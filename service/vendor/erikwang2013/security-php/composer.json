@@ -1,0 +1,42 @@
+{
+    "name": "erikwang2013/security-php",
+    "description": "PHP security attack detection plugin — 27 detectors, 4 framework adapters (Laravel/Webman/ThinkPHP/Hyperf)",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["security", "xss", "sql-injection", "waf", "attack-detection"],
+    "authors": [
+        {
+            "name": "erik",
+            "email": "erik@erik.xyz",
+            "homepage": "https://erik.xyz"
+        }
+    ],
+    "require": {
+        "php": ">=8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Erikwang2013\\Security\\": "src/",
+            "Erikwang2013\\Security\\Middleware\\": "middleware/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "suggest": {
+        "laravel/framework": "Required for Laravel middleware auto-discovery",
+        "webman/webman-framework": "Required for Webman middleware integration",
+        "topthink/framework": "Required for ThinkPHP middleware integration",
+        "hyperf/framework": "Required for Hyperf middleware integration"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Erikwang2013\\Security\\Middleware\\Laravel\\SecurityServiceProvider"
+            ]
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^12.5"
+    }
+}

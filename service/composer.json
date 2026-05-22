@@ -1,0 +1,36 @@
+{
+  "name": "erik/game-platform-service",
+  "description": "全球游戏聚合平台 — C端业务端",
+  "type": "project",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.1",
+    "workerman/webman-framework": "^2.1",
+    "monolog/monolog": "^2.0",
+    "erikwang2013/snowflake-php": "^2.0",
+    "erikwang2013/hashids": "^1.0",
+    "erikwang2013/jwt-webman": "^2.0",
+    "erikwang2013/encryption": "^1.0",
+    "erikwang2013/encryptable": "^2.0",
+    "erikwang2013/webman-scout": "^2.0",
+    "erikwang2013/season": "^2.0",
+    "erikwang2013/poster-php": "^1.0",
+    "erikwang2013/security-php": "^1.0",
+    "vlucas/phpdotenv": "^5.6"
+  },
+  "autoload": {
+    "psr-4": {
+      "": "./",
+      "app\\": "./app",
+      "common\\model\\": "../common/model",
+      "common\\middleware\\": "../common/middleware"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "erikwang2013/encryptable": true,
+      "erikwang2013/webman-scout": true,
+      "erikwang2013/encryption": true
+    }
+  }
+}

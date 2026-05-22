@@ -1,0 +1,72 @@
+{
+    "name": "erikwang2013/webman-scout",
+    "description": "Scout-style full-text search for Webman, Laravel, ThinkPHP, and Hyperf (Eloquent models, multiple engines).",
+    "keywords": ["algolia", "webman", "laravel", "thinkphp", "hyperf", "scout", "search", "opensearch", "elasticsearch"],
+    "license": "MIT",
+    "support": {
+        "issues": "https://github.com/erikwang2013/webman-scout/issues",
+        "source": "https://github.com/erikwang2013/webman-scout"
+    },
+    "authors": [
+        {
+            "name": "erik",
+            "email": "erik@erik.xyz"
+        }
+    ],
+    "require": {
+        "php": "^8.0",
+        "illuminate/bus": "^7.0|^8.0|^9.0|^10.0|^11.0",
+        "illuminate/contracts": "^7.0|^8.0|^9.0|^10.0|^11.0",
+        "illuminate/database": "^7.0|^8.0|^9.0|^10.0|^11.0",
+        "illuminate/http": "^7.0|^8.0|^9.0|^10.0|^11.0",
+        "illuminate/pagination": "^7.0|^8.0|^9.0|^10.0|^11.0",
+        "illuminate/queue": "^7.0|^8.0|^9.0|^10.0|^11.0",
+        "illuminate/support": "^7.0|^8.0|^9.0|^10.0|^11.0",
+        "symfony/console": "^5.4|^6.0|^7.0"
+    },
+    "require-dev": {
+        "algolia/algoliasearch-client-php": "^3.2|^4.0",
+        "typesense/typesense-php": "^4.9.3",
+        "meilisearch/meilisearch-php": "^1.0",
+        "mockery/mockery": "^1.0",
+        "orchestra/testbench": "^5.0|^6.0|^7.0|^8.0|^9.0",
+        "php-http/guzzle7-adapter": "^1.0",
+        "phpstan/phpstan": "^1.10"
+    },
+    "conflict": {
+        "algolia/algoliasearch-client-php": "<3.2.0|>=5.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Erikwang2013\\WebmanScout\\": "src/"
+        },
+        "files": [
+            "helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Erikwang2013\\WebmanScout\\Tests\\": "tests/",
+            "Workbench\\App\\": "workbench/app/",
+            "Workbench\\Database\\Factories\\": "workbench/database/factories/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "10.x-dev"
+        }
+    },
+    "suggest": {
+        "algolia/algoliasearch-client-php": "Required to use the Algolia engine (^3.2).",
+        "meilisearch/meilisearch-php": "Required to use the Meilisearch engine (^1.0).",
+        "typesense/typesense-php": "Required to use the Typesense engine (^4.9)."
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

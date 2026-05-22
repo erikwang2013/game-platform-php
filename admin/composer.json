@@ -1,0 +1,84 @@
+{
+  "name": "workerman/webman",
+  "type": "project",
+  "keywords": [
+    "high performance",
+    "http service"
+  ],
+  "homepage": "https://www.workerman.net",
+  "license": "MIT",
+  "description": "High performance HTTP Service Framework.",
+  "authors": [
+    {
+      "name": "walkor",
+      "email": "walkor@workerman.net",
+      "homepage": "https://www.workerman.net",
+      "role": "Developer"
+    }
+  ],
+  "support": {
+    "email": "walkor@workerman.net",
+    "issues": "https://github.com/walkor/webman/issues",
+    "forum": "https://wenda.workerman.net/",
+    "wiki": "https://workerman.net/doc/webman",
+    "source": "https://github.com/walkor/webman"
+  },
+  "require": {
+    "php": ">=8.1",
+    "workerman/webman-framework": "^2.1",
+    "monolog/monolog": "^2.0",
+    "erikwang2013/snowflake-php": "^2.0",
+    "erikwang2013/hashids": "^1.0",
+    "erikwang2013/jwt-webman": "^2.0",
+    "erikwang2013/encryption": "^1.0",
+    "erikwang2013/encryptable": "^2.0",
+    "erikwang2013/webman-scout": "^2.0",
+    "erikwang2013/season": "^2.0",
+    "phpoffice/phpspreadsheet": "^5.7",
+    "barryvdh/laravel-dompdf": "^3.1",
+    "erikwang2013/poster-php": "^1.0",
+    "vlucas/phpdotenv": "^5.6"
+  },
+  "suggest": {
+    "ext-event": "For better performance. "
+  },
+  "autoload": {
+    "psr-4": {
+      "": "./",
+      "app\\": "./app",
+      "App\\": "./app",
+      "app\\View\\Components\\": "./app/view/components",
+      "common\\model\\": "../common/model",
+      "common\\middleware\\": "../common/middleware"
+    }
+  },
+  "scripts": {
+    "post-package-install": [
+      "support\\Plugin::install"
+    ],
+    "post-package-update": [
+      "support\\Plugin::install"
+    ],
+    "pre-package-uninstall": [
+      "support\\Plugin::uninstall"
+    ],
+    "post-create-project-cmd": [
+      "support\\Setup::run"
+    ],
+    "setup-webman": [
+      "support\\Setup::run"
+    ]
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "config": {
+    "allow-plugins": {
+      "erikwang2013/encryptable": true,
+      "erikwang2013/webman-scout": true,
+      "erikwang2013/encryption": true
+    }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^12.5"
+  }
+}

@@ -1,0 +1,69 @@
+{
+    "name": "erikwang2013/hashids",
+    "description": "Hashids integration for Laravel, Webman, ThinkPHP, and Hyperf (multi-connection, API aligned with vinkla/hashids).",
+    "keywords": [
+        "hashids",
+        "laravel",
+        "webman",
+        "thinkphp",
+        "hyperf",
+        "erikwang2013"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "erik",
+            "email": "erik@erik.xyz",
+            "homepage": "https://erik.xyz",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/erikwang2013/hashids/issues",
+        "source": "https://github.com/erikwang2013/hashids"
+    },
+    "require": {
+        "php": "^8.1",
+        "hashids/hashids": "^5.0"
+    },
+    "require-dev": {
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "mockery/mockery": "^1.6",
+        "phpunit/phpunit": "^10.5|^11.0"
+    },
+    "suggest": {
+        "laravel/framework": "For Laravel integration.",
+        "topthink/framework": "For ThinkPHP integration.",
+        "hyperf/framework": "For Hyperf integration.",
+        "workerman/webman": "For Webman integration."
+    },
+    "autoload": {
+        "psr-4": {
+            "Erikwang2013\\Hashids\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Erikwang2013\\Hashids\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Erikwang2013\\Hashids\\Laravel\\HashidsServiceProvider"
+            ],
+            "aliases": {
+                "Hashids": "Erikwang2013\\Hashids\\Laravel\\Facades\\Hashids"
+            }
+        },
+        "hyperf": {
+            "config": "Erikwang2013\\Hashids\\Hyperf\\ConfigProvider"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "sort-packages": true
+    }
+}

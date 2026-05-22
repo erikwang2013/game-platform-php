@@ -1,0 +1,89 @@
+{
+    "name": "erikwang2013/encryptable",
+    "description": "Encryptable Eloquent casts and helpers for PHP 8.2+ with Laravel 10–12 / Webman (Illuminate), Hyperf 2–3, and ThinkPHP 6–8 bridges.",
+    "keywords": [
+        "laravel",
+        "webman",
+        "hyperf",
+        "thinkphp",
+        "encryptable",
+        "encrypt",
+        "anonymize"
+    ],
+    "homepage": "https://github.com/erikwang2013/encryptable",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "erik",
+            "email": "erik@erik.xyz",
+            "homepage": "https://erik.xyz",
+            "role": "Developer"
+        }
+    ],
+    "type": "composer-plugin",
+    "require": {
+        "php": "^8.2",
+        "ext-openssl": "*",
+        "composer-plugin-api": "^2.2",
+        "psr/container": "^1.1|^2.0"
+    },
+    "require-dev": {
+        "illuminate/contracts": "^10.0|^11.0|^12.0",
+        "illuminate/database": "^10.0|^11.0|^12.0",
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "illuminate/validation": "^10.0|^11.0|^12.0",
+        "larastan/larastan": "^2.9|^3.0",
+        "laravel/pint": "^1.13",
+        "orchestra/testbench": "^8.0|^9.0|^10.0",
+        "pestphp/pest": "^2.34|^3.0",
+        "pestphp/pest-plugin-laravel": "^2.4|^3.0",
+        "phpunit/phpunit": "^10.5|^11.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Erikwang2013\\Encryptable\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Erikwang2013\\Encryptable\\Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "format": "vendor/bin/pint",
+        "analyse": "vendor/bin/phpstan analyse",
+        "test": "vendor/bin/phpunit",
+        "test:pest": "vendor/bin/pest",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage-html"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "erikwang2013/encryptable": true,
+            "pestphp/pest-plugin": true
+        }
+    },
+    "extra": {
+        "class": "Erikwang2013\\Encryptable\\Composer\\Plugin",
+        "laravel": {
+            "providers": [
+                "Erikwang2013\\Encryptable\\EncryptableServiceProvider"
+            ]
+        },
+        "hyperf": {
+            "config": "Erikwang2013\\Encryptable\\Bridge\\Hyperf\\ConfigProvider"
+        }
+    },
+    "suggest": {
+        "laravel/framework": "Laravel 10–12: auto-discovery registers EncryptableServiceProvider.",
+        "illuminate/database": "Required with illuminate/support and illuminate/validation for Laravel/Webman integration.",
+        "illuminate/support": "Required for EncryptableServiceProvider and validation rule macros.",
+        "illuminate/validation": "Required for UniqueEncrypted / ExistsEncrypted rules.",
+        "hyperf/framework": "Hyperf 2–3: ConfigProvider is registered via composer extra (see docs).",
+        "hyperf/db-connection": "Required for Hyperf DB decrypt snippets (Encryption::db()).",
+        "topthink/framework": "ThinkPHP 6–8: call ThinkphpEncryptable::register($app) during boot.",
+        "workerman/webman": "Webman: install suggested Illuminate packages, then register EncryptableServiceProvider."
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
