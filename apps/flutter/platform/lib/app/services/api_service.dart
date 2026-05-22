@@ -66,7 +66,7 @@ class ApiService {
   Map<String, dynamic> _handleResponse(Response resp) {
     final body = resp.data as Map<String, dynamic>;
     if (body['code'] != 0) {
-      throw ApiException(body['code'] as int, body['message'] as String? ?? '请求失败');
+      throw ApiException(body['code'] as int, body['message'] as String? ?? 'requestFailed);
     }
     return body;
   }
