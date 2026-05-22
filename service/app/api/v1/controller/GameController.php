@@ -8,6 +8,8 @@ declare(strict_types=1);
 namespace app\api\v1\controller;
 
 use common\model\Game;
+use common\model\GamePlayLog;
+use common\model\UserWallet;
 use support\Request;
 use support\Response;
 
@@ -132,12 +134,31 @@ class GameController extends BaseController
             return $this->fail('Game is not available', 403);
         }
 
+        // 生成会话 ID
+        $sessionId = 'GAME_SESSION_' . date('YmdHis') . random_int(1000, 9999);
+
+        // 获取用户游戏钱包余额
+        $wallet = UserWallet::where('user_id', $request->userId)->first();
+        $gameAmountBefore = $wallet ? $wallet->balance : '0.00';
+
+        // 创建游戏记录
+        $playLog = new GamePlayLog();
+        $playLog->id                = $this->generateId();
+        $playLog->user_id           = $request->userId;
+        $playLog->game_id           = $gameId;
+        $playLog->session_id        = $sessionId;
+        $playLog->action            = 'start';
+        $playLog->game_amount_before = $gameAmountBefore;
+        $playLog->created_at        = date('Y-m-d H:i:s');
+        $playLog->save();
+
         return $this->success([
-            'id'           => $this->encodeId($game->id),
-            'name'         => $game->name,
-            'slug'         => $game->slug,
-            'type'         => $game->type,
-            'api_endpoint' => $game->api_endpoint,
+            'id'            => $this->encodeId($game->id),
+            'name'          => $game->name,
+            'slug'          => $game->slug,
+            'type'          => $game->type,
+            'api_endpoint'  => $game->api_endpoint,
+            'session_id'    => $sessionId,
         ]);
     }
 }

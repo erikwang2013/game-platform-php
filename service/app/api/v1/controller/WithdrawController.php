@@ -9,11 +9,13 @@ namespace app\api\v1\controller;
 
 use common\model\PlatformConfig;
 use common\model\Transaction;
+use common\model\UserIdentity;
 use common\model\UserWallet;
+use common\model\WithdrawLimit;
 use common\model\WithdrawOrder;
+use support\Db;
 use support\Request;
 use support\Response;
-use support\Db;
 
 class WithdrawController extends BaseController
 {
@@ -43,14 +45,46 @@ class WithdrawController extends BaseController
         $method         = $request->input('method');
         $accountInfo    = $request->input('account_info');
 
+        // Check KYC-based tiered limits
+        $level    = 'default';
+        $identity = UserIdentity::where('user_id', $request->userId)->first();
+        if ($identity && $identity->status === 'approved') {
+            $level = 'verified';
+        }
+        // VIP check could go here later
+
+        $limit = WithdrawLimit::getByLevel($level);
+        if ($limit) {
+            // Override platform config with tiered limits
+            $minAmount    = $limit->single_min;
+            $maxAmount    = $limit->single_max;
+            $dailyLimit   = $limit->daily_limit;
+            $monthlyLimit = $limit->monthly_limit;
+            $autoThreshold = $limit->auto_approve_threshold;
+            $feePct       = $limit->fee_pct;
+            $feeMax       = $limit->fee_max;
+        } else {
+            // Fallback to PlatformConfig when no tiered limit exists
+            $minAmount    = PlatformConfig::get('withdraw', 'min_amount', '0.0001');
+            $maxAmount    = '0';
+            $dailyLimit   = PlatformConfig::get('withdraw', 'daily_limit', '0');
+            $monthlyLimit = '0';
+            $autoThreshold = PlatformConfig::get('withdraw', 'auto_approve_threshold', '0');
+            $feePct       = '0';
+            $feeMax       = '0';
+        }
+
         // Check minimum withdrawal amount
-        $minAmount = PlatformConfig::get('withdraw', 'min_amount', '0.0001');
         if (bccomp($platformAmount, $minAmount, 4) < 0) {
             return $this->fail('Amount below minimum withdrawal limit', 400);
         }
 
+        // Check maximum single withdrawal amount
+        if (bccomp($maxAmount, '0', 4) > 0 && bccomp($platformAmount, $maxAmount, 4) > 0) {
+            return $this->fail('Amount exceeds maximum withdrawal limit', 400);
+        }
+
         // Check daily withdrawal limit
-        $dailyLimit = PlatformConfig::get('withdraw', 'daily_limit', '0');
         if (bccomp($dailyLimit, '0', 4) > 0) {
             $todaySum = WithdrawOrder::where('user_id', $userId)
                 ->whereIn('status', ['pending', 'approved', 'completed'])
@@ -62,6 +96,32 @@ class WithdrawController extends BaseController
                 return $this->fail('Daily withdrawal limit exceeded', 400);
             }
         }
+
+        // Check monthly withdrawal limit
+        if (bccomp($monthlyLimit, '0', 4) > 0) {
+            $monthSum = WithdrawOrder::where('user_id', $userId)
+                ->whereIn('status', ['pending', 'approved', 'completed'])
+                ->whereBetween('created_at', [
+                    date('Y-m-01'),
+                    date('Y-m-t 23:59:59'),
+                ])
+                ->sum('platform_amount');
+
+            $monthTotalAfter = bcadd((string) $monthSum, $platformAmount, 4);
+            if (bccomp($monthTotalAfter, $monthlyLimit, 4) > 0) {
+                return $this->fail('Monthly withdrawal limit exceeded', 400);
+            }
+        }
+
+        // Calculate withdrawal fee: fee = min(platform_amount * fee_pct/100, fee_max)
+        $fee = '0';
+        if (bccomp($feePct, '0', 4) > 0) {
+            $fee = bcmul($platformAmount, bcdiv($feePct, '100', 4), 4);
+            if (bccomp($feeMax, '0', 4) > 0 && bccomp($fee, $feeMax, 4) > 0) {
+                $fee = $feeMax;
+            }
+        }
+        $actualAmount = bcsub($platformAmount, $fee, 4);
 
         // Check wallet balance
         $wallet = UserWallet::where('user_id', $userId)->first();
@@ -79,8 +139,7 @@ class WithdrawController extends BaseController
                 return $this->fail('Failed to deduct balance', 500);
             }
 
-            // Determine auto-approve
-            $autoThreshold = PlatformConfig::get('withdraw', 'auto_approve_threshold', '0');
+            // Determine auto-approve using tiered threshold
             if (bccomp($autoThreshold, '0', 4) > 0 && bccomp($platformAmount, $autoThreshold, 4) < 0) {
                 $status = 'approved';
             } else {
@@ -96,6 +155,7 @@ class WithdrawController extends BaseController
             $order->order_no        = $orderNo;
             $order->user_id         = $userId;
             $order->platform_amount = $platformAmount;
+            $order->fiat_amount     = $actualAmount;
             $order->method          = $method;
             $order->account_info    = $accountInfo;
             $order->status          = $status;
@@ -104,6 +164,12 @@ class WithdrawController extends BaseController
             // Refresh wallet to get balance after deduction
             $wallet->refresh();
             $balanceAfter = $wallet->balance;
+
+            // Build remark with fee info
+            $remark = "Withdraw via {$method}";
+            if (bccomp($fee, '0', 4) > 0) {
+                $remark .= " (fee: {$fee})";
+            }
 
             // Create transaction record
             $transaction = new Transaction();
@@ -114,7 +180,7 @@ class WithdrawController extends BaseController
             $transaction->balance_after = $balanceAfter;
             $transaction->ref_type      = 'withdraw_order';
             $transaction->ref_id        = $order->id;
-            $transaction->remark        = "Withdraw via {$method}";
+            $transaction->remark        = $remark;
             $transaction->save();
 
             Db::commit();
@@ -123,6 +189,8 @@ class WithdrawController extends BaseController
                 'order_id'        => $this->encodeId($order->id),
                 'order_no'        => $order->order_no,
                 'platform_amount' => $platformAmount,
+                'fee'             => $fee,
+                'actual_amount'   => $actualAmount,
                 'status'          => $status,
                 'balance_after'   => $balanceAfter,
                 'created_at'      => $order->created_at,

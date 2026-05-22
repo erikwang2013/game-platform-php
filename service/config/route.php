@@ -40,6 +40,8 @@ Route::group('/api', function () {
     Route::post('/auth/register', v('AuthController', 'register'));
     Route::post('/auth/login', v('AuthController', 'login'));
     Route::post('/auth/refresh', v('AuthController', 'refresh'));
+    Route::get('/auth/oauth/{provider}', v('OAuthController', 'redirect'));
+    Route::post('/auth/oauth/{provider}/callback', v('OAuthController', 'callback'));
     Route::post('/captcha/generate', v('CaptchaController', 'generate'));
 
     Route::get('/language/list', v('LanguageController', 'list'));
@@ -49,6 +51,10 @@ Route::group('/api', function () {
     Route::get('/game/{hashid}', v('GameController', 'detail'));
     Route::get('/announcement/list', v('AnnouncementController', 'list'));
     Route::get('/announcement/detail/{hashid}', v('AnnouncementController', 'detail'));
+
+    // 支付
+    Route::post('/payment/callback', v('PaymentController', 'callback'));
+    Route::get('/payment/methods', v('PaymentController', 'methods'));
 })->middleware([
     app\middleware\ApiVersion::class,
 ]);
@@ -77,10 +83,14 @@ Route::group('/api', function () {
 
     // 游戏
     Route::post('/game/launch', v('GameController', 'launch'));
+    Route::get('/game/play-logs', v('GamePlayLogController', 'list'));
+    Route::get('/game/play-log/{hashid}', v('GamePlayLogController', 'detail'));
 
     // 用户
     Route::get('/user/profile', v('UserController', 'profile'));
     Route::put('/user/profile', v('UserController', 'updateProfile'));
+    Route::get('/user/identity/status', v('IdentityController', 'status'));
+    Route::post('/user/identity/apply', v('IdentityController', 'apply'));
 })->middleware([
     app\middleware\ApiVersion::class,
     common\middleware\UserAuth::class,

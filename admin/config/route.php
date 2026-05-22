@@ -99,8 +99,18 @@ Route::group('/admin', function () {
     // 平台仪表盘
     Route::get('/dashboard/platform', [app\admin\controller\DashboardController::class, 'platform']);
 
+    // 身份认证审核
+    Route::get('/identity/list', [app\admin\controller\IdentityController::class, 'list']);
+    Route::put('/identity/review', [app\admin\controller\IdentityController::class, 'review']);
+
     // 游戏管理
     Route::get('/game/list', [app\admin\controller\GameController::class, 'list']);
+
+    // 游戏区服管理
+    Route::get('/game/server/list', [app\admin\controller\GameServerController::class, 'list']);
+    Route::post('/game/server/create', [app\admin\controller\GameServerController::class, 'create']);
+    Route::put('/game/server/{hashid}', [app\admin\controller\GameServerController::class, 'update']);
+    Route::delete('/game/server/{hashid}', [app\admin\controller\GameServerController::class, 'destroy']);
     Route::post('/game/create', [app\admin\controller\GameController::class, 'create']);
     Route::put('/game/{hashid}', [app\admin\controller\GameController::class, 'update']);
     Route::delete('/game/{hashid}', [app\admin\controller\GameController::class, 'destroy']);
@@ -111,6 +121,8 @@ Route::group('/admin', function () {
     Route::put('/withdraw/review', [app\admin\controller\WithdrawController::class, 'review']);
     Route::put('/withdraw/switch', [app\admin\controller\WithdrawController::class, 'toggleSwitch']);
     Route::post('/withdraw/limits/set', [app\admin\controller\WithdrawController::class, 'setLimits']);
+    Route::get('/withdraw/limits/list', [app\admin\controller\WithdrawController::class, 'listLimits']);
+    Route::put('/withdraw/limits/{hashid}', [app\admin\controller\WithdrawController::class, 'updateLimit']);
 
     // 支付方式管理
     Route::get('/payment/method/list', [app\admin\controller\PaymentController::class, 'list']);

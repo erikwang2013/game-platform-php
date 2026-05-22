@@ -11,6 +11,7 @@ use common\model\PlatformConfig;
 use common\model\Transaction;
 use common\model\User;
 use common\model\UserWallet;
+use common\model\WithdrawLimit;
 use common\model\WithdrawOrder;
 use support\Request;
 use support\Response;
@@ -173,5 +174,46 @@ class WithdrawController extends BaseController
         $limits['global_switch'] = PlatformConfig::get('withdraw', 'global_switch', false);
 
         return $this->success($limits, '操作成功');
+    }
+
+    /**
+     * 提现限制等级列表
+     * GET /admin/withdraw/limits/list
+     */
+    public function listLimits(Request $request): Response
+    {
+        $list = WithdrawLimit::all()->map(function ($limit) {
+            $data = $limit->toArray();
+            return $this->encodeIds($data);
+        })->toArray();
+
+        return $this->success(['list' => $list]);
+    }
+
+    /**
+     * 更新提现限制等级
+     * PUT /admin/withdraw/limits/{hashid}
+     */
+    public function updateLimit(Request $request, string $hashid): Response
+    {
+        $id    = $this->decodeId($hashid);
+        $limit = WithdrawLimit::find($id);
+
+        if (!$limit) {
+            return $this->fail('限制记录不存在', 404);
+        }
+
+        $limit->fill($request->only([
+            'single_min',
+            'single_max',
+            'daily_limit',
+            'monthly_limit',
+            'fee_pct',
+            'fee_max',
+            'auto_approve_threshold',
+        ]));
+        $limit->save();
+
+        return $this->success($this->encodeIds($limit->toArray()), '更新成功');
     }
 }
