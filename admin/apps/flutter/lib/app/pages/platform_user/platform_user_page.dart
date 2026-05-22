@@ -1,4 +1,5 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+import '../../i18n/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
@@ -65,7 +66,7 @@ class PlatformUserPage extends GetView<PlatformUserController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('平台用户', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        Text("${AppTranslations.t('platform_user.title')}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
         Row(
           children: [
@@ -90,8 +91,8 @@ class PlatformUserPage extends GetView<PlatformUserController> {
               underline: const SizedBox(),
               items: const [
                 DropdownMenuItem(value: '', child: Text('全部')),
-                DropdownMenuItem(value: '1', child: Text('启用')),
-                DropdownMenuItem(value: '0', child: Text('禁用')),
+                DropdownMenuItem(value: '1', child: Text("${AppTranslations.t('app.enabled')}")),
+                DropdownMenuItem(value: '0', child: Text("${AppTranslations.t('app.disabled')}")),
               ],
               onChanged: (v) {
                 ctrl.statusFilter.value = v ?? '';
@@ -104,13 +105,13 @@ class PlatformUserPage extends GetView<PlatformUserController> {
         Expanded(
           child: Obx(() {
             if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
-            if (ctrl.users.isEmpty) return const Center(child: Text('暂无数据'));
+            if (ctrl.users.isEmpty) return const Center(child: Text("${AppTranslations.t('app.no_data')}"));
 
             return SingleChildScrollView(
               child: DataTable(
                 columns: const [
                   DataColumn(label: Text('ID')),
-                  DataColumn(label: Text('用户名')),
+                  DataColumn(label: Text("${AppTranslations.t('user.username')}")),
                   DataColumn(label: Text('昵称')),
                   DataColumn(label: Text('国家')),
                   DataColumn(label: Text('状态')),
@@ -133,7 +134,7 @@ class PlatformUserPage extends GetView<PlatformUserController> {
                       DataCell(Text(nickname)),
                       DataCell(Text(country)),
                       DataCell(Chip(
-                        label: Text(status == 1 ? '启用' : '禁用'),
+                        label: Text(status == 1 ? "${AppTranslations.t('app.enabled')}" : "${AppTranslations.t('app.disabled')}"),
                         color: WidgetStatePropertyAll(status == 1 ? Colors.green.shade50 : Colors.red.shade50),
                       )),
                       DataCell(Text(createdAt)),
@@ -141,7 +142,7 @@ class PlatformUserPage extends GetView<PlatformUserController> {
                         TextButton(
                           onPressed: () => ctrl.toggleStatus(id, status == 1 ? 0 : 1),
                           child: Text(
-                            status == 1 ? '禁用' : '启用',
+                            status == 1 ? "${AppTranslations.t('app.disabled')}" : "${AppTranslations.t('app.enabled')}",
                             style: TextStyle(color: status == 1 ? Colors.red : Colors.green),
                           ),
                         ),
@@ -172,14 +173,14 @@ class PlatformUserPage extends GetView<PlatformUserController> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _detailRow('用户名', detail['username']?.toString()),
+              _detailRow("${AppTranslations.t('user.username')}", detail['username']?.toString()),
               _detailRow('昵称', detail['nickname']?.toString()),
               _detailRow('邮箱', detail['email']?.toString()),
               _detailRow('手机号', detail['phone']?.toString()),
               _detailRow('国家', detail['country']?.toString()),
               _detailRow('钱包余额', detail['wallet_balance']?.toString() ?? detail['balance']?.toString()),
               _detailRow('注册时间', detail['created_at']?.toString()),
-              _detailRow('状态', detail['status'] == 1 ? '启用' : '禁用'),
+              _detailRow('状态', detail['status'] == 1 ? "${AppTranslations.t('app.enabled')}" : "${AppTranslations.t('app.disabled')}"),
             ],
           ),
         ),

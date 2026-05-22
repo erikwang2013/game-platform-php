@@ -120,7 +120,59 @@ WHERE user_id = ? AND version = ?
 | 游戏安全 | 第三方回调签名验签 + IP白名单 + replay attack 防御 | 防止伪造游戏结算 |
 | 风控 | 规则引擎（IP黑名单、大额预警、频率异常） | 实时阻断可疑交易 |
 
-## 5. 扩展性设计
+## 5. 国际化设计
+
+### 5.1 语言检测
+
+```
+请求进入
+  ↓
+LanguageMiddleware（全局中间件）
+  ├── 1. X-Language 请求头
+  ├── 2. Accept-Language 头（zh → zh-CN, en → en-US）
+  └── 3. 默认 en-US
+  ↓
+TranslationService::setLocale($locale)
+  ↓
+Controller 中 __() 函数或 TranslationService::trans() 获取翻译文本
+```
+
+### 5.2 翻译存储
+
+- 数据库表 `erik_translation` 存储所有翻译文本（group + key + lang_code + value）
+- 首次请求从数据库全量加载到 Redis（key: `i18n:translations`，TTL: 1小时）
+- 后续请求直接从 Redis 读取，内存缓存加速
+- 管理后台可扩展翻译管理页面（完整版实现）
+
+### 5.3 翻译键命名
+
+格式：`group.key` 如 `auth.login_success`、`wallet.insufficient_balance`
+
+| 分组 | 域 |
+|------|------|
+| auth | 认证相关 |
+| wallet | 钱包相关 |
+| exchange | 兑换相关 |
+| withdraw | 提现相关 |
+| deposit | 充值相关 |
+| game | 游戏相关 |
+| admin | 管理后台 |
+| error | 错误信息 |
+
+### 5.4 回退策略
+
+- 请求语言有对应翻译 → 使用
+- 请求语言无对应翻译 → 回退到 en-US
+- en-US 也无 → 返回原始 key
+
+### 5.5 前端 i18n
+
+- Flutter 使用自建 `AppTranslations` + `LocaleController`（GetX）
+- 语言偏好持久化到 SharedPreferences
+- 切换语言时通过 `Get.updateLocale()` 触发全局 UI 重渲染
+- `StringResult` 类利用 Dart 的 `toString()` 实现自然内联语法：`Text('${AppTranslations.t("key")}')`
+
+## 6. 扩展性设计
 
 ### 5.1 水平扩展
 

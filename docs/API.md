@@ -430,7 +430,32 @@ type 可选值: self / third_party
 }
 ```
 
-### 2.7 用户
+### 2.7 语言
+
+#### GET /api/language/list — 可用语言列表
+
+```
+响应: {
+  "current": "en-US",
+  "languages": {
+    "en-US": { "name": "English", "nativeName": "English", "icon": "us" },
+    "zh-CN": { "name": "Chinese (Simplified)", "nativeName": "简体中文", "icon": "cn" },
+    "ja-JP": { "name": "Japanese", "nativeName": "日本語", "icon": "jp" },
+    "ko-KR": { "name": "Korean", "nativeName": "한국어", "icon": "kr" }
+  }
+}
+```
+
+#### POST /api/language/switch — 切换语言
+
+```
+请求: { "locale": "zh-CN" }
+响应: { "locale": "zh-CN" }
+```
+
+locale 可选值: en-US / zh-CN / ja-JP / ko-KR
+
+### 2.8 用户
 
 #### GET /api/user/profile — 个人信息
 
@@ -473,7 +498,7 @@ type 可选值: self / third_party
 
 language 可选值: en-US / zh-CN / ja-JP / ko-KR
 
-### 2.8 公告
+### 2.9 公告
 
 #### GET /api/announcement/list — 公告列表
 

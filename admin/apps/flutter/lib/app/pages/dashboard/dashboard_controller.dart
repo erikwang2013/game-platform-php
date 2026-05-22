@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import '../../i18n/translations.dart';
 
 class DashboardController extends GetxController {
   final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:8787'));
@@ -51,16 +52,16 @@ class DashboardController extends GetxController {
     } catch (e) {
       // 开发环境使用模拟数据
       stats.value = [
-        {'label': '用户总数', 'value': '1,236', 'icon': 'people', 'color': '#1677FF', 'trend': 12.5},
-        {'label': '今日新增', 'value': '28', 'icon': 'person_add', 'color': '#52C41A', 'trend': null},
-        {'label': '活跃用户', 'value': '89', 'icon': 'bolt', 'color': '#FA8C16', 'trend': -3.2},
-        {'label': '操作日志', 'value': '452', 'icon': 'description', 'color': '#722ED1', 'trend': 8.0},
+        {'label': AppTranslations.t('dashboard.total_users').toString(), 'value': '1,236', 'icon': 'people', 'color': '#1677FF', 'trend': 12.5},
+        {'label': AppTranslations.t('dashboard.active_users').toString(), 'value': '89', 'icon': 'bolt', 'color': '#FA8C16', 'trend': -3.2},
+        {'label': AppTranslations.t('dashboard.total_games').toString(), 'value': '28', 'icon': 'person_add', 'color': '#52C41A', 'trend': null},
+        {'label': "${AppTranslations.t('log.title')}", 'value': '452', 'icon': 'description', 'color': '#722ED1', 'trend': 8.0},
       ];
       trends.value = {
         'dates': List.generate(30, (i) => 'Day $i'),
         'series': [
           {
-            'name': '累计用户',
+            'name': AppTranslations.t('dashboard.total_users').toString(),
             'data': List.generate(30, (i) => 800 + i * 15 + (i > 20 ? 20 : 0)),
           },
         ],
@@ -84,7 +85,7 @@ class DashboardController extends GetxController {
     pdf.addPage(pw.MultiPage(
       pageFormat: PdfPageFormat.a4.landscape,
       build: (ctx) => [
-        pw.Header(text: '仪表盘数据导出'),
+        pw.Header(text: AppTranslations.t('dashboard.export').toString()),
         pw.Paragraph(text: 'Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz'),
         for (final s in stats)
           pw.Row(children: [
@@ -97,6 +98,6 @@ class DashboardController extends GetxController {
   }
 
   Future<void> exportExcel() async {
-    Get.snackbar('导出', 'Excel 导出功能已触发');
+    Get.snackbar("${AppTranslations.t('dashboard.export')}", "${AppTranslations.t('dashboard.export_excel')}");
   }
 }

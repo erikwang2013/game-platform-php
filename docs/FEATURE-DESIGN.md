@@ -206,7 +206,32 @@ signature = HMAC-SHA256(
   put.admin/withdraw/switch → 操作提现开关（仅超级管理员）
 ```
 
-## 7. 平台收益模型
+## 7. 国际化设计
+
+### 7.1 支持语言
+
+| 代码 | 名称 | 本地语 | 图标 |
+|------|------|--------|------|
+| en-US | English | English | us |
+| zh-CN | Chinese (Simplified) | 简体中文 | cn |
+| ja-JP | Japanese | 日本語 | jp |
+| ko-KR | Korean | 한국어 | kr |
+
+### 7.2 翻译管理
+
+- 翻译以 `group.key` 格式组织（如 `auth.login_success`）
+- 数据库表 `erik_translation` 存储，Redis 缓存（TTL 1小时）
+- API: `GET /api/language/list` 获取可用语言，`POST /api/language/switch` 切换语言
+- 前端通过 `X-Language` 请求头或 `Accept-Language` 自动检测
+- 翻译缺失时回退到 en-US，en-US 也无则返回原始 key
+
+### 7.3 用户语言偏好
+
+- 用户注册时根据浏览器 `Accept-Language` 自动设置
+- 登录后可通过 `PUT /api/user/profile` 修改 `language` 字段
+- 切换语言时同步更新用户记录
+
+## 8. 平台收益模型
 
 | 收益来源 | 计算方式 | 说明 |
 |---------|---------|------|

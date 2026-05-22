@@ -17,7 +17,8 @@
 | 管理 | 游戏管理/提现审核/用户管理/支付管理/公告管理 | 已完成 |
 | 面板 | 平台仪表盘（DAU/流水/收益/排行） | 已完成 |
 | 导出 | Excel导出用户/流水/提现 | 已完成 |
-| 前端 | Flutter PC管理后台 + C端用户平台 | 已完成 |
+| 国际化 | 中/英文切换、翻译表、语言检测中间件 | 已完成 |
+| 前端 | Flutter PC管理后台 + C端用户平台（含i18n） | 已完成 |
 
 ### 标准版 — 规划中
 
@@ -74,6 +75,8 @@
 | POST | /api/auth/register | 用户注册 | 否 |
 | POST | /api/auth/login | 用户登录 | 否 |
 | POST | /api/auth/refresh | 刷新Token | 否 |
+| GET | /api/language/list | 可用语言列表 | 否 |
+| POST | /api/language/switch | 切换语言 | 否 |
 | GET | /api/game/list | 游戏列表 | 否 |
 | GET | /api/game/{id} | 游戏详情 | 否 |
 | GET | /api/announcement/list | 公告列表 | 否 |
@@ -152,6 +155,8 @@
 | erik_payment_method | 支付方式 | 配置加密、启禁用 |
 | erik_announcement | 公告 | 定时发布、按语言过滤 |
 | erik_platform_config | 平台配置 | 类型化存取、分组管理 |
+| erik_language | 语言定义 | 4种语言预设 |
+| erik_translation | 翻译文本 | group.key + lang_code 唯一索引 |
 
 （admin 原有 7 张表：erik_admin_user, erik_admin_role, erik_admin_permission, erik_admin_user_role, erik_admin_role_permission, erik_operation_log, erik_system_config）
 

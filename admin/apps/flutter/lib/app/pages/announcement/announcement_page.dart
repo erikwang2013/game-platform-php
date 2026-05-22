@@ -1,4 +1,5 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+import '../../i18n/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
@@ -52,7 +53,7 @@ class AnnouncementPage extends GetView<AnnouncementController> {
       children: [
         Row(
           children: [
-            const Text('公告管理', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text("${AppTranslations.t('announcement.title')}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const Spacer(),
             FloatingActionButton.small(
               heroTag: 'addAnnouncement',
@@ -65,13 +66,13 @@ class AnnouncementPage extends GetView<AnnouncementController> {
         Expanded(
           child: Obx(() {
             if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
-            if (ctrl.announcements.isEmpty) return const Center(child: Text('暂无数据'));
+            if (ctrl.announcements.isEmpty) return const Center(child: Text("${AppTranslations.t('app.no_data')}"));
 
             return SingleChildScrollView(
               child: DataTable(
                 columns: const [
                   DataColumn(label: Text('标题')),
-                  DataColumn(label: Text('类型')),
+                  DataColumn(label: Text("${AppTranslations.t('game.type')}")),
                   DataColumn(label: Text('状态')),
                   DataColumn(label: Text('发布时间')),
                 ],
@@ -148,7 +149,7 @@ class AnnouncementPage extends GetView<AnnouncementController> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text("${AppTranslations.t('app.cancel')}")),
             ElevatedButton(
               onPressed: () {
                 ctrl.create({

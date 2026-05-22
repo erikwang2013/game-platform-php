@@ -2,7 +2,7 @@
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
-全球通用、国际化的游戏聚合平台。用户注册后在平台充值兑换游戏币，用游戏币玩游戏、赚取游戏币，游戏币可转回钱包提现。后台提供完整的游戏管理、提现审核、用户管理和支付管理功能。
+全球通用、国际化的游戏聚合平台。用户注册后在平台充值兑换游戏币，用游戏币玩游戏、赚取游戏币，游戏币可转回钱包提现。后台提供完整的游戏管理、提现审核、用户管理和支付管理功能。支持多语言切换（英文/中文）。
 
 ## 版本策略
 
@@ -26,6 +26,7 @@
 - Flutter 3.x (Web PC 风格)
 - HarmonyOS ArkTS (移动端)
 - 响应式布局 (Phone / Tablet / Desktop)
+- 国际化 (i18n)：英文 / 简体中文切换
 
 ### 核心组件
 - `erikwang2013/snowflake-php` — 全局唯一 BIGINT ID 生成
@@ -55,8 +56,9 @@ game-platform-php/
 │   └── config/                #   配置文件
 │
 ├── common/                    # 共享层 (PSR-4 autoload)
-│   ├── model/                 #   数据模型 (12个)
-│   └── middleware/            #   共享中间件 (UserAuth)
+│   ├── model/                 #   数据模型 (14个)
+│   ├── middleware/            #   共享中间件 (UserAuth)
+│   └── service/               #   共享服务 (TranslationService)
 │
 ├── apps/
 │   └── flutter/platform/      # Flutter Web PC C端用户平台
@@ -91,6 +93,7 @@ mysql -u root -e "CREATE DATABASE IF NOT EXISTS game_platform CHARACTER SET utf8
 # 执行迁移（按编号顺序）
 mysql -u root game_platform < admin/database/migrations/2026_05_16_000000_init_tables.sql
 mysql -u root game_platform < admin/database/migrations/2026_05_22_000003_platform_tables.sql
+mysql -u root game_platform < admin/database/migrations/2026_05_22_000004_i18n_tables.sql
 ```
 
 ### 2. 后端启动

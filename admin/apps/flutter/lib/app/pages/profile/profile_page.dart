@@ -2,6 +2,8 @@
  * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
  */
 
+import '../../i18n/translations.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
@@ -65,7 +67,7 @@ class _ProfilePageState extends State<ProfilePage> {
           TextField(controller: confirmCtrl, obscureText: true, decoration: const InputDecoration(labelText: '确认新密码')),
         ]),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text("${AppTranslations.t('app.cancel')}")),
           ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('确认')),
         ],
       ),
@@ -95,7 +97,7 @@ class _ProfilePageState extends State<ProfilePage> {
         title: const Text('退出登录'),
         content: const Text('确定要退出登录吗？'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('取消')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text("${AppTranslations.t('app.cancel')}")),
           ElevatedButton(onPressed: () => Navigator.pop(context, true), style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white), child: const Text('退出')),
         ],
       ),
@@ -111,7 +113,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (_loading) return const Center(child: CircularProgressIndicator());
 
     return Center(child: SizedBox(width: 500, child: ListView(padding: const EdgeInsets.all(24), children: [
-      const Text('个人中心', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+      Text("${AppTranslations.t('profile.title')}", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
       const SizedBox(height: 24),
       TextField(controller: _realNameCtrl, decoration: const InputDecoration(labelText: '姓名')),
       const SizedBox(height: 12),
@@ -120,7 +122,7 @@ class _ProfilePageState extends State<ProfilePage> {
       TextField(controller: _emailCtrl, decoration: const InputDecoration(labelText: '邮箱')),
       const SizedBox(height: 24),
       Row(children: [
-        ElevatedButton.icon(onPressed: _updateProfile, icon: const Icon(Icons.save), label: const Text('保存')),
+        ElevatedButton.icon(onPressed: _updateProfile, icon: const Icon(Icons.save), label: Text("${AppTranslations.t('app.save')}")),
       ]),
       const SizedBox(height: 32),
       const Divider(),

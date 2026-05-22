@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'app/theme/app_theme.dart';
 import 'app/layouts/admin_layout.dart';
+import 'app/i18n/locale_controller.dart';
 import 'app/pages/login/login_page.dart';
 import 'app/pages/dashboard/dashboard_page.dart';
 import 'app/pages/user/user_list_page.dart';
@@ -18,6 +19,7 @@ import 'app/pages/payment/payment_page.dart';
 import 'app/pages/announcement/announcement_page.dart';
 
 void main() {
+  Get.put(LocaleController());
   runApp(const AdminApp());
 }
 
@@ -27,7 +29,9 @@ class AdminApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: '开放管理后台',
+      title: 'Game Platform Admin',
+      locale: const Locale('en', 'US'),
+      fallbackLocale: const Locale('en', 'US'),
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

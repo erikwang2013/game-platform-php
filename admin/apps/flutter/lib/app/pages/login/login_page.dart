@@ -1,4 +1,5 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+import '../../i18n/translations.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -137,14 +138,14 @@ class _LoginPageState extends State<LoginPage> {
               children: [
                 const Icon(Icons.admin_panel_settings, size: 64, color: Color(0xFF1677FF)),
                 const SizedBox(height: 12),
-                const Text('开放管理后台', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1677FF))),
+                Text("${AppTranslations.t('app.title')}", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1677FF))),
                 const SizedBox(height: 32),
 
                 // Username
                 TextField(
                   controller: _usernameCtrl,
                   decoration: const InputDecoration(
-                    labelText: '用户名',
+                    labelText: "${AppTranslations.t('user.username')}",
                     prefixIcon: Icon(Icons.person_outline),
                     border: OutlineInputBorder(),
                   ),

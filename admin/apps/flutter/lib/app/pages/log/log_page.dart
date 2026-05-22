@@ -2,6 +2,8 @@
  * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
  */
 
+import '../../i18n/translations.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
@@ -48,7 +50,7 @@ class LogPage extends GetView<LogController> {
     final ctrl = controller;
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const Text('操作日志', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+      Text("${AppTranslations.t('log.title')}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
       const SizedBox(height: 12),
       Row(children: [
         SizedBox(width: 150, child: TextField(decoration: const InputDecoration(hintText: '操作筛选', isDense: true), onSubmitted: (v) { ctrl.actionFilter.value = v; ctrl.loadLogs(reset: true); })),

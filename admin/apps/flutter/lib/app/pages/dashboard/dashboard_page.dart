@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../../i18n/translations.dart';
 import 'dashboard_controller.dart';
 
 class DashboardPage extends GetView<DashboardController> {
@@ -22,19 +23,19 @@ class DashboardPage extends GetView<DashboardController> {
           children: [
             Row(
               children: [
-                Text('仪表盘',
+                Text(AppTranslations.t('dashboard.title').toString(),
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
                 const Spacer(),
                 PopupMenuButton<String>(
                   icon: const Icon(Icons.download),
-                  tooltip: '导出',
+                  tooltip: "${AppTranslations.t('dashboard.export')}",
                   onSelected: (type) {
                     if (type == 'pdf') controller.exportPdf();
                     if (type == 'excel') controller.exportExcel();
                   },
                   itemBuilder: (_) => const [
-                    PopupMenuItem(value: 'pdf', child: ListTile(leading: Icon(Icons.picture_as_pdf), title: Text('导出PDF'), dense: true)),
-                    PopupMenuItem(value: 'excel', child: ListTile(leading: Icon(Icons.table_chart), title: Text('导出Excel'), dense: true)),
+                    PopupMenuItem(value: 'pdf', child: ListTile(leading: Icon(Icons.picture_as_pdf), title: Text("${AppTranslations.t('dashboard.export_pdf')}"), dense: true)),
+                    PopupMenuItem(value: 'excel', child: ListTile(leading: Icon(Icons.table_chart), title: Text("${AppTranslations.t('dashboard.export_excel')}"), dense: true)),
                   ],
                 ),
               ],
@@ -109,7 +110,7 @@ class DashboardPage extends GetView<DashboardController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('数据趋势（近30天）', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            Text("${AppTranslations.t('dashboard.data_trend')}", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 16),
             SizedBox(
               height: 300,
@@ -157,7 +158,7 @@ class DashboardPage extends GetView<DashboardController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('用户状态分布', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            Text("${AppTranslations.t('dashboard.user_distribution')}", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 16),
             SizedBox(
               height: 200,
@@ -173,9 +174,9 @@ class DashboardPage extends GetView<DashboardController> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildLegend(const Color(0xFF1677FF), '启用'),
+                _buildLegend(const Color(0xFF1677FF), "${AppTranslations.t('app.enabled')}"),
                 const SizedBox(width: 24),
-                _buildLegend(const Color(0xFF52C41A), '禁用'),
+                _buildLegend(const Color(0xFF52C41A), "${AppTranslations.t('app.disabled')}"),
               ],
             ),
           ],
@@ -202,7 +203,7 @@ class DashboardPage extends GetView<DashboardController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('最近操作', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            Text("${AppTranslations.t('dashboard.recent_ops')}", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 12),
             ...controller.recentLogs.take(8).map((log) => ListTile(
               dense: true,
@@ -237,7 +238,7 @@ class DashboardPage extends GetView<DashboardController> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('平台运营数据', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            Text("${AppTranslations.t('dashboard.platform_stats')}", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             const SizedBox(height: 16),
             LayoutBuilder(
               builder: (context, constraints) {
@@ -254,10 +255,10 @@ class DashboardPage extends GetView<DashboardController> {
                   itemCount: 4,
                   itemBuilder: (context, index) {
                     final items = [
-                      {'label': '平台总用户', 'value': totalUsers, 'icon': Icons.group, 'color': const Color(0xFF1677FF)},
-                      {'label': '7日活跃', 'value': active7d, 'icon': Icons.trending_up, 'color': const Color(0xFF52C41A)},
-                      {'label': '游戏数', 'value': gameCount, 'icon': Icons.games, 'color': const Color(0xFFFA8C16)},
-                      {'label': '待审核提现', 'value': pendingWithdraw, 'icon': Icons.account_balance_wallet, 'color': const Color(0xFF722ED1)},
+                      {'label': "${AppTranslations.t('dashboard.total_users')}", 'value': totalUsers, 'icon': Icons.group, 'color': const Color(0xFF1677FF)},
+                      {'label': "${AppTranslations.t('dashboard.active_users')}", 'value': active7d, 'icon': Icons.trending_up, 'color': const Color(0xFF52C41A)},
+                      {'label': "${AppTranslations.t('dashboard.total_games')}", 'value': gameCount, 'icon': Icons.games, 'color': const Color(0xFFFA8C16)},
+                      {'label': "${AppTranslations.t('dashboard.pending_withdraws')}", 'value': pendingWithdraw, 'icon': Icons.account_balance_wallet, 'color': const Color(0xFF722ED1)},
                     ][index];
                     return Card(
                       elevation: 0,
@@ -287,15 +288,15 @@ class DashboardPage extends GetView<DashboardController> {
             Row(
               children: [
                 Expanded(
-                  child: _buildFinanceCard('今日充值', todayRecharge, const Color(0xFF1677FF)),
+                  child: _buildFinanceCard("${AppTranslations.t('dashboard.today_deposits')}", todayRecharge, const Color(0xFF1677FF)),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: _buildFinanceCard('今日提现', todayWithdraw, const Color(0xFFFA8C16)),
+                  child: _buildFinanceCard("${AppTranslations.t('dashboard.today_withdraws')}", todayWithdraw, const Color(0xFFFA8C16)),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
-                  child: _buildFinanceCard('平台总收益(手续费)', totalProfit, const Color(0xFF52C41A)),
+                  child: _buildFinanceCard("${AppTranslations.t('dashboard.total_revenue')}", totalProfit, const Color(0xFF52C41A)),
                 ),
               ],
             ),

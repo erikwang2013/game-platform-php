@@ -1,4 +1,5 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+import '../../i18n/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
@@ -90,7 +91,7 @@ class WithdrawPage extends GetView<WithdrawController> {
       children: [
         Row(
           children: [
-            const Text('提现管理', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text("${AppTranslations.t('withdraw.title')}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const Spacer(),
             Obx(() => Row(
               mainAxisSize: MainAxisSize.min,
@@ -130,7 +131,7 @@ class WithdrawPage extends GetView<WithdrawController> {
         Expanded(
           child: Obx(() {
             if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
-            if (ctrl.orders.isEmpty) return const Center(child: Text('暂无数据'));
+            if (ctrl.orders.isEmpty) return const Center(child: Text("${AppTranslations.t('app.no_data')}"));
 
             return SingleChildScrollView(
               child: DataTable(
@@ -223,7 +224,7 @@ class WithdrawPage extends GetView<WithdrawController> {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),
           ElevatedButton(
             onPressed: () {
               ctrl.review(
@@ -278,7 +279,7 @@ class WithdrawPage extends GetView<WithdrawController> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),
           ElevatedButton(
             onPressed: () {
               final data = <String, dynamic>{};
@@ -288,7 +289,7 @@ class WithdrawPage extends GetView<WithdrawController> {
               ctrl.setLimits(data);
               Navigator.pop(context);
             },
-            child: const Text('保存'),
+            child: Text("${AppTranslations.t('app.save')}"),
           ),
         ],
       ),

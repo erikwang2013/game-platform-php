@@ -1,4 +1,5 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+import '../../i18n/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
@@ -72,7 +73,7 @@ class GameListPage extends GetView<GameListController> {
       children: [
         Row(
           children: [
-            const Text('游戏管理', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text("${AppTranslations.t('game.title')}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const Spacer(),
             FloatingActionButton.small(
               heroTag: 'addGame',
@@ -85,16 +86,16 @@ class GameListPage extends GetView<GameListController> {
         Expanded(
           child: Obx(() {
             if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
-            if (ctrl.games.isEmpty) return const Center(child: Text('暂无数据'));
+            if (ctrl.games.isEmpty) return const Center(child: Text("${AppTranslations.t('app.no_data')}"));
 
             return SingleChildScrollView(
               child: DataTable(
                 columns: const [
                   DataColumn(label: Text('ID')),
-                  DataColumn(label: Text('名称')),
-                  DataColumn(label: Text('标识')),
-                  DataColumn(label: Text('类型')),
-                  DataColumn(label: Text('币种数')),
+                  DataColumn(label: Text("${AppTranslations.t('game.name')}")),
+                  DataColumn(label: Text("${AppTranslations.t('game.slug')}")),
+                  DataColumn(label: Text("${AppTranslations.t('game.type')}")),
+                  DataColumn(label: Text("${AppTranslations.t('game.currencies')}")),
                   DataColumn(label: Text('状态')),
                   DataColumn(label: Text('操作')),
                 ],
@@ -106,7 +107,7 @@ class GameListPage extends GetView<GameListController> {
                   final typeLabel = type == 'self' ? '自研' : '第三方';
                   final currencyCount = (g['currency_count'] ?? g['currencies'] is List ? (g['currencies'] as List).length : 0).toString();
                   final status = g['status'] is int ? g['status'] : (g['status'] == 'active' || g['status'] == true ? 1 : 0);
-                  final statusLabel = status == 1 ? '启用' : '禁用';
+                  final statusLabel = status == 1 ? "${AppTranslations.t('app.enabled')}" : "${AppTranslations.t('app.disabled')}";
 
                   return DataRow(cells: [
                     DataCell(Text(id)),
@@ -187,7 +188,7 @@ class GameListPage extends GetView<GameListController> {
                 TextField(controller: sortCtrl, decoration: const InputDecoration(labelText: '排序'), keyboardType: TextInputType.number),
                 const SizedBox(height: 12),
                 SwitchListTile(
-                  title: const Text('启用'),
+                  title: const Text("${AppTranslations.t('app.enabled')}"),
                   value: isEnabled,
                   onChanged: (v) => setDialogState(() => isEnabled = v),
                   contentPadding: EdgeInsets.zero,
@@ -196,7 +197,7 @@ class GameListPage extends GetView<GameListController> {
             ),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: Text("${AppTranslations.t('app.cancel')}")),
             ElevatedButton(
               onPressed: () {
                 final data = <String, dynamic>{
@@ -216,7 +217,7 @@ class GameListPage extends GetView<GameListController> {
                 }
                 Navigator.pop(ctx);
               },
-              child: const Text('保存'),
+              child: Text("${AppTranslations.t('app.save')}"),
             ),
           ],
         ),
@@ -228,17 +229,19 @@ class GameListPage extends GetView<GameListController> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('确认删除'),
+        title: Text("${AppTranslations.t('app.confirm')}"
+          + ' '
+          + "${AppTranslations.t('app.delete')}",
         content: Text('确定要删除游戏「${game['name']}」吗？'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),
           ElevatedButton(
             onPressed: () {
               ctrl.remove(game['id'].toString());
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-            child: const Text('删除'),
+            child: Text("${AppTranslations.t('app.delete')}"),
           ),
         ],
       ),

@@ -97,9 +97,13 @@ common/
 │   ├── Transaction.php       # 平台流水
 │   ├── PaymentMethod.php     # 支付方式
 │   ├── Announcement.php      # 公告
-│   └── PlatformConfig.php    # 平台配置（类型化 get/set）
-└── middleware/
-    └── UserAuth.php          # C端 JWT 认证中间件
+│   ├── PlatformConfig.php    # 平台配置（类型化 get/set）
+│   ├── Language.php          # 语言定义
+│   └── Translation.php       # 翻译文本
+├── middleware/
+│   └── UserAuth.php          # C端 JWT 认证中间件
+└── service/
+    └── TranslationService.php # 国际化翻译服务（Redis缓存 + DB回退）
 ```
 
 **设计原则**：
@@ -127,6 +131,7 @@ common/
 请求 → Cors (跨域)
      → SecurityFilter (方法白名单+攻击检测→405/403)
      → RateLimit (Redis 滑动窗口限流→429)
+     → LanguageMiddleware (检测语言→设置 locale)
      → ApiVersion (API-Version 头校验→400)
      → [UserAuth] (JWT 认证→401, 仅需认证的接口)
      → Controller → 响应

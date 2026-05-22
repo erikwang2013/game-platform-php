@@ -1,4 +1,5 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+import '../../i18n/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
@@ -54,18 +55,18 @@ class PaymentPage extends GetView<PaymentController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('支付管理', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        Text("${AppTranslations.t('payment.title')}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         const SizedBox(height: 12),
         Expanded(
           child: Obx(() {
             if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
-            if (ctrl.methods.isEmpty) return const Center(child: Text('暂无数据'));
+            if (ctrl.methods.isEmpty) return const Center(child: Text("${AppTranslations.t('app.no_data')}"));
 
             return SingleChildScrollView(
               child: DataTable(
                 columns: const [
-                  DataColumn(label: Text('名称')),
-                  DataColumn(label: Text('类型')),
+                  DataColumn(label: Text("${AppTranslations.t('game.name')}")),
+                  DataColumn(label: Text("${AppTranslations.t('game.type')}")),
                   DataColumn(label: Text('提供商')),
                   DataColumn(label: Text('状态')),
                   DataColumn(label: Text('操作')),
@@ -83,7 +84,7 @@ class PaymentPage extends GetView<PaymentController> {
                     DataCell(Chip(label: Text(typeLabel))),
                     DataCell(Text(provider)),
                     DataCell(Chip(
-                      label: Text(isEnabled ? '启用' : '禁用'),
+                      label: Text(isEnabled ? "${AppTranslations.t('app.enabled')}" : "${AppTranslations.t('app.disabled')}"),
                       color: WidgetStatePropertyAll(isEnabled ? Colors.green.shade50 : Colors.red.shade50),
                     )),
                     DataCell(

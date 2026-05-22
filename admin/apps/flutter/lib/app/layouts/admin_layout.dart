@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import '../services/auth_service.dart';
+import '../i18n/translations.dart';
+import '../i18n/locale_controller.dart';
 import '../pages/user/user_list_page.dart';
 import '../pages/role/role_list_page.dart';
 import '../pages/config/config_page.dart';
@@ -92,30 +94,32 @@ class _AdminLayoutState extends State<AdminLayout> {
   Widget _buildPhoneLayout() {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('管理后台'),
+        title: Obx(() => Text("${AppTranslations.t('common.admin_panel')}")),
         actions: [_buildUserMenu()],
       ),
       drawer: Drawer(
-        child: NavigationDrawer(
-          selectedIndex: _selectedIndex,
-          onDestinationSelected: _onNavChanged,
-          children: [
-            Container(
-              height: headerHeight,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              alignment: Alignment.centerLeft,
-              child: const Row(
-                children: [
-                  Icon(Icons.admin_panel_settings, size: 24),
-                  SizedBox(width: 8),
-                  Text('管理后台',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                ],
+        child: GetBuilder<LocaleController>(
+          builder: (lc) => NavigationDrawer(
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: _onNavChanged,
+            children: [
+              Container(
+                height: headerHeight,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  children: [
+                    const Icon(Icons.admin_panel_settings, size: 24),
+                    const SizedBox(width: 8),
+                    Text("${AppTranslations.t('common.admin_panel')}",
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  ],
+                ),
               ),
-            ),
-            const Divider(),
-            ..._buildNavItems(),
-          ],
+              const Divider(),
+              ..._buildNavItems(),
+            ],
+          ),
         ),
       ),
       body: Container(
@@ -157,83 +161,85 @@ class _AdminLayoutState extends State<AdminLayout> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       width: width,
-      child: NavigationDrawer(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: _onNavChanged,
-        children: [
-          Container(
-            height: headerHeight,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            alignment: Alignment.centerLeft,
-            child: _sidebarCollapsed
-                ? const Icon(Icons.admin_panel_settings, size: 28)
-                : const Row(
-                    children: [
-                      Icon(Icons.admin_panel_settings, size: 24),
-                      SizedBox(width: 8),
-                      Text('管理后台',
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-          ),
-          const Divider(),
-          ..._buildNavItems(),
-        ],
+      child: GetBuilder<LocaleController>(
+        builder: (lc) => NavigationDrawer(
+          selectedIndex: _selectedIndex,
+          onDestinationSelected: _onNavChanged,
+          children: [
+            Container(
+              height: headerHeight,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              alignment: Alignment.centerLeft,
+              child: _sidebarCollapsed
+                  ? const Icon(Icons.admin_panel_settings, size: 28)
+                  : Row(
+                      children: [
+                        const Icon(Icons.admin_panel_settings, size: 24),
+                        const SizedBox(width: 8),
+                        Text("${AppTranslations.t('common.admin_panel')}",
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+            ),
+            const Divider(),
+            ..._buildNavItems(),
+          ],
+        ),
       ),
     );
   }
 
   List<NavigationDrawerDestination> _buildNavItems() {
-    return const [
+    return [
       NavigationDrawerDestination(
-        icon: Icon(Icons.dashboard, size: 20),
-        label: Text('仪表盘'),
-        selectedIcon: Icon(Icons.dashboard, size: 20),
+        icon: const Icon(Icons.dashboard, size: 20),
+        label: Text("${AppTranslations.t('nav.dashboard')}"),
+        selectedIcon: const Icon(Icons.dashboard, size: 20),
       ),
       NavigationDrawerDestination(
-        icon: Icon(Icons.people, size: 20),
-        label: Text('用户管理'),
-        selectedIcon: Icon(Icons.people, size: 20),
+        icon: const Icon(Icons.people, size: 20),
+        label: Text("${AppTranslations.t('nav.users')}"),
+        selectedIcon: const Icon(Icons.people, size: 20),
       ),
       NavigationDrawerDestination(
-        icon: Icon(Icons.security, size: 20),
-        label: Text('角色权限'),
-        selectedIcon: Icon(Icons.security, size: 20),
+        icon: const Icon(Icons.security, size: 20),
+        label: Text("${AppTranslations.t('nav.roles')}"),
+        selectedIcon: const Icon(Icons.security, size: 20),
       ),
       NavigationDrawerDestination(
-        icon: Icon(Icons.settings, size: 20),
-        label: Text('系统配置'),
-        selectedIcon: Icon(Icons.settings, size: 20),
+        icon: const Icon(Icons.settings, size: 20),
+        label: Text("${AppTranslations.t('nav.config')}"),
+        selectedIcon: const Icon(Icons.settings, size: 20),
       ),
       NavigationDrawerDestination(
-        icon: Icon(Icons.description, size: 20),
-        label: Text('操作日志'),
-        selectedIcon: Icon(Icons.description, size: 20),
+        icon: const Icon(Icons.description, size: 20),
+        label: Text("${AppTranslations.t('nav.logs')}"),
+        selectedIcon: const Icon(Icons.description, size: 20),
       ),
       NavigationDrawerDestination(
-        icon: Icon(Icons.games, size: 20),
-        label: Text('游戏管理'),
-        selectedIcon: Icon(Icons.games, size: 20),
+        icon: const Icon(Icons.games, size: 20),
+        label: Text("${AppTranslations.t('nav.games')}"),
+        selectedIcon: const Icon(Icons.games, size: 20),
       ),
       NavigationDrawerDestination(
-        icon: Icon(Icons.account_balance_wallet, size: 20),
-        label: Text('提现管理'),
-        selectedIcon: Icon(Icons.account_balance_wallet, size: 20),
+        icon: const Icon(Icons.account_balance_wallet, size: 20),
+        label: Text("${AppTranslations.t('nav.withdraws')}"),
+        selectedIcon: const Icon(Icons.account_balance_wallet, size: 20),
       ),
       NavigationDrawerDestination(
-        icon: Icon(Icons.group, size: 20),
-        label: Text('平台用户'),
-        selectedIcon: Icon(Icons.group, size: 20),
+        icon: const Icon(Icons.group, size: 20),
+        label: Text("${AppTranslations.t('nav.platform_users')}"),
+        selectedIcon: const Icon(Icons.group, size: 20),
       ),
       NavigationDrawerDestination(
-        icon: Icon(Icons.payment, size: 20),
-        label: Text('支付管理'),
-        selectedIcon: Icon(Icons.payment, size: 20),
+        icon: const Icon(Icons.payment, size: 20),
+        label: Text("${AppTranslations.t('nav.payments')}"),
+        selectedIcon: const Icon(Icons.payment, size: 20),
       ),
       NavigationDrawerDestination(
-        icon: Icon(Icons.campaign, size: 20),
-        label: Text('公告管理'),
-        selectedIcon: Icon(Icons.campaign, size: 20),
+        icon: const Icon(Icons.campaign, size: 20),
+        label: Text("${AppTranslations.t('nav.announcements')}"),
+        selectedIcon: const Icon(Icons.campaign, size: 20),
       ),
     ];
   }
@@ -252,7 +258,9 @@ class _AdminLayoutState extends State<AdminLayout> {
         children: [
           IconButton(
             icon: Icon(_sidebarCollapsed ? Icons.menu_open : Icons.menu),
-            tooltip: _sidebarCollapsed ? '展开菜单' : '收起菜单',
+            tooltip: _sidebarCollapsed
+                ? "${AppTranslations.t('common.expand_menu')}"
+                : "${AppTranslations.t('common.collapse_menu')}",
             onPressed: () => setState(() => _sidebarCollapsed = !_sidebarCollapsed),
           ),
           const Spacer(),
@@ -263,35 +271,46 @@ class _AdminLayoutState extends State<AdminLayout> {
   }
 
   Widget _buildUserMenu() {
+    final localeCtrl = Get.find<LocaleController>();
     return PopupMenuButton<String>(
       offset: const Offset(0, headerHeight),
-      child: const Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          CircleAvatar(radius: 14, child: Icon(Icons.person, size: 16)),
-          SizedBox(width: 8),
-          Text('管理员', style: TextStyle(fontSize: 14)),
-          Icon(Icons.arrow_drop_down, size: 20),
-        ],
-      ),
+      child: Obx(() {
+        final isZh = localeCtrl.currentLocale.value == 'zh';
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircleAvatar(radius: 14, child: Icon(Icons.person, size: 16)),
+            const SizedBox(width: 8),
+            Text(isZh ? '管理员' : 'Admin', style: const TextStyle(fontSize: 14)),
+            const Icon(Icons.arrow_drop_down, size: 20),
+          ],
+        );
+      }),
       onSelected: (value) {
-        if (value == 'profile') {
+        if (value == 'lang') {
+          final current = localeCtrl.currentLocale.value;
+          localeCtrl.changeLocale(current == 'zh' ? 'en' : 'zh');
+        } else if (value == 'profile') {
           Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ProfilePage()));
         } else if (value == 'logout') {
           showDialog(
             context: context,
             builder: (ctx) => AlertDialog(
-              title: const Text('确认退出'),
-              content: const Text('确定要退出登录吗？'),
+              title: Text("${AppTranslations.t('app.confirm_logout')}"),
+              content: Text("${AppTranslations.t('app.confirm_logout')}"),
               actions: [
-                TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text("${AppTranslations.t('app.cancel')}"),
+                ),
                 TextButton(
                   onPressed: () async {
                     Navigator.pop(ctx);
                     await AuthService.clearToken();
                     Navigator.of(context).pushReplacementNamed('/login');
                   },
-                  child: const Text('确定退出', style: TextStyle(color: Colors.red)),
+                  child: Text("${AppTranslations.t('app.confirm')}",
+                      style: const TextStyle(color: Colors.red)),
                 ),
               ],
             ),
@@ -299,8 +318,27 @@ class _AdminLayoutState extends State<AdminLayout> {
         }
       },
       itemBuilder: (_) => [
-        const PopupMenuItem(value: 'profile', child: Text('个人中心')),
-        const PopupMenuItem(value: 'logout', child: Text('退出登录')),
+        PopupMenuItem(
+          value: 'lang',
+          child: Obx(() {
+            final isZh = localeCtrl.currentLocale.value == 'zh';
+            return Row(
+              children: [
+                const Icon(Icons.language, size: 18),
+                const SizedBox(width: 8),
+                Text(isZh ? 'Switch to English' : '切换到中文'),
+              ],
+            );
+          }),
+        ),
+        PopupMenuItem(
+          value: 'profile',
+          child: Text("${AppTranslations.t('profile.title')}"),
+        ),
+        PopupMenuItem(
+          value: 'logout',
+          child: Text("${AppTranslations.t('app.logout')}"),
+        ),
       ],
     );
   }

@@ -2,6 +2,8 @@
  * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
  */
 
+import '../../i18n/translations.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'user_controller.dart';
@@ -23,12 +25,12 @@ class UserListPage extends GetView<UserController> {
         // Header
         Row(
           children: [
-            const Text('用户管理', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text("${AppTranslations.t('user.title')}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const Spacer(),
             ElevatedButton.icon(
               onPressed: () => Get.to(() => const UserFormPage())?.then((_) => ctrl.loadUsers(reset: true)),
               icon: const Icon(Icons.add),
-              label: const Text('新增用户'),
+              label: Text("${AppTranslations.t('user.create')}"),
             ),
             const SizedBox(width: 8),
             if (ctrl.selectedIds.isNotEmpty) ...[
@@ -66,9 +68,9 @@ class UserListPage extends GetView<UserController> {
             const SizedBox(width: 12),
             ChoiceChip(label: const Text('全部'), selected: ctrl.statusFilter.value == null, onSelected: (_) => ctrl.filterByStatus(null)),
             const SizedBox(width: 4),
-            ChoiceChip(label: const Text('启用'), selected: ctrl.statusFilter.value == 1, onSelected: (_) => ctrl.filterByStatus(1)),
+            ChoiceChip(label: const Text("${AppTranslations.t('app.enabled')}"), selected: ctrl.statusFilter.value == 1, onSelected: (_) => ctrl.filterByStatus(1)),
             const SizedBox(width: 4),
-            ChoiceChip(label: const Text('禁用'), selected: ctrl.statusFilter.value == 0, onSelected: (_) => ctrl.filterByStatus(0)),
+            ChoiceChip(label: const Text("${AppTranslations.t('app.disabled')}"), selected: ctrl.statusFilter.value == 0, onSelected: (_) => ctrl.filterByStatus(0)),
           ],
         ),
         const SizedBox(height: 12),
@@ -76,13 +78,13 @@ class UserListPage extends GetView<UserController> {
         Expanded(
           child: Obx(() {
             if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
-            if (ctrl.users.isEmpty) return const Center(child: Text('暂无数据'));
+            if (ctrl.users.isEmpty) return const Center(child: Text("${AppTranslations.t('app.no_data')}"));
 
             return SingleChildScrollView(
               child: DataTable(
                 columns: [
                   DataColumn(label: Checkbox(value: ctrl.selectedIds.length == ctrl.users.length && ctrl.users.isNotEmpty, onChanged: (_) => ctrl.toggleSelectAll())),
-                  const DataColumn(label: Text('用户名')),
+                  const DataColumn(label: Text("${AppTranslations.t('user.username')}")),
                   const DataColumn(label: Text('姓名')),
                   const DataColumn(label: Text('手机号')),
                   const DataColumn(label: Text('邮箱')),
@@ -101,7 +103,7 @@ class UserListPage extends GetView<UserController> {
                       DataCell(Text(u['real_name'] ?? '')),
                       DataCell(Text(u['phone'] ?? '')),
                       DataCell(Text(u['email'] ?? '')),
-                      DataCell(Chip(label: Text(u['status'] == 1 ? '启用' : '禁用'), color: WidgetStatePropertyAll(u['status'] == 1 ? Colors.green.shade50 : Colors.red.shade50))),
+                      DataCell(Chip(label: Text(u['status'] == 1 ? "${AppTranslations.t('app.enabled')}" : "${AppTranslations.t('app.disabled')}"), color: WidgetStatePropertyAll(u['status'] == 1 ? Colors.green.shade50 : Colors.red.shade50))),
                       DataCell(Text(u['last_login_at'] ?? '-')),
                       DataCell(Row(mainAxisSize: MainAxisSize.min, children: [
                         IconButton(icon: const Icon(Icons.edit, size: 18), onPressed: () => Get.to(() => UserFormPage(userData: u))?.then((_) => ctrl.loadUsers())),
@@ -133,15 +135,17 @@ class UserListPage extends GetView<UserController> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('确认删除'),
+        title: Text("${AppTranslations.t('app.confirm')}"
+          + ' '
+          + "${AppTranslations.t('app.delete')}",
         content: Column(mainAxisSize: MainAxisSize.min, children: [
           Text('确定要删除用户「${user['username']}」吗？'),
           const SizedBox(height: 8),
           TextField(controller: pwdCtrl, obscureText: true, decoration: const InputDecoration(labelText: '请输入您的密码确认')),
         ]),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-          ElevatedButton(onPressed: () { ctrl.deleteUser(user['id'], pwdCtrl.text); Navigator.pop(context); }, style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white), child: const Text('删除')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),
+          ElevatedButton(onPressed: () { ctrl.deleteUser(user['id'], pwdCtrl.text); Navigator.pop(context); }, style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white), child: Text("${AppTranslations.t('app.delete')}")),
         ],
       ),
     );
@@ -159,8 +163,8 @@ class UserListPage extends GetView<UserController> {
           TextField(controller: pwdCtrl, obscureText: true, decoration: const InputDecoration(labelText: '请输入您的密码确认')),
         ]),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-          ElevatedButton(onPressed: () { ctrl.batchDelete(pwdCtrl.text); Navigator.pop(context); }, style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white), child: const Text('删除')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),
+          ElevatedButton(onPressed: () { ctrl.batchDelete(pwdCtrl.text); Navigator.pop(context); }, style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white), child: Text("${AppTranslations.t('app.delete')}")),
         ],
       ),
     );

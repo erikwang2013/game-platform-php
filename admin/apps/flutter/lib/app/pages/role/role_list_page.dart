@@ -2,6 +2,8 @@
  * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
  */
 
+import '../../i18n/translations.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'role_controller.dart';
@@ -20,18 +22,18 @@ class RoleListPage extends GetView<RoleController> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(children: [
-          const Text('角色管理', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          Text("${AppTranslations.t('role.title')}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           const Spacer(),
           ElevatedButton.icon(
             onPressed: () => _showRoleDialog(context, ctrl),
             icon: const Icon(Icons.add),
-            label: const Text('新增角色'),
+            label: Text("${AppTranslations.t('role.create')}"),
           ),
         ]),
         const SizedBox(height: 12),
         Expanded(child: Obx(() {
           if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
-          if (ctrl.roles.isEmpty) return const Center(child: Text('暂无角色'));
+          if (ctrl.roles.isEmpty) return const Center(child: Text("${AppTranslations.t('role.no_roles')}"));
 
           return ListView.builder(
             itemCount: ctrl.roles.length,
@@ -43,18 +45,20 @@ class RoleListPage extends GetView<RoleController> {
                   title: Text(r['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: Text('标识: ${r['slug']} | 用户数: ${r['users_count'] ?? 0} | ${r['description'] ?? ''}'),
                   trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                    Chip(label: Text(r['status'] == 1 ? '启用' : '禁用')),
+                    Chip(label: Text(r['status'] == 1 ? "${AppTranslations.t('app.enabled')}" : "${AppTranslations.t('app.disabled')}")),
                     IconButton(icon: const Icon(Icons.edit, size: 18), onPressed: () => _showRoleDialog(context, ctrl, role: r)),
                     IconButton(icon: const Icon(Icons.delete, size: 18, color: Colors.red), onPressed: () {
                       final pwdCtrl = TextEditingController();
                       showDialog(context: context, builder: (_) => AlertDialog(
-                        title: const Text('确认删除'), content: Column(mainAxisSize: MainAxisSize.min, children: [
+                        title: Text("${AppTranslations.t('app.confirm')}"
+          + ' '
+          + "${AppTranslations.t('app.delete')}", content: Column(mainAxisSize: MainAxisSize.min, children: [
                           Text('确定要删除角色「${r['name']}」吗？'),
                           TextField(controller: pwdCtrl, obscureText: true, decoration: const InputDecoration(labelText: '输入密码确认')),
                         ]),
                         actions: [
-                          TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
-                          ElevatedButton(onPressed: () { ctrl.deleteRole(r['id'], pwdCtrl.text); Navigator.pop(context); }, style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white), child: const Text('删除')),
+                          TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),
+                          ElevatedButton(onPressed: () { ctrl.deleteRole(r['id'], pwdCtrl.text); Navigator.pop(context); }, style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white), child: Text("${AppTranslations.t('app.delete')}")),
                         ],
                       ));
                     }),
@@ -95,7 +99,7 @@ class RoleListPage extends GetView<RoleController> {
             )),
           ]))),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('取消')),
+            TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),
             ElevatedButton(onPressed: () {
               if (role != null) {
                 ctrl.updateRole(role['id'], name: nameCtrl.text, desc: descCtrl.text, permIds: selectedPerms.toList());
@@ -103,7 +107,7 @@ class RoleListPage extends GetView<RoleController> {
                 ctrl.createRole(nameCtrl.text, slugCtrl.text, descCtrl.text, selectedPerms.toList());
               }
               Navigator.pop(context);
-            }, child: const Text('保存')),
+            }, child: Text("${AppTranslations.t('app.save')}")),
           ],
         ),
       ),

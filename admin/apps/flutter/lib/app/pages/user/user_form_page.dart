@@ -2,6 +2,8 @@
  * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
  */
 
+import '../../i18n/translations.dart';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
@@ -83,7 +85,7 @@ class _UserFormPageState extends State<UserFormPage> {
             child: ListView(
               padding: const EdgeInsets.all(24),
               children: [
-                TextFormField(controller: _usernameCtrl, enabled: !isEdit, decoration: const InputDecoration(labelText: '用户名'), validator: (v) => (v == null || v.isEmpty) ? '请输入用户名' : null),
+                TextFormField(controller: _usernameCtrl, enabled: !isEdit, decoration: const InputDecoration(labelText: "${AppTranslations.t('user.username')}"), validator: (v) => (v == null || v.isEmpty) ? '请输入用户名' : null),
                 const SizedBox(height: 16),
                 TextFormField(controller: _passwordCtrl, obscureText: true, decoration: InputDecoration(labelText: isEdit ? '新密码（留空不修改）' : '密码'), validator: (v) => !isEdit && (v == null || v.isEmpty) ? '请输入密码' : null),
                 const SizedBox(height: 16),
@@ -94,8 +96,8 @@ class _UserFormPageState extends State<UserFormPage> {
                 TextFormField(controller: _emailCtrl, decoration: const InputDecoration(labelText: '邮箱')),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<int>(value: _status, decoration: const InputDecoration(labelText: '状态'), items: const [
-                  DropdownMenuItem(value: 1, child: Text('启用')),
-                  DropdownMenuItem(value: 0, child: Text('禁用')),
+                  DropdownMenuItem(value: 1, child: Text("${AppTranslations.t('app.enabled')}")),
+                  DropdownMenuItem(value: 0, child: Text("${AppTranslations.t('app.disabled')}")),
                 ], onChanged: (v) => setState(() => _status = v ?? 1)),
                 const SizedBox(height: 24),
                 ElevatedButton(onPressed: _isLoading ? null : _submit, child: Text(_isLoading ? '提交中...' : '提交')),

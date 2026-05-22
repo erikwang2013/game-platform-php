@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'app/theme/app_theme.dart';
+import 'app/i18n/locale_controller.dart';
 import 'app/pages/login/login_page.dart';
 import 'app/pages/game/game_hall_page.dart';
 import 'app/pages/game/game_detail_page.dart';
@@ -13,6 +14,7 @@ import 'app/pages/wallet/withdraw_page.dart';
 import 'app/pages/profile/profile_page.dart';
 
 void main() {
+  Get.put(LocaleController());
   runApp(const GamePlatformApp());
 }
 
@@ -22,7 +24,9 @@ class GamePlatformApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
-      title: '全球游戏聚合平台',
+      title: 'Global Game Platform',
+      locale: const Locale('en', 'US'),
+      fallbackLocale: const Locale('en', 'US'),
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
