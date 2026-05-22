@@ -168,7 +168,31 @@ phpunit --bootstrap tests/bootstrap.php tests/
 
 - PHPUnit 12.x, 116 test cases
 - 56 business logic tests (PlatformTest) + 60 infrastructure tests
-- Coverage: bcmath precision, exchange calculation, withdraw fees, limits, risk control, coupons, KYC, i18n
+- Coverage: bcmath, exchange, withdraw, limits, risk, coupons, KYC, i18n
+
+## Platform Capabilities
+
+| Capability | Description |
+|------|------|
+| Auth | Username/password + Google/Facebook/Apple OAuth + 2FA TOTP |
+| Wallet | Platform wallet (optimistic lock) + game wallet + transactions |
+| Deposit | Order creation + Stripe/PayPal webhook verification + auto-credit |
+| Exchange | Platform⇄Game currency, real-time quote, spread revenue |
+| Withdraw | Apply→Review→Payout, global switch, KYC-tiered limits+fees |
+| KYC | Identity verification submit+review, 3-tier system |
+| Games | CRUD + categories (10) + servers + play log tracking |
+| Search | Elasticsearch full-text (with LIKE fallback) |
+| Leaderboard | Daily/weekly/monthly/total, Redis cache, WebSocket push (8789) |
+| Coupons | Fixed/rate discount, limited time/qty, claim & usage tracking |
+| Notifications | In-app + email, auto-notify for deposit/withdraw/KYC/coupons |
+| Referral | Codes, signup bonus, deposit commission |
+| Risk Control | IP blacklist, amount anomaly, frequency, velocity |
+| i18n | 4 languages (en-US/zh-CN/ja-JP/ko-KR) with translation DB |
+| Country Config | 8 countries with differentiated payment/withdraw methods |
+| Stats | Daily snapshots (5 metrics) + platform revenue tracking |
+| Captcha | Click-based human verification (poster-php) |
+| Deployment | Docker Compose 7 services + Nginx reverse proxy |
+| Clients | Flutter Admin (15 pages) + Platform (10 pages) + HarmonyOS (5 pages) |
 
 ## Business Model
 

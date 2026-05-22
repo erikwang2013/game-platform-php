@@ -44,6 +44,21 @@
 | 统计 | 日统计快照 + 平台收益追踪 | 已完成 |
 | 搜索 | Elasticsearch 全文搜索（模型层已集成） | 已完成 |
 
+### 生产级升级 — 已完成
+
+| 域 | 功能 | 状态 |
+|----|------|------|
+| OAuth | Google/Facebook/Apple 真实token交换（mock回退） | 已完成 |
+| 支付 | Stripe/PayPal Webhook 签名验证 | 已完成 |
+| 验证码 | poster-php 点击式验证码 | 已完成 |
+| 通知 | 站内信 + 邮件、充值/提现/KYC/优惠券自动通知 | 已完成 |
+| 2FA | Google Authenticator TOTP + 备用恢复码 | 已完成 |
+| 推荐 | 推荐码、注册奖励、充值返佣 | 已完成 |
+| 搜索 | ES 搜索API + 游戏建议 + LIKE回退 | 已完成 |
+| 排行榜 | WebSocket 实时推送 (端口8789) | 已完成 |
+| 部署 | Docker Compose 7服务 + Nginx反向代理 | 已完成 |
+| HarmonyOS | 游戏大厅 + 钱包 + 游戏详情页 | 已完成 |
+
 ## 2. C端用户功能
 
 ### 2.1 用户旅程

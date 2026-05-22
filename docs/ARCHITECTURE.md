@@ -269,6 +269,34 @@ tests/
 |------|------|------|
 | admin/ | 8787 | 管理后台 API |
 | service/ | 8788 | C端业务 API |
+| leaderboard-ws | 8789 | WebSocket 实时排行榜 |
 | MySQL | 3306 | 主数据库 |
-| Redis | 6379 | 缓存/限流 |
+| Redis | 6379 | 缓存/限流/WebSocket |
 | Elasticsearch | 9200 | 全文检索 |
+
+## 9. 部署架构
+
+### Docker Compose（7 服务）
+
+```yaml
+nginx (80/443) → admin (8787) + service (8788) + static files
+leaderboard-ws (8789) — WebSocket 排行榜实时推送
+mysql (3306) — 主数据库，数据卷持久化
+redis (6379) — 缓存/限流/WebSocket
+elasticsearch (9200) — 全文检索
+```
+
+启动：
+```bash
+docker-compose up -d
+```
+
+### 新增生产服务
+
+| 服务 | 类型 | 说明 |
+|------|------|------|
+| NotificationService | common/service | 站内通知 + 邮件发送 |
+| LeaderboardWebSocket | app/process | WebSocket 实时排行榜推送 |
+| OAuth (Google/Facebook/Apple) | controller | 真实token交换 + mock回退 |
+| Stripe/PayPal Webhook | controller | 签名验证 |
+| 2FA TOTP | controller | Google Authenticator |

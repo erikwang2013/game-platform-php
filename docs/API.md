@@ -619,7 +619,101 @@ status: success / failed
 }
 ```
 
-### 2.15 语言
+### 2.16 通知
+
+#### GET /api/notification/list — 通知列表
+
+```
+需认证: 是
+参数: ?page=1&per_page=20&is_read=0
+
+响应: {
+  "list": [
+    { "id": "...", "type": "deposit", "title": "Deposit Received", "is_read": 0, "created_at": "..." }
+  ],
+  "total": 5, "page": 1, "per_page": 20
+}
+```
+
+#### GET /api/notification/unread-count — 未读数量
+
+```
+需认证: 是
+响应: { "count": 3 }
+```
+
+#### POST /api/notification/read — 标记已读
+
+```
+需认证: 是
+请求: { "id": "hashid" }  // 不传=全部已读
+```
+
+### 2.17 推荐
+
+#### GET /api/referral/my-code — 我的推荐码
+
+```
+需认证: 是
+响应: { "code": "ABC12345", "referral_count": 12, "total_rewards": "150.0000" }
+```
+
+#### POST /api/referral/apply — 使用推荐码
+
+```
+需认证: 是
+请求: { "code": "ABC12345" }
+响应: { "message": "Referral applied" }
+```
+
+### 2.18 2FA
+
+#### GET /api/user/2fa/status — 2FA状态
+
+```
+需认证: 是
+响应: { "enabled": false }
+```
+
+#### POST /api/user/2fa/setup — 设置2FA
+
+```
+需认证: 是
+响应: { "secret": "JBSWY3DPEHPK3PXP", "qr_url": "otpauth://totp/..." }
+```
+
+#### POST /api/user/2fa/enable — 启用2FA
+
+```
+需认证: 是
+请求: { "code": "123456" }
+响应: { "backup_codes": ["abcd1234ef", ...] }
+```
+
+#### POST /api/2fa/verify — 验证2FA（公开）
+
+```
+请求: { "user_id": "hashid", "code": "123456" }
+响应: { "valid": true }
+```
+
+### 2.19 搜索
+
+#### GET /api/search — 全局搜索
+
+```
+参数: ?q=keyword&type=game&page=1&per_page=20
+响应: { "list": [...], "total": 100 }
+```
+
+#### GET /api/game/suggest — 搜索建议
+
+```
+参数: ?q=shoot
+响应: { "suggestions": [{ "id": "...", "name": "Shooter Master" }] }
+```
+
+### 2.20 语言
 
 #### GET /api/language/list — 可用语言列表
 

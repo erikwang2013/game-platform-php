@@ -249,6 +249,59 @@ signature = HMAC-SHA256(
 - 兑换统计（笔数/手续费总额）
 - 游戏统计（玩家数/会话数）
 
+## 9. 生产级功能
+
+### 9.1 通知系统
+
+通知类型：system/deposit/withdraw/kyc/coupon/announcement
+
+自动触发场景：
+- 充值到账 → NotificationService::send()
+- 提现审核通过/拒绝 → 自动通知
+- KYC 审核通过/拒绝 → 自动通知
+- 优惠券领取 → 自动通知
+- 推荐奖励到账 → 自动通知
+
+支持站内信 + 邮件双通道（邮件需配置 MAIL_HOST 环境变量）。
+
+### 9.2 推荐返利
+
+```
+用户A 生成推荐码 → 分享给用户B
+用户B 注册时填写推荐码 → 双方各得注册奖励(signup_reward)
+用户B 充值 → A 获得充值返佣(deposit_commission_pct%)
+```
+
+### 9.3 2FA 双因素认证
+
+- TOTP 标准协议 (RFC 6238)，兼容 Google Authenticator
+- 启用流程：获取密钥 → 扫码绑定 → 验证TOTP → 生成8个备用恢复码
+- 登录二次验证：POST /api/2fa/verify
+- 支持 ±1 时间窗口容差 (30秒)
+
+### 9.4 真实 OAuth 对接
+
+| 提供商 | Token端点 | 用户信息端点 |
+|--------|----------|------------|
+| Google | oauth2.googleapis.com/token | www.googleapis.com/oauth2/v3/userinfo |
+| Facebook | graph.facebook.com/v18.0/oauth/access_token | graph.facebook.com/me |
+| Apple | appleid.apple.com/auth/token | JWT id_token 解码 |
+
+配置通过 PlatformConfig 或环境变量，请求失败自动回退 mock 模式。
+
+### 9.5 支付 Webhook 验签
+
+- Stripe: HMAC-SHA256 签名验证 (Stripe-Signature 头)
+- PayPal: POST 回 PayPal 验证端点
+- 未配置密钥时自动跳过验证（开发模式）
+
+### 9.6 WebSocket 实时排行榜
+
+- 协议：WebSocket (ws://host:8789)
+- 订阅：{action: "subscribe", leaderboard_id: 123}
+- 推送：{type: "ranking_update", rankings: [...]}
+- 支持 ping/pong 心跳保活
+
 ## 7. 国际化设计
 
 ### 7.1 支持语言
