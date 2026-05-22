@@ -1,0 +1,182 @@
+<?php
+/*
+ * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+ */
+
+declare(strict_types=1);
+
+namespace app\api\v1\controller;
+
+use common\model\Coupon;
+use common\model\UserCoupon;
+use support\Db;
+use support\Request;
+use support\Response;
+
+class CouponController extends BaseController
+{
+    /**
+     * 可领取优惠券列表
+     * GET /api/coupon/available
+     */
+    public function available(Request $request): Response
+    {
+        $now    = date('Y-m-d H:i:s');
+        $userId = $request->userId;
+
+        $coupons = Coupon::where('status', 1)
+            ->where(function ($query) use ($now) {
+                $query->whereNull('start_at')
+                    ->orWhere('start_at', '<=', $now);
+            })
+            ->where(function ($query) use ($now) {
+                $query->whereNull('end_at')
+                    ->orWhere('end_at', '>=', $now);
+            })
+            ->where(function ($query) {
+                $query->where('total_qty', 0)
+                    ->orWhereRaw('used_qty < total_qty');
+            })
+            ->orderBy('id', 'desc')
+            ->get()
+            ->filter(function ($coupon) use ($userId) {
+                // Check user_limit: user hasn't already claimed max
+                $userLimit = (int) $coupon->user_limit;
+                if ($userLimit > 0) {
+                    $claimed = UserCoupon::where('user_id', $userId)
+                        ->where('coupon_id', $coupon->id)
+                        ->count();
+                    if ($claimed >= $userLimit) {
+                        return false;
+                    }
+                }
+                return true;
+            })
+            ->values()
+            ->map(function ($coupon) {
+                $data = $coupon->toArray();
+                $data['id'] = $this->encodeId($coupon->id);
+                if (!empty($coupon->game_id) && $coupon->game_id > 0) {
+                    $data['game_id'] = $this->encodeId((int) $coupon->game_id);
+                }
+                return $data;
+            });
+
+        return $this->success($coupons);
+    }
+
+    /**
+     * 领取优惠券
+     * POST /api/coupon/claim
+     */
+    public function claim(Request $request): Response
+    {
+        $validator = validator($request->all(), [
+            'coupon_id' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
+        }
+
+        $couponId = $this->decodeId($request->input('coupon_id'));
+        $userId   = $request->userId;
+        $now      = date('Y-m-d H:i:s');
+
+        $coupon = Coupon::find($couponId);
+        if (!$coupon) {
+            return $this->fail('优惠券不存在', 404);
+        }
+
+        // Check status
+        if ((int) $coupon->status !== 1) {
+            return $this->fail('优惠券已禁用', 400);
+        }
+
+        // Check time range
+        if ($coupon->start_at && $coupon->start_at > $now) {
+            return $this->fail('优惠券尚未开始', 400);
+        }
+        if ($coupon->end_at && $coupon->end_at < $now) {
+            return $this->fail('优惠券已过期', 400);
+        }
+
+        // Check user limit
+        $userLimit = (int) $coupon->user_limit;
+        if ($userLimit > 0) {
+            $claimed = UserCoupon::where('user_id', $userId)
+                ->where('coupon_id', $couponId)
+                ->count();
+            if ($claimed >= $userLimit) {
+                return $this->fail('您已达到该优惠券的领取上限', 400);
+            }
+        }
+
+        // Atomic increment used_qty
+        $affected = Coupon::where('id', $couponId)
+            ->where(function ($query) {
+                $query->where('total_qty', 0)
+                    ->orWhereRaw('used_qty < total_qty');
+            })
+            ->increment('used_qty');
+
+        if ($affected === 0) {
+            return $this->fail('优惠券已被领完', 400);
+        }
+
+        // Refresh coupon data
+        $coupon->refresh();
+
+        // Create UserCoupon
+        $userCoupon = new UserCoupon();
+        $userCoupon->id        = $this->generateId();
+        $userCoupon->user_id   = $userId;
+        $userCoupon->coupon_id = $couponId;
+        $userCoupon->status    = 'unused';
+        $userCoupon->save();
+
+        $data = $coupon->toArray();
+        $data['id'] = $this->encodeId($coupon->id);
+        if (!empty($coupon->game_id) && $coupon->game_id > 0) {
+            $data['game_id'] = $this->encodeId((int) $coupon->game_id);
+        }
+        $data['user_coupon_id'] = $this->encodeId($userCoupon->id);
+
+        return $this->success(['coupon' => $data], '领取成功');
+    }
+
+    /**
+     * 我的优惠券
+     * GET /api/coupon/my
+     */
+    public function my(Request $request): Response
+    {
+        $userId = $request->userId;
+        $status = $request->input('status');
+
+        $query = UserCoupon::where('user_id', $userId)
+            ->with('coupon');
+
+        if ($status && in_array($status, ['unused', 'used', 'expired'])) {
+            $query->where('status', $status);
+        }
+
+        $userCoupons = $query->orderBy('id', 'desc')->get();
+
+        $list = $userCoupons->map(function ($uc) {
+            $data = $uc->toArray();
+            $data['id'] = $this->encodeId($uc->id);
+            if ($uc->coupon) {
+                $couponData = $uc->coupon->toArray();
+                $couponData['id'] = $this->encodeId($uc->coupon->id);
+                if (!empty($uc->coupon->game_id) && $uc->coupon->game_id > 0) {
+                    $couponData['game_id'] = $this->encodeId((int) $uc->coupon->game_id);
+                }
+                $data['coupon'] = $couponData;
+            }
+            return $data;
+        });
+
+        return $this->success($list);
+    }
+}

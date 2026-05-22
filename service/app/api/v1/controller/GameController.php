@@ -10,6 +10,7 @@ namespace app\api\v1\controller;
 use common\model\Game;
 use common\model\GamePlayLog;
 use common\model\UserWallet;
+use support\Db;
 use support\Request;
 use support\Response;
 
@@ -20,10 +21,11 @@ class GameController extends BaseController
      */
     public function list(Request $request): Response
     {
-        $page    = (int) $request->input('page', 1);
-        $perPage = (int) $request->input('per_page', 20);
-        $keyword = $request->input('keyword');
-        $type    = $request->input('type');
+        $page       = (int) $request->input('page', 1);
+        $perPage    = (int) $request->input('per_page', 20);
+        $keyword    = $request->input('keyword');
+        $type       = $request->input('type');
+        $categoryId = $request->input('category_id');
 
         $query = Game::where('status', 1)
             ->orderBy('sort', 'asc')
@@ -37,7 +39,16 @@ class GameController extends BaseController
             $query->where('type', $type);
         }
 
-        $paginator = $query->with('currencies')->paginate($perPage, ['*'], 'page', $page);
+        if ($categoryId) {
+            $decodedCategoryId = $this->decodeId($categoryId);
+            $gameIds = Db::table('erik_game_category_rel')
+                ->where('category_id', $decodedCategoryId)
+                ->pluck('game_id')
+                ->toArray();
+            $query->whereIn('id', $gameIds);
+        }
+
+        $paginator = $query->with(['currencies', 'categories'])->paginate($perPage, ['*'], 'page', $page);
 
         $items = [];
         foreach ($paginator->items() as $game) {
@@ -53,6 +64,14 @@ class GameController extends BaseController
                 ];
             }
 
+            $categoryList = [];
+            foreach ($game->categories as $category) {
+                $categoryList[] = [
+                    'name' => $category->name,
+                    'slug' => $category->slug,
+                ];
+            }
+
             $items[] = [
                 'id'          => $this->encodeId($game->id),
                 'name'        => $game->name,
@@ -61,6 +80,7 @@ class GameController extends BaseController
                 'description' => $game->description,
                 'cover_image' => $game->cover_image,
                 'currencies'  => $currencyList,
+                'categories'  => $categoryList,
             ];
         }
 

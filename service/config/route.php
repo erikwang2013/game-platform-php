@@ -47,10 +47,16 @@ Route::group('/api', function () {
     Route::get('/language/list', v('LanguageController', 'list'));
     Route::post('/language/switch', v('LanguageController', 'switch'));
 
+    Route::get('/country/list', v('CountryController', 'list'));
+    Route::get('/country/{code}', v('CountryController', 'detail'));
+
     Route::get('/game/list', v('GameController', 'list'));
     Route::get('/game/{hashid}', v('GameController', 'detail'));
     Route::get('/announcement/list', v('AnnouncementController', 'list'));
     Route::get('/announcement/detail/{hashid}', v('AnnouncementController', 'detail'));
+
+    Route::get('/leaderboard/list', v('LeaderboardController', 'list'));
+    Route::get('/leaderboard/{hashid}', v('LeaderboardController', 'ranking'));
 
     // 支付
     Route::post('/payment/callback', v('PaymentController', 'callback'));
@@ -85,6 +91,11 @@ Route::group('/api', function () {
     Route::post('/game/launch', v('GameController', 'launch'));
     Route::get('/game/play-logs', v('GamePlayLogController', 'list'));
     Route::get('/game/play-log/{hashid}', v('GamePlayLogController', 'detail'));
+
+    // 优惠券
+    Route::get('/coupon/available', v('CouponController', 'available'));
+    Route::post('/coupon/claim', v('CouponController', 'claim'));
+    Route::get('/coupon/my', v('CouponController', 'my'));
 
     // 用户
     Route::get('/user/profile', v('UserController', 'profile'));

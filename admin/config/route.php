@@ -116,6 +116,18 @@ Route::group('/admin', function () {
     Route::delete('/game/{hashid}', [app\admin\controller\GameController::class, 'destroy']);
     Route::post('/game/currency/manage', [app\admin\controller\GameController::class, 'manageCurrency']);
 
+    // 游戏分类管理
+    Route::get('/game/category/list', [app\admin\controller\GameCategoryController::class, 'list']);
+    Route::post('/game/category/create', [app\admin\controller\GameCategoryController::class, 'create']);
+    Route::put('/game/category/{hashid}', [app\admin\controller\GameCategoryController::class, 'update']);
+    Route::delete('/game/category/{hashid}', [app\admin\controller\GameCategoryController::class, 'destroy']);
+    Route::post('/game/category/assign', [app\admin\controller\GameCategoryController::class, 'assignGames']);
+
+    // 国家配置管理
+    Route::get('/country/config/list', [app\admin\controller\CountryConfigController::class, 'list']);
+    Route::post('/country/config/create', [app\admin\controller\CountryConfigController::class, 'create']);
+    Route::put('/country/config/{hashid}', [app\admin\controller\CountryConfigController::class, 'update']);
+
     // 提现管理
     Route::get('/withdraw/orders', [app\admin\controller\WithdrawController::class, 'orders']);
     Route::put('/withdraw/review', [app\admin\controller\WithdrawController::class, 'review']);
@@ -136,6 +148,20 @@ Route::group('/admin', function () {
     // 公告管理
     Route::get('/announcement/list', [app\admin\controller\AnnouncementController::class, 'list']);
     Route::post('/announcement/create', [app\admin\controller\AnnouncementController::class, 'create']);
+
+    // 排行榜管理
+    Route::get('/leaderboard/list', [app\admin\controller\LeaderboardController::class, 'list']);
+    Route::post('/leaderboard/create', [app\admin\controller\LeaderboardController::class, 'create']);
+    Route::put('/leaderboard/{hashid}', [app\admin\controller\LeaderboardController::class, 'update']);
+    Route::delete('/leaderboard/{hashid}', [app\admin\controller\LeaderboardController::class, 'destroy']);
+    Route::post('/leaderboard/{hashid}/refresh', [app\admin\controller\LeaderboardController::class, 'refresh']);
+
+    // 优惠券管理
+    Route::get('/coupon/list', [app\admin\controller\CouponController::class, 'list']);
+    Route::post('/coupon/create', [app\admin\controller\CouponController::class, 'create']);
+    Route::put('/coupon/{hashid}', [app\admin\controller\CouponController::class, 'update']);
+    Route::delete('/coupon/{hashid}', [app\admin\controller\CouponController::class, 'destroy']);
+    Route::get('/coupon/{hashid}/stats', [app\admin\controller\CouponController::class, 'stats']);
 
     // 导出扩展
     Route::post('/export/users', [app\admin\controller\ExportController::class, 'exportUsers']);

@@ -9,6 +9,7 @@ namespace app\admin\controller;
 
 use common\model\Game;
 use common\model\GameCurrency;
+use support\Db;
 use support\Request;
 use support\Response;
 
@@ -39,6 +40,12 @@ class GameController extends BaseController
                           $data = $game->toArray();
                           $data = $this->encodeIds($data);
                           $data['currency_count'] = $game->currencies()->count();
+                          $data['categories'] = $game->categories()->get()->map(function ($cat) {
+                              return [
+                                  'name' => $cat->name,
+                                  'slug' => $cat->slug,
+                              ];
+                          });
                           return $data;
                       });
 
@@ -85,6 +92,9 @@ class GameController extends BaseController
         $game->sort        = (int) $request->input('sort', 0);
         $game->save();
 
+        // 同步分类关系
+        $this->syncGameCategories($game->id, $request->input('category_ids', []));
+
         return $this->success(['id' => $this->encodeId($game->id)], '创建成功');
     }
 
@@ -105,6 +115,9 @@ class GameController extends BaseController
             'api_endpoint', 'api_key', 'api_secret', 'status', 'sort',
         ]));
         $game->save();
+
+        // 同步分类关系
+        $this->syncGameCategories($game->id, $request->input('category_ids', []));
 
         return $this->success([], '更新成功');
     }
@@ -179,5 +192,34 @@ class GameController extends BaseController
         }
 
         return $this->success([], '操作成功');
+    }
+
+    /**
+     * 同步游戏分类关联
+     */
+    private function syncGameCategories(int $gameId, array $categoryHashids): void
+    {
+        if (empty($categoryHashids)) {
+            return;
+        }
+
+        $categoryIds = array_map(function ($hashid) {
+            return $this->decodeId($hashid);
+        }, $categoryHashids);
+
+        // 删除旧关联
+        Db::table('erik_game_category_rel')->where('game_id', $gameId)->delete();
+
+        // 插入新关联
+        $rows = array_map(function ($categoryId) use ($gameId) {
+            return [
+                'game_id'     => $gameId,
+                'category_id' => $categoryId,
+            ];
+        }, $categoryIds);
+
+        if (!empty($rows)) {
+            Db::table('erik_game_category_rel')->insert($rows);
+        }
     }
 }

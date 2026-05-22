@@ -46,4 +46,9 @@ class Game extends Model
     {
         return $this->hasMany(GameCurrency::class, 'game_id');
     }
+
+    public function categories()
+    {
+        return $this->belongsToMany(GameCategory::class, 'erik_game_category_rel', 'game_id', 'category_id');
+    }
 }
