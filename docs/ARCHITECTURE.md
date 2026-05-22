@@ -280,7 +280,7 @@ tests/
 
 | 文档 | 地址 | 控制器 | 分组 |
 |------|------|--------|------|
-| 管理后台 | :8787/apidoc/ | 25 | 15 组 |
+| 管理后台 | :8787/apidoc/ | 25(已注解)/26 | 25 组 |
 | C端业务 | :8788/apidoc/ | 22 | 16 组 |
 
 配置：
@@ -288,6 +288,7 @@ tests/
 - service: `config/plugin/hg/apidoc/app.php` → 扫描 `app\api\v1\controller`
 - 注解格式：`@Apidoc\Title` / `@Apidoc\Group` / `@Apidoc\Url` / `@Apidoc\Method` / `@Apidoc\Param`
 - 密码保护：`admin123`
+- 管理后台 79 个 API 端点，C端 54 个
 
 ## 10. 部署架构
 

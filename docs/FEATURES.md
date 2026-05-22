@@ -58,7 +58,7 @@
 | 排行榜 | WebSocket 实时推送 (端口8789) | 已完成 |
 | 部署 | Docker Compose 7服务 + Nginx反向代理 | 已完成 |
 | HarmonyOS | 游戏大厅 + 钱包 + 游戏详情页 | 已完成 |
-| API 文档 | hg/apidoc 交互式文档（Admin 15组 + Service 16组） | 已完成 |
+| API 文档 | hg/apidoc 交互式文档（Admin 25组79端点 + Service 16组54端点） | 已完成 |
 
 ## 2. C端用户功能
 

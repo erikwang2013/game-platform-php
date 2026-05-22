@@ -58,7 +58,7 @@ game-platform-php/
 │   └── config/                #   配置文件
 │
 ├── common/                    # 共享层 (PSR-4 autoload)
-│   ├── model/                 #   数据模型 (14个)
+│   ├── model/                 #   数据模型 (34个)
 │   ├── middleware/            #   共享中间件 (UserAuth)
 │   └── service/               #   共享服务 (TranslationService)
 │
