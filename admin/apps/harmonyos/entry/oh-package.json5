@@ -1,0 +1,13 @@
+{
+  "name": "entry",
+  "version": "1.0.0",
+  "description": "开放管理后台 - 鸿蒙客户端入口模块",
+  "main": "",
+  "author": "erik <erik@erik.xyz>",
+  "license": "MIT",
+  "dependencies": {
+    "@ohos/router": "latest",
+    "@ohos/http": "latest",
+    "@ohos/dataPreferences": "latest"
+  }
+}

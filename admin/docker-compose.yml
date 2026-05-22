@@ -1,0 +1,113 @@
+# ============================================================
+# 开放管理后台 — Docker Compose 生产编排
+# Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+# ============================================================
+
+services:
+  # ============================================================
+  # Web 应用 + Nginx 反向代理
+  # ============================================================
+  nginx:
+    image: nginx:alpine
+    container_name: open-admin-nginx
+    restart: unless-stopped
+    ports:
+      - "${NGINX_PORT:-80}:80"
+      - "${NGINX_SSL_PORT:-443}:443"
+    volumes:
+      - ./public:/app/public:ro
+      - ./docs/nginx-security.conf:/etc/nginx/conf.d/security.conf:ro
+    depends_on:
+      - app
+    networks:
+      - open-admin
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: open-admin-app
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - .:/app
+      - app-runtime:/app/runtime
+    command: ["php", "start.php", "start"]
+    env_file:
+      - .env.docker
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - open-admin
+
+  # ============================================================
+  # 数据服务
+  # ============================================================
+  mysql:
+    image: mysql:8.0
+    container_name: open-admin-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-open_admin}
+    ports:
+      - "${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./database/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - open-admin
+
+  redis:
+    image: redis:7-alpine
+    container_name: open-admin-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - open-admin
+
+  elasticsearch:
+    image: elasticsearch:8.12.0
+    container_name: open-admin-es
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "${ES_PORT:-9200}:9200"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q 'green\\|yellow'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - open-admin
+
+volumes:
+  mysql-data:
+  redis-data:
+  es-data:
+  app-runtime:
+
+networks:
+  open-admin:
+    driver: bridge

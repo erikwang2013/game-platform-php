@@ -1,0 +1,108 @@
+{
+  "string": [
+    {
+      "name": "entry_desc",
+      "value": "开放管理后台"
+    },
+    {
+      "name": "module_desc",
+      "value": "开放管理后台客户端模块"
+    },
+    {
+      "name": "app_name",
+      "value": "开放管理后台"
+    },
+    {
+      "name": "login_title",
+      "value": "登录"
+    },
+    {
+      "name": "login_username",
+      "value": "用户名"
+    },
+    {
+      "name": "login_password",
+      "value": "密码"
+    },
+    {
+      "name": "login_button",
+      "value": "登 录"
+    },
+    {
+      "name": "dashboard_title",
+      "value": "仪表盘"
+    },
+    {
+      "name": "user_list_title",
+      "value": "用户管理"
+    },
+    {
+      "name": "user_detail_title",
+      "value": "用户详情"
+    },
+    {
+      "name": "profile_title",
+      "value": "个人中心"
+    },
+    {
+      "name": "logout",
+      "value": "退出登录"
+    },
+    {
+      "name": "export_excel",
+      "value": "导出Excel"
+    },
+    {
+      "name": "export_pdf",
+      "value": "导出PDF"
+    },
+    {
+      "name": "search_hint",
+      "value": "请输入关键词搜索"
+    },
+    {
+      "name": "confirm",
+      "value": "确定"
+    },
+    {
+      "name": "cancel",
+      "value": "取消"
+    },
+    {
+      "name": "loading",
+      "value": "加载中..."
+    },
+    {
+      "name": "load_more",
+      "value": "加载更多"
+    },
+    {
+      "name": "no_more",
+      "value": "没有更多了"
+    },
+    {
+      "name": "network_error",
+      "value": "网络请求失败，请检查网络连接"
+    },
+    {
+      "name": "total_users",
+      "value": "用户总数"
+    },
+    {
+      "name": "today_new",
+      "value": "今日新增"
+    },
+    {
+      "name": "active_users",
+      "value": "活跃用户"
+    },
+    {
+      "name": "operation_logs",
+      "value": "操作日志"
+    },
+    {
+      "name": "copyright",
+      "value": "Copyright (c) 2026 erik — https://erik.xyz"
+    }
+  ]
+}

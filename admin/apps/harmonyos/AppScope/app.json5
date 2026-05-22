@@ -1,0 +1,17 @@
+{
+  "app": {
+    "bundleName": "xyz.erik.openadmin",
+    "vendor": "erik",
+    "versionCode": 1,
+    "versionName": "1.0.0",
+    "icon": "$media:app_icon",
+    "label": "$string:open_admin",
+    "minAPIVersion": 12,
+    "targetAPIVersion": 12,
+    "apiReleaseType": "Release",
+    "debug": false,
+    "car": {
+      "minAPIVersion": 12
+    }
+  }
+}

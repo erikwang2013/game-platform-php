@@ -1,0 +1,16 @@
+{
+  "name": "open-admin",
+  "version": "1.0.0",
+  "description": "开放管理后台 - 鸿蒙客户端",
+  "main": "",
+  "author": "erik <erik@erik.xyz>",
+  "license": "MIT",
+  "devDependencies": {
+    "@ohos/hvigor-ohos-plugin": "5.1.4",
+    "@ohos/hvigor": "5.1.4"
+  },
+  "dependencies": {
+    "@ohos/hamock": "1.0.0",
+    "@ohos/hypium": "1.0.19"
+  }
+}

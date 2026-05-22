@@ -1,0 +1,8 @@
+2026-05-22 19:58:49 pid:2996293 Workerman[start.php] start in DAEMON mode
+2026-05-22 19:58:51 pid:2996344 Workerman[start.php] status
+2026-05-22 20:03:18 pid:2999990 Workerman[start.php] stop
+2026-05-22 20:03:18 pid:2999990 Workerman[start.php] is stopping ...
+2026-05-22 20:03:18 pid:2996297 Workerman[start.php] received signal SIGINT
+2026-05-22 20:03:18 pid:2996297 Workerman[start.php] stopping
+2026-05-22 20:03:18 pid:2996297 Workerman[start.php] has been stopped
+2026-05-22 20:03:18 pid:2999990 Workerman[start.php] stop success

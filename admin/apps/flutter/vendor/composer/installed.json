@@ -1,0 +1,86 @@
+{
+    "packages": [
+        {
+            "name": "erikwang2013/poster-php",
+            "version": "v1.0.0",
+            "version_normalized": "1.0.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/erikwang2013/poster-php.git",
+                "reference": "a51f4fb991cc91f39941c730b182e9ca0b46b13f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/erikwang2013/poster-php/zipball/a51f4fb991cc91f39941c730b182e9ca0b46b13f",
+                "reference": "a51f4fb991cc91f39941c730b182e9ca0b46b13f",
+                "shasum": ""
+            },
+            "require": {
+                "ext-gd": "*",
+                "ext-mbstring": "*",
+                "php": ">=8.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.0 || ^10.0 || ^11.0"
+            },
+            "suggest": {
+                "ext-imagick": "For ImageMagick image driver (more features, better performance)",
+                "ext-redis": "For Redis captcha storage (distributed deployments)"
+            },
+            "time": "2026-05-16T10:54:51+00:00",
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Erikwang2013\\Poster\\Adapters\\Laravel\\CaptchaServiceProvider",
+                        "Erikwang2013\\Poster\\Adapters\\Laravel\\PosterServiceProvider"
+                    ]
+                },
+                "thinkphp": {
+                    "services": [
+                        "Erikwang2013\\Poster\\Adapters\\ThinkPHP\\CaptchaService",
+                        "Erikwang2013\\Poster\\Adapters\\ThinkPHP\\PosterService"
+                    ]
+                }
+            },
+            "installation-source": "dist",
+            "autoload": {
+                "files": [
+                    "helpers.php"
+                ],
+                "psr-4": {
+                    "Erikwang2013\\Poster\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "erik",
+                    "email": "erik@erik.xyz",
+                    "homepage": "https://erik.xyz"
+                }
+            ],
+            "description": "PHP captcha (click/rotate/slider) and poster generation — framework-agnostic with adapters for Laravel, ThinkPHP, Webman, Hyperf.",
+            "keywords": [
+                "captcha",
+                "hyperf",
+                "image",
+                "laravel",
+                "poster",
+                "qr-code",
+                "thinkphp",
+                "webman"
+            ],
+            "support": {
+                "issues": "https://github.com/erikwang2013/poster-php/issues",
+                "source": "https://github.com/erikwang2013/poster-php/tree/v1.0.0"
+            },
+            "install-path": "../erikwang2013/poster-php"
+        }
+    ],
+    "dev": true,
+    "dev-package-names": []
+}
