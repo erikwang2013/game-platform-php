@@ -9,6 +9,10 @@ use support\Request;
 /**
  * C端 API 路由配置
  *
+ * 全局中间件链: Cors → SecurityFilter → RateLimit
+ * 公开接口: + ApiVersion
+ * 认证接口: + ApiVersion → UserAuth
+ *
  * API 版本策略:
  * - 版本号通过请求头 API-Version 携带（如 "v1"）
  * - 缺失时默认使用 v1
@@ -29,11 +33,54 @@ Route::get('/health', function () {
     return json(['code' => 0, 'message' => 'ok']);
 });
 
+// ============================================================
 // 公开接口（无需认证）
+// ============================================================
 Route::group('/api', function () {
-    // Routes will be added in subsequent tasks
+    Route::post('/auth/register', v('AuthController', 'register'));
+    Route::post('/auth/login', v('AuthController', 'login'));
+    Route::post('/auth/refresh', v('AuthController', 'refresh'));
+    Route::post('/captcha/generate', v('CaptchaController', 'generate'));
+
+    Route::get('/game/list', v('GameController', 'list'));
+    Route::get('/game/{hashid}', v('GameController', 'detail'));
+    Route::get('/announcement/list', v('AnnouncementController', 'list'));
+    Route::get('/announcement/detail/{hashid}', v('AnnouncementController', 'detail'));
 })->middleware([
     app\middleware\ApiVersion::class,
+]);
+
+// ============================================================
+// 认证接口（需登录）
+// ============================================================
+Route::group('/api', function () {
+    // 钱包
+    Route::get('/wallet/info', v('WalletController', 'info'));
+    Route::get('/wallet/transactions', v('WalletController', 'transactions'));
+
+    // 充值
+    Route::post('/deposit/create', v('DepositController', 'create'));
+    Route::get('/deposit/orders', v('DepositController', 'orders'));
+
+    // 兑换
+    Route::post('/exchange/quote', v('ExchangeController', 'quote'));
+    Route::post('/exchange/buy', v('ExchangeController', 'buy'));
+    Route::post('/exchange/sell', v('ExchangeController', 'sell'));
+    Route::get('/exchange/records', v('ExchangeController', 'records'));
+
+    // 提现
+    Route::post('/withdraw/apply', v('WithdrawController', 'apply'));
+    Route::get('/withdraw/orders', v('WithdrawController', 'orders'));
+
+    // 游戏
+    Route::post('/game/launch', v('GameController', 'launch'));
+
+    // 用户
+    Route::get('/user/profile', v('UserController', 'profile'));
+    Route::put('/user/profile', v('UserController', 'updateProfile'));
+})->middleware([
+    app\middleware\ApiVersion::class,
+    common\middleware\UserAuth::class,
 ]);
 
 Route::disableDefaultRoute();

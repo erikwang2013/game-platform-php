@@ -1,0 +1,154 @@
+<?php
+/*
+ * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+ */
+
+use Webman\Route;
+use support\Request;
+
+/**
+ * API 路由配置
+ *
+ * 路由分组说明:
+ * - /admin/*  管理端接口，需要 JWT 认证 + 权限校验
+ * - /api/*    客户端接口（部分白名单，部分需认证）
+ * - /health   健康检查（无需认证）
+ *
+ * API 版本策略:
+ * - 版本号通过请求头 API-Version 携带（如 "v1"、"v2"），不在 URL 中体现
+ * - 缺失时默认使用 v1
+ * - 由 ApiVersion 中间件校验，路由闭包按版本解析对应控制器
+ */
+
+/**
+ * 创建版本化 API 路由闭包
+ */
+function v(string $controller, string $action): \Closure
+{
+    return function (Request $request) use ($controller, $action) {
+        $version = $request->apiVersion ?? 'v1';
+        $class = "\\app\\api\\{$version}\\controller\\{$controller}";
+        return (new $class)->{$action}($request);
+    };
+}
+
+// ============================================================
+// 健康检查（全局，无需认证）
+// ============================================================
+Route::get('/health', [app\admin\controller\HealthController::class, 'index']);
+
+// Prometheus 指标（无需认证）
+Route::get('/metrics', [app\admin\controller\MetricsController::class, 'index']);
+
+// security.txt — RFC 9116 安全漏洞报告联系人
+Route::get('/.well-known/security.txt', function () {
+    return response(<<<'TXT'
+Contact: mailto:erik@erik.xyz
+Expires: 2027-12-31T23:59:59Z
+Preferred-Languages: zh, en
+Canonical: https://erik.xyz/.well-known/security.txt
+TXT
+    , 200, ['Content-Type' => 'text/plain; charset=utf-8']);
+});
+
+// API 文档（全局，无需认证）
+Route::get('/api/docs', [app\admin\controller\DocsController::class, 'index']);
+
+// ============================================================
+// 管理端路由
+// ============================================================
+Route::group('/admin', function () {
+    // 仪表盘
+    Route::get('/dashboard', [app\admin\controller\DashboardController::class, 'index']);
+
+    // 用户管理
+    Route::resource('/user', app\admin\controller\UserController::class);
+    Route::post('/user/batch/destroy', [app\admin\controller\UserController::class, 'batchDestroy']);
+    Route::post('/user/batch/status', [app\admin\controller\UserController::class, 'batchStatus']);
+
+    // 角色管理
+    Route::resource('/role', app\admin\controller\RoleController::class);
+
+    // 权限管理
+    Route::resource('/permission', app\admin\controller\PermissionController::class);
+
+    // 系统配置
+    Route::get('/config', [app\admin\controller\ConfigController::class, 'index']);
+    Route::post('/config', [app\admin\controller\ConfigController::class, 'store']);
+    Route::put('/config/{id}', [app\admin\controller\ConfigController::class, 'update']);
+    Route::delete('/config/{id}', [app\admin\controller\ConfigController::class, 'destroy']);
+
+    // 操作日志
+    Route::get('/log', [app\admin\controller\LogController::class, 'index']);
+
+    // 个人中心
+    Route::put('/profile', [app\admin\controller\ProfileController::class, 'updateProfile']);
+    Route::put('/profile/password', [app\admin\controller\ProfileController::class, 'updatePassword']);
+    Route::post('/profile/logout', [app\admin\controller\ProfileController::class, 'logout']);
+
+    // 导出
+    Route::post('/export/excel', [app\admin\controller\ExportController::class, 'excel']);
+    Route::post('/export/pdf', [app\admin\controller\ExportController::class, 'pdf']);
+
+    // 导入
+    Route::post('/import/users', [app\admin\controller\ImportController::class, 'users']);
+
+    // 文件上传
+    Route::post('/upload', [app\admin\controller\UploadController::class, 'upload']);
+
+    // 平台仪表盘
+    Route::get('/dashboard/platform', [app\admin\controller\DashboardController::class, 'platform']);
+
+    // 游戏管理
+    Route::get('/game/list', [app\admin\controller\GameController::class, 'list']);
+    Route::post('/game/create', [app\admin\controller\GameController::class, 'create']);
+    Route::put('/game/{hashid}', [app\admin\controller\GameController::class, 'update']);
+    Route::delete('/game/{hashid}', [app\admin\controller\GameController::class, 'destroy']);
+    Route::post('/game/currency/manage', [app\admin\controller\GameController::class, 'manageCurrency']);
+
+    // 提现管理
+    Route::get('/withdraw/orders', [app\admin\controller\WithdrawController::class, 'orders']);
+    Route::put('/withdraw/review', [app\admin\controller\WithdrawController::class, 'review']);
+    Route::put('/withdraw/switch', [app\admin\controller\WithdrawController::class, 'toggleSwitch']);
+    Route::post('/withdraw/limits/set', [app\admin\controller\WithdrawController::class, 'setLimits']);
+
+    // 支付方式管理
+    Route::get('/payment/method/list', [app\admin\controller\PaymentController::class, 'list']);
+    Route::post('/payment/method/toggle', [app\admin\controller\PaymentController::class, 'toggle']);
+
+    // C端用户管理
+    Route::get('/platform/user/list', [app\admin\controller\PlatformUserController::class, 'list']);
+    Route::get('/platform/user/{hashid}', [app\admin\controller\PlatformUserController::class, 'detail']);
+    Route::put('/platform/user/{hashid}', [app\admin\controller\PlatformUserController::class, 'update']);
+
+    // 公告管理
+    Route::get('/announcement/list', [app\admin\controller\AnnouncementController::class, 'list']);
+    Route::post('/announcement/create', [app\admin\controller\AnnouncementController::class, 'create']);
+
+    // 导出扩展
+    Route::post('/export/users', [app\admin\controller\ExportController::class, 'exportUsers']);
+    Route::post('/export/transactions', [app\admin\controller\ExportController::class, 'exportTransactions']);
+})->middleware([
+    app\middleware\AdminAuth::class,
+    app\middleware\AdminPermission::class,
+    app\middleware\OperationLog::class,
+]);
+
+// ============================================================
+// 公开接口（通过 API-Version 头路由到版本化控制器）
+// ============================================================
+Route::group('/api', function () {
+    // 点击验证码
+    Route::post('/captcha/generate', v('CaptchaController', 'generate'));
+    Route::post('/captcha/verify', v('CaptchaController', 'verify'));
+
+    // 认证
+    Route::post('/auth/login', v('AuthController', 'login'));
+    Route::post('/auth/register', v('AuthController', 'register'));
+    Route::post('/auth/refresh', v('AuthController', 'refresh'));
+})->middleware([
+    app\middleware\ApiVersion::class,
+]);
+
+// 关闭默认路由
+Route::disableDefaultRoute();
