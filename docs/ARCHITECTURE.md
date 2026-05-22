@@ -274,7 +274,22 @@ tests/
 | Redis | 6379 | 缓存/限流/WebSocket |
 | Elasticsearch | 9200 | 全文检索 |
 
-## 9. 部署架构
+## 9. API 文档
+
+使用 `hg/apidoc` 通过控制器注解自动生成交互式 API 文档：
+
+| 文档 | 地址 | 控制器 | 分组 |
+|------|------|--------|------|
+| 管理后台 | :8787/apidoc/ | 25 | 15 组 |
+| C端业务 | :8788/apidoc/ | 22 | 16 组 |
+
+配置：
+- admin: `config/plugin/hg/apidoc/app.php` → 扫描 `app\admin\controller`
+- service: `config/plugin/hg/apidoc/app.php` → 扫描 `app\api\v1\controller`
+- 注解格式：`@Apidoc\Title` / `@Apidoc\Group` / `@Apidoc\Url` / `@Apidoc\Method` / `@Apidoc\Param`
+- 密码保护：`admin123`
+
+## 10. 部署架构
 
 ### Docker Compose（7 服务）
 
