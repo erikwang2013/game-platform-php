@@ -159,6 +159,17 @@ curl -X POST http://localhost:8788/api/auth/register \
 - **CSP headers**: Content-Security-Policy anti-XSS
 - **Account security**: 5 failed login attempts → 15-minute lockout
 
+## Testing
+
+```bash
+cd admin
+phpunit --bootstrap tests/bootstrap.php tests/
+```
+
+- PHPUnit 12.x, 116 test cases
+- 56 business logic tests (PlatformTest) + 60 infrastructure tests
+- Coverage: bcmath precision, exchange calculation, withdraw fees, limits, risk control, coupons, KYC, i18n
+
 ## Business Model
 
 ```

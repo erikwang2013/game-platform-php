@@ -159,6 +159,17 @@ curl -X POST http://localhost:8788/api/auth/register \
 - **CSP 头**：Content-Security-Policy 防 XSS
 - **账号安全**：连续5次登录失败锁定15分钟
 
+## 测试
+
+```bash
+cd admin
+phpunit --bootstrap tests/bootstrap.php tests/
+```
+
+- PHPUnit 12.x，116 个测试用例
+- 56 个业务逻辑测试 (PlatformTest) + 60 个基础设施测试
+- 覆盖：bcmath 精度、兑换计算、提现费用、限额、风控、优惠券、KYC、i18n
+
 ## 业务模型
 
 ```

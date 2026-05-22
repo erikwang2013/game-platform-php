@@ -247,7 +247,23 @@ flowchart TB
     ADM1 & ADM2 & SVC1 & SVC2 --> MON
 ```
 
-## 7. 端口分配
+## 7. 测试架构
+
+```
+tests/
+├── bootstrap.php                  # PHPUnit 引导（自动加载、.env、Model别名）
+├── PlatformTest.php               # 56 个业务逻辑测试
+├── BackendEnhancementTest.php     # 23 个加密/ID服务测试
+├── CaptchaTest.php                # 7 个验证码测试
+├── EncryptionServiceTest.php      # 6 个加解密测试
+├── EnvConfigTest.php              # 4 个环境配置测试
+├── HashidsServiceTest.php         # 8 个 ID 编解码测试
+└── SnowflakeServiceTest.php       # 6 个 Snowflake ID 测试
+```
+
+运行：`cd admin && phpunit --bootstrap tests/bootstrap.php tests/`
+
+## 8. 端口分配
 
 | 服务 | 端口 | 说明 |
 |------|------|------|

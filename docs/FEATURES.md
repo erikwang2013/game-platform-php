@@ -179,3 +179,17 @@
 ### 完整版新增 (8张)
 
 erik_game_category, erik_game_category_rel, erik_leaderboard, erik_coupon, erik_user_coupon, erik_language, erik_translation, erik_country_config, erik_platform_revenue
+
+## 5. 测试覆盖
+
+| 测试文件 | 用例数 | 覆盖范围 |
+|---------|--------|---------|
+| PlatformTest | 56 | bcmath精度/兑换计算/提现费用/限额/风控/优惠券/KYC/i18n/验证/响应格式 |
+| BackendEnhancementTest | 23 | 加密服务/Hashids/Snowflake |
+| CaptchaTest | 7 | 验证码生成/校验/难度/唯一性 |
+| EncryptionServiceTest | 6 | AES加解密/脱敏 |
+| EnvConfigTest | 4 | 环境变量配置 |
+| HashidsServiceTest | 8 | ID编解码往返 |
+| SnowflakeServiceTest | 6 | ID生成唯一性/格式 |
+
+**总计: 116 测试，109 通过，2 环境依赖跳过(Redis)，5 数据库依赖跳过**
