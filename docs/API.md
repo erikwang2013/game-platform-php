@@ -2,6 +2,11 @@
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
+**在线交互式文档（支持在线调试）：**
+- C端业务：`http://localhost:8788/apidoc/`（16 组）
+- 管理后台：`http://localhost:8787/apidoc/`（18 组）
+- 密码：`admin123`
+
 ## 1. 约定
 
 ### 1.1 基础 URL

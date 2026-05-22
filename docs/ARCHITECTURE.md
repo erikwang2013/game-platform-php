@@ -247,7 +247,18 @@ flowchart TB
     ADM1 & ADM2 & SVC1 & SVC2 --> MON
 ```
 
-## 7. 端口分配
+## 7. API 文档
+
+使用 `hg/apidoc` 通过控制器注解自动生成：
+
+| 文档 | 地址 | 分组数 | 密码 |
+|------|------|--------|------|
+| 管理后台 | `localhost:8787/apidoc/` | 18 组 | admin123 |
+| C端业务 | `localhost:8788/apidoc/` | 16 组 | admin123 |
+
+配置：`config/plugin/hg/apidoc/app.php`，注解：`@Apidoc\Title` / `@Apidoc\Group` / `@Apidoc\Url`
+
+## 8. 端口分配
 
 | 服务 | 端口 | 说明 |
 |------|------|------|

@@ -178,3 +178,14 @@
 ### 完整版新增 (8张)
 
 erik_game_category, erik_game_category_rel, erik_leaderboard, erik_coupon, erik_user_coupon, erik_language, erik_translation, erik_country_config, erik_platform_revenue
+
+## 5. API 文档
+
+使用 `hg/apidoc` 注解自动生成交互式 API 文档：
+
+| 文档 | 地址 | 控制器 | 分组 |
+|------|------|--------|------|
+| 管理后台 | `:8787/apidoc/` | 20 | admin_user/role/permission/config/log/game/gameserver/gamecategory/withdraw/platform_user/identity/payment/coupon/leaderboard/country_config/announcement/search/export/dashboard... |
+| C端业务 | `:8788/apidoc/` | 21 | auth/wallet/exchange/withdraw/game/user/leaderboard/coupon/notification/referral/search/country/announcement/language/captcha/payment |
+
+密码：admin123

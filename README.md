@@ -182,6 +182,9 @@ curl -X POST http://localhost:8788/api/auth/register \
 | [架构文档](docs/ARCHITECTURE.md) | 系统拓扑、模块架构、数据流 |
 | [功能设计文档](docs/FEATURE-DESIGN.md) | 业务模型、功能规格、流程设计 |
 | [功能文档](docs/FEATURES.md) | 功能清单、模块说明、用户旅程 |
-| [接口文档](docs/API.md) | 完整 API 参考 (C端 20 + 管理端 18) |
+| [接口文档](docs/API.md) | 完整 API 参考 |
+| [在线文档](http://localhost:8787/apidoc/) | 管理后台 hg/apidoc 交互式文档 |
+| [在线文档](http://localhost:8788/apidoc/) | C端业务 hg/apidoc 交互式文档 |
+| [部署文档](docs/DEPLOYMENT.md) | Docker + 手动 + Nginx + 监控 |
 | [设计规范](admin/docs/superpowers/specs/2026-05-22-game-platform-design.md) | 完整设计规范 |
 | [实现计划](admin/docs/superpowers/plans/2026-05-22-game-platform-plan.md) | 详细实现计划 |
