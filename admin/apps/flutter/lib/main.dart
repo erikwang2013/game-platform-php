@@ -15,6 +15,8 @@ import 'app/pages/profile/profile_page.dart';
 import 'app/pages/game/game_list_page.dart';
 import 'app/pages/withdraw/withdraw_page.dart';
 import 'app/pages/platform_user/platform_user_page.dart';
+import 'app/pages/identity/identity_page.dart';
+import 'app/pages/risk/risk_log_page.dart';
 import 'app/pages/payment/payment_page.dart';
 import 'app/pages/announcement/announcement_page.dart';
 
@@ -53,8 +55,10 @@ class AdminApp extends StatelessWidget {
         GetPage(name: '/games', page: () => const AdminLayout(child: GameListPage(), initialIndex: 5)),
         GetPage(name: '/withdraws', page: () => const AdminLayout(child: WithdrawPage(), initialIndex: 6)),
         GetPage(name: '/platform-users', page: () => const AdminLayout(child: PlatformUserPage(), initialIndex: 7)),
-        GetPage(name: '/payments', page: () => const AdminLayout(child: PaymentPage(), initialIndex: 8)),
-        GetPage(name: '/announcements', page: () => const AdminLayout(child: AnnouncementPage(), initialIndex: 9)),
+        GetPage(name: '/identities', page: () => const AdminLayout(child: IdentityPage(), initialIndex: 8)),
+        GetPage(name: '/risk-logs', page: () => const AdminLayout(child: RiskLogPage(), initialIndex: 9)),
+        GetPage(name: '/payments', page: () => const AdminLayout(child: PaymentPage(), initialIndex: 10)),
+        GetPage(name: '/announcements', page: () => const AdminLayout(child: AnnouncementPage(), initialIndex: 11)),
         GetPage(name: '/profile', page: () => const ProfilePage()),
       ],
       initialRoute: '/login',

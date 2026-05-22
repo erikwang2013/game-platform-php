@@ -70,6 +70,38 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> _oauthLogin(String provider) async {
+    try {
+      final api = ApiService();
+      // Step 1: Get redirect URL
+      final redirectResp = await api.get('/auth/oauth/$provider');
+      final redirectUrl = redirectResp['data']['redirect_url'] as String?;
+      if (redirectUrl == null) {
+        Get.snackbar('Error', 'OAuth configuration not available');
+        return;
+      }
+      // Step 2: For web MVP, simulate the callback
+      // In production, this would open a popup window and handle the redirect
+      // For now, simulate with a test code
+      final callbackResp = await api.post('/auth/oauth/$provider/callback', data: {
+        'code': 'test_oauth_code_${DateTime.now().millisecondsSinceEpoch}',
+        'state': 'test_state',
+      });
+      final data = callbackResp['data'];
+      await AuthService.saveLogin(
+        token: data['access_token'],
+        refreshToken: data['refresh_token'],
+        username: data['user']?['username'] ?? '',
+      );
+      Get.offAllNamed('/games');
+      if (data['is_new'] == true) {
+        Get.snackbar('Welcome', 'Account created successfully!');
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'OAuth login failed: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -171,6 +203,43 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 24),
+                const Row(children: [
+                  Expanded(child: Divider()),
+                  Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Text('or')),
+                  Expanded(child: Divider()),
+                ]),
+                const SizedBox(height: 16),
+                // OAuth buttons
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.g_mobiledata, size: 24),
+                    label: const Text('Continue with Google'),
+                    onPressed: () => _oauthLogin('google'),
+                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.all(12)),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.facebook, size: 24),
+                    label: const Text('Continue with Facebook'),
+                    onPressed: () => _oauthLogin('facebook'),
+                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.all(12)),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.apple, size: 24),
+                    label: const Text('Continue with Apple'),
+                    onPressed: () => _oauthLogin('apple'),
+                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.all(12)),
+                  ),
                 ),
                 const SizedBox(height: 20),
 

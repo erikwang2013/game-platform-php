@@ -14,6 +14,8 @@ import '../pages/profile/profile_page.dart';
 import '../pages/game/game_list_page.dart';
 import '../pages/withdraw/withdraw_page.dart';
 import '../pages/platform_user/platform_user_page.dart';
+import '../pages/identity/identity_page.dart';
+import '../pages/risk/risk_log_page.dart';
 import '../pages/payment/payment_page.dart';
 import '../pages/announcement/announcement_page.dart';
 
@@ -44,6 +46,8 @@ class _AdminLayoutState extends State<AdminLayout> {
     GameListPage(),
     WithdrawPage(),
     PlatformUserPage(),
+    IdentityPage(),
+    RiskLogPage(),
     PaymentPage(),
     AnnouncementPage(),
   ];
@@ -230,6 +234,16 @@ class _AdminLayoutState extends State<AdminLayout> {
         icon: const Icon(Icons.group, size: 20),
         label: Text("${AppTranslations.t('nav.platform_users')}"),
         selectedIcon: const Icon(Icons.group, size: 20),
+      ),
+      NavigationDrawerDestination(
+        icon: const Icon(Icons.verified_user, size: 20),
+        label: Text("${AppTranslations.t('nav.identity')}"),
+        selectedIcon: const Icon(Icons.verified_user, size: 20),
+      ),
+      NavigationDrawerDestination(
+        icon: const Icon(Icons.warning, size: 20),
+        label: Text("${AppTranslations.t('nav.risk_logs')}"),
+        selectedIcon: const Icon(Icons.warning, size: 20),
       ),
       NavigationDrawerDestination(
         icon: const Icon(Icons.payment, size: 20),

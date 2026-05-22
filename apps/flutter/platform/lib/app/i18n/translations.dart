@@ -29,6 +29,8 @@ class AppTranslations {
       // Sidebar / Nav
       'nav.games': 'Game Hall',
       'nav.wallet': 'My Wallet',
+      'nav.identity': 'KYC',
+      'nav.play_history': 'History',
       'nav.profile': 'Profile',
 
       // Game Hall
@@ -141,6 +143,15 @@ class AppTranslations {
       'login.go_register': 'Go to Register',
       'login.enter_credentials': 'Please enter username and password',
       'login.operation_failed': 'Operation failed',
+      'login.oauth_google': 'Continue with Google',
+      'login.oauth_facebook': 'Continue with Facebook',
+      'login.oauth_apple': 'Continue with Apple',
+      'login.or': 'or',
+
+      // Identity
+      'identity.title': 'KYC Verification',
+      'identity.verified': 'Verified',
+      'identity.pending': 'Under Review',
 
       // Common
       'common.collapse_menu': 'Collapse menu',
@@ -172,6 +183,8 @@ class AppTranslations {
       // Sidebar / Nav
       'nav.games': '游戏大厅',
       'nav.wallet': '我的钱包',
+      'nav.identity': '实名认证',
+      'nav.play_history': '游戏记录',
       'nav.profile': '个人中心',
 
       // Game Hall
@@ -284,6 +297,15 @@ class AppTranslations {
       'login.go_register': '去注册',
       'login.enter_credentials': '请输入用户名和密码',
       'login.operation_failed': '操作失败',
+      'login.oauth_google': 'Google账号登录',
+      'login.oauth_facebook': 'Facebook账号登录',
+      'login.oauth_apple': 'Apple账号登录',
+      'login.or': '或',
+
+      // Identity
+      'identity.title': '实名认证',
+      'identity.verified': '已认证',
+      'identity.pending': '审核中',
 
       // Common
       'common.collapse_menu': '收起菜单',

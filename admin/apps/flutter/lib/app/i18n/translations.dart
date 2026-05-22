@@ -35,6 +35,8 @@ class AppTranslations {
       'nav.games': 'Game Management',
       'nav.withdraws': 'Withdraw Management',
       'nav.platform_users': 'Platform Users',
+      'nav.identity': 'KYC Review',
+      'nav.risk_logs': 'Risk Logs',
       'nav.payments': 'Payment Management',
       'nav.announcements': 'Announcements',
 
@@ -124,6 +126,11 @@ class AppTranslations {
       'platform_user.email': 'Email',
       'platform_user.phone': 'Phone',
       'platform_user.user_detail': 'User Detail',
+
+      // Identity
+      'identity.title': 'KYC Review',
+      'identity.approve': 'Approve',
+      'identity.reject': 'Reject',
 
       // Payments
       'payment.title': 'Payment Management',
@@ -262,6 +269,8 @@ class AppTranslations {
       'nav.games': '游戏管理',
       'nav.withdraws': '提现管理',
       'nav.platform_users': '平台用户',
+      'nav.identity': 'KYC审核',
+      'nav.risk_logs': '风控日志',
       'nav.payments': '支付管理',
       'nav.announcements': '公告管理',
 
@@ -351,6 +360,11 @@ class AppTranslations {
       'platform_user.email': '邮箱',
       'platform_user.phone': '手机号',
       'platform_user.user_detail': '用户详情',
+
+      // Identity
+      'identity.title': '身份认证审核',
+      'identity.approve': '通过',
+      'identity.reject': '拒绝',
 
       // Payments
       'payment.title': '支付管理',

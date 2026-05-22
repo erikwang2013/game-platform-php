@@ -12,6 +12,8 @@ import 'app/pages/wallet/deposit_page.dart';
 import 'app/pages/wallet/exchange_page.dart';
 import 'app/pages/wallet/withdraw_page.dart';
 import 'app/pages/profile/profile_page.dart';
+import 'app/pages/profile/identity_page.dart';
+import 'app/pages/game/play_log_page.dart';
 
 void main() {
   Get.put(LocaleController());
@@ -47,6 +49,8 @@ class GamePlatformApp extends StatelessWidget {
         GetPage(name: '/exchange', page: () => const ExchangePage()),
         GetPage(name: '/withdraw', page: () => const WithdrawPage()),
         GetPage(name: '/profile', page: () => const ProfilePage()),
+        GetPage(name: '/identity', page: () => const IdentityPage()),
+        GetPage(name: '/play-logs', page: () => const PlayLogPage()),
       ],
       initialRoute: '/login',
     );
