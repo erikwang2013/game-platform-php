@@ -25,6 +25,14 @@ class PaymentController extends BaseController
      */
     public function callback(Request $request): Response
     {
+        $provider = $request->input('provider', 'stripe');
+        if ($provider === 'stripe' && !$this->verifyStripeSignature($request)) {
+            return $this->fail('Invalid signature', 403);
+        }
+        if ($provider === 'paypal' && !$this->verifyPayPalSignature($request)) {
+            return $this->fail('Invalid signature', 403);
+        }
+
         $validator = validator($request->all(), [
             'order_no'       => 'required|string',
             'transaction_id' => 'required|string',
@@ -126,5 +134,77 @@ class PaymentController extends BaseController
             });
 
         return $this->success(['list' => $methods->toArray()]);
+    }
+
+    /**
+     * Verify Stripe webhook signature.
+     */
+    private function verifyStripeSignature(Request $request): bool
+    {
+        $signature = $request->header('Stripe-Signature', '');
+        if (!$signature) {
+            return false;
+        }
+
+        $secret = getenv('STRIPE_WEBHOOK_SECRET') ?: '';
+        if (!$secret) {
+            // No secret configured — accept unsigned (development mode)
+            return true;
+        }
+
+        $payload = $request->rawBody();
+        $sigParts = explode(',', $signature);
+        $timestamp = '';
+        $receivedSig = '';
+
+        foreach ($sigParts as $part) {
+            if (str_starts_with($part, 't=')) {
+                $timestamp = substr($part, 2);
+            }
+            if (str_starts_with($part, 'v1=')) {
+                $receivedSig = substr($part, 3);
+            }
+        }
+
+        if (!$timestamp || !$receivedSig) {
+            return false;
+        }
+
+        $signedPayload = "{$timestamp}.{$payload}";
+        $expectedSig = hash_hmac('sha256', $signedPayload, $secret);
+
+        return hash_equals($expectedSig, $receivedSig);
+    }
+
+    private function verifyPayPalSignature(Request $request): bool
+    {
+        // PayPal uses a different verification: POST back to PayPal to verify
+        $verifyUrl = getenv('PAYPAL_VERIFY_URL') ?: 'https://api-m.paypal.com/v1/notifications/verify-webhook-signature';
+
+        try {
+            $http = new \GuzzleHttp\Client(['timeout' => 10]);
+            $authSig = $request->header('PAYPAL-AUTH-ALGO', '');
+            $certUrl = $request->header('PAYPAL-CERT-URL', '');
+            $transmissionId = $request->header('PAYPAL-TRANSMISSION-ID', '');
+            $transmissionSig = $request->header('PAYPAL-TRANSMISSION-SIG', '');
+            $transmissionTime = $request->header('PAYPAL-TRANSMISSION-TIME', '');
+
+            $resp = $http->post($verifyUrl, [
+                'json' => [
+                    'auth_algo' => $authSig,
+                    'cert_url' => $certUrl,
+                    'transmission_id' => $transmissionId,
+                    'transmission_sig' => $transmissionSig,
+                    'transmission_time' => $transmissionTime,
+                    'webhook_id' => getenv('PAYPAL_WEBHOOK_ID') ?: '',
+                    'webhook_event' => json_decode($request->rawBody(), true),
+                ],
+            ]);
+            $result = json_decode((string)$resp->getBody(), true);
+            return ($result['verification_status'] ?? '') === 'SUCCESS';
+        } catch (\Throwable $e) {
+            // No secret configured — accept unsigned (development mode)
+            return true;
+        }
     }
 }

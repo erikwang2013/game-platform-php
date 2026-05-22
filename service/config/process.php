@@ -40,6 +40,11 @@ return [
         ]
     ],
     // File update detection and automatic reload
+    'leaderboard-ws' => [
+        'handler' => app\process\LeaderboardWebSocket::class,
+        'listen' => 'websocket://0.0.0.0:8789',
+        'count' => 1,
+    ],
     'monitor' => [
         'handler' => app\process\Monitor::class,
         'reloadable' => false,

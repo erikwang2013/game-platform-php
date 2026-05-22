@@ -181,4 +181,32 @@ class GameController extends BaseController
             'session_id'    => $sessionId,
         ]);
     }
+
+    /**
+     * 搜索建议
+     * GET /api/game/suggest?q=keyword
+     */
+    public function suggest(Request $request): \support\Response
+    {
+        $q = $request->input('q', '');
+        if (empty(trim($q))) {
+            return $this->success(['suggestions' => []]);
+        }
+
+        try {
+            $games = Game::search($q)->where('status', 1)->take(5)->get();
+        } catch (\Throwable $e) {
+            $games = Game::where('status', 1)
+                ->where('name', 'like', "%{$q}%")
+                ->limit(5)->get();
+        }
+
+        $suggestions = $games->map(fn($g) => [
+            'id' => $this->encodeId($g->id),
+            'name' => $g->name,
+            'slug' => $g->slug,
+        ]);
+
+        return $this->success(['suggestions' => $suggestions]);
+    }
 }

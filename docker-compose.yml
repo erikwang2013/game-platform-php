@@ -1,0 +1,125 @@
+version: '3.8'
+
+# ============================================================
+# Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+# 全球游戏聚合平台 — Docker Compose 完整部署
+# ============================================================
+
+services:
+  # Nginx 反向代理
+  nginx:
+    image: nginx:alpine
+    container_name: game-platform-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./admin/public:/var/www/admin/public:ro
+      - ./apps/flutter/platform/build/web:/var/www/platform:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - admin
+      - service
+    restart: unless-stopped
+
+  # 管理后台 (端口 8787)
+  admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    container_name: game-platform-admin
+    ports:
+      - "8787:8787"
+    volumes:
+      - ./admin:/app
+      - ./common:/common
+    env_file:
+      - ./admin/.env
+    depends_on:
+      - mysql
+      - redis
+    restart: unless-stopped
+
+  # C端业务端 (端口 8788)
+  service:
+    build:
+      context: ./service
+      dockerfile: Dockerfile
+    container_name: game-platform-service
+    ports:
+      - "8788:8788"
+    volumes:
+      - ./service:/app
+      - ./common:/common
+    env_file:
+      - ./service/.env
+    depends_on:
+      - mysql
+      - redis
+      - elasticsearch
+    restart: unless-stopped
+
+  # WebSocket 排行榜 (端口 8789)
+  leaderboard-ws:
+    build:
+      context: ./service
+      dockerfile: Dockerfile
+    container_name: game-platform-ws
+    command: php start.php start
+    ports:
+      - "8789:8789"
+    volumes:
+      - ./service:/app
+      - ./common:/common
+    env_file:
+      - ./service/.env
+    depends_on:
+      - mysql
+      - redis
+    restart: unless-stopped
+
+  # MySQL 8.0
+  mysql:
+    image: mysql:8.0
+    container_name: game-platform-mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_DATABASE: ${DB_DATABASE:-game_platform}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./admin/database/migrations:/docker-entrypoint-initdb.d:ro
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    restart: unless-stopped
+
+  # Redis 7
+  redis:
+    image: redis:7-alpine
+    container_name: game-platform-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+
+  # Elasticsearch 8
+  elasticsearch:
+    image: elasticsearch:8.11.0
+    container_name: game-platform-es
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+  redis_data:
+  es_data:

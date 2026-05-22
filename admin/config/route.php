@@ -166,6 +166,9 @@ Route::group('/admin', function () {
     // 导出扩展
     Route::post('/export/users', [app\admin\controller\ExportController::class, 'exportUsers']);
     Route::post('/export/transactions', [app\admin\controller\ExportController::class, 'exportTransactions']);
+
+    // 全局搜索
+    Route::get('/search', [app\admin\controller\SearchController::class, 'search']);
 })->middleware([
     app\middleware\AdminAuth::class,
     app\middleware\AdminPermission::class,

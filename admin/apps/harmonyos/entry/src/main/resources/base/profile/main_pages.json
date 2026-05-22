@@ -4,6 +4,9 @@
     "pages/DashboardPage",
     "pages/UserListPage",
     "pages/UserDetailPage",
-    "pages/ProfilePage"
+    "pages/ProfilePage",
+    "pages/GameHallPage",
+    "pages/WalletPage",
+    "pages/GameDetailPage"
   ]
 }

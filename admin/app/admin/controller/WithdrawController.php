@@ -13,6 +13,7 @@ use common\model\User;
 use common\model\UserWallet;
 use common\model\WithdrawLimit;
 use common\model\WithdrawOrder;
+use common\service\NotificationService;
 use support\Request;
 use support\Response;
 
@@ -95,6 +96,15 @@ class WithdrawController extends BaseController
             $order->status = 'approved';
             $order->save();
 
+            NotificationService::send(
+                $order->user_id,
+                'withdraw',
+                'Withdrawal Approved',
+                "Your withdrawal of {$order->platform_amount} platform tokens has been approved.",
+                'withdraw',
+                $order->id
+            );
+
             return $this->success([], '审核通过');
         }
 
@@ -119,6 +129,15 @@ class WithdrawController extends BaseController
         $transaction->ref_id        = $order->id;
         $transaction->remark        = '提现驳回退款';
         $transaction->save();
+
+        NotificationService::send(
+            $order->user_id,
+            'withdraw',
+            'Withdrawal Rejected',
+            "Your withdrawal of {$order->platform_amount} platform tokens has been rejected. {$note}",
+            'withdraw',
+            $order->id
+        );
 
         return $this->success([], '已驳回并退款');
     }

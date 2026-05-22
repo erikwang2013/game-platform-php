@@ -9,6 +9,7 @@ namespace app\api\v1\controller;
 
 use common\model\DepositOrder;
 use common\model\PlatformConfig;
+use common\service\NotificationService;
 use support\Request;
 use support\Response;
 
@@ -51,6 +52,15 @@ class DepositController extends BaseController
         $order->payment_method_id  = $paymentMethodId;
         $order->status             = 'pending';
         $order->save();
+
+        NotificationService::send(
+            $userId,
+            'deposit',
+            'Deposit Received',
+            "{$platformAmount} platform tokens credited",
+            'deposit',
+            $order->id
+        );
 
         return $this->success([
             'order_id'        => $this->encodeId($order->id),

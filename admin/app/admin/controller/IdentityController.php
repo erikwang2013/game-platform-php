@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace app\admin\controller;
 
 use common\model\UserIdentity;
+use common\service\NotificationService;
 use support\Request;
 use support\Response;
 
@@ -90,6 +91,26 @@ class IdentityController extends BaseController
         $identity->review_note = $note;
         $identity->reviewed_at = date('Y-m-d H:i:s');
         $identity->save();
+
+        if ($action === 'approve') {
+            NotificationService::send(
+                $identity->user_id,
+                'kyc',
+                'KYC Approved',
+                'Your identity verification has been approved.',
+                'identity',
+                $identity->id
+            );
+        } else {
+            NotificationService::send(
+                $identity->user_id,
+                'kyc',
+                'KYC Rejected',
+                "Your identity verification has been rejected. {$note}",
+                'identity',
+                $identity->id
+            );
+        }
 
         $message = ($action === 'approve') ? 'KYC approved' : 'KYC rejected';
 

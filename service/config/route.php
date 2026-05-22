@@ -58,9 +58,15 @@ Route::group('/api', function () {
     Route::get('/leaderboard/list', v('LeaderboardController', 'list'));
     Route::get('/leaderboard/{hashid}', v('LeaderboardController', 'ranking'));
 
+    Route::get('/search', v('SearchController', 'search'));
+    Route::get('/game/suggest', v('GameController', 'suggest'));
+
     // 支付
     Route::post('/payment/callback', v('PaymentController', 'callback'));
     Route::get('/payment/methods', v('PaymentController', 'methods'));
+
+    // 2FA 验证（登录流程使用，公开接口）
+    Route::post('/2fa/verify', v('TwoFactorController', 'verify'));
 })->middleware([
     app\middleware\ApiVersion::class,
 ]);
@@ -102,6 +108,22 @@ Route::group('/api', function () {
     Route::put('/user/profile', v('UserController', 'updateProfile'));
     Route::get('/user/identity/status', v('IdentityController', 'status'));
     Route::post('/user/identity/apply', v('IdentityController', 'apply'));
+
+    // 通知
+    Route::get('/notification/list', v('NotificationController', 'list'));
+    Route::get('/notification/unread-count', v('NotificationController', 'unreadCount'));
+    Route::post('/notification/read', v('NotificationController', 'markRead'));
+
+    // 推荐
+    Route::get('/referral/my-code', v('ReferralController', 'myCode'));
+    Route::get('/referral/stats', v('ReferralController', 'stats'));
+    Route::post('/referral/apply', v('ReferralController', 'apply'));
+
+    // 2FA
+    Route::get('/user/2fa/status', v('TwoFactorController', 'status'));
+    Route::post('/user/2fa/setup', v('TwoFactorController', 'setup'));
+    Route::post('/user/2fa/enable', v('TwoFactorController', 'enable'));
+    Route::post('/user/2fa/disable', v('TwoFactorController', 'disable'));
 })->middleware([
     app\middleware\ApiVersion::class,
     common\middleware\UserAuth::class,
