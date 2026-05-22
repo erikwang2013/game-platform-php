@@ -23,9 +23,6 @@
     "psr-4": {
       "": "./",
       "app\\": "./app",
-      "common\\model\\": "../common/model",
-      "common\\middleware\\": "../common/middleware",
-      "common\\service\\": "../common/service"
     }
   },
   "config": {

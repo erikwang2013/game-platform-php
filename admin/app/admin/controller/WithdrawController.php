@@ -8,13 +8,13 @@ declare(strict_types=1);
 namespace app\admin\controller;
 
 use hg\apidoc\annotation as Apidoc;
-use common\model\PlatformConfig;
-use common\model\Transaction;
-use common\model\User;
-use common\model\UserWallet;
-use common\model\WithdrawLimit;
-use common\model\WithdrawOrder;
-use common\service\NotificationService;
+use app\model\PlatformConfig;
+use app\model\Transaction;
+use app\model\User;
+use app\model\UserWallet;
+use app\model\WithdrawLimit;
+use app\model\WithdrawOrder;
+use app\service\NotificationService;
 use support\Request;
 use support\Response;
 

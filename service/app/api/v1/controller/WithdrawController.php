@@ -7,12 +7,12 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use common\model\PlatformConfig;
-use common\model\Transaction;
-use common\model\UserIdentity;
-use common\model\UserWallet;
-use common\model\WithdrawLimit;
-use common\model\WithdrawOrder;
+use app\model\PlatformConfig;
+use app\model\Transaction;
+use app\model\UserIdentity;
+use app\model\UserWallet;
+use app\model\WithdrawLimit;
+use app\model\WithdrawOrder;
 use hg\apidoc\annotation as Apidoc;
 use support\Db;
 use support\Request;

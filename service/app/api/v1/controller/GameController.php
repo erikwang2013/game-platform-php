@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use common\model\Game;
-use common\model\GamePlayLog;
-use common\model\UserWallet;
+use app\model\Game;
+use app\model\GamePlayLog;
+use app\model\UserWallet;
 use hg\apidoc\annotation as Apidoc;
 use support\Db;
 use support\Request;

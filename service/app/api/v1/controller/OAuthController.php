@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use common\model\User;
-use common\model\UserOauth;
-use common\model\UserWallet;
+use app\model\User;
+use app\model\UserOauth;
+use app\model\UserWallet;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
@@ -227,7 +227,7 @@ class OAuthController extends BaseController
     private function getOAuthConfig(string $provider): ?array
     {
         // Read from PlatformConfig
-        $configJson = \common\model\PlatformConfig::get('oauth', $provider, null);
+        $configJson = \app\model\PlatformConfig::get('oauth', $provider, null);
         if (!$configJson) {
             // Fallback to env
             $envPrefix = strtoupper($provider);

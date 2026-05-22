@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use common\service\TranslationService;
+use app\service\TranslationService;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
@@ -54,7 +54,7 @@ class LanguageController extends BaseController
 
         // 如果已登录，更新用户语言偏好
         if ($request->userId ?? null) {
-            $user = \common\model\User::find($request->userId);
+            $user = \app\model\User::find($request->userId);
             if ($user) {
                 $user->update(['language' => $locale]);
             }

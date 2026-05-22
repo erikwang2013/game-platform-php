@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use common\model\Transaction;
-use common\model\UserWallet;
+use app\model\Transaction;
+use app\model\UserWallet;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;

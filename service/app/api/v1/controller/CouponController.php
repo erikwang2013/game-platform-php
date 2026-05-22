@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use common\model\Coupon;
-use common\model\UserCoupon;
+use app\model\Coupon;
+use app\model\UserCoupon;
 use hg\apidoc\annotation as Apidoc;
 use support\Db;
 use support\Request;

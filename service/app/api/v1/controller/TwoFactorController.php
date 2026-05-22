@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use common\model\User;
-use common\model\User2FA;
+use app\model\User;
+use app\model\User2FA;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;

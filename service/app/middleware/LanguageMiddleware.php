@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\middleware;
 
-use common\service\TranslationService;
+use app\service\TranslationService;
 use support\Request;
 use Webman\MiddlewareInterface;
 use Webman\Http\Response;

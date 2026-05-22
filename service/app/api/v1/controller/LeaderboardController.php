@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use common\model\Leaderboard;
-use common\service\LeaderboardService;
+use app\model\Leaderboard;
+use app\service\LeaderboardService;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;

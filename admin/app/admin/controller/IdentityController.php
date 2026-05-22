@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace app\admin\controller;
 
 use hg\apidoc\annotation as Apidoc;
-use common\model\UserIdentity;
-use common\service\NotificationService;
+use app\model\UserIdentity;
+use app\service\NotificationService;
 use support\Request;
 use support\Response;
 

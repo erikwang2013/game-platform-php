@@ -7,15 +7,15 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use common\model\DepositOrder;
-use common\model\ExchangeRecord;
-use common\model\Transaction;
-use common\model\User;
-use common\model\User2FA;
-use common\model\UserOauth;
-use common\model\UserSession;
-use common\model\UserWallet;
-use common\model\WithdrawOrder;
+use app\model\DepositOrder;
+use app\model\ExchangeRecord;
+use app\model\Transaction;
+use app\model\User;
+use app\model\User2FA;
+use app\model\UserOauth;
+use app\model\UserSession;
+use app\model\UserWallet;
+use app\model\WithdrawOrder;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;

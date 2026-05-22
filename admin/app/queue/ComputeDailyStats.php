@@ -7,12 +7,12 @@ declare(strict_types=1);
 
 namespace app\queue;
 
-use common\model\StatDaily;
-use common\model\User;
-use common\model\DepositOrder;
-use common\model\WithdrawOrder;
-use common\model\ExchangeRecord;
-use common\model\GamePlayLog;
+use app\model\StatDaily;
+use app\model\User;
+use app\model\DepositOrder;
+use app\model\WithdrawOrder;
+use app\model\ExchangeRecord;
+use app\model\GamePlayLog;
 
 /**
  * 日统计快照计算（建议 crontab 每天凌晨 1:00 执行）

@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use common\model\DepositOrder;
-use common\model\PlatformConfig;
-use common\service\NotificationService;
+use app\model\DepositOrder;
+use app\model\PlatformConfig;
+use app\service\NotificationService;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;

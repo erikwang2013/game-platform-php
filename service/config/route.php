@@ -131,7 +131,7 @@ Route::group('/api', function () {
     Route::put('/user/privacy', v('UserController', 'updatePrivacy'));
 })->middleware([
     app\middleware\ApiVersion::class,
-    common\middleware\UserAuth::class,
+    app\middleware\UserAuth::class,
 ]);
 
 Route::disableDefaultRoute();

@@ -7,11 +7,11 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use common\model\DepositOrder;
-use common\model\PaymentMethod;
-use common\model\Transaction;
-use common\model\UserWallet;
-use common\service\RiskService;
+use app\model\DepositOrder;
+use app\model\PaymentMethod;
+use app\model\Transaction;
+use app\model\UserWallet;
+use app\service\RiskService;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;

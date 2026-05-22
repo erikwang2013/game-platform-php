@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace app\admin\controller;
 
 use hg\apidoc\annotation as Apidoc;
-use common\model\PaymentMethod;
+use app\model\PaymentMethod;
 use support\Request;
 use support\Response;
 

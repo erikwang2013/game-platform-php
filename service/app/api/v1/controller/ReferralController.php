@@ -7,12 +7,12 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use common\model\PlatformConfig;
-use common\model\Referral;
-use common\model\ReferralReward;
-use common\model\Transaction;
-use common\model\UserWallet;
-use common\service\NotificationService;
+use app\model\PlatformConfig;
+use app\model\Referral;
+use app\model\ReferralReward;
+use app\model\Transaction;
+use app\model\UserWallet;
+use app\service\NotificationService;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;

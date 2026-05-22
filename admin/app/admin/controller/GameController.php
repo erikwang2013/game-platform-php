@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace app\admin\controller;
 
 use hg\apidoc\annotation as Apidoc;
-use common\model\Game;
-use common\model\GameCurrency;
+use app\model\Game;
+use app\model\GameCurrency;
 use support\Db;
 use support\Request;
 use support\Response;
