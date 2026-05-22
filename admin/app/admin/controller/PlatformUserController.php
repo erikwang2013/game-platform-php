@@ -7,15 +7,26 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\User;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("C端用户管理")
+ * @Apidoc\Group("platform_user")
+ */
 class PlatformUserController extends BaseController
 {
     /**
      * C端用户列表（分页）
-     * GET /admin/user/list
+     * @Apidoc\Title("C端用户列表")
+     * @Apidoc\Url("/admin/platform/user/list")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Param(name="page", type="int", required=false, desc="页码")
+     * @Apidoc\Param(name="limit", type="int", required=false, desc="每页数量")
+     * @Apidoc\Param(name="keyword", type="string", required=false, desc="搜索关键词")
+     * @Apidoc\Param(name="status", type="int", required=false, desc="状态:0禁用 1启用")
      */
     public function list(Request $request): Response
     {
@@ -56,7 +67,9 @@ class PlatformUserController extends BaseController
 
     /**
      * C端用户详情（含钱包）
-     * GET /admin/user/{hashid}
+     * @Apidoc\Title("C端用户详情")
+     * @Apidoc\Url("/admin/platform/user/{hashid}")
+     * @Apidoc\Method("GET")
      */
     public function detail(Request $request, string $hashid): Response
     {
@@ -80,7 +93,11 @@ class PlatformUserController extends BaseController
 
     /**
      * 更新C端用户
-     * PUT /admin/user/{hashid}
+     * @Apidoc\Title("更新C端用户")
+     * @Apidoc\Url("/admin/platform/user/{hashid}")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Param(name="status", type="int", required=false, desc="状态")
+     * @Apidoc\Param(name="nickname", type="string", required=false, desc="昵称")
      */
     public function update(Request $request, string $hashid): Response
     {

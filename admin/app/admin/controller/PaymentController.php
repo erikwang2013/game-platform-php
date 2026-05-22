@@ -7,15 +7,22 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\PaymentMethod;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("支付管理")
+ * @Apidoc\Group("payment")
+ */
 class PaymentController extends BaseController
 {
     /**
      * 支付方式列表
-     * GET /admin/payment/list
+     * @Apidoc\Title("支付方式列表")
+     * @Apidoc\Url("/admin/payment/method/list")
+     * @Apidoc\Method("GET")
      */
     public function list(Request $request): Response
     {
@@ -28,7 +35,11 @@ class PaymentController extends BaseController
 
     /**
      * 切换支付方式状态
-     * POST /admin/payment/method/toggle
+     * @Apidoc\Title("切换支付方式状态")
+     * @Apidoc\Url("/admin/payment/method/toggle")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="id", type="string", required=true, desc="支付方式ID")
+     * @Apidoc\Param(name="status", type="int", required=true, desc="状态:0禁用 1启用")
      */
     public function toggle(Request $request): Response
     {

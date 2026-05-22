@@ -7,16 +7,27 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use app\model\AdminUser;
 use app\common\EncryptionService;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("管理员用户管理")
+ * @Apidoc\Group("admin_user")
+ */
 class UserController extends BaseController
 {
     /**
      * 用户列表（分页）
-     * GET /admin/user
+     * @Apidoc\Title("用户列表")
+     * @Apidoc\Url("/admin/user")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Param(name="page", type="int", required=false, desc="页码")
+     * @Apidoc\Param(name="limit", type="int", required=false, desc="每页数量")
+     * @Apidoc\Param(name="keyword", type="string", required=false, desc="搜索关键词")
+     * @Apidoc\Param(name="status", type="int", required=false, desc="状态:0禁用 1启用")
      */
     public function index(Request $request): Response
     {
@@ -65,7 +76,15 @@ class UserController extends BaseController
 
     /**
      * 创建用户
-     * POST /admin/user
+     * @Apidoc\Title("创建用户")
+     * @Apidoc\Url("/admin/user")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="username", type="string", required=true, desc="用户名")
+     * @Apidoc\Param(name="password", type="string", required=true, desc="密码")
+     * @Apidoc\Param(name="real_name", type="string", required=true, desc="真实姓名")
+     * @Apidoc\Param(name="status", type="int", required=false, desc="状态")
+     * @Apidoc\Param(name="phone", type="string", required=false, desc="手机号")
+     * @Apidoc\Param(name="email", type="string", required=false, desc="邮箱")
      */
     public function store(Request $request): Response
     {
@@ -102,7 +121,9 @@ class UserController extends BaseController
 
     /**
      * 用户详情
-     * GET /admin/user/{id}
+     * @Apidoc\Title("用户详情")
+     * @Apidoc\Url("/admin/user/{hashid}")
+     * @Apidoc\Method("GET")
      */
     public function show(Request $request, string $hashid): Response
     {
@@ -120,7 +141,14 @@ class UserController extends BaseController
 
     /**
      * 更新用户
-     * PUT /admin/user/{id}
+     * @Apidoc\Title("更新用户")
+     * @Apidoc\Url("/admin/user/{hashid}")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Param(name="real_name", type="string", required=false, desc="真实姓名")
+     * @Apidoc\Param(name="status", type="int", required=false, desc="状态")
+     * @Apidoc\Param(name="password", type="string", required=false, desc="新密码")
+     * @Apidoc\Param(name="phone", type="string", required=false, desc="手机号")
+     * @Apidoc\Param(name="email", type="string", required=false, desc="邮箱")
      */
     public function update(Request $request, string $hashid): Response
     {
@@ -152,7 +180,10 @@ class UserController extends BaseController
 
     /**
      * 删除用户（软删除，需密码二次确认）
-     * DELETE /admin/user/{id}
+     * @Apidoc\Title("删除用户")
+     * @Apidoc\Url("/admin/user/{hashid}")
+     * @Apidoc\Method("DELETE")
+     * @Apidoc\Param(name="password", type="string", required=true, desc="管理员密码确认")
      */
     public function destroy(Request $request, string $hashid): Response
     {
@@ -174,7 +205,11 @@ class UserController extends BaseController
 
     /**
      * 批量删除
-     * POST /admin/user/batch/destroy
+     * @Apidoc\Title("批量删除用户")
+     * @Apidoc\Url("/admin/user/batch/destroy")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="ids", type="array", required=true, desc="用户ID列表")
+     * @Apidoc\Param(name="password", type="string", required=true, desc="管理员密码确认")
      */
     public function batchDestroy(Request $request): Response
     {
@@ -211,7 +246,11 @@ class UserController extends BaseController
 
     /**
      * 批量启用/禁用
-     * POST /admin/user/batch/status
+     * @Apidoc\Title("批量启用/禁用用户")
+     * @Apidoc\Url("/admin/user/batch/status")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="ids", type="array", required=true, desc="用户ID列表")
+     * @Apidoc\Param(name="status", type="int", required=true, desc="状态:0禁用 1启用")
      */
     public function batchStatus(Request $request): Response
     {

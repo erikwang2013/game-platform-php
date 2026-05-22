@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\PlatformConfig;
 use common\model\Transaction;
 use common\model\User;
@@ -15,11 +16,20 @@ use common\model\WithdrawOrder;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("提现管理")
+ * @Apidoc\Group("withdraw")
+ */
 class WithdrawController extends BaseController
 {
     /**
      * 提现订单列表（分页）
-     * GET /admin/withdraw/orders
+     * @Apidoc\Title("提现订单列表")
+     * @Apidoc\Url("/admin/withdraw/orders")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Param(name="page", type="int", required=false, desc="页码")
+     * @Apidoc\Param(name="limit", type="int", required=false, desc="每页数量")
+     * @Apidoc\Param(name="status", type="string", required=false, desc="订单状态")
      */
     public function orders(Request $request): Response
     {
@@ -59,7 +69,12 @@ class WithdrawController extends BaseController
 
     /**
      * 审核提现订单
-     * PUT /admin/withdraw/review
+     * @Apidoc\Title("审核提现订单")
+     * @Apidoc\Url("/admin/withdraw/review")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Param(name="order_id", type="string", required=true, desc="订单ID")
+     * @Apidoc\Param(name="action", type="string", required=true, desc="操作:approve|reject")
+     * @Apidoc\Param(name="note", type="string", required=false, desc="审核备注")
      */
     public function review(Request $request): Response
     {
@@ -124,7 +139,10 @@ class WithdrawController extends BaseController
 
     /**
      * 提现全局开关
-     * PUT /admin/withdraw/switch
+     * @Apidoc\Title("提现全局开关")
+     * @Apidoc\Url("/admin/withdraw/switch")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Param(name="enabled", type="int", required=true, desc="开关:0关闭 1开启")
      */
     public function toggleSwitch(Request $request): Response
     {
@@ -144,7 +162,12 @@ class WithdrawController extends BaseController
 
     /**
      * 设置提现限制
-     * POST /admin/withdraw/limits/set
+     * @Apidoc\Title("设置提现限制")
+     * @Apidoc\Url("/admin/withdraw/limits/set")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="daily_limit", type="float", required=false, desc="每日限额")
+     * @Apidoc\Param(name="min_amount", type="float", required=false, desc="最小提现金额")
+     * @Apidoc\Param(name="auto_approve_threshold", type="float", required=false, desc="自动审批阈值")
      */
     public function setLimits(Request $request): Response
     {
@@ -173,5 +196,129 @@ class WithdrawController extends BaseController
         $limits['global_switch'] = PlatformConfig::get('withdraw', 'global_switch', false);
 
         return $this->success($limits, '操作成功');
+    }
+
+    /**
+     * 提现限制列表
+     * @Apidoc\Title("提现限制列表")
+     * @Apidoc\Url("/admin/withdraw/limits/list")
+     * @Apidoc\Method("GET")
+     */
+    public function listLimits(Request $request): Response
+    {
+        $keys = ['daily_limit', 'min_amount', 'auto_approve_threshold'];
+        $limits = [];
+        foreach ($keys as $key) {
+            $limits[$key] = PlatformConfig::get('withdraw', $key, '0');
+        }
+        $limits['global_switch'] = PlatformConfig::get('withdraw', 'global_switch', false);
+
+        return $this->success($limits);
+    }
+
+    /**
+     * 更新提现限制
+     * @Apidoc\Title("更新提现限制")
+     * @Apidoc\Url("/admin/withdraw/limits/{hashid}")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Param(name="daily_limit", type="float", required=false, desc="每日限额")
+     * @Apidoc\Param(name="min_amount", type="float", required=false, desc="最小提现金额")
+     * @Apidoc\Param(name="auto_approve_threshold", type="float", required=false, desc="自动审批阈值")
+     */
+    public function updateLimit(Request $request, string $hashid): Response
+    {
+        $validator = validator($request->all(), [
+            'daily_limit'           => 'nullable|numeric|min:0',
+            'min_amount'            => 'nullable|numeric|min:0',
+            'auto_approve_threshold' => 'nullable|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
+        }
+
+        $keys = ['daily_limit', 'min_amount', 'auto_approve_threshold'];
+        foreach ($keys as $key) {
+            if ($request->has($key) && $request->input($key) !== null) {
+                PlatformConfig::set('withdraw', $key, $request->input($key), 'decimal');
+            }
+        }
+
+        $limits = [];
+        foreach ($keys as $key) {
+            $limits[$key] = PlatformConfig::get('withdraw', $key, '0');
+        }
+        $limits['global_switch'] = PlatformConfig::get('withdraw', 'global_switch', false);
+
+        return $this->success($limits, '更新成功');
+    }
+
+    /**
+     * 批量审核提现
+     * @Apidoc\Title("批量审核提现")
+     * @Apidoc\Url("/admin/withdraw/batch-review")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="order_ids", type="array", required=true, desc="订单ID列表")
+     * @Apidoc\Param(name="action", type="string", required=true, desc="操作:approve|reject")
+     * @Apidoc\Param(name="note", type="string", required=false, desc="审核备注")
+     */
+    public function batchReview(Request $request): Response
+    {
+        $validator = validator($request->all(), [
+            'order_ids' => 'required|array',
+            'action'    => 'required|string|in:approve,reject',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
+        }
+
+        $orderIds = $request->input('order_ids', []);
+        $action   = $request->input('action');
+        $note     = $request->input('note', '');
+        $adminId  = $request->adminId;
+        $success  = 0;
+        $failed   = 0;
+
+        foreach ($orderIds as $hashid) {
+            try {
+                $orderId = $this->decodeId($hashid);
+                $order   = WithdrawOrder::find($orderId);
+                if (!$order || $order->status !== 'pending') {
+                    $failed++;
+                    continue;
+                }
+
+                $order->reviewer_id = $adminId;
+                $order->review_note = $note;
+                $order->reviewed_at = date('Y-m-d H:i:s');
+
+                if ($action === 'approve') {
+                    $order->status = 'approved';
+                    $order->save();
+                } else {
+                    $order->status = 'rejected';
+                    $order->save();
+                    UserWallet::addBalance($order->user_id, $order->platform_amount);
+
+                    $wallet = UserWallet::where('user_id', $order->user_id)->first();
+                    $transaction = new Transaction();
+                    $transaction->id            = $this->generateId();
+                    $transaction->user_id       = $order->user_id;
+                    $transaction->type          = 'refund';
+                    $transaction->amount        = $order->platform_amount;
+                    $transaction->balance_after = $wallet ? $wallet->balance : '0';
+                    $transaction->ref_type      = 'withdraw';
+                    $transaction->ref_id        = $order->id;
+                    $transaction->remark        = '提现驳回退款';
+                    $transaction->save();
+                }
+                $success++;
+            } catch (\Throwable) {
+                $failed++;
+            }
+        }
+
+        return $this->success(['success' => $success, 'failed' => $failed], '批量审核完成');
     }
 }

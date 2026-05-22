@@ -7,15 +7,25 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\User;
 use common\model\UserWallet;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("Auth")
+ * @Apidoc\Group("auth")
+ */
 class AuthController extends BaseController
 {
     /**
-     * POST /api/auth/register
+     * @Apidoc\Title("Register")
+     * @Apidoc\Url("/api/auth/register")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name:"username",type:"string",require:true,desc:"Username (3-50 chars, alphanumeric + underscore)")
+     * @Apidoc\Param(name:"password",type:"string",require:true,desc:"Password (6-32 chars)")
+     * @Apidoc\Param(name:"email",type:"string",require:false,desc:"Email address")
      */
     public function register(Request $request): Response
     {
@@ -82,7 +92,11 @@ class AuthController extends BaseController
     }
 
     /**
-     * POST /api/auth/login
+     * @Apidoc\Title("Login")
+     * @Apidoc\Url("/api/auth/login")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name:"username",type:"string",require:true,desc:"Username")
+     * @Apidoc\Param(name:"password",type:"string",require:true,desc:"Password")
      */
     public function login(Request $request): Response
     {
@@ -131,7 +145,9 @@ class AuthController extends BaseController
     }
 
     /**
-     * POST /api/auth/refresh
+     * @Apidoc\Title("Refresh Token")
+     * @Apidoc\Url("/api/auth/refresh")
+     * @Apidoc\Method("POST")
      */
     public function refresh(Request $request): Response
     {

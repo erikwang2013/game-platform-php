@@ -7,14 +7,21 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use app\model\AdminPermission;
 use support\Request;
 
+/**
+ * @Apidoc\Title("权限管理")
+ * @Apidoc\Group("permission")
+ */
 class PermissionController extends BaseController
 {
     /**
      * 权限树
-     * GET /admin/permission
+     * @Apidoc\Title("权限树")
+     * @Apidoc\Url("/admin/permission")
+     * @Apidoc\Method("GET")
      */
     public function index(Request $request): Response
     {
@@ -29,7 +36,16 @@ class PermissionController extends BaseController
 
     /**
      * 创建权限
-     * POST /admin/permission
+     * @Apidoc\Title("创建权限")
+     * @Apidoc\Url("/admin/permission")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="name", type="string", required=true, desc="权限名称")
+     * @Apidoc\Param(name="slug", type="string", required=true, desc="权限标识")
+     * @Apidoc\Param(name="type", type="int", required=true, desc="类型:1目录 2菜单 3按钮")
+     * @Apidoc\Param(name="parent_id", type="int", required=false, desc="父级ID")
+     * @Apidoc\Param(name="icon", type="string", required=false, desc="图标")
+     * @Apidoc\Param(name="path", type="string", required=false, desc="前端路径")
+     * @Apidoc\Param(name="sort", type="int", required=false, desc="排序")
      */
     public function store(Request $request): Response
     {
@@ -59,7 +75,13 @@ class PermissionController extends BaseController
 
     /**
      * 更新权限
-     * PUT /admin/permission/{id}
+     * @Apidoc\Title("更新权限")
+     * @Apidoc\Url("/admin/permission/{hashid}")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Param(name="name", type="string", required=false, desc="权限名称")
+     * @Apidoc\Param(name="icon", type="string", required=false, desc="图标")
+     * @Apidoc\Param(name="path", type="string", required=false, desc="前端路径")
+     * @Apidoc\Param(name="sort", type="int", required=false, desc="排序")
      */
     public function update(Request $request, string $hashid): Response
     {
@@ -80,7 +102,10 @@ class PermissionController extends BaseController
 
     /**
      * 删除权限（需密码二次确认）
-     * DELETE /admin/permission/{id}
+     * @Apidoc\Title("删除权限")
+     * @Apidoc\Url("/admin/permission/{hashid}")
+     * @Apidoc\Method("DELETE")
+     * @Apidoc\Param(name="password", type="string", required=true, desc="管理员密码确认")
      */
     public function destroy(Request $request, string $hashid): Response
     {

@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use app\model\AdminUser;
 use app\common\EncryptionService;
 use app\model\OperationLog;
@@ -19,11 +20,17 @@ use support\Redis;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("仪表盘")
+ * @Apidoc\Group("dashboard")
+ */
 class DashboardController extends BaseController
 {
     /**
      * 仪表盘数据
-     * GET /admin/dashboard
+     * @Apidoc\Title("仪表盘数据")
+     * @Apidoc\Url("/admin/dashboard")
+     * @Apidoc\Method("GET")
      */
     public function index(Request $request): Response
     {
@@ -51,7 +58,9 @@ class DashboardController extends BaseController
 
     /**
      * 平台仪表盘
-     * GET /admin/dashboard/platform
+     * @Apidoc\Title("平台仪表盘")
+     * @Apidoc\Url("/admin/dashboard/platform")
+     * @Apidoc\Method("GET")
      */
     public function platform(Request $request): Response
     {

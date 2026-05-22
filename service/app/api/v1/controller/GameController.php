@@ -7,14 +7,25 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\Game;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("Game")
+ * @Apidoc\Group("game")
+ */
 class GameController extends BaseController
 {
     /**
-     * GET /api/game/list
+     * @Apidoc\Title("Game List")
+     * @Apidoc\Url("/api/game/list")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Query(name:"page",type:"integer",require:false,desc:"Page number")
+     * @Apidoc\Query(name:"per_page",type:"integer",require:false,desc:"Items per page")
+     * @Apidoc\Query(name:"keyword",type:"string",require:false,desc:"Search keyword")
+     * @Apidoc\Query(name:"type",type:"string",require:false,desc:"Game type filter")
      */
     public function list(Request $request): Response
     {
@@ -72,7 +83,10 @@ class GameController extends BaseController
     }
 
     /**
-     * GET /api/game/{hashid}
+     * @Apidoc\Title("Game Detail")
+     * @Apidoc\Url("/api/game/{hashid}")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Param(name:"hashid",type:"string",require:true,desc:"Game hashid")
      */
     public function detail(Request $request, string $hashid): Response
     {
@@ -109,7 +123,11 @@ class GameController extends BaseController
     }
 
     /**
-     * POST /api/game/launch
+     * @Apidoc\Title("Launch Game")
+     * @Apidoc\Url("/api/game/launch")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
+     * @Apidoc\Param(name:"game_id",type:"string",require:true,desc:"Game hashid")
      */
     public function launch(Request $request): Response
     {

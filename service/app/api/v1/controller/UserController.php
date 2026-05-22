@@ -7,14 +7,22 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\User;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("User")
+ * @Apidoc\Group("user")
+ */
 class UserController extends BaseController
 {
     /**
-     * GET /api/user/profile
+     * @Apidoc\Title("User Profile")
+     * @Apidoc\Url("/api/user/profile")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
      */
     public function profile(Request $request): Response
     {
@@ -40,7 +48,13 @@ class UserController extends BaseController
     }
 
     /**
-     * PUT /api/user/profile
+     * @Apidoc\Title("Update Profile")
+     * @Apidoc\Url("/api/user/profile")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
+     * @Apidoc\Param(name:"nickname",type:"string",require:false,desc:"Nickname (max 50 chars)")
+     * @Apidoc\Param(name:"avatar",type:"string",require:false,desc:"Avatar URL")
+     * @Apidoc\Param(name:"language",type:"string",require:false,desc:"Language preference (en-US, zh-CN, ja-JP, ko-KR)")
      */
     public function updateProfile(Request $request): Response
     {

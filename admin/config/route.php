@@ -111,6 +111,9 @@ Route::group('/admin', function () {
     Route::put('/withdraw/review', [app\admin\controller\WithdrawController::class, 'review']);
     Route::put('/withdraw/switch', [app\admin\controller\WithdrawController::class, 'toggleSwitch']);
     Route::post('/withdraw/limits/set', [app\admin\controller\WithdrawController::class, 'setLimits']);
+    Route::get('/withdraw/limits/list', [app\admin\controller\WithdrawController::class, 'listLimits']);
+    Route::put('/withdraw/limits/{hashid}', [app\admin\controller\WithdrawController::class, 'updateLimit']);
+    Route::post('/withdraw/batch-review', [app\admin\controller\WithdrawController::class, 'batchReview']);
 
     // 支付方式管理
     Route::get('/payment/method/list', [app\admin\controller\PaymentController::class, 'list']);
@@ -128,6 +131,46 @@ Route::group('/admin', function () {
     // 导出扩展
     Route::post('/export/users', [app\admin\controller\ExportController::class, 'exportUsers']);
     Route::post('/export/transactions', [app\admin\controller\ExportController::class, 'exportTransactions']);
+    Route::post('/export/receipt', [app\admin\controller\ExportController::class, 'receipt']);
+
+    // 游戏分类管理
+    Route::get('/game/category/list', [app\admin\controller\GameCategoryController::class, 'list']);
+    Route::post('/game/category/create', [app\admin\controller\GameCategoryController::class, 'create']);
+    Route::put('/game/category/{hashid}', [app\admin\controller\GameCategoryController::class, 'update']);
+    Route::delete('/game/category/{hashid}', [app\admin\controller\GameCategoryController::class, 'destroy']);
+    Route::post('/game/category/assign', [app\admin\controller\GameCategoryController::class, 'assignGames']);
+
+    // 游戏服务器管理
+    Route::get('/game/server/list', [app\admin\controller\GameServerController::class, 'list']);
+    Route::post('/game/server/create', [app\admin\controller\GameServerController::class, 'create']);
+    Route::put('/game/server/{hashid}', [app\admin\controller\GameServerController::class, 'update']);
+    Route::delete('/game/server/{hashid}', [app\admin\controller\GameServerController::class, 'destroy']);
+
+    // 国家配置管理
+    Route::get('/country/config/list', [app\admin\controller\CountryConfigController::class, 'list']);
+    Route::post('/country/config/create', [app\admin\controller\CountryConfigController::class, 'create']);
+    Route::put('/country/config/{hashid}', [app\admin\controller\CountryConfigController::class, 'update']);
+
+    // 实名认证管理
+    Route::get('/identity/list', [app\admin\controller\IdentityController::class, 'list']);
+    Route::put('/identity/review', [app\admin\controller\IdentityController::class, 'review']);
+
+    // 优惠券管理
+    Route::get('/coupon/list', [app\admin\controller\CouponController::class, 'list']);
+    Route::post('/coupon/create', [app\admin\controller\CouponController::class, 'create']);
+    Route::put('/coupon/{hashid}', [app\admin\controller\CouponController::class, 'update']);
+    Route::delete('/coupon/{hashid}', [app\admin\controller\CouponController::class, 'destroy']);
+    Route::get('/coupon/{hashid}/stats', [app\admin\controller\CouponController::class, 'stats']);
+
+    // 排行榜管理
+    Route::get('/leaderboard/list', [app\admin\controller\LeaderboardController::class, 'list']);
+    Route::post('/leaderboard/create', [app\admin\controller\LeaderboardController::class, 'create']);
+    Route::put('/leaderboard/{hashid}', [app\admin\controller\LeaderboardController::class, 'update']);
+    Route::delete('/leaderboard/{hashid}', [app\admin\controller\LeaderboardController::class, 'destroy']);
+    Route::post('/leaderboard/{hashid}/refresh', [app\admin\controller\LeaderboardController::class, 'refresh']);
+
+    // 全局搜索
+    Route::get('/search', [app\admin\controller\SearchController::class, 'search']);
 })->middleware([
     app\middleware\AdminAuth::class,
     app\middleware\AdminPermission::class,

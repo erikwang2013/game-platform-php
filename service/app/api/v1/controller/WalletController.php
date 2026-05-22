@@ -7,15 +7,23 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\Transaction;
 use common\model\UserWallet;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("Wallet")
+ * @Apidoc\Group("wallet")
+ */
 class WalletController extends BaseController
 {
     /**
-     * GET /api/wallet/info
+     * @Apidoc\Title("Wallet Info")
+     * @Apidoc\Url("/api/wallet/info")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
      */
     public function info(Request $request): Response
     {
@@ -36,7 +44,13 @@ class WalletController extends BaseController
     }
 
     /**
-     * GET /api/wallet/transactions
+     * @Apidoc\Title("Wallet Transactions")
+     * @Apidoc\Url("/api/wallet/transactions")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
+     * @Apidoc\Query(name:"page",type:"integer",require:false,desc:"Page number")
+     * @Apidoc\Query(name:"per_page",type:"integer",require:false,desc:"Items per page")
+     * @Apidoc\Query(name:"type",type:"string",require:false,desc:"Transaction type filter")
      */
     public function transactions(Request $request): Response
     {

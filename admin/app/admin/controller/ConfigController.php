@@ -7,12 +7,26 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use app\model\SystemConfig;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("系统配置")
+ * @Apidoc\Group("config")
+ */
 class ConfigController extends BaseController
 {
+    /**
+     * 配置列表
+     * @Apidoc\Title("配置列表")
+     * @Apidoc\Url("/admin/config")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Param(name="page", type="int", required=false, desc="页码")
+     * @Apidoc\Param(name="limit", type="int", required=false, desc="每页数量")
+     * @Apidoc\Param(name="group", type="string", required=false, desc="配置分组")
+     */
     public function index(Request $request): Response
     {
         $page  = (int) $request->input('page', 1);
@@ -40,6 +54,17 @@ class ConfigController extends BaseController
         ]);
     }
 
+    /**
+     * 创建配置
+     * @Apidoc\Title("创建配置")
+     * @Apidoc\Url("/admin/config")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="group", type="string", required=true, desc="配置分组")
+     * @Apidoc\Param(name="key", type="string", required=true, desc="配置键")
+     * @Apidoc\Param(name="value", type="string", required=true, desc="配置值")
+     * @Apidoc\Param(name="type", type="string", required=false, desc="值类型")
+     * @Apidoc\Param(name="description", type="string", required=false, desc="说明")
+     */
     public function store(Request $request): Response
     {
         $validator = validator($request->all(), [
@@ -71,6 +96,15 @@ class ConfigController extends BaseController
         return $this->success($this->encodeIds($config->toArray()), '创建成功');
     }
 
+    /**
+     * 更新配置
+     * @Apidoc\Title("更新配置")
+     * @Apidoc\Url("/admin/config/{hashid}")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Param(name="value", type="string", required=false, desc="配置值")
+     * @Apidoc\Param(name="type", type="string", required=false, desc="值类型")
+     * @Apidoc\Param(name="description", type="string", required=false, desc="说明")
+     */
     public function update(Request $request, string $hashid): Response
     {
         $id     = $this->decodeId($hashid);
@@ -94,6 +128,13 @@ class ConfigController extends BaseController
         return $this->success($this->encodeIds($config->toArray()), '更新成功');
     }
 
+    /**
+     * 删除配置
+     * @Apidoc\Title("删除配置")
+     * @Apidoc\Url("/admin/config/{hashid}")
+     * @Apidoc\Method("DELETE")
+     * @Apidoc\Param(name="password", type="string", required=true, desc="管理员密码确认")
+     */
     public function destroy(Request $request, string $hashid): Response
     {
         $id     = $this->decodeId($hashid);

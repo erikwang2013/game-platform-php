@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -22,11 +23,21 @@ use common\model\User;
 use common\model\Transaction;
 use support\Request;
 
+/**
+ * @Apidoc\Title("导出管理")
+ * @Apidoc\Group("export")
+ */
 class ExportController extends BaseController
 {
     /**
      * Excel 导出
-     * POST /admin/export/excel
+     * @Apidoc\Title("Excel导出")
+     * @Apidoc\Url("/admin/export/excel")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="table", type="string", required=true, desc="表名")
+     * @Apidoc\Param(name="columns", type="array", required=false, desc="导出列")
+     * @Apidoc\Param(name="conditions", type="object", required=false, desc="筛选条件")
+     * @Apidoc\Param(name="title", type="string", required=false, desc="标题")
      */
     public function excel(Request $request): Response
     {
@@ -116,7 +127,12 @@ class ExportController extends BaseController
 
     /**
      * PDF 导出
-     * POST /admin/export/pdf
+     * @Apidoc\Title("PDF导出")
+     * @Apidoc\Url("/admin/export/pdf")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="type", type="string", required=true, desc="导出类型")
+     * @Apidoc\Param(name="title", type="string", required=false, desc="标题")
+     * @Apidoc\Param(name="data", type="object", required=false, desc="数据")
      */
     public function pdf(Request $request): Response
     {
@@ -133,6 +149,176 @@ class ExportController extends BaseController
 
         $filename = sprintf('export_%s_%s.pdf', $type, date('YmdHis'));
         $tmpFile = runtime_path() . '/tmp/' . $filename;
+
+        $dir = dirname($tmpFile);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        file_put_contents($tmpFile, $dompdf->output());
+
+        return response()->download($tmpFile, $filename);
+    }
+
+    /**
+     * 导出C端用户
+     * @Apidoc\Title("导出C端用户")
+     * @Apidoc\Url("/admin/export/users")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="status", type="int", required=false, desc="状态筛选")
+     */
+    public function exportUsers(Request $request): \Webman\Http\Response
+    {
+        $query = User::orderBy('id', 'desc');
+        if ($request->has('status')) {
+            $query->where('status', (int) $request->input('status'));
+        }
+
+        $users = $query->limit(10000)->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('用户列表');
+
+        $headers = ['ID', '用户名', '昵称', '国家', '状态', '最后登录', '注册时间'];
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1677FF']],
+        ];
+
+        $col = 'A';
+        foreach ($headers as $h) {
+            $sheet->getCell($col . '1')->setValue($h);
+            $sheet->getStyle($col . '1')->applyFromArray($headerStyle);
+            $col++;
+        }
+
+        $row = 2;
+        foreach ($users as $u) {
+            $sheet->getCell('A' . $row)->setValue($this->encodeId($u->id));
+            $sheet->getCell('B' . $row)->setValue($u->username);
+            $sheet->getCell('C' . $row)->setValue($u->nickname);
+            $sheet->getCell('D' . $row)->setValue($u->country);
+            $sheet->getCell('E' . $row)->setValue($u->status == 1 ? '启用' : '禁用');
+            $sheet->getCell('F' . $row)->setValue($u->last_login_at);
+            $sheet->getCell('G' . $row)->setValue($u->created_at);
+            $row++;
+        }
+
+        $filename = 'export_users_' . date('YmdHis') . '.xlsx';
+        $tmpFile = runtime_path() . '/tmp/' . $filename;
+        $dir = dirname($tmpFile);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save($tmpFile);
+
+        return response()->download($tmpFile, $filename);
+    }
+
+    /**
+     * 导出平台流水
+     * @Apidoc\Title("导出平台流水")
+     * @Apidoc\Url("/admin/export/transactions")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="type", type="string", required=false, desc="流水类型")
+     */
+    public function exportTransactions(Request $request): \Webman\Http\Response
+    {
+        $query = Transaction::orderBy('created_at', 'desc');
+        if ($type = $request->input('type')) {
+            $query->where('type', $type);
+        }
+
+        $transactions = $query->limit(10000)->get();
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('平台流水');
+
+        $headers = ['ID', '用户ID', '类型', '金额', '余额', '关联类型', '备注', '时间'];
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1677FF']],
+        ];
+
+        $col = 'A';
+        foreach ($headers as $h) {
+            $sheet->getCell($col . '1')->setValue($h);
+            $sheet->getStyle($col . '1')->applyFromArray($headerStyle);
+            $col++;
+        }
+
+        $row = 2;
+        foreach ($transactions as $t) {
+            $sheet->getCell('A' . $row)->setValue($this->encodeId($t->id));
+            $sheet->getCell('B' . $row)->setValue($this->encodeId($t->user_id));
+            $sheet->getCell('C' . $row)->setValue($t->type);
+            $sheet->getCell('D' . $row)->setValue($t->amount);
+            $sheet->getCell('E' . $row)->setValue($t->balance_after);
+            $sheet->getCell('F' . $row)->setValue($t->ref_type);
+            $sheet->getCell('G' . $row)->setValue($t->remark);
+            $sheet->getCell('H' . $row)->setValue($t->created_at);
+            $row++;
+        }
+
+        $filename = 'export_transactions_' . date('YmdHis') . '.xlsx';
+        $tmpFile = runtime_path() . '/tmp/' . $filename;
+        $dir = dirname($tmpFile);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        $writer = new Xlsx($spreadsheet);
+        $writer->save($tmpFile);
+
+        return response()->download($tmpFile, $filename);
+    }
+
+    /**
+     * 导出回执
+     * @Apidoc\Title("导出回执")
+     * @Apidoc\Url("/admin/export/receipt")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="order_id", type="string", required=true, desc="订单ID")
+     */
+    public function receipt(Request $request): Response
+    {
+        $validator = validator($request->all(), [
+            'order_id' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
+        }
+
+        $orderId = $this->decodeId($request->input('order_id'));
+        $order   = WithdrawOrder::with('user')->find($orderId);
+        if (!$order) {
+            return $this->fail('订单不存在', 404);
+        }
+
+        $html = $this->buildPdfHtml('receipt', '提现回执', [
+            'rows' => [
+                ['订单号', $this->encodeId($order->id)],
+                ['用户', $order->user->username ?? ''],
+                ['金额', $order->platform_amount],
+                ['状态', $order->status],
+                ['创建时间', $order->created_at],
+                ['审核时间', $order->reviewed_at],
+            ],
+            'columns' => ['字段', '值'],
+        ]);
+
+        $dompdf = new Dompdf();
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->loadHtml($html);
+        $dompdf->render();
+
+        $filename = 'receipt_' . date('YmdHis') . '.pdf';
+        $tmpFile  = runtime_path() . '/tmp/' . $filename;
 
         $dir = dirname($tmpFile);
         if (!is_dir($dir)) {
@@ -201,117 +387,6 @@ class ExportController extends BaseController
         $html .= '</body></html>';
 
         return $html;
-    }
-
-    /**
-     * 导出C端用户
-     * POST /admin/export/users
-     */
-    public function exportUsers(Request $request): \Webman\Http\Response
-    {
-        $query = User::orderBy('id', 'desc');
-        if ($request->has('status')) {
-            $query->where('status', (int) $request->input('status'));
-        }
-
-        $users = $query->limit(10000)->get();
-
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('用户列表');
-
-        $headers = ['ID', '用户名', '昵称', '国家', '状态', '最后登录', '注册时间'];
-        $headerStyle = [
-            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1677FF']],
-        ];
-
-        $col = 'A';
-        foreach ($headers as $h) {
-            $sheet->getCell($col . '1')->setValue($h);
-            $sheet->getStyle($col . '1')->applyFromArray($headerStyle);
-            $col++;
-        }
-
-        $row = 2;
-        foreach ($users as $u) {
-            $sheet->getCell('A' . $row)->setValue($this->encodeId($u->id));
-            $sheet->getCell('B' . $row)->setValue($u->username);
-            $sheet->getCell('C' . $row)->setValue($u->nickname);
-            $sheet->getCell('D' . $row)->setValue($u->country);
-            $sheet->getCell('E' . $row)->setValue($u->status == 1 ? '启用' : '禁用');
-            $sheet->getCell('F' . $row)->setValue($u->last_login_at);
-            $sheet->getCell('G' . $row)->setValue($u->created_at);
-            $row++;
-        }
-
-        $filename = 'export_users_' . date('YmdHis') . '.xlsx';
-        $tmpFile = runtime_path() . '/tmp/' . $filename;
-        $dir = dirname($tmpFile);
-        if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
-        }
-
-        $writer = new Xlsx($spreadsheet);
-        $writer->save($tmpFile);
-
-        return response()->download($tmpFile, $filename);
-    }
-
-    /**
-     * 导出平台流水
-     * POST /admin/export/transactions
-     */
-    public function exportTransactions(Request $request): \Webman\Http\Response
-    {
-        $query = Transaction::orderBy('created_at', 'desc');
-        if ($type = $request->input('type')) {
-            $query->where('type', $type);
-        }
-
-        $transactions = $query->limit(10000)->get();
-
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('平台流水');
-
-        $headers = ['ID', '用户ID', '类型', '金额', '余额', '关联类型', '备注', '时间'];
-        $headerStyle = [
-            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1677FF']],
-        ];
-
-        $col = 'A';
-        foreach ($headers as $h) {
-            $sheet->getCell($col . '1')->setValue($h);
-            $sheet->getStyle($col . '1')->applyFromArray($headerStyle);
-            $col++;
-        }
-
-        $row = 2;
-        foreach ($transactions as $t) {
-            $sheet->getCell('A' . $row)->setValue($this->encodeId($t->id));
-            $sheet->getCell('B' . $row)->setValue($this->encodeId($t->user_id));
-            $sheet->getCell('C' . $row)->setValue($t->type);
-            $sheet->getCell('D' . $row)->setValue($t->amount);
-            $sheet->getCell('E' . $row)->setValue($t->balance_after);
-            $sheet->getCell('F' . $row)->setValue($t->ref_type);
-            $sheet->getCell('G' . $row)->setValue($t->remark);
-            $sheet->getCell('H' . $row)->setValue($t->created_at);
-            $row++;
-        }
-
-        $filename = 'export_transactions_' . date('YmdHis') . '.xlsx';
-        $tmpFile = runtime_path() . '/tmp/' . $filename;
-        $dir = dirname($tmpFile);
-        if (!is_dir($dir)) {
-            mkdir($dir, 0755, true);
-        }
-
-        $writer = new Xlsx($spreadsheet);
-        $writer->save($tmpFile);
-
-        return response()->download($tmpFile, $filename);
     }
 
     private function fetchExportData(string $table, array $columns, array $conditions): array

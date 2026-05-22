@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\PlatformConfig;
 use common\model\Transaction;
 use common\model\UserWallet;
@@ -15,10 +16,20 @@ use support\Request;
 use support\Response;
 use support\Db;
 
+/**
+ * @Apidoc\Title("Withdraw")
+ * @Apidoc\Group("withdraw")
+ */
 class WithdrawController extends BaseController
 {
     /**
-     * POST /api/withdraw/apply
+     * @Apidoc\Title("Withdraw Apply")
+     * @Apidoc\Url("/api/withdraw/apply")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
+     * @Apidoc\Param(name:"platform_amount",type:"float",require:true,desc:"Withdrawal amount (min 0.0001)")
+     * @Apidoc\Param(name:"method",type:"string",require:true,desc:"Withdrawal method (paypal, bank, crypto)")
+     * @Apidoc\Param(name:"account_info",type:"string",require:true,desc:"Account information for withdrawal")
      */
     public function apply(Request $request): Response
     {
@@ -134,7 +145,12 @@ class WithdrawController extends BaseController
     }
 
     /**
-     * GET /api/withdraw/orders
+     * @Apidoc\Title("Withdraw Orders")
+     * @Apidoc\Url("/api/withdraw/orders")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
+     * @Apidoc\Query(name:"page",type:"integer",require:false,desc:"Page number")
+     * @Apidoc\Query(name:"per_page",type:"integer",require:false,desc:"Items per page")
      */
     public function orders(Request $request): Response
     {

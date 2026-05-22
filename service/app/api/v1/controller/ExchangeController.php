@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\ExchangeRecord;
 use common\model\Game;
 use common\model\GameCurrency;
@@ -17,10 +18,21 @@ use support\Request;
 use support\Response;
 use support\Db;
 
+/**
+ * @Apidoc\Title("Exchange")
+ * @Apidoc\Group("exchange")
+ */
 class ExchangeController extends BaseController
 {
     /**
-     * POST /api/exchange/quote
+     * @Apidoc\Title("Exchange Quote")
+     * @Apidoc\Url("/api/exchange/quote")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
+     * @Apidoc\Param(name:"game_id",type:"string",require:true,desc:"Game hashid")
+     * @Apidoc\Param(name:"currency_id",type:"string",require:true,desc:"Currency hashid")
+     * @Apidoc\Param(name:"direction",type:"string",require:true,desc:"Exchange direction (in: buy, out: sell)")
+     * @Apidoc\Param(name:"platform_amount",type:"float",require:true,desc:"Platform token amount (min 0.0001)")
      */
     public function quote(Request $request): Response
     {
@@ -84,7 +96,13 @@ class ExchangeController extends BaseController
     }
 
     /**
-     * POST /api/exchange/buy
+     * @Apidoc\Title("Exchange Buy")
+     * @Apidoc\Url("/api/exchange/buy")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
+     * @Apidoc\Param(name:"game_id",type:"string",require:true,desc:"Game hashid")
+     * @Apidoc\Param(name:"currency_id",type:"string",require:true,desc:"Currency hashid")
+     * @Apidoc\Param(name:"platform_amount",type:"float",require:true,desc:"Platform token amount (min 0.0001)")
      */
     public function buy(Request $request): Response
     {
@@ -92,7 +110,13 @@ class ExchangeController extends BaseController
     }
 
     /**
-     * POST /api/exchange/sell
+     * @Apidoc\Title("Exchange Sell")
+     * @Apidoc\Url("/api/exchange/sell")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
+     * @Apidoc\Param(name:"game_id",type:"string",require:true,desc:"Game hashid")
+     * @Apidoc\Param(name:"currency_id",type:"string",require:true,desc:"Currency hashid")
+     * @Apidoc\Param(name:"platform_amount",type:"float",require:true,desc:"Platform token amount (min 0.0001)")
      */
     public function sell(Request $request): Response
     {
@@ -100,7 +124,12 @@ class ExchangeController extends BaseController
     }
 
     /**
-     * GET /api/exchange/records
+     * @Apidoc\Title("Exchange Records")
+     * @Apidoc\Url("/api/exchange/records")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
+     * @Apidoc\Query(name:"page",type:"integer",require:false,desc:"Page number")
+     * @Apidoc\Query(name:"per_page",type:"integer",require:false,desc:"Items per page")
      */
     public function records(Request $request): Response
     {

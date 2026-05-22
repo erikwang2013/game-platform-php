@@ -7,15 +7,24 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\Announcement;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("公告管理")
+ * @Apidoc\Group("announcement")
+ */
 class AnnouncementController extends BaseController
 {
     /**
      * 公告列表（分页）
-     * GET /admin/announcement/list
+     * @Apidoc\Title("公告列表")
+     * @Apidoc\Url("/admin/announcement/list")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Param(name="page", type="int", required=false, desc="页码")
+     * @Apidoc\Param(name="limit", type="int", required=false, desc="每页数量")
      */
     public function list(Request $request): Response
     {
@@ -39,7 +48,16 @@ class AnnouncementController extends BaseController
 
     /**
      * 创建公告
-     * POST /admin/announcement/create
+     * @Apidoc\Title("创建公告")
+     * @Apidoc\Url("/admin/announcement/create")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="title", type="string", required=true, desc="标题")
+     * @Apidoc\Param(name="content", type="string", required=true, desc="内容")
+     * @Apidoc\Param(name="type", type="string", required=false, desc="类型")
+     * @Apidoc\Param(name="target_lang", type="string", required=false, desc="目标语言")
+     * @Apidoc\Param(name="status", type="int", required=false, desc="状态")
+     * @Apidoc\Param(name="start_at", type="string", required=false, desc="开始时间")
+     * @Apidoc\Param(name="end_at", type="string", required=false, desc="结束时间")
      */
     public function create(Request $request): Response
     {

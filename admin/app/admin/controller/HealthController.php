@@ -7,14 +7,25 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 use support\Db;
 use support\Redis;
 use Throwable;
 
+/**
+ * @Apidoc\Title("健康检查")
+ * @Apidoc\Group("health")
+ */
 class HealthController
 {
+    /**
+     * 健康检查
+     * @Apidoc\Title("健康检查")
+     * @Apidoc\Url("/health")
+     * @Apidoc\Method("GET")
+     */
     public function index(Request $request): Response
     {
         return json([

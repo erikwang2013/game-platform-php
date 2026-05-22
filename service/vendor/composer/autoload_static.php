@@ -48,8 +48,13 @@ class ComposerStaticInit3c128a111e7dc019e8a86e488022f98b
         array (
             'support\\' => 8,
         ),
+        'h' => 
+        array (
+            'hg\\apidoc\\' => 10,
+        ),
         'c' => 
         array (
+            'common\\service\\' => 15,
             'common\\model\\' => 13,
             'common\\middleware\\' => 18,
         ),
@@ -111,6 +116,7 @@ class ComposerStaticInit3c128a111e7dc019e8a86e488022f98b
             'Psr\\EventDispatcher\\' => 20,
             'Psr\\Container\\' => 14,
             'Psr\\Clock\\' => 10,
+            'Psr\\Cache\\' => 10,
             'PhpOption\\' => 10,
         ),
         'M' => 
@@ -174,6 +180,8 @@ class ComposerStaticInit3c128a111e7dc019e8a86e488022f98b
         array (
             'Dotenv\\' => 7,
             'Doctrine\\Inflector\\' => 19,
+            'Doctrine\\Common\\Lexer\\' => 22,
+            'Doctrine\\Common\\Annotations\\' => 28,
         ),
         'C' => 
         array (
@@ -196,6 +204,14 @@ class ComposerStaticInit3c128a111e7dc019e8a86e488022f98b
         array (
             0 => __DIR__ . '/..' . '/workerman/webman-framework/src/support',
         ),
+        'hg\\apidoc\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/hg/apidoc/src',
+        ),
+        'common\\service\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/../common/service',
+        ),
         'common\\model\\' => 
         array (
             0 => __DIR__ . '/../..' . '/../common/model',
@@ -214,8 +230,8 @@ class ComposerStaticInit3c128a111e7dc019e8a86e488022f98b
         ),
         'Workerman\\' => 
         array (
-            0 => __DIR__ . '/..' . '/workerman/coroutine/src',
-            1 => __DIR__ . '/..' . '/workerman/workerman/src',
+            0 => __DIR__ . '/..' . '/workerman/workerman/src',
+            1 => __DIR__ . '/..' . '/workerman/coroutine/src',
         ),
         'Webman\\' => 
         array (
@@ -369,6 +385,10 @@ class ComposerStaticInit3c128a111e7dc019e8a86e488022f98b
         'Psr\\Clock\\' => 
         array (
             0 => __DIR__ . '/..' . '/psr/clock/src',
+        ),
+        'Psr\\Cache\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/psr/cache/src',
         ),
         'PhpOption\\' => 
         array (
@@ -528,6 +548,14 @@ class ComposerStaticInit3c128a111e7dc019e8a86e488022f98b
         'Doctrine\\Inflector\\' => 
         array (
             0 => __DIR__ . '/..' . '/doctrine/inflector/src',
+        ),
+        'Doctrine\\Common\\Lexer\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/doctrine/lexer/src',
+        ),
+        'Doctrine\\Common\\Annotations\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/doctrine/annotations/lib/Doctrine/Common/Annotations',
         ),
         'CryptoSm\\' => 
         array (

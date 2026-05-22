@@ -7,15 +7,26 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\DepositOrder;
 use common\model\PlatformConfig;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("Deposit")
+ * @Apidoc\Group("wallet")
+ */
 class DepositController extends BaseController
 {
     /**
-     * POST /api/deposit/create
+     * @Apidoc\Title("Create Deposit Order")
+     * @Apidoc\Url("/api/deposit/create")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
+     * @Apidoc\Param(name:"amount",type:"float",require:true,desc:"Deposit amount (min 0.01)")
+     * @Apidoc\Param(name:"currency",type:"string",require:true,desc:"Currency (USD, CNY, EUR)")
+     * @Apidoc\Param(name:"payment_method_id",type:"string",require:true,desc:"Payment method hashid")
      */
     public function create(Request $request): Response
     {
@@ -61,7 +72,12 @@ class DepositController extends BaseController
     }
 
     /**
-     * GET /api/deposit/orders
+     * @Apidoc\Title("Deposit Orders")
+     * @Apidoc\Url("/api/deposit/orders")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
+     * @Apidoc\Query(name:"page",type:"integer",require:false,desc:"Page number")
+     * @Apidoc\Query(name:"per_page",type:"integer",require:false,desc:"Items per page")
      */
     public function orders(Request $request): Response
     {

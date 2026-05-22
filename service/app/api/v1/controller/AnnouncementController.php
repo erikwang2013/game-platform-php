@@ -7,15 +7,21 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\Announcement;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("Announcement")
+ * @Apidoc\Group("announcement")
+ */
 class AnnouncementController extends BaseController
 {
     /**
-     * 公告列表
-     * GET /api/announcement/list
+     * @Apidoc\Title("Announcement List")
+     * @Apidoc\Url("/api/announcement/list")
+     * @Apidoc\Method("GET")
      */
     public function list(Request $request): Response
     {
@@ -42,8 +48,10 @@ class AnnouncementController extends BaseController
     }
 
     /**
-     * 公告详情
-     * GET /api/announcement/detail/{hashid}
+     * @Apidoc\Title("Announcement Detail")
+     * @Apidoc\Url("/api/announcement/detail/{hashid}")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Param(name:"hashid",type:"string",require:true,desc:"Announcement hashid")
      */
     public function detail(Request $request, string $hashid): Response
     {

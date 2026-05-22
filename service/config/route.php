@@ -49,6 +49,28 @@ Route::group('/api', function () {
     Route::get('/game/{hashid}', v('GameController', 'detail'));
     Route::get('/announcement/list', v('AnnouncementController', 'list'));
     Route::get('/announcement/detail/{hashid}', v('AnnouncementController', 'detail'));
+
+    // OAuth
+    Route::get('/auth/oauth/{provider}', v('OAuthController', 'redirect'));
+    Route::post('/auth/oauth/{provider}/callback', v('OAuthController', 'callback'));
+
+    // 2FA (public verify)
+    Route::post('/2fa/verify', v('TwoFactorController', 'verify'));
+
+    // Leaderboard
+    Route::get('/leaderboard/list', v('LeaderboardController', 'list'));
+    Route::get('/leaderboard/{hashid}', v('LeaderboardController', 'ranking'));
+
+    // Search
+    Route::get('/search', v('SearchController', 'search'));
+
+    // Country
+    Route::get('/country/list', v('CountryController', 'list'));
+    Route::get('/country/{code}', v('CountryController', 'detail'));
+
+    // Payment
+    Route::post('/payment/callback', v('PaymentController', 'callback'));
+    Route::get('/payment/methods', v('PaymentController', 'methods'));
 })->middleware([
     app\middleware\ApiVersion::class,
 ]);
@@ -81,6 +103,35 @@ Route::group('/api', function () {
     // 用户
     Route::get('/user/profile', v('UserController', 'profile'));
     Route::put('/user/profile', v('UserController', 'updateProfile'));
+
+    // 2FA
+    Route::get('/user/2fa/status', v('TwoFactorController', 'status'));
+    Route::post('/user/2fa/setup', v('TwoFactorController', 'setup'));
+    Route::post('/user/2fa/enable', v('TwoFactorController', 'enable'));
+    Route::post('/user/2fa/disable', v('TwoFactorController', 'disable'));
+
+    // Game Play Log
+    Route::get('/game/play-logs', v('GamePlayLogController', 'list'));
+    Route::get('/game/play-log/{hashid}', v('GamePlayLogController', 'detail'));
+
+    // Identity
+    Route::get('/user/identity/status', v('IdentityController', 'status'));
+    Route::post('/user/identity/apply', v('IdentityController', 'apply'));
+
+    // Coupon
+    Route::get('/coupon/available', v('CouponController', 'available'));
+    Route::post('/coupon/claim', v('CouponController', 'claim'));
+    Route::get('/coupon/my', v('CouponController', 'my'));
+
+    // Notification
+    Route::get('/notification/list', v('NotificationController', 'list'));
+    Route::get('/notification/unread-count', v('NotificationController', 'unreadCount'));
+    Route::post('/notification/read', v('NotificationController', 'markRead'));
+
+    // Referral
+    Route::get('/referral/my-code', v('ReferralController', 'myCode'));
+    Route::get('/referral/stats', v('ReferralController', 'stats'));
+    Route::post('/referral/apply', v('ReferralController', 'apply'));
 })->middleware([
     app\middleware\ApiVersion::class,
     common\middleware\UserAuth::class,
