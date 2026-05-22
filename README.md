@@ -1,5 +1,7 @@
 # 全球游戏聚合平台 (Global Game Platform)
 
+[English](README_EN.md) | 中文
+
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
 全球通用、国际化的游戏聚合平台。用户注册后在平台充值兑换游戏币，用游戏币玩游戏、赚取游戏币，游戏币可转回钱包提现。后台提供完整的游戏管理、提现审核、用户管理和支付管理功能。支持多语言切换（英文/中文）。
