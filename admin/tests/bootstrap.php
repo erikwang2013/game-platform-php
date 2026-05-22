@@ -10,6 +10,11 @@ $worker = $worker ?? null;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+// 注册 support\Model 别名 (PHPUnit 环境下需手动注册)
+if (!class_exists('support\Model')) {
+    class_alias('Illuminate\Database\Eloquent\Model', 'support\Model');
+}
+
 // 加载 .env
 if (class_exists('Dotenv\Dotenv') && file_exists(__DIR__ . '/../.env')) {
     if (method_exists('Dotenv\Dotenv', 'createUnsafeMutable')) {
