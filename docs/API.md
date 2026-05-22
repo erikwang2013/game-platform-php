@@ -2,6 +2,8 @@
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
+在线交互式文档（支持在线调试）：`:8787/apidoc/`（管理后台25组79端点） | `:8788/apidoc/`（C端16组50端点）| 密码 `admin123`
+
 ## 1. 约定
 
 ### 1.1 基础 URL

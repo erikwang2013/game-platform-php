@@ -58,7 +58,7 @@ game-platform-php/
 │   └── config/                #   Configuration files
 │
 ├── common/                    # Shared layer (PSR-4 autoload)
-│   ├── model/                 #   Data models (14)
+│   ├── model/                 #   Data models (25)
 │   ├── middleware/            #   Shared middleware (UserAuth)
 │   └── service/               #   Shared services (TranslationService)
 │
@@ -193,6 +193,9 @@ Automatic language detection via `X-Language` header or `Accept-Language` header
 | [Architecture](docs/ARCHITECTURE.md) | System topology, module architecture, data flow |
 | [Feature Design](docs/FEATURE-DESIGN.md) | Business models, feature specs, workflow design |
 | [Features](docs/FEATURES.md) | Feature catalog, module descriptions, user journeys |
-| [API Reference](docs/API.md) | Complete API reference (20 user + 18 admin endpoints) |
+| [API Reference](docs/API.md) | Complete API reference (129 endpoints) |
+| [Live Docs](http://localhost:8787/apidoc/) | Admin hg/apidoc interactive docs (25 groups, 79 endpoints) |
+| [Live Docs](http://localhost:8788/apidoc/) | Service hg/apidoc interactive docs (16 groups, 50 endpoints) |
+| [Deployment](docs/DEPLOYMENT_EN.md) | Docker + Manual + Nginx + Monitoring |
 | [Design Spec](admin/docs/superpowers/specs/2026-05-22-game-platform-design.md) | Full design specification |
 | [Implementation Plan](admin/docs/superpowers/plans/2026-05-22-game-platform-plan.md) | Detailed implementation plan |

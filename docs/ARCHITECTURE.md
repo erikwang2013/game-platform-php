@@ -86,24 +86,14 @@ flowchart TB
 ```
 common/
 ├── model/
-│   ├── User.php              # C端用户（SoftDeletes, Encryptable）
-│   ├── UserWallet.php        # 平台币钱包（乐观锁 addBalance/deductBalance）
-│   ├── UserGameWallet.php    # 游戏币钱包
-│   ├── Game.php              # 游戏（Encryptable api_key/secret）
-│   ├── GameCurrency.php      # 游戏币种（汇率 + 抽成）
-│   ├── DepositOrder.php      # 充值订单
-│   ├── WithdrawOrder.php     # 提现订单
-│   ├── ExchangeRecord.php    # 兑换记录
-│   ├── Transaction.php       # 平台流水
-│   ├── PaymentMethod.php     # 支付方式
-│   ├── Announcement.php      # 公告
-│   ├── PlatformConfig.php    # 平台配置（类型化 get/set）
-│   ├── Language.php          # 语言定义
-│   └── Translation.php       # 翻译文本
+│   ├── (25个数据模型: User/UserWallet/Game/DepositOrder/WithdrawOrder...)
 ├── middleware/
 │   └── UserAuth.php          # C端 JWT 认证中间件
 └── service/
-    └── TranslationService.php # 国际化翻译服务（Redis缓存 + DB回退）
+    ├── TranslationService.php # 国际化翻译
+    ├── RiskService.php       # 风控引擎
+    ├── LeaderboardService.php # 排行榜计算
+    └── NotificationService.php # 通知发送
 ```
 
 **设计原则**：
@@ -246,12 +236,23 @@ flowchart TB
     ADM1 & ADM2 & SVC1 & SVC2 --> MON
 ```
 
-## 7. 端口分配
+## 7. API 文档
+
+使用 `hg/apidoc` 注解自动生成交互式 API 文档：
+
+| 文档 | 地址 | 控制器 | 分组 | 端点 |
+|------|------|--------|------|------|
+| 管理后台 | :8787/apidoc/ | 25 | 25 组 | 79 |
+| C端业务 | :8788/apidoc/ | 21 | 16 组 | 50 |
+
+密码：admin123
+
+## 8. 端口分配
 
 | 服务 | 端口 | 说明 |
 |------|------|------|
-| admin/ | 8787 | 管理后台 API |
-| service/ | 8788 | C端业务 API |
+| admin/ | 8787 | 管理后台 API + hg/apidoc 文档 |
+| service/ | 8788 | C端业务 API + hg/apidoc 文档 |
 | MySQL | 3306 | 主数据库 |
 | Redis | 6379 | 缓存/限流 |
 | Elasticsearch | 9200 | 全文检索 |
