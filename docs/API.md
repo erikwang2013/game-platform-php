@@ -545,7 +545,81 @@ status: success / failed
 响应: { 完整记录，含 session_id / game_amount_before / after 等 }
 ```
 
-### 2.11 语言
+### 2.12 排行榜
+
+#### GET /api/leaderboard/list — 排行榜列表
+
+```
+响应: {
+  "list": [
+    { "id": "...", "name": "全服累计收入榜", "type": "total", "metric": "earned" }
+  ]
+}
+```
+
+#### GET /api/leaderboard/{hashid} — 排行榜详情
+
+```
+响应: {
+  "id": "...",
+  "name": "全服累计收入榜",
+  "type": "total",
+  "rankings": [
+    { "rank": 1, "user_id": "...", "score": "50000.0000" }
+  ]
+}
+```
+
+### 2.13 优惠券
+
+#### GET /api/coupon/available — 可领优惠券
+
+```
+需认证: 是
+响应: { "list": [{ "id": "...", "name": "新人礼包", "type": "fixed", "value": "10.0000" }] }
+```
+
+#### POST /api/coupon/claim — 领取优惠券
+
+```
+需认证: 是
+请求: { "coupon_id": "hashid" }
+响应: { "coupon": { ... } }
+```
+
+#### GET /api/coupon/my — 我的优惠券
+
+```
+需认证: 是
+参数: ?status=unused
+响应: { "list": [{ "id": "...", "coupon": {...}, "status": "unused" }] }
+```
+
+### 2.14 国家配置
+
+#### GET /api/country/list — 国家列表
+
+```
+响应: {
+  "list": [
+    { "country_code": "US", "currency": "USD", "min_deposit": "1.0000" }
+  ]
+}
+```
+
+#### GET /api/country/{code} — 国家详情
+
+```
+响应: {
+  "country_code": "US",
+  "currency": "USD",
+  "payment_methods": ["stripe", "paypal", "crypto"],
+  "withdraw_methods": ["paypal", "bank", "crypto"],
+  "min_deposit": "1.0000"
+}
+```
+
+### 2.15 语言
 
 #### GET /api/language/list — 可用语言列表
 
@@ -1078,7 +1152,91 @@ action: approve / reject
 // 可部分更新
 ```
 
-### 3.10 数据导出
+### 3.11 游戏分类管理
+
+#### GET /admin/game/category/list
+
+```
+需认证: 是
+响应: { "list": [{ "id": "...", "name": "动作", "slug": "action", "sort": 1 }] }
+```
+
+#### POST /admin/game/category/create
+
+```
+需认证: 是
+请求: { "name": "新分类", "slug": "new-cat", "icon": "star", "sort": 10 }
+响应: { "id": "hashid" }
+```
+
+#### PUT /admin/game/category/{hashid} — 编辑分类
+
+#### DELETE /admin/game/category/{hashid} — 删除分类
+
+#### POST /admin/game/category/assign — 分配游戏
+
+```
+需认证: 是
+请求: { "category_id": "hashid", "game_ids": ["hash1", "hash2"] }
+```
+
+### 3.12 排行榜管理
+
+#### GET /admin/leaderboard/list — 排行榜列表
+
+```
+需认证: 是
+响应: { "list": [{ "id": "...", "name": "...", "type": "total", "metric": "earned" }] }
+```
+
+#### POST /admin/leaderboard/create — 创建排行榜
+
+```
+需认证: 是
+请求: { "name": "周收入榜", "type": "weekly", "metric": "earned", "game_id": "hashid(可选)" }
+```
+
+#### PUT /admin/leaderboard/{hashid} — 编辑排行榜
+
+#### DELETE /admin/leaderboard/{hashid} — 删除排行榜
+
+#### POST /admin/leaderboard/{hashid}/refresh — 刷新缓存
+
+### 3.13 优惠券管理
+
+#### GET /admin/coupon/list — 优惠券列表
+
+#### POST /admin/coupon/create — 创建优惠券
+
+```
+需认证: 是
+请求: { "name": "新人礼包", "type": "fixed", "value": "10.0000", "total_qty": 1000 }
+```
+
+#### PUT /admin/coupon/{hashid} — 编辑（未领取时）
+
+#### DELETE /admin/coupon/{hashid} — 删除
+
+#### GET /admin/coupon/{hashid}/stats — 领取统计
+
+```
+响应: { "total_qty": 1000, "used_qty": 234, "remaining": 766, "usage_rate": "23.40%" }
+```
+
+### 3.14 国家配置管理
+
+#### GET /admin/country/config/list — 国家配置列表
+
+#### POST /admin/country/config/create — 创建国家配置
+
+```
+需认证: 是
+请求: { "country_code": "JP", "currency": "JPY", "payment_methods": "[\"stripe\",\"paypal\"]", "min_deposit": "100.0000" }
+```
+
+#### PUT /admin/country/config/{hashid} — 编辑国家配置
+
+### 3.15 数据导出
 
 #### POST /admin/export/users — 导出C端用户
 

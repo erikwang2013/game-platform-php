@@ -12,7 +12,7 @@ A global, internationalized game aggregation platform. Users register, deposit f
 |---------|------|--------|
 | MVP | Core loop: Register → Deposit → Exchange → Play → Withdraw → Review | Complete |
 | Standard | Production-ready: global payments, 3rd-party game SDK, risk control, 3 frontends | Complete |
-| Full | Complete: i18n, leaderboards, coupons, full risk engine, all features | Planned |
+| Full | Complete: leaderboards, coupons, categories, country config, ES search | Complete |
 
 ## Tech Stack
 
