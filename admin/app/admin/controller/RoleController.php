@@ -7,14 +7,25 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use app\model\AdminRole;
 use support\Request;
 
+/**
+ * @Apidoc\Title("角色管理")
+ * @Apidoc\Group("role")
+ */
 class RoleController extends BaseController
 {
     /**
-     * 角色列表
-     * GET /admin/role
+     * @Apidoc\Title("角色列表")
+     * @Apidoc\Desc("分页获取角色列表，包含关联用户数量")
+     * @Apidoc\Url("/admin/role")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("page", type="int", require=false, desc="页码")
+     * @Apidoc\Param("per_page", type="int", require=false, desc="每页数量")
+     * @Apidoc\Returned("id", type="string", desc="角色ID(hashid编码)")
      */
     public function index(Request $request): Response
     {
@@ -38,8 +49,17 @@ class RoleController extends BaseController
     }
 
     /**
-     * 创建角色
-     * POST /admin/role
+     * @Apidoc\Title("创建角色")
+     * @Apidoc\Desc("创建一个新角色并分配权限")
+     * @Apidoc\Url("/admin/role")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("name", type="string", require=true, desc="角色名称")
+     * @Apidoc\Param("slug", type="string", require=true, desc="角色标识")
+     * @Apidoc\Param("description", type="string", require=false, desc="角色描述")
+     * @Apidoc\Param("status", type="int", require=false, desc="状态(0禁用,1启用)")
+     * @Apidoc\Param("permission_ids", type="array", require=false, desc="权限ID数组")
+     * @Apidoc\Returned("id", type="string", desc="角色ID(hashid编码)")
      */
     public function store(Request $request): Response
     {
@@ -69,8 +89,15 @@ class RoleController extends BaseController
     }
 
     /**
-     * 更新角色
-     * PUT /admin/role/{id}
+     * @Apidoc\Title("更新角色")
+     * @Apidoc\Desc("更新角色信息并同步权限")
+     * @Apidoc\Url("/admin/role/{hashid}")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("name", type="string", require=false, desc="角色名称")
+     * @Apidoc\Param("description", type="string", require=false, desc="角色描述")
+     * @Apidoc\Param("status", type="int", require=false, desc="状态(0禁用,1启用)")
+     * @Apidoc\Param("permission_ids", type="array", require=false, desc="权限ID数组")
      */
     public function update(Request $request, string $hashid): Response
     {
@@ -93,8 +120,11 @@ class RoleController extends BaseController
     }
 
     /**
-     * 删除角色（需密码二次确认）
-     * DELETE /admin/role/{id}
+     * @Apidoc\Title("删除角色")
+     * @Apidoc\Desc("删除指定角色，同时解除权限和用户关联(需密码二次确认)")
+     * @Apidoc\Url("/admin/role/{hashid}")
+     * @Apidoc\Method("DELETE")
+     * @Apidoc\Author("erik")
      */
     public function destroy(Request $request, string $hashid): Response
     {

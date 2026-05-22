@@ -7,16 +7,25 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\GameCategory;
 use support\Db;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("游戏分类")
+ * @Apidoc\Group("gamecategory")
+ */
 class GameCategoryController extends BaseController
 {
     /**
-     * 游戏分类列表
-     * GET /admin/game/category/list
+     * @Apidoc\Title("分类列表")
+     * @Apidoc\Desc("获取所有游戏分类列表")
+     * @Apidoc\Url("/admin/game/category/list")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Returned("id", type="string", desc="分类ID(hashid编码)")
      */
     public function list(Request $request): Response
     {
@@ -31,8 +40,16 @@ class GameCategoryController extends BaseController
     }
 
     /**
-     * 创建游戏分类
-     * POST /admin/game/category/create
+     * @Apidoc\Title("创建分类")
+     * @Apidoc\Desc("创建一个新的游戏分类")
+     * @Apidoc\Url("/admin/game/category/create")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("name", type="string", require=true, desc="分类名称")
+     * @Apidoc\Param("slug", type="string", require=true, desc="分类标识")
+     * @Apidoc\Param("icon", type="string", require=false, desc="分类图标")
+     * @Apidoc\Param("sort", type="int", require=false, desc="排序")
+     * @Apidoc\Returned("id", type="string", desc="分类ID(hashid编码)")
      */
     public function create(Request $request): Response
     {
@@ -60,8 +77,11 @@ class GameCategoryController extends BaseController
     }
 
     /**
-     * 更新游戏分类
-     * PUT /admin/game/category/{hashid}
+     * @Apidoc\Title("编辑分类")
+     * @Apidoc\Desc("更新游戏分类信息")
+     * @Apidoc\Url("/admin/game/category/{hashid}")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Author("erik")
      */
     public function update(Request $request, string $hashid): Response
     {
@@ -80,8 +100,11 @@ class GameCategoryController extends BaseController
     }
 
     /**
-     * 删除游戏分类
-     * DELETE /admin/game/category/{hashid}
+     * @Apidoc\Title("删除分类")
+     * @Apidoc\Desc("删除指定游戏分类并清理关联关系")
+     * @Apidoc\Url("/admin/game/category/{hashid}")
+     * @Apidoc\Method("DELETE")
+     * @Apidoc\Author("erik")
      */
     public function destroy(Request $request, string $hashid): Response
     {
@@ -99,8 +122,13 @@ class GameCategoryController extends BaseController
     }
 
     /**
-     * 为分类分配游戏
-     * POST /admin/game/category/assign
+     * @Apidoc\Title("分配游戏到分类")
+     * @Apidoc\Desc("将游戏批量分配到指定分类")
+     * @Apidoc\Url("/admin/game/category/assign")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("category_id", type="string", require=true, desc="分类ID(hashid编码)")
+     * @Apidoc\Param("game_ids", type="array", require=true, desc="游戏ID数组(hashid编码)")
      */
     public function assignGames(Request $request): Response
     {

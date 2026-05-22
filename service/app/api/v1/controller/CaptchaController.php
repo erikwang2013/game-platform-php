@@ -7,16 +7,21 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("验证码")
+ * @Apidoc\Group("captcha")
+ */
 class CaptchaController extends BaseController
 {
     /**
-     * POST /api/captcha/generate
-     *
-     * Generate a click-based captcha using poster-php.
-     * Returns base64-encoded PNG image with targets for the client to render.
+     * @Apidoc\Title("获取验证码")
+     * @Apidoc\Url("/api/captcha/generate")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="difficulty", type="string", require=false, desc="难度(easy/medium/hard)")
      */
     public function generate(Request $request): Response
     {

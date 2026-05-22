@@ -7,15 +7,28 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\User;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("平台用户")
+ * @Apidoc\Group("platform_user")
+ */
 class PlatformUserController extends BaseController
 {
     /**
-     * C端用户列表（分页）
-     * GET /admin/user/list
+     * @Apidoc\Title("平台用户列表")
+     * @Apidoc\Desc("分页获取平台(C端)用户列表，支持关键词搜索和状态筛选")
+     * @Apidoc\Url("/admin/platform/user/list")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("page", type="int", require=false, desc="页码")
+     * @Apidoc\Param("per_page", type="int", require=false, desc="每页数量")
+     * @Apidoc\Param("keyword", type="string", require=false, desc="搜索关键词(用户名/昵称)")
+     * @Apidoc\Param("status", type="int", require=false, desc="状态(0禁用,1启用)")
+     * @Apidoc\Returned("id", type="string", desc="用户ID(hashid编码)")
      */
     public function list(Request $request): Response
     {
@@ -55,8 +68,12 @@ class PlatformUserController extends BaseController
     }
 
     /**
-     * C端用户详情（含钱包）
-     * GET /admin/user/{hashid}
+     * @Apidoc\Title("用户详情")
+     * @Apidoc\Desc("获取指定平台用户的详细信息，包含钱包信息")
+     * @Apidoc\Url("/admin/platform/user/{hashid}")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Returned("id", type="string", desc="用户ID(hashid编码)")
      */
     public function detail(Request $request, string $hashid): Response
     {
@@ -79,8 +96,13 @@ class PlatformUserController extends BaseController
     }
 
     /**
-     * 更新C端用户
-     * PUT /admin/user/{hashid}
+     * @Apidoc\Title("编辑/封禁用户")
+     * @Apidoc\Desc("更新平台用户的状态或昵称")
+     * @Apidoc\Url("/admin/platform/user/{hashid}")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("status", type="int", require=false, desc="用户状态(0禁用,1启用)")
+     * @Apidoc\Param("nickname", type="string", require=false, desc="用户昵称")
      */
     public function update(Request $request, string $hashid): Response
     {

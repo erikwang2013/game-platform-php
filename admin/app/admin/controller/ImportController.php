@@ -7,13 +7,26 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use app\model\AdminUser;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("数据导入")
+ * @Apidoc\Group("import")
+ */
 class ImportController extends BaseController
 {
+    /**
+     * @Apidoc\Title("导入用户")
+     * @Apidoc\Desc("通过Excel文件批量导入管理员用户")
+     * @Apidoc\Url("/admin/import/users")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("file", type="file", require=true, desc="Excel文件(.xlsx/.xls)")
+     */
     public function users(Request $request): Response
     {
         $file = $request->file('file');

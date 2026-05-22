@@ -8,15 +8,21 @@ declare(strict_types=1);
 namespace app\api\v1\controller;
 
 use common\model\UserIdentity;
+use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("身份认证")
+ * @Apidoc\Group("user")
+ */
 class IdentityController extends BaseController
 {
     /**
-     * GET /api/user/identity/status
-     *
-     * Return the current user's KYC identity verification status.
+     * @Apidoc\Title("认证状态")
+     * @Apidoc\Url("/api/user/identity/status")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Auth(true)
      */
     public function status(Request $request): Response
     {
@@ -39,9 +45,15 @@ class IdentityController extends BaseController
     }
 
     /**
-     * POST /api/user/identity/apply
-     *
-     * Submit or re-submit KYC identity verification.
+     * @Apidoc\Title("提交认证")
+     * @Apidoc\Url("/api/user/identity/apply")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Auth(true)
+     * @Apidoc\Param(name="real_name", type="string", require=true, desc="真实姓名")
+     * @Apidoc\Param(name="id_type", type="string", require=true, desc="证件类型(id_card/passport/driver_license)")
+     * @Apidoc\Param(name="id_number", type="string", require=true, desc="证件号码")
+     * @Apidoc\Param(name="id_front_photo", type="string", require=true, desc="证件正面照")
+     * @Apidoc\Param(name="selfie_photo", type="string", require=true, desc="自拍照")
      */
     public function apply(Request $request): Response
     {

@@ -7,16 +7,25 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\Coupon;
 use common\model\UserCoupon;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("优惠券")
+ * @Apidoc\Group("coupon")
+ */
 class CouponController extends BaseController
 {
     /**
-     * 优惠券列表
-     * GET /admin/coupon/list
+     * @Apidoc\Title("优惠券列表")
+     * @Apidoc\Desc("分页获取优惠券列表，支持状态、类型和游戏筛选")
+     * @Apidoc\Url("/admin/coupon/list")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Returned("id", type="string", desc="优惠券ID(hashid编码)")
      */
     public function list(Request $request): Response
     {
@@ -63,8 +72,20 @@ class CouponController extends BaseController
     }
 
     /**
-     * 创建优惠券
-     * POST /admin/coupon/create
+     * @Apidoc\Title("创建优惠券")
+     * @Apidoc\Desc("创建一个新的优惠券")
+     * @Apidoc\Url("/admin/coupon/create")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("name", type="string", require=true, desc="优惠券名称")
+     * @Apidoc\Param("type", type="string", require=true, desc="优惠券类型(fixed固定金额,rate折扣率)")
+     * @Apidoc\Param("value", type="float", require=true, desc="优惠券面值/折扣率")
+     * @Apidoc\Param("min_amount", type="float", require=false, desc="最低消费金额")
+     * @Apidoc\Param("max_discount", type="float", require=false, desc="最高折扣金额(rate类型有效)")
+     * @Apidoc\Param("game_id", type="string", require=false, desc="适用游戏ID(hashid编码)")
+     * @Apidoc\Param("total_qty", type="int", require=false, desc="总发放数量")
+     * @Apidoc\Param("user_limit", type="int", require=false, desc="每人限领数量")
+     * @Apidoc\Returned("id", type="string", desc="优惠券ID(hashid编码)")
      */
     public function create(Request $request): Response
     {
@@ -104,8 +125,11 @@ class CouponController extends BaseController
     }
 
     /**
-     * 更新优惠券
-     * PUT /admin/coupon/{hashid}
+     * @Apidoc\Title("编辑优惠券")
+     * @Apidoc\Desc("更新优惠券信息")
+     * @Apidoc\Url("/admin/coupon/{hashid}")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Author("erik")
      */
     public function update(Request $request, string $hashid): Response
     {
@@ -146,8 +170,11 @@ class CouponController extends BaseController
     }
 
     /**
-     * 删除优惠券
-     * DELETE /admin/coupon/{hashid}
+     * @Apidoc\Title("删除优惠券")
+     * @Apidoc\Desc("删除指定优惠券及其所有用户领取记录")
+     * @Apidoc\Url("/admin/coupon/{hashid}")
+     * @Apidoc\Method("DELETE")
+     * @Apidoc\Author("erik")
      */
     public function destroy(Request $request, string $hashid): Response
     {
@@ -166,8 +193,11 @@ class CouponController extends BaseController
     }
 
     /**
-     * 优惠券统计
-     * GET /admin/coupon/{hashid}/stats
+     * @Apidoc\Title("优惠券统计")
+     * @Apidoc\Desc("获取指定优惠券的使用统计信息")
+     * @Apidoc\Url("/admin/coupon/{hashid}/stats")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Author("erik")
      */
     public function stats(Request $request, string $hashid): Response
     {

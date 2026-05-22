@@ -10,14 +10,26 @@ namespace app\api\v1\controller;
 use common\model\Game;
 use common\model\GamePlayLog;
 use common\model\UserWallet;
+use hg\apidoc\annotation as Apidoc;
 use support\Db;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("游戏管理")
+ * @Apidoc\Group("game")
+ */
 class GameController extends BaseController
 {
     /**
-     * GET /api/game/list
+     * @Apidoc\Title("游戏列表")
+     * @Apidoc\Url("/api/game/list")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Param(name="page", type="int", require=false, desc="页码")
+     * @Apidoc\Param(name="per_page", type="int", require=false, desc="每页条数")
+     * @Apidoc\Param(name="keyword", type="string", require=false, desc="搜索关键词")
+     * @Apidoc\Param(name="type", type="string", require=false, desc="游戏类型")
+     * @Apidoc\Param(name="category_id", type="string", require=false, desc="分类ID")
      */
     public function list(Request $request): Response
     {
@@ -94,7 +106,10 @@ class GameController extends BaseController
     }
 
     /**
-     * GET /api/game/{hashid}
+     * @Apidoc\Title("游戏详情")
+     * @Apidoc\Url("/api/game/{hashid}")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Param(name="hashid", type="string", require=true, desc="游戏hashid", in="path")
      */
     public function detail(Request $request, string $hashid): Response
     {
@@ -131,7 +146,11 @@ class GameController extends BaseController
     }
 
     /**
-     * POST /api/game/launch
+     * @Apidoc\Title("启动游戏")
+     * @Apidoc\Url("/api/game/launch")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Auth(true)
+     * @Apidoc\Param(name="game_id", type="string", require=true, desc="游戏ID")
      */
     public function launch(Request $request): Response
     {
@@ -183,8 +202,10 @@ class GameController extends BaseController
     }
 
     /**
-     * 搜索建议
-     * GET /api/game/suggest?q=keyword
+     * @Apidoc\Title("搜索建议")
+     * @Apidoc\Url("/api/game/suggest")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Param(name="q", type="string", require=true, desc="搜索关键词")
      */
     public function suggest(Request $request): \support\Response
     {

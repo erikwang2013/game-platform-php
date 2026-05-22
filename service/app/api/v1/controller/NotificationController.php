@@ -8,16 +8,21 @@ declare(strict_types=1);
 namespace app\api\v1\controller;
 
 use common\model\Notification;
+use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("通知管理")
+ * @Apidoc\Group("notification")
+ */
 class NotificationController extends BaseController
 {
     /**
-     * GET /api/notification/list
-     *
-     * Paginate the current user's notifications, newest first.
-     * Optional query param: is_read (0 or 1) to filter by read status.
+     * @Apidoc\Title("通知列表")
+     * @Apidoc\Url("/api/notification/list")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Auth(true)
      */
     public function list(Request $request): Response
     {
@@ -59,9 +64,10 @@ class NotificationController extends BaseController
     }
 
     /**
-     * GET /api/notification/unread-count
-     *
-     * Return the number of unread notifications for the current user.
+     * @Apidoc\Title("未读数量")
+     * @Apidoc\Url("/api/notification/unread-count")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Auth(true)
      */
     public function unreadCount(Request $request): Response
     {
@@ -73,10 +79,11 @@ class NotificationController extends BaseController
     }
 
     /**
-     * POST /api/notification/read
-     *
-     * Mark one or all notifications as read.
-     * Body: id (hashid, optional) — if omitted, marks all as read.
+     * @Apidoc\Title("标记已读")
+     * @Apidoc\Url("/api/notification/read")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Auth(true)
+     * @Apidoc\Param(name="id", type="string", require=false, desc="通知ID(不传则全部已读)")
      */
     public function markRead(Request $request): Response
     {

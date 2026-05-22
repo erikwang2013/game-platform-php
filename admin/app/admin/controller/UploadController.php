@@ -7,14 +7,27 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("文件上传")
+ * @Apidoc\Group("upload")
+ */
 class UploadController extends BaseController
 {
     private array $allowExts = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'xlsx', 'docx'];
     private int $maxSize = 10 * 1024 * 1024;
 
+    /**
+     * @Apidoc\Title("文件上传")
+     * @Apidoc\Desc("上传文件到服务器，支持图片、文档等格式")
+     * @Apidoc\Url("/admin/upload")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("file", type="file", require=true, desc="上传文件(jpg/png/gif/pdf/xlsx/docx, 最大10MB)")
+     */
     public function upload(Request $request): Response
     {
         $file = $request->file('file');

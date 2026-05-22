@@ -13,16 +13,21 @@ use common\model\ReferralReward;
 use common\model\Transaction;
 use common\model\UserWallet;
 use common\service\NotificationService;
+use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("推荐管理")
+ * @Apidoc\Group("referral")
+ */
 class ReferralController extends BaseController
 {
     /**
-     * GET /api/referral/my-code
-     *
-     * Return the current user's referral code.
-     * If none exists, generate a new 8-character alphanumeric code.
+     * @Apidoc\Title("我的推荐码")
+     * @Apidoc\Url("/api/referral/my-code")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Auth(true)
      */
     public function myCode(Request $request): Response
     {
@@ -49,9 +54,10 @@ class ReferralController extends BaseController
     }
 
     /**
-     * GET /api/referral/stats
-     *
-     * Return referral statistics for the current user.
+     * @Apidoc\Title("推荐统计")
+     * @Apidoc\Url("/api/referral/stats")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Auth(true)
      */
     public function stats(Request $request): Response
     {
@@ -76,10 +82,11 @@ class ReferralController extends BaseController
     }
 
     /**
-     * POST /api/referral/apply
-     *
-     * Apply a referral code. Grants signup bonus to both parties.
-     * Body: code (required) — 8-character referral code.
+     * @Apidoc\Title("使用推荐码")
+     * @Apidoc\Url("/api/referral/apply")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Auth(true)
+     * @Apidoc\Param(name="code", type="string", require=true, desc="推荐码")
      */
     public function apply(Request $request): Response
     {

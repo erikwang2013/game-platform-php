@@ -7,12 +7,26 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\Game;
 use common\model\User;
 use support\Request;
 
+/**
+ * @Apidoc\Title("搜索")
+ * @Apidoc\Group("search")
+ */
 class SearchController extends BaseController
 {
+    /**
+     * @Apidoc\Title("全局搜索")
+     * @Apidoc\Desc("全局搜索游戏或用户，支持ES全文检索和数据库LIKE回退")
+     * @Apidoc\Url("/admin/search")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("q", type="string", require=true, desc="搜索关键词")
+     * @Apidoc\Param("type", type="string", require=false, desc="搜索类型(game,user)")
+     */
     public function search(Request $request): \support\Response
     {
         $q = $request->input('q', '');

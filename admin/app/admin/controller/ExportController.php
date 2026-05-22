@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -24,11 +25,22 @@ use common\model\WithdrawOrder;
 use common\model\Transaction;
 use support\Request;
 
+/**
+ * @Apidoc\Title("数据导出")
+ * @Apidoc\Group("export")
+ */
 class ExportController extends BaseController
 {
     /**
-     * Excel 导出
-     * POST /admin/export/excel
+     * @Apidoc\Title("Excel导出")
+     * @Apidoc\Desc("将指定数据表导出为Excel文件")
+     * @Apidoc\Url("/admin/export/excel")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("table", type="string", require=true, desc="数据表名(admin_user,operation_log,admin_role,system_config)")
+     * @Apidoc\Param("columns", type="array", require=false, desc="导出列名数组")
+     * @Apidoc\Param("conditions", type="object", require=false, desc="查询条件")
+     * @Apidoc\Param("title", type="string", require=false, desc="导出文件标题")
      */
     public function excel(Request $request): Response
     {
@@ -117,8 +129,14 @@ class ExportController extends BaseController
     }
 
     /**
-     * PDF 导出
-     * POST /admin/export/pdf
+     * @Apidoc\Title("PDF导出")
+     * @Apidoc\Desc("将数据导出为PDF文件")
+     * @Apidoc\Url("/admin/export/pdf")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("type", type="string", require=true, desc="导出类型(table,dashboard)")
+     * @Apidoc\Param("title", type="string", require=false, desc="PDF标题")
+     * @Apidoc\Param("data", type="object", require=false, desc="导出数据")
      */
     public function pdf(Request $request): Response
     {
@@ -206,8 +224,12 @@ class ExportController extends BaseController
     }
 
     /**
-     * 导出C端用户
-     * POST /admin/export/users
+     * @Apidoc\Title("导出用户Excel")
+     * @Apidoc\Desc("导出C端平台用户数据到Excel文件")
+     * @Apidoc\Url("/admin/export/users")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("status", type="int", require=false, desc="用户状态(0禁用,1启用)")
      */
     public function exportUsers(Request $request): \Webman\Http\Response
     {
@@ -261,8 +283,12 @@ class ExportController extends BaseController
     }
 
     /**
-     * 导出平台流水
-     * POST /admin/export/transactions
+     * @Apidoc\Title("导出流水Excel")
+     * @Apidoc\Desc("导出平台交易流水数据到Excel文件")
+     * @Apidoc\Url("/admin/export/transactions")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("type", type="string", require=false, desc="流水类型")
      */
     public function exportTransactions(Request $request): \Webman\Http\Response
     {
@@ -317,9 +343,13 @@ class ExportController extends BaseController
     }
 
     /**
-     * 生成收据 PDF
-     * POST /admin/export/receipt
-     * Body: { type: "deposit"|"withdraw", order_id: "hashid" }
+     * @Apidoc\Title("导出收据PDF")
+     * @Apidoc\Desc("生成充值或提现的电子凭证PDF")
+     * @Apidoc\Url("/admin/export/receipt")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("type", type="string", require=true, desc="订单类型(deposit充值,withdraw提现)")
+     * @Apidoc\Param("order_id", type="string", require=true, desc="订单ID(hashid编码)")
      */
     public function receipt(Request $request)
     {

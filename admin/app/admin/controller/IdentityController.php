@@ -7,17 +7,28 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\UserIdentity;
 use common\service\NotificationService;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("KYC审核")
+ * @Apidoc\Group("identity")
+ */
 class IdentityController extends BaseController
 {
     /**
-     * GET /admin/identity/list
-     *
-     * Paginated list of KYC identity verification records.
+     * @Apidoc\Title("KYC列表")
+     * @Apidoc\Desc("分页获取KYC身份认证记录列表")
+     * @Apidoc\Url("/admin/identity/list")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("page", type="int", require=false, desc="页码")
+     * @Apidoc\Param("per_page", type="int", require=false, desc="每页数量")
+     * @Apidoc\Param("status", type="string", require=false, desc="审核状态(pending,approved,rejected)")
+     * @Apidoc\Returned("id", type="string", desc="记录ID(hashid编码)")
      */
     public function list(Request $request): Response
     {
@@ -57,9 +68,14 @@ class IdentityController extends BaseController
     }
 
     /**
-     * PUT /admin/identity/review
-     *
-     * Approve or reject a KYC identity verification submission.
+     * @Apidoc\Title("审核KYC")
+     * @Apidoc\Desc("审批或拒绝KYC身份认证申请")
+     * @Apidoc\Url("/admin/identity/review")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("id", type="string", require=true, desc="认证记录ID(hashid编码)")
+     * @Apidoc\Param("action", type="string", require=true, desc="操作(approve通过,reject拒绝)")
+     * @Apidoc\Param("note", type="string", require=false, desc="审核备注")
      */
     public function review(Request $request): Response
     {

@@ -7,15 +7,23 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
 /**
- * OpenAPI 3.0 文档端点
- * GET /api/docs — 返回 JSON 格式 API 规范
+ * @Apidoc\Title("API文档")
+ * @Apidoc\Group("docs")
  */
 class DocsController
 {
+    /**
+     * @Apidoc\Title("API文档")
+     * @Apidoc\Desc("返回OpenAPI 3.0格式的API规范文档")
+     * @Apidoc\Url("/api/docs")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Author("erik")
+     */
     public function index(Request $request): Response
     {
         return json($this->buildSpec());

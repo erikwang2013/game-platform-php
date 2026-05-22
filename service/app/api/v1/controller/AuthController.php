@@ -9,13 +9,23 @@ namespace app\api\v1\controller;
 
 use common\model\User;
 use common\model\UserWallet;
+use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("用户认证")
+ * @Apidoc\Group("auth")
+ */
 class AuthController extends BaseController
 {
     /**
-     * POST /api/auth/register
+     * @Apidoc\Title("用户注册")
+     * @Apidoc\Url("/api/auth/register")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="username", type="string", require=true, desc="用户名")
+     * @Apidoc\Param(name="password", type="string", require=true, desc="密码")
+     * @Apidoc\Param(name="email", type="string", require=false, desc="邮箱")
      */
     public function register(Request $request): Response
     {
@@ -82,7 +92,11 @@ class AuthController extends BaseController
     }
 
     /**
-     * POST /api/auth/login
+     * @Apidoc\Title("用户登录")
+     * @Apidoc\Url("/api/auth/login")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="username", type="string", require=true, desc="用户名")
+     * @Apidoc\Param(name="password", type="string", require=true, desc="密码")
      */
     public function login(Request $request): Response
     {
@@ -131,7 +145,9 @@ class AuthController extends BaseController
     }
 
     /**
-     * POST /api/auth/refresh
+     * @Apidoc\Title("刷新Token")
+     * @Apidoc\Url("/api/auth/refresh")
+     * @Apidoc\Method("POST")
      */
     public function refresh(Request $request): Response
     {

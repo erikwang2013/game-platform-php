@@ -9,13 +9,22 @@ namespace app\api\v1\controller;
 
 use common\model\Game;
 use common\model\User;
+use hg\apidoc\annotation as Apidoc;
 use support\Request;
 
+/**
+ * @Apidoc\Title("全局搜索")
+ * @Apidoc\Group("search")
+ */
 class SearchController extends BaseController
 {
     /**
-     * 全局搜索
-     * GET /api/search?q=keyword&type=game|user&page=1&per_page=20
+     * @Apidoc\Title("全局搜索")
+     * @Apidoc\Url("/api/search")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Param(name="q", type="string", require=true, desc="搜索关键词")
+     * @Apidoc\Param(name="type", type="string", require=false, desc="搜索类型(game/user)")
+     * @Apidoc\Param(name="page", type="int", require=false, desc="页码")
      */
     public function search(Request $request): \support\Response
     {

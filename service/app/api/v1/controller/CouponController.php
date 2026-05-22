@@ -9,15 +9,22 @@ namespace app\api\v1\controller;
 
 use common\model\Coupon;
 use common\model\UserCoupon;
+use hg\apidoc\annotation as Apidoc;
 use support\Db;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("优惠券")
+ * @Apidoc\Group("coupon")
+ */
 class CouponController extends BaseController
 {
     /**
-     * 可领取优惠券列表
-     * GET /api/coupon/available
+     * @Apidoc\Title("可领优惠券")
+     * @Apidoc\Url("/api/coupon/available")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Auth(true)
      */
     public function available(Request $request): Response
     {
@@ -66,8 +73,11 @@ class CouponController extends BaseController
     }
 
     /**
-     * 领取优惠券
-     * POST /api/coupon/claim
+     * @Apidoc\Title("领取优惠券")
+     * @Apidoc\Url("/api/coupon/claim")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Auth(true)
+     * @Apidoc\Param(name="coupon_id", type="string", require=true, desc="优惠券ID")
      */
     public function claim(Request $request): Response
     {
@@ -146,8 +156,10 @@ class CouponController extends BaseController
     }
 
     /**
-     * 我的优惠券
-     * GET /api/coupon/my
+     * @Apidoc\Title("我的优惠券")
+     * @Apidoc\Url("/api/coupon/my")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Auth(true)
      */
     public function my(Request $request): Response
     {

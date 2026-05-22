@@ -7,14 +7,22 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use app\model\AdminPermission;
 use support\Request;
 
+/**
+ * @Apidoc\Title("权限管理")
+ * @Apidoc\Group("permission")
+ */
 class PermissionController extends BaseController
 {
     /**
-     * 权限树
-     * GET /admin/permission
+     * @Apidoc\Title("权限树")
+     * @Apidoc\Desc("获取完整的权限树结构")
+     * @Apidoc\Url("/admin/permission")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Author("erik")
      */
     public function index(Request $request): Response
     {
@@ -28,8 +36,19 @@ class PermissionController extends BaseController
     }
 
     /**
-     * 创建权限
-     * POST /admin/permission
+     * @Apidoc\Title("创建权限")
+     * @Apidoc\Desc("创建一个新的权限节点")
+     * @Apidoc\Url("/admin/permission")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("name", type="string", require=true, desc="权限名称")
+     * @Apidoc\Param("slug", type="string", require=true, desc="权限标识")
+     * @Apidoc\Param("type", type="int", require=true, desc="权限类型(1菜单,2按钮,3接口)")
+     * @Apidoc\Param("parent_id", type="int", require=false, desc="父权限ID")
+     * @Apidoc\Param("icon", type="string", require=false, desc="图标")
+     * @Apidoc\Param("path", type="string", require=false, desc="前端路由路径")
+     * @Apidoc\Param("sort", type="int", require=false, desc="排序")
+     * @Apidoc\Returned("id", type="string", desc="权限ID(hashid编码)")
      */
     public function store(Request $request): Response
     {
@@ -58,8 +77,15 @@ class PermissionController extends BaseController
     }
 
     /**
-     * 更新权限
-     * PUT /admin/permission/{id}
+     * @Apidoc\Title("更新权限")
+     * @Apidoc\Desc("更新指定权限节点的信息")
+     * @Apidoc\Url("/admin/permission/{hashid}")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("name", type="string", require=false, desc="权限名称")
+     * @Apidoc\Param("icon", type="string", require=false, desc="图标")
+     * @Apidoc\Param("path", type="string", require=false, desc="前端路由路径")
+     * @Apidoc\Param("sort", type="int", require=false, desc="排序")
      */
     public function update(Request $request, string $hashid): Response
     {
@@ -79,8 +105,11 @@ class PermissionController extends BaseController
     }
 
     /**
-     * 删除权限（需密码二次确认）
-     * DELETE /admin/permission/{id}
+     * @Apidoc\Title("删除权限")
+     * @Apidoc\Desc("删除指定权限节点及其子权限(需密码二次确认)")
+     * @Apidoc\Url("/admin/permission/{hashid}")
+     * @Apidoc\Method("DELETE")
+     * @Apidoc\Author("erik")
      */
     public function destroy(Request $request, string $hashid): Response
     {

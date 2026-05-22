@@ -16,13 +16,21 @@ use common\model\UserOauth;
 use common\model\UserSession;
 use common\model\UserWallet;
 use common\model\WithdrawOrder;
+use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("用户管理")
+ * @Apidoc\Group("user")
+ */
 class UserController extends BaseController
 {
     /**
-     * GET /api/user/profile
+     * @Apidoc\Title("个人信息")
+     * @Apidoc\Url("/api/user/profile")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Auth(true)
      */
     public function profile(Request $request): Response
     {
@@ -48,7 +56,13 @@ class UserController extends BaseController
     }
 
     /**
-     * PUT /api/user/profile
+     * @Apidoc\Title("编辑资料")
+     * @Apidoc\Url("/api/user/profile")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Auth(true)
+     * @Apidoc\Param(name="nickname", type="string", require=false, desc="昵称")
+     * @Apidoc\Param(name="avatar", type="string", require=false, desc="头像")
+     * @Apidoc\Param(name="language", type="string", require=false, desc="语言")
      */
     public function updateProfile(Request $request): Response
     {
@@ -94,8 +108,10 @@ class UserController extends BaseController
     }
 
     /**
-     * 导出个人数据 (GDPR)
-     * GET /api/user/export-data
+     * @Apidoc\Title("导出个人数据(GDPR)")
+     * @Apidoc\Url("/api/user/export-data")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Auth(true)
      */
     public function exportData(Request $request): Response
     {
@@ -152,8 +168,12 @@ class UserController extends BaseController
     }
 
     /**
-     * 注销账号 (GDPR)
-     * POST /api/user/delete-account
+     * @Apidoc\Title("注销账号(GDPR)")
+     * @Apidoc\Url("/api/user/delete-account")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Auth(true)
+     * @Apidoc\Param(name="password", type="string", require=true, desc="密码")
+     * @Apidoc\Param(name="confirm", type="string", require=true, desc="确认输入yes")
      */
     public function deleteAccount(Request $request): Response
     {
@@ -211,8 +231,10 @@ class UserController extends BaseController
     }
 
     /**
-     * 隐私设置
-     * PUT /api/user/privacy
+     * @Apidoc\Title("隐私设置")
+     * @Apidoc\Url("/api/user/privacy")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Auth(true)
      */
     public function updatePrivacy(Request $request): Response
     {

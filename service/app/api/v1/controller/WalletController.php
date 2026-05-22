@@ -9,13 +9,21 @@ namespace app\api\v1\controller;
 
 use common\model\Transaction;
 use common\model\UserWallet;
+use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("钱包管理")
+ * @Apidoc\Group("wallet")
+ */
 class WalletController extends BaseController
 {
     /**
-     * GET /api/wallet/info
+     * @Apidoc\Title("钱包信息")
+     * @Apidoc\Url("/api/wallet/info")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Auth(true)
      */
     public function info(Request $request): Response
     {
@@ -36,7 +44,13 @@ class WalletController extends BaseController
     }
 
     /**
-     * GET /api/wallet/transactions
+     * @Apidoc\Title("流水记录")
+     * @Apidoc\Url("/api/wallet/transactions")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Auth(true)
+     * @Apidoc\Param(name="page", type="int", require=false, desc="页码")
+     * @Apidoc\Param(name="per_page", type="int", require=false, desc="每页条数")
+     * @Apidoc\Param(name="type", type="string", require=false, desc="交易类型")
      */
     public function transactions(Request $request): Response
     {

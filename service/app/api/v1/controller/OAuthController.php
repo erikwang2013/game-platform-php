@@ -10,16 +10,21 @@ namespace app\api\v1\controller;
 use common\model\User;
 use common\model\UserOauth;
 use common\model\UserWallet;
+use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("OAuth认证")
+ * @Apidoc\Group("auth")
+ */
 class OAuthController extends BaseController
 {
     /**
-     * GET /api/auth/oauth/{provider}
-     *
-     * Build and return the OAuth authorization URL for the given provider.
-     * MVP: returns a redirect URL; the actual token exchange happens in callback.
+     * @Apidoc\Title("OAuth授权跳转")
+     * @Apidoc\Url("/api/auth/oauth/{provider}")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Param(name="provider", type="string", require=true, desc="第三方平台(google/facebook/apple)", in="path")
      */
     public function redirect(Request $request, string $provider): Response
     {
@@ -53,11 +58,12 @@ class OAuthController extends BaseController
     }
 
     /**
-     * POST /api/auth/oauth/{provider}/callback
-     *
-     * Exchange the authorization code for user info and authenticate.
-     * MVP: accepts the code and extracts mock user data.
-     * Production: exchange code for access_token, then fetch user info.
+     * @Apidoc\Title("OAuth回调")
+     * @Apidoc\Url("/api/auth/oauth/{provider}/callback")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="provider", type="string", require=true, desc="第三方平台(google/facebook/apple)", in="path")
+     * @Apidoc\Param(name="code", type="string", require=true, desc="授权码")
+     * @Apidoc\Param(name="state", type="string", require=true, desc="状态码")
      */
     public function callback(Request $request, string $provider): Response
     {

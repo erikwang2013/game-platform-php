@@ -9,15 +9,21 @@ namespace app\api\v1\controller;
 
 use common\model\User;
 use common\model\User2FA;
+use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("双因素认证")
+ * @Apidoc\Group("auth")
+ */
 class TwoFactorController extends BaseController
 {
     /**
-     * GET /api/user/2fa/status
-     *
-     * Return whether 2FA is enabled for the current user.
+     * @Apidoc\Title("2FA状态")
+     * @Apidoc\Url("/api/user/2fa/status")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Auth(true)
      */
     public function status(Request $request): Response
     {
@@ -29,10 +35,10 @@ class TwoFactorController extends BaseController
     }
 
     /**
-     * POST /api/user/2fa/setup
-     *
-     * Generate a new TOTP secret and return it along with a QR code URL.
-     * The 2FA is NOT enabled yet — the user must verify by calling /enable.
+     * @Apidoc\Title("设置2FA")
+     * @Apidoc\Url("/api/user/2fa/setup")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Auth(true)
      */
     public function setup(Request $request): Response
     {
@@ -64,11 +70,11 @@ class TwoFactorController extends BaseController
     }
 
     /**
-     * POST /api/user/2fa/enable
-     *
-     * Verify a TOTP code against the pending secret and enable 2FA.
-     * Returns 8 backup codes on success.
-     * Body: code (required) — 6-digit TOTP code.
+     * @Apidoc\Title("启用2FA")
+     * @Apidoc\Url("/api/user/2fa/enable")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Auth(true)
+     * @Apidoc\Param(name="code", type="string", require=true, desc="6位TOTP验证码")
      */
     public function enable(Request $request): Response
     {
@@ -112,10 +118,11 @@ class TwoFactorController extends BaseController
     }
 
     /**
-     * POST /api/2fa/verify
-     *
-     * Public endpoint used during login flow to verify a TOTP code.
-     * Body: user_id (hashid, required), code (6-digit, required).
+     * @Apidoc\Title("验证2FA")
+     * @Apidoc\Url("/api/2fa/verify")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="user_id", type="string", require=true, desc="用户ID(hashid)")
+     * @Apidoc\Param(name="code", type="string", require=true, desc="6位TOTP验证码")
      */
     public function verify(Request $request): Response
     {
@@ -161,11 +168,12 @@ class TwoFactorController extends BaseController
     }
 
     /**
-     * POST /api/user/2fa/disable
-     *
-     * Disable 2FA for the current user.
-     * Requires password confirmation and a valid TOTP code.
-     * Body: password (required), code (required).
+     * @Apidoc\Title("禁用2FA")
+     * @Apidoc\Url("/api/user/2fa/disable")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Auth(true)
+     * @Apidoc\Param(name="password", type="string", require=true, desc="密码")
+     * @Apidoc\Param(name="code", type="string", require=true, desc="6位TOTP验证码")
      */
     public function disable(Request $request): Response
     {

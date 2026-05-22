@@ -7,15 +7,24 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\CountryConfig;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("国家配置")
+ * @Apidoc\Group("country_config")
+ */
 class CountryConfigController extends BaseController
 {
     /**
-     * 国家配置列表（分页）
-     * GET /admin/country/config/list
+     * @Apidoc\Title("国家配置列表")
+     * @Apidoc\Desc("分页获取国家配置列表")
+     * @Apidoc\Url("/admin/country/config/list")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Returned("id", type="string", desc="配置ID(hashid编码)")
      */
     public function list(Request $request): Response
     {
@@ -42,8 +51,17 @@ class CountryConfigController extends BaseController
     }
 
     /**
-     * 创建国家配置
-     * POST /admin/country/config/create
+     * @Apidoc\Title("创建国家配置")
+     * @Apidoc\Desc("创建一个新的国家/地区配置")
+     * @Apidoc\Url("/admin/country/config/create")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("country_code", type="string", require=true, desc="国家代码(ISO 3166-1 alpha-2)")
+     * @Apidoc\Param("currency", type="string", require=true, desc="货币代码(ISO 4217)")
+     * @Apidoc\Param("payment_methods", type="string", require=false, desc="支付方式JSON数组")
+     * @Apidoc\Param("withdraw_methods", type="string", require=false, desc="提现方式JSON数组")
+     * @Apidoc\Param("min_deposit", type="float", require=false, desc="最低充值金额")
+     * @Apidoc\Returned("id", type="string", desc="配置ID(hashid编码)")
      */
     public function create(Request $request): Response
     {
@@ -73,8 +91,11 @@ class CountryConfigController extends BaseController
     }
 
     /**
-     * 更新国家配置
-     * PUT /admin/country/config/{hashid}
+     * @Apidoc\Title("编辑国家配置")
+     * @Apidoc\Desc("更新国家/地区配置信息")
+     * @Apidoc\Url("/admin/country/config/{hashid}")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Author("erik")
      */
     public function update(Request $request, string $hashid): Response
     {

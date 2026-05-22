@@ -13,14 +13,26 @@ use common\model\GameCurrency;
 use common\model\Transaction;
 use common\model\UserGameWallet;
 use common\model\UserWallet;
+use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 use support\Db;
 
+/**
+ * @Apidoc\Title("兑换管理")
+ * @Apidoc\Group("exchange")
+ */
 class ExchangeController extends BaseController
 {
     /**
-     * POST /api/exchange/quote
+     * @Apidoc\Title("兑换询价")
+     * @Apidoc\Url("/api/exchange/quote")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Auth(true)
+     * @Apidoc\Param(name="game_id", type="string", require=true, desc="游戏ID")
+     * @Apidoc\Param(name="currency_id", type="string", require=true, desc="币种ID")
+     * @Apidoc\Param(name="direction", type="string", require=true, desc="方向(in/out)")
+     * @Apidoc\Param(name="platform_amount", type="float", require=true, desc="平台币数量")
      */
     public function quote(Request $request): Response
     {
@@ -84,7 +96,13 @@ class ExchangeController extends BaseController
     }
 
     /**
-     * POST /api/exchange/buy
+     * @Apidoc\Title("买入游戏币")
+     * @Apidoc\Url("/api/exchange/buy")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Auth(true)
+     * @Apidoc\Param(name="game_id", type="string", require=true, desc="游戏ID")
+     * @Apidoc\Param(name="currency_id", type="string", require=true, desc="币种ID")
+     * @Apidoc\Param(name="platform_amount", type="float", require=true, desc="平台币数量")
      */
     public function buy(Request $request): Response
     {
@@ -92,7 +110,13 @@ class ExchangeController extends BaseController
     }
 
     /**
-     * POST /api/exchange/sell
+     * @Apidoc\Title("卖出游戏币")
+     * @Apidoc\Url("/api/exchange/sell")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Auth(true)
+     * @Apidoc\Param(name="game_id", type="string", require=true, desc="游戏ID")
+     * @Apidoc\Param(name="currency_id", type="string", require=true, desc="币种ID")
+     * @Apidoc\Param(name="platform_amount", type="float", require=true, desc="平台币数量")
      */
     public function sell(Request $request): Response
     {
@@ -100,7 +124,10 @@ class ExchangeController extends BaseController
     }
 
     /**
-     * GET /api/exchange/records
+     * @Apidoc\Title("兑换记录")
+     * @Apidoc\Url("/api/exchange/records")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Auth(true)
      */
     public function records(Request $request): Response
     {

@@ -13,14 +13,25 @@ use common\model\UserIdentity;
 use common\model\UserWallet;
 use common\model\WithdrawLimit;
 use common\model\WithdrawOrder;
+use hg\apidoc\annotation as Apidoc;
 use support\Db;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("提现管理")
+ * @Apidoc\Group("withdraw")
+ */
 class WithdrawController extends BaseController
 {
     /**
-     * POST /api/withdraw/apply
+     * @Apidoc\Title("提现申请")
+     * @Apidoc\Url("/api/withdraw/apply")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Auth(true)
+     * @Apidoc\Param(name="platform_amount", type="float", require=true, desc="提现金额")
+     * @Apidoc\Param(name="method", type="string", require=true, desc="提现方式(paypal/bank/crypto)")
+     * @Apidoc\Param(name="account_info", type="string", require=true, desc="提现账户信息")
      */
     public function apply(Request $request): Response
     {
@@ -202,7 +213,10 @@ class WithdrawController extends BaseController
     }
 
     /**
-     * GET /api/withdraw/orders
+     * @Apidoc\Title("提现记录")
+     * @Apidoc\Url("/api/withdraw/orders")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Auth(true)
      */
     public function orders(Request $request): Response
     {

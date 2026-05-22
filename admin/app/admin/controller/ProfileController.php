@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use app\model\AdminUser;
 use support\Request;
 use support\Response;
@@ -14,6 +15,10 @@ use support\Redis;
 use Erikwang2013\Jwt\JWT;
 use Erikwang2013\Jwt\JWTFactory;
 
+/**
+ * @Apidoc\Title("个人中心")
+ * @Apidoc\Group("profile")
+ */
 class ProfileController extends BaseController
 {
     private static ?JWT $jwt = null;
@@ -27,6 +32,16 @@ class ProfileController extends BaseController
         return self::$jwt;
     }
 
+    /**
+     * @Apidoc\Title("更新个人信息")
+     * @Apidoc\Desc("更新当前登录管理员的个人信息")
+     * @Apidoc\Url("/admin/profile")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("real_name", type="string", require=false, desc="真实姓名")
+     * @Apidoc\Param("phone", type="string", require=false, desc="手机号")
+     * @Apidoc\Param("email", type="string", require=false, desc="邮箱")
+     */
     public function updateProfile(Request $request): Response
     {
         $adminId = $request->adminId ?? 0;
@@ -54,6 +69,15 @@ class ProfileController extends BaseController
         return $this->success($this->encodeIds($data), '更新成功');
     }
 
+    /**
+     * @Apidoc\Title("修改密码")
+     * @Apidoc\Desc("修改当前登录管理员的登录密码")
+     * @Apidoc\Url("/admin/profile/password")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("old_password", type="string", require=true, desc="旧密码")
+     * @Apidoc\Param("new_password", type="string", require=true, desc="新密码(6-32位)")
+     */
     public function updatePassword(Request $request): Response
     {
         $adminId = $request->adminId ?? 0;
@@ -83,6 +107,13 @@ class ProfileController extends BaseController
         return $this->success([], '密码修改成功');
     }
 
+    /**
+     * @Apidoc\Title("登出")
+     * @Apidoc\Desc("将当前JWT令牌加入黑名单，实现安全登出")
+     * @Apidoc\Url("/admin/profile/logout")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Author("erik")
+     */
     public function logout(Request $request): Response
     {
         $token = $request->header('Authorization', '');

@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\PlatformConfig;
 use common\model\Transaction;
 use common\model\User;
@@ -17,11 +18,22 @@ use common\service\NotificationService;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("提现管理")
+ * @Apidoc\Group("withdraw")
+ */
 class WithdrawController extends BaseController
 {
     /**
-     * 提现订单列表（分页）
-     * GET /admin/withdraw/orders
+     * @Apidoc\Title("提现订单列表")
+     * @Apidoc\Desc("分页获取提现订单列表，支持按状态筛选")
+     * @Apidoc\Url("/admin/withdraw/orders")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("page", type="int", require=false, desc="页码")
+     * @Apidoc\Param("per_page", type="int", require=false, desc="每页数量")
+     * @Apidoc\Param("status", type="string", require=false, desc="订单状态(pending,approved,rejected,completed)")
+     * @Apidoc\Returned("id", type="string", desc="订单ID(hashid编码)")
      */
     public function orders(Request $request): Response
     {
@@ -60,8 +72,14 @@ class WithdrawController extends BaseController
     }
 
     /**
-     * 审核提现订单
-     * PUT /admin/withdraw/review
+     * @Apidoc\Title("审核提现")
+     * @Apidoc\Desc("审批或拒绝提现申请")
+     * @Apidoc\Url("/admin/withdraw/review")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("order_id", type="string", require=true, desc="订单ID(hashid编码)")
+     * @Apidoc\Param("action", type="string", require=true, desc="操作(approve通过,reject拒绝)")
+     * @Apidoc\Param("note", type="string", require=false, desc="审核备注")
      */
     public function review(Request $request): Response
     {
@@ -143,8 +161,12 @@ class WithdrawController extends BaseController
     }
 
     /**
-     * 提现全局开关
-     * PUT /admin/withdraw/switch
+     * @Apidoc\Title("全局提现开关")
+     * @Apidoc\Desc("启用或关闭全局提现功能")
+     * @Apidoc\Url("/admin/withdraw/switch")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("enabled", type="int", require=true, desc="是否启用(0关闭,1启用)")
      */
     public function toggleSwitch(Request $request): Response
     {
@@ -163,8 +185,14 @@ class WithdrawController extends BaseController
     }
 
     /**
-     * 设置提现限制
-     * POST /admin/withdraw/limits/set
+     * @Apidoc\Title("设置提现限额")
+     * @Apidoc\Desc("设置全局提现限额参数")
+     * @Apidoc\Url("/admin/withdraw/limits/set")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("daily_limit", type="float", require=false, desc="每日限额")
+     * @Apidoc\Param("min_amount", type="float", require=false, desc="最小提现金额")
+     * @Apidoc\Param("auto_approve_threshold", type="float", require=false, desc="自动审批阈值")
      */
     public function setLimits(Request $request): Response
     {
@@ -196,8 +224,11 @@ class WithdrawController extends BaseController
     }
 
     /**
-     * 提现限制等级列表
-     * GET /admin/withdraw/limits/list
+     * @Apidoc\Title("阶梯限额列表")
+     * @Apidoc\Desc("获取提现阶梯限额配置列表")
+     * @Apidoc\Url("/admin/withdraw/limits/list")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Author("erik")
      */
     public function listLimits(Request $request): Response
     {
@@ -210,8 +241,11 @@ class WithdrawController extends BaseController
     }
 
     /**
-     * 更新提现限制等级
-     * PUT /admin/withdraw/limits/{hashid}
+     * @Apidoc\Title("更新阶梯限额")
+     * @Apidoc\Desc("更新指定阶梯限额配置")
+     * @Apidoc\Url("/admin/withdraw/limits/{hashid}")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Author("erik")
      */
     public function updateLimit(Request $request, string $hashid): Response
     {
@@ -237,8 +271,14 @@ class WithdrawController extends BaseController
     }
 
     /**
-     * 批量审核提现
-     * POST /admin/withdraw/batch-review
+     * @Apidoc\Title("批量审核提现")
+     * @Apidoc\Desc("批量审批或拒绝提现申请")
+     * @Apidoc\Url("/admin/withdraw/batch-review")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("ids", type="array", require=true, desc="订单ID数组(hashid编码)")
+     * @Apidoc\Param("action", type="string", require=true, desc="操作(approve通过,reject拒绝)")
+     * @Apidoc\Param("note", type="string", require=false, desc="审核备注")
      */
     public function batchReview(Request $request)
     {

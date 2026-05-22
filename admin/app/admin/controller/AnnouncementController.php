@@ -7,15 +7,24 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\Announcement;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("公告管理")
+ * @Apidoc\Group("announcement")
+ */
 class AnnouncementController extends BaseController
 {
     /**
-     * 公告列表（分页）
-     * GET /admin/announcement/list
+     * @Apidoc\Title("公告列表")
+     * @Apidoc\Desc("分页获取公告列表")
+     * @Apidoc\Url("/admin/announcement/list")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Returned("id", type="string", desc="公告ID(hashid编码)")
      */
     public function list(Request $request): Response
     {
@@ -38,8 +47,15 @@ class AnnouncementController extends BaseController
     }
 
     /**
-     * 创建公告
-     * POST /admin/announcement/create
+     * @Apidoc\Title("发布公告")
+     * @Apidoc\Desc("创建并发布一条新公告")
+     * @Apidoc\Url("/admin/announcement/create")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("title", type="string", require=true, desc="公告标题")
+     * @Apidoc\Param("content", type="string", require=true, desc="公告内容")
+     * @Apidoc\Param("type", type="string", require=false, desc="公告类型(system系统,event活动)")
+     * @Apidoc\Returned("id", type="string", desc="公告ID(hashid编码)")
      */
     public function create(Request $request): Response
     {

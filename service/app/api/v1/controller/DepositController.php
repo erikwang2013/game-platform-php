@@ -10,13 +10,24 @@ namespace app\api\v1\controller;
 use common\model\DepositOrder;
 use common\model\PlatformConfig;
 use common\service\NotificationService;
+use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("充值管理")
+ * @Apidoc\Group("wallet")
+ */
 class DepositController extends BaseController
 {
     /**
-     * POST /api/deposit/create
+     * @Apidoc\Title("创建充值订单")
+     * @Apidoc\Url("/api/deposit/create")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Auth(true)
+     * @Apidoc\Param(name="amount", type="float", require=true, desc="充值金额")
+     * @Apidoc\Param(name="currency", type="string", require=true, desc="货币(USD/CNY/EUR)")
+     * @Apidoc\Param(name="payment_method_id", type="string", require=true, desc="支付方式ID")
      */
     public function create(Request $request): Response
     {
@@ -71,7 +82,10 @@ class DepositController extends BaseController
     }
 
     /**
-     * GET /api/deposit/orders
+     * @Apidoc\Title("充值记录")
+     * @Apidoc\Url("/api/deposit/orders")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Auth(true)
      */
     public function orders(Request $request): Response
     {

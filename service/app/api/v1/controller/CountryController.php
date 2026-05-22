@@ -8,14 +8,20 @@ declare(strict_types=1);
 namespace app\api\v1\controller;
 
 use common\model\CountryConfig;
+use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("国家配置")
+ * @Apidoc\Group("country")
+ */
 class CountryController extends BaseController
 {
     /**
-     * 国家配置列表
-     * GET /api/country/list
+     * @Apidoc\Title("国家列表")
+     * @Apidoc\Url("/api/country/list")
+     * @Apidoc\Method("GET")
      */
     public function list(Request $request): Response
     {
@@ -34,8 +40,10 @@ class CountryController extends BaseController
     }
 
     /**
-     * 国家配置详情
-     * GET /api/country/{code}
+     * @Apidoc\Title("国家详情")
+     * @Apidoc\Url("/api/country/{code}")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Param(name="code", type="string", require=true, desc="国家代码", in="path")
      */
     public function detail(Request $request, string $code): Response
     {

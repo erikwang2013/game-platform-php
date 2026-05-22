@@ -9,14 +9,20 @@ namespace app\api\v1\controller;
 
 use common\model\Leaderboard;
 use common\service\LeaderboardService;
+use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("排行榜")
+ * @Apidoc\Group("leaderboard")
+ */
 class LeaderboardController extends BaseController
 {
     /**
-     * 排行榜列表
-     * GET /api/leaderboard/list
+     * @Apidoc\Title("排行榜列表")
+     * @Apidoc\Url("/api/leaderboard/list")
+     * @Apidoc\Method("GET")
      */
     public function list(Request $request): Response
     {
@@ -39,8 +45,10 @@ class LeaderboardController extends BaseController
     }
 
     /**
-     * 排行榜排名
-     * GET /api/leaderboard/{hashid}
+     * @Apidoc\Title("排行榜详情")
+     * @Apidoc\Url("/api/leaderboard/{hashid}")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Param(name="hashid", type="string", require=true, desc="排行榜hashid", in="path")
      */
     public function ranking(Request $request, string $hashid): Response
     {

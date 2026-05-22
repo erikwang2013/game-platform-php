@@ -7,16 +7,25 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\Leaderboard;
 use common\service\LeaderboardService;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("排行榜")
+ * @Apidoc\Group("leaderboard")
+ */
 class LeaderboardController extends BaseController
 {
     /**
-     * 排行榜列表
-     * GET /admin/leaderboard/list
+     * @Apidoc\Title("排行榜列表")
+     * @Apidoc\Desc("分页获取排行榜列表，支持按游戏筛选")
+     * @Apidoc\Url("/admin/leaderboard/list")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Returned("id", type="string", desc="排行榜ID(hashid编码)")
      */
     public function list(Request $request): Response
     {
@@ -51,8 +60,16 @@ class LeaderboardController extends BaseController
     }
 
     /**
-     * 创建排行榜
-     * POST /admin/leaderboard/create
+     * @Apidoc\Title("创建排行榜")
+     * @Apidoc\Desc("创建一个新的排行榜")
+     * @Apidoc\Url("/admin/leaderboard/create")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Author("erik")
+     * @Apidoc\Param("name", type="string", require=true, desc="排行榜名称")
+     * @Apidoc\Param("type", type="string", require=true, desc="排行榜类型(daily,weekly,monthly,alltime)")
+     * @Apidoc\Param("metric", type="string", require=true, desc="排序指标(earned,spent,play_count)")
+     * @Apidoc\Param("game_id", type="string", require=false, desc="关联游戏ID(hashid编码)")
+     * @Apidoc\Returned("id", type="string", desc="排行榜ID(hashid编码)")
      */
     public function create(Request $request): Response
     {
@@ -87,8 +104,11 @@ class LeaderboardController extends BaseController
     }
 
     /**
-     * 更新排行榜
-     * PUT /admin/leaderboard/{hashid}
+     * @Apidoc\Title("编辑排行榜")
+     * @Apidoc\Desc("更新排行榜信息")
+     * @Apidoc\Url("/admin/leaderboard/{hashid}")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Author("erik")
      */
     public function update(Request $request, string $hashid): Response
     {
@@ -108,8 +128,11 @@ class LeaderboardController extends BaseController
     }
 
     /**
-     * 删除排行榜
-     * DELETE /admin/leaderboard/{hashid}
+     * @Apidoc\Title("删除排行榜")
+     * @Apidoc\Desc("删除指定排行榜并清除缓存")
+     * @Apidoc\Url("/admin/leaderboard/{hashid}")
+     * @Apidoc\Method("DELETE")
+     * @Apidoc\Author("erik")
      */
     public function destroy(Request $request, string $hashid): Response
     {
@@ -127,8 +150,11 @@ class LeaderboardController extends BaseController
     }
 
     /**
-     * 刷新排行榜缓存
-     * POST /admin/leaderboard/{hashid}/refresh
+     * @Apidoc\Title("刷新排行榜缓存")
+     * @Apidoc\Desc("清除并重新计算排行榜缓存数据")
+     * @Apidoc\Url("/admin/leaderboard/{hashid}/refresh")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Author("erik")
      */
     public function refresh(Request $request, string $hashid): Response
     {
