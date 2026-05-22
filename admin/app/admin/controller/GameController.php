@@ -7,16 +7,26 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\Game;
 use common\model\GameCurrency;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("游戏管理")
+ * @Apidoc\Group("game")
+ */
 class GameController extends BaseController
 {
     /**
      * 游戏列表（分页）
-     * GET /admin/game/list
+     * @Apidoc\Title("游戏列表")
+     * @Apidoc\Url("/admin/game/list")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Param(name="page", type="int", require=false, desc="页码")
+     * @Apidoc\Param(name="per_page", type="int", require=false, desc="每页数量")
+     * @Apidoc\Param(name="keyword", type="string", require=false, desc="关键词搜索")
      */
     public function list(Request $request): Response
     {
@@ -52,7 +62,17 @@ class GameController extends BaseController
 
     /**
      * 创建游戏
-     * POST /admin/game/create
+     * @Apidoc\Title("创建游戏")
+     * @Apidoc\Url("/admin/game/create")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="name", type="string", require=true, desc="游戏名称")
+     * @Apidoc\Param(name="slug", type="string", require=true, desc="游戏标识")
+     * @Apidoc\Param(name="type", type="string", require=true, desc="游戏类型: self|third_party")
+     * @Apidoc\Param(name="description", type="string", require=false, desc="描述")
+     * @Apidoc\Param(name="cover_image", type="string", require=false, desc="封面图")
+     * @Apidoc\Param(name="api_endpoint", type="string", require=false, desc="API端点")
+     * @Apidoc\Param(name="status", type="int", require=false, desc="状态: 0=禁用, 1=启用")
+     * @Apidoc\Param(name="sort", type="int", require=false, desc="排序")
      */
     public function create(Request $request): Response
     {
@@ -90,7 +110,10 @@ class GameController extends BaseController
 
     /**
      * 更新游戏
-     * PUT /admin/game/{hashid}
+     * @Apidoc\Title("更新游戏")
+     * @Apidoc\Url("/admin/game/{hashid}")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Param(name="hashid", type="string", require=true, desc="游戏哈希ID")
      */
     public function update(Request $request, string $hashid): Response
     {
@@ -111,7 +134,10 @@ class GameController extends BaseController
 
     /**
      * 删除游戏
-     * DELETE /admin/game/{hashid}
+     * @Apidoc\Title("删除游戏")
+     * @Apidoc\Url("/admin/game/{hashid}")
+     * @Apidoc\Method("DELETE")
+     * @Apidoc\Param(name="hashid", type="string", require=true, desc="游戏哈希ID")
      */
     public function destroy(Request $request, string $hashid): Response
     {
@@ -128,7 +154,11 @@ class GameController extends BaseController
 
     /**
      * 管理游戏币种
-     * POST /admin/game/currency/manage
+     * @Apidoc\Title("管理游戏币种")
+     * @Apidoc\Url("/admin/game/currency/manage")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="game_id", type="string", require=true, desc="游戏哈希ID")
+     * @Apidoc\Param(name="currencies", type="array", require=true, desc="币种配置数组")
      */
     public function manageCurrency(Request $request): Response
     {

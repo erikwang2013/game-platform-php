@@ -7,15 +7,24 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\GamePlayLog;
 use support\Request;
 use support\Response;
 
+/**
+ * C端 - 游戏记录
+ *
+ * @Apidoc\Title("游戏记录")
+ * @Apidoc\Group("game")
+ */
 class GamePlayLogController extends BaseController
 {
     /**
-     * 游戏记录列表（分页）
-     * GET /api/game/play-logs
+     * @Apidoc\Title("游戏记录列表")
+     * @Apidoc\Url("/api/game/play-logs")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
      */
     public function list(Request $request): Response
     {
@@ -64,8 +73,11 @@ class GamePlayLogController extends BaseController
     }
 
     /**
-     * 游戏记录详情
-     * GET /api/game/play-log/{hashid}
+     * @Apidoc\Title("游戏记录详情")
+     * @Apidoc\Url("/api/game/play-log/{hashid}")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Param(name:"hashid",type:"string",require:true,desc:"记录HashID")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
      */
     public function detail(Request $request, string $hashid): Response
     {

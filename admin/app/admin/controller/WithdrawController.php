@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\PlatformConfig;
 use common\model\Transaction;
 use common\model\User;
@@ -16,11 +17,20 @@ use common\model\WithdrawOrder;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("提现管理")
+ * @Apidoc\Group("withdraw")
+ */
 class WithdrawController extends BaseController
 {
     /**
      * 提现订单列表（分页）
-     * GET /admin/withdraw/orders
+     * @Apidoc\Title("提现订单列表")
+     * @Apidoc\Url("/admin/withdraw/orders")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Param(name="page", type="int", require=false, desc="页码")
+     * @Apidoc\Param(name="per_page", type="int", require=false, desc="每页数量")
+     * @Apidoc\Param(name="status", type="string", require=false, desc="订单状态")
      */
     public function orders(Request $request): Response
     {
@@ -60,7 +70,12 @@ class WithdrawController extends BaseController
 
     /**
      * 审核提现订单
-     * PUT /admin/withdraw/review
+     * @Apidoc\Title("审核提现订单")
+     * @Apidoc\Url("/admin/withdraw/review")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Param(name="order_id", type="string", require=true, desc="订单哈希ID")
+     * @Apidoc\Param(name="action", type="string", require=true, desc="审核动作: approve|reject")
+     * @Apidoc\Param(name="note", type="string", require=false, desc="审核备注")
      */
     public function review(Request $request): Response
     {
@@ -125,7 +140,10 @@ class WithdrawController extends BaseController
 
     /**
      * 提现全局开关
-     * PUT /admin/withdraw/switch
+     * @Apidoc\Title("提现全局开关")
+     * @Apidoc\Url("/admin/withdraw/switch")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Param(name="enabled", type="int", require=true, desc="开关: 0=关闭, 1=开启")
      */
     public function toggleSwitch(Request $request): Response
     {
@@ -145,7 +163,12 @@ class WithdrawController extends BaseController
 
     /**
      * 设置提现限制
-     * POST /admin/withdraw/limits/set
+     * @Apidoc\Title("设置提现限制")
+     * @Apidoc\Url("/admin/withdraw/limits/set")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="daily_limit", type="number", require=false, desc="每日提现上限")
+     * @Apidoc\Param(name="min_amount", type="number", require=false, desc="最低提现金额")
+     * @Apidoc\Param(name="auto_approve_threshold", type="number", require=false, desc="自动审批阈值")
      */
     public function setLimits(Request $request): Response
     {
@@ -178,7 +201,9 @@ class WithdrawController extends BaseController
 
     /**
      * 提现限制等级列表
-     * GET /admin/withdraw/limits/list
+     * @Apidoc\Title("提现限制等级列表")
+     * @Apidoc\Url("/admin/withdraw/limits/list")
+     * @Apidoc\Method("GET")
      */
     public function listLimits(Request $request): Response
     {
@@ -192,7 +217,10 @@ class WithdrawController extends BaseController
 
     /**
      * 更新提现限制等级
-     * PUT /admin/withdraw/limits/{hashid}
+     * @Apidoc\Title("更新提现限制等级")
+     * @Apidoc\Url("/admin/withdraw/limits/{hashid}")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Param(name="hashid", type="string", require=true, desc="限制等级哈希ID")
      */
     public function updateLimit(Request $request, string $hashid): Response
     {

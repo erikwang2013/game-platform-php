@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -22,11 +23,21 @@ use common\model\User;
 use common\model\Transaction;
 use support\Request;
 
+/**
+ * @Apidoc\Title("数据导出")
+ * @Apidoc\Group("export")
+ */
 class ExportController extends BaseController
 {
     /**
      * Excel 导出
-     * POST /admin/export/excel
+     * @Apidoc\Title("Excel导出")
+     * @Apidoc\Url("/admin/export/excel")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="table", type="string", require=true, desc="导出表名")
+     * @Apidoc\Param(name="columns", type="array", require=false, desc="导出列")
+     * @Apidoc\Param(name="conditions", type="object", require=false, desc="筛选条件")
+     * @Apidoc\Param(name="title", type="string", require=false, desc="导出标题")
      */
     public function excel(Request $request): Response
     {
@@ -116,7 +127,12 @@ class ExportController extends BaseController
 
     /**
      * PDF 导出
-     * POST /admin/export/pdf
+     * @Apidoc\Title("PDF导出")
+     * @Apidoc\Url("/admin/export/pdf")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="type", type="string", require=false, desc="导出类型")
+     * @Apidoc\Param(name="title", type="string", require=false, desc="导出标题")
+     * @Apidoc\Param(name="data", type="object", require=false, desc="导出数据")
      */
     public function pdf(Request $request): Response
     {
@@ -205,7 +221,10 @@ class ExportController extends BaseController
 
     /**
      * 导出C端用户
-     * POST /admin/export/users
+     * @Apidoc\Title("导出C端用户")
+     * @Apidoc\Url("/admin/export/users")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="status", type="int", require=false, desc="用户状态筛选")
      */
     public function exportUsers(Request $request): \Webman\Http\Response
     {
@@ -260,7 +279,10 @@ class ExportController extends BaseController
 
     /**
      * 导出平台流水
-     * POST /admin/export/transactions
+     * @Apidoc\Title("导出平台流水")
+     * @Apidoc\Url("/admin/export/transactions")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="type", type="string", require=false, desc="流水类型筛选")
      */
     public function exportTransactions(Request $request): \Webman\Http\Response
     {

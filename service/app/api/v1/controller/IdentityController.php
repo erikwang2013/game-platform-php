@@ -7,16 +7,24 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\UserIdentity;
 use support\Request;
 use support\Response;
 
+/**
+ * C端 - 实名认证
+ *
+ * @Apidoc\Title("实名认证")
+ * @Apidoc\Group("user")
+ */
 class IdentityController extends BaseController
 {
     /**
-     * GET /api/user/identity/status
-     *
-     * Return the current user's KYC identity verification status.
+     * @Apidoc\Title("认证状态查询")
+     * @Apidoc\Url("/api/user/identity/status")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
      */
     public function status(Request $request): Response
     {
@@ -39,9 +47,17 @@ class IdentityController extends BaseController
     }
 
     /**
-     * POST /api/user/identity/apply
-     *
-     * Submit or re-submit KYC identity verification.
+     * @Apidoc\Title("提交/重新提交认证")
+     * @Apidoc\Url("/api/user/identity/apply")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name:"real_name",type:"string",require:true,desc:"真实姓名")
+     * @Apidoc\Param(name:"id_type",type:"string",require:true,desc:"证件类型(id_card/passport/driver_license)")
+     * @Apidoc\Param(name:"id_number",type:"string",require:true,desc:"证件号码")
+     * @Apidoc\Param(name:"id_front_photo",type:"string",require:true,desc:"证件正面照片")
+     * @Apidoc\Param(name:"id_back_photo",type:"string",require:false,desc:"证件背面照片")
+     * @Apidoc\Param(name:"selfie_photo",type:"string",require:true,desc:"自拍照片")
+     * @Apidoc\Param(name:"country",type:"string",require:false,desc:"国家代码")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
      */
     public function apply(Request $request): Response
     {

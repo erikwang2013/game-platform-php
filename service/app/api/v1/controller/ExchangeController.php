@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\ExchangeRecord;
 use common\model\Game;
 use common\model\GameCurrency;
@@ -17,10 +18,23 @@ use support\Request;
 use support\Response;
 use support\Db;
 
+/**
+ * C端 - 兑换
+ *
+ * @Apidoc\Title("兑换")
+ * @Apidoc\Group("exchange")
+ */
 class ExchangeController extends BaseController
 {
     /**
-     * POST /api/exchange/quote
+     * @Apidoc\Title("兑换报价")
+     * @Apidoc\Url("/api/exchange/quote")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name:"game_id",type:"string",require:true,desc:"游戏ID(hashid)")
+     * @Apidoc\Param(name:"currency_id",type:"string",require:true,desc:"游戏币种ID(hashid)")
+     * @Apidoc\Param(name:"direction",type:"string",require:true,desc:"方向(in=买入/out=卖出)")
+     * @Apidoc\Param(name:"platform_amount",type:"number",require:true,desc:"平台币数量")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
      */
     public function quote(Request $request): Response
     {
@@ -84,7 +98,13 @@ class ExchangeController extends BaseController
     }
 
     /**
-     * POST /api/exchange/buy
+     * @Apidoc\Title("买入(平台币→游戏币)")
+     * @Apidoc\Url("/api/exchange/buy")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name:"game_id",type:"string",require:true,desc:"游戏ID(hashid)")
+     * @Apidoc\Param(name:"currency_id",type:"string",require:true,desc:"游戏币种ID(hashid)")
+     * @Apidoc\Param(name:"platform_amount",type:"number",require:true,desc:"平台币数量")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
      */
     public function buy(Request $request): Response
     {
@@ -92,7 +112,13 @@ class ExchangeController extends BaseController
     }
 
     /**
-     * POST /api/exchange/sell
+     * @Apidoc\Title("卖出(游戏币→平台币)")
+     * @Apidoc\Url("/api/exchange/sell")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name:"game_id",type:"string",require:true,desc:"游戏ID(hashid)")
+     * @Apidoc\Param(name:"currency_id",type:"string",require:true,desc:"游戏币种ID(hashid)")
+     * @Apidoc\Param(name:"platform_amount",type:"number",require:true,desc:"平台币数量")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
      */
     public function sell(Request $request): Response
     {
@@ -100,7 +126,10 @@ class ExchangeController extends BaseController
     }
 
     /**
-     * GET /api/exchange/records
+     * @Apidoc\Title("兑换记录")
+     * @Apidoc\Url("/api/exchange/records")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
      */
     public function records(Request $request): Response
     {

@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\PlatformConfig;
 use common\model\Transaction;
 use common\model\UserIdentity;
@@ -17,10 +18,22 @@ use support\Db;
 use support\Request;
 use support\Response;
 
+/**
+ * C端 - 提现
+ *
+ * @Apidoc\Title("提现")
+ * @Apidoc\Group("withdraw")
+ */
 class WithdrawController extends BaseController
 {
     /**
-     * POST /api/withdraw/apply
+     * @Apidoc\Title("申请提现")
+     * @Apidoc\Url("/api/withdraw/apply")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name:"platform_amount",type:"number",require:true,desc:"提现平台币数量")
+     * @Apidoc\Param(name:"method",type:"string",require:true,desc:"提现方式(paypal/bank/crypto)")
+     * @Apidoc\Param(name:"account_info",type:"string",require:true,desc:"收款账户信息")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
      */
     public function apply(Request $request): Response
     {
@@ -202,7 +215,10 @@ class WithdrawController extends BaseController
     }
 
     /**
-     * GET /api/withdraw/orders
+     * @Apidoc\Title("提现订单列表")
+     * @Apidoc\Url("/api/withdraw/orders")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
      */
     public function orders(Request $request): Response
     {

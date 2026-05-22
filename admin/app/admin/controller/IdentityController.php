@@ -7,16 +7,25 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\UserIdentity;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("身份认证审核")
+ * @Apidoc\Group("identity")
+ */
 class IdentityController extends BaseController
 {
     /**
-     * GET /admin/identity/list
-     *
-     * Paginated list of KYC identity verification records.
+     * 身份认证列表
+     * @Apidoc\Title("身份认证列表")
+     * @Apidoc\Url("/admin/identity/list")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Param(name="page", type="int", require=false, desc="页码")
+     * @Apidoc\Param(name="per_page", type="int", require=false, desc="每页数量")
+     * @Apidoc\Param(name="status", type="string", require=false, desc="认证状态")
      */
     public function list(Request $request): Response
     {
@@ -56,9 +65,13 @@ class IdentityController extends BaseController
     }
 
     /**
-     * PUT /admin/identity/review
-     *
-     * Approve or reject a KYC identity verification submission.
+     * 审核身份认证
+     * @Apidoc\Title("审核身份认证")
+     * @Apidoc\Url("/admin/identity/review")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Param(name="id", type="string", require=true, desc="认证记录哈希ID")
+     * @Apidoc\Param(name="action", type="string", require=true, desc="审核动作: approve|reject")
+     * @Apidoc\Param(name="note", type="string", require=false, desc="审核备注")
      */
     public function review(Request $request): Response
     {

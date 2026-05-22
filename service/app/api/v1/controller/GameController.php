@@ -7,16 +7,25 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\Game;
 use common\model\GamePlayLog;
 use common\model\UserWallet;
 use support\Request;
 use support\Response;
 
+/**
+ * C端 - 游戏
+ *
+ * @Apidoc\Title("游戏")
+ * @Apidoc\Group("game")
+ */
 class GameController extends BaseController
 {
     /**
-     * GET /api/game/list
+     * @Apidoc\Title("游戏列表")
+     * @Apidoc\Url("/api/game/list")
+     * @Apidoc\Method("GET")
      */
     public function list(Request $request): Response
     {
@@ -74,7 +83,10 @@ class GameController extends BaseController
     }
 
     /**
-     * GET /api/game/{hashid}
+     * @Apidoc\Title("游戏详情")
+     * @Apidoc\Url("/api/game/{hashid}")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Param(name:"hashid",type:"string",require:true,desc:"游戏HashID")
      */
     public function detail(Request $request, string $hashid): Response
     {
@@ -111,7 +123,11 @@ class GameController extends BaseController
     }
 
     /**
-     * POST /api/game/launch
+     * @Apidoc\Title("启动游戏")
+     * @Apidoc\Url("/api/game/launch")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name:"game_id",type:"string",require:true,desc:"游戏HashID")
+     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
      */
     public function launch(Request $request): Response
     {
@@ -160,5 +176,29 @@ class GameController extends BaseController
             'api_endpoint'  => $game->api_endpoint,
             'session_id'    => $sessionId,
         ]);
+    }
+
+    /**
+     * @Apidoc\Title("推荐游戏")
+     * @Apidoc\Url("/api/game/suggest")
+     * @Apidoc\Method("GET")
+     */
+    public function suggest(Request $request): Response
+    {
+        $games = Game::where('status', 1)
+            ->orderBy('sort', 'asc')
+            ->limit(10)
+            ->get()
+            ->map(function ($game) {
+                return [
+                    'id'          => $this->encodeId($game->id),
+                    'name'        => $game->name,
+                    'slug'        => $game->slug,
+                    'type'        => $game->type,
+                    'cover_image' => $game->cover_image,
+                ];
+            });
+
+        return $this->success(['list' => $games->toArray()]);
     }
 }

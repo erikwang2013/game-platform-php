@@ -7,15 +7,24 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\Announcement;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("公告管理")
+ * @Apidoc\Group("announcement")
+ */
 class AnnouncementController extends BaseController
 {
     /**
      * 公告列表（分页）
-     * GET /admin/announcement/list
+     * @Apidoc\Title("公告列表")
+     * @Apidoc\Url("/admin/announcement/list")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Param(name="page", type="int", require=false, desc="页码")
+     * @Apidoc\Param(name="per_page", type="int", require=false, desc="每页数量")
      */
     public function list(Request $request): Response
     {
@@ -39,7 +48,12 @@ class AnnouncementController extends BaseController
 
     /**
      * 创建公告
-     * POST /admin/announcement/create
+     * @Apidoc\Title("创建公告")
+     * @Apidoc\Url("/admin/announcement/create")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="title", type="string", require=true, desc="公告标题")
+     * @Apidoc\Param(name="content", type="string", require=true, desc="公告内容")
+     * @Apidoc\Param(name="type", type="string", require=false, desc="公告类型")
      */
     public function create(Request $request): Response
     {

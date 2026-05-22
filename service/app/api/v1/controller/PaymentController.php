@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\DepositOrder;
 use common\model\PaymentMethod;
 use common\model\Transaction;
@@ -15,13 +16,21 @@ use common\service\RiskService;
 use support\Request;
 use support\Response;
 
+/**
+ * C端 - 支付
+ *
+ * @Apidoc\Title("支付")
+ * @Apidoc\Group("payment")
+ */
 class PaymentController extends BaseController
 {
     /**
-     * POST /api/payment/callback
-     *
-     * Payment gateway callback endpoint — called by Stripe/PayPal.
-     * Public, no authentication required.
+     * @Apidoc\Title("支付回调")
+     * @Apidoc\Url("/api/payment/callback")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name:"order_no",type:"string",require:true,desc:"订单号")
+     * @Apidoc\Param(name:"transaction_id",type:"string",require:true,desc:"支付网关交易ID")
+     * @Apidoc\Param(name:"status",type:"string",require:true,desc:"支付状态(success/failed)")
      */
     public function callback(Request $request): Response
     {
@@ -107,9 +116,9 @@ class PaymentController extends BaseController
     }
 
     /**
-     * GET /api/payment/methods
-     *
-     * Return all enabled payment methods.
+     * @Apidoc\Title("支付方式列表")
+     * @Apidoc\Url("/api/payment/methods")
+     * @Apidoc\Method("GET")
      */
     public function methods(Request $request): Response
     {

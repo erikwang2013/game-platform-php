@@ -7,12 +7,30 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use app\model\OperationLog;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("操作日志")
+ * @Apidoc\Group("log")
+ */
 class LogController extends BaseController
 {
+    /**
+     * 操作日志查询
+     * @Apidoc\Title("操作日志查询")
+     * @Apidoc\Url("/admin/log")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Param(name="page", type="int", require=false, desc="页码")
+     * @Apidoc\Param(name="per_page", type="int", require=false, desc="每页数量")
+     * @Apidoc\Param(name="user_id", type="string", require=false, desc="用户ID")
+     * @Apidoc\Param(name="action", type="string", require=false, desc="操作动作")
+     * @Apidoc\Param(name="path", type="string", require=false, desc="请求路径")
+     * @Apidoc\Param(name="start_date", type="string", require=false, desc="开始日期")
+     * @Apidoc\Param(name="end_date", type="string", require=false, desc="结束日期")
+     */
     public function index(Request $request): Response
     {
         $page      = (int) $request->input('page', 1);

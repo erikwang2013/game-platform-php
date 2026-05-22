@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use support\Db;
 use support\Redis;
 use support\Request;
@@ -15,11 +16,17 @@ use app\model\AdminUser;
 use Throwable;
 
 /**
- * Prometheus 指标端点
- * GET /metrics
+ * @Apidoc\Title("Prometheus监控指标")
+ * @Apidoc\Group("metrics")
  */
 class MetricsController
 {
+    /**
+     * Prometheus指标端点
+     * @Apidoc\Title("Prometheus监控指标")
+     * @Apidoc\Url("/metrics")
+     * @Apidoc\Method("GET")
+     */
     public function index(Request $request): Response
     {
         $metrics = [];

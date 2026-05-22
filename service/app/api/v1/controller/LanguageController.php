@@ -7,15 +7,23 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\service\TranslationService;
 use support\Request;
 use support\Response;
 
+/**
+ * C端 - 语言
+ *
+ * @Apidoc\Title("语言")
+ * @Apidoc\Group("language")
+ */
 class LanguageController extends BaseController
 {
     /**
-     * 可用语言列表
-     * GET /api/language/list
+     * @Apidoc\Title("可用语言列表")
+     * @Apidoc\Url("/api/language/list")
+     * @Apidoc\Method("GET")
      */
     public function list(Request $request): Response
     {
@@ -28,8 +36,10 @@ class LanguageController extends BaseController
     }
 
     /**
-     * 切换语言
-     * POST /api/language/switch
+     * @Apidoc\Title("切换语言")
+     * @Apidoc\Url("/api/language/switch")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name:"locale",type:"string",require:true,desc:"语言代码(en-US/zh-CN/ja-JP/ko-KR)")
      */
     public function switch(Request $request): Response
     {

@@ -7,16 +7,24 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use hg\apidoc\annotation as Apidoc;
 use common\model\Game;
 use common\model\GameServer;
 use support\Request;
 use support\Response;
 
+/**
+ * @Apidoc\Title("游戏区服管理")
+ * @Apidoc\Group("gameserver")
+ */
 class GameServerController extends BaseController
 {
     /**
      * 区服列表
-     * GET /admin/game/server/list
+     * @Apidoc\Title("区服列表")
+     * @Apidoc\Url("/admin/game/server/list")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Param(name="game_id", type="string", require=true, desc="游戏哈希ID")
      */
     public function list(Request $request): Response
     {
@@ -48,7 +56,14 @@ class GameServerController extends BaseController
 
     /**
      * 创建区服
-     * POST /admin/game/server/create
+     * @Apidoc\Title("创建区服")
+     * @Apidoc\Url("/admin/game/server/create")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param(name="game_id", type="string", require=true, desc="游戏哈希ID")
+     * @Apidoc\Param(name="name", type="string", require=true, desc="区服名称")
+     * @Apidoc\Param(name="region", type="string", require=false, desc="区域")
+     * @Apidoc\Param(name="status", type="int", require=false, desc="状态: 0=禁用, 1=启用")
+     * @Apidoc\Param(name="sort", type="int", require=false, desc="排序")
      */
     public function create(Request $request): Response
     {
@@ -81,7 +96,10 @@ class GameServerController extends BaseController
 
     /**
      * 更新区服
-     * PUT /admin/game/server/{hashid}
+     * @Apidoc\Title("更新区服")
+     * @Apidoc\Url("/admin/game/server/{hashid}")
+     * @Apidoc\Method("PUT")
+     * @Apidoc\Param(name="hashid", type="string", require=true, desc="区服哈希ID")
      */
     public function update(Request $request, string $hashid): Response
     {
@@ -99,7 +117,10 @@ class GameServerController extends BaseController
 
     /**
      * 删除区服
-     * DELETE /admin/game/server/{hashid}
+     * @Apidoc\Title("删除区服")
+     * @Apidoc\Url("/admin/game/server/{hashid}")
+     * @Apidoc\Method("DELETE")
+     * @Apidoc\Param(name="hashid", type="string", require=true, desc="区服哈希ID")
      */
     public function destroy(Request $request, string $hashid): Response
     {
