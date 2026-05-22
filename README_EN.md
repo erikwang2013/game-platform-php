@@ -189,6 +189,7 @@ Automatic language detection via `X-Language` header or `Accept-Language` header
 
 | Document | Description |
 |----------|-------------|
+| [Version Comparison](docs/VERSIONS_EN.md) | Lite/Standard/Full comparison |
 | [Architecture Design](docs/ARCHITECTURE-DESIGN.md) | Architecture decisions and rationale |
 | [Architecture](docs/ARCHITECTURE.md) | System topology, module architecture, data flow |
 | [Feature Design](docs/FEATURE-DESIGN.md) | Business models, feature specs, workflow design |
