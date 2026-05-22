@@ -124,6 +124,11 @@ Route::group('/api', function () {
     Route::post('/user/2fa/setup', v('TwoFactorController', 'setup'));
     Route::post('/user/2fa/enable', v('TwoFactorController', 'enable'));
     Route::post('/user/2fa/disable', v('TwoFactorController', 'disable'));
+
+    // GDPR
+    Route::get('/user/export-data', v('UserController', 'exportData'));
+    Route::post('/user/delete-account', v('UserController', 'deleteAccount'));
+    Route::put('/user/privacy', v('UserController', 'updatePrivacy'));
 })->middleware([
     app\middleware\ApiVersion::class,
     common\middleware\UserAuth::class,

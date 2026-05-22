@@ -135,6 +135,7 @@ Route::group('/admin', function () {
     Route::post('/withdraw/limits/set', [app\admin\controller\WithdrawController::class, 'setLimits']);
     Route::get('/withdraw/limits/list', [app\admin\controller\WithdrawController::class, 'listLimits']);
     Route::put('/withdraw/limits/{hashid}', [app\admin\controller\WithdrawController::class, 'updateLimit']);
+    Route::post('/withdraw/batch-review', [app\admin\controller\WithdrawController::class, 'batchReview']);
 
     // 支付方式管理
     Route::get('/payment/method/list', [app\admin\controller\PaymentController::class, 'list']);
@@ -166,6 +167,7 @@ Route::group('/admin', function () {
     // 导出扩展
     Route::post('/export/users', [app\admin\controller\ExportController::class, 'exportUsers']);
     Route::post('/export/transactions', [app\admin\controller\ExportController::class, 'exportTransactions']);
+    Route::post('/export/receipt', [app\admin\controller\ExportController::class, 'receipt']);
 
     // 全局搜索
     Route::get('/search', [app\admin\controller\SearchController::class, 'search']);

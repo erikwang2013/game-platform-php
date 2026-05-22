@@ -51,4 +51,9 @@ class User extends Model
     {
         return $this->hasOne(UserWallet::class, 'user_id');
     }
+
+    public function oauthAccounts()
+    {
+        return $this->hasMany(UserOauth::class, 'user_id');
+    }
 }

@@ -19,6 +19,8 @@ use app\model\OperationLog;
 use app\model\AdminRole;
 use app\model\SystemConfig;
 use common\model\User;
+use common\model\DepositOrder;
+use common\model\WithdrawOrder;
 use common\model\Transaction;
 use support\Request;
 
@@ -310,6 +312,72 @@ class ExportController extends BaseController
 
         $writer = new Xlsx($spreadsheet);
         $writer->save($tmpFile);
+
+        return response()->download($tmpFile, $filename);
+    }
+
+    /**
+     * 生成收据 PDF
+     * POST /admin/export/receipt
+     * Body: { type: "deposit"|"withdraw", order_id: "hashid" }
+     */
+    public function receipt(Request $request)
+    {
+        $validator = validator($request->all(), [
+            'type' => 'required|in:deposit,withdraw',
+            'order_id' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
+        }
+
+        $orderId = $this->decodeId($request->input('order_id'));
+        $type = $request->input('type');
+
+        if ($type === 'deposit') {
+            $order = DepositOrder::with('user')->find($orderId);
+        } else {
+            $order = WithdrawOrder::with('user')->find($orderId);
+        }
+
+        if (!$order) {
+            return $this->fail('订单不存在', 404);
+        }
+
+        $html = '<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+            body { font-family: "DejaVu Sans", sans-serif; margin: 40px; }
+            .header { text-align: center; border-bottom: 2px solid #1677FF; padding-bottom: 16px; margin-bottom: 24px; }
+            .header h1 { color: #1677FF; font-size: 22px; }
+            .info { margin: 16px 0; }
+            .info td { padding: 6px 12px; }
+            .info td:first-child { font-weight: bold; width: 140px; }
+            .footer { text-align: center; font-size: 10px; color: #999; margin-top: 40px; border-top: 1px solid #eee; padding-top: 12px; }
+        </style></head><body>
+        <div class="header">
+            <h1>' . ($type === 'deposit' ? '充值凭证' : '提现凭证') . '</h1>
+            <p>Global Game Platform</p>
+        </div>
+        <table class="info">
+            <tr><td>订单号</td><td>' . htmlspecialchars($order->order_no) . '</td></tr>
+            <tr><td>用户</td><td>' . htmlspecialchars($order->user->username ?? '') . '</td></tr>
+            <tr><td>金额</td><td>' . htmlspecialchars($type === 'deposit' ? $order->platform_amount : $order->platform_amount) . ' 平台币</td></tr>
+            <tr><td>状态</td><td>' . htmlspecialchars($order->status) . '</td></tr>
+            <tr><td>时间</td><td>' . ($order->created_at instanceof \DateTime ? $order->created_at->format('Y-m-d H:i:s') : $order->created_at) . '</td></tr>
+        </table>
+        <div class="footer">Copyright (c) 2026 erik — https://erik.xyz | 电子凭证，与纸质凭证具有同等效力</div>
+        </body></html>';
+
+        $dompdf = new Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A5');
+        $dompdf->render();
+
+        $filename = 'receipt_' . $order->order_no . '.pdf';
+        $tmpFile = runtime_path() . '/tmp/' . $filename;
+        $dir = dirname($tmpFile);
+        if (!is_dir($dir)) mkdir($dir, 0755, true);
+        file_put_contents($tmpFile, $dompdf->output());
 
         return response()->download($tmpFile, $filename);
     }

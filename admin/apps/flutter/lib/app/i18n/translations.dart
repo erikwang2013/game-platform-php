@@ -56,6 +56,8 @@ class AppTranslations {
       'dashboard.export': 'Export',
       'dashboard.export_pdf': 'Export PDF',
       'dashboard.export_excel': 'Export Excel',
+      'dashboard.revenue_overview': 'Revenue Overview',
+      'dashboard.export_receipt': 'Export Receipt',
 
       // Games
       'game.title': 'Game Management',
@@ -109,6 +111,8 @@ class AppTranslations {
       'withdraw.confirm_reject': 'Confirm Rejection',
       'withdraw.note_optional': 'Note (optional)',
       'withdraw.submit_time': 'Submit Time',
+      'withdraw.batch_approve': 'Batch Approve',
+      'withdraw.batch_reject': 'Batch Reject',
 
       // Platform Users
       'platform_user.title': 'Platform Users',
@@ -290,6 +294,8 @@ class AppTranslations {
       'dashboard.export': '导出',
       'dashboard.export_pdf': '导出PDF',
       'dashboard.export_excel': '导出Excel',
+      'dashboard.revenue_overview': '收益概览',
+      'dashboard.export_receipt': '导出凭证',
 
       // Games
       'game.title': '游戏管理',
@@ -343,6 +349,8 @@ class AppTranslations {
       'withdraw.confirm_reject': '确认拒绝',
       'withdraw.note_optional': '备注（可选）',
       'withdraw.submit_time': '申请时间',
+      'withdraw.batch_approve': '批量通过',
+      'withdraw.batch_reject': '批量拒绝',
 
       // Platform Users
       'platform_user.title': '平台用户',

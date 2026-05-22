@@ -55,6 +55,8 @@ class DashboardPage extends GetView<DashboardController> {
             ),
             const SizedBox(height: 24),
             _buildPlatformStats(context),
+            const SizedBox(height: 24),
+            _buildRevenueChart(),
           ],
         ),
       );
@@ -322,6 +324,55 @@ class DashboardPage extends GetView<DashboardController> {
         ),
       ),
     );
+  }
+
+  Widget _buildRevenueChart() {
+    return Obx(() {
+      if (controller.dailyStats.isEmpty) return const SizedBox.shrink();
+
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('${AppTranslations.t('dashboard.revenue_overview')}',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 200,
+                child: BarChart(
+                  BarChartData(
+                    alignment: BarChartAlignment.spaceAround,
+                    maxY: (controller.dailyStats.map((e) => e['value'] as double).reduce((a, b) => a > b ? a : b)) * 1.2,
+                    barGroups: controller.dailyStats.asMap().entries.map((e) {
+                      return BarChartGroupData(
+                        x: e.key,
+                        barRods: [BarChartRodData(
+                          toY: e.value['value'] as double,
+                          color: const [Color(0xFF1677FF), Color(0xFFFA8C16), Color(0xFF52C41A)][e.key % 3],
+                          width: 24,
+                        )],
+                      );
+                    }).toList(),
+                    titlesData: FlTitlesData(
+                      show: true,
+                      bottomTitles: AxisTitles(sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) => Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(controller.dailyStats[value.toInt()]['label'] ?? '', fontSize: 12),
+                        ),
+                      )),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
   }
 
   Widget _buildTrendBadge(double trend) {

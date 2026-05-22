@@ -235,4 +235,62 @@ class WithdrawController extends BaseController
 
         return $this->success($this->encodeIds($limit->toArray()), '更新成功');
     }
+
+    /**
+     * 批量审核提现
+     * POST /admin/withdraw/batch-review
+     */
+    public function batchReview(Request $request)
+    {
+        $validator = validator($request->all(), [
+            'ids' => 'required|array|min:1',
+            'action' => 'required|in:approve,reject',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
+        }
+
+        $ids = $request->input('ids');
+        $action = $request->input('action');
+        $note = $request->input('note', '');
+        $successCount = 0;
+
+        foreach ($ids as $hashid) {
+            $orderId = $this->decodeId($hashid);
+            $order = WithdrawOrder::find($orderId);
+            if (!$order || $order->status !== 'pending') continue;
+
+            if ($action === 'approve') {
+                $order->update([
+                    'status' => 'approved',
+                    'reviewer_id' => $request->adminId,
+                    'review_note' => $note,
+                    'reviewed_at' => date('Y-m-d H:i:s'),
+                ]);
+            } else {
+                $order->update([
+                    'status' => 'rejected',
+                    'reviewer_id' => $request->adminId,
+                    'review_note' => $note,
+                    'reviewed_at' => date('Y-m-d H:i:s'),
+                ]);
+                UserWallet::addBalance($order->user_id, $order->platform_amount);
+                $wallet = UserWallet::where('user_id', $order->user_id)->first();
+                Transaction::create([
+                    'id' => $this->generateId(),
+                    'user_id' => $order->user_id,
+                    'type' => 'withdraw',
+                    'amount' => $order->platform_amount,
+                    'balance_after' => $wallet->balance,
+                    'ref_type' => 'withdraw',
+                    'ref_id' => $order->id,
+                    'remark' => '批量审核退回: ' . $note,
+                ]);
+            }
+            $successCount++;
+        }
+
+        return $this->success(['processed' => $successCount], "批量处理完成: {$successCount} 笔");
+    }
 }

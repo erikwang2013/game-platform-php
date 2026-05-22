@@ -16,6 +16,7 @@ class DashboardController extends GetxController {
   final trends = <String, dynamic>{}.obs;
   final recentLogs = <Map<String, dynamic>>[].obs;
   final platformStats = <String, dynamic>{}.obs;
+  final dailyStats = <Map<String, dynamic>>[].obs;
 
   List<List<FlSpot>> get trendSpots {
     final allSeries = trends['series'] as List<dynamic>? ?? [];
@@ -48,7 +49,7 @@ class DashboardController extends GetxController {
         trends.value = Map<String, dynamic>.from(data['trends'] ?? {});
         recentLogs.value = List<Map<String, dynamic>>.from(data['recent_logs'] ?? []);
       }
-      await loadPlatformStats();
+      await loadChartData();
     } catch (e) {
       // 开发环境使用模拟数据
       stats.value = [
@@ -76,6 +77,22 @@ class DashboardController extends GetxController {
       final resp = await _dio.get('/admin/dashboard/platform');
       if (resp.data['code'] == 0) {
         platformStats.value = Map<String, dynamic>.from(resp.data['data'] ?? {});
+      }
+    } catch (_) {}
+  }
+
+  Future<void> loadChartData() async {
+    try {
+      final resp = await _dio.get('/admin/dashboard/platform');
+      if (resp.data['code'] == 0) {
+        final data = resp.data['data'];
+        platformStats.value = Map<String, dynamic>.from(data);
+
+        dailyStats.value = [
+          {'label': 'Deposits', 'value': double.tryParse(data['today_deposits']?.toString() ?? '0') ?? 0},
+          {'label': 'Withdrawals', 'value': double.tryParse(data['today_withdraws']?.toString() ?? '0') ?? 0},
+          {'label': 'Fees', 'value': double.tryParse(data['total_spread_fee']?.toString() ?? '0') ?? 0},
+        ];
       }
     } catch (_) {}
   }
