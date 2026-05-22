@@ -178,6 +178,7 @@ curl -X POST http://localhost:8788/api/auth/register \
 
 | 文档 | 说明 |
 |------|------|
+| [版本对比](docs/VERSIONS.md) | 基础版/标准版/完整版功能对比 |
 | [架构设计文档](docs/ARCHITECTURE-DESIGN.md) | 架构选型理由与设计决策 |
 | [架构文档](docs/ARCHITECTURE.md) | 系统拓扑、模块架构、数据流 |
 | [功能设计文档](docs/FEATURE-DESIGN.md) | 业务模型、功能规格、流程设计 |
