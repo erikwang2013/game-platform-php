@@ -46,7 +46,7 @@ class _ProfilePageState extends State<ProfilePage> {
         'phone': _phoneCtrl.text.trim(),
         'email': _emailCtrl.text.trim(),
       });
-      Get.snackbar('成功', '个人信息更新成功');
+      Get.snackbar('成功', 'profileUpdateSuccess);
     } catch (e) {
       Get.snackbar('错误', '更新失败: $e');
     }
@@ -60,22 +60,22 @@ class _ProfilePageState extends State<ProfilePage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('修改密码'),
+        title: Text('${AppTranslations.t('profile.update_password')}'),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
-          TextField(controller: oldPwdCtrl, obscureText: true, decoration: const InputDecoration(labelText: '旧密码')),
-          TextField(controller: newPwdCtrl, obscureText: true, decoration: const InputDecoration(labelText: '新密码 (6-32位)')),
-          TextField(controller: confirmCtrl, obscureText: true, decoration: const InputDecoration(labelText: '确认新密码')),
+          TextField(controller: oldPwdCtrl, obscureText: true, decoration: InputDecoration(labelText: '${AppTranslations.t('profile.old_password')}')),
+          TextField(controller: newPwdCtrl, obscureText: true, decoration: InputDecoration(labelText: '${AppTranslations.t('profile.new_password')}')),
+          TextField(controller: confirmCtrl, obscureText: true, decoration: InputDecoration(labelText: '${AppTranslations.t('profile.confirm_password')}')),
         ]),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text("${AppTranslations.t('app.cancel')}")),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('确认')),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text('${AppTranslations.t('app.confirm')}')),
         ],
       ),
     );
 
     if (ok != true) return;
     if (newPwdCtrl.text != confirmCtrl.text) {
-      Get.snackbar('错误', '两次密码不一致');
+      Get.snackbar('错误', 'passwordMismatch);
       return;
     }
 
@@ -84,7 +84,7 @@ class _ProfilePageState extends State<ProfilePage> {
         'old_password': oldPwdCtrl.text,
         'new_password': newPwdCtrl.text,
       });
-      Get.snackbar('成功', '密码修改成功');
+      Get.snackbar('成功', 'passwordChangedSuccess);
     } catch (e) {
       Get.snackbar('错误', '修改失败: $e');
     }
@@ -94,11 +94,11 @@ class _ProfilePageState extends State<ProfilePage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('退出登录'),
-        content: const Text('确定要退出登录吗？'),
+        title: Text('${AppTranslations.t('profile.logout')}'),
+        content: Text('${AppTranslations.t('profile.logout_confirm')}'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text("${AppTranslations.t('app.cancel')}")),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white), child: const Text('退出')),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white), child: Text('${AppTranslations.t('app.logout')}')),
         ],
       ),
     );
@@ -115,19 +115,19 @@ class _ProfilePageState extends State<ProfilePage> {
     return Center(child: SizedBox(width: 500, child: ListView(padding: const EdgeInsets.all(24), children: [
       Text("${AppTranslations.t('profile.title')}", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
       const SizedBox(height: 24),
-      TextField(controller: _realNameCtrl, decoration: const InputDecoration(labelText: '姓名')),
+      TextField(controller: _realNameCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('user.real_name')}')),
       const SizedBox(height: 12),
-      TextField(controller: _phoneCtrl, decoration: const InputDecoration(labelText: '手机号')),
+      TextField(controller: _phoneCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('user.phone')}')),
       const SizedBox(height: 12),
-      TextField(controller: _emailCtrl, decoration: const InputDecoration(labelText: '邮箱')),
+      TextField(controller: _emailCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('user.email')}')),
       const SizedBox(height: 24),
       Row(children: [
         ElevatedButton.icon(onPressed: _updateProfile, icon: const Icon(Icons.save), label: Text("${AppTranslations.t('app.save')}")),
       ]),
       const SizedBox(height: 32),
       const Divider(),
-      ListTile(leading: const Icon(Icons.lock), title: const Text('修改密码'), trailing: const Icon(Icons.chevron_right), onTap: _changePassword),
-      ListTile(leading: const Icon(Icons.logout, color: Colors.red), title: const Text('退出登录', style: TextStyle(color: Colors.red)), onTap: _logout),
+      ListTile(leading: const Icon(Icons.lock), title: Text('${AppTranslations.t('profile.update_password')}'), trailing: const Icon(Icons.chevron_right), onTap: _changePassword),
+      ListTile(leading: const Icon(Icons.logout, color: Colors.red), title: Text('${AppTranslations.t('profile.logout')}', style: TextStyle(color: Colors.red)), onTap: _logout),
     ])));
   }
 }

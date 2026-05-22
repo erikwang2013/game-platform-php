@@ -74,7 +74,7 @@ class PlatformUserPage extends GetView<PlatformUserController> {
               width: 250,
               child: TextField(
                 decoration: const InputDecoration(
-                  hintText: '搜索用户名/昵称',
+                  hintText: '${AppTranslations.t('platform_user.search_hint')}',
                   prefixIcon: Icon(Icons.search),
                   isDense: true,
                 ),
@@ -87,10 +87,10 @@ class PlatformUserPage extends GetView<PlatformUserController> {
             const SizedBox(width: 12),
             Obx(() => DropdownButton<String>(
               value: ctrl.statusFilter.value.isEmpty ? null : ctrl.statusFilter.value,
-              hint: const Text('状态筛选'),
+              hint: Text('${AppTranslations.t('platform_user.filter_status')}'),
               underline: const SizedBox(),
               items: const [
-                DropdownMenuItem(value: '', child: Text('全部')),
+                DropdownMenuItem(value: '', child: Text('${AppTranslations.t('withdraw.all')}')),
                 DropdownMenuItem(value: '1', child: Text("${AppTranslations.t('app.enabled')}")),
                 DropdownMenuItem(value: '0', child: Text("${AppTranslations.t('app.disabled')}")),
               ],
@@ -112,11 +112,11 @@ class PlatformUserPage extends GetView<PlatformUserController> {
                 columns: const [
                   DataColumn(label: Text('ID')),
                   DataColumn(label: Text("${AppTranslations.t('user.username')}")),
-                  DataColumn(label: Text('昵称')),
-                  DataColumn(label: Text('国家')),
-                  DataColumn(label: Text('状态')),
-                  DataColumn(label: Text('注册时间')),
-                  DataColumn(label: Text('操作')),
+                  DataColumn(label: Text('${AppTranslations.t('platform_user.nickname')}')),
+                  DataColumn(label: Text('${AppTranslations.t('platform_user.country')}')),
+                  DataColumn(label: Text('${AppTranslations.t('platform_user.status')}')),
+                  DataColumn(label: Text('${AppTranslations.t('platform_user.created')}')),
+                  DataColumn(label: Text('${AppTranslations.t('withdraw.actions')}')),
                 ],
                 rows: ctrl.users.map((u) {
                   final id = u['id']?.toString() ?? '';
@@ -167,25 +167,25 @@ class PlatformUserPage extends GetView<PlatformUserController> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text('用户详情 - ${detail['username'] ?? user['username']}'),
+        title: Text('${AppTranslations.t('platform_user.user_detail')} - ${detail['username'] ?? user['username']}'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _detailRow("${AppTranslations.t('user.username')}", detail['username']?.toString()),
-              _detailRow('昵称', detail['nickname']?.toString()),
-              _detailRow('邮箱', detail['email']?.toString()),
-              _detailRow('手机号', detail['phone']?.toString()),
-              _detailRow('国家', detail['country']?.toString()),
-              _detailRow('钱包余额', detail['wallet_balance']?.toString() ?? detail['balance']?.toString()),
-              _detailRow('注册时间', detail['created_at']?.toString()),
-              _detailRow('状态', detail['status'] == 1 ? "${AppTranslations.t('app.enabled')}" : "${AppTranslations.t('app.disabled')}"),
+              _detailRow('${AppTranslations.t('platform_user.nickname')}', detail['nickname']?.toString()),
+              _detailRow('${AppTranslations.t('platform_user.email')}', detail['email']?.toString()),
+              _detailRow('${AppTranslations.t('platform_user.phone')}', detail['phone']?.toString()),
+              _detailRow('${AppTranslations.t('platform_user.country')}', detail['country']?.toString()),
+              _detailRow('${AppTranslations.t('platform_user.wallet_balance')}', detail['wallet_balance']?.toString() ?? detail['balance']?.toString()),
+              _detailRow('${AppTranslations.t('platform_user.created')}', detail['created_at']?.toString()),
+              _detailRow('${AppTranslations.t('platform_user.status')}', detail['status'] == 1 ? "${AppTranslations.t('app.enabled')}" : "${AppTranslations.t('app.disabled')}"),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('关闭')),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('${AppTranslations.t('app.close')}')),
         ],
       ),
     );

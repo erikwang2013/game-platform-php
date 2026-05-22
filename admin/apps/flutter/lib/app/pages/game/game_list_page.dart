@@ -31,7 +31,7 @@ class GameListController extends GetxController {
     try {
       await api.post('/admin/game/create', data: data);
       await loadGames();
-      Get.snackbar('成功', '游戏创建成功');
+      Get.snackbar('成功', 'gameCreateSuccess);
     } catch (e) {
       Get.snackbar('错误', '创建失败: $e');
     }
@@ -41,7 +41,7 @@ class GameListController extends GetxController {
     try {
       await api.put('/admin/game/$hashid', data: data);
       await loadGames();
-      Get.snackbar('成功', '游戏更新成功');
+      Get.snackbar('成功', 'gameUpdateSuccess);
     } catch (e) {
       Get.snackbar('错误', '更新失败: $e');
     }
@@ -51,7 +51,7 @@ class GameListController extends GetxController {
     try {
       await api.delete('/admin/game/$hashid');
       await loadGames();
-      Get.snackbar('成功', '游戏删除成功');
+      Get.snackbar('成功', 'gameDeleteSuccess);
     } catch (e) {
       Get.snackbar('错误', '删除失败: $e');
     }
@@ -91,20 +91,20 @@ class GameListPage extends GetView<GameListController> {
             return SingleChildScrollView(
               child: DataTable(
                 columns: const [
-                  DataColumn(label: Text('ID')),
+                  DataColumn(label: Text('${AppTranslations.t('game.id')}')),
                   DataColumn(label: Text("${AppTranslations.t('game.name')}")),
                   DataColumn(label: Text("${AppTranslations.t('game.slug')}")),
                   DataColumn(label: Text("${AppTranslations.t('game.type')}")),
                   DataColumn(label: Text("${AppTranslations.t('game.currencies')}")),
-                  DataColumn(label: Text('状态')),
-                  DataColumn(label: Text('操作')),
+                  DataColumn(label: Text('${AppTranslations.t('game.status')}')),
+                  DataColumn(label: Text('${AppTranslations.t('game.actions')}')),
                 ],
                 rows: ctrl.games.map((g) {
                   final id = g['id']?.toString() ?? '';
                   final name = g['name']?.toString() ?? '';
                   final slug = g['slug']?.toString() ?? '';
                   final type = g['type']?.toString() ?? '';
-                  final typeLabel = type == 'self' ? '自研' : '第三方';
+                  final typeLabel = type == 'self' ? '${AppTranslations.t('game.self')}' : '${AppTranslations.t('game.third_party')}';
                   final currencyCount = (g['currency_count'] ?? g['currencies'] is List ? (g['currencies'] as List).length : 0).toString();
                   final status = g['status'] is int ? g['status'] : (g['status'] == 'active' || g['status'] == true ? 1 : 0);
                   final statusLabel = status == 1 ? "${AppTranslations.t('app.enabled')}" : "${AppTranslations.t('app.disabled')}";
@@ -156,21 +156,21 @@ class GameListPage extends GetView<GameListController> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          title: Text(item != null ? '编辑游戏' : '新增游戏'),
+          title: Text(item != null ? '${AppTranslations.t('game.edit')}' : '${AppTranslations.t('game.create')}'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: '名称')),
+                TextField(controller: nameCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('game.name')}')),
                 const SizedBox(height: 12),
-                TextField(controller: slugCtrl, decoration: const InputDecoration(labelText: '标识(slug)')),
+                TextField(controller: slugCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('game.slug')}')),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: type,
-                  decoration: const InputDecoration(labelText: '类型'),
+                  decoration: InputDecoration(labelText: '${AppTranslations.t('game.type')}'),
                   items: const [
-                    DropdownMenuItem(value: 'self', child: Text('自研')),
-                    DropdownMenuItem(value: 'third_party', child: Text('第三方')),
+                    DropdownMenuItem(value: 'self', child: Text('${AppTranslations.t('game.self')}')),
+                    DropdownMenuItem(value: 'third_party', child: Text('${AppTranslations.t('game.third_party')}')),
                   ],
                   onChanged: (v) {
                     if (v != null) {
@@ -179,13 +179,13 @@ class GameListPage extends GetView<GameListController> {
                   },
                 ),
                 const SizedBox(height: 12),
-                TextField(controller: descCtrl, decoration: const InputDecoration(labelText: '描述'), maxLines: 2),
+                TextField(controller: descCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('game.description')}'), maxLines: 2),
                 const SizedBox(height: 12),
-                TextField(controller: coverCtrl, decoration: const InputDecoration(labelText: '封面图片URL')),
+                TextField(controller: coverCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('game.cover_image')}')),
                 const SizedBox(height: 12),
-                TextField(controller: endpointCtrl, decoration: const InputDecoration(labelText: 'API接口地址')),
+                TextField(controller: endpointCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('game.api_endpoint')}')),
                 const SizedBox(height: 12),
-                TextField(controller: sortCtrl, decoration: const InputDecoration(labelText: '排序'), keyboardType: TextInputType.number),
+                TextField(controller: sortCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('game.sort')}'), keyboardType: TextInputType.number),
                 const SizedBox(height: 12),
                 SwitchListTile(
                   title: const Text("${AppTranslations.t('app.enabled')}"),

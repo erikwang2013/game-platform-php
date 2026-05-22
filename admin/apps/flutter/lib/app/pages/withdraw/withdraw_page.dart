@@ -96,7 +96,7 @@ class WithdrawPage extends GetView<WithdrawController> {
             Obx(() => Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('全局提现开关', style: TextStyle(fontSize: 13)),
+                Text('${AppTranslations.t('withdraw.global_switch')}', style: const TextStyle(fontSize: 13)),
                 const SizedBox(width: 8),
                 Switch(
                   value: ctrl.withdrawEnabled.value,
@@ -108,7 +108,7 @@ class WithdrawPage extends GetView<WithdrawController> {
             ElevatedButton.icon(
               onPressed: () => _showLimitsDialog(context, ctrl),
               icon: const Icon(Icons.tune, size: 18),
-              label: const Text('限额设置'),
+              label: Text('${AppTranslations.t('withdraw.limits')}'),
             ),
           ],
         ),
@@ -116,10 +116,10 @@ class WithdrawPage extends GetView<WithdrawController> {
         // Status filter segmented buttons
         Obx(() => SegmentedButton<String>(
           segments: const [
-            ButtonSegment(value: 'all', label: Text('全部')),
-            ButtonSegment(value: 'pending', label: Text('待审核')),
-            ButtonSegment(value: 'approved', label: Text('已通过')),
-            ButtonSegment(value: 'rejected', label: Text('已拒绝')),
+            ButtonSegment(value: 'all', label: Text('${AppTranslations.t('withdraw.all')}')),
+            ButtonSegment(value: 'pending', label: Text('${AppTranslations.t('withdraw.pending')}')),
+            ButtonSegment(value: 'approved', label: Text('${AppTranslations.t('withdraw.approved')}')),
+            ButtonSegment(value: 'rejected', label: Text('${AppTranslations.t('withdraw.rejected')}')),
           ],
           selected: {ctrl.statusFilter.value},
           onSelectionChanged: (v) {
@@ -136,13 +136,13 @@ class WithdrawPage extends GetView<WithdrawController> {
             return SingleChildScrollView(
               child: DataTable(
                 columns: const [
-                  DataColumn(label: Text('订单号')),
-                  DataColumn(label: Text('用户')),
-                  DataColumn(label: Text('金额')),
-                  DataColumn(label: Text('方式')),
-                  DataColumn(label: Text('状态')),
-                  DataColumn(label: Text('申请时间')),
-                  DataColumn(label: Text('操作')),
+                  DataColumn(label: Text('${AppTranslations.t('withdraw.order_no')}')),
+                  DataColumn(label: Text('${AppTranslations.t('withdraw.user')}')),
+                  DataColumn(label: Text('${AppTranslations.t('withdraw.amount')}')),
+                  DataColumn(label: Text('${AppTranslations.t('withdraw.method')}')),
+                  DataColumn(label: Text('${AppTranslations.t('withdraw.status')}')),
+                  DataColumn(label: Text('${AppTranslations.t('withdraw.submit_time')}')),
+                  DataColumn(label: Text('${AppTranslations.t('withdraw.actions')}')),
                 ],
                 rows: ctrl.orders.map((o) {
                   final orderId = o['order_no']?.toString() ?? o['id']?.toString() ?? '';
@@ -157,15 +157,15 @@ class WithdrawPage extends GetView<WithdrawController> {
                   Color statusColor;
                   switch (status) {
                     case 'approved':
-                      statusLabel = '已通过';
+                      statusLabel = '${AppTranslations.t('withdraw.approved')}';
                       statusColor = Colors.green;
                       break;
                     case 'rejected':
-                      statusLabel = '已拒绝';
+                      statusLabel = '${AppTranslations.t('withdraw.rejected')}';
                       statusColor = Colors.red;
                       break;
                     default:
-                      statusLabel = '待审核';
+                      statusLabel = '${AppTranslations.t('withdraw.pending')}';
                       statusColor = Colors.orange;
                   }
 
@@ -184,12 +184,12 @@ class WithdrawPage extends GetView<WithdrawController> {
                           ? Row(mainAxisSize: MainAxisSize.min, children: [
                               TextButton(
                                 onPressed: () => _showReviewDialog(context, ctrl, o, 'approve'),
-                                child: const Text('通过', style: TextStyle(color: Colors.green)),
+                                child: Text('${AppTranslations.t('withdraw.approve')}', style: TextStyle(color: Colors.green)),
                               ),
                               const SizedBox(width: 4),
                               TextButton(
                                 onPressed: () => _showReviewDialog(context, ctrl, o, 'reject'),
-                                child: const Text('拒绝', style: TextStyle(color: Colors.red)),
+                                child: Text('${AppTranslations.t('withdraw.reject')}', style: TextStyle(color: Colors.red)),
                               ),
                             ])
                           : const Text('-'),
@@ -218,7 +218,7 @@ class WithdrawPage extends GetView<WithdrawController> {
             const SizedBox(height: 12),
             TextField(
               controller: noteCtrl,
-              decoration: const InputDecoration(labelText: '备注（可选）'),
+              decoration: InputDecoration(labelText: '${AppTranslations.t('withdraw.note_optional')}'),
               maxLines: 2,
             ),
           ],
@@ -260,19 +260,19 @@ class WithdrawPage extends GetView<WithdrawController> {
             children: [
               TextField(
                 controller: dailyCtrl,
-                decoration: const InputDecoration(labelText: '每日限额'),
+                decoration: InputDecoration(labelText: '${AppTranslations.t('withdraw.daily_limit')}'),
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: minCtrl,
-                decoration: const InputDecoration(labelText: '最低提现金额'),
+                decoration: InputDecoration(labelText: '${AppTranslations.t('withdraw.min_amount')}'),
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: autoCtrl,
-                decoration: const InputDecoration(labelText: '自动通过阈值'),
+                decoration: InputDecoration(labelText: '${AppTranslations.t('withdraw.auto_threshold')}'),
                 keyboardType: TextInputType.number,
               ),
             ],

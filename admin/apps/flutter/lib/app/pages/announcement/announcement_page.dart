@@ -71,15 +71,15 @@ class AnnouncementPage extends GetView<AnnouncementController> {
             return SingleChildScrollView(
               child: DataTable(
                 columns: const [
-                  DataColumn(label: Text('标题')),
+                  DataColumn(label: Text('${AppTranslations.t('announcement.publish')}')),
                   DataColumn(label: Text("${AppTranslations.t('game.type')}")),
-                  DataColumn(label: Text('状态')),
-                  DataColumn(label: Text('发布时间')),
+                  DataColumn(label: Text('${AppTranslations.t('withdraw.status')}')),
+                  DataColumn(label: Text('${AppTranslations.t('announcement.publish_time')}')),
                 ],
                 rows: ctrl.announcements.map((a) {
                   final title = a['title']?.toString() ?? '';
                   final type = a['type']?.toString() ?? '';
-                  final typeLabel = type == 'system' ? '系统公告' : (type == 'event' ? '活动公告' : type);
+                  final typeLabel = type == 'system' ? '${AppTranslations.t('announcement.type_system')}' : (type == 'event' ? '${AppTranslations.t('announcement.type_event')}' : type);
                   final status = a['status'] is int ? a['status'] : (a['status'] == 'active' || a['status'] == true ? 1 : 0);
                   final createdAt = a['created_at']?.toString() ?? a['published_at']?.toString() ?? '';
 
@@ -87,7 +87,7 @@ class AnnouncementPage extends GetView<AnnouncementController> {
                     DataCell(Text(title)),
                     DataCell(Chip(label: Text(typeLabel))),
                     DataCell(Chip(
-                      label: Text(status == 1 ? '已发布' : '草稿'),
+                      label: Text(status == 1 ? '${AppTranslations.t('announcement.published')}' : '${AppTranslations.t('announcement.draft')}'),
                       color: WidgetStatePropertyAll(status == 1 ? Colors.green.shade50 : Colors.grey.shade200),
                     )),
                     DataCell(Text(createdAt)),
@@ -111,22 +111,22 @@ class AnnouncementPage extends GetView<AnnouncementController> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          title: const Text('创建公告'),
+          title: Text('${AppTranslations.t('announcement.create')}'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: '标题')),
+                TextField(controller: titleCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('announcement.publish')}')),
                 const SizedBox(height: 12),
                 TextField(
                   controller: contentCtrl,
-                  decoration: const InputDecoration(labelText: '内容'),
+                  decoration: InputDecoration(labelText: '${AppTranslations.t('announcement.content')}'),
                   maxLines: 5,
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   value: type,
-                  decoration: const InputDecoration(labelText: '类型'),
+                  decoration: InputDecoration(labelText: '${AppTranslations.t('game.type')}'),
                   items: const [
                     DropdownMenuItem(value: 'system', child: Text('系统公告')),
                     DropdownMenuItem(value: 'event', child: Text('活动公告')),
@@ -160,7 +160,7 @@ class AnnouncementPage extends GetView<AnnouncementController> {
                 });
                 Navigator.pop(ctx);
               },
-              child: const Text('创建'),
+              child: Text('${AppTranslations.t('app.create')}'),
             ),
           ],
         ),

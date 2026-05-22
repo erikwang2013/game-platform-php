@@ -67,14 +67,14 @@ class PaymentPage extends GetView<PaymentController> {
                 columns: const [
                   DataColumn(label: Text("${AppTranslations.t('game.name')}")),
                   DataColumn(label: Text("${AppTranslations.t('game.type')}")),
-                  DataColumn(label: Text('提供商')),
-                  DataColumn(label: Text('状态')),
-                  DataColumn(label: Text('操作')),
+                  DataColumn(label: Text('${AppTranslations.t('payment.provider')}')),
+                  DataColumn(label: Text('${AppTranslations.t('payment.status')}')),
+                  DataColumn(label: Text('${AppTranslations.t('withdraw.actions')}')),
                 ],
                 rows: ctrl.methods.map((m) {
                   final name = m['name']?.toString() ?? '';
                   final type = m['type']?.toString() ?? '';
-                  final typeLabel = type == 'fiat' ? '法币' : '加密货币';
+                  final typeLabel = type == 'fiat' ? '${AppTranslations.t('payment.fiat')}' : '${AppTranslations.t('payment.crypto')}';
                   final provider = m['provider']?.toString() ?? '';
                   final status = m['status'] is int ? m['status'] : (m['status'] == 'active' || m['status'] == true ? 1 : 0);
                   final isEnabled = status == 1;

@@ -47,8 +47,8 @@ class UserListPage extends GetView<UserController> {
                   if (v == 'disable') ctrl.batchSetStatus(0);
                 },
                 itemBuilder: (_) => const [
-                  PopupMenuItem(value: 'enable', child: Text('批量启用')),
-                  PopupMenuItem(value: 'disable', child: Text('批量禁用')),
+                  PopupMenuItem(value: 'enable', child: Text('${AppTranslations.t('user.batch_enable')}')),
+                  PopupMenuItem(value: 'disable', child: Text('${AppTranslations.t('user.batch_disable')}')),
                 ],
               ),
             ],
@@ -61,12 +61,12 @@ class UserListPage extends GetView<UserController> {
             SizedBox(
               width: 250,
               child: TextField(
-                decoration: const InputDecoration(hintText: '搜索用户名/姓名', prefixIcon: Icon(Icons.search), isDense: true),
+                decoration: const InputDecoration(hintText: '${AppTranslations.t('user.search_hint')}', prefixIcon: Icon(Icons.search), isDense: true),
                 onSubmitted: (v) => ctrl.search(v),
               ),
             ),
             const SizedBox(width: 12),
-            ChoiceChip(label: const Text('全部'), selected: ctrl.statusFilter.value == null, onSelected: (_) => ctrl.filterByStatus(null)),
+            ChoiceChip(label: Text('${AppTranslations.t('withdraw.all')}'), selected: ctrl.statusFilter.value == null, onSelected: (_) => ctrl.filterByStatus(null)),
             const SizedBox(width: 4),
             ChoiceChip(label: const Text("${AppTranslations.t('app.enabled')}"), selected: ctrl.statusFilter.value == 1, onSelected: (_) => ctrl.filterByStatus(1)),
             const SizedBox(width: 4),
@@ -85,12 +85,12 @@ class UserListPage extends GetView<UserController> {
                 columns: [
                   DataColumn(label: Checkbox(value: ctrl.selectedIds.length == ctrl.users.length && ctrl.users.isNotEmpty, onChanged: (_) => ctrl.toggleSelectAll())),
                   const DataColumn(label: Text("${AppTranslations.t('user.username')}")),
-                  const DataColumn(label: Text('姓名')),
-                  const DataColumn(label: Text('手机号')),
-                  const DataColumn(label: Text('邮箱')),
-                  const DataColumn(label: Text('状态')),
-                  const DataColumn(label: Text('最后登录')),
-                  const DataColumn(label: Text('操作')),
+                  const DataColumn(label: Text('${AppTranslations.t('user.real_name')}')),
+                  const DataColumn(label: Text('${AppTranslations.t('user.phone')}')),
+                  const DataColumn(label: Text('${AppTranslations.t('user.email')}')),
+                  const DataColumn(label: Text('${AppTranslations.t('user.status')}')),
+                  const DataColumn(label: Text('${AppTranslations.t('user.last_login')}')),
+                  const DataColumn(label: Text('${AppTranslations.t('user.actions')}')),
                 ],
                 rows: ctrl.users.map((u) {
                   final id = u['id'].toString();
@@ -141,7 +141,7 @@ class UserListPage extends GetView<UserController> {
         content: Column(mainAxisSize: MainAxisSize.min, children: [
           Text('确定要删除用户「${user['username']}」吗？'),
           const SizedBox(height: 8),
-          TextField(controller: pwdCtrl, obscureText: true, decoration: const InputDecoration(labelText: '请输入您的密码确认')),
+          TextField(controller: pwdCtrl, obscureText: true, decoration: const InputDecoration(labelText: '${AppTranslations.t('user.password_confirm_hint')}')),
         ]),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),
@@ -156,11 +156,11 @@ class UserListPage extends GetView<UserController> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('确认批量删除'),
+        title: const Text('${AppTranslations.t('user.confirm_batch_delete')}'),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
           Text('确定要删除选中的 ${ctrl.selectedIds.length} 个用户吗？'),
           const SizedBox(height: 8),
-          TextField(controller: pwdCtrl, obscureText: true, decoration: const InputDecoration(labelText: '请输入您的密码确认')),
+          TextField(controller: pwdCtrl, obscureText: true, decoration: const InputDecoration(labelText: '${AppTranslations.t('user.password_confirm_hint')}')),
         ]),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),

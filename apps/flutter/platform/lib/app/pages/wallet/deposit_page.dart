@@ -1,4 +1,6 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+import '../../i18n/translations.dart';
+import '../../i18n/locale_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
@@ -32,12 +34,12 @@ class _DepositPageState extends State<DepositPage> {
   Future<void> _submit() async {
     final amountText = _amountCtrl.text.trim();
     if (amountText.isEmpty) {
-      setState(() => _error = '请输入充值金额');
+      setState(() => _error = "${AppTranslations.t('deposit.enter_amount')}");
       return;
     }
     final amount = double.tryParse(amountText);
     if (amount == null || amount <= 0) {
-      setState(() => _error = '请输入有效的金额');
+      setState(() => _error = "${AppTranslations.t('deposit.invalid_amount')}");
       return;
     }
 
@@ -67,7 +69,7 @@ class _DepositPageState extends State<DepositPage> {
       });
     } catch (e) {
       setState(() {
-        _error = '网络错误，请重试';
+        _error = "${AppTranslations.t('app.network_error')}";
         _loading = false;
       });
     }
@@ -79,7 +81,7 @@ class _DepositPageState extends State<DepositPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('充值'),
+        title: const Text("${AppTranslations.t('deposit.title')}"),
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Get.back()),
       ),
       body: Container(
@@ -96,9 +98,9 @@ class _DepositPageState extends State<DepositPage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text('账户充值', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                      Text("${AppTranslations.t('deposit.title')}", style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
-                      Text('选择充值金额和支付方式', style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant)),
+                      Text("${AppTranslations.t('deposit.subtitle')}", style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant)),
                       const SizedBox(height: 24),
 
                       // Amount
@@ -106,7 +108,7 @@ class _DepositPageState extends State<DepositPage> {
                         controller: _amountCtrl,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         decoration: const InputDecoration(
-                          labelText: '充值金额',
+                          labelText: "${AppTranslations.t('deposit.amount')}",
                           prefixIcon: Icon(Icons.monetization_on_outlined),
                           border: OutlineInputBorder(),
                         ),
@@ -117,7 +119,7 @@ class _DepositPageState extends State<DepositPage> {
                       DropdownButtonFormField<String>(
                         initialValue: _currency,
                         decoration: const InputDecoration(
-                          labelText: '币种',
+                          labelText: "${AppTranslations.t('deposit.currency')}",
                           prefixIcon: Icon(Icons.currency_exchange),
                           border: OutlineInputBorder(),
                         ),
@@ -130,7 +132,7 @@ class _DepositPageState extends State<DepositPage> {
                       DropdownButtonFormField<String>(
                         initialValue: _method,
                         decoration: const InputDecoration(
-                          labelText: '支付方式',
+                          labelText: "${AppTranslations.t('deposit.method')}",
                           prefixIcon: Icon(Icons.payment),
                           border: OutlineInputBorder(),
                         ),
@@ -170,9 +172,9 @@ class _DepositPageState extends State<DepositPage> {
                             children: [
                               const Icon(Icons.check_circle, color: Colors.green, size: 40),
                               const SizedBox(height: 8),
-                              const Text('充值申请已提交', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.green)),
+                              const Text("${AppTranslations.t('deposit.success')}", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.green)),
                               const SizedBox(height: 8),
-                              Text('订单号: $_orderNo', style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant)),
+                              Text('${AppTranslations.t('deposit.order_no')}: $_orderNo', style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant)),
                             ],
                           ),
                         ),
@@ -186,7 +188,7 @@ class _DepositPageState extends State<DepositPage> {
                           onPressed: _loading ? null : _submit,
                           child: _loading
                               ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                              : const Text('提交充值', style: TextStyle(fontSize: 16)),
+                              : const Text("${AppTranslations.t('deposit.submit')}", style: TextStyle(fontSize: 16)),
                         ),
                       ),
                     ],

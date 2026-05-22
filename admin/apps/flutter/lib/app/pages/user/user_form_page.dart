@@ -64,7 +64,7 @@ class _UserFormPageState extends State<UserFormPage> {
       } else {
         await api.post('/admin/user', data: data);
       }
-      Get.snackbar('成功', isEdit ? '用户更新成功' : '用户创建成功');
+      Get.snackbar('成功', isEdit ? 'userUpdateSuccess : 'userCreateSuccess);
       Get.back(result: true);
     } catch (e) {
       Get.snackbar('错误', '操作失败: $e');
@@ -76,7 +76,7 @@ class _UserFormPageState extends State<UserFormPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(isEdit ? '编辑用户' : '新增用户')),
+      appBar: AppBar(title: Text(isEdit ? '${AppTranslations.t('user.edit')}' : '${AppTranslations.t('user.create')}')),
       body: Center(
         child: SizedBox(
           width: 500,
@@ -87,20 +87,20 @@ class _UserFormPageState extends State<UserFormPage> {
               children: [
                 TextFormField(controller: _usernameCtrl, enabled: !isEdit, decoration: const InputDecoration(labelText: "${AppTranslations.t('user.username')}"), validator: (v) => (v == null || v.isEmpty) ? '请输入用户名' : null),
                 const SizedBox(height: 16),
-                TextFormField(controller: _passwordCtrl, obscureText: true, decoration: InputDecoration(labelText: isEdit ? '新密码（留空不修改）' : '密码'), validator: (v) => !isEdit && (v == null || v.isEmpty) ? '请输入密码' : null),
+                TextFormField(controller: _passwordCtrl, obscureText: true, decoration: InputDecoration(labelText: isEdit ? '${AppTranslations.t('user.new_password_hint')}' : '${AppTranslations.t('login.password')}'), validator: (v) => !isEdit && (v == null || v.isEmpty) ? 'passwordRequired' : null),
                 const SizedBox(height: 16),
-                TextFormField(controller: _realNameCtrl, decoration: const InputDecoration(labelText: '真实姓名'), validator: (v) => (v == null || v.isEmpty) ? '请输入真实姓名' : null),
+                TextFormField(controller: _realNameCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('user.real_name')}'), validator: (v) => (v == null || v.isEmpty) ? '请输入真实姓名' : null),
                 const SizedBox(height: 16),
-                TextFormField(controller: _phoneCtrl, decoration: const InputDecoration(labelText: '手机号')),
+                TextFormField(controller: _phoneCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('user.phone')}')),
                 const SizedBox(height: 16),
-                TextFormField(controller: _emailCtrl, decoration: const InputDecoration(labelText: '邮箱')),
+                TextFormField(controller: _emailCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('user.email')}')),
                 const SizedBox(height: 16),
-                DropdownButtonFormField<int>(value: _status, decoration: const InputDecoration(labelText: '状态'), items: const [
+                DropdownButtonFormField<int>(value: _status, decoration: InputDecoration(labelText: '${AppTranslations.t('user.status')}'), items: const [
                   DropdownMenuItem(value: 1, child: Text("${AppTranslations.t('app.enabled')}")),
                   DropdownMenuItem(value: 0, child: Text("${AppTranslations.t('app.disabled')}")),
                 ], onChanged: (v) => setState(() => _status = v ?? 1)),
                 const SizedBox(height: 24),
-                ElevatedButton(onPressed: _isLoading ? null : _submit, child: Text(_isLoading ? '提交中...' : '提交')),
+                ElevatedButton(onPressed: _isLoading ? null : _submit, child: Text(_isLoading ? 'Submitting...' : '${AppTranslations.t('app.save')}')),
               ],
             ),
           ),

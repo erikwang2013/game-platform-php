@@ -1,4 +1,6 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+import '../../i18n/translations.dart';
+import '../../i18n/locale_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
@@ -32,7 +34,7 @@ class _LoginPageState extends State<LoginPage> {
     final password = _passwordCtrl.text;
 
     if (username.isEmpty || password.isEmpty) {
-      setState(() => _error = '请输入用户名和密码');
+      setState(() => _error = "${AppTranslations.t('login.enter_credentials')}");
       return;
     }
 
@@ -57,12 +59,12 @@ class _LoginPageState extends State<LoginPage> {
         );
         if (mounted) Get.offAllNamed('/games');
       } else {
-        setState(() => _error = resp.data['message'] ?? '操作失败');
+        setState(() => _error = resp.data['message'] ?? "${AppTranslations.t('login.operation_failed')}");
       }
     } on DioException catch (e) {
-      setState(() => _error = e.response?.data?['message'] ?? '网络错误，请检查连接');
+      setState(() => _error = e.response?.data?['message'] ?? "${AppTranslations.t('app.network_error')}");
     } catch (e) {
-      setState(() => _error = '网络错误，请检查连接');
+      setState(() => _error = "${AppTranslations.t('app.network_error')}");
     } finally {
       setState(() => _loading = false);
     }
@@ -86,12 +88,12 @@ class _LoginPageState extends State<LoginPage> {
                 Icon(Icons.sports_esports, size: 64, color: colorScheme.primary),
                 const SizedBox(height: 12),
                 Text(
-                  '全球游戏聚合平台',
+                  "${AppTranslations.t('login.title')}",
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: colorScheme.primary),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  _isRegister ? '创建新账号' : '欢迎回来',
+                  _isRegister ? "${AppTranslations.t('login.create_account')}" : "${AppTranslations.t('login.welcome')}",
                   style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
                 ),
                 const SizedBox(height: 32),
@@ -100,7 +102,7 @@ class _LoginPageState extends State<LoginPage> {
                 TextField(
                   controller: _usernameCtrl,
                   decoration: const InputDecoration(
-                    labelText: '用户名',
+                    labelText: "${AppTranslations.t('profile.username')}",
                     prefixIcon: Icon(Icons.person_outline),
                     border: OutlineInputBorder(),
                   ),
@@ -112,7 +114,7 @@ class _LoginPageState extends State<LoginPage> {
                   controller: _passwordCtrl,
                   obscureText: true,
                   decoration: const InputDecoration(
-                    labelText: '密码',
+                    labelText: "${AppTranslations.t('login.password')}",
                     prefixIcon: Icon(Icons.lock_outline),
                     border: OutlineInputBorder(),
                   ),
@@ -145,7 +147,7 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: _loading ? null : _submit,
                     child: _loading
                         ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : Text(_isRegister ? '注 册' : '登 录', style: const TextStyle(fontSize: 16)),
+                        : Text(_isRegister ? '${AppTranslations.t('login.register')}' : '${AppTranslations.t('login.login')}', style: const TextStyle(fontSize: 16)),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -155,7 +157,7 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      _isRegister ? '已有账号？' : '没有账号？',
+                      _isRegister ? "${AppTranslations.t('login.have_account')}" : "${AppTranslations.t('login.no_account')}",
                       style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
                     ),
                     TextButton(
@@ -164,7 +166,7 @@ class _LoginPageState extends State<LoginPage> {
                         _error = null;
                       }),
                       child: Text(
-                        _isRegister ? '去登录' : '去注册',
+                        _isRegister ? "${AppTranslations.t('login.go_login')}" : "${AppTranslations.t('login.go_register')}",
                         style: const TextStyle(fontSize: 14),
                       ),
                     ),

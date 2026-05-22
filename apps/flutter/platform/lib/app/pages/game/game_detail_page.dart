@@ -1,4 +1,6 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+import '../../i18n/translations.dart';
+import '../../i18n/locale_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
@@ -33,7 +35,7 @@ class _GameDetailPageState extends State<GameDetailPage> {
       final resp = await _api.post('/api/game/launch', data: {'game_id': _game['id']});
       final data = resp['data'];
       setState(() {
-        _resultMsg = data?['message'] ?? '游戏启动成功';
+        _resultMsg = data?['message'] ?? 'Game launched successfully';
         _resultSuccess = true;
         _loading = false;
       });
@@ -49,7 +51,7 @@ class _GameDetailPageState extends State<GameDetailPage> {
       });
     } catch (e) {
       setState(() {
-        _resultMsg = '网络错误，请重试';
+        _resultMsg = "${AppTranslations.t('app.network_error')}";
         _resultSuccess = false;
         _loading = false;
       });
@@ -130,7 +132,7 @@ class _GameDetailPageState extends State<GameDetailPage> {
                                   icon: _loading
                                       ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                                       : const Icon(Icons.play_arrow),
-                                  label: const Text('开始游戏', style: TextStyle(fontSize: 16)),
+                                  label: const Text("${AppTranslations.t('game_detail.start_game')}", style: TextStyle(fontSize: 16)),
                                 ),
                               ),
                             ],
@@ -167,14 +169,14 @@ class _GameDetailPageState extends State<GameDetailPage> {
 
                 // Currencies / exchange rates
                 if (currencies != null && currencies is List && currencies.isNotEmpty) ...[
-                  Text('支持的游戏币', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                  Text("${AppTranslations.t('game_detail.supported_currencies')}", style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 12),
                   Card(
                     child: DataTable(
                       columns: const [
-                        DataColumn(label: Text('游戏币')),
-                        DataColumn(label: Text('兑换率')),
-                        DataColumn(label: Text('描述')),
+                        DataColumn(label: Text('${AppTranslations.t("game_detail.supported_currencies")}')),
+                        DataColumn(label: Text('${AppTranslations.t("game_detail.exchange_rate")}')),
+                        DataColumn(label: Text('${AppTranslations.t("game_detail.description")}')),
                       ],
                       rows: currencies.map((c) {
                         final cMap = c as Map<String, dynamic>?;
@@ -194,7 +196,7 @@ class _GameDetailPageState extends State<GameDetailPage> {
                 OutlinedButton.icon(
                   onPressed: () => Get.back(),
                   icon: const Icon(Icons.arrow_back),
-                  label: const Text('返回游戏大厅'),
+                  label: const Text("${AppTranslations.t('game_detail.back_to_hall')}"),
                 ),
               ],
             ),

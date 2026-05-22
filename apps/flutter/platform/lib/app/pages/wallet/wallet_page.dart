@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:responsive_framework/responsive_framework.dart';
+import '../../i18n/translations.dart';
+import '../../i18n/locale_controller.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 import '../profile/profile_page.dart';
@@ -36,7 +38,7 @@ class _WalletPageState extends State<WalletPage> {
 
   Future<void> _loadData() async {
     final name = await AuthService.getUsername();
-    if (mounted) setState(() => _username = name ?? '用户');
+    if (mounted) setState(() => _username = name ?? 'User');
     await Future.wait([_fetchWallet(), _fetchTransactions()]);
   }
 
@@ -55,7 +57,7 @@ class _WalletPageState extends State<WalletPage> {
       });
     } catch (e) {
       setState(() {
-        _error = '加载失败，请重试';
+        _error = '${AppTranslations.t('app.loading_failed')}';
         _loading = false;
       });
     }
@@ -81,7 +83,9 @@ class _WalletPageState extends State<WalletPage> {
     return Scaffold(
       appBar: _isPhone
           ? AppBar(
-              title: const Text('我的钱包'),
+              title: GetBuilder<LocaleController>(
+                builder: (_) => Text('${AppTranslations.t('wallet.title')}'),
+              ),
               leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Get.offAllNamed('/games')),
               actions: [_buildUserMenu()],
             )
@@ -108,51 +112,54 @@ class _WalletPageState extends State<WalletPage> {
   Widget _buildSidebar() {
     return Container(
       width: sidebarWidth,
-      child: NavigationDrawer(
-        selectedIndex: 1,
-        onDestinationSelected: (index) {
-          switch (index) {
-            case 0:
-              Get.offAllNamed('/games');
-              break;
-            case 1:
-              // Already on wallet
-              break;
-            case 2:
-              Get.to(() => const ProfilePage());
-              break;
-          }
-        },
-        children: [
-          Container(
-            height: headerHeight,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            alignment: Alignment.centerLeft,
-            child: const Row(
-              children: [
-                Icon(Icons.sports_esports, size: 24),
-                SizedBox(width: 8),
-                Text('游戏平台', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ],
+      child: GetBuilder<LocaleController>(
+        builder: (_) => NavigationDrawer(
+          selectedIndex: 1,
+          onDestinationSelected: (index) {
+            switch (index) {
+              case 0:
+                Get.offAllNamed('/games');
+                break;
+              case 1:
+                // Already on wallet
+                break;
+              case 2:
+                Get.to(() => const ProfilePage());
+                break;
+            }
+          },
+          children: [
+            Container(
+              height: headerHeight,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              alignment: Alignment.centerLeft,
+              child: Row(
+                children: [
+                  const Icon(Icons.sports_esports, size: 24),
+                  const SizedBox(width: 8),
+                  Text('${AppTranslations.t('common.platform')}',
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                ],
+              ),
             ),
-          ),
-          const Divider(),
-          const NavigationDrawerDestination(
-            icon: Icon(Icons.sports_esports, size: 20),
-            label: Text('游戏大厅'),
-            selectedIcon: Icon(Icons.sports_esports, size: 20),
-          ),
-          const NavigationDrawerDestination(
-            icon: Icon(Icons.account_balance_wallet, size: 20),
-            label: Text('我的钱包'),
-            selectedIcon: Icon(Icons.account_balance_wallet, size: 20),
-          ),
-          const NavigationDrawerDestination(
-            icon: Icon(Icons.person, size: 20),
-            label: Text('个人中心'),
-            selectedIcon: Icon(Icons.person, size: 20),
-          ),
-        ],
+            const Divider(),
+            NavigationDrawerDestination(
+              icon: const Icon(Icons.sports_esports, size: 20),
+              label: Text('${AppTranslations.t('nav.games')}'),
+              selectedIcon: const Icon(Icons.sports_esports, size: 20),
+            ),
+            NavigationDrawerDestination(
+              icon: const Icon(Icons.account_balance_wallet, size: 20),
+              label: Text('${AppTranslations.t('nav.wallet')}'),
+              selectedIcon: const Icon(Icons.account_balance_wallet, size: 20),
+            ),
+            NavigationDrawerDestination(
+              icon: const Icon(Icons.person, size: 20),
+              label: Text('${AppTranslations.t('nav.profile')}'),
+              selectedIcon: const Icon(Icons.person, size: 20),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -167,7 +174,10 @@ class _WalletPageState extends State<WalletPage> {
       ),
       child: Row(
         children: [
-          const Text('我的钱包', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          GetBuilder<LocaleController>(
+            builder: (_) => Text('${AppTranslations.t('wallet.title')}',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          ),
           const Spacer(),
           _buildUserMenu(),
         ],
@@ -176,6 +186,7 @@ class _WalletPageState extends State<WalletPage> {
   }
 
   Widget _buildUserMenu() {
+    final localeCtrl = Get.find<LocaleController>();
     return PopupMenuButton<String>(
       offset: const Offset(0, headerHeight),
       child: Row(
@@ -188,19 +199,26 @@ class _WalletPageState extends State<WalletPage> {
         ],
       ),
       onSelected: (value) async {
-        if (value == 'profile') {
+        if (value == 'lang') {
+          final current = localeCtrl.currentLocale.value;
+          localeCtrl.changeLocale(current == 'zh' ? 'en' : 'zh');
+        } else if (value == 'profile') {
           Get.to(() => const ProfilePage());
         } else if (value == 'logout') {
           final confirm = await showDialog<bool>(
             context: context,
             builder: (ctx) => AlertDialog(
-              title: const Text('确认退出'),
-              content: const Text('确定要退出登录吗？'),
+              title: Text('${AppTranslations.t('app.confirm_logout')}'),
+              content: Text('${AppTranslations.t('app.confirm_logout')}'),
               actions: [
-                TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: Text('${AppTranslations.t('app.cancel')}'),
+                ),
                 TextButton(
                   onPressed: () => Navigator.pop(ctx, true),
-                  child: const Text('确定退出', style: TextStyle(color: Colors.red)),
+                  child: Text('${AppTranslations.t('app.confirm')}',
+                      style: const TextStyle(color: Colors.red)),
                 ),
               ],
             ),
@@ -212,8 +230,27 @@ class _WalletPageState extends State<WalletPage> {
         }
       },
       itemBuilder: (_) => [
-        const PopupMenuItem(value: 'profile', child: Text('个人中心')),
-        const PopupMenuItem(value: 'logout', child: Text('退出登录')),
+        PopupMenuItem(
+          value: 'lang',
+          child: Obx(() {
+            final isZh = localeCtrl.currentLocale.value == 'zh';
+            return Row(
+              children: [
+                const Icon(Icons.language, size: 18),
+                const SizedBox(width: 8),
+                Text(isZh ? 'Switch to English' : '切换到中文'),
+              ],
+            );
+          }),
+        ),
+        PopupMenuItem(
+          value: 'profile',
+          child: Text('${AppTranslations.t('profile.title')}'),
+        ),
+        PopupMenuItem(
+          value: 'logout',
+          child: Text('${AppTranslations.t('profile.logout')}'),
+        ),
       ],
     );
   }
@@ -229,7 +266,10 @@ class _WalletPageState extends State<WalletPage> {
           children: [
             Text(_error!, style: const TextStyle(color: Colors.red)),
             const SizedBox(height: 16),
-            FilledButton.tonal(onPressed: _loadData, child: const Text('重试')),
+            FilledButton.tonal(
+              onPressed: _loadData,
+              child: Text('${AppTranslations.t('app.retry')}'),
+            ),
           ],
         ),
       );
@@ -255,13 +295,16 @@ class _WalletPageState extends State<WalletPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('平台余额', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                      Text('${AppTranslations.t('wallet.balance')}',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
                       const SizedBox(height: 16),
                       Row(
                         children: [
-                          _buildBalanceItem('可用余额', balance.toStringAsFixed(2), currency.toString(), colorScheme.primary),
+                          _buildBalanceItem('${AppTranslations.t('wallet.available_balance')}',
+                              balance.toStringAsFixed(2), currency.toString(), colorScheme.primary),
                           const SizedBox(width: 32),
-                          _buildBalanceItem('冻结余额', frozen.toStringAsFixed(2), currency.toString(), colorScheme.error),
+                          _buildBalanceItem('${AppTranslations.t('wallet.frozen_balance')}',
+                              frozen.toStringAsFixed(2), currency.toString(), colorScheme.error),
                         ],
                       ),
                       const SizedBox(height: 20),
@@ -270,19 +313,19 @@ class _WalletPageState extends State<WalletPage> {
                           FilledButton.icon(
                             onPressed: () => Get.toNamed('/deposit'),
                             icon: const Icon(Icons.add, size: 18),
-                            label: const Text('充值'),
+                            label: Text('${AppTranslations.t('wallet.deposit')}'),
                           ),
                           const SizedBox(width: 12),
                           FilledButton.tonalIcon(
                             onPressed: () => Get.toNamed('/exchange'),
                             icon: const Icon(Icons.swap_horiz, size: 18),
-                            label: const Text('兑换'),
+                            label: Text('${AppTranslations.t('wallet.exchange')}'),
                           ),
                           const SizedBox(width: 12),
                           OutlinedButton.icon(
                             onPressed: () => Get.toNamed('/withdraw'),
                             icon: const Icon(Icons.upload, size: 18),
-                            label: const Text('提现'),
+                            label: Text('${AppTranslations.t('wallet.withdraw')}'),
                           ),
                         ],
                       ),
@@ -293,7 +336,8 @@ class _WalletPageState extends State<WalletPage> {
               const SizedBox(height: 24),
 
               // Transactions
-              Text('交易记录', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+              Text('${AppTranslations.t('wallet.transactions')}',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
               const SizedBox(height: 12),
               Card(
                 child: _txLoading
@@ -302,18 +346,18 @@ class _WalletPageState extends State<WalletPage> {
                         child: Center(child: CircularProgressIndicator()),
                       )
                     : _transactions.isEmpty
-                        ? const Padding(
-                            padding: EdgeInsets.all(32),
-                            child: Center(child: Text('暂无交易记录')),
+                        ? Padding(
+                            padding: const EdgeInsets.all(32),
+                            child: Center(child: Text('${AppTranslations.t('wallet.no_transactions')}')),
                           )
                         : SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child: DataTable(
-                              columns: const [
-                                DataColumn(label: Text('类型')),
-                                DataColumn(label: Text('金额')),
-                                DataColumn(label: Text('余额变化后')),
-                                DataColumn(label: Text('时间')),
+                              columns: [
+                                DataColumn(label: Text('${AppTranslations.t('wallet.tx_type')}')),
+                                DataColumn(label: Text('${AppTranslations.t('wallet.tx_amount')}')),
+                                DataColumn(label: Text('${AppTranslations.t('wallet.tx_balance_after')}')),
+                                DataColumn(label: Text('${AppTranslations.t('wallet.tx_time')}')),
                               ],
                               rows: _transactions.map((tx) {
                                 return DataRow(cells: [

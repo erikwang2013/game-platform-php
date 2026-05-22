@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:responsive_framework/responsive_framework.dart';
+import '../../i18n/translations.dart';
+import '../../i18n/locale_controller.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 import '../profile/profile_page.dart';
@@ -30,10 +32,10 @@ class _GameHallPageState extends State<GameHallPage> {
   ResponsiveBreakpointsData get _bp => ResponsiveBreakpoints.of(context);
   bool get _isPhone => _bp.smallerThan(TABLET);
 
-  static const _navItems = [
-    {'icon': Icons.sports_esports, 'label': '游戏大厅', 'route': '/games'},
-    {'icon': Icons.account_balance_wallet, 'label': '我的钱包', 'route': '/wallet'},
-    {'icon': Icons.person, 'label': '个人中心', 'route': '/profile'},
+  List<Map<String, dynamic>> get _navItems => [
+    {'icon': Icons.sports_esports, 'label': '${AppTranslations.t('nav.games')}', 'route': '/games'},
+    {'icon': Icons.account_balance_wallet, 'label': '${AppTranslations.t('nav.wallet')}', 'route': '/wallet'},
+    {'icon': Icons.person, 'label': '${AppTranslations.t('nav.profile')}', 'route': '/profile'},
   ];
 
   @override
@@ -45,7 +47,7 @@ class _GameHallPageState extends State<GameHallPage> {
 
   Future<void> _loadUsername() async {
     final name = await AuthService.getUsername();
-    if (mounted) setState(() => _username = name ?? '用户');
+    if (mounted) setState(() => _username = name ?? 'User');
   }
 
   Future<void> _fetchGames() async {
@@ -67,7 +69,7 @@ class _GameHallPageState extends State<GameHallPage> {
       });
     } catch (e) {
       setState(() {
-        _error = '加载失败，请重试';
+        _error = '${AppTranslations.t('app.loading_failed')}';
         _loading = false;
       });
     }
@@ -85,7 +87,8 @@ class _GameHallPageState extends State<GameHallPage> {
 
   void _onNavTap(int index) {
     setState(() => _selectedNav = index);
-    final route = _navItems[index]['route'] as String;
+    final navItems = _navItems;
+    final route = navItems[index]['route'] as String;
     if (route == '/profile') {
       Get.to(() => const ProfilePage());
     } else {
@@ -99,7 +102,7 @@ class _GameHallPageState extends State<GameHallPage> {
     return _buildDesktopLayout();
   }
 
-  // ─── Desktop / Tablet layout: sidebar + header + content ────────────
+  // --- Desktop / Tablet layout: sidebar + header + content ---
 
   Widget _buildDesktopLayout() {
     return Scaffold(
@@ -122,29 +125,34 @@ class _GameHallPageState extends State<GameHallPage> {
   Widget _buildPhoneLayout() {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('游戏大厅'),
+        title: GetBuilder<LocaleController>(
+          builder: (_) => Text('${AppTranslations.t('game_hall.title')}'),
+        ),
         actions: [_buildUserMenu()],
       ),
       drawer: Drawer(
-        child: NavigationDrawer(
-          selectedIndex: _selectedNav,
-          onDestinationSelected: _onNavTap,
-          children: [
-            Container(
-              height: headerHeight,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              alignment: Alignment.centerLeft,
-              child: const Row(
-                children: [
-                  Icon(Icons.sports_esports, size: 24),
-                  SizedBox(width: 8),
-                  Text('游戏平台', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                ],
+        child: GetBuilder<LocaleController>(
+          builder: (_) => NavigationDrawer(
+            selectedIndex: _selectedNav,
+            onDestinationSelected: _onNavTap,
+            children: [
+              Container(
+                height: headerHeight,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  children: [
+                    const Icon(Icons.sports_esports, size: 24),
+                    const SizedBox(width: 8),
+                    Text('${AppTranslations.t('common.platform')}',
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  ],
+                ),
               ),
-            ),
-            const Divider(),
-            ..._buildNavItems(),
-          ],
+              const Divider(),
+              ..._buildNavItems(),
+            ],
+          ),
         ),
       ),
       body: _buildContent(),
@@ -156,27 +164,30 @@ class _GameHallPageState extends State<GameHallPage> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       width: width,
-      child: NavigationDrawer(
-        selectedIndex: _selectedNav,
-        onDestinationSelected: _onNavTap,
-        children: [
-          Container(
-            height: headerHeight,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            alignment: Alignment.centerLeft,
-            child: _sidebarCollapsed
-                ? const Icon(Icons.sports_esports, size: 28)
-                : const Row(
-                    children: [
-                      Icon(Icons.sports_esports, size: 24),
-                      SizedBox(width: 8),
-                      Text('游戏平台', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-          ),
-          const Divider(),
-          ..._buildNavItems(),
-        ],
+      child: GetBuilder<LocaleController>(
+        builder: (_) => NavigationDrawer(
+          selectedIndex: _selectedNav,
+          onDestinationSelected: _onNavTap,
+          children: [
+            Container(
+              height: headerHeight,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              alignment: Alignment.centerLeft,
+              child: _sidebarCollapsed
+                  ? const Icon(Icons.sports_esports, size: 28)
+                  : Row(
+                      children: [
+                        const Icon(Icons.sports_esports, size: 24),
+                        const SizedBox(width: 8),
+                        Text('${AppTranslations.t('common.platform')}',
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+            ),
+            const Divider(),
+            ..._buildNavItems(),
+          ],
+        ),
       ),
     );
   }
@@ -203,11 +214,16 @@ class _GameHallPageState extends State<GameHallPage> {
         children: [
           IconButton(
             icon: Icon(_sidebarCollapsed ? Icons.menu_open : Icons.menu),
-            tooltip: _sidebarCollapsed ? '展开菜单' : '收起菜单',
+            tooltip: _sidebarCollapsed
+                ? '${AppTranslations.t('common.expand_menu')}'
+                : '${AppTranslations.t('common.collapse_menu')}',
             onPressed: () => setState(() => _sidebarCollapsed = !_sidebarCollapsed),
           ),
           const SizedBox(width: 16),
-          const Text('游戏大厅', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          GetBuilder<LocaleController>(
+            builder: (_) => Text('${AppTranslations.t('game_hall.title')}',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          ),
           const Spacer(),
           _buildUserMenu(),
         ],
@@ -216,6 +232,7 @@ class _GameHallPageState extends State<GameHallPage> {
   }
 
   Widget _buildUserMenu() {
+    final localeCtrl = Get.find<LocaleController>();
     return PopupMenuButton<String>(
       offset: const Offset(0, headerHeight),
       child: Row(
@@ -228,19 +245,26 @@ class _GameHallPageState extends State<GameHallPage> {
         ],
       ),
       onSelected: (value) async {
-        if (value == 'profile') {
+        if (value == 'lang') {
+          final current = localeCtrl.currentLocale.value;
+          localeCtrl.changeLocale(current == 'zh' ? 'en' : 'zh');
+        } else if (value == 'profile') {
           Get.to(() => const ProfilePage());
         } else if (value == 'logout') {
           final confirm = await showDialog<bool>(
             context: context,
             builder: (ctx) => AlertDialog(
-              title: const Text('确认退出'),
-              content: const Text('确定要退出登录吗？'),
+              title: Text('${AppTranslations.t('app.confirm_logout')}'),
+              content: Text('${AppTranslations.t('app.confirm_logout')}'),
               actions: [
-                TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: Text('${AppTranslations.t('app.cancel')}'),
+                ),
                 TextButton(
                   onPressed: () => Navigator.pop(ctx, true),
-                  child: const Text('确定退出', style: TextStyle(color: Colors.red)),
+                  child: Text('${AppTranslations.t('app.confirm')}',
+                      style: const TextStyle(color: Colors.red)),
                 ),
               ],
             ),
@@ -252,8 +276,27 @@ class _GameHallPageState extends State<GameHallPage> {
         }
       },
       itemBuilder: (_) => [
-        const PopupMenuItem(value: 'profile', child: Text('个人中心')),
-        const PopupMenuItem(value: 'logout', child: Text('退出登录')),
+        PopupMenuItem(
+          value: 'lang',
+          child: Obx(() {
+            final isZh = localeCtrl.currentLocale.value == 'zh';
+            return Row(
+              children: [
+                const Icon(Icons.language, size: 18),
+                const SizedBox(width: 8),
+                Text(isZh ? 'Switch to English' : '切换到中文'),
+              ],
+            );
+          }),
+        ),
+        PopupMenuItem(
+          value: 'profile',
+          child: Text('${AppTranslations.t('profile.title')}'),
+        ),
+        PopupMenuItem(
+          value: 'logout',
+          child: Text('${AppTranslations.t('profile.logout')}'),
+        ),
       ],
     );
   }
@@ -270,7 +313,7 @@ class _GameHallPageState extends State<GameHallPage> {
               constraints: const BoxConstraints(maxWidth: 1200),
               child: TextField(
                 decoration: InputDecoration(
-                  hintText: '搜索游戏...',
+                  hintText: '${AppTranslations.t('game_hall.search_hint')}',
                   prefixIcon: const Icon(Icons.search),
                   suffixIcon: _searchQuery.isNotEmpty
                       ? IconButton(
@@ -299,7 +342,7 @@ class _GameHallPageState extends State<GameHallPage> {
                             const SizedBox(height: 16),
                             FilledButton.tonal(
                               onPressed: _fetchGames,
-                              child: const Text('重试'),
+                              child: Text('${AppTranslations.t('app.retry')}'),
                             ),
                           ],
                         ),
@@ -316,7 +359,9 @@ class _GameHallPageState extends State<GameHallPage> {
     if (filtered.isEmpty) {
       return Center(
         child: Text(
-          _searchQuery.isNotEmpty ? '未找到匹配的游戏' : '暂无游戏',
+          _searchQuery.isNotEmpty
+              ? '${AppTranslations.t('game_hall.no_results')}'
+              : '${AppTranslations.t('game_hall.no_games')}',
           style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       );
@@ -418,7 +463,8 @@ class _GameHallPageState extends State<GameHallPage> {
                       child: FilledButton.icon(
                         onPressed: () => Get.toNamed('/game-detail', arguments: game),
                         icon: const Icon(Icons.play_arrow, size: 18),
-                        label: const Text('进入游戏', style: TextStyle(fontSize: 12)),
+                        label: Text('${AppTranslations.t('game_hall.enter_game')}',
+                            style: const TextStyle(fontSize: 12)),
                       ),
                     ),
                   ],

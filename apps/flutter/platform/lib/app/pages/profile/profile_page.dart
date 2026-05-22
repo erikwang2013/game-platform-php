@@ -1,4 +1,6 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+import '../../i18n/translations.dart';
+import '../../i18n/locale_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
@@ -60,7 +62,7 @@ class _ProfilePageState extends State<ProfilePage> {
       });
     } catch (e) {
       setState(() {
-        _error = '加载失败，请重试';
+        _error = "${AppTranslations.t('app.loading_failed')}";
         _loading = false;
       });
     }
@@ -81,7 +83,7 @@ class _ProfilePageState extends State<ProfilePage> {
       });
       setState(() {
         _saving = false;
-        _successMsg = '保存成功';
+        _successMsg = "${AppTranslations.t('profile.save_success')}";
       });
     } on ApiException catch (e) {
       setState(() {
@@ -90,7 +92,7 @@ class _ProfilePageState extends State<ProfilePage> {
       });
     } catch (e) {
       setState(() {
-        _error = '网络错误，请重试';
+        _error = "${AppTranslations.t('app.network_error')}";
         _saving = false;
       });
     }
@@ -100,13 +102,13 @@ class _ProfilePageState extends State<ProfilePage> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('确认退出'),
-        content: const Text('确定要退出登录吗？'),
+        title: const Text("${AppTranslations.t('app.confirm_logout')}"),
+        content: const Text("${AppTranslations.t('app.confirm_logout')}"),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("${AppTranslations.t('app.cancel')}")),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('确定退出', style: TextStyle(color: Colors.red)),
+            child: const Text("${AppTranslations.t('app.confirm')}", style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -123,7 +125,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('个人中心'),
+        title: const Text("${AppTranslations.t('profile.title')}"),
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Get.back()),
       ),
       body: Container(
@@ -161,7 +163,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        '账号信息',
+                                        "${AppTranslations.t('profile.account_info')}",
                                         style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
                                       ),
                                     ],
@@ -169,11 +171,11 @@ class _ProfilePageState extends State<ProfilePage> {
                                 ],
                               ),
                               const Divider(height: 32),
-                              _buildInfoRow('用户名', _profile?['username'] ?? '-'),
-                              _buildInfoRow('昵称', _profile?['nickname'] ?? '-'),
-                              _buildInfoRow('国家', _profile?['country'] ?? '-'),
-                              _buildInfoRow('语言', _profile?['language'] ?? '-'),
-                              _buildInfoRow('注册日期', _profile?['created_at'] ?? '-'),
+                              _buildInfoRow("${AppTranslations.t('profile.username')}", _profile?['username'] ?? '-'),
+                              _buildInfoRow("${AppTranslations.t('profile.nickname')}", _profile?['nickname'] ?? '-'),
+                              _buildInfoRow("${AppTranslations.t('profile.country')}", _profile?['country'] ?? '-'),
+                              _buildInfoRow("${AppTranslations.t('profile.language')}", _profile?['language'] ?? '-'),
+                              _buildInfoRow("${AppTranslations.t('profile.registered')}", _profile?['created_at'] ?? '-'),
                             ],
                           ),
                         ),
@@ -187,13 +189,13 @@ class _ProfilePageState extends State<ProfilePage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('编辑资料', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                              Text("${AppTranslations.t('profile.edit')}", style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
                               const SizedBox(height: 16),
 
                               TextField(
                                 controller: _nicknameCtrl,
                                 decoration: const InputDecoration(
-                                  labelText: '昵称',
+                                  labelText: "${AppTranslations.t('profile.nickname')}",
                                   border: OutlineInputBorder(),
                                 ),
                               ),
@@ -202,8 +204,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               TextField(
                                 controller: _avatarCtrl,
                                 decoration: const InputDecoration(
-                                  labelText: '头像 URL',
-                                  hintText: '输入头像图片链接',
+                                  labelText: "${AppTranslations.t('profile.avatar')}",
+                                  hintText: "${AppTranslations.t('profile.avatar_hint')}",
                                   border: OutlineInputBorder(),
                                 ),
                               ),
@@ -212,8 +214,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               TextField(
                                 controller: _languageCtrl,
                                 decoration: const InputDecoration(
-                                  labelText: '语言',
-                                  hintText: '如 zh-CN, en-US',
+                                  labelText: "${AppTranslations.t('profile.language')}",
+                                  hintText: "${AppTranslations.t('profile.language_hint')}",
                                   border: OutlineInputBorder(),
                                 ),
                               ),
@@ -258,7 +260,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   onPressed: _saving ? null : _save,
                                   child: _saving
                                       ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                                      : const Text('保存', style: TextStyle(fontSize: 16)),
+                                      : const Text("${AppTranslations.t('app.save')}", style: TextStyle(fontSize: 16)),
                                 ),
                               ),
                             ],
@@ -275,12 +277,12 @@ class _ProfilePageState extends State<ProfilePage> {
                             children: [
                               const Icon(Icons.logout, color: Colors.red, size: 20),
                               const SizedBox(width: 12),
-                              const Text('退出登录', style: TextStyle(fontSize: 15, color: Colors.red)),
+                              const Text("${AppTranslations.t('profile.logout')}", style: TextStyle(fontSize: 15, color: Colors.red)),
                               const Spacer(),
                               OutlinedButton(
                                 onPressed: _logout,
                                 style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
-                                child: const Text('退出登录'),
+                                child: const Text("${AppTranslations.t('profile.logout')}"),
                               ),
                             ],
                           ),

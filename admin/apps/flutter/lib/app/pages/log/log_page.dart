@@ -53,21 +53,21 @@ class LogPage extends GetView<LogController> {
       Text("${AppTranslations.t('log.title')}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
       const SizedBox(height: 12),
       Row(children: [
-        SizedBox(width: 150, child: TextField(decoration: const InputDecoration(hintText: '操作筛选', isDense: true), onSubmitted: (v) { ctrl.actionFilter.value = v; ctrl.loadLogs(reset: true); })),
+        SizedBox(width: 150, child: TextField(decoration: const InputDecoration(hintText: '${AppTranslations.t('log.action_filter')}', isDense: true), onSubmitted: (v) { ctrl.actionFilter.value = v; ctrl.loadLogs(reset: true); })),
         const SizedBox(width: 12),
-        SizedBox(width: 200, child: TextField(decoration: const InputDecoration(hintText: '路径筛选', isDense: true), onSubmitted: (v) { ctrl.pathFilter.value = v; ctrl.loadLogs(reset: true); })),
+        SizedBox(width: 200, child: TextField(decoration: const InputDecoration(hintText: '${AppTranslations.t('log.path_filter')}', isDense: true), onSubmitted: (v) { ctrl.pathFilter.value = v; ctrl.loadLogs(reset: true); })),
       ]),
       const SizedBox(height: 12),
       Expanded(child: Obx(() {
         if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
         return SingleChildScrollView(child: DataTable(columns: const [
-          DataColumn(label: Text('操作者')),
-          DataColumn(label: Text('方法')),
-          DataColumn(label: Text('路径')),
-          DataColumn(label: Text('IP')),
-          DataColumn(label: Text('时间')),
+          DataColumn(label: Text('${AppTranslations.t('log.operator')}')),
+          DataColumn(label: Text('${AppTranslations.t('log.method')}')),
+          DataColumn(label: Text('${AppTranslations.t('log.path')}')),
+          DataColumn(label: Text('${AppTranslations.t('log.ip')}')),
+          DataColumn(label: Text('${AppTranslations.t('log.time')}')),
         ], rows: ctrl.logs.map((l) => DataRow(cells: [
-          DataCell(Text(l['user_name'] ?? '系统')),
+          DataCell(Text(l['user_name'] ?? '${AppTranslations.t('common.system')}')),
           DataCell(Chip(label: Text(l['method'] ?? ''))),
           DataCell(Text(l['path'] ?? '')),
           DataCell(Text(l['ip'] ?? '')),

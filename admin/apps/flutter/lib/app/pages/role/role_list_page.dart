@@ -54,7 +54,7 @@ class RoleListPage extends GetView<RoleController> {
           + ' '
           + "${AppTranslations.t('app.delete')}", content: Column(mainAxisSize: MainAxisSize.min, children: [
                           Text('确定要删除角色「${r['name']}」吗？'),
-                          TextField(controller: pwdCtrl, obscureText: true, decoration: const InputDecoration(labelText: '输入密码确认')),
+                          TextField(controller: pwdCtrl, obscureText: true, decoration: const InputDecoration(labelText: '${AppTranslations.t('user.password_confirm_hint')}')),
                         ]),
                         actions: [
                           TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),
@@ -82,13 +82,13 @@ class RoleListPage extends GetView<RoleController> {
       context: context,
       builder: (_) => StatefulBuilder(
         builder: (_, setDialogState) => AlertDialog(
-          title: Text(role != null ? '编辑角色' : '新增角色', style: const TextStyle(fontWeight: FontWeight.bold)),
+          title: Text(role != null ? '${AppTranslations.t('role.edit')}' : '${AppTranslations.t('role.create')}', style: const TextStyle(fontWeight: FontWeight.bold)),
           content: SizedBox(width: 450, child: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [
-            TextField(controller: nameCtrl, decoration: const InputDecoration(labelText: '名称'), enabled: role == null),
-            TextField(controller: slugCtrl, decoration: const InputDecoration(labelText: '标识'), enabled: role == null),
-            TextField(controller: descCtrl, decoration: const InputDecoration(labelText: '描述')),
+            TextField(controller: nameCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('role.name')}'), enabled: role == null),
+            TextField(controller: slugCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('role.slug')}'), enabled: role == null),
+            TextField(controller: descCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('role.description')}')),
             const SizedBox(height: 12),
-            const Text('权限分配:', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text('${AppTranslations.t('role.permissions')}:', style: TextStyle(fontWeight: FontWeight.bold)),
             ...ctrl.permissions.map((perm) => CheckboxListTile(
               title: Text(perm['name'] ?? ''),
               subtitle: Text(perm['slug'] ?? ''),

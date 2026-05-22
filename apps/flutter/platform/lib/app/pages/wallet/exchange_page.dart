@@ -1,4 +1,6 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+import '../../i18n/translations.dart';
+import '../../i18n/locale_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
@@ -79,12 +81,12 @@ class _ExchangePageState extends State<ExchangePage> {
   Future<void> _getQuote() async {
     final amountText = _amountCtrl.text.trim();
     if (amountText.isEmpty) {
-      setState(() => _error = '请输入金额');
+      setState(() => _error = '${AppTranslations.t('deposit.invalid_amount')}');
       return;
     }
     final amount = double.tryParse(amountText);
     if (amount == null || amount <= 0) {
-      setState(() => _error = '请输入有效的金额');
+      setState(() => _error = "${AppTranslations.t('deposit.invalid_amount')}");
       return;
     }
 
@@ -114,7 +116,7 @@ class _ExchangePageState extends State<ExchangePage> {
       });
     } catch (e) {
       setState(() {
-        _error = '网络错误，请重试';
+        _error = "${AppTranslations.t('app.network_error')}";
         _quoting = false;
       });
     }
@@ -149,7 +151,7 @@ class _ExchangePageState extends State<ExchangePage> {
       });
     } catch (e) {
       setState(() {
-        _error = '网络错误，请重试';
+        _error = "${AppTranslations.t('app.network_error')}";
         _loading = false;
       });
     }
@@ -161,7 +163,7 @@ class _ExchangePageState extends State<ExchangePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('游戏币兑换'),
+        title: const Text("${AppTranslations.t('exchange.title')}"),
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Get.back()),
       ),
       body: Container(
@@ -178,16 +180,16 @@ class _ExchangePageState extends State<ExchangePage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text('游戏币兑换', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                      Text("${AppTranslations.t('exchange.title')}", style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
-                      Text('将平台余额兑换为游戏币，或将游戏币兑换回余额', style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant)),
+                      Text("${AppTranslations.t('exchange.subtitle')}", style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant)),
                       const SizedBox(height: 24),
 
                       // Direction toggle
                       Row(
                         children: [
                           Expanded(
-                            child: _buildDirectionButton('买入游戏币', _isBuying, () => setState(() {
+                            child: _buildDirectionButton("${AppTranslations.t('exchange.buy')}", _isBuying, () => setState(() {
                               _isBuying = true;
                               _quote = null;
                               _result = null;
@@ -195,7 +197,7 @@ class _ExchangePageState extends State<ExchangePage> {
                           ),
                           const SizedBox(width: 8),
                           Expanded(
-                            child: _buildDirectionButton('卖出游戏币', !_isBuying, () => setState(() {
+                            child: _buildDirectionButton("${AppTranslations.t('exchange.sell')}", !_isBuying, () => setState(() {
                               _isBuying = false;
                               _quote = null;
                               _result = null;
@@ -209,7 +211,7 @@ class _ExchangePageState extends State<ExchangePage> {
                       DropdownButtonFormField<String>(
                         initialValue: _selectedGameId,
                         decoration: const InputDecoration(
-                          labelText: '选择游戏',
+                          labelText: "${AppTranslations.t('exchange.select_game')}",
                           border: OutlineInputBorder(),
                         ),
                         items: _games.map((g) {
@@ -227,13 +229,13 @@ class _ExchangePageState extends State<ExchangePage> {
                         DropdownButtonFormField<String>(
                           initialValue: _selectedCurrencyCode,
                           decoration: const InputDecoration(
-                            labelText: '游戏币种',
+                            labelText: "${AppTranslations.t('exchange.select_currency')}",
                             border: OutlineInputBorder(),
                           ),
                           items: _gameCurrencies.map((c) {
                             return DropdownMenuItem(
                               value: c['code']?.toString() ?? c['name']?.toString(),
-                              child: Text('${c['name'] ?? c['code']} (兑换率: ${c['exchange_rate'] ?? '-'})'),
+                              child: Text('${c['name'] ?? c['code']} (Rate:  ${c['exchange_rate'] ?? '-'})'),
                             );
                           }).toList(),
                           onChanged: (v) => setState(() => _selectedCurrencyCode = v),
@@ -246,7 +248,7 @@ class _ExchangePageState extends State<ExchangePage> {
                         controller: _amountCtrl,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         decoration: InputDecoration(
-                          labelText: _isBuying ? '支付金额 (平台币)' : '卖出金额 (游戏币)',
+                          labelText: _isBuying ? '${AppTranslations.t('exchange.payment_amount')}' : '${AppTranslations.t('exchange.sell_amount')}',
                           prefixIcon: const Icon(Icons.monetization_on_outlined),
                           border: const OutlineInputBorder(),
                         ),
@@ -282,12 +284,12 @@ class _ExchangePageState extends State<ExchangePage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('兑换报价', style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.primary)),
+                              Text("${AppTranslations.t('exchange.quote_title')}", style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.primary)),
                               const SizedBox(height: 8),
-                              _buildQuoteRow('兑换率', _quote!['rate']?.toString() ?? '-'),
-                              _buildQuoteRow('支付金额', _quote!['from_amount']?.toString() ?? '-'),
-                              _buildQuoteRow('获得金额', _quote!['to_amount']?.toString() ?? '-'),
-                              _buildQuoteRow('手续费', _quote!['fee']?.toString() ?? '0'),
+                              _buildQuoteRow('${AppTranslations.t('exchange.rate')}', _quote!['rate']?.toString() ?? '-'),
+                              _buildQuoteRow('${AppTranslations.t('exchange.from_amount')}', _quote!['from_amount']?.toString() ?? '-'),
+                              _buildQuoteRow('${AppTranslations.t('exchange.to_amount')}', _quote!['to_amount']?.toString() ?? '-'),
+                              _buildQuoteRow('${AppTranslations.t('exchange.fee')}', _quote!['fee']?.toString() ?? '0'),
                             ],
                           ),
                         ),
@@ -306,9 +308,9 @@ class _ExchangePageState extends State<ExchangePage> {
                             children: [
                               const Icon(Icons.check_circle, color: Colors.green, size: 40),
                               const SizedBox(height: 8),
-                              const Text('兑换成功', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.green)),
+                              const Text("${AppTranslations.t('exchange.success')}", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.green)),
                               const SizedBox(height: 8),
-                              Text('交易号: ${_result!['order_no'] ?? '-'}', style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant)),
+                              Text('${AppTranslations.t('exchange.order_no')}: ${_result!['order_no'] ?? '-'}', style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant)),
                             ],
                           ),
                         ),
@@ -323,7 +325,7 @@ class _ExchangePageState extends State<ExchangePage> {
                             onPressed: _quoting ? null : _getQuote,
                             child: _quoting
                                 ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                                : const Text('询价', style: TextStyle(fontSize: 16)),
+                                : const Text("${AppTranslations.t('exchange.get_quote')}", style: TextStyle(fontSize: 16)),
                           ),
                         ),
                       ],
@@ -334,7 +336,7 @@ class _ExchangePageState extends State<ExchangePage> {
                             onPressed: _loading ? null : _confirmExchange,
                             child: _loading
                                 ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                                : const Text('确认兑换', style: TextStyle(fontSize: 16)),
+                                : const Text("${AppTranslations.t('exchange.confirm')}", style: TextStyle(fontSize: 16)),
                           ),
                         ),
                       ],

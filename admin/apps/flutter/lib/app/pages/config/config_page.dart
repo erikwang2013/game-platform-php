@@ -105,13 +105,13 @@ class ConfigPage extends GetView<ConfigController> {
     final tCtrl = TextEditingController(text: item?['type'] ?? 'string');
     final dCtrl = TextEditingController(text: item?['description'] ?? '');
     showDialog(context: context, builder: (_) => AlertDialog(
-      title: Text(item != null ? '编辑配置' : '新增配置'),
+      title: Text(item != null ? '${AppTranslations.t('config.edit')}' : '${AppTranslations.t('config.create')}'),
       content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [
-        TextField(controller: gCtrl, decoration: const InputDecoration(labelText: '分组'), enabled: item == null),
-        TextField(controller: kCtrl, decoration: const InputDecoration(labelText: '键'), enabled: item == null),
-        TextField(controller: vCtrl, decoration: const InputDecoration(labelText: '值'), maxLines: 3),
-        TextField(controller: tCtrl, decoration: const InputDecoration(labelText: '类型')),
-        TextField(controller: dCtrl, decoration: const InputDecoration(labelText: '说明')),
+        TextField(controller: gCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('config.group')}'), enabled: item == null),
+        TextField(controller: kCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('config.key')}'), enabled: item == null),
+        TextField(controller: vCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('config.value')}'), maxLines: 3),
+        TextField(controller: tCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('config.type')}')),
+        TextField(controller: dCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('config.description')}')),
       ])),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),

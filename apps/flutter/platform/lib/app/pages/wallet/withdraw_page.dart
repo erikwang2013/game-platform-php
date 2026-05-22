@@ -1,4 +1,6 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+import '../../i18n/translations.dart';
+import '../../i18n/locale_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
@@ -63,24 +65,24 @@ class _WithdrawPageState extends State<WithdrawPage> {
     final accountInfo = _accountCtrl.text.trim();
 
     if (amountText.isEmpty) {
-      setState(() => _error = '请输入提现金额');
+      setState(() => _error = "${AppTranslations.t('withdraw.enter_amount')}");
       return;
     }
     final amount = double.tryParse(amountText);
     if (amount == null || amount <= 0) {
-      setState(() => _error = '请输入有效的金额');
+      setState(() => _error = "${AppTranslations.t('deposit.invalid_amount')}");
       return;
     }
     if (amount < _minAmount) {
-      setState(() => _error = '最低提现金额为 $_minAmount');
+      setState(() => _error = '${AppTranslations.t("withdraw.min_limit_error")}' + _minAmount.toString());
       return;
     }
     if (amount > _dailyLimit) {
-      setState(() => _error = '超过每日提现限额 $_dailyLimit');
+      setState(() => _error = '${AppTranslations.t("withdraw.daily_limit_error")}' + _dailyLimit.toString());
       return;
     }
     if (accountInfo.isEmpty) {
-      setState(() => _error = '请输入收款账户信息');
+      setState(() => _error = "${AppTranslations.t('withdraw.enter_account')}");
       return;
     }
 
@@ -109,7 +111,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
       });
     } catch (e) {
       setState(() {
-        _error = '网络错误，请重试';
+        _error = "${AppTranslations.t('app.network_error')}";
         _loading = false;
       });
     }
@@ -121,7 +123,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('提现'),
+        title: const Text("${AppTranslations.t('withdraw.title')}"),
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Get.back()),
       ),
       body: Container(
@@ -138,9 +140,9 @@ class _WithdrawPageState extends State<WithdrawPage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Text('提现', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                      Text("${AppTranslations.t('withdraw.title')}", style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
-                      Text('将平台余额提现到您的账户', style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant)),
+                      Text("${AppTranslations.t('withdraw.subtitle')}", style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant)),
                       const SizedBox(height: 20),
 
                       // Limits info
@@ -156,7 +158,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                '最低提现: $_minAmount  |  每日限额: $_dailyLimit',
+                                '${AppTranslations.t("withdraw.limits")}'.replaceAll('{min}', _minAmount.toString()).replaceAll('{daily}', _dailyLimit.toString()),
                                 style: TextStyle(fontSize: 13, color: colorScheme.onPrimaryContainer),
                               ),
                             ),
@@ -170,7 +172,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
                         controller: _amountCtrl,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
                         decoration: const InputDecoration(
-                          labelText: '提现金额',
+                          labelText: "${AppTranslations.t('withdraw.amount')}",
                           prefixIcon: Icon(Icons.monetization_on_outlined),
                           border: OutlineInputBorder(),
                         ),
@@ -181,7 +183,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
                       DropdownButtonFormField<String>(
                         initialValue: _method,
                         decoration: const InputDecoration(
-                          labelText: '提现方式',
+                          labelText: "${AppTranslations.t('withdraw.method')}",
                           prefixIcon: Icon(Icons.account_balance),
                           border: OutlineInputBorder(),
                         ),
@@ -197,10 +199,10 @@ class _WithdrawPageState extends State<WithdrawPage> {
                         controller: _accountCtrl,
                         decoration: InputDecoration(
                           labelText: _method == 'paypal'
-                              ? 'PayPal 邮箱地址'
+                              ? '${AppTranslations.t('withdraw.paypal_email')}'
                               : _method == 'bank'
-                                  ? '银行账户信息'
-                                  : '加密货币地址',
+                                  ? '${AppTranslations.t('withdraw.bank_info')}'
+                                  : '${AppTranslations.t('withdraw.crypto_address')}',
                           prefixIcon: const Icon(Icons.edit),
                           border: const OutlineInputBorder(),
                         ),
@@ -237,10 +239,10 @@ class _WithdrawPageState extends State<WithdrawPage> {
                             children: [
                               const Icon(Icons.check_circle, color: Colors.green, size: 40),
                               const SizedBox(height: 8),
-                              const Text('提现申请已提交', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.green)),
+                              const Text("${AppTranslations.t('withdraw.success')}", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.green)),
                               const SizedBox(height: 8),
                               Text(
-                                '状态: ${_result!['status'] ?? 'pending'}',
+                                'Status: ${_result!['status'] ?? 'pending'}',
                                 style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
                               ),
                             ],
@@ -256,7 +258,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
                           onPressed: _loading ? null : _submit,
                           child: _loading
                               ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                              : const Text('提交提现申请', style: TextStyle(fontSize: 16)),
+                              : const Text("${AppTranslations.t('withdraw.submit')}", style: TextStyle(fontSize: 16)),
                         ),
                       ),
                     ],
