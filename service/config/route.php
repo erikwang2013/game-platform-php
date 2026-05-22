@@ -42,6 +42,9 @@ Route::group('/api', function () {
     Route::post('/auth/refresh', v('AuthController', 'refresh'));
     Route::post('/captcha/generate', v('CaptchaController', 'generate'));
 
+    Route::get('/language/list', v('LanguageController', 'list'));
+    Route::post('/language/switch', v('LanguageController', 'switch'));
+
     Route::get('/game/list', v('GameController', 'list'));
     Route::get('/game/{hashid}', v('GameController', 'detail'));
     Route::get('/announcement/list', v('AnnouncementController', 'list'));

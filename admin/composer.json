@@ -49,7 +49,8 @@
       "App\\": "./app",
       "app\\View\\Components\\": "./app/view/components",
       "common\\model\\": "../common/model",
-      "common\\middleware\\": "../common/middleware"
+      "common\\middleware\\": "../common/middleware",
+      "common\\service\\": "../common/service"
     }
   },
   "scripts": {
