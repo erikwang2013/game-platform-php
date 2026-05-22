@@ -4,23 +4,24 @@
  */
 
 /**
- * 服务器配置
+ * This file is part of webman.
  *
- * listen: HTTP 监听地址和端口（C端业务端使用 8788）
- * context: SSL上下文选项
- * name: worker 进程名称
- * count: worker 进程数（建议 CPU 核心数 * 2）
- * user/worker_user: 进程运行用户
- * reloadable: 文件更新后自动重载
- * reuse_port: 端口复用
+ * Licensed under The MIT License
+ * For full copyright and license information, please see the MIT-LICENSE.txt
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @author    walkor<walkor@workerman.net>
+ * @copyright walkor<walkor@workerman.net>
+ * @link      http://www.workerman.net/
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
+
 return [
-    'listen'       => 'http://0.0.0.0:8788',
-    'context'      => [],
-    'name'         => 'game-platform-service',
-    'count'        => cpu_count() * 2,
-    'user'         => '',
-    'worker_user'  => '',
-    'reloadable'   => true,
-    'reuse_port'   => true,
+    'event_loop' => '',
+    'stop_timeout' => 2,
+    'pid_file' => runtime_path() . '/webman.pid',
+    'status_file' => runtime_path() . '/webman.status',
+    'stdout_file' => runtime_path() . '/logs/stdout.log',
+    'log_file' => runtime_path() . '/logs/workerman.log',
+    'max_package_size' => 10 * 1024 * 1024
 ];

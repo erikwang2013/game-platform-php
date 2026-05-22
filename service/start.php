@@ -4,13 +4,13 @@
  * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
  */
 
-ini_set('display_errors', 'on');
-error_reporting(E_ALL);
-
+chdir(__DIR__);
 require_once __DIR__ . '/vendor/autoload.php';
 
-support\App::load();
-support\bootstrap\Session::class;
-support\bootstrap\LaravelDb::class;
+// 加载 .env 环境变量（vlucas/phpdotenv）
+if (file_exists(__DIR__ . '/.env')) {
+    $dotenv = Dotenv\Dotenv::createUnsafeImmutable(__DIR__);
+    $dotenv->safeLoad();
+}
 
-Worker::runAll();
+support\App::run();
