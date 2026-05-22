@@ -172,7 +172,78 @@ Controller 中 __() 函数或 TranslationService::trans() 获取翻译文本
 - 切换语言时通过 `Get.updateLocale()` 触发全局 UI 重渲染
 - `StringResult` 类利用 Dart 的 `toString()` 实现自然内联语法：`Text('${AppTranslations.t("key")}')`
 
-## 6. 扩展性设计
+## 6. 标准版新增设计
+
+### 6.1 风控引擎
+
+在关键资金操作前执行多层规则检查：
+
+```
+充值/提现/兑换请求
+  ↓
+RiskService::check(userId, type, context)
+  ├── IP 黑名单检测 (ip_blacklist) → block
+  ├── 大额异常检测 (amount_anomaly) → warn
+  ├── 频率检测 (frequency) → warn/block
+  └── 速度检测 (velocity) → block
+  ↓
+passed → 正常执行
+warn   → 记录日志，继续执行
+block  → 拒绝操作
+```
+
+规则存储在 `erik_risk_rule` 表，配置为 JSON，可动态调整阈值和动作。
+
+### 6.2 KYC 实名认证
+
+三级认证体系：
+- `default` — 未认证，基础限额
+- `verified` — KYC 审核通过，提高限额+降低手续费
+- `vip` — VIP 等级，最高限额+零手续费
+
+认证流程：
+```
+用户提交证件信息 → status=pending
+管理员审核 → approve/reject
+approve → 用户自动升级为 verified 等级
+reject → 用户可重新提交
+```
+
+### 6.3 OAuth 第三方登录
+
+支持 Google / Facebook / Apple 登录：
+
+```
+前端点击 OAuth 按钮
+  → GET /api/auth/oauth/{provider} → 获取授权URL
+  → 跳转第三方授权页 → 用户同意
+  → 回调 POST /api/auth/oauth/{provider}/callback
+  → 查找已有绑定 → 直接登录
+  → 无绑定 → 自动注册新用户 + 绑定 + 创建钱包
+```
+
+### 6.4 支付回调
+
+```
+第三方支付完成 → POST /api/payment/callback
+  → 验签(order_no + transaction_id)
+  → 更新订单状态 confirmed
+  → UserWallet::addBalance 到账
+  → 记录 Transaction
+  → RiskService::check 风控检查
+```
+
+### 6.5 阶梯提现限额
+
+按用户 KYC 等级应用不同的限额和手续费：
+
+| 等级 | 单笔上限 | 日限额 | 月限额 | 手续费 |
+|------|---------|--------|--------|--------|
+| default | 1,000 | 10,000 | 50,000 | 1.00% |
+| verified | 5,000 | 50,000 | 200,000 | 0.50% |
+| vip | 20,000 | 200,000 | 1,000,000 | 0.00% |
+
+## 7. 扩展性设计
 
 ### 5.1 水平扩展
 

@@ -20,18 +20,18 @@
 | 国际化 | 中/英文切换、翻译表、语言检测中间件 | 已完成 |
 | 前端 | Flutter PC管理后台 + C端用户平台（含i18n） | 已完成 |
 
-### 标准版 — 规划中
+### 标准版 — 已完成
 
-| 域 | 功能 |
-|----|------|
-| 用户 | OAuth登录 (Google/Facebook/Apple) |
-| 支付 | 多支付渠道自动回调 |
-| 游戏 | 第三方游戏SDK（签名验签/回调结算） |
-| 提现 | 自动打款对接、阶梯手续费 |
-| KYC | 实名认证申请+审核 |
-| 风控 | 基础风控规则引擎 |
-| 前端 | HarmonyOS客户端 |
-| 数据 | 仪表盘可视化图表、Excel/PDF完整导出 |
+| 域 | 功能 | 状态 |
+|----|------|------|
+| 用户 | OAuth登录 (Google/Facebook/Apple) | 已完成 |
+| 支付 | 多支付渠道自动回调 (Stripe/PayPal) | 已完成 |
+| 游戏 | 区服管理、游戏记录追踪 | 已完成 |
+| 提现 | KYC阶梯限额 (default/verified/vip) + 手续费 | 已完成 |
+| KYC | 实名认证申请+审核 | 已完成 |
+| 风控 | IP黑名单/大额预警/频率/速度检测 | 已完成 |
+| 统计 | 日统计快照 (用户/充值/提现/兑换/游戏) | 已完成 |
+| 前端 | Admin: KYC审核+风控日志 / Platform: OAuth+KYC+游戏记录 | 已完成 |
 
 ### 完整版 — 规划中
 
@@ -162,7 +162,18 @@
 
 ### 标准版新增 (10张)
 
-erik_user_identity, erik_user_oauth, erik_user_payment_account, erik_user_session, erik_game_server, erik_game_play_log, erik_withdraw_limit, erik_risk_rule, erik_risk_log, erik_stat_daily
+| 表名 | 说明 | 关键特性 |
+|------|------|---------|
+| erik_user_oauth | 第三方登录绑定 | provider+open_id 唯一索引 |
+| erik_user_session | 登录会话 | token_id 唯一、设备/IP 追溯 |
+| erik_user_identity | 实名认证 | 证件信息加密、审核人追溯 |
+| erik_user_payment_account | 收款账户 | 多账户管理、加密存储 |
+| erik_withdraw_limit | 提现限额规则 | 三级(default/verified/vip) |
+| erik_game_server | 游戏区服 | 区域分组、状态管理 |
+| erik_game_play_log | 游戏记录 | session_id、金额快照 |
+| erik_risk_rule | 风控规则 | JSON 配置、优先级排序 |
+| erik_risk_log | 风控日志 | 触发上下文 JSON |
+| erik_stat_daily | 日统计快照 | 日期+类型+游戏 唯一索引 |
 
 ### 完整版新增 (8张)
 

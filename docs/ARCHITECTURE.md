@@ -59,7 +59,7 @@ flowchart TB
 存储层: MySQL / Redis / Elasticsearch
 ```
 
-**职责**：管理员登录、游戏 CRUD、提现审核、C端用户管理、支付方式管理、公告管理、数据导出、仪表盘
+**职责**：管理员登录、游戏 CRUD（含区服管理）、提现审核（含阶梯限额）、C端用户管理、KYC 审核、支付方式管理、公告管理、数据导出、仪表盘
 
 ### 2.2 service/ — C端业务端
 
@@ -68,10 +68,11 @@ flowchart TB
   ↓
 中间件链: Cors → SecurityFilter → RateLimit → ApiVersion → [UserAuth]
   ↓
-控制器层 (9 个):
+控制器层 (13 个):
   ┌──────────────────────────────────────────────────────┐
   │ Auth / Wallet / Deposit / Exchange / Withdraw        │
   │ Game / User / Announcement / Captcha                  │
+  │ OAuth / Identity / Payment / GamePlayLog             │ ← 标准版新增
   └──────────────────────────────────────────────────────┘
   ↓
 共享层: common/model/* (Eloquent ORM)

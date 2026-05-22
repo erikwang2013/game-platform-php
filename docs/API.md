@@ -430,7 +430,122 @@ type 可选值: self / third_party
 }
 ```
 
-### 2.7 语言
+### 2.7 OAuth 第三方登录
+
+#### GET /api/auth/oauth/{provider} — 获取授权URL
+
+```
+参数: provider = google / facebook / apple
+
+响应: {
+  "redirect_url": "https://accounts.google.com/o/oauth2/auth?..."
+}
+```
+
+#### POST /api/auth/oauth/{provider}/callback — OAuth回调
+
+```
+请求: { "code": "授权码", "state": "防CSRF状态" }
+
+响应: {
+  "access_token": "eyJhbG...",
+  "refresh_token": "eyJhbG...",
+  "user": { "id": "...", "username": "google_abc123", ... },
+  "is_new": true
+}
+```
+
+is_new: true=新注册用户 / false=已有账号绑定
+
+### 2.8 KYC 实名认证
+
+#### GET /api/user/identity/status — 认证状态
+
+```
+需认证: 是
+
+响应: {
+  "status": "approved",          // not_submitted / pending / approved / rejected
+  "real_name": "J***",
+  "id_type": "id_card",
+  "review_note": "",
+  "submitted_at": "2026-05-22 10:00:00",
+  "reviewed_at": "2026-05-23 14:00:00"
+}
+```
+
+#### POST /api/user/identity/apply — 提交认证
+
+```
+需认证: 是
+
+请求: {
+  "real_name": "John Doe",
+  "id_type": "id_card",
+  "id_number": "123456789",
+  "id_front_photo": "https://...",
+  "selfie_photo": "https://..."
+}
+
+响应: { "message": "KYC submitted successfully" }
+```
+
+### 2.9 支付
+
+#### POST /api/payment/callback — 支付回调（公开）
+
+```
+请求: {
+  "order_no": "DEP202605221030000123",
+  "transaction_id": "txn_abc123",
+  "status": "success"
+}
+
+响应: { "message": "success" }
+```
+
+status: success / failed
+
+#### GET /api/payment/methods — 可用支付方式（公开）
+
+```
+响应: {
+  "list": [
+    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "status": 1 }
+  ]
+}
+```
+
+### 2.10 游戏记录
+
+#### GET /api/game/play-logs — 游戏记录列表
+
+```
+需认证: 是
+参数: ?page=1&per_page=20&game_id=xxx&action=start
+
+响应: {
+  "list": [
+    {
+      "id": "...",
+      "game_id": "...",
+      "action": "start",
+      "game_amount_change": "-10.0000",
+      "created_at": "2026-05-22 10:30:00"
+    }
+  ],
+  "total": 50, "page": 1, "per_page": 20
+}
+```
+
+#### GET /api/game/play-log/{hashid} — 游戏记录详情
+
+```
+需认证: 是
+响应: { 完整记录，含 session_id / game_amount_before / after 等 }
+```
+
+### 2.11 语言
 
 #### GET /api/language/list — 可用语言列表
 
@@ -859,7 +974,111 @@ action: approve=通过 / reject=拒绝（拒绝时自动退回平台币）
 响应: { "id": "aB3xK..." }
 ```
 
-### 3.7 数据导出
+### 3.7 KYC 审核
+
+#### GET /admin/identity/list — KYC列表
+
+```
+需认证: 是
+参数: ?page=1&per_page=20&status=pending
+
+响应: {
+  "list": [
+    {
+      "id": "...",
+      "user": { "id": "...", "username": "player1" },
+      "real_name": "J***",
+      "id_type": "id_card",
+      "status": "pending",
+      "created_at": "2026-05-22 10:00:00"
+    }
+  ],
+  "total": 5, "page": 1, "per_page": 20
+}
+```
+
+#### PUT /admin/identity/review — 审核KYC
+
+```
+需认证: 是
+
+请求: { "id": "hashid", "action": "approve", "note": "" }
+
+响应: { "message": "Approved" }
+```
+
+action: approve / reject
+
+### 3.8 游戏区服管理
+
+#### GET /admin/game/server/list — 区服列表
+
+```
+需认证: 是
+参数: ?game_id=hashid
+
+响应: {
+  "list": [
+    { "id": "...", "name": "亚洲1服", "region": "asia", "status": 1, "sort": 0 }
+  ]
+}
+```
+
+#### POST /admin/game/server/create — 创建区服
+
+```
+需认证: 是
+请求: { "game_id": "hashid", "name": "亚洲1服", "region": "asia", "status": 1 }
+响应: { "id": "hashid" }
+```
+
+#### PUT /admin/game/server/{hashid} — 编辑区服
+
+```
+需认证: 是
+请求: { "name": "新名称", "status": 2 }
+```
+
+#### DELETE /admin/game/server/{hashid} — 删除区服
+
+```
+需认证: 是
+```
+
+### 3.9 提现阶梯限额管理
+
+#### GET /admin/withdraw/limits/list
+
+```
+需认证: 是
+
+响应: {
+  "list": [
+    {
+      "id": "...",
+      "user_level": "verified",
+      "single_min": "1.0000",
+      "single_max": "5000.0000",
+      "daily_limit": "50000.0000",
+      "monthly_limit": "200000.0000",
+      "fee_pct": "0.50",
+      "fee_max": "25.0000",
+      "auto_approve_threshold": "500.0000"
+    }
+  ]
+}
+```
+
+#### PUT /admin/withdraw/limits/{hashid} — 更新限额
+
+```
+需认证: 是
+
+请求: { "single_max": "10000.0000", "fee_pct": "0.25" }
+// 可部分更新
+```
+
+### 3.10 数据导出
 
 #### POST /admin/export/users — 导出C端用户
 
