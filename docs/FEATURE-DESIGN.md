@@ -239,3 +239,35 @@ signature = HMAC-SHA256(
 | 提现手续费 | 提现金额 × fee_pct | 标准版实现 |
 | 游戏分成 | 第三方游戏收入分成 | 按合同约定 |
 | 充值汇差 | 法币→平台币汇率差 | 平台设定汇率与市场汇率差值 |
+
+## 9. 数据分析设计
+
+### 9.1 ClickHouse OLAP 分析
+
+平台接入 ClickHouse 列式数据库，支撑以下分析场景：
+
+| 场景 | 计算方式 | 示例 |
+|------|---------|------|
+| 联合概率 | P(A ∩ B) = countIf(A ∧ B) / count(*) | 同时玩过两个游戏的用户占比 |
+| 条件概率 | P(A \| B) = countIf(A ∧ B) / countIf(B) | 玩过游戏A后充值的概率 |
+| 行为统计 | 聚合函数 countIf/sumIf/avgIf | 按国家/语言/游戏维度的行为分布 |
+
+### 9.2 ProbabilityService
+
+位于 `common/service/ProbabilityService.php`，提供：
+
+```php
+// 联合概率
+ProbabilityService::joint(
+    ['table' => 'erik_game_play_log', 'alias' => 'user_id', 'where' => ['game_id' => 5]],
+    ['table' => 'erik_deposit_orders', 'alias' => 'user_id', 'where' => ['status' => 'paid']],
+);
+
+// 条件概率 P(A | B)
+ProbabilityService::conditional(
+    ['table' => 'erik_deposit_orders', 'alias' => 'user_id', 'where' => ['status' => 'paid']],
+    ['table' => 'erik_game_play_log', 'alias' => 'user_id', 'where' => ['game_id' => 5]],
+);
+```
+
+内部使用 `erikwang2013/clickhouse-php` 包，通过 HTTP 接口执行 ClickHouse 原生 SQL。

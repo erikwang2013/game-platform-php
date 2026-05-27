@@ -20,6 +20,7 @@ A global, internationalized game aggregation platform. Users register, deposit f
 - PHP 8.3+, webman v2 (workerman/webman)
 - MySQL 8.0+ (table prefix `erik_`, BIGINT non-auto-increment primary keys)
 - Redis (Session / Cache / Rate Limiting)
+- ClickHouse (OLAP Analytics / Probability Calculation)
 - Elasticsearch (Full-text Search)
 - JWT Authentication + RBAC Authorization
 - Data Encryption: API transport layer AES-256-CBC + DB storage layer AES-128-ECB
@@ -40,6 +41,7 @@ A global, internationalized game aggregation platform. Users register, deposit f
 - `erikwang2013/season` — Country flags
 - `erikwang2013/security-php` — Security detection tools
 - `erikwang2013/poster-php` — Random verification for sensitive operations
+- `erikwang2013/clickhouse-php` — ClickHouse connection & query
 
 ## Project Structure
 
@@ -60,7 +62,7 @@ game-platform-php/
 ├── common/                    # Shared layer (PSR-4 autoload)
 │   ├── model/                 #   Data models (25)
 │   ├── middleware/            #   Shared middleware (UserAuth)
-│   └── service/               #   Shared services (TranslationService)
+│   └── service/               #   Shared services (5)
 │
 ├── apps/
 │   └── flutter/platform/      # Flutter Web PC user platform

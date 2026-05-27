@@ -91,6 +91,7 @@ return array(
     'Erikwang2013\\Hashids\\' => array($vendorDir . '/erikwang2013/hashids/src'),
     'Erikwang2013\\Encryption\\' => array($vendorDir . '/erikwang2013/encryption/src'),
     'Erikwang2013\\Encryptable\\' => array($vendorDir . '/erikwang2013/encryptable/src'),
+    'Erikwang2013\\ClickHouse\\' => array($vendorDir . '/erikwang2013/clickhouse-php/src'),
     'Dotenv\\' => array($vendorDir . '/vlucas/phpdotenv/src'),
     'Doctrine\\Inflector\\' => array($vendorDir . '/doctrine/inflector/src'),
     'Doctrine\\Common\\Lexer\\' => array($vendorDir . '/doctrine/lexer/src'),

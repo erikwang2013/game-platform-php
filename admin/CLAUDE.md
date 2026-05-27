@@ -22,6 +22,7 @@ Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 | 操作审计 | 日志查询 + 8 平台来源端自动检测 |
 | 文件 | 上传 + Excel/PDF 导出（敏感数据脱敏）|
 | 安全 | 18 层纵深防御（XSS/SQL注入/CSRF/限流/CSP...）|
+| 数据 | 用户行为概率分析、联合/条件概率计算 (ClickHouse) |
 | 运维 | 健康检查/Prometheus 指标/API 文档/security.txt + Docker + CI/CD |
 
 ## 技术栈
@@ -36,6 +37,7 @@ Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 - 数据库敏感字段加解密: `erikwang2013/encryptable`
 - ES 同步与查询: `erikwang2013/webman-scout`
 - 国家旗帜: `erikwang2013/season`
+- ClickHouse 连接: `erikwang2013/clickhouse-php`
 
 ### 前端
 - Flutter 3.x，源码目录 `apps/flutter/`

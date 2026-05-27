@@ -29,13 +29,14 @@ flowchart TB
         E1[("MySQL 8.0<br/>主存储<br/>表前缀 erik_")]
         E2[("Redis<br/>Session / 缓存<br/>限流 / Captcha")]
         E3[("Elasticsearch<br/>全文检索<br/>索引前缀 erik_")]
+        E4[("ClickHouse<br/>OLAP 分析<br/>概率计算 / 行为统计")]
     end
 
     A1 & A2 & A3 -->|"HTTPS / JSON<br/>JWT Bearer"| B1
     B1 -->|"/admin/*"| C1
     B1 -->|"/api/*"| C2
     C1 & C2 --> D1
-    C1 & C2 --> E1 & E2 & E3
+    C1 & C2 --> E1 & E2 & E3 & E4
 ```
 
 ## 2. 模块架构
@@ -56,7 +57,7 @@ flowchart TB
   ↓
 共享层: common/model/* (Eloquent ORM)
   ↓
-存储层: MySQL / Redis / Elasticsearch
+存储层: MySQL / Redis / Elasticsearch / ClickHouse
 ```
 
 **职责**：管理员登录、游戏 CRUD、提现审核、C端用户管理、支付方式管理、公告管理、数据导出、仪表盘
@@ -76,7 +77,7 @@ flowchart TB
   ↓
 共享层: common/model/* (Eloquent ORM)
   ↓
-存储层: MySQL / Redis / Elasticsearch
+存储层: MySQL / Redis / Elasticsearch / ClickHouse
 ```
 
 **职责**：用户注册登录、钱包管理、充值下单、平台币⇄游戏币兑换、提现申请、游戏列表/详情/启动、公告浏览
@@ -93,7 +94,8 @@ common/
     ├── TranslationService.php # 国际化翻译
     ├── RiskService.php       # 风控引擎
     ├── LeaderboardService.php # 排行榜计算
-    └── NotificationService.php # 通知发送
+    ├── NotificationService.php # 通知发送
+    └── ProbabilityService.php # 概率计算 (ClickHouse)
 ```
 
 **设计原则**：
@@ -224,6 +226,7 @@ flowchart TB
         MYSQL["MySQL 8.0 主从复制"]
         REDIS["Redis 7.x 哨兵模式"]
         ES["Elasticsearch 8.x 3节点集群"]
+        CH["ClickHouse<br/>列式分析数据库"]
     end
 
     subgraph "监控"
@@ -232,7 +235,7 @@ flowchart TB
 
     DNS --> NGX
     NGX --> ADM1 & ADM2 & SVC1 & SVC2
-    ADM1 & ADM2 & SVC1 & SVC2 --> MYSQL & REDIS & ES
+    ADM1 & ADM2 & SVC1 & SVC2 --> MYSQL & REDIS & ES & CH
     ADM1 & ADM2 & SVC1 & SVC2 --> MON
 ```
 
@@ -255,4 +258,6 @@ flowchart TB
 | service/ | 8788 | C端业务 API + hg/apidoc 文档 |
 | MySQL | 3306 | 主数据库 |
 | Redis | 6379 | 缓存/限流 |
+| ClickHouse | 8123 | OLAP HTTP 接口 (查询/统计) |
+| ClickHouse | 9000 | Native TCP 协议 |
 | Elasticsearch | 9200 | 全文检索 |
