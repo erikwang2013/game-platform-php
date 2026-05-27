@@ -22,7 +22,10 @@ Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 | 操作审计 | 日志查询 + 8 平台来源端自动检测 |
 | 文件 | 上传 + Excel/PDF 导出（敏感数据脱敏）|
 | 安全 | 18 层纵深防御（XSS/SQL注入/CSRF/限流/CSP...）|
-| 数据 | 用户行为概率分析、联合/条件概率计算 (ClickHouse) |
+| 数据 | ClickHouse：概率计算、双写(行为+充值)、推荐、留存、转化 |
+| 风控 | 增强风控+反作弊：高频/多账号/IP跳变/脚本/挂机/羊毛党 |
+| 运营 | 智能优惠券、游戏看板、限流看板、用户画像、A/B实验 |
+| 实时 | WebSocket :8789 推送：排行榜、告警、事件流、概览 |
 | 运维 | 健康检查/Prometheus 指标/API 文档/security.txt + Docker + CI/CD |
 
 ## 技术栈
@@ -207,6 +210,7 @@ Redis 滑动窗口（Lua 原子化），默认 60 次/分钟/IP/路由：
 | `app` | webman PHP 8.3 应用，`Dockerfile` 构建（含 OPcache） |
 | `mysql` | MySQL 8.0，数据卷持久化 |
 | `redis` | Redis 7 Alpine，缓存/限流/Session |
+| `clickhouse` | ClickHouse 24 Alpine，OLAP/概率计算/留存/行为分析 |
 | `elasticsearch` | Elasticsearch 8.x，全文检索 |
 
 ```bash

@@ -10,6 +10,7 @@ namespace app\api\v1\controller;
 use hg\apidoc\annotation as Apidoc;
 use common\model\DepositOrder;
 use common\model\PlatformConfig;
+use common\service\DepositLogService;
 use support\Request;
 use support\Response;
 
@@ -62,6 +63,8 @@ class DepositController extends BaseController
         $order->payment_method_id  = $paymentMethodId;
         $order->status             = 'pending';
         $order->save();
+
+        DepositLogService::logDeposit($order->id, $userId, (string) $amount, $currency, 'pending');
 
         return $this->success([
             'order_id'        => $this->encodeId($order->id),

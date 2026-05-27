@@ -39,6 +39,15 @@ return [
             'publicPath' => public_path()
         ]
     ],
+    // WebSocket real-time push
+    'websocket' => [
+        'handler' => app\process\WebSocket::class,
+        'listen' => 'websocket://0.0.0.0:8789',
+        'count' => 1,
+        'user' => '',
+        'group' => '',
+        'reusePort' => false,
+    ],
     // File update detection and automatic reload
     'monitor' => [
         'handler' => app\process\Monitor::class,

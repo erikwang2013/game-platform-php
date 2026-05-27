@@ -14,6 +14,7 @@ use common\model\GameCurrency;
 use common\model\Transaction;
 use common\model\UserGameWallet;
 use common\model\UserWallet;
+use common\service\DepositLogService;
 use support\Request;
 use support\Response;
 use support\Db;
@@ -273,6 +274,8 @@ class ExchangeController extends BaseController
                 ? "Exchange buy: {$platformAmount} platform -> {$gameAmount} game (game_id: {$gameId})"
                 : "Exchange sell: {$gameAmount} game -> platform (game_id: {$gameId})";
             $transaction->save();
+
+            DepositLogService::logTransaction($transaction->id, $userId, $transaction->type, $transaction->amount, $balanceAfter, 'exchange_record', $record->id);
 
             Db::commit();
 

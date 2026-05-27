@@ -9,6 +9,7 @@ namespace app\api\v1\controller;
 
 use hg\apidoc\annotation as Apidoc;
 use common\model\Game;
+use common\service\GamePlayLogService;
 use support\Request;
 use support\Response;
 
@@ -149,6 +150,15 @@ class GameController extends BaseController
         if ((int) $game->status !== 1) {
             return $this->fail('Game is not available', 403);
         }
+
+        $userId = $request->userId ?? 0;
+        GamePlayLogService::write(
+            userId: $userId,
+            gameId: $gameId,
+            action: 'launch',
+            ipAddress: $request->getRealIp() ?: '',
+            userAgent: $request->header('User-Agent', ''),
+        );
 
         return $this->success([
             'id'           => $this->encodeId($game->id),

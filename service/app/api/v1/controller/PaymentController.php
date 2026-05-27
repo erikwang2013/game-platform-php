@@ -12,6 +12,7 @@ use common\model\DepositOrder;
 use common\model\PaymentMethod;
 use common\model\Transaction;
 use common\model\UserWallet;
+use common\service\DepositLogService;
 use common\service\RiskService;
 use support\Request;
 use support\Response;
@@ -116,6 +117,9 @@ class PaymentController extends BaseController
             $transaction->ref_id        = $order->id;
             $transaction->remark        = "Deposit order {$orderNo}, gateway tx: {$transactionId}";
             $transaction->save();
+
+            DepositLogService::logDeposit($order->id, $order->user_id, $order->amount, $order->currency, 'completed', $provider);
+            DepositLogService::logTransaction($transaction->id, $order->user_id, 'deposit', $order->platform_amount, $wallet->balance ?? '0.0000', 'deposit_order', $order->id);
 
             return $this->success([
                 'order_no' => $orderNo,

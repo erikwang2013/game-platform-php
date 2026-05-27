@@ -62,7 +62,7 @@ game-platform-php/
 ├── common/                    # 共享层 (PSR-4 autoload)
 │   ├── model/                 #   数据模型 (25个)
 │   ├── middleware/            #   共享中间件 (UserAuth)
-│   └── service/               #   共享服务 (5个)
+│   └── service/               #   共享服务 (15个)
 │
 ├── apps/
 │   └── flutter/platform/      # Flutter Web PC C端用户平台
@@ -188,6 +188,8 @@ curl -X POST http://localhost:8788/api/auth/register \
 | [接口文档](docs/API.md) | 完整 API 参考 (129个端点) |
 | [在线文档](http://localhost:8787/apidoc/) | 管理后台 hg/apidoc 交互式文档 (25组79端点) |
 | [在线文档](http://localhost:8788/apidoc/) | C端业务 hg/apidoc 交互式文档 (16组50端点) |
+| [ClickHouse 安装](docs/CLICKHOUSE_INSTALL.md) | ClickHouse 安装/配置/迁移/验证 |
+| [ClickHouse 使用](docs/CLICKHOUSE_USAGE.md) | 12 个服务 API 参考与示例 |
 | [部署文档](docs/DEPLOYMENT.md) | Docker + 手动 + Nginx + 监控 |
 | [设计规范](admin/docs/superpowers/specs/2026-05-22-game-platform-design.md) | 完整设计规范 |
 | [实现计划](admin/docs/superpowers/plans/2026-05-22-game-platform-plan.md) | 详细实现计划 |

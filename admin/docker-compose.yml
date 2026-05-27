@@ -82,6 +82,28 @@ services:
     networks:
       - open-admin
 
+  clickhouse:
+    image: clickhouse/clickhouse-server:24-alpine
+    container_name: open-admin-clickhouse
+    restart: unless-stopped
+    environment:
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-default}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASS:-}
+      CLICKHOUSE_DB: ${CLICKHOUSE_DB:-default}
+    ports:
+      - "${CLICKHOUSE_HTTP_PORT:-8123}:8123"
+      - "${CLICKHOUSE_TCP_PORT:-9000}:9000"
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      - ./database/migrations/clickhouse:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "clickhouse-client -q 'SELECT 1'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - open-admin
+
   elasticsearch:
     image: elasticsearch:8.12.0
     container_name: open-admin-es
@@ -106,6 +128,7 @@ volumes:
   mysql-data:
   redis-data:
   es-data:
+  clickhouse-data:
   app-runtime:
 
 networks:

@@ -95,7 +95,19 @@ common/
     ├── RiskService.php       # 风控引擎
     ├── LeaderboardService.php # 排行榜计算
     ├── NotificationService.php # 通知发送
-    └── ProbabilityService.php # 概率计算 (ClickHouse)
+    ├── ProbabilityService.php # 概率计算 (ClickHouse)
+    ├── GamePlayLogService.php # 行为日志双写 (MySQL+ClickHouse)
+    ├── RecommendService.php  # 游戏推荐引擎 (ClickHouse)
+    ├── RiskClickHouseService.php # 增强风控 (ClickHouse)
+    ├── SmartCouponService.php # 智能优惠券 (ClickHouse)
+    ├── GameDashboardService.php # 游戏数据看板 (ClickHouse)
+    ├── RateLimitDashboardService.php # 限流看板 (ClickHouse)
+    ├── UserProfileService.php # 用户画像 (ClickHouse)
+    ├── AbTestService.php     # A/B 实验框架 (ClickHouse)
+    ├── DepositLogService.php # 充值交易双写 (ClickHouse)
+    ├── RetentionService.php  # 留存分析 (ClickHouse)
+    ├── AntiCheatService.php  # 反作弊检测 (ClickHouse)
+    └── WebSocketService.php  # 实时推送 (WebSocket+ClickHouse)
 ```
 
 **设计原则**：
@@ -201,6 +213,7 @@ erik_payment_method ── 1:N ── erik_deposit_order
   service/  :8788 (webman, 32 workers)
   MySQL     :3306
   Redis     :6379
+  ClickHouse :8123 / :9000
 ```
 
 ### 生产环境

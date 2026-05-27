@@ -271,3 +271,114 @@ ProbabilityService::conditional(
 ```
 
 内部使用 `erikwang2013/clickhouse-php` 包，通过 HTTP 接口执行 ClickHouse 原生 SQL。
+
+### 9.3 GamePlayLogService 双写
+
+位于 `common/service/GamePlayLogService.php`，提供行为日志的 MySQL + ClickHouse 双写：
+
+```php
+// 单条写入
+GamePlayLogService::write(
+    userId: $userId,
+    gameId: $gameId,
+    action: 'launch',
+    detail: ['version' => '1.2.3'],
+    ipAddress: $request->getRealIp(),
+    userAgent: $request->header('User-Agent'),
+);
+
+// 批量写入
+GamePlayLogService::writeBatch([
+    ['user_id' => 1, 'game_id' => 5, 'action' => 'spin', 'detail' => ['result' => 'win']],
+    ['user_id' => 1, 'game_id' => 5, 'action' => 'bet', 'detail' => ['amount' => 100]],
+]);
+```
+
+ClickHouse 表 `erik_game_play_log` 使用 MergeTree 引擎按月分区，附带物化视图 `erik_game_play_log_hourly` 按小时聚合。
+
+### 9.4 游戏推荐引擎 (RecommendService)
+
+位于 `common/service/RecommendService.php`，基于协同过滤：
+
+| 方法 | 功能 | 算法 |
+|------|------|------|
+| `alsoPlayed(gameId)` | 玩过X的人也玩了Y | P(Y\|X) 条件概率 |
+| `trending(hours)` | 热门游戏排行 | 近期活跃玩家数 |
+| `forUser(userId)` | 个性化推荐 | 相似用户协同过滤 |
+| `gameAffinity(A, B)` | 游戏关联度 | 联合概率 P(A∩B) |
+
+### 9.5 增强风控 (RiskClickHouseService)
+
+位于 `common/service/RiskClickHouseService.php`：
+
+| 方法 | 检测内容 |
+|------|---------|
+| `detectHighFrequency()` | 5分钟内操作超阈值 |
+| `detectMultiAccount()` | 同IP多账号关联 |
+| `detectIpHopping()` | 短时间多IP切换 |
+| `assessUser(userId)` | 综合风险评分 0-100 |
+
+### 9.6 智能优惠券 (SmartCouponService)
+
+`common/service/SmartCouponService.php` — 流失检测 + 挽留建议：
+- 7/14/30天不活跃自动分级（medium/high/critical）
+- 按阶梯建议面额（$5/$10/$20）
+- 游戏参与度排行榜辅助营销决策
+
+### 9.7 数据看板 (GameDashboardService / RateLimitDashboardService)
+
+- `GameDashboardService`：概览指标、行为分布、时段趋势、DAU趋势、游戏排行榜
+- `RateLimitDashboardService`：IP 请求分布、按小时趋势、action 分布、可疑来源识别
+
+### 9.8 用户画像 (UserProfileService)
+
+`common/service/UserProfileService.php` — 5维度标签体系：
+- 活跃度：daily_active / weekly_active / casual / dormant
+- 游戏偏好：explorer / multi_game / focused
+- 行为密度：hardcore / regular / light
+- IP稳定性：stable_ip / normal_ip / roaming
+- 时段偏好：night_owl / morning_player / afternoon_player / evening_player
+
+### 9.9 A/B 实验 (AbTestService)
+
+`common/service/AbTestService.php` — 实验框架：
+- `assign()`: 哈希分桶（crc32），支持自定义变体权重
+- `report()`: 各变体核心指标对比
+- `comparePeriods()`: 前后时期行为变化分析
+
+### 9.10 充值双写 (DepositLogService)
+
+`common/service/DepositLogService.php` — 充值订单 + 交易流水入 ClickHouse：
+- `logDeposit()`: 充值订单写入 ClickHouse
+- `logTransaction()`: 交易流水写入 ClickHouse
+- `revenueOverview()`: 收入概览（总额/笔数/均额）
+- `conversionByGame()`: 按游戏的充值转化率 P(充值\|玩过X)
+
+需在 ClickHouse 先建表 `erik_deposit_log` 和 `erik_transaction_log`。
+
+### 9.11 留存分析 (RetentionService)
+
+`common/service/RetentionService.php` — D1/D7/D30 队列留存：
+- `cohortRetention()`: 按首次行为日期队列，跟踪 D1/D7/D30 留存率
+- `retentionByGame()`: 按游戏对比留存（≥10用户才纳入）
+- `retentionByRegion()`: 按 IP 地域前缀对比
+- `churnRate()`: 整体流失率
+
+### 9.12 反作弊 (AntiCheatService)
+
+`common/service/AntiCheatService.php` — 时序异常检测：
+- `detectBotPattern()`: 操作间隔规律检测（<1s=90分脚本嫌疑）
+- `detect24HourActivity()`: 24h中≥18h活跃（挂机/共用）
+- `detectDensityAnomaly()`: 10分钟内操作≥100次
+- `detectAccountFarming()`: 同IP短时间大量账号切换
+- `assessUser()`: 综合反作弊评分 0-100
+
+### 9.13 实时推送 (WebSocketService)
+
+`common/service/WebSocketService.php` — webman WebSocket :8789：
+- `pushLeaderboard()`: 实时游戏排行榜（1h活跃玩家数）
+- `pushRiskAlert()`: 风控告警推送（高频/多账号/IP跳变）
+- `pushGameEvents()`: 1分钟内游戏事件流
+- `pushOverview()`: 概览快照（DAU/活跃游戏/操作量）
+
+客户端连接: `ws://localhost:8789`，服务端配置 `config/process.php`。
