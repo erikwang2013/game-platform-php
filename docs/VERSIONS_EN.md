@@ -10,7 +10,7 @@
 | API Endpoints | 38 | 54 | 129 |
 | Controllers | 14 | 22 | 48 |
 | Models | 14 | 24 | 34 |
-| Services | 1 | 2 | 4 |
+| Services | 1 | 2 | 6 |
 | Admin Pages | 11 | 13 | 15 |
 | Platform Pages | 8 | 10 | 10 |
 | HarmonyOS Pages | 2 | 2 | 5 |

@@ -29,13 +29,14 @@ flowchart TB
         E1[("MySQL 8.0<br/>主存储<br/>表前缀 erik_")]
         E2[("Redis<br/>Session / 缓存<br/>限流 / Captcha")]
         E3[("Elasticsearch<br/>全文检索<br/>索引前缀 erik_")]
+        E4[("ClickHouse<br/>OLAP 分析<br/>概率计算")]
     end
 
     A1 & A2 & A3 -->|"HTTPS / JSON<br/>JWT Bearer"| B1
     B1 -->|"/admin/*"| C1
     B1 -->|"/api/*"| C2
     C1 & C2 --> D1
-    C1 & C2 --> E1 & E2 & E3
+    C1 & C2 --> E1 & E2 & E3 & E4
 ```
 
 ## 2. 模块架构
@@ -56,7 +57,7 @@ flowchart TB
   ↓
 共享层: common/model/* (Eloquent ORM)
   ↓
-存储层: MySQL / Redis / Elasticsearch
+存储层: MySQL / Redis / Elasticsearch / ClickHouse
 ```
 
 **职责**：管理员登录、游戏 CRUD（含区服管理）、提现审核（含阶梯限额）、C端用户管理、KYC 审核、支付方式管理、公告管理、数据导出、仪表盘
@@ -77,7 +78,7 @@ flowchart TB
   ↓
 共享层: common/model/* (Eloquent ORM)
   ↓
-存储层: MySQL / Redis / Elasticsearch
+存储层: MySQL / Redis / Elasticsearch / ClickHouse
 ```
 
 **职责**：用户注册登录、钱包管理、充值下单、平台币⇄游戏币兑换、提现申请、游戏列表/详情/启动、公告浏览
@@ -104,7 +105,12 @@ common/
 ├── middleware/
 │   └── UserAuth.php          # C端 JWT 认证中间件
 └── service/
-    └── TranslationService.php # 国际化翻译服务（Redis缓存 + DB回退）
+    ├── TranslationService.php  # 国际化翻译（Redis缓存 + DB回退）
+    ├── RiskService.php         # 风控引擎
+    ├── ProbabilityService.php  # 概率计算 (ClickHouse)
+    ├── GamePlayLogService.php  # 行为日志双写 (MySQL+ClickHouse)
+    ├── GameDashboardService.php # 数据看板 (ClickHouse)
+    └── DepositLogService.php   # 充值日志双写 (ClickHouse)
 ```
 
 **设计原则**：
@@ -266,4 +272,5 @@ flowchart TB
 | service/ | 8788 | C端业务 API |
 | MySQL | 3306 | 主数据库 |
 | Redis | 6379 | 缓存/限流 |
+| ClickHouse | 8123 | OLAP HTTP 接口 |
 | Elasticsearch | 9200 | 全文检索 |

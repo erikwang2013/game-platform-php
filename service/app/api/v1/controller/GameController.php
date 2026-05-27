@@ -11,6 +11,7 @@ use hg\apidoc\annotation as Apidoc;
 use common\model\Game;
 use common\model\GamePlayLog;
 use common\model\UserWallet;
+use common\service\GamePlayLogService;
 use support\Request;
 use support\Response;
 
@@ -167,6 +168,8 @@ class GameController extends BaseController
         $playLog->game_amount_before = $gameAmountBefore;
         $playLog->created_at        = date('Y-m-d H:i:s');
         $playLog->save();
+
+        GamePlayLogService::write($request->userId, $gameId, 'launch', [], $request->getRealIp() ?: '', $request->header('User-Agent', ''));
 
         return $this->success([
             'id'            => $this->encodeId($game->id),

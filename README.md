@@ -20,6 +20,7 @@
 - PHP 8.3+, webman v2 (workerman/webman)
 - MySQL 8.0+ (表前缀 `erik_`，BIGINT 非自增主键)
 - Redis (Session / 缓存 / 限流)
+- ClickHouse (OLAP 分析 / 概率计算)
 - Elasticsearch (全文检索)
 - JWT 认证 + RBAC 权限控制
 - 数据加密：API 传输层 AES-256-CBC + 数据库存储层 AES-128-ECB
@@ -40,6 +41,7 @@
 - `erikwang2013/season` — 国家旗帜
 - `erikwang2013/security-php` — 安全工具检测
 - `erikwang2013/poster-php` — 敏感操作随机验证
+- `erikwang2013/clickhouse-php` — ClickHouse 连接与概率计算
 
 ## 项目结构
 
@@ -60,7 +62,7 @@ game-platform-php/
 ├── common/                    # 共享层 (PSR-4 autoload)
 │   ├── model/                 #   数据模型 (14个)
 │   ├── middleware/            #   共享中间件 (UserAuth)
-│   └── service/               #   共享服务 (TranslationService)
+│   └── service/               #   共享服务 (6个，含 ClickHouse 双写+看板+概率)
 │
 ├── apps/
 │   └── flutter/platform/      # Flutter Web PC C端用户平台

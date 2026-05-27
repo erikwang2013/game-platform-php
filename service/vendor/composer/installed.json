@@ -389,6 +389,74 @@
             "install-path": "../doctrine/lexer"
         },
         {
+            "name": "erikwang2013/clickhouse-php",
+            "version": "v1.0.2",
+            "version_normalized": "1.0.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/erikwang2013/clickhouse-php.git",
+                "reference": "c9d579aecb93b72c9529743f74b8e54e3ac2f6d6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/erikwang2013/clickhouse-php/zipball/c9d579aecb93b72c9529743f74b8e54e3ac2f6d6",
+                "reference": "c9d579aecb93b72c9529743f74b8e54e3ac2f6d6",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "^7.0",
+                "php": ">=8.1",
+                "psr/log": "^3.0"
+            },
+            "require-dev": {
+                "mockery/mockery": "^1.5",
+                "phpunit/phpunit": "^10.0"
+            },
+            "suggest": {
+                "hyperf/framework": "For Hyperf integration (^3.0)",
+                "laravel/framework": "For Laravel integration (^10.0|^11.0)",
+                "topthink/framework": "For ThinkPHP integration (^8.0)",
+                "workerman/workerman": "For Webman integration (^4.0)"
+            },
+            "time": "2026-05-27T10:40:54+00:00",
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Erikwang2013\\ClickHouse\\Laravel\\ClickHouseServiceProvider"
+                    ]
+                }
+            },
+            "installation-source": "dist",
+            "autoload": {
+                "psr-4": {
+                    "Erikwang2013\\ClickHouse\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "erik",
+                    "email": "erik@erik.xyz"
+                }
+            ],
+            "description": "A full-featured PHP ClickHouse client with HTTP and Native TCP support, query builder, schema builder, migration system, and ORM.",
+            "keywords": [
+                "clickhouse",
+                "client",
+                "database",
+                "php"
+            ],
+            "support": {
+                "issues": "https://github.com/erikwang2013/clickhouse-php/issues",
+                "source": "https://github.com/erikwang2013/clickhouse-php/tree/v1.0.2"
+            },
+            "install-path": "../erikwang2013/clickhouse-php"
+        },
+        {
             "name": "erikwang2013/encryptable",
             "version": "v2.0.0",
             "version_normalized": "2.0.0.0",

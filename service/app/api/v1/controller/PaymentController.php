@@ -12,6 +12,7 @@ use common\model\DepositOrder;
 use common\model\PaymentMethod;
 use common\model\Transaction;
 use common\model\UserWallet;
+use common\service\DepositLogService;
 use common\service\RiskService;
 use support\Request;
 use support\Response;
@@ -82,6 +83,8 @@ class PaymentController extends BaseController
             $transaction->ref_id        = $order->id;
             $transaction->remark        = "Deposit callback: {$order->order_no}";
             $transaction->save();
+
+            DepositLogService::log($order->id, $order->user_id, $order->amount, $order->currency, 'confirmed');
 
             // Run risk check
             $riskResult = RiskService::check(

@@ -21,15 +21,15 @@ class ComposerStaticInit3c128a111e7dc019e8a86e488022f98b
         '8825ede83f2f289127722d4e842cf7e8' => __DIR__ . '/..' . '/symfony/polyfill-intl-grapheme/bootstrap.php',
         'b6b991a57620e2fb6b2f66f03fe9ddc2' => __DIR__ . '/..' . '/symfony/string/Resources/functions.php',
         '06a34129a50df3d9257ee706cf3c875b' => __DIR__ . '/..' . '/illuminate/filesystem/functions.php',
-        'ef65a1626449d89d0811cf9befce46f0' => __DIR__ . '/..' . '/illuminate/events/functions.php',
         '7b11c4dc42b3b3023073cb14e519683c' => __DIR__ . '/..' . '/ralouphie/getallheaders/src/getallheaders.php',
+        'ef65a1626449d89d0811cf9befce46f0' => __DIR__ . '/..' . '/illuminate/events/functions.php',
         'a4a119a56e50fbb293281d9a48007e0e' => __DIR__ . '/..' . '/symfony/polyfill-php80/bootstrap.php',
         '606a39d89246991a373564698c2d8383' => __DIR__ . '/..' . '/symfony/polyfill-php85/bootstrap.php',
         '667aeda72477189d0494fecd327c3641' => __DIR__ . '/..' . '/symfony/var-dumper/Resources/functions/dump.php',
+        '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
         '47e1160838b5e5a10346ac4084b58c23' => __DIR__ . '/..' . '/laravel/prompts/src/helpers.php',
         '35a6ad97d21e794e7e22a17d806652e4' => __DIR__ . '/..' . '/nunomaduro/termwind/src/Functions.php',
         'f598d06aa772fa33d905e87be6398fb1' => __DIR__ . '/..' . '/symfony/polyfill-intl-idn/bootstrap.php',
-        '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
         'e39a8b23c42d4e1452234d762b03835a' => __DIR__ . '/..' . '/ramsey/uuid/src/functions.php',
         '253c157292f75eb38082b5acb06f3f01' => __DIR__ . '/..' . '/nikic/fast-route/src/functions.php',
         'd1e6f78cc9c78467ea1153b97160bd90' => __DIR__ . '/..' . '/erikwang2013/poster-php/helpers.php',
@@ -175,6 +175,7 @@ class ComposerStaticInit3c128a111e7dc019e8a86e488022f98b
             'Erikwang2013\\Hashids\\' => 21,
             'Erikwang2013\\Encryption\\' => 24,
             'Erikwang2013\\Encryptable\\' => 25,
+            'Erikwang2013\\ClickHouse\\' => 24,
         ),
         'D' => 
         array (
@@ -540,6 +541,10 @@ class ComposerStaticInit3c128a111e7dc019e8a86e488022f98b
         'Erikwang2013\\Encryptable\\' => 
         array (
             0 => __DIR__ . '/..' . '/erikwang2013/encryptable/src',
+        ),
+        'Erikwang2013\\ClickHouse\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/erikwang2013/clickhouse-php/src',
         ),
         'Dotenv\\' => 
         array (
