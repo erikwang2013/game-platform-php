@@ -10,6 +10,7 @@ namespace app\api\v1\controller;
 use app\model\DepositOrder;
 use app\model\PlatformConfig;
 use app\service\NotificationService;
+use common\service\DepositLogService;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
@@ -72,6 +73,8 @@ class DepositController extends BaseController
             'deposit',
             $order->id
         );
+
+        DepositLogService::log($order->id, $userId, (string)$amount, $currency, 'pending');
 
         return $this->success([
             'order_id'        => $this->encodeId($order->id),

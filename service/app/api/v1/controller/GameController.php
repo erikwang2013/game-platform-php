@@ -10,6 +10,7 @@ namespace app\api\v1\controller;
 use app\model\Game;
 use app\model\GamePlayLog;
 use app\model\UserWallet;
+use common\service\GamePlayLogService;
 use hg\apidoc\annotation as Apidoc;
 use support\Db;
 use support\Request;
@@ -190,6 +191,8 @@ class GameController extends BaseController
         $playLog->game_amount_before = $gameAmountBefore;
         $playLog->created_at        = date('Y-m-d H:i:s');
         $playLog->save();
+
+        GamePlayLogService::write($request->userId, $gameId, 'launch', ['session_id' => $sessionId], $request->getRealIp() ?: '', $request->header('User-Agent', ''));
 
         return $this->success([
             'id'            => $this->encodeId($game->id),

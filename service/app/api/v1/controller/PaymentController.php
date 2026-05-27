@@ -10,6 +10,7 @@ namespace app\api\v1\controller;
 use app\model\DepositOrder;
 use app\model\PaymentMethod;
 use app\model\Transaction;
+use common\service\DepositLogService;
 use app\model\UserWallet;
 use app\service\RiskService;
 use hg\apidoc\annotation as Apidoc;
@@ -88,6 +89,8 @@ class PaymentController extends BaseController
             $transaction->ref_id        = $order->id;
             $transaction->remark        = "Deposit callback: {$order->order_no}";
             $transaction->save();
+
+            DepositLogService::log($order->id, $order->user_id, $order->amount, $order->currency, 'confirmed');
 
             // Run risk check
             $riskResult = RiskService::check(
