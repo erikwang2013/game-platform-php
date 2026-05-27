@@ -234,6 +234,8 @@ Automatic language detection via `X-Language` header or `Accept-Language` header
 | [API Reference](docs/API.md) | Complete API reference (102 endpoints) |
 | [Live Docs](http://localhost:8788/apidoc/) | hg/apidoc interactive docs (Service) |
 | [Live Docs](http://localhost:8787/apidoc/) | hg/apidoc interactive docs (Admin) |
+| [ClickHouse Install](docs/CLICKHOUSE_INSTALL.md) | Installation, config, migration, verification |
+| [ClickHouse Usage](docs/CLICKHOUSE_USAGE.md) | 4 services API reference & admin dashboard |
 | [Deployment Guide](docs/DEPLOYMENT_EN.md) | Deployment guide (Docker + Manual + Nginx + Monitoring) |
 | [Design Spec](admin/docs/superpowers/specs/2026-05-22-game-platform-design.md) | Full design specification |
 | [Implementation Plan](admin/docs/superpowers/plans/2026-05-22-game-platform-plan.md) | Detailed implementation plan |

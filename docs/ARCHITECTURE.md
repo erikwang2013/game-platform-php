@@ -53,6 +53,7 @@ flowchart TB
   │ Dashboard / User / Role / Permission / Config / Log │ ← 原有
   │ Profile / Export / Import / Upload / Health / Docs  │ ← 原有
   │ Game / Withdraw / Payment / PlatformUser / Announce │ ← 新增
+  │ Analytics                                            │ ← ClickHouse 看板
   └─────────────────────────────────────────────────────┘
   ↓
 共享层: common/model/* (Eloquent ORM)
