@@ -21,7 +21,7 @@ return [
     */
 
     // getenv 仅单参数；勿写 getenv('X','default')，第二个参数是 local_only(bool)，会导致 driver=false 进而误匹配 createDriver()
-    'driver' => getenv('OPENSEARCH_SCOUT_DRIVER') ?: 'opensearch',
+    'driver' => getenv('SCOUT_DRIVER') ?: 'opensearch',
 
     /*
     |--------------------------------------------------------------------------
@@ -47,7 +47,7 @@ return [
     |
     */
 
-    'queue' => getenv('OPENSEARCH_SCOUT_QUEUE', false),
+    'queue' => getenv('SCOUT_QUEUE', false),
 
     /*
     |--------------------------------------------------------------------------
