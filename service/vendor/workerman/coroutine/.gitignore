@@ -1,5 +1,0 @@
-composer.lock
-vendor
-.idea
-tests/.phpunit.result.cache
-tests/workerman.log
