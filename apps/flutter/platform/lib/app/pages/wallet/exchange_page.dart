@@ -163,7 +163,7 @@ class _ExchangePageState extends State<ExchangePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("${AppTranslations.t('exchange.title')}"),
+        title: Text("${AppTranslations.t('exchange.title')}"),
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Get.back()),
       ),
       body: Container(
@@ -210,7 +210,7 @@ class _ExchangePageState extends State<ExchangePage> {
                       // Game selector
                       DropdownButtonFormField<String>(
                         initialValue: _selectedGameId,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: "${AppTranslations.t('exchange.select_game')}",
                           border: OutlineInputBorder(),
                         ),
@@ -228,7 +228,7 @@ class _ExchangePageState extends State<ExchangePage> {
                       if (_gameCurrencies.isNotEmpty) ...[
                         DropdownButtonFormField<String>(
                           initialValue: _selectedCurrencyCode,
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             labelText: "${AppTranslations.t('exchange.select_currency')}",
                             border: OutlineInputBorder(),
                           ),
@@ -308,7 +308,7 @@ class _ExchangePageState extends State<ExchangePage> {
                             children: [
                               const Icon(Icons.check_circle, color: Colors.green, size: 40),
                               const SizedBox(height: 8),
-                              const Text("${AppTranslations.t('exchange.success')}", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.green)),
+                              Text("${AppTranslations.t('exchange.success')}", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.green)),
                               const SizedBox(height: 8),
                               Text('${AppTranslations.t('exchange.order_no')}: ${_result!['order_no'] ?? '-'}', style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant)),
                             ],
@@ -325,7 +325,7 @@ class _ExchangePageState extends State<ExchangePage> {
                             onPressed: _quoting ? null : _getQuote,
                             child: _quoting
                                 ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                                : const Text("${AppTranslations.t('exchange.get_quote')}", style: TextStyle(fontSize: 16)),
+                                : Text("${AppTranslations.t('exchange.get_quote')}", style: TextStyle(fontSize: 16)),
                           ),
                         ),
                       ],
@@ -336,7 +336,7 @@ class _ExchangePageState extends State<ExchangePage> {
                             onPressed: _loading ? null : _confirmExchange,
                             child: _loading
                                 ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                                : const Text("${AppTranslations.t('exchange.confirm')}", style: TextStyle(fontSize: 16)),
+                                : Text("${AppTranslations.t('exchange.confirm')}", style: TextStyle(fontSize: 16)),
                           ),
                         ),
                       ],

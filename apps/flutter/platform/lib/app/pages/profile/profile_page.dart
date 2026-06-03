@@ -102,13 +102,13 @@ class _ProfilePageState extends State<ProfilePage> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("${AppTranslations.t('app.confirm_logout')}"),
-        content: const Text("${AppTranslations.t('app.confirm_logout')}"),
+        title: Text("${AppTranslations.t('app.confirm_logout')}"),
+        content: Text("${AppTranslations.t('app.confirm_logout')}"),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text("${AppTranslations.t('app.cancel')}")),
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text("${AppTranslations.t('app.cancel')}")),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text("${AppTranslations.t('app.confirm')}", style: TextStyle(color: Colors.red)),
+            child: Text("${AppTranslations.t('app.confirm')}", style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -125,7 +125,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("${AppTranslations.t('profile.title')}"),
+        title: Text("${AppTranslations.t('profile.title')}"),
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Get.back()),
       ),
       body: Container(
@@ -194,7 +194,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                               TextField(
                                 controller: _nicknameCtrl,
-                                decoration: const InputDecoration(
+                                decoration: InputDecoration(
                                   labelText: "${AppTranslations.t('profile.nickname')}",
                                   border: OutlineInputBorder(),
                                 ),
@@ -203,7 +203,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                               TextField(
                                 controller: _avatarCtrl,
-                                decoration: const InputDecoration(
+                                decoration: InputDecoration(
                                   labelText: "${AppTranslations.t('profile.avatar')}",
                                   hintText: "${AppTranslations.t('profile.avatar_hint')}",
                                   border: OutlineInputBorder(),
@@ -213,7 +213,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                               TextField(
                                 controller: _languageCtrl,
-                                decoration: const InputDecoration(
+                                decoration: InputDecoration(
                                   labelText: "${AppTranslations.t('profile.language')}",
                                   hintText: "${AppTranslations.t('profile.language_hint')}",
                                   border: OutlineInputBorder(),
@@ -260,7 +260,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                   onPressed: _saving ? null : _save,
                                   child: _saving
                                       ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                                      : const Text("${AppTranslations.t('app.save')}", style: TextStyle(fontSize: 16)),
+                                      : Text("${AppTranslations.t('app.save')}", style: TextStyle(fontSize: 16)),
                                 ),
                               ),
                             ],
@@ -277,12 +277,12 @@ class _ProfilePageState extends State<ProfilePage> {
                             children: [
                               const Icon(Icons.logout, color: Colors.red, size: 20),
                               const SizedBox(width: 12),
-                              const Text("${AppTranslations.t('profile.logout')}", style: TextStyle(fontSize: 15, color: Colors.red)),
+                              Text("${AppTranslations.t('profile.logout')}", style: TextStyle(fontSize: 15, color: Colors.red)),
                               const Spacer(),
                               OutlinedButton(
                                 onPressed: _logout,
                                 style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
-                                child: const Text("${AppTranslations.t('profile.logout')}"),
+                                child: Text("${AppTranslations.t('profile.logout')}"),
                               ),
                             ],
                           ),

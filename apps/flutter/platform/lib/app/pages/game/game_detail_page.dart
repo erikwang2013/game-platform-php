@@ -132,7 +132,7 @@ class _GameDetailPageState extends State<GameDetailPage> {
                                   icon: _loading
                                       ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
                                       : const Icon(Icons.play_arrow),
-                                  label: const Text("${AppTranslations.t('game_detail.start_game')}", style: TextStyle(fontSize: 16)),
+                                  label: Text("${AppTranslations.t('game_detail.start_game')}", style: TextStyle(fontSize: 16)),
                                 ),
                               ),
                             ],
@@ -173,7 +173,7 @@ class _GameDetailPageState extends State<GameDetailPage> {
                   const SizedBox(height: 12),
                   Card(
                     child: DataTable(
-                      columns: const [
+                      columns: [
                         DataColumn(label: Text('${AppTranslations.t("game_detail.supported_currencies")}')),
                         DataColumn(label: Text('${AppTranslations.t("game_detail.exchange_rate")}')),
                         DataColumn(label: Text('${AppTranslations.t("game_detail.description")}')),
@@ -196,7 +196,7 @@ class _GameDetailPageState extends State<GameDetailPage> {
                 OutlinedButton.icon(
                   onPressed: () => Get.back(),
                   icon: const Icon(Icons.arrow_back),
-                  label: const Text("${AppTranslations.t('game_detail.back_to_hall')}"),
+                  label: Text("${AppTranslations.t('game_detail.back_to_hall')}"),
                 ),
               ],
             ),

@@ -123,7 +123,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("${AppTranslations.t('withdraw.title')}"),
+        title: Text("${AppTranslations.t('withdraw.title')}"),
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Get.back()),
       ),
       body: Container(
@@ -171,7 +171,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
                       TextField(
                         controller: _amountCtrl,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: "${AppTranslations.t('withdraw.amount')}",
                           prefixIcon: Icon(Icons.monetization_on_outlined),
                           border: OutlineInputBorder(),
@@ -182,7 +182,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
                       // Method
                       DropdownButtonFormField<String>(
                         initialValue: _method,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: "${AppTranslations.t('withdraw.method')}",
                           prefixIcon: Icon(Icons.account_balance),
                           border: OutlineInputBorder(),
@@ -239,7 +239,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
                             children: [
                               const Icon(Icons.check_circle, color: Colors.green, size: 40),
                               const SizedBox(height: 8),
-                              const Text("${AppTranslations.t('withdraw.success')}", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.green)),
+                              Text("${AppTranslations.t('withdraw.success')}", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.green)),
                               const SizedBox(height: 8),
                               Text(
                                 'Status: ${_result!['status'] ?? 'pending'}',
@@ -258,7 +258,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
                           onPressed: _loading ? null : _submit,
                           child: _loading
                               ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                              : const Text("${AppTranslations.t('withdraw.submit')}", style: TextStyle(fontSize: 16)),
+                              : Text("${AppTranslations.t('withdraw.submit')}", style: TextStyle(fontSize: 16)),
                         ),
                       ),
                     ],

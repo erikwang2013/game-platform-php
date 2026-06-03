@@ -9,7 +9,7 @@ namespace app\middleware;
 
 use app\model\AdminUser;
 use support\Redis;
-use support\Request;
+use Webman\Http\Request;
 use support\Response;
 
 class AdminPermission

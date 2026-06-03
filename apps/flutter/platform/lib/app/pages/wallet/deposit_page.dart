@@ -81,7 +81,7 @@ class _DepositPageState extends State<DepositPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("${AppTranslations.t('deposit.title')}"),
+        title: Text("${AppTranslations.t('deposit.title')}"),
         leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Get.back()),
       ),
       body: Container(
@@ -107,7 +107,7 @@ class _DepositPageState extends State<DepositPage> {
                       TextField(
                         controller: _amountCtrl,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: "${AppTranslations.t('deposit.amount')}",
                           prefixIcon: Icon(Icons.monetization_on_outlined),
                           border: OutlineInputBorder(),
@@ -118,7 +118,7 @@ class _DepositPageState extends State<DepositPage> {
                       // Currency dropdown
                       DropdownButtonFormField<String>(
                         initialValue: _currency,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: "${AppTranslations.t('deposit.currency')}",
                           prefixIcon: Icon(Icons.currency_exchange),
                           border: OutlineInputBorder(),
@@ -131,7 +131,7 @@ class _DepositPageState extends State<DepositPage> {
                       // Payment method dropdown
                       DropdownButtonFormField<String>(
                         initialValue: _method,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: "${AppTranslations.t('deposit.method')}",
                           prefixIcon: Icon(Icons.payment),
                           border: OutlineInputBorder(),
@@ -172,7 +172,7 @@ class _DepositPageState extends State<DepositPage> {
                             children: [
                               const Icon(Icons.check_circle, color: Colors.green, size: 40),
                               const SizedBox(height: 8),
-                              const Text("${AppTranslations.t('deposit.success')}", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.green)),
+                              Text("${AppTranslations.t('deposit.success')}", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.green)),
                               const SizedBox(height: 8),
                               Text('${AppTranslations.t('deposit.order_no')}: $_orderNo', style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant)),
                             ],
@@ -188,7 +188,7 @@ class _DepositPageState extends State<DepositPage> {
                           onPressed: _loading ? null : _submit,
                           child: _loading
                               ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                              : const Text("${AppTranslations.t('deposit.submit')}", style: TextStyle(fontSize: 16)),
+                              : Text("${AppTranslations.t('deposit.submit')}", style: TextStyle(fontSize: 16)),
                         ),
                       ),
                     ],

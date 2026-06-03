@@ -133,7 +133,7 @@ class _LoginPageState extends State<LoginPage> {
                 // Username field
                 TextField(
                   controller: _usernameCtrl,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: "${AppTranslations.t('profile.username')}",
                     prefixIcon: Icon(Icons.person_outline),
                     border: OutlineInputBorder(),
@@ -145,7 +145,7 @@ class _LoginPageState extends State<LoginPage> {
                 TextField(
                   controller: _passwordCtrl,
                   obscureText: true,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: "${AppTranslations.t('login.password')}",
                     prefixIcon: Icon(Icons.lock_outline),
                     border: OutlineInputBorder(),

@@ -51,7 +51,8 @@ Route::group('/api', function () {
     Route::get('/country/{code}', v('CountryController', 'detail'));
 
     Route::get('/game/list', v('GameController', 'list'));
-    Route::get('/game/{hashid}', v('GameController', 'detail'));
+    Route::get('/game/suggest', v('GameController', 'suggest'));
+    Route::get('/game/detail/{hashid}', v('GameController', 'detail'));
     Route::get('/announcement/list', v('AnnouncementController', 'list'));
     Route::get('/announcement/detail/{hashid}', v('AnnouncementController', 'detail'));
 
@@ -59,7 +60,6 @@ Route::group('/api', function () {
     Route::get('/leaderboard/{hashid}', v('LeaderboardController', 'ranking'));
 
     Route::get('/search', v('SearchController', 'search'));
-    Route::get('/game/suggest', v('GameController', 'suggest'));
 
     // 支付
     Route::post('/payment/callback', v('PaymentController', 'callback'));
