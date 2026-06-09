@@ -26,7 +26,7 @@ return [
     'webman' => [
         'handler' => Http::class,
         'listen' => 'http://0.0.0.0:8788',
-        'count' => cpu_count() * 4,
+        'count' => 3,//cpu_count() * 4,
         'user' => '',
         'group' => '',
         'reusePort' => false,
@@ -42,7 +42,7 @@ return [
     // File update detection and automatic reload
     'leaderboard-ws' => [
         'handler' => app\process\LeaderboardWebSocket::class,
-        'listen' => 'websocket://0.0.0.0:8789',
+        'listen' => 'websocket://0.0.0.0:8790',
         'count' => 1,
     ],
     'monitor' => [

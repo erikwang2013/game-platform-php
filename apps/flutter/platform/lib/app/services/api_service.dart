@@ -9,7 +9,7 @@ class ApiService {
   factory ApiService() => _instance;
 
   late final Dio dio;
-  static const String baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:8788');
+  static const String baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'https://game-platform.test');
 
   ApiService._() {
     dio = Dio(BaseOptions(
