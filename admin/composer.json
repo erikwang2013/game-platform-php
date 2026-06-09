@@ -39,7 +39,8 @@
     "erikwang2013/poster-php": "^1.0",
     "vlucas/phpdotenv": "^5.6",
     "hg/apidoc": "^5.3",
-    "erikwang2013/security-php": "^1.1"
+    "erikwang2013/security-php": "^1.1",
+    "hg/apidoc-export": "^1.0"
   },
   "suggest": {
     "ext-event": "For better performance. "

@@ -18,7 +18,8 @@
     "erikwang2013/security-php": "^1.1",
     "vlucas/phpdotenv": "^5.6",
     "hg/apidoc": "^5.3",
-    "erikwang2013/clickhouse-php": "^1.0"
+    "erikwang2013/clickhouse-php": "^1.0",
+    "hg/apidoc-export": "^1.0"
   },
   "autoload": {
     "psr-4": {

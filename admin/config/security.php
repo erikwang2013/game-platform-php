@@ -97,6 +97,6 @@ return [
         'dedup_seconds' => 5,
     ],
 
-    'whitelist_ips' => [],
+    'whitelist_ips' => ['127.0.0.1', '::1'],
     'whitelist_fields' => ['_token', '_method', 'csrf_token'],
 ];

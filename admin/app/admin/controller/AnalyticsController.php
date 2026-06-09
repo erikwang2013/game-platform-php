@@ -21,7 +21,7 @@ class AnalyticsController extends BaseController
      * @Apidoc\Title("Platform Overview")
      * @Apidoc\Url("/admin/analytics/overview")
      * @Apidoc\Method("GET")
-     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
+     * @Apidoc\Header(name="Authorization",require=true,desc="Bearer Token")
      */
     public function overview(Request $request): Response
     {
@@ -32,8 +32,8 @@ class AnalyticsController extends BaseController
      * @Apidoc\Title("Game Ranking")
      * @Apidoc\Url("/admin/analytics/game-ranking")
      * @Apidoc\Method("GET")
-     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
-     * @Apidoc\Query(name:"days",type:"integer",require:false,desc:"Days back (default 7)")
+     * @Apidoc\Header(name="Authorization",require=true,desc="Bearer Token")
+     * @Apidoc\Query(name="days",type="integer",require=false,desc="Days back (default 7)")
      */
     public function gameRanking(Request $request): Response
     {
@@ -45,8 +45,8 @@ class AnalyticsController extends BaseController
      * @Apidoc\Title("DAU Trend")
      * @Apidoc\Url("/admin/analytics/dau-trend")
      * @Apidoc\Method("GET")
-     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
-     * @Apidoc\Query(name:"days",type:"integer",require:false,desc:"Days back (default 30)")
+     * @Apidoc\Header(name="Authorization",require=true,desc="Bearer Token")
+     * @Apidoc\Query(name="days",type="integer",require=false,desc="Days back (default 30)")
      */
     public function dauTrend(Request $request): Response
     {
@@ -57,8 +57,8 @@ class AnalyticsController extends BaseController
      * @Apidoc\Title("Hourly Trend")
      * @Apidoc\Url("/admin/analytics/hourly-trend")
      * @Apidoc\Method("GET")
-     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
-     * @Apidoc\Query(name:"game_id",type:"string",require:false,desc:"Game hashid (empty=all)")
+     * @Apidoc\Header(name="Authorization",require=true,desc="Bearer Token")
+     * @Apidoc\Query(name="game_id",type="string",require=false,desc="Game hashid (empty=all)")
      */
     public function hourlyTrend(Request $request): Response
     {
@@ -71,9 +71,9 @@ class AnalyticsController extends BaseController
      * @Apidoc\Title("Action Distribution")
      * @Apidoc\Url("/admin/analytics/action-distribution")
      * @Apidoc\Method("GET")
-     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
-     * @Apidoc\Query(name:"game_id",type:"string",require:true,desc:"Game hashid")
-     * @Apidoc\Query(name:"hours",type:"integer",require:false,desc:"Hours back (default 24)")
+     * @Apidoc\Header(name="Authorization",require=true,desc="Bearer Token")
+     * @Apidoc\Query(name="game_id",type="string",require=true,desc="Game hashid")
+     * @Apidoc\Query(name="hours",type="integer",require=false,desc="Hours back (default 24)")
      */
     public function actionDistribution(Request $request): Response
     {
@@ -86,8 +86,8 @@ class AnalyticsController extends BaseController
      * @Apidoc\Title("Revenue Overview")
      * @Apidoc\Url("/admin/analytics/revenue")
      * @Apidoc\Method("GET")
-     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
-     * @Apidoc\Query(name:"days",type:"integer",require:false,desc:"Days back (default 7)")
+     * @Apidoc\Header(name="Authorization",require=true,desc="Bearer Token")
+     * @Apidoc\Query(name="days",type="integer",require=false,desc="Days back (default 7)")
      */
     public function revenue(Request $request): Response
     {
@@ -98,8 +98,8 @@ class AnalyticsController extends BaseController
      * @Apidoc\Title("Conversion by Game")
      * @Apidoc\Url("/admin/analytics/conversion")
      * @Apidoc\Method("GET")
-     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
-     * @Apidoc\Query(name:"days",type:"integer",require:false,desc:"Days back (default 30)")
+     * @Apidoc\Header(name="Authorization",require=true,desc="Bearer Token")
+     * @Apidoc\Query(name="days",type="integer",require=false,desc="Days back (default 30)")
      */
     public function conversion(Request $request): Response
     {
@@ -111,9 +111,9 @@ class AnalyticsController extends BaseController
      * @Apidoc\Title("Joint Probability")
      * @Apidoc\Url("/admin/analytics/probability")
      * @Apidoc\Method("GET")
-     * @Apidoc\Header(name:"Authorization",require:true,desc:"Bearer Token")
-     * @Apidoc\Query(name:"game_a",type:"string",require:true,desc:"Game A hashid")
-     * @Apidoc\Query(name:"game_b",type:"string",require:true,desc:"Game B hashid")
+     * @Apidoc\Header(name="Authorization",require=true,desc="Bearer Token")
+     * @Apidoc\Query(name="game_a",type="string",require=true,desc="Game A hashid")
+     * @Apidoc\Query(name="game_b",type="string",require=true,desc="Game B hashid")
      */
     public function probability(Request $request): Response
     {
