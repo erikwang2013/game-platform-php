@@ -25,7 +25,7 @@ return [
         'auto_register_routes' => false,
         'cache' => ['enable' => false],
         'auth' => [
-            'enable' => true,
+            'enable' => false,
             'password' => "admin123",
             'secret_key' => "apidoc#hg_code",
             'expire' => 86400,
