@@ -35,7 +35,8 @@ class LanguageMiddleware implements MiddlewareInterface
     {
         // 1. 显式指定的语言头
         $headerLang = $request->header('X-Language', '');
-        if ($headerLang && in_array($headerLang, ['en-US', 'zh-CN', 'ja-JP', 'ko-KR'])) {
+        $lang=config('translation');
+        if ($headerLang && in_array($headerLang, $lang['fallback_locale'])) {
             return $headerLang;
         }
 
