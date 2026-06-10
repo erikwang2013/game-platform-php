@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace app\middleware;
 
 use Webman\Http\Request;
-use support\Response;
+use Webman\Http\Response;
 use support\Redis;
 use Erikwang2013\Jwt\JWT;
 use Erikwang2013\Jwt\JWTFactory;
