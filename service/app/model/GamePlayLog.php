@@ -11,7 +11,7 @@ use support\Model;
 
 class GamePlayLog extends Model
 {
-    protected $table = 'erik_game_play_log';
+    protected $table = 'game_play_log';
 
     public $incrementing = false;
     protected $keyType = 'int';

@@ -11,7 +11,7 @@ use support\Model;
 
 class Transaction extends Model
 {
-    protected $table = 'erik_transaction';
+    protected $table = 'transaction';
 
     public $incrementing = false;
     protected $keyType = 'int';

@@ -12,7 +12,7 @@ use Erikwang2013\Encryptable\Encryptable;
 
 class UserPaymentAccount extends Model
 {
-    protected $table = 'erik_user_payment_account';
+    protected $table = 'user_payment_account';
 
     public $incrementing = false;
     protected $keyType = 'int';

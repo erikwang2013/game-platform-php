@@ -11,7 +11,7 @@ use support\Model;
 
 class PlatformRevenue extends Model
 {
-    protected $table = 'erik_platform_revenue';
+    protected $table = 'platform_revenue';
 
     public $incrementing = false;
     protected $keyType = 'int';

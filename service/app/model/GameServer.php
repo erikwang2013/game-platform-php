@@ -11,7 +11,7 @@ use support\Model;
 
 class GameServer extends Model
 {
-    protected $table = 'erik_game_server';
+    protected $table = 'game_server';
 
     public $incrementing = false;
     protected $keyType = 'int';

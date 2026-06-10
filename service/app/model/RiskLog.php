@@ -11,7 +11,7 @@ use support\Model;
 
 class RiskLog extends Model
 {
-    protected $table = 'erik_risk_log';
+    protected $table = 'risk_log';
 
     public $incrementing = false;
     protected $keyType = 'int';

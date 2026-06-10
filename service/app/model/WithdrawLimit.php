@@ -11,7 +11,7 @@ use support\Model;
 
 class WithdrawLimit extends Model
 {
-    protected $table = 'erik_withdraw_limit';
+    protected $table = 'withdraw_limit';
 
     public $incrementing = false;
     protected $keyType = 'int';

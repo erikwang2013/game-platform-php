@@ -11,7 +11,7 @@ use support\Model;
 
 class ReferralReward extends Model
 {
-    protected $table = 'erik_referral_reward';
+    protected $table = 'referral_reward';
 
     public $incrementing = false;
     protected $keyType = 'int';

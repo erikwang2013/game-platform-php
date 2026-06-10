@@ -11,7 +11,7 @@ use support\Model;
 
 class ExchangeRecord extends Model
 {
-    protected $table = 'erik_exchange_record';
+    protected $table = 'exchange_record';
 
     public $incrementing = false;
     protected $keyType = 'int';

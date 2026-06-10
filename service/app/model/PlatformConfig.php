@@ -11,7 +11,7 @@ use support\Model;
 
 class PlatformConfig extends Model
 {
-    protected $table = 'erik_platform_config';
+    protected $table = 'platform_config';
 
     public $incrementing = false;
     protected $keyType = 'int';

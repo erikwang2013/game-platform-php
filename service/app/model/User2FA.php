@@ -12,7 +12,7 @@ use Erikwang2013\Encryptable\Encryptable;
 
 class User2FA extends Model
 {
-    protected $table = 'erik_user_2fa';
+    protected $table = 'user_2fa';
 
     public $incrementing = false;
     protected $keyType = 'int';

@@ -12,7 +12,7 @@ use Erikwang2013\Encryptable\Encryptable;
 
 class UserIdentity extends Model
 {
-    protected $table = 'erik_user_identity';
+    protected $table = 'user_identity';
 
     public $incrementing = false;
     protected $keyType = 'int';

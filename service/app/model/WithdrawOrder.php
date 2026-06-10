@@ -12,7 +12,7 @@ use Erikwang2013\Encryptable\Encryptable;
 
 class WithdrawOrder extends Model
 {
-    protected $table = 'erik_withdraw_order';
+    protected $table = 'withdraw_order';
 
     public $incrementing = false;
     protected $keyType = 'int';

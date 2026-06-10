@@ -15,7 +15,7 @@ class User extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'erik_user';
+    protected $table = 'user';
 
     public $incrementing = false;
     protected $keyType = 'int';

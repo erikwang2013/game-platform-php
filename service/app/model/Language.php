@@ -11,7 +11,7 @@ use support\Model;
 
 class Language extends Model
 {
-    protected $table = 'erik_language';
+    protected $table = 'language';
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'int';

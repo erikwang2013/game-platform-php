@@ -11,7 +11,7 @@ use support\Model;
 
 class Coupon extends Model
 {
-    protected $table = 'erik_coupon';
+    protected $table = 'coupon';
 
     public $incrementing = false;
     protected $keyType = 'int';

@@ -11,7 +11,7 @@ use support\Model;
 
 class DepositOrder extends Model
 {
-    protected $table = 'erik_deposit_order';
+    protected $table = 'deposit_order';
 
     public $incrementing = false;
     protected $keyType = 'int';

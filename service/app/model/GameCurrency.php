@@ -11,7 +11,7 @@ use support\Model;
 
 class GameCurrency extends Model
 {
-    protected $table = 'erik_game_currency';
+    protected $table = 'game_currency';
 
     public $incrementing = false;
     protected $keyType = 'int';

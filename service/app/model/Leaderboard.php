@@ -11,7 +11,7 @@ use support\Model;
 
 class Leaderboard extends Model
 {
-    protected $table = 'erik_leaderboard';
+    protected $table = 'leaderboard';
 
     public $incrementing = false;
     protected $keyType = 'int';

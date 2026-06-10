@@ -11,7 +11,7 @@ use support\Model;
 
 class RiskRule extends Model
 {
-    protected $table = 'erik_risk_rule';
+    protected $table = 'risk_rule';
 
     public $incrementing = false;
     protected $keyType = 'int';

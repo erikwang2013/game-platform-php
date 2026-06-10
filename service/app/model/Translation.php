@@ -11,7 +11,7 @@ use support\Model;
 
 class Translation extends Model
 {
-    protected $table = 'erik_translation';
+    protected $table = 'translation';
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'int';

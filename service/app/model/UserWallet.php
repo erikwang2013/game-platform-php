@@ -11,7 +11,7 @@ use support\Model;
 
 class UserWallet extends Model
 {
-    protected $table = 'erik_user_wallet';
+    protected $table = 'user_wallet';
 
     public $incrementing = false;
     protected $keyType = 'int';

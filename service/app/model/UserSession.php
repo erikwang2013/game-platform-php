@@ -11,7 +11,7 @@ use support\Model;
 
 class UserSession extends Model
 {
-    protected $table = 'erik_user_session';
+    protected $table = 'user_session';
 
     public $incrementing = false;
     protected $keyType = 'int';
