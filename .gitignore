@@ -1,5 +1,4 @@
 vendor/
-composer.lock
 .phpunit.result.cache
 .phpunit.cache/
 .DS_Store
@@ -17,8 +16,6 @@ service/runtime/
 service/tests
 service/.env
 service/*.log
-admin/composer.lock
-service/composer.lock
 install/install.lock
 admin/.env.backup.*
 service/.env.backup.*
@@ -34,6 +31,8 @@ skills-lock.json
 .php-cs-fixer.cache
 *.backup
 *.bak
+admin/public/apidoc/
+service/public/apidoc/
 
 apps/flutter/# Miscellaneous
 apps/flutter/*.class

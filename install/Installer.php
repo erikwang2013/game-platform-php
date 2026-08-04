@@ -275,13 +275,15 @@ class Installer
             $jwtSecret = $this->randomString(64);
             $hashidsSalt = $this->randomString(32);
             $encryptionKey = $this->randomString(32);
+            $openSearchPass = $this->randomString(16);
+            $clickHousePass = $this->randomString(16);
 
-            $this->writeAdminEnv($dbConfig, $jwtSecret, $hashidsSalt, $encryptionKey);
+            $this->writeAdminEnv($dbConfig, $jwtSecret, $hashidsSalt, $encryptionKey, $openSearchPass);
             $steps[] = ['name' => 'Admin .env 配置', 'ok' => true, 'message' => '已写入 admin/.env'];
 
             if ($configureService) {
                 $svcDb = $serviceDbConfig ?: $dbConfig;
-                $this->writeServiceEnv($svcDb, $jwtSecret, $hashidsSalt, $encryptionKey);
+                $this->writeServiceEnv($svcDb, $jwtSecret, $hashidsSalt, $encryptionKey, $openSearchPass, $clickHousePass);
                 $steps[] = ['name' => 'Service .env 配置', 'ok' => true, 'message' => '已写入 service/.env'];
             }
 
@@ -329,13 +331,13 @@ class Installer
         return $str;
     }
 
-    private function writeAdminEnv(array $db, string $jwtSecret, string $hashidsSalt, string $encryptionKey): void
+    private function writeAdminEnv(array $db, string $jwtSecret, string $hashidsSalt, string $encryptionKey, string $openSearchPass): void
     {
         $envFile = dirname(__DIR__) . '/admin/.env';
-        file_put_contents($envFile, $this->buildAdminEnvContent($db, $jwtSecret, $hashidsSalt, $encryptionKey));
+        file_put_contents($envFile, $this->buildAdminEnvContent($db, $jwtSecret, $hashidsSalt, $encryptionKey, $openSearchPass));
     }
 
-    private function buildAdminEnvContent(array $db, string $jwtSecret, string $hashidsSalt, string $encryptionKey): string
+    private function buildAdminEnvContent(array $db, string $jwtSecret, string $hashidsSalt, string $encryptionKey, string $openSearchPass): string
     {
         $encryptionKey32 = str_pad($encryptionKey, 32, '0');
         return <<<EOF
@@ -380,7 +382,7 @@ SCOUT_SOFT_DELETE=true
 
 OPENSEARCH_HTTP_HOST=http://localhost:37831
 OPENSEARCH_USERNAME=admin
-OPENSEARCH_PASSWORD=Admin@123
+OPENSEARCH_PASSWORD={$openSearchPass}
 OPENSEARCH_INDEX_PREFIX=game_
 OPENSEARCH_SSL_VERIFICATION=false
 OPENSEARCH_SSL_CERT=
@@ -414,13 +416,13 @@ JWT_REFRESH_EXPIRE=1209600
 EOF;
     }
 
-    private function writeServiceEnv(array $db, string $jwtSecret, string $hashidsSalt, string $encryptionKey): void
+    private function writeServiceEnv(array $db, string $jwtSecret, string $hashidsSalt, string $encryptionKey, string $openSearchPass, string $clickHousePass): void
     {
         $envFile = dirname(__DIR__) . '/service/.env';
-        file_put_contents($envFile, $this->buildServiceEnvContent($db, $jwtSecret, $hashidsSalt, $encryptionKey));
+        file_put_contents($envFile, $this->buildServiceEnvContent($db, $jwtSecret, $hashidsSalt, $encryptionKey, $openSearchPass, $clickHousePass));
     }
 
-    private function buildServiceEnvContent(array $db, string $jwtSecret, string $hashidsSalt, string $encryptionKey): string
+    private function buildServiceEnvContent(array $db, string $jwtSecret, string $hashidsSalt, string $encryptionKey, string $openSearchPass, string $clickHousePass): string
     {
         $encryptionKey32 = str_pad($encryptionKey, 32, '0');
         return <<<EOF
@@ -463,7 +465,7 @@ CLICKHOUSE_HOST=127.0.0.1
 CLICKHOUSE_PORT=8123
 CLICKHOUSE_DB={$db['database']}
 CLICKHOUSE_USER=default
-CLICKHOUSE_PASS=Aa123456
+CLICKHOUSE_PASS={$clickHousePass}
 
 OAUTH_GOOGLE_CLIENT_ID=
 OAUTH_GOOGLE_CLIENT_SECRET=
@@ -491,7 +493,7 @@ SCOUT_SOFT_DELETE=true
 
 OPENSEARCH_HTTP_HOST=http://localhost:37831
 OPENSEARCH_USERNAME=admin
-OPENSEARCH_PASSWORD=Admin@123
+OPENSEARCH_PASSWORD={$openSearchPass}
 OPENSEARCH_INDEX_PREFIX=game_
 OPENSEARCH_SSL_VERIFICATION=false
 OPENSEARCH_SSL_CERT=

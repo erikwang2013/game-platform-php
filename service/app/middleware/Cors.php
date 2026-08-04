@@ -25,8 +25,9 @@ class Cors implements MiddlewareInterface
         }
 
         $response = $handler($request);
+        $origin = getenv('CORS_ORIGIN') ?: '*';
         $response = $response->withHeaders([
-            'Access-Control-Allow-Origin'   => '*',
+            'Access-Control-Allow-Origin'   => $origin,
             'X-Content-Type-Options'        => 'nosniff',
             'X-Frame-Options'               => 'DENY',
             'X-XSS-Protection'              => '1; mode=block',
@@ -34,6 +35,7 @@ class Cors implements MiddlewareInterface
             'Permissions-Policy'            => 'camera=(), microphone=(), geolocation=()',
             'Content-Security-Policy'       => "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' http: https:;",
             'X-Permitted-Cross-Domain-Policies' => 'none',
+            'Strict-Transport-Security'     => 'max-age=31536000; includeSubDomains',
         ]);
         return $response;
     }

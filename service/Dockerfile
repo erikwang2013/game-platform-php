@@ -21,7 +21,10 @@ RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
     && docker-php-source extract
 
 # PHP 扩展
-RUN docker-php-ext-install -j$(nproc) \
+RUN apk add --no-cache autoconf build-base \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && docker-php-ext-install -j$(nproc) \
         pdo pdo_mysql \
         pcntl \
         mbstring \
