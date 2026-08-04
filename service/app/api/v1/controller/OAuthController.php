@@ -34,9 +34,8 @@ class OAuthController extends BaseController
             return $this->fail('Invalid OAuth provider', 422);
         }
 
-        // MVP: build a simple redirect URL with state for CSRF protection.
-        // In production, integrate with the provider's actual OAuth SDK.
         $state = bin2hex(random_bytes(16));
+        \support\Redis::setex("oauth_state:{$state}", 600, $provider);
         $redirectUri = config("oauth.{$provider}.redirect_uri", '');
         $clientId    = config("oauth.{$provider}.client_id", '');
 
@@ -85,7 +84,14 @@ class OAuthController extends BaseController
         $code  = $request->input('code');
         $state = $request->input('state');
 
-        // MVP: extract mock user data from the code.
+        $stateKey = "oauth_state:{$state}";
+        $storedProvider = \support\Redis::get($stateKey);
+        if (!$storedProvider || $storedProvider !== $provider) {
+            return $this->fail('Invalid or expired state parameter', 403);
+        }
+        \support\Redis::del($stateKey);
+
+        // Exchange authorization code for access token and user info
         // In production, exchange $code for access_token via provider API,
         // then fetch user profile (open_id, nickname, avatar, email, etc.).
         $oauthUser = $this->exchangeCode($provider, $code);
@@ -247,84 +253,76 @@ class OAuthController extends BaseController
         // Then GET https://www.googleapis.com/oauth2/v3/userinfo
         $http = new \GuzzleHttp\Client(['timeout' => 10]);
 
-        try {
-            $resp = $http->post('https://oauth2.googleapis.com/token', [
-                'form_params' => [
-                    'code' => $code,
-                    'client_id' => $config['client_id'],
-                    'client_secret' => $config['client_secret'],
-                    'redirect_uri' => $config['redirect_uri'],
-                    'grant_type' => 'authorization_code',
-                ],
-            ]);
-            $tokenData = json_decode((string)$resp->getBody(), true);
+        $resp = $http->post('https://oauth2.googleapis.com/token', [
+            'form_params' => [
+                'code' => $code,
+                'client_id' => $config['client_id'],
+                'client_secret' => $config['client_secret'],
+                'redirect_uri' => $config['redirect_uri'],
+                'grant_type' => 'authorization_code',
+            ],
+        ]);
+        $tokenData = json_decode((string)$resp->getBody(), true);
 
-            // Get user info
-            $userResp = $http->get('https://www.googleapis.com/oauth2/v3/userinfo', [
-                'headers' => ['Authorization' => 'Bearer ' . $tokenData['access_token']],
-            ]);
-            $userData = json_decode((string)$userResp->getBody(), true);
-
-            return [
-                'provider' => 'google',
-                'open_id' => $userData['sub'],
-                'nickname' => $userData['name'] ?? '',
-                'email' => $userData['email'] ?? '',
-                'avatar' => $userData['picture'] ?? '',
-            ];
-        } catch (\Throwable $e) {
-            // Fallback to mock on error
-            $mockId = substr(hash('sha256', 'google' . $code), 0, 16);
-            return [
-                'provider' => 'google',
-                'open_id' => 'goog_' . $mockId,
-                'nickname' => 'Google User',
-                'email' => 'google_' . $mockId . '@example.com',
-                'avatar' => '',
-            ];
+        if (empty($tokenData['access_token'])) {
+            throw new \RuntimeException('Google token exchange failed');
         }
+
+        $userResp = $http->get('https://www.googleapis.com/oauth2/v3/userinfo', [
+            'headers' => ['Authorization' => 'Bearer ' . $tokenData['access_token']],
+        ]);
+        $userData = json_decode((string)$userResp->getBody(), true);
+
+        if (empty($userData['sub'])) {
+            throw new \RuntimeException('Google user info missing sub');
+        }
+
+        return [
+            'provider' => 'google',
+            'open_id' => $userData['sub'],
+            'nickname' => $userData['name'] ?? '',
+            'email' => $userData['email'] ?? '',
+            'avatar' => $userData['picture'] ?? '',
+        ];
     }
 
     private function exchangeFacebook(string $code, array $config): array
     {
         $http = new \GuzzleHttp\Client(['timeout' => 10]);
 
-        try {
-            $resp = $http->get('https://graph.facebook.com/v18.0/oauth/access_token', [
-                'query' => [
-                    'client_id' => $config['client_id'],
-                    'client_secret' => $config['client_secret'],
-                    'redirect_uri' => $config['redirect_uri'],
-                    'code' => $code,
-                ],
-            ]);
-            $tokenData = json_decode((string)$resp->getBody(), true);
+        $resp = $http->get('https://graph.facebook.com/v18.0/oauth/access_token', [
+            'query' => [
+                'client_id' => $config['client_id'],
+                'client_secret' => $config['client_secret'],
+                'redirect_uri' => $config['redirect_uri'],
+                'code' => $code,
+            ],
+        ]);
+        $tokenData = json_decode((string)$resp->getBody(), true);
 
-            $userResp = $http->get('https://graph.facebook.com/me', [
-                'query' => [
-                    'fields' => 'id,name,email,picture',
-                    'access_token' => $tokenData['access_token'],
-                ],
-            ]);
-            $userData = json_decode((string)$userResp->getBody(), true);
-
-            return [
-                'provider' => 'facebook',
-                'open_id' => $userData['id'],
-                'nickname' => $userData['name'] ?? '',
-                'email' => $userData['email'] ?? '',
-                'avatar' => $userData['picture']['data']['url'] ?? '',
-            ];
-        } catch (\Throwable $e) {
-            $mockId = substr(hash('sha256', 'fb' . $code), 0, 16);
-            return [
-                'provider' => 'facebook',
-                'open_id' => 'fb_' . $mockId,
-                'nickname' => 'Facebook User',
-                'email' => 'fb_' . $mockId . '@example.com',
-                'avatar' => '',
-            ];
+        if (empty($tokenData['access_token'])) {
+            throw new \RuntimeException('Facebook token exchange failed');
         }
+
+        $userResp = $http->get('https://graph.facebook.com/me', [
+            'query' => [
+                'fields' => 'id,name,email,picture',
+                'access_token' => $tokenData['access_token'],
+            ],
+        ]);
+        $userData = json_decode((string)$userResp->getBody(), true);
+
+        if (empty($userData['id'])) {
+            throw new \RuntimeException('Facebook user info missing id');
+        }
+
+        return [
+            'provider' => 'facebook',
+            'open_id' => $userData['id'],
+            'nickname' => $userData['name'] ?? '',
+            'email' => $userData['email'] ?? '',
+            'avatar' => $userData['picture']['data']['url'] ?? '',
+        ];
     }
 
     private function exchangeApple(string $code, array $config): array
@@ -333,39 +331,35 @@ class OAuthController extends BaseController
         // For production, generate client_secret JWT with ES256 key
         $http = new \GuzzleHttp\Client(['timeout' => 10]);
 
-        try {
-            $resp = $http->post('https://appleid.apple.com/auth/token', [
-                'form_params' => [
-                    'client_id' => $config['client_id'],
-                    'client_secret' => $config['client_secret'],
-                    'code' => $code,
-                    'grant_type' => 'authorization_code',
-                    'redirect_uri' => $config['redirect_uri'],
-                ],
-            ]);
-            $tokenData = json_decode((string)$resp->getBody(), true);
+        $resp = $http->post('https://appleid.apple.com/auth/token', [
+            'form_params' => [
+                'client_id' => $config['client_id'],
+                'client_secret' => $config['client_secret'],
+                'code' => $code,
+                'grant_type' => 'authorization_code',
+                'redirect_uri' => $config['redirect_uri'],
+            ],
+        ]);
+        $tokenData = json_decode((string)$resp->getBody(), true);
 
-            // Decode id_token to get user info
-            $idToken = $tokenData['id_token'] ?? '';
-            $parts = explode('.', $idToken);
-            $payload = isset($parts[1]) ? json_decode(base64_decode($parts[1]), true) : [];
-
-            return [
-                'provider' => 'apple',
-                'open_id' => $payload['sub'] ?? '',
-                'nickname' => 'Apple User',
-                'email' => $payload['email'] ?? '',
-                'avatar' => '',
-            ];
-        } catch (\Throwable $e) {
-            $mockId = substr(hash('sha256', 'apple' . $code), 0, 16);
-            return [
-                'provider' => 'apple',
-                'open_id' => 'apple_' . $mockId,
-                'nickname' => 'Apple User',
-                'email' => 'apple_' . $mockId . '@example.com',
-                'avatar' => '',
-            ];
+        $idToken = $tokenData['id_token'] ?? '';
+        if (empty($idToken)) {
+            throw new \RuntimeException('Apple id_token missing');
         }
+
+        $parts = explode('.', $idToken);
+        $payload = isset($parts[1]) ? json_decode(base64_decode($parts[1]), true) : [];
+
+        if (empty($payload['sub'])) {
+            throw new \RuntimeException('Apple user info missing sub');
+        }
+
+        return [
+            'provider' => 'apple',
+            'open_id' => $payload['sub'],
+            'nickname' => 'Apple User',
+            'email' => $payload['email'] ?? '',
+            'avatar' => '',
+        ];
     }
 }

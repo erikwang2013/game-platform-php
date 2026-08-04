@@ -16,8 +16,9 @@ class Cors implements MiddlewareInterface
     public function process(Request $request, callable $handler): Response
     {
         if ($request->method() === 'OPTIONS') {
+            $origin = getenv('CORS_ORIGIN') ?: '*';
             return response('', 204, [
-                'Access-Control-Allow-Origin'      => '*',
+                'Access-Control-Allow-Origin'      => $origin,
                 'Access-Control-Allow-Methods'     => 'GET,POST,PUT,DELETE,OPTIONS',
                 'Access-Control-Allow-Headers'     => 'Authorization,Content-Type,API-Version',
                 'Access-Control-Max-Age'           => '86400',

@@ -61,15 +61,26 @@ class PaymentController extends BaseController
             return $this->fail('Order not found', 404);
         }
 
-        if (in_array($order->status, ['confirmed', 'cancelled'])) {
-            return $this->success([], 'Already confirmed');
+        // Idempotency: skip if this transaction_id was already processed
+        if ($order->transaction_id === $transactionId && $order->status !== 'pending') {
+            return $this->success(['order_no' => $order->order_no, 'status' => $order->status], 'Already processed');
+        }
+
+        // Atomic status update prevents double-credit race condition
+        $updated = DepositOrder::where('id', $order->id)
+            ->where('status', 'pending')
+            ->update([
+                'status'         => $callbackStatus === 'success' ? 'confirmed' : 'cancelled',
+                'transaction_id' => $transactionId,
+                'paid_at'        => $callbackStatus === 'success' ? date('Y-m-d H:i:s') : null,
+            ]);
+
+        if (!$updated) {
+            return $this->success([], 'Already processed');
         }
 
         if ($callbackStatus === 'success') {
-            $order->status         = 'confirmed';
-            $order->transaction_id = $transactionId;
-            $order->paid_at        = date('Y-m-d H:i:s');
-            $order->save();
+            $order->refresh();
 
             // Credit the user's platform wallet
             UserWallet::addBalance($order->user_id, $order->platform_amount);
@@ -114,10 +125,7 @@ class PaymentController extends BaseController
             ], 'Deposit confirmed');
         }
 
-        // Callback status is 'failed': cancel the order
-        $order->status = 'cancelled';
-        $order->save();
-
+        // Callback status is 'failed': order already cancelled atomically above
         return $this->success([
             'order_no' => $order->order_no,
             'status'   => 'cancelled',

@@ -33,9 +33,6 @@ class HealthController
             'code' => 0,
             'message' => 'success',
             'data' => [
-                'app'           => 'open-admin',
-                'version'       => '1.0',
-                'php'           => PHP_VERSION,
                 'database'      => $this->checkDb(),
                 'redis'         => $this->checkRedis(),
                 'elasticsearch' => $this->checkES(),
