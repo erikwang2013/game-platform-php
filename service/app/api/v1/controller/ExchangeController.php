@@ -17,6 +17,8 @@ use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 use support\Db;
+use app\event\EventBus;
+use app\service\VipService;
 
 /**
  * @Apidoc\Title("兑换管理")
@@ -64,9 +66,18 @@ class ExchangeController extends BaseController
         $rate      = $gameCurrency->exchange_rate;
         $spreadPct = $gameCurrency->spread_pct;
 
+        // Apply VIP exchange discount
+        $vipDiscount = VipService::getExchangeDiscount($request->userId);
+        $spreadPct = bcsub($spreadPct, bcmul($spreadPct, $vipDiscount, 8), 8);
+        if (bccomp($spreadPct, '0', 8) < 0) $spreadPct = '0';
+
+        // Apply VIP rate bonus
+        $rateBonus = VipService::getRateBonus($request->userId);
+        $effectiveRate = bcadd($rate, bcmul($rate, $rateBonus, 8), 8);
+
         if ($direction === 'in') {
             // Buy: platform -> game
-            $gameAmount      = bcmul($platformAmount, $rate, 8);
+            $gameAmount      = bcmul($platformAmount, $effectiveRate, 8);
             $spreadFee       = bcmul($gameAmount, bcdiv($spreadPct, '100', 8), 8);
             $actualGameAmount = bcsub($gameAmount, $spreadFee, 8);
 
@@ -81,7 +92,7 @@ class ExchangeController extends BaseController
         }
 
         // 'out' — Sell: game -> platform
-        $platformEquivalent   = bcdiv($platformAmount, $rate, 8);
+        $platformEquivalent   = bcdiv($platformAmount, $effectiveRate, 8);
         $spreadFee            = bcmul($platformEquivalent, bcdiv($spreadPct, '100', 8), 8);
         $actualPlatformAmount = bcsub($platformEquivalent, $spreadFee, 8);
 
@@ -200,6 +211,11 @@ class ExchangeController extends BaseController
         $rate      = $gameCurrency->exchange_rate;
         $spreadPct = $gameCurrency->spread_pct;
 
+        // Apply VIP exchange discount
+        $vipDiscount = VipService::getExchangeDiscount($request->userId);
+        $spreadPct = bcsub($spreadPct, bcmul($spreadPct, $vipDiscount, 8), 8);
+        if (bccomp($spreadPct, '0', 8) < 0) $spreadPct = '0';
+
         // Calculate amounts
         if ($direction === 'in') {
             // Buy: spend platform tokens to get game tokens
@@ -273,6 +289,8 @@ class ExchangeController extends BaseController
             $transaction->save();
 
             Db::commit();
+
+            EventBus::emit('exchange.completed', ['user_id' => $userId, 'game_id' => $gameId, 'direction' => $direction, 'platform_amount' => $platformAmount]);
 
             return $this->success([
                 'exchange_id'      => $this->encodeId($record->id),

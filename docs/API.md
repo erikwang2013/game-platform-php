@@ -437,10 +437,12 @@ type 可选值: self / third_party
 
 ### 2.7 OAuth 第三方登录
 
+支持 7 个平台: Google / Facebook / Apple / X(Twitter) / Microsoft / LinkedIn / GitHub
+
 #### GET /api/auth/oauth/{provider} — 获取授权URL
 
 ```
-参数: provider = google / facebook / apple
+参数: provider = google / facebook / apple / twitter / microsoft / linkedin / github
 
 响应: {
   "redirect_url": "https://accounts.google.com/o/oauth2/auth?..."
@@ -1398,3 +1400,333 @@ Retry-After: 60
 | 422 | 验证失败 | 表单参数不符合规则、订单状态不允许操作 |
 | 429 | 限流 | 请求过于频繁 |
 | 500 | 服务端错误 | 未预期异常 |
+
+
+## 7. 新增 API (v2.0 生态扩展)
+
+### 7.1 Provider API — 游戏方回调接口
+
+**认证方式**: HMAC-SHA256 签名 (X-Game-Id + X-Timestamp + X-Signature)
+**时间窗口**: 5分钟
+
+#### POST /api/provider/balance — 查询用户余额
+
+```
+请求头:
+  X-Game-Id: 1234567890
+  X-Timestamp: 1716400830
+  X-Signature: abc123...
+
+请求: {
+  "user_id": 1234567890,
+  "game_id": 9876543210,
+  "currency_id": 5555555555
+}
+
+响应: {
+  "code": 0,
+  "message": "success",
+  "data": { "balance": "1000.50000000" }
+}
+```
+
+#### POST /api/provider/bet — 通知下注
+
+```
+请求: {
+  "user_id": 1234567890,
+  "session_id": "GAME_SESSION_202608041030001234",
+  "amount": "10.00000000",
+  "round_id": "ROUND_abc123",
+  "meta": { "bet_type": "straight" }
+}
+
+响应: {
+  "code": 0,
+  "data": {
+    "success": true,
+    "transaction_id": "ROUND_abc123",
+    "balance_after": "990.50000000"
+  }
+}
+```
+
+#### POST /api/provider/settle — 通知结算
+
+```
+请求: {
+  "user_id": 1234567890,
+  "session_id": "GAME_SESSION_202608041030001234",
+  "amount": "50.00000000",
+  "round_id": "ROUND_abc123",
+  "meta": { "win_type": "jackpot" }
+}
+
+响应: {
+  "code": 0,
+  "data": {
+    "success": true,
+    "transaction_id": "ROUND_abc123",
+    "balance_after": "1040.50000000",
+    "win_amount": "50.00000000"
+  }
+}
+```
+
+#### POST /api/provider/refund — 通知退款
+
+```
+请求: {
+  "user_id": 1234567890,
+  "session_id": "GAME_SESSION_202608041030001234",
+  "amount": "10.00000000",
+  "round_id": "ROUND_abc123",
+  "reason": "game_crash"
+}
+
+响应: {
+  "code": 0,
+  "data": {
+    "success": true,
+    "transaction_id": "ROUND_abc123",
+    "balance_after": "1000.50000000"
+  }
+}
+```
+
+### 7.2 工单 API
+
+#### GET /api/ticket/list — 工单列表
+
+```
+需认证: 是
+参数: ?page=1&per_page=20
+
+响应: {
+  "list": [
+    {
+      "id": "aB3xK...",
+      "type": "deposit",
+      "subject": "充值未到账",
+      "status": "open",
+      "priority": 0,
+      "reply_count": 1,
+      "created_at": "2026-05-22 10:30:00"
+    }
+  ],
+  "total": 3, "page": 1, "last_page": 1
+}
+```
+
+type: deposit / withdraw / game / account / other
+status: open / waiting / replied / closed
+
+#### POST /api/ticket/create — 创建工单
+
+```
+需认证: 是
+请求: {
+  "type": "deposit",
+  "subject": "充值未到账",
+  "content": "我充值了100元但余额未更新..."
+}
+响应: { "code": 0, "message": "Ticket created", "data": { "id": "aB3xK..." } }
+```
+
+#### GET /api/ticket/{hashid} — 工单详情
+
+```
+需认证: 是
+响应: {
+  "id": "...", "type": "deposit", "subject": "...",
+  "content": "...", "status": "open",
+  "replies": [
+    { "id": "...", "content": "...", "is_admin": 1, "created_at": "..." }
+  ]
+}
+```
+
+#### POST /api/ticket/{hashid}/reply — 回复工单
+
+```
+需认证: 是
+请求: { "content": "已核实，将在24小时内处理" }
+响应: { "code": 0, "message": "Reply sent" }
+```
+
+### 7.3 邮箱验证 API
+
+#### POST /api/verify/send-email — 发送邮箱验证码
+
+```
+需认证: 是
+请求: { "email": "user@example.com" }
+响应: { "code": 0, "message": "Verification code sent" }
+错误: 429 请60秒后重试
+```
+
+#### POST /api/verify/confirm-email — 确认邮箱
+
+```
+需认证: 是
+请求: { "code": "123456" }
+响应: { "code": 0, "message": "Email verified" }
+错误: 422 验证码无效或已过期
+```
+
+### 7.4 VIP API
+
+#### GET /api/user/vip-status — VIP状态
+
+```
+需认证: 是
+响应: {
+  "level": 2,
+  "level_name": "Gold",
+  "exp": 300,
+  "total_exp": 2800,
+  "next_level": { "level": 3, "name": "Platinum", "required_exp": 12500 },
+  "benefits": {
+    "exchange_discount": "0.05",
+    "withdraw_fee_discount": "0.30",
+    "rate_bonus": "0.003"
+  }
+}
+```
+
+### 7.5 成就 API
+
+#### GET /api/user/achievements — 成就列表
+
+```
+需认证: 是
+响应: {
+  "achievements": [
+    {
+      "key": "first_deposit",
+      "name": "First Deposit",
+      "description": "Make your first deposit",
+      "icon": "",
+      "points": 20,
+      "progress": 1,
+      "completed": true
+    }
+  ]
+}
+```
+
+### 7.6 管理后台新增 API
+
+#### GET /admin/ticket/list — 工单列表
+
+```
+需认证: 是
+参数: ?page=1&limit=20&status=pending&type=deposit
+
+响应: {
+  "list": [
+    {
+      "id": "...", "user_name": "player1",
+      "type": "deposit", "subject": "...",
+      "status": "open", "reply_count": 0,
+      "created_at": "2026-05-22 10:30:00"
+    }
+  ],
+  "total": 5, "page": 1, "limit": 20
+}
+```
+
+#### POST /admin/ticket/{hashid}/reply — 回复工单
+
+```
+需认证: 是
+请求: { "content": "已处理" }
+响应: { "code": 0, "message": "Reply sent" }
+```
+
+#### POST /admin/ticket/{hashid}/close — 关闭工单
+
+```
+需认证: 是
+响应: { "code": 0, "message": "Ticket closed" }
+```
+
+#### POST /admin/ticket/{hashid}/assign — 指定处理人
+
+```
+需认证: 是
+请求: { "admin_id": 1234567890 }
+响应: { "code": 0, "message": "Assigned" }
+```
+
+#### GET /admin/analytics/retention — 留存分析
+
+```
+需认证: 是
+参数: ?days=30
+响应: {
+  "D1": "45.2%", "D3": "28.7%",
+  "D7": "18.3%", "D30": "8.1%"
+}
+```
+
+#### GET /admin/analytics/funnel — 转化漏斗
+
+```
+需认证: 是
+响应: {
+  "funnel": [
+    { "step": "register", "count": 1500, "rate": "100%" },
+    { "step": "first_deposit", "count": 450, "rate": "30.0%" },
+    { "step": "first_exchange", "count": 320, "rate": "21.3%" },
+    { "step": "first_game", "count": 280, "rate": "18.7%" }
+  ]
+}
+```
+
+#### GET /admin/analytics/arpu — ARPU/ARPPU 趋势
+
+```
+需认证: 是
+参数: ?days=30
+响应: { "arpu": [...], "arppu": [...], "dates": [...] }
+```
+
+#### GET /admin/analytics/economy — 游戏币种经济指标
+
+```
+需认证: 是
+响应: {
+  "currencies": [
+    {
+      "game_name": "Shooter Master",
+      "currency": "Gold",
+      "total_minted": "500000.0000",
+      "total_burned": "320000.0000",
+      "circulation": "180000.0000",
+      "inflation_rate": "2.3%"
+    }
+  ]
+}
+```
+
+## 8. 限流策略（更新）
+
+| 接口 | 限制 |
+|------|------|
+| 默认 | 60 次/分钟/IP |
+| POST /api/auth/login | 10 次/分钟 |
+| POST /api/auth/register | 5 次/分钟 |
+| POST /api/auth/oauth | 10 次/分钟 |
+| POST /api/payment/callback | 30 次/分钟 |
+| POST /api/provider/* | 无限制 (HMAC签名认证) |
+
+## 9. 鉴权说明（更新）
+
+### Provider 认证 (ProviderAuth)
+
+1. 从请求头提取 `X-Game-Id`、`X-Timestamp`、`X-Signature`
+2. 查询 `erik_game` 表验证游戏存在且 status=1
+3. 验证时间戳在5分钟窗口内 (防重放)
+4. 计算 `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)` 与签名比对
+5. 注入 `$request->gameId` 和 `$request->game`

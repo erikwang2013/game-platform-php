@@ -1,52 +1,40 @@
-# 系统拓扑架构
+# 系统架构图 (v2.0)
 
 ```mermaid
 flowchart TB
-    subgraph clients["客户端层"]
-        flutter["Flutter Web<br/>PC管理后台"]
-        harmony["HarmonyOS ArkTS<br/>手机/平板客户端"]
+    subgraph "客户端层"
+        A1["Flutter Web PC<br/>管理后台"]
+        A2["Flutter Web PC<br/>C端用户平台"]
+        A3["HarmonyOS ArkTS<br/>手机/平板客户端"]
     end
 
-    subgraph gateway["网关层"]
-        nginx["Nginx<br/>HTTPS反向代理<br/>Gzip压缩"]
+    subgraph "网关层"
+        B1["Nginx<br/>反向代理 + HTTPS"]
     end
 
-    subgraph app["应用层 - webman v2"]
-        auth["AdminAuth<br/>JWT验证"]
-        perm["AdminPermission<br/>RBAC鉴权"]
-        admin["管理端Controller<br/>Dashboard/User/Role/Permission"]
-        public["公开Controller<br/>Captcha/Auth"]
-        common["Common Services<br/>Hashids/Snowflake/Encryption"]
+    subgraph "应用层"
+        C1["admin/ :8787<br/>管理后台 API<br/>28 控制器"]
+        C2["service/ :8788<br/>C端业务 API<br/>25 控制器"]
     end
 
-    subgraph storage["存储层"]
-        mysql[("MySQL 8.0<br/>主存储 - erik_前缀")]
-        es[("Elasticsearch<br/>全文检索 - erik_前缀")]
-        redis[("Redis<br/>Session/缓存/Captcha")]
+    subgraph "服务层 v2.0"
+        D1["GameProvider<br/>Provider SDK<br/>HMAC-SHA256 签名"]
+        D2["EventBus<br/>Redis Pub/Sub<br/>异步事件分发"]
+        D3["VIP 引擎<br/>经验值/升级/权益"]
+        D4["成就引擎<br/>12 内置成就"]
+        D5["FeatureFlag<br/>特性开关"]
+        D6["GameSession<br/>心跳+超时检测"]
     end
 
-    flutter --> nginx
-    harmony --> nginx
-    nginx --> auth
-    auth --> perm
-    perm --> admin
-    auth --> public
-    admin --> common
-    public --> common
-    admin --> mysql
-    public --> mysql
-    admin --> es
-    public --> es
-    auth --> redis
-    public --> redis
+    subgraph "存储层"
+        E1[("MySQL 8.0<br/>52 张表")]
+        E2[("Redis 7.x<br/>缓存/限流/事件")]
+        E3[("Elasticsearch<br/>全文检索")]
+        E4[("ClickHouse<br/>OLAP 分析")]
+    end
 
-    style flutter fill:#1677FF,color:#fff
-    style harmony fill:#1677FF,color:#fff
-    style nginx fill:#722ED1,color:#fff
-    style auth fill:#FA8C16,color:#fff
-    style perm fill:#FA8C16,color:#fff
-    style common fill:#52C41A,color:#fff
-    style mysql fill:#1890FF,color:#fff
-    style es fill:#1890FF,color:#fff
-    style redis fill:#1890FF,color:#fff
+    A1 & A2 & A3 --> B1
+    B1 --> C1 & C2
+    C1 & C2 --> D1 & D2 & D3 & D4 & D5 & D6
+    C1 & C2 --> E1 & E2 & E3 & E4
 ```

@@ -16,6 +16,8 @@ use app\service\NotificationService;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
+use app\event\EventBus;
+use app\service\VipService;
 
 /**
  * @Apidoc\Title("推荐管理")
@@ -206,6 +208,9 @@ class ReferralController extends BaseController
                 $referral->id
             );
         }
+
+        EventBus::emit('referral.applied', ['referrer_id' => $referrerId, 'referred_id' => $userId]);
+        VipService::addExp($referrerId, VipService::EXP_REFERRAL, 'referral', $referral->id, 'referral');
 
         return $this->success([
             'referrer_bonus' => $referrerBonus,

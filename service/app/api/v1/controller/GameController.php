@@ -15,6 +15,7 @@ use hg\apidoc\annotation as Apidoc;
 use support\Db;
 use support\Request;
 use support\Response;
+use app\event\EventBus;
 
 /**
  * @Apidoc\Title("游戏管理")
@@ -193,6 +194,8 @@ class GameController extends BaseController
         $playLog->save();
 
         GamePlayLogService::write($request->userId, $gameId, 'launch', ['session_id' => $sessionId], $request->getRealIp() ?: '', $request->header('User-Agent', ''));
+
+        EventBus::emit('game.played', ['user_id' => $request->userId, 'game_id' => $gameId, 'session_id' => $sessionId]);
 
         return $this->success([
             'id'            => $this->encodeId($game->id),

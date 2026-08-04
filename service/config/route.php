@@ -161,7 +161,6 @@ Route::group('/api', function () {
     app\middleware\UserAuth::class,
 ]);
 
-echo "Admin TicketController + routes created"
 
 // 邮箱/手机验证
 Route::group('/api/verify', function () {
@@ -170,6 +169,20 @@ Route::group('/api/verify', function () {
     Route::post('/send-sms', v('VerificationController', 'sendSms'));
     Route::post('/confirm-phone', v('VerificationController', 'confirmPhone'));
 })->middleware([
-    app\\middleware\\ApiVersion::class,
-    app\\middleware\\UserAuth::class,
+    app\middleware\ApiVersion::class,
+    app\middleware\UserAuth::class,
+]);
+
+// 好友
+Route::group('/api/friend', function () {
+    Route::get('/list', v('FriendController', 'list'));
+    Route::get('/requests', v('FriendController', 'requests'));
+    Route::post('/request', v('FriendController', 'request'));
+    Route::post('/accept', v('FriendController', 'accept'));
+    Route::post('/reject', v('FriendController', 'reject'));
+    Route::post('/remove', v('FriendController', 'remove'));
+    Route::get('/search', v('FriendController', 'search'));
+})->middleware([
+    app\middleware\ApiVersion::class,
+    app\middleware\UserAuth::class,
 ]);

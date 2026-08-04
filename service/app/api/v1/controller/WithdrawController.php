@@ -17,6 +17,8 @@ use hg\apidoc\annotation as Apidoc;
 use support\Db;
 use support\Request;
 use support\Response;
+use app\event\EventBus;
+use app\service\VipService;
 
 /**
  * @Apidoc\Title("提现管理")
@@ -62,7 +64,7 @@ class WithdrawController extends BaseController
         if ($identity && $identity->status === 'approved') {
             $level = 'verified';
         }
-        // VIP check could go here later
+        // VIP fee discount applied below
 
         $limit = WithdrawLimit::getByLevel($level);
         if ($limit) {
@@ -124,10 +126,16 @@ class WithdrawController extends BaseController
             }
         }
 
-        // Calculate withdrawal fee: fee = min(platform_amount * fee_pct/100, fee_max)
+        // Calculate withdrawal fee with VIP discount: fee = min(platform_amount * fee_pct/100 * (1-vip_discount), fee_max)
         $fee = '0';
+        $vipFeeDiscount = VipService::getWithdrawFeeDiscount($userId);
         if (bccomp($feePct, '0', 4) > 0) {
-            $fee = bcmul($platformAmount, bcdiv($feePct, '100', 4), 4);
+            $effectiveFeePct = $feePct;
+            if (bccomp($vipFeeDiscount, '0', 4) > 0) {
+                $effectiveFeePct = bcmul($feePct, bcsub('1', $vipFeeDiscount, 4), 4);
+                if (bccomp($effectiveFeePct, '0', 4) < 0) $effectiveFeePct = '0';
+            }
+            $fee = bcmul($platformAmount, bcdiv($effectiveFeePct, '100', 4), 4);
             if (bccomp($feeMax, '0', 4) > 0 && bccomp($fee, $feeMax, 4) > 0) {
                 $fee = $feeMax;
             }
@@ -195,6 +203,8 @@ class WithdrawController extends BaseController
             $transaction->save();
 
             Db::commit();
+
+            EventBus::emit('withdraw.completed', ['user_id' => $userId, 'platform_amount' => $platformAmount, 'status' => $status]);
 
             return $this->success([
                 'order_id'        => $this->encodeId($order->id),

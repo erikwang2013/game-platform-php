@@ -5,6 +5,7 @@
 ## 总览
 
 | | 基础版 (Lite) | 标准版 (Standard) | 完整版 (Full) |
+| 生态扩展 (v2.0) | 52 | 150 | 53 | 44 | 7 | 15 | 10 | 5 | 8 | 116 |
 |------|------|------|------|
 | 数据表 | 19 | 29 | 42 |
 | API 端点 | 38 | 54 | 129 |
@@ -28,7 +29,7 @@
 | 点击验证码 | stub | stub | ✓ poster-php |
 | 账号锁定 (5次/15分钟) | ✓ | ✓ | ✓ |
 | 会话限制 (3并发) | ✓ | ✓ | ✓ |
-| OAuth (Google/Facebook/Apple) | - | mock | ✓ 真实对接 |
+| OAuth (Google/Facebook/Apple) | - | mock | ✓ 7平台 (含 X/MS/LinkedIn/GitHub) |
 | 2FA TOTP 双因素认证 | - | - | ✓ |
 | GDPR 数据导出/注销 | - | - | ✓ |
 
@@ -69,7 +70,7 @@
 | 游戏记录追踪 | - | ✓ | ✓ |
 | ES 全文搜索 | - | - | ✓ |
 | 搜索建议 | - | - | ✓ |
-| 第三方游戏 SDK | - | - | - |
+| 第三方游戏 Provider SDK | - | - | ✓ HMAC-SHA256 |
 
 ---
 
@@ -187,3 +188,63 @@ erik_notification, erik_referral, erik_referral_reward, erik_user_2fa
 | 运营工具 | - | - | 30 (+排行榜+优惠券+通知+推荐) |
 | 国际化 | 2 | 2 | 4 (+国家配置) |
 | **总计** | **38** | **54** | **129** |
+
+---
+
+## 生态扩展 (v2.0) — 新增
+
+| 功能 | 说明 |
+|------|------|
+| GameProvider 抽象层 | SelfProvider (DB事务) + ThirdPartyProvider (HTTP+签名) |
+| Provider API 网关 | balance/bet/settle/refund 回调 + ProviderAuth 中间件 |
+| 工单系统 | C端创建/回复 + 管理端处理/分配/关闭 |
+| 邮箱验证 | 6位验证码、Redis 10分钟过期、60秒重发限制 |
+| 推送通知 | PushService (FCM/APNs/华为推送) |
+| VIP 体系 | 5级、经验值累计、自动升级、兑换折扣、提现减免、汇率加成 |
+| 成就系统 | 12个内置成就、事件驱动检测、进度追踪 |
+| 好友系统 | 申请/接受/拒绝/删除/搜索 |
+| 私信/聊天 | REST + WebSocket 实时消息 (端口8790) |
+| 事件总线 | Redis Pub/Sub 异步解耦 |
+| 特性开关 | FeatureFlag 基于DB、4个预设开关 |
+| 高级分析 | 留存/D1-D30、转化漏斗、ARPU/ARPPU |
+
+### 新增数据表 (10张)
+```
+erik_ticket, erik_ticket_reply, erik_device_token,
+erik_vip_level, erik_user_vip, erik_exp_log,
+erik_achievement, erik_user_achievement,
+erik_friend, erik_message
+```
+
+### 新增 Provider API 端点 (4个)
+```
+POST /api/provider/balance  — 查询余额
+POST /api/provider/bet      — 通知下注
+POST /api/provider/settle   — 通知结算
+POST /api/provider/refund   — 通知退款
+```
+
+### 新增 C端 API 端点 (8个)
+```
+POST /api/verify/send-email    — 发送邮箱验证码
+POST /api/verify/confirm-email — 确认邮箱
+GET  /api/ticket/list             — 工单列表
+POST /api/ticket/create           — 创建工单
+GET  /api/ticket/{id}             — 工单详情
+POST /api/ticket/{id}/reply       — 回复工单
+GET  /api/user/vip-status         — VIP状态
+GET  /api/user/achievements       — 成就列表
+```
+
+### 新增管理后台 API 端点 (6个)
+```
+GET  /admin/ticket/list          — 工单列表
+GET  /admin/ticket/{id}          — 工单详情
+POST /admin/ticket/{id}/reply    — 回复工单
+POST /admin/ticket/{id}/close    — 关闭工单
+POST /admin/ticket/{id}/assign   — 指定处理人
+GET  /admin/analytics/retention  — 留存分析
+GET  /admin/analytics/funnel     — 转化漏斗
+GET  /admin/analytics/arpu       — ARPU趋势
+GET  /admin/analytics/economy    — 经济指标
+```

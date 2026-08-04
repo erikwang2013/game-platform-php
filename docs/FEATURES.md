@@ -24,7 +24,7 @@
 
 | 域 | 功能 | 状态 |
 |----|------|------|
-| 用户 | OAuth登录 (Google/Facebook/Apple) | 已完成 |
+| 用户 | OAuth登录 (Google/Facebook/Apple/Twitter/Microsoft/LinkedIn/GitHub) | 已完成 |
 | 支付 | 多支付渠道自动回调 (Stripe/PayPal) | 已完成 |
 | 游戏 | 区服管理、游戏记录追踪 | 已完成 |
 | 提现 | KYC阶梯限额 (default/verified/vip) + 手续费 | 已完成 |
@@ -48,7 +48,7 @@
 
 | 域 | 功能 | 状态 |
 |----|------|------|
-| OAuth | Google/Facebook/Apple 真实token交换（mock回退） | 已完成 |
+| OAuth | Google/Facebook/Apple 真实token交换 | 已完成 |
 | 支付 | Stripe/PayPal Webhook 签名验证 | 已完成 |
 | 验证码 | poster-php 点击式验证码 | 已完成 |
 | 通知 | 站内信 + 邮件、充值/提现/KYC/优惠券自动通知 | 已完成 |
@@ -56,157 +56,186 @@
 | 推荐 | 推荐码、注册奖励、充值返佣 | 已完成 |
 | 搜索 | ES 搜索API + 游戏建议 + LIKE回退 | 已完成 |
 | 排行榜 | WebSocket 实时推送 (端口8789) | 已完成 |
-| 部署 | Docker Compose 7服务 + Nginx反向代理 | 已完成 |
+| 部署 | Docker Compose 8服务 + Nginx反向代理 | 已完成 |
 | 数据 | ClickHouse OLAP 分析 + 联合/条件概率计算 | 已完成 |
 | HarmonyOS | 游戏大厅 + 钱包 + 游戏详情页 | 已完成 |
-| API 文档 | hg/apidoc 交互式文档（Admin 25组79端点 + Service 16组54端点） | 已完成 |
+| API 文档 | hg/apidoc 交互式文档 | 已完成 |
+
+### 生态扩展 (v2.0) — 刚完成
+
+| 域 | 功能 | 状态 |
+|----|------|------|
+| 游戏接入 | GameProvider 抽象层 (Self/ThirdParty) + HMAC-SHA256 签名 | 已完成 |
+| 游戏回调 | Provider API 网关 (balance/bet/settle/refund) + ProviderAuth 中间件 | 已完成 |
+| 游戏会话 | Redis 心跳 + 15分钟超时自动结算 + GameSessionService | 已完成 |
+| 工单系统 | C端创建/回复 + 管理端处理/分配/关闭、5种工单类型 | 已完成 |
+| 邮箱验证 | 6位验证码、Redis 10分钟过期、60秒重发限制 | 已完成 |
+| 推送通知 | PushService (FCM/APNs/华为推送) + DeviceToken 模型 | 已完成 |
+| VIP 体系 | 5级 (普通/白银/黄金/铂金/钻石) + 经验值 + 自动升级 | 已完成 |
+| VIP 权益 | 兑换折扣 2-15%、提现手续费减免 10-100%、汇率加成 0.1-1.0% | 已完成 |
+| 成就系统 | 12个内置成就、事件驱动检测、进度追踪、经验值奖励 | 已完成 |
+| 好友系统 | 申请/接受/拒绝/删除/搜索、pending/accepted/blocked 状态 | 已完成 |
+| 私信/聊天 | REST 私信 + WebSocket 实时消息 (端口8790)、仅好友可发 | 已完成 |
+| 事件总线 | Redis Pub/Sub 异步解耦、成就/VIP/通知/审计订阅 | 已完成 |
+| 特性开关 | FeatureFlag 基于DB、零额外依赖、4个预设开关 | 已完成 |
+| 高级分析 | 留存/D1-D30、转化漏斗、ARPU/ARPPU、游戏币种经济指标 | 已完成 |
 
 ## 2. C端用户功能
 
 ### 2.1 用户旅程
 
 ```
-注册 → 登录 → 浏览游戏大厅 → 进入游戏详情
-                                    ↓
-查看钱包 ← 玩游戏 ← 兑换游戏币 ← 充值平台币
+注册 → 登录 → 邮箱/手机验证 → 浏览游戏大厅 → 进入游戏详情
+                                           ↓
+查看钱包 ← 玩游戏 ← 兑换游戏币 (VIP折扣) ← 充值平台币
     ↓
-  提现 → 后台审核 → 到账
+  提现 (VIP手续费减免) → 后台审核 → 到账
+    ↓
+好友系统 → 私信聊天 → 排行榜竞技 → 成就追踪
+    ↓
+工单支持
 ```
 
-### 2.2 页面清单
-
-| 页面 | 说明 | 路由 |
-|------|------|------|
-| 登录/注册 | 用户名+密码，JWT认证 | /login |
-| 游戏大厅 | 游戏卡片网格、搜索、分类 | /games |
-| 游戏详情 | 游戏信息、币种汇率、启动入口 | /game-detail |
-| 我的钱包 | 余额、流水记录、快捷操作 | /wallet |
-| 充值 | 选择支付方式、输入金额、下单 | /deposit |
-| 兑换 | 选择游戏→询价→确认兑换 | /exchange |
-| 提现 | 输入金额→选择方式→填写账户→提交 | /withdraw |
-| 个人中心 | 资料编辑、语言设置、退出 | /profile |
-
-### 2.3 API 接口
+### 2.2 API 接口
 
 | 方法 | 路径 | 说明 | 认证 |
 |------|------|------|------|
 | POST | /api/auth/register | 用户注册 | 否 |
 | POST | /api/auth/login | 用户登录 | 否 |
 | POST | /api/auth/refresh | 刷新Token | 否 |
-| GET | /api/language/list | 可用语言列表 | 否 |
-| POST | /api/language/switch | 切换语言 | 否 |
 | GET | /api/game/list | 游戏列表 | 否 |
-| GET | /api/game/{id} | 游戏详情 | 否 |
+| GET | /api/game/detail/{id} | 游戏详情 | 否 |
 | GET | /api/announcement/list | 公告列表 | 否 |
-| GET | /api/announcement/{id} | 公告详情 | 否 |
 | GET | /api/wallet/info | 钱包余额 | 是 |
 | GET | /api/wallet/transactions | 流水记录 | 是 |
 | POST | /api/deposit/create | 创建充值订单 | 是 |
-| GET | /api/deposit/orders | 充值记录 | 是 |
-| POST | /api/exchange/quote | 兑换询价 | 是 |
+| POST | /api/exchange/quote | 兑换询价 (VIP折扣) | 是 |
 | POST | /api/exchange/buy | 买入游戏币 | 是 |
 | POST | /api/exchange/sell | 卖出游戏币 | 是 |
-| GET | /api/exchange/records | 兑换记录 | 是 |
-| POST | /api/withdraw/apply | 提现申请 | 是 |
-| GET | /api/withdraw/orders | 提现记录 | 是 |
+| POST | /api/withdraw/apply | 提现申请 (VIP减免) | 是 |
 | POST | /api/game/launch | 启动游戏 | 是 |
-| GET | /api/user/profile | 个人信息 | 是 |
-| PUT | /api/user/profile | 编辑资料 | 是 |
+| GET | /api/game/play-logs | 游戏记录 | 是 |
+| POST | /api/referral/apply | 使用推荐码 | 是 |
+| POST | /api/verify/send-email | 发送邮箱验证码 | 是 |
+| POST | /api/verify/confirm-email | 确认邮箱 | 是 |
+| GET | /api/ticket/list | 工单列表 | 是 |
+| POST | /api/ticket/create | 创建工单 | 是 |
+| POST | /api/ticket/{id}/reply | 回复工单 | 是 |
 
 ## 3. 管理后台功能
 
-### 3.1 页面清单
-
-| 页面 | 说明 | 路由 |
-|------|------|------|
-| 仪表盘 | 管理统计 + 平台统计 | /dashboard |
-| 管理员用户 | 后台用户CRUD | /users |
-| 角色权限 | RBAC角色和权限管理 | /roles |
-| 系统配置 | 键值对系统配置 | /config |
-| 操作日志 | 操作审计日志 | /logs |
-| 游戏管理 | 游戏CRUD + 币种汇率管理 | /games |
-| 提现管理 | 审核队列 + 全局开关 + 限额配置 | /withdraws |
-| 平台用户 | C端用户列表/详情/封禁 | /platform-users |
-| 支付管理 | 支付方式启禁用 | /payments |
-| 公告管理 | 公告发布/编辑 | /announcements |
-| 个人中心 | 修改密码/退出登录 | /profile |
-
-### 3.2 API 接口（新增）
+### 3.1 API 接口（新增）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | /admin/dashboard/platform | 平台仪表盘数据 |
+| GET | /admin/analytics/overview | 平台概览 (ClickHouse) |
+| GET | /admin/analytics/retention | 留存分析 D1/D3/D7/D30 |
+| GET | /admin/analytics/funnel | 转化漏斗 |
+| GET | /admin/analytics/arpu | ARPU/ARPPU 趋势 |
+| GET | /admin/analytics/economy | 游戏币种经济指标 |
+| GET | /admin/analytics/probability | 联合概率分析 |
 | GET | /admin/game/list | 游戏列表 |
-| POST | /admin/game/create | 创建游戏 |
+| POST | /admin/game/create | 创建游戏 (含 provider_config) |
 | PUT | /admin/game/{id} | 编辑游戏 |
-| DELETE | /admin/game/{id} | 删除游戏 |
-| POST | /admin/game/currency/manage | 管理游戏币种 |
 | GET | /admin/withdraw/orders | 提现订单列表 |
 | PUT | /admin/withdraw/review | 审核提现 |
-| PUT | /admin/withdraw/switch | 全局提现开关 |
-| POST | /admin/withdraw/limits/set | 设置提现限额 |
-| GET | /admin/platform/user/list | C端用户列表 |
-| GET | /admin/platform/user/{id} | C端用户详情 |
-| PUT | /admin/platform/user/{id} | 编辑/封禁用户 |
-| GET | /admin/payment/method/list | 支付方式列表 |
-| POST | /admin/payment/method/toggle | 启禁用支付方式 |
-| GET | /admin/announcement/list | 公告列表 |
-| POST | /admin/announcement/create | 发布公告 |
-| POST | /admin/export/users | 导出C端用户Excel |
-| POST | /admin/export/transactions | 导出流水Excel |
+| GET | /admin/ticket/list | 工单列表 |
+| GET | /admin/ticket/{id} | 工单详情 |
+| POST | /admin/ticket/{id}/reply | 回复工单 |
+| POST | /admin/ticket/{id}/close | 关闭工单 |
+| POST | /admin/ticket/{id}/assign | 指定处理人 |
 
-## 4. 数据库表清单
+## 4. Provider API（游戏方回调）
 
-### 基础版 (12张)
+| 方法 | 路径 | 说明 | 认证 |
+|------|------|------|------|
+| POST | /api/provider/balance | 查询用户余额 | HMAC-SHA256 |
+| POST | /api/provider/bet | 通知下注 | HMAC-SHA256 |
+| POST | /api/provider/settle | 通知结算 | HMAC-SHA256 |
+| POST | /api/provider/refund | 通知退款 | HMAC-SHA256 |
+
+签名算法: `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)`
+请求头: `X-Game-Id` + `X-Timestamp` + `X-Signature`
+时间窗口: 5分钟
+
+## 5. VIP 体系
+
+| 等级 | 累计EXP | 兑换折扣 | 提现手续费减免 | 汇率加成 |
+|------|---------|---------|-------------|---------|
+| 普通 | 0 | 0% | 0% | 基准 |
+| 白银 | 500 | 2% | 10% | +0.1% |
+| 黄金 | 2,500 | 5% | 30% | +0.3% |
+| 铂金 | 12,500 | 10% | 50% | +0.5% |
+| 钻石 | 62,500 | 15% | 100% | +1.0% |
+
+### 经验值获取
+
+| 行为 | EXP |
+|------|-----|
+| 充值 1 元 | 10 |
+| 每日登录 | 5 |
+| 完成 KYC | 50 |
+| 邀请新用户 | 100 |
+| 达成成就 | 10-100 |
+
+## 6. 成就清单
+
+| 成就 | 条件 | 积分 |
+|------|------|------|
+| First Deposit | 首次充值 | 20 |
+| Century Club | 累计充值100 | 50 |
+| High Roller | 累计充值1000 | 100 |
+| Trader | 首次兑换 | 20 |
+| Day Trader | 累计兑换100次 | 100 |
+| Explorer | 玩过3款游戏 | 30 |
+| Adventurer | 玩过5款游戏 | 50 |
+| Conqueror | 玩过10款游戏 | 100 |
+| Weekly Warrior | 连续7天登录 | 30 |
+| Monthly Master | 连续30天登录 | 100 |
+| Connector | 邀请1个好友 | 30 |
+| Influencer | 邀请10个好友 | 100 |
+
+## 7. 数据库表清单
+
+### 生态扩展新增 (10张)
 
 | 表名 | 说明 | 关键特性 |
 |------|------|---------|
-| erik_user | C端用户 | 软删除、邮箱/手机加密 |
-| erik_user_wallet | 平台币钱包 | 乐观锁、DECIMAL(18,4) |
-| erik_user_game_wallet | 游戏币钱包 | 用户+游戏+币种唯一索引 |
-| erik_game | 游戏 | API密钥加密存储 |
-| erik_game_currency | 游戏币种 | 汇率+抽成+限额 |
-| erik_deposit_order | 充值订单 | 订单号唯一 |
-| erik_withdraw_order | 提现订单 | 收款信息加密、审核人追溯 |
-| erik_exchange_record | 兑换记录 | 双向记录、手续费 |
-| erik_transaction | 平台流水 | 关联单据、余额快照 |
-| erik_payment_method | 支付方式 | 配置加密、启禁用 |
-| erik_announcement | 公告 | 定时发布、按语言过滤 |
-| erik_platform_config | 平台配置 | 类型化存取、分组管理 |
-| erik_language | 语言定义 | 4种语言预设 |
-| erik_translation | 翻译文本 | group.key + lang_code 唯一索引 |
+| erik_ticket | 工单 | user_id+type+status 索引, assigned_to |
+| erik_ticket_reply | 工单回复 | ticket_id 索引, is_admin 区分 |
+| erik_device_token | 设备令牌 | user_id+platform+token 唯一索引 |
+| erik_vip_level | VIP等级定义 | level 唯一索引, benefits JSON |
+| erik_user_vip | 用户VIP记录 | user_id 唯一索引, level+exp+total_exp |
+| erik_exp_log | 经验值日志 | user_id+source 组合索引 |
+| erik_achievement | 成就定义 | key 唯一索引, condition_json JSON |
+| erik_user_achievement | 用户成就 | user_id+achievement_id 唯一索引 |
+| erik_friend | 好友关系 | user_id+friend_id 唯一索引 |
+| erik_message | 私信 | from_user_id+to_user_id / to_user_id+is_read |
 
-（admin 原有 7 张表：erik_admin_user, erik_admin_role, erik_admin_permission, erik_admin_user_role, erik_admin_role_permission, erik_operation_log, erik_system_config）
+### 表结构变更
 
-### 标准版新增 (10张)
+| 表名 | 变更 |
+|------|------|
+| erik_game | +provider_config (JSON) |
+| erik_game_play_log | +round_id, +bet_amount, +win_amount |
 
-| 表名 | 说明 | 关键特性 |
-|------|------|---------|
-| erik_user_oauth | 第三方登录绑定 | provider+open_id 唯一索引 |
-| erik_user_session | 登录会话 | token_id 唯一、设备/IP 追溯 |
-| erik_user_identity | 实名认证 | 证件信息加密、审核人追溯 |
-| erik_user_payment_account | 收款账户 | 多账户管理、加密存储 |
-| erik_withdraw_limit | 提现限额规则 | 三级(default/verified/vip) |
-| erik_game_server | 游戏区服 | 区域分组、状态管理 |
-| erik_game_play_log | 游戏记录 | session_id、金额快照 |
-| erik_risk_rule | 风控规则 | JSON 配置、优先级排序 |
-| erik_risk_log | 风控日志 | 触发上下文 JSON |
-| erik_stat_daily | 日统计快照 | 日期+类型+游戏 唯一索引 |
+**总计: 52 张表** (原有 42 + 新增 10)
 
-### 完整版新增 (8张)
-
-erik_game_category, erik_game_category_rel, erik_leaderboard, erik_coupon, erik_user_coupon, erik_language, erik_translation, erik_country_config, erik_platform_revenue
-
-## 5. 测试覆盖
+## 8. 测试覆盖
 
 | 测试文件 | 用例数 | 覆盖范围 |
 |---------|--------|---------|
-| PlatformTest | 56 | bcmath精度/兑换计算/提现费用/限额/风控/优惠券/KYC/i18n/验证/响应格式 |
+| PlatformTest | 56 | bcmath精度/兑换计算/提现费用/限额/风控/优惠券/KYC/i18n |
 | BackendEnhancementTest | 23 | 加密服务/Hashids/Snowflake |
-| CaptchaTest | 7 | 验证码生成/校验/难度/唯一性 |
+| CaptchaTest | 7 | 验证码生成/校验 |
 | EncryptionServiceTest | 6 | AES加解密/脱敏 |
 | EnvConfigTest | 4 | 环境变量配置 |
 | HashidsServiceTest | 8 | ID编解码往返 |
-| SnowflakeServiceTest | 6 | ID生成唯一性/格式 |
+| SnowflakeServiceTest | 6 | ID生成唯一性 |
 
-**总计: 116 测试，109 通过，2 环境依赖跳过(Redis)，5 数据库依赖跳过**
+**总计: 116 测试**
+
+---
+
+> **Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz**

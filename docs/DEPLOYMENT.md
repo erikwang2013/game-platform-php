@@ -47,7 +47,7 @@ rm -rf install/
 
 安装向导完成的操作：
 - PHP 环境检查（版本、扩展、目录权限）
-- 执行合并 SQL（`install/install.sql`），创建 39 张表并导入种子数据
+- 执行合并 SQL（`install/install.sql`），创建 52 张表并导入种子数据
 - 创建超级管理员账户（bcrypt 加密，关联 super_admin 角色）
 - 自动生成 JWT/Encryption/Hashids 密钥
 - 写入 `admin/.env` 和 `service/.env`

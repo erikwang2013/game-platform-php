@@ -10,9 +10,8 @@
 
 | 版本 | 目标 | 状态 |
 |------|------|------|
-| 基础版 (MVP) | 跑通核心闭环：注册→充值→兑换→游戏→提现→审核 | 已完成 |
-| 标准版 | 生产可用：全球化支付、第三方游戏SDK、基础风控、三端前端 | 已完成 |
 | 完整版 | 完全体：排行榜、优惠券、游戏分类、国家配置、ES搜索 | 已完成 |
+| 生态扩展 | v2.0：游戏Provider接入、工单、VIP、成就、社交、事件总线 | 已完成 |
 
 ## 技术栈
 
@@ -49,14 +48,22 @@
 game-platform-php/
 ├── admin/                     # 管理后台 (webman v2, 端口 8787)
 │   ├── app/admin/controller/  #   管理端控制器
-│   ├── app/middleware/        #   中间件 (Cors/Security/RateLimit/Auth/Permission)
+│   ├── app/middleware/        #   中间件 (Cors/Security/RateLimit/Auth/ProviderAuth)
+│   ├── app/provider/          #   游戏Provider层
+│   ├── app/event/             #   事件总线 (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission/ProviderAuth)
+│   ├── app/provider/          #   游戏Provider层 (Self/ThirdParty/Factory)
+│   ├── app/middleware/        #   中间件 (Cors/Security/RateLimit/Auth/ProviderAuth)
+│   ├── app/provider/          #   游戏Provider层
+│   ├── app/event/             #   事件总线 (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission)
 │   ├── config/                #   配置文件
 │   ├── database/migrations/   #   SQL 迁移文件
 │   └── apps/flutter/          #   Flutter Web PC 管理后台
 │
 ├── service/                   # C端业务端 (webman v2, 端口 8788)
 │   ├── app/api/v1/controller/ #   C端 API 控制器
-│   ├── app/middleware/        #   中间件
+│   ├── app/middleware/        #   中间件 (Cors/Security/RateLimit/Auth/ProviderAuth)
+│   ├── app/provider/          #   游戏Provider层
+│   ├── app/event/             #   事件总线 (EventBus Redis Pub/Sub)
 │   └── config/                #   配置文件
 │
 ├── install/                   # 一键安装向导
@@ -120,7 +127,7 @@ rm -rf install/
 
 安装向导会自动完成：
 - 环境检查（PHP版本、扩展、目录权限）
-- 创建数据库和数据表（合并 SQL，39 张表 + 种子数据）
+- 创建数据库和数据表（合并 SQL，52 张表 + 种子数据）
 - 创建超级管理员账户（bcrypt 加密）
 - 自动生成 JWT/加密密钥并写入 .env 文件
 - 生成 install.lock 防止重复安装
@@ -225,7 +232,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 
 | 能力 | 说明 |
 |------|------|
-| 用户认证 | 用户名密码 + Google/Facebook/Apple OAuth + 2FA TOTP |
+| 用户认证 | 用户名密码 + 7平台 OAuth (Google/Facebook/Apple/X(Twitter)/Microsoft/LinkedIn/GitHub) + 2FA TOTP |
 | 钱包 | 平台币钱包(乐观锁) + 游戏币钱包 + 流水记录 |
 | 充值 | 创建订单 + Stripe/PayPal 回调验签 + 自动到账 |
 | 兑换 | 平台币⇄游戏币、实时询价、差价收益 |
@@ -242,7 +249,13 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | 国家配置 | 8国差异化支付/提现方式、最低充值额 |
 | 统计 | 日统计快照(5类指标) + 平台收益追踪 |
 | 验证码 | 点击式人机验证(poster-php) |
-| 部署 | Docker Compose 7服务编排 + Nginx反向代理 |
+| 游戏接入 | Provider SDK (Self+ThirdParty) + HMAC-SHA256 签名 + 回调网关 |
+| 工单 | C端创建/回复 + 管理端处理/分配/关闭 |
+| VIP | 5级忠诚度、经验值累计、兑换折扣/提现减免/汇率加成 |
+| 成就 | 12个内置成就、事件驱动检测、进度追踪 |
+| 社交 | 好友系统 + WebSocket 实时私信 (端口8790) |
+| 事件 | Redis Pub/Sub 异步事件总线 |
+| 部署 | Docker Compose 8服务编排 + Nginx反向代理 |
 | 客户端 | Flutter Admin(15页) + Platform(10页) + HarmonyOS(5页) |
 
 ## 业务模型
@@ -279,6 +292,10 @@ phpunit --bootstrap tests/bootstrap.php tests/
 ## 安全架构
 
 ![安全架构图](docs/diagrams/security-zh.svg)
+
+## 生态扩展 (v2.0)
+
+![生态扩展架构图](docs/diagrams/ecosystem-expansion.svg)
 
 ## 文档索引
 
