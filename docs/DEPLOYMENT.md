@@ -18,19 +18,55 @@
 
 ---
 
-## 2. Docker Compose 部署（推荐）
-
-### 2.1 一键启动
+## 2. 一键安装向导（推荐新部署）
 
 ```bash
 # 1. 克隆项目
 git clone <repo-url> /opt/game-platform
 cd /opt/game-platform
 
-# 2. 配置环境变量
-cp admin/.env.example admin/.env
-cp service/.env.example service/.env
-# 编辑 .env 文件，修改数据库密码、JWT密钥等
+# 2. 启动安装向导
+php -S 0.0.0.0:8888 -t install/
+
+# 3. 浏览器打开 http://<服务器IP>:8888
+#    按向导完成：环境检查 → 数据库配置 → 管理员账户 → 自动安装
+
+# 4. 安装依赖
+cd admin && composer install && cd ..
+cd service && composer install && cd ..
+
+# 5. 启动服务
+cd admin && php start.php start -d && cd ..
+cd service && php start.php start -d && cd ..
+
+# 6. 安全清理
+rm -rf install/
+
+# 7. 访问管理后台: http://<服务器IP>:8787
+```
+
+安装向导完成的操作：
+- PHP 环境检查（版本、扩展、目录权限）
+- 执行合并 SQL（`install/install.sql`），创建 39 张表并导入种子数据
+- 创建超级管理员账户（bcrypt 加密，关联 super_admin 角色）
+- 自动生成 JWT/Encryption/Hashids 密钥
+- 写入 `admin/.env` 和 `service/.env`
+- 生成 `install/install.lock` 防止重复安装
+
+---
+
+## 3. Docker Compose 部署
+
+### 3.1 一键启动
+
+```bash
+# 1. 克隆项目
+git clone <repo-url> /opt/game-platform
+cd /opt/game-platform
+
+# 2. 使用一键安装向导配置环境（或手动配置 .env 文件）
+php -S 0.0.0.0:8888 -t install/
+# 手动方式: cp admin/.env.example admin/.env && cp service/.env.example service/.env
 
 # 3. 构建并启动所有服务
 docker-compose up -d

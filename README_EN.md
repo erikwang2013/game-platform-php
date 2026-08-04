@@ -59,6 +59,12 @@ game-platform-php/
 │   ├── app/middleware/        #   Middleware (incl. LanguageMiddleware)
 │   └── config/                #   Configuration files
 │
+├── install/                   # One-click install wizard
+│   ├── index.php              #   Install entry point
+│   ├── Installer.php          #   Core install logic
+│   ├── install.sql            #   Merged install SQL (39 tables + seed data)
+│   └── assets/                #   Static assets
+│
 ├── common/                    # Shared layer (PSR-4 autoload)
 │   ├── model/                 #   Data models (34)
 │   ├── middleware/            #   Shared middleware (UserAuth)
@@ -82,41 +88,84 @@ game-platform-php/
 ## Quick Start
 
 ### Requirements
-- PHP 8.3+
+- PHP 8.1+
 - MySQL 8.0+
 - Redis 6.0+
 - Composer 2.x
-- Flutter SDK 3.x (frontend)
+- Flutter SDK 3.x (frontend, optional)
 
-### 1. Database Setup
+### Method 1: One-Click Install Wizard (Recommended)
 
 ```bash
-# Create database
+# 1. Start the install wizard
+php -S 0.0.0.0:8888 -t install/
+
+# 2. Open http://localhost:8888 in your browser
+#    Follow the wizard: Environment Check → DB Config → Admin Account → Auto Install
+
+# 3. Install dependencies
+cd admin && composer install && cd ..
+cd service && composer install && cd ..
+
+# 4. Start services
+cd admin && php start.php start -d && cd ..
+cd service && php start.php start -d && cd ..
+
+# 5. Access admin panel: http://localhost:8787
+#    Log in with the admin credentials you set during installation
+
+# 6. Remove install directory after installation (security)
+rm -rf install/
+```
+
+The install wizard automatically:
+- Checks environment (PHP version, extensions, directory permissions)
+- Creates database and tables (merged SQL, 39 tables + seed data)
+- Creates super admin account (bcrypt encrypted)
+- Generates JWT/encryption keys and writes .env files
+- Creates install.lock to prevent re-installation
+
+### Method 2: Manual Installation
+
+<details>
+<summary>Expand manual installation steps</summary>
+
+#### 1. Database Setup
+
+```bash
+# One-command import merged SQL
 mysql -u root -e "CREATE DATABASE IF NOT EXISTS game_platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-
-# Run migrations (in order)
-mysql -u root game_platform < admin/database/migrations/2026_05_16_000000_init_tables.sql
-mysql -u root game_platform < admin/database/migrations/2026_05_22_000003_platform_tables.sql
-mysql -u root game_platform < admin/database/migrations/2026_05_22_000004_i18n_tables.sql
+mysql -u root game_platform < install/install.sql
 ```
 
-### 2. Backend Start
+#### 2. Environment Configuration
 
 ```bash
-# Admin backend (port 8787)
+# Admin backend
 cd admin
-cp .env.example .env   # Edit database connection settings
-composer install
-php start.php start -d
+cp .env.example .env
+# Edit .env with your database credentials and keys
 
-# User-facing API (port 8788)
-cd service
-cp .env.example .env   # Edit database connection settings
-composer install
-php start.php start -d
+# Service API
+cd ../service
+cp .env.example .env
+# Edit .env with your database credentials and keys
 ```
 
-### 3. Frontend Start
+#### 3. Backend Start
+
+```bash
+cd admin && composer install && php start.php start -d
+cd ../service && composer install && php start.php start -d
+```
+
+#### 4. Create Admin
+
+You need to manually insert an admin user into the database (password must be bcrypt hashed).
+
+</details>
+
+### Frontend Start (Optional)
 
 ```bash
 # Admin panel (Flutter Web PC)
@@ -130,7 +179,7 @@ flutter pub get
 flutter run -d chrome
 ```
 
-### 4. Verification
+### Verification
 
 ```bash
 # Test admin backend

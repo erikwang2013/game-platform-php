@@ -1,0 +1,130 @@
+/* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
+/* 一键安装向导 — 样式 */
+
+:root {
+    --primary: #4f46e5;
+    --primary-hover: #4338ca;
+    --success: #059669;
+    --error: #dc2626;
+    --warning: #d97706;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --border: #e2e8f0;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --radius: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.installer {
+    width: 100%;
+    max-width: 720px;
+    background: var(--card);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 24px rgba(0,0,0,.04);
+    overflow: hidden;
+}
+
+.installer-header { padding: 32px 40px 20px; text-align: center; border-bottom: 1px solid var(--border); }
+.installer-header h1 { font-size: 22px; font-weight: 700; color: var(--primary); }
+.installer-header .subtitle { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+.installer-main { padding: 28px 40px 32px; }
+.installer-footer { padding: 16px 40px; text-align: center; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-muted); }
+
+.step-indicator { display: flex; gap: 4px; margin-bottom: 24px; }
+.step { flex: 1; text-align: center; padding: 8px 4px; font-size: 12px; font-weight: 500; color: var(--text-muted); border-bottom: 3px solid var(--border); transition: all .2s; }
+.step.active { color: var(--primary); border-color: var(--primary); font-weight: 600; }
+.step.done { color: var(--success); border-color: var(--success); }
+
+h2 { font-size: 18px; margin-bottom: 16px; }
+h3 { font-size: 15px; margin: 20px 0 10px; }
+
+.check-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; }
+.check-table th { text-align: left; padding: 8px 12px; background: #f1f5f9; font-weight: 600; font-size: 12px; color: var(--text-muted); }
+.check-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+.check-table tr.ok td:first-child { color: var(--success); }
+.check-table tr.fail td:first-child { color: var(--error); }
+
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.form-group input[type="text"],
+.form-group input[type="password"],
+.form-group input[type="number"] {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: var(--radius); font-size: 14px; font-family: inherit; transition: border-color .2s;
+}
+.form-group input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79,70,229,.1); }
+.form-hint { display: block; font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+fieldset { border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 20px; }
+fieldset legend { font-size: 14px; font-weight: 600; padding: 0 8px; }
+
+.tag-optional { font-size: 11px; font-weight: 400; color: var(--text-muted); background: #f1f5f9; padding: 2px 8px; border-radius: 10px; }
+
+.db-info { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; padding: 8px 12px; background: #f1f5f9; border-radius: var(--radius); font-family: monospace; }
+
+.btn-group { display: flex; gap: 10px; margin-top: 20px; }
+.btn { display: inline-block; padding: 10px 24px; border: none; border-radius: var(--radius); font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; transition: all .2s; font-family: inherit; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-secondary { background: #f1f5f9; color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { background: #e2e8f0; }
+.btn.disabled, .btn:disabled { opacity: .5; pointer-events: none; cursor: not-allowed; }
+
+.alert { padding: 12px 16px; border-radius: var(--radius); font-size: 13px; margin-bottom: 16px; }
+.alert-success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
+.alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.alert-warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+.test-result { margin-top: 12px; }
+
+.install-success, .install-fail, .already-installed { text-align: center; padding: 24px 0; }
+.success-icon, .fail-icon { width: 64px; height: 64px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 16px; }
+.success-icon { background: #ecfdf5; color: #059669; }
+.fail-icon { background: #fef2f2; color: #dc2626; }
+
+.install-steps { padding-left: 20px; font-size: 14px; }
+.install-steps li { margin-bottom: 6px; }
+.install-steps li.ok { color: var(--success); }
+.install-steps li.fail { color: var(--error); }
+.install-steps li strong { color: var(--text); }
+
+.next-steps ol { padding-left: 20px; font-size: 14px; }
+.next-steps li { margin-bottom: 6px; }
+.next-steps code { background: #f1f5f9; padding: 2px 6px; border-radius: 3px; font-size: 13px; font-family: "SF Mono", "Fira Code", "Fira Mono", "Roboto Mono", monospace; }
+
+.security-notice { margin-top: 24px; padding: 16px; background: #fffbeb; border-radius: var(--radius); border: 1px solid #fde68a; }
+.security-notice h3 { margin-top: 0; font-size: 14px; color: #92400e; }
+.security-notice ul { padding-left: 20px; font-size: 13px; }
+.security-notice li { margin-bottom: 4px; color: #92400e; }
+.security-notice code { background: rgba(0,0,0,.06); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+
+.notice { margin-top: 16px; font-size: 13px; color: var(--text-muted); }
+.notice code { background: #f1f5f9; padding: 1px 5px; border-radius: 3px; }
+
+.svc-fields { margin-top: 12px; }
+.error-message { color: var(--error); font-size: 14px; word-break: break-all; }
+
+@media (max-width: 600px) {
+    .installer-header { padding: 24px 20px 16px; }
+    .installer-main { padding: 20px; }
+    .installer-footer { padding: 12px 20px; }
+    .installer-header h1 { font-size: 18px; }
+    .step { font-size: 10px; }
+    .btn { padding: 10px 16px; font-size: 13px; }
+    .btn-group { flex-direction: column; }
+    .step-indicator { gap: 2px; }
+    fieldset { padding: 14px; }
+}

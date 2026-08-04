@@ -19,3 +19,6 @@ service/.env
 service/*.log
 admin/composer.lock
 service/composer.lock
+install/install.lock
+admin/.env.backup.*
+service/.env.backup.*

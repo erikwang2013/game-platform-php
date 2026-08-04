@@ -59,6 +59,12 @@ game-platform-php/
 │   ├── app/middleware/        #   中间件
 │   └── config/                #   配置文件
 │
+├── install/                   # 一键安装向导
+│   ├── index.php              #   安装入口
+│   ├── Installer.php          #   安装核心逻辑
+│   ├── install.sql            #   合并安装 SQL（39张表+种子数据）
+│   └── assets/                #   静态资源
+│
 ├── common/                    # 共享层 (PSR-4 autoload)
 │   ├── model/                 #   数据模型 (34个)
 │   ├── middleware/            #   共享中间件 (UserAuth)
@@ -82,41 +88,84 @@ game-platform-php/
 ## 快速开始
 
 ### 环境要求
-- PHP 8.3+
+- PHP 8.1+
 - MySQL 8.0+
 - Redis 6.0+
 - Composer 2.x
-- Flutter SDK 3.x (前端)
+- Flutter SDK 3.x (前端，可选)
 
-### 1. 数据库初始化
+### 方式一：一键安装向导（推荐）
 
 ```bash
-# 创建数据库
+# 1. 启动安装向导
+php -S 0.0.0.0:8888 -t install/
+
+# 2. 浏览器打开 http://localhost:8888
+#    按照向导完成：环境检查 → 数据库配置 → 管理员账户设置 → 自动安装
+
+# 3. 安装依赖
+cd admin && composer install && cd ..
+cd service && composer install && cd ..
+
+# 4. 启动服务
+cd admin && php start.php start -d && cd ..
+cd service && php start.php start -d && cd ..
+
+# 5. 访问管理后台: http://localhost:8787
+#    使用安装时设置的管理员账号密码登录
+
+# 6. 安装完成后删除安装目录（安全）
+rm -rf install/
+```
+
+安装向导会自动完成：
+- 环境检查（PHP版本、扩展、目录权限）
+- 创建数据库和数据表（合并 SQL，39 张表 + 种子数据）
+- 创建超级管理员账户（bcrypt 加密）
+- 自动生成 JWT/加密密钥并写入 .env 文件
+- 生成 install.lock 防止重复安装
+
+### 方式二：手动安装
+
+<details>
+<summary>展开手动安装步骤</summary>
+
+#### 1. 数据库初始化
+
+```bash
+# 一键导入合并 SQL
 mysql -u root -e "CREATE DATABASE IF NOT EXISTS game_platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-
-# 执行迁移（按编号顺序）
-mysql -u root game_platform < admin/database/migrations/2026_05_16_000000_init_tables.sql
-mysql -u root game_platform < admin/database/migrations/2026_05_22_000003_platform_tables.sql
-mysql -u root game_platform < admin/database/migrations/2026_05_22_000004_i18n_tables.sql
+mysql -u root game_platform < install/install.sql
 ```
 
-### 2. 后端启动
+#### 2. 配置环境变量
 
 ```bash
-# 管理后台 (端口 8787)
+# 管理后台
 cd admin
-cp .env.example .env   # 编辑数据库连接信息
-composer install
-php start.php start -d
+cp .env.example .env
+# 编辑 .env 中的数据库连接信息和密钥
 
-# C端业务端 (端口 8788)
-cd service
-cp .env.example .env   # 编辑数据库连接信息
-composer install
-php start.php start -d
+# C端业务端
+cd ../service
+cp .env.example .env
+# 编辑 .env 中的数据库连接信息和密钥
 ```
 
-### 3. 前端启动
+#### 3. 后端启动
+
+```bash
+cd admin && composer install && php start.php start -d
+cd ../service && composer install && php start.php start -d
+```
+
+#### 4. 创建管理员
+
+需要手动在数据库中插入管理员账户（密码使用 bcrypt 加密）。
+
+</details>
+
+### 前端启动（可选）
 
 ```bash
 # 管理后台 (Flutter Web PC)
@@ -130,7 +179,7 @@ flutter pub get
 flutter run -d chrome
 ```
 
-### 4. 验证
+### 验证
 
 ```bash
 # 测试管理后台
