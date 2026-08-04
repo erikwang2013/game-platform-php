@@ -23,6 +23,7 @@ class GamePlayLog extends Model
         'game_id',
         'server_id',
         'session_id',
+        'round_id',
         'action',
         'game_amount_before',
         'game_amount_change',

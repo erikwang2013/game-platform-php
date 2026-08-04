@@ -135,3 +135,41 @@ Route::group('/api', function () {
 ]);
 
 Route::disableDefaultRoute();
+
+// ============================================================
+// 游戏提供商回调接口（HMAC-SHA256 签名认证）
+// ============================================================
+Route::group('/api/provider', function () {
+    Route::post('/balance', v('ProviderController', 'balance'));
+    Route::post('/bet', v('ProviderController', 'bet'));
+    Route::post('/settle', v('ProviderController', 'settle'));
+    Route::post('/refund', v('ProviderController', 'refund'));
+})->middleware([
+    app\middleware\ProviderAuth::class,
+]);
+
+// ============================================================
+// 工单
+// ============================================================
+Route::group('/api', function () {
+    Route::get('/ticket/list', v('TicketController', 'list'));
+    Route::get('/ticket/{hashid}', v('TicketController', 'detail'));
+    Route::post('/ticket/create', v('TicketController', 'create'));
+    Route::post('/ticket/{hashid}/reply', v('TicketController', 'reply'));
+})->middleware([
+    app\middleware\ApiVersion::class,
+    app\middleware\UserAuth::class,
+]);
+
+echo "Admin TicketController + routes created"
+
+// 邮箱/手机验证
+Route::group('/api/verify', function () {
+    Route::post('/send-email', v('VerificationController', 'sendEmail'));
+    Route::post('/confirm-email', v('VerificationController', 'confirmEmail'));
+    Route::post('/send-sms', v('VerificationController', 'sendSms'));
+    Route::post('/confirm-phone', v('VerificationController', 'confirmPhone'));
+})->middleware([
+    app\\middleware\\ApiVersion::class,
+    app\\middleware\\UserAuth::class,
+]);
