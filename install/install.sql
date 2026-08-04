@@ -788,11 +788,11 @@ CREATE TABLE IF NOT EXISTS `erik_user_2fa` (
 -- ============================================================
 
 -- 默认管理员角色
-INSERT INTO `erik_admin_role` (`id`, `name`, `slug`, `description`, `status`) VALUES
+INSERT IGNORE INTO `erik_admin_role` (`id`, `name`, `slug`, `description`, `status`) VALUES
 (10000000000000001, '超级管理员', 'super_admin', '系统超级管理员，拥有所有权限', 1);
 
 -- 菜单权限 (type=1)
-INSERT INTO `erik_admin_permission` (`id`, `parent_id`, `name`, `slug`, `type`, `icon`, `path`, `sort`, `created_at`, `updated_at`) VALUES
+INSERT IGNORE INTO `erik_admin_permission` (`id`, `parent_id`, `name`, `slug`, `type`, `icon`, `path`, `sort`, `created_at`, `updated_at`) VALUES
 (21000000000000001, '0', '仪表盘',    'dashboard',     1, 'dashboard', '/dashboard',        1, NOW(), NOW()),
 (21000000000000002, '0', '用户管理',  'user',           1, 'people',    '/admin/user',        2, NOW(), NOW()),
 (21000000000000003, '0', '角色管理',  'role',           1, 'shield',    '/admin/role',        3, NOW(), NOW()),
@@ -801,7 +801,7 @@ INSERT INTO `erik_admin_permission` (`id`, `parent_id`, `name`, `slug`, `type`, 
 (21000000000000006, '0', '操作日志',  'log',            1, 'article',   '/admin/log',         6, NOW(), NOW());
 
 -- 按钮权限 (type=2)
-INSERT INTO `erik_admin_permission` (`id`, `parent_id`, `name`, `slug`, `type`, `icon`, `path`, `sort`, `created_at`, `updated_at`) VALUES
+INSERT IGNORE INTO `erik_admin_permission` (`id`, `parent_id`, `name`, `slug`, `type`, `icon`, `path`, `sort`, `created_at`, `updated_at`) VALUES
 (21000000000000011, 21000000000000002, '批量删除',     'batch.destroy', 2, '', '', 1, NOW(), NOW()),
 (21000000000000012, 21000000000000002, '批量启用/禁用', 'batch.status', 2, '', '', 2, NOW(), NOW()),
 (21000000000000013, 21000000000000002, '导入用户',     'import.users',  2, '', '', 3, NOW(), NOW()),
@@ -810,7 +810,7 @@ INSERT INTO `erik_admin_permission` (`id`, `parent_id`, `name`, `slug`, `type`, 
 (21000000000000016, 21000000000000002, '文件上传',     'upload',         2, '', '', 6, NOW(), NOW());
 
 -- API 权限 (type=3)
-INSERT INTO `erik_admin_permission` (`id`, `parent_id`, `name`, `slug`, `type`, `icon`, `path`, `sort`, `created_at`, `updated_at`) VALUES
+INSERT IGNORE INTO `erik_admin_permission` (`id`, `parent_id`, `name`, `slug`, `type`, `icon`, `path`, `sort`, `created_at`, `updated_at`) VALUES
 (21000000000000021, 21000000000000001, '查看仪表盘',   'get.admin/dashboard', 3, '', '', 1, NOW(), NOW()),
 (21000000000000031, 21000000000000002, '查看用户',     'get.admin/user',             3, '', '', 1, NOW(), NOW()),
 (21000000000000032, 21000000000000002, '创建用户',     'post.admin/user',            3, '', '', 2, NOW(), NOW()),
@@ -839,12 +839,15 @@ INSERT INTO `erik_admin_permission` (`id`, `parent_id`, `name`, `slug`, `type`, 
 (21000000000000093, '0', '导入用户', 'post.admin/import/users', 3, '', '', 1, NOW(), NOW()),
 (21000000000000094, '0', '文件上传', 'post.admin/upload', 3, '', '', 1, NOW(), NOW());
 
--- 超级管理员角色关联所有权限
+-- 超级管理员角色关联所有权限（幂等：跳过已存在的关联）
 INSERT INTO `erik_admin_role_permission` (`role_id`, `permission_id`)
-SELECT 10000000000000001, `id` FROM `erik_admin_permission`;
+SELECT 10000000000000001, `id` FROM `erik_admin_permission`
+WHERE `id` NOT IN (
+    SELECT `permission_id` FROM `erik_admin_role_permission` WHERE `role_id` = 10000000000000001
+);
 
 -- 默认平台配置
-INSERT INTO `erik_platform_config` (`id`, `group`, `key`, `value`, `type`, `description`) VALUES
+INSERT IGNORE INTO `erik_platform_config` (`id`, `group`, `key`, `value`, `type`, `description`) VALUES
 (20000000000000001, 'withdraw', 'global_switch', '1', 'bool', '全局提现开关: 1=允许提现 0=禁止提现'),
 (20000000000000002, 'withdraw', 'auto_approve_threshold', '100.0000', 'decimal', '自动审核阈值（平台币），低于此金额自动通过'),
 (20000000000000003, 'withdraw', 'daily_limit', '10000.0000', 'decimal', '每人每日提现上限（平台币）'),
@@ -853,19 +856,19 @@ INSERT INTO `erik_platform_config` (`id`, `group`, `key`, `value`, `type`, `desc
 (20000000000000006, 'system', 'site_name', 'Global Game Platform', 'string', '平台名称');
 
 -- 推荐配置
-INSERT INTO `erik_platform_config` (`id`, `group`, `key`, `value`, `type`, `description`) VALUES
+INSERT IGNORE INTO `erik_platform_config` (`id`, `group`, `key`, `value`, `type`, `description`) VALUES
 (60000000000000001, 'referral', 'signup_reward', '5.0000', 'decimal', '注册奖励(平台币)，推荐人和被推荐人各得'),
 (60000000000000002, 'referral', 'deposit_commission_pct', '5.00', 'decimal', '充值返佣比例(%)');
 
 -- 语言
-INSERT INTO `erik_language` (`id`, `code`, `name`, `native_name`, `icon`, `status`, `sort`) VALUES
+INSERT IGNORE INTO `erik_language` (`id`, `code`, `name`, `native_name`, `icon`, `status`, `sort`) VALUES
 (30000000000000001, 'en-US', 'English', 'English', 'us', 1, 1),
 (30000000000000002, 'zh-CN', 'Chinese (Simplified)', '简体中文', 'cn', 1, 2),
 (30000000000000003, 'ja-JP', 'Japanese', '日本語', 'jp', 1, 3),
 (30000000000000004, 'ko-KR', 'Korean', '한국어', 'kr', 1, 4);
 
 -- 翻译文本
-INSERT INTO `erik_translation` (`id`, `group`, `key`, `lang_code`, `value`) VALUES
+INSERT IGNORE INTO `erik_translation` (`id`, `group`, `key`, `lang_code`, `value`) VALUES
 (30000000000000101, 'auth', 'register_success', 'en-US', 'Registration successful'),
 (30000000000000102, 'auth', 'register_success', 'zh-CN', '注册成功'),
 (30000000000000103, 'auth', 'login_success', 'en-US', 'Login successful'),
@@ -946,20 +949,20 @@ INSERT INTO `erik_translation` (`id`, `group`, `key`, `lang_code`, `value`) VALU
 (30000000000000720, 'admin', 'announcement_not_found', 'zh-CN', '公告不存在');
 
 -- 默认风控规则
-INSERT INTO `erik_risk_rule` (`id`, `name`, `type`, `config`, `action`, `priority`, `status`) VALUES
+INSERT IGNORE INTO `erik_risk_rule` (`id`, `name`, `type`, `config`, `action`, `priority`, `status`) VALUES
 (40000000000000001, 'IP黑名单检测', 'ip_blacklist', '{"blacklist":[]}', 'block', 100, 1),
 (40000000000000002, '单笔大额充值预警', 'amount_anomaly', '{"min_amount":"5000","currency":"USD"}', 'warn', 50, 1),
 (40000000000000003, '高频提现检测', 'frequency', '{"window_minutes":60,"max_count":5}', 'warn', 50, 1),
 (40000000000000004, '短时多账号检测', 'velocity', '{"window_minutes":10,"max_accounts":3,"same_ip":true}', 'block', 80, 1);
 
 -- 默认提现限额规则
-INSERT INTO `erik_withdraw_limit` (`id`, `user_level`, `single_min`, `single_max`, `daily_limit`, `monthly_limit`, `fee_pct`, `fee_max`, `auto_approve_threshold`) VALUES
+INSERT IGNORE INTO `erik_withdraw_limit` (`id`, `user_level`, `single_min`, `single_max`, `daily_limit`, `monthly_limit`, `fee_pct`, `fee_max`, `auto_approve_threshold`) VALUES
 (40000000000000010, 'default', 1.0000, 1000.0000, 10000.0000, 50000.0000, 1.00, 50.0000, 100.0000),
 (40000000000000011, 'verified', 1.0000, 5000.0000, 50000.0000, 200000.0000, 0.50, 25.0000, 500.0000),
 (40000000000000012, 'vip', 1.0000, 20000.0000, 200000.0000, 1000000.0000, 0.00, 0.0000, 5000.0000);
 
 -- 默认游戏分类
-INSERT INTO `erik_game_category` (`id`, `name`, `slug`, `icon`, `sort`, `status`) VALUES
+INSERT IGNORE INTO `erik_game_category` (`id`, `name`, `slug`, `icon`, `sort`, `status`) VALUES
 (50000000000000001, '动作', 'action', 'sports_kabaddi', 1, 1),
 (50000000000000002, '冒险', 'adventure', 'explore', 2, 1),
 (50000000000000003, '角色扮演', 'rpg', 'swords', 3, 1),
@@ -972,7 +975,7 @@ INSERT INTO `erik_game_category` (`id`, `name`, `slug`, `icon`, `sort`, `status`
 (50000000000000010, '卡牌', 'card', 'style', 10, 1);
 
 -- 默认国家配置
-INSERT INTO `erik_country_config` (`id`, `country_code`, `currency`, `payment_methods`, `withdraw_methods`, `min_deposit`) VALUES
+INSERT IGNORE INTO `erik_country_config` (`id`, `country_code`, `currency`, `payment_methods`, `withdraw_methods`, `min_deposit`) VALUES
 (50000000000000101, 'US', 'USD', '["stripe","paypal","crypto"]', '["paypal","bank","crypto"]', 1.0000),
 (50000000000000102, 'CN', 'CNY', '["alipay","wechat"]', '["alipay","bank"]', 10.0000),
 (50000000000000103, 'JP', 'JPY', '["stripe","paypal"]', '["paypal","bank"]', 100.0000),

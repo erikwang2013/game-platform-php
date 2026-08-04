@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 750" font-family="Arial, 'Noto Sans SC', sans-serif">
+  <defs>
+    <linearGradient id="hd" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#8b5cf6"/></linearGradient>
+    <filter id="sh"><feDropShadow dx="1" dy="1" stdDeviation="1.5" flood-opacity=".06"/></filter>
+  </defs>
+  <rect width="1000" height="750" fill="#fafbfc"/>
+
+  <rect x="0" y="0" width="1000" height="52" fill="url(#hd)"/>
+  <text x="500" y="34" text-anchor="middle" fill="#fff" font-size="21" font-weight="bold">全球游戏聚合平台 — 功能全景图</text>
+
+  <rect x="30" y="72" width="220" height="95" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="96" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">用户认证</text>
+  <text x="140" y="116" text-anchor="middle" fill="#3b82f6" font-size="11">用户名/密码 登录注册</text>
+  <text x="140" y="135" text-anchor="middle" fill="#3b82f6" font-size="11">Google/Facebook/Apple OAuth</text>
+  <text x="140" y="154" text-anchor="middle" fill="#3b82f6" font-size="11">2FA TOTP 双因素认证</text>
+
+  <rect x="265" y="72" width="220" height="95" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="96" text-anchor="middle" fill="#854d0e" font-size="13" font-weight="bold">钱包系统</text>
+  <text x="375" y="116" text-anchor="middle" fill="#ca8a04" font-size="11">平台币钱包 (乐观锁防并发)</text>
+  <text x="375" y="135" text-anchor="middle" fill="#ca8a04" font-size="11">游戏币钱包 (按游戏独立)</text>
+  <text x="375" y="154" text-anchor="middle" fill="#ca8a04" font-size="11">全链路流水追踪记录</text>
+
+  <rect x="500" y="72" width="220" height="95" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="96" text-anchor="middle" fill="#166534" font-size="13" font-weight="bold">充值系统</text>
+  <text x="610" y="116" text-anchor="middle" fill="#22c55e" font-size="11">创建充值订单</text>
+  <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">Stripe/PayPal 回调验签</text>
+  <text x="610" y="154" text-anchor="middle" fill="#22c55e" font-size="11">自动到账 + 站内通知</text>
+
+  <rect x="735" y="72" width="230" height="95" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="96" text-anchor="middle" fill="#9a3412" font-size="13" font-weight="bold">提现系统</text>
+  <text x="850" y="116" text-anchor="middle" fill="#ea580c" font-size="11">申请 → 审核 → 打款</text>
+  <text x="850" y="135" text-anchor="middle" fill="#ea580c" font-size="11">全局开关 / KYC阶梯限额</text>
+  <text x="850" y="154" text-anchor="middle" fill="#ea580c" font-size="11">自动审核阈值可配置</text>
+
+  <rect x="30" y="182" width="220" height="95" rx="8" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="206" text-anchor="middle" fill="#5b21b6" font-size="13" font-weight="bold">兑换引擎</text>
+  <text x="140" y="226" text-anchor="middle" fill="#8b5cf6" font-size="11">平台币 ⇄ 游戏币 双向兑换</text>
+  <text x="140" y="245" text-anchor="middle" fill="#8b5cf6" font-size="11">实时询价 / 汇率管理</text>
+  <text x="140" y="264" text-anchor="middle" fill="#8b5cf6" font-size="11">平台抽成差价收益</text>
+
+  <rect x="265" y="182" width="220" height="95" rx="8" fill="#fce7f3" stroke="#f9a8d4" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="206" text-anchor="middle" fill="#831843" font-size="13" font-weight="bold">游戏管理</text>
+  <text x="375" y="226" text-anchor="middle" fill="#ec4899" font-size="11">CRUD + 自研/第三方类型</text>
+  <text x="375" y="245" text-anchor="middle" fill="#ec4899" font-size="11">10大游戏品类 + 区服管理</text>
+  <text x="375" y="264" text-anchor="middle" fill="#ec4899" font-size="11">游戏记录全程追踪</text>
+
+  <rect x="500" y="182" width="220" height="95" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="206" text-anchor="middle" fill="#991b1b" font-size="13" font-weight="bold">KYC 实名认证</text>
+  <text x="610" y="226" text-anchor="middle" fill="#ef4444" font-size="11">实名认证提交 + 后台审核</text>
+  <text x="610" y="245" text-anchor="middle" fill="#ef4444" font-size="11">身份证 / 护照 / 驾照</text>
+  <text x="610" y="264" text-anchor="middle" fill="#ef4444" font-size="11">三级认证等级体系</text>
+
+  <rect x="735" y="182" width="230" height="95" rx="8" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="206" text-anchor="middle" fill="#4c1d95" font-size="13" font-weight="bold">排行榜</text>
+  <text x="850" y="226" text-anchor="middle" fill="#7c3aed" font-size="11">日 / 周 / 月 / 总榜</text>
+  <text x="850" y="245" text-anchor="middle" fill="#7c3aed" font-size="11">Redis 缓存 + 实时排序</text>
+  <text x="850" y="264" text-anchor="middle" fill="#7c3aed" font-size="11">WebSocket 实时推送 (:8789)</text>
+
+  <rect x="30" y="292" width="220" height="95" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="316" text-anchor="middle" fill="#064e3b" font-size="13" font-weight="bold">优惠券</text>
+  <text x="140" y="336" text-anchor="middle" fill="#10b981" font-size="11">固定金额 / 比例折扣</text>
+  <text x="140" y="355" text-anchor="middle" fill="#10b981" font-size="11">限时限量 / 领取使用追踪</text>
+
+  <rect x="265" y="292" width="220" height="95" rx="8" fill="#fff1f2" stroke="#fda4af" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="316" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">推荐系统</text>
+  <text x="375" y="336" text-anchor="middle" fill="#f43f5e" font-size="11">唯一推荐码生成</text>
+  <text x="375" y="355" text-anchor="middle" fill="#f43f5e" font-size="11">注册奖励 + 充值返佣</text>
+
+  <rect x="500" y="292" width="220" height="95" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="316" text-anchor="middle" fill="#7c2d12" font-size="13" font-weight="bold">风控系统</text>
+  <text x="610" y="336" text-anchor="middle" fill="#f97316" font-size="11">IP黑名单 / 大额预警</text>
+  <text x="610" y="355" text-anchor="middle" fill="#f97316" font-size="11">频率检测 / 速度异常</text>
+
+  <rect x="735" y="292" width="230" height="95" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="316" text-anchor="middle" fill="#334155" font-size="13" font-weight="bold">国际化 i18n</text>
+  <text x="850" y="336" text-anchor="middle" fill="#64748b" font-size="11">4语言 en/zh/ja/ko</text>
+  <text x="850" y="355" text-anchor="middle" fill="#64748b" font-size="11">翻译表 + 缓存机制</text>
+
+  <rect x="30" y="402" width="220" height="95" rx="8" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="426" text-anchor="middle" fill="#0c4a6e" font-size="13" font-weight="bold">通知中心</text>
+  <text x="140" y="446" text-anchor="middle" fill="#0ea5e9" font-size="11">站内信 + 邮件通知</text>
+  <text x="140" y="465" text-anchor="middle" fill="#0ea5e9" font-size="11">充值/提现/KYC/优惠券</text>
+
+  <rect x="265" y="402" width="220" height="95" rx="8" fill="#fefce8" stroke="#fef08a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="426" text-anchor="middle" fill="#713f12" font-size="13" font-weight="bold">国家差异化</text>
+  <text x="375" y="446" text-anchor="middle" fill="#eab308" font-size="11">8国支付/提现方式配置</text>
+  <text x="375" y="465" text-anchor="middle" fill="#eab308" font-size="11">最低充值额差异化</text>
+
+  <rect x="500" y="402" width="220" height="95" rx="8" fill="#f5f3ff" stroke="#e9d5ff" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="426" text-anchor="middle" fill="#581c87" font-size="13" font-weight="bold">统计分析</text>
+  <text x="610" y="446" text-anchor="middle" fill="#a855f7" font-size="11">日统计快照 (5类指标)</text>
+  <text x="610" y="465" text-anchor="middle" fill="#a855f7" font-size="11">平台收益追踪</text>
+
+  <rect x="735" y="402" width="230" height="95" rx="8" fill="#fff1f2" stroke="#fecdd3" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="426" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">全文检索</text>
+  <text x="850" y="446" text-anchor="middle" fill="#e11d48" font-size="11">Elasticsearch 搜索</text>
+  <text x="850" y="465" text-anchor="middle" fill="#e11d48" font-size="11">LIKE 回退 + Scout 同步</text>
+
+  <rect x="30" y="518" width="940" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="500" y="546" text-anchor="middle" fill="#475569" font-size="14" font-weight="bold">平台能力总结</text>
+  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">用户认证 · 钱包(乐观锁) · 充值(Stripe/PayPal) · 兑换(实时汇率) · 提现(审核/自动) · KYC(三级认证)</text>
+  <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">游戏CRUD(10品类+区服) · 排行榜(WebSocket实时) · 优惠券 · 推荐(注册奖励+返佣) · 风控(4类规则)</text>
+  <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">通知(站内+邮件) · 国家差异化(8国) · 国际化(4语言) · 统计(日快照+收益) · 全文检索(ES)</text>
+
+  <text x="500" y="662" text-anchor="middle" fill="#94a3b8" font-size="11">三端客户端: Flutter Admin (15页) + Flutter Platform (10页) + HarmonyOS (5页)</text>
+  <text x="500" y="682" text-anchor="middle" fill="#94a3b8" font-size="11">部署: Docker Compose 7服务编排 + Nginx反向代理 + CI/CD (GitHub Actions)</text>
+
+  <text x="500" y="740" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>
+</svg>

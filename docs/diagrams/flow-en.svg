@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" font-family="Arial, sans-serif">
+  <defs>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/></marker>
+    <linearGradient id="hd" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0891b2"/><stop offset="100%" stop-color="#06b6d4"/></linearGradient>
+    <filter id="sh"><feDropShadow dx="1" dy="2" stdDeviation="2" flood-opacity=".08"/></filter>
+  </defs>
+  <rect width="1000" height="700" fill="#fafbfc"/>
+
+  <rect x="0" y="0" width="1000" height="52" fill="url(#hd)"/>
+  <text x="500" y="34" text-anchor="middle" fill="#fff" font-size="21" font-weight="bold">Global Game Platform — Core Business Flow</text>
+
+  <rect x="50" y="78" width="130" height="52" rx="10" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" filter="url(#sh)"/>
+  <text x="115" y="108" text-anchor="middle" fill="#1e40af" font-size="14" font-weight="bold">Register</text>
+
+  <line x1="180" y1="104" x2="230" y2="104" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="235" y="78" width="140" height="52" rx="10" fill="#d1fae5" stroke="#10b981" stroke-width="2" filter="url(#sh)"/>
+  <text x="305" y="108" text-anchor="middle" fill="#065f46" font-size="14" font-weight="bold">Fiat Deposit</text>
+
+  <line x1="375" y1="104" x2="425" y2="104" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="430" y="78" width="150" height="52" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" filter="url(#sh)"/>
+  <text x="505" y="108" text-anchor="middle" fill="#92400e" font-size="14" font-weight="bold">Platform Currency</text>
+
+  <text x="355" y="156" text-anchor="middle" fill="#64748b" font-size="11">Stripe | PayPal | Alipay | WeChat Pay</text>
+
+  <line x1="505" y1="132" x2="505" y2="184" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="340" y="188" width="330" height="56" rx="10" fill="#ede9fe" stroke="#8b5cf6" stroke-width="2" filter="url(#sh)"/>
+  <text x="505" y="214" text-anchor="middle" fill="#5b21b6" font-size="14" font-weight="bold">Platform ⇄ Game Currency Exchange</text>
+  <text x="505" y="234" text-anchor="middle" fill="#8b5cf6" font-size="11">Exchange Rate + Platform Spread</text>
+
+  <line x1="505" y1="246" x2="505" y2="296" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="280" y="300" width="450" height="56" rx="10" fill="#fce7f3" stroke="#ec4899" stroke-width="2" filter="url(#sh)"/>
+  <text x="505" y="326" text-anchor="middle" fill="#831843" font-size="14" font-weight="bold">Play Games — Earn / Spend Game Currency</text>
+  <text x="505" y="346" text-anchor="middle" fill="#ec4899" font-size="11">Game Servers | Game Sessions | Play Logs</text>
+
+  <line x1="505" y1="358" x2="505" y2="408" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="180" y="412" width="300" height="56" rx="10" fill="#fef2f2" stroke="#ef4444" stroke-width="2" filter="url(#sh)"/>
+  <text x="330" y="438" text-anchor="middle" fill="#991b1b" font-size="14" font-weight="bold">Convert Back to Platform Currency</text>
+
+  <rect x="530" y="412" width="240" height="56" rx="10" fill="#e0e7ff" stroke="#6366f1" stroke-width="2" filter="url(#sh)"/>
+  <text x="650" y="438" text-anchor="middle" fill="#312e81" font-size="14" font-weight="bold">Continue Playing</text>
+
+  <path d="M 530 440 L 140 440 L 140 328 L 274 328" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#arr)"/>
+  <text x="260" y="424" text-anchor="middle" fill="#94a3b8" font-size="10">Game Loop</text>
+
+  <line x1="330" y1="470" x2="330" y2="514" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="160" y="518" width="340" height="56" rx="10" fill="#fff7ed" stroke="#ea580c" stroke-width="2" filter="url(#sh)"/>
+  <text x="330" y="544" text-anchor="middle" fill="#9a3412" font-size="14" font-weight="bold">Withdrawal: Submit → Review → Transfer</text>
+
+  <line x1="500" y1="546" x2="560" y2="546" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="565" y="518" width="220" height="56" rx="10" fill="#f0fdf4" stroke="#22c55e" stroke-width="2" filter="url(#sh)"/>
+  <text x="675" y="544" text-anchor="middle" fill="#166534" font-size="14" font-weight="bold">Fiat Received</text>
+  <text x="675" y="564" text-anchor="middle" fill="#22c55e" font-size="11">USD / CNY / EUR ...</text>
+
+  <rect x="80" y="608" width="840" height="72" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="500" y="634" text-anchor="middle" fill="#475569" font-size="13" font-weight="bold">Core Loop: Register → Deposit (Fiat→Platform) → Exchange (Platform⇄Game) → Play (Earn/Spend) → Convert → Withdraw (Platform→Fiat)</text>
+  <text x="500" y="656" text-anchor="middle" fill="#94a3b8" font-size="11">Supported Currencies: USD / CNY / EUR / JPY / KRW / GBP / BRL / INR  |  Payment: Stripe / PayPal / Alipay / WeChat / Crypto</text>
+
+  <text x="500" y="695" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>
+</svg>

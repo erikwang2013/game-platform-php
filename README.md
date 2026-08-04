@@ -260,6 +260,26 @@ phpunit --bootstrap tests/bootstrap.php tests/
 平台币 ← 兑回 → 提现（审核/自动）
 ```
 
+## 架构图
+
+![系统架构图](docs/diagrams/architecture-zh.svg)
+
+## 核心业务流程
+
+![业务流程图](docs/diagrams/flow-zh.svg)
+
+## 功能全景
+
+![功能全景图](docs/diagrams/features-zh.svg)
+
+## 生命周期
+
+![生命周期图](docs/diagrams/lifecycle-zh.svg)
+
+## 安全架构
+
+![安全架构图](docs/diagrams/security-zh.svg)
+
 ## 文档索引
 
 | 文档 | 说明 |
@@ -277,3 +297,24 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | [部署文档](docs/DEPLOYMENT.md) | 部署指南（Docker + 手动 + Nginx + 监控） |
 | [设计规范](admin/docs/superpowers/specs/2026-05-22-game-platform-design.md) | 完整设计规范 |
 | [实现计划](admin/docs/superpowers/plans/2026-05-22-game-platform-plan.md) | 详细实现计划 |
+
+---
+
+## 支持项目
+
+如果这个项目对你有帮助，欢迎请作者喝杯咖啡 ☕
+
+<p align="center">
+  <table align="center" border="0" cellspacing="0" cellpadding="0">
+    <tr>
+      <td align="center" width="200">
+        <img src="docs/weixinpay-130.png" width="130" height="130" alt="微信支付"><br>
+        <b>微信支付</b>
+      </td>
+      <td align="center" width="200">
+        <img src="docs/alipay-130.png" width="130" height="130" alt="支付宝"><br>
+        <b>支付宝</b>
+      </td>
+    </tr>
+  </table>
+</p>

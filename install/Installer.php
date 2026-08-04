@@ -92,6 +92,15 @@ class Installer
             'message' => $sslOk ? '通过' : '请安装 openssl 扩展',
         ];
 
+        $pcntlOk = extension_loaded('pcntl');
+        $results[] = [
+            'name' => 'PCNTL',
+            'current' => $pcntlOk ? '已安装' : '未安装',
+            'required' => '必须',
+            'ok' => $pcntlOk,
+            'message' => $pcntlOk ? '通过' : 'webman 框架需要 pcntl 扩展，请安装 php-pcntl',
+        ];
+
         $gdOk = extension_loaded('gd');
         $results[] = [
             'name' => 'GD',
@@ -432,6 +441,7 @@ DB_PASSWORD={$db['password']}
 
 JWT_SECRET={$jwtSecret}
 JWT_TTL=7200
+JWT_REFRESH_TTL=1209600
 
 HASHIDS_SALT={$hashidsSalt}
 HASHIDS_ALPHABET=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
@@ -441,7 +451,9 @@ SNOWFLAKE_DATACENTER_ID=1
 SNOWFLAKE_WORKER_ID=2
 
 ENCRYPTION_KEY={$encryptionKey32}
+ENCRYPTION_CIPHER=AES-256-CBC
 ENCRYPTABLE_KEY={$encryptionKey32}-db
+ENCRYPTABLE_CIPHER=AES-256-CBC
 
 REDIS_HOST=127.0.0.1
 REDIS_PORT=6379

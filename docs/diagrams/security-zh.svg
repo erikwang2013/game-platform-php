@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" font-family="Arial, 'Noto Sans SC', sans-serif">
+  <defs>
+    <linearGradient id="hd" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#dc2626"/><stop offset="100%" stop-color="#ef4444"/></linearGradient>
+    <filter id="sh"><feDropShadow dx="1" dy="1" stdDeviation="1.5" flood-opacity=".06"/></filter>
+  </defs>
+  <rect width="1000" height="800" fill="#fafbfc"/>
+
+  <rect x="0" y="0" width="1000" height="52" fill="url(#hd)"/>
+  <text x="500" y="34" text-anchor="middle" fill="#fff" font-size="21" font-weight="bold">全球游戏聚合平台 — 安全架构图 (18层纵深防御)</text>
+
+  <!-- Layer 1-6 -->
+  <rect x="15" y="68" width="310" height="60" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="90" text-anchor="middle" fill="#991b1b" font-size="12" font-weight="bold">L1: CSP 内容安全策略</text>
+  <text x="170" y="108" text-anchor="middle" fill="#ef4444" font-size="10">Content-Security-Policy 响应头</text>
+  <text x="170" y="122" text-anchor="middle" fill="#ef4444" font-size="10">X-Permitted-Cross-Domain-Policies</text>
+
+  <rect x="340" y="68" width="310" height="60" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="90" text-anchor="middle" fill="#991b1b" font-size="12" font-weight="bold">L2: CORS 跨域控制</text>
+  <text x="495" y="108" text-anchor="middle" fill="#ef4444" font-size="10">Access-Control-Allow-Origin 白名单</text>
+  <text x="495" y="122" text-anchor="middle" fill="#ef4444" font-size="10">OPTIONS 预检请求处理</text>
+
+  <rect x="665" y="68" width="320" height="60" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="90" text-anchor="middle" fill="#991b1b" font-size="12" font-weight="bold">L3: HTTP 方法白名单</text>
+  <text x="825" y="108" text-anchor="middle" fill="#ef4444" font-size="10">仅允许 GET/POST/PUT/DELETE/OPTIONS/HEAD</text>
+  <text x="825" y="122" text-anchor="middle" fill="#ef4444" font-size="10">非标准方法返回 405 Method Not Allowed</text>
+
+  <!-- L4-L6 -->
+  <rect x="15" y="140" width="310" height="60" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="162" text-anchor="middle" fill="#7f1d1d" font-size="12" font-weight="bold">L4: SecurityFilter 攻击拦截</text>
+  <text x="170" y="180" text-anchor="middle" fill="#dc2626" font-size="10">XSS / SQL注入 / CSRF / 路径遍历</text>
+  <text x="170" y="194" text-anchor="middle" fill="#dc2626" font-size="10">命令注入检测与拦截</text>
+
+  <rect x="340" y="140" width="310" height="60" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="162" text-anchor="middle" fill="#7f1d1d" font-size="12" font-weight="bold">L5: RateLimit 频率限制</text>
+  <text x="495" y="180" text-anchor="middle" fill="#dc2626" font-size="10">Redis 滑动窗口 + Lua 原子化</text>
+  <text x="495" y="194" text-anchor="middle" fill="#dc2626" font-size="10">登录:10次/分 注册:5次/分 通用:60次/分</text>
+
+  <rect x="665" y="140" width="320" height="60" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="162" text-anchor="middle" fill="#7f1d1d" font-size="12" font-weight="bold">L6: API 版本控制</text>
+  <text x="825" y="180" text-anchor="middle" fill="#dc2626" font-size="10">API-Version 请求头校验</text>
+  <text x="825" y="194" text-anchor="middle" fill="#dc2626" font-size="10">默认 v1，支持多版本共存</text>
+
+  <!-- L7-L9 -->
+  <rect x="15" y="212" width="310" height="60" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="234" text-anchor="middle" fill="#9a3412" font-size="12" font-weight="bold">L7: JWT 认证</text>
+  <text x="170" y="252" text-anchor="middle" fill="#ea580c" font-size="10">erikwang2013/jwt-webman</text>
+  <text x="170" y="266" text-anchor="middle" fill="#ea580c" font-size="10">access_token 2h + refresh_token 14d</text>
+
+  <rect x="340" y="212" width="310" height="60" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="234" text-anchor="middle" fill="#9a3412" font-size="12" font-weight="bold">L8: 会话管理</text>
+  <text x="495" y="252" text-anchor="middle" fill="#ea580c" font-size="10">并发会话限制 (最多3个Token)</text>
+  <text x="495" y="266" text-anchor="middle" fill="#ea580c" font-size="10">Token 黑名单 + 自动淘汰</text>
+
+  <rect x="665" y="212" width="320" height="60" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="234" text-anchor="middle" fill="#9a3412" font-size="12" font-weight="bold">L9: 账号锁定</text>
+  <text x="825" y="252" text-anchor="middle" fill="#ea580c" font-size="10">5次登录失败 → 15分钟锁定</text>
+  <text x="825" y="266" text-anchor="middle" fill="#ea580c" font-size="10">Redis account_lock:{username} 900s</text>
+
+  <!-- L10-L12 -->
+  <rect x="15" y="284" width="310" height="60" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="306" text-anchor="middle" fill="#854d0e" font-size="12" font-weight="bold">L10: RBAC 权限控制</text>
+  <text x="170" y="324" text-anchor="middle" fill="#ca8a04" font-size="10">method.path 粒度权限校验</text>
+  <text x="170" y="338" text-anchor="middle" fill="#ca8a04" font-size="10">Redis 60s 权限缓存</text>
+
+  <rect x="340" y="284" width="310" height="60" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="306" text-anchor="middle" fill="#854d0e" font-size="12" font-weight="bold">L11: 点击验证码</text>
+  <text x="495" y="324" text-anchor="middle" fill="#ca8a04" font-size="10">erikwang2013/poster-php</text>
+  <text x="495" y="338" text-anchor="middle" fill="#ca8a04" font-size="10">登录/注册强制人机验证</text>
+
+  <rect x="665" y="284" width="320" height="60" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="306" text-anchor="middle" fill="#854d0e" font-size="12" font-weight="bold">L12: 操作审计</text>
+  <text x="825" y="324" text-anchor="middle" fill="#ca8a04" font-size="10">全量操作日志 + 8平台来源端检测</text>
+  <text x="825" y="338" text-anchor="middle" fill="#ca8a04" font-size="10">ipados/macos/windows/linux/ios/android/harmonyos/web</text>
+
+  <!-- L13-L15 -->
+  <rect x="15" y="356" width="310" height="60" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="378" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">L13: 传输层加密</text>
+  <text x="170" y="396" text-anchor="middle" fill="#22c55e" font-size="10">erikwang2013/encryption</text>
+  <text x="170" y="410" text-anchor="middle" fill="#22c55e" font-size="10">AES-256-CBC + SM4 国密支持</text>
+
+  <rect x="340" y="356" width="310" height="60" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="378" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">L14: 存储层加密</text>
+  <text x="495" y="396" text-anchor="middle" fill="#22c55e" font-size="10">erikwang2013/encryptable</text>
+  <text x="495" y="410" text-anchor="middle" fill="#22c55e" font-size="10">敏感字段自动加解密 + 密钥轮换</text>
+
+  <rect x="665" y="356" width="320" height="60" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="378" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">L15: ID 不可逆推</text>
+  <text x="825" y="396" text-anchor="middle" fill="#22c55e" font-size="10">Snowflake 生成 + Hashids 编码</text>
+  <text x="825" y="410" text-anchor="middle" fill="#22c55e" font-size="10">外部无法通过 ID 反推数据量/顺序</text>
+
+  <!-- L16-L18 -->
+  <rect x="15" y="428" width="310" height="60" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="450" text-anchor="middle" fill="#1e40af" font-size="12" font-weight="bold">L16: 钱包乐观锁</text>
+  <text x="170" y="468" text-anchor="middle" fill="#3b82f6" font-size="10">version 字段 + 并发更新检测</text>
+  <text x="170" y="482" text-anchor="middle" fill="#3b82f6" font-size="10">防止并发扣款/重复到账</text>
+
+  <rect x="340" y="428" width="310" height="60" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="450" text-anchor="middle" fill="#1e40af" font-size="12" font-weight="bold">L17: 支付回调验签</text>
+  <text x="495" y="468" text-anchor="middle" fill="#3b82f6" font-size="10">Stripe Webhook 签名验证</text>
+  <text x="495" y="482" text-anchor="middle" fill="#3b82f6" font-size="10">PayPal IPN 消息验证</text>
+
+  <rect x="665" y="428" width="320" height="60" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="450" text-anchor="middle" fill="#1e40af" font-size="12" font-weight="bold">L18: 数据精确计算</text>
+  <text x="825" y="468" text-anchor="middle" fill="#3b82f6" font-size="10">bcmath 任意精度数学</text>
+  <text x="825" y="482" text-anchor="middle" fill="#3b82f6" font-size="10">decimal(18,4) 金融级精度</text>
+
+  <!-- Additional measures -->
+  <rect x="15" y="504" width="970" height="90" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="500" y="526" text-anchor="middle" fill="#475569" font-size="13" font-weight="bold">补充安全措施</text>
+
+  <rect x="30" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="120" y="553" text-anchor="middle" fill="#475569" font-size="11">bcrypt 密码哈希 (cost=12)</text>
+  <rect x="220" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="553" text-anchor="middle" fill="#475569" font-size="11">密码二次确认 (敏感操作)</text>
+  <rect x="410" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="500" y="553" text-anchor="middle" fill="#475569" font-size="11">security.txt RFC 9116</text>
+  <rect x="600" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="690" y="553" text-anchor="middle" fill="#475569" font-size="11">Nginx 安全加固配置</text>
+  <rect x="790" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="880" y="553" text-anchor="middle" fill="#475569" font-size="11">Prometheus 监控指标</text>
+
+  <rect x="30" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="120" y="583" text-anchor="middle" fill="#475569" font-size="11">Docker 容器化隔离</text>
+  <rect x="220" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="583" text-anchor="middle" fill="#475569" font-size="11">HTTPS/TLS 传输安全</text>
+  <rect x="410" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="500" y="583" text-anchor="middle" fill="#475569" font-size="11">数据库密码 .gitignore</text>
+  <rect x="600" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="690" y="583" text-anchor="middle" fill="#475569" font-size="11">备份加密 + 30天保留</text>
+  <rect x="790" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="880" y="583" text-anchor="middle" fill="#475569" font-size="11">CI/CD 自动化安全检查</text>
+
+  <!-- Architecture flow -->
+  <rect x="15" y="612" width="970" height="82" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5"/>
+  <text x="500" y="636" text-anchor="middle" fill="#991b1b" font-size="13" font-weight="bold">防御纵深架构 (攻击流量 → 逐层过滤)</text>
+  <text x="60" y="662" text-anchor="middle" fill="#dc2626" font-size="11">L1 CSP</text>
+  <text x="120" y="662" fill="#dc2626" font-size="11">→</text>
+  <text x="145" y="662" text-anchor="middle" fill="#dc2626" font-size="11">L2 CORS</text>
+  <text x="200" y="662" fill="#dc2626" font-size="11">→</text>
+  <text x="225" y="662" text-anchor="middle" fill="#dc2626" font-size="11">L3 Method</text>
+  <text x="285" y="662" fill="#dc2626" font-size="11">→</text>
+  <text x="310" y="662" text-anchor="middle" fill="#dc2626" font-size="11">L4 Filter</text>
+  <text x="365" y="662" fill="#dc2626" font-size="11">→</text>
+  <text x="390" y="662" text-anchor="middle" fill="#ea580c" font-size="11">L5 Limit</text>
+  <text x="440" y="662" fill="#ea580c" font-size="11">→</text>
+  <text x="465" y="662" text-anchor="middle" fill="#ea580c" font-size="11">L6 Version</text>
+  <text x="525" y="662" fill="#ea580c" font-size="11">→</text>
+  <text x="550" y="662" text-anchor="middle" fill="#ca8a04" font-size="11">L7 JWT</text>
+  <text x="600" y="662" fill="#ca8a04" font-size="11">→</text>
+  <text x="625" y="662" text-anchor="middle" fill="#ca8a04" font-size="11">L8 Session</text>
+  <text x="685" y="662" fill="#ca8a04" font-size="11">→</text>
+  <text x="710" y="662" text-anchor="middle" fill="#ca8a04" font-size="11">L9 Lock</text>
+  <text x="755" y="662" fill="#22c55e" font-size="11">→</text>
+  <text x="780" y="662" text-anchor="middle" fill="#22c55e" font-size="11">L10 RBAC</text>
+  <text x="830" y="662" fill="#22c55e" font-size="11">→</text>
+  <text x="855" y="662" text-anchor="middle" fill="#22c55e" font-size="11">... L11-L18</text>
+  <text x="935" y="662" fill="#22c55e" font-size="11">→</text>
+  <text x="950" y="662" text-anchor="middle" fill="#166534" font-size="11">OK</text>
+
+  <text x="500" y="690" text-anchor="middle" fill="#991b1b" font-size="11">请求 → CSP头 → CORS检查 → 方法白名单 → 攻击过滤 → 限流 → 版本校验 → JWT认证 → 会话检查 → 锁定检查 → RBAC → 审计日志 → Controller</text>
+
+  <text x="500" y="740" text-anchor="middle" fill="#94a3b8" font-size="11">安全组件: erikwang2013/jwt-webman · erikwang2013/encryption · erikwang2013/encryptable · erikwang2013/security-php · erikwang2013/poster-php · erikwang2013/hashids</text>
+  <text x="500" y="762" text-anchor="middle" fill="#94a3b8" font-size="11">合规: security.txt (RFC 9116) · Prometheus Metrics · 操作审计日志 · 数据加密 (AES-256-CBC) · 支付合规 (PCI-DSS)</text>
+  <text x="500" y="790" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>
+</svg>

@@ -22,3 +22,96 @@ service/composer.lock
 install/install.lock
 admin/.env.backup.*
 service/.env.backup.*
+
+.claude
+.claude-flow
+.swarm
+.mcp.json
+ruvector.db
+.superpowers/state/target
+.agents
+skills-lock.json
+.php-cs-fixer.cache
+*.backup
+*.bak
+
+apps/flutter/# Miscellaneous
+apps/flutter/*.class
+apps/flutter/*.log
+apps/flutter/*.pyc
+apps/flutter/*.swp
+apps/flutter/.DS_Store
+apps/flutter/.atom/
+apps/flutter/.build/
+apps/flutter/.buildlog/
+apps/flutter/.history
+apps/flutter/.svn/
+apps/flutter/.swiftpm/
+apps/flutter/migrate_working_dir/
+apps/flutter/# IntelliJ related
+apps/flutter/*.iml
+apps/flutter/*.ipr
+apps/flutter/*.iws
+apps/flutter/.idea/
+apps/flutter/# The .vscode folder contains launch configuration and tasks you configure in
+apps/flutter/# VS Code which you may wish to be included in version control, so this line
+apps/flutter/# is commented out by default.
+apps/flutter/#.vscode/
+apps/flutter/# Flutter/Dart/Pub related
+apps/flutter/**/doc/api/
+apps/flutter/**/ios/Flutter/.last_build_id
+apps/flutter/.dart_tool/
+apps/flutter/.flutter-plugins
+apps/flutter/.flutter-plugins-dependencies
+apps/flutter/.pub-cache/
+apps/flutter/.pub/
+apps/flutter//build/
+apps/flutter/# Symbolication related
+apps/flutter/app.*.symbols
+apps/flutter/# Obfuscation related
+apps/flutter/app.*.map.json
+apps/flutter/# Android Studio will place build artifacts here
+apps/flutter//android/app/debug
+apps/flutter//android/app/profile
+apps/flutter//android/app/release
+
+
+admin/apps/flutter/# Miscellaneous
+admin/apps/flutter/*.class
+admin/apps/flutter/*.log
+admin/apps/flutter/*.pyc
+admin/apps/flutter/*.swp
+admin/apps/flutter/.DS_Store
+admin/apps/flutter/.atom/
+admin/apps/flutter/.build/
+admin/apps/flutter/.buildlog/
+admin/apps/flutter/.history
+admin/apps/flutter/.svn/
+admin/apps/flutter/.swiftpm/
+admin/apps/flutter/migrate_working_dir/
+admin/apps/flutter/# IntelliJ related
+admin/apps/flutter/*.iml
+admin/apps/flutter/*.ipr
+admin/apps/flutter/*.iws
+admin/apps/flutter/.idea/
+admin/apps/flutter/# The .vscode folder contains launch configuration and tasks you configure in
+admin/apps/flutter/# VS Code which you may wish to be included in version control, so this line
+admin/apps/flutter/# is commented out by default.
+admin/apps/flutter/#.vscode/
+admin/apps/flutter/# Flutter/Dart/Pub related
+admin/apps/flutter/**/doc/api/
+admin/apps/flutter/**/ios/Flutter/.last_build_id
+admin/apps/flutter/.dart_tool/
+admin/apps/flutter/.flutter-plugins
+admin/apps/flutter/.flutter-plugins-dependencies
+admin/apps/flutter/.pub-cache/
+admin/apps/flutter/.pub/
+admin/apps/flutter//build/
+admin/apps/flutter/# Symbolication related
+admin/apps/flutter/app.*.symbols
+admin/apps/flutter/# Obfuscation related
+admin/apps/flutter/app.*.map.json
+admin/apps/flutter/# Android Studio will place build artifacts here
+admin/apps/flutter//android/app/debug
+admin/apps/flutter//android/app/profile
+admin/apps/flutter//android/app/release

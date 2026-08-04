@@ -260,6 +260,26 @@ Game Currency (per-game, independent rates)
 Platform Currency ← Convert back → Withdraw (review/auto)
 ```
 
+## System Architecture
+
+![System Architecture](docs/diagrams/architecture-en.svg)
+
+## Core Business Flow
+
+![Business Flow](docs/diagrams/flow-en.svg)
+
+## Feature Overview
+
+![Feature Overview](docs/diagrams/features-en.svg)
+
+## Lifecycle Diagram
+
+![Lifecycle](docs/diagrams/lifecycle-en.svg)
+
+## Security Architecture
+
+![Security Architecture](docs/diagrams/security-en.svg)
+
 ## Supported Languages
 
 | Code | Name | Native Name | Status |
@@ -288,3 +308,24 @@ Automatic language detection via `X-Language` header or `Accept-Language` header
 | [Deployment Guide](docs/DEPLOYMENT_EN.md) | Deployment guide (Docker + Manual + Nginx + Monitoring) |
 | [Design Spec](admin/docs/superpowers/specs/2026-05-22-game-platform-design.md) | Full design specification |
 | [Implementation Plan](admin/docs/superpowers/plans/2026-05-22-game-platform-plan.md) | Detailed implementation plan |
+
+---
+
+## Support
+
+If this project helps you, consider buying the author a coffee ☕
+
+<p align="center">
+  <table align="center" border="0" cellspacing="0" cellpadding="0">
+    <tr>
+      <td align="center" width="200">
+        <img src="docs/weixinpay-130.png" width="130" height="130" alt="WeChat Pay"><br>
+        <b>WeChat Pay</b>
+      </td>
+      <td align="center" width="200">
+        <img src="docs/alipay-130.png" width="130" height="130" alt="Alipay"><br>
+        <b>Alipay</b>
+      </td>
+    </tr>
+  </table>
+</p>
