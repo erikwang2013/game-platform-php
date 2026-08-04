@@ -186,3 +186,26 @@ Route::group('/api/friend', function () {
     app\middleware\ApiVersion::class,
     app\middleware\UserAuth::class,
 ]);
+
+// 聊天
+Route::group('/api/chat', function () {
+    Route::get('/conversations', v('ChatController', 'conversations'));
+    Route::get('/messages/{peerHashid}', v('ChatController', 'messages'));
+    Route::post('/send', v('ChatController', 'send'));
+    Route::post('/read', v('ChatController', 'markRead'));
+    Route::get('/unread-total', v('ChatController', 'unreadTotal'));
+})->middleware([
+    app\middleware\ApiVersion::class,
+    app\middleware\UserAuth::class,
+]);
+
+// Webhook订阅
+Route::group('/api/webhook', function () {
+    Route::get('/list', v('WebhookController', 'list'));
+    Route::post('/register', v('WebhookController', 'register'));
+    Route::post('/delete', v('WebhookController', 'delete'));
+    Route::post('/test', v('WebhookController', 'test'));
+})->middleware([
+    app\middleware\ApiVersion::class,
+    app\middleware\UserAuth::class,
+]);

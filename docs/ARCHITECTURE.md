@@ -286,7 +286,7 @@ erik_achievement ── 1:N ── erik_user_achievement
   admin/         :8787 (webman, 32 workers)
   service/       :8788 (webman, 32 workers)
   leaderboard-ws :8789 (WebSocket 排行榜)
-  chat-ws        :8790 (WebSocket 聊天)
+  chat-ws        :8791 (WebSocket 聊天)
   MySQL          :3306
   Redis          :6379
 ```
@@ -296,7 +296,7 @@ erik_achievement ── 1:N ── erik_user_achievement
 ```yaml
 nginx (80/443) → admin (8787) + service (8788) + static files
 leaderboard-ws (8789) — WebSocket 排行榜实时推送
-chat-ws (8790) — WebSocket 私信/聊天
+chat-ws (8791) — WebSocket 私信/聊天
 mysql (3306) — 主数据库，数据卷持久化
 redis (6379) — 缓存/限流/WebSocket/EventBus
 elasticsearch (9200) — 全文检索
@@ -320,7 +320,7 @@ flowchart TB
         SVC1["service :8788"]
         SVC2["service :8788"]
         WS1["leaderboard-ws :8789"]
-        WS2["chat-ws :8790"]
+        WS2["chat-ws :8791"]
     end
 
     subgraph "数据层"
@@ -361,7 +361,7 @@ tests/
 | admin/ | 8787 | 管理后台 API |
 | service/ | 8788 | C端业务 API |
 | leaderboard-ws | 8789 | WebSocket 实时排行榜 |
-| chat-ws | 8790 | WebSocket 私信/聊天 |
+| chat-ws | 8791 | WebSocket 私信/聊天 |
 | MySQL | 3306 | 主数据库 |
 | Redis | 6379 | 缓存/限流/WebSocket/EventBus |
 | ClickHouse | 8123 | OLAP HTTP 接口 |

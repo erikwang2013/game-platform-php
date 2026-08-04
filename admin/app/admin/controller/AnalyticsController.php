@@ -125,4 +125,112 @@ class AnalyticsController extends BaseController
             ['table' => 'erik_game_play_log', 'alias' => 'user_id', 'where' => ['game_id' => $b]],
         )]);
     }
+
+    /**
+     * @Apidoc\Title("Retention Analysis")
+     * @Apidoc\Url("/admin/analytics/retention")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Query(name="days",type="integer",require=false,desc="Days back (default 30)")
+     */
+    public function retention(Request $request): Response
+    {
+        $days = (int) $request->input('days', 30);
+        $data = [];
+        foreach ([1, 3, 7, 30] as $d) {
+            if ($d > $days) break;
+            $cohortDate = date('Y-m-d', strtotime("-{$days} days"));
+            $endDate = date('Y-m-d', strtotime("-" . ($days - $d) . " days"));
+
+            $cohort = \app\model\User::whereDate('created_at', $cohortDate)->count();
+            if ($cohort === 0) { $data["D{$d}"] = '0%'; continue; }
+
+            $active = \app\model\UserSession::whereDate('created_at', '>=', $cohortDate)
+                ->whereDate('created_at', '<=', $endDate)
+                ->whereIn('user_id', function($q) use ($cohortDate) {
+                    $q->select('id')->from('erik_user')->whereDate('created_at', $cohortDate);
+                })->distinct('user_id')->count('user_id');
+
+            $data["D{$d}"] = round($active / $cohort * 100, 1) . '%';
+        }
+        return $this->success($data);
+    }
+
+    /**
+     * @Apidoc\Title("Conversion Funnel")
+     * @Apidoc\Url("/admin/analytics/funnel")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Query(name="days",type="integer",require=false,desc="Days back (default 30)")
+     */
+    public function funnel(Request $request): Response
+    {
+        $days = (int) $request->input('days', 30);
+        $since = date('Y-m-d H:i:s', strtotime("-{$days} days"));
+
+        $registered = \app\model\User::where('created_at', '>=', $since)->count();
+        $deposited = \app\model\DepositOrder::where('created_at', '>=', $since)->where('status', 'confirmed')->distinct('user_id')->count('user_id');
+        $exchanged = \app\model\ExchangeRecord::where('created_at', '>=', $since)->distinct('user_id')->count('user_id');
+        $played = \app\model\GamePlayLog::where('created_at', '>=', $since)->distinct('user_id')->count('user_id');
+
+        $base = $registered > 0 ? $registered : 1;
+        return $this->success([
+            ['step' => 'register', 'count' => $registered, 'rate' => '100%'],
+            ['step' => 'first_deposit', 'count' => $deposited, 'rate' => round($deposited / $base * 100, 1) . '%'],
+            ['step' => 'first_exchange', 'count' => $exchanged, 'rate' => round($exchanged / $base * 100, 1) . '%'],
+            ['step' => 'first_game', 'count' => $played, 'rate' => round($played / $base * 100, 1) . '%'],
+        ]);
+    }
+
+    /**
+     * @Apidoc\Title("ARPU/ARPPU Trend")
+     * @Apidoc\Url("/admin/analytics/arpu")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Query(name="days",type="integer",require=false,desc="Days back (default 30)")
+     */
+    public function arpu(Request $request): Response
+    {
+        $days = (int) $request->input('days', 30);
+        $dates = [];
+        $arpuSeries = [];
+        $arppuSeries = [];
+
+        for ($i = $days - 1; $i >= 0; $i--) {
+            $date = date('Y-m-d', strtotime("-{$i} days"));
+            $dates[] = $date;
+
+            $revenue = (float) (\app\model\DepositOrder::whereDate('created_at', $date)->where('status', 'confirmed')->sum('platform_amount') ?? '0');
+            $totalUsers = \app\model\User::whereDate('created_at', '<=', $date)->count();
+            $payingUsers = \app\model\DepositOrder::whereDate('created_at', $date)->where('status', 'confirmed')->distinct('user_id')->count('user_id');
+
+            $arpuSeries[] = $totalUsers > 0 ? round($revenue / $totalUsers, 4) : 0;
+            $arppuSeries[] = $payingUsers > 0 ? round($revenue / $payingUsers, 2) : 0;
+        }
+
+        return $this->success(['dates' => $dates, 'arpu' => $arpuSeries, 'arppu' => $arppuSeries]);
+    }
+
+    /**
+     * @Apidoc\Title("Game Economy Indicators")
+     * @Apidoc\Url("/admin/analytics/economy")
+     * @Apidoc\Method("GET")
+     */
+    public function economy(Request $request): Response
+    {
+        $currencies = \app\model\GameCurrency::with('game')->get();
+        $items = [];
+        foreach ($currencies as $c) {
+            $minted = \app\model\ExchangeRecord::where('currency_id', $c->id)->where('direction', 'in')->sum('game_amount') ?? '0';
+            $burned = \app\model\ExchangeRecord::where('currency_id', $c->id)->where('direction', 'out')->sum('game_amount') ?? '0';
+            $circulation = bcsub($minted, $burned, 8);
+            $inflation = bccomp($minted, '0', 4) > 0 ? bcmul(bcdiv(bcsub($minted, $burned, 8), $minted, 8), '100', 2) : '0';
+
+            $items[] = [
+                'game_name' => $c->game->name ?? 'Unknown',
+                'currency' => $c->name, 'symbol' => $c->symbol,
+                'total_minted' => $minted, 'total_burned' => $burned,
+                'circulation' => $circulation, 'inflation_rate' => $inflation . '%',
+            ];
+        }
+        return $this->success(['currencies' => $items]);
+    }
+
 }

@@ -1730,3 +1730,156 @@ status: open / waiting / replied / closed
 3. 验证时间戳在5分钟窗口内 (防重放)
 4. 计算 `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)` 与签名比对
 5. 注入 `$request->gameId` 和 `$request->game`
+
+
+### 7.7 好友 API
+
+#### GET /api/friend/list — 好友列表
+```
+需认证: 是
+响应: { "list": [{ "id": "...", "username": "...", "nickname": "...", "avatar": "..." }] }
+```
+
+#### GET /api/friend/requests — 待处理申请
+```
+需认证: 是
+响应: { "list": [{ "id": "...", "user": {...}, "created_at": "..." }] }
+```
+
+#### POST /api/friend/request — 发送好友申请
+```
+需认证: 是
+请求: { "friend_id": "hashid" }
+```
+
+#### POST /api/friend/accept — 接受申请
+```
+需认证: 是
+请求: { "request_id": "hashid" }
+```
+
+#### POST /api/friend/reject — 拒绝申请
+```
+需认证: 是
+请求: { "request_id": "hashid" }
+```
+
+#### POST /api/friend/remove — 删除好友
+```
+需认证: 是
+请求: { "friend_id": "hashid" }
+```
+
+#### GET /api/friend/search — 搜索用户
+```
+需认证: 是
+参数: ?q=username
+响应: { "list": [{ "id": "...", "username": "...", "nickname": "...", "avatar": "..." }] }
+```
+
+### 7.8 聊天 API
+
+#### GET /api/chat/conversations — 会话列表
+```
+需认证: 是
+响应: {
+  "list": [{
+    "peer": { "id": "...", "username": "...", "nickname": "...", "avatar": "..." },
+    "last_message": "最近一条消息",
+    "unread_count": 3,
+    "updated_at": "2026-05-22 10:30:00"
+  }]
+}
+```
+
+#### GET /api/chat/messages/{peerHashid} — 消息列表
+```
+需认证: 是
+参数: ?page=1&per_page=50
+响应: { "items": [{ "id": "...", "content": "...", "is_read": 1 }], "total": 100 }
+自动标记对端发来的未读消息为已读
+```
+
+#### POST /api/chat/send — 发送消息
+```
+需认证: 是
+请求: { "to_user_id": "hashid", "content": "Hello!" }
+错误: 403 非好友不可发
+```
+
+#### GET /api/chat/unread-total — 未读总数
+```
+需认证: 是
+响应: { "count": 5 }
+```
+
+**WebSocket 连接**: `ws://host:8791`
+```
+// 认证
+→ { "action": "auth", "token": "eyJhbG..." }
+← { "type": "authenticated", "user_id": 1234567890 }
+
+// 接收消息
+← { "type": "message", "message": { "id": "...", "from_user_id": "...", "content": "Hello!", "created_at": "..." } }
+```
+
+### 7.9 Webhook API
+
+#### GET /api/webhook/list — 订阅列表
+```
+需认证: 是
+响应: { "list": [{ "id": "...", "url": "https://...", "events": ["deposit.completed"] }] }
+```
+
+#### POST /api/webhook/register — 注册订阅
+```
+需认证: 是
+请求: { "url": "https://my-server.com/hook", "events": ["deposit.completed", "game.played"] }
+可用事件: deposit.completed / withdraw.completed / exchange.completed / game.played / user.registered / risk.alert / user.vip_upgraded
+```
+
+#### POST /api/webhook/delete — 删除订阅
+```
+需认证: 是
+请求: { "id": "hook_id" }
+```
+
+### 7.10 高级分析 API
+
+#### GET /admin/analytics/retention — 留存分析
+```
+需认证: 是
+响应: { "D1": "45.2%", "D3": "28.7%", "D7": "18.3%", "D30": "8.1%" }
+```
+
+#### GET /admin/analytics/funnel — 转化漏斗
+```
+需认证: 是
+响应: {
+  "funnel": [
+    { "step": "register", "count": 1500, "rate": "100%" },
+    { "step": "first_deposit", "count": 450, "rate": "30.0%" },
+    { "step": "first_exchange", "count": 320, "rate": "21.3%" },
+    { "step": "first_game", "count": 280, "rate": "18.7%" }
+  ]
+}
+```
+
+#### GET /admin/analytics/arpu — ARPU/ARPPU 趋势
+```
+需认证: 是
+参数: ?days=30
+响应: { "dates": [...], "arpu": [...], "arppu": [...] }
+```
+
+#### GET /admin/analytics/economy — 游戏经济指标
+```
+需认证: 是
+响应: {
+  "currencies": [{
+    "game_name": "Shooter Master", "currency": "Gold", "symbol": "G",
+    "total_minted": "500000.00000000", "total_burned": "320000.00000000",
+    "circulation": "180000.00000000", "inflation_rate": "36.00%"
+  }]
+}
+```

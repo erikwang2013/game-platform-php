@@ -78,7 +78,9 @@
 | 私信/聊天 | REST 私信 + WebSocket 实时消息 (端口8790)、仅好友可发 | 已完成 |
 | 事件总线 | Redis Pub/Sub 异步解耦、成就/VIP/通知/审计订阅 | 已完成 |
 | 特性开关 | FeatureFlag 基于DB、零额外依赖、4个预设开关 | 已完成 |
-| 高级分析 | 留存/D1-D30、转化漏斗、ARPU/ARPPU、游戏币种经济指标 | 已完成 |
+| 高级分析 | 留存/D1-D30、转化漏斗、ARPU/ARPPU、游戏币种经济指标 (ClickHouse) | 已完成 |
+| Webhook | 订阅管理 + Redis Pub/Sub 事件投递、7种事件可选 | 已完成 |
+| 聊天 | REST 私信 + WebSocket 实时消息 (端口8791)、仅好友可发 | 已完成 |
 
 ## 2. C端用户功能
 

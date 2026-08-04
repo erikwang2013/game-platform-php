@@ -253,8 +253,8 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | 工单 | C端创建/回复 + 管理端处理/分配/关闭 |
 | VIP | 5级忠诚度、经验值累计、兑换折扣/提现减免/汇率加成 |
 | 成就 | 12个内置成就、事件驱动检测、进度追踪 |
-| 社交 | 好友系统 + WebSocket 实时私信 (端口8790) |
-| 事件 | Redis Pub/Sub 异步事件总线 |
+| 社交 | 好友系统 + WebSocket 实时私信 (端口8791)、仅好友可发 |
+| 事件 | Redis Pub/Sub 事件总线 + Webhook订阅投递 (7种事件) |
 | 部署 | Docker Compose 8服务编排 + Nginx反向代理 |
 | 客户端 | Flutter Admin(15页) + Platform(10页) + HarmonyOS(5页) |
 

@@ -45,6 +45,12 @@ return [
         'listen' => 'websocket://0.0.0.0:8790',
         'count' => 1,
     ],
+    'chat-ws' => [
+        'handler' => app\process\ChatWebSocket::class,
+        'listen' => 'websocket://0.0.0.0:8791',
+        'count' => 1,
+    ],
+
     'monitor' => [
         'handler' => app\process\Monitor::class,
         'reloadable' => false,

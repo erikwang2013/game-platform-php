@@ -206,6 +206,8 @@ erik_notification, erik_referral, erik_referral_reward, erik_user_2fa
 | 私信/聊天 | REST + WebSocket 实时消息 (端口8790) |
 | 事件总线 | Redis Pub/Sub 异步解耦 |
 | 特性开关 | FeatureFlag 基于DB、4个预设开关 |
+| Webhook | - | - | ✓ 7种事件+Pub/Sub投递 |
+| 聊天 | - | - | ✓ REST+WebSocket :8791 |
 | 高级分析 | 留存/D1-D30、转化漏斗、ARPU/ARPPU |
 
 ### 新增数据表 (10张)
