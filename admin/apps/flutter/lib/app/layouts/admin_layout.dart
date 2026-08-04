@@ -18,6 +18,8 @@ import '../pages/identity/identity_page.dart';
 import '../pages/risk/risk_log_page.dart';
 import '../pages/payment/payment_page.dart';
 import '../pages/announcement/announcement_page.dart';
+import '../pages/vip/vip_page.dart';
+import '../pages/achievement/achievement_page.dart';
 
 class AdminLayout extends StatefulWidget {
   final Widget child;
@@ -50,6 +52,8 @@ class _AdminLayoutState extends State<AdminLayout> {
     RiskLogPage(),
     PaymentPage(),
     AnnouncementPage(),
+    VipPage(),
+    AchievementPage(),
   ];
 
   ResponsiveBreakpointsData get _bp => ResponsiveBreakpoints.of(context);
@@ -254,6 +258,16 @@ class _AdminLayoutState extends State<AdminLayout> {
         icon: const Icon(Icons.campaign, size: 20),
         label: Text("${AppTranslations.t('nav.announcements')}"),
         selectedIcon: const Icon(Icons.campaign, size: 20),
+      ),
+      NavigationDrawerDestination(
+        icon: const Icon(Icons.workspace_premium, size: 20),
+        label: Text("${AppTranslations.t('nav.vip')}"),
+        selectedIcon: const Icon(Icons.workspace_premium, size: 20),
+      ),
+      NavigationDrawerDestination(
+        icon: const Icon(Icons.emoji_events, size: 20),
+        label: Text("${AppTranslations.t('nav.achievements')}"),
+        selectedIcon: const Icon(Icons.emoji_events, size: 20),
       ),
     ];
   }

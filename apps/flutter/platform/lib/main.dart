@@ -14,9 +14,14 @@ import 'app/pages/wallet/withdraw_page.dart';
 import 'app/pages/profile/profile_page.dart';
 import 'app/pages/profile/identity_page.dart';
 import 'app/pages/game/play_log_page.dart';
+import 'app/pages/chat/chat_list_page.dart';
+import 'app/pages/chat/chat_page.dart';
+import 'app/pages/friend/friend_page.dart';
+import 'app/services/chat_service.dart';
 
 void main() {
   Get.put(LocaleController());
+  Get.put(ChatService(), permanent: true);
   runApp(const GamePlatformApp());
 }
 
@@ -51,6 +56,9 @@ class GamePlatformApp extends StatelessWidget {
         GetPage(name: '/profile', page: () => const ProfilePage()),
         GetPage(name: '/identity', page: () => const IdentityPage()),
         GetPage(name: '/play-logs', page: () => const PlayLogPage()),
+        GetPage(name: '/chat-list', page: () => const ChatListPage()),
+        GetPage(name: '/chat', page: () => const ChatPage()),
+        GetPage(name: '/friends', page: () => const FriendPage()),
       ],
       initialRoute: '/login',
     );

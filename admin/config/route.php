@@ -136,6 +136,8 @@ Route::group('/admin', function () {
     Route::get('/withdraw/limits/list', [app\admin\controller\WithdrawController::class, 'listLimits']);
     Route::put('/withdraw/limits/{hashid}', [app\admin\controller\WithdrawController::class, 'updateLimit']);
     Route::post('/withdraw/batch-review', [app\admin\controller\WithdrawController::class, 'batchReview']);
+    Route::post('/withdraw/execute-payout', [app\admin\controller\WithdrawController::class, 'executePayout']);
+    Route::post('/withdraw/sync-payout', [app\admin\controller\WithdrawController::class, 'syncPayout']);
 
     // 支付方式管理
     Route::get('/payment/method/list', [app\admin\controller\PaymentController::class, 'list']);
@@ -163,6 +165,18 @@ Route::group('/admin', function () {
     Route::put('/coupon/{hashid}', [app\admin\controller\CouponController::class, 'update']);
     Route::delete('/coupon/{hashid}', [app\admin\controller\CouponController::class, 'destroy']);
     Route::get('/coupon/{hashid}/stats', [app\admin\controller\CouponController::class, 'stats']);
+
+    // VIP等级管理
+    Route::get('/vip/level/list', [app\admin\controller\VipLevelController::class, 'list']);
+    Route::post('/vip/level/create', [app\admin\controller\VipLevelController::class, 'create']);
+    Route::put('/vip/level/{hashid}', [app\admin\controller\VipLevelController::class, 'update']);
+    Route::delete('/vip/level/{hashid}', [app\admin\controller\VipLevelController::class, 'destroy']);
+
+    // 成就管理
+    Route::get('/achievement/list', [app\admin\controller\AchievementController::class, 'list']);
+    Route::post('/achievement/create', [app\admin\controller\AchievementController::class, 'create']);
+    Route::put('/achievement/{hashid}', [app\admin\controller\AchievementController::class, 'update']);
+    Route::delete('/achievement/{hashid}', [app\admin\controller\AchievementController::class, 'destroy']);
 
     // 导出扩展
     Route::post('/export/users', [app\admin\controller\ExportController::class, 'exportUsers']);

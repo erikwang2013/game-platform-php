@@ -29,6 +29,11 @@ class WithdrawOrder extends Model
         'reviewer_id',
         'review_note',
         'reviewed_at',
+        'payout_batch_id',
+        'payout_item_id',
+        'payout_status',
+        'payout_attempts',
+        'paid_at',
     ];
 
     protected $casts = [
@@ -36,6 +41,7 @@ class WithdrawOrder extends Model
         'fiat_amount' => 'string',
         'account_info' => Encryptable::class,
         'reviewed_at' => 'datetime',
+        'paid_at' => 'datetime',
     ];
 
     public function user()

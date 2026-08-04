@@ -129,7 +129,7 @@ class ChatController extends BaseController
 
         // Push via Redis to WebSocket process
         try {
-            Redis::publish('chat:channel', json_encode([
+            $payload = json_encode([
                 'type' => 'message',
                 'message' => [
                     'id' => $this->encodeId($msg->id),
@@ -138,7 +138,9 @@ class ChatController extends BaseController
                     'created_at' => $msg->created_at,
                 ],
                 'to_user_id' => $peerId,
-            ]));
+            ]);
+            Redis::publish('chat:channel', $payload);
+            Redis::lpush('chat:delivery_queue', $payload);
         } catch (\Throwable $e) {}
 
         return $this->success(['id' => $this->encodeId($msg->id), 'created_at' => $msg->created_at], 'Sent');

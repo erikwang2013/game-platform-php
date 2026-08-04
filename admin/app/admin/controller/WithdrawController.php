@@ -15,6 +15,7 @@ use app\model\UserWallet;
 use app\model\WithdrawLimit;
 use app\model\WithdrawOrder;
 use app\service\NotificationService;
+use app\service\PayoutService;
 use support\Request;
 use support\Response;
 
@@ -332,5 +333,83 @@ class WithdrawController extends BaseController
         }
 
         return $this->success(['processed' => $successCount], "批量处理完成: {$successCount} 笔");
+    }
+
+    /**
+     * @Apidoc\Title("执行打款")
+     * @Apidoc\Desc("对已审批的提现订单执行PayPal打款")
+     * @Apidoc\Url("/admin/withdraw/execute-payout")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param("order_id", type="string", require=true, desc="订单ID(hashid编码)")
+     */
+    public function executePayout(Request $request): Response
+    {
+        $validator = validator($request->all(), [
+            'order_id' => 'required|string',
+        ]);
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
+        }
+
+        $orderId = $this->decodeId($request->input('order_id'));
+        $order = WithdrawOrder::find($orderId);
+        if (!$order) {
+            return $this->fail('订单不存在', 404);
+        }
+
+        if ($order->status === 'completed') {
+            return $this->fail('该订单已完成打款', 422);
+        }
+
+        if ($order->status !== 'approved') {
+            return $this->fail('该订单尚未审批，请先审批', 422);
+        }
+
+        try {
+            $result = PayoutService::execute($order);
+            return $this->success($result, $result['payout_status'] === 'success' ? '打款成功' : '打款已提交');
+        } catch (\RuntimeException $e) {
+            $order->payout_status = 'failed';
+            $order->payout_attempts = $order->payout_attempts + 1;
+            $order->save();
+            return $this->fail('打款失败: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * @Apidoc\Title("同步打款状态")
+     * @Apidoc\Desc("从PayPal查询打款批次状态并同步")
+     * @Apidoc\Url("/admin/withdraw/sync-payout")
+     * @Apidoc\Method("POST")
+     * @Apidoc\Param("order_id", type="string", require=true, desc="订单ID(hashid编码)")
+     */
+    public function syncPayout(Request $request): Response
+    {
+        $validator = validator($request->all(), [
+            'order_id' => 'required|string',
+        ]);
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
+        }
+
+        $orderId = $this->decodeId($request->input('order_id'));
+        $order = WithdrawOrder::find($orderId);
+        if (!$order) {
+            return $this->fail('订单不存在', 404);
+        }
+        if (empty($order->payout_batch_id)) {
+            return $this->fail('该订单尚未执行打款', 422);
+        }
+
+        try {
+            $status = PayoutService::syncStatus($order);
+            return $this->success([
+                'payout_status' => $order->payout_status,
+                'order_status' => $order->status,
+                'synced_status' => $status,
+            ]);
+        } catch (\RuntimeException $e) {
+            return $this->fail('同步失败: ' . $e->getMessage(), 500);
+        }
     }
 }

@@ -45,6 +45,8 @@ class NotificationService
             $notif->ref_id = $refId;
             $notif->save();
 
+            PushService::send($userId, $title, $content, ['type' => $type, 'ref_type' => $refType, 'ref_id' => (string)$refId]);
+
             // Attempt email delivery if user has an email and mail is configured
             self::sendEmail($userId, $title, $content);
         } catch (\Throwable $e) {

@@ -48,9 +48,22 @@ class ChatWebSocket
         unset($this->connections[$connection->id]);
     }
 
-    /**
-     * Push message to target user via WebSocket — called from Redis subscriber
-     */
+    public function onWorkerStart(): void
+    {
+        \Workerman\Timer::add(1, function () {
+            try {
+                while (true) {
+                    $msg = Redis::brpop(['chat:delivery_queue'], 1);
+                    if (!$msg) break;
+                    $data = json_decode(is_array($msg) ? ($msg[1] ?? '{}') : '{}', true);
+                    if ($data && isset($data['to_user_id'])) {
+                        $this->deliverToUser((int) $data['to_user_id'], json_encode($data));
+                    }
+                }
+            } catch (\Throwable $e) {}
+        });
+    }
+
     public function deliverToUser(int $userId, string $payload): void
     {
         foreach ($this->connections as $conn) {

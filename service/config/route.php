@@ -125,6 +125,10 @@ Route::group('/api', function () {
     Route::post('/user/2fa/enable', v('TwoFactorController', 'enable'));
     Route::post('/user/2fa/disable', v('TwoFactorController', 'disable'));
 
+    // 设备令牌
+    Route::post('/device/token', v('DeviceTokenController', 'register'));
+    Route::delete('/device/token', v('DeviceTokenController', 'unregister'));
+
     // GDPR
     Route::get('/user/export-data', v('UserController', 'exportData'));
     Route::post('/user/delete-account', v('UserController', 'deleteAccount'));

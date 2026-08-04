@@ -266,6 +266,11 @@ CREATE TABLE IF NOT EXISTS `erik_withdraw_order` (
     `reviewer_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '审核人ID（关联erik_admin_user）',
     `review_note` VARCHAR(500) NOT NULL DEFAULT '' COMMENT '审核附注',
     `reviewed_at` DATETIME DEFAULT NULL COMMENT '审核时间',
+    `payout_batch_id` VARCHAR(64) DEFAULT NULL COMMENT 'PayPal打款批次ID',
+    `payout_item_id` VARCHAR(64) DEFAULT NULL COMMENT 'PayPal打款项ID',
+    `payout_status` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '打款状态: (空)/processing/success/failed',
+    `payout_attempts` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '打款重试次数',
+    `paid_at` DATETIME DEFAULT NULL COMMENT '实际打款时间',
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '申请时间',
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
@@ -782,6 +787,17 @@ CREATE TABLE IF NOT EXISTS `erik_user_2fa` (
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='2FA双因素认证表';
+
+CREATE TABLE IF NOT EXISTS `erik_device_token` (
+    `id` BIGINT UNSIGNED NOT NULL,
+    `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
+    `platform` VARCHAR(20) NOT NULL COMMENT '平台: fcm/apns/harmonyos',
+    `token` VARCHAR(500) NOT NULL COMMENT '推送令牌',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '注册时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `idx_token` (`token`),
+    KEY `idx_user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='设备推送令牌表';
 
 -- ============================================================
 -- 种子数据

@@ -35,6 +35,8 @@ class _GameHallPageState extends State<GameHallPage> {
   List<Map<String, dynamic>> get _navItems => [
     {'icon': Icons.sports_esports, 'label': '${AppTranslations.t('nav.games')}', 'route': '/games'},
     {'icon': Icons.account_balance_wallet, 'label': '${AppTranslations.t('nav.wallet')}', 'route': '/wallet'},
+    {'icon': Icons.chat_bubble_outline, 'label': '${AppTranslations.t('nav.chat')}', 'route': '/chat-list'},
+    {'icon': Icons.people_outline, 'label': '${AppTranslations.t('nav.friends')}', 'route': '/friends'},
     {'icon': Icons.verified_user, 'label': '${AppTranslations.t('nav.identity')}', 'route': '/identity'},
     {'icon': Icons.history, 'label': '${AppTranslations.t('nav.play_history')}', 'route': '/play-logs'},
     {'icon': Icons.person, 'label': '${AppTranslations.t('nav.profile')}', 'route': '/profile'},

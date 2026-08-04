@@ -121,9 +121,14 @@ class _WalletPageState extends State<WalletPage> {
                 Get.offAllNamed('/games');
                 break;
               case 1:
-                // Already on wallet
                 break;
               case 2:
+                Get.toNamed('/chat-list');
+                break;
+              case 3:
+                Get.toNamed('/friends');
+                break;
+              case 4:
                 Get.to(() => const ProfilePage());
                 break;
             }
@@ -152,6 +157,16 @@ class _WalletPageState extends State<WalletPage> {
               icon: const Icon(Icons.account_balance_wallet, size: 20),
               label: Text('${AppTranslations.t('nav.wallet')}'),
               selectedIcon: const Icon(Icons.account_balance_wallet, size: 20),
+            ),
+            NavigationDrawerDestination(
+              icon: const Icon(Icons.chat_bubble_outline, size: 20),
+              label: Text('${AppTranslations.t('nav.chat')}'),
+              selectedIcon: const Icon(Icons.chat_bubble_outline, size: 20),
+            ),
+            NavigationDrawerDestination(
+              icon: const Icon(Icons.people_outline, size: 20),
+              label: Text('${AppTranslations.t('nav.friends')}'),
+              selectedIcon: const Icon(Icons.people_outline, size: 20),
             ),
             NavigationDrawerDestination(
               icon: const Icon(Icons.person, size: 20),

@@ -25,6 +25,8 @@ class AppTranslations {
       'app.no_data': 'No data',
       'app.loading_failed': 'Loading failed, please retry',
       'app.network_error': 'Network error, please retry',
+      'app.error': 'Error',
+      'app.success': 'Success',
 
       // Sidebar / Nav
       'nav.games': 'Game Hall',
@@ -32,6 +34,8 @@ class AppTranslations {
       'nav.identity': 'KYC',
       'nav.play_history': 'History',
       'nav.profile': 'Profile',
+      'nav.chat': 'Chat',
+      'nav.friends': 'Friends',
 
       // Game Hall
       'game_hall.title': 'Game Hall',
@@ -153,6 +157,23 @@ class AppTranslations {
       'identity.verified': 'Verified',
       'identity.pending': 'Under Review',
 
+      // Chat
+      'chat.title': 'Messages',
+      'chat.hint': 'Type a message...',
+      'chat.empty': 'No conversations yet',
+      'chat.reconnecting': 'Reconnecting...',
+
+      // Friend
+      'friend.tab_friends': 'Friends',
+      'friend.tab_requests': 'Requests',
+      'friend.tab_search': 'Search',
+      'friend.search_hint': 'Search users...',
+      'friend.add': 'Add',
+      'friend.request_sent': 'Friend request sent',
+      'friend.no_friends': 'No friends yet',
+      'friend.no_requests': 'No pending requests',
+      'friend.no_results': 'No users found',
+
       // Common
       'common.collapse_menu': 'Collapse menu',
       'common.expand_menu': 'Expand menu',
@@ -179,6 +200,8 @@ class AppTranslations {
       'app.no_data': '暂无数据',
       'app.loading_failed': '加载失败，请重试',
       'app.network_error': '网络错误，请重试',
+      'app.error': '错误',
+      'app.success': '成功',
 
       // Sidebar / Nav
       'nav.games': '游戏大厅',
@@ -186,6 +209,8 @@ class AppTranslations {
       'nav.identity': '实名认证',
       'nav.play_history': '游戏记录',
       'nav.profile': '个人中心',
+      'nav.chat': '聊天',
+      'nav.friends': '好友',
 
       // Game Hall
       'game_hall.title': '游戏大厅',
@@ -306,6 +331,23 @@ class AppTranslations {
       'identity.title': '实名认证',
       'identity.verified': '已认证',
       'identity.pending': '审核中',
+
+      // Chat
+      'chat.title': '消息',
+      'chat.hint': '输入消息...',
+      'chat.empty': '暂无会话',
+      'chat.reconnecting': '重新连接中...',
+
+      // Friend
+      'friend.tab_friends': '好友',
+      'friend.tab_requests': '请求',
+      'friend.tab_search': '搜索',
+      'friend.search_hint': '搜索用户...',
+      'friend.add': '添加',
+      'friend.request_sent': '好友请求已发送',
+      'friend.no_friends': '暂无好友',
+      'friend.no_requests': '暂无待处理请求',
+      'friend.no_results': '未找到用户',
 
       // Common
       'common.collapse_menu': '收起菜单',

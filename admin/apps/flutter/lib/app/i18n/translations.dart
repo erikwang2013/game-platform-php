@@ -25,6 +25,10 @@ class AppTranslations {
       'app.no_data': 'No data',
       'app.loading_failed': 'Loading failed, please retry',
       'app.network_error': 'Network error, please check connection',
+      'app.error': 'Error',
+      'app.success': 'Success',
+      'app.saved': 'Saved successfully',
+      'app.deleted': 'Deleted successfully',
 
       // Sidebar
       'nav.dashboard': 'Dashboard',
@@ -39,6 +43,8 @@ class AppTranslations {
       'nav.risk_logs': 'Risk Logs',
       'nav.payments': 'Payment Management',
       'nav.announcements': 'Announcements',
+      'nav.vip': 'VIP Levels',
+      'nav.achievements': 'Achievements',
 
       // Dashboard
       'dashboard.title': 'Dashboard',
@@ -241,6 +247,28 @@ class AppTranslations {
       'common.collapse_menu': 'Collapse menu',
       'common.expand_menu': 'Expand menu',
       'common.admin_panel': 'Admin Panel',
+
+      // VIP
+      'vip.title': 'VIP Level Management',
+      'vip.create': 'Create Level',
+      'vip.edit': 'Edit Level',
+      'vip.delete_confirm': 'Delete VIP level',
+      'vip.level': 'Level',
+      'vip.name': 'Name',
+      'vip.required_exp': 'Required EXP',
+      'vip.benefits': 'Benefits (JSON)',
+
+      // Achievement
+      'achievement.title': 'Achievement Management',
+      'achievement.create': 'Create Achievement',
+      'achievement.edit': 'Edit Achievement',
+      'achievement.delete_confirm': 'Delete achievement',
+      'achievement.key': 'Key',
+      'achievement.name': 'Name',
+      'achievement.description': 'Description',
+      'achievement.icon': 'Icon',
+      'achievement.condition': 'Condition (JSON)',
+      'achievement.points': 'Points',
     },
     'zh': {
       // App
@@ -263,6 +291,10 @@ class AppTranslations {
       'app.no_data': '暂无数据',
       'app.loading_failed': '加载失败，请重试',
       'app.network_error': '网络错误，请检查连接',
+      'app.error': '错误',
+      'app.success': '成功',
+      'app.saved': '保存成功',
+      'app.deleted': '删除成功',
 
       // Sidebar
       'nav.dashboard': '仪表盘',
@@ -277,6 +309,8 @@ class AppTranslations {
       'nav.risk_logs': '风控日志',
       'nav.payments': '支付管理',
       'nav.announcements': '公告管理',
+      'nav.vip': 'VIP等级',
+      'nav.achievements': '成就管理',
 
       // Dashboard
       'dashboard.title': '仪表盘',
@@ -479,6 +513,28 @@ class AppTranslations {
       'common.collapse_menu': '收起菜单',
       'common.expand_menu': '展开菜单',
       'common.admin_panel': '管理后台',
+
+      // VIP
+      'vip.title': 'VIP等级管理',
+      'vip.create': '新增等级',
+      'vip.edit': '编辑等级',
+      'vip.delete_confirm': '删除VIP等级',
+      'vip.level': '等级',
+      'vip.name': '名称',
+      'vip.required_exp': '所需经验',
+      'vip.benefits': '权益(JSON)',
+
+      // Achievement
+      'achievement.title': '成就管理',
+      'achievement.create': '新增成就',
+      'achievement.edit': '编辑成就',
+      'achievement.delete_confirm': '删除成就',
+      'achievement.key': '标识',
+      'achievement.name': '名称',
+      'achievement.description': '描述',
+      'achievement.icon': '图标',
+      'achievement.condition': '条件(JSON)',
+      'achievement.points': '积分',
     },
   };
 
