@@ -5,7 +5,7 @@ use support\Model;
 
 class UserAchievement extends Model
 {
-    protected $table = 'erik_user_achievement';
+    protected $table = 'user_achievement';
     public $incrementing = false;
     protected $keyType = 'int';
     public $timestamps = false;

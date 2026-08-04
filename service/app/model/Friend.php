@@ -8,7 +8,7 @@ use support\Model;
 
 class Friend extends Model
 {
-    protected $table = 'erik_friend';
+    protected $table = 'friend';
     public $incrementing = false;
     protected $keyType = 'int';
 

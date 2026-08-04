@@ -69,7 +69,7 @@ class AchievementService
 
     private static function consecutiveLoginDays(int $userId): int
     {
-        $dates = Db::table('erik_user_session')
+        $dates = Db::table('user_session')
             ->where('user_id', $userId)
             ->orderBy('created_at', 'desc')
             ->limit(30)

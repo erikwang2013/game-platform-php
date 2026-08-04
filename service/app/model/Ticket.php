@@ -11,7 +11,7 @@ use support\Model;
 
 class Ticket extends Model
 {
-    protected $table = 'erik_ticket';
+    protected $table = 'ticket';
     public $incrementing = false;
     protected $keyType = 'int';
 

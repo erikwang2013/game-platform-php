@@ -8,7 +8,7 @@ use support\Model;
 
 class DeviceToken extends Model
 {
-    protected $table = 'erik_device_token';
+    protected $table = 'device_token';
     public $incrementing = false;
     protected $keyType = 'int';
     public $timestamps = false;

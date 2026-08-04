@@ -55,7 +55,7 @@ class GameController extends BaseController
 
         if ($categoryId) {
             $decodedCategoryId = $this->decodeId($categoryId);
-            $gameIds = Db::table('erik_game_category_rel')
+            $gameIds = Db::table('game_category_rel')
                 ->where('category_id', $decodedCategoryId)
                 ->pluck('game_id')
                 ->toArray();

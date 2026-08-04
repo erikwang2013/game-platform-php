@@ -5,7 +5,7 @@ use support\Model;
 
 class ExpLog extends Model
 {
-    protected $table = 'erik_exp_log';
+    protected $table = 'exp_log';
     public $incrementing = false;
     protected $keyType = 'int';
     public $timestamps = false;

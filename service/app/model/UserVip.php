@@ -5,7 +5,7 @@ use support\Model;
 
 class UserVip extends Model
 {
-    protected $table = 'erik_user_vip';
+    protected $table = 'user_vip';
     public $incrementing = false;
     protected $keyType = 'int';
     public $timestamps = false;
