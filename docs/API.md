@@ -1883,3 +1883,45 @@ status: open / waiting / replied / closed
   }]
 }
 ```
+
+
+### 7.11 赛事 API
+
+#### GET /api/tournament/list — 赛事列表
+```
+参数: ?status=active|upcoming|ended&page=1&per_page=20
+响应: { "items": [{ "id": "...", "name": "...", "prize_pool": "1000.0000", "player_count": 45, "max_players": 100 }], "total": 5 }
+```
+
+#### GET /api/tournament/{hashid} — 赛事详情
+```
+响应: { "id": "...", "name": "...", "leaderboard": [...], "my_entry": {...} }
+```
+
+#### POST /api/tournament/{hashid}/join — 报名参赛
+```
+需认证: 是
+错误: 422 已报名 / 400 已开始或已满员 / 503 FeatureFlag关闭
+```
+
+### 7.12 优惠券条件 (新增)
+
+优惠券 `conditions` JSON 支持:
+- `min_deposit`: 字符串, 最低累计充值金额
+- `first_user_only`: bool, 仅限从未充值的新用户
+- `game_id`: int, 需玩过指定游戏
+
+条件在 `available()` 列表过滤和 `claim()` 领取时双重校验。
+
+### 7.13 多级推荐 (新增)
+
+推荐返佣增加二级分润:
+- L1: 直接推荐人获得 `referrer_bonus` (配置: referral.referrer_bonus)
+- L2: 推荐人的推荐人获得 `commission = referrer_bonus * level2_rate` (配置: referral.level2_rate, 默认 5%)
+- 记录 `erik_referral_commission` (level/commission_rate/commission_amount)
+
+### 8. 限流策略（更新）
+
+| 接口 | 限制 |
+|------|------|
+| POST /api/tournament/{id}/join | 10 次/分钟 |

@@ -43,7 +43,7 @@
 
   <!-- Phase 5: Infrastructure -->
   <rect x="30" y="496" width="900" height="140" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
-  <text x="480" y="520" text-anchor="middle" fill="#334155" font-size="15" font-weight="bold">Phase 5: Platform Infrastructure</text>
+  <text x="480" y="520" text-anchor="middle" fill="#334155" font-size="15" font-weight="bold">Phase 5 + P2/P3 Expansions</text>
   <rect x="50" y="540" width="270" height="45" rx="6" fill="#e2e8f0"/><text x="185" y="558" text-anchor="middle" fill="#334155" font-size="12">EventBus (Redis Pub/Sub)</text><text x="185" y="573" text-anchor="middle" fill="#64748b" font-size="10">user.registered / deposit.completed / game.played</text>
   <rect x="345" y="540" width="270" height="45" rx="6" fill="#e2e8f0"/><text x="480" y="558" text-anchor="middle" fill="#334155" font-size="12">Advanced Analytics (ClickHouse)</text><text x="480" y="573" text-anchor="middle" fill="#64748b" font-size="10">Retention D1-D30 / Funnel / ARPU / Economy</text>
   <rect x="640" y="540" width="270" height="45" rx="6" fill="#e2e8f0"/><text x="775" y="558" text-anchor="middle" fill="#334155" font-size="12">FeatureFlag (DB-based)</text><text x="775" y="573" text-anchor="middle" fill="#64748b" font-size="10">tournament / chat / vip / achievements</text>
@@ -58,5 +58,5 @@
   <!-- Footer -->
   <rect x="0" y="750" width="960" height="50" fill="#7c3aed"/>
   <text x="480" y="775" text-anchor="middle" fill="#ddd6fe" font-size="12">Copyright (c) 2026 erik — https://erik.xyz | Game Platform v2.0 Ecosystem</text>
-  <text x="480" y="792" text-anchor="middle" fill="#a78bfa" font-size="10">5 Phases · 10 Features · 10 Tables · Zero New Vendor Dependencies</text>
+  <text x="480" y="792" text-anchor="middle" fill="#a78bfa" font-size="10">5 Phases · 16 Features · 12 Tables · Zero New Vendor Dependencies</text>
 </svg>

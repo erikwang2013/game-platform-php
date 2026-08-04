@@ -81,6 +81,10 @@
 | 高级分析 | 留存/D1-D30、转化漏斗、ARPU/ARPPU、游戏币种经济指标 (ClickHouse) | 已完成 |
 | Webhook | 订阅管理 + Redis Pub/Sub 事件投递、7种事件可选 | 已完成 |
 | 聊天 | REST 私信 + WebSocket 实时消息 (端口8791)、仅好友可发 | 已完成 |
+| 赛事 | 创建/list/detail/join、FeatureFlag开关、排行榜、人数上限 | 已完成 |
+| 多级返佣 | 二级推荐分润、ReferralCommission 模型、可配置佣金率 | 已完成 |
+| 优惠券条件 | min_deposit/first_user_only/game_id 三种条件限制 | 已完成 |
+| SDK 文档 | Provider 接入文档 (PHP/Go/Python 示例 + 4 API 端点) | 已完成 |
 
 ## 2. C端用户功能
 

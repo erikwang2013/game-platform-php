@@ -254,6 +254,9 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | VIP | 5级忠诚度、经验值累计、兑换折扣/提现减免/汇率加成 |
 | 成就 | 12个内置成就、事件驱动检测、进度追踪 |
 | 社交 | 好友系统 + WebSocket 实时私信 (端口8791)、仅好友可发 |
+| 赛事 | 锦标赛系统 (FeatureFlag开关) + 排行榜 + 人数上限 |
+| 返佣 | 二级推荐分润 (可配置佣金率) |
+| 优惠券 | 条件限制 (min_deposit/first_user/game_id) |
 | 事件 | Redis Pub/Sub 事件总线 + Webhook订阅投递 (7种事件) |
 | 部署 | Docker Compose 8服务编排 + Nginx反向代理 |
 | 客户端 | Flutter Admin(15页) + Platform(10页) + HarmonyOS(5页) |
@@ -310,6 +313,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | [在线文档](http://localhost:8788/apidoc/) | hg/apidoc 交互式文档 (C端) |
 | [在线文档](http://localhost:8787/apidoc/) | hg/apidoc 交互式文档 (管理后台) |
 | [ClickHouse 安装](docs/CLICKHOUSE_INSTALL.md) | ClickHouse 安装/配置/迁移/验证 |
+| [Provider SDK 接入文档](docs/PROVIDER-SDK.md) | 第三方游戏接入指南 (签名算法+PHP/Go/Python示例) |
 | [ClickHouse 使用](docs/CLICKHOUSE_USAGE.md) | 4 个 ClickHouse 服务 API 与后台看板 |
 | [部署文档](docs/DEPLOYMENT.md) | 部署指南（Docker + 手动 + Nginx + 监控） |
 | [设计规范](admin/docs/superpowers/specs/2026-05-22-game-platform-design.md) | 完整设计规范 |

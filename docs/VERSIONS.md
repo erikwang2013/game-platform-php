@@ -208,6 +208,10 @@ erik_notification, erik_referral, erik_referral_reward, erik_user_2fa
 | 特性开关 | FeatureFlag 基于DB、4个预设开关 |
 | Webhook | - | - | ✓ 7种事件+Pub/Sub投递 |
 | 聊天 | - | - | ✓ REST+WebSocket :8791 |
+| 赛事系统 | - | - | ✓ FeatureFlag+tournament |
+| 优惠券条件 | - | - | ✓ min_deposit/first_user/game_id |
+| 多级返佣 | - | - | ✓ 二级分润 |
+| SDK文档 | - | - | ✓ PHP/Go/Python |
 | 高级分析 | 留存/D1-D30、转化漏斗、ARPU/ARPPU |
 
 ### 新增数据表 (10张)
