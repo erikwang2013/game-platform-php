@@ -122,6 +122,23 @@ class CouponController extends BaseController
             }
         }
 
+        // Check conditions
+        $conditions = json_decode($coupon->conditions ?? '{}', true) ?: [];
+        if (!empty($conditions['min_deposit'])) {
+            $totalDeposit = \app\model\DepositOrder::where('user_id', $userId)->where('status', 'confirmed')->sum('platform_amount') ?? '0';
+            if (bccomp($totalDeposit, $conditions['min_deposit'], 4) < 0) {
+                return $this->fail('Minimum deposit of ' . $conditions['min_deposit'] . ' not met', 400);
+            }
+        }
+        if (!empty($conditions['first_user_only']) && $conditions['first_user_only']) {
+            $hasDeposit = \app\model\DepositOrder::where('user_id', $userId)->where('status', 'confirmed')->exists();
+            if ($hasDeposit) return $this->fail('This coupon is for new users only', 400);
+        }
+        if (!empty($conditions['game_id']) && $conditions['game_id'] > 0) {
+            $gamePlayed = \app\model\GamePlayLog::where('user_id', $userId)->where('game_id', (int) $conditions['game_id'])->exists();
+            if (!$gamePlayed) return $this->fail('Must play the required game first', 400);
+        }
+
         // Atomic increment used_qty
         $affected = Coupon::where('id', $couponId)
             ->where(function ($query) {

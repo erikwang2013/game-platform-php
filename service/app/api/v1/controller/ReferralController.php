@@ -212,6 +212,31 @@ class ReferralController extends BaseController
         EventBus::emit('referral.applied', ['referrer_id' => $referrerId, 'referred_id' => $userId]);
         VipService::addExp($referrerId, VipService::EXP_REFERRAL, 'referral', $referral->id, 'referral');
 
+        // Multi-level commission (level 2: referrer of referrer)
+        $parentReferral = \app\model\Referral::where('referred_id', $referrerId)->first();
+        if ($parentReferral && $parentReferral->referrer_id !== $userId) {
+            $level2Bonus = PlatformConfig::get('referral', 'level2_bonus', '0');
+            $level2Rate = PlatformConfig::get('referral', 'level2_rate', '0.05');
+            $commission = bcmul($referrerBonus, $level2Rate, 4);
+
+            if (bccomp($commission, '0', 2) > 0) {
+                \app\model\UserWallet::addBalance($parentReferral->referrer_id, $commission);
+                $c = new \app\model\ReferralCommission();
+                $c->id = $this->generateId();
+                $c->referral_id = $parentReferral->id;
+                $c->user_id = $parentReferral->referrer_id;
+                $c->level = 2;
+                $c->source_user_id = $referrerId;
+                $c->source_amount = $referrerBonus;
+                $c->commission_rate = $level2Rate;
+                $c->commission_amount = $commission;
+                $c->source_type = 'referral';
+                $c->source_id = $referral->id;
+                $c->created_at = date('Y-m-d H:i:s');
+                $c->save();
+            }
+        }
+
         return $this->success([
             'referrer_bonus' => $referrerBonus,
             'referred_bonus' => $referredBonus,

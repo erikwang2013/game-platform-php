@@ -209,3 +209,13 @@ Route::group('/api/webhook', function () {
     app\middleware\ApiVersion::class,
     app\middleware\UserAuth::class,
 ]);
+
+// 赛事 (FeatureFlag: tournament)
+Route::group('/api/tournament', function () {
+    Route::get('/list', v('TournamentController', 'list'));
+    Route::get('/{hashid}', v('TournamentController', 'detail'));
+    Route::post('/{hashid}/join', v('TournamentController', 'join'));
+})->middleware([
+    app\middleware\ApiVersion::class,
+    app\middleware\UserAuth::class,
+]);

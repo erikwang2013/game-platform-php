@@ -21,6 +21,7 @@ class Referral extends Model
         'referred_id',
         'code',
         'status',
+        'parent_id',
     ];
 
     protected $casts = [

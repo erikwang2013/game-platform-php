@@ -29,6 +29,7 @@ class Coupon extends Model
         'start_at',
         'end_at',
         'status',
+        'conditions',
     ];
 
     protected $casts = [
