@@ -276,6 +276,54 @@ phpunit --bootstrap tests/bootstrap.php tests/
 平台币 ← 兑回 → 提现（审核/自动）
 ```
 
+## 多币种结算
+
+平台采用「法币 → 平台币 → 游戏币」三层币种隔离的结算体系：支持 USD/CNY/EUR 多法币充值，每款游戏拥有独立计价币种；金额计算全程使用 bcmath 高精度运算，杜绝浮点误差。
+
+### 三层币种模型
+
+| 层级 | 币种 | 说明 |
+|------|------|------|
+| 法币层 | USD / CNY / EUR | 用户充值/提现的实际支付货币，由 Stripe / PayPal 处理 |
+| 平台币层 | 平台币（全平台统一） | 内部统一结算货币（decimal(18,4)），钱包乐观锁防并发扣款/重复到账 |
+| 游戏币层 | 每款游戏独立币种 | 每款游戏独立 `exchange_rate` 汇率与 `spread_pct` 点差，独立游戏币钱包 |
+
+### 结算路径
+
+- **充值结算**：用户以法币支付（Stripe / PayPal 回调验签、幂等防重）→ 按 `default_exchange_rate` 换算平台币入账，充值订单同时记录 `amount + currency + platform_amount`
+- **兑换结算**：平台币 ⇄ 游戏币按游戏币种汇率实时询价（quote），扣除 `spread_pct` 点差作为平台差价收益，VIP 享兑换折扣与汇率加成
+- **游戏结算**：游戏 Provider 通过 `/api/provider/settle` 回调增减用户游戏币（HMAC-SHA256 签名），游戏会话超时自动结算
+- **提现结算**：平台币扣款 → 生成提现订单（记录 `platform_amount / fiat_amount / currency`）→ 管理端审批 → PayPal Payout 打款 → 批次状态同步至完成
+
+### 结算流程图
+
+```mermaid
+flowchart LR
+    subgraph FIAT["法币层 Fiat"]
+        A["用户充值<br/>USD / CNY / EUR<br/>Stripe / PayPal"]
+        H["提现到账<br/>PayPal Payout"]
+    end
+
+    subgraph PLAT["平台币层 Platform Token"]
+        B["平台币钱包<br/>decimal(18,4) 乐观锁"]
+        E["提现订单<br/>platform_amount<br/>fiat_amount / currency"]
+    end
+
+    subgraph GAME["游戏币层 Game Currency"]
+        D["游戏币种<br/>exchange_rate<br/>spread_pct"]
+        C["游戏币钱包<br/>UserGameWallet"]
+        G["游戏 Provider<br/>settle 结算回调"]
+    end
+
+    A -->|"充值回调验签<br/>平台币 = 法币 × default_exchange_rate"| B
+    B -->|"兑换买入 in<br/>扣除点差"| C
+    C -->|"兑换卖出 out<br/>按汇率折算"| B
+    D -.->|"独立汇率 + VIP 加成"| C
+    G <-->|"玩游戏赚/花"| C
+    B -->|"提现申请（扣款）"| E
+    E -->|"管理端审批<br/>PayPal Payout 打款"| H
+```
+
 ## 架构图
 
 ![系统架构图](docs/diagrams/architecture-zh.svg)

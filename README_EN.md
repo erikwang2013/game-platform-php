@@ -258,6 +258,54 @@ Game Currency (per-game, independent rates)
 Platform Currency ← Convert back → Withdraw (review/auto)
 ```
 
+## Multi-Currency Settlement
+
+The platform adopts a three-tier, currency-isolated settlement system — Fiat → Platform Currency → Game Currency: multi-fiat deposits in USD/CNY/EUR, and an independent pricing currency for each game. All amount calculations use bcmath high-precision arithmetic to eliminate floating-point errors.
+
+### Three-Tier Currency Model
+
+| Tier | Currency | Description |
+|------|----------|-------------|
+| Fiat layer | USD / CNY / EUR | Actual payment currency for deposits/withdrawals, handled by Stripe / PayPal |
+| Platform layer | Platform Currency (unified) | Internal unified settlement currency (decimal(18,4)); optimistic-lock wallet prevents concurrent deductions and duplicate credits |
+| Game layer | Independent currency per game | Each game has its own `exchange_rate` and `spread_pct`, with a separate game wallet |
+
+### Settlement Paths
+
+- **Deposit settlement**: User pays in fiat (Stripe / PayPal callback signature verification, idempotent) → converted to platform currency at `default_exchange_rate`; deposit order records `amount + currency + platform_amount`
+- **Exchange settlement**: Platform ⇄ game currency via real-time quote at the game currency rate, deducting `spread_pct` as platform spread revenue; VIPs get exchange discounts and rate bonuses
+- **Game settlement**: Game Provider adjusts the user's game balance via the `/api/provider/settle` callback (HMAC-SHA256 signature); game sessions auto-settle on timeout
+- **Withdrawal settlement**: Platform currency deducted → withdrawal order created (recording `platform_amount / fiat_amount / currency`) → admin approval → PayPal Payout → batch status synced to completion
+
+### Settlement Flowchart
+
+```mermaid
+flowchart LR
+    subgraph FIAT["Fiat Layer"]
+        A["User Deposit<br/>USD / CNY / EUR<br/>Stripe / PayPal"]
+        H["Withdrawal Payout<br/>PayPal Payout"]
+    end
+
+    subgraph PLAT["Platform Currency Layer"]
+        B["Platform Wallet<br/>decimal(18,4) optimistic lock"]
+        E["Withdrawal Order<br/>platform_amount<br/>fiat_amount / currency"]
+    end
+
+    subgraph GAME["Game Currency Layer"]
+        D["Game Currency<br/>exchange_rate<br/>spread_pct"]
+        C["Game Wallet<br/>UserGameWallet"]
+        G["Game Provider<br/>settle callback"]
+    end
+
+    A -->|"callback verified<br/>platform = fiat × default_exchange_rate"| B
+    B -->|"exchange buy (in)<br/>spread deducted"| C
+    C -->|"exchange sell (out)<br/>converted at rate"| B
+    D -.->|"independent rate + VIP bonus"| C
+    G <-->|"earn/spend playing"| C
+    B -->|"withdrawal request (deduct)"| E
+    E -->|"admin approval<br/>PayPal Payout"| H
+```
+
 ## System Architecture
 
 ![System Architecture](docs/diagrams/architecture-en.svg)
