@@ -95,12 +95,16 @@ flowchart TD
         CT6["ExportController<br/>Excel/PDF 导出"]
         CT7["CaptchaController<br/>验证码生成/校验"]
         CT8["AuthController<br/>登录/注册/刷新"]
+        CT9["AnalyticsController<br/>12 个数据分析端点<br/>总览/排行/概率/留存/漏斗/ARPU"]
     end
 
     subgraph "服务层 Service Layer"
         S1["HashidsService<br/>ID 编解码"]
         S2["SnowflakeService<br/>全局唯一 ID 生成"]
         S3["EncryptionService<br/>加解密 + 脱敏"]
+        S4["GameDashboardService<br/>总览/排行/DAU/小时/行为分布<br/>MySQL 实时聚合，DB 故障返回空数据"]
+        S5["DepositLogService<br/>营收总览/游戏转化率<br/>confirmed 订单统计"]
+        S6["ProbabilityService<br/>联合/条件概率<br/>SQL 构建器（转义/引用/IN）"]
     end
 
     subgraph "模型层 Model Layer"
@@ -120,12 +124,14 @@ flowchart TD
     R1 --> M_SF --> M_RL --> M0
     M0 --> M1
     M1 --> M2
-    M2 --> CT2 & CT3 & CT4 & CT5 & CT6
+    M2 --> CT2 & CT3 & CT4 & CT5 & CT6 & CT9
     M0 --> CT7 & CT8
-    CT1 -.->|extends| CT2 & CT3 & CT4 & CT5 & CT6
-    CT2 & CT3 & CT4 & CT5 & CT6 & CT7 & CT8 --> S1 & S2 & S3
-    CT2 & CT3 & CT4 & CT5 & CT6 & CT7 & CT8 --> MD1 & MD2 & MD3 & MD4 & MD5
+    CT1 -.->|extends| CT2 & CT3 & CT4 & CT5 & CT6 & CT9
+    CT2 & CT3 & CT4 & CT5 & CT6 & CT7 & CT8 & CT9 --> S1 & S2 & S3
+    CT9 --> S4 & S5 & S6
+    CT2 & CT3 & CT4 & CT5 & CT6 & CT7 & CT8 & CT9 --> MD1 & MD2 & MD3 & MD4 & MD5
     MD1 & MD2 & MD3 & MD4 & MD5 --> D1
+    S4 & S5 & S6 --> D1
     MD1 --> D2
     CT7 --> D3
 
@@ -136,6 +142,10 @@ flowchart TD
     style M1 fill:#FA8C16,color:#fff
     style M2 fill:#FA8C16,color:#fff
     style CT1 fill:#1677FF,color:#fff
+    style CT9 fill:#1677FF,color:#fff
+    style S4 fill:#13C2C2,color:#fff
+    style S5 fill:#13C2C2,color:#fff
+    style S6 fill:#13C2C2,color:#fff
 ```
 
 ---

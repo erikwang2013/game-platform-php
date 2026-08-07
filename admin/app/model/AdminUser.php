@@ -9,7 +9,7 @@ namespace app\model;
 
 use Erikwang2013\Encryptable\Encryptable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Laravel\Scout\Searchable;
+use Erikwang2013\WebmanScout\Searchable;
 use support\Model;
 
 class AdminUser extends Model

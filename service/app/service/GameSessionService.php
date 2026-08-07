@@ -9,6 +9,7 @@ namespace app\service;
 
 use app\model\GamePlayLog;
 use support\Redis;
+use Throwable;
 
 class GameSessionService
 {
@@ -18,29 +19,44 @@ class GameSessionService
     public static function heartbeat(int $userId, int $gameId, string $sessionId): void
     {
         $key = self::KEY_PREFIX . $sessionId;
-        Redis::setex($key, self::SESSION_TTL, json_encode([
-            'user_id' => $userId,
-            'game_id' => $gameId,
-            'last_heartbeat' => time(),
-        ]));
+        try {
+            Redis::setex($key, self::SESSION_TTL, json_encode([
+                'user_id' => $userId,
+                'game_id' => $gameId,
+                'last_heartbeat' => time(),
+            ]));
+        } catch (Throwable) {
+            // Redis 不可用时心跳降级为 no-op，会话活跃性由数据库日志兜底
+        }
     }
 
     public static function isActive(string $sessionId): bool
     {
-        return Redis::exists(self::KEY_PREFIX . $sessionId) > 0;
+        try {
+            return Redis::exists(self::KEY_PREFIX . $sessionId) > 0;
+        } catch (Throwable) {
+            return false;
+        }
     }
 
     public static function getSession(string $sessionId): ?array
     {
-        $data = Redis::get(self::KEY_PREFIX . $sessionId);
-        if (!$data) return null;
-        $decoded = json_decode($data, true);
-        return is_array($decoded) ? $decoded : null;
+        try {
+            $data = Redis::get(self::KEY_PREFIX . $sessionId);
+            if (!$data) return null;
+            $decoded = json_decode($data, true);
+            return is_array($decoded) ? $decoded : null;
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     public static function endSession(string $sessionId): void
     {
-        Redis::del(self::KEY_PREFIX . $sessionId);
+        try {
+            Redis::del(self::KEY_PREFIX . $sessionId);
+        } catch (Throwable) {
+        }
         GamePlayLog::where('session_id', $sessionId)
             ->where('action', 'start')
             ->update(['ended_at' => date('Y-m-d H:i:s')]);

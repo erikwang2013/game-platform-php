@@ -16,6 +16,7 @@ Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 |----|------|
 | 认证 | 登录/注册/刷新/登出 + 验证码 + 账号锁定 + 会话限制 |
 | 仪表盘 | 实时统计/趋势/分布/日志（Redis 5m 缓存）|
+| 数据分析 | 12 个端点：总览/排行/DAU/小时/行为分布/营收/转化/概率/留存/漏斗/ARPU/经济指标（MySQL 实时聚合）|
 | 用户 | CRUD + 批量删除/启禁用 + Excel 导入 |
 | 角色权限 | CRUD + 权限树 + RBAC method.path 鉴权 |
 | 系统配置 | 键值对 CRUD |
@@ -48,9 +49,10 @@ Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 ```
 open-admin/
 ├── app/
-│   ├── admin/controller/       # 管理端控制器 (14 个)
+│   ├── admin/controller/       # 管理端控制器 (30 个)
 │   │   ├── BaseController.php      # 基础控制器
 │   │   ├── DashboardController.php # 仪表盘（Redis 缓存）
+│   │   ├── AnalyticsController.php # 数据分析（12 个端点）
 │   │   ├── UserController.php      # 用户 CRUD + 批量操作
 │   │   ├── RoleController.php      # 角色 CRUD
 │   │   ├── PermissionController.php# 权限 CRUD
@@ -81,6 +83,11 @@ open-admin/
 │   ├── model/                  # 数据模型
 │   ├── queue/                  # 队列任务
 │   └── process/                # 进程 (Http, Monitor)
+├── common/                     # 业务服务（数据分析）
+│   └── service/
+│       ├── GameDashboardService.php  # 总览/排行/DAU/小时/行为分布
+│       ├── DepositLogService.php     # 营收总览/游戏转化率
+│       └── ProbabilityService.php    # 联合/条件概率（SQL 构建器）
 ├── apps/
 │   ├── flutter/                # Flutter Web 管理后台
 │   │   └── lib/app/

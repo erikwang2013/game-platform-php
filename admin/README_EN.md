@@ -12,6 +12,7 @@ A full-stack admin dashboard built with webman v2 + Flutter.
 | | Account lockout | 5 failures → 15 min lock |
 | | Concurrent session limit | Max 3 active tokens per user |
 | 📊 Dashboard | Real-time stats/trends/distribution/logs | Redis cached 5 min |
+| 📈 Analytics | 12 endpoints: overview/ranking/DAU/hourly/actions/revenue/conversion/probability/retention/funnel/ARPU/economy | Real-time MySQL aggregation; returns empty data on DB failure |
 | 👥 Users | CRUD + batch delete/toggle status | Soft delete + password confirmation |
 | | Excel batch import | Row-level validation + error report |
 | 🔒 Roles & Perms | Role CRUD + permission tree | RBAC method.path granularity |

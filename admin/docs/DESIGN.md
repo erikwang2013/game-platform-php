@@ -61,8 +61,8 @@
 |---|------|------|
 | 路由 | `config/route.php` | URL 到控制器的映射，中间件绑定，版本化路由 |
 | 中间件 | `app/middleware/` | 攻击拦截(SecurityFilter)、限流(RateLimit)、认证(JWT)、授权(RBAC)、API版本(ApiVersion) |
-| 控制器 | 14 个：Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs (管理端) + Captcha/Auth (API v1) | 请求参数校验、调用业务逻辑、响应格式化 |
-| 业务服务 | `app/service/` | 可复用的业务逻辑（预留） |
+| 控制器 | 30 个：Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (管理端) + Captcha/Auth (API v1) | 请求参数校验、调用业务逻辑、响应格式化 |
+| 业务服务 | `common/service/` | 数据分析：GameDashboardService（总览/排行/趋势）、DepositLogService（营收/转化）、ProbabilityService（联合/条件概率，SQL 构建器）；DB 故障时返回空数据而非报错 |
 | 数据模型 | `app/model/` | ORM 映射、关联关系、字段加解密 |
 | 公共工具 | `app/common/` | Hashids、Snowflake、Encryption 服务 |
 

@@ -40,7 +40,7 @@ class BackendEnhancementTest extends TestCase
 
         $this->assertEquals(0, $body['code']);
         $this->assertEquals('open-admin', $body['data']['app']);
-        $this->assertEquals('1.0', $body['data']['version']);
+        $this->assertEquals('1.1', $body['data']['version']);
         $this->assertEquals(PHP_VERSION, $body['data']['php']);
         $this->assertArrayHasKey('database', $body['data']);
         $this->assertArrayHasKey('redis', $body['data']);
@@ -203,8 +203,9 @@ class BackendEnhancementTest extends TestCase
     {
         $middlewares = require __DIR__ . '/../config/middleware.php';
         $this->assertIsArray($middlewares);
-        $this->assertContains(\app\middleware\Cors::class, $middlewares, '全局中间件应包含 Cors');
-        $this->assertContains(\app\middleware\RateLimit::class, $middlewares, '全局中间件应包含 RateLimit');
+        $global = $middlewares[''] ?? [];
+        $this->assertContains(\app\middleware\Cors::class, $global, '全局中间件应包含 Cors');
+        $this->assertContains(\app\middleware\RateLimit::class, $global, '全局中间件应包含 RateLimit');
     }
 
     // ============================================================

@@ -48,7 +48,8 @@
     "illuminate/database": "^11.51",
     "webman/database": "^2.1",
     "illuminate/pagination": "^11.51",
-    "symfony/var-dumper": "^7.4"
+    "symfony/var-dumper": "^7.4",
+    "webman/redis": "^2.1"
   },
   "suggest": {
     "ext-event": "For better performance. "

@@ -49,7 +49,7 @@ class AuthController
         }
 
         // 验证点击验证码
-        if (!captcha_verify($request->input('captcha_key'), 'click', $request->input('clicks'))) {
+        if (!captcha_verify($request->input('captcha_key'), 'click', captcha_clicks($request->input('clicks')))) {
             return json(['code' => 422, 'message' => '验证码错误，请重试', 'data' => []]);
         }
 
@@ -137,7 +137,7 @@ class AuthController
             return json(['code' => 422, 'message' => $validator->errors()->first(), 'data' => []]);
         }
 
-        if (!captcha_verify($request->input('captcha_key'), 'click', $request->input('clicks'))) {
+        if (!captcha_verify($request->input('captcha_key'), 'click', captcha_clicks($request->input('clicks')))) {
             return json(['code' => 422, 'message' => '验证码错误，请重试', 'data' => []]);
         }
 

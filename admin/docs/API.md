@@ -59,7 +59,7 @@ GET /health
   "message": "success",
   "data": {
     "app": "open-admin",
-    "version": "1.0",
+    "version": "1.1",
     "php": "8.3.0",
     "database": "ok",
     "redis": "ok",
@@ -1678,3 +1678,103 @@ docker-compose up -d
 ### Nginx 安全配置
 
 生产环境部署请参考 `docs/nginx-security.conf` 进行反向代理安全加固配置。
+
+## 16. 数据分析 (Analytics)
+
+数据分析接口由 `AnalyticsController` 提供，全部基于 MySQL 实时聚合（`erik_game_play_log` 游戏行为日志 / `erik_deposit_order` 充值订单），数据库故障时返回空数据而非 500。除特别说明外均需 JWT + RBAC 认证，响应包装格式统一为 `{ "code": 0, "message": "success", "data": ... }`。
+
+### 16.1 平台总览
+
+```
+GET /admin/analytics/overview
+```
+
+**响应**: `today` / `week` 各含 `dau`（活跃用户数）、`revenue`（已确认充值总额，字符串）、`new_users`（新增用户数）。
+
+### 16.2 游戏排行
+
+```
+GET /admin/analytics/game-ranking?days=7
+```
+
+**响应**: 按游戏行为次数降序取前 10，每项含 `game_id`（hashid）、`name`、`plays`、`players`。
+
+### 16.3 DAU 趋势
+
+```
+GET /admin/analytics/dau-trend?days=30
+```
+
+**响应**: `{ "日期": 活跃数, ... }`，缺失日期补 0。
+
+### 16.4 小时趋势
+
+```
+GET /admin/analytics/hourly-trend?game_id=<hashid>
+```
+
+**响应**: `{ "0": 次数, ... "23": 次数 }` 24 个整点槽位；`game_id` 为空时统计全部游戏。
+
+### 16.5 行为分布
+
+```
+GET /admin/analytics/action-distribution?game_id=<hashid>&hours=24
+```
+
+**响应**: `{ "start": n, "end": n, "earn": n, "spend": n }` 四类行为计数；`hours` 上限 168。
+
+### 16.6 营收总览
+
+```
+GET /admin/analytics/revenue?days=7
+```
+
+**响应**: `{ "total": "总额", "trend": { "日期": "当日额", ... } }`，仅统计 `status=confirmed` 订单。
+
+### 16.7 游戏转化率
+
+```
+GET /admin/analytics/conversion?days=30
+```
+
+**响应**: 每款游戏含 `game_id`（hashid）、`game_name`、`players`（去重玩家数）、`depositors`（去重充值人数）、`conversion_rate`（充值转化率，0~1）。
+
+### 16.8 联合概率
+
+```
+GET /admin/analytics/probability?game_a=<hashid>&game_b=<hashid>
+```
+
+**响应**: `{ "joint": { "joint_probability": 0.12, "confidence": 0.3 } }` — Jaccard 系数（两游戏共同玩家 / 并集玩家）与置信度（共同玩家 / A 游戏玩家）。
+
+### 16.9 留存分析
+
+```
+GET /admin/analytics/retention?days=30
+```
+
+**响应**: `{ "D1": "8.5%", "D3": "...", "D7": "...", "D30": "..." }` 按注册日分群的次日/3日/7日/30日留存率。
+
+### 16.10 转化漏斗
+
+```
+GET /admin/analytics/funnel?days=30
+```
+
+**响应**: 注册 → 首充 → 首次兑换 → 首次游戏 四个步骤的 `step`、`count`、`rate`（相对注册数百分比）。
+
+### 16.11 ARPU/ARPPU 趋势
+
+```
+GET /admin/analytics/arpu?days=30
+```
+
+**响应**: `{ "dates": [...], "arpu": [...], "arppu": [...] }` 每日人均营收（ARPU）与付费用户人均营收（ARPPU）。
+
+### 16.12 游戏经济指标
+
+```
+GET /admin/analytics/economy
+```
+
+**响应**: `currencies` 数组，每项含 `game_name`、`currency`、`symbol`、`total_minted`（铸币总量）、`total_burned`（销毁总量）、`circulation`（流通量）、`inflation_rate`（通胀率），使用 bcmath 高精度计算。

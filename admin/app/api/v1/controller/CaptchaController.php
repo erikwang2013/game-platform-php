@@ -17,7 +17,7 @@ class CaptchaController
      * 生成点击验证码
      * POST /api/captcha/generate
      *
-     * 返回: { key, image (base64), extra: { targets: [{order, text}] } }
+     * 返回: { key, image (base64 PNG), extra: { targets: [{order, text}] } }
      */
     public function generate(Request $request): Response
     {
@@ -31,7 +31,7 @@ class CaptchaController
                 'message' => 'success',
                 'data' => [
                     'key' => $result['key'],
-                    'image' => base64_encode($result['image']), // base64 PNG
+                    'image' => explode(',', $result['image'], 2)[1] ?? $result['image'], // base64 PNG
                     'extra' => [
                         'targets' => $result['extra']['targets'],
                     ],
@@ -61,7 +61,7 @@ class CaptchaController
             return json(['code' => 422, 'message' => '缺少验证参数', 'data' => []]);
         }
 
-        $valid = captcha_verify($key, 'click', $clicks);
+        $valid = captcha_verify($key, 'click', captcha_clicks($clicks));
 
         return json([
             'code' => $valid ? 0 : 422,

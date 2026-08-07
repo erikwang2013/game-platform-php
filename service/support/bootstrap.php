@@ -8,4 +8,4 @@ if (is_file($vendorBootstrap)) {
     require $vendorBootstrap;
 }
 
-\Erikwang2013\Security\SecurityGuard::init(config('security'));
+\Erikwang2013\Security\SecurityGuard::init(config('plugin.erikwang2013.security-php.app', config('security', [])));

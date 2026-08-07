@@ -33,3 +33,17 @@ function jwt(): \Erikwang2013\Jwt\JwtWrapper
     }
     return $wrapper;
 }
+
+/**
+ * 规范化验证码点击坐标为 [x, y] 元组格式（poster-php 包期望的格式）
+ */
+function captcha_clicks(mixed $clicks): array
+{
+    if (!is_array($clicks)) {
+        return [];
+    }
+    return array_map(
+        fn($c) => [$c['x'] ?? $c[0] ?? 0, $c['y'] ?? $c[1] ?? 0],
+        $clicks
+    );
+}

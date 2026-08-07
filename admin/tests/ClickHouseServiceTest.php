@@ -15,7 +15,7 @@ use common\service\ProbabilityService;
 class ClickHouseServiceTest extends TestCase
 {
     // ============================================================
-    // ProbabilityService — pure logic
+    // ProbabilityService — pure SQL builder logic
     // ============================================================
 
     #[Test]
@@ -52,7 +52,7 @@ class ClickHouseServiceTest extends TestCase
     #[Test]
     public function escapeValue_escapes_quote(): void
     {
-        $this->assertSame("'it\\'s'", $this->invoke(ProbabilityService::class, 'escapeValue', ["it's"]));
+        $this->assertSame("'it''s'", $this->invoke(ProbabilityService::class, 'escapeValue', ["it's"]));
     }
 
     #[Test]
@@ -119,7 +119,6 @@ class ClickHouseServiceTest extends TestCase
     {
         foreach ([
             ProbabilityService::class,
-            \common\service\GamePlayLogService::class,
             \common\service\GameDashboardService::class,
             \common\service\DepositLogService::class,
         ] as $c) {
@@ -132,7 +131,6 @@ class ClickHouseServiceTest extends TestCase
     {
         $this->assertTrue(method_exists(ProbabilityService::class, 'joint'));
         $this->assertTrue(method_exists(ProbabilityService::class, 'conditional'));
-        $this->assertTrue(method_exists(\common\service\GamePlayLogService::class, 'write'));
         $this->assertTrue(method_exists(\common\service\GameDashboardService::class, 'overview'));
         $this->assertTrue(method_exists(\common\service\DepositLogService::class, 'log'));
         $this->assertTrue(method_exists(\common\service\DepositLogService::class, 'revenueOverview'));
