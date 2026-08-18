@@ -18,6 +18,7 @@ use support\Db;
 use support\Request;
 use support\Response;
 use app\event\EventBus;
+use app\service\NotificationService;
 use app\service\VipService;
 
 /**
@@ -205,6 +206,8 @@ class WithdrawController extends BaseController
             Db::commit();
 
             EventBus::emit('withdraw.completed', ['user_id' => $userId, 'platform_amount' => $platformAmount, 'status' => $status]);
+
+            NotificationService::send($userId, 'withdraw', 'Withdrawal Request Submitted', "Withdrawal of {$platformAmount} platform tokens submitted ({$status})", 'withdraw_order', $order->id);
 
             return $this->success([
                 'order_id'        => $this->encodeId($order->id),

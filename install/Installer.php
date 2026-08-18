@@ -273,6 +273,7 @@ class Installer
             $steps[] = ['name' => '管理员账户', 'ok' => true, 'message' => "创建管理员 {$adminUsername} 并关联超级管理员角色"];
 
             $jwtSecret = $this->randomString(64);
+            $serviceJwtSecret = $this->randomString(64);
             $hashidsSalt = $this->randomString(32);
             $encryptionKey = $this->randomString(32);
             $openSearchPass = $this->randomString(16);
@@ -283,7 +284,7 @@ class Installer
 
             if ($configureService) {
                 $svcDb = $serviceDbConfig ?: $dbConfig;
-                $this->writeServiceEnv($svcDb, $jwtSecret, $hashidsSalt, $encryptionKey, $openSearchPass, $clickHousePass);
+                $this->writeServiceEnv($svcDb, $serviceJwtSecret, $hashidsSalt, $encryptionKey, $openSearchPass, $clickHousePass);
                 $steps[] = ['name' => 'Service .env 配置', 'ok' => true, 'message' => '已写入 service/.env'];
             }
 
@@ -410,7 +411,7 @@ REDIS_PORT=6379
 REDIS_PASSWORD=
 REDIS_DATABASE=0
 
-JWT_SECRET_KEY={$jwtSecret}
+ADMIN_JWT_SECRET_KEY={$jwtSecret}
 JWT_DEFAULT_EXPIRE=7200
 JWT_REFRESH_EXPIRE=1209600
 EOF;
@@ -442,6 +443,7 @@ DB_USERNAME={$db['username']}
 DB_PASSWORD={$db['password']}
 
 JWT_SECRET={$jwtSecret}
+SERVICE_JWT_SECRET_KEY={$jwtSecret}
 JWT_TTL=7200
 JWT_REFRESH_TTL=1209600
 

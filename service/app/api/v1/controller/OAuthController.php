@@ -10,6 +10,8 @@ namespace app\api\v1\controller;
 use app\model\User;
 use app\model\UserOauth;
 use app\model\UserWallet;
+use Firebase\JWT\JWT;
+use Firebase\JWT\JWK;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
@@ -373,10 +375,11 @@ class OAuthController extends BaseController
             throw new \RuntimeException('Apple id_token missing');
         }
 
-        $parts = explode('.', $idToken);
-        $payload = isset($parts[1]) ? json_decode(base64_decode($parts[1]), true) : [];
-        if (empty($payload['sub'])) {
-            throw new \RuntimeException('Apple user info missing sub');
+        try {
+            $payload = $this->verifyAppleIdToken($idToken, $config);
+        } catch (\Throwable $e) {
+            \support\Log::error('Apple id_token verification failed', ['error' => $e->getMessage()]);
+            throw new \RuntimeException('Apple authentication failed');
         }
 
         return [
@@ -386,6 +389,75 @@ class OAuthController extends BaseController
             'email' => $payload['email'] ?? '',
             'avatar' => '',
         ];
+    }
+
+    private function verifyAppleIdToken(string $idToken, array $config): array
+    {
+        $parts = explode('.', $idToken);
+        if (count($parts) !== 3) {
+            throw new \RuntimeException('Apple id_token malformed');
+        }
+
+        $header = json_decode(JWT::urlsafeB64Decode($parts[0]), true);
+        $kid = is_array($header) ? ($header['kid'] ?? '') : '';
+        if (!is_string($kid) || $kid === '') {
+            throw new \RuntimeException('Apple id_token missing kid');
+        }
+
+        $key = null;
+        foreach ($this->getAppleJwks() as $jwk) {
+            if (($jwk['kid'] ?? '') === $kid) {
+                $key = JWK::parseKey($jwk);
+                break;
+            }
+        }
+        // kid 未命中时刷新一次 JWKS，覆盖 Apple 轮换密钥但进程内缓存未过期的情况
+        if ($key === null) {
+            foreach ($this->getAppleJwks(true) as $jwk) {
+                if (($jwk['kid'] ?? '') === $kid) {
+                    $key = JWK::parseKey($jwk);
+                    break;
+                }
+            }
+        }
+        if ($key === null) {
+            throw new \RuntimeException('Apple id_token key not found in JWKS');
+        }
+
+        try {
+            // 校验 signature(RS256, Apple JWKS 仅发布 RSA 密钥；alg 白名单由 Key 携带) + exp(过期拒绝)
+            $decoded = JWT::decode($idToken, $key);
+        } catch (\Throwable $e) {
+            throw new \RuntimeException('Apple id_token verification failed: ' . $e->getMessage());
+        }
+
+        $payload = (array) $decoded;
+        if (($payload['iss'] ?? '') !== 'https://appleid.apple.com') {
+            throw new \RuntimeException('Apple id_token issuer mismatch');
+        }
+        if (($payload['aud'] ?? '') !== $config['client_id']) {
+            throw new \RuntimeException('Apple id_token audience mismatch');
+        }
+        if (empty($payload['sub'])) {
+            throw new \RuntimeException('Apple id_token missing sub');
+        }
+
+        return $payload;
+    }
+
+    private function getAppleJwks(bool $refresh = false): array
+    {
+        // 进程内静态缓存，避免每请求拉取；Apple 密钥轮换时由 kid 未命中触发刷新
+        static $keys = null;
+        if ($keys === null || $refresh) {
+            $resp = $this->http()->get('https://appleid.apple.com/auth/keys');
+            $data = json_decode((string) $resp->getBody(), true);
+            $keys = $data['keys'] ?? [];
+            if (!is_array($keys) || count($keys) === 0) {
+                throw new \RuntimeException('Apple JWKS fetch failed');
+            }
+        }
+        return $keys;
     }
 
     // ─── Twitter / X (OAuth 2.0 with PKCE) ─────────────────

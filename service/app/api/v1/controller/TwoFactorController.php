@@ -244,6 +244,28 @@ class TwoFactorController extends BaseController
         return $code;
     }
 
+    private function base32Decode(string $base32): string
+    {
+        $base32 = strtoupper(rtrim($base32, '='));
+        $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+        $buffer = 0;
+        $bits = 0;
+        $decoded = '';
+        for ($i = 0, $len = strlen($base32); $i < $len; $i++) {
+            $val = strpos($alphabet, $base32[$i]);
+            if ($val === false) {
+                return '';
+            }
+            $buffer = ($buffer << 5) | $val;
+            $bits += 5;
+            if ($bits >= 8) {
+                $bits -= 8;
+                $decoded .= chr(($buffer >> $bits) & 0xFF);
+            }
+        }
+        return $decoded;
+    }
+
     /**
      * Verify a TOTP code against a secret.
      *
@@ -255,9 +277,15 @@ class TwoFactorController extends BaseController
      */
     private function verifyTOTP(string $secret, string $code): bool
     {
+        // RFC 4648 Base32 解码后才是真实 HMAC 密钥（Authenticator 存储的也是解码后的字节）
+        $key = $this->base32Decode($secret);
+        if ($key === '') {
+            return false;
+        }
+
         $timeSlice = (int)(time() / 30);
         for ($i = -1; $i <= 1; $i++) {
-            $hash = hash_hmac('sha1', pack('J', $timeSlice + $i), $secret, true);
+            $hash = hash_hmac('sha1', pack('J', $timeSlice + $i), $key, true);
             $offset = ord($hash[strlen($hash) - 1]) & 0x0F;
             $binary = (ord($hash[$offset]) & 0x7F) << 24
                     | (ord($hash[$offset + 1]) & 0xFF) << 16

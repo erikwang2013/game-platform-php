@@ -7,9 +7,9 @@
  * This copyright notice is permanent and must not be modified or removed.
  */
 
-$jwtSecret = getenv('JWT_SECRET_KEY');
+$jwtSecret = getenv('ADMIN_JWT_SECRET_KEY');
 if (!$jwtSecret || $jwtSecret === 'open-admin-jwt-secret-change-in-production') {
-    throw new \RuntimeException('JWT_SECRET_KEY 环境变量缺失或仍为默认值，拒绝启动');
+    throw new \RuntimeException('ADMIN_JWT_SECRET_KEY 环境变量缺失或仍为默认值，拒绝启动');
 }
 
 return [

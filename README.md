@@ -204,7 +204,7 @@ curl -X POST http://localhost:8788/api/auth/register \
 - **18 层纵深防御**：XSS/SQL注入/CSRF/路径遍历/命令注入检测拦截
 - **HTTP 方法白名单**：仅允许 GET/POST/PUT/DELETE/OPTIONS/HEAD
 - **JWT 认证**：access_token 2h + refresh_token 14d，并发会话限制
-- **JWT 密钥启动校验**：`JWT_SECRET_KEY` 缺失或仍为默认值直接拒绝启动
+- **JWT 密钥启动校验**：admin 端 `ADMIN_JWT_SECRET_KEY`、service 端 `SERVICE_JWT_SECRET_KEY` 独立密钥，缺失或仍为默认值直接拒绝启动
 - **支付回调 fail-closed**：provider 白名单（仅 stripe/paypal）+ 未配密钥/验签失败/时间戳超限一律拒绝 + bccomp 金额核对 + 回调入账事务化
 - **RBAC 权限**：method.path 粒度权限控制，Redis 60s 缓存
 - **点击验证码**：登录/注册强制人机验证

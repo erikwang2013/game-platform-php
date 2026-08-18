@@ -13,7 +13,7 @@ declare(strict_types=1);
  */
 return [
     // JWT 签名密钥，生产环境请使用 64 位以上随机字符串并通过环境变量注入
-    'secret' => getenv('JWT_SECRET_KEY') ?: 'open-admin-jwt-secret-change-in-production',
+    'secret' => getenv('SERVICE_JWT_SECRET_KEY') ?: 'open-admin-jwt-secret-change-in-production',
 
     // 签名算法，支持 HS256/HS384/HS512/RS256
     'algorithm' => getenv('JWT_ALGORITHM') ?: 'HS256',

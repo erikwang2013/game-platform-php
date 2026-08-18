@@ -195,7 +195,7 @@ curl -X POST http://localhost:8788/api/auth/register \
 - **18-layer defense-in-depth**: XSS/SQL injection/CSRF/path traversal/command injection detection
 - **HTTP method whitelist**: Only GET/POST/PUT/DELETE/OPTIONS/HEAD allowed
 - **JWT authentication**: access_token 2h + refresh_token 14d, concurrent session limit
-- **JWT startup check**: startup refused if `JWT_SECRET_KEY` is missing or still the default value
+- **JWT startup check**: separate keys per app (`ADMIN_JWT_SECRET_KEY` / `SERVICE_JWT_SECRET_KEY`), startup refused if missing or still the default value
 - **Payment callback fail-closed**: provider whitelist (stripe/paypal only) + missing secret / failed verification / timestamp out of range all rejected + bccomp amount check + transactional crediting
 - **RBAC authorization**: method.path granularity, Redis 60s cache
 - **Click captcha**: Required for login/registration

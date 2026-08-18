@@ -26,7 +26,7 @@ class WebhookController extends BaseController
     {
         $url = $request->input('url', '');
         $events = $request->input('events', []);
-        if (!filter_var($url, FILTER_VALIDATE_URL)) return $this->fail('Invalid URL', 422);
+        if (!self::isSafeWebhookUrl($url)) return $this->fail('Invalid URL: 仅支持 https 公网地址', 422);
         if (empty($events) || !is_array($events)) return $this->fail('Events required', 422);
 
         $allowedEvents = ['deposit.completed', 'withdraw.completed', 'exchange.completed', 'game.played', 'user.registered', 'risk.alert', 'user.vip_upgraded'];
@@ -83,11 +83,31 @@ class WebhookController extends BaseController
 
     private function deliver(string $url, array $data): bool
     {
+        if (!self::isSafeWebhookUrl($url)) return false;
         try {
             (new \GuzzleHttp\Client(['timeout' => 5]))->post($url, ['json' => $data]);
             return true;
         } catch (\Throwable $e) {
             return false;
         }
+    }
+
+    /**
+     * SSRF 防护: 仅允许 https 公网地址, 拒绝内网/环回/保留 IP 段
+     */
+    private static function isSafeWebhookUrl(string $url): bool
+    {
+        if (!filter_var($url, FILTER_VALIDATE_URL)) return false;
+        if (strtolower((string) parse_url($url, PHP_URL_SCHEME)) !== 'https') return false;
+        $host = (string) parse_url($url, PHP_URL_HOST);
+        if ($host === '') return false;
+        $ips = filter_var($host, FILTER_VALIDATE_IP) ? [$host] : (gethostbynamel($host) ?: []);
+        if (empty($ips)) return false;
+        foreach ($ips as $ip) {
+            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
+                return false;
+            }
+        }
+        return true;
     }
 }

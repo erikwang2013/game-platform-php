@@ -97,8 +97,8 @@ class ProfileController extends BaseController
             return $this->fail('旧密码错误', 422);
         }
 
-        if (strlen($newPassword) < 6 || strlen($newPassword) > 32) {
-            return $this->fail('新密码长度 6-32 位', 422);
+        if (strlen($newPassword) < 8 || strlen($newPassword) > 32 || !preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/', $newPassword)) {
+            return $this->fail('新密码需 8-32 位，且包含大小写字母和数字', 422);
         }
 
         $user->password = password_hash($newPassword, PASSWORD_BCRYPT);

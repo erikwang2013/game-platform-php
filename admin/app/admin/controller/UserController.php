@@ -93,7 +93,7 @@ class UserController extends BaseController
     {
         $validator = validator($request->all(), [
             'username' => 'required|string|min:3|max:50',
-            'password' => 'required|string|min:6|max:32',
+            'password' => 'required|string|min:8|max:32|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/',
             'real_name' => 'required|string|max:50',
             'status' => 'in:0,1',
         ]);
@@ -168,7 +168,11 @@ class UserController extends BaseController
         $user->status = (int) $request->input('status', $user->status);
 
         if ($request->has('password') && !empty($request->input('password'))) {
-            $user->password = password_hash($request->input('password'), PASSWORD_BCRYPT);
+            $newPassword = (string) $request->input('password');
+            if (strlen($newPassword) < 8 || strlen($newPassword) > 32 || !preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/', $newPassword)) {
+                return $this->fail('密码需 8-32 位，且包含大小写字母和数字', 422);
+            }
+            $user->password = password_hash($newPassword, PASSWORD_BCRYPT);
         }
         if ($request->has('phone')) {
             $user->phone = $request->input('phone', '');

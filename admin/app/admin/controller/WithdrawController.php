@@ -104,20 +104,20 @@ class WithdrawController extends BaseController
         $note   = $request->input('note', '');
         $adminId = $request->adminId;
 
-        // 原子状态翻转：仅 pending 可处理，防止并发双击重复审核/重复退款
-        $flipped = WithdrawOrder::where('id', $orderId)
-            ->where('status', 'pending')
-            ->update([
-                'status'      => $action === 'approve' ? 'approved' : 'rejected',
-                'reviewer_id' => $adminId,
-                'review_note' => $note,
-                'reviewed_at' => date('Y-m-d H:i:s'),
-            ]);
-        if (!$flipped) {
-            return $this->fail('该订单已处理', 422);
-        }
-
         if ($action === 'approve') {
+            // 原子状态翻转：仅 pending 可处理，防止并发双击重复审核
+            $flipped = WithdrawOrder::where('id', $orderId)
+                ->where('status', 'pending')
+                ->update([
+                    'status'      => 'approved',
+                    'reviewer_id' => $adminId,
+                    'review_note' => $note,
+                    'reviewed_at' => date('Y-m-d H:i:s'),
+                ]);
+            if (!$flipped) {
+                return $this->fail('该订单已处理', 422);
+            }
+
             $order = WithdrawOrder::find($orderId);
             NotificationService::send(
                 $order->user_id,
@@ -131,9 +131,21 @@ class WithdrawController extends BaseController
             return $this->success([], '审核通过');
         }
 
-        // reject: 退款与流水记录在同一事务，失败整体回滚
+        // reject: 状态翻转 + 退款 + 流水同一事务，失败整体回滚，订单保持 pending 可重试
         try {
-            return Db::transaction(function () use ($orderId, $note) {
+            return Db::transaction(function () use ($orderId, $note, $adminId) {
+                $flipped = WithdrawOrder::where('id', $orderId)
+                    ->where('status', 'pending')
+                    ->update([
+                        'status'      => 'rejected',
+                        'reviewer_id' => $adminId,
+                        'review_note' => $note,
+                        'reviewed_at' => date('Y-m-d H:i:s'),
+                    ]);
+                if (!$flipped) {
+                    throw new \RuntimeException('order already processed');
+                }
+
                 $order = WithdrawOrder::find($orderId);
 
                 $refunded = UserWallet::addBalance($order->user_id, $order->platform_amount);
@@ -156,6 +168,9 @@ class WithdrawController extends BaseController
                 return $this->success([], '已驳回并退款');
             });
         } catch (\Throwable $e) {
+            if (WithdrawOrder::where('id', $orderId)->value('status') !== 'pending') {
+                return $this->fail('该订单已处理', 422);
+            }
             Log::error('Withdraw review refund failed: ' . $e->getMessage());
             return $this->fail('退款失败，请重试', 500);
         }
@@ -299,24 +314,35 @@ class WithdrawController extends BaseController
 
         foreach ($ids as $hashid) {
             $orderId = $this->decodeId($hashid);
-            // 原子状态翻转，跳过已处理订单，避免重复退款
-            $flipped = WithdrawOrder::where('id', $orderId)
-                ->where('status', 'pending')
-                ->update([
-                    'status' => $action === 'approve' ? 'approved' : 'rejected',
-                    'reviewer_id' => $request->adminId,
-                    'review_note' => $note,
-                    'reviewed_at' => date('Y-m-d H:i:s'),
-                ]);
-            if (!$flipped) continue;
 
             if ($action === 'approve') {
-                $successCount++;
+                // 原子状态翻转，跳过已处理订单
+                $flipped = WithdrawOrder::where('id', $orderId)
+                    ->where('status', 'pending')
+                    ->update([
+                        'status' => 'approved',
+                        'reviewer_id' => $request->adminId,
+                        'review_note' => $note,
+                        'reviewed_at' => date('Y-m-d H:i:s'),
+                    ]);
+                if ($flipped) $successCount++;
                 continue;
             }
 
+            // reject: 状态翻转 + 退款同一事务，失败回滚保持 pending 可重试
             try {
-                Db::transaction(function () use ($orderId, $note) {
+                $flipped = Db::transaction(function () use ($orderId, $note, $request) {
+                    $flipped = WithdrawOrder::where('id', $orderId)
+                        ->where('status', 'pending')
+                        ->update([
+                            'status' => 'rejected',
+                            'reviewer_id' => $request->adminId,
+                            'review_note' => $note,
+                            'reviewed_at' => date('Y-m-d H:i:s'),
+                        ]);
+                    if (!$flipped) {
+                        return false;
+                    }
                     $order = WithdrawOrder::find($orderId);
                     if (!UserWallet::addBalance($order->user_id, $order->platform_amount)) {
                         throw new \RuntimeException('refund failed');
@@ -332,8 +358,9 @@ class WithdrawController extends BaseController
                     $transaction->ref_id        = $order->id;
                     $transaction->remark        = '批量审核退回: ' . $note;
                     $transaction->save();
+                    return true;
                 });
-                $successCount++;
+                if ($flipped) $successCount++;
             } catch (\Throwable $e) {
                 Log::error('Withdraw batch review refund failed: ' . $e->getMessage());
             }

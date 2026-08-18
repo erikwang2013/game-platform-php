@@ -19,6 +19,7 @@ use support\Request;
 use support\Response;
 use support\Db;
 use app\event\EventBus;
+use app\service\NotificationService;
 use app\service\VipService;
 
 /**
@@ -295,6 +296,8 @@ class ExchangeController extends BaseController
             Db::commit();
 
             EventBus::emit('exchange.completed', ['user_id' => $userId, 'game_id' => $gameId, 'direction' => $direction, 'platform_amount' => $platformAmount]);
+
+            NotificationService::send($userId, 'exchange', 'Exchange Completed', "Exchange {$direction}: {$platformAmount} platform tokens (game #{$gameId})", 'exchange_record', $record->id);
 
             return $this->success([
                 'exchange_id'      => $this->encodeId($record->id),
