@@ -115,7 +115,7 @@ class GameCategoryController extends BaseController
         }
 
         // 移除关联关系
-        Db::table('erik_game_category_rel')->where('category_id', $id)->delete();
+        Db::table('game_category_rel')->where('category_id', $id)->delete();
         $category->delete();
 
         return $this->success([], '删除成功');
@@ -147,7 +147,7 @@ class GameCategoryController extends BaseController
         }, $request->input('game_ids', []));
 
         // 删除旧关联
-        Db::table('erik_game_category_rel')->where('category_id', $categoryId)->delete();
+        Db::table('game_category_rel')->where('category_id', $categoryId)->delete();
 
         // 插入新关联
         $rows = array_map(function ($gameId) use ($categoryId) {
@@ -158,7 +158,7 @@ class GameCategoryController extends BaseController
         }, $gameIds);
 
         if (!empty($rows)) {
-            Db::table('erik_game_category_rel')->insert($rows);
+            Db::table('game_category_rel')->insert($rows);
         }
 
         return $this->success([], '分配成功');

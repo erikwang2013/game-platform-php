@@ -11,7 +11,7 @@ use support\Model;
 
 class Notification extends Model
 {
-    protected $table = 'erik_notification';
+    protected $table = 'notification';
 
     public $incrementing = false;
     protected $keyType = 'int';

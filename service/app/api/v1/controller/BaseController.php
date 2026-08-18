@@ -9,7 +9,6 @@ namespace app\api\v1\controller;
 
 use app\common\HashidsService;
 use app\common\SnowflakeService;
-use support\Request;
 use support\Response;
 
 /**

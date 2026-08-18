@@ -134,6 +134,8 @@ Redis Pub/Sub (channel: platform:events):
   VipService          — 累计经验值
   NotificationService — 发送通知
   WebhookController   — 投递外部 webhook
+
+> 注：截至 2026-08-18，`emit()` 有调用方但 `subscribe()` 无任何进程注册（P0-4 未做），事件目前仅发布无消费，订阅者为设计目标。
 ```
 
 ## 3. 中间件执行链
@@ -171,7 +173,8 @@ Provider API:
 用户 → POST /api/deposit/create → 生成订单 (status=pending)
      → 跳转第三方支付 (Stripe/PayPal)
      → 支付成功 → 回调 /api/payment/callback
-     → 验证签名 → 更新订单 (status=confirmed)
+     → provider 白名单(仅 stripe/paypal) + 跨渠道冒用校验 + 验签(fail-closed) + 时间戳±300s + bccomp 金额核对
+     → 更新订单 (status=confirmed, 事务化)
      → UserWallet::addBalance() → 平台币到账
      → EventBus::emit('deposit.completed')
        → VipService::addExp() → EXP累计 → VIP升级检测

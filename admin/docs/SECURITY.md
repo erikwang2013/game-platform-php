@@ -247,17 +247,19 @@ Lua 脚本在 Redis 服务端单线程执行，**天然原子化**，消除 TOCT
 
 ### 降级策略
 
-Redis 异常（连接超时、不可用等）时 **fail-open**：
+Redis 异常（连接超时、不可用等）时 **fail-closed**：
 
 ```php
 try {
     $result = Redis::eval($lua, ...);
 } catch (\Throwable $e) {
-    return $handler($request); // Redis down, 放行所有请求
+    // Redis down: 限流不可用即拒绝，避免安全防线失效（登录/支付回调限流为空转）
+    return json(['code' => 503, 'message' => '服务暂不可用，请稍后再试', 'data' => []])
+        ->withStatus(503)->withHeaders(['Retry-After' => '5']);
 }
 ```
 
-宁可短时间丧失限流保护，也不阻断正常业务请求。
+限流是登录防暴力破解、支付回调防重放的第一道安全防线，Redis 故障时宁可拒绝请求（503），也不放行。
 
 ### 5.4 账号锁定机制
 
@@ -300,7 +302,7 @@ AdminAuth 中间件实现，挂载在需要认证的路由组上。
 | 参数 | 值 | 说明 |
 |------|-----|------|
 | 算法 | HS256 | HMAC-SHA256 对称签名 |
-| 密钥 | `JWT_SECRET` | 环境变量注入，生产环境需更换 |
+| 密钥 | `JWT_SECRET_KEY` | 环境变量注入，缺失或仍为默认值时**拒绝启动**（fail-closed） |
 | access_token TTL | 7200s (2h) | `JWT_TTL` |
 | refresh_token TTL | 1209600s (14d) | `JWT_REFRESH_TTL` |
 | 签发者 | `open-admin` | `JWT_ISSUER` |
@@ -315,6 +317,8 @@ AdminAuth 中间件实现，挂载在需要认证的路由组上。
 4. 成功 → 注入 `$request->adminId` 和 `$request->adminUsername`
 
 **黑名单机制**：用户登出时，将 `md5(token)` 写入 Redis，TTL 设为 JWT 剩余有效期。Redis 故障时黑名单检查被跳过（fail-open），此时已登出的 Token 仍可短期使用，但 JWT 本身的短期有效期（2h）作为兜底保护。
+
+**Token 刷新**：`POST /api/auth/refresh` 校验原 refresh token（`token_type=refresh` 且未过期/未拉黑）后才轮换签发，并校验 `sub` 必须为有效用户 ID —— **不再签发 sub=null 的 refresh token**，刷新失败直接返回 401。
 
 ### 6.2 并发会话限制
 
@@ -371,13 +375,29 @@ API 权限标识格式：`{method}.{path}`
 - `get.admin/user` — 查看用户列表
 
 **鉴权流程**：
-1. `$request->adminId` 为空 → 放行（路由未配置认证前置）
+1. `$request->adminId` 为空（未登录）→ 直接 401 `{"code": 401, "message": "未登录"}`，不再放行
 2. 获取用户 → 角色（跳过 `status=0` 的禁用角色）→ 权限列表
 3. 超级管理员（`slug = '*'`）→ 直接放行
 4. 构造 `strtolower(method) . '.' . trim(path, '/')` → 对比权限列表
 5. 匹配失败 → 403 `{"code": 403, "message": "无权限访问"}`
 
 **二次确认**：BaseController 提供 `confirmPassword()` 方法，敏感操作（删除用户、数据导出等）在 Controller 层额外要求输入当前密码，防止会话劫持后被未授权操作。
+
+### 6.4 支付回调验签（fail-closed）
+
+`POST /api/payment/callback`（Stripe/PayPal 充值回调）验签采用 **fail-closed**，任何配置缺失或校验异常均拒绝回调：
+
+| 场景 | 行为 |
+|------|------|
+| Stripe 未配置 `STRIPE_WEBHOOK_SECRET` | 拒绝（403），不再接受无签名回调 |
+| Stripe 签名缺失 / 验签失败 | 拒绝（403） |
+| Stripe 时间戳 `t=` 缺失或与服务器时间差 **> ±5 分钟** | 拒绝（403），防重放 |
+| PayPal 未配置 `PAYPAL_WEBHOOK_ID` | 拒绝（403） |
+| PayPal 回查验证异常 / 非 SUCCESS | 拒绝（403） |
+| 可选 `CALLBACK_TRUSTED_IPS` 配置后来源 IP 不在白名单 | 拒绝（403） |
+| 回调 provider 与订单支付方式不一致 / 支付方式不存在 | 拒绝（403） |
+
+回调入账（状态更新 + 余额 + 流水）在同一数据库事务内完成，任一步失败整体回滚，防止半入账。
 
 ---
 
@@ -489,7 +509,7 @@ OperationLog 中间件对 POST / PUT / DELETE 请求自动记录操作日志。G
 
 | 环境变量 | 用途 | 包 | 生产要求 |
 |----------|------|-----|---------|
-| JWT_SECRET | JWT 签名密钥 | erikwang2013/jwt-webman | 64+ 字符随机字符串 |
+| JWT_SECRET_KEY | JWT 签名密钥 | erikwang2013/jwt-webman | 64+ 字符随机字符串；缺失或默认值拒绝启动 |
 | JWT_ALGORITHM | JWT 签名算法 | 同上 | 保持 HS256 |
 | HASHIDS_SALT | ID 编码盐值 | erikwang2013/hashids | 随机字符串 |
 | SNOWFLAKE_DATACENTER_ID | 数据中心 ID (0-31) | erikwang2013/snowflake-php | 单机房保持默认 |
@@ -509,7 +529,7 @@ OperationLog 中间件对 POST / PUT / DELETE 请求自动记录操作日志。G
 | 传输加密 | `config/encryption.php` → `key` | `ENCRYPTION_KEY` |
 | 存储加密 | `config/encryptable.php` → `key` | `ENCRYPTABLE_KEY` |
 | ID 混淆 | `config/hashids.php` → `connections.main.salt` | `HASHIDS_SALT` |
-| JWT 签名 | `config/plugin/erikwang2013/jwt/jwt` | `JWT_SECRET` |
+| JWT 签名 | `config/plugin/erikwang2013/jwt/jwt` | `JWT_SECRET_KEY` |
 
 ---
 
@@ -594,7 +614,7 @@ Policy: https://erik.xyz/security-policy
 | 局限 | 影响范围 | 缓解措施 |
 |------|---------|---------|
 | CSRF 保护仅对浏览器有效 | 非浏览器客户端（curl, Postman, 移动 App）可跳过 Origin/Referer 检查 | 非浏览器客户端天然不受 CSRF 攻击；依赖 JWT 认证替代 Cookie |
-| Redis 不可用时限流和黑名单降级为 fail-open | 攻击者可绕过限流和高频拦截 | 监控 Redis 可用性告警；JWT 短期有效期作为兜底 |
+| Redis 不可用时限流 fail-closed（503）、黑名单检查 fail-open | 限流期间部分请求被拒绝；已登出 Token 短期可用 | 监控 Redis 可用性告警；JWT 短期有效期作为兜底 |
 | 无独立 WAF 引擎 | SecurityFilter 使用 `@preg_match` 正则匹配，非专用 WAF 规则引擎 | 生产环境建议前置 Nginx ModSecurity 或 Cloudflare WAF |
 | JWT 无状态无法主动失效 | Token 未过期前无法从服务端主动吊销（除黑名单外） | 黑名单 + 短期 2h TTL 降低风险窗口 |
 | IP 黑名单仅内存存储 | Redis 重启后黑名单丢失 | Ban 时长仅 15 分钟，影响有限 |

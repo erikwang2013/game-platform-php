@@ -11,7 +11,7 @@ use support\Model;
 
 class CountryConfig extends Model
 {
-    protected $table = 'erik_country_config';
+    protected $table = 'country_config';
 
     public $incrementing = false;
     protected $keyType = 'int';

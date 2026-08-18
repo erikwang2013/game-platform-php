@@ -11,7 +11,7 @@ use support\Model;
 
 class StatDaily extends Model
 {
-    protected $table = 'erik_stat_daily';
+    protected $table = 'stat_daily';
 
     public $incrementing = false;
     protected $keyType = 'int';

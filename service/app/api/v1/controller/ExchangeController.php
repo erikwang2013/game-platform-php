@@ -14,6 +14,7 @@ use app\model\Transaction;
 use app\model\UserGameWallet;
 use app\model\UserWallet;
 use hg\apidoc\annotation as Apidoc;
+use support\Log;
 use support\Request;
 use support\Response;
 use support\Db;
@@ -216,15 +217,18 @@ class ExchangeController extends BaseController
         $spreadPct = bcsub($spreadPct, bcmul($spreadPct, $vipDiscount, 8), 8);
         if (bccomp($spreadPct, '0', 8) < 0) $spreadPct = '0';
 
-        // Calculate amounts
+        // Calculate amounts — 与 quote() 同公式：sell 需除以 effectiveRate 换算，且平台入账为扣费后净值
         if ($direction === 'in') {
-            // Buy: spend platform tokens to get game tokens
-            $gameAmount = bcmul($platformAmount, $rate, 8);
+            // Buy: spend platform tokens to get game tokens (net of spread fee, matches quote)
+            $gameAmount = bcmul($platformAmount, $effectiveRate, 8);
             $spreadFee  = bcmul($gameAmount, bcdiv($spreadPct, '100', 8), 8);
+            $gameAmount = bcsub($gameAmount, $spreadFee, 8);
         } else {
-            // Sell: spend game tokens to get platform tokens
-            $gameAmount = bcmul($platformAmount, $rate, 8);
-            $spreadFee  = bcmul($gameAmount, bcdiv($spreadPct, '100', 8), 8);
+            // Sell: spend game tokens to get platform tokens (net of spread fee, matches quote)
+            $platformEquivalent   = bcdiv($platformAmount, $effectiveRate, 8);
+            $spreadFee            = bcmul($platformEquivalent, bcdiv($spreadPct, '100', 8), 8);
+            $actualPlatformAmount = bcsub($platformEquivalent, $spreadFee, 8);
+            $gameAmount           = $platformEquivalent;
         }
 
         // Use a database transaction to ensure atomicity
@@ -249,8 +253,8 @@ class ExchangeController extends BaseController
                     return $this->fail('Insufficient game balance', 400);
                 }
 
-                // Add platform balance
-                $added = UserWallet::addBalance($userId, $gameAmount);
+                // Add platform balance (扣费后净值)
+                $added = UserWallet::addBalance($userId, $actualPlatformAmount);
                 if (!$added) {
                     Db::rollBack();
                     return $this->fail('Failed to add platform balance', 500);
@@ -279,7 +283,7 @@ class ExchangeController extends BaseController
             $transaction->id            = $this->generateId();
             $transaction->user_id       = $userId;
             $transaction->type          = $direction === 'in' ? 'exchange_buy' : 'exchange_sell';
-            $transaction->amount        = $direction === 'in' ? '-' . $platformAmount : $gameAmount;
+            $transaction->amount        = $direction === 'in' ? '-' . $platformAmount : $actualPlatformAmount;
             $transaction->balance_after = $balanceAfter;
             $transaction->ref_type      = 'exchange_record';
             $transaction->ref_id        = $record->id;
@@ -303,7 +307,8 @@ class ExchangeController extends BaseController
             ], 'Exchange successful');
         } catch (\Throwable $e) {
             Db::rollBack();
-            return $this->fail('Exchange failed: ' . $e->getMessage(), 500);
+            Log::error('Exchange failed', ['user_id' => $userId, 'direction' => $direction, 'error' => $e->getMessage()]);
+            return $this->fail('Exchange failed, please try again later', 500);
         }
     }
 
@@ -312,16 +317,21 @@ class ExchangeController extends BaseController
      */
     private function addGameBalance(int $userId, int $gameId, int $currencyId, string $amount): void
     {
-        $wallet = UserGameWallet::firstOrNew([
-            'user_id'     => $userId,
-            'game_id'     => $gameId,
-            'currency_id' => $currencyId,
-        ]);
+        // 事务内行锁，避免 read-modify-write 竞态（调用方已在 doExchange 事务中）
+        $wallet = UserGameWallet::where('user_id', $userId)
+            ->where('game_id', $gameId)
+            ->where('currency_id', $currencyId)
+            ->lockForUpdate()
+            ->first();
 
-        if (!$wallet->exists) {
-            $wallet->id             = $this->generateId();
-            $wallet->frozen_balance = '0.0000';
-            $wallet->balance        = '0.0000';
+        if (!$wallet) {
+            $wallet                    = new UserGameWallet();
+            $wallet->id                = $this->generateId();
+            $wallet->user_id           = $userId;
+            $wallet->game_id           = $gameId;
+            $wallet->currency_id       = $currencyId;
+            $wallet->frozen_balance    = '0.0000';
+            $wallet->balance           = '0.0000';
         }
 
         $wallet->balance = bcadd($wallet->balance, $amount, 8);
@@ -336,6 +346,7 @@ class ExchangeController extends BaseController
         $wallet = UserGameWallet::where('user_id', $userId)
             ->where('game_id', $gameId)
             ->where('currency_id', $currencyId)
+            ->lockForUpdate()
             ->first();
 
         if (!$wallet) {

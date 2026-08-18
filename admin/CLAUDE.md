@@ -17,6 +17,7 @@ Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 | 认证 | 登录/注册/刷新/登出 + 验证码 + 账号锁定 + 会话限制 |
 | 仪表盘 | 实时统计/趋势/分布/日志（Redis 5m 缓存）|
 | 数据分析 | 12 个端点：总览/排行/DAU/小时/行为分布/营收/转化/概率/留存/漏斗/ARPU/经济指标（MySQL 实时聚合）|
+| 工单 | 列表/详情/回复/关闭/指派（5 个端点，AdminAuth + AdminPermission）|
 | 用户 | CRUD + 批量删除/启禁用 + Excel 导入 |
 | 角色权限 | CRUD + 权限树 + RBAC method.path 鉴权 |
 | 系统配置 | 键值对 CRUD |

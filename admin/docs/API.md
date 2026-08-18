@@ -1572,9 +1572,40 @@ POST /admin/upload
 - 登录端点 `/api/auth/login`: 10 次/分钟
 - 注册端点 `/api/auth/register`: 5 次/分钟
 - 使用 Redis 原子化滑动窗口算法（Lua ZSET），避免 TOCTOU 竞态
-- Redis 不可用时 fail open（放行），不阻塞请求
+- Redis 不可用时 fail-closed：返回 503（`Retry-After: 5`），不放行请求
 
-## 14. 认证流程
+## 14. 数据分析 (Analytics)
+
+全部端点需认证（`AdminAuth` + `AdminPermission`），MySQL 实时聚合，共 12 个：
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | /admin/analytics/overview | 平台总览（今日/近7天） |
+| GET | /admin/analytics/game-ranking | 游戏排行（?days=7） |
+| GET | /admin/analytics/dau-trend | DAU 趋势（?days=30） |
+| GET | /admin/analytics/hourly-trend | 小时趋势 |
+| GET | /admin/analytics/action-distribution | 行为分布 |
+| GET | /admin/analytics/revenue | 营收分析 |
+| GET | /admin/analytics/conversion | 游戏转化率 |
+| GET | /admin/analytics/probability | 联合/条件概率 |
+| GET | /admin/analytics/retention | 留存分析 D1/D3/D7/D30 |
+| GET | /admin/analytics/funnel | 转化漏斗 |
+| GET | /admin/analytics/arpu | ARPU/ARPPU 趋势 |
+| GET | /admin/analytics/economy | 游戏币种经济指标 |
+
+## 15. 工单管理 (Ticket)
+
+全部端点需认证（`AdminAuth` + `AdminPermission`），共 5 个：
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | /admin/ticket/list | 工单列表（?page=&limit=&status=&type=） |
+| GET | /admin/ticket/{hashid} | 工单详情（含回复） |
+| POST | /admin/ticket/{hashid}/reply | 回复工单 |
+| POST | /admin/ticket/{hashid}/close | 关闭工单 |
+| POST | /admin/ticket/{hashid}/assign | 指定处理人（admin_id） |
+
+## 16. 认证流程
 
 完整的认证时序：
 
@@ -1610,9 +1641,10 @@ POST /admin/upload
    d. 设置 $request->adminId = sub 字段
     ↓
    AdminPermission 中间件:
-   a. 对资源路由解析权限标识
-   b. 查询用户角色 → 角色权限，进行匹配
-   c. 无权限 → 403
+   a. 未登录（adminId 为空）→ 401
+   b. 对资源路由解析权限标识
+   c. 查询用户角色 → 角色权限，进行匹配
+   d. 无权限 → 403
     ↓
    Controller 处理请求
     ↓

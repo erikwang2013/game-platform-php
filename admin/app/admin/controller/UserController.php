@@ -9,7 +9,6 @@ namespace app\admin\controller;
 
 use hg\apidoc\annotation as Apidoc;
 use app\model\AdminUser;
-use app\common\EncryptionService;
 use support\Request;
 use support\Response;
 

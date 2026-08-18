@@ -52,9 +52,9 @@ class UserWallet extends Model
             }
 
             $currentVersion = (int) $wallet->version;
-            $newBalance = bcadd($wallet->balance, $amount, 2);
+            $newBalance = bcadd($wallet->balance, $amount, 4);
 
-            if (bccomp($newBalance, '0', 2) < 0) {
+            if (bccomp($newBalance, '0', 4) < 0) {
                 return false;
             }
 
@@ -66,9 +66,9 @@ class UserWallet extends Model
                 ]);
 
             if ($affected > 0) {
-                if (bccomp($amount, '0', 2) > 0) {
+                if (bccomp($amount, '0', 4) > 0) {
                     $wallet->increment('total_earned', $amount);
-                } elseif (bccomp($amount, '0', 2) < 0) {
+                } elseif (bccomp($amount, '0', 4) < 0) {
                     $absAmount = ltrim($amount, '-');
                     $wallet->increment('total_spent', $absAmount);
                 }
@@ -88,7 +88,7 @@ class UserWallet extends Model
      */
     public static function deductBalance(int $userId, string $amount): bool
     {
-        $negated = bccomp($amount, '0', 2) > 0 ? '-' . $amount : $amount;
+        $negated = bccomp($amount, '0', 4) > 0 ? '-' . $amount : $amount;
         return static::addBalance($userId, $negated);
     }
 

@@ -5,7 +5,7 @@ use support\Model;
 
 class VipLevel extends Model
 {
-    protected $table = 'erik_vip_level';
+    protected $table = 'vip_level';
     public $incrementing = false;
     protected $keyType = 'int';
     public $timestamps = false;

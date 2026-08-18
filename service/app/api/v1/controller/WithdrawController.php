@@ -218,7 +218,8 @@ class WithdrawController extends BaseController
             ], 'Withdrawal request submitted');
         } catch (\Throwable $e) {
             Db::rollBack();
-            return $this->fail('Withdrawal failed: ' . $e->getMessage(), 500);
+            \support\Log::error('Withdrawal failed', ['user_id' => $userId, 'error' => $e->getMessage()]);
+            return $this->fail('Withdrawal failed, please try again later', 500);
         }
     }
 

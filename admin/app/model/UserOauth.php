@@ -12,7 +12,7 @@ use Erikwang2013\Encryptable\Encryptable;
 
 class UserOauth extends Model
 {
-    protected $table = 'erik_user_oauth';
+    protected $table = 'user_oauth';
 
     public $incrementing = false;
     protected $keyType = 'int';

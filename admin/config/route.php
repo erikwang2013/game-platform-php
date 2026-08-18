@@ -25,10 +25,10 @@ use support\Request;
  */
 function v(string $controller, string $action): \Closure
 {
-    return function (Request $request) use ($controller, $action) {
+    return function (Request $request, ...$params) use ($controller, $action) {
         $version = $request->apiVersion ?? 'v1';
         $class = "\\app\\api\\{$version}\\controller\\{$controller}";
-        return (new $class)->{$action}($request);
+        return (new $class)->{$action}($request, ...$params);
     };
 }
 
@@ -185,6 +185,27 @@ Route::group('/admin', function () {
 
     // 全局搜索
     Route::get('/search', [app\admin\controller\SearchController::class, 'search']);
+
+    // 数据分析（MySQL 实时聚合）
+    Route::get('/analytics/overview', [app\admin\controller\AnalyticsController::class, 'overview']);
+    Route::get('/analytics/game-ranking', [app\admin\controller\AnalyticsController::class, 'gameRanking']);
+    Route::get('/analytics/dau-trend', [app\admin\controller\AnalyticsController::class, 'dauTrend']);
+    Route::get('/analytics/hourly-trend', [app\admin\controller\AnalyticsController::class, 'hourlyTrend']);
+    Route::get('/analytics/action-distribution', [app\admin\controller\AnalyticsController::class, 'actionDistribution']);
+    Route::get('/analytics/revenue', [app\admin\controller\AnalyticsController::class, 'revenue']);
+    Route::get('/analytics/conversion', [app\admin\controller\AnalyticsController::class, 'conversion']);
+    Route::get('/analytics/probability', [app\admin\controller\AnalyticsController::class, 'probability']);
+    Route::get('/analytics/retention', [app\admin\controller\AnalyticsController::class, 'retention']);
+    Route::get('/analytics/funnel', [app\admin\controller\AnalyticsController::class, 'funnel']);
+    Route::get('/analytics/arpu', [app\admin\controller\AnalyticsController::class, 'arpu']);
+    Route::get('/analytics/economy', [app\admin\controller\AnalyticsController::class, 'economy']);
+
+    // 工单管理
+    Route::get('/ticket/list', [app\admin\controller\TicketController::class, 'list']);
+    Route::get('/ticket/{hashid}', [app\admin\controller\TicketController::class, 'detail']);
+    Route::post('/ticket/{hashid}/reply', [app\admin\controller\TicketController::class, 'reply']);
+    Route::post('/ticket/{hashid}/close', [app\admin\controller\TicketController::class, 'close']);
+    Route::post('/ticket/{hashid}/assign', [app\admin\controller\TicketController::class, 'assign']);
 })->middleware([
     app\middleware\AdminAuth::class,
     app\middleware\AdminPermission::class,

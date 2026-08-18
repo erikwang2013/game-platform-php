@@ -77,7 +77,7 @@ class AuthController extends BaseController
 
         // Generate tokens
         $accessToken  = jwt()->create(['sub' => $userId, 'username' => $username]);
-        $refreshToken = jwt()->create(['sub' => $userId, 'type' => 'refresh']);
+        $refreshToken = jwt()->create(['sub' => $userId, 'token_type' => 'refresh']);
 
         return $this->success([
             'access_token'  => $accessToken,
@@ -130,7 +130,7 @@ class AuthController extends BaseController
 
         // Generate tokens
         $accessToken  = jwt()->create(['sub' => $user->id, 'username' => $user->username]);
-        $refreshToken = jwt()->create(['sub' => $user->id, 'type' => 'refresh']);
+        $refreshToken = jwt()->create(['sub' => $user->id, 'token_type' => 'refresh']);
 
         return $this->success([
             'access_token'  => $accessToken,
@@ -152,16 +152,21 @@ class AuthController extends BaseController
     public function refresh(Request $request): Response
     {
         try {
-            $accessToken = jwt()->refresh();
+            // 校验原 refresh token（token_type=refresh 且未过期/未拉黑），并轮换为新 refresh token
+            $newRefresh = jwt()->refresh();
+            $payload = jwt()->decode($newRefresh);
+            $sub = (int) ($payload['sub'] ?? 0);
+            if ($sub <= 0) {
+                return $this->fail('Invalid refresh token', 401);
+            }
+            $accessToken = jwt()->create(['sub' => $sub]);
         } catch (\Throwable $e) {
-            $accessToken = jwt()->create(['sub' => $request->userId]);
+            return $this->fail('Invalid or expired refresh token', 401);
         }
-
-        $refreshToken = jwt()->create(['sub' => $request->userId]);
 
         return $this->success([
             'access_token'  => $accessToken,
-            'refresh_token' => $refreshToken,
+            'refresh_token' => $newRefresh,
         ], 'Token refreshed');
     }
 }

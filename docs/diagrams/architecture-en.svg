@@ -65,7 +65,7 @@
   <rect x="760" y="556" width="140" height="30" rx="6" fill="#fef2f2"/><text x="830" y="576" text-anchor="middle" fill="#7f1d1d" font-size="12">OpenSearch (Alt)</text>
 
   <rect x="200" y="610" width="560" height="36" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1" stroke-dasharray="6,3"/>
-  <text x="480" y="634" text-anchor="middle" fill="#475569" font-size="11">common/ Shared Layer — 34 Models · Snowflake ID · Hashids · Encryption · Scout</text>
+  <text x="480" y="634" text-anchor="middle" fill="#475569" font-size="11">Models/Shared Services (admin 46 + service 44) · Snowflake ID · Hashids · Encryption · Scout</text>
 
   <text x="480" y="705" text-anchor="middle" fill="#94a3b8" font-size="11">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt; — https://erik.xyz</text>
 </svg>

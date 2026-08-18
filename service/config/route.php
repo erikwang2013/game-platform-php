@@ -21,10 +21,10 @@ use support\Request;
 
 function v(string $controller, string $action): \Closure
 {
-    return function (Request $request) use ($controller, $action) {
+    return function (Request $request, ...$params) use ($controller, $action) {
         $version = $request->apiVersion ?? 'v1';
         $class = "\\app\\api\\{$version}\\controller\\{$controller}";
-        return (new $class)->{$action}($request);
+        return (new $class)->{$action}($request, ...$params);
     };
 }
 

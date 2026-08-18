@@ -10,6 +10,7 @@ namespace app\middleware;
 use Webman\MiddlewareInterface;
 use Webman\Http\Response;
 use Webman\Http\Request;
+use support\Log;
 use support\Redis;
 
 class RateLimit implements MiddlewareInterface
@@ -57,7 +58,13 @@ LUA;
         try {
             $result = Redis::eval($lua, 1, $key, $windowStart, $limit, $now, $now . '.' . mt_rand(), $window + 10);
         } catch (\Throwable $e) {
-            return $handler($request); // Redis down, fail open
+            // Redis 故障时 fail-closed：限流不可用即拒绝，避免安全防线失效（登录/支付回调限流为空转）
+            Log::error('RateLimit redis unavailable: ' . $e->getMessage());
+            return json([
+                'code'    => 503,
+                'message' => '服务暂不可用，请稍后再试',
+                'data'    => [],
+            ])->withStatus(503)->withHeaders(['Retry-After' => '5']);
         }
         $count     = (int) ($result[1] ?? 0);
         $remaining = max($limit - $count, 0);

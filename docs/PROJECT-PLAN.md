@@ -14,7 +14,7 @@
 |------|---------|
 | 控制器 | admin 32 + service 30 = 62 |
 | API 端点 | ~149 (admin 103 / service 88，含 Webhook/Provider 回调) |
-| 数据模型 | 各 52 份，admin/service **重复复制** (无共享层) |
+| 数据模型 | admin 46 / service 44，admin/service **重复复制** (无共享层) |
 | 测试 | 132 用例 / 8 文件 (admin 项目)，service 项目 **零测试** |
 | 版本 | v1.1 (2026-08-07)：Redis 插件、分析服务、Redis 降级、测试修复 |
 
@@ -63,30 +63,37 @@
 ### 通过项（安全审查确认无问题）
 钱包乐观锁+版本条件更新正确；回调幂等 `where status=pending` 条件更新正确；全 ORM 无直接拼 SQL；.env 未入 git；admin 全路由挂 AdminAuth+RBAC 默认拒绝；OAuth state 校验+单次消费正确。
 
+> **2026-08-18 修复状态**：C1/C2/C3/H1/H5 已修复（详见三.路线图状态标注）；H2 事件总线断链、H6 Apple 验签未做；M5 部分完成（RateLimit fail-closed）。问题清单保留为历史审计结论。
+
 ---
 
 ## 三、路线图
 
 ### P0 — 资金安全 + 正确性（先做，阻断上线）
 
-1. **支付回调 fail-closed**：provider 白名单（仅 stripe/paypal）+ 密钥缺失必须 500 拒绝 + PayPal 异常必拒（C1/C2）
-2. **JWT 启动校验**：env 无 `JWT_SECRET_KEY` 拒绝启动（C3）
-3. **分析服务挂路由**：注册 analytics 12 路由 + 权限点，修复 VERSIONS.md 承诺（H1）
-4. **事件总线打通**：注册常驻订阅进程消费，或改同步直调；事件落库 + 失败重试（H2）
-5. **Apple id_token 验签**：JWKS 验证 + aud/iss/exp（H6）
-6. **Stripe 重放与金额核对**：时间戳容差 + 与网关金额比对（H5）
+1. **支付回调 fail-closed**：provider 白名单（仅 stripe/paypal）+ 密钥缺失必须 500 拒绝 + PayPal 异常必拒（C1/C2） — ✅ 已完成（2026-08-18：provider 白名单 + 跨渠道冒用校验 + 来源 IP 可选校验 + 回调入账事务化）
+2. **JWT 启动校验**：env 无 `JWT_SECRET_KEY` 拒绝启动（C3） — ✅ 已完成（2026-08-18：JWT_SECRET_KEY 缺失或为默认值 `open-admin-jwt-secret-change-in-production` 时拒绝启动，admin/service 一致）
+3. **分析服务挂路由**：注册 analytics 12 路由 + 权限点，修复 VERSIONS.md 承诺（H1） — ✅ 已完成（2026-08-18：admin/config/route.php 注册 12 条 `/admin/analytics/*` 路由）
+4. **事件总线打通**：注册常驻订阅进程消费，或改同步直调；事件落库 + 失败重试（H2） — ⬜ 未做（emit 仍无消费者）
+5. **Apple id_token 验签**：JWKS 验证 + aud/iss/exp（H6） — ⬜ 未做
+6. **Stripe 重放与金额核对**：时间戳容差 + 与网关金额比对（H5） — ✅ 已完成（2026-08-18：t= 时间戳 ±300s 防重放 + bccomp 精度金额核对 + 未配置 secret/webhook_id 或验签异常一律拒绝）
 
 ### P1 — 可靠性 + 一致性
 
-7. **共享层去重**：common/model 抽 composer path repo（或符号链接），消除双份漂移（H3）
-8. **统一 Redis 降级封装**：fail 策略显式化 + 告警不静默；补 PayoutService/OAuth/ChatWebSocket 兜底（M5）
-9. **webman/queue 接线**：承载事件与 webhook 投递（消费重试、死信），ComputeDailyStats/ES 任务启用或删除（M7）
-10. **2FA 修复**：Base32 解码 + verify 加登录态与逐用户尝试锁定（M1）
-11. **提现原子化**：审核/打款条件更新 + 双重审核；限额 Redis Lua/唯一约束（M2/M4）
-12. **Webhook SSRF 阻断**：拒绝内网/保留地址（M3）
-13. **ClickHouse 二选一**：真实接入或摘除依赖 + 修订文档（M6）
-14. **死代码清理**：接线或删除 Vip/Achievement/Notification/FeatureFlag；删 Test model；DepositLog 审计落库（M8）
-15. **service 测试 + CI 门禁**：回调验签/提现流/Redis 降级/概率计算/乐观锁并发集成测试；phpunit 失败阻断；service 纳入 CI（当前 `|| echo warning` 允许失败）
+7. **共享层去重**：common/model 抽 composer path repo（或符号链接），消除双份漂移（H3） — ⬜ 未做
+8. **统一 Redis 降级封装**：fail 策略显式化 + 告警不静默；补 PayoutService/OAuth/ChatWebSocket 兜底（M5） — 🔶 部分完成（RateLimit fail-closed 已落地：Redis 故障时限流拒绝而非静默放行；其余未做）
+9. **webman/queue 接线**：承载事件与 webhook 投递（消费重试、死信），ComputeDailyStats/ES 任务启用或删除（M7） — ⬜ 未做
+10. **2FA 修复**：Base32 解码 + verify 加登录态与逐用户尝试锁定（M1） — ⬜ 未做
+11. **提现原子化**：审核/打款条件更新 + 双重审核；限额 Redis Lua/唯一约束（M2/M4） — ⬜ 未做
+12. **Webhook SSRF 阻断**：拒绝内网/保留地址（M3） — ⬜ 未做
+13. **ClickHouse 二选一**：真实接入或摘除依赖 + 修订文档（M6） — ⬜ 未做
+14. **死代码清理**：接线或删除 Vip/Achievement/Notification/FeatureFlag；删 Test model；DepositLog 审计落库（M8） — ✅ 已完成（2026-08-18：Test model 已删，DepositLogService 审计落库）
+15. **service 测试 + CI 门禁**：回调验签/提现流/Redis 降级/概率计算/乐观锁并发集成测试；phpunit 失败阻断；service 纳入 CI（当前 `|| echo warning` 允许失败） — ⬜ 未做（service 测试目录未建）
+
+**本轮（2026-08-18）额外已完成（不在原编号内）**：
+- **表前缀修复**：52 模型去除硬编码 `erik_` 前缀，消除 `erik_erik_` 双重前缀；DB 前缀统一由 config/database.php `prefix=erik_` 提供，install.sql 无需变更
+- **refresh token 重写**：service AuthController 刷新令牌逻辑重写
+- **DepositLogService service 版移植**：service/common/service/DepositLogService.php 补齐（消除 admin/service 双份漂移之一）
 
 ### P2 — 可观测 / 扩展 / 体验
 

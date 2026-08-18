@@ -11,7 +11,7 @@ use support\Model;
 
 class GameCategory extends Model
 {
-    protected $table = 'erik_game_category';
+    protected $table = 'game_category';
 
     public $incrementing = false;
     protected $keyType = 'int';

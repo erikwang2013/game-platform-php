@@ -10,7 +10,6 @@ namespace app\api\v1\controller;
 use app\model\Coupon;
 use app\model\UserCoupon;
 use hg\apidoc\annotation as Apidoc;
-use support\Db;
 use support\Request;
 use support\Response;
 

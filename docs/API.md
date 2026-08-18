@@ -1357,6 +1357,37 @@ action: approve / reject
 响应: Excel 文件下载 (xlsx)
 ```
 
+### 3.16 数据分析（MySQL 实时聚合）
+
+全部端点需认证（AdminAuth + AdminPermission），数据实时聚合自 MySQL，不依赖 ClickHouse。
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | /admin/analytics/overview | 平台总览（今日/近7天） |
+| GET | /admin/analytics/game-ranking | 游戏排行（?days=7） |
+| GET | /admin/analytics/dau-trend | DAU 趋势（?days=30） |
+| GET | /admin/analytics/hourly-trend | 小时趋势 |
+| GET | /admin/analytics/action-distribution | 行为分布 |
+| GET | /admin/analytics/revenue | 营收分析 |
+| GET | /admin/analytics/conversion | 游戏转化率 |
+| GET | /admin/analytics/probability | 联合/条件概率 |
+| GET | /admin/analytics/retention | 留存分析 D1/D3/D7/D30 |
+| GET | /admin/analytics/funnel | 转化漏斗 |
+| GET | /admin/analytics/arpu | ARPU/ARPPU 趋势 |
+| GET | /admin/analytics/economy | 游戏币种经济指标 |
+
+### 3.17 工单管理
+
+全部端点需认证（AdminAuth + AdminPermission）。
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | /admin/ticket/list | 工单列表（?page=&limit=&status=&type=） |
+| GET | /admin/ticket/{hashid} | 工单详情（含回复） |
+| POST | /admin/ticket/{hashid}/reply | 回复工单 |
+| POST | /admin/ticket/{hashid}/close | 关闭工单 |
+| POST | /admin/ticket/{hashid}/assign | 指定处理人（admin_id） |
+
 ## 4. 限流策略
 
 | 接口 | 限制 |

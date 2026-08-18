@@ -14,6 +14,8 @@ use common\service\DepositLogService;
 use app\model\UserWallet;
 use app\service\RiskService;
 use hg\apidoc\annotation as Apidoc;
+use support\Db;
+use support\Log;
 use support\Request;
 use support\Response;
 
@@ -46,6 +48,15 @@ class PaymentController extends BaseController
             return $this->fail('Invalid signature', 403);
         }
 
+        // 配置了可信回调来源 IP 列表时校验来源，未配置则不强制（仅限服务端到服务端的 Webhook）
+        $trustedIps = getenv('CALLBACK_TRUSTED_IPS') ?: '';
+        if ($trustedIps !== '') {
+            $ips = array_map('trim', explode(',', $trustedIps));
+            if (!in_array((string) $request->getRealIp(), $ips, true)) {
+                return $this->fail('Source IP not allowed', 403);
+            }
+        }
+
         $validator = validator($request->all(), [
             'order_no'       => 'required|string',
             'transaction_id' => 'required|string',
@@ -66,15 +77,15 @@ class PaymentController extends BaseController
             return $this->fail('Order not found', 404);
         }
 
-        // 回调 provider 必须与订单支付方式一致，防止跨渠道冒用
+        // 回调 provider 必须与订单支付方式一致，防止跨渠道冒用；支付方式不存在同样拒绝
         $method = PaymentMethod::find($order->payment_method_id);
-        if ($method && strtolower((string) $method->provider) !== $provider) {
+        if (!$method || strtolower((string) $method->provider) !== $provider) {
             return $this->fail('Provider mismatch', 403);
         }
 
-        // 入账金额与订单核对：回调携带金额时不一致直接拒绝
+        // 入账金额与订单核对：回调携带金额时不一致（或非数字）直接拒绝
         $callbackAmount = (string) $request->input('amount', '');
-        if ($callbackAmount !== '' && bccomp($callbackAmount, $order->amount, 4) !== 0) {
+        if ($callbackAmount !== '' && (!is_numeric($callbackAmount) || bccomp($callbackAmount, $order->amount, 4) !== 0)) {
             return $this->fail('Amount mismatch', 422);
         }
 
@@ -83,43 +94,59 @@ class PaymentController extends BaseController
             return $this->success(['order_no' => $order->order_no, 'status' => $order->status], 'Already processed');
         }
 
-        // Atomic status update prevents double-credit race condition
-        $updated = DepositOrder::where('id', $order->id)
-            ->where('status', 'pending')
-            ->update([
-                'status'         => $callbackStatus === 'success' ? 'confirmed' : 'cancelled',
-                'transaction_id' => $transactionId,
-                'paid_at'        => $callbackStatus === 'success' ? date('Y-m-d H:i:s') : null,
-            ]);
+        // 状态更新 + 余额入账 + 流水写入必须同事务，任一步失败整体回滚，防止半入账
+        Db::beginTransaction();
 
-        if (!$updated) {
-            return $this->success([], 'Already processed');
+        try {
+            // Atomic status update prevents double-credit race condition
+            $updated = DepositOrder::where('id', $order->id)
+                ->where('status', 'pending')
+                ->update([
+                    'status'         => $callbackStatus === 'success' ? 'confirmed' : 'cancelled',
+                    'transaction_id' => $transactionId,
+                    'paid_at'        => $callbackStatus === 'success' ? date('Y-m-d H:i:s') : null,
+                ]);
+
+            if (!$updated) {
+                Db::rollBack();
+                return $this->success([], 'Already processed');
+            }
+
+            if ($callbackStatus === 'success') {
+                $order->refresh();
+
+                // Credit the user's platform wallet; failure aborts the transaction
+                if (!UserWallet::addBalance($order->user_id, $order->platform_amount)) {
+                    throw new \RuntimeException('Wallet credit failed');
+                }
+
+                // Refresh wallet to get balance after credit
+                $wallet = UserWallet::where('user_id', $order->user_id)->first();
+                $balanceAfter = $wallet ? $wallet->balance : '0';
+
+                // Create transaction record
+                $transaction = new Transaction();
+                $transaction->id            = $this->generateId();
+                $transaction->user_id       = $order->user_id;
+                $transaction->type          = 'deposit';
+                $transaction->amount        = $order->platform_amount;
+                $transaction->balance_after = $balanceAfter;
+                $transaction->ref_type      = 'deposit';
+                $transaction->ref_id        = $order->id;
+                $transaction->remark        = "Deposit callback: {$order->order_no}";
+                $transaction->save();
+
+                DepositLogService::log($order->id, $order->user_id, $order->amount, $order->currency, 'confirmed');
+            }
+
+            Db::commit();
+        } catch (\Throwable $e) {
+            Db::rollBack();
+            Log::error('Payment callback failed', ['order_no' => $orderNo, 'error' => $e->getMessage()]);
+            return $this->fail('Callback processing failed', 500);
         }
 
         if ($callbackStatus === 'success') {
-            $order->refresh();
-
-            // Credit the user's platform wallet
-            UserWallet::addBalance($order->user_id, $order->platform_amount);
-
-            // Refresh wallet to get balance after credit
-            $wallet = UserWallet::where('user_id', $order->user_id)->first();
-            $balanceAfter = $wallet ? $wallet->balance : '0';
-
-            // Create transaction record
-            $transaction = new Transaction();
-            $transaction->id            = $this->generateId();
-            $transaction->user_id       = $order->user_id;
-            $transaction->type          = 'deposit';
-            $transaction->amount        = $order->platform_amount;
-            $transaction->balance_after = $balanceAfter;
-            $transaction->ref_type      = 'deposit';
-            $transaction->ref_id        = $order->id;
-            $transaction->remark        = "Deposit callback: {$order->order_no}";
-            $transaction->save();
-
-            DepositLogService::log($order->id, $order->user_id, $order->amount, $order->currency, 'confirmed');
-
             // Run risk check
             $riskResult = RiskService::check(
                 $order->user_id,
@@ -183,8 +210,8 @@ class PaymentController extends BaseController
 
         $secret = getenv('STRIPE_WEBHOOK_SECRET') ?: '';
         if (!$secret) {
-            // No secret configured — accept unsigned (development mode)
-            return true;
+            // Fail closed: 未配置密钥时拒绝一切回调，与 JWT 一致
+            return false;
         }
 
         $payload = $request->rawBody();
@@ -205,6 +232,12 @@ class PaymentController extends BaseController
             return false;
         }
 
+        // 时间戳新鲜度：签名 header 的 t= 即 payload 时间戳，缺失时上面已拒绝；
+        // 超过 ±5 分钟视为重放
+        if (abs(time() - (int) $timestamp) > 300) {
+            return false;
+        }
+
         $signedPayload = "{$timestamp}.{$payload}";
         $expectedSig = hash_hmac('sha256', $signedPayload, $secret);
 
@@ -214,6 +247,11 @@ class PaymentController extends BaseController
     private function verifyPayPalSignature(Request $request): bool
     {
         // PayPal uses a different verification: POST back to PayPal to verify
+        // Fail closed: 未配置 webhook_id 时拒绝一切回调
+        if (empty(getenv('PAYPAL_WEBHOOK_ID'))) {
+            return false;
+        }
+
         $verifyUrl = getenv('PAYPAL_VERIFY_URL') ?: 'https://api-m.paypal.com/v1/notifications/verify-webhook-signature';
 
         try {
@@ -238,8 +276,8 @@ class PaymentController extends BaseController
             $result = json_decode((string)$resp->getBody(), true);
             return ($result['verification_status'] ?? '') === 'SUCCESS';
         } catch (\Throwable $e) {
-            // No secret configured — accept unsigned (development mode)
-            return true;
+            // Fail closed: 验证异常视为验签失败
+            return false;
         }
     }
 }

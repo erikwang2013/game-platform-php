@@ -11,7 +11,7 @@ use support\Model;
 
 class TicketReply extends Model
 {
-    protected $table = 'erik_ticket_reply';
+    protected $table = 'ticket_reply';
     public $incrementing = false;
     protected $keyType = 'int';
     public $timestamps = false;

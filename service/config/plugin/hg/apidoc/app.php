@@ -17,7 +17,6 @@ return [
             'path' => 'app\api\v1\controller',
             'key' => 'service',
         ]],
-        'definitions' => "app\common\controller\Definitions",
         'auto_url' => [
             'letter_rule' => "lcfirst",
             'prefix' => "/api",

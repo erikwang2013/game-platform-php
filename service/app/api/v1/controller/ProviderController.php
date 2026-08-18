@@ -8,9 +8,6 @@ declare(strict_types=1);
 namespace app\api\v1\controller;
 
 use app\model\GamePlayLog;
-use app\model\UserGameWallet;
-use app\model\UserWallet;
-use app\model\Transaction;
 use app\provider\ProviderFactory;
 use support\Db;
 use support\Request;

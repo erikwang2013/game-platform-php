@@ -12,7 +12,7 @@ use Erikwang2013\Encryptable\Encryptable;
 
 class Game extends Model
 {
-    protected $table = 'erik_game';
+    protected $table = 'game';
 
     public $incrementing = false;
     protected $keyType = 'int';
@@ -50,6 +50,6 @@ class Game extends Model
 
     public function categories()
     {
-        return $this->belongsToMany(GameCategory::class, 'erik_game_category_rel', 'game_id', 'category_id');
+        return $this->belongsToMany(GameCategory::class, 'game_category_rel', 'game_id', 'category_id');
     }
 }

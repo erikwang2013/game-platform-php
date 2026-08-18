@@ -147,11 +147,6 @@ final class PayoutService
 
     public static function markCompleted(WithdrawOrder $order): void
     {
-        // 幂等：已完成的订单不重复标记，避免 syncStatus 轮询重复发通知
-        if ($order->status === 'completed') {
-            return;
-        }
-
         $order->status = 'completed';
         $order->payout_status = 'success';
         $order->paid_at = date('Y-m-d H:i:s');

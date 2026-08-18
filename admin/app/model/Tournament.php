@@ -8,7 +8,7 @@ use support\Model;
 
 class Tournament extends Model
 {
-    protected $table = 'erik_tournament';
+    protected $table = 'tournament';
     public $incrementing = false;
     protected $keyType = 'int';
 

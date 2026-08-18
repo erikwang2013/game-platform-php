@@ -69,12 +69,10 @@ game-platform-php/
 ├── install/                   # 一键安装向导
 │   ├── index.php              #   安装入口
 │   ├── Installer.php          #   安装核心逻辑
-│   ├── install.sql            #   合并安装 SQL（39张表+种子数据）
+│   ├── install.sql            #   合并安装 SQL（43张表+种子数据）
 │   └── assets/                #   静态资源
 │
-├── common/                    # 共享层 (PSR-4 autoload)
-│   ├── model/                 #   数据模型 (34个)
-│   ├── middleware/            #   共享中间件 (UserAuth)
+├── admin/common/ 与 service/common/   # 共享服务各一份 (DepositLogService 等，待抽共享层)
 │   └── service/               #   共享服务 (含 ClickHouse 概率计算)
 │
 ├── apps/
@@ -127,7 +125,7 @@ rm -rf install/
 
 安装向导会自动完成：
 - 环境检查（PHP版本、扩展、目录权限）
-- 创建数据库和数据表（合并 SQL，52 张表 + 种子数据）
+- 创建数据库和数据表（合并 SQL，43 张表 + 种子数据）
 - 创建超级管理员账户（bcrypt 加密）
 - 自动生成 JWT/加密密钥并写入 .env 文件
 - 生成 install.lock 防止重复安装
@@ -206,6 +204,8 @@ curl -X POST http://localhost:8788/api/auth/register \
 - **18 层纵深防御**：XSS/SQL注入/CSRF/路径遍历/命令注入检测拦截
 - **HTTP 方法白名单**：仅允许 GET/POST/PUT/DELETE/OPTIONS/HEAD
 - **JWT 认证**：access_token 2h + refresh_token 14d，并发会话限制
+- **JWT 密钥启动校验**：`JWT_SECRET_KEY` 缺失或仍为默认值直接拒绝启动
+- **支付回调 fail-closed**：provider 白名单（仅 stripe/paypal）+ 未配密钥/验签失败/时间戳超限一律拒绝 + bccomp 金额核对 + 回调入账事务化
 - **RBAC 权限**：method.path 粒度权限控制，Redis 60s 缓存
 - **点击验证码**：登录/注册强制人机验证
 - **密码二次确认**：敏感操作需输入密码确认

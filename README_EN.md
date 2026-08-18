@@ -60,12 +60,10 @@ game-platform-php/
 ├── install/                   # One-click install wizard
 │   ├── index.php              #   Install entry point
 │   ├── Installer.php          #   Core install logic
-│   ├── install.sql            #   Merged install SQL (39 tables + seed data)
+│   ├── install.sql            #   Merged install SQL (43 tables + seed data)
 │   └── assets/                #   Static assets
 │
-├── common/                    # Shared layer (PSR-4 autoload)
-│   ├── model/                 #   Data models (34)
-│   ├── middleware/            #   Shared middleware (UserAuth)
+├── admin/common/ & service/common/     # Shared services maintained per-app (DepositLogService etc., shared layer pending)
 │   └── service/               #   Shared services (incl. ClickHouse probability)
 │
 ├── apps/
@@ -118,7 +116,7 @@ rm -rf install/
 
 The install wizard automatically:
 - Checks environment (PHP version, extensions, directory permissions)
-- Creates database and tables (merged SQL, 39 tables + seed data)
+- Creates database and tables (merged SQL, 43 tables + seed data)
 - Creates super admin account (bcrypt encrypted)
 - Generates JWT/encryption keys and writes .env files
 - Creates install.lock to prevent re-installation
@@ -197,6 +195,8 @@ curl -X POST http://localhost:8788/api/auth/register \
 - **18-layer defense-in-depth**: XSS/SQL injection/CSRF/path traversal/command injection detection
 - **HTTP method whitelist**: Only GET/POST/PUT/DELETE/OPTIONS/HEAD allowed
 - **JWT authentication**: access_token 2h + refresh_token 14d, concurrent session limit
+- **JWT startup check**: startup refused if `JWT_SECRET_KEY` is missing or still the default value
+- **Payment callback fail-closed**: provider whitelist (stripe/paypal only) + missing secret / failed verification / timestamp out of range all rejected + bccomp amount check + transactional crediting
 - **RBAC authorization**: method.path granularity, Redis 60s cache
 - **Click captcha**: Required for login/registration
 - **Password confirmation**: Required for sensitive operations

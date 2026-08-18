@@ -9,7 +9,6 @@ namespace app\api\v1\controller;
 
 use app\model\AdminUser;
 use app\common\SnowflakeService;
-use app\common\EncryptionService;
 use support\Container;
 use support\Redis;
 use support\Request;

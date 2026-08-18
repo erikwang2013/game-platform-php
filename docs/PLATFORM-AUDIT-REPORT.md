@@ -223,4 +223,26 @@
 
 ---
 
+## 十、2026-08-18 安全与可用性修复确认
+
+本轮（2026-08-18）完成的安全与可用性修复（工作区未提交，随版本 1.1 后续发布）：
+
+| 项 | 修复内容 | 状态 |
+|----|---------|------|
+| 支付回调 provider 白名单 | 仅接受 stripe/paypal，其余 403 拒绝；回调 provider 与订单支付方式不一致（跨渠道冒用）拒绝 | ✅ 已修复 |
+| 支付回调 fail-closed | Stripe：未配 `STRIPE_WEBHOOK_SECRET` 或验签失败返回 false；PayPal：未配 `PAYPAL_WEBHOOK_ID` 或验证异常均拒绝；签名时间戳超 ±300s 视为重放拒绝 | ✅ 已修复 |
+| 金额核对 | 回调金额与订单金额 `bccomp(…, 4)` 精确比对，不符拒绝 | ✅ 已修复 |
+| 回调入账事务化 | 订单更新 + 钱包入账同一事务，入账失败回滚 | ✅ 已修复 |
+| JWT 密钥启动校验 | `JWT_SECRET_KEY` 缺失或仍为默认值 `open-admin-jwt-secret-change-in-production` 时拒绝启动，admin/service 一致 | ✅ 已修复 |
+| 分析服务路由 | admin/config/route.php 注册 12 条 `/admin/analytics/*` 路由（AnalyticsController 全部方法） | ✅ 已修复 |
+| 表前缀 | 52 模型去除硬编码 `erik_` 前缀（消除 `erik_erik_` 双重前缀），DB 前缀统一由 config `prefix=erik_` 提供 | ✅ 已修复 |
+| 限流降级 | RateLimit 在 Redis 故障时 fail-closed（拒绝而非静默放行） | ✅ 已修复 |
+| refresh token | service AuthController 刷新令牌逻辑重写 | ✅ 已修复 |
+| DepositLogService | service 版移植补齐，消除 admin/service 双份漂移之一 | ✅ 已修复 |
+| 死代码清理 | Test model 删除；DepositLog 审计落库 | ✅ 已修复 |
+
+**仍未完成**：事件总线消费端（emit 无消费者）、Apple id_token 验签（JWKS）、共享层去重、webman/queue 接线、2FA Base32 修复、提现原子化、Webhook SSRF 阻断、service 测试与 CI 门禁。历史评分与结论保持不变。
+
+---
+
 > **Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz**

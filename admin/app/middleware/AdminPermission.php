@@ -20,7 +20,7 @@ class AdminPermission
     {
         $adminId = $request->adminId ?? 0;
         if (!$adminId) {
-            return $next($request);
+            return json(['code' => 401, 'message' => '未登录', 'data' => []]);
         }
 
         $path = $request->path();

@@ -8,7 +8,7 @@ use support\Model;
 
 class Message extends Model
 {
-    protected $table = 'erik_message';
+    protected $table = 'message';
     public $incrementing = false;
     protected $keyType = 'int';
     public $timestamps = false;

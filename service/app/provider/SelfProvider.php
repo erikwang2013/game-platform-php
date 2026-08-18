@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\provider;
 
+use app\model\GamePlayLog;
 use app\model\UserGameWallet;
 use support\Db;
 
@@ -50,6 +51,17 @@ class SelfProvider extends GameProvider
                 ->where('game_id', $gameId)
                 ->lockForUpdate()
                 ->first();
+
+            // 幂等：同一 round 只能结算/退款一次。钱包行锁使并发重放串行化，
+            // 首次结算写入的 GamePlayLog（ProviderController 在同一外层事务中插入）
+            // 在提交后对重放可见，重放直接跳过入账
+            if ($roundId !== '' && GamePlayLog::where('user_id', $userId)
+                    ->where('game_id', $gameId)
+                    ->where('round_id', $roundId)
+                    ->whereIn('action', ['settle', 'refund'])
+                    ->exists()) {
+                return ['success' => true, 'transaction_id' => $roundId, 'balance_after' => $wallet ? $wallet->balance : '0', 'win_amount' => '0', 'already_processed' => true];
+            }
 
             $before = $wallet ? $wallet->balance : '0';
             $after = bcadd($before, $amount, 8);

@@ -250,7 +250,7 @@ class GameController extends BaseController
         }, $categoryHashids);
 
         // 删除旧关联
-        Db::table('erik_game_category_rel')->where('game_id', $gameId)->delete();
+        Db::table('game_category_rel')->where('game_id', $gameId)->delete();
 
         // 插入新关联
         $rows = array_map(function ($categoryId) use ($gameId) {
@@ -261,7 +261,7 @@ class GameController extends BaseController
         }, $categoryIds);
 
         if (!empty($rows)) {
-            Db::table('erik_game_category_rel')->insert($rows);
+            Db::table('game_category_rel')->insert($rows);
         }
     }
 }

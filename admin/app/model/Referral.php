@@ -11,7 +11,7 @@ use support\Model;
 
 class Referral extends Model
 {
-    protected $table = 'erik_referral';
+    protected $table = 'referral';
 
     public $incrementing = false;
     protected $keyType = 'int';

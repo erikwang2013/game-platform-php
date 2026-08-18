@@ -226,8 +226,10 @@ reject → 用户可重新提交
 
 ```
 第三方支付完成 → POST /api/payment/callback
-  → 验签(order_no + transaction_id)
-  → 更新订单状态 confirmed
+  → provider 白名单校验（仅 stripe/paypal）
+  → 验签 fail-closed（未配 secret/webhook_id、验签失败、时间戳超 ±300s 一律拒绝）
+  → 回调金额与订单金额 bccomp 核对（防跨渠道冒用）
+  → 更新订单状态 confirmed（事务化，入账失败回滚）
   → UserWallet::addBalance 到账
   → 记录 Transaction
   → RiskService::check 风控检查

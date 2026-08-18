@@ -17,7 +17,6 @@ return [
             'path' => 'app\admin\controller',
             'key' => 'admin',
         ]],
-        'definitions' => "app\common\controller\Definitions",
         'auto_url' => [
             'letter_rule' => "lcfirst",
             'prefix' => "/admin",

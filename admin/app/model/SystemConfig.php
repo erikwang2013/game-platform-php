@@ -11,7 +11,7 @@ use support\Model;
 
 class SystemConfig extends Model
 {
-    protected $table = 'erik_system_config';
+    protected $table = 'system_config';
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'int';

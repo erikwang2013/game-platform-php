@@ -57,7 +57,7 @@
 | 搜索 | ES 搜索API + 游戏建议 + LIKE回退 | 已完成 |
 | 排行榜 | WebSocket 实时推送 (端口8789) | 已完成 |
 | 部署 | Docker Compose 8服务 + Nginx反向代理 | 已完成 |
-| 数据 | ClickHouse OLAP 分析 + 联合/条件概率计算 | 已完成 |
+| 数据 | MySQL 实时聚合分析 + 联合/条件概率计算 | 已完成 |
 | HarmonyOS | 游戏大厅 + 钱包 + 游戏详情页 | 已完成 |
 | API 文档 | hg/apidoc 交互式文档 | 已完成 |
 
@@ -78,7 +78,7 @@
 | 私信/聊天 | REST 私信 + WebSocket 实时消息 (端口8790)、仅好友可发 | 已完成 |
 | 事件总线 | Redis Pub/Sub 异步解耦、成就/VIP/通知/审计订阅 | 已完成 |
 | 特性开关 | FeatureFlag 基于DB、零额外依赖、4个预设开关 | 已完成 |
-| 高级分析 | 留存/D1-D30、转化漏斗、ARPU/ARPPU、游戏币种经济指标 (ClickHouse) | 已完成 |
+| 高级分析 | 留存/D1-D30、转化漏斗、ARPU/ARPPU、游戏币种经济指标 (MySQL 实时聚合) | 已完成 |
 | Webhook | 订阅管理 + Redis Pub/Sub 事件投递、7种事件可选 | 已完成 |
 | 聊天 | REST 私信 + WebSocket 实时消息 (端口8791)、仅好友可发 | 已完成 |
 | 赛事 | 创建/list/detail/join、FeatureFlag开关、排行榜、人数上限 | 已完成 |
@@ -135,12 +135,18 @@
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | /admin/dashboard/platform | 平台仪表盘数据 |
-| GET | /admin/analytics/overview | 平台概览 (ClickHouse) |
+| GET | /admin/analytics/overview | 平台总览 (MySQL 实时聚合) |
+| GET | /admin/analytics/game-ranking | 游戏排行 |
+| GET | /admin/analytics/dau-trend | DAU 趋势 |
+| GET | /admin/analytics/hourly-trend | 小时趋势 |
+| GET | /admin/analytics/action-distribution | 行为分布 |
+| GET | /admin/analytics/revenue | 营收分析 |
+| GET | /admin/analytics/conversion | 游戏转化率 |
+| GET | /admin/analytics/probability | 联合/条件概率 |
 | GET | /admin/analytics/retention | 留存分析 D1/D3/D7/D30 |
 | GET | /admin/analytics/funnel | 转化漏斗 |
 | GET | /admin/analytics/arpu | ARPU/ARPPU 趋势 |
 | GET | /admin/analytics/economy | 游戏币种经济指标 |
-| GET | /admin/analytics/probability | 联合概率分析 |
 | GET | /admin/game/list | 游戏列表 |
 | POST | /admin/game/create | 创建游戏 (含 provider_config) |
 | PUT | /admin/game/{id} | 编辑游戏 |
