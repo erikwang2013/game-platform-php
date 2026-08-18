@@ -31,9 +31,14 @@ class PaymentController extends BaseController
      * @Apidoc\Param(name="transaction_id", type="string", require=true, desc="交易ID")
      * @Apidoc\Param(name="status", type="string", require=true, desc="支付状态(success/failed)")
      */
+    private const ALLOWED_PROVIDERS = ['stripe', 'paypal'];
+
     public function callback(Request $request): Response
     {
-        $provider = $request->input('provider', 'stripe');
+        $provider = strtolower((string) $request->input('provider', ''));
+        if (!in_array($provider, self::ALLOWED_PROVIDERS, true)) {
+            return $this->fail('Invalid provider', 403);
+        }
         if ($provider === 'stripe' && !$this->verifyStripeSignature($request)) {
             return $this->fail('Invalid signature', 403);
         }
@@ -59,6 +64,18 @@ class PaymentController extends BaseController
 
         if (!$order) {
             return $this->fail('Order not found', 404);
+        }
+
+        // 回调 provider 必须与订单支付方式一致，防止跨渠道冒用
+        $method = PaymentMethod::find($order->payment_method_id);
+        if ($method && strtolower((string) $method->provider) !== $provider) {
+            return $this->fail('Provider mismatch', 403);
+        }
+
+        // 入账金额与订单核对：回调携带金额时不一致直接拒绝
+        $callbackAmount = (string) $request->input('amount', '');
+        if ($callbackAmount !== '' && bccomp($callbackAmount, $order->amount, 4) !== 0) {
+            return $this->fail('Amount mismatch', 422);
         }
 
         // Idempotency: skip if this transaction_id was already processed
