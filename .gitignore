@@ -111,4 +111,4 @@ admin/apps/flutter/app.*.map.json
 admin/apps/flutter/# Android Studio will place build artifacts here
 admin/apps/flutter//android/app/debug
 admin/apps/flutter//android/app/profile
-admin/apps/flutter//android/app/release
+admin/apps/flutter//android/app/releaseruntime/
