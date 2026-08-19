@@ -51,8 +51,8 @@ class DepositController extends BaseController
         $exchangeRate   = PlatformConfig::get('payment', 'default_exchange_rate', '1.0000');
         $platformAmount = bcmul((string) $amount, $exchangeRate, 4);
 
-        // Generate order number: DEP + YmdHis + random 4 digits
-        $orderNo = 'DEP' . date('YmdHis') . str_pad((string) mt_rand(0, 9999), 4, '0', STR_PAD_LEFT);
+        // Generate order number: DEP + YmdHis + unique suffix (uniqid 微秒+进程，避免同秒撞 uk_order_no)
+        $orderNo = 'DEP' . date('YmdHis') . strtoupper(substr(uniqid('', true), -6));
 
         $order = new DepositOrder();
         $order->id                 = $this->generateId();

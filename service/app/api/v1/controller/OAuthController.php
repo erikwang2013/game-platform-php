@@ -13,6 +13,8 @@ use app\model\UserWallet;
 use Firebase\JWT\JWT;
 use Firebase\JWT\JWK;
 use hg\apidoc\annotation as Apidoc;
+use support\Db;
+use support\Log;
 use support\Request;
 use support\Response;
 
@@ -68,7 +70,12 @@ class OAuthController extends BaseController
         }
 
         $state = bin2hex(random_bytes(16));
-        \support\Redis::setex("oauth_state:{$state}", 600, $provider);
+        try {
+            \support\Redis::setex("oauth_state:{$state}", 600, $provider);
+        } catch (\Throwable $e) {
+            Log::warning('OAuth state Redis setex failed (fail-closed): ' . $e->getMessage());
+            return $this->fail('OAuth temporarily unavailable', 503);
+        }
 
         $redirectUri = config("oauth.{$provider}.redirect_uri", '');
         $clientId    = config("oauth.{$provider}.client_id", '');
@@ -84,7 +91,12 @@ class OAuthController extends BaseController
         // Twitter requires PKCE (code_challenge)
         if ($provider === 'twitter') {
             $codeVerifier = $this->generateCodeVerifier();
-            \support\Redis::setex("oauth_pkce:{$state}", 600, $codeVerifier);
+            try {
+                \support\Redis::setex("oauth_pkce:{$state}", 600, $codeVerifier);
+            } catch (\Throwable $e) {
+                Log::warning('OAuth PKCE Redis setex failed (fail-closed): ' . $e->getMessage());
+                return $this->fail('OAuth temporarily unavailable', 503);
+            }
             $params['code_challenge'] = $this->computeCodeChallenge($codeVerifier);
             $params['code_challenge_method'] = 'S256';
         }
@@ -122,16 +134,26 @@ class OAuthController extends BaseController
         $state = $request->input('state');
 
         $stateKey = "oauth_state:{$state}";
-        $storedProvider = \support\Redis::get($stateKey);
-        if (!$storedProvider || $storedProvider !== $provider) {
-            return $this->fail('Invalid or expired state parameter', 403);
+        try {
+            $storedProvider = \support\Redis::get($stateKey);
+            if (!$storedProvider || $storedProvider !== $provider) {
+                return $this->fail('Invalid or expired state parameter', 403);
+            }
+            \support\Redis::del($stateKey);
+        } catch (\Throwable $e) {
+            Log::warning('OAuth state Redis get failed (fail-closed): ' . $e->getMessage());
+            return $this->fail('OAuth temporarily unavailable', 503);
         }
-        \support\Redis::del($stateKey);
 
         $codeVerifier = null;
         if ($provider === 'twitter') {
-            $codeVerifier = \support\Redis::get("oauth_pkce:{$state}");
-            \support\Redis::del("oauth_pkce:{$state}");
+            try {
+                $codeVerifier = \support\Redis::get("oauth_pkce:{$state}");
+                \support\Redis::del("oauth_pkce:{$state}");
+            } catch (\Throwable $e) {
+                Log::warning('OAuth PKCE Redis get failed (fail-closed): ' . $e->getMessage());
+                return $this->fail('OAuth temporarily unavailable', 503);
+            }
         }
 
         $oauthUser = $this->exchangeCode($provider, $code, $codeVerifier);
@@ -176,39 +198,42 @@ class OAuthController extends BaseController
         $username = $provider . '_' . $uniqueSuffix;
         $nickname = $oauthUser['nickname'] ?? $username;
 
-        $user = new User();
-        $user->id = $userId;
-        $user->username = $username;
-        $user->password = password_hash(bin2hex(random_bytes(16)), PASSWORD_BCRYPT);
-        $user->nickname = $nickname;
-        $user->avatar = $oauthUser['avatar'] ?? '';
-        $user->email = $oauthUser['email'] ?? null;
-        $user->status = 1;
-        $user->last_login_at = date('Y-m-d H:i:s');
-        $user->last_login_ip = $request->getRealIp() ?? '';
-        $user->save();
+        $user = null;
+        Db::transaction(function () use ($userId, $username, $nickname, $oauthUser, $request, $provider, $openId, $unionId, &$user) {
+            $user = new User();
+            $user->id = $userId;
+            $user->username = $username;
+            $user->password = password_hash(bin2hex(random_bytes(16)), PASSWORD_BCRYPT);
+            $user->nickname = $nickname;
+            $user->avatar = $oauthUser['avatar'] ?? '';
+            $user->email = $oauthUser['email'] ?? null;
+            $user->status = 1;
+            $user->last_login_at = date('Y-m-d H:i:s');
+            $user->last_login_ip = $request->getRealIp() ?? '';
+            $user->save();
 
-        $oauth = new UserOauth();
-        $oauth->id = $this->generateId();
-        $oauth->user_id = $userId;
-        $oauth->provider = $provider;
-        $oauth->open_id = $openId;
-        $oauth->union_id = $unionId;
-        $oauth->access_token = $oauthUser['access_token'] ?? '';
-        $oauth->refresh_token = $oauthUser['refresh_token'] ?? '';
-        $oauth->token_expires_at = $oauthUser['token_expires_at'] ?? null;
-        $oauth->raw_data = json_encode($oauthUser);
-        $oauth->save();
+            $oauth = new UserOauth();
+            $oauth->id = $this->generateId();
+            $oauth->user_id = $userId;
+            $oauth->provider = $provider;
+            $oauth->open_id = $openId;
+            $oauth->union_id = $unionId;
+            $oauth->access_token = $oauthUser['access_token'] ?? '';
+            $oauth->refresh_token = $oauthUser['refresh_token'] ?? '';
+            $oauth->token_expires_at = $oauthUser['token_expires_at'] ?? null;
+            $oauth->raw_data = json_encode($oauthUser);
+            $oauth->save();
 
-        $wallet = new UserWallet();
-        $wallet->id = $this->generateId();
-        $wallet->user_id = $userId;
-        $wallet->balance = '0.0000';
-        $wallet->frozen_balance = '0.0000';
-        $wallet->total_earned = '0.0000';
-        $wallet->total_spent = '0.0000';
-        $wallet->version = 0;
-        $wallet->save();
+            $wallet = new UserWallet();
+            $wallet->id = $this->generateId();
+            $wallet->user_id = $userId;
+            $wallet->balance = '0.0000';
+            $wallet->frozen_balance = '0.0000';
+            $wallet->total_earned = '0.0000';
+            $wallet->total_spent = '0.0000';
+            $wallet->version = 0;
+            $wallet->save();
+        });
 
         $accessToken  = jwt()->create(['sub' => $userId, 'username' => $username]);
         $refreshToken = jwt()->create(['sub' => $userId, 'type' => 'refresh']);

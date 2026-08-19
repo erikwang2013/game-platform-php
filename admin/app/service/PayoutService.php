@@ -5,6 +5,7 @@
 declare(strict_types=1);
 namespace app\service;
 use app\model\WithdrawOrder;
+use support\Log;
 use support\Redis;
 
 final class PayoutService
@@ -117,9 +118,13 @@ final class PayoutService
 
     public static function getAccessToken(): string
     {
-        $cached = Redis::get('paypal:token');
-        if ($cached) {
-            return $cached;
+        try {
+            $cached = Redis::get('paypal:token');
+            if ($cached) {
+                return $cached;
+            }
+        } catch (\Throwable $e) {
+            Log::warning('PayPal token Redis get failed, fetching fresh: ' . $e->getMessage());
         }
 
         $clientId = getenv('PAYPAL_CLIENT_ID', '');
@@ -141,12 +146,21 @@ final class PayoutService
             throw new \RuntimeException('Failed to obtain PayPal access token');
         }
 
-        Redis::setex('paypal:token', self::TOKEN_TTL, $token);
+        try {
+            Redis::setex('paypal:token', self::TOKEN_TTL, $token);
+        } catch (\Throwable $e) {
+            Log::warning('PayPal token Redis setex failed (token still returned): ' . $e->getMessage());
+        }
         return $token;
     }
 
     public static function markCompleted(WithdrawOrder $order): void
     {
+        // 幂等：已完成的订单不重复标记，避免 syncStatus 轮询重复发通知
+        if ($order->status === 'completed') {
+            return;
+        }
+
         $order->status = 'completed';
         $order->payout_status = 'success';
         $order->paid_at = date('Y-m-d H:i:s');

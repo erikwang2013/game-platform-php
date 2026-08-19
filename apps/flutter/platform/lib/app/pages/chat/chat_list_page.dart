@@ -56,16 +56,19 @@ class _ChatListPageState extends State<ChatListPage> {
                     itemCount: _conversations.length,
                     itemBuilder: (_, i) {
                       final c = _conversations[i];
+                      final peer = c['peer'] as Map<String, dynamic>? ?? const {};
+                      final peerId = peer['id'] as String? ?? '';
+                      final peerName = (peer['nickname'] as String? ?? peer['username'] as String? ?? '').trim();
                       return ListTile(
-                        leading: CircleAvatar(child: Text((c['peer_name'] as String? ?? '?')[0].toUpperCase())),
-                        title: Text(c['peer_name'] as String? ?? 'User'),
+                        leading: CircleAvatar(child: Text(peerName.isEmpty ? '?' : peerName[0].toUpperCase())),
+                        title: Text(peerName.isEmpty ? 'User' : peerName),
                         subtitle: Text(c['last_message'] as String? ?? '', maxLines: 1, overflow: TextOverflow.ellipsis),
                         trailing: (c['unread_count'] as int? ?? 0) > 0
                             ? Chip(label: Text('${c['unread_count']}'))
                             : null,
                         onTap: () => Get.toNamed('/chat', arguments: {
-                          'peer_id': c['peer_id'],
-                          'peer_name': c['peer_name'],
+                          'peer_id': peerId,
+                          'peer_name': peerName,
                         }),
                       );
                     },

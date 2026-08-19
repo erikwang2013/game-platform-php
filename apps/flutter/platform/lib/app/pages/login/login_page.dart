@@ -1,9 +1,9 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 import '../../i18n/translations.dart';
-import '../../i18n/locale_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 
@@ -52,6 +52,12 @@ class _LoginPageState extends State<LoginPage> {
 
       if (resp.data['code'] == 0) {
         final data = resp.data['data'];
+        if (data['require_2fa'] == true) {
+          if (mounted) {
+            Get.toNamed('/2fa-verify', arguments: {'pending_2fa_token': data['pending_2fa_token']});
+          }
+          return;
+        }
         await AuthService.saveLogin(
           token: data['access_token'] as String,
           refreshToken: data['refresh_token'] as String,
@@ -73,32 +79,24 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _oauthLogin(String provider) async {
     try {
       final api = ApiService();
-      // Step 1: Get redirect URL
-      final redirectResp = await api.get('/auth/oauth/$provider');
+      final redirectResp = await api.get('/api/auth/oauth/$provider');
       final redirectUrl = redirectResp['data']['redirect_url'] as String?;
-      if (redirectUrl == null) {
-        Get.snackbar('Error', 'OAuth configuration not available');
+      if (redirectUrl == null || redirectUrl.isEmpty) {
+        Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('login.oauth_unavailable')}');
         return;
       }
-      // Step 2: For web MVP, simulate the callback
-      // In production, this would open a popup window and handle the redirect
-      // For now, simulate with a test code
-      final callbackResp = await api.post('/auth/oauth/$provider/callback', data: {
-        'code': 'test_oauth_code_${DateTime.now().millisecondsSinceEpoch}',
-        'state': 'test_state',
-      });
-      final data = callbackResp['data'];
-      await AuthService.saveLogin(
-        token: data['access_token'],
-        refreshToken: data['refresh_token'],
-        username: data['user']?['username'] ?? '',
+      await AuthService.setPendingOauthProvider(provider);
+      final uri = Uri.parse(redirectUrl);
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+        webOnlyWindowName: '_self',
       );
-      Get.offAllNamed('/games');
-      if (data['is_new'] == true) {
-        Get.snackbar('Welcome', 'Account created successfully!');
+      if (!launched) {
+        Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('login.oauth_failed')}');
       }
     } catch (e) {
-      Get.snackbar('Error', 'OAuth login failed: $e');
+      Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('login.oauth_failed')}: $e');
     }
   }
 
@@ -216,7 +214,7 @@ class _LoginPageState extends State<LoginPage> {
                   width: double.infinity,
                   child: OutlinedButton.icon(
                     icon: const Icon(Icons.g_mobiledata, size: 24),
-                    label: const Text('Continue with Google'),
+                    label: Text('${AppTranslations.t('login.oauth_google')}'),
                     onPressed: () => _oauthLogin('google'),
                     style: OutlinedButton.styleFrom(padding: const EdgeInsets.all(12)),
                   ),
@@ -226,7 +224,7 @@ class _LoginPageState extends State<LoginPage> {
                   width: double.infinity,
                   child: OutlinedButton.icon(
                     icon: const Icon(Icons.facebook, size: 24),
-                    label: const Text('Continue with Facebook'),
+                    label: Text('${AppTranslations.t('login.oauth_facebook')}'),
                     onPressed: () => _oauthLogin('facebook'),
                     style: OutlinedButton.styleFrom(padding: const EdgeInsets.all(12)),
                   ),
@@ -236,7 +234,7 @@ class _LoginPageState extends State<LoginPage> {
                   width: double.infinity,
                   child: OutlinedButton.icon(
                     icon: const Icon(Icons.apple, size: 24),
-                    label: const Text('Continue with Apple'),
+                    label: Text('${AppTranslations.t('login.oauth_apple')}'),
                     onPressed: () => _oauthLogin('apple'),
                     style: OutlinedButton.styleFrom(padding: const EdgeInsets.all(12)),
                   ),

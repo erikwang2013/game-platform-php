@@ -45,7 +45,7 @@ class _ChatPageState extends State<ChatPage> {
     setState(() {
       _messages.add({'content': text, 'from_self': true, 'created_at': DateTime.now().toIso8601String()});
     });
-    _chat.sendMessage(0, _peerId, text);
+    _chat.sendMessage(_peerId, text);
   }
 
   @override

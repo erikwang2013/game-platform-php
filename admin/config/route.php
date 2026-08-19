@@ -37,8 +37,11 @@ function v(string $controller, string $action): \Closure
 // ============================================================
 Route::get('/health', [app\admin\controller\HealthController::class, 'index']);
 
-// Prometheus 指标（无需认证）
-Route::get('/metrics', [app\admin\controller\MetricsController::class, 'index']);
+// Prometheus 指标（需 JWT 认证 + 权限）
+Route::get('/metrics', [app\admin\controller\MetricsController::class, 'index'])->middleware([
+    app\middleware\AdminAuth::class,
+    app\middleware\AdminPermission::class,
+]);
 
 // security.txt — RFC 9116 安全漏洞报告联系人
 Route::get('/.well-known/security.txt', function () {
@@ -51,8 +54,11 @@ TXT
     , 200, ['Content-Type' => 'text/plain; charset=utf-8']);
 });
 
-// API 文档（全局，无需认证）
-Route::get('/api/docs', [app\admin\controller\DocsController::class, 'index']);
+// API 文档（需 JWT 认证 + 权限）
+Route::get('/api/docs', [app\admin\controller\DocsController::class, 'index'])->middleware([
+    app\middleware\AdminAuth::class,
+    app\middleware\AdminPermission::class,
+]);
 
 // ============================================================
 // 管理端路由

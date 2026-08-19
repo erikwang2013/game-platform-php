@@ -1,6 +1,5 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 import '../../i18n/translations.dart';
-import '../../i18n/locale_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
@@ -125,6 +124,12 @@ class _ExchangePageState extends State<ExchangePage> {
   Future<void> _confirmExchange() async {
     if (_quote == null) return;
 
+    final amount = double.tryParse(_amountCtrl.text.trim());
+    if (amount == null || amount <= 0) {
+      setState(() => _error = "${AppTranslations.t('deposit.invalid_amount')}");
+      return;
+    }
+
     setState(() {
       _loading = true;
       _error = null;
@@ -134,7 +139,7 @@ class _ExchangePageState extends State<ExchangePage> {
       final endpoint = _isBuying ? '/api/exchange/buy' : '/api/exchange/sell';
       final resp = await _api.post(endpoint, data: {
         'game_id': _selectedGameId,
-        'amount': double.tryParse(_amountCtrl.text.trim()),
+        'amount': amount,
         'direction': _isBuying ? 'buy' : 'sell',
         'currency_code': _selectedCurrencyCode,
         'quote_id': _quote!['quote_id'],

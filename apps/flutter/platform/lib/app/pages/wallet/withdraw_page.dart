@@ -1,6 +1,5 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 import '../../i18n/translations.dart';
-import '../../i18n/locale_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
@@ -28,36 +27,16 @@ class _WithdrawPageState extends State<WithdrawPage> {
     'crypto': 'Crypto Wallet',
   };
 
-  // Limits - fetched from platform config, hardcoded defaults for MVP
+  // ponytail: 后端无 /config/withdraw_limits 路由（已有 withdraw 限额逻辑在 apply 内），
+  // 请求必然失败走默认值；直接用默认值，待后端提供限额接口后再接回
   double _minAmount = 10;
   double _dailyLimit = 10000;
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchLimits();
-  }
 
   @override
   void dispose() {
     _amountCtrl.dispose();
     _accountCtrl.dispose();
     super.dispose();
-  }
-
-  Future<void> _fetchLimits() async {
-    try {
-      final resp = await _api.get('/api/config/withdraw_limits');
-      final data = resp['data'];
-      if (data != null && mounted) {
-        setState(() {
-          _minAmount = (data['min_amount'] ?? 10).toDouble();
-          _dailyLimit = (data['daily_limit'] ?? 10000).toDouble();
-        });
-      }
-    } catch (_) {
-      // Use defaults
-    }
   }
 
   Future<void> _submit() async {

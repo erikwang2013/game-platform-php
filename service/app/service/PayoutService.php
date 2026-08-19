@@ -5,6 +5,7 @@
 declare(strict_types=1);
 namespace app\service;
 use app\model\WithdrawOrder;
+use support\Log;
 use support\Redis;
 
 final class PayoutService
@@ -117,9 +118,14 @@ final class PayoutService
 
     public static function getAccessToken(): string
     {
-        $cached = Redis::get('paypal:token');
-        if ($cached) {
-            return $cached;
+        try {
+            $cached = Redis::get('paypal:token');
+            if ($cached) {
+                return $cached;
+            }
+        } catch (\Throwable $e) {
+            // 缓存不可用可降级直连 PayPal，但必须告警
+            Log::warning('PayPal token Redis get failed, fetching fresh: ' . $e->getMessage());
         }
 
         $clientId = getenv('PAYPAL_CLIENT_ID', '');
@@ -141,7 +147,11 @@ final class PayoutService
             throw new \RuntimeException('Failed to obtain PayPal access token');
         }
 
-        Redis::setex('paypal:token', self::TOKEN_TTL, $token);
+        try {
+            Redis::setex('paypal:token', self::TOKEN_TTL, $token);
+        } catch (\Throwable $e) {
+            Log::warning('PayPal token Redis setex failed (token still returned): ' . $e->getMessage());
+        }
         return $token;
     }
 
@@ -156,6 +166,13 @@ final class PayoutService
         $order->payout_status = 'success';
         $order->paid_at = date('Y-m-d H:i:s');
         $order->save();
+
+        // 真正打款完成才发 completed 事件（申请时发的是 withdraw.applied）
+        \app\event\EventBus::emit('withdraw.completed', [
+            'user_id' => $order->user_id,
+            'platform_amount' => $order->platform_amount,
+            'status' => 'completed',
+        ]);
 
         NotificationService::send(
             $order->user_id,

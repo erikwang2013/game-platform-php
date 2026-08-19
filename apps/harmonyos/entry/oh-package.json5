@@ -1,0 +1,9 @@
+{
+  "name": "entry",
+  "version": "1.0.0",
+  "description": "游戏平台 - 鸿蒙 C 端入口模块",
+  "main": "",
+  "author": "erik <erik@erik.xyz>",
+  "license": "MIT",
+  "dependencies": {}
+}

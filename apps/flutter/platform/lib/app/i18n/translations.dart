@@ -36,6 +36,9 @@ class AppTranslations {
       'nav.profile': 'Profile',
       'nav.chat': 'Chat',
       'nav.friends': 'Friends',
+      'nav.coupons': 'Coupons',
+      'nav.leaderboard': 'Leaderboard',
+      'nav.notifications': 'Notifications',
 
       // Game Hall
       'game_hall.title': 'Game Hall',
@@ -151,11 +154,73 @@ class AppTranslations {
       'login.oauth_facebook': 'Continue with Facebook',
       'login.oauth_apple': 'Continue with Apple',
       'login.or': 'or',
+      'login.oauth_failed': 'OAuth login failed',
+      'login.oauth_unavailable': 'OAuth is not configured',
+      'login.welcome_new': 'Account created successfully',
+
+      // 2FA
+      'two_factor.title': 'Two-Factor Auth',
+      'two_factor.verify_title': 'Verify 2FA',
+      'two_factor.enabled': '2FA enabled',
+      'two_factor.disabled': '2FA disabled',
+      'two_factor.setup': 'Set up 2FA',
+      'two_factor.enable': 'Enable',
+      'two_factor.disable': 'Disable',
+      'two_factor.secret': 'Copy secret',
+      'two_factor.code': '6-digit code',
+      'two_factor.password': 'Password',
+      'two_factor.user_id': 'User ID',
+      'two_factor.backup_codes': 'Backup codes',
+      'two_factor.verify': 'Verify',
+      'two_factor.enter_code': 'Please enter the 6-digit code',
+      'two_factor.setup_hint': 'Add this secret to your authenticator app',
+
+      // Coupon
+      'coupon.title': 'Coupons',
+      'coupon.available': 'Available',
+      'coupon.my': 'My Coupons',
+      'coupon.claim': 'Claim',
+      'coupon.claimed': 'Coupon claimed',
+      'coupon.empty': 'No coupons',
+      'coupon.value': 'Value',
+
+      // Leaderboard
+      'leaderboard.title': 'Leaderboard',
+      'leaderboard.empty': 'No rankings yet',
+
+      // Notification
+      'notification.title': 'Notifications',
+      'notification.empty': 'No notifications',
+      'notification.mark_read': 'Read',
+      'notification.mark_all_read': 'Mark all read',
+
+      // OAuth
+      'oauth.processing': 'Completing sign-in...',
+      'oauth.failed': 'OAuth callback failed',
 
       // Identity
       'identity.title': 'KYC Verification',
       'identity.verified': 'Verified',
       'identity.pending': 'Under Review',
+      'identity.full_name': 'Full Name',
+      'identity.id_type_label': 'ID Type',
+      'identity.id_card': 'ID Card',
+      'identity.passport': 'Passport',
+      'identity.driver_license': 'Driver License',
+      'identity.id_number': 'ID Number',
+      'identity.front_photo': 'Front Photo URL',
+      'identity.back_photo': 'Back Photo URL (optional)',
+      'identity.selfie_photo': 'Selfie with ID URL',
+      'identity.country': 'Country (ISO code)',
+      'identity.required': 'Required',
+      'identity.submit': 'Submit',
+      'identity.submitting': 'Submitting...',
+      'identity.submitted': 'KYC submitted',
+      'identity.submit_failed': 'Submit failed, please retry',
+      'identity.real_name': 'Name',
+      'identity.type': 'Type',
+      'identity.review_note': 'Note',
+      'identity.rejected': 'Rejected',
 
       // Chat
       'chat.title': 'Messages',
@@ -211,6 +276,9 @@ class AppTranslations {
       'nav.profile': '个人中心',
       'nav.chat': '聊天',
       'nav.friends': '好友',
+      'nav.coupons': '优惠券',
+      'nav.leaderboard': '排行榜',
+      'nav.notifications': '通知',
 
       // Game Hall
       'game_hall.title': '游戏大厅',
@@ -326,11 +394,73 @@ class AppTranslations {
       'login.oauth_facebook': 'Facebook账号登录',
       'login.oauth_apple': 'Apple账号登录',
       'login.or': '或',
+      'login.oauth_failed': 'OAuth 登录失败',
+      'login.oauth_unavailable': 'OAuth 未配置',
+      'login.welcome_new': '账号创建成功',
+
+      // 2FA
+      'two_factor.title': '双因素认证',
+      'two_factor.verify_title': '验证双因素认证',
+      'two_factor.enabled': '已启用双因素认证',
+      'two_factor.disabled': '未启用双因素认证',
+      'two_factor.setup': '设置双因素认证',
+      'two_factor.enable': '启用',
+      'two_factor.disable': '禁用',
+      'two_factor.secret': '复制密钥',
+      'two_factor.code': '6位验证码',
+      'two_factor.password': '密码',
+      'two_factor.user_id': '用户ID',
+      'two_factor.backup_codes': '备用码',
+      'two_factor.verify': '验证',
+      'two_factor.enter_code': '请输入6位验证码',
+      'two_factor.setup_hint': '请将密钥添加到验证器应用',
+
+      // Coupon
+      'coupon.title': '优惠券',
+      'coupon.available': '可领取',
+      'coupon.my': '我的优惠券',
+      'coupon.claim': '领取',
+      'coupon.claimed': '领取成功',
+      'coupon.empty': '暂无优惠券',
+      'coupon.value': '面额',
+
+      // Leaderboard
+      'leaderboard.title': '排行榜',
+      'leaderboard.empty': '暂无排名',
+
+      // Notification
+      'notification.title': '通知',
+      'notification.empty': '暂无通知',
+      'notification.mark_read': '已读',
+      'notification.mark_all_read': '全部已读',
+
+      // OAuth
+      'oauth.processing': '正在完成登录...',
+      'oauth.failed': 'OAuth 回调失败',
 
       // Identity
       'identity.title': '实名认证',
       'identity.verified': '已认证',
       'identity.pending': '审核中',
+      'identity.full_name': '真实姓名',
+      'identity.id_type_label': '证件类型',
+      'identity.id_card': '身份证',
+      'identity.passport': '护照',
+      'identity.driver_license': '驾驶证',
+      'identity.id_number': '证件号码',
+      'identity.front_photo': '证件正面照 URL',
+      'identity.back_photo': '证件背面照 URL（可选）',
+      'identity.selfie_photo': '手持证件照 URL',
+      'identity.country': '国家（ISO 代码）',
+      'identity.required': '必填',
+      'identity.submit': '提交',
+      'identity.submitting': '提交中...',
+      'identity.submitted': '实名认证已提交',
+      'identity.submit_failed': '提交失败，请重试',
+      'identity.real_name': '姓名',
+      'identity.type': '证件类型',
+      'identity.review_note': '备注',
+      'identity.rejected': '已驳回',
 
       // Chat
       'chat.title': '消息',

@@ -5,6 +5,7 @@
 declare(strict_types=1);
 namespace app\api\v1\controller;
 use app\model\PlatformConfig;
+use support\Log;
 use support\Request;
 use support\Response;
 
@@ -14,7 +15,8 @@ class WebhookController extends BaseController
 
     public function list(Request $request): Response
     {
-        $hooks = PlatformConfig::where('group', $this->configGroup)->where('key', $request->userId . '_%', 'like')->get();
+        // 转义 LIKE 通配符：key 为 "{userId}_{hookId}"，不转义时 userId=1 可匹配到 userId=10 的配置
+        $hooks = PlatformConfig::where('group', $this->configGroup)->where('key', 'like', $request->userId . '\_%')->get();
         $items = [];
         foreach ($hooks as $h) {
             $items[] = json_decode($h->value, true);
@@ -78,16 +80,25 @@ class WebhookController extends BaseController
                 if (!$data || !in_array($event, $data['events'] ?? [], true)) continue;
                 (new self())->deliver($data['url'], ['event' => $event, 'payload' => $payload, 'timestamp' => time()]);
             }
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+            Log::warning('Webhook dispatch failed: ' . $e->getMessage(), [
+                'event' => $event,
+            ]);
+        }
     }
 
     private function deliver(string $url, array $data): bool
     {
         if (!self::isSafeWebhookUrl($url)) return false;
         try {
-            (new \GuzzleHttp\Client(['timeout' => 5]))->post($url, ['json' => $data]);
+            // 禁重定向：isSafeWebhookUrl 只校验首跳，跟随 302 可被重定向到内网
+            (new \GuzzleHttp\Client(['timeout' => 5, 'allow_redirects' => false]))->post($url, ['json' => $data]);
             return true;
         } catch (\Throwable $e) {
+            Log::warning('Webhook deliver failed: ' . $e->getMessage(), [
+                'url' => $url,
+                'event' => $data['event'] ?? '',
+            ]);
             return false;
         }
     }
@@ -95,7 +106,7 @@ class WebhookController extends BaseController
     /**
      * SSRF 防护: 仅允许 https 公网地址, 拒绝内网/环回/保留 IP 段
      */
-    private static function isSafeWebhookUrl(string $url): bool
+    public static function isSafeWebhookUrl(string $url): bool
     {
         if (!filter_var($url, FILTER_VALIDATE_URL)) return false;
         if (strtolower((string) parse_url($url, PHP_URL_SCHEME)) !== 'https') return false;

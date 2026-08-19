@@ -1,25 +1,18 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:get/get.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'app/theme/app_theme.dart';
 import 'app/i18n/locale_controller.dart';
-import 'app/pages/login/login_page.dart';
-import 'app/pages/game/game_hall_page.dart';
-import 'app/pages/game/game_detail_page.dart';
-import 'app/pages/wallet/wallet_page.dart';
-import 'app/pages/wallet/deposit_page.dart';
-import 'app/pages/wallet/exchange_page.dart';
-import 'app/pages/wallet/withdraw_page.dart';
-import 'app/pages/profile/profile_page.dart';
-import 'app/pages/profile/identity_page.dart';
-import 'app/pages/game/play_log_page.dart';
-import 'app/pages/chat/chat_list_page.dart';
-import 'app/pages/chat/chat_page.dart';
-import 'app/pages/friend/friend_page.dart';
+import 'app/routes/app_pages.dart';
 import 'app/services/chat_service.dart';
 
 void main() {
+  if (kIsWeb) {
+    usePathUrlStrategy();
+  }
   Get.put(LocaleController());
   Get.put(ChatService(), permanent: true);
   runApp(const GamePlatformApp());
@@ -45,22 +38,8 @@ class GamePlatformApp extends StatelessWidget {
           const Breakpoint(start: 1200, end: 4500, name: DESKTOP),
         ],
       ),
-      getPages: [
-        GetPage(name: '/login', page: () => const LoginPage()),
-        GetPage(name: '/games', page: () => const GameHallPage()),
-        GetPage(name: '/game-detail', page: () => const GameDetailPage()),
-        GetPage(name: '/wallet', page: () => const WalletPage()),
-        GetPage(name: '/deposit', page: () => const DepositPage()),
-        GetPage(name: '/exchange', page: () => const ExchangePage()),
-        GetPage(name: '/withdraw', page: () => const WithdrawPage()),
-        GetPage(name: '/profile', page: () => const ProfilePage()),
-        GetPage(name: '/identity', page: () => const IdentityPage()),
-        GetPage(name: '/play-logs', page: () => const PlayLogPage()),
-        GetPage(name: '/chat-list', page: () => const ChatListPage()),
-        GetPage(name: '/chat', page: () => const ChatPage()),
-        GetPage(name: '/friends', page: () => const FriendPage()),
-      ],
-      initialRoute: '/login',
+      getPages: AppPages.routes,
+      initialRoute: AppPages.initialRoute,
     );
   }
 }

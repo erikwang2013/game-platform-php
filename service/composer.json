@@ -19,7 +19,6 @@
     "guzzlehttp/guzzle": "^7.0",
     "vlucas/phpdotenv": "^5.6",
     "hg/apidoc": "^5.3",
-    "erikwang2013/clickhouse-php": "^1.0",
     "hg/apidoc-export": "^1.0",
     "webman/validation": "^2.2",
     "illuminate/validation": "^11.51",
@@ -27,13 +26,33 @@
     "webman/database": "^2.1",
     "illuminate/pagination": "^11.51",
     "symfony/var-dumper": "^7.4",
-    "webman/redis": "^2.1"
+    "webman/redis": "^2.1",
+    "erik/platform-common": "dev-main"
   },
+  "require-dev": {
+    "phpunit/phpunit": "^11.5"
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../packages/platform-common",
+      "options": {
+        "symlink": true
+      }
+    }
+  ],
   "autoload": {
     "psr-4": {
       "": "./",
-      "app\\": "./app",
-      "common\\": "./common"
+      "app\\": "./app"
+    },
+    "exclude-from-classmap": [
+      "common/service/"
+    ]
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "./tests/"
     }
   },
   "config": {
@@ -43,5 +62,7 @@
       "erikwang2013/encryption": true,
       "erikwang2013/security-php": true
     }
-  }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
 }

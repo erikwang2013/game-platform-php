@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b0e2ba01302b787af5ab4ea09e648f72",
+    "content-hash": "9462e72d10c5dc9952933ba8f755de64",
     "packages": [
         {
             "name": "barryvdh/laravel-dompdf",
@@ -755,6 +755,39 @@
             "time": "2025-03-06T22:45:56+00:00"
         },
         {
+            "name": "erik/platform-common",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "../packages/platform-common",
+                "reference": "d0a9c8043e7e80e07a9e2f2edbac5dc8766ddc4d"
+            },
+            "require": {
+                "php": ">=8.1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "common\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "erik",
+                    "email": "erik@erik.xyz",
+                    "homepage": "https://erik.xyz"
+                }
+            ],
+            "description": "Shared common\\service layer for game-platform admin + service apps",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
             "name": "erikwang2013/encryptable",
             "version": "v2.0.3",
             "source": {
@@ -1127,16 +1160,16 @@
         },
         {
             "name": "erikwang2013/season",
-            "version": "v2.0.0",
+            "version": "v2.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/erikwang2013/season.git",
-                "reference": "e6b4783ce596995f5f0f63c1a3184b497c922cd5"
+                "reference": "63f4bd28ab678d2c952830ab9c571589d660a533"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/erikwang2013/season/zipball/e6b4783ce596995f5f0f63c1a3184b497c922cd5",
-                "reference": "e6b4783ce596995f5f0f63c1a3184b497c922cd5",
+                "url": "https://api.github.com/repos/erikwang2013/season/zipball/63f4bd28ab678d2c952830ab9c571589d660a533",
+                "reference": "63f4bd28ab678d2c952830ab9c571589d660a533",
                 "shasum": ""
             },
             "require": {
@@ -1144,6 +1177,7 @@
                 "php": ">=8.1"
             },
             "require-dev": {
+                "phpstan/phpstan": "^2.0",
                 "phpunit/phpunit": "^10.0 || ^11.0 || ^12.0"
             },
             "suggest": {
@@ -1202,9 +1236,9 @@
             ],
             "support": {
                 "issues": "https://github.com/erikwang2013/season/issues",
-                "source": "https://github.com/erikwang2013/season/tree/v2.0.0"
+                "source": "https://github.com/erikwang2013/season/tree/v2.0.2"
             },
-            "time": "2026-05-17T11:02:49+00:00"
+            "time": "2026-08-02T08:14:02+00:00"
         },
         {
             "name": "erikwang2013/security-php",
@@ -3698,24 +3732,24 @@
         },
         {
             "name": "masterminds/html5",
-            "version": "2.10.1",
+            "version": "2.11.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Masterminds/html5-php.git",
-                "reference": "fd5018f6815fff903946d0564977b44ce8010e29"
+                "reference": "a1e7a2f88ee13635d86fc61cfbdf2306a76ddfc7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Masterminds/html5-php/zipball/fd5018f6815fff903946d0564977b44ce8010e29",
-                "reference": "fd5018f6815fff903946d0564977b44ce8010e29",
+                "url": "https://api.github.com/repos/Masterminds/html5-php/zipball/a1e7a2f88ee13635d86fc61cfbdf2306a76ddfc7",
+                "reference": "a1e7a2f88ee13635d86fc61cfbdf2306a76ddfc7",
                 "shasum": ""
             },
             "require": {
                 "ext-dom": "*",
-                "php": ">=5.3.0"
+                "php": ">=7.4"
             },
             "require-dev": {
-                "phpunit/phpunit": "^4.8.35 || ^5.7.21 || ^6 || ^7 || ^8 || ^9 || ^10"
+                "phpunit/phpunit": "^6 || ^7 || ^8 || ^9 || ^10"
             },
             "type": "library",
             "extra": {
@@ -3759,9 +3793,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Masterminds/html5-php/issues",
-                "source": "https://github.com/Masterminds/html5-php/tree/2.10.1"
+                "source": "https://github.com/Masterminds/html5-php/tree/2.11.0"
             },
-            "time": "2026-06-23T18:43:15+00:00"
+            "time": "2026-08-18T06:18:41+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -9452,7 +9486,9 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {},
+    "stability-flags": {
+        "erik/platform-common": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

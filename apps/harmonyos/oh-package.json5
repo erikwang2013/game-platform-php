@@ -1,0 +1,13 @@
+{
+  "name": "game-platform",
+  "version": "1.0.0",
+  "description": "游戏平台 - 鸿蒙 C 端",
+  "main": "",
+  "author": "erik <erik@erik.xyz>",
+  "license": "MIT",
+  "devDependencies": {
+    "@ohos/hvigor-ohos-plugin": "5.1.4",
+    "@ohos/hvigor": "5.1.4"
+  },
+  "dependencies": {}
+}

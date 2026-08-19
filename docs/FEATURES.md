@@ -56,9 +56,9 @@
 | 推荐 | 推荐码、注册奖励、充值返佣 | 已完成 |
 | 搜索 | ES 搜索API + 游戏建议 + LIKE回退 | 已完成 |
 | 排行榜 | WebSocket 实时推送 (端口8789) | 已完成 |
-| 部署 | Docker Compose 8服务 + Nginx反向代理 | 已完成 |
+| 部署 | Docker Compose 7服务 + Nginx反向代理 | 已完成 |
 | 数据 | MySQL 实时聚合分析 + 联合/条件概率计算 | 已完成 |
-| HarmonyOS | 游戏大厅 + 钱包 + 游戏详情页 | 已完成 |
+| HarmonyOS | admin 端 8 页；C 端 `apps/harmonyos/` 已实现登录/大厅/详情/钱包/个人（指向 8788） | 部分完成（工程可跑，真机需改 IP） |
 | API 文档 | hg/apidoc 交互式文档 | 已完成 |
 
 ### 生态扩展 (v2.0) — 刚完成
@@ -73,11 +73,11 @@
 | 推送通知 | PushService (FCM/APNs/华为推送) + DeviceToken 模型 | 已完成 |
 | VIP 体系 | 5级 (普通/白银/黄金/铂金/钻石) + 经验值 + 自动升级 | 已完成 |
 | VIP 权益 | 兑换折扣 2-15%、提现手续费减免 10-100%、汇率加成 0.1-1.0% | 已完成 |
-| 成就系统 | 12个内置成就、事件驱动检测、进度追踪、经验值奖励 | 已完成 |
+| 成就系统 | 12个内置成就；EventConsumer → AchievementService 事件驱动检测与 VIP 经验 | 已完成 |
 | 好友系统 | 申请/接受/拒绝/删除/搜索、pending/accepted/blocked 状态 | 已完成 |
 | 私信/聊天 | REST 私信 + WebSocket 实时消息 (端口8790)、仅好友可发 | 已完成 |
-| 事件总线 | Redis Pub/Sub 异步解耦、成就/VIP/通知/审计订阅 | 已完成 |
-| 特性开关 | FeatureFlag 基于DB、零额外依赖、4个预设开关 | 已完成 |
+| 事件总线 | Redis Pub/Sub；emit + EventConsumer 消费成就/Webhook + metrics INCR | 已完成 |
+| 特性开关 | FeatureFlag 基于DB；`inRollout`/`abTest` crc32 分桶读 `feature.{name}_percent` | 已完成 |
 | 高级分析 | 留存/D1-D30、转化漏斗、ARPU/ARPPU、游戏币种经济指标 (MySQL 实时聚合) | 已完成 |
 | Webhook | 订阅管理 + Redis Pub/Sub 事件投递、7种事件可选 | 已完成 |
 | 聊天 | REST 私信 + WebSocket 实时消息 (端口8791)、仅好友可发 | 已完成 |
@@ -232,7 +232,7 @@
 | erik_game | +provider_config (JSON) |
 | erik_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**总计: 52 张表** (原有 42 + 新增 10)
+**总计: install.sql 43 张表**（生态扩展 10 张在 `admin/database/migrations/clickhouse/`，未并入 install.sql）。模型非共享：admin 46 / service 44 各一份。
 
 ## 8. 测试覆盖
 
@@ -246,7 +246,7 @@
 | HashidsServiceTest | 8 | ID编解码往返 |
 | SnowflakeServiceTest | 6 | ID生成唯一性 |
 
-**总计: 116 测试**
+**总计: admin ~132 用例 / 8 文件；service 3 用例（WebhookUrlSafety + EventBusMessageFormat）。service 未纳入 CI 失败阻断。**
 
 ---
 

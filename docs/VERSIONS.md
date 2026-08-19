@@ -5,18 +5,18 @@
 ## 总览
 
 | | 基础版 (Lite) | 标准版 (Standard) | 完整版 (Full) |
-| 生态扩展 (v2.0) | 52 | 150 | 53 | 44 | 7 | 15 | 10 | 5 | 8 | 116 |
 |------|------|------|------|
-| 数据表 | 19 | 29 | 42 |
-| API 端点 | 38 | 54 | 129 |
-| 后端控制器 | 14 | 22 | 48 |
-| 共享 Model | 14 | 24 | 34 |
-| 共享 Service | 1 | 2 | 5 |
+| 数据表 (install.sql) | 19 | 29 | **43**（非文档曾写的 52） |
+| API 端点 | 38 | 54 | ~149 (admin+service，含 Webhook/Provider) |
+| 后端控制器 | 14 | 22 | admin 32 + service 30 |
+| 数据模型 | 非共享 | 非共享 | **admin 46 / service 44 各一份，无共享层** |
+| 共享 Service | 无共享层 | 无共享层 | `packages/platform-common` 单一共享包 |
 | Admin 前端页面 | 11 | 13 | 15 |
 | Platform 前端页面 | 8 | 10 | 10 |
-| HarmonyOS 页面 | 2 | 2 | 5 |
-| Docker 服务 | - | - | 7 |
-| 测试用例 | 60 | 60 | 116 |
+| HarmonyOS (admin) | - | 登录+仪表盘 | **8 页** `admin/apps/harmonyos/` |
+| HarmonyOS (C端) | - | - | **5 页** `apps/harmonyos/`（登录/游戏大厅/详情/钱包/我的） |
+| Docker 服务 | - | - | **7** (nginx/admin/service/leaderboard-ws/mysql/redis/elasticsearch) |
+| 测试用例 | 60 | 60 | admin ~132；service 3 |
 
 ---
 
@@ -127,7 +127,7 @@
 | Docker Compose | - | - | ✓ 7服务 |
 | Nginx 反向代理 | - | - | ✓ |
 | Crontab 定时任务 | - | ✓ | ✓ |
-| Prometheus 监控 | ✓ | ✓ | ✓ |
+| Prometheus 监控 | ✓ | ✓ | ✓ `/metrics` 业务 gauge + 事件 counter |
 | 健康检查 | ✓ | ✓ | ✓ |
 | hg/apidoc 在线文档 | - | - | ✓ 41控制器 |
 
@@ -139,7 +139,8 @@
 |------|--------|--------|--------|
 | Flutter Web PC 管理后台 | ✓ 5页 | ✓ 11页 | ✓ 15页 |
 | Flutter Web PC 用户平台 | ✓ 5页 | ✓ 8页 | ✓ 10页 |
-| HarmonyOS 客户端 | - | ✓ 登录+仪表盘 | ✓ 5页 |
+| HarmonyOS admin | - | ✓ 登录+仪表盘 | ✓ 8页 `admin/apps/harmonyos/` |
+| HarmonyOS C端 | - | - | ✓ 5页 `apps/harmonyos/` |
 
 ---
 
@@ -204,8 +205,8 @@ erik_notification, erik_referral, erik_referral_reward, erik_user_2fa
 | 成就系统 | 12个内置成就、事件驱动检测、进度追踪 |
 | 好友系统 | 申请/接受/拒绝/删除/搜索 |
 | 私信/聊天 | REST + WebSocket 实时消息 (端口8790) |
-| 事件总线 | Redis Pub/Sub 异步解耦 |
-| 特性开关 | FeatureFlag 基于DB、4个预设开关 |
+| 事件总线 | Redis Pub/Sub；emit INCR `metrics:event_*`；消费进程 `EventConsumer` 已落地 |
+| 特性开关 | FeatureFlag 基于DB；`inRollout`/`abTest` 读 `feature.{name}_percent` |
 | Webhook | - | - | ✓ 7种事件+Pub/Sub投递 |
 | 聊天 | - | - | ✓ REST+WebSocket :8791 |
 | 赛事系统 | - | - | ✓ FeatureFlag+tournament |

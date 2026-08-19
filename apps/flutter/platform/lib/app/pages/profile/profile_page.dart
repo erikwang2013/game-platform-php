@@ -1,6 +1,5 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 import '../../i18n/translations.dart';
-import '../../i18n/locale_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
@@ -265,6 +264,16 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                             ],
                           ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      Card(
+                        child: ListTile(
+                          leading: const Icon(Icons.security),
+                          title: Text("${AppTranslations.t('two_factor.title')}"),
+                          trailing: const Icon(Icons.chevron_right),
+                          onTap: () => Get.toNamed('/2fa'),
                         ),
                       ),
                       const SizedBox(height: 24),

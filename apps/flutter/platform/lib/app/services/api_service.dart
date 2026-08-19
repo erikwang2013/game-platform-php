@@ -9,7 +9,7 @@ class ApiService {
   factory ApiService() => _instance;
 
   late final Dio dio;
-  static const String baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'https://game-platform.test');
+  static const String baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:8788');
 
   ApiService._() {
     dio = Dio(BaseOptions(
@@ -33,10 +33,12 @@ class ApiService {
       onError: (error, handler) async {
         if (error.response?.statusCode == 401) {
           final refreshed = await tryRefresh();
-          if (!refreshed) {
-            await AuthService.clearToken();
-            Future.microtask(() => Get.offAllNamed('/login'));
+          if (refreshed) {
+            handler.resolve(await dio.fetch(error.requestOptions));
+            return;
           }
+          await AuthService.clearToken();
+          _redirectToLoginOnce();
         }
         handler.next(error);
       },
@@ -71,7 +73,23 @@ class ApiService {
     return body;
   }
 
-  Future<bool> tryRefresh() async {
+  Future<bool>? _refreshInFlight;
+  static bool _loginRedirectPending = false;
+
+  void _redirectToLoginOnce() {
+    if (_loginRedirectPending) return;
+    _loginRedirectPending = true;
+    Future.microtask(() {
+      Get.offAllNamed('/login');
+      _loginRedirectPending = false;
+    });
+  }
+
+  Future<bool> tryRefresh() {
+    return _refreshInFlight ??= _doRefresh().whenComplete(() => _refreshInFlight = null);
+  }
+
+  Future<bool> _doRefresh() async {
     final refreshToken = await AuthService.getRefreshToken();
     if (refreshToken == null) return false;
     try {

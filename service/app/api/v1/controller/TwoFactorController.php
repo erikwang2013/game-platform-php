@@ -10,6 +10,8 @@ namespace app\api\v1\controller;
 use app\model\User;
 use app\model\User2FA;
 use hg\apidoc\annotation as Apidoc;
+use support\Log;
+use support\Redis;
 use support\Request;
 use support\Response;
 
@@ -121,22 +123,45 @@ class TwoFactorController extends BaseController
      * @Apidoc\Title("验证2FA")
      * @Apidoc\Url("/api/2fa/verify")
      * @Apidoc\Method("POST")
-     * @Apidoc\Param(name="user_id", type="string", require=true, desc="用户ID(hashid)")
+     * @Apidoc\Param(name="pending_2fa_token", type="string", require=true, desc="登录返回的短期2FA票据")
      * @Apidoc\Param(name="code", type="string", require=true, desc="6位TOTP验证码")
      */
     public function verify(Request $request): Response
     {
         $validator = validator($request->all(), [
-            'user_id' => 'required|string',
-            'code'    => 'required|string|size:6',
+            'pending_2fa_token' => 'required|string',
+            'code'              => 'required|string|size:6',
         ]);
 
         if ($validator->fails()) {
             return $this->fail($validator->errors()->first(), 422);
         }
 
-        $userId = $this->decodeId($request->input('user_id'));
-        $code   = $request->input('code');
+        // 用户身份取自登录时签发的短期票据（含已过密码校验标记），客户端无法自选用户
+        try {
+            $payload = jwt()->verify($request->input('pending_2fa_token'));
+        } catch (\Throwable) {
+            return $this->fail('Invalid or expired verification session', 401);
+        }
+
+        $userId = (int) ($payload->sub ?? 0);
+        $scope  = $payload->scope ?? '';
+        if ($userId <= 0 || $scope !== 'pending_2fa') {
+            return $this->fail('Invalid or expired verification session', 401);
+        }
+
+        $bound = $this->boundUserId($request);
+        if ($bound > 0 && $bound !== $userId) {
+            return $this->fail('user_id does not match current session', 403);
+        }
+
+        $code = $request->input('code');
+
+        // 逐用户锁定：5 次失败锁定 15 分钟（Redis 故障时 fail-closed，拒绝校验）
+        $lockCheck = $this->assert2faNotLocked($userId);
+        if ($lockCheck !== null) {
+            return $lockCheck;
+        }
 
         $user2FA = User2FA::where('user_id', $userId)
             ->where('is_enabled', 1)
@@ -146,9 +171,15 @@ class TwoFactorController extends BaseController
             return $this->fail('2FA is not enabled for this user', 404);
         }
 
+        $user = User::find($userId);
+        if (!$user || (int) $user->status !== 1) {
+            return $this->fail('Account is disabled', 403);
+        }
+
         // Check TOTP code
         if ($this->verifyTOTP($user2FA->secret, $code)) {
-            return $this->success(['valid' => true], 'TOTP code verified');
+            $this->clear2faFailures($userId);
+            return $this->issueLogin($user, $request);
         }
 
         // Check backup codes
@@ -160,10 +191,15 @@ class TwoFactorController extends BaseController
             unset($backupCodes[$matchIndex]);
             $user2FA->backup_codes = json_encode(array_values($backupCodes));
             $user2FA->save();
+            $this->clear2faFailures($userId);
 
-            return $this->success(['valid' => true, 'backup_used' => true], 'Backup code accepted');
+            return $this->issueLogin($user, $request);
         }
 
+        $recorded = $this->record2faFailure($userId);
+        if ($recorded !== null) {
+            return $recorded;
+        }
         return $this->fail('Invalid TOTP code', 422);
     }
 
@@ -217,6 +253,51 @@ class TwoFactorController extends BaseController
     // -----------------------------------------------------------------
     //  Internal helpers
     // -----------------------------------------------------------------
+
+    /**
+     * 2FA 校验通过后签发正式 token，响应结构与 AuthController::login 一致。
+     */
+    private function issueLogin(User $user, Request $request): Response
+    {
+        $user->last_login_at = date('Y-m-d H:i:s');
+        $user->last_login_ip = $request->getRealIp() ?? '';
+        $user->save();
+
+        $accessToken  = jwt()->create(['sub' => $user->id, 'username' => $user->username]);
+        $refreshToken = jwt()->create(['sub' => $user->id, 'token_type' => 'refresh']);
+
+        return $this->success([
+            'access_token'  => $accessToken,
+            'refresh_token' => $refreshToken,
+            'user'          => [
+                'id'       => $this->encodeId($user->id),
+                'username' => $user->username,
+                'nickname' => $user->nickname,
+                'avatar'   => $user->avatar,
+            ],
+        ], 'Login successful');
+    }
+
+    /**
+     * Optional call-context bind: JWT sub if present, else 0 (public login-step verify).
+     */
+    private function boundUserId(Request $request): int
+    {
+        $authed = (int) ($request->userId ?? 0);
+        if ($authed > 0) {
+            return $authed;
+        }
+        $header = $request->header('Authorization', '');
+        if (!is_string($header) || !preg_match('/^Bearer\s+(\S+)/', $header, $m)) {
+            return 0;
+        }
+        try {
+            $payload = jwt()->verify($m[1]);
+            return (int) ($payload->sub ?? 0);
+        } catch (\Throwable) {
+            return 0;
+        }
+    }
 
     /**
      * Generate a random Base32-encoded secret (32 raw bytes).
@@ -297,5 +378,61 @@ class TwoFactorController extends BaseController
             }
         }
         return false;
+    }
+
+    private const TOTP_MAX_FAILURES = 5;
+    private const TOTP_LOCK_SECONDS = 900;
+
+    private function totpFailKey(int $userId): string
+    {
+        return "2fa:fail:{$userId}";
+    }
+
+    private function totpLockKey(int $userId): string
+    {
+        return "2fa:lock:{$userId}";
+    }
+
+    private function assert2faNotLocked(int $userId): ?Response
+    {
+        try {
+            if (Redis::exists($this->totpLockKey($userId))) {
+                return $this->fail('Too many failed attempts. Try again later.', 429);
+            }
+        } catch (\Throwable $e) {
+            Log::error('2FA lock check Redis failed (fail-closed): ' . $e->getMessage());
+            return $this->fail('Verification temporarily unavailable', 503);
+        }
+        return null;
+    }
+
+    private function record2faFailure(int $userId): ?Response
+    {
+        try {
+            $key = $this->totpFailKey($userId);
+            $count = (int) Redis::incr($key);
+            if ($count === 1) {
+                Redis::expire($key, self::TOTP_LOCK_SECONDS);
+            }
+            if ($count >= self::TOTP_MAX_FAILURES) {
+                Redis::setex($this->totpLockKey($userId), self::TOTP_LOCK_SECONDS, '1');
+                Redis::del($key);
+                return $this->fail('Too many failed attempts. Try again later.', 429);
+            }
+        } catch (\Throwable $e) {
+            Log::error('2FA failure counter Redis failed (fail-closed): ' . $e->getMessage());
+            return $this->fail('Verification temporarily unavailable', 503);
+        }
+        return null;
+    }
+
+    private function clear2faFailures(int $userId): void
+    {
+        try {
+            Redis::del($this->totpFailKey($userId));
+            Redis::del($this->totpLockKey($userId));
+        } catch (\Throwable $e) {
+            Log::error('2FA clear failures Redis failed: ' . $e->getMessage());
+        }
     }
 }

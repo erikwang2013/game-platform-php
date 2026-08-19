@@ -141,7 +141,9 @@ class ChatController extends BaseController
             ]);
             Redis::publish('chat:channel', $payload);
             Redis::lpush('chat:delivery_queue', $payload);
-        } catch (\Throwable $e) {}
+        } catch (\Throwable $e) {
+            \support\Log::error('Chat realtime push degraded: ' . $e->getMessage());
+        }
 
         return $this->success(['id' => $this->encodeId($msg->id), 'created_at' => $msg->created_at], 'Sent');
     }

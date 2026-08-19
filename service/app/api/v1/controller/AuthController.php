@@ -8,8 +8,10 @@ declare(strict_types=1);
 namespace app\api\v1\controller;
 
 use app\model\User;
+use app\model\User2FA;
 use app\model\UserWallet;
 use hg\apidoc\annotation as Apidoc;
+use support\Db;
 use support\Request;
 use support\Response;
 
@@ -49,31 +51,37 @@ class AuthController extends BaseController
             return $this->fail('Username already exists', 422);
         }
 
-        // Create user
-        $userId = $this->generateId();
+        // Create user + wallet in one transaction: wallet failure must roll back
+        // the user, otherwise a crashed signup leaves an orphan account
+        $user = null;
+        $userId = Db::transaction(function () use ($username, $password, $email, $request, &$user) {
+            $userId = $this->generateId();
 
-        $user = new User();
-        $user->id            = $userId;
-        $user->username      = $username;
-        $user->password      = password_hash($password, PASSWORD_BCRYPT);
-        $user->nickname      = $username;
-        $user->avatar        = '';
-        $user->email         = $email;
-        $user->status        = 1;
-        $user->last_login_at = date('Y-m-d H:i:s');
-        $user->last_login_ip = $request->getRealIp() ?? '';
-        $user->save();
+            $user = new User();
+            $user->id            = $userId;
+            $user->username      = $username;
+            $user->password      = password_hash($password, PASSWORD_BCRYPT);
+            $user->nickname      = $username;
+            $user->avatar        = '';
+            $user->email         = $email;
+            $user->status        = 1;
+            $user->last_login_at = date('Y-m-d H:i:s');
+            $user->last_login_ip = $request->getRealIp() ?? '';
+            $user->save();
 
-        // Create wallet with 0 balance
-        $wallet = new UserWallet();
-        $wallet->id            = $this->generateId();
-        $wallet->user_id       = $userId;
-        $wallet->balance       = '0.0000';
-        $wallet->frozen_balance = '0.0000';
-        $wallet->total_earned  = '0.0000';
-        $wallet->total_spent   = '0.0000';
-        $wallet->version       = 0;
-        $wallet->save();
+            // Create wallet with 0 balance
+            $wallet = new UserWallet();
+            $wallet->id            = $this->generateId();
+            $wallet->user_id       = $userId;
+            $wallet->balance       = '0.0000';
+            $wallet->frozen_balance = '0.0000';
+            $wallet->total_earned  = '0.0000';
+            $wallet->total_spent   = '0.0000';
+            $wallet->version       = 0;
+            $wallet->save();
+
+            return $userId;
+        });
 
         // Generate tokens
         $accessToken  = jwt()->create(['sub' => $userId, 'username' => $username]);
@@ -121,6 +129,18 @@ class AuthController extends BaseController
         // Check status
         if ((int) $user->status !== 1) {
             return $this->fail('Account is disabled', 403);
+        }
+
+        // 2FA 已开启：不签发正式 token，返回短期票据供 verify 换发
+        $has2fa = User2FA::where('user_id', $user->id)
+            ->where('is_enabled', 1)
+            ->exists();
+        if ($has2fa) {
+            $pendingToken = jwt()->create(['sub' => $user->id, 'scope' => 'pending_2fa'], 600);
+            return $this->success([
+                'require_2fa'      => true,
+                'pending_2fa_token' => $pendingToken,
+            ], '2FA verification required');
         }
 
         // Update login info

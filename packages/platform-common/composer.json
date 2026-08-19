@@ -1,0 +1,23 @@
+{
+  "name": "erik/platform-common",
+  "description": "Shared common\\service layer for game-platform admin + service apps",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "erik",
+      "email": "erik@erik.xyz",
+      "homepage": "https://erik.xyz"
+    }
+  ],
+  "require": {
+    "php": ">=8.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "common\\": "src/"
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
+}

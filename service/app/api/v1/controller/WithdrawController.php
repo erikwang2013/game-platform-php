@@ -15,6 +15,8 @@ use app\model\WithdrawLimit;
 use app\model\WithdrawOrder;
 use hg\apidoc\annotation as Apidoc;
 use support\Db;
+use support\Log;
+use support\Redis;
 use support\Request;
 use support\Response;
 use app\event\EventBus;
@@ -59,9 +61,34 @@ class WithdrawController extends BaseController
         $method         = $request->input('method');
         $accountInfo    = $request->input('account_info');
 
+        // 按用户串行化申请，防止日/月限额 check-then-act 并发突破
+        $lockKey = "withdraw:apply:{$userId}";
+        try {
+            $locked = Redis::set($lockKey, '1', 'EX', 15, 'NX');
+            if (!$locked) {
+                return $this->fail('Withdrawal request in progress, please retry', 429);
+            }
+        } catch (\Throwable $e) {
+            Log::error('Withdraw apply lock Redis failed (fail-closed): ' . $e->getMessage());
+            return $this->fail('Withdrawal temporarily unavailable', 503);
+        }
+
+        try {
+            return $this->applyLocked($request, $userId, $platformAmount, $method, $accountInfo);
+        } finally {
+            try {
+                Redis::del($lockKey);
+            } catch (\Throwable $e) {
+                Log::warning('Withdraw apply unlock Redis failed: ' . $e->getMessage());
+            }
+        }
+    }
+
+    private function applyLocked(Request $request, int $userId, string $platformAmount, string $method, $accountInfo): Response
+    {
         // Check KYC-based tiered limits
         $level    = 'default';
-        $identity = UserIdentity::where('user_id', $request->userId)->first();
+        $identity = UserIdentity::where('user_id', $userId)->first();
         if ($identity && $identity->status === 'approved') {
             $level = 'verified';
         }
@@ -98,35 +125,6 @@ class WithdrawController extends BaseController
             return $this->fail('Amount exceeds maximum withdrawal limit', 400);
         }
 
-        // Check daily withdrawal limit
-        if (bccomp($dailyLimit, '0', 4) > 0) {
-            $todaySum = WithdrawOrder::where('user_id', $userId)
-                ->whereIn('status', ['pending', 'approved', 'completed'])
-                ->whereDate('created_at', date('Y-m-d'))
-                ->sum('platform_amount');
-
-            $totalAfter = bcadd((string) $todaySum, $platformAmount, 4);
-            if (bccomp($totalAfter, $dailyLimit, 4) > 0) {
-                return $this->fail('Daily withdrawal limit exceeded', 400);
-            }
-        }
-
-        // Check monthly withdrawal limit
-        if (bccomp($monthlyLimit, '0', 4) > 0) {
-            $monthSum = WithdrawOrder::where('user_id', $userId)
-                ->whereIn('status', ['pending', 'approved', 'completed'])
-                ->whereBetween('created_at', [
-                    date('Y-m-01'),
-                    date('Y-m-t 23:59:59'),
-                ])
-                ->sum('platform_amount');
-
-            $monthTotalAfter = bcadd((string) $monthSum, $platformAmount, 4);
-            if (bccomp($monthTotalAfter, $monthlyLimit, 4) > 0) {
-                return $this->fail('Monthly withdrawal limit exceeded', 400);
-            }
-        }
-
         // Calculate withdrawal fee with VIP discount: fee = min(platform_amount * fee_pct/100 * (1-vip_discount), fee_max)
         $fee = '0';
         $vipFeeDiscount = VipService::getWithdrawFeeDiscount($userId);
@@ -143,15 +141,40 @@ class WithdrawController extends BaseController
         }
         $actualAmount = bcsub($platformAmount, $fee, 4);
 
-        // Check wallet balance
-        $wallet = UserWallet::where('user_id', $userId)->first();
-        if (!$wallet || bccomp($wallet->balance, $platformAmount, 4) < 0) {
-            return $this->fail('Insufficient balance', 400);
-        }
-
         Db::beginTransaction();
 
         try {
+            $wallet = UserWallet::where('user_id', $userId)->lockForUpdate()->first();
+            if (!$wallet || bccomp((string) $wallet->balance, $platformAmount, 4) < 0) {
+                Db::rollBack();
+                return $this->fail('Insufficient balance', 400);
+            }
+
+            $counted = ['pending', 'approved', 'processing', 'completed'];
+            if (bccomp($dailyLimit, '0', 4) > 0) {
+                $todaySum = WithdrawOrder::where('user_id', $userId)
+                    ->whereIn('status', $counted)
+                    ->whereDate('created_at', date('Y-m-d'))
+                    ->sum('platform_amount');
+                if (bccomp(bcadd((string) $todaySum, $platformAmount, 4), $dailyLimit, 4) > 0) {
+                    Db::rollBack();
+                    return $this->fail('Daily withdrawal limit exceeded', 400);
+                }
+            }
+            if (bccomp($monthlyLimit, '0', 4) > 0) {
+                $monthSum = WithdrawOrder::where('user_id', $userId)
+                    ->whereIn('status', $counted)
+                    ->whereBetween('created_at', [
+                        date('Y-m-01'),
+                        date('Y-m-t 23:59:59'),
+                    ])
+                    ->sum('platform_amount');
+                if (bccomp(bcadd((string) $monthSum, $platformAmount, 4), $monthlyLimit, 4) > 0) {
+                    Db::rollBack();
+                    return $this->fail('Monthly withdrawal limit exceeded', 400);
+                }
+            }
+
             // Deduct balance
             $deducted = UserWallet::deductBalance($userId, $platformAmount);
             if (!$deducted) {
@@ -160,14 +183,16 @@ class WithdrawController extends BaseController
             }
 
             // Determine auto-approve using tiered threshold
-            if (bccomp($autoThreshold, '0', 4) > 0 && bccomp($platformAmount, $autoThreshold, 4) < 0) {
+            $dualOn = in_array((string) PlatformConfig::get('withdraw', 'require_dual_review', 'off'), ['on', '1', 'true'], true);
+            if (!$dualOn && bccomp($autoThreshold, '0', 4) > 0 && bccomp($platformAmount, $autoThreshold, 4) < 0) {
                 $status = 'approved';
             } else {
                 $status = 'pending';
             }
 
             // Generate order number: WTH + YmdHis + random 4 digits
-            $orderNo = 'WTH' . date('YmdHis') . str_pad((string) mt_rand(0, 9999), 4, '0', STR_PAD_LEFT);
+            // uniqid 微秒+进程后缀避免同秒撞 uk_order_no
+            $orderNo = 'WTH' . date('YmdHis') . strtoupper(substr(uniqid('', true), -6));
 
             // Create withdraw order
             $order = new WithdrawOrder();
@@ -205,7 +230,8 @@ class WithdrawController extends BaseController
 
             Db::commit();
 
-            EventBus::emit('withdraw.completed', ['user_id' => $userId, 'platform_amount' => $platformAmount, 'status' => $status]);
+            // 语义：这里是"申请"不是"完成"，completed 由 PayoutService::markCompleted 在打款成功时发出
+            EventBus::emit('withdraw.applied', ['user_id' => $userId, 'platform_amount' => $platformAmount, 'status' => $status]);
 
             NotificationService::send($userId, 'withdraw', 'Withdrawal Request Submitted', "Withdrawal of {$platformAmount} platform tokens submitted ({$status})", 'withdraw_order', $order->id);
 
@@ -218,11 +244,11 @@ class WithdrawController extends BaseController
                 'status'          => $status,
                 'balance_after'   => $balanceAfter,
                 'created_at'      => $order->created_at,
-            ], 'Withdrawal request submitted');
+            ]);
         } catch (\Throwable $e) {
             Db::rollBack();
-            \support\Log::error('Withdrawal failed', ['user_id' => $userId, 'error' => $e->getMessage()]);
-            return $this->fail('Withdrawal failed, please try again later', 500);
+            Log::error('Withdraw apply failed: ' . $e->getMessage());
+            return $this->fail('Withdrawal failed', 500);
         }
     }
 

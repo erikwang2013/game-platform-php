@@ -1,0 +1,46 @@
+# Changelog
+
+> Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+
+人类可读变更记录。PHP 不 import 本文件。对应 PROJECT-PLAN P2-21。
+
+## [1.1] — 2026-08-07
+
+- Redis 插件接入、分析服务、Redis 降级、测试修复。
+
+## [1.1] security / ops — 2026-08-18
+
+### 安全
+
+- 支付回调：provider 白名单（stripe/paypal）、fail-closed 验签、金额核对、入账事务化、Stripe 时间戳 ±300s 防重放。
+- JWT：`JWT_SECRET_KEY` / `ADMIN_JWT_SECRET_KEY` / `SERVICE_JWT_SECRET_KEY` 缺失或为默认值时拒绝启动。
+- Apple id_token：JWKS（RS256）验签 + aud/iss/exp。
+- Webhook：仅 https 公网 URL，拒绝内网/保留地址（SSRF）。
+- 2FA：TOTP HMAC 使用 RFC 4648 Base32 解码后的密钥；`/api/2fa/verify` 逐用户失败锁定（5 次 / 15 分钟，Redis 故障 fail-closed）。
+- 提现：审核/打款条件 UPDATE 状态原子翻转；可选双重审核（`withdraw.require_dual_review`）；申请侧 Redis 用户锁防限额并发突破。
+- 限流：Redis 故障 fail-closed。
+
+### 可用性
+
+- admin 分析服务 12 条 `/admin/analytics/*` 路由挂载。
+- 模型去掉硬编码 `erik_` 前缀；DepositLog 审计落库；Test model 删除。
+
+### 可观测
+
+- `GET /metrics` 增加待审核提现、今日确认充值（COUNT 查询 Redis 30s 缓存）、事件 emit/consume 计数、`memory_usage`、`info version=1.1`。
+- FeatureFlag：`inRollout` / `abTest` 按 crc32 分桶读取 `feature.{name}_percent`。
+- EventBus `emit` / `consume` 对 Redis `metrics:event_emit_total` / `metrics:event_consume_total` 做 INCR。
+
+### 客户端 / 共享（同日补齐）
+
+- Flutter Platform：`app_pages.dart` 路由表；补 2FA 设置/校验、优惠券、排行榜、通知、OAuth 回调页；大厅入口已挂导航。
+- HarmonyOS C 端：`apps/harmonyos/` 五页（登录/大厅/详情/钱包/个人），默认 `BASE_URL` 指向 service `8788`。
+- 共享层：`packages/platform-common`（`erik/platform-common` path repo）抽出 DepositLog / GameDashboard / Probability / GamePlayLog；model 仍双份。
+- ClickHouse：composer 依赖已摘除；分析继续走 MySQL 实时聚合。
+- CI：admin / service 分 job 跑 phpunit，失败即阻断。
+
+### 仍存缺口
+
+- admin/service **模型**仍双份（仅部分 `common/service` 入 path 包）。
+- `webman/queue` 未接线；概率/留存未迁 OLAP。
+- PROJECT-PLAN / VERSIONS / 审计报告部分段落仍可能滞后于本 CHANGELOG，以本文件与磁盘为准。

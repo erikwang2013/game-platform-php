@@ -1,0 +1,9 @@
+{
+  "src": [
+    "pages/LoginPage",
+    "pages/GameHallPage",
+    "pages/GameDetailPage",
+    "pages/WalletPage",
+    "pages/ProfilePage"
+  ]
+}

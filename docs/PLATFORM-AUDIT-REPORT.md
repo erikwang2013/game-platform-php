@@ -240,8 +240,14 @@
 | refresh token | service AuthController 刷新令牌逻辑重写 | ✅ 已修复 |
 | DepositLogService | service 版移植补齐，消除 admin/service 双份漂移之一 | ✅ 已修复 |
 | 死代码清理 | Test model 删除；DepositLog 审计落库 | ✅ 已修复 |
+| Apple id_token | JWKS RS256 验签 + kid 刷新 + aud/iss/exp | ✅ 已修复 |
+| Webhook SSRF | `isSafeWebhookUrl()` 仅 https 公网，拒绝内网/保留地址 | ✅ 已修复 |
+| 2FA | Base32 解码后 HMAC；`/api/2fa/verify` 逐用户 5 次/15 分钟锁定 | ✅ 已修复 |
+| 提现原子化 | 审核/打款条件 UPDATE；可选双重审核；申请 Redis 用户锁 | ✅ 已修复 |
+| Prometheus 业务指标 | `/metrics`：待审核提现、今日确认充值（30s 缓存）、事件 emit/consume、memory_usage、version=1.1 | ✅ 已落地 |
+| FeatureFlag 灰度 | `inRollout` / `abTest` crc32 分桶读 `feature.{name}_percent` | ✅ 已落地 |
 
-**仍未完成**：事件总线消费端（emit 无消费者）、Apple id_token 验签（JWKS）、共享层去重、webman/queue 接线、2FA Base32 修复、提现原子化、Webhook SSRF 阻断、service 测试与 CI 门禁。历史评分与结论保持不变。
+**仍未完成**：webman/queue 接线、ClickHouse 真实接入。历史评分与结论保持不变。已落地：事件总线消费进程（`service/app/process/EventConsumer.php` + `process.php` 登记 `event-consumer`）、共享层去重（合并为单一 `packages/platform-common`）、HarmonyOS C 端页面、成就引擎接线（EventConsumer 内调用）、service CI 门禁。
 
 ---
 

@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace app\process;
 
 use Workerman\Connection\TcpConnection;
+use support\Log;
 use support\Redis;
 
 class ChatWebSocket
@@ -60,7 +61,9 @@ class ChatWebSocket
                         $this->deliverToUser((int) $data['to_user_id'], json_encode($data));
                     }
                 }
-            } catch (\Throwable $e) {}
+            } catch (\Throwable $e) {
+                Log::warning('ChatWebSocket brpop failed: ' . $e->getMessage());
+            }
         });
     }
 

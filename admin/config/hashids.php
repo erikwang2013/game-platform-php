@@ -8,6 +8,16 @@ declare(strict_types=1);
  * This copyright notice is permanent and must not be modified or removed.
  */
 
+// fail-closed：salt 缺失或仍为默认值时拒绝启动，否则 hashid 可逆、IDOR 防护失效
+$hashidsMainSalt = getenv('HASHIDS_SALT');
+if (!$hashidsMainSalt || $hashidsMainSalt === 'game-platform-hashids-salt-2026') {
+    throw new \RuntimeException('HASHIDS_SALT 环境变量缺失或仍为默认值，拒绝启动');
+}
+$hashidsAltSalt = getenv('HASHIDS_ALT_SALT');
+if (!$hashidsAltSalt || $hashidsAltSalt === 'game-platform-alt-salt-2026') {
+    throw new \RuntimeException('HASHIDS_ALT_SALT 环境变量缺失或仍为默认值，拒绝启动');
+}
+
 return [
 
     /*
@@ -36,13 +46,13 @@ return [
     'connections' => [
 
         'main' => [
-            'salt' => '',
+            'salt' => $hashidsMainSalt,
             'length' => 0,
             // 'alphabet' => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890',
         ],
 
         'alternative' => [
-            'salt' => 'your-salt-string',
+            'salt' => $hashidsAltSalt,
             'length' => 0,
             // 'alphabet' => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890',
         ],

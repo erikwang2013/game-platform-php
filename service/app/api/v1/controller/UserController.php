@@ -205,11 +205,8 @@ class UserController extends BaseController
             return $this->fail('请先提现所有余额后再注销账号', 422);
         }
 
-        // Soft delete user
-        $user->update(['status' => 0, 'deleted_at' => date('Y-m-d H:i:s')]);
-        $user->delete(); // SoftDeletes
-
-        // Anonymize personal data
+        // Anonymize personal data BEFORE soft delete: update on a soft-deleted
+        // model is a no-op (SoftDeletes global scope), so PII would stay in DB
         $user->update([
             'username' => 'deleted_' . $userId,
             'nickname' => '',
@@ -217,6 +214,9 @@ class UserController extends BaseController
             'email' => '',
             'phone' => '',
         ]);
+
+        // Soft delete user
+        $user->delete(); // SoftDeletes
 
         // Delete OAuth bindings
         UserOauth::where('user_id', $userId)->delete();

@@ -22,6 +22,7 @@ class RateLimit implements MiddlewareInterface
         '/api/auth/login'    => ['limit' => 10, 'window' => 60],
         '/api/auth/register' => ['limit' => 5,  'window' => 60],
         '/api/auth/oauth'    => ['limit' => 10, 'window' => 60],
+        '/api/2fa/verify'    => ['limit' => 10, 'window' => 60],
         '/api/payment/callback' => ['limit' => 30, 'window' => 60],
     ];
 

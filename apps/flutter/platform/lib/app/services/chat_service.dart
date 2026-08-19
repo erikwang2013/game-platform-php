@@ -20,11 +20,9 @@ class ChatService extends GetxService {
     if (token == null) return;
 
     try {
-      final base = ApiService.baseUrl
-          .replaceFirst('https://', 'wss://')
-          .replaceFirst('http://', 'ws://');
-      final uri = Uri.parse(base).host;
-      _channel = WebSocketChannel.connect(Uri.parse('ws://$uri:8791'));
+      final baseUri = Uri.parse(ApiService.baseUrl);
+      final scheme = baseUri.scheme == 'https' ? 'wss' : 'ws';
+      _channel = WebSocketChannel.connect(Uri.parse('$scheme://${baseUri.host}:8791'));
 
       _channel!.stream.listen(
         _onMessage,
@@ -102,7 +100,7 @@ class ChatService extends GetxService {
     return List<Map<String, dynamic>>.from(resp['data'] ?? []);
   }
 
-  Future<void> sendMessage(int peerId, String peerHashid, String content) async {
+  Future<void> sendMessage(String peerHashid, String content) async {
     await ApiService().post('/api/chat/send', data: {'to_user_id': peerHashid, 'content': content});
     try { await refreshUnread(); } catch (_) {}
   }

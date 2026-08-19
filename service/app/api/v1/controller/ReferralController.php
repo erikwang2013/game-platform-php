@@ -127,13 +127,21 @@ class ReferralController extends BaseController
         $referredBonus = PlatformConfig::get('referral', 'referred_bonus', '0');
 
         // Create the referral record for the referred user
+        // 并发场景下唯一索引兜底：预检查通过后仍可能撞 uk(referred_id)，捕获重复键返回 422
         $referral = new Referral();
         $referral->id          = $this->generateId();
         $referral->referrer_id = $referrerId;
         $referral->referred_id = $userId;
         $referral->code        = $code;
         $referral->status      = 1;
-        $referral->save();
+        try {
+            $referral->save();
+        } catch (\PDOException $e) {
+            if (in_array($e->errorInfo[1] ?? null, [1062, 23000], true)) {
+                return $this->fail('You have already applied a referral code', 422);
+            }
+            throw $e;
+        }
 
         // Grant bonus to referrer
         if (bccomp($referrerBonus, '0', 2) > 0) {

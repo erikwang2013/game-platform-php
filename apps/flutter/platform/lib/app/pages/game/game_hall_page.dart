@@ -6,7 +6,8 @@ import '../../i18n/translations.dart';
 import '../../i18n/locale_controller.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
-import '../profile/profile_page.dart';
+import '../../services/api_helpers.dart';
+import '../../services/chat_service.dart';
 
 class GameHallPage extends StatefulWidget {
   const GameHallPage({super.key});
@@ -35,6 +36,9 @@ class _GameHallPageState extends State<GameHallPage> {
   List<Map<String, dynamic>> get _navItems => [
     {'icon': Icons.sports_esports, 'label': '${AppTranslations.t('nav.games')}', 'route': '/games'},
     {'icon': Icons.account_balance_wallet, 'label': '${AppTranslations.t('nav.wallet')}', 'route': '/wallet'},
+    {'icon': Icons.local_offer_outlined, 'label': '${AppTranslations.t('nav.coupons')}', 'route': '/coupons'},
+    {'icon': Icons.leaderboard_outlined, 'label': '${AppTranslations.t('nav.leaderboard')}', 'route': '/leaderboard'},
+    {'icon': Icons.notifications_outlined, 'label': '${AppTranslations.t('nav.notifications')}', 'route': '/notifications'},
     {'icon': Icons.chat_bubble_outline, 'label': '${AppTranslations.t('nav.chat')}', 'route': '/chat-list'},
     {'icon': Icons.people_outline, 'label': '${AppTranslations.t('nav.friends')}', 'route': '/friends'},
     {'icon': Icons.verified_user, 'label': '${AppTranslations.t('nav.identity')}', 'route': '/identity'},
@@ -47,6 +51,8 @@ class _GameHallPageState extends State<GameHallPage> {
     super.initState();
     _loadUsername();
     _fetchGames();
+    // 登录成功/会话恢复后统一在这里建立聊天连接（connect 内部无 token 时为 no-op）
+    Get.find<ChatService>().connect();
   }
 
   Future<void> _loadUsername() async {
@@ -61,9 +67,8 @@ class _GameHallPageState extends State<GameHallPage> {
     });
     try {
       final resp = await _api.get('/api/game/list');
-      final data = resp['data'];
       setState(() {
-        _games = data is List ? List<Map<String, dynamic>>.from(data) : [];
+        _games = ApiHelpers.extractList(resp['data']);
         _loading = false;
       });
     } on ApiException catch (e) {
@@ -93,11 +98,8 @@ class _GameHallPageState extends State<GameHallPage> {
     setState(() => _selectedNav = index);
     final navItems = _navItems;
     final route = navItems[index]['route'] as String;
-    if (route == '/profile') {
-      Get.to(() => const ProfilePage());
-    } else {
-      Get.toNamed(route);
-    }
+    if (route == '/games') return;
+    Get.toNamed(route);
   }
 
   @override
@@ -253,7 +255,7 @@ class _GameHallPageState extends State<GameHallPage> {
           final current = localeCtrl.currentLocale.value;
           localeCtrl.changeLocale(current == 'zh' ? 'en' : 'zh');
         } else if (value == 'profile') {
-          Get.to(() => const ProfilePage());
+          Get.toNamed('/profile');
         } else if (value == 'logout') {
           final confirm = await showDialog<bool>(
             context: context,

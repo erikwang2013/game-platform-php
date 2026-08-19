@@ -11,6 +11,7 @@ use app\model\DepositOrder;
 use app\model\Game;
 use app\model\GamePlayLog;
 use support\Db;
+use support\Log;
 use Throwable;
 
 /**
@@ -19,9 +20,22 @@ use Throwable;
 class DepositLogService
 {
     /**
-     * 充值审计占位（当前无调用方；如启用请写入充值审计表）
+     * 充值审计：写入应用日志（deposit_log 表未进 install.sql 前的最小可用实现）
      */
-    public static function log(int $orderId, int $userId, string $amount, string $currency, string $status): void {}
+    public static function log(int $orderId, int $userId, string $amount, string $currency, string $status): void
+    {
+        try {
+            Log::info('deposit_audit', [
+                'order_id' => $orderId,
+                'user_id'  => $userId,
+                'amount'   => $amount,
+                'currency' => $currency,
+                'status'   => $status,
+            ]);
+        } catch (Throwable) {
+            // 审计失败不阻断入账主流程
+        }
+    }
 
     public static function revenueOverview(int $days): array
     {

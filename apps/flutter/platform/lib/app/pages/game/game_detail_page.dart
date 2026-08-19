@@ -1,8 +1,8 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 import '../../i18n/translations.dart';
-import '../../i18n/locale_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../services/api_service.dart';
 
 class GameDetailPage extends StatefulWidget {
@@ -39,9 +39,10 @@ class _GameDetailPageState extends State<GameDetailPage> {
         _resultSuccess = true;
         _loading = false;
       });
-      // If a game URL is returned, navigate to it
-      if (data?['url'] != null) {
-        // In web, we could open a new window or iframe
+      // 后端返回游戏的启动地址（api_endpoint），直接在新窗口打开
+      final launchUrlStr = data?['api_endpoint'] as String? ?? data?['url'] as String?;
+      if (launchUrlStr != null && launchUrlStr.isNotEmpty && mounted) {
+        await launchUrl(Uri.parse(launchUrlStr), mode: LaunchMode.externalApplication, webOnlyWindowName: '_blank');
       }
     } on ApiException catch (e) {
       setState(() {

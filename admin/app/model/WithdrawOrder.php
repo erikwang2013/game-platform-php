@@ -27,6 +27,8 @@ class WithdrawOrder extends Model
         'account_info',
         'status',
         'reviewer_id',
+        'confirmed_by',
+        'confirmed_at',
         'review_note',
         'reviewed_at',
         'payout_batch_id',
@@ -41,6 +43,7 @@ class WithdrawOrder extends Model
         'fiat_amount' => 'string',
         'account_info' => Encryptable::class,
         'reviewed_at' => 'datetime',
+        'confirmed_at' => 'datetime',
         'paid_at' => 'datetime',
     ];
 

@@ -57,8 +57,10 @@ class _FriendPageState extends State<FriendPage> {
     try {
       await _api.post('/api/friend/request', data: {'friend_id': friendId});
       Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('friend.request_sent')}');
-    } catch (e) {
-      Get.snackbar('${AppTranslations.t('app.error')}', '$e');
+    } on ApiException catch (e) {
+      Get.snackbar('${AppTranslations.t('app.error')}', e.message);
+    } catch (_) {
+      Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.network_error')}');
     }
   }
 

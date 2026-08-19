@@ -51,6 +51,11 @@ return [
         'count' => 1,
     ],
 
+    'event-consumer' => [
+        'handler' => app\process\EventConsumer::class,
+        'count' => 1,
+    ],
+
     'monitor' => [
         'handler' => app\process\Monitor::class,
         'reloadable' => false,

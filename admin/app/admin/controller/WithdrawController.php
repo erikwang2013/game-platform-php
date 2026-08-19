@@ -88,7 +88,7 @@ class WithdrawController extends BaseController
     {
         $validator = validator($request->all(), [
             'order_id' => 'required|string',
-            'action'   => 'required|string|in:approve,reject',
+            'action'   => 'required|string|in:approve,reject,confirm',
         ]);
 
         if ($validator->fails()) {
@@ -102,9 +102,82 @@ class WithdrawController extends BaseController
 
         $action = $request->input('action');
         $note   = $request->input('note', '');
-        $adminId = $request->adminId;
+        $adminId = (int) $request->adminId;
+        $requireDual = PlatformConfig::get('withdraw', 'require_dual_review', 'off');
+        $dualOn = in_array((string) $requireDual, ['on', '1', 'true'], true);
+
+        if ($action === 'confirm') {
+            if (!$dualOn) {
+                return $this->fail('双重审核未启用', 422);
+            }
+            $payload = [
+                'status'       => 'approved',
+                'confirmed_by' => $adminId,
+                'confirmed_at' => date('Y-m-d H:i:s'),
+                'reviewed_at'  => date('Y-m-d H:i:s'),
+            ];
+            if ($note !== '') {
+                $payload['review_note'] = $note;
+            }
+            // 补单语义：双审开启前已批准但从未确认的历史订单（approved + confirmed_by=0）
+            // 允许补确认；若原订单无第一审核人（reviewer_id 为空/0），确认人即审核人并写入
+            $currentReviewer = (int) WithdrawOrder::where('id', $orderId)->value('reviewer_id');
+            if ($currentReviewer <= 0) {
+                $payload['reviewer_id'] = $adminId;
+            }
+
+            $flipped = WithdrawOrder::where('id', $orderId)
+                ->where(function ($q) use ($adminId) {
+                    // 常规双审：初审后待另一管理员确认
+                    $q->where('status', 'pending')
+                      ->where('reviewer_id', '>', 0)
+                      ->where('reviewer_id', '!=', $adminId);
+                    // 补单：已批准未确认的历史订单，仍需满足双审（reviewer_id 非本人或为空）
+                    $q->orWhere(function ($q2) use ($adminId) {
+                        $q2->where('status', 'approved')
+                           ->where('confirmed_by', 0)
+                           ->where(function ($q3) use ($adminId) {
+                               $q3->whereNull('reviewer_id')
+                                  ->orWhere('reviewer_id', '!=', $adminId);
+                           });
+                    });
+                })
+                ->update($payload);
+            if (!$flipped) {
+                return $this->fail('无法确认：需另一管理员复核，或订单状态不符', 422);
+            }
+
+            $order = WithdrawOrder::find($orderId);
+            NotificationService::send(
+                $order->user_id,
+                'withdraw',
+                'Withdrawal Approved',
+                "Your withdrawal of {$order->platform_amount} platform tokens has been approved.",
+                'withdraw',
+                $order->id
+            );
+            return $this->success([], '二次确认通过');
+        }
 
         if ($action === 'approve') {
+            if ($dualOn) {
+                // 第一审核：仅记录 reviewer_id，保持 pending，等待 confirm
+                $flipped = WithdrawOrder::where('id', $orderId)
+                    ->where('status', 'pending')
+                    ->where(function ($q) {
+                        $q->where('reviewer_id', 0)->orWhereNull('reviewer_id');
+                    })
+                    ->update([
+                        'reviewer_id' => $adminId,
+                        'review_note' => $note,
+                        'reviewed_at' => date('Y-m-d H:i:s'),
+                    ]);
+                if (!$flipped) {
+                    return $this->fail('该订单已处理或已有第一审核人', 422);
+                }
+                return $this->success([], '初审通过，等待另一管理员确认');
+            }
+
             // 原子状态翻转：仅 pending 可处理，防止并发双击重复审核
             $flipped = WithdrawOrder::where('id', $orderId)
                 ->where('status', 'pending')
@@ -311,11 +384,28 @@ class WithdrawController extends BaseController
         $action = $request->input('action');
         $note = $request->input('note', '');
         $successCount = 0;
+        $failedIds = [];
 
         foreach ($ids as $hashid) {
             $orderId = $this->decodeId($hashid);
 
             if ($action === 'approve') {
+                $requireDual = PlatformConfig::get('withdraw', 'require_dual_review', 'off');
+                $dualOn = in_array((string) $requireDual, ['on', '1', 'true'], true);
+                if ($dualOn) {
+                    $flipped = WithdrawOrder::where('id', $orderId)
+                        ->where('status', 'pending')
+                        ->where(function ($q) {
+                            $q->where('reviewer_id', 0)->orWhereNull('reviewer_id');
+                        })
+                        ->update([
+                            'reviewer_id' => $request->adminId,
+                            'review_note' => $note,
+                            'reviewed_at' => date('Y-m-d H:i:s'),
+                        ]);
+                    if ($flipped) $successCount++;
+                    continue;
+                }
                 // 原子状态翻转，跳过已处理订单
                 $flipped = WithdrawOrder::where('id', $orderId)
                     ->where('status', 'pending')
@@ -363,10 +453,11 @@ class WithdrawController extends BaseController
                 if ($flipped) $successCount++;
             } catch (\Throwable $e) {
                 Log::error('Withdraw batch review refund failed: ' . $e->getMessage());
+                $failedIds[] = $hashid;
             }
         }
 
-        return $this->success(['processed' => $successCount], "批量处理完成: {$successCount} 笔");
+        return $this->success(['processed' => $successCount, 'failed' => $failedIds], "批量处理完成: {$successCount} 笔" . ($failedIds ? ", 失败 " . count($failedIds) . " 笔" : ''));
     }
 
     /**
@@ -389,6 +480,16 @@ class WithdrawController extends BaseController
         $order = WithdrawOrder::find($orderId);
         if (!$order) {
             return $this->fail('订单不存在', 404);
+        }
+
+        $requireDual = PlatformConfig::get('withdraw', 'require_dual_review', 'off');
+        $dualOn = in_array((string) $requireDual, ['on', '1', 'true'], true);
+        if ($dualOn) {
+            $confirmedBy = (int) ($order->confirmed_by ?? 0);
+            $reviewerId  = (int) ($order->reviewer_id ?? 0);
+            if ($confirmedBy <= 0 || $confirmedBy === $reviewerId) {
+                return $this->fail('该订单尚未完成双重审核确认', 422);
+            }
         }
 
         // 原子状态翻转 approved→processing：并发/重试只会有一个请求进入打款

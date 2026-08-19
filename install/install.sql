@@ -264,6 +264,8 @@ CREATE TABLE IF NOT EXISTS `erik_withdraw_order` (
     `account_info` VARCHAR(500) NOT NULL DEFAULT '' COMMENT '收款账户信息（加密存储）',
     `status` VARCHAR(20) NOT NULL DEFAULT 'pending' COMMENT '状态: pending=待审核 approved=已通过 rejected=已拒绝 completed=已完成',
     `reviewer_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '审核人ID（关联erik_admin_user）',
+    `confirmed_by` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '二次确认管理员ID',
+    `confirmed_at` DATETIME DEFAULT NULL COMMENT '二次确认时间',
     `review_note` VARCHAR(500) NOT NULL DEFAULT '' COMMENT '审核附注',
     `reviewed_at` DATETIME DEFAULT NULL COMMENT '审核时间',
     `payout_batch_id` VARCHAR(64) DEFAULT NULL COMMENT 'PayPal打款批次ID',
@@ -868,6 +870,7 @@ INSERT IGNORE INTO `erik_platform_config` (`id`, `group`, `key`, `value`, `type`
 (20000000000000002, 'withdraw', 'auto_approve_threshold', '100.0000', 'decimal', '自动审核阈值（平台币），低于此金额自动通过'),
 (20000000000000003, 'withdraw', 'daily_limit', '10000.0000', 'decimal', '每人每日提现上限（平台币）'),
 (20000000000000004, 'withdraw', 'min_amount', '1.0000', 'decimal', '单笔最低提现金额（平台币）'),
+(20000000000000007, 'withdraw', 'require_dual_review', '1', 'bool', '提现双重审核: 1=通过后须另一管理员确认方可打款 0=关闭'),
 (20000000000000005, 'payment', 'default_exchange_rate', '1.00000000', 'decimal', '默认平台币兑USD汇率'),
 (20000000000000006, 'system', 'site_name', 'Global Game Platform', 'string', '平台名称');
 

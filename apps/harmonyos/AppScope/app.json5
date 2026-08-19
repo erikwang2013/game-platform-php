@@ -1,0 +1,17 @@
+{
+  "app": {
+    "bundleName": "xyz.erik.gameplatform",
+    "vendor": "erik",
+    "versionCode": 1,
+    "versionName": "1.0.0",
+    "icon": "$media:app_icon",
+    "label": "$string:app_name",
+    "minAPIVersion": 12,
+    "targetAPIVersion": 12,
+    "apiReleaseType": "Release",
+    "debug": true,
+    "car": {
+      "minAPIVersion": 12
+    }
+  }
+}

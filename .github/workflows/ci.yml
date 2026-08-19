@@ -51,8 +51,8 @@ jobs:
         working-directory: service
         run: composer audit
 
-  phpunit:
-    name: PHPUnit Tests
+  phpunit-admin:
+    name: Admin PHPUnit
     runs-on: ubuntu-latest
     needs: [php-syntax]
     steps:
@@ -69,6 +69,36 @@ jobs:
         working-directory: admin
         run: composer install --no-interaction --prefer-dist
 
+      - name: Prepare env
+        working-directory: admin
+        run: test -f .env || cp .env.example .env
+
       - name: Run admin tests
         working-directory: admin
-        run: vendor/bin/phpunit || echo "::warning ::Tests not configured — add phpunit.xml"
+        run: vendor/bin/phpunit
+
+  phpunit-service:
+    name: Service PHPUnit
+    runs-on: ubuntu-latest
+    needs: [php-syntax]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: pdo, pdo_mysql, redis, pcntl, mbstring, gd, xml, dom, xmlwriter, openssl
+          coverage: none
+
+      - name: Install service dependencies
+        working-directory: service
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Prepare env
+        working-directory: service
+        run: test -f .env || cp .env.example .env
+
+      - name: Run service tests
+        working-directory: service
+        run: vendor/bin/phpunit
