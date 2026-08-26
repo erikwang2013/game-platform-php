@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" font-family="Arial, 'Noto Sans SC', 'Noto Sans Bengali', sans-serif">
+  <defs>
+    <linearGradient id="hd" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#dc2626"/><stop offset="100%" stop-color="#ef4444"/></linearGradient>
+    <filter id="sh"><feDropShadow dx="1" dy="1" stdDeviation="1.5" flood-opacity=".06"/></filter>
+  </defs>
+  <rect width="1000" height="800" fill="#fafbfc"/>
+
+  <rect x="0" y="0" width="1000" height="52" fill="url(#hd)"/>
+  <text x="500" y="34" text-anchor="middle" fill="#fff" font-size="21" font-weight="bold">বিশ্বব্যাপী গেম প্ল্যাটফর্ম — সিকিউরিটি আর্কিটেকচার (১৮-স্তর ডিফেন্স-ইন-ডেপথ)</text>
+
+  <!-- Layer 1-6 -->
+  <rect x="15" y="68" width="310" height="60" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="90" text-anchor="middle" fill="#991b1b" font-size="12" font-weight="bold">L1: CSP কনটেন্ট সিকিউরিটি পলিসি</text>
+  <text x="170" y="108" text-anchor="middle" fill="#ef4444" font-size="10">Content-Security-Policy রেসপন্স হেডার</text>
+  <text x="170" y="122" text-anchor="middle" fill="#ef4444" font-size="10">X-Permitted-Cross-Domain-Policies</text>
+
+  <rect x="340" y="68" width="310" height="60" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="90" text-anchor="middle" fill="#991b1b" font-size="12" font-weight="bold">L2: CORS ক্রস-অরিজিন কন্ট্রোল</text>
+  <text x="495" y="108" text-anchor="middle" fill="#ef4444" font-size="10">Access-Control-Allow-Origin হোয়াইটলিস্ট</text>
+  <text x="495" y="122" text-anchor="middle" fill="#ef4444" font-size="10">OPTIONS প্রিফ্লাইট রিকোয়েস্ট হ্যান্ডলিং</text>
+
+  <rect x="665" y="68" width="320" height="60" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="90" text-anchor="middle" fill="#991b1b" font-size="12" font-weight="bold">L3: HTTP মেথড হোয়াইটলিস্ট</text>
+  <text x="825" y="108" text-anchor="middle" fill="#ef4444" font-size="10">শুধুমাত্র GET/POST/PUT/DELETE/OPTIONS/HEAD</text>
+  <text x="825" y="122" text-anchor="middle" fill="#ef4444" font-size="10">অ-স্ট্যান্ডার্ড মেথডে 405 Method Not Allowed</text>
+
+  <!-- L4-L6 -->
+  <rect x="15" y="140" width="310" height="60" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="162" text-anchor="middle" fill="#7f1d1d" font-size="12" font-weight="bold">L4: SecurityFilter অ্যাটাক ব্লকিং</text>
+  <text x="170" y="180" text-anchor="middle" fill="#dc2626" font-size="10">XSS / SQL ইনজেকশন / CSRF / পাথ ট্রাভার্সাল</text>
+  <text x="170" y="194" text-anchor="middle" fill="#dc2626" font-size="10">কমান্ড ইনজেকশন ডিটেকশন ও ব্লকিং</text>
+
+  <rect x="340" y="140" width="310" height="60" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="162" text-anchor="middle" fill="#7f1d1d" font-size="12" font-weight="bold">L5: RateLimit ফ্রিকোয়েন্সি লিমিট</text>
+  <text x="495" y="180" text-anchor="middle" fill="#dc2626" font-size="10">Redis স্লাইডিং উইন্ডো + Lua অ্যাটমিক</text>
+  <text x="495" y="194" text-anchor="middle" fill="#dc2626" font-size="10">লগইন:১০/মিনিট  রেজিস্ট্রেশন:৫/মিনিট  সাধারণ:৬০/মিনিট</text>
+
+  <rect x="665" y="140" width="320" height="60" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="162" text-anchor="middle" fill="#7f1d1d" font-size="12" font-weight="bold">L6: API ভার্সন কন্ট্রোল</text>
+  <text x="825" y="180" text-anchor="middle" fill="#dc2626" font-size="10">API-Version রিকোয়েস্ট হেডার ভ্যালিডেশন</text>
+  <text x="825" y="194" text-anchor="middle" fill="#dc2626" font-size="10">ডিফল্ট v1, একাধিক ভার্সন সমর্থন</text>
+
+  <!-- L7-L9 -->
+  <rect x="15" y="212" width="310" height="60" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="234" text-anchor="middle" fill="#9a3412" font-size="12" font-weight="bold">L7: JWT অথেনটিকেশন</text>
+  <text x="170" y="252" text-anchor="middle" fill="#ea580c" font-size="10">erikwang2013/jwt-webman</text>
+  <text x="170" y="266" text-anchor="middle" fill="#ea580c" font-size="10">access_token 2h + refresh_token 14d</text>
+
+  <rect x="340" y="212" width="310" height="60" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="234" text-anchor="middle" fill="#9a3412" font-size="12" font-weight="bold">L8: সেশন ম্যানেজমেন্ট</text>
+  <text x="495" y="252" text-anchor="middle" fill="#ea580c" font-size="10">কনকারেন্ট সেশন লিমিট (সর্বোচ্চ ৩ টোকেন)</text>
+  <text x="495" y="266" text-anchor="middle" fill="#ea580c" font-size="10">Token ব্ল্যাকলিস্ট + অটো-এক্সপায়ার</text>
+
+  <rect x="665" y="212" width="320" height="60" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="234" text-anchor="middle" fill="#9a3412" font-size="12" font-weight="bold">L9: অ্যাকাউন্ট লক</text>
+  <text x="825" y="252" text-anchor="middle" fill="#ea580c" font-size="10">৫ বার লগইন ব্যর্থ → ১৫ মিনিট লক</text>
+  <text x="825" y="266" text-anchor="middle" fill="#ea580c" font-size="10">Redis account_lock:{username} 900s</text>
+
+  <!-- L10-L12 -->
+  <rect x="15" y="284" width="310" height="60" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="306" text-anchor="middle" fill="#854d0e" font-size="12" font-weight="bold">L10: RBAC পারমিশন কন্ট্রোল</text>
+  <text x="170" y="324" text-anchor="middle" fill="#ca8a04" font-size="10">method.path গ্রানুলারিটি পারমিশন চেক</text>
+  <text x="170" y="338" text-anchor="middle" fill="#ca8a04" font-size="10">Redis ৬০ সেকেন্ড পারমিশন ক্যাশ</text>
+
+  <rect x="340" y="284" width="310" height="60" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="306" text-anchor="middle" fill="#854d0e" font-size="12" font-weight="bold">L11: ক্লিক ক্যাপচা</text>
+  <text x="495" y="324" text-anchor="middle" fill="#ca8a04" font-size="10">erikwang2013/poster-php</text>
+  <text x="495" y="338" text-anchor="middle" fill="#ca8a04" font-size="10">লগইন/রেজিস্ট্রেশনে বাধ্যতামূলক হিউম্যান ভেরিফিকেশন</text>
+
+  <rect x="665" y="284" width="320" height="60" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="306" text-anchor="middle" fill="#854d0e" font-size="12" font-weight="bold">L12: অপারেশন অডিট</text>
+  <text x="825" y="324" text-anchor="middle" fill="#ca8a04" font-size="10">সম্পূর্ণ অপারেশন লগ + ৮টি প্ল্যাটফর্ম সোর্স ডিটেকশন</text>
+  <text x="825" y="338" text-anchor="middle" fill="#ca8a04" font-size="10">ipados/macos/windows/linux/ios/android/harmonyos/web</text>
+
+  <!-- L13-L15 -->
+  <rect x="15" y="356" width="310" height="60" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="378" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">L13: ট্রান্সপোর্ট লেয়ার এনক্রিপশন</text>
+  <text x="170" y="396" text-anchor="middle" fill="#22c55e" font-size="10">erikwang2013/encryption</text>
+  <text x="170" y="410" text-anchor="middle" fill="#22c55e" font-size="10">AES-256-CBC + SM4 গুওমি সাপোর্ট</text>
+
+  <rect x="340" y="356" width="310" height="60" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="378" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">L14: স্টোরেজ লেয়ার এনক্রিপশন</text>
+  <text x="495" y="396" text-anchor="middle" fill="#22c55e" font-size="10">erikwang2013/encryptable</text>
+  <text x="495" y="410" text-anchor="middle" fill="#22c55e" font-size="10">সেনসিটিভ ফিল্ড অটো এনক্রিপ্ট/ডিক্রিপ্ট + কী রোটেশন</text>
+
+  <rect x="665" y="356" width="320" height="60" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="378" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">L15: ID অপ্রত্যাবর্তনীয়</text>
+  <text x="825" y="396" text-anchor="middle" fill="#22c55e" font-size="10">Snowflake জেনারেশন + Hashids এনকোডিং</text>
+  <text x="825" y="410" text-anchor="middle" fill="#22c55e" font-size="10">বাইরের পক্ষ ID দিয়ে ডেটা ভলিউম/সিকোয়েন্স বের করতে পারে না</text>
+
+  <!-- L16-L18 -->
+  <rect x="15" y="428" width="310" height="60" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="450" text-anchor="middle" fill="#1e40af" font-size="12" font-weight="bold">L16: ওয়ালেট অপটিমিস্টিক লক</text>
+  <text x="170" y="468" text-anchor="middle" fill="#3b82f6" font-size="10">version ফিল্ড + কনকারেন্ট আপডেট ডিটেকশন</text>
+  <text x="170" y="482" text-anchor="middle" fill="#3b82f6" font-size="10">কনকারেন্ট ডেবিট/ডুপ্লিকেট ক্রেডিট প্রতিরোধ</text>
+
+  <rect x="340" y="428" width="310" height="60" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="450" text-anchor="middle" fill="#1e40af" font-size="12" font-weight="bold">L17: পেমেন্ট কলব্যাক সিগনেচার</text>
+  <text x="495" y="468" text-anchor="middle" fill="#3b82f6" font-size="10">Stripe Webhook সিগনেচার ভেরিফিকেশন</text>
+  <text x="495" y="482" text-anchor="middle" fill="#3b82f6" font-size="10">PayPal IPN মেসেজ ভেরিফিকেশন</text>
+
+  <rect x="665" y="428" width="320" height="60" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="450" text-anchor="middle" fill="#1e40af" font-size="12" font-weight="bold">L18: সঠিক ডেটা ক্যালকুলেশন</text>
+  <text x="825" y="468" text-anchor="middle" fill="#3b82f6" font-size="10">bcmath আর্বিটারি-প্রিসিশন ম্যাথ</text>
+  <text x="825" y="482" text-anchor="middle" fill="#3b82f6" font-size="10">decimal(18,4) ফাইন্যান্স-গ্রেড প্রিসিশন</text>
+
+  <!-- Additional measures -->
+  <rect x="15" y="504" width="970" height="90" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="500" y="526" text-anchor="middle" fill="#475569" font-size="13" font-weight="bold">অতিরিক্ত নিরাপত্তা ব্যবস্থা</text>
+
+  <rect x="30" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="120" y="553" text-anchor="middle" fill="#475569" font-size="11">bcrypt পাসওয়ার্ড হ্যাশ (cost=12)</text>
+  <rect x="220" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="553" text-anchor="middle" fill="#475569" font-size="11">পাসওয়ার্ড রি-কনফার্মেশন</text>
+  <rect x="410" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="500" y="553" text-anchor="middle" fill="#475569" font-size="11">security.txt RFC 9116</text>
+  <rect x="600" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="690" y="553" text-anchor="middle" fill="#475569" font-size="11">Nginx সিকিউরিটি হার্ডেনিং</text>
+  <rect x="790" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="880" y="553" text-anchor="middle" fill="#475569" font-size="11">Prometheus মনিটরিং মেট্রিক</text>
+
+  <rect x="30" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="120" y="583" text-anchor="middle" fill="#475569" font-size="11">Docker কনটেইনার আইসোলেশন</text>
+  <rect x="220" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="583" text-anchor="middle" fill="#475569" font-size="11">HTTPS/TLS ট্রান্সমিশন সিকিউরিটি</text>
+  <rect x="410" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="500" y="583" text-anchor="middle" fill="#475569" font-size="11">ডাটাবেস পাসওয়ার্ড .gitignore</text>
+  <rect x="600" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="690" y="583" text-anchor="middle" fill="#475569" font-size="11">ব্যাকআপ এনক্রিপশন + ৩০ দিন রিটেনশন</text>
+  <rect x="790" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="880" y="583" text-anchor="middle" fill="#475569" font-size="11">CI/CD অটোমেটেড সিকিউরিটি চেক</text>
+
+  <!-- Architecture flow -->
+  <rect x="15" y="612" width="970" height="82" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5"/>
+  <text x="500" y="636" text-anchor="middle" fill="#991b1b" font-size="13" font-weight="bold">ডিফেন্স-ইন-ডেপথ আর্কিটেকচার (অ্যাটাক ট্রাফিক → লেয়ার-বাই-লেয়ার ফিল্টারিং)</text>
+  <text x="60" y="662" text-anchor="middle" fill="#dc2626" font-size="11">L1 CSP</text>
+  <text x="120" y="662" fill="#dc2626" font-size="11">→</text>
+  <text x="145" y="662" text-anchor="middle" fill="#dc2626" font-size="11">L2 CORS</text>
+  <text x="200" y="662" fill="#dc2626" font-size="11">→</text>
+  <text x="225" y="662" text-anchor="middle" fill="#dc2626" font-size="11">L3 Method</text>
+  <text x="285" y="662" fill="#dc2626" font-size="11">→</text>
+  <text x="310" y="662" text-anchor="middle" fill="#dc2626" font-size="11">L4 Filter</text>
+  <text x="365" y="662" fill="#dc2626" font-size="11">→</text>
+  <text x="390" y="662" text-anchor="middle" fill="#ea580c" font-size="11">L5 Limit</text>
+  <text x="440" y="662" fill="#ea580c" font-size="11">→</text>
+  <text x="465" y="662" text-anchor="middle" fill="#ea580c" font-size="11">L6 Version</text>
+  <text x="525" y="662" fill="#ea580c" font-size="11">→</text>
+  <text x="550" y="662" text-anchor="middle" fill="#ca8a04" font-size="11">L7 JWT</text>
+  <text x="600" y="662" fill="#ca8a04" font-size="11">→</text>
+  <text x="625" y="662" text-anchor="middle" fill="#ca8a04" font-size="11">L8 Session</text>
+  <text x="685" y="662" fill="#ca8a04" font-size="11">→</text>
+  <text x="710" y="662" text-anchor="middle" fill="#ca8a04" font-size="11">L9 Lock</text>
+  <text x="755" y="662" fill="#22c55e" font-size="11">→</text>
+  <text x="780" y="662" text-anchor="middle" fill="#22c55e" font-size="11">L10 RBAC</text>
+  <text x="830" y="662" fill="#22c55e" font-size="11">→</text>
+  <text x="855" y="662" text-anchor="middle" fill="#22c55e" font-size="11">... L11-L18</text>
+  <text x="935" y="662" fill="#22c55e" font-size="11">→</text>
+  <text x="950" y="662" text-anchor="middle" fill="#166534" font-size="11">OK</text>
+
+  <text x="500" y="690" text-anchor="middle" fill="#991b1b" font-size="11">রিকোয়েস্ট → CSP হেডার → CORS চেক → মেথড হোয়াইটলিস্ট → অ্যাটাক ফিল্টার → রেট লিমিট → ভার্সন চেক → JWT অথ → সেশন চেক → লক চেক → RBAC → অডিট লগ → Controller</text>
+
+  <text x="500" y="740" text-anchor="middle" fill="#94a3b8" font-size="11">সিকিউরিটি কম্পোনেন্ট: erikwang2013/jwt-webman · erikwang2013/encryption · erikwang2013/encryptable · erikwang2013/security-php · erikwang2013/poster-php · erikwang2013/hashids</text>
+  <text x="500" y="762" text-anchor="middle" fill="#94a3b8" font-size="11">কমপ্লায়েন্স: security.txt (RFC 9116) · Prometheus Metrics · অপারেশন অডিট লগ · ডেটা এনক্রিপশন (AES-256-CBC) · পেমেন্ট কমপ্লায়েন্স (PCI-DSS)</text>
+  <text x="500" y="790" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>
+</svg>

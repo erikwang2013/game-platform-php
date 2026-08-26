@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 800" font-family="Arial, 'Noto Sans SC', sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 800" font-family="Arial, 'Noto Sans SC', 'Noto Sans', sans-serif">
   <defs>
     <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/></marker>
     <linearGradient id="hdr" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#a78bfa"/></linearGradient>
@@ -13,50 +13,50 @@
   <!-- Phase 1: Provider Layer -->
   <rect x="30" y="76" width="440" height="200" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="2"/>
   <text x="250" y="100" text-anchor="middle" fill="#1e40af" font-size="15" font-weight="bold">Phase 1: Game Provider SDK</text>
-  <rect x="50" y="115" width="190" height="45" rx="6" fill="#dbeafe"/><text x="145" y="138" text-anchor="middle" fill="#1e3a5f" font-size="12">GameProvider (Abstract)</text><text x="145" y="152" text-anchor="middle" fill="#64748b" font-size="10">balance/bet/settle/refund</text>
-  <rect x="260" y="115" width="190" height="45" rx="6" fill="#dbeafe"/><text x="355" y="138" text-anchor="middle" fill="#1e3a5f" font-size="12">ProviderAuth Middleware</text><text x="355" y="152" text-anchor="middle" fill="#64748b" font-size="10">HMAC-SHA256 + 5min window</text>
-  <rect x="50" y="175" width="190" height="40" rx="6" fill="#bfdbfe"/><text x="145" y="194" text-anchor="middle" fill="#1e40af" font-size="11">SelfProvider</text><text x="145" y="208" text-anchor="middle" fill="#64748b" font-size="10">DB Transaction (SELECT FOR UPDATE)</text>
-  <rect x="260" y="175" width="190" height="40" rx="6" fill="#bfdbfe"/><text x="355" y="194" text-anchor="middle" fill="#1e40af" font-size="11">ThirdPartyProvider</text><text x="355" y="208" text-anchor="middle" fill="#64748b" font-size="10">Guzzle HTTP + Signature</text>
-  <rect x="50" y="230" width="400" height="35" rx="6" fill="#93c5fd"/><text x="250" y="244" text-anchor="middle" fill="#fff" font-size="12">GameSessionService — Redis Heartbeat + 15min Auto-Settlement</text>
+  <rect x="50" y="115" width="190" height="45" rx="6" fill="#dbeafe"/><text x="145" y="138" text-anchor="middle" fill="#1e3a5f" font-size="12">GameProvider (abstract)</text><text x="145" y="152" text-anchor="middle" fill="#64748b" font-size="10">balance/bet/settle/refund</text>
+  <rect x="260" y="115" width="190" height="45" rx="6" fill="#dbeafe"/><text x="355" y="138" text-anchor="middle" fill="#1e3a5f" font-size="12">ProviderAuth middleware</text><text x="355" y="152" text-anchor="middle" fill="#64748b" font-size="10">HMAC-SHA256 + 5-minute window</text>
+  <rect x="50" y="175" width="190" height="40" rx="6" fill="#bfdbfe"/><text x="145" y="194" text-anchor="middle" fill="#1e40af" font-size="11">SelfProvider</text><text x="145" y="208" text-anchor="middle" fill="#64748b" font-size="10">DB transactions (SELECT FOR UPDATE)</text>
+  <rect x="260" y="175" width="190" height="40" rx="6" fill="#bfdbfe"/><text x="355" y="194" text-anchor="middle" fill="#1e40af" font-size="11">ThirdPartyProvider</text><text x="355" y="208" text-anchor="middle" fill="#64748b" font-size="10">Guzzle HTTP + signature</text>
+  <rect x="50" y="230" width="400" height="35" rx="6" fill="#93c5fd"/><text x="250" y="244" text-anchor="middle" fill="#fff" font-size="12">GameSessionService — Redis heartbeat + 15-min auto-settlement</text>
 
   <!-- Phase 2: Operations -->
   <rect x="490" y="76" width="440" height="200" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="2"/>
   <text x="710" y="100" text-anchor="middle" fill="#166534" font-size="15" font-weight="bold">Phase 2: Operations Support</text>
-  <rect x="510" y="115" width="190" height="55" rx="6" fill="#dcfce7"/><text x="605" y="135" text-anchor="middle" fill="#14532d" font-size="12">Ticket System</text><text x="605" y="150" text-anchor="middle" fill="#64748b" font-size="10">C端: create/list/reply</text><text x="605" y="163" text-anchor="middle" fill="#64748b" font-size="10">Admin: reply/close/assign</text>
-  <rect x="720" y="115" width="190" height="55" rx="6" fill="#dcfce7"/><text x="815" y="135" text-anchor="middle" fill="#14532d" font-size="12">Verification</text><text x="815" y="150" text-anchor="middle" fill="#64748b" font-size="10">Email + SMS 6-digit code</text><text x="815" y="163" text-anchor="middle" fill="#64748b" font-size="10">Redis 10min TTL</text>
-  <rect x="510" y="185" width="400" height="45" rx="6" fill="#bbf7d0"/><text x="710" y="204" text-anchor="middle" fill="#14532d" font-size="12">PushService — FCM / APNs / Huawei Push</text><text x="710" y="252" text-anchor="middle" fill="#64748b" font-size="10">OAuth: +X(Twitter)/Microsoft/LinkedIn/GitHub (PKCE)</text><text x="710" y="218" text-anchor="middle" fill="#64748b" font-size="10">DeviceToken Model + NotificationService Integration</text>
+  <rect x="510" y="115" width="190" height="55" rx="6" fill="#dcfce7"/><text x="605" y="135" text-anchor="middle" fill="#14532d" font-size="12">Ticket system</text><text x="605" y="150" text-anchor="middle" fill="#64748b" font-size="10">C-end: create/list/reply</text><text x="605" y="163" text-anchor="middle" fill="#64748b" font-size="10">Admin: reply/close/assign</text>
+  <rect x="720" y="115" width="190" height="55" rx="6" fill="#dcfce7"/><text x="815" y="135" text-anchor="middle" fill="#14532d" font-size="12">Verification</text><text x="815" y="150" text-anchor="middle" fill="#64748b" font-size="10">Email + SMS 6-digit codes</text><text x="815" y="163" text-anchor="middle" fill="#64748b" font-size="10">Redis 10-minute TTL</text>
+  <rect x="510" y="185" width="400" height="45" rx="6" fill="#bbf7d0"/><text x="710" y="204" text-anchor="middle" fill="#14532d" font-size="12">PushService — FCM / APNs / Huawei push</text><text x="710" y="252" text-anchor="middle" fill="#64748b" font-size="10">OAuth: +X(Twitter)/Microsoft/LinkedIn/GitHub (PKCE)</text><text x="710" y="218" text-anchor="middle" fill="#64748b" font-size="10">DeviceToken model + NotificationService integration</text>
 
   <!-- Phase 3: Engagement -->
   <rect x="30" y="296" width="440" height="180" rx="10" fill="#fef3c7" stroke="#fcd34d" stroke-width="2"/>
   <text x="250" y="320" text-anchor="middle" fill="#92400e" font-size="15" font-weight="bold">Phase 3: User Engagement</text>
-  <rect x="50" y="340" width="190" height="55" rx="6" fill="#fde68a"/><text x="145" y="358" text-anchor="middle" fill="#78350f" font-size="12">VIP System (5 Levels)</text><text x="145" y="373" text-anchor="middle" fill="#64748b" font-size="10">EXP: deposit/login/KYC/referral</text><text x="145" y="386" text-anchor="middle" fill="#64748b" font-size="10">Discount: 2-15% exchange / 10-100% fee</text>
-  <rect x="260" y="340" width="190" height="55" rx="6" fill="#fde68a"/><text x="355" y="358" text-anchor="middle" fill="#78350f" font-size="12">Achievement System</text><text x="355" y="373" text-anchor="middle" fill="#64748b" font-size="10">12 built-in achievements</text><text x="355" y="386" text-anchor="middle" fill="#64748b" font-size="10">Event-driven + Progress Tracking</text>
-  <rect x="50" y="410" width="400" height="55" rx="6" fill="#fde68a"/><text x="250" y="430" text-anchor="middle" fill="#78350f" font-size="12">VipService: EXP Accumulation + Auto-Level-Up + Benefits Calculation</text><text x="250" y="445" text-anchor="middle" fill="#64748b" font-size="10">AchievementService: Condition Evaluation (count/sum/distinct/consecutive)</text>
+  <rect x="50" y="340" width="190" height="55" rx="6" fill="#fde68a"/><text x="145" y="358" text-anchor="middle" fill="#78350f" font-size="12">VIP system (5 levels)</text><text x="145" y="373" text-anchor="middle" fill="#64748b" font-size="10">EXP: deposit/login/KYC/referral</text><text x="145" y="386" text-anchor="middle" fill="#64748b" font-size="10">Discounts: exchange 2-15% / fees 10-100%</text>
+  <rect x="260" y="340" width="190" height="55" rx="6" fill="#fde68a"/><text x="355" y="358" text-anchor="middle" fill="#78350f" font-size="12">Achievement system</text><text x="355" y="373" text-anchor="middle" fill="#64748b" font-size="10">12 built-in achievements</text><text x="355" y="386" text-anchor="middle" fill="#64748b" font-size="10">Event-driven + progress tracking</text>
+  <rect x="50" y="410" width="400" height="55" rx="6" fill="#fde68a"/><text x="250" y="430" text-anchor="middle" fill="#78350f" font-size="12">VipService: EXP accumulation + auto upgrade + benefits</text><text x="250" y="445" text-anchor="middle" fill="#64748b" font-size="10">AchievementService: condition checks (count/sum/dedupe/streak)</text>
   <text x="250" y="468" text-anchor="middle" fill="#92400e" font-size="11" font-style="italic">ExchangeController / WithdrawController — VIP discount integration</text>
 
   <!-- Phase 4: Social -->
   <rect x="490" y="296" width="440" height="180" rx="10" fill="#fce7f3" stroke="#f9a8d4" stroke-width="2"/>
   <text x="710" y="320" text-anchor="middle" fill="#9d174d" font-size="15" font-weight="bold">Phase 4: Social Layer</text>
-  <rect x="510" y="340" width="190" height="55" rx="6" fill="#fbcfe8"/><text x="605" y="358" text-anchor="middle" fill="#831843" font-size="12">Friend System</text><text x="605" y="373" text-anchor="middle" fill="#64748b" font-size="10">request/accept/reject/remove</text><text x="605" y="386" text-anchor="middle" fill="#64748b" font-size="10">pending/accepted/blocked</text>
-  <rect x="720" y="340" width="190" height="55" rx="6" fill="#fbcfe8"/><text x="815" y="358" text-anchor="middle" fill="#831843" font-size="12">Chat Messaging</text><text x="815" y="373" text-anchor="middle" fill="#64748b" font-size="10">REST + WebSocket :8790</text><text x="815" y="386" text-anchor="middle" fill="#64748b" font-size="10">Friends-only messaging</text>
-  <rect x="510" y="410" width="400" height="55" rx="6" fill="#f9a8d4"/><text x="710" y="430" text-anchor="middle" fill="#831843" font-size="12">ChatWebSocket Process — workerman WebSocket + Redis Pub/Sub</text><text x="710" y="445" text-anchor="middle" fill="#64748b" font-size="10">erik_friend table + erik_message table</text>
+  <rect x="510" y="340" width="190" height="55" rx="6" fill="#fbcfe8"/><text x="605" y="358" text-anchor="middle" fill="#831843" font-size="12">Friend system</text><text x="605" y="373" text-anchor="middle" fill="#64748b" font-size="10">Request/accept/reject/remove</text><text x="605" y="386" text-anchor="middle" fill="#64748b" font-size="10">Pending/accepted/blocked</text>
+  <rect x="720" y="340" width="190" height="55" rx="6" fill="#fbcfe8"/><text x="815" y="358" text-anchor="middle" fill="#831843" font-size="12">Chat messages</text><text x="815" y="373" text-anchor="middle" fill="#64748b" font-size="10">REST + WebSocket :8790</text><text x="815" y="386" text-anchor="middle" fill="#64748b" font-size="10">Friends-only messaging</text>
+  <rect x="510" y="410" width="400" height="55" rx="6" fill="#f9a8d4"/><text x="710" y="430" text-anchor="middle" fill="#831843" font-size="12">ChatWebSocket process — workerman WebSocket + Redis Pub/Sub</text><text x="710" y="445" text-anchor="middle" fill="#64748b" font-size="10">erik_friend table + erik_message table</text>
 
   <!-- Phase 5: Infrastructure -->
   <rect x="30" y="496" width="900" height="140" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
-  <text x="480" y="520" text-anchor="middle" fill="#334155" font-size="15" font-weight="bold">Phase 5 + P2/P3 Expansions</text>
+  <text x="480" y="520" text-anchor="middle" fill="#334155" font-size="15" font-weight="bold">Phase 5 + P2/P3 Expansion</text>
   <rect x="50" y="540" width="270" height="45" rx="6" fill="#e2e8f0"/><text x="185" y="558" text-anchor="middle" fill="#334155" font-size="12">EventBus (Redis Pub/Sub)</text><text x="185" y="573" text-anchor="middle" fill="#64748b" font-size="10">user.registered / deposit.completed / game.played</text>
-  <rect x="345" y="540" width="270" height="45" rx="6" fill="#e2e8f0"/><text x="480" y="558" text-anchor="middle" fill="#334155" font-size="12">Advanced Analytics (ClickHouse)</text><text x="480" y="573" text-anchor="middle" fill="#64748b" font-size="10">Retention D1-D30 / Funnel / ARPU / Economy</text>
+  <rect x="345" y="540" width="270" height="45" rx="6" fill="#e2e8f0"/><text x="480" y="558" text-anchor="middle" fill="#334155" font-size="12">Advanced analytics (ClickHouse)</text><text x="480" y="573" text-anchor="middle" fill="#64748b" font-size="10">Retention D1-D30 / funnel / ARPU / economy</text>
   <rect x="640" y="540" width="270" height="45" rx="6" fill="#e2e8f0"/><text x="775" y="558" text-anchor="middle" fill="#334155" font-size="12">FeatureFlag (DB-based)</text><text x="775" y="573" text-anchor="middle" fill="#64748b" font-size="10">tournament / chat / vip / achievements</text>
-  <rect x="50" y="600" width="860" height="27" rx="6" fill="#94a3b8"/><text x="480" y="618" text-anchor="middle" fill="#fff" font-size="12">+10 New Tables  |  +51 New Files  |  0 New Dependencies  |  BC Math 8-digit Precision  |  Full Backward Compatibility</text>
+  <rect x="50" y="600" width="860" height="27" rx="6" fill="#94a3b8"/><text x="480" y="618" text-anchor="middle" fill="#fff" font-size="12">+10 new tables  |  +51 new files  |  0 new dependencies  |  BC Math 8-digit precision  |  fully backward compatible</text>
 
   <!-- Database Summary -->
   <rect x="30" y="656" width="900" height="70" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="480" y="680" text-anchor="middle" fill="#334155" font-size="14" font-weight="bold">Database: 42 → 52 Tables</text>
+  <text x="480" y="680" text-anchor="middle" fill="#334155" font-size="14" font-weight="bold">Database: 42 → 52 tables</text>
   <text x="480" y="700" text-anchor="middle" fill="#64748b" font-size="11">New: erik_ticket, erik_ticket_reply, erik_device_token, erik_vip_level, erik_user_vip, erik_exp_log, erik_achievement, erik_user_achievement, erik_friend, erik_message</text>
-  <text x="480" y="716" text-anchor="middle" fill="#64748b" font-size="11">Modified: erik_game (+provider_config JSON), erik_game_play_log (+round_id, +bet_amount, +win_amount)</text>
+  <text x="480" y="716" text-anchor="middle" fill="#64748b" font-size="11">Modified: erik_game (+provider_config JSON)、erik_game_play_log (+round_id、+bet_amount、+win_amount)</text>
 
   <!-- Footer -->
   <rect x="0" y="750" width="960" height="50" fill="#7c3aed"/>
   <text x="480" y="775" text-anchor="middle" fill="#ddd6fe" font-size="12">Copyright (c) 2026 erik — https://erik.xyz | Game Platform v2.0 Ecosystem</text>
-  <text x="480" y="792" text-anchor="middle" fill="#a78bfa" font-size="10">5 Phases · 16 Features · 12 Tables · Zero New Vendor Dependencies</text>
+  <text x="480" y="792" text-anchor="middle" fill="#a78bfa" font-size="10">5 phases · 16 features · 12 tables · zero new third-party dependencies</text>
 </svg>

@@ -1,0 +1,50 @@
+# Changelog
+<!-- lang-nav -->
+
+Languages: [中文](CHANGELOG.md) · [English](CHANGELOG.en.md) · **한국어** · [Русский](CHANGELOG.ru.md) · [Deutsch](CHANGELOG.de.md) · [Français](CHANGELOG.fr.md) · [Español](CHANGELOG.es.md) · [Português](CHANGELOG.pt.md) · [हिन्दी](CHANGELOG.hi.md) · [العربية](CHANGELOG.ar.md) · [বাংলা](CHANGELOG.bn.md) · [Bahasa Indonesia](CHANGELOG.id.md) · [日本語](CHANGELOG.ja.md)
+
+
+> Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+
+사람이 읽을 수 있는 변경 기록. PHP는 이 파일을 import하지 않습니다. PROJECT-PLAN P2-21에 해당합니다.
+
+## [1.1] — 2026-08-07
+
+- Redis 플러그인 연동, 분석 서비스, Redis 디그레이드, 테스트 수정.
+
+## [1.1] security / ops — 2026-08-18
+
+### 보안
+
+- 결제 콜백: provider 화이트리스트(stripe/paypal), fail-closed 서명 검증, 금액 대조, 입금 트랜잭션화, Stripe 타임스탬프 ±300s 리플레이 방지.
+- JWT: `JWT_SECRET_KEY` / `ADMIN_JWT_SECRET_KEY` / `SERVICE_JWT_SECRET_KEY` 누락 또는 기본값이면 기동 거부.
+- Apple id_token: JWKS(RS256) 서명 검증 + aud/iss/exp.
+- Webhook: https 공개 URL만 허용, 내부/예약 주소 거부(SSRF).
+- 2FA: TOTP HMAC은 RFC 4648 Base32 디코딩된 키 사용; `/api/2fa/verify` 사용자별 실패 잠금(5회 / 15분, Redis 장애 시 fail-closed).
+- 출금: 심사/지급 조건의 UPDATE 상태 원자적 전환; 선택적 이중 심사(`withdraw.require_dual_review`); 신청 쪽 Redis 사용자 잠금으로 한도 동시성 돌파 방지.
+- 레이트 리밋: Redis 장애 시 fail-closed.
+
+### 가용성
+
+- admin 분석 서비스 12개 `/admin/analytics/*` 라우트 마운트.
+- 모델에서 하드코딩된 `erik_` 접두사 제거; DepositLog 감사 로그 저장; Test model 삭제.
+
+### 관측성
+
+- `GET /metrics`에 심사 대기 출금, 오늘 확정 충전(COUNT 쿼리 Redis 30s 캐시), 이벤트 emit/consume 카운트, `memory_usage`, `info version=1.1` 추가.
+- FeatureFlag: `inRollout` / `abTest`가 crc32 버킷으로 `feature.{name}_percent` 읽기.
+- EventBus `emit` / `consume`이 Redis `metrics:event_emit_total` / `metrics:event_consume_total`을 INCR.
+
+### 클라이언트 / 공유 (동일 날짜 보완)
+
+- Flutter Platform: `app_pages.dart` 라우트 테이블; 2FA 설정/검증, 쿠폰, 리더보드, 알림, OAuth 콜백 페이지 보완; 로비 진입점에 내비게이션 연결.
+- HarmonyOS C단: `apps/harmonyos/` 5페이지(로그인/로비/상세/지갑/개인), 기본 `BASE_URL`이 service `8788`을 가리킴.
+- 공유 레이어: `packages/platform-common`(`erik/platform-common` path repo)에 DepositLog / GameDashboard / Probability / GamePlayLog 추출; 모델은 여전히 2벌.
+- ClickHouse: composer 의존성 제거; 분석은 MySQL 실시간 집계로 계속.
+- CI: admin / service가 job을 나눠 phpunit 실행, 실패 시 차단.
+
+### 여전히 남은 격차
+
+- admin/service **모델**이 여전히 2벌(일부 `common/service`만 path 패키지로 편입).
+- `webman/queue` 미연결; 확률/리텐션이 OLAP로 미이전.
+- PROJECT-PLAN / VERSIONS / 감사 보고서 일부 문단이 본 CHANGELOG보다 늦을 수 있으며, 본 파일과 디스크가 기준입니다.

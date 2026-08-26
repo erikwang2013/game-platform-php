@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" font-family="Arial, 'Noto Sans SC', sans-serif, 'Noto Kufi Arabic', sans-serif">
+  <defs>
+    <linearGradient id="hd" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#dc2626"/><stop offset="100%" stop-color="#ef4444"/></linearGradient>
+    <filter id="sh"><feDropShadow dx="1" dy="1" stdDeviation="1.5" flood-opacity=".06"/></filter>
+  </defs>
+  <rect width="1000" height="800" fill="#fafbfc"/>
+
+  <rect x="0" y="0" width="1000" height="52" fill="url(#hd)"/>
+  <text x="500" y="34" text-anchor="middle" fill="#fff" font-size="21" font-weight="bold">منصة تجميع الألعاب العالمية — مخطط البنية الأمنية (دفاع متعمق من 18 طبقة)</text>
+
+  <!-- Layer 1-6 -->
+  <rect x="15" y="68" width="310" height="60" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="90" text-anchor="middle" fill="#991b1b" font-size="12" font-weight="bold">L1: سياسة أمان المحتوى CSP</text>
+  <text x="170" y="108" text-anchor="middle" fill="#ef4444" font-size="10">ترويسة استجابة Content-Security-Policy</text>
+  <text x="170" y="122" text-anchor="middle" fill="#ef4444" font-size="10">X-Permitted-Cross-Domain-Policies</text>
+
+  <rect x="340" y="68" width="310" height="60" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="90" text-anchor="middle" fill="#991b1b" font-size="12" font-weight="bold">L2: التحكم عبر النطاقات CORS</text>
+  <text x="495" y="108" text-anchor="middle" fill="#ef4444" font-size="10">قائمة بيضاء Access-Control-Allow-Origin</text>
+  <text x="495" y="122" text-anchor="middle" fill="#ef4444" font-size="10">معالجة طلبات فحص OPTIONS</text>
+
+  <rect x="665" y="68" width="320" height="60" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="90" text-anchor="middle" fill="#991b1b" font-size="12" font-weight="bold">L3: قائمة بيضاء لطرق HTTP</text>
+  <text x="825" y="108" text-anchor="middle" fill="#ef4444" font-size="10">يُسمح فقط GET/POST/PUT/DELETE/OPTIONS/HEAD</text>
+  <text x="825" y="122" text-anchor="middle" fill="#ef4444" font-size="10">الطرق غير القياسية تُرجع 405 Method Not Allowed</text>
+
+  <!-- L4-L6 -->
+  <rect x="15" y="140" width="310" height="60" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="162" text-anchor="middle" fill="#7f1d1d" font-size="12" font-weight="bold">L4: فلتر أمان SecurityFilter</text>
+  <text x="170" y="180" text-anchor="middle" fill="#dc2626" font-size="10">XSS / حقن SQL / CSRF / اجتياز المسارات</text>
+  <text x="170" y="194" text-anchor="middle" fill="#dc2626" font-size="10">كشف وحجب حقن الأوامر</text>
+
+  <rect x="340" y="140" width="310" height="60" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="162" text-anchor="middle" fill="#7f1d1d" font-size="12" font-weight="bold">L5: تحديد المعدل RateLimit</text>
+  <text x="495" y="180" text-anchor="middle" fill="#dc2626" font-size="10">نافذة منزلقة Redis + Lua ذرّي</text>
+  <text x="495" y="194" text-anchor="middle" fill="#dc2626" font-size="10">الدخول:10/دقيقة التسجيل:5/دقيقة العام:60/دقيقة</text>
+
+  <rect x="665" y="140" width="320" height="60" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="162" text-anchor="middle" fill="#7f1d1d" font-size="12" font-weight="bold">L6: التحكم بإصدار API</text>
+  <text x="825" y="180" text-anchor="middle" fill="#dc2626" font-size="10">تحقق ترويسة طلب API-Version</text>
+  <text x="825" y="194" text-anchor="middle" fill="#dc2626" font-size="10">افتراضي v1، دعم تعايش إصدارات متعددة</text>
+
+  <!-- L7-L9 -->
+  <rect x="15" y="212" width="310" height="60" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="234" text-anchor="middle" fill="#9a3412" font-size="12" font-weight="bold">L7: مصادقة JWT</text>
+  <text x="170" y="252" text-anchor="middle" fill="#ea580c" font-size="10">erikwang2013/jwt-webman</text>
+  <text x="170" y="266" text-anchor="middle" fill="#ea580c" font-size="10">access_token 2h + refresh_token 14d</text>
+
+  <rect x="340" y="212" width="310" height="60" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="234" text-anchor="middle" fill="#9a3412" font-size="12" font-weight="bold">L8: إدارة الجلسات</text>
+  <text x="495" y="252" text-anchor="middle" fill="#ea580c" font-size="10">تقييد الجلسات المتزامنة (3 Tokens كحد أقصى)</text>
+  <text x="495" y="266" text-anchor="middle" fill="#ea580c" font-size="10">قائمة سوداء للـ Token + إقصاء تلقائي</text>
+
+  <rect x="665" y="212" width="320" height="60" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="234" text-anchor="middle" fill="#9a3412" font-size="12" font-weight="bold">L9: قفل الحساب</text>
+  <text x="825" y="252" text-anchor="middle" fill="#ea580c" font-size="10">5 إخفاقات دخول ← قفل 15 دقيقة</text>
+  <text x="825" y="266" text-anchor="middle" fill="#ea580c" font-size="10">Redis account_lock:{username} 900s</text>
+
+  <!-- L10-L12 -->
+  <rect x="15" y="284" width="310" height="60" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="306" text-anchor="middle" fill="#854d0e" font-size="12" font-weight="bold">L10: التحكم بالصلاحيات RBAC</text>
+  <text x="170" y="324" text-anchor="middle" fill="#ca8a04" font-size="10">تحقق صلاحيات بدقة method.path</text>
+  <text x="170" y="338" text-anchor="middle" fill="#ca8a04" font-size="10">تخزين مؤقت للصلاحيات Redis 60s</text>
+
+  <rect x="340" y="284" width="310" height="60" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="306" text-anchor="middle" fill="#854d0e" font-size="12" font-weight="bold">L11: كابتشا النقر</text>
+  <text x="495" y="324" text-anchor="middle" fill="#ca8a04" font-size="10">erikwang2013/poster-php</text>
+  <text x="495" y="338" text-anchor="middle" fill="#ca8a04" font-size="10">تحقق إنسان-آلة إلزامي للدخول/التسجيل</text>
+
+  <rect x="665" y="284" width="320" height="60" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="306" text-anchor="middle" fill="#854d0e" font-size="12" font-weight="bold">L12: تدقيق العمليات</text>
+  <text x="825" y="324" text-anchor="middle" fill="#ca8a04" font-size="10">سجل عمليات كامل + كشف مصدر 8 منصات</text>
+  <text x="825" y="338" text-anchor="middle" fill="#ca8a04" font-size="10">ipados/macos/windows/linux/ios/android/harmonyos/web</text>
+
+  <!-- L13-L15 -->
+  <rect x="15" y="356" width="310" height="60" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="378" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">L13: تشفير طبقة النقل</text>
+  <text x="170" y="396" text-anchor="middle" fill="#22c55e" font-size="10">erikwang2013/encryption</text>
+  <text x="170" y="410" text-anchor="middle" fill="#22c55e" font-size="10">AES-256-CBC + دعم SM4 الوطني</text>
+
+  <rect x="340" y="356" width="310" height="60" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="378" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">L14: تشفير طبقة التخزين</text>
+  <text x="495" y="396" text-anchor="middle" fill="#22c55e" font-size="10">erikwang2013/encryptable</text>
+  <text x="495" y="410" text-anchor="middle" fill="#22c55e" font-size="10">تشفير/فك تشفير تلقائي للحقول الحساسة + تدوير المفاتيح</text>
+
+  <rect x="665" y="356" width="320" height="60" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="378" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">L15: معرّفات غير قابلة للاستدلال</text>
+  <text x="825" y="396" text-anchor="middle" fill="#22c55e" font-size="10">توليد Snowflake + ترميز Hashids</text>
+  <text x="825" y="410" text-anchor="middle" fill="#22c55e" font-size="10">لا يمكن استدلال حجم البيانات/الترتيب خارجيًا عبر الـ ID</text>
+
+  <!-- L16-L18 -->
+  <rect x="15" y="428" width="310" height="60" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="450" text-anchor="middle" fill="#1e40af" font-size="12" font-weight="bold">L16: القفل التفاؤلي للمحفظة</text>
+  <text x="170" y="468" text-anchor="middle" fill="#3b82f6" font-size="10">حقل version + كشف التحديث المتزامن</text>
+  <text x="170" y="482" text-anchor="middle" fill="#3b82f6" font-size="10">منع الخصم المتزامن/الإيداع المكرر</text>
+
+  <rect x="340" y="428" width="310" height="60" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="450" text-anchor="middle" fill="#1e40af" font-size="12" font-weight="bold">L17: تحقق توقيع استدعاء الدفع</text>
+  <text x="495" y="468" text-anchor="middle" fill="#3b82f6" font-size="10">تحقق توقيع Stripe Webhook</text>
+  <text x="495" y="482" text-anchor="middle" fill="#3b82f6" font-size="10">تحقق رسائل PayPal IPN</text>
+
+  <rect x="665" y="428" width="320" height="60" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="450" text-anchor="middle" fill="#1e40af" font-size="12" font-weight="bold">L18: حساب البيانات بدقة</text>
+  <text x="825" y="468" text-anchor="middle" fill="#3b82f6" font-size="10">حساب bcmath بدقة اعتباطية</text>
+  <text x="825" y="482" text-anchor="middle" fill="#3b82f6" font-size="10">decimal(18,4) دقة بمستوى مالي</text>
+
+  <!-- Additional measures -->
+  <rect x="15" y="504" width="970" height="90" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="500" y="526" text-anchor="middle" fill="#475569" font-size="13" font-weight="bold">إجراءات أمنية تكميلية</text>
+
+  <rect x="30" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="120" y="553" text-anchor="middle" fill="#475569" font-size="11">تجزئة bcrypt لكلمات المرور (cost=12)</text>
+  <rect x="220" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="553" text-anchor="middle" fill="#475569" font-size="11">تأكيد كلمة المرور (العمليات الحساسة)</text>
+  <rect x="410" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="500" y="553" text-anchor="middle" fill="#475569" font-size="11">security.txt RFC 9116</text>
+  <rect x="600" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="690" y="553" text-anchor="middle" fill="#475569" font-size="11">تقوية إعداد Nginx الأمني</text>
+  <rect x="790" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="880" y="553" text-anchor="middle" fill="#475569" font-size="11">مؤشرات مراقبة Prometheus</text>
+
+  <rect x="30" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="120" y="583" text-anchor="middle" fill="#475569" font-size="11">عزل حاويات Docker</text>
+  <rect x="220" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="583" text-anchor="middle" fill="#475569" font-size="11">أمان نقل HTTPS/TLS</text>
+  <rect x="410" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="500" y="583" text-anchor="middle" fill="#475569" font-size="11">كلمات مرور قاعدة البيانات في .gitignore</text>
+  <rect x="600" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="690" y="583" text-anchor="middle" fill="#475569" font-size="11">تشفير النسخ الاحتياطية + احتفاظ 30 يومًا</text>
+  <rect x="790" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="880" y="583" text-anchor="middle" fill="#475569" font-size="11">فحص أمني تلقائي CI/CD</text>
+
+  <!-- Architecture flow -->
+  <rect x="15" y="612" width="970" height="82" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5"/>
+  <text x="500" y="636" text-anchor="middle" fill="#991b1b" font-size="13" font-weight="bold">بنية الدفاع المتعمق (حركة الهجوم ← ترشيح طبقة بطبقة)</text>
+  <text x="60" y="662" text-anchor="middle" fill="#dc2626" font-size="11">L1 CSP</text>
+  <text x="120" y="662" fill="#dc2626" font-size="11">→</text>
+  <text x="145" y="662" text-anchor="middle" fill="#dc2626" font-size="11">L2 CORS</text>
+  <text x="200" y="662" fill="#dc2626" font-size="11">→</text>
+  <text x="225" y="662" text-anchor="middle" fill="#dc2626" font-size="11">L3 Method</text>
+  <text x="285" y="662" fill="#dc2626" font-size="11">→</text>
+  <text x="310" y="662" text-anchor="middle" fill="#dc2626" font-size="11">L4 Filter</text>
+  <text x="365" y="662" fill="#dc2626" font-size="11">→</text>
+  <text x="390" y="662" text-anchor="middle" fill="#ea580c" font-size="11">L5 Limit</text>
+  <text x="440" y="662" fill="#ea580c" font-size="11">→</text>
+  <text x="465" y="662" text-anchor="middle" fill="#ea580c" font-size="11">L6 Version</text>
+  <text x="525" y="662" fill="#ea580c" font-size="11">→</text>
+  <text x="550" y="662" text-anchor="middle" fill="#ca8a04" font-size="11">L7 JWT</text>
+  <text x="600" y="662" fill="#ca8a04" font-size="11">→</text>
+  <text x="625" y="662" text-anchor="middle" fill="#ca8a04" font-size="11">L8 Session</text>
+  <text x="685" y="662" fill="#ca8a04" font-size="11">→</text>
+  <text x="710" y="662" text-anchor="middle" fill="#ca8a04" font-size="11">L9 Lock</text>
+  <text x="755" y="662" fill="#22c55e" font-size="11">→</text>
+  <text x="780" y="662" text-anchor="middle" fill="#22c55e" font-size="11">L10 RBAC</text>
+  <text x="830" y="662" fill="#22c55e" font-size="11">→</text>
+  <text x="855" y="662" text-anchor="middle" fill="#22c55e" font-size="11">... L11-L18</text>
+  <text x="935" y="662" fill="#22c55e" font-size="11">→</text>
+  <text x="950" y="662" text-anchor="middle" fill="#166534" font-size="11">OK</text>
+
+  <text x="500" y="690" text-anchor="middle" fill="#991b1b" font-size="11">الطلب ← ترويسات CSP ← فحص CORS ← قائمة طرق بيضاء ← فلترة الهجمات ← تحديد المعدل ← تحقق الإصدار ← مصادقة JWT ← فحص الجلسة ← فحص القفل ← RBAC ← سجل التدقيق ← Controller</text>
+
+  <text x="500" y="740" text-anchor="middle" fill="#94a3b8" font-size="11">المكونات الأمنية: erikwang2013/jwt-webman · erikwang2013/encryption · erikwang2013/encryptable · erikwang2013/security-php · erikwang2013/poster-php · erikwang2013/hashids</text>
+  <text x="500" y="762" text-anchor="middle" fill="#94a3b8" font-size="11">الامتثال: security.txt (RFC 9116) · Prometheus Metrics · سجلات تدقيق العمليات · تشفير البيانات (AES-256-CBC) · امتثال الدفع (PCI-DSS)</text>
+  <text x="500" y="790" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>
+</svg>

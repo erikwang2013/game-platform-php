@@ -1,4 +1,8 @@
 # 全球游戏聚合平台基础版 — 实现计划
+<!-- lang-nav -->
+
+Languages: **中文** · [English](2026-05-22-game-platform-plan.en.md) · [한국어](2026-05-22-game-platform-plan.ko.md) · [Русский](2026-05-22-game-platform-plan.ru.md) · [Deutsch](2026-05-22-game-platform-plan.de.md) · [Français](2026-05-22-game-platform-plan.fr.md) · [Español](2026-05-22-game-platform-plan.es.md) · [Português](2026-05-22-game-platform-plan.pt.md) · [हिन्दी](2026-05-22-game-platform-plan.hi.md) · [العربية](2026-05-22-game-platform-plan.ar.md) · [বাংলা](2026-05-22-game-platform-plan.bn.md) · [Bahasa Indonesia](2026-05-22-game-platform-plan.id.md) · [日本語](2026-05-22-game-platform-plan.ja.md)
+
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

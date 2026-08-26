@@ -1,45 +1,49 @@
 # Global Game Platform
+<!-- lang-nav -->
 
-[中文](README.md) | English
+Languages: [中文](../../README.md) · **English** · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+
+
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
-A global, internationalized game aggregation platform. Users register, deposit funds, exchange for game currencies, play games to earn coins, and withdraw earnings to their wallets. The admin panel provides complete game management, withdrawal review, user management, and payment management. Supports English/Chinese language switching.
+A global, internationalized game aggregation platform. After registering, users deposit to exchange for platform coins, play games with platform coins to earn more game coins, and can convert game coins back to their wallet for withdrawal. The admin backend provides complete game management, withdrawal review, user management, and payment management. Supports multi-language switching (English/Chinese).
 
 ## Version Strategy
 
 | Version | Goal | Status |
-|---------|------|--------|
-| Full | Complete: leaderboards, coupons, categories, country config, ES search | Complete |
+|------|------|------|
+| Full Version | Complete edition: leaderboards, coupons, game categories, country config, ES search | Completed |
+| Ecosystem Expansion | v2.0: game Provider integration, tickets, VIP, achievements, social, event bus | Completed |
 
 ## Tech Stack
 
 ### Backend
 - PHP 8.3+, webman v2 (workerman/webman)
 - MySQL 8.0+ (table prefix `erik_`, BIGINT non-auto-increment primary keys)
-- Redis (Session / Cache / Rate Limiting)
-- ClickHouse (OLAP Analytics / Probability Calculation)
-- Elasticsearch (Full-text Search)
-- JWT Authentication + RBAC Authorization
-- Data Encryption: API transport layer AES-256-CBC + DB storage layer AES-128-ECB
+- Redis (Session / Cache / Rate limiting)
+- ClickHouse (OLAP analytics / probability calculations)
+- Elasticsearch (full-text search)
+- JWT authentication + RBAC permission control
+- Data encryption: AES-256-CBC at the API transport layer + AES-128-ECB at the database storage layer
 
 ### Frontend
 - Flutter 3.x (Web PC style)
-- HarmonyOS ArkTS (Mobile)
+- HarmonyOS ArkTS (mobile)
 - Responsive layout (Phone / Tablet / Desktop)
-- i18n: English / Simplified Chinese switching
+- Internationalization (i18n): English / Simplified Chinese switching
 
 ### Core Components
-- `erikwang2013/snowflake-php` — Globally unique BIGINT ID generation
-- `erikwang2013/hashids` — API layer ID encode/decode
+- `erikwang2013/snowflake-php` — global unique BIGINT ID generation
+- `erikwang2013/hashids` — API-layer ID encryption/decryption
 - `erikwang2013/jwt-webman` — JWT authentication
-- `erikwang2013/encryption` — API sensitive data encryption
-- `erikwang2013/encryptable` — Database field encryption
-- `erikwang2013/webman-scout` — Elasticsearch sync & query
-- `erikwang2013/season` — Country flags
-- `erikwang2013/security-php` — Security detection tools
-- `erikwang2013/poster-php` — Random verification for sensitive operations
-- `erikwang2013/clickhouse-php` — ClickHouse connection & probability calculation
+- `erikwang2013/encryption` — API sensitive data encryption/decryption
+- `erikwang2013/encryptable` — database sensitive field encryption/decryption
+- `erikwang2013/webman-scout` — Elasticsearch sync and query
+- `erikwang2013/season` — country flags
+- `erikwang2013/security-php` — security tool detection
+- `erikwang2013/poster-php` — random verification for sensitive operations
+- `erikwang2013/clickhouse-php` — ClickHouse connection and probability calculation
 
 ## Project Structure
 
@@ -47,129 +51,137 @@ A global, internationalized game aggregation platform. Users register, deposit f
 game-platform-php/
 ├── admin/                     # Admin backend (webman v2, port 8787)
 │   ├── app/admin/controller/  #   Admin controllers
-│   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/Permission)
-│   ├── config/                #   Configuration files
+│   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
+│   ├── app/provider/          #   Game Provider layer
+│   ├── app/event/             #   Event bus (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission/ProviderAuth)
+│   ├── app/provider/          #   Game Provider layer (Self/ThirdParty/Factory)
+│   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
+│   ├── app/provider/          #   Game Provider layer
+│   ├── app/event/             #   Event bus (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission)
+│   ├── config/                #   Config files
 │   ├── database/migrations/   #   SQL migration files
-│   └── apps/flutter/          #   Flutter Web PC admin panel
+│   └── apps/flutter/          #   Flutter Web PC admin backend
 │
-├── service/                   # User-facing API (webman v2, port 8788)
-│   ├── app/api/v1/controller/ #   API controllers
-│   ├── app/middleware/        #   Middleware (incl. LanguageMiddleware)
-│   └── config/                #   Configuration files
+├── service/                   # C-end business service (webman v2, port 8788)
+│   ├── app/api/v1/controller/ #   C-end API controllers
+│   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
+│   ├── app/provider/          #   Game Provider layer
+│   ├── app/event/             #   Event bus (EventBus Redis Pub/Sub)
+│   └── config/                #   Config files
 │
 ├── install/                   # One-click install wizard
-│   ├── index.php              #   Install entry point
-│   ├── Installer.php          #   Core install logic
+│   ├── index.php              #   Installation entry
+│   ├── Installer.php          #   Installation core logic
 │   ├── install.sql            #   Merged install SQL (43 tables + seed data)
 │   └── assets/                #   Static assets
 │
-├── admin/common/ & service/common/     # Shared services maintained per-app (DepositLogService etc., shared layer pending)
-│   └── service/               #   Shared services (incl. ClickHouse probability)
+├── admin/common/ 与 service/common/   # Shared services duplicated in each (DepositLogService etc., pending extraction into a shared layer)
+│   └── service/               #   Shared services (incl. ClickHouse probability calculation)
 │
 ├── apps/
-│   └── flutter/platform/      # Flutter Web PC user platform
+│   └── flutter/platform/      # Flutter Web PC C-end user platform
 │
-├── docs/                      # Documentation
-│   ├── ARCHITECTURE.md        #   Architecture document
-│   ├── ARCHITECTURE-DESIGN.md #   Architecture design document
-│   ├── FEATURES.md            #   Features document
-│   ├── FEATURE-DESIGN.md      #   Feature design document
-│   └── API.md                 #   API reference
+├── docs/                      # Project documentation
+│   ├── ARCHITECTURE.md        #   Architecture doc
+│   ├── ARCHITECTURE-DESIGN.md #   Architecture design doc
+│   ├── FEATURES.md            #   Features doc
+│   ├── FEATURE-DESIGN.md      #   Feature design doc
+│   └── API.md                 #   API doc
 │
-└── admin/docs/superpowers/    # Development specs & plans
-    ├── specs/                 #   Design specifications
+└── admin/docs/superpowers/    # Development standards and plans
+    ├── specs/                 #   Design specs
     └── plans/                 #   Implementation plans
 ```
 
 ## Quick Start
 
-### Requirements
+### Environment Requirements
 - PHP 8.1+
 - MySQL 8.0+
 - Redis 6.0+
 - Composer 2.x
 - Flutter SDK 3.x (frontend, optional)
 
-### Method 1: One-Click Install Wizard (Recommended)
+### Option 1: One-Click Install Wizard (Recommended)
 
 ```bash
 # 1. Start the install wizard
 php -S 0.0.0.0:8888 -t install/
 
-# 2. Open http://localhost:8888 in your browser
-#    Follow the wizard: Environment Check → DB Config → Admin Account → Auto Install
+# 2. Open http://localhost:8888 in the browser
+#    Follow the wizard: environment check → database config → admin account setup → auto install
 
 # 3. Install dependencies
 cd admin && composer install && cd ..
 cd service && composer install && cd ..
 
-# 4. Start services
+# 4. Start the services
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. Access admin panel: http://localhost:8787
-#    Log in with the admin credentials you set during installation
+# 5. Access the admin backend: http://localhost:8787
+#    Log in with the admin account and password set during installation
 
-# 6. Remove install directory after installation (security)
+# 6. Delete the install directory after installation (security)
 rm -rf install/
 ```
 
 The install wizard automatically:
-- Checks environment (PHP version, extensions, directory permissions)
-- Creates database and tables (merged SQL, 43 tables + seed data)
-- Creates super admin account (bcrypt encrypted)
-- Generates JWT/encryption keys and writes .env files
-- Creates install.lock to prevent re-installation
+- Checks the environment (PHP version, extensions, directory permissions)
+- Creates the database and tables (merged SQL, 43 tables + seed data)
+- Creates the super admin account (bcrypt encrypted)
+- Auto-generates JWT/encryption keys and writes them to the .env file
+- Generates install.lock to prevent re-installation
 
-### Method 2: Manual Installation
+### Option 2: Manual Installation
 
 <details>
 <summary>Expand manual installation steps</summary>
 
-#### 1. Database Setup
+#### 1. Database initialization
 
 ```bash
-# One-command import merged SQL
+# Import the merged SQL in one go
 mysql -u root -e "CREATE DATABASE IF NOT EXISTS game_platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 mysql -u root game_platform < install/install.sql
 ```
 
-#### 2. Environment Configuration
+#### 2. Configure environment variables
 
 ```bash
 # Admin backend
 cd admin
 cp .env.example .env
-# Edit .env with your database credentials and keys
+# Edit the database connection info and keys in .env
 
-# Service API
+# C-end business service
 cd ../service
 cp .env.example .env
-# Edit .env with your database credentials and keys
+# Edit the database connection info and keys in .env
 ```
 
-#### 3. Backend Start
+#### 3. Start the backend
 
 ```bash
 cd admin && composer install && php start.php start -d
 cd ../service && composer install && php start.php start -d
 ```
 
-#### 4. Create Admin
+#### 4. Create the admin
 
-You need to manually insert an admin user into the database (password must be bcrypt hashed).
+You need to manually insert the admin account into the database (password bcrypt-encrypted).
 
 </details>
 
-### Frontend Start (Optional)
+### Frontend Startup (Optional)
 
 ```bash
-# Admin panel (Flutter Web PC)
+# Admin backend (Flutter Web PC)
 cd admin/apps/flutter
 flutter pub get
 flutter run -d chrome
 
-# User platform (Flutter Web PC)
+# C-end user platform (Flutter Web PC)
 cd apps/flutter/platform
 flutter pub get
 flutter run -d chrome
@@ -178,10 +190,10 @@ flutter run -d chrome
 ### Verification
 
 ```bash
-# Test admin backend
+# Test the admin backend
 curl http://localhost:8787/health
 
-# Test user API
+# Test the C-end business service
 curl http://localhost:8788/health
 
 # Test user registration
@@ -192,21 +204,21 @@ curl -X POST http://localhost:8788/api/auth/register \
 
 ## Security Features
 
-- **18-layer defense-in-depth**: XSS/SQL injection/CSRF/path traversal/command injection detection
-- **HTTP method whitelist**: Only GET/POST/PUT/DELETE/OPTIONS/HEAD allowed
+- **18-layer defense in depth**: XSS/SQL injection/CSRF/path traversal/command injection detection and blocking
+- **HTTP method whitelist**: only GET/POST/PUT/DELETE/OPTIONS/HEAD allowed
 - **JWT authentication**: access_token 2h + refresh_token 14d, concurrent session limit
-- **JWT startup check**: separate keys per app (`ADMIN_JWT_SECRET_KEY` / `SERVICE_JWT_SECRET_KEY`), startup refused if missing or still the default value
-- **Payment callback fail-closed**: provider whitelist (stripe/paypal only) + missing secret / failed verification / timestamp out of range all rejected + bccomp amount check + transactional crediting
-- **RBAC authorization**: method.path granularity, Redis 60s cache
-- **Click captcha**: Required for login/registration
-- **Password confirmation**: Required for sensitive operations
-- **Data encryption**: Transport AES-256-CBC + Storage AES-128-ECB
-- **ID encryption**: Snowflake generation + Hashids encoding, non-reversible externally
-- **Wallet optimistic locking**: Prevents concurrent deduction/duplicate crediting
-- **Operation audit**: Full operation logging, 8-platform source detection
+- **JWT key startup validation**: admin uses `ADMIN_JWT_SECRET_KEY`, service uses `SERVICE_JWT_SECRET_KEY` as independent keys; missing or still-default keys cause the service to refuse startup
+- **Payment callback fail-closed**: provider whitelist (stripe/paypal only) + missing keys/verification failure/timestamp over-limit all rejected + bccomp amount check + transactional callback crediting
+- **RBAC permissions**: method.path granularity permission control, Redis 60s cache
+- **Click captcha**: mandatory human verification for login/registration
+- **Password re-confirmation**: sensitive operations require password confirmation
+- **Data encryption**: AES-256-CBC at transport layer + AES-128-ECB at storage layer
+- **ID encryption**: Snowflake generation + Hashids encoding, not reversible externally
+- **Wallet optimistic lock**: prevents concurrent deductions/duplicate credits
+- **Operation audit**: full operation logs, automatic detection of 8 platform sources
 - **Rate limiting**: Redis sliding window, Lua atomic
-- **CSP headers**: Content-Security-Policy anti-XSS
-- **Account security**: 5 failed login attempts → 15-minute lockout
+- **CSP header**: Content-Security-Policy against XSS
+- **Account security**: 5 consecutive failed logins lock the account for 15 minutes
 
 ## Testing
 
@@ -217,161 +229,198 @@ phpunit --bootstrap tests/bootstrap.php tests/
 
 - PHPUnit 12.x, 116 test cases
 - 56 business logic tests (PlatformTest) + 60 infrastructure tests
-- Coverage: bcmath, exchange, withdraw, limits, risk, coupons, KYC, i18n
+- Coverage: bcmath precision, exchange calculations, withdrawal fees, limits, risk control, coupons, KYC, i18n
 
-## Platform Capabilities
+## Platform Capability Overview
 
 | Capability | Description |
 |------|------|
-| Auth | Username/password + Google/Facebook/Apple OAuth + 2FA TOTP |
-| Wallet | Platform wallet (optimistic lock) + game wallet + transactions |
-| Deposit | Order creation + Stripe/PayPal webhook verification + auto-credit |
-| Exchange | Platform⇄Game currency, real-time quote, spread revenue |
-| Withdraw | Apply→Review→Payout, global switch, KYC-tiered limits+fees |
-| KYC | Identity verification submit+review, 3-tier system |
-| Games | CRUD + categories (10) + servers + play log tracking |
-| Search | Elasticsearch full-text (with LIKE fallback) |
-| Leaderboard | Daily/weekly/monthly/total, Redis cache, WebSocket push (8789) |
-| Coupons | Fixed/rate discount, limited time/qty, claim & usage tracking |
-| Notifications | In-app + email, auto-notify for deposit/withdraw/KYC/coupons |
-| Referral | Codes, signup bonus, deposit commission |
-| Risk Control | IP blacklist, amount anomaly, frequency, velocity |
-| i18n | 4 languages (en-US/zh-CN/ja-JP/ko-KR) with translation DB |
-| Country Config | 8 countries with differentiated payment/withdraw methods |
-| Stats | Daily snapshots (5 metrics) + platform revenue tracking |
+| User authentication | Username/password + 7-platform OAuth (Google/Facebook/Apple/X(Twitter)/Microsoft/LinkedIn/GitHub) + 2FA TOTP |
+| Wallet | Platform coin wallet (optimistic lock) + game coin wallet + transaction records |
+| Deposit | Create order + Stripe/PayPal callback verification + automatic crediting |
+| Exchange | Platform coins ⇄ game coins, real-time quotes, spread profit |
+| Withdrawal | Apply → review → payout, global switch, KYC tiered limits + fees |
+| KYC | Real-name verification submission + review, three-tier verification system |
+| Games | CRUD + categories (10) + servers/regions + game record tracking |
+| Search | Elasticsearch full-text search (with LIKE fallback) |
+| Leaderboards | Daily/weekly/monthly/all-time, Redis cache, WebSocket real-time push (8789) |
+| Coupons | Fixed amount + percentage discount, time/quantity limited, claim and usage tracking |
+| Notifications | In-app messages + email, automatic notifications for deposits/withdrawals/KYC/coupons |
+| Referrals | Referral codes, signup rewards, deposit commissions |
+| Risk control | IP blacklist / large-amount alerts / frequency / speed detection |
+| Internationalization | 4 languages (en-US/zh-CN/ja-JP/ko-KR), translation tables + cache |
+| Country config | 8 countries with differentiated payment/withdrawal methods, minimum deposit amounts |
+| Statistics | Daily statistics snapshots (5 metric types) + platform revenue tracking |
 | Captcha | Click-based human verification (poster-php) |
-| Deployment | Docker Compose 7 services + Nginx reverse proxy |
+| Game integration | Provider SDK (Self+ThirdParty) + HMAC-SHA256 signing + callback gateway |
+| Tickets | C-end create/reply + admin handle/assign/close |
+| VIP | 5 loyalty levels, XP accumulation, exchange discounts/withdrawal fee waivers/exchange rate bonuses |
+| Achievements | 12 built-in achievements, event-driven detection, progress tracking |
+| Social | Friend system + WebSocket real-time private messaging (port 8791), friends-only messaging |
+| Tournaments | Championship system (FeatureFlag switch) + leaderboards + participant caps |
+| Rebates | Two-tier referral profit sharing (configurable commission rates) |
+| Coupons | Conditional restrictions (min_deposit/first_user/game_id) |
+| Events | Redis Pub/Sub event bus + Webhook subscription delivery (7 event types) |
+| Deployment | Docker Compose 8-service orchestration + Nginx reverse proxy |
 | Clients | Flutter Admin (15 pages) + Platform (10 pages) + HarmonyOS (5 pages) |
 
 ## Business Model
 
 ```
-Fiat (USD/CNY/EUR...)
-  │  Deposit (Stripe/PayPal/Alipay/WeChat)
+Fiat currency (USD/CNY/EUR...)
+  │  Deposit (Stripe/PayPal/Alipay/WeChat Pay)
   ▼
-Platform Currency (unified, precision decimal(18,4))
-  │  Exchange (with rate + platform spread)
+Platform coins (unified, precision decimal(18,4))
+  │  Exchange (incl. exchange rate + platform spread)
   ▼
-Game Currency (per-game, independent rates)
-  │  Earn/spend by playing
+Game coins (per-game independent, independent exchange rates)
+  │  Earn/spend by playing games
   ▼
-Platform Currency ← Convert back → Withdraw (review/auto)
+Platform coins ← convert back → Withdraw (review/automatic)
 ```
 
 ## Multi-Currency Settlement
 
-The platform adopts a three-tier, currency-isolated settlement system — Fiat → Platform Currency → Game Currency: multi-fiat deposits in USD/CNY/EUR, and an independent pricing currency for each game. All amount calculations use bcmath high-precision arithmetic to eliminate floating-point errors.
+The platform uses a "fiat → platform coin → game coin" three-tier currency-isolated settlement system: supports multi-fiat deposits in USD/CNY/EUR, and each game has its own pricing currency; all amount calculations use bcmath high-precision arithmetic to eliminate floating-point errors.
 
 ### Three-Tier Currency Model
 
 | Tier | Currency | Description |
-|------|----------|-------------|
-| Fiat layer | USD / CNY / EUR | Actual payment currency for deposits/withdrawals, handled by Stripe / PayPal |
-| Platform layer | Platform Currency (unified) | Internal unified settlement currency (decimal(18,4)); optimistic-lock wallet prevents concurrent deductions and duplicate credits |
-| Game layer | Independent currency per game | Each game has its own `exchange_rate` and `spread_pct`, with a separate game wallet |
+|------|------|------|
+| Fiat tier | USD / CNY / EUR | The actual payment currency for user deposits/withdrawals, handled by Stripe / PayPal |
+| Platform coin tier | Platform coin (unified across the platform) | Internal unified settlement currency (decimal(18,4)), wallet optimistic lock against concurrent deductions/duplicate credits |
+| Game coin tier | Per-game independent currency | Each game has its own `exchange_rate` and `spread_pct`, with an independent game coin wallet |
 
 ### Settlement Paths
 
-- **Deposit settlement**: User pays in fiat (Stripe / PayPal callback signature verification, idempotent) → converted to platform currency at `default_exchange_rate`; deposit order records `amount + currency + platform_amount`
-- **Exchange settlement**: Platform ⇄ game currency via real-time quote at the game currency rate, deducting `spread_pct` as platform spread revenue; VIPs get exchange discounts and rate bonuses
-- **Game settlement**: Game Provider adjusts the user's game balance via the `/api/provider/settle` callback (HMAC-SHA256 signature); game sessions auto-settle on timeout
-- **Withdrawal settlement**: Platform currency deducted → withdrawal order created (recording `platform_amount / fiat_amount / currency`) → admin approval → PayPal Payout → batch status synced to completion
+- **Deposit settlement**: user pays in fiat (Stripe / PayPal callback verification, idempotent anti-duplicate) → converted to platform coins at `default_exchange_rate`, the deposit order records `amount + currency + platform_amount` at the same time
+- **Exchange settlement**: platform coins ⇄ game coins quoted in real time at the game's exchange rate (quote), `spread_pct` deducted as platform spread profit, VIP gets exchange discounts and exchange rate bonuses
+- **Game settlement**: game Provider increases/decreases user game coins via `/api/provider/settle` callback (HMAC-SHA256 signed), game sessions auto-settle on timeout
+- **Withdrawal settlement**: platform coins deducted → withdrawal order created (recording `platform_amount / fiat_amount / currency`) → admin approval → PayPal Payout → batch status synced to completed
 
-### Settlement Flowchart
+### Settlement Flow Diagram
 
 ```mermaid
 flowchart LR
-    subgraph FIAT["Fiat Layer"]
-        A["User Deposit<br/>USD / CNY / EUR<br/>Stripe / PayPal"]
-        H["Withdrawal Payout<br/>PayPal Payout"]
+    subgraph FIAT["法币层 Fiat"]
+        A["用户充值<br/>USD / CNY / EUR<br/>Stripe / PayPal"]
+        H["提现到账<br/>PayPal Payout"]
     end
 
-    subgraph PLAT["Platform Currency Layer"]
-        B["Platform Wallet<br/>decimal(18,4) optimistic lock"]
-        E["Withdrawal Order<br/>platform_amount<br/>fiat_amount / currency"]
+    subgraph PLAT["平台币层 Platform Token"]
+        B["平台币钱包<br/>decimal(18,4) 乐观锁"]
+        E["提现订单<br/>platform_amount<br/>fiat_amount / currency"]
     end
 
-    subgraph GAME["Game Currency Layer"]
-        D["Game Currency<br/>exchange_rate<br/>spread_pct"]
-        C["Game Wallet<br/>UserGameWallet"]
-        G["Game Provider<br/>settle callback"]
+    subgraph GAME["游戏币层 Game Currency"]
+        D["游戏币种<br/>exchange_rate<br/>spread_pct"]
+        C["游戏币钱包<br/>UserGameWallet"]
+        G["游戏 Provider<br/>settle 结算回调"]
     end
 
-    A -->|"callback verified<br/>platform = fiat × default_exchange_rate"| B
-    B -->|"exchange buy (in)<br/>spread deducted"| C
-    C -->|"exchange sell (out)<br/>converted at rate"| B
-    D -.->|"independent rate + VIP bonus"| C
-    G <-->|"earn/spend playing"| C
-    B -->|"withdrawal request (deduct)"| E
-    E -->|"admin approval<br/>PayPal Payout"| H
+    A -->|"充值回调验签<br/>平台币 = 法币 × default_exchange_rate"| B
+    B -->|"兑换买入 in<br/>扣除点差"| C
+    C -->|"兑换卖出 out<br/>按汇率折算"| B
+    D -.->|"独立汇率 + VIP 加成"| C
+    G <-->|"玩游戏赚/花"| C
+    B -->|"提现申请（扣款）"| E
+    E -->|"管理端审批<br/>PayPal Payout 打款"| H
 ```
 
-## System Architecture
+## Architecture Diagram
 
-![System Architecture](docs/diagrams/architecture-en.svg)
+![System architecture diagram](../diagrams/architecture-en.svg)
 
 ## Core Business Flow
 
-![Business Flow](docs/diagrams/flow-en.svg)
+![Business flow diagram](../diagrams/flow-en.svg)
 
 ## Feature Overview
 
-![Feature Overview](docs/diagrams/features-en.svg)
+![Feature overview diagram](../diagrams/features-en.svg)
 
-## Lifecycle Diagram
+## Lifecycle
 
-![Lifecycle](docs/diagrams/lifecycle-en.svg)
+![Lifecycle diagram](../diagrams/lifecycle-en.svg)
 
 ## Security Architecture
 
-![Security Architecture](docs/diagrams/security-en.svg)
+![Security architecture diagram](../diagrams/security-en.svg)
 
-## Supported Languages
+## Ecosystem Expansion (v2.0)
 
-| Code | Name | Native Name | Status |
-|------|------|-------------|--------|
-| en-US | English | English | Active |
-| zh-CN | Chinese (Simplified) | 简体中文 | Active |
-| ja-JP | Japanese | 日本語 | Active |
-| ko-KR | Korean | 한국어 | Active |
-
-Automatic language detection via `X-Language` header or `Accept-Language` header. Manual switching via `POST /api/language/switch`.
+![Ecosystem expansion architecture diagram](../diagrams/ecosystem-expansion-en.svg)
 
 ## Documentation Index
 
 | Document | Description |
-|----------|-------------|
-| [Version Comparison](docs/VERSIONS_EN.md) | Lite/Standard/Full comparison |
-| [Architecture Design](docs/ARCHITECTURE-DESIGN.md) | Architecture decisions and rationale |
-| [Architecture](docs/ARCHITECTURE.md) | System topology, module architecture, data flow |
-| [Feature Design](docs/FEATURE-DESIGN.md) | Business models, feature specs, workflow design |
-| [Features](docs/FEATURES.md) | Feature catalog, module descriptions, user journeys |
-| [API Reference](docs/API.md) | Complete API reference (102 endpoints) |
-| [Live Docs](http://localhost:8788/apidoc/) | hg/apidoc interactive docs (Service) |
-| [Live Docs](http://localhost:8787/apidoc/) | hg/apidoc interactive docs (Admin) |
-| [ClickHouse Install](docs/CLICKHOUSE_INSTALL.md) | Installation, config, migration, verification |
-| [ClickHouse Usage](docs/CLICKHOUSE_USAGE.md) | 4 services API reference & admin dashboard |
-| [Deployment Guide](docs/DEPLOYMENT_EN.md) | Deployment guide (Docker + Manual + Nginx + Monitoring) |
-| [Design Spec](admin/docs/superpowers/specs/2026-05-22-game-platform-design.md) | Full design specification |
-| [Implementation Plan](admin/docs/superpowers/plans/2026-05-22-game-platform-plan.md) | Detailed implementation plan |
+|------|------|
+| [Version comparison](../VERSIONS.en.md) | Basic/Standard/Full version feature comparison |
+| [Architecture design doc](../ARCHITECTURE-DESIGN.en.md) | Architecture selection rationale and design decisions |
+| [Architecture doc](../ARCHITECTURE.en.md) | System topology, module architecture, data flows |
+| [Feature design doc](../FEATURE-DESIGN.en.md) | Business models, feature specs, flow design |
+| [Features doc](../FEATURES.en.md) | Feature list, module descriptions, user journeys |
+| [API doc](../API.en.md) | Complete API reference (102 endpoints) |
+| [Online docs](http://localhost:8788/apidoc/) | hg/apidoc interactive docs (C-end) |
+| [Online docs](http://localhost:8787/apidoc/) | hg/apidoc interactive docs (admin backend) |
+| [ClickHouse installation](../CLICKHOUSE_INSTALL.en.md) | ClickHouse install/config/migration/verification |
+| [Provider SDK integration doc](../PROVIDER-SDK.en.md) | Third-party game integration guide (signing algorithm + PHP/Go/Python examples) |
+| [ClickHouse usage](../CLICKHOUSE_USAGE.en.md) | The 4 ClickHouse service APIs and admin dashboards |
+| [Deployment doc](../DEPLOYMENT.en.md) | Deployment guide (Docker + manual + Nginx + monitoring) |
+| [Design spec](../../admin/docs/superpowers/specs/2026-05-22-game-platform-design.en.md) | Complete design spec |
+| [Implementation plan](../../admin/docs/superpowers/plans/2026-05-22-game-platform-plan.en.md) | Detailed implementation plan |
 
 ---
 
-## Support
+## Support the Project
 
-If this project helps you, consider buying the author a coffee ☕
+If this project helps you, feel free to buy the author a coffee ☕
 
 <p align="center">
   <table align="center" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <td align="center" width="200">
-        <img src="docs/weixinpay-130.png" width="130" height="130" alt="WeChat Pay"><br>
+        <img src="docs/weixinpay-130.png" width="130" height="130" alt="微信支付"><br>
         <b>WeChat Pay</b>
       </td>
       <td align="center" width="200">
-        <img src="docs/alipay-130.png" width="130" height="130" alt="Alipay"><br>
+        <img src="docs/alipay-130.png" width="130" height="130" alt="支付宝"><br>
         <b>Alipay</b>
       </td>
     </tr>
   </table>
 </p>
+
+### Global Bank Transfer
+
+**Recipient**
+
+| Item | Content |
+|----|------|
+| Beneficiary Name | WANG KEXUN |
+| Account Number | 881015918251 |
+
+**Beneficiary Bank**
+
+| Item | Content |
+|----|------|
+| SWIFT Code | AABLHKHHXXX |
+| Bank Name | ZA Bank Limited |
+| Bank Code | 387 |
+| Bank Address | Core F, Cyberport 3, 100 Cyberport Road, Hong Kong |
+
+**Correspondent Bank (if required)**
+
+> Please note, this is the correspondent (intermediary) bank information, not the beneficiary bank information. Please ask your remitting bank whether correspondent bank details are required.
+
+- **Citibank is the correspondent bank for HKD, CNY and USD remittances:**
+  - Bank Name: Citibank N.A. Hong Kong
+  - SWIFT Code: CITIHKHXXXX
+  - Bank Code: 006
+  - Branch Name: Hong Kong Branch
+  - Branch Code: 391
+  - Bank Address: Citibank Tower, Citibank Plaza, 3 Garden Road, Central, Hong Kong
+- **BNY Mellon is the correspondent bank for other currencies:**
+  - Bank Name: THE BANK OF NEW YORK MELLON
+  - SWIFT Code: IRVTUS3NXXX
+  - Bank Address: THE BANK OF NEW YORK MELLON, 240 GREENWICH STREET, NEW YORK, United States

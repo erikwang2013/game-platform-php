@@ -1,4 +1,8 @@
 # 安装系统审查报告
+<!-- lang-nav -->
+
+Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](INSTALL-AUDIT-REPORT.ko.md) · [Русский](INSTALL-AUDIT-REPORT.ru.md) · [Deutsch](INSTALL-AUDIT-REPORT.de.md) · [Français](INSTALL-AUDIT-REPORT.fr.md) · [Español](INSTALL-AUDIT-REPORT.es.md) · [Português](INSTALL-AUDIT-REPORT.pt.md) · [हिन्दी](INSTALL-AUDIT-REPORT.hi.md) · [العربية](INSTALL-AUDIT-REPORT.ar.md) · [বাংলা](INSTALL-AUDIT-REPORT.bn.md) · [Bahasa Indonesia](INSTALL-AUDIT-REPORT.id.md) · [日本語](INSTALL-AUDIT-REPORT.ja.md)
+
 
 > 审查日期: 2026-08-04
 > 审查范围: `install/` 目录下所有文件 + 相关文档变更
@@ -202,7 +206,7 @@
 | 文件 | 变更内容 |
 |------|---------|
 | `README.md` | 快速开始改为"一键安装向导（推荐）"，新增手动安装折叠块，更新项目结构 |
-| `README_EN.md` | 同上（英文版），更新项目结构 |
+| `README.en.md` | 同上（英文版），更新项目结构 |
 | `docs/DEPLOYMENT.md` | 新增第2节"一键安装向导（推荐新部署）"，原Docker章节后移 |
 | `.gitignore` | 新增 `install/install.lock`, `admin/.env.backup.*`, `service/.env.backup.*` |
 

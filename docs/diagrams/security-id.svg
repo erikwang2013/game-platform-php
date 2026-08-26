@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" font-family="Arial, 'Noto Sans SC', 'Noto Sans', sans-serif">
+  <defs>
+    <linearGradient id="hd" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#dc2626"/><stop offset="100%" stop-color="#ef4444"/></linearGradient>
+    <filter id="sh"><feDropShadow dx="1" dy="1" stdDeviation="1.5" flood-opacity=".06"/></filter>
+  </defs>
+  <rect width="1000" height="800" fill="#fafbfc"/>
+
+  <rect x="0" y="0" width="1000" height="52" fill="url(#hd)"/>
+  <text x="500" y="34" text-anchor="middle" fill="#fff" font-size="21" font-weight="bold">Platform Agregasi Game Global — Arsitektur Keamanan (Pertahanan Berlapis 18)</text>
+
+  <!-- Layer 1-6 -->
+  <rect x="15" y="68" width="310" height="60" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="90" text-anchor="middle" fill="#991b1b" font-size="12" font-weight="bold">L1: CSP Kebijakan Keamanan Konten</text>
+  <text x="170" y="108" text-anchor="middle" fill="#ef4444" font-size="10">Header Content-Security-Policy</text>
+  <text x="170" y="122" text-anchor="middle" fill="#ef4444" font-size="10">X-Permitted-Cross-Domain-Policies</text>
+
+  <rect x="340" y="68" width="310" height="60" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="90" text-anchor="middle" fill="#991b1b" font-size="12" font-weight="bold">L2: Kontrol Cross-Origin CORS</text>
+  <text x="495" y="108" text-anchor="middle" fill="#ef4444" font-size="10">Daftar putih Access-Control-Allow-Origin</text>
+  <text x="495" y="122" text-anchor="middle" fill="#ef4444" font-size="10">Penanganan permintaan preflight OPTIONS</text>
+
+  <rect x="665" y="68" width="320" height="60" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="90" text-anchor="middle" fill="#991b1b" font-size="12" font-weight="bold">L3: Daftar Putih Metode HTTP</text>
+  <text x="825" y="108" text-anchor="middle" fill="#ef4444" font-size="10">Hanya izinkan GET/POST/PUT/DELETE/OPTIONS/HEAD</text>
+  <text x="825" y="122" text-anchor="middle" fill="#ef4444" font-size="10">Metode non-standar kembalikan 405 Method Not Allowed</text>
+
+  <!-- L4-L6 -->
+  <rect x="15" y="140" width="310" height="60" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="162" text-anchor="middle" fill="#7f1d1d" font-size="12" font-weight="bold">L4: SecurityFilter Blokir Serangan</text>
+  <text x="170" y="180" text-anchor="middle" fill="#dc2626" font-size="10">XSS / SQL injection / CSRF / path traversal</text>
+  <text x="170" y="194" text-anchor="middle" fill="#dc2626" font-size="10">Deteksi &amp; blokir command injection</text>
+
+  <rect x="340" y="140" width="310" height="60" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="162" text-anchor="middle" fill="#7f1d1d" font-size="12" font-weight="bold">L5: RateLimit Pembatasan Frekuensi</text>
+  <text x="495" y="180" text-anchor="middle" fill="#dc2626" font-size="10">Sliding window Redis + atomik Lua</text>
+  <text x="495" y="194" text-anchor="middle" fill="#dc2626" font-size="10">Login: 10/menit Registrasi: 5/menit Umum: 60/menit</text>
+
+  <rect x="665" y="140" width="320" height="60" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="162" text-anchor="middle" fill="#7f1d1d" font-size="12" font-weight="bold">L6: Versioning API</text>
+  <text x="825" y="180" text-anchor="middle" fill="#dc2626" font-size="10">Validasi header permintaan API-Version</text>
+  <text x="825" y="194" text-anchor="middle" fill="#dc2626" font-size="10">Default v1, dukung banyak versi berdampingan</text>
+
+  <!-- L7-L9 -->
+  <rect x="15" y="212" width="310" height="60" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="234" text-anchor="middle" fill="#9a3412" font-size="12" font-weight="bold">L7: Autentikasi JWT</text>
+  <text x="170" y="252" text-anchor="middle" fill="#ea580c" font-size="10">erikwang2013/jwt-webman</text>
+  <text x="170" y="266" text-anchor="middle" fill="#ea580c" font-size="10">access_token 2h + refresh_token 14d</text>
+
+  <rect x="340" y="212" width="310" height="60" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="234" text-anchor="middle" fill="#9a3412" font-size="12" font-weight="bold">L8: Manajemen Sesi</text>
+  <text x="495" y="252" text-anchor="middle" fill="#ea580c" font-size="10">Batas sesi konkurensi (maks 3 Token)</text>
+  <text x="495" y="266" text-anchor="middle" fill="#ea580c" font-size="10">Blacklist Token + eviction otomatis</text>
+
+  <rect x="665" y="212" width="320" height="60" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="234" text-anchor="middle" fill="#9a3412" font-size="12" font-weight="bold">L9: Kunci Akun</text>
+  <text x="825" y="252" text-anchor="middle" fill="#ea580c" font-size="10">5 gagal login → kunci 15 menit</text>
+  <text x="825" y="266" text-anchor="middle" fill="#ea580c" font-size="10">Redis account_lock:{username} 900s</text>
+
+  <!-- L10-L12 -->
+  <rect x="15" y="284" width="310" height="60" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="306" text-anchor="middle" fill="#854d0e" font-size="12" font-weight="bold">L10: Kontrol Izin RBAC</text>
+  <text x="170" y="324" text-anchor="middle" fill="#ca8a04" font-size="10">Validasi izin granularity method.path</text>
+  <text x="170" y="338" text-anchor="middle" fill="#ca8a04" font-size="10">Cache izin Redis 60s</text>
+
+  <rect x="340" y="284" width="310" height="60" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="306" text-anchor="middle" fill="#854d0e" font-size="12" font-weight="bold">L11: CAPTCHA Klik</text>
+  <text x="495" y="324" text-anchor="middle" fill="#ca8a04" font-size="10">erikwang2013/poster-php</text>
+  <text x="495" y="338" text-anchor="middle" fill="#ca8a04" font-size="10">Verifikasi manusia-mesin wajib login/registrasi</text>
+
+  <rect x="665" y="284" width="320" height="60" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="306" text-anchor="middle" fill="#854d0e" font-size="12" font-weight="bold">L12: Audit Operasi</text>
+  <text x="825" y="324" text-anchor="middle" fill="#ca8a04" font-size="10">Log operasi lengkap + deteksi sumber 8 platform</text>
+  <text x="825" y="338" text-anchor="middle" fill="#ca8a04" font-size="10">ipados/macos/windows/linux/ios/android/harmonyos/web</text>
+
+  <!-- L13-L15 -->
+  <rect x="15" y="356" width="310" height="60" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="378" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">L13: Enkripsi Lapisan Transmisi</text>
+  <text x="170" y="396" text-anchor="middle" fill="#22c55e" font-size="10">erikwang2013/encryption</text>
+  <text x="170" y="410" text-anchor="middle" fill="#22c55e" font-size="10">AES-256-CBC + dukungan SM4 nasional</text>
+
+  <rect x="340" y="356" width="310" height="60" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="378" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">L14: Enkripsi Lapisan Penyimpanan</text>
+  <text x="495" y="396" text-anchor="middle" fill="#22c55e" font-size="10">erikwang2013/encryptable</text>
+  <text x="495" y="410" text-anchor="middle" fill="#22c55e" font-size="10">Enkripsi/dekripsi otomatis bidang sensitif + rotasi kunci</text>
+
+  <rect x="665" y="356" width="320" height="60" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="378" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">L15: ID Tidak Dapat Dibalik</text>
+  <text x="825" y="396" text-anchor="middle" fill="#22c55e" font-size="10">Generate Snowflake + encode Hashids</text>
+  <text x="825" y="410" text-anchor="middle" fill="#22c55e" font-size="10">Eksternal tidak bisa membalik data/jumlah urutan dari ID</text>
+
+  <!-- L16-L18 -->
+  <rect x="15" y="428" width="310" height="60" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="170" y="450" text-anchor="middle" fill="#1e40af" font-size="12" font-weight="bold">L16: Kunci Optimis Dompet</text>
+  <text x="170" y="468" text-anchor="middle" fill="#3b82f6" font-size="10">Kolom version + deteksi pembaruan konkurensi</text>
+  <text x="170" y="482" text-anchor="middle" fill="#3b82f6" font-size="10">Cegah potong ganda konkurensi / masuk berulang</text>
+
+  <rect x="340" y="428" width="310" height="60" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="495" y="450" text-anchor="middle" fill="#1e40af" font-size="12" font-weight="bold">L17: Verifikasi Tanda Tangan Callback Pembayaran</text>
+  <text x="495" y="468" text-anchor="middle" fill="#3b82f6" font-size="10">Verifikasi tanda tangan Stripe Webhook</text>
+  <text x="495" y="482" text-anchor="middle" fill="#3b82f6" font-size="10">Verifikasi pesan PayPal IPN</text>
+
+  <rect x="665" y="428" width="320" height="60" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="825" y="450" text-anchor="middle" fill="#1e40af" font-size="12" font-weight="bold">L18: Perhitungan Data Presisi</text>
+  <text x="825" y="468" text-anchor="middle" fill="#3b82f6" font-size="10">Matematika presisi arbitrer bcmath</text>
+  <text x="825" y="482" text-anchor="middle" fill="#3b82f6" font-size="10">decimal(18,4) presisi tingkat finansial</text>
+
+  <!-- Additional measures -->
+  <rect x="15" y="504" width="970" height="90" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="500" y="526" text-anchor="middle" fill="#475569" font-size="13" font-weight="bold">Langkah Keamanan Tambahan</text>
+
+  <rect x="30" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="120" y="553" text-anchor="middle" fill="#475569" font-size="11">Hash kata sandi bcrypt (cost=12)</text>
+  <rect x="220" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="553" text-anchor="middle" fill="#475569" font-size="11">Konfirmasi kata sandi kedua (operasi sensitif)</text>
+  <rect x="410" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="500" y="553" text-anchor="middle" fill="#475569" font-size="11">security.txt RFC 9116</text>
+  <rect x="600" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="690" y="553" text-anchor="middle" fill="#475569" font-size="11">Konfigurasi penguatan Nginx</text>
+  <rect x="790" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="880" y="553" text-anchor="middle" fill="#475569" font-size="11">Metrik monitoring Prometheus</text>
+
+  <rect x="30" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="120" y="583" text-anchor="middle" fill="#475569" font-size="11">Isolasi container Docker</text>
+  <rect x="220" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="583" text-anchor="middle" fill="#475569" font-size="11">Keamanan transmisi HTTPS/TLS</text>
+  <rect x="410" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="500" y="583" text-anchor="middle" fill="#475569" font-size="11">Kata sandi database .gitignore</text>
+  <rect x="600" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="690" y="583" text-anchor="middle" fill="#475569" font-size="11">Enkripsi backup + simpan 30 hari</text>
+  <rect x="790" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="880" y="583" text-anchor="middle" fill="#475569" font-size="11">Pemeriksaan keamanan otomatis CI/CD</text>
+
+  <!-- Architecture flow -->
+  <rect x="15" y="612" width="970" height="82" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5"/>
+  <text x="500" y="636" text-anchor="middle" fill="#991b1b" font-size="13" font-weight="bold">Arsitektur Pertahanan Berlapis (trafik serangan → filter per lapisan)</text>
+  <text x="60" y="662" text-anchor="middle" fill="#dc2626" font-size="11">L1 CSP</text>
+  <text x="120" y="662" fill="#dc2626" font-size="11">→</text>
+  <text x="145" y="662" text-anchor="middle" fill="#dc2626" font-size="11">L2 CORS</text>
+  <text x="200" y="662" fill="#dc2626" font-size="11">→</text>
+  <text x="225" y="662" text-anchor="middle" fill="#dc2626" font-size="11">L3 Method</text>
+  <text x="285" y="662" fill="#dc2626" font-size="11">→</text>
+  <text x="310" y="662" text-anchor="middle" fill="#dc2626" font-size="11">L4 Filter</text>
+  <text x="365" y="662" fill="#dc2626" font-size="11">→</text>
+  <text x="390" y="662" text-anchor="middle" fill="#ea580c" font-size="11">L5 Limit</text>
+  <text x="440" y="662" fill="#ea580c" font-size="11">→</text>
+  <text x="465" y="662" text-anchor="middle" fill="#ea580c" font-size="11">L6 Version</text>
+  <text x="525" y="662" fill="#ea580c" font-size="11">→</text>
+  <text x="550" y="662" text-anchor="middle" fill="#ca8a04" font-size="11">L7 JWT</text>
+  <text x="600" y="662" fill="#ca8a04" font-size="11">→</text>
+  <text x="625" y="662" text-anchor="middle" fill="#ca8a04" font-size="11">L8 Session</text>
+  <text x="685" y="662" fill="#ca8a04" font-size="11">→</text>
+  <text x="710" y="662" text-anchor="middle" fill="#ca8a04" font-size="11">L9 Lock</text>
+  <text x="755" y="662" fill="#22c55e" font-size="11">→</text>
+  <text x="780" y="662" text-anchor="middle" fill="#22c55e" font-size="11">L10 RBAC</text>
+  <text x="830" y="662" fill="#22c55e" font-size="11">→</text>
+  <text x="855" y="662" text-anchor="middle" fill="#22c55e" font-size="11">... L11-L18</text>
+  <text x="935" y="662" fill="#22c55e" font-size="11">→</text>
+  <text x="950" y="662" text-anchor="middle" fill="#166534" font-size="11">OK</text>
+
+  <text x="500" y="690" text-anchor="middle" fill="#991b1b" font-size="11">Permintaan → header CSP → cek CORS → daftar putih metode → filter serangan → rate limit → validasi versi → autentikasi JWT → cek sesi → cek kunci → RBAC → log audit → Controller</text>
+
+  <text x="500" y="740" text-anchor="middle" fill="#94a3b8" font-size="11">Komponen keamanan: erikwang2013/jwt-webman · erikwang2013/encryption · erikwang2013/encryptable · erikwang2013/security-php · erikwang2013/poster-php · erikwang2013/hashids</text>
+  <text x="500" y="762" text-anchor="middle" fill="#94a3b8" font-size="11">Kepatuhan: security.txt (RFC 9116) · Prometheus Metrics · Log audit operasi · Enkripsi data (AES-256-CBC) · Kepatuhan pembayaran (PCI-DSS)</text>
+  <text x="500" y="790" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>
+</svg>

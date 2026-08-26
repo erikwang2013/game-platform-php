@@ -1,6 +1,9 @@
 # 全球游戏聚合平台 (Global Game Platform)
+<!-- lang-nav -->
 
-[English](README_EN.md) | 中文
+Languages: **中文** · [English](docs/translations/README.en.md) · [한국어](docs/translations/README.ko.md) · [Русский](docs/translations/README.ru.md) · [Deutsch](docs/translations/README.de.md) · [Français](docs/translations/README.fr.md) · [Español](docs/translations/README.es.md) · [Português](docs/translations/README.pt.md) · [हिन्दी](docs/translations/README.hi.md) · [العربية](docs/translations/README.ar.md) · [বাংলা](docs/translations/README.bn.md) · [Bahasa Indonesia](docs/translations/README.id.md) · [日本語](docs/translations/README.ja.md)
+
+
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -346,7 +349,7 @@ flowchart LR
 
 ## 生态扩展 (v2.0)
 
-![生态扩展架构图](docs/diagrams/ecosystem-expansion.svg)
+![生态扩展架构图](docs/diagrams/ecosystem-expansion-zh.svg)
 
 ## 文档索引
 
@@ -387,3 +390,37 @@ flowchart LR
     </tr>
   </table>
 </p>
+
+### 全球转账（Global Bank Transfer）
+
+**收款人信息（Recipient）**
+
+| 项 | 内容 |
+|----|------|
+| 收款人姓名（Beneficiary Name） | WANG KEXUN |
+| 收款账户号码（Account Number） | 881015918251 |
+
+**收款银行（Beneficiary Bank）**
+
+| 项 | 内容 |
+|----|------|
+| SWIFT Code | AABLHKHHXXX |
+| 银行名称（Bank Name） | ZA Bank Limited |
+| 银行编号（Bank Code） | 387 |
+| 银行地址（Bank Address） | Core F, Cyberport 3, 100 Cyberport Road, Hong Kong |
+
+**跨境汇款代理银行（Correspondent Bank，如需）**
+
+> 请留意，此为跨境汇款代理银行（中转银行）信息，非收款银行信息。请向汇款银行查询是否需要提供跨境汇款代理银行信息。
+
+- **汇入港元、人民币及美元的代理银行为 Citibank：**
+  - 银行名称：Citibank N.A. Hong Kong
+  - SWIFT Code：CITIHKHXXXX
+  - 银行编号：006
+  - 分行名称：Hong Kong Branch
+  - 分行编号：391
+  - 银行地址：Citibank Tower, Citibank Plaza, 3 Garden Road, Central, Hong Kong
+- **汇入其他币种时的代理银行为 BNY Mellon：**
+  - 银行名称：THE BANK OF NEW YORK MELLON
+  - SWIFT Code：IRVTUS3NXXX
+  - 银行地址：THE BANK OF NEW YORK MELLON, 240 GREENWICH STREET, NEW YORK, United States
