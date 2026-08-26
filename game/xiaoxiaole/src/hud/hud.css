@@ -1,0 +1,99 @@
+:root {
+  --soil: #3c2a18;
+  --kraft: #f3e2c4;
+  --moss: #3f6b32;
+  --stamp: #b23b2a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #6ea8c4;
+}
+
+#game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+#hud-root {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+}
+
+.hud-panel {
+  position: absolute;
+  top: 1.1rem;
+  left: 1.1rem;
+  width: min(16.5rem, calc(100vw - 2rem));
+  padding: 1rem 1.15rem 1.1rem;
+  color: var(--soil);
+  background:
+    repeating-linear-gradient(
+      -18deg,
+      rgba(90, 58, 28, 0.04) 0 2px,
+      transparent 2px 6px
+    ),
+    linear-gradient(160deg, #f7e7cb 0%, #edd4a6 100%);
+  border: 2px solid #6a4424;
+  box-shadow:
+    4px 5px 0 #2c1c10,
+    inset 0 0 0 3px rgba(255, 248, 230, 0.45);
+}
+
+.hud-title {
+  margin: 0;
+  font-family: 'ZCOOL XiaoWei', 'Songti SC', serif;
+  font-size: 1.85rem;
+  letter-spacing: 0.08em;
+  font-weight: 400;
+}
+
+.hud-stamp {
+  display: inline-block;
+  margin: 0.35rem 0 0.85rem;
+  padding: 0.1rem 0.45rem;
+  font-family: 'Fraunces', 'Times New Roman', serif;
+  font-size: 0.72rem;
+  font-style: italic;
+  letter-spacing: 0.14em;
+  text-transform: lowercase;
+  color: var(--stamp);
+  border: 1.5px dashed var(--stamp);
+  transform: rotate(-6deg);
+}
+
+.hud-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem 1rem;
+  margin: 0;
+}
+
+.hud-stats dt {
+  margin: 0;
+  font-family: 'ZCOOL XiaoWei', serif;
+  font-size: 0.85rem;
+  color: var(--moss);
+}
+
+.hud-stats dd {
+  margin: 0.1rem 0 0;
+  font-family: 'Fraunces', serif;
+  font-optical-sizing: auto;
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: oldstyle-nums;
+}
