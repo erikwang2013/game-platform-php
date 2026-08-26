@@ -32,6 +32,10 @@ skills-lock.json
 admin/public/apidoc/
 service/public/apidoc/
 
+# H5 游戏构建产物
+game/xiaoxiaole/dist/
+game/xiaoxiaole/node_modules/
+
 apps/flutter/# Miscellaneous
 apps/flutter/*.class
 apps/flutter/*.log
