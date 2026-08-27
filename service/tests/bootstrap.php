@@ -37,6 +37,9 @@ putenv('ENCRYPTION_CIPHER=aes-256-gcm');
 // Dotenv(mutable) 会覆盖进程环境变量，故在连接初始化时强制覆写，确保测试永不读写开发库。
 $dbConfig = config('database');
 $dbConfig['connections'][$dbConfig['default']]['database'] = getenv('DB_DATABASE_TEST') ?: 'game_platform_test';
+// 测试环境 root 免密（本机 MySQL root 无密码；.env 的 DB_PASSWORD=root 会让测试连不上库）。
+// 仅在此处（测试 bootstrap）强制空密码，不影响业务运行。
+$dbConfig['connections'][$dbConfig['default']]['password'] = '';
 
 // 初始化 Eloquent 与 support\Db。
 // 注意：不能用 Webman\Database\Initializer::init()——support\Db 首次被 autoload 时
