@@ -99,7 +99,7 @@ open-admin/
 │   ├── route.php               # Rute + strategi versi API
 │   ├── middleware.php           # Registrasi middleware global
 │   └── ...                     # Konfigurasi tiap komponen
-├── database/migrations/        # File migrasi SQL (termasuk data seed izin)
+├── install/        # File migrasi SQL (termasuk data seed izin)
 ├── public/                     # Titik masuk publik
 ├── runtime/                    # File runtime
 └── vendor/                     # Dependensi Composer
@@ -144,13 +144,10 @@ Item konfigurasi utama:
 
 ### 3. Inisialisasi Database
 
-Jalankan file SQL di `database/migrations/` secara berurutan:
+Jalankan file SQL di `install/` secara berurutan:
 
 ```bash
-# Membuat tabel
-mysql -u root -p < database/migrations/2026_05_16_000000_init_tables.sql
-# Menanam data izin
-mysql -u root -p < database/migrations/2026_05_20_000001_seed_permissions.sql
+mysql -u root -p < install/install.sql
 ```
 
 ### 4. Menjalankan Layanan
@@ -187,8 +184,7 @@ cp .env.docker .env
 docker-compose up -d
 
 # 3. Inisialisasi database (jalankan di dalam kontainer app)
-docker-compose exec app mysql -h mysql -u root -p < database/migrations/2026_05_16_000000_init_tables.sql
-docker-compose exec app mysql -h mysql -u root -p < database/migrations/2026_05_20_000001_seed_permissions.sql
+docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 # 4. Akses
 # http://localhost:8787  (webman)

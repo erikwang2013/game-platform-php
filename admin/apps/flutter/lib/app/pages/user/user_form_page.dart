@@ -64,7 +64,7 @@ class _UserFormPageState extends State<UserFormPage> {
       } else {
         await api.post('/admin/user', data: data);
       }
-      Get.snackbar('成功', isEdit ? 'userUpdateSuccess : 'userCreateSuccess);
+      Get.snackbar('成功', isEdit ? 'userUpdateSuccess' : 'userCreateSuccess');
       Get.back(result: true);
     } catch (e) {
       Get.snackbar('错误', '操作失败: $e');
@@ -85,7 +85,7 @@ class _UserFormPageState extends State<UserFormPage> {
             child: ListView(
               padding: const EdgeInsets.all(24),
               children: [
-                TextFormField(controller: _usernameCtrl, enabled: !isEdit, decoration: const InputDecoration(labelText: "${AppTranslations.t('user.username')}"), validator: (v) => (v == null || v.isEmpty) ? '请输入用户名' : null),
+                TextFormField(controller: _usernameCtrl, enabled: !isEdit, decoration: InputDecoration(labelText: "${AppTranslations.t('user.username')}"), validator: (v) => (v == null || v.isEmpty) ? '请输入用户名' : null),
                 const SizedBox(height: 16),
                 TextFormField(controller: _passwordCtrl, obscureText: true, decoration: InputDecoration(labelText: isEdit ? '${AppTranslations.t('user.new_password_hint')}' : '${AppTranslations.t('login.password')}'), validator: (v) => !isEdit && (v == null || v.isEmpty) ? 'passwordRequired' : null),
                 const SizedBox(height: 16),
@@ -95,7 +95,7 @@ class _UserFormPageState extends State<UserFormPage> {
                 const SizedBox(height: 16),
                 TextFormField(controller: _emailCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('user.email')}')),
                 const SizedBox(height: 16),
-                DropdownButtonFormField<int>(value: _status, decoration: InputDecoration(labelText: '${AppTranslations.t('user.status')}'), items: const [
+                DropdownButtonFormField<int>(value: _status, decoration: InputDecoration(labelText: '${AppTranslations.t('user.status')}'), items: [
                   DropdownMenuItem(value: 1, child: Text("${AppTranslations.t('app.enabled')}")),
                   DropdownMenuItem(value: 0, child: Text("${AppTranslations.t('app.disabled')}")),
                 ], onChanged: (v) => setState(() => _status = v ?? 1)),

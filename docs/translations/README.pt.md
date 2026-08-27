@@ -59,7 +59,7 @@ game-platform-php/
 │   ├── app/provider/          #   Camada de Providers de jogos
 │   ├── app/event/             #   Barramento de eventos (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission)
 │   ├── config/                #   Arquivos de configuração
-│   ├── database/migrations/   #   Arquivos de migração SQL
+│   ├── install/   #   Arquivos de migração SQL
 │   └── apps/flutter/          #   Painel administrativo Flutter Web PC
 │
 ├── service/                   # Serviço de negócios do lado C (webman v2, porta 8788)

@@ -99,7 +99,7 @@ open-admin/
 │   ├── route.php               # 라우트 + API 버전 정책
 │   ├── middleware.php           # 전역 미들웨어 등록
 │   └── ...                     # 각 컴포넌트 설정
-├── database/migrations/        # SQL 마이그레이션 파일 (권한 시드 데이터 포함)
+├── install/        # SQL 마이그레이션 파일 (권한 시드 데이터 포함)
 ├── public/                     # 공용 진입점
 ├── runtime/                    # 런타임 파일
 └── vendor/                     # Composer 의존성
@@ -144,13 +144,10 @@ cp .env.example .env
 
 ### 3. 데이터베이스 초기화
 
-`database/migrations/` 아래의 SQL 파일을 순서대로 실행합니다:
+`install/` 아래의 SQL 파일을 순서대로 실행합니다:
 
 ```bash
-# 테이블 생성
-mysql -u root -p < database/migrations/2026_05_16_000000_init_tables.sql
-# 권한 데이터 시드
-mysql -u root -p < database/migrations/2026_05_20_000001_seed_permissions.sql
+mysql -u root -p < install/install.sql
 ```
 
 ### 4. 서비스 시작
@@ -187,8 +184,7 @@ cp .env.docker .env
 docker-compose up -d
 
 # 3. 데이터베이스 초기화 (app 컨테이너에서 실행)
-docker-compose exec app mysql -h mysql -u root -p < database/migrations/2026_05_16_000000_init_tables.sql
-docker-compose exec app mysql -h mysql -u root -p < database/migrations/2026_05_20_000001_seed_permissions.sql
+docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 # 4. 접속
 # http://localhost:8787  (webman)

@@ -236,7 +236,7 @@ Jendela waktu: 5 menit
 | erik_game | +provider_config (JSON) |
 | erik_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**Total: 43 tabel di install.sql** (10 tabel perluasan ekosistem di `admin/database/migrations/clickhouse/`, tidak digabung ke install.sql). Model tidak dibagikan: admin 46 / service 44 masing-masing satu salinan.
+**Total: 43 tabel di install.sql** (10 tabel perluasan ekosistem di `install/`, tidak digabung ke install.sql). Model tidak dibagikan: admin 46 / service 44 masing-masing satu salinan.
 
 ## 8. Cakupan Pengujian
 

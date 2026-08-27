@@ -31,7 +31,7 @@ class GameListController extends GetxController {
     try {
       await api.post('/admin/game/create', data: data);
       await loadGames();
-      Get.snackbar('成功', 'gameCreateSuccess);
+      Get.snackbar('成功', 'gameCreateSuccess');
     } catch (e) {
       Get.snackbar('错误', '创建失败: $e');
     }
@@ -41,7 +41,7 @@ class GameListController extends GetxController {
     try {
       await api.put('/admin/game/$hashid', data: data);
       await loadGames();
-      Get.snackbar('成功', 'gameUpdateSuccess);
+      Get.snackbar('成功', 'gameUpdateSuccess');
     } catch (e) {
       Get.snackbar('错误', '更新失败: $e');
     }
@@ -51,7 +51,7 @@ class GameListController extends GetxController {
     try {
       await api.delete('/admin/game/$hashid');
       await loadGames();
-      Get.snackbar('成功', 'gameDeleteSuccess);
+      Get.snackbar('成功', 'gameDeleteSuccess');
     } catch (e) {
       Get.snackbar('错误', '删除失败: $e');
     }
@@ -86,11 +86,11 @@ class GameListPage extends GetView<GameListController> {
         Expanded(
           child: Obx(() {
             if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
-            if (ctrl.games.isEmpty) return const Center(child: Text("${AppTranslations.t('app.no_data')}"));
+            if (ctrl.games.isEmpty) return Center(child: Text("${AppTranslations.t('app.no_data')}"));
 
             return SingleChildScrollView(
               child: DataTable(
-                columns: const [
+                columns: [
                   DataColumn(label: Text('${AppTranslations.t('game.id')}')),
                   DataColumn(label: Text("${AppTranslations.t('game.name')}")),
                   DataColumn(label: Text("${AppTranslations.t('game.slug')}")),
@@ -168,7 +168,7 @@ class GameListPage extends GetView<GameListController> {
                 DropdownButtonFormField<String>(
                   value: type,
                   decoration: InputDecoration(labelText: '${AppTranslations.t('game.type')}'),
-                  items: const [
+                  items: [
                     DropdownMenuItem(value: 'self', child: Text('${AppTranslations.t('game.self')}')),
                     DropdownMenuItem(value: 'third_party', child: Text('${AppTranslations.t('game.third_party')}')),
                   ],
@@ -188,7 +188,7 @@ class GameListPage extends GetView<GameListController> {
                 TextField(controller: sortCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('game.sort')}'), keyboardType: TextInputType.number),
                 const SizedBox(height: 12),
                 SwitchListTile(
-                  title: const Text("${AppTranslations.t('app.enabled')}"),
+                  title: Text("${AppTranslations.t('app.enabled')}"),
                   value: isEnabled,
                   onChanged: (v) => setDialogState(() => isEnabled = v),
                   contentPadding: EdgeInsets.zero,
@@ -231,7 +231,7 @@ class GameListPage extends GetView<GameListController> {
       builder: (_) => AlertDialog(
         title: Text("${AppTranslations.t('app.confirm')}"
           + ' '
-          + "${AppTranslations.t('app.delete')}",
+          + "${AppTranslations.t('app.delete')}"),
         content: Text('确定要删除游戏「${game['name']}」吗？'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),

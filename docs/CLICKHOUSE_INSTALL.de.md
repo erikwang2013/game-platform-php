@@ -40,7 +40,7 @@ CLICKHOUSE_PASS=
 ## 4. Tabellen anlegen
 
 ```bash
-clickhouse-client < admin/database/migrations/clickhouse/000_init_tables.sql
+clickhouse-client < install/clickhouse.sql
 ```
 
 ## 5. Verifikation

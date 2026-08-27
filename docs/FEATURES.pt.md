@@ -236,7 +236,7 @@ Janela de tempo: 5 minutos
 | erik_game | +provider_config (JSON) |
 | erik_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**Total: 43 tabelas no install.sql** (as 10 da expansão do ecossistema ficam em `admin/database/migrations/clickhouse/`, não incorporadas ao install.sql). Modelos não compartilhados: admin 46 / service 44, uma cópia cada.
+**Total: 43 tabelas no install.sql** (as 10 da expansão do ecossistema ficam em `install/`, não incorporadas ao install.sql). Modelos não compartilhados: admin 46 / service 44, uma cópia cada.
 
 ## 8. Cobertura de testes
 

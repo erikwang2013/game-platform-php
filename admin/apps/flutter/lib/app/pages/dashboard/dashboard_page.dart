@@ -33,7 +33,7 @@ class DashboardPage extends GetView<DashboardController> {
                     if (type == 'pdf') controller.exportPdf();
                     if (type == 'excel') controller.exportExcel();
                   },
-                  itemBuilder: (_) => const [
+                  itemBuilder: (_) => [
                     PopupMenuItem(value: 'pdf', child: ListTile(leading: Icon(Icons.picture_as_pdf), title: Text("${AppTranslations.t('dashboard.export_pdf')}"), dense: true)),
                     PopupMenuItem(value: 'excel', child: ListTile(leading: Icon(Icons.table_chart), title: Text("${AppTranslations.t('dashboard.export_excel')}"), dense: true)),
                   ],
@@ -361,7 +361,7 @@ class DashboardPage extends GetView<DashboardController> {
                         showTitles: true,
                         getTitlesWidget: (value, meta) => Padding(
                           padding: const EdgeInsets.only(top: 8),
-                          child: Text(controller.dailyStats[value.toInt()]['label'] ?? '', fontSize: 12),
+                          child: Text(controller.dailyStats[value.toInt()]['label'] ?? '', style: TextStyle(fontSize: 12)),
                         ),
                       )),
                     ),

@@ -99,12 +99,7 @@ docker-compose logs -f
 ```bash
 # Les fichiers de migration s'exécutent automatiquement au premier démarrage de MySQL
 # ou manuellement :
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_16_000000_init_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000003_platform_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000004_i18n_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000005_standard_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000006_complete_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000007_production_tables.sql
+docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < install/install.sql
 ```
 
 ### 3.4 Persistance des données
@@ -561,7 +556,7 @@ cd admin && composer install --no-dev --optimize-autoloader
 cd ../service && composer install --no-dev --optimize-autoloader
 
 # 3. Exécuter les nouvelles migrations (si nécessaire)
-mysql -u game_platform -p game_platform < admin/database/migrations/nouveau-fichier-de-migration.sql
+mysql -u game_platform -p game_platform < install/nouveau-fichier-de-migration.sql
 
 # 4. Redémarrage à chaud (sans interruption de service)
 cd /opt/game-platform/admin && php start.php reload

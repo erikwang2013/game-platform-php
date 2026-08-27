@@ -8,7 +8,7 @@ Languages: **中文** · [English](2026-05-22-game-platform-plan.en.md) · [한�
 
 **Ziel:** Den zentralen Kernkreislauf durchspielen: Registrierung → Einzahlung → Umtausch → Spielwährung → Auszahlung → Backend-Prüfung
 
-**Architektur:** admin/ (Verwaltungs-Backend) und service/ (C-End-Geschäft) sind unabhängige webman-v2-Instanzen, die über common/ (PSR-4-Autoload) Modelle und Services gemeinsam nutzen. Datenbank-Migrationen liegen zentral in admin/database/migrations/. Frontend: Erweiterung des Flutter-PC-Verwaltungs-Backends + neue C-End-PC-Plattform.
+**Architektur:** admin/ (Verwaltungs-Backend) und service/ (C-End-Geschäft) sind unabhängige webman-v2-Instanzen, die über common/ (PSR-4-Autoload) Modelle und Services gemeinsam nutzen. Datenbank-Migrationen liegen zentral in install/. Frontend: Erweiterung des Flutter-PC-Verwaltungs-Backends + neue C-End-PC-Plattform.
 
 **Tech-Stack:** PHP 8.3+, webman v2, MySQL 8.0, Redis, erikwang2013/*-Komponenten
 
@@ -81,7 +81,7 @@ game-platform-php/
 │   │   ├── Request.php
 │   │   ├── Response.php
 │   │   └── Setup.php
-│   └── database/migrations/ -> ../../admin/database/migrations/  (symlink)
+│   └── install/ -> ../../install/  (symlink)
 │
 ├── admin/
 │   ├── composer.json                  # 增加 common/ path repo + new controllers
@@ -96,7 +96,7 @@ game-platform-php/
 │   ├── app/model/ -> ../../common/model/  (symlink, or autoload)
 │   ├── config/route.php               # 扩展新路由
 │   ├── config/autoload.php            # 扩展 common namespace
-│   └── database/migrations/
+│   └── install/
 │       └── 2026_05_22_000003_platform_tables.sql  # 基础版12张表
 │
 └── apps/flutter/
@@ -641,7 +641,7 @@ git commit -m "feat: add middleware for service/ and shared UserAuth"
 ### Aufgabe 6: SQL-Migration für die 12 Basistabellen erstellen
 
 **Dateien:**
-- Erstellen: `admin/database/migrations/2026_05_22_000003_platform_tables.sql`
+- Erstellen: `install/install.sql`
 
 - [ ] **Schritt 1: Vollständige Migrations-SQL schreiben**
 
@@ -913,7 +913,7 @@ INSERT INTO `erik_platform_config` (`id`, `group`, `key`, `value`, `type`, `desc
 - [ ] **Schritt 2: Migration gegen die Entwicklungsdatenbank ausführen**
 
 ```bash
-mysql -h 127.0.0.1 -u root game_platform < admin/database/migrations/2026_05_22_000003_platform_tables.sql
+mysql -h 127.0.0.1 -u root game_platform < install/install.sql
 ```
 
 Erwartet: keine Fehler, alle 12 Tabellen erstellt.
@@ -929,7 +929,7 @@ Erwartet: Liste enthält alle 12 neuen Tabellen + die bestehenden admin-Tabellen
 - [ ] **Schritt 4: Committen**
 
 ```bash
-git add admin/database/migrations/2026_05_22_000003_platform_tables.sql
+git add install/install.sql
 git commit -m "feat: add 12 platform tables migration for MVP"
 ```
 

@@ -73,7 +73,7 @@ class PlatformUserPage extends GetView<PlatformUserController> {
             SizedBox(
               width: 250,
               child: TextField(
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   hintText: '${AppTranslations.t('platform_user.search_hint')}',
                   prefixIcon: Icon(Icons.search),
                   isDense: true,
@@ -89,7 +89,7 @@ class PlatformUserPage extends GetView<PlatformUserController> {
               value: ctrl.statusFilter.value.isEmpty ? null : ctrl.statusFilter.value,
               hint: Text('${AppTranslations.t('platform_user.filter_status')}'),
               underline: const SizedBox(),
-              items: const [
+              items: [
                 DropdownMenuItem(value: '', child: Text('${AppTranslations.t('withdraw.all')}')),
                 DropdownMenuItem(value: '1', child: Text("${AppTranslations.t('app.enabled')}")),
                 DropdownMenuItem(value: '0', child: Text("${AppTranslations.t('app.disabled')}")),
@@ -105,11 +105,11 @@ class PlatformUserPage extends GetView<PlatformUserController> {
         Expanded(
           child: Obx(() {
             if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
-            if (ctrl.users.isEmpty) return const Center(child: Text("${AppTranslations.t('app.no_data')}"));
+            if (ctrl.users.isEmpty) return Center(child: Text("${AppTranslations.t('app.no_data')}"));
 
             return SingleChildScrollView(
               child: DataTable(
-                columns: const [
+                columns: [
                   DataColumn(label: Text('ID')),
                   DataColumn(label: Text("${AppTranslations.t('user.username')}")),
                   DataColumn(label: Text('${AppTranslations.t('platform_user.nickname')}')),
@@ -185,7 +185,7 @@ class PlatformUserPage extends GetView<PlatformUserController> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('${AppTranslations.t('app.close')}')),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text('${AppTranslations.t('app.close')}')),
         ],
       ),
     );

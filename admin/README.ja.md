@@ -99,7 +99,7 @@ open-admin/
 │   ├── route.php               # ルート + API バージョン戦略
 │   ├── middleware.php           # グローバル中間ウェア登録
 │   └── ...                     # 各コンポーネント設定
-├── database/migrations/        # SQL 移行ファイル（権限シードデータ含む）
+├── install/        # SQL 移行ファイル（権限シードデータ含む）
 ├── public/                     # 公開エントリー
 ├── runtime/                    # ランタイムファイル
 └── vendor/                     # Composer 依存関係
@@ -144,13 +144,10 @@ cp .env.example .env
 
 ### 3. データベース初期化
 
-`database/migrations/` 配下のSQLファイルを順番に実行します：
+`install/` 配下のSQLファイルを順番に実行します：
 
 ```bash
-# テーブル作成
-mysql -u root -p < database/migrations/2026_05_16_000000_init_tables.sql
-# 権限データのシード投入
-mysql -u root -p < database/migrations/2026_05_20_000001_seed_permissions.sql
+mysql -u root -p < install/install.sql
 ```
 
 ### 4. サービスの起動
@@ -187,8 +184,7 @@ cp .env.docker .env
 docker-compose up -d
 
 # 3. データベースの初期化（app コンテナ内で実行）
-docker-compose exec app mysql -h mysql -u root -p < database/migrations/2026_05_16_000000_init_tables.sql
-docker-compose exec app mysql -h mysql -u root -p < database/migrations/2026_05_20_000001_seed_permissions.sql
+docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 # 4. アクセス
 # http://localhost:8787  (webman)

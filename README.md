@@ -59,7 +59,6 @@ game-platform-php/
 │   ├── app/provider/          #   游戏Provider层
 │   ├── app/event/             #   事件总线 (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission)
 │   ├── config/                #   配置文件
-│   ├── database/migrations/   #   SQL 迁移文件
 │   └── apps/flutter/          #   Flutter Web PC 管理后台
 │
 ├── service/                   # C端业务端 (webman v2, 端口 8788)
@@ -69,10 +68,11 @@ game-platform-php/
 │   ├── app/event/             #   事件总线 (EventBus Redis Pub/Sub)
 │   └── config/                #   配置文件
 │
-├── install/                   # 一键安装向导
+├── install/                   # 一键安装向导 + 数据库初始化 SQL
 │   ├── index.php              #   安装入口
 │   ├── Installer.php          #   安装核心逻辑
-│   ├── install.sql            #   合并安装 SQL（43张表+种子数据）
+│   ├── install.sql            #   合并安装 SQL（MySQL 全量：43张表+种子数据）
+│   ├── clickhouse.sql         #   ClickHouse 分析库 DDL（独立引擎，单独导入）
 │   └── assets/                #   静态资源
 │
 ├── admin/common/ 与 service/common/   # 共享服务各一份 (DepositLogService 等，待抽共享层)
@@ -222,14 +222,29 @@ curl -X POST http://localhost:8788/api/auth/register \
 
 ## 测试
 
+测试报告（本地存储）：[docs/test-reports/](docs/test-reports/)
+
+| 测试类型 | 用例/覆盖 | 结果 |
+|---------|----------|------|
+| PHP 单元测试 | admin 153 + service 45 + 新增 63 用例 | service 全过；admin 6 errors + 1 failure 为既有问题（详见报告） |
+| API 接口自动化 | 187 端点全量覆盖，225 断言 | 171 通过 / 50 失败 / 4 跳过（失败均为确定性缺陷，详见报告） |
+| Flutter UI 测试 | 12 用例（登录/仪表盘/导航/语言切换） | 全部通过 |
+| Go/Rust | 仓库无 Go/Rust 代码 | 跳过，已记录 |
+
 ```bash
-cd admin
-phpunit --bootstrap tests/bootstrap.php tests/
+# PHP 单元测试（需先导出 JWT 密钥环境变量）
+cd admin && ADMIN_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
+cd service && SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
+# API 接口自动化（需启动服务，详见 tests/api/run_all.sh）
+bash tests/api/run_all.sh
+# Flutter UI 测试
+cd admin/apps/flutter && flutter test --timeout 300s
 ```
 
-- PHPUnit 12.x，116 个测试用例
-- 56 个业务逻辑测试 (PlatformTest) + 60 个基础设施测试
-- 覆盖：bcmath 精度、兑换计算、提现费用、限额、风控、优惠券、KYC、i18n
+详细报告：
+- [PHP 单元测试报告](docs/test-reports/php-unit.md)
+- [API 接口自动化报告](docs/test-reports/api.md)
+- [Flutter UI 测试报告](docs/test-reports/ui.md)
 
 ## 平台能力总览
 

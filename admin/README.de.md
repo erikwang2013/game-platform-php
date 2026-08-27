@@ -99,7 +99,7 @@ open-admin/
 │   ├── route.php               # Routen + API-Versionsstrategie
 │   ├── middleware.php           # Registrierung globaler Middleware
 │   └── ...                     # Komponentenkonfigurationen
-├── database/migrations/        # SQL-Migrationsdateien (inkl. Berechtigungs-Seed-Daten)
+├── install/        # SQL-Migrationsdateien (inkl. Berechtigungs-Seed-Daten)
 ├── public/                     # Öffentlicher Einstiegspunkt
 ├── runtime/                    # Laufzeitdateien
 └── vendor/                     # Composer-Abhängigkeiten
@@ -144,13 +144,10 @@ Wichtige Konfigurationsoptionen:
 
 ### 3. Datenbank initialisieren
 
-Die SQL-Dateien unter `database/migrations/` in Reihenfolge ausführen:
+Die SQL-Dateien unter `install/` in Reihenfolge ausführen:
 
 ```bash
-# Tabellen anlegen
-mysql -u root -p < database/migrations/2026_05_16_000000_init_tables.sql
-# Berechtigungsdaten einspielen
-mysql -u root -p < database/migrations/2026_05_20_000001_seed_permissions.sql
+mysql -u root -p < install/install.sql
 ```
 
 ### 4. Dienst starten
@@ -187,8 +184,7 @@ cp .env.docker .env
 docker-compose up -d
 
 # 3. Datenbank initialisieren (im app-Container ausführen)
-docker-compose exec app mysql -h mysql -u root -p < database/migrations/2026_05_16_000000_init_tables.sql
-docker-compose exec app mysql -h mysql -u root -p < database/migrations/2026_05_20_000001_seed_permissions.sql
+docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 # 4. Zugriff
 # http://localhost:8787  (webman)

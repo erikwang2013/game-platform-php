@@ -8,7 +8,7 @@ Languages: **中文** · [English](2026-05-22-game-platform-plan.en.md) · [한�
 
 **Goal:** Отработать сквозной цикл: регистрация → пополнение → обмен → игровая валюта → вывод средств → проверка в админке
 
-**Architecture:** admin/ (админ-панель) и service/ (C-сторона) — независимые экземпляры webman v2, разделяющие Model и Service через common/ (PSR-4 autoload). Миграции БД единообразно размещаются в admin/database/migrations/. Фронтенд: расширение Flutter PC-админки + новая C-сторонняя PC-платформа.
+**Architecture:** admin/ (админ-панель) и service/ (C-сторона) — независимые экземпляры webman v2, разделяющие Model и Service через common/ (PSR-4 autoload). Миграции БД единообразно размещаются в install/. Фронтенд: расширение Flutter PC-админки + новая C-сторонняя PC-платформа.
 
 **Tech Stack:** PHP 8.3+, webman v2, MySQL 8.0, Redis, компоненты серии erikwang2013/*
 
@@ -81,7 +81,7 @@ game-platform-php/
 │   │   ├── Request.php
 │   │   ├── Response.php
 │   │   └── Setup.php
-│   └── database/migrations/ -> ../../admin/database/migrations/  (symlink)
+│   └── install/ -> ../../install/  (symlink)
 │
 ├── admin/
 │   ├── composer.json                  # 增加 common/ path repo + new controllers
@@ -96,7 +96,7 @@ game-platform-php/
 │   ├── app/model/ -> ../../common/model/  (symlink, or autoload)
 │   ├── config/route.php               # 扩展新路由
 │   ├── config/autoload.php            # 扩展 common namespace
-│   └── database/migrations/
+│   └── install/
 │       └── 2026_05_22_000003_platform_tables.sql  # 基础版12张表
 │
 └── apps/flutter/
@@ -643,7 +643,7 @@ git commit -m "feat: add middleware for service/ and shared UserAuth"
 ### Task 6: Создать SQL-миграцию для 12 базовых таблиц
 
 **Files:**
-- Create: `admin/database/migrations/2026_05_22_000003_platform_tables.sql`
+- Create: `install/install.sql`
 
 - [ ] **Step 1: Write complete migration SQL**
 
@@ -915,7 +915,7 @@ INSERT INTO `erik_platform_config` (`id`, `group`, `key`, `value`, `type`, `desc
 - [ ] **Step 2: Run migration against dev database**
 
 ```bash
-mysql -h 127.0.0.1 -u root game_platform < admin/database/migrations/2026_05_22_000003_platform_tables.sql
+mysql -h 127.0.0.1 -u root game_platform < install/install.sql
 ```
 
 Expected: no errors, all 12 tables created.
@@ -931,7 +931,7 @@ Expected: list includes all 12 new tables + existing admin tables.
 - [ ] **Step 4: Commit**
 
 ```bash
-git add admin/database/migrations/2026_05_22_000003_platform_tables.sql
+git add install/install.sql
 git commit -m "feat: add 12 platform tables migration for MVP"
 ```
 

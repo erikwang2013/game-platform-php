@@ -99,12 +99,7 @@ docker-compose logs -f
 ```bash
 # Migration files run automatically on first MySQL startup
 # Or run manually:
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_16_000000_init_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000003_platform_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000004_i18n_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000005_standard_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000006_complete_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000007_production_tables.sql
+docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < install/install.sql
 ```
 
 ### 2.4 Data Persistence
@@ -561,7 +556,7 @@ cd admin && composer install --no-dev --optimize-autoloader
 cd ../service && composer install --no-dev --optimize-autoloader
 
 # 3. Run new migrations (if any)
-mysql -u game_platform -p game_platform < admin/database/migrations/新迁移文件.sql
+mysql -u game_platform -p game_platform < install/新迁移文件.sql
 
 # 4. Graceful restart (no service interruption)
 cd /opt/game-platform/admin && php start.php reload

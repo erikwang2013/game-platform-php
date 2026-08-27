@@ -236,7 +236,7 @@ Zeitfenster: 5 Minuten
 | erik_game | +provider_config (JSON) |
 | erik_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**Gesamt: install.sql 43 Tabellen** (die 10 Ökosystem-Erweiterungs-Tabellen liegen in `admin/database/migrations/clickhouse/` und sind nicht in install.sql zusammengeführt). Modelle nicht geteilt: admin 46 / service 44, jeweils eigene Kopie.
+**Gesamt: install.sql 43 Tabellen** (die 10 Ökosystem-Erweiterungs-Tabellen liegen in `install/` und sind nicht in install.sql zusammengeführt). Modelle nicht geteilt: admin 46 / service 44, jeweils eigene Kopie.
 
 ## 8. Testabdeckung
 

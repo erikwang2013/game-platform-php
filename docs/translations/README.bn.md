@@ -59,7 +59,7 @@ game-platform-php/
 │   ├── app/provider/          #   গেম Provider লেয়ার
 │   ├── app/event/             #   ইভেন্ট বাস (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission)
 │   ├── config/                #   কনফিগারেশন ফাইল
-│   ├── database/migrations/   #   SQL মাইগ্রেশন ফাইল
+│   ├── install/   #   SQL মাইগ্রেশন ফাইল
 │   └── apps/flutter/          #   Flutter Web PC প্রশাসনিক প্যানেল
 │
 ├── service/                   # C-এন্ড ব্যবসায়িক সার্ভার (webman v2, পোর্ট 8788)

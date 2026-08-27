@@ -90,7 +90,7 @@ services:
       MYSQL_DATABASE: ${DB_DATABASE:-game_platform}
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./admin/database/migrations:/docker-entrypoint-initdb.d:ro
+      - ./install/install.sql:/docker-entrypoint-initdb.d/install.sql:ro
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     restart: unless-stopped
 

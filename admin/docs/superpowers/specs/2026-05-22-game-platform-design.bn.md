@@ -62,7 +62,7 @@ game-platform-php/
 │   │   └── ...
 │   ├── app/model/                  # 数据模型
 │   ├── config/                     # 路由 & 配置
-│   └── database/migrations/        # SQL 迁移
+│   └── install/        # SQL 迁移
 │
 ├── service/                        # C端业务端（webman v2）
 │   ├── app/api/v1/controller/      # C端API
@@ -75,7 +75,7 @@ game-platform-php/
 │   │   └── ...
 │   ├── app/middleware/             # UserAuth(JWT) 等
 │   ├── config/                     # 路由 & 配置
-│   └── database/migrations/        # 共享迁移
+│   └── install/        # 共享迁移
 │
 ├── common/                         # 共享层（PSR-4 autoload）
 │   ├── model/                      # 所有 Model

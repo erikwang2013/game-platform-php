@@ -59,7 +59,7 @@ game-platform-php/
 │   ├── app/provider/          #   Слой игровых провайдеров
 │   ├── app/event/             #   Шина событий (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission)
 │   ├── config/                #   Файлы конфигурации
-│   ├── database/migrations/   #   SQL-миграции
+│   ├── install/   #   SQL-миграции
 │   └── apps/flutter/          #   Flutter Web PC административная панель
 │
 ├── service/                   # C-бизнес (webman v2, порт 8788)

@@ -8,7 +8,7 @@ Languages: [中文](2026-05-22-game-platform-plan.md) · [English](2026-05-22-ga
 
 **Goal:** 핵심 루프 구동: 회원가입 → 충전 → 환전 → 게임 코인 → 출금 → 관리자 심사
 
-**Architecture:** admin/ (관리 백엔드)와 service/ (C단 비즈니스)는 독립된 webman v2 인스턴스이며, common/ (PSR-4 autoload)을 통해 Model과 Service를 공유한다. 데이터베이스 마이그레이션은 admin/database/migrations/에 통합한다. 프론트엔드는 Flutter PC 관리 백엔드 확장 + 새 C단 PC 플랫폼 신설.
+**Architecture:** admin/ (관리 백엔드)와 service/ (C단 비즈니스)는 독립된 webman v2 인스턴스이며, common/ (PSR-4 autoload)을 통해 Model과 Service를 공유한다. 데이터베이스 마이그레이션은 install/에 통합한다. 프론트엔드는 Flutter PC 관리 백엔드 확장 + 새 C단 PC 플랫폼 신설.
 
 **Tech Stack:** PHP 8.3+, webman v2, MySQL 8.0, Redis, erikwang2013/* 계열 컴포넌트
 
@@ -81,7 +81,7 @@ game-platform-php/
 │   │   ├── Request.php
 │   │   ├── Response.php
 │   │   └── Setup.php
-│   └── database/migrations/ -> ../../admin/database/migrations/  (symlink)
+│   └── install/ -> ../../install/  (symlink)
 │
 ├── admin/
 │   ├── composer.json                  # 增加 common/ path repo + new controllers
@@ -96,7 +96,7 @@ game-platform-php/
 │   ├── app/model/ -> ../../common/model/  (symlink, or autoload)
 │   ├── config/route.php               # 扩展新路由
 │   ├── config/autoload.php            # 扩展 common namespace
-│   └── database/migrations/
+│   └── install/
 │       └── 2026_05_22_000003_platform_tables.sql  # 基础版12张表
 │
 └── apps/flutter/
@@ -643,7 +643,7 @@ git commit -m "feat: add middleware for service/ and shared UserAuth"
 ### Task 6: 베이직 에디션 12개 테이블 SQL 마이그레이션 생성
 
 **Files:**
-- Create: `admin/database/migrations/2026_05_22_000003_platform_tables.sql`
+- Create: `install/install.sql`
 
 - [ ] **Step 1: Write complete migration SQL**
 
@@ -915,7 +915,7 @@ INSERT INTO `erik_platform_config` (`id`, `group`, `key`, `value`, `type`, `desc
 - [ ] **Step 2: Run migration against dev database**
 
 ```bash
-mysql -h 127.0.0.1 -u root game_platform < admin/database/migrations/2026_05_22_000003_platform_tables.sql
+mysql -h 127.0.0.1 -u root game_platform < install/install.sql
 ```
 
 Expected: no errors, all 12 tables created.
@@ -931,7 +931,7 @@ Expected: list includes all 12 new tables + existing admin tables.
 - [ ] **Step 4: Commit**
 
 ```bash
-git add admin/database/migrations/2026_05_22_000003_platform_tables.sql
+git add install/install.sql
 git commit -m "feat: add 12 platform tables migration for MVP"
 ```
 

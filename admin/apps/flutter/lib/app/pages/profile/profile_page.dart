@@ -46,7 +46,7 @@ class _ProfilePageState extends State<ProfilePage> {
         'phone': _phoneCtrl.text.trim(),
         'email': _emailCtrl.text.trim(),
       });
-      Get.snackbar('成功', 'profileUpdateSuccess);
+      Get.snackbar('成功', 'profileUpdateSuccess');
     } catch (e) {
       Get.snackbar('错误', '更新失败: $e');
     }
@@ -75,7 +75,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
     if (ok != true) return;
     if (newPwdCtrl.text != confirmCtrl.text) {
-      Get.snackbar('错误', 'passwordMismatch);
+      Get.snackbar('错误', 'passwordMismatch');
       return;
     }
 
@@ -84,7 +84,7 @@ class _ProfilePageState extends State<ProfilePage> {
         'old_password': oldPwdCtrl.text,
         'new_password': newPwdCtrl.text,
       });
-      Get.snackbar('成功', 'passwordChangedSuccess);
+      Get.snackbar('成功', 'passwordChangedSuccess');
     } catch (e) {
       Get.snackbar('错误', '修改失败: $e');
     }

@@ -99,7 +99,7 @@ open-admin/
 │   ├── route.php               # 路由 + API 版本策略
 │   ├── middleware.php           # 全局中间件注册
 │   └── ...                     # 各组件配置
-├── database/migrations/        # SQL 迁移文件（含权限种子数据）
+├── install/        # SQL 迁移文件（含权限种子数据）
 ├── public/                     # 公共入口
 ├── runtime/                    # 运行时文件
 └── vendor/                     # Composer 依赖
@@ -144,13 +144,10 @@ cp .env.example .env
 
 ### 3. डेटाबेस आरंभ करें
 
-`database/migrations/` के तहत SQL फ़ाइलें क्रम से चलाएँ:
+`install/` के तहत SQL फ़ाइलें क्रम से चलाएँ:
 
 ```bash
-# 建表
-mysql -u root -p < database/migrations/2026_05_16_000000_init_tables.sql
-# 播种权限数据
-mysql -u root -p < database/migrations/2026_05_20_000001_seed_permissions.sql
+mysql -u root -p < install/install.sql
 ```
 
 ### 4. सेवा शुरू करें
@@ -187,8 +184,7 @@ cp .env.docker .env
 docker-compose up -d
 
 # 3. 初始化数据库（进入 app 容器执行）
-docker-compose exec app mysql -h mysql -u root -p < database/migrations/2026_05_16_000000_init_tables.sql
-docker-compose exec app mysql -h mysql -u root -p < database/migrations/2026_05_20_000001_seed_permissions.sql
+docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 # 4. 访问
 # http://localhost:8787  (webman)

@@ -33,7 +33,7 @@ class RoleListPage extends GetView<RoleController> {
         const SizedBox(height: 12),
         Expanded(child: Obx(() {
           if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
-          if (ctrl.roles.isEmpty) return const Center(child: Text("${AppTranslations.t('role.no_roles')}"));
+          if (ctrl.roles.isEmpty) return Center(child: Text("${AppTranslations.t('role.no_roles')}"));
 
           return ListView.builder(
             itemCount: ctrl.roles.length,
@@ -52,9 +52,10 @@ class RoleListPage extends GetView<RoleController> {
                       showDialog(context: context, builder: (_) => AlertDialog(
                         title: Text("${AppTranslations.t('app.confirm')}"
           + ' '
-          + "${AppTranslations.t('app.delete')}", content: Column(mainAxisSize: MainAxisSize.min, children: [
+          + "${AppTranslations.t('app.delete')}"),
+                        content: Column(mainAxisSize: MainAxisSize.min, children: [
                           Text('确定要删除角色「${r['name']}」吗？'),
-                          TextField(controller: pwdCtrl, obscureText: true, decoration: const InputDecoration(labelText: '${AppTranslations.t('user.password_confirm_hint')}')),
+                          TextField(controller: pwdCtrl, obscureText: true, decoration: InputDecoration(labelText: '${AppTranslations.t('user.password_confirm_hint')}')),
                         ]),
                         actions: [
                           TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),

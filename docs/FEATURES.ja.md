@@ -236,7 +236,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | erik_game | +provider_config (JSON) |
 | erik_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**合計: install.sql 43 枚のテーブル**（エコシステム拡張の 10 枚は `admin/database/migrations/clickhouse/` にあり、install.sql には未統合）。モデルは非共有：admin 46 / service 44 各1部。
+**合計: install.sql 43 枚のテーブル**（エコシステム拡張の 10 枚は `install/` にあり、install.sql には未統合）。モデルは非共有：admin 46 / service 44 各1部。
 
 ## 8. テストカバレッジ
 

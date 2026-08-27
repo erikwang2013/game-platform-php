@@ -62,7 +62,7 @@ game-platform-php/
 │   │   └── ...
 │   ├── app/model/                  # 데이터 모델
 │   ├── config/                     # 라우트 & 설정
-│   └── database/migrations/        # SQL 마이그레이션
+│   └── install/        # SQL 마이그레이션
 │
 ├── service/                        # C단 비즈니스 서버 (webman v2)
 │   ├── app/api/v1/controller/      # C단 API
@@ -75,7 +75,7 @@ game-platform-php/
 │   │   └── ...
 │   ├── app/middleware/             # UserAuth(JWT) 등
 │   ├── config/                     # 라우트 & 설정
-│   └── database/migrations/        # 공유 마이그레이션
+│   └── install/        # 공유 마이그레이션
 │
 ├── common/                         # 공유 레이어 (PSR-4 autoload)
 │   ├── model/                      # 모든 Model

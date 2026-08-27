@@ -62,7 +62,7 @@ game-platform-php/
 │   │   └── ...
 │   ├── app/model/                  # Datenmodelle
 │   ├── config/                     # Routen & Konfiguration
-│   └── database/migrations/        # SQL-Migrationen
+│   └── install/        # SQL-Migrationen
 │
 ├── service/                        # C-End-Geschäftsbackend (webman v2)
 │   ├── app/api/v1/controller/      # C-End-APIs
@@ -75,7 +75,7 @@ game-platform-php/
 │   │   └── ...
 │   ├── app/middleware/             # UserAuth(JWT) usw.
 │   ├── config/                     # Routen & Konfiguration
-│   └── database/migrations/        # gemeinsame Migrationen
+│   └── install/        # gemeinsame Migrationen
 │
 ├── common/                         # gemeinsame Schicht (PSR-4 autoload)
 │   ├── model/                      # alle Modelle

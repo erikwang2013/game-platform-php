@@ -99,7 +99,7 @@ open-admin/
 │   ├── route.php               # রাউট + API ভার্সন কৌশল
 │   ├── middleware.php           # গ্লোবাল মিডলওয়্যার রেজিস্ট্রেশন
 │   └── ...                     # প্রতিটি কম্পোনেন্টের কনফিগারেশন
-├── database/migrations/        # SQL মাইগ্রেশন ফাইল (পারমিশন সিড ডেটা সহ)
+├── install/        # SQL মাইগ্রেশন ফাইল (পারমিশন সিড ডেটা সহ)
 ├── public/                     # পাবলিক এন্ট্রি
 ├── runtime/                    # রানটাইম ফাইল
 └── vendor/                     # Composer ডিপেন্ডেন্সি
@@ -144,13 +144,10 @@ cp .env.example .env
 
 ### 3. ডেটাবেস ইনিশিয়ালাইজ করুন
 
-`database/migrations/`-এর SQL ফাইলগুলো ক্রমানুসারে চালান:
+`install/`-এর SQL ফাইলগুলো ক্রমানুসারে চালান:
 
 ```bash
-# টেবিল তৈরি
-mysql -u root -p < database/migrations/2026_05_16_000000_init_tables.sql
-# পারমিশন ডেটা সিড
-mysql -u root -p < database/migrations/2026_05_20_000001_seed_permissions.sql
+mysql -u root -p < install/install.sql
 ```
 
 ### 4. সার্ভিস চালু করুন
@@ -187,8 +184,7 @@ cp .env.docker .env
 docker-compose up -d
 
 # 3. ডেটাবেস ইনিশিয়ালাইজ (app কন্টেইনারে প্রবেশ করে চালান)
-docker-compose exec app mysql -h mysql -u root -p < database/migrations/2026_05_16_000000_init_tables.sql
-docker-compose exec app mysql -h mysql -u root -p < database/migrations/2026_05_20_000001_seed_permissions.sql
+docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 # 4. প্রবেশ করুন
 # http://localhost:8787  (webman)

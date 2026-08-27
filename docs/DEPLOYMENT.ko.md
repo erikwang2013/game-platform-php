@@ -99,12 +99,7 @@ docker-compose logs -f
 ```bash
 # 마이그레이션 파일은 MySQL 최초 기동 시 자동 실행됩니다
 # 또는 수동 실행:
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_16_000000_init_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000003_platform_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000004_i18n_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000005_standard_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000006_complete_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000007_production_tables.sql
+docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < install/install.sql
 ```
 
 ### 2.4 데이터 영속화
@@ -561,7 +556,7 @@ cd admin && composer install --no-dev --optimize-autoloader
 cd ../service && composer install --no-dev --optimize-autoloader
 
 # 3. 새 마이그레이션 실행 (있을 경우)
-mysql -u game_platform -p game_platform < admin/database/migrations/新迁移文件.sql
+mysql -u game_platform -p game_platform < install/新迁移文件.sql
 
 # 4. 무중단 재시작 (서비스 중단 없음)
 cd /opt/game-platform/admin && php start.php reload

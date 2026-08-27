@@ -236,7 +236,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | erik_game | +provider_config (JSON) |
 | erik_game_play_log | +round_id، +bet_amount، +win_amount |
 
-**الإجمالي: 43 جدولًا في install.sql** (جداول التوسعة البيئية العشرة في `admin/database/migrations/clickhouse/`، غير مدمجة في install.sql). النماذج غير مشتركة: نسخة لكل من admin 46 / service 44.
+**الإجمالي: 43 جدولًا في install.sql** (جداول التوسعة البيئية العشرة في `install/`، غير مدمجة في install.sql). النماذج غير مشتركة: نسخة لكل من admin 46 / service 44.
 
 ## 8. تغطية الاختبارات
 

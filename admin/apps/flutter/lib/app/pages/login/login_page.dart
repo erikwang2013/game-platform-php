@@ -46,7 +46,7 @@ class _LoginPageState extends State<LoginPage> {
         _clickLabels.clear();
       });
     } catch (_) {
-      setState(() => _error = 'captchaLoadFailed);
+      setState(() => _error = 'captchaLoadFailed');
     }
   }
 
@@ -75,11 +75,11 @@ class _LoginPageState extends State<LoginPage> {
     final password = _passwordCtrl.text;
 
     if (username.isEmpty || password.isEmpty) {
-      setState(() => _error = 'enterCredentials);
+      setState(() => _error = 'enterCredentials');
       return;
     }
     if (_captchaData == null) {
-      setState(() => _error = 'loadCaptcha);
+      setState(() => _error = 'loadCaptcha');
       return;
     }
     if (_clicks.length < _captchaData!.targets.length) {
@@ -106,11 +106,11 @@ class _LoginPageState extends State<LoginPage> {
         );
         if (mounted) Navigator.of(context).pushReplacementNamed('/dashboard');
       } else {
-        setState(() => _error = resp.data['message'] ?? 'loginFailed);
+        setState(() => _error = resp.data['message'] ?? 'loginFailed');
         _loadCaptcha();
       }
     } catch (e) {
-      setState(() => _error = 'networkErrorCheck);
+      setState(() => _error = 'networkErrorCheck');
       _loadCaptcha();
     } finally {
       setState(() => _loading = false);
@@ -144,7 +144,7 @@ class _LoginPageState extends State<LoginPage> {
                 // Username
                 TextField(
                   controller: _usernameCtrl,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: "${AppTranslations.t('user.username')}",
                     prefixIcon: Icon(Icons.person_outline),
                     border: OutlineInputBorder(),
@@ -156,7 +156,7 @@ class _LoginPageState extends State<LoginPage> {
                 TextField(
                   controller: _passwordCtrl,
                   obscureText: true,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: '${AppTranslations.t('login.password')}',
                     prefixIcon: Icon(Icons.lock_outline),
                     border: OutlineInputBorder(),
@@ -214,7 +214,7 @@ class _LoginPageState extends State<LoginPage> {
                       Text('已点击 ${_clicks.length}/${_captchaData!.targets.length}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
                       TextButton.icon(
                         icon: const Icon(Icons.refresh, size: 16),
-                        label: const Text('refresh),
+                        label: const Text('refresh'),
                         onPressed: _loadCaptcha,
                       ),
                     ],
@@ -245,7 +245,7 @@ class _LoginPageState extends State<LoginPage> {
                     onPressed: _loading ? null : _login,
                     child: _loading
                         ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                        : const Text('${AppTranslations.t('login.login')}', style: TextStyle(fontSize: 16)),
+                        : Text('${AppTranslations.t('login.login')}', style: TextStyle(fontSize: 16)),
                   ),
                 ),
                 const SizedBox(height: 20),

@@ -85,7 +85,7 @@ class ConfigPage extends GetView<ConfigController> {
                   final p = TextEditingController();
                   showDialog(context: context, builder: (_) => AlertDialog(title: Text("${AppTranslations.t('app.confirm')}"
           + ' '
-          + "${AppTranslations.t('app.delete')}", content: TextField(controller: p, obscureText: true, decoration: const InputDecoration(labelText: '输入密码确认')), actions: [
+          + "${AppTranslations.t('app.delete')}"), content: TextField(controller: p, obscureText: true, decoration: InputDecoration(labelText: '输入密码确认')), actions: [
                     TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),
                     ElevatedButton(onPressed: () { ctrl.remove(c['id'], p.text); Navigator.pop(context); }, style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white), child: Text("${AppTranslations.t('app.delete')}")),
                   ]));

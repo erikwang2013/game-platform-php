@@ -28,6 +28,12 @@ if (class_exists('Dotenv\Dotenv') && file_exists(__DIR__ . '/../.env')) {
 \Webman\Config::clear();
 support\App::loadAllConfig(['route']);
 
+// 测试专用数据库：默认指向 game_platform_test（可用 DB_DATABASE_TEST 覆盖）。
+// config/database.php 支持 getenv 覆盖，但 Dotenv(mutable) 会覆盖进程环境变量，故在连接初始化时强制覆写，
+// 确保测试永不读写开发库。
+$dbConfig = config('database');
+$dbConfig['connections'][$dbConfig['default']]['database'] = getenv('DB_DATABASE_TEST') ?: 'game_platform_test';
+
 // 加载 autoload 文件
 foreach (config('autoload.files', []) as $file) {
     include_once $file;
@@ -65,3 +71,17 @@ foreach (config('plugin', []) as $firm => $projects) {
         }
     }
 }
+
+// 初始化 Eloquent 与 support\Db。
+// 注意：不能用 Webman\Database\Initializer::init()——support\Db 首次被 autoload 时
+// 会 require Initializer.php，其文件尾部立即调用 init() 消耗一次性 $initialized 守卫；
+// 随后 support\bootstrap\Database::start 又用未设置默认连接的裸 Capsule 覆盖全局实例，
+// 使后续 init() 全部空转，默认连接 'default' 缺失。这里在 bootstrap 之后统一用裸 Capsule
+// 重建（与 support\Db 共享同一 static 实例）；MySQL 不可用时由各测试用例自行跳过。
+$capsule = new \Illuminate\Database\Capsule\Manager();
+foreach ($dbConfig['connections'] as $name => $connection) {
+    $capsule->addConnection($connection, $name);
+}
+$capsule->getDatabaseManager()->setDefaultConnection($dbConfig['default']);
+$capsule->setAsGlobal();
+$capsule->bootEloquent();

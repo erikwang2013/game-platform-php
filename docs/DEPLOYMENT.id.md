@@ -99,12 +99,7 @@ docker-compose logs -f
 ```bash
 # File migrasi dieksekusi otomatis saat MySQL pertama kali dimulai
 # Atau eksekusi manual:
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_16_000000_init_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000003_platform_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000004_i18n_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000005_standard_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000006_complete_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000007_production_tables.sql
+docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < install/install.sql
 ```
 
 ### 2.4 Persistensi Data
@@ -561,7 +556,7 @@ cd admin && composer install --no-dev --optimize-autoloader
 cd ../service && composer install --no-dev --optimize-autoloader
 
 # 3. Jalankan migrasi baru (jika ada)
-mysql -u game_platform -p game_platform < admin/database/migrations/File-migrasi-baru.sql
+mysql -u game_platform -p game_platform < install/File-migrasi-baru.sql
 
 # 4. Restart halus (tidak menghentikan layanan)
 cd /opt/game-platform/admin && php start.php reload

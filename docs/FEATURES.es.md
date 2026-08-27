@@ -236,7 +236,7 @@ Ventana de tiempo: 5 minutos
 | erik_game | +provider_config (JSON) |
 | erik_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**Total: 43 tablas en install.sql** (las 10 de la extensión de ecosistema están en `admin/database/migrations/clickhouse/`, no se han fusionado en install.sql). Los modelos no están compartidos: admin 46 / service 44, una copia en cada uno.
+**Total: 43 tablas en install.sql** (las 10 de la extensión de ecosistema están en `install/`, no se han fusionado en install.sql). Los modelos no están compartidos: admin 46 / service 44, una copia en cada uno.
 
 ## 8. Cobertura de pruebas
 

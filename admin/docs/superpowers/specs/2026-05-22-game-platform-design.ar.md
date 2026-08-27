@@ -62,7 +62,7 @@ game-platform-php/
 │   │   └── ...
 │   ├── app/model/                  # نماذج البيانات
 │   ├── config/                     # المسارات والإعدادات
-│   └── database/migrations/        # ترحيلات SQL
+│   └── install/        # ترحيلات SQL
 │
 ├── service/                        # خادم أعمال الطرف C (webman v2)
 │   ├── app/api/v1/controller/      # API الطرف C
@@ -75,7 +75,7 @@ game-platform-php/
 │   │   └── ...
 │   ├── app/middleware/             # UserAuth(JWT) وغيرها
 │   ├── config/                     # المسارات والإعدادات
-│   └── database/migrations/        # الترحيلات المشتركة
+│   └── install/        # الترحيلات المشتركة
 │
 ├── common/                         # الطبقة المشتركة (PSR-4 autoload)
 │   ├── model/                      # جميع النماذج

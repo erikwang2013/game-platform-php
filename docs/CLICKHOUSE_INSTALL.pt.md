@@ -40,7 +40,7 @@ O `composer.json` já inclui `erikwang2013/clickhouse-php: ^1.0`; a configuraç�
 ## 4. Criação de tabelas
 
 ```bash
-clickhouse-client < admin/database/migrations/clickhouse/000_init_tables.sql
+clickhouse-client < install/clickhouse.sql
 ```
 
 ## 5. Verificação

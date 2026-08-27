@@ -62,7 +62,7 @@ game-platform-php/
 │   │   └── ...
 │   ├── app/model/                  # डेटा मॉडल
 │   ├── config/                     # रूट और कॉन्फ़िग
-│   └── database/migrations/        # SQL माइग्रेशन
+│   └── install/        # SQL माइग्रेशन
 │
 ├── service/                        # C-छोर व्यवसाय छोर (webman v2)
 │   ├── app/api/v1/controller/      # C-छोर API
@@ -75,7 +75,7 @@ game-platform-php/
 │   │   └── ...
 │   ├── app/middleware/             # UserAuth(JWT) आदि
 │   ├── config/                     # रूट और कॉन्फ़िग
-│   └── database/migrations/        # साझा माइग्रेशन
+│   └── install/        # साझा माइग्रेशन
 │
 ├── common/                         # साझा परत (PSR-4 autoload)
 │   ├── model/                      # सभी Model

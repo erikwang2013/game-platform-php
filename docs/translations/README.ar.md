@@ -59,7 +59,7 @@ game-platform-php/
 │   ├── app/provider/          #   طبقة مزوّدي الألعاب
 │   ├── app/event/             #   ناقل الأحداث (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission)
 │   ├── config/                #   ملفات التكوين
-│   ├── database/migrations/   #   ملفات ترحيل SQL
+│   ├── install/   #   ملفات ترحيل SQL
 │   └── apps/flutter/          #   لوحة إدارة Flutter Web PC
 │
 ├── service/                   # طرف C للأعمال (webman v2, المنفذ 8788)

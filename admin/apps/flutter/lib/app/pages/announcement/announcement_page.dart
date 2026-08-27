@@ -66,11 +66,11 @@ class AnnouncementPage extends GetView<AnnouncementController> {
         Expanded(
           child: Obx(() {
             if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
-            if (ctrl.announcements.isEmpty) return const Center(child: Text("${AppTranslations.t('app.no_data')}"));
+            if (ctrl.announcements.isEmpty) return Center(child: Text("${AppTranslations.t('app.no_data')}"));
 
             return SingleChildScrollView(
               child: DataTable(
-                columns: const [
+                columns: [
                   DataColumn(label: Text('${AppTranslations.t('announcement.publish')}')),
                   DataColumn(label: Text("${AppTranslations.t('game.type')}")),
                   DataColumn(label: Text('${AppTranslations.t('withdraw.status')}')),

@@ -236,7 +236,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | erik_game | +provider_config (JSON) |
 | erik_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**总计: install.sql 43 张表**（生态扩展 10 张在 `admin/database/migrations/clickhouse/`，未并入 install.sql）。模型非共享：admin 46 / service 44 各一份。
+**总计: install.sql 43 张表**（生态扩展 10 张在 `install/`，未并入 install.sql）。模型非共享：admin 46 / service 44 各一份。
 
 ## 8. 测试覆盖
 

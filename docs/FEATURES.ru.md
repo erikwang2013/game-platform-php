@@ -236,7 +236,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | erik_game | +provider_config (JSON) |
 | erik_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**Всего: install.sql 43 таблицы** (10 таблиц экосистемного расширения в `admin/database/migrations/clickhouse/`, не включены в install.sql). Модели не общие: admin 46 / service 44, по одной копии.
+**Всего: install.sql 43 таблицы** (10 таблиц экосистемного расширения в `install/`, не включены в install.sql). Модели не общие: admin 46 / service 44, по одной копии.
 
 ## 8. Покрытие тестами
 

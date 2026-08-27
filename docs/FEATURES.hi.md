@@ -236,7 +236,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | erik_game | +provider_config (JSON) |
 | erik_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**कुल: install.sql में 43 तालिकाएँ** (पारिस्थितिकी विस्तार की 10 तालिकाएँ `admin/database/migrations/clickhouse/` में हैं, install.sql में शामिल नहीं)। मॉडल साझा नहीं: admin 46 / service 44 प्रत्येक की एक प्रति।
+**कुल: install.sql में 43 तालिकाएँ** (पारिस्थितिकी विस्तार की 10 तालिकाएँ `install/` में हैं, install.sql में शामिल नहीं)। मॉडल साझा नहीं: admin 46 / service 44 प्रत्येक की एक प्रति।
 
 ## 8. परीक्षण कवरेज
 

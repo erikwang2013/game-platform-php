@@ -236,7 +236,7 @@ Time window: 5 minutes
 | erik_game | +provider_config (JSON) |
 | erik_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**Total: 43 tables in install.sql** (the 10 ecosystem expansion tables live in `admin/database/migrations/clickhouse/`, not merged into install.sql). Models are not shared: admin 46 / service 44, one copy each.
+**Total: 43 tables in install.sql** (the 10 ecosystem expansion tables live in `install/`, not merged into install.sql). Models are not shared: admin 46 / service 44, one copy each.
 
 ## 8. Test Coverage
 

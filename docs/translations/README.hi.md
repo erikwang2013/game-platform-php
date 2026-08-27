@@ -59,7 +59,7 @@ game-platform-php/
 │   ├── app/provider/          #   游戏Provider层
 │   ├── app/event/             #   事件总线 (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission)
 │   ├── config/                #   配置文件
-│   ├── database/migrations/   #   SQL 迁移文件
+│   ├── install/   #   SQL 迁移文件
 │   └── apps/flutter/          #   Flutter Web PC 管理后台
 │
 ├── service/                   # C端业务端 (webman v2, 端口 8788)

@@ -99,7 +99,7 @@ open-admin/
 │   ├── route.php               # المسارات + استراتيجية إصدار API
 │   ├── middleware.php           # تسجيل الوسيطات العامة
 │   └── ...                     # تكوينات المكونات
-├── database/migrations/        # ملفات ترحيل SQL (بما فيها بيانات صلاحيات أولية)
+├── install/        # ملفات ترحيل SQL (بما فيها بيانات صلاحيات أولية)
 ├── public/                     # نقطة الدخول العامة
 ├── runtime/                    # ملفات التشغيل
 └── vendor/                     # تبعيات Composer
@@ -144,13 +144,10 @@ cp .env.example .env
 
 ### 3. تهيئة قاعدة البيانات
 
-نفّذ ملفات SQL في `database/migrations/` بالترتيب:
+نفّذ ملفات SQL في `install/` بالترتيب:
 
 ```bash
-# إنشاء الجداول
-mysql -u root -p < database/migrations/2026_05_16_000000_init_tables.sql
-# زرع بيانات الصلاحيات
-mysql -u root -p < database/migrations/2026_05_20_000001_seed_permissions.sql
+mysql -u root -p < install/install.sql
 ```
 
 ### 4. تشغيل الخدمة
@@ -187,8 +184,7 @@ cp .env.docker .env
 docker-compose up -d
 
 # 3. تهيئة قاعدة البيانات (نفّذ داخل حاوية app)
-docker-compose exec app mysql -h mysql -u root -p < database/migrations/2026_05_16_000000_init_tables.sql
-docker-compose exec app mysql -h mysql -u root -p < database/migrations/2026_05_20_000001_seed_permissions.sql
+docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 # 4. الوصول
 # http://localhost:8787  (webman)

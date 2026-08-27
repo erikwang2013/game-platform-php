@@ -62,7 +62,7 @@ game-platform-php/
 │   │   └── ...
 │   ├── app/model/                  # Model data
 │   ├── config/                     # Rute & konfigurasi
-│   └── database/migrations/        # Migrasi SQL
+│   └── install/        # Migrasi SQL
 │
 ├── service/                        # Sisi bisnis C (webman v2)
 │   ├── app/api/v1/controller/      # API sisi C
@@ -75,7 +75,7 @@ game-platform-php/
 │   │   └── ...
 │   ├── app/middleware/             # UserAuth(JWT) dll.
 │   ├── config/                     # Rute & konfigurasi
-│   └── database/migrations/        # Migrasi bersama
+│   └── install/        # Migrasi bersama
 │
 ├── common/                         # Lapisan bersama (PSR-4 autoload)
 │   ├── model/                      # Semua Model

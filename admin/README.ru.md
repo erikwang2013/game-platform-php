@@ -99,7 +99,7 @@ open-admin/
 │   ├── route.php               # Маршруты + стратегия версий API
 │   ├── middleware.php           # Регистрация глобального промежуточного ПО
 │   └── ...                     # Конфигурация компонентов
-├── database/migrations/        # SQL-миграции (включая стартовые данные прав)
+├── install/        # SQL-миграции (включая стартовые данные прав)
 ├── public/                     # Публичная точка входа
 ├── runtime/                    # Файлы времени выполнения
 └── vendor/                     # Зависимости Composer
@@ -144,13 +144,10 @@ cp .env.example .env
 
 ### 3. Инициализация базы данных
 
-Выполните по порядку SQL-файлы из `database/migrations/`:
+Выполните по порядку SQL-файлы из `install/`:
 
 ```bash
-# Создание таблиц
-mysql -u root -p < database/migrations/2026_05_16_000000_init_tables.sql
-# Посев данных прав
-mysql -u root -p < database/migrations/2026_05_20_000001_seed_permissions.sql
+mysql -u root -p < install/install.sql
 ```
 
 ### 4. Запуск сервиса
@@ -187,8 +184,7 @@ cp .env.docker .env
 docker-compose up -d
 
 # 3. Инициализируйте базу данных (выполните внутри контейнера app)
-docker-compose exec app mysql -h mysql -u root -p < database/migrations/2026_05_16_000000_init_tables.sql
-docker-compose exec app mysql -h mysql -u root -p < database/migrations/2026_05_20_000001_seed_permissions.sql
+docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 # 4. Доступ
 # http://localhost:8787  (webman)

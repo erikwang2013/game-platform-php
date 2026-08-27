@@ -59,7 +59,7 @@ game-platform-php/
 │   ├── app/provider/          #   Spiel-Provider-Schicht
 │   ├── app/event/             #   Event-Bus (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission)
 │   ├── config/                #   Konfigurationsdateien
-│   ├── database/migrations/   #   SQL-Migrationsdateien
+│   ├── install/   #   SQL-Migrationsdateien
 │   └── apps/flutter/          #   Flutter-Web-PC-Verwaltungs-Backend
 │
 ├── service/                   # C-End-Geschäftsdienst (webman v2, Port 8788)

@@ -236,7 +236,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | erik_game | +provider_config (JSON) |
 | erik_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**총계: install.sql 43장 테이블** (생태계 확장 10장은 `admin/database/migrations/clickhouse/`에 있으며 install.sql에 미통합). 모델은 공유되지 않음: admin 46 / service 44 각각 1벌.
+**총계: install.sql 43장 테이블** (생태계 확장 10장은 `install/`에 있으며 install.sql에 미통합). 모델은 공유되지 않음: admin 46 / service 44 각각 1벌.
 
 ## 8. 테스트 커버리지
 

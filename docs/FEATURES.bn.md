@@ -236,7 +236,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | erik_game | +provider_config (JSON) |
 | erik_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**মোট: install.sql ৪৩টি টেবিল** (ইকোসিস্টেম এক্সটেনশনের ১০টি `admin/database/migrations/clickhouse/`-এ, install.sql-এ একীভূত নয়)। মডেল শেয়ার্ড নয়: admin 46 / service 44 প্রত্যেকে আলাদা।
+**মোট: install.sql ৪৩টি টেবিল** (ইকোসিস্টেম এক্সটেনশনের ১০টি `install/`-এ, install.sql-এ একীভূত নয়)। মডেল শেয়ার্ড নয়: admin 46 / service 44 প্রত্যেকে আলাদা।
 
 ## 8. টেস্ট কভারেজ
 

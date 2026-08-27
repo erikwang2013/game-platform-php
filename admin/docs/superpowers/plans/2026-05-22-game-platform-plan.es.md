@@ -8,7 +8,7 @@ Languages: [中文](2026-05-22-game-platform-plan.md) · [English](2026-05-22-ga
 
 **Objetivo:** Completar el ciclo central: registro → recarga → intercambio → monedas de juego → retiro → revisión del panel de administración
 
-**Arquitectura:** admin/ (panel de administración) y service/ (negocio del lado C) son instancias independientes de webman v2, que comparten Model y Service a través de common/ (autoload PSR-4). Las migraciones de base de datos se unifican en admin/database/migrations/. Frontend: extensión del panel de administración PC en Flutter + nueva plataforma PC del lado C.
+**Arquitectura:** admin/ (panel de administración) y service/ (negocio del lado C) son instancias independientes de webman v2, que comparten Model y Service a través de common/ (autoload PSR-4). Las migraciones de base de datos se unifican en install/. Frontend: extensión del panel de administración PC en Flutter + nueva plataforma PC del lado C.
 
 **Stack tecnológico:** PHP 8.3+, webman v2, MySQL 8.0, Redis, componentes de la serie erikwang2013/*
 
@@ -81,7 +81,7 @@ game-platform-php/
 │   │   ├── Request.php
 │   │   ├── Response.php
 │   │   └── Setup.php
-│   └── database/migrations/ -> ../../admin/database/migrations/  (symlink)
+│   └── install/ -> ../../install/  (symlink)
 │
 ├── admin/
 │   ├── composer.json                  # 增加 common/ path repo + new controllers
@@ -96,7 +96,7 @@ game-platform-php/
 │   ├── app/model/ -> ../../common/model/  (symlink, or autoload)
 │   ├── config/route.php               # 扩展新路由
 │   ├── config/autoload.php            # 扩展 common namespace
-│   └── database/migrations/
+│   └── install/
 │       └── 2026_05_22_000003_platform_tables.sql  # 基础版12张表
 │
 └── apps/flutter/
@@ -643,7 +643,7 @@ git commit -m "feat: add middleware for service/ and shared UserAuth"
 ### Tarea 6: Crear la migración SQL de las 12 tablas de la versión básica
 
 **Archivos:**
-- Crear: `admin/database/migrations/2026_05_22_000003_platform_tables.sql`
+- Crear: `install/install.sql`
 
 - [ ] **Paso 1: Escribir la migración SQL completa**
 
@@ -915,7 +915,7 @@ INSERT INTO `erik_platform_config` (`id`, `group`, `key`, `value`, `type`, `desc
 - [ ] **Paso 2: Ejecutar la migración contra la base de datos de desarrollo**
 
 ```bash
-mysql -h 127.0.0.1 -u root game_platform < admin/database/migrations/2026_05_22_000003_platform_tables.sql
+mysql -h 127.0.0.1 -u root game_platform < install/install.sql
 ```
 
 Esperado: sin errores, se crean las 12 tablas.
@@ -931,7 +931,7 @@ Esperado: la lista incluye las 12 tablas nuevas + las tablas de admin existentes
 - [ ] **Paso 4: Confirmar**
 
 ```bash
-git add admin/database/migrations/2026_05_22_000003_platform_tables.sql
+git add install/install.sql
 git commit -m "feat: add 12 platform tables migration for MVP"
 ```
 

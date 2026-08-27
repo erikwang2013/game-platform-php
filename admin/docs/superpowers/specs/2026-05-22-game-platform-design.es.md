@@ -62,7 +62,7 @@ game-platform-php/
 │   │   └── ...
 │   ├── app/model/                  # Modelos de datos
 │   ├── config/                     # Rutas y configuración
-│   └── database/migrations/        # Migraciones SQL
+│   └── install/        # Migraciones SQL
 │
 ├── service/                        # Negocio del lado C (webman v2)
 │   ├── app/api/v1/controller/      # API del lado C
@@ -75,7 +75,7 @@ game-platform-php/
 │   │   └── ...
 │   ├── app/middleware/             # UserAuth(JWT) etc.
 │   ├── config/                     # Rutas y configuración
-│   └── database/migrations/        # Migraciones compartidas
+│   └── install/        # Migraciones compartidas
 │
 ├── common/                         # Capa compartida (autoload PSR-4)
 │   ├── model/                      # Todos los Model
