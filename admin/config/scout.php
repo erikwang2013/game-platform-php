@@ -17,8 +17,8 @@ return [
     // ES 服务地址数组，支持多节点集群
     'hosts' => explode(',', getenv('SCOUT_HOSTS') ?: 'http://localhost:9200'),
 
-    // 索引名称前缀，最终索引名为: erik_表名。与数据库表前缀保持一致
-    'prefix' => getenv('SCOUT_PREFIX') ?: 'erik_',
+    // 索引名称前缀，最终索引名为: game_表名。与数据库表前缀保持一致
+    'prefix' => getenv('SCOUT_PREFIX') ?: 'game_',
 
     // ES 索引分片数，生产环境建议 3
     'number_of_shards' => (int)(getenv('SCOUT_SHARDS') ?: 1),

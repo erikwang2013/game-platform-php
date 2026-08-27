@@ -1,8 +1,12 @@
 # 开放管理后台 (open-admin)
+<!-- lang-nav -->
+
+Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+
 
 基于 webman v2 + Flutter 的全栈管理后台系统。
 
-> [English version](README_EN.md) | [架构设计图](docs/ARCHITECTURE.md) | [设计文档](docs/DESIGN.md) | [安全架构](docs/SECURITY.md) | [API 参考](docs/API.md)
+> [English version](README.en.md) | [架构设计图](docs/ARCHITECTURE.md) | [设计文档](docs/DESIGN.md) | [安全架构](docs/SECURITY.md) | [API 参考](docs/API.md)
 
 ## 功能清单
 
@@ -28,7 +32,7 @@
 |---|------|------|
 | 后端框架 | webman v2 (workerman) | 超高性能 PHP 常驻进程框架 |
 | PHP 版本 | 8.3+ | |
-| 数据库 | MySQL 8.0+ | 表前缀 `erik_`，BIGINT 非自增主键 |
+| 数据库 | MySQL 8.0+ | 表前缀 `game_`，BIGINT 非自增主键 |
 | 搜索引擎 | Elasticsearch | 通过 `webman-scout` 同步与查询 |
 | 管理端前端 | Flutter 3.x | Web 端为 PC 管理后台风格（`apps/flutter/`） |
 | 移动端 | HarmonyOS ArkTS | 鸿蒙原生客户端（`apps/harmonyos/`），支持手机/平板/2in1 |
@@ -95,7 +99,7 @@ open-admin/
 │   ├── route.php               # 路由 + API 版本策略
 │   ├── middleware.php           # 全局中间件注册
 │   └── ...                     # 各组件配置
-├── database/migrations/        # SQL 迁移文件（含权限种子数据）
+├── install/        # SQL 迁移文件（含权限种子数据）
 ├── public/                     # 公共入口
 ├── runtime/                    # 运行时文件
 └── vendor/                     # Composer 依赖
@@ -140,13 +144,10 @@ cp .env.example .env
 
 ### 3. 初始化数据库
 
-按顺序执行 `database/migrations/` 下的 SQL 文件：
+按顺序执行 `install/` 下的 SQL 文件：
 
 ```bash
-# 建表
-mysql -u root -p < database/migrations/2026_05_16_000000_init_tables.sql
-# 播种权限数据
-mysql -u root -p < database/migrations/2026_05_20_000001_seed_permissions.sql
+mysql -u root -p < install/install.sql
 ```
 
 ### 4. 启动服务
@@ -183,8 +184,7 @@ cp .env.docker .env
 docker-compose up -d
 
 # 3. 初始化数据库（进入 app 容器执行）
-docker-compose exec app mysql -h mysql -u root -p < database/migrations/2026_05_16_000000_init_tables.sql
-docker-compose exec app mysql -h mysql -u root -p < database/migrations/2026_05_20_000001_seed_permissions.sql
+docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 # 4. 访问
 # http://localhost:8787  (webman)
@@ -198,7 +198,7 @@ docker-compose exec app mysql -h mysql -u root -p < database/migrations/2026_05_
 
 ## 数据库规范
 
-- **表前缀**: `erik_`
+- **表前缀**: `game_`
 - **主键**: 所有表主键均为 `id BIGINT UNSIGNED NOT NULL`，**禁用 AUTO_INCREMENT**
 - **ID 生成**: 主键 ID 由应用层 `SnowflakeService::generate()` 生成，分布式唯一
 - **必备字段**: 每张表必须包含 `id`, `created_at`, `updated_at`

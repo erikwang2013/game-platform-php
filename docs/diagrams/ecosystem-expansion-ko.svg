@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 800" font-family="Arial, 'Noto Sans SC', 'Noto Sans KR', sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/></marker>
+    <linearGradient id="hdr" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#a78bfa"/></linearGradient>
+    <linearGradient id="gradNew" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#faf5ff"/><stop offset="100%" stop-color="#f3e8ff"/></linearGradient>
+    <linearGradient id="gradProvider" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#eff6ff"/><stop offset="100%" stop-color="#dbeafe"/></linearGradient>
+  </defs>
+  <rect width="960" height="800" fill="#ffffff"/>
+
+  <rect x="0" y="0" width="960" height="56" fill="url(#hdr)"/>
+  <text x="480" y="36" text-anchor="middle" fill="#fff" font-size="22" font-weight="bold">게임 플랫폼 v2.0 — 생태계 확장</text>
+
+  <!-- Phase 1: Provider Layer -->
+  <rect x="30" y="76" width="440" height="200" rx="10" fill="#eff6ff" stroke="#93c5fd" stroke-width="2"/>
+  <text x="250" y="100" text-anchor="middle" fill="#1e40af" font-size="15" font-weight="bold">단계 1: 게임 Provider SDK</text>
+  <rect x="50" y="115" width="190" height="45" rx="6" fill="#dbeafe"/><text x="145" y="138" text-anchor="middle" fill="#1e3a5f" font-size="12">GameProvider（추상）</text><text x="145" y="152" text-anchor="middle" fill="#64748b" font-size="10">balance/bet/settle/refund</text>
+  <rect x="260" y="115" width="190" height="45" rx="6" fill="#dbeafe"/><text x="355" y="138" text-anchor="middle" fill="#1e3a5f" font-size="12">ProviderAuth 미들웨어</text><text x="355" y="152" text-anchor="middle" fill="#64748b" font-size="10">HMAC-SHA256 + 5분 창</text>
+  <rect x="50" y="175" width="190" height="40" rx="6" fill="#bfdbfe"/><text x="145" y="194" text-anchor="middle" fill="#1e40af" font-size="11">SelfProvider</text><text x="145" y="208" text-anchor="middle" fill="#64748b" font-size="10">데이터베이스 트랜잭션（SELECT FOR UPDATE）</text>
+  <rect x="260" y="175" width="190" height="40" rx="6" fill="#bfdbfe"/><text x="355" y="194" text-anchor="middle" fill="#1e40af" font-size="11">ThirdPartyProvider</text><text x="355" y="208" text-anchor="middle" fill="#64748b" font-size="10">Guzzle HTTP + 서명</text>
+  <rect x="50" y="230" width="400" height="35" rx="6" fill="#93c5fd"/><text x="250" y="244" text-anchor="middle" fill="#fff" font-size="12">GameSessionService — Redis 하트비트 + 15분 자동 정산</text>
+
+  <!-- Phase 2: Operations -->
+  <rect x="490" y="76" width="440" height="200" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="2"/>
+  <text x="710" y="100" text-anchor="middle" fill="#166534" font-size="15" font-weight="bold">단계 2: 운영 지원</text>
+  <rect x="510" y="115" width="190" height="55" rx="6" fill="#dcfce7"/><text x="605" y="135" text-anchor="middle" fill="#14532d" font-size="12">티켓 시스템</text><text x="605" y="150" text-anchor="middle" fill="#64748b" font-size="10">C단: 생성/목록/답변</text><text x="605" y="163" text-anchor="middle" fill="#64748b" font-size="10">관리단: 답변/닫기/할당</text>
+  <rect x="720" y="115" width="190" height="55" rx="6" fill="#dcfce7"/><text x="815" y="135" text-anchor="middle" fill="#14532d" font-size="12">검증</text><text x="815" y="150" text-anchor="middle" fill="#64748b" font-size="10">이메일 + SMS 6자리 인증 코드</text><text x="815" y="163" text-anchor="middle" fill="#64748b" font-size="10">Redis 10분 TTL</text>
+  <rect x="510" y="185" width="400" height="45" rx="6" fill="#bbf7d0"/><text x="710" y="204" text-anchor="middle" fill="#14532d" font-size="12">PushService — FCM / APNs / 华为推送</text><text x="710" y="252" text-anchor="middle" fill="#64748b" font-size="10">OAuth：+X(Twitter)/Microsoft/LinkedIn/GitHub (PKCE)</text><text x="710" y="218" text-anchor="middle" fill="#64748b" font-size="10">DeviceToken 모델 + NotificationService 통합</text>
+
+  <!-- Phase 3: Engagement -->
+  <rect x="30" y="296" width="440" height="180" rx="10" fill="#fef3c7" stroke="#fcd34d" stroke-width="2"/>
+  <text x="250" y="320" text-anchor="middle" fill="#92400e" font-size="15" font-weight="bold">단계 3: 사용자 인터랙션</text>
+  <rect x="50" y="340" width="190" height="55" rx="6" fill="#fde68a"/><text x="145" y="358" text-anchor="middle" fill="#78350f" font-size="12">VIP 시스템（5단계）</text><text x="145" y="373" text-anchor="middle" fill="#64748b" font-size="10">경험치: 충전/로그인/KYC/추천</text><text x="145" y="386" text-anchor="middle" fill="#64748b" font-size="10">할인: 환전 2-15% / 수수료 10-100%</text>
+  <rect x="260" y="340" width="190" height="55" rx="6" fill="#fde68a"/><text x="355" y="358" text-anchor="middle" fill="#78350f" font-size="12">업적 시스템</text><text x="355" y="373" text-anchor="middle" fill="#64748b" font-size="10">내장 업적 12개</text><text x="355" y="386" text-anchor="middle" fill="#64748b" font-size="10">이벤트 주도 + 진행도 추적</text>
+  <rect x="50" y="410" width="400" height="55" rx="6" fill="#fde68a"/><text x="250" y="430" text-anchor="middle" fill="#78350f" font-size="12">VipService: 경험치 누적 + 자동 승급 + 혜택 계산</text><text x="250" y="445" text-anchor="middle" fill="#64748b" font-size="10">AchievementService: 조건 판정（카운트/합산/중복 제거/연속）</text>
+  <text x="250" y="468" text-anchor="middle" fill="#92400e" font-size="11" font-style="italic">ExchangeController / WithdrawController — VIP 할인 통합</text>
+
+  <!-- Phase 4: Social -->
+  <rect x="490" y="296" width="440" height="180" rx="10" fill="#fce7f3" stroke="#f9a8d4" stroke-width="2"/>
+  <text x="710" y="320" text-anchor="middle" fill="#9d174d" font-size="15" font-weight="bold">단계 4: 소셜 레이어</text>
+  <rect x="510" y="340" width="190" height="55" rx="6" fill="#fbcfe8"/><text x="605" y="358" text-anchor="middle" fill="#831843" font-size="12">친구 시스템</text><text x="605" y="373" text-anchor="middle" fill="#64748b" font-size="10">요청/수락/거절/삭제</text><text x="605" y="386" text-anchor="middle" fill="#64748b" font-size="10">대기 중/수락됨/차단됨</text>
+  <rect x="720" y="340" width="190" height="55" rx="6" fill="#fbcfe8"/><text x="815" y="358" text-anchor="middle" fill="#831843" font-size="12">채팅 메시지</text><text x="815" y="373" text-anchor="middle" fill="#64748b" font-size="10">REST + WebSocket :8790</text><text x="815" y="386" text-anchor="middle" fill="#64748b" font-size="10">친구만 메시지 전송 가능</text>
+  <rect x="510" y="410" width="400" height="55" rx="6" fill="#f9a8d4"/><text x="710" y="430" text-anchor="middle" fill="#831843" font-size="12">ChatWebSocket 프로세스 — workerman WebSocket + Redis Pub/Sub</text><text x="710" y="445" text-anchor="middle" fill="#64748b" font-size="10">game_friend 테이블 + game_message 테이블</text>
+
+  <!-- Phase 5: Infrastructure -->
+  <rect x="30" y="496" width="900" height="140" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+  <text x="480" y="520" text-anchor="middle" fill="#334155" font-size="15" font-weight="bold">단계 5 + P2/P3 확장</text>
+  <rect x="50" y="540" width="270" height="45" rx="6" fill="#e2e8f0"/><text x="185" y="558" text-anchor="middle" fill="#334155" font-size="12">EventBus（Redis Pub/Sub）</text><text x="185" y="573" text-anchor="middle" fill="#64748b" font-size="10">user.registered / deposit.completed / game.played</text>
+  <rect x="345" y="540" width="270" height="45" rx="6" fill="#e2e8f0"/><text x="480" y="558" text-anchor="middle" fill="#334155" font-size="12">고급 분석（ClickHouse）</text><text x="480" y="573" text-anchor="middle" fill="#64748b" font-size="10">리텐션 D1-D30 / 퍼널 / ARPU / 경제</text>
+  <rect x="640" y="540" width="270" height="45" rx="6" fill="#e2e8f0"/><text x="775" y="558" text-anchor="middle" fill="#334155" font-size="12">FeatureFlag（DB 기반）</text><text x="775" y="573" text-anchor="middle" fill="#64748b" font-size="10">tournament / chat / vip / achievements</text>
+  <rect x="50" y="600" width="860" height="27" rx="6" fill="#94a3b8"/><text x="480" y="618" text-anchor="middle" fill="#fff" font-size="12">+10 신규 테이블  |  +51 신규 파일  |  0 신규 의존성  |  BC Math 8자리 정밀도  |  완전 하위 호환</text>
+
+  <!-- Database Summary -->
+  <rect x="30" y="656" width="900" height="70" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="480" y="680" text-anchor="middle" fill="#334155" font-size="14" font-weight="bold">데이터베이스: 42 → 52 테이블</text>
+  <text x="480" y="700" text-anchor="middle" fill="#64748b" font-size="11">신규: game_ticket, game_ticket_reply, game_device_token, game_vip_level, game_user_vip, game_exp_log, game_achievement, game_user_achievement, game_friend, game_message</text>
+  <text x="480" y="716" text-anchor="middle" fill="#64748b" font-size="11">수정: game_game（+provider_config JSON）、game_game_play_log（+round_id、+bet_amount、+win_amount）</text>
+
+  <!-- Footer -->
+  <rect x="0" y="750" width="960" height="50" fill="#7c3aed"/>
+  <text x="480" y="775" text-anchor="middle" fill="#ddd6fe" font-size="12">Copyright (c) 2026 erik — https://erik.xyz | 게임 플랫폼 v2.0 생태계</text>
+  <text x="480" y="792" text-anchor="middle" fill="#a78bfa" font-size="10">5단계 · 16개 기능 · 12개 테이블 · 신규 서드파티 의존성 0</text>
+</svg>

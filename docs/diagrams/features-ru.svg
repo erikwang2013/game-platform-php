@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 750" font-family="Arial, 'Noto Sans SC', 'Noto Sans', sans-serif">
+  <defs>
+    <linearGradient id="hd" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#8b5cf6"/></linearGradient>
+    <filter id="sh"><feDropShadow dx="1" dy="1" stdDeviation="1.5" flood-opacity=".06"/></filter>
+  </defs>
+  <rect width="1000" height="750" fill="#fafbfc"/>
+
+  <rect x="0" y="0" width="1000" height="52" fill="url(#hd)"/>
+  <text x="500" y="34" text-anchor="middle" fill="#fff" font-size="21" font-weight="bold">Глобальная игровая агрегационная платформа — обзор функций</text>
+
+  <rect x="30" y="72" width="220" height="95" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="96" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">Аутентификация</text>
+  <text x="140" y="116" text-anchor="middle" fill="#3b82f6" font-size="11">вход/регистрация по имени и паролю</text>
+  <text x="140" y="135" text-anchor="middle" fill="#3b82f6" font-size="11">Google/Facebook/Apple OAuth</text>
+  <text x="140" y="154" text-anchor="middle" fill="#3b82f6" font-size="11">двухфакторная аутентификация 2FA TOTP</text>
+
+  <rect x="265" y="72" width="220" height="95" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="96" text-anchor="middle" fill="#854d0e" font-size="13" font-weight="bold">Кошелёк</text>
+  <text x="375" y="116" text-anchor="middle" fill="#ca8a04" font-size="11">кошелёк платформенной валюты (оптимистичная блокировка)</text>
+  <text x="375" y="135" text-anchor="middle" fill="#ca8a04" font-size="11">кошелёк игровой валюты (отдельно по играм)</text>
+  <text x="375" y="154" text-anchor="middle" fill="#ca8a04" font-size="11">полная цепочка записей операций</text>
+
+  <rect x="500" y="72" width="220" height="95" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="96" text-anchor="middle" fill="#166534" font-size="13" font-weight="bold">Система пополнения</text>
+  <text x="610" y="116" text-anchor="middle" fill="#22c55e" font-size="11">создание ордера на пополнение</text>
+  <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">проверка подписи колбэков Stripe/PayPal</text>
+  <text x="610" y="154" text-anchor="middle" fill="#22c55e" font-size="11">автозачисление + внутриплатформенное уведомление</text>
+
+  <rect x="735" y="72" width="230" height="95" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="96" text-anchor="middle" fill="#9a3412" font-size="13" font-weight="bold">Система вывода</text>
+  <text x="850" y="116" text-anchor="middle" fill="#ea580c" font-size="11">заявка → проверка → выплата</text>
+  <text x="850" y="135" text-anchor="middle" fill="#ea580c" font-size="11">глобальный переключатель / ступенчатые лимиты KYC</text>
+  <text x="850" y="154" text-anchor="middle" fill="#ea580c" font-size="11">настраиваемый порог автопроверки</text>
+
+  <rect x="30" y="182" width="220" height="95" rx="8" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="206" text-anchor="middle" fill="#5b21b6" font-size="13" font-weight="bold">Движок обмена</text>
+  <text x="140" y="226" text-anchor="middle" fill="#8b5cf6" font-size="11">двусторонний обмен платформенная ⇄ игровая</text>
+  <text x="140" y="245" text-anchor="middle" fill="#8b5cf6" font-size="11">котировка в реальном времени / управление курсом</text>
+  <text x="140" y="264" text-anchor="middle" fill="#8b5cf6" font-size="11">доход платформы с разницы (спреда)</text>
+
+  <rect x="265" y="182" width="220" height="95" rx="8" fill="#fce7f3" stroke="#f9a8d4" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="206" text-anchor="middle" fill="#831843" font-size="13" font-weight="bold">Управление играми</text>
+  <text x="375" y="226" text-anchor="middle" fill="#ec4899" font-size="11">CRUD + типы «своя/третья сторона»</text>
+  <text x="375" y="245" text-anchor="middle" fill="#ec4899" font-size="11">10 игровых категорий + управление серверами</text>
+  <text x="375" y="264" text-anchor="middle" fill="#ec4899" font-size="11">полное отслеживание игровых записей</text>
+
+  <rect x="500" y="182" width="220" height="95" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="206" text-anchor="middle" fill="#991b1b" font-size="13" font-weight="bold">KYC — верификация личности</text>
+  <text x="610" y="226" text-anchor="middle" fill="#ef4444" font-size="11">подача данных + проверка в админке</text>
+  <text x="610" y="245" text-anchor="middle" fill="#ef4444" font-size="11">удостоверение / паспорт / водительские права</text>
+  <text x="610" y="264" text-anchor="middle" fill="#ef4444" font-size="11">трёхуровневая система верификации</text>
+
+  <rect x="735" y="182" width="230" height="95" rx="8" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="206" text-anchor="middle" fill="#4c1d95" font-size="13" font-weight="bold">Рейтинги</text>
+  <text x="850" y="226" text-anchor="middle" fill="#7c3aed" font-size="11">дневной / недельный / месячный / общий</text>
+  <text x="850" y="245" text-anchor="middle" fill="#7c3aed" font-size="11">кэш Redis + сортировка в реальном времени</text>
+  <text x="850" y="264" text-anchor="middle" fill="#7c3aed" font-size="11">WebSocket-пуш в реальном времени (:8789)</text>
+
+  <rect x="30" y="292" width="220" height="95" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="316" text-anchor="middle" fill="#064e3b" font-size="13" font-weight="bold">Купоны</text>
+  <text x="140" y="336" text-anchor="middle" fill="#10b981" font-size="11">фиксированная сумма / процентная скидка</text>
+  <text x="140" y="355" text-anchor="middle" fill="#10b981" font-size="11">лимит по времени и количеству / отслеживание получения и использования</text>
+
+  <rect x="265" y="292" width="220" height="95" rx="8" fill="#fff1f2" stroke="#fda4af" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="316" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">Система рефералов</text>
+  <text x="375" y="336" text-anchor="middle" fill="#f43f5e" font-size="11">генерация уникального реферального кода</text>
+  <text x="375" y="355" text-anchor="middle" fill="#f43f5e" font-size="11">награда за регистрацию + комиссия с пополнений</text>
+
+  <rect x="500" y="292" width="220" height="95" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="316" text-anchor="middle" fill="#7c2d12" font-size="13" font-weight="bold">Система риск-контроля</text>
+  <text x="610" y="336" text-anchor="middle" fill="#f97316" font-size="11">IP-чёрные списки / предупреждение о крупных суммах</text>
+  <text x="610" y="355" text-anchor="middle" fill="#f97316" font-size="11">детекция частоты / аномальной скорости</text>
+
+  <rect x="735" y="292" width="230" height="95" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="316" text-anchor="middle" fill="#334155" font-size="13" font-weight="bold">Интернационализация i18n</text>
+  <text x="850" y="336" text-anchor="middle" fill="#64748b" font-size="11">4 языка en/zh/ja/ko</text>
+  <text x="850" y="355" text-anchor="middle" fill="#64748b" font-size="11">таблица переводов + механизм кэша</text>
+
+  <rect x="30" y="402" width="220" height="95" rx="8" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="426" text-anchor="middle" fill="#0c4a6e" font-size="13" font-weight="bold">Центр уведомлений</text>
+  <text x="140" y="446" text-anchor="middle" fill="#0ea5e9" font-size="11">внутриплатформенные + email-уведомления</text>
+  <text x="140" y="465" text-anchor="middle" fill="#0ea5e9" font-size="11">пополнение/вывод/KYC/купоны</text>
+
+  <rect x="265" y="402" width="220" height="95" rx="8" fill="#fefce8" stroke="#fef08a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="426" text-anchor="middle" fill="#713f12" font-size="13" font-weight="bold">Дифференциация стран</text>
+  <text x="375" y="446" text-anchor="middle" fill="#eab308" font-size="11">конфигурация способов оплаты/вывода для 8 стран</text>
+  <text x="375" y="465" text-anchor="middle" fill="#eab308" font-size="11">дифференцированная минимальная сумма пополнения</text>
+
+  <rect x="500" y="402" width="220" height="95" rx="8" fill="#f5f3ff" stroke="#e9d5ff" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="426" text-anchor="middle" fill="#581c87" font-size="13" font-weight="bold">Статистический анализ</text>
+  <text x="610" y="446" text-anchor="middle" fill="#a855f7" font-size="11">ежедневный снимок статистики (5 типов метрик)</text>
+  <text x="610" y="465" text-anchor="middle" fill="#a855f7" font-size="11">отслеживание дохода платформы</text>
+
+  <rect x="735" y="402" width="230" height="95" rx="8" fill="#fff1f2" stroke="#fecdd3" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="426" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">Полнотекстовый поиск</text>
+  <text x="850" y="446" text-anchor="middle" fill="#e11d48" font-size="11">поиск Elasticsearch</text>
+  <text x="850" y="465" text-anchor="middle" fill="#e11d48" font-size="11">откат на LIKE + синхронизация Scout</text>
+
+  <rect x="30" y="518" width="940" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="500" y="546" text-anchor="middle" fill="#475569" font-size="14" font-weight="bold">Сводка возможностей платформы</text>
+  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">Аутентификация · Кошелёк (оптимистичная блокировка) · Пополнение (Stripe/PayPal) · Обмен (курс в реальном времени) · Вывод (проверка/авто) · KYC (трёхуровневая)</text>
+  <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">CRUD игр (10 категорий + серверы) · Рейтинги (WebSocket в реальном времени) · Купоны · Рефералы (награда за регистрацию + комиссия) · Риск-контроль (4 типа правил)</text>
+  <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">Уведомления (внутриплатформенные + email) · Дифференциация стран (8 стран) · Интернационализация (4 языка) · Статистика (дневной снимок + доход) · Полнотекстовый поиск (ES)</text>
+
+  <text x="500" y="662" text-anchor="middle" fill="#94a3b8" font-size="11">Клиенты на трёх платформах: Flutter Admin (15 стр.) + Flutter Platform (10 стр.) + HarmonyOS (5 стр.)</text>
+  <text x="500" y="682" text-anchor="middle" fill="#94a3b8" font-size="11">Развёртывание: Docker Compose (7 сервисов) + обратный прокси Nginx + CI/CD (GitHub Actions)</text>
+
+  <text x="500" y="740" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>
+</svg>

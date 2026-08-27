@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+# 串行化：并发 push 排队，避免两个 run 抢同一个版本号
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Incremental tag + release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          prev=$(git tag -l 'v*' --sort=-v:refname | head -1 || true)
+          if [ -z "$prev" ]; then
+            next="v1.0.0"
+            prev=""
+          else
+            v=${prev#v}
+            IFS='.' read -r major minor patch <<< "$v"
+            patch=${patch:-0}
+            next="v${major}.${minor}.$((patch + 1))"
+          fi
+
+          # 自上次 tag 无新提交则跳过，不重复发版
+          if [ -n "$prev" ] && [ -z "$(git log "$prev"..HEAD --oneline)" ]; then
+            echo "no new commits since $prev; skipping release"
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag "$next"
+          git push origin "$next"
+
+          if [ -n "$prev" ]; then
+            changelog=$(git log --oneline "$prev"..HEAD | head -50)
+          else
+            changelog=$(git log --oneline | head -50)
+          fi
+          gh release create "$next" --title "$next" --notes "## Changes
+$changelog"
+          echo "released $next"

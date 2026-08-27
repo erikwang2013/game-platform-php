@@ -12,7 +12,7 @@ use app\model\GamePlayLog;
 use Throwable;
 
 /**
- * 游戏行为日志写入服务 — 落库 erik_game_play_log（MySQL），供运营后台实时聚合分析
+ * 游戏行为日志写入服务 — 落库 game_game_play_log（MySQL），供运营后台实时聚合分析
  */
 class GamePlayLogService
 {

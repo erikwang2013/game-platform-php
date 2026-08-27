@@ -24,14 +24,16 @@ function validator(array $data, array $rules, array $messages = [], array $attri
 /**
  * JWT 便捷包装
  */
-function jwt(): \Erikwang2013\Jwt\JwtWrapper
-{
-    static $wrapper = null;
-    if ($wrapper === null) {
-        $jwt = JWTFactory::createFromConfig(config('plugin.erikwang2013.jwt.jwt'));
-        $wrapper = new \Erikwang2013\Jwt\JwtWrapper($jwt);
+if (!function_exists('jwt')) {
+    function jwt(): \Erikwang2013\Jwt\JwtWrapper
+    {
+        static $wrapper = null;
+        if ($wrapper === null) {
+            $jwt = JWTFactory::createFromConfig(config('plugin.erikwang2013.jwt.jwt'));
+            $wrapper = new \Erikwang2013\Jwt\JwtWrapper($jwt);
+        }
+        return $wrapper;
     }
-    return $wrapper;
 }
 
 /**

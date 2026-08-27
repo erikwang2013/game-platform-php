@@ -1,4 +1,8 @@
 # 开放管理后台 — 设计文档
+<!-- lang-nav -->
+
+Languages: **中文** · [English](DESIGN.en.md) · [한국어](DESIGN.ko.md) · [Русский](DESIGN.ru.md) · [Deutsch](DESIGN.de.md) · [Français](DESIGN.fr.md) · [Español](DESIGN.es.md) · [Português](DESIGN.pt.md) · [हिन्दी](DESIGN.hi.md) · [العربية](DESIGN.ar.md) · [বাংলা](DESIGN.bn.md) · [Bahasa Indonesia](DESIGN.id.md) · [日本語](DESIGN.ja.md)
+
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -128,34 +132,34 @@ Controller::method()
 ### 3.1 ER 关系
 
 ```
-erik_admin_user ──┬── erik_admin_user_role ──┬── erik_admin_role
+game_admin_user ──┬── game_admin_user_role ──┬── game_admin_role
   (用户)           │    (用户-角色关联)         │     (角色)
                   │                          │
-                  │                    erik_admin_role_permission
+                  │                    game_admin_role_permission
                   │                     (角色-权限关联)
                   │                          │
                   │                          ▼
-                  │                    erik_admin_permission
+                  │                    game_admin_permission
                   │                      (权限/菜单)
                   │
                   ▼
-           erik_operation_log
+           game_operation_log
              (操作日志)
 
-erik_system_config (系统配置) — 独立表
+game_system_config (系统配置) — 独立表
 ```
 
 ### 3.2 核心表结构
 
 | 表名 | 字段数 | 说明 |
 |------|-------|------|
-| `erik_admin_user` | 14 | 管理用户，phone/email/id_card 加密存储，支持软删除 |
-| `erik_admin_role` | 7 | 角色，slug 唯一 |
-| `erik_admin_permission` | 10 | 权限树（parent_id 自引用），type: 1=菜单 2=按钮 3=API |
-| `erik_admin_user_role` | 2 | 用户-角色多对多中间表 |
-| `erik_admin_role_permission` | 2 | 角色-权限多对多中间表 |
-| `erik_system_config` | 8 | 键值对配置，group+key 联合唯一 |
-| `erik_operation_log` | 9 | 操作审计日志（含 source 来源端） |
+| `game_admin_user` | 14 | 管理用户，phone/email/id_card 加密存储，支持软删除 |
+| `game_admin_role` | 7 | 角色，slug 唯一 |
+| `game_admin_permission` | 10 | 权限树（parent_id 自引用），type: 1=菜单 2=按钮 3=API |
+| `game_admin_user_role` | 2 | 用户-角色多对多中间表 |
+| `game_admin_role_permission` | 2 | 角色-权限多对多中间表 |
+| `game_system_config` | 8 | 键值对配置，group+key 联合唯一 |
+| `game_operation_log` | 9 | 操作审计日志（含 source 来源端） |
 
 ### 3.3 主键规范
 

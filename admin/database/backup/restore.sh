@@ -26,7 +26,7 @@ cd "$(dirname "$0")/../.."
 
 DB_HOST="${DB_HOST:-127.0.0.1}"
 DB_PORT="${DB_PORT:-3306}"
-DB_DATABASE="${DB_DATABASE:-open_admin}"
+DB_DATABASE="${DB_DATABASE:-game-platform}"
 DB_USERNAME="${DB_USERNAME:-root}"
 DB_PASSWORD="${DB_PASSWORD:-}"
 

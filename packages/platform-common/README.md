@@ -1,4 +1,8 @@
 # erik/platform-common
+<!-- lang-nav -->
+
+Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+
 
 共享 `common\service\*`，供 admin/ 与 service/ 通过 Composer path 仓库引用。
 

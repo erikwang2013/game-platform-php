@@ -1,4 +1,8 @@
 # API 参考文档
+<!-- lang-nav -->
+
+Languages: **中文** · [English](API.en.md) · [한국어](API.ko.md) · [Русский](API.ru.md) · [Deutsch](API.de.md) · [Français](API.fr.md) · [Español](API.es.md) · [Português](API.pt.md) · [हिन्दी](API.hi.md) · [العربية](API.ar.md) · [বাংলা](API.bn.md) · [Bahasa Indonesia](API.id.md) · [日本語](API.ja.md)
+
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -1713,7 +1717,7 @@ docker-compose up -d
 
 ## 16. 数据分析 (Analytics)
 
-数据分析接口由 `AnalyticsController` 提供，全部基于 MySQL 实时聚合（`erik_game_play_log` 游戏行为日志 / `erik_deposit_order` 充值订单），数据库故障时返回空数据而非 500。除特别说明外均需 JWT + RBAC 认证，响应包装格式统一为 `{ "code": 0, "message": "success", "data": ... }`。
+数据分析接口由 `AnalyticsController` 提供，全部基于 MySQL 实时聚合（`game_game_play_log` 游戏行为日志 / `game_deposit_order` 充值订单），数据库故障时返回空数据而非 500。除特别说明外均需 JWT + RBAC 认证，响应包装格式统一为 `{ "code": 0, "message": "success", "data": ... }`。
 
 ### 16.1 平台总览
 

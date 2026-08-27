@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 750" font-family="Arial, 'Noto Sans SC', 'Noto Sans', sans-serif">
+  <defs>
+    <linearGradient id="hd" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#8b5cf6"/></linearGradient>
+    <filter id="sh"><feDropShadow dx="1" dy="1" stdDeviation="1.5" flood-opacity=".06"/></filter>
+  </defs>
+  <rect width="1000" height="750" fill="#fafbfc"/>
+
+  <rect x="0" y="0" width="1000" height="52" fill="url(#hd)"/>
+  <text x="500" y="34" text-anchor="middle" fill="#fff" font-size="21" font-weight="bold">Globale Spielaggregationsplattform — Funktionsübersicht</text>
+
+  <rect x="30" y="72" width="220" height="95" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="96" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">Benutzer-Authentifizierung</text>
+  <text x="140" y="116" text-anchor="middle" fill="#3b82f6" font-size="11">Login/Registrierung Benutzername/Passwort</text>
+  <text x="140" y="135" text-anchor="middle" fill="#3b82f6" font-size="11">Google/Facebook/Apple OAuth</text>
+  <text x="140" y="154" text-anchor="middle" fill="#3b82f6" font-size="11">2FA-TOTP-Zwei-Faktor-Authentifizierung</text>
+
+  <rect x="265" y="72" width="220" height="95" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="96" text-anchor="middle" fill="#854d0e" font-size="13" font-weight="bold">Wallet-System</text>
+  <text x="375" y="116" text-anchor="middle" fill="#ca8a04" font-size="11">Plattformwährungs-Wallet (Optimistic-Lock gegen Nebenläufigkeit)</text>
+  <text x="375" y="135" text-anchor="middle" fill="#ca8a04" font-size="11">Spielwährungs-Wallet (pro Spiel unabhängig)</text>
+  <text x="375" y="154" text-anchor="middle" fill="#ca8a04" font-size="11">Durchgängige Transaktionsverfolgung</text>
+
+  <rect x="500" y="72" width="220" height="95" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="96" text-anchor="middle" fill="#166534" font-size="13" font-weight="bold">Einzahlungssystem</text>
+  <text x="610" y="116" text-anchor="middle" fill="#22c55e" font-size="11">Einzahlungsauftrag erstellen</text>
+  <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">Stripe/PayPal-Callback-Signaturprüfung</text>
+  <text x="610" y="154" text-anchor="middle" fill="#22c55e" font-size="11">Automatische Gutschrift + In-App-Benachrichtigung</text>
+
+  <rect x="735" y="72" width="230" height="95" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="96" text-anchor="middle" fill="#9a3412" font-size="13" font-weight="bold">Auszahlungssystem</text>
+  <text x="850" y="116" text-anchor="middle" fill="#ea580c" font-size="11">Antrag → Prüfung → Überweisung</text>
+  <text x="850" y="135" text-anchor="middle" fill="#ea580c" font-size="11">Globaler Schalter / KYC-Stufenlimits</text>
+  <text x="850" y="154" text-anchor="middle" fill="#ea580c" font-size="11">Auto-Prüfschwelle konfigurierbar</text>
+
+  <rect x="30" y="182" width="220" height="95" rx="8" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="206" text-anchor="middle" fill="#5b21b6" font-size="13" font-weight="bold">Umtausch-Engine</text>
+  <text x="140" y="226" text-anchor="middle" fill="#8b5cf6" font-size="11">Plattformwährung ⇄ Spielwährung beidseitig</text>
+  <text x="140" y="245" text-anchor="middle" fill="#8b5cf6" font-size="11">Echtzeit-Preisangebot / Wechselkursverwaltung</text>
+  <text x="140" y="264" text-anchor="middle" fill="#8b5cf6" font-size="11">Plattform-Spread als Erlös</text>
+
+  <rect x="265" y="182" width="220" height="95" rx="8" fill="#fce7f3" stroke="#f9a8d4" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="206" text-anchor="middle" fill="#831843" font-size="13" font-weight="bold">Spielverwaltung</text>
+  <text x="375" y="226" text-anchor="middle" fill="#ec4899" font-size="11">CRUD + Typen Selbstentwicklung/Drittanbieter</text>
+  <text x="375" y="245" text-anchor="middle" fill="#ec4899" font-size="11">10 Spielkategorien + Serververwaltung</text>
+  <text x="375" y="264" text-anchor="middle" fill="#ec4899" font-size="11">Durchgängige Spielprotokollverfolgung</text>
+
+  <rect x="500" y="182" width="220" height="95" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="206" text-anchor="middle" fill="#991b1b" font-size="13" font-weight="bold">KYC-Identitätsprüfung</text>
+  <text x="610" y="226" text-anchor="middle" fill="#ef4444" font-size="11">Identitätsprüfungsantrag + Backend-Prüfung</text>
+  <text x="610" y="245" text-anchor="middle" fill="#ef4444" font-size="11">Personalausweis / Reisepass / Führerschein</text>
+  <text x="610" y="264" text-anchor="middle" fill="#ef4444" font-size="11">Drei Prüfstufen-System</text>
+
+  <rect x="735" y="182" width="230" height="95" rx="8" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="206" text-anchor="middle" fill="#4c1d95" font-size="13" font-weight="bold">Rangliste</text>
+  <text x="850" y="226" text-anchor="middle" fill="#7c3aed" font-size="11">Tages-/Wochen-/Monats-/Gesamtrangliste</text>
+  <text x="850" y="245" text-anchor="middle" fill="#7c3aed" font-size="11">Redis-Cache + Echtzeit-Sortierung</text>
+  <text x="850" y="264" text-anchor="middle" fill="#7c3aed" font-size="11">WebSocket-Echtzeit-Push (:8789)</text>
+
+  <rect x="30" y="292" width="220" height="95" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="316" text-anchor="middle" fill="#064e3b" font-size="13" font-weight="bold">Gutscheine</text>
+  <text x="140" y="336" text-anchor="middle" fill="#10b981" font-size="11">Festbetrag / Prozentrabatt</text>
+  <text x="140" y="355" text-anchor="middle" fill="#10b981" font-size="11">Zeit-/Mengenlimit / Einlöse-Nutzungsverfolgung</text>
+
+  <rect x="265" y="292" width="220" height="95" rx="8" fill="#fff1f2" stroke="#fda4af" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="316" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">Empfehlungssystem</text>
+  <text x="375" y="336" text-anchor="middle" fill="#f43f5e" font-size="11">Eindeutigen Empfehlungscode generieren</text>
+  <text x="375" y="355" text-anchor="middle" fill="#f43f5e" font-size="11">Registrierungsbelohnung + Einzahlungsprovision</text>
+
+  <rect x="500" y="292" width="220" height="95" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="316" text-anchor="middle" fill="#7c2d12" font-size="13" font-weight="bold">Risikokontrollsystem</text>
+  <text x="610" y="336" text-anchor="middle" fill="#f97316" font-size="11">IP-Blacklist / Großbetragswarnung</text>
+  <text x="610" y="355" text-anchor="middle" fill="#f97316" font-size="11">Frequenzerkennung / Geschwindigkeitsanomalien</text>
+
+  <rect x="735" y="292" width="230" height="95" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="316" text-anchor="middle" fill="#334155" font-size="13" font-weight="bold">Internationalisierung i18n</text>
+  <text x="850" y="336" text-anchor="middle" fill="#64748b" font-size="11">4 Sprachen en/zh/ja/ko</text>
+  <text x="850" y="355" text-anchor="middle" fill="#64748b" font-size="11">Übersetzungstabelle + Cache-Mechanismus</text>
+
+  <rect x="30" y="402" width="220" height="95" rx="8" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="426" text-anchor="middle" fill="#0c4a6e" font-size="13" font-weight="bold">Benachrichtigungszentrum</text>
+  <text x="140" y="446" text-anchor="middle" fill="#0ea5e9" font-size="11">In-App-Nachrichten + E-Mail-Benachrichtigung</text>
+  <text x="140" y="465" text-anchor="middle" fill="#0ea5e9" font-size="11">Einzahlung/Auszahlung/KYC/Gutschein</text>
+
+  <rect x="265" y="402" width="220" height="95" rx="8" fill="#fefce8" stroke="#fef08a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="426" text-anchor="middle" fill="#713f12" font-size="13" font-weight="bold">Länderdifferenzierung</text>
+  <text x="375" y="446" text-anchor="middle" fill="#eab308" font-size="11">Zahlungs-/Auszahlungskonfiguration für 8 Länder</text>
+  <text x="375" y="465" text-anchor="middle" fill="#eab308" font-size="11">Differenzierte Mindesteinzahlung</text>
+
+  <rect x="500" y="402" width="220" height="95" rx="8" fill="#f5f3ff" stroke="#e9d5ff" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="426" text-anchor="middle" fill="#581c87" font-size="13" font-weight="bold">Statistik-Analyse</text>
+  <text x="610" y="446" text-anchor="middle" fill="#a855f7" font-size="11">Tägliche Statistik-Snapshots (5 Kennzahlenarten)</text>
+  <text x="610" y="465" text-anchor="middle" fill="#a855f7" font-size="11">Plattform-Erlösverfolgung</text>
+
+  <rect x="735" y="402" width="230" height="95" rx="8" fill="#fff1f2" stroke="#fecdd3" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="426" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">Volltextsuche</text>
+  <text x="850" y="446" text-anchor="middle" fill="#e11d48" font-size="11">Elasticsearch-Suche</text>
+  <text x="850" y="465" text-anchor="middle" fill="#e11d48" font-size="11">LIKE-Fallback + Scout-Synchronisierung</text>
+
+  <rect x="30" y="518" width="940" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="500" y="546" text-anchor="middle" fill="#475569" font-size="14" font-weight="bold">Zusammenfassung der Plattform-Fähigkeiten</text>
+  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">Benutzer-Authentifizierung · Wallet (Optimistic-Lock) · Einzahlung (Stripe/PayPal) · Umtausch (Echtzeit-Wechselkurs) · Auszahlung (Prüfung/automatisch) · KYC (drei Stufen)</text>
+  <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">Spiel-CRUD (10 Kategorien + Server) · Rangliste (WebSocket-Echtzeit) · Gutscheine · Empfehlung (Registrierungsbelohnung + Provision) · Risikokontrolle (4 Regelarten)</text>
+  <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">Benachrichtigung (In-App + E-Mail) · Länderdifferenzierung (8 Länder) · Internationalisierung (4 Sprachen) · Statistik (Tages-Snapshot + Erlös) · Volltextsuche (ES)</text>
+
+  <text x="500" y="662" text-anchor="middle" fill="#94a3b8" font-size="11">Drei Client-Endgeräte: Flutter Admin (15 Seiten) + Flutter Platform (10 Seiten) + HarmonyOS (5 Seiten)</text>
+  <text x="500" y="682" text-anchor="middle" fill="#94a3b8" font-size="11">Bereitstellung: Docker-Compose-Orchestrierung (7 Dienste) + Nginx-Reverse-Proxy + CI/CD (GitHub Actions)</text>
+
+  <text x="500" y="740" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>
+</svg>

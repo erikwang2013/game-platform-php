@@ -1,4 +1,8 @@
 # 安全架构设计文档
+<!-- lang-nav -->
+
+Languages: **中文** · [English](SECURITY.en.md) · [한국어](SECURITY.ko.md) · [Русский](SECURITY.ru.md) · [Deutsch](SECURITY.de.md) · [Français](SECURITY.fr.md) · [Español](SECURITY.es.md) · [Português](SECURITY.pt.md) · [हिन्दी](SECURITY.hi.md) · [العربية](SECURITY.ar.md) · [বাংলা](SECURITY.bn.md) · [Bahasa Indonesia](SECURITY.id.md) · [日本語](SECURITY.ja.md)
+
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -353,11 +357,11 @@ AdminPermission 中间件实现。
 
 **数据模型**：User -> Role -> Permission 三层关联
 
-- `erik_admin_user` (用户表)
-- `erik_admin_user_role` (用户-角色关联表)
-- `erik_admin_role` (角色表)
-- `erik_admin_role_permission` (角色-权限关联表)
-- `erik_admin_permission` (权限表)
+- `game_admin_user` (用户表)
+- `game_admin_user_role` (用户-角色关联表)
+- `game_admin_role` (角色表)
+- `game_admin_role_permission` (角色-权限关联表)
+- `game_admin_permission` (权限表)
 
 **权限类型**：
 | type | 含义 | 示例 |

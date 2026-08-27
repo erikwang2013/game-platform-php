@@ -115,7 +115,7 @@ class WithdrawPage extends GetView<WithdrawController> {
         const SizedBox(height: 12),
         // Status filter segmented buttons
         Obx(() => SegmentedButton<String>(
-          segments: const [
+          segments: [
             ButtonSegment(value: 'all', label: Text('${AppTranslations.t('withdraw.all')}')),
             ButtonSegment(value: 'pending', label: Text('${AppTranslations.t('withdraw.pending')}')),
             ButtonSegment(value: 'approved', label: Text('${AppTranslations.t('withdraw.approved')}')),
@@ -131,11 +131,11 @@ class WithdrawPage extends GetView<WithdrawController> {
         Expanded(
           child: Obx(() {
             if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
-            if (ctrl.orders.isEmpty) return const Center(child: Text("${AppTranslations.t('app.no_data')}"));
+            if (ctrl.orders.isEmpty) return Center(child: Text("${AppTranslations.t('app.no_data')}"));
 
             return SingleChildScrollView(
               child: DataTable(
-                columns: const [
+                columns: [
                   DataColumn(label: Text('${AppTranslations.t('withdraw.order_no')}')),
                   DataColumn(label: Text('${AppTranslations.t('withdraw.user')}')),
                   DataColumn(label: Text('${AppTranslations.t('withdraw.amount')}')),

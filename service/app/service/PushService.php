@@ -5,6 +5,9 @@
 declare(strict_types=1);
 namespace app\service;
 use app\model\DeviceToken;
+use common\CircuitBreaker;
+use common\Retry;
+use support\Log;
 use support\Redis;
 
 class PushService
@@ -12,6 +15,10 @@ class PushService
     public static function send(int $userId, string $title, string $body, array $data = []): void
     {
         try {
+            if (FeatureFlag::isEnabled('provider_mock')) {
+                Log::warning("PushService mock mode: skip push to user {$userId}");
+                return;
+            }
             $tokens = DeviceToken::where('user_id', $userId)->get();
             foreach ($tokens as $token) {
                 match ($token->platform) {
@@ -28,21 +35,25 @@ class PushService
 
     private static function sendFcm(string $token, string $title, string $body, array $data): void
     {
-        $serviceAccount = getenv('FCM_SERVICE_ACCOUNT_JSON', '');
+        $serviceAccount = getenv('FCM_SERVICE_ACCOUNT_JSON');
         if (!empty($serviceAccount)) {
             self::sendFcmV1($token, $title, $body, $data, $serviceAccount);
             return;
         }
 
-        $serverKey = getenv('FCM_SERVER_KEY', '');
+        $serverKey = getenv('FCM_SERVER_KEY');
         if (empty($serverKey)) {
             return;
         }
 
-        (new \GuzzleHttp\Client(['timeout' => 5]))->post('https://fcm.googleapis.com/fcm/send', [
-            'headers' => ['Authorization' => 'key=' . $serverKey, 'Content-Type' => 'application/json'],
-            'json' => ['to' => $token, 'notification' => ['title' => $title, 'body' => $body], 'data' => $data],
-        ]);
+        Retry::run(function () use ($serverKey, $token, $title, $body, $data) {
+            CircuitBreaker::call('push:fcm', function () use ($serverKey, $token, $title, $body, $data) {
+                (new \GuzzleHttp\Client(['timeout' => 5]))->post('https://fcm.googleapis.com/fcm/send', [
+                    'headers' => ['Authorization' => 'key=' . $serverKey, 'Content-Type' => 'application/json'],
+                    'json' => ['to' => $token, 'notification' => ['title' => $title, 'body' => $body], 'data' => $data],
+                ]);
+            });
+        });
     }
 
     private static function sendFcmV1(string $token, string $title, string $body, array $data, string $serviceAccount): void
@@ -58,7 +69,9 @@ class PushService
         }
 
         $url = 'https://fcm.googleapis.com/v1/projects/' . $sa['project_id'] . '/messages:send';
-        (new \GuzzleHttp\Client(['timeout' => 5]))->post($url, [
+        Retry::run(function () use ($url, $accessToken, $token, $title, $body, $data) {
+            CircuitBreaker::call('push:fcm', function () use ($url, $accessToken, $token, $title, $body, $data) {
+                (new \GuzzleHttp\Client(['timeout' => 5]))->post($url, [
             'headers' => [
                 'Authorization' => 'Bearer ' . $accessToken,
                 'Content-Type' => 'application/json',
@@ -71,6 +84,8 @@ class PushService
                 ],
             ],
         ]);
+            });
+        });
     }
 
     private static function getFcmOAuthToken(array $sa): string
@@ -112,10 +127,10 @@ class PushService
 
     private static function sendApns(string $token, string $title, string $body, array $data): void
     {
-        $keyId = getenv('APNS_KEY_ID', '');
-        $teamId = getenv('APNS_TEAM_ID', '');
-        $keyFile = getenv('APNS_KEY_FILE', '');
-        $topic = getenv('APNS_TOPIC', '');
+        $keyId = getenv('APNS_KEY_ID');
+        $teamId = getenv('APNS_TEAM_ID');
+        $keyFile = getenv('APNS_KEY_FILE');
+        $topic = getenv('APNS_TOPIC');
 
         if (empty($keyId) || empty($teamId) || empty($keyFile) || empty($topic)) {
             return;
@@ -134,28 +149,32 @@ class PushService
         openssl_sign($header . '.' . $claims, $signature, $p8key, OPENSSL_ALGO_SHA256);
         $jwt = $header . '.' . $claims . '.' . self::base64urlEncode($signature);
 
-        (new \GuzzleHttp\Client(['timeout' => 5, 'curl' => [CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_2_0]]))
-            ->post("https://{$host}/3/device/{$token}", [
-                'headers' => [
-                    'authorization' => 'bearer ' . $jwt,
-                    'apns-topic' => $topic,
-                    'apns-push-type' => 'alert',
-                    'content-type' => 'application/json',
-                ],
-                'json' => [
-                    'aps' => [
-                        'alert' => ['title' => $title, 'body' => $body],
-                        'sound' => 'default',
-                    ],
-                    'data' => $data,
-                ],
-            ]);
+        Retry::run(function () use ($host, $token, $jwt, $topic, $title, $body, $data) {
+            CircuitBreaker::call('push:apns', function () use ($host, $token, $jwt, $topic, $title, $body, $data) {
+                (new \GuzzleHttp\Client(['timeout' => 5, 'curl' => [CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_2_0]]))
+                    ->post("https://{$host}/3/device/{$token}", [
+                        'headers' => [
+                            'authorization' => 'bearer ' . $jwt,
+                            'apns-topic' => $topic,
+                            'apns-push-type' => 'alert',
+                            'content-type' => 'application/json',
+                        ],
+                        'json' => [
+                            'aps' => [
+                                'alert' => ['title' => $title, 'body' => $body],
+                                'sound' => 'default',
+                            ],
+                            'data' => $data,
+                        ],
+                    ]);
+            });
+        });
     }
 
     private static function sendHarmonyOS(string $token, string $title, string $body, array $data): void
     {
-        $appId = getenv('HUAWEI_APP_ID', '');
-        $appSecret = getenv('HUAWEI_APP_SECRET', '');
+        $appId = getenv('HUAWEI_APP_ID');
+        $appSecret = getenv('HUAWEI_APP_SECRET');
         if (empty($appId) || empty($appSecret)) {
             return;
         }
@@ -165,22 +184,26 @@ class PushService
             return;
         }
 
-        (new \GuzzleHttp\Client(['timeout' => 5]))->post(
-            "https://push-api.cloud.huawei.com/v1/{$appId}/messages:send",
-            [
-                'headers' => [
-                    'Authorization' => 'Bearer ' . $accessToken,
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => [
-                    'message' => [
-                        'token' => [$token],
-                        'notification' => ['title' => $title, 'body' => $body],
-                        'data' => json_encode($data),
-                    ],
-                ],
-            ]
-        );
+        Retry::run(function () use ($appId, $token, $title, $body, $data, $accessToken) {
+            CircuitBreaker::call('push:harmonyos', function () use ($appId, $token, $title, $body, $data, $accessToken) {
+                (new \GuzzleHttp\Client(['timeout' => 5]))->post(
+                    "https://push-api.cloud.huawei.com/v1/{$appId}/messages:send",
+                    [
+                        'headers' => [
+                            'Authorization' => 'Bearer ' . $accessToken,
+                            'Content-Type' => 'application/json',
+                        ],
+                        'json' => [
+                            'message' => [
+                                'token' => [$token],
+                                'notification' => ['title' => $title, 'body' => $body],
+                                'data' => json_encode($data),
+                            ],
+                        ],
+                    ]
+                );
+            });
+        });
     }
 
     private static function getHuaweiToken(string $appId, string $appSecret): string

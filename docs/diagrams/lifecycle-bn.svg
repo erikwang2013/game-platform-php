@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 720" font-family="Arial, 'Noto Sans SC', 'Noto Sans Bengali', sans-serif">
+  <defs>
+    <linearGradient id="hd" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#059669"/><stop offset="100%" stop-color="#10b981"/></linearGradient>
+    <marker id="arr" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/></marker>
+    <filter id="sh"><feDropShadow dx="1" dy="2" stdDeviation="2" flood-opacity=".08"/></filter>
+  </defs>
+  <rect width="1000" height="720" fill="#fafbfc"/>
+  <rect x="0" y="0" width="1000" height="52" fill="url(#hd)"/>
+  <text x="500" y="34" text-anchor="middle" fill="#fff" font-size="21" font-weight="bold">বিশ্বব্যাপী গেম প্ল্যাটফর্ম — লাইফসাইকেল ডায়াগ্রাম</text>
+
+  <!-- User Lifecycle -->
+  <rect x="20" y="72" width="960" height="30" rx="6" fill="#ecfdf5"/>
+  <text x="500" y="93" text-anchor="middle" fill="#065f46" font-size="14" font-weight="bold">ইউজার লাইফসাইকেল</text>
+
+  <rect x="30" y="118" width="120" height="46" rx="10" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" filter="url(#sh)"/>
+  <text x="90" y="146" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">রেজিস্ট্রেশন</text>
+
+  <line x1="150" y1="141" x2="190" y2="141" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="195" y="118" width="130" height="46" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" filter="url(#sh)"/>
+  <text x="260" y="146" text-anchor="middle" fill="#92400e" font-size="13" font-weight="bold">KYC ভেরিফিকেশন</text>
+
+  <line x1="325" y1="141" x2="365" y2="141" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="370" y="118" width="130" height="46" rx="10" fill="#d1fae5" stroke="#10b981" stroke-width="2" filter="url(#sh)"/>
+  <text x="435" y="146" text-anchor="middle" fill="#065f46" font-size="13" font-weight="bold">টপ-আপ ও গেম</text>
+
+  <line x1="500" y1="141" x2="540" y2="141" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="545" y="118" width="130" height="46" rx="10" fill="#fce7f3" stroke="#ec4899" stroke-width="2" filter="url(#sh)"/>
+  <text x="610" y="146" text-anchor="middle" fill="#831843" font-size="13" font-weight="bold">উত্তোলন / রিইনভেস্ট</text>
+
+  <line x1="675" y1="141" x2="715" y2="141" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="720" y="118" width="130" height="46" rx="10" fill="#ede9fe" stroke="#8b5cf6" stroke-width="2" filter="url(#sh)"/>
+  <text x="785" y="146" text-anchor="middle" fill="#5b21b6" font-size="13" font-weight="bold">VIP আপগ্রেড</text>
+
+  <text x="480" y="190" text-anchor="middle" fill="#64748b" font-size="11">রেজিস্ট্রেশন → KYC (তিন-স্তর) → টপ-আপ (ফিয়াট→প্ল্যাটফর্ম কয়েন→গেম কয়েন) → গেম (আয়/খরচ) → উত্তোলন বা আরও টপ-আপ (ইতিবাচক চক্র)</text>
+
+  <!-- Order Lifecycle -->
+  <rect x="20" y="215" width="960" height="30" rx="6" fill="#fef3c7"/>
+  <text x="500" y="236" text-anchor="middle" fill="#92400e" font-size="14" font-weight="bold">টপ-আপ/উত্তোলন অর্ডার লাইফসাইকেল</text>
+
+  <rect x="50" y="261" width="130" height="50" rx="10" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" filter="url(#sh)"/>
+  <text x="115" y="292" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">অর্ডার তৈরি</text>
+
+  <line x1="180" y1="286" x2="230" y2="286" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="235" y="261" width="130" height="50" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" filter="url(#sh)"/>
+  <text x="300" y="292" text-anchor="middle" fill="#92400e" font-size="13" font-weight="bold">পেমেন্ট অপেক্ষমাণ</text>
+
+  <line x1="365" y1="286" x2="415" y2="286" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="420" y="261" width="130" height="50" rx="10" fill="#d1fae5" stroke="#10b981" stroke-width="2" filter="url(#sh)"/>
+  <text x="485" y="292" text-anchor="middle" fill="#065f46" font-size="13" font-weight="bold">পেইড</text>
+
+  <line x1="550" y1="286" x2="600" y2="286" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="605" y="261" width="130" height="50" rx="10" fill="#bbf7d0" stroke="#22c55e" stroke-width="2" filter="url(#sh)"/>
+  <text x="670" y="292" text-anchor="middle" fill="#14532d" font-size="13" font-weight="bold">কনফার্মড</text>
+
+  <line x1="735" y1="286" x2="785" y2="286" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="790" y="261" width="140" height="50" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="2" filter="url(#sh)"/>
+  <text x="860" y="292" text-anchor="middle" fill="#166534" font-size="13" font-weight="bold">সম্পন্ন</text>
+
+  <text x="500" y="338" text-anchor="middle" fill="#64748b" font-size="11">টপ-আপ: pending → paid → confirmed  |  উত্তোলন: pending → approved → completed (rejected হতে পারে)</text>
+
+  <!-- Game Session -->
+  <rect x="20" y="360" width="960" height="30" rx="6" fill="#fce7f3"/>
+  <text x="500" y="381" text-anchor="middle" fill="#831843" font-size="14" font-weight="bold">গেম সেশন লাইফসাইকেল</text>
+
+  <rect x="80" y="406" width="150" height="50" rx="10" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" filter="url(#sh)"/>
+  <text x="155" y="437" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">খেলায় প্রবেশ (start)</text>
+
+  <line x1="230" y1="431" x2="300" y2="431" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="305" y="406" width="180" height="50" rx="10" fill="#fce7f3" stroke="#ec4899" stroke-width="2" filter="url(#sh)"/>
+  <text x="395" y="437" text-anchor="middle" fill="#831843" font-size="13" font-weight="bold">গেম চলছে (earn/spend)</text>
+
+  <line x1="485" y1="431" x2="555" y2="431" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="560" y="406" width="150" height="50" rx="10" fill="#ede9fe" stroke="#8b5cf6" stroke-width="2" filter="url(#sh)"/>
+  <text x="635" y="437" text-anchor="middle" fill="#5b21b6" font-size="13" font-weight="bold">গেম ছাড়া (end)</text>
+
+  <path d="M 395 458 L 395 490 L 155 490 L 155 462" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#arr)"/>
+  <text x="275" y="505" text-anchor="middle" fill="#94a3b8" font-size="10">একাধিক রাউন্ডের গেম লুপ</text>
+
+  <text x="500" y="538" text-anchor="middle" fill="#64748b" font-size="11">প্রতি রাউন্ডের রেকর্ড: session_id ট্র্যাকিং · গেম কয়েন পরিবর্তন · প্ল্যাটফর্ম কয়েন সমতুল্য · মেটাডেটা (JSON)</text>
+
+  <!-- KYC Lifecycle -->
+  <rect x="20" y="556" width="960" height="30" rx="6" fill="#fef2f2"/>
+  <text x="500" y="577" text-anchor="middle" fill="#991b1b" font-size="14" font-weight="bold">KYC ভেরিফিকেশন লাইফসাইকেল</text>
+
+  <rect x="70" y="598" width="140" height="46" rx="10" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" filter="url(#sh)"/>
+  <text x="140" y="626" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">ভেরিফিকেশন সাবমিট</text>
+
+  <line x1="210" y1="621" x2="270" y2="621" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="275" y="598" width="140" height="46" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" filter="url(#sh)"/>
+  <text x="345" y="626" text-anchor="middle" fill="#92400e" font-size="13" font-weight="bold">রিভিউ অপেক্ষমাণ pending</text>
+
+  <line x1="415" y1="621" x2="475" y2="621" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
+
+  <rect x="480" y="612" width="120" height="32" rx="8" fill="#f0fdf4" stroke="#22c55e" stroke-width="2" filter="url(#sh)"/>
+  <text x="540" y="633" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">পাস → verified</text>
+
+  <rect x="640" y="612" width="120" height="32" rx="8" fill="#fef2f2" stroke="#ef4444" stroke-width="2" filter="url(#sh)"/>
+  <text x="700" y="633" text-anchor="middle" fill="#991b1b" font-size="12" font-weight="bold">প্রত্যাখ্যান → rejected</text>
+
+  <text x="500" y="680" text-anchor="middle" fill="#64748b" font-size="11">পাসের পর আপগ্রেড: default → verified → vip (উচ্চতর উত্তোলন লিমিট + কম ফি)</text>
+
+  <text x="500" y="710" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>
+</svg>

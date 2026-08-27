@@ -207,7 +207,7 @@ class Installer
 
             $version = $pdoDb->query('SELECT VERSION()')->fetchColumn();
 
-            $stmt = $pdoDb->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = " . $pdoDb->quote($database) . " AND TABLE_NAME LIKE 'erik_%'");
+            $stmt = $pdoDb->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = " . $pdoDb->quote($database) . " AND TABLE_NAME LIKE 'game_%'");
             $existingTables = (int)$stmt->fetchColumn();
 
             return [
@@ -264,10 +264,10 @@ class Installer
             $adminId = $this->snowflakeId(1);
             $hashedPassword = password_hash($adminPassword, PASSWORD_BCRYPT, ['cost' => 12]);
 
-            $stmt = $pdo->prepare('INSERT INTO `erik_admin_user` (`id`, `username`, `password`, `real_name`, `status`, `created_at`, `updated_at`) VALUES (?, ?, ?, ?, 1, NOW(), NOW())');
+            $stmt = $pdo->prepare('INSERT INTO `game_admin_user` (`id`, `username`, `password`, `real_name`, `status`, `created_at`, `updated_at`) VALUES (?, ?, ?, ?, 1, NOW(), NOW())');
             $stmt->execute([$adminId, $adminUsername, $hashedPassword]);
 
-            $stmt = $pdo->prepare('INSERT INTO `erik_admin_user_role` (`user_id`, `role_id`) VALUES (?, 10000000000000001)');
+            $stmt = $pdo->prepare('INSERT INTO `game_admin_user_role` (`user_id`, `role_id`) VALUES (?, 10000000000000001)');
             $stmt->execute([$adminId]);
 
             $steps[] = ['name' => '管理员账户', 'ok' => true, 'message' => "创建管理员 {$adminUsername} 并关联超级管理员角色"];
@@ -309,7 +309,7 @@ class Installer
 
     private function countTables(PDO $pdo): int
     {
-        $stmt = $pdo->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME LIKE 'erik_%'");
+        $stmt = $pdo->query("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME LIKE 'game_%'");
         return (int)$stmt->fetchColumn();
     }
 
@@ -375,7 +375,7 @@ ENCRYPTION_PREVIOUS_KEYS=
 
 SCOUT_DRIVER=opensearch
 SCOUT_HOSTS=http://localhost:9200
-SCOUT_PREFIX=erik_
+SCOUT_PREFIX=game_
 SCOUT_SHARDS=1
 SCOUT_REPLICAS=0
 SCOUT_CHUNK_SIZE=500
@@ -499,7 +499,7 @@ CORS_ORIGIN=*
 
 SCOUT_DRIVER=opensearch
 SCOUT_HOSTS=http://localhost:9200
-SCOUT_PREFIX=erik_
+SCOUT_PREFIX=game_
 SCOUT_SHARDS=1
 SCOUT_REPLICAS=0
 SCOUT_CHUNK_SIZE=500

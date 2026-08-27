@@ -36,7 +36,7 @@ class RiskLogPage extends GetView<RiskLogController> {
       const Text('Risk Logs', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
       const SizedBox(height: 12),
       Expanded(child: Obx(() {
-        if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
+        if (controller.isLoading.value) return const Center(child: CircularProgressIndicator());
         return const Center(child: Text('Risk logs will be available with dedicated API endpoint'));
       })),
     ]);

@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 750" font-family="Arial, 'Noto Sans SC', 'Noto Sans Devanagari', sans-serif">
+  <defs>
+    <linearGradient id="hd" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#8b5cf6"/></linearGradient>
+    <filter id="sh"><feDropShadow dx="1" dy="1" stdDeviation="1.5" flood-opacity=".06"/></filter>
+  </defs>
+  <rect width="1000" height="750" fill="#fafbfc"/>
+
+  <rect x="0" y="0" width="1000" height="52" fill="url(#hd)"/>
+  <text x="500" y="34" text-anchor="middle" fill="#fff" font-size="21" font-weight="bold">वैश्विक गेम एग्रीगेशन प्लेटफ़ॉर्म — कार्यात्मकता पैनोरमा</text>
+
+  <rect x="30" y="72" width="220" height="95" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="96" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">उपयोगकर्ता प्रमाणीकरण</text>
+  <text x="140" y="116" text-anchor="middle" fill="#3b82f6" font-size="11">उपयोगकर्ता नाम/पासवर्ड लॉगिन पंजीकरण</text>
+  <text x="140" y="135" text-anchor="middle" fill="#3b82f6" font-size="11">Google/Facebook/Apple OAuth</text>
+  <text x="140" y="154" text-anchor="middle" fill="#3b82f6" font-size="11">2FA TOTP दो-कारक प्रमाणीकरण</text>
+
+  <rect x="265" y="72" width="220" height="95" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="96" text-anchor="middle" fill="#854d0e" font-size="13" font-weight="bold">वॉलेट प्रणाली</text>
+  <text x="375" y="116" text-anchor="middle" fill="#ca8a04" font-size="11">प्लेटफ़ॉर्म कॉइन वॉलेट (ऑप्टिमिस्टिक लॉक)</text>
+  <text x="375" y="135" text-anchor="middle" fill="#ca8a04" font-size="11">गेम कॉइन वॉलेट (गेम-वार स्वतंत्र)</text>
+  <text x="375" y="154" text-anchor="middle" fill="#ca8a04" font-size="11">पूर्ण श्रृंखला लेन-देन ट्रैकिंग</text>
+
+  <rect x="500" y="72" width="220" height="95" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="96" text-anchor="middle" fill="#166534" font-size="13" font-weight="bold">रिचार्ज प्रणाली</text>
+  <text x="610" y="116" text-anchor="middle" fill="#22c55e" font-size="11">रिचार्ज ऑर्डर निर्माण</text>
+  <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">Stripe/PayPal कॉलबैक हस्ताक्षर सत्यापन</text>
+  <text x="610" y="154" text-anchor="middle" fill="#22c55e" font-size="11">स्वचालित जमा + साइट सूचना</text>
+
+  <rect x="735" y="72" width="230" height="95" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="96" text-anchor="middle" fill="#9a3412" font-size="13" font-weight="bold">निकासी प्रणाली</text>
+  <text x="850" y="116" text-anchor="middle" fill="#ea580c" font-size="11">आवेदन → समीक्षा → भुगतान</text>
+  <text x="850" y="135" text-anchor="middle" fill="#ea580c" font-size="11">वैश्विक स्विच / KYC स्तरीय सीमाएँ</text>
+  <text x="850" y="154" text-anchor="middle" fill="#ea580c" font-size="11">स्वचालित समीक्षा सीमा कॉन्फ़िगर करने योग्य</text>
+
+  <rect x="30" y="182" width="220" height="95" rx="8" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="206" text-anchor="middle" fill="#5b21b6" font-size="13" font-weight="bold">विनिमय इंजन</text>
+  <text x="140" y="226" text-anchor="middle" fill="#8b5cf6" font-size="11">प्लेटफ़ॉर्म कॉइन ⇄ गेम कॉइन द्विदिश विनिमय</text>
+  <text x="140" y="245" text-anchor="middle" fill="#8b5cf6" font-size="11">रीयल-टाइम कोटेशन / विनिमय दर प्रबंधन</text>
+  <text x="140" y="264" text-anchor="middle" fill="#8b5cf6" font-size="11">प्लेटफ़ॉर्म मार्जिन आय</text>
+
+  <rect x="265" y="182" width="220" height="95" rx="8" fill="#fce7f3" stroke="#f9a8d4" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="206" text-anchor="middle" fill="#831843" font-size="13" font-weight="bold">गेम प्रबंधन</text>
+  <text x="375" y="226" text-anchor="middle" fill="#ec4899" font-size="11">CRUD + स्वयं/थर्ड-पार्टी प्रकार</text>
+  <text x="375" y="245" text-anchor="middle" fill="#ec4899" font-size="11">10 बड़ी गेम श्रेणियाँ + सर्वर प्रबंधन</text>
+  <text x="375" y="264" text-anchor="middle" fill="#ec4899" font-size="11">गेम रिकॉर्ड पूर्ण ट्रैकिंग</text>
+
+  <rect x="500" y="182" width="220" height="95" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="206" text-anchor="middle" fill="#991b1b" font-size="13" font-weight="bold">KYC सत्यापन</text>
+  <text x="610" y="226" text-anchor="middle" fill="#ef4444" font-size="11">सत्यापन जानकारी जमा + कंसोल समीक्षा</text>
+  <text x="610" y="245" text-anchor="middle" fill="#ef4444" font-size="11">पहचान पत्र / पासपोर्ट / ड्राइविंग लाइसेंस</text>
+  <text x="610" y="264" text-anchor="middle" fill="#ef4444" font-size="11">तीन-स्तरीय सत्यापन प्रणाली</text>
+
+  <rect x="735" y="182" width="230" height="95" rx="8" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="206" text-anchor="middle" fill="#4c1d95" font-size="13" font-weight="bold">लीडरबोर्ड</text>
+  <text x="850" y="226" text-anchor="middle" fill="#7c3aed" font-size="11">दैनिक / साप्ताहिक / मासिक / कुल</text>
+  <text x="850" y="245" text-anchor="middle" fill="#7c3aed" font-size="11">Redis कैश + रीयल-टाइम सॉर्टिंग</text>
+  <text x="850" y="264" text-anchor="middle" fill="#7c3aed" font-size="11">WebSocket रीयल-टाइम पुश (:8789)</text>
+
+  <rect x="30" y="292" width="220" height="95" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="316" text-anchor="middle" fill="#064e3b" font-size="13" font-weight="bold">कूपन</text>
+  <text x="140" y="336" text-anchor="middle" fill="#10b981" font-size="11">निश्चित राशि / प्रतिशत छूट</text>
+  <text x="140" y="355" text-anchor="middle" fill="#10b981" font-size="11">समय-सीमा/मात्रा सीमा / उपयोग ट्रैकिंग</text>
+
+  <rect x="265" y="292" width="220" height="95" rx="8" fill="#fff1f2" stroke="#fda4af" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="316" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">रेफरल प्रणाली</text>
+  <text x="375" y="336" text-anchor="middle" fill="#f43f5e" font-size="11">अद्वितीय रेफरल कोड निर्माण</text>
+  <text x="375" y="355" text-anchor="middle" fill="#f43f5e" font-size="11">पंजीकरण पुरस्कार + रिचार्ज कमीशन</text>
+
+  <rect x="500" y="292" width="220" height="95" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="316" text-anchor="middle" fill="#7c2d12" font-size="13" font-weight="bold">जोखिम नियंत्रण प्रणाली</text>
+  <text x="610" y="336" text-anchor="middle" fill="#f97316" font-size="11">IP ब्लैकलिस्ट / बड़ी राशि अलर्ट</text>
+  <text x="610" y="355" text-anchor="middle" fill="#f97316" font-size="11">आवृत्ति पहचान / गति असामान्यता</text>
+
+  <rect x="735" y="292" width="230" height="95" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="316" text-anchor="middle" fill="#334155" font-size="13" font-weight="bold">अंतर्राष्ट्रीयकरण i18n</text>
+  <text x="850" y="336" text-anchor="middle" fill="#64748b" font-size="11">4 भाषाएँ en/zh/ja/ko</text>
+  <text x="850" y="355" text-anchor="middle" fill="#64748b" font-size="11">अनुवाद तालिका + कैश तंत्र</text>
+
+  <rect x="30" y="402" width="220" height="95" rx="8" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="426" text-anchor="middle" fill="#0c4a6e" font-size="13" font-weight="bold">सूचना केंद्र</text>
+  <text x="140" y="446" text-anchor="middle" fill="#0ea5e9" font-size="11">साइट संदेश + ईमेल सूचना</text>
+  <text x="140" y="465" text-anchor="middle" fill="#0ea5e9" font-size="11">रिचार्ज/निकासी/KYC/कूपन</text>
+
+  <rect x="265" y="402" width="220" height="95" rx="8" fill="#fefce8" stroke="#fef08a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="426" text-anchor="middle" fill="#713f12" font-size="13" font-weight="bold">देश विभेदीकरण</text>
+  <text x="375" y="446" text-anchor="middle" fill="#eab308" font-size="11">8 देश भुगतान/निकासी विधि कॉन्फ़िगरेशन</text>
+  <text x="375" y="465" text-anchor="middle" fill="#eab308" font-size="11">न्यूनतम रिचार्ज राशि विभेदित</text>
+
+  <rect x="500" y="402" width="220" height="95" rx="8" fill="#f5f3ff" stroke="#e9d5ff" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="426" text-anchor="middle" fill="#581c87" font-size="13" font-weight="bold">सांख्यिकी विश्लेषण</text>
+  <text x="610" y="446" text-anchor="middle" fill="#a855f7" font-size="11">दैनिक सांख्यिकी स्नैपशॉट (5 प्रकार मीट्रिक)</text>
+  <text x="610" y="465" text-anchor="middle" fill="#a855f7" font-size="11">प्लेटफ़ॉर्म आय ट्रैकिंग</text>
+
+  <rect x="735" y="402" width="230" height="95" rx="8" fill="#fff1f2" stroke="#fecdd3" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="426" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">पूर्ण-पाठ खोज</text>
+  <text x="850" y="446" text-anchor="middle" fill="#e11d48" font-size="11">Elasticsearch खोज</text>
+  <text x="850" y="465" text-anchor="middle" fill="#e11d48" font-size="11">LIKE फ़ॉलबैक + Scout समकालिक</text>
+
+  <rect x="30" y="518" width="940" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="500" y="546" text-anchor="middle" fill="#475569" font-size="14" font-weight="bold">प्लेटफ़ॉर्म क्षमता सारांश</text>
+  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">उपयोगकर्ता प्रमाणीकरण · वॉलेट (ऑप्टिमिस्टिक लॉक) · रिचार्ज (Stripe/PayPal) · विनिमय (रीयल-टाइम विनिमय दर) · निकासी (समीक्षा/स्वचालित) · KYC (तीन-स्तरीय)</text>
+  <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">गेम CRUD (10 श्रेणियाँ + सर्वर) · लीडरबोर्ड (WebSocket रीयल-टाइम) · कूपन · रेफरल (पंजीकरण पुरस्कार + कमीशन) · जोखिम नियंत्रण (4 प्रकार नियम)</text>
+  <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">सूचना (साइट + ईमेल) · देश विभेदीकरण (8 देश) · अंतर्राष्ट्रीयकरण (4 भाषाएँ) · सांख्यिकी (दैनिक स्नैपशॉट + आय) · पूर्ण-पाठ खोज (ES)</text>
+
+  <text x="500" y="662" text-anchor="middle" fill="#94a3b8" font-size="11">तीन क्लाइंट: Flutter Admin (15 पेज) + Flutter Platform (10 पेज) + HarmonyOS (5 पेज)</text>
+  <text x="500" y="682" text-anchor="middle" fill="#94a3b8" font-size="11">परिनियोजन: Docker Compose 7 सेवा ऑर्केस्ट्रेशन + Nginx रिवर्स प्रॉक्सी + CI/CD (GitHub Actions)</text>
+
+  <text x="500" y="740" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>
+</svg>

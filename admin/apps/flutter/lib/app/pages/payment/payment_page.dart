@@ -60,11 +60,11 @@ class PaymentPage extends GetView<PaymentController> {
         Expanded(
           child: Obx(() {
             if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
-            if (ctrl.methods.isEmpty) return const Center(child: Text("${AppTranslations.t('app.no_data')}"));
+            if (ctrl.methods.isEmpty) return Center(child: Text("${AppTranslations.t('app.no_data')}"));
 
             return SingleChildScrollView(
               child: DataTable(
-                columns: const [
+                columns: [
                   DataColumn(label: Text("${AppTranslations.t('game.name')}")),
                   DataColumn(label: Text("${AppTranslations.t('game.type')}")),
                   DataColumn(label: Text('${AppTranslations.t('payment.provider')}')),

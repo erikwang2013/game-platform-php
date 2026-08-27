@@ -1,4 +1,8 @@
 # 部署文档
+<!-- lang-nav -->
+
+Languages: **中文** · [English](DEPLOYMENT.en.md) · [한국어](DEPLOYMENT.ko.md) · [Русский](DEPLOYMENT.ru.md) · [Deutsch](DEPLOYMENT.de.md) · [Français](DEPLOYMENT.fr.md) · [Español](DEPLOYMENT.es.md) · [Português](DEPLOYMENT.pt.md) · [हिन्दी](DEPLOYMENT.hi.md) · [العربية](DEPLOYMENT.ar.md) · [বাংলা](DEPLOYMENT.bn.md) · [Bahasa Indonesia](DEPLOYMENT.id.md) · [日本語](DEPLOYMENT.ja.md)
+
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -95,12 +99,7 @@ docker-compose logs -f
 ```bash
 # 迁移文件会在 MySQL 首次启动时自动执行
 # 或手动执行:
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_16_000000_init_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000003_platform_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000004_i18n_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000005_standard_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000006_complete_tables.sql
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < admin/database/migrations/2026_05_22_000007_production_tables.sql
+docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform < install/install.sql
 ```
 
 ### 2.4 数据持久化
@@ -116,10 +115,10 @@ docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform <
 备份：
 ```bash
 # MySQL 备份
-docker exec game-platform-mysql mysqldump -uroot -p${DB_PASSWORD} game_platform | gzip > backup_$(date +%Y%m%d).sql.gz
+docker exec game-platform-mysql mysqldump -uroot -p${DB_PASSWORD} game-platform | gzip > backup_$(date +%Y%m%d).sql.gz
 
 # 恢复
-gunzip < backup_20260101.sql.gz | docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform
+gunzip < backup_20260101.sql.gz | docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform
 ```
 
 ---
@@ -167,8 +166,8 @@ APP_DEBUG=false
 
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=game_platform
-DB_USERNAME=game_platform
+DB_DATABASE=game-platform
+DB_USERNAME=game-platform
 DB_PASSWORD=<强密码>
 
 JWT_SECRET=<64位随机字符串>
@@ -507,7 +506,7 @@ tail -f runtime/logs/workerman.log
 
 ```bash
 # 测试连接
-mysql -h 127.0.0.1 -u game_platform -p game_platform -e "SELECT 1"
+mysql -h 127.0.0.1 -u game-platform -p game-platform -e "SELECT 1"
 
 # 检查 .env 配置
 grep DB_ admin/.env
@@ -557,7 +556,7 @@ cd admin && composer install --no-dev --optimize-autoloader
 cd ../service && composer install --no-dev --optimize-autoloader
 
 # 3. 执行新迁移（如有）
-mysql -u game_platform -p game_platform < admin/database/migrations/新迁移文件.sql
+mysql -u game-platform -p game-platform < install/新迁移文件.sql
 
 # 4. 平滑重启（不中断服务）
 cd /opt/game-platform/admin && php start.php reload

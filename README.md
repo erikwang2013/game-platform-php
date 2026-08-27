@@ -1,6 +1,9 @@
 # 全球游戏聚合平台 (Global Game Platform)
+<!-- lang-nav -->
 
-[English](README_EN.md) | 中文
+Languages: **中文** · [English](docs/translations/README.en.md) · [한국어](docs/translations/README.ko.md) · [Русский](docs/translations/README.ru.md) · [Deutsch](docs/translations/README.de.md) · [Français](docs/translations/README.fr.md) · [Español](docs/translations/README.es.md) · [Português](docs/translations/README.pt.md) · [हिन्दी](docs/translations/README.hi.md) · [العربية](docs/translations/README.ar.md) · [বাংলা](docs/translations/README.bn.md) · [Bahasa Indonesia](docs/translations/README.id.md) · [日本語](docs/translations/README.ja.md)
+
+
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -17,7 +20,7 @@
 
 ### 后端
 - PHP 8.3+, webman v2 (workerman/webman)
-- MySQL 8.0+ (表前缀 `erik_`，BIGINT 非自增主键)
+- MySQL 8.0+ (表前缀 `game_`，BIGINT 非自增主键)
 - Redis (Session / 缓存 / 限流)
 - ClickHouse (OLAP 分析 / 概率计算)
 - Elasticsearch (全文检索)
@@ -56,7 +59,6 @@ game-platform-php/
 │   ├── app/provider/          #   游戏Provider层
 │   ├── app/event/             #   事件总线 (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission)
 │   ├── config/                #   配置文件
-│   ├── database/migrations/   #   SQL 迁移文件
 │   └── apps/flutter/          #   Flutter Web PC 管理后台
 │
 ├── service/                   # C端业务端 (webman v2, 端口 8788)
@@ -66,10 +68,11 @@ game-platform-php/
 │   ├── app/event/             #   事件总线 (EventBus Redis Pub/Sub)
 │   └── config/                #   配置文件
 │
-├── install/                   # 一键安装向导
+├── install/                   # 一键安装向导 + 数据库初始化 SQL
 │   ├── index.php              #   安装入口
 │   ├── Installer.php          #   安装核心逻辑
-│   ├── install.sql            #   合并安装 SQL（43张表+种子数据）
+│   ├── install.sql            #   合并安装 SQL（MySQL 全量：43张表+种子数据）
+│   ├── clickhouse.sql         #   ClickHouse 分析库 DDL（独立引擎，单独导入）
 │   └── assets/                #   静态资源
 │
 ├── admin/common/ 与 service/common/   # 共享服务各一份 (DepositLogService 等，待抽共享层)
@@ -139,8 +142,8 @@ rm -rf install/
 
 ```bash
 # 一键导入合并 SQL
-mysql -u root -e "CREATE DATABASE IF NOT EXISTS game_platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -u root game_platform < install/install.sql
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS game-platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root game-platform < install/install.sql
 ```
 
 #### 2. 配置环境变量
@@ -219,14 +222,31 @@ curl -X POST http://localhost:8788/api/auth/register \
 
 ## 测试
 
+测试报告（本地存储）：[docs/test-reports/](docs/test-reports/)
+
+| 测试类型 | 用例/覆盖 | 结果 |
+|---------|----------|------|
+| PHP 单元测试 | admin 153 + service 60 + 新增 63 用例 | service 全过；admin 6 errors + 1 failure 为既有问题（详见报告） |
+| 稳定性机制测试 | 熔断/重试/降级开关 15 用例（CircuitBreakerTest/RetryTest/ResilienceMockTest） | 全部通过 |
+| API 接口自动化 | 187 端点全量覆盖，225 断言 | 171 通过 / 50 失败 / 4 跳过（失败均为确定性缺陷，详见报告） |
+| Flutter UI 测试 | 12 用例（登录/仪表盘/导航/语言切换） | 全部通过 |
+| Go/Rust | 仓库无 Go/Rust 代码 | 跳过，已记录 |
+
 ```bash
-cd admin
-phpunit --bootstrap tests/bootstrap.php tests/
+# PHP 单元测试（需先导出 JWT 密钥环境变量）
+cd admin && ADMIN_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
+cd service && SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
+# API 接口自动化（需启动服务，详见 tests/api/run_all.sh）
+bash tests/api/run_all.sh
+# Flutter UI 测试
+cd admin/apps/flutter && flutter test --timeout 300s
 ```
 
-- PHPUnit 12.x，116 个测试用例
-- 56 个业务逻辑测试 (PlatformTest) + 60 个基础设施测试
-- 覆盖：bcmath 精度、兑换计算、提现费用、限额、风控、优惠券、KYC、i18n
+详细报告：
+- [PHP 单元测试报告](docs/test-reports/php-unit.md)
+- [稳定性机制测试报告（熔断/重试/降级）](docs/test-reports/resilience.md)
+- [API 接口自动化报告](docs/test-reports/api.md)
+- [Flutter UI 测试报告](docs/test-reports/ui.md)
 
 ## 平台能力总览
 
@@ -346,7 +366,7 @@ flowchart LR
 
 ## 生态扩展 (v2.0)
 
-![生态扩展架构图](docs/diagrams/ecosystem-expansion.svg)
+![生态扩展架构图](docs/diagrams/ecosystem-expansion-zh.svg)
 
 ## 文档索引
 
@@ -387,3 +407,37 @@ flowchart LR
     </tr>
   </table>
 </p>
+
+### 全球转账（Global Bank Transfer）
+
+**收款人信息（Recipient）**
+
+| 项 | 内容 |
+|----|------|
+| 收款人姓名（Beneficiary Name） | WANG KEXUN |
+| 收款账户号码（Account Number） | 881015918251 |
+
+**收款银行（Beneficiary Bank）**
+
+| 项 | 内容 |
+|----|------|
+| SWIFT Code | AABLHKHHXXX |
+| 银行名称（Bank Name） | ZA Bank Limited |
+| 银行编号（Bank Code） | 387 |
+| 银行地址（Bank Address） | Core F, Cyberport 3, 100 Cyberport Road, Hong Kong |
+
+**跨境汇款代理银行（Correspondent Bank，如需）**
+
+> 请留意，此为跨境汇款代理银行（中转银行）信息，非收款银行信息。请向汇款银行查询是否需要提供跨境汇款代理银行信息。
+
+- **汇入港元、人民币及美元的代理银行为 Citibank：**
+  - 银行名称：Citibank N.A. Hong Kong
+  - SWIFT Code：CITIHKHXXXX
+  - 银行编号：006
+  - 分行名称：Hong Kong Branch
+  - 分行编号：391
+  - 银行地址：Citibank Tower, Citibank Plaza, 3 Garden Road, Central, Hong Kong
+- **汇入其他币种时的代理银行为 BNY Mellon：**
+  - 银行名称：THE BANK OF NEW YORK MELLON
+  - SWIFT Code：IRVTUS3NXXX
+  - 银行地址：THE BANK OF NEW YORK MELLON, 240 GREENWICH STREET, NEW YORK, United States

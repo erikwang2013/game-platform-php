@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 750" font-family="Arial, 'Noto Sans SC', 'Noto Sans KR', sans-serif">
+  <defs>
+    <linearGradient id="hd" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#8b5cf6"/></linearGradient>
+    <filter id="sh"><feDropShadow dx="1" dy="1" stdDeviation="1.5" flood-opacity=".06"/></filter>
+  </defs>
+  <rect width="1000" height="750" fill="#fafbfc"/>
+
+  <rect x="0" y="0" width="1000" height="52" fill="url(#hd)"/>
+  <text x="500" y="34" text-anchor="middle" fill="#fff" font-size="21" font-weight="bold">글로벌 게임 통합 플랫폼 — 기능 전체 지도</text>
+
+  <rect x="30" y="72" width="220" height="95" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="96" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">사용자 인증</text>
+  <text x="140" y="116" text-anchor="middle" fill="#3b82f6" font-size="11">사용자 이름/비밀번호 로그인·등록</text>
+  <text x="140" y="135" text-anchor="middle" fill="#3b82f6" font-size="11">Google/Facebook/Apple OAuth</text>
+  <text x="140" y="154" text-anchor="middle" fill="#3b82f6" font-size="11">2FA TOTP 이중 인증</text>
+
+  <rect x="265" y="72" width="220" height="95" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="96" text-anchor="middle" fill="#854d0e" font-size="13" font-weight="bold">지갑 시스템</text>
+  <text x="375" y="116" text-anchor="middle" fill="#ca8a04" font-size="11">플랫폼 코인 지갑 (낙관적 잠금으로 동시성 방지)</text>
+  <text x="375" y="135" text-anchor="middle" fill="#ca8a04" font-size="11">게임 코인 지갑 (게임별 독립)</text>
+  <text x="375" y="154" text-anchor="middle" fill="#ca8a04" font-size="11">전 링크 거래 내역 추적</text>
+
+  <rect x="500" y="72" width="220" height="95" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="96" text-anchor="middle" fill="#166534" font-size="13" font-weight="bold">충전 시스템</text>
+  <text x="610" y="116" text-anchor="middle" fill="#22c55e" font-size="11">충전 주문 생성</text>
+  <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">Stripe/PayPal 콜백 서명 검증</text>
+  <text x="610" y="154" text-anchor="middle" fill="#22c55e" font-size="11">자동 입금 + 사이트 내 알림</text>
+
+  <rect x="735" y="72" width="230" height="95" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="96" text-anchor="middle" fill="#9a3412" font-size="13" font-weight="bold">출금 시스템</text>
+  <text x="850" y="116" text-anchor="middle" fill="#ea580c" font-size="11">신청 → 심사 → 지급</text>
+  <text x="850" y="135" text-anchor="middle" fill="#ea580c" font-size="11">전역 스위치 / KYC 단계별 한도</text>
+  <text x="850" y="154" text-anchor="middle" fill="#ea580c" font-size="11">자동 심사 임계값 설정 가능</text>
+
+  <rect x="30" y="182" width="220" height="95" rx="8" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="206" text-anchor="middle" fill="#5b21b6" font-size="13" font-weight="bold">환전 엔진</text>
+  <text x="140" y="226" text-anchor="middle" fill="#8b5cf6" font-size="11">플랫폼 코인 ⇄ 게임 코인 양방향 환전</text>
+  <text x="140" y="245" text-anchor="middle" fill="#8b5cf6" font-size="11">실시간 견적 / 환율 관리</text>
+  <text x="140" y="264" text-anchor="middle" fill="#8b5cf6" font-size="11">플랫폼 차액 수익</text>
+
+  <rect x="265" y="182" width="220" height="95" rx="8" fill="#fce7f3" stroke="#f9a8d4" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="206" text-anchor="middle" fill="#831843" font-size="13" font-weight="bold">게임 관리</text>
+  <text x="375" y="226" text-anchor="middle" fill="#ec4899" font-size="11">CRUD + 자체 개발/서드파티 유형</text>
+  <text x="375" y="245" text-anchor="middle" fill="#ec4899" font-size="11">게임 카테고리 10개 + 구역 관리</text>
+  <text x="375" y="264" text-anchor="middle" fill="#ec4899" font-size="11">게임 기록 전 과정 추적</text>
+
+  <rect x="500" y="182" width="220" height="95" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="206" text-anchor="middle" fill="#991b1b" font-size="13" font-weight="bold">KYC 실명 인증</text>
+  <text x="610" y="226" text-anchor="middle" fill="#ef4444" font-size="11">실명 인증 제출 + 백오피스 심사</text>
+  <text x="610" y="245" text-anchor="middle" fill="#ef4444" font-size="11">신분증 / 여권 / 운전면허</text>
+  <text x="610" y="264" text-anchor="middle" fill="#ef4444" font-size="11">3단계 인증 등급 체계</text>
+
+  <rect x="735" y="182" width="230" height="95" rx="8" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="206" text-anchor="middle" fill="#4c1d95" font-size="13" font-weight="bold">리더보드</text>
+  <text x="850" y="226" text-anchor="middle" fill="#7c3aed" font-size="11">일 / 주 / 월 / 누적 랭킹</text>
+  <text x="850" y="245" text-anchor="middle" fill="#7c3aed" font-size="11">Redis 캐시 + 실시간 정렬</text>
+  <text x="850" y="264" text-anchor="middle" fill="#7c3aed" font-size="11">WebSocket 실시간 푸시 (:8789)</text>
+
+  <rect x="30" y="292" width="220" height="95" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="316" text-anchor="middle" fill="#064e3b" font-size="13" font-weight="bold">쿠폰</text>
+  <text x="140" y="336" text-anchor="middle" fill="#10b981" font-size="11">고정 금액 / 비율 할인</text>
+  <text x="140" y="355" text-anchor="middle" fill="#10b981" font-size="11">기한·수량 제한 / 수령·사용 추적</text>
+
+  <rect x="265" y="292" width="220" height="95" rx="8" fill="#fff1f2" stroke="#fda4af" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="316" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">추천 시스템</text>
+  <text x="375" y="336" text-anchor="middle" fill="#f43f5e" font-size="11">고유 추천 코드 생성</text>
+  <text x="375" y="355" text-anchor="middle" fill="#f43f5e" font-size="11">등록 보상 + 충전 커미션</text>
+
+  <rect x="500" y="292" width="220" height="95" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="316" text-anchor="middle" fill="#7c2d12" font-size="13" font-weight="bold">리스크 관리</text>
+  <text x="610" y="336" text-anchor="middle" fill="#f97316" font-size="11">IP 블랙리스트 / 대액 경보</text>
+  <text x="610" y="355" text-anchor="middle" fill="#f97316" font-size="11">빈도 감지 / 속도 이상</text>
+
+  <rect x="735" y="292" width="230" height="95" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="316" text-anchor="middle" fill="#334155" font-size="13" font-weight="bold">국제화 i18n</text>
+  <text x="850" y="336" text-anchor="middle" fill="#64748b" font-size="11">4언어 en/zh/ja/ko</text>
+  <text x="850" y="355" text-anchor="middle" fill="#64748b" font-size="11">번역 테이블 + 캐시 메커니즘</text>
+
+  <rect x="30" y="402" width="220" height="95" rx="8" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="426" text-anchor="middle" fill="#0c4a6e" font-size="13" font-weight="bold">알림 센터</text>
+  <text x="140" y="446" text-anchor="middle" fill="#0ea5e9" font-size="11">사이트 내 메시지 + 이메일 알림</text>
+  <text x="140" y="465" text-anchor="middle" fill="#0ea5e9" font-size="11">충전/출금/KYC/쿠폰</text>
+
+  <rect x="265" y="402" width="220" height="95" rx="8" fill="#fefce8" stroke="#fef08a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="426" text-anchor="middle" fill="#713f12" font-size="13" font-weight="bold">국가 차등화</text>
+  <text x="375" y="446" text-anchor="middle" fill="#eab308" font-size="11">8개국 결제/출금 방식 설정</text>
+  <text x="375" y="465" text-anchor="middle" fill="#eab308" font-size="11">최소 충전액 차등화</text>
+
+  <rect x="500" y="402" width="220" height="95" rx="8" fill="#f5f3ff" stroke="#e9d5ff" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="426" text-anchor="middle" fill="#581c87" font-size="13" font-weight="bold">통계 분석</text>
+  <text x="610" y="446" text-anchor="middle" fill="#a855f7" font-size="11">일별 통계 스냅샷 (지표 5종)</text>
+  <text x="610" y="465" text-anchor="middle" fill="#a855f7" font-size="11">플랫폼 수익 추적</text>
+
+  <rect x="735" y="402" width="230" height="95" rx="8" fill="#fff1f2" stroke="#fecdd3" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="426" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">전문 검색</text>
+  <text x="850" y="446" text-anchor="middle" fill="#e11d48" font-size="11">Elasticsearch 검색</text>
+  <text x="850" y="465" text-anchor="middle" fill="#e11d48" font-size="11">LIKE 폴백 + Scout 동기화</text>
+
+  <rect x="30" y="518" width="940" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="500" y="546" text-anchor="middle" fill="#475569" font-size="14" font-weight="bold">플랫폼 능력 요약</text>
+  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">사용자 인증 · 지갑(낙관적 잠금) · 충전(Stripe/PayPal) · 환전(실시간 환율) · 출금(심사/자동) · KYC(3단계 인증)</text>
+  <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">게임 CRUD(10카테고리+구역) · 리더보드(WebSocket 실시간) · 쿠폰 · 추천(등록 보상+커미션) · 리스크(4종 규칙)</text>
+  <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">알림(사이트 내+이메일) · 국가 차등화(8개국) · 국제화(4언어) · 통계(일 스냅샷+수익) · 전문 검색(ES)</text>
+
+  <text x="500" y="662" text-anchor="middle" fill="#94a3b8" font-size="11">3단 클라이언트: Flutter Admin (15페이지) + Flutter Platform (10페이지) + HarmonyOS (5페이지)</text>
+  <text x="500" y="682" text-anchor="middle" fill="#94a3b8" font-size="11">배포: Docker Compose 7서비스 오케스트레이션 + Nginx 리버스 프록시 + CI/CD (GitHub Actions)</text>
+
+  <text x="500" y="740" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>
+</svg>

@@ -1,4 +1,8 @@
 # Changelog
+<!-- lang-nav -->
+
+Languages: **中文** · [English](CHANGELOG.en.md) · [한국어](CHANGELOG.ko.md) · [Русский](CHANGELOG.ru.md) · [Deutsch](CHANGELOG.de.md) · [Français](CHANGELOG.fr.md) · [Español](CHANGELOG.es.md) · [Português](CHANGELOG.pt.md) · [हिन्दी](CHANGELOG.hi.md) · [العربية](CHANGELOG.ar.md) · [বাংলা](CHANGELOG.bn.md) · [Bahasa Indonesia](CHANGELOG.id.md) · [日本語](CHANGELOG.ja.md)
+
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -23,7 +27,7 @@
 ### 可用性
 
 - admin 分析服务 12 条 `/admin/analytics/*` 路由挂载。
-- 模型去掉硬编码 `erik_` 前缀；DepositLog 审计落库；Test model 删除。
+- 模型去掉硬编码 `game_` 前缀；DepositLog 审计落库；Test model 删除。
 
 ### 可观测
 
@@ -44,3 +48,12 @@
 - admin/service **模型**仍双份（仅部分 `common/service` 入 path 包）。
 - `webman/queue` 未接线；概率/留存未迁 OLAP。
 - PROJECT-PLAN / VERSIONS / 审计报告部分段落仍可能滞后于本 CHANGELOG，以本文件与磁盘为准。
+
+## [1.1] resilience — 2026-08-27
+
+### 稳定性
+
+- 共享层新增 `CircuitBreaker`（Redis 状态存储，阈值 5 / 窗口 30s，Redis 不可用 fail-open）与 `Retry`（指数退避，仅网络类异常可重试，上限 5 次），位于 `packages/platform-common/src/`。
+- 降级开关 `feature.provider_mock`：PushService（FCM/APNs/HarmonyOS）、PayoutService（PayPal）、ThirdPartyProvider 接入 mock 短路，`on` 时跳过真实网络调用。
+- 修复 11 处 `getenv($name, '')` 第二参类型缺陷（strict_types 下必抛 TypeError）；PushService mock 检查移入 try/catch。
+- 新增测试：CircuitBreakerTest / RetryTest / ResilienceMockTest，service 套件 45 → 60 用例全绿（报告见 [test-reports/resilience.md](test-reports/resilience.md)）。

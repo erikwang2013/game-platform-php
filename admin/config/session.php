@@ -36,13 +36,13 @@ return [
             'auth' => '',
             'timeout' => 2,
             'database' => '',
-            'prefix' => 'redis_session_',
+            'prefix' => 'game-platform:session:',
         ],
         'redis_cluster' => [
             'host' => ['127.0.0.1:7000', '127.0.0.1:7001', '127.0.0.1:7001'],
             'timeout' => 2,
             'auth' => '',
-            'prefix' => 'redis_session_',
+            'prefix' => 'game-platform:session:',
         ]
     ],
 

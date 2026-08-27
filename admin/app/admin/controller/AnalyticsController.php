@@ -121,8 +121,8 @@ class AnalyticsController extends BaseController
         $b = $this->decodeId($request->input('game_b', '0'));
         if ($a <= 0 || $b <= 0) return $this->fail('game_a and game_b required', 422);
         return $this->success(['joint' => ProbabilityService::joint(
-            ['table' => 'erik_game_play_log', 'alias' => 'user_id', 'where' => ['game_id' => $a]],
-            ['table' => 'erik_game_play_log', 'alias' => 'user_id', 'where' => ['game_id' => $b]],
+            ['table' => 'game_game_play_log', 'alias' => 'user_id', 'where' => ['game_id' => $a]],
+            ['table' => 'game_game_play_log', 'alias' => 'user_id', 'where' => ['game_id' => $b]],
         )]);
     }
 

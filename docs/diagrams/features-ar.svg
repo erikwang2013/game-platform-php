@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 750" font-family="Arial, 'Noto Sans SC', sans-serif, 'Noto Kufi Arabic', sans-serif">
+  <defs>
+    <linearGradient id="hd" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#8b5cf6"/></linearGradient>
+    <filter id="sh"><feDropShadow dx="1" dy="1" stdDeviation="1.5" flood-opacity=".06"/></filter>
+  </defs>
+  <rect width="1000" height="750" fill="#fafbfc"/>
+
+  <rect x="0" y="0" width="1000" height="52" fill="url(#hd)"/>
+  <text x="500" y="34" text-anchor="middle" fill="#fff" font-size="21" font-weight="bold">منصة تجميع الألعاب العالمية — خريطة الوظائف الشاملة</text>
+
+  <rect x="30" y="72" width="220" height="95" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="96" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">مصادقة المستخدم</text>
+  <text x="140" y="116" text-anchor="middle" fill="#3b82f6" font-size="11">دخول/تسجيل باسم المستخدم وكلمة المرور</text>
+  <text x="140" y="135" text-anchor="middle" fill="#3b82f6" font-size="11">Google/Facebook/Apple OAuth</text>
+  <text x="140" y="154" text-anchor="middle" fill="#3b82f6" font-size="11">مصادقة ثنائية 2FA TOTP</text>
+
+  <rect x="265" y="72" width="220" height="95" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="96" text-anchor="middle" fill="#854d0e" font-size="13" font-weight="bold">نظام المحفظة</text>
+  <text x="375" y="116" text-anchor="middle" fill="#ca8a04" font-size="11">محفظة عملات المنصة (قفل تفاؤلي ضد التزامن)</text>
+  <text x="375" y="135" text-anchor="middle" fill="#ca8a04" font-size="11">محفظة عملات اللعبة (مستقلة لكل لعبة)</text>
+  <text x="375" y="154" text-anchor="middle" fill="#ca8a04" font-size="11">تتبع سجلات الحركات بكامل المسار</text>
+
+  <rect x="500" y="72" width="220" height="95" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="96" text-anchor="middle" fill="#166534" font-size="13" font-weight="bold">نظام الشحن</text>
+  <text x="610" y="116" text-anchor="middle" fill="#22c55e" font-size="11">إنشاء طلب شحن</text>
+  <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">تحقق توقيع استدعاء Stripe/PayPal</text>
+  <text x="610" y="154" text-anchor="middle" fill="#22c55e" font-size="11">إيداع تلقائي + إشعار داخل الموقع</text>
+
+  <rect x="735" y="72" width="230" height="95" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="96" text-anchor="middle" fill="#9a3412" font-size="13" font-weight="bold">نظام السحب</text>
+  <text x="850" y="116" text-anchor="middle" fill="#ea580c" font-size="11">طلب ← مراجعة ← تحويل</text>
+  <text x="850" y="135" text-anchor="middle" fill="#ea580c" font-size="11">مفتاح عام / حدود KYC المتدرجة</text>
+  <text x="850" y="154" text-anchor="middle" fill="#ea580c" font-size="11">عتبة المراجعة التلقائية قابلة للضبط</text>
+
+  <rect x="30" y="182" width="220" height="95" rx="8" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="206" text-anchor="middle" fill="#5b21b6" font-size="13" font-weight="bold">محرك الاستبدال</text>
+  <text x="140" y="226" text-anchor="middle" fill="#8b5cf6" font-size="11">استبدال ثنائي الاتجاه منصة ⇄ لعبة</text>
+  <text x="140" y="245" text-anchor="middle" fill="#8b5cf6" font-size="11">استعلام سعر لحظي / إدارة سعر الصرف</text>
+  <text x="140" y="264" text-anchor="middle" fill="#8b5cf6" font-size="11">إيراد فرق عمولة المنصة</text>
+
+  <rect x="265" y="182" width="220" height="95" rx="8" fill="#fce7f3" stroke="#f9a8d4" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="206" text-anchor="middle" fill="#831843" font-size="13" font-weight="bold">إدارة الألعاب</text>
+  <text x="375" y="226" text-anchor="middle" fill="#ec4899" font-size="11">CRUD + أنواع مطوّرة ذاتيًا/جهة ثالثة</text>
+  <text x="375" y="245" text-anchor="middle" fill="#ec4899" font-size="11">10 فئات ألعاب + إدارة الخوادم</text>
+  <text x="375" y="264" text-anchor="middle" fill="#ec4899" font-size="11">تتبع سجلات الألعاب كاملًا</text>
+
+  <rect x="500" y="182" width="220" height="95" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="206" text-anchor="middle" fill="#991b1b" font-size="13" font-weight="bold">التحقق من الهوية KYC</text>
+  <text x="610" y="226" text-anchor="middle" fill="#ef4444" font-size="11">تقديم التحقق + مراجعة الخلفية</text>
+  <text x="610" y="245" text-anchor="middle" fill="#ef4444" font-size="11">بطاقة هوية / جواز سفر / رخصة قيادة</text>
+  <text x="610" y="264" text-anchor="middle" fill="#ef4444" font-size="11">نظام ثلاثي لمستويات التحقق</text>
+
+  <rect x="735" y="182" width="230" height="95" rx="8" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="206" text-anchor="middle" fill="#4c1d95" font-size="13" font-weight="bold">لوحات المتصدرين</text>
+  <text x="850" y="226" text-anchor="middle" fill="#7c3aed" font-size="11">يومية / أسبوعية / شهرية / إجمالية</text>
+  <text x="850" y="245" text-anchor="middle" fill="#7c3aed" font-size="11">تخزين مؤقت Redis + فرز لحظي</text>
+  <text x="850" y="264" text-anchor="middle" fill="#7c3aed" font-size="11">دفع لحظي WebSocket (:8789)</text>
+
+  <rect x="30" y="292" width="220" height="95" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="316" text-anchor="middle" fill="#064e3b" font-size="13" font-weight="bold">القسائم</text>
+  <text x="140" y="336" text-anchor="middle" fill="#10b981" font-size="11">مبلغ ثابت / خصم نسبي</text>
+  <text x="140" y="355" text-anchor="middle" fill="#10b981" font-size="11">محدودة بالوقت والكمية / تتبع الاستلام والاستخدام</text>
+
+  <rect x="265" y="292" width="220" height="95" rx="8" fill="#fff1f2" stroke="#fda4af" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="316" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">نظام الإحالة</text>
+  <text x="375" y="336" text-anchor="middle" fill="#f43f5e" font-size="11">توليد رمز إحالة فريد</text>
+  <text x="375" y="355" text-anchor="middle" fill="#f43f5e" font-size="11">مكافأة التسجيل + عمولة الشحن</text>
+
+  <rect x="500" y="292" width="220" height="95" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="316" text-anchor="middle" fill="#7c2d12" font-size="13" font-weight="bold">نظام إدارة المخاطر</text>
+  <text x="610" y="336" text-anchor="middle" fill="#f97316" font-size="11">قائمة IP السوداء / إنذار المبالغ الكبيرة</text>
+  <text x="610" y="355" text-anchor="middle" fill="#f97316" font-size="11">كشف التكرار / شذوذ السرعة</text>
+
+  <rect x="735" y="292" width="230" height="95" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="316" text-anchor="middle" fill="#334155" font-size="13" font-weight="bold">التدويل i18n</text>
+  <text x="850" y="336" text-anchor="middle" fill="#64748b" font-size="11">4 لغات en/zh/ja/ko</text>
+  <text x="850" y="355" text-anchor="middle" fill="#64748b" font-size="11">جدول الترجمات + آلية التخزين المؤقت</text>
+
+  <rect x="30" y="402" width="220" height="95" rx="8" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="426" text-anchor="middle" fill="#0c4a6e" font-size="13" font-weight="bold">مركز الإشعارات</text>
+  <text x="140" y="446" text-anchor="middle" fill="#0ea5e9" font-size="11">رسائل داخل الموقع + إشعارات البريد</text>
+  <text x="140" y="465" text-anchor="middle" fill="#0ea5e9" font-size="11">الشحن/السحب/KYC/القسائم</text>
+
+  <rect x="265" y="402" width="220" height="95" rx="8" fill="#fefce8" stroke="#fef08a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="426" text-anchor="middle" fill="#713f12" font-size="13" font-weight="bold">التفاضل حسب الدولة</text>
+  <text x="375" y="446" text-anchor="middle" fill="#eab308" font-size="11">إعداد طرق الدفع/السحب لـ 8 دول</text>
+  <text x="375" y="465" text-anchor="middle" fill="#eab308" font-size="11">تفاضل الحد الأدنى للشحن</text>
+
+  <rect x="500" y="402" width="220" height="95" rx="8" fill="#f5f3ff" stroke="#e9d5ff" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="426" text-anchor="middle" fill="#581c87" font-size="13" font-weight="bold">التحليل الإحصائي</text>
+  <text x="610" y="446" text-anchor="middle" fill="#a855f7" font-size="11">لقطة الإحصائيات اليومية (5 فئات مؤشرات)</text>
+  <text x="610" y="465" text-anchor="middle" fill="#a855f7" font-size="11">تتبع إيراد المنصة</text>
+
+  <rect x="735" y="402" width="230" height="95" rx="8" fill="#fff1f2" stroke="#fecdd3" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="426" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">البحث النصي الكامل</text>
+  <text x="850" y="446" text-anchor="middle" fill="#e11d48" font-size="11">بحث Elasticsearch</text>
+  <text x="850" y="465" text-anchor="middle" fill="#e11d48" font-size="11">تراجع LIKE + مزامنة Scout</text>
+
+  <rect x="30" y="518" width="940" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="500" y="546" text-anchor="middle" fill="#475569" font-size="14" font-weight="bold">ملخص قدرات المنصة</text>
+  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">مصادقة المستخدم · المحفظة (قفل تفاؤلي) · الشحن (Stripe/PayPal) · الاستبدال (سعر صرف لحظي) · السحب (مراجعة/تلقائي) · KYC (تحقق ثلاثي)</text>
+  <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">CRUD الألعاب (10 فئات + خوادم) · لوحات المتصدرين (WebSocket لحظي) · القسائم · الإحالة (مكافأة تسجيل + عمولة) · المخاطر (4 فئات قواعد)</text>
+  <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">الإشعارات (داخل الموقع + البريد) · التفاضل حسب الدولة (8 دول) · التدويل (4 لغات) · الإحصائيات (لقطة يومية + إيراد) · البحث النصي الكامل (ES)</text>
+
+  <text x="500" y="662" text-anchor="middle" fill="#94a3b8" font-size="11">عملاء ثلاثي: Flutter Admin (15 صفحة) + Flutter Platform (10 صفحات) + HarmonyOS (5 صفحات)</text>
+  <text x="500" y="682" text-anchor="middle" fill="#94a3b8" font-size="11">النشر: Docker Compose 7 خدمات + Nginx وكيل عكسي + CI/CD (GitHub Actions)</text>
+
+  <text x="500" y="740" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>
+</svg>

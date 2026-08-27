@@ -1,4 +1,8 @@
 # 功能设计文档
+<!-- lang-nav -->
+
+Languages: **中文** · [English](FEATURE-DESIGN.en.md) · [한국어](FEATURE-DESIGN.ko.md) · [Русский](FEATURE-DESIGN.ru.md) · [Deutsch](FEATURE-DESIGN.de.md) · [Français](FEATURE-DESIGN.fr.md) · [Español](FEATURE-DESIGN.es.md) · [Português](FEATURE-DESIGN.pt.md) · [हिन्दी](FEATURE-DESIGN.hi.md) · [العربية](FEATURE-DESIGN.ar.md) · [বাংলা](FEATURE-DESIGN.bn.md) · [Bahasa Indonesia](FEATURE-DESIGN.id.md) · [日本語](FEATURE-DESIGN.ja.md)
+
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -50,7 +54,7 @@
 
 ## 2. 钱包设计
 
-### 2.1 平台币钱包 (erik_user_wallet)
+### 2.1 平台币钱包 (game_user_wallet)
 
 用户注册时自动创建，余额初始为 0。
 
@@ -62,7 +66,7 @@
 | total_spent | 累计支出 |
 | version | 乐观锁版本号（每次更新+1） |
 
-### 2.2 游戏币钱包 (erik_user_game_wallet)
+### 2.2 游戏币钱包 (game_user_game_wallet)
 
 按用户+游戏+币种三维唯一。首次兑换时自动创建。
 
@@ -316,7 +320,7 @@ signature = HMAC-SHA256(
 ### 7.2 翻译管理
 
 - 翻译以 `group.key` 格式组织（如 `auth.login_success`）
-- 数据库表 `erik_translation` 存储，Redis 缓存（TTL 1小时）
+- 数据库表 `game_translation` 存储，Redis 缓存（TTL 1小时）
 - API: `GET /api/language/list` 获取可用语言，`POST /api/language/switch` 切换语言
 - 前端通过 `X-Language` 请求头或 `Accept-Language` 自动检测
 - 翻译缺失时回退到 en-US，en-US 也无则返回原始 key

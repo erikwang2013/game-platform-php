@@ -1,4 +1,8 @@
 # 架构文档
+<!-- lang-nav -->
+
+Languages: **中文** · [English](ARCHITECTURE.en.md) · [한국어](ARCHITECTURE.ko.md) · [Русский](ARCHITECTURE.ru.md) · [Deutsch](ARCHITECTURE.de.md) · [Français](ARCHITECTURE.fr.md) · [Español](ARCHITECTURE.es.md) · [Português](ARCHITECTURE.pt.md) · [हिन्दी](ARCHITECTURE.hi.md) · [العربية](ARCHITECTURE.ar.md) · [বাংলা](ARCHITECTURE.bn.md) · [Bahasa Indonesia](ARCHITECTURE.id.md) · [日本語](ARCHITECTURE.ja.md)
+
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -138,6 +142,27 @@ Redis Pub/Sub (channel: platform:events):
 > 注：截至 2026-08-18，`emit()` 有调用方但 `subscribe()` 无任何进程注册（P0-4 未做），事件目前仅发布无消费，订阅者为设计目标。
 ```
 
+### 2.5 稳定性保障 — 熔断 / 重试 / 降级
+
+```
+packages/platform-common/src/
+├── CircuitBreaker.php   # 熔断 — Redis 状态 (cb:{key}:failures / opened_at)，阈值 5 / 窗口 30s
+│                        #   达阈值抛 CircuitOpenException 快速失败；成功重置计数；半开探测
+│                        #   Redis 不可用 fail-open，不影响主流程
+└── Retry.php            # 重试 — 指数退避 (200/400/800ms)，仅网络类异常 (ConnectException/超时/cURL 28)
+                         #   maxAttempts 上限 5；与熔断共用 isRetryable 判定
+```
+
+降级开关 `feature.provider_mock`（FeatureFlag / PlatformConfig，`on` 时短路真实网络调用）：
+
+| 接入点 | mock=on 行为 |
+|--------|-------------|
+| `PushService::send` | 直接返回，不发推送 |
+| `PayoutService::execute` | 返回 `mock-{order_no}` 批次并标记订单 completed |
+| `ThirdPartyProvider::request` | 返回 `['success' => true]` |
+
+真实网络调用均包 `Retry::run → CircuitBreaker::call`（Push FCM/APNs/HarmonyOS、PayPal 打款、第三方 Provider 请求）。
+
 ## 3. 中间件执行链
 
 ### admin/（管理后台）
@@ -254,30 +279,30 @@ Provider API:
 ## 5. 数据库 ER 关系
 
 ```
-erik_user ──┬── 1:1 ── erik_user_wallet
-            ├── 1:1 ── erik_user_vip ── erik_vip_level
-            ├── 1:N ── erik_user_game_wallet
-            ├── 1:N ── erik_deposit_order
-            ├── 1:N ── erik_withdraw_order
-            ├── 1:N ── erik_exchange_record
-            ├── 1:N ── erik_transaction
-            ├── 1:N ── erik_user_achievement ── erik_achievement
-            ├── 1:N ── erik_exp_log
-            ├── 1:N ── erik_ticket ── erik_ticket_reply
-            ├── 1:N ── erik_device_token
-            ├── 1:N ── erik_user_session
-            └── 1:N ── erik_message
+game_user ──┬── 1:1 ── game_user_wallet
+            ├── 1:1 ── game_user_vip ── game_vip_level
+            ├── 1:N ── game_user_game_wallet
+            ├── 1:N ── game_deposit_order
+            ├── 1:N ── game_withdraw_order
+            ├── 1:N ── game_exchange_record
+            ├── 1:N ── game_transaction
+            ├── 1:N ── game_user_achievement ── game_achievement
+            ├── 1:N ── game_exp_log
+            ├── 1:N ── game_ticket ── game_ticket_reply
+            ├── 1:N ── game_device_token
+            ├── 1:N ── game_user_session
+            └── 1:N ── game_message
 
-erik_game ──┬── 1:N ── erik_game_currency
-            ├── 1:N ── erik_user_game_wallet
-            ├── 1:N ── erik_exchange_record
-            └── 1:N ── erik_game_play_log
+game_game ──┬── 1:N ── game_game_currency
+            ├── 1:N ── game_user_game_wallet
+            ├── 1:N ── game_exchange_record
+            └── 1:N ── game_game_play_log
 
-erik_friend ── user_id → erik_user
-             └── friend_id → erik_user
+game_friend ── user_id → game_user
+             └── friend_id → game_user
 
-erik_vip_level ── 1:N ── erik_user_vip
-erik_achievement ── 1:N ── erik_user_achievement
+game_vip_level ── 1:N ── game_user_vip
+game_achievement ── 1:N ── game_user_achievement
 ```
 
 ## 6. 部署架构
@@ -382,32 +407,32 @@ tests/
 ## 10. 数据库表清单
 
 ### 基础版 (14张) + admin (7张)
-erik_user, erik_user_wallet, erik_user_game_wallet, erik_game, erik_game_currency,
-erik_deposit_order, erik_withdraw_order, erik_exchange_record, erik_transaction,
-erik_payment_method, erik_announcement, erik_platform_config, erik_language, erik_translation,
-erik_admin_user, erik_admin_role, erik_admin_permission, erik_admin_user_role,
-erik_admin_role_permission, erik_operation_log, erik_system_config
+game_user, game_user_wallet, game_user_game_wallet, game_game, game_game_currency,
+game_deposit_order, game_withdraw_order, game_exchange_record, game_transaction,
+game_payment_method, game_announcement, game-platform_config, game_language, game_translation,
+game_admin_user, game_admin_role, game_admin_permission, game_admin_user_role,
+game_admin_role_permission, game_operation_log, game_system_config
 
 ### 标准版 (10张)
-erik_user_oauth, erik_user_session, erik_user_identity, erik_user_payment_account,
-erik_withdraw_limit, erik_game_server, erik_game_play_log, erik_risk_rule,
-erik_risk_log, erik_stat_daily
+game_user_oauth, game_user_session, game_user_identity, game_user_payment_account,
+game_withdraw_limit, game_game_server, game_game_play_log, game_risk_rule,
+game_risk_log, game_stat_daily
 
 ### 完整版 (8张)
-erik_game_category, erik_game_category_rel, erik_leaderboard, erik_coupon,
-erik_user_coupon, erik_country_config, erik_platform_revenue
+game_game_category, game_game_category_rel, game_leaderboard, game_coupon,
+game_user_coupon, game_country_config, game-platform_revenue
 
 ### 生态扩展 (10张) ← 新增
-erik_ticket, erik_ticket_reply, erik_device_token,
-erik_vip_level, erik_user_vip, erik_exp_log,
-erik_achievement, erik_user_achievement,
-erik_friend, erik_message
+game_ticket, game_ticket_reply, game_device_token,
+game_vip_level, game_user_vip, game_exp_log,
+game_achievement, game_user_achievement,
+game_friend, game_message
 
 **总计: 52 张表**
 
 ## 11. 特性开关
 
-基于 `erik_platform_config` 的 `feature.*` 命名空间，零额外依赖：
+基于 `game-platform_config` 的 `feature.*` 命名空间，零额外依赖：
 
 | 开关 | 默认 | 功能 |
 |------|------|------|

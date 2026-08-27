@@ -1,3 +1,7 @@
+<!-- lang-nav -->
+
+Languages: **中文** · [English](design.en.md) · [한국어](design.ko.md) · [Русский](design.ru.md) · [Deutsch](design.de.md) · [Français](design.fr.md) · [Español](design.es.md) · [Português](design.pt.md) · [हिन्दी](design.hi.md) · [العربية](design.ar.md) · [বাংলা](design.bn.md) · [Bahasa Indonesia](design.id.md) · [日本語](design.ja.md)
+
 好的，作为你的游戏策划与3D技术负责人，我来为你做一份完整的《Three.js 消消乐》规划设计。这份方案不涉及代码，重点聚焦在**元素扩充**、**规则矩阵**、**玩法融合机制**以及**Three.js场景搭建思路**上。
 
 ---

@@ -1,4 +1,8 @@
 # ID 全生命周期
+<!-- lang-nav -->
+
+Languages: **中文** · [English](06-id-lifecycle.en.md) · [한국어](06-id-lifecycle.ko.md) · [Русский](06-id-lifecycle.ru.md) · [Deutsch](06-id-lifecycle.de.md) · [Français](06-id-lifecycle.fr.md) · [Español](06-id-lifecycle.es.md) · [Português](06-id-lifecycle.pt.md) · [हिन्दी](06-id-lifecycle.hi.md) · [العربية](06-id-lifecycle.ar.md) · [বাংলা](06-id-lifecycle.bn.md) · [Bahasa Indonesia](06-id-lifecycle.id.md) · [日本語](06-id-lifecycle.ja.md)
+
 
 ```mermaid
 flowchart LR
@@ -10,7 +14,7 @@ flowchart LR
     end
 
     subgraph store["2.存储"]
-        s1["MySQL erik_* 表<br/>id BIGINT UNSIGNED NOT NULL"]
+        s1["MySQL game_* 表<br/>id BIGINT UNSIGNED NOT NULL"]
         s2["敏感字段 encryptable cast<br/>AES-128-ECB 加密存储"]
         g3 --> s1 --> s2
     end

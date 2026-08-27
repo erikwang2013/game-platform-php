@@ -15,7 +15,7 @@ use support\Log;
 use Throwable;
 
 /**
- * 充值数据服务 — 基于 erik_deposit_order 实时聚合，DB 故障时返回空数据而非报错
+ * 充值数据服务 — 基于 game_deposit_order 实时聚合，DB 故障时返回空数据而非报错
  */
 class DepositLogService
 {

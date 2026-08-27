@@ -11,10 +11,10 @@ use support\Db;
 use Throwable;
 
 /**
- * 概率分析服务 — 基于游戏行为日志（erik_game_play_log）计算事件概率
+ * 概率分析服务 — 基于游戏行为日志（game_game_play_log）计算事件概率
  *
  * 事件定义结构:
- *   ['table' => 'erik_game_play_log', 'alias' => 'user_id',
+ *   ['table' => 'game_game_play_log', 'alias' => 'user_id',
  *    'where' => ['game_id' => 5, 'action' => ['start', 'earn']],
  *    'whereRaw' => 'created_at > now()']
  */

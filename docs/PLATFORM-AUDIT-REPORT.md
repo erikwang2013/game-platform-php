@@ -1,4 +1,8 @@
 # 全球游戏聚合平台 — 生态扩展审查报告 v2.0
+<!-- lang-nav -->
+
+Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](PLATFORM-AUDIT-REPORT.ko.md) · [Русский](PLATFORM-AUDIT-REPORT.ru.md) · [Deutsch](PLATFORM-AUDIT-REPORT.de.md) · [Français](PLATFORM-AUDIT-REPORT.fr.md) · [Español](PLATFORM-AUDIT-REPORT.es.md) · [Português](PLATFORM-AUDIT-REPORT.pt.md) · [हिन्दी](PLATFORM-AUDIT-REPORT.hi.md) · [العربية](PLATFORM-AUDIT-REPORT.ar.md) · [বাংলা](PLATFORM-AUDIT-REPORT.bn.md) · [Bahasa Indonesia](PLATFORM-AUDIT-REPORT.id.md) · [日本語](PLATFORM-AUDIT-REPORT.ja.md)
+
 
 > **审查日期**: 2026-08-04
 > **审查范围**: 全部规划 16 项功能、代码质量、安全、模型一致性、测试
@@ -47,9 +51,9 @@
 
 | 问题 | 修复 |
 |------|------|
-| 🔴 service 模型表名带 `erik_` 前缀 (与现有规范冲突) | 10 个新模型全部去除前缀 |
-| 🟡 `AchievementService` 硬编码 `erik_user_session` | service 版改为 `user_session` |
-| 🟡 `GameController` 硬编码 `erik_game_category_rel` | service 版改为 `game_category_rel` |
+| 🔴 service 模型表名带 `game_` 前缀 (与现有规范冲突) | 10 个新模型全部去除前缀 |
+| 🟡 `AchievementService` 硬编码 `game_user_session` | service 版改为 `user_session` |
+| 🟡 `GameController` 硬编码 `game_game_category_rel` | service 版改为 `game_category_rel` |
 
 ---
 
@@ -124,9 +128,9 @@
 
 | # | 问题 | 严重性 | 修复 |
 |---|------|--------|------|
-| 1 | 🔴 service 模型表名全部带 `erik_` 前缀 (10个) | 高 | sed 批量去除 |
-| 2 | 🟡 service AchievementService 硬编码 `erik_user_session` | 中 | 改为 `user_session` |
-| 3 | 🟡 service GameController 硬编码 `erik_game_category_rel` | 中 | 改为 `game_category_rel` |
+| 1 | 🔴 service 模型表名全部带 `game_` 前缀 (10个) | 高 | sed 批量去除 |
+| 2 | 🟡 service AchievementService 硬编码 `game_user_session` | 中 | 改为 `user_session` |
+| 3 | 🟡 service GameController 硬编码 `game_game_category_rel` | 中 | 改为 `game_category_rel` |
 | 4 | 🟡 route.php 双反斜杠 + 残余 echo 语句 | 中 | 修复 |
 | 5 | 🟢 Friend/Message 模型最初未创建 (仅 SQL) | 低 | 已创建 |
 | 6 | 🟢 LeaderboardWebSocket 端口实际用 8790，chat-ws 改用 8791 | 低 | 端口调整 |
@@ -235,7 +239,7 @@
 | 回调入账事务化 | 订单更新 + 钱包入账同一事务，入账失败回滚 | ✅ 已修复 |
 | JWT 密钥启动校验 | `JWT_SECRET_KEY` 缺失或仍为默认值 `open-admin-jwt-secret-change-in-production` 时拒绝启动，admin/service 一致 | ✅ 已修复 |
 | 分析服务路由 | admin/config/route.php 注册 12 条 `/admin/analytics/*` 路由（AnalyticsController 全部方法） | ✅ 已修复 |
-| 表前缀 | 52 模型去除硬编码 `erik_` 前缀（消除 `erik_erik_` 双重前缀），DB 前缀统一由 config `prefix=erik_` 提供 | ✅ 已修复 |
+| 表前缀 | 52 模型去除硬编码 `game_` 前缀（消除 `game_game_` 双重前缀），DB 前缀统一由 config `prefix=game_` 提供 | ✅ 已修复 |
 | 限流降级 | RateLimit 在 Redis 故障时 fail-closed（拒绝而非静默放行） | ✅ 已修复 |
 | refresh token | service AuthController 刷新令牌逻辑重写 | ✅ 已修复 |
 | DepositLogService | service 版移植补齐，消除 admin/service 双份漂移之一 | ✅ 已修复 |

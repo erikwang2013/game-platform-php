@@ -121,7 +121,7 @@ class AchievementService
     private static function normalizeTable(string $table): string
     {
         $table = trim($table);
-        if (str_starts_with($table, 'erik_')) {
+        if (str_starts_with($table, 'game_')) {
             return substr($table, 5);
         }
 

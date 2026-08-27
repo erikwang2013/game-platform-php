@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 720" font-family="Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 720" font-family="Arial, 'Noto Sans SC', 'Noto Sans', sans-serif">
   <defs>
     <linearGradient id="hd" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#059669"/><stop offset="100%" stop-color="#10b981"/></linearGradient>
     <marker id="arr" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/></marker>
@@ -6,84 +6,100 @@
   </defs>
   <rect width="1000" height="720" fill="#fafbfc"/>
   <rect x="0" y="0" width="1000" height="52" fill="url(#hd)"/>
-  <text x="500" y="34" text-anchor="middle" fill="#fff" font-size="21" font-weight="bold">Global Game Platform — Lifecycle Diagram</text>
+  <text x="500" y="34" text-anchor="middle" fill="#fff" font-size="21" font-weight="bold">Global Game Aggregation Platform — Lifecycle Diagram</text>
 
+  <!-- User Lifecycle -->
   <rect x="20" y="72" width="960" height="30" rx="6" fill="#ecfdf5"/>
   <text x="500" y="93" text-anchor="middle" fill="#065f46" font-size="14" font-weight="bold">User Lifecycle</text>
 
   <rect x="30" y="118" width="120" height="46" rx="10" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" filter="url(#sh)"/>
   <text x="90" y="146" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">Register</text>
+
   <line x1="150" y1="141" x2="190" y2="141" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="195" y="118" width="130" height="46" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" filter="url(#sh)"/>
   <text x="260" y="146" text-anchor="middle" fill="#92400e" font-size="13" font-weight="bold">KYC Verify</text>
+
   <line x1="325" y1="141" x2="365" y2="141" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="370" y="118" width="130" height="46" rx="10" fill="#d1fae5" stroke="#10b981" stroke-width="2" filter="url(#sh)"/>
   <text x="435" y="146" text-anchor="middle" fill="#065f46" font-size="13" font-weight="bold">Deposit &amp; Play</text>
+
   <line x1="500" y1="141" x2="540" y2="141" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="545" y="118" width="130" height="46" rx="10" fill="#fce7f3" stroke="#ec4899" stroke-width="2" filter="url(#sh)"/>
-  <text x="610" y="146" text-anchor="middle" fill="#831843" font-size="13" font-weight="bold">Withdraw / Reinvest</text>
+  <text x="610" y="146" text-anchor="middle" fill="#831843" font-size="13" font-weight="bold">Withdraw / Re-deposit</text>
+
   <line x1="675" y1="141" x2="715" y2="141" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="720" y="118" width="130" height="46" rx="10" fill="#ede9fe" stroke="#8b5cf6" stroke-width="2" filter="url(#sh)"/>
   <text x="785" y="146" text-anchor="middle" fill="#5b21b6" font-size="13" font-weight="bold">VIP Upgrade</text>
 
-  <text x="480" y="190" text-anchor="middle" fill="#64748b" font-size="11">Register → KYC(3 Tiers) → Deposit(Fiat→Platform→Game) → Play(Earn/Spend) → Withdraw or Reinvest (Positive Cycle)</text>
+  <text x="480" y="190" text-anchor="middle" fill="#64748b" font-size="11">Register → KYC (3 tiers) → Deposit (fiat→platform→game currency) → Play (earn/spend) → Withdraw or re-deposit (positive loop)</text>
 
+  <!-- Order Lifecycle -->
   <rect x="20" y="215" width="960" height="30" rx="6" fill="#fef3c7"/>
-  <text x="500" y="236" text-anchor="middle" fill="#92400e" font-size="14" font-weight="bold">Deposit / Withdraw Order Lifecycle</text>
+  <text x="500" y="236" text-anchor="middle" fill="#92400e" font-size="14" font-weight="bold">Deposit/Withdrawal Order Lifecycle</text>
 
   <rect x="50" y="261" width="130" height="50" rx="10" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" filter="url(#sh)"/>
-  <text x="115" y="292" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">Created</text>
+  <text x="115" y="292" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">Create Order</text>
+
   <line x1="180" y1="286" x2="230" y2="286" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="235" y="261" width="130" height="50" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" filter="url(#sh)"/>
-  <text x="300" y="292" text-anchor="middle" fill="#92400e" font-size="13" font-weight="bold">Pending</text>
+  <text x="300" y="292" text-anchor="middle" fill="#92400e" font-size="13" font-weight="bold">Pending Payment</text>
+
   <line x1="365" y1="286" x2="415" y2="286" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="420" y="261" width="130" height="50" rx="10" fill="#d1fae5" stroke="#10b981" stroke-width="2" filter="url(#sh)"/>
   <text x="485" y="292" text-anchor="middle" fill="#065f46" font-size="13" font-weight="bold">Paid</text>
+
   <line x1="550" y1="286" x2="600" y2="286" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="605" y="261" width="130" height="50" rx="10" fill="#bbf7d0" stroke="#22c55e" stroke-width="2" filter="url(#sh)"/>
   <text x="670" y="292" text-anchor="middle" fill="#14532d" font-size="13" font-weight="bold">Confirmed</text>
+
   <line x1="735" y1="286" x2="785" y2="286" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="790" y="261" width="140" height="50" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="2" filter="url(#sh)"/>
   <text x="860" y="292" text-anchor="middle" fill="#166534" font-size="13" font-weight="bold">Completed</text>
 
-  <text x="500" y="338" text-anchor="middle" fill="#64748b" font-size="11">Deposit: pending → paid → confirmed  |  Withdraw: pending → approved → completed (may be rejected)</text>
+  <text x="500" y="338" text-anchor="middle" fill="#64748b" font-size="11">Deposit: pending → paid → confirmed  |  Withdrawal: pending → approved → completed (can be rejected)</text>
 
+  <!-- Game Session -->
   <rect x="20" y="360" width="960" height="30" rx="6" fill="#fce7f3"/>
   <text x="500" y="381" text-anchor="middle" fill="#831843" font-size="14" font-weight="bold">Game Session Lifecycle</text>
 
   <rect x="80" y="406" width="150" height="50" rx="10" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" filter="url(#sh)"/>
   <text x="155" y="437" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">Enter Game (start)</text>
+
   <line x1="230" y1="431" x2="300" y2="431" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="305" y="406" width="180" height="50" rx="10" fill="#fce7f3" stroke="#ec4899" stroke-width="2" filter="url(#sh)"/>
   <text x="395" y="437" text-anchor="middle" fill="#831843" font-size="13" font-weight="bold">Playing (earn/spend)</text>
+
   <line x1="485" y1="431" x2="555" y2="431" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="560" y="406" width="150" height="50" rx="10" fill="#ede9fe" stroke="#8b5cf6" stroke-width="2" filter="url(#sh)"/>
-  <text x="635" y="437" text-anchor="middle" fill="#5b21b6" font-size="13" font-weight="bold">Exit Game (end)</text>
+  <text x="635" y="437" text-anchor="middle" fill="#5b21b6" font-size="13" font-weight="bold">Leave Game (end)</text>
 
   <path d="M 395 458 L 395 490 L 155 490 L 155 462" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#arr)"/>
-  <text x="275" y="505" text-anchor="middle" fill="#94a3b8" font-size="10">Multi-Round Game Loop</text>
+  <text x="275" y="505" text-anchor="middle" fill="#94a3b8" font-size="10">Multi-round game loop</text>
 
-  <text x="500" y="538" text-anchor="middle" fill="#64748b" font-size="11">Per-Game Tracking: session_id · Game Currency Delta · Platform Equivalent · Metadata (JSON)</text>
+  <text x="500" y="538" text-anchor="middle" fill="#64748b" font-size="11">Per-session records: session_id tracking · game currency changes · platform currency equivalent · metadata (JSON)</text>
 
+  <!-- KYC Lifecycle -->
   <rect x="20" y="556" width="960" height="30" rx="6" fill="#fef2f2"/>
-  <text x="500" y="577" text-anchor="middle" fill="#991b1b" font-size="14" font-weight="bold">KYC Verification Lifecycle</text>
+  <text x="500" y="577" text-anchor="middle" fill="#991b1b" font-size="14" font-weight="bold">KYC Lifecycle</text>
 
   <rect x="70" y="598" width="140" height="46" rx="10" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" filter="url(#sh)"/>
-  <text x="140" y="626" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">Submit Docs</text>
+  <text x="140" y="626" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">Submit Documents</text>
+
   <line x1="210" y1="621" x2="270" y2="621" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="275" y="598" width="140" height="46" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" filter="url(#sh)"/>
-  <text x="345" y="626" text-anchor="middle" fill="#92400e" font-size="13" font-weight="bold">Pending Review</text>
+  <text x="345" y="626" text-anchor="middle" fill="#92400e" font-size="13" font-weight="bold">Pending review</text>
+
   <line x1="415" y1="621" x2="475" y2="621" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="480" y="612" width="120" height="32" rx="8" fill="#f0fdf4" stroke="#22c55e" stroke-width="2" filter="url(#sh)"/>
@@ -92,6 +108,7 @@
   <rect x="640" y="612" width="120" height="32" rx="8" fill="#fef2f2" stroke="#ef4444" stroke-width="2" filter="url(#sh)"/>
   <text x="700" y="633" text-anchor="middle" fill="#991b1b" font-size="12" font-weight="bold">Rejected → rejected</text>
 
-  <text x="500" y="680" text-anchor="middle" fill="#64748b" font-size="11">After approval: default → verified → vip (Unlock higher withdraw limits + lower fees)</text>
-  <text x="500" y="710" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik</text>
+  <text x="500" y="680" text-anchor="middle" fill="#64748b" font-size="11">After approval, upgrade: default → verified → vip (unlocks higher withdrawal limits + lower fees)</text>
+
+  <text x="500" y="710" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>
 </svg>

@@ -1,4 +1,8 @@
 # 后端增强 — 实现计划
+<!-- lang-nav -->
+
+Languages: **中文** · [English](2026-05-20-backend-enhancement-plan.en.md) · [한국어](2026-05-20-backend-enhancement-plan.ko.md) · [Русский](2026-05-20-backend-enhancement-plan.ru.md) · [Deutsch](2026-05-20-backend-enhancement-plan.de.md) · [Français](2026-05-20-backend-enhancement-plan.fr.md) · [Español](2026-05-20-backend-enhancement-plan.es.md) · [Português](2026-05-20-backend-enhancement-plan.pt.md) · [हिन्दी](2026-05-20-backend-enhancement-plan.hi.md) · [العربية](2026-05-20-backend-enhancement-plan.ar.md) · [বাংলা](2026-05-20-backend-enhancement-plan.bn.md) · [Bahasa Indonesia](2026-05-20-backend-enhancement-plan.id.md) · [日本語](2026-05-20-backend-enhancement-plan.ja.md)
+
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 

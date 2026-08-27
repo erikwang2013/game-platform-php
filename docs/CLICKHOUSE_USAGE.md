@@ -1,4 +1,8 @@
 # ClickHouse 服务使用指南
+<!-- lang-nav -->
+
+Languages: **中文** · [English](CLICKHOUSE_USAGE.en.md) · [한국어](CLICKHOUSE_USAGE.ko.md) · [Русский](CLICKHOUSE_USAGE.ru.md) · [Deutsch](CLICKHOUSE_USAGE.de.md) · [Français](CLICKHOUSE_USAGE.fr.md) · [Español](CLICKHOUSE_USAGE.es.md) · [Português](CLICKHOUSE_USAGE.pt.md) · [हिन्दी](CLICKHOUSE_USAGE.hi.md) · [العربية](CLICKHOUSE_USAGE.ar.md) · [বাংলা](CLICKHOUSE_USAGE.bn.md) · [Bahasa Indonesia](CLICKHOUSE_USAGE.id.md) · [日本語](CLICKHOUSE_USAGE.ja.md)
+
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -8,7 +12,7 @@
 
 ```php
 use Erikwang2013\ClickHouse\Webman\ClickHouseService;
-$r = ClickHouseService::query('SELECT count() FROM erik_game_play_log');
+$r = ClickHouseService::query('SELECT count() FROM game_game_play_log');
 ```
 
 ## 2. ProbabilityService
@@ -18,14 +22,14 @@ use common\service\ProbabilityService;
 
 // 条件概率 P(A | B)
 ProbabilityService::conditional(
-    ['table' => 'erik_deposit_log', 'alias' => 'user_id', 'where' => ['status' => 'confirmed']],
-    ['table' => 'erik_game_play_log', 'alias' => 'user_id', 'where' => ['game_id' => 5]],
+    ['table' => 'game_deposit_log', 'alias' => 'user_id', 'where' => ['status' => 'confirmed']],
+    ['table' => 'game_game_play_log', 'alias' => 'user_id', 'where' => ['game_id' => 5]],
 );
 
 // 联合概率 P(A ∩ B)
 ProbabilityService::joint(
-    ['table' => 'erik_game_play_log', 'alias' => 'user_id', 'where' => ['game_id' => 5]],
-    ['table' => 'erik_game_play_log', 'alias' => 'user_id', 'where' => ['game_id' => 8]],
+    ['table' => 'game_game_play_log', 'alias' => 'user_id', 'where' => ['game_id' => 5]],
+    ['table' => 'game_game_play_log', 'alias' => 'user_id', 'where' => ['game_id' => 8]],
 );
 ```
 

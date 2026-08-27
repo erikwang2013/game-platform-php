@@ -1,4 +1,8 @@
 # 版本对比
+<!-- lang-nav -->
+
+Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md) · [Русский](VERSIONS.ru.md) · [Deutsch](VERSIONS.de.md) · [Français](VERSIONS.fr.md) · [Español](VERSIONS.es.md) · [Português](VERSIONS.pt.md) · [हिन्दी](VERSIONS.hi.md) · [العربية](VERSIONS.ar.md) · [বাংলা](VERSIONS.bn.md) · [Bahasa Indonesia](VERSIONS.id.md) · [日本語](VERSIONS.ja.md)
+
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -148,29 +152,29 @@
 
 ### 基础版 (19张)
 ```
-管理后台 (7):  erik_admin_user, erik_admin_role, erik_admin_permission,
-               erik_admin_user_role, erik_admin_role_permission,
-               erik_operation_log, erik_system_config
+管理后台 (7):  game_admin_user, game_admin_role, game_admin_permission,
+               game_admin_user_role, game_admin_role_permission,
+               game_operation_log, game_system_config
 
-平台核心 (12): erik_user, erik_user_wallet, erik_user_game_wallet,
-               erik_game, erik_game_currency, erik_deposit_order,
-               erik_withdraw_order, erik_exchange_record, erik_transaction,
-               erik_payment_method, erik_announcement, erik_platform_config
+平台核心 (12): game_user, game_user_wallet, game_user_game_wallet,
+               game_game, game_game_currency, game_deposit_order,
+               game_withdraw_order, game_exchange_record, game_transaction,
+               game_payment_method, game_announcement, game-platform_config
 ```
 
 ### 标准版新增 (10张)
 ```
-erik_user_identity, erik_user_oauth, erik_user_payment_account,
-erik_user_session, erik_game_server, erik_game_play_log,
-erik_withdraw_limit, erik_risk_rule, erik_risk_log, erik_stat_daily
+game_user_identity, game_user_oauth, game_user_payment_account,
+game_user_session, game_game_server, game_game_play_log,
+game_withdraw_limit, game_risk_rule, game_risk_log, game_stat_daily
 ```
 
 ### 完整版新增 (13张)
 ```
-erik_game_category, erik_game_category_rel, erik_leaderboard,
-erik_coupon, erik_user_coupon, erik_language, erik_translation,
-erik_country_config, erik_platform_revenue,
-erik_notification, erik_referral, erik_referral_reward, erik_user_2fa
+game_game_category, game_game_category_rel, game_leaderboard,
+game_coupon, game_user_coupon, game_language, game_translation,
+game_country_config, game-platform_revenue,
+game_notification, game_referral, game_referral_reward, game_user_2fa
 ```
 
 ---
@@ -217,10 +221,10 @@ erik_notification, erik_referral, erik_referral_reward, erik_user_2fa
 
 ### 新增数据表 (10张)
 ```
-erik_ticket, erik_ticket_reply, erik_device_token,
-erik_vip_level, erik_user_vip, erik_exp_log,
-erik_achievement, erik_user_achievement,
-erik_friend, erik_message
+game_ticket, game_ticket_reply, game_device_token,
+game_vip_level, game_user_vip, game_exp_log,
+game_achievement, game_user_achievement,
+game_friend, game_message
 ```
 
 ### 新增 Provider API 端点 (4个)

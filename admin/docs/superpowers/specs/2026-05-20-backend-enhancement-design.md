@@ -1,4 +1,8 @@
 # 子项目 A：后端增强 — 设计规范
+<!-- lang-nav -->
+
+Languages: **中文** · [English](2026-05-20-backend-enhancement-design.en.md) · [한국어](2026-05-20-backend-enhancement-design.ko.md) · [Русский](2026-05-20-backend-enhancement-design.ru.md) · [Deutsch](2026-05-20-backend-enhancement-design.de.md) · [Français](2026-05-20-backend-enhancement-design.fr.md) · [Español](2026-05-20-backend-enhancement-design.es.md) · [Português](2026-05-20-backend-enhancement-design.pt.md) · [हिन्दी](2026-05-20-backend-enhancement-design.hi.md) · [العربية](2026-05-20-backend-enhancement-design.ar.md) · [বাংলা](2026-05-20-backend-enhancement-design.bn.md) · [Bahasa Indonesia](2026-05-20-backend-enhancement-design.id.md) · [日本語](2026-05-20-backend-enhancement-design.ja.md)
+
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -228,7 +232,7 @@ Redis::setex("jwt_blacklist:" . md5($token), max($ttl, 0), '1');
 
 **文件**: `app/model/OperationLog.php`（修改）
 
-表 `erik_operation_log` 仅有 `created_at` 列（无 `updated_at`）。Eloquent 默认 `save()` 会尝试写入 `updated_at`，导致 SQL 错误。
+表 `game_operation_log` 仅有 `created_at` 列（无 `updated_at`）。Eloquent 默认 `save()` 会尝试写入 `updated_at`，导致 SQL 错误。
 
 修复：`public $timestamps = false;` + 写入时手动指定 `created_at`。
 

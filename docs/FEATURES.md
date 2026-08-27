@@ -1,4 +1,8 @@
 # 功能文档
+<!-- lang-nav -->
+
+Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md) · [Русский](FEATURES.ru.md) · [Deutsch](FEATURES.de.md) · [Français](FEATURES.fr.md) · [Español](FEATURES.es.md) · [Português](FEATURES.pt.md) · [हिन्दी](FEATURES.hi.md) · [العربية](FEATURES.ar.md) · [বাংলা](FEATURES.bn.md) · [Bahasa Indonesia](FEATURES.id.md) · [日本語](FEATURES.ja.md)
+
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -214,25 +218,25 @@
 
 | 表名 | 说明 | 关键特性 |
 |------|------|---------|
-| erik_ticket | 工单 | user_id+type+status 索引, assigned_to |
-| erik_ticket_reply | 工单回复 | ticket_id 索引, is_admin 区分 |
-| erik_device_token | 设备令牌 | user_id+platform+token 唯一索引 |
-| erik_vip_level | VIP等级定义 | level 唯一索引, benefits JSON |
-| erik_user_vip | 用户VIP记录 | user_id 唯一索引, level+exp+total_exp |
-| erik_exp_log | 经验值日志 | user_id+source 组合索引 |
-| erik_achievement | 成就定义 | key 唯一索引, condition_json JSON |
-| erik_user_achievement | 用户成就 | user_id+achievement_id 唯一索引 |
-| erik_friend | 好友关系 | user_id+friend_id 唯一索引 |
-| erik_message | 私信 | from_user_id+to_user_id / to_user_id+is_read |
+| game_ticket | 工单 | user_id+type+status 索引, assigned_to |
+| game_ticket_reply | 工单回复 | ticket_id 索引, is_admin 区分 |
+| game_device_token | 设备令牌 | user_id+platform+token 唯一索引 |
+| game_vip_level | VIP等级定义 | level 唯一索引, benefits JSON |
+| game_user_vip | 用户VIP记录 | user_id 唯一索引, level+exp+total_exp |
+| game_exp_log | 经验值日志 | user_id+source 组合索引 |
+| game_achievement | 成就定义 | key 唯一索引, condition_json JSON |
+| game_user_achievement | 用户成就 | user_id+achievement_id 唯一索引 |
+| game_friend | 好友关系 | user_id+friend_id 唯一索引 |
+| game_message | 私信 | from_user_id+to_user_id / to_user_id+is_read |
 
 ### 表结构变更
 
 | 表名 | 变更 |
 |------|------|
-| erik_game | +provider_config (JSON) |
-| erik_game_play_log | +round_id, +bet_amount, +win_amount |
+| game_game | +provider_config (JSON) |
+| game_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**总计: install.sql 43 张表**（生态扩展 10 张在 `admin/database/migrations/clickhouse/`，未并入 install.sql）。模型非共享：admin 46 / service 44 各一份。
+**总计: install.sql 43 张表**（生态扩展 10 张在 `install/`，未并入 install.sql）。模型非共享：admin 46 / service 44 各一份。
 
 ## 8. 测试覆盖
 

@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 750" font-family="Arial, 'Noto Sans SC', 'Noto Sans', sans-serif">
+  <defs>
+    <linearGradient id="hd" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#8b5cf6"/></linearGradient>
+    <filter id="sh"><feDropShadow dx="1" dy="1" stdDeviation="1.5" flood-opacity=".06"/></filter>
+  </defs>
+  <rect width="1000" height="750" fill="#fafbfc"/>
+
+  <rect x="0" y="0" width="1000" height="52" fill="url(#hd)"/>
+  <text x="500" y="34" text-anchor="middle" fill="#fff" font-size="21" font-weight="bold">Platform Agregasi Game Global — Peta Fitur Lengkap</text>
+
+  <rect x="30" y="72" width="220" height="95" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="96" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">Autentikasi Pengguna</text>
+  <text x="140" y="116" text-anchor="middle" fill="#3b82f6" font-size="11">Login/registrasi nama pengguna &amp; kata sandi</text>
+  <text x="140" y="135" text-anchor="middle" fill="#3b82f6" font-size="11">Google/Facebook/Apple OAuth</text>
+  <text x="140" y="154" text-anchor="middle" fill="#3b82f6" font-size="11">2FA TOTP autentikasi dua faktor</text>
+
+  <rect x="265" y="72" width="220" height="95" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="96" text-anchor="middle" fill="#854d0e" font-size="13" font-weight="bold">Sistem Dompet</text>
+  <text x="375" y="116" text-anchor="middle" fill="#ca8a04" font-size="11">Dompet koin platform (kunci optimis anti-konkurensi)</text>
+  <text x="375" y="135" text-anchor="middle" fill="#ca8a04" font-size="11">Dompet koin game (independen per game)</text>
+  <text x="375" y="154" text-anchor="middle" fill="#ca8a04" font-size="11">Pelacakan transaksi rantai penuh</text>
+
+  <rect x="500" y="72" width="220" height="95" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="96" text-anchor="middle" fill="#166534" font-size="13" font-weight="bold">Sistem Deposit</text>
+  <text x="610" y="116" text-anchor="middle" fill="#22c55e" font-size="11">Buat pesanan deposit</text>
+  <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">Verifikasi tanda tangan callback Stripe/PayPal</text>
+  <text x="610" y="154" text-anchor="middle" fill="#22c55e" font-size="11">Masuk otomatis + notifikasi dalam situs</text>
+
+  <rect x="735" y="72" width="230" height="95" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="96" text-anchor="middle" fill="#9a3412" font-size="13" font-weight="bold">Sistem Penarikan</text>
+  <text x="850" y="116" text-anchor="middle" fill="#ea580c" font-size="11">Aplikasi → review → transfer</text>
+  <text x="850" y="135" text-anchor="middle" fill="#ea580c" font-size="11">Saklar global / limit bertingkat KYC</text>
+  <text x="850" y="154" text-anchor="middle" fill="#ea580c" font-size="11">Ambang review otomatis dapat dikonfigurasi</text>
+
+  <rect x="30" y="182" width="220" height="95" rx="8" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="206" text-anchor="middle" fill="#5b21b6" font-size="13" font-weight="bold">Mesin Penukaran</text>
+  <text x="140" y="226" text-anchor="middle" fill="#8b5cf6" font-size="11">Penukaran dua arah koin platform ⇄ koin game</text>
+  <text x="140" y="245" text-anchor="middle" fill="#8b5cf6" font-size="11">Harga real-time / manajemen kurs</text>
+  <text x="140" y="264" text-anchor="middle" fill="#8b5cf6" font-size="11">Pendapatan selisih komisi platform</text>
+
+  <rect x="265" y="182" width="220" height="95" rx="8" fill="#fce7f3" stroke="#f9a8d4" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="206" text-anchor="middle" fill="#831843" font-size="13" font-weight="bold">Manajemen Game</text>
+  <text x="375" y="226" text-anchor="middle" fill="#ec4899" font-size="11">CRUD + tipe buatan sendiri/pihak ketiga</text>
+  <text x="375" y="245" text-anchor="middle" fill="#ec4899" font-size="11">10 kategori game + manajemen server</text>
+  <text x="375" y="264" text-anchor="middle" fill="#ec4899" font-size="11">Pelacakan penuh catatan game</text>
+
+  <rect x="500" y="182" width="220" height="95" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="206" text-anchor="middle" fill="#991b1b" font-size="13" font-weight="bold">Verifikasi Identitas KYC</text>
+  <text x="610" y="226" text-anchor="middle" fill="#ef4444" font-size="11">Pengajuan verifikasi identitas + review backend</text>
+  <text x="610" y="245" text-anchor="middle" fill="#ef4444" font-size="11">KTP / Paspor / SIM</text>
+  <text x="610" y="264" text-anchor="middle" fill="#ef4444" font-size="11">Sistem tiga tingkat verifikasi</text>
+
+  <rect x="735" y="182" width="230" height="95" rx="8" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="206" text-anchor="middle" fill="#4c1d95" font-size="13" font-weight="bold">Papan Peringkat</text>
+  <text x="850" y="226" text-anchor="middle" fill="#7c3aed" font-size="11">Peringkat harian / mingguan / bulanan / total</text>
+  <text x="850" y="245" text-anchor="middle" fill="#7c3aed" font-size="11">Cache Redis + pengurutan real-time</text>
+  <text x="850" y="264" text-anchor="middle" fill="#7c3aed" font-size="11">Push real-time WebSocket (:8789)</text>
+
+  <rect x="30" y="292" width="220" height="95" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="316" text-anchor="middle" fill="#064e3b" font-size="13" font-weight="bold">Kupon</text>
+  <text x="140" y="336" text-anchor="middle" fill="#10b981" font-size="11">Jumlah tetap / diskon rasio</text>
+  <text x="140" y="355" text-anchor="middle" fill="#10b981" font-size="11">Batas waktu &amp; jumlah / pelacakan klaim-pakai</text>
+
+  <rect x="265" y="292" width="220" height="95" rx="8" fill="#fff1f2" stroke="#fda4af" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="316" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">Sistem Referral</text>
+  <text x="375" y="336" text-anchor="middle" fill="#f43f5e" font-size="11">Generate kode referral unik</text>
+  <text x="375" y="355" text-anchor="middle" fill="#f43f5e" font-size="11">Hadiah registrasi + komisi deposit</text>
+
+  <rect x="500" y="292" width="220" height="95" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="316" text-anchor="middle" fill="#7c2d12" font-size="13" font-weight="bold">Sistem Kontrol Risiko</text>
+  <text x="610" y="336" text-anchor="middle" fill="#f97316" font-size="11">Daftar hitam IP / peringatan jumlah besar</text>
+  <text x="610" y="355" text-anchor="middle" fill="#f97316" font-size="11">Deteksi frekuensi / anomali kecepatan</text>
+
+  <rect x="735" y="292" width="230" height="95" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="316" text-anchor="middle" fill="#334155" font-size="13" font-weight="bold">Internasionalisasi i18n</text>
+  <text x="850" y="336" text-anchor="middle" fill="#64748b" font-size="11">4 bahasa en/zh/ja/ko</text>
+  <text x="850" y="355" text-anchor="middle" fill="#64748b" font-size="11">Tabel terjemahan + mekanisme cache</text>
+
+  <rect x="30" y="402" width="220" height="95" rx="8" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="426" text-anchor="middle" fill="#0c4a6e" font-size="13" font-weight="bold">Pusat Notifikasi</text>
+  <text x="140" y="446" text-anchor="middle" fill="#0ea5e9" font-size="11">Pesan dalam situs + notifikasi email</text>
+  <text x="140" y="465" text-anchor="middle" fill="#0ea5e9" font-size="11">Deposit/penarikan/KYC/kupon</text>
+
+  <rect x="265" y="402" width="220" height="95" rx="8" fill="#fefce8" stroke="#fef08a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="426" text-anchor="middle" fill="#713f12" font-size="13" font-weight="bold">Diferensiasi Negara</text>
+  <text x="375" y="446" text-anchor="middle" fill="#eab308" font-size="11">Konfigurasi metode pembayaran/penarikan 8 negara</text>
+  <text x="375" y="465" text-anchor="middle" fill="#eab308" font-size="11">Diferensiasi deposit minimum</text>
+
+  <rect x="500" y="402" width="220" height="95" rx="8" fill="#f5f3ff" stroke="#e9d5ff" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="426" text-anchor="middle" fill="#581c87" font-size="13" font-weight="bold">Statistik &amp; Analisis</text>
+  <text x="610" y="446" text-anchor="middle" fill="#a855f7" font-size="11">Snapshot statistik harian (5 jenis metrik)</text>
+  <text x="610" y="465" text-anchor="middle" fill="#a855f7" font-size="11">Pelacakan pendapatan platform</text>
+
+  <rect x="735" y="402" width="230" height="95" rx="8" fill="#fff1f2" stroke="#fecdd3" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="426" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">Pencarian Full-text</text>
+  <text x="850" y="446" text-anchor="middle" fill="#e11d48" font-size="11">Pencarian Elasticsearch</text>
+  <text x="850" y="465" text-anchor="middle" fill="#e11d48" font-size="11">Fallback LIKE + sinkronisasi Scout</text>
+
+  <rect x="30" y="518" width="940" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="500" y="546" text-anchor="middle" fill="#475569" font-size="14" font-weight="bold">Ringkasan Kapabilitas Platform</text>
+  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">Autentikasi pengguna · Dompet (kunci optimis) · Deposit (Stripe/PayPal) · Penukaran (kurs real-time) · Penarikan (review/otomatis) · KYC (tiga tingkat)</text>
+  <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">CRUD game (10 kategori+server) · Papan peringkat (WebSocket real-time) · Kupon · Referral (hadiah registrasi+komisi) · Kontrol risiko (4 jenis aturan)</text>
+  <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">Notifikasi (dalam situs+email) · Diferensiasi negara (8 negara) · Internasionalisasi (4 bahasa) · Statistik (snapshot harian+pendapatan) · Pencarian full-text (ES)</text>
+
+  <text x="500" y="662" text-anchor="middle" fill="#94a3b8" font-size="11">Klien tiga platform: Flutter Admin (15 halaman) + Flutter Platform (10 halaman) + HarmonyOS (5 halaman)</text>
+  <text x="500" y="682" text-anchor="middle" fill="#94a3b8" font-size="11">Deployment: orkestrasi Docker Compose 7 layanan + reverse proxy Nginx + CI/CD (GitHub Actions)</text>
+
+  <text x="500" y="740" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>
+</svg>

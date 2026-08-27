@@ -53,14 +53,14 @@ class LogPage extends GetView<LogController> {
       Text("${AppTranslations.t('log.title')}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
       const SizedBox(height: 12),
       Row(children: [
-        SizedBox(width: 150, child: TextField(decoration: const InputDecoration(hintText: '${AppTranslations.t('log.action_filter')}', isDense: true), onSubmitted: (v) { ctrl.actionFilter.value = v; ctrl.loadLogs(reset: true); })),
+        SizedBox(width: 150, child: TextField(decoration: InputDecoration(hintText: '${AppTranslations.t('log.action_filter')}', isDense: true), onSubmitted: (v) { ctrl.actionFilter.value = v; ctrl.loadLogs(reset: true); })),
         const SizedBox(width: 12),
-        SizedBox(width: 200, child: TextField(decoration: const InputDecoration(hintText: '${AppTranslations.t('log.path_filter')}', isDense: true), onSubmitted: (v) { ctrl.pathFilter.value = v; ctrl.loadLogs(reset: true); })),
+        SizedBox(width: 200, child: TextField(decoration: InputDecoration(hintText: '${AppTranslations.t('log.path_filter')}', isDense: true), onSubmitted: (v) { ctrl.pathFilter.value = v; ctrl.loadLogs(reset: true); })),
       ]),
       const SizedBox(height: 12),
       Expanded(child: Obx(() {
         if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
-        return SingleChildScrollView(child: DataTable(columns: const [
+        return SingleChildScrollView(child: DataTable(columns: [
           DataColumn(label: Text('${AppTranslations.t('log.operator')}')),
           DataColumn(label: Text('${AppTranslations.t('log.method')}')),
           DataColumn(label: Text('${AppTranslations.t('log.path')}')),

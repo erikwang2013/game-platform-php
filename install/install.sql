@@ -10,7 +10,7 @@ START TRANSACTION;
 -- ============================================================
 -- 管理用户表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_admin_user` (
+CREATE TABLE IF NOT EXISTS `game_admin_user` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `username` VARCHAR(50) NOT NULL COMMENT '用户名',
     `password` VARCHAR(255) NOT NULL COMMENT '密码（bcrypt哈希）',
@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS `erik_admin_user` (
 -- ============================================================
 -- 角色表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_admin_role` (
+CREATE TABLE IF NOT EXISTS `game_admin_role` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `name` VARCHAR(50) NOT NULL COMMENT '角色名称',
     `slug` VARCHAR(50) NOT NULL COMMENT '角色标识，用于权限判断',
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS `erik_admin_role` (
 -- ============================================================
 -- 权限表（菜单/按钮/接口）
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_admin_permission` (
+CREATE TABLE IF NOT EXISTS `game_admin_permission` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `parent_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '父级权限ID，0表示顶级',
     `name` VARCHAR(50) NOT NULL COMMENT '权限名称',
@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS `erik_admin_permission` (
 -- ============================================================
 -- 用户角色关联表（多对多中间表）
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_admin_user_role` (
+CREATE TABLE IF NOT EXISTS `game_admin_user_role` (
     `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
     `role_id` BIGINT UNSIGNED NOT NULL COMMENT '角色ID',
     PRIMARY KEY (`user_id`, `role_id`),
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS `erik_admin_user_role` (
 -- ============================================================
 -- 角色权限关联表（多对多中间表）
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_admin_role_permission` (
+CREATE TABLE IF NOT EXISTS `game_admin_role_permission` (
     `role_id` BIGINT UNSIGNED NOT NULL COMMENT '角色ID',
     `permission_id` BIGINT UNSIGNED NOT NULL COMMENT '权限ID',
     PRIMARY KEY (`role_id`, `permission_id`),
@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS `erik_admin_role_permission` (
 -- ============================================================
 -- 系统配置表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_system_config` (
+CREATE TABLE IF NOT EXISTS `game_system_config` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `group` VARCHAR(50) NOT NULL DEFAULT 'default' COMMENT '配置分组标识',
     `key` VARCHAR(100) NOT NULL COMMENT '配置键名',
@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS `erik_system_config` (
 -- ============================================================
 -- 操作日志表（含 source 来源端字段）
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_operation_log` (
+CREATE TABLE IF NOT EXISTS `game_operation_log` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `user_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '操作用户ID',
     `action` VARCHAR(100) NOT NULL COMMENT '操作动作，如 admin.user.store',
@@ -126,7 +126,7 @@ CREATE TABLE IF NOT EXISTS `erik_operation_log` (
 -- ============================================================
 -- C端用户表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_user` (
+CREATE TABLE IF NOT EXISTS `game_user` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `username` VARCHAR(50) NOT NULL COMMENT '用户名',
     `password` VARCHAR(255) NOT NULL COMMENT '密码（bcrypt哈希）',
@@ -153,7 +153,7 @@ CREATE TABLE IF NOT EXISTS `erik_user` (
 -- ============================================================
 -- 平台币钱包表（含乐观锁）
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_user_wallet` (
+CREATE TABLE IF NOT EXISTS `game_user_wallet` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
     `balance` DECIMAL(18,4) UNSIGNED NOT NULL DEFAULT 0.0000 COMMENT '可用余额（平台币）',
@@ -171,7 +171,7 @@ CREATE TABLE IF NOT EXISTS `erik_user_wallet` (
 -- ============================================================
 -- 游戏币钱包表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_user_game_wallet` (
+CREATE TABLE IF NOT EXISTS `game_user_game_wallet` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
     `game_id` BIGINT UNSIGNED NOT NULL COMMENT '游戏ID',
@@ -189,7 +189,7 @@ CREATE TABLE IF NOT EXISTS `erik_user_game_wallet` (
 -- ============================================================
 -- 游戏表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_game` (
+CREATE TABLE IF NOT EXISTS `game_game` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `name` VARCHAR(100) NOT NULL COMMENT '游戏名称',
     `slug` VARCHAR(50) NOT NULL COMMENT '游戏标识',
@@ -212,7 +212,7 @@ CREATE TABLE IF NOT EXISTS `erik_game` (
 -- ============================================================
 -- 游戏币种表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_game_currency` (
+CREATE TABLE IF NOT EXISTS `game_game_currency` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `game_id` BIGINT UNSIGNED NOT NULL COMMENT '游戏ID',
     `name` VARCHAR(50) NOT NULL COMMENT '币种名称',
@@ -230,7 +230,7 @@ CREATE TABLE IF NOT EXISTS `erik_game_currency` (
 -- ============================================================
 -- 充值订单表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_deposit_order` (
+CREATE TABLE IF NOT EXISTS `game_deposit_order` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `order_no` VARCHAR(32) NOT NULL COMMENT '订单号',
     `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
@@ -253,7 +253,7 @@ CREATE TABLE IF NOT EXISTS `erik_deposit_order` (
 -- ============================================================
 -- 提现订单表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_withdraw_order` (
+CREATE TABLE IF NOT EXISTS `game_withdraw_order` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `order_no` VARCHAR(32) NOT NULL COMMENT '订单号',
     `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
@@ -263,7 +263,7 @@ CREATE TABLE IF NOT EXISTS `erik_withdraw_order` (
     `method` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '提现方式: paypal/bank/crypto',
     `account_info` VARCHAR(500) NOT NULL DEFAULT '' COMMENT '收款账户信息（加密存储）',
     `status` VARCHAR(20) NOT NULL DEFAULT 'pending' COMMENT '状态: pending=待审核 approved=已通过 rejected=已拒绝 completed=已完成',
-    `reviewer_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '审核人ID（关联erik_admin_user）',
+    `reviewer_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '审核人ID（关联game_admin_user）',
     `confirmed_by` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '二次确认管理员ID',
     `confirmed_at` DATETIME DEFAULT NULL COMMENT '二次确认时间',
     `review_note` VARCHAR(500) NOT NULL DEFAULT '' COMMENT '审核附注',
@@ -286,7 +286,7 @@ CREATE TABLE IF NOT EXISTS `erik_withdraw_order` (
 -- ============================================================
 -- 兑换记录表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_exchange_record` (
+CREATE TABLE IF NOT EXISTS `game_exchange_record` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
     `game_id` BIGINT UNSIGNED NOT NULL COMMENT '游戏ID',
@@ -306,7 +306,7 @@ CREATE TABLE IF NOT EXISTS `erik_exchange_record` (
 -- ============================================================
 -- 平台流水表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_transaction` (
+CREATE TABLE IF NOT EXISTS `game_transaction` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
     `type` VARCHAR(20) NOT NULL COMMENT '流水类型: deposit/withdraw/exchange_in/exchange_out/game_earn/game_spend',
@@ -325,7 +325,7 @@ CREATE TABLE IF NOT EXISTS `erik_transaction` (
 -- ============================================================
 -- 支付方式表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_payment_method` (
+CREATE TABLE IF NOT EXISTS `game_payment_method` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `name` VARCHAR(50) NOT NULL COMMENT '支付方式名称',
     `type` VARCHAR(20) NOT NULL COMMENT '类型: fiat=法币 crypto=加密货币',
@@ -343,7 +343,7 @@ CREATE TABLE IF NOT EXISTS `erik_payment_method` (
 -- ============================================================
 -- 公告表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_announcement` (
+CREATE TABLE IF NOT EXISTS `game_announcement` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `title` VARCHAR(255) NOT NULL COMMENT '标题',
     `content` TEXT NOT NULL COMMENT '内容',
@@ -362,7 +362,7 @@ CREATE TABLE IF NOT EXISTS `erik_announcement` (
 -- ============================================================
 -- 平台配置表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_platform_config` (
+CREATE TABLE IF NOT EXISTS `game_platform_config` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `group` VARCHAR(50) NOT NULL DEFAULT 'default' COMMENT '配置分组: withdraw/payment/game/system',
     `key` VARCHAR(100) NOT NULL COMMENT '配置键名',
@@ -378,7 +378,7 @@ CREATE TABLE IF NOT EXISTS `erik_platform_config` (
 -- ============================================================
 -- 语言定义表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_language` (
+CREATE TABLE IF NOT EXISTS `game_language` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `code` VARCHAR(10) NOT NULL COMMENT '语言代码: en-US/zh-CN/ja-JP/ko-KR',
     `name` VARCHAR(50) NOT NULL COMMENT '语言名称',
@@ -396,7 +396,7 @@ CREATE TABLE IF NOT EXISTS `erik_language` (
 -- ============================================================
 -- 翻译文本表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_translation` (
+CREATE TABLE IF NOT EXISTS `game_translation` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `group` VARCHAR(50) NOT NULL DEFAULT 'app' COMMENT '翻译分组: app/auth/wallet/exchange/withdraw/game/error',
     `key` VARCHAR(200) NOT NULL COMMENT '翻译键名',
@@ -412,7 +412,7 @@ CREATE TABLE IF NOT EXISTS `erik_translation` (
 -- ============================================================
 -- 第三方登录关联表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_user_oauth` (
+CREATE TABLE IF NOT EXISTS `game_user_oauth` (
     `id` BIGINT UNSIGNED NOT NULL,
     `user_id` BIGINT UNSIGNED NOT NULL,
     `provider` VARCHAR(20) NOT NULL COMMENT '平台: google/facebook/apple',
@@ -432,7 +432,7 @@ CREATE TABLE IF NOT EXISTS `erik_user_oauth` (
 -- ============================================================
 -- 用户登录会话表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_user_session` (
+CREATE TABLE IF NOT EXISTS `game_user_session` (
     `id` BIGINT UNSIGNED NOT NULL,
     `user_id` BIGINT UNSIGNED NOT NULL,
     `token_id` VARCHAR(64) NOT NULL COMMENT 'JWT jti',
@@ -451,7 +451,7 @@ CREATE TABLE IF NOT EXISTS `erik_user_session` (
 -- ============================================================
 -- 实名认证表 (KYC)
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_user_identity` (
+CREATE TABLE IF NOT EXISTS `game_user_identity` (
     `id` BIGINT UNSIGNED NOT NULL,
     `user_id` BIGINT UNSIGNED NOT NULL,
     `real_name` VARCHAR(500) NOT NULL COMMENT '真实姓名(加密)',
@@ -475,7 +475,7 @@ CREATE TABLE IF NOT EXISTS `erik_user_identity` (
 -- ============================================================
 -- 用户收款账户表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_user_payment_account` (
+CREATE TABLE IF NOT EXISTS `game_user_payment_account` (
     `id` BIGINT UNSIGNED NOT NULL,
     `user_id` BIGINT UNSIGNED NOT NULL,
     `type` VARCHAR(20) NOT NULL COMMENT '类型: paypal/alipay/bank/crypto_wallet',
@@ -493,7 +493,7 @@ CREATE TABLE IF NOT EXISTS `erik_user_payment_account` (
 -- ============================================================
 -- 提现限额规则表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_withdraw_limit` (
+CREATE TABLE IF NOT EXISTS `game_withdraw_limit` (
     `id` BIGINT UNSIGNED NOT NULL,
     `user_level` VARCHAR(20) NOT NULL DEFAULT 'default' COMMENT '用户等级: default/verified/vip/svip',
     `single_min` DECIMAL(18,4) UNSIGNED NOT NULL DEFAULT 1.0000 COMMENT '单笔最低',
@@ -512,7 +512,7 @@ CREATE TABLE IF NOT EXISTS `erik_withdraw_limit` (
 -- ============================================================
 -- 游戏区服表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_game_server` (
+CREATE TABLE IF NOT EXISTS `game_game_server` (
     `id` BIGINT UNSIGNED NOT NULL,
     `game_id` BIGINT UNSIGNED NOT NULL,
     `name` VARCHAR(50) NOT NULL COMMENT '区服名称',
@@ -529,7 +529,7 @@ CREATE TABLE IF NOT EXISTS `erik_game_server` (
 -- ============================================================
 -- 游戏记录表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_game_play_log` (
+CREATE TABLE IF NOT EXISTS `game_game_play_log` (
     `id` BIGINT UNSIGNED NOT NULL,
     `user_id` BIGINT UNSIGNED NOT NULL,
     `game_id` BIGINT UNSIGNED NOT NULL,
@@ -553,7 +553,7 @@ CREATE TABLE IF NOT EXISTS `erik_game_play_log` (
 -- ============================================================
 -- 风控规则表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_risk_rule` (
+CREATE TABLE IF NOT EXISTS `game_risk_rule` (
     `id` BIGINT UNSIGNED NOT NULL,
     `name` VARCHAR(100) NOT NULL COMMENT '规则名称',
     `type` VARCHAR(30) NOT NULL COMMENT '类型: ip_blacklist/amount_anomaly/frequency/velocity/device_fingerprint',
@@ -570,7 +570,7 @@ CREATE TABLE IF NOT EXISTS `erik_risk_rule` (
 -- ============================================================
 -- 风控日志表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_risk_log` (
+CREATE TABLE IF NOT EXISTS `game_risk_log` (
     `id` BIGINT UNSIGNED NOT NULL,
     `user_id` BIGINT UNSIGNED NOT NULL DEFAULT 0,
     `rule_id` BIGINT UNSIGNED NOT NULL DEFAULT 0,
@@ -588,7 +588,7 @@ CREATE TABLE IF NOT EXISTS `erik_risk_log` (
 -- ============================================================
 -- 日统计快照表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_stat_daily` (
+CREATE TABLE IF NOT EXISTS `game_stat_daily` (
     `id` BIGINT UNSIGNED NOT NULL,
     `date` DATE NOT NULL COMMENT '统计日期',
     `stat_type` VARCHAR(30) NOT NULL COMMENT '类型: revenue/users/game/deposit/withdraw/exchange',
@@ -604,7 +604,7 @@ CREATE TABLE IF NOT EXISTS `erik_stat_daily` (
 -- ============================================================
 -- 游戏分类表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_game_category` (
+CREATE TABLE IF NOT EXISTS `game_game_category` (
     `id` BIGINT UNSIGNED NOT NULL,
     `name` VARCHAR(50) NOT NULL COMMENT '分类名称',
     `slug` VARCHAR(50) NOT NULL COMMENT '分类标识',
@@ -621,7 +621,7 @@ CREATE TABLE IF NOT EXISTS `erik_game_category` (
 -- ============================================================
 -- 游戏-分类关联表（多对多）
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_game_category_rel` (
+CREATE TABLE IF NOT EXISTS `game_game_category_rel` (
     `game_id` BIGINT UNSIGNED NOT NULL,
     `category_id` BIGINT UNSIGNED NOT NULL,
     PRIMARY KEY (`game_id`, `category_id`),
@@ -631,7 +631,7 @@ CREATE TABLE IF NOT EXISTS `erik_game_category_rel` (
 -- ============================================================
 -- 排行榜定义表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_leaderboard` (
+CREATE TABLE IF NOT EXISTS `game_leaderboard` (
     `id` BIGINT UNSIGNED NOT NULL,
     `game_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '游戏ID(0=全平台)',
     `name` VARCHAR(100) NOT NULL COMMENT '排行榜名称',
@@ -650,7 +650,7 @@ CREATE TABLE IF NOT EXISTS `erik_leaderboard` (
 -- ============================================================
 -- 优惠券表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_coupon` (
+CREATE TABLE IF NOT EXISTS `game_coupon` (
     `id` BIGINT UNSIGNED NOT NULL,
     `name` VARCHAR(100) NOT NULL COMMENT '优惠券名称',
     `type` VARCHAR(20) NOT NULL DEFAULT 'fixed' COMMENT '类型: fixed=固定金额 rate=比例折扣',
@@ -674,7 +674,7 @@ CREATE TABLE IF NOT EXISTS `erik_coupon` (
 -- ============================================================
 -- 用户优惠券表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_user_coupon` (
+CREATE TABLE IF NOT EXISTS `game_user_coupon` (
     `id` BIGINT UNSIGNED NOT NULL,
     `user_id` BIGINT UNSIGNED NOT NULL,
     `coupon_id` BIGINT UNSIGNED NOT NULL,
@@ -690,7 +690,7 @@ CREATE TABLE IF NOT EXISTS `erik_user_coupon` (
 -- ============================================================
 -- 国家差异化配置表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_country_config` (
+CREATE TABLE IF NOT EXISTS `game_country_config` (
     `id` BIGINT UNSIGNED NOT NULL,
     `country_code` VARCHAR(10) NOT NULL COMMENT 'ISO 3166-1 alpha-2',
     `currency` VARCHAR(10) NOT NULL DEFAULT 'USD' COMMENT '默认币种',
@@ -707,7 +707,7 @@ CREATE TABLE IF NOT EXISTS `erik_country_config` (
 -- ============================================================
 -- 平台收益记录表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_platform_revenue` (
+CREATE TABLE IF NOT EXISTS `game_platform_revenue` (
     `id` BIGINT UNSIGNED NOT NULL,
     `date` DATE NOT NULL COMMENT '收益日期',
     `source` VARCHAR(30) NOT NULL COMMENT '来源: exchange_spread/withdraw_fee/deposit_fee/game_share',
@@ -725,7 +725,7 @@ CREATE TABLE IF NOT EXISTS `erik_platform_revenue` (
 -- ============================================================
 -- 通知表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_notification` (
+CREATE TABLE IF NOT EXISTS `game_notification` (
     `id` BIGINT UNSIGNED NOT NULL,
     `user_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '用户ID(0=全站通知)',
     `type` VARCHAR(30) NOT NULL DEFAULT 'system' COMMENT '类型: system/deposit/withdraw/kyc/coupon/announcement',
@@ -743,7 +743,7 @@ CREATE TABLE IF NOT EXISTS `erik_notification` (
 -- ============================================================
 -- 推荐关系表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_referral` (
+CREATE TABLE IF NOT EXISTS `game_referral` (
     `id` BIGINT UNSIGNED NOT NULL,
     `referrer_id` BIGINT UNSIGNED NOT NULL COMMENT '推荐人用户ID',
     `referred_id` BIGINT UNSIGNED NOT NULL COMMENT '被推荐人用户ID',
@@ -759,7 +759,7 @@ CREATE TABLE IF NOT EXISTS `erik_referral` (
 -- ============================================================
 -- 推荐奖励表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_referral_reward` (
+CREATE TABLE IF NOT EXISTS `game_referral_reward` (
     `id` BIGINT UNSIGNED NOT NULL,
     `referral_id` BIGINT UNSIGNED NOT NULL,
     `user_id` BIGINT UNSIGNED NOT NULL COMMENT '获得奖励的用户ID',
@@ -777,7 +777,7 @@ CREATE TABLE IF NOT EXISTS `erik_referral_reward` (
 -- ============================================================
 -- 2FA 双因素认证表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_user_2fa` (
+CREATE TABLE IF NOT EXISTS `game_user_2fa` (
     `id` BIGINT UNSIGNED NOT NULL,
     `user_id` BIGINT UNSIGNED NOT NULL,
     `secret` VARCHAR(500) NOT NULL COMMENT 'TOTP密钥(加密)',
@@ -790,7 +790,7 @@ CREATE TABLE IF NOT EXISTS `erik_user_2fa` (
     UNIQUE KEY `uk_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='2FA双因素认证表';
 
-CREATE TABLE IF NOT EXISTS `erik_device_token` (
+CREATE TABLE IF NOT EXISTS `game_device_token` (
     `id` BIGINT UNSIGNED NOT NULL,
     `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
     `platform` VARCHAR(20) NOT NULL COMMENT '平台: fcm/apns/harmonyos',
@@ -806,11 +806,11 @@ CREATE TABLE IF NOT EXISTS `erik_device_token` (
 -- ============================================================
 
 -- 默认管理员角色
-INSERT IGNORE INTO `erik_admin_role` (`id`, `name`, `slug`, `description`, `status`) VALUES
+INSERT IGNORE INTO `game_admin_role` (`id`, `name`, `slug`, `description`, `status`) VALUES
 (10000000000000001, '超级管理员', 'super_admin', '系统超级管理员，拥有所有权限', 1);
 
 -- 菜单权限 (type=1)
-INSERT IGNORE INTO `erik_admin_permission` (`id`, `parent_id`, `name`, `slug`, `type`, `icon`, `path`, `sort`, `created_at`, `updated_at`) VALUES
+INSERT IGNORE INTO `game_admin_permission` (`id`, `parent_id`, `name`, `slug`, `type`, `icon`, `path`, `sort`, `created_at`, `updated_at`) VALUES
 (21000000000000001, '0', '仪表盘',    'dashboard',     1, 'dashboard', '/dashboard',        1, NOW(), NOW()),
 (21000000000000002, '0', '用户管理',  'user',           1, 'people',    '/admin/user',        2, NOW(), NOW()),
 (21000000000000003, '0', '角色管理',  'role',           1, 'shield',    '/admin/role',        3, NOW(), NOW()),
@@ -819,7 +819,7 @@ INSERT IGNORE INTO `erik_admin_permission` (`id`, `parent_id`, `name`, `slug`, `
 (21000000000000006, '0', '操作日志',  'log',            1, 'article',   '/admin/log',         6, NOW(), NOW());
 
 -- 按钮权限 (type=2)
-INSERT IGNORE INTO `erik_admin_permission` (`id`, `parent_id`, `name`, `slug`, `type`, `icon`, `path`, `sort`, `created_at`, `updated_at`) VALUES
+INSERT IGNORE INTO `game_admin_permission` (`id`, `parent_id`, `name`, `slug`, `type`, `icon`, `path`, `sort`, `created_at`, `updated_at`) VALUES
 (21000000000000011, 21000000000000002, '批量删除',     'batch.destroy', 2, '', '', 1, NOW(), NOW()),
 (21000000000000012, 21000000000000002, '批量启用/禁用', 'batch.status', 2, '', '', 2, NOW(), NOW()),
 (21000000000000013, 21000000000000002, '导入用户',     'import.users',  2, '', '', 3, NOW(), NOW()),
@@ -828,7 +828,7 @@ INSERT IGNORE INTO `erik_admin_permission` (`id`, `parent_id`, `name`, `slug`, `
 (21000000000000016, 21000000000000002, '文件上传',     'upload',         2, '', '', 6, NOW(), NOW());
 
 -- API 权限 (type=3)
-INSERT IGNORE INTO `erik_admin_permission` (`id`, `parent_id`, `name`, `slug`, `type`, `icon`, `path`, `sort`, `created_at`, `updated_at`) VALUES
+INSERT IGNORE INTO `game_admin_permission` (`id`, `parent_id`, `name`, `slug`, `type`, `icon`, `path`, `sort`, `created_at`, `updated_at`) VALUES
 (21000000000000021, 21000000000000001, '查看仪表盘',   'get.admin/dashboard', 3, '', '', 1, NOW(), NOW()),
 (21000000000000031, 21000000000000002, '查看用户',     'get.admin/user',             3, '', '', 1, NOW(), NOW()),
 (21000000000000032, 21000000000000002, '创建用户',     'post.admin/user',            3, '', '', 2, NOW(), NOW()),
@@ -858,14 +858,14 @@ INSERT IGNORE INTO `erik_admin_permission` (`id`, `parent_id`, `name`, `slug`, `
 (21000000000000094, '0', '文件上传', 'post.admin/upload', 3, '', '', 1, NOW(), NOW());
 
 -- 超级管理员角色关联所有权限（幂等：跳过已存在的关联）
-INSERT INTO `erik_admin_role_permission` (`role_id`, `permission_id`)
-SELECT 10000000000000001, `id` FROM `erik_admin_permission`
+INSERT INTO `game_admin_role_permission` (`role_id`, `permission_id`)
+SELECT 10000000000000001, `id` FROM `game_admin_permission`
 WHERE `id` NOT IN (
-    SELECT `permission_id` FROM `erik_admin_role_permission` WHERE `role_id` = 10000000000000001
+    SELECT `permission_id` FROM `game_admin_role_permission` WHERE `role_id` = 10000000000000001
 );
 
 -- 默认平台配置
-INSERT IGNORE INTO `erik_platform_config` (`id`, `group`, `key`, `value`, `type`, `description`) VALUES
+INSERT IGNORE INTO `game_platform_config` (`id`, `group`, `key`, `value`, `type`, `description`) VALUES
 (20000000000000001, 'withdraw', 'global_switch', '1', 'bool', '全局提现开关: 1=允许提现 0=禁止提现'),
 (20000000000000002, 'withdraw', 'auto_approve_threshold', '100.0000', 'decimal', '自动审核阈值（平台币），低于此金额自动通过'),
 (20000000000000003, 'withdraw', 'daily_limit', '10000.0000', 'decimal', '每人每日提现上限（平台币）'),
@@ -875,19 +875,19 @@ INSERT IGNORE INTO `erik_platform_config` (`id`, `group`, `key`, `value`, `type`
 (20000000000000006, 'system', 'site_name', 'Global Game Platform', 'string', '平台名称');
 
 -- 推荐配置
-INSERT IGNORE INTO `erik_platform_config` (`id`, `group`, `key`, `value`, `type`, `description`) VALUES
+INSERT IGNORE INTO `game_platform_config` (`id`, `group`, `key`, `value`, `type`, `description`) VALUES
 (60000000000000001, 'referral', 'signup_reward', '5.0000', 'decimal', '注册奖励(平台币)，推荐人和被推荐人各得'),
 (60000000000000002, 'referral', 'deposit_commission_pct', '5.00', 'decimal', '充值返佣比例(%)');
 
 -- 语言
-INSERT IGNORE INTO `erik_language` (`id`, `code`, `name`, `native_name`, `icon`, `status`, `sort`) VALUES
+INSERT IGNORE INTO `game_language` (`id`, `code`, `name`, `native_name`, `icon`, `status`, `sort`) VALUES
 (30000000000000001, 'en-US', 'English', 'English', 'us', 1, 1),
 (30000000000000002, 'zh-CN', 'Chinese (Simplified)', '简体中文', 'cn', 1, 2),
 (30000000000000003, 'ja-JP', 'Japanese', '日本語', 'jp', 1, 3),
 (30000000000000004, 'ko-KR', 'Korean', '한국어', 'kr', 1, 4);
 
 -- 翻译文本
-INSERT IGNORE INTO `erik_translation` (`id`, `group`, `key`, `lang_code`, `value`) VALUES
+INSERT IGNORE INTO `game_translation` (`id`, `group`, `key`, `lang_code`, `value`) VALUES
 (30000000000000101, 'auth', 'register_success', 'en-US', 'Registration successful'),
 (30000000000000102, 'auth', 'register_success', 'zh-CN', '注册成功'),
 (30000000000000103, 'auth', 'login_success', 'en-US', 'Login successful'),
@@ -968,20 +968,20 @@ INSERT IGNORE INTO `erik_translation` (`id`, `group`, `key`, `lang_code`, `value
 (30000000000000720, 'admin', 'announcement_not_found', 'zh-CN', '公告不存在');
 
 -- 默认风控规则
-INSERT IGNORE INTO `erik_risk_rule` (`id`, `name`, `type`, `config`, `action`, `priority`, `status`) VALUES
+INSERT IGNORE INTO `game_risk_rule` (`id`, `name`, `type`, `config`, `action`, `priority`, `status`) VALUES
 (40000000000000001, 'IP黑名单检测', 'ip_blacklist', '{"blacklist":[]}', 'block', 100, 1),
 (40000000000000002, '单笔大额充值预警', 'amount_anomaly', '{"min_amount":"5000","currency":"USD"}', 'warn', 50, 1),
 (40000000000000003, '高频提现检测', 'frequency', '{"window_minutes":60,"max_count":5}', 'warn', 50, 1),
 (40000000000000004, '短时多账号检测', 'velocity', '{"window_minutes":10,"max_accounts":3,"same_ip":true}', 'block', 80, 1);
 
 -- 默认提现限额规则
-INSERT IGNORE INTO `erik_withdraw_limit` (`id`, `user_level`, `single_min`, `single_max`, `daily_limit`, `monthly_limit`, `fee_pct`, `fee_max`, `auto_approve_threshold`) VALUES
+INSERT IGNORE INTO `game_withdraw_limit` (`id`, `user_level`, `single_min`, `single_max`, `daily_limit`, `monthly_limit`, `fee_pct`, `fee_max`, `auto_approve_threshold`) VALUES
 (40000000000000010, 'default', 1.0000, 1000.0000, 10000.0000, 50000.0000, 1.00, 50.0000, 100.0000),
 (40000000000000011, 'verified', 1.0000, 5000.0000, 50000.0000, 200000.0000, 0.50, 25.0000, 500.0000),
 (40000000000000012, 'vip', 1.0000, 20000.0000, 200000.0000, 1000000.0000, 0.00, 0.0000, 5000.0000);
 
 -- 默认游戏分类
-INSERT IGNORE INTO `erik_game_category` (`id`, `name`, `slug`, `icon`, `sort`, `status`) VALUES
+INSERT IGNORE INTO `game_game_category` (`id`, `name`, `slug`, `icon`, `sort`, `status`) VALUES
 (50000000000000001, '动作', 'action', 'sports_kabaddi', 1, 1),
 (50000000000000002, '冒险', 'adventure', 'explore', 2, 1),
 (50000000000000003, '角色扮演', 'rpg', 'swords', 3, 1),
@@ -994,7 +994,7 @@ INSERT IGNORE INTO `erik_game_category` (`id`, `name`, `slug`, `icon`, `sort`, `
 (50000000000000010, '卡牌', 'card', 'style', 10, 1);
 
 -- 默认国家配置
-INSERT IGNORE INTO `erik_country_config` (`id`, `country_code`, `currency`, `payment_methods`, `withdraw_methods`, `min_deposit`) VALUES
+INSERT IGNORE INTO `game_country_config` (`id`, `country_code`, `currency`, `payment_methods`, `withdraw_methods`, `min_deposit`) VALUES
 (50000000000000101, 'US', 'USD', '["stripe","paypal","crypto"]', '["paypal","bank","crypto"]', 1.0000),
 (50000000000000102, 'CN', 'CNY', '["alipay","wechat"]', '["alipay","bank"]', 10.0000),
 (50000000000000103, 'JP', 'JPY', '["stripe","paypal"]', '["paypal","bank"]', 100.0000),

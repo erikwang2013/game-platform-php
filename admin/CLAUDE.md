@@ -30,7 +30,7 @@ Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
 ### 后端
 - PHP 8.3+, webman v2 (workerman/webman)
-- 数据库: MySQL 8.0+，表前缀 `erik_`
+- 数据库: MySQL 8.0+，表前缀 `game_`
 - 主键: BIGINT 非自增，由 `erikwang2013/snowflake-php` 生成
 - API 层 ID 加解密: `erikwang2013/hashids`
 - JWT 认证: `erikwang2013/jwt-webman`
@@ -108,9 +108,6 @@ open-admin/
 │   ├── route.php               # 路由 + API 版本策略
 │   └── middleware.php           # 全局中间件注册
 ├── database/
-│   ├── migrations/             # SQL 迁移文件
-│   │   ├── 2026_05_16_000000_init_tables.sql
-│   │   └── 2026_05_20_000001_seed_permissions.sql
 │   └── backup/                 # 数据库备份脚本
 │       ├── backup.sh           # mysqldump+gzip，30天保留
 │       └── restore.sh          # 交互式恢复
@@ -185,7 +182,7 @@ Redis 滑动窗口（Lua 原子化），默认 60 次/分钟/IP/路由：
 - 所有新建 `.php` 文件头必须包含版权声明
 
 ### 数据库
-- 表前缀: `erik_`
+- 表前缀: `game_`
 - 主键 `id`: BIGINT 类型，非自增，由 snowflake 生成
 - 敏感字段使用 `erikwang2013/encryptable` trait 自动加解密
 - 迁移文件使用 SQL 格式

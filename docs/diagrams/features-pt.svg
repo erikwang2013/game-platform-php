@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 750" font-family="Arial, 'Noto Sans SC', 'Noto Sans', sans-serif">
+  <defs>
+    <linearGradient id="hd" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#8b5cf6"/></linearGradient>
+    <filter id="sh"><feDropShadow dx="1" dy="1" stdDeviation="1.5" flood-opacity=".06"/></filter>
+  </defs>
+  <rect width="1000" height="750" fill="#fafbfc"/>
+
+  <rect x="0" y="0" width="1000" height="52" fill="url(#hd)"/>
+  <text x="500" y="34" text-anchor="middle" fill="#fff" font-size="21" font-weight="bold">Plataforma Global de Agregação de Jogos — Panorama de Funcionalidades</text>
+
+  <rect x="30" y="72" width="220" height="95" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="96" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">Autenticação de usuários</text>
+  <text x="140" y="116" text-anchor="middle" fill="#3b82f6" font-size="11">Login/registro por usuário e senha</text>
+  <text x="140" y="135" text-anchor="middle" fill="#3b82f6" font-size="11">Google/Facebook/Apple OAuth</text>
+  <text x="140" y="154" text-anchor="middle" fill="#3b82f6" font-size="11">Autenticação de dois fatores 2FA TOTP</text>
+
+  <rect x="265" y="72" width="220" height="95" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="96" text-anchor="middle" fill="#854d0e" font-size="13" font-weight="bold">Sistema de carteira</text>
+  <text x="375" y="116" text-anchor="middle" fill="#ca8a04" font-size="11">Carteira de moeda da plataforma (lock otimista anti-concorrência)</text>
+  <text x="375" y="135" text-anchor="middle" fill="#ca8a04" font-size="11">Carteira de moeda de jogo (independente por jogo)</text>
+  <text x="375" y="154" text-anchor="middle" fill="#ca8a04" font-size="11">Rastreamento de transações de ponta a ponta</text>
+
+  <rect x="500" y="72" width="220" height="95" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="96" text-anchor="middle" fill="#166534" font-size="13" font-weight="bold">Sistema de recarga</text>
+  <text x="610" y="116" text-anchor="middle" fill="#22c55e" font-size="11">Criação de ordem de recarga</text>
+  <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">Verificação de assinatura do callback Stripe/PayPal</text>
+  <text x="610" y="154" text-anchor="middle" fill="#22c55e" font-size="11">Crédito automático + notificação no site</text>
+
+  <rect x="735" y="72" width="230" height="95" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="96" text-anchor="middle" fill="#9a3412" font-size="13" font-weight="bold">Sistema de saque</text>
+  <text x="850" y="116" text-anchor="middle" fill="#ea580c" font-size="11">Solicitação → revisão → pagamento</text>
+  <text x="850" y="135" text-anchor="middle" fill="#ea580c" font-size="11">Interruptor global / limites escalonados por KYC</text>
+  <text x="850" y="154" text-anchor="middle" fill="#ea580c" font-size="11">Limite de revisão automática configurável</text>
+
+  <rect x="30" y="182" width="220" height="95" rx="8" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="206" text-anchor="middle" fill="#5b21b6" font-size="13" font-weight="bold">Motor de câmbio</text>
+  <text x="140" y="226" text-anchor="middle" fill="#8b5cf6" font-size="11">Câmbio bidirecional moeda da plataforma ⇄ moeda de jogo</text>
+  <text x="140" y="245" text-anchor="middle" fill="#8b5cf6" font-size="11">Cotação em tempo real / gestão de taxas</text>
+  <text x="140" y="264" text-anchor="middle" fill="#8b5cf6" font-size="11">Receita de spread da plataforma</text>
+
+  <rect x="265" y="182" width="220" height="95" rx="8" fill="#fce7f3" stroke="#f9a8d4" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="206" text-anchor="middle" fill="#831843" font-size="13" font-weight="bold">Gestão de jogos</text>
+  <text x="375" y="226" text-anchor="middle" fill="#ec4899" font-size="11">CRUD + tipos próprio/terceiros</text>
+  <text x="375" y="245" text-anchor="middle" fill="#ec4899" font-size="11">10 categorias de jogos + gestão de servidores</text>
+  <text x="375" y="264" text-anchor="middle" fill="#ec4899" font-size="11">Rastreamento completo de registros de partidas</text>
+
+  <rect x="500" y="182" width="220" height="95" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="206" text-anchor="middle" fill="#991b1b" font-size="13" font-weight="bold">Verificação de identidade KYC</text>
+  <text x="610" y="226" text-anchor="middle" fill="#ef4444" font-size="11">Envio de verificação + revisão no painel</text>
+  <text x="610" y="245" text-anchor="middle" fill="#ef4444" font-size="11">Documento de identidade / passaporte / CNH</text>
+  <text x="610" y="264" text-anchor="middle" fill="#ef4444" font-size="11">Sistema de três níveis de verificação</text>
+
+  <rect x="735" y="182" width="230" height="95" rx="8" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="206" text-anchor="middle" fill="#4c1d95" font-size="13" font-weight="bold">Rankings</text>
+  <text x="850" y="226" text-anchor="middle" fill="#7c3aed" font-size="11">diário / semanal / mensal / geral</text>
+  <text x="850" y="245" text-anchor="middle" fill="#7c3aed" font-size="11">Cache Redis + ordenação em tempo real</text>
+  <text x="850" y="264" text-anchor="middle" fill="#7c3aed" font-size="11">Push em tempo real via WebSocket (:8789)</text>
+
+  <rect x="30" y="292" width="220" height="95" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="316" text-anchor="middle" fill="#064e3b" font-size="13" font-weight="bold">Cupons</text>
+  <text x="140" y="336" text-anchor="middle" fill="#10b981" font-size="11">Valor fixo / desconto percentual</text>
+  <text x="140" y="355" text-anchor="middle" fill="#10b981" font-size="11">Limite de tempo/quantidade / rastreamento de resgate e uso</text>
+
+  <rect x="265" y="292" width="220" height="95" rx="8" fill="#fff1f2" stroke="#fda4af" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="316" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">Sistema de indicação</text>
+  <text x="375" y="336" text-anchor="middle" fill="#f43f5e" font-size="11">Geração de código de indicação único</text>
+  <text x="375" y="355" text-anchor="middle" fill="#f43f5e" font-size="11">Recompensa de registro + comissão de recarga</text>
+
+  <rect x="500" y="292" width="220" height="95" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="316" text-anchor="middle" fill="#7c2d12" font-size="13" font-weight="bold">Sistema de risco</text>
+  <text x="610" y="336" text-anchor="middle" fill="#f97316" font-size="11">Blacklist de IP / alerta de valores altos</text>
+  <text x="610" y="355" text-anchor="middle" fill="#f97316" font-size="11">Detecção de frequência / anomalia de velocidade</text>
+
+  <rect x="735" y="292" width="230" height="95" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="316" text-anchor="middle" fill="#334155" font-size="13" font-weight="bold">Internacionalização i18n</text>
+  <text x="850" y="336" text-anchor="middle" fill="#64748b" font-size="11">4 idiomas en/zh/ja/ko</text>
+  <text x="850" y="355" text-anchor="middle" fill="#64748b" font-size="11">Tabela de traduções + mecanismo de cache</text>
+
+  <rect x="30" y="402" width="220" height="95" rx="8" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="140" y="426" text-anchor="middle" fill="#0c4a6e" font-size="13" font-weight="bold">Central de notificações</text>
+  <text x="140" y="446" text-anchor="middle" fill="#0ea5e9" font-size="11">Mensagem no site + notificação por email</text>
+  <text x="140" y="465" text-anchor="middle" fill="#0ea5e9" font-size="11">Recarga/saque/KYC/cupom</text>
+
+  <rect x="265" y="402" width="220" height="95" rx="8" fill="#fefce8" stroke="#fef08a" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="375" y="426" text-anchor="middle" fill="#713f12" font-size="13" font-weight="bold">Diferenciação por país</text>
+  <text x="375" y="446" text-anchor="middle" fill="#eab308" font-size="11">Configuração de pagamento/saque de 8 países</text>
+  <text x="375" y="465" text-anchor="middle" fill="#eab308" font-size="11">Recarga mínima diferenciada</text>
+
+  <rect x="500" y="402" width="220" height="95" rx="8" fill="#f5f3ff" stroke="#e9d5ff" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="610" y="426" text-anchor="middle" fill="#581c87" font-size="13" font-weight="bold">Análise estatística</text>
+  <text x="610" y="446" text-anchor="middle" fill="#a855f7" font-size="11">Snapshot de estatísticas diárias (5 tipos de indicadores)</text>
+  <text x="610" y="465" text-anchor="middle" fill="#a855f7" font-size="11">Rastreamento de receita da plataforma</text>
+
+  <rect x="735" y="402" width="230" height="95" rx="8" fill="#fff1f2" stroke="#fecdd3" stroke-width="1.5" filter="url(#sh)"/>
+  <text x="850" y="426" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">Busca full-text</text>
+  <text x="850" y="446" text-anchor="middle" fill="#e11d48" font-size="11">Busca Elasticsearch</text>
+  <text x="850" y="465" text-anchor="middle" fill="#e11d48" font-size="11">Fallback LIKE + sincronização Scout</text>
+
+  <rect x="30" y="518" width="940" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="500" y="546" text-anchor="middle" fill="#475569" font-size="14" font-weight="bold">Resumo das capacidades da plataforma</text>
+  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">Autenticação de usuários · Carteira (lock otimista) · Recarga (Stripe/PayPal) · Câmbio (taxa em tempo real) · Saque (revisão/automático) · KYC (3 níveis)</text>
+  <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">CRUD de jogos (10 categorias + servidores) · Rankings (WebSocket em tempo real) · Cupons · Indicação (recompensa de registro + comissão) · Risco (4 tipos de regra)</text>
+  <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">Notificações (no site + email) · Diferenciação por país (8 países) · Internacionalização (4 idiomas) · Estatísticas (snapshot diário + receita) · Busca full-text (ES)</text>
+
+  <text x="500" y="662" text-anchor="middle" fill="#94a3b8" font-size="11">Três clientes: Flutter Admin (15 páginas) + Flutter Platform (10 páginas) + HarmonyOS (5 páginas)</text>
+  <text x="500" y="682" text-anchor="middle" fill="#94a3b8" font-size="11">Implantação: orquestração Docker Compose com 7 serviços + proxy reverso Nginx + CI/CD (GitHub Actions)</text>
+
+  <text x="500" y="740" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>
+</svg>
