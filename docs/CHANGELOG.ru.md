@@ -48,3 +48,12 @@ Languages: **中文** · [English](CHANGELOG.en.md) · [한국어](CHANGELOG.ko.
 - **Модели** admin/service по-прежнему в двух копиях (лишь часть `common/service` вошла в path-пакет).
 - `webman/queue` не подключён; вероятность/удержание не перенесены на OLAP.
 - PROJECT-PLAN / VERSIONS / части отчётов аудита могут отставать от этого CHANGELOG; источник истины — этот файл и диск.
+
+## [1.1] resilience — 2026-08-27
+
+### Стабильность
+
+- В общий слой добавлены `CircuitBreaker` (состояние в Redis, порог 5 / окно 30 с, fail-open при недоступности Redis) и `Retry` (экспоненциальная задержка, только сетевые исключения, максимум 5 попыток), в `packages/platform-common/src/`.
+- Переключатель деградации `feature.provider_mock`: PushService (FCM/APNs/HarmonyOS), PayoutService (PayPal), ThirdPartyProvider при `on` пропускают реальные сетевые вызовы.
+- Исправлено 11 дефектов типа `getenv($name, '')` (TypeError при strict_types); проверка mock в PushService перенесена в try/catch.
+- Новые тесты: CircuitBreakerTest / RetryTest / ResilienceMockTest; набор service 45 → 60 кейсов, все зелёные (отчёт: [test-reports/resilience.md](test-reports/resilience.md)).

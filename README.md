@@ -226,7 +226,8 @@ curl -X POST http://localhost:8788/api/auth/register \
 
 | 测试类型 | 用例/覆盖 | 结果 |
 |---------|----------|------|
-| PHP 单元测试 | admin 153 + service 45 + 新增 63 用例 | service 全过；admin 6 errors + 1 failure 为既有问题（详见报告） |
+| PHP 单元测试 | admin 153 + service 60 + 新增 63 用例 | service 全过；admin 6 errors + 1 failure 为既有问题（详见报告） |
+| 稳定性机制测试 | 熔断/重试/降级开关 15 用例（CircuitBreakerTest/RetryTest/ResilienceMockTest） | 全部通过 |
 | API 接口自动化 | 187 端点全量覆盖，225 断言 | 171 通过 / 50 失败 / 4 跳过（失败均为确定性缺陷，详见报告） |
 | Flutter UI 测试 | 12 用例（登录/仪表盘/导航/语言切换） | 全部通过 |
 | Go/Rust | 仓库无 Go/Rust 代码 | 跳过，已记录 |
@@ -243,6 +244,7 @@ cd admin/apps/flutter && flutter test --timeout 300s
 
 详细报告：
 - [PHP 单元测试报告](docs/test-reports/php-unit.md)
+- [稳定性机制测试报告（熔断/重试/降级）](docs/test-reports/resilience.md)
 - [API 接口自动化报告](docs/test-reports/api.md)
 - [Flutter UI 测试报告](docs/test-reports/ui.md)
 

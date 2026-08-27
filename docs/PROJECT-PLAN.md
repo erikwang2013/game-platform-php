@@ -85,14 +85,14 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 ### P1 — 可靠性 + 一致性
 
 7. **共享层去重**：common/model 抽 composer path repo（或符号链接），消除双份漂移（H3） — 🔶 部分完成（2026-08-18：`common/service` 已抽出单一 `packages/platform-common` / `erik/platform-common` path repo（原 `common-php` 已并入），admin+service 引用；model 与 host-bound `app/common` 包装仍双份，见 `packages/platform-common/DUAL_MODELS.md`）
-8. **统一 Redis 降级封装**：fail 策略显式化 + 告警不静默；补 PayoutService/OAuth/ChatWebSocket 兜底（M5） — 🔶 部分完成（RateLimit fail-closed 已落地：Redis 故障时限流拒绝而非静默放行；其余未做）
+8. **统一 Redis 降级封装**：fail 策略显式化 + 告警不静默；补 PayoutService/OAuth/ChatWebSocket 兜底（M5） — 🔶 部分完成（2026-08-27：`packages/platform-common` 新增 `CircuitBreaker`（Redis 状态、阈值 5/窗口 30s、不可用 fail-open）与 `Retry`（指数退避、仅网络类异常、上限 5 次）统一抽象，Push/Payout/ThirdPartyProvider 全部接入；降级开关 `feature.provider_mock` 短路真实网络调用。OAuth state 存取、ChatWebSocket brpop 兜底仍未做）
 9. **webman/queue 接线**：承载事件与 webhook 投递（消费重试、死信），ComputeDailyStats/ES 任务启用或删除（M7） — ⬜ 未做
 10. **2FA 修复**：Base32 解码 + verify 加登录态与逐用户尝试锁定（M1） — ✅ 已完成（2026-08-18：RFC 4648 Base32 解码后 HMAC；`/api/2fa/verify` 5 次失败锁定 15 分钟，Redis 故障 fail-closed）
 11. **提现原子化**：审核/打款条件更新 + 双重审核；限额 Redis Lua/唯一约束（M2/M4） — 🔶 部分完成（2026-08-18：pending→approved/rejected、approved→processing 条件 UPDATE；可选双重审核 `withdraw.require_dual_review`；申请侧 Redis 用户锁。无 Lua 限额/唯一约束）
 12. **Webhook SSRF 阻断**：拒绝内网/保留地址（M3） — ✅ 已完成（2026-08-18：`isSafeWebhookUrl()` 仅 https 公网）
 13. **ClickHouse 二选一**：真实接入或摘除依赖 + 修订文档（M6） — ⬜ 未做
 14. **死代码清理**：接线或删除 Vip/Achievement/Notification/FeatureFlag；删 Test model；DepositLog 审计落库（M8） — 🔶 部分完成（2026-08-18：Test model 已删，DepositLog 审计落库；Vip/FeatureFlag/Notification 已有调用方；AchievementService 已由 EventConsumer 调用）
-15. **service 测试 + CI 门禁**：回调验签/提现流/Redis 降级/概率计算/乐观锁并发集成测试；phpunit 失败阻断；service 纳入 CI（当前 `|| echo warning` 允许失败） — 🔶 部分完成（service 已有 WebhookUrlSafety / EventBusMessageFormat；已纳入 CI `phpunit-service` job 失败阻断）
+15. **service 测试 + CI 门禁**：回调验签/提现流/Redis 降级/概率计算/乐观锁并发集成测试；phpunit 失败阻断；service 纳入 CI（当前 `|| echo warning` 允许失败） — 🔶 部分完成（2026-08-27：新增 CircuitBreakerTest / RetryTest / ResilienceMockTest / FeatureFlagTest / PayoutServiceTest / PushServiceTest / RiskServiceTest 等，service 套件 60 用例全绿；已纳入 CI `phpunit-service` job 失败阻断）
 
 **本轮（2026-08-18）额外已完成（不在原编号内）**：
 - **表前缀修复**：52 模型去除硬编码 `erik_` 前缀，消除 `erik_erik_` 双重前缀；DB 前缀统一由 config/database.php `prefix=erik_` 提供，install.sql 无需变更

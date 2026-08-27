@@ -142,6 +142,27 @@ Redis Pub/Sub (channel: platform:events):
 > 참고: 2026-08-18 기준 `emit()`은 호출자가 있으나 `subscribe()`에는 등록된 프로세스가 없습니다(P0-4 미완료). 이벤트는 현재 발행만 되고 소비되지 않으며, 구독자는 설계 목표입니다.
 ```
 
+### 2.5 안정성 보장 — 서킷 브레이커 / 재시도 / 디그레이션
+
+```
+packages/platform-common/src/
+├── CircuitBreaker.php   # 熔断 — Redis 状态 (cb:{key}:failures / opened_at)，阈值 5 / 窗口 30s
+│                        #   达阈值抛 CircuitOpenException 快速失败；成功重置计数；半开探测
+│                        #   Redis 不可用 fail-open，不影响主流程
+└── Retry.php            # 重试 — 指数退避 (200/400/800ms)，仅网络类异常 (ConnectException/超时/cURL 28)
+                         #   maxAttempts 上限 5；与熔断共用 isRetryable 判定
+```
+
+디그레이션 스위치 `feature.provider_mock`(FeatureFlag / PlatformConfig, `on`이면 실제 네트워크 호출 단락):
+
+| 접점 | mock=on 동작 |
+|--------|-------------|
+| `PushService::send` | 즉시 반환, 푸시 미전송 |
+| `PayoutService::execute` | `mock-{order_no}` 배치 반환 및 주문 completed 표시 |
+| `ThirdPartyProvider::request` | `['success' => true]` 반환 |
+
+실제 네트워크 호출은 모두 `Retry::run → CircuitBreaker::call`로 래핑(Push FCM/APNs/HarmonyOS, PayPal 지급, 타사 Provider 요청).
+
 ## 3. 미들웨어 실행 체인
 
 ### admin/ (관리 백오피스)

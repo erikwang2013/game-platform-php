@@ -142,6 +142,27 @@ Redis Pub/Sub (channel: platform:events):
 > नोट: 2026-08-18 तक, `emit()` के कॉलर हैं लेकिन `subscribe()` के लिए कोई प्रक्रिया पंजीकृत नहीं है (P0-4 नहीं किया गया); इवेंट वर्तमान में केवल प्रकाशित होते हैं, उपभोग नहीं; सब्सक्राइबर डिज़ाइन लक्ष्य हैं।
 ```
 
+### 2.5 स्थिरता सुरक्षा — सर्किट ब्रेकर / पुनः प्रयास / डिग्रेडेशन
+
+```
+packages/platform-common/src/
+├── CircuitBreaker.php   # 熔断 — Redis 状态 (cb:{key}:failures / opened_at)，阈值 5 / 窗口 30s
+│                        #   达阈值抛 CircuitOpenException 快速失败；成功重置计数；半开探测
+│                        #   Redis 不可用 fail-open，不影响主流程
+└── Retry.php            # 重试 — 指数退避 (200/400/800ms)，仅网络类异常 (ConnectException/超时/cURL 28)
+                         #   maxAttempts 上限 5；与熔断共用 isRetryable 判定
+```
+
+डिग्रेडेशन स्विच `feature.provider_mock` (FeatureFlag / PlatformConfig, `on` होने पर वास्तविक नेटवर्क कॉल शॉर्ट-सर्किट करता है):
+
+| प्रवेश बिंदु | mock=on व्यवहार |
+|--------|-------------|
+| `PushService::send` | तुरंत लौटें, कोई पुश नहीं |
+| `PayoutService::execute` | `mock-{order_no}` बैच लौटाता है और ऑर्डर completed चिह्नित करता है |
+| `ThirdPartyProvider::request` | `['success' => true]` लौटाता है |
+
+सभी वास्तविक नेटवर्क कॉल `Retry::run → CircuitBreaker::call` में लिपटे हैं (Push FCM/APNs/HarmonyOS, PayPal भुगतान, तृतीय-पक्ष Provider अनुरोध)।
+
 ## 3. मिडलवेयर निष्पादन श्रृंखला
 
 ### admin/ (प्रशासन कंसोल)

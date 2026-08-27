@@ -142,6 +142,27 @@ Redis Pub/Sub (channel: platform:events):
 > 注：截至 2026-08-18，`emit()` 有调用方但 `subscribe()` 无任何进程注册（P0-4 未做），事件目前仅发布无消费，订阅者为设计目标。
 ```
 
+### 2.5 安定性保証 — サーキットブレーカー / 再試行 / 縮退
+
+```
+packages/platform-common/src/
+├── CircuitBreaker.php   # 熔断 — Redis 状态 (cb:{key}:failures / opened_at)，阈值 5 / 窗口 30s
+│                        #   达阈值抛 CircuitOpenException 快速失败；成功重置计数；半开探测
+│                        #   Redis 不可用 fail-open，不影响主流程
+└── Retry.php            # 重试 — 指数退避 (200/400/800ms)，仅网络类异常 (ConnectException/超时/cURL 28)
+                         #   maxAttempts 上限 5；与熔断共用 isRetryable 判定
+```
+
+縮退スイッチ `feature.provider_mock`（FeatureFlag / PlatformConfig、`on` 時に実ネットワーク呼び出しをショートサーキット）:
+
+| 接続点 | mock=on 時の動作 |
+|--------|-------------|
+| `PushService::send` | 即時リターン、通知送信なし |
+| `PayoutService::execute` | `mock-{order_no}` バッチを返し、注文を completed に |
+| `ThirdPartyProvider::request` | `['success' => true]` を返す |
+
+実ネットワーク呼び出しは全て `Retry::run → CircuitBreaker::call` でラップ（Push FCM/APNs/HarmonyOS、PayPal 送金、サードパーティ Provider リクエスト）。
+
 ## 3. 中間件実行チェーン
 
 ### admin/（管理バックエンド）

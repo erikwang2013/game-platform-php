@@ -142,6 +142,27 @@ Redis Pub/Sub (channel: platform:events):
 > 注：截至 2026-08-18，`emit()` 有调用方但 `subscribe()` 无任何进程注册（P0-4 未做），事件目前仅发布无消费，订阅者为设计目标。
 ```
 
+### 2.5 稳定性保障 — 熔断 / 重试 / 降级
+
+```
+packages/platform-common/src/
+├── CircuitBreaker.php   # 熔断 — Redis 状态 (cb:{key}:failures / opened_at)，阈值 5 / 窗口 30s
+│                        #   达阈值抛 CircuitOpenException 快速失败；成功重置计数；半开探测
+│                        #   Redis 不可用 fail-open，不影响主流程
+└── Retry.php            # 重试 — 指数退避 (200/400/800ms)，仅网络类异常 (ConnectException/超时/cURL 28)
+                         #   maxAttempts 上限 5；与熔断共用 isRetryable 判定
+```
+
+降级开关 `feature.provider_mock`（FeatureFlag / PlatformConfig，`on` 时短路真实网络调用）：
+
+| 接入点 | mock=on 行为 |
+|--------|-------------|
+| `PushService::send` | 直接返回，不发推送 |
+| `PayoutService::execute` | 返回 `mock-{order_no}` 批次并标记订单 completed |
+| `ThirdPartyProvider::request` | 返回 `['success' => true]` |
+
+真实网络调用均包 `Retry::run → CircuitBreaker::call`（Push FCM/APNs/HarmonyOS、PayPal 打款、第三方 Provider 请求）。
+
 ## 3. 中间件执行链
 
 ### admin/（管理后台）

@@ -48,3 +48,12 @@ Languages: [中文](CHANGELOG.md) · [English](CHANGELOG.en.md) · [한국어](C
 - admin/service **মডেল** এখনও দুটি কপি (শুধুমাত্র আংশিক `common/service` path প্যাকেজে)।
 - `webman/queue` সংযুক্ত নয়; প্রোবাবিলিটি/রিটেনশন OLAP-এ স্থানান্তরিত হয়নি।
 - PROJECT-PLAN / VERSIONS / অডিট রিপোর্টের কিছু অনুচ্ছেদ এখনও এই CHANGELOG-এর চেয়ে পিছিয়ে থাকতে পারে; এই ফাইল ও ডিস্কই সঠিক উৎস।
+
+## [1.1] resilience — 2026-08-27
+
+### স্থিতিশীলতা
+
+- শেয়ার্ড লেয়ারে `CircuitBreaker` (Redis-এ অবস্থা, থ্রেশহোল্ড 5 / উইন্ডো 30s, Redis অনুপলব্ধ হলে fail-open) এবং `Retry` (সূচকীয় ব্যাকঅফ, শুধু নেটওয়ার্ক ব্যতিক্রম, সর্বোচ্চ 5 চেষ্টা) যোগ হয়েছে, `packages/platform-common/src/`-এ।
+- ডিগ্রেডেশন সুইচ `feature.provider_mock`: PushService (FCM/APNs/HarmonyOS), PayoutService (PayPal), ThirdPartyProvider `on` হলে শর্ট-সার্কিট করে, প্রকৃত নেটওয়ার্ক কল এড়িয়ে।
+- `getenv($name, '')`-এর 11টি টাইপ ত্রুটি সংশোধন (strict_types-এ TypeError); PushService-এর mock পরীক্ষা try/catch-এ সরানো হয়েছে।
+- নতুন পরীক্ষা: CircuitBreakerTest / RetryTest / ResilienceMockTest; service স্যুট 45 → 60 কেস, সব পাস (রিপোর্ট: [test-reports/resilience.md](test-reports/resilience.md))।

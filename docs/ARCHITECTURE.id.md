@@ -142,6 +142,27 @@ Pelanggan:
 > Catatan: per 2026-08-18, `emit()` memiliki pemanggil tetapi `subscribe()` tidak terdaftar di proses mana pun (P0-4 belum dikerjakan), event saat ini hanya diterbitkan tanpa konsumsi, pelanggan adalah target desain.
 ```
 
+### 2.5 Jaminan stabilitas — pemutus sirkuit / percobaan ulang / degradasi
+
+```
+packages/platform-common/src/
+├── CircuitBreaker.php   # 熔断 — Redis 状态 (cb:{key}:failures / opened_at)，阈值 5 / 窗口 30s
+│                        #   达阈值抛 CircuitOpenException 快速失败；成功重置计数；半开探测
+│                        #   Redis 不可用 fail-open，不影响主流程
+└── Retry.php            # 重试 — 指数退避 (200/400/800ms)，仅网络类异常 (ConnectException/超时/cURL 28)
+                         #   maxAttempts 上限 5；与熔断共用 isRetryable 判定
+```
+
+Sakelar degradasi `feature.provider_mock` (FeatureFlag / PlatformConfig, short-circuit panggilan jaringan nyata saat `on`):
+
+| Titik masuk | Perilaku saat mock=on |
+|--------|-------------|
+| `PushService::send` | Kembali langsung, tidak mengirim notifikasi |
+| `PayoutService::execute` | Mengembalikan batch `mock-{order_no}` dan menandai pesanan completed |
+| `ThirdPartyProvider::request` | Mengembalikan `['success' => true]` |
+
+Semua panggilan jaringan nyata dibungkus dalam `Retry::run → CircuitBreaker::call` (Push FCM/APNs/HarmonyOS, pembayaran PayPal, permintaan Provider pihak ketiga).
+
 ## 3. Rantai Eksekusi Middleware
 
 ### admin/ (backend administrasi)

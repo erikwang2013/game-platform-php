@@ -48,3 +48,12 @@ Languages: [中文](CHANGELOG.md) · [English](CHANGELOG.en.md) · **한국어**
 - admin/service **모델**이 여전히 2벌(일부 `common/service`만 path 패키지로 편입).
 - `webman/queue` 미연결; 확률/리텐션이 OLAP로 미이전.
 - PROJECT-PLAN / VERSIONS / 감사 보고서 일부 문단이 본 CHANGELOG보다 늦을 수 있으며, 본 파일과 디스크가 기준입니다.
+
+## [1.1] resilience — 2026-08-27
+
+### 안정성
+
+- 공유 레이어에 `CircuitBreaker`(Redis 상태 저장, 임계값 5 / 창 30초, Redis 중단 시 fail-open)와 `Retry`(지수 백오프, 네트워크 예외만 재시도, 최대 5회) 추가, `packages/platform-common/src/`.
+- 디그레이션 스위치 `feature.provider_mock`: PushService(FCM/APNs/HarmonyOS), PayoutService(PayPal), ThirdPartyProvider가 `on`이면 단락되어 실제 네트워크 호출 생략.
+- `getenv($name, '')` 두 번째 인자 타입 결함 11곳 수정(strict_types에서 TypeError); PushService mock 확인을 try/catch로 이동.
+- 신규 테스트: CircuitBreakerTest / RetryTest / ResilienceMockTest; service 스위트 45 → 60 케이스 전부 통과(보고서: [test-reports/resilience.md](test-reports/resilience.md)).

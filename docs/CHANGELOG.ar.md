@@ -48,3 +48,12 @@ Languages: **中文** · [English](CHANGELOG.en.md) · [한국어](CHANGELOG.ko.
 - نماذج **admin / service** ما زالت نسختين (جزء فقط من `common/service` دخل حزمة path).
 - `webman/queue` غير موصول؛ الاحتمالات/الاحتفاظ لم تُرحَّل إلى OLAP.
 - بعض الفقرات في PROJECT-PLAN / VERSIONS / تقارير التدقيق قد تتأخر عن سجل التغييرات هذا؛ المرجع هو هذا الملف والقرص.
+
+## [1.1] resilience — 2026-08-27
+
+### الاستقرار
+
+- إضافة `CircuitBreaker` (حالة في Redis، عتبة 5 / نافذة 30 ثانية، fail-open عند تعذر Redis) و`Retry` (تراجع أسي، استثناءات الشبكة فقط، 5 محاولات كحد أقصى) إلى الطبقة المشتركة، في `packages/platform-common/src/`.
+- مفتاح التدهور `feature.provider_mock`: PushService (FCM/APNs/HarmonyOS) وPayoutService (PayPal) وThirdPartyProvider يختصرون المكالمات عند `on`، بدون طلبات شبكة حقيقية.
+- إصلاح 11 عيب نوع في `getenv($name, '')` (TypeError مع strict_types)؛ نقل فحص mock في PushService إلى try/catch.
+- اختبارات جديدة: CircuitBreakerTest / RetryTest / ResilienceMockTest؛ مجموعة service 45 ← 60 حالة، كلها ناجحة (تقرير: [test-reports/resilience.md](test-reports/resilience.md)).

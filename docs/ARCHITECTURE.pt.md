@@ -142,6 +142,27 @@ Assinantes:
 > Nota: até 2026-08-18, `emit()` tem chamadores mas `subscribe()` não tem nenhum processo registrado (P0-4 não feito); os eventos hoje são apenas publicados, sem consumo; os assinantes são metas de design.
 ```
 
+### 2.5 Garantia de estabilidade — disjuntor / nova tentativa / degradação
+
+```
+packages/platform-common/src/
+├── CircuitBreaker.php   # 熔断 — Redis 状态 (cb:{key}:failures / opened_at)，阈值 5 / 窗口 30s
+│                        #   达阈值抛 CircuitOpenException 快速失败；成功重置计数；半开探测
+│                        #   Redis 不可用 fail-open，不影响主流程
+└── Retry.php            # 重试 — 指数退避 (200/400/800ms)，仅网络类异常 (ConnectException/超时/cURL 28)
+                         #   maxAttempts 上限 5；与熔断共用 isRetryable 判定
+```
+
+Interruptor de degradação `feature.provider_mock` (FeatureFlag / PlatformConfig, curto-circuita chamadas de rede reais quando `on`):
+
+| Ponto de entrada | Comportamento com mock=on |
+|--------|-------------|
+| `PushService::send` | Retorno imediato, nenhuma notificação enviada |
+| `PayoutService::execute` | Retorna o lote `mock-{order_no}` e marca o pedido como completed |
+| `ThirdPartyProvider::request` | Retorna `['success' => true]` |
+
+Todas as chamadas de rede reais são envolvidas em `Retry::run → CircuitBreaker::call` (Push FCM/APNs/HarmonyOS, pagamentos PayPal, solicitações de Provider de terceiros).
+
 ## 3. Cadeias de execução de middlewares
 
 ### admin/ (painel administrativo)

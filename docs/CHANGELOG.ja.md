@@ -48,3 +48,12 @@ Languages: **中文** · [English](CHANGELOG.en.md) · [한국어](CHANGELOG.ko.
 - admin/service **モデル**は依然二重（`common/service` の一部のみ path パッケージ化）。
 - `webman/queue` 未接続；確率/リテンションは OLAP に未移行。
 - PROJECT-PLAN / VERSIONS / 監査レポートの一部段落は本 CHANGELOG より遅れている可能性がある。本ファイルとディスク上の実態を正とする。
+
+## [1.1] resilience — 2026-08-27
+
+### 安定性
+
+- 共有レイヤーに `CircuitBreaker`（Redis に状態保存、閾値 5 / ウィンドウ 30 秒、Redis 停止時 fail-open）と `Retry`（指数バックオフ、ネットワーク系例外のみ再試行、最大 5 回）を追加、`packages/platform-common/src/`。
+- 縮退スイッチ `feature.provider_mock`：PushService（FCM/APNs/HarmonyOS）、PayoutService（PayPal）、ThirdPartyProvider が `on` 時にショートサーキットし、実ネットワーク呼び出しをスキップ。
+- `getenv($name, '')` の第二引数型欠陥 11 箇所を修正（strict_types で TypeError）；PushService の mock チェックを try/catch 内へ移動。
+- 新規テスト：CircuitBreakerTest / RetryTest / ResilienceMockTest；service スイート 45 → 60 ケース全て成功（報告: [test-reports/resilience.md](test-reports/resilience.md)）。

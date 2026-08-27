@@ -142,6 +142,27 @@ Redis Pub/Sub (القناة: platform:events):
 > ملاحظة: حتى 2026-08-18، لـ `emit()` مستدعون لكن لا توجد أي عملية مسجّلة لـ `subscribe()` (P0-4 لم يُنفَّذ)، الأحداث حاليًا تُنشر دون استهلاك، والمشتركون أهداف تصميمية.
 ```
 
+### 2.5 ضمان الاستقرار — قاطع الدائرة / إعادة المحاولة / التدهور
+
+```
+packages/platform-common/src/
+├── CircuitBreaker.php   # 熔断 — Redis 状态 (cb:{key}:failures / opened_at)，阈值 5 / 窗口 30s
+│                        #   达阈值抛 CircuitOpenException 快速失败；成功重置计数；半开探测
+│                        #   Redis 不可用 fail-open，不影响主流程
+└── Retry.php            # 重试 — 指数退避 (200/400/800ms)，仅网络类异常 (ConnectException/超时/cURL 28)
+                         #   maxAttempts 上限 5；与熔断共用 isRetryable 判定
+```
+
+مفتاح التدهور `feature.provider_mock` (FeatureFlag / PlatformConfig، يختصر المكالمات الحقيقية عند `on`):
+
+| نقطة الدخول | السلوك عند mock=on |
+|--------|-------------|
+| `PushService::send` | عودة فورية، لا إرسال إشعار |
+| `PayoutService::execute` | يرجع دفعة `mock-{order_no}` ويحدد الطلب completed |
+| `ThirdPartyProvider::request` | يرجع `['success' => true]` |
+
+جميع المكالمات الحقيقية مغلفة بـ `Retry::run → CircuitBreaker::call` (Push FCM/APNs/HarmonyOS، مدفوعات PayPal، طلبات موفري الطرف الثالث).
+
 ## 3. سلسلة تنفيذ الوسائط
 
 ### admin/ (لوحة الإدارة)

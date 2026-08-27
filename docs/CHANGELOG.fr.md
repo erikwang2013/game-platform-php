@@ -48,3 +48,12 @@ Journal des modifications lisible par les humains. PHP n'importe pas ce fichier.
 - Les **modèles** admin/service restent en double (seuls certains `common/service` sont dans le package path).
 - `webman/queue` non câblé ; probabilités/rétention non migrées vers OLAP.
 - Des parties de PROJECT-PLAN / VERSIONS / rapports d'audit peuvent encore être en retard sur ce CHANGELOG ; ce fichier et le disque font foi.
+
+## [1.1] resilience — 2026-08-27
+
+### Stabilité
+
+- Couche partagée : ajout de `CircuitBreaker` (état dans Redis, seuil 5 / fenêtre 30 s, fail-open si Redis indisponible) et `Retry` (backoff exponentiel, uniquement exceptions réseau, max 5 tentatives), dans `packages/platform-common/src/`.
+- Interrupteur de dégradation `feature.provider_mock` : PushService (FCM/APNs/HarmonyOS), PayoutService (PayPal), ThirdPartyProvider court-circuitent quand `on`, sans appels réseau réels.
+- Correction de 11 défauts de type `getenv($name, '')` (TypeError sous strict_types) ; contrôle mock de PushService déplacé dans try/catch.
+- Nouveaux tests : CircuitBreakerTest / RetryTest / ResilienceMockTest ; suite service 45 → 60 cas, tous verts (rapport : [test-reports/resilience.md](test-reports/resilience.md)).

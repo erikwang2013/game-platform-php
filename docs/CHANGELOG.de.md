@@ -48,3 +48,12 @@ Menschenlesbares Änderungsprotokoll. PHP importiert diese Datei nicht. Entspric
 - admin/service-**Modelle** weiterhin doppelt vorhanden (nur Teile von `common/service` im Path-Paket).
 - `webman/queue` nicht angeschlossen; Wahrscheinlichkeit/Retention nicht auf OLAP migriert.
 - PROJECT-PLAN / VERSIONS / Audit-Berichte können stellenweise hinter diesem CHANGELOG zurückliegen; diese Datei und der Datenträger sind maßgeblich.
+
+## [1.1] resilience — 2026-08-27
+
+### Stabilität
+
+- Gemeinsame Schicht: `CircuitBreaker` (Zustand in Redis, Schwelle 5 / Fenster 30s, fail-open bei Redis-Ausfall) und `Retry` (exponentieller Backoff, nur Netzwerk-Exceptions, max. 5 Versuche) hinzugefügt, in `packages/platform-common/src/`.
+- Degradationsschalter `feature.provider_mock`: PushService (FCM/APNs/HarmonyOS), PayoutService (PayPal), ThirdPartyProvider bei `on` überspringen echte Netzwerkaufrufe.
+- 11 Typfehler von `getenv($name, '')` behoben (TypeError unter strict_types); Mock-Prüfung in PushService in try/catch verschoben.
+- Neue Tests: CircuitBreakerTest / RetryTest / ResilienceMockTest; service-Suite 45 → 60 Fälle, alle grün (Bericht: [test-reports/resilience.md](test-reports/resilience.md)).

@@ -48,3 +48,12 @@ Catatan perubahan yang dapat dibaca manusia. PHP tidak meng-import file ini. Ber
 - Model admin/service **masih ganda** (hanya sebagian `common/service` yang masuk paket path).
 - `webman/queue` belum tersambung; probabilitas/retensi belum dimigrasi ke OLAP.
 - Sebagian paragraf PROJECT-PLAN / VERSIONS / laporan audit mungkin masih tertinggal dari CHANGELOG ini; yang berlaku adalah file ini dan kondisi disk.
+
+## [1.1] resilience — 2026-08-27
+
+### Stabilitas
+
+- Lapisan bersama: ditambahkan `CircuitBreaker` (status di Redis, ambang 5 / jendela 30 detik, fail-open jika Redis tidak tersedia) dan `Retry` (backoff eksponensial, hanya pengecualian jaringan, maks. 5 percobaan), di `packages/platform-common/src/`.
+- Sakelar degradasi `feature.provider_mock`: PushService (FCM/APNs/HarmonyOS), PayoutService (PayPal), ThirdPartyProvider short-circuit saat `on`, tanpa panggilan jaringan nyata.
+- Memperbaiki 11 cacat tipe `getenv($name, '')` (TypeError pada strict_types); pemeriksaan mock PushService dipindah ke try/catch.
+- Tes baru: CircuitBreakerTest / RetryTest / ResilienceMockTest; rangkaian service 45 → 60 kasus, semua hijau (laporan: [test-reports/resilience.md](test-reports/resilience.md)).

@@ -48,3 +48,12 @@ Languages: [中文](CHANGELOG.md) · [English](CHANGELOG.en.md) · [한국어](C
 - admin/service **मॉडल** अभी भी दो प्रतियों में (केवल कुछ `common/service` path पैकेज में)।
 - `webman/queue` जुड़ा नहीं; प्रायिकता/प्रतिधारण OLAP में स्थानांतरित नहीं।
 - PROJECT-PLAN / VERSIONS / ऑडिट रिपोर्ट के कुछ अनुच्छेद इस CHANGELOG से पीछे रह सकते हैं; इस फ़ाइल और डिस्क को प्रामाणिक मानें।
+
+## [1.1] resilience — 2026-08-27
+
+### स्थिरता
+
+- साझा परत में `CircuitBreaker` (Redis में स्थिति, सीमा 5 / विंडो 30s, Redis अनुपलब्ध होने पर fail-open) और `Retry` (घातीय बैकऑफ़, केवल नेटवर्क अपवाद, अधिकतम 5 प्रयास) जोड़े गए, `packages/platform-common/src/` में।
+- डिग्रेडेशन स्विच `feature.provider_mock`: PushService (FCM/APNs/HarmonyOS), PayoutService (PayPal), ThirdPartyProvider `on` होने पर शॉर्ट-सर्किट करते हैं, वास्तविक नेटवर्क कॉल छोड़ते हैं।
+- `getenv($name, '')` के 11 टाइप दोष ठीक किए (strict_types में TypeError); PushService mock जाँच try/catch में स्थानांतरित।
+- नए परीक्षण: CircuitBreakerTest / RetryTest / ResilienceMockTest; service सूट 45 → 60 मामले, सभी पास (रिपोर्ट: [test-reports/resilience.md](test-reports/resilience.md))।

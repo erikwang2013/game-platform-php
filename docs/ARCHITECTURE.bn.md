@@ -142,6 +142,27 @@ Redis Pub/Sub (channel: platform:events):
 > 注：截至 2026-08-18，`emit()` 有调用方但 `subscribe()` 无任何进程注册（P0-4 未做），事件目前仅发布无消费，订阅者为设计目标。
 ```
 
+### 2.5 স্থিতিশীলতা নিশ্চয়তা — সার্কিট ব্রেকার / পুনঃচেষ্টা / ডিগ্রেডেশন
+
+```
+packages/platform-common/src/
+├── CircuitBreaker.php   # 熔断 — Redis 状态 (cb:{key}:failures / opened_at)，阈值 5 / 窗口 30s
+│                        #   达阈值抛 CircuitOpenException 快速失败；成功重置计数；半开探测
+│                        #   Redis 不可用 fail-open，不影响主流程
+└── Retry.php            # 重试 — 指数退避 (200/400/800ms)，仅网络类异常 (ConnectException/超时/cURL 28)
+                         #   maxAttempts 上限 5；与熔断共用 isRetryable 判定
+```
+
+ডিগ্রেডেশন সুইচ `feature.provider_mock` (FeatureFlag / PlatformConfig, `on` হলে প্রকৃত নেটওয়ার্ক কল শর্ট-সার্কিট করে):
+
+| প্রবেশ বিন্দু | mock=on আচরণ |
+|--------|-------------|
+| `PushService::send` | সাথে সাথে ফেরত, কোনো পুশ নয় |
+| `PayoutService::execute` | `mock-{order_no}` ব্যাচ ফেরত দেয় এবং অর্ডার completed চিহ্নিত করে |
+| `ThirdPartyProvider::request` | `['success' => true]` ফেরত দেয় |
+
+সব প্রকৃত নেটওয়ার্ক কল `Retry::run → CircuitBreaker::call`-এ মোড়ানো (Push FCM/APNs/HarmonyOS, PayPal পেমেন্ট, থার্ড-পার্টি Provider অনুরোধ)।
+
 ## 3. মিডলওয়্যার এক্সিকিউশন চেইন
 
 ### admin/ (অ্যাডমিন প্যানেল)

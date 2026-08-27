@@ -7,8 +7,12 @@ declare(strict_types=1);
 
 namespace app\provider;
 
+use app\service\FeatureFlag;
+use common\CircuitBreaker;
+use common\Retry;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use support\Log;
 
 class ThirdPartyProvider extends GameProvider
 {
@@ -85,25 +89,39 @@ class ThirdPartyProvider extends GameProvider
 
     private function request(string $method, string $path, array $body): array
     {
+        if (FeatureFlag::isEnabled('provider_mock')) {
+            Log::warning("ThirdPartyProvider mock mode: provider {$this->game->name} {$method} {$path}");
+            return ['success' => true];
+        }
+
         $auth = $this->signRequest($method, $path, $body);
 
         try {
-            $response = $this->http->request($method, $path, [
-                'json' => $body,
-                'headers' => [
-                    'X-Game-Id' => (string) $this->game->id,
-                    'X-Timestamp' => (string) $auth['timestamp'],
-                    'X-Signature' => $auth['signature'],
-                    'Accept' => 'application/json',
-                ],
-            ]);
+            return CircuitBreaker::call('provider:' . $this->game->name, function () use ($method, $path, $body, $auth) {
+                try {
+                    $response = $this->http->request($method, $path, [
+                        'json' => $body,
+                        'headers' => [
+                            'X-Game-Id' => (string) $this->game->id,
+                            'X-Timestamp' => (string) $auth['timestamp'],
+                            'X-Signature' => $auth['signature'],
+                            'Accept' => 'application/json',
+                        ],
+                    ]);
 
-            $data = json_decode((string) $response->getBody(), true);
-            if (!is_array($data)) {
-                return ['success' => false, 'error' => 'Invalid response from game server'];
-            }
-            return $data;
-        } catch (GuzzleException $e) {
+                    $data = json_decode((string) $response->getBody(), true);
+                    if (!is_array($data)) {
+                        return ['success' => false, 'error' => 'Invalid response from game server'];
+                    }
+                    return $data;
+                } catch (GuzzleException $e) {
+                    if (Retry::isRetryable($e)) {
+                        throw $e; // 连接失败/5xx/超时 → 计入熔断
+                    }
+                    return ['success' => false, 'error' => 'Game server error: ' . $e->getMessage()];
+                }
+            });
+        } catch (\Throwable $e) {
             return ['success' => false, 'error' => 'Game server unreachable: ' . $e->getMessage()];
         }
     }

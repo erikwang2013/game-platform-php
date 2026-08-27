@@ -5,6 +5,8 @@
 declare(strict_types=1);
 namespace app\service;
 use app\model\WithdrawOrder;
+use app\model\PlatformConfig;
+use common\CircuitBreaker;
 use support\Log;
 use support\Redis;
 
@@ -22,6 +24,17 @@ final class PayoutService
             throw new \RuntimeException('Max payout attempts exceeded');
         }
 
+        if (self::mockEnabled()) {
+            Log::warning('PayoutService mock mode: skip PayPal payout, order ' . $order->order_no);
+            self::markCompleted($order);
+            return [
+                'payout_batch_id' => 'mock-' . $order->order_no,
+                'payout_item_id' => 'mock-' . $order->order_no,
+                'payout_status' => 'success',
+                'payout_attempts' => $order->payout_attempts + 1,
+            ];
+        }
+
         $attempt = $order->payout_attempts + 1;
         $batchId = $order->order_no . '-' . $attempt;
         $email = self::extractPaypalEmail($order);
@@ -31,7 +44,7 @@ final class PayoutService
         $accessToken = self::getAccessToken();
         $client = new \GuzzleHttp\Client(['timeout' => 15]);
 
-        $response = $client->post(self::baseUrl() . '/v1/payments/payouts', [
+        $response = CircuitBreaker::call('paypal', fn () => $client->post(self::baseUrl() . '/v1/payments/payouts', [
             'headers' => [
                 'Authorization' => 'Bearer ' . $accessToken,
                 'Content-Type' => 'application/json',
@@ -50,7 +63,7 @@ final class PayoutService
                     'sender_item_id' => $order->order_no,
                 ]],
             ],
-        ]);
+        ]));
 
         $body = json_decode((string) $response->getBody(), true);
         $batchHeader = $body['batch_header'] ?? [];
@@ -86,12 +99,17 @@ final class PayoutService
             return $order->payout_status;
         }
 
+        if (self::mockEnabled()) {
+            Log::warning('PayoutService mock mode: skip PayPal status check, order ' . $order->order_no);
+            return 'success';
+        }
+
         $accessToken = self::getAccessToken();
         $client = new \GuzzleHttp\Client(['timeout' => 10]);
 
-        $response = $client->get(self::baseUrl() . '/v1/payments/payouts/' . $order->payout_batch_id, [
+        $response = CircuitBreaker::call('paypal', fn () => $client->get(self::baseUrl() . '/v1/payments/payouts/' . $order->payout_batch_id, [
             'headers' => ['Authorization' => 'Bearer ' . $accessToken, 'Content-Type' => 'application/json'],
-        ]);
+        ]));
 
         $body = json_decode((string) $response->getBody(), true);
         $batchStatus = $body['batch_header']['batch_status'] ?? '';
@@ -127,18 +145,18 @@ final class PayoutService
             Log::warning('PayPal token Redis get failed, fetching fresh: ' . $e->getMessage());
         }
 
-        $clientId = getenv('PAYPAL_CLIENT_ID', '');
-        $clientSecret = getenv('PAYPAL_CLIENT_SECRET', '');
+        $clientId = getenv('PAYPAL_CLIENT_ID');
+        $clientSecret = getenv('PAYPAL_CLIENT_SECRET');
 
         if (empty($clientId) || empty($clientSecret)) {
             throw new \RuntimeException('PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET must be configured');
         }
 
         $client = new \GuzzleHttp\Client(['timeout' => 10]);
-        $response = $client->post(self::baseUrl() . '/v1/oauth2/token', [
+        $response = CircuitBreaker::call('paypal', fn () => $client->post(self::baseUrl() . '/v1/oauth2/token', [
             'auth' => [$clientId, $clientSecret],
             'form_params' => ['grant_type' => 'client_credentials'],
-        ]);
+        ]));
 
         $body = json_decode((string) $response->getBody(), true);
         $token = $body['access_token'] ?? '';
@@ -194,5 +212,11 @@ final class PayoutService
             return $order->account_info;
         }
         throw new \RuntimeException('Cannot extract PayPal email from account_info');
+    }
+
+    private static function mockEnabled(): bool
+    {
+        $value = PlatformConfig::get('feature', 'provider_mock', 'off');
+        return $value === 'on' || $value === '1' || $value === 'true';
     }
 }
