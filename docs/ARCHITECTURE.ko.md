@@ -279,30 +279,30 @@ Provider API:
 ## 5. 데이터베이스 ER 관계
 
 ```
-erik_user ──┬── 1:1 ── erik_user_wallet
-            ├── 1:1 ── erik_user_vip ── erik_vip_level
-            ├── 1:N ── erik_user_game_wallet
-            ├── 1:N ── erik_deposit_order
-            ├── 1:N ── erik_withdraw_order
-            ├── 1:N ── erik_exchange_record
-            ├── 1:N ── erik_transaction
-            ├── 1:N ── erik_user_achievement ── erik_achievement
-            ├── 1:N ── erik_exp_log
-            ├── 1:N ── erik_ticket ── erik_ticket_reply
-            ├── 1:N ── erik_device_token
-            ├── 1:N ── erik_user_session
-            └── 1:N ── erik_message
+game_user ──┬── 1:1 ── game_user_wallet
+            ├── 1:1 ── game_user_vip ── game_vip_level
+            ├── 1:N ── game_user_game_wallet
+            ├── 1:N ── game_deposit_order
+            ├── 1:N ── game_withdraw_order
+            ├── 1:N ── game_exchange_record
+            ├── 1:N ── game_transaction
+            ├── 1:N ── game_user_achievement ── game_achievement
+            ├── 1:N ── game_exp_log
+            ├── 1:N ── game_ticket ── game_ticket_reply
+            ├── 1:N ── game_device_token
+            ├── 1:N ── game_user_session
+            └── 1:N ── game_message
 
-erik_game ──┬── 1:N ── erik_game_currency
-            ├── 1:N ── erik_user_game_wallet
-            ├── 1:N ── erik_exchange_record
-            └── 1:N ── erik_game_play_log
+game_game ──┬── 1:N ── game_game_currency
+            ├── 1:N ── game_user_game_wallet
+            ├── 1:N ── game_exchange_record
+            └── 1:N ── game_game_play_log
 
-erik_friend ── user_id → erik_user
-             └── friend_id → erik_user
+game_friend ── user_id → game_user
+             └── friend_id → game_user
 
-erik_vip_level ── 1:N ── erik_user_vip
-erik_achievement ── 1:N ── erik_user_achievement
+game_vip_level ── 1:N ── game_user_vip
+game_achievement ── 1:N ── game_user_achievement
 ```
 
 ## 6. 배포 아키텍처
@@ -407,32 +407,32 @@ tests/
 ## 10. 데이터베이스 테이블 목록
 
 ### 베이직 에디션 (14장) + admin (7장)
-erik_user, erik_user_wallet, erik_user_game_wallet, erik_game, erik_game_currency,
-erik_deposit_order, erik_withdraw_order, erik_exchange_record, erik_transaction,
-erik_payment_method, erik_announcement, erik_platform_config, erik_language, erik_translation,
-erik_admin_user, erik_admin_role, erik_admin_permission, erik_admin_user_role,
-erik_admin_role_permission, erik_operation_log, erik_system_config
+game_user, game_user_wallet, game_user_game_wallet, game_game, game_game_currency,
+game_deposit_order, game_withdraw_order, game_exchange_record, game_transaction,
+game_payment_method, game_announcement, game-platform_config, game_language, game_translation,
+game_admin_user, game_admin_role, game_admin_permission, game_admin_user_role,
+game_admin_role_permission, game_operation_log, game_system_config
 
 ### 스탠다드 에디션 (10장)
-erik_user_oauth, erik_user_session, erik_user_identity, erik_user_payment_account,
-erik_withdraw_limit, erik_game_server, erik_game_play_log, erik_risk_rule,
-erik_risk_log, erik_stat_daily
+game_user_oauth, game_user_session, game_user_identity, game_user_payment_account,
+game_withdraw_limit, game_game_server, game_game_play_log, game_risk_rule,
+game_risk_log, game_stat_daily
 
 ### 풀 에디션 (8장)
-erik_game_category, erik_game_category_rel, erik_leaderboard, erik_coupon,
-erik_user_coupon, erik_country_config, erik_platform_revenue
+game_game_category, game_game_category_rel, game_leaderboard, game_coupon,
+game_user_coupon, game_country_config, game-platform_revenue
 
 ### 생태계 확장 (10장) ← 신규
-erik_ticket, erik_ticket_reply, erik_device_token,
-erik_vip_level, erik_user_vip, erik_exp_log,
-erik_achievement, erik_user_achievement,
-erik_friend, erik_message
+game_ticket, game_ticket_reply, game_device_token,
+game_vip_level, game_user_vip, game_exp_log,
+game_achievement, game_user_achievement,
+game_friend, game_message
 
 **총계: 52장 테이블**
 
 ## 11. 기능 스위치
 
-`erik_platform_config`의 `feature.*` 네임스페이스 기반, 추가 의존성 없음:
+`game-platform_config`의 `feature.*` 네임스페이스 기반, 추가 의존성 없음:
 
 | 스위치 | 기본값 | 기능 |
 |------|------|------|

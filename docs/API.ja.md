@@ -1414,7 +1414,7 @@ Retry-After: 60
 
 1. `Authorization: Bearer <token>` から Token を抽出
 2. JWT 署名検証（HS256）、`sub`（ユーザーID）を解析
-3. `erik_user` テーブルを照会してユーザーが存在し status=1 であることを検証
+3. `game_user` テーブルを照会してユーザーが存在し status=1 であることを検証
 4. `$request->userId` に注入
 
 ### 管理バックエンド (AdminAuth + AdminPermission)
@@ -1761,7 +1761,7 @@ status: open / waiting / replied / closed
 ### Provider 認証 (ProviderAuth)
 
 1. リクエストヘッダーから `X-Game-Id`、`X-Timestamp`、`X-Signature` を抽出
-2. `erik_game` テーブルを照会してゲームが存在し status=1 であることを検証
+2. `game_game` テーブルを照会してゲームが存在し status=1 であることを検証
 3. タイムスタンプが5分ウィンドウ内であることを検証 (リプレイ防止)
 4. `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)` を計算し署名と照合
 5. `$request->gameId` と `$request->game` に注入
@@ -1953,7 +1953,7 @@ status: open / waiting / replied / closed
 紹介報酬に二級分潤を追加:
 - L1: 直接紹介者が `referrer_bonus` を獲得 (設定: referral.referrer_bonus)
 - L2: 紹介者の紹介者が `commission = referrer_bonus * level2_rate` を獲得 (設定: referral.level2_rate、デフォルト 5%)
-- `erik_referral_commission` に記録 (level/commission_rate/commission_amount)
+- `game_referral_commission` に記録 (level/commission_rate/commission_amount)
 
 ### 8. レートリミット戦略（更新）
 

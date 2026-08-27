@@ -24,7 +24,7 @@ Languages: **中文** · [English](2026-05-22-game-platform-design.en.md) · [�
 
 ### 后端
 - PHP 8.3+, webman v2 (workerman/webman)
-- 数据库: MySQL 8.0+，表前缀 `erik_`
+- 数据库: MySQL 8.0+，表前缀 `game_`
 - 主键: BIGINT 非自增，由 `erikwang2013/snowflake-php` 生成
 - API 层 ID 加解密: `erikwang2013/hashids`
 - JWT 认证: `erikwang2013/jwt-webman`
@@ -142,47 +142,47 @@ game-platform-php/
 
 | 序号 | 表名 | 说明 |
 |------|------|------|
-| 1 | `erik_user` | C端用户 |
-| 2 | `erik_user_wallet` | 平台币钱包 |
-| 3 | `erik_user_game_wallet` | 游戏币钱包 |
-| 4 | `erik_game` | 游戏 |
-| 5 | `erik_game_currency` | 游戏币种 |
-| 6 | `erik_deposit_order` | 充值订单 |
-| 7 | `erik_withdraw_order` | 提现订单 |
-| 8 | `erik_exchange_record` | 兑换记录 |
-| 9 | `erik_transaction` | 平台流水 |
-| 10 | `erik_payment_method` | 支付方式 |
-| 11 | `erik_announcement` | 公告 |
-| 12 | `erik_platform_config` | 平台配置（扩展现有 erik_system_config） |
+| 1 | `game_user` | C端用户 |
+| 2 | `game_user_wallet` | 平台币钱包 |
+| 3 | `game_user_game_wallet` | 游戏币钱包 |
+| 4 | `game_game` | 游戏 |
+| 5 | `game_game_currency` | 游戏币种 |
+| 6 | `game_deposit_order` | 充值订单 |
+| 7 | `game_withdraw_order` | 提现订单 |
+| 8 | `game_exchange_record` | 兑换记录 |
+| 9 | `game_transaction` | 平台流水 |
+| 10 | `game_payment_method` | 支付方式 |
+| 11 | `game_announcement` | 公告 |
+| 12 | `game-platform_config` | 平台配置（扩展现有 game_system_config） |
 
 ### 5.2 标准版新增（10张）
 
 | 序号 | 表名 | 说明 |
 |------|------|------|
-| 13 | `erik_user_identity` | 实名/KYC |
-| 14 | `erik_user_oauth` | 第三方登录 |
-| 15 | `erik_user_payment_account` | 收款账户 |
-| 16 | `erik_user_session` | 登录会话 |
-| 17 | `erik_game_server` | 游戏区服 |
-| 18 | `erik_game_play_log` | 游戏记录 |
-| 19 | `erik_withdraw_limit` | 提现限制规则 |
-| 20 | `erik_risk_rule` | 风控规则 |
-| 21 | `erik_risk_log` | 风控触发记录 |
-| 22 | `erik_stat_daily` | 日统计快照 |
+| 13 | `game_user_identity` | 实名/KYC |
+| 14 | `game_user_oauth` | 第三方登录 |
+| 15 | `game_user_payment_account` | 收款账户 |
+| 16 | `game_user_session` | 登录会话 |
+| 17 | `game_game_server` | 游戏区服 |
+| 18 | `game_game_play_log` | 游戏记录 |
+| 19 | `game_withdraw_limit` | 提现限制规则 |
+| 20 | `game_risk_rule` | 风控规则 |
+| 21 | `game_risk_log` | 风控触发记录 |
+| 22 | `game_stat_daily` | 日统计快照 |
 
 ### 5.3 完整版新增（8张）
 
 | 序号 | 表名 | 说明 |
 |------|------|------|
-| 23 | `erik_game_category` | 游戏分类 |
-| 24 | `erik_game_category_rel` | 游戏-分类关联 |
-| 25 | `erik_leaderboard` | 排行榜 |
-| 26 | `erik_coupon` | 优惠券 |
-| 27 | `erik_user_coupon` | 用户领券 |
-| 28 | `erik_language` | 语言定义 |
-| 29 | `erik_translation` | 翻译文本 |
-| 30 | `erik_country_config` | 国家配置 |
-| 31 | `erik_platform_revenue` | 平台收益记录 |
+| 23 | `game_game_category` | 游戏分类 |
+| 24 | `game_game_category_rel` | 游戏-分类关联 |
+| 25 | `game_leaderboard` | 排行榜 |
+| 26 | `game_coupon` | 优惠券 |
+| 27 | `game_user_coupon` | 用户领券 |
+| 28 | `game_language` | 语言定义 |
+| 29 | `game_translation` | 翻译文本 |
+| 30 | `game_country_config` | 国家配置 |
+| 31 | `game-platform_revenue` | 平台收益记录 |
 
 ---
 
@@ -286,7 +286,7 @@ flowchart TB
     end
 
     subgraph "存储层"
-        E1[("MySQL 8.0<br/>erik_ 前缀")]
+        E1[("MySQL 8.0<br/>game_ 前缀")]
         E2[("Redis<br/>Session / 缓存 / 限流")]
         E3[("Elasticsearch<br/>全文检索")]
     end

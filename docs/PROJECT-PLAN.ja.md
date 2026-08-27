@@ -95,7 +95,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 15. **service テスト + CI ゲート**: コールバック署名検証/出金フロー/Redis ダウングレード/確率計算/楽観ロック並行の統合テスト；phpunit 失敗でブロック；service を CI に組み込み（現在は `|| echo warning` で失敗を許容） — 🔶 一部完了（service に WebhookUrlSafety / EventBusMessageFormat あり；CI `phpunit-service` job に組み込み、失敗でブロック）
 
 **今回（2026-08-18）の追加完了項目（元の番号外）**:
-- **テーブルプレフィックス修正**: 52 モデルからハードコード `erik_` プレフィックスを除去、`erik_erik_` 二重プレフィックス解消；DB プレフィックスは config/database.php `prefix=erik_` に統一、install.sql の変更不要
+- **テーブルプレフィックス修正**: 52 モデルからハードコード `game_` プレフィックスを除去、`game_game_` 二重プレフィックス解消；DB プレフィックスは config/database.php `prefix=game_` に統一、install.sql の変更不要
 - **refresh token 書き直し**: service AuthController のトークンリフレッシュロジックを書き直し
 - **DepositLogService の service 版移植**: service/common/service/DepositLogService.php を補完（admin/service 二重ドリフトの 1 つを解消）
 

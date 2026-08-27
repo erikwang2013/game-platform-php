@@ -24,7 +24,7 @@ Languages: **中文** · [English](2026-05-22-game-platform-design.en.md) · [�
 
 ### الخلفية
 - PHP 8.3+، webman v2 (workerman/webman)
-- قاعدة البيانات: MySQL 8.0+، بادئة الجداول `erik_`
+- قاعدة البيانات: MySQL 8.0+، بادئة الجداول `game_`
 - المفتاح الأساسي: BIGINT غير تلقائي، يولَّد بواسطة `erikwang2013/snowflake-php`
 - تشفير وفك تشفير معرّفات طبقة API: `erikwang2013/hashids`
 - مصادقة JWT: `erikwang2013/jwt-webman`
@@ -142,47 +142,47 @@ game-platform-php/
 
 | الرقم | اسم الجدول | الوصف |
 |------|------|------|
-| 1 | `erik_user` | مستخدمو الطرف C |
-| 2 | `erik_user_wallet` | محفظة عملات المنصة |
-| 3 | `erik_user_game_wallet` | محفظة عملات الألعاب |
-| 4 | `erik_game` | الألعاب |
-| 5 | `erik_game_currency` | عملات الألعاب |
-| 6 | `erik_deposit_order` | طلبات الشحن |
-| 7 | `erik_withdraw_order` | طلبات السحب |
-| 8 | `erik_exchange_record` | سجلات الاستبدال |
-| 9 | `erik_transaction` | حركات المنصة |
-| 10 | `erik_payment_method` | طرق الدفع |
-| 11 | `erik_announcement` | الإعلانات |
-| 12 | `erik_platform_config` | إعدادات المنصة (توسيع erik_system_config الحالي) |
+| 1 | `game_user` | مستخدمو الطرف C |
+| 2 | `game_user_wallet` | محفظة عملات المنصة |
+| 3 | `game_user_game_wallet` | محفظة عملات الألعاب |
+| 4 | `game_game` | الألعاب |
+| 5 | `game_game_currency` | عملات الألعاب |
+| 6 | `game_deposit_order` | طلبات الشحن |
+| 7 | `game_withdraw_order` | طلبات السحب |
+| 8 | `game_exchange_record` | سجلات الاستبدال |
+| 9 | `game_transaction` | حركات المنصة |
+| 10 | `game_payment_method` | طرق الدفع |
+| 11 | `game_announcement` | الإعلانات |
+| 12 | `game-platform_config` | إعدادات المنصة (توسيع game_system_config الحالي) |
 
 ### 5.2 جداول الإصدار القياسي الجديدة (10 جداول)
 
 | الرقم | اسم الجدول | الوصف |
 |------|------|------|
-| 13 | `erik_user_identity` | التحقق من الهوية/KYC |
-| 14 | `erik_user_oauth` | تسجيل الدخول بطرف ثالث |
-| 15 | `erik_user_payment_account` | حسابات الاستلام |
-| 16 | `erik_user_session` | جلسات تسجيل الدخول |
-| 17 | `erik_game_server` | خوادم الألعاب |
-| 18 | `erik_game_play_log` | سجلات اللعب |
-| 19 | `erik_withdraw_limit` | قواعد حدود السحب |
-| 20 | `erik_risk_rule` | قواعد حوكمة المخاطر |
-| 21 | `erik_risk_log` | سجلات تفعيل المخاطر |
-| 22 | `erik_stat_daily` | لقطات الإحصائيات اليومية |
+| 13 | `game_user_identity` | التحقق من الهوية/KYC |
+| 14 | `game_user_oauth` | تسجيل الدخول بطرف ثالث |
+| 15 | `game_user_payment_account` | حسابات الاستلام |
+| 16 | `game_user_session` | جلسات تسجيل الدخول |
+| 17 | `game_game_server` | خوادم الألعاب |
+| 18 | `game_game_play_log` | سجلات اللعب |
+| 19 | `game_withdraw_limit` | قواعد حدود السحب |
+| 20 | `game_risk_rule` | قواعد حوكمة المخاطر |
+| 21 | `game_risk_log` | سجلات تفعيل المخاطر |
+| 22 | `game_stat_daily` | لقطات الإحصائيات اليومية |
 
 ### 5.3 جداول الإصدار الكامل الجديدة (8 جداول)
 
 | الرقم | اسم الجدول | الوصف |
 |------|------|------|
-| 23 | `erik_game_category` | تصنيفات الألعاب |
-| 24 | `erik_game_category_rel` | علاقة الألعاب-التصنيفات |
-| 25 | `erik_leaderboard` | لوحات المتصدرين |
-| 26 | `erik_coupon` | القسائم |
-| 27 | `erik_user_coupon` | قسائم المستخدمين |
-| 28 | `erik_language` | تعريفات اللغات |
-| 29 | `erik_translation` | نصوص الترجمة |
-| 30 | `erik_country_config` | إعدادات الدول |
-| 31 | `erik_platform_revenue` | سجلات إيرادات المنصة |
+| 23 | `game_game_category` | تصنيفات الألعاب |
+| 24 | `game_game_category_rel` | علاقة الألعاب-التصنيفات |
+| 25 | `game_leaderboard` | لوحات المتصدرين |
+| 26 | `game_coupon` | القسائم |
+| 27 | `game_user_coupon` | قسائم المستخدمين |
+| 28 | `game_language` | تعريفات اللغات |
+| 29 | `game_translation` | نصوص الترجمة |
+| 30 | `game_country_config` | إعدادات الدول |
+| 31 | `game-platform_revenue` | سجلات إيرادات المنصة |
 
 ---
 
@@ -286,7 +286,7 @@ flowchart TB
     end
 
     subgraph "طبقة التخزين"
-        E1[("MySQL 8.0<br/>بادئة erik_")]
+        E1[("MySQL 8.0<br/>بادئة game_")]
         E2[("Redis<br/>Session / تخزين مؤقت / تقييد")]
         E3[("Elasticsearch<br/>بحث نصي كامل")]
     end

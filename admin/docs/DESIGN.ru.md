@@ -132,34 +132,34 @@ Controller::method()
 ### 3.1 ER-связи
 
 ```
-erik_admin_user ──┬── erik_admin_user_role ──┬── erik_admin_role
+game_admin_user ──┬── game_admin_user_role ──┬── game_admin_role
   (用户)           │    (用户-角色关联)         │     (角色)
                   │                          │
-                  │                    erik_admin_role_permission
+                  │                    game_admin_role_permission
                   │                     (角色-权限关联)
                   │                          │
                   │                          ▼
-                  │                    erik_admin_permission
+                  │                    game_admin_permission
                   │                      (权限/菜单)
                   │
                   ▼
-           erik_operation_log
+           game_operation_log
              (操作日志)
 
-erik_system_config (系统配置) — 独立表
+game_system_config (系统配置) — 独立表
 ```
 
 ### 3.2 Структура ключевых таблиц
 
 | Имя таблицы | Число полей | Описание |
 |------|-------|------|
-| `erik_admin_user` | 14 | Администраторы, phone/email/id_card хранятся зашифрованными, поддержка мягкого удаления |
-| `erik_admin_role` | 7 | Роли, slug уникален |
-| `erik_admin_permission` | 10 | Дерево прав (самосвязь parent_id), type: 1=меню 2=кнопка 3=API |
-| `erik_admin_user_role` | 2 | Промежуточная таблица «многие ко многим» пользователь-роль |
-| `erik_admin_role_permission` | 2 | Промежуточная таблица «многие ко многим» роль-право |
-| `erik_system_config` | 8 | Настройки «ключ-значение», уникальность по group+key |
-| `erik_operation_log` | 9 | Журнал аудита операций (включая source — источник) |
+| `game_admin_user` | 14 | Администраторы, phone/email/id_card хранятся зашифрованными, поддержка мягкого удаления |
+| `game_admin_role` | 7 | Роли, slug уникален |
+| `game_admin_permission` | 10 | Дерево прав (самосвязь parent_id), type: 1=меню 2=кнопка 3=API |
+| `game_admin_user_role` | 2 | Промежуточная таблица «многие ко многим» пользователь-роль |
+| `game_admin_role_permission` | 2 | Промежуточная таблица «многие ко многим» роль-право |
+| `game_system_config` | 8 | Настройки «ключ-значение», уникальность по group+key |
+| `game_operation_log` | 9 | Журнал аудита операций (включая source — источник) |
 
 ### 3.3 Стандарты первичных ключей
 

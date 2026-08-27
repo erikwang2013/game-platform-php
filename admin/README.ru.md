@@ -32,7 +32,7 @@ Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.
 |---|------|------|
 | Фреймворк бэкенда | webman v2 (workerman) | Сверхвысокопроизводительный PHP-фреймворк с резидентными процессами |
 | Версия PHP | 8.3+ | |
-| База данных | MySQL 8.0+ | Префикс таблиц `erik_`, BIGINT неавтоинкрементные первичные ключи |
+| База данных | MySQL 8.0+ | Префикс таблиц `game_`, BIGINT неавтоинкрементные первичные ключи |
 | Поисковая система | Elasticsearch | Синхронизация и поиск через `webman-scout` |
 | Фронтенд панели | Flutter 3.x | Web-версия в стиле PC-панели (`apps/flutter/`) |
 | Мобильная версия | HarmonyOS ArkTS | Нативный клиент HarmonyOS (`apps/harmonyos/`), поддержка телефонов/планшетов/2in1 |
@@ -198,7 +198,7 @@ docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 ## Стандарты базы данных
 
-- **Префикс таблиц**: `erik_`
+- **Префикс таблиц**: `game_`
 - **Первичный ключ**: у всех таблиц `id BIGINT UNSIGNED NOT NULL`, **AUTO_INCREMENT запрещен**
 - **Генерация ID**: первичные ключи генерируются на уровне приложения `SnowflakeService::generate()`, распределенно уникальны
 - **Обязательные поля**: каждая таблица должна содержать `id`, `created_at`, `updated_at`

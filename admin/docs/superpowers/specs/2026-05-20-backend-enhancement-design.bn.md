@@ -232,7 +232,7 @@ Redis::setex("jwt_blacklist:" . md5($token), max($ttl, 0), '1');
 
 **ফাইল**: `app/model/OperationLog.php` (পরিবর্তিত)
 
-টেবিল `erik_operation_log`-এ শুধুমাত্র `created_at` কলাম আছে (`updated_at` নেই)। Eloquent-এর ডিফল্ট `save()` `updated_at` লেখার চেষ্টা করে, যার ফলে SQL ত্রুটি হয়।
+টেবিল `game_operation_log`-এ শুধুমাত্র `created_at` কলাম আছে (`updated_at` নেই)। Eloquent-এর ডিফল্ট `save()` `updated_at` লেখার চেষ্টা করে, যার ফলে SQL ত্রুটি হয়।
 
 ফিক্স: `public $timestamps = false;` + লেখার সময় ম্যানুয়ালি `created_at` নির্ধারণ।
 

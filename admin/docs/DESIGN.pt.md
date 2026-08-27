@@ -132,34 +132,34 @@ Controller::method()
 ### 3.1 Relações ER
 
 ```
-erik_admin_user ──┬── erik_admin_user_role ──┬── erik_admin_role
+game_admin_user ──┬── game_admin_user_role ──┬── game_admin_role
   (用户)           │    (用户-角色关联)         │     (角色)
                   │                          │
-                  │                    erik_admin_role_permission
+                  │                    game_admin_role_permission
                   │                     (角色-权限关联)
                   │                          │
                   │                          ▼
-                  │                    erik_admin_permission
+                  │                    game_admin_permission
                   │                      (权限/菜单)
                   │
                   ▼
-           erik_operation_log
+           game_operation_log
              (操作日志)
 
-erik_system_config (系统配置) — 独立表
+game_system_config (系统配置) — 独立表
 ```
 
 ### 3.2 Estrutura das tabelas principais
 
 | Nome da tabela | Nº de campos | Descrição |
 |------|-------|------|
-| `erik_admin_user` | 14 | Usuários administrativos, phone/email/id_card armazenados criptografados, suporte a soft delete |
-| `erik_admin_role` | 7 | Funções, slug único |
-| `erik_admin_permission` | 10 | Árvore de permissões (auto-relacionamento via parent_id), type: 1=menu 2=botão 3=API |
-| `erik_admin_user_role` | 2 | Tabela intermediária muitos-para-muitos usuário-função |
-| `erik_admin_role_permission` | 2 | Tabela intermediária muitos-para-muitos função-permissão |
-| `erik_system_config` | 8 | Configuração chave-valor, group+key único combinado |
-| `erik_operation_log` | 9 | Log de auditoria de operações (inclui source de origem) |
+| `game_admin_user` | 14 | Usuários administrativos, phone/email/id_card armazenados criptografados, suporte a soft delete |
+| `game_admin_role` | 7 | Funções, slug único |
+| `game_admin_permission` | 10 | Árvore de permissões (auto-relacionamento via parent_id), type: 1=menu 2=botão 3=API |
+| `game_admin_user_role` | 2 | Tabela intermediária muitos-para-muitos usuário-função |
+| `game_admin_role_permission` | 2 | Tabela intermediária muitos-para-muitos função-permissão |
+| `game_system_config` | 8 | Configuração chave-valor, group+key único combinado |
+| `game_operation_log` | 9 | Log de auditoria de operações (inclui source de origem) |
 
 ### 3.3 Padrão de chave primária
 

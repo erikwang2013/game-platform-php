@@ -95,7 +95,7 @@ Verrou optimiste du portefeuille + mise à jour conditionnelle par version corre
 15. **Tests service + porte CI** : tests d'intégration vérification de rappel/flux de retrait/repli Redis/calcul de probabilités/verrou optimiste concurrent ; blocage si phpunit échoue ; service dans la CI (actuellement `|| echo warning` autorise l'échec) — 🔶 Partiellement terminé (service a WebhookUrlSafety / EventBusMessageFormat ; intégré à la CI, job `phpunit-service` bloquant en cas d'échec)
 
 **Complété en plus cette vague (2026-08-18) (hors numérotation d'origine)** :
-- **Correction du préfixe de tables** : suppression du préfixe `erik_` codé en dur des 52 modèles, élimination du double préfixe `erik_erik_` ; le préfixe de base est désormais fourni de façon unifiée par config/database.php `prefix=erik_`, install.sql inchangé
+- **Correction du préfixe de tables** : suppression du préfixe `game_` codé en dur des 52 modèles, élimination du double préfixe `game_game_` ; le préfixe de base est désormais fourni de façon unifiée par config/database.php `prefix=game_`, install.sql inchangé
 - **Réécriture du refresh token** : logique de rafraîchissement du jeton réécrite dans AuthController de service
 - **Portage de DepositLogService côté service** : service/common/service/DepositLogService.php complété (élimine l'une des divergences en double admin/service)
 

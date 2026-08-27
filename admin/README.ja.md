@@ -32,7 +32,7 @@ webman v2 + Flutter ベースのフルスタック管理画面システム。
 |---|------|------|
 | バックエンドフレームワーク | webman v2 (workerman) | 超高性能なPHP常駐プロセスフレームワーク |
 | PHPバージョン | 8.3+ | |
-| データベース | MySQL 8.0+ | テーブルプレフィックス `erik_`、BIGINT 非オートインクリメント主キー |
+| データベース | MySQL 8.0+ | テーブルプレフィックス `game_`、BIGINT 非オートインクリメント主キー |
 | 検索エンジン | Elasticsearch | `webman-scout` で同期と検索 |
 | 管理画面フロントエンド | Flutter 3.x | Web端はPC管理画面スタイル（`apps/flutter/`） |
 | モバイル | HarmonyOS ArkTS | 鴻蒙(ホウモン)ネイティブクライアント（`apps/harmonyos/`）、スマホ/タブレット/2in1対応 |
@@ -198,7 +198,7 @@ docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 ## データベース規約
 
-- **テーブルプレフィックス**: `erik_`
+- **テーブルプレフィックス**: `game_`
 - **主キー**: 全テーブルの主キーは `id BIGINT UNSIGNED NOT NULL`、**AUTO_INCREMENT は禁止**
 - **ID生成**: 主キーIDはアプリケーション層の `SnowflakeService::generate()` で生成され、分散環境で一意
 - **必須フィールド**: 各テーブルに `id`, `created_at`, `updated_at` が必須

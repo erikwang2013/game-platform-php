@@ -1717,7 +1717,7 @@ Para despliegues en producción, consulta `docs/nginx-security.conf` para el ref
 
 ## 16. Análisis de datos (Analytics)
 
-Las interfaces de análisis de datos las proporciona `AnalyticsController` y se basan todas en agregación en tiempo real en MySQL (`erik_game_play_log` registros de comportamiento de juego / `erik_deposit_order` pedidos de recarga); ante un fallo de la base de datos devuelven datos vacíos en lugar de 500. Salvo indicación contraria, todas requieren autenticación JWT + RBAC y el formato de respuesta envuelto es uniforme: `{ "code": 0, "message": "success", "data": ... }`.
+Las interfaces de análisis de datos las proporciona `AnalyticsController` y se basan todas en agregación en tiempo real en MySQL (`game_game_play_log` registros de comportamiento de juego / `game_deposit_order` pedidos de recarga); ante un fallo de la base de datos devuelven datos vacíos en lugar de 500. Salvo indicación contraria, todas requieren autenticación JWT + RBAC y el formato de respuesta envuelto es uniforme: `{ "code": 0, "message": "success", "data": ... }`.
 
 ### 16.1 Resumen de la plataforma
 

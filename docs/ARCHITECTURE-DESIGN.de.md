@@ -74,7 +74,7 @@ Plattformwährung und Spielwährung verwenden einheitlich die Präzision `DECIMA
 ### 3.3 Wallet-Optimistic-Lock
 
 ```sql
-UPDATE erik_user_wallet 
+UPDATE game_user_wallet 
 SET balance = balance + ?, version = version + 1 
 WHERE user_id = ? AND version = ?
 ```
@@ -143,7 +143,7 @@ Im Controller: __()-Funktion oder TranslationService::trans() für Übersetzungs
 
 ### 5.2 Übersetzungsspeicherung
 
-- Datenbanktabelle `erik_translation` speichert alle Übersetzungstexte (group + key + lang_code + value)
+- Datenbanktabelle `game_translation` speichert alle Übersetzungstexte (group + key + lang_code + value)
 - Beim ersten Request werden alle Einträge aus der Datenbank in Redis geladen (key: `i18n:translations`, TTL: 1 Stunde)
 - Folge-Requests lesen direkt aus Redis, Speichercache beschleunigt
 - Das Verwaltungsbackend kann um eine Übersetzungsverwaltungsseite erweitert werden (Vollversion)
@@ -196,7 +196,7 @@ warn   → protokollieren, weiter ausführen
 block  → Operation ablehnen
 ```
 
-Die Regeln liegen in der Tabelle `erik_risk_rule`, konfiguriert als JSON, Schwellenwerte und Aktionen dynamisch anpassbar.
+Die Regeln liegen in der Tabelle `game_risk_rule`, konfiguriert als JSON, Schwellenwerte und Aktionen dynamisch anpassbar.
 
 ### 6.2 KYC-Identitätsprüfung
 

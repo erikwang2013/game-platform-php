@@ -27,7 +27,7 @@ Catatan perubahan yang dapat dibaca manusia. PHP tidak meng-import file ini. Ber
 ### Ketersediaan
 
 - 12 rute `/admin/analytics/*` layanan analisis admin terpasang.
-- Model menghapus prefiks `erik_` yang di-hardcode; DepositLog audit masuk database; model Test dihapus.
+- Model menghapus prefiks `game_` yang di-hardcode; DepositLog audit masuk database; model Test dihapus.
 
 ### Observabilitas
 

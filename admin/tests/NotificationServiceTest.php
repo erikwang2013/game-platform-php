@@ -60,7 +60,7 @@ class NotificationServiceTest extends TestCase
     public function sendWithUnknownUserStillPersists(): void
     {
         Db::connection()->transaction(function () {
-            $userId = 990000202; // 不存在于 erik_user
+            $userId = 990000202; // 不存在于 游戏用户表 game_user
             Notification::where('user_id', $userId)->delete();
 
             NotificationService::send($userId, 'system', 'Hello', 'World');

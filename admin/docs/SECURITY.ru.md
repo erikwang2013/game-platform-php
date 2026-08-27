@@ -357,11 +357,11 @@ try {
 
 **Модель данных**: трехслойная связь User -> Role -> Permission
 
-- `erik_admin_user` (таблица пользователей)
-- `erik_admin_user_role` (таблица связей пользователь-роль)
-- `erik_admin_role` (таблица ролей)
-- `erik_admin_role_permission` (таблица связей роль-право)
-- `erik_admin_permission` (таблица прав)
+- `game_admin_user` (таблица пользователей)
+- `game_admin_user_role` (таблица связей пользователь-роль)
+- `game_admin_role` (таблица ролей)
+- `game_admin_role_permission` (таблица связей роль-право)
+- `game_admin_permission` (таблица прав)
 
 **Типы прав**:
 | type | Значение | Пример |

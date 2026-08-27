@@ -95,7 +95,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 15. **service 测试 + CI 门禁**：回调验签/提现流/Redis 降级/概率计算/乐观锁并发集成测试；phpunit 失败阻断；service 纳入 CI（当前 `|| echo warning` 允许失败） — 🔶 部分完成（2026-08-27：新增 CircuitBreakerTest / RetryTest / ResilienceMockTest / FeatureFlagTest / PayoutServiceTest / PushServiceTest / RiskServiceTest 等，service 套件 60 用例全绿；已纳入 CI `phpunit-service` job 失败阻断）
 
 **本轮（2026-08-18）额外已完成（不在原编号内）**：
-- **表前缀修复**：52 模型去除硬编码 `erik_` 前缀，消除 `erik_erik_` 双重前缀；DB 前缀统一由 config/database.php `prefix=erik_` 提供，install.sql 无需变更
+- **表前缀修复**：52 模型去除硬编码 `game_` 前缀，消除 `game_game_` 双重前缀；DB 前缀统一由 config/database.php `prefix=game_` 提供，install.sql 无需变更
 - **refresh token 重写**：service AuthController 刷新令牌逻辑重写
 - **DepositLogService service 版移植**：service/common/service/DepositLogService.php 补齐（消除 admin/service 双份漂移之一）
 

@@ -24,7 +24,7 @@ Languages: [中文](2026-05-22-game-platform-design.md) · [English](2026-05-22-
 
 ### बैकएंड
 - PHP 8.3+, webman v2 (workerman/webman)
-- डेटाबेस: MySQL 8.0+, तालिका उपसर्ग `erik_`
+- डेटाबेस: MySQL 8.0+, तालिका उपसर्ग `game_`
 - प्राथमिक कुंजी: BIGINT गैर-ऑटोइन्क्रीमेंट, `erikwang2013/snowflake-php` से उत्पन्न
 - API परत ID एन्क्रिप्शन/डिक्रिप्शन: `erikwang2013/hashids`
 - JWT प्रमाणीकरण: `erikwang2013/jwt-webman`
@@ -142,47 +142,47 @@ game-platform-php/
 
 | क्रम | तालिका नाम | विवरण |
 |------|------|------|
-| 1 | `erik_user` | C-छोर उपयोगकर्ता |
-| 2 | `erik_user_wallet` | प्लेटफ़ॉर्म कॉइन वॉलेट |
-| 3 | `erik_user_game_wallet` | गेम कॉइन वॉलेट |
-| 4 | `erik_game` | गेम |
-| 5 | `erik_game_currency` | गेम मुद्रा |
-| 6 | `erik_deposit_order` | रिचार्ज ऑर्डर |
-| 7 | `erik_withdraw_order` | निकासी ऑर्डर |
-| 8 | `erik_exchange_record` | विनिमय रिकॉर्ड |
-| 9 | `erik_transaction` | प्लेटफ़ॉर्म लेनदेन |
-| 10 | `erik_payment_method` | भुगतान विधि |
-| 11 | `erik_announcement` | घोषणा |
-| 12 | `erik_platform_config` | प्लेटफ़ॉर्म कॉन्फ़िग (मौजूदा erik_system_config का विस्तार) |
+| 1 | `game_user` | C-छोर उपयोगकर्ता |
+| 2 | `game_user_wallet` | प्लेटफ़ॉर्म कॉइन वॉलेट |
+| 3 | `game_user_game_wallet` | गेम कॉइन वॉलेट |
+| 4 | `game_game` | गेम |
+| 5 | `game_game_currency` | गेम मुद्रा |
+| 6 | `game_deposit_order` | रिचार्ज ऑर्डर |
+| 7 | `game_withdraw_order` | निकासी ऑर्डर |
+| 8 | `game_exchange_record` | विनिमय रिकॉर्ड |
+| 9 | `game_transaction` | प्लेटफ़ॉर्म लेनदेन |
+| 10 | `game_payment_method` | भुगतान विधि |
+| 11 | `game_announcement` | घोषणा |
+| 12 | `game-platform_config` | प्लेटफ़ॉर्म कॉन्फ़िग (मौजूदा game_system_config का विस्तार) |
 
 ### 5.2 मानक संस्करण नई तालिकाएँ (10 तालिकाएँ)
 
 | क्रम | तालिका नाम | विवरण |
 |------|------|------|
-| 13 | `erik_user_identity` | वास्तविक नाम/KYC |
-| 14 | `erik_user_oauth` | तृतीय-पक्ष लॉगिन |
-| 15 | `erik_user_payment_account` | प्राप्ति खाता |
-| 16 | `erik_user_session` | लॉगिन सत्र |
-| 17 | `erik_game_server` | गेम क्षेत्र/सर्वर |
-| 18 | `erik_game_play_log` | गेम रिकॉर्ड |
-| 19 | `erik_withdraw_limit` | निकासी सीमा नियम |
-| 20 | `erik_risk_rule` | जोखिम नियंत्रण नियम |
-| 21 | `erik_risk_log` | जोखिम नियंत्रण ट्रिगर रिकॉर्ड |
-| 22 | `erik_stat_daily` | दैनिक सांख्यिकी स्नैपशॉट |
+| 13 | `game_user_identity` | वास्तविक नाम/KYC |
+| 14 | `game_user_oauth` | तृतीय-पक्ष लॉगिन |
+| 15 | `game_user_payment_account` | प्राप्ति खाता |
+| 16 | `game_user_session` | लॉगिन सत्र |
+| 17 | `game_game_server` | गेम क्षेत्र/सर्वर |
+| 18 | `game_game_play_log` | गेम रिकॉर्ड |
+| 19 | `game_withdraw_limit` | निकासी सीमा नियम |
+| 20 | `game_risk_rule` | जोखिम नियंत्रण नियम |
+| 21 | `game_risk_log` | जोखिम नियंत्रण ट्रिगर रिकॉर्ड |
+| 22 | `game_stat_daily` | दैनिक सांख्यिकी स्नैपशॉट |
 
 ### 5.3 पूर्ण संस्करण नई तालिकाएँ (8 तालिकाएँ)
 
 | क्रम | तालिका नाम | विवरण |
 |------|------|------|
-| 23 | `erik_game_category` | गेम श्रेणी |
-| 24 | `erik_game_category_rel` | गेम-श्रेणी संबंध |
-| 25 | `erik_leaderboard` | लीडरबोर्ड |
-| 26 | `erik_coupon` | कूपन |
-| 27 | `erik_user_coupon` | उपयोगकर्ता कूपन प्राप्ति |
-| 28 | `erik_language` | भाषा परिभाषा |
-| 29 | `erik_translation` | अनुवाद पाठ |
-| 30 | `erik_country_config` | देश कॉन्फ़िगरेशन |
-| 31 | `erik_platform_revenue` | प्लेटफ़ॉर्म राजस्व रिकॉर्ड |
+| 23 | `game_game_category` | गेम श्रेणी |
+| 24 | `game_game_category_rel` | गेम-श्रेणी संबंध |
+| 25 | `game_leaderboard` | लीडरबोर्ड |
+| 26 | `game_coupon` | कूपन |
+| 27 | `game_user_coupon` | उपयोगकर्ता कूपन प्राप्ति |
+| 28 | `game_language` | भाषा परिभाषा |
+| 29 | `game_translation` | अनुवाद पाठ |
+| 30 | `game_country_config` | देश कॉन्फ़िगरेशन |
+| 31 | `game-platform_revenue` | प्लेटफ़ॉर्म राजस्व रिकॉर्ड |
 
 ---
 
@@ -286,7 +286,7 @@ flowchart TB
     end
 
     subgraph "存储层"
-        E1[("MySQL 8.0<br/>erik_ 前缀")]
+        E1[("MySQL 8.0<br/>game_ 前缀")]
         E2[("Redis<br/>Session / 缓存 / 限流")]
         E3[("Elasticsearch<br/>全文检索")]
     end

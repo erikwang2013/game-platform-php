@@ -32,7 +32,7 @@ Sistema de panel de administración full-stack basado en webman v2 + Flutter.
 |---|------|------|
 | Framework backend | webman v2 (workerman) | Framework PHP de alto rendimiento con procesos residentes |
 | Versión de PHP | 8.3+ | |
-| Base de datos | MySQL 8.0+ | Prefijo de tabla `erik_`, claves primarias BIGINT no autoincrementales |
+| Base de datos | MySQL 8.0+ | Prefijo de tabla `game_`, claves primarias BIGINT no autoincrementales |
 | Motor de búsqueda | Elasticsearch | Sincronización y consulta mediante `webman-scout` |
 | Frontend de administración | Flutter 3.x | El lado web usa estilo de panel de administración PC (`apps/flutter/`) |
 | Móvil | HarmonyOS ArkTS | Cliente nativo HarmonyOS (`apps/harmonyos/`), compatible con teléfono/tableta/2en1 |
@@ -198,7 +198,7 @@ docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 ## Estándares de base de datos
 
-- **Prefijo de tabla**: `erik_`
+- **Prefijo de tabla**: `game_`
 - **Clave primaria**: todas las tablas usan `id BIGINT UNSIGNED NOT NULL` como clave primaria, **AUTO_INCREMENT prohibido**
 - **Generación de ID**: los ID de clave primaria los genera `SnowflakeService::generate()` en la capa de aplicación, únicos de forma distribuida
 - **Campos obligatorios**: toda tabla debe contener `id`, `created_at`, `updated_at`

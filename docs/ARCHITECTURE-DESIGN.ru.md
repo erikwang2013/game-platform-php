@@ -74,7 +74,7 @@ API 请求/响应中传输 hashid 字符串
 ### 3.3 Оптимистичная блокировка кошелька
 
 ```sql
-UPDATE erik_user_wallet 
+UPDATE game_user_wallet 
 SET balance = balance + ?, version = version + 1 
 WHERE user_id = ? AND version = ?
 ```
@@ -143,7 +143,7 @@ Controller 中 __() 函数或 TranslationService::trans() 获取翻译文本
 
 ### 5.2 Хранение переводов
 
-- Таблица БД `erik_translation` хранит все переводы (group + key + lang_code + value)
+- Таблица БД `game_translation` хранит все переводы (group + key + lang_code + value)
 - При первом запросе всё грузится из БД в Redis (key: `i18n:translations`, TTL: 1 час)
 - Последующие запросы читают прямо из Redis, ускорение через кэш в памяти
 - В админке можно расширить страницу управления переводами (реализация в полной версии)
@@ -196,7 +196,7 @@ warn   → 记录日志，继续执行
 block  → 拒绝操作
 ```
 
-Правила хранятся в таблице `erik_risk_rule`, конфигурация в JSON, пороги и действия настраиваются динамически.
+Правила хранятся в таблице `game_risk_rule`, конфигурация в JSON, пороги и действия настраиваются динамически.
 
 ### 6.2 KYC-верификация
 

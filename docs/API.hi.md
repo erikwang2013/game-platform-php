@@ -1414,7 +1414,7 @@ Retry-After: 60
 
 1. `Authorization: Bearer <token>` से Token निकालें
 2. JWT हस्ताक्षर सत्यापन (HS256), `sub` (उपयोगकर्ता ID) पार्स करें
-3. उपयोगकर्ता के अस्तित्व और status=1 की पुष्टि के लिए `erik_user` तालिका क्वेरी करें
+3. उपयोगकर्ता के अस्तित्व और status=1 की पुष्टि के लिए `game_user` तालिका क्वेरी करें
 4. `$request->userId` इंजेक्ट करें
 
 ### प्रशासन कंसोल (AdminAuth + AdminPermission)
@@ -1761,7 +1761,7 @@ status: open / waiting / replied / closed
 ### Provider प्रमाणीकरण (ProviderAuth)
 
 1. अनुरोध हेडर से `X-Game-Id`, `X-Timestamp`, `X-Signature` निकालें
-2. गेम के अस्तित्व और status=1 की पुष्टि के लिए `erik_game` तालिका क्वेरी करें
+2. गेम के अस्तित्व और status=1 की पुष्टि के लिए `game_game` तालिका क्वेरी करें
 3. टाइमस्टैम्प को 5 मिनट की विंडो के भीतर सत्यापित करें (रीप्ले सुरक्षा)
 4. `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)` की गणना करके हस्ताक्षर से तुलना करें
 5. `$request->gameId` और `$request->game` इंजेक्ट करें
@@ -1953,7 +1953,7 @@ status: open / waiting / replied / closed
 रेफरल कमीशन में दूसरे स्तर का लाभ-साझाकरण जोड़ा गया:
 - L1: प्रत्यक्ष रेफरर को `referrer_bonus` मिलता है (कॉन्फ़िग: referral.referrer_bonus)
 - L2: रेफरर का रेफरर `commission = referrer_bonus * level2_rate` प्राप्त करता है (कॉन्फ़िग: referral.level2_rate, डिफ़ॉल्ट 5%)
-- `erik_referral_commission` रिकॉर्ड करता है (level/commission_rate/commission_amount)
+- `game_referral_commission` रिकॉर्ड करता है (level/commission_rate/commission_amount)
 
 ### 8. दर सीमा रणनीति (अद्यतन)
 

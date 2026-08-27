@@ -28,9 +28,9 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ### 2.1 `install/install.sql` (988 baris)
 - Menggabungkan 8 file migrasi asli
-- 42 tabel data dengan prefiks `erik_` (CREATE TABLE IF NOT EXISTS)
+- 42 tabel data dengan prefiks `game_` (CREATE TABLE IF NOT EXISTS)
 - 13 blok data seed INSERT IGNORE
-- Kolom `source` di `erik_operation_log` sudah digabung ke pernyataan pembuatan tabel (tanpa perlu ALTER TABLE)
+- Kolom `source` di `game_operation_log` sudah digabung ke pernyataan pembuatan tabel (tanpa perlu ALTER TABLE)
 - Dibungkus transaksi (START TRANSACTION / COMMIT)
 - Semua INSERT sudah diproses idempoten
 
@@ -38,16 +38,16 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 | Nama tabel | Cara pemrosesan |
 |------|---------|
-| `erik_admin_role` | INSERT IGNORE (ID tetap) |
-| `erik_admin_permission` | INSERT IGNORE (ID tetap) - 4 kali |
-| `erik_admin_role_permission` | Subkueri WHERE NOT EXISTS |
-| `erik_platform_config` | INSERT IGNORE (ID tetap) - 2 kali |
-| `erik_language` | INSERT IGNORE (ID tetap) |
-| `erik_translation` | INSERT IGNORE (ID tetap) |
-| `erik_risk_rule` | INSERT IGNORE (ID tetap) |
-| `erik_withdraw_limit` | INSERT IGNORE (ID tetap) |
-| `erik_game_category` | INSERT IGNORE (ID tetap) |
-| `erik_country_config` | INSERT IGNORE (ID tetap) |
+| `game_admin_role` | INSERT IGNORE (ID tetap) |
+| `game_admin_permission` | INSERT IGNORE (ID tetap) - 4 kali |
+| `game_admin_role_permission` | Subkueri WHERE NOT EXISTS |
+| `game-platform_config` | INSERT IGNORE (ID tetap) - 2 kali |
+| `game_language` | INSERT IGNORE (ID tetap) |
+| `game_translation` | INSERT IGNORE (ID tetap) |
+| `game_risk_rule` | INSERT IGNORE (ID tetap) |
+| `game_withdraw_limit` | INSERT IGNORE (ID tetap) |
+| `game_game_category` | INSERT IGNORE (ID tetap) |
+| `game_country_config` | INSERT IGNORE (ID tetap) |
 
 ### 2.2 `install/index.php` (485 baris)
 - Dispatching rute: step1 -> step2 -> step3 -> step4 -> step5
@@ -181,7 +181,7 @@ Lolos halaman sudah terinstal — deteksi install.lock normal, informasi peringa
 ### 6.3 Validasi SQL
 ```
 Lolos 42 nama tabel identik dengan file migrasi asli
-Lolos kolom source sudah digabung ke pernyataan pembuatan tabel erik_operation_log
+Lolos kolom source sudah digabung ke pernyataan pembuatan tabel game_operation_log
 Lolos semua pernyataan INSERT sudah diproses idempoten
 Lolos guard WHERE NOT EXISTS sudah dipulihkan (konsisten dengan migrasi asli)
 ```
@@ -192,7 +192,7 @@ Lolos guard WHERE NOT EXISTS sudah dipulihkan (konsisten dengan migrasi asli)
 
 | # | Masalah | Severity | Status |
 |---|------|--------|------|
-| 1 | INSERT `erik_admin_role_permission` kurang guard `WHERE NOT EXISTS` (tidak konsisten dengan migrasi asli) | Tinggi | Sudah diperbaiki |
+| 1 | INSERT `game_admin_role_permission` kurang guard `WHERE NOT EXISTS` (tidak konsisten dengan migrasi asli) | Tinggi | Sudah diperbaiki |
 | 2 | Semua INSERT data seed belum diproses idempoten (eksekusi ulang akan gagal) | Sedang | Sudah diperbaiki (INSERT IGNORE) |
 | 3 | Pemeriksaan lingkungan kurang pemeriksaan ekstensi `pcntl` (dependensi inti webman) | Sedang | Sudah diperbaiki |
 | 4 | .env Service kurang konfigurasi `ENCRYPTION_CIPHER` | Rendah | Sudah diperbaiki |
@@ -224,7 +224,7 @@ Sistem instalasi berfungsi lengkap, kualitas kode baik, tindakan keamanan memada
 
 Perbaikan keamanan putaran ini (fail-closed callback pembayaran, validasi startup JWT, penyatuan prefiks tabel) **tidak menyentuh sistem instalasi**, tanpa masalah baru:
 
-- Setelah model menghapus prefiks `erik_` yang di-hardcode, nama tabel sebenarnya masih dibuat seragam oleh `prefix=erik_` di `config/database.php`, konsisten dengan tabel `erik_*` yang dibuat install.sql, tidak perlu mengubah SQL instalasi
+- Setelah model menghapus prefiks `game_` yang di-hardcode, nama tabel sebenarnya masih dibuat seragam oleh `prefix=game_` di `config/database.php`, konsisten dengan tabel `game_*` yang dibuat install.sql, tidak perlu mengubah SQL instalasi
 - Validasi startup JWT (tolak startup saat `JWT_SECRET_KEY` hilang atau nilai default) kompatibel dengan kunci acak 64 byte yang dibuat otomatis wizard instalasi, alur instalasi tidak perlu disesuaikan
 
 Kesimpulan historis dan daftar masalah tetap tidak berubah.

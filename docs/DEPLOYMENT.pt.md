@@ -99,7 +99,7 @@ docker-compose logs -f
 ```bash
 # Os arquivos de migração são executados automaticamente no primeiro start do MySQL
 # Ou executar manualmente:
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < install/install.sql
+docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform < install/install.sql
 ```
 
 ### 2.4 Persistência de dados
@@ -115,10 +115,10 @@ Os volumes de dados são criados automaticamente, sem gerenciamento manual:
 Backup:
 ```bash
 # Backup do MySQL
-docker exec game-platform-mysql mysqldump -uroot -p${DB_PASSWORD} game_platform | gzip > backup_$(date +%Y%m%d).sql.gz
+docker exec game-platform-mysql mysqldump -uroot -p${DB_PASSWORD} game-platform | gzip > backup_$(date +%Y%m%d).sql.gz
 
 # Restauração
-gunzip < backup_20260101.sql.gz | docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform
+gunzip < backup_20260101.sql.gz | docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform
 ```
 
 ---
@@ -166,8 +166,8 @@ APP_DEBUG=false
 
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=game_platform
-DB_USERNAME=game_platform
+DB_DATABASE=game-platform
+DB_USERNAME=game-platform
 DB_PASSWORD=<senha forte>
 
 JWT_SECRET=<string aleatória de 64 caracteres>
@@ -506,7 +506,7 @@ tail -f runtime/logs/workerman.log
 
 ```bash
 # Testar conexão
-mysql -h 127.0.0.1 -u game_platform -p game_platform -e "SELECT 1"
+mysql -h 127.0.0.1 -u game-platform -p game-platform -e "SELECT 1"
 
 # Verificar a configuração do .env
 grep DB_ admin/.env
@@ -556,7 +556,7 @@ cd admin && composer install --no-dev --optimize-autoloader
 cd ../service && composer install --no-dev --optimize-autoloader
 
 # 3. Executar novas migrações (se houver)
-mysql -u game_platform -p game_platform < install/install.sql
+mysql -u game-platform -p game-platform < install/install.sql
 
 # 4. Reinício suave (sem interromper o serviço)
 cd /opt/game-platform/admin && php start.php reload

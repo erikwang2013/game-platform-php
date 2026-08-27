@@ -20,7 +20,7 @@ A global, internationalized game aggregation platform. After registering, users 
 
 ### Backend
 - PHP 8.3+, webman v2 (workerman/webman)
-- MySQL 8.0+ (table prefix `erik_`, BIGINT non-auto-increment primary keys)
+- MySQL 8.0+ (table prefix `game_`, BIGINT non-auto-increment primary keys)
 - Redis (Session / Cache / Rate limiting)
 - ClickHouse (OLAP analytics / probability calculations)
 - Elasticsearch (full-text search)
@@ -142,8 +142,8 @@ The install wizard automatically:
 
 ```bash
 # Import the merged SQL in one go
-mysql -u root -e "CREATE DATABASE IF NOT EXISTS game_platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -u root game_platform < install/install.sql
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS game-platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root game-platform < install/install.sql
 ```
 
 #### 2. Configure environment variables

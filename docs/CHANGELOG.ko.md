@@ -27,7 +27,7 @@ Languages: [中文](CHANGELOG.md) · [English](CHANGELOG.en.md) · **한국어**
 ### 가용성
 
 - admin 분석 서비스 12개 `/admin/analytics/*` 라우트 마운트.
-- 모델에서 하드코딩된 `erik_` 접두사 제거; DepositLog 감사 로그 저장; Test model 삭제.
+- 모델에서 하드코딩된 `game_` 접두사 제거; DepositLog 감사 로그 저장; Test model 삭제.
 
 ### 관측성
 

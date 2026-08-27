@@ -85,7 +85,7 @@ class RiskServiceTest extends TestCase
 
             $this->assertSame('block', $result['result']);
             $this->assertSame($rule->name, $result['rule_name']);
-            // 注: 风控日志写入受 erik_risk_log.result VARCHAR(20) 长度限制影响
+            // 注: 风控日志写入受 game_risk_log.result VARCHAR(20) 长度限制影响
             // （消息如 "IP 5.5.5.5 in blacklist" 超过 20 字符），此处仅断言 check() 结果。
         });
     }

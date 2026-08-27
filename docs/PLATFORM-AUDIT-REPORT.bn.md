@@ -51,9 +51,9 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 | সমস্যা | মেরামত |
 |------|------|
-| 🔴 service মডেলের টেবিলের নামে `erik_` প্রিফিক্স (বিদ্যমান নিয়মের সাথে সংঘর্ষ) | ১০টি নতুন মডেল থেকে প্রিফিক্স সরানো |
-| 🟡 `AchievementService`-এ হার্ডকোডেড `erik_user_session` | service সংস্করণে `user_session` করা হয়েছে |
-| 🟡 `GameController`-এ হার্ডকোডেড `erik_game_category_rel` | service সংস্করণে `game_category_rel` করা হয়েছে |
+| 🔴 service মডেলের টেবিলের নামে `game_` প্রিফিক্স (বিদ্যমান নিয়মের সাথে সংঘর্ষ) | ১০টি নতুন মডেল থেকে প্রিফিক্স সরানো |
+| 🟡 `AchievementService`-এ হার্ডকোডেড `game_user_session` | service সংস্করণে `user_session` করা হয়েছে |
+| 🟡 `GameController`-এ হার্ডকোডেড `game_game_category_rel` | service সংস্করণে `game_category_rel` করা হয়েছে |
 
 ---
 
@@ -128,9 +128,9 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 | # | সমস্যা | গুরুত্ব | মেরামত |
 |---|------|--------|------|
-| 1 | 🔴 service মডেলের টেবিলের নাম সব `erik_` প্রিফিক্সসহ (১০টি) | উচ্চ | sed দিয়ে ব্যাচ অপসারণ |
-| 2 | 🟡 service AchievementService-এ হার্ডকোডেড `erik_user_session` | মাঝারি | `user_session` করা হয়েছে |
-| 3 | 🟡 service GameController-এ হার্ডকোডেড `erik_game_category_rel` | মাঝারি | `game_category_rel` করা হয়েছে |
+| 1 | 🔴 service মডেলের টেবিলের নাম সব `game_` প্রিফিক্সসহ (১০টি) | উচ্চ | sed দিয়ে ব্যাচ অপসারণ |
+| 2 | 🟡 service AchievementService-এ হার্ডকোডেড `game_user_session` | মাঝারি | `user_session` করা হয়েছে |
+| 3 | 🟡 service GameController-এ হার্ডকোডেড `game_game_category_rel` | মাঝারি | `game_category_rel` করা হয়েছে |
 | 4 | 🟡 route.php-এ ডাবল ব্যাকস্ল্যাশ + অবশিষ্ট echo স্টেটমেন্ট | মাঝারি | মেরামত |
 | 5 | 🟢 Friend/Message মডেল প্রাথমিকভাবে তৈরি হয়নি (শুধুমাত্র SQL) | কম | তৈরি করা হয়েছে |
 | 6 | 🟢 LeaderboardWebSocket পোর্ট আসলে 8790 ব্যবহৃত, chat-ws 8791-এ পরিবর্তিত | কম | পোর্ট সামঞ্জস্য |
@@ -237,7 +237,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 | কলব্যাক ক্রেডিট ট্রানজেকশন-ভিত্তিক | অর্ডার আপডেট + ওয়ালেট ক্রেডিট একই ট্রানজেকশনে, ক্রেডিট ব্যর্থ হলে রোলব্যাক | ✅ মেরামত করা হয়েছে |
 | JWT সিক্রেট স্টার্টআপ যাচাই | `JWT_SECRET_KEY` অনুপস্থিত বা এখনও ডিফল্ট `open-admin-jwt-secret-change-in-production` থাকলে স্টার্ট প্রত্যাখ্যান, admin/service একই | ✅ মেরামত করা হয়েছে |
 | অ্যানালিটিক্স সার্ভিস রুট | admin/config/route.php-এ ১২টি `/admin/analytics/*` রুট নিবন্ধিত (AnalyticsController-এর সব মেথড) | ✅ মেরামত করা হয়েছে |
-| টেবিল প্রিফিক্স | ৫২ মডেল থেকে হার্ডকোডেড `erik_` প্রিফিক্স অপসারণ (`erik_erik_` ডাবল প্রিফিক্স দূর), DB প্রিফিক্স ইউনিফাইডভাবে কনফিগ `prefix=erik_` থেকে | ✅ মেরামত করা হয়েছে |
+| টেবিল প্রিফিক্স | ৫২ মডেল থেকে হার্ডকোডেড `game_` প্রিফিক্স অপসারণ (`game_game_` ডাবল প্রিফিক্স দূর), DB প্রিফিক্স ইউনিফাইডভাবে কনফিগ `prefix=game_` থেকে | ✅ মেরামত করা হয়েছে |
 | রেট লিমিট ডিগ্রেডেশন | RateLimit Redis ব্যর্থ হলে fail-closed (নিঃশব্দ পাস না করে প্রত্যাখ্যান) | ✅ মেরামত করা হয়েছে |
 | refresh token | service AuthController রিফ্রেশ টোকেন লজিক পুনর্লিখন | ✅ মেরামত করা হয়েছে |
 | DepositLogService | service সংস্করণ পোর্ট পূরণ, admin/service ডুয়াল-কপি ড্রিফটের একটি দূর | ✅ মেরামত করা হয়েছে |

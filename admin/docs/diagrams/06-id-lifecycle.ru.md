@@ -14,7 +14,7 @@ flowchart LR
     end
 
     subgraph store["2.存储"]
-        s1["MySQL erik_* 表<br/>id BIGINT UNSIGNED NOT NULL"]
+        s1["MySQL game_* 表<br/>id BIGINT UNSIGNED NOT NULL"]
         s2["敏感字段 encryptable cast<br/>AES-128-ECB 加密存储"]
         g3 --> s1 --> s2
     end

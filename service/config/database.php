@@ -8,7 +8,7 @@ declare(strict_types=1);
 /**
  * 数据库连接配置
  * 使用 illuminate/database (Laravel Eloquent)
- * 表前缀统一为 erik_
+ * 表前缀统一为 game_
  */
 return [
     // 默认连接
@@ -23,7 +23,7 @@ return [
             // 数据库端口
             'port' => (int)(getenv('DB_PORT') ?: 3306),
             // 数据库名
-            'database' => getenv('DB_DATABASE') ?: 'open_admin',
+            'database' => getenv('DB_DATABASE') ?: 'game-platform',
             // 用户名
             'username' => getenv('DB_USERNAME') ?: 'root',
             // 密码
@@ -33,7 +33,7 @@ return [
             // 排序规则
             'collation' => 'utf8mb4_unicode_ci',
             // 表前缀
-            'prefix' => 'erik_',
+            'prefix' => 'game_',
             // 严格模式
             'strict' => true,
             // 引擎

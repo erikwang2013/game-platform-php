@@ -74,7 +74,7 @@ La moneda de plataforma y la moneda de juego usan uniformemente la precisión `D
 ### 3.3 Bloqueo optimista de la billetera
 
 ```sql
-UPDATE erik_user_wallet 
+UPDATE game_user_wallet 
 SET balance = balance + ?, version = version + 1 
 WHERE user_id = ? AND version = ?
 ```
@@ -143,7 +143,7 @@ Función __() en el Controller o TranslationService::trans() para obtener el tex
 
 ### 5.2 Almacenamiento de traducciones
 
-- La tabla de base de datos `erik_translation` almacena todos los textos traducidos (group + key + lang_code + value)
+- La tabla de base de datos `game_translation` almacena todos los textos traducidos (group + key + lang_code + value)
 - En la primera solicitud se carga todo desde la base de datos a Redis (key: `i18n:translations`, TTL: 1 hora)
 - Las solicitudes posteriores leen directamente de Redis, con caché en memoria como aceleración
 - El panel de administración puede ampliarse con una página de gestión de traducciones (implementada en la versión completa)
@@ -196,7 +196,7 @@ warn   → registrar en log, continuar la ejecución
 block  → rechazar la operación
 ```
 
-Las reglas se almacenan en la tabla `erik_risk_rule`, configuradas como JSON, con umbrales y acciones ajustables dinámicamente.
+Las reglas se almacenan en la tabla `game_risk_rule`, configuradas como JSON, con umbrales y acciones ajustables dinámicamente.
 
 ### 6.2 Verificación de identidad KYC
 

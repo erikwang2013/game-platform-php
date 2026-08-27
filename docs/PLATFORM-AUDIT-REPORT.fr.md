@@ -51,9 +51,9 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 | Problème | Correction |
 |------|------|
-| 🔴 Les noms de tables des modèles service portent le préfixe `erik_` (conflit avec la norme existante) | Suppression du préfixe des 10 nouveaux modèles |
-| 🟡 `AchievementService` code en dur `erik_user_session` | Version service remplacée par `user_session` |
-| 🟡 `GameController` code en dur `erik_game_category_rel` | Version service remplacée par `game_category_rel` |
+| 🔴 Les noms de tables des modèles service portent le préfixe `game_` (conflit avec la norme existante) | Suppression du préfixe des 10 nouveaux modèles |
+| 🟡 `AchievementService` code en dur `game_user_session` | Version service remplacée par `user_session` |
+| 🟡 `GameController` code en dur `game_game_category_rel` | Version service remplacée par `game_category_rel` |
 
 ---
 
@@ -128,9 +128,9 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 | # | Problème | Sévérité | Correction |
 |---|------|--------|------|
-| 1 | 🔴 Les noms de tables de tous les modèles service portent le préfixe `erik_` (10) | Élevée | Suppression par lots avec sed |
-| 2 | 🟡 `erik_user_session` codé en dur dans AchievementService de service | Moyenne | Remplacé par `user_session` |
-| 3 | 🟡 `erik_game_category_rel` codé en dur dans GameController de service | Moyenne | Remplacé par `game_category_rel` |
+| 1 | 🔴 Les noms de tables de tous les modèles service portent le préfixe `game_` (10) | Élevée | Suppression par lots avec sed |
+| 2 | 🟡 `game_user_session` codé en dur dans AchievementService de service | Moyenne | Remplacé par `user_session` |
+| 3 | 🟡 `game_game_category_rel` codé en dur dans GameController de service | Moyenne | Remplacé par `game_category_rel` |
 | 4 | 🟡 Double barre oblique + instruction echo résiduelle dans route.php | Moyenne | Corrigé |
 | 5 | 🟢 Les modèles Friend/Message n'étaient pas créés au départ (SQL uniquement) | Faible | Créés |
 | 6 | 🟢 Le port réel de LeaderboardWebSocket est 8790, chat-ws passe à 8791 | Faible | Ajustement de port |
@@ -237,7 +237,7 @@ Les réparations sécurité et disponibilité de cette vague (2026-08-18) (espac
 | Enregistrement transactionnel des rappels | Mise à jour de la commande + crédit du portefeuille dans la même transaction, rollback si le crédit échoue | ✅ Corrigé |
 | Validation des clés JWT au démarrage | Refus de démarrage si `JWT_SECRET_KEY` manque ou vaut encore `open-admin-jwt-secret-change-in-production`, cohérent admin/service | ✅ Corrigé |
 | Routes du service d'analyse | admin/config/route.php enregistre 12 routes `/admin/analytics/*` (toutes les méthodes d'AnalyticsController) | ✅ Corrigé |
-| Préfixe de tables | Suppression du préfixe `erik_` codé en dur des 52 modèles (élimination du double préfixe `erik_erik_`), préfixe DB fourni de façon unifiée par la config `prefix=erik_` | ✅ Corrigé |
+| Préfixe de tables | Suppression du préfixe `game_` codé en dur des 52 modèles (élimination du double préfixe `game_game_`), préfixe DB fourni de façon unifiée par la config `prefix=game_` | ✅ Corrigé |
 | Repli de la limitation de débit | RateLimit fail-closed en cas de panne Redis (refus plutôt que passage silencieux) | ✅ Corrigé |
 | refresh token | Logique de rafraîchissement du jeton réécrite dans AuthController de service | ✅ Corrigé |
 | DepositLogService | Portage côté service complété, élimine l'une des divergences en double admin/service | ✅ Corrigé |

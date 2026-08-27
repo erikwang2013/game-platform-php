@@ -28,9 +28,9 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 ### 2.1 `install/install.sql` (988行)
 - 8つの元マイグレーションファイルを統合
-- 42枚の `erik_` プレフィックスデータテーブル (CREATE TABLE IF NOT EXISTS)
+- 42枚の `game_` プレフィックスデータテーブル (CREATE TABLE IF NOT EXISTS)
 - 13個の INSERT IGNORE シードデータブロック
-- `erik_operation_log` の `source` フィールドは建表文に統合済み（ALTER TABLE 不要）
+- `game_operation_log` の `source` フィールドは建表文に統合済み（ALTER TABLE 不要）
 - トランザクションでラップ (START TRANSACTION / COMMIT)
 - 全 INSERT が冪等処理済み
 
@@ -38,16 +38,16 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 | テーブル名 | 処理方法 |
 |------|---------|
-| `erik_admin_role` | INSERT IGNORE (固定ID) |
-| `erik_admin_permission` | INSERT IGNORE (固定ID) - 4回 |
-| `erik_admin_role_permission` | WHERE NOT EXISTS サブクエリ |
-| `erik_platform_config` | INSERT IGNORE (固定ID) - 2回 |
-| `erik_language` | INSERT IGNORE (固定ID) |
-| `erik_translation` | INSERT IGNORE (固定ID) |
-| `erik_risk_rule` | INSERT IGNORE (固定ID) |
-| `erik_withdraw_limit` | INSERT IGNORE (固定ID) |
-| `erik_game_category` | INSERT IGNORE (固定ID) |
-| `erik_country_config` | INSERT IGNORE (固定ID) |
+| `game_admin_role` | INSERT IGNORE (固定ID) |
+| `game_admin_permission` | INSERT IGNORE (固定ID) - 4回 |
+| `game_admin_role_permission` | WHERE NOT EXISTS サブクエリ |
+| `game-platform_config` | INSERT IGNORE (固定ID) - 2回 |
+| `game_language` | INSERT IGNORE (固定ID) |
+| `game_translation` | INSERT IGNORE (固定ID) |
+| `game_risk_rule` | INSERT IGNORE (固定ID) |
+| `game_withdraw_limit` | INSERT IGNORE (固定ID) |
+| `game_game_category` | INSERT IGNORE (固定ID) |
+| `game_country_config` | INSERT IGNORE (固定ID) |
 
 ### 2.2 `install/index.php` (485行)
 - ルートディスパッチ: step1 -> step2 -> step3 -> step4 -> step5
@@ -181,7 +181,7 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 ### 6.3 SQL検証
 ```
 合格 42枚のテーブル名が元のマイグレーションファイルと完全に一致
-合格 sourceフィールドが erik_operation_log の建表文に統合済み
+合格 sourceフィールドが game_operation_log の建表文に統合済み
 合格 全INSERT文が冪等処理済み
 合格 WHERE NOT EXISTS ガードが復元済み（元のマイグレーションと一致）
 ```
@@ -192,7 +192,7 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 | # | 問題 | 重大度 | 状態 |
 |---|------|--------|------|
-| 1 | `erik_admin_role_permission` INSERT に `WHERE NOT EXISTS` ガードがない（元のマイグレーションと不一致） | 高 | 修正済み |
+| 1 | `game_admin_role_permission` INSERT に `WHERE NOT EXISTS` ガードがない（元のマイグレーションと不一致） | 高 | 修正済み |
 | 2 | 全シードデータ INSERT が冪等処理されていない（再実行で失敗する） | 中 | 修正済み (INSERT IGNORE) |
 | 3 | 環境チェックに `pcntl` 拡張のチェックがない（webmanのコア依存） | 中 | 修正済み |
 | 4 | Service .env に `ENCRYPTION_CIPHER` 設定がない | 低 | 修正済み |
@@ -224,7 +224,7 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 今回のセキュリティ修正（決済コールバック fail-closed、JWT 起動検証、テーブルプレフィックス統一）は**インストールシステムには関与せず**、新たな問題はなし：
 
-- モデルからハードコードされた `erik_` プレフィックスを除去後も、実際のテーブル名は `config/database.php` の `prefix=erik_` によって統一的に生成され、install.sql で作成される `erik_*` テーブルと一致するため、インストールSQLの変更は不要
+- モデルからハードコードされた `game_` プレフィックスを除去後も、実際のテーブル名は `config/database.php` の `prefix=game_` によって統一的に生成され、install.sql で作成される `game_*` テーブルと一致するため、インストールSQLの変更は不要
 - JWT 起動検証（`JWT_SECRET_KEY` 欠落またはデフォルト値で起動拒否）は、インストールウィザードが自動生成する 64 バイトのランダムキーと互換性があり、インストールフローの調整は不要
 
 歴史的な結論と問題リストはそのまま維持。

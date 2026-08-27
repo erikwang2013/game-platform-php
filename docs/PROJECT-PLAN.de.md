@@ -95,7 +95,7 @@ Wallet-Optimistic-Lock + Versionsbedingtes Update korrekt; Callback-Idempotenz `
 15. **service-Tests + CI-Tor**: Integrations-Tests für Callback-Signaturprüfung/Auszahlungsfluss/Redis-Degradierung/Wahrscheinlichkeitsberechnung/Optimistic-Lock-Nebenläufigkeit; phpunit-Fehlschlag blockiert; service in CI aufnehmen (aktuell `|| echo warning` erlaubt Fehlschlag) — 🔶 teilweise abgeschlossen (service hat WebhookUrlSafety / EventBusMessageFormat; in CI-Job `phpunit-service` aufgenommen, Fehlschlag blockiert)
 
 **In dieser Runde (2026-08-18) zusätzlich abgeschlossen (außerhalb der ursprünglichen Nummerierung)**:
-- **Tabellenpräfix-Fix**: 52 Modelle vom hartkodierten `erik_`-Präfix befreit, Doppelpräfix `erik_erik_` beseitigt; DB-Präfix kommt einheitlich aus config/database.php `prefix=erik_`, install.sql unverändert
+- **Tabellenpräfix-Fix**: 52 Modelle vom hartkodierten `game_`-Präfix befreit, Doppelpräfix `game_game_` beseitigt; DB-Präfix kommt einheitlich aus config/database.php `prefix=game_`, install.sql unverändert
 - **refresh token neu geschrieben**: service AuthController-Refresh-Token-Logik neu geschrieben
 - **DepositLogService service-Version portiert**: service/common/service/DepositLogService.php vervollständigt (beseitigt einen der admin/service-Doppelkopie-Drifts)
 

@@ -58,13 +58,13 @@ class ClickHouseServiceTest extends TestCase
     #[Test]
     public function quoteTable_single(): void
     {
-        $this->assertSame('`erik_game_play_log`', $this->invoke(ProbabilityService::class, 'quoteTable', ['erik_game_play_log']));
+        $this->assertSame('`game_game_play_log`', $this->invoke(ProbabilityService::class, 'quoteTable', ['game_game_play_log']));
     }
 
     #[Test]
     public function quoteTable_with_db(): void
     {
-        $this->assertSame('`default`.`erik_game_play_log`', $this->invoke(ProbabilityService::class, 'quoteTable', ['default.erik_game_play_log']));
+        $this->assertSame('`default`.`game_game_play_log`', $this->invoke(ProbabilityService::class, 'quoteTable', ['default.game_game_play_log']));
     }
 
     #[Test]

@@ -20,7 +20,7 @@ Platform agregasi game global, universal, dan berstandar internasional. Setelah 
 
 ### Backend
 - PHP 8.3+, webman v2 (workerman/webman)
-- MySQL 8.0+ (prefix tabel `erik_`, primary key BIGINT non-auto-increment)
+- MySQL 8.0+ (prefix tabel `game_`, primary key BIGINT non-auto-increment)
 - Redis (Session / Cache / Rate Limit)
 - ClickHouse (Analisis OLAP / Perhitungan probabilitas)
 - Elasticsearch (Pencarian teks penuh)
@@ -142,8 +142,8 @@ Wizard instalasi otomatis menyelesaikan:
 
 ```bash
 # Impor SQL gabungan satu-klik
-mysql -u root -e "CREATE DATABASE IF NOT EXISTS game_platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -u root game_platform < install/install.sql
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS game-platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root game-platform < install/install.sql
 ```
 
 #### 2. Konfigurasi Variabel Lingkungan

@@ -1717,7 +1717,7 @@ Untuk deployment produksi, lihat `docs/nginx-security.conf` untuk konfigurasi pe
 
 ## 16. Analisis Data (Analytics)
 
-Antarmuka analisis data disediakan oleh `AnalyticsController`, semuanya berbasis agregasi real-time MySQL (`erik_game_play_log` log perilaku game / `erik_deposit_order` pesanan deposit), saat database bermasalah mengembalikan data kosong bukan 500. Kecuali disebutkan khusus, semuanya memerlukan autentikasi JWT + RBAC, format pembungkus respons terpadu `{ "code": 0, "message": "success", "data": ... }`.
+Antarmuka analisis data disediakan oleh `AnalyticsController`, semuanya berbasis agregasi real-time MySQL (`game_game_play_log` log perilaku game / `game_deposit_order` pesanan deposit), saat database bermasalah mengembalikan data kosong bukan 500. Kecuali disebutkan khusus, semuanya memerlukan autentikasi JWT + RBAC, format pembungkus respons terpadu `{ "code": 0, "message": "success", "data": ... }`.
 
 ### 16.1 Ringkasan Platform
 

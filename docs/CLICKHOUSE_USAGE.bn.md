@@ -12,7 +12,7 @@ Languages: [中文](CLICKHOUSE_USAGE.md) · [English](CLICKHOUSE_USAGE.en.md) ·
 
 ```php
 use Erikwang2013\ClickHouse\Webman\ClickHouseService;
-$r = ClickHouseService::query('SELECT count() FROM erik_game_play_log');
+$r = ClickHouseService::query('SELECT count() FROM game_game_play_log');
 ```
 
 ## 2. ProbabilityService
@@ -22,14 +22,14 @@ use common\service\ProbabilityService;
 
 // 条件概率 P(A | B)
 ProbabilityService::conditional(
-    ['table' => 'erik_deposit_log', 'alias' => 'user_id', 'where' => ['status' => 'confirmed']],
-    ['table' => 'erik_game_play_log', 'alias' => 'user_id', 'where' => ['game_id' => 5]],
+    ['table' => 'game_deposit_log', 'alias' => 'user_id', 'where' => ['status' => 'confirmed']],
+    ['table' => 'game_game_play_log', 'alias' => 'user_id', 'where' => ['game_id' => 5]],
 );
 
 // 联合概率 P(A ∩ B)
 ProbabilityService::joint(
-    ['table' => 'erik_game_play_log', 'alias' => 'user_id', 'where' => ['game_id' => 5]],
-    ['table' => 'erik_game_play_log', 'alias' => 'user_id', 'where' => ['game_id' => 8]],
+    ['table' => 'game_game_play_log', 'alias' => 'user_id', 'where' => ['game_id' => 5]],
+    ['table' => 'game_game_play_log', 'alias' => 'user_id', 'where' => ['game_id' => 8]],
 );
 ```
 

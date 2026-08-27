@@ -1717,7 +1717,7 @@ docker-compose up -d
 
 ## 16. 데이터 분석 (Analytics)
 
-데이터 분석 인터페이스는 `AnalyticsController`가 제공하며, 모두 MySQL 실시간 집계 (`erik_game_play_log` 게임 행동 로그 / `erik_deposit_order` 충전 주문) 기반, 데이터베이스 장애 시 500이 아닌 빈 데이터를 반환합니다. 특별한 언급이 없으면 모두 JWT + RBAC 인증이 필요하며, 응답 포장 형식은 통일적으로 `{ "code": 0, "message": "success", "data": ... }`입니다.
+데이터 분석 인터페이스는 `AnalyticsController`가 제공하며, 모두 MySQL 실시간 집계 (`game_game_play_log` 게임 행동 로그 / `game_deposit_order` 충전 주문) 기반, 데이터베이스 장애 시 500이 아닌 빈 데이터를 반환합니다. 특별한 언급이 없으면 모두 JWT + RBAC 인증이 필요하며, 응답 포장 형식은 통일적으로 `{ "code": 0, "message": "success", "data": ... }`입니다.
 
 ### 16.1 플랫폼 개요
 

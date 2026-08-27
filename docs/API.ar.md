@@ -1414,7 +1414,7 @@ Retry-After: 60
 
 1. استخراج Token من `Authorization: Bearer <token>`
 2. التحقق من توقيع JWT (HS256)، تحليل `sub` (معرّف المستخدم)
-3. الاستعلام من جدول `erik_user` للتحقق من وجود المستخدم وأن status=1
+3. الاستعلام من جدول `game_user` للتحقق من وجود المستخدم وأن status=1
 4. حقن `$request->userId`
 
 ### لوحة الإدارة (AdminAuth + AdminPermission)
@@ -1761,7 +1761,7 @@ status: open / waiting / replied / closed
 ### مصادقة Provider (ProviderAuth)
 
 1. استخراج `X-Game-Id` و`X-Timestamp` و`X-Signature` من رؤوس الطلب
-2. الاستعلام من جدول `erik_game` للتحقق من وجود اللعبة وأن status=1
+2. الاستعلام من جدول `game_game` للتحقق من وجود اللعبة وأن status=1
 3. التحقق من أن الطابع الزمني ضمن نافذة 5 دقائق (الحماية من إعادة التشغيل)
 4. حساب `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)` ومقارنته بالتوقيع
 5. حقن `$request->gameId` و`$request->game`
@@ -1953,7 +1953,7 @@ status: open / waiting / replied / closed
 تضيف عمولة الإحالة تقسيمًا من المستوى الثاني:
 - L1: يحصل المُحيل المباشر على `referrer_bonus` (الإعداد: referral.referrer_bonus)
 - L2: يحصل مُحيل المُحيل على `commission = referrer_bonus * level2_rate` (الإعداد: referral.level2_rate، الافتراضي 5%)
-- يُسجَّل في `erik_referral_commission` (level/commission_rate/commission_amount)
+- يُسجَّل في `game_referral_commission` (level/commission_rate/commission_amount)
 
 ### 8. سياسة حد المعدل (محدثة)
 

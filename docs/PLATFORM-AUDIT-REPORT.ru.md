@@ -51,9 +51,9 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 
 | Проблема | Исправление |
 |------|------|
-| 🔴 таблицы моделей service с префиксом `erik_` (конфликт с действующим стандартом) | у всех 10 новых моделей префикс убран |
-| 🟡 `AchievementService` с жёстко зашитым `erik_user_session` | в service-версии заменено на `user_session` |
-| 🟡 `GameController` с жёстко зашитым `erik_game_category_rel` | в service-версии заменено на `game_category_rel` |
+| 🔴 таблицы моделей service с префиксом `game_` (конфликт с действующим стандартом) | у всех 10 новых моделей префикс убран |
+| 🟡 `AchievementService` с жёстко зашитым `game_user_session` | в service-версии заменено на `user_session` |
+| 🟡 `GameController` с жёстко зашитым `game_game_category_rel` | в service-версии заменено на `game_category_rel` |
 
 ---
 
@@ -128,9 +128,9 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 
 | # | Проблема | Серьёзность | Исправление |
 |---|------|--------|------|
-| 1 | 🔴 у таблиц моделей service префикс `erik_` (10 шт.) | высокая | пакетное удаление sed |
-| 2 | 🟡 в service AchievementService жёстко зашит `erik_user_session` | средняя | заменено на `user_session` |
-| 3 | 🟡 в service GameController жёстко зашит `erik_game_category_rel` | средняя | заменено на `game_category_rel` |
+| 1 | 🔴 у таблиц моделей service префикс `game_` (10 шт.) | высокая | пакетное удаление sed |
+| 2 | 🟡 в service AchievementService жёстко зашит `game_user_session` | средняя | заменено на `user_session` |
+| 3 | 🟡 в service GameController жёстко зашит `game_game_category_rel` | средняя | заменено на `game_category_rel` |
 | 4 | 🟡 в route.php двойные обратные слеши + остаточные echo | средняя | исправлено |
 | 5 | 🟢 модели Friend/Message изначально не созданы (только SQL) | низкая | созданы |
 | 6 | 🟢 порт LeaderboardWebSocket фактически 8790, chat-ws переведён на 8791 | низкая | переназначение портов |
@@ -237,7 +237,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 | Транзакционное зачисление колбэка | обновление ордера + зачисление в кошелёк в одной транзакции, при провале зачисления — откат | ✅ исправлено |
 | Проверка JWT-ключа при запуске | отказ запуска при отсутствии `JWT_SECRET_KEY` или значении по умолчанию `open-admin-jwt-secret-change-in-production`, единообразно в admin/service | ✅ исправлено |
 | Маршруты аналитических сервисов | в admin/config/route.php зарегистрированы 12 маршрутов `/admin/analytics/*` (все методы AnalyticsController) | ✅ исправлено |
-| Префикс таблиц | у 52 моделей убран жёстко зашитый `erik_` (устранён двойной префикс `erik_erik_`), префикс БД единообразно задаётся конфигом `prefix=erik_` | ✅ исправлено |
+| Префикс таблиц | у 52 моделей убран жёстко зашитый `game_` (устранён двойной префикс `game_game_`), префикс БД единообразно задаётся конфигом `prefix=game_` | ✅ исправлено |
 | Деградация лимитов | RateLimit при сбое Redis — fail-closed (отказ вместо молчаливого пропуска) | ✅ исправлено |
 | refresh token | логика обновления токена в service AuthController переписана | ✅ исправлено |
 | DepositLogService | перенесён в service-версию, устранено одно из расхождений двойных копий admin/service | ✅ исправлено |

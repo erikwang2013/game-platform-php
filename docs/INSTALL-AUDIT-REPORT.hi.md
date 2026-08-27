@@ -28,9 +28,9 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ### 2.1 `install/install.sql` (988 पंक्तियाँ)
 - 8 मूल माइग्रेशन फ़ाइलें विलीन की गईं
-- 42 `erik_` उपसर्ग वाली डेटा तालिकाएँ (CREATE TABLE IF NOT EXISTS)
+- 42 `game_` उपसर्ग वाली डेटा तालिकाएँ (CREATE TABLE IF NOT EXISTS)
 - 13 INSERT IGNORE सीड डेटा ब्लॉक
-- `erik_operation_log` का `source` फ़ील्ड तालिका-निर्माण कथन में विलीन (ALTER TABLE की आवश्यकता नहीं)
+- `game_operation_log` का `source` फ़ील्ड तालिका-निर्माण कथन में विलीन (ALTER TABLE की आवश्यकता नहीं)
 - ट्रांज़ैक्शन में लपेटा गया (START TRANSACTION / COMMIT)
 - सभी INSERT शक्ति-समान बनाए गए
 
@@ -38,16 +38,16 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 | तालिका नाम | प्रसंस्करण विधि |
 |------|---------|
-| `erik_admin_role` | INSERT IGNORE (निश्चित ID) |
-| `erik_admin_permission` | INSERT IGNORE (निश्चित ID) - 4 बार |
-| `erik_admin_role_permission` | WHERE NOT EXISTS उप-क्वेरी |
-| `erik_platform_config` | INSERT IGNORE (निश्चित ID) - 2 बार |
-| `erik_language` | INSERT IGNORE (निश्चित ID) |
-| `erik_translation` | INSERT IGNORE (निश्चित ID) |
-| `erik_risk_rule` | INSERT IGNORE (निश्चित ID) |
-| `erik_withdraw_limit` | INSERT IGNORE (निश्चित ID) |
-| `erik_game_category` | INSERT IGNORE (निश्चित ID) |
-| `erik_country_config` | INSERT IGNORE (निश्चित ID) |
+| `game_admin_role` | INSERT IGNORE (निश्चित ID) |
+| `game_admin_permission` | INSERT IGNORE (निश्चित ID) - 4 बार |
+| `game_admin_role_permission` | WHERE NOT EXISTS उप-क्वेरी |
+| `game-platform_config` | INSERT IGNORE (निश्चित ID) - 2 बार |
+| `game_language` | INSERT IGNORE (निश्चित ID) |
+| `game_translation` | INSERT IGNORE (निश्चित ID) |
+| `game_risk_rule` | INSERT IGNORE (निश्चित ID) |
+| `game_withdraw_limit` | INSERT IGNORE (निश्चित ID) |
+| `game_game_category` | INSERT IGNORE (निश्चित ID) |
+| `game_country_config` | INSERT IGNORE (निश्चित ID) |
 
 ### 2.2 `install/index.php` (485 पंक्तियाँ)
 - रूट शेड्यूलिंग: step1 -> step2 -> step3 -> step4 -> step5
@@ -181,7 +181,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 ### 6.3 SQL सत्यापन
 ```
 पास 42 तालिका नाम मूल माइग्रेशन फ़ाइलों से पूरी तरह समान
-पास source फ़ील्ड erik_operation_log तालिका-निर्माण कथन में विलीन
+पास source फ़ील्ड game_operation_log तालिका-निर्माण कथन में विलीन
 पास सभी INSERT कथन शक्ति-समान बनाए गए
 पास WHERE NOT EXISTS गार्ड पुनर्स्थापित (मूल माइग्रेशन के अनुरूप)
 ```
@@ -192,7 +192,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 | # | समस्या | गंभीरता | स्थिति |
 |---|------|--------|------|
-| 1 | `erik_admin_role_permission` INSERT में `WHERE NOT EXISTS` गार्ड की कमी (मूल माइग्रेशन से असंगत) | उच्च | ठीक किया गया |
+| 1 | `game_admin_role_permission` INSERT में `WHERE NOT EXISTS` गार्ड की कमी (मूल माइग्रेशन से असंगत) | उच्च | ठीक किया गया |
 | 2 | सभी सीड डेटा INSERT शक्ति-समान नहीं थे (दोहरा निष्पादन विफल होगा) | मध्यम | ठीक किया गया (INSERT IGNORE) |
 | 3 | पर्यावरण जाँच में `pcntl` एक्सटेंशन जाँच की कमी (webman मुख्य निर्भरता) | मध्यम | ठीक किया गया |
 | 4 | Service .env में `ENCRYPTION_CIPHER` कॉन्फ़िगरेशन की कमी | निम्न | ठीक किया गया |
@@ -224,7 +224,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 इस दौर की सुरक्षा मरम्मत (भुगतान कॉलबैक fail-closed、JWT स्टार्टअप सत्यापन、तालिका उपसर्ग एकीकरण) **स्थापना प्रणाली को शामिल नहीं करती**, कोई नई समस्या नहीं:
 
-- मॉडल से हार्डकोडेड `erik_` उपसर्ग हटाने के बाद, वास्तविक तालिका नाम अभी भी `config/database.php` के `prefix=erik_` से एकीकृत रूप से उत्पन्न होते हैं, जो install.sql द्वारा बनाई गई `erik_*` तालिकाओं से मेल खाते हैं, स्थापना SQL बदलने की आवश्यकता नहीं है
+- मॉडल से हार्डकोडेड `game_` उपसर्ग हटाने के बाद, वास्तविक तालिका नाम अभी भी `config/database.php` के `prefix=game_` से एकीकृत रूप से उत्पन्न होते हैं, जो install.sql द्वारा बनाई गई `game_*` तालिकाओं से मेल खाते हैं, स्थापना SQL बदलने की आवश्यकता नहीं है
 - JWT स्टार्टअप सत्यापन (`JWT_SECRET_KEY` अनुपलब्ध या डिफ़ॉल्ट मान पर स्टार्टअप अस्वीकार) स्थापना विज़ार्ड द्वारा स्वचालित रूप से उत्पन्न 64-बाइट यादृच्छिक कुंजी के साथ संगत है, स्थापना प्रक्रिया में समायोजन की आवश्यकता नहीं है
 
 ऐतिहासिक निष्कर्ष और समस्या सूची अपरिवर्तित हैं।

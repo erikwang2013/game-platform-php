@@ -54,7 +54,7 @@ Languages: **中文** · [English](FEATURE-DESIGN.en.md) · [한국어](FEATURE-
 
 ## 2. ウォレット設計
 
-### 2.1 プラットフォームコインウォレット (erik_user_wallet)
+### 2.1 プラットフォームコインウォレット (game_user_wallet)
 
 ユーザー登録時に自動作成され、残高は初期 0。
 
@@ -66,7 +66,7 @@ Languages: **中文** · [English](FEATURE-DESIGN.en.md) · [한국어](FEATURE-
 | total_spent | 累計支出 |
 | version | 楽観ロックバージョン番号（更新のたびに+1） |
 
-### 2.2 ゲームコインウォレット (erik_user_game_wallet)
+### 2.2 ゲームコインウォレット (game_user_game_wallet)
 
 ユーザー+ゲーム+通貨の3次元で一意。初回交換時に自動作成。
 
@@ -320,7 +320,7 @@ signature = HMAC-SHA256(
 ### 7.2 翻訳管理
 
 - 翻訳は `group.key` 形式で整理（例: `auth.login_success`）
-- データベーステーブル `erik_translation` に保存、Redis キャッシュ（TTL 1時間）
+- データベーステーブル `game_translation` に保存、Redis キャッシュ（TTL 1時間）
 - API: `GET /api/language/list` で利用可能な言語を取得、`POST /api/language/switch` で言語切替
 - フロントエンドは `X-Language` リクエストヘッダーまたは `Accept-Language` で自動検出
 - 翻訳がない場合は en-US にフォールバック、en-US にもなければ元の key を返す

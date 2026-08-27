@@ -218,23 +218,23 @@ Fenêtre de temps : 5 minutes
 
 | Nom de table | Description | Caractéristiques clés |
 |------|------|---------|
-| erik_ticket | Tickets | index user_id+type+status, assigned_to |
-| erik_ticket_reply | Réponses de tickets | index ticket_id, distinction is_admin |
-| erik_device_token | Jetons d'appareil | index unique user_id+platform+token |
-| erik_vip_level | Définition des niveaux VIP | index unique level, bénéfices en JSON |
-| erik_user_vip | Enregistrement VIP utilisateur | index unique user_id, level+exp+total_exp |
-| erik_exp_log | Journal d'expérience | index combiné user_id+source |
-| erik_achievement | Définition des succès | index unique key, condition_json en JSON |
-| erik_user_achievement | Succès utilisateur | index unique user_id+achievement_id |
-| erik_friend | Relations d'amitié | index unique user_id+friend_id |
-| erik_message | Messages privés | from_user_id+to_user_id / to_user_id+is_read |
+| game_ticket | Tickets | index user_id+type+status, assigned_to |
+| game_ticket_reply | Réponses de tickets | index ticket_id, distinction is_admin |
+| game_device_token | Jetons d'appareil | index unique user_id+platform+token |
+| game_vip_level | Définition des niveaux VIP | index unique level, bénéfices en JSON |
+| game_user_vip | Enregistrement VIP utilisateur | index unique user_id, level+exp+total_exp |
+| game_exp_log | Journal d'expérience | index combiné user_id+source |
+| game_achievement | Définition des succès | index unique key, condition_json en JSON |
+| game_user_achievement | Succès utilisateur | index unique user_id+achievement_id |
+| game_friend | Relations d'amitié | index unique user_id+friend_id |
+| game_message | Messages privés | from_user_id+to_user_id / to_user_id+is_read |
 
 ### Modifications de structure de tables
 
 | Nom de table | Modification |
 |------|------|
-| erik_game | +provider_config (JSON) |
-| erik_game_play_log | +round_id, +bet_amount, +win_amount |
+| game_game | +provider_config (JSON) |
+| game_game_play_log | +round_id, +bet_amount, +win_amount |
 
 **Total : install.sql 43 tables** (les 10 de l'extension d'écosystème sont dans `install/`, non fusionnées dans install.sql). Modèles non partagés : admin 46 / service 44 chacun de son côté.
 

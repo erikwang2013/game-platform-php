@@ -27,7 +27,7 @@ Registro de cambios legible para humanos. PHP no importa este archivo. Correspon
 ### Disponibilidad
 
 - Montaje de las 12 rutas `/admin/analytics/*` del servicio de análisis de admin.
-- Los modelos eliminan el prefijo `erik_` hardcodeado; DepositLog audit se guarda en base de datos; eliminado el model de Test.
+- Los modelos eliminan el prefijo `game_` hardcodeado; DepositLog audit se guarda en base de datos; eliminado el model de Test.
 
 ### Observabilidad
 

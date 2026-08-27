@@ -54,7 +54,7 @@ Devises de plateforme créditées = devises de jeu ÷ exchange_rate × (1 - spre
 
 ## 2. Conception du portefeuille
 
-### 2.1 Portefeuille de devises de plateforme (erik_user_wallet)
+### 2.1 Portefeuille de devises de plateforme (game_user_wallet)
 
 Créé automatiquement à l'inscription de l'utilisateur, solde initial à 0.
 
@@ -66,7 +66,7 @@ Créé automatiquement à l'inscription de l'utilisateur, solde initial à 0.
 | total_spent | Dépenses cumulées |
 | version | Numéro de version du verrou optimiste (+1 à chaque mise à jour) |
 
-### 2.2 Portefeuille de devises de jeu (erik_user_game_wallet)
+### 2.2 Portefeuille de devises de jeu (game_user_game_wallet)
 
 Unique selon les trois dimensions utilisateur+jeu+devise. Créé automatiquement au premier échange.
 
@@ -320,7 +320,7 @@ Configuration via PlatformConfig ou variables d'environnement, repli automatique
 ### 7.2 Gestion des traductions
 
 - Traductions organisées au format `group.key` (ex. `auth.login_success`)
-- Stockées dans la table `erik_translation`, mises en cache Redis (TTL 1 heure)
+- Stockées dans la table `game_translation`, mises en cache Redis (TTL 1 heure)
 - API : `GET /api/language/list` pour lister les langues disponibles, `POST /api/language/switch` pour changer de langue
 - Le frontend détecte automatiquement via l'en-tête `X-Language` ou `Accept-Language`
 - Traduction manquante → repli sur en-US ; absente aussi en en-US → renvoi de la clé d'origine

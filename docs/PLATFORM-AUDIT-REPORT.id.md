@@ -51,9 +51,9 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 | Masalah | Perbaikan |
 |------|------|
-| 🔴 Nama tabel model service membawa prefiks `erik_` (konflik dengan standar yang ada) | 10 model baru semuanya menghapus prefiks |
-| 🟡 `AchievementService` hardcode `erik_user_session` | versi service diubah menjadi `user_session` |
-| 🟡 `GameController` hardcode `erik_game_category_rel` | versi service diubah menjadi `game_category_rel` |
+| 🔴 Nama tabel model service membawa prefiks `game_` (konflik dengan standar yang ada) | 10 model baru semuanya menghapus prefiks |
+| 🟡 `AchievementService` hardcode `game_user_session` | versi service diubah menjadi `user_session` |
+| 🟡 `GameController` hardcode `game_game_category_rel` | versi service diubah menjadi `game_category_rel` |
 
 ---
 
@@ -128,9 +128,9 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 | # | Masalah | Severity | Perbaikan |
 |---|------|--------|------|
-| 1 | 🔴 Nama tabel model service semuanya membawa prefiks `erik_` (10 model) | Tinggi | Penghapusan massal dengan sed |
-| 2 | 🟡 AchievementService service hardcode `erik_user_session` | Sedang | Diubah menjadi `user_session` |
-| 3 | 🟡 GameController service hardcode `erik_game_category_rel` | Sedang | Diubah menjadi `game_category_rel` |
+| 1 | 🔴 Nama tabel model service semuanya membawa prefiks `game_` (10 model) | Tinggi | Penghapusan massal dengan sed |
+| 2 | 🟡 AchievementService service hardcode `game_user_session` | Sedang | Diubah menjadi `user_session` |
+| 3 | 🟡 GameController service hardcode `game_game_category_rel` | Sedang | Diubah menjadi `game_category_rel` |
 | 4 | 🟡 route.php double backslash + sisa pernyataan echo | Sedang | Diperbaiki |
 | 5 | 🟢 Model Friend/Message awalnya belum dibuat (hanya SQL) | Rendah | Sudah dibuat |
 | 6 | 🟢 Port LeaderboardWebSocket sebenarnya menggunakan 8790, chat-ws diganti ke 8791 | Rendah | Penyesuaian port |
@@ -239,7 +239,7 @@ Perbaikan keamanan dan ketersediaan yang diselesaikan putaran ini (2026-08-18) (
 | Pencatatan dana callback transaksional | Pembaruan pesanan + pencatatan dana dompet dalam satu transaksi, gagal pencatatan dana di-rollback | ✅ Sudah diperbaiki |
 | Validasi startup kunci JWT | Saat `JWT_SECRET_KEY` hilang atau masih nilai default `open-admin-jwt-secret-change-in-production`, tolak startup, admin/service konsisten | ✅ Sudah diperbaiki |
 | Rute layanan analisis | admin/config/route.php mendaftarkan 12 rute `/admin/analytics/*` (semua metode AnalyticsController) | ✅ Sudah diperbaiki |
-| Prefiks tabel | 52 model menghapus prefiks `erik_` yang di-hardcode (menghilangkan prefiks ganda `erik_erik_`), prefiks DB disediakan seragam oleh config `prefix=erik_` | ✅ Sudah diperbaiki |
+| Prefiks tabel | 52 model menghapus prefiks `game_` yang di-hardcode (menghilangkan prefiks ganda `game_game_`), prefiks DB disediakan seragam oleh config `prefix=game_` | ✅ Sudah diperbaiki |
 | Degradasi rate limit | RateLimit fail-closed saat Redis error (menolak alih-alih membiarkan diam-diam) | ✅ Sudah diperbaiki |
 | refresh token | Logika perbarui token AuthController service ditulis ulang | ✅ Sudah diperbaiki |
 | DepositLogService | Port versi service dilengkapi, menghilangkan salah satu drift dua salinan admin/service | ✅ Sudah diperbaiki |

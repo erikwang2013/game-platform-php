@@ -357,11 +357,11 @@ Implementiert in der AdminPermission-Middleware.
 
 **Datenmodell**: dreistufige Verknüpfung User -> Role -> Permission
 
-- `erik_admin_user` (Benutzertabelle)
-- `erik_admin_user_role` (Benutzer-Rollen-Verknüpfungstabelle)
-- `erik_admin_role` (Rollentabelle)
-- `erik_admin_role_permission` (Rollen-Berechtigungs-Verknüpfungstabelle)
-- `erik_admin_permission` (Berechtigungstabelle)
+- `game_admin_user` (Benutzertabelle)
+- `game_admin_user_role` (Benutzer-Rollen-Verknüpfungstabelle)
+- `game_admin_role` (Rollentabelle)
+- `game_admin_role_permission` (Rollen-Berechtigungs-Verknüpfungstabelle)
+- `game_admin_permission` (Berechtigungstabelle)
 
 **Berechtigungstypen**:
 | type | Bedeutung | Beispiel |

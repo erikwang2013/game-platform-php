@@ -1717,7 +1717,7 @@ docker-compose up -d
 
 ## 16. 数据分析 (Analytics)
 
-数据分析接口由 `AnalyticsController` 提供，全部基于 MySQL 实时聚合（`erik_game_play_log` 游戏行为日志 / `erik_deposit_order` 充值订单），数据库故障时返回空数据而非 500。除特别说明外均需 JWT + RBAC 认证，响应包装格式统一为 `{ "code": 0, "message": "success", "data": ... }`。
+数据分析接口由 `AnalyticsController` 提供，全部基于 MySQL 实时聚合（`game_game_play_log` 游戏行为日志 / `game_deposit_order` 充值订单），数据库故障时返回空数据而非 500。除特别说明外均需 JWT + RBAC 认证，响应包装格式统一为 `{ "code": 0, "message": "success", "data": ... }`。
 
 ### 16.1 平台总览
 

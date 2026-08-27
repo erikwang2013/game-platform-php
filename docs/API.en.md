@@ -1327,7 +1327,7 @@ Retry-After: 60
 
 1. Extract the Token from `Authorization: Bearer <token>`
 2. JWT signature verification (HS256), parse `sub` (user ID)
-3. Query the `erik_user` table to verify the user exists and status=1
+3. Query the `game_user` table to verify the user exists and status=1
 4. Inject `$request->userId`
 
 ### Admin Backend (AdminAuth + AdminPermission)
@@ -1654,7 +1654,7 @@ status: open / waiting / replied / closed
 ### Provider Authentication (ProviderAuth)
 
 1. Extract `X-Game-Id`, `X-Timestamp`, `X-Signature` from the request headers
-2. Query the `erik_game` table to verify the game exists and status=1
+2. Query the `game_game` table to verify the game exists and status=1
 3. Verify the timestamp is within the 5-minute window (anti-replay)
 4. Compute `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)` and compare against the signature
 5. Inject `$request->gameId` and `$request->game`
@@ -1846,7 +1846,7 @@ Conditions are double-validated in the `available()` list filter and at `claim()
 Referral commission adds a second level:
 - L1: direct referrer receives `referrer_bonus` (config: referral.referrer_bonus)
 - L2: the referrer's referrer receives `commission = referrer_bonus * level2_rate` (config: referral.level2_rate, default 5%)
-- Recorded in `erik_referral_commission` (level/commission_rate/commission_amount)
+- Recorded in `game_referral_commission` (level/commission_rate/commission_amount)
 
 ### 8. Rate Limit Policy (Updated)
 

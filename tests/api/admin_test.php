@@ -128,9 +128,9 @@ if ($svcToken) {
     $payload = json_decode(base64_decode(str_replace(['-', '_'], ['+', '/'], explode('.', $svcToken)[1] ?? '')), true);
     $userId = (int) ($payload['sub'] ?? 0);
     // 直连测试库为链上用户充值(测试数据, 非业务改动)
-    $pdo = new PDO('mysql:host=127.0.0.1;dbname=game_platform_test;charset=utf8mb4', 'root', '');
-    $pdo->exec("UPDATE erik_user_wallet SET balance = balance + 500 WHERE user_id = $userId");
-    $funded = $pdo->query("SELECT balance FROM erik_user_wallet WHERE user_id = $userId")->fetchColumn();
+    $pdo = new PDO('mysql:host=127.0.0.1;dbname=game-platform-test;charset=utf8mb4', 'root', '');
+    $pdo->exec("UPDATE game_user_wallet SET balance = balance + 500 WHERE user_id = $userId");
+    $funded = $pdo->query("SELECT balance FROM game_user_wallet WHERE user_id = $userId")->fetchColumn();
     t_ok("链上充值 +500 (余额=$funded)", (float) $funded >= 500, 'PDO 充值失败');
 
     $w = api('POST', '/api/withdraw/apply', [
@@ -144,7 +144,7 @@ if ($svcToken) {
     if ($orderId && $orderNo) {
         // 已知缺陷: admin 与 service 的 hashids 配置不兼容(length 16 vs 0), 服务端订单号
         // 无法被 admin 直接解码。此处经 DB 取原始 ID, 再用 admin 端配置重新编码(仅测试绕过)。
-        $rawId = (int) $pdo->query("SELECT id FROM erik_withdraw_order WHERE order_no = " . $pdo->quote($orderNo))->fetchColumn();
+        $rawId = (int) $pdo->query("SELECT id FROM game_withdraw_order WHERE order_no = " . $pdo->quote($orderNo))->fetchColumn();
         $adminHashids = new \Hashids\Hashids(getenv('HASHIDS_SALT'), 0);
         $adminOrderId = $rawId ? $adminHashids->encode([$rawId]) : '';
         t_ok('DB 取回提现订单原始 ID', $rawId > 0, 'order_no 未在 DB 找到');

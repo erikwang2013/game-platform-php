@@ -51,9 +51,9 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 | 문제 | 수정 |
 |------|------|
-| 🔴 service 모델 테이블명에 `erik_` 접두사 포함 (기존 규범과 충돌) | 신규 모델 10개 모두 접두사 제거 |
-| 🟡 `AchievementService` 하드코딩 `erik_user_session` | service 버전을 `user_session`으로 변경 |
-| 🟡 `GameController` 하드코딩 `erik_game_category_rel` | service 버전을 `game_category_rel`로 변경 |
+| 🔴 service 모델 테이블명에 `game_` 접두사 포함 (기존 규범과 충돌) | 신규 모델 10개 모두 접두사 제거 |
+| 🟡 `AchievementService` 하드코딩 `game_user_session` | service 버전을 `user_session`으로 변경 |
+| 🟡 `GameController` 하드코딩 `game_game_category_rel` | service 버전을 `game_category_rel`로 변경 |
 
 ---
 
@@ -128,9 +128,9 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 | # | 문제 | 심각성 | 수정 |
 |---|------|--------|------|
-| 1 | 🔴 service 모델 테이블명이 모두 `erik_` 접두사 포함 (10개) | 높음 | sed 일괄 제거 |
-| 2 | 🟡 service AchievementService 하드코딩 `erik_user_session` | 중 | `user_session`으로 변경 |
-| 3 | 🟡 service GameController 하드코딩 `erik_game_category_rel` | 중 | `game_category_rel`로 변경 |
+| 1 | 🔴 service 모델 테이블명이 모두 `game_` 접두사 포함 (10개) | 높음 | sed 일괄 제거 |
+| 2 | 🟡 service AchievementService 하드코딩 `game_user_session` | 중 | `user_session`으로 변경 |
+| 3 | 🟡 service GameController 하드코딩 `game_game_category_rel` | 중 | `game_category_rel`로 변경 |
 | 4 | 🟡 route.php 이중 백슬래시 + 잔여 echo 문 | 중 | 수정 |
 | 5 | 🟢 Friend/Message 모델이 최초에 미생성 (SQL만) | 낮음 | 생성됨 |
 | 6 | 🟢 LeaderboardWebSocket 포트가 실제로 8790 사용, chat-ws를 8791로 변경 | 낮음 | 포트 조정 |
@@ -239,7 +239,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 | 콜백 입금 트랜잭션화 | 주문 업데이트 + 지갑 입금을 동일 트랜잭션으로, 입금 실패 시 롤백 | ✅ 수정됨 |
 | JWT 키 기동 검증 | `JWT_SECRET_KEY` 누락 또는 기본값 `open-admin-jwt-secret-change-in-production`이면 기동 거부, admin/service 일관 | ✅ 수정됨 |
 | 분석 서비스 라우트 | admin/config/route.php에 `/admin/analytics/*` 라우트 12개 등록 (AnalyticsController 전체 메서드) | ✅ 수정됨 |
-| 테이블 접두사 | 모델 52개에서 하드코딩 `erik_` 접두사 제거 (`erik_erik_` 이중 접두사 해소), DB 접두사는 config `prefix=erik_`로 통일 제공 | ✅ 수정됨 |
+| 테이블 접두사 | 모델 52개에서 하드코딩 `game_` 접두사 제거 (`game_game_` 이중 접두사 해소), DB 접두사는 config `prefix=game_`로 통일 제공 | ✅ 수정됨 |
 | 레이트 리밋 디그레이드 | RateLimit이 Redis 장애 시 fail-closed (묵묵히 통과시키는 대신 거부) | ✅ 수정됨 |
 | refresh token | service AuthController 리프레시 토큰 로직 재작성 | ✅ 수정됨 |
 | DepositLogService | service 버전 이식 보완, admin/service 이중 파일 표류 중 하나 해소 | ✅ 수정됨 |

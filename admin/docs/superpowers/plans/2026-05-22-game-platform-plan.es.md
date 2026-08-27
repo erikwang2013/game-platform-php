@@ -362,7 +362,7 @@ APP_DEBUG=true
 
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=game_platform
+DB_DATABASE=game-platform
 DB_USERNAME=root
 DB_PASSWORD=
 
@@ -658,7 +658,7 @@ git commit -m "feat: add middleware for service/ and shared UserAuth"
 -- ============================================================
 -- 1. C端用户表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_user` (
+CREATE TABLE IF NOT EXISTS `game_user` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `username` VARCHAR(50) NOT NULL COMMENT '用户名',
     `password` VARCHAR(255) NOT NULL COMMENT '密码（bcrypt哈希）',
@@ -685,7 +685,7 @@ CREATE TABLE IF NOT EXISTS `erik_user` (
 -- ============================================================
 -- 2. 平台币钱包表（含乐观锁）
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_user_wallet` (
+CREATE TABLE IF NOT EXISTS `game_user_wallet` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
     `balance` DECIMAL(18,4) UNSIGNED NOT NULL DEFAULT 0.0000 COMMENT '可用余额（平台币）',
@@ -703,7 +703,7 @@ CREATE TABLE IF NOT EXISTS `erik_user_wallet` (
 -- ============================================================
 -- 3. 游戏币钱包表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_user_game_wallet` (
+CREATE TABLE IF NOT EXISTS `game_user_game_wallet` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
     `game_id` BIGINT UNSIGNED NOT NULL COMMENT '游戏ID',
@@ -721,7 +721,7 @@ CREATE TABLE IF NOT EXISTS `erik_user_game_wallet` (
 -- ============================================================
 -- 4. 游戏表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_game` (
+CREATE TABLE IF NOT EXISTS `game_game` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `name` VARCHAR(100) NOT NULL COMMENT '游戏名称',
     `slug` VARCHAR(50) NOT NULL COMMENT '游戏标识',
@@ -744,7 +744,7 @@ CREATE TABLE IF NOT EXISTS `erik_game` (
 -- ============================================================
 -- 5. 游戏币种表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_game_currency` (
+CREATE TABLE IF NOT EXISTS `game_game_currency` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `game_id` BIGINT UNSIGNED NOT NULL COMMENT '游戏ID',
     `name` VARCHAR(50) NOT NULL COMMENT '币种名称',
@@ -762,7 +762,7 @@ CREATE TABLE IF NOT EXISTS `erik_game_currency` (
 -- ============================================================
 -- 6. 充值订单表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_deposit_order` (
+CREATE TABLE IF NOT EXISTS `game_deposit_order` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `order_no` VARCHAR(32) NOT NULL COMMENT '订单号',
     `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
@@ -785,7 +785,7 @@ CREATE TABLE IF NOT EXISTS `erik_deposit_order` (
 -- ============================================================
 -- 7. 提现订单表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_withdraw_order` (
+CREATE TABLE IF NOT EXISTS `game_withdraw_order` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `order_no` VARCHAR(32) NOT NULL COMMENT '订单号',
     `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
@@ -795,7 +795,7 @@ CREATE TABLE IF NOT EXISTS `erik_withdraw_order` (
     `method` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '提现方式: paypal/bank/crypto',
     `account_info` VARCHAR(500) NOT NULL DEFAULT '' COMMENT '收款账户信息（加密存储）',
     `status` VARCHAR(20) NOT NULL DEFAULT 'pending' COMMENT '状态: pending=待审核 approved=已通过 rejected=已拒绝 completed=已完成',
-    `reviewer_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '审核人ID（关联erik_admin_user）',
+    `reviewer_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '审核人ID（关联game_admin_user）',
     `review_note` VARCHAR(500) NOT NULL DEFAULT '' COMMENT '审核附注',
     `reviewed_at` DATETIME DEFAULT NULL COMMENT '审核时间',
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '申请时间',
@@ -811,7 +811,7 @@ CREATE TABLE IF NOT EXISTS `erik_withdraw_order` (
 -- ============================================================
 -- 8. 兑换记录表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_exchange_record` (
+CREATE TABLE IF NOT EXISTS `game_exchange_record` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
     `game_id` BIGINT UNSIGNED NOT NULL COMMENT '游戏ID',
@@ -831,7 +831,7 @@ CREATE TABLE IF NOT EXISTS `erik_exchange_record` (
 -- ============================================================
 -- 9. 平台流水表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_transaction` (
+CREATE TABLE IF NOT EXISTS `game_transaction` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
     `type` VARCHAR(20) NOT NULL COMMENT '流水类型: deposit=充值 withdraw=提现 exchange_in=兑换买入 exchange_out=兑换卖出 game_earn=游戏赚取 game_spend=游戏花费',
@@ -850,7 +850,7 @@ CREATE TABLE IF NOT EXISTS `erik_transaction` (
 -- ============================================================
 -- 10. 支付方式表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_payment_method` (
+CREATE TABLE IF NOT EXISTS `game_payment_method` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `name` VARCHAR(50) NOT NULL COMMENT '支付方式名称',
     `type` VARCHAR(20) NOT NULL COMMENT '类型: fiat=法币 crypto=加密货币',
@@ -868,7 +868,7 @@ CREATE TABLE IF NOT EXISTS `erik_payment_method` (
 -- ============================================================
 -- 11. 公告表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_announcement` (
+CREATE TABLE IF NOT EXISTS `game_announcement` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `title` VARCHAR(255) NOT NULL COMMENT '标题',
     `content` TEXT NOT NULL COMMENT '内容',
@@ -885,9 +885,9 @@ CREATE TABLE IF NOT EXISTS `erik_announcement` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='公告表';
 
 -- ============================================================
--- 12. 平台配置表（扩展现有 erik_system_config 能力）
+-- 12. 平台配置表（扩展现有 game_system_config 能力）
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `erik_platform_config` (
+CREATE TABLE IF NOT EXISTS `game-platform_config` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `group` VARCHAR(50) NOT NULL DEFAULT 'default' COMMENT '配置分组: withdraw/payment/game/system',
     `key` VARCHAR(100) NOT NULL COMMENT '配置键名',
@@ -903,7 +903,7 @@ CREATE TABLE IF NOT EXISTS `erik_platform_config` (
 -- ============================================================
 -- 插入默认配置
 -- ============================================================
-INSERT INTO `erik_platform_config` (`id`, `group`, `key`, `value`, `type`, `description`) VALUES
+INSERT INTO `game-platform_config` (`id`, `group`, `key`, `value`, `type`, `description`) VALUES
 (20000000000000001, 'withdraw', 'global_switch', '1', 'bool', '全局提现开关: 1=允许提现 0=禁止提现'),
 (20000000000000002, 'withdraw', 'auto_approve_threshold', '100.0000', 'decimal', '自动审核阈值（平台币），低于此金额自动通过'),
 (20000000000000003, 'withdraw', 'daily_limit', '10000.0000', 'decimal', '每人每日提现上限（平台币）'),
@@ -915,7 +915,7 @@ INSERT INTO `erik_platform_config` (`id`, `group`, `key`, `value`, `type`, `desc
 - [ ] **Paso 2: Ejecutar la migración contra la base de datos de desarrollo**
 
 ```bash
-mysql -h 127.0.0.1 -u root game_platform < install/install.sql
+mysql -h 127.0.0.1 -u root game-platform < install/install.sql
 ```
 
 Esperado: sin errores, se crean las 12 tablas.
@@ -923,7 +923,7 @@ Esperado: sin errores, se crean las 12 tablas.
 - [ ] **Paso 3: Verificar que existen las tablas**
 
 ```bash
-mysql -h 127.0.0.1 -u root game_platform -e "SHOW TABLES LIKE 'erik_%';"
+mysql -h 127.0.0.1 -u root game-platform -e "SHOW TABLES LIKE 'game_%';"
 ```
 
 Esperado: la lista incluye las 12 tablas nuevas + las tablas de admin existentes.
@@ -968,7 +968,7 @@ class User extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'erik_user';
+    protected $table = 'game_user';
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'int';
@@ -1027,7 +1027,7 @@ use support\Model;
 
 class UserWallet extends Model
 {
-    protected $table = 'erik_user_wallet';
+    protected $table = 'game_user_wallet';
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'int';
@@ -1128,7 +1128,7 @@ use support\Model;
 
 class UserGameWallet extends Model
 {
-    protected $table = 'erik_user_game_wallet';
+    protected $table = 'game_user_game_wallet';
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'int';
@@ -1161,7 +1161,7 @@ use support\Model;
 
 class Game extends Model
 {
-    protected $table = 'erik_game';
+    protected $table = 'game_game';
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'int';
@@ -1202,7 +1202,7 @@ use support\Model;
 
 class GameCurrency extends Model
 {
-    protected $table = 'erik_game_currency';
+    protected $table = 'game_game_currency';
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'int';
@@ -1242,7 +1242,7 @@ use support\Model;
 
 class DepositOrder extends Model
 {
-    protected $table = 'erik_deposit_order';
+    protected $table = 'game_deposit_order';
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'int';
@@ -1282,7 +1282,7 @@ use support\Model;
 
 class WithdrawOrder extends Model
 {
-    protected $table = 'erik_withdraw_order';
+    protected $table = 'game_withdraw_order';
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'int';
@@ -1323,7 +1323,7 @@ use support\Model;
 
 class ExchangeRecord extends Model
 {
-    protected $table = 'erik_exchange_record';
+    protected $table = 'game_exchange_record';
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'int';
@@ -1360,7 +1360,7 @@ use support\Model;
 
 class Transaction extends Model
 {
-    protected $table = 'erik_transaction';
+    protected $table = 'game_transaction';
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'int';
@@ -1396,7 +1396,7 @@ use support\Model;
 
 class PaymentMethod extends Model
 {
-    protected $table = 'erik_payment_method';
+    protected $table = 'game_payment_method';
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'int';
@@ -1429,7 +1429,7 @@ use support\Model;
 
 class Announcement extends Model
 {
-    protected $table = 'erik_announcement';
+    protected $table = 'game_announcement';
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'int';
@@ -1463,7 +1463,7 @@ use support\Model;
 
 class PlatformConfig extends Model
 {
-    protected $table = 'erik_platform_config';
+    protected $table = 'game-platform_config';
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'int';

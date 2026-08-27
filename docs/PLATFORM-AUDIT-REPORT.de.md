@@ -51,9 +51,9 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 
 | Problem | Fix |
 |------|------|
-| 🔴 service-Modell-Tabellennamen mit `erik_`-Präfix (Konflikt mit bestehender Norm) | Alle 10 neuen Modelle ohne Präfix |
-| 🟡 `AchievementService` hartkodiert `erik_user_session` | service-Version auf `user_session` geändert |
-| 🟡 `GameController` hartkodiert `erik_game_category_rel` | service-Version auf `game_category_rel` geändert |
+| 🔴 service-Modell-Tabellennamen mit `game_`-Präfix (Konflikt mit bestehender Norm) | Alle 10 neuen Modelle ohne Präfix |
+| 🟡 `AchievementService` hartkodiert `game_user_session` | service-Version auf `user_session` geändert |
+| 🟡 `GameController` hartkodiert `game_game_category_rel` | service-Version auf `game_category_rel` geändert |
 
 ---
 
@@ -128,9 +128,9 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 
 | # | Problem | Schweregrad | Fix |
 |---|------|--------|------|
-| 1 | 🔴 service-Modell-Tabellennamen alle mit `erik_`-Präfix (10 Stück) | Hoch | sed-Massenentfernung |
-| 2 | 🟡 service-AchievementService hartkodiert `erik_user_session` | Mittel | auf `user_session` geändert |
-| 3 | 🟡 service-GameController hartkodiert `erik_game_category_rel` | Mittel | auf `game_category_rel` geändert |
+| 1 | 🔴 service-Modell-Tabellennamen alle mit `game_`-Präfix (10 Stück) | Hoch | sed-Massenentfernung |
+| 2 | 🟡 service-AchievementService hartkodiert `game_user_session` | Mittel | auf `user_session` geändert |
+| 3 | 🟡 service-GameController hartkodiert `game_game_category_rel` | Mittel | auf `game_category_rel` geändert |
 | 4 | 🟡 route.php doppelte Backslashes + Rest-echo-Anweisungen | Mittel | behoben |
 | 5 | 🟢 Friend/Message-Modelle anfangs nicht erstellt (nur SQL) | Niedrig | erstellt |
 | 6 | 🟢 LeaderboardWebSocket-Port tatsächlich 8790, chat-ws auf 8791 geändert | Niedrig | Portanpassung |
@@ -239,7 +239,7 @@ Diese Runde (2026-08-18) abgeschlossene Sicherheits- und Verfügbarkeitsreparatu
 | Callback-Gutschrift transaktional | Auftrags-Update + Wallet-Gutschrift in derselben Transaktion, Rollback bei Gutschriftfehler | ✅ behoben |
 | JWT-Schlüssel-Startprüfung | Start verweigert bei fehlendem `JWT_SECRET_KEY` oder weiterhin Standardwert `open-admin-jwt-secret-change-in-production`, admin/service konsistent | ✅ behoben |
 | Analyseservice-Routen | admin/config/route.php registriert 12 Routen `/admin/analytics/*` (alle Methoden von AnalyticsController) | ✅ behoben |
-| Tabellenpräfix | 52 Modelle vom hartkodierten `erik_`-Präfix befreit (Doppelpräfix `erik_erik_` beseitigt), DB-Präfix einheitlich aus config `prefix=erik_` | ✅ behoben |
+| Tabellenpräfix | 52 Modelle vom hartkodierten `game_`-Präfix befreit (Doppelpräfix `game_game_` beseitigt), DB-Präfix einheitlich aus config `prefix=game_` | ✅ behoben |
 | Ratenbegrenzungs-Degradierung | RateLimit fail-closed bei Redis-Ausfall (Ablehnung statt stummer Freigabe) | ✅ behoben |
 | refresh token | service-AuthController-Refresh-Token-Logik neu geschrieben | ✅ behoben |
 | DepositLogService | service-Version portiert und vervollständigt, beseitigt einen der admin/service-Doppelkopie-Drifts | ✅ behoben |

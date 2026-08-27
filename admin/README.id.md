@@ -32,7 +32,7 @@ Sistem backend administrasi full-stack berbasis webman v2 + Flutter.
 |---|------|------|
 | Framework backend | webman v2 (workerman) | Framework proses tetap PHP berperforma sangat tinggi |
 | Versi PHP | 8.3+ | |
-| Database | MySQL 8.0+ | Prefix tabel `erik_`, primary key BIGINT non-auto-increment |
+| Database | MySQL 8.0+ | Prefix tabel `game_`, primary key BIGINT non-auto-increment |
 | Mesin pencari | Elasticsearch | Sinkronisasi & kueri melalui `webman-scout` |
 | Frontend admin | Flutter 3.x | Web dalam gaya backend admin PC (`apps/flutter/`) |
 | Seluler | HarmonyOS ArkTS | Klien native HarmonyOS (`apps/harmonyos/`), mendukung ponsel/tablet/2in1 |
@@ -198,7 +198,7 @@ docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 ## Standar Database
 
-- **Prefix tabel**: `erik_`
+- **Prefix tabel**: `game_`
 - **Primary key**: primary key semua tabel adalah `id BIGINT UNSIGNED NOT NULL`, **AUTO_INCREMENT dilarang**
 - **Pembuatan ID**: ID primary key dihasilkan oleh `SnowflakeService::generate()` di lapisan aplikasi, unik terdistribusi
 - **Kolom wajib**: setiap tabel harus memiliki `id`, `created_at`, `updated_at`

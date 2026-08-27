@@ -28,9 +28,9 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 ### 2.1 `install/install.sql` (988 سطرًا)
 - دمج 8 ملفات ترحيل أصلية
-- 42 جدول بيانات بادئة `erik_` (CREATE TABLE IF NOT EXISTS)
+- 42 جدول بيانات بادئة `game_` (CREATE TABLE IF NOT EXISTS)
 - 13 كتلة بيانات بذور INSERT IGNORE
-- دمج حقل `source` في جدول `erik_operation_log` في عبارة إنشاء الجدول (دون الحاجة إلى ALTER TABLE)
+- دمج حقل `source` في جدول `game_operation_log` في عبارة إنشاء الجدول (دون الحاجة إلى ALTER TABLE)
 - محاطة بمعاملة (START TRANSACTION / COMMIT)
 - جميع عبارات INSERT عولجت لتكون قوية ذاتيًا
 
@@ -38,16 +38,16 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 | اسم الجدول | طريقة المعالجة |
 |------|---------|
-| `erik_admin_role` | INSERT IGNORE (معرّف ثابت) |
-| `erik_admin_permission` | INSERT IGNORE (معرّف ثابت) - 4 مرات |
-| `erik_admin_role_permission` | استعلام فرعي WHERE NOT EXISTS |
-| `erik_platform_config` | INSERT IGNORE (معرّف ثابت) - مرتين |
-| `erik_language` | INSERT IGNORE (معرّف ثابت) |
-| `erik_translation` | INSERT IGNORE (معرّف ثابت) |
-| `erik_risk_rule` | INSERT IGNORE (معرّف ثابت) |
-| `erik_withdraw_limit` | INSERT IGNORE (معرّف ثابت) |
-| `erik_game_category` | INSERT IGNORE (معرّف ثابت) |
-| `erik_country_config` | INSERT IGNORE (معرّف ثابت) |
+| `game_admin_role` | INSERT IGNORE (معرّف ثابت) |
+| `game_admin_permission` | INSERT IGNORE (معرّف ثابت) - 4 مرات |
+| `game_admin_role_permission` | استعلام فرعي WHERE NOT EXISTS |
+| `game-platform_config` | INSERT IGNORE (معرّف ثابت) - مرتين |
+| `game_language` | INSERT IGNORE (معرّف ثابت) |
+| `game_translation` | INSERT IGNORE (معرّف ثابت) |
+| `game_risk_rule` | INSERT IGNORE (معرّف ثابت) |
+| `game_withdraw_limit` | INSERT IGNORE (معرّف ثابت) |
+| `game_game_category` | INSERT IGNORE (معرّف ثابت) |
+| `game_country_config` | INSERT IGNORE (معرّف ثابت) |
 
 ### 2.2 `install/index.php` (485 سطرًا)
 - جدولة المسارات: step1 -> step2 -> step3 -> step4 -> step5
@@ -181,7 +181,7 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 ### 6.3 التحقق من SQL
 ```
 ناجح أسماء 42 جدولًا مطابقة تمامًا لملفات الترحيل الأصلية
-ناجح دمج حقل source في عبارة إنشاء جدول erik_operation_log
+ناجح دمج حقل source في عبارة إنشاء جدول game_operation_log
 ناجح جميع عبارات INSERT عولجت لتكون قوية ذاتيًا
 ناجح استعادة حراس WHERE NOT EXISTS (بما يطابق الترحيلات الأصلية)
 ```
@@ -192,7 +192,7 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 | # | المشكلة | الخطورة | الحالة |
 |---|------|--------|------|
-| 1 | إدراج `erik_admin_role_permission` يفتقد حارس `WHERE NOT EXISTS` (غير متسق مع الترحيل الأصلي) | عالية | تم الإصلاح |
+| 1 | إدراج `game_admin_role_permission` يفتقد حارس `WHERE NOT EXISTS` (غير متسق مع الترحيل الأصلي) | عالية | تم الإصلاح |
 | 2 | جميع إدراجات بيانات البذور لم تُعالج لتكون قوية ذاتيًا (الفشل عند إعادة التنفيذ) | متوسطة | تم الإصلاح (INSERT IGNORE) |
 | 3 | فحص البيئة يفتقد فحص إضافة `pcntl` (تبعية جوهرية لـ webman) | متوسطة | تم الإصلاح |
 | 4 | إعداد Service .env يفتقد `ENCRYPTION_CIPHER` | منخفضة | تم الإصلاح |
@@ -224,7 +224,7 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 إصلاحات الأمان في هذه الجولة (fail-closed لاستدعاء الدفع، والتحقق من الإقلاع JWT، وتوحيد بادئات الجداول) **لم تمس نظام التثبيت**، ولا توجد مشكلات جديدة:
 
-- بعد إزالة البادئة المرمّزة `erik_` من النماذج، ما زالت أسماء الجداول الفعلية تُولَّد موحدًا من `prefix=erik_` في `config/database.php`، بما يطابق جداول `erik_*` التي ينشئها install.sql، فلا حاجة لتغيير SQL التثبيت
+- بعد إزالة البادئة المرمّزة `game_` من النماذج، ما زالت أسماء الجداول الفعلية تُولَّد موحدًا من `prefix=game_` في `config/database.php`، بما يطابق جداول `game_*` التي ينشئها install.sql، فلا حاجة لتغيير SQL التثبيت
 - التحقق من الإقلاع JWT (رفض الإقلاع عند غياب `JWT_SECRET_KEY` أو قيمته الافتراضية) متوافق مع المفتاح العشوائي 64 بايت الذي يولده معالج التثبيت تلقائيًا، فلا حاجة لتعديل عملية التثبيت
 
 تبقى الاستنتاجات التاريخية وقائمة المشكلات كما هي.

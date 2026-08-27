@@ -132,34 +132,34 @@ Controller::method()
 ### 3.1 ER संबंध
 
 ```
-erik_admin_user ──┬── erik_admin_user_role ──┬── erik_admin_role
+game_admin_user ──┬── game_admin_user_role ──┬── game_admin_role
   (用户)           │    (用户-角色关联)         │     (角色)
                   │                          │
-                  │                    erik_admin_role_permission
+                  │                    game_admin_role_permission
                   │                     (角色-权限关联)
                   │                          │
                   │                          ▼
-                  │                    erik_admin_permission
+                  │                    game_admin_permission
                   │                      (权限/菜单)
                   │
                   ▼
-           erik_operation_log
+           game_operation_log
              (操作日志)
 
-erik_system_config (系统配置) — 独立表
+game_system_config (系统配置) — 独立表
 ```
 
 ### 3.2 मुख्य तालिका संरचना
 
 | तालिका नाम | फ़ील्ड संख्या | विवरण |
 |------|-------|------|
-| `erik_admin_user` | 14 | एडमिन उपयोगकर्ता, phone/email/id_card एन्क्रिप्टेड स्टोरेज, सॉफ्ट डिलीट समर्थित |
-| `erik_admin_role` | 7 | भूमिका, slug अद्वितीय |
-| `erik_admin_permission` | 10 | अनुमति वृक्ष (parent_id स्व-संदर्भ), type: 1=मेनू 2=बटन 3=API |
-| `erik_admin_user_role` | 2 | उपयोगकर्ता-भूमिका कई-से-कई मध्यवर्ती तालिका |
-| `erik_admin_role_permission` | 2 | भूमिका-अनुमति कई-से-कई मध्यवर्ती तालिका |
-| `erik_system_config` | 8 | कुंजी-मान कॉन्फ़िगरेशन, group+key संयुक्त अद्वितीय |
-| `erik_operation_log` | 9 | ऑपरेशन ऑडिट लॉग (source स्रोत सहित) |
+| `game_admin_user` | 14 | एडमिन उपयोगकर्ता, phone/email/id_card एन्क्रिप्टेड स्टोरेज, सॉफ्ट डिलीट समर्थित |
+| `game_admin_role` | 7 | भूमिका, slug अद्वितीय |
+| `game_admin_permission` | 10 | अनुमति वृक्ष (parent_id स्व-संदर्भ), type: 1=मेनू 2=बटन 3=API |
+| `game_admin_user_role` | 2 | उपयोगकर्ता-भूमिका कई-से-कई मध्यवर्ती तालिका |
+| `game_admin_role_permission` | 2 | भूमिका-अनुमति कई-से-कई मध्यवर्ती तालिका |
+| `game_system_config` | 8 | कुंजी-मान कॉन्फ़िगरेशन, group+key संयुक्त अद्वितीय |
+| `game_operation_log` | 9 | ऑपरेशन ऑडिट लॉग (source स्रोत सहित) |
 
 ### 3.3 प्राथमिक कुंजी मानक
 

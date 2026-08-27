@@ -218,23 +218,23 @@ Zeitfenster: 5 Minuten
 
 | Tabellenname | Beschreibung | Hauptmerkmale |
 |------|------|---------|
-| erik_ticket | Ticket | user_id+type+status-Index, assigned_to |
-| erik_ticket_reply | Ticket-Antwort | ticket_id-Index, is_admin zur Unterscheidung |
-| erik_device_token | Geräte-Token | user_id+platform+token eindeutiger Index |
-| erik_vip_level | VIP-Stufendefinition | level eindeutiger Index, benefits JSON |
-| erik_user_vip | Benutzer-VIP-Datensatz | user_id eindeutiger Index, level+exp+total_exp |
-| erik_exp_log | Erfahrungspunkt-Log | user_id+source kombinierter Index |
-| erik_achievement | Erfolgsdefinition | key eindeutiger Index, condition_json JSON |
-| erik_user_achievement | Benutzer-Erfolge | user_id+achievement_id eindeutiger Index |
-| erik_friend | Freundschaftsbeziehung | user_id+friend_id eindeutiger Index |
-| erik_message | Direktnachricht | from_user_id+to_user_id / to_user_id+is_read |
+| game_ticket | Ticket | user_id+type+status-Index, assigned_to |
+| game_ticket_reply | Ticket-Antwort | ticket_id-Index, is_admin zur Unterscheidung |
+| game_device_token | Geräte-Token | user_id+platform+token eindeutiger Index |
+| game_vip_level | VIP-Stufendefinition | level eindeutiger Index, benefits JSON |
+| game_user_vip | Benutzer-VIP-Datensatz | user_id eindeutiger Index, level+exp+total_exp |
+| game_exp_log | Erfahrungspunkt-Log | user_id+source kombinierter Index |
+| game_achievement | Erfolgsdefinition | key eindeutiger Index, condition_json JSON |
+| game_user_achievement | Benutzer-Erfolge | user_id+achievement_id eindeutiger Index |
+| game_friend | Freundschaftsbeziehung | user_id+friend_id eindeutiger Index |
+| game_message | Direktnachricht | from_user_id+to_user_id / to_user_id+is_read |
 
 ### Tabellenstruktur-Änderungen
 
 | Tabellenname | Änderung |
 |------|------|
-| erik_game | +provider_config (JSON) |
-| erik_game_play_log | +round_id, +bet_amount, +win_amount |
+| game_game | +provider_config (JSON) |
+| game_game_play_log | +round_id, +bet_amount, +win_amount |
 
 **Gesamt: install.sql 43 Tabellen** (die 10 Ökosystem-Erweiterungs-Tabellen liegen in `install/` und sind nicht in install.sql zusammengeführt). Modelle nicht geteilt: admin 46 / service 44, jeweils eigene Kopie.
 

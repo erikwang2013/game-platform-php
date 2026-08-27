@@ -1717,7 +1717,7 @@ Für die Produktionsumgebung `docs/nginx-security.conf` als Referenz zur Härtun
 
 ## 18. Datenanalyse (Analytics)
 
-Die Datenanalyse-Schnittstellen werden vom `AnalyticsController` bereitgestellt und basieren alle auf Echtzeit-Aggregation in MySQL (`erik_game_play_log`-Spielverhaltensprotokolle / `erik_deposit_order`-Einzahlungsaufträge); bei Datenbankfehlern werden leere Daten statt 500 zurückgegeben. Sofern nicht anders angegeben, ist JWT- + RBAC-Authentifizierung erforderlich; das Antwortformat ist einheitlich `{ "code": 0, "message": "success", "data": ... }`.
+Die Datenanalyse-Schnittstellen werden vom `AnalyticsController` bereitgestellt und basieren alle auf Echtzeit-Aggregation in MySQL (`game_game_play_log`-Spielverhaltensprotokolle / `game_deposit_order`-Einzahlungsaufträge); bei Datenbankfehlern werden leere Daten statt 500 zurückgegeben. Sofern nicht anders angegeben, ist JWT- + RBAC-Authentifizierung erforderlich; das Antwortformat ist einheitlich `{ "code": 0, "message": "success", "data": ... }`.
 
 ### 18.1 Plattform-Übersicht
 

@@ -27,7 +27,7 @@ Journal des modifications lisible par les humains. PHP n'importe pas ce fichier.
 ### Disponibilité
 
 - Montage des 12 routes `/admin/analytics/*` des services d'analyse admin.
-- Suppression du préfixe `erik_` codé en dur dans les modèles ; audit DepositLog en base ; suppression du modèle Test.
+- Suppression du préfixe `game_` codé en dur dans les modèles ; audit DepositLog en base ; suppression du modèle Test.
 
 ### Observabilité
 

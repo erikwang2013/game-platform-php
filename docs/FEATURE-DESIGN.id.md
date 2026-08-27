@@ -54,7 +54,7 @@ Koin platform masuk = jumlah koin game ÷ exchange_rate × (1 - spread_pct / 100
 
 ## 2. Desain Dompet
 
-### 2.1 Dompet Koin Platform (erik_user_wallet)
+### 2.1 Dompet Koin Platform (game_user_wallet)
 
 Dibuat otomatis saat pengguna mendaftar, saldo awal 0.
 
@@ -66,7 +66,7 @@ Dibuat otomatis saat pengguna mendaftar, saldo awal 0.
 | total_spent | Pengeluaran kumulatif |
 | version | Nomor versi kunci optimis (setiap pembaruan +1) |
 
-### 2.2 Dompet Koin Game (erik_user_game_wallet)
+### 2.2 Dompet Koin Game (game_user_game_wallet)
 
 Unik berdasarkan tiga dimensi pengguna+game+mata uang. Dibuat otomatis saat penukaran pertama.
 
@@ -320,7 +320,7 @@ Konfigurasi melalui PlatformConfig atau variabel lingkungan, saat permintaan gag
 ### 7.2 Manajemen Terjemahan
 
 - Terjemahan diorganisir dalam format `group.key` (seperti `auth.login_success`)
-- Disimpan di tabel database `erik_translation`, cache Redis (TTL 1 jam)
+- Disimpan di tabel database `game_translation`, cache Redis (TTL 1 jam)
 - API: `GET /api/language/list` mendapatkan bahasa tersedia, `POST /api/language/switch` mengganti bahasa
 - Frontend mendeteksi otomatis melalui header `X-Language` atau `Accept-Language`
 - Saat terjemahan tidak ada, fallback ke en-US; en-US juga tidak ada, kembalikan key asli

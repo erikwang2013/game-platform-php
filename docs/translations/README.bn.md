@@ -20,7 +20,7 @@ Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](R
 
 ### ব্যাকএন্ড
 - PHP 8.3+, webman v2 (workerman/webman)
-- MySQL 8.0+ (টেবিল প্রিফিক্স `erik_`, BIGINT নন-অটোইনক্রিমেন্ট প্রাইমারি কী)
+- MySQL 8.0+ (টেবিল প্রিফিক্স `game_`, BIGINT নন-অটোইনক্রিমেন্ট প্রাইমারি কী)
 - Redis (Session / ক্যাশ / রেট লিমিট)
 - ClickHouse (OLAP অ্যানালাইসিস / প্রোবাবিলিটি গণনা)
 - Elasticsearch (ফুল-টেক্সট সার্চ)
@@ -142,8 +142,8 @@ rm -rf install/
 
 ```bash
 # এক ক্লিকে মার্জড SQL ইমপোর্ট
-mysql -u root -e "CREATE DATABASE IF NOT EXISTS game_platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -u root game_platform < install/install.sql
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS game-platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root game-platform < install/install.sql
 ```
 
 #### 2. এনভায়রনমেন্ট ভেরিয়েবল কনফিগার করুন

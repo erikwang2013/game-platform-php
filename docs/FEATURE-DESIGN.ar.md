@@ -54,7 +54,7 @@ Languages: **中文** · [English](FEATURE-DESIGN.en.md) · [한국어](FEATURE-
 
 ## 2. تصميم المحفظة
 
-### 2.1 محفظة عملات المنصة (erik_user_wallet)
+### 2.1 محفظة عملات المنصة (game_user_wallet)
 
 تُنشأ تلقائيًا عند تسجيل المستخدم، الرصيد الابتدائي 0.
 
@@ -66,7 +66,7 @@ Languages: **中文** · [English](FEATURE-DESIGN.en.md) · [한국어](FEATURE-
 | total_spent | الإنفاق التراكمي |
 | version | رقم إصدار القفل التفاؤلي (يزيد +1 عند كل تحديث) |
 
-### 2.2 محفظة عملات الألعاب (erik_user_game_wallet)
+### 2.2 محفظة عملات الألعاب (game_user_game_wallet)
 
 فريدة ثلاثيًا حسب المستخدم + اللعبة + العملة. تُنشأ تلقائيًا عند أول استبدال.
 
@@ -320,7 +320,7 @@ signature = HMAC-SHA256(
 ### 7.2 إدارة الترجمات
 
 - تُنظَّم الترجمات بصيغة `group.key` (مثل `auth.login_success`)
-- تخزين في جدول `erik_translation`، تخزين مؤقت Redis (TTL ساعة واحدة)
+- تخزين في جدول `game_translation`، تخزين مؤقت Redis (TTL ساعة واحدة)
 - الواجهات: `GET /api/language/list` للحصول على اللغات المتاحة، `POST /api/language/switch` لتبديل اللغة
 - كشف تلقائي في الواجهة الأمامية عبر رأس `X-Language` أو `Accept-Language`
 - عند غياب الترجمة تراجع إلى en-US، وعند غيابها في en-US أيضًا يُرجع المفتاح الأصلي

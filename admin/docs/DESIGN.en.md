@@ -132,34 +132,34 @@ Controller::method()
 ### 3.1 ER Relationships
 
 ```
-erik_admin_user ──┬── erik_admin_user_role ──┬── erik_admin_role
+game_admin_user ──┬── game_admin_user_role ──┬── game_admin_role
   (用户)           │    (用户-角色关联)         │     (角色)
                   │                          │
-                  │                    erik_admin_role_permission
+                  │                    game_admin_role_permission
                   │                     (角色-权限关联)
                   │                          │
                   │                          ▼
-                  │                    erik_admin_permission
+                  │                    game_admin_permission
                   │                      (权限/菜单)
                   │
                   ▼
-           erik_operation_log
+           game_operation_log
              (操作日志)
 
-erik_system_config (系统配置) — 独立表
+game_system_config (系统配置) — 独立表
 ```
 
 ### 3.2 Core Table Structures
 
 | Table | Field count | Description |
 |------|-------|------|
-| `erik_admin_user` | 14 | Admin users, phone/email/id_card stored encrypted, supports soft delete |
-| `erik_admin_role` | 7 | Roles, slug unique |
-| `erik_admin_permission` | 10 | Permission tree (parent_id self-reference), type: 1=menu 2=button 3=API |
-| `erik_admin_user_role` | 2 | User-role many-to-many junction table |
-| `erik_admin_role_permission` | 2 | Role-permission many-to-many junction table |
-| `erik_system_config` | 8 | Key-value config, group+key composite unique |
-| `erik_operation_log` | 9 | Operation audit log (incl. source) |
+| `game_admin_user` | 14 | Admin users, phone/email/id_card stored encrypted, supports soft delete |
+| `game_admin_role` | 7 | Roles, slug unique |
+| `game_admin_permission` | 10 | Permission tree (parent_id self-reference), type: 1=menu 2=button 3=API |
+| `game_admin_user_role` | 2 | User-role many-to-many junction table |
+| `game_admin_role_permission` | 2 | Role-permission many-to-many junction table |
+| `game_system_config` | 8 | Key-value config, group+key composite unique |
+| `game_operation_log` | 9 | Operation audit log (incl. source) |
 
 ### 3.3 Primary Key Conventions
 

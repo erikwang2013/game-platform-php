@@ -32,7 +32,7 @@ webman v2 + Flutter पर आधारित फुल-स्टैक एड�
 |---|------|------|
 | बैकएंड फ्रेमवर्क | webman v2 (workerman) | अति-उच्च प्रदर्शन PHP रेज़िडेंट-प्रोसेस फ्रेमवर्क |
 | PHP संस्करण | 8.3+ | |
-| डेटाबेस | MySQL 8.0+ | तालिका उपसर्ग `erik_`, BIGINT गैर-ऑटो-इन्क्रीमेंट प्राथमिक कुंजी |
+| डेटाबेस | MySQL 8.0+ | तालिका उपसर्ग `game_`, BIGINT गैर-ऑटो-इन्क्रीमेंट प्राथमिक कुंजी |
 | सर्च इंजन | Elasticsearch | `webman-scout` के माध्यम से सिंक और क्वेरी |
 | एडमिन फ्रंटएंड | Flutter 3.x | वेब संस्करण PC एडमिन शैली (`apps/flutter/`) |
 | मोबाइल | HarmonyOS ArkTS | हार्मनीOS नेटिव क्लाइंट (`apps/harmonyos/`), फ़ोन/टैबलेट/2in1 समर्थन |
@@ -197,7 +197,7 @@ docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 ## डेटाबेस मानक
 
-- **तालिका उपसर्ग**: `erik_`
+- **तालिका उपसर्ग**: `game_`
 - **प्राथमिक कुंजी**: सभी तालिकाओं की प्राथमिक कुंजी `id BIGINT UNSIGNED NOT NULL` है, **AUTO_INCREMENT निषिद्ध**
 - **ID जनरेशन**: प्राथमिक कुंजी ID एप्लिकेशन परत `SnowflakeService::generate()` से उत्पन्न, वितरित रूप से अद्वितीय
 - **अनिवार्य फ़ील्ड**: प्रत्येक तालिका में `id`, `created_at`, `updated_at` होना चाहिए

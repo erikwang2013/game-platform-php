@@ -27,7 +27,7 @@ Menschenlesbares Änderungsprotokoll. PHP importiert diese Datei nicht. Entspric
 ### Verfügbarkeit
 
 - admin-Analyseservices: 12 Routen `/admin/analytics/*` gemountet.
-- Modelle ohne hartkodiertes `erik_`-Präfix; DepositLog-Audit wird in die Datenbank geschrieben; Test-Modell gelöscht.
+- Modelle ohne hartkodiertes `game_`-Präfix; DepositLog-Audit wird in die Datenbank geschrieben; Test-Modell gelöscht.
 
 ### Beobachtbarkeit
 

@@ -28,9 +28,9 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ### 2.1 `install/install.sql` (988 lignes)
 - Fusion de 8 fichiers de migration d'origine
-- 42 tables de données à préfixe `erik_` (CREATE TABLE IF NOT EXISTS)
+- 42 tables de données à préfixe `game_` (CREATE TABLE IF NOT EXISTS)
 - 13 blocs de données de seed en INSERT IGNORE
-- Le champ `source` de `erik_operation_log` fusionné dans l'instruction de création de table (pas d'ALTER TABLE)
+- Le champ `source` de `game_operation_log` fusionné dans l'instruction de création de table (pas d'ALTER TABLE)
 - Enveloppé dans des transactions (START TRANSACTION / COMMIT)
 - Tous les INSERT rendus idempotents
 
@@ -38,16 +38,16 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 | Nom de table | Traitement |
 |------|---------|
-| `erik_admin_role` | INSERT IGNORE (ID fixe) |
-| `erik_admin_permission` | INSERT IGNORE (ID fixe) - 4 fois |
-| `erik_admin_role_permission` | Sous-requête WHERE NOT EXISTS |
-| `erik_platform_config` | INSERT IGNORE (ID fixe) - 2 fois |
-| `erik_language` | INSERT IGNORE (ID fixe) |
-| `erik_translation` | INSERT IGNORE (ID fixe) |
-| `erik_risk_rule` | INSERT IGNORE (ID fixe) |
-| `erik_withdraw_limit` | INSERT IGNORE (ID fixe) |
-| `erik_game_category` | INSERT IGNORE (ID fixe) |
-| `erik_country_config` | INSERT IGNORE (ID fixe) |
+| `game_admin_role` | INSERT IGNORE (ID fixe) |
+| `game_admin_permission` | INSERT IGNORE (ID fixe) - 4 fois |
+| `game_admin_role_permission` | Sous-requête WHERE NOT EXISTS |
+| `game-platform_config` | INSERT IGNORE (ID fixe) - 2 fois |
+| `game_language` | INSERT IGNORE (ID fixe) |
+| `game_translation` | INSERT IGNORE (ID fixe) |
+| `game_risk_rule` | INSERT IGNORE (ID fixe) |
+| `game_withdraw_limit` | INSERT IGNORE (ID fixe) |
+| `game_game_category` | INSERT IGNORE (ID fixe) |
+| `game_country_config` | INSERT IGNORE (ID fixe) |
 
 ### 2.2 `install/index.php` (485 lignes)
 - Routage : step1 -> step2 -> step3 -> step4 -> step5
@@ -181,7 +181,7 @@ Réussi Page déjà installé — détection install.lock correcte, messages com
 ### 6.3 Validation SQL
 ```
 Réussi les 42 noms de tables strictement identiques aux fichiers de migration d'origine
-Réussi le champ source fusionné dans l'instruction de création de erik_operation_log
+Réussi le champ source fusionné dans l'instruction de création de game_operation_log
 Réussi toutes les instructions INSERT rendues idempotentes
 Réussi la garde WHERE NOT EXISTS restaurée (cohérente avec la migration d'origine)
 ```
@@ -192,7 +192,7 @@ Réussi la garde WHERE NOT EXISTS restaurée (cohérente avec la migration d'ori
 
 | # | Problème | Sévérité | Statut |
 |---|------|--------|------|
-| 1 | L'INSERT de `erik_admin_role_permission` manque la garde `WHERE NOT EXISTS` (incohérent avec la migration d'origine) | Élevée | Corrigé |
+| 1 | L'INSERT de `game_admin_role_permission` manque la garde `WHERE NOT EXISTS` (incohérent avec la migration d'origine) | Élevée | Corrigé |
 | 2 | Les INSERT de données de seed ne sont pas idempotents (l'exécution répétée échoue) | Moyenne | Corrigé (INSERT IGNORE) |
 | 3 | La vérification de l'environnement omet l'extension `pcntl` (dépendance clé de webman) | Moyenne | Corrigé |
 | 4 | Le .env Service manque la configuration `ENCRYPTION_CIPHER` | Faible | Corrigé |
@@ -224,7 +224,7 @@ Le système d'installation est fonctionnellement complet, de bonne qualité de c
 
 Les réparations de sécurité de cette vague (fail-closed des rappels de paiement, validation JWT au démarrage, unification du préfixe de tables) **ne concernent pas le système d'installation**, aucun nouveau problème :
 
-- Après suppression du préfixe `erik_` codé en dur des modèles, les noms de tables réels restent générés de façon unifiée par `prefix=erik_` de `config/database.php`, cohérents avec les tables `erik_*` créées par install.sql, aucune modification du SQL d'installation requise
+- Après suppression du préfixe `game_` codé en dur des modèles, les noms de tables réels restent générés de façon unifiée par `prefix=game_` de `config/database.php`, cohérents avec les tables `game_*` créées par install.sql, aucune modification du SQL d'installation requise
 - La validation JWT au démarrage (refus si `JWT_SECRET_KEY` manque ou vaut la valeur par défaut) est compatible avec la clé aléatoire de 64 octets générée automatiquement par l'assistant, le processus d'installation n'a pas besoin d'ajustement
 
 Les conclusions historiques et la liste des problèmes restent inchangées.

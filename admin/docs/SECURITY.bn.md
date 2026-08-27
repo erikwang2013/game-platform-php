@@ -357,11 +357,11 @@ AdminPermission মিডলওয়্যারে বাস্তবায়
 
 **ডেটা মডেল**: User -> Role -> Permission তিন-স্তরের সম্পর্ক
 
-- `erik_admin_user` (ইউজার টেবিল)
-- `erik_admin_user_role` (ইউজার-রোল সম্পর্ক টেবিল)
-- `erik_admin_role` (রোল টেবিল)
-- `erik_admin_role_permission` (রোল-পারমিশন সম্পর্ক টেবিল)
-- `erik_admin_permission` (পারমিশন টেবিল)
+- `game_admin_user` (ইউজার টেবিল)
+- `game_admin_user_role` (ইউজার-রোল সম্পর্ক টেবিল)
+- `game_admin_role` (রোল টেবিল)
+- `game_admin_role_permission` (রোল-পারমিশন সম্পর্ক টেবিল)
+- `game_admin_permission` (পারমিশন টেবিল)
 
 **পারমিশন টাইপ**:
 | type | অর্থ | উদাহরণ |

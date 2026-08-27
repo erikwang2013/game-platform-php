@@ -218,23 +218,23 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 
 | テーブル名 | 説明 | 主要特性 |
 |------|------|---------|
-| erik_ticket | 工单 | user_id+type+status インデックス, assigned_to |
-| erik_ticket_reply | 工单返信 | ticket_id インデックス, is_admin 区分 |
-| erik_device_token | デバイストークン | user_id+platform+token 一意インデックス |
-| erik_vip_level | VIPレベル定義 | level 一意インデックス, benefits JSON |
-| erik_user_vip | ユーザーVIP記録 | user_id 一意インデックス, level+exp+total_exp |
-| erik_exp_log | 経験値ログ | user_id+source 複合インデックス |
-| erik_achievement | 成就定義 | key 一意インデックス, condition_json JSON |
-| erik_user_achievement | ユーザー成就 | user_id+achievement_id 一意インデックス |
-| erik_friend | フレンド関係 | user_id+friend_id 一意インデックス |
-| erik_message | 私信 | from_user_id+to_user_id / to_user_id+is_read |
+| game_ticket | 工单 | user_id+type+status インデックス, assigned_to |
+| game_ticket_reply | 工单返信 | ticket_id インデックス, is_admin 区分 |
+| game_device_token | デバイストークン | user_id+platform+token 一意インデックス |
+| game_vip_level | VIPレベル定義 | level 一意インデックス, benefits JSON |
+| game_user_vip | ユーザーVIP記録 | user_id 一意インデックス, level+exp+total_exp |
+| game_exp_log | 経験値ログ | user_id+source 複合インデックス |
+| game_achievement | 成就定義 | key 一意インデックス, condition_json JSON |
+| game_user_achievement | ユーザー成就 | user_id+achievement_id 一意インデックス |
+| game_friend | フレンド関係 | user_id+friend_id 一意インデックス |
+| game_message | 私信 | from_user_id+to_user_id / to_user_id+is_read |
 
 ### テーブル構造の変更
 
 | テーブル名 | 変更 |
 |------|------|
-| erik_game | +provider_config (JSON) |
-| erik_game_play_log | +round_id, +bet_amount, +win_amount |
+| game_game | +provider_config (JSON) |
+| game_game_play_log | +round_id, +bet_amount, +win_amount |
 
 **合計: install.sql 43 枚のテーブル**（エコシステム拡張の 10 枚は `install/` にあり、install.sql には未統合）。モデルは非共有：admin 46 / service 44 各1部。
 

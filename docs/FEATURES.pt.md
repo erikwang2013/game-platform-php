@@ -218,23 +218,23 @@ Janela de tempo: 5 minutos
 
 | Nome da tabela | Observação | Características-chave |
 |------|------|---------|
-| erik_ticket | tickets | índice user_id+type+status, assigned_to |
-| erik_ticket_reply | respostas de tickets | índice ticket_id, is_admin distingue |
-| erik_device_token | tokens de dispositivo | índice único user_id+platform+token |
-| erik_vip_level | definição de níveis VIP | índice único level, benefits JSON |
-| erik_user_vip | registro VIP do usuário | índice único user_id, level+exp+total_exp |
-| erik_exp_log | log de pontos de experiência | índice combinado user_id+source |
-| erik_achievement | definição de conquistas | índice único key, condition_json JSON |
-| erik_user_achievement | conquistas do usuário | índice único user_id+achievement_id |
-| erik_friend | relação de amizade | índice único user_id+friend_id |
-| erik_message | mensagens privadas | from_user_id+to_user_id / to_user_id+is_read |
+| game_ticket | tickets | índice user_id+type+status, assigned_to |
+| game_ticket_reply | respostas de tickets | índice ticket_id, is_admin distingue |
+| game_device_token | tokens de dispositivo | índice único user_id+platform+token |
+| game_vip_level | definição de níveis VIP | índice único level, benefits JSON |
+| game_user_vip | registro VIP do usuário | índice único user_id, level+exp+total_exp |
+| game_exp_log | log de pontos de experiência | índice combinado user_id+source |
+| game_achievement | definição de conquistas | índice único key, condition_json JSON |
+| game_user_achievement | conquistas do usuário | índice único user_id+achievement_id |
+| game_friend | relação de amizade | índice único user_id+friend_id |
+| game_message | mensagens privadas | from_user_id+to_user_id / to_user_id+is_read |
 
 ### Mudanças de estrutura de tabelas
 
 | Nome da tabela | Mudança |
 |------|------|
-| erik_game | +provider_config (JSON) |
-| erik_game_play_log | +round_id, +bet_amount, +win_amount |
+| game_game | +provider_config (JSON) |
+| game_game_play_log | +round_id, +bet_amount, +win_amount |
 
 **Total: 43 tabelas no install.sql** (as 10 da expansão do ecossistema ficam em `install/`, não incorporadas ao install.sql). Modelos não compartilhados: admin 46 / service 44, uma cópia cada.
 

@@ -20,7 +20,7 @@ Plateforme de jeux mondiale, universelle et internationalisée. Après inscripti
 
 ### Backend
 - PHP 8.3+, webman v2 (workerman/webman)
-- MySQL 8.0+ (préfixe de tables `erik_`, clés primaires BIGINT non auto-incrémentées)
+- MySQL 8.0+ (préfixe de tables `game_`, clés primaires BIGINT non auto-incrémentées)
 - Redis (Session / Cache / Limitation de débit)
 - ClickHouse (analyse OLAP / calcul de probabilités)
 - Elasticsearch (recherche plein texte)
@@ -142,8 +142,8 @@ L'assistant d'installation effectue automatiquement :
 
 ```bash
 # Importer le SQL fusionné en une commande
-mysql -u root -e "CREATE DATABASE IF NOT EXISTS game_platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -u root game_platform < install/install.sql
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS game-platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root game-platform < install/install.sql
 ```
 
 #### 2. Configuration des variables d'environnement

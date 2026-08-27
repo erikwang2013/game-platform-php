@@ -51,9 +51,9 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 | समस्या | मरम्मत |
 |------|------|
-| 🔴 service मॉडल तालिका नामों में `erik_` उपसर्ग (मौजूदा मानकों से टकराव) | 10 नए मॉडलों से सभी उपसर्ग हटाए गए |
-| 🟡 `AchievementService` हार्डकोडेड `erik_user_session` | service संस्करण में `user_session` किया गया |
-| 🟡 `GameController` हार्डकोडेड `erik_game_category_rel` | service संस्करण में `game_category_rel` किया गया |
+| 🔴 service मॉडल तालिका नामों में `game_` उपसर्ग (मौजूदा मानकों से टकराव) | 10 नए मॉडलों से सभी उपसर्ग हटाए गए |
+| 🟡 `AchievementService` हार्डकोडेड `game_user_session` | service संस्करण में `user_session` किया गया |
+| 🟡 `GameController` हार्डकोडेड `game_game_category_rel` | service संस्करण में `game_category_rel` किया गया |
 
 ---
 
@@ -128,9 +128,9 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 | # | समस्या | गंभीरता | मरम्मत |
 |---|------|--------|------|
-| 1 | 🔴 service मॉडल तालिका नामों में सभी `erik_` उपसर्ग (10) | उच्च | sed बैच निष्कासन |
-| 2 | 🟡 service AchievementService हार्डकोडेड `erik_user_session` | मध्यम | `user_session` किया गया |
-| 3 | 🟡 service GameController हार्डकोडेड `erik_game_category_rel` | मध्यम | `game_category_rel` किया गया |
+| 1 | 🔴 service मॉडल तालिका नामों में सभी `game_` उपसर्ग (10) | उच्च | sed बैच निष्कासन |
+| 2 | 🟡 service AchievementService हार्डकोडेड `game_user_session` | मध्यम | `user_session` किया गया |
+| 3 | 🟡 service GameController हार्डकोडेड `game_game_category_rel` | मध्यम | `game_category_rel` किया गया |
 | 4 | 🟡 route.php दोहरा बैकस्लैश + अवशिष्ट echo कथन | मध्यम | मरम्मत |
 | 5 | 🟢 Friend/Message मॉडल शुरुआत में नहीं बनाए गए थे (केवल SQL) | निम्न | बनाए गए |
 | 6 | 🟢 LeaderboardWebSocket पोर्ट वास्तव में 8790 उपयोग करता है, chat-ws 8791 पर बदला गया | निम्न | पोर्ट समायोजन |
@@ -239,7 +239,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 | कॉलबैक जमा ट्रांज़ैक्शनल | ऑर्डर अपडेट + वॉलेट जमा एक ही ट्रांज़ैक्शन में, जमा विफल होने पर रोलबैक | ✅ ठीक किया गया |
 | JWT कुंजी स्टार्टअप सत्यापन | `JWT_SECRET_KEY` अनुपलब्ध या अभी भी डिफ़ॉल्ट मान `open-admin-jwt-secret-change-in-production` होने पर स्टार्टअप अस्वीकृत, admin/service एक समान | ✅ ठीक किया गया |
 | विश्लेषण सेवा रूट | admin/config/route.php में 12 `/admin/analytics/*` रूट पंजीकृत (AnalyticsController के सभी तरीके) | ✅ ठीक किया गया |
-| तालिका उपसर्ग | 52 मॉडलों से हार्डकोडेड `erik_` उपसर्ग हटाया गया (`erik_erik_` दोहरे उपसर्ग का उन्मूलन), DB उपसर्ग एकीकृत रूप से config `prefix=erik_` द्वारा | ✅ ठीक किया गया |
+| तालिका उपसर्ग | 52 मॉडलों से हार्डकोडेड `game_` उपसर्ग हटाया गया (`game_game_` दोहरे उपसर्ग का उन्मूलन), DB उपसर्ग एकीकृत रूप से config `prefix=game_` द्वारा | ✅ ठीक किया गया |
 | दर सीमा डिग्रेडेशन | RateLimit Redis विफलता पर fail-closed (मौन अनुमति के बजाय अस्वीकार) | ✅ ठीक किया गया |
 | refresh token | service AuthController रिफ्रेश टोकन तर्क पुनर्लेखन | ✅ ठीक किया गया |
 | DepositLogService | service संस्करण पोर्ट पूरा किया गया, admin/service दोहरी प्रति में से एक का विचलन समाप्त | ✅ ठीक किया गया |

@@ -1,7 +1,7 @@
 # PHP 单元测试报告
 
 - 日期: 2026-08-27
-- 环境: PHP 8.3.7, MySQL 8.0（测试库 `game_platform_test`）, Redis 7
+- 环境: PHP 8.3.7, MySQL 8.0（测试库 `game-platform_test`）, Redis 7
 - 范围: admin / service / packages/platform-common 核心业务 service 类
 
 ## 运行命令
@@ -31,7 +31,7 @@ cd service && SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me \
 
 - admin 套件连续运行多次结果稳定（153 tests，6 errors + 1 failure 均为既有测试问题，见"发现的问题"）。
 - service 套件连续运行两次均 `OK (45 tests, 94 assertions)`。
-- 测试库 `game_platform_test` 拥有全部 43 张表（install.sql 全量导入）。
+- 测试库 `game-platform_test` 拥有全部 43 张表（install.sql 全量导入）。
 
 ## 新增测试文件
 
@@ -85,11 +85,11 @@ cd service && SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me \
 
 2. **[严重] `PlatformConfig::set()` insert 路径必然失败（影响 `FeatureFlag::enable()`）**
    `updateOrCreate` 在无现存行时走 insert，模型 `$incrementing=false` 且未生成 id，
-   `erik_platform_config.id` 列无默认值 → `SQLSTATE 1364 Field 'id' doesn't have a default value`。
+   `game-platform_config.id` 列无默认值 → `SQLSTATE 1364 Field 'id' doesn't have a default value`。
    已在 `FeatureFlagTest::enableOnMissingRowThrowsDueToMissingId` 中固化。
    影响：`FeatureFlag::enable()/disable()` 首次开启某功能开关必然抛错。
 
-3. **[中] `erik_risk_log.result` VARCHAR(20) 截断导致风控日志静默丢失**
+3. **[中] `game_risk_log.result` VARCHAR(20) 截断导致风控日志静默丢失**
    `RiskService::log()` 写入的消息（如 `IP 5.5.5.5 in blacklist` 22 字符、
    `Large amount 5000 detected` 25 字符）超过列长，insert 失败被 try/catch 吞掉。
    风控日志在真实环境中不会写入。建议 `result` 改 TEXT 或截断消息。
@@ -108,7 +108,7 @@ cd service && SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me \
    运行需导出 `ADMIN_JWT_SECRET_KEY`/`SERVICE_JWT_SECRET_KEY`，而 `.env` 使用
    `JWT_SECRET_KEY`。jwt 插件配置读取的是前者，导致不导出就无法启动测试/应用。
 
-7. **[低] 缺失表：`erik_user_vip`/`vip_level`/`exp_log`/`achievement`/`user_achievement`**
+7. **[低] 缺失表：`game_user_vip`/`vip_level`/`exp_log`/`achievement`/`user_achievement`**
    install.sql 未包含这些表，`VipService`/`AchievementService` 的 DB 路径不可测试
    （本次仅测内部纯逻辑）。若这两个服务有真实使用场景，需要补建表。
 
@@ -121,7 +121,7 @@ cd service && SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me \
 ## 基础设施改动
 
 - `admin/tests/bootstrap.php`：bootstrap 后统一重建 Eloquent 连接（修复 #1），
-  默认指向 `game_platform_test`（`DB_DATABASE_TEST` 可覆盖）。
+  默认指向 `game-platform_test`（`DB_DATABASE_TEST` 可覆盖）。
 - `service/tests/bootstrap.php`：由 3 行扩展为完整 bootstrap（autoload 文件、
   bootstrap 类、Eloquent 初始化），与 admin 相同处理；并固定测试加密密钥（#8）。
 - 两套件均在 bootstrap 之后以裸 `Capsule\Manager` + `setDefaultConnection`

@@ -51,9 +51,9 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 | Problema | Correção |
 |------|------|
-| 🔴 nomes de tabelas dos modelos do service com prefixo `erik_` (conflito com a convenção existente) | os 10 novos modelos tiveram o prefixo removido |
-| 🟡 `AchievementService` com `erik_user_session` hardcoded | versão service alterada para `user_session` |
-| 🟡 `GameController` com `erik_game_category_rel` hardcoded | versão service alterada para `game_category_rel` |
+| 🔴 nomes de tabelas dos modelos do service com prefixo `game_` (conflito com a convenção existente) | os 10 novos modelos tiveram o prefixo removido |
+| 🟡 `AchievementService` com `game_user_session` hardcoded | versão service alterada para `user_session` |
+| 🟡 `GameController` com `game_game_category_rel` hardcoded | versão service alterada para `game_category_rel` |
 
 ---
 
@@ -128,9 +128,9 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 | # | Problema | Severidade | Correção |
 |---|------|--------|------|
-| 1 | 🔴 nomes de tabelas dos modelos do service com prefixo `erik_` (10) | Alta | remoção em lote com sed |
-| 2 | 🟡 `erik_user_session` hardcoded no AchievementService do service | Média | alterado para `user_session` |
-| 3 | 🟡 `erik_game_category_rel` hardcoded no GameController do service | Média | alterado para `game_category_rel` |
+| 1 | 🔴 nomes de tabelas dos modelos do service com prefixo `game_` (10) | Alta | remoção em lote com sed |
+| 2 | 🟡 `game_user_session` hardcoded no AchievementService do service | Média | alterado para `user_session` |
+| 3 | 🟡 `game_game_category_rel` hardcoded no GameController do service | Média | alterado para `game_category_rel` |
 | 4 | 🟡 dupla barra invertida no route.php + declarações echo residuais | Média | corrigido |
 | 5 | 🟢 modelos Friend/Message inicialmente não criados (apenas SQL) | Baixa | criados |
 | 6 | 🟢 porta real do LeaderboardWebSocket é 8790, chat-ws mudou para 8791 | Baixa | ajuste de portas |
@@ -239,7 +239,7 @@ As correções de segurança e disponibilidade concluídas nesta rodada (2026-08
 | Creditação transacional no callback | atualização da ordem + crédito na carteira na mesma transação, rollback se a creditação falhar | ✅ corrigido |
 | Validação de chave JWT na inicialização | recusa iniciar se `JWT_SECRET_KEY` ausente ou ainda com o valor padrão `open-admin-jwt-secret-change-in-production`, consistente entre admin/service | ✅ corrigido |
 | Rotas do serviço de análise | admin/config/route.php registra 12 rotas `/admin/analytics/*` (todos os métodos do AnalyticsController) | ✅ corrigido |
-| Prefixo de tabelas | 52 modelos sem prefixo `erik_` hardcoded (elimina o duplo prefixo `erik_erik_`), prefixo do DB fornecido uniformemente pelo config `prefix=erik_` | ✅ corrigido |
+| Prefixo de tabelas | 52 modelos sem prefixo `game_` hardcoded (elimina o duplo prefixo `game_game_`), prefixo do DB fornecido uniformemente pelo config `prefix=game_` | ✅ corrigido |
 | Degradação do rate limit | RateLimit fail-closed quando o Redis falha (recusa em vez de deixar passar silenciosamente) | ✅ corrigido |
 | refresh token | lógica de refresh de token do AuthController do service reescrita | ✅ corrigido |
 | DepositLogService | versão do service transplantada e completada, elimina uma das duas cópias divergentes admin/service | ✅ corrigido |

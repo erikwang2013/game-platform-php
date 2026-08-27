@@ -1414,7 +1414,7 @@ Retry-After: 60
 
 1. Extraer el Token de `Authorization: Bearer <token>`
 2. Verificar la firma JWT (HS256), analizar `sub` (ID de usuario)
-3. Consultar la tabla `erik_user` para verificar que el usuario existe y status=1
+3. Consultar la tabla `game_user` para verificar que el usuario existe y status=1
 4. Inyectar `$request->userId`
 
 ### Panel de administración (AdminAuth + AdminPermission)
@@ -1761,7 +1761,7 @@ status: open / waiting / replied / closed
 ### Autenticación de Provider (ProviderAuth)
 
 1. Extraer `X-Game-Id`, `X-Timestamp`, `X-Signature` de las cabeceras de la solicitud
-2. Consultar la tabla `erik_game` para verificar que el juego existe y status=1
+2. Consultar la tabla `game_game` para verificar que el juego existe y status=1
 3. Verificar que la marca de tiempo esté dentro de la ventana de 5 minutos (anti-replay)
 4. Calcular `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)` y comparar con la firma
 5. Inyectar `$request->gameId` y `$request->game`
@@ -1953,7 +1953,7 @@ Las condiciones se validan dos veces: en el filtro de la lista de `available()` 
 La comisión por recomendación añade una segunda línea de reparto:
 - L1: el recomendador directo obtiene `referrer_bonus` (config: referral.referrer_bonus)
 - L2: el recomendador del recomendador obtiene `commission = referrer_bonus * level2_rate` (config: referral.level2_rate, predeterminado 5%)
-- Se registra en `erik_referral_commission` (level/commission_rate/commission_amount)
+- Se registra en `game_referral_commission` (level/commission_rate/commission_amount)
 
 ### 8. Política de limitación de velocidad (actualizada)
 

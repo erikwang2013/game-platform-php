@@ -74,7 +74,7 @@ API 请求/响应中传输 hashid 字符串
 ### 3.3 ওয়ালেট অপটিমিস্টিক লক
 
 ```sql
-UPDATE erik_user_wallet 
+UPDATE game_user_wallet 
 SET balance = balance + ?, version = version + 1 
 WHERE user_id = ? AND version = ?
 ```
@@ -143,7 +143,7 @@ Controller 中 __() 函数或 TranslationService::trans() 获取翻译文本
 
 ### 5.2 অনুবাদ স্টোরেজ
 
-- ডেটাবেস টেবিল `erik_translation`-এ সব অনুবাদ টেক্সট সংরক্ষিত (group + key + lang_code + value)
+- ডেটাবেস টেবিল `game_translation`-এ সব অনুবাদ টেক্সট সংরক্ষিত (group + key + lang_code + value)
 - প্রথম রিকোয়েস্টে ডেটাবেস থেকে সম্পূর্ণ Redis-এ লোড (key: `i18n:translations`, TTL: ১ ঘণ্টা)
 - পরবর্তী রিকোয়েস্ট সরাসরি Redis থেকে পড়ে, মেমরি ক্যাশ ত্বরান্বিত করে
 - অ্যাডমিন প্যানেলে অনুবাদ ম্যানেজমেন্ট পেজ যোগ করা যায় (ফুল ভার্সনে বাস্তবায়িত)
@@ -196,7 +196,7 @@ warn   → 记录日志，继续执行
 block  → 拒绝操作
 ```
 
-নিয়ম `erik_risk_rule` টেবিলে সংরক্ষিত, কনফিগ JSON আকারে, থ্রেশহোল্ড ও অ্যাকশন ডাইনামিকভাবে সামঞ্জস্য করা যায়।
+নিয়ম `game_risk_rule` টেবিলে সংরক্ষিত, কনফিগ JSON আকারে, থ্রেশহোল্ড ও অ্যাকশন ডাইনামিকভাবে সামঞ্জস্য করা যায়।
 
 ### 6.2 KYC রিয়েল-নেম ভেরিফিকেশন
 

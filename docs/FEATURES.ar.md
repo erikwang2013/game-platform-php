@@ -218,23 +218,23 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 
 | اسم الجدول | الوصف | الميزات الرئيسية |
 |------|------|---------|
-| erik_ticket | التذاكر | فهرس user_id+type+status، assigned_to |
-| erik_ticket_reply | ردود التذاكر | فهرس ticket_id، تمييز is_admin |
-| erik_device_token | رموز الأجهزة | فهرس فريد user_id+platform+token |
-| erik_vip_level | تعريف مستويات VIP | فهرس فريد level، benefits JSON |
-| erik_user_vip | سجلات VIP للمستخدمين | فهرس فريد user_id، level+exp+total_exp |
-| erik_exp_log | سجلات الخبرة | فهرس مركب user_id+source |
-| erik_achievement | تعريفات الإنجازات | فهرس فريد key، condition_json JSON |
-| erik_user_achievement | إنجازات المستخدمين | فهرس فريد user_id+achievement_id |
-| erik_friend | علاقات الصداقة | فهرس فريد user_id+friend_id |
-| erik_message | الرسائل الخاصة | from_user_id+to_user_id / to_user_id+is_read |
+| game_ticket | التذاكر | فهرس user_id+type+status، assigned_to |
+| game_ticket_reply | ردود التذاكر | فهرس ticket_id، تمييز is_admin |
+| game_device_token | رموز الأجهزة | فهرس فريد user_id+platform+token |
+| game_vip_level | تعريف مستويات VIP | فهرس فريد level، benefits JSON |
+| game_user_vip | سجلات VIP للمستخدمين | فهرس فريد user_id، level+exp+total_exp |
+| game_exp_log | سجلات الخبرة | فهرس مركب user_id+source |
+| game_achievement | تعريفات الإنجازات | فهرس فريد key، condition_json JSON |
+| game_user_achievement | إنجازات المستخدمين | فهرس فريد user_id+achievement_id |
+| game_friend | علاقات الصداقة | فهرس فريد user_id+friend_id |
+| game_message | الرسائل الخاصة | from_user_id+to_user_id / to_user_id+is_read |
 
 ### تغييرات بنية الجداول
 
 | اسم الجدول | التغيير |
 |------|------|
-| erik_game | +provider_config (JSON) |
-| erik_game_play_log | +round_id، +bet_amount، +win_amount |
+| game_game | +provider_config (JSON) |
+| game_game_play_log | +round_id، +bet_amount، +win_amount |
 
 **الإجمالي: 43 جدولًا في install.sql** (جداول التوسعة البيئية العشرة في `install/`، غير مدمجة في install.sql). النماذج غير مشتركة: نسخة لكل من admin 46 / service 44.
 

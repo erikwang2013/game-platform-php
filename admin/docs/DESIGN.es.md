@@ -132,34 +132,34 @@ Controller::method()
 ### 3.1 Relaciones ER
 
 ```
-erik_admin_user ──┬── erik_admin_user_role ──┬── erik_admin_role
+game_admin_user ──┬── game_admin_user_role ──┬── game_admin_role
   (用户)           │    (用户-角色关联)         │     (角色)
                   │                          │
-                  │                    erik_admin_role_permission
+                  │                    game_admin_role_permission
                   │                     (角色-权限关联)
                   │                          │
                   │                          ▼
-                  │                    erik_admin_permission
+                  │                    game_admin_permission
                   │                      (权限/菜单)
                   │
                   ▼
-           erik_operation_log
+           game_operation_log
              (操作日志)
 
-erik_system_config (系统配置) — 独立表
+game_system_config (系统配置) — 独立表
 ```
 
 ### 3.2 Estructura de las tablas principales
 
 | Nombre de tabla | N.º de campos | Descripción |
 |------|-------|------|
-| `erik_admin_user` | 14 | Usuarios de administración; phone/email/id_card almacenados cifrados, soporta borrado lógico |
-| `erik_admin_role` | 7 | Roles; slug único |
-| `erik_admin_permission` | 10 | Árbol de permisos (parent_id auto-referenciado), type: 1=menú 2=botón 3=API |
-| `erik_admin_user_role` | 2 | Tabla intermedia muchos-a-muchos usuario-rol |
-| `erik_admin_role_permission` | 2 | Tabla intermedia muchos-a-muchos rol-permiso |
-| `erik_system_config` | 8 | Configuración clave-valor; group+key únicos combinados |
-| `erik_operation_log` | 9 | Registro de auditoría de operaciones (incluye source de origen) |
+| `game_admin_user` | 14 | Usuarios de administración; phone/email/id_card almacenados cifrados, soporta borrado lógico |
+| `game_admin_role` | 7 | Roles; slug único |
+| `game_admin_permission` | 10 | Árbol de permisos (parent_id auto-referenciado), type: 1=menú 2=botón 3=API |
+| `game_admin_user_role` | 2 | Tabla intermedia muchos-a-muchos usuario-rol |
+| `game_admin_role_permission` | 2 | Tabla intermedia muchos-a-muchos rol-permiso |
+| `game_system_config` | 8 | Configuración clave-valor; group+key únicos combinados |
+| `game_operation_log` | 9 | Registro de auditoría de operaciones (incluye source de origen) |
 
 ### 3.3 Estándar de claves primarias
 

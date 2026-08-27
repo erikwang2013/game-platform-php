@@ -27,7 +27,7 @@ Languages: **中文** · [English](CHANGELOG.en.md) · [한국어](CHANGELOG.ko.
 ### 可用性
 
 - admin 分析サービスの 12 本の `/admin/analytics/*` ルートをマウント。
-- モデルからハードコード `erik_` プレフィックスを除去；DepositLog 監査を永続化；Test model 削除。
+- モデルからハードコード `game_` プレフィックスを除去；DepositLog 監査を永続化；Test model 削除。
 
 ### 可観測性
 

@@ -24,7 +24,7 @@ Languages: **中文** · [English](2026-05-22-game-platform-design.en.md) · [�
 
 ### バックエンド
 - PHP 8.3+, webman v2 (workerman/webman)
-- データベース: MySQL 8.0+、テーブルプレフィックス `erik_`
+- データベース: MySQL 8.0+、テーブルプレフィックス `game_`
 - 主キー: BIGINT 非自動採番、`erikwang2013/snowflake-php` が生成
 - API 層 ID 暗号化/復号: `erikwang2013/hashids`
 - JWT 認証: `erikwang2013/jwt-webman`
@@ -142,47 +142,47 @@ game-platform-php/
 
 | 番号 | テーブル名 | 説明 |
 |------|------|------|
-| 1 | `erik_user` | C端ユーザー |
-| 2 | `erik_user_wallet` | プラットフォームコインウォレット |
-| 3 | `erik_user_game_wallet` | ゲームコインウォレット |
-| 4 | `erik_game` | ゲーム |
-| 5 | `erik_game_currency` | ゲーム通貨 |
-| 6 | `erik_deposit_order` | チャージ注文 |
-| 7 | `erik_withdraw_order` | 出金注文 |
-| 8 | `erik_exchange_record` | 交換記録 |
-| 9 | `erik_transaction` | プラットフォーム流水 |
-| 10 | `erik_payment_method` | 決済方法 |
-| 11 | `erik_announcement` | 公告 |
-| 12 | `erik_platform_config` | プラットフォーム設定（既存の erik_system_config を拡張） |
+| 1 | `game_user` | C端ユーザー |
+| 2 | `game_user_wallet` | プラットフォームコインウォレット |
+| 3 | `game_user_game_wallet` | ゲームコインウォレット |
+| 4 | `game_game` | ゲーム |
+| 5 | `game_game_currency` | ゲーム通貨 |
+| 6 | `game_deposit_order` | チャージ注文 |
+| 7 | `game_withdraw_order` | 出金注文 |
+| 8 | `game_exchange_record` | 交換記録 |
+| 9 | `game_transaction` | プラットフォーム流水 |
+| 10 | `game_payment_method` | 決済方法 |
+| 11 | `game_announcement` | 公告 |
+| 12 | `game-platform_config` | プラットフォーム設定（既存の game_system_config を拡張） |
 
 ### 5.2 標準版で追加（10枚）
 
 | 番号 | テーブル名 | 説明 |
 |------|------|------|
-| 13 | `erik_user_identity` | 実名/KYC |
-| 14 | `erik_user_oauth` | サードパーティログイン |
-| 15 | `erik_user_payment_account` | 入金口座 |
-| 16 | `erik_user_session` | ログインセッション |
-| 17 | `erik_game_server` | ゲーム区サーバー |
-| 18 | `erik_game_play_log` | ゲーム記録 |
-| 19 | `erik_withdraw_limit` | 出金制限ルール |
-| 20 | `erik_risk_rule` | リスク管理ルール |
-| 21 | `erik_risk_log` | リスク管理発動記録 |
-| 22 | `erik_stat_daily` | 日次統計スナップショット |
+| 13 | `game_user_identity` | 実名/KYC |
+| 14 | `game_user_oauth` | サードパーティログイン |
+| 15 | `game_user_payment_account` | 入金口座 |
+| 16 | `game_user_session` | ログインセッション |
+| 17 | `game_game_server` | ゲーム区サーバー |
+| 18 | `game_game_play_log` | ゲーム記録 |
+| 19 | `game_withdraw_limit` | 出金制限ルール |
+| 20 | `game_risk_rule` | リスク管理ルール |
+| 21 | `game_risk_log` | リスク管理発動記録 |
+| 22 | `game_stat_daily` | 日次統計スナップショット |
 
 ### 5.3 完全版で追加（8枚）
 
 | 番号 | テーブル名 | 説明 |
 |------|------|------|
-| 23 | `erik_game_category` | ゲームカテゴリ |
-| 24 | `erik_game_category_rel` | ゲーム-カテゴリ関連 |
-| 25 | `erik_leaderboard` | ランキング |
-| 26 | `erik_coupon` | クーポン |
-| 27 | `erik_user_coupon` | ユーザークーポン取得 |
-| 28 | `erik_language` | 言語定義 |
-| 29 | `erik_translation` | 翻訳テキスト |
-| 30 | `erik_country_config` | 国家設定 |
-| 31 | `erik_platform_revenue` | プラットフォーム収益記録 |
+| 23 | `game_game_category` | ゲームカテゴリ |
+| 24 | `game_game_category_rel` | ゲーム-カテゴリ関連 |
+| 25 | `game_leaderboard` | ランキング |
+| 26 | `game_coupon` | クーポン |
+| 27 | `game_user_coupon` | ユーザークーポン取得 |
+| 28 | `game_language` | 言語定義 |
+| 29 | `game_translation` | 翻訳テキスト |
+| 30 | `game_country_config` | 国家設定 |
+| 31 | `game-platform_revenue` | プラットフォーム収益記録 |
 
 ---
 
@@ -286,7 +286,7 @@ flowchart TB
     end
 
     subgraph "存储层"
-        E1[("MySQL 8.0<br/>erik_ 前缀")]
+        E1[("MySQL 8.0<br/>game_ 前缀")]
         E2[("Redis<br/>Session / 缓存 / 限流")]
         E3[("Elasticsearch<br/>全文检索")]
     end

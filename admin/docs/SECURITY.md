@@ -357,11 +357,11 @@ AdminPermission 中间件实现。
 
 **数据模型**：User -> Role -> Permission 三层关联
 
-- `erik_admin_user` (用户表)
-- `erik_admin_user_role` (用户-角色关联表)
-- `erik_admin_role` (角色表)
-- `erik_admin_role_permission` (角色-权限关联表)
-- `erik_admin_permission` (权限表)
+- `game_admin_user` (用户表)
+- `game_admin_user_role` (用户-角色关联表)
+- `game_admin_role` (角色表)
+- `game_admin_role_permission` (角色-权限关联表)
+- `game_admin_permission` (权限表)
 
 **权限类型**：
 | type | 含义 | 示例 |

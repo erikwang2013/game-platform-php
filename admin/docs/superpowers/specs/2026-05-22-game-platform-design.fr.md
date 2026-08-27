@@ -24,7 +24,7 @@ Plateforme mondiale universelle d'agrégation de jeux. L'utilisateur s'inscrit p
 
 ### Backend
 - PHP 8.3+, webman v2 (workerman/webman)
-- Base de données : MySQL 8.0+, préfixe de tables `erik_`
+- Base de données : MySQL 8.0+, préfixe de tables `game_`
 - Clés primaires : BIGINT non auto-incrémentées, générées par `erikwang2013/snowflake-php`
 - Chiffrement/déchiffrement des ID au niveau API : `erikwang2013/hashids`
 - Authentification JWT : `erikwang2013/jwt-webman`
@@ -142,47 +142,47 @@ L'utilisateur lance un retrait
 
 | N° | Table | Description |
 |------|------|------|
-| 1 | `erik_user` | Utilisateurs C |
-| 2 | `erik_user_wallet` | Portefeuille de devises de plateforme |
-| 3 | `erik_user_game_wallet` | Portefeuille de devises de jeu |
-| 4 | `erik_game` | Jeux |
-| 5 | `erik_game_currency` | Devises de jeu |
-| 6 | `erik_deposit_order` | Commandes de recharge |
-| 7 | `erik_withdraw_order` | Commandes de retrait |
-| 8 | `erik_exchange_record` | Enregistrements d'échange |
-| 9 | `erik_transaction` | Flux de la plateforme |
-| 10 | `erik_payment_method` | Modes de paiement |
-| 11 | `erik_announcement` | Annonces |
-| 12 | `erik_platform_config` | Configuration de la plateforme (extension de erik_system_config existant) |
+| 1 | `game_user` | Utilisateurs C |
+| 2 | `game_user_wallet` | Portefeuille de devises de plateforme |
+| 3 | `game_user_game_wallet` | Portefeuille de devises de jeu |
+| 4 | `game_game` | Jeux |
+| 5 | `game_game_currency` | Devises de jeu |
+| 6 | `game_deposit_order` | Commandes de recharge |
+| 7 | `game_withdraw_order` | Commandes de retrait |
+| 8 | `game_exchange_record` | Enregistrements d'échange |
+| 9 | `game_transaction` | Flux de la plateforme |
+| 10 | `game_payment_method` | Modes de paiement |
+| 11 | `game_announcement` | Annonces |
+| 12 | `game-platform_config` | Configuration de la plateforme (extension de game_system_config existant) |
 
 ### 5.2 Ajouts de l'édition standard (10)
 
 | N° | Table | Description |
 |------|------|------|
-| 13 | `erik_user_identity` | Identité réelle/KYC |
-| 14 | `erik_user_oauth` | Connexion tierce |
-| 15 | `erik_user_payment_account` | Comptes de réception |
-| 16 | `erik_user_session` | Sessions de connexion |
-| 17 | `erik_game_server` | Serveurs de jeux |
-| 18 | `erik_game_play_log` | Historique de jeu |
-| 19 | `erik_withdraw_limit` | Règles de limites de retrait |
-| 20 | `erik_risk_rule` | Règles de gestion des risques |
-| 21 | `erik_risk_log` | Enregistrements de déclenchement des risques |
-| 22 | `erik_stat_daily` | Instantanés des statistiques quotidiennes |
+| 13 | `game_user_identity` | Identité réelle/KYC |
+| 14 | `game_user_oauth` | Connexion tierce |
+| 15 | `game_user_payment_account` | Comptes de réception |
+| 16 | `game_user_session` | Sessions de connexion |
+| 17 | `game_game_server` | Serveurs de jeux |
+| 18 | `game_game_play_log` | Historique de jeu |
+| 19 | `game_withdraw_limit` | Règles de limites de retrait |
+| 20 | `game_risk_rule` | Règles de gestion des risques |
+| 21 | `game_risk_log` | Enregistrements de déclenchement des risques |
+| 22 | `game_stat_daily` | Instantanés des statistiques quotidiennes |
 
 ### 5.3 Ajouts de l'édition complète (8)
 
 | N° | Table | Description |
 |------|------|------|
-| 23 | `erik_game_category` | Catégories de jeux |
-| 24 | `erik_game_category_rel` | Association jeux-catégories |
-| 25 | `erik_leaderboard` | Classements |
-| 26 | `erik_coupon` | Coupons |
-| 27 | `erik_user_coupon` | Coupons réclamés par les utilisateurs |
-| 28 | `erik_language` | Définitions de langues |
-| 29 | `erik_translation` | Textes de traduction |
-| 30 | `erik_country_config` | Configuration des pays |
-| 31 | `erik_platform_revenue` | Enregistrements de revenus de la plateforme |
+| 23 | `game_game_category` | Catégories de jeux |
+| 24 | `game_game_category_rel` | Association jeux-catégories |
+| 25 | `game_leaderboard` | Classements |
+| 26 | `game_coupon` | Coupons |
+| 27 | `game_user_coupon` | Coupons réclamés par les utilisateurs |
+| 28 | `game_language` | Définitions de langues |
+| 29 | `game_translation` | Textes de traduction |
+| 30 | `game_country_config` | Configuration des pays |
+| 31 | `game-platform_revenue` | Enregistrements de revenus de la plateforme |
 
 ---
 
@@ -286,7 +286,7 @@ flowchart TB
     end
 
     subgraph "Couche stockage"
-        E1[("MySQL 8.0<br/>préfixe erik_")]
+        E1[("MySQL 8.0<br/>préfixe game_")]
         E2[("Redis<br/>Session / cache / rate-limit")]
         E3[("Elasticsearch<br/>recherche plein texte")]
     end

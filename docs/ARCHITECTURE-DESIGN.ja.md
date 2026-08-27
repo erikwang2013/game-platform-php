@@ -74,7 +74,7 @@ API 请求/响应中传输 hashid 字符串
 ### 3.3 ウォレット楽観ロック
 
 ```sql
-UPDATE erik_user_wallet 
+UPDATE game_user_wallet 
 SET balance = balance + ?, version = version + 1 
 WHERE user_id = ? AND version = ?
 ```
@@ -143,7 +143,7 @@ Controller 中 __() 函数或 TranslationService::trans() 获取翻译文本
 
 ### 5.2 翻訳の保存
 
-- データベーステーブル `erik_translation` に全翻訳テキストを保存（group + key + lang_code + value）
+- データベーステーブル `game_translation` に全翻訳テキストを保存（group + key + lang_code + value）
 - 初回リクエスト時にデータベースから全量を Redis にロード（key: `i18n:translations`、TTL: 1時間）
 - 以降のリクエストは Redis から直接読み取り、メモリキャッシュで高速化
 - 管理バックエンドで翻訳管理ページを拡張可能（完全版で実装）
@@ -196,7 +196,7 @@ warn   → 记录日志，继续执行
 block  → 拒绝操作
 ```
 
-ルールは `erik_risk_rule` テーブルに保存され、設定は JSON で、閾値とアクションを動的に調整できる。
+ルールは `game_risk_rule` テーブルに保存され、設定は JSON で、閾値とアクションを動的に調整できる。
 
 ### 6.2 KYC 実名認証
 

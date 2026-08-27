@@ -74,7 +74,7 @@ API 请求/响应中传输 hashid 字符串
 ### 3.3 钱包乐观锁
 
 ```sql
-UPDATE erik_user_wallet 
+UPDATE game_user_wallet 
 SET balance = balance + ?, version = version + 1 
 WHERE user_id = ? AND version = ?
 ```
@@ -143,7 +143,7 @@ Controller 中 __() 函数或 TranslationService::trans() 获取翻译文本
 
 ### 5.2 翻译存储
 
-- 数据库表 `erik_translation` 存储所有翻译文本（group + key + lang_code + value）
+- 数据库表 `game_translation` 存储所有翻译文本（group + key + lang_code + value）
 - 首次请求从数据库全量加载到 Redis（key: `i18n:translations`，TTL: 1小时）
 - 后续请求直接从 Redis 读取，内存缓存加速
 - 管理后台可扩展翻译管理页面（完整版实现）
@@ -196,7 +196,7 @@ warn   → 记录日志，继续执行
 block  → 拒绝操作
 ```
 
-规则存储在 `erik_risk_rule` 表，配置为 JSON，可动态调整阈值和动作。
+规则存储在 `game_risk_rule` 表，配置为 JSON，可动态调整阈值和动作。
 
 ### 6.2 KYC 实名认证
 

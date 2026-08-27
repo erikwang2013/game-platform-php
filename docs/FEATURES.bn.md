@@ -218,23 +218,23 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 
 | টেবিলের নাম | বিবরণ | মূল বৈশিষ্ট্য |
 |------|------|---------|
-| erik_ticket | টিকিট | user_id+type+status ইনডেক্স, assigned_to |
-| erik_ticket_reply | টিকিট রিপ্লাই | ticket_id ইনডেক্স, is_admin দিয়ে পার্থক্য |
-| erik_device_token | ডিভাইস টোকেন | user_id+platform+token ইউনিক ইনডেক্স |
-| erik_vip_level | VIP লেভেল সংজ্ঞা | level ইউনিক ইনডেক্স, benefits JSON |
-| erik_user_vip | ইউজার VIP রেকর্ড | user_id ইউনিক ইনডেক্স, level+exp+total_exp |
-| erik_exp_log | অভিজ্ঞতা পয়েন্ট লগ | user_id+source কম্বো ইনডেক্স |
-| erik_achievement | অ্যাচিভমেন্ট সংজ্ঞা | key ইউনিক ইনডেক্স, condition_json JSON |
-| erik_user_achievement | ইউজার অ্যাচিভমেন্ট | user_id+achievement_id ইউনিক ইনডেক্স |
-| erik_friend | ফ্রেন্ড সম্পর্ক | user_id+friend_id ইউনিক ইনডেক্স |
-| erik_message | প্রাইভেট মেসেজ | from_user_id+to_user_id / to_user_id+is_read |
+| game_ticket | টিকিট | user_id+type+status ইনডেক্স, assigned_to |
+| game_ticket_reply | টিকিট রিপ্লাই | ticket_id ইনডেক্স, is_admin দিয়ে পার্থক্য |
+| game_device_token | ডিভাইস টোকেন | user_id+platform+token ইউনিক ইনডেক্স |
+| game_vip_level | VIP লেভেল সংজ্ঞা | level ইউনিক ইনডেক্স, benefits JSON |
+| game_user_vip | ইউজার VIP রেকর্ড | user_id ইউনিক ইনডেক্স, level+exp+total_exp |
+| game_exp_log | অভিজ্ঞতা পয়েন্ট লগ | user_id+source কম্বো ইনডেক্স |
+| game_achievement | অ্যাচিভমেন্ট সংজ্ঞা | key ইউনিক ইনডেক্স, condition_json JSON |
+| game_user_achievement | ইউজার অ্যাচিভমেন্ট | user_id+achievement_id ইউনিক ইনডেক্স |
+| game_friend | ফ্রেন্ড সম্পর্ক | user_id+friend_id ইউনিক ইনডেক্স |
+| game_message | প্রাইভেট মেসেজ | from_user_id+to_user_id / to_user_id+is_read |
 
 ### টেবিল স্ট্রাকচার পরিবর্তন
 
 | টেবিলের নাম | পরিবর্তন |
 |------|------|
-| erik_game | +provider_config (JSON) |
-| erik_game_play_log | +round_id, +bet_amount, +win_amount |
+| game_game | +provider_config (JSON) |
+| game_game_play_log | +round_id, +bet_amount, +win_amount |
 
 **মোট: install.sql ৪৩টি টেবিল** (ইকোসিস্টেম এক্সটেনশনের ১০টি `install/`-এ, install.sql-এ একীভূত নয়)। মডেল শেয়ার্ড নয়: admin 46 / service 44 প্রত্যেকে আলাদা।
 

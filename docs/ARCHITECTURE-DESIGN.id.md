@@ -74,7 +74,7 @@ Koin platform dan koin game secara seragam menggunakan presisi `DECIMAL(18,4)`, 
 ### 3.3 Kunci Optimis Dompet
 
 ```sql
-UPDATE erik_user_wallet 
+UPDATE game_user_wallet 
 SET balance = balance + ?, version = version + 1 
 WHERE user_id = ? AND version = ?
 ```
@@ -143,7 +143,7 @@ Fungsi __() di Controller atau TranslationService::trans() mendapatkan teks terj
 
 ### 5.2 Penyimpanan Terjemahan
 
-- Tabel database `erik_translation` menyimpan semua teks terjemahan (group + key + lang_code + value)
+- Tabel database `game_translation` menyimpan semua teks terjemahan (group + key + lang_code + value)
 - Permintaan pertama memuat semua data dari database ke Redis (key: `i18n:translations`, TTL: 1 jam)
 - Permintaan berikutnya langsung membaca dari Redis, cache memori mempercepat
 - Backend administrasi dapat memperluas halaman manajemen terjemahan (diimplementasikan di versi lengkap)
@@ -196,7 +196,7 @@ warn   → catat log, lanjutkan eksekusi
 block  → tolak operasi
 ```
 
-Aturan disimpan di tabel `erik_risk_rule`, dikonfigurasi sebagai JSON, ambang dan tindakan dapat disesuaikan secara dinamis.
+Aturan disimpan di tabel `game_risk_rule`, dikonfigurasi sebagai JSON, ambang dan tindakan dapat disesuaikan secara dinamis.
 
 ### 6.2 Verifikasi Nama Asli KYC
 

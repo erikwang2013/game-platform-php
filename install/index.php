@@ -49,7 +49,7 @@ function handleStep3(Installer $installer): void
         $db = [
             'host' => $_POST['db_host'] ?? '127.0.0.1',
             'port' => (int)($_POST['db_port'] ?? 3306),
-            'database' => $_POST['db_database'] ?? 'game_platform',
+            'database' => $_POST['db_database'] ?? 'game-platform',
             'username' => $_POST['db_username'] ?? 'root',
             'password' => $_POST['db_password'] ?? '',
         ];
@@ -75,7 +75,7 @@ function handleStep4(Installer $installer): void
     $db = [
         'host' => $_POST['db_host'] ?? '127.0.0.1',
         'port' => (int)($_POST['db_port'] ?? 3306),
-        'database' => $_POST['db_database'] ?? 'game_platform',
+        'database' => $_POST['db_database'] ?? 'game-platform',
         'username' => $_POST['db_username'] ?? 'root',
         'password' => $_POST['db_password'] ?? '',
     ];
@@ -247,7 +247,7 @@ function step2Page(string $error = '', array $prev = []): string
             </div>
             <div class="form-group">
                 <label for="db_database">数据库名称</label>
-                <input type="text" id="db_database" name="db_database" value="{$v('db_database', 'game_platform')}" required>
+                <input type="text" id="db_database" name="db_database" value="{$v('db_database', 'game-platform')}" required>
                 <span class="form-hint">如果数据库不存在，安装向导将自动创建</span>
             </div>
             <div class="form-group">
@@ -279,7 +279,7 @@ function step2Page(string $error = '', array $prev = []): string
                 const resp = await fetch('?action=test-db', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
                 const json = await resp.json();
                 if (json.success) {
-                    r.innerHTML = '<div class="alert alert-success">✓ 连接成功 — MySQL ' + json.version + (json.db_created ? '（数据库已自动创建）' : '') + (json.existing_tables > 0 ? ' ⚠ 检测到已有 ' + json.existing_tables + ' 张 erik_ 表，继续安装将覆盖已有数据' : '') + '</div>';
+                    r.innerHTML = '<div class="alert alert-success">✓ 连接成功 — MySQL ' + json.version + (json.db_created ? '（数据库已自动创建）' : '') + (json.existing_tables > 0 ? ' ⚠ 检测到已有 ' + json.existing_tables + ' 张 game_ 表，继续安装将覆盖已有数据' : '') + '</div>';
                 } else {
                     r.innerHTML = '<div class="alert alert-error">✗ ' + json.message + '</div>';
                 }
@@ -300,7 +300,7 @@ function step3Page(array $db, array $dbResult, string $error = '', string $prevA
 
     $existingWarning = '';
     if ($dbResult['existing_tables'] > 0) {
-        $existingWarning = '<div class="alert alert-warning">⚠ 检测到数据库中已有 ' . $dbResult['existing_tables'] . ' 张 erik_ 表，继续安装将覆盖已有数据！</div>';
+        $existingWarning = '<div class="alert alert-warning">⚠ 检测到数据库中已有 ' . $dbResult['existing_tables'] . ' 张 game_ 表，继续安装将覆盖已有数据！</div>';
     }
 
     return <<<HTML

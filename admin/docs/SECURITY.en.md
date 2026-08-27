@@ -357,11 +357,11 @@ Implemented by the AdminPermission middleware.
 
 **Data model**: three-layer User -> Role -> Permission association
 
-- `erik_admin_user` (user table)
-- `erik_admin_user_role` (user-role junction table)
-- `erik_admin_role` (role table)
-- `erik_admin_role_permission` (role-permission junction table)
-- `erik_admin_permission` (permission table)
+- `game_admin_user` (user table)
+- `game_admin_user_role` (user-role junction table)
+- `game_admin_role` (role table)
+- `game_admin_role_permission` (role-permission junction table)
+- `game_admin_permission` (permission table)
 
 **Permission types**:
 | type | Meaning | Example |

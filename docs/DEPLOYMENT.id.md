@@ -99,7 +99,7 @@ docker-compose logs -f
 ```bash
 # File migrasi dieksekusi otomatis saat MySQL pertama kali dimulai
 # Atau eksekusi manual:
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < install/install.sql
+docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform < install/install.sql
 ```
 
 ### 2.4 Persistensi Data
@@ -115,10 +115,10 @@ Volume data dibuat otomatis, tidak perlu dikelola manual:
 Backup:
 ```bash
 # Backup MySQL
-docker exec game-platform-mysql mysqldump -uroot -p${DB_PASSWORD} game_platform | gzip > backup_$(date +%Y%m%d).sql.gz
+docker exec game-platform-mysql mysqldump -uroot -p${DB_PASSWORD} game-platform | gzip > backup_$(date +%Y%m%d).sql.gz
 
 # Restore
-gunzip < backup_20260101.sql.gz | docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform
+gunzip < backup_20260101.sql.gz | docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform
 ```
 
 ---
@@ -166,8 +166,8 @@ APP_DEBUG=false
 
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=game_platform
-DB_USERNAME=game_platform
+DB_DATABASE=game-platform
+DB_USERNAME=game-platform
 DB_PASSWORD=<kata sandi kuat>
 
 JWT_SECRET=<string acak 64 karakter>
@@ -506,7 +506,7 @@ tail -f runtime/logs/workerman.log
 
 ```bash
 # Uji koneksi
-mysql -h 127.0.0.1 -u game_platform -p game_platform -e "SELECT 1"
+mysql -h 127.0.0.1 -u game-platform -p game-platform -e "SELECT 1"
 
 # Periksa konfigurasi .env
 grep DB_ admin/.env
@@ -556,7 +556,7 @@ cd admin && composer install --no-dev --optimize-autoloader
 cd ../service && composer install --no-dev --optimize-autoloader
 
 # 3. Jalankan migrasi baru (jika ada)
-mysql -u game_platform -p game_platform < install/File-migrasi-baru.sql
+mysql -u game-platform -p game-platform < install/File-migrasi-baru.sql
 
 # 4. Restart halus (tidak menghentikan layanan)
 cd /opt/game-platform/admin && php start.php reload

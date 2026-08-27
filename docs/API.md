@@ -1414,7 +1414,7 @@ Retry-After: 60
 
 1. 从 `Authorization: Bearer <token>` 提取 Token
 2. JWT 验签（HS256），解析 `sub`（用户ID）
-3. 查询 `erik_user` 表验证用户存在且 status=1
+3. 查询 `game_user` 表验证用户存在且 status=1
 4. 注入 `$request->userId`
 
 ### 管理后台 (AdminAuth + AdminPermission)
@@ -1761,7 +1761,7 @@ status: open / waiting / replied / closed
 ### Provider 认证 (ProviderAuth)
 
 1. 从请求头提取 `X-Game-Id`、`X-Timestamp`、`X-Signature`
-2. 查询 `erik_game` 表验证游戏存在且 status=1
+2. 查询 `game_game` 表验证游戏存在且 status=1
 3. 验证时间戳在5分钟窗口内 (防重放)
 4. 计算 `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)` 与签名比对
 5. 注入 `$request->gameId` 和 `$request->game`
@@ -1953,7 +1953,7 @@ status: open / waiting / replied / closed
 推荐返佣增加二级分润:
 - L1: 直接推荐人获得 `referrer_bonus` (配置: referral.referrer_bonus)
 - L2: 推荐人的推荐人获得 `commission = referrer_bonus * level2_rate` (配置: referral.level2_rate, 默认 5%)
-- 记录 `erik_referral_commission` (level/commission_rate/commission_amount)
+- 记录 `game_referral_commission` (level/commission_rate/commission_amount)
 
 ### 8. 限流策略（更新）
 

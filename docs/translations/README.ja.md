@@ -20,7 +20,7 @@ Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](R
 
 ### バックエンド
 - PHP 8.3+, webman v2 (workerman/webman)
-- MySQL 8.0+ (テーブルプレフィックス `erik_`、BIGINT 非オートインクリメント主キー)
+- MySQL 8.0+ (テーブルプレフィックス `game_`、BIGINT 非オートインクリメント主キー)
 - Redis (セッション / キャッシュ / レート制限)
 - ClickHouse (OLAP 分析 / 確率計算)
 - Elasticsearch (全文検索)
@@ -142,8 +142,8 @@ rm -rf install/
 
 ```bash
 # 統合SQLを一括インポート
-mysql -u root -e "CREATE DATABASE IF NOT EXISTS game_platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -u root game_platform < install/install.sql
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS game-platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root game-platform < install/install.sql
 ```
 
 #### 2. 環境変数の設定

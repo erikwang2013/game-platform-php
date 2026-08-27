@@ -28,9 +28,9 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 ### 2.1 `install/install.sql` (988 Zeilen)
 - 8 ursprüngliche Migrationsdateien zusammengeführt
-- 42 Datenbanktabellen mit `erik_`-Präfix (CREATE TABLE IF NOT EXISTS)
+- 42 Datenbanktabellen mit `game_`-Präfix (CREATE TABLE IF NOT EXISTS)
 - 13 INSERT-IGNORE-Seed-Datenblöcke
-- `source`-Feld von `erik_operation_log` in die CREATE-TABLE-Anweisung zusammengeführt (kein ALTER TABLE nötig)
+- `source`-Feld von `game_operation_log` in die CREATE-TABLE-Anweisung zusammengeführt (kein ALTER TABLE nötig)
 - In Transaktionen verpackt (START TRANSACTION / COMMIT)
 - Alle INSERTs idempotent behandelt
 
@@ -38,16 +38,16 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 | Tabellenname | Behandlung |
 |------|---------|
-| `erik_admin_role` | INSERT IGNORE (feste ID) |
-| `erik_admin_permission` | INSERT IGNORE (feste ID) - 4x |
-| `erik_admin_role_permission` | WHERE-NOT-EXISTS-Subquery |
-| `erik_platform_config` | INSERT IGNORE (feste ID) - 2x |
-| `erik_language` | INSERT IGNORE (feste ID) |
-| `erik_translation` | INSERT IGNORE (feste ID) |
-| `erik_risk_rule` | INSERT IGNORE (feste ID) |
-| `erik_withdraw_limit` | INSERT IGNORE (feste ID) |
-| `erik_game_category` | INSERT IGNORE (feste ID) |
-| `erik_country_config` | INSERT IGNORE (feste ID) |
+| `game_admin_role` | INSERT IGNORE (feste ID) |
+| `game_admin_permission` | INSERT IGNORE (feste ID) - 4x |
+| `game_admin_role_permission` | WHERE-NOT-EXISTS-Subquery |
+| `game-platform_config` | INSERT IGNORE (feste ID) - 2x |
+| `game_language` | INSERT IGNORE (feste ID) |
+| `game_translation` | INSERT IGNORE (feste ID) |
+| `game_risk_rule` | INSERT IGNORE (feste ID) |
+| `game_withdraw_limit` | INSERT IGNORE (feste ID) |
+| `game_game_category` | INSERT IGNORE (feste ID) |
+| `game_country_config` | INSERT IGNORE (feste ID) |
 
 ### 2.2 `install/index.php` (485 Zeilen)
 - Routen-Dispatch: step1 -> step2 -> step3 -> step4 -> step5
@@ -181,7 +181,7 @@ Bestanden Bereits-installiert-Seite — install.lock-Erkennung funktioniert, Hin
 ### 6.3 SQL-Verifikation
 ```
 Bestanden 42 Tabellennamen exakt identisch mit den ursprünglichen Migrationsdateien
-Bestanden source-Feld in die erik_operation_log-CREATE-TABLE-Anweisung zusammengeführt
+Bestanden source-Feld in die game_operation_log-CREATE-TABLE-Anweisung zusammengeführt
 Bestanden alle INSERT-Anweisungen idempotent behandelt
 Bestanden WHERE-NOT-EXISTS-Wächter wiederhergestellt (identisch mit Originalmigrationen)
 ```
@@ -192,7 +192,7 @@ Bestanden WHERE-NOT-EXISTS-Wächter wiederhergestellt (identisch mit Originalmig
 
 | # | Problem | Schweregrad | Status |
 |---|------|--------|------|
-| 1 | `erik_admin_role_permission`-INSERT ohne `WHERE NOT EXISTS`-Wächter (abweichend von den Originalmigrationen) | Hoch | Behoben |
+| 1 | `game_admin_role_permission`-INSERT ohne `WHERE NOT EXISTS`-Wächter (abweichend von den Originalmigrationen) | Hoch | Behoben |
 | 2 | Alle Seed-Daten-INSERTs nicht idempotent (erneute Ausführung schlägt fehl) | Mittel | Behoben (INSERT IGNORE) |
 | 3 | Umgebungsprüfung ohne `pcntl`-Erweiterungsprüfung (Kernabhängigkeit von webman) | Mittel | Behoben |
 | 4 | Service-.env ohne `ENCRYPTION_CIPHER`-Konfiguration | Niedrig | Behoben |
@@ -224,7 +224,7 @@ Das Installationssystem ist funktional vollständig, die Codequalität gut und d
 
 Diese Sicherheitsrunde (Zahlungs-Callback fail-closed, JWT-Startprüfung, einheitliches Tabellenpräfix) **betrifft das Installationssystem nicht**, keine neuen Probleme:
 
-- Nach dem Entfernen des hartkodierten `erik_`-Präfixes aus den Modellen werden die tatsächlichen Tabellennamen weiterhin einheitlich von `prefix=erik_` aus `config/database.php` erzeugt, identisch mit den von install.sql erstellten `erik_*`-Tabellen; keine Änderung am Installations-SQL nötig
+- Nach dem Entfernen des hartkodierten `game_`-Präfixes aus den Modellen werden die tatsächlichen Tabellennamen weiterhin einheitlich von `prefix=game_` aus `config/database.php` erzeugt, identisch mit den von install.sql erstellten `game_*`-Tabellen; keine Änderung am Installations-SQL nötig
 - Die JWT-Startprüfung (Start verweigert bei fehlendem `JWT_SECRET_KEY` oder Standardwert) ist kompatibel mit dem automatisch generierten 64-Byte-Zufallsschlüssel des Installationsassistenten; der Installationsablauf muss nicht angepasst werden
 
 Historische Ergebnisse und Problemliste bleiben unverändert.

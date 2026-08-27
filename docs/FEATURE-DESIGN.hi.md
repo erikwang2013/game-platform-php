@@ -54,7 +54,7 @@ Languages: [中文](FEATURE-DESIGN.md) · [English](FEATURE-DESIGN.en.md) · [�
 
 ## 2. वॉलेट डिज़ाइन
 
-### 2.1 प्लेटफ़ॉर्म कॉइन वॉलेट (erik_user_wallet)
+### 2.1 प्लेटफ़ॉर्म कॉइन वॉलेट (game_user_wallet)
 
 उपयोगकर्ता पंजीकरण पर स्वचालित रूप से बनता है, प्रारंभिक शेष 0।
 
@@ -66,7 +66,7 @@ Languages: [中文](FEATURE-DESIGN.md) · [English](FEATURE-DESIGN.en.md) · [�
 | total_spent | संचयी व्यय |
 | version | ऑप्टिमिस्टिक लॉक संस्करण संख्या (प्रत्येक अपडेट पर +1) |
 
-### 2.2 गेम कॉइन वॉलेट (erik_user_game_wallet)
+### 2.2 गेम कॉइन वॉलेट (game_user_game_wallet)
 
 उपयोगकर्ता + गेम + मुद्रा तीन आयामों में अद्वितीय। पहले विनिमय पर स्वचालित रूप से बनता है।
 
@@ -320,7 +320,7 @@ signature = HMAC-SHA256(
 ### 7.2 अनुवाद प्रबंधन
 
 - अनुवाद `group.key` प्रारूप में व्यवस्थित (जैसे `auth.login_success`)
-- डेटाबेस तालिका `erik_translation` में संग्रहीत, Redis कैश (TTL 1 घंटा)
+- डेटाबेस तालिका `game_translation` में संग्रहीत, Redis कैश (TTL 1 घंटा)
 - API: `GET /api/language/list` उपलब्ध भाषाएँ प्राप्त करता है, `POST /api/language/switch` भाषा बदलता है
 - फ्रंटएंड `X-Language` अनुरोध हेडर या `Accept-Language` से स्वचालित पहचान
 - अनुवाद अनुपलब्ध होने पर en-US में रोलबैक, en-US में भी न हो तो मूल key लौटाएं

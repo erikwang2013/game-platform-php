@@ -218,23 +218,23 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 
 | Таблица | Описание | Ключевые особенности |
 |------|------|---------|
-| erik_ticket | тикеты | индекс user_id+type+status, assigned_to |
-| erik_ticket_reply | ответы на тикеты | индекс ticket_id, различие через is_admin |
-| erik_device_token | токены устройств | уникальный индекс user_id+platform+token |
-| erik_vip_level | определение уровней VIP | уникальный индекс level, benefits JSON |
-| erik_user_vip | записи VIP пользователей | уникальный индекс user_id, level+exp+total_exp |
-| erik_exp_log | журнал опыта | комбинированный индекс user_id+source |
-| erik_achievement | определение достижений | уникальный индекс key, condition_json JSON |
-| erik_user_achievement | достижения пользователей | уникальный индекс user_id+achievement_id |
-| erik_friend | отношения дружбы | уникальный индекс user_id+friend_id |
-| erik_message | личные сообщения | from_user_id+to_user_id / to_user_id+is_read |
+| game_ticket | тикеты | индекс user_id+type+status, assigned_to |
+| game_ticket_reply | ответы на тикеты | индекс ticket_id, различие через is_admin |
+| game_device_token | токены устройств | уникальный индекс user_id+platform+token |
+| game_vip_level | определение уровней VIP | уникальный индекс level, benefits JSON |
+| game_user_vip | записи VIP пользователей | уникальный индекс user_id, level+exp+total_exp |
+| game_exp_log | журнал опыта | комбинированный индекс user_id+source |
+| game_achievement | определение достижений | уникальный индекс key, condition_json JSON |
+| game_user_achievement | достижения пользователей | уникальный индекс user_id+achievement_id |
+| game_friend | отношения дружбы | уникальный индекс user_id+friend_id |
+| game_message | личные сообщения | from_user_id+to_user_id / to_user_id+is_read |
 
 ### Изменения структуры таблиц
 
 | Таблица | Изменение |
 |------|------|
-| erik_game | +provider_config (JSON) |
-| erik_game_play_log | +round_id, +bet_amount, +win_amount |
+| game_game | +provider_config (JSON) |
+| game_game_play_log | +round_id, +bet_amount, +win_amount |
 
 **Всего: install.sql 43 таблицы** (10 таблиц экосистемного расширения в `install/`, не включены в install.sql). Модели не общие: admin 46 / service 44, по одной копии.
 

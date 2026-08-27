@@ -4,7 +4,7 @@
 - 测试工程师: API 测试工程师 (任务 #6)
 - 被测对象: `admin`(管理端 API, 端口 8789) + `service`(服务端 API, 端口 8795/8796/8797), webman v2 / PHP 8.3.7
 - 测试方式: 无框架 PHP CLI 脚本(存放于 `tests/api/`), 全部接口冒烟 + 认证链 + 业务链 + 负例
-- 测试数据库: `game_platform_test`(MySQL 127.0.0.1, root 无密码), Redis 127.0.0.1:6379
+- 测试数据库: `game-platform_test`(MySQL 127.0.0.1, root 无密码), Redis 127.0.0.1:6379
 
 ## 一、总体结果
 
@@ -32,7 +32,7 @@ webman 的 `Dotenv::createUnsafeMutable` 会无条件用 `.env` 覆盖已存在�
 <?php
 // 测试环境预载: 使 webman dotenv 视为外部定义, 不再从 .env 覆盖
 $vars = [
-    'DB_DATABASE'            => 'game_platform_test',
+    'DB_DATABASE'            => 'game-platform_test',
     'DB_USERNAME'            => 'root',
     'DB_PASSWORD'            => '',
     'DB_HOST'                => '127.0.0.1',
@@ -85,18 +85,18 @@ foreach (['/home/wwwroot/game-platform-php/service', '/home/wwwroot/game-platfor
 ```bash
 # 缺表: user_vip / vip_level / achievement / ticket / ticket_reply / friend / message
 # 建表 DDL 见本报告 §六-2 与脚本执行历史; 简化起见可执行:
-mysql -uroot game_platform_test -e "
-CREATE TABLE IF NOT EXISTS erik_user_vip (user_id BIGINT PRIMARY KEY, level INT DEFAULT 0, exp INT DEFAULT 0, total_exp INT DEFAULT 0, created_at TIMESTAMP NULL, updated_at TIMESTAMP NULL);
-CREATE TABLE IF NOT EXISTS erik_vip_level (id BIGINT PRIMARY KEY, level INT DEFAULT 0, name VARCHAR(50) DEFAULT '', required_exp INT DEFAULT 0, benefits TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP);
-CREATE TABLE IF NOT EXISTS erik_achievement (id BIGINT PRIMARY KEY, \`key\` VARCHAR(100) UNIQUE, name VARCHAR(100) DEFAULT '', description VARCHAR(255) DEFAULT '', icon VARCHAR(255) DEFAULT '', condition_json TEXT, points INT DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP);
-CREATE TABLE IF NOT EXISTS erik_ticket (id BIGINT PRIMARY KEY, user_id BIGINT DEFAULT 0, category VARCHAR(50) DEFAULT '', subject VARCHAR(255) DEFAULT '', content TEXT, status VARCHAR(20) DEFAULT 'open', admin_id BIGINT DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP);
-CREATE TABLE IF NOT EXISTS erik_ticket_reply (id BIGINT PRIMARY KEY, ticket_id BIGINT DEFAULT 0, user_id BIGINT DEFAULT 0, content TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);
-CREATE TABLE IF NOT EXISTS erik_friend (id BIGINT PRIMARY KEY, user_id BIGINT DEFAULT 0, friend_id BIGINT DEFAULT 0, status VARCHAR(20) DEFAULT 'pending', created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP);
-CREATE TABLE IF NOT EXISTS erik_message (id BIGINT PRIMARY KEY, from_user_id BIGINT DEFAULT 0, to_user_id BIGINT DEFAULT 0, content TEXT, is_read TINYINT DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+mysql -uroot game-platform_test -e "
+CREATE TABLE IF NOT EXISTS game_user_vip (user_id BIGINT PRIMARY KEY, level INT DEFAULT 0, exp INT DEFAULT 0, total_exp INT DEFAULT 0, created_at TIMESTAMP NULL, updated_at TIMESTAMP NULL);
+CREATE TABLE IF NOT EXISTS game_vip_level (id BIGINT PRIMARY KEY, level INT DEFAULT 0, name VARCHAR(50) DEFAULT '', required_exp INT DEFAULT 0, benefits TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS game_achievement (id BIGINT PRIMARY KEY, \`key\` VARCHAR(100) UNIQUE, name VARCHAR(100) DEFAULT '', description VARCHAR(255) DEFAULT '', icon VARCHAR(255) DEFAULT '', condition_json TEXT, points INT DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS game_ticket (id BIGINT PRIMARY KEY, user_id BIGINT DEFAULT 0, category VARCHAR(50) DEFAULT '', subject VARCHAR(255) DEFAULT '', content TEXT, status VARCHAR(20) DEFAULT 'open', admin_id BIGINT DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS game_ticket_reply (id BIGINT PRIMARY KEY, ticket_id BIGINT DEFAULT 0, user_id BIGINT DEFAULT 0, content TEXT, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS game_friend (id BIGINT PRIMARY KEY, user_id BIGINT DEFAULT 0, friend_id BIGINT DEFAULT 0, status VARCHAR(20) DEFAULT 'pending', created_at DATETIME DEFAULT CURRENT_TIMESTAMP, updated_at DATETIME DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS game_message (id BIGINT PRIMARY KEY, from_user_id BIGINT DEFAULT 0, to_user_id BIGINT DEFAULT 0, content TEXT, is_read TINYINT DEFAULT 0, created_at DATETIME DEFAULT CURRENT_TIMESTAMP);
 # 管理员角色补全量权限(测试期), 支付方式种子
-INSERT INTO erik_admin_permission (id, parent_id, name, slug, type) VALUES (900000000000000001, 0, '全部权限(测试)', '*', 3) ON DUPLICATE KEY UPDATE slug=slug;
-INSERT IGNORE INTO erik_admin_role_permission (role_id, permission_id) VALUES (10000000000000001, 900000000000000001);
-INSERT INTO erik_payment_method (id, name, type, provider, config, status, sort) VALUES (900000000000000001, 'QA-PayPal(测试)', 'online', 'paypal', '{\"sandbox\":true}', 1, 1) ON DUPLICATE KEY UPDATE name=name;
+INSERT INTO game_admin_permission (id, parent_id, name, slug, type) VALUES (900000000000000001, 0, '全部权限(测试)', '*', 3) ON DUPLICATE KEY UPDATE slug=slug;
+INSERT IGNORE INTO game_admin_role_permission (role_id, permission_id) VALUES (10000000000000001, 900000000000000001);
+INSERT INTO game_payment_method (id, name, type, provider, config, status, sort) VALUES (900000000000000001, 'QA-PayPal(测试)', 'online', 'paypal', '{\"sandbox\":true}', 1, 1) ON DUPLICATE KEY UPDATE name=name;
 redis-cli DEL \$(redis-cli KEYS 'rate_limit:*' | tr '\n' ' ')  # 清限流
 redis-cli DEL perm:1                                         # 清权限缓存
 "
@@ -179,7 +179,7 @@ cd /home/wwwroot/game-platform-php/service && php start.php stop 2>&1 | tail -1
 
 ### 2. install.sql 缺表(7 张)
 
-`erik_user_vip`、`erik_vip_level`、`erik_achievement`、`erik_ticket`、`erik_ticket_reply`、`erik_friend`、`erik_message`
+`game_user_vip`、`game_vip_level`、`game_achievement`、`game_ticket`、`game_ticket_reply`、`game_friend`、`game_message`
 在代码中被引用, 但 `install/install.sql` 未创建 → 相关接口(VIP 等级、成就、工单、好友、私聊)首请求 500。
 测试库已按模型补建, 生产安装需补齐。
 
@@ -193,12 +193,12 @@ cd /home/wwwroot/game-platform-php/service && php start.php stop 2>&1 | tail -1
 6. **webman-scout 默认驱动 opensearch**: 未安装 `opensearch-project/opensearch-php` 时任何 Searchable 模型查询 500; 测试用 `collection` 驱动。
 7. **OpenSearch / ClickHouse 未初始化**: 本环境未启动, 相关搜索/分析降级路径未覆盖(已跳过并记录)。
 8. **端口与文档不一致**: admin 实际 8789(README 8787)、service 实际 8795/8796/8797(README 8788/8790/8791), 系端口冲突所致。
-9. **管理员角色权限种子不足**: 角色 `10000000000000001` 仅关联 39 条权限, 大量管理路由 403(如 `/admin/withdraw/review`、`/admin/coupon/*`)。测试期在 `erik_admin_permission` 补 `*` 通配权限。
+9. **管理员角色权限种子不足**: 角色 `10000000000000001` 仅关联 39 条权限, 大量管理路由 403(如 `/admin/withdraw/review`、`/admin/coupon/*`)。测试期在 `game_admin_permission` 补 `*` 通配权限。
 10. **限流键跨进程累积**: `rate_limit:{ip}:{path}` 存于共享 Redis, 注册接口 5 次/分钟, 多轮测试会触发 429; 测试脚本启动时自动清理。
 
 ## 七、环境信息
 
-- PHP 8.3.7 / webman 2.x / workerman 5.2.2; MySQL 8.0(root 无密码, `game_platform_test`, 43 表 → 测试期补 7 表); Redis 127.0.0.1:6379
+- PHP 8.3.7 / webman 2.x / workerman 5.2.2; MySQL 8.0(root 无密码, `game-platform_test`, 43 表 → 测试期补 7 表); Redis 127.0.0.1:6379
 - admin 种子账号: `admin` / `Admin@123`(bcrypt, id=1, role_id=10000000000000001)
 - 测试期新增数据(测试库): 管理员全量权限、QA-PayPal 支付方式、链上用户若干与充值记录(均已留痕, 可整体清库)
 

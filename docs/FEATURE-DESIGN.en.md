@@ -54,7 +54,7 @@ Languages: [中文](FEATURE-DESIGN.md) · **English** · [한국어](FEATURE-DES
 
 ## 2. Wallet Design
 
-### 2.1 Platform Currency Wallet (erik_user_wallet)
+### 2.1 Platform Currency Wallet (game_user_wallet)
 
 Auto-created on user registration, balance starts at 0.
 
@@ -66,7 +66,7 @@ Auto-created on user registration, balance starts at 0.
 | total_spent | Cumulative spending |
 | version | Optimistic lock version (increments on every update) |
 
-### 2.2 Game Currency Wallet (erik_user_game_wallet)
+### 2.2 Game Currency Wallet (game_user_game_wallet)
 
 Unique on the user + game + currency three dimensions. Auto-created on first exchange.
 
@@ -320,7 +320,7 @@ Configured via PlatformConfig or environment variables; requests automatically f
 ### 7.2 Translation Management
 
 - Translations are organized in `group.key` format (e.g. `auth.login_success`)
-- Stored in the `erik_translation` table, cached in Redis (TTL 1 hour)
+- Stored in the `game_translation` table, cached in Redis (TTL 1 hour)
 - APIs: `GET /api/language/list` gets available languages, `POST /api/language/switch` switches the language
 - Frontend auto-detects via the `X-Language` request header or `Accept-Language`
 - Falls back to en-US when a translation is missing; returns the raw key if en-US also lacks it

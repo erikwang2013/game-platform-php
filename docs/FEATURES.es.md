@@ -218,23 +218,23 @@ Ventana de tiempo: 5 minutos
 
 | Nombre de tabla | Descripción | Características clave |
 |------|------|---------|
-| erik_ticket | Tickets | Índice user_id+type+status, assigned_to |
-| erik_ticket_reply | Respuestas de tickets | Índice ticket_id, distinción por is_admin |
-| erik_device_token | Tokens de dispositivo | Índice único user_id+platform+token |
-| erik_vip_level | Definición de niveles VIP | Índice único level, beneficios JSON |
-| erik_user_vip | Registros VIP de usuarios | Índice único user_id, level+exp+total_exp |
-| erik_exp_log | Registros de experiencia | Índice combinado user_id+source |
-| erik_achievement | Definiciones de logros | Índice único key, condition_json JSON |
-| erik_user_achievement | Logros de usuarios | Índice único user_id+achievement_id |
-| erik_friend | Relaciones de amistad | Índice único user_id+friend_id |
-| erik_message | Mensajes privados | from_user_id+to_user_id / to_user_id+is_read |
+| game_ticket | Tickets | Índice user_id+type+status, assigned_to |
+| game_ticket_reply | Respuestas de tickets | Índice ticket_id, distinción por is_admin |
+| game_device_token | Tokens de dispositivo | Índice único user_id+platform+token |
+| game_vip_level | Definición de niveles VIP | Índice único level, beneficios JSON |
+| game_user_vip | Registros VIP de usuarios | Índice único user_id, level+exp+total_exp |
+| game_exp_log | Registros de experiencia | Índice combinado user_id+source |
+| game_achievement | Definiciones de logros | Índice único key, condition_json JSON |
+| game_user_achievement | Logros de usuarios | Índice único user_id+achievement_id |
+| game_friend | Relaciones de amistad | Índice único user_id+friend_id |
+| game_message | Mensajes privados | from_user_id+to_user_id / to_user_id+is_read |
 
 ### Cambios de estructura de tablas
 
 | Nombre de tabla | Cambio |
 |------|------|
-| erik_game | +provider_config (JSON) |
-| erik_game_play_log | +round_id, +bet_amount, +win_amount |
+| game_game | +provider_config (JSON) |
+| game_game_play_log | +round_id, +bet_amount, +win_amount |
 
 **Total: 43 tablas en install.sql** (las 10 de la extensión de ecosistema están en `install/`, no se han fusionado en install.sql). Los modelos no están compartidos: admin 46 / service 44, una copia en cada uno.
 

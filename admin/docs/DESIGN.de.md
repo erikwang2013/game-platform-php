@@ -132,34 +132,34 @@ Anzeigeebene (mask)             — Telefonnummer: 138****1234, E-Mail: a***@exa
 ### 3.1 ER-Beziehungen
 
 ```
-erik_admin_user ──┬── erik_admin_user_role ──┬── erik_admin_role
+game_admin_user ──┬── game_admin_user_role ──┬── game_admin_role
   (用户)           │    (用户-角色关联)         │     (角色)
                   │                          │
-                  │                    erik_admin_role_permission
+                  │                    game_admin_role_permission
                   │                     (角色-权限关联)
                   │                          │
                   │                          ▼
-                  │                    erik_admin_permission
+                  │                    game_admin_permission
                   │                      (权限/菜单)
                   │
                   ▼
-           erik_operation_log
+           game_operation_log
              (操作日志)
 
-erik_system_config (系统配置) — 独立表
+game_system_config (系统配置) — 独立表
 ```
 
 ### 3.2 Kern-Tabellenstrukturen
 
 | Tabellenname | Anzahl Felder | Beschreibung |
 |------|-------|------|
-| `erik_admin_user` | 14 | Verwaltungsbenutzer, phone/email/id_card verschlüsselt gespeichert, Soft-Delete unterstützt |
-| `erik_admin_role` | 7 | Rollen, slug eindeutig |
-| `erik_admin_permission` | 10 | Berechtigungsbaum (parent_id-Selbstreferenz), type: 1=Menü 2=Button 3=API |
-| `erik_admin_user_role` | 2 | Viele-zu-viele-Zwischentabelle Benutzer-Rolle |
-| `erik_admin_role_permission` | 2 | Viele-zu-viele-Zwischentabelle Rolle-Berechtigung |
-| `erik_system_config` | 8 | Key-Value-Konfiguration, group+key gemeinsam eindeutig |
-| `erik_operation_log` | 9 | Operationsprüfprotokolle (inkl. source-Quellenangabe) |
+| `game_admin_user` | 14 | Verwaltungsbenutzer, phone/email/id_card verschlüsselt gespeichert, Soft-Delete unterstützt |
+| `game_admin_role` | 7 | Rollen, slug eindeutig |
+| `game_admin_permission` | 10 | Berechtigungsbaum (parent_id-Selbstreferenz), type: 1=Menü 2=Button 3=API |
+| `game_admin_user_role` | 2 | Viele-zu-viele-Zwischentabelle Benutzer-Rolle |
+| `game_admin_role_permission` | 2 | Viele-zu-viele-Zwischentabelle Rolle-Berechtigung |
+| `game_system_config` | 8 | Key-Value-Konfiguration, group+key gemeinsam eindeutig |
+| `game_operation_log` | 9 | Operationsprüfprotokolle (inkl. source-Quellenangabe) |
 
 ### 3.3 Primärschlüssel-Standards
 

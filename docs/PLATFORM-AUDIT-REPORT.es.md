@@ -51,9 +51,9 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 | Problema | Corrección |
 |------|------|
-| 🔴 Los nombres de tabla de los modelos de service llevaban prefijo `erik_` (conflicto con la norma existente) | Los 10 modelos nuevos pierden todos el prefijo |
-| 🟡 `AchievementService` con `erik_user_session` hardcodeado | La versión de service pasa a `user_session` |
-| 🟡 `GameController` con `erik_game_category_rel` hardcodeado | La versión de service pasa a `game_category_rel` |
+| 🔴 Los nombres de tabla de los modelos de service llevaban prefijo `game_` (conflicto con la norma existente) | Los 10 modelos nuevos pierden todos el prefijo |
+| 🟡 `AchievementService` con `game_user_session` hardcodeado | La versión de service pasa a `user_session` |
+| 🟡 `GameController` con `game_game_category_rel` hardcodeado | La versión de service pasa a `game_category_rel` |
 
 ---
 
@@ -128,9 +128,9 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 | # | Problema | Gravedad | Corrección |
 |---|------|--------|------|
-| 1 | 🔴 Los nombres de tabla de los modelos de service llevaban todos prefijo `erik_` (10) | Alta | Eliminación masiva con sed |
-| 2 | 🟡 AchievementService de service con `erik_user_session` hardcodeado | Media | Pasa a `user_session` |
-| 3 | 🟡 GameController de service con `erik_game_category_rel` hardcodeado | Media | Pasa a `game_category_rel` |
+| 1 | 🔴 Los nombres de tabla de los modelos de service llevaban todos prefijo `game_` (10) | Alta | Eliminación masiva con sed |
+| 2 | 🟡 AchievementService de service con `game_user_session` hardcodeado | Media | Pasa a `user_session` |
+| 3 | 🟡 GameController de service con `game_game_category_rel` hardcodeado | Media | Pasa a `game_category_rel` |
 | 4 | 🟡 Doble barra invertida en route.php + sentencias echo residuales | Media | Corregido |
 | 5 | 🟢 Los modelos Friend/Message no se crearon inicialmente (solo SQL) | Baja | Creados |
 | 6 | 🟢 LeaderboardWebSocket usa realmente el puerto 8790; chat-ws pasa a 8791 | Baja | Ajuste de puertos |
@@ -239,7 +239,7 @@ Las correcciones de seguridad y disponibilidad completadas en esta ronda (2026-0
 | Ingreso del callback transaccional | Actualización de la orden + ingreso en la billetera en la misma transacción; si falla el ingreso, se revierte | ✅ Corregido |
 | Validación de claves JWT al arrancar | Rechaza el arranque si `JWT_SECRET_KEY` falta o sigue con el valor por defecto `open-admin-jwt-secret-change-in-production`; coherente en admin/service | ✅ Corregido |
 | Rutas del servicio de análisis | admin/config/route.php registra las 12 rutas `/admin/analytics/*` (todos los métodos de AnalyticsController) | ✅ Corregido |
-| Prefijo de tablas | Los 52 modelos eliminan el prefijo `erik_` hardcodeado (se elimina el doble prefijo `erik_erik_`); el prefijo DB lo proporciona de forma unificada la config `prefix=erik_` | ✅ Corregido |
+| Prefijo de tablas | Los 52 modelos eliminan el prefijo `game_` hardcodeado (se elimina el doble prefijo `game_game_`); el prefijo DB lo proporciona de forma unificada la config `prefix=game_` | ✅ Corregido |
 | Degradación de la limitación | RateLimit es fail-closed cuando falla Redis (rechaza en lugar de dejar pasar en silencio) | ✅ Corregido |
 | refresh token | Lógica de refresco de tokens del AuthController de service reescrita | ✅ Corregido |
 | DepositLogService | La versión de service se ha trasplantado y completado, eliminando una de las duplicaciones admin/service | ✅ Corregido |

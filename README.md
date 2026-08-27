@@ -20,7 +20,7 @@ Languages: **中文** · [English](docs/translations/README.en.md) · [한국어
 
 ### 后端
 - PHP 8.3+, webman v2 (workerman/webman)
-- MySQL 8.0+ (表前缀 `erik_`，BIGINT 非自增主键)
+- MySQL 8.0+ (表前缀 `game_`，BIGINT 非自增主键)
 - Redis (Session / 缓存 / 限流)
 - ClickHouse (OLAP 分析 / 概率计算)
 - Elasticsearch (全文检索)
@@ -142,8 +142,8 @@ rm -rf install/
 
 ```bash
 # 一键导入合并 SQL
-mysql -u root -e "CREATE DATABASE IF NOT EXISTS game_platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -u root game_platform < install/install.sql
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS game-platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root game-platform < install/install.sql
 ```
 
 #### 2. 配置环境变量

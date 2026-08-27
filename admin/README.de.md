@@ -32,7 +32,7 @@ Ein Full-Stack-Verwaltungs-Backend-System basierend auf webman v2 + Flutter.
 |---|------|------|
 | Backend-Framework | webman v2 (workerman) | Hochleistungs-PHP-Daemon-Framework |
 | PHP-Version | 8.3+ | |
-| Datenbank | MySQL 8.0+ | Tabellenpräfix `erik_`, BIGINT-IDs ohne Auto-Increment |
+| Datenbank | MySQL 8.0+ | Tabellenpräfix `game_`, BIGINT-IDs ohne Auto-Increment |
 | Suchmaschine | Elasticsearch | Synchronisation und Abfrage über `webman-scout` |
 | Admin-Frontend | Flutter 3.x | Web-Version im PC-Admin-Stil (`apps/flutter/`) |
 | Mobil | HarmonyOS ArkTS | Natives HarmonyOS-Client (`apps/harmonyos/`), unterstützt Phone/Tablet/2in1 |
@@ -198,7 +198,7 @@ docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 ## Datenbank-Standards
 
-- **Tabellenpräfix**: `erik_`
+- **Tabellenpräfix**: `game_`
 - **Primärschlüssel**: Alle Tabellen verwenden `id BIGINT UNSIGNED NOT NULL` als Primärschlüssel, **AUTO_INCREMENT ist verboten**
 - **ID-Generierung**: Primärschlüssel-IDs werden auf Anwendungsebene per `SnowflakeService::generate()` erzeugt, verteilt eindeutig
 - **Pflichtfelder**: Jede Tabelle muss `id`, `created_at`, `updated_at` enthalten

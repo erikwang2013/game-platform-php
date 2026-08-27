@@ -54,7 +54,7 @@ Languages: [中文](FEATURE-DESIGN.md) · [English](FEATURE-DESIGN.en.md) · [�
 
 ## 2. ওয়ালেট ডিজাইন
 
-### 2.1 প্ল্যাটফর্ম কয়েন ওয়ালেট (erik_user_wallet)
+### 2.1 প্ল্যাটফর্ম কয়েন ওয়ালেট (game_user_wallet)
 
 ইউজার রেজিস্ট্রেশনের সময় স্বয়ংক্রিয়ভাবে তৈরি হয়, প্রাথমিক ব্যালেন্স 0।
 
@@ -66,7 +66,7 @@ Languages: [中文](FEATURE-DESIGN.md) · [English](FEATURE-DESIGN.en.md) · [�
 | total_spent | মোট ব্যয় |
 | version | অপটিমিস্টিক লক ভার্সন নম্বর (প্রতিটি আপডেটে +1) |
 
-### 2.2 গেম কয়েন ওয়ালেট (erik_user_game_wallet)
+### 2.2 গেম কয়েন ওয়ালেট (game_user_game_wallet)
 
 ব্যবহারকারী+গেম+কয়েন তিন মাত্রায় ইউনিক। প্রথম বিনিময়ে স্বয়ংক্রিয়ভাবে তৈরি হয়।
 
@@ -320,7 +320,7 @@ signature = HMAC-SHA256(
 ### 7.2 অনুবাদ ম্যানেজমেন্ট
 
 - অনুবাদ `group.key` ফরম্যাটে সংগঠিত (যেমন `auth.login_success`)
-- ডেটাবেস টেবিল `erik_translation`-এ সংরক্ষিত, Redis ক্যাশ (TTL ১ ঘণ্টা)
+- ডেটাবেস টেবিল `game_translation`-এ সংরক্ষিত, Redis ক্যাশ (TTL ১ ঘণ্টা)
 - API: `GET /api/language/list` উপলব্ধ ভাষা পায়, `POST /api/language/switch` ভাষা পরিবর্তন করে
 - ফ্রন্টএন্ড `X-Language` রিকোয়েস্ট হেডার বা `Accept-Language` দিয়ে অটো ডিটেক্ট করে
 - অনুবাদ না থাকলে en-US-এ ফলব্যাক, en-US-ও না থাকলে মূল key রিটার্ন

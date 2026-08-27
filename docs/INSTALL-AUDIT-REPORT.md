@@ -28,9 +28,9 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 ### 2.1 `install/install.sql` (988行)
 - 合并了 8 个原始迁移文件
-- 42 张 `erik_` 前缀数据表 (CREATE TABLE IF NOT EXISTS)
+- 42 张 `game_` 前缀数据表 (CREATE TABLE IF NOT EXISTS)
 - 13 个 INSERT IGNORE 种子数据块
-- `erik_operation_log` 的 `source` 字段已合并到建表语句（无需 ALTER TABLE）
+- `game_operation_log` 的 `source` 字段已合并到建表语句（无需 ALTER TABLE）
 - 事务包裹 (START TRANSACTION / COMMIT)
 - 所有 INSERT 已做幂等处理
 
@@ -38,16 +38,16 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 | 表名 | 处理方式 |
 |------|---------|
-| `erik_admin_role` | INSERT IGNORE (固定ID) |
-| `erik_admin_permission` | INSERT IGNORE (固定ID) - 4次 |
-| `erik_admin_role_permission` | WHERE NOT EXISTS 子查询 |
-| `erik_platform_config` | INSERT IGNORE (固定ID) - 2次 |
-| `erik_language` | INSERT IGNORE (固定ID) |
-| `erik_translation` | INSERT IGNORE (固定ID) |
-| `erik_risk_rule` | INSERT IGNORE (固定ID) |
-| `erik_withdraw_limit` | INSERT IGNORE (固定ID) |
-| `erik_game_category` | INSERT IGNORE (固定ID) |
-| `erik_country_config` | INSERT IGNORE (固定ID) |
+| `game_admin_role` | INSERT IGNORE (固定ID) |
+| `game_admin_permission` | INSERT IGNORE (固定ID) - 4次 |
+| `game_admin_role_permission` | WHERE NOT EXISTS 子查询 |
+| `game-platform_config` | INSERT IGNORE (固定ID) - 2次 |
+| `game_language` | INSERT IGNORE (固定ID) |
+| `game_translation` | INSERT IGNORE (固定ID) |
+| `game_risk_rule` | INSERT IGNORE (固定ID) |
+| `game_withdraw_limit` | INSERT IGNORE (固定ID) |
+| `game_game_category` | INSERT IGNORE (固定ID) |
+| `game_country_config` | INSERT IGNORE (固定ID) |
 
 ### 2.2 `install/index.php` (485行)
 - 路由调度: step1 -> step2 -> step3 -> step4 -> step5
@@ -181,7 +181,7 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 ### 6.3 SQL验证
 ```
 通过 42张表名与原始迁移文件完全一致
-通过 source字段已合并到 erik_operation_log 建表语句
+通过 source字段已合并到 game_operation_log 建表语句
 通过 所有INSERT语句已做幂等处理
 通过 WHERE NOT EXISTS 守卫已恢复（与原迁移一致）
 ```
@@ -192,7 +192,7 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 | # | 问题 | 严重度 | 状态 |
 |---|------|--------|------|
-| 1 | `erik_admin_role_permission` INSERT 缺少 `WHERE NOT EXISTS` 守卫（与原迁移不一致） | 高 | 已修复 |
+| 1 | `game_admin_role_permission` INSERT 缺少 `WHERE NOT EXISTS` 守卫（与原迁移不一致） | 高 | 已修复 |
 | 2 | 所有种子数据 INSERT 未做幂等处理（重复执行会失败） | 中 | 已修复 (INSERT IGNORE) |
 | 3 | 环境检查缺少 `pcntl` 扩展检查（webman核心依赖） | 中 | 已修复 |
 | 4 | Service .env 缺少 `ENCRYPTION_CIPHER` 配置 | 低 | 已修复 |
@@ -224,7 +224,7 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 本轮安全修复（支付回调 fail-closed、JWT 启动校验、表前缀统一）**未涉及安装系统**，无新增问题：
 
-- 模型去除硬编码 `erik_` 前缀后，实际表名仍由 `config/database.php` 的 `prefix=erik_` 统一生成，与 install.sql 创建的 `erik_*` 表一致，无需变更安装 SQL
+- 模型去除硬编码 `game_` 前缀后，实际表名仍由 `config/database.php` 的 `prefix=game_` 统一生成，与 install.sql 创建的 `game_*` 表一致，无需变更安装 SQL
 - JWT 启动校验（`JWT_SECRET_KEY` 缺失或默认值拒绝启动）与安装向导自动生成的 64 字节随机密钥兼容，安装流程无需调整
 
 历史结论与问题清单保持不变。

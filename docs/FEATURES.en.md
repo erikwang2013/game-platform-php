@@ -218,23 +218,23 @@ Time window: 5 minutes
 
 | Table | Description | Key Features |
 |------|------|---------|
-| erik_ticket | Tickets | user_id+type+status index, assigned_to |
-| erik_ticket_reply | Ticket replies | ticket_id index, is_admin distinction |
-| erik_device_token | Device tokens | user_id+platform+token unique index |
-| erik_vip_level | VIP level definitions | level unique index, benefits JSON |
-| erik_user_vip | User VIP records | user_id unique index, level+exp+total_exp |
-| erik_exp_log | EXP logs | user_id+source composite index |
-| erik_achievement | Achievement definitions | key unique index, condition_json JSON |
-| erik_user_achievement | User achievements | user_id+achievement_id unique index |
-| erik_friend | Friend relations | user_id+friend_id unique index |
-| erik_message | DMs | from_user_id+to_user_id / to_user_id+is_read |
+| game_ticket | Tickets | user_id+type+status index, assigned_to |
+| game_ticket_reply | Ticket replies | ticket_id index, is_admin distinction |
+| game_device_token | Device tokens | user_id+platform+token unique index |
+| game_vip_level | VIP level definitions | level unique index, benefits JSON |
+| game_user_vip | User VIP records | user_id unique index, level+exp+total_exp |
+| game_exp_log | EXP logs | user_id+source composite index |
+| game_achievement | Achievement definitions | key unique index, condition_json JSON |
+| game_user_achievement | User achievements | user_id+achievement_id unique index |
+| game_friend | Friend relations | user_id+friend_id unique index |
+| game_message | DMs | from_user_id+to_user_id / to_user_id+is_read |
 
 ### Table Structure Changes
 
 | Table | Change |
 |------|------|
-| erik_game | +provider_config (JSON) |
-| erik_game_play_log | +round_id, +bet_amount, +win_amount |
+| game_game | +provider_config (JSON) |
+| game_game_play_log | +round_id, +bet_amount, +win_amount |
 
 **Total: 43 tables in install.sql** (the 10 ecosystem expansion tables live in `install/`, not merged into install.sql). Models are not shared: admin 46 / service 44, one copy each.
 

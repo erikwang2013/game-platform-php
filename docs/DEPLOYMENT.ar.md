@@ -99,7 +99,7 @@ docker-compose logs -f
 ```bash
 # تُنفَّذ ملفات الترحيل تلقائيًا عند أول إقلاع لـ MySQL
 # أو تنفيذها يدويًا:
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < install/install.sql
+docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform < install/install.sql
 ```
 
 ### 2.4 استمرارية البيانات
@@ -115,10 +115,10 @@ docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform <
 النسخ الاحتياطي:
 ```bash
 # نسخ MySQL الاحتياطي
-docker exec game-platform-mysql mysqldump -uroot -p${DB_PASSWORD} game_platform | gzip > backup_$(date +%Y%m%d).sql.gz
+docker exec game-platform-mysql mysqldump -uroot -p${DB_PASSWORD} game-platform | gzip > backup_$(date +%Y%m%d).sql.gz
 
 # الاستعادة
-gunzip < backup_20260101.sql.gz | docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform
+gunzip < backup_20260101.sql.gz | docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform
 ```
 
 ---
@@ -166,8 +166,8 @@ APP_DEBUG=false
 
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=game_platform
-DB_USERNAME=game_platform
+DB_DATABASE=game-platform
+DB_USERNAME=game-platform
 DB_PASSWORD=<强密码>
 
 JWT_SECRET=<64位随机字符串>
@@ -506,7 +506,7 @@ tail -f runtime/logs/workerman.log
 
 ```bash
 # اختبار الاتصال
-mysql -h 127.0.0.1 -u game_platform -p game_platform -e "SELECT 1"
+mysql -h 127.0.0.1 -u game-platform -p game-platform -e "SELECT 1"
 
 # فحص إعداد .env
 grep DB_ admin/.env
@@ -556,7 +556,7 @@ cd admin && composer install --no-dev --optimize-autoloader
 cd ../service && composer install --no-dev --optimize-autoloader
 
 # 3. تنفيذ الترحيلات الجديدة (إن وجدت)
-mysql -u game_platform -p game_platform < install/新迁移文件.sql
+mysql -u game-platform -p game-platform < install/新迁移文件.sql
 
 # 4. إعادة التشغيل السلس (دون انقطاع الخدمة)
 cd /opt/game-platform/admin && php start.php reload

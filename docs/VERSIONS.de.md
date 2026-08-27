@@ -152,29 +152,29 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 
 ### Basisversion (19 Tabellen)
 ```
-Verwaltungsbackend (7):  erik_admin_user, erik_admin_role, erik_admin_permission,
-               erik_admin_user_role, erik_admin_role_permission,
-               erik_operation_log, erik_system_config
+Verwaltungsbackend (7):  game_admin_user, game_admin_role, game_admin_permission,
+               game_admin_user_role, game_admin_role_permission,
+               game_operation_log, game_system_config
 
-Plattform-Kern (12): erik_user, erik_user_wallet, erik_user_game_wallet,
-               erik_game, erik_game_currency, erik_deposit_order,
-               erik_withdraw_order, erik_exchange_record, erik_transaction,
-               erik_payment_method, erik_announcement, erik_platform_config
+Plattform-Kern (12): game_user, game_user_wallet, game_user_game_wallet,
+               game_game, game_game_currency, game_deposit_order,
+               game_withdraw_order, game_exchange_record, game_transaction,
+               game_payment_method, game_announcement, game-platform_config
 ```
 
 ### Standardversion neu (10 Tabellen)
 ```
-erik_user_identity, erik_user_oauth, erik_user_payment_account,
-erik_user_session, erik_game_server, erik_game_play_log,
-erik_withdraw_limit, erik_risk_rule, erik_risk_log, erik_stat_daily
+game_user_identity, game_user_oauth, game_user_payment_account,
+game_user_session, game_game_server, game_game_play_log,
+game_withdraw_limit, game_risk_rule, game_risk_log, game_stat_daily
 ```
 
 ### Vollversion neu (13 Tabellen)
 ```
-erik_game_category, erik_game_category_rel, erik_leaderboard,
-erik_coupon, erik_user_coupon, erik_language, erik_translation,
-erik_country_config, erik_platform_revenue,
-erik_notification, erik_referral, erik_referral_reward, erik_user_2fa
+game_game_category, game_game_category_rel, game_leaderboard,
+game_coupon, game_user_coupon, game_language, game_translation,
+game_country_config, game-platform_revenue,
+game_notification, game_referral, game_referral_reward, game_user_2fa
 ```
 
 ---
@@ -221,10 +221,10 @@ erik_notification, erik_referral, erik_referral_reward, erik_user_2fa
 
 ### Neue Datentabellen (10 Tabellen)
 ```
-erik_ticket, erik_ticket_reply, erik_device_token,
-erik_vip_level, erik_user_vip, erik_exp_log,
-erik_achievement, erik_user_achievement,
-erik_friend, erik_message
+game_ticket, game_ticket_reply, game_device_token,
+game_vip_level, game_user_vip, game_exp_log,
+game_achievement, game_user_achievement,
+game_friend, game_message
 ```
 
 ### Neue Provider-API-Endpunkte (4)

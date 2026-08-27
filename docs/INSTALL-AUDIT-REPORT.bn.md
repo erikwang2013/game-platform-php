@@ -28,9 +28,9 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ### 2.1 `install/install.sql` (988 লাইন)
 - ৮টি মূল মাইগ্রেশন ফাইল একীভূত
-- ৪২টি `erik_` প্রিফিক্স ডেটা টেবিল (CREATE TABLE IF NOT EXISTS)
+- ৪২টি `game_` প্রিফিক্স ডেটা টেবিল (CREATE TABLE IF NOT EXISTS)
 - ১৩টি INSERT IGNORE সিড ডেটা ব্লক
-- `erik_operation_log`-এর `source` ফিল্ড টেবিল-তৈরি স্টেটমেন্টে একীভূত (ALTER TABLE প্রয়োজন নেই)
+- `game_operation_log`-এর `source` ফিল্ড টেবিল-তৈরি স্টেটমেন্টে একীভূত (ALTER TABLE প্রয়োজন নেই)
 - ট্রানজেকশন র্যাপার (START TRANSACTION / COMMIT)
 - সব INSERT আইডেম্পোটেন্ট করা হয়েছে
 
@@ -38,16 +38,16 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 | টেবিলের নাম | প্রক্রিয়াকরণ পদ্ধতি |
 |------|---------|
-| `erik_admin_role` | INSERT IGNORE (নির্দিষ্ট ID) |
-| `erik_admin_permission` | INSERT IGNORE (নির্দিষ্ট ID) - ৪ বার |
-| `erik_admin_role_permission` | WHERE NOT EXISTS সাবকুয়েরি |
-| `erik_platform_config` | INSERT IGNORE (নির্দিষ্ট ID) - ২ বার |
-| `erik_language` | INSERT IGNORE (নির্দিষ্ট ID) |
-| `erik_translation` | INSERT IGNORE (নির্দিষ্ট ID) |
-| `erik_risk_rule` | INSERT IGNORE (নির্দিষ্ট ID) |
-| `erik_withdraw_limit` | INSERT IGNORE (নির্দিষ্ট ID) |
-| `erik_game_category` | INSERT IGNORE (নির্দিষ্ট ID) |
-| `erik_country_config` | INSERT IGNORE (নির্দিষ্ট ID) |
+| `game_admin_role` | INSERT IGNORE (নির্দিষ্ট ID) |
+| `game_admin_permission` | INSERT IGNORE (নির্দিষ্ট ID) - ৪ বার |
+| `game_admin_role_permission` | WHERE NOT EXISTS সাবকুয়েরি |
+| `game-platform_config` | INSERT IGNORE (নির্দিষ্ট ID) - ২ বার |
+| `game_language` | INSERT IGNORE (নির্দিষ্ট ID) |
+| `game_translation` | INSERT IGNORE (নির্দিষ্ট ID) |
+| `game_risk_rule` | INSERT IGNORE (নির্দিষ্ট ID) |
+| `game_withdraw_limit` | INSERT IGNORE (নির্দিষ্ট ID) |
+| `game_game_category` | INSERT IGNORE (নির্দিষ্ট ID) |
+| `game_country_config` | INSERT IGNORE (নির্দিষ্ট ID) |
 
 ### 2.2 `install/index.php` (485 লাইন)
 - রুট ডিসপ্যাচ: step1 -> step2 -> step3 -> step4 -> step5
@@ -181,7 +181,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 ### 6.3 SQL ভেরিফিকেশন
 ```
 通过 42张表名与原始迁移文件完全一致
-通过 source字段已合并到 erik_operation_log 建表语句
+通过 source字段已合并到 game_operation_log 建表语句
 通过 所有INSERT语句已做幂等处理
 通过 WHERE NOT EXISTS 守卫已恢复（与原迁移一致）
 ```
@@ -192,7 +192,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 | # | সমস্যা | গুরুত্ব | অবস্থা |
 |---|------|--------|------|
-| 1 | `erik_admin_role_permission` INSERT-এ `WHERE NOT EXISTS` গার্ড নেই (মূল মাইগ্রেশনের সাথে অসামঞ্জস্য) | উচ্চ | মেরামত করা হয়েছে |
+| 1 | `game_admin_role_permission` INSERT-এ `WHERE NOT EXISTS` গার্ড নেই (মূল মাইগ্রেশনের সাথে অসামঞ্জস্য) | উচ্চ | মেরামত করা হয়েছে |
 | 2 | সব সিড ডেটা INSERT আইডেম্পোটেন্ট নয় (বারবার চালালে ব্যর্থ হবে) | মাঝারি | মেরামত করা হয়েছে (INSERT IGNORE) |
 | 3 | এনভায়রনমেন্ট চেকে `pcntl` এক্সটেনশন চেক নেই (webman কোর নির্ভরতা) | মাঝারি | মেরামত করা হয়েছে |
 | 4 | Service .env-এ `ENCRYPTION_CIPHER` কনফিগ নেই | কম | মেরামত করা হয়েছে |
@@ -224,7 +224,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 এই রাউন্ডের নিরাপত্তা মেরামত (পেমেন্ট কলব্যাক fail-closed, JWT স্টার্টআপ যাচাই, টেবিল প্রিফিক্স ইউনিফিকেশন) **ইনস্টল সিস্টেম স্পর্শ করেনি**, কোনো নতুন সমস্যা নেই:
 
-- মডেল থেকে হার্ডকোডেড `erik_` প্রিফিক্স অপসারণের পর, প্রকৃত টেবিলের নাম এখনও `config/database.php`-এর `prefix=erik_` থেকে ইউনিফাইডভাবে তৈরি হয়, install.sql-এর তৈরি `erik_*` টেবিলের সাথে সামঞ্জস্যপূর্ণ, ইনস্টল SQL পরিবর্তনের প্রয়োজন নেই
+- মডেল থেকে হার্ডকোডেড `game_` প্রিফিক্স অপসারণের পর, প্রকৃত টেবিলের নাম এখনও `config/database.php`-এর `prefix=game_` থেকে ইউনিফাইডভাবে তৈরি হয়, install.sql-এর তৈরি `game_*` টেবিলের সাথে সামঞ্জস্যপূর্ণ, ইনস্টল SQL পরিবর্তনের প্রয়োজন নেই
 - JWT স্টার্টআপ যাচাই (`JWT_SECRET_KEY` অনুপস্থিত বা ডিফল্ট হলে স্টার্ট প্রত্যাখ্যান) ইনস্টল উইজার্ডের অটো-জেনারেটেড ৬৪ বাইট র্যান্ডম সিক্রেটের সাথে সামঞ্জস্যপূর্ণ, ইনস্টল প্রক্রিয়া সামঞ্জস্যের প্রয়োজন নেই
 
 ঐতিহাসিক উপসংহার ও সমস্যা তালিকা অপরিবর্তিত।

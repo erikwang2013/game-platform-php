@@ -33,7 +33,7 @@ class PlatformCommonTest extends TestCase
     #[Test]
     public function quoteTableHandlesSingleAndQualifiedNames(): void
     {
-        $this->assertSame('`erik_game_play_log`', ProbabilityService::quoteTable('erik_game_play_log'));
+        $this->assertSame('`game_game_play_log`', ProbabilityService::quoteTable('game_game_play_log'));
         $this->assertSame('`db`.`table`', ProbabilityService::quoteTable('db.table'));
     }
 
@@ -54,9 +54,9 @@ class PlatformCommonTest extends TestCase
     public function buildDistinctSetSqlProducesExactQuery(): void
     {
         $this->assertSame(
-            "SELECT DISTINCT `user_id` FROM `erik_game_play_log` WHERE `game_id` = 5",
+            "SELECT DISTINCT `user_id` FROM `game_game_play_log` WHERE `game_id` = 5",
             ProbabilityService::buildDistinctSetSql([
-                'table' => 'erik_game_play_log',
+                'table' => 'game_game_play_log',
                 'alias' => 'user_id',
                 'where' => ['game_id' => 5],
             ])

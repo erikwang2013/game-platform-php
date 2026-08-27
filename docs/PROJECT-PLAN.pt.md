@@ -95,7 +95,7 @@ Lock otimista da carteira + atualização condicional por versão corretos; idem
 15. **Testes do service + portão de CI**: testes de integração de verificação de assinatura do callback/fluxo de saque/degradacão do Redis/cálculo de probabilidade/concorrência do lock otimista; falha do phpunit bloqueia; service no CI (atualmente `|| echo warning` permite falha) — 🔶 Parcialmente concluído (service já tem WebhookUrlSafety / EventBusMessageFormat; já incluído no job `phpunit-service` do CI com bloqueio em falha)
 
 **Extra concluído nesta rodada (2026-08-18) (fora da numeração original)**:
-- **Correção de prefixo de tabelas**: 52 modelos sem prefixo `erik_` hardcoded, eliminando o duplo prefixo `erik_erik_`; o prefixo do DB é fornecido uniformemente por config/database.php `prefix=erik_`, sem necessidade de alterar o install.sql
+- **Correção de prefixo de tabelas**: 52 modelos sem prefixo `game_` hardcoded, eliminando o duplo prefixo `game_game_`; o prefixo do DB é fornecido uniformemente por config/database.php `prefix=game_`, sem necessidade de alterar o install.sql
 - **Reescrita do refresh token**: lógica de atualização de token do AuthController do service reescrita
 - **Transplante do DepositLogService versão service**: service/common/service/DepositLogService.php completado (elimina uma das duas cópias divergentes admin/service)
 

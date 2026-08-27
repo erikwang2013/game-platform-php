@@ -24,15 +24,21 @@ if (class_exists('Dotenv\Dotenv') && file_exists(__DIR__ . '/../.env')) {
     }
 }
 
+// 测试环境固定 JWT 密钥：.env 中的占位符会触发 jwt 配置启动守卫（拒绝启动）。
+// 与 ENCRYPTION_KEY 同模式，在配置加载前注入，规避占位符校验。
+$testJwt = 'test-jwt-secret-0123456789abcdef-test-jwt-secret';
+$_ENV['ADMIN_JWT_SECRET_KEY'] = $_SERVER['ADMIN_JWT_SECRET_KEY'] = $testJwt;
+putenv('ADMIN_JWT_SECRET_KEY=' . $testJwt);
+
 // 加载所有配置
 \Webman\Config::clear();
 support\App::loadAllConfig(['route']);
 
-// 测试专用数据库：默认指向 game_platform_test（可用 DB_DATABASE_TEST 覆盖）。
+// 测试专用数据库：默认指向 game-platform-test（可用 DB_DATABASE_TEST 覆盖）。
 // config/database.php 支持 getenv 覆盖，但 Dotenv(mutable) 会覆盖进程环境变量，故在连接初始化时强制覆写，
 // 确保测试永不读写开发库。
 $dbConfig = config('database');
-$dbConfig['connections'][$dbConfig['default']]['database'] = getenv('DB_DATABASE_TEST') ?: 'game_platform_test';
+$dbConfig['connections'][$dbConfig['default']]['database'] = getenv('DB_DATABASE_TEST') ?: 'game-platform-test';
 
 // 加载 autoload 文件
 foreach (config('autoload.files', []) as $file) {

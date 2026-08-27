@@ -218,23 +218,23 @@ Jendela waktu: 5 menit
 
 | Nama tabel | Keterangan | Fitur kunci |
 |------|------|---------|
-| erik_ticket | Tiket | indeks user_id+type+status, assigned_to |
-| erik_ticket_reply | Balasan tiket | indeks ticket_id, is_admin membedakan |
-| erik_device_token | Token perangkat | indeks unik user_id+platform+token |
-| erik_vip_level | Definisi level VIP | indeks unik level, benefits JSON |
-| erik_user_vip | Catatan VIP pengguna | indeks unik user_id, level+exp+total_exp |
-| erik_exp_log | Log poin pengalaman | indeks gabungan user_id+source |
-| erik_achievement | Definisi pencapaian | indeks unik key, condition_json JSON |
-| erik_user_achievement | Pencapaian pengguna | indeks unik user_id+achievement_id |
-| erik_friend | Relasi teman | indeks unik user_id+friend_id |
-| erik_message | Pesan pribadi | from_user_id+to_user_id / to_user_id+is_read |
+| game_ticket | Tiket | indeks user_id+type+status, assigned_to |
+| game_ticket_reply | Balasan tiket | indeks ticket_id, is_admin membedakan |
+| game_device_token | Token perangkat | indeks unik user_id+platform+token |
+| game_vip_level | Definisi level VIP | indeks unik level, benefits JSON |
+| game_user_vip | Catatan VIP pengguna | indeks unik user_id, level+exp+total_exp |
+| game_exp_log | Log poin pengalaman | indeks gabungan user_id+source |
+| game_achievement | Definisi pencapaian | indeks unik key, condition_json JSON |
+| game_user_achievement | Pencapaian pengguna | indeks unik user_id+achievement_id |
+| game_friend | Relasi teman | indeks unik user_id+friend_id |
+| game_message | Pesan pribadi | from_user_id+to_user_id / to_user_id+is_read |
 
 ### Perubahan Struktur Tabel
 
 | Nama tabel | Perubahan |
 |------|------|
-| erik_game | +provider_config (JSON) |
-| erik_game_play_log | +round_id, +bet_amount, +win_amount |
+| game_game | +provider_config (JSON) |
+| game_game_play_log | +round_id, +bet_amount, +win_amount |
 
 **Total: 43 tabel di install.sql** (10 tabel perluasan ekosistem di `install/`, tidak digabung ke install.sql). Model tidak dibagikan: admin 46 / service 44 masing-masing satu salinan.
 

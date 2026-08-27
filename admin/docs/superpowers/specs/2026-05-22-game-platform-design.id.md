@@ -24,7 +24,7 @@ Platform agregasi game global yang berlaku untuk semua orang. Setelah pengguna m
 
 ### Backend
 - PHP 8.3+, webman v2 (workerman/webman)
-- Database: MySQL 8.0+, prefiks tabel `erik_`
+- Database: MySQL 8.0+, prefiks tabel `game_`
 - Primary key: BIGINT non-auto-increment, dihasilkan oleh `erikwang2013/snowflake-php`
 - Enkripsi/dekripsi ID lapisan API: `erikwang2013/hashids`
 - Autentikasi JWT: `erikwang2013/jwt-webman`
@@ -142,47 +142,47 @@ Pengguna mengajukan penarikan
 
 | No. | Nama tabel | Keterangan |
 |------|------|------|
-| 1 | `erik_user` | Pengguna sisi C |
-| 2 | `erik_user_wallet` | Dompet koin platform |
-| 3 | `erik_user_game_wallet` | Dompet koin game |
-| 4 | `erik_game` | Game |
-| 5 | `erik_game_currency` | Mata uang game |
-| 6 | `erik_deposit_order` | Pesanan deposit |
-| 7 | `erik_withdraw_order` | Pesanan penarikan |
-| 8 | `erik_exchange_record` | Catatan penukaran |
-| 9 | `erik_transaction` | Transaksi platform |
-| 10 | `erik_payment_method` | Metode pembayaran |
-| 11 | `erik_announcement` | Pengumuman |
-| 12 | `erik_platform_config` | Konfigurasi platform (perluasan dari erik_system_config yang ada) |
+| 1 | `game_user` | Pengguna sisi C |
+| 2 | `game_user_wallet` | Dompet koin platform |
+| 3 | `game_user_game_wallet` | Dompet koin game |
+| 4 | `game_game` | Game |
+| 5 | `game_game_currency` | Mata uang game |
+| 6 | `game_deposit_order` | Pesanan deposit |
+| 7 | `game_withdraw_order` | Pesanan penarikan |
+| 8 | `game_exchange_record` | Catatan penukaran |
+| 9 | `game_transaction` | Transaksi platform |
+| 10 | `game_payment_method` | Metode pembayaran |
+| 11 | `game_announcement` | Pengumuman |
+| 12 | `game-platform_config` | Konfigurasi platform (perluasan dari game_system_config yang ada) |
 
 ### 5.2 Baru di Versi Standar (10 tabel)
 
 | No. | Nama tabel | Keterangan |
 |------|------|------|
-| 13 | `erik_user_identity` | KYC/nama asli |
-| 14 | `erik_user_oauth` | Login pihak ketiga |
-| 15 | `erik_user_payment_account` | Akun penerima pembayaran |
-| 16 | `erik_user_session` | Sesi login |
-| 17 | `erik_game_server` | Server/zona game |
-| 18 | `erik_game_play_log` | Catatan game |
-| 19 | `erik_withdraw_limit` | Aturan batas penarikan |
-| 20 | `erik_risk_rule` | Aturan kontrol risiko |
-| 21 | `erik_risk_log` | Catatan pemicu kontrol risiko |
-| 22 | `erik_stat_daily` | Snapshot statistik harian |
+| 13 | `game_user_identity` | KYC/nama asli |
+| 14 | `game_user_oauth` | Login pihak ketiga |
+| 15 | `game_user_payment_account` | Akun penerima pembayaran |
+| 16 | `game_user_session` | Sesi login |
+| 17 | `game_game_server` | Server/zona game |
+| 18 | `game_game_play_log` | Catatan game |
+| 19 | `game_withdraw_limit` | Aturan batas penarikan |
+| 20 | `game_risk_rule` | Aturan kontrol risiko |
+| 21 | `game_risk_log` | Catatan pemicu kontrol risiko |
+| 22 | `game_stat_daily` | Snapshot statistik harian |
 
 ### 5.3 Baru di Versi Lengkap (8 tabel)
 
 | No. | Nama tabel | Keterangan |
 |------|------|------|
-| 23 | `erik_game_category` | Kategori game |
-| 24 | `erik_game_category_rel` | Relasi game-kategori |
-| 25 | `erik_leaderboard` | Papan peringkat |
-| 26 | `erik_coupon` | Kupon |
-| 27 | `erik_user_coupon` | Kupon yang diambil pengguna |
-| 28 | `erik_language` | Definisi bahasa |
-| 29 | `erik_translation` | Teks terjemahan |
-| 30 | `erik_country_config` | Konfigurasi negara |
-| 31 | `erik_platform_revenue` | Catatan pendapatan platform |
+| 23 | `game_game_category` | Kategori game |
+| 24 | `game_game_category_rel` | Relasi game-kategori |
+| 25 | `game_leaderboard` | Papan peringkat |
+| 26 | `game_coupon` | Kupon |
+| 27 | `game_user_coupon` | Kupon yang diambil pengguna |
+| 28 | `game_language` | Definisi bahasa |
+| 29 | `game_translation` | Teks terjemahan |
+| 30 | `game_country_config` | Konfigurasi negara |
+| 31 | `game-platform_revenue` | Catatan pendapatan platform |
 
 ---
 
@@ -286,7 +286,7 @@ flowchart TB
     end
 
     subgraph "存储层"
-        E1[("MySQL 8.0<br/>erik_ 前缀")]
+        E1[("MySQL 8.0<br/>game_ 前缀")]
         E2[("Redis<br/>Session / 缓存 / 限流")]
         E3[("Elasticsearch<br/>全文检索")]
     end

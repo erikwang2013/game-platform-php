@@ -1415,7 +1415,7 @@ Retry-After: 60
 
 1. Token aus `Authorization: Bearer <token>` extrahieren
 2. JWT-Signaturprüfung (HS256), `sub` (Benutzer-ID) parsen
-3. `erik_user`-Tabelle abfragen, um zu prüfen, dass der Benutzer existiert und status=1
+3. `game_user`-Tabelle abfragen, um zu prüfen, dass der Benutzer existiert und status=1
 4. `$request->userId` injizieren
 
 ### Verwaltungsbackend (AdminAuth + AdminPermission)
@@ -1763,7 +1763,7 @@ status: open / waiting / replied / closed
 ### Provider-Authentifizierung (ProviderAuth)
 
 1. `X-Game-Id`, `X-Timestamp`, `X-Signature` aus den Anfrage-Headern extrahieren
-2. `erik_game`-Tabelle abfragen, um zu prüfen, dass das Spiel existiert und status=1
+2. `game_game`-Tabelle abfragen, um zu prüfen, dass das Spiel existiert und status=1
 3. Prüfen, dass der Zeitstempel im 5-Minuten-Fenster liegt (gegen Replay)
 4. `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)` berechnen und mit der Signatur vergleichen
 5. `$request->gameId` und `$request->game` injizieren
@@ -1955,7 +1955,7 @@ Die Bedingungen werden doppelt geprüft: beim Filtern der Liste in `available()`
 Die Empfehlungsprovision erhält eine zweistufige Gewinnbeteiligung:
 - L1: Der direkte Empfehler erhält `referrer_bonus` (Konfiguration: referral.referrer_bonus)
 - L2: Der Empfehler des Empfehlers erhält `commission = referrer_bonus * level2_rate` (Konfiguration: referral.level2_rate, Standard 5%)
-- `erik_referral_commission` protokollieren (level/commission_rate/commission_amount)
+- `game_referral_commission` protokollieren (level/commission_rate/commission_amount)
 
 ### 8. Ratenbegrenzungsstrategie (aktualisiert)
 

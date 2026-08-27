@@ -218,23 +218,23 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 
 | तालिका नाम | विवरण | मुख्य विशेषताएँ |
 |------|------|---------|
-| erik_ticket | टिकट | user_id+type+status इंडेक्स, assigned_to |
-| erik_ticket_reply | टिकट उत्तर | ticket_id इंडेक्स, is_admin अंतर |
-| erik_device_token | डिवाइस टोकन | user_id+platform+token अद्वितीय इंडेक्स |
-| erik_vip_level | VIP स्तर परिभाषा | level अद्वितीय इंडेक्स, benefits JSON |
-| erik_user_vip | उपयोगकर्ता VIP रिकॉर्ड | user_id अद्वितीय इंडेक्स, level+exp+total_exp |
-| erik_exp_log | अनुभव मान लॉग | user_id+source संयुक्त इंडेक्स |
-| erik_achievement | उपलब्धि परिभाषा | key अद्वितीय इंडेक्स, condition_json JSON |
-| erik_user_achievement | उपयोगकर्ता उपलब्धियाँ | user_id+achievement_id अद्वितीय इंडेक्स |
-| erik_friend | मित्र संबंध | user_id+friend_id अद्वितीय इंडेक्स |
-| erik_message | निजी संदेश | from_user_id+to_user_id / to_user_id+is_read |
+| game_ticket | टिकट | user_id+type+status इंडेक्स, assigned_to |
+| game_ticket_reply | टिकट उत्तर | ticket_id इंडेक्स, is_admin अंतर |
+| game_device_token | डिवाइस टोकन | user_id+platform+token अद्वितीय इंडेक्स |
+| game_vip_level | VIP स्तर परिभाषा | level अद्वितीय इंडेक्स, benefits JSON |
+| game_user_vip | उपयोगकर्ता VIP रिकॉर्ड | user_id अद्वितीय इंडेक्स, level+exp+total_exp |
+| game_exp_log | अनुभव मान लॉग | user_id+source संयुक्त इंडेक्स |
+| game_achievement | उपलब्धि परिभाषा | key अद्वितीय इंडेक्स, condition_json JSON |
+| game_user_achievement | उपयोगकर्ता उपलब्धियाँ | user_id+achievement_id अद्वितीय इंडेक्स |
+| game_friend | मित्र संबंध | user_id+friend_id अद्वितीय इंडेक्स |
+| game_message | निजी संदेश | from_user_id+to_user_id / to_user_id+is_read |
 
 ### तालिका संरचना परिवर्तन
 
 | तालिका नाम | परिवर्तन |
 |------|------|
-| erik_game | +provider_config (JSON) |
-| erik_game_play_log | +round_id, +bet_amount, +win_amount |
+| game_game | +provider_config (JSON) |
+| game_game_play_log | +round_id, +bet_amount, +win_amount |
 
 **कुल: install.sql में 43 तालिकाएँ** (पारिस्थितिकी विस्तार की 10 तालिकाएँ `install/` में हैं, install.sql में शामिल नहीं)। मॉडल साझा नहीं: admin 46 / service 44 प्रत्येक की एक प्रति।
 

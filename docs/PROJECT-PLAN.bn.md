@@ -95,7 +95,7 @@ Languages: [中文](PROJECT-PLAN.md) · [English](PROJECT-PLAN.en.md) · [한국
 15. **service টেস্ট + CI গেট**: কলব্যাক ভেরিফিকেশন/উত্তোলন ফ্লো/Redis ডিগ্রেডেশন/প্রোবাবিলিটি গণনা/অপটিমিস্টিক লক কনকারেন্সি ইন্টিগ্রেশন টেস্ট; phpunit ব্যর্থ হলে ব্লক; service CI-তে (বর্তমান `|| echo warning` ব্যর্থতা অনুমোদন) — 🔶 আংশিক সম্পন্ন (service-এ WebhookUrlSafety / EventBusMessageFormat আছে; CI-তে `phpunit-service` job ব্যর্থ হলে ব্লক অন্তর্ভুক্ত)
 
 **এই রাউন্ডে (2026-08-18) অতিরিক্ত সম্পন্ন (আসল সংখ্যায় নেই)**:
-- **টেবিল প্রিফিক্স ফিক্স**: ৫২টি মডেল থেকে হার্ডকোডেড `erik_` প্রিফিক্স অপসারণ, `erik_erik_` ডাবল প্রিফিক্স দূর করা; DB প্রিফিক্স ইউনিফাইডভাবে config/database.php `prefix=erik_` থেকে; install.sql পরিবর্তনের প্রয়োজন নেই
+- **টেবিল প্রিফিক্স ফিক্স**: ৫২টি মডেল থেকে হার্ডকোডেড `game_` প্রিফিক্স অপসারণ, `game_game_` ডাবল প্রিফিক্স দূর করা; DB প্রিফিক্স ইউনিফাইডভাবে config/database.php `prefix=game_` থেকে; install.sql পরিবর্তনের প্রয়োজন নেই
 - **refresh token পুনর্লিখন**: service AuthController রিফ্রেশ টোকেন লজিক পুনর্লিখিত
 - **DepositLogService service সংস্করণ পোর্ট**: service/common/service/DepositLogService.php পূরণ (admin/service ডুয়াল-কপি ড্রিফটের একটি দূর)
 

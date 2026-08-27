@@ -95,7 +95,7 @@ Languages: [中文](PROJECT-PLAN.md) · [English](PROJECT-PLAN.en.md) · [한국
 15. **service परीक्षण + CI द्वार**: कॉलबैक हस्ताक्षर सत्यापन/निकासी प्रवाह/Redis डिग्रेडेशन/प्रायिकता गणना/ऑप्टिमिस्टिक लॉक समवर्ती एकीकरण परीक्षण; phpunit विफलता पर अवरोध; service CI में (वर्तमान `|| echo warning` विफलता की अनुमति देता है) — 🔶 आंशिक पूर्ण (service में WebhookUrlSafety / EventBusMessageFormat हैं; CI में `phpunit-service` job शामिल, विफलता पर अवरोध)
 
 **इस दौर (2026-08-18) के अतिरिक्त पूर्ण (मूल क्रमांकन में नहीं)**:
-- **तालिका उपसर्ग मरम्मत**: 52 मॉडलों से हार्डकोडेड `erik_` उपसर्ग हटाया, `erik_erik_` दोहरा उपसर्ग समाप्त; DB उपसर्ग एकीकृत रूप से config/database.php `prefix=erik_` द्वारा, install.sql में परिवर्तन आवश्यक नहीं
+- **तालिका उपसर्ग मरम्मत**: 52 मॉडलों से हार्डकोडेड `game_` उपसर्ग हटाया, `game_game_` दोहरा उपसर्ग समाप्त; DB उपसर्ग एकीकृत रूप से config/database.php `prefix=game_` द्वारा, install.sql में परिवर्तन आवश्यक नहीं
 - **refresh token पुनर्लेखन**: service AuthController रिफ्रेश टोकन तर्क पुनर्लेखन
 - **DepositLogService service संस्करण पोर्ट**: service/common/service/DepositLogService.php पूरा किया (admin/service दोहरी प्रति का एक विचलन समाप्त)
 

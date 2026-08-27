@@ -1717,7 +1717,7 @@ docker-compose up -d
 
 ## 16. データ分析 (Analytics)
 
-データ分析APIは `AnalyticsController` が提供し、すべて MySQL リアルタイム集計（`erik_game_play_log` ゲーム行動ログ / `erik_deposit_order` 入金注文）に基づきます。データベース障害時は 500 ではなく空データを返します。特に記載がない限り JWT + RBAC 認証が必要で、レスポンスのラッパー形式は統一して `{ "code": 0, "message": "success", "data": ... }` です。
+データ分析APIは `AnalyticsController` が提供し、すべて MySQL リアルタイム集計（`game_game_play_log` ゲーム行動ログ / `game_deposit_order` 入金注文）に基づきます。データベース障害時は 500 ではなく空データを返します。特に記載がない限り JWT + RBAC 認証が必要で、レスポンスのラッパー形式は統一して `{ "code": 0, "message": "success", "data": ... }` です。
 
 ### 16.1 プラットフォーム概要
 

@@ -54,7 +54,7 @@ Languages: **中文** · [English](FEATURE-DESIGN.en.md) · [한국어](FEATURE-
 
 ## 2. Wallet-Design
 
-### 2.1 Plattformwährungs-Wallet (erik_user_wallet)
+### 2.1 Plattformwährungs-Wallet (game_user_wallet)
 
 Wird bei der Benutzerregistrierung automatisch erstellt, Startguthaben 0.
 
@@ -66,7 +66,7 @@ Wird bei der Benutzerregistrierung automatisch erstellt, Startguthaben 0.
 | total_spent | Kumulierte Ausgaben |
 | version | Optimistic-Lock-Versionsnummer (bei jedem Update +1) |
 
-### 2.2 Spielwährungs-Wallet (erik_user_game_wallet)
+### 2.2 Spielwährungs-Wallet (game_user_game_wallet)
 
 Eindeutig über die Kombination Benutzer + Spiel + Währung. Wird bei der ersten Umtauschtransaktion automatisch erstellt.
 
@@ -320,7 +320,7 @@ Konfiguration über PlatformConfig oder Umgebungsvariablen; bei Anfragefehlern a
 ### 7.2 Übersetzungsverwaltung
 
 - Übersetzungen sind im Format `group.key` organisiert (z. B. `auth.login_success`)
-- Speicherung in der Datenbanktabelle `erik_translation`, Redis-Cache (TTL 1 Stunde)
+- Speicherung in der Datenbanktabelle `game_translation`, Redis-Cache (TTL 1 Stunde)
 - API: `GET /api/language/list` ruft verfügbare Sprachen ab, `POST /api/language/switch` wechselt die Sprache
 - Das Frontend erkennt automatisch über den `X-Language`-Request-Header oder `Accept-Language`
 - Bei fehlender Übersetzung Fallback auf en-US; auch en-US fehlt → Rückgabe des Original-keys

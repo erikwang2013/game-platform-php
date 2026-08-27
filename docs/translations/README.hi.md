@@ -20,7 +20,7 @@ Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](R
 
 ### बैकएंड
 - PHP 8.3+, webman v2 (workerman/webman)
-- MySQL 8.0+ (तालिका उपसर्ग `erik_`, BIGINT गैर-ऑटो-इन्क्रीमेंट प्राथमिक कुंजी)
+- MySQL 8.0+ (तालिका उपसर्ग `game_`, BIGINT गैर-ऑटो-इन्क्रीमेंट प्राथमिक कुंजी)
 - Redis (सत्र / कैश / दर सीमा)
 - ClickHouse (OLAP विश्लेषण / संभाव्यता गणना)
 - Elasticsearch (पूर्ण-पाठ खोज)
@@ -142,8 +142,8 @@ rm -rf install/
 
 ```bash
 # 一键导入合并 SQL
-mysql -u root -e "CREATE DATABASE IF NOT EXISTS game_platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -u root game_platform < install/install.sql
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS game-platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root game-platform < install/install.sql
 ```
 
 #### 2. पर्यावरण चर कॉन्फ़िगर करें

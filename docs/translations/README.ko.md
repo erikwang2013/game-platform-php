@@ -20,7 +20,7 @@ Languages: [中文](../../README.md) · [English](README.en.md) · **한국어**
 
 ### 백엔드
 - PHP 8.3+, webman v2 (workerman/webman)
-- MySQL 8.0+ (테이블 접두사 `erik_`, BIGINT 비자동증가 기본키)
+- MySQL 8.0+ (테이블 접두사 `game_`, BIGINT 비자동증가 기본키)
 - Redis (Session / 캐시 / 속도 제한)
 - ClickHouse (OLAP 분석 / 확률 계산)
 - Elasticsearch (전문 검색)
@@ -142,8 +142,8 @@ rm -rf install/
 
 ```bash
 # 통합 SQL 원클릭 임포트
-mysql -u root -e "CREATE DATABASE IF NOT EXISTS game_platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -u root game_platform < install/install.sql
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS game-platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root game-platform < install/install.sql
 ```
 
 #### 2. 환경 변수 설정

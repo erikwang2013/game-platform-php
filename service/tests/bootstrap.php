@@ -20,6 +20,20 @@ if (class_exists('Dotenv\Dotenv') && file_exists(__DIR__ . '/../.env')) {
     \Dotenv\Dotenv::createUnsafeMutable(__DIR__ . '/..')->load();
 }
 
+// 测试环境固定 JWT 密钥：.env 中的占位符会触发 jwt 配置启动守卫（拒绝启动）。
+// 与 ENCRYPTION_KEY 同模式，在配置加载前注入，规避占位符校验。
+$testJwt = 'test-jwt-secret-0123456789abcdef-test-jwt-secret';
+$_ENV['SERVICE_JWT_SECRET_KEY'] = $_SERVER['SERVICE_JWT_SECRET_KEY'] = $testJwt;
+putenv('SERVICE_JWT_SECRET_KEY=' . $testJwt);
+
+// 测试环境固定 hashids 盐值：.env 中的占位符同样触发 hashids 配置启动守卫。
+$testHashSalt = 'test-hashids-salt-0123456789';
+$testAltSalt = 'test-hashids-alt-salt-0123456789';
+$_ENV['HASHIDS_SALT'] = $_SERVER['HASHIDS_SALT'] = $testHashSalt;
+putenv('HASHIDS_SALT=' . $testHashSalt);
+$_ENV['HASHIDS_ALT_SALT'] = $_SERVER['HASHIDS_ALT_SALT'] = $testAltSalt;
+putenv('HASHIDS_ALT_SALT=' . $testAltSalt);
+
 // 加载所有配置
 \Webman\Config::clear();
 support\App::loadAllConfig(['route']);
@@ -33,10 +47,10 @@ $_ENV['ENCRYPTION_KEY'] = $_SERVER['ENCRYPTION_KEY'] = $testKey;
 putenv('ENCRYPTION_KEY=' . $testKey);
 putenv('ENCRYPTION_CIPHER=aes-256-gcm');
 
-// 测试专用数据库：默认指向 game_platform_test（可用 DB_DATABASE_TEST 覆盖）。
+// 测试专用数据库：默认指向 game-platform-test（可用 DB_DATABASE_TEST 覆盖）。
 // Dotenv(mutable) 会覆盖进程环境变量，故在连接初始化时强制覆写，确保测试永不读写开发库。
 $dbConfig = config('database');
-$dbConfig['connections'][$dbConfig['default']]['database'] = getenv('DB_DATABASE_TEST') ?: 'game_platform_test';
+$dbConfig['connections'][$dbConfig['default']]['database'] = getenv('DB_DATABASE_TEST') ?: 'game-platform-test';
 // 测试环境 root 免密（本机 MySQL root 无密码；.env 的 DB_PASSWORD=root 会让测试连不上库）。
 // 仅在此处（测试 bootstrap）强制空密码，不影响业务运行。
 $dbConfig['connections'][$dbConfig['default']]['password'] = '';

@@ -218,23 +218,23 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 
 | 테이블명 | 설명 | 핵심 특성 |
 |------|------|---------|
-| erik_ticket | 티켓 | user_id+type+status 인덱스, assigned_to |
-| erik_ticket_reply | 티켓 답변 | ticket_id 인덱스, is_admin 구분 |
-| erik_device_token | 기기 토큰 | user_id+platform+token 고유 인덱스 |
-| erik_vip_level | VIP 등급 정의 | level 고유 인덱스, benefits JSON |
-| erik_user_vip | 사용자 VIP 기록 | user_id 고유 인덱스, level+exp+total_exp |
-| erik_exp_log | 경험치 로그 | user_id+source 복합 인덱스 |
-| erik_achievement | 업적 정의 | key 고유 인덱스, condition_json JSON |
-| erik_user_achievement | 사용자 업적 | user_id+achievement_id 고유 인덱스 |
-| erik_friend | 친구 관계 | user_id+friend_id 고유 인덱스 |
-| erik_message | 쪽지 | from_user_id+to_user_id / to_user_id+is_read |
+| game_ticket | 티켓 | user_id+type+status 인덱스, assigned_to |
+| game_ticket_reply | 티켓 답변 | ticket_id 인덱스, is_admin 구분 |
+| game_device_token | 기기 토큰 | user_id+platform+token 고유 인덱스 |
+| game_vip_level | VIP 등급 정의 | level 고유 인덱스, benefits JSON |
+| game_user_vip | 사용자 VIP 기록 | user_id 고유 인덱스, level+exp+total_exp |
+| game_exp_log | 경험치 로그 | user_id+source 복합 인덱스 |
+| game_achievement | 업적 정의 | key 고유 인덱스, condition_json JSON |
+| game_user_achievement | 사용자 업적 | user_id+achievement_id 고유 인덱스 |
+| game_friend | 친구 관계 | user_id+friend_id 고유 인덱스 |
+| game_message | 쪽지 | from_user_id+to_user_id / to_user_id+is_read |
 
 ### 테이블 구조 변경
 
 | 테이블명 | 변경 |
 |------|------|
-| erik_game | +provider_config (JSON) |
-| erik_game_play_log | +round_id, +bet_amount, +win_amount |
+| game_game | +provider_config (JSON) |
+| game_game_play_log | +round_id, +bet_amount, +win_amount |
 
 **총계: install.sql 43장 테이블** (생태계 확장 10장은 `install/`에 있으며 install.sql에 미통합). 모델은 공유되지 않음: admin 46 / service 44 각각 1벌.
 

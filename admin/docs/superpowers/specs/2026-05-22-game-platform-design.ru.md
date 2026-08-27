@@ -24,7 +24,7 @@ Languages: **中文** · [English](2026-05-22-game-platform-design.en.md) · [�
 
 ### Бэкенд
 - PHP 8.3+, webman v2 (workerman/webman)
-- БД: MySQL 8.0+, префикс таблиц `erik_`
+- БД: MySQL 8.0+, префикс таблиц `game_`
 - Первичные ключи: BIGINT без автоприращения, генерируются `erikwang2013/snowflake-php`
 - Шифрование ID на уровне API: `erikwang2013/hashids`
 - JWT-аутентификация: `erikwang2013/jwt-webman`
@@ -142,47 +142,47 @@ game-platform-php/
 
 | № | Таблица | Описание |
 |------|------|------|
-| 1 | `erik_user` | C-сторонний пользователь |
-| 2 | `erik_user_wallet` | Кошелёк платформенной валюты |
-| 3 | `erik_user_game_wallet` | Кошелёк игровой валюты |
-| 4 | `erik_game` | Игра |
-| 5 | `erik_game_currency` | Игровая валюта |
-| 6 | `erik_deposit_order` | Заказ пополнения |
-| 7 | `erik_withdraw_order` | Заказ вывода |
-| 8 | `erik_exchange_record` | Запись обмена |
-| 9 | `erik_transaction` | Платформенные транзакции |
-| 10 | `erik_payment_method` | Способ оплаты |
-| 11 | `erik_announcement` | Объявления |
-| 12 | `erik_platform_config` | Конфигурация платформы (расширение существующей erik_system_config) |
+| 1 | `game_user` | C-сторонний пользователь |
+| 2 | `game_user_wallet` | Кошелёк платформенной валюты |
+| 3 | `game_user_game_wallet` | Кошелёк игровой валюты |
+| 4 | `game_game` | Игра |
+| 5 | `game_game_currency` | Игровая валюта |
+| 6 | `game_deposit_order` | Заказ пополнения |
+| 7 | `game_withdraw_order` | Заказ вывода |
+| 8 | `game_exchange_record` | Запись обмена |
+| 9 | `game_transaction` | Платформенные транзакции |
+| 10 | `game_payment_method` | Способ оплаты |
+| 11 | `game_announcement` | Объявления |
+| 12 | `game-platform_config` | Конфигурация платформы (расширение существующей game_system_config) |
 
 ### 5.2 Новые таблицы стандартной версии (10 штук)
 
 | № | Таблица | Описание |
 |------|------|------|
-| 13 | `erik_user_identity` | Идентификация/KYC |
-| 14 | `erik_user_oauth` | Вход через третьи стороны |
-| 15 | `erik_user_payment_account` | Платёжные счета |
-| 16 | `erik_user_session` | Сессии входа |
-| 17 | `erik_game_server` | Серверы/миры игры |
-| 18 | `erik_game_play_log` | Журнал игры |
-| 19 | `erik_withdraw_limit` | Правила лимитов вывода |
-| 20 | `erik_risk_rule` | Правила риск-контроля |
-| 21 | `erik_risk_log` | Журнал срабатывания риск-контроля |
-| 22 | `erik_stat_daily` | Ежедневный статистический снимок |
+| 13 | `game_user_identity` | Идентификация/KYC |
+| 14 | `game_user_oauth` | Вход через третьи стороны |
+| 15 | `game_user_payment_account` | Платёжные счета |
+| 16 | `game_user_session` | Сессии входа |
+| 17 | `game_game_server` | Серверы/миры игры |
+| 18 | `game_game_play_log` | Журнал игры |
+| 19 | `game_withdraw_limit` | Правила лимитов вывода |
+| 20 | `game_risk_rule` | Правила риск-контроля |
+| 21 | `game_risk_log` | Журнал срабатывания риск-контроля |
+| 22 | `game_stat_daily` | Ежедневный статистический снимок |
 
 ### 5.3 Новые таблицы полной версии (8 штук)
 
 | № | Таблица | Описание |
 |------|------|------|
-| 23 | `erik_game_category` | Категории игр |
-| 24 | `erik_game_category_rel` | Связь игра-категория |
-| 25 | `erik_leaderboard` | Рейтинги |
-| 26 | `erik_coupon` | Купоны |
-| 27 | `erik_user_coupon` | Купоны пользователей |
-| 28 | `erik_language` | Определения языков |
-| 29 | `erik_translation` | Переводы текстов |
-| 30 | `erik_country_config` | Конфигурация стран |
-| 31 | `erik_platform_revenue` | Записи дохода платформы |
+| 23 | `game_game_category` | Категории игр |
+| 24 | `game_game_category_rel` | Связь игра-категория |
+| 25 | `game_leaderboard` | Рейтинги |
+| 26 | `game_coupon` | Купоны |
+| 27 | `game_user_coupon` | Купоны пользователей |
+| 28 | `game_language` | Определения языков |
+| 29 | `game_translation` | Переводы текстов |
+| 30 | `game_country_config` | Конфигурация стран |
+| 31 | `game-platform_revenue` | Записи дохода платформы |
 
 ---
 
@@ -286,7 +286,7 @@ flowchart TB
     end
 
     subgraph "存储层"
-        E1[("MySQL 8.0<br/>erik_ 前缀")]
+        E1[("MySQL 8.0<br/>game_ 前缀")]
         E2[("Redis<br/>Session / 缓存 / 限流")]
         E3[("Elasticsearch<br/>全文检索")]
     end

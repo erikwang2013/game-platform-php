@@ -51,9 +51,9 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 
 | 問題 | 修正 |
 |------|------|
-| 🔴 service モデルのテーブル名に `erik_` プレフィックス (既存規約と衝突) | 10 個の新規モデルからすべてプレフィックスを除去 |
-| 🟡 `AchievementService` が `erik_user_session` をハードコード | service 版を `user_session` に変更 |
-| 🟡 `GameController` が `erik_game_category_rel` をハードコード | service 版を `game_category_rel` に変更 |
+| 🔴 service モデルのテーブル名に `game_` プレフィックス (既存規約と衝突) | 10 個の新規モデルからすべてプレフィックスを除去 |
+| 🟡 `AchievementService` が `game_user_session` をハードコード | service 版を `user_session` に変更 |
+| 🟡 `GameController` が `game_game_category_rel` をハードコード | service 版を `game_category_rel` に変更 |
 
 ---
 
@@ -128,9 +128,9 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 
 | # | 問題 | 重大度 | 修正 |
 |---|------|--------|------|
-| 1 | 🔴 service モデルのテーブル名がすべて `erik_` プレフィックス付き (10個) | 高 | sed で一括除去 |
-| 2 | 🟡 service の AchievementService が `erik_user_session` をハードコード | 中 | `user_session` に変更 |
-| 3 | 🟡 service の GameController が `erik_game_category_rel` をハードコード | 中 | `game_category_rel` に変更 |
+| 1 | 🔴 service モデルのテーブル名がすべて `game_` プレフィックス付き (10個) | 高 | sed で一括除去 |
+| 2 | 🟡 service の AchievementService が `game_user_session` をハードコード | 中 | `user_session` に変更 |
+| 3 | 🟡 service の GameController が `game_game_category_rel` をハードコード | 中 | `game_category_rel` に変更 |
 | 4 | 🟡 route.php の二重バックスラッシュ + 残存 echo 文 | 中 | 修正 |
 | 5 | 🟢 Friend/Message モデルが最初作成されていなかった (SQL のみ) | 低 | 作成済み |
 | 6 | 🟢 LeaderboardWebSocket のポートが実際は 8790、chat-ws は 8791 に変更 | 低 | ポート調整 |
@@ -239,7 +239,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 | コールバック入金のトランザクション化 | 注文更新 + ウォレット入金を同一トランザクションで、入金失敗時はロールバック | ✅ 修正済み |
 | JWT キー起動検証 | `JWT_SECRET_KEY` 欠落またはデフォルト値 `open-admin-jwt-secret-change-in-production` のままなら起動拒否、admin/service 一致 | ✅ 修正済み |
 | 分析サービスルート | admin/config/route.php に 12 本の `/admin/analytics/*` ルートを登録（AnalyticsController 全メソッド） | ✅ 修正済み |
-| テーブルプレフィックス | 52 モデルからハードコードされた `erik_` プレフィックスを除去（`erik_erik_` 二重プレフィックスを解消）、DB プレフィックスは config の `prefix=erik_` に統一 | ✅ 修正済み |
+| テーブルプレフィックス | 52 モデルからハードコードされた `game_` プレフィックスを除去（`game_game_` 二重プレフィックスを解消）、DB プレフィックスは config の `prefix=game_` に統一 | ✅ 修正済み |
 | レート制限のフォールバック | RateLimit は Redis 障害時に fail-closed（黙認通過ではなく拒否） | ✅ 修正済み |
 | refresh token | service の AuthController のトークン更新ロジックを書き直し | ✅ 修正済み |
 | DepositLogService | service 版の移植を補完、admin/service の二重漂移の一つを解消 | ✅ 修正済み |

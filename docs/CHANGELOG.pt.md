@@ -27,7 +27,7 @@ Registro de mudanças legível para humanos. O PHP não importa este arquivo. Co
 ### Disponibilidade
 
 - 12 rotas `/admin/analytics/*` do serviço de análise do admin montadas.
-- Modelos sem prefixo `erik_` hardcoded; DepositLog auditado no banco; model Test removido.
+- Modelos sem prefixo `game_` hardcoded; DepositLog auditado no banco; model Test removido.
 
 ### Observabilidade
 

@@ -95,7 +95,7 @@ El bloqueo optimista de billetera con actualización condicional de versión es 
 15. **Pruebas de service + puerta de CI**: pruebas de integración de verificación de callbacks/flujo de retiros/degradación Redis/cálculo de probabilidad/concurrencia de bloqueo optimista; que el fallo de phpunit bloquee; incluir service en el CI (actualmente `|| echo warning` permite fallos) — 🔶 Parcialmente completado (service ya tiene WebhookUrlSafety / EventBusMessageFormat; ya incluido en el job de CI `phpunit-service` con bloqueo por fallo)
 
 **Completado adicionalmente en esta ronda (2026-08-18) (fuera de la numeración original)**:
-- **Corrección de prefijo de tablas**: los 52 modelos eliminan el prefijo `erik_` hardcodeado, eliminando el doble prefijo `erik_erik_`; el prefijo de DB lo proporciona de forma unificada `prefix=erik_` de config/database.php, sin cambios en install.sql
+- **Corrección de prefijo de tablas**: los 52 modelos eliminan el prefijo `game_` hardcodeado, eliminando el doble prefijo `game_game_`; el prefijo de DB lo proporciona de forma unificada `prefix=game_` de config/database.php, sin cambios en install.sql
 - **Reescritura de refresh token**: reescrita la lógica de refresco de tokens del AuthController de service
 - **Trasplante de la versión service de DepositLogService**: completado service/common/service/DepositLogService.php (eliminada una de las duplicaciones admin/service divergentes)
 

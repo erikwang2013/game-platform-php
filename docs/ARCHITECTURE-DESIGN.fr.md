@@ -74,7 +74,7 @@ Les devises de plateforme et de jeu utilisent de façon unifiée la précision `
 ### 3.3 Verrou optimiste du portefeuille
 
 ```sql
-UPDATE erik_user_wallet 
+UPDATE game_user_wallet 
 SET balance = balance + ?, version = version + 1 
 WHERE user_id = ? AND version = ?
 ```
@@ -143,7 +143,7 @@ Fonction __() dans le contrôleur ou TranslationService::trans() pour obtenir le
 
 ### 5.2 Stockage des traductions
 
-- La table `erik_translation` stocke tous les textes traduits (group + key + lang_code + value)
+- La table `game_translation` stocke tous les textes traduits (group + key + lang_code + value)
 - Première requête : chargement complet de la base vers Redis (clé : `i18n:translations`, TTL : 1 heure)
 - Requêtes suivantes : lecture directe depuis Redis, accéléré par le cache mémoire
 - Le backend d'administration peut étendre une page de gestion des traductions (implémenté dans l'édition complète)
@@ -196,7 +196,7 @@ warn   → journalisation, poursuite de l'exécution
 block  → refus de l'opération
 ```
 
-Les règles sont stockées dans la table `erik_risk_rule`, configurées en JSON, avec seuils et actions ajustables dynamiquement.
+Les règles sont stockées dans la table `game_risk_rule`, configurées en JSON, avec seuils et actions ajustables dynamiquement.
 
 ### 6.2 KYC de vérification d'identité
 

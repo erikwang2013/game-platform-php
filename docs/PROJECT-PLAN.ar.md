@@ -95,7 +95,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 15. **اختبارات service + بوابة CI**: اختبارات تكامل للتحقق من توقيع الاستدعاء/تدفق السحب/تخفيض Redis/حساب الاحتمالات/التزامن بالقفل التفاؤلي؛ منع الإخفاق في phpunit؛ دمج service في CI (حاليًا `|| echo warning` يسمح بالفشل) — 🔶 مكتمل جزئيًا (لدى service WebhookUrlSafety / EventBusMessageFormat؛ مُدمج في وظيفة `phpunit-service` في CI تمنع الإخفاق)
 
 **إضافي مُكتمل هذه الجولة (2026-08-18) (خارج الترقيم الأصلي)**:
-- **إصلاح بادئات الجداول**: إزالة البادئة المرمّزة `erik_` من 52 نموذجًا، إزالة البادئة المزدوجة `erik_erik_`؛ البادئة موحدة من `prefix=erik_` في config/database.php، ولا حاجة لتغيير install.sql
+- **إصلاح بادئات الجداول**: إزالة البادئة المرمّزة `game_` من 52 نموذجًا، إزالة البادئة المزدوجة `game_game_`؛ البادئة موحدة من `prefix=game_` في config/database.php، ولا حاجة لتغيير install.sql
 - **إعادة كتابة refresh token**: إعادة كتابة منطق تجديد الرمز في AuthController في service
 - **نقل نسخة DepositLogService في service**: استكمال service/common/service/DepositLogService.php (إزالة أحد انحرافات النسختين admin/service)
 

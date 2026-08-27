@@ -74,7 +74,7 @@ API 요청/응답에서 hashid 문자열 전송
 ### 3.3 지갑 낙관적 잠금
 
 ```sql
-UPDATE erik_user_wallet 
+UPDATE game_user_wallet 
 SET balance = balance + ?, version = version + 1 
 WHERE user_id = ? AND version = ?
 ```
@@ -143,7 +143,7 @@ Controller에서 __() 함수 또는 TranslationService::trans()로 번역 텍스
 
 ### 5.2 번역 저장
 
-- 데이터베이스 테이블 `erik_translation`에 모든 번역 텍스트 저장 (group + key + lang_code + value)
+- 데이터베이스 테이블 `game_translation`에 모든 번역 텍스트 저장 (group + key + lang_code + value)
 - 첫 요청 시 데이터베이스에서 Redis로 전체 로드 (key: `i18n:translations`, TTL: 1시간)
 - 이후 요청은 Redis에서 직접 읽고, 메모리 캐시로 가속
 - 관리 백오피스에서 번역 관리 페이지 확장 가능 (풀 에디션에서 구현)
@@ -196,7 +196,7 @@ warn   → 로그 기록 후 계속 실행
 block  → 작업 거부
 ```
 
-규칙은 `erik_risk_rule` 테이블에 저장되며 JSON으로 설정되어 임계값과 동작을 동적으로 조정할 수 있습니다.
+규칙은 `game_risk_rule` 테이블에 저장되며 JSON으로 설정되어 임계값과 동작을 동적으로 조정할 수 있습니다.
 
 ### 6.2 KYC 실명 인증
 

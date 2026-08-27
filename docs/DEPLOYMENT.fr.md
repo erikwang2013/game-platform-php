@@ -99,7 +99,7 @@ docker-compose logs -f
 ```bash
 # Les fichiers de migration s'exécutent automatiquement au premier démarrage de MySQL
 # ou manuellement :
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < install/install.sql
+docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform < install/install.sql
 ```
 
 ### 3.4 Persistance des données
@@ -115,10 +115,10 @@ Les volumes de données sont créés automatiquement, aucune gestion manuelle re
 Sauvegarde :
 ```bash
 # Sauvegarde MySQL
-docker exec game-platform-mysql mysqldump -uroot -p${DB_PASSWORD} game_platform | gzip > backup_$(date +%Y%m%d).sql.gz
+docker exec game-platform-mysql mysqldump -uroot -p${DB_PASSWORD} game-platform | gzip > backup_$(date +%Y%m%d).sql.gz
 
 # Restauration
-gunzip < backup_20260101.sql.gz | docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform
+gunzip < backup_20260101.sql.gz | docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform
 ```
 
 ---
@@ -166,8 +166,8 @@ APP_DEBUG=false
 
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=game_platform
-DB_USERNAME=game_platform
+DB_DATABASE=game-platform
+DB_USERNAME=game-platform
 DB_PASSWORD=<mot de passe fort>
 
 JWT_SECRET=<chaîne aléatoire de 64 caractères>
@@ -506,7 +506,7 @@ tail -f runtime/logs/workerman.log
 
 ```bash
 # Tester la connexion
-mysql -h 127.0.0.1 -u game_platform -p game_platform -e "SELECT 1"
+mysql -h 127.0.0.1 -u game-platform -p game-platform -e "SELECT 1"
 
 # Vérifier la configuration .env
 grep DB_ admin/.env
@@ -556,7 +556,7 @@ cd admin && composer install --no-dev --optimize-autoloader
 cd ../service && composer install --no-dev --optimize-autoloader
 
 # 3. Exécuter les nouvelles migrations (si nécessaire)
-mysql -u game_platform -p game_platform < install/nouveau-fichier-de-migration.sql
+mysql -u game-platform -p game-platform < install/nouveau-fichier-de-migration.sql
 
 # 4. Redémarrage à chaud (sans interruption de service)
 cd /opt/game-platform/admin && php start.php reload

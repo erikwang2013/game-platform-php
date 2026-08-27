@@ -95,7 +95,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 15. **Тесты service + CI-ворота**: интеграционные тесты колбэк-подписей/потока вывода/деградации Redis/вычисления вероятностей/конкурентной оптимистичной блокировки; блокировка при провале phpunit; service в CI (сейчас `|| echo warning` допускает провал) — 🔶 частично (у service есть WebhookUrlSafety / EventBusMessageFormat; подключён job `phpunit-service` в CI с блокировкой при провале)
 
 **Дополнительно выполнено в этот раунд (2026-08-18, вне исходной нумерации)**:
-- **Исправление префикса таблиц**: 52 модели без жёстко зашитого `erik_`, устранён двойной префикс `erik_erik_`; префикс БД единообразно задаётся в config/database.php `prefix=erik_`, install.sql менять не нужно
+- **Исправление префикса таблиц**: 52 модели без жёстко зашитого `game_`, устранён двойной префикс `game_game_`; префикс БД единообразно задаётся в config/database.php `prefix=game_`, install.sql менять не нужно
 - **Переписан refresh token**: логика обновления токена в service AuthController переписана
 - **Порт DepositLogService в service**: service/common/service/DepositLogService.php дополнен (устранено одно из расхождений двойных копий admin/service)
 

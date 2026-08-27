@@ -33,8 +33,8 @@ flowchart TB
     end
 
     subgraph "Couche stockage"
-        D1[("MySQL 8.0<br/>Stockage principal<br/>Préfixe de tables erik_")]
-        D2[("Elasticsearch<br/>Recherche plein texte<br/>Préfixe d'index erik_")]
+        D1[("MySQL 8.0<br/>Stockage principal<br/>Préfixe de tables game_")]
+        D2[("Elasticsearch<br/>Recherche plein texte<br/>Préfixe d'index game_")]
         D3[("Redis<br/>Session / Cache<br/>Stockage Captcha")]
     end
 
@@ -379,7 +379,7 @@ flowchart LR
     end
 
     subgraph "2. Stockage"
-        S1["Tables MySQL erik_*<br/>id BIGINT UNSIGNED<br/>NOT NULL"]
+        S1["Tables MySQL game_*<br/>id BIGINT UNSIGNED<br/>NOT NULL"]
         S2["Champs sensibles<br/>cast encryptable<br/>Chiffrement AES-128-ECB"]
         G3 --> S1
         S1 --> S2
@@ -445,7 +445,7 @@ flowchart TB
 
 ```mermaid
 erDiagram
-    erik_admin_user {
+    game_admin_user {
         BIGINT id PK "Snowflake"
         VARCHAR username UK
         VARCHAR password "bcrypt"
@@ -462,7 +462,7 @@ erDiagram
         DATETIME deleted_at "Suppression douce"
     }
 
-    erik_admin_role {
+    game_admin_role {
         BIGINT id PK "Snowflake"
         VARCHAR name
         VARCHAR slug UK
@@ -472,7 +472,7 @@ erDiagram
         DATETIME updated_at
     }
 
-    erik_admin_permission {
+    game_admin_permission {
         BIGINT id PK "Snowflake"
         BIGINT parent_id FK "Auto-référence"
         VARCHAR name
@@ -485,17 +485,17 @@ erDiagram
         DATETIME updated_at
     }
 
-    erik_admin_user_role {
+    game_admin_user_role {
         BIGINT user_id PK_FK
         BIGINT role_id PK_FK
     }
 
-    erik_admin_role_permission {
+    game_admin_role_permission {
         BIGINT role_id PK_FK
         BIGINT permission_id PK_FK
     }
 
-    erik_operation_log {
+    game_operation_log {
         BIGINT id PK "Snowflake"
         BIGINT user_id FK
         VARCHAR action
@@ -507,7 +507,7 @@ erDiagram
         DATETIME created_at
     }
 
-    erik_system_config {
+    game_system_config {
         BIGINT id PK "Snowflake"
         VARCHAR group
         VARCHAR key
@@ -518,12 +518,12 @@ erDiagram
         DATETIME updated_at
     }
 
-    erik_admin_user ||--o{ erik_admin_user_role : "user_id"
-    erik_admin_role ||--o{ erik_admin_user_role : "role_id"
-    erik_admin_role ||--o{ erik_admin_role_permission : "role_id"
-    erik_admin_permission ||--o{ erik_admin_role_permission : "permission_id"
-    erik_admin_user ||--o{ erik_operation_log : "user_id"
-    erik_admin_permission ||--o{ erik_admin_permission : "parent_id"
+    game_admin_user ||--o{ game_admin_user_role : "user_id"
+    game_admin_role ||--o{ game_admin_user_role : "role_id"
+    game_admin_role ||--o{ game_admin_role_permission : "role_id"
+    game_admin_permission ||--o{ game_admin_role_permission : "permission_id"
+    game_admin_user ||--o{ game_operation_log : "user_id"
+    game_admin_permission ||--o{ game_admin_permission : "parent_id"
 ```
 
 ---
@@ -675,8 +675,8 @@ flowchart TB
     end
 
     subgraph "Couche de données"
-        MYSQL["MySQL 8.0<br/>Réplication maître-esclave<br/>Préfixe erik_"]
-        ES["Elasticsearch 8.x<br/>Cluster de 3 nœuds<br/>Préfixe erik_"]
+        MYSQL["MySQL 8.0<br/>Réplication maître-esclave<br/>Préfixe game_"]
+        ES["Elasticsearch 8.x<br/>Cluster de 3 nœuds<br/>Préfixe game_"]
         REDIS["Redis 7.x<br/>Mode sentinelle<br/>poster:captcha:*"]
     end
 

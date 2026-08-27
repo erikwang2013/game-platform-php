@@ -28,9 +28,9 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ### 2.1 `install/install.sql` (988 linhas)
 - Consolidou 8 arquivos de migração originais
-- 42 tabelas de dados com prefixo `erik_` (CREATE TABLE IF NOT EXISTS)
+- 42 tabelas de dados com prefixo `game_` (CREATE TABLE IF NOT EXISTS)
 - 13 blocos de seed data com INSERT IGNORE
-- O campo `source` de `erik_operation_log` incorporado ao CREATE TABLE (sem necessidade de ALTER TABLE)
+- O campo `source` de `game_operation_log` incorporado ao CREATE TABLE (sem necessidade de ALTER TABLE)
 - Envolto em transação (START TRANSACTION / COMMIT)
 - Todos os INSERT idempotentes
 
@@ -38,16 +38,16 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 | Tabela | Tratamento |
 |------|---------|
-| `erik_admin_role` | INSERT IGNORE (IDs fixos) |
-| `erik_admin_permission` | INSERT IGNORE (IDs fixos) - 4 vezes |
-| `erik_admin_role_permission` | subconsulta WHERE NOT EXISTS |
-| `erik_platform_config` | INSERT IGNORE (IDs fixos) - 2 vezes |
-| `erik_language` | INSERT IGNORE (IDs fixos) |
-| `erik_translation` | INSERT IGNORE (IDs fixos) |
-| `erik_risk_rule` | INSERT IGNORE (IDs fixos) |
-| `erik_withdraw_limit` | INSERT IGNORE (IDs fixos) |
-| `erik_game_category` | INSERT IGNORE (IDs fixos) |
-| `erik_country_config` | INSERT IGNORE (IDs fixos) |
+| `game_admin_role` | INSERT IGNORE (IDs fixos) |
+| `game_admin_permission` | INSERT IGNORE (IDs fixos) - 4 vezes |
+| `game_admin_role_permission` | subconsulta WHERE NOT EXISTS |
+| `game-platform_config` | INSERT IGNORE (IDs fixos) - 2 vezes |
+| `game_language` | INSERT IGNORE (IDs fixos) |
+| `game_translation` | INSERT IGNORE (IDs fixos) |
+| `game_risk_rule` | INSERT IGNORE (IDs fixos) |
+| `game_withdraw_limit` | INSERT IGNORE (IDs fixos) |
+| `game_game_category` | INSERT IGNORE (IDs fixos) |
+| `game_country_config` | INSERT IGNORE (IDs fixos) |
 
 ### 2.2 `install/index.php` (485 linhas)
 - Roteamento: step1 -> step2 -> step3 -> step4 -> step5
@@ -181,7 +181,7 @@ Aprovado página de já-instalado — detecção install.lock normal, mensagens 
 ### 6.3 Validação do SQL
 ```
 Aprovado os nomes das 42 tabelas são idênticos aos arquivos de migração originais
-Aprovado campo source incorporado ao CREATE TABLE de erik_operation_log
+Aprovado campo source incorporado ao CREATE TABLE de game_operation_log
 Aprovado todos os INSERT idempotentes
 Aprovado guardas WHERE NOT EXISTS restauradas (consistentes com a migração original)
 ```
@@ -192,7 +192,7 @@ Aprovado guardas WHERE NOT EXISTS restauradas (consistentes com a migração ori
 
 | # | Problema | Severidade | Status |
 |---|------|--------|------|
-| 1 | INSERT de `erik_admin_role_permission` sem guarda `WHERE NOT EXISTS` (inconsistente com a migração original) | Alta | Corrigido |
+| 1 | INSERT de `game_admin_role_permission` sem guarda `WHERE NOT EXISTS` (inconsistente com a migração original) | Alta | Corrigido |
 | 2 | INSERTs de seed data sem idempotência (execução repetida falharia) | Média | Corrigido (INSERT IGNORE) |
 | 3 | Verificação de ambiente sem checar a extensão `pcntl` (dependência central do webman) | Média | Corrigido |
 | 4 | Service .env sem a configuração `ENCRYPTION_CIPHER` | Baixa | Corrigido |
@@ -224,7 +224,7 @@ O sistema de instalação tem funcionalidade completa, qualidade de código boa 
 
 As correções de segurança desta rodada (callback de pagamento fail-closed, validação de startup do JWT, unificação de prefixo de tabelas) **não envolvem o sistema de instalação**, sem novos problemas:
 
-- Após remover o prefixo `erik_` hardcoded dos modelos, os nomes reais das tabelas continuam sendo gerados uniformemente pelo `prefix=erik_` de `config/database.php`, consistente com as tabelas `erik_*` criadas pelo install.sql — sem necessidade de alterar o SQL de instalação
+- Após remover o prefixo `game_` hardcoded dos modelos, os nomes reais das tabelas continuam sendo gerados uniformemente pelo `prefix=game_` de `config/database.php`, consistente com as tabelas `game_*` criadas pelo install.sql — sem necessidade de alterar o SQL de instalação
 - A validação de startup do JWT (recusa iniciar com `JWT_SECRET_KEY` ausente ou valor padrão) é compatível com a chave aleatória de 64 bytes gerada automaticamente pelo assistente de instalação — sem necessidade de ajustar o fluxo de instalação
 
 As conclusões históricas e a lista de problemas permanecem inalteradas.

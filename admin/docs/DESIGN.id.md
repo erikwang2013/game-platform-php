@@ -132,34 +132,34 @@ Controller::method()
 ### 3.1 Hubungan ER
 
 ```
-erik_admin_user ──┬── erik_admin_user_role ──┬── erik_admin_role
+game_admin_user ──┬── game_admin_user_role ──┬── game_admin_role
   (用户)           │    (用户-角色关联)         │     (角色)
                   │                          │
-                  │                    erik_admin_role_permission
+                  │                    game_admin_role_permission
                   │                     (角色-权限关联)
                   │                          │
                   │                          ▼
-                  │                    erik_admin_permission
+                  │                    game_admin_permission
                   │                      (权限/菜单)
                   │
                   ▼
-           erik_operation_log
+           game_operation_log
              (操作日志)
 
-erik_system_config (系统配置) — 独立表
+game_system_config (系统配置) — 独立表
 ```
 
 ### 3.2 Struktur Tabel Inti
 
 | Nama tabel | Jumlah kolom | Deskripsi |
 |------|-------|------|
-| `erik_admin_user` | 14 | Pengguna admin, phone/email/id_card disimpan terenkripsi, mendukung soft delete |
-| `erik_admin_role` | 7 | Peran, slug unik |
-| `erik_admin_permission` | 10 | Pohon izin (self-referensi parent_id), type: 1=menu 2=tombol 3=API |
-| `erik_admin_user_role` | 2 | Tabel perantara many-to-many pengguna-peran |
-| `erik_admin_role_permission` | 2 | Tabel perantara many-to-many peran-izin |
-| `erik_system_config` | 8 | Konfigurasi pasangan kunci-nilai, group+key unik gabungan |
-| `erik_operation_log` | 9 | Log audit operasi (termasuk source sumber) |
+| `game_admin_user` | 14 | Pengguna admin, phone/email/id_card disimpan terenkripsi, mendukung soft delete |
+| `game_admin_role` | 7 | Peran, slug unik |
+| `game_admin_permission` | 10 | Pohon izin (self-referensi parent_id), type: 1=menu 2=tombol 3=API |
+| `game_admin_user_role` | 2 | Tabel perantara many-to-many pengguna-peran |
+| `game_admin_role_permission` | 2 | Tabel perantara many-to-many peran-izin |
+| `game_system_config` | 8 | Konfigurasi pasangan kunci-nilai, group+key unik gabungan |
+| `game_operation_log` | 9 | Log audit operasi (termasuk source sumber) |
 
 ### 3.3 Standar Primary Key
 

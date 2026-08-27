@@ -95,7 +95,7 @@ Wallet optimistic lock + version conditional update correct; callback idempotenc
 15. **service tests + CI gate**: integration tests for callback verification/withdrawal flow/Redis degradation/probability computation/optimistic-lock concurrency; phpunit failure blocks; service into CI (currently `|| echo warning` allows failure) — 🔶 Partially done (service has WebhookUrlSafety / EventBusMessageFormat; included in CI `phpunit-service` job, failure blocks)
 
 **Additional items completed this round (2026-08-18, outside the original numbering)**:
-- **Table prefix fix**: 52 models removed hardcoded `erik_` prefix, eliminating the `erik_erik_` double prefix; DB prefix uniformly provided by config/database.php `prefix=erik_`, install.sql unchanged
+- **Table prefix fix**: 52 models removed hardcoded `game_` prefix, eliminating the `game_game_` double prefix; DB prefix uniformly provided by config/database.php `prefix=game_`, install.sql unchanged
 - **refresh token rewrite**: service AuthController refresh token logic rewritten
 - **DepositLogService service port**: service/common/service/DepositLogService.php completed (eliminating one admin/service duplicate drift)
 

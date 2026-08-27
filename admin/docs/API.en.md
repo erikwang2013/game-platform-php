@@ -1717,7 +1717,7 @@ For production deployment, see `docs/nginx-security.conf` for reverse-proxy secu
 
 ## 16. Data Analytics
 
-The analytics endpoints are provided by `AnalyticsController`, all based on MySQL real-time aggregation (`erik_game_play_log` game behavior logs / `erik_deposit_order` deposit orders); on database failure, empty data is returned instead of 500. Unless otherwise noted, JWT + RBAC authentication is required, and the response is uniformly wrapped as `{ "code": 0, "message": "success", "data": ... }`.
+The analytics endpoints are provided by `AnalyticsController`, all based on MySQL real-time aggregation (`game_game_play_log` game behavior logs / `game_deposit_order` deposit orders); on database failure, empty data is returned instead of 500. Unless otherwise noted, JWT + RBAC authentication is required, and the response is uniformly wrapped as `{ "code": 0, "message": "success", "data": ... }`.
 
 ### 16.1 Platform Overview
 

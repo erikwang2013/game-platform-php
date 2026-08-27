@@ -132,34 +132,34 @@ Controller::method()
 ### 3.1 علاقات ER
 
 ```
-erik_admin_user ──┬── erik_admin_user_role ──┬── erik_admin_role
+game_admin_user ──┬── game_admin_user_role ──┬── game_admin_role
   (المستخدمون)     │    (ربط المستخدم-الدور)    │     (الأدوار)
                   │                          │
-                  │                    erik_admin_role_permission
+                  │                    game_admin_role_permission
                   │                     (ربط الدور-الصلاحية)
                   │                          │
                   │                          ▼
-                  │                    erik_admin_permission
+                  │                    game_admin_permission
                   │                      (الصلاحيات/القوائم)
                   │
                   ▼
-           erik_operation_log
+           game_operation_log
              (سجلات العمليات)
 
-erik_system_config (إعدادات النظام) — جدول مستقل
+game_system_config (إعدادات النظام) — جدول مستقل
 ```
 
 ### 3.2 بنية الجداول الأساسية
 
 | اسم الجدول | عدد الحقول | الوصف |
 |------|-------|------|
-| `erik_admin_user` | 14 | مستخدمو الإدارة، phone/email/id_card مخزنة مشفرة، تدعم الحذف الناعم |
-| `erik_admin_role` | 7 | الأدوار، slug فريد |
-| `erik_admin_permission` | 10 | شجرة الصلاحيات (parent_id مرجع ذاتي)، type: 1=قائمة 2=زر 3=API |
-| `erik_admin_user_role` | 2 | جدول وسيط متعدد-متعدد للمستخدم-الدور |
-| `erik_admin_role_permission` | 2 | جدول وسيط متعدد-متعدد للدور-الصلاحية |
-| `erik_system_config` | 8 | إعدادات أزواج مفتاح-قيمة، group+key فريدان معًا |
-| `erik_operation_log` | 9 | سجل تدقيق العمليات (بما فيه source طرف المصدر) |
+| `game_admin_user` | 14 | مستخدمو الإدارة، phone/email/id_card مخزنة مشفرة، تدعم الحذف الناعم |
+| `game_admin_role` | 7 | الأدوار، slug فريد |
+| `game_admin_permission` | 10 | شجرة الصلاحيات (parent_id مرجع ذاتي)، type: 1=قائمة 2=زر 3=API |
+| `game_admin_user_role` | 2 | جدول وسيط متعدد-متعدد للمستخدم-الدور |
+| `game_admin_role_permission` | 2 | جدول وسيط متعدد-متعدد للدور-الصلاحية |
+| `game_system_config` | 8 | إعدادات أزواج مفتاح-قيمة، group+key فريدان معًا |
+| `game_operation_log` | 9 | سجل تدقيق العمليات (بما فيه source طرف المصدر) |
 
 ### 3.3 مواصفات المفتاح الأساسي
 

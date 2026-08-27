@@ -357,11 +357,11 @@ AdminPermission मिडलवेयर लागू।
 
 **डेटा मॉडल**: User -> Role -> Permission तीन-परत संबंध
 
-- `erik_admin_user` (उपयोगकर्ता तालिका)
-- `erik_admin_user_role` (उपयोगकर्ता-भूमिका संबंध तालिका)
-- `erik_admin_role` (भूमिका तालिका)
-- `erik_admin_role_permission` (भूमिका-अनुमति संबंध तालिका)
-- `erik_admin_permission` (अनुमति तालिका)
+- `game_admin_user` (उपयोगकर्ता तालिका)
+- `game_admin_user_role` (उपयोगकर्ता-भूमिका संबंध तालिका)
+- `game_admin_role` (भूमिका तालिका)
+- `game_admin_role_permission` (भूमिका-अनुमति संबंध तालिका)
+- `game_admin_permission` (अनुमति तालिका)
 
 **अनुमति प्रकार**:
 | type | अर्थ | उदाहरण |

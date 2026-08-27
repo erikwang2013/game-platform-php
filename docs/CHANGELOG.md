@@ -27,7 +27,7 @@ Languages: **中文** · [English](CHANGELOG.en.md) · [한국어](CHANGELOG.ko.
 ### 可用性
 
 - admin 分析服务 12 条 `/admin/analytics/*` 路由挂载。
-- 模型去掉硬编码 `erik_` 前缀；DepositLog 审计落库；Test model 删除。
+- 模型去掉硬编码 `game_` 前缀；DepositLog 审计落库；Test model 删除。
 
 ### 可观测
 

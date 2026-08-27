@@ -54,7 +54,7 @@ Languages: [中文](FEATURE-DESIGN.md) · [English](FEATURE-DESIGN.en.md) · **�
 
 ## 2. 지갑 설계
 
-### 2.1 플랫폼 코인 지갑 (erik_user_wallet)
+### 2.1 플랫폼 코인 지갑 (game_user_wallet)
 
 사용자 등록 시 자동 생성, 잔액 초기값 0.
 
@@ -66,7 +66,7 @@ Languages: [中文](FEATURE-DESIGN.md) · [English](FEATURE-DESIGN.en.md) · **�
 | total_spent | 누적 지출 |
 | version | 낙관적 잠금 버전 번호 (업데이트마다 +1) |
 
-### 2.2 게임 코인 지갑 (erik_user_game_wallet)
+### 2.2 게임 코인 지갑 (game_user_game_wallet)
 
 사용자+게임+코인 3차원으로 고유. 최초 환전 시 자동 생성.
 
@@ -320,7 +320,7 @@ signature = HMAC-SHA256(
 ### 7.2 번역 관리
 
 - 번역은 `group.key` 형식으로 구성 (예: `auth.login_success`)
-- 데이터베이스 테이블 `erik_translation`에 저장, Redis 캐시 (TTL 1시간)
+- 데이터베이스 테이블 `game_translation`에 저장, Redis 캐시 (TTL 1시간)
 - API: `GET /api/language/list`로 사용 가능 언어 조회, `POST /api/language/switch`로 언어 전환
 - 프론트엔드는 `X-Language` 요청 헤더 또는 `Accept-Language`로 자동 감지
 - 번역 누락 시 en-US로 폴백, en-US에도 없으면 원본 key 반환

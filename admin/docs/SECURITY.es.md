@@ -357,11 +357,11 @@ Implementado en el middleware AdminPermission.
 
 **Modelo de datos**: relación de tres niveles User -> Role -> Permission
 
-- `erik_admin_user` (tabla de usuarios)
-- `erik_admin_user_role` (tabla de relación usuario-rol)
-- `erik_admin_role` (tabla de roles)
-- `erik_admin_role_permission` (tabla de relación rol-permiso)
-- `erik_admin_permission` (tabla de permisos)
+- `game_admin_user` (tabla de usuarios)
+- `game_admin_user_role` (tabla de relación usuario-rol)
+- `game_admin_role` (tabla de roles)
+- `game_admin_role_permission` (tabla de relación rol-permiso)
+- `game_admin_permission` (tabla de permisos)
 
 **Tipos de permiso**:
 | type | Significado | Ejemplo |

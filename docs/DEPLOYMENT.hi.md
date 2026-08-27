@@ -99,7 +99,7 @@ docker-compose logs -f
 ```bash
 # माइग्रेशन फ़ाइलें MySQL के पहले प्रारंभ पर स्वचालित रूप से निष्पादित होती हैं
 # या मैन्युअल निष्पादन:
-docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform < install/install.sql
+docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform < install/install.sql
 ```
 
 ### 2.4 डेटा स्थायीकरण
@@ -115,10 +115,10 @@ docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform <
 बैकअप:
 ```bash
 # MySQL बैकअप
-docker exec game-platform-mysql mysqldump -uroot -p${DB_PASSWORD} game_platform | gzip > backup_$(date +%Y%m%d).sql.gz
+docker exec game-platform-mysql mysqldump -uroot -p${DB_PASSWORD} game-platform | gzip > backup_$(date +%Y%m%d).sql.gz
 
 # पुनर्स्थापना
-gunzip < backup_20260101.sql.gz | docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game_platform
+gunzip < backup_20260101.sql.gz | docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform
 ```
 
 ---
@@ -166,8 +166,8 @@ APP_DEBUG=false
 
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=game_platform
-DB_USERNAME=game_platform
+DB_DATABASE=game-platform
+DB_USERNAME=game-platform
 DB_PASSWORD=<मजबूत पासवर्ड>
 
 JWT_SECRET=<64 अक्षर यादृच्छिक स्ट्रिंग>
@@ -506,7 +506,7 @@ tail -f runtime/logs/workerman.log
 
 ```bash
 # कनेक्शन परीक्षण
-mysql -h 127.0.0.1 -u game_platform -p game_platform -e "SELECT 1"
+mysql -h 127.0.0.1 -u game-platform -p game-platform -e "SELECT 1"
 
 # .env कॉन्फ़िग जाँचें
 grep DB_ admin/.env
@@ -556,7 +556,7 @@ cd admin && composer install --no-dev --optimize-autoloader
 cd ../service && composer install --no-dev --optimize-autoloader
 
 # 3. नए माइग्रेशन निष्पादित करें (यदि कोई हों)
-mysql -u game_platform -p game_platform < install/新迁移文件.sql
+mysql -u game-platform -p game-platform < install/新迁移文件.sql
 
 # 4. सुचारू पुनः प्रारंभ (सेवा बाधित नहीं होती)
 cd /opt/game-platform/admin && php start.php reload

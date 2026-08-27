@@ -28,9 +28,9 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ### 2.1 `install/install.sql` (988 líneas)
 - Fusiona los 8 archivos de migración originales
-- 42 tablas de datos con prefijo `erik_` (CREATE TABLE IF NOT EXISTS)
+- 42 tablas de datos con prefijo `game_` (CREATE TABLE IF NOT EXISTS)
 - 13 bloques de datos semilla INSERT IGNORE
-- El campo `source` de `erik_operation_log` se ha fusionado en la sentencia de creación de tabla (sin necesidad de ALTER TABLE)
+- El campo `source` de `game_operation_log` se ha fusionado en la sentencia de creación de tabla (sin necesidad de ALTER TABLE)
 - Envuelto en transacción (START TRANSACTION / COMMIT)
 - Todos los INSERT se han tratado de forma idempotente
 
@@ -38,16 +38,16 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 | Nombre de tabla | Método |
 |------|---------|
-| `erik_admin_role` | INSERT IGNORE (ID fijo) |
-| `erik_admin_permission` | INSERT IGNORE (ID fijo) - 4 veces |
-| `erik_admin_role_permission` | Subconsulta WHERE NOT EXISTS |
-| `erik_platform_config` | INSERT IGNORE (ID fijo) - 2 veces |
-| `erik_language` | INSERT IGNORE (ID fijo) |
-| `erik_translation` | INSERT IGNORE (ID fijo) |
-| `erik_risk_rule` | INSERT IGNORE (ID fijo) |
-| `erik_withdraw_limit` | INSERT IGNORE (ID fijo) |
-| `erik_game_category` | INSERT IGNORE (ID fijo) |
-| `erik_country_config` | INSERT IGNORE (ID fijo) |
+| `game_admin_role` | INSERT IGNORE (ID fijo) |
+| `game_admin_permission` | INSERT IGNORE (ID fijo) - 4 veces |
+| `game_admin_role_permission` | Subconsulta WHERE NOT EXISTS |
+| `game-platform_config` | INSERT IGNORE (ID fijo) - 2 veces |
+| `game_language` | INSERT IGNORE (ID fijo) |
+| `game_translation` | INSERT IGNORE (ID fijo) |
+| `game_risk_rule` | INSERT IGNORE (ID fijo) |
+| `game_withdraw_limit` | INSERT IGNORE (ID fijo) |
+| `game_game_category` | INSERT IGNORE (ID fijo) |
+| `game_country_config` | INSERT IGNORE (ID fijo) |
 
 ### 2.2 `install/index.php` (485 líneas)
 - Enrutamiento: step1 -> step2 -> step3 -> step4 -> step5
@@ -181,7 +181,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 ### 6.3 Validación SQL
 ```
 通过 42张表名与原始迁移文件完全一致
-通过 source字段已合并到 erik_operation_log 建表语句
+通过 source字段已合并到 game_operation_log 建表语句
 通过 所有INSERT语句已做幂等处理
 通过 WHERE NOT EXISTS 守卫已恢复（与原迁移一致）
 ```
@@ -192,7 +192,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 | # | Problema | Gravedad | Estado |
 |---|------|--------|------|
-| 1 | El INSERT de `erik_admin_role_permission` carecía de la guarda `WHERE NOT EXISTS` (incoherente con la migración original) | Alta | Corregido |
+| 1 | El INSERT de `game_admin_role_permission` carecía de la guarda `WHERE NOT EXISTS` (incoherente con la migración original) | Alta | Corregido |
 | 2 | Los INSERT de datos semilla no eran idempotentes (fallaban al ejecutarse de nuevo) | Media | Corregido (INSERT IGNORE) |
 | 3 | A la comprobación del entorno le faltaba la extensión `pcntl` (dependencia principal de webman) | Media | Corregido |
 | 4 | Al .env de Service le faltaba `ENCRYPTION_CIPHER` | Baja | Corregido |
@@ -224,7 +224,7 @@ El sistema de instalación es funcionalmente completo, con buena calidad de cód
 
 Esta ronda de correcciones de seguridad (callback de pago fail-closed, validación de arranque JWT, unificación del prefijo de tablas) **no afecta al sistema de instalación**; no hay problemas nuevos:
 
-- Tras eliminar el prefijo `erik_` hardcodeado de los modelos, los nombres reales de las tablas los sigue generando de forma unificada `prefix=erik_` de `config/database.php`, coherente con las tablas `erik_*` creadas por install.sql; no hace falta cambiar el SQL de instalación
+- Tras eliminar el prefijo `game_` hardcodeado de los modelos, los nombres reales de las tablas los sigue generando de forma unificada `prefix=game_` de `config/database.php`, coherente con las tablas `game_*` creadas por install.sql; no hace falta cambiar el SQL de instalación
 - La validación de arranque JWT (`JWT_SECRET_KEY` faltante o con el valor por defecto bloquea el arranque) es compatible con la clave aleatoria de 64 bytes generada automáticamente por el asistente de instalación; no hay que ajustar el proceso de instalación
 
 La conclusión histórica y la lista de problemas se mantienen sin cambios.

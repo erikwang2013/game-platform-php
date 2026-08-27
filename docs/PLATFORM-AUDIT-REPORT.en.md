@@ -51,9 +51,9 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · **English** · [한국어](PLAT
 
 | Issue | Fix |
 |------|------|
-| 🔴 service model table names had `erik_` prefix (conflicts with existing convention) | Removed the prefix from all 10 new models |
-| 🟡 `AchievementService` hardcoded `erik_user_session` | service version changed to `user_session` |
-| 🟡 `GameController` hardcoded `erik_game_category_rel` | service version changed to `game_category_rel` |
+| 🔴 service model table names had `game_` prefix (conflicts with existing convention) | Removed the prefix from all 10 new models |
+| 🟡 `AchievementService` hardcoded `game_user_session` | service version changed to `user_session` |
+| 🟡 `GameController` hardcoded `game_game_category_rel` | service version changed to `game_category_rel` |
 
 ---
 
@@ -128,9 +128,9 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · **English** · [한국어](PLAT
 
 | # | Issue | Severity | Fix |
 |---|------|--------|------|
-| 1 | 🔴 service model table names all had `erik_` prefix (10) | High | Removed in batch with sed |
-| 2 | 🟡 service AchievementService hardcoded `erik_user_session` | Medium | Changed to `user_session` |
-| 3 | 🟡 service GameController hardcoded `erik_game_category_rel` | Medium | Changed to `game_category_rel` |
+| 1 | 🔴 service model table names all had `game_` prefix (10) | High | Removed in batch with sed |
+| 2 | 🟡 service AchievementService hardcoded `game_user_session` | Medium | Changed to `user_session` |
+| 3 | 🟡 service GameController hardcoded `game_game_category_rel` | Medium | Changed to `game_category_rel` |
 | 4 | 🟡 route.php double backslashes + leftover echo statements | Medium | Fixed |
 | 5 | 🟢 Friend/Message models initially not created (SQL only) | Low | Created |
 | 6 | 🟢 LeaderboardWebSocket actually used port 8790, chat-ws switched to 8791 | Low | Port adjusted |
@@ -239,7 +239,7 @@ This round (2026-08-18) of security and availability fixes (uncommitted in the w
 | Transactional callback crediting | Order update + wallet credit in the same transaction, rollback on credit failure | ✅ Fixed |
 | JWT key startup validation | Refuses to start when `JWT_SECRET_KEY` is missing or still the default `open-admin-jwt-secret-change-in-production`, consistent across admin/service | ✅ Fixed |
 | Analytics service routes | admin/config/route.php registers 12 `/admin/analytics/*` routes (all AnalyticsController methods) | ✅ Fixed |
-| Table prefix | 52 models removed hardcoded `erik_` prefix (eliminating the `erik_erik_` double prefix), DB prefix uniformly provided by config `prefix=erik_` | ✅ Fixed |
+| Table prefix | 52 models removed hardcoded `game_` prefix (eliminating the `game_game_` double prefix), DB prefix uniformly provided by config `prefix=game_` | ✅ Fixed |
 | Rate limit degradation | RateLimit fails closed when Redis is down (rejects instead of silently allowing) | ✅ Fixed |
 | refresh token | service AuthController refresh token logic rewritten | ✅ Fixed |
 | DepositLogService | service version ported to eliminate one of the admin/service duplicated copies | ✅ Fixed |

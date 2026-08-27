@@ -232,7 +232,7 @@ Redis::setex("jwt_blacklist:" . md5($token), max($ttl, 0), '1');
 
 **文件**: `app/model/OperationLog.php`（修改）
 
-表 `erik_operation_log` 仅有 `created_at` 列（无 `updated_at`）。Eloquent 默认 `save()` 会尝试写入 `updated_at`，导致 SQL 错误。
+表 `game_operation_log` 仅有 `created_at` 列（无 `updated_at`）。Eloquent 默认 `save()` 会尝试写入 `updated_at`，导致 SQL 错误。
 
 修复：`public $timestamps = false;` + 写入时手动指定 `created_at`。
 

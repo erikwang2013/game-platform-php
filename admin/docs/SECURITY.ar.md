@@ -357,11 +357,11 @@ try {
 
 **نموذج البيانات**: ارتباط ثلاثي الطبقات User -> Role -> Permission
 
-- `erik_admin_user` (جدول المستخدمين)
-- `erik_admin_user_role` (جدول ربط المستخدم-الدور)
-- `erik_admin_role` (جدول الأدوار)
-- `erik_admin_role_permission` (جدول ربط الدور-الصلاحية)
-- `erik_admin_permission` (جدول الصلاحيات)
+- `game_admin_user` (جدول المستخدمين)
+- `game_admin_user_role` (جدول ربط المستخدم-الدور)
+- `game_admin_role` (جدول الأدوار)
+- `game_admin_role_permission` (جدول ربط الدور-الصلاحية)
+- `game_admin_permission` (جدول الصلاحيات)
 
 **أنواع الصلاحيات**:
 | type | المعنى | مثال |

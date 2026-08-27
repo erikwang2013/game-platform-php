@@ -1414,7 +1414,7 @@ Retry-After: 60
 
 1. Ekstrak Token dari `Authorization: Bearer <token>`
 2. Verifikasi tanda tangan JWT (HS256), parse `sub` (ID pengguna)
-3. Kueri tabel `erik_user` untuk memverifikasi pengguna ada dan status=1
+3. Kueri tabel `game_user` untuk memverifikasi pengguna ada dan status=1
 4. Suntikkan `$request->userId`
 
 ### Backend Administrasi (AdminAuth + AdminPermission)
@@ -1761,7 +1761,7 @@ Respons: {
 ### Autentikasi Provider (ProviderAuth)
 
 1. Ekstrak `X-Game-Id`, `X-Timestamp`, `X-Signature` dari header permintaan
-2. Kueri tabel `erik_game` untuk memverifikasi game ada dan status=1
+2. Kueri tabel `game_game` untuk memverifikasi game ada dan status=1
 3. Verifikasi timestamp dalam jendela 5 menit (cegah replay)
 4. Hitung `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)` dan bandingkan dengan tanda tangan
 5. Suntikkan `$request->gameId` dan `$request->game`
@@ -1953,7 +1953,7 @@ Kondisi divalidasi ganda pada daftar `available()` dan saat pengambilan `claim()
 Komisi referral menambahkan bagi hasil level dua:
 - L1: perujuk langsung mendapatkan `referrer_bonus` (konfigurasi: referral.referrer_bonus)
 - L2: perujuk dari perujuk mendapatkan `commission = referrer_bonus * level2_rate` (konfigurasi: referral.level2_rate, default 5%)
-- Catat `erik_referral_commission` (level/commission_rate/commission_amount)
+- Catat `game_referral_commission` (level/commission_rate/commission_amount)
 
 ### 8. Strategi Rate Limit (Diperbarui)
 

@@ -1414,7 +1414,7 @@ Retry-After: 60
 
 1. `Authorization: Bearer <token>` থেকে Token এক্সট্রাক্ট করুন
 2. JWT সিগনেচার যাচাই (HS256), `sub` পার্স করুন (ইউজার ID)
-3. `erik_user` টেবিলে ইউজার আছে ও status=1 কিনা যাচাই করুন
+3. `game_user` টেবিলে ইউজার আছে ও status=1 কিনা যাচাই করুন
 4. `$request->userId` ইনজেক্ট করুন
 
 ### অ্যাডমিন প্যানেল (AdminAuth + AdminPermission)
@@ -1761,7 +1761,7 @@ status: open / waiting / replied / closed
 ### Provider অথেনটিকেশন (ProviderAuth)
 
 1. রিকোয়েস্ট হেডার থেকে `X-Game-Id`, `X-Timestamp`, `X-Signature` এক্সট্রাক্ট করুন
-2. `erik_game` টেবিলে গেম আছে ও status=1 কিনা যাচাই করুন
+2. `game_game` টেবিলে গেম আছে ও status=1 কিনা যাচাই করুন
 3. টাইমস্ট্যাম্প ৫ মিনিটের উইন্ডোর মধ্যে যাচাই করুন (রিপ্লে-প্রতিরোধ)
 4. `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)` গণনা করে সিগনেচারের সাথে তুলনা করুন
 5. `$request->gameId` এবং `$request->game` ইনজেক্ট করুন
@@ -1953,7 +1953,7 @@ status: open / waiting / replied / closed
 রেফারেল কমিশনে সেকেন্ড-লেভেল প্রফিট শেয়ার যোগ হয়েছে:
 - L1: সরাসরি রেফারার `referrer_bonus` পায় (কনফিগ: referral.referrer_bonus)
 - L2: রেফারারের রেফারার `commission = referrer_bonus * level2_rate` পায় (কনফিগ: referral.level2_rate, ডিফল্ট ৫%)
-- `erik_referral_commission`-এ রেকর্ড হয় (level/commission_rate/commission_amount)
+- `game_referral_commission`-এ রেকর্ড হয় (level/commission_rate/commission_amount)
 
 ### 8. রেট লিমিট পলিসি (আপডেট)
 

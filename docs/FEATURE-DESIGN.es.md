@@ -54,7 +54,7 @@ Languages: [中文](FEATURE-DESIGN.md) · [English](FEATURE-DESIGN.en.md) · [�
 
 ## 2. Diseño de la billetera
 
-### 2.1 Billetera de moneda de plataforma (erik_user_wallet)
+### 2.1 Billetera de moneda de plataforma (game_user_wallet)
 
 Se crea automáticamente al registrar al usuario; el saldo inicial es 0.
 
@@ -66,7 +66,7 @@ Se crea automáticamente al registrar al usuario; el saldo inicial es 0.
 | total_spent | Gastos acumulados |
 | version | Número de versión de bloqueo optimista (se incrementa en cada actualización) |
 
-### 2.2 Billetera de moneda de juego (erik_user_game_wallet)
+### 2.2 Billetera de moneda de juego (game_user_game_wallet)
 
 Única en las tres dimensiones usuario + juego + moneda. Se crea automáticamente en la primera conversión.
 
@@ -320,7 +320,7 @@ La configuración se hace mediante PlatformConfig o variables de entorno; si la 
 ### 7.2 Gestión de traducciones
 
 - Las traducciones se organizan en formato `group.key` (por ejemplo, `auth.login_success`)
-- Se almacenan en la tabla `erik_translation` con caché Redis (TTL 1 hora)
+- Se almacenan en la tabla `game_translation` con caché Redis (TTL 1 hora)
 - API: `GET /api/language/list` obtiene los idiomas disponibles; `POST /api/language/switch` cambia de idioma
 - El frontend detecta automáticamente mediante la cabecera `X-Language` o `Accept-Language`
 - Si falta la traducción, se vuelve a en-US; si tampoco está en en-US, se devuelve la clave original

@@ -3,7 +3,7 @@
 - 测试日期: 2026-08-27
 - 测试团队: PHP 测试工程师 / API 测试工程师 / UI 自动化测试工程师
 - 分支: feat/xiaoxiaole-p0
-- 测试库: `game_platform_test`（install.sql 全量导入，43 张表）
+- 测试库: `game-platform_test`（install.sql 全量导入，43 张表）
 
 ## 一、总览
 
@@ -29,7 +29,7 @@
 1. **hashids 非法输入未捕获** → 41 个 `{hashid}` 路由传非法 ID 直接 500（`InvalidArgumentException` 未转 400）
 2. **hashids 配置不兼容**：admin 长度 0 / service 长度 16，管理端无法解码服务端订单号，提现审核链无法打通
 3. **PlatformConfig::set() insert 路径必然失败**（admin 生产 bug）
-4. **erik_risk_log.result VARCHAR(20) 截断** → 风控日志静默丢失（建议改 TEXT）
+4. **game_risk_log.result VARCHAR(20) 截断** → 风控日志静默丢失（建议改 TEXT）
 5. **控制器误用 `Request::has()`**（webman 无此方法）→ 5 个接口 500
 6. **ExportController 返回类型不匹配** → 2 个导出接口 500
 
@@ -39,7 +39,7 @@
 
 ### 已修复（测试前置）
 - Flutter `lib/` 17 文件 ~150 处编译错误（历史损坏，从未编译通过）——纯机械修复，`flutter analyze` 0 error
-- 两个 tests/bootstrap.php：修复 Eloquent 默认连接缺失根因，测试库固定 `game_platform_test`
+- 两个 tests/bootstrap.php：修复 Eloquent 默认连接缺失根因，测试库固定 `game-platform_test`
 
 ## 四、Go/Rust 说明
 

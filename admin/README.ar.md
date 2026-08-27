@@ -32,7 +32,7 @@ Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.
 |---|------|------|
 | إطار الواجهة الخلفية | webman v2 (workerman) | إطار PHP عالي الأداء للعمليات المقيمة |
 | إصدار PHP | 8.3+ | |
-| قاعدة البيانات | MySQL 8.0+ | بادئة الجداول `erik_`، مفاتيح أساسية BIGINT غير متزايدة ذاتيًا |
+| قاعدة البيانات | MySQL 8.0+ | بادئة الجداول `game_`، مفاتيح أساسية BIGINT غير متزايدة ذاتيًا |
 | محرك البحث | Elasticsearch | المزامنة والاستعلام عبر `webman-scout` |
 | واجهة الإدارة الأمامية | Flutter 3.x | الويب بنمط لوحة إدارة PC (`apps/flutter/`) |
 | الهاتف المحمول | HarmonyOS ArkTS | عميل HarmonyOS الأصلي (`apps/harmonyos/`)، يدعم الهاتف/اللوحي/2in1 |
@@ -198,7 +198,7 @@ docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 ## مواصفات قاعدة البيانات
 
-- **بادئة الجداول**: `erik_`
+- **بادئة الجداول**: `game_`
 - **المفتاح الأساسي**: المفتاح الأساسي لكل الجداول هو `id BIGINT UNSIGNED NOT NULL`، **مُعطّل AUTO_INCREMENT**
 - **توليد المعرفات**: معرفات المفتاح الأساسي يولّدها `SnowflakeService::generate()` على طبقة التطبيق، فريدة موزّعة
 - **الحقول الإلزامية**: يجب أن يتضمن كل جدول `id`, `created_at`, `updated_at`

@@ -24,7 +24,7 @@ Globale, universelle Spielaggregationsplattform. Nach der Registrierung lädt de
 
 ### Backend
 - PHP 8.3+, webman v2 (workerman/webman)
-- Datenbank: MySQL 8.0+, Tabellenpräfix `erik_`
+- Datenbank: MySQL 8.0+, Tabellenpräfix `game_`
 - Primärschlüssel: BIGINT, nicht auto-increment, generiert von `erikwang2013/snowflake-php`
 - ID-Verschlüsselung in der API-Schicht: `erikwang2013/hashids`
 - JWT-Authentifizierung: `erikwang2013/jwt-webman`
@@ -142,47 +142,47 @@ Benutzer beantragt Auszahlung
 
 | Nr. | Tabellenname | Beschreibung |
 |------|------|------|
-| 1 | `erik_user` | C-End-Benutzer |
-| 2 | `erik_user_wallet` | Plattformwährungs-Wallet |
-| 3 | `erik_user_game_wallet` | Spielwährungs-Wallet |
-| 4 | `erik_game` | Spiel |
-| 5 | `erik_game_currency` | Spielwährung |
-| 6 | `erik_deposit_order` | Einzahlungsauftrag |
-| 7 | `erik_withdraw_order` | Auszahlungsauftrag |
-| 8 | `erik_exchange_record` | Umtauschprotokoll |
-| 9 | `erik_transaction` | Plattformtransaktionen |
-| 10 | `erik_payment_method` | Zahlungsmethode |
-| 11 | `erik_announcement` | Ankündigung |
-| 12 | `erik_platform_config` | Plattformkonfiguration (erweitert die bestehende erik_system_config) |
+| 1 | `game_user` | C-End-Benutzer |
+| 2 | `game_user_wallet` | Plattformwährungs-Wallet |
+| 3 | `game_user_game_wallet` | Spielwährungs-Wallet |
+| 4 | `game_game` | Spiel |
+| 5 | `game_game_currency` | Spielwährung |
+| 6 | `game_deposit_order` | Einzahlungsauftrag |
+| 7 | `game_withdraw_order` | Auszahlungsauftrag |
+| 8 | `game_exchange_record` | Umtauschprotokoll |
+| 9 | `game_transaction` | Plattformtransaktionen |
+| 10 | `game_payment_method` | Zahlungsmethode |
+| 11 | `game_announcement` | Ankündigung |
+| 12 | `game-platform_config` | Plattformkonfiguration (erweitert die bestehende game_system_config) |
 
 ### 5.2 Standardversion neu (10 Tabellen)
 
 | Nr. | Tabellenname | Beschreibung |
 |------|------|------|
-| 13 | `erik_user_identity` | Echte-Name/KYC |
-| 14 | `erik_user_oauth` | Drittanbieter-Login |
-| 15 | `erik_user_payment_account` | Zahlungsempfängerkonto |
-| 16 | `erik_user_session` | Login-Sitzung |
-| 17 | `erik_game_server` | Spielserver/Region |
-| 18 | `erik_game_play_log` | Spielprotokoll |
-| 19 | `erik_withdraw_limit` | Auszahlungslimitregeln |
-| 20 | `erik_risk_rule` | Risikokontrollregeln |
-| 21 | `erik_risk_log` | Auslöseprotokoll der Risikokontrolle |
-| 22 | `erik_stat_daily` | Tagesstatistik-Snapshot |
+| 13 | `game_user_identity` | Echte-Name/KYC |
+| 14 | `game_user_oauth` | Drittanbieter-Login |
+| 15 | `game_user_payment_account` | Zahlungsempfängerkonto |
+| 16 | `game_user_session` | Login-Sitzung |
+| 17 | `game_game_server` | Spielserver/Region |
+| 18 | `game_game_play_log` | Spielprotokoll |
+| 19 | `game_withdraw_limit` | Auszahlungslimitregeln |
+| 20 | `game_risk_rule` | Risikokontrollregeln |
+| 21 | `game_risk_log` | Auslöseprotokoll der Risikokontrolle |
+| 22 | `game_stat_daily` | Tagesstatistik-Snapshot |
 
 ### 5.3 Vollversion neu (8 Tabellen)
 
 | Nr. | Tabellenname | Beschreibung |
 |------|------|------|
-| 23 | `erik_game_category` | Spielkategorie |
-| 24 | `erik_game_category_rel` | Spiel-Kategorie-Zuordnung |
-| 25 | `erik_leaderboard` | Rangliste |
-| 26 | `erik_coupon` | Gutschein |
-| 27 | `erik_user_coupon` | Benutzer-Gutscheine |
-| 28 | `erik_language` | Sprachdefinitionen |
-| 29 | `erik_translation` | Übersetzungstexte |
-| 30 | `erik_country_config` | Länderkonfiguration |
-| 31 | `erik_platform_revenue` | Plattformerlösprotokoll |
+| 23 | `game_game_category` | Spielkategorie |
+| 24 | `game_game_category_rel` | Spiel-Kategorie-Zuordnung |
+| 25 | `game_leaderboard` | Rangliste |
+| 26 | `game_coupon` | Gutschein |
+| 27 | `game_user_coupon` | Benutzer-Gutscheine |
+| 28 | `game_language` | Sprachdefinitionen |
+| 29 | `game_translation` | Übersetzungstexte |
+| 30 | `game_country_config` | Länderkonfiguration |
+| 31 | `game-platform_revenue` | Plattformerlösprotokoll |
 
 ---
 
@@ -286,7 +286,7 @@ flowchart TB
     end
 
     subgraph "存储层"
-        E1[("MySQL 8.0<br/>erik_ 前缀")]
+        E1[("MySQL 8.0<br/>game_ 前缀")]
         E2[("Redis<br/>Session / 缓存 / 限流")]
         E3[("Elasticsearch<br/>全文检索")]
     end

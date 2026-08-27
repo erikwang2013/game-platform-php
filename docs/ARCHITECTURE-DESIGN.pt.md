@@ -74,7 +74,7 @@ Moeda da plataforma e moeda de jogo usam uniformemente a precisão `DECIMAL(18,4
 ### 3.3 Lock otimista de carteira
 
 ```sql
-UPDATE erik_user_wallet 
+UPDATE game_user_wallet 
 SET balance = balance + ?, version = version + 1 
 WHERE user_id = ? AND version = ?
 ```
@@ -143,7 +143,7 @@ Função __() no Controller ou TranslationService::trans() obtém o texto traduz
 
 ### 5.2 Armazenamento de traduções
 
-- A tabela `erik_translation` armazena todos os textos traduzidos (group + key + lang_code + value)
+- A tabela `game_translation` armazena todos os textos traduzidos (group + key + lang_code + value)
 - Na primeira requisição, carrega tudo do banco para o Redis (key: `i18n:translations`, TTL: 1 hora)
 - Requisições seguintes leem direto do Redis, com cache em memória para aceleração
 - O painel administrativo pode estender a página de gestão de traduções (implementada na versão completa)
@@ -196,7 +196,7 @@ warn   → registra log, continua a execução
 block  → recusa a operação
 ```
 
-As regras ficam na tabela `erik_risk_rule`, configuradas como JSON, permitindo ajuste dinâmico de limites e ações.
+As regras ficam na tabela `game_risk_rule`, configuradas como JSON, permitindo ajuste dinâmico de limites e ações.
 
 ### 6.2 KYC de identidade real
 

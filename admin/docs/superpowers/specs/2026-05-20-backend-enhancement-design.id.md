@@ -232,7 +232,7 @@ Mengembalikan status koneksi setiap komponen:
 
 **File**: `app/model/OperationLog.php` (modifikasi)
 
-Tabel `erik_operation_log` hanya memiliki kolom `created_at` (tanpa `updated_at`). `save()` default Eloquent akan mencoba menulis `updated_at`, menyebabkan error SQL.
+Tabel `game_operation_log` hanya memiliki kolom `created_at` (tanpa `updated_at`). `save()` default Eloquent akan mencoba menulis `updated_at`, menyebabkan error SQL.
 
 Perbaikan: `public $timestamps = false;` + tentukan `created_at` secara manual saat menulis.
 

@@ -24,7 +24,7 @@ Languages: [中文](2026-05-22-game-platform-design.md) · [English](2026-05-22-
 
 ### 백엔드
 - PHP 8.3+, webman v2 (workerman/webman)
-- 데이터베이스: MySQL 8.0+, 테이블 접두사 `erik_`
+- 데이터베이스: MySQL 8.0+, 테이블 접두사 `game_`
 - 기본 키: BIGINT 비자동 증가, `erikwang2013/snowflake-php`로 생성
 - API 계층 ID 암복호화: `erikwang2013/hashids`
 - JWT 인증: `erikwang2013/jwt-webman`
@@ -142,47 +142,47 @@ game-platform-php/
 
 | 번호 | 테이블명 | 설명 |
 |------|------|------|
-| 1 | `erik_user` | C단 사용자 |
-| 2 | `erik_user_wallet` | 플랫폼 코인 지갑 |
-| 3 | `erik_user_game_wallet` | 게임 코인 지갑 |
-| 4 | `erik_game` | 게임 |
-| 5 | `erik_game_currency` | 게임 코인 종류 |
-| 6 | `erik_deposit_order` | 충전 주문 |
-| 7 | `erik_withdraw_order` | 출금 주문 |
-| 8 | `erik_exchange_record` | 환전 기록 |
-| 9 | `erik_transaction` | 플랫폼 거래 내역 |
-| 10 | `erik_payment_method` | 결제 수단 |
-| 11 | `erik_announcement` | 공지 |
-| 12 | `erik_platform_config` | 플랫폼 설정 (기존 erik_system_config 확장) |
+| 1 | `game_user` | C단 사용자 |
+| 2 | `game_user_wallet` | 플랫폼 코인 지갑 |
+| 3 | `game_user_game_wallet` | 게임 코인 지갑 |
+| 4 | `game_game` | 게임 |
+| 5 | `game_game_currency` | 게임 코인 종류 |
+| 6 | `game_deposit_order` | 충전 주문 |
+| 7 | `game_withdraw_order` | 출금 주문 |
+| 8 | `game_exchange_record` | 환전 기록 |
+| 9 | `game_transaction` | 플랫폼 거래 내역 |
+| 10 | `game_payment_method` | 결제 수단 |
+| 11 | `game_announcement` | 공지 |
+| 12 | `game-platform_config` | 플랫폼 설정 (기존 game_system_config 확장) |
 
 ### 5.2 스탠다드 에디션 추가 (10장)
 
 | 번호 | 테이블명 | 설명 |
 |------|------|------|
-| 13 | `erik_user_identity` | 실명/KYC |
-| 14 | `erik_user_oauth` | 서드파티 로그인 |
-| 15 | `erik_user_payment_account` | 수취 계좌 |
-| 16 | `erik_user_session` | 로그인 세션 |
-| 17 | `erik_game_server` | 게임 서버/구역 |
-| 18 | `erik_game_play_log` | 게임 기록 |
-| 19 | `erik_withdraw_limit` | 출금 제한 규칙 |
-| 20 | `erik_risk_rule` | 리스크 규칙 |
-| 21 | `erik_risk_log` | 리스크 트리거 기록 |
-| 22 | `erik_stat_daily` | 일별 통계 스냅샷 |
+| 13 | `game_user_identity` | 실명/KYC |
+| 14 | `game_user_oauth` | 서드파티 로그인 |
+| 15 | `game_user_payment_account` | 수취 계좌 |
+| 16 | `game_user_session` | 로그인 세션 |
+| 17 | `game_game_server` | 게임 서버/구역 |
+| 18 | `game_game_play_log` | 게임 기록 |
+| 19 | `game_withdraw_limit` | 출금 제한 규칙 |
+| 20 | `game_risk_rule` | 리스크 규칙 |
+| 21 | `game_risk_log` | 리스크 트리거 기록 |
+| 22 | `game_stat_daily` | 일별 통계 스냅샷 |
 
 ### 5.3 풀 에디션 추가 (8장)
 
 | 번호 | 테이블명 | 설명 |
 |------|------|------|
-| 23 | `erik_game_category` | 게임 분류 |
-| 24 | `erik_game_category_rel` | 게임-분류 연관 |
-| 25 | `erik_leaderboard` | 리더보드 |
-| 26 | `erik_coupon` | 쿠폰 |
-| 27 | `erik_user_coupon` | 사용자 쿠폰 수령 |
-| 28 | `erik_language` | 언어 정의 |
-| 29 | `erik_translation` | 번역 텍스트 |
-| 30 | `erik_country_config` | 국가 설정 |
-| 31 | `erik_platform_revenue` | 플랫폼 수익 기록 |
+| 23 | `game_game_category` | 게임 분류 |
+| 24 | `game_game_category_rel` | 게임-분류 연관 |
+| 25 | `game_leaderboard` | 리더보드 |
+| 26 | `game_coupon` | 쿠폰 |
+| 27 | `game_user_coupon` | 사용자 쿠폰 수령 |
+| 28 | `game_language` | 언어 정의 |
+| 29 | `game_translation` | 번역 텍스트 |
+| 30 | `game_country_config` | 국가 설정 |
+| 31 | `game-platform_revenue` | 플랫폼 수익 기록 |
 
 ---
 
@@ -286,7 +286,7 @@ flowchart TB
     end
 
     subgraph "存储层"
-        E1[("MySQL 8.0<br/>erik_ 前缀")]
+        E1[("MySQL 8.0<br/>game_ 前缀")]
         E2[("Redis<br/>Session / 缓存 / 限流")]
         E3[("Elasticsearch<br/>全文检索")]
     end

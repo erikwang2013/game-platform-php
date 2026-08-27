@@ -232,7 +232,7 @@ Redis::setex("jwt_blacklist:" . md5($token), max($ttl, 0), '1');
 
 **Файл**: `app/model/OperationLog.php` (изменение)
 
-Таблица `erik_operation_log` содержит только колонку `created_at` (нет `updated_at`). Eloquent при `save()` по умолчанию пытается записать `updated_at`, что вызывает SQL-ошибку.
+Таблица `game_operation_log` содержит только колонку `created_at` (нет `updated_at`). Eloquent при `save()` по умолчанию пытается записать `updated_at`, что вызывает SQL-ошибку.
 
 Исправление: `public $timestamps = false;` + ручное указание `created_at` при записи.
 

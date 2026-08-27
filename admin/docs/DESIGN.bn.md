@@ -132,34 +132,34 @@ Controller::method()
 ### 3.1 ER সম্পর্ক
 
 ```
-erik_admin_user ──┬── erik_admin_user_role ──┬── erik_admin_role
+game_admin_user ──┬── game_admin_user_role ──┬── game_admin_role
   (用户)           │    (用户-角色关联)         │     (角色)
                   │                          │
-                  │                    erik_admin_role_permission
+                  │                    game_admin_role_permission
                   │                     (角色-权限关联)
                   │                          │
                   │                          ▼
-                  │                    erik_admin_permission
+                  │                    game_admin_permission
                   │                      (权限/菜单)
                   │
                   ▼
-           erik_operation_log
+           game_operation_log
              (操作日志)
 
-erik_system_config (系统配置) — 独立表
+game_system_config (系统配置) — 独立表
 ```
 
 ### 3.2 মূল টেবিল স্ট্রাকচার
 
 | টেবিল নাম | ফিল্ড সংখ্যা | বিবরণ |
 |------|-------|------|
-| `erik_admin_user` | 14 | প্রশাসনিক ইউজার, phone/email/id_card এনক্রিপ্টেড স্টোর, সফট ডিলিট সাপোর্ট |
-| `erik_admin_role` | 7 | রোল, slug ইউনিক |
-| `erik_admin_permission` | 10 | পারমিশন ট্রি (parent_id সেলফ-রেফারেন্স), type: 1=মেনু 2=বাটন 3=API |
-| `erik_admin_user_role` | 2 | ইউজার-রোল ম্যানি-টু-ম্যানি ইন্টারমিডিয়েট টেবিল |
-| `erik_admin_role_permission` | 2 | রোল-পারমিশন ম্যানি-টু-ম্যানি ইন্টারমিডিয়েট টেবিল |
-| `erik_system_config` | 8 | কী-ভ্যালু কনফিগ, group+key যৌথ ইউনিক |
-| `erik_operation_log` | 9 | অপারেশন অডিট লগ (source সোর্স সহ) |
+| `game_admin_user` | 14 | প্রশাসনিক ইউজার, phone/email/id_card এনক্রিপ্টেড স্টোর, সফট ডিলিট সাপোর্ট |
+| `game_admin_role` | 7 | রোল, slug ইউনিক |
+| `game_admin_permission` | 10 | পারমিশন ট্রি (parent_id সেলফ-রেফারেন্স), type: 1=মেনু 2=বাটন 3=API |
+| `game_admin_user_role` | 2 | ইউজার-রোল ম্যানি-টু-ম্যানি ইন্টারমিডিয়েট টেবিল |
+| `game_admin_role_permission` | 2 | রোল-পারমিশন ম্যানি-টু-ম্যানি ইন্টারমিডিয়েট টেবিল |
+| `game_system_config` | 8 | কী-ভ্যালু কনফিগ, group+key যৌথ ইউনিক |
+| `game_operation_log` | 9 | অপারেশন অডিট লগ (source সোর্স সহ) |
 
 ### 3.3 প্রাইমারি কী স্ট্যান্ডার্ড
 

@@ -95,7 +95,7 @@ Languages: [中文](PROJECT-PLAN.md) · [English](PROJECT-PLAN.en.md) · **한�
 15. **service 테스트 + CI 게이트**: 콜백 검증/출금 플로우/Redis 디그레이드/확률 계산/낙관적 잠금 동시성 통합 테스트; phpunit 실패 차단; service CI 편입（현재 `|| echo warning`으로 실패 허용） — 🔶 부분 완료（service에 WebhookUrlSafety / EventBusMessageFormat 있음; CI `phpunit-service` job 편입으로 실패 차단）
 
 **이번 라운드（2026-08-18）추가 완료（원래 번호에 없음）**:
-- **테이블 접두사 수정**: 52 모델에서 하드코딩 `erik_` 접두사 제거, `erik_erik_` 이중 접두사 해소; DB 접두사는 config/database.php `prefix=erik_`로 통일 제공, install.sql 변경 불필요
+- **테이블 접두사 수정**: 52 모델에서 하드코딩 `game_` 접두사 제거, `game_game_` 이중 접두사 해소; DB 접두사는 config/database.php `prefix=game_`로 통일 제공, install.sql 변경 불필요
 - **refresh token 재작성**: service AuthController 갱신 토큰 로직 재작성
 - **DepositLogService service 버전 이식**: service/common/service/DepositLogService.php 보완（admin/service 이중 분기 중 하나 해소）
 

@@ -74,7 +74,7 @@ Platform currency and game currency uniformly use `DECIMAL(18,4)` precision; on 
 ### 3.3 Wallet Optimistic Lock
 
 ```sql
-UPDATE erik_user_wallet 
+UPDATE game_user_wallet 
 SET balance = balance + ?, version = version + 1 
 WHERE user_id = ? AND version = ?
 ```
@@ -143,7 +143,7 @@ Controller 中 __() 函数或 TranslationService::trans() 获取翻译文本
 
 ### 5.2 Translation Storage
 
-- The database table `erik_translation` stores all translation texts (group + key + lang_code + value)
+- The database table `game_translation` stores all translation texts (group + key + lang_code + value)
 - On the first request, all translations are loaded from the database into Redis (key: `i18n:translations`, TTL: 1 hour)
 - Subsequent requests read directly from Redis with in-memory caching for speed
 - The admin backend can add a translation management page (implemented in the complete version)
@@ -196,7 +196,7 @@ warn   → 记录日志，继续执行
 block  → 拒绝操作
 ```
 
-Rules are stored in the `erik_risk_rule` table, configured as JSON, with dynamically adjustable thresholds and actions.
+Rules are stored in the `game_risk_rule` table, configured as JSON, with dynamically adjustable thresholds and actions.
 
 ### 6.2 KYC Real-Name Verification
 

@@ -357,11 +357,11 @@ Diimplementasikan middleware AdminPermission.
 
 **Model data**: relasi tiga lapis User -> Role -> Permission
 
-- `erik_admin_user` (tabel pengguna)
-- `erik_admin_user_role` (tabel relasi pengguna-peran)
-- `erik_admin_role` (tabel peran)
-- `erik_admin_role_permission` (tabel relasi peran-izin)
-- `erik_admin_permission` (tabel izin)
+- `game_admin_user` (tabel pengguna)
+- `game_admin_user_role` (tabel relasi pengguna-peran)
+- `game_admin_role` (tabel peran)
+- `game_admin_role_permission` (tabel relasi peran-izin)
+- `game_admin_permission` (tabel izin)
 
 **Tipe izin**:
 | type | Arti | Contoh |

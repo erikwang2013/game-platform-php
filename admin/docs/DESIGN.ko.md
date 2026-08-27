@@ -132,34 +132,34 @@ Controller::method()
 ### 3.1 ER 관계
 
 ```
-erik_admin_user ──┬── erik_admin_user_role ──┬── erik_admin_role
+game_admin_user ──┬── game_admin_user_role ──┬── game_admin_role
   (사용자)          │    (사용자-역할 연관)         │     (역할)
                   │                          │
-                  │                    erik_admin_role_permission
+                  │                    game_admin_role_permission
                   │                     (역할-권한 연관)
                   │                          │
                   │                          ▼
-                  │                    erik_admin_permission
+                  │                    game_admin_permission
                   │                      (권한/메뉴)
                   │
                   ▼
-           erik_operation_log
+           game_operation_log
              (작업 로그)
 
-erik_system_config (시스템 설정) — 독립 테이블
+game_system_config (시스템 설정) — 독립 테이블
 ```
 
 ### 3.2 핵심 테이블 구조
 
 | 테이블 이름 | 필드 수 | 설명 |
 |------|-------|------|
-| `erik_admin_user` | 14 | 관리 사용자, phone/email/id_card 암호화 저장, 소프트 삭제 지원 |
-| `erik_admin_role` | 7 | 역할, slug 고유 |
-| `erik_admin_permission` | 10 | 권한 트리 (parent_id 자기 참조), type: 1=메뉴 2=버튼 3=API |
-| `erik_admin_user_role` | 2 | 사용자-역할 다대다 중간 테이블 |
-| `erik_admin_role_permission` | 2 | 역할-권한 다대다 중간 테이블 |
-| `erik_system_config` | 8 | 키-값 설정, group+key 결합 고유 |
-| `erik_operation_log` | 9 | 작업 감사 로그 (source 출처 포함) |
+| `game_admin_user` | 14 | 관리 사용자, phone/email/id_card 암호화 저장, 소프트 삭제 지원 |
+| `game_admin_role` | 7 | 역할, slug 고유 |
+| `game_admin_permission` | 10 | 권한 트리 (parent_id 자기 참조), type: 1=메뉴 2=버튼 3=API |
+| `game_admin_user_role` | 2 | 사용자-역할 다대다 중간 테이블 |
+| `game_admin_role_permission` | 2 | 역할-권한 다대다 중간 테이블 |
+| `game_system_config` | 8 | 키-값 설정, group+key 결합 고유 |
+| `game_operation_log` | 9 | 작업 감사 로그 (source 출처 포함) |
 
 ### 3.3 기본키 규범
 

@@ -24,7 +24,7 @@ Languages: [中文](2026-05-22-game-platform-design.md) · [English](2026-05-22-
 
 ### ব্যাকএন্ড
 - PHP 8.3+, webman v2 (workerman/webman)
-- ডেটাবেস: MySQL 8.0+, টেবিল প্রিফিক্স `erik_`
+- ডেটাবেস: MySQL 8.0+, টেবিল প্রিফিক্স `game_`
 - প্রাইমারি কী: BIGINT নন-অটো-ইনক্রিমেন্ট, `erikwang2013/snowflake-php` দ্বারা তৈরি
 - API স্তরের ID এনক্রিপশন/ডিক্রিপশন: `erikwang2013/hashids`
 - JWT অথেনটিকেশন: `erikwang2013/jwt-webman`
@@ -142,47 +142,47 @@ game-platform-php/
 
 | ক্রম | টেবিলের নাম | বিবরণ |
 |------|------|------|
-| 1 | `erik_user` | C-এন্ড ব্যবহারকারী |
-| 2 | `erik_user_wallet` | প্ল্যাটফর্ম কয়েন ওয়ালেট |
-| 3 | `erik_user_game_wallet` | গেম কয়েন ওয়ালেট |
-| 4 | `erik_game` | গেম |
-| 5 | `erik_game_currency` | গেম কয়েনের ধরন |
-| 6 | `erik_deposit_order` | টপ-আপ অর্ডার |
-| 7 | `erik_withdraw_order` | উত্তোলন অর্ডার |
-| 8 | `erik_exchange_record` | বিনিময় রেকর্ড |
-| 9 | `erik_transaction` | প্ল্যাটফর্ম লেজার |
-| 10 | `erik_payment_method` | পেমেন্ট মাধ্যম |
-| 11 | `erik_announcement` | ঘোষণা |
-| 12 | `erik_platform_config` | প্ল্যাটফর্ম কনফিগ (বিদ্যমান erik_system_config-কে সম্প্রসারণ) |
+| 1 | `game_user` | C-এন্ড ব্যবহারকারী |
+| 2 | `game_user_wallet` | প্ল্যাটফর্ম কয়েন ওয়ালেট |
+| 3 | `game_user_game_wallet` | গেম কয়েন ওয়ালেট |
+| 4 | `game_game` | গেম |
+| 5 | `game_game_currency` | গেম কয়েনের ধরন |
+| 6 | `game_deposit_order` | টপ-আপ অর্ডার |
+| 7 | `game_withdraw_order` | উত্তোলন অর্ডার |
+| 8 | `game_exchange_record` | বিনিময় রেকর্ড |
+| 9 | `game_transaction` | প্ল্যাটফর্ম লেজার |
+| 10 | `game_payment_method` | পেমেন্ট মাধ্যম |
+| 11 | `game_announcement` | ঘোষণা |
+| 12 | `game-platform_config` | প্ল্যাটফর্ম কনফিগ (বিদ্যমান game_system_config-কে সম্প্রসারণ) |
 
 ### 5.2 স্ট্যান্ডার্ড সংস্করণে নতুন (১০টি)
 
 | ক্রম | টেবিলের নাম | বিবরণ |
 |------|------|------|
-| 13 | `erik_user_identity` | রিয়েল-নেম/KYC |
-| 14 | `erik_user_oauth` | থার্ড-পার্টি লগইন |
-| 15 | `erik_user_payment_account` | প্রাপ্তি অ্যাকাউন্ট |
-| 16 | `erik_user_session` | লগইন সেশন |
-| 17 | `erik_game_server` | গেম সার্ভার/অঞ্চল |
-| 18 | `erik_game_play_log` | গেম রেকর্ড |
-| 19 | `erik_withdraw_limit` | উত্তোলন সীমা নিয়ম |
-| 20 | `erik_risk_rule` | রিস্ক কন্ট্রোল নিয়ম |
-| 21 | `erik_risk_log` | রিস্ক কন্ট্রোল ট্রিগার রেকর্ড |
-| 22 | `erik_stat_daily` | দৈনিক পরিসংখ্যান স্ন্যাপশট |
+| 13 | `game_user_identity` | রিয়েল-নেম/KYC |
+| 14 | `game_user_oauth` | থার্ড-পার্টি লগইন |
+| 15 | `game_user_payment_account` | প্রাপ্তি অ্যাকাউন্ট |
+| 16 | `game_user_session` | লগইন সেশন |
+| 17 | `game_game_server` | গেম সার্ভার/অঞ্চল |
+| 18 | `game_game_play_log` | গেম রেকর্ড |
+| 19 | `game_withdraw_limit` | উত্তোলন সীমা নিয়ম |
+| 20 | `game_risk_rule` | রিস্ক কন্ট্রোল নিয়ম |
+| 21 | `game_risk_log` | রিস্ক কন্ট্রোল ট্রিগার রেকর্ড |
+| 22 | `game_stat_daily` | দৈনিক পরিসংখ্যান স্ন্যাপশট |
 
 ### 5.3 কমপ্লিট সংস্করণে নতুন (৮টি)
 
 | ক্রম | টেবিলের নাম | বিবরণ |
 |------|------|------|
-| 23 | `erik_game_category` | গেম ক্যাটাগরি |
-| 24 | `erik_game_category_rel` | গেম-ক্যাটাগরি সম্পর্ক |
-| 25 | `erik_leaderboard` | লিডারবোর্ড |
-| 26 | `erik_coupon` | কুপন |
-| 27 | `erik_user_coupon` | ব্যবহারকারী কুপন গ্রহণ |
-| 28 | `erik_language` | ভাষা সংজ্ঞা |
-| 29 | `erik_translation` | অনুবাদ পাঠ্য |
-| 30 | `erik_country_config` | দেশ কনফিগ |
-| 31 | `erik_platform_revenue` | প্ল্যাটফর্ম রাজস্ব রেকর্ড |
+| 23 | `game_game_category` | গেম ক্যাটাগরি |
+| 24 | `game_game_category_rel` | গেম-ক্যাটাগরি সম্পর্ক |
+| 25 | `game_leaderboard` | লিডারবোর্ড |
+| 26 | `game_coupon` | কুপন |
+| 27 | `game_user_coupon` | ব্যবহারকারী কুপন গ্রহণ |
+| 28 | `game_language` | ভাষা সংজ্ঞা |
+| 29 | `game_translation` | অনুবাদ পাঠ্য |
+| 30 | `game_country_config` | দেশ কনফিগ |
+| 31 | `game-platform_revenue` | প্ল্যাটফর্ম রাজস্ব রেকর্ড |
 
 ---
 
@@ -286,7 +286,7 @@ flowchart TB
     end
 
     subgraph "存储层"
-        E1[("MySQL 8.0<br/>erik_ 前缀")]
+        E1[("MySQL 8.0<br/>game_ 前缀")]
         E2[("Redis<br/>Session / 缓存 / 限流")]
         E3[("Elasticsearch<br/>全文检索")]
     end

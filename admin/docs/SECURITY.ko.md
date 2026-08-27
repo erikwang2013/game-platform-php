@@ -357,11 +357,11 @@ AdminPermission 미들웨어가 구현합니다.
 
 **데이터 모델**: User -> Role -> Permission 3계층 연관
 
-- `erik_admin_user` (사용자 테이블)
-- `erik_admin_user_role` (사용자-역할 연관 테이블)
-- `erik_admin_role` (역할 테이블)
-- `erik_admin_role_permission` (역할-권한 연관 테이블)
-- `erik_admin_permission` (권한 테이블)
+- `game_admin_user` (사용자 테이블)
+- `game_admin_user_role` (사용자-역할 연관 테이블)
+- `game_admin_role` (역할 테이블)
+- `game_admin_role_permission` (역할-권한 연관 테이블)
+- `game_admin_permission` (권한 테이블)
 
 **권한 유형**:
 | type | 의미 | 예시 |

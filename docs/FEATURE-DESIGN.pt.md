@@ -54,7 +54,7 @@ Moeda da plataforma creditada = quantidade de moeda de jogo ÷ exchange_rate × 
 
 ## 2. Design da carteira
 
-### 2.1 Carteira de moeda da plataforma (erik_user_wallet)
+### 2.1 Carteira de moeda da plataforma (game_user_wallet)
 
 Criada automaticamente no registro do usuário, saldo inicial 0.
 
@@ -66,7 +66,7 @@ Criada automaticamente no registro do usuário, saldo inicial 0.
 | total_spent | gasto acumulado |
 | version | número de versão do lock otimista (+1 a cada atualização) |
 
-### 2.2 Carteira de moeda de jogo (erik_user_game_wallet)
+### 2.2 Carteira de moeda de jogo (game_user_game_wallet)
 
 Única por usuário+jogo+moeda (três dimensões). Criada automaticamente na primeira troca.
 
@@ -320,7 +320,7 @@ Configuração via PlatformConfig ou variáveis de ambiente; em caso de falha de
 ### 7.2 Gestão de traduções
 
 - Traduções organizadas no formato `group.key` (por exemplo `auth.login_success`)
-- Armazenadas na tabela `erik_translation`, com cache Redis (TTL 1 hora)
+- Armazenadas na tabela `game_translation`, com cache Redis (TTL 1 hora)
 - API: `GET /api/language/list` obtém os idiomas disponíveis, `POST /api/language/switch` alterna o idioma
 - O frontend detecta automaticamente via cabeçalho `X-Language` ou `Accept-Language`
 - Quando a tradução está ausente, faz fallback para en-US; se en-US também não tiver, retorna a key original

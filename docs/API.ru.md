@@ -1414,7 +1414,7 @@ Retry-After: 60
 
 1. Извлечение токена из `Authorization: Bearer <token>`
 2. Проверка подписи JWT (HS256), извлечение `sub` (ID пользователя)
-3. Запрос к таблице `erik_user` для проверки существования пользователя и status=1
+3. Запрос к таблице `game_user` для проверки существования пользователя и status=1
 4. Инъекция `$request->userId`
 
 ### Админ-панель (AdminAuth + AdminPermission)
@@ -1761,7 +1761,7 @@ status: open / waiting / replied / closed
 ### Аутентификация Provider (ProviderAuth)
 
 1. Извлечение `X-Game-Id`, `X-Timestamp`, `X-Signature` из заголовков запроса
-2. Запрос к таблице `erik_game` для проверки существования игры и status=1
+2. Запрос к таблице `game_game` для проверки существования игры и status=1
 3. Проверка, что временная метка находится в 5-минутном окне (защита от повторов)
 4. Вычисление `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)` и сравнение с подписью
 5. Инъекция `$request->gameId` и `$request->game`
@@ -1953,7 +1953,7 @@ JSON `conditions` купона поддерживает:
 К реферальному вознаграждению добавлено распределение второго уровня:
 - L1: прямой пригласивший получает `referrer_bonus` (конфигурация: referral.referrer_bonus)
 - L2: пригласивший пригласившего получает `commission = referrer_bonus * level2_rate` (конфигурация: referral.level2_rate, по умолчанию 5%)
-- Запись в `erik_referral_commission` (level/commission_rate/commission_amount)
+- Запись в `game_referral_commission` (level/commission_rate/commission_amount)
 
 ### 8. Стратегия лимитов запросов (обновлено)
 

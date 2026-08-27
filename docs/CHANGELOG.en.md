@@ -27,7 +27,7 @@ Human-readable change log. PHP does not import this file. Corresponds to PROJECT
 ### Availability
 
 - Admin analytics service: 12 `/admin/analytics/*` routes mounted.
-- Models no longer have hardcoded `erik_` prefixes; DepositLog audit persisted to DB; Test model removed.
+- Models no longer have hardcoded `game_` prefixes; DepositLog audit persisted to DB; Test model removed.
 
 ### Observability
 

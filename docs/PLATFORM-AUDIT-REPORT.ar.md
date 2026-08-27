@@ -51,9 +51,9 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 
 | المشكلة | الإصلاح |
 |------|------|
-| 🔴 أسماء جداول نماذج service تحمل بادئة `erik_` (تتعارض مع المعايير الحالية) | إزالة البادئة من جميع النماذج العشرة الجديدة |
-| 🟡 `AchievementService` بترميز صلب لـ `erik_user_session` | نسخة service تغيّرت إلى `user_session` |
-| 🟡 `GameController` بترميز صلب لـ `erik_game_category_rel` | نسخة service تغيّرت إلى `game_category_rel` |
+| 🔴 أسماء جداول نماذج service تحمل بادئة `game_` (تتعارض مع المعايير الحالية) | إزالة البادئة من جميع النماذج العشرة الجديدة |
+| 🟡 `AchievementService` بترميز صلب لـ `game_user_session` | نسخة service تغيّرت إلى `user_session` |
+| 🟡 `GameController` بترميز صلب لـ `game_game_category_rel` | نسخة service تغيّرت إلى `game_category_rel` |
 
 ---
 
@@ -128,9 +128,9 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 
 | # | المشكلة | الخطورة | الإصلاح |
 |---|------|--------|------|
-| 1 | 🔴 أسماء جداول نماذج service تحمل بادئة `erik_` بالكامل (10 نماذج) | عالية | إزالة جماعية عبر sed |
-| 2 | 🟡 AchievementService في service بترميز صلب لـ `erik_user_session` | متوسطة | تغيير إلى `user_session` |
-| 3 | 🟡 GameController في service بترميز صلب لـ `erik_game_category_rel` | متوسطة | تغيير إلى `game_category_rel` |
+| 1 | 🔴 أسماء جداول نماذج service تحمل بادئة `game_` بالكامل (10 نماذج) | عالية | إزالة جماعية عبر sed |
+| 2 | 🟡 AchievementService في service بترميز صلب لـ `game_user_session` | متوسطة | تغيير إلى `user_session` |
+| 3 | 🟡 GameController في service بترميز صلب لـ `game_game_category_rel` | متوسطة | تغيير إلى `game_category_rel` |
 | 4 | 🟡 route.php شرطتان عكسيتان + عبارات echo متبقية | متوسطة | إصلاح |
 | 5 | 🟢 نموذجا Friend/Message لم يُنشآ في البداية (SQL فقط) | منخفضة | أُنشئا |
 | 6 | 🟢 منفذ LeaderboardWebSocket الفعلي 8790، chat-ws تغيّر إلى 8791 | منخفضة | تعديل المنافذ |
@@ -239,7 +239,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 | معاملاتية الإيداع في الاستدعاء | تحديث الطلب + إيداع المحفظة في معاملة واحدة، تراجع عند فشل الإيداع | ✅ تم الإصلاح |
 | التحقق من مفتاح JWT عند الإقلاع | رفض الإقلاع عند غياب `JWT_SECRET_KEY` أو بقائه القيمة الافتراضية `open-admin-jwt-secret-change-in-production`، بشكل متسق في admin/service | ✅ تم الإصلاح |
 | مسارات خدمة التحليل | تسجيل 12 مسارًا من `/admin/analytics/*` في admin/config/route.php (جميع طرق AnalyticsController) | ✅ تم الإصلاح |
-| بادئات الجداول | إزالة البادئة المرمّزة `erik_` من 52 نموذجًا (إزالة البادئة المزدوجة `erik_erik_`)، تُوفَّر البادئة موحدًا من إعداد `prefix=erik_` | ✅ تم الإصلاح |
+| بادئات الجداول | إزالة البادئة المرمّزة `game_` من 52 نموذجًا (إزالة البادئة المزدوجة `game_game_`)، تُوفَّر البادئة موحدًا من إعداد `prefix=game_` | ✅ تم الإصلاح |
 | تخفيف حد المعدل | RateLimit يتبع fail-closed عند تعطل Redis (رفض بدلًا من المرور الصامت) | ✅ تم الإصلاح |
 | refresh token | إعادة كتابة منطق تجديد الرمز في AuthController في service | ✅ تم الإصلاح |
 | DepositLogService | نقل نسخة service وإكمالها، إزالة أحد انحرافات النسختين admin/service | ✅ تم الإصلاح |

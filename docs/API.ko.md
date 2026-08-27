@@ -1414,7 +1414,7 @@ Retry-After: 60
 
 1. `Authorization: Bearer <token>`에서 Token 추출
 2. JWT 서명 검증 (HS256), `sub`(사용자 ID) 파싱
-3. `erik_user` 테이블 조회로 사용자 존재 및 status=1 확인
+3. `game_user` 테이블 조회로 사용자 존재 및 status=1 확인
 4. `$request->userId` 주입
 
 ### 관리 백오피스 (AdminAuth + AdminPermission)
@@ -1761,7 +1761,7 @@ status: open / waiting / replied / closed
 ### Provider 인증 (ProviderAuth)
 
 1. 요청 헤더에서 `X-Game-Id`, `X-Timestamp`, `X-Signature` 추출
-2. `erik_game` 테이블 조회로 게임 존재 및 status=1 확인
+2. `game_game` 테이블 조회로 게임 존재 및 status=1 확인
 3. 타임스탬프가 5분 창 내인지 검증 (리플레이 방지)
 4. `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)` 계산하여 서명과 비교
 5. `$request->gameId`와 `$request->game` 주입
@@ -1953,7 +1953,7 @@ status: open / waiting / replied / closed
 추천 커미션에 2차 수익 분배 추가:
 - L1: 직접 추천인이 `referrer_bonus` 획득 (설정: referral.referrer_bonus)
 - L2: 추천인의 추천인이 `commission = referrer_bonus * level2_rate` 획득 (설정: referral.level2_rate, 기본 5%)
-- `erik_referral_commission` 기록 (level/commission_rate/commission_amount)
+- `game_referral_commission` 기록 (level/commission_rate/commission_amount)
 
 ### 8. 레이트 리밋 정책 (업데이트)
 

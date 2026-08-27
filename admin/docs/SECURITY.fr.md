@@ -357,11 +357,11 @@ Implémenté par le middleware AdminPermission.
 
 **Modèle de données** : association à trois niveaux User -> Role -> Permission
 
-- `erik_admin_user` (table utilisateurs)
-- `erik_admin_user_role` (table d'association user-rôle)
-- `erik_admin_role` (table rôles)
-- `erik_admin_role_permission` (table d'association rôle-permission)
-- `erik_admin_permission` (table permissions)
+- `game_admin_user` (table utilisateurs)
+- `game_admin_user_role` (table d'association user-rôle)
+- `game_admin_role` (table rôles)
+- `game_admin_role_permission` (table d'association rôle-permission)
+- `game_admin_permission` (table permissions)
 
 **Types de permissions** :
 | type | Signification | Exemple |

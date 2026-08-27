@@ -39,7 +39,7 @@
   <text x="710" y="320" text-anchor="middle" fill="#9d174d" font-size="15" font-weight="bold">পর্যায় ৪: সোশ্যাল লেয়ার</text>
   <rect x="510" y="340" width="190" height="55" rx="6" fill="#fbcfe8"/><text x="605" y="358" text-anchor="middle" fill="#831843" font-size="12">ফ্রেন্ড সিস্টেম</text><text x="605" y="373" text-anchor="middle" fill="#64748b" font-size="10">রিকোয়েস্ট/অ্যাকসেপ্ট/রিজেক্ট/ডিলিট</text><text x="605" y="386" text-anchor="middle" fill="#64748b" font-size="10">পেন্ডিং/অ্যাকসেপ্টেড/ব্ল্যাকলিস্টেড</text>
   <rect x="720" y="340" width="190" height="55" rx="6" fill="#fbcfe8"/><text x="815" y="358" text-anchor="middle" fill="#831843" font-size="12">চ্যাট মেসেজ</text><text x="815" y="373" text-anchor="middle" fill="#64748b" font-size="10">REST + WebSocket :8790</text><text x="815" y="386" text-anchor="middle" fill="#64748b" font-size="10">শুধু ফ্রেন্ডরাই মেসেজ পাঠাতে পারে</text>
-  <rect x="510" y="410" width="400" height="55" rx="6" fill="#f9a8d4"/><text x="710" y="430" text-anchor="middle" fill="#831843" font-size="12">ChatWebSocket প্রসেস — workerman WebSocket + Redis Pub/Sub</text><text x="710" y="445" text-anchor="middle" fill="#64748b" font-size="10">erik_friend টেবিল + erik_message টেবিল</text>
+  <rect x="510" y="410" width="400" height="55" rx="6" fill="#f9a8d4"/><text x="710" y="430" text-anchor="middle" fill="#831843" font-size="12">ChatWebSocket প্রসেস — workerman WebSocket + Redis Pub/Sub</text><text x="710" y="445" text-anchor="middle" fill="#64748b" font-size="10">game_friend টেবিল + game_message টেবিল</text>
 
   <!-- Phase 5: Infrastructure -->
   <rect x="30" y="496" width="900" height="140" rx="10" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
@@ -52,8 +52,8 @@
   <!-- Database Summary -->
   <rect x="30" y="656" width="900" height="70" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="480" y="680" text-anchor="middle" fill="#334155" font-size="14" font-weight="bold">ডাটাবেস: ৪২ → ৫২ টেবিল</text>
-  <text x="480" y="700" text-anchor="middle" fill="#64748b" font-size="11">নতুন: erik_ticket, erik_ticket_reply, erik_device_token, erik_vip_level, erik_user_vip, erik_exp_log, erik_achievement, erik_user_achievement, erik_friend, erik_message</text>
-  <text x="480" y="716" text-anchor="middle" fill="#64748b" font-size="11">পরিবর্তন: erik_game (+provider_config JSON), erik_game_play_log (+round_id, +bet_amount, +win_amount)</text>
+  <text x="480" y="700" text-anchor="middle" fill="#64748b" font-size="11">নতুন: game_ticket, game_ticket_reply, game_device_token, game_vip_level, game_user_vip, game_exp_log, game_achievement, game_user_achievement, game_friend, game_message</text>
+  <text x="480" y="716" text-anchor="middle" fill="#64748b" font-size="11">পরিবর্তন: game_game (+provider_config JSON), game_game_play_log (+round_id, +bet_amount, +win_amount)</text>
 
   <!-- Footer -->
   <rect x="0" y="750" width="960" height="50" fill="#7c3aed"/>

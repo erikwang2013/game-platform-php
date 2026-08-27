@@ -28,9 +28,9 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 ### 2.1 `install/install.sql` (988 строк)
 - объединены 8 исходных файлов миграций
-- 42 таблицы данных с префиксом `erik_` (CREATE TABLE IF NOT EXISTS)
+- 42 таблицы данных с префиксом `game_` (CREATE TABLE IF NOT EXISTS)
 - 13 блоков стартовых данных INSERT IGNORE
-- поле `source` таблицы `erik_operation_log` объединено в оператор создания таблицы (ALTER TABLE не требуется)
+- поле `source` таблицы `game_operation_log` объединено в оператор создания таблицы (ALTER TABLE не требуется)
 - обёрнуто в транзакцию (START TRANSACTION / COMMIT)
 - все INSERT идемпотентны
 
@@ -38,16 +38,16 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 | Таблица | Способ обработки |
 |------|---------|
-| `erik_admin_role` | INSERT IGNORE (фиксированные ID) |
-| `erik_admin_permission` | INSERT IGNORE (фиксированные ID) - 4 раза |
-| `erik_admin_role_permission` | подзапрос WHERE NOT EXISTS |
-| `erik_platform_config` | INSERT IGNORE (фиксированные ID) - 2 раза |
-| `erik_language` | INSERT IGNORE (фиксированные ID) |
-| `erik_translation` | INSERT IGNORE (фиксированные ID) |
-| `erik_risk_rule` | INSERT IGNORE (фиксированные ID) |
-| `erik_withdraw_limit` | INSERT IGNORE (фиксированные ID) |
-| `erik_game_category` | INSERT IGNORE (фиксированные ID) |
-| `erik_country_config` | INSERT IGNORE (фиксированные ID) |
+| `game_admin_role` | INSERT IGNORE (фиксированные ID) |
+| `game_admin_permission` | INSERT IGNORE (фиксированные ID) - 4 раза |
+| `game_admin_role_permission` | подзапрос WHERE NOT EXISTS |
+| `game-platform_config` | INSERT IGNORE (фиксированные ID) - 2 раза |
+| `game_language` | INSERT IGNORE (фиксированные ID) |
+| `game_translation` | INSERT IGNORE (фиксированные ID) |
+| `game_risk_rule` | INSERT IGNORE (фиксированные ID) |
+| `game_withdraw_limit` | INSERT IGNORE (фиксированные ID) |
+| `game_game_category` | INSERT IGNORE (фиксированные ID) |
+| `game_country_config` | INSERT IGNORE (фиксированные ID) |
 
 ### 2.2 `install/index.php` (485 строк)
 - маршрутизация: step1 -> step2 -> step3 -> step4 -> step5
@@ -181,7 +181,7 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 ### 6.3 Проверка SQL
 ```
 通过 42张表名与原始迁移文件完全一致
-通过 source字段已合并到 erik_operation_log 建表语句
+通过 source字段已合并到 game_operation_log 建表语句
 通过 所有INSERT语句已做幂等处理
 通过 WHERE NOT EXISTS 守卫已恢复（与原迁移一致）
 ```
@@ -192,7 +192,7 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 | # | Проблема | Серьёзность | Статус |
 |---|------|--------|------|
-| 1 | INSERT `erik_admin_role_permission` не хватает защиты `WHERE NOT EXISTS` (несоответствие исходной миграции) | высокая | исправлено |
+| 1 | INSERT `game_admin_role_permission` не хватает защиты `WHERE NOT EXISTS` (несоответствие исходной миграции) | высокая | исправлено |
 | 2 | Все INSERT стартовых данных не идемпотентны (повторное выполнение завершится ошибкой) | средняя | исправлено (INSERT IGNORE) |
 | 3 | В проверке окружения отсутствует проверка расширения `pcntl` (ключевая зависимость webman) | средняя | исправлено |
 | 4 | В Service .env отсутствует конфигурация `ENCRYPTION_CIPHER` | низкая | исправлено |
@@ -224,7 +224,7 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 Текущий раунд исправлений безопасности (fail-closed платёжных колбэков, проверка JWT при запуске, унификация префикса таблиц) **не затрагивает систему установки**, новых проблем нет:
 
-- После удаления жёстко зашитого префикса `erik_` в моделях фактические имена таблиц по-прежнему генерируются единообразно через `prefix=erik_` в `config/database.php`, что совпадает с таблицами `erik_*` из install.sql, менять установочный SQL не нужно
+- После удаления жёстко зашитого префикса `game_` в моделях фактические имена таблиц по-прежнему генерируются единообразно через `prefix=game_` в `config/database.php`, что совпадает с таблицами `game_*` из install.sql, менять установочный SQL не нужно
 - Проверка JWT при запуске (отказ запуска при отсутствии `JWT_SECRET_KEY` или значении по умолчанию) совместима с автоматически генерируемым мастером установки 64-байтовым случайным ключом, корректировка процесса установки не требуется
 
 Исторические выводы и список проблем остаются без изменений.

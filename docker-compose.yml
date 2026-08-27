@@ -87,7 +87,7 @@ services:
       - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
-      MYSQL_DATABASE: ${DB_DATABASE:-game_platform}
+      MYSQL_DATABASE: ${DB_DATABASE:-game-platform}
     volumes:
       - mysql_data:/var/lib/mysql
       - ./install/install.sql:/docker-entrypoint-initdb.d/install.sql:ro

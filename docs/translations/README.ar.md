@@ -20,7 +20,7 @@ Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](R
 
 ### الواجهة الخلفية
 - PHP 8.3+، webman v2 (workerman/webman)
-- MySQL 8.0+ (بادئة الجداول `erik_`، مفاتيح أساسية BIGINT غير متزايدة ذاتيًا)
+- MySQL 8.0+ (بادئة الجداول `game_`، مفاتيح أساسية BIGINT غير متزايدة ذاتيًا)
 - Redis (الجلسات / التخزين المؤقت / الحد من المعدل)
 - ClickHouse (تحليلات OLAP / الحساب الاحتمالي)
 - Elasticsearch (البحث النصي الكامل)
@@ -142,8 +142,8 @@ rm -rf install/
 
 ```bash
 # استيراد SQL المدمج بخطوة واحدة
-mysql -u root -e "CREATE DATABASE IF NOT EXISTS game_platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -u root game_platform < install/install.sql
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS game-platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root game-platform < install/install.sql
 ```
 
 #### 2. تكوين متغيرات البيئة

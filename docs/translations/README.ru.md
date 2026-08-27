@@ -20,7 +20,7 @@ Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](R
 
 ### Бэкенд
 - PHP 8.3+, webman v2 (workerman/webman)
-- MySQL 8.0+ (префикс таблиц `erik_`, BIGINT неавтоинкрементные первичные ключи)
+- MySQL 8.0+ (префикс таблиц `game_`, BIGINT неавтоинкрементные первичные ключи)
 - Redis (Session / кэш / ограничение частоты запросов)
 - ClickHouse (OLAP-аналитика / вычисление вероятностей)
 - Elasticsearch (полнотекстовый поиск)
@@ -142,8 +142,8 @@ rm -rf install/
 
 ```bash
 # Импорт объединенного SQL одним махом
-mysql -u root -e "CREATE DATABASE IF NOT EXISTS game_platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -u root game_platform < install/install.sql
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS game-platform CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+mysql -u root game-platform < install/install.sql
 ```
 
 #### 2. Настройка переменных окружения

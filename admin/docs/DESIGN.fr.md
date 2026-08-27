@@ -134,34 +134,34 @@ Couche d'affichage (mask)            — téléphone : 138****1234, e-mail : a**
 ### 3.1 Relations ER
 
 ```
-erik_admin_user ──┬── erik_admin_user_role ──┬── erik_admin_role
+game_admin_user ──┬── game_admin_user_role ──┬── game_admin_role
   (utilisateurs)   │    (association user-role)│     (rôles)
                   │                          │
-                  │                    erik_admin_role_permission
+                  │                    game_admin_role_permission
                   │                     (association rôle-permission)
                   │                          │
                   │                          ▼
-                  │                    erik_admin_permission
+                  │                    game_admin_permission
                   │                      (permissions/menus)
                   │
                   ▼
-           erik_operation_log
+           game_operation_log
              (journaux d'opérations)
 
-erik_system_config (configuration système) — table indépendante
+game_system_config (configuration système) — table indépendante
 ```
 
 ### 3.2 Structures de tables centrales
 
 | Table | Nombre de champs | Description |
 |------|-------|------|
-| `erik_admin_user` | 14 | Utilisateurs administrateurs, phone/email/id_card stockés chiffrés, suppression douce prise en charge |
-| `erik_admin_role` | 7 | Rôles, slug unique |
-| `erik_admin_permission` | 10 | Arbre de permissions (auto-référence parent_id), type : 1=menu 2=bouton 3=API |
-| `erik_admin_user_role` | 2 | Table intermédiaire many-to-many user-rôle |
-| `erik_admin_role_permission` | 2 | Table intermédiaire many-to-many rôle-permission |
-| `erik_system_config` | 8 | Configuration clé-valeur, unicité group+key |
-| `erik_operation_log` | 9 | Journaux d'audit des opérations (avec source du canal) |
+| `game_admin_user` | 14 | Utilisateurs administrateurs, phone/email/id_card stockés chiffrés, suppression douce prise en charge |
+| `game_admin_role` | 7 | Rôles, slug unique |
+| `game_admin_permission` | 10 | Arbre de permissions (auto-référence parent_id), type : 1=menu 2=bouton 3=API |
+| `game_admin_user_role` | 2 | Table intermédiaire many-to-many user-rôle |
+| `game_admin_role_permission` | 2 | Table intermédiaire many-to-many rôle-permission |
+| `game_system_config` | 8 | Configuration clé-valeur, unicité group+key |
+| `game_operation_log` | 9 | Journaux d'audit des opérations (avec source du canal) |
 
 ### 3.3 Normes des clés primaires
 

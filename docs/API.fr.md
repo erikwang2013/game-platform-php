@@ -1414,7 +1414,7 @@ Retry-After: 60
 
 1. Extraire le Token de `Authorization: Bearer <token>`
 2. Vérification de la signature JWT (HS256), décodage de `sub` (ID utilisateur)
-3. Interroger la table `erik_user` pour vérifier que l'utilisateur existe et que status=1
+3. Interroger la table `game_user` pour vérifier que l'utilisateur existe et que status=1
 4. Injection de `$request->userId`
 
 ### Administration (AdminAuth + AdminPermission)
@@ -1761,7 +1761,7 @@ status : open / waiting / replied / closed
 ### Authentification Provider (ProviderAuth)
 
 1. Extraire `X-Game-Id`, `X-Timestamp`, `X-Signature` des en-têtes de requête
-2. Interroger la table `erik_game` pour vérifier que le jeu existe et que status=1
+2. Interroger la table `game_game` pour vérifier que le jeu existe et que status=1
 3. Vérifier que l'horodatage se situe dans la fenêtre de 5 minutes (anti-rejeu)
 4. Calculer `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)` et le comparer à la signature
 5. Injection de `$request->gameId` et `$request->game`
@@ -1953,7 +1953,7 @@ Les conditions sont vérifiées deux fois : dans le filtrage de la liste `availa
 La commission de parrainage ajoute une répartition de deuxième niveau :
 - L1 : le parrain direct reçoit `referrer_bonus` (config : referral.referrer_bonus)
 - L2 : le parrain du parrain reçoit `commission = referrer_bonus * level2_rate` (config : referral.level2_rate, défaut 5 %)
-- Enregistrement dans `erik_referral_commission` (level/commission_rate/commission_amount)
+- Enregistrement dans `game_referral_commission` (level/commission_rate/commission_amount)
 
 ### 8. Stratégie de limitation (mise à jour)
 

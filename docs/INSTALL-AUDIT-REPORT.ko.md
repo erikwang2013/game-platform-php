@@ -28,9 +28,9 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ### 2.1 `install/install.sql` (988줄)
 - 원본 마이그레이션 파일 8개 병합
-- `erik_` 접두사 데이터 테이블 42장 (CREATE TABLE IF NOT EXISTS)
+- `game_` 접두사 데이터 테이블 42장 (CREATE TABLE IF NOT EXISTS)
 - INSERT IGNORE 시드 데이터 블록 13개
-- `erik_operation_log`의 `source` 필드가 테이블 생성문에 병합됨 (ALTER TABLE 불필요)
+- `game_operation_log`의 `source` 필드가 테이블 생성문에 병합됨 (ALTER TABLE 불필요)
 - 트랜잭션 래핑 (START TRANSACTION / COMMIT)
 - 모든 INSERT에 멱등 처리 완료
 
@@ -38,16 +38,16 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 | 테이블명 | 처리 방식 |
 |------|---------|
-| `erik_admin_role` | INSERT IGNORE (고정 ID) |
-| `erik_admin_permission` | INSERT IGNORE (고정 ID) - 4회 |
-| `erik_admin_role_permission` | WHERE NOT EXISTS 서브쿼리 |
-| `erik_platform_config` | INSERT IGNORE (고정 ID) - 2회 |
-| `erik_language` | INSERT IGNORE (고정 ID) |
-| `erik_translation` | INSERT IGNORE (고정 ID) |
-| `erik_risk_rule` | INSERT IGNORE (고정 ID) |
-| `erik_withdraw_limit` | INSERT IGNORE (고정 ID) |
-| `erik_game_category` | INSERT IGNORE (고정 ID) |
-| `erik_country_config` | INSERT IGNORE (고정 ID) |
+| `game_admin_role` | INSERT IGNORE (고정 ID) |
+| `game_admin_permission` | INSERT IGNORE (고정 ID) - 4회 |
+| `game_admin_role_permission` | WHERE NOT EXISTS 서브쿼리 |
+| `game-platform_config` | INSERT IGNORE (고정 ID) - 2회 |
+| `game_language` | INSERT IGNORE (고정 ID) |
+| `game_translation` | INSERT IGNORE (고정 ID) |
+| `game_risk_rule` | INSERT IGNORE (고정 ID) |
+| `game_withdraw_limit` | INSERT IGNORE (고정 ID) |
+| `game_game_category` | INSERT IGNORE (고정 ID) |
+| `game_country_config` | INSERT IGNORE (고정 ID) |
 
 ### 2.2 `install/index.php` (485줄)
 - 라우트 디스패치: step1 -> step2 -> step3 -> step4 -> step5
@@ -181,7 +181,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 ### 6.3 SQL 검증
 ```
 통과 42장 테이블명이 원본 마이그레이션 파일과 완전히 일치
-통과 source 필드가 erik_operation_log 테이블 생성문에 병합됨
+통과 source 필드가 game_operation_log 테이블 생성문에 병합됨
 통과 모든 INSERT문에 멱등 처리 완료
 통과 WHERE NOT EXISTS 가드 복원됨 (원본 마이그레이션과 일치)
 ```
@@ -192,7 +192,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 | # | 문제 | 심각도 | 상태 |
 |---|------|--------|------|
-| 1 | `erik_admin_role_permission` INSERT에 `WHERE NOT EXISTS` 가드 누락 (원본 마이그레이션과 불일치) | 높음 | 수정됨 |
+| 1 | `game_admin_role_permission` INSERT에 `WHERE NOT EXISTS` 가드 누락 (원본 마이그레이션과 불일치) | 높음 | 수정됨 |
 | 2 | 모든 시드 데이터 INSERT에 멱등 처리 없음 (재실행 시 실패) | 중 | 수정됨 (INSERT IGNORE) |
 | 3 | 환경 검사에 `pcntl` 확장 검사 누락 (webman 핵심 의존성) | 중 | 수정됨 |
 | 4 | Service .env에 `ENCRYPTION_CIPHER` 설정 누락 | 낮음 | 수정됨 |
@@ -224,7 +224,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 이번 라운드의 보안 수정(결제 콜백 fail-closed, JWT 기동 검증, 테이블 접두사 통일)은 **설치 시스템을 다루지 않았으며**, 새로 발견된 문제는 없습니다:
 
-- 모델에서 하드코딩된 `erik_` 접두사를 제거한 후에도 실제 테이블명은 `config/database.php`의 `prefix=erik_`로 통일 생성되어 install.sql이 만든 `erik_*` 테이블과 일치하므로 설치 SQL 변경 불필요
+- 모델에서 하드코딩된 `game_` 접두사를 제거한 후에도 실제 테이블명은 `config/database.php`의 `prefix=game_`로 통일 생성되어 install.sql이 만든 `game_*` 테이블과 일치하므로 설치 SQL 변경 불필요
 - JWT 기동 검증(`JWT_SECRET_KEY` 누락 또는 기본값이면 기동 거부)은 설치 마법사가 자동 생성하는 64바이트 랜덤 키와 호환되어 설치 플로우 조정 불필요
 
 기존 결론과 문제 목록은 그대로 유지됩니다.

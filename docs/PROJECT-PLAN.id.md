@@ -95,7 +95,7 @@ Kunci optimis dompet + pembaruan kondisi versi benar; callback idempoten `where 
 15. **Pengujian service + gerbang CI**: pengujian integrasi verifikasi tanda tangan callback/alur penarikan/degradasi Redis/perhitungan probabilitas/konkurensi kunci optimis; phpunit gagal memblokir; service masuk CI (sekarang `|| echo warning` membiarkan gagal) — 🔶 Sebagian selesai (service sudah punya WebhookUrlSafety / EventBusMessageFormat; sudah masuk CI job `phpunit-service` gagal memblokir)
 
 **Putaran ini (2026-08-18) tambahan selesai (di luar penomoran asli)**:
-- **Perbaikan prefiks tabel**: 52 model menghapus prefiks `erik_` hardcode, hilangkan prefiks ganda `erik_erik_`; prefiks DB seragam disediakan config/database.php `prefix=erik_`, install.sql tidak perlu diubah
+- **Perbaikan prefiks tabel**: 52 model menghapus prefiks `game_` hardcode, hilangkan prefiks ganda `game_game_`; prefiks DB seragam disediakan config/database.php `prefix=game_`, install.sql tidak perlu diubah
 - **Penulisan ulang refresh token**: logika refresh token service AuthController ditulis ulang
 - **Porting DepositLogService versi service**: service/common/service/DepositLogService.php dilengkapi (menghilangkan salah satu drift ganda admin/service)
 
