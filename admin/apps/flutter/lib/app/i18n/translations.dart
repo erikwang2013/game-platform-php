@@ -150,6 +150,16 @@ class AppTranslations {
       'payment.status': 'Status',
       'payment.fiat': 'Fiat',
       'payment.crypto': 'Crypto',
+      'payment.create_title': 'Create Payment Method',
+      'payment.edit_title': 'Edit Payment Method',
+      'payment.countries': 'Countries',
+      'payment.global': 'Global (all countries)',
+      'payment.currency': 'Currency',
+      'payment.min_amount': 'Min Amount',
+      'payment.max_amount': 'Max Amount',
+      'payment.sort': 'Sort',
+      'payment.config': 'Config (JSON)',
+      'payment.confirm_delete': 'Delete this payment method?',
 
       // Announcements
       'announcement.title': 'Announcement Management',
@@ -416,6 +426,16 @@ class AppTranslations {
       'payment.status': '状态',
       'payment.fiat': '法币',
       'payment.crypto': '加密货币',
+      'payment.create_title': '新建支付方式',
+      'payment.edit_title': '编辑支付方式',
+      'payment.countries': '可见国家',
+      'payment.global': '全球（所有国家）',
+      'payment.currency': '币种',
+      'payment.min_amount': '最低金额',
+      'payment.max_amount': '最高金额',
+      'payment.sort': '排序',
+      'payment.config': '配置 (JSON)',
+      'payment.confirm_delete': '确定删除该支付方式吗？',
 
       // Announcements
       'announcement.title': '公告管理',

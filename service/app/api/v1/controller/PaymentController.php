@@ -7,9 +7,11 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
+use app\model\CountryConfig;
 use app\model\DepositOrder;
 use app\model\PaymentMethod;
 use app\model\Transaction;
+use app\payment\GatewayFactory;
 use common\service\DepositLogService;
 use app\model\UserWallet;
 use app\service\RiskService;
@@ -33,7 +35,7 @@ class PaymentController extends BaseController
      * @Apidoc\Param(name="transaction_id", type="string", require=true, desc="交易ID")
      * @Apidoc\Param(name="status", type="string", require=true, desc="支付状态(success/failed)")
      */
-    private const ALLOWED_PROVIDERS = ['stripe', 'paypal'];
+    private const ALLOWED_PROVIDERS = ['stripe', 'paypal', 'nowpayments', 'coinbase'];
 
     public function callback(Request $request): Response
     {
@@ -47,6 +49,12 @@ class PaymentController extends BaseController
         if ($provider === 'paypal' && !$this->verifyPayPalSignature($request)) {
             return $this->fail('Invalid signature', 403);
         }
+        if ($provider === 'nowpayments' && !$this->verifyNowPaymentsSignature($request)) {
+            return $this->fail('Invalid signature', 403);
+        }
+        if ($provider === 'coinbase' && !$this->verifyCoinbaseSignature($request)) {
+            return $this->fail('Invalid signature', 403);
+        }
 
         // 配置了可信回调来源 IP 列表时校验来源，未配置则不强制（仅限服务端到服务端的 Webhook）
         $trustedIps = getenv('CALLBACK_TRUSTED_IPS') ?: '';
@@ -57,19 +65,23 @@ class PaymentController extends BaseController
             }
         }
 
-        $validator = validator($request->all(), [
-            'order_no'       => 'required|string',
-            'transaction_id' => 'required|string',
-            'status'         => 'required|in:success,failed',
-        ]);
+        // 解析回调数据：paypal 保持旧版扁平参数协议，其余由网关解析真实 Webhook 报文
+        $verified = $provider === 'paypal'
+            ? $this->legacyCallbackData($request)
+            : GatewayFactory::resolve($provider)->verifyCallback($request);
 
-        if ($validator->fails()) {
-            return $this->fail($validator->errors()->first(), 422);
+        if (empty($verified['valid'])) {
+            return $this->fail('Invalid callback payload', 403);
+        }
+        if (($verified['status'] ?? '') === 'ignored') {
+            // 网关事件无需处理（如 charge:created），成功应答防止网关重试
+            return $this->success([], 'Ignored');
         }
 
-        $orderNo        = $request->input('order_no');
-        $transactionId  = $request->input('transaction_id');
-        $callbackStatus = $request->input('status');
+        $orderNo        = (string) $verified['order_no'];
+        $transactionId  = (string) $verified['transaction_id'];
+        $callbackStatus = (string) $verified['status'];
+        $callbackAmount = (string) $verified['amount'];
 
         $order = DepositOrder::where('order_no', $orderNo)->first();
 
@@ -83,8 +95,14 @@ class PaymentController extends BaseController
             return $this->fail('Provider mismatch', 403);
         }
 
+        // 惰性过期：支付链接已过期且订单仍 pending 则取消，成功应答防止网关重试。
+        // 回调状态为 success 时跳过 —— 用户已真实付款，过期不阻止入账（webhook 可能延迟）
+        if ($callbackStatus !== 'success' && $order->status === 'pending' && $order->expires_at && strtotime((string) $order->expires_at) < time()) {
+            DepositOrder::where('id', $order->id)->where('status', 'pending')->update(['status' => 'cancelled']);
+            return $this->success(['order_no' => $order->order_no, 'status' => 'cancelled'], 'Order expired');
+        }
+
         // 入账金额与订单核对：回调携带金额时不一致（或非数字）直接拒绝
-        $callbackAmount = (string) $request->input('amount', '');
         if ($callbackAmount !== '' && (!is_numeric($callbackAmount) || bccomp($callbackAmount, $order->amount, 4) !== 0)) {
             return $this->fail('Amount mismatch', 422);
         }
@@ -184,19 +202,89 @@ class PaymentController extends BaseController
      */
     public function methods(Request $request): Response
     {
-        $methods = PaymentMethod::where('status', 1)
-            ->orderBy('sort')
-            ->get()
-            ->map(function ($method) {
-                return [
-                    'id'       => $this->encodeId($method->id),
-                    'name'     => $method->name,
-                    'type'     => $method->type,
-                    'provider' => $method->provider,
-                ];
-            });
+        $country = $this->resolveCountry($request);
 
-        return $this->success(['list' => $methods->toArray()]);
+        $methods = PaymentMethod::where('status', 1)->get()
+            ->filter(fn (PaymentMethod $method) => $method->isAvailableIn($country));
+
+        // 本国优先：按国家配置 payment_methods 顺序排序（'crypto' 匹配 type='crypto' 方法），其余按 sort
+        $pref = [];
+        if ($country !== '') {
+            $cfg = CountryConfig::getByCode($country);
+            $pref = $cfg ? json_decode((string) $cfg->payment_methods, true) : [];
+            if (!is_array($pref)) {
+                $pref = [];
+            }
+        }
+        $prefCount = count($pref);
+        $methods = $methods->sortBy(function (PaymentMethod $method) use ($pref, $prefCount): int {
+            $key = $method->type === 'crypto' ? 'crypto' : (string) $method->provider;
+            $idx = array_search($key, $pref, true);
+            return ($idx === false ? $prefCount : $idx) * 1000 + (int) $method->sort;
+        })->values();
+
+        $list = $methods->map(function (PaymentMethod $method) {
+            return [
+                'id'         => $this->encodeId($method->id),
+                'name'       => $method->name,
+                'type'       => $method->type,
+                'provider'   => $method->provider,
+                'min_amount' => $method->min_amount,
+                'max_amount' => $method->max_amount,
+            ];
+        });
+
+        return $this->success(['list' => $list->toArray()]);
+    }
+
+    /**
+     * 旧版扁平参数回调协议（order_no/transaction_id/status），paypal 专用
+     */
+    private function legacyCallbackData(Request $request): array
+    {
+        $orderNo = (string) $request->input('order_no', '');
+        $txId    = (string) $request->input('transaction_id', '');
+        $status  = (string) $request->input('status', '');
+        if ($orderNo === '' || $txId === '' || !in_array($status, ['success', 'failed'], true)) {
+            return ['valid' => false, 'order_no' => '', 'transaction_id' => '', 'amount' => '', 'status' => ''];
+        }
+        return [
+            'valid'          => true,
+            'order_no'       => $orderNo,
+            'transaction_id' => $txId,
+            'amount'         => (string) $request->input('amount', ''),
+            'status'         => $status,
+        ];
+    }
+
+    /**
+     * Verify NOWPayments IPN signature (HMAC-SHA512 over raw body).
+     */
+    private function verifyNowPaymentsSignature(Request $request): bool
+    {
+        $secret    = getenv('NOWPAYMENTS_IPN_SECRET') ?: '';
+        $signature = $request->header('X-NowPayments-Sig', '');
+        if (!$secret || !$signature) {
+            // Fail closed: 未配置密钥时拒绝一切回调，与 JWT 一致
+            return false;
+        }
+        $expected = hash_hmac('sha512', $request->rawBody(), $secret);
+        return hash_equals($expected, $signature);
+    }
+
+    /**
+     * Verify Coinbase Commerce webhook signature (HMAC-SHA256, base64-encoded secret).
+     */
+    private function verifyCoinbaseSignature(Request $request): bool
+    {
+        $secret    = getenv('COINBASE_COMMERCE_WEBHOOK_SECRET') ?: '';
+        $signature = $request->header('X-CC-Webhook-Signature', '');
+        if (!$secret || !$signature) {
+            // Fail closed: 未配置密钥时拒绝一切回调，与 JWT 一致
+            return false;
+        }
+        $expected = base64_encode(hash_hmac('sha256', $request->rawBody(), base64_decode($secret)));
+        return hash_equals($expected, $signature);
     }
 
     /**

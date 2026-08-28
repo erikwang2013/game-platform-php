@@ -9,6 +9,8 @@ namespace app\api\v1\controller;
 
 use app\common\HashidsService;
 use app\common\SnowflakeService;
+use app\model\CountryConfig;
+use support\Request;
 use support\Response;
 
 /**
@@ -55,5 +57,14 @@ class BaseController
     protected function generateId(): int
     {
         return SnowflakeService::generate();
+    }
+
+    /**
+     * 解析请求所属国家：语言头优先（X-Language → Accept-Language），未知返回空串
+     */
+    protected function resolveCountry(Request $request): string
+    {
+        $lang = $request->header('X-Language', '') ?: $request->header('Accept-Language', '');
+        return CountryConfig::fromLang($lang);
     }
 }

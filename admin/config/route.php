@@ -148,6 +148,9 @@ Route::group('/admin', function () {
     // 支付方式管理
     Route::get('/payment/method/list', [app\admin\controller\PaymentController::class, 'list']);
     Route::post('/payment/method/toggle', [app\admin\controller\PaymentController::class, 'toggle']);
+    Route::post('/payment/method/create', [app\admin\controller\PaymentController::class, 'create']);
+    Route::put('/payment/method/{hashid}', [app\admin\controller\PaymentController::class, 'update']);
+    Route::delete('/payment/method/{hashid}', [app\admin\controller\PaymentController::class, 'delete']);
 
     // C端用户管理
     Route::get('/platform/user/list', [app\admin\controller\PlatformUserController::class, 'list']);

@@ -24,11 +24,18 @@ class PaymentMethod extends Model
         'config',
         'status',
         'sort',
+        'countries',
+        'currency',
+        'min_amount',
+        'max_amount',
     ];
 
     protected $casts = [
         'status' => 'int',
         'sort' => 'int',
+        'countries' => 'array',
+        'min_amount' => 'string',
+        'max_amount' => 'string',
         'config' => Encryptable::class,
     ];
 }

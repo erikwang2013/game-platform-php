@@ -8,10 +8,13 @@ declare(strict_types=1);
 namespace app\api\v1\controller;
 
 use app\model\DepositOrder;
+use app\model\PaymentMethod;
 use app\model\PlatformConfig;
+use app\payment\GatewayFactory;
 use app\service\NotificationService;
 use common\service\DepositLogService;
 use hg\apidoc\annotation as Apidoc;
+use support\Log;
 use support\Request;
 use support\Response;
 
@@ -34,7 +37,7 @@ class DepositController extends BaseController
     {
         $validator = validator($request->all(), [
             'amount'            => 'required|numeric|min:0.01',
-            'currency'          => 'required|in:USD,CNY,EUR',
+            'currency'          => 'required|in:USD,CNY,EUR,JPY,KRW,GBP,BRL,INR',
             'payment_method_id' => 'required',
         ]);
 
@@ -45,7 +48,31 @@ class DepositController extends BaseController
         $userId          = $request->userId;
         $amount          = $request->input('amount');
         $currency        = $request->input('currency');
+
+        // 精度对齐支付商最小单位转换：JPY/KRW 零小数币，其余最多 2 位小数，否则 Stripe 分转换回环不一致
+        $maxDecimals = in_array(strtoupper((string) $currency), ['JPY', 'KRW'], true) ? 0 : 2;
+        if (!preg_match('/^\d+(\.\d{1,' . $maxDecimals . '})?$/', (string) $amount)) {
+            return $this->fail('Amount precision not supported', 422);
+        }
         $paymentMethodId = $this->decodeId($request->input('payment_method_id'));
+
+        // 支付方式校验：存在、启用、国家可见（按语言头映射）、金额区间
+        $method = PaymentMethod::find($paymentMethodId);
+        if (!$method || (int) $method->status !== 1) {
+            return $this->fail('Payment method not available', 422);
+        }
+        if (!$method->isAvailableIn($this->resolveCountry($request))) {
+            return $this->fail('Payment method not available in your country', 422);
+        }
+        if ($method->currency !== '' && strtoupper($method->currency) !== strtoupper($currency)) {
+            return $this->fail('Currency not supported by this method', 422);
+        }
+        if (bccomp((string) $amount, (string) $method->min_amount, 4) < 0) {
+            return $this->fail('Amount below minimum', 422);
+        }
+        if (bccomp((string) $method->max_amount, '0', 4) > 0 && bccomp((string) $amount, (string) $method->max_amount, 4) > 0) {
+            return $this->fail('Amount above maximum', 422);
+        }
 
         // Calculate platform amount using exchange rate
         $exchangeRate   = PlatformConfig::get('payment', 'default_exchange_rate', '1.0000');
@@ -65,6 +92,19 @@ class DepositController extends BaseController
         $order->status             = 'pending';
         $order->save();
 
+        // 调网关创建支付：成功回填支付链接与过期时间，失败取消订单（客户端可重试）
+        try {
+            $result = GatewayFactory::resolve((string) $method->provider)->createPayment($order, $method);
+            $order->checkout_url   = (string) ($result['checkout_url'] ?? '');
+            $order->transaction_id = (string) ($result['transaction_id'] ?? '');
+            $order->expires_at     = date('Y-m-d H:i:s', time() + 3600);
+            $order->save();
+        } catch (\Throwable $e) {
+            Log::error('Gateway create payment failed', ['order_no' => $orderNo, 'error' => $e->getMessage()]);
+            DepositOrder::where('id', $order->id)->where('status', 'pending')->update(['status' => 'cancelled']);
+            return $this->fail('Payment gateway unavailable, please retry', 502);
+        }
+
         NotificationService::send(
             $userId,
             'deposit',
@@ -81,6 +121,8 @@ class DepositController extends BaseController
             'order_no'        => $order->order_no,
             'amount'          => $amount,
             'platform_amount' => $platformAmount,
+            'checkout_url'    => $order->checkout_url,
+            'expires_at'      => $order->expires_at,
         ], 'Deposit order created');
     }
 

@@ -240,6 +240,8 @@ CREATE TABLE IF NOT EXISTS `game_deposit_order` (
     `payment_method_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '支付方式ID',
     `status` VARCHAR(20) NOT NULL DEFAULT 'pending' COMMENT '状态: pending=待支付 paid=已支付 confirmed=已确认 cancelled=已取消',
     `transaction_id` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '第三方支付交易ID',
+    `checkout_url` VARCHAR(500) NOT NULL DEFAULT '' COMMENT '网关支付链接（Stripe PaymentIntent / NOWPayments payment_url / Coinbase hosted_url）',
+    `expires_at` DATETIME DEFAULT NULL COMMENT '支付链接过期时间',
     `paid_at` DATETIME DEFAULT NULL COMMENT '支付时间',
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -333,6 +335,10 @@ CREATE TABLE IF NOT EXISTS `game_payment_method` (
     `config` TEXT COMMENT '支付配置（加密JSON）',
     `status` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '状态: 0=禁用 1=启用',
     `sort` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '排序',
+    `countries` JSON NOT NULL COMMENT '可见国家码JSON数组，空数组或["*"]=全球',
+    `currency` VARCHAR(10) NOT NULL DEFAULT '' COMMENT '限定币种（空=任意，如USDT方法限定USD）',
+    `min_amount` DECIMAL(18,4) NOT NULL DEFAULT 0.0000 COMMENT '最小充值金额（订单币种，0=不限）',
+    `max_amount` DECIMAL(18,4) NOT NULL DEFAULT 0.0000 COMMENT '最大充值金额（订单币种，0=不限）',
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
@@ -993,10 +999,16 @@ INSERT IGNORE INTO `game_game_category` (`id`, `name`, `slug`, `icon`, `sort`, `
 (50000000000000009, '益智', 'puzzle', 'extension', 9, 1),
 (50000000000000010, '卡牌', 'card', 'style', 10, 1);
 
+-- 默认支付方式（加密货币，provider 与 country_config.payment_methods 中 "crypto" 匹配）
+INSERT IGNORE INTO `game_payment_method` (`id`, `name`, `type`, `provider`, `config`, `status`, `sort`, `countries`, `currency`, `min_amount`, `max_amount`) VALUES
+(50000000000000051, 'USDT (TRC20)', 'crypto', 'nowpayments', '{"network":"TRC20"}', 1, 10, '[]', '', 0.0000, 0.0000),
+(50000000000000052, 'USDT (ERC20)', 'crypto', 'nowpayments', '{"network":"ERC20"}', 1, 20, '[]', '', 0.0000, 0.0000),
+(50000000000000053, 'Crypto Wallet (Coinbase)', 'crypto', 'coinbase', '{"coin":"USDC"}', 1, 30, '[]', '', 0.0000, 0.0000);
+
 -- 默认国家配置
 INSERT IGNORE INTO `game_country_config` (`id`, `country_code`, `currency`, `payment_methods`, `withdraw_methods`, `min_deposit`) VALUES
 (50000000000000101, 'US', 'USD', '["stripe","paypal","crypto"]', '["paypal","bank","crypto"]', 1.0000),
-(50000000000000102, 'CN', 'CNY', '["alipay","wechat"]', '["alipay","bank"]', 10.0000),
+(50000000000000102, 'CN', 'CNY', '["crypto","alipay","wechat"]', '["alipay","bank"]', 10.0000),
 (50000000000000103, 'JP', 'JPY', '["stripe","paypal"]', '["paypal","bank"]', 100.0000),
 (50000000000000104, 'KR', 'KRW', '["stripe","paypal"]', '["paypal","bank"]', 1000.0000),
 (50000000000000105, 'GB', 'GBP', '["stripe","paypal"]', '["paypal","bank"]', 1.0000),

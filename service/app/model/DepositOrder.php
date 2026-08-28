@@ -25,6 +25,8 @@ class DepositOrder extends Model
         'payment_method_id',
         'status',
         'transaction_id',
+        'checkout_url',
+        'expires_at',
         'paid_at',
     ];
 
