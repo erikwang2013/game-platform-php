@@ -160,6 +160,7 @@ class PaymentController extends BaseController
             if ($riskResult['result'] === 'block') {
                 // MVP: log warning but do NOT reverse the credit
                 // Production should queue for manual review
+                Log::warning('Deposit credited despite risk block', ['order_no' => $order->order_no, 'user_id' => $order->user_id]);
             }
 
             return $this->success([

@@ -84,8 +84,8 @@ class AuthController extends BaseController
         });
 
         // Generate tokens
-        $accessToken  = jwt()->create(['sub' => $userId, 'username' => $username]);
-        $refreshToken = jwt()->create(['sub' => $userId, 'token_type' => 'refresh']);
+        $accessToken  = jwt_wrapper()->create(['sub' => $userId, 'username' => $username]);
+        $refreshToken = jwt_wrapper()->create(['sub' => $userId, 'token_type' => 'refresh']);
 
         return $this->success([
             'access_token'  => $accessToken,
@@ -136,7 +136,7 @@ class AuthController extends BaseController
             ->where('is_enabled', 1)
             ->exists();
         if ($has2fa) {
-            $pendingToken = jwt()->create(['sub' => $user->id, 'scope' => 'pending_2fa'], 600);
+            $pendingToken = jwt_wrapper()->create(['sub' => $user->id, 'scope' => 'pending_2fa'], 600);
             return $this->success([
                 'require_2fa'      => true,
                 'pending_2fa_token' => $pendingToken,
@@ -149,8 +149,8 @@ class AuthController extends BaseController
         $user->save();
 
         // Generate tokens
-        $accessToken  = jwt()->create(['sub' => $user->id, 'username' => $user->username]);
-        $refreshToken = jwt()->create(['sub' => $user->id, 'token_type' => 'refresh']);
+        $accessToken  = jwt_wrapper()->create(['sub' => $user->id, 'username' => $user->username]);
+        $refreshToken = jwt_wrapper()->create(['sub' => $user->id, 'token_type' => 'refresh']);
 
         return $this->success([
             'access_token'  => $accessToken,
@@ -173,13 +173,13 @@ class AuthController extends BaseController
     {
         try {
             // 校验原 refresh token（token_type=refresh 且未过期/未拉黑），并轮换为新 refresh token
-            $newRefresh = jwt()->refresh();
-            $payload = jwt()->decode($newRefresh);
+            $newRefresh = jwt_wrapper()->refresh();
+            $payload = jwt_wrapper()->decode($newRefresh);
             $sub = (int) ($payload['sub'] ?? 0);
             if ($sub <= 0) {
                 return $this->fail('Invalid refresh token', 401);
             }
-            $accessToken = jwt()->create(['sub' => $sub]);
+            $accessToken = jwt_wrapper()->create(['sub' => $sub]);
         } catch (\Throwable $e) {
             return $this->fail('Invalid or expired refresh token', 401);
         }

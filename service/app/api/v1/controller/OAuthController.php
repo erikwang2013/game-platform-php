@@ -177,8 +177,8 @@ class OAuthController extends BaseController
             $user->last_login_ip = $request->getRealIp() ?? '';
             $user->save();
 
-            $accessToken  = jwt()->create(['sub' => $user->id, 'username' => $user->username]);
-            $refreshToken = jwt()->create(['sub' => $user->id, 'type' => 'refresh']);
+            $accessToken  = jwt_wrapper()->create(['sub' => $user->id, 'username' => $user->username]);
+            $refreshToken = jwt_wrapper()->create(['sub' => $user->id, 'token_type' => 'refresh']);
 
             return $this->success([
                 'access_token'  => $accessToken,
@@ -235,8 +235,8 @@ class OAuthController extends BaseController
             $wallet->save();
         });
 
-        $accessToken  = jwt()->create(['sub' => $userId, 'username' => $username]);
-        $refreshToken = jwt()->create(['sub' => $userId, 'type' => 'refresh']);
+        $accessToken  = jwt_wrapper()->create(['sub' => $userId, 'username' => $username]);
+        $refreshToken = jwt_wrapper()->create(['sub' => $userId, 'token_type' => 'refresh']);
 
         return $this->success([
             'access_token'  => $accessToken,

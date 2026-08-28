@@ -6,6 +6,7 @@ declare(strict_types=1);
 namespace app\api\v1\controller;
 use app\model\Friend;
 use app\model\Message;
+use app\model\User;
 use support\Redis;
 use support\Request;
 use support\Response;
@@ -35,20 +36,32 @@ class ChatController extends BaseController
 
         $conversations = [];
         $allPeers = $sent->union($received);
+        if ($allPeers->isEmpty()) {
+            return $this->success(['list' => []]);
+        }
+
+        // 批量查询：消息/用户/未读数各 1 次，替代逐会话 3 次查询
+        $peerIds = $allPeers->keys()->all();
+        // union 只保留首个集合的 last_msg_id，而下方取双向最大值，故两个方向的消息 id 都要取
+        $lastMsgIds = $sent->values()->merge($received->values())->all();
+        $msgs = Message::whereIn('id', $lastMsgIds)->get()->keyBy('id');
+        $peers = User::whereIn('id', $peerIds)->get()->keyBy('id');
+        $unread = Message::where('to_user_id', $userId)
+            ->whereIn('from_user_id', $peerIds)->where('is_read', 0)
+            ->selectRaw('from_user_id, COUNT(*) as c')
+            ->groupBy('from_user_id')->pluck('c', 'from_user_id');
+
         foreach ($allPeers as $peerId => $lastMsgId) {
             $peerMsgId = max($sent[$peerId] ?? 0, $received[$peerId] ?? 0);
-            $lastMsg = Message::find($peerMsgId);
+            $lastMsg = $msgs->get($peerMsgId);
             if (!$lastMsg) continue;
-            $peer = \app\model\User::find($peerId);
+            $peer = $peers->get($peerId);
             if (!$peer) continue;
-
-            $unread = Message::where('to_user_id', $userId)
-                ->where('from_user_id', $peerId)->where('is_read', 0)->count();
 
             $conversations[] = [
                 'peer' => ['id' => $this->encodeId($peer->id), 'username' => $peer->username, 'nickname' => $peer->nickname, 'avatar' => $peer->avatar],
                 'last_message' => mb_substr($lastMsg->content, 0, 100),
-                'unread_count' => $unread,
+                'unread_count' => (int) ($unread[$peerId] ?? 0),
                 'updated_at' => $lastMsg->created_at,
             ];
         }

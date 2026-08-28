@@ -74,8 +74,7 @@ class ExchangeController extends BaseController
         if (bccomp($spreadPct, '0', 8) < 0) $spreadPct = '0';
 
         // Apply VIP rate bonus
-        $rateBonus = VipService::getRateBonus($request->userId);
-        $effectiveRate = bcadd($rate, bcmul($rate, $rateBonus, 8), 8);
+        $effectiveRate = $this->effectiveRate($gameCurrency, $request->userId);
 
         if ($direction === 'in') {
             // Buy: platform -> game
@@ -218,6 +217,9 @@ class ExchangeController extends BaseController
         $spreadPct = bcsub($spreadPct, bcmul($spreadPct, $vipDiscount, 8), 8);
         if (bccomp($spreadPct, '0', 8) < 0) $spreadPct = '0';
 
+        // VIP 加成后的有效汇率 — 与 quote() 共用同一公式，避免漂移
+        $effectiveRate = $this->effectiveRate($gameCurrency, $userId);
+
         // Calculate amounts — 与 quote() 同公式：sell 需除以 effectiveRate 换算，且平台入账为扣费后净值
         if ($direction === 'in') {
             // Buy: spend platform tokens to get game tokens (net of spread fee, matches quote)
@@ -313,6 +315,12 @@ class ExchangeController extends BaseController
             Log::error('Exchange failed', ['user_id' => $userId, 'direction' => $direction, 'error' => $e->getMessage()]);
             return $this->fail('Exchange failed, please try again later', 500);
         }
+    }
+
+    private function effectiveRate(GameCurrency $gameCurrency, int $userId): string
+    {
+        $rateBonus = VipService::getRateBonus($userId);
+        return bcadd($gameCurrency->exchange_rate, bcmul($gameCurrency->exchange_rate, $rateBonus, 8), 8);
     }
 
     /**

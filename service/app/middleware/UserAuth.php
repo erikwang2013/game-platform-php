@@ -29,7 +29,7 @@ class UserAuth implements MiddlewareInterface
         }
 
         try {
-            $payload = jwt()->verify($token);
+            $payload = jwt_wrapper()->verify($token);
         } catch (\Throwable $e) {
             return json(['code' => 401, 'message' => 'Token已过期或无效', 'data' => []]);
         }

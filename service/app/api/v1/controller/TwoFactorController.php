@@ -139,7 +139,7 @@ class TwoFactorController extends BaseController
 
         // 用户身份取自登录时签发的短期票据（含已过密码校验标记），客户端无法自选用户
         try {
-            $payload = jwt()->verify($request->input('pending_2fa_token'));
+            $payload = jwt_wrapper()->verify($request->input('pending_2fa_token'));
         } catch (\Throwable) {
             return $this->fail('Invalid or expired verification session', 401);
         }
@@ -263,8 +263,8 @@ class TwoFactorController extends BaseController
         $user->last_login_ip = $request->getRealIp() ?? '';
         $user->save();
 
-        $accessToken  = jwt()->create(['sub' => $user->id, 'username' => $user->username]);
-        $refreshToken = jwt()->create(['sub' => $user->id, 'token_type' => 'refresh']);
+        $accessToken  = jwt_wrapper()->create(['sub' => $user->id, 'username' => $user->username]);
+        $refreshToken = jwt_wrapper()->create(['sub' => $user->id, 'token_type' => 'refresh']);
 
         return $this->success([
             'access_token'  => $accessToken,
@@ -292,7 +292,7 @@ class TwoFactorController extends BaseController
             return 0;
         }
         try {
-            $payload = jwt()->verify($m[1]);
+            $payload = jwt_wrapper()->verify($m[1]);
             return (int) ($payload->sub ?? 0);
         } catch (\Throwable) {
             return 0;

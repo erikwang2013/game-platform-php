@@ -3,8 +3,8 @@
  * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
  */
 
-use Erikwang2013\Jwt\JWT;
 use Erikwang2013\Jwt\JWTFactory;
+use Erikwang2013\Jwt\JwtWrapper;
 use Illuminate\Translation\ArrayLoader;
 use Illuminate\Translation\Translator;
 use Illuminate\Validation\Factory;
@@ -22,14 +22,13 @@ function validator(array $data, array $rules, array $messages = [], array $attri
 }
 
 /**
- * JWT 便捷包装
+ * JWT 门面：vendor 的 jwt() 仅返回裸 JWT(无 create/verify/refresh)，应用侧统一走 JwtWrapper
  */
-function jwt(): \Erikwang2013\Jwt\JwtWrapper
+function jwt_wrapper(): JwtWrapper
 {
     static $wrapper = null;
     if ($wrapper === null) {
-        $jwt = JWTFactory::createFromConfig(config('plugin.erikwang2013.jwt.jwt'));
-        $wrapper = new \Erikwang2013\Jwt\JwtWrapper($jwt);
+        $wrapper = new JwtWrapper(JWTFactory::createFromConfig(config('plugin.erikwang2013.jwt.jwt')));
     }
     return $wrapper;
 }

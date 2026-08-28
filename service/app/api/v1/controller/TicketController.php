@@ -20,6 +20,7 @@ class TicketController extends BaseController
         $perPage = (int) $request->input('per_page', 20);
 
         $tickets = Ticket::where('user_id', $request->userId)
+            ->withCount('replies')
             ->orderBy('id', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
 
@@ -31,7 +32,7 @@ class TicketController extends BaseController
                 'subject' => $ticket->subject,
                 'status' => $ticket->status,
                 'priority' => $ticket->priority,
-                'reply_count' => $ticket->replies()->count(),
+                'reply_count' => $ticket->replies_count,
                 'created_at' => $ticket->created_at,
             ];
         }

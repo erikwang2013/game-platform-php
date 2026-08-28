@@ -30,7 +30,7 @@ class TournamentController extends BaseController
         $perPage = (int) $request->input('per_page', 20);
         $status = $request->input('status', 'active');
 
-        $query = Tournament::with('game')->orderBy('id', 'desc');
+        $query = Tournament::with('game')->withCount('entries')->orderBy('id', 'desc');
         if ($status === 'active') {
             $now = date('Y-m-d H:i:s');
             $query->where('start_at', '<=', $now)->where('end_at', '>=', $now)->where('status', 1);
@@ -48,7 +48,7 @@ class TournamentController extends BaseController
                 'type' => $t->type, 'description' => $t->description,
                 'game' => $t->game ? ['id' => $this->encodeId($t->game->id), 'name' => $t->game->name] : null,
                 'prize_pool' => $t->prize_pool, 'entry_fee' => $t->entry_fee,
-                'player_count' => $t->entries()->count(), 'max_players' => $t->max_players,
+                'player_count' => $t->entries_count, 'max_players' => $t->max_players,
                 'start_at' => $t->start_at, 'end_at' => $t->end_at,
             ];
         }
@@ -63,6 +63,7 @@ class TournamentController extends BaseController
     public function detail(Request $request, string $hashid): Response
     {
         $t = Tournament::with(['game', 'entries' => function($q) { $q->orderBy('score', 'desc')->limit(100); }])
+            ->withCount('entries')
             ->find($this->decodeId($hashid));
         if (!$t) return $this->fail('Tournament not found', 404);
 
@@ -78,7 +79,7 @@ class TournamentController extends BaseController
             'type' => $t->type, 'description' => $t->description,
             'game' => $t->game ? ['id' => $this->encodeId($t->game->id), 'name' => $t->game->name] : null,
             'prize_pool' => $t->prize_pool, 'entry_fee' => $t->entry_fee,
-            'player_count' => $t->entries()->count(), 'max_players' => $t->max_players,
+            'player_count' => $t->entries_count, 'max_players' => $t->max_players,
             'start_at' => $t->start_at, 'end_at' => $t->end_at,
             'my_entry' => $myEntry ? ['id' => $this->encodeId($myEntry->id), 'score' => $myEntry->score, 'rank' => $myEntry->rank] : null,
             'leaderboard' => $leaderboard,

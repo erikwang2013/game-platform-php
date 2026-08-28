@@ -30,13 +30,11 @@ class AchievementService
             return;
         }
 
-        $achievements = Achievement::query()->get();
+        // condition_json 为 MySQL JSON 列，SQL 过滤事件，避免每次事件全表加载
+        $achievements = Achievement::query()->where('condition_json->event', $event)->get();
         foreach ($achievements as $achievement) {
             $condition = json_decode((string) $achievement->condition_json, true);
             if (!is_array($condition)) {
-                continue;
-            }
-            if (($condition['event'] ?? '') !== $event) {
                 continue;
             }
 

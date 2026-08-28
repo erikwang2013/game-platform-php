@@ -30,7 +30,7 @@ class ChatWebSocket
                 $token = $msg['token'] ?? '';
                 if (empty($token)) { $connection->send(json_encode(['type' => 'error', 'message' => 'Token required'])); return; }
                 try {
-                    $payload = jwt()->verify($token);
+                    $payload = jwt_wrapper()->verify($token);
                     $connection->userId = (int) $payload->sub;
                     $connection->send(json_encode(['type' => 'authenticated', 'user_id' => $connection->userId]));
                 } catch (\Throwable $e) {
