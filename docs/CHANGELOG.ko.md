@@ -57,3 +57,9 @@ Languages: [中文](CHANGELOG.md) · [English](CHANGELOG.en.md) · **한국어**
 - 디그레이션 스위치 `feature.provider_mock`: PushService(FCM/APNs/HarmonyOS), PayoutService(PayPal), ThirdPartyProvider가 `on`이면 단락되어 실제 네트워크 호출 생략.
 - `getenv($name, '')` 두 번째 인자 타입 결함 11곳 수정(strict_types에서 TypeError); PushService mock 확인을 try/catch로 이동.
 - 신규 테스트: CircuitBreakerTest / RetryTest / ResilienceMockTest; service 스위트 45 → 60 케이스 전부 통과(보고서: [test-reports/resilience.md](test-reports/resilience.md)).
+
+## [1.1] payments — 2026-08-29
+
+- 다중 결제 게이트웨이: Stripe Checkout / NOWPayments(USDT TRC20+ERC20) / Coinbase Commerce(USDC) 연동.
+- 관리자 결제수단 CRUD + 국가별 표시 + 금액 범위; 충전 주문 생성 시 checkout_url / expires_at 즉시 기록.
+- 새 마이그레이션 install/migrations/2026_08_29_multi_payment.sql(실행 필요).

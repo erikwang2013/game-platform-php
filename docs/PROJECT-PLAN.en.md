@@ -22,7 +22,7 @@ Languages: [中文](PROJECT-PLAN.md) · **English** · [한국어](PROJECT-PLAN.
 | Tests | 132 cases / 8 files (admin project), service project **zero tests** |
 | Version | v1.1 (2026-08-07): Redis plugin, analytics service, Redis degradation, test fixes |
 
-Implemented capabilities: JWT+RBAC, wallet optimistic lock, deposits (Stripe/PayPal signature verification), exchange spread, withdrawal review + PayPal payout, game CRUD/Provider gateway (HMAC), coupons/VIP/achievements/tickets/referral commissions/2FA/social (friends/chat WS)/tournaments/Webhooks/push (FCM/APNs/Huawei)/i18n bilingual.
+Implemented capabilities: JWT+RBAC, wallet optimistic lock, deposits (Stripe/PayPal/NowPayments/Coinbase signature verification), exchange spread, withdrawal review + PayPal payout, game CRUD/Provider gateway (HMAC), coupons/VIP/achievements/tickets/referral commissions/2FA/social (friends/chat WS)/tournaments/Webhooks/push (FCM/APNs/Huawei)/i18n bilingual.
 
 ---
 
@@ -75,7 +75,7 @@ Wallet optimistic lock + version conditional update correct; callback idempotenc
 
 ### P0 — Fund Safety + Correctness (First, Blocks Launch)
 
-1. **Payment callback fail-closed**: provider whitelist (stripe/paypal only) + missing keys must reject with 500 + PayPal exceptions must reject (C1/C2) — ✅ Done (2026-08-18: provider whitelist + cross-channel impersonation validation + optional source IP validation + transactional callback crediting)
+1. **Payment callback fail-closed**: provider whitelist (stripe/paypal/nowpayments/coinbase only) + missing keys must reject with 500 + PayPal exceptions must reject (C1/C2) — ✅ Done (2026-08-18: provider whitelist + cross-channel impersonation validation + optional source IP validation + transactional callback crediting)
 2. **JWT startup validation**: refuse to start when env has no `JWT_SECRET_KEY` (C3) — ✅ Done (2026-08-18: refuses to start when JWT_SECRET_KEY missing or default `open-admin-jwt-secret-change-in-production`, consistent across admin/service)
 3. **Mount analytics routes**: register 12 analytics routes + permission points, honor the VERSIONS.md promise (H1) — ✅ Done (2026-08-18: admin/config/route.php registers 12 `/admin/analytics/*` routes)
 4. **Event bus end-to-end**: register a resident subscriber process, or switch to synchronous direct calls; persist events + retry on failure (H2) — ✅ Done (2026-08-18: emit/consume INCR Redis counters; `service/config/process.php` registers `event-consumer`, `service/app/process/EventConsumer.php` consumes events)

@@ -1814,3 +1814,157 @@ GET /admin/analytics/economy
 ```
 
 **응답**: `currencies` 배열, 각 항목은 `game_name`, `currency`, `symbol`, `total_minted`（발행 총량）, `total_burned`（소각 총량）, `circulation`（유통량）, `inflation_rate`（인플레이션율）포함, bcmath 고정밀 계산 사용.
+
+## 17. 결제 관리 (Payment)
+
+결제 수단 관리는 `PaymentController`가 제공하며, 5개 엔드포인트 모두 JWT + RBAC 인증이 필요합니다. `provider` 화이트리스트: `stripe` / `nowpayments` / `coinbase`. `config`는 결제 설정 JSON 문자열(DB에 암호화 저장)입니다.
+
+| 메서드 | 경로 | 설명 |
+|------|------|------|
+| GET | /admin/payment/method/list | 결제 수단 목록(sort 오름차순) |
+| POST | /admin/payment/method/toggle | 결제 수단 활성/비활성 전환 |
+| POST | /admin/payment/method/create | 결제 수단 생성 |
+| PUT | /admin/payment/method/{hashid} | 결제 수단 업데이트 |
+| DELETE | /admin/payment/method/{hashid} | 결제 수단 삭제(pending 주문 존재 시 거부) |
+
+### 17.1 결제 수단 목록
+
+```
+GET /admin/payment/method/list
+```
+
+- **인증**: JWT + RBAC
+
+**응답 예시**:
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "list": [
+      {
+        "id": "a1b2c3d4",
+        "name": "Stripe 신용카드",
+        "type": "fiat",
+        "provider": "stripe",
+        "status": 1,
+        "sort": 1,
+        "countries": ["US", "SG"],
+        "currency": "USD",
+        "min_amount": "10",
+        "max_amount": "5000",
+        "config": null,
+        "created_at": "2026-08-29 10:00:00",
+        "updated_at": "2026-08-29 10:00:00"
+      }
+    ]
+  }
+}
+```
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| id | string | 결제 수단 ID(hashid 인코딩) |
+| name | string | 결제 수단 이름 |
+| type | string | `fiat`(법정화폐) / `crypto`(암호화폐) |
+| provider | string | 게이트웨이 제공자: `stripe` / `nowpayments` / `coinbase` |
+| status | int | 1=활성, 0=비활성 |
+| sort | int | 정렬값(오름차순) |
+| countries | array{string} | 표시 대상 국가 코드 배열(빈 배열=전 세계 표시) |
+| currency | string | 통화(예: USD/USDT), 비어 있으면 제한 없음 |
+| min_amount / max_amount | string | 금액 범위(정밀도 유지용 문자열), 0=제한 없음 |
+| config | string? | 결제 설정 JSON(암호화, 미설정 시 null) |
+
+### 17.2 결제 수단 활성/비활성 전환
+
+```
+POST /admin/payment/method/toggle
+```
+
+**요청 본문**:
+```json
+{
+  "id": "a1b2c3d4",
+  "status": 1
+}
+```
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| id | string | 예 | 결제 수단 ID(hashid) |
+| status | int | 예 | 0=비활성, 1=활성 |
+
+**가능한 오류**:
+- 422: 검증 실패(id/status 누락 또는 status가 0/1 아님)
+- 404: 결제 수단이 존재하지 않음
+
+### 17.3 결제 수단 생성
+
+```
+POST /admin/payment/method/create
+```
+
+**요청 본문**:
+```json
+{
+  "name": "USDT 암호화폐",
+  "type": "crypto",
+  "provider": "nowpayments",
+  "status": 1,
+  "sort": 2,
+  "countries": [],
+  "currency": "USDT",
+  "min_amount": "10",
+  "max_amount": "10000",
+  "config": "{\"api_key\":\"...\"}"
+}
+```
+
+| 필드 | 타입 | 필수 | 검증 | 설명 |
+|------|------|------|---------|------|
+| name | string | 예 | max:50 | 결제 수단 이름 |
+| type | string | 예 | in:fiat,crypto | 유형: 법정화폐/암호화폐 |
+| provider | string | 예 | in:stripe,nowpayments,coinbase | 게이트웨이 제공자 화이트리스트 |
+| status | int | 예 | in:0,1 | 상태 |
+| sort | int | 아니요 | integer,min:0 | 정렬값, 기본 0 |
+| countries | array{string} | 아니요 | max:2 | 표시 국가 코드, 비어 있으면 전 세계 |
+| currency | string | 아니요 | max:10 | 통화, 기본 비어 있음 |
+| min_amount / max_amount | string | 아니요 | numeric,min:0 | 금액 범위, 기본 "0" |
+| config | string | 아니요 | | 결제 설정 JSON(암호화), 빈 문자열은 NULL로 저장 |
+
+**응답 예시**:
+```json
+{
+  "code": 0,
+  "message": "생성 성공",
+  "data": { "id": "e5f6g7h8" }
+}
+```
+
+**가능한 오류**:
+- 422: 검증 실패
+
+### 17.4 결제 수단 업데이트
+
+```
+PUT /admin/payment/method/{hashid}
+```
+
+- **경로 파라미터**: `{hashid}`는 hashid 인코딩된 결제 수단 ID
+- **요청 본문**: 생성(17.3)과 동일, 모든 필드 선택, 전달된 필드만 업데이트
+
+**가능한 오류**:
+- 404: 결제 수단이 존재하지 않음
+- 422: 검증 실패
+
+### 17.5 결제 수단 삭제
+
+```
+DELETE /admin/payment/method/{hashid}
+```
+
+- **경로 파라미터**: `{hashid}`는 hashid 인코딩된 결제 수단 ID
+
+**가능한 오류**:
+- 404: 결제 수단이 존재하지 않음
+- 422: 대기 중인 입금 주문(status=pending)이 존재하여 삭제 불가

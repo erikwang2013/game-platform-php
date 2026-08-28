@@ -22,7 +22,7 @@ Languages: [中文](PROJECT-PLAN.md) · [English](PROJECT-PLAN.en.md) · [한국
 | Tests | 132 cas / 8 fichiers (projet admin), projet service **zéro test** |
 | Version | v1.1 (2026-08-07) : plugin Redis, services d'analyse, repli Redis, corrections de tests |
 
-Capacités implémentées : JWT+RBAC, verrou optimiste du portefeuille, recharge (vérification Stripe/PayPal), écart d'échange, validation des retraits + paiement PayPal, CRUD de jeux/passerelle Provider (HMAC), coupons/VIP/succès/tickets/commission de parrainage/2FA/social (amis/chat WS)/tournois/Webhook/push (FCM/APNs/Huawei)/i18n bilingue.
+Capacités implémentées : JWT+RBAC, verrou optimiste du portefeuille, recharge (vérification Stripe/PayPal/NowPayments/Coinbase), écart d'échange, validation des retraits + paiement PayPal, CRUD de jeux/passerelle Provider (HMAC), coupons/VIP/succès/tickets/commission de parrainage/2FA/social (amis/chat WS)/tournois/Webhook/push (FCM/APNs/Huawei)/i18n bilingue.
 
 ---
 
@@ -75,7 +75,7 @@ Verrou optimiste du portefeuille + mise à jour conditionnelle par version corre
 
 ### P0 — Sécurité des fonds + exactitude (en premier, bloque la mise en production)
 
-1. **Fail-closed des rappels de paiement** : liste blanche des providers (stripe/paypal uniquement) + clé manquante → refus 500 obligatoire + toute exception PayPal refusée (C1/C2) — ✅ Terminé (2026-08-18 : liste blanche des providers + vérification anti-abus inter-canaux + vérification optionnelle de l'IP source + enregistrement transactionnel des rappels)
+1. **Fail-closed des rappels de paiement** : liste blanche des providers (stripe/paypal/nowpayments/coinbase uniquement) + clé manquante → refus 500 obligatoire + toute exception PayPal refusée (C1/C2) — ✅ Terminé (2026-08-18 : liste blanche des providers + vérification anti-abus inter-canaux + vérification optionnelle de l'IP source + enregistrement transactionnel des rappels)
 2. **Validation JWT au démarrage** : refus de démarrage si `JWT_SECRET_KEY` absente de l'env (C3) — ✅ Terminé (2026-08-18 : refus de démarrage si `JWT_SECRET_KEY` manque ou vaut `open-admin-jwt-secret-change-in-production`, cohérent admin/service)
 3. **Montage des routes du service d'analyse** : enregistrer les 12 routes analytics + points de permission, honorer l'engagement de VERSIONS.md (H1) — ✅ Terminé (2026-08-18 : 12 routes `/admin/analytics/*` enregistrées dans admin/config/route.php)
 4. **Bus d'événements connecté** : enregistrer un processus d'abonnement permanent pour consommer, ou basculer en appel synchrone direct ; événements en base + nouvel essai en cas d'échec (H2) — ✅ Terminé (2026-08-18 : emit/consume font INCR sur les compteurs Redis ; `service/config/process.php` enregistre `event-consumer`, `service/app/process/EventConsumer.php` consomme les événements)

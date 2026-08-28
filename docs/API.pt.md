@@ -181,11 +181,15 @@ Resposta: {
   "order_id": "aB3xK...",
   "order_no": "DEP202605221030000123",
   "amount": "10.00",
-  "platform_amount": "10.0000"
+  "platform_amount": "10.0000",
+  "checkout_url": "https://checkout.stripe.com/...",
+  "expires_at": "2026-05-22 11:30:00"
 }
 ```
 
 Valores possíveis de currency: USD / CNY / EUR
+
+checkout_url: link de redirecionamento do gateway de pagamento (preenchido na criação do pedido); expires_at: expiração do link de pagamento (1 hora após a criação)
 
 #### GET /api/deposit/orders — Registros de depósito
 
@@ -517,15 +521,19 @@ Resposta: { "message": "success" }
 
 status: success / failed
 
+Valores de provider: stripe / paypal / nowpayments / coinbase (nowpayments verifica via IPN HMAC-SHA512, coinbase via webhook HMAC-SHA256)
+
 #### GET /api/payment/methods — Métodos de pagamento disponíveis (público)
 
 ```
 Resposta: {
   "list": [
-    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "status": 1 }
+    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "min_amount": "10.00", "max_amount": "5000.00" }
   ]
 }
 ```
+
+Filtrado por país do usuário (X-Language/Accept-Language → código do país): countries vazio ou contendo * significa visível globalmente; ordenado pela preferência de métodos de pagamento de country_config do país
 
 ### 2.10 Registros de partidas
 

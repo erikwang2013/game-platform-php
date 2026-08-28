@@ -196,9 +196,10 @@ packages/platform-common/src/
 
 ```
 المستخدم → POST /api/deposit/create → إنشاء الطلب (status=pending)
-     → الانتقال إلى الدفع عبر الطرف الثالث (Stripe/PayPal)
+     → إنشاء الدفع عبر GatewayFactory (Stripe Checkout/NowPayments invoice/Coinbase charge) → تعبئة checkout_url + expires_at(+1h)؛ عند الفشل إلغاء الطلب عبر CAS وإعادة المحاولة
+     → الانتقال إلى الدفع عبر الطرف الثالث (Stripe/PayPal/NowPayments[USDT TRC20/ERC20]/Coinbase[USDC/BTC/ETH])
      → نجاح الدفع → استدعاء /api/payment/callback
-     → القائمة البيضاء للمزود (stripe/paypal فقط) + التحقق من انتحال القنوات المتقاطعة + التحقق من التوقيع (fail-closed) + الطابع الزمني ±300s + مطابقة المبلغ bccomp
+     → القائمة البيضاء للمزود (stripe/paypal/nowpayments/coinbase فقط) + التحقق من انتحال القنوات المتقاطعة + التحقق من التوقيع (fail-closed) + الطابع الزمني ±300s + مطابقة المبلغ bccomp
      → تحديث الطلب (status=confirmed، معاملاتي)
      → UserWallet::addBalance() → إيداع عملات المنصة
      → EventBus::emit('deposit.completed')

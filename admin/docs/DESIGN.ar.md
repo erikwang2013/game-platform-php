@@ -317,6 +317,23 @@ curl /api/auth/login
 
 تظهر الواجهة الأمامية مربع حوار تأكيد قبل تنفيذ الحذف، وتجمع كلمة مرور المستخدم ثم ترسل الطلب.
 
+### 4.8 إدارة طرق الدفع
+
+توفر وحدة إدارة طرق الدفع (`PaymentController` + Flutter `payment_page.dart`) 5 نقاط نهاية، جميعها تتطلب مصادقة JWT + RBAC:
+
+| الطريقة | المسار | الوصف |
+|------|------|------|
+| GET | /admin/payment/method/list | القائمة (تصاعديًا حسب sort) |
+| POST | /admin/payment/method/toggle | تفعيل/تعطيل |
+| POST | /admin/payment/method/create | إنشاء |
+| PUT | /admin/payment/method/{hashid} | تحديث (الحقول المرسلة فقط) |
+| DELETE | /admin/payment/method/{hashid} | حذف (422 إذا كانت هناك طلبات معلقة) |
+
+- **القائمة البيضاء لـ provider**: `stripe` / `nowpayments` / `coinbase`
+- **الحقول**: name / type (fiat|crypto) / provider / status / sort / countries[] (الرؤية حسب الدولة، فارغ = عالمي) / currency / min_amount / max_amount / config (JSON، مخزن مشفر)
+- **حماية الحذف**: الحذف يُرجع 422 ما دامت هناك طلبات بحالة pending
+- **الواجهة الأمامية**: Flutter `payment_page.dart` — قائمة + نافذة إنشاء/تعديل + مفتاح تفعيل/تعطيل
+
 ## 5. تصميم الواجهة الأمامية
 
 ### 5.1 لوحة إدارة Flutter Web

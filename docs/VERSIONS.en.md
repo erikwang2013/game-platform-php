@@ -47,8 +47,8 @@ Languages: [中文](VERSIONS.md) · **English** · [한국어](VERSIONS.ko.md) �
 | Wallet optimistic lock | ✓ | ✓ | ✓ |
 | Transaction records | ✓ | ✓ | ✓ |
 | Game currency wallet | ✓ | ✓ | ✓ |
-| Deposit order creation | ✓ | ✓ | ✓ |
-| Deposit callback auto-credit | - | ✓ manual | ✓ Stripe/PayPal verification |
+| Deposit order creation (backfills checkout_url/expires_at) | ✓ | ✓ | ✓ |
+| Deposit callback auto-credit | - | ✓ manual | ✓ Stripe/PayPal/NowPayments IPN/Coinbase webhook verification |
 | Exchange quote/buy/sell | ✓ | ✓ | ✓ |
 | Exchange spread revenue | ✓ | ✓ | ✓ |
 | Withdrawal application | ✓ | ✓ | ✓ |

@@ -14,7 +14,7 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 |----|------|------|
 | Users | Register/login/JWT/captcha | Completed |
 | Wallet | Platform currency balance/transaction query | Completed |
-| Deposit | Create deposit order (single payment) | Completed |
+| Deposit | Create deposit order (Stripe 125+ local APMs / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal callback) | Completed |
 | Exchange | Platform currency⇄game currency (fixed rate + spread) | Completed |
 | Withdrawal | Apply/query/global switch/auto review/manual review | Completed |
 | Games | Admin CRUD/currency management/C-end list/detail/launch | Completed |
@@ -29,7 +29,7 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 | Domain | Feature | Status |
 |----|------|------|
 | Users | OAuth login (Google/Facebook/Apple/Twitter/Microsoft/LinkedIn/GitHub) | Completed |
-| Payments | Multi-channel auto callbacks (Stripe/PayPal) | Completed |
+| Payments | Multi-channel auto callbacks (Stripe/PayPal/NOWPayments IPN/Coinbase Webhook) | Completed |
 | Games | Server management, game play log tracking | Completed |
 | Withdrawal | KYC tiered limits (default/verified/vip) + fees | Completed |
 | KYC | Real-name verification application + review | Completed |
@@ -53,7 +53,7 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 | Domain | Feature | Status |
 |----|------|------|
 | OAuth | Google/Facebook/Apple real token exchange | Completed |
-| Payments | Stripe/PayPal Webhook signature verification | Completed |
+| Payments | Payment callback signature verification (Stripe/PayPal Webhook, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 base64 secret) | Completed |
 | Captcha | poster-php click captcha | Completed |
 | Notifications | In-app messages + email, auto notifications for deposit/withdrawal/KYC/coupon | Completed |
 | 2FA | Google Authenticator TOTP + backup recovery codes | Completed |
@@ -119,6 +119,7 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 | GET | /api/wallet/info | Wallet balance | Yes |
 | GET | /api/wallet/transactions | Transaction records | Yes |
 | POST | /api/deposit/create | Create deposit order | Yes |
+| GET | /api/payment/methods | List payment methods (routed by country) | Yes |
 | POST | /api/exchange/quote | Exchange quote (VIP discount) | Yes |
 | POST | /api/exchange/buy | Buy game currency | Yes |
 | POST | /api/exchange/sell | Sell game currency | Yes |

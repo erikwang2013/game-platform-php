@@ -317,6 +317,23 @@ Redis Sorted Set স্লাইডিং উইন্ডো অ্যালগ�
 
 ফ্রন্টএন্ড ডিলিট অপারেশন ট্রিগার করার আগে কনফার্মেশন ডায়ালগ দেখায়, ইউজারের পাসওয়ার্ড সংগ্রহ করে রিকোয়েস্ট পাঠায়।
 
+### 4.8 পেমেন্ট পদ্ধতি ব্যবস্থাপনা
+
+পেমেন্ট পদ্ধতি ব্যবস্থাপনা মডিউল (`PaymentController` + Flutter `payment_page.dart`) ৫টি এন্ডপয়েন্ট প্রদান করে, সবগুলোরই JWT + RBAC প্রমাণীকরণ প্রয়োজন:
+
+| পদ্ধতি | পথ | বিবরণ |
+|------|------|------|
+| GET | /admin/payment/method/list | তালিকা (sort ঊর্ধ্বক্রম) |
+| POST | /admin/payment/method/toggle | সক্রিয়/নিষ্ক্রিয় |
+| POST | /admin/payment/method/create | তৈরি |
+| PUT | /admin/payment/method/{hashid} | আপডেট (শুধু পাঠানো ফিল্ড) |
+| DELETE | /admin/payment/method/{hashid} | মুছুন (pending অর্ডার থাকলে 422) |
+
+- **provider হোয়াইটলিস্ট**: `stripe` / `nowpayments` / `coinbase`
+- **ফিল্ড**: name / type (fiat|crypto) / provider / status / sort / countries[] (দেশ ভিত্তিক দৃশ্যমানতা, খালি = বৈশ্বিক) / currency / min_amount / max_amount / config (JSON, এনক্রিপ্টেড সংরক্ষিত)
+- **মুছে ফেলার সুরক্ষা**: status=pending অর্ডার থাকা পর্যন্ত মুছলে 422 ফেরত দেয়
+- **ফ্রন্টএন্ড**: Flutter `payment_page.dart` — তালিকা + তৈরি/সম্পাদনা ডায়ালগ + সক্রিয়/নিষ্ক্রিয় টগল
+
 ## 5. ফ্রন্টএন্ড ডিজাইন
 
 ### 5.1 Flutter Web প্রশাসনিক প্যানেল

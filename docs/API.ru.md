@@ -181,11 +181,15 @@ type 可选值: deposit / withdraw / exchange_in / exchange_out / game_earn / ga
   "order_id": "aB3xK...",
   "order_no": "DEP202605221030000123",
   "amount": "10.00",
-  "platform_amount": "10.0000"
+  "platform_amount": "10.0000",
+  "checkout_url": "https://checkout.stripe.com/...",
+  "expires_at": "2026-05-22 11:30:00"
 }
 ```
 
 currency 可选值: USD / CNY / EUR
+
+checkout_url: ссылка перехода на платёжный шлюз (заполняется при создании заказа); expires_at: срок действия платёжной ссылки (1 час после создания)
 
 #### GET /api/deposit/orders — записи пополнений
 
@@ -517,15 +521,19 @@ is_new: true=новый зарегистрированный пользоват�
 
 status: success / failed
 
+Допустимые значения provider: stripe / paypal / nowpayments / coinbase (nowpayments проверяет подпись через IPN HMAC-SHA512, coinbase — через webhook HMAC-SHA256)
+
 #### GET /api/payment/methods — доступные способы оплаты (публичный)
 
 ```
 响应: {
   "list": [
-    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "status": 1 }
+    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "min_amount": "10.00", "max_amount": "5000.00" }
   ]
 }
 ```
+
+Фильтруется по стране пользователя (X-Language/Accept-Language → код страны): пустой countries или содержащий * означает видимость во всех странах; сортируется по предпочтению методов оплаты country_config этой страны
 
 ### 2.10 Игровые записи
 

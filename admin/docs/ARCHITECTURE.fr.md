@@ -27,7 +27,7 @@ flowchart TB
         C0["Middleware ApiVersion<br/>Validation de l'en-tête API-Version"]
         C1["Middleware AdminAuth<br/>Validation JWT"]
         C2["Middleware AdminPermission<br/>Vérification des permissions RBAC"]
-        C3["Contrôleur administration<br/>Dashboard / User / Role / Permission"]
+        C3["Contrôleur administration<br/>Dashboard / User / Role / Permission / Payment"]
         C4["Contrôleurs publics v1<br/>Captcha / Auth"]
         C5["Services communs<br/>Hashids / Snowflake / Encryption"]
     end
@@ -568,7 +568,7 @@ flowchart TD
     LP --> LF["Formulaire de connexion<br/>Nom d'utilisateur/mot de passe/captcha"]
     LF --> CAPTCHA["Composant de captcha à clic<br/>GestureDetector + Stack<br/>Image.memory(base64)<br/>Marquage des clics Circle"]
 
-    DB --> SIDEBAR["Barre latérale NavigationDrawer<br/>Repliable 64px / 240px<br/>Tableau de bord/utilisateurs/rôles/config/journaux"]
+    DB --> SIDEBAR["Barre latérale NavigationDrawer<br/>Repliable 64px / 240px<br/>Tableau de bord/utilisateurs/rôles/config/journaux/paiements"]
     DB --> HEADER["Barre supérieure 56px<br/>Bouton de repli + menu utilisateur<br/>Dialog de déconnexion AlertDialog"]
     DB --> CONTENT["Zone de contenu"]
     CONTENT --> DASH["DashboardPage<br/>Cartes de statistiques GridView<br/>Courbe de tendance LineChart<br/>Camembert de répartition PieChart<br/>Opérations récentes ListTile"]

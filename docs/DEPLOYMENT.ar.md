@@ -202,6 +202,13 @@ OAUTH_GOOGLE_REDIRECT_URI=https://your-domain.com/api/auth/oauth/google/callback
 # Webhook الدفع
 STRIPE_WEBHOOK_SECRET=<从Stripe Dashboard获取>
 PAYPAL_WEBHOOK_ID=<从PayPal Developer获取>
+STRIPE_SECRET_KEY=<Stripe 密钥>
+NOWPAYMENTS_API_KEY=<NOWPayments API 密钥>
+NOWPAYMENTS_IPN_SECRET=<IPN 签名密钥>
+NOWPAYMENTS_API_URL=https://api.nowpayments.io  # 默认地址
+COINBASE_COMMERCE_API_KEY=<Coinbase Commerce API 密钥>
+COINBASE_COMMERCE_WEBHOOK_SECRET=<Coinbase Commerce Webhook 密钥>
+SITE_URL=https://your-domain.com  # 支付回调/跳转站点地址
 ```
 
 ### 3.4 تشغيل الخدمات

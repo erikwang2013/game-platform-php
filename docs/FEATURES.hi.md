@@ -14,7 +14,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 |----|------|------|
 | उपयोगकर्ता | पंजीकरण/लॉगिन/JWT/कैप्चा | पूर्ण |
 | वॉलेट | प्लेटफ़ॉर्म कॉइन शेष/लेनदेन क्वेरी | पूर्ण |
-| रिचार्ज | रिचार्ज ऑर्डर निर्माण (एकल भुगतान) | पूर्ण |
+| रिचार्ज | रिचार्ज ऑर्डर निर्माण (Stripe 125+ स्थानीय भुगतान / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal कॉलबैक) | पूर्ण |
 | विनिमय | प्लेटफ़ॉर्म कॉइन⇄गेम कॉइन (निश्चित दर+अंतर) | पूर्ण |
 | निकासी | आवेदन/क्वेरी/वैश्विक स्विच/स्वचालित समीक्षा/मैन्युअल समीक्षा | पूर्ण |
 | गेम | कंसोल CRUD/मुद्रा प्रबंधन/C-छोर सूची/विवरण/लॉन्च | पूर्ण |
@@ -29,7 +29,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | क्षेत्र | कार्य | स्थिति |
 |----|------|------|
 | उपयोगकर्ता | OAuth लॉगिन (Google/Facebook/Apple/Twitter/Microsoft/LinkedIn/GitHub) | पूर्ण |
-| भुगतान | बहु-भुगतान चैनल स्वचालित कॉलबैक (Stripe/PayPal) | पूर्ण |
+| भुगतान | बहु-भुगतान चैनल स्वचालित कॉलबैक (Stripe/PayPal/NOWPayments IPN/Coinbase Webhook) | पूर्ण |
 | गेम | क्षेत्र/सर्वर प्रबंधन, गेम रिकॉर्ड ट्रैकिंग | पूर्ण |
 | निकासी | KYC स्तरीय सीमाएँ (default/verified/vip) + शुल्क | पूर्ण |
 | KYC | वास्तविक नाम प्रमाणीकरण आवेदन+समीक्षा | पूर्ण |
@@ -53,7 +53,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | क्षेत्र | कार्य | स्थिति |
 |----|------|------|
 | OAuth | Google/Facebook/Apple वास्तविक token विनिमय | पूर्ण |
-| भुगतान | Stripe/PayPal Webhook हस्ताक्षर सत्यापन | पूर्ण |
+| भुगतान | कॉलबैक हस्ताक्षर सत्यापन (Stripe/PayPal Webhook, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 base64 सीक्रेट) | पूर्ण |
 | कैप्चा | poster-php क्लिक-शैली कैप्चा | पूर्ण |
 | अधिसूचना | साइट-आंतरिक संदेश + ईमेल, रिचार्ज/निकासी/KYC/कूपन स्वचालित अधिसूचना | पूर्ण |
 | 2FA | Google Authenticator TOTP + बैकअप रिकवरी कोड | पूर्ण |
@@ -119,6 +119,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | GET | /api/wallet/info | वॉलेट शेष | हाँ |
 | GET | /api/wallet/transactions | लेनदेन रिकॉर्ड | हाँ |
 | POST | /api/deposit/create | रिचार्ज ऑर्डर निर्माण | हाँ |
+| GET | /api/payment/methods | भुगतान विधि सूची (देश अनुसार रूटिंग) | हाँ |
 | POST | /api/exchange/quote | विनिमय मूल्य पूछताछ (VIP छूट) | हाँ |
 | POST | /api/exchange/buy | गेम कॉइन खरीदना | हाँ |
 | POST | /api/exchange/sell | गेम कॉइन बेचना | हाँ |

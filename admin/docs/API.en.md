@@ -1814,3 +1814,157 @@ GET /admin/analytics/economy
 ```
 
 **Response**: a `currencies` array, each entry contains `game_name`, `currency`, `symbol`, `total_minted` (total minted), `total_burned` (total burned), `circulation` (in circulation), `inflation_rate` (inflation rate), computed with bcmath high precision.
+
+## 17. Payment Management
+
+Payment method management is provided by `PaymentController`; all 5 endpoints require JWT + RBAC authentication. `provider` whitelist: `stripe` / `nowpayments` / `coinbase`. `config` is a JSON string of payment configuration (stored encrypted in the database).
+
+| Method | Path | Description |
+|------|------|------|
+| GET | /admin/payment/method/list | List payment methods (ascending by sort) |
+| POST | /admin/payment/method/toggle | Enable/disable a payment method |
+| POST | /admin/payment/method/create | Create a payment method |
+| PUT | /admin/payment/method/{hashid} | Update a payment method |
+| DELETE | /admin/payment/method/{hashid} | Delete a payment method (rejected if pending orders exist) |
+
+### 17.1 List Payment Methods
+
+```
+GET /admin/payment/method/list
+```
+
+- **Authentication**: JWT + RBAC
+
+**Response example**:
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "list": [
+      {
+        "id": "a1b2c3d4",
+        "name": "Stripe Credit Card",
+        "type": "fiat",
+        "provider": "stripe",
+        "status": 1,
+        "sort": 1,
+        "countries": ["US", "SG"],
+        "currency": "USD",
+        "min_amount": "10",
+        "max_amount": "5000",
+        "config": null,
+        "created_at": "2026-08-29 10:00:00",
+        "updated_at": "2026-08-29 10:00:00"
+      }
+    ]
+  }
+}
+```
+
+| Field | Type | Description |
+|------|------|------|
+| id | string | Payment method ID (hashid encoded) |
+| name | string | Payment method name |
+| type | string | `fiat` (fiat currency) / `crypto` (cryptocurrency) |
+| provider | string | Gateway provider: `stripe` / `nowpayments` / `coinbase` |
+| status | int | 1=enabled, 0=disabled |
+| sort | int | Sort order (ascending) |
+| countries | array{string} | Visible country code array (empty array = visible globally) |
+| currency | string | Currency (e.g. USD/USDT), empty = no restriction |
+| min_amount / max_amount | string | Amount range (string preserves precision), 0 = no limit |
+| config | string? | Payment config JSON (encrypted; null if not set) |
+
+### 17.2 Enable/Disable Payment Method
+
+```
+POST /admin/payment/method/toggle
+```
+
+**Request body**:
+```json
+{
+  "id": "a1b2c3d4",
+  "status": 1
+}
+```
+
+| Field | Type | Required | Description |
+|------|------|------|------|
+| id | string | Yes | Payment method ID (hashid encoded) |
+| status | int | Yes | 0=disabled, 1=enabled |
+
+**Possible errors**:
+- 422: validation failed (id/status missing or status not 0/1)
+- 404: payment method not found
+
+### 17.3 Create Payment Method
+
+```
+POST /admin/payment/method/create
+```
+
+**Request body**:
+```json
+{
+  "name": "USDT Cryptocurrency",
+  "type": "crypto",
+  "provider": "nowpayments",
+  "status": 1,
+  "sort": 2,
+  "countries": [],
+  "currency": "USDT",
+  "min_amount": "10",
+  "max_amount": "10000",
+  "config": "{\"api_key\":\"...\"}"
+}
+```
+
+| Field | Type | Required | Validation | Description |
+|------|------|------|---------|------|
+| name | string | Yes | max:50 | Payment method name |
+| type | string | Yes | in:fiat,crypto | Type: fiat/crypto |
+| provider | string | Yes | in:stripe,nowpayments,coinbase | Gateway provider whitelist |
+| status | int | Yes | in:0,1 | Status |
+| sort | int | No | integer,min:0 | Sort order, default 0 |
+| countries | array{string} | No | max:2 | Visible country codes, empty = global |
+| currency | string | No | max:10 | Currency, default empty |
+| min_amount / max_amount | string | No | numeric,min:0 | Amount range, default "0" |
+| config | string | No | | Payment config JSON (encrypted), empty string stored as NULL |
+
+**Response example**:
+```json
+{
+  "code": 0,
+  "message": "created successfully",
+  "data": { "id": "e5f6g7h8" }
+}
+```
+
+**Possible errors**:
+- 422: validation failed
+
+### 17.4 Update Payment Method
+
+```
+PUT /admin/payment/method/{hashid}
+```
+
+- **Path parameter**: `{hashid}` is the hashid-encoded payment method ID
+- **Request body**: same as create (17.3), all fields optional, only provided fields are updated
+
+**Possible errors**:
+- 404: payment method not found
+- 422: validation failed
+
+### 17.5 Delete Payment Method
+
+```
+DELETE /admin/payment/method/{hashid}
+```
+
+- **Path parameter**: `{hashid}` is the hashid-encoded payment method ID
+
+**Possible errors**:
+- 404: payment method not found
+- 422: pending deposit orders (status=pending) exist, cannot delete

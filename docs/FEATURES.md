@@ -14,7 +14,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 |----|------|------|
 | 用户 | 注册/登录/JWT/验证码 | 已完成 |
 | 钱包 | 平台币余额/流水查询 | 已完成 |
-| 充值 | 创建充值订单（单一支付） | 已完成 |
+| 充值 | 创建充值订单（Stripe 125+ 本地支付 / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal 回调） | 已完成 |
 | 兑换 | 平台币⇄游戏币（固定汇率+差价） | 已完成 |
 | 提现 | 申请/查询/全局开关/自动审核/人工审核 | 已完成 |
 | 游戏 | 后台CRUD/币种管理/C端列表/详情/启动 | 已完成 |
@@ -29,7 +29,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | 域 | 功能 | 状态 |
 |----|------|------|
 | 用户 | OAuth登录 (Google/Facebook/Apple/Twitter/Microsoft/LinkedIn/GitHub) | 已完成 |
-| 支付 | 多支付渠道自动回调 (Stripe/PayPal) | 已完成 |
+| 支付 | 多支付渠道自动回调 (Stripe/PayPal/NOWPayments IPN/Coinbase Webhook) | 已完成 |
 | 游戏 | 区服管理、游戏记录追踪 | 已完成 |
 | 提现 | KYC阶梯限额 (default/verified/vip) + 手续费 | 已完成 |
 | KYC | 实名认证申请+审核 | 已完成 |
@@ -53,7 +53,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | 域 | 功能 | 状态 |
 |----|------|------|
 | OAuth | Google/Facebook/Apple 真实token交换 | 已完成 |
-| 支付 | Stripe/PayPal Webhook 签名验证 | 已完成 |
+| 支付 | 支付回调签名验证 (Stripe/PayPal Webhook、NOWPayments IPN HMAC-SHA512、Coinbase HMAC-SHA256 base64 secret) | 已完成 |
 | 验证码 | poster-php 点击式验证码 | 已完成 |
 | 通知 | 站内信 + 邮件、充值/提现/KYC/优惠券自动通知 | 已完成 |
 | 2FA | Google Authenticator TOTP + 备用恢复码 | 已完成 |
@@ -119,6 +119,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | GET | /api/wallet/info | 钱包余额 | 是 |
 | GET | /api/wallet/transactions | 流水记录 | 是 |
 | POST | /api/deposit/create | 创建充值订单 | 是 |
+| GET | /api/payment/methods | 支付方式列表（按国家路由） | 是 |
 | POST | /api/exchange/quote | 兑换询价 (VIP折扣) | 是 |
 | POST | /api/exchange/buy | 买入游戏币 | 是 |
 | POST | /api/exchange/sell | 卖出游戏币 | 是 |

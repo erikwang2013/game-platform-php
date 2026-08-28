@@ -57,3 +57,9 @@ Human-readable change log. PHP does not import this file. Corresponds to PROJECT
 - Degradation switch `feature.provider_mock`: PushService (FCM/APNs/HarmonyOS), PayoutService (PayPal), ThirdPartyProvider short-circuit when `on`, skipping real network calls.
 - Fixed 11 `getenv($name, '')` second-argument type defects (TypeError under strict_types); moved PushService mock check into try/catch.
 - New tests: CircuitBreakerTest / RetryTest / ResilienceMockTest; service suite 45 → 60 cases all green (report: [test-reports/resilience.md](test-reports/resilience.md)).
+
+## [1.1] payments — 2026-08-29
+
+- Multi-gateway payments: Stripe Checkout / NOWPayments (USDT TRC20+ERC20) / Coinbase Commerce (USDC).
+- Admin payment-method CRUD + country visibility + amount ranges; deposit orders backfill checkout_url / expires_at on creation.
+- New migration install/migrations/2026_08_29_multi_payment.sql (must be run).

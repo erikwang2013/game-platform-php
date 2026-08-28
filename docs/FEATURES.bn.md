@@ -14,7 +14,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 |----|------|------|
 | ব্যবহারকারী | রেজিস্ট্রেশন/লগইন/JWT/ক্যাপচা | সম্পন্ন |
 | ওয়ালেট | প্ল্যাটফর্ম কয়েন ব্যালেন্স/লেজার কুয়েরি | সম্পন্ন |
-| টপ-আপ | টপ-আপ অর্ডার তৈরি (একক পেমেন্ট) | সম্পন্ন |
+| টপ-আপ | টপ-আপ অর্ডার তৈরি (Stripe 125+ লোকাল পেমেন্ট / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal কলব্যাক) | সম্পন্ন |
 | বিনিময় | প্ল্যাটফর্ম কয়েন⇄গেম কয়েন (ফিক্সড রেট+স্প্রেড) | সম্পন্ন |
 | উত্তোলন | আবেদন/কুয়েরি/গ্লোবাল সুইচ/অটো রিভিউ/মানব রিভিউ | সম্পন্ন |
 | গেম | ব্যাকএন্ড CRUD/কয়েন ম্যানেজমেন্ট/C-এন্ড তালিকা/ডিটেইল/লঞ্চ | সম্পন্ন |
@@ -29,7 +29,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | ডোমেইন | ফিচার | অবস্থা |
 |----|------|------|
 | ব্যবহারকারী | OAuth লগইন (Google/Facebook/Apple/Twitter/Microsoft/LinkedIn/GitHub) | সম্পন্ন |
-| পেমেন্ট | মাল্টি-পেমেন্ট চ্যানেল অটো কলব্যাক (Stripe/PayPal) | সম্পন্ন |
+| পেমেন্ট | মাল্টি-পেমেন্ট চ্যানেল অটো কলব্যাক (Stripe/PayPal/NOWPayments IPN/Coinbase Webhook) | সম্পন্ন |
 | গেম | সার্ভার/অঞ্চল ম্যানেজমেন্ট, গেম রেকর্ড ট্র্যাকিং | সম্পন্ন |
 | উত্তোলন | KYC লেভেলভিত্তিক সীমা (default/verified/vip) + ফি | সম্পন্ন |
 | KYC | রিয়েল-নেম ভেরিফিকেশন আবেদন+রিভিউ | সম্পন্ন |
@@ -53,7 +53,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | ডোমেইন | ফিচার | অবস্থা |
 |----|------|------|
 | OAuth | Google/Facebook/Apple প্রকৃত token বিনিময় | সম্পন্ন |
-| পেমেন্ট | Stripe/PayPal Webhook সিগনেচার ভেরিফিকেশন | সম্পন্ন |
+| পেমেন্ট | কলব্যাক সিগনেচার ভেরিফিকেশন (Stripe/PayPal Webhook, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 base64) | সম্পন্ন |
 | ক্যাপচা | poster-php ক্লিক-টাইপ ক্যাপচা | সম্পন্ন |
 | নোটিফিকেশন | ইন-অ্যাপ মেসেজ + ইমেইল, টপ-আপ/উত্তোলন/KYC/কুপন অটো নোটিফিকেশন | সম্পন্ন |
 | 2FA | Google Authenticator TOTP + ব্যাকআপ রিকভারি কোড | সম্পন্ন |
@@ -119,6 +119,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | GET | /api/wallet/info | ওয়ালেট ব্যালেন্স | হ্যাঁ |
 | GET | /api/wallet/transactions | লেজার রেকর্ড | হ্যাঁ |
 | POST | /api/deposit/create | টপ-আপ অর্ডার তৈরি | হ্যাঁ |
+| GET | /api/payment/methods | পেমেন্ট পদ্ধতির তালিকা (দেশ অনুযায়ী) | হ্যাঁ |
 | POST | /api/exchange/quote | বিনিময় কোটেশন (VIP ডিসকাউন্ট) | হ্যাঁ |
 | POST | /api/exchange/buy | গেম কয়েন বাই | হ্যাঁ |
 | POST | /api/exchange/sell | গেম কয়েন সেল | হ্যাঁ |

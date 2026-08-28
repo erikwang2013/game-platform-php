@@ -57,3 +57,9 @@ Languages: **中文** · [English](CHANGELOG.en.md) · [한국어](CHANGELOG.ko.
 - 降级开关 `feature.provider_mock`：PushService（FCM/APNs/HarmonyOS）、PayoutService（PayPal）、ThirdPartyProvider 接入 mock 短路，`on` 时跳过真实网络调用。
 - 修复 11 处 `getenv($name, '')` 第二参类型缺陷（strict_types 下必抛 TypeError）；PushService mock 检查移入 try/catch。
 - 新增测试：CircuitBreakerTest / RetryTest / ResilienceMockTest，service 套件 45 → 60 用例全绿（报告见 [test-reports/resilience.md](test-reports/resilience.md)）。
+
+## [1.1] payments — 2026-08-29
+
+- 多支付网关：接入 Stripe Checkout / NOWPayments（USDT TRC20+ERC20）/ Coinbase Commerce（USDC）。
+- 后台支付方式 CRUD + 国家可见性 + 金额区间；充值订单创建即回填 checkout_url / expires_at。
+- 新增迁移 install/migrations/2026_08_29_multi_payment.sql（需执行）。

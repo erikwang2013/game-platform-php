@@ -22,7 +22,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 | Pengujian | 132 kasus / 8 file (proyek admin), proyek service **nol pengujian** |
 | Versi | v1.1 (2026-08-07): plugin Redis, layanan analisis, degradasi Redis, perbaikan pengujian |
 
-Kemampuan yang sudah diimplementasikan: JWT+RBAC, kunci optimis dompet, deposit (verifikasi tanda tangan Stripe/PayPal), selisih penukaran, review penarikan + pembayaran PayPal, CRUD game/gateway Provider (HMAC), kupon/VIP/pencapaian/tiket/komisi referral/2FA/sosial (teman/chat WS)/turnamen/Webhook/push (FCM/APNs/Huawei)/i18n dua bahasa.
+Kemampuan yang sudah diimplementasikan: JWT+RBAC, kunci optimis dompet, deposit (verifikasi tanda tangan Stripe/PayPal/NowPayments/Coinbase), selisih penukaran, review penarikan + pembayaran PayPal, CRUD game/gateway Provider (HMAC), kupon/VIP/pencapaian/tiket/komisi referral/2FA/sosial (teman/chat WS)/turnamen/Webhook/push (FCM/APNs/Huawei)/i18n dua bahasa.
 
 ---
 
@@ -75,7 +75,7 @@ Kunci optimis dompet + pembaruan kondisi versi benar; callback idempoten `where 
 
 ### P0 — Keamanan Dana + Kebenaran (dikerjakan dulu, memblokir peluncuran)
 
-1. **Callback pembayaran fail-closed**: daftar putih provider (hanya stripe/paypal) + kunci hilang wajib 500 tolak + pengecualian PayPal wajib tolak (C1/C2) — ✅ Selesai (2026-08-18: daftar putih provider + validasi penyalahgunaan lintas saluran + validasi IP sumber opsional + transaksionalisasi pencatatan dana callback)
+1. **Callback pembayaran fail-closed**: daftar putih provider (hanya stripe/paypal/nowpayments/coinbase) + kunci hilang wajib 500 tolak + pengecualian PayPal wajib tolak (C1/C2) — ✅ Selesai (2026-08-18: daftar putih provider + validasi penyalahgunaan lintas saluran + validasi IP sumber opsional + transaksionalisasi pencatatan dana callback)
 2. **Validasi startup JWT**: env tanpa `JWT_SECRET_KEY` tolak startup (C3) — ✅ Selesai (2026-08-18: JWT_SECRET_KEY hilang atau nilai default `open-admin-jwt-secret-change-in-production` tolak startup, admin/service konsisten)
 3. **Pasang rute layanan analisis**: daftarkan 12 rute analytics + titik izin, perbaiki janji VERSIONS.md (H1) — ✅ Selesai (2026-08-18: admin/config/route.php mendaftarkan 12 rute `/admin/analytics/*`)
 4. **Bus event tersambung**: daftarkan proses konsumen tetap atau ubah panggilan sinkron langsung; event masuk database + retry gagal (H2) — ✅ Selesai (2026-08-18: emit/consume sudah INCR hitungan Redis; `service/config/process.php` mendaftarkan `event-consumer`, `service/app/process/EventConsumer.php` mengonsumsi event)

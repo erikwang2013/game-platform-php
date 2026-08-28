@@ -57,3 +57,9 @@ Languages: **中文** · [English](CHANGELOG.en.md) · [한국어](CHANGELOG.ko.
 - مفتاح التدهور `feature.provider_mock`: PushService (FCM/APNs/HarmonyOS) وPayoutService (PayPal) وThirdPartyProvider يختصرون المكالمات عند `on`، بدون طلبات شبكة حقيقية.
 - إصلاح 11 عيب نوع في `getenv($name, '')` (TypeError مع strict_types)؛ نقل فحص mock في PushService إلى try/catch.
 - اختبارات جديدة: CircuitBreakerTest / RetryTest / ResilienceMockTest؛ مجموعة service 45 ← 60 حالة، كلها ناجحة (تقرير: [test-reports/resilience.md](test-reports/resilience.md)).
+
+## [1.1] payments — 2026-08-29
+
+- بوابات دفع متعددة: Stripe Checkout / NOWPayments (USDT TRC20+ERC20) / Coinbase Commerce (USDC).
+- CRUD لطرق الدفع في لوحة الإدارة + رؤية حسب الدولة + نطاقات المبالغ؛ أوامر الشحن تملأ checkout_url / expires_at عند الإنشاء.
+- ترحيل جديد install/migrations/2026_08_29_multi_payment.sql (يجب تنفيذه).

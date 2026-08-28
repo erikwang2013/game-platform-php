@@ -47,8 +47,8 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 | Bloqueo optimista de billetera | ✓ | ✓ | ✓ |
 | Registro de movimientos | ✓ | ✓ | ✓ |
 | Billetera de moneda de juego | ✓ | ✓ | ✓ |
-| Creación de órdenes de recarga | ✓ | ✓ | ✓ |
-| Acreditación automática por callback de recarga | - | ✓ manual | ✓ verificación de firma Stripe/PayPal |
+| Creación de órdenes de recarga (rellena checkout_url/expires_at al crearse) | ✓ | ✓ | ✓ |
+| Acreditación automática por callback de recarga | - | ✓ manual | ✓ verificación de firma Stripe/PayPal/NowPayments IPN/Coinbase webhook |
 | Cotización/compra/venta de conversión | ✓ | ✓ | ✓ |
 | Ingreso por diferencial de conversión | ✓ | ✓ | ✓ |
 | Solicitud de retiro | ✓ | ✓ | ✓ |

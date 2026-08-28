@@ -24,6 +24,7 @@
   <text x="610" y="96" text-anchor="middle" fill="#166534" font-size="13" font-weight="bold">충전 시스템</text>
   <text x="610" y="116" text-anchor="middle" fill="#22c55e" font-size="11">충전 주문 생성</text>
   <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">Stripe/PayPal 콜백 서명 검증</text>
+  <text x="610" y="174" text-anchor="middle" fill="#22c55e" font-size="10">NOWPayments/Coinbase 콜백 서명 검증</text>
   <text x="610" y="154" text-anchor="middle" fill="#22c55e" font-size="11">자동 입금 + 사이트 내 알림</text>
 
   <rect x="735" y="72" width="230" height="95" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5" filter="url(#sh)"/>

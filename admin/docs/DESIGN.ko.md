@@ -317,6 +317,23 @@ Redis Sorted Set 슬라이딩 윈도우 알고리즘 기반, 원자화 Lua 스�
 
 프론트엔드는 삭제 작업을 트리거하기 전에 확인 다이얼로그를 띄우고, 사용자 비밀번호를 수집한 후 요청을 보냅니다.
 
+### 4.8 결제 수단 관리
+
+결제 수단 관리 모듈(`PaymentController` + Flutter `payment_page.dart`)은 5개 엔드포인트를 제공하며, 모두 JWT + RBAC 인증이 필요합니다:
+
+| 메서드 | 경로 | 설명 |
+|------|------|------|
+| GET | /admin/payment/method/list | 목록(sort 오름차순) |
+| POST | /admin/payment/method/toggle | 활성/비활성 전환 |
+| POST | /admin/payment/method/create | 생성 |
+| PUT | /admin/payment/method/{hashid} | 업데이트(전달된 필드만) |
+| DELETE | /admin/payment/method/{hashid} | 삭제(pending 주문이 있으면 422) |
+
+- **provider 화이트리스트**: `stripe` / `nowpayments` / `coinbase`
+- **필드**: name / type(fiat|crypto) / provider / status / sort / countries[](국가별 표시, 비어 있으면 전 세계) / currency / min_amount / max_amount / config(JSON, 암호화 저장)
+- **삭제 보호**: status=pending 주문이 있는 동안 삭제 시 422 반환
+- **프론트엔드**: Flutter `payment_page.dart` — 목록 + 생성/편집 다이얼로그 + 활성/비활성 토글
+
 ## 5. 프론트엔드 설계
 
 ### 5.1 Flutter Web 관리 백엔드

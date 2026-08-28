@@ -196,9 +196,10 @@ Provider API:
 
 ```
 Pengguna → POST /api/deposit/create → buat pesanan (status=pending)
-     → lompat ke pembayaran pihak ketiga (Stripe/PayPal)
+     → buat pembayaran via GatewayFactory (Stripe Checkout/invoice NowPayments/charge Coinbase) → isi checkout_url + expires_at(+1h); jika gagal, batalkan pesanan via CAS dan coba lagi
+     → lompat ke pembayaran pihak ketiga (Stripe/PayPal/NowPayments[USDT TRC20/ERC20]/Coinbase[USDC/BTC/ETH])
      → pembayaran sukses → callback /api/payment/callback
-     → daftar putih provider (hanya stripe/paypal) + validasi penggunaan lintas saluran + verifikasi tanda tangan (fail-closed) + timestamp ±300s + bccomp perbandingan jumlah
+     → daftar putih provider (hanya stripe/paypal/nowpayments/coinbase) + validasi penggunaan lintas saluran + verifikasi tanda tangan (fail-closed) + timestamp ±300s + bccomp perbandingan jumlah
      → perbarui pesanan (status=confirmed, transaksional)
      → UserWallet::addBalance() → koin platform masuk
      → EventBus::emit('deposit.completed')

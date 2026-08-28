@@ -47,8 +47,8 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · **한국어** �
 | 지갑 낙관적 잠금 | ✓ | ✓ | ✓ |
 | 거래 내역 기록 | ✓ | ✓ | ✓ |
 | 게임 코인 지갑 | ✓ | ✓ | ✓ |
-| 충전 주문 생성 | ✓ | ✓ | ✓ |
-| 충전 콜백 자동 입금 | - | ✓ 수동 | ✓ Stripe/PayPal 검증 |
+| 충전 주문 생성(즉시 checkout_url/expires_at 기록) | ✓ | ✓ | ✓ |
+| 충전 콜백 자동 입금 | - | ✓ 수동 | ✓ Stripe/PayPal/NowPayments IPN/Coinbase webhook 검증 |
 | 환전 견적/매수/매도 | ✓ | ✓ | ✓ |
 | 환전 차액 수익 | ✓ | ✓ | ✓ |
 | 출금 신청 | ✓ | ✓ | ✓ |

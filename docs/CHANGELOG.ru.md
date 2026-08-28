@@ -57,3 +57,9 @@ Languages: **中文** · [English](CHANGELOG.en.md) · [한국어](CHANGELOG.ko.
 - Переключатель деградации `feature.provider_mock`: PushService (FCM/APNs/HarmonyOS), PayoutService (PayPal), ThirdPartyProvider при `on` пропускают реальные сетевые вызовы.
 - Исправлено 11 дефектов типа `getenv($name, '')` (TypeError при strict_types); проверка mock в PushService перенесена в try/catch.
 - Новые тесты: CircuitBreakerTest / RetryTest / ResilienceMockTest; набор service 45 → 60 кейсов, все зелёные (отчёт: [test-reports/resilience.md](test-reports/resilience.md)).
+
+## [1.1] payments — 2026-08-29
+
+- Мульти-платёжные шлюзы: Stripe Checkout / NOWPayments (USDT TRC20+ERC20) / Coinbase Commerce (USDC).
+- CRUD платёжных методов в админке + видимость по странам + диапазоны сумм; при создании заказа пополнения сразу заполняются checkout_url / expires_at.
+- Новая миграция install/migrations/2026_08_29_multi_payment.sql (необходимо выполнить).

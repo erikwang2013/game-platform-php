@@ -1814,3 +1814,157 @@ GET /admin/analytics/economy
 ```
 
 **प्रतिक्रिया**: `currencies` सरणी, प्रत्येक में `game_name`, `currency`, `symbol`, `total_minted` (कुल ढलाई), `total_burned` (कुल विनाश), `circulation` (प्रचलन), `inflation_rate` (मुद्रास्फीति दर), bcmath उच्च-परिशुद्धता गणना।
+
+## 17. भुगतान प्रबंधन (Payment)
+
+भुगतान विधि प्रबंधन `PaymentController` द्वारा प्रदान किया जाता है; सभी 5 एंडपॉइंट्स को JWT + RBAC प्रमाणीकरण की आवश्यकता होती है। `provider` व्हाइटलिस्ट: `stripe` / `nowpayments` / `coinbase`। `config` भुगतान कॉन्फ़िगरेशन का JSON स्ट्रिंग है (डेटाबेस में एन्क्रिप्टेड संग्रहीत)।
+
+| विधि | पथ | विवरण |
+|------|------|------|
+| GET | /admin/payment/method/list | भुगतान विधियों की सूची (sort के अनुसार आरोही) |
+| POST | /admin/payment/method/toggle | भुगतान विधि सक्षम/अक्षम करें |
+| POST | /admin/payment/method/create | भुगतान विधि बनाएं |
+| PUT | /admin/payment/method/{hashid} | भुगतान विधि अपडेट करें |
+| DELETE | /admin/payment/method/{hashid} | भुगतान विधि हटाएं (लंबित ऑर्डर होने पर अस्वीकृत) |
+
+### 17.1 भुगतान विधियों की सूची
+
+```
+GET /admin/payment/method/list
+```
+
+- **प्रमाणीकरण**: JWT + RBAC
+
+**प्रतिक्रिया उदाहरण**:
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "list": [
+      {
+        "id": "a1b2c3d4",
+        "name": "स्ट्राइप क्रेडिट कार्ड",
+        "type": "fiat",
+        "provider": "stripe",
+        "status": 1,
+        "sort": 1,
+        "countries": ["US", "SG"],
+        "currency": "USD",
+        "min_amount": "10",
+        "max_amount": "5000",
+        "config": null,
+        "created_at": "2026-08-29 10:00:00",
+        "updated_at": "2026-08-29 10:00:00"
+      }
+    ]
+  }
+}
+```
+
+| फ़ील्ड | प्रकार | विवरण |
+|------|------|------|
+| id | string | भुगतान विधि ID (hashid एन्कोडेड) |
+| name | string | भुगतान विधि का नाम |
+| type | string | `fiat` (फिएट मुद्रा) / `crypto` (क्रिप्टोकरेंसी) |
+| provider | string | गेटवे प्रदाता: `stripe` / `nowpayments` / `coinbase` |
+| status | int | 1=सक्षम, 0=अक्षम |
+| sort | int | क्रम मान (आरोही) |
+| countries | array{string} | दृश्यमान देश कोड सरणी (खाली सरणी = वैश्विक दृश्य) |
+| currency | string | मुद्रा (जैसे USD/USDT), खाली = कोई प्रतिबंध नहीं |
+| min_amount / max_amount | string | राशि सीमा (सटीकता के लिए स्ट्रिंग), 0 = कोई सीमा नहीं |
+| config | string? | भुगतान कॉन्फ़िग JSON (एन्क्रिप्टेड; सेट न होने पर null) |
+
+### 17.2 भुगतान विधि सक्षम/अक्षम करें
+
+```
+POST /admin/payment/method/toggle
+```
+
+**अनुरोध निकाय**:
+```json
+{
+  "id": "a1b2c3d4",
+  "status": 1
+}
+```
+
+| फ़ील्ड | प्रकार | आवश्यक | विवरण |
+|------|------|------|------|
+| id | string | हाँ | भुगतान विधि ID (hashid) |
+| status | int | हाँ | 0=अक्षम, 1=सक्षम |
+
+**संभावित त्रुटियाँ**:
+- 422: सत्यापन विफल (id/status अनुपस्थित या status 0/1 नहीं)
+- 404: भुगतान विधि मौजूद नहीं
+
+### 17.3 भुगतान विधि बनाएं
+
+```
+POST /admin/payment/method/create
+```
+
+**अनुरोध निकाय**:
+```json
+{
+  "name": "USDT क्रिप्टोकरेंसी",
+  "type": "crypto",
+  "provider": "nowpayments",
+  "status": 1,
+  "sort": 2,
+  "countries": [],
+  "currency": "USDT",
+  "min_amount": "10",
+  "max_amount": "10000",
+  "config": "{\"api_key\":\"...\"}"
+}
+```
+
+| फ़ील्ड | प्रकार | आवश्यक | सत्यापन | विवरण |
+|------|------|------|---------|------|
+| name | string | हाँ | max:50 | भुगतान विधि का नाम |
+| type | string | हाँ | in:fiat,crypto | प्रकार: फिएट/क्रिप्टो |
+| provider | string | हाँ | in:stripe,nowpayments,coinbase | गेटवे प्रदाता व्हाइटलिस्ट |
+| status | int | हाँ | in:0,1 | स्थिति |
+| sort | int | नहीं | integer,min:0 | क्रम मान, डिफ़ॉल्ट 0 |
+| countries | array{string} | नहीं | max:2 | दृश्यमान देश कोड, खाली = वैश्विक |
+| currency | string | नहीं | max:10 | मुद्रा, डिफ़ॉल्ट खाली |
+| min_amount / max_amount | string | नहीं | numeric,min:0 | राशि सीमा, डिफ़ॉल्ट "0" |
+| config | string | नहीं | | भुगतान कॉन्फ़िग JSON (एन्क्रिप्टेड); खाली स्ट्रिंग NULL के रूप में संग्रहीत |
+
+**प्रतिक्रिया उदाहरण**:
+```json
+{
+  "code": 0,
+  "message": "सफलतापूर्वक बनाया गया",
+  "data": { "id": "e5f6g7h8" }
+}
+```
+
+**संभावित त्रुटियाँ**:
+- 422: सत्यापन विफल
+
+### 17.4 भुगतान विधि अपडेट करें
+
+```
+PUT /admin/payment/method/{hashid}
+```
+
+- **पथ पैरामीटर**: `{hashid}` hashid एन्कोडेड भुगतान विधि ID है
+- **अनुरोध निकाय**: बनाने (17.3) जैसा ही, सभी फ़ील्ड वैकल्पिक, केवल भेजे गए फ़ील्ड अपडेट होते हैं
+
+**संभावित त्रुटियाँ**:
+- 404: भुगतान विधि मौजूद नहीं
+- 422: सत्यापन विफल
+
+### 17.5 भुगतान विधि हटाएं
+
+```
+DELETE /admin/payment/method/{hashid}
+```
+
+- **पथ पैरामीटर**: `{hashid}` hashid एन्कोडेड भुगतान विधि ID है
+
+**संभावित त्रुटियाँ**:
+- 404: भुगतान विधि मौजूद नहीं
+- 422: लंबित जमा ऑर्डर (status=pending) मौजूद हैं, हटाना संभव नहीं

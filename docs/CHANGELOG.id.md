@@ -57,3 +57,9 @@ Catatan perubahan yang dapat dibaca manusia. PHP tidak meng-import file ini. Ber
 - Sakelar degradasi `feature.provider_mock`: PushService (FCM/APNs/HarmonyOS), PayoutService (PayPal), ThirdPartyProvider short-circuit saat `on`, tanpa panggilan jaringan nyata.
 - Memperbaiki 11 cacat tipe `getenv($name, '')` (TypeError pada strict_types); pemeriksaan mock PushService dipindah ke try/catch.
 - Tes baru: CircuitBreakerTest / RetryTest / ResilienceMockTest; rangkaian service 45 → 60 kasus, semua hijau (laporan: [test-reports/resilience.md](test-reports/resilience.md)).
+
+## [1.1] payments — 2026-08-29
+
+- Multi-payment gateway: Stripe Checkout / NOWPayments (USDT TRC20+ERC20) / Coinbase Commerce (USDC).
+- CRUD metode pembayaran di admin + visibilitas negara + rentang nominal; pesanan top-up langsung mengisi checkout_url / expires_at.
+- Migrasi baru install/migrations/2026_08_29_multi_payment.sql (harus dijalankan).

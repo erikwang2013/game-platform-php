@@ -14,7 +14,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 |----|------|------|
 | Benutzer | Registrierung/Login/JWT/Verifizierungscode | Abgeschlossen |
 | Wallet | Plattformwährungsguthaben/Transaktionsabfrage | Abgeschlossen |
-| Einzahlung | Einzahlungsauftrag erstellen (einzelne Zahlung) | Abgeschlossen |
+| Einzahlung | Einzahlungsauftrag erstellen (Stripe 125+ lokale Zahlungsarten / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal-Callback) | Abgeschlossen |
 | Umtausch | Plattformwährung⇄Spielwährung (fester Kurs + Spread) | Abgeschlossen |
 | Auszahlung | Antrag/Abfrage/globaler Schalter/automatische Prüfung/manuelle Prüfung | Abgeschlossen |
 | Spiele | Backend-CRUD/Währungsverwaltung/C-End-Liste/Details/Start | Abgeschlossen |
@@ -29,7 +29,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | Bereich | Funktion | Status |
 |----|------|------|
 | Benutzer | OAuth-Login (Google/Facebook/Apple/Twitter/Microsoft/LinkedIn/GitHub) | Abgeschlossen |
-| Zahlung | Automatischer Callback mehrerer Zahlungskanäle (Stripe/PayPal) | Abgeschlossen |
+| Zahlung | Automatischer Callback mehrerer Zahlungskanäle (Stripe/PayPal/NOWPayments IPN/Coinbase Webhook) | Abgeschlossen |
 | Spiele | Regionen-/Serververwaltung, Spielprotokollverfolgung | Abgeschlossen |
 | Auszahlung | KYC-Stufenlimits (default/verified/vip) + Gebühren | Abgeschlossen |
 | KYC | Identitätsprüfungsantrag + Prüfung | Abgeschlossen |
@@ -53,7 +53,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | Bereich | Funktion | Status |
 |----|------|------|
 | OAuth | Google/Facebook/Apple echter Token-Austausch | Abgeschlossen |
-| Zahlung | Stripe/PayPal-Webhook-Signaturprüfung | Abgeschlossen |
+| Zahlung | Signaturprüfung der Zahlungs-Callbacks (Stripe/PayPal-Webhook, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 base64) | Abgeschlossen |
 | Verifizierungscode | poster-php Klick-Captcha | Abgeschlossen |
 | Benachrichtigung | In-App-Nachrichten + E-Mail, automatische Benachrichtigung bei Einzahlung/Auszahlung/KYC/Gutschein | Abgeschlossen |
 | 2FA | Google Authenticator TOTP + Backup-Wiederherstellungscodes | Abgeschlossen |
@@ -119,6 +119,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | GET | /api/wallet/info | Wallet-Guthaben | ja |
 | GET | /api/wallet/transactions | Transaktionsverlauf | ja |
 | POST | /api/deposit/create | Einzahlungsauftrag erstellen | ja |
+| GET | /api/payment/methods | Zahlungsarten auflisten (nach Land geroutet) | ja |
 | POST | /api/exchange/quote | Umtausch-Preisangebot (VIP-Rabatt) | ja |
 | POST | /api/exchange/buy | Spielwährung kaufen | ja |
 | POST | /api/exchange/sell | Spielwährung verkaufen | ja |

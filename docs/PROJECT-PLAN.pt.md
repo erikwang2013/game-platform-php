@@ -22,7 +22,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 | Testes | 132 casos / 8 arquivos (projeto admin), projeto service **zero testes** |
 | Versão | v1.1 (2026-08-07): plugin Redis, serviço de análise, degradação do Redis, correções de testes |
 
-Capacidades já implementadas: JWT+RBAC, lock otimista da carteira, recarga (verificação de assinatura Stripe/PayPal), spread de câmbio, revisão de saque + pagamento via PayPal, CRUD de jogos/gateway Provider (HMAC), cupons/VIP/conquistas/tickets/recomendação com comissão/2FA/social (amigos/chat WS)/torneios/Webhook/push (FCM/APNs/华为)/i18n bilíngue.
+Capacidades já implementadas: JWT+RBAC, lock otimista da carteira, recarga (verificação de assinatura Stripe/PayPal/NowPayments/Coinbase), spread de câmbio, revisão de saque + pagamento via PayPal, CRUD de jogos/gateway Provider (HMAC), cupons/VIP/conquistas/tickets/recomendação com comissão/2FA/social (amigos/chat WS)/torneios/Webhook/push (FCM/APNs/华为)/i18n bilíngue.
 
 ---
 
@@ -75,7 +75,7 @@ Lock otimista da carteira + atualização condicional por versão corretos; idem
 
 ### P0 — Segurança de fundos + correção (primeiro, bloqueia o lançamento)
 
-1. **Callback de pagamento fail-closed**: whitelist de providers (apenas stripe/paypal) + falta de chave deve recusar com 500 + exceção do PayPal deve recusar (C1/C2) — ✅ Concluído (2026-08-18: whitelist de providers + validação de uso indevido entre canais + validação opcional do IP de origem + creditação transacional no callback)
+1. **Callback de pagamento fail-closed**: whitelist de providers (apenas stripe/paypal/nowpayments/coinbase) + falta de chave deve recusar com 500 + exceção do PayPal deve recusar (C1/C2) — ✅ Concluído (2026-08-18: whitelist de providers + validação de uso indevido entre canais + validação opcional do IP de origem + creditação transacional no callback)
 2. **Validação do JWT na inicialização**: recusar iniciar sem `JWT_SECRET_KEY` no env (C3) — ✅ Concluído (2026-08-18: recusa iniciar quando `JWT_SECRET_KEY` ausente ou com o valor padrão `open-admin-jwt-secret-change-in-production`, consistente entre admin/service)
 3. **Montar rotas do serviço de análise**: registrar 12 rotas de analytics + pontos de permissão, cumprir a promessa do VERSIONS.md (H1) — ✅ Concluído (2026-08-18: admin/config/route.php registra 12 rotas `/admin/analytics/*`)
 4. **Integrar o barramento de eventos**: registrar processo de assinatura residente para consumir, ou mudar para chamada síncrona direta; eventos persistidos + retry em falha (H2) — ✅ Concluído (2026-08-18: emit/consume já fazem INCR no Redis; `service/config/process.php` registra `event-consumer`, `service/app/process/EventConsumer.php` consome eventos)

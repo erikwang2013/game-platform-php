@@ -22,7 +22,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 | テスト | 132 ケース / 8 ファイル (admin プロジェクト)、service プロジェクトは **ゼロテスト** |
 | バージョン | v1.1 (2026-08-07)：Redis プラグイン、分析サービス、Redis ダウングレード、テスト修正 |
 
-実装済み機能: JWT+RBAC、ウォレット楽観ロック、チャージ(Stripe/PayPal 署名検証)、交換差益、出金審査+PayPal 送金、ゲーム CRUD/Provider ゲートウェイ(HMAC)、クーポン/VIP/アチーブメント/チケット/紹介報酬/2FA/ソーシャル(友達/チャット WS)/トーナメント/Webhook/プッシュ(FCM/APNs/华为)/i18n バイリンガル。
+実装済み機能: JWT+RBAC、ウォレット楽観ロック、チャージ(Stripe/PayPal/NowPayments/Coinbase 署名検証)、交換差益、出金審査+PayPal 送金、ゲーム CRUD/Provider ゲートウェイ(HMAC)、クーポン/VIP/アチーブメント/チケット/紹介報酬/2FA/ソーシャル(友達/チャット WS)/トーナメント/Webhook/プッシュ(FCM/APNs/华为)/i18n バイリンガル。
 
 ---
 
@@ -75,7 +75,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 
 ### P0 — 資金セキュリティ + 正確性（最優先、リリースをブロック）
 
-1. **決済コールバック fail-closed**: provider ホワイトリスト（stripe/paypal のみ）+ 鍵欠落時は 500 拒否 + PayPal 例外は必ず拒否（C1/C2） — ✅ 完了済み（2026-08-18: provider ホワイトリスト + チャネル横断のすり替え検証 + 送信元 IP 任意検証 + コールバック入金のトランザクション化）
+1. **決済コールバック fail-closed**: provider ホワイトリスト（stripe/paypal/nowpayments/coinbase のみ）+ 鍵欠落時は 500 拒否 + PayPal 例外は必ず拒否（C1/C2） — ✅ 完了済み（2026-08-18: provider ホワイトリスト + チャネル横断のすり替え検証 + 送信元 IP 任意検証 + コールバック入金のトランザクション化）
 2. **JWT 起動時検証**: env に `JWT_SECRET_KEY` がない場合は起動拒否（C3） — ✅ 完了済み（2026-08-18: JWT_SECRET_KEY 欠落またはデフォルト値 `open-admin-jwt-secret-change-in-production` の場合に起動拒否、admin/service 一致）
 3. **分析サービスのルート登録**: analytics 12 ルート + 権限ポイントを登録、VERSIONS.md の約束を修正（H1） — ✅ 完了済み（2026-08-18: admin/config/route.php に 12 本の `/admin/analytics/*` ルートを登録）
 4. **イベントバス接続**: 常駐サブスクライブプロセスを登録して消費、または同期直接呼び出しに変更；イベントの永続化 + 失敗リトライ（H2） — ✅ 完了済み（2026-08-18: emit/consume が Redis カウンターを INCR；`service/config/process.php` に `event-consumer` を登録、`service/app/process/EventConsumer.php` がイベントを消費）

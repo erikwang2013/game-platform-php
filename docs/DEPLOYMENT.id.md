@@ -202,6 +202,13 @@ OAUTH_GOOGLE_REDIRECT_URI=https://your-domain.com/api/auth/oauth/google/callback
 # Webhook Pembayaran
 STRIPE_WEBHOOK_SECRET=<didapat dari Stripe Dashboard>
 PAYPAL_WEBHOOK_ID=<didapat dari PayPal Developer>
+STRIPE_SECRET_KEY=<kunci rahasia Stripe>
+NOWPAYMENTS_API_KEY=<kunci API NOWPayments>
+NOWPAYMENTS_IPN_SECRET=<kunci tanda tangan IPN>
+NOWPAYMENTS_API_URL=https://api.nowpayments.io  # URL default
+COINBASE_COMMERCE_API_KEY=<kunci API Coinbase Commerce>
+COINBASE_COMMERCE_WEBHOOK_SECRET=<secret Webhook Coinbase Commerce>
+SITE_URL=https://your-domain.com  # URL situs untuk callback/redirect pembayaran
 ```
 
 ### 3.4 Mulai Layanan

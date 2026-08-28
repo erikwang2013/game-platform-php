@@ -1814,3 +1814,157 @@ GET /admin/analytics/economy
 ```
 
 **Antwort**: Array `currencies`, jeder Eintrag mit `game_name`, `currency`, `symbol`, `total_minted` (Gesamtmenge geprägt), `total_burned` (Gesamtmenge vernichtet), `circulation` (Umlaufmenge), `inflation_rate` (Inflationsrate), berechnet mit bcmath-Hochpräzisionsarithmetik.
+
+## 17. Zahlungsverwaltung (Payment)
+
+Die Zahlungsmethoden-Verwaltung wird von `PaymentController` bereitgestellt; alle 5 Endpunkte erfordern JWT + RBAC-Authentifizierung. `provider`-Whitelist: `stripe` / `nowpayments` / `coinbase`. `config` ist ein JSON-String der Zahlungskonfiguration (verschlüsselt in der Datenbank gespeichert).
+
+| Methode | Pfad | Beschreibung |
+|------|------|------|
+| GET | /admin/payment/method/list | Liste der Zahlungsmethoden (aufsteigend nach sort) |
+| POST | /admin/payment/method/toggle | Zahlungsmethode aktivieren/deaktivieren |
+| POST | /admin/payment/method/create | Zahlungsmethode erstellen |
+| PUT | /admin/payment/method/{hashid} | Zahlungsmethode aktualisieren |
+| DELETE | /admin/payment/method/{hashid} | Zahlungsmethode löschen (abgelehnt, wenn ausstehende Bestellungen existieren) |
+
+### 17.1 Liste der Zahlungsmethoden
+
+```
+GET /admin/payment/method/list
+```
+
+- **Authentifizierung**: JWT + RBAC
+
+**Antwortbeispiel**:
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "list": [
+      {
+        "id": "a1b2c3d4",
+        "name": "Stripe Kreditkarte",
+        "type": "fiat",
+        "provider": "stripe",
+        "status": 1,
+        "sort": 1,
+        "countries": ["US", "SG"],
+        "currency": "USD",
+        "min_amount": "10",
+        "max_amount": "5000",
+        "config": null,
+        "created_at": "2026-08-29 10:00:00",
+        "updated_at": "2026-08-29 10:00:00"
+      }
+    ]
+  }
+}
+```
+
+| Feld | Typ | Beschreibung |
+|------|------|------|
+| id | string | Zahlungsmethoden-ID (hashid-kodiert) |
+| name | string | Name der Zahlungsmethode |
+| type | string | `fiat` (Fiat-Währung) / `crypto` (Kryptowährung) |
+| provider | string | Gateway-Anbieter: `stripe` / `nowpayments` / `coinbase` |
+| status | int | 1=aktiviert, 0=deaktiviert |
+| sort | int | Sortierwert (aufsteigend) |
+| countries | array{string} | Sichtbare Länder-Codes (leeres Array = global sichtbar) |
+| currency | string | Währung (z. B. USD/USDT), leer = keine Einschränkung |
+| min_amount / max_amount | string | Betragsbereich (String erhält Präzision), 0 = keine Begrenzung |
+| config | string? | Zahlungskonfiguration JSON (verschlüsselt; null, wenn nicht gesetzt) |
+
+### 17.2 Zahlungsmethode aktivieren/deaktivieren
+
+```
+POST /admin/payment/method/toggle
+```
+
+**Anfragekörper**:
+```json
+{
+  "id": "a1b2c3d4",
+  "status": 1
+}
+```
+
+| Feld | Typ | Erforderlich | Beschreibung |
+|------|------|------|------|
+| id | string | Ja | Zahlungsmethoden-ID (hashid-kodiert) |
+| status | int | Ja | 0=deaktiviert, 1=aktiviert |
+
+**Mögliche Fehler**:
+- 422: Validierung fehlgeschlagen (id/status fehlt oder status nicht 0/1)
+- 404: Zahlungsmethode nicht gefunden
+
+### 17.3 Zahlungsmethode erstellen
+
+```
+POST /admin/payment/method/create
+```
+
+**Anfragekörper**:
+```json
+{
+  "name": "USDT Kryptowährung",
+  "type": "crypto",
+  "provider": "nowpayments",
+  "status": 1,
+  "sort": 2,
+  "countries": [],
+  "currency": "USDT",
+  "min_amount": "10",
+  "max_amount": "10000",
+  "config": "{\"api_key\":\"...\"}"
+}
+```
+
+| Feld | Typ | Erforderlich | Validierung | Beschreibung |
+|------|------|------|---------|------|
+| name | string | Ja | max:50 | Name der Zahlungsmethode |
+| type | string | Ja | in:fiat,crypto | Typ: Fiat/Krypto |
+| provider | string | Ja | in:stripe,nowpayments,coinbase | Gateway-Anbieter-Whitelist |
+| status | int | Ja | in:0,1 | Status |
+| sort | int | Nein | integer,min:0 | Sortierwert, Standard 0 |
+| countries | array{string} | Nein | max:2 | Sichtbare Länder-Codes, leer = global |
+| currency | string | Nein | max:10 | Währung, Standard leer |
+| min_amount / max_amount | string | Nein | numeric,min:0 | Betragsbereich, Standard "0" |
+| config | string | Nein | | Zahlungskonfiguration JSON (verschlüsselt), leerer String wird als NULL gespeichert |
+
+**Antwortbeispiel**:
+```json
+{
+  "code": 0,
+  "message": "erfolgreich erstellt",
+  "data": { "id": "e5f6g7h8" }
+}
+```
+
+**Mögliche Fehler**:
+- 422: Validierung fehlgeschlagen
+
+### 17.4 Zahlungsmethode aktualisieren
+
+```
+PUT /admin/payment/method/{hashid}
+```
+
+- **Pfadparameter**: `{hashid}` ist die hashid-kodierte Zahlungsmethoden-ID
+- **Anfragekörper**: wie bei Erstellen (17.3), alle Felder optional, nur übergebene Felder werden aktualisiert
+
+**Mögliche Fehler**:
+- 404: Zahlungsmethode nicht gefunden
+- 422: Validierung fehlgeschlagen
+
+### 17.5 Zahlungsmethode löschen
+
+```
+DELETE /admin/payment/method/{hashid}
+```
+
+- **Pfadparameter**: `{hashid}` ist die hashid-kodierte Zahlungsmethoden-ID
+
+**Mögliche Fehler**:
+- 404: Zahlungsmethode nicht gefunden
+- 422: ausstehende Einzahlungsaufträge (status=pending) vorhanden, Löschen nicht möglich

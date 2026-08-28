@@ -1814,3 +1814,157 @@ GET /admin/analytics/economy
 ```
 
 **响应**: `currencies` 数组，每项含 `game_name`、`currency`、`symbol`、`total_minted`（铸币总量）、`total_burned`（销毁总量）、`circulation`（流通量）、`inflation_rate`（通胀率），使用 bcmath 高精度计算。
+
+## 17. 支付管理 (Payment)
+
+支付方式管理由 `PaymentController` 提供，5 个端点均需 JWT + RBAC 认证。`provider` 白名单：`stripe` / `nowpayments` / `coinbase`。`config` 为支付配置 JSON 字符串（数据库加密存储）。
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | /admin/payment/method/list | 支付方式列表（按 sort 升序） |
+| POST | /admin/payment/method/toggle | 启禁用支付方式 |
+| POST | /admin/payment/method/create | 创建支付方式 |
+| PUT | /admin/payment/method/{hashid} | 更新支付方式 |
+| DELETE | /admin/payment/method/{hashid} | 删除支付方式（存在 pending 订单时拒绝） |
+
+### 17.1 支付方式列表
+
+```
+GET /admin/payment/method/list
+```
+
+- **认证**: JWT + RBAC
+
+**响应示例**:
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "list": [
+      {
+        "id": "a1b2c3d4",
+        "name": "Stripe 信用卡",
+        "type": "fiat",
+        "provider": "stripe",
+        "status": 1,
+        "sort": 1,
+        "countries": ["US", "SG"],
+        "currency": "USD",
+        "min_amount": "10",
+        "max_amount": "5000",
+        "config": null,
+        "created_at": "2026-08-29 10:00:00",
+        "updated_at": "2026-08-29 10:00:00"
+      }
+    ]
+  }
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | string | hashid 加密的支付方式 ID |
+| name | string | 支付方式名称 |
+| type | string | `fiat`（法币）/ `crypto`（加密货币） |
+| provider | string | 网关提供商：`stripe` / `nowpayments` / `coinbase` |
+| status | int | 1=启用, 0=禁用 |
+| sort | int | 排序值（升序） |
+| countries | array{string} | 可见国家码数组（空数组=全球可见） |
+| currency | string | 币种（如 USD/USDT），空=不限 |
+| min_amount / max_amount | string | 金额区间（字符串保留精度），0=不限制 |
+| config | string? | 支付配置 JSON（加密存储，未设置时为 null） |
+
+### 17.2 启禁用支付方式
+
+```
+POST /admin/payment/method/toggle
+```
+
+**请求体**:
+```json
+{
+  "id": "a1b2c3d4",
+  "status": 1
+}
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| id | string | 是 | 支付方式 ID（hashid 编码） |
+| status | int | 是 | 0=禁用, 1=启用 |
+
+**可能的错误**:
+- 422: 参数验证失败（id/status 缺失或 status 非 0/1）
+- 404: 支付方式不存在
+
+### 17.3 创建支付方式
+
+```
+POST /admin/payment/method/create
+```
+
+**请求体**:
+```json
+{
+  "name": "USDT 加密货币",
+  "type": "crypto",
+  "provider": "nowpayments",
+  "status": 1,
+  "sort": 2,
+  "countries": [],
+  "currency": "USDT",
+  "min_amount": "10",
+  "max_amount": "10000",
+  "config": "{\"api_key\":\"...\"}"
+}
+```
+
+| 字段 | 类型 | 必填 | 验证规则 | 说明 |
+|------|------|------|---------|------|
+| name | string | 是 | max:50 | 支付方式名称 |
+| type | string | 是 | in:fiat,crypto | 类型：法币/加密货币 |
+| provider | string | 是 | in:stripe,nowpayments,coinbase | 网关提供商白名单 |
+| status | int | 是 | in:0,1 | 状态 |
+| sort | int | 否 | integer,min:0 | 排序值，默认 0 |
+| countries | array{string} | 否 | max:2 | 可见国家码数组，空=全球 |
+| currency | string | 否 | max:10 | 币种，默认空 |
+| min_amount / max_amount | string | 否 | numeric,min:0 | 金额区间，默认 "0" |
+| config | string | 否 | | 支付配置 JSON（加密存储），空字符串存 NULL |
+
+**响应示例**:
+```json
+{
+  "code": 0,
+  "message": "创建成功",
+  "data": { "id": "e5f6g7h8" }
+}
+```
+
+**可能的错误**:
+- 422: 参数验证失败
+
+### 17.4 更新支付方式
+
+```
+PUT /admin/payment/method/{hashid}
+```
+
+- **路径参数**: `{hashid}` 为 hashid 加密的支付方式 ID
+- **请求体**: 同创建（17.3），所有字段可选，仅更新传入字段
+
+**可能的错误**:
+- 404: 支付方式不存在
+- 422: 参数验证失败
+
+### 17.5 删除支付方式
+
+```
+DELETE /admin/payment/method/{hashid}
+```
+
+- **路径参数**: `{hashid}` 为 hashid 加密的支付方式 ID
+
+**可能的错误**:
+- 404: 支付方式不存在
+- 422: 存在待支付订单（status=pending），无法删除

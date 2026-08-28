@@ -1814,3 +1814,157 @@ GET /admin/analytics/economy
 ```
 
 **Réponse** : tableau `currencies`, chaque élément contient `game_name`, `currency`, `symbol`, `total_minted` (masse monétaire totale émise), `total_burned` (masse détruite totale), `circulation` (masse en circulation), `inflation_rate` (taux d'inflation), calculs haute précision via bcmath.
+
+## 17. Gestion des paiements (Payment)
+
+La gestion des méthodes de paiement est fournie par `PaymentController` ; les 5 endpoints requièrent une authentification JWT + RBAC. Liste blanche `provider` : `stripe` / `nowpayments` / `coinbase`. `config` est une chaîne JSON de configuration de paiement (stockée chiffrée en base).
+
+| Méthode | Chemin | Description |
+|------|------|------|
+| GET | /admin/payment/method/list | Liste des méthodes de paiement (tri croissant par sort) |
+| POST | /admin/payment/method/toggle | Activer/désactiver une méthode de paiement |
+| POST | /admin/payment/method/create | Créer une méthode de paiement |
+| PUT | /admin/payment/method/{hashid} | Mettre à jour une méthode de paiement |
+| DELETE | /admin/payment/method/{hashid} | Supprimer une méthode de paiement (refusé si des commandes en attente existent) |
+
+### 17.1 Liste des méthodes de paiement
+
+```
+GET /admin/payment/method/list
+```
+
+- **Authentification** : JWT + RBAC
+
+**Exemple de réponse** :
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "list": [
+      {
+        "id": "a1b2c3d4",
+        "name": "Carte bancaire Stripe",
+        "type": "fiat",
+        "provider": "stripe",
+        "status": 1,
+        "sort": 1,
+        "countries": ["US", "SG"],
+        "currency": "USD",
+        "min_amount": "10",
+        "max_amount": "5000",
+        "config": null,
+        "created_at": "2026-08-29 10:00:00",
+        "updated_at": "2026-08-29 10:00:00"
+      }
+    ]
+  }
+}
+```
+
+| Champ | Type | Description |
+|------|------|------|
+| id | string | ID de la méthode de paiement (codé hashid) |
+| name | string | Nom de la méthode de paiement |
+| type | string | `fiat` (monnaie fiduciaire) / `crypto` (cryptomonnaie) |
+| provider | string | Fournisseur de passerelle : `stripe` / `nowpayments` / `coinbase` |
+| status | int | 1=actif, 0=inactif |
+| sort | int | Valeur de tri (croissant) |
+| countries | array{string} | Codes pays visibles (tableau vide = visible mondialement) |
+| currency | string | Devise (p. ex. USD/USDT), vide = aucune restriction |
+| min_amount / max_amount | string | Plage de montants (chaîne pour préserver la précision), 0 = sans limite |
+| config | string? | JSON de configuration de paiement (chiffré ; null si non défini) |
+
+### 17.2 Activer/désactiver une méthode de paiement
+
+```
+POST /admin/payment/method/toggle
+```
+
+**Corps de la requête** :
+```json
+{
+  "id": "a1b2c3d4",
+  "status": 1
+}
+```
+
+| Champ | Type | Requis | Description |
+|------|------|------|------|
+| id | string | Oui | ID de la méthode de paiement (hashid) |
+| status | int | Oui | 0=désactivé, 1=activé |
+
+**Erreurs possibles** :
+- 422 : échec de validation (id/status manquant ou status différent de 0/1)
+- 404 : méthode de paiement introuvable
+
+### 17.3 Créer une méthode de paiement
+
+```
+POST /admin/payment/method/create
+```
+
+**Corps de la requête** :
+```json
+{
+  "name": "Cryptomonnaie USDT",
+  "type": "crypto",
+  "provider": "nowpayments",
+  "status": 1,
+  "sort": 2,
+  "countries": [],
+  "currency": "USDT",
+  "min_amount": "10",
+  "max_amount": "10000",
+  "config": "{\"api_key\":\"...\"}"
+}
+```
+
+| Champ | Type | Requis | Validation | Description |
+|------|------|------|---------|------|
+| name | string | Oui | max:50 | Nom de la méthode de paiement |
+| type | string | Oui | in:fiat,crypto | Type : fiduciaire/cripto |
+| provider | string | Oui | in:stripe,nowpayments,coinbase | Liste blanche des fournisseurs de passerelle |
+| status | int | Oui | in:0,1 | État |
+| sort | int | Non | integer,min:0 | Valeur de tri, défaut 0 |
+| countries | array{string} | Non | max:2 | Codes pays visibles, vide = mondial |
+| currency | string | Non | max:10 | Devise, défaut vide |
+| min_amount / max_amount | string | Non | numeric,min:0 | Plage de montants, défaut "0" |
+| config | string | Non | | JSON de configuration de paiement (chiffré) ; chaîne vide stockée en NULL |
+
+**Exemple de réponse** :
+```json
+{
+  "code": 0,
+  "message": "créé avec succès",
+  "data": { "id": "e5f6g7h8" }
+}
+```
+
+**Erreurs possibles** :
+- 422 : échec de validation
+
+### 17.4 Mettre à jour une méthode de paiement
+
+```
+PUT /admin/payment/method/{hashid}
+```
+
+- **Paramètre de chemin** : `{hashid}` est l'ID de la méthode de paiement codé en hashid
+- **Corps de la requête** : identique à la création (17.3), tous les champs optionnels ; seuls les champs transmis sont mis à jour
+
+**Erreurs possibles** :
+- 404 : méthode de paiement introuvable
+- 422 : échec de validation
+
+### 17.5 Supprimer une méthode de paiement
+
+```
+DELETE /admin/payment/method/{hashid}
+```
+
+- **Paramètre de chemin** : `{hashid}` est l'ID de la méthode de paiement codé en hashid
+
+**Erreurs possibles** :
+- 404 : méthode de paiement introuvable
+- 422 : des commandes de dépôt en attente (status=pending) existent, suppression impossible

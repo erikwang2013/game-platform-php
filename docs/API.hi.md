@@ -181,11 +181,15 @@ type वैकल्पिक मान: deposit / withdraw / exchange_in / exch
   "order_id": "aB3xK...",
   "order_no": "DEP202605221030000123",
   "amount": "10.00",
-  "platform_amount": "10.0000"
+  "platform_amount": "10.0000",
+  "checkout_url": "https://checkout.stripe.com/...",
+  "expires_at": "2026-05-22 11:30:00"
 }
 ```
 
 currency वैकल्पिक मान: USD / CNY / EUR
+
+checkout_url: भुगतान गेटवे रीडायरेक्ट लिंक (ऑर्डर बनाते समय भरा जाता है); expires_at: भुगतान लिंक की समाप्ति (बनाने के 1 घंटे बाद)
 
 #### GET /api/deposit/orders — रिचार्ज रिकॉर्ड
 
@@ -517,15 +521,19 @@ is_new: true=नया पंजीकृत उपयोगकर्ता / fa
 
 status: success / failed
 
+provider के मान: stripe / paypal / nowpayments / coinbase (nowpayments IPN HMAC-SHA512 से सत्यापित करता है, coinbase webhook HMAC-SHA256 से)
+
 #### GET /api/payment/methods — उपलब्ध भुगतान विधियाँ (सार्वजनिक)
 
 ```
 प्रतिक्रिया: {
   "list": [
-    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "status": 1 }
+    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "min_amount": "10.00", "max_amount": "5000.00" }
   ]
 }
 ```
+
+उपयोगकर्ता के देश के अनुसार फ़िल्टर (X-Language/Accept-Language → देश कोड): countries खाली या * वाला वैश्विक रूप से दृश्य; उस देश की country_config भुगतान विधि प्राथमिकता के अनुसार क्रमबद्ध
 
 ### 2.10 गेम रिकॉर्ड
 

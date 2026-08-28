@@ -317,6 +317,23 @@ Las operaciones sensibles como eliminar usuarios, roles o permisos requieren env
 
 El frontend muestra un diálogo de confirmación antes de ejecutar la operación de borrado y envía la solicitud tras recoger la contraseña del usuario.
 
+### 4.8 Gestión de métodos de pago
+
+El módulo de gestión de métodos de pago (`PaymentController` + Flutter `payment_page.dart`) proporciona 5 endpoints, todos requieren autenticación JWT + RBAC:
+
+| Método | Ruta | Descripción |
+|------|------|------|
+| GET | /admin/payment/method/list | Lista (ascendente por sort) |
+| POST | /admin/payment/method/toggle | Activar/desactivar |
+| POST | /admin/payment/method/create | Crear |
+| PUT | /admin/payment/method/{hashid} | Actualizar (solo campos enviados) |
+| DELETE | /admin/payment/method/{hashid} | Eliminar (422 si existen pedidos pendientes) |
+
+- **Lista blanca de provider**: `stripe` / `nowpayments` / `coinbase`
+- **Campos**: name / type (fiat|crypto) / provider / status / sort / countries[] (visibilidad por país, vacío = global) / currency / min_amount / max_amount / config (JSON, almacenado cifrado)
+- **Protección de borrado**: el borrado devuelve 422 mientras existan pedidos con status=pending
+- **Frontend**: Flutter `payment_page.dart` — lista + diálogo crear/editar + toggle activar/desactivar
+
 ## 5. Diseño del frontend
 
 ### 5.1 Panel de administración Flutter Web

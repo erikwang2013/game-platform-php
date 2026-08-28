@@ -1814,3 +1814,157 @@ GET /admin/analytics/economy
 ```
 
 **Respons**: array `currencies`, setiap item berisi `game_name`、`currency`、`symbol`、`total_minted`（total mint）、`total_burned`（total burn）、`circulation`（jumlah beredar）、`inflation_rate`（tingkat inflasi）, menggunakan perhitungan presisi tinggi bcmath.
+
+## 17. Manajemen Pembayaran (Payment)
+
+Manajemen metode pembayaran disediakan oleh `PaymentController`; 5 endpoint semuanya memerlukan autentikasi JWT + RBAC. Daftar putih `provider`: `stripe` / `nowpayments` / `coinbase`. `config` adalah string JSON konfigurasi pembayaran (disimpan terenkripsi di database).
+
+| Metode | Jalur | Deskripsi |
+|------|------|------|
+| GET | /admin/payment/method/list | Daftar metode pembayaran (ascending by sort) |
+| POST | /admin/payment/method/toggle | Aktifkan/nonaktifkan metode pembayaran |
+| POST | /admin/payment/method/create | Buat metode pembayaran |
+| PUT | /admin/payment/method/{hashid} | Perbarui metode pembayaran |
+| DELETE | /admin/payment/method/{hashid} | Hapus metode pembayaran (ditolak jika ada pesanan pending) |
+
+### 17.1 Daftar Metode Pembayaran
+
+```
+GET /admin/payment/method/list
+```
+
+- **Autentikasi**: JWT + RBAC
+
+**Contoh respons**:
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "list": [
+      {
+        "id": "a1b2c3d4",
+        "name": "Kartu Kredit Stripe",
+        "type": "fiat",
+        "provider": "stripe",
+        "status": 1,
+        "sort": 1,
+        "countries": ["US", "SG"],
+        "currency": "USD",
+        "min_amount": "10",
+        "max_amount": "5000",
+        "config": null,
+        "created_at": "2026-08-29 10:00:00",
+        "updated_at": "2026-08-29 10:00:00"
+      }
+    ]
+  }
+}
+```
+
+| Kolom | Tipe | Deskripsi |
+|------|------|------|
+| id | string | ID metode pembayaran (dikodekan hashid) |
+| name | string | Nama metode pembayaran |
+| type | string | `fiat` (mata uang fiat) / `crypto` (kripto) |
+| provider | string | Penyedia gateway: `stripe` / `nowpayments` / `coinbase` |
+| status | int | 1=aktif, 0=nonaktif |
+| sort | int | Nilai urutan (ascending) |
+| countries | array{string} | Array kode negara yang terlihat (array kosong = terlihat global) |
+| currency | string | Mata uang (mis. USD/USDT), kosong = tanpa batasan |
+| min_amount / max_amount | string | Rentang jumlah (string menjaga presisi), 0 = tanpa batas |
+| config | string? | JSON konfigurasi pembayaran (terenkripsi; null jika tidak diatur) |
+
+### 17.2 Aktifkan/Nonaktifkan Metode Pembayaran
+
+```
+POST /admin/payment/method/toggle
+```
+
+**Badan permintaan**:
+```json
+{
+  "id": "a1b2c3d4",
+  "status": 1
+}
+```
+
+| Kolom | Tipe | Wajib | Deskripsi |
+|------|------|------|------|
+| id | string | Ya | ID metode pembayaran (hashid) |
+| status | int | Ya | 0=nonaktif, 1=aktif |
+
+**Kemungkinan error**:
+- 422: validasi gagal (id/status hilang atau status bukan 0/1)
+- 404: metode pembayaran tidak ditemukan
+
+### 17.3 Buat Metode Pembayaran
+
+```
+POST /admin/payment/method/create
+```
+
+**Badan permintaan**:
+```json
+{
+  "name": "Kripto USDT",
+  "type": "crypto",
+  "provider": "nowpayments",
+  "status": 1,
+  "sort": 2,
+  "countries": [],
+  "currency": "USDT",
+  "min_amount": "10",
+  "max_amount": "10000",
+  "config": "{\"api_key\":\"...\"}"
+}
+```
+
+| Kolom | Tipe | Wajib | Validasi | Deskripsi |
+|------|------|------|---------|------|
+| name | string | Ya | max:50 | Nama metode pembayaran |
+| type | string | Ya | in:fiat,crypto | Tipe: fiat/kripto |
+| provider | string | Ya | in:stripe,nowpayments,coinbase | Daftar putih penyedia gateway |
+| status | int | Ya | in:0,1 | Status |
+| sort | int | Tidak | integer,min:0 | Urutan, default 0 |
+| countries | array{string} | Tidak | max:2 | Kode negara terlihat, kosong = global |
+| currency | string | Tidak | max:10 | Mata uang, default kosong |
+| min_amount / max_amount | string | Tidak | numeric,min:0 | Rentang jumlah, default "0" |
+| config | string | Tidak | | JSON konfigurasi pembayaran (terenkripsi); string kosong disimpan sebagai NULL |
+
+**Contoh respons**:
+```json
+{
+  "code": 0,
+  "message": "berhasil dibuat",
+  "data": { "id": "e5f6g7h8" }
+}
+```
+
+**Kemungkinan error**:
+- 422: validasi gagal
+
+### 17.4 Perbarui Metode Pembayaran
+
+```
+PUT /admin/payment/method/{hashid}
+```
+
+- **Parameter jalur**: `{hashid}` adalah ID metode pembayaran yang dikodekan hashid
+- **Badan permintaan**: sama dengan buat (17.3), semua kolom opsional, hanya kolom yang dikirim yang diperbarui
+
+**Kemungkinan error**:
+- 404: metode pembayaran tidak ditemukan
+- 422: validasi gagal
+
+### 17.5 Hapus Metode Pembayaran
+
+```
+DELETE /admin/payment/method/{hashid}
+```
+
+- **Parameter jalur**: `{hashid}` adalah ID metode pembayaran yang dikodekan hashid
+
+**Kemungkinan error**:
+- 404: metode pembayaran tidak ditemukan
+- 422: ada pesanan deposit pending (status=pending), tidak dapat dihapus

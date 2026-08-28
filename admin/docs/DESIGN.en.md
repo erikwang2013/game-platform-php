@@ -317,6 +317,23 @@ Sensitive operations like deleting users, roles, and permissions require passing
 
 The frontend pops up a confirmation dialog before triggering delete operations, and sends the request after collecting the user's password.
 
+### 4.8 Payment Method Management
+
+The payment method management module (`PaymentController` + Flutter `payment_page.dart`) provides 5 endpoints, all requiring JWT + RBAC authentication:
+
+| Method | Path | Description |
+|------|------|------|
+| GET | /admin/payment/method/list | List (ascending by sort) |
+| POST | /admin/payment/method/toggle | Enable/disable |
+| POST | /admin/payment/method/create | Create |
+| PUT | /admin/payment/method/{hashid} | Update (only provided fields) |
+| DELETE | /admin/payment/method/{hashid} | Delete (rejected with 422 if pending orders exist) |
+
+- **provider whitelist**: `stripe` / `nowpayments` / `coinbase`
+- **Fields**: name / type (fiat|crypto) / provider / status / sort / countries[] (country visibility, empty = global) / currency / min_amount / max_amount / config (JSON, stored encrypted)
+- **Delete protection**: deletion returns 422 while pending orders (status=pending) exist
+- **Frontend**: Flutter `payment_page.dart` — list + create/edit dialog + enable/disable toggle
+
 ## 5. Frontend Design
 
 ### 5.1 Flutter Web Admin Backend

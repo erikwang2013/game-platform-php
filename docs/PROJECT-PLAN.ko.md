@@ -22,7 +22,7 @@ Languages: [中文](PROJECT-PLAN.md) · [English](PROJECT-PLAN.en.md) · **한�
 | 테스트 | 132 케이스 / 8 파일 (admin 프로젝트), service 프로젝트 **테스트 0개** |
 | 버전 | v1.1 (2026-08-07): Redis 플러그인, 분석 서비스, Redis 디그레이드, 테스트 수정 |
 
-구현 완료 능력: JWT+RBAC, 지갑 낙관적 잠금, 충전(Stripe/PayPal 검증), 환전 차액, 출금 심사+PayPal 지급, 게임 CRUD/Provider 게이트웨이(HMAC), 쿠폰/VIP/업적/티켓/추천 커미션/2FA/소셜(친구/채팅 WS)/토너먼트/Webhook/푸시(FCM/APNs/华为)/i18n 이중 언어.
+구현 완료 능력: JWT+RBAC, 지갑 낙관적 잠금, 충전(Stripe/PayPal/NowPayments/Coinbase 검증), 환전 차액, 출금 심사+PayPal 지급, 게임 CRUD/Provider 게이트웨이(HMAC), 쿠폰/VIP/업적/티켓/추천 커미션/2FA/소셜(친구/채팅 WS)/토너먼트/Webhook/푸시(FCM/APNs/华为)/i18n 이중 언어.
 
 ---
 
@@ -75,7 +75,7 @@ Languages: [中文](PROJECT-PLAN.md) · [English](PROJECT-PLAN.en.md) · **한�
 
 ### P0 — 자금 안전 + 정확성（우선, 출시 차단）
 
-1. **결제 콜백 fail-closed**: provider 화이트리스트（stripe/paypal만）+ 키 누락 시 반드시 500 거부 + PayPal 예외 반드시 거부（C1/C2） — ✅ 완료（2026-08-18: provider 화이트리스트 + 크로스 채널 도용 검증 + 소스 IP 선택 검증 + 콜백 입금 트랜잭션화）
+1. **결제 콜백 fail-closed**: provider 화이트리스트（stripe/paypal/nowpayments/coinbase만）+ 키 누락 시 반드시 500 거부 + PayPal 예외 반드시 거부（C1/C2） — ✅ 완료（2026-08-18: provider 화이트리스트 + 크로스 채널 도용 검증 + 소스 IP 선택 검증 + 콜백 입금 트랜잭션화）
 2. **JWT 기동 검증**: env에 `JWT_SECRET_KEY` 없으면 기동 거부（C3） — ✅ 완료（2026-08-18: JWT_SECRET_KEY 누락 또는 기본값 `open-admin-jwt-secret-change-in-production`이면 기동 거부, admin/service 일관）
 3. **분석 서비스 라우트 연결**: analytics 12 라우트 + 권한 포인트 등록, VERSIONS.md 약속 수정（H1） — ✅ 완료（2026-08-18: admin/config/route.php에 `/admin/analytics/*` 라우트 12개 등록）
 4. **이벤트 버스 연결**: 상주 구독 프로세스 등록으로 소비, 또는 동기 직접 호출로 변경; 이벤트 적재 + 실패 재시도（H2） — ✅ 완료（2026-08-18: emit/consume INCR Redis 카운트; `service/config/process.php`에 `event-consumer` 등록, `service/app/process/EventConsumer.php`가 이벤트 소비）

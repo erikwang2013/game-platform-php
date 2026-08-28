@@ -202,6 +202,13 @@ OAUTH_GOOGLE_REDIRECT_URI=https://your-domain.com/api/auth/oauth/google/callback
 # भुगतान Webhook
 STRIPE_WEBHOOK_SECRET=<Stripe Dashboard से प्राप्त>
 PAYPAL_WEBHOOK_ID=<PayPal Developer से प्राप्त>
+STRIPE_SECRET_KEY=<Stripe गुप्त कुंजी>
+NOWPAYMENTS_API_KEY=<NOWPayments API कुंजी>
+NOWPAYMENTS_IPN_SECRET=<IPN हस्ताक्षर कुंजी>
+NOWPAYMENTS_API_URL=https://api.nowpayments.io  # डिफ़ॉल्ट
+COINBASE_COMMERCE_API_KEY=<Coinbase Commerce API कुंजी>
+COINBASE_COMMERCE_WEBHOOK_SECRET=<Coinbase Commerce Webhook गुप्त कुंजी>
+SITE_URL=https://your-domain.com  # भुगतान कॉलबैक/रीडायरेक्ट साइट URL
 ```
 
 ### 3.4 सेवाएँ शुरू करें

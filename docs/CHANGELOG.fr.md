@@ -57,3 +57,9 @@ Journal des modifications lisible par les humains. PHP n'importe pas ce fichier.
 - Interrupteur de dégradation `feature.provider_mock` : PushService (FCM/APNs/HarmonyOS), PayoutService (PayPal), ThirdPartyProvider court-circuitent quand `on`, sans appels réseau réels.
 - Correction de 11 défauts de type `getenv($name, '')` (TypeError sous strict_types) ; contrôle mock de PushService déplacé dans try/catch.
 - Nouveaux tests : CircuitBreakerTest / RetryTest / ResilienceMockTest ; suite service 45 → 60 cas, tous verts (rapport : [test-reports/resilience.md](test-reports/resilience.md)).
+
+## [1.1] payments — 2026-08-29
+
+- Passerelles de paiement multiples : Stripe Checkout / NOWPayments (USDT TRC20+ERC20) / Coinbase Commerce (USDC).
+- CRUD admin des méthodes de paiement + visibilité par pays + plages de montants ; les commandes de recharge renseignent checkout_url / expires_at à la création.
+- Nouvelle migration install/migrations/2026_08_29_multi_payment.sql (à exécuter).

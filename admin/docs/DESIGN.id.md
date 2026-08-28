@@ -317,6 +317,23 @@ Operasi sensitif seperti menghapus pengguna, peran, izin, perlu mengirim kata sa
 
 Frontend menampilkan dialog konfirmasi sebelum memicu operasi hapus, mengumpulkan kata sandi pengguna lalu mengirim permintaan.
 
+### 4.8 Manajemen Metode Pembayaran
+
+Modul manajemen metode pembayaran (`PaymentController` + Flutter `payment_page.dart`) menyediakan 5 endpoint, semuanya memerlukan autentikasi JWT + RBAC:
+
+| Metode | Jalur | Deskripsi |
+|------|------|------|
+| GET | /admin/payment/method/list | Daftar (ascending by sort) |
+| POST | /admin/payment/method/toggle | Aktifkan/nonaktifkan |
+| POST | /admin/payment/method/create | Buat |
+| PUT | /admin/payment/method/{hashid} | Perbarui (hanya kolom yang dikirim) |
+| DELETE | /admin/payment/method/{hashid} | Hapus (422 jika ada pesanan pending) |
+
+- **Daftar putih provider**: `stripe` / `nowpayments` / `coinbase`
+- **Kolom**: name / type (fiat|crypto) / provider / status / sort / countries[] (visibilitas negara, kosong = global) / currency / min_amount / max_amount / config (JSON, disimpan terenkripsi)
+- **Proteksi penghapusan**: penghapusan mengembalikan 422 selama ada pesanan dengan status=pending
+- **Frontend**: Flutter `payment_page.dart` — daftar + dialog buat/edit + toggle aktif/nonaktif
+
 ## 5. Desain Frontend
 
 ### 5.1 Backend Administrasi Flutter Web

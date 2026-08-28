@@ -57,3 +57,9 @@ Menschenlesbares Änderungsprotokoll. PHP importiert diese Datei nicht. Entspric
 - Degradationsschalter `feature.provider_mock`: PushService (FCM/APNs/HarmonyOS), PayoutService (PayPal), ThirdPartyProvider bei `on` überspringen echte Netzwerkaufrufe.
 - 11 Typfehler von `getenv($name, '')` behoben (TypeError unter strict_types); Mock-Prüfung in PushService in try/catch verschoben.
 - Neue Tests: CircuitBreakerTest / RetryTest / ResilienceMockTest; service-Suite 45 → 60 Fälle, alle grün (Bericht: [test-reports/resilience.md](test-reports/resilience.md)).
+
+## [1.1] payments — 2026-08-29
+
+- Multi-Payment-Gateways: Stripe Checkout / NOWPayments (USDT TRC20+ERC20) / Coinbase Commerce (USDC).
+- Admin-CRUD für Zahlungsmethoden + Länder-Sichtbarkeit + Betragsspannen; Einzahlungsaufträge schreiben checkout_url / expires_at sofort zurück.
+- Neue Migration install/migrations/2026_08_29_multi_payment.sql (auszuführen).

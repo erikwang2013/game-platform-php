@@ -1814,3 +1814,157 @@ GET /admin/analytics/economy
 ```
 
 **الاستجابة**: مصفوفة `currencies`، كل عنصر يتضمن `game_name` و`currency` و`symbol` و`total_minted` (إجمالي السك) و`total_burned` (إجمالي الإتلاف) و`circulation` (حجم التداول) و`inflation_rate` (معدل التضخم)، بحسابات bcmath عالية الدقة.
+
+## 17. إدارة الدفع (Payment)
+
+توفر إدارة طرق الدفع عبر `PaymentController`؛ جميع نقاط النهاية الخمس تتطلب مصادقة JWT + RBAC. القائمة البيضاء لـ `provider`: `stripe` / `nowpayments` / `coinbase`. `config` عبارة عن سلسلة JSON لإعدادات الدفع (مخزنة مشفرة في قاعدة البيانات).
+
+| الطريقة | المسار | الوصف |
+|------|------|------|
+| GET | /admin/payment/method/list | قائمة طرق الدفع (تصاعديًا حسب sort) |
+| POST | /admin/payment/method/toggle | تفعيل/تعطيل طريقة دفع |
+| POST | /admin/payment/method/create | إنشاء طريقة دفع |
+| PUT | /admin/payment/method/{hashid} | تحديث طريقة دفع |
+| DELETE | /admin/payment/method/{hashid} | حذف طريقة دفع (مرفوض إذا كانت هناك طلبات معلقة) |
+
+### 17.1 قائمة طرق الدفع
+
+```
+GET /admin/payment/method/list
+```
+
+- **المصادقة**: JWT + RBAC
+
+**مثال الاستجابة**:
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "list": [
+      {
+        "id": "a1b2c3d4",
+        "name": "بطاقة ائتمان Stripe",
+        "type": "fiat",
+        "provider": "stripe",
+        "status": 1,
+        "sort": 1,
+        "countries": ["US", "SG"],
+        "currency": "USD",
+        "min_amount": "10",
+        "max_amount": "5000",
+        "config": null,
+        "created_at": "2026-08-29 10:00:00",
+        "updated_at": "2026-08-29 10:00:00"
+      }
+    ]
+  }
+}
+```
+
+| الحقل | النوع | الوصف |
+|------|------|------|
+| id | string | معرف طريقة الدفع (مشفر hashid) |
+| name | string | اسم طريقة الدفع |
+| type | string | `fiat` (عملة ورقية) / `crypto` (عملة رقمية) |
+| provider | string | مزود البوابة: `stripe` / `nowpayments` / `coinbase` |
+| status | int | 1=مفعل, 0=معطل |
+| sort | int | قيمة الترتيب (تصاعديًا) |
+| countries | array{string} | مصفوفة رموز الدول المرئية (مصفوفة فارغة = مرئي عالميًا) |
+| currency | string | العملة (مثل USD/USDT)، فارغ = بدون قيود |
+| min_amount / max_amount | string | نطاق المبالغ (سلسلة تحافظ على الدقة)، 0 = بلا حد |
+| config | string? | JSON إعدادات الدفع (مشفر؛ null إذا لم يُحدد) |
+
+### 17.2 تفعيل/تعطيل طريقة دفع
+
+```
+POST /admin/payment/method/toggle
+```
+
+**نص الطلب**:
+```json
+{
+  "id": "a1b2c3d4",
+  "status": 1
+}
+```
+
+| الحقل | النوع | مطلوب | الوصف |
+|------|------|------|------|
+| id | string | نعم | معرف طريقة الدفع (hashid) |
+| status | int | نعم | 0=معطل, 1=مفعل |
+
+**الأخطاء المحتملة**:
+- 422: فشل التحقق (id/status مفقود أو status ليس 0/1)
+- 404: طريقة الدفع غير موجودة
+
+### 17.3 إنشاء طريقة دفع
+
+```
+POST /admin/payment/method/create
+```
+
+**نص الطلب**:
+```json
+{
+  "name": "عملة رقمية USDT",
+  "type": "crypto",
+  "provider": "nowpayments",
+  "status": 1,
+  "sort": 2,
+  "countries": [],
+  "currency": "USDT",
+  "min_amount": "10",
+  "max_amount": "10000",
+  "config": "{\"api_key\":\"...\"}"
+}
+```
+
+| الحقل | النوع | مطلوب | التحقق | الوصف |
+|------|------|------|---------|------|
+| name | string | نعم | max:50 | اسم طريقة الدفع |
+| type | string | نعم | in:fiat,crypto | النوع: ورقية/رقمية |
+| provider | string | نعم | in:stripe,nowpayments,coinbase | القائمة البيضاء لمزودي البوابة |
+| status | int | نعم | in:0,1 | الحالة |
+| sort | int | لا | integer,min:0 | الترتيب، الافتراضي 0 |
+| countries | array{string} | لا | max:2 | رموز الدول المرئية، فارغ = عالمي |
+| currency | string | لا | max:10 | العملة، الافتراضي فارغ |
+| min_amount / max_amount | string | لا | numeric,min:0 | نطاق المبالغ، الافتراضي "0" |
+| config | string | لا | | JSON إعدادات الدفع (مشفر)؛ السلسلة الفارغة تُخزن كـ NULL |
+
+**مثال الاستجابة**:
+```json
+{
+  "code": 0,
+  "message": "تم الإنشاء بنجاح",
+  "data": { "id": "e5f6g7h8" }
+}
+```
+
+**الأخطاء المحتملة**:
+- 422: فشل التحقق
+
+### 17.4 تحديث طريقة دفع
+
+```
+PUT /admin/payment/method/{hashid}
+```
+
+- **معامل المسار**: `{hashid}` هو معرف طريقة الدفع المشفر بـ hashid
+- **نص الطلب**: كما في الإنشاء (17.3)، جميع الحقول اختيارية، يتم تحديث الحقول المرسلة فقط
+
+**الأخطاء المحتملة**:
+- 404: طريقة الدفع غير موجودة
+- 422: فشل التحقق
+
+### 17.5 حذف طريقة دفع
+
+```
+DELETE /admin/payment/method/{hashid}
+```
+
+- **معامل المسار**: `{hashid}` هو معرف طريقة الدفع المشفر بـ hashid
+
+**الأخطاء المحتملة**:
+- 404: طريقة الدفع غير موجودة
+- 422: توجد طلبات إيداع معلقة (status=pending)، لا يمكن الحذف

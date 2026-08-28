@@ -47,8 +47,8 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Kunci optimis dompet | ✓ | ✓ | ✓ |
 | Catatan transaksi | ✓ | ✓ | ✓ |
 | Dompet koin game | ✓ | ✓ | ✓ |
-| Pembuatan pesanan deposit | ✓ | ✓ | ✓ |
-| Callback deposit masuk otomatis | - | ✓ manual | ✓ verifikasi tanda tangan Stripe/PayPal |
+| Pembuatan pesanan deposit (langsung mengisi checkout_url/expires_at) | ✓ | ✓ | ✓ |
+| Callback deposit masuk otomatis | - | ✓ manual | ✓ verifikasi tanda tangan Stripe/PayPal/NowPayments IPN/Coinbase webhook |
 | Penukaran harga/kueri beli/jual | ✓ | ✓ | ✓ |
 | Pendapatan selisih penukaran | ✓ | ✓ | ✓ |
 | Aplikasi penarikan | ✓ | ✓ | ✓ |

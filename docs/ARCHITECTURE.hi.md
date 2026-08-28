@@ -196,9 +196,10 @@ Provider API:
 
 ```
 उपयोगकर्ता → POST /api/deposit/create → ऑर्डर बनाएं (status=pending)
-     → तृतीय-पक्ष भुगतान पर जाएं (Stripe/PayPal)
+     → GatewayFactory से भुगतान बनाएं (Stripe Checkout/NowPayments invoice/Coinbase charge) → checkout_url + expires_at(+1h) भरें; विफलता पर CAS से ऑर्डर रद्द करें और पुनः प्रयास करें
+     → तृतीय-पक्ष भुगतान पर जाएं (Stripe/PayPal/NowPayments[USDT TRC20/ERC20]/Coinbase[USDC/BTC/ETH])
      → भुगतान सफल → कॉलबैक /api/payment/callback
-     → provider श्वेतसूची (केवल stripe/paypal) + क्रॉस-चैनल दुरुपयोग सत्यापन + हस्ताक्षर सत्यापन (fail-closed) + टाइमस्टैम्प±300s + bccomp राशि मिलान
+     → provider श्वेतसूची (केवल stripe/paypal/nowpayments/coinbase) + क्रॉस-चैनल दुरुपयोग सत्यापन + हस्ताक्षर सत्यापन (fail-closed) + टाइमस्टैम्प±300s + bccomp राशि मिलान
      → ऑर्डर अपडेट करें (status=confirmed, लेनदेनित)
      → UserWallet::addBalance() → प्लेटफ़ॉर्म कॉइन जमा
      → EventBus::emit('deposit.completed')

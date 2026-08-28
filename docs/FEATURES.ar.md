@@ -14,7 +14,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 |----|------|------|
 | المستخدم | تسجيل/دخول/JWT/كابتشا | مكتمل |
 | المحفظة | رصيد عملات المنصة/استعلام الحركات | مكتمل |
-| الشحن | إنشاء طلب شحن (دفع واحد) | مكتمل |
+| الشحن | إنشاء طلب شحن (Stripe 125+ وسيلة دفع محلية / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal) | مكتمل |
 | الاستبدال | عملة المنصة ⇄ عملة اللعبة (سعر صرف ثابت + فرق) | مكتمل |
 | السحب | طلب/استعلام/مفتاح عام/مراجعة تلقائية/مراجعة بشرية | مكتمل |
 | الألعاب | CRUD خلفي/إدارة العملات/قائمة الطرف C/تفاصيل/تشغيل | مكتمل |
@@ -29,7 +29,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | المجال | الوظيفة | الحالة |
 |----|------|------|
 | المستخدم | تسجيل دخول OAuth (Google/Facebook/Apple/Twitter/Microsoft/LinkedIn/GitHub) | مكتمل |
-| الدفع | استدعاءات تلقائية لقنوات دفع متعددة (Stripe/PayPal) | مكتمل |
+| الدفع | استدعاءات تلقائية لقنوات دفع متعددة (Stripe/PayPal/NOWPayments IPN/Coinbase Webhook) | مكتمل |
 | الألعاب | إدارة الخوادم، تتبع سجلات اللعب | مكتمل |
 | السحب | حدود KYC المتدرجة (default/verified/vip) + الرسوم | مكتمل |
 | KYC | طلب التحقق من الهوية + المراجعة | مكتمل |
@@ -53,7 +53,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | المجال | الوظيفة | الحالة |
 |----|------|------|
 | OAuth | تبادل Token حقيقي Google/Facebook/Apple | مكتمل |
-| الدفع | التحقق من توقيع Webhook Stripe/PayPal | مكتمل |
+| الدفع | التحقق من توقيع الاستدعاء (Webhook Stripe/PayPal، NOWPayments IPN HMAC-SHA512، Coinbase HMAC-SHA256 base64) | مكتمل |
 | الكابتشا | كابتشا نقرة poster-php | مكتمل |
 | الإشعارات | رسائل داخل الموقع + البريد، إشعارات تلقائية للشحن/السحب/KYC/القسائم | مكتمل |
 | 2FA | Google Authenticator TOTP + رموز استرداد احتياطية | مكتمل |
@@ -119,6 +119,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | GET | /api/wallet/info | رصيد المحفظة | نعم |
 | GET | /api/wallet/transactions | سجلات الحركات | نعم |
 | POST | /api/deposit/create | إنشاء طلب شحن | نعم |
+| GET | /api/payment/methods | قائمة طرق الدفع (حسب الدولة) | نعم |
 | POST | /api/exchange/quote | استعلام سعر الاستبدال (خصم VIP) | نعم |
 | POST | /api/exchange/buy | شراء عملات اللعبة | نعم |
 | POST | /api/exchange/sell | بيع عملات اللعبة | نعم |

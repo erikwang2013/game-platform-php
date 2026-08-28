@@ -317,6 +317,23 @@ Redis Sorted Set スライディングウィンドウアルゴリズム、原子
 
 フロントエンドは削除操作の前に確認ダイアログを表示し、ユーザーのパスワードを収集してからリクエストを送信します。
 
+### 4.8 支払方法管理
+
+支払方法管理モジュール（`PaymentController` + Flutter `payment_page.dart`）は 5 つのエンドポイントを提供し、すべて JWT + RBAC 認証が必要です：
+
+| メソッド | パス | 説明 |
+|------|------|------|
+| GET | /admin/payment/method/list | リスト（sort 昇順） |
+| POST | /admin/payment/method/toggle | 有効/無効切り替え |
+| POST | /admin/payment/method/create | 作成 |
+| PUT | /admin/payment/method/{hashid} | 更新（渡されたフィールドのみ） |
+| DELETE | /admin/payment/method/{hashid} | 削除（pending 注文があれば 422） |
+
+- **provider ホワイトリスト**: `stripe` / `nowpayments` / `coinbase`
+- **フィールド**: name / type（fiat|crypto）/ provider / status / sort / countries[]（国別表示、空=全世界）/ currency / min_amount / max_amount / config（JSON、暗号化保存）
+- **削除保護**: status=pending の注文がある間は削除で 422 を返す
+- **フロントエンド**: Flutter `payment_page.dart` — リスト + 作成/編集ダイアログ + 有効/無効トグル
+
 ## 5. フロントエンド設計
 
 ### 5.1 Flutter Web 管理画面

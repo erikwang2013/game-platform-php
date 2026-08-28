@@ -181,11 +181,15 @@ type 可选值: deposit / withdraw / exchange_in / exchange_out / game_earn / ga
   "order_id": "aB3xK...",
   "order_no": "DEP202605221030000123",
   "amount": "10.00",
-  "platform_amount": "10.0000"
+  "platform_amount": "10.0000",
+  "checkout_url": "https://checkout.stripe.com/...",
+  "expires_at": "2026-05-22 11:30:00"
 }
 ```
 
 currency 可选值: USD / CNY / EUR
+
+checkout_url: 支付网关跳转链接（创建订单时已回填）；expires_at: 支付链接过期时间（创建后 1 小时）
 
 #### GET /api/deposit/orders — 充值记录
 
@@ -517,15 +521,19 @@ is_new: true=新注册用户 / false=已有账号绑定
 
 status: success / failed
 
+provider 可选值: stripe / paypal / nowpayments / coinbase（nowpayments 使用 IPN HMAC-SHA512 验签，coinbase 使用 webhook HMAC-SHA256）
+
 #### GET /api/payment/methods — 可用支付方式（公开）
 
 ```
 响应: {
   "list": [
-    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "status": 1 }
+    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "min_amount": "10.00", "max_amount": "5000.00" }
   ]
 }
 ```
+
+按用户国家过滤（X-Language/Accept-Language → 国家码映射）：countries 为空或含 * 表示全球可见；按该国 country_config 的支付方式偏好排序
 
 ### 2.10 游戏记录
 

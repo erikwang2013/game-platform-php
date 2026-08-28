@@ -196,9 +196,10 @@ Provider API:
 
 ```
 Usuário → POST /api/deposit/create → gerar ordem (status=pending)
-     → redirecionar para pagamento de terceiros (Stripe/PayPal)
+     → criar pagamento via GatewayFactory (Stripe Checkout/fatura NowPayments/cobrança Coinbase) → preencher checkout_url + expires_at(+1h); em caso de falha, cancelar pedido via CAS e tentar novamente
+     → redirecionar para pagamento de terceiros (Stripe/PayPal/NowPayments[USDT TRC20/ERC20]/Coinbase[USDC/BTC/ETH])
      → pagamento com sucesso → callback /api/payment/callback
-     → whitelist do provider (apenas stripe/paypal) + verificação de uso indevido entre canais + verificação de assinatura (fail-closed) + timestamp ±300s + conferência de valor com bccomp
+     → whitelist do provider (apenas stripe/paypal/nowpayments/coinbase) + verificação de uso indevido entre canais + verificação de assinatura (fail-closed) + timestamp ±300s + conferência de valor com bccomp
      → atualizar ordem (status=confirmed, transacional)
      → UserWallet::addBalance() → crédito de moeda da plataforma
      → EventBus::emit('deposit.completed')

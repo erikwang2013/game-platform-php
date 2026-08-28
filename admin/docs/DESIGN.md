@@ -317,6 +317,23 @@ curl /api/auth/login
 
 前端在触发删除操作前弹出确认对话框，收集用户密码后发送请求。
 
+### 4.8 支付方式管理
+
+支付方式管理模块（`PaymentController` + Flutter `payment_page.dart`）提供 5 个端点，均需 JWT + RBAC 认证：
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | /admin/payment/method/list | 列表（按 sort 升序） |
+| POST | /admin/payment/method/toggle | 启禁用 |
+| POST | /admin/payment/method/create | 创建 |
+| PUT | /admin/payment/method/{hashid} | 更新（仅更新传入字段） |
+| DELETE | /admin/payment/method/{hashid} | 删除（存在 pending 订单时拒绝 422） |
+
+- **provider 白名单**: `stripe` / `nowpayments` / `coinbase`
+- **字段**: name / type（fiat|crypto）/ provider / status / sort / countries[]（国家可见性，空=全球）/ currency / min_amount / max_amount / config（JSON 加密存储）
+- **删除保护**: 存在待支付订单（status=pending）时删除返回 422
+- **前端**: Flutter `payment_page.dart` — 列表 + 新建/编辑弹窗 + 启停 toggle
+
 ## 5. 前端设计
 
 ### 5.1 Flutter Web 管理后台

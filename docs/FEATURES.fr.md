@@ -14,7 +14,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 |----|------|------|
 | Utilisateurs | Inscription/connexion/JWT/captcha | Terminé |
 | Portefeuille | Solde de devises de plateforme/consultation des transactions | Terminé |
-| Recharge | Création de commande de recharge (paiement unique) | Terminé |
+| Recharge | Création de commande de recharge (Stripe 125+ paiements locaux / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / callback PayPal) | Terminé |
 | Échange | Devises de plateforme ⇄ devises de jeu (taux fixe + écart) | Terminé |
 | Retrait | Demande/consultation/interrupteur global/validation automatique/validation manuelle | Terminé |
 | Jeux | CRUD backend/gestion des devises/liste côté C/détail/lancement | Terminé |
@@ -29,7 +29,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Domaine | Fonctionnalité | Statut |
 |----|------|------|
 | Utilisateurs | Connexion OAuth (Google/Facebook/Apple/Twitter/Microsoft/LinkedIn/GitHub) | Terminé |
-| Paiement | Rappels automatiques multi-canaux (Stripe/PayPal) | Terminé |
+| Paiement | Rappels automatiques multi-canaux (Stripe/PayPal/NOWPayments IPN/Coinbase Webhook) | Terminé |
 | Jeux | Gestion des serveurs, suivi des parties | Terminé |
 | Retrait | Plafonds KYC par paliers (default/verified/vip) + frais | Terminé |
 | KYC | Demande de vérification d'identité + validation | Terminé |
@@ -53,7 +53,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Domaine | Fonctionnalité | Statut |
 |----|------|------|
 | OAuth | Échange de vrais tokens Google/Facebook/Apple | Terminé |
-| Paiement | Vérification des signatures Webhook Stripe/PayPal | Terminé |
+| Paiement | Vérification des signatures de callback (Webhook Stripe/PayPal, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 secret base64) | Terminé |
 | Captcha | Captcha cliquable poster-php | Terminé |
 | Notifications | Messages internes + e-mails, notifications automatiques recharge/retrait/KYC/coupon | Terminé |
 | 2FA | TOTP Google Authenticator + codes de secours de rechange | Terminé |
@@ -119,6 +119,7 @@ Support par tickets
 | GET | /api/wallet/info | Solde du portefeuille | Oui |
 | GET | /api/wallet/transactions | Historique des transactions | Oui |
 | POST | /api/deposit/create | Créer une commande de recharge | Oui |
+| GET | /api/payment/methods | Liste des modes de paiement (routage par pays) | Oui |
 | POST | /api/exchange/quote | Cotation d'échange (remise VIP) | Oui |
 | POST | /api/exchange/buy | Acheter des devises de jeu | Oui |
 | POST | /api/exchange/sell | Vendre des devises de jeu | Oui |

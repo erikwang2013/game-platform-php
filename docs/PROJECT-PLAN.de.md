@@ -22,7 +22,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 | Tests | 132 Fälle / 8 Dateien (admin-Projekt), service-Projekt **null Tests** |
 | Version | v1.1 (2026-08-07): Redis-Plugin, Analyseservices, Redis-Degradierung, Testkorrekturen |
 
-Bereits implementierte Fähigkeiten: JWT+RBAC, Wallet-Optimistic-Lock, Einzahlungen (Stripe/PayPal-Signaturprüfung), Umtauschspanne, Auszahlungsprüfung + PayPal-Auszahlung, Spiel-CRUD/Provider-Gateway (HMAC), Gutscheine/VIP/Errungenschaften/Tickets/Empfehlungsprovision/2FA/Soziales (Freunde/Chat-WS)/Turniere/Webhooks/Push (FCM/APNs/Huawei)/i18n zweisprachig.
+Bereits implementierte Fähigkeiten: JWT+RBAC, Wallet-Optimistic-Lock, Einzahlungen (Stripe/PayPal/NowPayments/Coinbase-Signaturprüfung), Umtauschspanne, Auszahlungsprüfung + PayPal-Auszahlung, Spiel-CRUD/Provider-Gateway (HMAC), Gutscheine/VIP/Errungenschaften/Tickets/Empfehlungsprovision/2FA/Soziales (Freunde/Chat-WS)/Turniere/Webhooks/Push (FCM/APNs/Huawei)/i18n zweisprachig.
 
 ---
 
@@ -75,7 +75,7 @@ Wallet-Optimistic-Lock + Versionsbedingtes Update korrekt; Callback-Idempotenz `
 
 ### P0 — Finanzsicherheit + Korrektheit (zuerst, blockiert den Release)
 
-1. **Zahlungs-Callback fail-closed**: Provider-Whitelist (nur stripe/paypal) + fehlender Schlüssel muss mit 500 ablehnen + PayPal-Ausnahmen immer ablehnen (C1/C2) — ✅ abgeschlossen (2026-08-18: Provider-Whitelist + kanalübergreifende Missbrauchsprüfung + optionale Quell-IP-Prüfung + transaktionale Callback-Gutschrift)
+1. **Zahlungs-Callback fail-closed**: Provider-Whitelist (nur stripe/paypal/nowpayments/coinbase) + fehlender Schlüssel muss mit 500 ablehnen + PayPal-Ausnahmen immer ablehnen (C1/C2) — ✅ abgeschlossen (2026-08-18: Provider-Whitelist + kanalübergreifende Missbrauchsprüfung + optionale Quell-IP-Prüfung + transaktionale Callback-Gutschrift)
 2. **JWT-Startprüfung**: env ohne `JWT_SECRET_KEY` verweigert den Start (C3) — ✅ abgeschlossen (2026-08-18: Start verweigert, wenn JWT_SECRET_KEY fehlt oder den Standardwert `open-admin-jwt-secret-change-in-production` hat, admin/service konsistent)
 3. **Analyseservice-Routen einhängen**: analytics-12-Routen + Berechtigungspunkte registrieren, VERSIONS.md-Zusage reparieren (H1) — ✅ abgeschlossen (2026-08-18: admin/config/route.php registriert 12 Routen `/admin/analytics/*`)
 4. **Event-Bus durchgängig machen**: dauerhaften Subscribe-Prozess zur Konsumation registrieren oder auf synchronen Direktaufruf umstellen; Events in die Datenbank schreiben + Fehler-Retry (H2) — ✅ abgeschlossen (2026-08-18: emit/consume macht INCR auf Redis-Zähler; `service/config/process.php` registriert `event-consumer`, `service/app/process/EventConsumer.php` konsumiert Events)

@@ -47,8 +47,8 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Lock otimista da carteira | ✓ | ✓ | ✓ |
 | Registro de transações | ✓ | ✓ | ✓ |
 | Carteira de moeda de jogo | ✓ | ✓ | ✓ |
-| Criação de ordem de recarga | ✓ | ✓ | ✓ |
-| Crédito automático no callback de recarga | - | ✓ manual | ✓ verificação de assinatura Stripe/PayPal |
+| Criação de ordem de recarga (preenche checkout_url/expires_at na criação) | ✓ | ✓ | ✓ |
+| Crédito automático no callback de recarga | - | ✓ manual | ✓ verificação de assinatura Stripe/PayPal/NowPayments IPN/Coinbase webhook |
 | Cotação/compra/venda de câmbio | ✓ | ✓ | ✓ |
 | Receita de spread de câmbio | ✓ | ✓ | ✓ |
 | Solicitação de saque | ✓ | ✓ | ✓ |

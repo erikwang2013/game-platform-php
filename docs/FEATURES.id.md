@@ -14,7 +14,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 |----|------|------|
 | Pengguna | Registrasi/login/JWT/CAPTCHA | Selesai |
 | Dompet | Saldo koin platform/kueri transaksi | Selesai |
-| Deposit | Buat pesanan deposit (pembayaran tunggal) | Selesai |
+| Deposit | Buat pesanan deposit (Stripe 125+ pembayaran lokal / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / callback PayPal) | Selesai |
 | Penukaran | Koin platform⇄koin game (kurs tetap + selisih) | Selesai |
 | Penarikan | Ajukan/kueri/saklar global/review otomatis/review manual | Selesai |
 | Game | CRUD backend/manajemen mata uang/daftar sisi C/detail/launch | Selesai |
@@ -29,7 +29,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Domain | Fitur | Status |
 |----|------|------|
 | Pengguna | Login OAuth (Google/Facebook/Apple/Twitter/Microsoft/LinkedIn/GitHub) | Selesai |
-| Pembayaran | Callback otomatis banyak saluran pembayaran (Stripe/PayPal) | Selesai |
+| Pembayaran | Callback otomatis banyak saluran pembayaran (Stripe/PayPal/NOWPayments IPN/Coinbase Webhook) | Selesai |
 | Game | Manajemen server, pelacakan catatan game | Selesai |
 | Penarikan | Batas bertingkat KYC (default/verified/vip) + biaya | Selesai |
 | KYC | Aplikasi verifikasi nama asli + review | Selesai |
@@ -53,7 +53,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Domain | Fitur | Status |
 |----|------|------|
 | OAuth | Pertukaran token nyata Google/Facebook/Apple | Selesai |
-| Pembayaran | Verifikasi tanda tangan Webhook Stripe/PayPal | Selesai |
+| Pembayaran | Verifikasi tanda tangan callback (Webhook Stripe/PayPal, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 secret base64) | Selesai |
 | CAPTCHA | CAPTCHA klik poster-php | Selesai |
 | Notifikasi | Pesan dalam situs + email, notifikasi otomatis deposit/penarikan/KYC/kupon | Selesai |
 | 2FA | Google Authenticator TOTP + kode pemulihan cadangan | Selesai |
@@ -119,6 +119,7 @@ Dukungan tiket
 | GET | /api/wallet/info | Saldo dompet | Ya |
 | GET | /api/wallet/transactions | Catatan transaksi | Ya |
 | POST | /api/deposit/create | Buat pesanan deposit | Ya |
+| GET | /api/payment/methods | Daftar metode pembayaran (dirutekan per negara) | Ya |
 | POST | /api/exchange/quote | Kueri harga penukaran (diskon VIP) | Ya |
 | POST | /api/exchange/buy | Beli koin game | Ya |
 | POST | /api/exchange/sell | Jual koin game | Ya |

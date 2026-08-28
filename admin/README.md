@@ -21,6 +21,7 @@ Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) ·
 | | Excel 批量导入 | 逐行校验 + 错误报告 |
 | 🔒 角色权限 | 角色 CRUD + 权限树 | RBAC method.path 粒度鉴权 |
 | ⚙ 系统配置 | 键值对 CRUD | 分组管理 |
+| 💳 支付方式管理 | 多网关增删改 + 启停 | stripe/nowpayments/coinbase + 国家可见性 |
 | 📋 操作审计 | 日志查询 + 来源端检测 | 8 平台自动识别 |
 | 📁 文件管理 | 上传/Excel 导出/PDF 导出 | 敏感数据自动脱敏 |
 | 🛡 安全防护 | 18 层纵深防御 | XSS/SQL注入/路径遍历/命令注入/CSRF/限流/CSP... |
@@ -364,6 +365,11 @@ Authorization: Bearer <token>
 | `POST` | `/admin/config` | 创建配置项 |
 | `PUT` | `/admin/config/{id}` | 更新配置项 |
 | `DELETE` | `/admin/config/{id}` | 删除配置项（需密码确认） |
+| `GET` | `/admin/payment/method/list` | 支付方式列表 |
+| `POST` | `/admin/payment/method/toggle` | 支付方式启用/停用 |
+| `POST` | `/admin/payment/method/create` | 创建支付方式 |
+| `PUT` | `/admin/payment/method/{id}` | 更新支付方式 |
+| `DELETE` | `/admin/payment/method/{id}` | 删除支付方式（存在待支付订单时拒绝） |
 | `GET` | `/admin/log` | 操作日志（分页 + 筛选） |
 | `PUT` | `/admin/profile` | 更新个人信息 |
 | `PUT` | `/admin/profile/password` | 修改密码 |
@@ -378,7 +384,7 @@ Authorization: Bearer <token>
 ### Flutter 管理后台（PC 风格）
 
 - **布局**: 侧边栏（可折叠 64px/240px）+ 顶栏 + 内容区，响应式三断点（手机/平板/桌面）
-- **页面**: 登录、仪表盘、用户管理、角色权限、系统配置、操作日志、个人中心
+- **页面**: 登录、仪表盘、用户管理、角色权限、系统配置、操作日志、支付管理、个人中心
 - **状态管理**: GetX（`ApiService` 单例 + `AuthService` Token 持久化）
 - **仪表盘**: 统计卡片、趋势折线图（fl_chart）、饼图、最近操作日志
 - **导出**: Excel/PDF 导出，PDF 含不可移除版权信息

@@ -57,3 +57,9 @@ Languages: [中文](CHANGELOG.md) · [English](CHANGELOG.en.md) · [한국어](C
 - डिग्रेडेशन स्विच `feature.provider_mock`: PushService (FCM/APNs/HarmonyOS), PayoutService (PayPal), ThirdPartyProvider `on` होने पर शॉर्ट-सर्किट करते हैं, वास्तविक नेटवर्क कॉल छोड़ते हैं।
 - `getenv($name, '')` के 11 टाइप दोष ठीक किए (strict_types में TypeError); PushService mock जाँच try/catch में स्थानांतरित।
 - नए परीक्षण: CircuitBreakerTest / RetryTest / ResilienceMockTest; service सूट 45 → 60 मामले, सभी पास (रिपोर्ट: [test-reports/resilience.md](test-reports/resilience.md))।
+
+## [1.1] payments — 2026-08-29
+
+- मल्टी-पेमेंट गेटवे: Stripe Checkout / NOWPayments (USDT TRC20+ERC20) / Coinbase Commerce (USDC)।
+- एडमिन में भुगतान विधि CRUD + देश दृश्यता + राशि सीमा; रिचार्ज ऑर्डर बनते ही checkout_url / expires_at भर जाते हैं।
+- नया माइग्रेशन install/migrations/2026_08_29_multi_payment.sql (चलाना आवश्यक)।

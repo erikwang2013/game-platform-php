@@ -175,11 +175,15 @@ type 可选值: deposit / withdraw / exchange_in / exchange_out / game_earn / ga
   "order_id": "aB3xK...",
   "order_no": "DEP202605221030000123",
   "amount": "10.00",
-  "platform_amount": "10.0000"
+  "platform_amount": "10.0000",
+  "checkout_url": "https://checkout.stripe.com/...",
+  "expires_at": "2026-05-22 11:30:00"
 }
 ```
 
 currency 可选值: USD / CNY / EUR
+
+checkout_url: payment gateway redirect link (filled in at order creation); expires_at: payment link expiry (1 hour after creation)
 
 #### GET /api/deposit/orders — Deposit Records
 ```
@@ -496,14 +500,18 @@ is_new: true=新注册用户 / false=已有账号绑定
 
 status: success / failed
 
+provider values: stripe / paypal / nowpayments / coinbase (nowpayments verifies via IPN HMAC-SHA512, coinbase via webhook HMAC-SHA256)
+
 #### GET /api/payment/methods — Available Payment Methods (public)
 ```
 响应: {
   "list": [
-    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "status": 1 }
+    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "min_amount": "10.00", "max_amount": "5000.00" }
   ]
 }
 ```
+
+Filtered by user country (X-Language/Accept-Language → country code mapping): empty countries or containing * means globally visible; sorted by that country's country_config payment-method preference
 
 ### 2.10 Game Play Logs
 

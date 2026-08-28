@@ -1814,3 +1814,157 @@ GET /admin/analytics/economy
 ```
 
 **Respuesta**: array `currencies`; cada elemento contiene `game_name`, `currency`, `symbol`, `total_minted` (total acuñado), `total_burned` (total quemado), `circulation` (en circulación), `inflation_rate` (tasa de inflación), calculado con aritmética de alta precisión bcmath.
+
+## 17. Gestión de pagos (Payment)
+
+La gestión de métodos de pago la proporciona `PaymentController`; los 5 endpoints requieren autenticación JWT + RBAC. Lista blanca de `provider`: `stripe` / `nowpayments` / `coinbase`. `config` es una cadena JSON de configuración de pago (almacenada cifrada en la base de datos).
+
+| Método | Ruta | Descripción |
+|------|------|------|
+| GET | /admin/payment/method/list | Lista de métodos de pago (ascendente por sort) |
+| POST | /admin/payment/method/toggle | Activar/desactivar un método de pago |
+| POST | /admin/payment/method/create | Crear un método de pago |
+| PUT | /admin/payment/method/{hashid} | Actualizar un método de pago |
+| DELETE | /admin/payment/method/{hashid} | Eliminar un método de pago (rechazado si existen pedidos pendientes) |
+
+### 17.1 Lista de métodos de pago
+
+```
+GET /admin/payment/method/list
+```
+
+- **Autenticación**: JWT + RBAC
+
+**Ejemplo de respuesta**:
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "list": [
+      {
+        "id": "a1b2c3d4",
+        "name": "Tarjeta de crédito Stripe",
+        "type": "fiat",
+        "provider": "stripe",
+        "status": 1,
+        "sort": 1,
+        "countries": ["US", "SG"],
+        "currency": "USD",
+        "min_amount": "10",
+        "max_amount": "5000",
+        "config": null,
+        "created_at": "2026-08-29 10:00:00",
+        "updated_at": "2026-08-29 10:00:00"
+      }
+    ]
+  }
+}
+```
+
+| Campo | Tipo | Descripción |
+|------|------|------|
+| id | string | ID del método de pago (codificado con hashid) |
+| name | string | Nombre del método de pago |
+| type | string | `fiat` (moneda fiduciaria) / `crypto` (criptomoneda) |
+| provider | string | Proveedor de pasarela: `stripe` / `nowpayments` / `coinbase` |
+| status | int | 1=activo, 0=inactivo |
+| sort | int | Valor de ordenación (ascendente) |
+| countries | array{string} | Códigos de país visibles (array vacío = visible globalmente) |
+| currency | string | Moneda (p. ej. USD/USDT), vacío = sin restricción |
+| min_amount / max_amount | string | Rango de importes (string conserva precisión), 0 = sin límite |
+| config | string? | JSON de configuración de pago (cifrado; null si no está definido) |
+
+### 17.2 Activar/desactivar método de pago
+
+```
+POST /admin/payment/method/toggle
+```
+
+**Cuerpo de la solicitud**:
+```json
+{
+  "id": "a1b2c3d4",
+  "status": 1
+}
+```
+
+| Campo | Tipo | Obligatorio | Descripción |
+|------|------|------|------|
+| id | string | Sí | ID del método de pago (hashid) |
+| status | int | Sí | 0=desactivado, 1=activado |
+
+**Posibles errores**:
+- 422: validación fallida (id/status ausente o status no es 0/1)
+- 404: método de pago no encontrado
+
+### 17.3 Crear método de pago
+
+```
+POST /admin/payment/method/create
+```
+
+**Cuerpo de la solicitud**:
+```json
+{
+  "name": "Criptomoneda USDT",
+  "type": "crypto",
+  "provider": "nowpayments",
+  "status": 1,
+  "sort": 2,
+  "countries": [],
+  "currency": "USDT",
+  "min_amount": "10",
+  "max_amount": "10000",
+  "config": "{\"api_key\":\"...\"}"
+}
+```
+
+| Campo | Tipo | Obligatorio | Validación | Descripción |
+|------|------|------|---------|------|
+| name | string | Sí | max:50 | Nombre del método de pago |
+| type | string | Sí | in:fiat,crypto | Tipo: fiduciario/cripto |
+| provider | string | Sí | in:stripe,nowpayments,coinbase | Lista blanca de proveedores de pasarela |
+| status | int | Sí | in:0,1 | Estado |
+| sort | int | No | integer,min:0 | Ordenación, por defecto 0 |
+| countries | array{string} | No | max:2 | Códigos de país visibles, vacío = global |
+| currency | string | No | max:10 | Moneda, por defecto vacío |
+| min_amount / max_amount | string | No | numeric,min:0 | Rango de importes, por defecto "0" |
+| config | string | No | | JSON de configuración de pago (cifrado); cadena vacía se guarda como NULL |
+
+**Ejemplo de respuesta**:
+```json
+{
+  "code": 0,
+  "message": "creado correctamente",
+  "data": { "id": "e5f6g7h8" }
+}
+```
+
+**Posibles errores**:
+- 422: validación fallida
+
+### 17.4 Actualizar método de pago
+
+```
+PUT /admin/payment/method/{hashid}
+```
+
+- **Parámetro de ruta**: `{hashid}` es el ID del método de pago codificado con hashid
+- **Cuerpo de la solicitud**: igual que al crear (17.3), todos los campos opcionales; solo se actualizan los campos enviados
+
+**Posibles errores**:
+- 404: método de pago no encontrado
+- 422: validación fallida
+
+### 17.5 Eliminar método de pago
+
+```
+DELETE /admin/payment/method/{hashid}
+```
+
+- **Parámetro de ruta**: `{hashid}` es el ID del método de pago codificado con hashid
+
+**Posibles errores**:
+- 404: método de pago no encontrado
+- 422: existen pedidos de depósito pendientes (status=pending), no se puede eliminar

@@ -317,6 +317,23 @@ Operações sensíveis, como excluir usuários, funções e permissões, exigem 
 
 O frontend exibe uma caixa de confirmação antes de disparar a operação de exclusão, coleta a senha do usuário e envia a requisição.
 
+### 4.8 Gerenciamento de métodos de pagamento
+
+O módulo de gerenciamento de métodos de pagamento (`PaymentController` + Flutter `payment_page.dart`) fornece 5 endpoints, todos exigindo autenticação JWT + RBAC:
+
+| Método | Caminho | Descrição |
+|------|------|------|
+| GET | /admin/payment/method/list | Lista (crescente por sort) |
+| POST | /admin/payment/method/toggle | Ativar/desativar |
+| POST | /admin/payment/method/create | Criar |
+| PUT | /admin/payment/method/{hashid} | Atualizar (somente campos enviados) |
+| DELETE | /admin/payment/method/{hashid} | Excluir (422 se houver pedidos pendentes) |
+
+- **Lista branca de provider**: `stripe` / `nowpayments` / `coinbase`
+- **Campos**: name / type (fiat|crypto) / provider / status / sort / countries[] (visibilidade por país, vazio = global) / currency / min_amount / max_amount / config (JSON, armazenado criptografado)
+- **Proteção de exclusão**: a exclusão retorna 422 enquanto existirem pedidos com status=pending
+- **Frontend**: Flutter `payment_page.dart` — lista + diálogo criar/editar + toggle ativar/desativar
+
 ## 5. Design do frontend
 
 ### 5.1 Painel administrativo Flutter Web

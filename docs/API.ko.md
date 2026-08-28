@@ -181,11 +181,15 @@ type 선택값: deposit / withdraw / exchange_in / exchange_out / game_earn / ga
   "order_id": "aB3xK...",
   "order_no": "DEP202605221030000123",
   "amount": "10.00",
-  "platform_amount": "10.0000"
+  "platform_amount": "10.0000",
+  "checkout_url": "https://checkout.stripe.com/...",
+  "expires_at": "2026-05-22 11:30:00"
 }
 ```
 
 currency 선택값: USD / CNY / EUR
+
+checkout_url: 결제 게이트웨이 리다이렉트 링크(주문 생성 시 입력됨); expires_at: 결제 링크 만료 시간(생성 후 1시간)
 
 #### GET /api/deposit/orders — 충전 기록
 
@@ -517,15 +521,19 @@ is_new: true=신규 등록 사용자 / false=기존 계정 연동
 
 status: success / failed
 
+provider 값: stripe / paypal / nowpayments / coinbase (nowpayments는 IPN HMAC-SHA512로 검증, coinbase는 webhook HMAC-SHA256으로 검증)
+
 #### GET /api/payment/methods — 사용 가능한 결제 수단 (공개)
 
 ```
 응답: {
   "list": [
-    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "status": 1 }
+    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "min_amount": "10.00", "max_amount": "5000.00" }
   ]
 }
 ```
+
+사용자 국가로 필터링(X-Language/Accept-Language → 국가 코드 매핑): countries가 비어 있거나 * 포함 시 전 세계 노출; 해당 국가의 country_config 결제 수단 선호 순서로 정렬
 
 ### 2.10 게임 기록
 

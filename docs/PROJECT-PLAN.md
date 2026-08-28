@@ -22,7 +22,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 | 测试 | 132 用例 / 8 文件 (admin 项目)，service 项目 **零测试** |
 | 版本 | v1.1 (2026-08-07)：Redis 插件、分析服务、Redis 降级、测试修复 |
 
-已实现能力：JWT+RBAC、钱包乐观锁、充值(Stripe/PayPal 验签)、兑换差价、提现审核+PayPal 打款、游戏 CRUD/Provider 网关(HMAC)、优惠券/VIP/成就/工单/推荐返佣/2FA/社交(好友/聊天 WS)/赛事/Webhook/推送(FCM/APNs/华为)/i18n 双语。
+已实现能力：JWT+RBAC、钱包乐观锁、充值(Stripe/PayPal/NowPayments/Coinbase 验签)、兑换差价、提现审核+PayPal 打款、游戏 CRUD/Provider 网关(HMAC)、优惠券/VIP/成就/工单/推荐返佣/2FA/社交(好友/聊天 WS)/赛事/Webhook/推送(FCM/APNs/华为)/i18n 双语。
 
 ---
 
@@ -75,7 +75,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 
 ### P0 — 资金安全 + 正确性（先做，阻断上线）
 
-1. **支付回调 fail-closed**：provider 白名单（仅 stripe/paypal）+ 密钥缺失必须 500 拒绝 + PayPal 异常必拒（C1/C2） — ✅ 已完成（2026-08-18：provider 白名单 + 跨渠道冒用校验 + 来源 IP 可选校验 + 回调入账事务化）
+1. **支付回调 fail-closed**：provider 白名单（仅 stripe/paypal/nowpayments/coinbase）+ 密钥缺失必须 500 拒绝 + PayPal 异常必拒（C1/C2） — ✅ 已完成（2026-08-18：provider 白名单 + 跨渠道冒用校验 + 来源 IP 可选校验 + 回调入账事务化）
 2. **JWT 启动校验**：env 无 `JWT_SECRET_KEY` 拒绝启动（C3） — ✅ 已完成（2026-08-18：JWT_SECRET_KEY 缺失或为默认值 `open-admin-jwt-secret-change-in-production` 时拒绝启动，admin/service 一致）
 3. **分析服务挂路由**：注册 analytics 12 路由 + 权限点，修复 VERSIONS.md 承诺（H1） — ✅ 已完成（2026-08-18：admin/config/route.php 注册 12 条 `/admin/analytics/*` 路由）
 4. **事件总线打通**：注册常驻订阅进程消费，或改同步直调；事件落库 + 失败重试（H2） — ✅ 已完成（2026-08-18：emit/consume 已 INCR Redis 计数；`service/config/process.php` 登记 `event-consumer`，`service/app/process/EventConsumer.php` 消费事件）

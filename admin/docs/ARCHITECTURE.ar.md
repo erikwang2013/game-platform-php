@@ -27,7 +27,7 @@ flowchart TB
         C0["وسيطة ApiVersion<br/>التحقق من ترويسة API-Version"]
         C1["وسيطة AdminAuth<br/>التحقق من JWT"]
         C2["وسيطة AdminPermission<br/>التحقق من صلاحيات RBAC"]
-        C3["وحدات تحكم الإدارة<br/>Dashboard / User / Role / Permission"]
+        C3["وحدات تحكم الإدارة<br/>Dashboard / User / Role / Permission / Payment"]
         C4["وحدات تحكم عامة v1<br/>Captcha / Auth"]
         C5["خدمات مشتركة<br/>Hashids / Snowflake / Encryption"]
     end
@@ -568,7 +568,7 @@ flowchart TD
     LP --> LF["نموذج تسجيل الدخول<br/>اسم المستخدم/كلمة المرور/رمز التحقق"]
     LF --> CAPTCHA["مكوّن رمز التحقق بالنقر<br/>GestureDetector + Stack<br/>Image.memory(base64)<br/>علامة النقر Circle"]
 
-    DB --> SIDEBAR["الشريط الجانبي NavigationDrawer<br/>قابل للطي 64px / 240px<br/>لوحة المعلومات/المستخدمون/الأدوار/الإعدادات/السجلات"]
+    DB --> SIDEBAR["الشريط الجانبي NavigationDrawer<br/>قابل للطي 64px / 240px<br/>لوحة المعلومات/المستخدمون/الأدوار/الإعدادات/السجلات/الدفع"]
     DB --> HEADER["الشريط العلوي 56px<br/>زر الطي + قائمة المستخدم<br/>تسجيل الخروج AlertDialog"]
     DB --> CONTENT["منطقة المحتوى"]
     CONTENT --> DASH["DashboardPage<br/>بطاقات إحصائية GridView<br/>مخطط خطي للاتجاه LineChart<br/>مخطط دائري للتوزيع PieChart<br/>أحدث العمليات ListTile"]

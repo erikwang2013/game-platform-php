@@ -14,7 +14,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 |----|------|------|
 | 사용자 | 등록/로그인/JWT/캡차 | 완료 |
 | 지갑 | 플랫폼 코인 잔액/거래 내역 조회 | 완료 |
-| 충전 | 충전 주문 생성 (단일 결제) | 완료 |
+| 충전 | 충전 주문 생성 (Stripe 125+ 로컬 결제 / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal 콜백) | 완료 |
 | 환전 | 플랫폼 코인⇄게임 코인 (고정 환율+차액) | 완료 |
 | 출금 | 신청/조회/전역 스위치/자동 심사/수동 심사 | 완료 |
 | 게임 | 백오피스 CRUD/코인 관리/C단 목록/상세/시작 | 완료 |
@@ -29,7 +29,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | 도메인 | 기능 | 상태 |
 |----|------|------|
 | 사용자 | OAuth 로그인 (Google/Facebook/Apple/Twitter/Microsoft/LinkedIn/GitHub) | 완료 |
-| 결제 | 다중 결제 채널 자동 콜백 (Stripe/PayPal) | 완료 |
+| 결제 | 다중 결제 채널 자동 콜백 (Stripe/PayPal/NOWPayments IPN/Coinbase Webhook) | 완료 |
 | 게임 | 구역 관리, 게임 기록 추적 | 완료 |
 | 출금 | KYC 단계별 한도 (default/verified/vip) + 수수료 | 완료 |
 | KYC | 실명 인증 신청+심사 | 완료 |
@@ -53,7 +53,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | 도메인 | 기능 | 상태 |
 |----|------|------|
 | OAuth | Google/Facebook/Apple 실제 token 교환 | 완료 |
-| 결제 | Stripe/PayPal Webhook 서명 검증 | 완료 |
+| 결제 | 콜백 서명 검증 (Stripe/PayPal Webhook, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 base64 시크릿) | 완료 |
 | 캡차 | poster-php 클릭형 캡차 | 완료 |
 | 알림 | 사이트 내 메시지 + 이메일, 충전/출금/KYC/쿠폰 자동 알림 | 완료 |
 | 2FA | Google Authenticator TOTP + 백업 복구 코드 | 완료 |
@@ -119,6 +119,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | GET | /api/wallet/info | 지갑 잔액 | 예 |
 | GET | /api/wallet/transactions | 거래 내역 | 예 |
 | POST | /api/deposit/create | 충전 주문 생성 | 예 |
+| GET | /api/payment/methods | 결제 수단 목록 (국가별 라우팅) | 예 |
 | POST | /api/exchange/quote | 환전 견적 (VIP 할인) | 예 |
 | POST | /api/exchange/buy | 게임 코인 매수 | 예 |
 | POST | /api/exchange/sell | 게임 코인 매도 | 예 |

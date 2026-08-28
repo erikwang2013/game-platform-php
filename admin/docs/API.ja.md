@@ -1814,3 +1814,157 @@ GET /admin/analytics/economy
 ```
 
 **レスポンス**: `currencies` 配列、各項目に `game_name`、`currency`、`symbol`、`total_minted`（鋳造総量）、`total_burned`（破棄総量）、`circulation`（流通量）、`inflation_rate`（インフレ率）を含み、bcmath 高精度計算を使用。
+
+## 17. 支払管理 (Payment)
+
+支払方法の管理は `PaymentController` が提供し、5 つのエンドポイントはいずれも JWT + RBAC 認証が必要です。`provider` ホワイトリスト: `stripe` / `nowpayments` / `coinbase`。`config` は支払設定の JSON 文字列（DB に暗号化して保存）です。
+
+| メソッド | パス | 説明 |
+|------|------|------|
+| GET | /admin/payment/method/list | 支払方法リスト（sort 昇順） |
+| POST | /admin/payment/method/toggle | 支払方法の有効/無効切り替え |
+| POST | /admin/payment/method/create | 支払方法の作成 |
+| PUT | /admin/payment/method/{hashid} | 支払方法の更新 |
+| DELETE | /admin/payment/method/{hashid} | 支払方法の削除（pending 注文がある場合は拒否） |
+
+### 17.1 支払方法リスト
+
+```
+GET /admin/payment/method/list
+```
+
+- **認証**: JWT + RBAC
+
+**レスポンス例**:
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "list": [
+      {
+        "id": "a1b2c3d4",
+        "name": "Stripe クレジットカード",
+        "type": "fiat",
+        "provider": "stripe",
+        "status": 1,
+        "sort": 1,
+        "countries": ["US", "SG"],
+        "currency": "USD",
+        "min_amount": "10",
+        "max_amount": "5000",
+        "config": null,
+        "created_at": "2026-08-29 10:00:00",
+        "updated_at": "2026-08-29 10:00:00"
+      }
+    ]
+  }
+}
+```
+
+| フィールド | 型 | 説明 |
+|------|------|------|
+| id | string | 支払方法 ID（hashid エンコード） |
+| name | string | 支払方法名 |
+| type | string | `fiat`（法定通貨）/ `crypto`（暗号通貨） |
+| provider | string | ゲートウェイ提供元: `stripe` / `nowpayments` / `coinbase` |
+| status | int | 1=有効, 0=無効 |
+| sort | int | 並び順（昇順） |
+| countries | array{string} | 表示対象国のコード配列（空配列=全世界表示） |
+| currency | string | 通貨（例: USD/USDT）、空=制限なし |
+| min_amount / max_amount | string | 金額範囲（精度保持のため文字列）、0=制限なし |
+| config | string? | 支払設定 JSON（暗号化、未設定なら null） |
+
+### 17.2 支払方法の有効/無効切り替え
+
+```
+POST /admin/payment/method/toggle
+```
+
+**リクエストボディ**:
+```json
+{
+  "id": "a1b2c3d4",
+  "status": 1
+}
+```
+
+| フィールド | 型 | 必須 | 説明 |
+|------|------|------|------|
+| id | string | はい | 支払方法 ID（hashid） |
+| status | int | はい | 0=無効, 1=有効 |
+
+**考えられるエラー**:
+- 422: バリデーション失敗（id/status 欠落または status が 0/1 以外）
+- 404: 支払方法が存在しない
+
+### 17.3 支払方法の作成
+
+```
+POST /admin/payment/method/create
+```
+
+**リクエストボディ**:
+```json
+{
+  "name": "USDT 暗号通貨",
+  "type": "crypto",
+  "provider": "nowpayments",
+  "status": 1,
+  "sort": 2,
+  "countries": [],
+  "currency": "USDT",
+  "min_amount": "10",
+  "max_amount": "10000",
+  "config": "{\"api_key\":\"...\"}"
+}
+```
+
+| フィールド | 型 | 必須 | バリデーション | 説明 |
+|------|------|------|---------|------|
+| name | string | はい | max:50 | 支払方法名 |
+| type | string | はい | in:fiat,crypto | 種別: 法定通貨/暗号通貨 |
+| provider | string | はい | in:stripe,nowpayments,coinbase | ゲートウェイ提供元ホワイトリスト |
+| status | int | はい | in:0,1 | 状態 |
+| sort | int | いいえ | integer,min:0 | 並び順、デフォルト 0 |
+| countries | array{string} | いいえ | max:2 | 表示対象国のコード、空=全世界 |
+| currency | string | いいえ | max:10 | 通貨、デフォルト空 |
+| min_amount / max_amount | string | いいえ | numeric,min:0 | 金額範囲、デフォルト "0" |
+| config | string | いいえ | | 支払設定 JSON（暗号化）、空文字列は NULL で保存 |
+
+**レスポンス例**:
+```json
+{
+  "code": 0,
+  "message": "作成成功",
+  "data": { "id": "e5f6g7h8" }
+}
+```
+
+**考えられるエラー**:
+- 422: バリデーション失敗
+
+### 17.4 支払方法の更新
+
+```
+PUT /admin/payment/method/{hashid}
+```
+
+- **パスパラメータ**: `{hashid}` は hashid エンコードされた支払方法 ID
+- **リクエストボディ**: 作成（17.3）と同じ、全フィールド任意、渡されたフィールドのみ更新
+
+**考えられるエラー**:
+- 404: 支払方法が存在しない
+- 422: バリデーション失敗
+
+### 17.5 支払方法の削除
+
+```
+DELETE /admin/payment/method/{hashid}
+```
+
+- **パスパラメータ**: `{hashid}` は hashid エンコードされた支払方法 ID
+
+**考えられるエラー**:
+- 404: 支払方法が存在しない
+- 422: 保留中の入金注文（status=pending）が存在するため削除不可

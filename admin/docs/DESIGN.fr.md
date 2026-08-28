@@ -319,6 +319,23 @@ Client                            Serveur
 
 Le frontend affiche une boîte de dialogue de confirmation avant l'opération de suppression, collecte le mot de passe de l'utilisateur puis envoie la requête.
 
+### 4.8 Gestion des méthodes de paiement
+
+Le module de gestion des méthodes de paiement (`PaymentController` + Flutter `payment_page.dart`) fournit 5 endpoints, tous soumis à l'authentification JWT + RBAC :
+
+| Méthode | Chemin | Description |
+|------|------|------|
+| GET | /admin/payment/method/list | Liste (tri croissant par sort) |
+| POST | /admin/payment/method/toggle | Activer/désactiver |
+| POST | /admin/payment/method/create | Créer |
+| PUT | /admin/payment/method/{hashid} | Mettre à jour (champs transmis uniquement) |
+| DELETE | /admin/payment/method/{hashid} | Supprimer (422 si des commandes en attente existent) |
+
+- **Liste blanche provider** : `stripe` / `nowpayments` / `coinbase`
+- **Champs** : name / type (fiat|crypto) / provider / status / sort / countries[] (visibilité par pays, vide = mondial) / currency / min_amount / max_amount / config (JSON, stocké chiffré)
+- **Protection de suppression** : la suppression renvoie 422 tant que des commandes avec status=pending existent
+- **Frontend** : Flutter `payment_page.dart` — liste + boîte de dialogue création/édition + toggle activer/désactiver
+
 ## 5. Conception du frontend
 
 ### 5.1 Administration Flutter Web

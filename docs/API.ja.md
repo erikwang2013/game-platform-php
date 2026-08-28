@@ -181,11 +181,15 @@ type 可选值: deposit / withdraw / exchange_in / exchange_out / game_earn / ga
   "order_id": "aB3xK...",
   "order_no": "DEP202605221030000123",
   "amount": "10.00",
-  "platform_amount": "10.0000"
+  "platform_amount": "10.0000",
+  "checkout_url": "https://checkout.stripe.com/...",
+  "expires_at": "2026-05-22 11:30:00"
 }
 ```
 
 currency 選択値: USD / CNY / EUR
+
+checkout_url: 決済ゲートウェイのリダイレクトリンク（注文作成時に設定済み）；expires_at: 決済リンクの有効期限（作成から1時間）
 
 #### GET /api/deposit/orders — チャージ記録
 
@@ -517,15 +521,19 @@ is_new: true=新規登録ユーザー / false=既存アカウント連携
 
 status: success / failed
 
+provider 選択値: stripe / paypal / nowpayments / coinbase（nowpayments は IPN HMAC-SHA512 で検証、coinbase は webhook HMAC-SHA256 で検証）
+
 #### GET /api/payment/methods — 利用可能な決済方法（公開）
 
 ```
 响应: {
   "list": [
-    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "status": 1 }
+    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "min_amount": "10.00", "max_amount": "5000.00" }
   ]
 }
 ```
+
+ユーザーの国でフィルタリング（X-Language/Accept-Language → 国コード変換）：countries が空または * を含む場合は全世界に表示；その国の country_config の支払い方法優先順位でソート
 
 ### 2.10 ゲーム記録
 

@@ -57,3 +57,9 @@ Languages: [中文](CHANGELOG.md) · [English](CHANGELOG.en.md) · [한국어](C
 - ডিগ্রেডেশন সুইচ `feature.provider_mock`: PushService (FCM/APNs/HarmonyOS), PayoutService (PayPal), ThirdPartyProvider `on` হলে শর্ট-সার্কিট করে, প্রকৃত নেটওয়ার্ক কল এড়িয়ে।
 - `getenv($name, '')`-এর 11টি টাইপ ত্রুটি সংশোধন (strict_types-এ TypeError); PushService-এর mock পরীক্ষা try/catch-এ সরানো হয়েছে।
 - নতুন পরীক্ষা: CircuitBreakerTest / RetryTest / ResilienceMockTest; service স্যুট 45 → 60 কেস, সব পাস (রিপোর্ট: [test-reports/resilience.md](test-reports/resilience.md))।
+
+## [1.1] payments — 2026-08-29
+
+- মাল্টি-পেমেন্ট গেটওয়ে: Stripe Checkout / NOWPayments (USDT TRC20+ERC20) / Coinbase Commerce (USDC)।
+- অ্যাডমিনে পেমেন্ট পদ্ধতি CRUD + দেশভিত্তিক দৃশ্যমানতা + পরিমাণ রেঞ্জ; টপ-আপ অর্ডার তৈরি হওয়ামাত্র checkout_url / expires_at ভরাট।
+- নতুন মাইগ্রেশন install/migrations/2026_08_29_multi_payment.sql (চালানো প্রয়োজন)।

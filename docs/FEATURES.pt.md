@@ -14,7 +14,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 |----|------|------|
 | Usuários | registro/login/JWT/captcha | Concluído |
 | Carteira | saldo de moeda da plataforma/consulta de transações | Concluído |
-| Depósito | criação de ordem de depósito (pagamento único) | Concluído |
+| Depósito | criação de ordem de depósito (Stripe 125+ pagamentos locais / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / callback PayPal) | Concluído |
 | Troca | moeda da plataforma⇄moeda de jogo (câmbio fixo + margem) | Concluído |
 | Saque | solicitação/consulta/interruptor global/revisão automática/revisão manual | Concluído |
 | Jogos | CRUD no backend/gestão de moedas/lista C-side/detalhes/início | Concluído |
@@ -29,7 +29,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Domínio | Funcionalidade | Status |
 |----|------|------|
 | Usuários | login OAuth (Google/Facebook/Apple/Twitter/Microsoft/LinkedIn/GitHub) | Concluído |
-| Pagamento | callback automático de múltiplos canais (Stripe/PayPal) | Concluído |
+| Pagamento | callback automático de múltiplos canais (Stripe/PayPal/NOWPayments IPN/Coinbase Webhook) | Concluído |
 | Jogos | gestão de servidores, rastreamento de registros de partidas | Concluído |
 | Saque | limites escalonados por KYC (default/verified/vip) + tarifas | Concluído |
 | KYC | solicitação de verificação de identidade + revisão | Concluído |
@@ -53,7 +53,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Domínio | Funcionalidade | Status |
 |----|------|------|
 | OAuth | troca de token real Google/Facebook/Apple | Concluído |
-| Pagamento | verificação de assinatura dos webhooks Stripe/PayPal | Concluído |
+| Pagamento | verificação de assinatura de callback (Webhook Stripe/PayPal, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 secret base64) | Concluído |
 | Captcha | captcha de clique poster-php | Concluído |
 | Notificações | mensagem no site + email, notificações automáticas de depósito/saque/KYC/cupom | Concluído |
 | 2FA | Google Authenticator TOTP + códigos de recuperação reserva | Concluído |
@@ -119,6 +119,7 @@ Suporte via tickets
 | GET | /api/wallet/info | saldo da carteira | Sim |
 | GET | /api/wallet/transactions | registro de transações | Sim |
 | POST | /api/deposit/create | criar ordem de depósito | Sim |
+| GET | /api/payment/methods | lista de métodos de pagamento (rota por país) | Sim |
 | POST | /api/exchange/quote | cotação de troca (desconto VIP) | Sim |
 | POST | /api/exchange/buy | comprar moeda de jogo | Sim |
 | POST | /api/exchange/sell | vender moeda de jogo | Sim |

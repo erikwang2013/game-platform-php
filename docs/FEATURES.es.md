@@ -14,7 +14,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 |----|------|------|
 | Usuarios | Registro/inicio de sesión/JWT/captcha | Completada |
 | Billetera | Saldo de moneda de plataforma/consulta de movimientos | Completada |
-| Recarga | Creación de órdenes de recarga (pago único) | Completada |
+| Recarga | Creación de órdenes de recarga (Stripe 125+ APM locales / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal) | Completada |
 | Conversión | Moneda de plataforma ⇄ moneda de juego (tipo de cambio fijo + diferencia) | Completada |
 | Retiro | Solicitud/consulta/interruptor global/revisión automática/revisión manual | Completada |
 | Juegos | CRUD en el backend/gestión de monedas/lista C/detalle/inicio | Completada |
@@ -29,7 +29,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Dominio | Función | Estado |
 |----|------|------|
 | Usuarios | Inicio de sesión OAuth (Google/Facebook/Apple/Twitter/Microsoft/LinkedIn/GitHub) | Completada |
-| Pagos | Callback automático de múltiples canales de pago (Stripe/PayPal) | Completada |
+| Pagos | Callback automático de múltiples canales (Stripe/PayPal/NOWPayments IPN/Coinbase Webhook) | Completada |
 | Juegos | Gestión de servidores, seguimiento de registros de juego | Completada |
 | Retiros | Límites escalonados KYC (default/verified/vip) + comisión | Completada |
 | KYC | Solicitud y revisión de verificación de identidad | Completada |
@@ -53,7 +53,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Dominio | Función | Estado |
 |----|------|------|
 | OAuth | Intercambio real de tokens Google/Facebook/Apple | Completada |
-| Pagos | Verificación de firma de webhooks Stripe/PayPal | Completada |
+| Pagos | Verificación de firma de callbacks (Webhook Stripe/PayPal, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 base64) | Completada |
 | Captcha | Captcha de clic poster-php | Completada |
 | Notificaciones | Mensajes internos + email, notificaciones automáticas de recarga/retiro/KYC/cupón | Completada |
 | 2FA | Google Authenticator TOTP + códigos de recuperación de respaldo | Completada |
@@ -119,6 +119,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | GET | /api/wallet/info | Saldo de la billetera | Sí |
 | GET | /api/wallet/transactions | Registros de movimientos | Sí |
 | POST | /api/deposit/create | Crear orden de recarga | Sí |
+| GET | /api/payment/methods | Lista de métodos de pago (según país) | Sí |
 | POST | /api/exchange/quote | Cotización de conversión (descuento VIP) | Sí |
 | POST | /api/exchange/buy | Comprar moneda de juego | Sí |
 | POST | /api/exchange/sell | Vender moneda de juego | Sí |

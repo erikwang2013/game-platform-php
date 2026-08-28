@@ -181,11 +181,15 @@ type 可选值: deposit / withdraw / exchange_in / exchange_out / game_earn / ga
   "order_id": "aB3xK...",
   "order_no": "DEP202605221030000123",
   "amount": "10.00",
-  "platform_amount": "10.0000"
+  "platform_amount": "10.0000",
+  "checkout_url": "https://checkout.stripe.com/...",
+  "expires_at": "2026-05-22 11:30:00"
 }
 ```
 
 Valores de currency: USD / CNY / EUR
+
+checkout_url: enlace de redirección a la pasarela de pago (se rellena al crear el pedido); expires_at: caducidad del enlace de pago (1 hora tras la creación)
 
 #### GET /api/deposit/orders — Registros de recarga
 
@@ -517,15 +521,19 @@ is_new: true=usuario recién registrado / false=cuenta existente vinculada
 
 status: success / failed
 
+Valores de provider: stripe / paypal / nowpayments / coinbase (nowpayments verifica con IPN HMAC-SHA512, coinbase con webhook HMAC-SHA256)
+
 #### GET /api/payment/methods — Métodos de pago disponibles (público)
 
 ```
 响应: {
   "list": [
-    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "status": 1 }
+    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "min_amount": "10.00", "max_amount": "5000.00" }
   ]
 }
 ```
+
+Filtrado por país del usuario (X-Language/Accept-Language → código de país): countries vacío o con * significa visible globalmente; ordenado según la preferencia de métodos de pago de country_config de ese país
 
 ### 2.10 Registros de juego
 

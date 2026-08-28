@@ -202,6 +202,13 @@ OAUTH_GOOGLE_REDIRECT_URI=https://your-domain.com/api/auth/oauth/google/callback
 # Webhooks de paiement
 STRIPE_WEBHOOK_SECRET=<obtenu sur le dashboard Stripe>
 PAYPAL_WEBHOOK_ID=<obtenu sur PayPal Developer>
+STRIPE_SECRET_KEY=<clé secrète Stripe>
+NOWPAYMENTS_API_KEY=<clé API NOWPayments>
+NOWPAYMENTS_IPN_SECRET=<clé de signature IPN>
+NOWPAYMENTS_API_URL=https://api.nowpayments.io  # URL par défaut
+COINBASE_COMMERCE_API_KEY=<clé API Coinbase Commerce>
+COINBASE_COMMERCE_WEBHOOK_SECRET=<secret Webhook Coinbase Commerce>
+SITE_URL=https://your-domain.com  # URL du site pour les retours/redirections de paiement
 ```
 
 ### 4.4 Démarrage des services

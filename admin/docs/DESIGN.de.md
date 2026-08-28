@@ -317,6 +317,23 @@ Client                           Server
 
 Das Frontend zeigt vor dem Auslösen der Löschaktion einen Bestätigungsdialog und sendet die Anfrage nach Eingabe des Benutzerpassworts.
 
+### 4.8 Verwaltung der Zahlungsmethoden
+
+Das Modul zur Verwaltung der Zahlungsmethoden (`PaymentController` + Flutter `payment_page.dart`) stellt 5 Endpunkte bereit, die alle JWT + RBAC-Authentifizierung erfordern:
+
+| Methode | Pfad | Beschreibung |
+|------|------|------|
+| GET | /admin/payment/method/list | Liste (aufsteigend nach sort) |
+| POST | /admin/payment/method/toggle | Aktivieren/Deaktivieren |
+| POST | /admin/payment/method/create | Erstellen |
+| PUT | /admin/payment/method/{hashid} | Aktualisieren (nur übergebene Felder) |
+| DELETE | /admin/payment/method/{hashid} | Löschen (422 bei ausstehenden Bestellungen) |
+
+- **provider-Whitelist**: `stripe` / `nowpayments` / `coinbase`
+- **Felder**: name / type (fiat|crypto) / provider / status / sort / countries[] (Ländersichtbarkeit, leer = global) / currency / min_amount / max_amount / config (JSON, verschlüsselt gespeichert)
+- **Löschschutz**: Löschung liefert 422, solange Bestellungen mit status=pending existieren
+- **Frontend**: Flutter `payment_page.dart` — Liste + Erstellen/Bearbeiten-Dialog + Aktivieren/Deaktivieren-Toggle
+
 ## 5. Frontend-Design
 
 ### 5.1 Flutter-Web-Verwaltungs-Backend

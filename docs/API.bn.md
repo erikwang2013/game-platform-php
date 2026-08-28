@@ -181,11 +181,15 @@ type এর মান: deposit / withdraw / exchange_in / exchange_out / game_ea
   "order_id": "aB3xK...",
   "order_no": "DEP202605221030000123",
   "amount": "10.00",
-  "platform_amount": "10.0000"
+  "platform_amount": "10.0000",
+  "checkout_url": "https://checkout.stripe.com/...",
+  "expires_at": "2026-05-22 11:30:00"
 }
 ```
 
 currency এর মান: USD / CNY / EUR
+
+checkout_url: পেমেন্ট গেটওয়ে রিডাইরেক্ট লিংক (অর্ডার তৈরির সময় পূরণ করা হয়); expires_at: পেমেন্ট লিংকের মেয়াদ (তৈরির ১ ঘণ্টা পরে)
 
 #### GET /api/deposit/orders — টপ-আপ রেকর্ড
 
@@ -517,15 +521,19 @@ is_new: true=নতুন রেজিস্টার্ড ইউজার / fa
 
 status: success / failed
 
+provider এর মান: stripe / paypal / nowpayments / coinbase (nowpayments IPN HMAC-SHA512 দিয়ে যাচাই করে, coinbase webhook HMAC-SHA256 দিয়ে)
+
 #### GET /api/payment/methods — উপলব্ধ পেমেন্ট পদ্ধতি (পাবলিক)
 
 ```
 রেসপন্স: {
   "list": [
-    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "status": 1 }
+    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "min_amount": "10.00", "max_amount": "5000.00" }
   ]
 }
 ```
+
+ব্যবহারকারীর দেশ অনুযায়ী ফিল্টার করা হয় (X-Language/Accept-Language → দেশের কোড): countries খালি বা * থাকলে বিশ্বব্যাপী দৃশ্যমান; সে দেশের country_config পেমেন্ট পছন্দ অনুযায়ী সাজানো হয়
 
 ### 2.10 গেম রেকর্ড
 

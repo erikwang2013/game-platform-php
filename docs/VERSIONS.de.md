@@ -47,8 +47,8 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Wallet-Optimistic-Lock | ✓ | ✓ | ✓ |
 | Transaktionsprotokoll | ✓ | ✓ | ✓ |
 | Spielwährungs-Wallet | ✓ | ✓ | ✓ |
-| Einzahlungsauftrag erstellen | ✓ | ✓ | ✓ |
-| Automatische Gutschrift per Einzahlungs-Callback | - | ✓ manuell | ✓ Stripe/PayPal-Signaturprüfung |
+| Einzahlungsauftrag erstellen (checkout_url/expires_at sofort zurückgeschrieben) | ✓ | ✓ | ✓ |
+| Automatische Gutschrift per Einzahlungs-Callback | - | ✓ manuell | ✓ Stripe/PayPal/NowPayments-IPN/Coinbase-Webhook-Signaturprüfung |
 | Umtausch-Preisangebot/Kauf/Verkauf | ✓ | ✓ | ✓ |
 | Umtauschspannen-Erlös | ✓ | ✓ | ✓ |
 | Auszahlungsantrag | ✓ | ✓ | ✓ |

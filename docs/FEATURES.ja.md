@@ -14,7 +14,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 |----|------|------|
 | ユーザー | 登録/ログイン/JWT/認証コード | 完了 |
 | ウォレット | プラットフォームコイン残高/明細照会 | 完了 |
-| チャージ | チャージ注文の作成（単一決済） | 完了 |
+| チャージ | チャージ注文の作成（Stripe 125+ ローカル決済 / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal コールバック） | 完了 |
 | 交換 | プラットフォームコイン⇄ゲームコイン（固定レート+差額） | 完了 |
 | 出金 | 申請/照会/グローバルスイッチ/自動審査/人工審査 | 完了 |
 | ゲーム | バックエンドCRUD/通貨管理/C端リスト/詳細/起動 | 完了 |
@@ -29,7 +29,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | ドメイン | 機能 | 状態 |
 |----|------|------|
 | ユーザー | OAuthログイン (Google/Facebook/Apple/Twitter/Microsoft/LinkedIn/GitHub) | 完了 |
-| 決済 | 複数決済チャネルの自動コールバック (Stripe/PayPal) | 完了 |
+| 決済 | 複数決済チャネルの自動コールバック (Stripe/PayPal/NOWPayments IPN/Coinbase Webhook) | 完了 |
 | ゲーム | 区サーバー管理、ゲーム記録の追跡 | 完了 |
 | 出金 | KYC段階別限度額 (default/verified/vip) + 手数料 | 完了 |
 | KYC | 実名認証の申請+審査 | 完了 |
@@ -53,7 +53,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | ドメイン | 機能 | 状態 |
 |----|------|------|
 | OAuth | Google/Facebook/Apple 実トークン交換 | 完了 |
-| 決済 | Stripe/PayPal Webhook 署名検証 | 完了 |
+| 決済 | コールバック署名検証 (Stripe/PayPal Webhook、NOWPayments IPN HMAC-SHA512、Coinbase HMAC-SHA256 base64 secret) | 完了 |
 | 認証コード | poster-php クリック式認証コード | 完了 |
 | 通知 | サイト内メッセージ + メール、チャージ/出金/KYC/クーポン自動通知 | 完了 |
 | 2FA | Google Authenticator TOTP + 予備リカバリーコード | 完了 |
@@ -119,6 +119,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | GET | /api/wallet/info | ウォレット残高 | あり |
 | GET | /api/wallet/transactions | 明細記録 | あり |
 | POST | /api/deposit/create | チャージ注文の作成 | あり |
+| GET | /api/payment/methods | 決済手段一覧（国別ルーティング） | あり |
 | POST | /api/exchange/quote | 交換の見積り (VIP割引) | あり |
 | POST | /api/exchange/buy | ゲームコインの購入 | あり |
 | POST | /api/exchange/sell | ゲームコインの売却 | あり |

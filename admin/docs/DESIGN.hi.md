@@ -317,6 +317,23 @@ Redis Sorted Set स्लाइडिंग विंडो एल्गोर�
 
 फ्रंटएंड डिलीट ट्रिगर करने से पहले पुष्टि डायलॉग दिखाता है, उपयोगकर्ता का पासवर्ड एकत्र कर अनुरोध भेजता है।
 
+### 4.8 भुगतान विधि प्रबंधन
+
+भुगतान विधि प्रबंधन मॉड्यूल (`PaymentController` + Flutter `payment_page.dart`) 5 एंडपॉइंट प्रदान करता है, सभी को JWT + RBAC प्रमाणीकरण की आवश्यकता होती है:
+
+| विधि | पथ | विवरण |
+|------|------|------|
+| GET | /admin/payment/method/list | सूची (sort आरोही) |
+| POST | /admin/payment/method/toggle | सक्षम/अक्षम करें |
+| POST | /admin/payment/method/create | बनाएं |
+| PUT | /admin/payment/method/{hashid} | अपडेट (केवल भेजे गए फ़ील्ड) |
+| DELETE | /admin/payment/method/{hashid} | हटाएं (pending ऑर्डर होने पर 422) |
+
+- **provider व्हाइटलिस्ट**: `stripe` / `nowpayments` / `coinbase`
+- **फ़ील्ड**: name / type (fiat|crypto) / provider / status / sort / countries[] (देश दृश्यता, खाली = वैश्विक) / currency / min_amount / max_amount / config (JSON, एन्क्रिप्टेड संग्रहीत)
+- **हटाने की सुरक्षा**: status=pending ऑर्डर मौजूद रहने पर हटाने पर 422 लौटाता है
+- **फ्रंटएंड**: Flutter `payment_page.dart` — सूची + बनाएं/संपादित करें डायलॉग + सक्षम/अक्षम टॉगल
+
 ## 5. फ्रंटएंड डिज़ाइन
 
 ### 5.1 Flutter Web एडमिन बैकएंड

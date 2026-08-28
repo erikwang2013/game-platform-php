@@ -317,6 +317,23 @@ curl /api/auth/login
 
 Фронтенд перед выполнением операции удаления показывает диалог подтверждения, собирает пароль пользователя и отправляет запрос.
 
+### 4.8 Управление способами оплаты
+
+Модуль управления способами оплаты (`PaymentController` + Flutter `payment_page.dart`) предоставляет 5 эндпоинтов, все требуют аутентификации JWT + RBAC:
+
+| Метод | Путь | Описание |
+|------|------|------|
+| GET | /admin/payment/method/list | Список (по возрастанию sort) |
+| POST | /admin/payment/method/toggle | Включить/отключить |
+| POST | /admin/payment/method/create | Создать |
+| PUT | /admin/payment/method/{hashid} | Обновить (только переданные поля) |
+| DELETE | /admin/payment/method/{hashid} | Удалить (422 при наличии ожидающих заказов) |
+
+- **Белый список provider**: `stripe` / `nowpayments` / `coinbase`
+- **Поля**: name / type (fiat|crypto) / provider / status / sort / countries[] (видимость по странам, пусто = глобально) / currency / min_amount / max_amount / config (JSON, хранится зашифрованным)
+- **Защита удаления**: удаление возвращает 422, пока существуют заказы со статусом pending
+- **Фронтенд**: Flutter `payment_page.dart` — список + диалог создания/редактирования + переключатель включения/отключения
+
 ## 5. Проектирование фронтенда
 
 ### 5.1 Flutter Web админ-панель

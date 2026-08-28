@@ -57,3 +57,9 @@ Languages: **中文** · [English](CHANGELOG.en.md) · [한국어](CHANGELOG.ko.
 - 縮退スイッチ `feature.provider_mock`：PushService（FCM/APNs/HarmonyOS）、PayoutService（PayPal）、ThirdPartyProvider が `on` 時にショートサーキットし、実ネットワーク呼び出しをスキップ。
 - `getenv($name, '')` の第二引数型欠陥 11 箇所を修正（strict_types で TypeError）；PushService の mock チェックを try/catch 内へ移動。
 - 新規テスト：CircuitBreakerTest / RetryTest / ResilienceMockTest；service スイート 45 → 60 ケース全て成功（報告: [test-reports/resilience.md](test-reports/resilience.md)）。
+
+## [1.1] payments — 2026-08-29
+
+- マルチ決済ゲートウェイ: Stripe Checkout / NOWPayments（USDT TRC20+ERC20）/ Coinbase Commerce（USDC）対応。
+- 管理画面で決済手段 CRUD + 国別表示 + 金額範囲; チャージ注文作成時に checkout_url / expires_at を即時記録。
+- 新マイグレーション install/migrations/2026_08_29_multi_payment.sql（実行が必要）。

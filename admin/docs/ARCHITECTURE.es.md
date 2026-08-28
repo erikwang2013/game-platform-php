@@ -27,7 +27,7 @@ flowchart TB
         C0["ApiVersion 中间件<br/>API-Version 头校验"]
         C1["AdminAuth 中间件<br/>JWT 验证"]
         C2["AdminPermission 中间件<br/>RBAC 权限校验"]
-        C3["管理端 Controller<br/>Dashboard / User / Role / Permission"]
+        C3["管理端 Controller<br/>Dashboard / User / Role / Permission / Payment"]
         C4["公开 Controller v1<br/>Captcha / Auth"]
         C5["Common Services<br/>Hashids / Snowflake / Encryption"]
     end
@@ -568,7 +568,7 @@ flowchart TD
     LP --> LF["登录表单<br/>用户名/密码/验证码"]
     LF --> CAPTCHA["点击验证码组件<br/>GestureDetector + Stack<br/>Image.memory(base64)<br/>点击标记 Circle"]
 
-    DB --> SIDEBAR["侧边栏 NavigationDrawer<br/>可折叠 64px / 240px<br/>仪表盘/用户/角色/配置/日志"]
+    DB --> SIDEBAR["侧边栏 NavigationDrawer<br/>可折叠 64px / 240px<br/>仪表盘/用户/角色/配置/日志/支付"]
     DB --> HEADER["顶栏 56px<br/>折叠按钮 + 用户菜单<br/>退出登录 AlertDialog"]
     DB --> CONTENT["内容区"]
     CONTENT --> DASH["DashboardPage<br/>统计卡片 GridView<br/>趋势折线图 LineChart<br/>分布饼图 PieChart<br/>最近操作 ListTile"]

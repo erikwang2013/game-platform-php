@@ -181,11 +181,15 @@ Authorization: Bearer <token>    (الواجهات التي تتطلب مصاد�
   "order_id": "aB3xK...",
   "order_no": "DEP202605221030000123",
   "amount": "10.00",
-  "platform_amount": "10.0000"
+  "platform_amount": "10.0000",
+  "checkout_url": "https://checkout.stripe.com/...",
+  "expires_at": "2026-05-22 11:30:00"
 }
 ```
 
 القيم الممكنة لـ currency: USD / CNY / EUR
+
+checkout_url: رابط إعادة التوجيه إلى بوابة الدفع (يُملأ عند إنشاء الطلب)؛ expires_at: انتهاء صلاحية رابط الدفع (بعد ساعة من الإنشاء)
 
 #### GET /api/deposit/orders — سجلات الشحن
 
@@ -517,15 +521,19 @@ is_new: true=مستخدم مسجل حديثًا / false=حساب موجود تم
 
 status: success / failed
 
+القيم الممكنة لـ provider: stripe / paypal / nowpayments / coinbase (nowpayments يتحقق عبر IPN HMAC-SHA512، وcoinbase عبر webhook HMAC-SHA256)
+
 #### GET /api/payment/methods — طرق الدفع المتاحة (عام)
 
 ```
 الاستجابة: {
   "list": [
-    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "status": 1 }
+    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "min_amount": "10.00", "max_amount": "5000.00" }
   ]
 }
 ```
+
+يتم التصفية حسب دولة المستخدم (X-Language/Accept-Language → رمز الدولة): countries فارغ أو يحتوي على * يعني متاح عالميًا؛ يُرتب حسب تفضيل طرق الدفع في country_config لتلك الدولة
 
 ### 2.10 سجلات اللعب
 

@@ -181,11 +181,15 @@ Respons: {
   "order_id": "aB3xK...",
   "order_no": "DEP202605221030000123",
   "amount": "10.00",
-  "platform_amount": "10.0000"
+  "platform_amount": "10.0000",
+  "checkout_url": "https://checkout.stripe.com/...",
+  "expires_at": "2026-05-22 11:30:00"
 }
 ```
 
 Nilai opsional currency: USD / CNY / EUR
+
+checkout_url: tautan pengalihan gateway pembayaran (diisi saat pesanan dibuat); expires_at: kedaluwarsa tautan pembayaran (1 jam setelah dibuat)
 
 #### GET /api/deposit/orders — Catatan Deposit
 
@@ -517,15 +521,19 @@ Respons: { "message": "success" }
 
 status: success / failed
 
+Nilai provider: stripe / paypal / nowpayments / coinbase (nowpayments memverifikasi via IPN HMAC-SHA512, coinbase via webhook HMAC-SHA256)
+
 #### GET /api/payment/methods — Metode Pembayaran Tersedia (publik)
 
 ```
 Respons: {
   "list": [
-    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "status": 1 }
+    { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "min_amount": "10.00", "max_amount": "5000.00" }
   ]
 }
 ```
+
+Difilter berdasarkan negara pengguna (X-Language/Accept-Language → kode negara): countries kosong atau berisi * berarti terlihat global; diurutkan berdasarkan preferensi metode pembayaran country_config negara tersebut
 
 ### 2.10 Catatan Game
 

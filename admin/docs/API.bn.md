@@ -1814,3 +1814,157 @@ GET /admin/analytics/economy
 ```
 
 **রেসপন্স**: `currencies` অ্যারে, প্রতিটিতে `game_name`, `currency`, `symbol`, `total_minted` (মোট মিন্টেড), `total_burned` (মোট বার্নড), `circulation` (সার্কুলেশন), `inflation_rate` (ইনফ্লেশন রেট), bcmath উচ্চ-নির্ভুলতা গণনা ব্যবহৃত।
+
+## 17. পেমেন্ট ম্যানেজমেন্ট (Payment)
+
+পেমেন্ট পদ্ধতি ব্যবস্থাপনা `PaymentController` দ্বারা সরবরাহ করা হয়; ৫টি এন্ডপয়েন্টেরই JWT + RBAC প্রমাণীকরণ প্রয়োজন। `provider` হোয়াইটলিস্ট: `stripe` / `nowpayments` / `coinbase`। `config` হল পেমেন্ট কনফিগারেশনের JSON স্ট্রিং (ডাটাবেসে এনক্রিপ্টেড সংরক্ষিত)।
+
+| পদ্ধতি | পথ | বিবরণ |
+|------|------|------|
+| GET | /admin/payment/method/list | পেমেন্ট পদ্ধতির তালিকা (sort অনুযায়ী ঊর্ধ্বক্রম) |
+| POST | /admin/payment/method/toggle | পেমেন্ট পদ্ধতি সক্রিয়/নিষ্ক্রিয় করা |
+| POST | /admin/payment/method/create | পেমেন্ট পদ্ধতি তৈরি করা |
+| PUT | /admin/payment/method/{hashid} | পেমেন্ট পদ্ধতি আপডেট করা |
+| DELETE | /admin/payment/method/{hashid} | পেমেন্ট পদ্ধতি মুছে ফেলা (pending অর্ডার থাকলে প্রত্যাখ্যান) |
+
+### 17.1 পেমেন্ট পদ্ধতির তালিকা
+
+```
+GET /admin/payment/method/list
+```
+
+- **প্রমাণীকরণ**: JWT + RBAC
+
+**রেসপন্স উদাহরণ**:
+```json
+{
+  "code": 0,
+  "message": "success",
+  "data": {
+    "list": [
+      {
+        "id": "a1b2c3d4",
+        "name": "স্ট্রাইপ ক্রেডিট কার্ড",
+        "type": "fiat",
+        "provider": "stripe",
+        "status": 1,
+        "sort": 1,
+        "countries": ["US", "SG"],
+        "currency": "USD",
+        "min_amount": "10",
+        "max_amount": "5000",
+        "config": null,
+        "created_at": "2026-08-29 10:00:00",
+        "updated_at": "2026-08-29 10:00:00"
+      }
+    ]
+  }
+}
+```
+
+| ফিল্ড | ধরন | বিবরণ |
+|------|------|------|
+| id | string | পেমেন্ট পদ্ধতি ID (hashid এনকোডেড) |
+| name | string | পেমেন্ট পদ্ধতির নাম |
+| type | string | `fiat` (ফিয়াট মুদ্রা) / `crypto` (ক্রিপ্টোকারেন্সি) |
+| provider | string | গেটওয়ে প্রদানকারী: `stripe` / `nowpayments` / `coinbase` |
+| status | int | 1=সক্রিয়, 0=নিষ্ক্রিয় |
+| sort | int | ক্রম মান (ঊর্ধ্বক্রম) |
+| countries | array{string} | দৃশ্যমান দেশের কোড অ্যারে (খালি অ্যারে = বিশ্বব্যাপী দৃশ্যমান) |
+| currency | string | মুদ্রা (যেমন USD/USDT), খালি = কোনো সীমাবদ্ধতা নেই |
+| min_amount / max_amount | string | পরিমাণ সীমা (স্পষ্টতার জন্য স্ট্রিং), 0 = সীমাহীন |
+| config | string? | পেমেন্ট কনফিগ JSON (এনক্রিপ্টেড; সেট না থাকলে null) |
+
+### 17.2 পেমেন্ট পদ্ধতি সক্রিয়/নিষ্ক্রিয় করা
+
+```
+POST /admin/payment/method/toggle
+```
+
+**অনুরোধ বডি**:
+```json
+{
+  "id": "a1b2c3d4",
+  "status": 1
+}
+```
+
+| ফিল্ড | ধরন | আবশ্যক | বিবরণ |
+|------|------|------|------|
+| id | string | হ্যাঁ | পেমেন্ট পদ্ধতি ID (hashid) |
+| status | int | হ্যাঁ | 0=নিষ্ক্রিয়, 1=সক্রিয় |
+
+**সম্ভাব্য ত্রুটি**:
+- 422: ভ্যালিডেশন ব্যর্থ (id/status অনুপস্থিত বা status 0/1 নয়)
+- 404: পেমেন্ট পদ্ধতি পাওয়া যায়নি
+
+### 17.3 পেমেন্ট পদ্ধতি তৈরি করা
+
+```
+POST /admin/payment/method/create
+```
+
+**অনুরোধ বডি**:
+```json
+{
+  "name": "USDT ক্রিপ্টোকারেন্সি",
+  "type": "crypto",
+  "provider": "nowpayments",
+  "status": 1,
+  "sort": 2,
+  "countries": [],
+  "currency": "USDT",
+  "min_amount": "10",
+  "max_amount": "10000",
+  "config": "{\"api_key\":\"...\"}"
+}
+```
+
+| ফিল্ড | ধরন | আবশ্যক | ভ্যালিডেশন | বিবরণ |
+|------|------|------|---------|------|
+| name | string | হ্যাঁ | max:50 | পেমেন্ট পদ্ধতির নাম |
+| type | string | হ্যাঁ | in:fiat,crypto | ধরন: ফিয়াট/ক্রিপ্টো |
+| provider | string | হ্যাঁ | in:stripe,nowpayments,coinbase | গেটওয়ে প্রদানকারী হোয়াইটলিস্ট |
+| status | int | হ্যাঁ | in:0,1 | অবস্থা |
+| sort | int | না | integer,min:0 | ক্রম মান, ডিফল্ট 0 |
+| countries | array{string} | না | max:2 | দৃশ্যমান দেশের কোড, খালি = বিশ্বব্যাপী |
+| currency | string | না | max:10 | মুদ্রা, ডিফল্ট খালি |
+| min_amount / max_amount | string | না | numeric,min:0 | পরিমাণ সীমা, ডিফল্ট "0" |
+| config | string | না | | পেমেন্ট কনফিগ JSON (এনক্রিপ্টেড); খালি স্ট্রিং NULL হিসেবে সংরক্ষিত |
+
+**রেসপন্স উদাহরণ**:
+```json
+{
+  "code": 0,
+  "message": "সফলভাবে তৈরি হয়েছে",
+  "data": { "id": "e5f6g7h8" }
+}
+```
+
+**সম্ভাব্য ত্রুটি**:
+- 422: ভ্যালিডেশন ব্যর্থ
+
+### 17.4 পেমেন্ট পদ্ধতি আপডেট করা
+
+```
+PUT /admin/payment/method/{hashid}
+```
+
+- **পথ প্যারামিটার**: `{hashid}` হলো hashid এনকোডেড পেমেন্ট পদ্ধতি ID
+- **অনুরোধ বডি**: তৈরি (17.3) এর মতোই, সব ফিল্ড ঐচ্ছিক, শুধুমাত্র পাঠানো ফিল্ড আপডেট হয়
+
+**সম্ভাব্য ত্রুটি**:
+- 404: পেমেন্ট পদ্ধতি পাওয়া যায়নি
+- 422: ভ্যালিডেশন ব্যর্থ
+
+### 17.5 পেমেন্ট পদ্ধতি মুছে ফেলা
+
+```
+DELETE /admin/payment/method/{hashid}
+```
+
+- **পথ প্যারামিটার**: `{hashid}` হলো hashid এনকোডেড পেমেন্ট পদ্ধতি ID
+
+**সম্ভাব্য ত্রুটি**:
+- 404: পেমেন্ট পদ্ধতি পাওয়া যায়নি
+- 422: pending ডিপোজিট অর্ডার (status=pending) আছে, মুছে ফেলা সম্ভব নয়

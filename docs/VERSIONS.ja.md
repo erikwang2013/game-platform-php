@@ -47,8 +47,8 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | ウォレット楽観ロック | ✓ | ✓ | ✓ |
 | 流水記録 | ✓ | ✓ | ✓ |
 | ゲームコインウォレット | ✓ | ✓ | ✓ |
-| チャージ注文作成 | ✓ | ✓ | ✓ |
-| チャージコールバック自動入金 | - | ✓ 手動 | ✓ Stripe/PayPal署名検証 |
+| チャージ注文作成(作成時に checkout_url/expires_at を即時記録) | ✓ | ✓ | ✓ |
+| チャージコールバック自動入金 | - | ✓ 手動 | ✓ Stripe/PayPal/NowPayments IPN/Coinbase webhook署名検証 |
 | 交換見積/買い/売り | ✓ | ✓ | ✓ |
 | 交換差益収益 | ✓ | ✓ | ✓ |
 | 出金申請 | ✓ | ✓ | ✓ |
