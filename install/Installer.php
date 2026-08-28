@@ -279,7 +279,7 @@ class Installer
             $hashedPassword = password_hash($adminPassword, PASSWORD_BCRYPT, ['cost' => 12]);
 
             $stmt = $pdo->prepare('INSERT INTO `game_admin_user` (`id`, `username`, `password`, `real_name`, `status`, `created_at`, `updated_at`) VALUES (?, ?, ?, ?, 1, NOW(), NOW())');
-            $stmt->execute([$adminId, $adminUsername, $hashedPassword]);
+            $stmt->execute([$adminId, $adminUsername, $hashedPassword, '']);
 
             $stmt = $pdo->prepare('INSERT INTO `game_admin_user_role` (`user_id`, `role_id`) VALUES (?, 10000000000000001)');
             $stmt->execute([$adminId]);
