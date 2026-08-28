@@ -252,6 +252,20 @@ class Installer
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
             ]);
 
+            // 存量库（已有 game_ 表）先执行迁移补结构，保证 install.sql 种子列引用可用
+            if ($this->countTables($pdo) > 0) {
+                foreach (glob($this->installDir . '/migrations/*.sql') as $migrationFile) {
+                    try {
+                        $pdo->exec((string) file_get_contents($migrationFile));
+                    } catch (PDOException $e) {
+                        // 42S21/42S22 = 重复加列/缺列的迁移重放，幂等忽略
+                        if (!in_array($e->getCode(), ['42S21', '42S22'], true)) {
+                            throw $e;
+                        }
+                    }
+                }
+            }
+
             $sql = file_get_contents($this->sqlFile);
             if (!$sql) {
                 return ['success' => false, 'message' => '无法读取 install.sql 文件'];
