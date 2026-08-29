@@ -25,3 +25,9 @@ cd ../service && composer update erik/platform-common
 ## Sisa Salinan Ganda
 
 app/model/*, app/common/*Service, mayoritas app/service/*, EventBus masih disalin dua sisi.
+
+## Maskot Proyek
+
+![Maskot proyek: Dicey](../../docs/mascot.svg)
+
+**Dicey** — Maskot platform. Dadu melambangkan permainan dan gameplay berbasis probabilitas, koin melambangkan ekonomi platform dan multi-gateway pembayaran, dan warna ungu mencerminkan branding admin. File SVG: `docs/mascot.svg`, dapat diskalakan tanpa batas untuk dokumen, logo, dan merchandise.

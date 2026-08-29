@@ -25,3 +25,9 @@ cd ../service && composer update erik/platform-common
 ## Cópias duplas restantes
 
 app/model/*, app/common/*Service, a maioria de app/service/*, EventBus ainda são copiados nos dois lados.
+
+## Mascote do projeto
+
+![Mascote do projeto: Dicey](../../docs/mascot.svg)
+
+**Dicey** — Mascote da plataforma. O dado representa os jogos e a jogabilidade baseada em probabilidade, a moeda a economia da plataforma e os múltiplos gateways de pagamento, e o roxo reflete a marca do painel administrativo. Arquivo SVG: `docs/mascot.svg`, escalável infinitamente para documentação, logotipos e produtos.

@@ -442,3 +442,9 @@ Wenn dieses Projekt Ihnen hilft, scannen Sie gerne den QR-Code, um zu spenden. V
 | Arbitrum One | [<img src="../coin/9.jpg" width="150" alt="Arbitrum One">](../coin/9.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
 | AVAX C-Chain | [<img src="../coin/10.jpg" width="150" alt="AVAX C-Chain">](../coin/10.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
 
+
+## Projekt-Maskottchen
+
+![Projekt-Maskottchen: Dicey](../mascot.svg)
+
+**Dicey** — Plattform-Maskottchen. Der Würfel steht für Spiele und wahrscheinlichkeitsbasiertes Gameplay, die Münze für die Plattform-Ökonomie und die Multi-Payment-Gateways, das Lila spiegelt das Admin-Branding wider. SVG-Quelle: `docs/mascot.svg`, unbegrenzt skalierbar für Doku, Logos und Merchandise.

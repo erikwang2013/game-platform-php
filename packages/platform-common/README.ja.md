@@ -25,3 +25,9 @@ cd ../service && composer update erik/platform-common
 ## 残存する二重コピー
 
 app/model/*、app/common/*Service、大多数の app/service/*、EventBus は引き続き両側に複製されています。
+
+## プロジェクトマスコット
+
+![プロジェクトマスコット：ダイスィー](../../docs/mascot.svg)
+
+**ダイスィー（Dicey）** — プラットフォームのマスコット。サイコロはゲームと確率ベースのゲームプレイを、コインはプラットフォーム経済とマルチ決済ゲートウェイを、紫のメインカラーは管理画面ブランドを表します。SVG ファイル: `docs/mascot.svg`、文書・ロゴ・グッズに無限に拡大可能。

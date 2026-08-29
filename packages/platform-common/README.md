@@ -25,3 +25,9 @@ cd ../service && composer update erik/platform-common
 ## 剩余双份
 
 app/model/*、app/common/*Service、多数 app/service/*、EventBus 仍双侧复制。
+
+## 项目吉祥物
+
+![项目吉祥物：小骰 Dicey](../../docs/mascot.svg)
+
+**小骰（Dicey）** — 平台吉祥物。骰子代表游戏与概率玩法，金币代表平台经济与多支付网关，紫色主色调呼应后台品牌。SVG 源文件：`docs/mascot.svg`，可无限缩放用于文档、Logo 与周边。

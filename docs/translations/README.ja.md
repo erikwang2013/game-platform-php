@@ -442,3 +442,9 @@ flowchart LR
 | Arbitrum One | [<img src="../coin/9.jpg" width="150" alt="Arbitrum One">](../coin/9.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
 | AVAX C-Chain | [<img src="../coin/10.jpg" width="150" alt="AVAX C-Chain">](../coin/10.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
 
+
+## プロジェクトマスコット
+
+![プロジェクトマスコット：ダイスィー](../mascot.svg)
+
+**ダイスィー（Dicey）** — プラットフォームのマスコット。サイコロはゲームと確率ベースのゲームプレイを、コインはプラットフォーム経済とマルチ決済ゲートウェイを、紫のメインカラーは管理画面ブランドを表します。SVG ファイル: `docs/mascot.svg`、文書・ロゴ・グッズに無限に拡大可能。

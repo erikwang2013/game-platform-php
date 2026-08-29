@@ -199,7 +199,7 @@ Provider API:
      → GatewayFactory 创建支付 (Stripe Checkout(含 Alipay/WeChat Pay APM)/NowPayments invoice/Coinbase charge) → 回填 checkout_url + expires_at(+1h)；失败则 CAS 取消订单可重试
      → 跳转第三方支付 (Stripe(含 Alipay/WeChat Pay)/PayPal/NowPayments[USDT TRC20/ERC20]/Coinbase[USDC/BTC/ETH])
      → 支付成功 → 回调 /api/payment/callback
-     → provider 白名单(仅 stripe/paypal/nowpayments/coinbase) + 跨渠道冒用校验 + 验签(fail-closed) + 时间戳±300s + bccomp 金额核对
+     → provider 白名单(仅 stripe/paypal/nowpayments/coinbase/skrill/neteller/paysafecard/paytm/mercadopago/astropay/paypay/kakaopay/gcash) + 跨渠道冒用校验 + 验签(fail-closed) + 时间戳±300s + bccomp 金额核对
      → 更新订单 (status=confirmed, 事务化)
      → UserWallet::addBalance() → 平台币到账
      → EventBus::emit('deposit.completed')

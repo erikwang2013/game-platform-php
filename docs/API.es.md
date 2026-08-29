@@ -521,7 +521,26 @@ is_new: true=usuario recién registrado / false=cuenta existente vinculada
 
 status: success / failed
 
-Valores de provider: stripe / paypal / nowpayments / coinbase (nowpayments verifica con IPN HMAC-SHA512, coinbase con webhook HMAC-SHA256)
+Valores de provider: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash (toss / mpesa / paystack próximamente)
+
+| provider | Región | Esquema de firma | Monedas compatibles |
+|----------|--------|------------------|---------------------|
+| stripe | Global (125+ métodos de pago locales, incl. APM Alipay/WeChat Pay) | Webhook HMAC-SHA256 | USD / CNY / EUR |
+| paypal | 200+ mercados mundiales | Verificación de webhook (verify-webhook-signature) | USD / CNY / EUR y otras monedas fiat |
+| nowpayments | Global (cripto) | IPN HMAC-SHA512 | USDT TRC20 / ERC20 |
+| coinbase | Global (cripto) | Webhook HMAC-SHA256 (secret base64) | USDC / BTC / ETH |
+| skrill | Europa / Global | Verificación MD5 de secret word | EUR y otras monedas fiat |
+| neteller | Europa / Global | Comparación de campo secret key | EUR y otras monedas fiat |
+| paysafecard | Europa (DE / AT / CH, etc.) | X-Signature HMAC-SHA256 | EUR y otras monedas fiat |
+| paytm | India | SHA256 + AES-128-CBC | INR |
+| mercadopago | Latinoamérica (BR / MX, etc.) | X-Signature (ts,v1) HMAC-SHA256 | BRL / MXN y otras monedas fiat |
+| astropay | Latinoamérica (BR, etc.) | MD5(order_id.amount.status.secret) | BRL y otras monedas fiat |
+| paypay | Japón | PayPay-Signature HMAC-SHA256 | JPY |
+| kakaopay | Corea del Sur | Sin webhook (flujo de dos pasos ready/approve) | KRW |
+| gcash | Filipinas | Paymongo-Signature HMAC-SHA256 | PHP |
+| toss | Corea del Sur (próximamente) | — | KRW |
+| mpesa | Kenia / Tanzania, etc. (próximamente) | — | KES / TZS |
+| paystack | Nigeria (próximamente) | — | NGN |
 
 #### GET /api/payment/methods — Métodos de pago disponibles (público)
 

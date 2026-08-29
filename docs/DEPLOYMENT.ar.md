@@ -199,16 +199,64 @@ OAUTH_GOOGLE_CLIENT_ID=<从Google Cloud Console获取>
 OAUTH_GOOGLE_CLIENT_SECRET=<密钥>
 OAUTH_GOOGLE_REDIRECT_URI=https://your-domain.com/api/auth/oauth/google/callback
 
-# Webhook الدفع
-STRIPE_WEBHOOK_SECRET=<从Stripe Dashboard获取>
-PAYPAL_WEBHOOK_ID=<从PayPal Developer获取>
-STRIPE_SECRET_KEY=<Stripe 密钥>
-NOWPAYMENTS_API_KEY=<NOWPayments API 密钥>
-NOWPAYMENTS_IPN_SECRET=<IPN 签名密钥>
-NOWPAYMENTS_API_URL=https://api.nowpayments.io  # 默认地址
-COINBASE_COMMERCE_API_KEY=<Coinbase Commerce API 密钥>
-COINBASE_COMMERCE_WEBHOOK_SECRET=<Coinbase Commerce Webhook 密钥>
-SITE_URL=https://your-domain.com  # 支付回调/跳转站点地址
+# Webhook الدفع (toss / mpesa / paystack قيد الإضافة)
+STRIPE_SECRET_KEY=<مفتاح Stripe>
+STRIPE_WEBHOOK_SECRET=<من Stripe Dashboard>
+PAYPAL_WEBHOOK_ID=<من PayPal Developer>
+PAYPAL_VERIFY_URL=<عنوان التحقق من Webhook PayPal>
+PAYPAL_CLIENT_ID=<معرف عميل PayPal>
+PAYPAL_CLIENT_SECRET=<سر عميل PayPal>
+PAYPAL_MODE=sandbox  # sandbox / live
+NOWPAYMENTS_API_KEY=<مفتاح NOWPayments API>
+NOWPAYMENTS_IPN_SECRET=<مفتاح توقيع IPN>
+NOWPAYMENTS_API_URL=https://api.nowpayments.io  # العنوان الافتراضي
+COINBASE_COMMERCE_API_KEY=<مفتاح Coinbase Commerce API>
+COINBASE_COMMERCE_WEBHOOK_SECRET=<مفتاح Webhook Coinbase Commerce>
+SKRILL_API_URL=https://pay.skrill.com
+SKRILL_API_KEY=<مفتاح Skrill API>
+SKRILL_MERCHANT_ID=<معرف تاجر Skrill>
+SKRILL_SECRET_WORD=<مفتاح التحقق من التوقيع md5sig>
+NETELLER_API_URL=https://api.neteller.com
+NETELLER_CLIENT_ID=<معرف عميل Neteller>
+NETELLER_CLIENT_SECRET=<سر عميل Neteller>
+NETELLER_SECRET=<مفتاح التحقق من التوقيع>
+PAYSAFECARD_API_URL=https://api.paysafecard.com
+PAYSAFECARD_API_KEY=<مفتاح Paysafecard API>
+PAYSAFECARD_SECRET=<مفتاح التحقق من التوقيع X-Signature HMAC-SHA256>
+PAYTM_MID=<معرف تاجر Paytm>
+PAYTM_KEY=<مفتاح Paytm>
+PAYTM_API_URL=https://securegw.paytm.in
+PAYTM_WEBSITE=DEFAULT  # DEFAULT للإنتاج / WEBSTAGING للتجربة
+MERCADOPAGO_CLIENT_ID=<معرف عميل Mercado Pago>
+MERCADOPAGO_CLIENT_SECRET=<سر عميل Mercado Pago>
+MERCADOPAGO_WEBHOOK_SECRET=<مفتاح التحقق من Webhook X-Signature>
+MERCADOPAGO_API_URL=https://api.mercadopago.com
+ASTROPAY_LOGIN=<اسم دخول AstroPay>
+ASTROPAY_API_KEY=<مفتاح AstroPay API>
+ASTROPAY_SECRET=<مفتاح التحقق من التوقيع MD5>
+ASTROPAY_API_URL=https://api.astropaycard.com
+PAYPAY_CLIENT_ID=<معرف عميل PayPay>
+PAYPAY_CLIENT_SECRET=<سر عميل PayPay>
+PAYPAY_SIGNING_KEY=<مفتاح التحقق من Webhook PayPay-Signature>
+PAYPAY_API_URL=https://api.paypay.ne.jp
+KAKAOPAY_ADMIN_KEY=<مفتاح إدارة KakaoPay>
+KAKAOPAY_CID=<معرف تاجر KakaoPay>
+KAKAOPAY_APPROVAL_URL=<عنوان القفز بعد الدفع>
+KAKAOPAY_API_URL=https://kapi.kakao.com
+PAYMONGO_API_KEY=<مفتاح PayMongo API>
+PAYMONGO_WEBHOOK_SECRET=<مفتاح التحقق من Webhook Paymongo-Signature>
+PAYMONGO_API_URL=https://api.paymongo.com/v1
+# قيد الإضافة
+MPESA_CONSUMER_KEY=<مفتاح مستهلك M-Pesa>
+MPESA_CONSUMER_SECRET=<سر مستهلك M-Pesa>
+MPESA_PASSKEY=<مفتاح مرور STK Push M-Pesa>
+MPESA_SHORTCODE=<الرمز القصير M-Pesa>
+MPESA_API_URL=https://api.safaricom.co.ke
+PAYSTACK_SECRET_KEY=<مفتاح Paystack السري>
+PAYSTACK_API_URL=https://api.paystack.co
+TOSS_SECRET_KEY=<مفتاح Toss السري>
+TOSS_API_URL=https://api.tosspayments.com
+SITE_URL=https://your-domain.com  # عنوان الموقع للاستدعاء/إعادة التوجيه
 ```
 
 ### 3.4 تشغيل الخدمات

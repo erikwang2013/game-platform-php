@@ -19,3 +19,9 @@ Alguns recursos para você começar, se este for o seu primeiro projeto Flutter:
 Para ajuda ao começar com o desenvolvimento Flutter, consulte a
 [documentação online](https://docs.flutter.dev/), que oferece tutoriais,
 exemplos, orientações sobre desenvolvimento móvel e uma referência completa da API.
+
+## Mascote do projeto
+
+![Mascote do projeto: Dicey](../../../docs/mascot.svg)
+
+**Dicey** — Mascote da plataforma. O dado representa os jogos e a jogabilidade baseada em probabilidade, a moeda a economia da plataforma e os múltiplos gateways de pagamento, e o roxo reflete a marca do painel administrativo. Arquivo SVG: `docs/mascot.svg`, escalável infinitamente para documentação, logotipos e produtos.

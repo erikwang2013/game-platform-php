@@ -453,3 +453,9 @@ GitHub Actions 지속적 통합 파이프라인: `.github/workflows/ci.yml`
 MIT
 
 Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+
+## 프로젝트 마스코트
+
+![프로젝트 마스코트: 다이시](../docs/mascot.svg)
+
+**다이시(Dicey)** — 플랫폼 마스코트. 주사위는 게임과 확률 기반 게임플레이를, 코인은 플랫폼 경제와 다중 결제 게이트웨이를, 보라색 메인 컬러는 관리자 브랜드를 상징합니다. SVG 파일: `docs/mascot.svg`, 문서·로고·굿즈에 무제한 확대 가능.

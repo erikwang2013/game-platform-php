@@ -453,3 +453,9 @@ Für die Produktionsbereitstellung `docs/nginx-security.conf` als Referenz zur H
 MIT
 
 Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+
+## Projekt-Maskottchen
+
+![Projekt-Maskottchen: Dicey](../docs/mascot.svg)
+
+**Dicey** — Plattform-Maskottchen. Der Würfel steht für Spiele und wahrscheinlichkeitsbasiertes Gameplay, die Münze für die Plattform-Ökonomie und die Multi-Payment-Gateways, das Lila spiegelt das Admin-Branding wider. SVG-Quelle: `docs/mascot.svg`, unbegrenzt skalierbar für Doku, Logos und Merchandise.

@@ -453,3 +453,9 @@ For production deployment, see `docs/nginx-security.conf` for reverse-proxy secu
 MIT
 
 Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+
+## Project Mascot
+
+![Project mascot: Dicey](../docs/mascot.svg)
+
+**Dicey** — Platform mascot. The die represents games and probability-based gameplay, the coin represents the platform economy and multi-payment gateways, and the purple palette echoes the admin branding. SVG source: `docs/mascot.svg`, infinitely scalable for docs, logos and merchandise.

@@ -9,3 +9,9 @@ Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) ·
 `packages/platform-common`
 
 Jangan menaruh kelas PHP di direktori ini (akan membayangi autoload paket). Lihat `packages/platform-common/README.id.md`.
+
+## Maskot Proyek
+
+![Maskot proyek: Dicey](../../docs/mascot.svg)
+
+**Dicey** — Maskot platform. Dadu melambangkan permainan dan gameplay berbasis probabilitas, koin melambangkan ekonomi platform dan multi-gateway pembayaran, dan warna ungu mencerminkan branding admin. File SVG: `docs/mascot.svg`, dapat diskalakan tanpa batas untuk dokumen, logo, dan merchandise.

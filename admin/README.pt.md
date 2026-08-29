@@ -453,3 +453,9 @@ Para deploy em produção, consulte `docs/nginx-security.conf` para reforço de 
 MIT
 
 Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+
+## Mascote do projeto
+
+![Mascote do projeto: Dicey](../docs/mascot.svg)
+
+**Dicey** — Mascote da plataforma. O dado representa os jogos e a jogabilidade baseada em probabilidade, a moeda a economia da plataforma e os múltiplos gateways de pagamento, e o roxo reflete a marca do painel administrativo. Arquivo SVG: `docs/mascot.svg`, escalável infinitamente para documentação, logotipos e produtos.

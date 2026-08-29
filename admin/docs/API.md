@@ -1817,7 +1817,7 @@ GET /admin/analytics/economy
 
 ## 17. 支付管理 (Payment)
 
-支付方式管理由 `PaymentController` 提供，5 个端点均需 JWT + RBAC 认证。`provider` 白名单：`stripe` / `nowpayments` / `coinbase`。`config` 为支付配置 JSON 字符串（数据库加密存储）。
+支付方式管理由 `PaymentController` 提供，5 个端点均需 JWT + RBAC 认证。`provider` 白名单：`stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`。`config` 为支付配置 JSON 字符串（数据库加密存储）。
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -1867,7 +1867,7 @@ GET /admin/payment/method/list
 | id | string | hashid 加密的支付方式 ID |
 | name | string | 支付方式名称 |
 | type | string | `fiat`（法币）/ `crypto`（加密货币） |
-| provider | string | 网关提供商：`stripe` / `nowpayments` / `coinbase` |
+| provider | string | 网关提供商：`stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` |
 | status | int | 1=启用, 0=禁用 |
 | sort | int | 排序值（升序） |
 | countries | array{string} | 可见国家码数组（空数组=全球可见） |
@@ -1924,7 +1924,7 @@ POST /admin/payment/method/create
 |------|------|------|---------|------|
 | name | string | 是 | max:50 | 支付方式名称 |
 | type | string | 是 | in:fiat,crypto | 类型：法币/加密货币 |
-| provider | string | 是 | in:stripe,nowpayments,coinbase | 网关提供商白名单 |
+| provider | string | 是 | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash | 网关提供商白名单 |
 | status | int | 是 | in:0,1 | 状态 |
 | sort | int | 否 | integer,min:0 | 排序值，默认 0 |
 | countries | array{string} | 否 | max:2 | 可见国家码数组，空=全球 |

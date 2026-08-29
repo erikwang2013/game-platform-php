@@ -521,7 +521,26 @@ Resposta: { "message": "success" }
 
 status: success / failed
 
-Valores de provider: stripe / paypal / nowpayments / coinbase (nowpayments verifica via IPN HMAC-SHA512, coinbase via webhook HMAC-SHA256)
+Valores de provider: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash (toss / mpesa / paystack em breve)
+
+| provider | Região | Esquema de assinatura | Moedas suportadas |
+|----------|--------|-----------------------|-------------------|
+| stripe | Global (125+ métodos de pagamento locais, incl. APM Alipay/WeChat Pay) | Webhook HMAC-SHA256 | USD / CNY / EUR |
+| paypal | 200+ mercados mundiais | Verificação de webhook (verify-webhook-signature) | USD / CNY / EUR e outras moedas fiduciárias |
+| nowpayments | Global (cripto) | IPN HMAC-SHA512 | USDT TRC20 / ERC20 |
+| coinbase | Global (cripto) | Webhook HMAC-SHA256 (secret base64) | USDC / BTC / ETH |
+| skrill | Europa / Global | Verificação MD5 do secret word | EUR e outras moedas fiduciárias |
+| neteller | Europa / Global | Comparação do campo secret key | EUR e outras moedas fiduciárias |
+| paysafecard | Europa (DE / AT / CH etc.) | X-Signature HMAC-SHA256 | EUR e outras moedas fiduciárias |
+| paytm | Índia | SHA256 + AES-128-CBC | INR |
+| mercadopago | América Latina (BR / MX etc.) | X-Signature (ts,v1) HMAC-SHA256 | BRL / MXN e outras moedas fiduciárias |
+| astropay | América Latina (BR etc.) | MD5(order_id.amount.status.secret) | BRL e outras moedas fiduciárias |
+| paypay | Japão | PayPay-Signature HMAC-SHA256 | JPY |
+| kakaopay | Coreia do Sul | Sem webhook (fluxo em duas etapas ready/approve) | KRW |
+| gcash | Filipinas | Paymongo-Signature HMAC-SHA256 | PHP |
+| toss | Coreia do Sul (em breve) | — | KRW |
+| mpesa | Quênia / Tanzânia etc. (em breve) | — | KES / TZS |
+| paystack | Nigéria (em breve) | — | NGN |
 
 #### GET /api/payment/methods — Métodos de pagamento disponíveis (público)
 

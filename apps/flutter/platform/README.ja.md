@@ -17,3 +17,9 @@ Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) ·
 - [Flutter 学習リソース](https://docs.flutter.dev/reference/learning-resources)
 
 Flutter 開発のヘルプについては、チュートリアル、サンプル、モバイル開発のガイダンス、完全な API リファレンスを提供する [オンラインドキュメント](https://docs.flutter.dev/) を参照してください。
+
+## プロジェクトマスコット
+
+![プロジェクトマスコット：ダイスィー](../../../docs/mascot.svg)
+
+**ダイスィー（Dicey）** — プラットフォームのマスコット。サイコロはゲームと確率ベースのゲームプレイを、コインはプラットフォーム経済とマルチ決済ゲートウェイを、紫のメインカラーは管理画面ブランドを表します。SVG ファイル: `docs/mascot.svg`、文書・ロゴ・グッズに無限に拡大可能。

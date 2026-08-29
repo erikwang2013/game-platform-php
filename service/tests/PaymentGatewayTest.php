@@ -14,14 +14,17 @@ use app\payment\GatewayFactory;
 use app\payment\GcashGateway;
 use app\payment\KakaoPayGateway;
 use app\payment\MercadoPagoGateway;
+use app\payment\MpesaGateway;
 use app\payment\NetellerGateway;
 use app\payment\NowPaymentsGateway;
 use app\payment\PayPalGateway;
 use app\payment\PayPayGateway;
 use app\payment\PaysafecardGateway;
+use app\payment\PaystackGateway;
 use app\payment\PaytmGateway;
 use app\payment\SkrillGateway;
 use app\payment\StripeGateway;
+use app\payment\TossGateway;
 use PHPUnit\Framework\TestCase;
 use support\Request;
 
@@ -204,6 +207,9 @@ class PaymentGatewayTest extends TestCase
         $this->assertInstanceOf(PayPayGateway::class, GatewayFactory::resolve('paypay'));
         $this->assertInstanceOf(KakaoPayGateway::class, GatewayFactory::resolve('kakaopay'));
         $this->assertInstanceOf(GcashGateway::class, GatewayFactory::resolve('gcash'));
+        $this->assertInstanceOf(MpesaGateway::class, GatewayFactory::resolve('mpesa'));
+        $this->assertInstanceOf(PaystackGateway::class, GatewayFactory::resolve('paystack'));
+        $this->assertInstanceOf(TossGateway::class, GatewayFactory::resolve('toss'));
 
         $this->expectException(\InvalidArgumentException::class);
         GatewayFactory::resolve('bitcoin');

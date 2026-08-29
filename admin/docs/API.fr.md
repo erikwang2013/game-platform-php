@@ -1817,7 +1817,7 @@ GET /admin/analytics/economy
 
 ## 17. Gestion des paiements (Payment)
 
-La gestion des méthodes de paiement est fournie par `PaymentController` ; les 5 endpoints requièrent une authentification JWT + RBAC. Liste blanche `provider` : `stripe` / `nowpayments` / `coinbase`. `config` est une chaîne JSON de configuration de paiement (stockée chiffrée en base).
+La gestion des méthodes de paiement est fournie par `PaymentController` ; les 5 endpoints requièrent une authentification JWT + RBAC. Liste blanche `provider` : `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`. `config` est une chaîne JSON de configuration de paiement (stockée chiffrée en base).
 
 | Méthode | Chemin | Description |
 |------|------|------|
@@ -1867,7 +1867,7 @@ GET /admin/payment/method/list
 | id | string | ID de la méthode de paiement (codé hashid) |
 | name | string | Nom de la méthode de paiement |
 | type | string | `fiat` (monnaie fiduciaire) / `crypto` (cryptomonnaie) |
-| provider | string | Fournisseur de passerelle : `stripe` / `nowpayments` / `coinbase` |
+| provider | string | Fournisseur de passerelle : `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` |
 | status | int | 1=actif, 0=inactif |
 | sort | int | Valeur de tri (croissant) |
 | countries | array{string} | Codes pays visibles (tableau vide = visible mondialement) |
@@ -1924,7 +1924,7 @@ POST /admin/payment/method/create
 |------|------|------|---------|------|
 | name | string | Oui | max:50 | Nom de la méthode de paiement |
 | type | string | Oui | in:fiat,crypto | Type : fiduciaire/cripto |
-| provider | string | Oui | in:stripe,nowpayments,coinbase | Liste blanche des fournisseurs de passerelle |
+| provider | string | Oui | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash | Liste blanche des fournisseurs de passerelle |
 | status | int | Oui | in:0,1 | État |
 | sort | int | Non | integer,min:0 | Valeur de tri, défaut 0 |
 | countries | array{string} | Non | max:2 | Codes pays visibles, vide = mondial |

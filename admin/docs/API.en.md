@@ -1817,7 +1817,7 @@ GET /admin/analytics/economy
 
 ## 17. Payment Management
 
-Payment method management is provided by `PaymentController`; all 5 endpoints require JWT + RBAC authentication. `provider` whitelist: `stripe` / `nowpayments` / `coinbase`. `config` is a JSON string of payment configuration (stored encrypted in the database).
+Payment method management is provided by `PaymentController`; all 5 endpoints require JWT + RBAC authentication. `provider` whitelist: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`. `config` is a JSON string of payment configuration (stored encrypted in the database).
 
 | Method | Path | Description |
 |------|------|------|
@@ -1867,7 +1867,7 @@ GET /admin/payment/method/list
 | id | string | Payment method ID (hashid encoded) |
 | name | string | Payment method name |
 | type | string | `fiat` (fiat currency) / `crypto` (cryptocurrency) |
-| provider | string | Gateway provider: `stripe` / `nowpayments` / `coinbase` |
+| provider | string | Gateway provider: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` |
 | status | int | 1=enabled, 0=disabled |
 | sort | int | Sort order (ascending) |
 | countries | array{string} | Visible country code array (empty array = visible globally) |
@@ -1924,7 +1924,7 @@ POST /admin/payment/method/create
 |------|------|------|---------|------|
 | name | string | Yes | max:50 | Payment method name |
 | type | string | Yes | in:fiat,crypto | Type: fiat/crypto |
-| provider | string | Yes | in:stripe,nowpayments,coinbase | Gateway provider whitelist |
+| provider | string | Yes | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash | Gateway provider whitelist |
 | status | int | Yes | in:0,1 | Status |
 | sort | int | No | integer,min:0 | Sort order, default 0 |
 | countries | array{string} | No | max:2 | Visible country codes, empty = global |

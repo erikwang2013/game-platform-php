@@ -19,3 +19,9 @@ Ein paar Ressourcen für den Einstieg, falls dies dein erstes Flutter-Projekt is
 Für Hilfe beim Einstieg in die Flutter-Entwicklung siehe die
 [Online-Dokumentation](https://docs.flutter.dev/) mit Tutorials,
 Beispielen, Anleitungen zur mobilen Entwicklung und einer vollständigen API-Referenz.
+
+## Projekt-Maskottchen
+
+![Projekt-Maskottchen: Dicey](../../../docs/mascot.svg)
+
+**Dicey** — Plattform-Maskottchen. Der Würfel steht für Spiele und wahrscheinlichkeitsbasiertes Gameplay, die Münze für die Plattform-Ökonomie und die Multi-Payment-Gateways, das Lila spiegelt das Admin-Branding wider. SVG-Quelle: `docs/mascot.svg`, unbegrenzt skalierbar für Doku, Logos und Merchandise.

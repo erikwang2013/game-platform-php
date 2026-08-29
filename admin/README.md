@@ -21,7 +21,7 @@ Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) ·
 | | Excel 批量导入 | 逐行校验 + 错误报告 |
 | 🔒 角色权限 | 角色 CRUD + 权限树 | RBAC method.path 粒度鉴权 |
 | ⚙ 系统配置 | 键值对 CRUD | 分组管理 |
-| 💳 支付方式管理 | 多网关增删改 + 启停 | stripe/nowpayments/coinbase + 国家可见性 |
+| 💳 支付方式管理 | 多网关增删改 + 启停 | 13 个网关（stripe/paypal/nowpayments/coinbase 等）+ 国家可见性 |
 | 📋 操作审计 | 日志查询 + 来源端检测 | 8 平台自动识别 |
 | 📁 文件管理 | 上传/Excel 导出/PDF 导出 | 敏感数据自动脱敏 |
 | 🛡 安全防护 | 18 层纵深防御 | XSS/SQL注入/路径遍历/命令注入/CSRF/限流/CSP... |
@@ -459,3 +459,9 @@ GitHub Actions 持续集成流水线：`.github/workflows/ci.yml`
 MIT
 
 Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+
+## 项目吉祥物
+
+![项目吉祥物：小骰 Dicey](../docs/mascot.svg)
+
+**小骰（Dicey）** — 平台吉祥物。骰子代表游戏与概率玩法，金币代表平台经济与多支付网关，紫色主色调呼应后台品牌。SVG 源文件：`docs/mascot.svg`，可无限缩放用于文档、Logo 与周边。

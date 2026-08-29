@@ -1817,7 +1817,7 @@ GET /admin/analytics/economy
 
 ## 17. Manajemen Pembayaran (Payment)
 
-Manajemen metode pembayaran disediakan oleh `PaymentController`; 5 endpoint semuanya memerlukan autentikasi JWT + RBAC. Daftar putih `provider`: `stripe` / `nowpayments` / `coinbase`. `config` adalah string JSON konfigurasi pembayaran (disimpan terenkripsi di database).
+Manajemen metode pembayaran disediakan oleh `PaymentController`; 5 endpoint semuanya memerlukan autentikasi JWT + RBAC. Daftar putih `provider`: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`. `config` adalah string JSON konfigurasi pembayaran (disimpan terenkripsi di database).
 
 | Metode | Jalur | Deskripsi |
 |------|------|------|
@@ -1867,7 +1867,7 @@ GET /admin/payment/method/list
 | id | string | ID metode pembayaran (dikodekan hashid) |
 | name | string | Nama metode pembayaran |
 | type | string | `fiat` (mata uang fiat) / `crypto` (kripto) |
-| provider | string | Penyedia gateway: `stripe` / `nowpayments` / `coinbase` |
+| provider | string | Penyedia gateway: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` |
 | status | int | 1=aktif, 0=nonaktif |
 | sort | int | Nilai urutan (ascending) |
 | countries | array{string} | Array kode negara yang terlihat (array kosong = terlihat global) |
@@ -1924,7 +1924,7 @@ POST /admin/payment/method/create
 |------|------|------|---------|------|
 | name | string | Ya | max:50 | Nama metode pembayaran |
 | type | string | Ya | in:fiat,crypto | Tipe: fiat/kripto |
-| provider | string | Ya | in:stripe,nowpayments,coinbase | Daftar putih penyedia gateway |
+| provider | string | Ya | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash | Daftar putih penyedia gateway |
 | status | int | Ya | in:0,1 | Status |
 | sort | int | Tidak | integer,min:0 | Urutan, default 0 |
 | countries | array{string} | Tidak | max:2 | Kode negara terlihat, kosong = global |

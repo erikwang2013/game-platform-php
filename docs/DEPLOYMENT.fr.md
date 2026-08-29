@@ -199,15 +199,63 @@ OAUTH_GOOGLE_CLIENT_ID=<obtenu sur Google Cloud Console>
 OAUTH_GOOGLE_CLIENT_SECRET=<secret>
 OAUTH_GOOGLE_REDIRECT_URI=https://your-domain.com/api/auth/oauth/google/callback
 
-# Webhooks de paiement
+# Webhooks de paiement (toss / mpesa / paystack bientôt disponibles)
+STRIPE_SECRET_KEY=<clé secrète Stripe>
 STRIPE_WEBHOOK_SECRET=<obtenu sur le dashboard Stripe>
 PAYPAL_WEBHOOK_ID=<obtenu sur PayPal Developer>
-STRIPE_SECRET_KEY=<clé secrète Stripe>
+PAYPAL_VERIFY_URL=<adresse de vérification du webhook PayPal>
+PAYPAL_CLIENT_ID=<identifiant client PayPal>
+PAYPAL_CLIENT_SECRET=<secret client PayPal>
+PAYPAL_MODE=sandbox  # sandbox / live
 NOWPAYMENTS_API_KEY=<clé API NOWPayments>
 NOWPAYMENTS_IPN_SECRET=<clé de signature IPN>
-NOWPAYMENTS_API_URL=https://api.nowpayments.io  # URL par défaut
+NOWPAYMENTS_API_URL=https://api.nowpayments.io  # adresse par défaut
 COINBASE_COMMERCE_API_KEY=<clé API Coinbase Commerce>
-COINBASE_COMMERCE_WEBHOOK_SECRET=<secret Webhook Coinbase Commerce>
+COINBASE_COMMERCE_WEBHOOK_SECRET=<clé de webhook Coinbase Commerce>
+SKRILL_API_URL=https://pay.skrill.com
+SKRILL_API_KEY=<clé API Skrill>
+SKRILL_MERCHANT_ID=<identifiant marchand Skrill>
+SKRILL_SECRET_WORD=<clé de vérification de signature md5sig>
+NETELLER_API_URL=https://api.neteller.com
+NETELLER_CLIENT_ID=<identifiant client Neteller>
+NETELLER_CLIENT_SECRET=<secret client Neteller>
+NETELLER_SECRET=<clé de vérification de signature>
+PAYSAFECARD_API_URL=https://api.paysafecard.com
+PAYSAFECARD_API_KEY=<clé API Paysafecard>
+PAYSAFECARD_SECRET=<clé de vérification X-Signature HMAC-SHA256>
+PAYTM_MID=<identifiant marchand Paytm>
+PAYTM_KEY=<clé Paytm>
+PAYTM_API_URL=https://securegw.paytm.in
+PAYTM_WEBSITE=DEFAULT  # DEFAULT production / WEBSTAGING test
+MERCADOPAGO_CLIENT_ID=<identifiant client Mercado Pago>
+MERCADOPAGO_CLIENT_SECRET=<secret client Mercado Pago>
+MERCADOPAGO_WEBHOOK_SECRET=<clé de vérification X-Signature>
+MERCADOPAGO_API_URL=https://api.mercadopago.com
+ASTROPAY_LOGIN=<identifiant AstroPay>
+ASTROPAY_API_KEY=<clé API AstroPay>
+ASTROPAY_SECRET=<clé de vérification de signature MD5>
+ASTROPAY_API_URL=https://api.astropaycard.com
+PAYPAY_CLIENT_ID=<identifiant client PayPay>
+PAYPAY_CLIENT_SECRET=<secret client PayPay>
+PAYPAY_SIGNING_KEY=<clé de vérification PayPay-Signature>
+PAYPAY_API_URL=https://api.paypay.ne.jp
+KAKAOPAY_ADMIN_KEY=<clé admin KakaoPay>
+KAKAOPAY_CID=<CID marchand KakaoPay>
+KAKAOPAY_APPROVAL_URL=<URL de redirection après paiement>
+KAKAOPAY_API_URL=https://kapi.kakao.com
+PAYMONGO_API_KEY=<clé API PayMongo>
+PAYMONGO_WEBHOOK_SECRET=<clé de vérification Paymongo-Signature>
+PAYMONGO_API_URL=https://api.paymongo.com/v1
+# bientôt disponibles
+MPESA_CONSUMER_KEY=<clé consommateur M-Pesa>
+MPESA_CONSUMER_SECRET=<secret consommateur M-Pesa>
+MPESA_PASSKEY=<passkey STK Push M-Pesa>
+MPESA_SHORTCODE=<code court M-Pesa>
+MPESA_API_URL=https://api.safaricom.co.ke
+PAYSTACK_SECRET_KEY=<clé secrète Paystack>
+PAYSTACK_API_URL=https://api.paystack.co
+TOSS_SECRET_KEY=<clé secrète Toss>
+TOSS_API_URL=https://api.tosspayments.com
 SITE_URL=https://your-domain.com  # URL du site pour les retours/redirections de paiement
 ```
 

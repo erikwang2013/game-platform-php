@@ -39,6 +39,7 @@ class PaymentController extends BaseController
         'stripe', 'paypal', 'nowpayments', 'coinbase',
         'skrill', 'neteller', 'paysafecard', 'paytm',
         'mercadopago', 'astropay', 'paypay', 'kakaopay', 'gcash',
+        'mpesa', 'paystack', 'toss',
     ];
 
     public function callback(Request $request): Response
@@ -67,6 +68,12 @@ class PaymentController extends BaseController
             if (!in_array((string) $request->getRealIp(), $ips, true)) {
                 return $this->fail('Source IP not allowed', 403);
             }
+        }
+
+        // M-Pesa 回调无签名，CheckoutRequestID 客户端可知（即订单 transaction_id），
+        // 伪造回调即可免费入账 —— 必须配置可信来源 IP 才允许该渠道，否则一律拒绝（fail-closed）
+        if ($provider === 'mpesa' && $trustedIps === '') {
+            return $this->fail('M-Pesa requires CALLBACK_TRUSTED_IPS', 403);
         }
 
         // 解析回调数据：order_no/金额一律取自已验签的报文（或权威回查 API），

@@ -521,7 +521,26 @@ is_new: true=новый зарегистрированный пользоват�
 
 status: success / failed
 
-Допустимые значения provider: stripe / paypal / nowpayments / coinbase (nowpayments проверяет подпись через IPN HMAC-SHA512, coinbase — через webhook HMAC-SHA256)
+Допустимые значения provider: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash (toss / mpesa / paystack скоро)
+
+| provider | Регион | Схема подписи | Поддерживаемые валюты |
+|----------|--------|---------------|-----------------------|
+| stripe | Глобально (125+ локальных способов оплаты, включая Alipay/WeChat Pay APM) | Webhook HMAC-SHA256 | USD / CNY / EUR |
+| paypal | 200+ рынков по всему миру | Проверка webhook (verify-webhook-signature) | USD / CNY / EUR и другие фиатные валюты |
+| nowpayments | Глобально (крипто) | IPN HMAC-SHA512 | USDT TRC20 / ERC20 |
+| coinbase | Глобально (крипто) | Webhook HMAC-SHA256 (base64 secret) | USDC / BTC / ETH |
+| skrill | Европа / Глобально | Проверка MD5 секретного слова | EUR и другие фиатные валюты |
+| neteller | Европа / Глобально | Сравнение поля secret key | EUR и другие фиатные валюты |
+| paysafecard | Европа (DE / AT / CH и др.) | X-Signature HMAC-SHA256 | EUR и другие фиатные валюты |
+| paytm | Индия | SHA256 + AES-128-CBC | INR |
+| mercadopago | Латинская Америка (BR / MX и др.) | X-Signature (ts,v1) HMAC-SHA256 | BRL / MXN и другие фиатные валюты |
+| astropay | Латинская Америка (BR и др.) | MD5(order_id.amount.status.secret) | BRL и другие фиатные валюты |
+| paypay | Япония | PayPay-Signature HMAC-SHA256 | JPY |
+| kakaopay | Южная Корея | Без webhook (двухэтапный ready/approve) | KRW |
+| gcash | Филиппины | Paymongo-Signature HMAC-SHA256 | PHP |
+| toss | Южная Корея (скоро) | — | KRW |
+| mpesa | Кения / Танзания и др. (скоро) | — | KES / TZS |
+| paystack | Нигерия (скоро) | — | NGN |
 
 #### GET /api/payment/methods — доступные способы оплаты (публичный)
 

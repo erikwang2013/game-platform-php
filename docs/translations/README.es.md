@@ -442,3 +442,9 @@ Si este proyecto te resulta útil, escanea el código QR para donar, ¡gracias!
 | Arbitrum One | [<img src="../coin/9.jpg" width="150" alt="Arbitrum One">](../coin/9.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
 | AVAX C-Chain | [<img src="../coin/10.jpg" width="150" alt="AVAX C-Chain">](../coin/10.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
 
+
+## Mascota del proyecto
+
+![Mascota del proyecto: Dicey](../mascot.svg)
+
+**Dicey** — Mascota de la plataforma. El dado representa los juegos y la jugabilidad basada en probabilidad, la moneda la economía de la plataforma y las múltiples pasarelas de pago, y el púrpura refleja la marca del panel de administración. Archivo SVG: `docs/mascot.svg`, escalable infinitamente para documentos, logotipos y productos.

@@ -1817,7 +1817,7 @@ GET /admin/analytics/economy
 
 ## 17. পেমেন্ট ম্যানেজমেন্ট (Payment)
 
-পেমেন্ট পদ্ধতি ব্যবস্থাপনা `PaymentController` দ্বারা সরবরাহ করা হয়; ৫টি এন্ডপয়েন্টেরই JWT + RBAC প্রমাণীকরণ প্রয়োজন। `provider` হোয়াইটলিস্ট: `stripe` / `nowpayments` / `coinbase`। `config` হল পেমেন্ট কনফিগারেশনের JSON স্ট্রিং (ডাটাবেসে এনক্রিপ্টেড সংরক্ষিত)।
+পেমেন্ট পদ্ধতি ব্যবস্থাপনা `PaymentController` দ্বারা সরবরাহ করা হয়; ৫টি এন্ডপয়েন্টেরই JWT + RBAC প্রমাণীকরণ প্রয়োজন। `provider` হোয়াইটলিস্ট: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`। `config` হল পেমেন্ট কনফিগারেশনের JSON স্ট্রিং (ডাটাবেসে এনক্রিপ্টেড সংরক্ষিত)।
 
 | পদ্ধতি | পথ | বিবরণ |
 |------|------|------|
@@ -1867,7 +1867,7 @@ GET /admin/payment/method/list
 | id | string | পেমেন্ট পদ্ধতি ID (hashid এনকোডেড) |
 | name | string | পেমেন্ট পদ্ধতির নাম |
 | type | string | `fiat` (ফিয়াট মুদ্রা) / `crypto` (ক্রিপ্টোকারেন্সি) |
-| provider | string | গেটওয়ে প্রদানকারী: `stripe` / `nowpayments` / `coinbase` |
+| provider | string | গেটওয়ে প্রদানকারী: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` |
 | status | int | 1=সক্রিয়, 0=নিষ্ক্রিয় |
 | sort | int | ক্রম মান (ঊর্ধ্বক্রম) |
 | countries | array{string} | দৃশ্যমান দেশের কোড অ্যারে (খালি অ্যারে = বিশ্বব্যাপী দৃশ্যমান) |
@@ -1924,7 +1924,7 @@ POST /admin/payment/method/create
 |------|------|------|---------|------|
 | name | string | হ্যাঁ | max:50 | পেমেন্ট পদ্ধতির নাম |
 | type | string | হ্যাঁ | in:fiat,crypto | ধরন: ফিয়াট/ক্রিপ্টো |
-| provider | string | হ্যাঁ | in:stripe,nowpayments,coinbase | গেটওয়ে প্রদানকারী হোয়াইটলিস্ট |
+| provider | string | হ্যাঁ | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash | গেটওয়ে প্রদানকারী হোয়াইটলিস্ট |
 | status | int | হ্যাঁ | in:0,1 | অবস্থা |
 | sort | int | না | integer,min:0 | ক্রম মান, ডিফল্ট 0 |
 | countries | array{string} | না | max:2 | দৃশ্যমান দেশের কোড, খালি = বিশ্বব্যাপী |

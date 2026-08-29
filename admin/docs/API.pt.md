@@ -1817,7 +1817,7 @@ GET /admin/analytics/economy
 
 ## 17. Gerenciamento de pagamentos (Payment)
 
-O gerenciamento de métodos de pagamento é fornecido por `PaymentController`; os 5 endpoints exigem autenticação JWT + RBAC. Lista branca de `provider`: `stripe` / `nowpayments` / `coinbase`. `config` é uma string JSON de configuração de pagamento (armazenada criptografada no banco).
+O gerenciamento de métodos de pagamento é fornecido por `PaymentController`; os 5 endpoints exigem autenticação JWT + RBAC. Lista branca de `provider`: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`. `config` é uma string JSON de configuração de pagamento (armazenada criptografada no banco).
 
 | Método | Caminho | Descrição |
 |------|------|------|
@@ -1867,7 +1867,7 @@ GET /admin/payment/method/list
 | id | string | ID do método de pagamento (codificado em hashid) |
 | name | string | Nome do método de pagamento |
 | type | string | `fiat` (moeda fiduciária) / `crypto` (criptomoeda) |
-| provider | string | Provedor de gateway: `stripe` / `nowpayments` / `coinbase` |
+| provider | string | Provedor de gateway: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` |
 | status | int | 1=ativo, 0=inativo |
 | sort | int | Valor de ordenação (crescente) |
 | countries | array{string} | Códigos de país visíveis (array vazio = visível globalmente) |
@@ -1924,7 +1924,7 @@ POST /admin/payment/method/create
 |------|------|------|---------|------|
 | name | string | Sim | max:50 | Nome do método de pagamento |
 | type | string | Sim | in:fiat,crypto | Tipo: fiduciário/cripto |
-| provider | string | Sim | in:stripe,nowpayments,coinbase | Lista branca de provedores de gateway |
+| provider | string | Sim | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash | Lista branca de provedores de gateway |
 | status | int | Sim | in:0,1 | Status |
 | sort | int | Não | integer,min:0 | Ordenação, padrão 0 |
 | countries | array{string} | Não | max:2 | Códigos de país visíveis, vazio = global |

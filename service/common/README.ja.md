@@ -9,3 +9,9 @@ Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) ·
 `packages/platform-common`
 
 このディレクトリには PHP クラスを置かないでください（パッケージのオートロードをシャドウしてしまいます）。`packages/platform-common/README.md` を参照してください。
+
+## プロジェクトマスコット
+
+![プロジェクトマスコット：ダイスィー](../../docs/mascot.svg)
+
+**ダイスィー（Dicey）** — プラットフォームのマスコット。サイコロはゲームと確率ベースのゲームプレイを、コインはプラットフォーム経済とマルチ決済ゲートウェイを、紫のメインカラーは管理画面ブランドを表します。SVG ファイル: `docs/mascot.svg`、文書・ロゴ・グッズに無限に拡大可能。

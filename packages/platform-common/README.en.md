@@ -25,3 +25,9 @@ cd ../service && composer update erik/platform-common
 ## Remaining dual copies
 
 app/model/*, app/common/*Service, most app/service/*, EventBus are still duplicated on both sides.
+
+## Project Mascot
+
+![Project mascot: Dicey](../../docs/mascot.svg)
+
+**Dicey** — Platform mascot. The die represents games and probability-based gameplay, the coin represents the platform economy and multi-payment gateways, and the purple palette echoes the admin branding. SVG source: `docs/mascot.svg`, infinitely scalable for docs, logos and merchandise.

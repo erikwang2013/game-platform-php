@@ -9,3 +9,9 @@ Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.
 `packages/platform-common`
 
 No coloques clases PHP en este directorio (harían sombra al autoload del paquete). Consulta `packages/platform-common/README.es.md`.
+
+## Mascota del proyecto
+
+![Mascota del proyecto: Dicey](../../docs/mascot.svg)
+
+**Dicey** — Mascota de la plataforma. El dado representa los juegos y la jugabilidad basada en probabilidad, la moneda la economía de la plataforma y las múltiples pasarelas de pago, y el púrpura refleja la marca del panel de administración. Archivo SVG: `docs/mascot.svg`, escalable infinitamente para documentos, logotipos y productos.

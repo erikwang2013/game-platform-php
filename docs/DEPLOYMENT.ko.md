@@ -199,16 +199,64 @@ OAUTH_GOOGLE_CLIENT_ID=<从Google Cloud Console获取>
 OAUTH_GOOGLE_CLIENT_SECRET=<密钥>
 OAUTH_GOOGLE_REDIRECT_URI=https://your-domain.com/api/auth/oauth/google/callback
 
-# 결제 Webhook
-STRIPE_WEBHOOK_SECRET=<从Stripe Dashboard获取>
-PAYPAL_WEBHOOK_ID=<从PayPal Developer获取>
-STRIPE_SECRET_KEY=<Stripe 密钥>
-NOWPAYMENTS_API_KEY=<NOWPayments API 密钥>
-NOWPAYMENTS_IPN_SECRET=<IPN 签名密钥>
-NOWPAYMENTS_API_URL=https://api.nowpayments.io  # 默认地址
-COINBASE_COMMERCE_API_KEY=<Coinbase Commerce API 密钥>
-COINBASE_COMMERCE_WEBHOOK_SECRET=<Coinbase Commerce Webhook 密钥>
-SITE_URL=https://your-domain.com  # 支付回调/跳转站点地址
+# 결제 Webhook (toss / mpesa / paystack 연동 예정)
+STRIPE_SECRET_KEY=<Stripe 비밀 키>
+STRIPE_WEBHOOK_SECRET=<Stripe Dashboard에서 획득>
+PAYPAL_WEBHOOK_ID=<PayPal Developer에서 획득>
+PAYPAL_VERIFY_URL=<PayPal Webhook 검증 주소>
+PAYPAL_CLIENT_ID=<PayPal Client ID>
+PAYPAL_CLIENT_SECRET=<PayPal Client Secret>
+PAYPAL_MODE=sandbox  # sandbox / live
+NOWPAYMENTS_API_KEY=<NOWPayments API 키>
+NOWPAYMENTS_IPN_SECRET=<IPN 서명 키>
+NOWPAYMENTS_API_URL=https://api.nowpayments.io  # 기본 주소
+COINBASE_COMMERCE_API_KEY=<Coinbase Commerce API 키>
+COINBASE_COMMERCE_WEBHOOK_SECRET=<Coinbase Commerce Webhook 키>
+SKRILL_API_URL=https://pay.skrill.com
+SKRILL_API_KEY=<Skrill API 키>
+SKRILL_MERCHANT_ID=<Skrill 가맹점 번호>
+SKRILL_SECRET_WORD=<콜백 서명 검증 키 md5sig>
+NETELLER_API_URL=https://api.neteller.com
+NETELLER_CLIENT_ID=<Neteller Client ID>
+NETELLER_CLIENT_SECRET=<Neteller Client Secret>
+NETELLER_SECRET=<콜백 서명 검증 키>
+PAYSAFECARD_API_URL=https://api.paysafecard.com
+PAYSAFECARD_API_KEY=<Paysafecard API 키>
+PAYSAFECARD_SECRET=<콜백 서명 검증 키 X-Signature HMAC-SHA256>
+PAYTM_MID=<Paytm 가맹점 번호>
+PAYTM_KEY=<Paytm 키>
+PAYTM_API_URL=https://securegw.paytm.in
+PAYTM_WEBSITE=DEFAULT  # 운영 DEFAULT / 스테이징 WEBSTAGING
+MERCADOPAGO_CLIENT_ID=<Mercado Pago Client ID>
+MERCADOPAGO_CLIENT_SECRET=<Mercado Pago Client Secret>
+MERCADOPAGO_WEBHOOK_SECRET=<Webhook 서명 검증 키 X-Signature>
+MERCADOPAGO_API_URL=https://api.mercadopago.com
+ASTROPAY_LOGIN=<AstroPay 로그인 이름>
+ASTROPAY_API_KEY=<AstroPay API 키>
+ASTROPAY_SECRET=<콜백 서명 검증 키 MD5>
+ASTROPAY_API_URL=https://api.astropaycard.com
+PAYPAY_CLIENT_ID=<PayPay Client ID>
+PAYPAY_CLIENT_SECRET=<PayPay Client Secret>
+PAYPAY_SIGNING_KEY=<Webhook 서명 검증 키 PayPay-Signature>
+PAYPAY_API_URL=https://api.paypay.ne.jp
+KAKAOPAY_ADMIN_KEY=<KakaoPay Admin Key>
+KAKAOPAY_CID=<KakaoPay 가맹점 CID>
+KAKAOPAY_APPROVAL_URL=<결제 후 승인 리다이렉트 URL>
+KAKAOPAY_API_URL=https://kapi.kakao.com
+PAYMONGO_API_KEY=<PayMongo API 키>
+PAYMONGO_WEBHOOK_SECRET=<Webhook 서명 검증 키 Paymongo-Signature>
+PAYMONGO_API_URL=https://api.paymongo.com/v1
+# 연동 예정
+MPESA_CONSUMER_KEY=<M-Pesa Consumer Key>
+MPESA_CONSUMER_SECRET=<M-Pesa Consumer Secret>
+MPESA_PASSKEY=<M-Pesa STK Push Passkey>
+MPESA_SHORTCODE=<M-Pesa 단축 코드>
+MPESA_API_URL=https://api.safaricom.co.ke
+PAYSTACK_SECRET_KEY=<Paystack Secret Key>
+PAYSTACK_API_URL=https://api.paystack.co
+TOSS_SECRET_KEY=<Toss Secret Key>
+TOSS_API_URL=https://api.tosspayments.com
+SITE_URL=https://your-domain.com  # 결제 콜백/리다이렉트 사이트 주소
 ```
 
 ### 3.4 서비스 시작

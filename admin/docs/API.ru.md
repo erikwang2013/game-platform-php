@@ -1817,7 +1817,7 @@ GET /admin/analytics/economy
 
 ## 17. Управление платежами (Payment)
 
-Управление способами оплаты предоставляется `PaymentController`; все 5 эндпоинтов требуют аутентификации JWT + RBAC. Белый список `provider`: `stripe` / `nowpayments` / `coinbase`. `config` — строка JSON с конфигурацией оплаты (хранится в БД в зашифрованном виде).
+Управление способами оплаты предоставляется `PaymentController`; все 5 эндпоинтов требуют аутентификации JWT + RBAC. Белый список `provider`: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`. `config` — строка JSON с конфигурацией оплаты (хранится в БД в зашифрованном виде).
 
 | Метод | Путь | Описание |
 |------|------|------|
@@ -1867,7 +1867,7 @@ GET /admin/payment/method/list
 | id | string | ID способа оплаты (кодировка hashid) |
 | name | string | Название способа оплаты |
 | type | string | `fiat` (фиатная валюта) / `crypto` (криптовалюта) |
-| provider | string | Провайдер шлюза: `stripe` / `nowpayments` / `coinbase` |
+| provider | string | Провайдер шлюза: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` |
 | status | int | 1=включен, 0=отключен |
 | sort | int | Порядок сортировки (по возрастанию) |
 | countries | array{string} | Массив видимых кодов стран (пустой массив = виден глобально) |
@@ -1924,7 +1924,7 @@ POST /admin/payment/method/create
 |------|------|------|---------|------|
 | name | string | Да | max:50 | Название способа оплаты |
 | type | string | Да | in:fiat,crypto | Тип: фиат/крипто |
-| provider | string | Да | in:stripe,nowpayments,coinbase | Белый список провайдеров шлюза |
+| provider | string | Да | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash | Белый список провайдеров шлюза |
 | status | int | Да | in:0,1 | Статус |
 | sort | int | Нет | integer,min:0 | Порядок сортировки, по умолчанию 0 |
 | countries | array{string} | Нет | max:2 | Коды видимых стран, пусто = глобально |

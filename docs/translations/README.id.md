@@ -442,3 +442,9 @@ Jika proyek ini membantu Anda, silakan pindai kode QR untuk berdonasi, terima ka
 | Arbitrum One | [<img src="../coin/9.jpg" width="150" alt="Arbitrum One">](../coin/9.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
 | AVAX C-Chain | [<img src="../coin/10.jpg" width="150" alt="AVAX C-Chain">](../coin/10.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
 
+
+## Maskot Proyek
+
+![Maskot proyek: Dicey](../mascot.svg)
+
+**Dicey** — Maskot platform. Dadu melambangkan permainan dan gameplay berbasis probabilitas, koin melambangkan ekonomi platform dan multi-gateway pembayaran, dan warna ungu mencerminkan branding admin. File SVG: `docs/mascot.svg`, dapat diskalakan tanpa batas untuk dokumen, logo, dan merchandise.

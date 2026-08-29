@@ -45,6 +45,12 @@ Languages: **中文** · [English](docs/translations/README.en.md) · [한국어
 - `erikwang2013/poster-php` — 敏感操作随机验证
 - `erikwang2013/clickhouse-php` — ClickHouse 连接与概率计算
 
+## 项目吉祥物
+
+![项目吉祥物：小骰 Dicey](docs/mascot.svg)
+
+**小骰（Dicey）** — 平台吉祥物。骰子代表游戏与概率玩法，金币代表平台经济与多支付网关，紫色主色调呼应后台品牌。SVG 源文件：`docs/mascot.svg`，可无限缩放用于文档、Logo 与周边。
+
 ## 项目结构
 
 ```
@@ -208,7 +214,7 @@ curl -X POST http://localhost:8788/api/auth/register \
 - **HTTP 方法白名单**：仅允许 GET/POST/PUT/DELETE/OPTIONS/HEAD
 - **JWT 认证**：access_token 2h + refresh_token 14d，并发会话限制
 - **JWT 密钥启动校验**：admin 端 `ADMIN_JWT_SECRET_KEY`、service 端 `SERVICE_JWT_SECRET_KEY` 独立密钥，缺失或仍为默认值直接拒绝启动
-- **支付回调 fail-closed**：provider 白名单（stripe/paypal/nowpayments/coinbase）+ 未配密钥/验签失败/时间戳超限一律拒绝 + bccomp 金额核对 + 回调入账事务化
+- **支付回调 fail-closed**：provider 白名单（stripe/paypal/nowpayments/coinbase/skrill/neteller/paysafecard/paytm/mercadopago/astropay/paypay/kakaopay/gcash）+ 未配密钥/验签失败/时间戳超限一律拒绝 + bccomp 金额核对 + 回调入账事务化
 - **RBAC 权限**：method.path 粒度权限控制，Redis 60s 缓存
 - **点击验证码**：登录/注册强制人机验证
 - **密码二次确认**：敏感操作需输入密码确认
@@ -254,7 +260,7 @@ cd admin/apps/flutter && flutter test --timeout 300s
 |------|------|
 | 用户认证 | 用户名密码 + 7平台 OAuth (Google/Facebook/Apple/X(Twitter)/Microsoft/LinkedIn/GitHub) + 2FA TOTP |
 | 钱包 | 平台币钱包(乐观锁) + 游戏币钱包 + 流水记录 |
-| 充值 | 创建订单(回填 checkout_url/expires_at) + Stripe/PayPal/NowPayments/Coinbase 回调验签 + 自动到账 |
+| 充值 | 创建订单(回填 checkout_url/expires_at) + Stripe/PayPal/NowPayments/Coinbase 等 13 网关回调验签 + 自动到账 |
 | 兑换 | 平台币⇄游戏币、实时询价、差价收益 |
 | 提现 | 申请→审核→打款、全局开关、KYC阶梯限额+手续费 |
 | KYC | 实名认证提交+审核、三级认证体系 |
@@ -285,7 +291,7 @@ cd admin/apps/flutter && flutter test --timeout 300s
 
 ```
 法币 (USD/CNY/EUR...)
-  │  充值(Stripe/PayPal/NowPayments/Coinbase/支付宝/微信)
+  │  充值(Stripe/PayPal/NowPayments/Coinbase 等/支付宝/微信)
   ▼
 平台币 (统一，精度 decimal(18,4))
   │  兑换（含汇率 + 平台抽成差价）
@@ -304,13 +310,13 @@ cd admin/apps/flutter && flutter test --timeout 300s
 
 | 层级 | 币种 | 说明 |
 |------|------|------|
-| 法币层 | USD / CNY / EUR | 用户充值/提现的实际支付货币，由 Stripe / PayPal / NOWPayments / Coinbase 处理 |
+| 法币层 | USD / CNY / EUR | 用户充值/提现的实际支付货币，由 Stripe / PayPal / NOWPayments / Coinbase 等 13 个网关 处理 |
 | 平台币层 | 平台币（全平台统一） | 内部统一结算货币（decimal(18,4)），钱包乐观锁防并发扣款/重复到账 |
 | 游戏币层 | 每款游戏独立币种 | 每款游戏独立 `exchange_rate` 汇率与 `spread_pct` 点差，独立游戏币钱包 |
 
 ### 结算路径
 
-- **充值结算**：用户以法币支付（Stripe / PayPal / NowPayments / Coinbase 回调验签、幂等防重）→ 按 `default_exchange_rate` 换算平台币入账，充值订单同时记录 `amount + currency + platform_amount`
+- **充值结算**：用户以法币支付（Stripe / PayPal / NowPayments / Coinbase 等 13 个网关回调验签、幂等防重）→ 按 `default_exchange_rate` 换算平台币入账，充值订单同时记录 `amount + currency + platform_amount`
 - **兑换结算**：平台币 ⇄ 游戏币按游戏币种汇率实时询价（quote），扣除 `spread_pct` 点差作为平台差价收益，VIP 享兑换折扣与汇率加成
 - **游戏结算**：游戏 Provider 通过 `/api/provider/settle` 回调增减用户游戏币（HMAC-SHA256 签名），游戏会话超时自动结算
 - **提现结算**：平台币扣款 → 生成提现订单（记录 `platform_amount / fiat_amount / currency`）→ 管理端审批 → PayPal Payout 打款 → 批次状态同步至完成
@@ -320,7 +326,7 @@ cd admin/apps/flutter && flutter test --timeout 300s
 ```mermaid
 flowchart LR
     subgraph FIAT["法币层 Fiat"]
-        A["用户充值<br/>USD / CNY / EUR<br/>Stripe / PayPal / NOWPayments / Coinbase"]
+        A["用户充值<br/>USD / CNY / EUR<br/>Stripe / PayPal / NOWPayments / Coinbase 等 13 个网关"]
         H["提现到账<br/>PayPal Payout"]
     end
 

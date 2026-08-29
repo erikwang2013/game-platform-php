@@ -25,6 +25,9 @@ class GatewayFactory
             'paypay'      => new PayPayGateway(),
             'kakaopay'    => new KakaoPayGateway(),
             'gcash'       => new GcashGateway(),
+            'mpesa'       => new MpesaGateway(),
+            'paystack'    => new PaystackGateway(),
+            'toss'        => new TossGateway(),
             default       => throw new \InvalidArgumentException("Unsupported payment gateway: {$provider}"),
         };
     }

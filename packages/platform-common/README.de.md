@@ -25,3 +25,9 @@ cd ../service && composer update erik/platform-common
 ## Verbleibende Doppelkopien
 
 app/model/*, app/common/*Service, die meisten app/service/*, EventBus sind weiterhin auf beiden Seiten dupliziert.
+
+## Projekt-Maskottchen
+
+![Projekt-Maskottchen: Dicey](../../docs/mascot.svg)
+
+**Dicey** — Plattform-Maskottchen. Der Würfel steht für Spiele und wahrscheinlichkeitsbasiertes Gameplay, die Münze für die Plattform-Ökonomie und die Multi-Payment-Gateways, das Lila spiegelt das Admin-Branding wider. SVG-Quelle: `docs/mascot.svg`, unbegrenzt skalierbar für Doku, Logos und Merchandise.

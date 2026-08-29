@@ -199,15 +199,63 @@ OAUTH_GOOGLE_CLIENT_ID=<Google Cloud Console से प्राप्त>
 OAUTH_GOOGLE_CLIENT_SECRET=<कुंजी>
 OAUTH_GOOGLE_REDIRECT_URI=https://your-domain.com/api/auth/oauth/google/callback
 
-# भुगतान Webhook
+# भुगतान Webhook (toss / mpesa / paystack जल्द आ रहे हैं)
+STRIPE_SECRET_KEY=<Stripe गुप्त कुंजी>
 STRIPE_WEBHOOK_SECRET=<Stripe Dashboard से प्राप्त>
 PAYPAL_WEBHOOK_ID=<PayPal Developer से प्राप्त>
-STRIPE_SECRET_KEY=<Stripe गुप्त कुंजी>
+PAYPAL_VERIFY_URL=<PayPal Webhook सत्यापन पता>
+PAYPAL_CLIENT_ID=<PayPal Client ID>
+PAYPAL_CLIENT_SECRET=<PayPal Client Secret>
+PAYPAL_MODE=sandbox  # sandbox / live
 NOWPAYMENTS_API_KEY=<NOWPayments API कुंजी>
 NOWPAYMENTS_IPN_SECRET=<IPN हस्ताक्षर कुंजी>
-NOWPAYMENTS_API_URL=https://api.nowpayments.io  # डिफ़ॉल्ट
+NOWPAYMENTS_API_URL=https://api.nowpayments.io  # डिफ़ॉल्ट पता
 COINBASE_COMMERCE_API_KEY=<Coinbase Commerce API कुंजी>
-COINBASE_COMMERCE_WEBHOOK_SECRET=<Coinbase Commerce Webhook गुप्त कुंजी>
+COINBASE_COMMERCE_WEBHOOK_SECRET=<Coinbase Commerce Webhook कुंजी>
+SKRILL_API_URL=https://pay.skrill.com
+SKRILL_API_KEY=<Skrill API कुंजी>
+SKRILL_MERCHANT_ID=<Skrill व्यापारी आईडी>
+SKRILL_SECRET_WORD=<कॉलबैक हस्ताक्षर सत्यापन कुंजी md5sig>
+NETELLER_API_URL=https://api.neteller.com
+NETELLER_CLIENT_ID=<Neteller Client ID>
+NETELLER_CLIENT_SECRET=<Neteller Client Secret>
+NETELLER_SECRET=<कॉलबैक हस्ताक्षर सत्यापन कुंजी>
+PAYSAFECARD_API_URL=https://api.paysafecard.com
+PAYSAFECARD_API_KEY=<Paysafecard API कुंजी>
+PAYSAFECARD_SECRET=<कॉलबैक हस्ताक्षर सत्यापन कुंजी X-Signature HMAC-SHA256>
+PAYTM_MID=<Paytm व्यापारी आईडी>
+PAYTM_KEY=<Paytm कुंजी>
+PAYTM_API_URL=https://securegw.paytm.in
+PAYTM_WEBSITE=DEFAULT  # प्रोडक्शन DEFAULT / स्टेजिंग WEBSTAGING
+MERCADOPAGO_CLIENT_ID=<Mercado Pago Client ID>
+MERCADOPAGO_CLIENT_SECRET=<Mercado Pago Client Secret>
+MERCADOPAGO_WEBHOOK_SECRET=<Webhook हस्ताक्षर सत्यापन कुंजी X-Signature>
+MERCADOPAGO_API_URL=https://api.mercadopago.com
+ASTROPAY_LOGIN=<AstroPay लॉगिन नाम>
+ASTROPAY_API_KEY=<AstroPay API कुंजी>
+ASTROPAY_SECRET=<कॉलबैक हस्ताक्षर सत्यापन कुंजी MD5>
+ASTROPAY_API_URL=https://api.astropaycard.com
+PAYPAY_CLIENT_ID=<PayPay Client ID>
+PAYPAY_CLIENT_SECRET=<PayPay Client Secret>
+PAYPAY_SIGNING_KEY=<Webhook हस्ताक्षर सत्यापन कुंजी PayPay-Signature>
+PAYPAY_API_URL=https://api.paypay.ne.jp
+KAKAOPAY_ADMIN_KEY=<KakaoPay Admin Key>
+KAKAOPAY_CID=<KakaoPay व्यापारी CID>
+KAKAOPAY_APPROVAL_URL=<भुगतान के बाद स्वीकृति रीडायरेक्ट URL>
+KAKAOPAY_API_URL=https://kapi.kakao.com
+PAYMONGO_API_KEY=<PayMongo API कुंजी>
+PAYMONGO_WEBHOOK_SECRET=<Webhook हस्ताक्षर सत्यापन कुंजी Paymongo-Signature>
+PAYMONGO_API_URL=https://api.paymongo.com/v1
+# जल्द आ रहे हैं
+MPESA_CONSUMER_KEY=<M-Pesa Consumer Key>
+MPESA_CONSUMER_SECRET=<M-Pesa Consumer Secret>
+MPESA_PASSKEY=<M-Pesa STK Push Passkey>
+MPESA_SHORTCODE=<M-Pesa शॉर्ट कोड>
+MPESA_API_URL=https://api.safaricom.co.ke
+PAYSTACK_SECRET_KEY=<Paystack Secret Key>
+PAYSTACK_API_URL=https://api.paystack.co
+TOSS_SECRET_KEY=<Toss Secret Key>
+TOSS_API_URL=https://api.tosspayments.com
 SITE_URL=https://your-domain.com  # भुगतान कॉलबैक/रीडायरेक्ट साइट URL
 ```
 

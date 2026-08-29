@@ -1817,7 +1817,7 @@ GET /admin/analytics/economy
 
 ## 17. Zahlungsverwaltung (Payment)
 
-Die Zahlungsmethoden-Verwaltung wird von `PaymentController` bereitgestellt; alle 5 Endpunkte erfordern JWT + RBAC-Authentifizierung. `provider`-Whitelist: `stripe` / `nowpayments` / `coinbase`. `config` ist ein JSON-String der Zahlungskonfiguration (verschlüsselt in der Datenbank gespeichert).
+Die Zahlungsmethoden-Verwaltung wird von `PaymentController` bereitgestellt; alle 5 Endpunkte erfordern JWT + RBAC-Authentifizierung. `provider`-Whitelist: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`. `config` ist ein JSON-String der Zahlungskonfiguration (verschlüsselt in der Datenbank gespeichert).
 
 | Methode | Pfad | Beschreibung |
 |------|------|------|
@@ -1867,7 +1867,7 @@ GET /admin/payment/method/list
 | id | string | Zahlungsmethoden-ID (hashid-kodiert) |
 | name | string | Name der Zahlungsmethode |
 | type | string | `fiat` (Fiat-Währung) / `crypto` (Kryptowährung) |
-| provider | string | Gateway-Anbieter: `stripe` / `nowpayments` / `coinbase` |
+| provider | string | Gateway-Anbieter: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` |
 | status | int | 1=aktiviert, 0=deaktiviert |
 | sort | int | Sortierwert (aufsteigend) |
 | countries | array{string} | Sichtbare Länder-Codes (leeres Array = global sichtbar) |
@@ -1924,7 +1924,7 @@ POST /admin/payment/method/create
 |------|------|------|---------|------|
 | name | string | Ja | max:50 | Name der Zahlungsmethode |
 | type | string | Ja | in:fiat,crypto | Typ: Fiat/Krypto |
-| provider | string | Ja | in:stripe,nowpayments,coinbase | Gateway-Anbieter-Whitelist |
+| provider | string | Ja | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash | Gateway-Anbieter-Whitelist |
 | status | int | Ja | in:0,1 | Status |
 | sort | int | Nein | integer,min:0 | Sortierwert, Standard 0 |
 | countries | array{string} | Nein | max:2 | Sichtbare Länder-Codes, leer = global |

@@ -521,7 +521,26 @@ is_new: true=新注册用户 / false=已有账号绑定
 
 status: success / failed
 
-provider 可选值: stripe / paypal / nowpayments / coinbase（nowpayments 使用 IPN HMAC-SHA512 验签，coinbase 使用 webhook HMAC-SHA256）
+provider 可选值: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash（toss / mpesa / paystack 接入中）
+
+| provider | 区域 | 签名方案 | 支持币种 |
+|----------|------|----------|----------|
+| stripe | 全球（125+ 本地支付方式，含 Alipay/WeChat Pay APM） | Webhook HMAC-SHA256 | USD / CNY / EUR |
+| paypal | 全球 200+ 市场 | Webhook 验签（verify-webhook-signature） | USD / CNY / EUR 等法币 |
+| nowpayments | 全球（加密币） | IPN HMAC-SHA512 | USDT TRC20 / ERC20 |
+| coinbase | 全球（加密币） | Webhook HMAC-SHA256（base64 secret） | USDC / BTC / ETH |
+| skrill | 欧洲 / 全球 | Secret word MD5 校验 | EUR 等法币 |
+| neteller | 欧洲 / 全球 | Secret key 字段比对 | EUR 等法币 |
+| paysafecard | 欧洲（DE / AT / CH 等） | X-Signature HMAC-SHA256 | EUR 等法币 |
+| paytm | 印度 | SHA256 + AES-128-CBC | INR |
+| mercadopago | 拉丁美洲（BR / MX 等） | X-Signature（ts,v1）HMAC-SHA256 | BRL / MXN 等法币 |
+| astropay | 拉丁美洲（BR 等） | MD5(order_id.amount.status.secret) | BRL 等法币 |
+| paypay | 日本 | PayPay-Signature HMAC-SHA256 | JPY |
+| kakaopay | 韩国 | 无 Webhook（ready/approve 两步） | KRW |
+| gcash | 菲律宾 | Paymongo-Signature HMAC-SHA256 | PHP |
+| toss | 韩国（接入中） | — | KRW |
+| mpesa | 肯尼亚 / 坦桑尼亚等（接入中） | — | KES / TZS |
+| paystack | 尼日利亚（接入中） | — | NGN |
 
 #### GET /api/payment/methods — 可用支付方式（公开）
 

@@ -9,3 +9,9 @@ Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) ·
 `packages/platform-common`
 
 Lege keine PHP-Klassen in dieses Verzeichnis (sie würden den Paket-Autoload überschatten). Siehe `packages/platform-common/README.md`.
+
+## Projekt-Maskottchen
+
+![Projekt-Maskottchen: Dicey](../../docs/mascot.svg)
+
+**Dicey** — Plattform-Maskottchen. Der Würfel steht für Spiele und wahrscheinlichkeitsbasiertes Gameplay, die Münze für die Plattform-Ökonomie und die Multi-Payment-Gateways, das Lila spiegelt das Admin-Branding wider. SVG-Quelle: `docs/mascot.svg`, unbegrenzt skalierbar für Doku, Logos und Merchandise.

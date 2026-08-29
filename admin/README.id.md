@@ -453,3 +453,9 @@ Untuk deployment produksi, lihat `docs/nginx-security.conf` untuk konfigurasi pe
 MIT
 
 Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+
+## Maskot Proyek
+
+![Maskot proyek: Dicey](../docs/mascot.svg)
+
+**Dicey** — Maskot platform. Dadu melambangkan permainan dan gameplay berbasis probabilitas, koin melambangkan ekonomi platform dan multi-gateway pembayaran, dan warna ungu mencerminkan branding admin. File SVG: `docs/mascot.svg`, dapat diskalakan tanpa batas untuk dokumen, logo, dan merchandise.

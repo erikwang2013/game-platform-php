@@ -521,7 +521,26 @@ is_new: true=नया पंजीकृत उपयोगकर्ता / fa
 
 status: success / failed
 
-provider के मान: stripe / paypal / nowpayments / coinbase (nowpayments IPN HMAC-SHA512 से सत्यापित करता है, coinbase webhook HMAC-SHA256 से)
+provider के मान: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash (toss / mpesa / paystack जल्द आ रहे हैं)
+
+| provider | क्षेत्र | हस्ताक्षर योजना | समर्थित मुद्राएँ |
+|----------|---------|----------------|------------------|
+| stripe | वैश्विक (125+ स्थानीय भुगतान विधियाँ, Alipay/WeChat Pay APM सहित) | Webhook HMAC-SHA256 | USD / CNY / EUR |
+| paypal | दुनिया भर के 200+ बाज़ार | Webhook सत्यापन (verify-webhook-signature) | USD / CNY / EUR और अन्य फिएट |
+| nowpayments | वैश्विक (क्रिप्टो) | IPN HMAC-SHA512 | USDT TRC20 / ERC20 |
+| coinbase | वैश्विक (क्रिप्टो) | Webhook HMAC-SHA256 (base64 secret) | USDC / BTC / ETH |
+| skrill | यूरोप / वैश्विक | Secret word MD5 जांच | EUR और अन्य फिएट |
+| neteller | यूरोप / वैश्विक | Secret key फ़ील्ड तुलना | EUR और अन्य फिएट |
+| paysafecard | यूरोप (DE / AT / CH आदि) | X-Signature HMAC-SHA256 | EUR और अन्य फिएट |
+| paytm | भारत | SHA256 + AES-128-CBC | INR |
+| mercadopago | लैटिन अमेरिका (BR / MX आदि) | X-Signature (ts,v1) HMAC-SHA256 | BRL / MXN और अन्य फिएट |
+| astropay | लैटिन अमेरिका (BR आदि) | MD5(order_id.amount.status.secret) | BRL और अन्य फिएट |
+| paypay | जापान | PayPay-Signature HMAC-SHA256 | JPY |
+| kakaopay | दक्षिण कोरिया | कोई webhook नहीं (ready/approve दो-चरणीय) | KRW |
+| gcash | फिलीपींस | Paymongo-Signature HMAC-SHA256 | PHP |
+| toss | दक्षिण कोरिया (जल्द आ रहा है) | — | KRW |
+| mpesa | केन्या / तंजानिया आदि (जल्द आ रहा है) | — | KES / TZS |
+| paystack | नाइजीरिया (जल्द आ रहा है) | — | NGN |
 
 #### GET /api/payment/methods — उपलब्ध भुगतान विधियाँ (सार्वजनिक)
 

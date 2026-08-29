@@ -1015,7 +1015,10 @@ INSERT IGNORE INTO `game_payment_method` (`id`, `name`, `type`, `provider`, `con
 (50000000000000062, 'AstroPay', 'fiat', 'astropay', '{"country":"BR"}', 1, 120, '["BR","AR","CO","PE","UY","MX"]', '', 0.0000, 0.0000),
 (50000000000000063, 'PayPay', 'fiat', 'paypay', '{}', 1, 130, '["JP"]', 'JPY', 100.0000, 50000.0000),
 (50000000000000064, 'KakaoPay', 'fiat', 'kakaopay', '{}', 1, 140, '["KR"]', 'KRW', 1000.0000, 1000000.0000),
-(50000000000000065, 'GCash', 'fiat', 'gcash', '{}', 1, 150, '["PH"]', 'PHP', 100.0000, 50000.0000);
+(50000000000000065, 'GCash', 'fiat', 'gcash', '{}', 1, 150, '["PH"]', 'PHP', 100.0000, 50000.0000),
+(50000000000000066, 'M-Pesa', 'fiat', 'mpesa', '{}', 1, 160, '["KE"]', 'KES', 10.0000, 100000.0000),
+(50000000000000067, 'Paystack', 'fiat', 'paystack', '{}', 1, 170, '["NG"]', 'NGN', 100.0000, 1000000.0000),
+(50000000000000068, 'Toss Payments', 'fiat', 'toss', '{}', 1, 145, '["KR"]', 'KRW', 1000.0000, 1000000.0000);
 
 -- 默认国家配置
 INSERT IGNORE INTO `game_country_config` (`id`, `country_code`, `currency`, `payment_methods`, `withdraw_methods`, `min_deposit`) VALUES

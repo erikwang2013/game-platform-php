@@ -1817,7 +1817,7 @@ GET /admin/analytics/economy
 
 ## 17. إدارة الدفع (Payment)
 
-توفر إدارة طرق الدفع عبر `PaymentController`؛ جميع نقاط النهاية الخمس تتطلب مصادقة JWT + RBAC. القائمة البيضاء لـ `provider`: `stripe` / `nowpayments` / `coinbase`. `config` عبارة عن سلسلة JSON لإعدادات الدفع (مخزنة مشفرة في قاعدة البيانات).
+توفر إدارة طرق الدفع عبر `PaymentController`؛ جميع نقاط النهاية الخمس تتطلب مصادقة JWT + RBAC. القائمة البيضاء لـ `provider`: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`. `config` عبارة عن سلسلة JSON لإعدادات الدفع (مخزنة مشفرة في قاعدة البيانات).
 
 | الطريقة | المسار | الوصف |
 |------|------|------|
@@ -1867,7 +1867,7 @@ GET /admin/payment/method/list
 | id | string | معرف طريقة الدفع (مشفر hashid) |
 | name | string | اسم طريقة الدفع |
 | type | string | `fiat` (عملة ورقية) / `crypto` (عملة رقمية) |
-| provider | string | مزود البوابة: `stripe` / `nowpayments` / `coinbase` |
+| provider | string | مزود البوابة: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` |
 | status | int | 1=مفعل, 0=معطل |
 | sort | int | قيمة الترتيب (تصاعديًا) |
 | countries | array{string} | مصفوفة رموز الدول المرئية (مصفوفة فارغة = مرئي عالميًا) |
@@ -1924,7 +1924,7 @@ POST /admin/payment/method/create
 |------|------|------|---------|------|
 | name | string | نعم | max:50 | اسم طريقة الدفع |
 | type | string | نعم | in:fiat,crypto | النوع: ورقية/رقمية |
-| provider | string | نعم | in:stripe,nowpayments,coinbase | القائمة البيضاء لمزودي البوابة |
+| provider | string | نعم | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash | القائمة البيضاء لمزودي البوابة |
 | status | int | نعم | in:0,1 | الحالة |
 | sort | int | لا | integer,min:0 | الترتيب، الافتراضي 0 |
 | countries | array{string} | لا | max:2 | رموز الدول المرئية، فارغ = عالمي |

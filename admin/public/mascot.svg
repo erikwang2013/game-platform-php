@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200" role="img" aria-label="Game Platform 吉祥物：小骰 Dicey">
+  <defs>
+    <linearGradient id="m-body" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8f6cff"/>
+      <stop offset="1" stop-color="#4a2fd0"/>
+    </linearGradient>
+    <linearGradient id="m-coin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffe08a"/>
+      <stop offset="1" stop-color="#f5a623"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 地面阴影 -->
+  <ellipse cx="112" cy="176" rx="84" ry="12" fill="#3a2a6b" opacity="0.18"/>
+
+  <!-- 骰子主体 -->
+  <g transform="rotate(-8 100 94)">
+    <rect x="38" y="32" width="124" height="124" rx="28" fill="url(#m-body)"/>
+    <rect x="38" y="32" width="124" height="124" rx="28" fill="none" stroke="#ffffff" stroke-opacity="0.22" stroke-width="3"/>
+    <path d="M52 50 Q72 40 96 46" fill="none" stroke="#ffffff" stroke-opacity="0.4" stroke-width="6" stroke-linecap="round"/>
+
+    <!-- 四角点数 -->
+    <circle cx="62" cy="56" r="8" fill="#ffffff" opacity="0.95"/>
+    <circle cx="138" cy="56" r="8" fill="#ffffff" opacity="0.95"/>
+    <circle cx="62" cy="132" r="8" fill="#ffffff" opacity="0.95"/>
+    <circle cx="138" cy="132" r="8" fill="#ffffff" opacity="0.95"/>
+
+    <!-- 眼睛 -->
+    <ellipse cx="86" cy="88" rx="10" ry="13" fill="#ffffff"/>
+    <ellipse cx="114" cy="88" rx="10" ry="13" fill="#ffffff"/>
+    <circle cx="88" cy="90" r="5.5" fill="#2b1a5e"/>
+    <circle cx="112" cy="90" r="5.5" fill="#2b1a5e"/>
+    <circle cx="90" cy="87" r="2" fill="#ffffff"/>
+    <circle cx="114" cy="87" r="2" fill="#ffffff"/>
+
+    <!-- 微笑 -->
+    <path d="M94 104 Q100 112 106 104" fill="none" stroke="#2b1a5e" stroke-width="3.5" stroke-linecap="round"/>
+
+    <!-- 腮红 -->
+    <ellipse cx="74" cy="104" rx="6" ry="4" fill="#ff8fb3" opacity="0.55"/>
+    <ellipse cx="126" cy="104" rx="6" ry="4" fill="#ff8fb3" opacity="0.55"/>
+  </g>
+
+  <!-- 金币 -->
+  <g transform="rotate(10 178 96)">
+    <circle cx="178" cy="96" r="34" fill="url(#m-coin)"/>
+    <circle cx="178" cy="96" r="27" fill="none" stroke="#c77f14" stroke-opacity="0.5" stroke-width="3"/>
+    <text x="178" y="107" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#4a2fd0">G</text>
+  </g>
+
+  <!-- 星光 -->
+  <path d="M196 46 Q200 54 208 58 Q200 62 196 70 Q192 62 184 58 Q192 54 196 46Z" fill="#ffe08a"/>
+  <path d="M40 172 Q43 177 48 180 Q43 183 40 188 Q37 183 32 180 Q37 177 40 172Z" fill="#ffe08a" opacity="0.8"/>
+  <circle cx="170" cy="148" r="3" fill="#ffe08a" opacity="0.7"/>
+</svg>

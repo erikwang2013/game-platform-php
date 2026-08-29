@@ -500,7 +500,26 @@ is_new: true=新注册用户 / false=已有账号绑定
 
 status: success / failed
 
-provider values: stripe / paypal / nowpayments / coinbase (nowpayments verifies via IPN HMAC-SHA512, coinbase via webhook HMAC-SHA256)
+provider values: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash (toss / mpesa / paystack coming soon)
+
+| provider | Region | Signature scheme | Supported currencies |
+|----------|--------|------------------|----------------------|
+| stripe | Global (125+ local payment methods, incl. Alipay/WeChat Pay APM) | Webhook HMAC-SHA256 | USD / CNY / EUR |
+| paypal | 200+ markets worldwide | Webhook verify-webhook-signature | USD / CNY / EUR and other fiat |
+| nowpayments | Global (crypto) | IPN HMAC-SHA512 | USDT TRC20 / ERC20 |
+| coinbase | Global (crypto) | Webhook HMAC-SHA256 (base64 secret) | USDC / BTC / ETH |
+| skrill | Europe / Global | Secret word MD5 check | EUR and other fiat |
+| neteller | Europe / Global | Secret key field comparison | EUR and other fiat |
+| paysafecard | Europe (DE / AT / CH etc.) | X-Signature HMAC-SHA256 | EUR and other fiat |
+| paytm | India | SHA256 + AES-128-CBC | INR |
+| mercadopago | Latin America (BR / MX etc.) | X-Signature (ts,v1) HMAC-SHA256 | BRL / MXN and other fiat |
+| astropay | Latin America (BR etc.) | MD5(order_id.amount.status.secret) | BRL and other fiat |
+| paypay | Japan | PayPay-Signature HMAC-SHA256 | JPY |
+| kakaopay | South Korea | No webhook (ready/approve two-step) | KRW |
+| gcash | Philippines | Paymongo-Signature HMAC-SHA256 | PHP |
+| toss | South Korea (coming soon) | — | KRW |
+| mpesa | Kenya / Tanzania etc. (coming soon) | — | KES / TZS |
+| paystack | Nigeria (coming soon) | — | NGN |
 
 #### GET /api/payment/methods — Available Payment Methods (public)
 ```

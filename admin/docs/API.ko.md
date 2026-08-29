@@ -1817,7 +1817,7 @@ GET /admin/analytics/economy
 
 ## 17. 결제 관리 (Payment)
 
-결제 수단 관리는 `PaymentController`가 제공하며, 5개 엔드포인트 모두 JWT + RBAC 인증이 필요합니다. `provider` 화이트리스트: `stripe` / `nowpayments` / `coinbase`. `config`는 결제 설정 JSON 문자열(DB에 암호화 저장)입니다.
+결제 수단 관리는 `PaymentController`가 제공하며, 5개 엔드포인트 모두 JWT + RBAC 인증이 필요합니다. `provider` 화이트리스트: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`. `config`는 결제 설정 JSON 문자열(DB에 암호화 저장)입니다.
 
 | 메서드 | 경로 | 설명 |
 |------|------|------|
@@ -1867,7 +1867,7 @@ GET /admin/payment/method/list
 | id | string | 결제 수단 ID(hashid 인코딩) |
 | name | string | 결제 수단 이름 |
 | type | string | `fiat`(법정화폐) / `crypto`(암호화폐) |
-| provider | string | 게이트웨이 제공자: `stripe` / `nowpayments` / `coinbase` |
+| provider | string | 게이트웨이 제공자: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` |
 | status | int | 1=활성, 0=비활성 |
 | sort | int | 정렬값(오름차순) |
 | countries | array{string} | 표시 대상 국가 코드 배열(빈 배열=전 세계 표시) |
@@ -1924,7 +1924,7 @@ POST /admin/payment/method/create
 |------|------|------|---------|------|
 | name | string | 예 | max:50 | 결제 수단 이름 |
 | type | string | 예 | in:fiat,crypto | 유형: 법정화폐/암호화폐 |
-| provider | string | 예 | in:stripe,nowpayments,coinbase | 게이트웨이 제공자 화이트리스트 |
+| provider | string | 예 | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash | 게이트웨이 제공자 화이트리스트 |
 | status | int | 예 | in:0,1 | 상태 |
 | sort | int | 아니요 | integer,min:0 | 정렬값, 기본 0 |
 | countries | array{string} | 아니요 | max:2 | 표시 국가 코드, 비어 있으면 전 세계 |

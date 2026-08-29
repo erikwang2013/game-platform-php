@@ -453,3 +453,9 @@ Pour la production, se référer à `docs/nginx-security.conf` pour le durcissem
 MIT
 
 Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+
+## Mascotte du projet
+
+![Mascotte du projet : Dicey](../docs/mascot.svg)
+
+**Dicey** — Mascotte de la plateforme. Le dé représente les jeux et le gameplay basé sur la probabilité, la pièce l'économie de la plateforme et les passerelles de paiement multiples, et le violet reflète l'identité du panneau d'administration. Fichier SVG : `docs/mascot.svg`, redimensionnable à l'infini pour la documentation, les logos et les produits dérivés.

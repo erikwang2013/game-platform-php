@@ -199,7 +199,7 @@ Usuário → POST /api/deposit/create → gerar ordem (status=pending)
      → criar pagamento via GatewayFactory (Stripe Checkout (incl. Alipay/WeChat Pay APM)/fatura NowPayments/cobrança Coinbase) → preencher checkout_url + expires_at(+1h); em caso de falha, cancelar pedido via CAS e tentar novamente
      → redirecionar para pagamento de terceiros (Stripe (incl. Alipay/WeChat Pay)/PayPal/NowPayments[USDT TRC20/ERC20]/Coinbase[USDC/BTC/ETH])
      → pagamento com sucesso → callback /api/payment/callback
-     → whitelist do provider (apenas stripe/paypal/nowpayments/coinbase) + verificação de uso indevido entre canais + verificação de assinatura (fail-closed) + timestamp ±300s + conferência de valor com bccomp
+     → whitelist do provider (apenas stripe/paypal/nowpayments/coinbase/skrill/neteller/paysafecard/paytm/mercadopago/astropay/paypay/kakaopay/gcash) + verificação de uso indevido entre canais + verificação de assinatura (fail-closed) + timestamp ±300s + conferência de valor com bccomp
      → atualizar ordem (status=confirmed, transacional)
      → UserWallet::addBalance() → crédito de moeda da plataforma
      → EventBus::emit('deposit.completed')

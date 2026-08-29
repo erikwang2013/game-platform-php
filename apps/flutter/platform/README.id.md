@@ -19,3 +19,9 @@ Beberapa sumber daya untuk membantu Anda memulai jika ini adalah proyek Flutter 
 Untuk bantuan memulai pengembangan Flutter, lihat
 [dokumentasi online](https://docs.flutter.dev/), yang menawarkan tutorial,
 contoh, panduan pengembangan seluler, dan referensi API lengkap.
+
+## Maskot Proyek
+
+![Maskot proyek: Dicey](../../../docs/mascot.svg)
+
+**Dicey** — Maskot platform. Dadu melambangkan permainan dan gameplay berbasis probabilitas, koin melambangkan ekonomi platform dan multi-gateway pembayaran, dan warna ungu mencerminkan branding admin. File SVG: `docs/mascot.svg`, dapat diskalakan tanpa batas untuk dokumen, logo, dan merchandise.

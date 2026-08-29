@@ -1817,7 +1817,7 @@ GET /admin/analytics/economy
 
 ## 17. भुगतान प्रबंधन (Payment)
 
-भुगतान विधि प्रबंधन `PaymentController` द्वारा प्रदान किया जाता है; सभी 5 एंडपॉइंट्स को JWT + RBAC प्रमाणीकरण की आवश्यकता होती है। `provider` व्हाइटलिस्ट: `stripe` / `nowpayments` / `coinbase`। `config` भुगतान कॉन्फ़िगरेशन का JSON स्ट्रिंग है (डेटाबेस में एन्क्रिप्टेड संग्रहीत)।
+भुगतान विधि प्रबंधन `PaymentController` द्वारा प्रदान किया जाता है; सभी 5 एंडपॉइंट्स को JWT + RBAC प्रमाणीकरण की आवश्यकता होती है। `provider` व्हाइटलिस्ट: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`। `config` भुगतान कॉन्फ़िगरेशन का JSON स्ट्रिंग है (डेटाबेस में एन्क्रिप्टेड संग्रहीत)।
 
 | विधि | पथ | विवरण |
 |------|------|------|
@@ -1867,7 +1867,7 @@ GET /admin/payment/method/list
 | id | string | भुगतान विधि ID (hashid एन्कोडेड) |
 | name | string | भुगतान विधि का नाम |
 | type | string | `fiat` (फिएट मुद्रा) / `crypto` (क्रिप्टोकरेंसी) |
-| provider | string | गेटवे प्रदाता: `stripe` / `nowpayments` / `coinbase` |
+| provider | string | गेटवे प्रदाता: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` |
 | status | int | 1=सक्षम, 0=अक्षम |
 | sort | int | क्रम मान (आरोही) |
 | countries | array{string} | दृश्यमान देश कोड सरणी (खाली सरणी = वैश्विक दृश्य) |
@@ -1924,7 +1924,7 @@ POST /admin/payment/method/create
 |------|------|------|---------|------|
 | name | string | हाँ | max:50 | भुगतान विधि का नाम |
 | type | string | हाँ | in:fiat,crypto | प्रकार: फिएट/क्रिप्टो |
-| provider | string | हाँ | in:stripe,nowpayments,coinbase | गेटवे प्रदाता व्हाइटलिस्ट |
+| provider | string | हाँ | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash | गेटवे प्रदाता व्हाइटलिस्ट |
 | status | int | हाँ | in:0,1 | स्थिति |
 | sort | int | नहीं | integer,min:0 | क्रम मान, डिफ़ॉल्ट 0 |
 | countries | array{string} | नहीं | max:2 | दृश्यमान देश कोड, खाली = वैश्विक |

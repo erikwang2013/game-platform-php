@@ -1817,7 +1817,7 @@ GET /admin/analytics/economy
 
 ## 17. 支払管理 (Payment)
 
-支払方法の管理は `PaymentController` が提供し、5 つのエンドポイントはいずれも JWT + RBAC 認証が必要です。`provider` ホワイトリスト: `stripe` / `nowpayments` / `coinbase`。`config` は支払設定の JSON 文字列（DB に暗号化して保存）です。
+支払方法の管理は `PaymentController` が提供し、5 つのエンドポイントはいずれも JWT + RBAC 認証が必要です。`provider` ホワイトリスト: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`。`config` は支払設定の JSON 文字列（DB に暗号化して保存）です。
 
 | メソッド | パス | 説明 |
 |------|------|------|
@@ -1867,7 +1867,7 @@ GET /admin/payment/method/list
 | id | string | 支払方法 ID（hashid エンコード） |
 | name | string | 支払方法名 |
 | type | string | `fiat`（法定通貨）/ `crypto`（暗号通貨） |
-| provider | string | ゲートウェイ提供元: `stripe` / `nowpayments` / `coinbase` |
+| provider | string | ゲートウェイ提供元: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` |
 | status | int | 1=有効, 0=無効 |
 | sort | int | 並び順（昇順） |
 | countries | array{string} | 表示対象国のコード配列（空配列=全世界表示） |
@@ -1924,7 +1924,7 @@ POST /admin/payment/method/create
 |------|------|------|---------|------|
 | name | string | はい | max:50 | 支払方法名 |
 | type | string | はい | in:fiat,crypto | 種別: 法定通貨/暗号通貨 |
-| provider | string | はい | in:stripe,nowpayments,coinbase | ゲートウェイ提供元ホワイトリスト |
+| provider | string | はい | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash | ゲートウェイ提供元ホワイトリスト |
 | status | int | はい | in:0,1 | 状態 |
 | sort | int | いいえ | integer,min:0 | 並び順、デフォルト 0 |
 | countries | array{string} | いいえ | max:2 | 表示対象国のコード、空=全世界 |

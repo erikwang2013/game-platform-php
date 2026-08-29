@@ -521,7 +521,26 @@ is_new: true=신규 등록 사용자 / false=기존 계정 연동
 
 status: success / failed
 
-provider 값: stripe / paypal / nowpayments / coinbase (nowpayments는 IPN HMAC-SHA512로 검증, coinbase는 webhook HMAC-SHA256으로 검증)
+provider 값: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash (toss / mpesa / paystack 출시 예정)
+
+| provider | 지역 | 서명 방식 | 지원 통화 |
+|----------|------|-----------|----------|
+| stripe | 글로벌 (125+ 현지 결제 수단, Alipay/WeChat Pay APM 포함) | Webhook HMAC-SHA256 | USD / CNY / EUR |
+| paypal | 전 세계 200+ 시장 | Webhook 검증 (verify-webhook-signature) | USD / CNY / EUR 등 법정 통화 |
+| nowpayments | 글로벌 (암호화폐) | IPN HMAC-SHA512 | USDT TRC20 / ERC20 |
+| coinbase | 글로벌 (암호화폐) | Webhook HMAC-SHA256 (base64 secret) | USDC / BTC / ETH |
+| skrill | 유럽 / 글로벌 | Secret word MD5 검증 | EUR 등 법정 통화 |
+| neteller | 유럽 / 글로벌 | Secret key 필드 비교 | EUR 등 법정 통화 |
+| paysafecard | 유럽 (DE / AT / CH 등) | X-Signature HMAC-SHA256 | EUR 등 법정 통화 |
+| paytm | 인도 | SHA256 + AES-128-CBC | INR |
+| mercadopago | 라틴아메리카 (BR / MX 등) | X-Signature (ts,v1) HMAC-SHA256 | BRL / MXN 등 법정 통화 |
+| astropay | 라틴아메리카 (BR 등) | MD5(order_id.amount.status.secret) | BRL 등 법정 통화 |
+| paypay | 일본 | PayPay-Signature HMAC-SHA256 | JPY |
+| kakaopay | 한국 | Webhook 없음 (ready/approve 2단계) | KRW |
+| gcash | 필리핀 | Paymongo-Signature HMAC-SHA256 | PHP |
+| toss | 한국 (출시 예정) | — | KRW |
+| mpesa | 케냐 / 탄자니아 등 (출시 예정) | — | KES / TZS |
+| paystack | 나이지리아 (출시 예정) | — | NGN |
 
 #### GET /api/payment/methods — 사용 가능한 결제 수단 (공개)
 

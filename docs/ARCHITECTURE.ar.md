@@ -199,7 +199,7 @@ packages/platform-common/src/
      → إنشاء الدفع عبر GatewayFactory (Stripe Checkout (incl. Alipay/WeChat Pay APM)/NowPayments invoice/Coinbase charge) → تعبئة checkout_url + expires_at(+1h)؛ عند الفشل إلغاء الطلب عبر CAS وإعادة المحاولة
      → الانتقال إلى الدفع عبر الطرف الثالث (Stripe (incl. Alipay/WeChat Pay)/PayPal/NowPayments[USDT TRC20/ERC20]/Coinbase[USDC/BTC/ETH])
      → نجاح الدفع → استدعاء /api/payment/callback
-     → القائمة البيضاء للمزود (stripe/paypal/nowpayments/coinbase فقط) + التحقق من انتحال القنوات المتقاطعة + التحقق من التوقيع (fail-closed) + الطابع الزمني ±300s + مطابقة المبلغ bccomp
+     → القائمة البيضاء للمزود (stripe/paypal/nowpayments/coinbase/skrill/neteller/paysafecard/paytm/mercadopago/astropay/paypay/kakaopay/gcash فقط) + التحقق من انتحال القنوات المتقاطعة + التحقق من التوقيع (fail-closed) + الطابع الزمني ±300s + مطابقة المبلغ bccomp
      → تحديث الطلب (status=confirmed، معاملاتي)
      → UserWallet::addBalance() → إيداع عملات المنصة
      → EventBus::emit('deposit.completed')

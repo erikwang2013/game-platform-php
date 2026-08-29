@@ -521,7 +521,26 @@ Respons: { "message": "success" }
 
 status: success / failed
 
-Nilai provider: stripe / paypal / nowpayments / coinbase (nowpayments memverifikasi via IPN HMAC-SHA512, coinbase via webhook HMAC-SHA256)
+Nilai provider: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash (toss / mpesa / paystack segera hadir)
+
+| provider | Wilayah | Skema tanda tangan | Mata uang yang didukung |
+|----------|---------|--------------------|-------------------------|
+| stripe | Global (125+ metode pembayaran lokal, termasuk APM Alipay/WeChat Pay) | Webhook HMAC-SHA256 | USD / CNY / EUR |
+| paypal | 200+ pasar global | Verifikasi webhook (verify-webhook-signature) | USD / CNY / EUR dan fiat lainnya |
+| nowpayments | Global (kripto) | IPN HMAC-SHA512 | USDT TRC20 / ERC20 |
+| coinbase | Global (kripto) | Webhook HMAC-SHA256 (base64 secret) | USDC / BTC / ETH |
+| skrill | Eropa / Global | Pemeriksaan MD5 secret word | EUR dan fiat lainnya |
+| neteller | Eropa / Global | Perbandingan kolom secret key | EUR dan fiat lainnya |
+| paysafecard | Eropa (DE / AT / CH dll.) | X-Signature HMAC-SHA256 | EUR dan fiat lainnya |
+| paytm | India | SHA256 + AES-128-CBC | INR |
+| mercadopago | Amerika Latin (BR / MX dll.) | X-Signature (ts,v1) HMAC-SHA256 | BRL / MXN dan fiat lainnya |
+| astropay | Amerika Latin (BR dll.) | MD5(order_id.amount.status.secret) | BRL dan fiat lainnya |
+| paypay | Jepang | PayPay-Signature HMAC-SHA256 | JPY |
+| kakaopay | Korea Selatan | Tanpa webhook (dua langkah ready/approve) | KRW |
+| gcash | Filipina | Paymongo-Signature HMAC-SHA256 | PHP |
+| toss | Korea Selatan (segera hadir) | — | KRW |
+| mpesa | Kenya / Tanzania dll. (segera hadir) | — | KES / TZS |
+| paystack | Nigeria (segera hadir) | — | NGN |
 
 #### GET /api/payment/methods — Metode Pembayaran Tersedia (publik)
 

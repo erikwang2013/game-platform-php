@@ -1817,7 +1817,7 @@ GET /admin/analytics/economy
 
 ## 17. Gestión de pagos (Payment)
 
-La gestión de métodos de pago la proporciona `PaymentController`; los 5 endpoints requieren autenticación JWT + RBAC. Lista blanca de `provider`: `stripe` / `nowpayments` / `coinbase`. `config` es una cadena JSON de configuración de pago (almacenada cifrada en la base de datos).
+La gestión de métodos de pago la proporciona `PaymentController`; los 5 endpoints requieren autenticación JWT + RBAC. Lista blanca de `provider`: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`. `config` es una cadena JSON de configuración de pago (almacenada cifrada en la base de datos).
 
 | Método | Ruta | Descripción |
 |------|------|------|
@@ -1867,7 +1867,7 @@ GET /admin/payment/method/list
 | id | string | ID del método de pago (codificado con hashid) |
 | name | string | Nombre del método de pago |
 | type | string | `fiat` (moneda fiduciaria) / `crypto` (criptomoneda) |
-| provider | string | Proveedor de pasarela: `stripe` / `nowpayments` / `coinbase` |
+| provider | string | Proveedor de pasarela: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` |
 | status | int | 1=activo, 0=inactivo |
 | sort | int | Valor de ordenación (ascendente) |
 | countries | array{string} | Códigos de país visibles (array vacío = visible globalmente) |
@@ -1924,7 +1924,7 @@ POST /admin/payment/method/create
 |------|------|------|---------|------|
 | name | string | Sí | max:50 | Nombre del método de pago |
 | type | string | Sí | in:fiat,crypto | Tipo: fiduciario/cripto |
-| provider | string | Sí | in:stripe,nowpayments,coinbase | Lista blanca de proveedores de pasarela |
+| provider | string | Sí | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash | Lista blanca de proveedores de pasarela |
 | status | int | Sí | in:0,1 | Estado |
 | sort | int | No | integer,min:0 | Ordenación, por defecto 0 |
 | countries | array{string} | No | max:2 | Códigos de país visibles, vacío = global |
