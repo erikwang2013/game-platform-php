@@ -1419,6 +1419,19 @@ action: approve / reject
 | POST | /admin/ticket/{hashid}/close | टिकट बंद करें |
 | POST | /admin/ticket/{hashid}/assign | प्रबंधक नियुक्त करें (admin_id) |
 
+### 3.18 CDN कॉन्फ़िगरेशन प्रबंधन
+
+सभी एंडपॉइंट्स को प्रमाणीकरण आवश्यक है (AdminAuth + AdminPermission)।
+
+| विधि | पथ | विवरण | प्रमाणीकरण |
+|------|------|------|------|
+| GET | /admin/cdn/provider/list | CDN प्रदाताओं की सूची (क्रेडेंशियल वापस नहीं भेजे जाते) | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/toggle | प्रदाता सक्षम/अक्षम करें {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/create | बनाएँ {name, provider, config(JSON), status, sort}，provider अद्वितीयता जाँच | AdminAuth + RBAC: cdn |
+| PUT | /admin/cdn/provider/{hashid} | संपादित करें (खाली config = अपरिवर्तित) | AdminAuth + RBAC: cdn |
+| DELETE | /admin/cdn/provider/{hashid} | हटाएँ | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/test | कनेक्टिविटी परीक्षण HeadBucket {id} | AdminAuth + RBAC: cdn |
+
 ## 4. दर सीमा रणनीति
 
 | इंटरफ़ेस | सीमा |
@@ -1772,6 +1785,52 @@ status: open / waiting / replied / closed
 }
 ```
 
+
+#### GET /admin/cdn/provider/list — CDN प्रदाताओं की सूची (क्रेडेंशियल वापस नहीं भेजे जाते)
+
+```
+प्रमाणीकरण आवश्यक: हाँ
+प्रतिक्रिया: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
+```
+
+#### POST /admin/cdn/provider/toggle — प्रदाता सक्षम/अक्षम करें {id, status}
+
+```
+प्रमाणीकरण आवश्यक: हाँ
+अनुरोध: { "id": "...", "status": 1 }
+प्रतिक्रिया: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/create — बनाएँ {name, provider, config(JSON), status, sort}，provider अद्वितीयता जाँच
+
+```
+प्रमाणीकरण आवश्यक: हाँ
+अनुरोध: { "name": "...", "provider": "aliyun", "config": "{...}", "status": 1, "sort": 0 }
+प्रतिक्रिया: { "code": 0, "data": { "id": "..." } }
+```
+
+#### PUT /admin/cdn/provider/{hashid} — संपादित करें (खाली config = अपरिवर्तित)
+
+```
+प्रमाणीकरण आवश्यक: हाँ
+अनुरोध: { "name": "...", "config": "" }
+प्रतिक्रिया: { "code": 0, "message": "..." }
+```
+
+#### DELETE /admin/cdn/provider/{hashid} — हटाएँ
+
+```
+प्रमाणीकरण आवश्यक: हाँ
+प्रतिक्रिया: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/test — कनेक्टिविटी परीक्षण HeadBucket {id}
+
+```
+प्रमाणीकरण आवश्यक: हाँ
+अनुरोध: { "id": "..." }
+प्रतिक्रिया: { "code": 0, "data": { "ok": true } }
+```
 ## 8. दर सीमा रणनीति (अद्यतन)
 
 | इंटरफ़ेस | सीमा |

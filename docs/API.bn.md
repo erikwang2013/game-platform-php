@@ -1419,6 +1419,19 @@ action: approve / reject
 | POST | /admin/ticket/{hashid}/close | টিকিট বন্ধ |
 | POST | /admin/ticket/{hashid}/assign | হ্যান্ডলার নিয়োগ (admin_id) |
 
+### 3.18 CDN কনফিগারেশন ম্যানেজমেন্ট
+
+সব এন্ডপয়েন্টে অথেনটিকেশন প্রয়োজন (AdminAuth + AdminPermission)।
+
+| মেথড | পাথ | বিবরণ | অথেনটিকেশন |
+|------|------|------|------|
+| GET | /admin/cdn/provider/list | CDN প্রোভাইডার তালিকা (ক্রেডেনশিয়াল ফেরত দেওয়া হয় না) | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/toggle | প্রোভাইডার চালু/বন্ধ {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/create | তৈরি {name, provider, config(JSON), status, sort}，provider স্বতন্ত্রতা যাচাই | AdminAuth + RBAC: cdn |
+| PUT | /admin/cdn/provider/{hashid} | সম্পাদনা (খালি config = অপরিবর্তিত) | AdminAuth + RBAC: cdn |
+| DELETE | /admin/cdn/provider/{hashid} | মুছুন | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/test | সংযোগ পরীক্ষা HeadBucket {id} | AdminAuth + RBAC: cdn |
+
 ## 4. রেট লিমিট পলিসি
 
 | ইন্টারফেস | সীমা |
@@ -1772,6 +1785,52 @@ status: open / waiting / replied / closed
 }
 ```
 
+
+#### GET /admin/cdn/provider/list — CDN প্রোভাইডার তালিকা (ক্রেডেনশিয়াল ফেরত দেওয়া হয় না)
+
+```
+অথেনটিকেশন প্রয়োজন: হ্যাঁ
+রেসপন্স: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
+```
+
+#### POST /admin/cdn/provider/toggle — প্রোভাইডার চালু/বন্ধ {id, status}
+
+```
+অথেনটিকেশন প্রয়োজন: হ্যাঁ
+অনুরোধ: { "id": "...", "status": 1 }
+রেসপন্স: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/create — তৈরি {name, provider, config(JSON), status, sort}，provider স্বতন্ত্রতা যাচাই
+
+```
+অথেনটিকেশন প্রয়োজন: হ্যাঁ
+অনুরোধ: { "name": "...", "provider": "aliyun", "config": "{...}", "status": 1, "sort": 0 }
+রেসপন্স: { "code": 0, "data": { "id": "..." } }
+```
+
+#### PUT /admin/cdn/provider/{hashid} — সম্পাদনা (খালি config = অপরিবর্তিত)
+
+```
+অথেনটিকেশন প্রয়োজন: হ্যাঁ
+অনুরোধ: { "name": "...", "config": "" }
+রেসপন্স: { "code": 0, "message": "..." }
+```
+
+#### DELETE /admin/cdn/provider/{hashid} — মুছুন
+
+```
+অথেনটিকেশন প্রয়োজন: হ্যাঁ
+রেসপন্স: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/test — সংযোগ পরীক্ষা HeadBucket {id}
+
+```
+অথেনটিকেশন প্রয়োজন: হ্যাঁ
+অনুরোধ: { "id": "..." }
+রেসপন্স: { "code": 0, "data": { "ok": true } }
+```
 ## 8. রেট লিমিট পলিসি (আপডেট)
 
 | ইন্টারফেস | সীমা |

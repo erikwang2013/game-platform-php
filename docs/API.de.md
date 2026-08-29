@@ -1420,6 +1420,19 @@ Alle Endpunkte erfordern Authentifizierung (AdminAuth + AdminPermission).
 | POST | /admin/ticket/{hashid}/close | Ticket schließen |
 | POST | /admin/ticket/{hashid}/assign | Bearbeiter zuweisen (admin_id) |
 
+### 3.18 CDN-Konfigurationsverwaltung
+
+Alle Endpunkte erfordern Authentifizierung (AdminAuth + AdminPermission).
+
+| Methode | Pfad | Beschreibung | Authentifizierung |
+|------|------|------|------|
+| GET | /admin/cdn/provider/list | CDN-Anbieter auflisten (Anmeldedaten werden nicht zurückgegeben) | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/toggle | Anbieter aktivieren/deaktivieren {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/create | Anlegen {name, provider, config(JSON), status, sort}, Eindeutigkeitsprüfung von provider | AdminAuth + RBAC: cdn |
+| PUT | /admin/cdn/provider/{hashid} | Bearbeiten (leerer config = unverändert) | AdminAuth + RBAC: cdn |
+| DELETE | /admin/cdn/provider/{hashid} | Löschen | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/test | Verbindungstest HeadBucket {id} | AdminAuth + RBAC: cdn |
+
 ## 4. Ratenbegrenzungsstrategie
 
 | Schnittstelle | Limit |
@@ -1774,6 +1787,52 @@ status: open / waiting / replied / closed
 }
 ```
 
+
+#### GET /admin/cdn/provider/list — CDN-Anbieter auflisten (Anmeldedaten werden nicht zurückgegeben)
+
+```
+需认证: 是
+响应: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
+```
+
+#### POST /admin/cdn/provider/toggle — Anbieter aktivieren/deaktivieren {id, status}
+
+```
+需认证: 是
+请求: { "id": "...", "status": 1 }
+响应: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/create — Anlegen {name, provider, config(JSON), status, sort}, Eindeutigkeitsprüfung von provider
+
+```
+需认证: 是
+请求: { "name": "...", "provider": "aliyun", "config": "{...}", "status": 1, "sort": 0 }
+响应: { "code": 0, "data": { "id": "..." } }
+```
+
+#### PUT /admin/cdn/provider/{hashid} — Bearbeiten (leerer config = unverändert)
+
+```
+需认证: 是
+请求: { "name": "...", "config": "" }
+响应: { "code": 0, "message": "..." }
+```
+
+#### DELETE /admin/cdn/provider/{hashid} — Löschen
+
+```
+需认证: 是
+响应: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/test — Verbindungstest HeadBucket {id}
+
+```
+需认证: 是
+请求: { "id": "..." }
+响应: { "code": 0, "data": { "ok": true } }
+```
 ## 8. Ratenbegrenzungsstrategie (aktualisiert)
 
 | Schnittstelle | Limit |

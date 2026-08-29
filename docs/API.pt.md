@@ -1419,6 +1419,19 @@ Todos os endpoints exigem autenticação (AdminAuth + AdminPermission).
 | POST | /admin/ticket/{hashid}/close | Fechar ticket |
 | POST | /admin/ticket/{hashid}/assign | Designar responsável (admin_id) |
 
+### 3.18 Gerenciamento de configuração de CDN
+
+Todos os endpoints exigem autenticação (AdminAuth + AdminPermission).
+
+| Método | Caminho | Observação | Autenticação |
+|------|------|------|------|
+| GET | /admin/cdn/provider/list | Lista de provedores de CDN (credenciais não retornadas) | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/toggle | Ativar/desativar provedor {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/create | Criar {name, provider, config(JSON), status, sort}, verificação de unicidade do provider | AdminAuth + RBAC: cdn |
+| PUT | /admin/cdn/provider/{hashid} | Editar (config vazio = inalterado) | AdminAuth + RBAC: cdn |
+| DELETE | /admin/cdn/provider/{hashid} | Excluir | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/test | Teste de conectividade HeadBucket {id} | AdminAuth + RBAC: cdn |
+
 ## 4. Política de rate limit
 
 | Interface | Limite |
@@ -1772,6 +1785,52 @@ Resposta: {
 }
 ```
 
+
+#### GET /admin/cdn/provider/list — Lista de provedores de CDN (credenciais não retornadas)
+
+```
+Requer autenticação: sim
+Resposta: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
+```
+
+#### POST /admin/cdn/provider/toggle — Ativar/desativar provedor {id, status}
+
+```
+Requer autenticação: sim
+Requisição: { "id": "...", "status": 1 }
+Resposta: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/create — Criar {name, provider, config(JSON), status, sort}, verificação de unicidade do provider
+
+```
+Requer autenticação: sim
+Requisição: { "name": "...", "provider": "aliyun", "config": "{...}", "status": 1, "sort": 0 }
+Resposta: { "code": 0, "data": { "id": "..." } }
+```
+
+#### PUT /admin/cdn/provider/{hashid} — Editar (config vazio = inalterado)
+
+```
+Requer autenticação: sim
+Requisição: { "name": "...", "config": "" }
+Resposta: { "code": 0, "message": "..." }
+```
+
+#### DELETE /admin/cdn/provider/{hashid} — Excluir
+
+```
+Requer autenticação: sim
+Resposta: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/test — Teste de conectividade HeadBucket {id}
+
+```
+Requer autenticação: sim
+Requisição: { "id": "..." }
+Resposta: { "code": 0, "data": { "ok": true } }
+```
 ## 8. Política de rate limit (atualizada)
 
 | Interface | Limite |

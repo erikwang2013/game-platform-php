@@ -1419,6 +1419,19 @@ Tous les points d'extrémité nécessitent une authentification (AdminAuth + Adm
 | POST | /admin/ticket/{hashid}/close | Clôturer un ticket |
 | POST | /admin/ticket/{hashid}/assign | Attribuer un traitement (admin_id) |
 
+### 3.18 Gestion de la configuration CDN
+
+Tous les points d'extrémité nécessitent une authentification (AdminAuth + AdminPermission).
+
+| Méthode | Chemin | Description | Authentification |
+|------|------|------|------|
+| GET | /admin/cdn/provider/list | Liste des fournisseurs CDN (les identifiants ne sont pas renvoyés) | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/toggle | Activer/désactiver le fournisseur {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/create | Créer {name, provider, config(JSON), status, sort}, vérification d'unicité de provider | AdminAuth + RBAC: cdn |
+| PUT | /admin/cdn/provider/{hashid} | Modifier (config vide = inchangé) | AdminAuth + RBAC: cdn |
+| DELETE | /admin/cdn/provider/{hashid} | Supprimer | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/test | Test de connectivité HeadBucket {id} | AdminAuth + RBAC: cdn |
+
 ## 4. Stratégie de limitation
 
 | Interface | Limite |
@@ -1772,6 +1785,52 @@ status : open / waiting / replied / closed
 }
 ```
 
+
+#### GET /admin/cdn/provider/list — Liste des fournisseurs CDN (les identifiants ne sont pas renvoyés)
+
+```
+需认证: 是
+响应: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
+```
+
+#### POST /admin/cdn/provider/toggle — Activer/désactiver le fournisseur {id, status}
+
+```
+需认证: 是
+请求: { "id": "...", "status": 1 }
+响应: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/create — Créer {name, provider, config(JSON), status, sort}, vérification d'unicité de provider
+
+```
+需认证: 是
+请求: { "name": "...", "provider": "aliyun", "config": "{...}", "status": 1, "sort": 0 }
+响应: { "code": 0, "data": { "id": "..." } }
+```
+
+#### PUT /admin/cdn/provider/{hashid} — Modifier (config vide = inchangé)
+
+```
+需认证: 是
+请求: { "name": "...", "config": "" }
+响应: { "code": 0, "message": "..." }
+```
+
+#### DELETE /admin/cdn/provider/{hashid} — Supprimer
+
+```
+需认证: 是
+响应: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/test — Test de connectivité HeadBucket {id}
+
+```
+需认证: 是
+请求: { "id": "..." }
+响应: { "code": 0, "data": { "ok": true } }
+```
 ## 8. Stratégie de limitation (mise à jour)
 
 | Interface | Limite |

@@ -1419,6 +1419,19 @@ action: approve / reject
 | POST | /admin/ticket/{hashid}/close | Закрытие тикета |
 | POST | /admin/ticket/{hashid}/assign | Назначение обработчика (admin_id) |
 
+### 3.18 Управление конфигурацией CDN
+
+Все эндпоинты требуют аутентификации (AdminAuth + AdminPermission).
+
+| Метод | Путь | Описание | Аутентификация |
+|------|------|------|------|
+| GET | /admin/cdn/provider/list | Список CDN-провайдеров (учётные данные не возвращаются) | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/toggle | Включение/отключение провайдера {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/create | Создание {name, provider, config(JSON), status, sort}, проверка уникальности provider | AdminAuth + RBAC: cdn |
+| PUT | /admin/cdn/provider/{hashid} | Обновление (пустой config = без изменений) | AdminAuth + RBAC: cdn |
+| DELETE | /admin/cdn/provider/{hashid} | Удаление | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/test | Тест подключения HeadBucket {id} | AdminAuth + RBAC: cdn |
+
 ## 4. Стратегия лимитов запросов
 
 | Интерфейс | Лимит |
@@ -1772,6 +1785,52 @@ status: open / waiting / replied / closed
 }
 ```
 
+
+#### GET /admin/cdn/provider/list — Список CDN-провайдеров (учётные данные не возвращаются)
+
+```
+需认证: 是
+响应: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
+```
+
+#### POST /admin/cdn/provider/toggle — Включение/отключение провайдера {id, status}
+
+```
+需认证: 是
+请求: { "id": "...", "status": 1 }
+响应: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/create — Создание {name, provider, config(JSON), status, sort}, проверка уникальности provider
+
+```
+需认证: 是
+请求: { "name": "...", "provider": "aliyun", "config": "{...}", "status": 1, "sort": 0 }
+响应: { "code": 0, "data": { "id": "..." } }
+```
+
+#### PUT /admin/cdn/provider/{hashid} — Обновление (пустой config = без изменений)
+
+```
+需认证: 是
+请求: { "name": "...", "config": "" }
+响应: { "code": 0, "message": "..." }
+```
+
+#### DELETE /admin/cdn/provider/{hashid} — Удаление
+
+```
+需认证: 是
+响应: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/test — Тест подключения HeadBucket {id}
+
+```
+需认证: 是
+请求: { "id": "..." }
+响应: { "code": 0, "data": { "ok": true } }
+```
 ## 8. Стратегия лимитов запросов (обновлено)
 
 | Интерфейс | Лимит |

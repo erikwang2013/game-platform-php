@@ -1419,6 +1419,19 @@ action: approve / reject
 | POST | /admin/ticket/{hashid}/close | チケットクローズ |
 | POST | /admin/ticket/{hashid}/assign | 担当者の指定（admin_id） |
 
+### 3.18 CDN 構成管理
+
+すべてのエンドポイントは認証が必要（AdminAuth + AdminPermission）。
+
+| 方法 | パス | 説明 | 認証 |
+|------|------|------|------|
+| GET | /admin/cdn/provider/list | CDN プロバイダー一覧（config 認証情報は返却されない） | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/toggle | プロバイダー有効/無効 {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/create | 新規追加 {name, provider, config(JSON), status, sort}，provider 重複チェック | AdminAuth + RBAC: cdn |
+| PUT | /admin/cdn/provider/{hashid} | 編集（config 空欄なら変更なし） | AdminAuth + RBAC: cdn |
+| DELETE | /admin/cdn/provider/{hashid} | 削除 | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/test | 接続テスト HeadBucket {id} | AdminAuth + RBAC: cdn |
+
 ## 4. レートリミット戦略
 
 | エンドポイント | 制限 |
@@ -1772,6 +1785,52 @@ status: open / waiting / replied / closed
 }
 ```
 
+
+#### GET /admin/cdn/provider/list — CDN プロバイダー一覧（config 認証情報は返却されない）
+
+```
+需认证: 是
+响应: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
+```
+
+#### POST /admin/cdn/provider/toggle — プロバイダー有効/無効 {id, status}
+
+```
+需认证: 是
+请求: { "id": "...", "status": 1 }
+响应: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/create — 新規追加 {name, provider, config(JSON), status, sort}，provider 重複チェック
+
+```
+需认证: 是
+请求: { "name": "...", "provider": "aliyun", "config": "{...}", "status": 1, "sort": 0 }
+响应: { "code": 0, "data": { "id": "..." } }
+```
+
+#### PUT /admin/cdn/provider/{hashid} — 編集（config 空欄なら変更なし）
+
+```
+需认证: 是
+请求: { "name": "...", "config": "" }
+响应: { "code": 0, "message": "..." }
+```
+
+#### DELETE /admin/cdn/provider/{hashid} — 削除
+
+```
+需认证: 是
+响应: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/test — 接続テスト HeadBucket {id}
+
+```
+需认证: 是
+请求: { "id": "..." }
+响应: { "code": 0, "data": { "ok": true } }
+```
 ## 8. レートリミット戦略（更新）
 
 | エンドポイント | 制限 |

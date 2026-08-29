@@ -1332,6 +1332,19 @@ All endpoints require authentication (AdminAuth + AdminPermission).
 | POST | /admin/ticket/{hashid}/close | Close ticket |
 | POST | /admin/ticket/{hashid}/assign | Assign handler (admin_id) |
 
+### 3.18 CDN Configuration Management
+
+All endpoints require authentication (AdminAuth + AdminPermission).
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/cdn/provider/list | List CDN providers (credentials not returned) | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/toggle | Enable/disable provider {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/create | Create {name, provider, config(JSON), status, sort}, provider uniqueness check | AdminAuth + RBAC: cdn |
+| PUT | /admin/cdn/provider/{hashid} | Update (empty config = unchanged) | AdminAuth + RBAC: cdn |
+| DELETE | /admin/cdn/provider/{hashid} | Delete | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/test | Connectivity test HeadBucket {id} | AdminAuth + RBAC: cdn |
+
 ## 4. Rate Limit Policy
 
 | Endpoint | Limit |
@@ -1665,6 +1678,52 @@ status: open / waiting / replied / closed
 }
 ```
 
+
+#### GET /admin/cdn/provider/list — List CDN providers (credentials not returned)
+
+```
+需认证: 是
+响应: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
+```
+
+#### POST /admin/cdn/provider/toggle — Enable/disable provider {id, status}
+
+```
+需认证: 是
+请求: { "id": "...", "status": 1 }
+响应: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/create — Create {name, provider, config(JSON), status, sort}, provider uniqueness check
+
+```
+需认证: 是
+请求: { "name": "...", "provider": "aliyun", "config": "{...}", "status": 1, "sort": 0 }
+响应: { "code": 0, "data": { "id": "..." } }
+```
+
+#### PUT /admin/cdn/provider/{hashid} — Update (empty config = unchanged)
+
+```
+需认证: 是
+请求: { "name": "...", "config": "" }
+响应: { "code": 0, "message": "..." }
+```
+
+#### DELETE /admin/cdn/provider/{hashid} — Delete
+
+```
+需认证: 是
+响应: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/test — Connectivity test HeadBucket {id}
+
+```
+需认证: 是
+请求: { "id": "..." }
+响应: { "code": 0, "data": { "ok": true } }
+```
 ## 8. Rate Limit Policy (Updated)
 
 | Endpoint | Limit |

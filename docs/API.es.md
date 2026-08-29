@@ -1419,6 +1419,19 @@ Todos los endpoints requieren autenticación (AdminAuth + AdminPermission).
 | POST | /admin/ticket/{hashid}/close | Cerrar ticket |
 | POST | /admin/ticket/{hashid}/assign | Asignar responsable (admin_id) |
 
+### 3.18 Gestión de configuración de CDN
+
+Todos los endpoints requieren autenticación (AdminAuth + AdminPermission).
+
+| Método | Ruta | Descripción | Autenticación |
+|------|------|------|------|
+| GET | /admin/cdn/provider/list | Lista de proveedores CDN (las credenciales no se devuelven) | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/toggle | Activar/desactivar proveedor {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/create | Crear {name, provider, config(JSON), status, sort}, verificación de unicidad de provider | AdminAuth + RBAC: cdn |
+| PUT | /admin/cdn/provider/{hashid} | Editar (config vacío = sin cambios) | AdminAuth + RBAC: cdn |
+| DELETE | /admin/cdn/provider/{hashid} | Eliminar | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/test | Prueba de conectividad HeadBucket {id} | AdminAuth + RBAC: cdn |
+
 ## 4. Política de limitación de velocidad
 
 | Interfaz | Límite |
@@ -1772,6 +1785,52 @@ status: open / waiting / replied / closed
 }
 ```
 
+
+#### GET /admin/cdn/provider/list — Lista de proveedores CDN (las credenciales no se devuelven)
+
+```
+需认证: 是
+响应: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
+```
+
+#### POST /admin/cdn/provider/toggle — Activar/desactivar proveedor {id, status}
+
+```
+需认证: 是
+请求: { "id": "...", "status": 1 }
+响应: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/create — Crear {name, provider, config(JSON), status, sort}, verificación de unicidad de provider
+
+```
+需认证: 是
+请求: { "name": "...", "provider": "aliyun", "config": "{...}", "status": 1, "sort": 0 }
+响应: { "code": 0, "data": { "id": "..." } }
+```
+
+#### PUT /admin/cdn/provider/{hashid} — Editar (config vacío = sin cambios)
+
+```
+需认证: 是
+请求: { "name": "...", "config": "" }
+响应: { "code": 0, "message": "..." }
+```
+
+#### DELETE /admin/cdn/provider/{hashid} — Eliminar
+
+```
+需认证: 是
+响应: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/test — Prueba de conectividad HeadBucket {id}
+
+```
+需认证: 是
+请求: { "id": "..." }
+响应: { "code": 0, "data": { "ok": true } }
+```
 ## 8. Política de limitación de velocidad (actualizada)
 
 | Interfaz | Límite |

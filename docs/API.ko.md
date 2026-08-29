@@ -1419,6 +1419,19 @@ action: approve / reject
 | POST | /admin/ticket/{hashid}/close | 티켓 닫기 |
 | POST | /admin/ticket/{hashid}/assign | 처리 담당자 지정 (admin_id) |
 
+### 3.18 CDN 구성 관리
+
+모든 엔드포인트는 인증 필요(AdminAuth + AdminPermission).
+
+| 메서드 | 경로 | 설명 | 인증 |
+|------|------|------|------|
+| GET | /admin/cdn/provider/list | CDN 업체 목록（config 자격증명 미반환） | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/toggle | 업체 활성/비활성 {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/create | 추가 {name, provider, config(JSON), status, sort}，provider 중복 확인 | AdminAuth + RBAC: cdn |
+| PUT | /admin/cdn/provider/{hashid} | 수정（config 비우면 변경 안 함） | AdminAuth + RBAC: cdn |
+| DELETE | /admin/cdn/provider/{hashid} | 삭제 | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/test | 연결 테스트 HeadBucket {id} | AdminAuth + RBAC: cdn |
+
 ## 4. 레이트 리밋 정책
 
 | 인터페이스 | 제한 |
@@ -1772,6 +1785,52 @@ status: open / waiting / replied / closed
 }
 ```
 
+
+#### GET /admin/cdn/provider/list — CDN 업체 목록（config 자격증명 미반환）
+
+```
+인증 필요: 예
+응답: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
+```
+
+#### POST /admin/cdn/provider/toggle — 업체 활성/비활성 {id, status}
+
+```
+인증 필요: 예
+요청: { "id": "...", "status": 1 }
+응답: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/create — 추가 {name, provider, config(JSON), status, sort}，provider 중복 확인
+
+```
+인증 필요: 예
+요청: { "name": "...", "provider": "aliyun", "config": "{...}", "status": 1, "sort": 0 }
+응답: { "code": 0, "data": { "id": "..." } }
+```
+
+#### PUT /admin/cdn/provider/{hashid} — 수정（config 비우면 변경 안 함）
+
+```
+인증 필요: 예
+요청: { "name": "...", "config": "" }
+응답: { "code": 0, "message": "..." }
+```
+
+#### DELETE /admin/cdn/provider/{hashid} — 삭제
+
+```
+인증 필요: 예
+응답: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/test — 연결 테스트 HeadBucket {id}
+
+```
+인증 필요: 예
+요청: { "id": "..." }
+응답: { "code": 0, "data": { "ok": true } }
+```
 ## 8. 레이트 리밋 정책 (업데이트)
 
 | 인터페이스 | 제한 |

@@ -1419,6 +1419,19 @@ Semua endpoint memerlukan autentikasi (AdminAuth + AdminPermission).
 | POST | /admin/ticket/{hashid}/close | Tutup tiket |
 | POST | /admin/ticket/{hashid}/assign | Tetapkan penangan (admin_id) |
 
+### 3.18 Manajemen Konfigurasi CDN
+
+Semua endpoint memerlukan autentikasi (AdminAuth + AdminPermission).
+
+| Metode | Jalur | Keterangan | Autentikasi |
+|------|------|------|------|
+| GET | /admin/cdn/provider/list | Daftar penyedia CDN (kredensial tidak dikembalikan) | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/toggle | Aktifkan/nonaktifkan penyedia {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/create | Buat {name, provider, config(JSON), status, sort}, pemeriksaan keunikan provider | AdminAuth + RBAC: cdn |
+| PUT | /admin/cdn/provider/{hashid} | Edit (config kosong = tidak berubah) | AdminAuth + RBAC: cdn |
+| DELETE | /admin/cdn/provider/{hashid} | Hapus | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/test | Uji konektivitas HeadBucket {id} | AdminAuth + RBAC: cdn |
+
 ## 4. Strategi Rate Limit
 
 | Antarmuka | Batas |
@@ -1772,6 +1785,52 @@ Respons: {
 }
 ```
 
+
+#### GET /admin/cdn/provider/list — Daftar penyedia CDN (kredensial tidak dikembalikan)
+
+```
+Perlu autentikasi: ya
+Respons: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
+```
+
+#### POST /admin/cdn/provider/toggle — Aktifkan/nonaktifkan penyedia {id, status}
+
+```
+Perlu autentikasi: ya
+Permintaan: { "id": "...", "status": 1 }
+Respons: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/create — Buat {name, provider, config(JSON), status, sort}, pemeriksaan keunikan provider
+
+```
+Perlu autentikasi: ya
+Permintaan: { "name": "...", "provider": "aliyun", "config": "{...}", "status": 1, "sort": 0 }
+Respons: { "code": 0, "data": { "id": "..." } }
+```
+
+#### PUT /admin/cdn/provider/{hashid} — Edit (config kosong = tidak berubah)
+
+```
+Perlu autentikasi: ya
+Permintaan: { "name": "...", "config": "" }
+Respons: { "code": 0, "message": "..." }
+```
+
+#### DELETE /admin/cdn/provider/{hashid} — Hapus
+
+```
+Perlu autentikasi: ya
+Respons: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/test — Uji konektivitas HeadBucket {id}
+
+```
+Perlu autentikasi: ya
+Permintaan: { "id": "..." }
+Respons: { "code": 0, "data": { "ok": true } }
+```
 ## 8. Strategi Rate Limit (Diperbarui)
 
 | Antarmuka | Batas |

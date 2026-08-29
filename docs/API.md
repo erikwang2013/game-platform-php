@@ -1419,6 +1419,19 @@ action: approve / reject
 | POST | /admin/ticket/{hashid}/close | 关闭工单 |
 | POST | /admin/ticket/{hashid}/assign | 指定处理人（admin_id） |
 
+### 3.18 CDN 配置管理
+
+全部端点需认证（AdminAuth + AdminPermission）。
+
+| 方法 | 路径 | 说明 | 认证 |
+|------|------|------|------|
+| GET | /admin/cdn/provider/list | CDN 厂商列表（config 凭据不回传） | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/toggle | 启停厂商 {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/create | 新增 {name, provider, config(JSON), status, sort}，provider 查重 | AdminAuth + RBAC: cdn |
+| PUT | /admin/cdn/provider/{hashid} | 编辑（config 留空不修改） | AdminAuth + RBAC: cdn |
+| DELETE | /admin/cdn/provider/{hashid} | 删除 | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/test | 连通测试 HeadBucket {id} | AdminAuth + RBAC: cdn |
+
 ## 4. 限流策略
 
 | 接口 | 限制 |
@@ -1772,6 +1785,52 @@ status: open / waiting / replied / closed
 }
 ```
 
+
+#### GET /admin/cdn/provider/list — CDN 厂商列表（config 凭据不回传）
+
+```
+需认证: 是
+响应: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
+```
+
+#### POST /admin/cdn/provider/toggle — 启停厂商 {id, status}
+
+```
+需认证: 是
+请求: { "id": "...", "status": 1 }
+响应: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/create — 新增 {name, provider, config(JSON), status, sort}，provider 查重
+
+```
+需认证: 是
+请求: { "name": "...", "provider": "aliyun", "config": "{...}", "status": 1, "sort": 0 }
+响应: { "code": 0, "data": { "id": "..." } }
+```
+
+#### PUT /admin/cdn/provider/{hashid} — 编辑（config 留空不修改）
+
+```
+需认证: 是
+请求: { "name": "...", "config": "" }
+响应: { "code": 0, "message": "..." }
+```
+
+#### DELETE /admin/cdn/provider/{hashid} — 删除
+
+```
+需认证: 是
+响应: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/test — 连通测试 HeadBucket {id}
+
+```
+需认证: 是
+请求: { "id": "..." }
+响应: { "code": 0, "data": { "ok": true } }
+```
 ## 8. 限流策略（更新）
 
 | 接口 | 限制 |

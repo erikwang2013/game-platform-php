@@ -1419,6 +1419,19 @@ action: approve / reject
 | POST | /admin/ticket/{hashid}/close | إغلاق التذكرة |
 | POST | /admin/ticket/{hashid}/assign | تعيين المعالج (admin_id) |
 
+### 3.18 إدارة تكوين CDN
+
+جميع الواجهات تتطلب مصادقة (AdminAuth + AdminPermission).
+
+| الطريقة | المسار | الوصف | المصادقة |
+|------|------|------|------|
+| GET | /admin/cdn/provider/list | قائمة مزودي CDN (لا تُعاد بيانات الاعتماد) | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/toggle | تفعيل/تعطيل المزود {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/create | إنشاء {name, provider, config(JSON), status, sort}، فحص تفرد provider | AdminAuth + RBAC: cdn |
+| PUT | /admin/cdn/provider/{hashid} | تعديل (config فارغ = بدون تغيير) | AdminAuth + RBAC: cdn |
+| DELETE | /admin/cdn/provider/{hashid} | حذف | AdminAuth + RBAC: cdn |
+| POST | /admin/cdn/provider/test | اختبار الاتصال HeadBucket {id} | AdminAuth + RBAC: cdn |
+
 ## 4. سياسة حد المعدل
 
 | الواجهة | الحد |
@@ -1772,6 +1785,52 @@ status: open / waiting / replied / closed
 }
 ```
 
+
+#### GET /admin/cdn/provider/list — قائمة مزودي CDN (لا تُعاد بيانات الاعتماد)
+
+```
+يتطلب مصادقة: نعم
+الاستجابة: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
+```
+
+#### POST /admin/cdn/provider/toggle — تفعيل/تعطيل المزود {id, status}
+
+```
+يتطلب مصادقة: نعم
+الطلب: { "id": "...", "status": 1 }
+الاستجابة: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/create — إنشاء {name, provider, config(JSON), status, sort}، فحص تفرد provider
+
+```
+يتطلب مصادقة: نعم
+الطلب: { "name": "...", "provider": "aliyun", "config": "{...}", "status": 1, "sort": 0 }
+الاستجابة: { "code": 0, "data": { "id": "..." } }
+```
+
+#### PUT /admin/cdn/provider/{hashid} — تعديل (config فارغ = بدون تغيير)
+
+```
+يتطلب مصادقة: نعم
+الطلب: { "name": "...", "config": "" }
+الاستجابة: { "code": 0, "message": "..." }
+```
+
+#### DELETE /admin/cdn/provider/{hashid} — حذف
+
+```
+يتطلب مصادقة: نعم
+الاستجابة: { "code": 0, "message": "..." }
+```
+
+#### POST /admin/cdn/provider/test — اختبار الاتصال HeadBucket {id}
+
+```
+يتطلب مصادقة: نعم
+الطلب: { "id": "..." }
+الاستجابة: { "code": 0, "data": { "ok": true } }
+```
 ## 8. سياسة حد المعدل (محدثة)
 
 | الواجهة | الحد |
