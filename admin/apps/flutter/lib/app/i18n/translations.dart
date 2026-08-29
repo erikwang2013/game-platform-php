@@ -42,6 +42,7 @@ class AppTranslations {
       'nav.identity': 'KYC Review',
       'nav.risk_logs': 'Risk Logs',
       'nav.payments': 'Payment Management',
+      'nav.cdn': 'CDN Providers',
       'nav.announcements': 'Announcements',
       'nav.vip': 'VIP Levels',
       'nav.achievements': 'Achievements',
@@ -160,6 +161,17 @@ class AppTranslations {
       'payment.sort': 'Sort',
       'payment.config': 'Config (JSON)',
       'payment.confirm_delete': 'Delete this payment method?',
+
+      // CDN Providers
+      'cdn.title': 'CDN Providers',
+      'cdn.provider': 'Provider',
+      'cdn.domain': 'CDN Domain',
+      'cdn.test': 'Test',
+      'cdn.test_success': 'Connection OK',
+      'cdn.test_fail': 'Connection failed',
+      'cdn.edit_title': 'Edit CDN Provider',
+      'cdn.create_title': 'Add CDN Provider',
+      'cdn.confirm_delete': 'Delete this CDN provider?',
 
       // Announcements
       'announcement.title': 'Announcement Management',
@@ -318,6 +330,7 @@ class AppTranslations {
       'nav.identity': 'KYC审核',
       'nav.risk_logs': '风控日志',
       'nav.payments': '支付管理',
+      'nav.cdn': 'CDN 配置',
       'nav.announcements': '公告管理',
       'nav.vip': 'VIP等级',
       'nav.achievements': '成就管理',
@@ -436,6 +449,17 @@ class AppTranslations {
       'payment.sort': '排序',
       'payment.config': '配置 (JSON)',
       'payment.confirm_delete': '确定删除该支付方式吗？',
+
+      // CDN Providers
+      'cdn.title': 'CDN 配置',
+      'cdn.provider': '厂商',
+      'cdn.domain': 'CDN域名',
+      'cdn.test': '连通测试',
+      'cdn.test_success': '连通正常',
+      'cdn.test_fail': '连通测试失败',
+      'cdn.edit_title': '编辑CDN厂商',
+      'cdn.create_title': '新增CDN厂商',
+      'cdn.confirm_delete': '确认删除该CDN厂商?',
 
       // Announcements
       'announcement.title': '公告管理',

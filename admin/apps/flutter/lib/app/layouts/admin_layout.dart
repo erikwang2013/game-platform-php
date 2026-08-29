@@ -17,6 +17,7 @@ import '../pages/platform_user/platform_user_page.dart';
 import '../pages/identity/identity_page.dart';
 import '../pages/risk/risk_log_page.dart';
 import '../pages/payment/payment_page.dart';
+import '../pages/cdn/cdn_page.dart';
 import '../pages/announcement/announcement_page.dart';
 import '../pages/vip/vip_page.dart';
 import '../pages/achievement/achievement_page.dart';
@@ -51,6 +52,7 @@ class _AdminLayoutState extends State<AdminLayout> {
     IdentityPage(),
     RiskLogPage(),
     PaymentPage(),
+    CdnPage(),
     AnnouncementPage(),
     VipPage(),
     AchievementPage(),
@@ -253,6 +255,11 @@ class _AdminLayoutState extends State<AdminLayout> {
         icon: const Icon(Icons.payment, size: 20),
         label: Text("${AppTranslations.t('nav.payments')}"),
         selectedIcon: const Icon(Icons.payment, size: 20),
+      ),
+      NavigationDrawerDestination(
+        icon: const Icon(Icons.cloud, size: 20),
+        label: Text("${AppTranslations.t('nav.cdn')}"),
+        selectedIcon: const Icon(Icons.cloud, size: 20),
       ),
       NavigationDrawerDestination(
         icon: const Icon(Icons.campaign, size: 20),
