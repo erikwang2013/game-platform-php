@@ -60,6 +60,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | 推荐 | 推荐码、注册奖励、充值返佣 | 已完成 |
 | 搜索 | ES 搜索API + 游戏建议 + LIKE回退 | 已完成 |
 | 排行榜 | WebSocket 实时推送 (端口8789) | 已完成 |
+| CDN | 五厂商接入（Cloudflare R2 / AWS S3 / 阿里OSS / 腾讯COS / 华为OBS 上传+刷新+预热） | 已完成 |
 | 部署 | Docker Compose 7服务 + Nginx反向代理 | 已完成 |
 | 数据 | MySQL 实时聚合分析 + 联合/条件概率计算 | 已完成 |
 | HarmonyOS | admin 端 8 页；C 端 `apps/harmonyos/` 已实现登录/大厅/详情/钱包/个人（指向 8788） | 部分完成（工程可跑，真机需改 IP） |
