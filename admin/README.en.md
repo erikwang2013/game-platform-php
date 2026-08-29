@@ -26,6 +26,7 @@ A full-stack admin dashboard system built with webman v2 + Flutter.
 | | Excel batch import | Per-row validation + error report |
 | 🔒 Roles & permissions | Role CRUD + permission tree | RBAC method.path granularity authorization |
 | ⚙ System config | Key-value CRUD | Group management |
+| 🖥 CDN Admin | Five-provider config CRUD + toggle + connectivity test | Credentials AES-encrypted, service reads from DB only |
 | 📋 Operation audit | Log query + source detection | Automatic detection of 8 platforms |
 | 📁 File management | Upload/Excel export/PDF export | Sensitive data automatically masked |
 | 🛡 Security | 18-layer defense in depth | XSS/SQL injection/path traversal/command injection/CSRF/rate limit/CSP... |

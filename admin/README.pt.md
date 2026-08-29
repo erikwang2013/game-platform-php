@@ -26,6 +26,7 @@ Sistema de painel administrativo full-stack baseado em webman v2 + Flutter.
 | | Importação em lote via Excel | Validação linha a linha + relatório de erros |
 | 🔒 Permissões de funções | CRUD de funções + árvore de permissões | Autorização RBAC em granularidade method.path |
 | ⚙ Configuração do sistema | CRUD de pares chave-valor | Gerenciamento por grupos |
+| 🖥 Gerenciamento de CDN | CRUD de configuração de 5 provedores + ativar/desativar + teste de conectividade | Credenciais criptografadas com AES, service lê apenas do banco |
 | 📋 Auditoria de operações | Consulta de logs + detecção de origem | Reconhecimento automático de 8 plataformas |
 | 📁 Gerenciamento de arquivos | Upload/exportação Excel/exportação PDF | Mascaramento automático de dados sensíveis |
 | 🛡 Proteção de segurança | Defesa em profundidade em 18 camadas | XSS/injeção SQL/traversal de caminho/injeção de comandos/CSRF/rate limit/CSP... |

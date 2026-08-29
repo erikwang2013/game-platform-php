@@ -26,6 +26,7 @@ Sistem backend administrasi full-stack berbasis webman v2 + Flutter.
 | | Impor massal Excel | Validasi per baris + laporan kesalahan |
 | 🔒 Peran & izin | CRUD peran + pohon izin | Otorisasi RBAC granular method.path |
 | ⚙ Konfigurasi sistem | CRUD pasangan kunci-nilai | Manajemen grup |
+| 🖥 Manajemen CDN | CRUD konfigurasi 5 penyedia + aktif/nonaktif + tes konektivitas | Kredensial terenkripsi AES, service hanya membaca dari DB |
 | 📋 Audit operasi | Kueri log + deteksi sumber | Identifikasi otomatis 8 platform |
 | 📁 Manajemen file | Unggah/Ekspor Excel/Ekspor PDF | Data sensitif otomatis diredaksi |
 | 🛡 Proteksi keamanan | 18 lapisan pertahanan berlapis | XSS/Injeksi SQL/path traversal/injeksi perintah/CSRF/rate limit/CSP... |

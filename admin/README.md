@@ -27,6 +27,7 @@ Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) ·
 | 🔒 角色权限 | 角色 CRUD + 权限树 | RBAC method.path 粒度鉴权 |
 | ⚙ 系统配置 | 键值对 CRUD | 分组管理 |
 | 💳 支付方式管理 | 多网关增删改 + 启停 | 13 个网关（stripe/paypal/nowpayments/coinbase 等）+ 国家可见性 |
+| 🖥 CDN 管理 | 五厂商配置 CRUD + 启停 + 连通测试 | 凭据 AES 加密存储，service 纯 DB 读取 |
 | 📋 操作审计 | 日志查询 + 来源端检测 | 8 平台自动识别 |
 | 📁 文件管理 | 上传/Excel 导出/PDF 导出 | 敏感数据自动脱敏 |
 | 🛡 安全防护 | 18 层纵深防御 | XSS/SQL注入/路径遍历/命令注入/CSRF/限流/CSP... |

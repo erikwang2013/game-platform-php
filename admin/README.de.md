@@ -26,6 +26,7 @@ Ein Full-Stack-Verwaltungs-Backend-System basierend auf webman v2 + Flutter.
 | | Excel-Batch-Import | zeilenweise Validierung + Fehlerbericht |
 | 🔒 Rollen & Berechtigungen | Rollen-CRUD + Berechtigungsbaum | RBAC method.path-granulare Autorisierung |
 | ⚙ Systemkonfiguration | Key-Value-CRUD | Gruppenverwaltung |
+| 🖥 CDN-Verwaltung | CRUD-Konfiguration für 5 Anbieter + Aktivieren/Deaktivieren + Konnektivitätstest | Zugangsdaten AES-verschlüsselt, service liest nur aus der DB |
 | 📋 Betriebsprüfung | Protokollabfrage + Quellen-Erkennung | automatische Erkennung von 8 Plattformen |
 | 📁 Dateiverwaltung | Upload/Excel-Export/PDF-Export | automatische Maskierung sensibler Daten |
 | 🛡 Sicherheitsschutz | 18 Ebenen Verteidigung in der Tiefe | XSS/SQL-Injection/Pfad-Traversal/Befehlsinjektion/CSRF/Rate-Limiting/CSP... |
