@@ -139,8 +139,8 @@ pending (審査待ち)
 |------|--------|------|
 | 法定通貨 | Stripe | 国際クレジットカード決済 |
 | 法定通貨 | PayPal | グローバル電子ウォレット |
-| 法定通貨 | Alipay | 支付宝（中国本土） |
-| 法定通貨 | WeChat Pay | 微信支付（中国本土） |
+| 法定通貨 | Alipay | 支付宝（国際版、Stripe Checkout APM 経由） |
+| 法定通貨 | WeChat Pay | 微信支付（国際版、Stripe Checkout APM 経由） |
 | 暗号通貨 | USDT-TRC20 | トロンチェーン USDT |
 
 基本版ではまず単一の決済方法（例: Stripe）と連携し、標準版で全チャネルに拡張する。

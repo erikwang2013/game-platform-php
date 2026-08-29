@@ -14,7 +14,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 |----|------|------|
 | Pengguna | Registrasi/login/JWT/CAPTCHA | Selesai |
 | Dompet | Saldo koin platform/kueri transaksi | Selesai |
-| Deposit | Buat pesanan deposit (Stripe 125+ pembayaran lokal / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / callback PayPal) | Selesai |
+| Deposit | Buat pesanan deposit (Stripe 125+ pembayaran lokal, termasuk Alipay/WeChat Pay APM / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / callback PayPal) | Selesai |
 | Penukaran | Koin platform⇄koin game (kurs tetap + selisih) | Selesai |
 | Penarikan | Ajukan/kueri/saklar global/review otomatis/review manual | Selesai |
 | Game | CRUD backend/manajemen mata uang/daftar sisi C/detail/launch | Selesai |
@@ -29,7 +29,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Domain | Fitur | Status |
 |----|------|------|
 | Pengguna | Login OAuth (Google/Facebook/Apple/Twitter/Microsoft/LinkedIn/GitHub) | Selesai |
-| Pembayaran | Callback otomatis banyak saluran pembayaran (Stripe/PayPal/NOWPayments IPN/Coinbase Webhook) | Selesai |
+| Pembayaran | Callback otomatis banyak saluran pembayaran (Stripe termasuk Alipay/WeChat Pay APM / PayPal / NOWPayments IPN / Coinbase Webhook) | Selesai |
 | Game | Manajemen server, pelacakan catatan game | Selesai |
 | Penarikan | Batas bertingkat KYC (default/verified/vip) + biaya | Selesai |
 | KYC | Aplikasi verifikasi nama asli + review | Selesai |
@@ -53,7 +53,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Domain | Fitur | Status |
 |----|------|------|
 | OAuth | Pertukaran token nyata Google/Facebook/Apple | Selesai |
-| Pembayaran | Verifikasi tanda tangan callback (Webhook Stripe/PayPal, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 secret base64) | Selesai |
+| Pembayaran | Verifikasi tanda tangan callback (Webhook Stripe termasuk Alipay/WeChat Pay APM, Webhook PayPal, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 secret base64) | Selesai |
 | CAPTCHA | CAPTCHA klik poster-php | Selesai |
 | Notifikasi | Pesan dalam situs + email, notifikasi otomatis deposit/penarikan/KYC/kupon | Selesai |
 | 2FA | Google Authenticator TOTP + kode pemulihan cadangan | Selesai |
@@ -64,6 +64,10 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Data | Analisis agregasi real-time MySQL + perhitungan probabilitas gabungan/bersyarat | Selesai |
 | HarmonyOS | admin 8 halaman; sisi C `apps/harmonyos/` sudah mengimplementasikan login/lobi/detail/dompet/profil (menunjuk 8788) | Sebagian selesai (proyek dapat berjalan, perangkat nyata perlu ubah IP) |
 | Dokumentasi API | Dokumentasi interaktif hg/apidoc | Selesai |
+| Instal satu klik | Wizard instalasi browser: buat admin, upgrade DB lama, install.lock mencegah instal ulang | Selesai |
+| Toleransi kegagalan | CircuitBreaker + Retry + saklar degradasi feature.provider_mock | Selesai |
+| Metode pembayaran | CRUD admin + visibilitas negara + rentang jumlah + batasan mata uang | Selesai |
+| CI | tag kenaikan otomatis saat push + GitHub Release | Selesai |
 
 ### Perluasan Ekosistem (v2.0) — Baru Selesai
 
@@ -89,6 +93,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Komisi bertingkat | Bagi hasil referral dua level, model ReferralCommission, rasio komisi dapat dikonfigurasi | Selesai |
 | Kondisi kupon | Tiga kondisi pembatasan min_deposit/first_user_only/game_id | Selesai |
 | Dokumentasi SDK | Dokumentasi integrasi Provider (contoh PHP/Go/Python + 4 endpoint API) | Selesai |
+| Mini-game | Farm Match-3 P0 (mesin domain + desain 4 level, unit test TypeScript/Vite/Vitest) | Selesai |
 
 ## 2. Fitur Pengguna Sisi C
 

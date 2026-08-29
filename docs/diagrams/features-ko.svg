@@ -23,7 +23,7 @@
   <rect x="500" y="72" width="220" height="95" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
   <text x="610" y="96" text-anchor="middle" fill="#166534" font-size="13" font-weight="bold">충전 시스템</text>
   <text x="610" y="116" text-anchor="middle" fill="#22c55e" font-size="11">충전 주문 생성</text>
-  <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">Stripe/PayPal 콜백 서명 검증</text>
+  <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">Stripe/PayPal/Alipay/WeChat Pay 콜백 서명 검증</text>
   <text x="610" y="174" text-anchor="middle" fill="#22c55e" font-size="10">NOWPayments/Coinbase 콜백 서명 검증</text>
   <text x="610" y="154" text-anchor="middle" fill="#22c55e" font-size="11">자동 입금 + 사이트 내 알림</text>
 
@@ -99,7 +99,7 @@
 
   <rect x="30" y="518" width="940" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="500" y="546" text-anchor="middle" fill="#475569" font-size="14" font-weight="bold">플랫폼 능력 요약</text>
-  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">사용자 인증 · 지갑(낙관적 잠금) · 충전(Stripe/PayPal) · 환전(실시간 환율) · 출금(심사/자동) · KYC(3단계 인증)</text>
+  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">사용자 인증 · 지갑(낙관적 잠금) · 충전(Stripe/PayPal/Alipay/WeChat Pay) · 환전(실시간 환율) · 출금(심사/자동) · KYC(3단계 인증)</text>
   <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">게임 CRUD(10카테고리+구역) · 리더보드(WebSocket 실시간) · 쿠폰 · 추천(등록 보상+커미션) · 리스크(4종 규칙)</text>
   <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">알림(사이트 내+이메일) · 국가 차등화(8개국) · 국제화(4언어) · 통계(일 스냅샷+수익) · 전문 검색(ES)</text>
 

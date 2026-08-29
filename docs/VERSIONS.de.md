@@ -48,7 +48,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Transaktionsprotokoll | ✓ | ✓ | ✓ |
 | Spielwährungs-Wallet | ✓ | ✓ | ✓ |
 | Einzahlungsauftrag erstellen (checkout_url/expires_at sofort zurückgeschrieben) | ✓ | ✓ | ✓ |
-| Automatische Gutschrift per Einzahlungs-Callback | - | ✓ manuell | ✓ Stripe/PayPal/NowPayments-IPN/Coinbase-Webhook-Signaturprüfung |
+| Automatische Gutschrift per Einzahlungs-Callback | - | ✓ manuell | ✓ Stripe (incl. Alipay/WeChat Pay)/PayPal/NowPayments-IPN/Coinbase-Webhook-Signaturprüfung |
 | Umtausch-Preisangebot/Kauf/Verkauf | ✓ | ✓ | ✓ |
 | Umtauschspannen-Erlös | ✓ | ✓ | ✓ |
 | Auszahlungsantrag | ✓ | ✓ | ✓ |

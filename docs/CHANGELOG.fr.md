@@ -60,6 +60,14 @@ Journal des modifications lisible par les humains. PHP n'importe pas ce fichier.
 
 ## [1.1] payments — 2026-08-29
 
-- Passerelles de paiement multiples : Stripe Checkout / NOWPayments (USDT TRC20+ERC20) / Coinbase Commerce (USDC).
+- Passerelles de paiement multiples : Stripe Checkout / NOWPayments (USDT TRC20+ERC20) / Coinbase Commerce (USDC) + Alipay/WeChat Pay (Stripe Checkout APM).
 - CRUD admin des méthodes de paiement + visibilité par pays + plages de montants ; les commandes de recharge renseignent checkout_url / expires_at à la création.
 - Nouvelle migration install/migrations/2026_08_29_multi_payment.sql (à exécuter).
+
+## [1.1] features — 2026-08-29
+
+- Mini-jeu Farm Match-3 P0 : moteur de domaine + conception de 4 niveaux + tests unitaires Vitest (`game/xiaoxiaole/`).
+- Assistant d'installation en un clic : création de l'admin dans le navigateur, mise à niveau des bases existantes (corrige la non-correspondance des paramètres liés HY093, Unknown column 'countries'), install.lock empêche la réinstallation.
+- CI : tag incrémental automatique au push + publication GitHub Release.
+- Infrastructure : base de données renommée game-platform, préfixe de table `game_` unifié.
+- Synchronisation des docs : FEATURES.md complété en 13 langues pour la résilience (interrupteurs circuit-breaker/retry/degradation), CRUD admin des méthodes de paiement, mini-jeu, installation en un clic, lignes CI (correspondant aux entrées [1.1] resilience / payments ci-dessus).

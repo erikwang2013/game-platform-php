@@ -196,8 +196,8 @@ Provider API:
 
 ```
 사용자 → POST /api/deposit/create → 주문 생성 (status=pending)
-     → GatewayFactory로 결제 생성 (Stripe Checkout/NowPayments invoice/Coinbase charge) → checkout_url + expires_at(+1h) 반영; 실패 시 CAS로 주문 취소 후 재시도
-     → 서드파티 결제로 이동 (Stripe/PayPal/NowPayments[USDT TRC20/ERC20]/Coinbase[USDC/BTC/ETH])
+     → GatewayFactory로 결제 생성 (Stripe Checkout (incl. Alipay/WeChat Pay APM)/NowPayments invoice/Coinbase charge) → checkout_url + expires_at(+1h) 반영; 실패 시 CAS로 주문 취소 후 재시도
+     → 서드파티 결제로 이동 (Stripe (incl. Alipay/WeChat Pay)/PayPal/NowPayments[USDT TRC20/ERC20]/Coinbase[USDC/BTC/ETH])
      → 결제 성공 → 콜백 /api/payment/callback
      → provider 화이트리스트(stripe/paypal/nowpayments/coinbase만) + 채널 간 도용 검증 + 서명 검증(fail-closed) + 타임스탬프±300s + bccomp 금액 대조
      → 주문 업데이트 (status=confirmed, 트랜잭션화)

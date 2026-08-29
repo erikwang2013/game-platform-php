@@ -60,6 +60,14 @@ Languages: **中文** · [English](CHANGELOG.en.md) · [한국어](CHANGELOG.ko.
 
 ## [1.1] payments — 2026-08-29
 
-- 多支付网关：接入 Stripe Checkout / NOWPayments（USDT TRC20+ERC20）/ Coinbase Commerce（USDC）。
+- 多支付网关：接入 Stripe Checkout / NOWPayments（USDT TRC20+ERC20）/ Coinbase Commerce（USDC）、Alipay/WeChat Pay（Stripe Checkout APM）。
 - 后台支付方式 CRUD + 国家可见性 + 金额区间；充值订单创建即回填 checkout_url / expires_at。
 - 新增迁移 install/migrations/2026_08_29_multi_payment.sql（需执行）。
+
+## [1.1] features — 2026-08-29
+
+- 田园消消乐 P0 小游戏：领域引擎 + 四关设计 + Vitest 单测（`game/xiaoxiaole/`）。
+- 一键安装向导：浏览器建管理员、存量库升级（修复 HY093 绑定参数、Unknown column 'countries'）、install.lock 防重装。
+- CI：push 自动增量 tag + GitHub Release 发布。
+- 基础设施：数据库更名 game-platform、`game_` 表前缀统一。
+- 文档同步：FEATURES.md 13 语言补齐容错（熔断/重试/降级开关）、支付方式后台 CRUD、小游戏、一键安装、CI 行（对应上 [1.1] resilience / payments 条目）。

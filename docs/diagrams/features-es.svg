@@ -23,7 +23,7 @@
   <rect x="500" y="72" width="220" height="95" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
   <text x="610" y="96" text-anchor="middle" fill="#166534" font-size="13" font-weight="bold">Sistema de recargas</text>
   <text x="610" y="116" text-anchor="middle" fill="#22c55e" font-size="11">Creación de órdenes de recarga</text>
-  <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">Verificación de firma de callbacks Stripe/PayPal</text>
+  <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">Verificación de firma de callbacks Stripe/PayPal/Alipay/WeChat Pay</text>
   <text x="610" y="174" text-anchor="middle" fill="#22c55e" font-size="10">Verificación de firma de callbacks NOWPayments/Coinbase</text>
   <text x="610" y="154" text-anchor="middle" fill="#22c55e" font-size="11">Abono automático + notificación interna</text>
 
@@ -99,7 +99,7 @@
 
   <rect x="30" y="518" width="940" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="500" y="546" text-anchor="middle" fill="#475569" font-size="14" font-weight="bold">Resumen de capacidades de la plataforma</text>
-  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">Autenticación · Billetera (bloqueo optimista) · Recarga (Stripe/PayPal) · Conversión (tipo de cambio en tiempo real) · Retiro (revisión/automático) · KYC (verificación en tres niveles)</text>
+  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">Autenticación · Billetera (bloqueo optimista) · Recarga (Stripe/PayPal/Alipay/WeChat Pay) · Conversión (tipo de cambio en tiempo real) · Retiro (revisión/automático) · KYC (verificación en tres niveles)</text>
   <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">CRUD de juegos (10 categorías+servidores) · Clasificaciones (WebSocket en tiempo real) · Cupones · Recomendación (recompensa de registro+comisión) · Control de riesgos (4 tipos de reglas)</text>
   <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">Notificaciones (internas+email) · Diferenciación por país (8 países) · i18n (4 idiomas) · Estadísticas (instantáneas diarias+ingresos) · Búsqueda de texto completo (ES)</text>
 

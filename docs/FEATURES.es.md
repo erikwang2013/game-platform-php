@@ -14,7 +14,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 |----|------|------|
 | Usuarios | Registro/inicio de sesión/JWT/captcha | Completada |
 | Billetera | Saldo de moneda de plataforma/consulta de movimientos | Completada |
-| Recarga | Creación de órdenes de recarga (Stripe 125+ APM locales / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal) | Completada |
+| Recarga | Creación de órdenes de recarga (Stripe 125+ APM locales, incl. Alipay/WeChat Pay APM / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal) | Completada |
 | Conversión | Moneda de plataforma ⇄ moneda de juego (tipo de cambio fijo + diferencia) | Completada |
 | Retiro | Solicitud/consulta/interruptor global/revisión automática/revisión manual | Completada |
 | Juegos | CRUD en el backend/gestión de monedas/lista C/detalle/inicio | Completada |
@@ -29,7 +29,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Dominio | Función | Estado |
 |----|------|------|
 | Usuarios | Inicio de sesión OAuth (Google/Facebook/Apple/Twitter/Microsoft/LinkedIn/GitHub) | Completada |
-| Pagos | Callback automático de múltiples canales (Stripe/PayPal/NOWPayments IPN/Coinbase Webhook) | Completada |
+| Pagos | Callback automático de múltiples canales (Stripe incl. Alipay/WeChat Pay APM / PayPal / NOWPayments IPN / Coinbase Webhook) | Completada |
 | Juegos | Gestión de servidores, seguimiento de registros de juego | Completada |
 | Retiros | Límites escalonados KYC (default/verified/vip) + comisión | Completada |
 | KYC | Solicitud y revisión de verificación de identidad | Completada |
@@ -53,7 +53,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Dominio | Función | Estado |
 |----|------|------|
 | OAuth | Intercambio real de tokens Google/Facebook/Apple | Completada |
-| Pagos | Verificación de firma de callbacks (Webhook Stripe/PayPal, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 base64) | Completada |
+| Pagos | Verificación de firma de callbacks (Webhook Stripe incl. Alipay/WeChat Pay APM, Webhook PayPal, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 base64) | Completada |
 | Captcha | Captcha de clic poster-php | Completada |
 | Notificaciones | Mensajes internos + email, notificaciones automáticas de recarga/retiro/KYC/cupón | Completada |
 | 2FA | Google Authenticator TOTP + códigos de recuperación de respaldo | Completada |
@@ -64,6 +64,10 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Datos | Análisis de agregación en tiempo real MySQL + cálculo de probabilidad conjunta/condicional | Completada |
 | HarmonyOS | admin 8 páginas; el lado C `apps/harmonyos/` ya implementa login/lobby/detalle/billetera/perfil (apunta a 8788) | Parcialmente completada (el proyecto compila; en dispositivo real hay que cambiar la IP) |
 | Documentación de API | Documentación interactiva hg/apidoc | Completada |
+| Instalación en un clic | Asistente de instalación en el navegador: crear admin, actualizar BD existente, install.lock evita reinstalación | Completada |
+| Tolerancia a fallos | CircuitBreaker + Retry + interruptor de degradación feature.provider_mock | Completada |
+| Métodos de pago | CRUD admin + visibilidad por país + rango de importes + restricción de moneda | Completada |
+| CI | tag autoincremental al push + GitHub Release | Completada |
 
 ### Extensión de ecosistema (v2.0) — Recién completada
 
@@ -89,6 +93,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Comisión multinivel | Reparto de segundo nivel, modelo ReferralCommission, tasa de comisión configurable | Completada |
 | Condiciones de cupones | Tres condiciones: min_deposit/first_user_only/game_id | Completada |
 | Documentación SDK | Documentación de integración de Provider (ejemplos PHP/Go/Python + 4 endpoints de API) | Completada |
+| Minijuego | Farm Match-3 P0 (motor de dominio + diseño de 4 niveles, pruebas unitarias TypeScript/Vite/Vitest) | Completada |
 
 ## 2. Funcionalidades del usuario C
 

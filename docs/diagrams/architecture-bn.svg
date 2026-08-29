@@ -17,7 +17,7 @@
   <rect x="510" y="110" width="130" height="26" rx="6" fill="#bbf7d0"/><text x="575" y="128" text-anchor="middle" fill="#14532d" font-size="12">থার্ড-পার্টি API</text>
   <rect x="660" y="110" width="130" height="26" rx="6" fill="#bbf7d0"/><text x="725" y="128" text-anchor="middle" fill="#14532d" font-size="12">গেম সার্ভার</text>
   <rect x="810" y="110" width="100" height="26" rx="6" fill="#bbf7d0"/><text x="860" y="128" text-anchor="middle" fill="#14532d" font-size="12">পেমেন্ট গেটওয়ে</text>
-  <text x="860" y="148" text-anchor="middle" fill="#14532d" font-size="10">NOWPayments · Coinbase</text>
+  <text x="860" y="148" text-anchor="middle" fill="#14532d" font-size="9">NOWPayments · Coinbase · Alipay/WeChat Pay</text>
 
   <line x1="480" y1="148" x2="480" y2="176" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
 

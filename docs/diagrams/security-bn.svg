@@ -96,7 +96,7 @@
 
   <rect x="340" y="428" width="310" height="60" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
   <text x="495" y="450" text-anchor="middle" fill="#1e40af" font-size="12" font-weight="bold">L17: পেমেন্ট কলব্যাক সিগনেচার</text>
-  <text x="495" y="468" text-anchor="middle" fill="#3b82f6" font-size="10">Stripe Webhook সিগনেচার ভেরিফিকেশন</text>
+  <text x="495" y="468" text-anchor="middle" fill="#3b82f6" font-size="10">Stripe/Alipay/WeChat Pay Webhook সিগনেচার ভেরিফিকেশন</text>
   <text x="495" y="482" text-anchor="middle" fill="#3b82f6" font-size="10">PayPal IPN মেসেজ ভেরিফিকেশন</text>
   <text x="495" y="496" text-anchor="middle" fill="#3b82f6" font-size="10">NOWPayments/Coinbase কলব্যাক সিগনেচার</text>
 

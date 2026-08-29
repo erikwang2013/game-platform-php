@@ -139,8 +139,8 @@ pending (待审核)
 |------|--------|------|
 | Moneda fiduciaria | Stripe | Pago con tarjeta de crédito internacional |
 | Moneda fiduciaria | PayPal | Billetera electrónica global |
-| Moneda fiduciaria | Alipay | Alipay (China continental) |
-| Moneda fiduciaria | WeChat Pay | WeChat Pay (China continental) |
+| Moneda fiduciaria | Alipay | Alipay (internacional, vía Stripe Checkout APM) |
+| Moneda fiduciaria | WeChat Pay | WeChat Pay (internacional, vía Stripe Checkout APM) |
 | Criptomoneda | USDT-TRC20 | USDT en la cadena Tron |
 
 La versión básica integra primero un único método de pago (por ejemplo, Stripe); la versión estándar amplía a todos los canales.

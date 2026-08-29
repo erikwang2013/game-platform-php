@@ -60,6 +60,14 @@ Languages: [中文](CHANGELOG.md) · [English](CHANGELOG.en.md) · **한국어**
 
 ## [1.1] payments — 2026-08-29
 
-- 다중 결제 게이트웨이: Stripe Checkout / NOWPayments(USDT TRC20+ERC20) / Coinbase Commerce(USDC) 연동.
+- 다중 결제 게이트웨이: Stripe Checkout / NOWPayments(USDT TRC20+ERC20) / Coinbase Commerce(USDC) + Alipay/WeChat Pay(Stripe Checkout APM) 연동.
 - 관리자 결제수단 CRUD + 국가별 표시 + 금액 범위; 충전 주문 생성 시 checkout_url / expires_at 즉시 기록.
 - 새 마이그레이션 install/migrations/2026_08_29_multi_payment.sql(실행 필요).
+
+## [1.1] features — 2026-08-29
+
+- Farm 매치-3 P0 미니게임: 도메인 엔진 + 4레벨 설계 + Vitest 단위 테스트(`game/xiaoxiaole/`).
+- 원클릭 설치 마법사: 브라우저에서 관리자 생성, 기존 DB 업그레이드(HY093 바인딩 파라미터 불일치, Unknown column 'countries' 수정), install.lock으로 재설치 방지.
+- CI: push 시 자동 증분 tag + GitHub Release 게시.
+- 인프라: 데이터베이스 명칭 game-platform으로 변경, `game_` 테이블 접두사 통일.
+- 문서 동기화: FEATURES.md 13개 언어로 내결함성(서킷 브레이커/재시도/폴백 스위치), 결제수단 관리 CRUD, 미니게임, 원클릭 설치, CI 행 보완(위 [1.1] resilience / payments 항목 대응).

@@ -23,7 +23,7 @@
   <rect x="500" y="72" width="220" height="95" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
   <text x="610" y="96" text-anchor="middle" fill="#166534" font-size="13" font-weight="bold">रिचार्ज प्रणाली</text>
   <text x="610" y="116" text-anchor="middle" fill="#22c55e" font-size="11">रिचार्ज ऑर्डर निर्माण</text>
-  <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">Stripe/PayPal कॉलबैक हस्ताक्षर सत्यापन</text>
+  <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">Stripe/PayPal/Alipay/WeChat Pay कॉलबैक हस्ताक्षर सत्यापन</text>
   <text x="610" y="174" text-anchor="middle" fill="#22c55e" font-size="10">NOWPayments/Coinbase कॉलबैक हस्ताक्षर सत्यापन</text>
   <text x="610" y="154" text-anchor="middle" fill="#22c55e" font-size="11">स्वचालित जमा + साइट सूचना</text>
 
@@ -99,7 +99,7 @@
 
   <rect x="30" y="518" width="940" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="500" y="546" text-anchor="middle" fill="#475569" font-size="14" font-weight="bold">प्लेटफ़ॉर्म क्षमता सारांश</text>
-  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">उपयोगकर्ता प्रमाणीकरण · वॉलेट (ऑप्टिमिस्टिक लॉक) · रिचार्ज (Stripe/PayPal) · विनिमय (रीयल-टाइम विनिमय दर) · निकासी (समीक्षा/स्वचालित) · KYC (तीन-स्तरीय)</text>
+  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">उपयोगकर्ता प्रमाणीकरण · वॉलेट (ऑप्टिमिस्टिक लॉक) · रिचार्ज (Stripe/PayPal/Alipay/WeChat Pay) · विनिमय (रीयल-टाइम विनिमय दर) · निकासी (समीक्षा/स्वचालित) · KYC (तीन-स्तरीय)</text>
   <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">गेम CRUD (10 श्रेणियाँ + सर्वर) · लीडरबोर्ड (WebSocket रीयल-टाइम) · कूपन · रेफरल (पंजीकरण पुरस्कार + कमीशन) · जोखिम नियंत्रण (4 प्रकार नियम)</text>
   <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">सूचना (साइट + ईमेल) · देश विभेदीकरण (8 देश) · अंतर्राष्ट्रीयकरण (4 भाषाएँ) · सांख्यिकी (दैनिक स्नैपशॉट + आय) · पूर्ण-पाठ खोज (ES)</text>
 

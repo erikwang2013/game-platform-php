@@ -14,7 +14,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 |----|------|------|
 | ユーザー | 登録/ログイン/JWT/認証コード | 完了 |
 | ウォレット | プラットフォームコイン残高/明細照会 | 完了 |
-| チャージ | チャージ注文の作成（Stripe 125+ ローカル決済 / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal コールバック） | 完了 |
+| チャージ | チャージ注文の作成（Stripe 125+ ローカル決済、Alipay/WeChat Pay APM を含む / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal コールバック） | 完了 |
 | 交換 | プラットフォームコイン⇄ゲームコイン（固定レート+差額） | 完了 |
 | 出金 | 申請/照会/グローバルスイッチ/自動審査/人工審査 | 完了 |
 | ゲーム | バックエンドCRUD/通貨管理/C端リスト/詳細/起動 | 完了 |
@@ -29,7 +29,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | ドメイン | 機能 | 状態 |
 |----|------|------|
 | ユーザー | OAuthログイン (Google/Facebook/Apple/Twitter/Microsoft/LinkedIn/GitHub) | 完了 |
-| 決済 | 複数決済チャネルの自動コールバック (Stripe/PayPal/NOWPayments IPN/Coinbase Webhook) | 完了 |
+| 決済 | 複数決済チャネルの自動コールバック (Stripe Alipay/WeChat Pay APM 含む / PayPal / NOWPayments IPN / Coinbase Webhook) | 完了 |
 | ゲーム | 区サーバー管理、ゲーム記録の追跡 | 完了 |
 | 出金 | KYC段階別限度額 (default/verified/vip) + 手数料 | 完了 |
 | KYC | 実名認証の申請+審査 | 完了 |
@@ -53,7 +53,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | ドメイン | 機能 | 状態 |
 |----|------|------|
 | OAuth | Google/Facebook/Apple 実トークン交換 | 完了 |
-| 決済 | コールバック署名検証 (Stripe/PayPal Webhook、NOWPayments IPN HMAC-SHA512、Coinbase HMAC-SHA256 base64 secret) | 完了 |
+| 決済 | コールバック署名検証 (Stripe Webhook Alipay/WeChat Pay APM 含む、PayPal Webhook、NOWPayments IPN HMAC-SHA512、Coinbase HMAC-SHA256 base64 secret) | 完了 |
 | 認証コード | poster-php クリック式認証コード | 完了 |
 | 通知 | サイト内メッセージ + メール、チャージ/出金/KYC/クーポン自動通知 | 完了 |
 | 2FA | Google Authenticator TOTP + 予備リカバリーコード | 完了 |
@@ -64,6 +64,10 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | データ | MySQL リアルタイム集計分析 + 結合/条件確率計算 | 完了 |
 | HarmonyOS | admin 端 8 ページ；C 端 `apps/harmonyos/` にログイン/ロビー/詳細/ウォレット/マイページ実装（8788 を指す） | 一部完了（工程は実行可能、実機では IP 変更が必要） |
 | API ドキュメント | hg/apidoc インタラクティブドキュメント | 完了 |
+| ワンクリックインストール | ブラウザインストールウィザード：管理者作成、既存DBアップグレード、install.lock で再インストール防止 | 完了 |
+| 耐障害性 | CircuitBreaker 遮断 + Retry 再試行 + feature.provider_mock 縮退スイッチ | 完了 |
+| 決済手段 | 管理CRUD + 国別表示 + 金額範囲 + 通貨制限 | 完了 |
+| CI | push 時に自動インクリメント tag + GitHub Release | 完了 |
 
 ### エコシステム拡張 (v2.0) — 完了
 
@@ -89,6 +93,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | 多段階コミッション | 二段階紹介分与、ReferralCommission モデル、設定可能なコミッション率 | 完了 |
 | クーポン条件 | min_deposit/first_user_only/game_id 3種の条件制限 | 完了 |
 | SDK ドキュメント | Provider 接続ドキュメント (PHP/Go/Python 例 + 4 API エンドポイント) | 完了 |
+| ミニゲーム | Farm Match-3 P0（ドメインエンジン + 4レベル設計、TypeScript/Vite/Vitest 単体テスト） | 完了 |
 
 ## 2. C端ユーザー機能
 

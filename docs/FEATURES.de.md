@@ -14,7 +14,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 |----|------|------|
 | Benutzer | Registrierung/Login/JWT/Verifizierungscode | Abgeschlossen |
 | Wallet | Plattformwährungsguthaben/Transaktionsabfrage | Abgeschlossen |
-| Einzahlung | Einzahlungsauftrag erstellen (Stripe 125+ lokale Zahlungsarten / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal-Callback) | Abgeschlossen |
+| Einzahlung | Einzahlungsauftrag erstellen (Stripe 125+ lokale Zahlungsarten, inkl. Alipay/WeChat Pay APM / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal-Callback) | Abgeschlossen |
 | Umtausch | Plattformwährung⇄Spielwährung (fester Kurs + Spread) | Abgeschlossen |
 | Auszahlung | Antrag/Abfrage/globaler Schalter/automatische Prüfung/manuelle Prüfung | Abgeschlossen |
 | Spiele | Backend-CRUD/Währungsverwaltung/C-End-Liste/Details/Start | Abgeschlossen |
@@ -29,7 +29,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | Bereich | Funktion | Status |
 |----|------|------|
 | Benutzer | OAuth-Login (Google/Facebook/Apple/Twitter/Microsoft/LinkedIn/GitHub) | Abgeschlossen |
-| Zahlung | Automatischer Callback mehrerer Zahlungskanäle (Stripe/PayPal/NOWPayments IPN/Coinbase Webhook) | Abgeschlossen |
+| Zahlung | Automatischer Callback mehrerer Zahlungskanäle (Stripe inkl. Alipay/WeChat Pay APM / PayPal / NOWPayments IPN / Coinbase Webhook) | Abgeschlossen |
 | Spiele | Regionen-/Serververwaltung, Spielprotokollverfolgung | Abgeschlossen |
 | Auszahlung | KYC-Stufenlimits (default/verified/vip) + Gebühren | Abgeschlossen |
 | KYC | Identitätsprüfungsantrag + Prüfung | Abgeschlossen |
@@ -53,7 +53,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | Bereich | Funktion | Status |
 |----|------|------|
 | OAuth | Google/Facebook/Apple echter Token-Austausch | Abgeschlossen |
-| Zahlung | Signaturprüfung der Zahlungs-Callbacks (Stripe/PayPal-Webhook, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 base64) | Abgeschlossen |
+| Zahlung | Signaturprüfung der Zahlungs-Callbacks (Stripe-Webhook inkl. Alipay/WeChat Pay APM, PayPal-Webhook, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 base64) | Abgeschlossen |
 | Verifizierungscode | poster-php Klick-Captcha | Abgeschlossen |
 | Benachrichtigung | In-App-Nachrichten + E-Mail, automatische Benachrichtigung bei Einzahlung/Auszahlung/KYC/Gutschein | Abgeschlossen |
 | 2FA | Google Authenticator TOTP + Backup-Wiederherstellungscodes | Abgeschlossen |
@@ -64,6 +64,10 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | Daten | MySQL-Echtzeit-Aggregationsanalyse + Verbund-/Bedingte-Wahrscheinlichkeitsberechnung | Abgeschlossen |
 | HarmonyOS | admin-Seite 8 Seiten; C-End `apps/harmonyos/` mit Login/Lobby/Details/Wallet/Profil (zeigt auf 8788) | Teilweise abgeschlossen (Projekt läuft, echte Geräte benötigen IP-Anpassung) |
 | API-Dokumentation | hg/apidoc interaktive Dokumentation | Abgeschlossen |
+| Ein-Klick-Installation | Browser-Installationsassistent: Admin erstellen, bestehende DB aktualisieren, install.lock verhindert Neuinstallation | Abgeschlossen |
+| Fehlertoleranz | CircuitBreaker + Retry + Degradationsschalter feature.provider_mock | Abgeschlossen |
+| Zahlungsarten | Admin-CRUD + Sichtbarkeit nach Land + Betragsbereich + Währungsbeschränkung | Abgeschlossen |
+| CI | Automatischer Inkrement-Tag bei push + GitHub Release | Abgeschlossen |
 
 ### Ökosystem-Erweiterung (v2.0) — Gerade abgeschlossen
 
@@ -89,6 +93,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | Mehrstufige Provision | Zweistufige Empfehlungsgewinnbeteiligung, ReferralCommission-Modell, konfigurierbare Provisionssätze | Abgeschlossen |
 | Gutscheinbedingungen | min_deposit/first_user_only/game_id drei Bedingungsarten | Abgeschlossen |
 | SDK-Dokumentation | Provider-Anbindungsdokumentation (PHP/Go/Python-Beispiele + 4 API-Endpunkte) | Abgeschlossen |
+| Minispiel | Farm Match-3 P0 (Domain-Engine + 4-Level-Design, TypeScript/Vite/Vitest-Unit-Tests) | Abgeschlossen |
 
 ## 2. C-End-Benutzerfunktionen
 

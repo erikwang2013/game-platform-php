@@ -27,7 +27,7 @@
   <text x="490" y="120" text-anchor="middle" fill="#f59e0b" font-size="11">Platform Currency</text>
 
   <text x="345" y="156" text-anchor="middle" fill="#64748b" font-size="11">Stripe | PayPal | 支付宝 | 微信支付</text>
-  <text x="345" y="172" text-anchor="middle" fill="#64748b" font-size="11">NOWPayments | Coinbase — USDT/USDC/BTC/ETH</text>
+  <text x="345" y="172" text-anchor="middle" fill="#64748b" font-size="11">Stripe APM (Alipay/WeChat Pay) | NOWPayments | Coinbase — USDT/USDC/BTC/ETH</text>
 
   <line x1="490" y1="132" x2="490" y2="184" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 

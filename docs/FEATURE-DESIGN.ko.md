@@ -139,8 +139,8 @@ pending (심사 대기)
 |------|--------|------|
 | 법정화폐 | Stripe | 국제 신용카드 결제 |
 | 법정화폐 | PayPal | 글로벌 전자 지갑 |
-| 법정화폐 | Alipay | 알리페이 (중국 본토) |
-| 법정화폐 | WeChat Pay | 위챗페이 (중국 본토) |
+| 법정화폐 | Alipay | 알리페이 (국제판, Stripe Checkout APM 경유) |
+| 법정화폐 | WeChat Pay | 위챗페이 (국제판, Stripe Checkout APM 경유) |
 | 암호화폐 | USDT-TRC20 | 트론 체인 USDT |
 
 베이직 에디션은 단일 결제 수단(예: Stripe)부터 연동하고, 스탠다드 에디션에서 전체 채널을 확장합니다.

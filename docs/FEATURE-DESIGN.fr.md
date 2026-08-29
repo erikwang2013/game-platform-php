@@ -139,8 +139,8 @@ pending (en attente de validation)
 |------|--------|------|
 | Fiduciaire | Stripe | Paiement par carte de crédit internationale |
 | Fiduciaire | PayPal | Portefeuille électronique mondial |
-| Fiduciaire | Alipay | Alipay (Chine continentale) |
-| Fiduciaire | WeChat Pay | WeChat Pay (Chine continentale) |
+| Fiduciaire | Alipay | Alipay (international, via Stripe Checkout APM) |
+| Fiduciaire | WeChat Pay | WeChat Pay (international, via Stripe Checkout APM) |
 | Crypto | USDT-TRC20 | USDT sur la chaîne Tron |
 
 L'édition de base connecte d'abord un mode de paiement unique (ex. Stripe), l'édition standard étend à tous les canaux.

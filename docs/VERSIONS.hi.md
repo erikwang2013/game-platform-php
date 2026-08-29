@@ -48,7 +48,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 | लेन-देन रिकॉर्ड | ✓ | ✓ | ✓ |
 | गेम कॉइन वॉलेट | ✓ | ✓ | ✓ |
 | रिचार्ज ऑर्डर निर्माण (बनते ही checkout_url/expires_at भर जाते हैं) | ✓ | ✓ | ✓ |
-| रिचार्ज कॉलबैक स्वचालित जमा | - | ✓ मैन्युअल | ✓ Stripe/PayPal/NowPayments IPN/Coinbase webhook हस्ताक्षर सत्यापन |
+| रिचार्ज कॉलबैक स्वचालित जमा | - | ✓ मैन्युअल | ✓ Stripe (incl. Alipay/WeChat Pay)/PayPal/NowPayments IPN/Coinbase webhook हस्ताक्षर सत्यापन |
 | विनिमय कोटेशन/खरीद/बिक्री | ✓ | ✓ | ✓ |
 | विनिमय मार्जिन आय | ✓ | ✓ | ✓ |
 | निकासी आवेदन | ✓ | ✓ | ✓ |

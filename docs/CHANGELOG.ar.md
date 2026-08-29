@@ -60,6 +60,14 @@ Languages: **中文** · [English](CHANGELOG.en.md) · [한국어](CHANGELOG.ko.
 
 ## [1.1] payments — 2026-08-29
 
-- بوابات دفع متعددة: Stripe Checkout / NOWPayments (USDT TRC20+ERC20) / Coinbase Commerce (USDC).
+- بوابات دفع متعددة: Stripe Checkout / NOWPayments (USDT TRC20+ERC20) / Coinbase Commerce (USDC) + Alipay/WeChat Pay (Stripe Checkout APM).
 - CRUD لطرق الدفع في لوحة الإدارة + رؤية حسب الدولة + نطاقات المبالغ؛ أوامر الشحن تملأ checkout_url / expires_at عند الإنشاء.
 - ترحيل جديد install/migrations/2026_08_29_multi_payment.sql (يجب تنفيذه).
+
+## [1.1] features — 2026-08-29
+
+- لعبة مصغرة Farm Match-3 P0: محرك المجال + تصميم 4 مستويات + اختبارات وحدة Vitest (`game/xiaoxiaole/`).
+- معالج التثبيت بنقرة واحدة: إنشاء المدير في المتصفح، ترقية قواعد البيانات الحالية (إصلاح عدم تطابق معاملات الربط HY093 وUnknown column 'countries')، install.lock يمنع إعادة التثبيت.
+- CI: وسم تزايدي تلقائي عند push + نشر GitHub Release.
+- البنية التحتية: إعادة تسمية قاعدة البيانات إلى game-platform وتوحيد بادئة الجداول `game_`.
+- مزامنة التوثيق: إكمال FEATURES.md بـ 13 لغة للمرونة (مفاتيح circuit-breaker/retry/degradation) وCRUD طرق الدفع في لوحة الإدارة واللعبة المصغرة والتثبيت بنقرة واحدة وصفوف CI (مقابل إدخالات [1.1] resilience / payments أعلاه).

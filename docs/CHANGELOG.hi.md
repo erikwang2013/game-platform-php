@@ -60,6 +60,14 @@ Languages: [中文](CHANGELOG.md) · [English](CHANGELOG.en.md) · [한국어](C
 
 ## [1.1] payments — 2026-08-29
 
-- मल्टी-पेमेंट गेटवे: Stripe Checkout / NOWPayments (USDT TRC20+ERC20) / Coinbase Commerce (USDC)।
+- मल्टी-पेमेंट गेटवे: Stripe Checkout / NOWPayments (USDT TRC20+ERC20) / Coinbase Commerce (USDC) + Alipay/WeChat Pay (Stripe Checkout APM)।
 - एडमिन में भुगतान विधि CRUD + देश दृश्यता + राशि सीमा; रिचार्ज ऑर्डर बनते ही checkout_url / expires_at भर जाते हैं।
 - नया माइग्रेशन install/migrations/2026_08_29_multi_payment.sql (चलाना आवश्यक)।
+
+## [1.1] features — 2026-08-29
+
+- मिनी-गेम Farm Match-3 P0: डोमेन इंजन + 4-स्तरीय डिज़ाइन + Vitest यूनिट टेस्ट (`game/xiaoxiaole/`)।
+- वन-क्लिक इंस्टॉल विज़ार्ड: ब्राउज़र में एडमिन बनाना, मौजूदा DB अपग्रेड (HY093 बाइंडिंग-पैरामीटर मिसमैच, Unknown column 'countries' ठीक), install.lock पुनः इंस्टॉल रोकता है।
+- CI: push पर स्वचालित इंक्रीमेंटल tag + GitHub Release प्रकाशन।
+- इंफ्रास्ट्रक्चर: डेटाबेस का नाम game-platform, `game_` टेबल प्रीफ़िक्स एकीकृत।
+- दस्तावेज़ सिंक: FEATURES.md 13 भाषाओं में रेज़िलिएंस (circuit-breaker/retry/degradation स्विच), पेमेंट विधि CRUD, मिनी-गेम, वन-क्लिक इंस्टॉल, CI पंक्तियाँ पूरी (ऊपर [1.1] resilience / payments आइटम के अनुरूप)।

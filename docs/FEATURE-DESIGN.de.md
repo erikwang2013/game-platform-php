@@ -139,8 +139,8 @@ pending (待审核)
 |------|--------|------|
 | Fiat | Stripe | Internationale Kreditkartenzahlung |
 | Fiat | PayPal | Globales E-Wallet |
-| Fiat | Alipay | Alipay (Festlandchina) |
-| Fiat | WeChat Pay | WeChat Pay (Festlandchina) |
+| Fiat | Alipay | Alipay (international, über Stripe Checkout APM) |
+| Fiat | WeChat Pay | WeChat Pay (international, über Stripe Checkout APM) |
 | Kryptowährung | USDT-TRC20 | USDT auf dem Tron-Netzwerk |
 
 Die Basisversion integriert zunächst eine einzelne Zahlungsmethode (z. B. Stripe), die Standardversion erweitert auf alle Kanäle.

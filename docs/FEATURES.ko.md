@@ -14,7 +14,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 |----|------|------|
 | 사용자 | 등록/로그인/JWT/캡차 | 완료 |
 | 지갑 | 플랫폼 코인 잔액/거래 내역 조회 | 완료 |
-| 충전 | 충전 주문 생성 (Stripe 125+ 로컬 결제 / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal 콜백) | 완료 |
+| 충전 | 충전 주문 생성 (Stripe 125+ 로컬 결제, Alipay/WeChat Pay APM 포함 / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal 콜백) | 완료 |
 | 환전 | 플랫폼 코인⇄게임 코인 (고정 환율+차액) | 완료 |
 | 출금 | 신청/조회/전역 스위치/자동 심사/수동 심사 | 완료 |
 | 게임 | 백오피스 CRUD/코인 관리/C단 목록/상세/시작 | 완료 |
@@ -29,7 +29,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | 도메인 | 기능 | 상태 |
 |----|------|------|
 | 사용자 | OAuth 로그인 (Google/Facebook/Apple/Twitter/Microsoft/LinkedIn/GitHub) | 완료 |
-| 결제 | 다중 결제 채널 자동 콜백 (Stripe/PayPal/NOWPayments IPN/Coinbase Webhook) | 완료 |
+| 결제 | 다중 결제 채널 자동 콜백 (Stripe Alipay/WeChat Pay APM 포함 / PayPal / NOWPayments IPN / Coinbase Webhook) | 완료 |
 | 게임 | 구역 관리, 게임 기록 추적 | 완료 |
 | 출금 | KYC 단계별 한도 (default/verified/vip) + 수수료 | 완료 |
 | KYC | 실명 인증 신청+심사 | 완료 |
@@ -53,7 +53,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | 도메인 | 기능 | 상태 |
 |----|------|------|
 | OAuth | Google/Facebook/Apple 실제 token 교환 | 완료 |
-| 결제 | 콜백 서명 검증 (Stripe/PayPal Webhook, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 base64 시크릿) | 완료 |
+| 결제 | 콜백 서명 검증 (Stripe Webhook Alipay/WeChat Pay APM 포함, PayPal Webhook, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 base64 시크릿) | 완료 |
 | 캡차 | poster-php 클릭형 캡차 | 완료 |
 | 알림 | 사이트 내 메시지 + 이메일, 충전/출금/KYC/쿠폰 자동 알림 | 완료 |
 | 2FA | Google Authenticator TOTP + 백업 복구 코드 | 완료 |
@@ -64,6 +64,10 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | 데이터 | MySQL 실시간 집계 분석 + 결합/조건부 확률 계산 | 완료 |
 | HarmonyOS | admin 단 8페이지; C단 `apps/harmonyos/`에 로그인/로비/상세/지갑/개인 구현 (8788 지시) | 부분 완료 (프로젝트 실행 가능, 실기기 IP 변경 필요) |
 | API 문서 | hg/apidoc 인터랙티브 문서 | 완료 |
+| 원클릭 설치 | 브라우저 설치 마법사: 관리자 생성, 기존 DB 업그레이드, install.lock 재설치 방지 | 완료 |
+| 내결함성 | CircuitBreaker 차단 + Retry 재시도 + feature.provider_mock 다운그레이드 스위치 | 완료 |
+| 결제 수단 | 백오피스 CRUD + 국가별 표시 + 금액 구간 + 통화 제한 | 완료 |
+| CI | push 시 자동 증가 tag + GitHub Release | 완료 |
 
 ### 생태계 확장 (v2.0) — 방금 완료
 
@@ -89,6 +93,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | 다단계 커미션 | 2차 추천 수익 분배, ReferralCommission 모델, 커미션율 설정 가능 | 완료 |
 | 쿠폰 조건 | min_deposit/first_user_only/game_id 3가지 조건 제한 | 완료 |
 | SDK 문서 | Provider 연동 문서 (PHP/Go/Python 예시 + 4개 API 엔드포인트) | 완료 |
+| 미니게임 | Farm 매치-3 P0 (도메인 엔진 + 4레벨 설계, TypeScript/Vite/Vitest 단위 테스트) | 완료 |
 
 ## 2. C단 사용자 기능
 

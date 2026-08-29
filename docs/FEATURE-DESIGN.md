@@ -139,8 +139,8 @@ pending (待审核)
 |------|--------|------|
 | 法币 | Stripe | 国际信用卡支付 |
 | 法币 | PayPal | 全球电子钱包 |
-| 法币 | Alipay | 支付宝（中国大陆） |
-| 法币 | WeChat Pay | 微信支付（中国大陆） |
+| 法币 | Alipay | 支付宝（国际版，经 Stripe Checkout APM） |
+| 法币 | WeChat Pay | 微信支付（国际版，经 Stripe Checkout APM） |
 | 加密货币 | USDT-TRC20 | 波场链 USDT |
 
 基础版先对接单一支付方式（如 Stripe），标准版扩展全部渠道。

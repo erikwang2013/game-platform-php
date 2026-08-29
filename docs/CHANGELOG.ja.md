@@ -60,6 +60,14 @@ Languages: **中文** · [English](CHANGELOG.en.md) · [한국어](CHANGELOG.ko.
 
 ## [1.1] payments — 2026-08-29
 
-- マルチ決済ゲートウェイ: Stripe Checkout / NOWPayments（USDT TRC20+ERC20）/ Coinbase Commerce（USDC）対応。
+- マルチ決済ゲートウェイ: Stripe Checkout / NOWPayments（USDT TRC20+ERC20）/ Coinbase Commerce（USDC）+ Alipay/WeChat Pay（Stripe Checkout APM）対応。
 - 管理画面で決済手段 CRUD + 国別表示 + 金額範囲; チャージ注文作成時に checkout_url / expires_at を即時記録。
 - 新マイグレーション install/migrations/2026_08_29_multi_payment.sql（実行が必要）。
+
+## [1.1] features — 2026-08-29
+
+- ミニゲーム Farm Match-3 P0: ドメインエンジン + 4レベル設計 + Vitest 単体テスト（`game/xiaoxiaole/`）。
+- ワンクリックインストールウィザード: ブラウザで管理者作成、既存 DB アップグレード（HY093 バインドパラメータ不一致、Unknown column 'countries' を修正）、install.lock で再インストール防止。
+- CI: push 時に自動インクリメンタル tag + GitHub Release 公開。
+- インフラ: データベースを game-platform に改名、`game_` テーブルプレフィックス統一。
+- ドキュメント同期: FEATURES.md を 13 言語で補完（サーキットブレーカー/リトライ/縮退スイッチ）、決済手段 CRUD、ミニゲーム、ワンクリックインストール、CI 行（上記 [1.1] resilience / payments エントリに対応）。

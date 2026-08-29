@@ -48,7 +48,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | 流水记录 | ✓ | ✓ | ✓ |
 | 游戏币钱包 | ✓ | ✓ | ✓ |
 | 充值订单创建(即回填 checkout_url/expires_at) | ✓ | ✓ | ✓ |
-| 充值回调自动到账 | - | ✓ 手动 | ✓ Stripe/PayPal/NowPayments IPN/Coinbase webhook验签 |
+| 充值回调自动到账 | - | ✓ 手动 | ✓ Stripe(含 Alipay/WeChat Pay)/PayPal/NowPayments IPN/Coinbase webhook验签 |
 | 兑换询价/买入/卖出 | ✓ | ✓ | ✓ |
 | 兑换差价收益 | ✓ | ✓ | ✓ |
 | 提现申请 | ✓ | ✓ | ✓ |

@@ -139,8 +139,8 @@ pending (menunggu review)
 |------|--------|------|
 | Fiat | Stripe | Pembayaran kartu kredit internasional |
 | Fiat | PayPal | Dompet elektronik global |
-| Fiat | Alipay | Alipay (China daratan) |
-| Fiat | WeChat Pay | WeChat Pay (China daratan) |
+| Fiat | Alipay | Alipay (internasional, via Stripe Checkout APM) |
+| Fiat | WeChat Pay | WeChat Pay (internasional, via Stripe Checkout APM) |
 | Kripto | USDT-TRC20 | USDT jaringan Tron |
 
 Versi dasar mengintegrasikan satu metode pembayaran terlebih dahulu (seperti Stripe), versi standar memperluas semua saluran.

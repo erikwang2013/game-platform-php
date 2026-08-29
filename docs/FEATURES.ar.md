@@ -14,7 +14,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 |----|------|------|
 | المستخدم | تسجيل/دخول/JWT/كابتشا | مكتمل |
 | المحفظة | رصيد عملات المنصة/استعلام الحركات | مكتمل |
-| الشحن | إنشاء طلب شحن (Stripe 125+ وسيلة دفع محلية / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal) | مكتمل |
+| الشحن | إنشاء طلب شحن (Stripe 125+ وسيلة دفع محلية، بما في ذلك Alipay/WeChat Pay APM / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal) | مكتمل |
 | الاستبدال | عملة المنصة ⇄ عملة اللعبة (سعر صرف ثابت + فرق) | مكتمل |
 | السحب | طلب/استعلام/مفتاح عام/مراجعة تلقائية/مراجعة بشرية | مكتمل |
 | الألعاب | CRUD خلفي/إدارة العملات/قائمة الطرف C/تفاصيل/تشغيل | مكتمل |
@@ -29,7 +29,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | المجال | الوظيفة | الحالة |
 |----|------|------|
 | المستخدم | تسجيل دخول OAuth (Google/Facebook/Apple/Twitter/Microsoft/LinkedIn/GitHub) | مكتمل |
-| الدفع | استدعاءات تلقائية لقنوات دفع متعددة (Stripe/PayPal/NOWPayments IPN/Coinbase Webhook) | مكتمل |
+| الدفع | استدعاءات تلقائية لقنوات دفع متعددة (Stripe بما في ذلك Alipay/WeChat Pay APM / PayPal / NOWPayments IPN / Coinbase Webhook) | مكتمل |
 | الألعاب | إدارة الخوادم، تتبع سجلات اللعب | مكتمل |
 | السحب | حدود KYC المتدرجة (default/verified/vip) + الرسوم | مكتمل |
 | KYC | طلب التحقق من الهوية + المراجعة | مكتمل |
@@ -53,7 +53,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | المجال | الوظيفة | الحالة |
 |----|------|------|
 | OAuth | تبادل Token حقيقي Google/Facebook/Apple | مكتمل |
-| الدفع | التحقق من توقيع الاستدعاء (Webhook Stripe/PayPal، NOWPayments IPN HMAC-SHA512، Coinbase HMAC-SHA256 base64) | مكتمل |
+| الدفع | التحقق من توقيع الاستدعاء (Webhook Stripe بما في ذلك Alipay/WeChat Pay APM، Webhook PayPal، NOWPayments IPN HMAC-SHA512، Coinbase HMAC-SHA256 base64) | مكتمل |
 | الكابتشا | كابتشا نقرة poster-php | مكتمل |
 | الإشعارات | رسائل داخل الموقع + البريد، إشعارات تلقائية للشحن/السحب/KYC/القسائم | مكتمل |
 | 2FA | Google Authenticator TOTP + رموز استرداد احتياطية | مكتمل |
@@ -64,6 +64,10 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | البيانات | تحليل تجميع MySQL لحظي + حساب الاحتمالات المشتركة/الشرطية | مكتمل |
 | HarmonyOS | إدارة 8 صفحات؛ الطرف C في `apps/harmonyos/` نفّذ تسجيل الدخول/اللوبي/التفاصيل/المحفظة/الملف الشخصي (يشير إلى 8788) | مكتمل جزئيًا (المشروع يعمل، الجهاز الحقيقي يحتاج تغيير IP) |
 | توثيق API | توثيق تفاعلي hg/apidoc | مكتمل |
+| تثبيت بنقرة واحدة | معالج تثبيت بالمتصفح: إنشاء مدير، ترقية قاعدة بيانات موجودة، install.lock يمنع إعادة التثبيت | مكتمل |
+| تحمل الأعطال | CircuitBreaker + Retry + مفتاح التدهور feature.provider_mock | مكتمل |
+| طرق الدفع | CRUD في الإدارة + رؤية حسب الدولة + نطاق المبالغ + تقييد العملة | مكتمل |
+| CI | tag تلقائي متزايد عند push + GitHub Release | مكتمل |
 
 ### التوسعة البيئية (v2.0) — أُنجزت للتو
 
@@ -89,6 +93,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | عمولة متعددة المستويات | تقسيم عمولة المستويين، نموذج ReferralCommission، معدلات عمولة قابلة للإعداد | مكتمل |
 | شروط القسائم | ثلاثة قيود: min_deposit/first_user_only/game_id | مكتمل |
 | توثيق SDK | توثيق ربط Provider (أمثلة PHP/Go/Python + 4 نقاط نهاية API) | مكتمل |
+| لعبة مصغرة | Farm Match-3 P0 (محرك المجال + تصميم 4 مستويات، اختبارات وحدة TypeScript/Vite/Vitest) | مكتمل |
 
 ## 2. وظائف مستخدمي الطرف C
 

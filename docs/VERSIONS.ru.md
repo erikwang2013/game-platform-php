@@ -48,7 +48,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Записи операций | ✓ | ✓ | ✓ |
 | Кошелёк игровой валюты | ✓ | ✓ | ✓ |
 | Создание ордера на пополнение (сразу заполняется checkout_url/expires_at) | ✓ | ✓ | ✓ |
-| Автозачисление по колбэку пополнения | - | ✓ вручную | ✓ проверка подписи Stripe/PayPal/NowPayments IPN/Coinbase webhook |
+| Автозачисление по колбэку пополнения | - | ✓ вручную | ✓ проверка подписи Stripe (incl. Alipay/WeChat Pay)/PayPal/NowPayments IPN/Coinbase webhook |
 | Котировка обмена/покупка/продажа | ✓ | ✓ | ✓ |
 | Доход с разницы обмена | ✓ | ✓ | ✓ |
 | Заявка на вывод | ✓ | ✓ | ✓ |

@@ -48,7 +48,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Catatan transaksi | ✓ | ✓ | ✓ |
 | Dompet koin game | ✓ | ✓ | ✓ |
 | Pembuatan pesanan deposit (langsung mengisi checkout_url/expires_at) | ✓ | ✓ | ✓ |
-| Callback deposit masuk otomatis | - | ✓ manual | ✓ verifikasi tanda tangan Stripe/PayPal/NowPayments IPN/Coinbase webhook |
+| Callback deposit masuk otomatis | - | ✓ manual | ✓ verifikasi tanda tangan Stripe (incl. Alipay/WeChat Pay)/PayPal/NowPayments IPN/Coinbase webhook |
 | Penukaran harga/kueri beli/jual | ✓ | ✓ | ✓ |
 | Pendapatan selisih penukaran | ✓ | ✓ | ✓ |
 | Aplikasi penarikan | ✓ | ✓ | ✓ |

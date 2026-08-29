@@ -23,7 +23,7 @@
   <rect x="500" y="72" width="220" height="95" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
   <text x="610" y="96" text-anchor="middle" fill="#166534" font-size="13" font-weight="bold">充值系统</text>
   <text x="610" y="116" text-anchor="middle" fill="#22c55e" font-size="11">创建充值订单</text>
-  <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">Stripe/PayPal 回调验签</text>
+  <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">Stripe/PayPal/Alipay/WeChat Pay 回调验签</text>
   <text x="610" y="174" text-anchor="middle" fill="#22c55e" font-size="10">NOWPayments/Coinbase 回调验签</text>
   <text x="610" y="154" text-anchor="middle" fill="#22c55e" font-size="11">自动到账 + 站内通知</text>
 
@@ -99,7 +99,7 @@
 
   <rect x="30" y="518" width="940" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="500" y="546" text-anchor="middle" fill="#475569" font-size="14" font-weight="bold">平台能力总结</text>
-  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">用户认证 · 钱包(乐观锁) · 充值(Stripe/PayPal) · 兑换(实时汇率) · 提现(审核/自动) · KYC(三级认证)</text>
+  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">用户认证 · 钱包(乐观锁) · 充值(Stripe/PayPal/Alipay/WeChat Pay) · 兑换(实时汇率) · 提现(审核/自动) · KYC(三级认证)</text>
   <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">游戏CRUD(10品类+区服) · 排行榜(WebSocket实时) · 优惠券 · 推荐(注册奖励+返佣) · 风控(4类规则)</text>
   <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">通知(站内+邮件) · 国家差异化(8国) · 国际化(4语言) · 统计(日快照+收益) · 全文检索(ES)</text>
 

@@ -60,6 +60,14 @@ Languages: **中文** · [English](CHANGELOG.en.md) · [한국어](CHANGELOG.ko.
 
 ## [1.1] payments — 2026-08-29
 
-- Мульти-платёжные шлюзы: Stripe Checkout / NOWPayments (USDT TRC20+ERC20) / Coinbase Commerce (USDC).
+- Мульти-платёжные шлюзы: Stripe Checkout / NOWPayments (USDT TRC20+ERC20) / Coinbase Commerce (USDC) + Alipay/WeChat Pay (Stripe Checkout APM).
 - CRUD платёжных методов в админке + видимость по странам + диапазоны сумм; при создании заказа пополнения сразу заполняются checkout_url / expires_at.
 - Новая миграция install/migrations/2026_08_29_multi_payment.sql (необходимо выполнить).
+
+## [1.1] features — 2026-08-29
+
+- Мини-игра Farm Match-3 P0: доменный движок + дизайн 4 уровней + юнит-тесты Vitest (`game/xiaoxiaole/`).
+- Мастер однокнопочной установки: создание администратора в браузере, обновление существующих БД (исправлены несоответствие связанных параметров HY093, Unknown column 'countries'), install.lock защищает от повторной установки.
+- CI: автоматический инкрементный tag при push + публикация GitHub Release.
+- Инфраструктура: БД переименована в game-platform, унифицирован префикс таблиц `game_`.
+- Синхронизация документации: FEATURES.md дополнена на 13 языках отказоустойчивостью (переключатели circuit-breaker/retry/degradation), CRUD платёжных методов в админке, мини-игрой, однокнопочной установкой, строками CI (соответствует вышеуказанным пунктам [1.1] resilience / payments).

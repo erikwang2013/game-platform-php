@@ -64,7 +64,7 @@
   <rect x="790" y="261" width="140" height="50" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="2" filter="url(#sh)"/>
   <text x="860" y="292" text-anchor="middle" fill="#166534" font-size="13" font-weight="bold">Terminé</text>
 
-  <text x="500" y="320" text-anchor="middle" fill="#64748b" font-size="10">Canaux de paiement: NOWPayments · Coinbase</text>
+  <text x="500" y="320" text-anchor="middle" fill="#64748b" font-size="10">Canaux de paiement: NOWPayments · Coinbase · Alipay/WeChat Pay (Stripe APM)</text>
   <text x="500" y="338" text-anchor="middle" fill="#64748b" font-size="11">Dépôt : pending → paid → confirmed  |  Retrait : pending → approved → completed (peut être rejected)</text>
 
   <!-- Game Session -->

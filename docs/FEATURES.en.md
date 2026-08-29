@@ -14,7 +14,7 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 |----|------|------|
 | Users | Register/login/JWT/captcha | Completed |
 | Wallet | Platform currency balance/transaction query | Completed |
-| Deposit | Create deposit order (Stripe 125+ local APMs / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal callback) | Completed |
+| Deposit | Create deposit order (Stripe 125+ local APMs incl. Alipay/WeChat Pay / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal callback) | Completed |
 | Exchange | Platform currency⇄game currency (fixed rate + spread) | Completed |
 | Withdrawal | Apply/query/global switch/auto review/manual review | Completed |
 | Games | Admin CRUD/currency management/C-end list/detail/launch | Completed |
@@ -29,7 +29,7 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 | Domain | Feature | Status |
 |----|------|------|
 | Users | OAuth login (Google/Facebook/Apple/Twitter/Microsoft/LinkedIn/GitHub) | Completed |
-| Payments | Multi-channel auto callbacks (Stripe/PayPal/NOWPayments IPN/Coinbase Webhook) | Completed |
+| Payments | Multi-channel auto callbacks (Stripe incl. Alipay/WeChat Pay APM / PayPal / NOWPayments IPN / Coinbase Webhook) | Completed |
 | Games | Server management, game play log tracking | Completed |
 | Withdrawal | KYC tiered limits (default/verified/vip) + fees | Completed |
 | KYC | Real-name verification application + review | Completed |
@@ -53,7 +53,7 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 | Domain | Feature | Status |
 |----|------|------|
 | OAuth | Google/Facebook/Apple real token exchange | Completed |
-| Payments | Payment callback signature verification (Stripe/PayPal Webhook, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 base64 secret) | Completed |
+| Payments | Payment callback signature verification (Stripe Webhook incl. Alipay/WeChat Pay APM, PayPal Webhook, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 base64 secret) | Completed |
 | Captcha | poster-php click captcha | Completed |
 | Notifications | In-app messages + email, auto notifications for deposit/withdrawal/KYC/coupon | Completed |
 | 2FA | Google Authenticator TOTP + backup recovery codes | Completed |
@@ -64,6 +64,10 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 | Data | MySQL real-time aggregation analytics + joint/conditional probability | Completed |
 | HarmonyOS | admin 8 pages; C-end `apps/harmonyos/` implements login/lobby/detail/wallet/profile (pointing to 8788) | Partially complete (project runs, device needs IP change) |
 | API docs | hg/apidoc interactive documentation | Completed |
+| One-click install | Browser install wizard: create admin, upgrade existing DB, install.lock prevents reinstall | Completed |
+| Fault tolerance | CircuitBreaker + Retry + feature.provider_mock degradation switch | Completed |
+| Payment methods | Admin CRUD + country visibility + amount range + currency restriction | Completed |
+| CI | Auto-increment tag on push + GitHub Release | Completed |
 
 ### Ecosystem Expansion (v2.0) — Just Completed
 
@@ -89,6 +93,7 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 | Multi-level rebates | Two-level referral profit sharing, ReferralCommission model, configurable commission rates | Completed |
 | Coupon conditions | min_deposit/first_user_only/game_id three condition types | Completed |
 | SDK docs | Provider integration docs (PHP/Go/Python examples + 4 API endpoints) | Completed |
+| Mini-game | Farm Match-3 P0 (domain engine + 4-level design, TypeScript/Vite/Vitest unit tests) | Completed |
 
 ## 2. C-end User Features
 

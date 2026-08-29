@@ -14,7 +14,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 |----|------|------|
 | उपयोगकर्ता | पंजीकरण/लॉगिन/JWT/कैप्चा | पूर्ण |
 | वॉलेट | प्लेटफ़ॉर्म कॉइन शेष/लेनदेन क्वेरी | पूर्ण |
-| रिचार्ज | रिचार्ज ऑर्डर निर्माण (Stripe 125+ स्थानीय भुगतान / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal कॉलबैक) | पूर्ण |
+| रिचार्ज | रिचार्ज ऑर्डर निर्माण (Stripe 125+ स्थानीय भुगतान, Alipay/WeChat Pay APM सहित / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal कॉलबैक) | पूर्ण |
 | विनिमय | प्लेटफ़ॉर्म कॉइन⇄गेम कॉइन (निश्चित दर+अंतर) | पूर्ण |
 | निकासी | आवेदन/क्वेरी/वैश्विक स्विच/स्वचालित समीक्षा/मैन्युअल समीक्षा | पूर्ण |
 | गेम | कंसोल CRUD/मुद्रा प्रबंधन/C-छोर सूची/विवरण/लॉन्च | पूर्ण |
@@ -29,7 +29,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | क्षेत्र | कार्य | स्थिति |
 |----|------|------|
 | उपयोगकर्ता | OAuth लॉगिन (Google/Facebook/Apple/Twitter/Microsoft/LinkedIn/GitHub) | पूर्ण |
-| भुगतान | बहु-भुगतान चैनल स्वचालित कॉलबैक (Stripe/PayPal/NOWPayments IPN/Coinbase Webhook) | पूर्ण |
+| भुगतान | बहु-भुगतान चैनल स्वचालित कॉलबैक (Stripe Alipay/WeChat Pay APM सहित / PayPal / NOWPayments IPN / Coinbase Webhook) | पूर्ण |
 | गेम | क्षेत्र/सर्वर प्रबंधन, गेम रिकॉर्ड ट्रैकिंग | पूर्ण |
 | निकासी | KYC स्तरीय सीमाएँ (default/verified/vip) + शुल्क | पूर्ण |
 | KYC | वास्तविक नाम प्रमाणीकरण आवेदन+समीक्षा | पूर्ण |
@@ -53,7 +53,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | क्षेत्र | कार्य | स्थिति |
 |----|------|------|
 | OAuth | Google/Facebook/Apple वास्तविक token विनिमय | पूर्ण |
-| भुगतान | कॉलबैक हस्ताक्षर सत्यापन (Stripe/PayPal Webhook, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 base64 सीक्रेट) | पूर्ण |
+| भुगतान | कॉलबैक हस्ताक्षर सत्यापन (Stripe Webhook Alipay/WeChat Pay APM सहित, PayPal Webhook, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 base64 सीक्रेट) | पूर्ण |
 | कैप्चा | poster-php क्लिक-शैली कैप्चा | पूर्ण |
 | अधिसूचना | साइट-आंतरिक संदेश + ईमेल, रिचार्ज/निकासी/KYC/कूपन स्वचालित अधिसूचना | पूर्ण |
 | 2FA | Google Authenticator TOTP + बैकअप रिकवरी कोड | पूर्ण |
@@ -64,6 +64,10 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | डेटा | MySQL वास्तविक समय एकत्रीकरण विश्लेषण + संयुक्त/सशर्त प्रायिकता गणना | पूर्ण |
 | HarmonyOS | admin छोर 8 पेज; C-छोर `apps/harmonyos/` में लॉगिन/लॉबी/विवरण/वॉलेट/व्यक्तिगत कार्यान्वित (8788 को इंगित) | आंशिक पूर्ण (प्रोजेक्ट चलता है, वास्तविक डिवाइस पर IP बदलना आवश्यक) |
 | API दस्तावेज़ | hg/apidoc इंटरैक्टिव दस्तावेज़ | पूर्ण |
+| वन-क्लिक इंस्टॉल | ब्राउज़र इंस्टॉल विज़ार्ड: एडमिन बनाना, मौजूदा DB अपग्रेड, install.lock पुनः इंस्टॉल रोकता है | पूर्ण |
+| फॉल्ट सहनशीलता | CircuitBreaker + Retry + feature.provider_mock डिग्रेडेशन स्विच | पूर्ण |
+| भुगतान विधियाँ | एडमिन CRUD + देश दृश्यता + राशि सीमा + मुद्रा प्रतिबंध | पूर्ण |
+| CI | push पर स्वचालित इंक्रीमेंट tag + GitHub Release | पूर्ण |
 
 ### पारिस्थितिकी विस्तार (v2.0) — अभी पूर्ण
 
@@ -89,6 +93,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | बहु-स्तरीय कमीशन | दूसरे स्तर का रेफरल लाभ-साझाकरण, ReferralCommission मॉडल, कॉन्फ़िगर करने योग्य कमीशन दरें | पूर्ण |
 | कूपन शर्तें | min_deposit/first_user_only/game_id तीन शर्त प्रतिबंध | पूर्ण |
 | SDK दस्तावेज़ | Provider एकीकरण दस्तावेज़ (PHP/Go/Python उदाहरण + 4 API एंडपॉइंट) | पूर्ण |
+| मिनी-गेम | Farm Match-3 P0 (डोमेन इंजन + 4-स्तरीय डिज़ाइन, TypeScript/Vite/Vitest यूनिट टेस्ट) | पूर्ण |
 
 ## 2. C-छोर उपयोगकर्ता सुविधाएँ
 

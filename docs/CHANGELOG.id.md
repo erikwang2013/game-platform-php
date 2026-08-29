@@ -60,6 +60,14 @@ Catatan perubahan yang dapat dibaca manusia. PHP tidak meng-import file ini. Ber
 
 ## [1.1] payments — 2026-08-29
 
-- Multi-payment gateway: Stripe Checkout / NOWPayments (USDT TRC20+ERC20) / Coinbase Commerce (USDC).
+- Multi-payment gateway: Stripe Checkout / NOWPayments (USDT TRC20+ERC20) / Coinbase Commerce (USDC) + Alipay/WeChat Pay (Stripe Checkout APM).
 - CRUD metode pembayaran di admin + visibilitas negara + rentang nominal; pesanan top-up langsung mengisi checkout_url / expires_at.
 - Migrasi baru install/migrations/2026_08_29_multi_payment.sql (harus dijalankan).
+
+## [1.1] features — 2026-08-29
+
+- Mini-game Farm Match-3 P0: mesin domain + desain 4 level + unit test Vitest (`game/xiaoxiaole/`).
+- Wizard instalasi satu klik: buat admin di browser, upgrade DB yang ada (memperbaiki HY093 ketidakcocokan parameter terikat, Unknown column 'countries'), install.lock mencegah instal ulang.
+- CI: tag inkremental otomatis saat push + publikasi GitHub Release.
+- Infrastruktur: database diubah nama menjadi game-platform, prefiks tabel `game_` diseragamkan.
+- Sinkronisasi dokumen: FEATURES.md dilengkapi di 13 bahasa untuk resiliency (saklar circuit-breaker/retry/degradation), CRUD metode pembayaran, mini-game, instalasi satu klik, baris CI (sesuai entri [1.1] resilience / payments di atas).

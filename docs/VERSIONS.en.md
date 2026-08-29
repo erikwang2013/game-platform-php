@@ -48,7 +48,7 @@ Languages: [中文](VERSIONS.md) · **English** · [한국어](VERSIONS.ko.md) �
 | Transaction records | ✓ | ✓ | ✓ |
 | Game currency wallet | ✓ | ✓ | ✓ |
 | Deposit order creation (backfills checkout_url/expires_at) | ✓ | ✓ | ✓ |
-| Deposit callback auto-credit | - | ✓ manual | ✓ Stripe/PayPal/NowPayments IPN/Coinbase webhook verification |
+| Deposit callback auto-credit | - | ✓ manual | ✓ Stripe (incl. Alipay/WeChat Pay)/PayPal/NowPayments IPN/Coinbase webhook verification |
 | Exchange quote/buy/sell | ✓ | ✓ | ✓ |
 | Exchange spread revenue | ✓ | ✓ | ✓ |
 | Withdrawal application | ✓ | ✓ | ✓ |

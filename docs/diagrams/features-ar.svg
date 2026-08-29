@@ -23,7 +23,7 @@
   <rect x="500" y="72" width="220" height="95" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
   <text x="610" y="96" text-anchor="middle" fill="#166534" font-size="13" font-weight="bold">نظام الشحن</text>
   <text x="610" y="116" text-anchor="middle" fill="#22c55e" font-size="11">إنشاء طلب شحن</text>
-  <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">تحقق توقيع استدعاء Stripe/PayPal</text>
+  <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">تحقق توقيع استدعاء Stripe/PayPal/Alipay/WeChat Pay</text>
   <text x="610" y="174" text-anchor="middle" fill="#22c55e" font-size="10">تحقق توقيع استدعاء NOWPayments/Coinbase</text>
   <text x="610" y="154" text-anchor="middle" fill="#22c55e" font-size="11">إيداع تلقائي + إشعار داخل الموقع</text>
 
@@ -99,7 +99,7 @@
 
   <rect x="30" y="518" width="940" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="500" y="546" text-anchor="middle" fill="#475569" font-size="14" font-weight="bold">ملخص قدرات المنصة</text>
-  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">مصادقة المستخدم · المحفظة (قفل تفاؤلي) · الشحن (Stripe/PayPal) · الاستبدال (سعر صرف لحظي) · السحب (مراجعة/تلقائي) · KYC (تحقق ثلاثي)</text>
+  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">مصادقة المستخدم · المحفظة (قفل تفاؤلي) · الشحن (Stripe/PayPal/Alipay/WeChat Pay) · الاستبدال (سعر صرف لحظي) · السحب (مراجعة/تلقائي) · KYC (تحقق ثلاثي)</text>
   <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">CRUD الألعاب (10 فئات + خوادم) · لوحات المتصدرين (WebSocket لحظي) · القسائم · الإحالة (مكافأة تسجيل + عمولة) · المخاطر (4 فئات قواعد)</text>
   <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">الإشعارات (داخل الموقع + البريد) · التفاضل حسب الدولة (8 دول) · التدويل (4 لغات) · الإحصائيات (لقطة يومية + إيراد) · البحث النصي الكامل (ES)</text>
 

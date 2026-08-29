@@ -14,7 +14,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 |----|------|------|
 | ব্যবহারকারী | রেজিস্ট্রেশন/লগইন/JWT/ক্যাপচা | সম্পন্ন |
 | ওয়ালেট | প্ল্যাটফর্ম কয়েন ব্যালেন্স/লেজার কুয়েরি | সম্পন্ন |
-| টপ-আপ | টপ-আপ অর্ডার তৈরি (Stripe 125+ লোকাল পেমেন্ট / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal কলব্যাক) | সম্পন্ন |
+| টপ-আপ | টপ-আপ অর্ডার তৈরি (Stripe 125+ লোকাল পেমেন্ট, Alipay/WeChat Pay APM সহ / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal কলব্যাক) | সম্পন্ন |
 | বিনিময় | প্ল্যাটফর্ম কয়েন⇄গেম কয়েন (ফিক্সড রেট+স্প্রেড) | সম্পন্ন |
 | উত্তোলন | আবেদন/কুয়েরি/গ্লোবাল সুইচ/অটো রিভিউ/মানব রিভিউ | সম্পন্ন |
 | গেম | ব্যাকএন্ড CRUD/কয়েন ম্যানেজমেন্ট/C-এন্ড তালিকা/ডিটেইল/লঞ্চ | সম্পন্ন |
@@ -29,7 +29,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | ডোমেইন | ফিচার | অবস্থা |
 |----|------|------|
 | ব্যবহারকারী | OAuth লগইন (Google/Facebook/Apple/Twitter/Microsoft/LinkedIn/GitHub) | সম্পন্ন |
-| পেমেন্ট | মাল্টি-পেমেন্ট চ্যানেল অটো কলব্যাক (Stripe/PayPal/NOWPayments IPN/Coinbase Webhook) | সম্পন্ন |
+| পেমেন্ট | মাল্টি-পেমেন্ট চ্যানেল অটো কলব্যাক (Stripe Alipay/WeChat Pay APM সহ / PayPal / NOWPayments IPN / Coinbase Webhook) | সম্পন্ন |
 | গেম | সার্ভার/অঞ্চল ম্যানেজমেন্ট, গেম রেকর্ড ট্র্যাকিং | সম্পন্ন |
 | উত্তোলন | KYC লেভেলভিত্তিক সীমা (default/verified/vip) + ফি | সম্পন্ন |
 | KYC | রিয়েল-নেম ভেরিফিকেশন আবেদন+রিভিউ | সম্পন্ন |
@@ -53,7 +53,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | ডোমেইন | ফিচার | অবস্থা |
 |----|------|------|
 | OAuth | Google/Facebook/Apple প্রকৃত token বিনিময় | সম্পন্ন |
-| পেমেন্ট | কলব্যাক সিগনেচার ভেরিফিকেশন (Stripe/PayPal Webhook, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 base64) | সম্পন্ন |
+| পেমেন্ট | কলব্যাক সিগনেচার ভেরিফিকেশন (Stripe Webhook Alipay/WeChat Pay APM সহ, PayPal Webhook, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 base64) | সম্পন্ন |
 | ক্যাপচা | poster-php ক্লিক-টাইপ ক্যাপচা | সম্পন্ন |
 | নোটিফিকেশন | ইন-অ্যাপ মেসেজ + ইমেইল, টপ-আপ/উত্তোলন/KYC/কুপন অটো নোটিফিকেশন | সম্পন্ন |
 | 2FA | Google Authenticator TOTP + ব্যাকআপ রিকভারি কোড | সম্পন্ন |
@@ -64,6 +64,10 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | ডেটা | MySQL রিয়েল-টাইম অ্যাগ্রিগেশন অ্যানালাইসিস + জয়েন্ট/কন্ডিশনাল প্রোবাবিলিটি | সম্পন্ন |
 | HarmonyOS | admin প্রান্ত ৮ পেজ; C-এন্ড `apps/harmonyos/`-এ লগইন/লবি/ডিটেইল/ওয়ালেট/প্রোফাইল বাস্তবায়িত (8788-এ নির্দেশিত) | আংশিক সম্পন্ন (প্রজেক্ট চলে, আসল ডিভাইসে IP পরিবর্তন প্রয়োজন) |
 | API ডকুমেন্টেশন | hg/apidoc ইন্টারঅ্যাকটিভ ডকুমেন্টেশন | সম্পন্ন |
+| ওয়ান-ক্লিক ইনস্টল | ব্রাউজার ইনস্টল উইজার্ড: অ্যাডমিন তৈরি, বিদ্যমান DB আপগ্রেড, install.lock পুনঃইনস্টল প্রতিরোধ | সম্পন্ন |
+| ফল্ট টলারেন্স | CircuitBreaker + Retry + feature.provider_mock ডিগ্রেডেশন সুইচ | সম্পন্ন |
+| পেমেন্ট মাধ্যম | অ্যাডমিন CRUD + দেশ ভিজিবিলিটি + অঙ্কের রেঞ্জ + মুদ্রা সীমা | সম্পন্ন |
+| CI | push-এ অটো ইনক্রিমেন্ট tag + GitHub Release | সম্পন্ন |
 
 ### ইকোসিস্টেম এক্সটেনশন (v2.0) — এইমাত্র সম্পন্ন
 
@@ -89,6 +93,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | মাল্টি-লেভেল কমিশন | দ্বি-স্তর রেফারেল প্রফিট শেয়ার, ReferralCommission মডেল, কনফিগারেবল কমিশন রেট | সম্পন্ন |
 | কুপন শর্ত | min_deposit/first_user_only/game_id তিন ধরনের শর্ত সীমা | সম্পন্ন |
 | SDK ডকুমেন্টেশন | Provider ইন্টিগ্রেশন ডক (PHP/Go/Python উদাহরণ + ৪ API এন্ডপয়েন্ট) | সম্পন্ন |
+| মিনি-গেম | Farm Match-3 P0 (ডোমেইন ইঞ্জিন + ৪ লেভেল ডিজাইন, TypeScript/Vite/Vitest ইউনিট টেস্ট) | সম্পন্ন |
 
 ## 2. C-এন্ড ইউজার ফিচার
 

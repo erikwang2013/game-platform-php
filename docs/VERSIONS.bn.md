@@ -48,7 +48,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 | লেজার রেকর্ড | ✓ | ✓ | ✓ |
 | গেম কয়েন ওয়ালেট | ✓ | ✓ | ✓ |
 | টপ-আপ অর্ডার তৈরি (তৈরির সাথেই checkout_url/expires_at ভরাট) | ✓ | ✓ | ✓ |
-| টপ-আপ কলব্যাক অটো ক্রেডিট | - | ✓ ম্যানুয়াল | ✓ Stripe/PayPal/NowPayments IPN/Coinbase webhook ভেরিফিকেশন |
+| টপ-আপ কলব্যাক অটো ক্রেডিট | - | ✓ ম্যানুয়াল | ✓ Stripe (incl. Alipay/WeChat Pay)/PayPal/NowPayments IPN/Coinbase webhook ভেরিফিকেশন |
 | বিনিময় কোটেশন/বাই/সেল | ✓ | ✓ | ✓ |
 | বিনিময় স্প্রেড আয় | ✓ | ✓ | ✓ |
 | উত্তোলন আবেদন | ✓ | ✓ | ✓ |

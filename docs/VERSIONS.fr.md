@@ -48,7 +48,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 | Historique des transactions | ✓ | ✓ | ✓ |
 | Portefeuille de devises de jeu | ✓ | ✓ | ✓ |
 | Création de commande de recharge (checkout_url/expires_at renseignés à la création) | ✓ | ✓ | ✓ |
-| Crédit automatique au rappel de recharge | - | ✓ manuel | ✓ vérification Stripe/PayPal/NowPayments IPN/Coinbase webhook |
+| Crédit automatique au rappel de recharge | - | ✓ manuel | ✓ vérification Stripe (incl. Alipay/WeChat Pay)/PayPal/NowPayments IPN/Coinbase webhook |
 | Cotation/achat/vente d'échange | ✓ | ✓ | ✓ |
 | Gain sur l'écart d'échange | ✓ | ✓ | ✓ |
 | Demande de retrait | ✓ | ✓ | ✓ |

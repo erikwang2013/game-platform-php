@@ -48,7 +48,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | سجلات الحركات | ✓ | ✓ | ✓ |
 | محفظة عملات الألعاب | ✓ | ✓ | ✓ |
 | إنشاء طلب شحن (يملأ checkout_url/expires_at عند الإنشاء) | ✓ | ✓ | ✓ |
-| إيداع تلقائي عند استدعاء الشحن | - | ✓ يدوي | ✓ تحقق توقيع Stripe/PayPal/NowPayments IPN/Coinbase webhook |
+| إيداع تلقائي عند استدعاء الشحن | - | ✓ يدوي | ✓ تحقق توقيع Stripe (incl. Alipay/WeChat Pay)/PayPal/NowPayments IPN/Coinbase webhook |
 | استعلام سعر الاستبدال/شراء/بيع | ✓ | ✓ | ✓ |
 | إيراد فرق الاستبدال | ✓ | ✓ | ✓ |
 | طلب السحب | ✓ | ✓ | ✓ |
