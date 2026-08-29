@@ -152,6 +152,14 @@ Route::group('/admin', function () {
     Route::put('/payment/method/{hashid}', [app\admin\controller\PaymentController::class, 'update']);
     Route::delete('/payment/method/{hashid}', [app\admin\controller\PaymentController::class, 'delete']);
 
+    // CDN 厂商配置管理
+    Route::get('/cdn/provider/list', [app\admin\controller\CdnProviderController::class, 'list']);
+    Route::post('/cdn/provider/toggle', [app\admin\controller\CdnProviderController::class, 'toggle']);
+    Route::post('/cdn/provider/create', [app\admin\controller\CdnProviderController::class, 'create']);
+    Route::put('/cdn/provider/{hashid}', [app\admin\controller\CdnProviderController::class, 'update']);
+    Route::delete('/cdn/provider/{hashid}', [app\admin\controller\CdnProviderController::class, 'delete']);
+    Route::post('/cdn/provider/test', [app\admin\controller\CdnProviderController::class, 'test']);
+
     // C端用户管理
     Route::get('/platform/user/list', [app\admin\controller\PlatformUserController::class, 'list']);
     Route::get('/platform/user/{hashid}', [app\admin\controller\PlatformUserController::class, 'detail']);
