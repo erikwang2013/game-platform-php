@@ -53,6 +53,5 @@ jobs:
           else
             changelog=$(git log --oneline | head -50)
           fi
-          gh release create "$next" --title "$next" --notes "## Changes
-$changelog"
+          gh release create "$next" --title "$next" --notes "$(printf '## Changes\n%s' "$changelog")"
           echo "released $next"
