@@ -61,6 +61,7 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 | Search | ES search API + game suggestions + LIKE fallback | Completed |
 | Leaderboards | WebSocket real-time push (port 8789) | Completed |
 | CDN | Five-provider integration (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + preload) | Completed |
+| CDN Admin | Admin-configurable five providers (encrypted credentials/toggle/connectivity test via HeadBucket), service reads from DB only | Completed |
 | Deployment | Docker Compose 7 services + Nginx reverse proxy | Completed |
 | Data | MySQL real-time aggregation analytics + joint/conditional probability | Completed |
 | HarmonyOS | admin 8 pages; C-end `apps/harmonyos/` implements login/lobby/detail/wallet/profile (pointing to 8788) | Partially complete (project runs, device needs IP change) |
