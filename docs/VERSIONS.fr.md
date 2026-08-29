@@ -130,6 +130,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 | Déploiement webman autonome | ✓ | ✓ | ✓ |
 | Docker Compose | - | - | ✓ 7 services |
 | Proxy inverse Nginx | - | - | ✓ |
+| CDN | - | - | ✓ Intégration de 5 fournisseurs + configuration admin/activation-désactivation/test de connectivité (identifiants chiffrés, service lit uniquement depuis la DB) |
 | Tâches planifiées Crontab | - | ✓ | ✓ |
 | Surveillance Prometheus | ✓ | ✓ | ✓ `/metrics` gauges métier + compteurs d'événements |
 | Contrôle de santé | ✓ | ✓ | ✓ |

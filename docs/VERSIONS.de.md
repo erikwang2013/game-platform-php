@@ -130,6 +130,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Webman-Eigenständige Bereitstellung | ✓ | ✓ | ✓ |
 | Docker Compose | - | - | ✓ 7 Dienste |
 | Nginx-Reverse-Proxy | - | - | ✓ |
+| CDN | - | - | ✓ 5-Anbieter-Anbindung + Admin-Konfiguration/Aktiv-Deaktivierung/Konnektivitätstest (Zugangsdaten verschlüsselt, service liest ausschließlich aus DB) |
 | Crontab-Planungsaufgaben | - | ✓ | ✓ |
 | Prometheus-Überwachung | ✓ | ✓ | ✓ `/metrics` Geschäfts-Gauges + Event-Counter |
 | Gesundheitscheck | ✓ | ✓ | ✓ |

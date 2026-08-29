@@ -130,6 +130,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | webman 独立部署 | ✓ | ✓ | ✓ |
 | Docker Compose | - | - | ✓ 7服务 |
 | Nginx 反向代理 | - | - | ✓ |
+| CDN | - | - | ✓ 五厂商接入 + 管理端配置/启停/连通测试（凭据加密，service 纯 DB 读取） |
 | Crontab 定时任务 | - | ✓ | ✓ |
 | Prometheus 监控 | ✓ | ✓ | ✓ `/metrics` 业务 gauge + 事件 counter |
 | 健康检查 | ✓ | ✓ | ✓ |

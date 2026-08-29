@@ -130,6 +130,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · **한국어** �
 | webman 독립 배포 | ✓ | ✓ | ✓ |
 | Docker Compose | - | - | ✓ 7서비스 |
 | Nginx 리버스 프록시 | - | - | ✓ |
+| CDN | - | - | ✓ 5개 업체 연동 + 관리자 설정/활성-비활성/연결 테스트（자격 증명 암호화, service는 DB에서만 읽음） |
 | Crontab 예약 작업 | - | ✓ | ✓ |
 | Prometheus 모니터링 | ✓ | ✓ | ✓ `/metrics` 비즈니스 gauge + 이벤트 counter |
 | 헬스 체크 | ✓ | ✓ | ✓ |

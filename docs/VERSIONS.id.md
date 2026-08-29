@@ -130,6 +130,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Deployment mandiri webman | ✓ | ✓ | ✓ |
 | Docker Compose | - | - | ✓ 7 layanan |
 | Reverse proxy Nginx | - | - | ✓ |
+| CDN | - | - | ✓ Integrasi 5 vendor + konfigurasi admin/aktif-nonaktif/tes konektivitas (kredensial terenkripsi, service hanya baca dari DB) |
 | Tugas terjadwal Crontab | - | ✓ | ✓ |
 | Monitoring Prometheus | ✓ | ✓ | ✓ `/metrics` gauge bisnis + counter event |
 | Pemeriksaan kesehatan | ✓ | ✓ | ✓ |

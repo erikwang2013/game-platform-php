@@ -130,6 +130,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | webman 単独デプロイ | ✓ | ✓ | ✓ |
 | Docker Compose | - | - | ✓ 7サービス |
 | Nginx リバースプロキシ | - | - | ✓ |
+| CDN | - | - | ✓ 5社連携 + 管理画面設定/有効・無効/接続テスト（認証情報は暗号化、service は DB のみから読み取り） |
 | Crontab 定期タスク | - | ✓ | ✓ |
 | Prometheus モニタリング | ✓ | ✓ | ✓ `/metrics` 業務 gauge + イベント counter |
 | ヘルスチェック | ✓ | ✓ | ✓ |
