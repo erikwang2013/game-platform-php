@@ -38,6 +38,11 @@ putenv('HASHIDS_SALT=' . $testHashSalt);
 $_ENV['HASHIDS_ALT_SALT'] = $_SERVER['HASHIDS_ALT_SALT'] = $testAltSalt;
 putenv('HASHIDS_ALT_SALT=' . $testAltSalt);
 
+// 测试环境固定加密密钥：.env.example 占位符 35 字节，encryptable 要求恰好 32 字节。
+$testEncKey = '0123456789abcdef0123456789abcdef';
+$_ENV['ENCRYPTION_KEY'] = $_SERVER['ENCRYPTION_KEY'] = $testEncKey;
+putenv('ENCRYPTION_KEY=' . $testEncKey);
+
 // 加载所有配置
 \Webman\Config::clear();
 support\App::loadAllConfig(['route']);
