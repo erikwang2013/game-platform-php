@@ -1003,7 +1003,9 @@ INSERT IGNORE INTO `game_game_category` (`id`, `name`, `slug`, `icon`, `sort`, `
 INSERT IGNORE INTO `game_payment_method` (`id`, `name`, `type`, `provider`, `config`, `status`, `sort`, `countries`, `currency`, `min_amount`, `max_amount`) VALUES
 (50000000000000051, 'USDT (TRC20)', 'crypto', 'nowpayments', '{"network":"TRC20"}', 1, 10, '[]', '', 0.0000, 0.0000),
 (50000000000000052, 'USDT (ERC20)', 'crypto', 'nowpayments', '{"network":"ERC20"}', 1, 20, '[]', '', 0.0000, 0.0000),
-(50000000000000053, 'Crypto Wallet (Coinbase)', 'crypto', 'coinbase', '{"coin":"USDC"}', 1, 30, '[]', '', 0.0000, 0.0000);
+(50000000000000053, 'Crypto Wallet (Coinbase)', 'crypto', 'coinbase', '{"coin":"USDC"}', 1, 30, '[]', '', 0.0000, 0.0000),
+(50000000000000054, 'Alipay (国际支付宝)', 'fiat', 'stripe', '{"apm_types":["alipay"]}', 1, 40, '[]', '', 0.0000, 0.0000),
+(50000000000000055, 'WeChat Pay (国际微信支付)', 'fiat', 'stripe', '{"apm_types":["wechat_pay"]}', 1, 50, '[]', '', 0.0000, 0.0000);
 
 -- 默认国家配置
 INSERT IGNORE INTO `game_country_config` (`id`, `country_code`, `currency`, `payment_methods`, `withdraw_methods`, `min_deposit`) VALUES

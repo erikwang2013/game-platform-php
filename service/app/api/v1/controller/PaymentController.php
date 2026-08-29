@@ -218,7 +218,12 @@ class PaymentController extends BaseController
         }
         $prefCount = count($pref);
         $methods = $methods->sortBy(function (PaymentMethod $method) use ($pref, $prefCount): int {
-            $key = $method->type === 'crypto' ? 'crypto' : (string) $method->provider;
+            $apm = (string) ($method->config['apm_types'][0] ?? '');
+            $key = $method->type === 'crypto' ? 'crypto' : match ($apm) {
+                'wechat_pay' => 'wechat',
+                'alipay'     => 'alipay',
+                default      => (string) $method->provider,
+            };
             $idx = array_search($key, $pref, true);
             return ($idx === false ? $prefCount : $idx) * 1000 + (int) $method->sort;
         })->values();
