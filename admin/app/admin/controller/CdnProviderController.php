@@ -140,6 +140,13 @@ class CdnProviderController extends BaseController
             return $this->fail($validator->errors()->first(), 422);
         }
 
+        if ($request->has('provider')) {
+            $newProvider = (string) $request->input('provider');
+            if (CdnProvider::where('provider', $newProvider)->where('id', '!=', $provider->id)->exists()) {
+                return $this->fail("厂商 {$newProvider} 已存在", 422);
+            }
+        }
+
         foreach (['name', 'provider', 'status', 'sort'] as $field) {
             if ($request->has($field)) {
                 $provider->$field = in_array($field, ['status', 'sort'], true)
