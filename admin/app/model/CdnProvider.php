@@ -12,7 +12,7 @@ use Erikwang2013\Encryptable\Encryptable;
 
 class CdnProvider extends Model
 {
-    protected $table = 'game_cdn_provider';
+    protected $table = 'cdn_provider';
 
     public $incrementing = false;
     protected $keyType = 'int';
