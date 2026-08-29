@@ -102,7 +102,7 @@ jobs:
 
       - name: Prepare test databases
         run: |
-          mysql -h 127.0.0.1 -u root -e "CREATE DATABASE IF NOT EXISTS game-platform; CREATE DATABASE IF NOT EXISTS game-platform-test;"
+          mysql -h 127.0.0.1 -u root -e "CREATE DATABASE IF NOT EXISTS \`game-platform\`; CREATE DATABASE IF NOT EXISTS \`game-platform-test\`;"
           mysql -h 127.0.0.1 -u root game-platform < install/install.sql
           mysql -h 127.0.0.1 -u root game-platform-test < install/install.sql
 
@@ -151,7 +151,7 @@ jobs:
 
       - name: Prepare test databases
         run: |
-          mysql -h 127.0.0.1 -u root -e "CREATE DATABASE IF NOT EXISTS game-platform; CREATE DATABASE IF NOT EXISTS game-platform-test;"
+          mysql -h 127.0.0.1 -u root -e "CREATE DATABASE IF NOT EXISTS \`game-platform\`; CREATE DATABASE IF NOT EXISTS \`game-platform-test\`;"
           mysql -h 127.0.0.1 -u root game-platform < install/install.sql
           mysql -h 127.0.0.1 -u root game-platform-test < install/install.sql
 
