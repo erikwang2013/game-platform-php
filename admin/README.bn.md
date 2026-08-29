@@ -1,8 +1,13 @@
 # ওপেন অ্যাডমিন প্যানেল (open-admin)
+
+## প্রকল্প মাসকট
+
+<img src="../docs/mascot.svg" width="120" alt="Dicey"/>
+
+**ডাইসি (Dicey)** — প্ল্যাটফর্ম মাসকট। পাশা খেলা ও সম্ভাবনা-ভিত্তিক গেমপ্লে বোঝায়, মুদ্রা প্ল্যাটফর্ম অর্থনীতি ও মাল্টি-পেমেন্ট গেটওয়ে বোঝায়, বেগুনি রঙ অ্যাডমিন ব্র্যান্ডিংয়ের সাথে মেলে। SVG ফাইল: `docs/mascot.svg`, ডকুমেন্টেশন, লোগো ও পণ্যে অসীম স্কেলযোগ্য।
 <!-- lang-nav -->
 
 Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · **বাংলা** · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
-
 
 webman v2 + Flutter ভিত্তিক ফুল-স্ট্যাক প্রশাসনিক প্যানেল সিস্টেম।
 
@@ -194,7 +199,6 @@ docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 - `Dockerfile`: PHP 8.3 + OPcache + Composer, `php:8.3-cli` ভিত্তিক
 - `docker-compose.yml`: ৫টি সার্ভিস অর্কেস্ট্রেশন, নেটওয়ার্ক আইসোলেশন, ডেটা ভলিউম পারসিস্টেন্স
 - `.env.docker`: Docker এনভায়রনমেন্ট বিশেষ এনভায়রনমেন্ট ভেরিয়েবল
-
 
 ## ডেটাবেস স্ট্যান্ডার্ড
 
@@ -454,8 +458,3 @@ MIT
 
 Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
-## প্রকল্প মাসকট
-
-![প্রকল্প মাসকট: ডাইসি](../docs/mascot.svg)
-
-**ডাইসি (Dicey)** — প্ল্যাটফর্ম মাসকট। পাশা খেলা ও সম্ভাবনা-ভিত্তিক গেমপ্লে বোঝায়, মুদ্রা প্ল্যাটফর্ম অর্থনীতি ও মাল্টি-পেমেন্ট গেটওয়ে বোঝায়, বেগুনি রঙ অ্যাডমিন ব্র্যান্ডিংয়ের সাথে মেলে। SVG ফাইল: `docs/mascot.svg`, ডকুমেন্টেশন, লোগো ও পণ্যে অসীম স্কেলযোগ্য।

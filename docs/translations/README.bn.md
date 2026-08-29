@@ -1,9 +1,13 @@
 # 全球游戏聚合平台 (Global Game Platform)
+
+## প্রকল্প মাসকট
+
+<img src="../mascot.svg" width="120" alt="Dicey"/>
+
+**ডাইসি (Dicey)** — প্ল্যাটফর্ম মাসকট। পাশা খেলা ও সম্ভাবনা-ভিত্তিক গেমপ্লে বোঝায়, মুদ্রা প্ল্যাটফর্ম অর্থনীতি ও মাল্টি-পেমেন্ট গেটওয়ে বোঝায়, বেগুনি রঙ অ্যাডমিন ব্র্যান্ডিংয়ের সাথে মেলে। SVG ফাইল: `docs/mascot.svg`, ডকুমেন্টেশন, লোগো ও পণ্যে অসীম স্কেলযোগ্য।
 <!-- lang-nav -->
 
 Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · **বাংলা** · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
-
-
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -442,9 +446,3 @@ flowchart LR
 | Arbitrum One | [<img src="../coin/9.jpg" width="150" alt="Arbitrum One">](../coin/9.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
 | AVAX C-Chain | [<img src="../coin/10.jpg" width="150" alt="AVAX C-Chain">](../coin/10.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
 
-
-## প্রকল্প মাসকট
-
-![প্রকল্প মাসকট: ডাইসি](../mascot.svg)
-
-**ডাইসি (Dicey)** — প্ল্যাটফর্ম মাসকট। পাশা খেলা ও সম্ভাবনা-ভিত্তিক গেমপ্লে বোঝায়, মুদ্রা প্ল্যাটফর্ম অর্থনীতি ও মাল্টি-পেমেন্ট গেটওয়ে বোঝায়, বেগুনি রঙ অ্যাডমিন ব্র্যান্ডিংয়ের সাথে মেলে। SVG ফাইল: `docs/mascot.svg`, ডকুমেন্টেশন, লোগো ও পণ্যে অসীম স্কেলযোগ্য।

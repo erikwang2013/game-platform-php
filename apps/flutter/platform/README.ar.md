@@ -1,8 +1,13 @@
 # game_platform
+
+## تميمة المشروع
+
+<img src="../../../docs/mascot.svg" width="120" alt="Dicey"/>
+
+**ديسي (Dicey)** — تميمة المنصة. النرد يرمز إلى الألعاب وأسلوب اللعب الاحتمالي، والعملة ترمز إلى اقتصاد المنصة وبوابات الدفع المتعددة، واللون البنفسجي يعكس هوية لوحة الإدارة. ملف SVG: `docs/mascot.svg`، قابل للتحجيم بلا حدود للوثائق والشعارات والمنتجات.
 <!-- lang-nav -->
 
 Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
-
 
 مشروع Flutter جديد.
 
@@ -20,8 +25,3 @@ Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) ·
 [التوثيق عبر الإنترنت](https://docs.flutter.dev/)، الذي يقدم دروسًا تعليمية
 وعينات وإرشادات حول تطوير الجوال ومرجع API كامل.
 
-## تميمة المشروع
-
-![تميمة المشروع: ديسي](../../../docs/mascot.svg)
-
-**ديسي (Dicey)** — تميمة المنصة. النرد يرمز إلى الألعاب وأسلوب اللعب الاحتمالي، والعملة ترمز إلى اقتصاد المنصة وبوابات الدفع المتعددة، واللون البنفسجي يعكس هوية لوحة الإدارة. ملف SVG: `docs/mascot.svg`، قابل للتحجيم بلا حدود للوثائق والشعارات والمنتجات.

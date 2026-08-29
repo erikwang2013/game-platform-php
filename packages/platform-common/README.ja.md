@@ -1,8 +1,13 @@
 # erik/platform-common
+
+## プロジェクトマスコット
+
+<img src="../../docs/mascot.svg" width="120" alt="Dicey"/>
+
+**ダイスィー（Dicey）** — プラットフォームのマスコット。サイコロはゲームと確率ベースのゲームプレイを、コインはプラットフォーム経済とマルチ決済ゲートウェイを、紫のメインカラーは管理画面ブランドを表します。SVG ファイル: `docs/mascot.svg`、文書・ロゴ・グッズに無限に拡大可能。
 <!-- lang-nav -->
 
 Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
-
 
 共有の `common\service\*` を、admin/ と service/ が Composer の path リポジトリ経由で参照します。
 
@@ -26,8 +31,3 @@ cd ../service && composer update erik/platform-common
 
 app/model/*、app/common/*Service、大多数の app/service/*、EventBus は引き続き両側に複製されています。
 
-## プロジェクトマスコット
-
-![プロジェクトマスコット：ダイスィー](../../docs/mascot.svg)
-
-**ダイスィー（Dicey）** — プラットフォームのマスコット。サイコロはゲームと確率ベースのゲームプレイを、コインはプラットフォーム経済とマルチ決済ゲートウェイを、紫のメインカラーは管理画面ブランドを表します。SVG ファイル: `docs/mascot.svg`、文書・ロゴ・グッズに無限に拡大可能。

@@ -1,8 +1,13 @@
 # Administration ouverte (open-admin)
+
+## Mascotte du projet
+
+<img src="../docs/mascot.svg" width="120" alt="Dicey"/>
+
+**Dicey** — Mascotte de la plateforme. Le dé représente les jeux et le gameplay basé sur la probabilité, la pièce l'économie de la plateforme et les passerelles de paiement multiples, et le violet reflète l'identité du panneau d'administration. Fichier SVG : `docs/mascot.svg`, redimensionnable à l'infini pour la documentation, les logos et les produits dérivés.
 <!-- lang-nav -->
 
 Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · **Français** · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
-
 
 Système d'administration full-stack basé sur webman v2 + Flutter.
 
@@ -194,7 +199,6 @@ docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 - `Dockerfile` : PHP 8.3 + OPcache + Composer, basé sur `php:8.3-cli`
 - `docker-compose.yml` : orchestration de 5 services, isolation réseau, persistance des volumes de données
 - `.env.docker` : variables d'environnement dédiées Docker
-
 
 ## Normes de base de données
 
@@ -454,8 +458,3 @@ MIT
 
 Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
-## Mascotte du projet
-
-![Mascotte du projet : Dicey](../docs/mascot.svg)
-
-**Dicey** — Mascotte de la plateforme. Le dé représente les jeux et le gameplay basé sur la probabilité, la pièce l'économie de la plateforme et les passerelles de paiement multiples, et le violet reflète l'identité du panneau d'administration. Fichier SVG : `docs/mascot.svg`, redimensionnable à l'infini pour la documentation, les logos et les produits dérivés.

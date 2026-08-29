@@ -1,8 +1,13 @@
 # admin_app
+
+## 프로젝트 마스코트
+
+<img src="../../../docs/mascot.svg" width="120" alt="Dicey"/>
+
+**다이시(Dicey)** — 플랫폼 마스코트. 주사위는 게임과 확률 기반 게임플레이를, 코인은 플랫폼 경제와 다중 결제 게이트웨이를, 보라색 메인 컬러는 관리자 브랜드를 상징합니다. SVG 파일: `docs/mascot.svg`, 문서·로고·굿즈에 무제한 확대 가능.
 <!-- lang-nav -->
 
 Languages: [中文](README.md) · [English](README.en.md) · **한국어** · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
-
 
 새로운 Flutter 프로젝트입니다.
 
@@ -20,8 +25,3 @@ Flutter 개발 시작에 도움이 필요하면
 [온라인 문서](https://docs.flutter.dev/)를 확인하세요. 튜토리얼,
 샘플, 모바일 개발 가이드와 전체 API 레퍼런스를 제공합니다.
 
-## 프로젝트 마스코트
-
-![프로젝트 마스코트: 다이시](../../../docs/mascot.svg)
-
-**다이시(Dicey)** — 플랫폼 마스코트. 주사위는 게임과 확률 기반 게임플레이를, 코인은 플랫폼 경제와 다중 결제 게이트웨이를, 보라색 메인 컬러는 관리자 브랜드를 상징합니다. SVG 파일: `docs/mascot.svg`, 문서·로고·굿즈에 무제한 확대 가능.

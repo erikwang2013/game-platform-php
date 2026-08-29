@@ -1,8 +1,13 @@
 # Panel de administración abierto (open-admin)
+
+## Mascota del proyecto
+
+<img src="../docs/mascot.svg" width="120" alt="Dicey"/>
+
+**Dicey** — Mascota de la plataforma. El dado representa los juegos y la jugabilidad basada en probabilidad, la moneda la economía de la plataforma y las múltiples pasarelas de pago, y el púrpura refleja la marca del panel de administración. Archivo SVG: `docs/mascot.svg`, escalable infinitamente para documentos, logotipos y productos.
 <!-- lang-nav -->
 
 Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · **Español** · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
-
 
 Sistema de panel de administración full-stack basado en webman v2 + Flutter.
 
@@ -194,7 +199,6 @@ docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 - `Dockerfile`: PHP 8.3 + OPcache + Composer, basado en `php:8.3-cli`
 - `docker-compose.yml`: orquestación de 5 servicios, aislamiento de red, persistencia de volúmenes de datos
 - `.env.docker`: variables de entorno específicas para el entorno Docker
-
 
 ## Estándares de base de datos
 
@@ -454,8 +458,3 @@ MIT
 
 Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
-## Mascota del proyecto
-
-![Mascota del proyecto: Dicey](../docs/mascot.svg)
-
-**Dicey** — Mascota de la plataforma. El dado representa los juegos y la jugabilidad basada en probabilidad, la moneda la economía de la plataforma y las múltiples pasarelas de pago, y el púrpura refleja la marca del panel de administración. Archivo SVG: `docs/mascot.svg`, escalable infinitamente para documentos, logotipos y productos.

@@ -1,8 +1,13 @@
 # Backend Administrasi Terbuka (open-admin)
+
+## Maskot Proyek
+
+<img src="../docs/mascot.svg" width="120" alt="Dicey"/>
+
+**Dicey** — Maskot platform. Dadu melambangkan permainan dan gameplay berbasis probabilitas, koin melambangkan ekonomi platform dan multi-gateway pembayaran, dan warna ungu mencerminkan branding admin. File SVG: `docs/mascot.svg`, dapat diskalakan tanpa batas untuk dokumen, logo, dan merchandise.
 <!-- lang-nav -->
 
 Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · **Bahasa Indonesia** · [日本語](README.ja.md)
-
 
 Sistem backend administrasi full-stack berbasis webman v2 + Flutter.
 
@@ -194,7 +199,6 @@ docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 - `Dockerfile`: PHP 8.3 + OPcache + Composer, berbasis `php:8.3-cli`
 - `docker-compose.yml`: Orkestrasi 5 layanan, isolasi jaringan, persistensi volume data
 - `.env.docker`: Variabel lingkungan khusus lingkungan Docker
-
 
 ## Standar Database
 
@@ -454,8 +458,3 @@ MIT
 
 Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
-## Maskot Proyek
-
-![Maskot proyek: Dicey](../docs/mascot.svg)
-
-**Dicey** — Maskot platform. Dadu melambangkan permainan dan gameplay berbasis probabilitas, koin melambangkan ekonomi platform dan multi-gateway pembayaran, dan warna ungu mencerminkan branding admin. File SVG: `docs/mascot.svg`, dapat diskalakan tanpa batas untuk dokumen, logo, dan merchandise.

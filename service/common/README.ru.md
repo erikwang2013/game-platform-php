@@ -1,8 +1,13 @@
 # common/
+
+## Талисман проекта
+
+<img src="../../docs/mascot.svg" width="120" alt="Dicey"/>
+
+**Дайси (Dicey)** — Талисман платформы. Кость символизирует игры и вероятностный геймплей, монета — экономику платформы и мульти-платежные шлюзы, фиолетовый основной цвет перекликается с брендом админки. SVG-файл: `docs/mascot.svg`, бесконечно масштабируется для документации, логотипов и мерча.
 <!-- lang-nav -->
 
 Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
-
 
 `common\service\*` находится в общем пакете **erik/platform-common**:
 
@@ -10,8 +15,3 @@ Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) ·
 
 Не размещайте PHP-классы в этом каталоге (они затенят автозагрузку пакета). См. `packages/platform-common/README.md`.
 
-## Талисман проекта
-
-![Талисман проекта: Дайси](../../docs/mascot.svg)
-
-**Дайси (Dicey)** — Талисман платформы. Кость символизирует игры и вероятностный геймплей, монета — экономику платформы и мульти-платежные шлюзы, фиолетовый основной цвет перекликается с брендом админки. SVG-файл: `docs/mascot.svg`, бесконечно масштабируется для документации, логотипов и мерча.

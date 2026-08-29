@@ -1,8 +1,13 @@
 # admin_app
+
+## Mascota del proyecto
+
+<img src="../../../docs/mascot.svg" width="120" alt="Dicey"/>
+
+**Dicey** — Mascota de la plataforma. El dado representa los juegos y la jugabilidad basada en probabilidad, la moneda la economía de la plataforma y las múltiples pasarelas de pago, y el púrpura refleja la marca del panel de administración. Archivo SVG: `docs/mascot.svg`, escalable infinitamente para documentos, logotipos y productos.
 <!-- lang-nav -->
 
 Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · **Español** · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
-
 
 Un nuevo proyecto Flutter.
 
@@ -20,8 +25,3 @@ Para obtener ayuda para empezar con el desarrollo en Flutter, consulta la
 [documentación en línea](https://docs.flutter.dev/), que ofrece tutoriales,
 ejemplos, guías sobre desarrollo móvil y una referencia completa de la API.
 
-## Mascota del proyecto
-
-![Mascota del proyecto: Dicey](../../../docs/mascot.svg)
-
-**Dicey** — Mascota de la plataforma. El dado representa los juegos y la jugabilidad basada en probabilidad, la moneda la economía de la plataforma y las múltiples pasarelas de pago, y el púrpura refleja la marca del panel de administración. Archivo SVG: `docs/mascot.svg`, escalable infinitamente para documentos, logotipos y productos.

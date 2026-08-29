@@ -9,6 +9,10 @@ Languages: **中文** · [English](docs/translations/README.en.md) · [한국어
 
 全球通用、国际化的游戏聚合平台。用户注册后在平台充值兑换游戏币，用游戏币玩游戏、赚取游戏币，游戏币可转回钱包提现。后台提供完整的游戏管理、提现审核、用户管理和支付管理功能。支持多语言切换（英文/中文）。
 
+<p align="center"><img src="docs/mascot.svg" width="120" alt="项目吉祥物：小骰 Dicey"/></p>
+
+**小骰（Dicey）** — 平台吉祥物。骰子代表游戏与概率玩法，金币代表平台经济与多支付网关，紫色主色调呼应后台品牌。SVG 源文件：`docs/mascot.svg`，可无限缩放用于文档、Logo 与周边。
+
 ## 版本策略
 
 | 版本 | 目标 | 状态 |
@@ -44,12 +48,6 @@ Languages: **中文** · [English](docs/translations/README.en.md) · [한국어
 - `erikwang2013/security-php` — 安全工具检测
 - `erikwang2013/poster-php` — 敏感操作随机验证
 - `erikwang2013/clickhouse-php` — ClickHouse 连接与概率计算
-
-## 项目吉祥物
-
-![项目吉祥物：小骰 Dicey](docs/mascot.svg)
-
-**小骰（Dicey）** — 平台吉祥物。骰子代表游戏与概率玩法，金币代表平台经济与多支付网关，紫色主色调呼应后台品牌。SVG 源文件：`docs/mascot.svg`，可无限缩放用于文档、Logo 与周边。
 
 ## 项目结构
 

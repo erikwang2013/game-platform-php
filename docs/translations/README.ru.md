@@ -1,9 +1,13 @@
 # Глобальная игровая агрегационная платформа (Global Game Platform)
+
+## Талисман проекта
+
+<img src="../mascot.svg" width="120" alt="Dicey"/>
+
+**Дайси (Dicey)** — Талисман платформы. Кость символизирует игры и вероятностный геймплей, монета — экономику платформы и мульти-платежные шлюзы, фиолетовый основной цвет перекликается с брендом админки. SVG-файл: `docs/mascot.svg`, бесконечно масштабируется для документации, логотипов и мерча.
 <!-- lang-nav -->
 
 Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](README.ko.md) · **Русский** · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
-
-
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -442,9 +446,3 @@ flowchart LR
 | Arbitrum One | [<img src="../coin/9.jpg" width="150" alt="Arbitrum One">](../coin/9.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
 | AVAX C-Chain | [<img src="../coin/10.jpg" width="150" alt="AVAX C-Chain">](../coin/10.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
 
-
-## Талисман проекта
-
-![Талисман проекта: Дайси](../mascot.svg)
-
-**Дайси (Dicey)** — Талисман платформы. Кость символизирует игры и вероятностный геймплей, монета — экономику платформы и мульти-платежные шлюзы, фиолетовый основной цвет перекликается с брендом админки. SVG-файл: `docs/mascot.svg`, бесконечно масштабируется для документации, логотипов и мерча.

@@ -1,8 +1,13 @@
 # game_platform
+
+## プロジェクトマスコット
+
+<img src="../../../docs/mascot.svg" width="120" alt="Dicey"/>
+
+**ダイスィー（Dicey）** — プラットフォームのマスコット。サイコロはゲームと確率ベースのゲームプレイを、コインはプラットフォーム経済とマルチ決済ゲートウェイを、紫のメインカラーは管理画面ブランドを表します。SVG ファイル: `docs/mascot.svg`、文書・ロゴ・グッズに無限に拡大可能。
 <!-- lang-nav -->
 
 Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
-
 
 新しい Flutter プロジェクトです。
 
@@ -18,8 +23,3 @@ Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) ·
 
 Flutter 開発のヘルプについては、チュートリアル、サンプル、モバイル開発のガイダンス、完全な API リファレンスを提供する [オンラインドキュメント](https://docs.flutter.dev/) を参照してください。
 
-## プロジェクトマスコット
-
-![プロジェクトマスコット：ダイスィー](../../../docs/mascot.svg)
-
-**ダイスィー（Dicey）** — プラットフォームのマスコット。サイコロはゲームと確率ベースのゲームプレイを、コインはプラットフォーム経済とマルチ決済ゲートウェイを、紫のメインカラーは管理画面ブランドを表します。SVG ファイル: `docs/mascot.svg`、文書・ロゴ・グッズに無限に拡大可能。

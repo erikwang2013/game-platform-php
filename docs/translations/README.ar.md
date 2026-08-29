@@ -1,9 +1,13 @@
 # 全球游戏聚合平台 (Global Game Platform)
+
+## تميمة المشروع
+
+<img src="../mascot.svg" width="120" alt="Dicey"/>
+
+**ديسي (Dicey)** — تميمة المنصة. النرد يرمز إلى الألعاب وأسلوب اللعب الاحتمالي، والعملة ترمز إلى اقتصاد المنصة وبوابات الدفع المتعددة، واللون البنفسجي يعكس هوية لوحة الإدارة. ملف SVG: `docs/mascot.svg`، قابل للتحجيم بلا حدود للوثائق والشعارات والمنتجات.
 <!-- lang-nav -->
 
 Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · **العربية** · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
-
-
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -442,9 +446,3 @@ flowchart LR
 | Arbitrum One | [<img src="../coin/9.jpg" width="150" alt="Arbitrum One">](../coin/9.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
 | AVAX C-Chain | [<img src="../coin/10.jpg" width="150" alt="AVAX C-Chain">](../coin/10.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
 
-
-## تميمة المشروع
-
-![تميمة المشروع: ديسي](../mascot.svg)
-
-**ديسي (Dicey)** — تميمة المنصة. النرد يرمز إلى الألعاب وأسلوب اللعب الاحتمالي، والعملة ترمز إلى اقتصاد المنصة وبوابات الدفع المتعددة، واللون البنفسجي يعكس هوية لوحة الإدارة. ملف SVG: `docs/mascot.svg`، قابل للتحجيم بلا حدود للوثائق والشعارات والمنتجات.
