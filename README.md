@@ -265,6 +265,7 @@ cd admin/apps/flutter && flutter test --timeout 300s
 | 游戏 | CRUD + 分类(10类) + 区服 + 游戏记录追踪 |
 | 搜索 | Elasticsearch 全文检索(含LIKE回退) |
 | 排行榜 | 日/周/月/总榜、Redis缓存、WebSocket实时推送(8789) |
+| CDN | 五厂商接入（Cloudflare R2 / AWS S3 / 阿里OSS / 腾讯COS / 华为OBS 上传+刷新+预热）+ 管理端配置/启停/连通测试 |
 | 优惠券 | 固定金额+比例折扣、限时限量、领取使用追踪 |
 | 通知 | 站内信+邮件、充值/提现/KYC/优惠券自动通知 |
 | 推荐 | 推荐码、注册奖励、充值返佣 |

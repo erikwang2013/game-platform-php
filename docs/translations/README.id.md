@@ -248,6 +248,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Game | CRUD + kategori (10 kategori) + server wilayah + pelacakan catatan game |
 | Pencarian | Pencarian teks penuh Elasticsearch (dengan fallback LIKE) |
 | Peringkat | Harian/mingguan/bulanan/keseluruhan, cache Redis, push real-time WebSocket (8789) |
+| CDN | Integrasi lima penyedia (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + preload) + konfigurasi/aktif-nonaktif/uji konektivitas admin |
 | Kupon | Jumlah tetap + diskon persentase, terbatas waktu & kuota, pelacakan klaim dan penggunaan |
 | Notifikasi | Pesan internal + email, notifikasi otomatis deposit/penarikan/KYC/kupon |
 | Referral | Kode referral, bonus pendaftaran, komisi deposit |

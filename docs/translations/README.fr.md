@@ -248,6 +248,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Jeux | CRUD + catégories (10) + serveurs + suivi des parties |
 | Recherche | Recherche plein texte Elasticsearch (avec repli LIKE) |
 | Classements | Quotidien/hebdomadaire/mensuel/général, cache Redis, push temps réel WebSocket (8789) |
+| CDN | Intégration de cinq fournisseurs (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + préchargement) + configuration/activation/test de connectivité admin |
 | Coupons | Montant fixe + remise proportionnelle, limites de temps et de quantité, suivi d'obtention et d'utilisation |
 | Notifications | Messages internes + e-mails, notifications automatiques recharge/retrait/KYC/coupon |
 | Parrainage | Code de parrainage, récompense d'inscription, commission sur recharges |

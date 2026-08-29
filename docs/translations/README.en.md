@@ -248,6 +248,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Games | CRUD + categories (10) + servers/regions + game record tracking |
 | Search | Elasticsearch full-text search (with LIKE fallback) |
 | Leaderboards | Daily/weekly/monthly/all-time, Redis cache, WebSocket real-time push (8789) |
+| CDN | Five-provider integration (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + preload) + admin config/toggle/connectivity test |
 | Coupons | Fixed amount + percentage discount, time/quantity limited, claim and usage tracking |
 | Notifications | In-app messages + email, automatic notifications for deposits/withdrawals/KYC/coupons |
 | Referrals | Referral codes, signup rewards, deposit commissions |

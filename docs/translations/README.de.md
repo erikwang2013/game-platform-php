@@ -248,6 +248,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Spiele | CRUD + Kategorien (10) + Server/Regionen + Spielverlaufs-Tracking |
 | Suche | Elasticsearch-Volltextsuche (mit LIKE-Fallback) |
 | Ranglisten | Tages/Wochen/Monats/Gesamt-Rankings, Redis-Cache, WebSocket-Echtzeit-Push (8789) |
+| CDN | Fünf-Anbieter-Integration (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS Upload + Purge + Preload) + Admin-Konfiguration/Aktivierung/Konnektivitätstest |
 | Gutscheine | Festbetrag + Prozentrabatt, zeit-/mengenbegrenzt, Einlösung- und Nutzungs-Tracking |
 | Benachrichtigungen | Interne Nachrichten + E-Mail, automatische Benachrichtigung bei Einzahlung/Auszahlung/KYC/Gutschein |
 | Empfehlungen | Empfehlungscode, Registrierungsbonus, Einzahlungs-Provision |

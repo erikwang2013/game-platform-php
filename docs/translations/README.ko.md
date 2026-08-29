@@ -248,6 +248,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | 게임 | CRUD + 분류(10종) + 서버 + 게임 기록 추적 |
 | 검색 | Elasticsearch 전문 검색(LIKE 폴백 포함) |
 | 랭킹 | 일/주/월/전체 랭킹, Redis 캐시, WebSocket 실시간 푸시(8789) |
+| CDN | 5개 업체 연동 (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS 업로드+퍼지+프리로드) + 관리자 설정/활성화/연결 테스트 |
 | 쿠폰 | 고정 금액+비율 할인, 기간/수량 한정, 사용 추적 |
 | 알림 | 사이트 내 메시지+이메일, 충전/출금/KYC/쿠폰 자동 알림 |
 | 추천 | 추천 코드, 가입 보상, 충전 수수료 리베이트 |

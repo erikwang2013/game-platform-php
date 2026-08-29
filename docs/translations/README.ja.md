@@ -248,6 +248,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | ゲーム | CRUD + カテゴリ(10種) + サーバー区分 + ゲーム記録トラッキング |
 | 検索 | Elasticsearch 全文検索(LIKE フォールバック含む) |
 | ランキング | 日/週/月/総合ランキング、Redisキャッシュ、WebSocketリアルタイム配信(8789) |
+| CDN | 5社プロバイダー連携 (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS アップロード+パージ+プリロード) + 管理画面での設定/有効無効/接続テスト |
 | クーポン | 固定額+比率割引、期間・数量限定、獲得・使用の追跡 |
 | 通知 | サイト内メッセージ+メール、入金/出金/KYC/クーポンの自動通知 |
 | 紹介 | 紹介コード、登録ボーナス、入金コミッション |
