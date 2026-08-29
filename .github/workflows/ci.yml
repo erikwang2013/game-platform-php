@@ -19,10 +19,10 @@ jobs:
           php-version: '8.3'
 
       - name: Check PHP syntax (admin)
-        run: find admin -name '*.php' -not -path '*/vendor/*' -exec php -l {} \; | grep -v 'No syntax errors'
+        run: find admin -name '*.php' -not -path '*/vendor/*' -exec php -l {} \; 2>&1 | grep -v 'No syntax errors' | grep . && exit 1 || true
 
       - name: Check PHP syntax (service)
-        run: find service -name '*.php' -not -path '*/vendor/*' -exec php -l {} \; | grep -v 'No syntax errors'
+        run: find service -name '*.php' -not -path '*/vendor/*' -exec php -l {} \; 2>&1 | grep -v 'No syntax errors' | grep . && exit 1 || true
 
   composer-audit:
     name: Composer Security Audit
@@ -41,7 +41,12 @@ jobs:
 
       - name: Audit admin dependencies
         working-directory: admin
-        run: composer audit
+        run: |
+          composer audit --no-interaction | tee /tmp/audit-admin.txt
+          code=${PIPESTATUS[0]}
+          if [ $code -ne 0 ] && ! grep -q 'No security vulnerability advisories found' /tmp/audit-admin.txt; then
+            exit $code
+          fi
 
       - name: Install service dependencies
         working-directory: service
@@ -49,7 +54,12 @@ jobs:
 
       - name: Audit service dependencies
         working-directory: service
-        run: composer audit
+        run: |
+          composer audit --no-interaction | tee /tmp/audit-service.txt
+          code=${PIPESTATUS[0]}
+          if [ $code -ne 0 ] && ! grep -q 'No security vulnerability advisories found' /tmp/audit-service.txt; then
+            exit $code
+          fi
 
   phpunit-admin:
     name: Admin PHPUnit
