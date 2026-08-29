@@ -64,6 +64,10 @@ Languages: **中文** · [English](CHANGELOG.en.md) · [한국어](CHANGELOG.ko.
 - CRUD لطرق الدفع في لوحة الإدارة + رؤية حسب الدولة + نطاقات المبالغ؛ أوامر الشحن تملأ checkout_url / expires_at عند الإنشاء.
 - ترحيل جديد install/migrations/2026_08_29_multi_payment.sql (يجب تنفيذه).
 
+## [1.1] cdn — 2026-08-29
+
+- دمج CDN لخمسة مزودين (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS رفع + تطهير + تسخين) + إعدادات لوحة الإدارة (جدول game_cdn_provider CRUD/تفعيل/اختبار اتصال عبر HeadBucket)، service يقرأ من قاعدة البيانات فقط (تم حذف config/cdn.php).
+
 ## [1.1] features — 2026-08-29
 
 - لعبة مصغرة Farm Match-3 P0: محرك المجال + تصميم 4 مستويات + اختبارات وحدة Vitest (`game/xiaoxiaole/`).

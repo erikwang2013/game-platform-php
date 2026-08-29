@@ -64,6 +64,10 @@ Languages: [中文](CHANGELOG.md) · [English](CHANGELOG.en.md) · [한국어](C
 - एडमिन में भुगतान विधि CRUD + देश दृश्यता + राशि सीमा; रिचार्ज ऑर्डर बनते ही checkout_url / expires_at भर जाते हैं।
 - नया माइग्रेशन install/migrations/2026_08_29_multi_payment.sql (चलाना आवश्यक)।
 
+## [1.1] cdn — 2026-08-29
+
+- पाँच-प्रदाता CDN एकीकरण (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS अपलोड + पर्ज + प्रीलोड) + एडमिन कॉन्फ़िगरेशन (game_cdn_provider तालिका CRUD/सक्षम-अक्षम/HeadBucket कनेक्टिविटी टेस्ट), service केवल DB से पढ़ता है (config/cdn.php हटाया गया)।
+
 ## [1.1] features — 2026-08-29
 
 - मिनी-गेम Farm Match-3 P0: डोमेन इंजन + 4-स्तरीय डिज़ाइन + Vitest यूनिट टेस्ट (`game/xiaoxiaole/`)।

@@ -64,6 +64,10 @@ Languages: [中文](CHANGELOG.md) · [English](CHANGELOG.en.md) · [한국어](C
 - অ্যাডমিনে পেমেন্ট পদ্ধতি CRUD + দেশভিত্তিক দৃশ্যমানতা + পরিমাণ রেঞ্জ; টপ-আপ অর্ডার তৈরি হওয়ামাত্র checkout_url / expires_at ভরাট।
 - নতুন মাইগ্রেশন install/migrations/2026_08_29_multi_payment.sql (চালানো প্রয়োজন)।
 
+## [1.1] cdn — 2026-08-29
+
+- পাঁচ-প্রদাতা CDN ইন্টিগ্রেশন (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS আপলোড + পার্জ + প্রিলোড) + অ্যাডমিন কনফিগারেশন (game_cdn_provider টেবিল CRUD/সক্ষম-অক্ষম/HeadBucket সংযোগ পরীক্ষা), service শুধুমাত্র DB থেকে পড়ে (config/cdn.php মুছে ফেলা হয়েছে)।
+
 ## [1.1] features — 2026-08-29
 
 - মিনি-গেম Farm Match-3 P0: ডোমেইন ইঞ্জিন + ৪ লেভেল ডিজাইন + Vitest ইউনিট টেস্ট (`game/xiaoxiaole/`)।

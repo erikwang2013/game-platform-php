@@ -64,6 +64,10 @@ Languages: **中文** · [English](CHANGELOG.en.md) · [한국어](CHANGELOG.ko.
 - CRUD платёжных методов в админке + видимость по странам + диапазоны сумм; при создании заказа пополнения сразу заполняются checkout_url / expires_at.
 - Новая миграция install/migrations/2026_08_29_multi_payment.sql (необходимо выполнить).
 
+## [1.1] cdn — 2026-08-29
+
+- Подключение CDN пяти провайдеров (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS: загрузка + очистка кэша + прогрев) + настройка в админке (таблица game_cdn_provider: CRUD/включение-отключение/тест соединения HeadBucket), service читает только из БД (config/cdn.php удалён).
+
 ## [1.1] features — 2026-08-29
 
 - Мини-игра Farm Match-3 P0: доменный движок + дизайн 4 уровней + юнит-тесты Vitest (`game/xiaoxiaole/`).

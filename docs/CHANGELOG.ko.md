@@ -64,6 +64,10 @@ Languages: [中文](CHANGELOG.md) · [English](CHANGELOG.en.md) · **한국어**
 - 관리자 결제수단 CRUD + 국가별 표시 + 금액 범위; 충전 주문 생성 시 checkout_url / expires_at 즉시 기록.
 - 새 마이그레이션 install/migrations/2026_08_29_multi_payment.sql(실행 필요).
 
+## [1.1] cdn — 2026-08-29
+
+- 5개 업체 CDN 연동(Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS 업로드+퍼지+프리로드) + 관리자 설정(game_cdn_provider 테이블 CRUD/활성-비활성/HeadBucket 연결 테스트), service는 DB에서만 읽음(config/cdn.php 삭제).
+
 ## [1.1] features — 2026-08-29
 
 - Farm 매치-3 P0 미니게임: 도메인 엔진 + 4레벨 설계 + Vitest 단위 테스트(`game/xiaoxiaole/`).

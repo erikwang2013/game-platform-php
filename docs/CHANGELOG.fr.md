@@ -64,6 +64,10 @@ Journal des modifications lisible par les humains. PHP n'importe pas ce fichier.
 - CRUD admin des méthodes de paiement + visibilité par pays + plages de montants ; les commandes de recharge renseignent checkout_url / expires_at à la création.
 - Nouvelle migration install/migrations/2026_08_29_multi_payment.sql (à exécuter).
 
+## [1.1] cdn — 2026-08-29
+
+- Intégration CDN multi-fournisseurs (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + préchargement) + configuration admin (table game_cdn_provider CRUD/activation/test de connexion via HeadBucket), le service ne lit que la base (config/cdn.php supprimé).
+
 ## [1.1] features — 2026-08-29
 
 - Mini-jeu Farm Match-3 P0 : moteur de domaine + conception de 4 niveaux + tests unitaires Vitest (`game/xiaoxiaole/`).

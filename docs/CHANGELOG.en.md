@@ -64,6 +64,10 @@ Human-readable change log. PHP does not import this file. Corresponds to PROJECT
 - Admin payment-method CRUD + country visibility + amount ranges; deposit orders backfill checkout_url / expires_at on creation.
 - New migration install/migrations/2026_08_29_multi_payment.sql (must be run).
 
+## [1.1] cdn — 2026-08-29
+
+- Five-provider CDN integration (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + preload) + admin management (game_cdn_provider table CRUD/toggle/connectivity test via HeadBucket), service reads from DB only (config/cdn.php removed).
+
 ## [1.1] features — 2026-08-29
 
 - Farm Match-3 P0 mini-game: domain engine + 4-level design + Vitest unit tests (`game/xiaoxiaole/`).

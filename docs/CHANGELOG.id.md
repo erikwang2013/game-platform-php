@@ -64,6 +64,10 @@ Catatan perubahan yang dapat dibaca manusia. PHP tidak meng-import file ini. Ber
 - CRUD metode pembayaran di admin + visibilitas negara + rentang nominal; pesanan top-up langsung mengisi checkout_url / expires_at.
 - Migrasi baru install/migrations/2026_08_29_multi_payment.sql (harus dijalankan).
 
+## [1.1] cdn — 2026-08-29
+
+- Integrasi CDN lima penyedia (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + preload) + konfigurasi admin (tabel game_cdn_provider CRUD/aktif-nonaktif/tes konektivitas via HeadBucket), service hanya membaca dari DB (config/cdn.php dihapus).
+
 ## [1.1] features — 2026-08-29
 
 - Mini-game Farm Match-3 P0: mesin domain + desain 4 level + unit test Vitest (`game/xiaoxiaole/`).

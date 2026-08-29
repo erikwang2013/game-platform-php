@@ -64,6 +64,10 @@ Menschenlesbares Änderungsprotokoll. PHP importiert diese Datei nicht. Entspric
 - Admin-CRUD für Zahlungsmethoden + Länder-Sichtbarkeit + Betragsspannen; Einzahlungsaufträge schreiben checkout_url / expires_at sofort zurück.
 - Neue Migration install/migrations/2026_08_29_multi_payment.sql (auszuführen).
 
+## [1.1] cdn — 2026-08-29
+
+- Fünf-Anbieter-CDN-Integration (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS Upload + Purge + Preload) + Admin-Konfiguration (game_cdn_provider-Tabelle CRUD/Aktivierung/Verbindungstest per HeadBucket), Service liest nur aus der DB (config/cdn.php entfernt).
+
 ## [1.1] features — 2026-08-29
 
 - Minispiel Farm Match-3 P0: Domain-Engine + 4-Level-Design + Vitest-Unit-Tests (`game/xiaoxiaole/`).

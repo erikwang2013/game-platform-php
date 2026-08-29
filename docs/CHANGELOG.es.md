@@ -64,6 +64,10 @@ Registro de cambios legible para humanos. PHP no importa este archivo. Correspon
 - CRUD de métodos de pago en el panel + visibilidad por país + rangos de importe; las órdenes de recarga rellenan checkout_url / expires_at al crearse.
 - Nueva migración install/migrations/2026_08_29_multi_payment.sql (debe ejecutarse).
 
+## [1.1] cdn — 2026-08-29
+
+- Integración de CDN de cinco proveedores (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS subida + purga + precarga) + configuración en el panel (tabla game_cdn_provider CRUD/activación/prueba de conexión mediante HeadBucket), el service solo lee de la BD (config/cdn.php eliminado).
+
 ## [1.1] features — 2026-08-29
 
 - Minijuego Farm Match-3 P0: motor de dominio + diseño de 4 niveles + pruebas unitarias Vitest (`game/xiaoxiaole/`).

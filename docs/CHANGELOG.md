@@ -64,6 +64,10 @@ Languages: **中文** · [English](CHANGELOG.en.md) · [한국어](CHANGELOG.ko.
 - 后台支付方式 CRUD + 国家可见性 + 金额区间；充值订单创建即回填 checkout_url / expires_at。
 - 新增迁移 install/migrations/2026_08_29_multi_payment.sql（需执行）。
 
+## [1.1] cdn — 2026-08-29
+
+- 五厂商 CDN 接入（Cloudflare R2 / AWS S3 / 阿里OSS / 腾讯COS / 华为OBS 上传+刷新+预热）+ 管理端配置（game_cdn_provider 表 CRUD/启停/连通测试 HeadBucket），service 纯 DB 读取（config/cdn.php 已删除）。
+
 ## [1.1] features — 2026-08-29
 
 - 田园消消乐 P0 小游戏：领域引擎 + 四关设计 + Vitest 单测（`game/xiaoxiaole/`）。

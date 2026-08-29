@@ -64,6 +64,10 @@ Languages: **中文** · [English](CHANGELOG.en.md) · [한국어](CHANGELOG.ko.
 - 管理画面で決済手段 CRUD + 国別表示 + 金額範囲; チャージ注文作成時に checkout_url / expires_at を即時記録。
 - 新マイグレーション install/migrations/2026_08_29_multi_payment.sql（実行が必要）。
 
+## [1.1] cdn — 2026-08-29
+
+- 5社 CDN 連携（Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS アップロード+パージ+プリロード）+ 管理画面設定（game_cdn_provider テーブル CRUD/有効無効/HeadBucket 疎通テスト）、service は DB のみ参照（config/cdn.php 削除）。
+
 ## [1.1] features — 2026-08-29
 
 - ミニゲーム Farm Match-3 P0: ドメインエンジン + 4レベル設計 + Vitest 単体テスト（`game/xiaoxiaole/`）。
