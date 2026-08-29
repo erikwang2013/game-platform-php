@@ -76,7 +76,7 @@ class PaymentController extends BaseController
      * @Apidoc\Author("erik")
      * @Apidoc\Param("name", type="string", require=true, desc="支付方式名称")
      * @Apidoc\Param("type", type="string", require=true, desc="类型(fiat/crypto)")
-     * @Apidoc\Param("provider", type="string", require=true, desc="提供商(stripe/nowpayments/coinbase)")
+     * @Apidoc\Param("provider", type="string", require=true, desc="提供商(stripe/nowpayments/coinbase/paypal/skrill/neteller/paysafecard/paytm/mercadopago/astropay/paypay/kakaopay/gcash)")
      * @Apidoc\Param("status", type="int", require=true, desc="状态(0禁用,1启用)")
      * @Apidoc\Param("countries", type="array", require=false, desc="可见国家码数组(空=全球)")
      * @Apidoc\Param("config", type="string", require=false, desc="支付配置JSON(加密存储)")
@@ -86,7 +86,7 @@ class PaymentController extends BaseController
         $validator = validator($request->all(), [
             'name'        => 'required|string|max:50',
             'type'        => 'required|in:fiat,crypto',
-            'provider'    => 'required|in:stripe,nowpayments,coinbase',
+            'provider'    => 'required|in:stripe,nowpayments,coinbase,paypal,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash',
             'status'      => 'required|in:0,1',
             'sort'        => 'integer|min:0',
             'countries'   => 'array',
@@ -136,7 +136,7 @@ class PaymentController extends BaseController
         $validator = validator($request->all(), [
             'name'        => 'string|max:50',
             'type'        => 'in:fiat,crypto',
-            'provider'    => 'in:stripe,nowpayments,coinbase',
+            'provider'    => 'in:stripe,nowpayments,coinbase,paypal,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash',
             'status'      => 'in:0,1',
             'sort'        => 'integer|min:0',
             'countries'   => 'array',

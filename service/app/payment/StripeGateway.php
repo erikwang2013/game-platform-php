@@ -65,6 +65,14 @@ class StripeGateway implements PaymentGatewayInterface
         }
 
         $object = $data['data']['object'] ?? [];
+
+        // 异步支付方式（alipay/wechat_pay/konbini/pix/upi 等）completed 事件可能尚未到账
+        // （payment_status 为 unpaid/processing），此时确认会提前入账且后续 async_payment_succeeded
+        // 会被 CAS 幂等丢弃。仅 payment_status=paid 才算成功，其余按 ignored 处理。
+        if (($object['payment_status'] ?? '') !== 'paid') {
+            return ['valid' => true, 'order_no' => '', 'transaction_id' => '', 'amount' => '', 'status' => 'ignored'];
+        }
+
         $amount = $this->fromMinor((string) ($object['amount_total'] ?? '0'), (string) ($object['currency'] ?? ''));
         return [
             'valid'          => true,

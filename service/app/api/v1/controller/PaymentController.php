@@ -35,7 +35,11 @@ class PaymentController extends BaseController
      * @Apidoc\Param(name="transaction_id", type="string", require=true, desc="交易ID")
      * @Apidoc\Param(name="status", type="string", require=true, desc="支付状态(success/failed)")
      */
-    private const ALLOWED_PROVIDERS = ['stripe', 'paypal', 'nowpayments', 'coinbase'];
+    private const ALLOWED_PROVIDERS = [
+        'stripe', 'paypal', 'nowpayments', 'coinbase',
+        'skrill', 'neteller', 'paysafecard', 'paytm',
+        'mercadopago', 'astropay', 'paypay', 'kakaopay', 'gcash',
+    ];
 
     public function callback(Request $request): Response
     {
@@ -65,10 +69,9 @@ class PaymentController extends BaseController
             }
         }
 
-        // 解析回调数据：paypal 保持旧版扁平参数协议，其余由网关解析真实 Webhook 报文
-        $verified = $provider === 'paypal'
-            ? $this->legacyCallbackData($request)
-            : GatewayFactory::resolve($provider)->verifyCallback($request);
+        // 解析回调数据：order_no/金额一律取自已验签的报文（或权威回查 API），
+        // 不信任查询参数 —— 扁平协议可被重放篡改（截获 1 条真实 webhook 即可给任意订单入账）
+        $verified = GatewayFactory::resolve($provider)->verifyCallback($request);
 
         if (empty($verified['valid'])) {
             return $this->fail('Invalid callback payload', 403);
@@ -243,26 +246,6 @@ class PaymentController extends BaseController
     }
 
     /**
-     * 旧版扁平参数回调协议（order_no/transaction_id/status），paypal 专用
-     */
-    private function legacyCallbackData(Request $request): array
-    {
-        $orderNo = (string) $request->input('order_no', '');
-        $txId    = (string) $request->input('transaction_id', '');
-        $status  = (string) $request->input('status', '');
-        if ($orderNo === '' || $txId === '' || !in_array($status, ['success', 'failed'], true)) {
-            return ['valid' => false, 'order_no' => '', 'transaction_id' => '', 'amount' => '', 'status' => ''];
-        }
-        return [
-            'valid'          => true,
-            'order_no'       => $orderNo,
-            'transaction_id' => $txId,
-            'amount'         => (string) $request->input('amount', ''),
-            'status'         => $status,
-        ];
-    }
-
-    /**
      * Verify NOWPayments IPN signature (HMAC-SHA512 over raw body).
      */
     private function verifyNowPaymentsSignature(Request $request): bool
@@ -278,7 +261,8 @@ class PaymentController extends BaseController
     }
 
     /**
-     * Verify Coinbase Commerce webhook signature (HMAC-SHA256, base64-encoded secret).
+     * Verify Coinbase Commerce webhook signature (HMAC-SHA256 hex digest of raw body,
+     * shared secret used raw as key — 官方 SDK coinbase-commerce-php 同款算法).
      */
     private function verifyCoinbaseSignature(Request $request): bool
     {
@@ -288,7 +272,7 @@ class PaymentController extends BaseController
             // Fail closed: 未配置密钥时拒绝一切回调，与 JWT 一致
             return false;
         }
-        $expected = base64_encode(hash_hmac('sha256', $request->rawBody(), base64_decode($secret)));
+        $expected = hash_hmac('sha256', $request->rawBody(), $secret);
         return hash_equals($expected, $signature);
     }
 

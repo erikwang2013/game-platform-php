@@ -24,6 +24,7 @@ use support\Db;
 class ResilienceMockTest extends TestCase
 {
     private const TEST_USER_ID = 990000701;
+    private bool $dbAvailable = false;
     private array $orderIds = [];
     private array $tokenIds = [];
 
@@ -34,6 +35,7 @@ class ResilienceMockTest extends TestCase
         } catch (\Throwable $e) {
             $this->markTestSkipped('Database connection not available: ' . $e->getMessage());
         }
+        $this->dbAvailable = true;
         $this->setMock(false);
         $this->orderIds = [];
         $this->tokenIds = [];
@@ -41,6 +43,9 @@ class ResilienceMockTest extends TestCase
 
     protected function tearDown(): void
     {
+        if (!$this->dbAvailable) {
+            return;
+        }
         // 删除测试写入的 platform_config 行（删除即回到默认 off 行为），不影响其他测试
         PlatformConfig::where('group', 'feature')->where('key', 'provider_mock')->delete();
         if ($this->orderIds) {

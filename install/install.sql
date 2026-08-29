@@ -1005,7 +1005,17 @@ INSERT IGNORE INTO `game_payment_method` (`id`, `name`, `type`, `provider`, `con
 (50000000000000052, 'USDT (ERC20)', 'crypto', 'nowpayments', '{"network":"ERC20"}', 1, 20, '[]', '', 0.0000, 0.0000),
 (50000000000000053, 'Crypto Wallet (Coinbase)', 'crypto', 'coinbase', '{"coin":"USDC"}', 1, 30, '[]', '', 0.0000, 0.0000),
 (50000000000000054, 'Alipay (国际支付宝)', 'fiat', 'stripe', '{"apm_types":["alipay"]}', 1, 40, '[]', '', 0.0000, 0.0000),
-(50000000000000055, 'WeChat Pay (国际微信支付)', 'fiat', 'stripe', '{"apm_types":["wechat_pay"]}', 1, 50, '[]', '', 0.0000, 0.0000);
+(50000000000000055, 'WeChat Pay (国际微信支付)', 'fiat', 'stripe', '{"apm_types":["wechat_pay"]}', 1, 50, '[]', '', 0.0000, 0.0000),
+(50000000000000056, 'PayPal', 'fiat', 'paypal', '{}', 1, 60, '[]', '', 0.0000, 0.0000),
+(50000000000000057, 'Skrill', 'fiat', 'skrill', '{}', 1, 70, '[]', '', 1.0000, 5000.0000),
+(50000000000000058, 'Neteller', 'fiat', 'neteller', '{}', 1, 80, '[]', '', 1.0000, 5000.0000),
+(50000000000000059, 'Paysafecard', 'fiat', 'paysafecard', '{"country":"DE"}', 1, 90, '["DE","AT","CH","GB","NL","ES","IT","FR","BE","PL","PT","RO","GR","CZ","HU","SK","HR","SI","BG","IE","LU"]', '', 1.0000, 1000.0000),
+(50000000000000060, 'Paytm / UPI', 'fiat', 'paytm', '{}', 1, 100, '["IN"]', 'INR', 10.0000, 500000.0000),
+(50000000000000061, 'Mercado Pago', 'fiat', 'mercadopago', '{}', 1, 110, '["MX","BR","AR","CL","CO","PE","UY"]', '', 0.0000, 0.0000),
+(50000000000000062, 'AstroPay', 'fiat', 'astropay', '{"country":"BR"}', 1, 120, '["BR","AR","CO","PE","UY","MX"]', '', 0.0000, 0.0000),
+(50000000000000063, 'PayPay', 'fiat', 'paypay', '{}', 1, 130, '["JP"]', 'JPY', 100.0000, 50000.0000),
+(50000000000000064, 'KakaoPay', 'fiat', 'kakaopay', '{}', 1, 140, '["KR"]', 'KRW', 1000.0000, 1000000.0000),
+(50000000000000065, 'GCash', 'fiat', 'gcash', '{}', 1, 150, '["PH"]', 'PHP', 100.0000, 50000.0000);
 
 -- 默认国家配置
 INSERT IGNORE INTO `game_country_config` (`id`, `country_code`, `currency`, `payment_methods`, `withdraw_methods`, `min_deposit`) VALUES

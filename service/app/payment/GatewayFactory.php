@@ -15,6 +15,16 @@ class GatewayFactory
             'stripe'      => new StripeGateway(),
             'nowpayments' => new NowPaymentsGateway(),
             'coinbase'    => new CoinbaseCommerceGateway(),
+            'paypal'      => new PayPalGateway(),
+            'skrill'      => new SkrillGateway(),
+            'neteller'    => new NetellerGateway(),
+            'paysafecard' => new PaysafecardGateway(),
+            'paytm'       => new PaytmGateway(),
+            'mercadopago' => new MercadoPagoGateway(),
+            'astropay'    => new AstroPayGateway(),
+            'paypay'      => new PayPayGateway(),
+            'kakaopay'    => new KakaoPayGateway(),
+            'gcash'       => new GcashGateway(),
             default       => throw new \InvalidArgumentException("Unsupported payment gateway: {$provider}"),
         };
     }
