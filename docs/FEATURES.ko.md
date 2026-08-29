@@ -60,6 +60,8 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | 추천 | 추천 코드, 등록 보상, 충전 커미션 | 완료 |
 | 검색 | ES 검색 API + 게임 제안 + LIKE 폴백 | 완료 |
 | 리더보드 | WebSocket 실시간 푸시 (포트 8789) | 완료 |
+| CDN | 5개 업체 연동 (Cloudflare R2 / AWS S3 / 알리 OSS / 텐센트 COS / 화웨이 OBS 업로드 + 캐시 제거 + 프리로드) | 완료 |
+| CDN 관리 | 관리자가 5개 업체 설정 (자격증명 암호화 저장/활성·비활성/HeadBucket 연결 테스트), service는 DB만 읽음 | 완료 |
 | 배포 | Docker Compose 7서비스 + Nginx 리버스 프록시 | 완료 |
 | 데이터 | MySQL 실시간 집계 분석 + 결합/조건부 확률 계산 | 완료 |
 | HarmonyOS | admin 단 8페이지; C단 `apps/harmonyos/`에 로그인/로비/상세/지갑/개인 구현 (8788 지시) | 부분 완료 (프로젝트 실행 가능, 실기기 IP 변경 필요) |

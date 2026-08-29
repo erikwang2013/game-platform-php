@@ -60,6 +60,8 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Referral | Kode referral, hadiah pendaftaran, komisi deposit | Selesai |
 | Pencarian | API pencarian ES + saran game + fallback LIKE | Selesai |
 | Papan peringkat | Push real-time WebSocket (port 8789) | Selesai |
+| CDN | Integrasi lima penyedia (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + preload) | Selesai |
+| Manajemen CDN | Konfigurasi lima penyedia di admin (kredensial terenkripsi/aktif-nonaktif/tes konektivitas HeadBucket), service hanya membaca dari DB | Selesai |
 | Deployment | Docker Compose 7 layanan + reverse proxy Nginx | Selesai |
 | Data | Analisis agregasi real-time MySQL + perhitungan probabilitas gabungan/bersyarat | Selesai |
 | HarmonyOS | admin 8 halaman; sisi C `apps/harmonyos/` sudah mengimplementasikan login/lobi/detail/dompet/profil (menunjuk 8788) | Sebagian selesai (proyek dapat berjalan, perangkat nyata perlu ubah IP) |

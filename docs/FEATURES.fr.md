@@ -60,6 +60,8 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Parrainage | Code de parrainage, récompense d'inscription, commission de recharge | Terminé |
 | Recherche | API de recherche ES + suggestions de jeux + repli LIKE | Terminé |
 | Classements | Push temps réel WebSocket (port 8789) | Terminé |
+| CDN | Intégration de cinq fournisseurs (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + préchargement) | Terminé |
+| Administration CDN | Configuration des cinq fournisseurs côté admin (identifiants chiffrés/activation-désactivation/test de connexion HeadBucket), le service lit uniquement la base de données | Terminé |
 | Déploiement | Docker Compose 7 services + proxy inverse Nginx | Terminé |
 | Données | Analyse par agrégation MySQL en temps réel + calcul de probabilités conjointes/conditionnelles | Terminé |
 | HarmonyOS | 8 pages côté admin ; côté C `apps/harmonyos/` implémente connexion/hall/détail/portefeuille/profil (pointant vers 8788) | Partiellement terminé (le projet s'exécute, IP à modifier sur appareil réel) |

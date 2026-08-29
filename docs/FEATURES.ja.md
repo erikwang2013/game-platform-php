@@ -60,6 +60,8 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | 紹介 | 紹介コード、登録報酬、チャージコミッション | 完了 |
 | 検索 | ES検索API + ゲーム提案 + LIKEフォールバック | 完了 |
 | ランキング | WebSocket リアルタイムプッシュ (ポート8789) | 完了 |
+| CDN | 5社連携 (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS アップロード + キャッシュ削除 + プリロード) | 完了 |
+| CDN 管理 | 管理画面で5社設定 (暗号化保存した認証情報/有効·無効/HeadBucket 接続テスト)、service は DB のみ参照 | 完了 |
 | デプロイ | Docker Compose 7サービス + Nginxリバースプロキシ | 完了 |
 | データ | MySQL リアルタイム集計分析 + 結合/条件確率計算 | 完了 |
 | HarmonyOS | admin 端 8 ページ；C 端 `apps/harmonyos/` にログイン/ロビー/詳細/ウォレット/マイページ実装（8788 を指す） | 一部完了（工程は実行可能、実機では IP 変更が必要） |

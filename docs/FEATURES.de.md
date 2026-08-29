@@ -60,6 +60,8 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | Empfehlung | Empfehlungscode, Registrierungsbelohnung, Einzahlungsprovision | Abgeschlossen |
 | Suche | ES-Such-API + Spielvorschläge + LIKE-Fallback | Abgeschlossen |
 | Rangliste | WebSocket-Echtzeit-Push (Port 8789) | Abgeschlossen |
+| CDN | Integration von fünf Anbietern (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS Upload + Purge + Preload) | Abgeschlossen |
+| CDN-Verwaltung | Admin-Konfiguration der fünf Anbieter (verschlüsselte Zugangsdaten/Aktivierung/Verbindungstest per HeadBucket), Service liest nur aus DB | Abgeschlossen |
 | Bereitstellung | Docker Compose 7 Dienste + Nginx-Reverse-Proxy | Abgeschlossen |
 | Daten | MySQL-Echtzeit-Aggregationsanalyse + Verbund-/Bedingte-Wahrscheinlichkeitsberechnung | Abgeschlossen |
 | HarmonyOS | admin-Seite 8 Seiten; C-End `apps/harmonyos/` mit Login/Lobby/Details/Wallet/Profil (zeigt auf 8788) | Teilweise abgeschlossen (Projekt läuft, echte Geräte benötigen IP-Anpassung) |

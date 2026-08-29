@@ -60,6 +60,8 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Recomendación | Código de recomendación, recompensa de registro, comisión por recarga | Completada |
 | Búsqueda | API de búsqueda ES + sugerencias de juegos + fallback LIKE | Completada |
 | Clasificaciones | Push en tiempo real por WebSocket (puerto 8789) | Completada |
+| CDN | Integración de cinco proveedores (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS carga + purga + precarga) | Completada |
+| Administración CDN | Configuración de los cinco proveedores en el panel (credenciales cifradas/activación-desactivación/prueba de conexión HeadBucket), el servicio solo lee de la base de datos | Completada |
 | Despliegue | Docker Compose 7 servicios + proxy inverso Nginx | Completada |
 | Datos | Análisis de agregación en tiempo real MySQL + cálculo de probabilidad conjunta/condicional | Completada |
 | HarmonyOS | admin 8 páginas; el lado C `apps/harmonyos/` ya implementa login/lobby/detalle/billetera/perfil (apunta a 8788) | Parcialmente completada (el proyecto compila; en dispositivo real hay que cambiar la IP) |
