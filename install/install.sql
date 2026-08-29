@@ -807,6 +807,19 @@ CREATE TABLE IF NOT EXISTS `game_device_token` (
     KEY `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='设备推送令牌表';
 
+CREATE TABLE IF NOT EXISTS `game_cdn_provider` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '雪花ID',
+    `name` VARCHAR(50) NOT NULL COMMENT '显示名称',
+    `provider` VARCHAR(30) NOT NULL COMMENT '厂商: cloudflare/cloudfront/aliyun/tencent/huawei',
+    `config` TEXT NULL COMMENT '加密JSON配置（凭据/桶/域名）',
+    `status` TINYINT NOT NULL DEFAULT 1 COMMENT '1启用 0停用',
+    `sort` INT NOT NULL DEFAULT 0 COMMENT '排序',
+    `created_at` DATETIME DEFAULT NULL,
+    `updated_at` DATETIME DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_provider` (`provider`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='CDN厂商配置';
+
 -- ============================================================
 -- 种子数据
 -- ============================================================
@@ -1019,6 +1032,14 @@ INSERT IGNORE INTO `game_payment_method` (`id`, `name`, `type`, `provider`, `con
 (50000000000000066, 'M-Pesa', 'fiat', 'mpesa', '{}', 1, 160, '["KE"]', 'KES', 10.0000, 100000.0000),
 (50000000000000067, 'Paystack', 'fiat', 'paystack', '{}', 1, 170, '["NG"]', 'NGN', 100.0000, 1000000.0000),
 (50000000000000068, 'Toss Payments', 'fiat', 'toss', '{}', 1, 145, '["KR"]', 'KRW', 1000.0000, 1000000.0000);
+
+-- 默认 CDN 厂商（凭据为空，status=0 停用，管理端填写凭据后启用）
+INSERT IGNORE INTO `game_cdn_provider` (`id`, `name`, `provider`, `config`, `status`, `sort`) VALUES
+(50000000000000061, 'Cloudflare R2', 'cloudflare', '{"bucket":"static","domain":"cdn.example.com","account_id":"","api_token":"","zone_id":"","s3":{"region":"auto","access_key_id":"","secret_access_key":""}}', 0, 10),
+(50000000000000062, 'AWS CloudFront', 'cloudfront', '{"bucket":"static","domain":"d111111abcdef8.cloudfront.net","distribution_id":"","s3":{"region":"us-east-1","access_key_id":"","secret_access_key":""}}', 0, 20),
+(50000000000000063, '阿里云 OSS', 'aliyun', '{"bucket":"static","domain":"cdn.aliyun.example.com","access_key_id":"","access_key_secret":"","region":"oss-cn-hangzhou"}', 0, 30),
+(50000000000000064, '腾讯云 COS', 'tencent', '{"bucket":"static","domain":"cdn.tencent.example.com","secret_id":"","secret_key":"","region":"ap-guangzhou"}', 0, 40),
+(50000000000000065, '华为云 OBS', 'huawei', '{"bucket":"static","domain":"cdn.huawei.example.com","ak":"","sk":"","region":"cn-north-4"}', 0, 50);
 
 -- 默认国家配置
 INSERT IGNORE INTO `game_country_config` (`id`, `country_code`, `currency`, `payment_methods`, `withdraw_methods`, `min_deposit`) VALUES
