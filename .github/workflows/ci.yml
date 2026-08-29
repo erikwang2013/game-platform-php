@@ -65,6 +65,23 @@ jobs:
     name: Admin PHPUnit
     runs-on: ubuntu-latest
     needs: [php-syntax]
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_ROOT_HOST: '%'
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
     steps:
       - uses: actions/checkout@v4
 
@@ -83,6 +100,12 @@ jobs:
         working-directory: admin
         run: test -f .env || cp .env.example .env
 
+      - name: Prepare test databases
+        run: |
+          mysql -h 127.0.0.1 -u root -e "CREATE DATABASE IF NOT EXISTS game-platform; CREATE DATABASE IF NOT EXISTS game-platform-test;"
+          mysql -h 127.0.0.1 -u root game-platform < install/install.sql
+          mysql -h 127.0.0.1 -u root game-platform-test < install/install.sql
+
       - name: Run admin tests
         working-directory: admin
         run: vendor/bin/phpunit
@@ -91,6 +114,23 @@ jobs:
     name: Service PHPUnit
     runs-on: ubuntu-latest
     needs: [php-syntax]
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_ROOT_HOST: '%'
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
     steps:
       - uses: actions/checkout@v4
 
@@ -108,6 +148,12 @@ jobs:
       - name: Prepare env
         working-directory: service
         run: test -f .env || cp .env.example .env
+
+      - name: Prepare test databases
+        run: |
+          mysql -h 127.0.0.1 -u root -e "CREATE DATABASE IF NOT EXISTS game-platform; CREATE DATABASE IF NOT EXISTS game-platform-test;"
+          mysql -h 127.0.0.1 -u root game-platform < install/install.sql
+          mysql -h 127.0.0.1 -u root game-platform-test < install/install.sql
 
       - name: Run service tests
         working-directory: service

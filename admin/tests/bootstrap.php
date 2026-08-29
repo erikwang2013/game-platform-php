@@ -30,6 +30,14 @@ $testJwt = 'test-jwt-secret-0123456789abcdef-test-jwt-secret';
 $_ENV['ADMIN_JWT_SECRET_KEY'] = $_SERVER['ADMIN_JWT_SECRET_KEY'] = $testJwt;
 putenv('ADMIN_JWT_SECRET_KEY=' . $testJwt);
 
+// 测试环境固定 hashids 盐值：.env 中的占位符同样触发 hashids 配置启动守卫。
+$testHashSalt = 'test-hashids-salt-0123456789';
+$testAltSalt = 'test-hashids-alt-salt-0123456789';
+$_ENV['HASHIDS_SALT'] = $_SERVER['HASHIDS_SALT'] = $testHashSalt;
+putenv('HASHIDS_SALT=' . $testHashSalt);
+$_ENV['HASHIDS_ALT_SALT'] = $_SERVER['HASHIDS_ALT_SALT'] = $testAltSalt;
+putenv('HASHIDS_ALT_SALT=' . $testAltSalt);
+
 // 加载所有配置
 \Webman\Config::clear();
 support\App::loadAllConfig(['route']);
