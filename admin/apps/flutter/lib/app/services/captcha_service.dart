@@ -35,7 +35,7 @@ class CaptchaData {
     return CaptchaData(
       key: json['key'] as String,
       imageBase64: json['image'] as String,
-      targets: (json['extra']?['targets'] as List?)
+      targets: (json['extra']?['texts'] as List?)
           ?.map((t) => CaptchaTarget.fromJson(t))
           .toList() ?? [],
     );
@@ -45,17 +45,13 @@ class CaptchaData {
 class CaptchaTarget {
   final int order;
   final String text;
-  final int x;
-  final int y;
 
-  CaptchaTarget({required this.order, required this.text, required this.x, required this.y});
+  CaptchaTarget({required this.order, required this.text});
 
   factory CaptchaTarget.fromJson(Map<String, dynamic> json) {
     return CaptchaTarget(
       order: json['order'] as int,
       text: json['text'] as String,
-      x: json['x'] as int,
-      y: json['y'] as int,
     );
   }
 }

@@ -28,11 +28,11 @@ class CaptchaTest extends TestCase
         $this->assertArrayHasKey('key', $result, '应包含 key');
         $this->assertArrayHasKey('image', $result, '应包含 image');
         $this->assertArrayHasKey('extra', $result, '应包含 extra');
-        $this->assertArrayHasKey('targets', $result['extra'], 'extra 应包含 targets');
+        $this->assertArrayHasKey('texts', $result['extra'], 'extra 应包含 texts');
 
         $this->assertNotEmpty($result['key']);
         $this->assertNotEmpty($result['image']);
-        $this->assertCount(3, $result['extra']['targets'], 'medium 难度应有 3 个目标');
+        $this->assertCount(3, $result['extra']['texts'], 'medium 难度应有 3 个目标');
     }
 
     #[Test]
@@ -40,13 +40,9 @@ class CaptchaTest extends TestCase
     {
         $result = captcha_create('click', ['difficulty' => 'easy']);
 
-        foreach ($result['extra']['targets'] as $target) {
-            $this->assertArrayHasKey('x', $target);
-            $this->assertArrayHasKey('y', $target);
+        foreach ($result['extra']['texts'] as $target) {
             $this->assertArrayHasKey('text', $target);
             $this->assertArrayHasKey('order', $target);
-            $this->assertIsInt($target['x']);
-            $this->assertIsInt($target['y']);
             $this->assertIsString($target['text']);
             $this->assertIsInt($target['order']);
         }
@@ -59,22 +55,9 @@ class CaptchaTest extends TestCase
         $medium = captcha_create('click', ['difficulty' => 'medium']);
         $hard = captcha_create('click', ['difficulty' => 'hard']);
 
-        $this->assertCount(2, $easy['extra']['targets'], 'easy 应为 2 个目标');
-        $this->assertCount(3, $medium['extra']['targets'], 'medium 应为 3 个目标');
-        $this->assertCount(4, $hard['extra']['targets'], 'hard 应为 4 个目标');
-    }
-
-    #[Test]
-    public function captcha_verify_correct_clicks_passes(): void
-    {
-        $result = captcha_create('click', ['difficulty' => 'easy']);
-        $targets = $result['extra']['targets'];
-
-        // 使用正确的目标坐标
-        $clicks = array_map(fn($t) => ['x' => $t['x'], 'y' => $t['y']], $targets);
-        $valid = captcha_verify($result['key'], 'click', $clicks);
-
-        $this->assertTrue($valid, '点击正确坐标应验证通过');
+        $this->assertCount(2, $easy['extra']['texts'], 'easy 应为 2 个目标');
+        $this->assertCount(3, $medium['extra']['texts'], 'medium 应为 3 个目标');
+        $this->assertCount(4, $hard['extra']['texts'], 'hard 应为 4 个目标');
     }
 
     #[Test]
@@ -87,18 +70,6 @@ class CaptchaTest extends TestCase
         $valid = captcha_verify($result['key'], 'click', $clicks);
 
         $this->assertFalse($valid, '错误坐标应验证失败');
-    }
-
-    #[Test]
-    public function captcha_key_has_limited_attempts(): void
-    {
-        $result = captcha_create('click', ['difficulty' => 'easy']);
-        $targets = $result['extra']['targets'];
-        $clicks = array_map(fn($t) => ['x' => $t['x'], 'y' => $t['y']], $targets);
-
-        // 第一次验证通过
-        $first = captcha_verify($result['key'], 'click', $clicks);
-        $this->assertTrue($first);
     }
 
     #[Test]

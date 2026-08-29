@@ -43,6 +43,11 @@ $testEncKey = '0123456789abcdef0123456789abcdef';
 $_ENV['ENCRYPTION_KEY'] = $_SERVER['ENCRYPTION_KEY'] = $testEncKey;
 putenv('ENCRYPTION_KEY=' . $testEncKey);
 
+// 测试环境固定海报驱动：imagick 新版本移除了 Imagick::RESOURCETYPE_PIXELS 常量，
+// poster-php ImagickDriver 引用它导致验证码生成报错，测试统一走 GD 驱动。
+putenv('POSTER_IMAGE_DRIVER=gd');
+$_ENV['POSTER_IMAGE_DRIVER'] = $_SERVER['POSTER_IMAGE_DRIVER'] = 'gd';
+
 // 加载所有配置
 \Webman\Config::clear();
 support\App::loadAllConfig(['route']);

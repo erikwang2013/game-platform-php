@@ -36,7 +36,7 @@ class EnvConfigTest extends TestCase
     public function getenv_reads_env_variables(): void
     {
         $this->assertNotEmpty(getenv('APP_NAME'), 'APP_NAME 应有值');
-        $this->assertNotEmpty(getenv('JWT_SECRET_KEY'), 'JWT_SECRET_KEY 应有值');
+        $this->assertNotEmpty(getenv('ADMIN_JWT_SECRET_KEY'), 'ADMIN_JWT_SECRET_KEY 应有值');
         $this->assertNotEmpty(getenv('DB_HOST'), 'DB_HOST 应有值');
     }
 
@@ -82,7 +82,7 @@ class EnvConfigTest extends TestCase
     {
         $this->assertIsNumeric(getenv('JWT_TTL') ?: 7200, 'JWT_TTL 应为数字');
         $this->assertIsNumeric(getenv('DB_PORT') ?: 3306, 'DB_PORT 应为数字');
-        $this->assertIsString(getenv('JWT_SECRET_KEY') ?: 'x', 'JWT_SECRET_KEY 应为字符串');
+        $this->assertIsString(getenv('ADMIN_JWT_SECRET_KEY') ?: 'x', 'ADMIN_JWT_SECRET_KEY 应为字符串');
         $this->assertIsString(getenv('HASHIDS_SALT') ?: 'x', 'HASHIDS_SALT 应为字符串');
     }
 }

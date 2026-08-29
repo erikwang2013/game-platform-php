@@ -17,7 +17,7 @@ class CaptchaController
      * 生成点击验证码
      * POST /api/captcha/generate
      *
-     * 返回: { key, image (base64 PNG), extra: { targets: [{order, text}] } }
+     * 返回: { key, image (base64 PNG), extra: { texts: [{order, text}] } }
      */
     public function generate(Request $request): Response
     {
@@ -33,7 +33,7 @@ class CaptchaController
                     'key' => $result['key'],
                     'image' => explode(',', $result['image'], 2)[1] ?? $result['image'], // base64 PNG
                     'extra' => [
-                        'targets' => $result['extra']['targets'],
+                        'texts' => $result['extra']['texts'],
                     ],
                 ],
             ]);

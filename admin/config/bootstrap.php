@@ -19,4 +19,6 @@
 return [
     support\bootstrap\Session::class,
     support\bootstrap\Database::class,
+    // poster-php 项目配置合并（验证码驱动/存储），未注册则使用包内默认配置
+    Erikwang2013\Poster\Adapters\Webman\CaptchaPlugin::class,
 ];
