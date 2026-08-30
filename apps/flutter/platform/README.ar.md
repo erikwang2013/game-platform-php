@@ -1,27 +1,55 @@
-# game_platform
-
-## تميمة المشروع
-
-<img src="../../../docs/mascot.svg" width="120" alt="Dicey"/>
-
-**ديسي (Dicey)** — تميمة المنصة. النرد يرمز إلى الألعاب وأسلوب اللعب الاحتمالي، والعملة ترمز إلى اقتصاد المنصة وبوابات الدفع المتعددة، واللون البنفسجي يعكس هوية لوحة الإدارة. ملف SVG: `docs/mascot.svg`، قابل للتحجيم بلا حدود للوثائق والشعارات والمنتجات.
+# game_platform — منصة المستخدمين (Flutter Web)
 <!-- lang-nav -->
 
-Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · **العربية** · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
-مشروع Flutter جديد.
+> Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
-## البدء
+الواجهة الأمامية لمنصة المستخدمين (الجانب C) المبنية على Flutter 3.x، والتي توفّر للمستخدمين تجربة منصة تجميع الألعاب الكاملة: التسجيل وتسجيل الدخول، صالة الألعاب، المحفظة، الإيداع، السحب، التحويل، لوحات الترتيب، القسائم، الإشعارات، الدردشة، الأصدقاء وتذاكر الدعم.
 
-هذا المشروع هو نقطة انطلاق لتطبيق Flutter.
+## قائمة الوظائف
 
-بعض الموارد لمساعدتك على البدء إذا كان هذا أول مشروع Flutter لك:
+| الوحدة | الوصف |
+|------|------|
+| تسجيل الدخول/التسجيل | اسم المستخدم+كلمة المرور / OAuth / 2FA |
+| صالة الألعاب | قائمة/تصنيفات/بحث الألعاب |
+| المحفظة | أرصدة ومعاملات عملات المنصة/اللعبة |
+| الإيداع | اختيار وسيلة الدفع، الانتقال إلى بوابة الدفع |
+| السحب | طلب السحب، تتبع حالة المراجعة |
+| التحويل | تحويل فوري عملات المنصة ⇄ عملات اللعبة |
+| لوحات الترتيب | يومي/أسبوعي/شهري/إجمالي |
+| القسائم | الحصول والاستخدام |
+| الإشعارات | رسائل داخل التطبيق (إيداع/سحب/قسائم وغيرها) |
+| الدردشة | رسائل WebSocket الفورية |
+| الأصدقاء | نظام الأصدقاء |
+| التذاكر | إنشاء والرد على تذاكر الدعم |
+| الملف الشخصي | تعديل الملف/إعدادات الأمان |
 
-- [تعلّم Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [اكتب أول تطبيق Flutter لك](https://docs.flutter.dev/get-started/codelab)
-- [موارد تعلّم Flutter](https://docs.flutter.dev/reference/learning-resources)
+## المتطلبات
 
-للحصول على مساعدة في بدء تطوير Flutter، راجع
-[التوثيق عبر الإنترنت](https://docs.flutter.dev/)، الذي يقدم دروسًا تعليمية
-وعينات وإرشادات حول تطوير الجوال ومرجع API كامل.
+- Flutter SDK 3.x
 
+## التثبيت والتشغيل
+
+```bash
+cd apps/flutter/platform
+
+# تثبيت الاعتماديات
+flutter pub get
+
+# التشغيل في وضع التطوير (Chrome)
+flutter run -d chrome
+
+# تحديد عنوان الخادم الخلفي (الافتراضي http://localhost:8788)
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8788
+
+# بناء نسخة الإنتاج للويب (الإخراج في build/web/)
+flutter build web
+```
+
+## الاستخدام
+
+1. شغّل أولاً الخدمة الخلفية: `cd service && php start.php start -d` (المنفذ الافتراضي 8788)
+2. سجّل حسابًا ثم ادخل (يدعم اسم المستخدم+كلمة المرور وOAuth و2FA)
+3. بعد الإيداع، يمكنك اللعب بعملات المنصة وتحويلها إلى عملات اللعبة؛ ويمكن إرجاع عملات اللعبة إلى المحفظة للسحب
+4. لوحة الإدارة في دليل `admin/` (بما في ذلك الواجهة الأمامية `admin/apps/flutter/`)

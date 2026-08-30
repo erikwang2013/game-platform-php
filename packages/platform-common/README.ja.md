@@ -1,33 +1,53 @@
 # erik/platform-common
-
-## プロジェクトマスコット
-
-<img src="../../docs/mascot.svg" width="120" alt="Dicey"/>
-
-**ダイスィー（Dicey）** — プラットフォームのマスコット。サイコロはゲームと確率ベースのゲームプレイを、コインはプラットフォーム経済とマルチ決済ゲートウェイを、紫のメインカラーは管理画面ブランドを表します。SVG ファイル: `docs/mascot.svg`、文書・ロゴ・グッズに無限に拡大可能。
 <!-- lang-nav -->
 
-Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · **日本語**
 
-共有の `common\service\*` を、admin/ と service/ が Composer の path リポジトリ経由で参照します。
+> Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+
+admin/ と service/ が共有する `common\service\*` 共通レイヤー。Composer の path リポジトリでローカルソースを参照します。
 
 ## サービス
 
-- DepositLogService — チャージ監査 + 収益/転換
-- GameDashboardService — 運営ダッシュボード
-- ProbabilityService — 確率分析
-- GamePlayLogService — ゲーム行動ログの書き込み
+| サービス | 説明 |
+|------|------|
+| DepositLogService | 入金監査 + 収益/コンバージョン |
+| GameDashboardService | 運営ダッシュボード |
+| ProbabilityService | 確率分析 |
+| GamePlayLogService | ゲーム行動ログの書き込み |
+| CircuitBreaker / Retry | 安定性機構（サーキットブレーカー/リトライ） |
 
 ホスト側が `app\model\*`、`app\common\SnowflakeService`、`support\Db`、`support\Log` を提供する必要があります。
 
-## 導入
+## インストール
+
+パッケージ名は `erik/platform-common`。admin/ と service/ はどちらも composer.json で path リポジトリ（`../packages/platform-common`）を設定済みのため、`composer install` で自動インストールされます。admin/ または service/ で個別に更新することもできます：
 
 ```bash
-cd admin && composer update erik/platform-common
-cd ../service && composer update erik/platform-common
+composer update erik/platform-common
 ```
+
+Packagist に公開されていれば直接インストールも可能です：
+
+```bash
+composer require erik/platform-common
+```
+
+## 使い方
+
+名前空間は `common\`（PSR-4 → `src/`）：
+
+```php
+use common\service\GameDashboardService;
+
+$dashboard = new GameDashboardService();
+$overview = $dashboard->overview();
+```
+
+## ワンクリックインストール
+
+プラットフォームのワンクリックインストールウィザード（`install/`）で自動的に完了します：ウィザードが admin/ と service/ の `composer install` を実行し、path リポジトリの依存関係が自動インストールされるため、手動設定は不要です。
 
 ## 残存する二重コピー
 
-app/model/*、app/common/*Service、大多数の app/service/*、EventBus は引き続き両側に複製されています。
-
+`app/model/*`、`app/common/*Service`、大多数の `app/service/*`、EventBus は引き続き両側に複製されています。

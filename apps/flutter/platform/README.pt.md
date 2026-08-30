@@ -1,27 +1,55 @@
-# game_platform
-
-## Mascote do projeto
-
-<img src="../../../docs/mascot.svg" width="120" alt="Dicey"/>
-
-**Dicey** — Mascote da plataforma. O dado representa os jogos e a jogabilidade baseada em probabilidade, a moeda a economia da plataforma e os múltiplos gateways de pagamento, e o roxo reflete a marca do painel administrativo. Arquivo SVG: `docs/mascot.svg`, escalável infinitamente para documentação, logotipos e produtos.
+# game_platform — Plataforma de usuários (Flutter Web)
 <!-- lang-nav -->
 
 Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · **Português** · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
-Um novo projeto Flutter.
+> Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
-## Primeiros passos
+O frontend web da plataforma de usuários (lado C), baseado em Flutter 3.x, oferece aos usuários a experiência completa da plataforma de agregação de jogos: cadastro e login, lobby de jogos, carteira, depósito, saque, câmbio, rankings, cupons, notificações, chat, amigos e tickets de suporte.
 
-Este projeto é um ponto de partida para uma aplicação Flutter.
+## Funcionalidades
 
-Alguns recursos para você começar, se este for seu primeiro projeto Flutter:
+| Módulo | Descrição |
+|------|------|
+| Login/cadastro | Usuário+senha / OAuth / 2FA |
+| Lobby de jogos | Lista/categorias/busca de jogos |
+| Carteira | Saldos e transações de moedas da plataforma/jogo |
+| Depósito | Escolher método de pagamento, redirecionar para o gateway |
+| Saque | Solicitar saque, acompanhamento do status |
+| Câmbio | Câmbio em tempo real moeda da plataforma ⇄ moeda de jogo |
+| Rankings | Diário/semanal/mensal/geral |
+| Cupons | Obter e usar |
+| Notificações | Mensagens no app (depósito/saque/cupons, etc.) |
+| Chat | Mensagens WebSocket em tempo real |
+| Amigos | Sistema de amigos |
+| Tickets | Criar e responder tickets de suporte |
+| Perfil | Edição de perfil/configurações de segurança |
 
-- [Aprenda Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Escreva seu primeiro app Flutter](https://docs.flutter.dev/get-started/codelab)
-- [Recursos de aprendizado do Flutter](https://docs.flutter.dev/reference/learning-resources)
+## Requisitos
 
-Para ajuda ao começar com o desenvolvimento Flutter, consulte a
-[documentação online](https://docs.flutter.dev/), que oferece tutoriais,
-exemplos, orientação sobre desenvolvimento mobile e uma referência completa da API.
+- Flutter SDK 3.x
 
+## Instalação e execução
+
+```bash
+cd apps/flutter/platform
+
+# Instalar dependências
+flutter pub get
+
+# Executar em desenvolvimento (Chrome)
+flutter run -d chrome
+
+# Especificar o endereço do backend (padrão http://localhost:8788)
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8788
+
+# Build web de produção (saída em build/web/)
+flutter build web
+```
+
+## Uso
+
+1. Inicie primeiro o backend: `cd service && php start.php start -d` (porta padrão 8788)
+2. Cadastre uma conta e faça login (usuário+senha, OAuth e 2FA são suportados)
+3. Após depositar, jogue com moedas da plataforma e troque por moedas de jogo; as moedas de jogo podem ser convertidas de volta à carteira para saque
+4. O backend admin está no diretório `admin/` (incluindo o frontend Flutter Web `admin/apps/flutter/`)

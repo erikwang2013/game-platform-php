@@ -1,33 +1,53 @@
 # erik/platform-common
-
-## Maskot Proyek
-
-<img src="../../docs/mascot.svg" width="120" alt="Dicey"/>
-
-**Dicey** — Maskot platform. Dadu melambangkan permainan dan gameplay berbasis probabilitas, koin melambangkan ekonomi platform dan multi-gateway pembayaran, dan warna ungu mencerminkan branding admin. File SVG: `docs/mascot.svg`, dapat diskalakan tanpa batas untuk dokumen, logo, dan merchandise.
 <!-- lang-nav -->
 
-Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · **Bahasa Indonesia** · [日本語](README.ja.md)
 
-Berbagi `common\service\*`, untuk dirujuk admin/ dan service/ melalui path repository Composer.
+> Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+
+Lapisan bersama `common\service\*` yang digunakan oleh admin/ dan service/, merujuk sumber lokal melalui path repository Composer.
 
 ## Layanan
 
-- DepositLogService — audit deposit + pendapatan/konversi
-- GameDashboardService — dasbor operasional
-- ProbabilityService — analisis probabilitas
-- GamePlayLogService — penulisan log perilaku game
+| Layanan | Deskripsi |
+|------|------|
+| DepositLogService | Audit deposit + pendapatan/konversi |
+| GameDashboardService | Dasbor operasional |
+| ProbabilityService | Analisis probabilitas |
+| GamePlayLogService | Penulisan log perilaku game |
+| CircuitBreaker / Retry | Mekanisme ketahanan (pemutus/percobaan ulang) |
 
 Dependensi host menyediakan `app\model\*`, `app\common\SnowflakeService`, `support\Db`, `support\Log`.
 
-## Integrasi
+## Instalasi
+
+Nama paket `erik/platform-common`. Baik admin/ maupun service/ telah mengonfigurasi path repository (`../packages/platform-common`) di composer.json, sehingga terinstal otomatis melalui `composer install`; pembaruan terpisah dari admin/ atau service/ juga dimungkinkan:
 
 ```bash
-cd admin && composer update erik/platform-common
-cd ../service && composer update erik/platform-common
+composer update erik/platform-common
 ```
+
+Jika dipublikasikan ke Packagist, dapat juga diinstal langsung:
+
+```bash
+composer require erik/platform-common
+```
+
+## Penggunaan
+
+Namespace `common\` (PSR-4 → `src/`):
+
+```php
+use common\service\GameDashboardService;
+
+$dashboard = new GameDashboardService();
+$overview = $dashboard->overview();
+```
+
+## Instalasi Sekali Klik
+
+Diselesaikan otomatis oleh wizard instalasi sekali klik platform (`install/`): wizard menjalankan `composer install` untuk admin/ dan service/, dependensi path repository terinstal otomatis; tidak diperlukan konfigurasi manual.
 
 ## Sisa Salinan Ganda
 
-app/model/*, app/common/*Service, mayoritas app/service/*, EventBus masih disalin dua sisi.
-
+`app/model/*`, `app/common/*Service`, mayoritas `app/service/*`, dan EventBus masih disalin dua sisi.

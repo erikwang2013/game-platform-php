@@ -1,17 +1,36 @@
-# common/
-
-## Project Mascot
-
-<img src="../../docs/mascot.svg" width="120" alt="Dicey"/>
-
-**Dicey** — Platform mascot. The die represents games and probability-based gameplay, the coin represents the platform economy and multi-payment gateways, and the purple palette echoes the admin branding. SVG source: `docs/mascot.svg`, infinitely scalable for docs, logos and merchandise.
+# common/ — Admin Shared Library
 <!-- lang-nav -->
 
 Languages: [中文](README.md) · **English** · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
-`common\service\*` lives in the shared package **erik/platform-common**:
+> Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
-`packages/platform-common`
+The shared code directory of the admin backend (`admin/`). `common\service\*` has been extracted into the shared package **erik/platform-common** (`packages/platform-common`); do not place PHP classes in this directory, as they would shadow the package autoload. See `packages/platform-common/README.md`.
 
-Do not put PHP classes in this directory (they would shadow the package autoload). See `packages/platform-common/README.en.md`.
+## Features
 
+| Category | Location | Description |
+|------|------|------|
+| Models | `app\model\*` | Data models (users/orders/games, etc.) |
+| Services | `common\service\*` | Shared business services (in the erik/platform-common package): DepositLogService (deposit audit + revenue/conversion), GameDashboardService (operations dashboard), ProbabilityService (probability analysis), GamePlayLogService (game play log writes) |
+| Middleware | `app\middleware\*` | Cors / SecurityFilter / RateLimit / AdminAuth / AdminPermission / OperationLog |
+
+## Installation
+
+As part of the admin project, dependencies are already declared in `admin/composer.json` (including the path repository `../packages/platform-common`) and are installed automatically by `composer install`; no separate installation is needed:
+
+```bash
+cd admin && composer install
+```
+
+## Usage
+
+- The `app\...` namespace maps to the admin project's own code, e.g.: `use app\model\User;`
+- The `common\...` namespace maps to the shared package erik/platform-common (PSR-4 → `src/`), e.g.:
+
+```php
+use common\service\GameDashboardService;
+
+$dashboard = new GameDashboardService();
+$overview = $dashboard->overview();
+```

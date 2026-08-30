@@ -1,25 +1,55 @@
-# game_platform
-
-## プロジェクトマスコット
-
-<img src="../../../docs/mascot.svg" width="120" alt="Dicey"/>
-
-**ダイスィー（Dicey）** — プラットフォームのマスコット。サイコロはゲームと確率ベースのゲームプレイを、コインはプラットフォーム経済とマルチ決済ゲートウェイを、紫のメインカラーは管理画面ブランドを表します。SVG ファイル: `docs/mascot.svg`、文書・ロゴ・グッズに無限に拡大可能。
+# game_platform — ユーザープラットフォーム（Flutter Web）
 <!-- lang-nav -->
 
-Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · **日本語**
 
-新しい Flutter プロジェクトです。
+> Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
-## はじめに
+C端ユーザープラットフォームの Web フロントエンド。Flutter 3.x ベースで、ユーザー向けにゲーム集約プラットフォームの完全な体験（登録・ログイン、ゲームロビー、ウォレット、入金、出金、両替、ランキング、クーポン、通知、チャット、友達、サポートチケット）を提供します。
 
-このプロジェクトは Flutter アプリケーションの出発点です。
+## 機能一覧
 
-初めての Flutter プロジェクトで役立つリソースをいくつか紹介します:
+| モジュール | 説明 |
+|------|------|
+| ログイン/登録 | ユーザー名・パスワード / OAuth / 2FA |
+| ゲームロビー | ゲーム一覧/カテゴリ/検索 |
+| ウォレット | プラットフォームコイン/ゲームコイン残高と取引履歴 |
+| 入金 | 支払い方法を選択し、ゲートウェイ決済へ遷移 |
+| 出金 | 出金申請、審査状況の追跡 |
+| 両替 | プラットフォームコイン ⇄ ゲームコインのリアルタイム両替 |
+| ランキング | 日/週/月/総合 |
+| クーポン | 受け取りと利用 |
+| 通知 | アプリ内メッセージ（入金/出金/クーポン等） |
+| チャット | WebSocket リアルタイムメッセージ |
+| 友達 | 友達システム |
+| チケット | サポートチケットの作成と返信 |
+| プロフィール | プロフィール編集/セキュリティ設定 |
 
-- [Flutter を学ぶ](https://docs.flutter.dev/get-started/learn-flutter)
-- [最初の Flutter アプリを作成する](https://docs.flutter.dev/get-started/codelab)
-- [Flutter 学習リソース](https://docs.flutter.dev/reference/learning-resources)
+## 環境要件
 
-Flutter 開発のヘルプについては、チュートリアル、サンプル、モバイル開発のガイダンス、完全な API リファレンスを提供する [オンラインドキュメント](https://docs.flutter.dev/) を参照してください。
+- Flutter SDK 3.x
 
+## インストールと実行
+
+```bash
+cd apps/flutter/platform
+
+# 依存関係をインストール
+flutter pub get
+
+# 開発実行（Chrome）
+flutter run -d chrome
+
+# バックエンドのアドレスを指定（デフォルト http://localhost:8788）
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8788
+
+# Web 本番ビルド（出力先 build/web/）
+flutter build web
+```
+
+## 使い方
+
+1. 先にバックエンドを起動：`cd service && php start.php start -d`（デフォルトポート 8788）
+2. アカウントを登録してログイン（ユーザー名・パスワード、OAuth、2FA に対応）
+3. 入金後、プラットフォームコインでゲームをプレイし、ゲームコインに両替できます。ゲームコインはウォレットに戻して出金も可能です
+4. 管理バックエンドは `admin/` ディレクトリ（Flutter Web フロントエンド `admin/apps/flutter/` 含む）

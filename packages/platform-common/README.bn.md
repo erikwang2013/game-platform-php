@@ -1,33 +1,53 @@
 # erik/platform-common
-
-## প্রকল্প মাসকট
-
-<img src="../../docs/mascot.svg" width="120" alt="Dicey"/>
-
-**ডাইসি (Dicey)** — প্ল্যাটফর্ম মাসকট। পাশা খেলা ও সম্ভাবনা-ভিত্তিক গেমপ্লে বোঝায়, মুদ্রা প্ল্যাটফর্ম অর্থনীতি ও মাল্টি-পেমেন্ট গেটওয়ে বোঝায়, বেগুনি রঙ অ্যাডমিন ব্র্যান্ডিংয়ের সাথে মেলে। SVG ফাইল: `docs/mascot.svg`, ডকুমেন্টেশন, লোগো ও পণ্যে অসীম স্কেলযোগ্য।
 <!-- lang-nav -->
 
 Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · **বাংলা** · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
-শেয়ার্ড `common\service\*`, admin/ ও service/ Composer path রিপোজিটরির মাধ্যমে রেফারেন্স করে।
+> Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+
+admin/ ও service/ দ্বারা ব্যবহৃত শেয়ার্ড `common\service\*` লেয়ার, যা Composer path রিপোজিটরির মাধ্যমে লোকাল সোর্স রেফারেন্স করে।
 
 ## সার্ভিস
 
-- DepositLogService — টপ-আপ অডিট + রাজস্ব/কনভার্সন
-- GameDashboardService — অপারেশনাল ড্যাশবোর্ড
-- ProbabilityService — প্রোবাবিলিটি অ্যানালাইসিস
-- GamePlayLogService — গেম আচরণ লগ লেখা
+| সার্ভিস | বিবরণ |
+|------|------|
+| DepositLogService | টপ-আপ অডিট + রাজস্ব/কনভার্সন |
+| GameDashboardService | অপারেশনাল ড্যাশবোর্ড |
+| ProbabilityService | প্রোবাবিলিটি অ্যানালাইসিস |
+| GamePlayLogService | গেম আচরণ লগ লেখা |
+| CircuitBreaker / Retry | স্থিতিশীলতা প্রক্রিয়া (সার্কিট ব্রেকার/রিট্রাই) |
 
-হোস্টের `app\model\*`, `app\common\SnowflakeService`, `support\Db`, `support\Log` এর উপর নির্ভর করে।
+হোস্টের `app\model\*`, `app\common\SnowflakeService`, `support\Db`, `support\Log` প্রদানের উপর নির্ভর করে।
 
-## ইন্টিগ্রেশন
+## ইনস্টলেশন
+
+প্যাকেজের নাম `erik/platform-common`। admin/ ও service/ উভয়ই composer.json-এ path রিপোজিটরি (`../packages/platform-common`) কনফিগার করেছে, তাই `composer install`-এর মাধ্যমে স্বয়ংক্রিয়ভাবে ইনস্টল হয়; admin/ বা service/ থেকে আলাদাভাবে আপডেট করাও সম্ভব:
 
 ```bash
-cd admin && composer update erik/platform-common
-cd ../service && composer update erik/platform-common
+composer update erik/platform-common
 ```
+
+Packagist-এ প্রকাশিত হলে সরাসরি ইনস্টলও করা যায়:
+
+```bash
+composer require erik/platform-common
+```
+
+## ব্যবহার
+
+নেমস্পেস `common\` (PSR-4 → `src/`):
+
+```php
+use common\service\GameDashboardService;
+
+$dashboard = new GameDashboardService();
+$overview = $dashboard->overview();
+```
+
+## ওয়ান-ক্লিক ইনস্টলেশন
+
+প্ল্যাটফর্মের ওয়ান-ক্লিক ইনস্টলেশন উইজার্ড (`install/`) দিয়ে স্বয়ংক্রিয়ভাবে সম্পন্ন হয়: উইজার্ড admin/ ও service/-এর জন্য `composer install` চালায়, path রিপোজিটরি ডিপেন্ডেন্সি স্বয়ংক্রিয়ভাবে ইনস্টল হয়; ম্যানুয়াল কনফিগারেশনের প্রয়োজন নেই।
 
 ## অবশিষ্ট ডুপ্লিকেট
 
-app/model/*, app/common/*Service, অধিকাংশ app/service/*, EventBus এখনও দুই পাশে কপি করা আছে।
-
+`app/model/*`, `app/common/*Service`, অধিকাংশ `app/service/*` এবং EventBus এখনও দুই পাশে কপি করা আছে।

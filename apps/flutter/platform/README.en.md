@@ -1,27 +1,55 @@
-# game_platform
-
-## Project Mascot
-
-<img src="../../../docs/mascot.svg" width="120" alt="Dicey"/>
-
-**Dicey** — Platform mascot. The die represents games and probability-based gameplay, the coin represents the platform economy and multi-payment gateways, and the purple palette echoes the admin branding. SVG source: `docs/mascot.svg`, infinitely scalable for docs, logos and merchandise.
+# game_platform — User Platform (Flutter Web)
 <!-- lang-nav -->
 
 Languages: [中文](README.md) · **English** · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
-A new Flutter project.
+> Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
-## Getting Started
+The web frontend of the C-side user platform, built with Flutter 3.x, offering users the full game aggregation platform experience: registration and login, game lobby, wallet, deposit, withdrawal, exchange, leaderboards, coupons, notifications, chat, friends and support tickets.
 
-This project is a starting point for a Flutter application.
+## Feature List
 
-A few resources to get you started if this is your first Flutter project:
+| Module | Description |
+|------|------|
+| Login/Register | Username/password / OAuth / 2FA |
+| Game Lobby | Game list/categories/search |
+| Wallet | Platform token/game currency balances and transactions |
+| Deposit | Choose a payment method, redirect to gateway payment |
+| Withdrawal | Apply for withdrawal, review status tracking |
+| Exchange | Real-time platform token ⇄ game currency exchange |
+| Leaderboards | Daily/weekly/monthly/all-time |
+| Coupons | Claim and use |
+| Notifications | In-app messages (deposit/withdrawal/coupons, etc.) |
+| Chat | WebSocket real-time messaging |
+| Friends | Friend system |
+| Tickets | Create and reply to support tickets |
+| Profile | Profile editing/security settings |
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Requirements
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Flutter SDK 3.x
 
+## Installation & Run
+
+```bash
+cd apps/flutter/platform
+
+# Install dependencies
+flutter pub get
+
+# Run in development (Chrome)
+flutter run -d chrome
+
+# Point to a backend address (default http://localhost:8788)
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8788
+
+# Build web production bundle (outputs to build/web/)
+flutter build web
+```
+
+## Usage
+
+1. Start the backend service first: `cd service && php start.php start -d` (default port 8788)
+2. Register an account and log in (username/password, OAuth, and 2FA are supported)
+3. After depositing, play games with platform tokens and exchange them for game currency; game currency can be converted back to the wallet for withdrawal
+4. The admin backend is in the `admin/` directory (including the Flutter web frontend `admin/apps/flutter/`)

@@ -1,33 +1,53 @@
 # erik/platform-common
-
-## Projekt-Maskottchen
-
-<img src="../../docs/mascot.svg" width="120" alt="Dicey"/>
-
-**Dicey** — Plattform-Maskottchen. Der Würfel steht für Spiele und wahrscheinlichkeitsbasiertes Gameplay, die Münze für die Plattform-Ökonomie und die Multi-Payment-Gateways, das Lila spiegelt das Admin-Branding wider. SVG-Quelle: `docs/mascot.svg`, unbegrenzt skalierbar für Doku, Logos und Merchandise.
 <!-- lang-nav -->
 
-Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · **Deutsch** · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
-Teilt `common\service\*`, auf das admin/ und service/ über Composer-Path-Repositorys verweisen.
+> Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+
+Die gemeinsame `common\service\*`-Schicht, die von admin/ und service/ verwendet wird und über ein Composer-Path-Repository auf den lokalen Quellcode verweist.
 
 ## Dienste
 
-- DepositLogService — Einzahlungs-Audit + Umsatz/Konversion
-- GameDashboardService — Betriebs-Dashboard
-- ProbabilityService — Wahrscheinlichkeitsanalyse
-- GamePlayLogService — Schreiben von Spielverhaltens-Logs
+| Dienst | Beschreibung |
+|------|------|
+| DepositLogService | Einzahlungs-Audit + Umsatz/Konversion |
+| GameDashboardService | Betriebs-Dashboard |
+| ProbabilityService | Wahrscheinlichkeitsanalyse |
+| GamePlayLogService | Schreiben von Spielverhaltens-Logs |
+| CircuitBreaker / Retry | Stabilitätsmechanismen (Circuit Breaker/Retry) |
 
 Der Host stellt `app\model\*`, `app\common\SnowflakeService`, `support\Db`, `support\Log` bereit.
 
-## Anbindung
+## Installation
+
+Paketname `erik/platform-common`. Sowohl admin/ als auch service/ haben das Path-Repository (`../packages/platform-common`) bereits in composer.json konfiguriert, sodass es mit `composer install` automatisch installiert wird; ein separates Update aus admin/ oder service/ ist ebenfalls möglich:
 
 ```bash
-cd admin && composer update erik/platform-common
-cd ../service && composer update erik/platform-common
+composer update erik/platform-common
 ```
+
+Falls in Packagist veröffentlicht, kann es auch direkt installiert werden:
+
+```bash
+composer require erik/platform-common
+```
+
+## Verwendung
+
+Namespace `common\` (PSR-4 → `src/`):
+
+```php
+use common\service\GameDashboardService;
+
+$dashboard = new GameDashboardService();
+$overview = $dashboard->overview();
+```
+
+## Ein-Klick-Installation
+
+Wird automatisch vom Ein-Klick-Installationsassistenten der Plattform (`install/`) erledigt: Der Assistent führt `composer install` für admin/ und service/ aus, die Path-Repository-Abhängigkeit wird automatisch installiert; manuelle Konfiguration ist nicht erforderlich.
 
 ## Verbleibende Doppelkopien
 
-app/model/*, app/common/*Service, die meisten app/service/*, EventBus sind weiterhin auf beiden Seiten dupliziert.
-
+`app/model/*`, `app/common/*Service`, die meisten `app/service/*` und EventBus sind weiterhin auf beiden Seiten dupliziert.

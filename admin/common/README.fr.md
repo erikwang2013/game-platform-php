@@ -1,17 +1,36 @@
-# common/
-
-## Mascotte du projet
-
-<img src="../../docs/mascot.svg" width="120" alt="Dicey"/>
-
-**Dicey** — Mascotte de la plateforme. Le dé représente les jeux et le gameplay basé sur la probabilité, la pièce l'économie de la plateforme et les passerelles de paiement multiples, et le violet reflète l'identité du panneau d'administration. Fichier SVG : `docs/mascot.svg`, redimensionnable à l'infini pour la documentation, les logos et les produits dérivés.
+# common/ — Bibliothèque partagée de l'admin
 <!-- lang-nav -->
 
 Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · **Français** · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
-`common\service\*` vit dans le package partagé **erik/platform-common** :
+> Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
-`packages/platform-common`
+Le répertoire du code partagé du backend admin (`admin/`). Les `common\service\*` ont été extraits dans le paquet partagé **erik/platform-common** (`packages/platform-common`) ; ne placez pas de classes PHP dans ce répertoire, elles masqueraient l'autoload du paquet. Voir `packages/platform-common/README.md`.
 
-Ne placez pas de classes PHP dans ce répertoire (elles masqueraient l'autoload du package). Voir `packages/platform-common/README.fr.md`.
+## Fonctionnalités
 
+| Catégorie | Emplacement | Description |
+|------|------|------|
+| Modèles | `app\model\*` | Modèles de données (utilisateurs/commandes/jeux, etc.) |
+| Services | `common\service\*` | Services métier partagés (dans le paquet erik/platform-common) : DepositLogService (audit des dépôts + revenus/conversion), GameDashboardService (tableau de bord d'exploitation), ProbabilityService (analyse de probabilité), GamePlayLogService (écriture des journaux d'activité de jeu) |
+| Middleware | `app\middleware\*` | Cors / SecurityFilter / RateLimit / AdminAuth / AdminPermission / OperationLog |
+
+## Installation
+
+Faisant partie du projet admin, les dépendances sont déjà déclarées dans `admin/composer.json` (y compris le dépôt path `../packages/platform-common`) et sont installées automatiquement par `composer install` ; aucune installation séparée n'est nécessaire :
+
+```bash
+cd admin && composer install
+```
+
+## Utilisation
+
+- L'espace de noms `app\...` correspond au code du projet admin lui-même, ex. : `use app\model\User;`
+- L'espace de noms `common\...` correspond au paquet partagé erik/platform-common (PSR-4 → `src/`), ex. :
+
+```php
+use common\service\GameDashboardService;
+
+$dashboard = new GameDashboardService();
+$overview = $dashboard->overview();
+```

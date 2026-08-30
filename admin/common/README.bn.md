@@ -1,17 +1,36 @@
-# common/
-
-## প্রকল্প মাসকট
-
-<img src="../../docs/mascot.svg" width="120" alt="Dicey"/>
-
-**ডাইসি (Dicey)** — প্ল্যাটফর্ম মাসকট। পাশা খেলা ও সম্ভাবনা-ভিত্তিক গেমপ্লে বোঝায়, মুদ্রা প্ল্যাটফর্ম অর্থনীতি ও মাল্টি-পেমেন্ট গেটওয়ে বোঝায়, বেগুনি রঙ অ্যাডমিন ব্র্যান্ডিংয়ের সাথে মেলে। SVG ফাইল: `docs/mascot.svg`, ডকুমেন্টেশন, লোগো ও পণ্যে অসীম স্কেলযোগ্য।
+# common/ — অ্যাডমিন শেয়ার্ড লাইব্রেরি
 <!-- lang-nav -->
 
 Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · **বাংলা** · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
 
-`common\service\*` শেয়ার্ড প্যাকেজ **erik/platform-common**-এ অবস্থিত:
+> Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
-`packages/platform-common`
+অ্যাডমিন ব্যাকএন্ডের (admin/) শেয়ার্ড কোড ডিরেক্টরি। `common\service\*` শেয়ার্ড প্যাকেজ **erik/platform-common** (`packages/platform-common`)-এ স্থানান্তরিত হয়েছে; এই ডিরেক্টরিতে PHP ক্লাস রাখবেন না, কারণ সেগুলি প্যাকেজের অটোলোড ছাপিয়ে যাবে। বিস্তারিত: `packages/platform-common/README.md`।
 
-এই ডিরেক্টরিতে PHP ক্লাস রাখবেন না (সেগুলি প্যাকেজের অটোলোডকে ছাপিয়ে যাবে)। দেখুন `packages/platform-common/README.md`।
+## ফিচার
 
+| বিভাগ | অবস্থান | বিবরণ |
+|------|------|------|
+| মডেল | `app\model\*` | ডেটা মডেল (ব্যবহারকারী/অর্ডার/গেম ইত্যাদি) |
+| সার্ভিস | `common\service\*` | শেয়ার্ড বিজনেস সার্ভিস (erik/platform-common প্যাকেজে): DepositLogService (ডিপোজিট অডিট + রাজস্ব/কনভার্সন), GameDashboardService (অপারেশন ড্যাশবোর্ড), ProbabilityService (প্রোবাবিলিটি অ্যানালাইসিস), GamePlayLogService (গেম অ্যাক্টিভিটি লগ লেখা) |
+| মিডলওয়্যার | `app\middleware\*` | Cors / SecurityFilter / RateLimit / AdminAuth / AdminPermission / OperationLog |
+
+## ইনস্টলেশন
+
+admin প্রজেক্টের অংশ হিসেবে, ডিপেন্ডেন্সিগুলি `admin/composer.json`-এ আগেই ঘোষিত (path রিপোজিটরি `../packages/platform-common` সহ) এবং `composer install`-এর মাধ্যমে স্বয়ংক্রিয়ভাবে ইনস্টল হয়; আলাদা ইনস্টলেশনের প্রয়োজন নেই:
+
+```bash
+cd admin && composer install
+```
+
+## ব্যবহার
+
+- `app\...` নেমস্পেস admin প্রজেক্টের নিজস্ব কোডের সাথে মেলে, যেমন: `use app\model\User;`
+- `common\...` নেমস্পেস শেয়ার্ড প্যাকেজ erik/platform-common (PSR-4 → `src/`) এর সাথে মেলে, যেমন:
+
+```php
+use common\service\GameDashboardService;
+
+$dashboard = new GameDashboardService();
+$overview = $dashboard->overview();
+```
