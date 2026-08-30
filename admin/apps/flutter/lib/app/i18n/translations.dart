@@ -32,6 +32,7 @@ class AppTranslations {
 
       // Sidebar
       'nav.dashboard': 'Dashboard',
+      'nav.reports': 'Reports',
       'nav.users': 'Users',
       'nav.roles': 'Roles & Permissions',
       'nav.config': 'Settings',
@@ -65,6 +66,23 @@ class AppTranslations {
       'dashboard.export_excel': 'Export Excel',
       'dashboard.revenue_overview': 'Revenue Overview',
       'dashboard.export_receipt': 'Export Receipt',
+
+      // Reports
+      'report.title': 'Reports',
+      'report.summary': 'Summary',
+      'report.daily': 'Daily Details',
+      'report.daily_chart': 'Daily Deposits / Withdrawals',
+      'report.date_range': 'Date Range',
+      'report.export': 'Export CSV',
+      'report.exported': 'Report exported',
+      'report.date': 'Date',
+      'report.new_users': 'New Users',
+      'report.deposit_amount': 'Deposit Amount',
+      'report.deposit_count': 'Deposit Count',
+      'report.withdraw_amount': 'Withdraw Amount',
+      'report.withdraw_count': 'Withdraw Count',
+      'report.exchange_amount': 'Exchange Amount',
+      'report.play_count': 'Play Count',
 
       // Games
       'game.title': 'Game Management',
@@ -320,6 +338,7 @@ class AppTranslations {
 
       // Sidebar
       'nav.dashboard': '仪表盘',
+      'nav.reports': '报表中心',
       'nav.users': '后台用户',
       'nav.roles': '角色权限',
       'nav.config': '系统配置',
@@ -353,6 +372,23 @@ class AppTranslations {
       'dashboard.export_excel': '导出Excel',
       'dashboard.revenue_overview': '收益概览',
       'dashboard.export_receipt': '导出凭证',
+
+      // Reports
+      'report.title': '报表中心',
+      'report.summary': '汇总统计',
+      'report.daily': '每日明细',
+      'report.daily_chart': '每日充值/提现',
+      'report.date_range': '日期范围',
+      'report.export': '导出CSV',
+      'report.exported': '报表已导出',
+      'report.date': '日期',
+      'report.new_users': '新增用户',
+      'report.deposit_amount': '充值金额',
+      'report.deposit_count': '充值笔数',
+      'report.withdraw_amount': '提现金额',
+      'report.withdraw_count': '提现笔数',
+      'report.exchange_amount': '兑换金额',
+      'report.play_count': '对局次数',
 
       // Games
       'game.title': '游戏管理',

@@ -10,6 +10,7 @@ import '../pages/role/role_list_page.dart';
 import '../pages/config/config_page.dart';
 import '../pages/log/log_page.dart';
 import '../pages/dashboard/dashboard_page.dart';
+import '../pages/report/report_page.dart';
 import '../pages/profile/profile_page.dart';
 import '../pages/game/game_list_page.dart';
 import '../pages/withdraw/withdraw_page.dart';
@@ -42,6 +43,7 @@ class _AdminLayoutState extends State<AdminLayout> {
 
   static const _pages = <Widget>[
     DashboardPage(),
+    ReportPage(),
     UserListPage(),
     RoleListPage(),
     ConfigPage(),
@@ -205,6 +207,11 @@ class _AdminLayoutState extends State<AdminLayout> {
         icon: const Icon(Icons.dashboard, size: 20),
         label: Text("${AppTranslations.t('nav.dashboard')}"),
         selectedIcon: const Icon(Icons.dashboard, size: 20),
+      ),
+      NavigationDrawerDestination(
+        icon: const Icon(Icons.bar_chart, size: 20),
+        label: Text("${AppTranslations.t('nav.reports')}"),
+        selectedIcon: const Icon(Icons.bar_chart, size: 20),
       ),
       NavigationDrawerDestination(
         icon: const Icon(Icons.people, size: 20),

@@ -61,6 +61,8 @@ Route::group('/api', function () {
 
     Route::get('/search', v('SearchController', 'search'));
 
+    Route::get('/platform/stats', v('PlatformStatsController', 'stats'));
+
     // 支付
     Route::post('/payment/callback', v('PaymentController', 'callback'));
     Route::get('/payment/methods', v('PaymentController', 'methods'));

@@ -2,12 +2,14 @@
 import 'package:get/get.dart';
 import '../pages/dashboard/dashboard_page.dart';
 import '../pages/cdn/cdn_page.dart';
+import '../pages/report/report_page.dart';
 
 class AppPages {
   static const String initial = '/dashboard';
 
   static final List<GetPage> routes = [
     GetPage(name: '/dashboard', page: () => const DashboardPage()),
+    GetPage(name: '/reports', page: () => const ReportPage()),
     GetPage(name: '/cdn', page: () => const CdnPage()),
   ];
 }

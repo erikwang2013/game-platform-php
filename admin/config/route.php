@@ -203,6 +203,11 @@ Route::group('/admin', function () {
     // 全局搜索
     Route::get('/search', [app\admin\controller\SearchController::class, 'search']);
 
+    // 数据报表
+    Route::get('/report/summary', [app\admin\controller\ReportController::class, 'summary']);
+    Route::get('/report/daily', [app\admin\controller\ReportController::class, 'daily']);
+    Route::get('/report/export', [app\admin\controller\ReportController::class, 'export']);
+
     // 数据分析（MySQL 实时聚合）
     Route::get('/analytics/overview', [app\admin\controller\AnalyticsController::class, 'overview']);
     Route::get('/analytics/game-ranking', [app\admin\controller\AnalyticsController::class, 'gameRanking']);

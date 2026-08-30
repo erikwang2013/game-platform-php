@@ -173,18 +173,41 @@ class DashboardPage extends GetView<DashboardController> {
               ),
             ),
             const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildLegend(const Color(0xFF1677FF), "${AppTranslations.t('app.enabled')}"),
-                const SizedBox(width: 24),
-                _buildLegend(const Color(0xFF52C41A), "${AppTranslations.t('app.disabled')}"),
-              ],
-            ),
+            _buildDistributionLegend(),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildDistributionLegend() {
+    final dist = controller.distribution;
+    if (dist.isEmpty) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildLegend(const Color(0xFF1677FF), "${AppTranslations.t('app.enabled')}"),
+          const SizedBox(width: 24),
+          _buildLegend(const Color(0xFF52C41A), "${AppTranslations.t('app.disabled')}"),
+        ],
+      );
+    }
+    const colors = [Color(0xFF1677FF), Color(0xFF52C41A)];
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 24,
+      runSpacing: 8,
+      children: dist.asMap().entries.map((e) {
+        return _buildLegend(colors[e.key % colors.length], _distLabel(e.value));
+      }).toList(),
+    );
+  }
+
+  String _distLabel(Map<String, dynamic> item) {
+    final name = item['name']?.toString() ?? '';
+    if (name == '启用') return AppTranslations.t('app.enabled').toString();
+    if (name == '禁用') return AppTranslations.t('app.disabled').toString();
+    return name;
   }
 
   Widget _buildLegend(Color color, String label) {
@@ -227,12 +250,12 @@ class DashboardPage extends GetView<DashboardController> {
     if (stats.isEmpty) return const SizedBox.shrink();
 
     final totalUsers = stats['total_users']?.toString() ?? '0';
-    final active7d = stats['active_7d']?.toString() ?? '0';
-    final gameCount = stats['game_count']?.toString() ?? '0';
-    final pendingWithdraw = stats['pending_withdraw_count']?.toString() ?? '0';
-    final todayRecharge = stats['today_recharge']?.toString() ?? '0';
-    final todayWithdraw = stats['today_withdraw']?.toString() ?? '0';
-    final totalProfit = stats['total_profit']?.toString() ?? '0';
+    final active7d = stats['active_users_7d']?.toString() ?? '0';
+    final gameCount = stats['total_games']?.toString() ?? '0';
+    final pendingWithdraw = stats['pending_withdraws']?.toString() ?? '0';
+    final todayRecharge = stats['today_deposits']?.toString() ?? '0';
+    final todayWithdraw = stats['today_withdraws']?.toString() ?? '0';
+    final totalProfit = stats['total_spread_fee']?.toString() ?? '0';
 
     return Card(
       child: Padding(

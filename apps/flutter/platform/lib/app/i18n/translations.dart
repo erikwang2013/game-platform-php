@@ -47,6 +47,12 @@ class AppTranslations {
       'game_hall.no_games': 'No games available',
       'game_hall.enter_game': 'Enter Game',
 
+      // Platform Stats
+      'stats.total_games': 'Total Games',
+      'stats.total_users': 'Total Users',
+      'stats.today_plays': "Today's Plays",
+      'stats.active_7d': 'Active (7d)',
+
       // Game Detail
       'game_detail.title': 'Game Detail',
       'game_detail.start_game': 'Start Game',
@@ -286,6 +292,12 @@ class AppTranslations {
       'game_hall.no_results': '未找到匹配的游戏',
       'game_hall.no_games': '暂无游戏',
       'game_hall.enter_game': '进入游戏',
+
+      // Platform Stats
+      'stats.total_games': '游戏总数',
+      'stats.total_users': '注册用户',
+      'stats.today_plays': '今日对局',
+      'stats.active_7d': '7日活跃',
 
       // Game Detail
       'game_detail.title': '游戏详情',

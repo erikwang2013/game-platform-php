@@ -25,6 +25,8 @@ class _GameHallPageState extends State<GameHallPage> {
   String _username = '';
   int _selectedNav = 0;
   bool _sidebarCollapsed = false;
+  Map<String, dynamic> _stats = {};
+  bool _statsVisible = false;
 
   static const double sidebarWidth = 220;
   static const double sidebarCollapsedWidth = 64;
@@ -51,8 +53,23 @@ class _GameHallPageState extends State<GameHallPage> {
     super.initState();
     _loadUsername();
     _fetchGames();
+    _fetchStats();
     // 登录成功/会话恢复后统一在这里建立聊天连接（connect 内部无 token 时为 no-op）
     Get.find<ChatService>().connect();
+  }
+
+  Future<void> _fetchStats() async {
+    try {
+      final resp = await _api.get('/api/platform/stats');
+      if (!mounted) return;
+      final data = resp['data'];
+      setState(() {
+        _stats = data is Map<String, dynamic> ? data : {};
+        _statsVisible = _stats.isNotEmpty;
+      });
+    } catch (_) {
+      // 统计失败时隐藏横幅，不阻塞游戏列表
+    }
   }
 
   Future<void> _loadUsername() async {
@@ -335,6 +352,11 @@ class _GameHallPageState extends State<GameHallPage> {
           ),
           const SizedBox(height: 8),
 
+          if (_statsVisible) ...[
+            _buildStatsBanner(),
+            const SizedBox(height: 8),
+          ],
+
           // Game grid
           Expanded(
             child: _loading
@@ -356,6 +378,61 @@ class _GameHallPageState extends State<GameHallPage> {
                     : _buildGameGrid(),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildStatsBanner() {
+    final items = <(String, String, IconData, Color)>[
+      ('${AppTranslations.t('stats.total_games')}', _stats['total_games']?.toString() ?? '0', Icons.sports_esports, const Color(0xFF1677FF)),
+      ('${AppTranslations.t('stats.total_users')}', _stats['total_users']?.toString() ?? '0', Icons.people, const Color(0xFF52C41A)),
+      ('${AppTranslations.t('stats.today_plays')}', _stats['today_game_plays']?.toString() ?? '0', Icons.play_circle, const Color(0xFFFA8C16)),
+      ('${AppTranslations.t('stats.active_7d')}', _stats['active_users_7d']?.toString() ?? '0', Icons.trending_up, const Color(0xFF722ED1)),
+    ];
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1200),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final crossAxisCount = constraints.maxWidth > 900 ? 4 : 2;
+            return GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: crossAxisCount,
+                mainAxisExtent: 84,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
+              itemCount: items.length,
+              itemBuilder: (context, index) {
+                final (label, value, icon, color) = items[index];
+                return Card(
+                  color: color.withValues(alpha: 0.08),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        Icon(icon, color: color, size: 28),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(label, style: TextStyle(fontSize: 12, color: color)),
+                            const SizedBox(height: 4),
+                            Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        ),
       ),
     );
   }

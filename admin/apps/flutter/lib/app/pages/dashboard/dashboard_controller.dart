@@ -17,6 +17,7 @@ class DashboardController extends GetxController {
   final recentLogs = <Map<String, dynamic>>[].obs;
   final platformStats = <String, dynamic>{}.obs;
   final dailyStats = <Map<String, dynamic>>[].obs;
+  final distribution = <Map<String, dynamic>>[].obs;
 
   List<List<FlSpot>> get trendSpots {
     final allSeries = trends['series'] as List<dynamic>? ?? [];
@@ -27,10 +28,21 @@ class DashboardController extends GetxController {
   }
 
   List<PieChartSectionData> get pieSections {
-    return [
-      PieChartSectionData(color: const Color(0xFF1677FF), value: 265, title: '', radius: 30),
-      PieChartSectionData(color: const Color(0xFF52C41A), value: 35, title: '', radius: 30),
-    ];
+    if (distribution.isEmpty) {
+      return [
+        PieChartSectionData(color: const Color(0xFF1677FF), value: 265, title: '', radius: 30),
+        PieChartSectionData(color: const Color(0xFF52C41A), value: 35, title: '', radius: 30),
+      ];
+    }
+    const colors = [Color(0xFF1677FF), Color(0xFF52C41A)];
+    return distribution.asMap().entries.map((e) {
+      return PieChartSectionData(
+        color: colors[e.key % colors.length],
+        value: (e.value['value'] as num?)?.toDouble() ?? 0,
+        title: '',
+        radius: 30,
+      );
+    }).toList();
   }
 
   @override
@@ -48,6 +60,10 @@ class DashboardController extends GetxController {
         stats.value = List<Map<String, dynamic>>.from(data['stats'] ?? []);
         trends.value = Map<String, dynamic>.from(data['trends'] ?? {});
         recentLogs.value = List<Map<String, dynamic>>.from(data['recent_logs'] ?? []);
+        final dist = data['distribution'];
+        if (dist is Map && dist['user_status'] is List) {
+          distribution.value = List<Map<String, dynamic>>.from(dist['user_status']);
+        }
       }
       await loadChartData();
     } catch (e) {
@@ -89,9 +105,9 @@ class DashboardController extends GetxController {
         platformStats.value = Map<String, dynamic>.from(data);
 
         dailyStats.value = [
-          {'label': 'Deposits', 'value': double.tryParse(data['today_deposits']?.toString() ?? '0') ?? 0},
-          {'label': 'Withdrawals', 'value': double.tryParse(data['today_withdraws']?.toString() ?? '0') ?? 0},
-          {'label': 'Fees', 'value': double.tryParse(data['total_spread_fee']?.toString() ?? '0') ?? 0},
+          {'label': AppTranslations.t('dashboard.today_deposits').toString(), 'value': double.tryParse(data['today_deposits']?.toString() ?? '0') ?? 0},
+          {'label': AppTranslations.t('dashboard.today_withdraws').toString(), 'value': double.tryParse(data['today_withdraws']?.toString() ?? '0') ?? 0},
+          {'label': AppTranslations.t('dashboard.total_revenue').toString(), 'value': double.tryParse(data['total_spread_fee']?.toString() ?? '0') ?? 0},
         ];
       }
     } catch (_) {}
