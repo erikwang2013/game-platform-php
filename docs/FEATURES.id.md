@@ -62,6 +62,8 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Papan peringkat | Push real-time WebSocket (port 8789) | Selesai |
 | CDN | Integrasi lima penyedia (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + preload) | Selesai |
 | Manajemen CDN | Konfigurasi lima penyedia di admin (kredensial terenkripsi/aktif-nonaktif/tes konektivitas HeadBucket), service hanya membaca dari DB | Selesai |
+| Laporan | Laporan data admin (ringkasan/harian/ekspor CSV, cache Redis 5 menit, rentang ≤90 hari) | Selesai |
+| Statistik platform | Statistik beranda sisi C (total game/pengguna/permainan hari ini/aktif 7 hari) | Selesai |
 | Deployment | Docker Compose 7 layanan + reverse proxy Nginx | Selesai |
 | Data | Analisis agregasi real-time MySQL + perhitungan probabilitas gabungan/bersyarat | Selesai |
 | HarmonyOS | admin 8 halaman; sisi C `apps/harmonyos/` sudah mengimplementasikan login/lobi/detail/dompet/profil (menunjuk 8788) | Sebagian selesai (proyek dapat berjalan, perangkat nyata perlu ubah IP) |
@@ -140,6 +142,7 @@ Dukungan tiket
 | POST | /api/ticket/create | Buat tiket | Ya |
 | POST | /api/ticket/{id}/reply | Balas tiket | Ya |
 
+| GET | /api/platform/stats | Statistik Platform | Tidak |
 ## 3. Fitur Backend Administrasi
 
 ### 3.1 Antarmuka API (baru)
@@ -159,6 +162,9 @@ Dukungan tiket
 | GET | /admin/analytics/funnel | Funnel konversi |
 | GET | /admin/analytics/arpu | Tren ARPU/ARPPU |
 | GET | /admin/analytics/economy | Metrik ekonomi mata uang game |
+| GET | /admin/report/summary | Ringkasan laporan (pengguna baru/deposit/penarikan/penukaran/permainan) |
+| GET | /admin/report/daily | Laporan harian (agregasi per hari, tanggal tanpa data diisi 0) |
+| GET | /admin/report/export | Ekspor laporan harian CSV (UTF-8 BOM) |
 | GET | /admin/game/list | Daftar game |
 | POST | /admin/game/create | Buat game (termasuk provider_config) |
 | PUT | /admin/game/{id} | Edit game |

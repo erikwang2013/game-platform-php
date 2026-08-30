@@ -62,6 +62,8 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Rankings | push em tempo real via WebSocket (porta 8789) | Concluído |
 | CDN | Integração de cinco provedores (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purga + preload) | Concluído |
 | Administração CDN | Configuração dos cinco provedores no admin (credenciais criptografadas/ativação-desativação/teste de conectividade HeadBucket), o serviço só lê do banco de dados | Concluído |
+| Relatórios | Relatórios de dados do admin (resumo/diário/exportação CSV, cache Redis 5 min, período ≤90 dias) | Concluído |
+| Estatísticas da plataforma | Estatísticas da página inicial C (total jogos/usuários/partidas hoje/ativos 7 dias) | Concluído |
 | Implantação | Docker Compose 7 serviços + proxy reverso Nginx | Concluído |
 | Dados | análise com agregação em tempo real no MySQL + cálculo de probabilidade conjunta/condicional | Concluído |
 | HarmonyOS | admin 8 páginas; C-side `apps/harmonyos/` com login/lobby/detalhes/carteira/perfil implementados (aponta para 8788) | Parcialmente concluído (projeto compila; em dispositivo real, alterar o IP) |
@@ -140,6 +142,7 @@ Suporte via tickets
 | POST | /api/ticket/create | criar ticket | Sim |
 | POST | /api/ticket/{id}/reply | responder ticket | Sim |
 
+| GET | /api/platform/stats | Estatísticas da plataforma | Não |
 ## 3. Funcionalidades do painel administrativo
 
 ### 3.1 Interfaces de API (novas)
@@ -159,6 +162,9 @@ Suporte via tickets
 | GET | /admin/analytics/funnel | funil de conversão |
 | GET | /admin/analytics/arpu | tendência ARPU/ARPPU |
 | GET | /admin/analytics/economy | indicadores econômicos das moedas de jogo |
+| GET | /admin/report/summary | Resumo de relatórios (novos usuários/depósitos/saques/câmbios/partidas) |
+| GET | /admin/report/daily | Relatório diário (agregação por dia, datas sem dados preenchidas com 0) |
+| GET | /admin/report/export | Exportação do relatório diário em CSV (UTF-8 BOM) |
 | GET | /admin/game/list | lista de jogos |
 | POST | /admin/game/create | criar jogo (incl. provider_config) |
 | PUT | /admin/game/{id} | editar jogo |

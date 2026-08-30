@@ -93,6 +93,8 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Sistem notifikasi (pesan dalam situs+email) | - | - | ✓ |
 | Komisi referral | - | - | ✓ |
 | Snapshot statistik harian | - | ✓ | ✓ |
+| Laporan data (ringkasan/harian/CSV) | - | - | ✓ |
+| Statistik platform (sisi C) | - | - | ✓ |
 | Pelacakan pendapatan platform | - | - | ✓ |
 
 ---

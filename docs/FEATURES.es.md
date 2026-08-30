@@ -62,6 +62,8 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Clasificaciones | Push en tiempo real por WebSocket (puerto 8789) | Completada |
 | CDN | Integración de cinco proveedores (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS carga + purga + precarga) | Completada |
 | Administración CDN | Configuración de los cinco proveedores en el panel (credenciales cifradas/activación-desactivación/prueba de conexión HeadBucket), el servicio solo lee de la base de datos | Completada |
+| Informes | Informes de datos del panel (resumen/diario/exportación CSV, caché Redis 5 min, período ≤90 días) | Completada |
+| Estadísticas de la plataforma | Estadísticas de inicio C (total juegos/usuarios/partidas de hoy/activos 7 días) | Completada |
 | Despliegue | Docker Compose 7 servicios + proxy inverso Nginx | Completada |
 | Datos | Análisis de agregación en tiempo real MySQL + cálculo de probabilidad conjunta/condicional | Completada |
 | HarmonyOS | admin 8 páginas; el lado C `apps/harmonyos/` ya implementa login/lobby/detalle/billetera/perfil (apunta a 8788) | Parcialmente completada (el proyecto compila; en dispositivo real hay que cambiar la IP) |
@@ -140,6 +142,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | POST | /api/ticket/create | Crear ticket | Sí |
 | POST | /api/ticket/{id}/reply | Responder ticket | Sí |
 
+| GET | /api/platform/stats | Estadísticas de la plataforma | No |
 ## 3. Funcionalidades del panel de administración
 
 ### 3.1 Interfaces de API (nuevas)
@@ -159,6 +162,9 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | GET | /admin/analytics/funnel | Embudo de conversión |
 | GET | /admin/analytics/arpu | Tendencia ARPU/ARPPU |
 | GET | /admin/analytics/economy | Indicadores económicos de monedas de juego |
+| GET | /admin/report/summary | Resumen de informes (nuevos usuarios/depósitos/retiros/cambios/partidas) |
+| GET | /admin/report/daily | Informe diario (agregación por día, días sin datos rellenados con 0) |
+| GET | /admin/report/export | Exportación del informe diario a CSV (UTF-8 BOM) |
 | GET | /admin/game/list | Lista de juegos |
 | POST | /admin/game/create | Crear juego (incluye provider_config) |
 | PUT | /admin/game/{id} | Editar juego |

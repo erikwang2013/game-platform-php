@@ -62,6 +62,8 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | Rangliste | WebSocket-Echtzeit-Push (Port 8789) | Abgeschlossen |
 | CDN | Integration von fünf Anbietern (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS Upload + Purge + Preload) | Abgeschlossen |
 | CDN-Verwaltung | Admin-Konfiguration der fünf Anbieter (verschlüsselte Zugangsdaten/Aktivierung/Verbindungstest per HeadBucket), Service liest nur aus DB | Abgeschlossen |
+| Berichte | Admin-Datenberichte (Zusammenfassung/Tagesbericht/CSV-Export, Redis-5-min-Cache, Zeitraum ≤90 Tage) | Abgeschlossen |
+| Plattform-Statistik | Homepage-Statistik C-Seite (Spiele/User gesamt, Spiele heute, 7-Tage-aktiv) | Abgeschlossen |
 | Bereitstellung | Docker Compose 7 Dienste + Nginx-Reverse-Proxy | Abgeschlossen |
 | Daten | MySQL-Echtzeit-Aggregationsanalyse + Verbund-/Bedingte-Wahrscheinlichkeitsberechnung | Abgeschlossen |
 | HarmonyOS | admin-Seite 8 Seiten; C-End `apps/harmonyos/` mit Login/Lobby/Details/Wallet/Profil (zeigt auf 8788) | Teilweise abgeschlossen (Projekt läuft, echte Geräte benötigen IP-Anpassung) |
@@ -140,6 +142,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | POST | /api/ticket/create | Ticket erstellen | ja |
 | POST | /api/ticket/{id}/reply | Ticket beantworten | ja |
 
+| GET | /api/platform/stats | Plattform-Statistik | nein |
 ## 3. Verwaltungsbackend-Funktionen
 
 ### 3.1 API-Schnittstellen (neu)
@@ -159,6 +162,9 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | GET | /admin/analytics/funnel | Conversion-Funnel |
 | GET | /admin/analytics/arpu | ARPU/ARPPU-Trend |
 | GET | /admin/analytics/economy | Spielwährungs-Wirtschaftsindikatoren |
+| GET | /admin/report/summary | Berichtszusammenfassung (neue Nutzer/Einzahlungen/Auszahlungen/Umrechnungen/Spiele) |
+| GET | /admin/report/daily | Tagesbericht (tägliche Aggregation, leere Tage mit 0 aufgefüllt) |
+| GET | /admin/report/export | Tagesbericht als CSV exportieren (UTF-8 BOM) |
 | GET | /admin/game/list | Spielliste |
 | POST | /admin/game/create | Spiel erstellen (inkl. provider_config) |
 | PUT | /admin/game/{id} | Spiel bearbeiten |

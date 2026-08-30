@@ -75,3 +75,10 @@ Registro de mudanças legível para humanos. O PHP não importa este arquivo. Co
 - CI: tag incremental automático no push + publicação de GitHub Release.
 - Infraestrutura: banco de dados renomeado para game-platform, prefixo de tabela `game_` unificado.
 - Sincronização de documentos: FEATURES.md completado em 13 idiomas para resiliência (interruptores circuit-breaker/retry/degradation), CRUD de métodos de pagamento no admin, minijogo, instalação em um clique, linhas CI (correspondentes às entradas [1.1] resilience / payments acima).
+
+## [1.1] reports — 2026-08-31
+
+- Relatórios de dados: admin `/admin/report/summary|daily|export` (resumo/diário/exportação CSV, cache Redis 5 min, período ≤90 dias).
+- Estatísticas da plataforma (lado C): `GET /api/platform/stats` (total jogos/usuários/partidas hoje/ativos 7 dias), ligadas à página inicial.
+- Flutter admin: cartões de estatísticas do painel ligados a dados reais, nova página ReportsPage (/reports).
+- Sincronização de docs: FEATURES/VERSIONS/API ampliados com entradas de relatórios e estatísticas em 13 idiomas, caixa de análise estatística do diagrama atualizada.

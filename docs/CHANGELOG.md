@@ -75,3 +75,10 @@ Languages: **中文** · [English](CHANGELOG.en.md) · [한국어](CHANGELOG.ko.
 - CI：push 自动增量 tag + GitHub Release 发布。
 - 基础设施：数据库更名 game-platform、`game_` 表前缀统一。
 - 文档同步：FEATURES.md 13 语言补齐容错（熔断/重试/降级开关）、支付方式后台 CRUD、小游戏、一键安装、CI 行（对应上 [1.1] resilience / payments 条目）。
+
+## [1.1] reports — 2026-08-31
+
+- 数据报表：管理端 `/admin/report/summary|daily|export`（汇总/日报/CSV 导出，Redis 5 分钟缓存，日期跨度 ≤90 天）。
+- C 端平台统计：`GET /api/platform/stats`（游戏总数/用户总数/今日局数/7 日活跃用户），首页统计展示接线。
+- 管理端 Flutter：仪表盘统计卡片接入真实数据，新增报表页面 ReportsPage（/reports）。
+- 文档同步：FEATURES/VERSIONS/API 13 语言增补报表与统计条目，功能全景图统计分析框更新。

@@ -848,6 +848,25 @@ language 可选值: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
+### 2.21 Статистика платформы
+
+| Метод | Путь | Описание | Аутентификация |
+|------|------|------|------|
+| GET | /api/platform/stats | Публичная статистика платформы (всего игр/всего пользователей/сегодняшних игр/активных за 7 дней) | нет |
+
+#### GET /api/platform/stats — Статистика платформы
+
+```
+无需认证
+
+响应: {
+  "total_games": 12,
+  "total_users": 1500,
+  "today_game_plays": 320,
+  "active_users_7d": 450
+}
+```
+
 ## 3. Интерфейсы админ-панели (admin :8787)
 
 ### 3.1 Дашборд платформы
@@ -1432,6 +1451,16 @@ action: approve / reject
 | DELETE | /admin/cdn/provider/{hashid} | Удаление | AdminAuth + RBAC: cdn |
 | POST | /admin/cdn/provider/test | Тест подключения HeadBucket {id} | AdminAuth + RBAC: cdn |
 
+### 3.19 Отчёты по данным
+
+Все эндпоинты требуют аутентификации (AdminAuth + AdminPermission).
+
+| Метод | Путь | Описание | Аутентификация |
+|------|------|------|------|
+| GET | /admin/report/summary | Сводный отчёт (новые пользователи/депозиты/выводы/обмены/игры) | AdminAuth + RBAC: report |
+| GET | /admin/report/daily | Ежедневный отчёт (агрегация по дням, пустые даты заполняются 0) | AdminAuth + RBAC: report |
+| GET | /admin/report/export | Экспорт ежедневного отчёта в CSV (UTF-8 BOM) | AdminAuth + RBAC: report |
+
 ## 4. Стратегия лимитов запросов
 
 | Интерфейс | Лимит |
@@ -1831,6 +1860,40 @@ status: open / waiting / replied / closed
 请求: { "id": "..." }
 响应: { "code": 0, "data": { "ok": true } }
 ```
+#### GET /admin/report/summary — Сводный отчёт
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "new_users": 120, "deposit_amount": "5000.0000", "deposit_count": 45,
+  "withdraw_amount": "1200.0000", "withdraw_count": 8,
+  "exchange_amount": "3000.0000", "play_count": 1500
+}
+```
+
+
+#### GET /admin/report/daily — Ежедневный отчёт
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "rows": [ { "date": "2026-08-01", "new_users": 12, "deposit_amount": "500.0000", "deposit_count": 4, "withdraw_amount": "100.0000", "withdraw_count": 1, "exchange_amount": "300.0000", "play_count": 150 } ]
+}
+```
+
+
+#### GET /admin/report/export — Экспорт отчёта в CSV
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d&format=excel
+响应: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
+```
+
 ## 8. Стратегия лимитов запросов (обновлено)
 
 | Интерфейс | Лимит |

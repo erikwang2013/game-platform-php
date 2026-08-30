@@ -93,6 +93,8 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 | Système de notifications (interne + e-mail) | - | - | ✓ |
 | Rétrocommission de parrainage | - | - | ✓ |
 | Instantané de statistiques quotidien | - | ✓ | ✓ |
+| Rapports de données (résumé/quotidien/CSV) | - | - | ✓ |
+| Statistiques de la plateforme (côté C) | - | - | ✓ |
 | Suivi des revenus de la plateforme | - | - | ✓ |
 
 ---

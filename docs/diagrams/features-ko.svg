@@ -91,6 +91,7 @@
   <text x="610" y="426" text-anchor="middle" fill="#581c87" font-size="13" font-weight="bold">통계 분석</text>
   <text x="610" y="446" text-anchor="middle" fill="#a855f7" font-size="11">일별 통계 스냅샷 (지표 5종)</text>
   <text x="610" y="465" text-anchor="middle" fill="#a855f7" font-size="11">플랫폼 수익 추적</text>
+  <text x="610" y="484" text-anchor="middle" fill="#a855f7" font-size="11">데이터 리포트 · 플랫폼 통계</text>
 
   <rect x="735" y="402" width="230" height="95" rx="8" fill="#fff1f2" stroke="#fecdd3" stroke-width="1.5" filter="url(#sh)"/>
   <text x="850" y="426" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">전문 검색</text>

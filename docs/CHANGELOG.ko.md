@@ -75,3 +75,10 @@ Languages: [中文](CHANGELOG.md) · [English](CHANGELOG.en.md) · **한국어**
 - CI: push 시 자동 증분 tag + GitHub Release 게시.
 - 인프라: 데이터베이스 명칭 game-platform으로 변경, `game_` 테이블 접두사 통일.
 - 문서 동기화: FEATURES.md 13개 언어로 내결함성(서킷 브레이커/재시도/폴백 스위치), 결제수단 관리 CRUD, 미니게임, 원클릭 설치, CI 행 보완(위 [1.1] resilience / payments 항목 대응).
+
+## [1.1] reports — 2026-08-31
+
+- 데이터 리포트: 관리자 `/admin/report/summary|daily|export` (요약/일일/CSV 내보내기, Redis 5분 캐시, 기간 ≤90일).
+- C측 플랫폼 통계: `GET /api/platform/stats` (게임 총수/사용자 총수/오늘 플레이/7일 활성), 홈 통계 표시 연결.
+- 관리자 Flutter: 대시보드 통계 카드를 실제 데이터에 연결, 리포트 페이지 ReportsPage(/reports) 신설.
+- 문서 동기화: FEATURES/VERSIONS/API에 리포트·통계 항목 13개 언어로 추가, 기능 전경도 통계 분석 박스 업데이트.

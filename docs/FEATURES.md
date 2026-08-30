@@ -62,6 +62,8 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | 排行榜 | WebSocket 实时推送 (端口8789) | 已完成 |
 | CDN | 五厂商接入（Cloudflare R2 / AWS S3 / 阿里OSS / 腾讯COS / 华为OBS 上传+刷新+预热） | 已完成 |
 | CDN 管理 | 管理端配置五厂商（凭据加密存储/启停/连通测试 HeadBucket），service 纯 DB 读取 | 已完成 |
+| 报表 | 管理端数据报表（汇总/日报/CSV 导出，Redis 5 分钟缓存，跨度 ≤90 天） | 已完成 |
+| 平台统计 | C端首页统计（游戏总数/用户总数/今日局数/7 日活跃） | 已完成 |
 | 部署 | Docker Compose 7服务 + Nginx反向代理 | 已完成 |
 | 数据 | MySQL 实时聚合分析 + 联合/条件概率计算 | 已完成 |
 | HarmonyOS | admin 端 8 页；C 端 `apps/harmonyos/` 已实现登录/大厅/详情/钱包/个人（指向 8788） | 部分完成（工程可跑，真机需改 IP） |
@@ -140,6 +142,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | POST | /api/ticket/create | 创建工单 | 是 |
 | POST | /api/ticket/{id}/reply | 回复工单 | 是 |
 
+| GET | /api/platform/stats | 平台统计 | 否 |
 ## 3. 管理后台功能
 
 ### 3.1 API 接口（新增）
@@ -159,6 +162,9 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | GET | /admin/analytics/funnel | 转化漏斗 |
 | GET | /admin/analytics/arpu | ARPU/ARPPU 趋势 |
 | GET | /admin/analytics/economy | 游戏币种经济指标 |
+| GET | /admin/report/summary | 报表汇总（新增用户/充值/提现/兑换/游戏局数） |
+| GET | /admin/report/daily | 日报表（按日聚合，无数据日期补 0） |
+| GET | /admin/report/export | 日报表导出 CSV（UTF-8 BOM） |
 | GET | /admin/game/list | 游戏列表 |
 | POST | /admin/game/create | 创建游戏 (含 provider_config) |
 | PUT | /admin/game/{id} | 编辑游戏 |

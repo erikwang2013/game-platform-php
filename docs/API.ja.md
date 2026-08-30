@@ -848,6 +848,25 @@ language 選択値: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
+### 2.21 プラットフォーム統計
+
+| メソッド | パス | 説明 | 認証 |
+|------|------|------|------|
+| GET | /api/platform/stats | プラットフォーム公開統計（ゲーム総数/ユーザー総数/今日の対局数/7日間アクティブ） | なし |
+
+#### GET /api/platform/stats — プラットフォーム統計
+
+```
+无需认证
+
+响应: {
+  "total_games": 12,
+  "total_users": 1500,
+  "today_game_plays": 320,
+  "active_users_7d": 450
+}
+```
+
 ## 3. 管理バックエンドインターフェース (admin :8787)
 
 ### 3.1 プラットフォームダッシュボード
@@ -1432,6 +1451,16 @@ action: approve / reject
 | DELETE | /admin/cdn/provider/{hashid} | 削除 | AdminAuth + RBAC: cdn |
 | POST | /admin/cdn/provider/test | 接続テスト HeadBucket {id} | AdminAuth + RBAC: cdn |
 
+### 3.19 データレポート
+
+すべてのエンドポイントは認証が必要（AdminAuth + AdminPermission）。
+
+| メソッド | パス | 説明 | 認証 |
+|------|------|------|------|
+| GET | /admin/report/summary | レポート集計（新規ユーザー/入金/出金/両替/ゲーム対局数） | AdminAuth + RBAC: report |
+| GET | /admin/report/daily | 日報（日次集計、データのない日は 0 補完） | AdminAuth + RBAC: report |
+| GET | /admin/report/export | 日報 CSV エクスポート（UTF-8 BOM） | AdminAuth + RBAC: report |
+
 ## 4. レートリミット戦略
 
 | エンドポイント | 制限 |
@@ -1831,6 +1860,40 @@ status: open / waiting / replied / closed
 请求: { "id": "..." }
 响应: { "code": 0, "data": { "ok": true } }
 ```
+#### GET /admin/report/summary — レポート集計
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "new_users": 120, "deposit_amount": "5000.0000", "deposit_count": 45,
+  "withdraw_amount": "1200.0000", "withdraw_count": 8,
+  "exchange_amount": "3000.0000", "play_count": 1500
+}
+```
+
+
+#### GET /admin/report/daily — 日報
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "rows": [ { "date": "2026-08-01", "new_users": 12, "deposit_amount": "500.0000", "deposit_count": 4, "withdraw_amount": "100.0000", "withdraw_count": 1, "exchange_amount": "300.0000", "play_count": 150 } ]
+}
+```
+
+
+#### GET /admin/report/export — 日報 CSV エクスポート
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d&format=excel
+响应: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
+```
+
 ## 8. レートリミット戦略（更新）
 
 | エンドポイント | 制限 |

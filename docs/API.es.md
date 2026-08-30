@@ -848,6 +848,25 @@ Valores de language: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
+### 2.21 Estadísticas de la plataforma
+
+| Método | Ruta | Descripción | Autenticación |
+|------|------|------|------|
+| GET | /api/platform/stats | Estadísticas públicas de la plataforma (total juegos / total usuarios / partidas de hoy / activos en 7 días) | No |
+
+#### GET /api/platform/stats — Estadísticas de la plataforma
+
+```
+无需认证
+
+响应: {
+  "total_games": 12,
+  "total_users": 1500,
+  "today_game_plays": 320,
+  "active_users_7d": 450
+}
+```
+
 ## 3. Interfaces del panel de administración (admin :8787)
 
 ### 3.1 Dashboard de la plataforma
@@ -1432,6 +1451,16 @@ Todos los endpoints requieren autenticación (AdminAuth + AdminPermission).
 | DELETE | /admin/cdn/provider/{hashid} | Eliminar | AdminAuth + RBAC: cdn |
 | POST | /admin/cdn/provider/test | Prueba de conectividad HeadBucket {id} | AdminAuth + RBAC: cdn |
 
+### 3.19 Informes de datos
+
+Todos los endpoints requieren autenticación (AdminAuth + AdminPermission).
+
+| Método | Ruta | Descripción | Autenticación |
+|------|------|------|------|
+| GET | /admin/report/summary | Resumen de informes (nuevos usuarios/depósitos/retiros/cambios/partidas) | AdminAuth + RBAC: report |
+| GET | /admin/report/daily | Informe diario (agregación por día, días sin datos rellenados con 0) | AdminAuth + RBAC: report |
+| GET | /admin/report/export | Exportación del informe diario a CSV (UTF-8 BOM) | AdminAuth + RBAC: report |
+
 ## 4. Política de limitación de velocidad
 
 | Interfaz | Límite |
@@ -1831,6 +1860,40 @@ status: open / waiting / replied / closed
 请求: { "id": "..." }
 响应: { "code": 0, "data": { "ok": true } }
 ```
+#### GET /admin/report/summary — Resumen de informes
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "new_users": 120, "deposit_amount": "5000.0000", "deposit_count": 45,
+  "withdraw_amount": "1200.0000", "withdraw_count": 8,
+  "exchange_amount": "3000.0000", "play_count": 1500
+}
+```
+
+
+#### GET /admin/report/daily — Informe diario
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "rows": [ { "date": "2026-08-01", "new_users": 12, "deposit_amount": "500.0000", "deposit_count": 4, "withdraw_amount": "100.0000", "withdraw_count": 1, "exchange_amount": "300.0000", "play_count": 150 } ]
+}
+```
+
+
+#### GET /admin/report/export — Exportación del informe diario CSV
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d&format=excel
+响应: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
+```
+
 ## 8. Política de limitación de velocidad (actualizada)
 
 | Interfaz | Límite |

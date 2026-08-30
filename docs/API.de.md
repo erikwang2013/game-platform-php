@@ -849,6 +849,25 @@ language 可选值: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
+### 2.21 Plattform-Statistik
+
+| Methode | Pfad | Beschreibung | Authentifizierung |
+|------|------|------|------|
+| GET | /api/platform/stats | Öffentliche Plattform-Statistik (Spiele gesamt/User gesamt/Spiele heute/7-Tage-aktive Nutzer) | nein |
+
+#### GET /api/platform/stats — Plattform-Statistik
+
+```
+无需认证
+
+响应: {
+  "total_games": 12,
+  "total_users": 1500,
+  "today_game_plays": 320,
+  "active_users_7d": 450
+}
+```
+
 ## 3. Verwaltungsbackend-Schnittstellen (admin :8787)
 
 ### 3.1 Plattform-Dashboard
@@ -1433,6 +1452,16 @@ Alle Endpunkte erfordern Authentifizierung (AdminAuth + AdminPermission).
 | DELETE | /admin/cdn/provider/{hashid} | Löschen | AdminAuth + RBAC: cdn |
 | POST | /admin/cdn/provider/test | Verbindungstest HeadBucket {id} | AdminAuth + RBAC: cdn |
 
+### 3.19 Datenberichte
+
+Alle Endpunkte erfordern Authentifizierung (AdminAuth + AdminPermission).
+
+| Methode | Pfad | Beschreibung | Authentifizierung |
+|------|------|------|------|
+| GET | /admin/report/summary | Berichtszusammenfassung (neue Nutzer/Einzahlungen/Auszahlungen/Umrechnungen/Spiele) | AdminAuth + RBAC: report |
+| GET | /admin/report/daily | Tagesbericht (tägliche Aggregation, leere Tage mit 0 aufgefüllt) | AdminAuth + RBAC: report |
+| GET | /admin/report/export | Tagesbericht als CSV exportieren (UTF-8 BOM) | AdminAuth + RBAC: report |
+
 ## 4. Ratenbegrenzungsstrategie
 
 | Schnittstelle | Limit |
@@ -1833,6 +1862,40 @@ status: open / waiting / replied / closed
 请求: { "id": "..." }
 响应: { "code": 0, "data": { "ok": true } }
 ```
+#### GET /admin/report/summary — Berichtszusammenfassung
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "new_users": 120, "deposit_amount": "5000.0000", "deposit_count": 45,
+  "withdraw_amount": "1200.0000", "withdraw_count": 8,
+  "exchange_amount": "3000.0000", "play_count": 1500
+}
+```
+
+
+#### GET /admin/report/daily — Tagesbericht
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "rows": [ { "date": "2026-08-01", "new_users": 12, "deposit_amount": "500.0000", "deposit_count": 4, "withdraw_amount": "100.0000", "withdraw_count": 1, "exchange_amount": "300.0000", "play_count": 150 } ]
+}
+```
+
+
+#### GET /admin/report/export — Tagesbericht-CSV-Export
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d&format=excel
+响应: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
+```
+
 ## 8. Ratenbegrenzungsstrategie (aktualisiert)
 
 | Schnittstelle | Limit |

@@ -62,6 +62,8 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | ランキング | WebSocket リアルタイムプッシュ (ポート8789) | 完了 |
 | CDN | 5社連携 (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS アップロード + キャッシュ削除 + プリロード) | 完了 |
 | CDN 管理 | 管理画面で5社設定 (暗号化保存した認証情報/有効·無効/HeadBucket 接続テスト)、service は DB のみ参照 | 完了 |
+| レポート | 管理側データレポート（集計/日報/CSV エクスポート、Redis 5分キャッシュ、期間 ≤90日） | 完了 |
+| プラットフォーム統計 | C端ホーム統計（ゲーム総数/ユーザー総数/今日の対局/7日間アクティブ） | 完了 |
 | デプロイ | Docker Compose 7サービス + Nginxリバースプロキシ | 完了 |
 | データ | MySQL リアルタイム集計分析 + 結合/条件確率計算 | 完了 |
 | HarmonyOS | admin 端 8 ページ；C 端 `apps/harmonyos/` にログイン/ロビー/詳細/ウォレット/マイページ実装（8788 を指す） | 一部完了（工程は実行可能、実機では IP 変更が必要） |
@@ -140,6 +142,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | POST | /api/ticket/create | チケット作成 | あり |
 | POST | /api/ticket/{id}/reply | チケット返信 | あり |
 
+| GET | /api/platform/stats | プラットフォーム統計 | なし |
 ## 3. 管理バックエンド機能
 
 ### 3.1 API エンドポイント（追加）
@@ -159,6 +162,9 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | GET | /admin/analytics/funnel | 転換ファネル |
 | GET | /admin/analytics/arpu | ARPU/ARPPU トレンド |
 | GET | /admin/analytics/economy | ゲーム通貨経済指標 |
+| GET | /admin/report/summary | レポート集計（新規ユーザー/入金/出金/両替/ゲーム対局数） |
+| GET | /admin/report/daily | 日報（日次集計、データのない日は 0 補完） |
+| GET | /admin/report/export | 日報 CSV エクスポート（UTF-8 BOM） |
 | GET | /admin/game/list | ゲーム一覧 |
 | POST | /admin/game/create | ゲーム作成 (provider_config 含む) |
 | PUT | /admin/game/{id} | ゲーム編集 |

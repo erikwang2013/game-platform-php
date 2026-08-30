@@ -93,6 +93,8 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Benachrichtigungssystem (In-App + E-Mail) | - | - | ✓ |
 | Empfehlungsprovision | - | - | ✓ |
 | Tagesstatistik-Snapshot | - | ✓ | ✓ |
+| Datenberichte (Zusammenfassung/Tagesbericht/CSV) | - | - | ✓ |
+| Plattform-Statistik (C-Seite) | - | - | ✓ |
 | Plattformerlös-Tracking | - | - | ✓ |
 
 ---

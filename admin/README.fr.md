@@ -22,6 +22,7 @@ Système d'administration full-stack basé sur webman v2 + Flutter.
 | | Limite de sessions concurrentes | 3 tokens valides maximum par utilisateur |
 | 📊 Tableau de bord | Statistiques temps réel/courbe de tendance/diagramme de répartition/opérations récentes | Cache Redis 5 minutes |
 | 📈 Analyse de données | 12 points d'API : vue d'ensemble/classement/DAU/heures/répartition des comportements/revenus/conversion/probabilités/rétention/entonnoir/ARPU/indicateurs économiques | Agrégation temps réel MySQL, données vides si la base est en panne |
+| 📊 Rapports de données | Résumé/quotidien/export CSV | Cache Redis 5 min, période ≤90 jours |
 | 👥 Gestion des utilisateurs | CRUD + suppression/activation/désactivation par lots | Suppression douce + confirmation par mot de passe |
 | | Import Excel par lots | Validation ligne par ligne + rapport d'erreurs |
 | 🔒 Rôles et permissions | CRUD des rôles + arbre de permissions | Autorisation RBAC à la granularité method.path |

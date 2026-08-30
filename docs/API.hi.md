@@ -848,6 +848,25 @@ language वैकल्पिक मान: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
+### 2.21 प्लेटफ़ॉर्म सांख्यिकी
+
+| विधि | पथ | विवरण | प्रमाणीकरण |
+|------|------|------|------|
+| GET | /api/platform/stats | प्लेटफ़ॉर्म सार्वजनिक सांख्यिकी (कुल गेम / कुल उपयोगकर्ता / आज के प्ले / 7 दिन सक्रिय) | नहीं |
+
+#### GET /api/platform/stats — प्लेटफ़ॉर्म सांख्यिकी
+
+```
+无需认证
+
+响应: {
+  "total_games": 12,
+  "total_users": 1500,
+  "today_game_plays": 320,
+  "active_users_7d": 450
+}
+```
+
 ## 3. प्रशासन कंसोल इंटरफ़ेस (admin :8787)
 
 ### 3.1 प्लेटफ़ॉर्म डैशबोर्ड
@@ -1432,6 +1451,16 @@ action: approve / reject
 | DELETE | /admin/cdn/provider/{hashid} | हटाएँ | AdminAuth + RBAC: cdn |
 | POST | /admin/cdn/provider/test | कनेक्टिविटी परीक्षण HeadBucket {id} | AdminAuth + RBAC: cdn |
 
+### 3.19 डेटा रिपोर्ट
+
+सभी एंडपॉइंट्स को प्रमाणीकरण आवश्यक है (AdminAuth + AdminPermission)।
+
+| विधि | पथ | विवरण | प्रमाणीकरण |
+|------|------|------|------|
+| GET | /admin/report/summary | रिपोर्ट सारांश (नए उपयोगकर्ता/जमा/निकासी/विनिमय/गेम प्ले) | AdminAuth + RBAC: report |
+| GET | /admin/report/daily | दैनिक रिपोर्ट (दिन-वार एग्रीगेशन, खाली तारीखों पर 0 भरा जाता है) | AdminAuth + RBAC: report |
+| GET | /admin/report/export | दैनिक रिपोर्ट CSV निर्यात (UTF-8 BOM) | AdminAuth + RBAC: report |
+
 ## 4. दर सीमा रणनीति
 
 | इंटरफ़ेस | सीमा |
@@ -1831,6 +1860,40 @@ status: open / waiting / replied / closed
 अनुरोध: { "id": "..." }
 प्रतिक्रिया: { "code": 0, "data": { "ok": true } }
 ```
+#### GET /admin/report/summary — रिपोर्ट सारांश
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "new_users": 120, "deposit_amount": "5000.0000", "deposit_count": 45,
+  "withdraw_amount": "1200.0000", "withdraw_count": 8,
+  "exchange_amount": "3000.0000", "play_count": 1500
+}
+```
+
+
+#### GET /admin/report/daily — दैनिक रिपोर्ट
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "rows": [ { "date": "2026-08-01", "new_users": 12, "deposit_amount": "500.0000", "deposit_count": 4, "withdraw_amount": "100.0000", "withdraw_count": 1, "exchange_amount": "300.0000", "play_count": 150 } ]
+}
+```
+
+
+#### GET /admin/report/export — दैनिक रिपोर्ट CSV निर्यात
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d&format=excel
+响应: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
+```
+
 ## 8. दर सीमा रणनीति (अद्यतन)
 
 | इंटरफ़ेस | सीमा |

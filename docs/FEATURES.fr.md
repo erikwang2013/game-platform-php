@@ -62,6 +62,8 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Classements | Push temps réel WebSocket (port 8789) | Terminé |
 | CDN | Intégration de cinq fournisseurs (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + préchargement) | Terminé |
 | Administration CDN | Configuration des cinq fournisseurs côté admin (identifiants chiffrés/activation-désactivation/test de connexion HeadBucket), le service lit uniquement la base de données | Terminé |
+| Rapports | Rapports de données côté admin (résumé/quotidien/export CSV, cache Redis 5 min, période ≤90 jours) | Terminé |
+| Statistiques de la plateforme | Statistiques d'accueil C (total jeux/utilisateurs/parties du jour/actifs 7 jours) | Terminé |
 | Déploiement | Docker Compose 7 services + proxy inverse Nginx | Terminé |
 | Données | Analyse par agrégation MySQL en temps réel + calcul de probabilités conjointes/conditionnelles | Terminé |
 | HarmonyOS | 8 pages côté admin ; côté C `apps/harmonyos/` implémente connexion/hall/détail/portefeuille/profil (pointant vers 8788) | Partiellement terminé (le projet s'exécute, IP à modifier sur appareil réel) |
@@ -140,6 +142,7 @@ Support par tickets
 | POST | /api/ticket/create | Créer un ticket | Oui |
 | POST | /api/ticket/{id}/reply | Répondre au ticket | Oui |
 
+| GET | /api/platform/stats | Statistiques de la plateforme | Non |
 ## 3. Fonctionnalités du backend d'administration
 
 ### 3.1 Interfaces API (nouvelles)
@@ -159,6 +162,9 @@ Support par tickets
 | GET | /admin/analytics/funnel | Entonnoir de conversion |
 | GET | /admin/analytics/arpu | Tendance ARPU/ARPPU |
 | GET | /admin/analytics/economy | Indicateurs économiques des devises de jeu |
+| GET | /admin/report/summary | Récapitulatif des rapports (nouveaux utilisateurs/dépôts/retraits/échanges/parties) |
+| GET | /admin/report/daily | Rapport quotidien (agrégation par jour, jours sans données remplis à 0) |
+| GET | /admin/report/export | Export du rapport quotidien en CSV (UTF-8 BOM) |
 | GET | /admin/game/list | Liste des jeux |
 | POST | /admin/game/create | Créer un jeu (provider_config inclus) |
 | PUT | /admin/game/{id} | Modifier un jeu |

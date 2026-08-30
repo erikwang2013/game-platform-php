@@ -62,6 +62,8 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | लीडरबोर्ड | WebSocket वास्तविक समय पुश (पोर्ट 8789) | पूर्ण |
 | CDN | पाँच प्रदाताओं का एकीकरण (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS अपलोड + पर्ज + प्रीलोड) | पूर्ण |
 | CDN प्रशासन | व्यवस्थापक पाँच प्रदाता कॉन्फ़िगर करें (एन्क्रिप्टेड क्रेडेंशियल/सक्षम-अक्षम/HeadBucket कनेक्टिविटी टेस्ट), service केवल DB पढ़ता है | पूर्ण |
+| रिपोर्ट | एडमिन डेटा रिपोर्ट (सारांश/दैनिक/CSV निर्यात, Redis 5 मिनट कैश, अवधि ≤90 दिन) | पूर्ण |
+| प्लेटफ़ॉर्म सांख्यिकी | C-साइड होम सांख्यिकी (कुल गेम/उपयोगकर्ता/आज के प्ले/7 दिन सक्रिय) | पूर्ण |
 | तैनाती | Docker Compose 7 सेवाएँ + Nginx रिवर्स प्रॉक्सी | पूर्ण |
 | डेटा | MySQL वास्तविक समय एकत्रीकरण विश्लेषण + संयुक्त/सशर्त प्रायिकता गणना | पूर्ण |
 | HarmonyOS | admin छोर 8 पेज; C-छोर `apps/harmonyos/` में लॉगिन/लॉबी/विवरण/वॉलेट/व्यक्तिगत कार्यान्वित (8788 को इंगित) | आंशिक पूर्ण (प्रोजेक्ट चलता है, वास्तविक डिवाइस पर IP बदलना आवश्यक) |
@@ -140,6 +142,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | POST | /api/ticket/create | टिकट निर्माण | हाँ |
 | POST | /api/ticket/{id}/reply | टिकट का उत्तर | हाँ |
 
+| GET | /api/platform/stats | प्लेटफ़ॉर्म सांख्यिकी | नहीं |
 ## 3. प्रशासन कंसोल सुविधाएँ
 
 ### 3.1 API इंटरफ़ेस (नए)
@@ -159,6 +162,9 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | GET | /admin/analytics/funnel | रूपांतरण फ़नल |
 | GET | /admin/analytics/arpu | ARPU/ARPPU प्रवृत्ति |
 | GET | /admin/analytics/economy | गेम मुद्रा आर्थिक मीट्रिक्स |
+| GET | /admin/report/summary | रिपोर्ट सारांश (नए उपयोगकर्ता/जमा/निकासी/विनिमय/गेम प्ले) |
+| GET | /admin/report/daily | दैनिक रिपोर्ट (दिन-वार एग्रीगेशन, खाली तारीखों पर 0 भरा जाता है) |
+| GET | /admin/report/export | दैनिक रिपोर्ट CSV निर्यात (UTF-8 BOM) |
 | GET | /admin/game/list | गेम सूची |
 | POST | /admin/game/create | गेम निर्माण (provider_config सहित) |
 | PUT | /admin/game/{id} | गेम संपादन |

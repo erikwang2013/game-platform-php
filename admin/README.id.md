@@ -22,6 +22,7 @@ Sistem backend administrasi full-stack berbasis webman v2 + Flutter.
 | | Batasan sesi bersamaan | Maksimal 3 Token aktif per pengguna |
 | 📊 Dasbor | Statistik real-time/grafik tren/grafik distribusi/operasi terbaru | Cache Redis 5 menit |
 | 📈 Analisis data | 12 endpoint: ringkasan/peringkat/DAU/jam/distribusi perilaku/pendapatan/konversi/probabilitas/retensi/funnel/ARPU/metrik ekonomi | Agregasi real-time MySQL, DB gagal mengembalikan data kosong |
+| 📊 Laporan data | Ringkasan/harian/ekspor CSV | Cache Redis 5 menit, rentang ≤90 hari |
 | 👥 Manajemen pengguna | CRUD + hapus massal/aktif-nonaktif | Soft delete + konfirmasi ulang kata sandi |
 | | Impor massal Excel | Validasi per baris + laporan kesalahan |
 | 🔒 Peran & izin | CRUD peran + pohon izin | Otorisasi RBAC granular method.path |

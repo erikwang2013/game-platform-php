@@ -91,6 +91,7 @@
   <text x="610" y="426" text-anchor="middle" fill="#581c87" font-size="13" font-weight="bold">Statistik &amp; Analisis</text>
   <text x="610" y="446" text-anchor="middle" fill="#a855f7" font-size="11">Snapshot statistik harian (5 jenis metrik)</text>
   <text x="610" y="465" text-anchor="middle" fill="#a855f7" font-size="11">Pelacakan pendapatan platform</text>
+  <text x="610" y="484" text-anchor="middle" fill="#a855f7" font-size="11">Laporan · Statistik platform</text>
 
   <rect x="735" y="402" width="230" height="95" rx="8" fill="#fff1f2" stroke="#fecdd3" stroke-width="1.5" filter="url(#sh)"/>
   <text x="850" y="426" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">Pencarian Full-text</text>

@@ -848,6 +848,25 @@ language এর মান: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
+### 2.21 প্ল্যাটফর্ম পরিসংখ্যান
+
+| মেথড | পাথ | বিবরণ | অথেনটিকেশন |
+|------|------|------|------|
+| GET | /api/platform/stats | প্ল্যাটফর্ম পাবলিক পরিসংখ্যান (মোট গেম/মোট ব্যবহারকারী/আজকের প্লে/৭ দিন সক্রিয়) | না |
+
+#### GET /api/platform/stats — প্ল্যাটফর্ম পরিসংখ্যান
+
+```
+无需认证
+
+响应: {
+  "total_games": 12,
+  "total_users": 1500,
+  "today_game_plays": 320,
+  "active_users_7d": 450
+}
+```
+
 ## 3. অ্যাডমিন প্যানেল ইন্টারফেস (admin :8787)
 
 ### 3.1 প্ল্যাটফর্ম ড্যাশবোর্ড
@@ -1432,6 +1451,16 @@ action: approve / reject
 | DELETE | /admin/cdn/provider/{hashid} | মুছুন | AdminAuth + RBAC: cdn |
 | POST | /admin/cdn/provider/test | সংযোগ পরীক্ষা HeadBucket {id} | AdminAuth + RBAC: cdn |
 
+### 3.19 ডেটা রিপোর্ট
+
+সব এন্ডপয়েন্টে অথেনটিকেশন প্রয়োজন (AdminAuth + AdminPermission)।
+
+| মেথড | পাথ | বিবরণ | অথেনটিকেশন |
+|------|------|------|------|
+| GET | /admin/report/summary | রিপোর্ট সারাংশ (নতুন ব্যবহারকারী/ডিপোজিট/উইথড্রয়াল/এক্সচেঞ্জ/গেম প্লে) | AdminAuth + RBAC: report |
+| GET | /admin/report/daily | দৈনিক রিপোর্ট (দিনভিত্তিক সমষ্টি, ডেটাবিহীন তারিখে 0 পূরণ) | AdminAuth + RBAC: report |
+| GET | /admin/report/export | দৈনিক রিপোর্ট CSV এক্সপোর্ট (UTF-8 BOM) | AdminAuth + RBAC: report |
+
 ## 4. রেট লিমিট পলিসি
 
 | ইন্টারফেস | সীমা |
@@ -1831,6 +1860,40 @@ status: open / waiting / replied / closed
 অনুরোধ: { "id": "..." }
 রেসপন্স: { "code": 0, "data": { "ok": true } }
 ```
+#### GET /admin/report/summary — রিপোর্ট সারাংশ
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "new_users": 120, "deposit_amount": "5000.0000", "deposit_count": 45,
+  "withdraw_amount": "1200.0000", "withdraw_count": 8,
+  "exchange_amount": "3000.0000", "play_count": 1500
+}
+```
+
+
+#### GET /admin/report/daily — দৈনিক রিপোর্ট
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "rows": [ { "date": "2026-08-01", "new_users": 12, "deposit_amount": "500.0000", "deposit_count": 4, "withdraw_amount": "100.0000", "withdraw_count": 1, "exchange_amount": "300.0000", "play_count": 150 } ]
+}
+```
+
+
+#### GET /admin/report/export — দৈনিক রিপোর্ট CSV এক্সপোর্ট
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d&format=excel
+响应: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
+```
+
 ## 8. রেট লিমিট পলিসি (আপডেট)
 
 | ইন্টারফেস | সীমা |

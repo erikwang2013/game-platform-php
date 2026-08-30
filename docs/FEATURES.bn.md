@@ -62,6 +62,8 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | লিডারবোর্ড | WebSocket রিয়েল-টাইম পুশ (পোর্ট 8789) | সম্পন্ন |
 | CDN | পাঁচটি প্রদানকারীর ইন্টিগ্রেশন (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS আপলোড + পার্জ + প্রিলোড) | সম্পন্ন |
 | CDN ম্যানেজমেন্ট | অ্যাডমিন পাঁচ প্রদানকারী কনফিগার (এনক্রিপ্টেড ক্রেডেনশিয়াল/চালু-বন্ধ/HeadBucket কানেক্টিভিটি টেস্ট), service শুধু DB পড়ে | সম্পন্ন |
+| রিপোর্ট | অ্যাডমিন ডেটা রিপোর্ট (সারাংশ/দৈনিক/CSV এক্সপোর্ট, Redis ৫ মিনিট ক্যাশ, সময়সীমা ≤৯০ দিন) | সম্পন্ন |
+| প্ল্যাটফর্ম পরিসংখ্যান | C-সাইড হোম পরিসংখ্যান (মোট গেম/ব্যবহারকারী/আজকের প্লে/৭ দিন সক্রিয়) | সম্পন্ন |
 | ডিপ্লয় | Docker Compose ৭ সার্ভিস + Nginx রিভার্স প্রক্সি | সম্পন্ন |
 | ডেটা | MySQL রিয়েল-টাইম অ্যাগ্রিগেশন অ্যানালাইসিস + জয়েন্ট/কন্ডিশনাল প্রোবাবিলিটি | সম্পন্ন |
 | HarmonyOS | admin প্রান্ত ৮ পেজ; C-এন্ড `apps/harmonyos/`-এ লগইন/লবি/ডিটেইল/ওয়ালেট/প্রোফাইল বাস্তবায়িত (8788-এ নির্দেশিত) | আংশিক সম্পন্ন (প্রজেক্ট চলে, আসল ডিভাইসে IP পরিবর্তন প্রয়োজন) |
@@ -140,6 +142,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | POST | /api/ticket/create | টিকিট তৈরি | হ্যাঁ |
 | POST | /api/ticket/{id}/reply | টিকিট রিপ্লাই | হ্যাঁ |
 
+| GET | /api/platform/stats | প্ল্যাটফর্ম পরিসংখ্যান | না |
 ## 3. অ্যাডমিন প্যানেল ফিচার
 
 ### 3.1 API ইন্টারফেস (নতুন)
@@ -159,6 +162,9 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | GET | /admin/analytics/funnel | কনভার্সন ফানেল |
 | GET | /admin/analytics/arpu | ARPU/ARPPU ট্রেন্ড |
 | GET | /admin/analytics/economy | গেম কয়েন ইকোনমি মেট্রিক |
+| GET | /admin/report/summary | রিপোর্ট সারাংশ (নতুন ব্যবহারকারী/ডিপোজিট/উইথড্রয়াল/এক্সচেঞ্জ/গেম প্লে) |
+| GET | /admin/report/daily | দৈনিক রিপোর্ট (দিনভিত্তিক সমষ্টি, ডেটাবিহীন তারিখে 0 পূরণ) |
+| GET | /admin/report/export | দৈনিক রিপোর্ট CSV এক্সপোর্ট (UTF-8 BOM) |
 | GET | /admin/game/list | গেম তালিকা |
 | POST | /admin/game/create | গেম তৈরি (provider_config সহ) |
 | PUT | /admin/game/{id} | গেম সম্পাদনা |

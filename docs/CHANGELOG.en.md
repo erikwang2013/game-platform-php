@@ -75,3 +75,10 @@ Human-readable change log. PHP does not import this file. Corresponds to PROJECT
 - CI: auto incremental tag on push + GitHub Release publishing.
 - Infrastructure: database renamed to game-platform, unified `game_` table prefix.
 - Docs sync: FEATURES.md completed across 13 languages for resilience (circuit-breaker/retry/degradation switches), admin payment-method CRUD, mini-game, one-click install, CI rows (corresponding to the [1.1] resilience / payments entries above).
+
+## [1.1] reports — 2026-08-31
+
+- Data reports: admin `/admin/report/summary|daily|export` (summary/daily/CSV export, Redis 5-min cache, date span ≤90 days).
+- C-side platform stats: `GET /api/platform/stats` (total games/total users/today's plays/7-day active users), wired into the homepage stats display.
+- Admin Flutter: dashboard stat cards wired to real data, new ReportsPage (/reports).
+- Docs sync: FEATURES/VERSIONS/API updated with report and stats entries in 13 languages, feature map stats box updated.

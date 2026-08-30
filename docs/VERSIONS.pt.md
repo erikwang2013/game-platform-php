@@ -93,6 +93,8 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Sistema de notificações (no site + email) | - | - | ✓ |
 | Recompensa de indicação | - | - | ✓ |
 | Snapshot de estatísticas diárias | - | ✓ | ✓ |
+| Relatórios de dados (resumo/diário/CSV) | - | - | ✓ |
+| Estatísticas da plataforma (lado C) | - | - | ✓ |
 | Rastreamento de receita da plataforma | - | - | ✓ |
 
 ---

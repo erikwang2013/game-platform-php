@@ -848,6 +848,25 @@ language 可选值: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
+### 2.21 平台统计
+
+| 方法 | 路径 | 说明 | 认证 |
+|------|------|------|------|
+| GET | /api/platform/stats | 平台公开统计（游戏总数/用户总数/今日局数/7日活跃用户） | 否 |
+
+#### GET /api/platform/stats — 平台统计
+
+```
+无需认证
+
+响应: {
+  "total_games": 12,
+  "total_users": 1500,
+  "today_game_plays": 320,
+  "active_users_7d": 450
+}
+```
+
 ## 3. 管理后台接口 (admin :8787)
 
 ### 3.1 平台仪表盘
@@ -1432,6 +1451,16 @@ action: approve / reject
 | DELETE | /admin/cdn/provider/{hashid} | 删除 | AdminAuth + RBAC: cdn |
 | POST | /admin/cdn/provider/test | 连通测试 HeadBucket {id} | AdminAuth + RBAC: cdn |
 
+### 3.19 数据报表
+
+全部端点需认证（AdminAuth + AdminPermission）。
+
+| 方法 | 路径 | 说明 | 认证 |
+|------|------|------|------|
+| GET | /admin/report/summary | 报表汇总（新增用户/充值/提现/兑换/游戏局数） | AdminAuth + RBAC: report |
+| GET | /admin/report/daily | 日报表（按日聚合，无数据日期补 0） | AdminAuth + RBAC: report |
+| GET | /admin/report/export | 日报表导出 CSV（UTF-8 BOM） | AdminAuth + RBAC: report |
+
 ## 4. 限流策略
 
 | 接口 | 限制 |
@@ -1831,6 +1860,40 @@ status: open / waiting / replied / closed
 请求: { "id": "..." }
 响应: { "code": 0, "data": { "ok": true } }
 ```
+#### GET /admin/report/summary — 报表汇总
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "new_users": 120, "deposit_amount": "5000.0000", "deposit_count": 45,
+  "withdraw_amount": "1200.0000", "withdraw_count": 8,
+  "exchange_amount": "3000.0000", "play_count": 1500
+}
+```
+
+
+#### GET /admin/report/daily — 日报表
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "rows": [ { "date": "2026-08-01", "new_users": 12, "deposit_amount": "500.0000", "deposit_count": 4, "withdraw_amount": "100.0000", "withdraw_count": 1, "exchange_amount": "300.0000", "play_count": 150 } ]
+}
+```
+
+
+#### GET /admin/report/export — 日报表导出 CSV
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d&format=excel
+响应: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
+```
+
 ## 8. 限流策略（更新）
 
 | 接口 | 限制 |

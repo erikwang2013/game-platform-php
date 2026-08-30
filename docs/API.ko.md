@@ -848,6 +848,25 @@ language 선택값: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
+### 2.21 플랫폼 통계
+
+| 메서드 | 경로 | 설명 | 인증 |
+|------|------|------|------|
+| GET | /api/platform/stats | 플랫폼 공개 통계 (게임 총수/사용자 총수/오늘 플레이 수/7일 활성 사용자) | 아니요 |
+
+#### GET /api/platform/stats — 플랫폼 통계
+
+```
+无需认证
+
+响应: {
+  "total_games": 12,
+  "total_users": 1500,
+  "today_game_plays": 320,
+  "active_users_7d": 450
+}
+```
+
 ## 3. 관리 백오피스 인터페이스 (admin :8787)
 
 ### 3.1 플랫폼 대시보드
@@ -1432,6 +1451,16 @@ action: approve / reject
 | DELETE | /admin/cdn/provider/{hashid} | 삭제 | AdminAuth + RBAC: cdn |
 | POST | /admin/cdn/provider/test | 연결 테스트 HeadBucket {id} | AdminAuth + RBAC: cdn |
 
+### 3.19 데이터 리포트
+
+모든 엔드포인트는 인증 필요(AdminAuth + AdminPermission).
+
+| 메서드 | 경로 | 설명 | 인증 |
+|------|------|------|------|
+| GET | /admin/report/summary | 리포트 요약 (신규 사용자/입금/출금/환전/게임 플레이 수) | AdminAuth + RBAC: report |
+| GET | /admin/report/daily | 일일 리포트 (일별 집계, 데이터 없는 날짜는 0 채움) | AdminAuth + RBAC: report |
+| GET | /admin/report/export | 일일 리포트 CSV 내보내기 (UTF-8 BOM) | AdminAuth + RBAC: report |
+
 ## 4. 레이트 리밋 정책
 
 | 인터페이스 | 제한 |
@@ -1831,6 +1860,40 @@ status: open / waiting / replied / closed
 요청: { "id": "..." }
 응답: { "code": 0, "data": { "ok": true } }
 ```
+#### GET /admin/report/summary — 리포트 요약
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "new_users": 120, "deposit_amount": "5000.0000", "deposit_count": 45,
+  "withdraw_amount": "1200.0000", "withdraw_count": 8,
+  "exchange_amount": "3000.0000", "play_count": 1500
+}
+```
+
+
+#### GET /admin/report/daily — 일일 리포트
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "rows": [ { "date": "2026-08-01", "new_users": 12, "deposit_amount": "500.0000", "deposit_count": 4, "withdraw_amount": "100.0000", "withdraw_count": 1, "exchange_amount": "300.0000", "play_count": 150 } ]
+}
+```
+
+
+#### GET /admin/report/export — 일일 리포트 CSV 내보내기
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d&format=excel
+响应: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
+```
+
 ## 8. 레이트 리밋 정책 (업데이트)
 
 | 인터페이스 | 제한 |

@@ -91,6 +91,7 @@
   <text x="610" y="426" text-anchor="middle" fill="#581c87" font-size="13" font-weight="bold">পরিসংখ্যান বিশ্লেষণ</text>
   <text x="610" y="446" text-anchor="middle" fill="#a855f7" font-size="11">দৈনিক স্ন্যাপশট (৫ ধরনের মেট্রিক)</text>
   <text x="610" y="465" text-anchor="middle" fill="#a855f7" font-size="11">প্ল্যাটফর্ম রেভিনিউ ট্র্যাকিং</text>
+  <text x="610" y="484" text-anchor="middle" fill="#a855f7" font-size="11">রিপোর্ট · প্ল্যাটফর্ম পরিসংখ্যান</text>
 
   <rect x="735" y="402" width="230" height="95" rx="8" fill="#fff1f2" stroke="#fecdd3" stroke-width="1.5" filter="url(#sh)"/>
   <text x="850" y="426" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">ফুল-টেক্সট সার্চ</text>

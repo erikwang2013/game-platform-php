@@ -62,6 +62,8 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 | Leaderboards | WebSocket real-time push (port 8789) | Completed |
 | CDN | Five-provider integration (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + preload) | Completed |
 | CDN Admin | Admin-configurable five providers (encrypted credentials/toggle/connectivity test via HeadBucket), service reads from DB only | Completed |
+| Reports | Admin data reports (summary/daily/CSV export, Redis 5-min cache, span ≤90 days) | Completed |
+| Platform stats | C-side homepage stats (total games/users/today's plays/7-day active) | Completed |
 | Deployment | Docker Compose 7 services + Nginx reverse proxy | Completed |
 | Data | MySQL real-time aggregation analytics + joint/conditional probability | Completed |
 | HarmonyOS | admin 8 pages; C-end `apps/harmonyos/` implements login/lobby/detail/wallet/profile (pointing to 8788) | Partially complete (project runs, device needs IP change) |
@@ -140,6 +142,7 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 | POST | /api/ticket/create | Create ticket | Yes |
 | POST | /api/ticket/{id}/reply | Reply to ticket | Yes |
 
+| GET | /api/platform/stats | Platform Stats | No |
 ## 3. Admin Backend Features
 
 ### 3.1 APIs (New)
@@ -159,6 +162,9 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 | GET | /admin/analytics/funnel | Conversion funnel |
 | GET | /admin/analytics/arpu | ARPU/ARPPU trend |
 | GET | /admin/analytics/economy | Game currency economy metrics |
+| GET | /admin/report/summary | Report summary (new users / deposits / withdrawals / exchanges / game plays) |
+| GET | /admin/report/daily | Daily report (daily aggregation, zero-filled for empty days) |
+| GET | /admin/report/export | Daily report export as CSV (UTF-8 BOM) |
 | GET | /admin/game/list | Game list |
 | POST | /admin/game/create | Create game (incl. provider_config) |
 | PUT | /admin/game/{id} | Edit game |

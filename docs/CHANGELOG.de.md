@@ -75,3 +75,10 @@ Menschenlesbares Änderungsprotokoll. PHP importiert diese Datei nicht. Entspric
 - CI: automatischer inkrementeller Tag bei Push + GitHub-Release-Veröffentlichung.
 - Infrastruktur: Datenbank in game-platform umbenannt, `game_`-Tabellenpräfix vereinheitlicht.
 - Dokumentsynchronisierung: FEATURES.md in 13 Sprachen ergänzt um Resilienz (Circuit-Breaker/Retry/Degradation-Schalter), Admin-CRUD für Zahlungsmethoden, Minispiel, Ein-Klick-Installation, CI-Zeilen (entspricht den obigen Einträgen [1.1] resilience / payments).
+
+## [1.1] reports — 2026-08-31
+
+- Datenberichte: Admin `/admin/report/summary|daily|export` (Zusammenfassung/Tagesbericht/CSV-Export, Redis-5-min-Cache, Zeitraum ≤90 Tage).
+- Plattform-Statistik (C-Seite): `GET /api/platform/stats` (Spiele/User gesamt, Spiele heute, 7-Tage-aktiv), an die Homepage-Statistik angeschlossen.
+- Admin Flutter: Dashboard-Statistikkarten mit echten Daten verbunden, neue Berichtsseite ReportsPage (/reports).
+- Doku-Sync: FEATURES/VERSIONS/API um Berichts- und Statistik-Einträge in 13 Sprachen ergänzt, Statistikbox der Funktionsübersicht aktualisiert.

@@ -22,6 +22,7 @@ Sistema de painel administrativo full-stack baseado em webman v2 + Flutter.
 | | Limite de sessões concorrentes | Máximo de 3 Tokens válidos por usuário |
 | 📊 Dashboard | Estatísticas em tempo real/gráfico de tendências/gráfico de distribuição/operações recentes | Cache Redis de 5 minutos |
 | 📈 Análise de dados | 12 endpoints: visão geral/ranking/DAU/hora/distribuição de comportamento/receita/conversão/probabilidade/retenção/funil/ARPU/métricas econômicas | Agregação em tempo real no MySQL, dados vazios em caso de falha do banco |
+| 📊 Relatórios de dados | Resumo/diário/exportação CSV | Cache Redis 5 min, período ≤90 dias |
 | 👥 Gerenciamento de usuários | CRUD + exclusão em lote/habilitar-desabilitar | Soft delete + confirmação de senha |
 | | Importação em lote via Excel | Validação linha a linha + relatório de erros |
 | 🔒 Permissões de funções | CRUD de funções + árvore de permissões | Autorização RBAC em granularidade method.path |

@@ -93,6 +93,8 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 | Sistema de notificaciones (internas + email) | - | - | ✓ |
 | Comisión por recomendación | - | - | ✓ |
 | Instantáneas de estadísticas diarias | - | ✓ | ✓ |
+| Informes de datos (resumen/diario/CSV) | - | - | ✓ |
+| Estadísticas de la plataforma (lado C) | - | - | ✓ |
 | Seguimiento de ingresos de la plataforma | - | - | ✓ |
 
 ---

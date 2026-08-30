@@ -848,6 +848,25 @@ Valeurs possibles de language : en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
+### 2.21 Statistiques de la plateforme
+
+| Méthode | Chemin | Description | Authentification |
+|------|------|------|------|
+| GET | /api/platform/stats | Statistiques publiques de la plateforme (total jeux / total utilisateurs / parties du jour / actifs sur 7 jours) | Non |
+
+#### GET /api/platform/stats — Statistiques de la plateforme
+
+```
+无需认证
+
+响应: {
+  "total_games": 12,
+  "total_users": 1500,
+  "today_game_plays": 320,
+  "active_users_7d": 450
+}
+```
+
 ## 3. Interfaces d'administration (admin :8787)
 
 ### 3.1 Tableau de bord de la plateforme
@@ -1432,6 +1451,16 @@ Tous les points d'extrémité nécessitent une authentification (AdminAuth + Adm
 | DELETE | /admin/cdn/provider/{hashid} | Supprimer | AdminAuth + RBAC: cdn |
 | POST | /admin/cdn/provider/test | Test de connectivité HeadBucket {id} | AdminAuth + RBAC: cdn |
 
+### 3.19 Rapports de données
+
+Tous les points d'extrémité nécessitent une authentification (AdminAuth + AdminPermission).
+
+| Méthode | Chemin | Description | Authentification |
+|------|------|------|------|
+| GET | /admin/report/summary | Récapitulatif des rapports (nouveaux utilisateurs/dépôts/retraits/échanges/parties) | AdminAuth + RBAC: report |
+| GET | /admin/report/daily | Rapport quotidien (agrégation par jour, jours sans données remplis à 0) | AdminAuth + RBAC: report |
+| GET | /admin/report/export | Export du rapport quotidien en CSV (UTF-8 BOM) | AdminAuth + RBAC: report |
+
 ## 4. Stratégie de limitation
 
 | Interface | Limite |
@@ -1831,6 +1860,40 @@ status : open / waiting / replied / closed
 请求: { "id": "..." }
 响应: { "code": 0, "data": { "ok": true } }
 ```
+#### GET /admin/report/summary — Récapitulatif des rapports
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "new_users": 120, "deposit_amount": "5000.0000", "deposit_count": 45,
+  "withdraw_amount": "1200.0000", "withdraw_count": 8,
+  "exchange_amount": "3000.0000", "play_count": 1500
+}
+```
+
+
+#### GET /admin/report/daily — Rapport quotidien
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "rows": [ { "date": "2026-08-01", "new_users": 12, "deposit_amount": "500.0000", "deposit_count": 4, "withdraw_amount": "100.0000", "withdraw_count": 1, "exchange_amount": "300.0000", "play_count": 150 } ]
+}
+```
+
+
+#### GET /admin/report/export — Export CSV du rapport quotidien
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d&format=excel
+响应: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
+```
+
 ## 8. Stratégie de limitation (mise à jour)
 
 | Interface | Limite |

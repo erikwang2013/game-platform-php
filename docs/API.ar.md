@@ -848,6 +848,25 @@ status: success / failed
 }
 ```
 
+### 2.21 إحصائيات المنصة
+
+| الطريقة | المسار | الوصف | المصادقة |
+|------|------|------|------|
+| GET | /api/platform/stats | إحصائيات المنصة العامة (إجمالي الألعاب / إجمالي المستخدمين / جولات اليوم / نشطون خلال 7 أيام) | لا |
+
+#### GET /api/platform/stats — إحصائيات المنصة
+
+```
+无需认证
+
+响应: {
+  "total_games": 12,
+  "total_users": 1500,
+  "today_game_plays": 320,
+  "active_users_7d": 450
+}
+```
+
 ## 3. واجهات لوحة الإدارة (admin :8787)
 
 ### 3.1 لوحة تحكم المنصة
@@ -1432,6 +1451,16 @@ action: approve / reject
 | DELETE | /admin/cdn/provider/{hashid} | حذف | AdminAuth + RBAC: cdn |
 | POST | /admin/cdn/provider/test | اختبار الاتصال HeadBucket {id} | AdminAuth + RBAC: cdn |
 
+### 3.19 تقارير البيانات
+
+جميع الواجهات تتطلب مصادقة (AdminAuth + AdminPermission).
+
+| الطريقة | المسار | الوصف | المصادقة |
+|------|------|------|------|
+| GET | /admin/report/summary | ملخص التقارير (مستخدمون جدد/إيداعات/سحوبات/تحويلات/جولات) | AdminAuth + RBAC: report |
+| GET | /admin/report/daily | تقرير يومي (تجميع يومي، الأيام بدون بيانات تُعبأ بـ 0) | AdminAuth + RBAC: report |
+| GET | /admin/report/export | تصدير التقرير اليومي CSV (UTF-8 BOM) | AdminAuth + RBAC: report |
+
 ## 4. سياسة حد المعدل
 
 | الواجهة | الحد |
@@ -1831,6 +1860,40 @@ status: open / waiting / replied / closed
 الطلب: { "id": "..." }
 الاستجابة: { "code": 0, "data": { "ok": true } }
 ```
+#### GET /admin/report/summary — ملخص التقارير
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "new_users": 120, "deposit_amount": "5000.0000", "deposit_count": 45,
+  "withdraw_amount": "1200.0000", "withdraw_count": 8,
+  "exchange_amount": "3000.0000", "play_count": 1500
+}
+```
+
+
+#### GET /admin/report/daily — تقرير يومي
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "rows": [ { "date": "2026-08-01", "new_users": 12, "deposit_amount": "500.0000", "deposit_count": 4, "withdraw_amount": "100.0000", "withdraw_count": 1, "exchange_amount": "300.0000", "play_count": 150 } ]
+}
+```
+
+
+#### GET /admin/report/export — تصدير التقرير اليومي CSV
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d&format=excel
+响应: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
+```
+
 ## 8. سياسة حد المعدل (محدثة)
 
 | الواجهة | الحد |

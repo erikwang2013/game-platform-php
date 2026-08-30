@@ -91,6 +91,7 @@
   <text x="610" y="426" text-anchor="middle" fill="#581c87" font-size="13" font-weight="bold">सांख्यिकी विश्लेषण</text>
   <text x="610" y="446" text-anchor="middle" fill="#a855f7" font-size="11">दैनिक सांख्यिकी स्नैपशॉट (5 प्रकार मीट्रिक)</text>
   <text x="610" y="465" text-anchor="middle" fill="#a855f7" font-size="11">प्लेटफ़ॉर्म आय ट्रैकिंग</text>
+  <text x="610" y="484" text-anchor="middle" fill="#a855f7" font-size="11">रिपोर्ट · प्लेटफ़ॉर्म सांख्यिकी</text>
 
   <rect x="735" y="402" width="230" height="95" rx="8" fill="#fff1f2" stroke="#fecdd3" stroke-width="1.5" filter="url(#sh)"/>
   <text x="850" y="426" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">पूर्ण-पाठ खोज</text>

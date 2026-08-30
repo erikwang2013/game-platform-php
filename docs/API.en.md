@@ -800,6 +800,25 @@ language 可选值: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
+### 2.21 Platform Stats
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /api/platform/stats | Public platform stats (total games / total users / today's plays / 7-day active users) | No |
+
+#### GET /api/platform/stats — Platform Stats
+
+```
+无需认证
+
+响应: {
+  "total_games": 12,
+  "total_users": 1500,
+  "today_game_plays": 320,
+  "active_users_7d": 450
+}
+```
+
 ## 3. Admin Backend APIs (admin :8787)
 
 ### 3.1 Platform Dashboard
@@ -1345,6 +1364,16 @@ All endpoints require authentication (AdminAuth + AdminPermission).
 | DELETE | /admin/cdn/provider/{hashid} | Delete | AdminAuth + RBAC: cdn |
 | POST | /admin/cdn/provider/test | Connectivity test HeadBucket {id} | AdminAuth + RBAC: cdn |
 
+### 3.19 Data Reports
+
+All endpoints require authentication (AdminAuth + AdminPermission).
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/report/summary | Report summary (new users / deposits / withdrawals / exchanges / game plays) | AdminAuth + RBAC: report |
+| GET | /admin/report/daily | Daily report (daily aggregation, zero-filled for empty days) | AdminAuth + RBAC: report |
+| GET | /admin/report/export | Daily report export as CSV (UTF-8 BOM) | AdminAuth + RBAC: report |
+
 ## 4. Rate Limit Policy
 
 | Endpoint | Limit |
@@ -1724,6 +1753,40 @@ status: open / waiting / replied / closed
 请求: { "id": "..." }
 响应: { "code": 0, "data": { "ok": true } }
 ```
+#### GET /admin/report/summary — Report summary
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "new_users": 120, "deposit_amount": "5000.0000", "deposit_count": 45,
+  "withdraw_amount": "1200.0000", "withdraw_count": 8,
+  "exchange_amount": "3000.0000", "play_count": 1500
+}
+```
+
+
+#### GET /admin/report/daily — Daily report
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "rows": [ { "date": "2026-08-01", "new_users": 12, "deposit_amount": "500.0000", "deposit_count": 4, "withdraw_amount": "100.0000", "withdraw_count": 1, "exchange_amount": "300.0000", "play_count": 150 } ]
+}
+```
+
+
+#### GET /admin/report/export — Daily report CSV export
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d&format=excel
+响应: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
+```
+
 ## 8. Rate Limit Policy (Updated)
 
 | Endpoint | Limit |

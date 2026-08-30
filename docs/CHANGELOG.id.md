@@ -75,3 +75,10 @@ Catatan perubahan yang dapat dibaca manusia. PHP tidak meng-import file ini. Ber
 - CI: tag inkremental otomatis saat push + publikasi GitHub Release.
 - Infrastruktur: database diubah nama menjadi game-platform, prefiks tabel `game_` diseragamkan.
 - Sinkronisasi dokumen: FEATURES.md dilengkapi di 13 bahasa untuk resiliency (saklar circuit-breaker/retry/degradation), CRUD metode pembayaran, mini-game, instalasi satu klik, baris CI (sesuai entri [1.1] resilience / payments di atas).
+
+## [1.1] reports — 2026-08-31
+
+- Laporan data: admin `/admin/report/summary|daily|export` (ringkasan/harian/ekspor CSV, cache Redis 5 menit, rentang ≤90 hari).
+- Statistik platform (sisi C): `GET /api/platform/stats` (total game/pengguna/permainan hari ini/aktif 7 hari), terhubung ke tampilan beranda.
+- Flutter admin: kartu statistik dasbor terhubung ke data nyata, halaman laporan baru ReportsPage (/reports).
+- Sinkronisasi dokumen: FEATURES/VERSIONS/API dilengkapi entri laporan dan statistik dalam 13 bahasa, kotak analisis statistik pada diagram fitur diperbarui.

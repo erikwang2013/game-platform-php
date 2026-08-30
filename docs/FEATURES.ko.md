@@ -62,6 +62,8 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | 리더보드 | WebSocket 실시간 푸시 (포트 8789) | 완료 |
 | CDN | 5개 업체 연동 (Cloudflare R2 / AWS S3 / 알리 OSS / 텐센트 COS / 화웨이 OBS 업로드 + 캐시 제거 + 프리로드) | 완료 |
 | CDN 관리 | 관리자가 5개 업체 설정 (자격증명 암호화 저장/활성·비활성/HeadBucket 연결 테스트), service는 DB만 읽음 | 완료 |
+| 리포트 | 관리자 데이터 리포트 (요약/일일/CSV 내보내기, Redis 5분 캐시, 기간 ≤90일) | 완료 |
+| 플랫폼 통계 | C측 홈 통계 (게임 총수/사용자 총수/오늘 플레이/7일 활성) | 완료 |
 | 배포 | Docker Compose 7서비스 + Nginx 리버스 프록시 | 완료 |
 | 데이터 | MySQL 실시간 집계 분석 + 결합/조건부 확률 계산 | 완료 |
 | HarmonyOS | admin 단 8페이지; C단 `apps/harmonyos/`에 로그인/로비/상세/지갑/개인 구현 (8788 지시) | 부분 완료 (프로젝트 실행 가능, 실기기 IP 변경 필요) |
@@ -140,6 +142,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | POST | /api/ticket/create | 티켓 생성 | 예 |
 | POST | /api/ticket/{id}/reply | 티켓 답변 | 예 |
 
+| GET | /api/platform/stats | 플랫폼 통계 | 아니요 |
 ## 3. 관리 백오피스 기능
 
 ### 3.1 API 인터페이스 (신규)
@@ -159,6 +162,9 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | GET | /admin/analytics/funnel | 전환 퍼널 |
 | GET | /admin/analytics/arpu | ARPU/ARPPU 추세 |
 | GET | /admin/analytics/economy | 게임 코인 경제 지표 |
+| GET | /admin/report/summary | 리포트 요약 (신규 사용자/입금/출금/환전/게임 플레이 수) |
+| GET | /admin/report/daily | 일일 리포트 (일별 집계, 데이터 없는 날짜는 0 채움) |
+| GET | /admin/report/export | 일일 리포트 CSV 내보내기 (UTF-8 BOM) |
 | GET | /admin/game/list | 게임 목록 |
 | POST | /admin/game/create | 게임 생성 (provider_config 포함) |
 | PUT | /admin/game/{id} | 게임 편집 |

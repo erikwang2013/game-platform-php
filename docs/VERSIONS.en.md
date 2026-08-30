@@ -93,6 +93,8 @@ Languages: [中文](VERSIONS.md) · **English** · [한국어](VERSIONS.ko.md) �
 | Notification system (in-app + email) | - | - | ✓ |
 | Referral commissions | - | - | ✓ |
 | Daily stats snapshot | - | ✓ | ✓ |
+| Data reports (summary/daily/CSV export) | - | - | ✓ |
+| C-side platform stats | - | - | ✓ |
 | Platform revenue tracking | - | - | ✓ |
 
 ---

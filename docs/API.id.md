@@ -848,6 +848,25 @@ Respons: {
 }
 ```
 
+### 2.21 Statistik Platform
+
+| Metode | Jalur | Keterangan | Autentikasi |
+|------|------|------|------|
+| GET | /api/platform/stats | Statistik publik platform (total game / total pengguna / permainan hari ini / aktif 7 hari) | Tidak |
+
+#### GET /api/platform/stats — Statistik Platform
+
+```
+无需认证
+
+响应: {
+  "total_games": 12,
+  "total_users": 1500,
+  "today_game_plays": 320,
+  "active_users_7d": 450
+}
+```
+
 ## 3. Antarmuka Backend Administrasi (admin :8787)
 
 ### 3.1 Dasbor Platform
@@ -1432,6 +1451,16 @@ Semua endpoint memerlukan autentikasi (AdminAuth + AdminPermission).
 | DELETE | /admin/cdn/provider/{hashid} | Hapus | AdminAuth + RBAC: cdn |
 | POST | /admin/cdn/provider/test | Uji konektivitas HeadBucket {id} | AdminAuth + RBAC: cdn |
 
+### 3.19 Laporan Data
+
+Semua endpoint memerlukan autentikasi (AdminAuth + AdminPermission).
+
+| Metode | Jalur | Keterangan | Autentikasi |
+|------|------|------|------|
+| GET | /admin/report/summary | Ringkasan laporan (pengguna baru/deposit/penarikan/penukaran/permainan) | AdminAuth + RBAC: report |
+| GET | /admin/report/daily | Laporan harian (agregasi per hari, tanggal tanpa data diisi 0) | AdminAuth + RBAC: report |
+| GET | /admin/report/export | Ekspor laporan harian CSV (UTF-8 BOM) | AdminAuth + RBAC: report |
+
 ## 4. Strategi Rate Limit
 
 | Antarmuka | Batas |
@@ -1831,6 +1860,40 @@ Perlu autentikasi: ya
 Permintaan: { "id": "..." }
 Respons: { "code": 0, "data": { "ok": true } }
 ```
+#### GET /admin/report/summary — Ringkasan laporan
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "new_users": 120, "deposit_amount": "5000.0000", "deposit_count": 45,
+  "withdraw_amount": "1200.0000", "withdraw_count": 8,
+  "exchange_amount": "3000.0000", "play_count": 1500
+}
+```
+
+
+#### GET /admin/report/daily — Laporan harian
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d
+响应: {
+  "start": "2026-08-01", "end": "2026-08-31",
+  "rows": [ { "date": "2026-08-01", "new_users": 12, "deposit_amount": "500.0000", "deposit_count": 4, "withdraw_amount": "100.0000", "withdraw_count": 1, "exchange_amount": "300.0000", "play_count": 150 } ]
+}
+```
+
+
+#### GET /admin/report/export — Ekspor laporan harian CSV
+
+```
+需认证: 是
+参数: ?start=Y-m-d&end=Y-m-d&format=excel
+响应: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
+```
+
 ## 8. Strategi Rate Limit (Diperbarui)
 
 | Antarmuka | Batas |

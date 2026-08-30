@@ -75,3 +75,10 @@ Languages: **中文** · [English](CHANGELOG.en.md) · [한국어](CHANGELOG.ko.
 - CI: push 時に自動インクリメンタル tag + GitHub Release 公開。
 - インフラ: データベースを game-platform に改名、`game_` テーブルプレフィックス統一。
 - ドキュメント同期: FEATURES.md を 13 言語で補完（サーキットブレーカー/リトライ/縮退スイッチ）、決済手段 CRUD、ミニゲーム、ワンクリックインストール、CI 行（上記 [1.1] resilience / payments エントリに対応）。
+
+## [1.1] reports — 2026-08-31
+
+- データレポート：管理側 `/admin/report/summary|daily|export`（集計/日報/CSV エクスポート、Redis 5分キャッシュ、期間 ≤90日）。
+- C端プラットフォーム統計：`GET /api/platform/stats`（ゲーム総数/ユーザー総数/今日の対局数/7日間アクティブ）、ホーム統計表示に接続。
+- 管理側 Flutter：ダッシュボード統計カードを実データに接続、レポートページ ReportsPage（/reports）を新設。
+- ドキュメント同期：FEATURES/VERSIONS/API にレポートと統計の項目を13言語で追記、機能全景図の統計分析ボックスを更新。

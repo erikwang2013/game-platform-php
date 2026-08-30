@@ -22,6 +22,7 @@ Ein Full-Stack-Verwaltungs-Backend-System basierend auf webman v2 + Flutter.
 | | Begrenzung paralleler Sitzungen | maximal 3 gültige Token pro Benutzer |
 | 📊 Dashboard | Echtzeit-Statistiken/Trenddiagramm/Verteilungsdiagramm/letzte Aktionen | Redis-Cache 5 Minuten |
 | 📈 Datenanalyse | 12 Endpunkte: Übersicht/Ranking/DAU/Stunden/Verhaltensverteilung/Umsatz/Konversion/Wahrscheinlichkeit/Retention/Funnel/ARPU/Wirtschaftsindikatoren | Echtzeit-Aggregation in MySQL, bei DB-Ausfall leere Daten |
+| 📊 Datenberichte | Zusammenfassung/Tagesbericht/CSV-Export | Redis-5-min-Cache, Zeitraum ≤90 Tage |
 | 👥 Benutzerverwaltung | CRUD + Batch-Löschen/Aktivieren-Deaktivieren | Soft-Delete + Passwort-Bestätigung |
 | | Excel-Batch-Import | zeilenweise Validierung + Fehlerbericht |
 | 🔒 Rollen & Berechtigungen | Rollen-CRUD + Berechtigungsbaum | RBAC method.path-granulare Autorisierung |

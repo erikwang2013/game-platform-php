@@ -62,6 +62,8 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | لوحات المتصدرين | دفع لحظي WebSocket (المنفذ 8789) | مكتمل |
 | CDN | تكامل خمسة مزودين (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS رفع + مسح + تحميل مسبق) | مكتمل |
 | إدارة CDN | إعداد المزودين الخمسة من لوحة الإدارة (تخزين مشفر للاعتمادات/تفعيل-إيقاف/اختبار الاتصال HeadBucket)، والخدمة تقرأ من قاعدة البيانات فقط | مكتمل |
+| التقارير | تقارير بيانات لوحة الإدارة (ملخص/يومي/تصدير CSV، كاش Redis 5 دقائق، فترة ≤90 يومًا) | مكتمل |
+| إحصائيات المنصة | إحصائيات الصفحة الرئيسية للجانب C (إجمالي الألعاب/المستخدمين/جولات اليوم/نشطون 7 أيام) | مكتمل |
 | النشر | Docker Compose 7 خدمات + وكيل Nginx عكسي | مكتمل |
 | البيانات | تحليل تجميع MySQL لحظي + حساب الاحتمالات المشتركة/الشرطية | مكتمل |
 | HarmonyOS | إدارة 8 صفحات؛ الطرف C في `apps/harmonyos/` نفّذ تسجيل الدخول/اللوبي/التفاصيل/المحفظة/الملف الشخصي (يشير إلى 8788) | مكتمل جزئيًا (المشروع يعمل، الجهاز الحقيقي يحتاج تغيير IP) |
@@ -140,6 +142,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | POST | /api/ticket/create | إنشاء تذكرة | نعم |
 | POST | /api/ticket/{id}/reply | الرد على التذكرة | نعم |
 
+| GET | /api/platform/stats | إحصائيات المنصة | لا |
 ## 3. وظائف لوحة الإدارة
 
 ### 3.1 واجهات API (جديدة)
@@ -159,6 +162,9 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | GET | /admin/analytics/funnel | قمع التحويل |
 | GET | /admin/analytics/arpu | اتجاه ARPU/ARPPU |
 | GET | /admin/analytics/economy | مؤشرات اقتصاد عملات الألعاب |
+| GET | /admin/report/summary | ملخص التقارير (مستخدمون جدد/إيداعات/سحوبات/تحويلات/جولات) |
+| GET | /admin/report/daily | تقرير يومي (تجميع يومي، الأيام بدون بيانات تُعبأ بـ 0) |
+| GET | /admin/report/export | تصدير التقرير اليومي CSV (UTF-8 BOM) |
 | GET | /admin/game/list | قائمة الألعاب |
 | POST | /admin/game/create | إنشاء لعبة (تشمل provider_config) |
 | PUT | /admin/game/{id} | تعديل اللعبة |
