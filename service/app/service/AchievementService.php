@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace app\service;
 use common\service\VipService;
 
-use app\common\SnowflakeService;
+use common\SnowflakeService;
 use app\model\Achievement;
 use app\model\UserAchievement;
 use support\Db;

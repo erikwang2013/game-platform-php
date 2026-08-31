@@ -10,7 +10,7 @@ namespace Tests;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use app\model\WithdrawOrder;
-use app\service\PayoutService;
+use common\service\PayoutService;
 use support\Db;
 
 /**

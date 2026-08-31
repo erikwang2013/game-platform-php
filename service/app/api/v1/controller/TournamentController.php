@@ -6,7 +6,7 @@ declare(strict_types=1);
 namespace app\api\v1\controller;
 use app\model\Tournament;
 use app\model\TournamentEntry;
-use app\service\FeatureFlag;
+use common\service\FeatureFlag;
 use support\Request;
 use support\Response;
 use hg\apidoc\annotation as Apidoc;

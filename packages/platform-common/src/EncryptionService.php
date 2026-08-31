@@ -5,7 +5,7 @@
 
 declare(strict_types=1);
 
-namespace app\common;
+namespace common;
 
 use Erikwang2013\Encryption\EncryptionManager;
 use Erikwang2013\Encryption\EncryptionManagerFactory;

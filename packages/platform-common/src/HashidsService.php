@@ -5,7 +5,7 @@
 
 declare(strict_types=1);
 
-namespace app\common;
+namespace common;
 
 use support\Container;
 use InvalidArgumentException;

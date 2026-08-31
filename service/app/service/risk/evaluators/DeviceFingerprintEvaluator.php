@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\service\risk\evaluators;
 
-use app\common\SnowflakeService;
+use common\SnowflakeService;
 use app\model\DeviceAccountMap;
 use app\model\DeviceFingerprint;
 use app\service\risk\RiskEvaluator;

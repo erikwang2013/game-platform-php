@@ -11,7 +11,7 @@ use app\model\PlatformConfig;
 use app\model\Referral;
 use app\model\ReferralReward;
 use app\model\UserWallet;
-use app\service\NotificationService;
+use common\service\NotificationService;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;

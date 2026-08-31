@@ -9,7 +9,7 @@ namespace Tests;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use app\service\FeatureFlag;
+use common\service\FeatureFlag;
 use app\model\PlatformConfig;
 use support\Db;
 

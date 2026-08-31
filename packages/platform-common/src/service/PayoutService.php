@@ -3,9 +3,8 @@
  * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
  */
 declare(strict_types=1);
-namespace app\service;
+namespace common\service;
 use app\model\WithdrawOrder;
-use app\model\PlatformConfig;
 use common\CircuitBreaker;
 use support\Log;
 use support\Redis;
@@ -24,7 +23,7 @@ final class PayoutService
             throw new \RuntimeException('Max payout attempts exceeded');
         }
 
-        if (self::mockEnabled()) {
+        if (FeatureFlag::isEnabled('provider_mock')) {
             Log::warning('PayoutService mock mode: skip PayPal payout, order ' . $order->order_no);
             self::markCompleted($order);
             return [
@@ -99,7 +98,7 @@ final class PayoutService
             return $order->payout_status;
         }
 
-        if (self::mockEnabled()) {
+        if (FeatureFlag::isEnabled('provider_mock')) {
             Log::warning('PayoutService mock mode: skip PayPal status check, order ' . $order->order_no);
             return 'success';
         }
@@ -142,6 +141,7 @@ final class PayoutService
                 return $cached;
             }
         } catch (\Throwable $e) {
+            // 缓存不可用可降级直连 PayPal，但必须告警
             Log::warning('PayPal token Redis get failed, fetching fresh: ' . $e->getMessage());
         }
 
@@ -184,6 +184,14 @@ final class PayoutService
         $order->paid_at = date('Y-m-d H:i:s');
         $order->save();
 
+        // 真正打款完成才发 completed 事件（申请时发的是 withdraw.applied）。
+        // eventId 与 Monitor 对账巡检 SQL 的 CONCAT('withdraw_', wo.id, '_completed') 对应。
+        EventPublisher::push('withdraw.completed', "withdraw_{$order->id}_completed", [
+            'user_id' => $order->user_id,
+            'platform_amount' => $order->platform_amount,
+            'status' => 'completed',
+        ]);
+
         NotificationService::send(
             $order->user_id,
             'withdraw',
@@ -212,11 +220,5 @@ final class PayoutService
             return $order->account_info;
         }
         throw new \RuntimeException('Cannot extract PayPal email from account_info');
-    }
-
-    private static function mockEnabled(): bool
-    {
-        $value = PlatformConfig::get('feature', 'provider_mock', 'off');
-        return $value === 'on' || $value === '1' || $value === 'true';
     }
 }

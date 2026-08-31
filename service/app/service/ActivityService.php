@@ -9,7 +9,7 @@ namespace app\service;
 
 use app\activity\ActivityHandlerFactory;
 use app\activity\ActivityHandlerInterface;
-use app\common\SnowflakeService;
+use common\SnowflakeService;
 use app\event\EventBus;
 use app\model\Activity;
 use app\model\ActivityParticipation;

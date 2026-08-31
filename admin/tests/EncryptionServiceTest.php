@@ -9,7 +9,7 @@ namespace tests;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use app\common\EncryptionService;
+use common\EncryptionService;
 
 class EncryptionServiceTest extends TestCase
 {

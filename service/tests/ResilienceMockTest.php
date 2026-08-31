@@ -12,8 +12,8 @@ use PHPUnit\Framework\Attributes\Test;
 use app\model\DeviceToken;
 use app\model\PlatformConfig;
 use app\model\WithdrawOrder;
-use app\service\FeatureFlag;
-use app\service\PayoutService;
+use common\service\FeatureFlag;
+use common\service\PayoutService;
 use app\service\PushService;
 use support\Db;
 

@@ -5,12 +5,23 @@
 
 declare(strict_types=1);
 
-namespace app\service;
+namespace common\service;
 
 use app\model\Notification;
 
 class NotificationService
 {
+    private static $pushHandler = null;
+
+    /**
+     * 推送是可选钩子：service 端注册 PushService::send，admin 端不注册（方案批次 2）。
+     * 共享核心只做落库 + 站内信。
+     */
+    public static function setPushHandler(?callable $handler): void
+    {
+        self::$pushHandler = $handler;
+    }
+
     /**
      * Send a notification to a user.
      *
@@ -44,6 +55,10 @@ class NotificationService
             $notif->ref_type = $refType;
             $notif->ref_id = $refId;
             $notif->save();
+
+            if (self::$pushHandler !== null) {
+                (self::$pushHandler)($userId, $type, $title, $content, $refType, $refId);
+            }
 
             // Attempt email delivery if user has an email and mail is configured
             self::sendEmail($userId, $title, $content);

@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use app\common\HashidsService;
-use app\common\SnowflakeService;
+use common\HashidsService;
+use common\SnowflakeService;
 use app\model\CountryConfig;
 use support\Request;
 use support\Response;

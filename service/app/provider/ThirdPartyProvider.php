@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\provider;
 
-use app\service\FeatureFlag;
+use common\service\FeatureFlag;
 use common\CircuitBreaker;
 use common\Retry;
 use GuzzleHttp\Client;

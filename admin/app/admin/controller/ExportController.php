@@ -14,7 +14,7 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use Dompdf\Dompdf;
-use app\common\EncryptionService;
+use common\EncryptionService;
 use app\model\AdminUser;
 use app\model\OperationLog;
 use app\model\AdminRole;

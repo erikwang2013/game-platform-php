@@ -9,7 +9,7 @@ namespace app\admin\controller;
 
 use hg\apidoc\annotation as Apidoc;
 use app\model\UserIdentity;
-use app\service\NotificationService;
+use common\service\NotificationService;
 use support\Request;
 use support\Response;
 

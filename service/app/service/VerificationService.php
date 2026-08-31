@@ -33,7 +33,7 @@ class VerificationService
         }
 
         // Attempt email delivery via notification service
-        \app\service\NotificationService::send(
+        \common\service\NotificationService::send(
             $userId, 'verification', 'Email Verification',
             "Your verification code is: {$code}. Valid for 10 minutes."
         );

@@ -20,7 +20,7 @@ use support\Request;
 use support\Response;
 use app\event\EventBus;
 use app\service\AntiCheatService;
-use app\service\NotificationService;
+use common\service\NotificationService;
 use app\service\RiskService;
 use common\service\VipService;
 

@@ -11,7 +11,7 @@ use app\model\DepositOrder;
 use app\model\PaymentMethod;
 use app\model\PlatformConfig;
 use app\payment\GatewayFactory;
-use app\service\NotificationService;
+use common\service\NotificationService;
 use common\service\DepositLogService;
 use hg\apidoc\annotation as Apidoc;
 use support\Log;

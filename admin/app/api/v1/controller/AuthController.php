@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace app\api\v1\controller;
 
 use app\model\AdminUser;
-use app\common\SnowflakeService;
+use common\SnowflakeService;
 use support\Container;
 use support\Redis;
 use support\Request;

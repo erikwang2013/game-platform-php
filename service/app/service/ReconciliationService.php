@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\service;
 
-use app\common\SnowflakeService;
+use common\SnowflakeService;
 use app\model\DepositOrder;
 use app\model\PaymentMethod;
 use app\model\ReconciliationBatch;

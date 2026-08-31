@@ -9,7 +9,7 @@ namespace tests;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use app\common\SnowflakeService;
+use common\SnowflakeService;
 
 class SnowflakeServiceTest extends TestCase
 {

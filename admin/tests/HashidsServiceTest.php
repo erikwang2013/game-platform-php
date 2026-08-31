@@ -9,7 +9,7 @@ namespace tests;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use app\common\HashidsService;
+use common\HashidsService;
 
 class HashidsServiceTest extends TestCase
 {

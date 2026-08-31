@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\event;
 
-use app\common\SnowflakeService;
+use common\SnowflakeService;
 use app\model\EventOutbox;
 use support\Db;
 use support\Log;

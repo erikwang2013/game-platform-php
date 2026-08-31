@@ -18,7 +18,7 @@ use support\Request;
 use support\Response;
 use support\Db;
 use app\event\EventBus;
-use app\service\NotificationService;
+use common\service\NotificationService;
 use common\service\VipService;
 
 /**
