@@ -19,6 +19,7 @@ Languages: **中文** · [English](docs/translations/README.en.md) · [한국어
 |------|------|------|
 | 完整版 | 完全体：排行榜、优惠券、游戏分类、国家配置、ES搜索 | 已完成 |
 | 生态扩展 | v2.0：游戏Provider接入、工单、VIP、成就、社交、事件总线 | 已完成 |
+| v1.3.15-22 (8版本) | 对账/结算、风控纵深、统一钱包、活动引擎、反作弊、社交拉新、Adyen/GrabPay | 已完成 |
 
 ## 技术栈
 
@@ -270,6 +271,13 @@ cd admin/apps/flutter && flutter test --timeout 300s
 | 通知 | 站内信+邮件、充值/提现/KYC/优惠券自动通知 |
 | 推荐 | 推荐码、注册奖励、充值返佣 |
 | 风控 | IP黑名单/大额预警/频率/速度检测 |
+| 风控纵深 | 设备指纹/IP信誉/账号关联图谱 + 规则引擎 + 风控看板 + AML/KYC/信任分 |
+| 反作弊 | 反作弊事件采集 + 日统计 + 人工复核 |
+| 对账/结算 | 每日对账批处理 + 差异明细 + 账单对账 |
+| 统一钱包 | WalletScope 统一钱包作用域 |
+| 活动引擎 | 活动创建/参与/奖励 + 签到 |
+| 社交拉新 | 群组 + 分享链接追踪 |
+| 支付网关 | Adyen / GrabPay 新增网关 (L1) |
 | 国际化 | 4语言(en-US/zh-CN/ja-JP/ko-KR)、翻译表+缓存 |
 | 国家配置 | 8国差异化支付/提现方式、最低充值额 |
 | 统计 | 日统计快照(5类指标) + 平台收益追踪 |
@@ -284,7 +292,7 @@ cd admin/apps/flutter && flutter test --timeout 300s
 | 优惠券 | 条件限制 (min_deposit/first_user/game_id) |
 | 事件 | Redis Pub/Sub 事件总线 + Webhook订阅投递 (7种事件) |
 | 部署 | Docker Compose 8服务编排 + Nginx反向代理 |
-| 客户端 | Flutter Admin(15页) + Platform(10页) + HarmonyOS(5页) |
+| 客户端 | Flutter Admin(17页) + Platform(10页) + HarmonyOS(5页) |
 
 ## 业务模型
 
