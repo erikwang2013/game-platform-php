@@ -23,6 +23,7 @@ import '../pages/announcement/announcement_page.dart';
 import '../pages/vip/vip_page.dart';
 import '../pages/achievement/achievement_page.dart';
 import '../pages/activity/activity_page.dart';
+import '../pages/risk/risk_dashboard_page.dart';
 
 class AdminLayout extends StatefulWidget {
   final Widget child;
@@ -54,6 +55,7 @@ class _AdminLayoutState extends State<AdminLayout> {
     PlatformUserPage(),
     IdentityPage(),
     RiskLogPage(),
+    RiskDashboardPage(),
     PaymentPage(),
     CdnPage(),
     AnnouncementPage(),
@@ -259,6 +261,11 @@ class _AdminLayoutState extends State<AdminLayout> {
         icon: const Icon(Icons.warning, size: 20),
         label: Text("${AppTranslations.t('nav.risk_logs')}"),
         selectedIcon: const Icon(Icons.warning, size: 20),
+      ),
+      NavigationDrawerDestination(
+        icon: const Icon(Icons.monitor_heart, size: 20),
+        label: const Text('风控大盘'),
+        selectedIcon: const Icon(Icons.monitor_heart, size: 20),
       ),
       NavigationDrawerDestination(
         icon: const Icon(Icons.payment, size: 20),
