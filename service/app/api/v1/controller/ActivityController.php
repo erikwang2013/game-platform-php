@@ -10,7 +10,7 @@ namespace app\api\v1\controller;
 use app\model\Activity;
 use app\model\ActivityParticipation;
 use app\service\ActivityService;
-use app\service\FeatureFlag;
+use common\service\FeatureFlag;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
