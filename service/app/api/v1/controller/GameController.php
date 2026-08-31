@@ -9,7 +9,7 @@ namespace app\api\v1\controller;
 
 use common\model\Game;
 use common\model\GamePlayLog;
-use app\model\UserWallet;
+use common\model\UserWallet;
 use common\service\GamePlayLogService;
 use hg\apidoc\annotation as Apidoc;
 use support\Db;

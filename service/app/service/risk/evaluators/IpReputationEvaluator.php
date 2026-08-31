@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\service\risk\evaluators;
 
-use app\model\IpReputation;
+use common\model\IpReputation;
 use app\service\risk\RiskEvaluator;
 use support\Db;
 use support\Log;

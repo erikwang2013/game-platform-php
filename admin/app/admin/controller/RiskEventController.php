@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
-use app\model\RiskLog;
-use app\model\RiskRule;
+use common\model\RiskLog;
+use common\model\RiskRule;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;

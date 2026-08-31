@@ -6,7 +6,7 @@ declare(strict_types=1);
 namespace app\admin\controller;
 
 use app\activity\ActivityHandlerFactory;
-use app\model\Activity;
+use common\model\Activity;
 use support\Request;
 use support\Response;
 

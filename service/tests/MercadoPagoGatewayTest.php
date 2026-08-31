@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace tests;
 
-use app\model\DepositOrder;
-use app\model\PaymentMethod;
+use common\model\DepositOrder;
+use common\model\PaymentMethod;
 use app\payment\MercadoPagoGateway;
 use GuzzleHttp\Client;
 use GuzzleHttp\Handler\MockHandler;

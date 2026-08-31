@@ -4,7 +4,7 @@
  */
 declare(strict_types=1);
 namespace app\service;
-use app\model\DeviceToken;
+use common\model\DeviceToken;
 use common\CircuitBreaker;
 use common\service\FeatureFlag;
 use common\Retry;

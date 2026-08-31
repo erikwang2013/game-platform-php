@@ -9,7 +9,7 @@ namespace app\api\v1\controller;
 
 use common\HashidsService;
 use common\SnowflakeService;
-use app\model\CountryConfig;
+use common\model\CountryConfig;
 use support\Request;
 use support\Response;
 

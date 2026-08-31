@@ -9,9 +9,9 @@ namespace Tests;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use app\model\DeviceToken;
-use app\model\PlatformConfig;
-use app\model\WithdrawOrder;
+use common\model\DeviceToken;
+use common\model\PlatformConfig;
+use common\model\WithdrawOrder;
 use common\service\FeatureFlag;
 use common\service\PayoutService;
 use app\service\PushService;

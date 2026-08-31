@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace tests;
 
-use app\model\DepositOrder;
+use common\model\DepositOrder;
 use app\payment\TossGateway;
 use PHPUnit\Framework\TestCase;
 use support\Request;
@@ -98,7 +98,7 @@ class TossGatewayTest extends TestCase
             $this->assertFalse($gateway->verifyCallback($this->makeRequest('', [], 'POST', '/?provider=toss&order_no=DEP1&paymentKey=PK1&amount=100'))['valid']);
             $this->assertFalse($gateway->verifyCallback($this->makeRequest('{"eventType":"PAYMENT_STATUS_CHANGED","data":{"paymentKey":"PK1"}}'))['valid']);
             $this->expectException(\RuntimeException::class);
-            $gateway->createPayment(new DepositOrder(['order_no' => 'DEP1', 'amount' => '100.0000']), new \app\model\PaymentMethod());
+            $gateway->createPayment(new DepositOrder(['order_no' => 'DEP1', 'amount' => '100.0000']), new \common\model\PaymentMethod());
         } finally {
             putenv('TOSS_SECRET_KEY=test-secret');
         }

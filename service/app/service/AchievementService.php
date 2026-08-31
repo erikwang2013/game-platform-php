@@ -9,8 +9,8 @@ namespace app\service;
 use common\service\VipService;
 
 use common\SnowflakeService;
-use app\model\Achievement;
-use app\model\UserAchievement;
+use common\model\Achievement;
+use common\model\UserAchievement;
 use support\Db;
 use support\Log;
 

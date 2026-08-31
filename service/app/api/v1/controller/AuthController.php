@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use app\model\ShareLink;
+use common\model\ShareLink;
 use common\model\User;
 use app\model\User2FA;
-use app\model\UserWallet;
+use common\model\UserWallet;
 use hg\apidoc\annotation as Apidoc;
 use support\Db;
 use support\Request;

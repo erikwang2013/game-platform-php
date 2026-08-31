@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use app\model\CountryConfig;
+use common\model\CountryConfig;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
@@ -56,8 +56,8 @@ class CountryController extends BaseController
             'country_code'     => $config->country_code,
             'currency'         => $config->currency,
             'min_deposit'      => $config->min_deposit,
-            'payment_methods'  => json_decode($config->payment_methods ?? '[]', true),
-            'withdraw_methods' => json_decode($config->withdraw_methods ?? '[]', true),
+            'payment_methods'  => CountryConfig::methodNames((string) $config->payment_methods),
+            'withdraw_methods' => CountryConfig::methodNames((string) $config->withdraw_methods),
             'status'           => $config->status,
         ]);
     }

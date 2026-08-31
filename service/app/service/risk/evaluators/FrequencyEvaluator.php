@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace app\service\risk\evaluators;
 
-use app\model\DepositOrder;
-use app\model\ExchangeRecord;
-use app\model\RiskLog;
-use app\model\WithdrawOrder;
+use common\model\DepositOrder;
+use common\model\ExchangeRecord;
+use common\model\RiskLog;
+use common\model\WithdrawOrder;
 use app\service\risk\RiskEvaluator;
 
 /**

@@ -7,11 +7,11 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use app\model\ExchangeRecord;
+use common\model\ExchangeRecord;
 use common\model\Game;
-use app\model\GameCurrency;
-use app\model\UserGameWallet;
-use app\model\UserWallet;
+use common\model\GameCurrency;
+use common\model\UserGameWallet;
+use common\model\UserWallet;
 use hg\apidoc\annotation as Apidoc;
 use support\Log;
 use support\Request;

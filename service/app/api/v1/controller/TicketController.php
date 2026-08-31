@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use app\model\Ticket;
-use app\model\TicketReply;
+use common\model\Ticket;
+use common\model\TicketReply;
 use support\Request;
 use support\Response;
 

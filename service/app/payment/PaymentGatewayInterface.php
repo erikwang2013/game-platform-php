@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace app\payment;
 
-use app\model\DepositOrder;
-use app\model\PaymentMethod;
+use common\model\DepositOrder;
+use common\model\PaymentMethod;
 use support\Request;
 
 interface PaymentGatewayInterface

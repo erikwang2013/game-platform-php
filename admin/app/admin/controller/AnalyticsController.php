@@ -144,7 +144,7 @@ class AnalyticsController extends BaseController
             $cohort = \common\model\User::whereDate('created_at', $cohortDate)->count();
             if ($cohort === 0) { $data["D{$d}"] = '0%'; continue; }
 
-            $active = \app\model\UserSession::whereDate('created_at', '>=', $cohortDate)
+            $active = \common\model\UserSession::whereDate('created_at', '>=', $cohortDate)
                 ->whereDate('created_at', '<=', $endDate)
                 ->whereIn('user_id', function($q) use ($cohortDate) {
                     $q->select('id')->from('user')->whereDate('created_at', $cohortDate);
@@ -167,8 +167,8 @@ class AnalyticsController extends BaseController
         $since = date('Y-m-d H:i:s', strtotime("-{$days} days"));
 
         $registered = \common\model\User::where('created_at', '>=', $since)->count();
-        $deposited = \app\model\DepositOrder::where('created_at', '>=', $since)->where('status', 'confirmed')->distinct('user_id')->count('user_id');
-        $exchanged = \app\model\ExchangeRecord::where('created_at', '>=', $since)->distinct('user_id')->count('user_id');
+        $deposited = \common\model\DepositOrder::where('created_at', '>=', $since)->where('status', 'confirmed')->distinct('user_id')->count('user_id');
+        $exchanged = \common\model\ExchangeRecord::where('created_at', '>=', $since)->distinct('user_id')->count('user_id');
         $played = \common\model\GamePlayLog::where('created_at', '>=', $since)->distinct('user_id')->count('user_id');
 
         $base = $registered > 0 ? $registered : 1;
@@ -197,9 +197,9 @@ class AnalyticsController extends BaseController
             $date = date('Y-m-d', strtotime("-{$i} days"));
             $dates[] = $date;
 
-            $revenue = (float) (\app\model\DepositOrder::whereDate('created_at', $date)->where('status', 'confirmed')->sum('platform_amount') ?? '0');
+            $revenue = (float) (\common\model\DepositOrder::whereDate('created_at', $date)->where('status', 'confirmed')->sum('platform_amount') ?? '0');
             $totalUsers = \common\model\User::whereDate('created_at', '<=', $date)->count();
-            $payingUsers = \app\model\DepositOrder::whereDate('created_at', $date)->where('status', 'confirmed')->distinct('user_id')->count('user_id');
+            $payingUsers = \common\model\DepositOrder::whereDate('created_at', $date)->where('status', 'confirmed')->distinct('user_id')->count('user_id');
 
             $arpuSeries[] = $totalUsers > 0 ? round($revenue / $totalUsers, 4) : 0;
             $arppuSeries[] = $payingUsers > 0 ? round($revenue / $payingUsers, 2) : 0;
@@ -215,11 +215,11 @@ class AnalyticsController extends BaseController
      */
     public function economy(Request $request): Response
     {
-        $currencies = \app\model\GameCurrency::with('game')->get();
+        $currencies = \common\model\GameCurrency::with('game')->get();
         $items = [];
         foreach ($currencies as $c) {
-            $minted = \app\model\ExchangeRecord::where('currency_id', $c->id)->where('direction', 'in')->sum('game_amount') ?? '0';
-            $burned = \app\model\ExchangeRecord::where('currency_id', $c->id)->where('direction', 'out')->sum('game_amount') ?? '0';
+            $minted = \common\model\ExchangeRecord::where('currency_id', $c->id)->where('direction', 'in')->sum('game_amount') ?? '0';
+            $burned = \common\model\ExchangeRecord::where('currency_id', $c->id)->where('direction', 'out')->sum('game_amount') ?? '0';
             $circulation = bcsub($minted, $burned, 8);
             $inflation = bccomp($minted, '0', 4) > 0 ? bcmul(bcdiv(bcsub($minted, $burned, 8), $minted, 8), '100', 2) : '0';
 

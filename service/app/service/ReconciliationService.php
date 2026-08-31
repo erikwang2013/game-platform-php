@@ -8,12 +8,12 @@ declare(strict_types=1);
 namespace app\service;
 
 use common\SnowflakeService;
-use app\model\DepositOrder;
-use app\model\PaymentMethod;
+use common\model\DepositOrder;
+use common\model\PaymentMethod;
 use app\model\ReconciliationBatch;
 use app\model\ReconciliationDiff;
 use app\model\ReconciliationStatement;
-use app\model\Transaction;
+use common\model\Transaction;
 use app\payment\StatementSourceResolver;
 use support\Db;
 use support\Log;

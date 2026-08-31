@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\activity;
 
-use app\model\Activity;
+use common\model\Activity;
 
 /**
  * 每日任务活动：消费 EventBus 事件累加进度，全任务达标后一次性发奖。

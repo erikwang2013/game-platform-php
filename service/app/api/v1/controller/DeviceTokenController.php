@@ -4,7 +4,7 @@
  */
 declare(strict_types=1);
 namespace app\api\v1\controller;
-use app\model\DeviceToken;
+use common\model\DeviceToken;
 use support\Request;
 use support\Response;
 

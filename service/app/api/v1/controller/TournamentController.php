@@ -4,8 +4,8 @@
  */
 declare(strict_types=1);
 namespace app\api\v1\controller;
-use app\model\Tournament;
-use app\model\TournamentEntry;
+use common\model\Tournament;
+use common\model\TournamentEntry;
 use common\service\FeatureFlag;
 use support\Request;
 use support\Response;

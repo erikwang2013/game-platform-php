@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace common\service;
 
-use app\model\PlatformConfig;
+use common\model\PlatformConfig;
 
 class FeatureFlag
 {

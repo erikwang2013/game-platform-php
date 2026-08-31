@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace app\api\v1\controller;
 
 use common\model\User;
-use app\model\UserOauth;
-use app\model\UserWallet;
+use common\model\UserOauth;
+use common\model\UserWallet;
 use Firebase\JWT\JWT;
 use Firebase\JWT\JWK;
 use hg\apidoc\annotation as Apidoc;
@@ -287,7 +287,7 @@ class OAuthController extends BaseController
 
     private function getOAuthConfig(string $provider): ?array
     {
-        $configJson = \app\model\PlatformConfig::get('oauth', $provider, null);
+        $configJson = \common\model\PlatformConfig::get('oauth', $provider, null);
         if (!$configJson) {
             $envPrefix = strtoupper($provider);
             return [

@@ -9,7 +9,7 @@ namespace app\service;
 
 use common\SnowflakeService;
 use app\event\EventBus;
-use app\model\Transaction;
+use common\model\Transaction;
 use support\Db;
 
 /**

@@ -4,9 +4,9 @@
  */
 declare(strict_types=1);
 namespace common\service;
-use app\model\UserVip;
-use app\model\VipLevel;
-use app\model\ExpLog;
+use common\model\UserVip;
+use common\model\VipLevel;
+use common\model\ExpLog;
 use support\Db;
 
 class VipService

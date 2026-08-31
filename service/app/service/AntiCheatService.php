@@ -9,10 +9,10 @@ namespace app\service;
 
 use common\SnowflakeService;
 use app\model\AntiCheatDailyStat;
-use app\model\AntiCheatEvent;
+use common\model\AntiCheatEvent;
 use common\model\GamePlayLog;
-use app\model\RiskRule;
-use app\model\UserTrust;
+use common\model\RiskRule;
+use common\model\UserTrust;
 use app\service\anticheat\AntiCheatDetector;
 use support\Log;
 use support\Redis;

@@ -8,8 +8,8 @@ namespace app\service;
 
 use common\SnowflakeService;
 use app\event\EventBus;
-use app\model\RiskLog;
-use app\model\RiskRule;
+use common\model\RiskLog;
+use common\model\RiskRule;
 use app\service\risk\FingerprintContext;
 use app\service\risk\RiskEvaluator;
 use app\service\risk\evaluators\AmountAnomalyEvaluator;

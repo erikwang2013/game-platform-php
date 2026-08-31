@@ -6,9 +6,9 @@ declare(strict_types=1);
 
 namespace common\service;
 
-use app\model\ExchangeRecord;
+use common\model\ExchangeRecord;
 use common\model\GamePlayLog;
-use app\model\Leaderboard;
+use common\model\Leaderboard;
 use support\Redis;
 
 /**

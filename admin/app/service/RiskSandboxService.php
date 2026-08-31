@@ -7,14 +7,14 @@ declare(strict_types=1);
 
 namespace app\service;
 
-use app\model\DepositOrder;
-use app\model\DeviceAccountMap;
-use app\model\DeviceFingerprint;
-use app\model\ExchangeRecord;
-use app\model\IpReputation;
-use app\model\RiskLog;
+use common\model\DepositOrder;
+use common\model\DeviceAccountMap;
+use common\model\DeviceFingerprint;
+use common\model\ExchangeRecord;
+use common\model\IpReputation;
+use common\model\RiskLog;
 use common\model\User;
-use app\model\WithdrawOrder;
+use common\model\WithdrawOrder;
 
 /**
  * 管理端风控沙箱试算：按服务端评估器同款判定条件只读评估，不写库、不落日志、不触发处置。

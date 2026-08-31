@@ -9,7 +9,7 @@ namespace tests;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use app\model\PlatformConfig;
+use common\model\PlatformConfig;
 use app\service\RiskService;
 use common\service\TranslationService;
 

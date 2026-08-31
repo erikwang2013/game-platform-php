@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace app\api\v1\controller;
 
 use common\model\Game;
-use app\model\Group;
-use app\model\GroupMember;
+use common\model\Group;
+use common\model\GroupMember;
 use hg\apidoc\annotation as Apidoc;
 use support\Db;
 use support\Request;

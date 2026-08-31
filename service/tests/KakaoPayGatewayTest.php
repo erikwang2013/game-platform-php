@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace tests;
 
-use app\model\DepositOrder;
+use common\model\DepositOrder;
 use app\payment\KakaoPayGateway;
 use PHPUnit\Framework\TestCase;
 use support\Request;

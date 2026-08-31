@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace app\service\risk\evaluators;
 
-use app\model\UserWallet;
-use app\model\WithdrawOrder;
+use common\model\UserWallet;
+use common\model\WithdrawOrder;
 use app\service\risk\riskEvaluator;
 
 /**

@@ -4,7 +4,7 @@
  */
 declare(strict_types=1);
 namespace common\service;
-use app\model\WithdrawOrder;
+use common\model\WithdrawOrder;
 use common\CircuitBreaker;
 use support\Log;
 use support\Redis;

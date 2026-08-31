@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace app\admin\controller;
 
 use hg\apidoc\annotation as Apidoc;
-use app\model\Leaderboard;
+use common\model\Leaderboard;
 use common\service\LeaderboardService;
 use support\Request;
 use support\Response;

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\payment;
 
-use app\model\DepositOrder;
+use common\model\DepositOrder;
 
 /**
  * 可选能力接口：支持退款的网关实现之。

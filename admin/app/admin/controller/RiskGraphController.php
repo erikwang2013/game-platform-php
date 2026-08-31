@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
-use app\model\AccountAccountLink;
-use app\model\DeviceAccountMap;
-use app\model\DeviceFingerprint;
+use common\model\AccountAccountLink;
+use common\model\DeviceAccountMap;
+use common\model\DeviceFingerprint;
 use common\model\User;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;

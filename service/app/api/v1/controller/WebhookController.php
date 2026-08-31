@@ -6,7 +6,7 @@ declare(strict_types=1);
 namespace app\api\v1\controller;
 use app\event\EventBus;
 use app\model\EventOutbox;
-use app\model\PlatformConfig;
+use common\model\PlatformConfig;
 use support\Log;
 use support\Request;
 use support\Response;

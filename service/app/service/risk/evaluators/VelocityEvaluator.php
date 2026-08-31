@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\service\risk\evaluators;
 
-use app\model\RiskLog;
+use common\model\RiskLog;
 use app\service\risk\RiskEvaluator;
 
 /**

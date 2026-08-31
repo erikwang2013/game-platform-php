@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\cdn;
 
-use app\model\CdnProvider;
+use common\model\CdnProvider;
 
 /**
  * CDN 配置服务：从 game_cdn_provider 表读取启用厂商配置

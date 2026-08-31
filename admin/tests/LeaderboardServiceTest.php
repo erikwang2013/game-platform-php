@@ -9,8 +9,8 @@ namespace tests;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use app\model\Leaderboard;
-use app\model\ExchangeRecord;
+use common\model\Leaderboard;
+use common\model\ExchangeRecord;
 use common\service\LeaderboardService;
 use support\Db;
 use support\Redis;

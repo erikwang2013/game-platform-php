@@ -4,7 +4,7 @@
  */
 declare(strict_types=1);
 namespace app\admin\controller;
-use app\model\Achievement;
+use common\model\Achievement;
 use support\Request;
 use support\Response;
 

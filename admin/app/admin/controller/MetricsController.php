@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace app\admin\controller;
 
 use app\model\AdminUser;
-use app\model\DepositOrder;
-use app\model\WithdrawOrder;
+use common\model\DepositOrder;
+use common\model\WithdrawOrder;
 use GuzzleHttp\Client;
 use hg\apidoc\annotation as Apidoc;
 use support\Db;

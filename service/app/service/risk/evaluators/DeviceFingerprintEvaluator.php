@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace app\service\risk\evaluators;
 
 use common\SnowflakeService;
-use app\model\DeviceAccountMap;
-use app\model\DeviceFingerprint;
+use common\model\DeviceAccountMap;
+use common\model\DeviceFingerprint;
 use app\service\risk\RiskEvaluator;
 use support\Db;
 use support\Log;

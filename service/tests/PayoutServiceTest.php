@@ -9,7 +9,7 @@ namespace Tests;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use app\model\WithdrawOrder;
+use common\model\WithdrawOrder;
 use common\service\PayoutService;
 use support\Db;
 
@@ -110,7 +110,7 @@ class PayoutServiceTest extends TestCase
         }
 
         Db::connection()->transaction(function () {
-            \app\model\WithdrawOrder::where('id', 980000601)->delete();
+            \common\model\WithdrawOrder::where('id', 980000601)->delete();
             $order = new WithdrawOrder();
             $order->id = 980000601;
             $order->order_no = 'TEST-MC-' . random_int(100000, 999999);

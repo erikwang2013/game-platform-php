@@ -24,6 +24,9 @@ jobs:
       - name: Check PHP syntax (service)
         run: find service -name '*.php' -not -path '*/vendor/*' -exec php -l {} \; 2>&1 | grep -v 'No syntax errors' | grep . && exit 1 || true
 
+      - name: Check model drift (admin vs service, strict)
+        run: php scripts/check-model-drift.php --strict
+
   composer-audit:
     name: Composer Security Audit
     runs-on: ubuntu-latest

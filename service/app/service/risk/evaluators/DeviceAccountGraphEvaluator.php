@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\service\risk\evaluators;
 
-use app\model\DeviceAccountMap;
+use common\model\DeviceAccountMap;
 use common\model\User;
 use app\service\risk\riskEvaluator;
 use support\Db;

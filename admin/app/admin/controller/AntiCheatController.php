@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
-use app\model\AntiCheatEvent;
-use app\model\UserTrust;
+use common\model\AntiCheatEvent;
+use common\model\UserTrust;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;

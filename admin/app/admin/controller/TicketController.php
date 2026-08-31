@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
-use app\model\Ticket;
-use app\model\TicketReply;
+use common\model\Ticket;
+use common\model\TicketReply;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;

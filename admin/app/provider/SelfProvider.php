@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\provider;
 
-use app\model\UserGameWallet;
+use common\model\UserGameWallet;
 use support\Db;
 
 class SelfProvider extends GameProvider

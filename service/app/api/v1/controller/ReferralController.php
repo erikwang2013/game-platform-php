@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use app\model\PlatformConfig;
-use app\model\Referral;
+use common\model\PlatformConfig;
+use common\model\Referral;
 use app\model\ReferralReward;
-use app\model\UserWallet;
+use common\model\UserWallet;
 use common\service\NotificationService;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
@@ -198,14 +198,14 @@ class ReferralController extends BaseController
         VipService::addExp($referrerId, VipService::EXP_REFERRAL, 'referral', $referral->id, 'referral');
 
         // Multi-level commission (level 2: referrer of referrer)
-        $parentReferral = \app\model\Referral::where('referred_id', $referrerId)->first();
+        $parentReferral = \common\model\Referral::where('referred_id', $referrerId)->first();
         if ($parentReferral && $parentReferral->referrer_id !== $userId) {
             $level2Bonus = PlatformConfig::get('referral', 'level2_bonus', '0');
             $level2Rate = PlatformConfig::get('referral', 'level2_rate', '0.05');
             $commission = bcmul($referrerBonus, $level2Rate, 4);
 
             if (bccomp($commission, '0', 2) > 0) {
-                \app\model\UserWallet::addBalance($parentReferral->referrer_id, $commission, 'referral_bonus');
+                \common\model\UserWallet::addBalance($parentReferral->referrer_id, $commission, 'referral_bonus');
                 $c = new \app\model\ReferralCommission();
                 $c->id = $this->generateId();
                 $c->referral_id = $parentReferral->id;

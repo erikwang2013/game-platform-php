@@ -4,8 +4,8 @@
  *
  * 批次 5 漂移守卫：比较 admin/app/model 与 service/app/model 同名模型的
  * 定义（表名/fillable/casts/timestamps/incrementing/keyType），
- * 输出漂移清单。默认只报告、退出码 0（现状仍有漂移待收敛）；
- * 加 --strict 时存在漂移即退出码 1（CI 用，待批次 4 全量收敛后开启）。
+ * 输出漂移清单。默认只报告、退出码 0；
+ * 加 --strict 时存在漂移即退出码 1（CI 用，已在 .github/workflows/ci.yml 启用）。
  *
  * 用法: php scripts/check-model-drift.php [--strict] [--verbose]
  */
@@ -100,7 +100,7 @@ if ($drifts === []) {
             echo "    - $d\n";
         }
     }
-    echo "\n共 " . count($drifts) . " 个模型漂移，待批次 4 全量收敛后清零；届时以 --strict 接入 CI。\n";
+    echo "\n共 " . count($drifts) . " 个模型漂移，批次 4 收敛后应保持清零（--strict 已在 CI 生效）。\n";
 }
 
 exit($strict && $drifts !== [] ? 1 : 0);

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace tests;
 
-use app\model\CountryConfig;
+use common\model\CountryConfig;
 use app\payment\AstroPayGateway;
 use app\payment\CoinbaseCommerceGateway;
 use app\payment\GatewayFactory;

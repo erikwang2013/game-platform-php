@@ -9,7 +9,7 @@ namespace tests;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use app\model\CdnProvider;
+use common\model\CdnProvider;
 
 /**
  * CDN 厂商配置模型测试

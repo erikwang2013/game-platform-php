@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace common\service;
 
-use app\model\DepositOrder;
+use common\model\DepositOrder;
 use common\model\Game;
 use common\model\GamePlayLog;
 use support\Db;

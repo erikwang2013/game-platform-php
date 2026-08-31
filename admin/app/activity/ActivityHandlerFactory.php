@@ -1,4 +1,3 @@
-<?php
 /*
  * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
  */
@@ -7,7 +6,7 @@ declare(strict_types=1);
 
 namespace app\activity;
 
-use app\model\Activity;
+use common\model\Activity;
 
 /**
  * 活动类型策略工厂。与 ProviderFactory 同构：新增活动类型只需加实现类 + 一个分支。

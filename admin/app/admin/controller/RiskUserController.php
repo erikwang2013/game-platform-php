@@ -7,12 +7,12 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
-use app\model\AntiCheatEvent;
+use common\model\AntiCheatEvent;
 use common\model\GamePlayLog;
-use app\model\RiskLog;
+use common\model\RiskLog;
 use common\model\User;
-use app\model\UserTrust;
-use app\model\UserWallet;
+use common\model\UserTrust;
+use common\model\UserWallet;
 use app\service\WalletScope;
 use app\service\WalletService;
 use hg\apidoc\annotation as Apidoc;

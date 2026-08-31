@@ -9,7 +9,7 @@ namespace tests;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use app\model\Notification;
+use common\model\Notification;
 use common\service\NotificationService;
 use support\Db;
 

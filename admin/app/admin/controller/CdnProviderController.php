@@ -9,7 +9,7 @@ namespace app\admin\controller;
 
 use hg\apidoc\annotation as Apidoc;
 use app\common\CdnProbeService;
-use app\model\CdnProvider;
+use common\model\CdnProvider;
 use support\Request;
 use support\Response;
 

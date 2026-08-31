@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\activity;
 
-use app\model\Activity;
+use common\model\Activity;
 
 /**
  * 签到活动：端点驱动（POST /checkin），不消费 EventBus 事件。

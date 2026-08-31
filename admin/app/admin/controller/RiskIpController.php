@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
-use app\model\IpReputation;
+use common\model\IpReputation;
 use hg\apidoc\annotation as Apidoc;
 use support\Redis;
 use support\Request;

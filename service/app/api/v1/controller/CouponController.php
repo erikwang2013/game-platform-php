@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use app\model\Coupon;
-use app\model\UserCoupon;
+use common\model\Coupon;
+use common\model\UserCoupon;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
@@ -124,13 +124,13 @@ class CouponController extends BaseController
         // Check conditions
         $conditions = json_decode($coupon->conditions ?? '{}', true) ?: [];
         if (!empty($conditions['min_deposit'])) {
-            $totalDeposit = \app\model\DepositOrder::where('user_id', $userId)->where('status', 'confirmed')->sum('platform_amount') ?? '0';
+            $totalDeposit = \common\model\DepositOrder::where('user_id', $userId)->where('status', 'confirmed')->sum('platform_amount') ?? '0';
             if (bccomp($totalDeposit, $conditions['min_deposit'], 4) < 0) {
                 return $this->fail('Minimum deposit of ' . $conditions['min_deposit'] . ' not met', 400);
             }
         }
         if (!empty($conditions['first_user_only']) && $conditions['first_user_only']) {
-            $hasDeposit = \app\model\DepositOrder::where('user_id', $userId)->where('status', 'confirmed')->exists();
+            $hasDeposit = \common\model\DepositOrder::where('user_id', $userId)->where('status', 'confirmed')->exists();
             if ($hasDeposit) return $this->fail('This coupon is for new users only', 400);
         }
         if (!empty($conditions['game_id']) && $conditions['game_id'] > 0) {

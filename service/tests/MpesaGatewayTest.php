@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace tests;
 
-use app\model\DepositOrder;
+use common\model\DepositOrder;
 use app\payment\MpesaGateway;
 use PHPUnit\Framework\TestCase;
 use support\Request;

@@ -11,9 +11,9 @@ use app\activity\ActivityHandlerFactory;
 use app\activity\ActivityHandlerInterface;
 use common\SnowflakeService;
 use app\event\EventBus;
-use app\model\Activity;
-use app\model\ActivityParticipation;
-use app\model\ActivityRewardLog;
+use common\model\Activity;
+use common\model\ActivityParticipation;
+use common\model\ActivityRewardLog;
 use support\Db;
 use support\Log;
 

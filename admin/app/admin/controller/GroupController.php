@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace app\admin\controller;
 
 use hg\apidoc\annotation as Apidoc;
-use app\model\Group;
-use app\model\GroupMember;
+use common\model\Group;
+use common\model\GroupMember;
 use support\Request;
 use support\Response;
 

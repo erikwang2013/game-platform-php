@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\activity;
 
-use app\model\Activity;
+use common\model\Activity;
 
 /**
  * 活动类型策略接口。与 ProviderFactory 同构：工厂按 activity.type 匹配实现。

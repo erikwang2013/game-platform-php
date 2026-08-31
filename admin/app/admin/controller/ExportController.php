@@ -20,9 +20,9 @@ use app\model\OperationLog;
 use app\model\AdminRole;
 use app\model\SystemConfig;
 use common\model\User;
-use app\model\DepositOrder;
-use app\model\WithdrawOrder;
-use app\model\Transaction;
+use common\model\DepositOrder;
+use common\model\WithdrawOrder;
+use common\model\Transaction;
 use support\Request;
 
 /**

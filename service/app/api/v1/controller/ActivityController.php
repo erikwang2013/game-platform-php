@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use app\model\Activity;
-use app\model\ActivityParticipation;
+use common\model\Activity;
+use common\model\ActivityParticipation;
 use app\service\ActivityService;
 use common\service\FeatureFlag;
 use hg\apidoc\annotation as Apidoc;

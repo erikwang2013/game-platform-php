@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace app\process;
 
-use app\model\IpReputation;
-use app\model\RiskLog;
+use common\model\IpReputation;
+use common\model\RiskLog;
 use support\Log;
 use support\Redis;
 

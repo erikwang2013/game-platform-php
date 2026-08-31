@@ -4,8 +4,8 @@
  */
 declare(strict_types=1);
 namespace app\admin\controller;
-use app\model\VipLevel;
-use app\model\UserVip;
+use common\model\VipLevel;
+use common\model\UserVip;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
-use app\model\RiskRule;
+use common\model\RiskRule;
 use app\service\RiskSandboxService;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;

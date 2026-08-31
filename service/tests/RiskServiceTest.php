@@ -9,8 +9,8 @@ namespace Tests;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use app\model\RiskRule;
-use app\model\RiskLog;
+use common\model\RiskRule;
+use common\model\RiskLog;
 use app\service\RiskService;
 use support\Db;
 

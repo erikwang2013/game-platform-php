@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\activity;
 
-use app\model\Activity;
+use common\model\Activity;
 
 /**
  * 邀请注册活动：注册链路按分享短码绑定后驱动（AuthController::register → ShareLink::bindConversion）。

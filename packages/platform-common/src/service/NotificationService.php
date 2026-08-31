@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace common\service;
 
-use app\model\Notification;
+use common\model\Notification;
 
 class NotificationService
 {
