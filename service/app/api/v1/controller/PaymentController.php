@@ -7,12 +7,12 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use app\model\CountryConfig;
-use app\model\DepositOrder;
-use app\model\PaymentMethod;
+use common\model\CountryConfig;
+use common\model\DepositOrder;
+use common\model\PaymentMethod;
 use app\payment\GatewayFactory;
 use common\service\DepositLogService;
-use app\model\UserWallet;
+use common\model\UserWallet;
 use app\event\EventBus;
 use app\service\RiskService;
 use app\service\WalletScope;
@@ -214,10 +214,7 @@ class PaymentController extends BaseController
         $pref = [];
         if ($country !== '') {
             $cfg = CountryConfig::getByCode($country);
-            $pref = $cfg ? json_decode((string) $cfg->payment_methods, true) : [];
-            if (!is_array($pref)) {
-                $pref = [];
-            }
+            $pref = $cfg ? CountryConfig::methodNames((string) $cfg->payment_methods) : [];
         }
         $prefCount = count($pref);
         $methods = $methods->sortBy(function (PaymentMethod $method) use ($pref, $prefCount): int {

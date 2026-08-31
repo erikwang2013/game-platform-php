@@ -7,10 +7,11 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use app\model\DepositOrder;
-use app\model\PaymentMethod;
-use app\model\PlatformConfig;
+use common\model\DepositOrder;
+use common\model\PaymentMethod;
+use common\model\PlatformConfig;
 use app\payment\GatewayFactory;
+use app\service\ComplianceCheckService;
 use common\service\NotificationService;
 use common\service\DepositLogService;
 use hg\apidoc\annotation as Apidoc;
@@ -80,6 +81,9 @@ class DepositController extends BaseController
 
         // Generate order number: DEP + YmdHis + unique suffix (uniqid 微秒+进程，避免同秒撞 uk_order_no)
         $orderNo = 'DEP' . date('YmdHis') . strtoupper(substr(uniqid('', true), -6));
+
+        // 合规钩子（默认 no-op，config/compliance.php enabled=false 时与改造前行为完全一致）
+        ComplianceCheckService::beforeDeposit($userId, (string) $amount, (string) $currency, $this->resolveCountry($request));
 
         $order = new DepositOrder();
         $order->id                 = $this->generateId();

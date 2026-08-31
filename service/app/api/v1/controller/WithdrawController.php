@@ -7,11 +7,11 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use app\model\PlatformConfig;
-use app\model\UserIdentity;
-use app\model\UserWallet;
-use app\model\WithdrawLimit;
-use app\model\WithdrawOrder;
+use common\model\PlatformConfig;
+use common\model\UserIdentity;
+use common\model\UserWallet;
+use common\model\WithdrawLimit;
+use common\model\WithdrawOrder;
 use hg\apidoc\annotation as Apidoc;
 use support\Db;
 use support\Log;
@@ -20,6 +20,7 @@ use support\Request;
 use support\Response;
 use app\event\EventBus;
 use app\service\AntiCheatService;
+use app\service\ComplianceCheckService;
 use common\service\NotificationService;
 use app\service\RiskService;
 use common\service\VipService;
@@ -87,6 +88,9 @@ class WithdrawController extends BaseController
 
     private function applyLocked(Request $request, int $userId, string $platformAmount, string $method, $accountInfo): Response
     {
+        // 合规钩子（默认 no-op，config/compliance.php enabled=false 时与改造前行为完全一致）
+        ComplianceCheckService::beforeWithdraw($userId, $platformAmount, (string) $method, $this->resolveCountry($request));
+
         // Check KYC-based tiered limits
         $level    = 'default';
         $identity = UserIdentity::where('user_id', $userId)->first();
