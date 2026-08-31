@@ -10,7 +10,6 @@ namespace app\api\v1\controller;
 use app\model\ExchangeRecord;
 use app\model\Game;
 use app\model\GameCurrency;
-use app\model\Transaction;
 use app\model\UserGameWallet;
 use app\model\UserWallet;
 use hg\apidoc\annotation as Apidoc;
@@ -240,7 +239,7 @@ class ExchangeController extends BaseController
         try {
             if ($direction === 'in') {
                 // Deduct platform balance
-                $deducted = UserWallet::deductBalance($userId, $platformAmount);
+                $deducted = UserWallet::deductBalance($userId, $platformAmount, 'exchange_out');
                 if (!$deducted) {
                     Db::rollBack();
                     return $this->fail('Insufficient platform balance', 400);
@@ -257,7 +256,7 @@ class ExchangeController extends BaseController
                 }
 
                 // Add platform balance (扣费后净值)
-                $added = UserWallet::addBalance($userId, $actualPlatformAmount);
+                $added = UserWallet::addBalance($userId, $actualPlatformAmount, 'exchange_in');
                 if (!$added) {
                     Db::rollBack();
                     return $this->fail('Failed to add platform balance', 500);
@@ -277,23 +276,9 @@ class ExchangeController extends BaseController
             $record->spread_fee      = $spreadFee;
             $record->save();
 
-            // Get wallet balance after exchange
+            // Get wallet balance after exchange（平台侧流水已由 WalletService 写入）
             $wallet = UserWallet::where('user_id', $userId)->first();
             $balanceAfter = $wallet ? $wallet->balance : '0.0000';
-
-            // Create transaction record
-            $transaction = new Transaction();
-            $transaction->id            = $this->generateId();
-            $transaction->user_id       = $userId;
-            $transaction->type          = $direction === 'in' ? 'exchange_buy' : 'exchange_sell';
-            $transaction->amount        = $direction === 'in' ? '-' . $platformAmount : $actualPlatformAmount;
-            $transaction->balance_after = $balanceAfter;
-            $transaction->ref_type      = 'exchange_record';
-            $transaction->ref_id        = $record->id;
-            $transaction->remark        = $direction === 'in'
-                ? "Exchange buy: {$platformAmount} platform -> {$gameAmount} game (game_id: {$gameId})"
-                : "Exchange sell: {$gameAmount} game -> platform (game_id: {$gameId})";
-            $transaction->save();
 
             Db::commit();
 

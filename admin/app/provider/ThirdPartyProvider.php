@@ -33,37 +33,37 @@ class ThirdPartyProvider extends GameProvider
         return $result['balance'] ?? '0.00000000';
     }
 
-    public function bet(int $userId, int $gameId, string $sessionId, string $amount, string $roundId, array $meta = []): array
+    public function bet(int $userId, int $gameId, int $currencyId, string $sessionId, string $amount, string $roundId, array $meta = []): array
     {
         return $this->request('POST', '/api/game/bet', [
-            'user_id' => $userId, 'game_id' => $gameId,
+            'user_id' => $userId, 'game_id' => $gameId, 'currency_id' => $currencyId,
             'session_id' => $sessionId, 'amount' => $amount,
             'round_id' => $roundId, 'meta' => $meta,
         ]);
     }
 
-    public function settle(int $userId, int $gameId, string $sessionId, string $amount, string $roundId, array $meta = []): array
+    public function settle(int $userId, int $gameId, int $currencyId, string $sessionId, string $amount, string $roundId, array $meta = []): array
     {
         return $this->request('POST', '/api/game/settle', [
-            'user_id' => $userId, 'game_id' => $gameId,
+            'user_id' => $userId, 'game_id' => $gameId, 'currency_id' => $currencyId,
             'session_id' => $sessionId, 'amount' => $amount,
             'round_id' => $roundId, 'meta' => $meta,
         ]);
     }
 
-    public function refund(int $userId, int $gameId, string $sessionId, string $amount, string $roundId, string $reason): array
+    public function refund(int $userId, int $gameId, int $currencyId, string $sessionId, string $amount, string $roundId, string $reason): array
     {
         return $this->request('POST', '/api/game/refund', [
-            'user_id' => $userId, 'game_id' => $gameId,
+            'user_id' => $userId, 'game_id' => $gameId, 'currency_id' => $currencyId,
             'session_id' => $sessionId, 'amount' => $amount,
             'round_id' => $roundId, 'reason' => $reason,
         ]);
     }
 
-    public function rollback(int $userId, int $gameId, string $sessionId, string $roundId): array
+    public function rollback(int $userId, int $gameId, int $currencyId, string $sessionId, string $roundId): array
     {
         return $this->request('POST', '/api/game/rollback', [
-            'user_id' => $userId, 'game_id' => $gameId,
+            'user_id' => $userId, 'game_id' => $gameId, 'currency_id' => $currencyId,
             'session_id' => $sessionId, 'round_id' => $roundId,
         ]);
     }

@@ -47,6 +47,7 @@ class ProviderController extends BaseController
     public function bet(Request $request): Response
     {
         $userId = (int) $request->input('user_id', 0);
+        $currencyId = (int) $request->input('currency_id', 0);
         $sessionId = $request->input('session_id', '');
         $amount = $request->input('amount', '0');
         $roundId = $request->input('round_id', '');
@@ -58,8 +59,8 @@ class ProviderController extends BaseController
 
         $provider = ProviderFactory::create($request->game);
 
-        return Db::transaction(function () use ($provider, $userId, $request, $sessionId, $amount, $roundId, $meta) {
-            $result = $provider->bet($userId, $request->gameId, $sessionId, $amount, $roundId, $meta);
+        return Db::transaction(function () use ($provider, $userId, $currencyId, $request, $sessionId, $amount, $roundId, $meta) {
+            $result = $provider->bet($userId, $request->gameId, $currencyId, $sessionId, $amount, $roundId, $meta);
 
             if ($result['success']) {
                 $this->logPlay($userId, $request->gameId, $sessionId, $roundId, 'bet', $amount, $result['balance_after'] ?? '0', $meta);
@@ -76,6 +77,7 @@ class ProviderController extends BaseController
     public function settle(Request $request): Response
     {
         $userId = (int) $request->input('user_id', 0);
+        $currencyId = (int) $request->input('currency_id', 0);
         $sessionId = $request->input('session_id', '');
         $amount = $request->input('amount', '0');
         $roundId = $request->input('round_id', '');
@@ -87,8 +89,8 @@ class ProviderController extends BaseController
 
         $provider = ProviderFactory::create($request->game);
 
-        return Db::transaction(function () use ($provider, $userId, $request, $sessionId, $amount, $roundId, $meta) {
-            $result = $provider->settle($userId, $request->gameId, $sessionId, $amount, $roundId, $meta);
+        return Db::transaction(function () use ($provider, $userId, $currencyId, $request, $sessionId, $amount, $roundId, $meta) {
+            $result = $provider->settle($userId, $request->gameId, $currencyId, $sessionId, $amount, $roundId, $meta);
 
             if ($result['success']) {
                 $winAmount = $result['win_amount'] ?? '0';
@@ -111,6 +113,7 @@ class ProviderController extends BaseController
     public function refund(Request $request): Response
     {
         $userId = (int) $request->input('user_id', 0);
+        $currencyId = (int) $request->input('currency_id', 0);
         $sessionId = $request->input('session_id', '');
         $amount = $request->input('amount', '0');
         $roundId = $request->input('round_id', '');
@@ -122,8 +125,8 @@ class ProviderController extends BaseController
 
         $provider = ProviderFactory::create($request->game);
 
-        return Db::transaction(function () use ($provider, $userId, $request, $sessionId, $amount, $roundId, $reason) {
-            $result = $provider->refund($userId, $request->gameId, $sessionId, $amount, $roundId, $reason);
+        return Db::transaction(function () use ($provider, $userId, $currencyId, $request, $sessionId, $amount, $roundId, $reason) {
+            $result = $provider->refund($userId, $request->gameId, $currencyId, $sessionId, $amount, $roundId, $reason);
 
             if ($result['success']) {
                 $this->logPlay($userId, $request->gameId, $sessionId, $roundId, 'refund', $amount, $result['balance_after'] ?? '0', ['reason' => $reason]);
@@ -145,8 +148,26 @@ class ProviderController extends BaseController
         $log->game_amount_before = '0';
         $log->game_amount_change = $amount;
         $log->game_amount_after = $balanceAfter;
+        // 反作弊所需: 按 action 拆分注码/赢额
+        if ($action === 'bet') {
+            $log->bet_amount = $amount;
+            $log->win_amount = null;
+        } elseif ($action === 'settle') {
+            $log->bet_amount = null;
+            $log->win_amount = $amount;
+        } elseif ($action === 'refund') {
+            $log->bet_amount = null;
+            $log->win_amount = $amount;
+        } else {
+            $log->bet_amount = null;
+            $log->win_amount = null;
+        }
         $log->metadata = json_encode($meta, JSON_UNESCAPED_UNICODE);
         $log->started_at = date('Y-m-d H:i:s');
+        if (isset($meta['ended_at'])) {
+            $log->ended_at = $meta['ended_at'];
+        }
+        // ponytail: 不写 ip/ua —— MySQL game_game_play_log 无这两列(仅 ClickHouse 镜像有), 写入会 Unknown column
         $log->save();
     }
 }

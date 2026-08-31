@@ -10,7 +10,6 @@ namespace app\api\v1\controller;
 use app\model\PlatformConfig;
 use app\model\Referral;
 use app\model\ReferralReward;
-use app\model\Transaction;
 use app\model\UserWallet;
 use app\service\NotificationService;
 use hg\apidoc\annotation as Apidoc;
@@ -145,7 +144,7 @@ class ReferralController extends BaseController
 
         // Grant bonus to referrer
         if (bccomp($referrerBonus, '0', 2) > 0) {
-            UserWallet::addBalance($referrerId, $referrerBonus);
+            UserWallet::addBalance($referrerId, $referrerBonus, 'referral_bonus');
 
             $rewardId = $this->generateId();
             $reward = new ReferralReward();
@@ -158,18 +157,7 @@ class ReferralController extends BaseController
             $reward->status        = 1;
             $reward->save();
 
-            $wallet = UserWallet::where('user_id', $referrerId)->first();
-            $transaction = new Transaction();
-            $transaction->id            = $this->generateId();
-            $transaction->user_id       = $referrerId;
-            $transaction->type          = 'referral_bonus';
-            $transaction->amount        = $referrerBonus;
-            $transaction->balance_after = $wallet ? $wallet->balance : '0';
-            $transaction->ref_type      = 'referral';
-            $transaction->ref_id        = $referral->id;
-            $transaction->remark        = 'Referral bonus for inviting user #' . $userId;
-            $transaction->save();
-
+            // 流水已由 WalletService 统一写入（type=referral_bonus，ref 关联后续奖励单）
             NotificationService::send(
                 $referrerId,
                 'referral',
@@ -182,7 +170,7 @@ class ReferralController extends BaseController
 
         // Grant bonus to referred user
         if (bccomp($referredBonus, '0', 2) > 0) {
-            UserWallet::addBalance($userId, $referredBonus);
+            UserWallet::addBalance($userId, $referredBonus, 'referral_bonus');
 
             $rewardId2 = $this->generateId();
             $reward2 = new ReferralReward();
@@ -195,18 +183,7 @@ class ReferralController extends BaseController
             $reward2->status        = 1;
             $reward2->save();
 
-            $wallet = UserWallet::where('user_id', $userId)->first();
-            $transaction = new Transaction();
-            $transaction->id            = $this->generateId();
-            $transaction->user_id       = $userId;
-            $transaction->type          = 'referral_bonus';
-            $transaction->amount        = $referredBonus;
-            $transaction->balance_after = $wallet ? $wallet->balance : '0';
-            $transaction->ref_type      = 'referral';
-            $transaction->ref_id        = $referral->id;
-            $transaction->remark        = 'Signup bonus from referral code: ' . $code;
-            $transaction->save();
-
+            // 流水已由 WalletService 统一写入（type=referral_bonus，ref 关联后续奖励单）
             NotificationService::send(
                 $userId,
                 'referral',
@@ -228,7 +205,7 @@ class ReferralController extends BaseController
             $commission = bcmul($referrerBonus, $level2Rate, 4);
 
             if (bccomp($commission, '0', 2) > 0) {
-                \app\model\UserWallet::addBalance($parentReferral->referrer_id, $commission);
+                \app\model\UserWallet::addBalance($parentReferral->referrer_id, $commission, 'referral_bonus');
                 $c = new \app\model\ReferralCommission();
                 $c->id = $this->generateId();
                 $c->referral_id = $parentReferral->id;

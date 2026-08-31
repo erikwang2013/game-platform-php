@@ -21,11 +21,12 @@ class SelfProvider extends GameProvider
         return $wallet ? $wallet->balance : '0.00000000';
     }
 
-    public function bet(int $userId, int $gameId, string $sessionId, string $amount, string $roundId, array $meta = []): array
+    public function bet(int $userId, int $gameId, int $currencyId, string $sessionId, string $amount, string $roundId, array $meta = []): array
     {
-        return Db::transaction(function () use ($userId, $gameId, $amount, $roundId) {
+        return Db::transaction(function () use ($userId, $gameId, $currencyId, $amount, $roundId) {
             $wallet = UserGameWallet::where('user_id', $userId)
                 ->where('game_id', $gameId)
+                ->where('currency_id', $currencyId)
                 ->lockForUpdate()
                 ->first();
 
@@ -43,11 +44,12 @@ class SelfProvider extends GameProvider
         });
     }
 
-    public function settle(int $userId, int $gameId, string $sessionId, string $amount, string $roundId, array $meta = []): array
+    public function settle(int $userId, int $gameId, int $currencyId, string $sessionId, string $amount, string $roundId, array $meta = []): array
     {
-        return Db::transaction(function () use ($userId, $gameId, $amount, $roundId) {
+        return Db::transaction(function () use ($userId, $gameId, $currencyId, $amount, $roundId) {
             $wallet = UserGameWallet::where('user_id', $userId)
                 ->where('game_id', $gameId)
+                ->where('currency_id', $currencyId)
                 ->lockForUpdate()
                 ->first();
 
@@ -63,14 +65,14 @@ class SelfProvider extends GameProvider
         });
     }
 
-    public function refund(int $userId, int $gameId, string $sessionId, string $amount, string $roundId, string $reason): array
+    public function refund(int $userId, int $gameId, int $currencyId, string $sessionId, string $amount, string $roundId, string $reason): array
     {
-        return $this->settle($userId, $gameId, $sessionId, $amount, $roundId, ['reason' => $reason]);
+        return $this->settle($userId, $gameId, $currencyId, $sessionId, $amount, $roundId, ['reason' => $reason]);
     }
 
-    public function rollback(int $userId, int $gameId, string $sessionId, string $roundId): array
+    public function rollback(int $userId, int $gameId, int $currencyId, string $sessionId, string $roundId): array
     {
-        return ['success' => true, 'transaction_id' => $roundId, 'balance_after' => $this->getBalance($userId, $gameId, 0)];
+        return ['success' => true, 'transaction_id' => $roundId, 'balance_after' => $this->getBalance($userId, $gameId, $currencyId)];
     }
 
     public function verifySignature(array $payload, string $signature): bool

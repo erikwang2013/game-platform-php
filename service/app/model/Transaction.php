@@ -21,6 +21,9 @@ class Transaction extends Model
     protected $fillable = [
         'user_id',
         'type',
+        'scope',
+        'game_id',
+        'currency_id',
         'amount',
         'balance_after',
         'ref_type',

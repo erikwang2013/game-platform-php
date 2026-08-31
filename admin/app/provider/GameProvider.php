@@ -23,22 +23,22 @@ abstract class GameProvider
     /**
      * @return array ['success' => bool, 'transaction_id' => string, 'balance_after' => string]
      */
-    abstract public function bet(int $userId, int $gameId, string $sessionId, string $amount, string $roundId, array $meta = []): array;
+    abstract public function bet(int $userId, int $gameId, int $currencyId, string $sessionId, string $amount, string $roundId, array $meta = []): array;
 
     /**
      * @return array ['success' => bool, 'transaction_id' => string, 'balance_after' => string, 'win_amount' => string]
      */
-    abstract public function settle(int $userId, int $gameId, string $sessionId, string $amount, string $roundId, array $meta = []): array;
+    abstract public function settle(int $userId, int $gameId, int $currencyId, string $sessionId, string $amount, string $roundId, array $meta = []): array;
 
     /**
      * @return array ['success' => bool, 'transaction_id' => string, 'balance_after' => string]
      */
-    abstract public function refund(int $userId, int $gameId, string $sessionId, string $amount, string $roundId, string $reason): array;
+    abstract public function refund(int $userId, int $gameId, int $currencyId, string $sessionId, string $amount, string $roundId, string $reason): array;
 
     /**
      * @return array ['success' => bool, 'transaction_id' => string, 'balance_after' => string]
      */
-    abstract public function rollback(int $userId, int $gameId, string $sessionId, string $roundId): array;
+    abstract public function rollback(int $userId, int $gameId, int $currencyId, string $sessionId, string $roundId): array;
 
     abstract public function verifySignature(array $payload, string $signature): bool;
 
