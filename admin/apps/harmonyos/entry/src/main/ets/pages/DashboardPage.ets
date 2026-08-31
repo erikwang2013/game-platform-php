@@ -4,8 +4,8 @@
 
 import router from '@ohos.router';
 import promptAction from '@ohos.promptAction';
-import { DashboardService } from '../service/DataService';
-import { DashboardData, StatCard as StatCardType, OperationLogItem } from '../model/DataModels';
+import { DashboardService, ReportService } from '../service/DataService';
+import { DashboardData, StatCard as StatCardType, OperationLogItem, ReportSummary } from '../model/DataModels';
 import { StatCard, LoadingView, ErrorView, EmptyView, CopyrightBar } from '../common/Components';
 
 @Entry
@@ -14,9 +14,13 @@ struct DashboardPage {
   @State dashboardData: DashboardData | null = null;
   @State isLoading: boolean = true;
   @State hasError: boolean = false;
+  @State report: ReportSummary | null = null;
+  @State reportDays: number = 30;
+  @State reportLoading: boolean = false;
 
   aboutToAppear(): void {
     this.loadDashboard();
+    this.loadReport();
   }
 
   async loadDashboard(): Promise<void> {
@@ -33,6 +37,42 @@ struct DashboardPage {
     } finally {
       this.isLoading = false;
     }
+  }
+
+  // 报表汇总：近 7 天 / 近 30 天快捷预设
+  async loadReport(): Promise<void> {
+    this.reportLoading = true;
+    try {
+      const end = new Date();
+      const start = new Date();
+      start.setDate(start.getDate() - (this.reportDays - 1));
+      const fmt = (d: Date): string => {
+        const m = `${d.getMonth() + 1}`.padStart(2, '0');
+        const day = `${d.getDate()}`.padStart(2, '0');
+        return `${d.getFullYear()}-${m}-${day}`;
+      };
+      this.report = await ReportService.getSummary(fmt(start), fmt(end));
+    } catch (e) {
+      if (e instanceof Error && e.message === 'UNAUTHORIZED') {
+        router.replaceUrl({ url: 'pages/LoginPage' });
+        return;
+      }
+      this.report = null;
+      promptAction.showToast({ message: '报表加载失败' });
+    } finally {
+      this.reportLoading = false;
+    }
+  }
+
+  switchReportDays(days: number): void {
+    if (this.reportDays === days) return;
+    this.reportDays = days;
+    this.loadReport();
+  }
+
+  formatAmount(value: string): string {
+    const num = Number(value);
+    return `¥${num.toFixed(2)}`;
   }
 
   build() {
@@ -99,6 +139,124 @@ struct DashboardPage {
             .width('100%')
             .margin({ top: 16 })
             .padding({ left: 16, right: 16 })
+
+            // 报表汇总卡片
+            Column() {
+              Row() {
+                Text('报表汇总')
+                  .fontSize(16)
+                  .fontWeight(FontWeight.Medium)
+
+                Blank()
+
+                Button('近7天')
+                  .fontSize(12)
+                  .height(28)
+                  .fontColor(this.reportDays === 7 ? '#FFFFFF' : '#1677FF')
+                  .backgroundColor(this.reportDays === 7 ? '#1677FF' : '#E6F0FF')
+                  .borderRadius(4)
+                  .onClick(() => this.switchReportDays(7))
+
+                Button('近30天')
+                  .fontSize(12)
+                  .height(28)
+                  .fontColor(this.reportDays === 30 ? '#FFFFFF' : '#1677FF')
+                  .backgroundColor(this.reportDays === 30 ? '#1677FF' : '#E6F0FF')
+                  .borderRadius(4)
+                  .margin({ left: 8 })
+                  .onClick(() => this.switchReportDays(30))
+              }
+              .width('100%')
+              .margin({ bottom: 12 })
+
+              if (this.reportLoading) {
+                Text('加载中...')
+                  .fontSize(13)
+                  .fontColor('#999999')
+                  .width('100%')
+                  .textAlign(TextAlign.Center)
+                  .padding({ top: 16, bottom: 16 })
+              } else if (this.report) {
+                Grid() {
+                  GridItem() {
+                    Column() {
+                      Text('充值金额')
+                        .fontSize(12)
+                        .fontColor('#999999')
+
+                      Text(this.formatAmount(this.report.deposit_amount))
+                        .fontSize(16)
+                        .fontWeight(FontWeight.Bold)
+                        .fontColor('#1677FF')
+                        .margin({ top: 4 })
+                    }
+                    .alignItems(HorizontalAlign.Start)
+                  }
+
+                  GridItem() {
+                    Column() {
+                      Text('提现金额')
+                        .fontSize(12)
+                        .fontColor('#999999')
+
+                      Text(this.formatAmount(this.report.withdraw_amount))
+                        .fontSize(16)
+                        .fontWeight(FontWeight.Bold)
+                        .fontColor('#FA8C16')
+                        .margin({ top: 4 })
+                    }
+                    .alignItems(HorizontalAlign.Start)
+                  }
+
+                  GridItem() {
+                    Column() {
+                      Text('新增用户')
+                        .fontSize(12)
+                        .fontColor('#999999')
+
+                      Text(`${this.report.new_users}`)
+                        .fontSize(16)
+                        .fontWeight(FontWeight.Bold)
+                        .fontColor('#333333')
+                        .margin({ top: 4 })
+                    }
+                    .alignItems(HorizontalAlign.Start)
+                  }
+
+                  GridItem() {
+                    Column() {
+                      Text('游戏局数')
+                        .fontSize(12)
+                        .fontColor('#999999')
+
+                      Text(`${this.report.play_count}`)
+                        .fontSize(16)
+                        .fontWeight(FontWeight.Bold)
+                        .fontColor('#333333')
+                        .margin({ top: 4 })
+                    }
+                    .alignItems(HorizontalAlign.Start)
+                  }
+                }
+                .columnsTemplate('1fr 1fr')
+                .rowsGap(16)
+                .columnsGap(12)
+                .width('100%')
+              } else {
+                Text('报表加载失败，点击重试')
+                  .fontSize(13)
+                  .fontColor('#999999')
+                  .width('100%')
+                  .textAlign(TextAlign.Center)
+                  .padding({ top: 16, bottom: 16 })
+                  .onClick(() => this.loadReport())
+              }
+            }
+            .width('100%')
+            .backgroundColor('#FFFFFF')
+            .borderRadius(8)
+            .padding(16)
+            .margin({ left: 16, right: 16, top: 12 })
 
             // 最近操作日志
             Column() {

@@ -18,7 +18,56 @@ struct UserListPage {
   @State hasError: boolean = false;
   @State keyword: string = '';
   @State isRefreshing: boolean = false;
+  @State selectionMode: boolean = false;
+  @State selectedIds: string[] = [];
   private readonly limit: number = 15;
+
+  toggleSelectionMode(): void {
+    this.selectionMode = !this.selectionMode;
+    this.selectedIds = [];
+  }
+
+  toggleSelect(id: string, checked: boolean): void {
+    if (checked) {
+      if (!this.selectedIds.includes(id)) {
+        this.selectedIds = this.selectedIds.concat(id);
+      }
+    } else {
+      this.selectedIds = this.selectedIds.filter((x: string) => x !== id);
+    }
+  }
+
+  batchOperate(status: number): void {
+    const label = status === 1 ? '启用' : '禁用';
+    promptAction.showDialog({
+      title: `批量${label}`,
+      message: `确认${label}选中的 ${this.selectedIds.length} 个用户？`,
+      buttons: [
+        { text: '取消', color: '#999999' },
+        { text: '确认', color: '#1677FF' }
+      ]
+    }).then((result: promptAction.ShowDialogSuccessResponse) => {
+      if (result.index === 1) {
+        this.doBatch(status);
+      }
+    }).catch(() => {
+    });
+  }
+
+  async doBatch(status: number): Promise<void> {
+    try {
+      await UserService.batchStatus(this.selectedIds, status);
+      promptAction.showToast({ message: status === 1 ? '批量启用成功' : '批量禁用成功' });
+      this.toggleSelectionMode();
+      this.loadData(true);
+    } catch (e) {
+      if (e instanceof Error && e.message === 'UNAUTHORIZED') {
+        router.replaceUrl({ url: 'pages/LoginPage' });
+        return;
+      }
+      promptAction.showToast({ message: '操作失败' });
+    }
+  }
 
   aboutToAppear(): void {
     this.loadData();
@@ -87,6 +136,17 @@ struct UserListPage {
 
         Blank()
 
+        Button(this.selectionMode ? '取消' : '批量')
+          .fontSize(13)
+          .fontColor('#1677FF')
+          .backgroundColor('#E6F0FF')
+          .borderRadius(4)
+          .height(32)
+          .margin({ right: 8 })
+          .onClick(() => {
+            this.toggleSelectionMode();
+          })
+
         Button('+ 新增')
           .fontSize(13)
           .fontColor('#FFFFFF')
@@ -148,6 +208,17 @@ struct UserListPage {
             ForEach(this.users, (user: User, index: number) => {
               ListItem() {
                 Row() {
+                  // 批量选择
+                  if (this.selectionMode) {
+                    Checkbox()
+                      .select(this.selectedIds.includes(user.id))
+                      .selectedColor('#1677FF')
+                      .margin({ right: 12 })
+                      .onChange((checked: boolean) => {
+                        this.toggleSelect(user.id, checked);
+                      })
+                  }
+
                   // 头像
                   Circle({ width: 40, height: 40 })
                     .fill('#E6F0FF')
@@ -188,6 +259,11 @@ struct UserListPage {
                 .backgroundColor('#FFFFFF')
                 .border({ width: { bottom: 0.5 }, color: '#EEEEEE' })
                 .onClick(() => {
+                  if (this.selectionMode) {
+                    // 选择模式下点行切换选中
+                    this.toggleSelect(user.id, !this.selectedIds.includes(user.id));
+                    return;
+                  }
                   router.pushUrl({
                     url: 'pages/UserDetailPage',
                     params: { mode: 'edit', userId: user.id }
@@ -226,6 +302,45 @@ struct UserListPage {
         .onRefreshing(() => {
           this.loadData(true);
         })
+      }
+
+      // 批量操作栏
+      if (this.selectionMode) {
+        Row() {
+          Text(`已选 ${this.selectedIds.length} 项`)
+            .fontSize(13)
+            .fontColor('#666666')
+
+          Blank()
+
+          Button('批量禁用')
+            .fontSize(13)
+            .fontColor('#FFFFFF')
+            .backgroundColor('#FF4D4F')
+            .borderRadius(4)
+            .height(32)
+            .enabled(this.selectedIds.length > 0)
+            .onClick(() => {
+              this.batchOperate(0);
+            })
+
+          Button('批量启用')
+            .fontSize(13)
+            .fontColor('#FFFFFF')
+            .backgroundColor('#1677FF')
+            .borderRadius(4)
+            .height(32)
+            .margin({ left: 8 })
+            .enabled(this.selectedIds.length > 0)
+            .onClick(() => {
+              this.batchOperate(1);
+            })
+        }
+        .width('100%')
+        .height(52)
+        .padding({ left: 16, right: 16 })
+        .backgroundColor('#FFFFFF')
+        .border({ width: { top: 0.5 }, color: '#EEEEEE' })
       }
     }
     .width('100%')

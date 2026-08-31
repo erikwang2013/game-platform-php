@@ -124,3 +124,18 @@ export interface LoginResponse {
   refresh_token: string;
   expires_in: number;
 }
+
+/**
+ * 报表汇总（/admin/report/summary）
+ */
+export interface ReportSummary {
+  start: string;
+  end: string;
+  new_users: number;
+  deposit_amount: string;
+  deposit_count: number;
+  withdraw_amount: string;
+  withdraw_count: number;
+  exchange_amount: string;
+  play_count: number;
+}

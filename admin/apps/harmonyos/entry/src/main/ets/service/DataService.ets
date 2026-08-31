@@ -9,7 +9,8 @@ import {
   DashboardData,
   User,
   UserListResult,
-  PageParams
+  PageParams,
+  ReportSummary
 } from '../model/DataModels';
 
 /**
@@ -92,5 +93,25 @@ export class UserService {
     if (response.code !== 0) {
       throw new Error(response.message);
     }
+  }
+
+  static async batchStatus(ids: string[], status: number): Promise<void> {
+    const response = await apiService.post<void>('/admin/user/batch/status', { ids, status });
+    if (response.code !== 0) {
+      throw new Error(response.message);
+    }
+  }
+}
+
+/**
+ * 报表服务
+ */
+export class ReportService {
+  static async getSummary(start: string, end: string): Promise<ReportSummary> {
+    const response = await apiService.get<ReportSummary>(`/admin/report/summary?start=${start}&end=${end}`);
+    if (response.code !== 0) {
+      throw new Error(response.message);
+    }
+    return response.data;
   }
 }
