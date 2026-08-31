@@ -64,6 +64,22 @@ Panggilan `/api/provider/*` dari sisi game melalui `PlatformAdapter`, ditandatan
 | `level_fail` | Gagal |
 | `skill_use` | Menggunakan skill |
 
+### Kontrak kolom `meta` (dipakai bersama oleh `bet` / `settle`, H5 anti-cheat)
+
+Definisi kolom `meta` (objek) pada body request `POST /api/provider/bet` dan `POST /api/provider/settle`:
+
+| Kolom | Tipe | Wajib | Keterangan |
+|------|------|------|------|
+| `device_id` | string | Tidak | ID perangkat (disimpan dalam teks biasa di server, digunakan untuk agregasi tingkat perangkat) |
+| `result` | string | Wajib untuk settle | Hasil ronde: `win` / `fail` |
+| `move_count` | int | Tidak | Jumlah gerakan pada ronde ini (input untuk deteksi frekuensi gerakan) |
+| `ended_at` | string | Tidak | Waktu berakhirnya ronde `YYYY-MM-DD HH:MM:SS` |
+| `level_id` | int | Tidak | ID level |
+| `ip` | string | Tidak | IP sumber pemain (sisi game meneruskan IP asli; server hanya menyimpan sha256 sebagai `ip_hash`, bukan teks biasa) |
+| `user_agent` | string | Tidak | User-Agent pemain (server hanya menyimpan sha256 sebagai `user_agent_hash`) |
+
+Saat disimpan ke `game_game_play_log` di server: `result / move_count / ended_at_round / device_id / level_id` masuk kolom terpisah; `ip` / `user_agent` di-hash ke `ip_hash` / `user_agent_hash`; `meta` disimpan apa adanya di `metadata` (JSON).
+
 ---
 
 ## 5. Saklar Fitur (FeatureFlag)

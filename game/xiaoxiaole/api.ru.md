@@ -64,6 +64,22 @@ game/xiaoxiaole/  (静态资源，Nginx)
 | `level_fail` | провал |
 | `skill_use` | использование навыка |
 
+### Контракт поля `meta` (общий для `bet` / `settle`, H5 античит)
+
+Определения поля `meta` (объект) в теле запросов `POST /api/provider/bet` и `POST /api/provider/settle`:
+
+| Поле | Тип | Обязательно | Описание |
+|------|------|------|------|
+| `device_id` | string | Нет | ID устройства (хранится на сервере в открытом виде, используется для агрегации по устройствам) |
+| `result` | string | Обязательно для settle | Результат раунда: `win` / `fail` |
+| `move_count` | int | Нет | Число ходов в этом раунде (вход для детекции частоты ходов) |
+| `ended_at` | string | Нет | Время окончания раунда `YYYY-MM-DD HH:MM:SS` |
+| `level_id` | int | Нет | ID уровня |
+| `ip` | string | Нет | Исходный IP игрока (игровая сторона передаёт реальный IP; сервер сохраняет только sha256 как `ip_hash`, не в открытом виде) |
+| `user_agent` | string | Нет | User-Agent игрока (сервер сохраняет только sha256 как `user_agent_hash`) |
+
+При сохранении на сервере в `game_game_play_log`: `result / move_count / ended_at_round / device_id / level_id` — в отдельные колонки; `ip` / `user_agent` хешируются в `ip_hash` / `user_agent_hash`; `meta` сохраняется как есть в `metadata` (JSON).
+
 ---
 
 ## 5. Функциональные переключатели (FeatureFlag)

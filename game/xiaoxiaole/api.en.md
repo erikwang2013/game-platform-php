@@ -64,6 +64,22 @@ The game side calls `/api/provider/*` through `PlatformAdapter`, signed with HMA
 | `level_fail` | Failed |
 | `skill_use` | Skill used |
 
+### `meta` field contract (shared by `bet` / `settle`, anti-cheat H5)
+
+The `meta` (object) field definitions in the request bodies of `POST /api/provider/bet` and `POST /api/provider/settle`:
+
+| Field | Type | Required | Description |
+|------|------|------|------|
+| `device_id` | string | No | Device ID (stored in plaintext on the server, used for device-level aggregation) |
+| `result` | string | Required for settle | Round result: `win` / `fail` |
+| `move_count` | int | No | Number of moves in this round (input for move-frequency detection) |
+| `ended_at` | string | No | Round end time `YYYY-MM-DD HH:MM:SS` |
+| `level_id` | int | No | Level ID |
+| `ip` | string | No | Player source IP (the game side forwards the real IP; the server only stores the sha256 as `ip_hash`, never plaintext) |
+| `user_agent` | string | No | Player User-Agent (the server only stores the sha256 as `user_agent_hash`) |
+
+When persisted to `game_game_play_log` on the server: `result / move_count / ended_at_round / device_id / level_id` go into dedicated columns; `ip` / `user_agent` are hashed into `ip_hash` / `user_agent_hash`; `meta` is stored as-is in `metadata` (JSON).
+
 ---
 
 ## 5. Feature Flags

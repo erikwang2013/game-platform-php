@@ -64,6 +64,22 @@ Le jeu appelle `/api/provider/*` via `PlatformAdapter`, signé HMAC/JWT.
 | `level_fail` | Défaite |
 | `skill_use` | Utilisation d'une compétence |
 
+### Contrat du champ `meta` (partagé par `bet` / `settle`, H5 anti-triche)
+
+Définitions du champ `meta` (objet) dans le corps des requêtes `POST /api/provider/bet` et `POST /api/provider/settle` :
+
+| Champ | Type | Requis | Description |
+|------|------|------|------|
+| `device_id` | string | Non | ID de l'appareil (stocké en clair côté serveur, utilisé pour l'agrégation par appareil) |
+| `result` | string | Requis pour settle | Résultat de la partie : `win` / `fail` |
+| `move_count` | int | Non | Nombre de coups de cette partie (entrée pour la détection de fréquence de coups) |
+| `ended_at` | string | Non | Heure de fin de la partie `YYYY-MM-DD HH:MM:SS` |
+| `level_id` | int | Non | ID du niveau |
+| `ip` | string | Non | IP source du joueur (le jeu transmet la vraie IP ; le serveur ne stocke que le sha256 sous forme de `ip_hash`, jamais en clair) |
+| `user_agent` | string | Non | User-Agent du joueur (le serveur ne stocke que le sha256 sous forme de `user_agent_hash`) |
+
+À la persistance côté serveur dans `game_game_play_log` : `result / move_count / ended_at_round / device_id / level_id` vont dans des colonnes dédiées ; `ip` / `user_agent` sont hachés dans `ip_hash` / `user_agent_hash` ; `meta` est stocké tel quel dans `metadata` (JSON).
+
 ---
 
 ## 5. Interrupteurs de fonctionnalités (FeatureFlag)

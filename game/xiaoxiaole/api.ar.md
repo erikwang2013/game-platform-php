@@ -64,6 +64,22 @@ game/xiaoxiaole/  (静态资源，Nginx)
 | `level_fail` | الفشل |
 | `skill_use` | استخدام مهارة |
 
+### عقد حقل `meta` (مشترك بين `bet` / `settle`، H5 لمكافحة الغش)
+
+تعريفات حقل `meta` (كائن) في جسمي طلبي `POST /api/provider/bet` و `POST /api/provider/settle`:
+
+| الحقل | النوع | مطلوب | الوصف |
+|------|------|------|------|
+| `device_id` | string | لا | معرف الجهاز (يُخزن كنص صريح على الخادم، ويُستخدم للتجميع على مستوى الجهاز) |
+| `result` | string | مطلوب في settle | نتيجة الجولة: `win` / `fail` |
+| `move_count` | int | لا | عدد الحركات في هذه الجولة (مدخل لاكتشاف تكرار الحركات) |
+| `ended_at` | string | لا | وقت انتهاء الجولة `YYYY-MM-DD HH:MM:SS` |
+| `level_id` | int | لا | معرف المستوى |
+| `ip` | string | لا | عنوان IP الخاص باللاعب (الجهة الفعلية يُرسلها جانب اللعبة؛ يخزن الخادم sha256 فقط كـ `ip_hash`، ولا يخزن النص الصريح) |
+| `user_agent` | string | لا | User-Agent الخاص باللاعب (يخزن الخادم sha256 فقط كـ `user_agent_hash`) |
+
+عند الحفظ في `game_game_play_log`: تُخزن `result / move_count / ended_at_round / device_id / level_id` في أعمدة مستقلة، ويُحوَّل `ip` / `user_agent` إلى تجزئة في `ip_hash` / `user_agent_hash`، ويُخزن `meta` كما هو في `metadata` (JSON).
+
 ---
 
 ## 5. مفاتيح الميزات (FeatureFlag)

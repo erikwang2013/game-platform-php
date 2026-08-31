@@ -64,6 +64,22 @@ game/xiaoxiaole/  (স্ট্যাটিক রিসোর্স, Nginx)
 | `level_fail` | ব্যর্থ |
 | `skill_use` | স্কিল ব্যবহার |
 
+### `meta` ফিল্ড কন্ট্র্যাক্ট (`bet` / `settle` শেয়ার্ড, অ্যান্টি-চিট H5)
+
+`POST /api/provider/bet` ও `POST /api/provider/settle` রিকোয়েস্ট বডির `meta` (অবজেক্ট) ফিল্ডের সংজ্ঞা:
+
+| ফিল্ড | টাইপ | প্রয়োজন | বিবরণ |
+|------|------|------|------|
+| `device_id` | string | না | ডিভাইস আইডি (সার্ভারে প্লেইনটেক্সটে সংরক্ষিত, ডিভাইস-স্তরের এগ্রিগেশনের জন্য) |
+| `result` | string | settle-এর জন্য প্রয়োজন | রাউন্ডের ফলাফল: `win` / `fail` |
+| `move_count` | int | না | এই রাউন্ডে মুভের সংখ্যা (মুভ-ফ্রিকোয়েন্সি ডিটেকশনের ইনপুট) |
+| `ended_at` | string | না | রাউন্ড শেষ হওয়ার সময় `YYYY-MM-DD HH:MM:SS` |
+| `level_id` | int | না | লেভেল আইডি |
+| `ip` | string | না | প্লেয়ারের উৎস IP (গেম সাইড আসল IP ফরওয়ার্ড করে; সার্ভার শুধু sha256 = `ip_hash` সংরক্ষণ করে, প্লেইনটেক্সট নয়) |
+| `user_agent` | string | না | প্লেয়ারের User-Agent (সার্ভার শুধু sha256 = `user_agent_hash` সংরক্ষণ করে) |
+
+সার্ভারে `game_game_play_log`-এ সংরক্ষণের সময়: `result / move_count / ended_at_round / device_id / level_id` আলাদা কলামে যায়; `ip` / `user_agent` হ্যাশ করে `ip_hash` / `user_agent_hash`-এ রাখা হয়; `meta`-কে `metadata` (JSON)-এ যেমন আছে তেমনই সংরক্ষণ করা হয়।
+
 ---
 
 ## 5. ফিচার সুইচ (FeatureFlag)

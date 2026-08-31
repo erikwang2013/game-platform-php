@@ -64,6 +64,22 @@ game/xiaoxiaole/  (정적 리소스, Nginx)
 | `level_fail` | 실패 |
 | `skill_use` | 스킬 사용 |
 
+### `meta` 필드 계약 (`bet` / `settle` 공용, 안티치트 H5)
+
+`POST /api/provider/bet` 및 `POST /api/provider/settle` 요청 본문의 `meta`(객체) 필드 정의:
+
+| 필드 | 유형 | 필수 | 설명 |
+|------|------|------|------|
+| `device_id` | string | 아니요 | 기기 ID (서버에 평문 저장, 기기 단위 집계에 사용) |
+| `result` | string | settle 필수 | 라운드 결과: `win` / `fail` |
+| `move_count` | int | 아니요 | 이번 라운드의 이동 횟수 (이동 빈도 탐지 입력) |
+| `ended_at` | string | 아니요 | 라운드 종료 시간 `YYYY-MM-DD HH:MM:SS` |
+| `level_id` | int | 아니요 | 레벨 ID |
+| `ip` | string | 아니요 | 플레이어 출처 IP (게임 측이 실제 IP를 전달; 서버는 sha256 = `ip_hash`만 저장, 평문 미저장) |
+| `user_agent` | string | 아니요 | 플레이어 User-Agent (서버는 sha256 = `user_agent_hash`만 저장) |
+
+서버 `game_game_play_log` 저장: `result / move_count / ended_at_round / device_id / level_id`는 독립 컬럼, `ip` / `user_agent`는 해시 후 `ip_hash` / `user_agent_hash`에 저장, `meta`는 `metadata`(JSON)에 원문 그대로 저장.
+
 ---
 
 ## 5. 기능 스위치（FeatureFlag）

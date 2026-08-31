@@ -64,6 +64,22 @@ game/xiaoxiaole/  (स्थिर संसाधन, Nginx)
 | `level_fail` | असफल |
 | `skill_use` | कौशल उपयोग |
 
+### `meta` फ़ील्ड कॉन्ट्रैक्ट (`bet` / `settle` के लिए साझा, एंटी-चीट H5)
+
+`POST /api/provider/bet` और `POST /api/provider/settle` के रिक्वेस्ट बॉडी में `meta` (ऑब्जेक्ट) फ़ील्ड की परिभाषाएँ:
+
+| फ़ील्ड | प्रकार | आवश्यक | विवरण |
+|------|------|------|------|
+| `device_id` | string | नहीं | डिवाइस ID (सर्वर पर प्लेनटेक्स्ट में संग्रहीत, डिवाइस-स्तर एग्रीगेशन के लिए) |
+| `result` | string | settle के लिए आवश्यक | राउंड का परिणाम: `win` / `fail` |
+| `move_count` | int | नहीं | इस राउंड में चालों की संख्या (चाल-आवृत्ति जाँच के लिए इनपुट) |
+| `ended_at` | string | नहीं | राउंड समाप्ति समय `YYYY-MM-DD HH:MM:SS` |
+| `level_id` | int | नहीं | लेवल ID |
+| `ip` | string | नहीं | खिलाड़ी का स्रोत IP (गेम पक्ष वास्तविक IP फ़ॉरवर्ड करता है; सर्वर केवल sha256 = `ip_hash` संग्रहीत करता है, प्लेनटेक्स्ट नहीं) |
+| `user_agent` | string | नहीं | खिलाड़ी का User-Agent (सर्वर केवल sha256 = `user_agent_hash` संग्रहीत करता है) |
+
+सर्वर पर `game_game_play_log` में संग्रहण: `result / move_count / ended_at_round / device_id / level_id` अलग कॉलम में; `ip` / `user_agent` हैश करके `ip_hash` / `user_agent_hash` में; `meta` को `metadata` (JSON) में ज्यों-का-त्यों संग्रहीत किया जाता है।
+
 ---
 
 ## 5. फ़ीचर स्विच (FeatureFlag)

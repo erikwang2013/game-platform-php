@@ -64,6 +64,22 @@ O lado do jogo chama `/api/provider/*` através do `PlatformAdapter`, com assina
 | `level_fail` | Falhar |
 | `skill_use` | Usar habilidade |
 
+### Contrato do campo `meta` (compartilhado por `bet` / `settle`, H5 anti-cheat)
+
+Definições do campo `meta` (objeto) no corpo das requisições `POST /api/provider/bet` e `POST /api/provider/settle`:
+
+| Campo | Tipo | Obrigatório | Descrição |
+|------|------|------|------|
+| `device_id` | string | Não | ID do dispositivo (armazenado em texto puro no servidor, usado para agregação por dispositivo) |
+| `result` | string | Obrigatório no settle | Resultado da partida: `win` / `fail` |
+| `move_count` | int | Não | Número de jogadas desta partida (entrada para detecção de frequência de jogadas) |
+| `ended_at` | string | Não | Horário de término da partida `YYYY-MM-DD HH:MM:SS` |
+| `level_id` | int | Não | ID do nível |
+| `ip` | string | Não | IP de origem do jogador (o lado do jogo encaminha o IP real; o servidor só armazena o sha256 como `ip_hash`, nunca em texto puro) |
+| `user_agent` | string | Não | User-Agent do jogador (o servidor só armazena o sha256 como `user_agent_hash`) |
+
+Ao persistir em `game_game_play_log`: `result / move_count / ended_at_round / device_id / level_id` vão para colunas independentes; `ip` / `user_agent` são armazenados com hash em `ip_hash` / `user_agent_hash`; `meta` é salvo como está em `metadata` (JSON).
+
 ---
 
 ## 5. Feature flags

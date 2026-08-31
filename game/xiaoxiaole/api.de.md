@@ -64,6 +64,22 @@ Die Spielseite ruft `/api/provider/*` über den `PlatformAdapter` mit HMAC/JWT-S
 | `level_fail` | Fehlgeschlagen |
 | `skill_use` | Fähigkeit verwendet |
 
+### `meta`-Feldvertrag (gemeinsam von `bet` / `settle` genutzt, Anti-Cheat H5)
+
+Die Felddefinitionen von `meta` (Objekt) im Request-Body von `POST /api/provider/bet` und `POST /api/provider/settle`:
+
+| Feld | Typ | Erforderlich | Beschreibung |
+|------|------|------|------|
+| `device_id` | string | Nein | Geräte-ID (auf dem Server im Klartext gespeichert, für gerätebezogene Aggregation) |
+| `result` | string | Erforderlich bei settle | Rundergebnis: `win` / `fail` |
+| `move_count` | int | Nein | Anzahl der Züge dieser Runde (Eingabe für die Zugfrequenz-Erkennung) |
+| `ended_at` | string | Nein | Endzeit der Runde `YYYY-MM-DD HH:MM:SS` |
+| `level_id` | int | Nein | Level-ID |
+| `ip` | string | Nein | Quell-IP des Spielers (die Spielseite leitet die echte IP weiter; der Server speichert nur den sha256 als `ip_hash`, keinen Klartext) |
+| `user_agent` | string | Nein | User-Agent des Spielers (der Server speichert nur den sha256 als `user_agent_hash`) |
+
+Beim Speichern auf dem Server in `game_game_play_log`: `result / move_count / ended_at_round / device_id / level_id` kommen in eigene Spalten; `ip` / `user_agent` werden gehasht in `ip_hash` / `user_agent_hash` gespeichert; `meta` wird unverändert in `metadata` (JSON) abgelegt.
+
 ---
 
 ## 5. Feature-Schalter (FeatureFlag)

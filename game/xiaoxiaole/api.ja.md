@@ -64,6 +64,22 @@ game/xiaoxiaole/  (静的リソース，Nginx)
 | `level_fail` | 失敗 |
 | `skill_use` | スキル使用 |
 
+### `meta` フィールド契約（`bet` / `settle` 共通、アンチチート H5）
+
+`POST /api/provider/bet` と `POST /api/provider/settle` のリクエストボディ内の `meta`（オブジェクト）フィールド定義:
+
+| フィールド | 型 | 必須 | 説明 |
+|------|------|------|------|
+| `device_id` | string | いいえ | デバイス ID（サーバー側で平文保存、デバイス単位の集計に使用） |
+| `result` | string | settle で必須 | 対局結果: `win` / `fail` |
+| `move_count` | int | いいえ | 本対局の着手回数（着手頻度系検知の入力） |
+| `ended_at` | string | いいえ | 対局終了時刻 `YYYY-MM-DD HH:MM:SS` |
+| `level_id` | int | いいえ | レベル ID |
+| `ip` | string | いいえ | プレイヤーの接続元 IP（ゲーム側が実際の IP を転送; サーバーは sha256 = `ip_hash` のみ保存し、平文は保存しない） |
+| `user_agent` | string | いいえ | プレイヤーの User-Agent（サーバーは sha256 = `user_agent_hash` のみ保存） |
+
+サーバー側で `game_game_play_log` に保存: `result / move_count / ended_at_round / device_id / level_id` は独立カラム、`ip` / `user_agent` はハッシュ化して `ip_hash` / `user_agent_hash` に格納、`meta` は `metadata`(JSON) にそのまま保存。
+
 ---
 
 ## 5. フィーチャーフラグ（FeatureFlag）
