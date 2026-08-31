@@ -69,6 +69,9 @@ Route::group('/api', function () {
 
     // 2FA 验证（登录流程使用，公开接口）
     Route::post('/2fa/verify', v('TwoFactorController', 'verify'));
+
+    // 分享落地页点击上报（M4，匿名可访问，不泄露分享者信息）
+    Route::post('/shares/visit', v('ShareController', 'visit'));
 })->middleware([
     app\middleware\ApiVersion::class,
 ]);
@@ -99,6 +102,21 @@ Route::group('/api', function () {
     Route::post('/game/launch', v('GameController', 'launch'));
     Route::get('/game/play-logs', v('GamePlayLogController', 'list'));
     Route::get('/game/play-log/{hashid}', v('GamePlayLogController', 'detail'));
+
+    // 多游戏聚合（M5）：聚合余额 + SDK 会话签发
+    Route::get('/game/balance', v('GameController', 'balance'));
+    Route::get('/game/session', v('GameController', 'session'));
+
+    // 组队/公会（M4）
+    Route::post('/groups', v('GroupController', 'create'));
+    Route::get('/groups/{hashid}', v('GroupController', 'detail'));
+    Route::get('/groups/{hashid}/members', v('GroupController', 'members'));
+    Route::post('/groups/{hashid}/join', v('GroupController', 'join'));
+    Route::post('/groups/{hashid}/leave', v('GroupController', 'leave'));
+    Route::put('/groups/{hashid}/role', v('GroupController', 'role'));
+
+    // 分享短码（M4）
+    Route::post('/shares', v('ShareController', 'create'));
 
     // 优惠券
     Route::get('/coupon/available', v('CouponController', 'available'));
@@ -152,6 +170,19 @@ Route::group('/api/provider', function () {
     Route::post('/refund', v('ProviderController', 'refund'));
 })->middleware([
     app\middleware\ProviderAuth::class,
+]);
+
+// ============================================================
+// 自研/内嵌游戏 SDK 接口（M5，SDK 会话令牌认证）
+// ============================================================
+Route::group('/api/game', function () {
+    Route::post('/balance', v('GameSdkController', 'balance'));
+    Route::post('/bet', v('GameSdkController', 'bet'));
+    Route::post('/settle', v('GameSdkController', 'settle'));
+    Route::post('/refund', v('GameSdkController', 'refund'));
+})->middleware([
+    app\middleware\ApiVersion::class,
+    app\middleware\SdkSessionAuth::class,
 ]);
 
 // ============================================================

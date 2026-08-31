@@ -193,12 +193,15 @@ CREATE TABLE IF NOT EXISTS `game_game` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `name` VARCHAR(100) NOT NULL COMMENT '游戏名称',
     `slug` VARCHAR(50) NOT NULL COMMENT '游戏标识',
-    `type` VARCHAR(20) NOT NULL DEFAULT 'third_party' COMMENT '游戏类型: self=自研 third_party=第三方',
+    `type` VARCHAR(20) NOT NULL DEFAULT 'self' COMMENT '游戏类型: self=自研 embedded=内嵌 third_party=第三方',
     `description` TEXT COMMENT '游戏简介',
     `cover_image` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '封面图',
     `api_endpoint` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '第三方游戏API地址',
     `api_key` VARCHAR(500) NOT NULL DEFAULT '' COMMENT '第三方API密钥（加密存储）',
     `api_secret` VARCHAR(500) NOT NULL DEFAULT '' COMMENT '第三方API密钥（加密存储）',
+    `sdk_version` VARCHAR(20) DEFAULT NULL COMMENT 'SDK版本号(自研/内嵌游戏)',
+    `platform` VARCHAR(20) NOT NULL DEFAULT 'h5' COMMENT '客户端平台: h5/unity/web/native',
+    `region` VARCHAR(10) NOT NULL DEFAULT 'global' COMMENT '运营区域: global/CN/US/EU/...',
     `status` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '状态: 0=下架 1=上架',
     `sort` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '排序值，越小越靠前',
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
@@ -678,6 +681,24 @@ CREATE TABLE IF NOT EXISTS `game_risk_log` (
     KEY `idx_fp_hash_created` (`fp_hash`, `created_at`),
     KEY `idx_action_created` (`action`, `created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='风控日志表';
+
+-- ============================================================
+-- 风控关联团伙表（人工确认结果落库；候选由 detect 接口实时扫描）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_risk_cluster` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `name` VARCHAR(100) NOT NULL COMMENT '团伙名称（人工命名）',
+    `type` VARCHAR(30) NOT NULL COMMENT 'same_ip/same_device/same_pay_account/manual',
+    `fingerprint` VARCHAR(64) NOT NULL DEFAULT '' COMMENT '聚类依据值（ip_hash/fp_hash；manual 可空）',
+    `member_ids` VARCHAR(512) NOT NULL DEFAULT '' COMMENT '成员 user_id JSON 数组（无表可查的聚类类型用）',
+    `user_count` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '成员数',
+    `status` TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '1=观察中 2=已处置 0=误判',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_type` (`type`),
+    KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='风控关联团伙表（人工确认）';
 
 -- ============================================================
 -- 设备指纹表（只存 hash，不存明文 UA / IP / 前端 device id）
@@ -1354,5 +1375,63 @@ INSERT IGNORE INTO `game_country_config` (`id`, `country_code`, `currency`, `pay
 (50000000000000106, 'DE', 'EUR', '["stripe","paypal"]', '["paypal","bank"]', 1.0000),
 (50000000000000107, 'BR', 'BRL', '["stripe"]', '["bank"]', 1.0000),
 (50000000000000108, 'IN', 'INR', '["stripe"]', '["bank"]', 50.0000);
+
+-- ============================================================
+-- 组队/公会表（M4 社交拉新）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_group` (
+    `id` BIGINT NOT NULL COMMENT '主键ID，由snowflake生成',
+    `type` VARCHAR(16) NOT NULL COMMENT 'team=组队 guild=公会',
+    `name` VARCHAR(100) NOT NULL COMMENT '名称',
+    `game_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '归属游戏(team 必填；guild 0=跨游戏)',
+    `owner_id` BIGINT UNSIGNED NOT NULL COMMENT '创建人/会长',
+    `level` INT UNSIGNED NOT NULL DEFAULT 1 COMMENT '公会等级；team 恒为 1',
+    `xp` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '公会经验',
+    `member_count` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '冗余计数，避免 COUNT 查询（定时校正兜底）',
+    `announcement` TEXT COMMENT '公会公告；team 留空',
+    `expire_at` DATETIME DEFAULT NULL COMMENT 'team 到期自动解散',
+    `status` TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '1=正常 0=解散',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_type_game` (`type`, `game_id`),
+    KEY `idx_type_level` (`type`, `level` DESC),
+    KEY `idx_owner` (`owner_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='组队/公会表';
+
+-- ============================================================
+-- 组队/公会成员表（M4）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_group_member` (
+    `id` BIGINT NOT NULL COMMENT '主键ID，由snowflake生成',
+    `group_id` BIGINT UNSIGNED NOT NULL COMMENT '组ID',
+    `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
+    `role` VARCHAR(16) NOT NULL DEFAULT 'member' COMMENT 'owner/admin/member/guest',
+    `contrib` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '贡献值（公会排行榜用）',
+    `joined_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '加入时间',
+    `left_at` DATETIME DEFAULT NULL COMMENT '离开时间（NULL=仍在组）',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_group_user` (`group_id`, `user_id`),
+    KEY `idx_user_role` (`user_id`, `role`),
+    KEY `idx_group_contrib` (`group_id`, `contrib` DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='组队/公会成员表';
+
+-- ============================================================
+-- 分享短码表（M4 裂变追踪）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_share_link` (
+    `id` BIGINT NOT NULL COMMENT '主键ID，由snowflake生成',
+    `user_id` BIGINT UNSIGNED NOT NULL COMMENT '分享者用户ID',
+    `activity_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '关联 M3 活动，0=无活动',
+    `short_code` VARCHAR(12) NOT NULL COMMENT '分享短码',
+    `clicks` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '点击次数',
+    `conversions` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '点击后成功注册数',
+    `expires_at` DATETIME DEFAULT NULL COMMENT '过期时间',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_short_code` (`short_code`),
+    KEY `idx_user` (`user_id`),
+    KEY `idx_activity` (`activity_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='分享短码表';
 
 COMMIT;

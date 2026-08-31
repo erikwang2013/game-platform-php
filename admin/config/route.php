@@ -257,10 +257,31 @@ Route::group('/admin', function () {
     Route::get('/risk/graph/clusters', [app\admin\controller\RiskGraphController::class, 'clusters']);
     Route::get('/risk/graph/{userId}', [app\admin\controller\RiskGraphController::class, 'graph']);
 
+    // ---- M6 风控可视化（静态路由先于动态注册）----
+    Route::get('/risk/overview', [app\admin\controller\RiskDashboardController::class, 'overview']);
+    Route::get('/risk/hit-trend', [app\admin\controller\RiskDashboardController::class, 'hitTrend']);
+    Route::get('/risk/action-distribution', [app\admin\controller\RiskDashboardController::class, 'actionDistribution']);
+    Route::get('/risk/rule-performance', [app\admin\controller\RiskDashboardController::class, 'rulePerformance']);
+    Route::get('/risk/clusters', [app\admin\controller\RiskClusterController::class, 'list']);
+    Route::post('/risk/clusters/detect', [app\admin\controller\RiskClusterController::class, 'detect']);
+    Route::post('/risk/clusters/confirm', [app\admin\controller\RiskClusterController::class, 'confirm']);
+    Route::get('/risk/clusters/{hashid}/members', [app\admin\controller\RiskClusterController::class, 'members']);
+    Route::put('/risk/clusters/{hashid}/status', [app\admin\controller\RiskClusterController::class, 'status']);
+    Route::get('/risk/users', [app\admin\controller\RiskUserController::class, 'users']);
+    Route::get('/risk/users/{hashid}/timeline', [app\admin\controller\RiskUserController::class, 'timeline']);
+    Route::post('/risk/users/{hashid}/hold', [app\admin\controller\RiskUserController::class, 'hold']);
+
     // ---- 反作弊管理 ----
     Route::get('/anticheat/events', [app\admin\controller\AntiCheatController::class, 'events']);
     Route::get('/anticheat/events/{hashid}', [app\admin\controller\AntiCheatController::class, 'detail']);
     Route::post('/anticheat/events/{hashid}/review', [app\admin\controller\AntiCheatController::class, 'review']);
+
+    // ---- 组队/公会管理（M4）----
+    Route::get('/groups', [app\admin\controller\GroupController::class, 'list']);
+    Route::get('/groups/{hashid}/audit', [app\admin\controller\GroupController::class, 'audit']);
+
+    // ---- 分享统计（M4）----
+    Route::get('/share/stats', [app\admin\controller\ShareController::class, 'stats']);
 })->middleware([
     app\middleware\AdminAuth::class,
     app\middleware\AdminPermission::class,
