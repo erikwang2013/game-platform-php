@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use app\service\TranslationService;
+use common\service\TranslationService;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;

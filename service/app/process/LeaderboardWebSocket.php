@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace app\process;
 
 use Workerman\Connection\TcpConnection;
-use app\service\LeaderboardService;
+use common\service\LeaderboardService;
 
 class LeaderboardWebSocket
 {

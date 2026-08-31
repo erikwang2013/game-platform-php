@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use app\model\PlatformConfig;
 use app\service\RiskService;
-use app\service\TranslationService;
+use common\service\TranslationService;
 
 /**
  * 平台核心业务逻辑测试

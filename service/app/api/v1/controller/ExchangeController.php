@@ -19,7 +19,7 @@ use support\Response;
 use support\Db;
 use app\event\EventBus;
 use app\service\NotificationService;
-use app\service\VipService;
+use common\service\VipService;
 
 /**
  * @Apidoc\Title("兑换管理")

@@ -16,7 +16,7 @@ use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 use app\event\EventBus;
-use app\service\VipService;
+use common\service\VipService;
 
 /**
  * @Apidoc\Title("推荐管理")

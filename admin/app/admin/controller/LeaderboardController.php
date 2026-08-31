@@ -9,7 +9,7 @@ namespace app\admin\controller;
 
 use hg\apidoc\annotation as Apidoc;
 use app\model\Leaderboard;
-use app\service\LeaderboardService;
+use common\service\LeaderboardService;
 use support\Request;
 use support\Response;
 

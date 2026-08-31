@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use app\model\Leaderboard;
 use app\model\ExchangeRecord;
-use app\service\LeaderboardService;
+use common\service\LeaderboardService;
 use support\Db;
 use support\Redis;
 

@@ -6,6 +6,7 @@
 declare(strict_types=1);
 
 namespace app\service;
+use common\service\VipService;
 
 use app\common\SnowflakeService;
 use app\model\Achievement;

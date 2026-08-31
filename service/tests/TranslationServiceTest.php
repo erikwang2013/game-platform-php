@@ -9,7 +9,7 @@ namespace Tests;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
-use app\service\TranslationService;
+use common\service\TranslationService;
 
 /**
  * TranslationService 单元测试

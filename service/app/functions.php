@@ -3,7 +3,7 @@
  * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
  */
 
-use app\service\TranslationService;
+use common\service\TranslationService;
 
 /**
  * C端业务端公共函数
