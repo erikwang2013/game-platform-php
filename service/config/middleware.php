@@ -12,6 +12,7 @@
 
 return [
     '' => [
+        app\middleware\TraceId::class,
         app\middleware\Cors::class,
         app\middleware\SecurityFilter::class,
         app\middleware\RateLimit::class,

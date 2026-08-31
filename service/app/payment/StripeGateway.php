@@ -19,8 +19,6 @@ class StripeGateway implements PaymentGatewayInterface
 {
     private const API_URL = 'https://api.stripe.com/v1';
 
-    private const ZERO_DECIMAL_CURRENCIES = ['JPY', 'KRW'];
-
     public function createPayment(DepositOrder $order, PaymentMethod $method): array
     {
         $secret = getenv('STRIPE_SECRET_KEY') ?: '';
@@ -83,21 +81,15 @@ class StripeGateway implements PaymentGatewayInterface
         ];
     }
 
-    /** 金额转最小单位（分），JPY/KRW 等零小数币种不放大 */
+    /** 金额转最小单位（分），零小数币种（JPY/KRW 等）不放大 —— 共享清单见 CurrencyUtils */
     public function toMinor(string $amount, string $currency): string
     {
-        if (in_array(strtoupper($currency), self::ZERO_DECIMAL_CURRENCIES, true)) {
-            return bcmul($amount, '1', 0);
-        }
-        return bcmul($amount, '100', 0);
+        return CurrencyUtils::toMinor($amount, $currency);
     }
 
     /** 最小单位转回金额字符串 */
     private function fromMinor(string $amount, string $currency): string
     {
-        if (in_array(strtoupper($currency), self::ZERO_DECIMAL_CURRENCIES, true)) {
-            return $amount;
-        }
-        return bcdiv($amount, '100', 4);
+        return CurrencyUtils::fromMinor($amount, $currency);
     }
 }

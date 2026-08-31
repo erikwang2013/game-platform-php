@@ -40,7 +40,7 @@ class PaymentController extends BaseController
         'stripe', 'paypal', 'nowpayments', 'coinbase',
         'skrill', 'neteller', 'paysafecard', 'paytm',
         'mercadopago', 'astropay', 'paypay', 'kakaopay', 'gcash',
-        'mpesa', 'paystack', 'toss',
+        'mpesa', 'paystack', 'toss', 'adyen', 'grabpay',
     ];
 
     public function callback(Request $request): Response
@@ -179,7 +179,7 @@ class PaymentController extends BaseController
             Db::commit();
         } catch (\Throwable $e) {
             Db::rollBack();
-            Log::error('Payment callback failed', ['order_no' => $orderNo, 'error' => $e->getMessage()]);
+            Log::error('Payment callback failed', ['order_no' => $orderNo, 'trace_id' => ($request->traceId ?? ''), 'error' => $e->getMessage()]);
             return $this->fail('Callback processing failed', 500);
         }
 

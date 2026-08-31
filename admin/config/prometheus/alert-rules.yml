@@ -1,0 +1,77 @@
+# Prometheus Alertmanager 告警规则（L4 可观测性，plan §4.3 起步 5 条）
+# 指标源：admin 侧 /metrics（open_admin_*），告警通道复用现有通知能力，不新建。
+# 校验：amtool check-config ./alert-rules.yml
+#
+# 说明：
+# - 规则 1/5 引用的 histogram/队列指标尚未导出（见下方注释），其余 3 条引用的指标
+#   已由 MetricsController 提供；未导出指标上线后即可生效，无需改规则。
+
+groups:
+  - name: game-platform-payment
+    rules:
+      # 1. 支付回调延迟 P95 > 5s 持续 10m → P1（影响入账）
+      # 依赖：open_admin_payment_callback_seconds 直方图（支付回调链路打点，随
+      # 回调日志管道部署；当前 TraceId 中间件已写 trace_id 日志，histogram 导出为后续项）
+      - alert: PaymentCallbackP95High
+        expr: histogram_quantile(0.95, sum by (le) (rate(open_admin_payment_callback_seconds_bucket[5m]))) > 5
+        for: 10m
+        labels:
+          severity: P1
+        annotations:
+          summary: "支付回调 P95 延迟超 5s"
+          description: "支付回调链路 P95 延迟 {{ $value }}s，持续 10 分钟，入账可能阻塞"
+
+  - name: game-platform-infra
+    rules:
+      # 2. DB / Redis 连接状态 = 0 持续 1m → P1（系统不可用）
+      - alert: MysqlDown
+        expr: open_admin_db_up == 0
+        for: 1m
+        labels:
+          severity: P1
+        annotations:
+          summary: "MySQL 不可达"
+          description: "MySQL 连接状态为 0，持续 1 分钟"
+
+      - alert: RedisDown
+        expr: open_admin_redis_up == 0
+        for: 1m
+        labels:
+          severity: P1
+        annotations:
+          summary: "Redis 不可达"
+          description: "Redis 连接状态为 0，持续 1 分钟"
+
+  - name: game-platform-business
+    rules:
+      # 3. 对账差异笔数 > 0 持续 30m → P2（资金风险，联动 H3）
+      - alert: ReconciliationDiffPending
+        expr: open_admin_reconciliation_diff_pending > 0
+        for: 30m
+        labels:
+          severity: P2
+        annotations:
+          summary: "对账差异未清零"
+          description: "待处理对账差异 {{ $value }} 笔，持续 30 分钟，需人工核查资金"
+
+      # 4. worker 存活数 < 预期值 持续 5m → P1（进程掉线）
+      # 依赖：open_admin_worker_alive gauge（每进程心跳写入，随进程注册上线）
+      - alert: WorkerDown
+        expr: open_admin_worker_alive < 6
+        for: 5m
+        labels:
+          severity: P1
+        annotations:
+          summary: "worker 进程掉线"
+          description: "存活 worker 数 {{ $value }}（预期 ≥ 6），持续 5 分钟"
+
+      # 5. 队列积压 > 1000 持续 10m → P2（提现/KYC 延迟）
+      # 依赖：open_admin_queue_backlog gauge（队列长度打点，随队列监控上线）
+      - alert: QueueBacklogHigh
+        expr: open_admin_queue_backlog > 1000
+        for: 10m
+        labels:
+          severity: P2
+        annotations:
+          summary: "队列积压超 1000"
+          description: "队列积压 {{ $value }} 条，持续 10 分钟，提现/KYC 处理延迟"

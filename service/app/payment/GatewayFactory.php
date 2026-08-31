@@ -28,6 +28,8 @@ class GatewayFactory
             'mpesa'       => new MpesaGateway(),
             'paystack'    => new PaystackGateway(),
             'toss'        => new TossGateway(),
+            'adyen'       => new AdyenGateway(),
+            'grabpay'     => new GrabPayGateway(),
             default       => throw new \InvalidArgumentException("Unsupported payment gateway: {$provider}"),
         };
     }

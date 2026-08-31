@@ -73,6 +73,12 @@ return [
         'count' => 1,
     ],
 
+    // 健康探活（L4）：每分钟探测 MySQL/Redis，失败写日志 + 指标归零（health:mysql / health:redis）
+    'health' => [
+        'handler' => app\process\Health::class,
+        'count' => 1,
+    ],
+
     'monitor' => [
         'handler' => app\process\Monitor::class,
         'reloadable' => false,
