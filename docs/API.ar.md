@@ -2109,3 +2109,80 @@ status: open / waiting / replied / closed
 | الواجهة | الحد |
 |------|------|
 | POST /api/tournament/{id}/join | 10 مرات/دقيقة |
+
+---
+
+## 10. واجهات برمجة جديدة (v1.3.15-v1.3.22)
+
+### 10.1 إدارة المخاطر (الإدارة :8787)
+
+| نقطة الوصول | الوصف |
+|------|------|
+| GET /admin/risk/dashboard | نظرة عامة على لوحة المخاطر |
+| GET /admin/risk/overview | مؤشرات نظرة المخاطر |
+| GET /admin/risk/hit-trend | اتجاه الإصابات |
+| GET /admin/risk/action-distribution | توزيع الإجراءات |
+| GET /admin/risk/rule-performance | أداء القواعد |
+| GET /admin/risk/rule/list | قائمة القواعد |
+| POST /admin/risk/rule/create | إنشاء قاعدة |
+| PUT /admin/risk/rule/{hashid} | تحديث قاعدة |
+| POST /admin/risk/rule/{hashid}/toggle | تفعيل/تعطيل قاعدة |
+| POST /admin/risk/rule/test | اختبار قاعدة |
+| GET /admin/risk/event/list | قائمة أحداث المخاطر |
+| GET /admin/risk/event/{hashid} | تفاصيل الحدث |
+| POST /admin/risk/event/{hashid}/handle | معالجة الحدث |
+| GET /admin/risk/device/list | قائمة بصمات الأجهزة |
+| POST /admin/risk/device/block | حظر الجهاز |
+| POST /admin/risk/device/unblock | إلغاء حظر الجهاز |
+| GET /admin/risk/ip/list | قائمة عناوين IP |
+| POST /admin/risk/ip/block | حظر عنوان IP |
+| POST /admin/risk/ip/whitelist | قائمة IP البيضاء |
+| POST /admin/risk/ip/appeal | استئناف عنوان IP |
+| POST /admin/risk/ip/recheck | إعادة فحص عنوان IP |
+| GET /admin/risk/graph/clusters | قائمة العناقيد |
+| GET /admin/risk/graph/{userId} | رسم بياني لروابط المستخدم |
+| GET /admin/risk/clusters | قائمة عناقيد المخاطر |
+
+### 10.2 إدارة مكافحة الغش (الإدارة :8787)
+
+| نقطة الوصول | الوصف |
+|------|------|
+| GET /admin/anticheat/events | قائمة أحداث مكافحة الغش |
+| GET /admin/anticheat/events/{hashid} | تفاصيل الحدث |
+| POST /admin/anticheat/events/{hashid}/review | مراجعة الحدث |
+
+### 10.3 الأنشطة (الإدارة :8787 + العميل :8788)
+
+| نقطة الوصول | الوصف |
+|------|------|
+| GET /admin/activities/list | قائمة الأنشطة (الإدارة) |
+| POST /admin/activities/create | إنشاء نشاط (الإدارة) |
+| PUT /admin/activities/{hashid} | تحديث نشاط (الإدارة) |
+| DELETE /admin/activities/{hashid} | حذف نشاط (الإدارة) |
+| GET /api/activities/list | قائمة الأنشطة (العميل) |
+| GET /api/activities/progress | تقدم المشاركة (العميل) |
+| GET /api/activities/{hashid} | تفاصيل النشاط (العميل) |
+| POST /api/activities/{hashid}/checkin | تسجيل الحضور (العميل) |
+
+### 10.4 المجموعات / المشاركة (العميل :8788 + الإدارة :8787)
+
+| نقطة الوصول | الوصف |
+|------|------|
+| POST /api/groups | إنشاء مجموعة |
+| GET /api/groups/{hashid} | تفاصيل المجموعة |
+| GET /api/groups/{hashid}/members | قائمة الأعضاء |
+| POST /api/groups/{hashid}/join | الانضمام إلى مجموعة |
+| POST /api/groups/{hashid}/leave | مغادرة مجموعة |
+| PUT /api/groups/{hashid}/role | دور العضو |
+| POST /api/shares | إنشاء رابط مشاركة |
+| POST /api/shares/visit | تتبع زيارات المشاركة |
+| GET /admin/groups | قائمة المجموعات (الإدارة) |
+| GET /admin/groups/{hashid}/audit | تدقيق المجموعة (الإدارة) |
+| GET /admin/share/stats | إحصائيات المشاركة (الإدارة) |
+
+### 10.5 توسعات بوابة الدفع (L1)
+
+| البوابة | الوصف |
+|------|------|
+| Adyen | بوابة دفع جديدة (إيداع / التحقق من الاستدعاء / إضافة تلقائية) |
+| GrabPay | بوابة دفع جديدة (إيداع / التحقق من الاستدعاء / إضافة تلقائية) |

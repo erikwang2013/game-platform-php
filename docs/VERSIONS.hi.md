@@ -10,10 +10,10 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 
 | | मूल संस्करण (Lite) | मानक संस्करण (Standard) | पूर्ण संस्करण (Full) |
 |------|------|------|------|
-| डेटा तालिकाएँ (install.sql) | 19 | 29 | **43** (दस्तावेज़ में पहले लिखे 52 नहीं) |
-| API एंडपॉइंट | 38 | 54 | ~149 (admin+service, Webhook/Provider सहित) |
-| बैकएंड कंट्रोलर | 14 | 22 | admin 32 + service 30 |
-| डेटा मॉडल | गैर-साझा | गैर-साझा | **admin 46 / service 44 प्रत्येक की एक प्रति, कोई साझा परत नहीं** |
+| डेटा तालिकाएँ (install.sql) | 19 | 29 | **66**（v1.3.15-22 में 22 नई） |
+| API एंडपॉइंट | 38 | 54 | ~260 (admin+service, Webhook/Provider सहित) |
+| बैकएंड कंट्रोलर | 14 | 22 | admin 46 + service 35 |
+| डेटा मॉडल | गैर-साझा | गैर-साझा | **साझा 52 (platform-common) + admin 8 + service 10** |
 | साझा Service | कोई साझा परत नहीं | कोई साझा परत नहीं | `packages/platform-common` एकल साझा पैकेज |
 | Admin फ्रंटएंड पेज | 11 | 13 | 15 |
 | Platform फ्रंटएंड पेज | 8 | 10 | 10 |
@@ -144,7 +144,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 
 | कार्यात्मकता | मूल संस्करण | मानक संस्करण | पूर्ण संस्करण |
 |------|--------|--------|--------|
-| Flutter Web PC प्रशासन कंसोल | ✓ 5 पेज | ✓ 11 पेज | ✓ 15 पेज |
+| Flutter Web PC प्रशासन कंसोल | ✓ 5 पेज | ✓ 11 पेज | ✓ 17 पेज |
 | Flutter Web PC उपयोगकर्ता प्लेटफ़ॉर्म | ✓ 5 पेज | ✓ 8 पेज | ✓ 10 पेज |
 | HarmonyOS admin | - | ✓ लॉगिन + डैशबोर्ड | ✓ 8 पेज `admin/apps/harmonyos/` |
 | HarmonyOS C-छोर | - | - | ✓ 5 पेज `apps/harmonyos/` |
@@ -180,6 +180,17 @@ game_country_config, game-platform_revenue,
 game_notification, game_referral, game_referral_reward, game_user_2fa
 ```
 
+### v1.3.15-22 में नई (22 तालिकाएँ)
+```
+game_event_outbox, game_reconciliation_batch, game_reconciliation_diff,
+game_reconciliation_statement, game_device_fingerprint, game_device_account_map,
+game_ip_reputation, game_account_account_link,
+game_activity, game_activity_participation, game_activity_reward_log,
+game_anticheat_event, game_anticheat_daily_stat,
+game_group, game_group_member, game_share_link,
+game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, game_risk_cluster
+```
+
 ---
 
 ## API एंडपॉइंट
@@ -195,7 +206,7 @@ game_notification, game_referral, game_referral_reward, game_user_2fa
 | प्रशासन कंसोल | 18 | 25 | 79 |
 | संचालन उपकरण | - | - | 30 (+लीडरबोर्ड+कूपन+सूचना+रेफरल) |
 | अंतर्राष्ट्रीयकरण | 2 | 2 | 4 (+देश कॉन्फ़िगरेशन) |
-| **कुल** | **38** | **54** | **129** |
+| **कुल** | **38** | **54** | **~260** |
 
 ---
 

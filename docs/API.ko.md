@@ -2109,3 +2109,80 @@ status: open / waiting / replied / closed
 | 인터페이스 | 제한 |
 |------|------|
 | POST /api/tournament/{id}/join | 10회/분 |
+
+---
+
+## 10. v1.3.15-22 신규 API
+
+### 10.1 리스크 관리 (관리자 :8787)
+
+| 엔드포인트 | 설명 |
+|------|------|
+| GET /admin/risk/dashboard | 리스크 대시보드 개요 |
+| GET /admin/risk/overview | 리스크 개요 지표 |
+| GET /admin/risk/hit-trend | 히트 추세 |
+| GET /admin/risk/action-distribution | 처리 액션 분포 |
+| GET /admin/risk/rule-performance | 규칙 성능 |
+| GET /admin/risk/rule/list | 규칙 목록 |
+| POST /admin/risk/rule/create | 규칙 생성 |
+| PUT /admin/risk/rule/{hashid} | 규칙 수정 |
+| POST /admin/risk/rule/{hashid}/toggle | 규칙 활성/비활성 |
+| POST /admin/risk/rule/test | 규칙 테스트 |
+| GET /admin/risk/event/list | 리스크 이벤트 목록 |
+| GET /admin/risk/event/{hashid} | 이벤트 상세 |
+| POST /admin/risk/event/{hashid}/handle | 이벤트 처리 |
+| GET /admin/risk/device/list | 디바이스 핑거프린트 목록 |
+| POST /admin/risk/device/block | 디바이스 차단 |
+| POST /admin/risk/device/unblock | 디바이스 차단 해제 |
+| GET /admin/risk/ip/list | IP 목록 |
+| POST /admin/risk/ip/block | IP 차단 |
+| POST /admin/risk/ip/whitelist | IP 화이트리스트 |
+| POST /admin/risk/ip/appeal | IP 이의 제기 |
+| POST /admin/risk/ip/recheck | IP 재검토 |
+| GET /admin/risk/graph/clusters | 클러스터 목록 |
+| GET /admin/risk/graph/{userId} | 사용자 연관 그래프 |
+| GET /admin/risk/clusters | 리스크 클러스터 목록 |
+
+### 10.2 안티치트 관리 (관리자 :8787)
+
+| 엔드포인트 | 설명 |
+|------|------|
+| GET /admin/anticheat/events | 안티치트 이벤트 목록 |
+| GET /admin/anticheat/events/{hashid} | 이벤트 상세 |
+| POST /admin/anticheat/events/{hashid}/review | 이벤트 검토 |
+
+### 10.3 활동 (관리자 :8787 + C측 :8788)
+
+| 엔드포인트 | 설명 |
+|------|------|
+| GET /admin/activities/list | 활동 목록 (관리자) |
+| POST /admin/activities/create | 활동 생성 (관리자) |
+| PUT /admin/activities/{hashid} | 활동 수정 (관리자) |
+| DELETE /admin/activities/{hashid} | 활동 삭제 (관리자) |
+| GET /api/activities/list | 활동 목록 (C측) |
+| GET /api/activities/progress | 참여 진행 상황 (C측) |
+| GET /api/activities/{hashid} | 활동 상세 (C측) |
+| POST /api/activities/{hashid}/checkin | 체크인 (C측) |
+
+### 10.4 그룹/공유 (C측 :8788 + 관리자 :8787)
+
+| 엔드포인트 | 설명 |
+|------|------|
+| POST /api/groups | 그룹 생성 |
+| GET /api/groups/{hashid} | 그룹 상세 |
+| GET /api/groups/{hashid}/members | 멤버 목록 |
+| POST /api/groups/{hashid}/join | 그룹 가입 |
+| POST /api/groups/{hashid}/leave | 그룹 탈퇴 |
+| PUT /api/groups/{hashid}/role | 멤버 역할 |
+| POST /api/shares | 공유 링크 생성 |
+| POST /api/shares/visit | 공유 방문 추적 |
+| GET /admin/groups | 그룹 목록 (관리자) |
+| GET /admin/groups/{hashid}/audit | 그룹 심사 (관리자) |
+| GET /admin/share/stats | 공유 통계 (관리자) |
+
+### 10.5 결제 게이트웨이 확장 (L1)
+
+| 게이트웨이 | 설명 |
+|------|------|
+| Adyen | 신규 결제 게이트웨이 (입금/콜백 검증/자동 입금) |
+| GrabPay | 신규 결제 게이트웨이 (입금/콜백 검증/자동 입금) |

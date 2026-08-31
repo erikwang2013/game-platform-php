@@ -2002,3 +2002,80 @@ Referral commission adds a second level:
 | Endpoint | Limit |
 |------|------|
 | POST /api/tournament/{id}/join | 10 requests/minute |
+
+---
+
+## 10. New APIs (v1.3.15-v1.3.22)
+
+### 10.1 Risk Control Management (Admin :8787)
+
+| Endpoint | Description |
+|------|------|
+| GET /admin/risk/dashboard | Risk dashboard overview |
+| GET /admin/risk/overview | Risk overview metrics |
+| GET /admin/risk/hit-trend | Hit trend |
+| GET /admin/risk/action-distribution | Action distribution |
+| GET /admin/risk/rule-performance | Rule performance |
+| GET /admin/risk/rule/list | Rule list |
+| POST /admin/risk/rule/create | Create rule |
+| PUT /admin/risk/rule/{hashid} | Update rule |
+| POST /admin/risk/rule/{hashid}/toggle | Enable/disable rule |
+| POST /admin/risk/rule/test | Test rule |
+| GET /admin/risk/event/list | Risk event list |
+| GET /admin/risk/event/{hashid} | Event detail |
+| POST /admin/risk/event/{hashid}/handle | Handle event |
+| GET /admin/risk/device/list | Device fingerprint list |
+| POST /admin/risk/device/block | Block device |
+| POST /admin/risk/device/unblock | Unblock device |
+| GET /admin/risk/ip/list | IP list |
+| POST /admin/risk/ip/block | Block IP |
+| POST /admin/risk/ip/whitelist | IP whitelist |
+| POST /admin/risk/ip/appeal | IP appeal |
+| POST /admin/risk/ip/recheck | IP recheck |
+| GET /admin/risk/graph/clusters | Cluster list |
+| GET /admin/risk/graph/{userId} | User link graph |
+| GET /admin/risk/clusters | Risk cluster list |
+
+### 10.2 Anti-Cheat Management (Admin :8787)
+
+| Endpoint | Description |
+|------|------|
+| GET /admin/anticheat/events | Anti-cheat event list |
+| GET /admin/anticheat/events/{hashid} | Event detail |
+| POST /admin/anticheat/events/{hashid}/review | Review event |
+
+### 10.3 Activities (Admin :8787 + Client :8788)
+
+| Endpoint | Description |
+|------|------|
+| GET /admin/activities/list | Activity list (Admin) |
+| POST /admin/activities/create | Create activity (Admin) |
+| PUT /admin/activities/{hashid} | Update activity (Admin) |
+| DELETE /admin/activities/{hashid} | Delete activity (Admin) |
+| GET /api/activities/list | Activity list (Client) |
+| GET /api/activities/progress | Participation progress (Client) |
+| GET /api/activities/{hashid} | Activity detail (Client) |
+| POST /api/activities/{hashid}/checkin | Check-in (Client) |
+
+### 10.4 Groups / Shares (Client :8788 + Admin :8787)
+
+| Endpoint | Description |
+|------|------|
+| POST /api/groups | Create group |
+| GET /api/groups/{hashid} | Group detail |
+| GET /api/groups/{hashid}/members | Member list |
+| POST /api/groups/{hashid}/join | Join group |
+| POST /api/groups/{hashid}/leave | Leave group |
+| PUT /api/groups/{hashid}/role | Member role |
+| POST /api/shares | Create share link |
+| POST /api/shares/visit | Share visit tracking |
+| GET /admin/groups | Group list (Admin) |
+| GET /admin/groups/{hashid}/audit | Group audit (Admin) |
+| GET /admin/share/stats | Share stats (Admin) |
+
+### 10.5 Payment Gateway Extensions (L1)
+
+| Gateway | Description |
+|------|------|
+| Adyen | New payment gateway (deposit / callback verification / auto-credit) |
+| GrabPay | New payment gateway (deposit / callback verification / auto-credit) |

@@ -2111,3 +2111,80 @@ Die Empfehlungsprovision erhält eine zweistufige Gewinnbeteiligung:
 | Schnittstelle | Limit |
 |------|------|
 | POST /api/tournament/{id}/join | 10 Anfragen/Minute |
+
+---
+
+## 10. Neue APIs (v1.3.15-v1.3.22)
+
+### 10.1 Risikomanagement (Admin :8787)
+
+| Endpunkt | Beschreibung |
+|------|------|
+| GET /admin/risk/dashboard | Risiko-Dashboard-Übersicht |
+| GET /admin/risk/overview | Risiko-Übersichtsmetriken |
+| GET /admin/risk/hit-trend | Treffer-Trend |
+| GET /admin/risk/action-distribution | Maßnahmenverteilung |
+| GET /admin/risk/rule-performance | Regelleistung |
+| GET /admin/risk/rule/list | Regelliste |
+| POST /admin/risk/rule/create | Regel erstellen |
+| PUT /admin/risk/rule/{hashid} | Regel aktualisieren |
+| POST /admin/risk/rule/{hashid}/toggle | Regel aktivieren/deaktivieren |
+| POST /admin/risk/rule/test | Regel testen |
+| GET /admin/risk/event/list | Risikoereignisliste |
+| GET /admin/risk/event/{hashid} | Ereignisdetails |
+| POST /admin/risk/event/{hashid}/handle | Ereignis bearbeiten |
+| GET /admin/risk/device/list | Geräte-Fingerprint-Liste |
+| POST /admin/risk/device/block | Gerät sperren |
+| POST /admin/risk/device/unblock | Gerät entsperren |
+| GET /admin/risk/ip/list | IP-Liste |
+| POST /admin/risk/ip/block | IP sperren |
+| POST /admin/risk/ip/whitelist | IP-Whitelist |
+| POST /admin/risk/ip/appeal | IP-Einspruch |
+| POST /admin/risk/ip/recheck | IP-Nachprüfung |
+| GET /admin/risk/graph/clusters | Clusterliste |
+| GET /admin/risk/graph/{userId} | Benutzer-Verknüpfungsgraph |
+| GET /admin/risk/clusters | Risikoclusterliste |
+
+### 10.2 Anti-Cheat-Verwaltung (Admin :8787)
+
+| Endpunkt | Beschreibung |
+|------|------|
+| GET /admin/anticheat/events | Anti-Cheat-Ereignisliste |
+| GET /admin/anticheat/events/{hashid} | Ereignisdetails |
+| POST /admin/anticheat/events/{hashid}/review | Ereignis prüfen |
+
+### 10.3 Aktionen (Admin :8787 + Client :8788)
+
+| Endpunkt | Beschreibung |
+|------|------|
+| GET /admin/activities/list | Aktionsliste (Admin) |
+| POST /admin/activities/create | Aktion erstellen (Admin) |
+| PUT /admin/activities/{hashid} | Aktion aktualisieren (Admin) |
+| DELETE /admin/activities/{hashid} | Aktion löschen (Admin) |
+| GET /api/activities/list | Aktionsliste (Client) |
+| GET /api/activities/progress | Teilnahmefortschritt (Client) |
+| GET /api/activities/{hashid} | Aktionsdetails (Client) |
+| POST /api/activities/{hashid}/checkin | Check-in (Client) |
+
+### 10.4 Gruppen / Teilen (Client :8788 + Admin :8787)
+
+| Endpunkt | Beschreibung |
+|------|------|
+| POST /api/groups | Gruppe erstellen |
+| GET /api/groups/{hashid} | Gruppendetails |
+| GET /api/groups/{hashid}/members | Mitgliederliste |
+| POST /api/groups/{hashid}/join | Gruppe beitreten |
+| POST /api/groups/{hashid}/leave | Gruppe verlassen |
+| PUT /api/groups/{hashid}/role | Mitgliederrolle |
+| POST /api/shares | Teilen-Link erstellen |
+| POST /api/shares/visit | Teilen-Zugriffsverfolgung |
+| GET /admin/groups | Gruppenliste (Admin) |
+| GET /admin/groups/{hashid}/audit | Gruppenprüfung (Admin) |
+| GET /admin/share/stats | Teilen-Statistik (Admin) |
+
+### 10.5 Zahlungs-Gateway-Erweiterungen (L1)
+
+| Gateway | Beschreibung |
+|------|------|
+| Adyen | Neues Zahlungs-Gateway (Einzahlung / Callback-Verifizierung / automatische Gutschrift) |
+| GrabPay | Neues Zahlungs-Gateway (Einzahlung / Callback-Verifizierung / automatische Gutschrift) |

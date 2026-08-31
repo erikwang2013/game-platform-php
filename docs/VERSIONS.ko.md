@@ -10,10 +10,10 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · **한국어** �
 
 | | 베이직 에디션 (Lite) | 스탠다드 에디션 (Standard) | 풀 에디션 (Full) |
 |------|------|------|------|
-| 데이터 테이블 (install.sql) | 19 | 29 | **43**（문서가 이전에 쓴 52 아님） |
-| API 엔드포인트 | 38 | 54 | ~149 (admin+service, Webhook/Provider 포함) |
-| 백엔드 컨트롤러 | 14 | 22 | admin 32 + service 30 |
-| 데이터 모델 | 비공유 | 비공유 | **admin 46 / service 44 각각 1벌, 공유 레이어 없음** |
+| 데이터 테이블 (install.sql) | 19 | 29 | **66**（v1.3.15-22에서 22개 신규） |
+| API 엔드포인트 | 38 | 54 | ~260 (admin+service, Webhook/Provider 포함) |
+| 백엔드 컨트롤러 | 14 | 22 | admin 46 + service 35 |
+| 데이터 모델 | 비공유 | 비공유 | **공유 52 (platform-common) + admin 8 + service 10** |
 | 공유 Service | 공유 레이어 없음 | 공유 레이어 없음 | `packages/platform-common` 단일 공유 패키지 |
 | Admin 프론트엔드 페이지 | 11 | 13 | 15 |
 | Platform 프론트엔드 페이지 | 8 | 10 | 10 |
@@ -144,7 +144,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · **한국어** �
 
 | 기능 | 베이직 | 스탠다드 | 풀 |
 |------|--------|--------|--------|
-| Flutter Web PC 관리 백오피스 | ✓ 5페이지 | ✓ 11페이지 | ✓ 15페이지 |
+| Flutter Web PC 관리 백오피스 | ✓ 5페이지 | ✓ 11페이지 | ✓ 17페이지 |
 | Flutter Web PC 사용자 플랫폼 | ✓ 5페이지 | ✓ 8페이지 | ✓ 10페이지 |
 | HarmonyOS admin | - | ✓ 로그인+대시보드 | ✓ 8페이지 `admin/apps/harmonyos/` |
 | HarmonyOS C단 | - | - | ✓ 5페이지 `apps/harmonyos/` |
@@ -180,6 +180,17 @@ game_country_config, game-platform_revenue,
 game_notification, game_referral, game_referral_reward, game_user_2fa
 ```
 
+### v1.3.15-22 추가 (22개)
+```
+game_event_outbox, game_reconciliation_batch, game_reconciliation_diff,
+game_reconciliation_statement, game_device_fingerprint, game_device_account_map,
+game_ip_reputation, game_account_account_link,
+game_activity, game_activity_participation, game_activity_reward_log,
+game_anticheat_event, game_anticheat_daily_stat,
+game_group, game_group_member, game_share_link,
+game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, game_risk_cluster
+```
+
 ---
 
 ## API 엔드포인트
@@ -195,7 +206,7 @@ game_notification, game_referral, game_referral_reward, game_user_2fa
 | 관리 백오피스 | 18 | 25 | 79 |
 | 운영 도구 | - | - | 30 (+랭킹+쿠폰+알림+추천) |
 | 국제화 | 2 | 2 | 4 (+국가 설정) |
-| **총계** | **38** | **54** | **129** |
+| **총계** | **38** | **54** | **~260** |
 
 ---
 

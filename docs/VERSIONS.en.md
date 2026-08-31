@@ -10,10 +10,10 @@ Languages: [中文](VERSIONS.md) · **English** · [한국어](VERSIONS.ko.md) �
 
 | | Lite | Standard | Full |
 |------|------|------|------|
-| Data tables (install.sql) | 19 | 29 | **43** (not the 52 previously claimed in docs) |
-| API endpoints | 38 | 54 | ~149 (admin+service, incl. Webhook/Provider) |
-| Backend controllers | 14 | 22 | admin 32 + service 30 |
-| Data models | Not shared | Not shared | **admin 46 / service 44, one copy each, no shared layer** |
+| Data tables (install.sql) | 19 | 29 | **66** (22 new in v1.3.15-v1.3.22) |
+| API endpoints | 38 | 54 | ~260 (admin+service, incl. Webhook/Provider) |
+| Backend controllers | 14 | 22 | admin 46 + service 35 |
+| Data models | Not shared | Not shared | **shared 52 (platform-common) + admin 8 + service 10** |
 | Shared services | No shared layer | No shared layer | Single shared package `packages/platform-common` |
 | Admin frontend pages | 11 | 13 | 15 |
 | Platform frontend pages | 8 | 10 | 10 |
@@ -144,7 +144,7 @@ Languages: [中文](VERSIONS.md) · **English** · [한국어](VERSIONS.ko.md) �
 
 | Feature | Lite | Standard | Full |
 |------|--------|--------|--------|
-| Flutter Web PC admin backend | ✓ 5 pages | ✓ 11 pages | ✓ 15 pages |
+| Flutter Web PC admin backend | ✓ 5 pages | ✓ 11 pages | ✓ 17 pages |
 | Flutter Web PC user platform | ✓ 5 pages | ✓ 8 pages | ✓ 10 pages |
 | HarmonyOS admin | - | ✓ login + dashboard | ✓ 8 pages `admin/apps/harmonyos/` |
 | HarmonyOS C-end | - | - | ✓ 5 pages `apps/harmonyos/` |
@@ -180,6 +180,17 @@ game_country_config, game-platform_revenue,
 game_notification, game_referral, game_referral_reward, game_user_2fa
 ```
 
+### v1.3.15-v1.3.22 additions (22 tables)
+```
+game_event_outbox, game_reconciliation_batch, game_reconciliation_diff,
+game_reconciliation_statement, game_device_fingerprint, game_device_account_map,
+game_ip_reputation, game_account_account_link,
+game_activity, game_activity_participation, game_activity_reward_log,
+game_anticheat_event, game_anticheat_daily_stat,
+game_group, game_group_member, game_share_link,
+game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, game_risk_cluster
+```
+
 ---
 
 ## API Endpoints
@@ -195,7 +206,7 @@ game_notification, game_referral, game_referral_reward, game_user_2fa
 | Admin | 18 | 25 | 79 |
 | Operations tools | - | - | 30 (+leaderboards+coupons+notifications+referrals) |
 | i18n | 2 | 2 | 4 (+country config) |
-| **Total** | **38** | **54** | **129** |
+| **Total** | **38** | **54** | **~260** |
 
 ---
 

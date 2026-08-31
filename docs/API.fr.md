@@ -2109,3 +2109,80 @@ La commission de parrainage ajoute une répartition de deuxième niveau :
 | Interface | Limite |
 |------|------|
 | POST /api/tournament/{id}/join | 10 requêtes/minute |
+
+---
+
+## 10. Nouvelles API (v1.3.15-v1.3.22)
+
+### 10.1 Gestion des risques (admin :8787)
+
+| Point d'accès | Description |
+|------|------|
+| GET /admin/risk/dashboard | Vue d'ensemble du tableau de bord des risques |
+| GET /admin/risk/overview | Indicateurs d'ensemble des risques |
+| GET /admin/risk/hit-trend | Tendance des déclenchements |
+| GET /admin/risk/action-distribution | Répartition des actions |
+| GET /admin/risk/rule-performance | Performance des règles |
+| GET /admin/risk/rule/list | Liste des règles |
+| POST /admin/risk/rule/create | Créer une règle |
+| PUT /admin/risk/rule/{hashid} | Mettre à jour une règle |
+| POST /admin/risk/rule/{hashid}/toggle | Activer/désactiver une règle |
+| POST /admin/risk/rule/test | Tester une règle |
+| GET /admin/risk/event/list | Liste des événements à risque |
+| GET /admin/risk/event/{hashid} | Détail de l'événement |
+| POST /admin/risk/event/{hashid}/handle | Traiter l'événement |
+| GET /admin/risk/device/list | Liste des empreintes d'appareils |
+| POST /admin/risk/device/block | Bloquer l'appareil |
+| POST /admin/risk/device/unblock | Débloquer l'appareil |
+| GET /admin/risk/ip/list | Liste des IP |
+| POST /admin/risk/ip/block | Bloquer une IP |
+| POST /admin/risk/ip/whitelist | Liste blanche IP |
+| POST /admin/risk/ip/appeal | Appel d'IP |
+| POST /admin/risk/ip/recheck | Revérification d'IP |
+| GET /admin/risk/graph/clusters | Liste des clusters |
+| GET /admin/risk/graph/{userId} | Graphe de liens de l'utilisateur |
+| GET /admin/risk/clusters | Liste des clusters à risque |
+
+### 10.2 Gestion anti-triche (admin :8787)
+
+| Point d'accès | Description |
+|------|------|
+| GET /admin/anticheat/events | Liste des événements anti-triche |
+| GET /admin/anticheat/events/{hashid} | Détail de l'événement |
+| POST /admin/anticheat/events/{hashid}/review | Examiner l'événement |
+
+### 10.3 Activités (admin :8787 + client :8788)
+
+| Point d'accès | Description |
+|------|------|
+| GET /admin/activities/list | Liste des activités (admin) |
+| POST /admin/activities/create | Créer une activité (admin) |
+| PUT /admin/activities/{hashid} | Mettre à jour une activité (admin) |
+| DELETE /admin/activities/{hashid} | Supprimer une activité (admin) |
+| GET /api/activities/list | Liste des activités (client) |
+| GET /api/activities/progress | Progression de participation (client) |
+| GET /api/activities/{hashid} | Détail de l'activité (client) |
+| POST /api/activities/{hashid}/checkin | Check-in (client) |
+
+### 10.4 Groupes / Partage (client :8788 + admin :8787)
+
+| Point d'accès | Description |
+|------|------|
+| POST /api/groups | Créer un groupe |
+| GET /api/groups/{hashid} | Détail du groupe |
+| GET /api/groups/{hashid}/members | Liste des membres |
+| POST /api/groups/{hashid}/join | Rejoindre un groupe |
+| POST /api/groups/{hashid}/leave | Quitter un groupe |
+| PUT /api/groups/{hashid}/role | Rôle du membre |
+| POST /api/shares | Créer un lien de partage |
+| POST /api/shares/visit | Suivi des visites de partage |
+| GET /admin/groups | Liste des groupes (admin) |
+| GET /admin/groups/{hashid}/audit | Audit du groupe (admin) |
+| GET /admin/share/stats | Statistiques de partage (admin) |
+
+### 10.5 Extensions de passerelle de paiement (L1)
+
+| Passerelle | Description |
+|------|------|
+| Adyen | Nouvelle passerelle de paiement (dépôt / vérification du callback / crédit automatique) |
+| GrabPay | Nouvelle passerelle de paiement (dépôt / vérification du callback / crédit automatique) |

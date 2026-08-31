@@ -19,6 +19,7 @@ A global, internationalized game aggregation platform. After registering, users 
 |------|------|------|
 | Full Version | Complete edition: leaderboards, coupons, game categories, country config, ES search | Completed |
 | Ecosystem Expansion | v2.0: game Provider integration, tickets, VIP, achievements, social, event bus | Completed |
+| v1.3.15-22 (8 releases) | Reconciliation/settlement, risk-control depth, unified wallet, activity engine, anti-cheat, social growth, Adyen/GrabPay | Completed |
 
 ## Tech Stack
 
@@ -253,6 +254,13 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Notifications | In-app messages + email, automatic notifications for deposits/withdrawals/KYC/coupons |
 | Referrals | Referral codes, signup rewards, deposit commissions |
 | Risk control | IP blacklist / large-amount alerts / frequency / speed detection |
+| Risk-control depth | Device fingerprint / IP reputation / account-link graph + rule engine + risk dashboard + AML/KYC/trust score |
+| Anti-cheat | Anti-cheat event collection + daily stats + manual review |
+| Reconciliation/settlement | Daily reconciliation batches + diff details + statement reconciliation |
+| Unified wallet | WalletScope unified wallet scoping |
+| Activity engine | Activity create/join/rewards + check-in |
+| Social growth | Groups + share-link tracking |
+| Payment gateways | New Adyen / GrabPay gateways (L1) |
 | Internationalization | 4 languages (en-US/zh-CN/ja-JP/ko-KR), translation tables + cache |
 | Country config | 8 countries with differentiated payment/withdrawal methods, minimum deposit amounts |
 | Statistics | Daily statistics snapshots (5 metric types) + platform revenue tracking |
@@ -267,7 +275,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Coupons | Conditional restrictions (min_deposit/first_user/game_id) |
 | Events | Redis Pub/Sub event bus + Webhook subscription delivery (7 event types) |
 | Deployment | Docker Compose 8-service orchestration + Nginx reverse proxy |
-| Clients | Flutter Admin (15 pages) + Platform (10 pages) + HarmonyOS (5 pages) |
+| Clients | Flutter Admin (17 pages) + Platform (10 pages) + HarmonyOS (5 pages) |
 
 ## Business Model
 

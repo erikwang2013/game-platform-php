@@ -10,10 +10,10 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 
 | | الأساسي (Lite) | القياسي (Standard) | الكامل (Full) |
 |------|------|------|------|
-| جداول البيانات (install.sql) | 19 | 29 | **43** (وليس 52 كما ورد سابقًا في التوثيق) |
-| نقاط نهاية API | 38 | 54 | ~149 (admin+service، تشمل Webhook/Provider) |
-| وحدات التحكم الخلفية | 14 | 22 | admin 32 + service 30 |
-| نماذج البيانات | غير مشتركة | غير مشتركة | **نسخة لكل من admin 46 / service 44، دون طبقة مشتركة** |
+| جداول البيانات (install.sql) | 19 | 29 | **66**（22 جدولًا جديدًا في v1.3.15-22） |
+| نقاط نهاية API | 38 | 54 | ~260 (admin+service، تشمل Webhook/Provider) |
+| وحدات التحكم الخلفية | 14 | 22 | admin 46 + service 35 |
+| نماذج البيانات | غير مشتركة | غير مشتركة | **مشتركة 52 (platform-common) + admin 8 + service 10** |
 | Service المشتركة | دون طبقة مشتركة | دون طبقة مشتركة | حزمة مشتركة واحدة `packages/platform-common` |
 | صفحات إدارة Admin | 11 | 13 | 15 |
 | صفحات منصة الطرف C | 8 | 10 | 10 |
@@ -144,7 +144,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 
 | الوظيفة | الأساسي | القياسي | الكامل |
 |------|--------|--------|--------|
-| لوحة إدارة Flutter Web PC | ✓ 5 صفحات | ✓ 11 صفحة | ✓ 15 صفحة |
+| لوحة إدارة Flutter Web PC | ✓ 5 صفحات | ✓ 11 صفحة | ✓ 17 صفحة |
 | منصة مستخدمي Flutter Web PC | ✓ 5 صفحات | ✓ 8 صفحات | ✓ 10 صفحات |
 | HarmonyOS admin | - | ✓ دخول + لوحة تحكم | ✓ 8 صفحات `admin/apps/harmonyos/` |
 | HarmonyOS الطرف C | - | - | ✓ 5 صفحات `apps/harmonyos/` |
@@ -180,6 +180,17 @@ game_country_config, game-platform_revenue,
 game_notification, game_referral, game_referral_reward, game_user_2fa
 ```
 
+### إضافات v1.3.15-22 (22 جدولًا)
+```
+game_event_outbox, game_reconciliation_batch, game_reconciliation_diff,
+game_reconciliation_statement, game_device_fingerprint, game_device_account_map,
+game_ip_reputation, game_account_account_link,
+game_activity, game_activity_participation, game_activity_reward_log,
+game_anticheat_event, game_anticheat_daily_stat,
+game_group, game_group_member, game_share_link,
+game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, game_risk_cluster
+```
+
 ---
 
 ## نقاط نهاية API
@@ -195,7 +206,7 @@ game_notification, game_referral, game_referral_reward, game_user_2fa
 | لوحة الإدارة | 18 | 25 | 79 |
 | أدوات التشغيل | - | - | 30 (+لوحات متصدرين+قسائم+إشعارات+إحالة) |
 | التدويل | 2 | 2 | 4 (+إعدادات الدول) |
-| **الإجمالي** | **38** | **54** | **129** |
+| **الإجمالي** | **38** | **54** | **~260** |
 
 ---
 

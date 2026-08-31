@@ -10,10 +10,10 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 
 | | Versão base (Lite) | Versão padrão (Standard) | Versão completa (Full) |
 |------|------|------|------|
-| Tabelas de dados (install.sql) | 19 | 29 | **43** (não os 52 que a documentação já escreveu) |
-| Endpoints de API | 38 | 54 | ~149 (admin+service, incluindo Webhook/Provider) |
-| Controllers do backend | 14 | 22 | admin 32 + service 30 |
-| Modelos de dados | Não compartilhados | Não compartilhados | **admin 46 / service 44, uma cópia cada, sem camada compartilhada** |
+| Tabelas de dados (install.sql) | 19 | 29 | **66** (22 novas em v1.3.15-22) |
+| Endpoints de API | 38 | 54 | ~260 (admin+service, incluindo Webhook/Provider) |
+| Controllers do backend | 14 | 22 | admin 46 + service 35 |
+| Modelos de dados | Não compartilhados | Não compartilhados | **compartilhados 52 (platform-common) + admin 8 + service 10** |
 | Service compartilhado | Sem camada compartilhada | Sem camada compartilhada | `packages/platform-common` pacote compartilhado único |
 | Páginas do frontend Admin | 11 | 13 | 15 |
 | Páginas do frontend Platform | 8 | 10 | 10 |
@@ -144,7 +144,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 
 | Funcionalidade | Versão base | Versão padrão | Versão completa |
 |------|--------|--------|--------|
-| Painel administrativo Flutter Web PC | ✓ 5 páginas | ✓ 11 páginas | ✓ 15 páginas |
+| Painel administrativo Flutter Web PC | ✓ 5 páginas | ✓ 11 páginas | ✓ 17 páginas |
 | Plataforma de usuário Flutter Web PC | ✓ 5 páginas | ✓ 8 páginas | ✓ 10 páginas |
 | HarmonyOS admin | - | ✓ login + dashboard | ✓ 8 páginas `admin/apps/harmonyos/` |
 | HarmonyOS C-side | - | - | ✓ 5 páginas `apps/harmonyos/` |
@@ -180,6 +180,17 @@ game_country_config, game-platform_revenue,
 game_notification, game_referral, game_referral_reward, game_user_2fa
 ```
 
+### Adições v1.3.15-22 (22 tabelas)
+```
+game_event_outbox, game_reconciliation_batch, game_reconciliation_diff,
+game_reconciliation_statement, game_device_fingerprint, game_device_account_map,
+game_ip_reputation, game_account_account_link,
+game_activity, game_activity_participation, game_activity_reward_log,
+game_anticheat_event, game_anticheat_daily_stat,
+game_group, game_group_member, game_share_link,
+game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, game_risk_cluster
+```
+
 ---
 
 ## Endpoints de API
@@ -195,7 +206,7 @@ game_notification, game_referral, game_referral_reward, game_user_2fa
 | Painel administrativo | 18 | 25 | 79 |
 | Ferramentas operacionais | - | - | 30 (+rankings+cupons+notificações+indicação) |
 | Internacionalização | 2 | 2 | 4 (+configuração por país) |
-| **Total** | **38** | **54** | **129** |
+| **Total** | **38** | **54** | **~260** |
 
 ---
 

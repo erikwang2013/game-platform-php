@@ -19,6 +19,7 @@ Plataforma de agregação de jogos global, universal e internacionalizada. Após
 |------|------|------|
 | Versão completa | Corpo completo: rankings, cupons, categorias de jogos, configuração de países, busca ES | Concluída |
 | Expansão do ecossistema | v2.0: integração de Providers de jogos, tickets de suporte, VIP, conquistas, social, barramento de eventos | Concluída |
+| v1.3.15-22 (8 versões) | Conciliação/liquidação, controle de risco aprofundado, carteira unificada, motor de atividades, anti-cheat, crescimento social, Adyen/GrabPay | Concluída |
 
 ## Stack tecnológica
 
@@ -253,6 +254,13 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Notificações | Mensagens internas + e-mail, notificações automáticas de recarga/saque/KYC/cupons |
 | Indicação | Código de indicação, bônus de registro, comissão de recarga |
 | Gerenciamento de risco | Lista negra de IP/alerta de valores altos/detecção de frequência e velocidade |
+| Controle de risco aprofundado | Impressão digital do dispositivo / reputação de IP / grafo de vínculos de contas + mecanismo de regras + painel de risco + AML/KYC/pontuação de confiança |
+| Anti-cheat | Coleta de eventos anti-cheat + estatísticas diárias + revisão manual |
+| Conciliação/liquidação | Lotes de conciliação diários + detalhes de diferenças + conciliação de extratos |
+| Carteira unificada | WalletScope carteira unificada |
+| Motor de atividades | Criação/participação/recompensas de atividades + check-in |
+| Crescimento social | Grupos + rastreamento de links de compartilhamento |
+| Gateways de pagamento | Novos gateways Adyen / GrabPay (L1) |
 | Internacionalização | 4 idiomas (en-US/zh-CN/ja-JP/ko-KR), tabelas de tradução + cache |
 | Configuração de países | Formas de pagamento/saque diferenciadas em 8 países, valor mínimo de recarga |
 | Estatísticas | Snapshot de estatísticas diárias (5 tipos de métricas) + rastreamento de receita da plataforma |
@@ -267,7 +275,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Cupons | Restrições de condição (min_deposit/first_user/game_id) |
 | Eventos | Barramento de eventos Redis Pub/Sub + entrega por assinatura Webhook (7 tipos de eventos) |
 | Deploy | Orquestração Docker Compose com 8 serviços + proxy reverso Nginx |
-| Clientes | Flutter Admin (15 páginas) + Platform (10 páginas) + HarmonyOS (5 páginas) |
+| Clientes | Flutter Admin (17 páginas) + Platform (10 páginas) + HarmonyOS (5 páginas) |
 
 ## Modelo de negócio
 

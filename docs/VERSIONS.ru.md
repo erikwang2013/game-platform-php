@@ -10,10 +10,10 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 
 | | Базовая версия (Lite) | Стандартная версия (Standard) | Полная версия (Full) |
 |------|------|------|------|
-| Таблицы данных (install.sql) | 19 | 29 | **43** (не 52, как ранее писалось в документации) |
-| Эндпоинты API | 38 | 54 | ~149 (admin+service, включая Webhook/Provider) |
-| Бэкенд-контроллеры | 14 | 22 | admin 32 + service 30 |
-| Модели данных | не общие | не общие | **admin 46 / service 44, по одной копии, без общего слоя** |
+| Таблицы данных (install.sql) | 19 | 29 | **66** (22 новых в v1.3.15-22) |
+| Эндпоинты API | 38 | 54 | ~260 (admin+service, включая Webhook/Provider) |
+| Бэкенд-контроллеры | 14 | 22 | admin 46 + service 35 |
+| Модели данных | не общие | не общие | **общие 52 (platform-common) + admin 8 + service 10** |
 | Общие Service | без общего слоя | без общего слоя | единый общий пакет `packages/platform-common` |
 | Страницы админ-фронтенда | 11 | 13 | 15 |
 | Страницы Platform-фронтенда | 8 | 10 | 10 |
@@ -144,7 +144,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 
 | Функция | Базовая версия | Стандартная версия | Полная версия |
 |------|--------|--------|--------|
-| Админ-панель Flutter Web PC | ✓ 5 страниц | ✓ 11 страниц | ✓ 15 страниц |
+| Админ-панель Flutter Web PC | ✓ 5 страниц | ✓ 11 страниц | ✓ 17 страниц |
 | Пользовательская платформа Flutter Web PC | ✓ 5 страниц | ✓ 8 страниц | ✓ 10 страниц |
 | HarmonyOS admin | - | ✓ вход + дашборд | ✓ 8 страниц `admin/apps/harmonyos/` |
 | HarmonyOS C-сторона | - | - | ✓ 5 страниц `apps/harmonyos/` |
@@ -180,6 +180,17 @@ game_country_config, game-platform_revenue,
 game_notification, game_referral, game_referral_reward, game_user_2fa
 ```
 
+### Новые в v1.3.15-22 (22 таблицы)
+```
+game_event_outbox, game_reconciliation_batch, game_reconciliation_diff,
+game_reconciliation_statement, game_device_fingerprint, game_device_account_map,
+game_ip_reputation, game_account_account_link,
+game_activity, game_activity_participation, game_activity_reward_log,
+game_anticheat_event, game_anticheat_daily_stat,
+game_group, game_group_member, game_share_link,
+game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, game_risk_cluster
+```
+
 ---
 
 ## Эндпоинты API
@@ -195,7 +206,7 @@ game_notification, game_referral, game_referral_reward, game_user_2fa
 | Админ-панель | 18 | 25 | 79 |
 | Операционные инструменты | - | - | 30 (+рейтинги+купоны+уведомления+рефералы) |
 | Интернационализация | 2 | 2 | 4 (+конфигурация стран) |
-| **Итого** | **38** | **54** | **129** |
+| **Итого** | **38** | **54** | **~260** |
 
 ---
 

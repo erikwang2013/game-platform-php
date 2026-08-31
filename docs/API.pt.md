@@ -2109,3 +2109,80 @@ A comissão de indicação adiciona repartição de segundo nível:
 | Interface | Limite |
 |------|------|
 | POST /api/tournament/{id}/join | 10 vezes/minuto |
+
+---
+
+## 10. Novas APIs (v1.3.15-v1.3.22)
+
+### 10.1 Gestão de risco (admin :8787)
+
+| Endpoint | Descrição |
+|------|------|
+| GET /admin/risk/dashboard | Visão geral do painel de risco |
+| GET /admin/risk/overview | Métricas gerais de risco |
+| GET /admin/risk/hit-trend | Tendência de acionamentos |
+| GET /admin/risk/action-distribution | Distribuição de ações |
+| GET /admin/risk/rule-performance | Desempenho das regras |
+| GET /admin/risk/rule/list | Lista de regras |
+| POST /admin/risk/rule/create | Criar regra |
+| PUT /admin/risk/rule/{hashid} | Atualizar regra |
+| POST /admin/risk/rule/{hashid}/toggle | Ativar/desativar regra |
+| POST /admin/risk/rule/test | Testar regra |
+| GET /admin/risk/event/list | Lista de eventos de risco |
+| GET /admin/risk/event/{hashid} | Detalhe do evento |
+| POST /admin/risk/event/{hashid}/handle | Tratar evento |
+| GET /admin/risk/device/list | Lista de impressões digitais de dispositivos |
+| POST /admin/risk/device/block | Bloquear dispositivo |
+| POST /admin/risk/device/unblock | Desbloquear dispositivo |
+| GET /admin/risk/ip/list | Lista de IPs |
+| POST /admin/risk/ip/block | Bloquear IP |
+| POST /admin/risk/ip/whitelist | Lista branca de IP |
+| POST /admin/risk/ip/appeal | Recurso de IP |
+| POST /admin/risk/ip/recheck | Revisão de IP |
+| GET /admin/risk/graph/clusters | Lista de clusters |
+| GET /admin/risk/graph/{userId} | Grafo de vínculos do usuário |
+| GET /admin/risk/clusters | Lista de clusters de risco |
+
+### 10.2 Gestão anti-cheat (admin :8787)
+
+| Endpoint | Descrição |
+|------|------|
+| GET /admin/anticheat/events | Lista de eventos anti-cheat |
+| GET /admin/anticheat/events/{hashid} | Detalhe do evento |
+| POST /admin/anticheat/events/{hashid}/review | Revisar evento |
+
+### 10.3 Atividades (admin :8787 + cliente :8788)
+
+| Endpoint | Descrição |
+|------|------|
+| GET /admin/activities/list | Lista de atividades (admin) |
+| POST /admin/activities/create | Criar atividade (admin) |
+| PUT /admin/activities/{hashid} | Atualizar atividade (admin) |
+| DELETE /admin/activities/{hashid} | Excluir atividade (admin) |
+| GET /api/activities/list | Lista de atividades (cliente) |
+| GET /api/activities/progress | Progresso de participação (cliente) |
+| GET /api/activities/{hashid} | Detalhe da atividade (cliente) |
+| POST /api/activities/{hashid}/checkin | Check-in (cliente) |
+
+### 10.4 Grupos / Compartilhamentos (cliente :8788 + admin :8787)
+
+| Endpoint | Descrição |
+|------|------|
+| POST /api/groups | Criar grupo |
+| GET /api/groups/{hashid} | Detalhe do grupo |
+| GET /api/groups/{hashid}/members | Lista de membros |
+| POST /api/groups/{hashid}/join | Entrar no grupo |
+| POST /api/groups/{hashid}/leave | Sair do grupo |
+| PUT /api/groups/{hashid}/role | Papel do membro |
+| POST /api/shares | Criar link de compartilhamento |
+| POST /api/shares/visit | Rastreamento de visitas de compartilhamento |
+| GET /admin/groups | Lista de grupos (admin) |
+| GET /admin/groups/{hashid}/audit | Auditoria do grupo (admin) |
+| GET /admin/share/stats | Estatísticas de compartilhamento (admin) |
+
+### 10.5 Extensões de gateway de pagamento (L1)
+
+| Gateway | Descrição |
+|------|------|
+| Adyen | Novo gateway de pagamento (depósito / verificação de callback / crédito automático) |
+| GrabPay | Novo gateway de pagamento (depósito / verificação de callback / crédito automático) |

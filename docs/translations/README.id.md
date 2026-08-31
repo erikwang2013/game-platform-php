@@ -19,6 +19,7 @@ Platform agregasi game global, universal, dan berstandar internasional. Setelah 
 |------|------|------|
 | Versi Lengkap | Fitur lengkap: peringkat, kupon, kategori game, konfigurasi negara, pencarian ES | Selesai |
 | Ekspansi Ekosistem | v2.0: integrasi Provider game, tiket dukungan, VIP, prestasi, sosial, event bus | Selesai |
+| v1.3.15-22 (8 rilis) | Rekonsiliasi/penyelesaian, kontrol risiko mendalam, dompet terpadu, mesin aktivitas, anti-cheat, pertumbuhan sosial, Adyen/GrabPay | Selesai |
 
 ## Tumpukan Teknologi
 
@@ -253,6 +254,13 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Notifikasi | Pesan internal + email, notifikasi otomatis deposit/penarikan/KYC/kupon |
 | Referral | Kode referral, bonus pendaftaran, komisi deposit |
 | Manajemen risiko | Daftar hitam IP/peringatan nominal besar/deteksi frekuensi/kecepatan |
+| Kontrol risiko mendalam | Sidik jari perangkat / reputasi IP / grafik keterkaitan akun + mesin aturan + dasbor risiko + AML/KYC/skor kepercayaan |
+| Anti-cheat | Pengumpulan event anti-cheat + statistik harian + tinjauan manual |
+| Rekonsiliasi/penyelesaian | Batch rekonsiliasi harian + detail selisih + rekonsiliasi laporan |
+| Dompet terpadu | WalletScope cakupan dompet terpadu |
+| Mesin aktivitas | Pembuatan/partisipasi/hadiah aktivitas + check-in |
+| Pertumbuhan sosial | Grup + pelacakan tautan berbagi |
+| Gerbang pembayaran | Gerbang baru Adyen / GrabPay (L1) |
 | Internasionalisasi | 4 bahasa (en-US/zh-CN/ja-JP/ko-KR), tabel terjemahan + cache |
 | Konfigurasi negara | Metode pembayaran/penarikan berbeda di 8 negara, jumlah deposit minimum |
 | Statistik | Snapshot statistik harian (5 metrik) + pelacakan pendapatan platform |
@@ -267,7 +275,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Kupon | Batasan kondisi (min_deposit/first_user/game_id) |
 | Event | Event bus Redis Pub/Sub + pengiriman langganan Webhook (7 jenis event) |
 | Deployment | Orkestrasi Docker Compose 8 layanan + proxy balik Nginx |
-| Klien | Flutter Admin (15 halaman) + Platform (10 halaman) + HarmonyOS (5 halaman) |
+| Klien | Flutter Admin (17 halaman) + Platform (10 halaman) + HarmonyOS (5 halaman) |
 
 ## Model Bisnis
 

@@ -10,10 +10,10 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 
 | | বেসিক (Lite) | স্ট্যান্ডার্ড (Standard) | ফুল (Full) |
 |------|------|------|------|
-| ডেটা টেবিল (install.sql) | 19 | 29 | **43** (ডকুমেন্টে আগে লেখা 52 নয়) |
-| API এন্ডপয়েন্ট | 38 | 54 | ~149 (admin+service, Webhook/Provider সহ) |
-| ব্যাকএন্ড কন্ট্রোলার | 14 | 22 | admin 32 + service 30 |
-| ডেটা মডেল | শেয়ার্ড নয় | শেয়ার্ড নয় | **admin 46 / service 44 প্রত্যেকে আলাদা, কোনো শেয়ার্ড লেয়ার নেই** |
+| ডেটা টেবিল (install.sql) | 19 | 29 | **66**（v1.3.15-22-এ 22টি নতুন） |
+| API এন্ডপয়েন্ট | 38 | 54 | ~260 (admin+service, Webhook/Provider সহ) |
+| ব্যাকএন্ড কন্ট্রোলার | 14 | 22 | admin 46 + service 35 |
+| ডেটা মডেল | শেয়ার্ড নয় | শেয়ার্ড নয় | **শেয়ার্ড 52 (platform-common) + admin 8 + service 10** |
 | শেয়ার্ড সার্ভিস | কোনো শেয়ার্ড লেয়ার নেই | কোনো শেয়ার্ড লেয়ার নেই | `packages/platform-common` একক শেয়ার্ড প্যাকেজ |
 | Admin ফ্রন্টএন্ড পেজ | 11 | 13 | 15 |
 | Platform ফ্রন্টএন্ড পেজ | 8 | 10 | 10 |
@@ -144,7 +144,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 
 | ফিচার | বেসিক | স্ট্যান্ডার্ড | ফুল |
 |------|--------|--------|--------|
-| Flutter Web PC অ্যাডমিন প্যানেল | ✓ ৫ পেজ | ✓ ১১ পেজ | ✓ ১৫ পেজ |
+| Flutter Web PC অ্যাডমিন প্যানেল | ✓ ৫ পেজ | ✓ ১১ পেজ | ✓ ১৭ পেজ |
 | Flutter Web PC ইউজার প্ল্যাটফর্ম | ✓ ৫ পেজ | ✓ ৮ পেজ | ✓ ১০ পেজ |
 | HarmonyOS admin | - | ✓ লগইন+ড্যাশবোর্ড | ✓ ৮ পেজ `admin/apps/harmonyos/` |
 | HarmonyOS C-এন্ড | - | - | ✓ ৫ পেজ `apps/harmonyos/` |
@@ -180,6 +180,17 @@ game_country_config, game-platform_revenue,
 game_notification, game_referral, game_referral_reward, game_user_2fa
 ```
 
+### v1.3.15-22-এ নতুন (২২টি)
+```
+game_event_outbox, game_reconciliation_batch, game_reconciliation_diff,
+game_reconciliation_statement, game_device_fingerprint, game_device_account_map,
+game_ip_reputation, game_account_account_link,
+game_activity, game_activity_participation, game_activity_reward_log,
+game_anticheat_event, game_anticheat_daily_stat,
+game_group, game_group_member, game_share_link,
+game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, game_risk_cluster
+```
+
 ---
 
 ## API এন্ডপয়েন্ট
@@ -195,7 +206,7 @@ game_notification, game_referral, game_referral_reward, game_user_2fa
 | অ্যাডমিন প্যানেল | 18 | 25 | 79 |
 | অপারেশনাল টুলস | - | - | 30 (+লিডারবোর্ড+কুপন+নোটিফিকেশন+রেফারেল) |
 | ইন্টারন্যাশনালাইজেশন | 2 | 2 | 4 (+দেশ কনফিগ) |
-| **মোট** | **38** | **54** | **129** |
+| **মোট** | **38** | **54** | **~260** |
 
 ---
 

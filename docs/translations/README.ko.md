@@ -19,6 +19,7 @@ Languages: [中文](../../README.md) · [English](README.en.md) · **한국어**
 |------|------|------|
 | 전체 버전 | 완전체: 랭킹, 쿠폰, 게임 분류, 국가 설정, ES 검색 | 완료 |
 | 생태계 확장 | v2.0: 게임 Provider 연동, 티켓, VIP, 업적, 소셜, 이벤트 버스 | 완료 |
+| v1.3.15-22 (8개 버전) | 대사/정산, 리스크 관리 심화, 통합 지갑, 활동 엔진, 안티치트, 소셜 성장, Adyen/GrabPay | 완료 |
 
 ## 기술 스택
 
@@ -253,6 +254,13 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | 알림 | 사이트 내 메시지+이메일, 충전/출금/KYC/쿠폰 자동 알림 |
 | 추천 | 추천 코드, 가입 보상, 충전 수수료 리베이트 |
 | 리스크 관리 | IP 블랙리스트/대금 경고/빈도/속도 감지 |
+| 리스크 관리 심화 | 디바이스 핑거프린트/IP 평판/계정 연관 그래프 + 규칙 엔진 + 리스크 대시보드 + AML/KYC/신뢰 점수 |
+| 안티치트 | 안티치트 이벤트 수집 + 일일 통계 + 수동 검토 |
+| 대사/정산 | 일일 대사 배치 + 차액 상세 + 스테이트먼트 대사 |
+| 통합 지갑 | WalletScope 통합 지갑 스코프 |
+| 활동 엔진 | 활동 생성/참여/보상 + 체크인 |
+| 소셜 성장 | 그룹 + 공유 링크 추적 |
+| 결제 게이트웨이 | 신규 Adyen / GrabPay 게이트웨이 (L1) |
 | 국제화 | 4개 언어(en-US/zh-CN/ja-JP/ko-KR), 번역 테이블+캐시 |
 | 국가 설정 | 8개국 차등 결제/출금 방식, 최소 충전액 |
 | 통계 | 일일 통계 스냅샷(5종 지표) + 플랫폼 수익 추적 |
@@ -267,7 +275,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | 쿠폰 | 조건 제한 (min_deposit/first_user/game_id) |
 | 이벤트 | Redis Pub/Sub 이벤트 버스 + Webhook 구독 전달 (7종 이벤트) |
 | 배포 | Docker Compose 8개 서비스 오케스트레이션 + Nginx 리버스 프록시 |
-| 클라이언트 | Flutter Admin(15페이지) + Platform(10페이지) + HarmonyOS(5페이지) |
+| 클라이언트 | Flutter Admin(17페이지) + Platform(10페이지) + HarmonyOS(5페이지) |
 
 ## 비즈니스 모델
 

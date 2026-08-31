@@ -10,10 +10,10 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 
 | | Basisversion (Lite) | Standardversion (Standard) | Vollversion (Full) |
 |------|------|------|------|
-| Datentabellen (install.sql) | 19 | 29 | **43** (nicht die einst dokumentierten 52) |
-| API-Endpunkte | 38 | 54 | ~149 (admin+service, inkl. Webhook/Provider) |
-| Backend-Controller | 14 | 22 | admin 32 + service 30 |
-| Datenmodelle | nicht geteilt | nicht geteilt | **admin 46 / service 44 je eine Kopie, keine gemeinsame Schicht** |
+| Datentabellen (install.sql) | 19 | 29 | **66** (22 neu in v1.3.15-22) |
+| API-Endpunkte | 38 | 54 | ~260 (admin+service, inkl. Webhook/Provider) |
+| Backend-Controller | 14 | 22 | admin 46 + service 35 |
+| Datenmodelle | nicht geteilt | nicht geteilt | **gemeinsam 52 (platform-common) + admin 8 + service 10** |
 | Gemeinsame Services | keine gemeinsame Schicht | keine gemeinsame Schicht | `packages/platform-common` einzelnes gemeinsames Paket |
 | Admin-Frontend-Seiten | 11 | 13 | 15 |
 | Platform-Frontend-Seiten | 8 | 10 | 10 |
@@ -144,7 +144,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 
 | Funktion | Basisversion | Standardversion | Vollversion |
 |------|--------|--------|--------|
-| Flutter Web PC-Verwaltungsbackend | ✓ 5 Seiten | ✓ 11 Seiten | ✓ 15 Seiten |
+| Flutter Web PC-Verwaltungsbackend | ✓ 5 Seiten | ✓ 11 Seiten | ✓ 17 Seiten |
 | Flutter Web PC-Benutzerplattform | ✓ 5 Seiten | ✓ 8 Seiten | ✓ 10 Seiten |
 | HarmonyOS admin | - | ✓ Login + Dashboard | ✓ 8 Seiten `admin/apps/harmonyos/` |
 | HarmonyOS C-End | - | - | ✓ 5 Seiten `apps/harmonyos/` |
@@ -180,6 +180,17 @@ game_country_config, game-platform_revenue,
 game_notification, game_referral, game_referral_reward, game_user_2fa
 ```
 
+### Neu in v1.3.15-22 (22 Tabellen)
+```
+game_event_outbox, game_reconciliation_batch, game_reconciliation_diff,
+game_reconciliation_statement, game_device_fingerprint, game_device_account_map,
+game_ip_reputation, game_account_account_link,
+game_activity, game_activity_participation, game_activity_reward_log,
+game_anticheat_event, game_anticheat_daily_stat,
+game_group, game_group_member, game_share_link,
+game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, game_risk_cluster
+```
+
 ---
 
 ## API-Endpunkte
@@ -195,7 +206,7 @@ game_notification, game_referral, game_referral_reward, game_user_2fa
 | Verwaltungsbackend | 18 | 25 | 79 |
 | Betriebswerkzeuge | - | - | 30 (+Ranglisten+Gutscheine+Benachrichtigungen+Empfehlungen) |
 | Internationalisierung | 2 | 2 | 4 (+Länderkonfiguration) |
-| **Gesamt** | **38** | **54** | **129** |
+| **Gesamt** | **38** | **54** | **~260** |
 
 ---
 

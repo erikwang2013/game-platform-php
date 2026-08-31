@@ -10,10 +10,10 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 
 | | 基础版 (Lite) | 标准版 (Standard) | 完整版 (Full) |
 |------|------|------|------|
-| 数据表 (install.sql) | 19 | 29 | **43**（非文档曾写的 52） |
-| API 端点 | 38 | 54 | ~149 (admin+service，含 Webhook/Provider) |
-| 后端控制器 | 14 | 22 | admin 32 + service 30 |
-| 数据模型 | 非共享 | 非共享 | **admin 46 / service 44 各一份，无共享层** |
+| 数据表 (install.sql) | 19 | 29 | **66**（v1.3.15-22 新增 22 张） |
+| API 端点 | 38 | 54 | ~260 (admin+service，含 Webhook/Provider) |
+| 后端控制器 | 14 | 22 | admin 46 + service 35 |
+| 数据模型 | 非共享 | 非共享 | **共享 52（platform-common）+ admin 8 + service 10** |
 | 共享 Service | 无共享层 | 无共享层 | `packages/platform-common` 单一共享包 |
 | Admin 前端页面 | 11 | 13 | 15 |
 | Platform 前端页面 | 8 | 10 | 10 |
@@ -144,7 +144,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 
 | 功能 | 基础版 | 标准版 | 完整版 |
 |------|--------|--------|--------|
-| Flutter Web PC 管理后台 | ✓ 5页 | ✓ 11页 | ✓ 15页 |
+| Flutter Web PC 管理后台 | ✓ 5页 | ✓ 11页 | ✓ 17页 |
 | Flutter Web PC 用户平台 | ✓ 5页 | ✓ 8页 | ✓ 10页 |
 | HarmonyOS admin | - | ✓ 登录+仪表盘 | ✓ 8页 `admin/apps/harmonyos/` |
 | HarmonyOS C端 | - | - | ✓ 5页 `apps/harmonyos/` |
@@ -180,6 +180,17 @@ game_country_config, game-platform_revenue,
 game_notification, game_referral, game_referral_reward, game_user_2fa
 ```
 
+### v1.3.15-22 新增 (22张)
+```
+game_event_outbox, game_reconciliation_batch, game_reconciliation_diff,
+game_reconciliation_statement, game_device_fingerprint, game_device_account_map,
+game_ip_reputation, game_account_account_link,
+game_activity, game_activity_participation, game_activity_reward_log,
+game_anticheat_event, game_anticheat_daily_stat,
+game_group, game_group_member, game_share_link,
+game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, game_risk_cluster
+```
+
 ---
 
 ## API 端点
@@ -195,7 +206,7 @@ game_notification, game_referral, game_referral_reward, game_user_2fa
 | 管理后台 | 18 | 25 | 79 |
 | 运营工具 | - | - | 30 (+排行榜+优惠券+通知+推荐) |
 | 国际化 | 2 | 2 | 4 (+国家配置) |
-| **总计** | **38** | **54** | **129** |
+| **总计** | **38** | **54** | **~260** |
 
 ---
 

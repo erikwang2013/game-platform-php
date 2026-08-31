@@ -2109,3 +2109,80 @@ status: open / waiting / replied / closed
 | ইন্টারফেস | সীমা |
 |------|------|
 | POST /api/tournament/{id}/join | ১০ বার/মিনিট |
+
+---
+
+## 10. নতুন API (v1.3.15-v1.3.22)
+
+### 10.1 ঝুঁকি ব্যবস্থাপনা (অ্যাডমিন :8787)
+
+| এন্ডপয়েন্ট | বর্ণনা |
+|------|------|
+| GET /admin/risk/dashboard | রিস্ক ড্যাশবোর্ড ওভারভিউ |
+| GET /admin/risk/overview | রিস্ক ওভারভিউ মেট্রিক্স |
+| GET /admin/risk/hit-trend | হিট ট্রেন্ড |
+| GET /admin/risk/action-distribution | অ্যাকশন বিতরণ |
+| GET /admin/risk/rule-performance | রুল পারফরম্যান্স |
+| GET /admin/risk/rule/list | রুল তালিকা |
+| POST /admin/risk/rule/create | রুল তৈরি |
+| PUT /admin/risk/rule/{hashid} | রুল আপডেট |
+| POST /admin/risk/rule/{hashid}/toggle | রুল সক্রিয়/নিষ্ক্রিয় |
+| POST /admin/risk/rule/test | রুল টেস্ট |
+| GET /admin/risk/event/list | রিস্ক ইভেন্ট তালিকা |
+| GET /admin/risk/event/{hashid} | ইভেন্ট বিবরণ |
+| POST /admin/risk/event/{hashid}/handle | ইভেন্ট নিষ্পত্তি |
+| GET /admin/risk/device/list | ডিভাইস ফিঙ্গারপ্রিন্ট তালিকা |
+| POST /admin/risk/device/block | ডিভাইস ব্লক |
+| POST /admin/risk/device/unblock | ডিভাইস আনব্লক |
+| GET /admin/risk/ip/list | IP তালিকা |
+| POST /admin/risk/ip/block | IP ব্লক |
+| POST /admin/risk/ip/whitelist | IP হোয়াইটলিস্ট |
+| POST /admin/risk/ip/appeal | IP আপিল |
+| POST /admin/risk/ip/recheck | IP পুনঃপরীক্ষা |
+| GET /admin/risk/graph/clusters | ক্লাস্টার তালিকা |
+| GET /admin/risk/graph/{userId} | ব্যবহারকারী লিংক গ্রাফ |
+| GET /admin/risk/clusters | রিস্ক ক্লাস্টার তালিকা |
+
+### 10.2 অ্যান্টি-চিট ব্যবস্থাপনা (অ্যাডমিন :8787)
+
+| এন্ডপয়েন্ট | বর্ণনা |
+|------|------|
+| GET /admin/anticheat/events | অ্যান্টি-চিট ইভেন্ট তালিকা |
+| GET /admin/anticheat/events/{hashid} | ইভেন্ট বিবরণ |
+| POST /admin/anticheat/events/{hashid}/review | ইভেন্ট রিভিউ |
+
+### 10.3 কার্যক্রম (অ্যাডমিন :8787 + ক্লায়েন্ট :8788)
+
+| এন্ডপয়েন্ট | বর্ণনা |
+|------|------|
+| GET /admin/activities/list | অ্যাক্টিভিটি তালিকা (অ্যাডমিন) |
+| POST /admin/activities/create | অ্যাক্টিভিটি তৈরি (অ্যাডমিন) |
+| PUT /admin/activities/{hashid} | অ্যাক্টিভিটি আপডেট (অ্যাডমিন) |
+| DELETE /admin/activities/{hashid} | অ্যাক্টিভিটি মুছুন (অ্যাডমিন) |
+| GET /api/activities/list | অ্যাক্টিভিটি তালিকা (ক্লায়েন্ট) |
+| GET /api/activities/progress | অংশগ্রহণের অগ্রগতি (ক্লায়েন্ট) |
+| GET /api/activities/{hashid} | অ্যাক্টিভিটি বিবরণ (ক্লায়েন্ট) |
+| POST /api/activities/{hashid}/checkin | চেক-ইন (ক্লায়েন্ট) |
+
+### 10.4 গ্রুপ / শেয়ার (ক্লায়েন্ট :8788 + অ্যাডমিন :8787)
+
+| এন্ডপয়েন্ট | বর্ণনা |
+|------|------|
+| POST /api/groups | গ্রুপ তৈরি |
+| GET /api/groups/{hashid} | গ্রুপ বিবরণ |
+| GET /api/groups/{hashid}/members | সদস্য তালিকা |
+| POST /api/groups/{hashid}/join | গ্রুপে যোগ দিন |
+| POST /api/groups/{hashid}/leave | গ্রুপ ত্যাগ |
+| PUT /api/groups/{hashid}/role | সদস্য ভূমিকা |
+| POST /api/shares | শেয়ার লিংক তৈরি |
+| POST /api/shares/visit | শেয়ার ভিজিট ট্র্যাকিং |
+| GET /admin/groups | গ্রুপ তালিকা (অ্যাডমিন) |
+| GET /admin/groups/{hashid}/audit | গ্রুপ অডিট (অ্যাডমিন) |
+| GET /admin/share/stats | শেয়ার পরিসংখ্যান (অ্যাডমিন) |
+
+### 10.5 পেমেন্ট গেটওয়ে এক্সটেনশন (L1)
+
+| গেটওয়ে | বর্ণনা |
+|------|------|
+| Adyen | নতুন পেমেন্ট গেটওয়ে (ডিপোজিট/কলব্যাক যাচাই/স্বয়ংক্রিয় ক্রেডিট) |
+| GrabPay | নতুন পেমেন্ট গেটওয়ে (ডিপোজিট/কলব্যাক যাচাই/স্বয়ংক্রিয় ক্রেডিট) |

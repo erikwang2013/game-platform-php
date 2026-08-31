@@ -2109,3 +2109,80 @@ status: open / waiting / replied / closed
 | エンドポイント | 制限 |
 |------|------|
 | POST /api/tournament/{id}/join | 10 回/分 |
+
+---
+
+## 10. v1.3.15-22 新規API
+
+### 10.1 リスク管理 (管理側 :8787)
+
+| エンドポイント | 説明 |
+|------|------|
+| GET /admin/risk/dashboard | リスクダッシュボード概要 |
+| GET /admin/risk/overview | リスク概要指標 |
+| GET /admin/risk/hit-trend | ヒット傾向 |
+| GET /admin/risk/action-distribution | 処置アクション分布 |
+| GET /admin/risk/rule-performance | ルール性能 |
+| GET /admin/risk/rule/list | ルール一覧 |
+| POST /admin/risk/rule/create | ルール作成 |
+| PUT /admin/risk/rule/{hashid} | ルール更新 |
+| POST /admin/risk/rule/{hashid}/toggle | ルール有効/無効 |
+| POST /admin/risk/rule/test | ルールテスト |
+| GET /admin/risk/event/list | リスクイベント一覧 |
+| GET /admin/risk/event/{hashid} | イベント詳細 |
+| POST /admin/risk/event/{hashid}/handle | イベント処置 |
+| GET /admin/risk/device/list | デバイスフィンガープリント一覧 |
+| POST /admin/risk/device/block | デバイス禁止 |
+| POST /admin/risk/device/unblock | デバイス禁止解除 |
+| GET /admin/risk/ip/list | IP一覧 |
+| POST /admin/risk/ip/block | IP禁止 |
+| POST /admin/risk/ip/whitelist | IPホワイトリスト |
+| POST /admin/risk/ip/appeal | IP異議申立 |
+| POST /admin/risk/ip/recheck | IP再審査 |
+| GET /admin/risk/graph/clusters | クラスター一覧 |
+| GET /admin/risk/graph/{userId} | ユーザー関連グラフ |
+| GET /admin/risk/clusters | リスククラスター一覧 |
+
+### 10.2 アンチチート管理 (管理側 :8787)
+
+| エンドポイント | 説明 |
+|------|------|
+| GET /admin/anticheat/events | アンチチートイベント一覧 |
+| GET /admin/anticheat/events/{hashid} | イベント詳細 |
+| POST /admin/anticheat/events/{hashid}/review | イベントレビュー |
+
+### 10.3 アクティビティ (管理側 :8787 + C側 :8788)
+
+| エンドポイント | 説明 |
+|------|------|
+| GET /admin/activities/list | アクティビティ一覧（管理側） |
+| POST /admin/activities/create | アクティビティ作成（管理側） |
+| PUT /admin/activities/{hashid} | アクティビティ更新（管理側） |
+| DELETE /admin/activities/{hashid} | アクティビティ削除（管理側） |
+| GET /api/activities/list | アクティビティ一覧（C側） |
+| GET /api/activities/progress | 参加進捗（C側） |
+| GET /api/activities/{hashid} | アクティビティ詳細（C側） |
+| POST /api/activities/{hashid}/checkin | チェックイン（C側） |
+
+### 10.4 グループ／シェア (C側 :8788 + 管理側 :8787)
+
+| エンドポイント | 説明 |
+|------|------|
+| POST /api/groups | グループ作成 |
+| GET /api/groups/{hashid} | グループ詳細 |
+| GET /api/groups/{hashid}/members | メンバー一覧 |
+| POST /api/groups/{hashid}/join | グループ参加 |
+| POST /api/groups/{hashid}/leave | グループ退出 |
+| PUT /api/groups/{hashid}/role | メンバー役割 |
+| POST /api/shares | シェアリンク作成 |
+| POST /api/shares/visit | シェア訪問追跡 |
+| GET /admin/groups | グループ一覧（管理側） |
+| GET /admin/groups/{hashid}/audit | グループ監査（管理側） |
+| GET /admin/share/stats | シェア統計（管理側） |
+
+### 10.5 決済ゲートウェイ拡張 (L1)
+
+| ゲートウェイ | 説明 |
+|------|------|
+| Adyen | 新規決済ゲートウェイ（入金/コールバック検証/自動入金） |
+| GrabPay | 新規決済ゲートウェイ（入金/コールバック検証/自動入金） |

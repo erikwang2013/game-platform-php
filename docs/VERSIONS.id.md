@@ -10,10 +10,10 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 
 | | Versi Dasar (Lite) | Versi Standar (Standard) | Versi Lengkap (Full) |
 |------|------|------|------|
-| Tabel data (install.sql) | 19 | 29 | **43** (bukan 52 yang pernah ditulis dokumen) |
-| Endpoint API | 38 | 54 | ~149 (admin+service, termasuk Webhook/Provider) |
-| Controller backend | 14 | 22 | admin 32 + service 30 |
-| Model data | Tidak dibagikan | Tidak dibagikan | **admin 46 / service 44 masing-masing satu, tanpa lapisan berbagi** |
+| Tabel data (install.sql) | 19 | 29 | **66** (22 baru di v1.3.15-22) |
+| Endpoint API | 38 | 54 | ~260 (admin+service, termasuk Webhook/Provider) |
+| Controller backend | 14 | 22 | admin 46 + service 35 |
+| Model data | Tidak dibagikan | Tidak dibagikan | **dibagikan 52 (platform-common) + admin 8 + service 10** |
 | Service dibagikan | Tanpa lapisan berbagi | Tanpa lapisan berbagi | `packages/platform-common` paket berbagi tunggal |
 | Halaman frontend Admin | 11 | 13 | 15 |
 | Halaman frontend Platform | 8 | 10 | 10 |
@@ -144,7 +144,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 
 | Fitur | Versi Dasar | Versi Standar | Versi Lengkap |
 |------|--------|--------|--------|
-| Backend Administrasi Flutter Web PC | ✓ 5 halaman | ✓ 11 halaman | ✓ 15 halaman |
+| Backend Administrasi Flutter Web PC | ✓ 5 halaman | ✓ 11 halaman | ✓ 17 halaman |
 | Platform pengguna Flutter Web PC | ✓ 5 halaman | ✓ 8 halaman | ✓ 10 halaman |
 | HarmonyOS admin | - | ✓ Login + dasbor | ✓ 8 halaman `admin/apps/harmonyos/` |
 | HarmonyOS C-end | - | - | ✓ 5 halaman `apps/harmonyos/` |
@@ -180,6 +180,17 @@ game_country_config, game-platform_revenue,
 game_notification, game_referral, game_referral_reward, game_user_2fa
 ```
 
+### Penambahan v1.3.15-22 (22 tabel)
+```
+game_event_outbox, game_reconciliation_batch, game_reconciliation_diff,
+game_reconciliation_statement, game_device_fingerprint, game_device_account_map,
+game_ip_reputation, game_account_account_link,
+game_activity, game_activity_participation, game_activity_reward_log,
+game_anticheat_event, game_anticheat_daily_stat,
+game_group, game_group_member, game_share_link,
+game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, game_risk_cluster
+```
+
 ---
 
 ## Endpoint API
@@ -195,7 +206,7 @@ game_notification, game_referral, game_referral_reward, game_user_2fa
 | Backend Administrasi | 18 | 25 | 79 |
 | Alat operasional | - | - | 30 (+papan peringkat+kupon+notifikasi+referral) |
 | Internasionalisasi | 2 | 2 | 4 (+konfigurasi negara) |
-| **Total** | **38** | **54** | **129** |
+| **Total** | **38** | **54** | **~260** |
 
 ---
 

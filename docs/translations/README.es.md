@@ -19,6 +19,7 @@ Plataforma global de juegos universal e internacionalizada. Los usuarios se regi
 |------|------|------|
 | Versión completa | Paquete completo: rankings, cupones, categorías de juegos, configuración por país, búsqueda ES | Completada |
 | Expansión del ecosistema | v2.0: integración de proveedores de juegos, tickets, VIP, logros, social, bus de eventos | Completada |
+| v1.3.15-22 (8 versiones) | Conciliación/liquidación, control de riesgos profundo, billetera unificada, motor de actividades, anti-trampas, crecimiento social, Adyen/GrabPay | Completada |
 
 ## Stack tecnológico
 
@@ -253,6 +254,13 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Notificaciones | Mensajes internos + correo, notificación automática de recargas/retiros/KYC/cupones |
 | Recomendaciones | Código de referido, bonificación de registro, comisión de recarga |
 | Gestión de riesgos | Lista negra de IP / alerta de montos grandes / detección de frecuencia y velocidad |
+| Control de riesgos profundo | Huella de dispositivo / reputación de IP / grafo de vínculos de cuentas + motor de reglas + panel de riesgos + AML/KYC/puntuación de confianza |
+| Anti-trampas | Recopilación de eventos anti-trampas + estadísticas diarias + revisión manual |
+| Conciliación/liquidación | Lotes de conciliación diarios + detalles de diferencias + conciliación de extractos |
+| Billetera unificada | WalletScope billetera unificada |
+| Motor de actividades | Creación/participación/recompensas de actividades + check-in |
+| Crecimiento social | Grupos + seguimiento de enlaces compartidos |
+| Pasarelas de pago | Nuevas pasarelas Adyen / GrabPay (L1) |
 | Internacionalización | 4 idiomas (en-US/zh-CN/ja-JP/ko-KR), tabla de traducciones + caché |
 | Configuración por país | Métodos de pago/retiro diferenciados para 8 países, monto mínimo de recarga |
 | Estadísticas | Instantáneas diarias (5 tipos de métricas) + seguimiento de ingresos de la plataforma |
@@ -267,7 +275,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Cupones | Restricciones de condiciones (min_deposit/first_user/game_id) |
 | Eventos | Bus de eventos Redis Pub/Sub + entrega de suscripciones Webhook (7 tipos de eventos) |
 | Despliegue | Orquestación de 8 servicios con Docker Compose + proxy inverso Nginx |
-| Clientes | Flutter Admin (15 páginas) + Platform (10 páginas) + HarmonyOS (5 páginas) |
+| Clientes | Flutter Admin (17 páginas) + Platform (10 páginas) + HarmonyOS (5 páginas) |
 
 ## Modelo de negocio
 

@@ -19,6 +19,7 @@ Eine weltweit einsetzbare, internationalisierte Spiele-Aggregationsplattform. Na
 |------|------|------|
 | Vollversion | Komplett: Ranglisten, Gutscheine, Spielkategorien, Länderkonfiguration, ES-Suche | Abgeschlossen |
 | Ökosystem-Erweiterung | v2.0: Spiel-Provider-Anbindung, Tickets, VIP, Erfolge, Soziales, Event-Bus | Abgeschlossen |
+| v1.3.15-22 (8 Versionen) | Abgleich/Abwicklung, tiefere Risikokontrolle, einheitliche Wallet, Aktions-Engine, Anti-Cheat, soziales Wachstum, Adyen/GrabPay | Abgeschlossen |
 
 ## Technologie-Stack
 
@@ -253,6 +254,13 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Benachrichtigungen | Interne Nachrichten + E-Mail, automatische Benachrichtigung bei Einzahlung/Auszahlung/KYC/Gutschein |
 | Empfehlungen | Empfehlungscode, Registrierungsbonus, Einzahlungs-Provision |
 | Risikokontrolle | IP-Blacklist/Großbetragswarnung/Frequenz-/Geschwindigkeitsprüfung |
+| Tiefere Risikokontrolle | Geräte-Fingerprint / IP-Reputation / Account-Verknüpfungsgraph + Regel-Engine + Risiko-Dashboard + AML/KYC/Vertrauensscore |
+| Anti-Cheat | Anti-Cheat-Ereigniserfassung + Tagesstatistik + manuelle Prüfung |
+| Abgleich/Abwicklung | Tägliche Abgleich-Batches + Diff-Details + Kontoauszugsabgleich |
+| Einheitliche Wallet | WalletScope einheitlicher Wallet-Scope |
+| Aktions-Engine | Aktionserstellung/-teilnahme/Belohnungen + Check-in |
+| Soziales Wachstum | Gruppen + Tracking von Teilen-Links |
+| Zahlungs-Gateways | Neue Adyen / GrabPay-Gateways (L1) |
 | Internationalisierung | 4 Sprachen (en-US/zh-CN/ja-JP/ko-KR), Übersetzungstabelle + Cache |
 | Länderkonfiguration | Länderdifferenzierte Zahlungs-/Auszahlungsmethoden, Mindesteinzahlungsbetrag |
 | Statistiken | Tagesstatistik-Snapshots (5 Kennzahlen) + Plattform-Einnahmen-Tracking |
@@ -267,7 +275,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Gutscheine | Bedingungsbeschränkungen (min_deposit/first_user/game_id) |
 | Events | Redis-Pub/Sub-Event-Bus + Webhook-Abo-Zustellung (7 Eventtypen) |
 | Bereitstellung | Docker-Compose-Orchestrierung mit 8 Diensten + Nginx-Reverse-Proxy |
-| Clients | Flutter Admin (15 Seiten) + Platform (10 Seiten) + HarmonyOS (5 Seiten) |
+| Clients | Flutter Admin (17 Seiten) + Platform (10 Seiten) + HarmonyOS (5 Seiten) |
 
 ## Geschäftsmodell
 

@@ -2109,3 +2109,80 @@ status: open / waiting / replied / closed
 | इंटरफ़ेस | सीमा |
 |------|------|
 | POST /api/tournament/{id}/join | 10 बार/मिनट |
+
+---
+
+## 10. नए API (v1.3.15-v1.3.22)
+
+### 10.1 जोखिम प्रबंधन (एडमिन :8787)
+
+| एंडपॉइंट | विवरण |
+|------|------|
+| GET /admin/risk/dashboard | रिस्क डैशबोर्ड अवलोकन |
+| GET /admin/risk/overview | जोखिम अवलोकन मेट्रिक्स |
+| GET /admin/risk/hit-trend | हिट ट्रेंड |
+| GET /admin/risk/action-distribution | एक्शन वितरण |
+| GET /admin/risk/rule-performance | रूल प्रदर्शन |
+| GET /admin/risk/rule/list | रूल सूची |
+| POST /admin/risk/rule/create | रूल बनाएँ |
+| PUT /admin/risk/rule/{hashid} | रूल अपडेट करें |
+| POST /admin/risk/rule/{hashid}/toggle | रूल सक्षम/अक्षम करें |
+| POST /admin/risk/rule/test | रूल परीक्षण |
+| GET /admin/risk/event/list | जोखिम इवेंट सूची |
+| GET /admin/risk/event/{hashid} | इवेंट विवरण |
+| POST /admin/risk/event/{hashid}/handle | इवेंट संभालें |
+| GET /admin/risk/device/list | डिवाइस फिंगरप्रिंट सूची |
+| POST /admin/risk/device/block | डिवाइस ब्लॉक करें |
+| POST /admin/risk/device/unblock | डिवाइस अनब्लॉक करें |
+| GET /admin/risk/ip/list | IP सूची |
+| POST /admin/risk/ip/block | IP ब्लॉक करें |
+| POST /admin/risk/ip/whitelist | IP व्हाइटलिस्ट |
+| POST /admin/risk/ip/appeal | IP अपील |
+| POST /admin/risk/ip/recheck | IP पुनर्जांच |
+| GET /admin/risk/graph/clusters | क्लस्टर सूची |
+| GET /admin/risk/graph/{userId} | उपयोगकर्ता लिंक ग्राफ |
+| GET /admin/risk/clusters | जोखिम क्लस्टर सूची |
+
+### 10.2 एंटी-चीट प्रबंधन (एडमिन :8787)
+
+| एंडपॉइंट | विवरण |
+|------|------|
+| GET /admin/anticheat/events | एंटी-चीट इवेंट सूची |
+| GET /admin/anticheat/events/{hashid} | इवेंट विवरण |
+| POST /admin/anticheat/events/{hashid}/review | इवेंट समीक्षा |
+
+### 10.3 गतिविधियाँ (एडमिन :8787 + क्लाइंट :8788)
+
+| एंडपॉइंट | विवरण |
+|------|------|
+| GET /admin/activities/list | गतिविधि सूची (एडमिन) |
+| POST /admin/activities/create | गतिविधि बनाएँ (एडमिन) |
+| PUT /admin/activities/{hashid} | गतिविधि अपडेट करें (एडमिन) |
+| DELETE /admin/activities/{hashid} | गतिविधि हटाएँ (एडमिन) |
+| GET /api/activities/list | गतिविधि सूची (क्लाइंट) |
+| GET /api/activities/progress | भागीदारी प्रगति (क्लाइंट) |
+| GET /api/activities/{hashid} | गतिविधि विवरण (क्लाइंट) |
+| POST /api/activities/{hashid}/checkin | चेक-इन (क्लाइंट) |
+
+### 10.4 समूह / शेयर (क्लाइंट :8788 + एडमिन :8787)
+
+| एंडपॉइंट | विवरण |
+|------|------|
+| POST /api/groups | समूह बनाएँ |
+| GET /api/groups/{hashid} | समूह विवरण |
+| GET /api/groups/{hashid}/members | सदस्य सूची |
+| POST /api/groups/{hashid}/join | समूह से जुड़ें |
+| POST /api/groups/{hashid}/leave | समूह छोड़ें |
+| PUT /api/groups/{hashid}/role | सदस्य भूमिका |
+| POST /api/shares | शेयर लिंक बनाएँ |
+| POST /api/shares/visit | शेयर विज़िट ट्रैकिंग |
+| GET /admin/groups | समूह सूची (एडमिन) |
+| GET /admin/groups/{hashid}/audit | समूह ऑडिट (एडमिन) |
+| GET /admin/share/stats | शेयर आँकड़े (एडमिन) |
+
+### 10.5 भुगतान गेटवे विस्तार (L1)
+
+| गेटवे | विवरण |
+|------|------|
+| Adyen | नया भुगतान गेटवे (जमा / कॉलबैक सत्यापन / स्वतः जमा) |
+| GrabPay | नया भुगतान गेटवे (जमा / कॉलबैक सत्यापन / स्वतः जमा) |

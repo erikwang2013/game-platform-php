@@ -2109,3 +2109,80 @@ Komisi referral menambahkan bagi hasil level dua:
 | Antarmuka | Batas |
 |------|------|
 | POST /api/tournament/{id}/join | 10 kali/menit |
+
+---
+
+## 10. API Baru (v1.3.15-v1.3.22)
+
+### 10.1 Manajemen Risiko (Admin :8787)
+
+| Endpoint | Deskripsi |
+|------|------|
+| GET /admin/risk/dashboard | Ringkasan dasbor risiko |
+| GET /admin/risk/overview | Metrik ringkasan risiko |
+| GET /admin/risk/hit-trend | Tren pemicuan |
+| GET /admin/risk/action-distribution | Distribusi tindakan |
+| GET /admin/risk/rule-performance | Kinerja aturan |
+| GET /admin/risk/rule/list | Daftar aturan |
+| POST /admin/risk/rule/create | Buat aturan |
+| PUT /admin/risk/rule/{hashid} | Perbarui aturan |
+| POST /admin/risk/rule/{hashid}/toggle | Aktifkan/nonaktifkan aturan |
+| POST /admin/risk/rule/test | Uji aturan |
+| GET /admin/risk/event/list | Daftar event risiko |
+| GET /admin/risk/event/{hashid} | Detail event |
+| POST /admin/risk/event/{hashid}/handle | Tangani event |
+| GET /admin/risk/device/list | Daftar sidik jari perangkat |
+| POST /admin/risk/device/block | Blokir perangkat |
+| POST /admin/risk/device/unblock | Buka blokir perangkat |
+| GET /admin/risk/ip/list | Daftar IP |
+| POST /admin/risk/ip/block | Blokir IP |
+| POST /admin/risk/ip/whitelist | Daftar putih IP |
+| POST /admin/risk/ip/appeal | Banding IP |
+| POST /admin/risk/ip/recheck | Periksa ulang IP |
+| GET /admin/risk/graph/clusters | Daftar klaster |
+| GET /admin/risk/graph/{userId} | Grafik keterkaitan pengguna |
+| GET /admin/risk/clusters | Daftar klaster risiko |
+
+### 10.2 Manajemen Anti-Cheat (Admin :8787)
+
+| Endpoint | Deskripsi |
+|------|------|
+| GET /admin/anticheat/events | Daftar event anti-cheat |
+| GET /admin/anticheat/events/{hashid} | Detail event |
+| POST /admin/anticheat/events/{hashid}/review | Tinjau event |
+
+### 10.3 Aktivitas (Admin :8787 + Klien :8788)
+
+| Endpoint | Deskripsi |
+|------|------|
+| GET /admin/activities/list | Daftar aktivitas (Admin) |
+| POST /admin/activities/create | Buat aktivitas (Admin) |
+| PUT /admin/activities/{hashid} | Perbarui aktivitas (Admin) |
+| DELETE /admin/activities/{hashid} | Hapus aktivitas (Admin) |
+| GET /api/activities/list | Daftar aktivitas (Klien) |
+| GET /api/activities/progress | Progres partisipasi (Klien) |
+| GET /api/activities/{hashid} | Detail aktivitas (Klien) |
+| POST /api/activities/{hashid}/checkin | Check-in (Klien) |
+
+### 10.4 Grup / Berbagi (Klien :8788 + Admin :8787)
+
+| Endpoint | Deskripsi |
+|------|------|
+| POST /api/groups | Buat grup |
+| GET /api/groups/{hashid} | Detail grup |
+| GET /api/groups/{hashid}/members | Daftar anggota |
+| POST /api/groups/{hashid}/join | Gabung grup |
+| POST /api/groups/{hashid}/leave | Keluar grup |
+| PUT /api/groups/{hashid}/role | Peran anggota |
+| POST /api/shares | Buat tautan berbagi |
+| POST /api/shares/visit | Pelacakan kunjungan berbagi |
+| GET /admin/groups | Daftar grup (Admin) |
+| GET /admin/groups/{hashid}/audit | Audit grup (Admin) |
+| GET /admin/share/stats | Statistik berbagi (Admin) |
+
+### 10.5 Ekstensi Gerbang Pembayaran (L1)
+
+| Gerbang | Deskripsi |
+|------|------|
+| Adyen | Gerbang pembayaran baru (deposit / verifikasi callback / kredit otomatis) |
+| GrabPay | Gerbang pembayaran baru (deposit / verifikasi callback / kredit otomatis) |

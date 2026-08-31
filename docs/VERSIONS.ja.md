@@ -10,10 +10,10 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 
 | | 基礎版 (Lite) | 標準版 (Standard) | 完全版 (Full) |
 |------|------|------|------|
-| データテーブル (install.sql) | 19 | 29 | **43**（かつてドキュメントに記載された 52 ではない） |
-| API エンドポイント | 38 | 54 | ~149 (admin+service、Webhook/Provider 含む) |
-| バックエンドコントローラー | 14 | 22 | admin 32 + service 30 |
-| データモデル | 非共有 | 非共有 | **admin 46 / service 44 が各 1 部、共有レイヤーなし** |
+| データテーブル (install.sql) | 19 | 29 | **66**（v1.3.15-22 で 22 テーブル追加） |
+| API エンドポイント | 38 | 54 | ~260 (admin+service、Webhook/Provider 含む) |
+| バックエンドコントローラー | 14 | 22 | admin 46 + service 35 |
+| データモデル | 非共有 | 非共有 | **共有 52（platform-common）+ admin 8 + service 10** |
 | 共有 Service | 共有レイヤーなし | 共有レイヤーなし | `packages/platform-common` 単一共有パッケージ |
 | Admin フロントエンドページ | 11 | 13 | 15 |
 | Platform フロントエンドページ | 8 | 10 | 10 |
@@ -144,7 +144,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 
 | 機能 | 基礎版 | 標準版 | 完全版 |
 |------|--------|--------|--------|
-| Flutter Web PC 管理バックエンド | ✓ 5ページ | ✓ 11ページ | ✓ 15ページ |
+| Flutter Web PC 管理バックエンド | ✓ 5ページ | ✓ 11ページ | ✓ 17ページ |
 | Flutter Web PC ユーザープラットフォーム | ✓ 5ページ | ✓ 8ページ | ✓ 10ページ |
 | HarmonyOS admin | - | ✓ ログイン+ダッシュボード | ✓ 8ページ `admin/apps/harmonyos/` |
 | HarmonyOS C端 | - | - | ✓ 5ページ `apps/harmonyos/` |
@@ -180,6 +180,17 @@ game_country_config, game-platform_revenue,
 game_notification, game_referral, game_referral_reward, game_user_2fa
 ```
 
+### v1.3.15-22 追加 (22テーブル)
+```
+game_event_outbox, game_reconciliation_batch, game_reconciliation_diff,
+game_reconciliation_statement, game_device_fingerprint, game_device_account_map,
+game_ip_reputation, game_account_account_link,
+game_activity, game_activity_participation, game_activity_reward_log,
+game_anticheat_event, game_anticheat_daily_stat,
+game_group, game_group_member, game_share_link,
+game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, game_risk_cluster
+```
+
 ---
 
 ## API エンドポイント
@@ -195,7 +206,7 @@ game_notification, game_referral, game_referral_reward, game_user_2fa
 | 管理バックエンド | 18 | 25 | 79 |
 | 運用ツール | - | - | 30 (+ランキング+クーポン+通知+紹介) |
 | 国際化 | 2 | 2 | 4 (+国別設定) |
-| **合計** | **38** | **54** | **129** |
+| **合計** | **38** | **54** | **~260** |
 
 ---
 

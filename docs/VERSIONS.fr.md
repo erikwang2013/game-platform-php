@@ -10,10 +10,10 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 
 | | Édition de base (Lite) | Édition standard (Standard) | Édition complète (Full) |
 |------|------|------|------|
-| Tables de données (install.sql) | 19 | 29 | **43** (et non les 52 écrites dans les documents) |
-| Points d'API | 38 | 54 | ~149 (admin+service, Webhook/Provider inclus) |
-| Contrôleurs backend | 14 | 22 | admin 32 + service 30 |
-| Modèles de données | Non partagés | Non partagés | **admin 46 / service 44 chacun de son côté, sans couche partagée** |
+| Tables de données (install.sql) | 19 | 29 | **66** (22 nouveaux dans v1.3.15-22) |
+| Points d'API | 38 | 54 | ~260 (admin+service, Webhook/Provider inclus) |
+| Contrôleurs backend | 14 | 22 | admin 46 + service 35 |
+| Modèles de données | Non partagés | Non partagés | **partagés 52 (platform-common) + admin 8 + service 10** |
 | Services partagés | Aucune couche partagée | Aucune couche partagée | `packages/platform-common` package partagé unique |
 | Pages frontend Admin | 11 | 13 | 15 |
 | Pages frontend Platform | 8 | 10 | 10 |
@@ -144,7 +144,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 
 | Fonctionnalité | Édition de base | Édition standard | Édition complète |
 |------|--------|--------|--------|
-| Backend d'administration Flutter Web PC | ✓ 5 pages | ✓ 11 pages | ✓ 15 pages |
+| Backend d'administration Flutter Web PC | ✓ 5 pages | ✓ 11 pages | ✓ 17 pages |
 | Plateforme utilisateur Flutter Web PC | ✓ 5 pages | ✓ 8 pages | ✓ 10 pages |
 | HarmonyOS admin | - | ✓ connexion + tableau de bord | ✓ 8 pages `admin/apps/harmonyos/` |
 | HarmonyOS côté C | - | - | ✓ 5 pages `apps/harmonyos/` |
@@ -180,6 +180,17 @@ game_country_config, game-platform_revenue,
 game_notification, game_referral, game_referral_reward, game_user_2fa
 ```
 
+### Ajouts v1.3.15-22 (22 tables)
+```
+game_event_outbox, game_reconciliation_batch, game_reconciliation_diff,
+game_reconciliation_statement, game_device_fingerprint, game_device_account_map,
+game_ip_reputation, game_account_account_link,
+game_activity, game_activity_participation, game_activity_reward_log,
+game_anticheat_event, game_anticheat_daily_stat,
+game_group, game_group_member, game_share_link,
+game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, game_risk_cluster
+```
+
 ---
 
 ## Points d'API
@@ -195,7 +206,7 @@ game_notification, game_referral, game_referral_reward, game_user_2fa
 | Backend d'administration | 18 | 25 | 79 |
 | Outils d'exploitation | - | - | 30 (+classements+coupons+notifications+parrainage) |
 | Internationalisation | 2 | 2 | 4 (+configuration par pays) |
-| **Total** | **38** | **54** | **129** |
+| **Total** | **38** | **54** | **~260** |
 
 ---
 

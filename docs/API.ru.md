@@ -2109,3 +2109,80 @@ JSON `conditions` купона поддерживает:
 | Интерфейс | Лимит |
 |------|------|
 | POST /api/tournament/{id}/join | 10 раз/мин |
+
+---
+
+## 10. Новые API (v1.3.15-v1.3.22)
+
+### 10.1 Управление рисками (админ :8787)
+
+| Эндпоинт | Описание |
+|------|------|
+| GET /admin/risk/dashboard | Обзор дашборда рисков |
+| GET /admin/risk/overview | Метрики обзора рисков |
+| GET /admin/risk/hit-trend | Тренд срабатываний |
+| GET /admin/risk/action-distribution | Распределение действий |
+| GET /admin/risk/rule-performance | Производительность правил |
+| GET /admin/risk/rule/list | Список правил |
+| POST /admin/risk/rule/create | Создать правило |
+| PUT /admin/risk/rule/{hashid} | Обновить правило |
+| POST /admin/risk/rule/{hashid}/toggle | Включить/выключить правило |
+| POST /admin/risk/rule/test | Тест правила |
+| GET /admin/risk/event/list | Список событий рисков |
+| GET /admin/risk/event/{hashid} | Детали события |
+| POST /admin/risk/event/{hashid}/handle | Обработать событие |
+| GET /admin/risk/device/list | Список отпечатков устройств |
+| POST /admin/risk/device/block | Заблокировать устройство |
+| POST /admin/risk/device/unblock | Разблокировать устройство |
+| GET /admin/risk/ip/list | Список IP |
+| POST /admin/risk/ip/block | Заблокировать IP |
+| POST /admin/risk/ip/whitelist | Белый список IP |
+| POST /admin/risk/ip/appeal | Апелляция IP |
+| POST /admin/risk/ip/recheck | Перепроверка IP |
+| GET /admin/risk/graph/clusters | Список кластеров |
+| GET /admin/risk/graph/{userId} | Граф связей пользователя |
+| GET /admin/risk/clusters | Список кластеров риска |
+
+### 10.2 Управление античитом (админ :8787)
+
+| Эндпоинт | Описание |
+|------|------|
+| GET /admin/anticheat/events | Список событий античита |
+| GET /admin/anticheat/events/{hashid} | Детали события |
+| POST /admin/anticheat/events/{hashid}/review | Проверка события |
+
+### 10.3 Акции (админ :8787 + клиент :8788)
+
+| Эндпоинт | Описание |
+|------|------|
+| GET /admin/activities/list | Список акций (админ) |
+| POST /admin/activities/create | Создать акцию (админ) |
+| PUT /admin/activities/{hashid} | Обновить акцию (админ) |
+| DELETE /admin/activities/{hashid} | Удалить акцию (админ) |
+| GET /api/activities/list | Список акций (клиент) |
+| GET /api/activities/progress | Прогресс участия (клиент) |
+| GET /api/activities/{hashid} | Детали акции (клиент) |
+| POST /api/activities/{hashid}/checkin | Чек-ин (клиент) |
+
+### 10.4 Группы / Поделиться (клиент :8788 + админ :8787)
+
+| Эндпоинт | Описание |
+|------|------|
+| POST /api/groups | Создать группу |
+| GET /api/groups/{hashid} | Детали группы |
+| GET /api/groups/{hashid}/members | Список участников |
+| POST /api/groups/{hashid}/join | Вступить в группу |
+| POST /api/groups/{hashid}/leave | Покинуть группу |
+| PUT /api/groups/{hashid}/role | Роль участника |
+| POST /api/shares | Создать ссылку для поделиться |
+| POST /api/shares/visit | Отслеживание переходов по ссылке |
+| GET /admin/groups | Список групп (админ) |
+| GET /admin/groups/{hashid}/audit | Аудит группы (админ) |
+| GET /admin/share/stats | Статистика поделиться (админ) |
+
+### 10.5 Расширение платёжных шлюзов (L1)
+
+| Шлюз | Описание |
+|------|------|
+| Adyen | Новый платёжный шлюз (депозит / проверка колбэка / автоматическое зачисление) |
+| GrabPay | Новый платёжный шлюз (депозит / проверка колбэка / автоматическое зачисление) |

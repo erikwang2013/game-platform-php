@@ -2109,3 +2109,80 @@ status: open / waiting / replied / closed
 | 接口 | 限制 |
 |------|------|
 | POST /api/tournament/{id}/join | 10 次/分钟 |
+
+---
+
+## 10. v1.3.15-22 新增接口
+
+### 10.1 风控管理 (管理端 :8787)
+
+| 接口 | 说明 |
+|------|------|
+| GET /admin/risk/dashboard | 风控看板总览 |
+| GET /admin/risk/overview | 风控总览指标 |
+| GET /admin/risk/hit-trend | 命中趋势 |
+| GET /admin/risk/action-distribution | 处置动作分布 |
+| GET /admin/risk/rule-performance | 规则性能 |
+| GET /admin/risk/rule/list | 规则列表 |
+| POST /admin/risk/rule/create | 创建规则 |
+| PUT /admin/risk/rule/{hashid} | 更新规则 |
+| POST /admin/risk/rule/{hashid}/toggle | 启停规则 |
+| POST /admin/risk/rule/test | 规则测试 |
+| GET /admin/risk/event/list | 风控事件列表 |
+| GET /admin/risk/event/{hashid} | 事件详情 |
+| POST /admin/risk/event/{hashid}/handle | 事件处置 |
+| GET /admin/risk/device/list | 设备指纹列表 |
+| POST /admin/risk/device/block | 设备封禁 |
+| POST /admin/risk/device/unblock | 设备解封 |
+| GET /admin/risk/ip/list | IP 列表 |
+| POST /admin/risk/ip/block | IP 封禁 |
+| POST /admin/risk/ip/whitelist | IP 白名单 |
+| POST /admin/risk/ip/appeal | IP 申诉 |
+| POST /admin/risk/ip/recheck | IP 复核 |
+| GET /admin/risk/graph/clusters | 关联簇列表 |
+| GET /admin/risk/graph/{userId} | 用户关联图谱 |
+| GET /admin/risk/clusters | 风险簇列表 |
+
+### 10.2 反作弊管理 (管理端 :8787)
+
+| 接口 | 说明 |
+|------|------|
+| GET /admin/anticheat/events | 反作弊事件列表 |
+| GET /admin/anticheat/events/{hashid} | 事件详情 |
+| POST /admin/anticheat/events/{hashid}/review | 事件复核 |
+
+### 10.3 活动 (管理端 :8787 + C端 :8788)
+
+| 接口 | 说明 |
+|------|------|
+| GET /admin/activities/list | 活动列表 (管理端) |
+| POST /admin/activities/create | 创建活动 (管理端) |
+| PUT /admin/activities/{hashid} | 更新活动 (管理端) |
+| DELETE /admin/activities/{hashid} | 删除活动 (管理端) |
+| GET /api/activities/list | 活动列表 (C端) |
+| GET /api/activities/progress | 参与进度 (C端) |
+| GET /api/activities/{hashid} | 活动详情 (C端) |
+| POST /api/activities/{hashid}/checkin | 签到 (C端) |
+
+### 10.4 群组/分享 (C端 :8788 + 管理端 :8787)
+
+| 接口 | 说明 |
+|------|------|
+| POST /api/groups | 创建群组 |
+| GET /api/groups/{hashid} | 群组详情 |
+| GET /api/groups/{hashid}/members | 成员列表 |
+| POST /api/groups/{hashid}/join | 加入群组 |
+| POST /api/groups/{hashid}/leave | 退出群组 |
+| PUT /api/groups/{hashid}/role | 成员角色 |
+| POST /api/shares | 创建分享链接 |
+| POST /api/shares/visit | 分享访问追踪 |
+| GET /admin/groups | 群组列表 (管理端) |
+| GET /admin/groups/{hashid}/audit | 群组审核 (管理端) |
+| GET /admin/share/stats | 分享统计 (管理端) |
+
+### 10.5 支付网关扩展 (L1)
+
+| 网关 | 说明 |
+|------|------|
+| Adyen | 新增支付网关（充值/回调验签/自动到账） |
+| GrabPay | 新增支付网关（充值/回调验签/自动到账） |
