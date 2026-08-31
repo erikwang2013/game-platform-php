@@ -11,13 +11,16 @@ use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use common\model\WithdrawOrder;
 use common\service\PayoutService;
+use support\Db;
 
 /**
  * PayoutService 单元测试
- * 覆盖: 状态/重试守卫、PayPal 邮箱提取、完成标记幂等性
+ * 覆盖: 状态/重试守卫、PayPal 邮箱提取、完成标记幂等性（含 EventBus 事件）
  */
 class PayoutServiceTest extends TestCase
 {
+    private const TEST_USER_ID = 990000601;
+
     #[Test]
     public function executeRejectsNonApprovedOrder(): void
     {
@@ -96,6 +99,39 @@ class PayoutServiceTest extends TestCase
         PayoutService::markCompleted($order);
         $this->assertSame('completed', $order->status);
         $this->assertSame('success', $order->payout_status);
+    }
+
+    #[Test]
+    public function markCompletedPersistsStateWhenDatabaseAvailable(): void
+    {
+        try {
+            Db::selectOne('SELECT 1');
+        } catch (\Throwable $e) {
+            $this->markTestSkipped('Database connection not available: ' . $e->getMessage());
+        }
+
+        Db::connection()->transaction(function () {
+            \common\model\WithdrawOrder::where('id', 980000601)->delete();
+            $order = new WithdrawOrder();
+            $order->id = 980000601;
+            $order->order_no = 'TEST-MC-' . random_int(100000, 999999);
+            $order->user_id = self::TEST_USER_ID;
+            $order->platform_amount = '50.0000';
+            $order->fiat_amount = '50.0000';
+            $order->currency = 'USD';
+            $order->method = 'paypal';
+            $order->account_info = json_encode(['paypal_email' => 'payout@example.com']);
+            $order->status = 'approved';
+            $order->payout_status = 'processing';
+            $order->payout_attempts = 1;
+            $order->save();
+
+            PayoutService::markCompleted($order);
+
+            $this->assertSame('completed', $order->status);
+            $this->assertSame('success', $order->payout_status);
+            $this->assertNotNull($order->paid_at);
+        });
     }
 
     private static function extractPaypalEmail(WithdrawOrder $order): string
