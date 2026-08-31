@@ -10,11 +10,12 @@ namespace app\api\v1\controller;
 use app\model\CountryConfig;
 use app\model\DepositOrder;
 use app\model\PaymentMethod;
-use app\model\Transaction;
 use app\payment\GatewayFactory;
 use common\service\DepositLogService;
 use app\model\UserWallet;
+use app\event\EventBus;
 use app\service\RiskService;
+use app\service\WalletScope;
 use hg\apidoc\annotation as Apidoc;
 use support\Db;
 use support\Log;
@@ -122,6 +123,20 @@ class PaymentController extends BaseController
             return $this->success(['order_no' => $order->order_no, 'status' => $order->status], 'Already processed');
         }
 
+        // 风控检查（H4）：入账前执行；阻断 → 订单转人工审核，不授信。
+        // IP 优先取订单留存的下单用户 IP（回调来源是网关回源 IP，velocity 会按网关汇聚误伤），缺省回落网关 IP
+        $risk = RiskService::check($order->user_id, 'deposit', [
+            'amount'          => (string) $order->platform_amount,
+            'ip'              => (string) ($order->client_ip ?: $request->getRealIp()),
+            'user_agent'      => (string) $request->header('user-agent', ''),
+            'accept_lang'     => (string) $request->header('accept-language', ''),
+            'accept_encoding' => (string) $request->header('accept-encoding', ''),
+        ]);
+        if ($risk['result'] === 'block') {
+            DepositOrder::where('id', $order->id)->where('status', 'pending')->update(['status' => 'manual_review']);
+            return $this->success(['order_no' => $order->order_no, 'status' => 'manual_review'], 'Deposit under manual review');
+        }
+
         // 状态更新 + 余额入账 + 流水写入必须同事务，任一步失败整体回滚，防止半入账
         Db::beginTransaction();
 
@@ -143,28 +158,22 @@ class PaymentController extends BaseController
             if ($callbackStatus === 'success') {
                 $order->refresh();
 
-                // Credit the user's platform wallet; failure aborts the transaction
-                if (!UserWallet::addBalance($order->user_id, $order->platform_amount)) {
+                // Credit the user's platform wallet (M1: WalletService 统一记账+流水，ref 关联充值单)
+                if (!UserWallet::addBalance($order->user_id, (string) $order->platform_amount, 'deposit', 'deposit', (int) $order->id)) {
                     throw new \RuntimeException('Wallet credit failed');
                 }
 
-                // Refresh wallet to get balance after credit
-                $wallet = UserWallet::where('user_id', $order->user_id)->first();
-                $balanceAfter = $wallet ? $wallet->balance : '0';
-
-                // Create transaction record
-                $transaction = new Transaction();
-                $transaction->id            = $this->generateId();
-                $transaction->user_id       = $order->user_id;
-                $transaction->type          = 'deposit';
-                $transaction->amount        = $order->platform_amount;
-                $transaction->balance_after = $balanceAfter;
-                $transaction->ref_type      = 'deposit';
-                $transaction->ref_id        = $order->id;
-                $transaction->remark        = "Deposit callback: {$order->order_no}";
-                $transaction->save();
-
                 DepositLogService::log($order->id, $order->user_id, $order->amount, $order->currency, 'confirmed');
+
+                // 到账事件与业务行同事务写入 Outbox（可靠投递），commit 后由消费进程投递 Webhook/成就引擎
+                EventBus::push('deposit.completed', 'deposit_' . $order->id, [
+                    'order_id'       => $order->id,
+                    'order_no'       => $order->order_no,
+                    'user_id'        => $order->user_id,
+                    'amount'         => $order->platform_amount,
+                    'currency'       => $order->currency,
+                    'transaction_id' => $transactionId,
+                ]);
             }
 
             Db::commit();
@@ -175,22 +184,6 @@ class PaymentController extends BaseController
         }
 
         if ($callbackStatus === 'success') {
-            // Run risk check
-            $riskResult = RiskService::check(
-                $order->user_id,
-                'deposit',
-                [
-                    'amount' => $order->platform_amount,
-                    'ip'     => $request->getRealIp(),
-                ]
-            );
-
-            if ($riskResult['result'] === 'block') {
-                // MVP: log warning but do NOT reverse the credit
-                // Production should queue for manual review
-                Log::warning('Deposit credited despite risk block', ['order_no' => $order->order_no, 'user_id' => $order->user_id]);
-            }
-
             return $this->success([
                 'order_no' => $order->order_no,
                 'status'   => 'confirmed',

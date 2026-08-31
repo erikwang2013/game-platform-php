@@ -9,25 +9,23 @@ namespace app\model;
 
 use support\Model;
 
-class RiskLog extends Model
+/**
+ * 设备指纹（只存 hash，不存明文 UA / IP）
+ */
+class DeviceFingerprint extends Model
 {
-    protected $table = 'risk_log';
+    protected $table = 'device_fingerprint';
 
     public $incrementing = false;
     protected $keyType = 'int';
 
-    public $timestamps = false;
-
     protected $fillable = [
-        'user_id',
-        'rule_id',
-        'type',
-        'action',
-        'context',
-        'result',
-        'detail',
-        'ip_hash',
         'fp_hash',
+        'ip_c_segment',
         'user_agent_hash',
+        'accept_lang_hash',
+        'account_count',
+        'first_seen_at',
+        'last_seen_at',
     ];
 }

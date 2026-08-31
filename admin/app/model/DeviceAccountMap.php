@@ -9,25 +9,20 @@ namespace app\model;
 
 use support\Model;
 
-class RiskLog extends Model
+/**
+ * 设备-账号关联边（图谱主表）
+ */
+class DeviceAccountMap extends Model
 {
-    protected $table = 'risk_log';
+    protected $table = 'device_account_map';
 
     public $incrementing = false;
     protected $keyType = 'int';
 
-    public $timestamps = false;
-
     protected $fillable = [
-        'user_id',
-        'rule_id',
-        'type',
-        'action',
-        'context',
-        'result',
-        'detail',
-        'ip_hash',
         'fp_hash',
-        'user_agent_hash',
+        'user_id',
+        'first_seen_at',
+        'last_seen_at',
     ];
 }

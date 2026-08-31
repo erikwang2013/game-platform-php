@@ -28,6 +28,7 @@ class DepositOrder extends Model
         'checkout_url',
         'expires_at',
         'paid_at',
+        'client_ip',
     ];
 
     protected $casts = [

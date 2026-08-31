@@ -90,6 +90,8 @@ class DepositController extends BaseController
         $order->platform_amount    = $platformAmount;
         $order->payment_method_id  = $paymentMethodId;
         $order->status             = 'pending';
+        // 留存下单用户 IP：回调请求来自网关回源 IP，风控需按用户真实 IP 聚合
+        $order->client_ip          = (string) $request->getRealIp();
         $order->save();
 
         // 调网关创建支付：成功回填支付链接与过期时间，失败取消订单（客户端可重试）

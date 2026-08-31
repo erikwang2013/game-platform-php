@@ -8,7 +8,6 @@ declare(strict_types=1);
 namespace app\api\v1\controller;
 
 use app\model\PlatformConfig;
-use app\model\Transaction;
 use app\model\UserIdentity;
 use app\model\UserWallet;
 use app\model\WithdrawLimit;
@@ -21,6 +20,7 @@ use support\Request;
 use support\Response;
 use app\event\EventBus;
 use app\service\NotificationService;
+use app\service\RiskService;
 use app\service\VipService;
 
 /**
@@ -141,6 +141,22 @@ class WithdrawController extends BaseController
         }
         $actualAmount = bcsub($platformAmount, $fee, 4);
 
+        // 风控检查（H4）：阻断 → 拒绝下单；警告 → 人工审核，不自动放行
+        $riskReview = false;
+        $risk = RiskService::check($userId, 'withdraw', [
+            'amount'          => $platformAmount,
+            'ip'              => (string) $request->getRealIp(),
+            'user_agent'      => (string) $request->header('user-agent', ''),
+            'accept_lang'     => (string) $request->header('accept-language', ''),
+            'accept_encoding' => (string) $request->header('accept-encoding', ''),
+        ]);
+        if ($risk['result'] === 'block') {
+            return $this->fail('Withdrawal blocked by risk control: ' . $risk['message'], 403);
+        }
+        if ($risk['result'] === 'warn') {
+            $riskReview = true;
+        }
+
         Db::beginTransaction();
 
         try {
@@ -150,7 +166,7 @@ class WithdrawController extends BaseController
                 return $this->fail('Insufficient balance', 400);
             }
 
-            $counted = ['pending', 'approved', 'processing', 'completed'];
+            $counted = ['pending', 'approved', 'processing', 'completed', 'manual_review'];
             if (bccomp($dailyLimit, '0', 4) > 0) {
                 $todaySum = WithdrawOrder::where('user_id', $userId)
                     ->whereIn('status', $counted)
@@ -175,26 +191,18 @@ class WithdrawController extends BaseController
                 }
             }
 
-            // Deduct balance
-            $deducted = UserWallet::deductBalance($userId, $platformAmount);
-            if (!$deducted) {
-                Db::rollBack();
-                return $this->fail('Failed to deduct balance', 500);
-            }
-
-            // Determine auto-approve using tiered threshold
+            // Determine auto-approve using tiered threshold（风控警告一律人工审核）
+            $status = 'pending';
             $dualOn = in_array((string) PlatformConfig::get('withdraw', 'require_dual_review', 'off'), ['on', '1', 'true'], true);
-            if (!$dualOn && bccomp($autoThreshold, '0', 4) > 0 && bccomp($platformAmount, $autoThreshold, 4) < 0) {
+            if (!$riskReview && !$dualOn && bccomp($autoThreshold, '0', 4) > 0 && bccomp($platformAmount, $autoThreshold, 4) < 0) {
                 $status = 'approved';
-            } else {
-                $status = 'pending';
             }
 
             // Generate order number: WTH + YmdHis + random 4 digits
             // uniqid 微秒+进程后缀避免同秒撞 uk_order_no
             $orderNo = 'WTH' . date('YmdHis') . strtoupper(substr(uniqid('', true), -6));
 
-            // Create withdraw order
+            // Create withdraw order first（扣款需以订单 id 作为流水 ref_id）
             $order = new WithdrawOrder();
             $order->id              = $this->generateId();
             $order->order_no        = $orderNo;
@@ -206,6 +214,13 @@ class WithdrawController extends BaseController
             $order->status          = $status;
             $order->save();
 
+            // Deduct balance（WalletService 统一记账，ref 关联提现单）
+            $deducted = UserWallet::deductBalance($userId, $platformAmount, 'withdraw', 'withdraw_order', (int) $order->id);
+            if (!$deducted) {
+                Db::rollBack();
+                return $this->fail('Failed to deduct balance', 500);
+            }
+
             // Refresh wallet to get balance after deduction
             $wallet->refresh();
             $balanceAfter = $wallet->balance;
@@ -215,18 +230,6 @@ class WithdrawController extends BaseController
             if (bccomp($fee, '0', 4) > 0) {
                 $remark .= " (fee: {$fee})";
             }
-
-            // Create transaction record
-            $transaction = new Transaction();
-            $transaction->id            = $this->generateId();
-            $transaction->user_id       = $userId;
-            $transaction->type          = 'withdraw';
-            $transaction->amount        = '-' . $platformAmount;
-            $transaction->balance_after = $balanceAfter;
-            $transaction->ref_type      = 'withdraw_order';
-            $transaction->ref_id        = $order->id;
-            $transaction->remark        = $remark;
-            $transaction->save();
 
             Db::commit();
 
