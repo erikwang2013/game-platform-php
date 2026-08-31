@@ -156,10 +156,10 @@ CREATE TABLE IF NOT EXISTS `game_user` (
 CREATE TABLE IF NOT EXISTS `game_user_wallet` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
-    `balance` DECIMAL(18,4) UNSIGNED NOT NULL DEFAULT 0.0000 COMMENT '可用余额（平台币）',
-    `frozen_balance` DECIMAL(18,4) UNSIGNED NOT NULL DEFAULT 0.0000 COMMENT '冻结余额（提现中）',
-    `total_earned` DECIMAL(18,4) UNSIGNED NOT NULL DEFAULT 0.0000 COMMENT '累计收入（平台币）',
-    `total_spent` DECIMAL(18,4) UNSIGNED NOT NULL DEFAULT 0.0000 COMMENT '累计支出（平台币）',
+    `balance` DECIMAL(20,8) UNSIGNED NOT NULL DEFAULT 0.00000000 COMMENT '可用余额（平台币）',
+    `frozen_balance` DECIMAL(20,8) UNSIGNED NOT NULL DEFAULT 0.00000000 COMMENT '冻结余额（提现中）',
+    `total_earned` DECIMAL(20,8) UNSIGNED NOT NULL DEFAULT 0.00000000 COMMENT '累计收入（平台币）',
+    `total_spent` DECIMAL(20,8) UNSIGNED NOT NULL DEFAULT 0.00000000 COMMENT '累计支出（平台币）',
     `version` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '乐观锁版本号',
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -176,8 +176,8 @@ CREATE TABLE IF NOT EXISTS `game_user_game_wallet` (
     `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
     `game_id` BIGINT UNSIGNED NOT NULL COMMENT '游戏ID',
     `currency_id` BIGINT UNSIGNED NOT NULL COMMENT '币种ID',
-    `balance` DECIMAL(18,4) UNSIGNED NOT NULL DEFAULT 0.0000 COMMENT '游戏币余额',
-    `frozen_balance` DECIMAL(18,4) UNSIGNED NOT NULL DEFAULT 0.0000 COMMENT '冻结游戏币余额',
+    `balance` DECIMAL(20,8) UNSIGNED NOT NULL DEFAULT 0.00000000 COMMENT '游戏币余额',
+    `frozen_balance` DECIMAL(20,8) UNSIGNED NOT NULL DEFAULT 0.00000000 COMMENT '冻结游戏币余额',
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
@@ -243,6 +243,7 @@ CREATE TABLE IF NOT EXISTS `game_deposit_order` (
     `checkout_url` VARCHAR(500) NOT NULL DEFAULT '' COMMENT '网关支付链接（Stripe PaymentIntent / NOWPayments payment_url / Coinbase hosted_url）',
     `expires_at` DATETIME DEFAULT NULL COMMENT '支付链接过期时间',
     `paid_at` DATETIME DEFAULT NULL COMMENT '支付时间',
+    `client_ip` VARCHAR(45) NOT NULL DEFAULT '' COMMENT '下单用户IP（回调风控优先取此值，缺省回落网关IP）',
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
@@ -311,9 +312,12 @@ CREATE TABLE IF NOT EXISTS `game_exchange_record` (
 CREATE TABLE IF NOT EXISTS `game_transaction` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
-    `type` VARCHAR(20) NOT NULL COMMENT '流水类型: deposit/withdraw/exchange_in/exchange_out/game_earn/game_spend',
-    `amount` DECIMAL(18,4) NOT NULL COMMENT '变动金额（正=收入，负=支出）',
-    `balance_after` DECIMAL(18,4) NOT NULL COMMENT '变动后余额',
+    `type` VARCHAR(20) NOT NULL COMMENT '流水类型: deposit/withdraw/exchange_in/exchange_out/game_earn/game_spend/lock/unlock/reconcile',
+    `scope` VARCHAR(20) NOT NULL DEFAULT 'platform' COMMENT '钱包范围: platform=平台币/game=游戏币',
+    `game_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '游戏ID（scope=game 时有效）',
+    `currency_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '币种ID（scope=game 时有效）',
+    `amount` DECIMAL(20,8) NOT NULL COMMENT '变动金额（正=收入，负=支出）',
+    `balance_after` DECIMAL(20,8) NOT NULL COMMENT '变动后余额',
     `ref_type` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '关联单据类型',
     `ref_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '关联单据ID',
     `remark` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '备注',
@@ -321,7 +325,8 @@ CREATE TABLE IF NOT EXISTS `game_transaction` (
     PRIMARY KEY (`id`),
     KEY `idx_user_id_type` (`user_id`, `type`),
     KEY `idx_ref` (`ref_type`, `ref_id`),
-    KEY `idx_created_at` (`created_at`)
+    KEY `idx_created_at` (`created_at`),
+    KEY `idx_user_scope` (`user_id`, `scope`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='平台流水表';
 
 -- ============================================================
@@ -562,7 +567,8 @@ CREATE TABLE IF NOT EXISTS `game_game_play_log` (
 CREATE TABLE IF NOT EXISTS `game_risk_rule` (
     `id` BIGINT UNSIGNED NOT NULL,
     `name` VARCHAR(100) NOT NULL COMMENT '规则名称',
-    `type` VARCHAR(30) NOT NULL COMMENT '类型: ip_blacklist/amount_anomaly/frequency/velocity/device_fingerprint',
+    `type` VARCHAR(30) NOT NULL COMMENT '类型: ip_blacklist/amount_anomaly/frequency/velocity/device_fingerprint/ip_reputation/device_account_graph/withdraw_pattern',
+    `scope` VARCHAR(30) NOT NULL DEFAULT 'all' COMMENT '生效范围: all=全环节/deposit/withdraw/exchange/login',
     `config` TEXT NOT NULL COMMENT '规则配置(JSON): 阈值/时间窗口/动作',
     `action` VARCHAR(20) NOT NULL DEFAULT 'log' COMMENT '触发动作: log=记录/warn=警告/block=阻断',
     `priority` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '优先级，越大越先执行',
@@ -583,13 +589,84 @@ CREATE TABLE IF NOT EXISTS `game_risk_log` (
     `type` VARCHAR(30) NOT NULL COMMENT '匹配的风控类型',
     `action` VARCHAR(20) NOT NULL COMMENT '执行动作: log/warn/block',
     `context` TEXT COMMENT '触发上下文(JSON): IP/设备/金额/频率等',
-    `result` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '处理结果: passed/blocked/manual_review',
+    `result` VARCHAR(512) NOT NULL DEFAULT '' COMMENT '处理结果: passed/blocked/manual_review',
+    `detail` TEXT COMMENT '完整命中详情（不被截断）',
+    `ip_hash` VARCHAR(64) NOT NULL DEFAULT '' COMMENT 'IP sha256（不存明文）',
+    `fp_hash` VARCHAR(64) NOT NULL DEFAULT '' COMMENT '设备指纹 sha256',
+    `user_agent_hash` VARCHAR(64) NOT NULL DEFAULT '' COMMENT 'User-Agent sha256',
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     KEY `idx_user_id` (`user_id`),
     KEY `idx_created_at` (`created_at`),
-    KEY `idx_type` (`type`)
+    KEY `idx_type` (`type`),
+    KEY `idx_ip_hash_created` (`ip_hash`, `created_at`),
+    KEY `idx_fp_hash_created` (`fp_hash`, `created_at`),
+    KEY `idx_action_created` (`action`, `created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='风控日志表';
+
+-- ============================================================
+-- 设备指纹表（只存 hash，不存明文 UA / IP / 前端 device id）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_device_fingerprint` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `fp_hash` VARCHAR(64) NOT NULL COMMENT '设备指纹 sha256(salt|ua|ip|accept_lang|accept_enc)',
+    `ip_c_segment` VARCHAR(16) NOT NULL DEFAULT '' COMMENT 'IP C段（IPv4前三段 / IPv6 /48），仅用于C段聚合',
+    `user_agent_hash` VARCHAR(64) NOT NULL DEFAULT '' COMMENT 'User-Agent sha256，用于浏览器版本聚合',
+    `accept_lang_hash` VARCHAR(64) NOT NULL DEFAULT '' COMMENT 'Accept-Language sha256',
+    `first_seen_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '首次观测时间',
+    `last_seen_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最近观测时间',
+    `account_count` INT NOT NULL DEFAULT 1 COMMENT '关联账号数（冗余计数，避免 count 查询）',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_fp_hash` (`fp_hash`),
+    KEY `idx_ip_c_segment` (`ip_c_segment`),
+    KEY `idx_last_seen_at` (`last_seen_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='设备指纹表';
+
+-- ============================================================
+-- 设备-账号关联边表（图谱主表：设备 → 账号）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_device_account_map` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `fp_hash` VARCHAR(64) NOT NULL COMMENT '设备指纹',
+    `user_id` BIGINT UNSIGNED NOT NULL COMMENT '账号ID',
+    `first_seen_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '首次关联时间',
+    `last_seen_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最近关联时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_fp_user` (`fp_hash`, `user_id`),
+    KEY `idx_user_id` (`user_id`),
+    KEY `idx_last_seen_at` (`last_seen_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='设备-账号关联边表';
+
+-- ============================================================
+-- IP 信誉表（0=bad / 50=neutral / 100=good）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_ip_reputation` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `ip_hash` VARCHAR(64) NOT NULL COMMENT 'IP sha256（不存明文，支持 IPv4/IPv6）',
+    `reputation_score` TINYINT NOT NULL DEFAULT 50 COMMENT '信誉分: 0=bad / 50=neutral / 100=good',
+    `source` ENUM('internal_blacklist', 'internal_whitelist', 'external_proxy', 'external_vpn') NOT NULL DEFAULT 'internal_blacklist' COMMENT '来源: 内部黑名单 / 内部白名单 / 外部代理检测 / 外部VPN检测',
+    `first_seen_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '首次观测时间',
+    `last_seen_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最近观测时间',
+    `hit_count` INT NOT NULL DEFAULT 0 COMMENT '累计命中次数',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_ip_hash` (`ip_hash`),
+    KEY `idx_source_score` (`source`, `reputation_score`),
+    KEY `idx_hit_count` (`hit_count`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='IP信誉表';
+
+-- ============================================================
+-- 账号-账号关联边表（设备 / IP / 邀请 / 共用手机派生）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_account_account_link` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `user_id_a` BIGINT UNSIGNED NOT NULL COMMENT '账号A',
+    `user_id_b` BIGINT UNSIGNED NOT NULL COMMENT '账号B',
+    `link_type` VARCHAR(32) NOT NULL DEFAULT '' COMMENT '关联类型: same_device / same_ip / referral / shared_phone',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_pair_type` (`user_id_a`, `user_id_b`, `link_type`),
+    KEY `idx_user_b_type` (`user_id_b`, `link_type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='账号关联边表';
 
 -- ============================================================
 -- 日统计快照表
@@ -821,6 +898,97 @@ CREATE TABLE IF NOT EXISTS `game_cdn_provider` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='CDN厂商配置';
 
 -- ============================================================
+-- 对账批次表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_reconciliation_batch` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `name` VARCHAR(128) NOT NULL COMMENT '批次名称',
+    `gateway` VARCHAR(64) NOT NULL COMMENT '网关名',
+    `date_range_start` DATE NOT NULL COMMENT '对账日期范围开始',
+    `date_range_end` DATE NOT NULL COMMENT '对账日期范围结束',
+    `status` ENUM('pending','running','completed','failed') NOT NULL DEFAULT 'pending' COMMENT '状态: pending=待执行 running=执行中 completed=已完成 failed=失败',
+    `error_msg` VARCHAR(512) DEFAULT NULL COMMENT '失败原因',
+    `total_statements` INT NOT NULL DEFAULT 0 COMMENT '网关明细笔数',
+    `matched_count` INT NOT NULL DEFAULT 0 COMMENT '匹配成功笔数',
+    `diff_count` INT NOT NULL DEFAULT 0 COMMENT '差异笔数',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_gateway_date` (`gateway`, `date_range_start`),
+    KEY `idx_status` (`status`),
+    KEY `idx_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='对账批次表';
+
+-- ============================================================
+-- 对账单明细表（网关侧原始明细，人工CSV上传后无法重新拉取，必须留底）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_reconciliation_statement` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `batch_id` BIGINT UNSIGNED NOT NULL COMMENT '批次ID',
+    `gateway` VARCHAR(64) NOT NULL COMMENT '网关名',
+    `external_id` VARCHAR(128) NOT NULL DEFAULT '' COMMENT '网关侧交易ID（法币=流水号，crypto=txHash）',
+    `amount` DECIMAL(20,4) NOT NULL DEFAULT 0.0000 COMMENT '网关结算金额',
+    `currency` VARCHAR(16) NOT NULL DEFAULT '' COMMENT '网关币种',
+    `status` VARCHAR(32) NOT NULL DEFAULT '' COMMENT '网关侧状态',
+    `transaction_time` DATETIME DEFAULT NULL COMMENT '网关交易时间',
+    `local_order_id` BIGINT UNSIGNED DEFAULT NULL COMMENT '匹配的本地订单ID（NULL=未匹配）',
+    `matched` TINYINT NOT NULL DEFAULT 0 COMMENT '是否匹配: 0=否 1=是',
+    `raw` JSON DEFAULT NULL COMMENT '原始对账数据',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_batch_id` (`batch_id`),
+    KEY `idx_external_id` (`external_id`),
+    KEY `idx_local_order_id` (`local_order_id`),
+    KEY `idx_matched` (`matched`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='对账单明细表';
+
+-- ============================================================
+-- 对账差异表（只落差异，不落匹配成功——健康系统下匹配成功占 99%+）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_reconciliation_diff` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `batch_id` BIGINT UNSIGNED NOT NULL COMMENT '批次ID',
+    `statement_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '对账单明细ID（0=无）',
+    `local_order_id` BIGINT UNSIGNED DEFAULT NULL COMMENT '本地订单ID（NULL=无）',
+    `diff_type` VARCHAR(32) NOT NULL COMMENT '差异类型: amount_mismatch/status_mismatch/missing_local/missing_gateway/duplicate_deposit/payout_unconfirmed/time_only/currency_mismatch',
+    `severity` VARCHAR(16) NOT NULL DEFAULT 'medium' COMMENT '严重度: low/medium/high/critical',
+    `description` VARCHAR(512) NOT NULL DEFAULT '' COMMENT '差异描述',
+    `resolution` VARCHAR(32) NOT NULL DEFAULT 'pending' COMMENT '处理状态: pending/resolved/ignored',
+    `resolved_by` BIGINT UNSIGNED DEFAULT NULL COMMENT '处理人ID（0=系统）',
+    `resolved_at` DATETIME DEFAULT NULL COMMENT '处理时间',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_batch_id` (`batch_id`),
+    KEY `idx_statement_id` (`statement_id`),
+    KEY `idx_local_order_id` (`local_order_id`),
+    KEY `idx_diff_type` (`diff_type`),
+    KEY `idx_resolution` (`resolution`),
+    KEY `idx_severity` (`severity`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='对账差异表';
+
+-- ============================================================
+-- 可靠事件投递表（Outbox）
+-- 关键资金事件（deposit/withdraw/exchange）与业务行同事务写入，
+-- 由 outbox-consumer 进程轮询消费；status=3 即死信，不另建 DLQ 表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_event_outbox` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `event_id` VARCHAR(64) NOT NULL COMMENT '业务幂等键，如 withdraw_123_completed，唯一',
+    `event` VARCHAR(128) NOT NULL COMMENT '事件类型，如 withdraw.completed',
+    `payload` JSON NOT NULL COMMENT '事件负载',
+    `status` TINYINT NOT NULL DEFAULT 0 COMMENT '状态: 0=pending 1=sent 2=retry 3=dead',
+    `retry_count` INT NOT NULL DEFAULT 0 COMMENT '消费重试次数，>=3 转 dead',
+    `last_error` VARCHAR(512) DEFAULT NULL COMMENT '最近一次错误信息（死信排查）',
+    `occurred_at` DATETIME NOT NULL COMMENT '业务发生时间（排序与重放依据）',
+    `processed_at` DATETIME DEFAULT NULL COMMENT '消费完成时间',
+    `created_at` DATETIME NOT NULL COMMENT '创建时间',
+    `updated_at` DATETIME DEFAULT NULL COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_event_id` (`event_id`),
+    KEY `idx_status_occurred` (`status`, `occurred_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='可靠事件投递表（Outbox）';
+
+-- ============================================================
 -- 种子数据
 -- ============================================================
 
@@ -987,11 +1155,15 @@ INSERT IGNORE INTO `game_translation` (`id`, `group`, `key`, `lang_code`, `value
 (30000000000000720, 'admin', 'announcement_not_found', 'zh-CN', '公告不存在');
 
 -- 默认风控规则
-INSERT IGNORE INTO `game_risk_rule` (`id`, `name`, `type`, `config`, `action`, `priority`, `status`) VALUES
-(40000000000000001, 'IP黑名单检测', 'ip_blacklist', '{"blacklist":[]}', 'block', 100, 1),
-(40000000000000002, '单笔大额充值预警', 'amount_anomaly', '{"min_amount":"5000","currency":"USD"}', 'warn', 50, 1),
-(40000000000000003, '高频提现检测', 'frequency', '{"window_minutes":60,"max_count":5}', 'warn', 50, 1),
-(40000000000000004, '短时多账号检测', 'velocity', '{"window_minutes":10,"max_accounts":3,"same_ip":true}', 'block', 80, 1);
+INSERT IGNORE INTO `game_risk_rule` (`id`, `name`, `type`, `scope`, `config`, `action`, `priority`, `status`) VALUES
+(40000000000000001, 'IP黑名单检测', 'ip_blacklist', 'all', '{"blacklist":[]}', 'block', 100, 1),
+(40000000000000002, '单笔大额充值预警', 'amount_anomaly', 'all', '{"min_amount":"5000","currency":"USD"}', 'warn', 50, 1),
+(40000000000000003, '高频提现检测', 'frequency', 'all', '{"window_minutes":60,"max_count":5}', 'warn', 50, 1),
+(40000000000000004, '短时多账号检测', 'velocity', 'all', '{"window_minutes":10,"max_accounts":3,"same_ip":true}', 'block', 80, 1),
+(40000000000000005, '新设备提现检测', 'device_fingerprint', 'all', '{"max_accounts_per_device":5,"new_device_lookback_hours":24,"new_device_withdraw_block":true}', 'block', 90, 0),
+(40000000000000006, 'IP 信誉检测', 'ip_reputation', 'all', '{"block_score_below":30,"warn_score_below":60,"block_unknown":false}', 'block', 90, 0),
+(40000000000000007, '设备团伙关联检测', 'device_account_graph', 'all', '{"cluster_threshold":6,"frozen_sibling_block":true,"max_accounts_per_device":50}', 'warn', 70, 0),
+(40000000000000008, '提现模式异常检测', 'withdraw_pattern', 'withdraw', '{"window_minutes":60,"max_applies":5,"single_hard_cap":"50000","drain_ratio":"0.99","sigma_window_days":90,"sigma_multiplier":3,"fast_interval_seconds":20,"fast_interval_min_count":5}', 'warn', 70, 0);
 
 -- 默认提现限额规则
 INSERT IGNORE INTO `game_withdraw_limit` (`id`, `user_level`, `single_min`, `single_max`, `daily_limit`, `monthly_limit`, `fee_pct`, `fee_max`, `auto_approve_threshold`) VALUES
