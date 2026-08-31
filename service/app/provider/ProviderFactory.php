@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\provider;
 
-use app\model\Game;
+use common\model\Game;
 
 class ProviderFactory
 {

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use app\model\Game;
+use common\model\Game;
 use app\model\Group;
 use app\model\GroupMember;
 use hg\apidoc\annotation as Apidoc;

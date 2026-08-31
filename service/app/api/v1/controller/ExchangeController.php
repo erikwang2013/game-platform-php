@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace app\api\v1\controller;
 
 use app\model\ExchangeRecord;
-use app\model\Game;
+use common\model\Game;
 use app\model\GameCurrency;
 use app\model\UserGameWallet;
 use app\model\UserWallet;

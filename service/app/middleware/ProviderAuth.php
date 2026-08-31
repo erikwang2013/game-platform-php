@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\middleware;
 
-use app\model\Game;
+use common\model\Game;
 use Webman\Http\Request;
 use Webman\Http\Response;
 use Webman\MiddlewareInterface;

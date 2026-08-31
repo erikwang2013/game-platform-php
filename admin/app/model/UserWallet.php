@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace app\model;
 
+use app\service\WalletScope;
+use app\service\WalletService;
 use support\Model;
 
 class UserWallet extends Model
@@ -34,49 +36,18 @@ class UserWallet extends Model
     ];
 
     /**
-     * Add balance to a user's wallet using optimistic locking.
+     * Add balance to a user's wallet (M1: 委托统一钱包服务记账+流水).
      *
      * @param int    $userId
-     * @param string $amount  Positive to add, negative to deduct. Uses bcmath.
+     * @param string $amount  正=收入，负=支出。bcmath。
+     * @param string $type    流水类型: deposit/withdraw/exchange_in/exchange_out/game_earn/game_spend...
+     * @param string $refType 关联单据类型
+     * @param int    $refId   关联单据ID
      * @return bool
      */
-    public static function addBalance(int $userId, string $amount): bool
+    public static function addBalance(int $userId, string $amount, string $type = 'deposit', string $refType = '', int $refId = 0): bool
     {
-        $maxRetries = 5;
-
-        for ($i = 0; $i < $maxRetries; $i++) {
-            $wallet = static::where('user_id', $userId)->lockForUpdate()->first();
-
-            if (!$wallet) {
-                return false;
-            }
-
-            $currentVersion = (int) $wallet->version;
-            $newBalance = bcadd($wallet->balance, $amount, 2);
-
-            if (bccomp($newBalance, '0', 2) < 0) {
-                return false;
-            }
-
-            $affected = static::where('id', $wallet->id)
-                ->where('version', $currentVersion)
-                ->update([
-                    'balance' => $newBalance,
-                    'version' => $currentVersion + 1,
-                ]);
-
-            if ($affected > 0) {
-                if (bccomp($amount, '0', 2) > 0) {
-                    $wallet->increment('total_earned', $amount);
-                } elseif (bccomp($amount, '0', 2) < 0) {
-                    $absAmount = ltrim($amount, '-');
-                    $wallet->increment('total_spent', $absAmount);
-                }
-                return true;
-            }
-        }
-
-        return false;
+        return WalletService::mutate($userId, WalletScope::platform(), bcadd($amount, '0', WalletService::SCALE), $type, $refType, $refId);
     }
 
     /**
@@ -86,10 +57,10 @@ class UserWallet extends Model
      * @param string $amount  Positive amount to deduct.
      * @return bool
      */
-    public static function deductBalance(int $userId, string $amount): bool
+    public static function deductBalance(int $userId, string $amount, string $type = 'withdraw', string $refType = '', int $refId = 0): bool
     {
-        $negated = bccomp($amount, '0', 2) > 0 ? '-' . $amount : $amount;
-        return static::addBalance($userId, $negated);
+        $negated = bccomp($amount, '0', WalletService::SCALE) > 0 ? '-' . $amount : $amount;
+        return static::addBalance($userId, $negated, $type, $refType, $refId);
     }
 
     public function user()

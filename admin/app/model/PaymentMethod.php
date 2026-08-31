@@ -38,4 +38,14 @@ class PaymentMethod extends Model
         'max_amount' => 'string',
         'config' => Encryptable::class,
     ];
+
+    /** 支付方式在指定国家是否可见（空国家或空/通配国家列表视为不限制） */
+    public function isAvailableIn(string $country): bool
+    {
+        $countries = is_array($this->countries) ? $this->countries : [];
+        if ($country === '' || $countries === [] || in_array('*', $countries, true)) {
+            return true;
+        }
+        return in_array($country, $countries, true);
+    }
 }

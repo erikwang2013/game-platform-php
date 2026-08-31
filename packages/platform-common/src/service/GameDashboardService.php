@@ -8,9 +8,9 @@ declare(strict_types=1);
 namespace common\service;
 
 use app\model\DepositOrder;
-use app\model\Game;
-use app\model\GamePlayLog;
-use app\model\User;
+use common\model\Game;
+use common\model\GamePlayLog;
+use common\model\User;
 use support\Db;
 use Throwable;
 

@@ -9,8 +9,8 @@ namespace app\admin\controller;
 
 use app\model\DepositOrder;
 use app\model\ExchangeRecord;
-use app\model\GamePlayLog;
-use app\model\User;
+use common\model\GamePlayLog;
+use common\model\User;
 use app\model\WithdrawOrder;
 use hg\apidoc\annotation as Apidoc;
 use support\Redis;

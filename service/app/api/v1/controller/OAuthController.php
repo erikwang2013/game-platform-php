@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use app\model\User;
+use common\model\User;
 use app\model\UserOauth;
 use app\model\UserWallet;
 use Firebase\JWT\JWT;

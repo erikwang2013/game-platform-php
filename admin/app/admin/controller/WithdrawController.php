@@ -10,7 +10,7 @@ namespace app\admin\controller;
 use hg\apidoc\annotation as Apidoc;
 use app\model\PlatformConfig;
 use app\model\Transaction;
-use app\model\User;
+use common\model\User;
 use app\model\UserWallet;
 use app\model\WithdrawLimit;
 use app\model\WithdrawOrder;

@@ -5,7 +5,7 @@
 
 declare(strict_types=1);
 
-namespace app\model;
+namespace common\model;
 
 use support\Model;
 use Erikwang2013\Encryptable\Encryptable;

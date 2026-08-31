@@ -8,9 +8,9 @@ declare(strict_types=1);
 namespace app\admin\controller;
 
 use app\model\AntiCheatEvent;
-use app\model\GamePlayLog;
+use common\model\GamePlayLog;
 use app\model\RiskLog;
-use app\model\User;
+use common\model\User;
 use app\model\UserTrust;
 use app\model\UserWallet;
 use app\service\WalletScope;

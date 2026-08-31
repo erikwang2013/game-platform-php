@@ -75,7 +75,7 @@ class NotificationService
     private static function sendEmail(int $userId, string $title, string $content): void
     {
         try {
-            $user = \app\model\User::find($userId);
+            $user = \common\model\User::find($userId);
             if (!$user || empty($user->email)) {
                 return;
             }

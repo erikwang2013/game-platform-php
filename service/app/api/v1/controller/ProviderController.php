@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace app\api\v1\controller;
 
 use app\event\EventBus;
-use app\model\GamePlayLog;
+use common\model\GamePlayLog;
 use app\provider\ProviderFactory;
 use app\service\AntiCheatService;
 use app\service\GamePlayRecorder;

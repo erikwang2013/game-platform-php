@@ -141,7 +141,7 @@ class AnalyticsController extends BaseController
             $cohortDate = date('Y-m-d', strtotime("-{$days} days"));
             $endDate = date('Y-m-d', strtotime("-" . ($days - $d) . " days"));
 
-            $cohort = \app\model\User::whereDate('created_at', $cohortDate)->count();
+            $cohort = \common\model\User::whereDate('created_at', $cohortDate)->count();
             if ($cohort === 0) { $data["D{$d}"] = '0%'; continue; }
 
             $active = \app\model\UserSession::whereDate('created_at', '>=', $cohortDate)
@@ -166,10 +166,10 @@ class AnalyticsController extends BaseController
         $days = (int) $request->input('days', 30);
         $since = date('Y-m-d H:i:s', strtotime("-{$days} days"));
 
-        $registered = \app\model\User::where('created_at', '>=', $since)->count();
+        $registered = \common\model\User::where('created_at', '>=', $since)->count();
         $deposited = \app\model\DepositOrder::where('created_at', '>=', $since)->where('status', 'confirmed')->distinct('user_id')->count('user_id');
         $exchanged = \app\model\ExchangeRecord::where('created_at', '>=', $since)->distinct('user_id')->count('user_id');
-        $played = \app\model\GamePlayLog::where('created_at', '>=', $since)->distinct('user_id')->count('user_id');
+        $played = \common\model\GamePlayLog::where('created_at', '>=', $since)->distinct('user_id')->count('user_id');
 
         $base = $registered > 0 ? $registered : 1;
         return $this->success([
@@ -198,7 +198,7 @@ class AnalyticsController extends BaseController
             $dates[] = $date;
 
             $revenue = (float) (\app\model\DepositOrder::whereDate('created_at', $date)->where('status', 'confirmed')->sum('platform_amount') ?? '0');
-            $totalUsers = \app\model\User::whereDate('created_at', '<=', $date)->count();
+            $totalUsers = \common\model\User::whereDate('created_at', '<=', $date)->count();
             $payingUsers = \app\model\DepositOrder::whereDate('created_at', $date)->where('status', 'confirmed')->distinct('user_id')->count('user_id');
 
             $arpuSeries[] = $totalUsers > 0 ? round($revenue / $totalUsers, 4) : 0;

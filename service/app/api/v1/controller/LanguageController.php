@@ -54,7 +54,7 @@ class LanguageController extends BaseController
 
         // 如果已登录，更新用户语言偏好
         if ($request->userId ?? null) {
-            $user = \app\model\User::find($request->userId);
+            $user = \common\model\User::find($request->userId);
             if ($user) {
                 $user->update(['language' => $locale]);
             }

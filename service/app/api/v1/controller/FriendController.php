@@ -5,7 +5,7 @@
 declare(strict_types=1);
 namespace app\api\v1\controller;
 use app\model\Friend;
-use app\model\User;
+use common\model\User;
 use support\Request;
 use support\Response;
 

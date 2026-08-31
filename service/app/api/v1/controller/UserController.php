@@ -10,7 +10,7 @@ namespace app\api\v1\controller;
 use app\model\DepositOrder;
 use app\model\ExchangeRecord;
 use app\model\Transaction;
-use app\model\User;
+use common\model\User;
 use app\model\User2FA;
 use app\model\UserOauth;
 use app\model\UserSession;

@@ -5,7 +5,7 @@
 
 declare(strict_types=1);
 
-namespace app\model;
+namespace common\model;
 
 use support\Model;
 

@@ -19,7 +19,7 @@ use app\model\AdminUser;
 use app\model\OperationLog;
 use app\model\AdminRole;
 use app\model\SystemConfig;
-use app\model\User;
+use common\model\User;
 use app\model\DepositOrder;
 use app\model\WithdrawOrder;
 use app\model\Transaction;

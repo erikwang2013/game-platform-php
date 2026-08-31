@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace common\service;
 
 use app\model\DepositOrder;
-use app\model\Game;
-use app\model\GamePlayLog;
+use common\model\Game;
+use common\model\GamePlayLog;
 use support\Db;
 use support\Log;
 use Throwable;

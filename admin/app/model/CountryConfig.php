@@ -37,4 +37,13 @@ class CountryConfig extends Model
     {
         return self::where('country_code', $code)->first();
     }
+
+    /**
+     * 语言前缀映射国家（用于本国支付优先），未知语言返回空串
+     */
+    public static function fromLang(string $lang): string
+    {
+        $map = ['zh' => 'CN', 'ja' => 'JP', 'ko' => 'KR', 'pt' => 'BR', 'hi' => 'IN', 'de' => 'DE', 'en' => 'US'];
+        return $map[strtolower(substr(trim($lang), 0, 2))] ?? '';
+    }
 }

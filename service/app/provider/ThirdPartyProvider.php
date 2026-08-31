@@ -18,7 +18,7 @@ class ThirdPartyProvider extends GameProvider
 {
     private Client $http;
 
-    public function __construct(\app\model\Game $game)
+    public function __construct(\common\model\Game $game)
     {
         parent::__construct($game);
         $this->http = new Client([

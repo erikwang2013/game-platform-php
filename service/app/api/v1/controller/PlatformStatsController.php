@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use app\model\Game;
-use app\model\GamePlayLog;
-use app\model\User;
+use common\model\Game;
+use common\model\GamePlayLog;
+use common\model\User;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;

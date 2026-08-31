@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\service;
 
-use app\model\GamePlayLog;
+use common\model\GamePlayLog;
 use common\SnowflakeService;
 use Webman\Http\Request;
 

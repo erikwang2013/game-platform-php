@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace app\provider;
 
-use app\model\GamePlayLog;
+use common\model\GamePlayLog;
 use app\model\UserGameWallet;
 use app\service\WalletScope;
 use app\service\WalletService;

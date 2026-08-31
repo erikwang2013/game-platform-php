@@ -134,7 +134,7 @@ class CouponController extends BaseController
             if ($hasDeposit) return $this->fail('This coupon is for new users only', 400);
         }
         if (!empty($conditions['game_id']) && $conditions['game_id'] > 0) {
-            $gamePlayed = \app\model\GamePlayLog::where('user_id', $userId)->where('game_id', (int) $conditions['game_id'])->exists();
+            $gamePlayed = \common\model\GamePlayLog::where('user_id', $userId)->where('game_id', (int) $conditions['game_id'])->exists();
             if (!$gamePlayed) return $this->fail('Must play the required game first', 400);
         }
 

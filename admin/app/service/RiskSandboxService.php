@@ -13,7 +13,7 @@ use app\model\DeviceFingerprint;
 use app\model\ExchangeRecord;
 use app\model\IpReputation;
 use app\model\RiskLog;
-use app\model\User;
+use common\model\User;
 use app\model\WithdrawOrder;
 
 /**

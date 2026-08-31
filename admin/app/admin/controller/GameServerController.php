@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace app\admin\controller;
 
 use hg\apidoc\annotation as Apidoc;
-use app\model\Game;
+use common\model\Game;
 use app\model\GameServer;
 use support\Request;
 use support\Response;

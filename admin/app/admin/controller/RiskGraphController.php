@@ -10,7 +10,7 @@ namespace app\admin\controller;
 use app\model\AccountAccountLink;
 use app\model\DeviceAccountMap;
 use app\model\DeviceFingerprint;
-use app\model\User;
+use common\model\User;
 use hg\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
