@@ -28,6 +28,7 @@ class Activity extends Model
 
     public const TYPE_SIGNIN = 'signin';
     public const TYPE_DAILY_TASK = 'daily_task';
+    public const TYPE_INVITE = 'invite';
 
     public const STATUS_DISABLED = 0;
     public const STATUS_ENABLED = 1;

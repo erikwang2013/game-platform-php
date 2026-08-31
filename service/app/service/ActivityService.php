@@ -46,7 +46,7 @@ class ActivityService
         $ctx = ['event' => $event, 'game_id' => (int) ($payload['game_id'] ?? 0), 'now' => date('Y-m-d H:i:s')];
 
         $activities = Activity::where('status', Activity::STATUS_ENABLED)
-            ->whereIn('type', [Activity::TYPE_SIGNIN, Activity::TYPE_DAILY_TASK])
+            ->whereIn('type', [Activity::TYPE_SIGNIN, Activity::TYPE_DAILY_TASK, Activity::TYPE_INVITE])
             ->get();
 
         $firstError = null;

@@ -40,7 +40,7 @@ class ActivityController extends BaseController
     public function create(Request $request): Response
     {
         $validator = validator($request->all(), [
-            'type'    => 'required|in:signin,daily_task',
+            'type'    => 'required|in:signin,daily_task,invite',
             'name'    => 'required|string|max:100',
             'game_id' => 'nullable|integer',
             'config'  => 'nullable|string',
@@ -157,6 +157,19 @@ class ActivityController extends BaseController
             }
             foreach ($tasks as $task) {
                 if (!is_array($task) || !is_string($task['event'] ?? null) || (int) ($task['target'] ?? 0) <= 0 || !is_array($task['reward'] ?? null)) {
+                    return null;
+                }
+            }
+        } elseif ($type === Activity::TYPE_INVITE) {
+            if ((int) ($config['target'] ?? 0) <= 0) {
+                return null;
+            }
+            $rewards = $config['rewards'] ?? null;
+            if (!is_array($rewards) || $rewards === []) {
+                return null;
+            }
+            foreach ($rewards as $entry) {
+                if (!is_array($entry) || !is_array($entry['reward'] ?? null)) {
                     return null;
                 }
             }

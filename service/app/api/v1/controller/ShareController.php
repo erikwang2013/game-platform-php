@@ -14,7 +14,7 @@ use support\Response;
 
 /**
  * 分享短码（M4）：生成短码 + 落地页点击上报（匿名）。
- * 裂变转化（conversions）由注册链路按 short_code 落库，见 M3 invite 子模式（本期未实现，见阻塞项）。
+ * 裂变转化（conversions）由注册链路按 short_code 落库（AuthController::register → ShareLink::bindConversion）。
  *
  * @Apidoc\Title("分享")
  * @Apidoc\Group("share")

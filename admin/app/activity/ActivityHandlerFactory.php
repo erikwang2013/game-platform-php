@@ -19,6 +19,7 @@ class ActivityHandlerFactory
         return match ($activity->type) {
             Activity::TYPE_SIGNIN     => new SignInHandler(),
             Activity::TYPE_DAILY_TASK => new DailyTaskHandler(),
+            Activity::TYPE_INVITE     => new InviteHandler(),
             default => throw new \InvalidArgumentException("Unknown activity type: {$activity->type}"),
         };
     }
