@@ -546,11 +546,21 @@ CREATE TABLE IF NOT EXISTS `game_game_play_log` (
     `game_id` BIGINT UNSIGNED NOT NULL,
     `server_id` BIGINT UNSIGNED NOT NULL DEFAULT 0,
     `session_id` VARCHAR(64) NOT NULL DEFAULT '' COMMENT '游戏会话ID',
+    `round_id` VARCHAR(64) NOT NULL DEFAULT '' COMMENT '对局ID',
     `action` VARCHAR(20) NOT NULL COMMENT 'start/end/earn/spend',
     `game_amount_before` DECIMAL(18,4) NOT NULL DEFAULT 0.0000,
     `game_amount_change` DECIMAL(18,4) NOT NULL DEFAULT 0.0000 COMMENT '变动(正=赚,负=花)',
     `game_amount_after` DECIMAL(18,4) NOT NULL DEFAULT 0.0000,
+    `bet_amount` DECIMAL(18,4) NULL COMMENT '下注额',
+    `win_amount` DECIMAL(18,4) NULL COMMENT '赢额',
     `platform_amount_change` DECIMAL(18,4) NOT NULL DEFAULT 0.0000 COMMENT '平台币等值变动',
+    `ip_hash` VARCHAR(64) NOT NULL DEFAULT '' COMMENT 'IP sha256（不存明文）',
+    `user_agent_hash` VARCHAR(64) NOT NULL DEFAULT '' COMMENT 'User-Agent sha256',
+    `device_id` VARCHAR(64) NOT NULL DEFAULT '' COMMENT '设备ID',
+    `ended_at_round` DATETIME NULL COMMENT '对局结束时间(区别于session级ended_at)',
+    `level_id` INT NULL COMMENT '关卡ID',
+    `move_count` INT NULL COMMENT '出招次数',
+    `result` VARCHAR(10) NULL COMMENT 'win/fail',
     `metadata` TEXT COMMENT '游戏自定义数据(JSON)',
     `started_at` DATETIME DEFAULT NULL,
     `ended_at` DATETIME DEFAULT NULL,
@@ -558,8 +568,73 @@ CREATE TABLE IF NOT EXISTS `game_game_play_log` (
     PRIMARY KEY (`id`),
     KEY `idx_user_game` (`user_id`, `game_id`),
     KEY `idx_session` (`session_id`),
-    KEY `idx_created_at` (`created_at`)
+    KEY `idx_created_at` (`created_at`),
+    KEY `idx_ip_hash_created` (`ip_hash`, `created_at`),
+    KEY `idx_device` (`device_id`),
+    KEY `idx_round` (`round_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='游戏记录表';
+
+-- ============================================================
+-- 反作弊表（H5）：日汇总 / 事件 / 用户信任分
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_anticheat_daily_stat` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '雪花ID',
+    `user_id` BIGINT UNSIGNED NOT NULL,
+    `game_id` BIGINT UNSIGNED NOT NULL,
+    `stat_date` DATE NOT NULL,
+    `rounds` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '对局数(去重round_id)',
+    `wins` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '胜局数',
+    `bets` DECIMAL(18,4) NOT NULL DEFAULT 0.0000 COMMENT '累计下注额',
+    `avg_bet` DECIMAL(18,4) NULL COMMENT '平均注码(批内聚合,非全天精确值)',
+    `std_bet` DECIMAL(18,4) NULL COMMENT '注码标准差(批内聚合)',
+    `wins_total` DECIMAL(18,4) NOT NULL DEFAULT 0.0000 COMMENT '累计赢额',
+    `plays_30d` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '30日对局数(后置)',
+    `wins_30d` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '30日胜局数(后置)',
+    `active_seconds` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '活跃秒数(后置)',
+    `moves_per_sec_p50` DECIMAL(6,3) NULL COMMENT '出招频率p50(后置)',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_user_game_date` (`user_id`, `game_id`, `stat_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='反作弊日汇总表';
+
+CREATE TABLE IF NOT EXISTS `game_anticheat_event` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '雪花ID',
+    `user_id` BIGINT UNSIGNED NOT NULL,
+    `game_id` BIGINT UNSIGNED NOT NULL DEFAULT 0,
+    `rule_type` VARCHAR(30) NOT NULL COMMENT '规则类型: anticheat_bet_pattern/anticheat_duration/anticheat_rate',
+    `rule_name` VARCHAR(100) NOT NULL DEFAULT '',
+    `severity` TINYINT UNSIGNED NOT NULL DEFAULT 2 COMMENT '1=低 2=中 3=高',
+    `score_delta` INT NOT NULL DEFAULT 0 COMMENT '信任分变动(负=扣分)',
+    `action` VARCHAR(20) NOT NULL DEFAULT 'warn' COMMENT '规则动作: log/warn/block',
+    `evidence` TEXT COMMENT '命中证据(JSON)',
+    `round_id` VARCHAR(64) NOT NULL DEFAULT '',
+    `stat_date` DATE NOT NULL DEFAULT '1970-01-01' COMMENT '统计日期(幂等键)',
+    `status` VARCHAR(20) NOT NULL DEFAULT 'open' COMMENT 'open/confirmed/whitelisted/closed',
+    `reviewer_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '审核人admin_id',
+    `review_note` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '审核备注',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_user_rule_date` (`user_id`, `rule_type`, `stat_date`),
+    KEY `idx_status_created` (`status`, `created_at`),
+    KEY `idx_user_created` (`user_id`, `created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='反作弊事件表';
+
+CREATE TABLE IF NOT EXISTS `game_user_trust` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '雪花ID',
+    `user_id` BIGINT UNSIGNED NOT NULL,
+    `score` SMALLINT NOT NULL DEFAULT 100 COMMENT '信任分 0-100',
+    `band` VARCHAR(20) NOT NULL DEFAULT 'normal' COMMENT 'normal/observe/restrict/freeze',
+    `hit_count` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '累计命中次数',
+    `last_hit_at` DATETIME NULL COMMENT '最近命中时间',
+    `whitelisted` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '客服加白后不再自动扣分',
+    `whitelist_by` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '加白操作人admin_id',
+    `whitelist_note` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '加白备注',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_user` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户信任分表';
 
 -- ============================================================
 -- 风控规则表
@@ -1163,7 +1238,8 @@ INSERT IGNORE INTO `game_risk_rule` (`id`, `name`, `type`, `scope`, `config`, `a
 (40000000000000005, '新设备提现检测', 'device_fingerprint', 'all', '{"max_accounts_per_device":5,"new_device_lookback_hours":24,"new_device_withdraw_block":true}', 'block', 90, 0),
 (40000000000000006, 'IP 信誉检测', 'ip_reputation', 'all', '{"block_score_below":30,"warn_score_below":60,"block_unknown":false}', 'block', 90, 0),
 (40000000000000007, '设备团伙关联检测', 'device_account_graph', 'all', '{"cluster_threshold":6,"frozen_sibling_block":true,"max_accounts_per_device":50}', 'warn', 70, 0),
-(40000000000000008, '提现模式异常检测', 'withdraw_pattern', 'withdraw', '{"window_minutes":60,"max_applies":5,"single_hard_cap":"50000","drain_ratio":"0.99","sigma_window_days":90,"sigma_multiplier":3,"fast_interval_seconds":20,"fast_interval_min_count":5}', 'warn', 70, 0);
+(40000000000000008, '提现模式异常检测', 'withdraw_pattern', 'withdraw', '{"window_minutes":60,"max_applies":5,"single_hard_cap":"50000","drain_ratio":"0.99","sigma_window_days":90,"sigma_multiplier":3,"fast_interval_seconds":20,"fast_interval_min_count":5}', 'warn', 70, 0),
+(40000000000000009, '下注模式异常检测', 'anticheat_bet_pattern', 'all', '{"min_rounds":30,"fixed_cv":0.02,"trigger_ratio":0.6,"ratio_tolerance":0.005,"ar_run":8,"ar_diff_tolerance":0.01,"score_delta":-10,"window_days":7}', 'warn', 60, 0);
 
 -- 默认提现限额规则
 INSERT IGNORE INTO `game_withdraw_limit` (`id`, `user_level`, `single_min`, `single_max`, `daily_limit`, `monthly_limit`, `fee_pct`, `fee_max`, `auto_approve_threshold`) VALUES

@@ -64,6 +64,23 @@ game/xiaoxiaole/  (静态资源，Nginx)
 | `level_fail` | 失败 |
 | `skill_use` | 使用技能 |
 
+### `meta` 字段契约（`bet` / `settle` 共用，反作弊 H5）
+
+`POST /api/provider/bet` 与 `POST /api/provider/settle` 请求体中的 `meta`（对象）字段定义：
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `device_id` | string | 否 | 设备 ID（服务端明文存储，用于设备维度聚合） |
+| `result` | string | settle 必填 | 对局结果：`win` / `fail` |
+| `move_count` | int | 否 | 本局出招次数（出招频率类检测输入） |
+| `ended_at` | string | 否 | 对局结束时间 `YYYY-MM-DD HH:MM:SS` |
+| `level_id` | int | 否 | 关卡 ID |
+| `ip` | string | 否 | 玩家来源 IP（游戏侧转发真实 IP；服务端只落 sha256 = `ip_hash`，不存明文） |
+| `user_agent` | string | 否 | 玩家 User-Agent（服务端只落 sha256 = `user_agent_hash`） |
+
+服务端落库 `game_game_play_log`：`result / move_count / ended_at_round / device_id / level_id` 独立列，
+`ip` / `user_agent` 哈希化后入 `ip_hash` / `user_agent_hash`，`meta` 原样存 `metadata`(JSON)。
+
 ---
 
 ## 5. 特性开关（FeatureFlag）

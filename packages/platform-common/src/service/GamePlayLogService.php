@@ -43,6 +43,9 @@ class GamePlayLogService
             $data['ip'] = $ip;
             $data['user_agent'] = $userAgent;
             $log->metadata = json_encode($data, JSON_UNESCAPED_UNICODE);
+            // 反作弊列双写（H5）：metadata 保留明文供运营查询，独立列只存 sha256
+            $log->ip_hash = $ip !== '' ? hash('sha256', $ip) : '';
+            $log->user_agent_hash = $userAgent !== '' ? hash('sha256', $userAgent) : '';
             $log->started_at = $data['started_at'] ?? date('Y-m-d H:i:s');
             $log->save();
         } catch (Throwable) {

@@ -11,6 +11,7 @@ use app\api\v1\controller\WebhookController;
 use app\event\EventBus;
 use app\model\EventOutbox;
 use app\service\AchievementService;
+use app\service\AntiCheatService;
 use support\Log;
 
 /**
@@ -101,6 +102,15 @@ class EventConsumer
         } catch (\Throwable $e) {
             Log::error('EventConsumer webhook failed: ' . $e->getMessage(), $ctx);
             $failures[] = $e;
+        }
+
+        // 反作弊旁路：异常隔离不阻塞主链路，也不进 $failures（非可靠事件，不驱动 Outbox 重试）
+        try {
+            if ($event === AntiCheatService::EVENT_ROUND_FINISHED) {
+                AntiCheatService::onRoundFinished($payload);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('EventConsumer anticheat failed: ' . $e->getMessage(), $ctx);
         }
 
         if ($failures !== [] && in_array($event, EventBus::RELIABLE_EVENTS, true)) {

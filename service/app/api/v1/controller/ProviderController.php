@@ -7,8 +7,10 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
+use app\event\EventBus;
 use app\model\GamePlayLog;
 use app\provider\ProviderFactory;
+use app\service\AntiCheatService;
 use support\Db;
 use support\Request;
 use support\Response;
@@ -63,7 +65,7 @@ class ProviderController extends BaseController
             $result = $provider->bet($userId, $request->gameId, $currencyId, $sessionId, $amount, $roundId, $meta);
 
             if ($result['success']) {
-                $this->logPlay($userId, $request->gameId, $sessionId, $roundId, 'bet', $amount, $result['balance_after'] ?? '0', $meta);
+                $this->logPlay($request, $userId, $request->gameId, $sessionId, $roundId, 'bet', $amount, $result['balance_after'] ?? '0', $meta);
             }
 
             return $this->success($result);
@@ -94,12 +96,22 @@ class ProviderController extends BaseController
 
             if ($result['success']) {
                 $winAmount = $result['win_amount'] ?? '0';
-                $this->logPlay($userId, $request->gameId, $sessionId, $roundId, 'settle', $winAmount, $result['balance_after'] ?? '0', $meta);
+                $this->logPlay($request, $userId, $request->gameId, $sessionId, $roundId, 'settle', $winAmount, $result['balance_after'] ?? '0', $meta);
 
                 // Update session ended_at
                 GamePlayLog::where('session_id', $sessionId)
                     ->where('action', 'start')
                     ->update(['ended_at' => date('Y-m-d H:i:s')]);
+
+                // 对局结算完成 → 反作弊旁路（非可靠事件走 Redis Pub/Sub，EventConsumer 内隔离异常不阻塞主链路）
+                EventBus::emit(AntiCheatService::EVENT_ROUND_FINISHED, [
+                    'user_id'    => $userId,
+                    'game_id'    => $request->gameId,
+                    'session_id' => $sessionId,
+                    'round_id'   => $roundId,
+                    'result'     => (string) ($meta['result'] ?? ''),
+                    'win_amount' => $winAmount,
+                ]);
             }
 
             return $this->success($result);
@@ -129,14 +141,14 @@ class ProviderController extends BaseController
             $result = $provider->refund($userId, $request->gameId, $currencyId, $sessionId, $amount, $roundId, $reason);
 
             if ($result['success']) {
-                $this->logPlay($userId, $request->gameId, $sessionId, $roundId, 'refund', $amount, $result['balance_after'] ?? '0', ['reason' => $reason]);
+                $this->logPlay($request, $userId, $request->gameId, $sessionId, $roundId, 'refund', $amount, $result['balance_after'] ?? '0', ['reason' => $reason]);
             }
 
             return $this->success($result);
         });
     }
 
-    private function logPlay(int $userId, int $gameId, string $sessionId, string $roundId, string $action, string $amount, string $balanceAfter, array $meta): void
+    private function logPlay(Request $request, int $userId, int $gameId, string $sessionId, string $roundId, string $action, string $amount, string $balanceAfter, array $meta): void
     {
         $log = new GamePlayLog();
         $log->id = $this->generateId();
@@ -167,7 +179,16 @@ class ProviderController extends BaseController
         if (isset($meta['ended_at'])) {
             $log->ended_at = $meta['ended_at'];
         }
-        // ponytail: 不写 ip/ua —— MySQL game_game_play_log 无这两列(仅 ClickHouse 镜像有), 写入会 Unknown column
+        // 反作弊列（H5 评审修订 #1）：PII 只存 sha256，device_id 可明文；IP/UA 优先取游戏转发 meta，兜底取请求方
+        $ip = (string) ($meta['ip'] ?? $request->getRealIp());
+        $ua = (string) ($meta['user_agent'] ?? $request->header('User-Agent', ''));
+        $log->ip_hash = $ip !== '' ? hash('sha256', $ip) : '';
+        $log->user_agent_hash = $ua !== '' ? hash('sha256', $ua) : '';
+        $log->device_id = (string) ($meta['device_id'] ?? '');
+        $log->result = (string) ($meta['result'] ?? '');
+        $log->level_id = isset($meta['level_id']) ? (int) $meta['level_id'] : null;
+        $log->move_count = isset($meta['move_count']) ? (int) $meta['move_count'] : null;
+        $log->ended_at_round = !empty($meta['ended_at']) ? (string) $meta['ended_at'] : null;
         $log->save();
     }
 }

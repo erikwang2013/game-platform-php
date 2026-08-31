@@ -61,6 +61,12 @@ return [
         'count' => 1,
     ],
 
+    // 反作弊批处理：每小时增量扫描对局日志（单实例，游标文件）
+    'anti-cheat' => [
+        'handler' => app\process\AntiCheatWorker::class,
+        'count' => 1,
+    ],
+
     'monitor' => [
         'handler' => app\process\Monitor::class,
         'reloadable' => false,
