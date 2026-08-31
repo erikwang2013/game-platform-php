@@ -40,6 +40,8 @@ class GameController extends BaseController
         $keyword    = $request->input('keyword');
         $type       = $request->input('type');
         $categoryId = $request->input('category_id');
+        $platform   = $request->input('platform');
+        $region     = $request->input('region');
 
         $query = Game::where('status', 1)
             ->orderBy('sort', 'asc')
@@ -51,6 +53,14 @@ class GameController extends BaseController
 
         if ($type) {
             $query->where('type', $type);
+        }
+
+        if ($platform) {
+            $query->where('platform', $platform);
+        }
+
+        if ($region) {
+            $query->where('region', $region);
         }
 
         if ($categoryId) {
@@ -93,6 +103,9 @@ class GameController extends BaseController
                 'type'        => $game->type,
                 'description' => $game->description,
                 'cover_image' => $game->cover_image,
+                'sdk_version' => $game->sdk_version,
+                'platform'    => $game->platform,
+                'region'      => $game->region,
                 'currencies'  => $currencyList,
                 'categories'  => $categoryList,
             ];
@@ -143,7 +156,89 @@ class GameController extends BaseController
             'description'  => $game->description,
             'cover_image'  => $game->cover_image,
             'api_endpoint' => $game->api_endpoint,
+            'sdk_version'  => $game->sdk_version,
+            'platform'     => $game->platform,
+            'region'       => $game->region,
             'currencies'   => $currencyList,
+        ]);
+    }
+
+    /**
+     * @Apidoc\Title("多游戏聚合余额")
+     * @Apidoc\Url("/api/game/balance")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Auth(true)
+     * @Apidoc\Desc("M5: 聚合用户在各游戏（上架）中的游戏币余额")
+     */
+    public function balance(Request $request): Response
+    {
+        $wallets = Db::table('user_game_wallet w')
+            ->join('game g', 'g.id', '=', 'w.game_id')
+            ->join('game_currency c', 'c.id', '=', 'w.currency_id')
+            ->where('w.user_id', $request->userId)
+            ->where('g.status', 1)
+            ->get([
+                'w.game_id', 'g.name', 'g.slug', 'g.type',
+                'w.currency_id', 'c.name AS currency_name', 'c.symbol',
+                'w.balance', 'w.frozen_balance',
+            ]);
+
+        $games = [];
+        foreach ($wallets as $w) {
+            if (!isset($games[$w->game_id])) {
+                $games[$w->game_id] = [
+                    'game_id'    => $this->encodeId((int) $w->game_id),
+                    'name'       => $w->name,
+                    'slug'       => $w->slug,
+                    'type'       => $w->type,
+                    'currencies' => [],
+                ];
+            }
+            $games[$w->game_id]['currencies'][] = [
+                'currency_id'    => $this->encodeId((int) $w->currency_id),
+                'name'           => $w->currency_name,
+                'symbol'         => $w->symbol,
+                'balance'        => $w->balance,
+                'frozen_balance' => $w->frozen_balance,
+            ];
+        }
+
+        return $this->success(['games' => array_values($games)]);
+    }
+
+    /**
+     * @Apidoc\Title("签发 SDK 会话令牌")
+     * @Apidoc\Url("/api/game/session")
+     * @Apidoc\Method("GET")
+     * @Apidoc\Auth(true)
+     * @Apidoc\Param(name="game_id", type="string", require=true, desc="游戏ID(hashid)")
+     * @Apidoc\Desc("M5: 自研/内嵌游戏启动前签发 5 分钟 HMAC 会话令牌（SdkSessionAuth 校验）")
+     */
+    public function session(Request $request): Response
+    {
+        $gameId = $request->input('game_id', '');
+        if (empty($gameId)) {
+            return $this->fail('game_id required', 422);
+        }
+        $gameId = $this->decodeId($gameId);
+
+        $game = Game::find($gameId);
+        if (!$game || (int) $game->status !== 1) {
+            return $this->fail('Game not found', 404);
+        }
+        if ($game->type !== 'self' && $game->type !== 'embedded') {
+            return $this->fail('SDK session only for self/embedded games', 403);
+        }
+
+        $payload = rtrim(strtr(base64_encode(json_encode([
+            'game_id' => $gameId,
+            'user_id' => $request->userId,
+            'exp'     => time() + 300,
+        ], JSON_UNESCAPED_UNICODE)), '+/', '-_'), '=');
+
+        return $this->success([
+            'token'      => $payload . '.' . hash_hmac('sha256', $payload, $game->api_secret),
+            'expires_in' => 300,
         ]);
     }
 

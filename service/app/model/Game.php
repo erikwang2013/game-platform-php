@@ -29,6 +29,9 @@ class Game extends Model
         'status',
         'sort',
         'provider_config',
+        'sdk_version',
+        'platform',
+        'region',
     ];
 
     protected $hidden = [

@@ -14,7 +14,8 @@ class ProviderFactory
     public static function create(Game $game): GameProvider
     {
         return match ($game->type) {
-            'self' => new SelfProvider($game),
+            // embedded（M5 内嵌小游戏）与 self 资金路径一致：平台持有余额
+            'self', 'embedded' => new SelfProvider($game),
             'third_party' => new ThirdPartyProvider($game),
             default => throw new \InvalidArgumentException("Unknown game type: {$game->type}"),
         };

@@ -90,7 +90,9 @@ class GameController extends BaseController
         $validator = validator($request->all(), [
             'name' => 'required|string|max:100',
             'slug' => 'required|string|max:50|regex:/^[a-z0-9_-]+$/',
-            'type' => 'required|string|in:self,third_party',
+            'type' => 'required|string|in:self,embedded,third_party',
+            'platform' => 'string|in:h5,unity,web,native',
+            'region' => 'string|max:10',
         ]);
 
         if ($validator->fails()) {
@@ -114,6 +116,9 @@ class GameController extends BaseController
         $game->api_secret  = $request->input('api_secret', '');
         $game->status      = (int) $request->input('status', 0);
         $game->sort        = (int) $request->input('sort', 0);
+        $game->sdk_version = $request->input('sdk_version', '');
+        $game->platform    = $request->input('platform', 'h5');
+        $game->region      = $request->input('region', 'global');
         $game->save();
 
         // 同步分类关系
@@ -147,6 +152,7 @@ class GameController extends BaseController
         $game->fill($request->only([
             'name', 'type', 'description', 'cover_image',
             'api_endpoint', 'api_key', 'api_secret', 'status', 'sort',
+            'sdk_version', 'platform', 'region',
         ]));
         $game->save();
 

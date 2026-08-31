@@ -67,6 +67,12 @@ return [
         'count' => 1,
     ],
 
+    // 组队/公会定时校正（M4）：每小时 到期解散 + member_count 对齐（单实例）
+    'group-sweep' => [
+        'handler' => app\process\GroupSweepWorker::class,
+        'count' => 1,
+    ],
+
     'monitor' => [
         'handler' => app\process\Monitor::class,
         'reloadable' => false,
