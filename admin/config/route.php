@@ -195,6 +195,12 @@ Route::group('/admin', function () {
     Route::put('/achievement/{hashid}', [app\admin\controller\AchievementController::class, 'update']);
     Route::delete('/achievement/{hashid}', [app\admin\controller\AchievementController::class, 'destroy']);
 
+    // 活动管理
+    Route::get('/activities/list', [app\admin\controller\ActivityController::class, 'list']);
+    Route::post('/activities/create', [app\admin\controller\ActivityController::class, 'create']);
+    Route::put('/activities/{hashid}', [app\admin\controller\ActivityController::class, 'update']);
+    Route::delete('/activities/{hashid}', [app\admin\controller\ActivityController::class, 'destroy']);
+
     // 导出扩展
     Route::post('/export/users', [app\admin\controller\ExportController::class, 'exportUsers']);
     Route::post('/export/transactions', [app\admin\controller\ExportController::class, 'exportTransactions']);

@@ -815,6 +815,7 @@ CREATE TABLE IF NOT EXISTS `game_coupon` (
     `value` DECIMAL(18,4) NOT NULL COMMENT '优惠值(fixed=平台币 rate=折扣率如0.10=9折)',
     `min_amount` DECIMAL(18,4) UNSIGNED NOT NULL DEFAULT 0.0000 COMMENT '最低使用金额',
     `max_discount` DECIMAL(18,4) UNSIGNED NOT NULL DEFAULT 0.0000 COMMENT '最大优惠金额(rate类型)',
+    `conditions` JSON NULL COMMENT '使用条件(JSON)',
     `game_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '适用游戏(0=全平台通用)',
     `total_qty` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '发行总量(0=不限)',
     `used_qty` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '已领取/使用数量',
@@ -1280,6 +1281,60 @@ INSERT IGNORE INTO `game_payment_method` (`id`, `name`, `type`, `provider`, `con
 (50000000000000066, 'M-Pesa', 'fiat', 'mpesa', '{}', 1, 160, '["KE"]', 'KES', 10.0000, 100000.0000),
 (50000000000000067, 'Paystack', 'fiat', 'paystack', '{}', 1, 170, '["NG"]', 'NGN', 100.0000, 1000000.0000),
 (50000000000000068, 'Toss Payments', 'fiat', 'toss', '{}', 1, 145, '["KR"]', 'KRW', 1000.0000, 1000000.0000);
+
+-- ============================================================
+-- 运营活动表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_activity` (
+    `id` BIGINT NOT NULL COMMENT '主键ID，由snowflake生成',
+    `type` VARCHAR(30) NOT NULL COMMENT '活动类型: signin=签到 daily_task=每日任务',
+    `name` VARCHAR(100) NOT NULL COMMENT '活动名称',
+    `game_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '适用游戏(0=全平台)',
+    `config` JSON NOT NULL COMMENT '目标/周期/奖励，按 type 定义 schema',
+    `status` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '0=禁用 1=启用 2=已结束',
+    `start_at` DATETIME DEFAULT NULL COMMENT '开始时间',
+    `end_at` DATETIME DEFAULT NULL COMMENT '结束时间',
+    `rollout_percent` INT UNSIGNED NOT NULL DEFAULT 100 COMMENT '灰度百分比(0=不投放 100=全量)',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_status_dates` (`status`, `start_at`, `end_at`),
+    KEY `idx_type` (`type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='运营活动定义表';
+
+CREATE TABLE IF NOT EXISTS `game_activity_participation` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
+    `activity_id` BIGINT UNSIGNED NOT NULL COMMENT '活动ID',
+    `period_key` VARCHAR(16) NOT NULL COMMENT '周期键: YYYY-MM-DD(每日) / all(一次性)',
+    `current` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '当前进度',
+    `target` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '目标值(快照，活动改配置不影响历史)',
+    `status` VARCHAR(20) NOT NULL DEFAULT 'progressing' COMMENT 'progressing=进行中 completed=已达标 rewarded=已发奖',
+    `completed_at` DATETIME DEFAULT NULL COMMENT '达标时间',
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_user_activity_period` (`user_id`, `activity_id`, `period_key`),
+    KEY `idx_activity_status` (`activity_id`, `status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='活动参与进度表';
+
+CREATE TABLE IF NOT EXISTS `game_activity_reward_log` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
+    `activity_id` BIGINT UNSIGNED NOT NULL COMMENT '活动ID',
+    `participation_id` BIGINT UNSIGNED NOT NULL COMMENT '参与进度ID',
+    `period_key` VARCHAR(16) NOT NULL COMMENT '周期键',
+    `reward_type` VARCHAR(20) NOT NULL COMMENT '奖励类型: platform_coin=平台币 game_coin=游戏币',
+    `reward_ref` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '奖励条目索引(1起)/游戏ID等',
+    `amount` DECIMAL(20,8) NOT NULL DEFAULT 0 COMMENT '奖励数量',
+    `status` VARCHAR(20) NOT NULL DEFAULT 'succeeded' COMMENT 'succeeded=已发放',
+    `fail_reason` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '失败原因',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_idempotent` (`participation_id`, `reward_type`, `reward_ref`),
+    KEY `idx_user` (`user_id`),
+    KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='活动发奖记录表';
 
 -- 默认 CDN 厂商（凭据为空，status=0 停用，管理端填写凭据后启用）
 INSERT IGNORE INTO `game_cdn_provider` (`id`, `name`, `provider`, `config`, `status`, `sort`) VALUES

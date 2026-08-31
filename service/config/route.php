@@ -216,6 +216,17 @@ Route::group('/api/webhook', function () {
     app\middleware\UserAuth::class,
 ]);
 
+// 运营活动
+Route::group('/api/activities', function () {
+    Route::get('/list', v('ActivityController', 'list'));
+    Route::get('/progress', v('ActivityController', 'progress'));
+    Route::get('/{hashid}', v('ActivityController', 'detail'));
+    Route::post('/{hashid}/checkin', v('ActivityController', 'checkin'));
+})->middleware([
+    app\middleware\ApiVersion::class,
+    app\middleware\UserAuth::class,
+]);
+
 // 赛事 (FeatureFlag: tournament)
 Route::group('/api/tournament', function () {
     Route::get('/list', v('TournamentController', 'list'));

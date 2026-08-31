@@ -11,6 +11,7 @@ use app\api\v1\controller\WebhookController;
 use app\event\EventBus;
 use app\model\EventOutbox;
 use app\service\AchievementService;
+use app\service\ActivityService;
 use app\service\AntiCheatService;
 use support\Log;
 
@@ -111,6 +112,15 @@ class EventConsumer
             }
         } catch (\Throwable $e) {
             Log::warning('EventConsumer anticheat failed: ' . $e->getMessage(), $ctx);
+        }
+
+        // 活动引擎旁路：语义与成就同档——业务性跳过（活动结束/事件不匹配）在 handler 内吞掉，
+        // 系统异常进 $failures 驱动可靠事件重试（进度累加同事务回滚，重放不双算）
+        try {
+            ActivityService::handle($event, $payload);
+        } catch (\Throwable $e) {
+            Log::warning('EventConsumer activity failed: ' . $e->getMessage(), $ctx);
+            $failures[] = $e;
         }
 
         if ($failures !== [] && in_array($event, EventBus::RELIABLE_EVENTS, true)) {

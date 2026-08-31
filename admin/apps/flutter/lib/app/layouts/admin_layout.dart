@@ -22,6 +22,7 @@ import '../pages/cdn/cdn_page.dart';
 import '../pages/announcement/announcement_page.dart';
 import '../pages/vip/vip_page.dart';
 import '../pages/achievement/achievement_page.dart';
+import '../pages/activity/activity_page.dart';
 
 class AdminLayout extends StatefulWidget {
   final Widget child;
@@ -58,6 +59,7 @@ class _AdminLayoutState extends State<AdminLayout> {
     AnnouncementPage(),
     VipPage(),
     AchievementPage(),
+    ActivityPage(),
   ];
 
   ResponsiveBreakpointsData get _bp => ResponsiveBreakpoints.of(context);
@@ -282,6 +284,11 @@ class _AdminLayoutState extends State<AdminLayout> {
         icon: const Icon(Icons.emoji_events, size: 20),
         label: Text("${AppTranslations.t('nav.achievements')}"),
         selectedIcon: const Icon(Icons.emoji_events, size: 20),
+      ),
+      NavigationDrawerDestination(
+        icon: const Icon(Icons.local_activity, size: 20),
+        label: const Text('运营活动'),
+        selectedIcon: const Icon(Icons.local_activity, size: 20),
       ),
     ];
   }
