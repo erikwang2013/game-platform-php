@@ -4,6 +4,8 @@
  */
 declare(strict_types=1);
 namespace app\api\v1\controller;
+use app\event\EventBus;
+use app\model\EventOutbox;
 use app\model\PlatformConfig;
 use support\Log;
 use support\Request;
@@ -71,19 +73,43 @@ class WebhookController extends BaseController
         return $this->success(['delivered' => $result]);
     }
 
-    public static function dispatch(string $event, array $payload): void
+    public static function dispatch(string $event, array $payload, ?string $eventId = null): void
     {
+        // 幂等去重：Outbox 中已消费（status=1）的事件不重复投递，防止重放/崩溃窗口重复消费
+        if ($eventId !== null
+            && EventOutbox::where('event_id', $eventId)->where('status', EventOutbox::STATUS_SENT)->exists()
+        ) {
+            return;
+        }
+
+        $failed = [];
         try {
             $configs = PlatformConfig::where('group', 'webhook')->get();
             foreach ($configs as $c) {
                 $data = json_decode($c->value, true);
                 if (!$data || !in_array($event, $data['events'] ?? [], true)) continue;
-                (new self())->deliver($data['url'], ['event' => $event, 'payload' => $payload, 'timestamp' => time()]);
+                $ok = (new self())->deliver($data['url'], [
+                    'event' => $event,
+                    'event_id' => $eventId,
+                    'payload' => $payload,
+                    'timestamp' => time(),
+                ]);
+                if (!$ok) {
+                    $failed[] = (string) ($data['url'] ?? '');
+                }
             }
         } catch (\Throwable $e) {
             Log::warning('Webhook dispatch failed: ' . $e->getMessage(), [
                 'event' => $event,
             ]);
+            if (in_array($event, EventBus::RELIABLE_EVENTS, true)) {
+                throw $e;
+            }
+        }
+
+        // 关键事件投递失败向上抛，驱动 Outbox 重试直至死信
+        if ($failed !== [] && in_array($event, EventBus::RELIABLE_EVENTS, true)) {
+            throw new \RuntimeException('Webhook deliver failed: ' . implode(', ', $failed));
         }
     }
 

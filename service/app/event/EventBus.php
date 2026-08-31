@@ -7,6 +7,9 @@ declare(strict_types=1);
 
 namespace app\event;
 
+use app\common\SnowflakeService;
+use app\model\EventOutbox;
+use support\Db;
 use support\Log;
 use support\Redis;
 
@@ -15,6 +18,15 @@ class EventBus
     const CHANNEL = 'platform:events';
     const METRICS_EMIT_KEY = 'metrics:event_emit_total';
     const METRICS_CONSUME_KEY = 'metrics:event_consume_total';
+
+    /**
+     * 关键事件清单：资产变动或外部可见，必须可靠投递（Outbox 表）。
+     * 非关键事件（game.played/referral.applied）继续走 Pub/Sub emit()。
+     */
+    const RELIABLE_EVENTS = [
+        'deposit.completed', 'withdraw.applied', 'withdraw.completed',
+        'exchange.completed', 'risk.alert',
+    ];
 
     /**
      * Emit an event to Redis Pub/Sub channel.
@@ -37,6 +49,33 @@ class EventBus
                 'event' => $event,
             ]);
         }
+    }
+
+    /**
+     * 可靠投递：关键事件写入 Outbox 表（event_id 幂等键唯一）。
+     * - 调用方已在事务内 → 加入当前事务，业务行与事件行同提交
+     * - 调用方不在事务内 → 自动包裹事务
+     * 必须把 push() 放在 Db::commit() 之前调用。
+     */
+    public static function push(string $event, string $eventId, array $payload = []): void
+    {
+        if (Db::transactionLevel() > 0) {
+            self::insertOutbox($event, $eventId, $payload);
+        } else {
+            Db::transaction(static fn () => self::insertOutbox($event, $eventId, $payload));
+        }
+    }
+
+    private static function insertOutbox(string $event, string $eventId, array $payload): void
+    {
+        $row = new EventOutbox();
+        $row->id = SnowflakeService::generate();
+        $row->event_id = $eventId; // 幂等键，UNIQUE
+        $row->event = $event;
+        $row->payload = $payload;  // JSON 列
+        $row->occurred_at = date('Y-m-d H:i:s');
+        $row->status = EventOutbox::STATUS_PENDING;
+        $row->save();
     }
 
     /**

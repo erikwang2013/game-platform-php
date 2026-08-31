@@ -55,6 +55,11 @@ return [
         'handler' => app\process\EventConsumer::class,
         'count' => 1,
     ],
+    // 非关键事件（game.played/referral.applied）仍走 Redis Pub/Sub，与 Outbox 轮询进程分离
+    'event-subscriber' => [
+        'handler' => app\process\EventSubscriber::class,
+        'count' => 1,
+    ],
 
     'monitor' => [
         'handler' => app\process\Monitor::class,
