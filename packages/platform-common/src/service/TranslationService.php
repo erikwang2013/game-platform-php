@@ -5,7 +5,7 @@
 
 declare(strict_types=1);
 
-namespace app\service;
+namespace common\service;
 
 use app\model\Translation;
 use support\Redis;

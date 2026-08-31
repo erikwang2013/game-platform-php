@@ -3,7 +3,7 @@
  * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
  */
 declare(strict_types=1);
-namespace app\service;
+namespace common\service;
 use app\model\UserVip;
 use app\model\VipLevel;
 use app\model\ExpLog;
