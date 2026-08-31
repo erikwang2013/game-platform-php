@@ -228,6 +228,33 @@ Route::group('/admin', function () {
     Route::post('/ticket/{hashid}/reply', [app\admin\controller\TicketController::class, 'reply']);
     Route::post('/ticket/{hashid}/close', [app\admin\controller\TicketController::class, 'close']);
     Route::post('/ticket/{hashid}/assign', [app\admin\controller\TicketController::class, 'assign']);
+
+    // ---- 风控管理 ----
+    Route::get('/risk/dashboard', [app\admin\controller\RiskDashboardController::class, 'index']);
+    Route::get('/risk/rule/list', [app\admin\controller\RiskRuleController::class, 'list']);
+    Route::post('/risk/rule/create', [app\admin\controller\RiskRuleController::class, 'create']);
+    Route::put('/risk/rule/{hashid}', [app\admin\controller\RiskRuleController::class, 'update']);
+    Route::post('/risk/rule/{hashid}/toggle', [app\admin\controller\RiskRuleController::class, 'toggle']);
+    Route::post('/risk/rule/test', [app\admin\controller\RiskRuleController::class, 'test']);
+    Route::get('/risk/event/list', [app\admin\controller\RiskEventController::class, 'list']);
+    Route::get('/risk/event/{hashid}', [app\admin\controller\RiskEventController::class, 'detail']);
+    Route::post('/risk/event/{hashid}/handle', [app\admin\controller\RiskEventController::class, 'handle']);
+    Route::get('/risk/device/list', [app\admin\controller\RiskDeviceController::class, 'list']);
+    Route::post('/risk/device/block', [app\admin\controller\RiskDeviceController::class, 'block']);
+    Route::post('/risk/device/unblock', [app\admin\controller\RiskDeviceController::class, 'unblock']);
+    Route::get('/risk/ip/list', [app\admin\controller\RiskIpController::class, 'list']);
+    Route::post('/risk/ip/block', [app\admin\controller\RiskIpController::class, 'block']);
+    Route::post('/risk/ip/whitelist', [app\admin\controller\RiskIpController::class, 'whitelist']);
+    Route::post('/risk/ip/appeal', [app\admin\controller\RiskIpController::class, 'appeal']);
+    Route::post('/risk/ip/recheck', [app\admin\controller\RiskIpController::class, 'recheck']);
+    // clusters 必须先于 /risk/graph/{userId} 注册（webman 顺序匹配）
+    Route::get('/risk/graph/clusters', [app\admin\controller\RiskGraphController::class, 'clusters']);
+    Route::get('/risk/graph/{userId}', [app\admin\controller\RiskGraphController::class, 'graph']);
+
+    // ---- 反作弊管理 ----
+    Route::get('/anticheat/events', [app\admin\controller\AntiCheatController::class, 'events']);
+    Route::get('/anticheat/events/{hashid}', [app\admin\controller\AntiCheatController::class, 'detail']);
+    Route::post('/anticheat/events/{hashid}/review', [app\admin\controller\AntiCheatController::class, 'review']);
 })->middleware([
     app\middleware\AdminAuth::class,
     app\middleware\AdminPermission::class,

@@ -39,6 +39,11 @@ return [
             'publicPath' => public_path()
         ]
     ],
+    // 风控定时任务：每日 03:00 IP 信誉衰减 + risk_log 180 天清理
+    'risk-ip-cron' => [
+        'handler' => app\process\RiskIpCron::class,
+        'reloadable' => false,
+    ],
     // File update detection and automatic reload
     'monitor' => [
         'handler' => app\process\Monitor::class,

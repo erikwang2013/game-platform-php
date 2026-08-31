@@ -19,8 +19,10 @@ class IpReputation extends Model
     public $incrementing = false;
     protected $keyType = 'int';
 
+    public $timestamps = false;
+
     protected $fillable = [
-        'ip',
+        'ip_hash',
         'reputation_score',
         'source',
         'hit_count',

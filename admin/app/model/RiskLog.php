@@ -25,5 +25,10 @@ class RiskLog extends Model
         'action',
         'context',
         'result',
+        'detail',
+        'ip_hash',
+        'fp_hash',
+        'user_agent_hash',
+        'created_at',
     ];
 }

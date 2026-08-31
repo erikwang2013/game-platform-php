@@ -19,6 +19,7 @@ class RiskRule extends Model
     protected $fillable = [
         'name',
         'type',
+        'scope',
         'config',
         'action',
         'priority',
