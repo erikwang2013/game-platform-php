@@ -18,6 +18,15 @@ class AppTranslations {
       'app.search': 'Search',
       'app.close': 'Close',
       'app.yes': 'Yes',
+
+      // Command palette
+      'command.placeholder': 'Search pages (Ctrl+K)...',
+
+      // Bigscreen
+      'bigscreen.enter': 'Bigscreen',
+      'bigscreen.hint': 'F: fullscreen, Esc: exit',
+      'bigscreen.users_trend': 'New Users / Play Count',
+      'bigscreen.platform': 'Platform Overview',
       'app.no': 'No',
       'app.enabled': 'Enabled',
       'app.disabled': 'Disabled',
@@ -74,7 +83,13 @@ class AppTranslations {
       'report.daily_chart': 'Daily Deposits / Withdrawals',
       'report.date_range': 'Date Range',
       'report.export': 'Export CSV',
+      'report.export_xlsx': 'Export XLSX',
       'report.exported': 'Report exported',
+      'report.max_days': 'Date range must not exceed 90 days',
+      'report.compare_hint': 'vs previous period',
+      'report.preset_7': '7D',
+      'report.preset_30': '30D',
+      'report.preset_90': '90D',
       'report.date': 'Date',
       'report.new_users': 'New Users',
       'report.deposit_amount': 'Deposit Amount',
@@ -324,6 +339,15 @@ class AppTranslations {
       'app.search': '搜索',
       'app.close': '关闭',
       'app.yes': '是',
+
+      // Command palette
+      'command.placeholder': '搜索页面 (Ctrl+K)...',
+
+      // Bigscreen
+      'bigscreen.enter': '大屏模式',
+      'bigscreen.hint': 'F: 全屏，Esc: 退出',
+      'bigscreen.users_trend': '新增用户 / 对局次数',
+      'bigscreen.platform': '平台概况',
       'app.no': '否',
       'app.enabled': '启用',
       'app.disabled': '禁用',
@@ -380,7 +404,13 @@ class AppTranslations {
       'report.daily_chart': '每日充值/提现',
       'report.date_range': '日期范围',
       'report.export': '导出CSV',
+      'report.export_xlsx': '导出XLSX',
       'report.exported': '报表已导出',
+      'report.max_days': '日期范围不能超过 90 天',
+      'report.compare_hint': '环比上一周期',
+      'report.preset_7': '近7天',
+      'report.preset_30': '近30天',
+      'report.preset_90': '近90天',
       'report.date': '日期',
       'report.new_users': '新增用户',
       'report.deposit_amount': '充值金额',

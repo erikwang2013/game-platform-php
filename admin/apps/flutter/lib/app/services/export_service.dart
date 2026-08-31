@@ -26,15 +26,17 @@ class ExportService {
     await FileSaver.instance.saveFile(name: filename, bytes: response.data, ext: 'xlsx');
   }
 
-  Future<void> exportReport({required String start, required String end}) async {
+  Future<void> exportReport({required String start, required String end, String format = 'excel'}) async {
     final response = await _dio.get(
       '/admin/report/export',
-      queryParameters: {'start': start, 'end': end, 'format': 'excel'},
+      queryParameters: {'start': start, 'end': end, 'format': format},
       options: Options(responseType: ResponseType.bytes),
     );
 
-    final filename = 'report_${start}_${end}.csv';
-    await FileSaver.instance.saveFile(name: filename, bytes: response.data, ext: 'csv');
+    final isXlsx = format == 'xlsx';
+    final ext = isXlsx ? 'xlsx' : 'csv';
+    final filename = 'report_${start}_${end}.$ext';
+    await FileSaver.instance.saveFile(name: filename, bytes: response.data, ext: ext);
   }
 
   Future<void> exportPdf({

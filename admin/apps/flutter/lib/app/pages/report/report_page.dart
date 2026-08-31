@@ -35,17 +35,43 @@ class ReportPage extends GetView<ReportController> {
                 Text(AppTranslations.t('report.title').toString(),
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold)),
                 const Spacer(),
+                for (final days in const [7, 30, 90]) ...[
+                  _presetChip(days),
+                  const SizedBox(width: 8),
+                ],
                 OutlinedButton.icon(
                   onPressed: _pickDateRange,
                   icon: const Icon(Icons.date_range, size: 18),
                   label: Text('${controller.startText} ~ ${controller.endText}'),
                 ),
                 const SizedBox(width: 12),
-                FilledButton.icon(
-                  onPressed: controller.exportCsv,
-                  icon: const Icon(Icons.download, size: 18),
-                  label: Text('${AppTranslations.t('report.export')}'),
+                PopupMenuButton<String>(
+                  onSelected: (format) =>
+                      format == 'xlsx' ? controller.exportXlsx() : controller.exportCsv(),
+                  itemBuilder: (_) => [
+                    PopupMenuItem(value: 'excel', child: Text('${AppTranslations.t('report.export')}')),
+                    PopupMenuItem(value: 'xlsx', child: Text('${AppTranslations.t('report.export_xlsx')}')),
+                  ],
+                  child: FilledButton.icon(
+                    onPressed: null,
+                    icon: const Icon(Icons.download, size: 18),
+                    label: Text('${AppTranslations.t('report.export')}'),
+                  ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              children: [
+                Text("${AppTranslations.t('report.compare_hint')}",
+                    style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+                if (controller.compare['start'] != null)
+                  Text(
+                    '${controller.compare['start']} ~ ${controller.compare['end']}',
+                    style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  ),
               ],
             ),
             const SizedBox(height: 24),
@@ -63,12 +89,21 @@ class ReportPage extends GetView<ReportController> {
   Future<void> _pickDateRange() async {
     final picked = await showDateRangePicker(
       context: Get.context!,
-      firstDate: DateTime(2020),
+      firstDate: DateTime.now().subtract(const Duration(days: ReportController.maxDays - 1)),
       lastDate: DateTime.now(),
       initialDateRange: DateTimeRange(start: controller.start, end: controller.end),
       helpText: '${AppTranslations.t('report.date_range')}',
     );
     if (picked != null) controller.setRange(picked.start, picked.end);
+  }
+
+  Widget _presetChip(int days) {
+    final active = controller._days(controller.start, controller.end) == days;
+    return ChoiceChip(
+      label: Text("${AppTranslations.t('report.preset_$days')}"),
+      selected: active,
+      onSelected: (_) => controller.setPreset(days),
+    );
   }
 
   Widget _buildSummaryGrid(BuildContext context) {
@@ -102,7 +137,13 @@ class ReportPage extends GetView<ReportController> {
                     const Spacer(),
                     Text("${AppTranslations.t('report.$key')}", style: TextStyle(fontSize: 13, color: color)),
                     const SizedBox(height: 4),
-                    Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                    Row(
+                      children: [
+                        Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                        const SizedBox(width: 8),
+                        _compareBadge(key, color),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -169,7 +210,21 @@ class ReportPage extends GetView<ReportController> {
                   ),
                   borderData: FlBorderData(show: false),
                   gridData: FlGridData(show: true, drawVerticalLine: false),
-                  barTouchData: BarTouchData(enabled: false),
+                  barTouchData: BarTouchData(
+                    touchTooltipData: BarTouchTooltipData(
+                      getTooltipColor: (_) => Theme.of(context).colorScheme.inverseSurface,
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        final date = rows[group.x]['date']?.toString() ?? '';
+                        final label = rodIndex == 0
+                            ? '${AppTranslations.t('report.deposit_amount')}: ${deposits[group.x].toStringAsFixed(2)}'
+                            : '${AppTranslations.t('report.withdraw_amount')}: ${withdraws[group.x].toStringAsFixed(2)}';
+                        return BarTooltipItem(
+                          '$date\n$label',
+                          TextStyle(color: Theme.of(context).colorScheme.onInverseSurface, fontSize: 12),
+                        );
+                      },
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -183,6 +238,29 @@ class ReportPage extends GetView<ReportController> {
               ],
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _compareBadge(String key, Color color) {
+    final prev = double.tryParse(controller.compare[key]?.toString() ?? '') ?? 0;
+    final cur = double.tryParse(controller.summary[key]?.toString() ?? '') ?? 0;
+    if (prev <= 0 || cur <= 0) return const SizedBox.shrink();
+    final pct = (cur - prev) / prev * 100;
+    final up = pct >= 0;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: (up ? const Color(0xFF52C41A) : const Color(0xFFF5222D)).withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        '${up ? '↑' : '↓'} ${pct.abs().toStringAsFixed(1)}%',
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: up ? const Color(0xFF52C41A) : const Color(0xFFF5222D),
         ),
       ),
     );

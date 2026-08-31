@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/api_service.dart';
 
 class UserController extends GetxController {
@@ -16,12 +17,28 @@ class UserController extends GetxController {
   final limit = 15.obs;
   final keyword = ''.obs;
   final statusFilter = Rx<int?>(null);
+  final keywordCtrl = TextEditingController();
   final selectedIds = <String>{}.obs;
 
   @override
   void onInit() {
     super.onInit();
+    _restoreFilters();
     loadUsers();
+  }
+
+  @override
+  void onClose() {
+    keywordCtrl.dispose();
+    super.onClose();
+  }
+
+  /// 筛选条件持久化：shared_preferences 恢复上次筛选
+  Future<void> _restoreFilters() async {
+    final prefs = await SharedPreferences.getInstance();
+    keyword.value = prefs.getString('user_filter.keyword') ?? '';
+    statusFilter.value = prefs.getInt('user_filter.status');
+    keywordCtrl.text = keyword.value;
   }
 
   Future<void> loadUsers({bool reset = false}) async {
@@ -47,11 +64,19 @@ class UserController extends GetxController {
 
   Future<void> search(String kw) async {
     keyword.value = kw;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('user_filter.keyword', kw);
     await loadUsers(reset: true);
   }
 
   Future<void> filterByStatus(int? status) async {
     statusFilter.value = status;
+    final prefs = await SharedPreferences.getInstance();
+    if (status == null) {
+      await prefs.remove('user_filter.status');
+    } else {
+      await prefs.setInt('user_filter.status', status);
+    }
     await loadUsers(reset: true);
   }
 

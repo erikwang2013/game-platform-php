@@ -6,6 +6,7 @@ import '../../i18n/translations.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/api_service.dart';
 
 class LogController extends GetxController {
@@ -17,9 +18,45 @@ class LogController extends GetxController {
   final limit = 15.obs;
   final actionFilter = ''.obs;
   final pathFilter = ''.obs;
+  final actionCtrl = TextEditingController();
+  final pathCtrl = TextEditingController();
 
   @override
-  void onInit() { super.onInit(); loadLogs(); }
+  void onInit() {
+    super.onInit();
+    _restoreFilters();
+    loadLogs();
+  }
+
+  @override
+  void onClose() {
+    actionCtrl.dispose();
+    pathCtrl.dispose();
+    super.onClose();
+  }
+
+  /// 筛选条件持久化：shared_preferences 恢复上次筛选
+  Future<void> _restoreFilters() async {
+    final prefs = await SharedPreferences.getInstance();
+    actionFilter.value = prefs.getString('log_filter.action') ?? '';
+    pathFilter.value = prefs.getString('log_filter.path') ?? '';
+    actionCtrl.text = actionFilter.value;
+    pathCtrl.text = pathFilter.value;
+  }
+
+  Future<void> setActionFilter(String v) async {
+    actionFilter.value = v;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('log_filter.action', v);
+    await loadLogs(reset: true);
+  }
+
+  Future<void> setPathFilter(String v) async {
+    pathFilter.value = v;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('log_filter.path', v);
+    await loadLogs(reset: true);
+  }
 
   Future<void> loadLogs({bool reset = false}) async {
     if (reset) page.value = 1;
@@ -53,9 +90,9 @@ class LogPage extends GetView<LogController> {
       Text("${AppTranslations.t('log.title')}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
       const SizedBox(height: 12),
       Row(children: [
-        SizedBox(width: 150, child: TextField(decoration: InputDecoration(hintText: '${AppTranslations.t('log.action_filter')}', isDense: true), onSubmitted: (v) { ctrl.actionFilter.value = v; ctrl.loadLogs(reset: true); })),
+        SizedBox(width: 150, child: TextField(controller: ctrl.actionCtrl, decoration: InputDecoration(hintText: '${AppTranslations.t('log.action_filter')}', isDense: true), onSubmitted: (v) => ctrl.setActionFilter(v))),
         const SizedBox(width: 12),
-        SizedBox(width: 200, child: TextField(decoration: InputDecoration(hintText: '${AppTranslations.t('log.path_filter')}', isDense: true), onSubmitted: (v) { ctrl.pathFilter.value = v; ctrl.loadLogs(reset: true); })),
+        SizedBox(width: 200, child: TextField(controller: ctrl.pathCtrl, decoration: InputDecoration(hintText: '${AppTranslations.t('log.path_filter')}', isDense: true), onSubmitted: (v) => ctrl.setPathFilter(v))),
       ]),
       const SizedBox(height: 12),
       Expanded(child: Obx(() {

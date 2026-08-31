@@ -7,12 +7,14 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
-use app\model\DepositOrder;
-use app\model\ExchangeRecord;
+use common\model\DepositOrder;
+use common\model\ExchangeRecord;
 use common\model\GamePlayLog;
 use common\model\User;
-use app\model\WithdrawOrder;
+use common\model\WithdrawOrder;
 use hg\apidoc\annotation as Apidoc;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use support\Redis;
 use support\Request;
 use support\Response;
@@ -33,6 +35,7 @@ class ReportController extends BaseController
      * @Apidoc\Header(name="Authorization",require=true,desc="Bearer Token")
      * @Apidoc\Query(name="start",type="string",require=false,desc="开始日期 Y-m-d，缺省最近30天")
      * @Apidoc\Query(name="end",type="string",require=false,desc="结束日期 Y-m-d，缺省今天")
+     * @Apidoc\Query(name="compare",type="int",require=false,desc="传 1 时附加上一等长周期环比数据（compare 键）")
      */
     public function summary(Request $request): Response
     {
@@ -41,9 +44,10 @@ class ReportController extends BaseController
             return $this->fail('日期格式必须为 Y-m-d 且跨度不超过 90 天', 400);
         }
         [$start, $end] = $range;
+        $withCompare = (int) $request->input('compare', 0) === 1;
 
         // Redis 缓存 5 分钟，Redis 不可用时降级为直查数据库
-        $cacheKey = 'report:summary:' . $start . ':' . $end;
+        $cacheKey = 'report:summary:' . ($withCompare ? 'c:' : '') . $start . ':' . $end;
         try {
             $cached = Redis::get($cacheKey);
             if ($cached) {
@@ -65,6 +69,25 @@ class ReportController extends BaseController
             'exchange_amount' => ExchangeRecord::whereBetween('created_at', $between)->sum('platform_amount') ?? '0',
             'play_count' => GamePlayLog::whereBetween('created_at', $between)->count(),
         ];
+
+        if ($withCompare) {
+            // 上一等长周期对比：start 向前平移 (end-start+1) 天
+            $span = (int) ((strtotime($end) - strtotime($start)) / 86400) + 1;
+            $prevStart = date('Y-m-d', strtotime($start) - $span * 86400);
+            $prevEnd = date('Y-m-d', strtotime($start) - 86400);
+            $prevBetween = [$prevStart . ' 00:00:00', $prevEnd . ' 23:59:59'];
+            $data['compare'] = [
+                'start' => $prevStart,
+                'end' => $prevEnd,
+                'new_users' => User::whereBetween('created_at', $prevBetween)->count(),
+                'deposit_amount' => DepositOrder::whereBetween('created_at', $prevBetween)->where('status', 'confirmed')->sum('platform_amount') ?? '0',
+                'deposit_count' => DepositOrder::whereBetween('created_at', $prevBetween)->where('status', 'confirmed')->count(),
+                'withdraw_amount' => WithdrawOrder::whereBetween('created_at', $prevBetween)->whereIn('status', ['approved', 'completed'])->sum('platform_amount') ?? '0',
+                'withdraw_count' => WithdrawOrder::whereBetween('created_at', $prevBetween)->whereIn('status', ['approved', 'completed'])->count(),
+                'exchange_amount' => ExchangeRecord::whereBetween('created_at', $prevBetween)->sum('platform_amount') ?? '0',
+                'play_count' => GamePlayLog::whereBetween('created_at', $prevBetween)->count(),
+            ];
+        }
 
         try {
             Redis::setex($cacheKey, 300, json_encode($data, JSON_UNESCAPED_UNICODE));
@@ -118,7 +141,7 @@ class ReportController extends BaseController
      * @Apidoc\Header(name="Authorization",require=true,desc="Bearer Token")
      * @Apidoc\Query(name="start",type="string",require=false,desc="开始日期 Y-m-d，缺省最近30天")
      * @Apidoc\Query(name="end",type="string",require=false,desc="结束日期 Y-m-d，缺省今天")
-     * @Apidoc\Query(name="format",type="string",require=false,desc="导出格式，缺省 excel(CSV)")
+     * @Apidoc\Query(name="format",type="string",require=false,desc="导出格式：excel(CSV，缺省) 或 xlsx")
      */
     public function export(Request $request): Response
     {
@@ -127,6 +150,7 @@ class ReportController extends BaseController
             return $this->fail('日期格式必须为 Y-m-d 且跨度不超过 90 天', 400);
         }
         [$start, $end] = $range;
+        $format = (string) $request->input('format', 'excel');
 
         $rows = $this->dailyRows($start, $end);
 
@@ -136,6 +160,25 @@ class ReportController extends BaseController
                 $row['date'], $row['new_users'], $row['deposit_amount'], $row['deposit_count'],
                 $row['withdraw_amount'], $row['withdraw_count'], $row['exchange_amount'], $row['play_count'],
             ];
+        }
+
+        if ($format === 'xlsx') {
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $sheet->fromArray($lines);
+            $sheet->getStyle('A1:H1')->getFont()->setBold(true);
+
+            $writer = new Xlsx($spreadsheet);
+            $tmp = tempnam(sys_get_temp_dir(), 'report_');
+            $writer->save($tmp);
+            $xlsx = (string) file_get_contents($tmp);
+            @unlink($tmp);
+            $spreadsheet->disconnectWorksheets();
+
+            return response($xlsx, 200, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'Content-Disposition' => 'attachment; filename="report_' . $start . '_' . $end . '.xlsx"',
+            ]);
         }
 
         $csv = "\xEF\xBB\xBF"; // UTF-8 BOM

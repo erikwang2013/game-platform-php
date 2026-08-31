@@ -1,5 +1,6 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import '../services/auth_service.dart';
@@ -99,10 +100,74 @@ class _AdminLayoutState extends State<AdminLayout> {
     });
   }
 
+  // ─── 命令面板 + 全局快捷键 ────────────────────────────────────────
+  // 列表与 _buildNavItems() 顺序一致：key 为翻译键，'!' 开头为硬编码中文
+  static const _paletteItems = <(String, IconData, int)>[
+    ('nav.dashboard', Icons.dashboard, 0),
+    ('nav.reports', Icons.bar_chart, 1),
+    ('nav.users', Icons.people, 2),
+    ('nav.roles', Icons.security, 3),
+    ('nav.config', Icons.settings, 4),
+    ('nav.logs', Icons.description, 5),
+    ('nav.games', Icons.games, 6),
+    ('nav.withdraws', Icons.account_balance_wallet, 7),
+    ('nav.platform_users', Icons.group, 8),
+    ('nav.identity', Icons.verified_user, 9),
+    ('nav.risk_logs', Icons.warning, 10),
+    ('!风控大盘', Icons.monitor_heart, 11),
+    ('nav.payments', Icons.payment, 12),
+    ('nav.cdn', Icons.cloud, 13),
+    ('nav.announcements', Icons.campaign, 14),
+    ('nav.vip', Icons.workspace_premium, 15),
+    ('nav.achievements', Icons.emoji_events, 16),
+    ('!运营活动', Icons.local_activity, 17),
+  ];
+
   @override
   Widget build(BuildContext context) {
-    if (_isPhone) return _buildPhoneLayout();
-    return _buildDesktopLayout();
+    return Focus(
+      autofocus: true,
+      onKeyEvent: _handleKey,
+      child: _isPhone ? _buildPhoneLayout() : _buildDesktopLayout(),
+    );
+  }
+
+  KeyEventResult _handleKey(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    final key = event.logicalKey;
+    final ctrl = HardwareKeyboard.instance.isControlPressed || HardwareKeyboard.instance.isMetaPressed;
+    if (ctrl && key == LogicalKeyboardKey.keyK) {
+      _openCommandPalette();
+      return KeyEventResult.handled;
+    }
+    if (HardwareKeyboard.instance.isAltPressed) {
+      if (key >= LogicalKeyboardKey.digit1 && key <= LogicalKeyboardKey.digit9) {
+        _onNavChanged(key.keyId - LogicalKeyboardKey.digit1.keyId);
+        return KeyEventResult.handled;
+      }
+      if (key == LogicalKeyboardKey.keyL) {
+        _onNavChanged(5);
+        return KeyEventResult.handled;
+      }
+      if (key == LogicalKeyboardKey.keyU) {
+        _onNavChanged(2);
+        return KeyEventResult.handled;
+      }
+    }
+    return KeyEventResult.ignored;
+  }
+
+  void _openCommandPalette() {
+    showDialog<void>(
+      context: context,
+      builder: (_) => _CommandPalette(
+        items: _paletteItems,
+        onSelected: (index) {
+          Navigator.of(context).pop();
+          _onNavChanged(index);
+        },
+      ),
+    );
   }
 
   // ─── PHONE layout: AppBar + Drawer ────────────────────────────────
@@ -320,6 +385,11 @@ class _AdminLayoutState extends State<AdminLayout> {
             onPressed: () => setState(() => _sidebarCollapsed = !_sidebarCollapsed),
           ),
           const Spacer(),
+          IconButton(
+            icon: const Icon(Icons.monitor),
+            tooltip: '${AppTranslations.t('bigscreen.enter')}',
+            onPressed: () => Navigator.of(context).pushNamed('/bigscreen'),
+          ),
           _buildUserMenu(),
         ],
       ),
@@ -396,6 +466,80 @@ class _AdminLayoutState extends State<AdminLayout> {
           child: Text("${AppTranslations.t('app.logout')}"),
         ),
       ],
+    );
+  }
+}
+
+/// Ctrl+K 命令面板：输入即过滤，回车或点击跳转页面
+class _CommandPalette extends StatefulWidget {
+  final List<(String, IconData, int)> items;
+  final ValueChanged<int> onSelected;
+  const _CommandPalette({required this.items, required this.onSelected});
+
+  @override
+  State<_CommandPalette> createState() => _CommandPaletteState();
+}
+
+class _CommandPaletteState extends State<_CommandPalette> {
+  final _query = TextEditingController();
+  String _filter = '';
+
+  String _label(String key) => key.startsWith('!') ? key.substring(1) : '${AppTranslations.t(key)}';
+
+  @override
+  void dispose() {
+    _query.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final filtered = widget.items
+        .where((e) => _filter.isEmpty || _label(e.$1).toLowerCase().contains(_filter.toLowerCase()))
+        .toList();
+    return Dialog(
+      child: Container(
+        width: 480,
+        height: 500,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            TextField(
+              controller: _query,
+              autofocus: true,
+              decoration: InputDecoration(
+                hintText: '${AppTranslations.t('command.placeholder')}',
+                prefixIcon: const Icon(Icons.search, size: 20),
+                border: const OutlineInputBorder(),
+                isDense: true,
+              ),
+              onChanged: (v) => setState(() => _filter = v),
+              onSubmitted: (_) {
+                if (filtered.isNotEmpty) widget.onSelected(filtered.first.$3);
+              },
+            ),
+            const SizedBox(height: 12),
+            Expanded(
+              child: filtered.isEmpty
+                  ? Center(child: Text("${AppTranslations.t('app.no_data')}"))
+                  : ListView.separated(
+                      itemCount: filtered.length,
+                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      itemBuilder: (_, i) {
+                        final (key, icon, index) = filtered[i];
+                        return ListTile(
+                          dense: true,
+                          leading: Icon(icon, size: 20),
+                          title: Text(_label(key)),
+                          trailing: Text('Alt+${index + 1}', style: Theme.of(context).textTheme.bodySmall),
+                          onTap: () => widget.onSelected(index),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

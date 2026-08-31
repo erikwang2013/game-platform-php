@@ -61,6 +61,7 @@ class UserListPage extends GetView<UserController> {
             SizedBox(
               width: 250,
               child: TextField(
+                controller: ctrl.keywordCtrl,
                 decoration: InputDecoration(hintText: '${AppTranslations.t('user.search_hint')}', prefixIcon: Icon(Icons.search), isDense: true),
                 onSubmitted: (v) => ctrl.search(v),
               ),

@@ -19,6 +19,7 @@ import 'app/pages/identity/identity_page.dart';
 import 'app/pages/risk/risk_log_page.dart';
 import 'app/pages/payment/payment_page.dart';
 import 'app/pages/announcement/announcement_page.dart';
+import 'app/pages/bigscreen/bigscreen_page.dart';
 
 void main() {
   Get.put(LocaleController());
@@ -59,6 +60,7 @@ class AdminApp extends StatelessWidget {
         GetPage(name: '/risk-logs', page: () => const AdminLayout(child: RiskLogPage(), initialIndex: 9)),
         GetPage(name: '/payments', page: () => const AdminLayout(child: PaymentPage(), initialIndex: 10)),
         GetPage(name: '/announcements', page: () => const AdminLayout(child: AnnouncementPage(), initialIndex: 11)),
+        GetPage(name: '/bigscreen', page: () => const BigscreenPage()),
         GetPage(name: '/profile', page: () => const ProfilePage()),
       ],
       initialRoute: '/login',
