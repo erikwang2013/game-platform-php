@@ -15,11 +15,12 @@ use app\model\RiskRule;
 use app\model\UserTrust;
 use app\service\anticheat\AntiCheatDetector;
 use support\Log;
+use support\Redis;
 
 /**
  * 反作弊服务（P0+P1 最小区间）
  *
- * 数据流: settle 完成 → EventBus::emit(anticheat.round_finished)（realtime 后置占位）
+ * 数据流: settle 完成 → EventBus::emit(anticheat.round_finished)（实时检测，独立 Redis 路径）
  *   + AntiCheatWorker 每小时增量批处理 game_game_play_log →
  *   AntiCheatDailyStat 每日汇总（uk user+game+date 幂等）→
  *   命中 → AntiCheatEvent（uk user+rule+date 幂等）+ UserTrust 扣分。
@@ -32,11 +33,174 @@ class AntiCheatService
 
     /**
      * 对局结算旁路入口（EventConsumer dispatch 调用）。
-     * 实时检测（速率/间隔/赔付封顶）后置；当前只做事件锚点，批处理走 runBatch。
+     * 实时检测 3 项（O(1) Redis，不写 MySQL，命中才写事件）：
+     *   1) 投注速率   anticheat_rate  窗口内对局数超 max_rounds（config: window_seconds/max_rounds）
+     *   2) 间隔模式   anticheat_rate  相邻对局间隔 ≤ gap_ms_max 连续 min_streak 次（config: gap_ms_max/min_streak）
+     *   3) 赔付封顶   anticheat_payout 窗口内累计赔付超 max_payout（config: window_minutes/max_payout）
+     * 规则未启用（status=0）跳过；任一检测异常仅记日志，不影响主链路。
      */
     public static function onRoundFinished(array $payload): void
     {
-        // realtime 检测后置：见设计稿 §6 后置清单，接入时在此挂 Redis 速率/间隔检测
+        $userId  = (int) ($payload['user_id'] ?? 0);
+        $gameId  = (int) ($payload['game_id'] ?? 0);
+        $roundId = (string) ($payload['round_id'] ?? '');
+        if ($userId <= 0) {
+            return;
+        }
+
+        $rules = self::realtimeRules();
+        if ($rules === []) {
+            return;
+        }
+
+        $now = time();
+
+        // 1) 投注速率：滑窗计数超阈值即时触发
+        if (isset($rules['anticheat_rate'])) {
+            try {
+                self::checkRate($userId, $gameId, $roundId, $rules['anticheat_rate'], $now);
+            } catch (\Throwable $e) {
+                Log::warning('AntiCheat rate check failed: ' . $e->getMessage());
+            }
+        }
+
+        // 2) 间隔模式：恒短间隔（机器节奏）连续 min_streak 次
+        if (isset($rules['anticheat_rate'])) {
+            try {
+                self::checkInterval($userId, $gameId, $roundId, $rules['anticheat_rate'], $now);
+            } catch (\Throwable $e) {
+                Log::warning('AntiCheat interval check failed: ' . $e->getMessage());
+            }
+        }
+
+        // 3) 赔付封顶：窗口内累计赔付超上限
+        if (isset($rules['anticheat_payout'])) {
+            try {
+                self::checkPayout($userId, $gameId, $roundId, $rules['anticheat_payout'], $now, (string) ($payload['win_amount'] ?? '0'));
+            } catch (\Throwable $e) {
+                Log::warning('AntiCheat payout check failed: ' . $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * 实时检测用规则（Redis 60s 缓存，避免每局结算事件都查库）。
+     * 只取实时用到的类型；配置变更最多 60s 生效。
+     */
+    private static function realtimeRules(): array
+    {
+        try {
+            $cached = Redis::get('ac:rules:realtime');
+            if (is_string($cached) && $cached !== '') {
+                $decoded = json_decode($cached, true);
+                if (is_array($decoded)) {
+                    return $decoded;
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('AntiCheat rules cache read failed: ' . $e->getMessage());
+        }
+
+        $map = [];
+        foreach (self::rules() as $rule) {
+            $type = (string) $rule->type;
+            if (!in_array($type, ['anticheat_rate', 'anticheat_payout'], true)) {
+                continue;
+            }
+            $map[$type] = [
+                'name'   => (string) $rule->name,
+                'type'   => $type,
+                'config' => (string) $rule->config,
+                'action' => (string) $rule->action,
+            ];
+        }
+
+        try {
+            Redis::setex('ac:rules:realtime', 60, json_encode($map, JSON_UNESCAPED_UNICODE));
+        } catch (\Throwable $e) {
+            Log::warning('AntiCheat rules cache write failed: ' . $e->getMessage());
+        }
+
+        return $map;
+    }
+
+    /**
+     * 投注速率：ac:rate:{uid}:{bucket} INCR，窗口内对局数 ≥ max_rounds 触发。
+     */
+    private static function checkRate(int $userId, int $gameId, string $roundId, array $rule, int $now): void
+    {
+        $config    = json_decode((string) ($rule['config'] ?? ''), true) ?? [];
+        $windowSec = (int) ($config['window_seconds'] ?? 60);
+        $maxRounds = (int) ($config['max_rounds'] ?? 30);
+        $bucket    = (int) floor($now / $windowSec);
+
+        $key   = "ac:rate:{$userId}:{$bucket}";
+        $count = (int) Redis::incr($key);
+        Redis::expire($key, $windowSec + 60);
+
+        if ($count >= $maxRounds) {
+            self::recordHit($userId, $gameId, $roundId, $rule, [
+                'template' => 'rate',
+                'ratio'    => $count / max(1, $maxRounds),
+                'detail'   => ['count' => $count, 'max_rounds' => $maxRounds, 'window_seconds' => $windowSec],
+            ]);
+        }
+    }
+
+    /**
+     * 间隔模式：相邻对局间隔 ≤ gap_ms_max 连续 min_streak 次（ac:last + ac:streak）。
+     * 一旦间隔超限立即重置连击，避免把人工慢节奏误判成机器人。
+     */
+    private static function checkInterval(int $userId, int $gameId, string $roundId, array $rule, int $now): void
+    {
+        $config    = json_decode((string) ($rule['config'] ?? ''), true) ?? [];
+        $gapMsMax  = (int) ($config['gap_ms_max'] ?? 5000);
+        $minStreak = (int) ($config['min_streak'] ?? 10);
+
+        $lastKey   = "ac:last:{$userId}";
+        $streakKey = "ac:streak:{$userId}";
+
+        $prev = (int) Redis::get($lastKey);
+        if ($prev > 0 && $now > $prev && ($now - $prev) * 1000 <= $gapMsMax) {
+            $streak = (int) Redis::incr($streakKey);
+            Redis::expire($streakKey, 300);
+            if ($streak >= $minStreak) {
+                self::recordHit($userId, $gameId, $roundId, $rule, [
+                    'template' => 'interval',
+                    'ratio'    => $streak / max(1, $minStreak),
+                    'detail'   => ['streak' => $streak, 'min_streak' => $minStreak, 'gap_ms_max' => $gapMsMax],
+                ]);
+            }
+        } else {
+            Redis::setex($streakKey, 300, '1');
+        }
+        Redis::setex($lastKey, 300, (string) $now);
+    }
+
+    /**
+     * 赔付封顶：ac:payout:{uid}:{bucket} INCRBY，窗口内累计赔付 ≥ max_payout 触发。
+     */
+    private static function checkPayout(int $userId, int $gameId, string $roundId, array $rule, int $now, string $winAmount): void
+    {
+        if (bccomp($winAmount, '0', 4) <= 0) {
+            return; // 无赔付不计入窗口
+        }
+        $config    = json_decode((string) ($rule['config'] ?? ''), true) ?? [];
+        $windowSec = (int) ($config['window_minutes'] ?? 60) * 60;
+        $maxPayout = (float) ($config['max_payout'] ?? 1000);
+        $bucket    = (int) floor($now / $windowSec);
+
+        $key   = "ac:payout:{$userId}:{$bucket}";
+        $total = (float) Redis::incrbyfloat($key, (float) $winAmount);
+        Redis::expire($key, $windowSec + 60);
+
+        if ($total >= $maxPayout) {
+            self::recordHit($userId, $gameId, $roundId, $rule, [
+                'template' => 'payout',
+                'ratio'    => $maxPayout > 0 ? $total / $maxPayout : 0,
+                'detail'   => ['total' => round($total, 4), 'max_payout' => $maxPayout, 'window_seconds' => $windowSec],
+            ]);
+        }
     }
 
     /**
@@ -180,7 +344,6 @@ class AntiCheatService
     private static function detect(int $userId, int $gameId, array $rulesByType): void
     {
         $rounds = self::loadRounds($userId, $gameId);
-        $date = date('Y-m-d');
 
         foreach ($rulesByType as $type => $rule) {
             $config = json_decode((string) $rule->config, true) ?? [];
@@ -196,35 +359,55 @@ class AntiCheatService
                 continue;
             }
 
-            // uk(user_id, rule_type, stat_date) 幂等：当日同规则只记一次（单进程无竞态）
-            $exists = AntiCheatEvent::where('user_id', $userId)
-                ->where('rule_type', $type)
-                ->where('stat_date', $date)
-                ->exists();
-            if ($exists) {
-                continue;
-            }
-
-            $event = new AntiCheatEvent();
-            $event->id = SnowflakeService::generate();
-            $event->user_id = $userId;
-            $event->game_id = $gameId;
-            $event->rule_type = $type;
-            $event->rule_name = (string) $rule->name;
-            $event->severity = self::severity((string) $rule->action);
-            $event->score_delta = (int) ($config['score_delta'] ?? 0);
-            $event->action = (string) $rule->action;
-            $event->evidence = json_encode([
+            // uk(user_id, rule_type, stat_date) 幂等：当日同规则只记一次（实时/批处理共用）
+            self::recordHit($userId, $gameId, '', [
+                'name'   => (string) $rule->name,
+                'type'   => $type,
+                'config' => (string) $rule->config,
+                'action' => (string) $rule->action,
+            ], [
                 'template' => $result['template'] ?? '',
-                'ratio' => $result['ratio'] ?? 0,
-                'detail' => $result['evidence'] ?? [],
-            ], JSON_UNESCAPED_UNICODE);
-            $event->stat_date = $date;
-            $event->created_at = date('Y-m-d H:i:s');
-            $event->save();
-
-            self::applyTrustPenalty($userId, $event->score_delta);
+                'ratio'    => $result['ratio'] ?? 0,
+                'detail'   => $result['evidence'] ?? [],
+            ]);
         }
+    }
+
+    /**
+     * 写命中事件（uk user+rule+date 幂等）+ 扣信任分（白名单豁免）。
+     * 实时与批处理共用：当日同规则只记一次，重复命中仅多一次 exists 查询。
+     */
+    private static function recordHit(int $userId, int $gameId, string $roundId, array $rule, array $evidence): void
+    {
+        $type = (string) $rule['type'];
+        $date = date('Y-m-d');
+
+        $exists = AntiCheatEvent::where('user_id', $userId)
+            ->where('rule_type', $type)
+            ->where('stat_date', $date)
+            ->exists();
+        if ($exists) {
+            return;
+        }
+
+        $config = json_decode((string) ($rule['config'] ?? ''), true) ?? [];
+
+        $event = new AntiCheatEvent();
+        $event->id = SnowflakeService::generate();
+        $event->user_id = $userId;
+        $event->game_id = $gameId;
+        $event->rule_type = $type;
+        $event->rule_name = (string) ($rule['name'] ?? '');
+        $event->severity = self::severity((string) ($rule['action'] ?? 'warn'));
+        $event->score_delta = (int) ($config['score_delta'] ?? 0);
+        $event->action = (string) ($rule['action'] ?? 'warn');
+        $event->evidence = json_encode($evidence, JSON_UNESCAPED_UNICODE);
+        $event->round_id = $roundId;
+        $event->stat_date = $date;
+        $event->created_at = date('Y-m-d H:i:s');
+        $event->save();
+
+        self::applyTrustPenalty($userId, $event->score_delta);
     }
 
     /**
@@ -246,6 +429,20 @@ class AntiCheatService
         $trust->hit_count = $trust->hit_count + 1;
         $trust->last_hit_at = date('Y-m-d H:i:s');
         $trust->save();
+    }
+
+    /**
+     * 读取用户信任带位（提现/结算链路调用）：无记录或白名单 → normal（豁免）。
+     * 带位由当前分数实时推导，保证手动调分后立即生效。
+     */
+    public static function trustBand(int $userId): string
+    {
+        $trust = UserTrust::where('user_id', $userId)->first();
+        if ($trust === null || $trust->whitelisted === 1) {
+            return 'normal';
+        }
+
+        return self::bandFor((int) $trust->score);
     }
 
     /**

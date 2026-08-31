@@ -19,9 +19,10 @@ use support\Redis;
 use support\Request;
 use support\Response;
 use app\event\EventBus;
+use app\service\AntiCheatService;
 use app\service\NotificationService;
 use app\service\RiskService;
-use app\service\VipService;
+use common\service\VipService;
 
 /**
  * @Apidoc\Title("提现管理")
@@ -154,6 +155,15 @@ class WithdrawController extends BaseController
             return $this->fail('Withdrawal blocked by risk control: ' . $risk['message'], 403);
         }
         if ($risk['result'] === 'warn') {
+            $riskReview = true;
+        }
+
+        // 反作弊信任带位联动（在 H4 风控检查之后）：freeze → 直接拒绝；restrict → 转人工审核
+        $band = AntiCheatService::trustBand($userId);
+        if ($band === 'freeze') {
+            return $this->fail('Withdrawal blocked by risk control: account restricted', 403);
+        }
+        if ($band === 'restrict') {
             $riskReview = true;
         }
 
