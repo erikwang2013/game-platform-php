@@ -181,6 +181,7 @@ Redis 滑动窗口（Lua 原子化），默认 60 次/分钟/IP/路由：
 - 全局函数/类引用不加前置 `\`，使用 `use` 导入
 - 配置文件必须包含中文注释说明每个配置项的含义
 - 所有新建 `.php` 文件头必须包含版权声明
+- 金额/价格运算必须使用 bcmath 扩展函数（bcadd/bcmul/bcdiv/bcsub），禁止 float 参与；比率/百分比/概率等十进制指标同样必须经 bcmath（百分比统一 `common\BcMath::percent`），四舍五入统一 `common\BcMath::round`（bc 函数截断不进位）。(float)/(int) 转型仅允许在 JSON/文本输出边界；无 bcmath 原语的算法豁免项（sqrt/方差等统计特征、Redis INCRBYFLOAT 原子计数、计时/系统遥测）必须加 ponytail 行内注释注明
 
 ### 数据库
 - 表前缀: `game_`

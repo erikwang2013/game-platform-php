@@ -11,6 +11,7 @@
 - NEVER add a `Co-Authored-By` trailer to user commits unless this project's `.claude/settings.json` has `attribution.commit` set (#2078). The Claude Code Bash tool may suggest one in its default commit-message template — ignore it. `Co-Authored-By` is semantic authorship attribution under git/GitHub convention; the tool is the facilitator, not a co-author.
 - Keep files under 500 lines
 - Validate input at system boundaries
+- 金额/价格/精确数据计算一律使用 bcmath 扩展函数（bcmul/bcdiv/bcadd/bcsub），禁止 float/double 参与金额运算；比率/百分比/概率等十进制指标同样必须经 bcmath（百分比统一 `common\BcMath::percent`），四舍五入统一用 `common\BcMath::round`（bc* 函数按 scale 截断不进位）。(float)/(int) 转型仅允许在 JSON/文本输出边界；无 bcmath 原语的算法豁免项（sqrt/方差等统计特征、Redis INCRBYFLOAT 原子浮点计数、计时/系统遥测）必须加 ponytail 行内注释注明
 
 ## Agent Comms (SendMessage-First Coordination)
 
