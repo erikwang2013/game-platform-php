@@ -23,7 +23,7 @@ class AdminPermission
             return json(['code' => 401, 'message' => '未登录', 'data' => []]);
         }
 
-        $path = $request->path();
+        $path = $this->stripVersionSegment($request->path());
         $method = $request->method();
 
         $permissions = $this->getUserPermissions($adminId);
@@ -39,6 +39,18 @@ class AdminPermission
         }
 
         return $next($request);
+    }
+
+    /**
+     * 剔除 URL 路径中的版本段（/admin/v1/user → /admin/user），保持与 DB 权限 slug 一致
+     */
+    private function stripVersionSegment(string $path): string
+    {
+        $segments = explode('/', trim($path, '/'));
+        if (count($segments) > 1 && preg_match('/^v\d+$/', $segments[1])) {
+            unset($segments[1]);
+        }
+        return '/' . implode('/', $segments);
     }
 
     private function getUserPermissions(int $adminId): array

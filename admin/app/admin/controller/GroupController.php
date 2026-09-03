@@ -23,7 +23,7 @@ class GroupController extends BaseController
 {
     /**
      * @Apidoc\Title("组/公会列表")
-     * @Apidoc\Url("/admin/groups")
+     * @Apidoc\Url("/admin/v1/groups")
      * @Apidoc\Method("GET")
      * @Apidoc\Param("type", type="string", require=false, desc="team/guild")
      * @Apidoc\Param("game_id", type="string", require=false, desc="游戏ID(hashid)")
@@ -78,7 +78,7 @@ class GroupController extends BaseController
 
     /**
      * @Apidoc\Title("成员变动流水")
-     * @Apidoc\Url("/admin/groups/{hashid}/audit")
+     * @Apidoc\Url("/admin/v1/groups/{hashid}/audit")
      * @Apidoc\Method("GET")
      * @Apidoc\Param("hashid", type="string", require=true, desc="组ID", in="path")
      */

@@ -23,7 +23,7 @@ class GameController extends BaseController
     /**
      * @Apidoc\Title("游戏列表")
      * @Apidoc\Desc("分页获取游戏列表，支持关键词搜索")
-     * @Apidoc\Url("/admin/game/list")
+     * @Apidoc\Url("/admin/v1/game/list")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("page", type="int", require=false, desc="页码")
@@ -72,7 +72,7 @@ class GameController extends BaseController
     /**
      * @Apidoc\Title("创建游戏")
      * @Apidoc\Desc("创建一个新游戏")
-     * @Apidoc\Url("/admin/game/create")
+     * @Apidoc\Url("/admin/v1/game/create")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("name", type="string", require=true, desc="游戏名称")
@@ -130,7 +130,7 @@ class GameController extends BaseController
     /**
      * @Apidoc\Title("编辑游戏")
      * @Apidoc\Desc("更新游戏信息")
-     * @Apidoc\Url("/admin/game/{hashid}")
+     * @Apidoc\Url("/admin/v1/game/{hashid}")
      * @Apidoc\Method("PUT")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("name", type="string", require=false, desc="游戏名称")
@@ -165,7 +165,7 @@ class GameController extends BaseController
     /**
      * @Apidoc\Title("删除游戏")
      * @Apidoc\Desc("删除指定游戏")
-     * @Apidoc\Url("/admin/game/{hashid}")
+     * @Apidoc\Url("/admin/v1/game/{hashid}")
      * @Apidoc\Method("DELETE")
      * @Apidoc\Author("erik")
      */
@@ -185,7 +185,7 @@ class GameController extends BaseController
     /**
      * @Apidoc\Title("管理游戏币种")
      * @Apidoc\Desc("批量管理游戏的币种设置")
-     * @Apidoc\Url("/admin/game/currency/manage")
+     * @Apidoc\Url("/admin/v1/game/currency/manage")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("game_id", type="string", require=true, desc="游戏ID(hashid编码)")

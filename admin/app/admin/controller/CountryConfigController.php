@@ -21,7 +21,7 @@ class CountryConfigController extends BaseController
     /**
      * @Apidoc\Title("国家配置列表")
      * @Apidoc\Desc("分页获取国家配置列表")
-     * @Apidoc\Url("/admin/country/config/list")
+     * @Apidoc\Url("/admin/v1/country/config/list")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      * @Apidoc\Returned("id", type="string", desc="配置ID(hashid编码)")
@@ -53,7 +53,7 @@ class CountryConfigController extends BaseController
     /**
      * @Apidoc\Title("创建国家配置")
      * @Apidoc\Desc("创建一个新的国家/地区配置")
-     * @Apidoc\Url("/admin/country/config/create")
+     * @Apidoc\Url("/admin/v1/country/config/create")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("country_code", type="string", require=true, desc="国家代码(ISO 3166-1 alpha-2)")
@@ -93,7 +93,7 @@ class CountryConfigController extends BaseController
     /**
      * @Apidoc\Title("编辑国家配置")
      * @Apidoc\Desc("更新国家/地区配置信息")
-     * @Apidoc\Url("/admin/country/config/{hashid}")
+     * @Apidoc\Url("/admin/v1/country/config/{hashid}")
      * @Apidoc\Method("PUT")
      * @Apidoc\Author("erik")
      */

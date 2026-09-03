@@ -34,7 +34,7 @@ class ExportController extends BaseController
     /**
      * @Apidoc\Title("Excel导出")
      * @Apidoc\Desc("将指定数据表导出为Excel文件")
-     * @Apidoc\Url("/admin/export/excel")
+     * @Apidoc\Url("/admin/v1/export/excel")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("table", type="string", require=true, desc="数据表名(admin_user,operation_log,admin_role,system_config)")
@@ -131,7 +131,7 @@ class ExportController extends BaseController
     /**
      * @Apidoc\Title("PDF导出")
      * @Apidoc\Desc("将数据导出为PDF文件")
-     * @Apidoc\Url("/admin/export/pdf")
+     * @Apidoc\Url("/admin/v1/export/pdf")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("type", type="string", require=true, desc="导出类型(table,dashboard)")
@@ -226,7 +226,7 @@ class ExportController extends BaseController
     /**
      * @Apidoc\Title("导出用户Excel")
      * @Apidoc\Desc("导出C端平台用户数据到Excel文件")
-     * @Apidoc\Url("/admin/export/users")
+     * @Apidoc\Url("/admin/v1/export/users")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("status", type="int", require=false, desc="用户状态(0禁用,1启用)")
@@ -285,7 +285,7 @@ class ExportController extends BaseController
     /**
      * @Apidoc\Title("导出流水Excel")
      * @Apidoc\Desc("导出平台交易流水数据到Excel文件")
-     * @Apidoc\Url("/admin/export/transactions")
+     * @Apidoc\Url("/admin/v1/export/transactions")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("type", type="string", require=false, desc="流水类型")
@@ -345,7 +345,7 @@ class ExportController extends BaseController
     /**
      * @Apidoc\Title("导出收据PDF")
      * @Apidoc\Desc("生成充值或提现的电子凭证PDF")
-     * @Apidoc\Url("/admin/export/receipt")
+     * @Apidoc\Url("/admin/v1/export/receipt")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("type", type="string", require=true, desc="订单类型(deposit充值,withdraw提现)")

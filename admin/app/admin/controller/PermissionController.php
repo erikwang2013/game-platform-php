@@ -20,7 +20,7 @@ class PermissionController extends BaseController
     /**
      * @Apidoc\Title("权限树")
      * @Apidoc\Desc("获取完整的权限树结构")
-     * @Apidoc\Url("/admin/permission")
+     * @Apidoc\Url("/admin/v1/permission")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      */
@@ -38,7 +38,7 @@ class PermissionController extends BaseController
     /**
      * @Apidoc\Title("创建权限")
      * @Apidoc\Desc("创建一个新的权限节点")
-     * @Apidoc\Url("/admin/permission")
+     * @Apidoc\Url("/admin/v1/permission")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("name", type="string", require=true, desc="权限名称")
@@ -79,7 +79,7 @@ class PermissionController extends BaseController
     /**
      * @Apidoc\Title("更新权限")
      * @Apidoc\Desc("更新指定权限节点的信息")
-     * @Apidoc\Url("/admin/permission/{hashid}")
+     * @Apidoc\Url("/admin/v1/permission/{hashid}")
      * @Apidoc\Method("PUT")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("name", type="string", require=false, desc="权限名称")
@@ -107,7 +107,7 @@ class PermissionController extends BaseController
     /**
      * @Apidoc\Title("删除权限")
      * @Apidoc\Desc("删除指定权限节点及其子权限(需密码二次确认)")
-     * @Apidoc\Url("/admin/permission/{hashid}")
+     * @Apidoc\Url("/admin/v1/permission/{hashid}")
      * @Apidoc\Method("DELETE")
      * @Apidoc\Author("erik")
      */

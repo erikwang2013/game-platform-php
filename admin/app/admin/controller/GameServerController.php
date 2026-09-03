@@ -22,7 +22,7 @@ class GameServerController extends BaseController
     /**
      * @Apidoc\Title("区服列表")
      * @Apidoc\Desc("获取指定游戏的所有区服列表")
-     * @Apidoc\Url("/admin/game/server/list")
+     * @Apidoc\Url("/admin/v1/game/server/list")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("game_id", type="string", require=true, desc="游戏ID(hashid编码)")
@@ -59,7 +59,7 @@ class GameServerController extends BaseController
     /**
      * @Apidoc\Title("创建区服")
      * @Apidoc\Desc("为指定游戏创建一个新区服")
-     * @Apidoc\Url("/admin/game/server/create")
+     * @Apidoc\Url("/admin/v1/game/server/create")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("game_id", type="string", require=true, desc="游戏ID(hashid编码)")
@@ -100,7 +100,7 @@ class GameServerController extends BaseController
     /**
      * @Apidoc\Title("编辑区服")
      * @Apidoc\Desc("更新区服信息")
-     * @Apidoc\Url("/admin/game/server/{hashid}")
+     * @Apidoc\Url("/admin/v1/game/server/{hashid}")
      * @Apidoc\Method("PUT")
      * @Apidoc\Author("erik")
      */
@@ -121,7 +121,7 @@ class GameServerController extends BaseController
     /**
      * @Apidoc\Title("删除区服")
      * @Apidoc\Desc("删除指定区服")
-     * @Apidoc\Url("/admin/game/server/{hashid}")
+     * @Apidoc\Url("/admin/v1/game/server/{hashid}")
      * @Apidoc\Method("DELETE")
      * @Apidoc\Author("erik")
      */

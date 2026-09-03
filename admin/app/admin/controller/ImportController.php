@@ -22,7 +22,7 @@ class ImportController extends BaseController
     /**
      * @Apidoc\Title("导入用户")
      * @Apidoc\Desc("通过Excel文件批量导入管理员用户")
-     * @Apidoc\Url("/admin/import/users")
+     * @Apidoc\Url("/admin/v1/import/users")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("file", type="file", require=true, desc="Excel文件(.xlsx/.xls)")

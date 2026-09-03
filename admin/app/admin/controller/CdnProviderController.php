@@ -22,7 +22,7 @@ class CdnProviderController extends BaseController
     /**
      * @Apidoc\Title("CDN 厂商列表")
      * @Apidoc\Desc("获取所有 CDN 厂商配置")
-     * @Apidoc\Url("/admin/cdn/provider/list")
+     * @Apidoc\Url("/admin/v1/cdn/provider/list")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      * @Apidoc\Returned("id", type="string", desc="厂商ID(hashid编码)")
@@ -43,7 +43,7 @@ class CdnProviderController extends BaseController
     /**
      * @Apidoc\Title("启停 CDN 厂商")
      * @Apidoc\Desc("切换 CDN 厂商的启用/禁用状态")
-     * @Apidoc\Url("/admin/cdn/provider/toggle")
+     * @Apidoc\Url("/admin/v1/cdn/provider/toggle")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("id", type="string", require=true, desc="厂商ID(hashid编码)")
@@ -73,7 +73,7 @@ class CdnProviderController extends BaseController
     /**
      * @Apidoc\Title("创建 CDN 厂商")
      * @Apidoc\Desc("创建 CDN 厂商配置")
-     * @Apidoc\Url("/admin/cdn/provider/create")
+     * @Apidoc\Url("/admin/v1/cdn/provider/create")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("name", type="string", require=true, desc="显示名称")
@@ -118,7 +118,7 @@ class CdnProviderController extends BaseController
     /**
      * @Apidoc\Title("更新 CDN 厂商")
      * @Apidoc\Desc("更新 CDN 厂商配置，config 留空不修改")
-     * @Apidoc\Url("/admin/cdn/provider/{hashid}")
+     * @Apidoc\Url("/admin/v1/cdn/provider/{hashid}")
      * @Apidoc\Method("PUT")
      * @Apidoc\Author("erik")
      */
@@ -170,7 +170,7 @@ class CdnProviderController extends BaseController
     /**
      * @Apidoc\Title("删除 CDN 厂商")
      * @Apidoc\Desc("删除 CDN 厂商配置")
-     * @Apidoc\Url("/admin/cdn/provider/{hashid}")
+     * @Apidoc\Url("/admin/v1/cdn/provider/{hashid}")
      * @Apidoc\Method("DELETE")
      * @Apidoc\Author("erik")
      */
@@ -188,7 +188,7 @@ class CdnProviderController extends BaseController
     /**
      * @Apidoc\Title("CDN 连通测试")
      * @Apidoc\Desc("HeadBucket 验证厂商凭据与 bucket")
-     * @Apidoc\Url("/admin/cdn/provider/test")
+     * @Apidoc\Url("/admin/v1/cdn/provider/test")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("id", type="string", require=true, desc="厂商ID(hashid编码)")

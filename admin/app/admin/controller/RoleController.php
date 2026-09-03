@@ -20,7 +20,7 @@ class RoleController extends BaseController
     /**
      * @Apidoc\Title("角色列表")
      * @Apidoc\Desc("分页获取角色列表，包含关联用户数量")
-     * @Apidoc\Url("/admin/role")
+     * @Apidoc\Url("/admin/v1/role")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("page", type="int", require=false, desc="页码")
@@ -51,7 +51,7 @@ class RoleController extends BaseController
     /**
      * @Apidoc\Title("创建角色")
      * @Apidoc\Desc("创建一个新角色并分配权限")
-     * @Apidoc\Url("/admin/role")
+     * @Apidoc\Url("/admin/v1/role")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("name", type="string", require=true, desc="角色名称")
@@ -91,7 +91,7 @@ class RoleController extends BaseController
     /**
      * @Apidoc\Title("更新角色")
      * @Apidoc\Desc("更新角色信息并同步权限")
-     * @Apidoc\Url("/admin/role/{hashid}")
+     * @Apidoc\Url("/admin/v1/role/{hashid}")
      * @Apidoc\Method("PUT")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("name", type="string", require=false, desc="角色名称")
@@ -122,7 +122,7 @@ class RoleController extends BaseController
     /**
      * @Apidoc\Title("删除角色")
      * @Apidoc\Desc("删除指定角色，同时解除权限和用户关联(需密码二次确认)")
-     * @Apidoc\Url("/admin/role/{hashid}")
+     * @Apidoc\Url("/admin/v1/role/{hashid}")
      * @Apidoc\Method("DELETE")
      * @Apidoc\Author("erik")
      */

@@ -22,7 +22,7 @@ class LeaderboardController extends BaseController
     /**
      * @Apidoc\Title("排行榜列表")
      * @Apidoc\Desc("分页获取排行榜列表，支持按游戏筛选")
-     * @Apidoc\Url("/admin/leaderboard/list")
+     * @Apidoc\Url("/admin/v1/leaderboard/list")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      * @Apidoc\Returned("id", type="string", desc="排行榜ID(hashid编码)")
@@ -62,7 +62,7 @@ class LeaderboardController extends BaseController
     /**
      * @Apidoc\Title("创建排行榜")
      * @Apidoc\Desc("创建一个新的排行榜")
-     * @Apidoc\Url("/admin/leaderboard/create")
+     * @Apidoc\Url("/admin/v1/leaderboard/create")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("name", type="string", require=true, desc="排行榜名称")
@@ -106,7 +106,7 @@ class LeaderboardController extends BaseController
     /**
      * @Apidoc\Title("编辑排行榜")
      * @Apidoc\Desc("更新排行榜信息")
-     * @Apidoc\Url("/admin/leaderboard/{hashid}")
+     * @Apidoc\Url("/admin/v1/leaderboard/{hashid}")
      * @Apidoc\Method("PUT")
      * @Apidoc\Author("erik")
      */
@@ -130,7 +130,7 @@ class LeaderboardController extends BaseController
     /**
      * @Apidoc\Title("删除排行榜")
      * @Apidoc\Desc("删除指定排行榜并清除缓存")
-     * @Apidoc\Url("/admin/leaderboard/{hashid}")
+     * @Apidoc\Url("/admin/v1/leaderboard/{hashid}")
      * @Apidoc\Method("DELETE")
      * @Apidoc\Author("erik")
      */
@@ -152,7 +152,7 @@ class LeaderboardController extends BaseController
     /**
      * @Apidoc\Title("刷新排行榜缓存")
      * @Apidoc\Desc("清除并重新计算排行榜缓存数据")
-     * @Apidoc\Url("/admin/leaderboard/{hashid}/refresh")
+     * @Apidoc\Url("/admin/v1/leaderboard/{hashid}/refresh")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      */

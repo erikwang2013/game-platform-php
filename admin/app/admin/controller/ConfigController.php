@@ -21,7 +21,7 @@ class ConfigController extends BaseController
     /**
      * @Apidoc\Title("配置列表")
      * @Apidoc\Desc("分页获取系统配置项列表")
-     * @Apidoc\Url("/admin/config")
+     * @Apidoc\Url("/admin/v1/config")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("page", type="int", require=false, desc="页码")
@@ -59,7 +59,7 @@ class ConfigController extends BaseController
     /**
      * @Apidoc\Title("创建配置")
      * @Apidoc\Desc("创建一个新的系统配置项")
-     * @Apidoc\Url("/admin/config")
+     * @Apidoc\Url("/admin/v1/config")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("group", type="string", require=true, desc="配置分组")
@@ -103,7 +103,7 @@ class ConfigController extends BaseController
     /**
      * @Apidoc\Title("更新配置")
      * @Apidoc\Desc("更新指定配置项的值")
-     * @Apidoc\Url("/admin/config/{hashid}")
+     * @Apidoc\Url("/admin/v1/config/{hashid}")
      * @Apidoc\Method("PUT")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("value", type="string", require=false, desc="配置值")
@@ -136,7 +136,7 @@ class ConfigController extends BaseController
     /**
      * @Apidoc\Title("删除配置")
      * @Apidoc\Desc("删除指定配置项(需密码二次确认)")
-     * @Apidoc\Url("/admin/config/{hashid}")
+     * @Apidoc\Url("/admin/v1/config/{hashid}")
      * @Apidoc\Method("DELETE")
      * @Apidoc\Author("erik")
      */

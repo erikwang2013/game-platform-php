@@ -22,7 +22,7 @@ class IdentityController extends BaseController
     /**
      * @Apidoc\Title("KYC列表")
      * @Apidoc\Desc("分页获取KYC身份认证记录列表")
-     * @Apidoc\Url("/admin/identity/list")
+     * @Apidoc\Url("/admin/v1/identity/list")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("page", type="int", require=false, desc="页码")
@@ -70,7 +70,7 @@ class IdentityController extends BaseController
     /**
      * @Apidoc\Title("审核KYC")
      * @Apidoc\Desc("审批或拒绝KYC身份认证申请")
-     * @Apidoc\Url("/admin/identity/review")
+     * @Apidoc\Url("/admin/v1/identity/review")
      * @Apidoc\Method("PUT")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("id", type="string", require=true, desc="认证记录ID(hashid编码)")

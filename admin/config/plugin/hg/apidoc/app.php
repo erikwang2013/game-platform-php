@@ -19,7 +19,7 @@ return [
         ]],
         'auto_url' => [
             'letter_rule' => "lcfirst",
-            'prefix' => "/admin",
+            'prefix' => "/admin/v1",
         ],
         'auto_register_routes' => false,
         'cache' => ['enable' => false],
@@ -32,7 +32,6 @@ return [
         'params' => [
             'header' => [
                 ['name' => 'Authorization', 'type' => 'string', 'require' => true, 'desc' => 'Bearer Token (JWT)'],
-                ['name' => 'API-Version', 'type' => 'string', 'require' => true, 'default' => 'v1', 'desc' => 'API版本号'],
             ],
         ],
         'responses' => [

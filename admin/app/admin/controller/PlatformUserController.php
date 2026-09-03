@@ -21,7 +21,7 @@ class PlatformUserController extends BaseController
     /**
      * @Apidoc\Title("平台用户列表")
      * @Apidoc\Desc("分页获取平台(C端)用户列表，支持关键词搜索和状态筛选")
-     * @Apidoc\Url("/admin/platform/user/list")
+     * @Apidoc\Url("/admin/v1/platform/user/list")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("page", type="int", require=false, desc="页码")
@@ -70,7 +70,7 @@ class PlatformUserController extends BaseController
     /**
      * @Apidoc\Title("用户详情")
      * @Apidoc\Desc("获取指定平台用户的详细信息，包含钱包信息")
-     * @Apidoc\Url("/admin/platform/user/{hashid}")
+     * @Apidoc\Url("/admin/v1/platform/user/{hashid}")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      * @Apidoc\Returned("id", type="string", desc="用户ID(hashid编码)")
@@ -98,7 +98,7 @@ class PlatformUserController extends BaseController
     /**
      * @Apidoc\Title("编辑/封禁用户")
      * @Apidoc\Desc("更新平台用户的状态或昵称")
-     * @Apidoc\Url("/admin/platform/user/{hashid}")
+     * @Apidoc\Url("/admin/v1/platform/user/{hashid}")
      * @Apidoc\Method("PUT")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("status", type="int", require=false, desc="用户状态(0禁用,1启用)")

@@ -21,7 +21,7 @@ class LogController extends BaseController
     /**
      * @Apidoc\Title("操作日志列表")
      * @Apidoc\Desc("分页获取操作日志，支持多条件筛选")
-     * @Apidoc\Url("/admin/log")
+     * @Apidoc\Url("/admin/v1/log")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("page", type="int", require=false, desc="页码")

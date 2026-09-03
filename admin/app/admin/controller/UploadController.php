@@ -23,7 +23,7 @@ class UploadController extends BaseController
     /**
      * @Apidoc\Title("文件上传")
      * @Apidoc\Desc("上传文件到服务器，支持图片、文档等格式")
-     * @Apidoc\Url("/admin/upload")
+     * @Apidoc\Url("/admin/v1/upload")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("file", type="file", require=true, desc="上传文件(jpg/png/gif/pdf/xlsx/docx, 最大10MB)")

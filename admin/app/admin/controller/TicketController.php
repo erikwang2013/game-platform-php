@@ -19,7 +19,7 @@ use support\Response;
  */
 class TicketController extends BaseController
 {
-    /** @Apidoc\Title("工单列表") @Apidoc\Url("/admin/ticket/list") @Apidoc\Method("GET") */
+    /** @Apidoc\Title("工单列表") @Apidoc\Url("/admin/v1/ticket/list") @Apidoc\Method("GET") */
     public function list(Request $request): Response
     {
         $page = (int) $request->input('page', 1);
@@ -45,7 +45,7 @@ class TicketController extends BaseController
         return $this->success(['list' => $list, 'total' => $total, 'page' => $page, 'limit' => $limit]);
     }
 
-    /** @Apidoc\Title("工单详情") @Apidoc\Url("/admin/ticket/{hashid}") @Apidoc\Method("GET") */
+    /** @Apidoc\Title("工单详情") @Apidoc\Url("/admin/v1/ticket/{hashid}") @Apidoc\Method("GET") */
     public function detail(Request $request, string $hashid): Response
     {
         $ticket = Ticket::with(['replies', 'user'])->find($this->decodeId($hashid));
@@ -71,7 +71,7 @@ class TicketController extends BaseController
         ]);
     }
 
-    /** @Apidoc\Title("回复工单") @Apidoc\Url("/admin/ticket/{hashid}/reply") @Apidoc\Method("POST") */
+    /** @Apidoc\Title("回复工单") @Apidoc\Url("/admin/v1/ticket/{hashid}/reply") @Apidoc\Method("POST") */
     public function reply(Request $request, string $hashid): Response
     {
         $ticket = Ticket::find($this->decodeId($hashid));
@@ -96,7 +96,7 @@ class TicketController extends BaseController
         return $this->success(['id' => $this->encodeId($reply->id)], 'Reply sent');
     }
 
-    /** @Apidoc\Title("关闭工单") @Apidoc\Url("/admin/ticket/{hashid}/close") @Apidoc\Method("POST") */
+    /** @Apidoc\Title("关闭工单") @Apidoc\Url("/admin/v1/ticket/{hashid}/close") @Apidoc\Method("POST") */
     public function close(Request $request, string $hashid): Response
     {
         $ticket = Ticket::find($this->decodeId($hashid));
@@ -109,7 +109,7 @@ class TicketController extends BaseController
         return $this->success([], 'Ticket closed');
     }
 
-    /** @Apidoc\Title("指定处理人") @Apidoc\Url("/admin/ticket/{hashid}/assign") @Apidoc\Method("POST") */
+    /** @Apidoc\Title("指定处理人") @Apidoc\Url("/admin/v1/ticket/{hashid}/assign") @Apidoc\Method("POST") */
     public function assign(Request $request, string $hashid): Response
     {
         $ticket = Ticket::find($this->decodeId($hashid));

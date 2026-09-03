@@ -30,7 +30,7 @@ class ReportController extends BaseController
     /**
      * @Apidoc\Title("报表汇总")
      * @Apidoc\Desc("统计时间段内新增用户、充值、提现、兑换、游戏局数")
-     * @Apidoc\Url("/admin/report/summary")
+     * @Apidoc\Url("/admin/v1/report/summary")
      * @Apidoc\Method("GET")
      * @Apidoc\Header(name="Authorization",require=true,desc="Bearer Token")
      * @Apidoc\Query(name="start",type="string",require=false,desc="开始日期 Y-m-d，缺省最近30天")
@@ -100,7 +100,7 @@ class ReportController extends BaseController
     /**
      * @Apidoc\Title("日报表")
      * @Apidoc\Desc("按日聚合返回统计明细，0 填充无数据日期")
-     * @Apidoc\Url("/admin/report/daily")
+     * @Apidoc\Url("/admin/v1/report/daily")
      * @Apidoc\Method("GET")
      * @Apidoc\Header(name="Authorization",require=true,desc="Bearer Token")
      * @Apidoc\Query(name="start",type="string",require=false,desc="开始日期 Y-m-d，缺省最近30天")
@@ -136,7 +136,7 @@ class ReportController extends BaseController
     /**
      * @Apidoc\Title("日报表导出")
      * @Apidoc\Desc("导出日报表 CSV，UTF-8 BOM 保证 Excel 打开不乱码")
-     * @Apidoc\Url("/admin/report/export")
+     * @Apidoc\Url("/admin/v1/report/export")
      * @Apidoc\Method("GET")
      * @Apidoc\Header(name="Authorization",require=true,desc="Bearer Token")
      * @Apidoc\Query(name="start",type="string",require=false,desc="开始日期 Y-m-d，缺省最近30天")

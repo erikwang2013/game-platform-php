@@ -18,7 +18,7 @@ class VipLevelController extends BaseController
 {
     /**
      * @Apidoc\Title("VIP等级列表")
-     * @Apidoc\Url("/admin/vip/level/list")
+     * @Apidoc\Url("/admin/v1/vip/level/list")
      * @Apidoc\Method("GET")
      */
     public function list(Request $request): Response
@@ -32,7 +32,7 @@ class VipLevelController extends BaseController
 
     /**
      * @Apidoc\Title("新增VIP等级")
-     * @Apidoc\Url("/admin/vip/level/create")
+     * @Apidoc\Url("/admin/v1/vip/level/create")
      * @Apidoc\Method("POST")
      */
     public function create(Request $request): Response
@@ -70,7 +70,7 @@ class VipLevelController extends BaseController
 
     /**
      * @Apidoc\Title("更新VIP等级")
-     * @Apidoc\Url("/admin/vip/level/{hashid}")
+     * @Apidoc\Url("/admin/v1/vip/level/{hashid}")
      * @Apidoc\Method("PUT")
      */
     public function update(Request $request, string $hashid): Response
@@ -105,7 +105,7 @@ class VipLevelController extends BaseController
 
     /**
      * @Apidoc\Title("删除VIP等级")
-     * @Apidoc\Url("/admin/vip/level/{hashid}")
+     * @Apidoc\Url("/admin/v1/vip/level/{hashid}")
      * @Apidoc\Method("DELETE")
      */
     public function destroy(Request $request, string $hashid): Response

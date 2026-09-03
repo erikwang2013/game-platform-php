@@ -35,7 +35,7 @@ class ProfileController extends BaseController
     /**
      * @Apidoc\Title("更新个人信息")
      * @Apidoc\Desc("更新当前登录管理员的个人信息")
-     * @Apidoc\Url("/admin/profile")
+     * @Apidoc\Url("/admin/v1/profile")
      * @Apidoc\Method("PUT")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("real_name", type="string", require=false, desc="真实姓名")
@@ -72,7 +72,7 @@ class ProfileController extends BaseController
     /**
      * @Apidoc\Title("修改密码")
      * @Apidoc\Desc("修改当前登录管理员的登录密码")
-     * @Apidoc\Url("/admin/profile/password")
+     * @Apidoc\Url("/admin/v1/profile/password")
      * @Apidoc\Method("PUT")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("old_password", type="string", require=true, desc="旧密码")
@@ -110,7 +110,7 @@ class ProfileController extends BaseController
     /**
      * @Apidoc\Title("登出")
      * @Apidoc\Desc("将当前JWT令牌加入黑名单，实现安全登出")
-     * @Apidoc\Url("/admin/profile/logout")
+     * @Apidoc\Url("/admin/v1/profile/logout")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      */

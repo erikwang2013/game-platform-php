@@ -21,7 +21,7 @@ class UserController extends BaseController
     /**
      * @Apidoc\Title("管理员列表")
      * @Apidoc\Desc("分页获取管理员用户列表，支持关键词搜索和状态筛选")
-     * @Apidoc\Url("/admin/user")
+     * @Apidoc\Url("/admin/v1/user")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("page", type="int", require=false, desc="页码")
@@ -78,7 +78,7 @@ class UserController extends BaseController
     /**
      * @Apidoc\Title("创建管理员")
      * @Apidoc\Desc("创建一个新的管理员用户")
-     * @Apidoc\Url("/admin/user")
+     * @Apidoc\Url("/admin/v1/user")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("username", type="string", require=true, desc="用户名(3-50位)")
@@ -125,7 +125,7 @@ class UserController extends BaseController
     /**
      * @Apidoc\Title("管理员详情")
      * @Apidoc\Desc("获取指定管理员的详细信息")
-     * @Apidoc\Url("/admin/user/{hashid}")
+     * @Apidoc\Url("/admin/v1/user/{hashid}")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      * @Apidoc\Returned("id", type="string", desc="用户ID(hashid编码)")
@@ -147,7 +147,7 @@ class UserController extends BaseController
     /**
      * @Apidoc\Title("编辑管理员")
      * @Apidoc\Desc("更新管理员用户信息")
-     * @Apidoc\Url("/admin/user/{hashid}")
+     * @Apidoc\Url("/admin/v1/user/{hashid}")
      * @Apidoc\Method("PUT")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("real_name", type="string", require=false, desc="真实姓名")
@@ -191,7 +191,7 @@ class UserController extends BaseController
     /**
      * @Apidoc\Title("删除管理员")
      * @Apidoc\Desc("删除指定管理员用户(软删除，需密码二次确认)")
-     * @Apidoc\Url("/admin/user/{hashid}")
+     * @Apidoc\Url("/admin/v1/user/{hashid}")
      * @Apidoc\Method("DELETE")
      * @Apidoc\Author("erik")
      */
@@ -216,7 +216,7 @@ class UserController extends BaseController
     /**
      * @Apidoc\Title("批量删除")
      * @Apidoc\Desc("批量删除管理员用户(需密码二次确认)")
-     * @Apidoc\Url("/admin/user/batch/destroy")
+     * @Apidoc\Url("/admin/v1/user/batch/destroy")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("ids", type="array", require=true, desc="用户ID数组(hashid编码)")
@@ -258,7 +258,7 @@ class UserController extends BaseController
     /**
      * @Apidoc\Title("批量启禁用")
      * @Apidoc\Desc("批量启用或禁用管理员用户")
-     * @Apidoc\Url("/admin/user/batch/status")
+     * @Apidoc\Url("/admin/v1/user/batch/status")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("ids", type="array", require=true, desc="用户ID数组(hashid编码)")

@@ -33,7 +33,7 @@ class OperationLog implements MiddlewareInterface
             $log->user_id    = $request->adminId ?? 0;
             $log->action     = $method;
             $log->method     = $method;
-            $log->path       = $request->path();
+            $log->path       = $this->stripVersionSegment($request->path());
             $log->ip         = $request->getRealIp();
             $log->source     = $this->detectSource($request);
             $log->input      = json_encode($input, JSON_UNESCAPED_UNICODE);
@@ -44,6 +44,18 @@ class OperationLog implements MiddlewareInterface
         }
 
         return $response;
+    }
+
+    /**
+     * 剔除 URL 路径中的版本段（/admin/v1/user → /admin/user），保持审计记录与权限 slug 语义一致
+     */
+    private function stripVersionSegment(string $path): string
+    {
+        $segments = explode('/', trim($path, '/'));
+        if (count($segments) > 1 && preg_match('/^v\d+$/', $segments[1])) {
+            unset($segments[1]);
+        }
+        return '/' . implode('/', $segments);
     }
 
     /**

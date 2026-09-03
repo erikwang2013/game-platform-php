@@ -29,7 +29,7 @@ class DashboardController extends BaseController
     /**
      * @Apidoc\Title("仪表盘")
      * @Apidoc\Desc("获取管理后台仪表盘数据，包含统计、趋势、分布和最近日志")
-     * @Apidoc\Url("/admin/dashboard")
+     * @Apidoc\Url("/admin/v1/dashboard")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      */
@@ -66,7 +66,7 @@ class DashboardController extends BaseController
     /**
      * @Apidoc\Title("平台仪表盘")
      * @Apidoc\Desc("获取平台运营总览数据")
-     * @Apidoc\Url("/admin/dashboard/platform")
+     * @Apidoc\Url("/admin/v1/dashboard/platform")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      */

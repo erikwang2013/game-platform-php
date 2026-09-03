@@ -30,7 +30,7 @@ class WithdrawController extends BaseController
     /**
      * @Apidoc\Title("提现订单列表")
      * @Apidoc\Desc("分页获取提现订单列表，支持按状态筛选")
-     * @Apidoc\Url("/admin/withdraw/orders")
+     * @Apidoc\Url("/admin/v1/withdraw/orders")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("page", type="int", require=false, desc="页码")
@@ -77,7 +77,7 @@ class WithdrawController extends BaseController
     /**
      * @Apidoc\Title("审核提现")
      * @Apidoc\Desc("审批或拒绝提现申请")
-     * @Apidoc\Url("/admin/withdraw/review")
+     * @Apidoc\Url("/admin/v1/withdraw/review")
      * @Apidoc\Method("PUT")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("order_id", type="string", require=true, desc="订单ID(hashid编码)")
@@ -252,7 +252,7 @@ class WithdrawController extends BaseController
     /**
      * @Apidoc\Title("全局提现开关")
      * @Apidoc\Desc("启用或关闭全局提现功能")
-     * @Apidoc\Url("/admin/withdraw/switch")
+     * @Apidoc\Url("/admin/v1/withdraw/switch")
      * @Apidoc\Method("PUT")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("enabled", type="int", require=true, desc="是否启用(0关闭,1启用)")
@@ -276,7 +276,7 @@ class WithdrawController extends BaseController
     /**
      * @Apidoc\Title("设置提现限额")
      * @Apidoc\Desc("设置全局提现限额参数")
-     * @Apidoc\Url("/admin/withdraw/limits/set")
+     * @Apidoc\Url("/admin/v1/withdraw/limits/set")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("daily_limit", type="float", require=false, desc="每日限额")
@@ -315,7 +315,7 @@ class WithdrawController extends BaseController
     /**
      * @Apidoc\Title("阶梯限额列表")
      * @Apidoc\Desc("获取提现阶梯限额配置列表")
-     * @Apidoc\Url("/admin/withdraw/limits/list")
+     * @Apidoc\Url("/admin/v1/withdraw/limits/list")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      */
@@ -332,7 +332,7 @@ class WithdrawController extends BaseController
     /**
      * @Apidoc\Title("更新阶梯限额")
      * @Apidoc\Desc("更新指定阶梯限额配置")
-     * @Apidoc\Url("/admin/withdraw/limits/{hashid}")
+     * @Apidoc\Url("/admin/v1/withdraw/limits/{hashid}")
      * @Apidoc\Method("PUT")
      * @Apidoc\Author("erik")
      */
@@ -362,7 +362,7 @@ class WithdrawController extends BaseController
     /**
      * @Apidoc\Title("批量审核提现")
      * @Apidoc\Desc("批量审批或拒绝提现申请")
-     * @Apidoc\Url("/admin/withdraw/batch-review")
+     * @Apidoc\Url("/admin/v1/withdraw/batch-review")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("ids", type="array", require=true, desc="订单ID数组(hashid编码)")
@@ -463,7 +463,7 @@ class WithdrawController extends BaseController
     /**
      * @Apidoc\Title("执行打款")
      * @Apidoc\Desc("对已审批的提现订单执行PayPal打款")
-     * @Apidoc\Url("/admin/withdraw/execute-payout")
+     * @Apidoc\Url("/admin/v1/withdraw/execute-payout")
      * @Apidoc\Method("POST")
      * @Apidoc\Param("order_id", type="string", require=true, desc="订单ID(hashid编码)")
      */
@@ -516,7 +516,7 @@ class WithdrawController extends BaseController
     /**
      * @Apidoc\Title("同步打款状态")
      * @Apidoc\Desc("从PayPal查询打款批次状态并同步")
-     * @Apidoc\Url("/admin/withdraw/sync-payout")
+     * @Apidoc\Url("/admin/v1/withdraw/sync-payout")
      * @Apidoc\Method("POST")
      * @Apidoc\Param("order_id", type="string", require=true, desc="订单ID(hashid编码)")
      */

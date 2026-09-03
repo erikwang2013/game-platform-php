@@ -21,7 +21,7 @@ class AnnouncementController extends BaseController
     /**
      * @Apidoc\Title("公告列表")
      * @Apidoc\Desc("分页获取公告列表")
-     * @Apidoc\Url("/admin/announcement/list")
+     * @Apidoc\Url("/admin/v1/announcement/list")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      * @Apidoc\Returned("id", type="string", desc="公告ID(hashid编码)")
@@ -49,7 +49,7 @@ class AnnouncementController extends BaseController
     /**
      * @Apidoc\Title("发布公告")
      * @Apidoc\Desc("创建并发布一条新公告")
-     * @Apidoc\Url("/admin/announcement/create")
+     * @Apidoc\Url("/admin/v1/announcement/create")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("title", type="string", require=true, desc="公告标题")

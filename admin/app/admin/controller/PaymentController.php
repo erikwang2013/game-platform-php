@@ -22,7 +22,7 @@ class PaymentController extends BaseController
     /**
      * @Apidoc\Title("支付方式列表")
      * @Apidoc\Desc("获取所有支付方式列表")
-     * @Apidoc\Url("/admin/payment/method/list")
+     * @Apidoc\Url("/admin/v1/payment/method/list")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      * @Apidoc\Returned("id", type="string", desc="支付方式ID(hashid编码)")
@@ -39,7 +39,7 @@ class PaymentController extends BaseController
     /**
      * @Apidoc\Title("启禁用支付方式")
      * @Apidoc\Desc("切换支付方式的启用/禁用状态")
-     * @Apidoc\Url("/admin/payment/method/toggle")
+     * @Apidoc\Url("/admin/v1/payment/method/toggle")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("id", type="string", require=true, desc="支付方式ID(hashid编码)")
@@ -71,7 +71,7 @@ class PaymentController extends BaseController
     /**
      * @Apidoc\Title("创建支付方式")
      * @Apidoc\Desc("创建支付方式（含国家可见性/金额区间/币种限定）")
-     * @Apidoc\Url("/admin/payment/method/create")
+     * @Apidoc\Url("/admin/v1/payment/method/create")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("name", type="string", require=true, desc="支付方式名称")
@@ -121,7 +121,7 @@ class PaymentController extends BaseController
     /**
      * @Apidoc\Title("更新支付方式")
      * @Apidoc\Desc("更新支付方式，仅更新传入字段")
-     * @Apidoc\Url("/admin/payment/method/{hashid}")
+     * @Apidoc\Url("/admin/v1/payment/method/{hashid}")
      * @Apidoc\Method("PUT")
      * @Apidoc\Author("erik")
      */
@@ -168,7 +168,7 @@ class PaymentController extends BaseController
     /**
      * @Apidoc\Title("删除支付方式")
      * @Apidoc\Desc("删除支付方式；存在待支付订单时拒绝")
-     * @Apidoc\Url("/admin/payment/method/{hashid}")
+     * @Apidoc\Url("/admin/v1/payment/method/{hashid}")
      * @Apidoc\Method("DELETE")
      * @Apidoc\Author("erik")
      */

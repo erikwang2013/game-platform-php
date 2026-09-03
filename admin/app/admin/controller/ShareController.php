@@ -23,7 +23,7 @@ class ShareController extends BaseController
 {
     /**
      * @Apidoc\Title("分享裂变漏斗统计")
-     * @Apidoc\Url("/admin/share/stats")
+     * @Apidoc\Url("/admin/v1/share/stats")
      * @Apidoc\Method("GET")
      * @Apidoc\Param("activity_id", type="string", require=false, desc="活动ID(hashid)")
      * @Apidoc\Param("from", type="string", require=false, desc="起始日期 Y-m-d")

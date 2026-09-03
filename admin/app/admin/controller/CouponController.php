@@ -23,7 +23,7 @@ class CouponController extends BaseController
     /**
      * @Apidoc\Title("优惠券列表")
      * @Apidoc\Desc("分页获取优惠券列表，支持状态、类型和游戏筛选")
-     * @Apidoc\Url("/admin/coupon/list")
+     * @Apidoc\Url("/admin/v1/coupon/list")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      * @Apidoc\Returned("id", type="string", desc="优惠券ID(hashid编码)")
@@ -75,7 +75,7 @@ class CouponController extends BaseController
     /**
      * @Apidoc\Title("创建优惠券")
      * @Apidoc\Desc("创建一个新的优惠券")
-     * @Apidoc\Url("/admin/coupon/create")
+     * @Apidoc\Url("/admin/v1/coupon/create")
      * @Apidoc\Method("POST")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("name", type="string", require=true, desc="优惠券名称")
@@ -128,7 +128,7 @@ class CouponController extends BaseController
     /**
      * @Apidoc\Title("编辑优惠券")
      * @Apidoc\Desc("更新优惠券信息")
-     * @Apidoc\Url("/admin/coupon/{hashid}")
+     * @Apidoc\Url("/admin/v1/coupon/{hashid}")
      * @Apidoc\Method("PUT")
      * @Apidoc\Author("erik")
      */
@@ -173,7 +173,7 @@ class CouponController extends BaseController
     /**
      * @Apidoc\Title("删除优惠券")
      * @Apidoc\Desc("删除指定优惠券及其所有用户领取记录")
-     * @Apidoc\Url("/admin/coupon/{hashid}")
+     * @Apidoc\Url("/admin/v1/coupon/{hashid}")
      * @Apidoc\Method("DELETE")
      * @Apidoc\Author("erik")
      */
@@ -196,7 +196,7 @@ class CouponController extends BaseController
     /**
      * @Apidoc\Title("优惠券统计")
      * @Apidoc\Desc("获取指定优惠券的使用统计信息")
-     * @Apidoc\Url("/admin/coupon/{hashid}/stats")
+     * @Apidoc\Url("/admin/v1/coupon/{hashid}/stats")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      */

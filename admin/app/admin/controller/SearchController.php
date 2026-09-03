@@ -21,7 +21,7 @@ class SearchController extends BaseController
     /**
      * @Apidoc\Title("全局搜索")
      * @Apidoc\Desc("全局搜索游戏或用户，支持ES全文检索和数据库LIKE回退")
-     * @Apidoc\Url("/admin/search")
+     * @Apidoc\Url("/admin/v1/search")
      * @Apidoc\Method("GET")
      * @Apidoc\Author("erik")
      * @Apidoc\Param("q", type="string", require=true, desc="搜索关键词")

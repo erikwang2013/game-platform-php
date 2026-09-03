@@ -20,7 +20,7 @@ class AnalyticsController extends BaseController
 {
     /**
      * @Apidoc\Title("Platform Overview")
-     * @Apidoc\Url("/admin/analytics/overview")
+     * @Apidoc\Url("/admin/v1/analytics/overview")
      * @Apidoc\Method("GET")
      * @Apidoc\Header(name="Authorization",require=true,desc="Bearer Token")
      */
@@ -31,7 +31,7 @@ class AnalyticsController extends BaseController
 
     /**
      * @Apidoc\Title("Game Ranking")
-     * @Apidoc\Url("/admin/analytics/game-ranking")
+     * @Apidoc\Url("/admin/v1/analytics/game-ranking")
      * @Apidoc\Method("GET")
      * @Apidoc\Header(name="Authorization",require=true,desc="Bearer Token")
      * @Apidoc\Query(name="days",type="integer",require=false,desc="Days back (default 7)")
@@ -44,7 +44,7 @@ class AnalyticsController extends BaseController
 
     /**
      * @Apidoc\Title("DAU Trend")
-     * @Apidoc\Url("/admin/analytics/dau-trend")
+     * @Apidoc\Url("/admin/v1/analytics/dau-trend")
      * @Apidoc\Method("GET")
      * @Apidoc\Header(name="Authorization",require=true,desc="Bearer Token")
      * @Apidoc\Query(name="days",type="integer",require=false,desc="Days back (default 30)")
@@ -56,7 +56,7 @@ class AnalyticsController extends BaseController
 
     /**
      * @Apidoc\Title("Hourly Trend")
-     * @Apidoc\Url("/admin/analytics/hourly-trend")
+     * @Apidoc\Url("/admin/v1/analytics/hourly-trend")
      * @Apidoc\Method("GET")
      * @Apidoc\Header(name="Authorization",require=true,desc="Bearer Token")
      * @Apidoc\Query(name="game_id",type="string",require=false,desc="Game hashid (empty=all)")
@@ -70,7 +70,7 @@ class AnalyticsController extends BaseController
 
     /**
      * @Apidoc\Title("Action Distribution")
-     * @Apidoc\Url("/admin/analytics/action-distribution")
+     * @Apidoc\Url("/admin/v1/analytics/action-distribution")
      * @Apidoc\Method("GET")
      * @Apidoc\Header(name="Authorization",require=true,desc="Bearer Token")
      * @Apidoc\Query(name="game_id",type="string",require=true,desc="Game hashid")
@@ -85,7 +85,7 @@ class AnalyticsController extends BaseController
 
     /**
      * @Apidoc\Title("Revenue Overview")
-     * @Apidoc\Url("/admin/analytics/revenue")
+     * @Apidoc\Url("/admin/v1/analytics/revenue")
      * @Apidoc\Method("GET")
      * @Apidoc\Header(name="Authorization",require=true,desc="Bearer Token")
      * @Apidoc\Query(name="days",type="integer",require=false,desc="Days back (default 7)")
@@ -97,7 +97,7 @@ class AnalyticsController extends BaseController
 
     /**
      * @Apidoc\Title("Conversion by Game")
-     * @Apidoc\Url("/admin/analytics/conversion")
+     * @Apidoc\Url("/admin/v1/analytics/conversion")
      * @Apidoc\Method("GET")
      * @Apidoc\Header(name="Authorization",require=true,desc="Bearer Token")
      * @Apidoc\Query(name="days",type="integer",require=false,desc="Days back (default 30)")
@@ -110,7 +110,7 @@ class AnalyticsController extends BaseController
 
     /**
      * @Apidoc\Title("Joint Probability")
-     * @Apidoc\Url("/admin/analytics/probability")
+     * @Apidoc\Url("/admin/v1/analytics/probability")
      * @Apidoc\Method("GET")
      * @Apidoc\Header(name="Authorization",require=true,desc="Bearer Token")
      * @Apidoc\Query(name="game_a",type="string",require=true,desc="Game A hashid")
@@ -129,7 +129,7 @@ class AnalyticsController extends BaseController
 
     /**
      * @Apidoc\Title("Retention Analysis")
-     * @Apidoc\Url("/admin/analytics/retention")
+     * @Apidoc\Url("/admin/v1/analytics/retention")
      * @Apidoc\Method("GET")
      * @Apidoc\Query(name="days",type="integer",require=false,desc="Days back (default 30)")
      */
@@ -158,7 +158,7 @@ class AnalyticsController extends BaseController
 
     /**
      * @Apidoc\Title("Conversion Funnel")
-     * @Apidoc\Url("/admin/analytics/funnel")
+     * @Apidoc\Url("/admin/v1/analytics/funnel")
      * @Apidoc\Method("GET")
      * @Apidoc\Query(name="days",type="integer",require=false,desc="Days back (default 30)")
      */
@@ -183,7 +183,7 @@ class AnalyticsController extends BaseController
 
     /**
      * @Apidoc\Title("ARPU/ARPPU Trend")
-     * @Apidoc\Url("/admin/analytics/arpu")
+     * @Apidoc\Url("/admin/v1/analytics/arpu")
      * @Apidoc\Method("GET")
      * @Apidoc\Query(name="days",type="integer",require=false,desc="Days back (default 30)")
      */
@@ -212,7 +212,7 @@ class AnalyticsController extends BaseController
 
     /**
      * @Apidoc\Title("Game Economy Indicators")
-     * @Apidoc\Url("/admin/analytics/economy")
+     * @Apidoc\Url("/admin/v1/analytics/economy")
      * @Apidoc\Method("GET")
      */
     public function economy(Request $request): Response
