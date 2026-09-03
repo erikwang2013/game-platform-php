@@ -19,7 +19,7 @@ class CaptchaController extends BaseController
 {
     /**
      * @Apidoc\Title("获取验证码")
-     * @Apidoc\Url("/api/captcha/generate")
+     * @Apidoc\Url("/api/v1/captcha/generate")
      * @Apidoc\Method("POST")
      * @Apidoc\Param(name="difficulty", type="string", require=false, desc="难度(easy/medium/hard)")
      */

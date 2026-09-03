@@ -46,7 +46,7 @@ class TossGateway implements PaymentGatewayInterface
                 'currency'    => 'KRW',
                 'orderId'     => $order->order_no,
                 'orderName'   => 'Game deposit ' . $order->order_no,
-                'successUrl'  => $siteUrl . '/api/payment/callback?provider=toss',
+                'successUrl'  => $siteUrl . '/api/v1/payment/callback?provider=toss',
                 'failUrl'     => $siteUrl . '/payment/cancel?order_no=' . $order->order_no,
             ],
         ]);

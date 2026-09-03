@@ -38,7 +38,7 @@ class PaysafecardGateway implements PaymentGatewayInterface
                         'failure_url' => $siteUrl . '/payment/cancel?order_no=' . $order->order_no,
                         'cancel_url'  => $siteUrl . '/payment/cancel?order_no=' . $order->order_no,
                     ],
-                    'notification_url' => $siteUrl . '/api/payment/callback?provider=paysafecard',
+                    'notification_url' => $siteUrl . '/api/v1/payment/callback?provider=paysafecard',
                 ],
             ]);
         $data = json_decode((string) $resp->getBody(), true);

@@ -62,7 +62,7 @@ class MpesaGateway implements PaymentGatewayInterface
                 'PartyA'            => $phone,
                 'PartyB'            => $shortcode,
                 'PhoneNumber'       => $phone,
-                'CallBackURL'       => $siteUrl . '/api/payment/callback?provider=mpesa',
+                'CallBackURL'       => $siteUrl . '/api/v1/payment/callback?provider=mpesa',
                 // 官方限制 12 字符；仅展示用途，安全匹配靠 CheckoutRequestID
                 'AccountReference'  => substr($order->order_no, 0, 12),
                 'TransactionDesc'   => substr('Game deposit', 0, 13),

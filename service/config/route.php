@@ -10,19 +10,19 @@ use support\Request;
  * C端 API 路由配置
  *
  * 全局中间件链: Cors → SecurityFilter → RateLimit
- * 公开接口: + ApiVersion
- * 认证接口: + ApiVersion → UserAuth
+ * 公开接口: 直接注册
+ * 认证接口: UserAuth
  *
  * API 版本策略:
- * - 版本号通过请求头 API-Version 携带（如 "v1"）
- * - 缺失时默认使用 v1
- * - 由 ApiVersion 中间件校验
+ * - 版本号置于 URL 路径（如 /api/v1/*），不再使用请求头 API-Version
+ * - 版本命名空间由 v() 解析；路由注册到哪个前缀组即对外暴露哪个版本
+ * - 新增 v2: 创建 app/api/v2/controller 并注册 /api/v2 组 + v('XController','x','v2')
+ * - /api/provider/*（第三方 HMAC）与 /api/game/*（SDK）为无版本外部契约，保持原样
  */
 
-function v(string $controller, string $action): \Closure
+function v(string $controller, string $action, string $version = 'v1'): \Closure
 {
-    return function (Request $request, ...$params) use ($controller, $action) {
-        $version = $request->apiVersion ?? 'v1';
+    return function (Request $request, ...$params) use ($controller, $action, $version) {
         $class = "\\app\\api\\{$version}\\controller\\{$controller}";
         return (new $class)->{$action}($request, ...$params);
     };
@@ -36,7 +36,7 @@ Route::get('/health', function () {
 // ============================================================
 // 公开接口（无需认证）
 // ============================================================
-Route::group('/api', function () {
+Route::group('/api/v1', function () {
     Route::post('/auth/register', v('AuthController', 'register'));
     Route::post('/auth/login', v('AuthController', 'login'));
     Route::post('/auth/refresh', v('AuthController', 'refresh'));
@@ -72,14 +72,12 @@ Route::group('/api', function () {
 
     // 分享落地页点击上报（M4，匿名可访问，不泄露分享者信息）
     Route::post('/shares/visit', v('ShareController', 'visit'));
-})->middleware([
-    app\middleware\ApiVersion::class,
-]);
+});
 
 // ============================================================
 // 认证接口（需登录）
 // ============================================================
-Route::group('/api', function () {
+Route::group('/api/v1', function () {
     // 钱包
     Route::get('/wallet/info', v('WalletController', 'info'));
     Route::get('/wallet/transactions', v('WalletController', 'transactions'));
@@ -154,7 +152,6 @@ Route::group('/api', function () {
     Route::post('/user/delete-account', v('UserController', 'deleteAccount'));
     Route::put('/user/privacy', v('UserController', 'updatePrivacy'));
 })->middleware([
-    app\middleware\ApiVersion::class,
     app\middleware\UserAuth::class,
 ]);
 
@@ -181,37 +178,34 @@ Route::group('/api/game', function () {
     Route::post('/settle', v('GameSdkController', 'settle'));
     Route::post('/refund', v('GameSdkController', 'refund'));
 })->middleware([
-    app\middleware\ApiVersion::class,
     app\middleware\SdkSessionAuth::class,
 ]);
 
 // ============================================================
 // 工单
 // ============================================================
-Route::group('/api', function () {
+Route::group('/api/v1', function () {
     Route::get('/ticket/list', v('TicketController', 'list'));
     Route::get('/ticket/{hashid}', v('TicketController', 'detail'));
     Route::post('/ticket/create', v('TicketController', 'create'));
     Route::post('/ticket/{hashid}/reply', v('TicketController', 'reply'));
 })->middleware([
-    app\middleware\ApiVersion::class,
     app\middleware\UserAuth::class,
 ]);
 
 
 // 邮箱/手机验证
-Route::group('/api/verify', function () {
+Route::group('/api/v1/verify', function () {
     Route::post('/send-email', v('VerificationController', 'sendEmail'));
     Route::post('/confirm-email', v('VerificationController', 'confirmEmail'));
     Route::post('/send-sms', v('VerificationController', 'sendSms'));
     Route::post('/confirm-phone', v('VerificationController', 'confirmPhone'));
 })->middleware([
-    app\middleware\ApiVersion::class,
     app\middleware\UserAuth::class,
 ]);
 
 // 好友
-Route::group('/api/friend', function () {
+Route::group('/api/v1/friend', function () {
     Route::get('/list', v('FriendController', 'list'));
     Route::get('/requests', v('FriendController', 'requests'));
     Route::post('/request', v('FriendController', 'request'));
@@ -220,50 +214,45 @@ Route::group('/api/friend', function () {
     Route::post('/remove', v('FriendController', 'remove'));
     Route::get('/search', v('FriendController', 'search'));
 })->middleware([
-    app\middleware\ApiVersion::class,
     app\middleware\UserAuth::class,
 ]);
 
 // 聊天
-Route::group('/api/chat', function () {
+Route::group('/api/v1/chat', function () {
     Route::get('/conversations', v('ChatController', 'conversations'));
     Route::get('/messages/{peerHashid}', v('ChatController', 'messages'));
     Route::post('/send', v('ChatController', 'send'));
     Route::post('/read', v('ChatController', 'markRead'));
     Route::get('/unread-total', v('ChatController', 'unreadTotal'));
 })->middleware([
-    app\middleware\ApiVersion::class,
     app\middleware\UserAuth::class,
 ]);
 
 // Webhook订阅
-Route::group('/api/webhook', function () {
+Route::group('/api/v1/webhook', function () {
     Route::get('/list', v('WebhookController', 'list'));
     Route::post('/register', v('WebhookController', 'register'));
     Route::post('/delete', v('WebhookController', 'delete'));
     Route::post('/test', v('WebhookController', 'test'));
 })->middleware([
-    app\middleware\ApiVersion::class,
     app\middleware\UserAuth::class,
 ]);
 
 // 运营活动
-Route::group('/api/activities', function () {
+Route::group('/api/v1/activities', function () {
     Route::get('/list', v('ActivityController', 'list'));
     Route::get('/progress', v('ActivityController', 'progress'));
     Route::get('/{hashid}', v('ActivityController', 'detail'));
     Route::post('/{hashid}/checkin', v('ActivityController', 'checkin'));
 })->middleware([
-    app\middleware\ApiVersion::class,
     app\middleware\UserAuth::class,
 ]);
 
 // 赛事 (FeatureFlag: tournament)
-Route::group('/api/tournament', function () {
+Route::group('/api/v1/tournament', function () {
     Route::get('/list', v('TournamentController', 'list'));
     Route::get('/{hashid}', v('TournamentController', 'detail'));
     Route::post('/{hashid}/join', v('TournamentController', 'join'));
 })->middleware([
-    app\middleware\ApiVersion::class,
     app\middleware\UserAuth::class,
 ]);

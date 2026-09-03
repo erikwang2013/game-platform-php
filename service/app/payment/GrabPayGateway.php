@@ -87,7 +87,7 @@ class GrabPayGateway implements PaymentGatewayInterface
             'terminalType'      => 'WEB',
             'paymentExpiryTime' => date('c', strtotime((string) $order->expires_at ?: '+30 minutes')),
             'items'             => [['itemName' => 'Game deposit', 'quantity' => 1, 'amount' => $order->amount]],
-            'callbackUrl'       => $siteUrl . '/api/payment/callback?provider=grabpay',
+            'callbackUrl'       => $siteUrl . '/api/v1/payment/callback?provider=grabpay',
             'redirectUrl'       => $siteUrl . '/payment/success?order_no=' . $order->order_no,
         ];
 

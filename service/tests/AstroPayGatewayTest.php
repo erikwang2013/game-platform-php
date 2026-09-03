@@ -21,7 +21,7 @@ class AstroPayGatewayTest extends TestCase
 {
     private const SECRET = 'test-astropay-secret';
 
-    protected function makeRequest(string $body, array $headers = [], string $path = '/api/payment/callback?provider=astropay'): Request
+    protected function makeRequest(string $body, array $headers = [], string $path = '/api/v1/payment/callback?provider=astropay'): Request
     {
         $headerBlock = '';
         foreach ($headers as $name => $value) {

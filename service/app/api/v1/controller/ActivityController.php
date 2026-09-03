@@ -23,7 +23,7 @@ class ActivityController extends BaseController
 {
     /**
      * @Apidoc\Title("活动列表")
-     * @Apidoc\Url("/api/activities/list")
+     * @Apidoc\Url("/api/v1/activities/list")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      */
@@ -60,7 +60,7 @@ class ActivityController extends BaseController
 
     /**
      * @Apidoc\Title("活动详情")
-     * @Apidoc\Url("/api/activities/{hashid}")
+     * @Apidoc\Url("/api/v1/activities/{hashid}")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      */
@@ -88,7 +88,7 @@ class ActivityController extends BaseController
 
     /**
      * @Apidoc\Title("签到")
-     * @Apidoc\Url("/api/activities/{hashid}/checkin")
+     * @Apidoc\Url("/api/v1/activities/{hashid}/checkin")
      * @Apidoc\Method("POST")
      * @Apidoc\Auth(true)
      */
@@ -105,7 +105,7 @@ class ActivityController extends BaseController
 
     /**
      * @Apidoc\Title("我的活动进度")
-     * @Apidoc\Url("/api/activities/progress")
+     * @Apidoc\Url("/api/v1/activities/progress")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      */

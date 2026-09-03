@@ -54,7 +54,7 @@ class AstroPayGateway implements PaymentGatewayInterface
                 'currency'     => $order->currency,
                 'country'      => $country,
                 'description'  => 'Game deposit ' . $order->order_no,
-                'url_callback' => $siteUrl . '/api/payment/callback?provider=astropay',
+                'url_callback' => $siteUrl . '/api/v1/payment/callback?provider=astropay',
             ],
         ]);
         $data     = json_decode((string) $resp->getBody(), true) ?: [];

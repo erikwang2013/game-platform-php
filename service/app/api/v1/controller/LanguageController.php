@@ -20,7 +20,7 @@ class LanguageController extends BaseController
 {
     /**
      * @Apidoc\Title("语言列表")
-     * @Apidoc\Url("/api/language/list")
+     * @Apidoc\Url("/api/v1/language/list")
      * @Apidoc\Method("GET")
      */
     public function list(Request $request): Response
@@ -35,7 +35,7 @@ class LanguageController extends BaseController
 
     /**
      * @Apidoc\Title("切换语言")
-     * @Apidoc\Url("/api/language/switch")
+     * @Apidoc\Url("/api/v1/language/switch")
      * @Apidoc\Method("POST")
      * @Apidoc\Param(name="locale", type="string", require=true, desc="语言代码(en-US/zh-CN/ja-JP/ko-KR)")
      */

@@ -30,7 +30,7 @@ class PaymentController extends BaseController
 {
     /**
      * @Apidoc\Title("支付回调")
-     * @Apidoc\Url("/api/payment/callback")
+     * @Apidoc\Url("/api/v1/payment/callback")
      * @Apidoc\Method("POST")
      * @Apidoc\Param(name="order_no", type="string", require=true, desc="订单号")
      * @Apidoc\Param(name="transaction_id", type="string", require=true, desc="交易ID")
@@ -200,7 +200,7 @@ class PaymentController extends BaseController
 
     /**
      * @Apidoc\Title("支付方式列表")
-     * @Apidoc\Url("/api/payment/methods")
+     * @Apidoc\Url("/api/v1/payment/methods")
      * @Apidoc\Method("GET")
      */
     public function methods(Request $request): Response

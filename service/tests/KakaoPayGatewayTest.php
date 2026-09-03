@@ -76,7 +76,7 @@ class KakaoPayGatewayTest extends TestCase
                 '',
                 [],
                 'GET',
-                '/api/payment/callback?provider=kakaopay&order_no=DEP20260829153000ABC123&transaction_id=tid-1&status=success&pg_token=pg-1'
+                '/api/v1/payment/callback?provider=kakaopay&order_no=DEP20260829153000ABC123&transaction_id=tid-1&status=success&pg_token=pg-1'
             ));
 
             $this->assertTrue($verified['valid']);
@@ -105,7 +105,7 @@ class KakaoPayGatewayTest extends TestCase
                 '',
                 [],
                 'GET',
-                '/api/payment/callback?provider=kakaopay&order_no=DEP20260829153000ABC123&transaction_id=tid-1&status=success&pg_token=pg-1'
+                '/api/v1/payment/callback?provider=kakaopay&order_no=DEP20260829153000ABC123&transaction_id=tid-1&status=success&pg_token=pg-1'
             ));
 
             $this->assertFalse($verified['valid']);
@@ -153,7 +153,7 @@ class KakaoPayGatewayTest extends TestCase
                 '',
                 [],
                 'GET',
-                '/api/payment/callback?provider=kakaopay&order_no=DEP20260829153000ABC123&transaction_id=tid-1&status=success'
+                '/api/v1/payment/callback?provider=kakaopay&order_no=DEP20260829153000ABC123&transaction_id=tid-1&status=success'
             ));
 
             $this->assertFalse($verified['valid']);
@@ -177,7 +177,7 @@ class KakaoPayGatewayTest extends TestCase
             '',
             [],
             'GET',
-            '/api/payment/callback?provider=kakaopay&order_no=DEP20260829153000ABC123&transaction_id=tid-1&status=failed'
+            '/api/v1/payment/callback?provider=kakaopay&order_no=DEP20260829153000ABC123&transaction_id=tid-1&status=failed'
         ));
 
         $this->assertTrue($verified['valid']);
@@ -200,7 +200,7 @@ class KakaoPayGatewayTest extends TestCase
             '',
             [],
             'GET',
-            '/api/payment/callback?provider=kakaopay&order_no=DEP20260829153000ABC123&transaction_id=tid-1&status=success&pg_token=pg-1'
+            '/api/v1/payment/callback?provider=kakaopay&order_no=DEP20260829153000ABC123&transaction_id=tid-1&status=success&pg_token=pg-1'
         ));
 
         $this->assertTrue($verified['valid']);
@@ -215,7 +215,7 @@ class KakaoPayGatewayTest extends TestCase
             '10000'
         );
 
-        $verified = $gateway->verifyCallback($this->makeRequest('', [], 'GET', '/api/payment/callback?provider=kakaopay&order_no=&transaction_id=tid-1&status=success'));
+        $verified = $gateway->verifyCallback($this->makeRequest('', [], 'GET', '/api/v1/payment/callback?provider=kakaopay&order_no=&transaction_id=tid-1&status=success'));
 
         $this->assertFalse($verified['valid']);
     }

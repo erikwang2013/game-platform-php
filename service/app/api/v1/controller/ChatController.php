@@ -20,7 +20,7 @@ class ChatController extends BaseController
 {
     /**
      * @Apidoc\Title("会话列表")
-     * @Apidoc\Url("/api/chat/conversations")
+     * @Apidoc\Url("/api/v1/chat/conversations")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      */
@@ -71,7 +71,7 @@ class ChatController extends BaseController
 
     /**
      * @Apidoc\Title("消息列表")
-     * @Apidoc\Url("/api/chat/messages/{peerHashid}")
+     * @Apidoc\Url("/api/v1/chat/messages/{peerHashid}")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      */
@@ -110,7 +110,7 @@ class ChatController extends BaseController
 
     /**
      * @Apidoc\Title("发送消息")
-     * @Apidoc\Url("/api/chat/send")
+     * @Apidoc\Url("/api/v1/chat/send")
      * @Apidoc\Method("POST")
      * @Apidoc\Auth(true)
      */
@@ -163,7 +163,7 @@ class ChatController extends BaseController
 
     /**
      * @Apidoc\Title("标记已读")
-     * @Apidoc\Url("/api/chat/read")
+     * @Apidoc\Url("/api/v1/chat/read")
      * @Apidoc\Method("POST")
      * @Apidoc\Auth(true)
      */
@@ -178,7 +178,7 @@ class ChatController extends BaseController
 
     /**
      * @Apidoc\Title("未读总数")
-     * @Apidoc\Url("/api/chat/unread-total")
+     * @Apidoc\Url("/api/v1/chat/unread-total")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      */

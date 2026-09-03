@@ -20,7 +20,7 @@ class IdentityController extends BaseController
 {
     /**
      * @Apidoc\Title("认证状态")
-     * @Apidoc\Url("/api/user/identity/status")
+     * @Apidoc\Url("/api/v1/user/identity/status")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      */
@@ -46,7 +46,7 @@ class IdentityController extends BaseController
 
     /**
      * @Apidoc\Title("提交认证")
-     * @Apidoc\Url("/api/user/identity/apply")
+     * @Apidoc\Url("/api/v1/user/identity/apply")
      * @Apidoc\Method("POST")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="real_name", type="string", require=true, desc="真实姓名")

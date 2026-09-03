@@ -24,7 +24,7 @@ class AuthController extends BaseController
 {
     /**
      * @Apidoc\Title("用户注册")
-     * @Apidoc\Url("/api/auth/register")
+     * @Apidoc\Url("/api/v1/auth/register")
      * @Apidoc\Method("POST")
      * @Apidoc\Param(name="username", type="string", require=true, desc="用户名")
      * @Apidoc\Param(name="password", type="string", require=true, desc="密码")
@@ -111,7 +111,7 @@ class AuthController extends BaseController
 
     /**
      * @Apidoc\Title("用户登录")
-     * @Apidoc\Url("/api/auth/login")
+     * @Apidoc\Url("/api/v1/auth/login")
      * @Apidoc\Method("POST")
      * @Apidoc\Param(name="username", type="string", require=true, desc="用户名")
      * @Apidoc\Param(name="password", type="string", require=true, desc="密码")
@@ -176,7 +176,7 @@ class AuthController extends BaseController
 
     /**
      * @Apidoc\Title("刷新Token")
-     * @Apidoc\Url("/api/auth/refresh")
+     * @Apidoc\Url("/api/v1/auth/refresh")
      * @Apidoc\Method("POST")
      */
     public function refresh(Request $request): Response

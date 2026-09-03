@@ -36,7 +36,7 @@ class NowPaymentsGateway implements PaymentGatewayInterface
                 'order_id'          => $order->order_no,
                 'order_description' => 'Game deposit ' . $order->order_no,
                 'pay_currency'      => $network === 'ERC20' ? 'usdt' : 'usdttrc20',
-                'ipn_callback_url'  => $siteUrl . '/api/payment/callback?provider=nowpayments',
+                'ipn_callback_url'  => $siteUrl . '/api/v1/payment/callback?provider=nowpayments',
                 'success_url'       => $siteUrl . '/payment/success?order_no=' . $order->order_no,
                 'cancel_url'        => $siteUrl . '/payment/cancel?order_no=' . $order->order_no,
                 'valid_until'       => gmdate('Y-m-d\TH:i:s\Z', time() + 3600),

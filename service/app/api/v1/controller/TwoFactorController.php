@@ -23,7 +23,7 @@ class TwoFactorController extends BaseController
 {
     /**
      * @Apidoc\Title("2FA状态")
-     * @Apidoc\Url("/api/user/2fa/status")
+     * @Apidoc\Url("/api/v1/user/2fa/status")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      */
@@ -38,7 +38,7 @@ class TwoFactorController extends BaseController
 
     /**
      * @Apidoc\Title("设置2FA")
-     * @Apidoc\Url("/api/user/2fa/setup")
+     * @Apidoc\Url("/api/v1/user/2fa/setup")
      * @Apidoc\Method("POST")
      * @Apidoc\Auth(true)
      */
@@ -73,7 +73,7 @@ class TwoFactorController extends BaseController
 
     /**
      * @Apidoc\Title("启用2FA")
-     * @Apidoc\Url("/api/user/2fa/enable")
+     * @Apidoc\Url("/api/v1/user/2fa/enable")
      * @Apidoc\Method("POST")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="code", type="string", require=true, desc="6位TOTP验证码")
@@ -121,7 +121,7 @@ class TwoFactorController extends BaseController
 
     /**
      * @Apidoc\Title("验证2FA")
-     * @Apidoc\Url("/api/2fa/verify")
+     * @Apidoc\Url("/api/v1/2fa/verify")
      * @Apidoc\Method("POST")
      * @Apidoc\Param(name="pending_2fa_token", type="string", require=true, desc="登录返回的短期2FA票据")
      * @Apidoc\Param(name="code", type="string", require=true, desc="6位TOTP验证码")
@@ -205,7 +205,7 @@ class TwoFactorController extends BaseController
 
     /**
      * @Apidoc\Title("禁用2FA")
-     * @Apidoc\Url("/api/user/2fa/disable")
+     * @Apidoc\Url("/api/v1/user/2fa/disable")
      * @Apidoc\Method("POST")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="password", type="string", require=true, desc="密码")

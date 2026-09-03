@@ -26,7 +26,7 @@ class ReferralController extends BaseController
 {
     /**
      * @Apidoc\Title("我的推荐码")
-     * @Apidoc\Url("/api/referral/my-code")
+     * @Apidoc\Url("/api/v1/referral/my-code")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      */
@@ -56,7 +56,7 @@ class ReferralController extends BaseController
 
     /**
      * @Apidoc\Title("推荐统计")
-     * @Apidoc\Url("/api/referral/stats")
+     * @Apidoc\Url("/api/v1/referral/stats")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      */
@@ -84,7 +84,7 @@ class ReferralController extends BaseController
 
     /**
      * @Apidoc\Title("使用推荐码")
-     * @Apidoc\Url("/api/referral/apply")
+     * @Apidoc\Url("/api/v1/referral/apply")
      * @Apidoc\Method("POST")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="code", type="string", require=true, desc="推荐码")

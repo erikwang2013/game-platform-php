@@ -32,7 +32,7 @@ class SkrillGateway implements PaymentGatewayInterface
                     'amount'         => $order->amount,
                     'currency'       => $order->currency,
                     'customer_email' => (string) ($order->user->email ?? ''),
-                    'status_url'     => $siteUrl . '/api/payment/callback?provider=skrill',
+                    'status_url'     => $siteUrl . '/api/v1/payment/callback?provider=skrill',
                     'return_url'     => $siteUrl . '/payment/success?order_no=' . $order->order_no,
                     'cancel_url'     => $siteUrl . '/payment/cancel?order_no=' . $order->order_no,
                 ],

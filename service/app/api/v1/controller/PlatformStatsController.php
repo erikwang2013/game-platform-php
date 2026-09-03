@@ -23,7 +23,7 @@ class PlatformStatsController extends BaseController
     /**
      * @Apidoc\Title("平台公开统计")
      * @Apidoc\Desc("C端首页展示：游戏总数、用户总数、今日局数、7日活跃用户")
-     * @Apidoc\Url("/api/platform/stats")
+     * @Apidoc\Url("/api/v1/platform/stats")
      * @Apidoc\Method("GET")
      */
     public function stats(Request $request): Response

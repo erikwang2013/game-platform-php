@@ -25,7 +25,7 @@ class ShareController extends BaseController
 
     /**
      * @Apidoc\Title("生成分享短码")
-     * @Apidoc\Url("/api/shares")
+     * @Apidoc\Url("/api/v1/shares")
      * @Apidoc\Method("POST")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="activity_id", type="string", require=false, desc="关联活动(hashid)")
@@ -52,7 +52,7 @@ class ShareController extends BaseController
 
     /**
      * @Apidoc\Title("分享落地页点击")
-     * @Apidoc\Url("/api/shares/visit")
+     * @Apidoc\Url("/api/v1/shares/visit")
      * @Apidoc\Method("POST")
      * @Apidoc\Param(name="short_code", type="string", require=true, desc="分享短码")
      */

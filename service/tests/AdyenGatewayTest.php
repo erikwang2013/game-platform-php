@@ -22,7 +22,7 @@ class AdyenGatewayTest extends TestCase
     private const HMAC_KEY = 'test-adyen-hmac-key';
     private const MERCHANT = 'TestMerchant';
 
-    protected function makeRequest(string $body, array $headers = [], string $path = '/api/payment/callback?provider=adyen'): Request
+    protected function makeRequest(string $body, array $headers = [], string $path = '/api/v1/payment/callback?provider=adyen'): Request
     {
         $headerBlock = '';
         foreach ($headers as $name => $value) {

@@ -21,7 +21,7 @@ class LeaderboardController extends BaseController
 {
     /**
      * @Apidoc\Title("排行榜列表")
-     * @Apidoc\Url("/api/leaderboard/list")
+     * @Apidoc\Url("/api/v1/leaderboard/list")
      * @Apidoc\Method("GET")
      */
     public function list(Request $request): Response
@@ -46,7 +46,7 @@ class LeaderboardController extends BaseController
 
     /**
      * @Apidoc\Title("排行榜详情")
-     * @Apidoc\Url("/api/leaderboard/{hashid}")
+     * @Apidoc\Url("/api/v1/leaderboard/{hashid}")
      * @Apidoc\Method("GET")
      * @Apidoc\Param(name="hashid", type="string", require=true, desc="排行榜hashid", in="path")
      */

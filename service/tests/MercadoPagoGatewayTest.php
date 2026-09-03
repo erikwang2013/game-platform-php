@@ -22,7 +22,7 @@ class MercadoPagoGatewayTest extends TestCase
     private const SECRET  = 'test-mp-webhook-secret';
     private const DATA_ID = '12345';
 
-    protected function makeRequest(string $body, array $headers = [], string $path = '/api/payment/callback?provider=mercadopago&data_id=12345'): Request
+    protected function makeRequest(string $body, array $headers = [], string $path = '/api/v1/payment/callback?provider=mercadopago&data_id=12345'): Request
     {
         $headerBlock = '';
         foreach ($headers as $name => $value) {

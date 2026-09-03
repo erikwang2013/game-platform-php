@@ -25,7 +25,7 @@ class GameController extends BaseController
 {
     /**
      * @Apidoc\Title("游戏列表")
-     * @Apidoc\Url("/api/game/list")
+     * @Apidoc\Url("/api/v1/game/list")
      * @Apidoc\Method("GET")
      * @Apidoc\Param(name="page", type="int", require=false, desc="页码")
      * @Apidoc\Param(name="per_page", type="int", require=false, desc="每页条数")
@@ -122,7 +122,7 @@ class GameController extends BaseController
 
     /**
      * @Apidoc\Title("游戏详情")
-     * @Apidoc\Url("/api/game/{hashid}")
+     * @Apidoc\Url("/api/v1/game/{hashid}")
      * @Apidoc\Method("GET")
      * @Apidoc\Param(name="hashid", type="string", require=true, desc="游戏hashid", in="path")
      */
@@ -165,7 +165,7 @@ class GameController extends BaseController
 
     /**
      * @Apidoc\Title("多游戏聚合余额")
-     * @Apidoc\Url("/api/game/balance")
+     * @Apidoc\Url("/api/v1/game/balance")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      * @Apidoc\Desc("M5: 聚合用户在各游戏（上架）中的游戏币余额")
@@ -208,7 +208,7 @@ class GameController extends BaseController
 
     /**
      * @Apidoc\Title("签发 SDK 会话令牌")
-     * @Apidoc\Url("/api/game/session")
+     * @Apidoc\Url("/api/v1/game/session")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="game_id", type="string", require=true, desc="游戏ID(hashid)")
@@ -244,7 +244,7 @@ class GameController extends BaseController
 
     /**
      * @Apidoc\Title("启动游戏")
-     * @Apidoc\Url("/api/game/launch")
+     * @Apidoc\Url("/api/v1/game/launch")
      * @Apidoc\Method("POST")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="game_id", type="string", require=true, desc="游戏ID")
@@ -304,7 +304,7 @@ class GameController extends BaseController
 
     /**
      * @Apidoc\Title("搜索建议")
-     * @Apidoc\Url("/api/game/suggest")
+     * @Apidoc\Url("/api/v1/game/suggest")
      * @Apidoc\Method("GET")
      * @Apidoc\Param(name="q", type="string", require=true, desc="搜索关键词")
      */

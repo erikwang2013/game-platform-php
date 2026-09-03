@@ -33,7 +33,7 @@ class WithdrawController extends BaseController
 {
     /**
      * @Apidoc\Title("提现申请")
-     * @Apidoc\Url("/api/withdraw/apply")
+     * @Apidoc\Url("/api/v1/withdraw/apply")
      * @Apidoc\Method("POST")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="platform_amount", type="float", require=true, desc="提现金额")
@@ -271,7 +271,7 @@ class WithdrawController extends BaseController
 
     /**
      * @Apidoc\Title("提现记录")
-     * @Apidoc\Url("/api/withdraw/orders")
+     * @Apidoc\Url("/api/v1/withdraw/orders")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      */

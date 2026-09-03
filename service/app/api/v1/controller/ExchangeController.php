@@ -29,7 +29,7 @@ class ExchangeController extends BaseController
 {
     /**
      * @Apidoc\Title("兑换询价")
-     * @Apidoc\Url("/api/exchange/quote")
+     * @Apidoc\Url("/api/v1/exchange/quote")
      * @Apidoc\Method("POST")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="game_id", type="string", require=true, desc="游戏ID")
@@ -108,7 +108,7 @@ class ExchangeController extends BaseController
 
     /**
      * @Apidoc\Title("买入游戏币")
-     * @Apidoc\Url("/api/exchange/buy")
+     * @Apidoc\Url("/api/v1/exchange/buy")
      * @Apidoc\Method("POST")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="game_id", type="string", require=true, desc="游戏ID")
@@ -122,7 +122,7 @@ class ExchangeController extends BaseController
 
     /**
      * @Apidoc\Title("卖出游戏币")
-     * @Apidoc\Url("/api/exchange/sell")
+     * @Apidoc\Url("/api/v1/exchange/sell")
      * @Apidoc\Method("POST")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="game_id", type="string", require=true, desc="游戏ID")
@@ -136,7 +136,7 @@ class ExchangeController extends BaseController
 
     /**
      * @Apidoc\Title("兑换记录")
-     * @Apidoc\Url("/api/exchange/records")
+     * @Apidoc\Url("/api/v1/exchange/records")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      */

@@ -26,7 +26,7 @@ class GroupController extends BaseController
 {
     /**
      * @Apidoc\Title("创建组/公会")
-     * @Apidoc\Url("/api/groups")
+     * @Apidoc\Url("/api/v1/groups")
      * @Apidoc\Method("POST")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="type", type="string", require=true, desc="team/guild")
@@ -90,7 +90,7 @@ class GroupController extends BaseController
 
     /**
      * @Apidoc\Title("组/公会详情")
-     * @Apidoc\Url("/api/groups/{hashid}")
+     * @Apidoc\Url("/api/v1/groups/{hashid}")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="hashid", type="string", require=true, desc="组ID", in="path")
@@ -109,7 +109,7 @@ class GroupController extends BaseController
 
     /**
      * @Apidoc\Title("成员列表")
-     * @Apidoc\Url("/api/groups/{hashid}/members")
+     * @Apidoc\Url("/api/v1/groups/{hashid}/members")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="hashid", type="string", require=true, desc="组ID", in="path")
@@ -156,7 +156,7 @@ class GroupController extends BaseController
 
     /**
      * @Apidoc\Title("加入组/公会")
-     * @Apidoc\Url("/api/groups/{hashid}/join")
+     * @Apidoc\Url("/api/v1/groups/{hashid}/join")
      * @Apidoc\Method("POST")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="hashid", type="string", require=true, desc="组ID", in="path")
@@ -205,7 +205,7 @@ class GroupController extends BaseController
 
     /**
      * @Apidoc\Title("退出/解散")
-     * @Apidoc\Url("/api/groups/{hashid}/leave")
+     * @Apidoc\Url("/api/v1/groups/{hashid}/leave")
      * @Apidoc\Method("POST")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="hashid", type="string", require=true, desc="组ID", in="path")
@@ -263,7 +263,7 @@ class GroupController extends BaseController
 
     /**
      * @Apidoc\Title("成员角色变更")
-     * @Apidoc\Url("/api/groups/{hashid}/role")
+     * @Apidoc\Url("/api/v1/groups/{hashid}/role")
      * @Apidoc\Method("PUT")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="hashid", type="string", require=true, desc="组ID", in="path")

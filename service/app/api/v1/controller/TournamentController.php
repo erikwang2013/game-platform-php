@@ -19,7 +19,7 @@ class TournamentController extends BaseController
 {
     /**
      * @Apidoc\Title("赛事列表")
-     * @Apidoc\Url("/api/tournament/list")
+     * @Apidoc\Url("/api/v1/tournament/list")
      * @Apidoc\Method("GET")
      */
     public function list(Request $request): Response
@@ -57,7 +57,7 @@ class TournamentController extends BaseController
 
     /**
      * @Apidoc\Title("赛事详情")
-     * @Apidoc\Url("/api/tournament/{hashid}")
+     * @Apidoc\Url("/api/v1/tournament/{hashid}")
      * @Apidoc\Method("GET")
      */
     public function detail(Request $request, string $hashid): Response
@@ -88,7 +88,7 @@ class TournamentController extends BaseController
 
     /**
      * @Apidoc\Title("报名参赛")
-     * @Apidoc\Url("/api/tournament/{hashid}/join")
+     * @Apidoc\Url("/api/v1/tournament/{hashid}/join")
      * @Apidoc\Method("POST")
      * @Apidoc\Auth(true)
      */

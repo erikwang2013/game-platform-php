@@ -28,7 +28,7 @@ class UserController extends BaseController
 {
     /**
      * @Apidoc\Title("个人信息")
-     * @Apidoc\Url("/api/user/profile")
+     * @Apidoc\Url("/api/v1/user/profile")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      */
@@ -57,7 +57,7 @@ class UserController extends BaseController
 
     /**
      * @Apidoc\Title("编辑资料")
-     * @Apidoc\Url("/api/user/profile")
+     * @Apidoc\Url("/api/v1/user/profile")
      * @Apidoc\Method("PUT")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="nickname", type="string", require=false, desc="昵称")
@@ -109,7 +109,7 @@ class UserController extends BaseController
 
     /**
      * @Apidoc\Title("导出个人数据(GDPR)")
-     * @Apidoc\Url("/api/user/export-data")
+     * @Apidoc\Url("/api/v1/user/export-data")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      */
@@ -169,7 +169,7 @@ class UserController extends BaseController
 
     /**
      * @Apidoc\Title("注销账号(GDPR)")
-     * @Apidoc\Url("/api/user/delete-account")
+     * @Apidoc\Url("/api/v1/user/delete-account")
      * @Apidoc\Method("POST")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="password", type="string", require=true, desc="密码")
@@ -232,7 +232,7 @@ class UserController extends BaseController
 
     /**
      * @Apidoc\Title("隐私设置")
-     * @Apidoc\Url("/api/user/privacy")
+     * @Apidoc\Url("/api/v1/user/privacy")
      * @Apidoc\Method("PUT")
      * @Apidoc\Auth(true)
      */

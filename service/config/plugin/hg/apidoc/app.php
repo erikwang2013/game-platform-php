@@ -19,7 +19,7 @@ return [
         ]],
         'auto_url' => [
             'letter_rule' => "lcfirst",
-            'prefix' => "/api",
+            'prefix' => "/api/v1",
         ],
         'auto_register_routes' => false,
         'cache' => ['enable' => false],
@@ -32,7 +32,6 @@ return [
         'params' => [
             'header' => [
                 ['name' => 'Authorization', 'type' => 'string', 'require' => false, 'desc' => 'Bearer Token (JWT) 认证接口必传'],
-                ['name' => 'API-Version', 'type' => 'string', 'require' => true, 'default' => 'v1', 'desc' => 'API版本号'],
                 ['name' => 'X-Language', 'type' => 'string', 'require' => false, 'default' => 'en-US', 'desc' => '语言: en-US/zh-CN/ja-JP/ko-KR'],
             ],
         ],

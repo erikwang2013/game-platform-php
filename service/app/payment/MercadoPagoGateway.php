@@ -51,7 +51,7 @@ class MercadoPagoGateway implements PaymentGatewayInterface
                     'unit_price' => (float) $order->amount,
                 ]],
                 'external_reference' => $order->order_no,
-                'notification_url'   => $siteUrl . '/api/payment/callback?provider=mercadopago',
+                'notification_url'   => $siteUrl . '/api/v1/payment/callback?provider=mercadopago',
                 'back_urls'          => [
                     'success' => $siteUrl . '/payment/success?order_no=' . $order->order_no,
                     'failure' => $siteUrl . '/payment/cancel?order_no=' . $order->order_no,

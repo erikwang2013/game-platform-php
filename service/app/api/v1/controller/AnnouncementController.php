@@ -20,7 +20,7 @@ class AnnouncementController extends BaseController
 {
     /**
      * @Apidoc\Title("公告列表")
-     * @Apidoc\Url("/api/announcement/list")
+     * @Apidoc\Url("/api/v1/announcement/list")
      * @Apidoc\Method("GET")
      */
     public function list(Request $request): Response
@@ -49,7 +49,7 @@ class AnnouncementController extends BaseController
 
     /**
      * @Apidoc\Title("公告详情")
-     * @Apidoc\Url("/api/announcement/detail/{hashid}")
+     * @Apidoc\Url("/api/v1/announcement/detail/{hashid}")
      * @Apidoc\Method("GET")
      * @Apidoc\Param(name="hashid", type="string", require=true, desc="公告hashid", in="path")
      */

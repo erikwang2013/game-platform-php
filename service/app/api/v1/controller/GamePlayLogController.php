@@ -20,7 +20,7 @@ class GamePlayLogController extends BaseController
 {
     /**
      * @Apidoc\Title("游戏记录")
-     * @Apidoc\Url("/api/game/play-logs")
+     * @Apidoc\Url("/api/v1/game/play-logs")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      */
@@ -72,7 +72,7 @@ class GamePlayLogController extends BaseController
 
     /**
      * @Apidoc\Title("记录详情")
-     * @Apidoc\Url("/api/game/play-log/{hashid}")
+     * @Apidoc\Url("/api/v1/game/play-log/{hashid}")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="hashid", type="string", require=true, desc="记录hashid", in="path")

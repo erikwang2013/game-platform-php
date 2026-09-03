@@ -21,7 +21,7 @@ class WalletController extends BaseController
 {
     /**
      * @Apidoc\Title("钱包信息")
-     * @Apidoc\Url("/api/wallet/info")
+     * @Apidoc\Url("/api/v1/wallet/info")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      */
@@ -45,7 +45,7 @@ class WalletController extends BaseController
 
     /**
      * @Apidoc\Title("流水记录")
-     * @Apidoc\Url("/api/wallet/transactions")
+     * @Apidoc\Url("/api/v1/wallet/transactions")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="page", type="int", require=false, desc="页码")

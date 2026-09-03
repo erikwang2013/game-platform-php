@@ -40,7 +40,7 @@ class PaytmGateway implements PaymentGatewayInterface
             'orderId'     => $order->order_no,
             'txnAmount'   => ['value' => (string) $order->amount, 'currency' => $order->currency],
             'userInfo'    => ['custId' => 'user_' . $order->user_id],
-            'callbackUrl' => $siteUrl . '/api/payment/callback?provider=paytm',
+            'callbackUrl' => $siteUrl . '/api/v1/payment/callback?provider=paytm',
         ];
         $json = json_encode($body, JSON_UNESCAPED_SLASHES);
 

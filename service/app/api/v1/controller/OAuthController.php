@@ -58,7 +58,7 @@ class OAuthController extends BaseController
 
     /**
      * @Apidoc\Title("OAuth授权跳转")
-     * @Apidoc\Url("/api/auth/oauth/{provider}")
+     * @Apidoc\Url("/api/v1/auth/oauth/{provider}")
      * @Apidoc\Method("GET")
      * @Apidoc\Param(name="provider", type="string", require=true, desc="第三方平台(google/facebook/apple/twitter/microsoft/linkedin/github)", in="path")
      */
@@ -107,7 +107,7 @@ class OAuthController extends BaseController
 
     /**
      * @Apidoc\Title("OAuth回调")
-     * @Apidoc\Url("/api/auth/oauth/{provider}/callback")
+     * @Apidoc\Url("/api/v1/auth/oauth/{provider}/callback")
      * @Apidoc\Method("POST")
      * @Apidoc\Param(name="provider", type="string", require=true, desc="第三方平台(google/facebook/apple/twitter/microsoft/linkedin/github)", in="path")
      * @Apidoc\Param(name="code", type="string", require=true, desc="授权码")

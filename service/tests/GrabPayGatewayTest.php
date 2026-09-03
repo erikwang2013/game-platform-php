@@ -22,7 +22,7 @@ class GrabPayGatewayTest extends TestCase
     private const SECRET = 'test-grabpay-secret';
     private const MERCHANT_ID = 'GRAB-TEST-001';
 
-    protected function makeRequest(string $body, array $headers = [], string $path = '/api/payment/callback?provider=grabpay'): Request
+    protected function makeRequest(string $body, array $headers = [], string $path = '/api/v1/payment/callback?provider=grabpay'): Request
     {
         $headerBlock = '';
         foreach ($headers as $name => $value) {

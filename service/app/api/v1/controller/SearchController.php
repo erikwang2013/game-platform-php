@@ -20,7 +20,7 @@ class SearchController extends BaseController
 {
     /**
      * @Apidoc\Title("全局搜索")
-     * @Apidoc\Url("/api/search")
+     * @Apidoc\Url("/api/v1/search")
      * @Apidoc\Method("GET")
      * @Apidoc\Param(name="q", type="string", require=true, desc="搜索关键词")
      * @Apidoc\Param(name="type", type="string", require=false, desc="搜索类型(game/user)")

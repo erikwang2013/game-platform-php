@@ -20,7 +20,7 @@ class CountryController extends BaseController
 {
     /**
      * @Apidoc\Title("国家列表")
-     * @Apidoc\Url("/api/country/list")
+     * @Apidoc\Url("/api/v1/country/list")
      * @Apidoc\Method("GET")
      */
     public function list(Request $request): Response
@@ -41,7 +41,7 @@ class CountryController extends BaseController
 
     /**
      * @Apidoc\Title("国家详情")
-     * @Apidoc\Url("/api/country/{code}")
+     * @Apidoc\Url("/api/v1/country/{code}")
      * @Apidoc\Method("GET")
      * @Apidoc\Param(name="code", type="string", require=true, desc="国家代码", in="path")
      */

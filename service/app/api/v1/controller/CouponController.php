@@ -21,7 +21,7 @@ class CouponController extends BaseController
 {
     /**
      * @Apidoc\Title("可领优惠券")
-     * @Apidoc\Url("/api/coupon/available")
+     * @Apidoc\Url("/api/v1/coupon/available")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      */
@@ -73,7 +73,7 @@ class CouponController extends BaseController
 
     /**
      * @Apidoc\Title("领取优惠券")
-     * @Apidoc\Url("/api/coupon/claim")
+     * @Apidoc\Url("/api/v1/coupon/claim")
      * @Apidoc\Method("POST")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="coupon_id", type="string", require=true, desc="优惠券ID")
@@ -173,7 +173,7 @@ class CouponController extends BaseController
 
     /**
      * @Apidoc\Title("我的优惠券")
-     * @Apidoc\Url("/api/coupon/my")
+     * @Apidoc\Url("/api/v1/coupon/my")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      */

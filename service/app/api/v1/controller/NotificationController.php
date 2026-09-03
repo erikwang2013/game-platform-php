@@ -20,7 +20,7 @@ class NotificationController extends BaseController
 {
     /**
      * @Apidoc\Title("通知列表")
-     * @Apidoc\Url("/api/notification/list")
+     * @Apidoc\Url("/api/v1/notification/list")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      */
@@ -65,7 +65,7 @@ class NotificationController extends BaseController
 
     /**
      * @Apidoc\Title("未读数量")
-     * @Apidoc\Url("/api/notification/unread-count")
+     * @Apidoc\Url("/api/v1/notification/unread-count")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      */
@@ -80,7 +80,7 @@ class NotificationController extends BaseController
 
     /**
      * @Apidoc\Title("标记已读")
-     * @Apidoc\Url("/api/notification/read")
+     * @Apidoc\Url("/api/v1/notification/read")
      * @Apidoc\Method("POST")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="id", type="string", require=false, desc="通知ID(不传则全部已读)")

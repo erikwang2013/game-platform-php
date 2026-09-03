@@ -27,7 +27,7 @@ class DepositController extends BaseController
 {
     /**
      * @Apidoc\Title("创建充值订单")
-     * @Apidoc\Url("/api/deposit/create")
+     * @Apidoc\Url("/api/v1/deposit/create")
      * @Apidoc\Method("POST")
      * @Apidoc\Auth(true)
      * @Apidoc\Param(name="amount", type="float", require=true, desc="充值金额")
@@ -134,7 +134,7 @@ class DepositController extends BaseController
 
     /**
      * @Apidoc\Title("充值记录")
-     * @Apidoc\Url("/api/deposit/orders")
+     * @Apidoc\Url("/api/v1/deposit/orders")
      * @Apidoc\Method("GET")
      * @Apidoc\Auth(true)
      */
