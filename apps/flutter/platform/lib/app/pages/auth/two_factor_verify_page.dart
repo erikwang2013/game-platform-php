@@ -46,7 +46,7 @@ class _TwoFactorVerifyPageState extends State<TwoFactorVerifyPage> {
       _error = null;
     });
     try {
-      final resp = await _api.post('/api/2fa/verify', data: {'pending_2fa_token': ticket, 'code': code});
+      final resp = await _api.post('/api/v1/2fa/verify', data: {'pending_2fa_token': ticket, 'code': code});
       final data = resp['data'];
       await AuthService.saveLogin(
         token: data['access_token'] as String,

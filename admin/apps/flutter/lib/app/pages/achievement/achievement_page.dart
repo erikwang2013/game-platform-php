@@ -16,7 +16,7 @@ class AchievementAdminController extends GetxController {
   Future<void> load() async {
     isLoading.value = true;
     try {
-      final resp = await api.get('/admin/achievement/list');
+      final resp = await api.get('/admin/v1/achievement/list');
       items.value = resp['data']['list'] as List<dynamic>;
     } catch (e) { Get.snackbar('${AppTranslations.t('app.error')}', '$e'); }
     finally { isLoading.value = false; }
@@ -25,9 +25,9 @@ class AchievementAdminController extends GetxController {
   Future<void> save(Map<String, dynamic> item) async {
     try {
       if (item['id'] != null) {
-        await api.put('/admin/achievement/${item['id']}', data: item);
+        await api.put('/admin/v1/achievement/${item['id']}', data: item);
       } else {
-        await api.post('/admin/achievement/create', data: item);
+        await api.post('/admin/v1/achievement/create', data: item);
       }
       await load();
       Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('app.saved')}');
@@ -36,7 +36,7 @@ class AchievementAdminController extends GetxController {
 
   Future<void> remove(String id) async {
     try {
-      await api.delete('/admin/achievement/$id');
+      await api.delete('/admin/v1/achievement/$id');
       await load();
       Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('app.deleted')}');
     } catch (e) { Get.snackbar('${AppTranslations.t('app.error')}', '$e'); }

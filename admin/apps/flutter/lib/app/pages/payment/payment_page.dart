@@ -21,7 +21,7 @@ class PaymentController extends GetxController {
   Future<void> loadMethods() async {
     isLoading.value = true;
     try {
-      final resp = await api.get('/admin/payment/method/list');
+      final resp = await api.get('/admin/v1/payment/method/list');
       methods.value = resp['data'] is List
           ? resp['data'] as List<dynamic>
           : (resp['data']['list'] as List<dynamic>? ?? []);
@@ -34,7 +34,7 @@ class PaymentController extends GetxController {
 
   Future<void> toggleMethod(String hashid, bool enabled) async {
     try {
-      await api.post('/admin/payment/method/toggle', data: {
+      await api.post('/admin/v1/payment/method/toggle', data: {
         'id': hashid,
         'status': enabled ? 1 : 0,
       });
@@ -49,9 +49,9 @@ class PaymentController extends GetxController {
   Future<bool> saveMethod({String? hashid, required Map<String, dynamic> data}) async {
     try {
       if (hashid == null) {
-        await api.post('/admin/payment/method/create', data: data);
+        await api.post('/admin/v1/payment/method/create', data: data);
       } else {
-        await api.put('/admin/payment/method/$hashid', data: data);
+        await api.put('/admin/v1/payment/method/$hashid', data: data);
       }
       await loadMethods();
       return true;
@@ -63,7 +63,7 @@ class PaymentController extends GetxController {
 
   Future<bool> deleteMethod(String hashid) async {
     try {
-      await api.delete('/admin/payment/method/$hashid');
+      await api.delete('/admin/v1/payment/method/$hashid');
       await loadMethods();
       return true;
     } catch (e) {

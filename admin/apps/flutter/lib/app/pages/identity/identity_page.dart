@@ -16,7 +16,7 @@ class IdentityController extends GetxController {
   Future<void> loadData() async {
     isLoading.value = true;
     try {
-      final resp = await api.get('/admin/identity/list', params: {'status': statusFilter});
+      final resp = await api.get('/admin/v1/identity/list', params: {'status': statusFilter});
       list.value = (resp['data']['list'] as List<dynamic>?) ?? [];
     } catch (e) {
       Get.snackbar('Error', 'Load failed: $e');
@@ -27,7 +27,7 @@ class IdentityController extends GetxController {
 
   Future<void> review(String id, String action) async {
     try {
-      await api.put('/admin/identity/review', data: {'id': id, 'action': action});
+      await api.put('/admin/v1/identity/review', data: {'id': id, 'action': action});
       Get.snackbar('Success', action == 'approve' ? 'Approved' : 'Rejected');
       loadData();
     } catch (e) {

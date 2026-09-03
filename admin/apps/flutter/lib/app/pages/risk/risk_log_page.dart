@@ -15,7 +15,7 @@ class RiskLogController extends GetxController {
     isLoading.value = true;
     try {
       // Risk logs are accessed via admin dashboard extension or direct query
-      final resp = await api.get('/admin/dashboard/platform');
+      final resp = await api.get('/admin/v1/dashboard/platform');
       // For MVP, just show we loaded something
       list.value = [];
     } catch (e) {

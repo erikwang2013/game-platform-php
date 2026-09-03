@@ -50,7 +50,7 @@ class _OAuthCallbackPageState extends State<OAuthCallbackPage> {
 
     try {
       final api = ApiService();
-      final resp = await api.post('/api/auth/oauth/$provider/callback', data: {
+      final resp = await api.post('/api/v1/auth/oauth/$provider/callback', data: {
         'code': code,
         'state': state,
       });

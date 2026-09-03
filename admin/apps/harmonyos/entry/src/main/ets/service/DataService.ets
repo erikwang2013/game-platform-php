@@ -19,7 +19,7 @@ import {
 export class AuthService {
   static async login(username: string, password: string): Promise<LoginResponse> {
     const body: LoginRequest = { username, password };
-    const response = await apiService.post<LoginResponse>('/api/auth/login', body);
+    const response = await apiService.post<LoginResponse>('/api/v1/auth/login', body);
     if (response.code !== 0) {
       throw new Error(response.message);
     }
@@ -27,7 +27,7 @@ export class AuthService {
   }
 
   static async refreshToken(refreshToken: string): Promise<LoginResponse> {
-    const response = await apiService.post<LoginResponse>('/api/auth/refresh', {
+    const response = await apiService.post<LoginResponse>('/api/v1/auth/refresh', {
       refresh_token: refreshToken
     });
     if (response.code !== 0) {
@@ -42,7 +42,7 @@ export class AuthService {
  */
 export class DashboardService {
   static async getDashboard(): Promise<DashboardData> {
-    const response = await apiService.get<DashboardData>('/admin/dashboard');
+    const response = await apiService.get<DashboardData>('/admin/v1/dashboard');
     if (response.code !== 0) {
       throw new Error(response.message);
     }
@@ -59,7 +59,7 @@ export class UserService {
       .filter(([_, v]) => v !== undefined && v !== '')
       .map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`)
       .join('&');
-    const response = await apiService.get<UserListResult>(`/admin/user?${query}`);
+    const response = await apiService.get<UserListResult>(`/admin/v1/user?${query}`);
     if (response.code !== 0) {
       throw new Error(response.message);
     }
@@ -67,7 +67,7 @@ export class UserService {
   }
 
   static async getDetail(id: string): Promise<User> {
-    const response = await apiService.get<User>(`/admin/user/${id}`);
+    const response = await apiService.get<User>(`/admin/v1/user/${id}`);
     if (response.code !== 0) {
       throw new Error(response.message);
     }
@@ -75,28 +75,28 @@ export class UserService {
   }
 
   static async create(data: Partial<User> & { password: string }): Promise<void> {
-    const response = await apiService.post<User>('/admin/user', data);
+    const response = await apiService.post<User>('/admin/v1/user', data);
     if (response.code !== 0) {
       throw new Error(response.message);
     }
   }
 
   static async update(id: string, data: Partial<User>): Promise<void> {
-    const response = await apiService.put<User>(`/admin/user/${id}`, data);
+    const response = await apiService.put<User>(`/admin/v1/user/${id}`, data);
     if (response.code !== 0) {
       throw new Error(response.message);
     }
   }
 
   static async delete(id: string): Promise<void> {
-    const response = await apiService.delete<void>(`/admin/user/${id}`);
+    const response = await apiService.delete<void>(`/admin/v1/user/${id}`);
     if (response.code !== 0) {
       throw new Error(response.message);
     }
   }
 
   static async batchStatus(ids: string[], status: number): Promise<void> {
-    const response = await apiService.post<void>('/admin/user/batch/status', { ids, status });
+    const response = await apiService.post<void>('/admin/v1/user/batch/status', { ids, status });
     if (response.code !== 0) {
       throw new Error(response.message);
     }
@@ -108,7 +108,7 @@ export class UserService {
  */
 export class ReportService {
   static async getSummary(start: string, end: string): Promise<ReportSummary> {
-    const response = await apiService.get<ReportSummary>(`/admin/report/summary?start=${start}&end=${end}`);
+    const response = await apiService.get<ReportSummary>(`/admin/v1/report/summary?start=${start}&end=${end}`);
     if (response.code !== 0) {
       throw new Error(response.message);
     }

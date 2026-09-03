@@ -65,7 +65,7 @@ class LogController extends GetxController {
       final params = <String, dynamic>{'page': page.value, 'limit': limit.value};
       if (actionFilter.value.isNotEmpty) params['action'] = actionFilter.value;
       if (pathFilter.value.isNotEmpty) params['path'] = pathFilter.value;
-      final resp = await api.get('/admin/log', params: params);
+      final resp = await api.get('/admin/v1/log', params: params);
       logs.value = resp['data']['list'] as List<dynamic>;
       total.value = resp['data']['total'] as int;
     } catch (e) { Get.snackbar('错误', '加载失败: $e'); }

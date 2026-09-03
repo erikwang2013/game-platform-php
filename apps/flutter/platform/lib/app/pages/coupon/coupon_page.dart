@@ -39,8 +39,8 @@ class _CouponPageState extends State<CouponPage> with SingleTickerProviderStateM
       _error = null;
     });
     try {
-      final availableResp = await _api.get('/api/coupon/available');
-      final mineResp = await _api.get('/api/coupon/my');
+      final availableResp = await _api.get('/api/v1/coupon/available');
+      final mineResp = await _api.get('/api/v1/coupon/my');
       setState(() {
         _available = ApiHelpers.extractList(availableResp['data']);
         _mine = ApiHelpers.extractList(mineResp['data']);
@@ -61,7 +61,7 @@ class _CouponPageState extends State<CouponPage> with SingleTickerProviderStateM
 
   Future<void> _claim(String id) async {
     try {
-      await _api.post('/api/coupon/claim', data: {'coupon_id': id});
+      await _api.post('/api/v1/coupon/claim', data: {'coupon_id': id});
       Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('coupon.claimed')}');
       await _load();
     } on ApiException catch (e) {

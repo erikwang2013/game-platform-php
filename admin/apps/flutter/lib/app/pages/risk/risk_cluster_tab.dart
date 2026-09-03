@@ -21,7 +21,7 @@ class RiskClusterController extends GetxController {
   Future<void> load() async {
     isLoading.value = true;
     try {
-      final resp = await api.get('/admin/risk/clusters', params: {
+      final resp = await api.get('/admin/v1/risk/clusters', params: {
         if (typeFilter.isNotEmpty) 'type': typeFilter,
         if (statusFilter.isNotEmpty) 'status': statusFilter,
       });
@@ -35,22 +35,22 @@ class RiskClusterController extends GetxController {
   }
 
   Future<List<dynamic>> detect() async {
-    final resp = await api.post('/admin/risk/clusters/detect');
+    final resp = await api.post('/admin/v1/risk/clusters/detect');
     return (resp['data']['candidates'] as List<dynamic>?) ?? [];
   }
 
   Future<void> confirm(Map<String, dynamic> data) async {
-    await api.post('/admin/risk/clusters/confirm', data: data);
+    await api.post('/admin/v1/risk/clusters/confirm', data: data);
     await load();
   }
 
   Future<List<dynamic>> members(String id) async {
-    final resp = await api.get('/admin/risk/clusters/$id/members');
+    final resp = await api.get('/admin/v1/risk/clusters/$id/members');
     return (resp['data']['members'] as List<dynamic>?) ?? [];
   }
 
   Future<void> setStatus(String id, int status) async {
-    await api.put('/admin/risk/clusters/$id/status', data: {'status': status});
+    await api.put('/admin/v1/risk/clusters/$id/status', data: {'status': status});
     await load();
   }
 }

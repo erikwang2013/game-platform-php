@@ -41,7 +41,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> _updateProfile() async {
     try {
-      await _api.put('/admin/profile', data: {
+      await _api.put('/admin/v1/profile', data: {
         'real_name': _realNameCtrl.text.trim(),
         'phone': _phoneCtrl.text.trim(),
         'email': _emailCtrl.text.trim(),
@@ -80,7 +80,7 @@ class _ProfilePageState extends State<ProfilePage> {
     }
 
     try {
-      await _api.put('/admin/profile/password', data: {
+      await _api.put('/admin/v1/profile/password', data: {
         'old_password': oldPwdCtrl.text,
         'new_password': newPwdCtrl.text,
       });
@@ -103,7 +103,7 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
     if (ok != true) return;
-    try { await _api.post('/admin/profile/logout'); } catch (_) {}
+    try { await _api.post('/admin/v1/profile/logout'); } catch (_) {}
     await AuthService.clearToken();
     Get.offAllNamed('/login');
   }

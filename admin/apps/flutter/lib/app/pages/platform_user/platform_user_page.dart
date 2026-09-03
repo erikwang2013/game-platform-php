@@ -23,7 +23,7 @@ class PlatformUserController extends GetxController {
       final params = <String, dynamic>{};
       if (keyword.value.isNotEmpty) params['keyword'] = keyword.value;
       if (statusFilter.value.isNotEmpty) params['status'] = statusFilter.value;
-      final resp = await api.get('/admin/platform/user/list', params: params);
+      final resp = await api.get('/admin/v1/platform/user/list', params: params);
       users.value = resp['data'] is List ? resp['data'] as List<dynamic> : (resp['data']['list'] as List<dynamic>? ?? []);
     } catch (e) {
       Get.snackbar('错误', '加载平台用户失败: $e');
@@ -34,7 +34,7 @@ class PlatformUserController extends GetxController {
 
   Future<void> toggleStatus(String hashid, int newStatus) async {
     try {
-      await api.put('/admin/platform/user/$hashid', data: {'status': newStatus});
+      await api.put('/admin/v1/platform/user/$hashid', data: {'status': newStatus});
       await loadUsers();
       Get.snackbar('成功', newStatus == 1 ? '用户已启用' : '用户已禁用');
     } catch (e) {
@@ -44,7 +44,7 @@ class PlatformUserController extends GetxController {
 
   Future<Map<String, dynamic>?> getUserDetail(String hashid) async {
     try {
-      final resp = await api.get('/admin/platform/user/$hashid');
+      final resp = await api.get('/admin/v1/platform/user/$hashid');
       return resp['data'] as Map<String, dynamic>?;
     } catch (e) {
       Get.snackbar('错误', '获取用户详情失败: $e');

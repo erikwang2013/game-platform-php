@@ -31,8 +31,8 @@ class _NotificationPageState extends State<NotificationPage> {
       _error = null;
     });
     try {
-      final listResp = await _api.get('/api/notification/list');
-      final countResp = await _api.get('/api/notification/unread-count');
+      final listResp = await _api.get('/api/v1/notification/list');
+      final countResp = await _api.get('/api/v1/notification/unread-count');
       setState(() {
         _items = ApiHelpers.extractList(listResp['data']);
         _unread = (countResp['data']?['count'] as num?)?.toInt() ?? 0;
@@ -53,7 +53,7 @@ class _NotificationPageState extends State<NotificationPage> {
 
   Future<void> _markRead([String? id]) async {
     try {
-      await _api.post('/api/notification/read', data: id == null ? null : {'id': id});
+      await _api.post('/api/v1/notification/read', data: id == null ? null : {'id': id});
       await _load();
     } on ApiException catch (e) {
       Get.snackbar('${AppTranslations.t('app.error')}', e.message);

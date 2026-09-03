@@ -17,7 +17,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _usernameCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
-  final _dio = Dio(BaseOptions(baseUrl: ApiService.baseUrl, headers: {'API-Version': 'v1'}));
+  final _dio = Dio(BaseOptions(baseUrl: ApiService.baseUrl, headers: {}));
   bool _loading = false;
   bool _isRegister = false;
   String? _error;
@@ -44,7 +44,7 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      final endpoint = _isRegister ? '/api/auth/register' : '/api/auth/login';
+      final endpoint = _isRegister ? '/api/v1/auth/register' : '/api/v1/auth/login';
       final resp = await _dio.post(endpoint, data: {
         'username': username,
         'password': password,
@@ -79,7 +79,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _oauthLogin(String provider) async {
     try {
       final api = ApiService();
-      final redirectResp = await api.get('/api/auth/oauth/$provider');
+      final redirectResp = await api.get('/api/v1/auth/oauth/$provider');
       final redirectUrl = redirectResp['data']['redirect_url'] as String?;
       if (redirectUrl == null || redirectUrl.isEmpty) {
         Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('login.oauth_unavailable')}');

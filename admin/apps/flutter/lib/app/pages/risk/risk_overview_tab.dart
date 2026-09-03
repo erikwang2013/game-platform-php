@@ -21,11 +21,11 @@ class RiskOverviewController extends GetxController {
   Future<void> load() async {
     isLoading.value = true;
     try {
-      final o = await api.get('/admin/risk/overview');
+      final o = await api.get('/admin/v1/risk/overview');
       overview.value = o['data'];
-      final t = await api.get('/admin/risk/hit-trend');
+      final t = await api.get('/admin/v1/risk/hit-trend');
       trend.value = t['data'];
-      final d = await api.get('/admin/risk/action-distribution');
+      final d = await api.get('/admin/v1/risk/action-distribution');
       distribution.value = d['data'];
     } catch (e) {
       Get.snackbar('加载失败', '$e');

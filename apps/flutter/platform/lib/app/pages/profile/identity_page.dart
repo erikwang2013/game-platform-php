@@ -43,7 +43,7 @@ class _IdentityPageState extends State<IdentityPage> {
   Future<void> _loadStatus() async {
     try {
       final api = ApiService();
-      final resp = await api.get('/api/user/identity/status');
+      final resp = await api.get('/api/v1/user/identity/status');
       final data = resp['data'];
       if (data != null && data['status'] != 'not_submitted') {
         setState(() => _existingData = data as Map<String, dynamic>?);
@@ -56,7 +56,7 @@ class _IdentityPageState extends State<IdentityPage> {
     setState(() => _isLoading = true);
     try {
       final api = ApiService();
-      await api.post('/api/user/identity/apply', data: {
+      await api.post('/api/v1/user/identity/apply', data: {
         'real_name': _nameCtrl.text,
         'id_type': _idType,
         'id_number': _idNumberCtrl.text,

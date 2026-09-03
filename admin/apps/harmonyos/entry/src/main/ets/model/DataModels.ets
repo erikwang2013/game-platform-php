@@ -126,7 +126,7 @@ export interface LoginResponse {
 }
 
 /**
- * 报表汇总（/admin/report/summary）
+ * 报表汇总（/admin/v1/report/summary）
  */
 export interface ReportSummary {
   start: string;

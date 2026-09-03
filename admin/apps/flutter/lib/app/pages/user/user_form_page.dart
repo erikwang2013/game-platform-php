@@ -60,9 +60,9 @@ class _UserFormPageState extends State<UserFormPage> {
     try {
       final api = ApiService();
       if (isEdit) {
-        await api.put('/admin/user/${widget.userData!['id']}', data: data);
+        await api.put('/admin/v1/user/${widget.userData!['id']}', data: data);
       } else {
-        await api.post('/admin/user', data: data);
+        await api.post('/admin/v1/user', data: data);
       }
       Get.snackbar('成功', isEdit ? 'userUpdateSuccess' : 'userCreateSuccess');
       Get.back(result: true);

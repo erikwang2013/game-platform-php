@@ -32,11 +32,11 @@ function unwrapList<T>(data: GameListResult | TransactionListResult | T[] | unde
 }
 
 /**
- * 认证服务 — C 端 /api/auth/*
+ * 认证服务 — C 端 /api/v1/auth/*
  */
 export class AuthService {
   static async login(username: string, password: string): Promise<LoginResponse> {
-    const response = await apiService.post<LoginResponse>('/api/auth/login', { username, password });
+    const response = await apiService.post<LoginResponse>('/api/v1/auth/login', { username, password });
     if (response.code !== 0) {
       throw new Error(response.message);
     }
@@ -44,7 +44,7 @@ export class AuthService {
   }
 
   static async register(username: string, password: string): Promise<LoginResponse> {
-    const response = await apiService.post<LoginResponse>('/api/auth/register', { username, password });
+    const response = await apiService.post<LoginResponse>('/api/v1/auth/register', { username, password });
     if (response.code !== 0) {
       throw new Error(response.message);
     }
@@ -53,11 +53,11 @@ export class AuthService {
 }
 
 /**
- * 游戏服务 — C 端 /api/game/*
+ * 游戏服务 — C 端 /api/v1/game/*
  */
 export class GameService {
   static async list(keyword?: string): Promise<GameItem[]> {
-    let path = '/api/game/list?page=1&per_page=50';
+    let path = '/api/v1/game/list?page=1&per_page=50';
     if (keyword && keyword.length > 0) {
       path += `&keyword=${encodeURIComponent(keyword)}`;
     }
@@ -69,7 +69,7 @@ export class GameService {
   }
 
   static async detail(id: string): Promise<GameItem> {
-    const response = await apiService.get<GameItem>(`/api/game/detail/${id}`);
+    const response = await apiService.get<GameItem>(`/api/v1/game/detail/${id}`);
     if (response.code !== 0) {
       throw new Error(response.message);
     }
@@ -77,7 +77,7 @@ export class GameService {
   }
 
   static async launch(gameId: string): Promise<GameLaunchResult> {
-    const response = await apiService.post<GameLaunchResult>('/api/game/launch', { game_id: gameId });
+    const response = await apiService.post<GameLaunchResult>('/api/v1/game/launch', { game_id: gameId });
     if (response.code !== 0) {
       throw new Error(response.message);
     }
@@ -86,11 +86,11 @@ export class GameService {
 }
 
 /**
- * 钱包服务 — C 端 /api/wallet/*
+ * 钱包服务 — C 端 /api/v1/wallet/*
  */
 export class WalletService {
   static async info(): Promise<WalletInfo> {
-    const response = await apiService.get<WalletInfo>('/api/wallet/info');
+    const response = await apiService.get<WalletInfo>('/api/v1/wallet/info');
     if (response.code !== 0) {
       throw new Error(response.message);
     }
@@ -98,7 +98,7 @@ export class WalletService {
   }
 
   static async transactions(page: number = 1): Promise<TransactionItem[]> {
-    const response = await apiService.get<TransactionListResult>(`/api/wallet/transactions?page=${page}&per_page=20`);
+    const response = await apiService.get<TransactionListResult>(`/api/v1/wallet/transactions?page=${page}&per_page=20`);
     if (response.code !== 0) {
       throw new Error(response.message);
     }
@@ -107,11 +107,11 @@ export class WalletService {
 }
 
 /**
- * 用户服务 — C 端 /api/user/profile
+ * 用户服务 — C 端 /api/v1/user/profile
  */
 export class UserService {
   static async profile(): Promise<UserProfile> {
-    const response = await apiService.get<UserProfile>('/api/user/profile');
+    const response = await apiService.get<UserProfile>('/api/v1/user/profile');
     if (response.code !== 0) {
       throw new Error(response.message);
     }
@@ -119,7 +119,7 @@ export class UserService {
   }
 
   static async updateProfile(data: object): Promise<UserProfile> {
-    const response = await apiService.put<UserProfile>('/api/user/profile', data);
+    const response = await apiService.put<UserProfile>('/api/v1/user/profile', data);
     if (response.code !== 0) {
       throw new Error(response.message);
     }

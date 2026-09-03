@@ -18,7 +18,7 @@ class GameListController extends GetxController {
   Future<void> loadGames() async {
     isLoading.value = true;
     try {
-      final resp = await api.get('/admin/game/list');
+      final resp = await api.get('/admin/v1/game/list');
       games.value = resp['data'] is List ? resp['data'] as List<dynamic> : (resp['data']['list'] as List<dynamic>? ?? []);
     } catch (e) {
       Get.snackbar('错误', '加载游戏列表失败: $e');
@@ -29,7 +29,7 @@ class GameListController extends GetxController {
 
   Future<void> create(Map<String, dynamic> data) async {
     try {
-      await api.post('/admin/game/create', data: data);
+      await api.post('/admin/v1/game/create', data: data);
       await loadGames();
       Get.snackbar('成功', 'gameCreateSuccess');
     } catch (e) {
@@ -39,7 +39,7 @@ class GameListController extends GetxController {
 
   Future<void> updateGame(String hashid, Map<String, dynamic> data) async {
     try {
-      await api.put('/admin/game/$hashid', data: data);
+      await api.put('/admin/v1/game/$hashid', data: data);
       await loadGames();
       Get.snackbar('成功', 'gameUpdateSuccess');
     } catch (e) {
@@ -49,7 +49,7 @@ class GameListController extends GetxController {
 
   Future<void> remove(String hashid) async {
     try {
-      await api.delete('/admin/game/$hashid');
+      await api.delete('/admin/v1/game/$hashid');
       await loadGames();
       Get.snackbar('成功', 'gameDeleteSuccess');
     } catch (e) {

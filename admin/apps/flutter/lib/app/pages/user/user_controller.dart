@@ -52,7 +52,7 @@ class UserController extends GetxController {
       if (keyword.value.isNotEmpty) params['keyword'] = keyword.value;
       if (statusFilter.value != null) params['status'] = statusFilter.value;
 
-      final resp = await api.get('/admin/user', params: params);
+      final resp = await api.get('/admin/v1/user', params: params);
       users.value = resp['data']['list'] as List<dynamic>;
       total.value = resp['data']['total'] as int;
     } catch (e) {
@@ -96,7 +96,7 @@ class UserController extends GetxController {
 
   Future<bool> deleteUser(String id, String password) async {
     try {
-      await api.delete('/admin/user/$id', data: {'password': password});
+      await api.delete('/admin/v1/user/$id', data: {'password': password});
       await loadUsers();
       return true;
     } catch (e) {
@@ -111,7 +111,7 @@ class UserController extends GetxController {
       return false;
     }
     try {
-      await api.post('/admin/user/batch/destroy', data: {
+      await api.post('/admin/v1/user/batch/destroy', data: {
         'ids': selectedIds.toList(),
         'password': password,
       });
@@ -131,7 +131,7 @@ class UserController extends GetxController {
       return false;
     }
     try {
-      await api.post('/admin/user/batch/status', data: {
+      await api.post('/admin/v1/user/batch/status', data: {
         'ids': selectedIds.toList(),
         'status': status,
       });

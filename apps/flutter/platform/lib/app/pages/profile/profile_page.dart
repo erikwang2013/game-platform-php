@@ -43,7 +43,7 @@ class _ProfilePageState extends State<ProfilePage> {
       _error = null;
     });
     try {
-      final resp = await _api.get('/api/user/profile');
+      final resp = await _api.get('/api/v1/user/profile');
       final data = resp['data'];
       if (mounted) {
         setState(() {
@@ -75,7 +75,7 @@ class _ProfilePageState extends State<ProfilePage> {
     });
 
     try {
-      await _api.put('/api/user/profile', data: {
+      await _api.put('/api/v1/user/profile', data: {
         'nickname': _nicknameCtrl.text.trim(),
         'avatar': _avatarCtrl.text.trim(),
         'language': _languageCtrl.text.trim(),

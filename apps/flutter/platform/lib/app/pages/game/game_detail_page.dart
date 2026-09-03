@@ -32,7 +32,7 @@ class _GameDetailPageState extends State<GameDetailPage> {
     });
 
     try {
-      final resp = await _api.post('/api/game/launch', data: {'game_id': _game['id']});
+      final resp = await _api.post('/api/v1/game/launch', data: {'game_id': _game['id']});
       final data = resp['data'];
       setState(() {
         _resultMsg = data?['message'] ?? 'Game launched successfully';

@@ -17,7 +17,7 @@ class ActivityAdminController extends GetxController {
   Future<void> load() async {
     isLoading.value = true;
     try {
-      final resp = await api.get('/admin/activities/list');
+      final resp = await api.get('/admin/v1/activities/list');
       items.value = resp['data']['list'] as List<dynamic>;
     } catch (e) { Get.snackbar('${AppTranslations.t('app.error')}', '$e'); }
     finally { isLoading.value = false; }
@@ -26,9 +26,9 @@ class ActivityAdminController extends GetxController {
   Future<void> save(Map<String, dynamic> item) async {
     try {
       if (item['id'] != null) {
-        await api.put('/admin/activities/${item['id']}', data: item);
+        await api.put('/admin/v1/activities/${item['id']}', data: item);
       } else {
-        await api.post('/admin/activities/create', data: item);
+        await api.post('/admin/v1/activities/create', data: item);
       }
       await load();
       Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('app.saved')}');
@@ -37,7 +37,7 @@ class ActivityAdminController extends GetxController {
 
   Future<void> remove(String id) async {
     try {
-      await api.delete('/admin/activities/$id');
+      await api.delete('/admin/v1/activities/$id');
       await load();
       Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('app.deleted')}');
     } catch (e) { Get.snackbar('${AppTranslations.t('app.error')}', '$e'); }

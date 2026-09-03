@@ -25,7 +25,7 @@ class WithdrawController extends GetxController {
       if (statusFilter.value != 'all') {
         params['status'] = statusFilter.value;
       }
-      final resp = await api.get('/admin/withdraw/orders', params: params);
+      final resp = await api.get('/admin/v1/withdraw/orders', params: params);
       orders.value = resp['data'] is List ? resp['data'] as List<dynamic> : (resp['data']['list'] as List<dynamic>? ?? []);
     } catch (e) {
       Get.snackbar('错误', '加载提现订单失败: $e');
@@ -36,14 +36,14 @@ class WithdrawController extends GetxController {
 
   Future<void> loadSwitch() async {
     try {
-      final resp = await api.get('/admin/withdraw/switch');
+      final resp = await api.get('/admin/v1/withdraw/switch');
       withdrawEnabled.value = resp['data']['enabled'] == true || resp['data']['status'] == 1;
     } catch (_) {}
   }
 
   Future<void> toggleWithdrawSwitch(bool value) async {
     try {
-      await api.put('/admin/withdraw/switch', data: {'enabled': value ? 1 : 0});
+      await api.put('/admin/v1/withdraw/switch', data: {'enabled': value ? 1 : 0});
       withdrawEnabled.value = value;
       Get.snackbar('成功', value ? '提现已开启' : '提现已关闭');
     } catch (e) {
@@ -54,7 +54,7 @@ class WithdrawController extends GetxController {
 
   Future<void> review(String orderId, String action, String note) async {
     try {
-      await api.put('/admin/withdraw/review', data: {
+      await api.put('/admin/v1/withdraw/review', data: {
         'order_id': orderId,
         'action': action,
         'note': note,
@@ -68,7 +68,7 @@ class WithdrawController extends GetxController {
 
   Future<void> setLimits(Map<String, dynamic> data) async {
     try {
-      await api.post('/admin/withdraw/limits/set', data: data);
+      await api.post('/admin/v1/withdraw/limits/set', data: data);
       Get.snackbar('成功', '限额设置成功');
     } catch (e) {
       Get.snackbar('错误', '设置失败: $e');

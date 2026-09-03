@@ -25,7 +25,7 @@ class RoleController extends GetxController {
   Future<void> loadRoles() async {
     isLoading.value = true;
     try {
-      final resp = await api.get('/admin/role', params: {'page': page.value, 'limit': limit.value});
+      final resp = await api.get('/admin/v1/role', params: {'page': page.value, 'limit': limit.value});
       roles.value = resp['data']['list'] as List<dynamic>;
       total.value = resp['data']['total'] as int;
     } catch (e) {
@@ -37,14 +37,14 @@ class RoleController extends GetxController {
 
   Future<void> loadPermissions() async {
     try {
-      final resp = await api.get('/admin/permission');
+      final resp = await api.get('/admin/v1/permission');
       permissions.value = resp['data'] as List<dynamic>? ?? [];
     } catch (_) {}
   }
 
   Future<bool> createRole(String name, String slug, String desc, List<String> permIds) async {
     try {
-      await api.post('/admin/role', data: {
+      await api.post('/admin/v1/role', data: {
         'name': name, 'slug': slug, 'description': desc, 'permission_ids': permIds,
       });
       await loadRoles();
@@ -62,7 +62,7 @@ class RoleController extends GetxController {
       if (name != null) data['name'] = name;
       if (desc != null) data['description'] = desc;
       if (permIds != null) data['permission_ids'] = permIds;
-      await api.put('/admin/role/$id', data: data);
+      await api.put('/admin/v1/role/$id', data: data);
       await loadRoles();
       Get.snackbar('成功', '角色更新成功');
       return true;
@@ -74,7 +74,7 @@ class RoleController extends GetxController {
 
   Future<bool> deleteRole(String id, String password) async {
     try {
-      await api.delete('/admin/role/$id', data: {'password': password});
+      await api.delete('/admin/v1/role/$id', data: {'password': password});
       await loadRoles();
       Get.snackbar('成功', '角色删除成功');
       return true;

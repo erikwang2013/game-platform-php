@@ -91,28 +91,28 @@ class ChatService extends GetxService {
   }
 
   Future<List<Map<String, dynamic>>> loadConversations() async {
-    final resp = await ApiService().get('/api/chat/conversations');
+    final resp = await ApiService().get('/api/v1/chat/conversations');
     return List<Map<String, dynamic>>.from(resp['data'] ?? []);
   }
 
   Future<List<Map<String, dynamic>>> loadMessages(String peerHashid, {int page = 1}) async {
-    final resp = await ApiService().get('/api/chat/messages/$peerHashid', params: {'page': page});
+    final resp = await ApiService().get('/api/v1/chat/messages/$peerHashid', params: {'page': page});
     return List<Map<String, dynamic>>.from(resp['data'] ?? []);
   }
 
   Future<void> sendMessage(String peerHashid, String content) async {
-    await ApiService().post('/api/chat/send', data: {'to_user_id': peerHashid, 'content': content});
+    await ApiService().post('/api/v1/chat/send', data: {'to_user_id': peerHashid, 'content': content});
     try { await refreshUnread(); } catch (_) {}
   }
 
   Future<void> markRead(String peerHashid) async {
-    await ApiService().post('/api/chat/read', data: {'peer_id': peerHashid});
+    await ApiService().post('/api/v1/chat/read', data: {'peer_id': peerHashid});
     await refreshUnread();
   }
 
   Future<void> refreshUnread() async {
     try {
-      final resp = await ApiService().get('/api/chat/unread-total');
+      final resp = await ApiService().get('/api/v1/chat/unread-total');
       unreadTotal.value = (resp['data'] ?? 0) as int;
     } catch (_) {}
   }

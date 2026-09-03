@@ -44,7 +44,7 @@ class _WalletPageState extends State<WalletPage> {
 
   Future<void> _fetchWallet() async {
     try {
-      final resp = await _api.get('/api/wallet/info');
+      final resp = await _api.get('/api/v1/wallet/info');
       setState(() {
         _wallet = resp['data'];
         _loading = false;
@@ -65,7 +65,7 @@ class _WalletPageState extends State<WalletPage> {
 
   Future<void> _fetchTransactions() async {
     try {
-      final resp = await _api.get('/api/wallet/transactions');
+      final resp = await _api.get('/api/v1/wallet/transactions');
       final data = resp['data'];
       setState(() {
         _transactions = data is List ? List<Map<String, dynamic>>.from(data) : [];

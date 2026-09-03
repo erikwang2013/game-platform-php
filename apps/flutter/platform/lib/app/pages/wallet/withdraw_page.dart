@@ -73,7 +73,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
     });
 
     try {
-      final resp = await _api.post('/api/withdraw/apply', data: {
+      final resp = await _api.post('/api/v1/withdraw/apply', data: {
         'amount': amount,
         'method': _method,
         'account_info': accountInfo,

@@ -40,7 +40,7 @@ class _ExchangePageState extends State<ExchangePage> {
 
   Future<void> _fetchGames() async {
     try {
-      final resp = await _api.get('/api/game/list');
+      final resp = await _api.get('/api/v1/game/list');
       final data = resp['data'];
       if (mounted) {
         setState(() {
@@ -98,7 +98,7 @@ class _ExchangePageState extends State<ExchangePage> {
     });
 
     try {
-      final resp = await _api.post('/api/exchange/quote', data: {
+      final resp = await _api.post('/api/v1/exchange/quote', data: {
         'game_id': _selectedGameId,
         'amount': amount,
         'direction': _isBuying ? 'buy' : 'sell',
@@ -136,7 +136,7 @@ class _ExchangePageState extends State<ExchangePage> {
     });
 
     try {
-      final endpoint = _isBuying ? '/api/exchange/buy' : '/api/exchange/sell';
+      final endpoint = _isBuying ? '/api/v1/exchange/buy' : '/api/v1/exchange/sell';
       final resp = await _api.post(endpoint, data: {
         'game_id': _selectedGameId,
         'amount': amount,

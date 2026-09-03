@@ -60,7 +60,7 @@ class _GameHallPageState extends State<GameHallPage> {
 
   Future<void> _fetchStats() async {
     try {
-      final resp = await _api.get('/api/platform/stats');
+      final resp = await _api.get('/api/v1/platform/stats');
       if (!mounted) return;
       final data = resp['data'];
       setState(() {
@@ -83,7 +83,7 @@ class _GameHallPageState extends State<GameHallPage> {
       _error = null;
     });
     try {
-      final resp = await _api.get('/api/game/list');
+      final resp = await _api.get('/api/v1/game/list');
       setState(() {
         _games = ApiHelpers.extractList(resp['data']);
         _loading = false;

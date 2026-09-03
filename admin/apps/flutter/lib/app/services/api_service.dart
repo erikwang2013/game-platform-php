@@ -20,7 +20,6 @@ class ApiService {
       receiveTimeout: const Duration(seconds: 10),
       headers: {
         'Content-Type': 'application/json',
-        'API-Version': 'v1',
       },
     ));
 
@@ -77,7 +76,7 @@ class ApiService {
     final refreshToken = await AuthService.getRefreshToken();
     if (refreshToken == null) return false;
     try {
-      final resp = await dio.post('/api/auth/refresh', data: {'refresh_token': refreshToken});
+      final resp = await dio.post('/api/v1/auth/refresh', data: {'refresh_token': refreshToken});
       final data = resp.data['data'];
       if (resp.data['code'] == 0) {
         await AuthService.saveLogin(

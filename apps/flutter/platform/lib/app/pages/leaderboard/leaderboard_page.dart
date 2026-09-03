@@ -34,7 +34,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
       _error = null;
     });
     try {
-      final resp = await _api.get('/api/leaderboard/list');
+      final resp = await _api.get('/api/v1/leaderboard/list');
       final boards = ApiHelpers.extractList(resp['data']);
       setState(() {
         _boards = boards;
@@ -63,7 +63,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
       _rankingLoading = true;
     });
     try {
-      final resp = await _api.get('/api/leaderboard/$id');
+      final resp = await _api.get('/api/v1/leaderboard/$id');
       final data = resp['data'];
       final ranks = data is Map ? (data['ranking'] ?? data['rankings']) : data;
       setState(() {

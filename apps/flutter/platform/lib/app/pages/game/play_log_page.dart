@@ -14,7 +14,7 @@ class PlayLogController extends GetxController {
   Future<void> loadData() async {
     isLoading.value = true;
     try {
-      final resp = await api.get('/api/game/play-logs', params: {'per_page': '50'});
+      final resp = await api.get('/api/v1/game/play-logs', params: {'per_page': '50'});
       list.value = (resp['data']['list'] as List<dynamic>?) ?? [];
     } catch (e) {
       Get.snackbar('Error', 'Load failed: $e');

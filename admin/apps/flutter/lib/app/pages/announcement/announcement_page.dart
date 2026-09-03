@@ -18,7 +18,7 @@ class AnnouncementController extends GetxController {
   Future<void> loadAnnouncements() async {
     isLoading.value = true;
     try {
-      final resp = await api.get('/admin/announcement/list');
+      final resp = await api.get('/admin/v1/announcement/list');
       announcements.value = resp['data'] is List ? resp['data'] as List<dynamic> : (resp['data']['list'] as List<dynamic>? ?? []);
     } catch (e) {
       Get.snackbar('错误', '加载公告失败: $e');
@@ -29,7 +29,7 @@ class AnnouncementController extends GetxController {
 
   Future<void> create(Map<String, dynamic> data) async {
     try {
-      await api.post('/admin/announcement/create', data: data);
+      await api.post('/admin/v1/announcement/create', data: data);
       await loadAnnouncements();
       Get.snackbar('成功', '公告创建成功');
     } catch (e) {

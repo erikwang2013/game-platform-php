@@ -35,12 +35,12 @@ class ReportController extends GetxController {
   Future<void> load() async {
     try {
       isLoading.value = true;
-      final summaryResp = await api.get('/admin/report/summary',
+      final summaryResp = await api.get('/admin/v1/report/summary',
           params: {'start': startText, 'end': endText, 'compare': '1'});
       final data = Map<String, dynamic>.from(summaryResp['data'] ?? {});
       summary.value = data;
       compare.value = Map<String, dynamic>.from(data['compare'] ?? {});
-      final dailyResp = await api.get('/admin/report/daily', params: {'start': startText, 'end': endText});
+      final dailyResp = await api.get('/admin/v1/report/daily', params: {'start': startText, 'end': endText});
       daily.value = List<Map<String, dynamic>>.from(dailyResp['data'] ?? []);
     } catch (_) {
       Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.loading_failed')}');

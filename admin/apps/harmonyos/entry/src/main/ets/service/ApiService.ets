@@ -31,7 +31,7 @@ export class ApiService {
       method: method,
       header: {
         'Content-Type': 'application/json',
-        'API-Version': 'v1',
+
         'X-Client-Platform': 'harmonyos',
         'Authorization': (token && token.length > 0) ? `Bearer ${token}` : '',
       },
@@ -79,12 +79,12 @@ export class ApiService {
 
     try {
       const refreshResponse = await this.httpRequest.request(
-        `${BASE_URL}/api/auth/refresh`,
+        `${BASE_URL}/api/v1/auth/refresh`,
         {
           method: http.RequestMethod.POST,
           header: {
             'Content-Type': 'application/json',
-            'API-Version': 'v1',
+
           },
           extraData: JSON.stringify({ refresh_token: refreshToken }),
           connectTimeout: 10000,

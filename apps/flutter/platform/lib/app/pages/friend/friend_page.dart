@@ -29,7 +29,7 @@ class _FriendPageState extends State<FriendPage> {
   Future<void> _loadFriends() async {
     setState(() => _loading = true);
     try {
-      final resp = await _api.get('/api/friend/list');
+      final resp = await _api.get('/api/v1/friend/list');
       _friends = List<Map<String, dynamic>>.from(resp['data'] ?? []);
     } catch (_) {}
     setState(() => _loading = false);
@@ -38,7 +38,7 @@ class _FriendPageState extends State<FriendPage> {
   Future<void> _loadRequests() async {
     setState(() => _loading = true);
     try {
-      final resp = await _api.get('/api/friend/requests');
+      final resp = await _api.get('/api/v1/friend/requests');
       _requests = List<Map<String, dynamic>>.from(resp['data'] ?? []);
     } catch (_) {}
     setState(() => _loading = false);
@@ -47,7 +47,7 @@ class _FriendPageState extends State<FriendPage> {
   Future<void> _search(String q) async {
     if (q.length < 2) return;
     try {
-      final resp = await _api.get('/api/friend/search', params: {'q': q});
+      final resp = await _api.get('/api/v1/friend/search', params: {'q': q});
       _searchResults = List<Map<String, dynamic>>.from(resp['data'] ?? []);
     } catch (_) {}
     setState(() {});
@@ -55,7 +55,7 @@ class _FriendPageState extends State<FriendPage> {
 
   Future<void> _sendRequest(String friendId) async {
     try {
-      await _api.post('/api/friend/request', data: {'friend_id': friendId});
+      await _api.post('/api/v1/friend/request', data: {'friend_id': friendId});
       Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('friend.request_sent')}');
     } on ApiException catch (e) {
       Get.snackbar('${AppTranslations.t('app.error')}', e.message);
@@ -66,7 +66,7 @@ class _FriendPageState extends State<FriendPage> {
 
   Future<void> _accept(String requestId) async {
     try {
-      await _api.post('/api/friend/accept', data: {'request_id': requestId});
+      await _api.post('/api/v1/friend/accept', data: {'request_id': requestId});
       _loadFriends();
       _loadRequests();
     } catch (_) {}
@@ -74,14 +74,14 @@ class _FriendPageState extends State<FriendPage> {
 
   Future<void> _reject(String requestId) async {
     try {
-      await _api.post('/api/friend/reject', data: {'request_id': requestId});
+      await _api.post('/api/v1/friend/reject', data: {'request_id': requestId});
       _loadRequests();
     } catch (_) {}
   }
 
   Future<void> _remove(String friendId) async {
     try {
-      await _api.post('/api/friend/remove', data: {'friend_id': friendId});
+      await _api.post('/api/v1/friend/remove', data: {'friend_id': friendId});
       _loadFriends();
     } catch (_) {}
   }

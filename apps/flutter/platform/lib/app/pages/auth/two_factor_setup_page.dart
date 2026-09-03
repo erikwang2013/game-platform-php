@@ -44,7 +44,7 @@ class _TwoFactorSetupPageState extends State<TwoFactorSetupPage> {
       _error = null;
     });
     try {
-      final resp = await _api.get('/api/user/2fa/status');
+      final resp = await _api.get('/api/v1/user/2fa/status');
       setState(() {
         _enabled = resp['data']?['enabled'] == true;
         _loading = false;
@@ -69,7 +69,7 @@ class _TwoFactorSetupPageState extends State<TwoFactorSetupPage> {
       _success = null;
     });
     try {
-      final resp = await _api.post('/api/user/2fa/setup');
+      final resp = await _api.post('/api/v1/user/2fa/setup');
       final data = resp['data'] ?? {};
       setState(() {
         _secret = data['secret']?.toString();
@@ -101,7 +101,7 @@ class _TwoFactorSetupPageState extends State<TwoFactorSetupPage> {
       _success = null;
     });
     try {
-      final resp = await _api.post('/api/user/2fa/enable', data: {'code': code});
+      final resp = await _api.post('/api/v1/user/2fa/enable', data: {'code': code});
       setState(() {
         _enabled = true;
         _backupCodes = resp['data']?['backup_codes'] as List<dynamic>? ?? [];
@@ -136,7 +136,7 @@ class _TwoFactorSetupPageState extends State<TwoFactorSetupPage> {
       _success = null;
     });
     try {
-      await _api.post('/api/user/2fa/disable', data: {
+      await _api.post('/api/v1/user/2fa/disable', data: {
         'code': code,
         'password': password,
       });

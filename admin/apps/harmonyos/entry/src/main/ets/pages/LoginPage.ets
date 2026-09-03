@@ -59,9 +59,9 @@ struct LoginPage {
     this.captchaError = '';
 
     try {
-      const resp = await this.httpClient.request(`${BASE_URL}/api/captcha/generate`, {
+      const resp = await this.httpClient.request(`${BASE_URL}/api/v1/captcha/generate`, {
         method: http.RequestMethod.POST,
-        header: { 'Content-Type': 'application/json', 'API-Version': 'v1', 'X-Client-Platform': 'harmonyos' },
+        header: { 'Content-Type': 'application/json', 'X-Client-Platform': 'harmonyos' },
         extraData: JSON.stringify({ difficulty: 'medium' }),
         connectTimeout: 10000,
         readTimeout: 10000
@@ -121,9 +121,9 @@ struct LoginPage {
     this.loginError = '';
 
     try {
-      const resp = await this.httpClient.request(`${BASE_URL}/api/auth/login`, {
+      const resp = await this.httpClient.request(`${BASE_URL}/api/v1/auth/login`, {
         method: http.RequestMethod.POST,
-        header: { 'Content-Type': 'application/json', 'API-Version': 'v1', 'X-Client-Platform': 'harmonyos' },
+        header: { 'Content-Type': 'application/json', 'X-Client-Platform': 'harmonyos' },
         extraData: JSON.stringify({
           username: trimmedUsername,
           password: this.password,

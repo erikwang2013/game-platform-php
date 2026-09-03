@@ -18,7 +18,7 @@ class RiskRuleController extends GetxController {
   Future<void> load() async {
     isLoading.value = true;
     try {
-      final resp = await api.get('/admin/risk/rule-performance');
+      final resp = await api.get('/admin/v1/risk/rule-performance');
       items.value = (resp['data']['items'] as List<dynamic>?) ?? [];
     } catch (e) {
       Get.snackbar('加载失败', '$e');
@@ -28,7 +28,7 @@ class RiskRuleController extends GetxController {
   }
 
   Future<void> toggle(String id) async {
-    await api.post('/admin/risk/rule/$id/toggle');
+    await api.post('/admin/v1/risk/rule/$id/toggle');
     await load();
   }
 }

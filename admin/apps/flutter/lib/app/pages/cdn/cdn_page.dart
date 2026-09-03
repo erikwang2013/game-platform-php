@@ -21,7 +21,7 @@ class CdnController extends GetxController {
   Future<void> loadProviders() async {
     isLoading.value = true;
     try {
-      final resp = await api.get('/admin/cdn/provider/list');
+      final resp = await api.get('/admin/v1/cdn/provider/list');
       providers.value = resp['data'] is List
           ? resp['data'] as List<dynamic>
           : (resp['data']['list'] as List<dynamic>? ?? []);
@@ -34,7 +34,7 @@ class CdnController extends GetxController {
 
   Future<void> toggleProvider(String hashid, bool enabled) async {
     try {
-      await api.post('/admin/cdn/provider/toggle', data: {
+      await api.post('/admin/v1/cdn/provider/toggle', data: {
         'id': hashid,
         'status': enabled ? 1 : 0,
       });
@@ -49,7 +49,7 @@ class CdnController extends GetxController {
   Future<void> testProvider(String hashid) async {
     testingId.value = hashid;
     try {
-      await api.post('/admin/cdn/provider/test', data: {'id': hashid});
+      await api.post('/admin/v1/cdn/provider/test', data: {'id': hashid});
       Get.snackbar('成功', "${AppTranslations.t('cdn.test_success')}");
     } catch (e) {
       Get.snackbar('错误', "${AppTranslations.t('cdn.test_fail')}: $e");
@@ -61,9 +61,9 @@ class CdnController extends GetxController {
   Future<bool> saveProvider({String? hashid, required Map<String, dynamic> data}) async {
     try {
       if (hashid == null) {
-        await api.post('/admin/cdn/provider/create', data: data);
+        await api.post('/admin/v1/cdn/provider/create', data: data);
       } else {
-        await api.put('/admin/cdn/provider/$hashid', data: data);
+        await api.put('/admin/v1/cdn/provider/$hashid', data: data);
       }
       await loadProviders();
       return true;
@@ -75,7 +75,7 @@ class CdnController extends GetxController {
 
   Future<bool> deleteProvider(String hashid) async {
     try {
-      await api.delete('/admin/cdn/provider/$hashid');
+      await api.delete('/admin/v1/cdn/provider/$hashid');
       await loadProviders();
       return true;
     } catch (e) {

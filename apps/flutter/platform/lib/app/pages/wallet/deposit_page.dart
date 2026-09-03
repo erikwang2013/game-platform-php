@@ -50,7 +50,7 @@ class _DepositPageState extends State<DepositPage> {
     });
 
     try {
-      final resp = await _api.post('/api/deposit/create', data: {
+      final resp = await _api.post('/api/v1/deposit/create', data: {
         'amount': amount,
         'currency': _currency,
         'payment_method': _method,

@@ -20,7 +20,7 @@ class RiskUserController extends GetxController {
   Future<void> load() async {
     isLoading.value = true;
     try {
-      final resp = await api.get('/admin/risk/users', params: {
+      final resp = await api.get('/admin/v1/risk/users', params: {
         if (scoreMin.isNotEmpty) 'score_min': scoreMin,
       });
       items.value = (resp['data']['items'] as List<dynamic>?) ?? [];
@@ -33,12 +33,12 @@ class RiskUserController extends GetxController {
 
   Future<void> loadTimeline(String userId) async {
     timeline.value = [];
-    final resp = await api.get('/admin/risk/users/$userId/timeline');
+    final resp = await api.get('/admin/v1/risk/users/$userId/timeline');
     timeline.value = (resp['data']['events'] as List<dynamic>?) ?? [];
   }
 
   Future<void> hold(String userId) async {
-    await api.post('/admin/risk/users/$userId/hold');
+    await api.post('/admin/v1/risk/users/$userId/hold');
     await load();
   }
 }

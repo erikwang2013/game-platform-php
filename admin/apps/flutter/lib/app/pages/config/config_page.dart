@@ -22,7 +22,7 @@ class ConfigController extends GetxController {
   Future<void> loadConfigs() async {
     isLoading.value = true;
     try {
-      final resp = await api.get('/admin/config', params: {'page': page.value, 'limit': limit.value});
+      final resp = await api.get('/admin/v1/config', params: {'page': page.value, 'limit': limit.value});
       configs.value = resp['data']['list'] as List<dynamic>;
       total.value = resp['data']['total'] as int;
     } catch (e) { Get.snackbar('错误', '加载失败: $e'); }
@@ -32,9 +32,9 @@ class ConfigController extends GetxController {
   Future<void> save(dynamic item) async {
     try {
       if (item['id'] != null) {
-        await api.put('/admin/config/${item['id']}', data: item);
+        await api.put('/admin/v1/config/${item['id']}', data: item);
       } else {
-        await api.post('/admin/config', data: item);
+        await api.post('/admin/v1/config', data: item);
       }
       await loadConfigs();
       Get.snackbar('成功', '保存成功');
@@ -43,7 +43,7 @@ class ConfigController extends GetxController {
 
   Future<void> remove(String id, String pwd) async {
     try {
-      await api.delete('/admin/config/$id', data: {'password': pwd});
+      await api.delete('/admin/v1/config/$id', data: {'password': pwd});
       await loadConfigs();
       Get.snackbar('成功', '删除成功');
     } catch (e) { Get.snackbar('错误', '删除失败: $e'); }

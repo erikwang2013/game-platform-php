@@ -54,7 +54,7 @@ class DashboardController extends GetxController {
   Future<void> loadData() async {
     try {
       isLoading.value = true;
-      final response = await _dio.get('/admin/dashboard');
+      final response = await _dio.get('/admin/v1/dashboard');
       if (response.data['code'] == 0) {
         final data = response.data['data'];
         stats.value = List<Map<String, dynamic>>.from(data['stats'] ?? []);
@@ -90,7 +90,7 @@ class DashboardController extends GetxController {
 
   Future<void> loadPlatformStats() async {
     try {
-      final resp = await _dio.get('/admin/dashboard/platform');
+      final resp = await _dio.get('/admin/v1/dashboard/platform');
       if (resp.data['code'] == 0) {
         platformStats.value = Map<String, dynamic>.from(resp.data['data'] ?? {});
       }
@@ -99,7 +99,7 @@ class DashboardController extends GetxController {
 
   Future<void> loadChartData() async {
     try {
-      final resp = await _dio.get('/admin/dashboard/platform');
+      final resp = await _dio.get('/admin/v1/dashboard/platform');
       if (resp.data['code'] == 0) {
         final data = resp.data['data'];
         platformStats.value = Map<String, dynamic>.from(data);

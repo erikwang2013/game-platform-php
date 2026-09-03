@@ -53,15 +53,15 @@ class _BigscreenPageState extends State<BigscreenPage> {
 
   Future<void> _load() async {
     try {
-      final s = await _api.get('/admin/report/summary',
+      final s = await _api.get('/admin/v1/report/summary',
           params: {'start': _fmt(DateTime.now().subtract(const Duration(days: 29))), 'end': _fmt(DateTime.now()), 'compare': '1'});
       final data = Map<String, dynamic>.from(s['data'] ?? {});
       _summary = data;
       _compare = Map<String, dynamic>.from(data['compare'] ?? {});
-      final d = await _api.get('/admin/report/daily',
+      final d = await _api.get('/admin/v1/report/daily',
           params: {'start': _fmt(DateTime.now().subtract(const Duration(days: 29))), 'end': _fmt(DateTime.now())});
       _daily = List<Map<String, dynamic>>.from(d['data'] ?? []);
-      final st = await _api.get('/admin/dashboard/stats');
+      final st = await _api.get('/admin/v1/dashboard/stats');
       _stats = List<Map<String, dynamic>>.from(st['data']?['stats'] ?? []);
     } catch (_) {
       // 大屏静默降级：数据缺失时显示占位
