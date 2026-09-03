@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace common\service;
 
+use common\BcMath;
 use support\Db;
 use Throwable;
 
@@ -97,8 +98,8 @@ class ProbabilityService
             $nAB = self::countIntersect($eventA, $eventB);
             $union = $nA + $nB - $nAB;
             return [
-                'joint_probability' => $union > 0 ? round($nAB / $union, 6) : 0.0,
-                'confidence'        => $nA > 0 ? round($nAB / $nA, 6) : 0.0,
+                'joint_probability' => $union > 0 ? (float) BcMath::round(bcdiv((string) $nAB, (string) $union, 8), 6) : 0.0,
+                'confidence'        => $nA > 0 ? (float) BcMath::round(bcdiv((string) $nAB, (string) $nA, 8), 6) : 0.0,
             ];
         } catch (Throwable) {
             // 数据库不可用时返回空概率，避免接口 500
@@ -114,7 +115,7 @@ class ProbabilityService
         try {
             $nA = self::countDistinct($eventA);
             $nAB = self::countIntersect($eventA, $eventB);
-            $p = $nA > 0 ? round($nAB / $nA, 6) : 0.0;
+            $p = $nA > 0 ? (float) BcMath::round(bcdiv((string) $nAB, (string) $nA, 8), 6) : 0.0;
             return [
                 'conditional_probability' => $p,
                 'confidence'               => $p,

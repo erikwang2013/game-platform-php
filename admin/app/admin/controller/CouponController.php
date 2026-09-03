@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use common\BcMath;
 use hg\apidoc\annotation as Apidoc;
 use common\model\Coupon;
 use common\model\UserCoupon;
@@ -210,7 +211,7 @@ class CouponController extends BaseController
         $totalQty  = (int) $coupon->total_qty;
         $usedQty   = (int) $coupon->used_qty;
         $remaining = $totalQty > 0 ? $totalQty - $usedQty : null;
-        $usageRate = $totalQty > 0 ? round($usedQty / $totalQty * 100, 2) : 0;
+        $usageRate = $totalQty > 0 ? (float) BcMath::percent((string) $usedQty, (string) $totalQty, 2) : 0;
 
         return $this->success([
             'total_qty'  => $totalQty,

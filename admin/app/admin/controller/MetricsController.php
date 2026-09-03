@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace app\admin\controller;
 
 use app\model\AdminUser;
+use common\BcMath;
 use common\model\DepositOrder;
 use common\model\WithdrawOrder;
 use GuzzleHttp\Client;
@@ -112,9 +113,9 @@ class MetricsController
         $metrics[] = "open_admin_deposit_total_today {$depositsToday}";
         $metrics[] = '# HELP open_admin_deposit_success_rate_percent Confirmed/total deposit ratio today (percent)';
         $metrics[] = '# TYPE open_admin_deposit_success_rate_percent gauge';
-        $metrics[] = 'open_admin_deposit_success_rate_percent ' . ($depositsToday > 0 ? round($this->safeCount(function () {
+        $metrics[] = 'open_admin_deposit_success_rate_percent ' . ($depositsToday > 0 ? (float) BcMath::percent((string) $this->safeCount(function () {
             return DepositOrder::where('status', 'confirmed')->whereDate('created_at', date('Y-m-d'))->count();
-        }) * 100 / $depositsToday, 2) : 0);
+        }), (string) $depositsToday, 2) : 0);
 
         $diffPending = $this->cachedGauge('metrics:biz:reconciliation_diff_pending', function () {
             // 对账差异表可能尚未建表：safeCount 兜底返回 0
@@ -265,7 +266,7 @@ class MetricsController
             $hits    = (int) ($stats['keyspace_hits'] ?? 0);
             $misses  = (int) ($stats['keyspace_misses'] ?? 0);
             if ($hits + $misses > 0) {
-                $info['hit_rate'] = (int) round($hits * 100 / ($hits + $misses));
+                $info['hit_rate'] = (int) BcMath::percent((string) $hits, (string) ($hits + $misses), 0);
             }
             $memory = Redis::info('memory');
             $info['used_memory'] = (int) ($memory['used_memory'] ?? 0);

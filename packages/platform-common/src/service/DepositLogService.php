@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace common\service;
 
+use common\BcMath;
 use common\model\DepositOrder;
 use common\model\Game;
 use common\model\GamePlayLog;
@@ -55,12 +56,12 @@ class DepositLogService
                 ->groupBy('d')
                 ->get();
 
-            $sum = 0;
+            $sum = '0';
             foreach ($rows as $row) {
                 $result[$row->d] = (string) $row->total;
-                $sum += (float) $row->total;
+                $sum = bcadd($sum, (string) $row->total, 4);
             }
-            return ['total' => (string) $sum, 'trend' => $result];
+            return ['total' => rtrim(rtrim($sum, '0'), '.'), 'trend' => $result];
         } catch (Throwable) {
             return ['total' => '0', 'trend' => $result];
         }
@@ -95,7 +96,7 @@ class DepositLogService
                     'game_name'       => $game->name ?? $game->title ?? 'game#' . $gameId,
                     'players'         => $p,
                     'depositors'      => $d,
-                    'conversion_rate' => $p > 0 ? round($d / $p, 4) : 0.0,
+                    'conversion_rate' => $p > 0 ? (float) BcMath::round(bcdiv((string) $d, (string) $p, 6), 4) : 0.0,
                 ];
             }
             return $result;

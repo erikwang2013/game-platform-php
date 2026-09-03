@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use common\BcMath;
 use common\model\DeviceFingerprint;
 use common\model\IpReputation;
 use common\model\RiskLog;
@@ -42,7 +43,7 @@ class RiskDashboardController extends BaseController
             'blocked_24h' => (int) ($byAction['block'] ?? 0),
             'warned_24h' => (int) ($byAction['warn'] ?? 0),
             'logged_24h' => (int) ($byAction['log'] ?? 0),
-            'block_rate_24h' => $total24h > 0 ? round(((int) ($byAction['block'] ?? 0)) / $total24h * 100, 2) : 0,
+            'block_rate_24h' => $total24h > 0 ? (float) BcMath::percent((string) ((int) ($byAction['block'] ?? 0)), (string) $total24h, 2) : 0,
             'enabled_rules' => RiskRule::where('status', 1)->count(),
             'total_rules' => RiskRule::count(),
             'blacklist_ips' => IpReputation::where('source', 'internal_blacklist')->count(),
@@ -94,7 +95,7 @@ class RiskDashboardController extends BaseController
             'group_by' => $request->get('group_by', 'day') === 'hour' ? 'hour' : 'day',
             'series' => $series,
             'total' => $total,
-            'block_rate' => $total['hits'] > 0 ? round($total['blocked'] / $total['hits'] * 100, 2) : 0,
+            'block_rate' => $total['hits'] > 0 ? (float) BcMath::percent((string) $total['blocked'], (string) $total['hits'], 2) : 0,
         ]);
     }
 
@@ -139,7 +140,7 @@ class RiskDashboardController extends BaseController
         $items = array_map(static fn ($r) => [
             'action' => (string) $r->action,
             'count' => (int) $r->cnt,
-            'ratio' => $total > 0 ? round((int) $r->cnt / $total * 100, 2) : 0,
+            'ratio' => $total > 0 ? (float) BcMath::percent((string) (int) $r->cnt, (string) $total, 2) : 0,
         ], $rows);
 
         return $this->success(['from' => $from, 'to' => $to, 'total' => $total, 'items' => $items]);
@@ -174,9 +175,9 @@ class RiskDashboardController extends BaseController
                 'status' => (int) $rule->status,
                 'hits' => $hits,
                 'blocked' => $blocked,
-                'block_rate' => $hits > 0 ? round($blocked / $hits * 100, 2) : 0,
+                'block_rate' => $hits > 0 ? (float) BcMath::percent((string) $blocked, (string) $hits, 2) : 0,
                 'manual_review' => $manual,
-                'manual_review_rate' => $hits > 0 ? round($manual / $hits * 100, 2) : 0,
+                'manual_review_rate' => $hits > 0 ? (float) BcMath::percent((string) $manual, (string) $hits, 2) : 0,
             ];
         }
 

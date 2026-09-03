@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use common\BcMath;
 use common\service\DepositLogService;
 use common\service\GameDashboardService;
 use common\service\ProbabilityService;
@@ -150,7 +151,7 @@ class AnalyticsController extends BaseController
                     $q->select('id')->from('user')->whereDate('created_at', $cohortDate);
                 })->distinct('user_id')->count('user_id');
 
-            $data["D{$d}"] = round($active / $cohort * 100, 1) . '%';
+            $data["D{$d}"] = self::pctDisplay((string) $active, (string) $cohort, 1);
         }
         return $this->success($data);
     }
@@ -174,9 +175,9 @@ class AnalyticsController extends BaseController
         $base = $registered > 0 ? $registered : 1;
         return $this->success([
             ['step' => 'register', 'count' => $registered, 'rate' => '100%'],
-            ['step' => 'first_deposit', 'count' => $deposited, 'rate' => round($deposited / $base * 100, 1) . '%'],
-            ['step' => 'first_exchange', 'count' => $exchanged, 'rate' => round($exchanged / $base * 100, 1) . '%'],
-            ['step' => 'first_game', 'count' => $played, 'rate' => round($played / $base * 100, 1) . '%'],
+            ['step' => 'first_deposit', 'count' => $deposited, 'rate' => self::pctDisplay((string) $deposited, (string) $base, 1)],
+            ['step' => 'first_exchange', 'count' => $exchanged, 'rate' => self::pctDisplay((string) $exchanged, (string) $base, 1)],
+            ['step' => 'first_game', 'count' => $played, 'rate' => self::pctDisplay((string) $played, (string) $base, 1)],
         ]);
     }
 
@@ -197,12 +198,13 @@ class AnalyticsController extends BaseController
             $date = date('Y-m-d', strtotime("-{$i} days"));
             $dates[] = $date;
 
-            $revenue = (float) (\common\model\DepositOrder::whereDate('created_at', $date)->where('status', 'confirmed')->sum('platform_amount') ?? '0');
+            $revenue = (string) (\common\model\DepositOrder::whereDate('created_at', $date)->where('status', 'confirmed')->sum('platform_amount') ?? '0');
             $totalUsers = \common\model\User::whereDate('created_at', '<=', $date)->count();
             $payingUsers = \common\model\DepositOrder::whereDate('created_at', $date)->where('status', 'confirmed')->distinct('user_id')->count('user_id');
 
-            $arpuSeries[] = $totalUsers > 0 ? round($revenue / $totalUsers, 4) : 0;
-            $arppuSeries[] = $payingUsers > 0 ? round($revenue / $payingUsers, 2) : 0;
+            // 金额运算 bcmath 完成，末尾 (float) 仅为保持 JSON 数值型输出
+            $arpuSeries[] = $totalUsers > 0 ? (float) BcMath::round(bcdiv($revenue, (string) $totalUsers, 5), 4) : 0;
+            $arppuSeries[] = $payingUsers > 0 ? (float) BcMath::round(bcdiv($revenue, (string) $payingUsers, 5), 2) : 0;
         }
 
         return $this->success(['dates' => $dates, 'arpu' => $arpuSeries, 'arppu' => $arppuSeries]);
@@ -233,4 +235,9 @@ class AnalyticsController extends BaseController
         return $this->success(['currencies' => $items]);
     }
 
+    /** 百分比展示：bcmath 计算后去 .0 尾缀，保持旧 round() 字符串格式（'87%' 而非 '87.0%'） */
+    private static function pctDisplay(string $numerator, string $denominator, int $scale): string
+    {
+        return rtrim(rtrim(BcMath::percent($numerator, $denominator, $scale), '0'), '.') . '%';
+    }
 }

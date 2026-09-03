@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\admin\controller;
 
+use common\BcMath;
 use hg\apidoc\annotation as Apidoc;
 use app\model\AdminUser;
 use app\model\OperationLog;
@@ -211,6 +212,6 @@ class DashboardController extends BaseController
         if ($yesterday === 0) {
             return $today > 0 ? 100.0 : 0.0;
         }
-        return round(($today - $yesterday) / $yesterday * 100, 1);
+        return (float) BcMath::percent((string) ($today - $yesterday), (string) $yesterday, 1);
     }
 }
