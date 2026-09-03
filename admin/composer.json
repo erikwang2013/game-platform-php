@@ -25,6 +25,7 @@
   },
   "require": {
     "php": ">=8.1",
+    "ext-bcmath": "*",
     "workerman/webman-framework": "^2.1",
     "monolog/monolog": "^2.0",
     "erikwang2013/snowflake-php": "^2.0",

@@ -24,6 +24,7 @@
     "illuminate/validation": "^11.51",
     "illuminate/events": "^11.51",
     "webman/database": "^2.1",
+    "ext-bcmath": "*",
     "illuminate/pagination": "^11.51",
     "symfony/var-dumper": "^7.4",
     "webman/redis": "^2.1",
