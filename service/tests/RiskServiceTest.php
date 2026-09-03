@@ -125,18 +125,20 @@ class RiskServiceTest extends TestCase
     {
         Db::connection()->transaction(function () {
             $this->cleanup();
-            // 同类型两条规则：priority 高者（先评估）命中即返回
+            // 同级硬规则（同为 ip_blacklist block/severity=high）时先命中者胜：
+            // getEnabled 按 priority desc，高优先级规则先评估并保底为首个命中。
             $low = $this->makeRule('ip_blacklist', ['blacklist' => ['1.1.1.1']], 'block', 10);
             $low->id = self::TEST_RULE_ID;
+            $low->name = 'test-ip_blacklist-low';
             $low->save();
-            $high = $this->makeRule('amount_anomaly', ['min_amount' => '0'], 'block', 90);
+            $high = $this->makeRule('ip_blacklist', ['blacklist' => ['1.1.1.1']], 'block', 90);
             $high->id = self::TEST_RULE_ID + 1;
+            $high->name = 'test-ip_blacklist-high';
             $high->save();
 
-            // 低优先级规则命中 ip 1.1.1.1；高优先级规则命中金额 100
-            $result = RiskService::check(self::TEST_USER_ID, 'withdraw', ['ip' => '1.1.1.1', 'amount' => '100']);
+            $result = RiskService::check(self::TEST_USER_ID, 'withdraw', ['ip' => '1.1.1.1']);
             $this->assertSame('block', $result['result']);
-            $this->assertSame('test-amount_anomaly', $result['rule_name']);
+            $this->assertSame('test-ip_blacklist-high', $result['rule_name']);
         });
     }
 
@@ -162,9 +164,14 @@ class RiskServiceTest extends TestCase
 
     private static function evaluateRule(RiskRule $rule, int $userId, string $checkType, array $context): array
     {
-        $method = new \ReflectionMethod(RiskService::class, 'evaluateRule');
-        $method->setAccessible(true);
+        // RiskService 已重构为评估器架构：type → RiskEvaluator 注册表（私有 evaluatorMap），
+        // 单条规则评估 = 从注册表取评估器直接 evaluate（与 check() 分发一致）。
+        $map = (new \ReflectionMethod(RiskService::class, 'evaluatorMap'))->invoke(null);
+        $evaluator = $map[$rule->type] ?? null;
+        if ($evaluator === null) {
+            return ['matched' => false, 'message' => '']; // 预留类型：无评估器 → 不命中（与 check() 跳过一致）
+        }
         $config = json_decode($rule->config, true) ?? [];
-        return $method->invoke(null, $rule, $userId, $checkType, $context, $config);
+        return $evaluator->evaluate($userId, $checkType, $context, $config);
     }
 }
