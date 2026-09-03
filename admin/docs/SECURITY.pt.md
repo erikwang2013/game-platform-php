@@ -156,7 +156,7 @@ Local do arquivo: `runtime/logs/security.log`
 
 Exemplo de formato de log:
 ```
-2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
+2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/v1/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
 2026-05-20 14:32:15 [SECURITY] IP banned 15min | IP: 192.168.1.100 | Triggers: 5
 ```
 
@@ -178,7 +178,7 @@ Todos os cabeçalhos são injetados no middleware `Cors` via `$response->withHea
 |----|-----|------|
 | Access-Control-Allow-Origin | `*` | Permite CORS de qualquer origem (cenário de painel administrativo em intranet) |
 | Access-Control-Allow-Methods | `GET,POST,PUT,DELETE,OPTIONS` | Conjunto de métodos permitidos |
-| Access-Control-Allow-Headers | `Authorization,Content-Type,API-Version` | Cabeçalhos personalizados permitidos |
+| Access-Control-Allow-Headers | `Authorization,Content-Type` | Cabeçalhos personalizados permitidos |
 | Access-Control-Max-Age | `86400` | Cache da requisição preflight por 24 horas |
 | X-Content-Type-Options | `nosniff` | Proíbe MIME sniffing do navegador |
 | X-Frame-Options | `DENY` | Proíbe qualquer incorporação em iframe, contra clickjacking |
@@ -230,8 +230,8 @@ O script Lua é executado em thread única no servidor Redis, **naturalmente at�
 | Rota | Limite | Janela | Cenário |
 |------|------|------|------|
 | Padrão (todas as rotas) | 60/minuto | 60s | API geral |
-| `/api/auth/login` | 10/minuto | 60s | Login (contra força bruta) |
-| `/api/auth/register` | 5/minuto | 60s | Registro (contra cadastro em massa) |
+| `/api/v1/auth/login` | 10/minuto | 60s | Login (contra força bruta) |
+| `/api/v1/auth/register` | 5/minuto | 60s | Registro (contra cadastro em massa) |
 
 ### Cabeçalhos de resposta
 
@@ -322,7 +322,7 @@ Implementada pelo middleware AdminAuth, montado nos grupos de rotas que exigem a
 
 **Mecanismo de lista negra**: no logout do usuário, `md5(token)` é gravado no Redis com TTL igual à validade restante do JWT. Em falha do Redis, a verificação da lista negra é pulada (fail-open); o Token deslogado pode ser usado por pouco tempo, mas o curto prazo de validade do próprio JWT (2h) serve como proteção de rede de segurança.
 
-**Refresh de Token**: `POST /api/auth/refresh` valida o refresh token original (`token_type=refresh` e não expirado/não banido) antes de rotacionar e emitir, e valida que `sub` deve ser um ID de usuário válido — **não emite mais refresh tokens com sub=null**; falha no refresh retorna diretamente 401.
+**Refresh de Token**: `POST /api/v1/auth/refresh` valida o refresh token original (`token_type=refresh` e não expirado/não banido) antes de rotacionar e emitir, e valida que `sub` deve ser um ID de usuário válido — **não emite mais refresh tokens com sub=null**; falha no refresh retorna diretamente 401.
 
 ### 6.2 Limite de sessões concorrentes
 
@@ -389,7 +389,7 @@ Por exemplo:
 
 ### 6.4 Verificação de assinatura de callbacks de pagamento (fail-closed)
 
-`POST /api/payment/callback` (callbacks de recarga Stripe/PayPal) usa verificação de assinatura **fail-closed**; qualquer configuração ausente ou erro de validação rejeita o callback:
+`POST /api/v1/payment/callback` (callbacks de recarga Stripe/PayPal) usa verificação de assinatura **fail-closed**; qualquer configuração ausente ou erro de validação rejeita o callback:
 
 | Cenário | Comportamento |
 |------|------|

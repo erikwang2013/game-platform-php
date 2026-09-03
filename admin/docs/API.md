@@ -8,10 +8,10 @@ Languages: **中文** · [English](API.en.md) · [한국어](API.ko.md) · [Ру
 
 ## 1. 概述
 
-开放管理后台 (open-admin) 基于 webman v2 构建，提供 RESTful JSON API。所有管理端接口需要 JWT 认证与 RBAC 权限校验，公开接口通过 API 版本头路由到版本化控制器。
+开放管理后台 (open-admin) 基于 webman v2 构建，提供 RESTful JSON API。所有管理端接口需要 JWT 认证与 RBAC 权限校验，公开接口挂载在 `/api/v1` 前缀下，管理端接口挂载在 `/admin/v1` 前缀下，版本由 URL 路径决定而非请求头。
 
 - **基础 URL**: `http://localhost:8787`
-- **API 版本**: 通过请求头 `API-Version: v1` 控制（缺失时默认 v1）
+- **API 版本**: 版本号置于 URL 路径——公开端点 `/api/v1`、管理端点 `/admin/v1`，不使用版本请求头；未来的 v2 将注册为 `/api/v2` 组
 
 > **端点总览**: 认证(5) | 仪表盘(1) | 用户(7) | 角色(4) | 权限(4) | 配置(4) | 日志(1) | 个人中心(3) | 导入导出(3) | 上传(1) | 运维(4: health/metrics/docs/security.txt) | 共 37 端点
 - **认证**: `Authorization: Bearer <token>`（JWT）
@@ -45,7 +45,7 @@ Languages: **中文** · [English](API.en.md) · [한국어](API.ko.md) · [Ру
 
 ## 3. 公开端点
 
-所有公开端点挂载在 `/api` 分组下，通过 `ApiVersion` 中间件按 `API-Version` 头分发到对应的版本化控制器（如 `app\api\v1\controller\AuthController`）。
+所有公开端点挂载在 `/api/v1` 前缀下，管理端点挂载在 `/admin/v1` 前缀下；版本由路由组前缀决定，不使用版本请求头。示例公开控制器：`app\api\v1\controller\AuthController`。
 
 ### 3.1 健康检查
 
@@ -88,11 +88,10 @@ GET /api/docs
 ### 3.3 生成点击验证码
 
 ```
-POST /api/captcha/generate
+POST /api/v1/captcha/generate
 ```
 
 - **认证**: 无需
-- **请求头**: `API-Version: v1`（必须）
 - **限流**: 全局默认 (60次/分钟)
 
 **请求体**:
@@ -134,11 +133,10 @@ POST /api/captcha/generate
 ### 3.4 校验点击验证码
 
 ```
-POST /api/captcha/verify
+POST /api/v1/captcha/verify
 ```
 
 - **认证**: 无需
-- **请求头**: `API-Version: v1`（必须）
 - **限流**: 全局默认 (60次/分钟)
 
 **请求体**:
@@ -171,11 +169,10 @@ POST /api/captcha/verify
 ### 3.5 登录
 
 ```
-POST /api/auth/login
+POST /api/v1/auth/login
 ```
 
 - **认证**: 无需
-- **请求头**: `API-Version: v1`（必须）
 - **限流**: 10 次/分钟（按 IP + 路径）
 
 **请求体**:
@@ -235,11 +232,10 @@ POST /api/auth/login
 ### 3.6 注册
 
 ```
-POST /api/auth/register
+POST /api/v1/auth/register
 ```
 
 - **认证**: 无需
-- **请求头**: `API-Version: v1`（必须）
 - **限流**: 5 次/分钟（按 IP + 路径）
 
 **请求体**:
@@ -287,11 +283,10 @@ POST /api/auth/register
 ### 3.7 刷新令牌
 
 ```
-POST /api/auth/refresh
+POST /api/v1/auth/refresh
 ```
 
 - **认证**: 无需
-- **请求头**: `API-Version: v1`（必须）
 - **限流**: 全局默认 (60次/分钟)
 
 **请求体**:
@@ -369,12 +364,12 @@ openadmin_memory_usage_bytes 18874368
 
 ## 4. 仪表盘
 
-所有管理端接口挂载在 `/admin` 分组下，经过 `AdminAuth`（JWT 认证）、`AdminPermission`（RBAC 权限校验）、`OperationLog`（操作记录）三个中间件。
+所有管理端接口挂载在 `/admin/v1` 前缀下，经过 `AdminAuth`（JWT 认证）、`AdminPermission`（RBAC 权限校验）、`OperationLog`（操作记录）三个中间件。
 
 ### 4.1 仪表盘数据
 
 ```
-GET /admin/dashboard
+GET /admin/v1/dashboard
 ```
 
 - **认证**: JWT + RBAC
@@ -431,7 +426,7 @@ GET /admin/dashboard
         "id": "hashid...",
         "action": "用户登录",
         "method": "POST",
-        "path": "/api/auth/login",
+        "path": "/api/v1/auth/login",
         "ip": "192.168.1.1",
         "user_name": "admin",
         "created_at": "2026-05-21 10:30:00"
@@ -461,7 +456,7 @@ GET /admin/dashboard
 ### 5.1 用户列表
 
 ```
-GET /admin/user
+GET /admin/v1/user
 ```
 
 - **认证**: JWT + RBAC
@@ -514,7 +509,7 @@ GET /admin/user
 ### 5.2 创建用户
 
 ```
-POST /admin/user
+POST /admin/v1/user
 ```
 
 - **认证**: JWT + RBAC
@@ -564,7 +559,7 @@ POST /admin/user
 ### 5.3 用户详情
 
 ```
-GET /admin/user/{id}
+GET /admin/v1/user/{id}
 ```
 
 - **认证**: JWT + RBAC
@@ -598,7 +593,7 @@ GET /admin/user/{id}
 ### 5.4 更新用户
 
 ```
-PUT /admin/user/{id}
+PUT /admin/v1/user/{id}
 ```
 
 - **认证**: JWT + RBAC
@@ -646,7 +641,7 @@ PUT /admin/user/{id}
 ### 5.5 删除用户
 
 ```
-DELETE /admin/user/{id}
+DELETE /admin/v1/user/{id}
 ```
 
 - **认证**: JWT + RBAC
@@ -683,7 +678,7 @@ DELETE /admin/user/{id}
 ### 5.6 批量删除用户
 
 ```
-POST /admin/user/batch/destroy
+POST /admin/v1/user/batch/destroy
 ```
 
 - **认证**: JWT + RBAC
@@ -723,7 +718,7 @@ POST /admin/user/batch/destroy
 ### 5.7 批量启用/禁用用户
 
 ```
-POST /admin/user/batch/status
+POST /admin/v1/user/batch/status
 ```
 
 - **认证**: JWT + RBAC
@@ -763,7 +758,7 @@ message 根据 status 值动态变化为 `"批量启用成功"` 或 `"批量禁�
 ### 6.1 角色列表
 
 ```
-GET /admin/role
+GET /admin/v1/role
 ```
 
 - **认证**: JWT + RBAC
@@ -811,7 +806,7 @@ GET /admin/role
 ### 6.2 创建角色
 
 ```
-POST /admin/role
+POST /admin/v1/role
 ```
 
 - **认证**: JWT + RBAC
@@ -853,7 +848,7 @@ POST /admin/role
 ### 6.3 更新角色
 
 ```
-PUT /admin/role/{id}
+PUT /admin/v1/role/{id}
 ```
 
 - **认证**: JWT + RBAC
@@ -893,7 +888,7 @@ PUT /admin/role/{id}
 ### 6.4 删除角色
 
 ```
-DELETE /admin/role/{id}
+DELETE /admin/v1/role/{id}
 ```
 
 - **认证**: JWT + RBAC
@@ -924,7 +919,7 @@ DELETE /admin/role/{id}
 ### 7.1 权限树
 
 ```
-GET /admin/permission
+GET /admin/v1/permission
 ```
 
 - **认证**: JWT + RBAC
@@ -939,7 +934,7 @@ GET /admin/permission
       "id": "p1p2p3p4",
       "parent_id": "0",
       "name": "用户管理",
-      "slug": "/admin/user",
+      "slug": "/admin/v1/user",
       "type": 1,
       "icon": "people",
       "path": "/user",
@@ -950,7 +945,7 @@ GET /admin/permission
           "id": "p5p6p7p8",
           "parent_id": "p1p2p3p4",
           "name": "用户列表",
-          "slug": "/admin/user/index",
+          "slug": "/admin/v1/user/index",
           "type": 2,
           "icon": "",
           "path": "/user/index",
@@ -977,7 +972,7 @@ GET /admin/permission
 ### 7.2 创建权限
 
 ```
-POST /admin/permission
+POST /admin/v1/permission
 ```
 
 - **认证**: JWT + RBAC
@@ -987,7 +982,7 @@ POST /admin/permission
 {
   "parent_id": 0,
   "name": "系统设置",
-  "slug": "/admin/config",
+  "slug": "/admin/v1/config",
   "type": 1,
   "icon": "settings",
   "path": "/config",
@@ -1014,7 +1009,7 @@ POST /admin/permission
     "id": "p9p0a1b2",
     "parent_id": "0",
     "name": "系统设置",
-    "slug": "/admin/config",
+    "slug": "/admin/v1/config",
     "type": 1,
     "icon": "settings",
     "path": "/config",
@@ -1026,7 +1021,7 @@ POST /admin/permission
 ### 7.3 更新权限
 
 ```
-PUT /admin/permission/{id}
+PUT /admin/v1/permission/{id}
 ```
 
 - **认证**: JWT + RBAC
@@ -1051,7 +1046,7 @@ PUT /admin/permission/{id}
 ### 7.4 删除权限
 
 ```
-DELETE /admin/permission/{id}
+DELETE /admin/v1/permission/{id}
 ```
 
 - **认证**: JWT + RBAC
@@ -1082,7 +1077,7 @@ DELETE /admin/permission/{id}
 ### 8.1 配置列表
 
 ```
-GET /admin/config
+GET /admin/v1/config
 ```
 
 - **认证**: JWT + RBAC
@@ -1131,7 +1126,7 @@ GET /admin/config
 ### 8.2 创建配置
 
 ```
-POST /admin/config
+POST /admin/v1/config
 ```
 
 - **认证**: JWT + RBAC
@@ -1177,7 +1172,7 @@ POST /admin/config
 ### 8.3 更新配置
 
 ```
-PUT /admin/config/{id}
+PUT /admin/v1/config/{id}
 ```
 
 - **认证**: JWT + RBAC
@@ -1200,7 +1195,7 @@ PUT /admin/config/{id}
 ### 8.4 删除配置
 
 ```
-DELETE /admin/config/{id}
+DELETE /admin/v1/config/{id}
 ```
 
 - **认证**: JWT + RBAC
@@ -1222,7 +1217,7 @@ DELETE /admin/config/{id}
 ### 9.1 操作日志列表
 
 ```
-GET /admin/log
+GET /admin/v1/log
 ```
 
 - **认证**: JWT + RBAC
@@ -1251,7 +1246,7 @@ GET /admin/log
         "user_name": "admin",
         "action": "用户登录",
         "method": "POST",
-        "path": "/api/auth/login",
+        "path": "/api/v1/auth/login",
         "ip": "192.168.1.1",
         "source": "web",
         "input": "{\"username\":\"admin\"}",
@@ -1284,7 +1279,7 @@ GET /admin/log
 ### 10.1 更新个人信息
 
 ```
-PUT /admin/profile
+PUT /admin/v1/profile
 ```
 
 - **认证**: JWT
@@ -1326,7 +1321,7 @@ PUT /admin/profile
 ### 10.2 修改密码
 
 ```
-PUT /admin/profile/password
+PUT /admin/v1/profile/password
 ```
 
 - **认证**: JWT
@@ -1361,7 +1356,7 @@ PUT /admin/profile/password
 ### 10.3 登出
 
 ```
-POST /admin/profile/logout
+POST /admin/v1/profile/logout
 ```
 
 - **认证**: JWT
@@ -1386,7 +1381,7 @@ POST /admin/profile/logout
 ### 11.1 导出 Excel
 
 ```
-POST /admin/export/excel
+POST /admin/v1/export/excel
 ```
 
 - **认证**: JWT + RBAC
@@ -1425,7 +1420,7 @@ POST /admin/export/excel
 ### 11.2 导出 PDF
 
 ```
-POST /admin/export/pdf
+POST /admin/v1/export/pdf
 ```
 
 - **认证**: JWT + RBAC
@@ -1472,7 +1467,7 @@ PDF 模板包含版权信息和导出时间戳。
 ### 11.3 导入用户 (Excel)
 
 ```
-POST /admin/import/users
+POST /admin/v1/import/users
 ```
 
 - **认证**: JWT + RBAC
@@ -1524,7 +1519,7 @@ POST /admin/import/users
 ## 12. 文件上传
 
 ```
-POST /admin/upload
+POST /admin/v1/upload
 ```
 
 - **认证**: JWT + RBAC
@@ -1573,8 +1568,8 @@ POST /admin/upload
 
 限流详情:
 - 默认全局限制: 60 次/分钟 / IP+路径
-- 登录端点 `/api/auth/login`: 10 次/分钟
-- 注册端点 `/api/auth/register`: 5 次/分钟
+- 登录端点 `/api/v1/auth/login`: 10 次/分钟
+- 注册端点 `/api/v1/auth/register`: 5 次/分钟
 - 使用 Redis 原子化滑动窗口算法（Lua ZSET），避免 TOCTOU 竞态
 - Redis 不可用时 fail-closed：返回 503（`Retry-After: 5`），不放行请求
 
@@ -1584,18 +1579,18 @@ POST /admin/upload
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | /admin/analytics/overview | 平台总览（今日/近7天） |
-| GET | /admin/analytics/game-ranking | 游戏排行（?days=7） |
-| GET | /admin/analytics/dau-trend | DAU 趋势（?days=30） |
-| GET | /admin/analytics/hourly-trend | 小时趋势 |
-| GET | /admin/analytics/action-distribution | 行为分布 |
-| GET | /admin/analytics/revenue | 营收分析 |
-| GET | /admin/analytics/conversion | 游戏转化率 |
-| GET | /admin/analytics/probability | 联合/条件概率 |
-| GET | /admin/analytics/retention | 留存分析 D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | 转化漏斗 |
-| GET | /admin/analytics/arpu | ARPU/ARPPU 趋势 |
-| GET | /admin/analytics/economy | 游戏币种经济指标 |
+| GET | /admin/v1/analytics/overview | 平台总览（今日/近7天） |
+| GET | /admin/v1/analytics/game-ranking | 游戏排行（?days=7） |
+| GET | /admin/v1/analytics/dau-trend | DAU 趋势（?days=30） |
+| GET | /admin/v1/analytics/hourly-trend | 小时趋势 |
+| GET | /admin/v1/analytics/action-distribution | 行为分布 |
+| GET | /admin/v1/analytics/revenue | 营收分析 |
+| GET | /admin/v1/analytics/conversion | 游戏转化率 |
+| GET | /admin/v1/analytics/probability | 联合/条件概率 |
+| GET | /admin/v1/analytics/retention | 留存分析 D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | 转化漏斗 |
+| GET | /admin/v1/analytics/arpu | ARPU/ARPPU 趋势 |
+| GET | /admin/v1/analytics/economy | 游戏币种经济指标 |
 
 ## 15. 工单管理 (Ticket)
 
@@ -1603,26 +1598,25 @@ POST /admin/upload
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | /admin/ticket/list | 工单列表（?page=&limit=&status=&type=） |
-| GET | /admin/ticket/{hashid} | 工单详情（含回复） |
-| POST | /admin/ticket/{hashid}/reply | 回复工单 |
-| POST | /admin/ticket/{hashid}/close | 关闭工单 |
-| POST | /admin/ticket/{hashid}/assign | 指定处理人（admin_id） |
+| GET | /admin/v1/ticket/list | 工单列表（?page=&limit=&status=&type=） |
+| GET | /admin/v1/ticket/{hashid} | 工单详情（含回复） |
+| POST | /admin/v1/ticket/{hashid}/reply | 回复工单 |
+| POST | /admin/v1/ticket/{hashid}/close | 关闭工单 |
+| POST | /admin/v1/ticket/{hashid}/assign | 指定处理人（admin_id） |
 
 ## 16. 认证流程
 
 完整的认证时序：
 
 ```
-1. 客户端请求 POST /api/captcha/generate
-   (请求头: API-Version: v1)
+1. 客户端请求 POST /api/v1/captcha/generate
     ↓
    服务端返回: key + base64 图片 + 点击目标提示
    
 2. 用户点击图片目标位置，前/客户端收集点击坐标
    
-3. 客户端请求 POST /api/auth/login
-   (请求头: API-Version: v1, Content-Type: application/json)
+3. 客户端请求 POST /api/v1/auth/login
+   (请求头: Content-Type: application/json)
    请求体: { username, password, captcha_key, clicks: [{x,y}, ...] }
     ↓
    服务端:
@@ -1655,7 +1649,7 @@ POST /admin/upload
    Response + X-RateLimit-* 头
 
 5. Access Token 过期前刷新
-   客户端请求 POST /api/auth/refresh
+   客户端请求 POST /api/v1/auth/refresh
    请求体: { refresh_token: "..." }
     ↓
    服务端解码 refresh_token → 签发新 access + refresh
@@ -1663,7 +1657,7 @@ POST /admin/upload
    客户端更新本地令牌
 
 6. 登出
-   客户端请求 POST /admin/profile/logout
+   客户端请求 POST /admin/v1/profile/logout
    请求头: Authorization: Bearer <access_token>
     ↓
    服务端:
@@ -1722,7 +1716,7 @@ docker-compose up -d
 ### 16.1 平台总览
 
 ```
-GET /admin/analytics/overview
+GET /admin/v1/analytics/overview
 ```
 
 **响应**: `today` / `week` 各含 `dau`（活跃用户数）、`revenue`（已确认充值总额，字符串）、`new_users`（新增用户数）。
@@ -1730,7 +1724,7 @@ GET /admin/analytics/overview
 ### 16.2 游戏排行
 
 ```
-GET /admin/analytics/game-ranking?days=7
+GET /admin/v1/analytics/game-ranking?days=7
 ```
 
 **响应**: 按游戏行为次数降序取前 10，每项含 `game_id`（hashid）、`name`、`plays`、`players`。
@@ -1738,7 +1732,7 @@ GET /admin/analytics/game-ranking?days=7
 ### 16.3 DAU 趋势
 
 ```
-GET /admin/analytics/dau-trend?days=30
+GET /admin/v1/analytics/dau-trend?days=30
 ```
 
 **响应**: `{ "日期": 活跃数, ... }`，缺失日期补 0。
@@ -1746,7 +1740,7 @@ GET /admin/analytics/dau-trend?days=30
 ### 16.4 小时趋势
 
 ```
-GET /admin/analytics/hourly-trend?game_id=<hashid>
+GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
 ```
 
 **响应**: `{ "0": 次数, ... "23": 次数 }` 24 个整点槽位；`game_id` 为空时统计全部游戏。
@@ -1754,7 +1748,7 @@ GET /admin/analytics/hourly-trend?game_id=<hashid>
 ### 16.5 行为分布
 
 ```
-GET /admin/analytics/action-distribution?game_id=<hashid>&hours=24
+GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
 ```
 
 **响应**: `{ "start": n, "end": n, "earn": n, "spend": n }` 四类行为计数；`hours` 上限 168。
@@ -1762,7 +1756,7 @@ GET /admin/analytics/action-distribution?game_id=<hashid>&hours=24
 ### 16.6 营收总览
 
 ```
-GET /admin/analytics/revenue?days=7
+GET /admin/v1/analytics/revenue?days=7
 ```
 
 **响应**: `{ "total": "总额", "trend": { "日期": "当日额", ... } }`，仅统计 `status=confirmed` 订单。
@@ -1770,7 +1764,7 @@ GET /admin/analytics/revenue?days=7
 ### 16.7 游戏转化率
 
 ```
-GET /admin/analytics/conversion?days=30
+GET /admin/v1/analytics/conversion?days=30
 ```
 
 **响应**: 每款游戏含 `game_id`（hashid）、`game_name`、`players`（去重玩家数）、`depositors`（去重充值人数）、`conversion_rate`（充值转化率，0~1）。
@@ -1778,7 +1772,7 @@ GET /admin/analytics/conversion?days=30
 ### 16.8 联合概率
 
 ```
-GET /admin/analytics/probability?game_a=<hashid>&game_b=<hashid>
+GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
 ```
 
 **响应**: `{ "joint": { "joint_probability": 0.12, "confidence": 0.3 } }` — Jaccard 系数（两游戏共同玩家 / 并集玩家）与置信度（共同玩家 / A 游戏玩家）。
@@ -1786,7 +1780,7 @@ GET /admin/analytics/probability?game_a=<hashid>&game_b=<hashid>
 ### 16.9 留存分析
 
 ```
-GET /admin/analytics/retention?days=30
+GET /admin/v1/analytics/retention?days=30
 ```
 
 **响应**: `{ "D1": "8.5%", "D3": "...", "D7": "...", "D30": "..." }` 按注册日分群的次日/3日/7日/30日留存率。
@@ -1794,7 +1788,7 @@ GET /admin/analytics/retention?days=30
 ### 16.10 转化漏斗
 
 ```
-GET /admin/analytics/funnel?days=30
+GET /admin/v1/analytics/funnel?days=30
 ```
 
 **响应**: 注册 → 首充 → 首次兑换 → 首次游戏 四个步骤的 `step`、`count`、`rate`（相对注册数百分比）。
@@ -1802,7 +1796,7 @@ GET /admin/analytics/funnel?days=30
 ### 16.11 ARPU/ARPPU 趋势
 
 ```
-GET /admin/analytics/arpu?days=30
+GET /admin/v1/analytics/arpu?days=30
 ```
 
 **响应**: `{ "dates": [...], "arpu": [...], "arppu": [...] }` 每日人均营收（ARPU）与付费用户人均营收（ARPPU）。
@@ -1810,7 +1804,7 @@ GET /admin/analytics/arpu?days=30
 ### 16.12 游戏经济指标
 
 ```
-GET /admin/analytics/economy
+GET /admin/v1/analytics/economy
 ```
 
 **响应**: `currencies` 数组，每项含 `game_name`、`currency`、`symbol`、`total_minted`（铸币总量）、`total_burned`（销毁总量）、`circulation`（流通量）、`inflation_rate`（通胀率），使用 bcmath 高精度计算。
@@ -1821,16 +1815,16 @@ GET /admin/analytics/economy
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | /admin/payment/method/list | 支付方式列表（按 sort 升序） |
-| POST | /admin/payment/method/toggle | 启禁用支付方式 |
-| POST | /admin/payment/method/create | 创建支付方式 |
-| PUT | /admin/payment/method/{hashid} | 更新支付方式 |
-| DELETE | /admin/payment/method/{hashid} | 删除支付方式（存在 pending 订单时拒绝） |
+| GET | /admin/v1/payment/method/list | 支付方式列表（按 sort 升序） |
+| POST | /admin/v1/payment/method/toggle | 启禁用支付方式 |
+| POST | /admin/v1/payment/method/create | 创建支付方式 |
+| PUT | /admin/v1/payment/method/{hashid} | 更新支付方式 |
+| DELETE | /admin/v1/payment/method/{hashid} | 删除支付方式（存在 pending 订单时拒绝） |
 
 ### 17.1 支付方式列表
 
 ```
-GET /admin/payment/method/list
+GET /admin/v1/payment/method/list
 ```
 
 - **认证**: JWT + RBAC
@@ -1878,7 +1872,7 @@ GET /admin/payment/method/list
 ### 17.2 启禁用支付方式
 
 ```
-POST /admin/payment/method/toggle
+POST /admin/v1/payment/method/toggle
 ```
 
 **请求体**:
@@ -1901,7 +1895,7 @@ POST /admin/payment/method/toggle
 ### 17.3 创建支付方式
 
 ```
-POST /admin/payment/method/create
+POST /admin/v1/payment/method/create
 ```
 
 **请求体**:
@@ -1947,7 +1941,7 @@ POST /admin/payment/method/create
 ### 17.4 更新支付方式
 
 ```
-PUT /admin/payment/method/{hashid}
+PUT /admin/v1/payment/method/{hashid}
 ```
 
 - **路径参数**: `{hashid}` 为 hashid 加密的支付方式 ID
@@ -1960,7 +1954,7 @@ PUT /admin/payment/method/{hashid}
 ### 17.5 删除支付方式
 
 ```
-DELETE /admin/payment/method/{hashid}
+DELETE /admin/v1/payment/method/{hashid}
 ```
 
 - **路径参数**: `{hashid}` 为 hashid 加密的支付方式 ID

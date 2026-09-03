@@ -64,7 +64,7 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · **한국어** · [�
 | 계층 | 디렉터리 | 책임 |
 |---|------|------|
 | 라우트 | `config/route.php` | URL에서 컨트롤러로의 매핑, 미들웨어 바인딩, 버전별 라우트 |
-| 미들웨어 | `app/middleware/` | 공격 차단(SecurityFilter), 속도 제한(RateLimit), 인증(JWT), 인가(RBAC), API 버전(ApiVersion) |
+| 미들웨어 | `app/middleware/` | 공격 차단(SecurityFilter), 속도 제한(RateLimit), 인증(JWT), 인가(RBAC) |
 | 컨트롤러 | 30개: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (관리자) + Captcha/Auth (API v1) | 요청 파라미터 검증, 비즈니스 로직 호출, 응답 포맷팅 |
 | 비즈니스 서비스 | `common/service/` | 데이터 분석: GameDashboardService(개요/랭킹/추세), DepositLogService(매출/전환), ProbabilityService(결합/조건부 확률, SQL 빌더); DB 장애 시 오류 대신 빈 데이터 반환 |
 | 데이터 모델 | `app/model/` | ORM 매핑, 연관 관계, 필드 암복호화 |
@@ -88,9 +88,6 @@ Route 매칭
   ▼
   RateLimit ───────────► Redis 슬라이딩 윈도우 속도 제한
   │ (실패 시 429 + Retry-After 헤더 반환)
-  ▼
-  ApiVersion ─────────► API-Version 헤더 검증, $request->apiVersion 주입
-  │ (실패 시 400 반환)
   ▼
   AdminAuth ──────────► JWT 검증, $request->adminId 주입
   │ (실패 시 401 반환)
@@ -173,58 +170,50 @@ game_system_config (시스템 설정) — 독립 테이블
 ### 4.1 URL 규범
 
 ```
-공개 인터페이스:  /api/captcha/{generate|verify}
-           /api/auth/{login|register|refresh}
+공개 인터페이스:  /api/v1/captcha/{generate|verify}
+           /api/v1/auth/{login|register|refresh}
 
-관리자:   /admin/{resource}[/{hashid}]
-          /admin/export/{excel|pdf}
+관리자:   /admin/v1/{resource}[/{hashid}]
+          /admin/v1/export/{excel|pdf}
 
 리소스 라우트:
-  GET    /admin/user          → 목록
-  POST   /admin/user          → 생성
-  GET    /admin/user/{hashid} → 상세
-  PUT    /admin/user/{hashid} → 수정
-  DELETE /admin/user/{hashid} → 삭제 (비밀번호 확인 필요)
+  GET    /admin/v1/user          → 목록
+  POST   /admin/v1/user          → 생성
+  GET    /admin/v1/user/{hashid} → 상세
+  PUT    /admin/v1/user/{hashid} → 수정
+  DELETE /admin/v1/user/{hashid} → 삭제 (비밀번호 확인 필요)
 
-시스템 설정:  /admin/config[/{hashid}]
-작업 로그:  /admin/log
-개인 센터:  /admin/profile[/password|/logout]
-가져오기:     /admin/import/users
-업로드:     /admin/upload
-일괄:     /admin/user/batch/{destroy|status}
+시스템 설정:  /admin/v1/config[/{hashid}]
+작업 로그:  /admin/v1/log
+개인 센터:  /admin/v1/profile[/password|/logout]
+가져오기:     /admin/v1/import/users
+업로드:     /admin/v1/upload
+일괄:     /admin/v1/user/batch/{destroy|status}
 문서:     /api/docs     (OpenAPI 3.0)
 헬스:     /health
 ```
 
 ### 4.2 API 버전 정책
 
-API 버전은 요청 헤더로 제어하며, **URL 경로에 표시하지 않습니다**:
-
-```http
-API-Version: v1
-```
+버전은 URL 경로 접두사(기본 `v1`)에 두며, 요청 헤더를 사용하지 않습니다:
 
 | 메커니즘 | 설명 |
 |------|------|
-| 기본 버전 | `API-Version` 헤더 미포함 시 기본 `v1` |
-| 검증 | `ApiVersion` 미들웨어가 검증, 지원하지 않는 버전은 400 반환 |
-| 라우팅 | `v()` 헬퍼 함수가 버전에 따라 컨트롤러 클래스를 동적으로 해석 |
+| 기본 버전 | 기본 `v1`, 라우트 그룹 접두사로 결정 |
+| 라우팅 | 라우트 그룹 접두사 `/api/v1`, `/admin/v1`이 버전을 컨트롤러 네임스페이스에 매핑하고, `v()` 헬퍼 함수가 버전에 따라 컨트롤러 클래스를 해석 |
 | 디렉터리 | 컨트롤러는 버전별로 구성: `app/api/{version}/controller/` |
 
 확장 예시 — v2 API 추가:
 1. `app/api/v2/controller/AuthController.php` 생성
-2. `ApiVersion` 미들웨어의 `SUPPORTED` 상수에 `'v2'` 추가
-3. 라우트 정의는 수정 불필요
+2. `/api/v2` 라우트 그룹을 등록하고 컨트롤러 연결
+3. `v()`에 버전을 명시적으로 전달: `v('AuthController', 'login', 'v2')`
 
 ```bash
 # v1 사용
-curl -H "API-Version: v1" /api/auth/login
+curl http://host/api/v1/auth/login
 
 # v2 사용
-curl -H "API-Version: v2" /api/auth/login
-
-# 미전달, 기본 v1
-curl /api/auth/login
+curl http://host/api/v2/auth/login
 ```
 
 ### 4.3 속도 제한 정책
@@ -234,8 +223,8 @@ Redis Sorted Set 슬라이딩 윈도우 알고리즘 기반, 원자화 Lua 스�
 | 인터페이스 | 제한 |
 |------|------|
 | 기본 | 60회/분/IP/라우트 |
-| POST /api/auth/login | 10회/분 |
-| POST /api/auth/register | 5회/분 |
+| POST /api/v1/auth/login | 10회/분 |
+| POST /api/v1/auth/register | 5회/분 |
 
 초과 시 429 반환, 응답 헤더에 X-RateLimit-Limit / Remaining / Reset / Retry-After 포함.
 
@@ -264,12 +253,12 @@ Redis Sorted Set 슬라이딩 윈도우 알고리즘 기반, 원자화 Lua 스�
 ```
 클라이언트                               서버
   │                                    │
-  │  ① POST /api/captcha/generate     │ captcha_create('click')
+  │  ① POST /api/v1/captcha/generate     │ captcha_create('click')
   │◄── {key, image(base64), targets}  │
   │                                    │
   │  ② 사용자가 그림의 텍스트 위치 클릭   │
   │                                    │
-  │  ③ POST /api/auth/login           │
+  │  ③ POST /api/v1/auth/login           │
   │     {username, password,          │
   │      captcha_key, clicks}         │
   │────────────────────────────────►  │
@@ -278,7 +267,7 @@ Redis Sorted Set 슬라이딩 윈도우 알고리즘 기반, 원자화 Lua 스�
   │                                    │ ③ jwt()->create()
   │◄── {access_token, refresh_token}  │
   │                                    │
-  │  ④ GET /admin/dashboard           │
+  │  ④ GET /admin/v1/dashboard           │
   │     Authorization: Bearer xxx     │
   │────────────────────────────────►  │ AdminAuth → AdminPermission
   │◄── 200 {dashboard data}           │
@@ -306,7 +295,7 @@ Redis Sorted Set 슬라이딩 윈도우 알고리즘 기반, 원자화 Lua 스�
 ```
 클라이언트                          서버
   │                                │
-  │  DELETE /admin/user/{hashid}  │
+  │  DELETE /admin/v1/user/{hashid}  │
   │  { password: "******" }       │
   │────────────────────────────►  │
   │                                │ confirmPassword(adminId, password)
@@ -323,11 +312,11 @@ Redis Sorted Set 슬라이딩 윈도우 알고리즘 기반, 원자화 Lua 스�
 
 | 메서드 | 경로 | 설명 |
 |------|------|------|
-| GET | /admin/payment/method/list | 목록(sort 오름차순) |
-| POST | /admin/payment/method/toggle | 활성/비활성 전환 |
-| POST | /admin/payment/method/create | 생성 |
-| PUT | /admin/payment/method/{hashid} | 업데이트(전달된 필드만) |
-| DELETE | /admin/payment/method/{hashid} | 삭제(pending 주문이 있으면 422) |
+| GET | /admin/v1/payment/method/list | 목록(sort 오름차순) |
+| POST | /admin/v1/payment/method/toggle | 활성/비활성 전환 |
+| POST | /admin/v1/payment/method/create | 생성 |
+| PUT | /admin/v1/payment/method/{hashid} | 업데이트(전달된 필드만) |
+| DELETE | /admin/v1/payment/method/{hashid} | 삭제(pending 주문이 있으면 422) |
 
 - **provider 화이트리스트**: `stripe` / `nowpayments` / `coinbase`
 - **필드**: name / type(fiat|crypto) / provider / status / sort / countries[](국가별 표시, 비어 있으면 전 세계) / currency / min_amount / max_amount / config(JSON, 암호화 저장)
@@ -419,7 +408,7 @@ SCOUT_HOSTS         → ES 주소, 내부망 배포
 ### 7.1 Excel 내보내기
 
 ```
-요청: POST /admin/export/excel { table, columns, conditions, title }
+요청: POST /admin/v1/export/excel { table, columns, conditions, title }
   → fetchExportData() 데이터 조회 (limit 10000)
   → 민감 필드 마스킹
   → PhpSpreadsheet 구성 (파란 배경 흰 글씨 헤더 + 첫 행 고정 + 자동 필터)
@@ -429,7 +418,7 @@ SCOUT_HOSTS         → ES 주소, 내부망 배포
 ### 7.2 PDF 내보내기
 
 ```
-요청: POST /admin/export/pdf { type: table|dashboard, title, data }
+요청: POST /admin/v1/export/pdf { type: table|dashboard, title, data }
   → buildPdfHtml() HTML + 인라인 CSS + 페이지 헤더 저작권 + 페이지 푸터 제거 불가능 저작권
   → Dompdf 렌더링 A4 가로
   → runtime/tmp/에 쓰기 → download 응답

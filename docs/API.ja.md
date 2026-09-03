@@ -24,7 +24,6 @@ Languages: **中文** · [English](API.en.md) · [한국어](API.ko.md) · [Ру
 
 ```
 Content-Type: application/json
-API-Version: v1
 Authorization: Bearer <token>    (需要认证的接口)
 ```
 
@@ -75,7 +74,7 @@ Authorization: Bearer <token>    (需要认证的接口)
 
 ### 2.1 認証
 
-#### POST /api/auth/register — ユーザー登録
+#### POST /api/v1/auth/register — ユーザー登録
 
 ```
 请求: {
@@ -96,7 +95,7 @@ Authorization: Bearer <token>    (需要认证的接口)
 }
 ```
 
-#### POST /api/auth/login — ユーザーログイン
+#### POST /api/v1/auth/login — ユーザーログイン
 
 ```
 请求: {
@@ -113,7 +112,7 @@ Authorization: Bearer <token>    (需要认证的接口)
 
 エラー: 401 ユーザー名またはパスワードが正しくない / アカウントが無効化されている
 
-#### POST /api/auth/refresh — Token リフレッシュ
+#### POST /api/v1/auth/refresh — Token リフレッシュ
 
 ```
 请求: (Authorization: Bearer <refresh_token>)
@@ -126,7 +125,7 @@ Authorization: Bearer <token>    (需要认证的接口)
 
 ### 2.2 ウォレット
 
-#### GET /api/wallet/info — ウォレット情報
+#### GET /api/v1/wallet/info — ウォレット情報
 
 ```
 需认证: 是
@@ -139,7 +138,7 @@ Authorization: Bearer <token>    (需要认证的接口)
 }
 ```
 
-#### GET /api/wallet/transactions — 流水記録
+#### GET /api/v1/wallet/transactions — 流水記録
 
 ```
 需认证: 是
@@ -166,7 +165,7 @@ type 可选值: deposit / withdraw / exchange_in / exchange_out / game_earn / ga
 
 ### 2.3 チャージ
 
-#### POST /api/deposit/create — チャージ注文の作成
+#### POST /api/v1/deposit/create — チャージ注文の作成
 
 ```
 需认证: 是
@@ -191,7 +190,7 @@ currency 選択値: USD / CNY / EUR
 
 checkout_url: 決済ゲートウェイのリダイレクトリンク（注文作成時に設定済み）；expires_at: 決済リンクの有効期限（作成から1時間）
 
-#### GET /api/deposit/orders — チャージ記録
+#### GET /api/v1/deposit/orders — チャージ記録
 
 ```
 需认证: 是
@@ -220,7 +219,7 @@ status 選択値: pending / paid / confirmed / cancelled
 
 ### 2.4 交換
 
-#### POST /api/exchange/quote — 見積
+#### POST /api/v1/exchange/quote — 見積
 
 ```
 需认证: 是
@@ -243,7 +242,7 @@ status 選択値: pending / paid / confirmed / cancelled
 
 direction: in=ゲームコイン購入 / out=ゲームコイン売却
 
-#### POST /api/exchange/buy — ゲームコイン購入
+#### POST /api/v1/exchange/buy — ゲームコイン購入
 
 ```
 需认证: 是
@@ -265,7 +264,7 @@ direction: in=ゲームコイン購入 / out=ゲームコイン売却
 
 エラー: 422 プラットフォームコイン残高不足 / 404 ゲームが利用不可
 
-#### POST /api/exchange/sell — ゲームコイン売却
+#### POST /api/v1/exchange/sell — ゲームコイン売却
 
 ```
 需认证: 是
@@ -287,7 +286,7 @@ direction: in=ゲームコイン購入 / out=ゲームコイン売却
 
 エラー: 422 ゲームコイン残高不足
 
-#### GET /api/exchange/records — 交換記録
+#### GET /api/v1/exchange/records — 交換記録
 
 ```
 需认证: 是
@@ -314,7 +313,7 @@ direction: in=ゲームコイン購入 / out=ゲームコイン売却
 
 ### 2.5 出金
 
-#### POST /api/withdraw/apply — 出金申請
+#### POST /api/v1/withdraw/apply — 出金申請
 
 ```
 需认证: 是
@@ -344,7 +343,7 @@ status:
 - 400 日次出金限度額を超過
 - 400 残高不足
 
-#### GET /api/withdraw/orders — 出金記録
+#### GET /api/v1/withdraw/orders — 出金記録
 
 ```
 需认证: 是
@@ -370,7 +369,7 @@ status:
 
 ### 2.6 ゲーム
 
-#### GET /api/game/list — ゲーム一覧
+#### GET /api/v1/game/list — ゲーム一覧
 
 ```
 参数: ?page=1&per_page=20&keyword=射击&type=self
@@ -404,7 +403,7 @@ status:
 
 type 選択値: self / third_party
 
-#### GET /api/game/{hashid} — ゲーム詳細
+#### GET /api/v1/game/{hashid} — ゲーム詳細
 
 ```
 响应: {
@@ -428,7 +427,7 @@ type 選択値: self / third_party
 }
 ```
 
-#### POST /api/game/launch — ゲーム起動
+#### POST /api/v1/game/launch — ゲーム起動
 
 ```
 需认证: 是
@@ -447,7 +446,7 @@ type 選択値: self / third_party
 
 7 つのプラットフォームをサポート: Google / Facebook / Apple / X(Twitter) / Microsoft / LinkedIn / GitHub
 
-#### GET /api/auth/oauth/{provider} — 認可 URL の取得
+#### GET /api/v1/auth/oauth/{provider} — 認可 URL の取得
 
 ```
 参数: provider = google / facebook / apple / twitter / microsoft / linkedin / github
@@ -457,7 +456,7 @@ type 選択値: self / third_party
 }
 ```
 
-#### POST /api/auth/oauth/{provider}/callback — OAuth コールバック
+#### POST /api/v1/auth/oauth/{provider}/callback — OAuth コールバック
 
 ```
 请求: { "code": "授权码", "state": "防CSRF状态" }
@@ -474,7 +473,7 @@ is_new: true=新規登録ユーザー / false=既存アカウント連携
 
 ### 2.8 KYC 実名認証
 
-#### GET /api/user/identity/status — 認証状態
+#### GET /api/v1/user/identity/status — 認証状態
 
 ```
 需认证: 是
@@ -489,7 +488,7 @@ is_new: true=新規登録ユーザー / false=既存アカウント連携
 }
 ```
 
-#### POST /api/user/identity/apply — 認証の提出
+#### POST /api/v1/user/identity/apply — 認証の提出
 
 ```
 需认证: 是
@@ -507,7 +506,7 @@ is_new: true=新規登録ユーザー / false=既存アカウント連携
 
 ### 2.9 決済
 
-#### POST /api/payment/callback — 決済コールバック（公開）
+#### POST /api/v1/payment/callback — 決済コールバック（公開）
 
 ```
 请求: {
@@ -542,7 +541,7 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 | mpesa | ケニア / タンザニアなど（準備中） | — | KES / TZS |
 | paystack | ナイジェリア（準備中） | — | NGN |
 
-#### GET /api/payment/methods — 利用可能な決済方法（公開）
+#### GET /api/v1/payment/methods — 利用可能な決済方法（公開）
 
 ```
 响应: {
@@ -556,7 +555,7 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 
 ### 2.10 ゲーム記録
 
-#### GET /api/game/play-logs — ゲーム記録一覧
+#### GET /api/v1/game/play-logs — ゲーム記録一覧
 
 ```
 需认证: 是
@@ -576,7 +575,7 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 }
 ```
 
-#### GET /api/game/play-log/{hashid} — ゲーム記録詳細
+#### GET /api/v1/game/play-log/{hashid} — ゲーム記録詳細
 
 ```
 需认证: 是
@@ -585,7 +584,7 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 
 ### 2.12 ランキング
 
-#### GET /api/leaderboard/list — ランキング一覧
+#### GET /api/v1/leaderboard/list — ランキング一覧
 
 ```
 响应: {
@@ -595,7 +594,7 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 }
 ```
 
-#### GET /api/leaderboard/{hashid} — ランキング詳細
+#### GET /api/v1/leaderboard/{hashid} — ランキング詳細
 
 ```
 响应: {
@@ -610,14 +609,14 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 
 ### 2.13 クーポン
 
-#### GET /api/coupon/available — 取得可能なクーポン
+#### GET /api/v1/coupon/available — 取得可能なクーポン
 
 ```
 需认证: 是
 响应: { "list": [{ "id": "...", "name": "新人礼包", "type": "fixed", "value": "10.0000" }] }
 ```
 
-#### POST /api/coupon/claim — クーポン取得
+#### POST /api/v1/coupon/claim — クーポン取得
 
 ```
 需认证: 是
@@ -625,7 +624,7 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 响应: { "coupon": { ... } }
 ```
 
-#### GET /api/coupon/my — マイクーポン
+#### GET /api/v1/coupon/my — マイクーポン
 
 ```
 需认证: 是
@@ -635,7 +634,7 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 
 ### 2.14 国別設定
 
-#### GET /api/country/list — 国一覧
+#### GET /api/v1/country/list — 国一覧
 
 ```
 响应: {
@@ -645,7 +644,7 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 }
 ```
 
-#### GET /api/country/{code} — 国の詳細
+#### GET /api/v1/country/{code} — 国の詳細
 
 ```
 响应: {
@@ -659,7 +658,7 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 
 ### 2.16 通知
 
-#### GET /api/notification/list — 通知一覧
+#### GET /api/v1/notification/list — 通知一覧
 
 ```
 需认证: 是
@@ -673,14 +672,14 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 }
 ```
 
-#### GET /api/notification/unread-count — 未読数
+#### GET /api/v1/notification/unread-count — 未読数
 
 ```
 需认证: 是
 响应: { "count": 3 }
 ```
 
-#### POST /api/notification/read — 既読化
+#### POST /api/v1/notification/read — 既読化
 
 ```
 需认证: 是
@@ -689,14 +688,14 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 
 ### 2.17 紹介
 
-#### GET /api/referral/my-code — マイ紹介コード
+#### GET /api/v1/referral/my-code — マイ紹介コード
 
 ```
 需认证: 是
 响应: { "code": "ABC12345", "referral_count": 12, "total_rewards": "150.0000" }
 ```
 
-#### POST /api/referral/apply — 紹介コードの使用
+#### POST /api/v1/referral/apply — 紹介コードの使用
 
 ```
 需认证: 是
@@ -706,21 +705,21 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 
 ### 2.18 2FA
 
-#### GET /api/user/2fa/status — 2FA状態
+#### GET /api/v1/user/2fa/status — 2FA状態
 
 ```
 需认证: 是
 响应: { "enabled": false }
 ```
 
-#### POST /api/user/2fa/setup — 2FA設定
+#### POST /api/v1/user/2fa/setup — 2FA設定
 
 ```
 需认证: 是
 响应: { "secret": "JBSWY3DPEHPK3PXP", "qr_url": "otpauth://totp/..." }
 ```
 
-#### POST /api/user/2fa/enable — 2FA有効化
+#### POST /api/v1/user/2fa/enable — 2FA有効化
 
 ```
 需认证: 是
@@ -728,7 +727,7 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 响应: { "backup_codes": ["abcd1234ef", ...] }
 ```
 
-#### POST /api/2fa/verify — 2FA検証（公開）
+#### POST /api/v1/2fa/verify — 2FA検証（公開）
 
 ```
 请求: { "user_id": "hashid", "code": "123456" }
@@ -737,14 +736,14 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 
 ### 2.19 検索
 
-#### GET /api/search — グローバル検索
+#### GET /api/v1/search — グローバル検索
 
 ```
 参数: ?q=keyword&type=game&page=1&per_page=20
 响应: { "list": [...], "total": 100 }
 ```
 
-#### GET /api/game/suggest — 検索サジェスト
+#### GET /api/v1/game/suggest — 検索サジェスト
 
 ```
 参数: ?q=shoot
@@ -753,7 +752,7 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 
 ### 2.20 言語
 
-#### GET /api/language/list — 利用可能な言語一覧
+#### GET /api/v1/language/list — 利用可能な言語一覧
 
 ```
 响应: {
@@ -767,7 +766,7 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 }
 ```
 
-#### POST /api/language/switch — 言語切り替え
+#### POST /api/v1/language/switch — 言語切り替え
 
 ```
 请求: { "locale": "zh-CN" }
@@ -778,7 +777,7 @@ locale 選択値: en-US / zh-CN / ja-JP / ko-KR
 
 ### 2.8 ユーザー
 
-#### GET /api/user/profile — 個人情報
+#### GET /api/v1/user/profile — 個人情報
 
 ```
 需认证: 是
@@ -797,7 +796,7 @@ locale 選択値: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
-#### PUT /api/user/profile — プロフィール編集
+#### PUT /api/v1/user/profile — プロフィール編集
 
 ```
 需认证: 是
@@ -821,7 +820,7 @@ language 選択値: en-US / zh-CN / ja-JP / ko-KR
 
 ### 2.9 公告
 
-#### GET /api/announcement/list — 公告一覧
+#### GET /api/v1/announcement/list — 公告一覧
 
 ```
 响应: {
@@ -836,7 +835,7 @@ language 選択値: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
-#### GET /api/announcement/detail/{hashid} — 公告詳細
+#### GET /api/v1/announcement/detail/{hashid} — 公告詳細
 
 ```
 响应: {
@@ -852,9 +851,9 @@ language 選択値: en-US / zh-CN / ja-JP / ko-KR
 
 | メソッド | パス | 説明 | 認証 |
 |------|------|------|------|
-| GET | /api/platform/stats | プラットフォーム公開統計（ゲーム総数/ユーザー総数/今日の対局数/7日間アクティブ） | なし |
+| GET | /api/v1/platform/stats | プラットフォーム公開統計（ゲーム総数/ユーザー総数/今日の対局数/7日間アクティブ） | なし |
 
-#### GET /api/platform/stats — プラットフォーム統計
+#### GET /api/v1/platform/stats — プラットフォーム統計
 
 ```
 无需认证
@@ -1466,8 +1465,8 @@ action: approve / reject
 | エンドポイント | 制限 |
 |------|------|
 | デフォルト | 60 回/分/IP |
-| POST /api/auth/login | 10 回/分 |
-| POST /api/auth/register | 5 回/分 |
+| POST /api/v1/auth/login | 10 回/分 |
+| POST /api/v1/auth/register | 5 回/分 |
 
 超過時は 429 を返し、レスポンスヘッダーに含まれる:
 ```
@@ -1600,7 +1599,7 @@ Retry-After: 60
 
 ### 7.2 チケット API
 
-#### GET /api/ticket/list — チケット一覧
+#### GET /api/v1/ticket/list — チケット一覧
 
 ```
 需认证: 是
@@ -1625,7 +1624,7 @@ Retry-After: 60
 type: deposit / withdraw / game / account / other
 status: open / waiting / replied / closed
 
-#### POST /api/ticket/create — チケット作成
+#### POST /api/v1/ticket/create — チケット作成
 
 ```
 需认证: 是
@@ -1637,7 +1636,7 @@ status: open / waiting / replied / closed
 响应: { "code": 0, "message": "Ticket created", "data": { "id": "aB3xK..." } }
 ```
 
-#### GET /api/ticket/{hashid} — チケット詳細
+#### GET /api/v1/ticket/{hashid} — チケット詳細
 
 ```
 需认证: 是
@@ -1650,7 +1649,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### POST /api/ticket/{hashid}/reply — チケット返信
+#### POST /api/v1/ticket/{hashid}/reply — チケット返信
 
 ```
 需认证: 是
@@ -1660,7 +1659,7 @@ status: open / waiting / replied / closed
 
 ### 7.3 メール検証 API
 
-#### POST /api/verify/send-email — メール認証コード送信
+#### POST /api/v1/verify/send-email — メール認証コード送信
 
 ```
 需认证: 是
@@ -1669,7 +1668,7 @@ status: open / waiting / replied / closed
 错误: 429 请60秒后重试
 ```
 
-#### POST /api/verify/confirm-email — メール確認
+#### POST /api/v1/verify/confirm-email — メール確認
 
 ```
 需认证: 是
@@ -1680,7 +1679,7 @@ status: open / waiting / replied / closed
 
 ### 7.4 VIP API
 
-#### GET /api/user/vip-status — VIP状態
+#### GET /api/v1/user/vip-status — VIP状態
 
 ```
 需认证: 是
@@ -1700,7 +1699,7 @@ status: open / waiting / replied / closed
 
 ### 7.5 アチーブメント API
 
-#### GET /api/user/achievements — アチーブメント一覧
+#### GET /api/v1/user/achievements — アチーブメント一覧
 
 ```
 需认证: 是
@@ -1899,10 +1898,10 @@ status: open / waiting / replied / closed
 | エンドポイント | 制限 |
 |------|------|
 | デフォルト | 60 回/分/IP |
-| POST /api/auth/login | 10 回/分 |
-| POST /api/auth/register | 5 回/分 |
-| POST /api/auth/oauth | 10 回/分 |
-| POST /api/payment/callback | 30 回/分 |
+| POST /api/v1/auth/login | 10 回/分 |
+| POST /api/v1/auth/register | 5 回/分 |
+| POST /api/v1/auth/oauth | 10 回/分 |
+| POST /api/v1/payment/callback | 30 回/分 |
 | POST /api/provider/* | 制限なし (HMAC署名認証) |
 
 ## 9. 認証の説明（更新）
@@ -1918,43 +1917,43 @@ status: open / waiting / replied / closed
 
 ### 7.7 フレンド API
 
-#### GET /api/friend/list — フレンド一覧
+#### GET /api/v1/friend/list — フレンド一覧
 ```
 需认证: 是
 响应: { "list": [{ "id": "...", "username": "...", "nickname": "...", "avatar": "..." }] }
 ```
 
-#### GET /api/friend/requests — 未処理の申請
+#### GET /api/v1/friend/requests — 未処理の申請
 ```
 需认证: 是
 响应: { "list": [{ "id": "...", "user": {...}, "created_at": "..." }] }
 ```
 
-#### POST /api/friend/request — フレンド申請の送信
+#### POST /api/v1/friend/request — フレンド申請の送信
 ```
 需认证: 是
 请求: { "friend_id": "hashid" }
 ```
 
-#### POST /api/friend/accept — 申請の承認
+#### POST /api/v1/friend/accept — 申請の承認
 ```
 需认证: 是
 请求: { "request_id": "hashid" }
 ```
 
-#### POST /api/friend/reject — 申請の拒否
+#### POST /api/v1/friend/reject — 申請の拒否
 ```
 需认证: 是
 请求: { "request_id": "hashid" }
 ```
 
-#### POST /api/friend/remove — フレンド削除
+#### POST /api/v1/friend/remove — フレンド削除
 ```
 需认证: 是
 请求: { "friend_id": "hashid" }
 ```
 
-#### GET /api/friend/search — ユーザー検索
+#### GET /api/v1/friend/search — ユーザー検索
 ```
 需认证: 是
 参数: ?q=username
@@ -1963,7 +1962,7 @@ status: open / waiting / replied / closed
 
 ### 7.8 チャット API
 
-#### GET /api/chat/conversations — 会話一覧
+#### GET /api/v1/chat/conversations — 会話一覧
 ```
 需认证: 是
 响应: {
@@ -1976,7 +1975,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /api/chat/messages/{peerHashid} — メッセージ一覧
+#### GET /api/v1/chat/messages/{peerHashid} — メッセージ一覧
 ```
 需认证: 是
 参数: ?page=1&per_page=50
@@ -1984,14 +1983,14 @@ status: open / waiting / replied / closed
 自动标记对端发来的未读消息为已读
 ```
 
-#### POST /api/chat/send — メッセージ送信
+#### POST /api/v1/chat/send — メッセージ送信
 ```
 需认证: 是
 请求: { "to_user_id": "hashid", "content": "Hello!" }
 错误: 403 非好友不可发
 ```
 
-#### GET /api/chat/unread-total — 未読総数
+#### GET /api/v1/chat/unread-total — 未読総数
 ```
 需认证: 是
 响应: { "count": 5 }
@@ -2009,20 +2008,20 @@ status: open / waiting / replied / closed
 
 ### 7.9 Webhook API
 
-#### GET /api/webhook/list — 購読一覧
+#### GET /api/v1/webhook/list — 購読一覧
 ```
 需认证: 是
 响应: { "list": [{ "id": "...", "url": "https://...", "events": ["deposit.completed"] }] }
 ```
 
-#### POST /api/webhook/register — 購読登録
+#### POST /api/v1/webhook/register — 購読登録
 ```
 需认证: 是
 请求: { "url": "https://my-server.com/hook", "events": ["deposit.completed", "game.played"] }
 可用事件: deposit.completed / withdraw.completed / exchange.completed / game.played / user.registered / risk.alert / user.vip_upgraded
 ```
 
-#### POST /api/webhook/delete — 購読削除
+#### POST /api/v1/webhook/delete — 購読削除
 ```
 需认证: 是
 请求: { "id": "hook_id" }
@@ -2071,18 +2070,18 @@ status: open / waiting / replied / closed
 
 ### 7.11 トーナメント API
 
-#### GET /api/tournament/list — トーナメント一覧
+#### GET /api/v1/tournament/list — トーナメント一覧
 ```
 参数: ?status=active|upcoming|ended&page=1&per_page=20
 响应: { "items": [{ "id": "...", "name": "...", "prize_pool": "1000.0000", "player_count": 45, "max_players": 100 }], "total": 5 }
 ```
 
-#### GET /api/tournament/{hashid} — トーナメント詳細
+#### GET /api/v1/tournament/{hashid} — トーナメント詳細
 ```
 响应: { "id": "...", "name": "...", "leaderboard": [...], "my_entry": {...} }
 ```
 
-#### POST /api/tournament/{hashid}/join — 大会参加登録
+#### POST /api/v1/tournament/{hashid}/join — 大会参加登録
 ```
 需认证: 是
 错误: 422 已报名 / 400 已开始或已满员 / 503 FeatureFlag关闭
@@ -2108,7 +2107,7 @@ status: open / waiting / replied / closed
 
 | エンドポイント | 制限 |
 |------|------|
-| POST /api/tournament/{id}/join | 10 回/分 |
+| POST /api/v1/tournament/{id}/join | 10 回/分 |
 
 ---
 
@@ -2159,23 +2158,23 @@ status: open / waiting / replied / closed
 | POST /admin/activities/create | アクティビティ作成（管理側） |
 | PUT /admin/activities/{hashid} | アクティビティ更新（管理側） |
 | DELETE /admin/activities/{hashid} | アクティビティ削除（管理側） |
-| GET /api/activities/list | アクティビティ一覧（C側） |
-| GET /api/activities/progress | 参加進捗（C側） |
-| GET /api/activities/{hashid} | アクティビティ詳細（C側） |
-| POST /api/activities/{hashid}/checkin | チェックイン（C側） |
+| GET /api/v1/activities/list | アクティビティ一覧（C側） |
+| GET /api/v1/activities/progress | 参加進捗（C側） |
+| GET /api/v1/activities/{hashid} | アクティビティ詳細（C側） |
+| POST /api/v1/activities/{hashid}/checkin | チェックイン（C側） |
 
 ### 10.4 グループ／シェア (C側 :8788 + 管理側 :8787)
 
 | エンドポイント | 説明 |
 |------|------|
-| POST /api/groups | グループ作成 |
-| GET /api/groups/{hashid} | グループ詳細 |
-| GET /api/groups/{hashid}/members | メンバー一覧 |
-| POST /api/groups/{hashid}/join | グループ参加 |
-| POST /api/groups/{hashid}/leave | グループ退出 |
-| PUT /api/groups/{hashid}/role | メンバー役割 |
-| POST /api/shares | シェアリンク作成 |
-| POST /api/shares/visit | シェア訪問追跡 |
+| POST /api/v1/groups | グループ作成 |
+| GET /api/v1/groups/{hashid} | グループ詳細 |
+| GET /api/v1/groups/{hashid}/members | メンバー一覧 |
+| POST /api/v1/groups/{hashid}/join | グループ参加 |
+| POST /api/v1/groups/{hashid}/leave | グループ退出 |
+| PUT /api/v1/groups/{hashid}/role | メンバー役割 |
+| POST /api/v1/shares | シェアリンク作成 |
+| POST /api/v1/shares/visit | シェア訪問追跡 |
 | GET /admin/groups | グループ一覧（管理側） |
 | GET /admin/groups/{hashid}/audit | グループ監査（管理側） |
 | GET /admin/share/stats | シェア統計（管理側） |

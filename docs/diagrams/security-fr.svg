@@ -37,7 +37,7 @@
 
   <rect x="665" y="140" width="320" height="60" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5" filter="url(#sh)"/>
   <text x="825" y="162" text-anchor="middle" fill="#7f1d1d" font-size="12" font-weight="bold">L6 : Contrôle de version API</text>
-  <text x="825" y="180" text-anchor="middle" fill="#dc2626" font-size="10">Validation de l'en-tête de requête API-Version</text>
+  <text x="825" y="180" text-anchor="middle" fill="#dc2626" font-size="10">Version dans l'URL (/api/v1)</text>
   <text x="825" y="194" text-anchor="middle" fill="#dc2626" font-size="10">Par défaut v1, coexistence multi-versions</text>
 
   <!-- L7-L9 -->

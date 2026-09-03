@@ -64,7 +64,7 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.
 | Schicht | Verzeichnis | Verantwortung |
 |---|------|------|
 | Routen | `config/route.php` | URL-zu-Controller-Zuordnung, Middleware-Bindung, versionierte Routen |
-| Middleware | `app/middleware/` | Angriffsabwehr (SecurityFilter), Rate-Limiting (RateLimit), Authentifizierung (JWT), Autorisierung (RBAC), API-Version (ApiVersion) |
+| Middleware | `app/middleware/` | Angriffsabwehr (SecurityFilter), Rate-Limiting (RateLimit), Authentifizierung (JWT), Autorisierung (RBAC) |
 | Controller | 30 Stück: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (Admin) + Captcha/Auth (API v1) | Validierung der Anfrageparameter, Aufruf der Geschäftslogik, Antwortformatierung |
 | Geschäftsdienste | `common/service/` | Datenanalyse: GameDashboardService (Übersicht/Ranking/Trend), DepositLogService (Umsatz/Konversion), ProbabilityService (gemeinsame/bedingte Wahrscheinlichkeit, SQL-Builder); bei DB-Ausfall leere Daten statt Fehler |
 | Datenmodelle | `app/model/` | ORM-Zuordnung, Beziehungen, Feldver-/entschlüsselung |
@@ -88,9 +88,6 @@ Middleware-Kette:
   ▼
   RateLimit ───────────► Redis-Sliding-Window-Rate-Limiting
   │ (bei Fehler 429 + Retry-After-Header)
-  ▼
-  ApiVersion ─────────► API-Version-Header-Prüfung, injiziert $request->apiVersion
-  │ (bei Fehler 400)
   ▼
   AdminAuth ──────────► JWT-Prüfung, injiziert $request->adminId
   │ (bei Fehler 401)
@@ -173,58 +170,50 @@ game_system_config (系统配置) — 独立表
 ### 4.1 URL-Standards
 
 ```
-Öffentliche Schnittstellen:  /api/captcha/{generate|verify}
-           /api/auth/{login|register|refresh}
+Öffentliche Schnittstellen:  /api/v1/captcha/{generate|verify}
+           /api/v1/auth/{login|register|refresh}
 
-Admin:     /admin/{resource}[/{hashid}]
-          /admin/export/{excel|pdf}
+Admin:     /admin/v1/{resource}[/{hashid}]
+          /admin/v1/export/{excel|pdf}
 
 Ressourcen-Routen:
-  GET    /admin/user          → Liste
-  POST   /admin/user          → anlegen
-  GET    /admin/user/{hashid} → Details
-  PUT    /admin/user/{hashid} → aktualisieren
-  DELETE /admin/user/{hashid} → löschen (Passwortbestätigung erforderlich)
+  GET    /admin/v1/user          → Liste
+  POST   /admin/v1/user          → anlegen
+  GET    /admin/v1/user/{hashid} → Details
+  PUT    /admin/v1/user/{hashid} → aktualisieren
+  DELETE /admin/v1/user/{hashid} → löschen (Passwortbestätigung erforderlich)
 
-Systemkonfiguration:  /admin/config[/{hashid}]
-Operationsprotokoll:  /admin/log
-Persönlicher Bereich:  /admin/profile[/password|/logout]
-Import:     /admin/import/users
-Upload:     /admin/upload
-Batch:     /admin/user/batch/{destroy|status}
+Systemkonfiguration:  /admin/v1/config[/{hashid}]
+Operationsprotokoll:  /admin/v1/log
+Persönlicher Bereich:  /admin/v1/profile[/password|/logout]
+Import:     /admin/v1/import/users
+Upload:     /admin/v1/upload
+Batch:     /admin/v1/user/batch/{destroy|status}
 Dokumentation:     /api/docs     (OpenAPI 3.0)
 Health:     /health
 ```
 
-### 4.2 API-Versionsstrategie
+### 4.2 Versionsstrategie der API
 
-Die API-Version wird über einen Request-Header gesteuert und **erscheint nicht im URL-Pfad**:
-
-```http
-API-Version: v1
-```
+Die Versionsnummer steht im URL-Pfad-Präfix (Standard `v1`); es wird kein Request-Header verwendet:
 
 | Mechanismus | Beschreibung |
 |------|------|
-| Standardversion | ohne `API-Version`-Header standardmäßig `v1` |
-| Prüfung | `ApiVersion`-Middleware prüft; nicht unterstützte Versionen liefern 400 |
-| Routing | die Hilfsfunktion `v()` löst Controller-Klassen dynamisch je nach Version auf |
+| Standardversion | Standard `v1`, bestimmt durch das Routen-Gruppen-Präfix |
+| Routing | Die Routen-Gruppen-Präfixe `/api/v1`, `/admin/v1` mappen die Version auf den Controller-Namespace; die Hilfsfunktion `v()` löst Controller-Klassen je nach Version auf |
 | Verzeichnis | Controller nach Version organisiert: `app/api/{version}/controller/` |
 
 Erweiterungsbeispiel — neue v2-API hinzufügen:
 1. `app/api/v2/controller/AuthController.php` anlegen
-2. In der `ApiVersion`-Middleware der `SUPPORTED`-Konstante `'v2'` hinzufügen
-3. Routendefinitionen müssen nicht geändert werden
+2. Eine `/api/v2`-Routengruppe registrieren und den Controller anbinden
+3. Die Version explizit an `v()` übergeben: `v('AuthController', 'login', 'v2')`
 
 ```bash
 # v1 verwenden
-curl -H "API-Version: v1" /api/auth/login
+curl http://host/api/v1/auth/login
 
 # v2 verwenden
-curl -H "API-Version: v2" /api/auth/login
-
-# Ohne Header, standardmäßig v1
-curl /api/auth/login
+curl http://host/api/v2/auth/login
 ```
 
 ### 4.3 Rate-Limiting-Strategie
@@ -234,8 +223,8 @@ Basiert auf dem Redis-Sorted-Set-Sliding-Window-Algorithmus, ausgeführt als ato
 | Schnittstelle | Limit |
 |------|------|
 | Standard | 60/Minute/IP/Route |
-| POST /api/auth/login | 10/Minute |
-| POST /api/auth/register | 5/Minute |
+| POST /api/v1/auth/login | 10/Minute |
+| POST /api/v1/auth/register | 5/Minute |
 
 Bei Überschreitung wird 429 zurückgegeben; der Response enthält die Header X-RateLimit-Limit / Remaining / Reset / Retry-After.
 
@@ -264,12 +253,12 @@ Bei Überschreitung wird 429 zurückgegeben; der Response enthält die Header X-
 ```
 Client                               Server
   │                                    │
-  │  ① POST /api/captcha/generate     │ captcha_create('click')
+  │  ① POST /api/v1/captcha/generate     │ captcha_create('click')
   │◄── {key, image(base64), targets}  │
   │                                    │
   │  ② Benutzer klickt auf Textpositionen im Bild │
   │                                    │
-  │  ③ POST /api/auth/login           │
+  │  ③ POST /api/v1/auth/login           │
   │     {username, password,          │
   │      captcha_key, clicks}         │
   │────────────────────────────────►  │
@@ -278,7 +267,7 @@ Client                               Server
   │                                    │ ③ jwt()->create()
   │◄── {access_token, refresh_token}  │
   │                                    │
-  │  ④ GET /admin/dashboard           │
+  │  ④ GET /admin/v1/dashboard           │
   │     Authorization: Bearer xxx     │
   │────────────────────────────────►  │ AdminAuth → AdminPermission
   │◄── 200 {dashboard data}           │
@@ -306,7 +295,7 @@ Bei sensiblen Aktionen wie dem Löschen von Benutzern, Rollen oder Berechtigunge
 ```
 Client                           Server
   │                                │
-  │  DELETE /admin/user/{hashid}  │
+  │  DELETE /admin/v1/user/{hashid}  │
   │  { password: "******" }       │
   │────────────────────────────►  │
   │                                │ confirmPassword(adminId, password)
@@ -323,11 +312,11 @@ Das Modul zur Verwaltung der Zahlungsmethoden (`PaymentController` + Flutter `pa
 
 | Methode | Pfad | Beschreibung |
 |------|------|------|
-| GET | /admin/payment/method/list | Liste (aufsteigend nach sort) |
-| POST | /admin/payment/method/toggle | Aktivieren/Deaktivieren |
-| POST | /admin/payment/method/create | Erstellen |
-| PUT | /admin/payment/method/{hashid} | Aktualisieren (nur übergebene Felder) |
-| DELETE | /admin/payment/method/{hashid} | Löschen (422 bei ausstehenden Bestellungen) |
+| GET | /admin/v1/payment/method/list | Liste (aufsteigend nach sort) |
+| POST | /admin/v1/payment/method/toggle | Aktivieren/Deaktivieren |
+| POST | /admin/v1/payment/method/create | Erstellen |
+| PUT | /admin/v1/payment/method/{hashid} | Aktualisieren (nur übergebene Felder) |
+| DELETE | /admin/v1/payment/method/{hashid} | Löschen (422 bei ausstehenden Bestellungen) |
 
 - **provider-Whitelist**: `stripe` / `nowpayments` / `coinbase`
 - **Felder**: name / type (fiat|crypto) / provider / status / sort / countries[] (Ländersichtbarkeit, leer = global) / currency / min_amount / max_amount / config (JSON, verschlüsselt gespeichert)
@@ -419,7 +408,7 @@ SCOUT_HOSTS         → ES-Adresse, Intranet-Bereitstellung
 ### 7.1 Excel-Export
 
 ```
-Anfrage: POST /admin/export/excel { table, columns, conditions, title }
+Anfrage: POST /admin/v1/export/excel { table, columns, conditions, title }
   → fetchExportData() Daten abfragen (limit 10000)
   → sensible Felder maskieren
   → PhpSpreadsheet-Aufbau (blauer Hintergrund/weiße Schrift im Kopf + erste Zeile eingefroren + Auto-Filter)
@@ -429,7 +418,7 @@ Anfrage: POST /admin/export/excel { table, columns, conditions, title }
 ### 7.2 PDF-Export
 
 ```
-Anfrage: POST /admin/export/pdf { type: table|dashboard, title, data }
+Anfrage: POST /admin/v1/export/pdf { type: table|dashboard, title, data }
   → buildPdfHtml() HTML + Inline-CSS + Copyright im Kopf + nicht entfernbarer Copyright-Fuß
   → Dompdf rendert A4-Querformat
   → in runtime/tmp/ schreiben → download-Antwort

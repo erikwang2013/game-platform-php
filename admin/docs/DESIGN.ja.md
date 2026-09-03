@@ -64,7 +64,7 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.
 | 層 | ディレクトリ | 責務 |
 |---|------|------|
 | ルート | `config/route.php` | URL からコントローラーへのマッピング、中間ウェアバインド、バージョン化ルート |
-| 中間ウェア | `app/middleware/` | 攻撃遮断(SecurityFilter)、レート制限(RateLimit)、認証(JWT)、認可(RBAC)、APIバージョン(ApiVersion) |
+| 中間ウェア | `app/middleware/` | 攻撃遮断(SecurityFilter)、レート制限(RateLimit)、認証(JWT)、認可(RBAC) |
 | コントローラー | 30個：Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (管理端) + Captcha/Auth (API v1) | リクエストパラメータ検証、ビジネスロジック呼び出し、レスポンス整形 |
 | 業務サービス | `common/service/` | データ分析：GameDashboardService（概要/ランキング/トレンド）、DepositLogService（売上/コンバージョン）、ProbabilityService（結合/条件確率、SQL ビルダー）；DB 障害時はエラーではなく空データを返す |
 | データモデル | `app/model/` | ORM マッピング、関連関係、フィールド暗号化・復号 |
@@ -88,9 +88,6 @@ Route 匹配
   ▼
   RateLimit ───────────► Redis 滑动窗口限流
   │ (失败返回 429 + Retry-After 头)
-  ▼
-  ApiVersion ─────────► API-Version 头校验，注入 $request->apiVersion
-  │ (失败返回 400)
   ▼
   AdminAuth ──────────► JWT 验证，注入 $request->adminId
   │ (失败返回 401)
@@ -173,58 +170,50 @@ game_system_config (系统配置) — 独立表
 ### 4.1 URL 規約
 
 ```
-公开接口:  /api/captcha/{generate|verify}
-           /api/auth/{login|register|refresh}
+公开接口:  /api/v1/captcha/{generate|verify}
+           /api/v1/auth/{login|register|refresh}
 
-管理端:   /admin/{resource}[/{hashid}]
-          /admin/export/{excel|pdf}
+管理端:   /admin/v1/{resource}[/{hashid}]
+          /admin/v1/export/{excel|pdf}
 
 资源路由:
-  GET    /admin/user          → 列表
-  POST   /admin/user          → 创建
-  GET    /admin/user/{hashid} → 详情
-  PUT    /admin/user/{hashid} → 更新
-  DELETE /admin/user/{hashid} → 删除（需密码确认）
+  GET    /admin/v1/user          → 列表
+  POST   /admin/v1/user          → 创建
+  GET    /admin/v1/user/{hashid} → 详情
+  PUT    /admin/v1/user/{hashid} → 更新
+  DELETE /admin/v1/user/{hashid} → 删除（需密码确认）
 
-系统配置:  /admin/config[/{hashid}]
-操作日志:  /admin/log
-个人中心:  /admin/profile[/password|/logout]
-导入:     /admin/import/users
-上传:     /admin/upload
-批量:     /admin/user/batch/{destroy|status}
+系统配置:  /admin/v1/config[/{hashid}]
+操作日志:  /admin/v1/log
+个人中心:  /admin/v1/profile[/password|/logout]
+导入:     /admin/v1/import/users
+上传:     /admin/v1/upload
+批量:     /admin/v1/user/batch/{destroy|status}
 文档:     /api/docs     (OpenAPI 3.0)
 健康:     /health
 ```
 
 ### 4.2 API バージョン戦略
 
-API バージョンはリクエストヘッダーで制御され、**URL パスには含まれません**：
-
-```http
-API-Version: v1
-```
+バージョンは URL パスのプレフィックス（デフォルト `v1`）に置き、リクエストヘッダーは使いません：
 
 | メカニズム | 説明 |
 |------|------|
-| デフォルトバージョン | `API-Version` ヘッダーがない場合はデフォルト `v1` |
-| 検証 | `ApiVersion` 中間ウェアが検証、サポートされていないバージョンは 400 を返す |
-| ルート | `v()` ヘルパー関数がバージョンに応じてコントローラークラスを動的解決 |
+| デフォルトバージョン | デフォルト `v1`、ルートグループのプレフィックスで決まる |
+| ルート | ルートグループのプレフィックス `/api/v1`、`/admin/v1` がバージョンをコントローラーの名前空間にマップし、`v()` ヘルパー関数がバージョンに応じてコントローラークラスを解決 |
 | ディレクトリ | コントローラーはバージョン別に整理: `app/api/{version}/controller/` |
 
 拡張例——v2 API の追加：
 1. `app/api/v2/controller/AuthController.php` を作成
-2. `ApiVersion` 中間ウェアの `SUPPORTED` 定数に `'v2'` を追加
-3. ルート定義は変更不要
+2. `/api/v2` ルートグループを登録してコントローラーをバインド
+3. `v()` にバージョンを明示的に渡す: `v('AuthController', 'login', 'v2')`
 
 ```bash
 # v1 を使用
-curl -H "API-Version: v1" /api/auth/login
+curl http://host/api/v1/auth/login
 
 # v2 を使用
-curl -H "API-Version: v2" /api/auth/login
-
-# 未指定、デフォルト v1
-curl /api/auth/login
+curl http://host/api/v2/auth/login
 ```
 
 ### 4.3 レート制限戦略
@@ -234,8 +223,8 @@ Redis Sorted Set スライディングウィンドウアルゴリズム、原子
 | API | 制限 |
 |------|------|
 | デフォルト | 60 回/分/IP/ルート |
-| POST /api/auth/login | 10 回/分 |
-| POST /api/auth/register | 5 回/分 |
+| POST /api/v1/auth/login | 10 回/分 |
+| POST /api/v1/auth/register | 5 回/分 |
 
 超過時は 429 を返し、レスポンスヘッダーに X-RateLimit-Limit / Remaining / Reset / Retry-After を含みます。
 
@@ -264,12 +253,12 @@ Redis Sorted Set スライディングウィンドウアルゴリズム、原子
 ```
 客户端                               服务端
   │                                    │
-  │  ① POST /api/captcha/generate     │ captcha_create('click')
+  │  ① POST /api/v1/captcha/generate     │ captcha_create('click')
   │◄── {key, image(base64), targets}  │
   │                                    │
   │  ② 用户点击图中文字位置              │
   │                                    │
-  │  ③ POST /api/auth/login           │
+  │  ③ POST /api/v1/auth/login           │
   │     {username, password,          │
   │      captcha_key, clicks}         │
   │────────────────────────────────►  │
@@ -278,7 +267,7 @@ Redis Sorted Set スライディングウィンドウアルゴリズム、原子
   │                                    │ ③ jwt()->create()
   │◄── {access_token, refresh_token}  │
   │                                    │
-  │  ④ GET /admin/dashboard           │
+  │  ④ GET /admin/v1/dashboard           │
   │     Authorization: Bearer xxx     │
   │────────────────────────────────►  │ AdminAuth → AdminPermission
   │◄── 200 {dashboard data}           │
@@ -306,7 +295,7 @@ Redis Sorted Set スライディングウィンドウアルゴリズム、原子
 ```
 客户端                           服务端
   │                                │
-  │  DELETE /admin/user/{hashid}  │
+  │  DELETE /admin/v1/user/{hashid}  │
   │  { password: "******" }       │
   │────────────────────────────►  │
   │                                │ confirmPassword(adminId, password)
@@ -323,11 +312,11 @@ Redis Sorted Set スライディングウィンドウアルゴリズム、原子
 
 | メソッド | パス | 説明 |
 |------|------|------|
-| GET | /admin/payment/method/list | リスト（sort 昇順） |
-| POST | /admin/payment/method/toggle | 有効/無効切り替え |
-| POST | /admin/payment/method/create | 作成 |
-| PUT | /admin/payment/method/{hashid} | 更新（渡されたフィールドのみ） |
-| DELETE | /admin/payment/method/{hashid} | 削除（pending 注文があれば 422） |
+| GET | /admin/v1/payment/method/list | リスト（sort 昇順） |
+| POST | /admin/v1/payment/method/toggle | 有効/無効切り替え |
+| POST | /admin/v1/payment/method/create | 作成 |
+| PUT | /admin/v1/payment/method/{hashid} | 更新（渡されたフィールドのみ） |
+| DELETE | /admin/v1/payment/method/{hashid} | 削除（pending 注文があれば 422） |
 
 - **provider ホワイトリスト**: `stripe` / `nowpayments` / `coinbase`
 - **フィールド**: name / type（fiat|crypto）/ provider / status / sort / countries[]（国別表示、空=全世界）/ currency / min_amount / max_amount / config（JSON、暗号化保存）
@@ -419,7 +408,7 @@ SCOUT_HOSTS         → ES 地址，内网部署
 ### 7.1 Excel エクスポート
 
 ```
-请求: POST /admin/export/excel { table, columns, conditions, title }
+请求: POST /admin/v1/export/excel { table, columns, conditions, title }
   → fetchExportData() 查询数据 (limit 10000)
   → 脱敏敏感字段
   → PhpSpreadsheet 构建（蓝底白字表头 + 冻结首行 + 自动筛选）
@@ -429,7 +418,7 @@ SCOUT_HOSTS         → ES 地址，内网部署
 ### 7.2 PDF エクスポート
 
 ```
-请求: POST /admin/export/pdf { type: table|dashboard, title, data }
+请求: POST /admin/v1/export/pdf { type: table|dashboard, title, data }
   → buildPdfHtml() HTML + 内联CSS + 页头版权 + 页脚不可移除版权
   → Dompdf 渲染 A4 横向
   → 写入 runtime/tmp/ → download 响应

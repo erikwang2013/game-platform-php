@@ -37,7 +37,7 @@
 
   <rect x="665" y="140" width="320" height="60" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5" filter="url(#sh)"/>
   <text x="825" y="162" text-anchor="middle" fill="#7f1d1d" font-size="12" font-weight="bold">L6: управление версиями API</text>
-  <text x="825" y="180" text-anchor="middle" fill="#dc2626" font-size="10">проверка заголовка API-Version</text>
+  <text x="825" y="180" text-anchor="middle" fill="#dc2626" font-size="10">Версия в пути URL (/api/v1)</text>
   <text x="825" y="194" text-anchor="middle" fill="#dc2626" font-size="10">по умолчанию v1, поддержка сосуществования версий</text>
 
   <!-- L7-L9 -->

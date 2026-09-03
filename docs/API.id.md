@@ -24,7 +24,6 @@ Dokumen interaktif online (mendukung debug online):
 
 ```
 Content-Type: application/json
-API-Version: v1
 Authorization: Bearer <token>    (antarmuka yang memerlukan autentikasi)
 ```
 
@@ -75,7 +74,7 @@ Respons: {
 
 ### 2.1 Autentikasi
 
-#### POST /api/auth/register — Registrasi Pengguna
+#### POST /api/v1/auth/register — Registrasi Pengguna
 
 ```
 Permintaan: {
@@ -96,7 +95,7 @@ Respons: {
 }
 ```
 
-#### POST /api/auth/login — Login Pengguna
+#### POST /api/v1/auth/login — Login Pengguna
 
 ```
 Permintaan: {
@@ -113,7 +112,7 @@ Respons: {
 
 Error: 401 nama pengguna atau kata sandi salah / akun telah dinonaktifkan
 
-#### POST /api/auth/refresh — Perbarui Token
+#### POST /api/v1/auth/refresh — Perbarui Token
 
 ```
 Permintaan: (Authorization: Bearer <refresh_token>)
@@ -126,7 +125,7 @@ Respons: {
 
 ### 2.2 Dompet
 
-#### GET /api/wallet/info — Informasi Dompet
+#### GET /api/v1/wallet/info — Informasi Dompet
 
 ```
 Perlu autentikasi: ya
@@ -139,7 +138,7 @@ Respons: {
 }
 ```
 
-#### GET /api/wallet/transactions — Catatan Transaksi
+#### GET /api/v1/wallet/transactions — Catatan Transaksi
 
 ```
 Perlu autentikasi: ya
@@ -166,7 +165,7 @@ Nilai opsional type: deposit / withdraw / exchange_in / exchange_out / game_earn
 
 ### 2.3 Deposit
 
-#### POST /api/deposit/create — Buat Pesanan Deposit
+#### POST /api/v1/deposit/create — Buat Pesanan Deposit
 
 ```
 Perlu autentikasi: ya
@@ -191,7 +190,7 @@ Nilai opsional currency: USD / CNY / EUR
 
 checkout_url: tautan pengalihan gateway pembayaran (diisi saat pesanan dibuat); expires_at: kedaluwarsa tautan pembayaran (1 jam setelah dibuat)
 
-#### GET /api/deposit/orders — Catatan Deposit
+#### GET /api/v1/deposit/orders — Catatan Deposit
 
 ```
 Perlu autentikasi: ya
@@ -220,7 +219,7 @@ Nilai opsional status: pending / paid / confirmed / cancelled
 
 ### 2.4 Penukaran
 
-#### POST /api/exchange/quote — Kueri Harga
+#### POST /api/v1/exchange/quote — Kueri Harga
 
 ```
 Perlu autentikasi: ya
@@ -243,7 +242,7 @@ Respons: {
 
 direction: in=membeli koin game / out=menjual koin game
 
-#### POST /api/exchange/buy — Beli Koin Game
+#### POST /api/v1/exchange/buy — Beli Koin Game
 
 ```
 Perlu autentikasi: ya
@@ -265,7 +264,7 @@ Respons: {
 
 Error: 422 saldo koin platform tidak cukup / 404 game tidak tersedia
 
-#### POST /api/exchange/sell — Jual Koin Game
+#### POST /api/v1/exchange/sell — Jual Koin Game
 
 ```
 Perlu autentikasi: ya
@@ -287,7 +286,7 @@ Respons: {
 
 Error: 422 saldo koin game tidak cukup
 
-#### GET /api/exchange/records — Catatan Penukaran
+#### GET /api/v1/exchange/records — Catatan Penukaran
 
 ```
 Perlu autentikasi: ya
@@ -314,7 +313,7 @@ Respons: {
 
 ### 2.5 Penarikan
 
-#### POST /api/withdraw/apply — Pengajuan Penarikan
+#### POST /api/v1/withdraw/apply — Pengajuan Penarikan
 
 ```
 Perlu autentikasi: ya
@@ -344,7 +343,7 @@ Error:
 - 400 melebihi batas penarikan harian
 - 400 saldo tidak cukup
 
-#### GET /api/withdraw/orders — Catatan Penarikan
+#### GET /api/v1/withdraw/orders — Catatan Penarikan
 
 ```
 Perlu autentikasi: ya
@@ -370,7 +369,7 @@ Respons: {
 
 ### 2.6 Game
 
-#### GET /api/game/list — Daftar Game
+#### GET /api/v1/game/list — Daftar Game
 
 ```
 Parameter: ?page=1&per_page=20&keyword=射击&type=self
@@ -404,7 +403,7 @@ Respons: {
 
 Nilai opsional type: self / third_party
 
-#### GET /api/game/{hashid} — Detail Game
+#### GET /api/v1/game/{hashid} — Detail Game
 
 ```
 Respons: {
@@ -428,7 +427,7 @@ Respons: {
 }
 ```
 
-#### POST /api/game/launch — Luncurkan Game
+#### POST /api/v1/game/launch — Luncurkan Game
 
 ```
 Perlu autentikasi: ya
@@ -447,7 +446,7 @@ Respons: {
 
 Mendukung 7 platform: Google / Facebook / Apple / X(Twitter) / Microsoft / LinkedIn / GitHub
 
-#### GET /api/auth/oauth/{provider} — Dapatkan URL Otorisasi
+#### GET /api/v1/auth/oauth/{provider} — Dapatkan URL Otorisasi
 
 ```
 Parameter: provider = google / facebook / apple / twitter / microsoft / linkedin / github
@@ -457,7 +456,7 @@ Respons: {
 }
 ```
 
-#### POST /api/auth/oauth/{provider}/callback — Callback OAuth
+#### POST /api/v1/auth/oauth/{provider}/callback — Callback OAuth
 
 ```
 Permintaan: { "code": "授权码", "state": "防CSRF状态" }
@@ -474,7 +473,7 @@ is_new: true=pengguna baru yang terdaftar / false=akun yang sudah ada ditautkan
 
 ### 2.8 Verifikasi KYC Nama Asli
 
-#### GET /api/user/identity/status — Status Verifikasi
+#### GET /api/v1/user/identity/status — Status Verifikasi
 
 ```
 Perlu autentikasi: ya
@@ -489,7 +488,7 @@ Respons: {
 }
 ```
 
-#### POST /api/user/identity/apply — Ajukan Verifikasi
+#### POST /api/v1/user/identity/apply — Ajukan Verifikasi
 
 ```
 Perlu autentikasi: ya
@@ -507,7 +506,7 @@ Respons: { "message": "KYC submitted successfully" }
 
 ### 2.9 Pembayaran
 
-#### POST /api/payment/callback — Callback Pembayaran (publik)
+#### POST /api/v1/payment/callback — Callback Pembayaran (publik)
 
 ```
 Permintaan: {
@@ -542,7 +541,7 @@ Nilai provider: stripe / paypal / nowpayments / coinbase / skrill / neteller / p
 | mpesa | Kenya / Tanzania dll. (segera hadir) | — | KES / TZS |
 | paystack | Nigeria (segera hadir) | — | NGN |
 
-#### GET /api/payment/methods — Metode Pembayaran Tersedia (publik)
+#### GET /api/v1/payment/methods — Metode Pembayaran Tersedia (publik)
 
 ```
 Respons: {
@@ -556,7 +555,7 @@ Difilter berdasarkan negara pengguna (X-Language/Accept-Language → kode negara
 
 ### 2.10 Catatan Game
 
-#### GET /api/game/play-logs — Daftar Catatan Game
+#### GET /api/v1/game/play-logs — Daftar Catatan Game
 
 ```
 Perlu autentikasi: ya
@@ -576,7 +575,7 @@ Respons: {
 }
 ```
 
-#### GET /api/game/play-log/{hashid} — Detail Catatan Game
+#### GET /api/v1/game/play-log/{hashid} — Detail Catatan Game
 
 ```
 Perlu autentikasi: ya
@@ -585,7 +584,7 @@ Respons: { catatan lengkap, termasuk session_id / game_amount_before / after, dl
 
 ### 2.12 Papan Peringkat
 
-#### GET /api/leaderboard/list — Daftar Papan Peringkat
+#### GET /api/v1/leaderboard/list — Daftar Papan Peringkat
 
 ```
 Respons: {
@@ -595,7 +594,7 @@ Respons: {
 }
 ```
 
-#### GET /api/leaderboard/{hashid} — Detail Papan Peringkat
+#### GET /api/v1/leaderboard/{hashid} — Detail Papan Peringkat
 
 ```
 Respons: {
@@ -610,14 +609,14 @@ Respons: {
 
 ### 2.13 Kupon
 
-#### GET /api/coupon/available — Kupon yang Dapat Diambil
+#### GET /api/v1/coupon/available — Kupon yang Dapat Diambil
 
 ```
 Perlu autentikasi: ya
 Respons: { "list": [{ "id": "...", "name": "新人礼包", "type": "fixed", "value": "10.0000" }] }
 ```
 
-#### POST /api/coupon/claim — Ambil Kupon
+#### POST /api/v1/coupon/claim — Ambil Kupon
 
 ```
 Perlu autentikasi: ya
@@ -625,7 +624,7 @@ Permintaan: { "coupon_id": "hashid" }
 Respons: { "coupon": { ... } }
 ```
 
-#### GET /api/coupon/my — Kupon Saya
+#### GET /api/v1/coupon/my — Kupon Saya
 
 ```
 Perlu autentikasi: ya
@@ -635,7 +634,7 @@ Respons: { "list": [{ "id": "...", "coupon": {...}, "status": "unused" }] }
 
 ### 2.14 Konfigurasi Negara
 
-#### GET /api/country/list — Daftar Negara
+#### GET /api/v1/country/list — Daftar Negara
 
 ```
 Respons: {
@@ -645,7 +644,7 @@ Respons: {
 }
 ```
 
-#### GET /api/country/{code} — Detail Negara
+#### GET /api/v1/country/{code} — Detail Negara
 
 ```
 Respons: {
@@ -659,7 +658,7 @@ Respons: {
 
 ### 2.16 Notifikasi
 
-#### GET /api/notification/list — Daftar Notifikasi
+#### GET /api/v1/notification/list — Daftar Notifikasi
 
 ```
 Perlu autentikasi: ya
@@ -673,14 +672,14 @@ Respons: {
 }
 ```
 
-#### GET /api/notification/unread-count — Jumlah Belum Dibaca
+#### GET /api/v1/notification/unread-count — Jumlah Belum Dibaca
 
 ```
 Perlu autentikasi: ya
 Respons: { "count": 3 }
 ```
 
-#### POST /api/notification/read — Tandai Telah Dibaca
+#### POST /api/v1/notification/read — Tandai Telah Dibaca
 
 ```
 Perlu autentikasi: ya
@@ -689,14 +688,14 @@ Permintaan: { "id": "hashid" }  // tidak diisi=semua ditandai dibaca
 
 ### 2.17 Referral
 
-#### GET /api/referral/my-code — Kode Referral Saya
+#### GET /api/v1/referral/my-code — Kode Referral Saya
 
 ```
 Perlu autentikasi: ya
 Respons: { "code": "ABC12345", "referral_count": 12, "total_rewards": "150.0000" }
 ```
 
-#### POST /api/referral/apply — Gunakan Kode Referral
+#### POST /api/v1/referral/apply — Gunakan Kode Referral
 
 ```
 Perlu autentikasi: ya
@@ -706,21 +705,21 @@ Respons: { "message": "Referral applied" }
 
 ### 2.18 2FA
 
-#### GET /api/user/2fa/status — Status 2FA
+#### GET /api/v1/user/2fa/status — Status 2FA
 
 ```
 Perlu autentikasi: ya
 Respons: { "enabled": false }
 ```
 
-#### POST /api/user/2fa/setup — Atur 2FA
+#### POST /api/v1/user/2fa/setup — Atur 2FA
 
 ```
 Perlu autentikasi: ya
 Respons: { "secret": "JBSWY3DPEHPK3PXP", "qr_url": "otpauth://totp/..." }
 ```
 
-#### POST /api/user/2fa/enable — Aktifkan 2FA
+#### POST /api/v1/user/2fa/enable — Aktifkan 2FA
 
 ```
 Perlu autentikasi: ya
@@ -728,7 +727,7 @@ Permintaan: { "code": "123456" }
 Respons: { "backup_codes": ["abcd1234ef", ...] }
 ```
 
-#### POST /api/2fa/verify — Verifikasi 2FA (publik)
+#### POST /api/v1/2fa/verify — Verifikasi 2FA (publik)
 
 ```
 Permintaan: { "user_id": "hashid", "code": "123456" }
@@ -737,14 +736,14 @@ Respons: { "valid": true }
 
 ### 2.19 Pencarian
 
-#### GET /api/search — Pencarian Global
+#### GET /api/v1/search — Pencarian Global
 
 ```
 Parameter: ?q=keyword&type=game&page=1&per_page=20
 Respons: { "list": [...], "total": 100 }
 ```
 
-#### GET /api/game/suggest — Saran Pencarian
+#### GET /api/v1/game/suggest — Saran Pencarian
 
 ```
 Parameter: ?q=shoot
@@ -753,7 +752,7 @@ Respons: { "suggestions": [{ "id": "...", "name": "Shooter Master" }] }
 
 ### 2.20 Bahasa
 
-#### GET /api/language/list — Daftar Bahasa Tersedia
+#### GET /api/v1/language/list — Daftar Bahasa Tersedia
 
 ```
 Respons: {
@@ -767,7 +766,7 @@ Respons: {
 }
 ```
 
-#### POST /api/language/switch — Ganti Bahasa
+#### POST /api/v1/language/switch — Ganti Bahasa
 
 ```
 Permintaan: { "locale": "zh-CN" }
@@ -778,7 +777,7 @@ Nilai opsional locale: en-US / zh-CN / ja-JP / ko-KR
 
 ### 2.8 Pengguna
 
-#### GET /api/user/profile — Informasi Pribadi
+#### GET /api/v1/user/profile — Informasi Pribadi
 
 ```
 Perlu autentikasi: ya
@@ -797,7 +796,7 @@ Respons: {
 }
 ```
 
-#### PUT /api/user/profile — Edit Profil
+#### PUT /api/v1/user/profile — Edit Profil
 
 ```
 Perlu autentikasi: ya
@@ -821,7 +820,7 @@ Nilai opsional language: en-US / zh-CN / ja-JP / ko-KR
 
 ### 2.9 Pengumuman
 
-#### GET /api/announcement/list — Daftar Pengumuman
+#### GET /api/v1/announcement/list — Daftar Pengumuman
 
 ```
 Respons: {
@@ -836,7 +835,7 @@ Respons: {
 }
 ```
 
-#### GET /api/announcement/detail/{hashid} — Detail Pengumuman
+#### GET /api/v1/announcement/detail/{hashid} — Detail Pengumuman
 
 ```
 Respons: {
@@ -852,9 +851,9 @@ Respons: {
 
 | Metode | Jalur | Keterangan | Autentikasi |
 |------|------|------|------|
-| GET | /api/platform/stats | Statistik publik platform (total game / total pengguna / permainan hari ini / aktif 7 hari) | Tidak |
+| GET | /api/v1/platform/stats | Statistik publik platform (total game / total pengguna / permainan hari ini / aktif 7 hari) | Tidak |
 
-#### GET /api/platform/stats — Statistik Platform
+#### GET /api/v1/platform/stats — Statistik Platform
 
 ```
 无需认证
@@ -1466,8 +1465,8 @@ Semua endpoint memerlukan autentikasi (AdminAuth + AdminPermission).
 | Antarmuka | Batas |
 |------|------|
 | Default | 60 kali/menit/IP |
-| POST /api/auth/login | 10 kali/menit |
-| POST /api/auth/register | 5 kali/menit |
+| POST /api/v1/auth/login | 10 kali/menit |
+| POST /api/v1/auth/register | 5 kali/menit |
 
 Melebihi batas mengembalikan 429, header respons berisi:
 ```
@@ -1600,7 +1599,7 @@ Respons: {
 
 ### 7.2 API Tiket
 
-#### GET /api/ticket/list — Daftar Tiket
+#### GET /api/v1/ticket/list — Daftar Tiket
 
 ```
 Perlu autentikasi: ya
@@ -1625,7 +1624,7 @@ Respons: {
 type: deposit / withdraw / game / account / other
 status: open / waiting / replied / closed
 
-#### POST /api/ticket/create — Buat Tiket
+#### POST /api/v1/ticket/create — Buat Tiket
 
 ```
 Perlu autentikasi: ya
@@ -1637,7 +1636,7 @@ Permintaan: {
 Respons: { "code": 0, "message": "Ticket created", "data": { "id": "aB3xK..." } }
 ```
 
-#### GET /api/ticket/{hashid} — Detail Tiket
+#### GET /api/v1/ticket/{hashid} — Detail Tiket
 
 ```
 Perlu autentikasi: ya
@@ -1650,7 +1649,7 @@ Respons: {
 }
 ```
 
-#### POST /api/ticket/{hashid}/reply — Balas Tiket
+#### POST /api/v1/ticket/{hashid}/reply — Balas Tiket
 
 ```
 Perlu autentikasi: ya
@@ -1660,7 +1659,7 @@ Respons: { "code": 0, "message": "Reply sent" }
 
 ### 7.3 API Verifikasi Email
 
-#### POST /api/verify/send-email — Kirim Kode Verifikasi Email
+#### POST /api/v1/verify/send-email — Kirim Kode Verifikasi Email
 
 ```
 Perlu autentikasi: ya
@@ -1669,7 +1668,7 @@ Respons: { "code": 0, "message": "Verification code sent" }
 Error: 429 coba lagi setelah 60 detik
 ```
 
-#### POST /api/verify/confirm-email — Konfirmasi Email
+#### POST /api/v1/verify/confirm-email — Konfirmasi Email
 
 ```
 Perlu autentikasi: ya
@@ -1680,7 +1679,7 @@ Error: 422 kode verifikasi tidak valid atau sudah kedaluwarsa
 
 ### 7.4 API VIP
 
-#### GET /api/user/vip-status — Status VIP
+#### GET /api/v1/user/vip-status — Status VIP
 
 ```
 Perlu autentikasi: ya
@@ -1700,7 +1699,7 @@ Respons: {
 
 ### 7.5 API Pencapaian
 
-#### GET /api/user/achievements — Daftar Pencapaian
+#### GET /api/v1/user/achievements — Daftar Pencapaian
 
 ```
 Perlu autentikasi: ya
@@ -1899,10 +1898,10 @@ Respons: { "code": 0, "data": { "ok": true } }
 | Antarmuka | Batas |
 |------|------|
 | Default | 60 kali/menit/IP |
-| POST /api/auth/login | 10 kali/menit |
-| POST /api/auth/register | 5 kali/menit |
-| POST /api/auth/oauth | 10 kali/menit |
-| POST /api/payment/callback | 30 kali/menit |
+| POST /api/v1/auth/login | 10 kali/menit |
+| POST /api/v1/auth/register | 5 kali/menit |
+| POST /api/v1/auth/oauth | 10 kali/menit |
+| POST /api/v1/payment/callback | 30 kali/menit |
 | POST /api/provider/* | Tanpa batas (autentikasi tanda tangan HMAC) |
 
 ## 9. Penjelasan Autentikasi (Diperbarui)
@@ -1918,43 +1917,43 @@ Respons: { "code": 0, "data": { "ok": true } }
 
 ### 7.7 API Teman
 
-#### GET /api/friend/list — Daftar Teman
+#### GET /api/v1/friend/list — Daftar Teman
 ```
 Perlu autentikasi: ya
 Respons: { "list": [{ "id": "...", "username": "...", "nickname": "...", "avatar": "..." }] }
 ```
 
-#### GET /api/friend/requests — Permintaan yang Menunggu
+#### GET /api/v1/friend/requests — Permintaan yang Menunggu
 ```
 Perlu autentikasi: ya
 Respons: { "list": [{ "id": "...", "user": {...}, "created_at": "..." }] }
 ```
 
-#### POST /api/friend/request — Kirim Permintaan Teman
+#### POST /api/v1/friend/request — Kirim Permintaan Teman
 ```
 Perlu autentikasi: ya
 Permintaan: { "friend_id": "hashid" }
 ```
 
-#### POST /api/friend/accept — Terima Permintaan
+#### POST /api/v1/friend/accept — Terima Permintaan
 ```
 Perlu autentikasi: ya
 Permintaan: { "request_id": "hashid" }
 ```
 
-#### POST /api/friend/reject — Tolak Permintaan
+#### POST /api/v1/friend/reject — Tolak Permintaan
 ```
 Perlu autentikasi: ya
 Permintaan: { "request_id": "hashid" }
 ```
 
-#### POST /api/friend/remove — Hapus Teman
+#### POST /api/v1/friend/remove — Hapus Teman
 ```
 Perlu autentikasi: ya
 Permintaan: { "friend_id": "hashid" }
 ```
 
-#### GET /api/friend/search — Cari Pengguna
+#### GET /api/v1/friend/search — Cari Pengguna
 ```
 Perlu autentikasi: ya
 Parameter: ?q=username
@@ -1963,7 +1962,7 @@ Respons: { "list": [{ "id": "...", "username": "...", "nickname": "...", "avatar
 
 ### 7.8 API Chat
 
-#### GET /api/chat/conversations — Daftar Percakapan
+#### GET /api/v1/chat/conversations — Daftar Percakapan
 ```
 Perlu autentikasi: ya
 Respons: {
@@ -1976,7 +1975,7 @@ Respons: {
 }
 ```
 
-#### GET /api/chat/messages/{peerHashid} — Daftar Pesan
+#### GET /api/v1/chat/messages/{peerHashid} — Daftar Pesan
 ```
 Perlu autentikasi: ya
 Parameter: ?page=1&per_page=50
@@ -1984,14 +1983,14 @@ Respons: { "items": [{ "id": "...", "content": "...", "is_read": 1 }], "total": 
 Otomatis menandai pesan belum dibaca dari lawan bicara sebagai telah dibaca
 ```
 
-#### POST /api/chat/send — Kirim Pesan
+#### POST /api/v1/chat/send — Kirim Pesan
 ```
 Perlu autentikasi: ya
 Permintaan: { "to_user_id": "hashid", "content": "Hello!" }
 Error: 403 bukan teman tidak dapat mengirim
 ```
 
-#### GET /api/chat/unread-total — Total Belum Dibaca
+#### GET /api/v1/chat/unread-total — Total Belum Dibaca
 ```
 Perlu autentikasi: ya
 Respons: { "count": 5 }
@@ -2009,20 +2008,20 @@ Respons: { "count": 5 }
 
 ### 7.9 API Webhook
 
-#### GET /api/webhook/list — Daftar Langganan
+#### GET /api/v1/webhook/list — Daftar Langganan
 ```
 Perlu autentikasi: ya
 Respons: { "list": [{ "id": "...", "url": "https://...", "events": ["deposit.completed"] }] }
 ```
 
-#### POST /api/webhook/register — Daftarkan Langganan
+#### POST /api/v1/webhook/register — Daftarkan Langganan
 ```
 Perlu autentikasi: ya
 Permintaan: { "url": "https://my-server.com/hook", "events": ["deposit.completed", "game.played"] }
 Event yang tersedia: deposit.completed / withdraw.completed / exchange.completed / game.played / user.registered / risk.alert / user.vip_upgraded
 ```
 
-#### POST /api/webhook/delete — Hapus Langganan
+#### POST /api/v1/webhook/delete — Hapus Langganan
 ```
 Perlu autentikasi: ya
 Permintaan: { "id": "hook_id" }
@@ -2071,18 +2070,18 @@ Respons: {
 
 ### 7.11 API Turnamen
 
-#### GET /api/tournament/list — Daftar Turnamen
+#### GET /api/v1/tournament/list — Daftar Turnamen
 ```
 Parameter: ?status=active|upcoming|ended&page=1&per_page=20
 Respons: { "items": [{ "id": "...", "name": "...", "prize_pool": "1000.0000", "player_count": 45, "max_players": 100 }], "total": 5 }
 ```
 
-#### GET /api/tournament/{hashid} — Detail Turnamen
+#### GET /api/v1/tournament/{hashid} — Detail Turnamen
 ```
 Respons: { "id": "...", "name": "...", "leaderboard": [...], "my_entry": {...} }
 ```
 
-#### POST /api/tournament/{hashid}/join — Daftar Ikut Serta
+#### POST /api/v1/tournament/{hashid}/join — Daftar Ikut Serta
 ```
 Perlu autentikasi: ya
 Error: 422 sudah terdaftar / 400 sudah dimulai atau penuh / 503 FeatureFlag dimatikan
@@ -2108,7 +2107,7 @@ Komisi referral menambahkan bagi hasil level dua:
 
 | Antarmuka | Batas |
 |------|------|
-| POST /api/tournament/{id}/join | 10 kali/menit |
+| POST /api/v1/tournament/{id}/join | 10 kali/menit |
 
 ---
 
@@ -2159,23 +2158,23 @@ Komisi referral menambahkan bagi hasil level dua:
 | POST /admin/activities/create | Buat aktivitas (Admin) |
 | PUT /admin/activities/{hashid} | Perbarui aktivitas (Admin) |
 | DELETE /admin/activities/{hashid} | Hapus aktivitas (Admin) |
-| GET /api/activities/list | Daftar aktivitas (Klien) |
-| GET /api/activities/progress | Progres partisipasi (Klien) |
-| GET /api/activities/{hashid} | Detail aktivitas (Klien) |
-| POST /api/activities/{hashid}/checkin | Check-in (Klien) |
+| GET /api/v1/activities/list | Daftar aktivitas (Klien) |
+| GET /api/v1/activities/progress | Progres partisipasi (Klien) |
+| GET /api/v1/activities/{hashid} | Detail aktivitas (Klien) |
+| POST /api/v1/activities/{hashid}/checkin | Check-in (Klien) |
 
 ### 10.4 Grup / Berbagi (Klien :8788 + Admin :8787)
 
 | Endpoint | Deskripsi |
 |------|------|
-| POST /api/groups | Buat grup |
-| GET /api/groups/{hashid} | Detail grup |
-| GET /api/groups/{hashid}/members | Daftar anggota |
-| POST /api/groups/{hashid}/join | Gabung grup |
-| POST /api/groups/{hashid}/leave | Keluar grup |
-| PUT /api/groups/{hashid}/role | Peran anggota |
-| POST /api/shares | Buat tautan berbagi |
-| POST /api/shares/visit | Pelacakan kunjungan berbagi |
+| POST /api/v1/groups | Buat grup |
+| GET /api/v1/groups/{hashid} | Detail grup |
+| GET /api/v1/groups/{hashid}/members | Daftar anggota |
+| POST /api/v1/groups/{hashid}/join | Gabung grup |
+| POST /api/v1/groups/{hashid}/leave | Keluar grup |
+| PUT /api/v1/groups/{hashid}/role | Peran anggota |
+| POST /api/v1/shares | Buat tautan berbagi |
+| POST /api/v1/shares/visit | Pelacakan kunjungan berbagi |
 | GET /admin/groups | Daftar grup (Admin) |
 | GET /admin/groups/{hashid}/audit | Audit grup (Admin) |
 | GET /admin/share/stats | Statistik berbagi (Admin) |

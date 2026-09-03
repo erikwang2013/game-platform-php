@@ -64,7 +64,7 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.
 | Camada | Diretório | Responsabilidade |
 |---|------|------|
 | Rotas | `config/route.php` | Mapeamento de URL para controladores, vínculo de middlewares, rotas versionadas |
-| Middlewares | `app/middleware/` | Interceptação de ataques (SecurityFilter), rate limit (RateLimit), autenticação (JWT), autorização (RBAC), versão da API (ApiVersion) |
+| Middlewares | `app/middleware/` | Interceptação de ataques (SecurityFilter), rate limit (RateLimit), autenticação (JWT), autorização (RBAC) |
 | Controladores | 30: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (painel) + Captcha/Auth (API v1) | Validação de parâmetros da requisição, chamada da lógica de negócio, formatação da resposta |
 | Serviços de negócio | `common/service/` | Análise de dados: GameDashboardService (visão geral/ranking/tendências), DepositLogService (receita/conversão), ProbabilityService (probabilidade conjunta/condicional, construtor SQL); em falha do banco, retorna dados vazios em vez de erro |
 | Modelos de dados | `app/model/` | Mapeamento ORM, relacionamentos, criptografia/descriptografia de campos |
@@ -88,9 +88,6 @@ Route 匹配
   ▼
   RateLimit ───────────► Redis 滑动窗口限流
   │ (失败返回 429 + Retry-After 头)
-  ▼
-  ApiVersion ─────────► API-Version 头校验，注入 $request->apiVersion
-  │ (失败返回 400)
   ▼
   AdminAuth ──────────► JWT 验证，注入 $request->adminId
   │ (失败返回 401)
@@ -173,58 +170,50 @@ game_system_config (系统配置) — 独立表
 ### 4.1 Padrão de URL
 
 ```
-公开接口:  /api/captcha/{generate|verify}
-           /api/auth/{login|register|refresh}
+公开接口:  /api/v1/captcha/{generate|verify}
+           /api/v1/auth/{login|register|refresh}
 
-管理端:   /admin/{resource}[/{hashid}]
-          /admin/export/{excel|pdf}
+管理端:   /admin/v1/{resource}[/{hashid}]
+          /admin/v1/export/{excel|pdf}
 
 资源路由:
-  GET    /admin/user          → 列表
-  POST   /admin/user          → 创建
-  GET    /admin/user/{hashid} → 详情
-  PUT    /admin/user/{hashid} → 更新
-  DELETE /admin/user/{hashid} → 删除（需密码确认）
+  GET    /admin/v1/user          → 列表
+  POST   /admin/v1/user          → 创建
+  GET    /admin/v1/user/{hashid} → 详情
+  PUT    /admin/v1/user/{hashid} → 更新
+  DELETE /admin/v1/user/{hashid} → 删除（需密码确认）
 
-系统配置:  /admin/config[/{hashid}]
-操作日志:  /admin/log
-个人中心:  /admin/profile[/password|/logout]
-导入:     /admin/import/users
-上传:     /admin/upload
-批量:     /admin/user/batch/{destroy|status}
+系统配置:  /admin/v1/config[/{hashid}]
+操作日志:  /admin/v1/log
+个人中心:  /admin/v1/profile[/password|/logout]
+导入:     /admin/v1/import/users
+上传:     /admin/v1/upload
+批量:     /admin/v1/user/batch/{destroy|status}
 文档:     /api/docs     (OpenAPI 3.0)
 健康:     /health
 ```
 
 ### 4.2 Estratégia de versão da API
 
-A versão da API é controlada por cabeçalho de requisição, **não aparece no caminho da URL**:
-
-```http
-API-Version: v1
-```
+A versão fica no prefixo do caminho da URL (padrão `v1`); não é usado cabeçalho de requisição:
 
 | Mecanismo | Descrição |
 |------|------|
-| Versão padrão | Sem o cabeçalho `API-Version`, o padrão é `v1` |
-| Validação | Middleware `ApiVersion` valida; versões não suportadas retornam 400 |
-| Rotas | A função auxiliar `v()` resolve dinamicamente a classe do controlador conforme a versão |
+| Versão padrão | Padrão `v1`, determinado pelo prefixo do grupo de rotas |
+| Rotas | Os prefixos de grupo de rotas `/api/v1`, `/admin/v1` mapeiam a versão para o namespace dos controladores; a função auxiliar `v()` resolve a classe do controlador conforme a versão |
 | Diretório | Controladores organizados por versão: `app/api/{version}/controller/` |
 
 Exemplo de extensão — adicionar a API v2:
 1. Criar `app/api/v2/controller/AuthController.php`
-2. Adicionar `'v2'` à constante `SUPPORTED` do middleware `ApiVersion`
-3. As definições de rota não precisam ser alteradas
+2. Registrar um grupo de rotas `/api/v2` e vincular o controlador
+3. Passar a versão explicitamente a `v()`: `v('AuthController', 'login', 'v2')`
 
 ```bash
 # 使用 v1
-curl -H "API-Version: v1" /api/auth/login
+curl http://host/api/v1/auth/login
 
 # 使用 v2
-curl -H "API-Version: v2" /api/auth/login
-
-# 不传，默认 v1
-curl /api/auth/login
+curl http://host/api/v2/auth/login
 ```
 
 ### 4.3 Estratégia de rate limit
@@ -234,8 +223,8 @@ Baseado no algoritmo de janela deslizante com Redis Sorted Set, executado com sc
 | Interface | Limite |
 |------|------|
 | Padrão | 60/minuto/IP/rota |
-| POST /api/auth/login | 10/minuto |
-| POST /api/auth/register | 5/minuto |
+| POST /api/v1/auth/login | 10/minuto |
+| POST /api/v1/auth/register | 5/minuto |
 
 Ao exceder o limite, retorna 429, com os cabeçalhos de resposta X-RateLimit-Limit / Remaining / Reset / Retry-After.
 
@@ -264,12 +253,12 @@ Ao exceder o limite, retorna 429, com os cabeçalhos de resposta X-RateLimit-Lim
 ```
 客户端                               服务端
   │                                    │
-  │  ① POST /api/captcha/generate     │ captcha_create('click')
+  │  ① POST /api/v1/captcha/generate     │ captcha_create('click')
   │◄── {key, image(base64), targets}  │
   │                                    │
   │  ② 用户点击图中文字位置              │
   │                                    │
-  │  ③ POST /api/auth/login           │
+  │  ③ POST /api/v1/auth/login           │
   │     {username, password,          │
   │      captcha_key, clicks}         │
   │────────────────────────────────►  │
@@ -278,7 +267,7 @@ Ao exceder o limite, retorna 429, com os cabeçalhos de resposta X-RateLimit-Lim
   │                                    │ ③ jwt()->create()
   │◄── {access_token, refresh_token}  │
   │                                    │
-  │  ④ GET /admin/dashboard           │
+  │  ④ GET /admin/v1/dashboard           │
   │     Authorization: Bearer xxx     │
   │────────────────────────────────►  │ AdminAuth → AdminPermission
   │◄── 200 {dashboard data}           │
@@ -306,7 +295,7 @@ Operações sensíveis, como excluir usuários, funções e permissões, exigem 
 ```
 客户端                           服务端
   │                                │
-  │  DELETE /admin/user/{hashid}  │
+  │  DELETE /admin/v1/user/{hashid}  │
   │  { password: "******" }       │
   │────────────────────────────►  │
   │                                │ confirmPassword(adminId, password)
@@ -323,11 +312,11 @@ O módulo de gerenciamento de métodos de pagamento (`PaymentController` + Flutt
 
 | Método | Caminho | Descrição |
 |------|------|------|
-| GET | /admin/payment/method/list | Lista (crescente por sort) |
-| POST | /admin/payment/method/toggle | Ativar/desativar |
-| POST | /admin/payment/method/create | Criar |
-| PUT | /admin/payment/method/{hashid} | Atualizar (somente campos enviados) |
-| DELETE | /admin/payment/method/{hashid} | Excluir (422 se houver pedidos pendentes) |
+| GET | /admin/v1/payment/method/list | Lista (crescente por sort) |
+| POST | /admin/v1/payment/method/toggle | Ativar/desativar |
+| POST | /admin/v1/payment/method/create | Criar |
+| PUT | /admin/v1/payment/method/{hashid} | Atualizar (somente campos enviados) |
+| DELETE | /admin/v1/payment/method/{hashid} | Excluir (422 se houver pedidos pendentes) |
 
 - **Lista branca de provider**: `stripe` / `nowpayments` / `coinbase`
 - **Campos**: name / type (fiat|crypto) / provider / status / sort / countries[] (visibilidade por país, vazio = global) / currency / min_amount / max_amount / config (JSON, armazenado criptografado)
@@ -419,7 +408,7 @@ SCOUT_HOSTS         → ES 地址，内网部署
 ### 7.1 Exportação Excel
 
 ```
-请求: POST /admin/export/excel { table, columns, conditions, title }
+请求: POST /admin/v1/export/excel { table, columns, conditions, title }
   → fetchExportData() 查询数据 (limit 10000)
   → 脱敏敏感字段
   → PhpSpreadsheet 构建（蓝底白字表头 + 冻结首行 + 自动筛选）
@@ -429,7 +418,7 @@ SCOUT_HOSTS         → ES 地址，内网部署
 ### 7.2 Exportação PDF
 
 ```
-请求: POST /admin/export/pdf { type: table|dashboard, title, data }
+请求: POST /admin/v1/export/pdf { type: table|dashboard, title, data }
   → buildPdfHtml() HTML + 内联CSS + 页头版权 + 页脚不可移除版权
   → Dompdf 渲染 A4 横向
   → 写入 runtime/tmp/ → download 响应

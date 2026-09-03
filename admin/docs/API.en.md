@@ -8,10 +8,10 @@ Languages: [中文](API.md) · **English** · [한국어](API.ko.md) · [Рус�
 
 ## 1. Overview
 
-The open admin dashboard (open-admin) is built on webman v2 and provides RESTful JSON APIs. All admin endpoints require JWT authentication and RBAC permission validation; public endpoints are routed to versioned controllers via the API version header.
+The open admin dashboard (open-admin) is built on webman v2 and provides RESTful JSON APIs. All admin endpoints require JWT authentication and RBAC permission validation; public endpoints are mounted under the `/api/v1` prefix and admin endpoints under the `/admin/v1` prefix; the version is carried by the URL path rather than a request header.
 
 - **Base URL**: `http://localhost:8787`
-- **API version**: controlled via the `API-Version: v1` request header (defaults to v1 when absent)
+- **API version**: encoded in the URL path — public endpoints under `/api/v1`, admin endpoints under `/admin/v1`; no version request header is used, a future v2 would register as an `/api/v2` group
 
 > **Endpoint overview**: auth(5) | dashboard(1) | users(7) | roles(4) | permissions(4) | config(4) | logs(1) | profile(3) | import/export(3) | upload(1) | operations(4: health/metrics/docs/security.txt) | 37 endpoints total
 - **Authentication**: `Authorization: Bearer <token>` (JWT)
@@ -45,7 +45,7 @@ The open admin dashboard (open-admin) is built on webman v2 and provides RESTful
 
 ## 3. Public Endpoints
 
-All public endpoints are mounted under the `/api` group and dispatched by the `ApiVersion` middleware to the corresponding versioned controllers (e.g. `app\api\v1\controller\AuthController`) based on the `API-Version` header.
+All public endpoints are mounted under the `/api/v1` prefix, and admin endpoints under the `/admin/v1` prefix; the version is determined by the route-group prefix ; no version request header is used. Example public controller: `app\api\v1\controller\AuthController`.
 
 ### 3.1 Health Check
 
@@ -88,11 +88,10 @@ GET /api/docs
 ### 3.3 Generate Click Captcha
 
 ```
-POST /api/captcha/generate
+POST /api/v1/captcha/generate
 ```
 
 - **Auth**: none
-- **Headers**: `API-Version: v1` (required)
 - **Rate limit**: global default (60/min)
 
 **Request body**:
@@ -134,11 +133,10 @@ POST /api/captcha/generate
 ### 3.4 Verify Click Captcha
 
 ```
-POST /api/captcha/verify
+POST /api/v1/captcha/verify
 ```
 
 - **Auth**: none
-- **Headers**: `API-Version: v1` (required)
 - **Rate limit**: global default (60/min)
 
 **Request body**:
@@ -171,11 +169,10 @@ On verification failure `code` is 422, `message` is `"验证失败，请重试"`
 ### 3.5 Login
 
 ```
-POST /api/auth/login
+POST /api/v1/auth/login
 ```
 
 - **Auth**: none
-- **Headers**: `API-Version: v1` (required)
 - **Rate limit**: 10/min (per IP + path)
 
 **Request body**:
@@ -235,11 +232,10 @@ POST /api/auth/login
 ### 3.6 Register
 
 ```
-POST /api/auth/register
+POST /api/v1/auth/register
 ```
 
 - **Auth**: none
-- **Headers**: `API-Version: v1` (required)
 - **Rate limit**: 5/min (per IP + path)
 
 **Request body**:
@@ -287,11 +283,10 @@ JWT tokens are returned directly on successful registration, and the user status
 ### 3.7 Refresh Token
 
 ```
-POST /api/auth/refresh
+POST /api/v1/auth/refresh
 ```
 
 - **Auth**: none
-- **Headers**: `API-Version: v1` (required)
 - **Rate limit**: global default (60/min)
 
 **Request body**:
@@ -369,12 +364,12 @@ openadmin_memory_usage_bytes 18874368
 
 ## 4. Dashboard
 
-All admin endpoints are mounted under the `/admin` group and pass through three middlewares: `AdminAuth` (JWT authentication), `AdminPermission` (RBAC permission validation), and `OperationLog` (operation recording).
+All admin endpoints are mounted under the `/admin/v1` prefix and pass through three middlewares: `AdminAuth` (JWT authentication), `AdminPermission` (RBAC permission validation), and `OperationLog` (operation recording).
 
 ### 4.1 Dashboard Data
 
 ```
-GET /admin/dashboard
+GET /admin/v1/dashboard
 ```
 
 - **Auth**: JWT + RBAC
@@ -431,7 +426,7 @@ GET /admin/dashboard
         "id": "hashid...",
         "action": "用户登录",
         "method": "POST",
-        "path": "/api/auth/login",
+        "path": "/api/v1/auth/login",
         "ip": "192.168.1.1",
         "user_name": "admin",
         "created_at": "2026-05-21 10:30:00"
@@ -461,7 +456,7 @@ All `id` values returned by user management endpoints are hashid-encrypted strin
 ### 5.1 User List
 
 ```
-GET /admin/user
+GET /admin/v1/user
 ```
 
 - **Auth**: JWT + RBAC
@@ -514,7 +509,7 @@ GET /admin/user
 ### 5.2 Create User
 
 ```
-POST /admin/user
+POST /admin/v1/user
 ```
 
 - **Auth**: JWT + RBAC
@@ -564,7 +559,7 @@ POST /admin/user
 ### 5.3 User Detail
 
 ```
-GET /admin/user/{id}
+GET /admin/v1/user/{id}
 ```
 
 - **Auth**: JWT + RBAC
@@ -598,7 +593,7 @@ In the detail endpoint, `phone` and `email` are returned in plaintext (stored en
 ### 5.4 Update User
 
 ```
-PUT /admin/user/{id}
+PUT /admin/v1/user/{id}
 ```
 
 - **Auth**: JWT + RBAC
@@ -646,7 +641,7 @@ PUT /admin/user/{id}
 ### 5.5 Delete User
 
 ```
-DELETE /admin/user/{id}
+DELETE /admin/v1/user/{id}
 ```
 
 - **Auth**: JWT + RBAC
@@ -683,7 +678,7 @@ Performs a soft delete (Eloquent SoftDeletes); the record is marked with deleted
 ### 5.6 Batch Delete Users
 
 ```
-POST /admin/user/batch/destroy
+POST /admin/v1/user/batch/destroy
 ```
 
 - **Auth**: JWT + RBAC
@@ -723,7 +718,7 @@ Performs a soft delete; `data.count` is the actual number deleted.
 ### 5.7 Batch Enable/Disable Users
 
 ```
-POST /admin/user/batch/status
+POST /admin/v1/user/batch/status
 ```
 
 - **Auth**: JWT + RBAC
@@ -763,7 +758,7 @@ The message changes dynamically based on the status value, to `"批量启用成�
 ### 6.1 Role List
 
 ```
-GET /admin/role
+GET /admin/v1/role
 ```
 
 - **Auth**: JWT + RBAC
@@ -811,7 +806,7 @@ GET /admin/role
 ### 6.2 Create Role
 
 ```
-POST /admin/role
+POST /admin/v1/role
 ```
 
 - **Auth**: JWT + RBAC
@@ -853,7 +848,7 @@ POST /admin/role
 ### 6.3 Update Role
 
 ```
-PUT /admin/role/{id}
+PUT /admin/v1/role/{id}
 ```
 
 - **Auth**: JWT + RBAC
@@ -893,7 +888,7 @@ PUT /admin/role/{id}
 ### 6.4 Delete Role
 
 ```
-DELETE /admin/role/{id}
+DELETE /admin/v1/role/{id}
 ```
 
 - **Auth**: JWT + RBAC
@@ -924,7 +919,7 @@ Permissions use a tree structure (parent_id self-reference) and are divided into
 ### 7.1 Permission Tree
 
 ```
-GET /admin/permission
+GET /admin/v1/permission
 ```
 
 - **Auth**: JWT + RBAC
@@ -939,7 +934,7 @@ GET /admin/permission
       "id": "p1p2p3p4",
       "parent_id": "0",
       "name": "用户管理",
-      "slug": "/admin/user",
+      "slug": "/admin/v1/user",
       "type": 1,
       "icon": "people",
       "path": "/user",
@@ -950,7 +945,7 @@ GET /admin/permission
           "id": "p5p6p7p8",
           "parent_id": "p1p2p3p4",
           "name": "用户列表",
-          "slug": "/admin/user/index",
+          "slug": "/admin/v1/user/index",
           "type": 2,
           "icon": "",
           "path": "/user/index",
@@ -977,7 +972,7 @@ GET /admin/permission
 ### 7.2 Create Permission
 
 ```
-POST /admin/permission
+POST /admin/v1/permission
 ```
 
 - **Auth**: JWT + RBAC
@@ -987,7 +982,7 @@ POST /admin/permission
 {
   "parent_id": 0,
   "name": "系统设置",
-  "slug": "/admin/config",
+  "slug": "/admin/v1/config",
   "type": 1,
   "icon": "settings",
   "path": "/config",
@@ -1014,7 +1009,7 @@ POST /admin/permission
     "id": "p9p0a1b2",
     "parent_id": "0",
     "name": "系统设置",
-    "slug": "/admin/config",
+    "slug": "/admin/v1/config",
     "type": 1,
     "icon": "settings",
     "path": "/config",
@@ -1026,7 +1021,7 @@ POST /admin/permission
 ### 7.3 Update Permission
 
 ```
-PUT /admin/permission/{id}
+PUT /admin/v1/permission/{id}
 ```
 
 - **Auth**: JWT + RBAC
@@ -1051,7 +1046,7 @@ PUT /admin/permission/{id}
 ### 7.4 Delete Permission
 
 ```
-DELETE /admin/permission/{id}
+DELETE /admin/v1/permission/{id}
 ```
 
 - **Auth**: JWT + RBAC
@@ -1082,7 +1077,7 @@ System configs are uniquely identified by the `group` + `key` combination.
 ### 8.1 Config List
 
 ```
-GET /admin/config
+GET /admin/v1/config
 ```
 
 - **Auth**: JWT + RBAC
@@ -1131,7 +1126,7 @@ GET /admin/config
 ### 8.2 Create Config
 
 ```
-POST /admin/config
+POST /admin/v1/config
 ```
 
 - **Auth**: JWT + RBAC
@@ -1177,7 +1172,7 @@ POST /admin/config
 ### 8.3 Update Config
 
 ```
-PUT /admin/config/{id}
+PUT /admin/v1/config/{id}
 ```
 
 - **Auth**: JWT + RBAC
@@ -1200,7 +1195,7 @@ PUT /admin/config/{id}
 ### 8.4 Delete Config
 
 ```
-DELETE /admin/config/{id}
+DELETE /admin/v1/config/{id}
 ```
 
 - **Auth**: JWT + RBAC
@@ -1222,7 +1217,7 @@ Operation logs are read-only; the `OperationLog` middleware automatically writes
 ### 9.1 Operation Log List
 
 ```
-GET /admin/log
+GET /admin/v1/log
 ```
 
 - **Auth**: JWT + RBAC
@@ -1251,7 +1246,7 @@ GET /admin/log
         "user_name": "admin",
         "action": "用户登录",
         "method": "POST",
-        "path": "/api/auth/login",
+        "path": "/api/v1/auth/login",
         "ip": "192.168.1.1",
         "source": "web",
         "input": "{\"username\":\"admin\"}",
@@ -1284,7 +1279,7 @@ Profile endpoints only require JWT authentication (no RBAC permission validation
 ### 10.1 Update Profile
 
 ```
-PUT /admin/profile
+PUT /admin/v1/profile
 ```
 
 - **Auth**: JWT
@@ -1326,7 +1321,7 @@ PUT /admin/profile
 ### 10.2 Change Password
 
 ```
-PUT /admin/profile/password
+PUT /admin/v1/profile/password
 ```
 
 - **Auth**: JWT
@@ -1361,7 +1356,7 @@ PUT /admin/profile/password
 ### 10.3 Logout
 
 ```
-POST /admin/profile/logout
+POST /admin/v1/profile/logout
 ```
 
 - **Auth**: JWT
@@ -1386,7 +1381,7 @@ Returns 401 when there is no token. When the token is expired/invalid (decode th
 ### 11.1 Export Excel
 
 ```
-POST /admin/export/excel
+POST /admin/v1/export/excel
 ```
 
 - **Auth**: JWT + RBAC
@@ -1425,7 +1420,7 @@ Sensitive fields `phone`, `email`, `id_card` are automatically masked on export.
 ### 11.2 Export PDF
 
 ```
-POST /admin/export/pdf
+POST /admin/v1/export/pdf
 ```
 
 - **Auth**: JWT + RBAC
@@ -1472,7 +1467,7 @@ The PDF template includes copyright info and the export timestamp.
 ### 11.3 Import Users (Excel)
 
 ```
-POST /admin/import/users
+POST /admin/v1/import/users
 ```
 
 - **Auth**: JWT + RBAC
@@ -1524,7 +1519,7 @@ Row 1 is the column header (case-insensitive); data starts at row 2.
 ## 12. File Upload
 
 ```
-POST /admin/upload
+POST /admin/v1/upload
 ```
 
 - **Auth**: JWT + RBAC
@@ -1573,8 +1568,8 @@ All endpoints (injected at the global middleware layer) include the following re
 
 Rate limit details:
 - Default global limit: 60/min / IP+path
-- Login endpoint `/api/auth/login`: 10/min
-- Register endpoint `/api/auth/register`: 5/min
+- Login endpoint `/api/v1/auth/login`: 10/min
+- Register endpoint `/api/v1/auth/register`: 5/min
 - Uses the Redis atomic sliding window algorithm (Lua ZSET) to avoid TOCTOU races
 - Fails closed when Redis is unavailable: returns 503 (`Retry-After: 5`), requests are not let through
 
@@ -1584,18 +1579,18 @@ All endpoints require authentication (`AdminAuth` + `AdminPermission`), MySQL re
 
 | Method | Path | Description |
 |------|------|------|
-| GET | /admin/analytics/overview | Platform overview (today/last 7 days) |
-| GET | /admin/analytics/game-ranking | Game rankings (?days=7) |
-| GET | /admin/analytics/dau-trend | DAU trend (?days=30) |
-| GET | /admin/analytics/hourly-trend | Hourly trend |
-| GET | /admin/analytics/action-distribution | Action distribution |
-| GET | /admin/analytics/revenue | Revenue analysis |
-| GET | /admin/analytics/conversion | Game conversion rate |
-| GET | /admin/analytics/probability | Joint/conditional probability |
-| GET | /admin/analytics/retention | Retention analysis D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | Conversion funnel |
-| GET | /admin/analytics/arpu | ARPU/ARPPU trend |
-| GET | /admin/analytics/economy | Game currency economy metrics |
+| GET | /admin/v1/analytics/overview | Platform overview (today/last 7 days) |
+| GET | /admin/v1/analytics/game-ranking | Game rankings (?days=7) |
+| GET | /admin/v1/analytics/dau-trend | DAU trend (?days=30) |
+| GET | /admin/v1/analytics/hourly-trend | Hourly trend |
+| GET | /admin/v1/analytics/action-distribution | Action distribution |
+| GET | /admin/v1/analytics/revenue | Revenue analysis |
+| GET | /admin/v1/analytics/conversion | Game conversion rate |
+| GET | /admin/v1/analytics/probability | Joint/conditional probability |
+| GET | /admin/v1/analytics/retention | Retention analysis D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | Conversion funnel |
+| GET | /admin/v1/analytics/arpu | ARPU/ARPPU trend |
+| GET | /admin/v1/analytics/economy | Game currency economy metrics |
 
 ## 15. Ticket Management
 
@@ -1603,26 +1598,25 @@ All endpoints require authentication (`AdminAuth` + `AdminPermission`), 5 in tot
 
 | Method | Path | Description |
 |------|------|------|
-| GET | /admin/ticket/list | Ticket list (?page=&limit=&status=&type=) |
-| GET | /admin/ticket/{hashid} | Ticket detail (incl. replies) |
-| POST | /admin/ticket/{hashid}/reply | Reply to ticket |
-| POST | /admin/ticket/{hashid}/close | Close ticket |
-| POST | /admin/ticket/{hashid}/assign | Assign handler (admin_id) |
+| GET | /admin/v1/ticket/list | Ticket list (?page=&limit=&status=&type=) |
+| GET | /admin/v1/ticket/{hashid} | Ticket detail (incl. replies) |
+| POST | /admin/v1/ticket/{hashid}/reply | Reply to ticket |
+| POST | /admin/v1/ticket/{hashid}/close | Close ticket |
+| POST | /admin/v1/ticket/{hashid}/assign | Assign handler (admin_id) |
 
 ## 16. Authentication Flow
 
 The complete authentication sequence:
 
 ```
-1. Client requests POST /api/captcha/generate
-   (headers: API-Version: v1)
+1. Client requests POST /api/v1/captcha/generate
     ↓
    Server returns: key + base64 image + click target prompts
 
 2. User clicks the target positions in the image, frontend/client collects click coordinates
 
-3. Client requests POST /api/auth/login
-   (headers: API-Version: v1, Content-Type: application/json)
+3. Client requests POST /api/v1/auth/login
+   (headers: Content-Type: application/json)
    body: { username, password, captcha_key, clicks: [{x,y}, ...] }
     ↓
    Server:
@@ -1655,7 +1649,7 @@ The complete authentication sequence:
    Response + X-RateLimit-* headers
 
 5. Refresh before Access Token expiry
-   Client requests POST /api/auth/refresh
+   Client requests POST /api/v1/auth/refresh
    body: { refresh_token: "..." }
     ↓
    Server decodes refresh_token → issues new access + refresh
@@ -1663,7 +1657,7 @@ The complete authentication sequence:
    Client updates local tokens
 
 6. Logout
-   Client requests POST /admin/profile/logout
+   Client requests POST /admin/v1/profile/logout
    header: Authorization: Bearer <access_token>
     ↓
    Server:
@@ -1722,7 +1716,7 @@ The analytics endpoints are provided by `AnalyticsController`, all based on MySQ
 ### 16.1 Platform Overview
 
 ```
-GET /admin/analytics/overview
+GET /admin/v1/analytics/overview
 ```
 
 **Response**: `today` / `week` each contain `dau` (active users), `revenue` (confirmed deposit total, string), `new_users` (new users).
@@ -1730,7 +1724,7 @@ GET /admin/analytics/overview
 ### 16.2 Game Rankings
 
 ```
-GET /admin/analytics/game-ranking?days=7
+GET /admin/v1/analytics/game-ranking?days=7
 ```
 
 **Response**: top 10 by game play count in descending order, each entry contains `game_id` (hashid), `name`, `plays`, `players`.
@@ -1738,7 +1732,7 @@ GET /admin/analytics/game-ranking?days=7
 ### 16.3 DAU Trend
 
 ```
-GET /admin/analytics/dau-trend?days=30
+GET /admin/v1/analytics/dau-trend?days=30
 ```
 
 **Response**: `{ "date": active_count, ... }`, missing dates are padded with 0.
@@ -1746,7 +1740,7 @@ GET /admin/analytics/dau-trend?days=30
 ### 16.4 Hourly Trend
 
 ```
-GET /admin/analytics/hourly-trend?game_id=<hashid>
+GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
 ```
 
 **Response**: `{ "0": count, ... "23": count }` across 24 hourly slots; when `game_id` is empty, all games are aggregated.
@@ -1754,7 +1748,7 @@ GET /admin/analytics/hourly-trend?game_id=<hashid>
 ### 16.5 Action Distribution
 
 ```
-GET /admin/analytics/action-distribution?game_id=<hashid>&hours=24
+GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
 ```
 
 **Response**: `{ "start": n, "end": n, "earn": n, "spend": n }` counts for four action types; `hours` capped at 168.
@@ -1762,7 +1756,7 @@ GET /admin/analytics/action-distribution?game_id=<hashid>&hours=24
 ### 16.6 Revenue Overview
 
 ```
-GET /admin/analytics/revenue?days=7
+GET /admin/v1/analytics/revenue?days=7
 ```
 
 **Response**: `{ "total": "total", "trend": { "date": "daily amount", ... } }`, only `status=confirmed` orders are counted.
@@ -1770,7 +1764,7 @@ GET /admin/analytics/revenue?days=7
 ### 16.7 Game Conversion Rate
 
 ```
-GET /admin/analytics/conversion?days=30
+GET /admin/v1/analytics/conversion?days=30
 ```
 
 **Response**: each game contains `game_id` (hashid), `game_name`, `players` (deduplicated player count), `depositors` (deduplicated depositor count), `conversion_rate` (deposit conversion rate, 0~1).
@@ -1778,7 +1772,7 @@ GET /admin/analytics/conversion?days=30
 ### 16.8 Joint Probability
 
 ```
-GET /admin/analytics/probability?game_a=<hashid>&game_b=<hashid>
+GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
 ```
 
 **Response**: `{ "joint": { "joint_probability": 0.12, "confidence": 0.3 } }` — the Jaccard coefficient (players of both games / union of players) and confidence (shared players / game A players).
@@ -1786,7 +1780,7 @@ GET /admin/analytics/probability?game_a=<hashid>&game_b=<hashid>
 ### 16.9 Retention Analysis
 
 ```
-GET /admin/analytics/retention?days=30
+GET /admin/v1/analytics/retention?days=30
 ```
 
 **Response**: `{ "D1": "8.5%", "D3": "...", "D7": "...", "D30": "..." }` — next-day/3-day/7-day/30-day retention rates grouped by registration date.
@@ -1794,7 +1788,7 @@ GET /admin/analytics/retention?days=30
 ### 16.10 Conversion Funnel
 
 ```
-GET /admin/analytics/funnel?days=30
+GET /admin/v1/analytics/funnel?days=30
 ```
 
 **Response**: the four steps register → first deposit → first exchange → first game, with `step`, `count`, `rate` (percentage relative to registrations).
@@ -1802,7 +1796,7 @@ GET /admin/analytics/funnel?days=30
 ### 16.11 ARPU/ARPPU Trend
 
 ```
-GET /admin/analytics/arpu?days=30
+GET /admin/v1/analytics/arpu?days=30
 ```
 
 **Response**: `{ "dates": [...], "arpu": [...], "arppu": [...] }` — daily revenue per user (ARPU) and revenue per paying user (ARPPU).
@@ -1810,7 +1804,7 @@ GET /admin/analytics/arpu?days=30
 ### 16.12 Game Economy Metrics
 
 ```
-GET /admin/analytics/economy
+GET /admin/v1/analytics/economy
 ```
 
 **Response**: a `currencies` array, each entry contains `game_name`, `currency`, `symbol`, `total_minted` (total minted), `total_burned` (total burned), `circulation` (in circulation), `inflation_rate` (inflation rate), computed with bcmath high precision.
@@ -1821,16 +1815,16 @@ Payment method management is provided by `PaymentController`; all 5 endpoints re
 
 | Method | Path | Description |
 |------|------|------|
-| GET | /admin/payment/method/list | List payment methods (ascending by sort) |
-| POST | /admin/payment/method/toggle | Enable/disable a payment method |
-| POST | /admin/payment/method/create | Create a payment method |
-| PUT | /admin/payment/method/{hashid} | Update a payment method |
-| DELETE | /admin/payment/method/{hashid} | Delete a payment method (rejected if pending orders exist) |
+| GET | /admin/v1/payment/method/list | List payment methods (ascending by sort) |
+| POST | /admin/v1/payment/method/toggle | Enable/disable a payment method |
+| POST | /admin/v1/payment/method/create | Create a payment method |
+| PUT | /admin/v1/payment/method/{hashid} | Update a payment method |
+| DELETE | /admin/v1/payment/method/{hashid} | Delete a payment method (rejected if pending orders exist) |
 
 ### 17.1 List Payment Methods
 
 ```
-GET /admin/payment/method/list
+GET /admin/v1/payment/method/list
 ```
 
 - **Authentication**: JWT + RBAC
@@ -1878,7 +1872,7 @@ GET /admin/payment/method/list
 ### 17.2 Enable/Disable Payment Method
 
 ```
-POST /admin/payment/method/toggle
+POST /admin/v1/payment/method/toggle
 ```
 
 **Request body**:
@@ -1901,7 +1895,7 @@ POST /admin/payment/method/toggle
 ### 17.3 Create Payment Method
 
 ```
-POST /admin/payment/method/create
+POST /admin/v1/payment/method/create
 ```
 
 **Request body**:
@@ -1947,7 +1941,7 @@ POST /admin/payment/method/create
 ### 17.4 Update Payment Method
 
 ```
-PUT /admin/payment/method/{hashid}
+PUT /admin/v1/payment/method/{hashid}
 ```
 
 - **Path parameter**: `{hashid}` is the hashid-encoded payment method ID
@@ -1960,7 +1954,7 @@ PUT /admin/payment/method/{hashid}
 ### 17.5 Delete Payment Method
 
 ```
-DELETE /admin/payment/method/{hashid}
+DELETE /admin/v1/payment/method/{hashid}
 ```
 
 - **Path parameter**: `{hashid}` is the hashid-encoded payment method ID

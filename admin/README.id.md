@@ -79,7 +79,7 @@ open-admin/
 │   │   ├── DocsController.php      # Dokumen OpenAPI
 │   │   └── BaseController.php      # Kontroler dasar
 │   ├── api/
-│   │   └── v1/controller/          # Kontroler API v1 (versi dikontrol header permintaan API-Version)
+│   │   └── v1/controller/          # Kontroler API v1 (versi di path URL: /api/v1, /admin/v1)
 │   │       ├── CaptchaController.php # CAPTCHA klik
 │   │       └── AuthController.php    # Login/Registrasi/Refresh token
 │   ├── common/                 # Kelas utilitas publik
@@ -90,7 +90,6 @@ open-admin/
 │   │   ├── Cors.php            # CORS
 │   │   ├── SecurityFilter.php  # Deteksi & pemblokiran serangan (batasan metode HTTP/XSS/Injeksi SQL/path traversal/injeksi perintah/CSRF)
 │   │   ├── RateLimit.php       # Rate limit Redis (jendela geser + header respons)
-│   │   ├── ApiVersion.php      # Validasi versi API
 │   │   ├── AdminAuth.php       # Autentikasi JWT + daftar hitam
 │   │   ├── AdminPermission.php # Validasi izin RBAC
 │   │   └── OperationLog.php    # Pencatatan log operasi otomatis (termasuk deteksi sumber)
@@ -242,20 +241,15 @@ docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 ### Penanganan ID
 
 - **ID dalam permintaan/respons**: dienkripsi menjadi string dengan hashids, tidak mengekspos ID database asli
-- **Path antarmuka**: `GET /admin/user/{hashid}` — `{id}` di path adalah string hashid
+- **Path antarmuka**: `GET /admin/v1/user/{hashid}` — `{id}` di path adalah string hashid
 - **Penyimpanan database**: nilai BIGINT asli, dihasilkan oleh snowflake
 
 ### Versi API
 
-Versi API dikontrol melalui header permintaan, **tidak tercermin di URL**:
+Nomor versi API ada di path URL — endpoint publik `/api/v1/*` dan endpoint admin `/admin/v1/*` (default `v1`); header tidak digunakan:
 
-```http
-API-Version: v1
-```
-
-- Jika tidak membawa nomor versi, default menggunakan `v1`
 - Versi yang tidak didukung mengembalikan `400 Bad Request`
-- Untuk menambahkan versi baru, cukup buat direktori `app/api/{version}/controller/` dan daftarkan versi baru di middleware
+- Untuk menambahkan versi baru, cukup buat direktori `app/api/{version}/controller/` dan daftarkan grup rute baru (mis. `/api/v2`)
 
 ### Rate Limit
 
@@ -273,10 +267,9 @@ Middleware global berlaku untuk semua permintaan, dieksekusi berurutan:
 Cors（praproses CORS + header respons）
   → SecurityFilter（batasan metode HTTP/ukuran body/validasi Content-Type/pemblokiran serangan XSS/Injeksi SQL/path traversal/injeksi perintah/CSRF）
   → RateLimit（rate limit jendela geser Redis + penguncian akun：5 kali gagal login mengunci 15 menit）
-  → ApiVersion（validasi versi API，grup rute /api）
-  → AdminAuth（autentikasi JWT + daftar hitam，grup rute /admin）
-  → AdminPermission（otorisasi RBAC，grup rute /admin）
-  → OperationLog（pencatatan otomatis POST/PUT/DELETE，termasuk deteksi sumber，grup rute /admin）
+  → AdminAuth（autentikasi JWT + daftar hitam，grup rute /admin/v1）
+  → AdminPermission（otorisasi RBAC，grup rute /admin/v1）
+  → OperationLog（pencatatan otomatis POST/PUT/DELETE，termasuk deteksi sumber，grup rute /admin/v1）
 ```
 
 `/health` dan `/api/docs` adalah endpoint publik, hanya melewati `Cors → SecurityFilter → RateLimit`.
@@ -291,12 +284,12 @@ Penguatan keamanan:
 
 Login dan registrasi harus melewati validasi **CAPTCHA klik** terlebih dahulu:
 
-1. Klien meminta `POST /api/captcha/generate` untuk mendapatkan gambar CAPTCHA (PNG base64) dan daftar target teks
+1. Klien meminta `POST /api/v1/captcha/generate` untuk mendapatkan gambar CAPTCHA (PNG base64) dan daftar target teks
 2. Pengguna mengklik posisi teks terkait pada gambar secara berurutan, mengumpulkan koordinat klik `[{x, y}, ...]`
 3. Saat login, kirim `captcha_key` dan `clicks` sekaligus, server memvalidasi CAPTCHA terlebih dahulu kemudian kredensial
 
 ```http
-POST /api/auth/login
+POST /api/v1/auth/login
 Content-Type: application/json
 
 {
@@ -315,14 +308,14 @@ Authorization: Bearer <token>
 
 Setelah login berhasil, mengembalikan access_token dengan masa berlaku 2 jam; juga mengembalikan refresh_token dengan masa berlaku 14 hari.
 
-Saat logout, Token masuk daftar hitam Redis dan tidak dapat digunakan kembali selama masa berlaku. POST /admin/profile/logout
+Saat logout, Token masuk daftar hitam Redis dan tidak dapat digunakan kembali selama masa berlaku. POST /admin/v1/profile/logout
 
 ### Konfirmasi Ulang Operasi Sensitif
 
 Operasi sensitif seperti menghapus pengguna, peran, izin memerlukan `password` pengguna yang sedang login di body permintaan untuk konfirmasi ulang identitas:
 
 ```http
-DELETE /admin/user/{id}
+DELETE /admin/v1/user/{id}
 Content-Type: application/json
 Authorization: Bearer <token>
 
@@ -331,7 +324,7 @@ Authorization: Bearer <token>
 
 ## Daftar API
 
-> Semua antarmuka `/api/*` perlu membawa `API-Version: v1` di header permintaan (default v1 jika tidak dikirim).
+> Semua endpoint `/api/v1/*` dan `/admin/v1/*` membawa nomor versi di path URL; header versi tidak digunakan.
 
 ### Antarmuka Publik
 
@@ -339,45 +332,45 @@ Authorization: Bearer <token>
 |-----|------|------|
 | `GET` | `/health` | Health check (status DB/Redis/ES) |
 | `GET` | `/api/docs` | Dokumen spesifikasi OpenAPI 3.0 |
-| `POST` | `/api/captcha/generate` | Membuat CAPTCHA klik |
-| `POST` | `/api/captcha/verify` | Memvalidasi CAPTCHA klik |
-| `POST` | `/api/auth/login` | Login (memerlukan captcha) |
-| `POST` | `/api/auth/register` | Registrasi (memerlukan captcha) |
-| `POST` | `/api/auth/refresh` | Refresh token |
+| `POST` | `/api/v1/captcha/generate` | Membuat CAPTCHA klik |
+| `POST` | `/api/v1/captcha/verify` | Memvalidasi CAPTCHA klik |
+| `POST` | `/api/v1/auth/login` | Login (memerlukan captcha) |
+| `POST` | `/api/v1/auth/register` | Registrasi (memerlukan captcha) |
+| `POST` | `/api/v1/auth/refresh` | Refresh token |
 | `GET` | `/metrics` | Metrik monitoring Prometheus |
 
 ### Antarmuka Admin (memerlukan JWT + RBAC)
 
 | Metode | Path | Deskripsi |
 |-----|------|------|
-| `GET` | `/admin/dashboard` | Data dasbor (cache Redis 5 menit) |
-| `GET` | `/admin/user` | Daftar pengguna (paginasi + pencarian) |
-| `POST` | `/admin/user` | Membuat pengguna |
-| `GET` | `/admin/user/{id}` | Detail pengguna |
-| `PUT` | `/admin/user/{id}` | Memperbarui pengguna |
-| `DELETE` | `/admin/user/{id}` | Menghapus pengguna (soft delete, perlu konfirmasi kata sandi) |
-| `POST` | `/admin/user/batch/destroy` | Menghapus pengguna massal (perlu konfirmasi kata sandi) |
-| `POST` | `/admin/user/batch/status` | Mengaktifkan/menonaktifkan pengguna massal |
-| `GET` | `/admin/role` | Daftar peran |
-| `POST` | `/admin/role` | Membuat peran |
-| `PUT` | `/admin/role/{id}` | Memperbarui peran |
-| `DELETE` | `/admin/role/{id}` | Menghapus peran (perlu konfirmasi kata sandi) |
-| `GET` | `/admin/permission` | Pohon izin |
-| `POST` | `/admin/permission` | Membuat izin |
-| `PUT` | `/admin/permission/{id}` | Memperbarui izin |
-| `DELETE` | `/admin/permission/{id}` | Menghapus izin (kaskade ke sub-izin, perlu konfirmasi kata sandi) |
-| `GET` | `/admin/config` | Daftar konfigurasi sistem |
-| `POST` | `/admin/config` | Membuat item konfigurasi |
-| `PUT` | `/admin/config/{id}` | Memperbarui item konfigurasi |
-| `DELETE` | `/admin/config/{id}` | Menghapus item konfigurasi (perlu konfirmasi kata sandi) |
-| `GET` | `/admin/log` | Log operasi (paginasi + filter) |
-| `PUT` | `/admin/profile` | Memperbarui informasi pribadi |
-| `PUT` | `/admin/profile/password` | Mengubah kata sandi |
-| `POST` | `/admin/profile/logout` | Logout (daftar hitam JWT) |
-| `POST` | `/admin/export/excel` | Ekspor Excel |
-| `POST` | `/admin/export/pdf` | Ekspor PDF |
-| `POST` | `/admin/import/users` | Impor pengguna Excel |
-| `POST` | `/admin/upload` | Unggah file (gambar/dokumen, maksimal 10MB) |
+| `GET` | `/admin/v1/dashboard` | Data dasbor (cache Redis 5 menit) |
+| `GET` | `/admin/v1/user` | Daftar pengguna (paginasi + pencarian) |
+| `POST` | `/admin/v1/user` | Membuat pengguna |
+| `GET` | `/admin/v1/user/{id}` | Detail pengguna |
+| `PUT` | `/admin/v1/user/{id}` | Memperbarui pengguna |
+| `DELETE` | `/admin/v1/user/{id}` | Menghapus pengguna (soft delete, perlu konfirmasi kata sandi) |
+| `POST` | `/admin/v1/user/batch/destroy` | Menghapus pengguna massal (perlu konfirmasi kata sandi) |
+| `POST` | `/admin/v1/user/batch/status` | Mengaktifkan/menonaktifkan pengguna massal |
+| `GET` | `/admin/v1/role` | Daftar peran |
+| `POST` | `/admin/v1/role` | Membuat peran |
+| `PUT` | `/admin/v1/role/{id}` | Memperbarui peran |
+| `DELETE` | `/admin/v1/role/{id}` | Menghapus peran (perlu konfirmasi kata sandi) |
+| `GET` | `/admin/v1/permission` | Pohon izin |
+| `POST` | `/admin/v1/permission` | Membuat izin |
+| `PUT` | `/admin/v1/permission/{id}` | Memperbarui izin |
+| `DELETE` | `/admin/v1/permission/{id}` | Menghapus izin (kaskade ke sub-izin, perlu konfirmasi kata sandi) |
+| `GET` | `/admin/v1/config` | Daftar konfigurasi sistem |
+| `POST` | `/admin/v1/config` | Membuat item konfigurasi |
+| `PUT` | `/admin/v1/config/{id}` | Memperbarui item konfigurasi |
+| `DELETE` | `/admin/v1/config/{id}` | Menghapus item konfigurasi (perlu konfirmasi kata sandi) |
+| `GET` | `/admin/v1/log` | Log operasi (paginasi + filter) |
+| `PUT` | `/admin/v1/profile` | Memperbarui informasi pribadi |
+| `PUT` | `/admin/v1/profile/password` | Mengubah kata sandi |
+| `POST` | `/admin/v1/profile/logout` | Logout (daftar hitam JWT) |
+| `POST` | `/admin/v1/export/excel` | Ekspor Excel |
+| `POST` | `/admin/v1/export/pdf` | Ekspor PDF |
+| `POST` | `/admin/v1/import/users` | Impor pengguna Excel |
+| `POST` | `/admin/v1/upload` | Unggah file (gambar/dokumen, maksimal 10MB) |
 
 ## Penjelasan Frontend
 

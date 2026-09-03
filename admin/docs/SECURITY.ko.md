@@ -156,7 +156,7 @@ if (Redis::get("security_ban:{$ip}")) {
 
 로그 형식 예시:
 ```
-2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
+2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/v1/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
 2026-05-20 14:32:15 [SECURITY] IP banned 15min | IP: 192.168.1.100 | Triggers: 5
 ```
 
@@ -178,7 +178,7 @@ POST/PUT 요청은 **반드시** `Content-Type`을 `application/json` 또는 `ap
 |----|-----|------|
 | Access-Control-Allow-Origin | `*` | 모든 출처의 크로스 도메인 허용 (내부망 관리 백엔드 시나리오) |
 | Access-Control-Allow-Methods | `GET,POST,PUT,DELETE,OPTIONS` | 허용되는 메서드 집합 |
-| Access-Control-Allow-Headers | `Authorization,Content-Type,API-Version` | 허용되는 사용자 정의 헤더 |
+| Access-Control-Allow-Headers | `Authorization,Content-Type` | 허용되는 사용자 정의 헤더 |
 | Access-Control-Max-Age | `86400` | 사전 요청 캐시 24시간 |
 | X-Content-Type-Options | `nosniff` | 브라우저 MIME 스니핑 금지 |
 | X-Frame-Options | `DENY` | 모든 iframe 삽입 금지, 클릭재킹 방지 |
@@ -230,8 +230,8 @@ Lua 스크립트는 Redis 서버에서 단일 스레드로 실행되므로 **본
 | 라우트 | 제한 | 윈도우 | 시나리오 |
 |------|------|------|------|
 | 기본 (모든 라우트) | 60회/분 | 60s | 일반 API |
-| `/api/auth/login` | 10회/분 | 60s | 로그인 (무차별 대입 방지) |
-| `/api/auth/register` | 5회/분 | 60s | 가입 (대량 가입 방지) |
+| `/api/v1/auth/login` | 10회/분 | 60s | 로그인 (무차별 대입 방지) |
+| `/api/v1/auth/register` | 5회/분 | 60s | 가입 (대량 가입 방지) |
 
 ### 응답 헤더
 
@@ -322,7 +322,7 @@ AdminAuth 미들웨어가 구현하며, 인증이 필요한 라우트 그룹에 
 
 **블랙리스트 메커니즘**: 사용자 로그아웃 시 `md5(token)`을 Redis에 기록하고, TTL을 JWT 남은 유효기간으로 설정합니다. Redis 장애 시 블랙리스트 확인은 건너뜁니다 (fail-open). 이때 이미 로그아웃한 토큰도 단기간 사용될 수 있지만, JWT 자체의 짧은 유효기간 (2h)이 마지막 보호 장치 역할을 합니다.
 
-**Token 갱신**: `POST /api/auth/refresh`는 기존 refresh token (`token_type=refresh`이고 만료/블랙리스트가 아닌 경우)을 검증한 후에만 교체 발급하며, `sub`가 유효한 사용자 ID인지도 검증합니다 — **sub=null인 refresh token은 더 이상 발급하지 않으며**, 갱신 실패 시 바로 401을 반환합니다.
+**Token 갱신**: `POST /api/v1/auth/refresh`는 기존 refresh token (`token_type=refresh`이고 만료/블랙리스트가 아닌 경우)을 검증한 후에만 교체 발급하며, `sub`가 유효한 사용자 ID인지도 검증합니다 — **sub=null인 refresh token은 더 이상 발급하지 않으며**, 갱신 실패 시 바로 401을 반환합니다.
 
 ### 6.2 동시 세션 제한
 
@@ -389,7 +389,7 @@ API 권한 식별자 형식: `{method}.{path}`
 
 ### 6.4 결제 콜백 서명 검증 (fail-closed)
 
-`POST /api/payment/callback` (Stripe/PayPal 충전 콜백) 서명 검증은 **fail-closed** 방식으로, 어떤 설정 누락이나 검증 이상도 콜백을 거부합니다:
+`POST /api/v1/payment/callback` (Stripe/PayPal 충전 콜백) 서명 검증은 **fail-closed** 방식으로, 어떤 설정 누락이나 검증 이상도 콜백을 거부합니다:
 
 | 시나리오 | 동작 |
 |------|------|

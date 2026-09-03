@@ -64,7 +64,7 @@ Languages: **中文** · [English](DESIGN.en.md) · [한국어](DESIGN.ko.md) ·
 | الطبقة | الدليل | المسؤولية |
 |---|------|------|
 | المسارات | `config/route.php` | تخطيط URL إلى وحدات التحكم، ربط الوسيطات، مسارات منسوخة حسب الإصدار |
-| الوسيطات | `app/middleware/` | اعتراض الهجمات(SecurityFilter)، الحد من المعدل(RateLimit)، المصادقة(JWT)، التفويض(RBAC)، إصدار API(ApiVersion) |
+| الوسيطات | `app/middleware/` | اعتراض الهجمات(SecurityFilter)، الحد من المعدل(RateLimit)، المصادقة(JWT)، التفويض(RBAC) |
 | وحدات التحكم | 30 وحدة: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (الإدارة) + Captcha/Auth (API v1) | التحقق من معاملات الطلب، استدعاء منطق الأعمال، تنسيق الاستجابة |
 | خدمات الأعمال | `common/service/` | تحليل البيانات: GameDashboardService (نظرة عامة/ترتيب/اتجاه)، DepositLogService (إيراد/تحويل)، ProbabilityService (احتمال مشترك/شرطي، منشئ SQL)؛ عند تعطل DB تُرجع بيانات فارغة بدلاً من خطأ |
 | نماذج البيانات | `app/model/` | تعيين ORM، علاقات الارتباط، تشفير/فك تشفير الحقول |
@@ -88,9 +88,6 @@ webman HTTP Server (workerman)
   ▼
   RateLimit ───────────► نافذة منزلقة في Redis
   │ (عند الفشل يُرجع 429 + ترويسة Retry-After)
-  ▼
-  ApiVersion ─────────► التحقق من ترويسة API-Version، حقن $request->apiVersion
-  │ (عند الفشل يُرجع 400)
   ▼
   AdminAuth ──────────► التحقق من JWT، حقن $request->adminId
   │ (عند الفشل يُرجع 401)
@@ -173,58 +170,50 @@ game_system_config (إعدادات النظام) — جدول مستقل
 ### 4.1 مواصفات URL
 
 ```
-واجهات عامة:  /api/captcha/{generate|verify}
-           /api/auth/{login|register|refresh}
+واجهات عامة:  /api/v1/captcha/{generate|verify}
+           /api/v1/auth/{login|register|refresh}
 
-لوحة الإدارة: /admin/{resource}[/{hashid}]
-          /admin/export/{excel|pdf}
+لوحة الإدارة: /admin/v1/{resource}[/{hashid}]
+          /admin/v1/export/{excel|pdf}
 
 مسارات الموارد:
-  GET    /admin/user          → القائمة
-  POST   /admin/user          → الإنشاء
-  GET    /admin/user/{hashid} → التفاصيل
-  PUT    /admin/user/{hashid} → التحديث
-  DELETE /admin/user/{hashid} → الحذف (يتطلب تأكيد كلمة المرور)
+  GET    /admin/v1/user          → القائمة
+  POST   /admin/v1/user          → الإنشاء
+  GET    /admin/v1/user/{hashid} → التفاصيل
+  PUT    /admin/v1/user/{hashid} → التحديث
+  DELETE /admin/v1/user/{hashid} → الحذف (يتطلب تأكيد كلمة المرور)
 
-إعدادات النظام:  /admin/config[/{hashid}]
-سجلات العمليات:  /admin/log
-المركز الشخصي:  /admin/profile[/password|/logout]
-الاستيراد:     /admin/import/users
-الرفع:     /admin/upload
-الجماعي:     /admin/user/batch/{destroy|status}
+إعدادات النظام:  /admin/v1/config[/{hashid}]
+سجلات العمليات:  /admin/v1/log
+المركز الشخصي:  /admin/v1/profile[/password|/logout]
+الاستيراد:     /admin/v1/import/users
+الرفع:     /admin/v1/upload
+الجماعي:     /admin/v1/user/batch/{destroy|status}
 الوثائق:     /api/docs     (OpenAPI 3.0)
 الصحة:     /health
 ```
 
 ### 4.2 استراتيجية إصدار API
 
-يُتحكم بإصدار API عبر ترويسة الطلب، **ولا يظهر في مسار URL**:
-
-```http
-API-Version: v1
-```
+يكون رقم الإصدار في بادئة مسار URL (الافتراضي `v1`)، دون استخدام ترويسة:
 
 | الآلية | الوصف |
 |------|------|
-| الإصدار الافتراضي | عند عدم حمل ترويسة `API-Version` يكون الافتراضي `v1` |
-| التحقق | تتحقق وسيطة `ApiVersion`، والإصدارات غير المدعومة تُرجع 400 |
-| التوجيه | تحلل الدالة المساعدة `v()` فئات وحدات التحكم ديناميكيًا حسب الإصدار |
+| الإصدار الافتراضي | الافتراضي `v1`، تحدده بادئة مجموعة المسارات |
+| التوجيه | بادئتا مجموعتي المسارات `/api/v1` و`/admin/v1` ترسمان الإصدار إلى مساحة وحدات التحكم؛ تحلل الدالة المساعدة `v()` فئات وحدات التحكم حسب الإصدار |
 | الدليل | تُنظم وحدات التحكم حسب الإصدار: `app/api/{version}/controller/` |
 
 مثال على التوسعة — إضافة v2 API:
 1. إنشاء `app/api/v2/controller/AuthController.php`
-2. إضافة `'v2'` إلى ثابت `SUPPORTED` في وسيطة `ApiVersion`
-3. لا حاجة لتعديل تعريفات المسارات
+2. تسجيل مجموعة مسارات `/api/v2` وربطها بوحدة التحكم
+3. تمرير الإصدار صراحةً إلى `v()`: `v('AuthController', 'login', 'v2')`
 
 ```bash
 # استخدام v1
-curl -H "API-Version: v1" /api/auth/login
+curl http://host/api/v1/auth/login
 
 # استخدام v2
-curl -H "API-Version: v2" /api/auth/login
-
-# بدون إرسال، الافتراضي v1
-curl /api/auth/login
+curl http://host/api/v2/auth/login
 ```
 
 ### 4.3 استراتيجية الحد من المعدل
@@ -234,8 +223,8 @@ curl /api/auth/login
 | الواجهة | الحد |
 |------|------|
 | الافتراضي | 60 مرة/دقيقة/IP/مسار |
-| POST /api/auth/login | 10 مرات/دقيقة |
-| POST /api/auth/register | 5 مرات/دقيقة |
+| POST /api/v1/auth/login | 10 مرات/دقيقة |
+| POST /api/v1/auth/register | 5 مرات/دقيقة |
 
 عند تجاوز الحد يُرجع 429، وتتضمن ترويسات الاستجابة X-RateLimit-Limit / Remaining / Reset / Retry-After.
 
@@ -264,12 +253,12 @@ curl /api/auth/login
 ```
 العميل                                الخادم
   │                                    │
-  │  ① POST /api/captcha/generate     │ captcha_create('click')
+  │  ① POST /api/v1/captcha/generate     │ captcha_create('click')
   │◄── {key, image(base64), targets}  │
   │                                    │
   │  ② ينقر المستخدم على مواضع النص في الصورة │
   │                                    │
-  │  ③ POST /api/auth/login           │
+  │  ③ POST /api/v1/auth/login           │
   │     {username, password,          │
   │      captcha_key, clicks}         │
   │────────────────────────────────►  │
@@ -278,7 +267,7 @@ curl /api/auth/login
   │                                    │ ③ jwt()->create()
   │◄── {access_token, refresh_token}  │
   │                                    │
-  │  ④ GET /admin/dashboard           │
+  │  ④ GET /admin/v1/dashboard           │
   │     Authorization: Bearer xxx     │
   │────────────────────────────────►  │ AdminAuth → AdminPermission
   │◄── 200 {dashboard data}           │
@@ -306,7 +295,7 @@ curl /api/auth/login
 ```
 العميل                            الخادم
   │                                │
-  │  DELETE /admin/user/{hashid}  │
+  │  DELETE /admin/v1/user/{hashid}  │
   │  { password: "******" }       │
   │────────────────────────────►  │
   │                                │ confirmPassword(adminId, password)
@@ -323,11 +312,11 @@ curl /api/auth/login
 
 | الطريقة | المسار | الوصف |
 |------|------|------|
-| GET | /admin/payment/method/list | القائمة (تصاعديًا حسب sort) |
-| POST | /admin/payment/method/toggle | تفعيل/تعطيل |
-| POST | /admin/payment/method/create | إنشاء |
-| PUT | /admin/payment/method/{hashid} | تحديث (الحقول المرسلة فقط) |
-| DELETE | /admin/payment/method/{hashid} | حذف (422 إذا كانت هناك طلبات معلقة) |
+| GET | /admin/v1/payment/method/list | القائمة (تصاعديًا حسب sort) |
+| POST | /admin/v1/payment/method/toggle | تفعيل/تعطيل |
+| POST | /admin/v1/payment/method/create | إنشاء |
+| PUT | /admin/v1/payment/method/{hashid} | تحديث (الحقول المرسلة فقط) |
+| DELETE | /admin/v1/payment/method/{hashid} | حذف (422 إذا كانت هناك طلبات معلقة) |
 
 - **القائمة البيضاء لـ provider**: `stripe` / `nowpayments` / `coinbase`
 - **الحقول**: name / type (fiat|crypto) / provider / status / sort / countries[] (الرؤية حسب الدولة، فارغ = عالمي) / currency / min_amount / max_amount / config (JSON، مخزن مشفر)
@@ -419,7 +408,7 @@ SCOUT_HOSTS         → عنوان ES، نشر داخلي
 ### 7.1 تصدير Excel
 
 ```
-الطلب: POST /admin/export/excel { table, columns, conditions, title }
+الطلب: POST /admin/v1/export/excel { table, columns, conditions, title }
   → fetchExportData() استعلام البيانات (limit 10000)
   → إخفاء الحقول الحساسة
   → بناء PhpSpreadsheet (ترويسة بخلفية زرقاء ونص أبيض + تجميد الصف الأول + تصفية تلقائية)
@@ -429,7 +418,7 @@ SCOUT_HOSTS         → عنوان ES، نشر داخلي
 ### 7.2 تصدير PDF
 
 ```
-الطلب: POST /admin/export/pdf { type: table|dashboard, title, data }
+الطلب: POST /admin/v1/export/pdf { type: table|dashboard, title, data }
   → buildPdfHtml() HTML + CSS مضمّن + حقوق نشر في الترويسة + حقوق نشر غير قابلة للإزالة في التذييل
   → عرض Dompdf A4 أفقي
   → الكتابة إلى runtime/tmp/ → استجابة download

@@ -24,7 +24,6 @@ Documentação online interativa (suporta teste em tempo real):
 
 ```
 Content-Type: application/json
-API-Version: v1
 Authorization: Bearer <token>    (interfaces que exigem autenticação)
 ```
 
@@ -75,7 +74,7 @@ Resposta: {
 
 ### 2.1 Autenticação
 
-#### POST /api/auth/register — Registro de usuário
+#### POST /api/v1/auth/register — Registro de usuário
 
 ```
 Requisição: {
@@ -96,7 +95,7 @@ Resposta: {
 }
 ```
 
-#### POST /api/auth/login — Login de usuário
+#### POST /api/v1/auth/login — Login de usuário
 
 ```
 Requisição: {
@@ -113,7 +112,7 @@ Resposta: {
 
 Erro: 401 nome de usuário ou senha incorretos / conta desabilitada
 
-#### POST /api/auth/refresh — Refresh do Token
+#### POST /api/v1/auth/refresh — Refresh do Token
 
 ```
 Requisição: (Authorization: Bearer <refresh_token>)
@@ -126,7 +125,7 @@ Resposta: {
 
 ### 2.2 Carteira
 
-#### GET /api/wallet/info — Informações da carteira
+#### GET /api/v1/wallet/info — Informações da carteira
 
 ```
 Requer autenticação: sim
@@ -139,7 +138,7 @@ Resposta: {
 }
 ```
 
-#### GET /api/wallet/transactions — Registro de transações
+#### GET /api/v1/wallet/transactions — Registro de transações
 
 ```
 Requer autenticação: sim
@@ -166,7 +165,7 @@ Valores possíveis de type: deposit / withdraw / exchange_in / exchange_out / ga
 
 ### 2.3 Depósito
 
-#### POST /api/deposit/create — Criar ordem de depósito
+#### POST /api/v1/deposit/create — Criar ordem de depósito
 
 ```
 Requer autenticação: sim
@@ -191,7 +190,7 @@ Valores possíveis de currency: USD / CNY / EUR
 
 checkout_url: link de redirecionamento do gateway de pagamento (preenchido na criação do pedido); expires_at: expiração do link de pagamento (1 hora após a criação)
 
-#### GET /api/deposit/orders — Registros de depósito
+#### GET /api/v1/deposit/orders — Registros de depósito
 
 ```
 Requer autenticação: sim
@@ -220,7 +219,7 @@ Valores possíveis de status: pending / paid / confirmed / cancelled
 
 ### 2.4 Troca
 
-#### POST /api/exchange/quote — Cotação
+#### POST /api/v1/exchange/quote — Cotação
 
 ```
 Requer autenticação: sim
@@ -243,7 +242,7 @@ Resposta: {
 
 direction: in=comprar moeda de jogo / out=vender moeda de jogo
 
-#### POST /api/exchange/buy — Comprar moeda de jogo
+#### POST /api/v1/exchange/buy — Comprar moeda de jogo
 
 ```
 Requer autenticação: sim
@@ -265,7 +264,7 @@ Resposta: {
 
 Erro: 422 saldo insuficiente de moeda da plataforma / 404 jogo indisponível
 
-#### POST /api/exchange/sell — Vender moeda de jogo
+#### POST /api/v1/exchange/sell — Vender moeda de jogo
 
 ```
 Requer autenticação: sim
@@ -287,7 +286,7 @@ Resposta: {
 
 Erro: 422 saldo insuficiente de moeda de jogo
 
-#### GET /api/exchange/records — Registros de troca
+#### GET /api/v1/exchange/records — Registros de troca
 
 ```
 Requer autenticação: sim
@@ -314,7 +313,7 @@ Resposta: {
 
 ### 2.5 Saque
 
-#### POST /api/withdraw/apply — Solicitação de saque
+#### POST /api/v1/withdraw/apply — Solicitação de saque
 
 ```
 Requer autenticação: sim
@@ -344,7 +343,7 @@ Erros:
 - 400 excedeu o limite diário de saque
 - 400 saldo insuficiente
 
-#### GET /api/withdraw/orders — Registros de saque
+#### GET /api/v1/withdraw/orders — Registros de saque
 
 ```
 Requer autenticação: sim
@@ -370,7 +369,7 @@ Resposta: {
 
 ### 2.6 Jogos
 
-#### GET /api/game/list — Lista de jogos
+#### GET /api/v1/game/list — Lista de jogos
 
 ```
 Parâmetros: ?page=1&per_page=20&keyword=射击&type=self
@@ -404,7 +403,7 @@ Resposta: {
 
 Valores possíveis de type: self / third_party
 
-#### GET /api/game/{hashid} — Detalhes do jogo
+#### GET /api/v1/game/{hashid} — Detalhes do jogo
 
 ```
 Resposta: {
@@ -428,7 +427,7 @@ Resposta: {
 }
 ```
 
-#### POST /api/game/launch — Iniciar jogo
+#### POST /api/v1/game/launch — Iniciar jogo
 
 ```
 Requer autenticação: sim
@@ -447,7 +446,7 @@ Resposta: {
 
 Suporta 7 plataformas: Google / Facebook / Apple / X(Twitter) / Microsoft / LinkedIn / GitHub
 
-#### GET /api/auth/oauth/{provider} — Obter URL de autorização
+#### GET /api/v1/auth/oauth/{provider} — Obter URL de autorização
 
 ```
 Parâmetros: provider = google / facebook / apple / twitter / microsoft / linkedin / github
@@ -457,7 +456,7 @@ Resposta: {
 }
 ```
 
-#### POST /api/auth/oauth/{provider}/callback — Callback do OAuth
+#### POST /api/v1/auth/oauth/{provider}/callback — Callback do OAuth
 
 ```
 Requisição: { "code": "授权码", "state": "防CSRF状态" }
@@ -474,7 +473,7 @@ is_new: true=usuário recém-registrado / false=conta existente vinculada
 
 ### 2.8 KYC de identidade real
 
-#### GET /api/user/identity/status — Status da verificação
+#### GET /api/v1/user/identity/status — Status da verificação
 
 ```
 Requer autenticação: sim
@@ -489,7 +488,7 @@ Resposta: {
 }
 ```
 
-#### POST /api/user/identity/apply — Enviar verificação
+#### POST /api/v1/user/identity/apply — Enviar verificação
 
 ```
 Requer autenticação: sim
@@ -507,7 +506,7 @@ Resposta: { "message": "KYC submitted successfully" }
 
 ### 2.9 Pagamento
 
-#### POST /api/payment/callback — Callback de pagamento (público)
+#### POST /api/v1/payment/callback — Callback de pagamento (público)
 
 ```
 Requisição: {
@@ -542,7 +541,7 @@ Valores de provider: stripe / paypal / nowpayments / coinbase / skrill / netelle
 | mpesa | Quênia / Tanzânia etc. (em breve) | — | KES / TZS |
 | paystack | Nigéria (em breve) | — | NGN |
 
-#### GET /api/payment/methods — Métodos de pagamento disponíveis (público)
+#### GET /api/v1/payment/methods — Métodos de pagamento disponíveis (público)
 
 ```
 Resposta: {
@@ -556,7 +555,7 @@ Filtrado por país do usuário (X-Language/Accept-Language → código do país)
 
 ### 2.10 Registros de partidas
 
-#### GET /api/game/play-logs — Lista de registros de partidas
+#### GET /api/v1/game/play-logs — Lista de registros de partidas
 
 ```
 Requer autenticação: sim
@@ -576,7 +575,7 @@ Resposta: {
 }
 ```
 
-#### GET /api/game/play-log/{hashid} — Detalhes do registro de partida
+#### GET /api/v1/game/play-log/{hashid} — Detalhes do registro de partida
 
 ```
 Requer autenticação: sim
@@ -585,7 +584,7 @@ Resposta: { 完整记录，含 session_id / game_amount_before / after 等 }
 
 ### 2.12 Rankings
 
-#### GET /api/leaderboard/list — Lista de rankings
+#### GET /api/v1/leaderboard/list — Lista de rankings
 
 ```
 Resposta: {
@@ -595,7 +594,7 @@ Resposta: {
 }
 ```
 
-#### GET /api/leaderboard/{hashid} — Detalhes do ranking
+#### GET /api/v1/leaderboard/{hashid} — Detalhes do ranking
 
 ```
 Resposta: {
@@ -610,14 +609,14 @@ Resposta: {
 
 ### 2.13 Cupons
 
-#### GET /api/coupon/available — Cupons resgatáveis
+#### GET /api/v1/coupon/available — Cupons resgatáveis
 
 ```
 Requer autenticação: sim
 Resposta: { "list": [{ "id": "...", "name": "新人礼包", "type": "fixed", "value": "10.0000" }] }
 ```
 
-#### POST /api/coupon/claim — Resgatar cupom
+#### POST /api/v1/coupon/claim — Resgatar cupom
 
 ```
 Requer autenticação: sim
@@ -625,7 +624,7 @@ Requisição: { "coupon_id": "hashid" }
 Resposta: { "coupon": { ... } }
 ```
 
-#### GET /api/coupon/my — Meus cupons
+#### GET /api/v1/coupon/my — Meus cupons
 
 ```
 Requer autenticação: sim
@@ -635,7 +634,7 @@ Resposta: { "list": [{ "id": "...", "coupon": {...}, "status": "unused" }] }
 
 ### 2.14 Configuração de países
 
-#### GET /api/country/list — Lista de países
+#### GET /api/v1/country/list — Lista de países
 
 ```
 Resposta: {
@@ -645,7 +644,7 @@ Resposta: {
 }
 ```
 
-#### GET /api/country/{code} — Detalhes do país
+#### GET /api/v1/country/{code} — Detalhes do país
 
 ```
 Resposta: {
@@ -659,7 +658,7 @@ Resposta: {
 
 ### 2.16 Notificações
 
-#### GET /api/notification/list — Lista de notificações
+#### GET /api/v1/notification/list — Lista de notificações
 
 ```
 Requer autenticação: sim
@@ -673,14 +672,14 @@ Resposta: {
 }
 ```
 
-#### GET /api/notification/unread-count — Contagem de não lidas
+#### GET /api/v1/notification/unread-count — Contagem de não lidas
 
 ```
 Requer autenticação: sim
 Resposta: { "count": 3 }
 ```
 
-#### POST /api/notification/read — Marcar como lida
+#### POST /api/v1/notification/read — Marcar como lida
 
 ```
 Requer autenticação: sim
@@ -689,14 +688,14 @@ Requisição: { "id": "hashid" }  // não enviar = marcar todas como lidas
 
 ### 2.17 Indicação
 
-#### GET /api/referral/my-code — Meu código de indicação
+#### GET /api/v1/referral/my-code — Meu código de indicação
 
 ```
 Requer autenticação: sim
 Resposta: { "code": "ABC12345", "referral_count": 12, "total_rewards": "150.0000" }
 ```
 
-#### POST /api/referral/apply — Usar código de indicação
+#### POST /api/v1/referral/apply — Usar código de indicação
 
 ```
 Requer autenticação: sim
@@ -706,21 +705,21 @@ Resposta: { "message": "Referral applied" }
 
 ### 2.18 2FA
 
-#### GET /api/user/2fa/status — Status do 2FA
+#### GET /api/v1/user/2fa/status — Status do 2FA
 
 ```
 Requer autenticação: sim
 Resposta: { "enabled": false }
 ```
 
-#### POST /api/user/2fa/setup — Configurar 2FA
+#### POST /api/v1/user/2fa/setup — Configurar 2FA
 
 ```
 Requer autenticação: sim
 Resposta: { "secret": "JBSWY3DPEHPK3PXP", "qr_url": "otpauth://totp/..." }
 ```
 
-#### POST /api/user/2fa/enable — Habilitar 2FA
+#### POST /api/v1/user/2fa/enable — Habilitar 2FA
 
 ```
 Requer autenticação: sim
@@ -728,7 +727,7 @@ Requisição: { "code": "123456" }
 Resposta: { "backup_codes": ["abcd1234ef", ...] }
 ```
 
-#### POST /api/2fa/verify — Verificar 2FA (público)
+#### POST /api/v1/2fa/verify — Verificar 2FA (público)
 
 ```
 Requisição: { "user_id": "hashid", "code": "123456" }
@@ -737,14 +736,14 @@ Resposta: { "valid": true }
 
 ### 2.19 Busca
 
-#### GET /api/search — Busca global
+#### GET /api/v1/search — Busca global
 
 ```
 Parâmetros: ?q=keyword&type=game&page=1&per_page=20
 Resposta: { "list": [...], "total": 100 }
 ```
 
-#### GET /api/game/suggest — Sugestões de busca
+#### GET /api/v1/game/suggest — Sugestões de busca
 
 ```
 Parâmetros: ?q=shoot
@@ -753,7 +752,7 @@ Resposta: { "suggestions": [{ "id": "...", "name": "Shooter Master" }] }
 
 ### 2.20 Idioma
 
-#### GET /api/language/list — Lista de idiomas disponíveis
+#### GET /api/v1/language/list — Lista de idiomas disponíveis
 
 ```
 Resposta: {
@@ -767,7 +766,7 @@ Resposta: {
 }
 ```
 
-#### POST /api/language/switch — Alternar idioma
+#### POST /api/v1/language/switch — Alternar idioma
 
 ```
 Requisição: { "locale": "zh-CN" }
@@ -778,7 +777,7 @@ Valores possíveis de locale: en-US / zh-CN / ja-JP / ko-KR
 
 ### 2.8 Usuário
 
-#### GET /api/user/profile — Informações pessoais
+#### GET /api/v1/user/profile — Informações pessoais
 
 ```
 Requer autenticação: sim
@@ -797,7 +796,7 @@ Resposta: {
 }
 ```
 
-#### PUT /api/user/profile — Editar perfil
+#### PUT /api/v1/user/profile — Editar perfil
 
 ```
 Requer autenticação: sim
@@ -821,7 +820,7 @@ Valores possíveis de language: en-US / zh-CN / ja-JP / ko-KR
 
 ### 2.9 Anúncios
 
-#### GET /api/announcement/list — Lista de anúncios
+#### GET /api/v1/announcement/list — Lista de anúncios
 
 ```
 Resposta: {
@@ -836,7 +835,7 @@ Resposta: {
 }
 ```
 
-#### GET /api/announcement/detail/{hashid} — Detalhes do anúncio
+#### GET /api/v1/announcement/detail/{hashid} — Detalhes do anúncio
 
 ```
 Resposta: {
@@ -852,9 +851,9 @@ Resposta: {
 
 | Método | Caminho | Observação | Autenticação |
 |------|------|------|------|
-| GET | /api/platform/stats | Estatísticas públicas da plataforma (total de jogos / total de usuários / partidas de hoje / ativos em 7 dias) | Não |
+| GET | /api/v1/platform/stats | Estatísticas públicas da plataforma (total de jogos / total de usuários / partidas de hoje / ativos em 7 dias) | Não |
 
-#### GET /api/platform/stats — Estatísticas da plataforma
+#### GET /api/v1/platform/stats — Estatísticas da plataforma
 
 ```
 无需认证
@@ -1466,8 +1465,8 @@ Todos os endpoints exigem autenticação (AdminAuth + AdminPermission).
 | Interface | Limite |
 |------|------|
 | Padrão | 60 vezes/minuto/IP |
-| POST /api/auth/login | 10 vezes/minuto |
-| POST /api/auth/register | 5 vezes/minuto |
+| POST /api/v1/auth/login | 10 vezes/minuto |
+| POST /api/v1/auth/register | 5 vezes/minuto |
 
 Ao exceder o limite retorna 429; o cabeçalho da resposta inclui:
 ```
@@ -1600,7 +1599,7 @@ Resposta: {
 
 ### 7.2 Ticket API
 
-#### GET /api/ticket/list — Lista de tickets
+#### GET /api/v1/ticket/list — Lista de tickets
 
 ```
 Requer autenticação: sim
@@ -1625,7 +1624,7 @@ Resposta: {
 type: deposit / withdraw / game / account / other
 status: open / waiting / replied / closed
 
-#### POST /api/ticket/create — Criar ticket
+#### POST /api/v1/ticket/create — Criar ticket
 
 ```
 Requer autenticação: sim
@@ -1637,7 +1636,7 @@ Requisição: {
 Resposta: { "code": 0, "message": "Ticket created", "data": { "id": "aB3xK..." } }
 ```
 
-#### GET /api/ticket/{hashid} — Detalhes do ticket
+#### GET /api/v1/ticket/{hashid} — Detalhes do ticket
 
 ```
 Requer autenticação: sim
@@ -1650,7 +1649,7 @@ Resposta: {
 }
 ```
 
-#### POST /api/ticket/{hashid}/reply — Responder ticket
+#### POST /api/v1/ticket/{hashid}/reply — Responder ticket
 
 ```
 Requer autenticação: sim
@@ -1660,7 +1659,7 @@ Resposta: { "code": 0, "message": "Reply sent" }
 
 ### 7.3 API de verificação de email
 
-#### POST /api/verify/send-email — Enviar código de verificação de email
+#### POST /api/v1/verify/send-email — Enviar código de verificação de email
 
 ```
 Requer autenticação: sim
@@ -1669,7 +1668,7 @@ Resposta: { "code": 0, "message": "Verification code sent" }
 Erro: 429 aguarde 60 segundos e tente novamente
 ```
 
-#### POST /api/verify/confirm-email — Confirmar email
+#### POST /api/v1/verify/confirm-email — Confirmar email
 
 ```
 Requer autenticação: sim
@@ -1680,7 +1679,7 @@ Erro: 422 código de verificação inválido ou expirado
 
 ### 7.4 VIP API
 
-#### GET /api/user/vip-status — Status do VIP
+#### GET /api/v1/user/vip-status — Status do VIP
 
 ```
 Requer autenticação: sim
@@ -1700,7 +1699,7 @@ Resposta: {
 
 ### 7.5 Achievement API
 
-#### GET /api/user/achievements — Lista de conquistas
+#### GET /api/v1/user/achievements — Lista de conquistas
 
 ```
 Requer autenticação: sim
@@ -1899,10 +1898,10 @@ Resposta: { "code": 0, "data": { "ok": true } }
 | Interface | Limite |
 |------|------|
 | Padrão | 60 vezes/minuto/IP |
-| POST /api/auth/login | 10 vezes/minuto |
-| POST /api/auth/register | 5 vezes/minuto |
-| POST /api/auth/oauth | 10 vezes/minuto |
-| POST /api/payment/callback | 30 vezes/minuto |
+| POST /api/v1/auth/login | 10 vezes/minuto |
+| POST /api/v1/auth/register | 5 vezes/minuto |
+| POST /api/v1/auth/oauth | 10 vezes/minuto |
+| POST /api/v1/payment/callback | 30 vezes/minuto |
 | POST /api/provider/* | Sem limite (autenticação por assinatura HMAC) |
 
 ## 9. Explicação da autenticação (atualizada)
@@ -1918,43 +1917,43 @@ Resposta: { "code": 0, "data": { "ok": true } }
 
 ### 7.7 Friend API
 
-#### GET /api/friend/list — Lista de amigos
+#### GET /api/v1/friend/list — Lista de amigos
 ```
 Requer autenticação: sim
 Resposta: { "list": [{ "id": "...", "username": "...", "nickname": "...", "avatar": "..." }] }
 ```
 
-#### GET /api/friend/requests — Solicitações pendentes
+#### GET /api/v1/friend/requests — Solicitações pendentes
 ```
 Requer autenticação: sim
 Resposta: { "list": [{ "id": "...", "user": {...}, "created_at": "..." }] }
 ```
 
-#### POST /api/friend/request — Enviar solicitação de amizade
+#### POST /api/v1/friend/request — Enviar solicitação de amizade
 ```
 Requer autenticação: sim
 Requisição: { "friend_id": "hashid" }
 ```
 
-#### POST /api/friend/accept — Aceitar solicitação
+#### POST /api/v1/friend/accept — Aceitar solicitação
 ```
 Requer autenticação: sim
 Requisição: { "request_id": "hashid" }
 ```
 
-#### POST /api/friend/reject — Recusar solicitação
+#### POST /api/v1/friend/reject — Recusar solicitação
 ```
 Requer autenticação: sim
 Requisição: { "request_id": "hashid" }
 ```
 
-#### POST /api/friend/remove — Remover amigo
+#### POST /api/v1/friend/remove — Remover amigo
 ```
 Requer autenticação: sim
 Requisição: { "friend_id": "hashid" }
 ```
 
-#### GET /api/friend/search — Buscar usuário
+#### GET /api/v1/friend/search — Buscar usuário
 ```
 Requer autenticação: sim
 Parâmetros: ?q=username
@@ -1963,7 +1962,7 @@ Resposta: { "list": [{ "id": "...", "username": "...", "nickname": "...", "avata
 
 ### 7.8 Chat API
 
-#### GET /api/chat/conversations — Lista de conversas
+#### GET /api/v1/chat/conversations — Lista de conversas
 ```
 Requer autenticação: sim
 Resposta: {
@@ -1976,7 +1975,7 @@ Resposta: {
 }
 ```
 
-#### GET /api/chat/messages/{peerHashid} — Lista de mensagens
+#### GET /api/v1/chat/messages/{peerHashid} — Lista de mensagens
 ```
 Requer autenticação: sim
 Parâmetros: ?page=1&per_page=50
@@ -1984,14 +1983,14 @@ Resposta: { "items": [{ "id": "...", "content": "...", "is_read": 1 }], "total":
 Marca automaticamente como lidas as mensagens não lidas recebidas do interlocutor
 ```
 
-#### POST /api/chat/send — Enviar mensagem
+#### POST /api/v1/chat/send — Enviar mensagem
 ```
 Requer autenticação: sim
 Requisição: { "to_user_id": "hashid", "content": "Hello!" }
 Erro: 403 não é possível enviar para quem não é amigo
 ```
 
-#### GET /api/chat/unread-total — Total de não lidas
+#### GET /api/v1/chat/unread-total — Total de não lidas
 ```
 Requer autenticação: sim
 Resposta: { "count": 5 }
@@ -2009,20 +2008,20 @@ Resposta: { "count": 5 }
 
 ### 7.9 Webhook API
 
-#### GET /api/webhook/list — Lista de assinaturas
+#### GET /api/v1/webhook/list — Lista de assinaturas
 ```
 Requer autenticação: sim
 Resposta: { "list": [{ "id": "...", "url": "https://...", "events": ["deposit.completed"] }] }
 ```
 
-#### POST /api/webhook/register — Registrar assinatura
+#### POST /api/v1/webhook/register — Registrar assinatura
 ```
 Requer autenticação: sim
 Requisição: { "url": "https://my-server.com/hook", "events": ["deposit.completed", "game.played"] }
 Eventos disponíveis: deposit.completed / withdraw.completed / exchange.completed / game.played / user.registered / risk.alert / user.vip_upgraded
 ```
 
-#### POST /api/webhook/delete — Excluir assinatura
+#### POST /api/v1/webhook/delete — Excluir assinatura
 ```
 Requer autenticação: sim
 Requisição: { "id": "hook_id" }
@@ -2071,18 +2070,18 @@ Resposta: {
 
 ### 7.11 Tournament API
 
-#### GET /api/tournament/list — Lista de torneios
+#### GET /api/v1/tournament/list — Lista de torneios
 ```
 Parâmetros: ?status=active|upcoming|ended&page=1&per_page=20
 Resposta: { "items": [{ "id": "...", "name": "...", "prize_pool": "1000.0000", "player_count": 45, "max_players": 100 }], "total": 5 }
 ```
 
-#### GET /api/tournament/{hashid} — Detalhes do torneio
+#### GET /api/v1/tournament/{hashid} — Detalhes do torneio
 ```
 Resposta: { "id": "...", "name": "...", "leaderboard": [...], "my_entry": {...} }
 ```
 
-#### POST /api/tournament/{hashid}/join — Inscrever-se no torneio
+#### POST /api/v1/tournament/{hashid}/join — Inscrever-se no torneio
 ```
 Requer autenticação: sim
 Erro: 422 já inscrito / 400 já começou ou lotado / 503 FeatureFlag desligado
@@ -2108,7 +2107,7 @@ A comissão de indicação adiciona repartição de segundo nível:
 
 | Interface | Limite |
 |------|------|
-| POST /api/tournament/{id}/join | 10 vezes/minuto |
+| POST /api/v1/tournament/{id}/join | 10 vezes/minuto |
 
 ---
 
@@ -2159,23 +2158,23 @@ A comissão de indicação adiciona repartição de segundo nível:
 | POST /admin/activities/create | Criar atividade (admin) |
 | PUT /admin/activities/{hashid} | Atualizar atividade (admin) |
 | DELETE /admin/activities/{hashid} | Excluir atividade (admin) |
-| GET /api/activities/list | Lista de atividades (cliente) |
-| GET /api/activities/progress | Progresso de participação (cliente) |
-| GET /api/activities/{hashid} | Detalhe da atividade (cliente) |
-| POST /api/activities/{hashid}/checkin | Check-in (cliente) |
+| GET /api/v1/activities/list | Lista de atividades (cliente) |
+| GET /api/v1/activities/progress | Progresso de participação (cliente) |
+| GET /api/v1/activities/{hashid} | Detalhe da atividade (cliente) |
+| POST /api/v1/activities/{hashid}/checkin | Check-in (cliente) |
 
 ### 10.4 Grupos / Compartilhamentos (cliente :8788 + admin :8787)
 
 | Endpoint | Descrição |
 |------|------|
-| POST /api/groups | Criar grupo |
-| GET /api/groups/{hashid} | Detalhe do grupo |
-| GET /api/groups/{hashid}/members | Lista de membros |
-| POST /api/groups/{hashid}/join | Entrar no grupo |
-| POST /api/groups/{hashid}/leave | Sair do grupo |
-| PUT /api/groups/{hashid}/role | Papel do membro |
-| POST /api/shares | Criar link de compartilhamento |
-| POST /api/shares/visit | Rastreamento de visitas de compartilhamento |
+| POST /api/v1/groups | Criar grupo |
+| GET /api/v1/groups/{hashid} | Detalhe do grupo |
+| GET /api/v1/groups/{hashid}/members | Lista de membros |
+| POST /api/v1/groups/{hashid}/join | Entrar no grupo |
+| POST /api/v1/groups/{hashid}/leave | Sair do grupo |
+| PUT /api/v1/groups/{hashid}/role | Papel do membro |
+| POST /api/v1/shares | Criar link de compartilhamento |
+| POST /api/v1/shares/visit | Rastreamento de visitas de compartilhamento |
 | GET /admin/groups | Lista de grupos (admin) |
 | GET /admin/groups/{hashid}/audit | Auditoria do grupo (admin) |
 | GET /admin/share/stats | Estatísticas de compartilhamento (admin) |

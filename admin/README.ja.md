@@ -79,7 +79,7 @@ open-admin/
 │   │   ├── DocsController.php      # OpenAPI ドキュメント
 │   │   └── BaseController.php      # ベースコントローラー
 │   ├── api/
-│   │   └── v1/controller/          # API v1 コントローラー（バージョンはリクエストヘッダー API-Version で制御）
+│   │   └── v1/controller/          # API v1 コントローラー（バージョンは URL パス: /api/v1、/admin/v1）
 │   │       ├── CaptchaController.php # クリック型CAPTCHA
 │   │       └── AuthController.php    # ログイン/登録/トークン更新
 │   ├── common/                 # 共通ユーティリティクラス
@@ -90,7 +90,6 @@ open-admin/
 │   │   ├── Cors.php            # クロスドメイン
 │   │   ├── SecurityFilter.php  # 攻撃検知・遮断（HTTPメソッド制限/XSS/SQLインジェクション/パストラバーサル/コマンドインジェクション/CSRF）
 │   │   ├── RateLimit.php       # Redis レート制限（スライディングウィンドウ + レスポンスヘッダー）
-│   │   ├── ApiVersion.php      # API バージョン検証
 │   │   ├── AdminAuth.php       # JWT 認証 + ブラックリスト
 │   │   ├── AdminPermission.php # RBAC 権限検証
 │   │   └── OperationLog.php    # 操作ログ自動記録（送信元検出を含む）
@@ -242,20 +241,15 @@ docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 ### ID の取り扱い
 
 - **リクエスト/レスポンス内の ID**: hashids で文字列に暗号化し、実際のデータベースIDを公開しない
-- **APIパス**: `GET /admin/user/{hashid}` — パス内の `{id}` は hashid 文字列
+- **APIパス**: `GET /admin/v1/user/{hashid}` — パス内の `{id}` は hashid 文字列
 - **データベース保存**: BIGINT の原値、snowflake で生成
 
 ### API バージョン
 
-APIバージョンはリクエストヘッダーで制御され、**URLには含まれません**：
+API のバージョン番号は URL パスに置きます（公開エンドポイント `/api/v1/*`、管理エンドポイント `/admin/v1/*`、デフォルト `v1`）。リクエストヘッダーは使用しません：
 
-```http
-API-Version: v1
-```
-
-- バージョン番号がない場合はデフォルトで `v1` を使用
 - サポートされていないバージョンは `400 Bad Request` を返す
-- 新しいバージョンを追加する場合は `app/api/{version}/controller/` ディレクトリを作成し、中間ウェアに新しいバージョンを登録するだけ
+- 新しいバージョンを追加する場合は `app/api/{version}/controller/` ディレクトリを作成し、新しいルートグループを登録するだけ（例：`/api/v2`）
 
 ### レート制限
 
@@ -273,10 +267,9 @@ Redis スライディングウィンドウアルゴリズムに基づき、デ�
 Cors（クロスドメイン前処理 + レスポンスヘッダー）
   → SecurityFilter（HTTPメソッド制限/リクエストボディサイズ/Content-Type検証/XSS/SQLインジェクション/パストラバーサル/コマンドインジェクション/CSRF 攻撃遮断）
   → RateLimit（Redis スライディングウィンドウレート制限 + アカウントロック：ログイン5回失敗で15分間ロック）
-  → ApiVersion（API バージョン検証、/api ルートグループ）
-  → AdminAuth（JWT 認証 + ブラックリスト、/admin ルートグループ）
-  → AdminPermission（RBAC 認可、/admin ルートグループ）
-  → OperationLog（POST/PUT/DELETE 自動記録、送信元検出含む、/admin ルートグループ）
+  → AdminAuth（JWT 認証 + ブラックリスト、/admin/v1 ルートグループ）
+  → AdminPermission（RBAC 認可、/admin/v1 ルートグループ）
+  → OperationLog（POST/PUT/DELETE 自動記録、送信元検出含む、/admin/v1 ルートグループ）
 ```
 
 `/health` と `/api/docs` は公開エンドポイントで、`Cors → SecurityFilter → RateLimit` のみを通過します。
@@ -291,12 +284,12 @@ Cors（クロスドメイン前処理 + レスポンスヘッダー）
 
 ログインと登録はまず**クリック型CAPTCHA**の検証を通過する必要があります：
 
-1. クライアントは `POST /api/captcha/generate` をリクエストしてCAPTCHA画像（base64 PNG）と文字ターゲットのリストを取得
+1. クライアントは `POST /api/v1/captcha/generate` をリクエストしてCAPTCHA画像（base64 PNG）と文字ターゲットのリストを取得
 2. ユーザーが画像内の対応する文字位置を順番にクリックし、クリック座標 `[{x, y}, ...]` を収集
 3. ログイン時に `captcha_key` と `clicks` を一緒に送信し、サーバー側はCAPTCHAを検証してから資格情報を検証
 
 ```http
-POST /api/auth/login
+POST /api/v1/auth/login
 Content-Type: application/json
 
 {
@@ -315,14 +308,14 @@ Authorization: Bearer <token>
 
 ログイン成功後、有効期限2時間の access_token が返されます。さらに、有効期限14日の refresh_token も返されます。
 
-ログアウト時、Token は Redis ブラックリストに追加され、有効期限内は再利用できません。POST /admin/profile/logout
+ログアウト時、Token は Redis ブラックリストに追加され、有効期限内は再利用できません。POST /admin/v1/profile/logout
 
 ### 機密操作の再確認
 
 ユーザー・ロール・権限の削除などの機密操作では、リクエストボディに現在ログイン中のユーザーの `password` を渡して本人確認を再度行う必要があります：
 
 ```http
-DELETE /admin/user/{id}
+DELETE /admin/v1/user/{id}
 Content-Type: application/json
 Authorization: Bearer <token>
 
@@ -331,7 +324,7 @@ Authorization: Bearer <token>
 
 ## API 一覧
 
-> すべての `/api/*` API はリクエストヘッダーに `API-Version: v1` を付ける必要があります（未指定時はデフォルトで v1）。
+> すべての `/api/v1/*` と `/admin/v1/*` エンドポイントのバージョン番号は URL パスに含まれます。バージョンヘッダーは使用しません。
 
 ### 公開API
 
@@ -339,45 +332,45 @@ Authorization: Bearer <token>
 |-----|------|------|
 | `GET` | `/health` | ヘルスチェック（DB/Redis/ES の状態） |
 | `GET` | `/api/docs` | OpenAPI 3.0 仕様ドキュメント |
-| `POST` | `/api/captcha/generate` | クリック型CAPTCHAの生成 |
-| `POST` | `/api/captcha/verify` | クリック型CAPTCHAの検証 |
-| `POST` | `/api/auth/login` | ログイン（captcha 必須） |
-| `POST` | `/api/auth/register` | 登録（captcha 必須） |
-| `POST` | `/api/auth/refresh` | トークン更新 |
+| `POST` | `/api/v1/captcha/generate` | クリック型CAPTCHAの生成 |
+| `POST` | `/api/v1/captcha/verify` | クリック型CAPTCHAの検証 |
+| `POST` | `/api/v1/auth/login` | ログイン（captcha 必須） |
+| `POST` | `/api/v1/auth/register` | 登録（captcha 必須） |
+| `POST` | `/api/v1/auth/refresh` | トークン更新 |
 | `GET` | `/metrics` | Prometheus 監視メトリクス |
 
 ### 管理画面API（JWT + RBAC 必須）
 
 | メソッド | パス | 説明 |
 |-----|------|------|
-| `GET` | `/admin/dashboard` | ダッシュボードデータ（Redis キャッシュ5分） |
-| `GET` | `/admin/user` | ユーザー一覧（ページング + 検索） |
-| `POST` | `/admin/user` | ユーザー作成 |
-| `GET` | `/admin/user/{id}` | ユーザー詳細 |
-| `PUT` | `/admin/user/{id}` | ユーザー更新 |
-| `DELETE` | `/admin/user/{id}` | ユーザー削除（ソフト削除、パスワード確認が必要） |
-| `POST` | `/admin/user/batch/destroy` | ユーザーの一括削除（パスワード確認が必要） |
-| `POST` | `/admin/user/batch/status` | ユーザーの一括有効化/無効化 |
-| `GET` | `/admin/role` | ロール一覧 |
-| `POST` | `/admin/role` | ロール作成 |
-| `PUT` | `/admin/role/{id}` | ロール更新 |
-| `DELETE` | `/admin/role/{id}` | ロール削除（パスワード確認が必要） |
-| `GET` | `/admin/permission` | 権限ツリー |
-| `POST` | `/admin/permission` | 権限作成 |
-| `PUT` | `/admin/permission/{id}` | 権限更新 |
-| `DELETE` | `/admin/permission/{id}` | 権限削除（子権限をカスケード削除、パスワード確認が必要） |
-| `GET` | `/admin/config` | システム設定一覧 |
-| `POST` | `/admin/config` | 設定項目の作成 |
-| `PUT` | `/admin/config/{id}` | 設定項目の更新 |
-| `DELETE` | `/admin/config/{id}` | 設定項目の削除（パスワード確認が必要） |
-| `GET` | `/admin/log` | 操作ログ（ページング + フィルタリング） |
-| `PUT` | `/admin/profile` | 個人情報の更新 |
-| `PUT` | `/admin/profile/password` | パスワード変更 |
-| `POST` | `/admin/profile/logout` | ログアウト（JWT ブラックリスト） |
-| `POST` | `/admin/export/excel` | Excel エクスポート |
-| `POST` | `/admin/export/pdf` | PDF エクスポート |
-| `POST` | `/admin/import/users` | Excel によるユーザーインポート |
-| `POST` | `/admin/upload` | ファイルアップロード（画像/ドキュメント、最大10MB） |
+| `GET` | `/admin/v1/dashboard` | ダッシュボードデータ（Redis キャッシュ5分） |
+| `GET` | `/admin/v1/user` | ユーザー一覧（ページング + 検索） |
+| `POST` | `/admin/v1/user` | ユーザー作成 |
+| `GET` | `/admin/v1/user/{id}` | ユーザー詳細 |
+| `PUT` | `/admin/v1/user/{id}` | ユーザー更新 |
+| `DELETE` | `/admin/v1/user/{id}` | ユーザー削除（ソフト削除、パスワード確認が必要） |
+| `POST` | `/admin/v1/user/batch/destroy` | ユーザーの一括削除（パスワード確認が必要） |
+| `POST` | `/admin/v1/user/batch/status` | ユーザーの一括有効化/無効化 |
+| `GET` | `/admin/v1/role` | ロール一覧 |
+| `POST` | `/admin/v1/role` | ロール作成 |
+| `PUT` | `/admin/v1/role/{id}` | ロール更新 |
+| `DELETE` | `/admin/v1/role/{id}` | ロール削除（パスワード確認が必要） |
+| `GET` | `/admin/v1/permission` | 権限ツリー |
+| `POST` | `/admin/v1/permission` | 権限作成 |
+| `PUT` | `/admin/v1/permission/{id}` | 権限更新 |
+| `DELETE` | `/admin/v1/permission/{id}` | 権限削除（子権限をカスケード削除、パスワード確認が必要） |
+| `GET` | `/admin/v1/config` | システム設定一覧 |
+| `POST` | `/admin/v1/config` | 設定項目の作成 |
+| `PUT` | `/admin/v1/config/{id}` | 設定項目の更新 |
+| `DELETE` | `/admin/v1/config/{id}` | 設定項目の削除（パスワード確認が必要） |
+| `GET` | `/admin/v1/log` | 操作ログ（ページング + フィルタリング） |
+| `PUT` | `/admin/v1/profile` | 個人情報の更新 |
+| `PUT` | `/admin/v1/profile/password` | パスワード変更 |
+| `POST` | `/admin/v1/profile/logout` | ログアウト（JWT ブラックリスト） |
+| `POST` | `/admin/v1/export/excel` | Excel エクスポート |
+| `POST` | `/admin/v1/export/pdf` | PDF エクスポート |
+| `POST` | `/admin/v1/import/users` | Excel によるユーザーインポート |
+| `POST` | `/admin/v1/upload` | ファイルアップロード（画像/ドキュメント、最大10MB） |
 
 ## フロントエンドについて
 

@@ -79,7 +79,7 @@ open-admin/
 │   │   ├── DocsController.php      # Документация OpenAPI
 │   │   └── BaseController.php      # Базовый контроллер
 │   ├── api/
-│   │   └── v1/controller/          # Контроллеры API v1 (версия задается заголовком API-Version)
+│   │   └── v1/controller/          # Контроллеры API v1 (версия в пути URL: /api/v1, /admin/v1)
 │   │       ├── CaptchaController.php # Клик-капча
 │   │       └── AuthController.php    # Вход/регистрация/обновление токена
 │   ├── common/                 # Общие утилиты
@@ -90,7 +90,6 @@ open-admin/
 │   │   ├── Cors.php            # CORS
 │   │   ├── SecurityFilter.php  # Обнаружение и блокировка атак (ограничение HTTP-методов/XSS/SQL-инъекции/обход пути/инъекции команд/CSRF)
 │   │   ├── RateLimit.php       # Ограничение частоты Redis (скользящее окно + заголовки ответа)
-│   │   ├── ApiVersion.php      # Проверка версии API
 │   │   ├── AdminAuth.php       # JWT-аутентификация + черный список
 │   │   ├── AdminPermission.php # RBAC-проверка прав
 │   │   └── OperationLog.php    # Автоматическая запись журнала операций (включая определение источника)
@@ -242,20 +241,15 @@ docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 ### Обработка ID
 
 - **ID в запросах/ответах**: шифруются в строки через hashids, реальные ID из БД не раскрываются
-- **Пути интерфейсов**: `GET /admin/user/{hashid}` — `{id}` в пути это строка hashid
+- **Пути интерфейсов**: `GET /admin/v1/user/{hashid}` — `{id}` в пути это строка hashid
 - **Хранение в БД**: исходное значение BIGINT, генерируется snowflake
 
 ### Версия API
 
-Версия API задается заголовком запроса, **не отражается в URL**:
+Номер версии API находится в пути URL — публичные эндпоинты `/api/v1/*`, админ-эндпоинты `/admin/v1/*` (по умолчанию `v1`); заголовок запроса не используется:
 
-```http
-API-Version: v1
-```
-
-- При отсутствии версии по умолчанию используется `v1`
 - Неподдерживаемая версия возвращает `400 Bad Request`
-- Для добавления версии достаточно создать каталог `app/api/{version}/controller/` и зарегистрировать новую версию в промежуточном ПО
+- Для добавления новой версии достаточно создать каталог `app/api/{version}/controller/` и зарегистрировать новую группу маршрутов (например, `/api/v2`)
 
 ### Ограничение частоты
 
@@ -273,10 +267,9 @@ API-Version: v1
 Cors (предобработка CORS + заголовки ответа)
   → SecurityFilter (ограничение HTTP-методов/размер тела/проверка Content-Type/XSS/SQL-инъекции/обход пути/инъекции команд/CSRF)
   → RateLimit (скользящее окно Redis + блокировка аккаунта: 5 неудачных входов — блокировка 15 минут)
-  → ApiVersion (проверка версии API, группа маршрутов /api)
-  → AdminAuth (JWT-аутентификация + черный список, группа маршрутов /admin)
-  → AdminPermission (RBAC-авторизация, группа маршрутов /admin)
-  → OperationLog (автоматическая запись POST/PUT/DELETE, включая определение источника, группа маршрутов /admin)
+  → AdminAuth (JWT-аутентификация + черный список, группа маршрутов /admin/v1)
+  → AdminPermission (RBAC-авторизация, группа маршрутов /admin/v1)
+  → OperationLog (автоматическая запись POST/PUT/DELETE, включая определение источника, группа маршрутов /admin/v1)
 ```
 
 `/health` и `/api/docs` — публичные эндпоинты, проходят только через `Cors → SecurityFilter → RateLimit`.
@@ -291,12 +284,12 @@ Cors (предобработка CORS + заголовки ответа)
 
 Вход и регистрация требуют предварительной проверки **клик-капчи**:
 
-1. Клиент запрашивает `POST /api/captcha/generate` и получает изображение капчи (base64 PNG) и список текстовых целей
+1. Клиент запрашивает `POST /api/v1/captcha/generate` и получает изображение капчи (base64 PNG) и список текстовых целей
 2. Пользователь кликает по соответствующим текстам на изображении по порядку, собираются координаты кликов `[{x, y}, ...]`
 3. При входе вместе с данными отправляются `captcha_key` и `clicks`, сервер сначала проверяет капчу, затем учетные данные
 
 ```http
-POST /api/auth/login
+POST /api/v1/auth/login
 Content-Type: application/json
 
 {
@@ -315,14 +308,14 @@ Authorization: Bearer <token>
 
 После успешного входа возвращается access_token сроком действия 2 часа; также возвращается refresh_token сроком действия 14 дней.
 
-При выходе токен добавляется в черный список Redis и не может использоваться до истечения срока. POST /admin/profile/logout
+При выходе токен добавляется в черный список Redis и не может использоваться до истечения срока. POST /admin/v1/profile/logout
 
 ### Повторное подтверждение чувствительных операций
 
 Для чувствительных операций (удаление пользователя, роли, прав и т.п.) в теле запроса необходимо передать `password` текущего вошедшего пользователя для повторного подтверждения личности:
 
 ```http
-DELETE /admin/user/{id}
+DELETE /admin/v1/user/{id}
 Content-Type: application/json
 Authorization: Bearer <token>
 
@@ -331,7 +324,7 @@ Authorization: Bearer <token>
 
 ## Перечень API
 
-> Все интерфейсы `/api/*` требуют заголовок `API-Version: v1` (при отсутствии — по умолчанию v1).
+> Все эндпоинты `/api/v1/*` и `/admin/v1/*` несут номер версии в пути URL; заголовок версии не используется.
 
 ### Публичные интерфейсы
 
@@ -339,45 +332,45 @@ Authorization: Bearer <token>
 |-----|------|------|
 | `GET` | `/health` | Health check (статус DB/Redis/ES) |
 | `GET` | `/api/docs` | Спецификация OpenAPI 3.0 |
-| `POST` | `/api/captcha/generate` | Генерация клик-капчи |
-| `POST` | `/api/captcha/verify` | Проверка клик-капчи |
-| `POST` | `/api/auth/login` | Вход (требуется captcha) |
-| `POST` | `/api/auth/register` | Регистрация (требуется captcha) |
-| `POST` | `/api/auth/refresh` | Обновление токена |
+| `POST` | `/api/v1/captcha/generate` | Генерация клик-капчи |
+| `POST` | `/api/v1/captcha/verify` | Проверка клик-капчи |
+| `POST` | `/api/v1/auth/login` | Вход (требуется captcha) |
+| `POST` | `/api/v1/auth/register` | Регистрация (требуется captcha) |
+| `POST` | `/api/v1/auth/refresh` | Обновление токена |
 | `GET` | `/metrics` | Метрики Prometheus |
 
 ### Интерфейсы панели (требуется JWT + RBAC)
 
 | Метод | Путь | Описание |
 |-----|------|------|
-| `GET` | `/admin/dashboard` | Данные дашборда (кэш Redis 5 минут) |
-| `GET` | `/admin/user` | Список пользователей (пагинация + поиск) |
-| `POST` | `/admin/user` | Создание пользователя |
-| `GET` | `/admin/user/{id}` | Детали пользователя |
-| `PUT` | `/admin/user/{id}` | Обновление пользователя |
-| `DELETE` | `/admin/user/{id}` | Удаление пользователя (мягкое, требуется подтверждение паролем) |
-| `POST` | `/admin/user/batch/destroy` | Массовое удаление пользователей (требуется подтверждение паролем) |
-| `POST` | `/admin/user/batch/status` | Массовое включение/отключение пользователей |
-| `GET` | `/admin/role` | Список ролей |
-| `POST` | `/admin/role` | Создание роли |
-| `PUT` | `/admin/role/{id}` | Обновление роли |
-| `DELETE` | `/admin/role/{id}` | Удаление роли (требуется подтверждение паролем) |
-| `GET` | `/admin/permission` | Дерево прав |
-| `POST` | `/admin/permission` | Создание права |
-| `PUT` | `/admin/permission/{id}` | Обновление права |
-| `DELETE` | `/admin/permission/{id}` | Удаление права (каскадно с дочерними, требуется подтверждение паролем) |
-| `GET` | `/admin/config` | Список системных настроек |
-| `POST` | `/admin/config` | Создание настройки |
-| `PUT` | `/admin/config/{id}` | Обновление настройки |
-| `DELETE` | `/admin/config/{id}` | Удаление настройки (требуется подтверждение паролем) |
-| `GET` | `/admin/log` | Журнал операций (пагинация + фильтры) |
-| `PUT` | `/admin/profile` | Обновление личной информации |
-| `PUT` | `/admin/profile/password` | Смена пароля |
-| `POST` | `/admin/profile/logout` | Выход (черный список JWT) |
-| `POST` | `/admin/export/excel` | Экспорт Excel |
-| `POST` | `/admin/export/pdf` | Экспорт PDF |
-| `POST` | `/admin/import/users` | Импорт пользователей из Excel |
-| `POST` | `/admin/upload` | Загрузка файлов (изображения/документы, максимум 10MB) |
+| `GET` | `/admin/v1/dashboard` | Данные дашборда (кэш Redis 5 минут) |
+| `GET` | `/admin/v1/user` | Список пользователей (пагинация + поиск) |
+| `POST` | `/admin/v1/user` | Создание пользователя |
+| `GET` | `/admin/v1/user/{id}` | Детали пользователя |
+| `PUT` | `/admin/v1/user/{id}` | Обновление пользователя |
+| `DELETE` | `/admin/v1/user/{id}` | Удаление пользователя (мягкое, требуется подтверждение паролем) |
+| `POST` | `/admin/v1/user/batch/destroy` | Массовое удаление пользователей (требуется подтверждение паролем) |
+| `POST` | `/admin/v1/user/batch/status` | Массовое включение/отключение пользователей |
+| `GET` | `/admin/v1/role` | Список ролей |
+| `POST` | `/admin/v1/role` | Создание роли |
+| `PUT` | `/admin/v1/role/{id}` | Обновление роли |
+| `DELETE` | `/admin/v1/role/{id}` | Удаление роли (требуется подтверждение паролем) |
+| `GET` | `/admin/v1/permission` | Дерево прав |
+| `POST` | `/admin/v1/permission` | Создание права |
+| `PUT` | `/admin/v1/permission/{id}` | Обновление права |
+| `DELETE` | `/admin/v1/permission/{id}` | Удаление права (каскадно с дочерними, требуется подтверждение паролем) |
+| `GET` | `/admin/v1/config` | Список системных настроек |
+| `POST` | `/admin/v1/config` | Создание настройки |
+| `PUT` | `/admin/v1/config/{id}` | Обновление настройки |
+| `DELETE` | `/admin/v1/config/{id}` | Удаление настройки (требуется подтверждение паролем) |
+| `GET` | `/admin/v1/log` | Журнал операций (пагинация + фильтры) |
+| `PUT` | `/admin/v1/profile` | Обновление личной информации |
+| `PUT` | `/admin/v1/profile/password` | Смена пароля |
+| `POST` | `/admin/v1/profile/logout` | Выход (черный список JWT) |
+| `POST` | `/admin/v1/export/excel` | Экспорт Excel |
+| `POST` | `/admin/v1/export/pdf` | Экспорт PDF |
+| `POST` | `/admin/v1/import/users` | Импорт пользователей из Excel |
+| `POST` | `/admin/v1/upload` | Загрузка файлов (изображения/документы, максимум 10MB) |
 
 ## Примечания по фронтенду
 

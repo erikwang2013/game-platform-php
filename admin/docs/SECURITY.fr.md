@@ -156,7 +156,7 @@ Emplacement du fichier : `runtime/logs/security.log`
 
 Exemple de format de journal :
 ```
-2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
+2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/v1/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
 2026-05-20 14:32:15 [SECURITY] IP banned 15min | IP: 192.168.1.100 | Triggers: 5
 ```
 
@@ -178,7 +178,7 @@ Tous les en-têtes sont injectés dans le middleware `Cors`, via `$response->wit
 |----|-----|------|
 | Access-Control-Allow-Origin | `*` | Autorise le cross-origin de toute origine (scénario d'administration en réseau interne) |
 | Access-Control-Allow-Methods | `GET,POST,PUT,DELETE,OPTIONS` | Ensemble de méthodes autorisées |
-| Access-Control-Allow-Headers | `Authorization,Content-Type,API-Version` | En-têtes personnalisés autorisés |
+| Access-Control-Allow-Headers | `Authorization,Content-Type` | En-têtes personnalisés autorisés |
 | Access-Control-Max-Age | `86400` | Cache des requêtes de préflight 24 h |
 | X-Content-Type-Options | `nosniff` | Interdit le sniffing MIME du navigateur |
 | X-Frame-Options | `DENY` | Interdit tout iframe, anti-clickjacking |
@@ -230,8 +230,8 @@ Le script Lua s'exécute en monothread côté serveur Redis, **naturellement ato
 | Route | Limite | Fenêtre | Scénario |
 |------|------|------|------|
 | Défaut (toutes les routes) | 60 requêtes/minute | 60s | API générale |
-| `/api/auth/login` | 10 requêtes/minute | 60s | Connexion (anti-force brute) |
-| `/api/auth/register` | 5 requêtes/minute | 60s | Inscription (anti-inscription en masse) |
+| `/api/v1/auth/login` | 10 requêtes/minute | 60s | Connexion (anti-force brute) |
+| `/api/v1/auth/register` | 5 requêtes/minute | 60s | Inscription (anti-inscription en masse) |
 
 ### En-têtes de réponse
 
@@ -322,7 +322,7 @@ Implémentée par le middleware AdminAuth, montée sur les groupes de routes né
 
 **Mécanisme de liste noire** : à la déconnexion, `md5(token)` est écrit dans Redis avec un TTL égal à la durée de validité restante du JWT. En cas de panne Redis, la vérification de la liste noire est contournée (fail-open) ; le token déconnecté reste alors utilisable à court terme, mais la courte durée de validité du JWT (2h) sert de protection de secours.
 
-**Rafraîchissement du token** : `POST /api/auth/refresh` ne réémet qu'après validation de l'ancien refresh token (`token_type=refresh` non expiré, non banni) et vérifie que `sub` est bien un ID utilisateur valide — **plus aucun refresh token avec sub=null n'est émis**, un échec de rafraîchissement renvoie directement 401.
+**Rafraîchissement du token** : `POST /api/v1/auth/refresh` ne réémet qu'après validation de l'ancien refresh token (`token_type=refresh` non expiré, non banni) et vérifie que `sub` est bien un ID utilisateur valide — **plus aucun refresh token avec sub=null n'est émis**, un échec de rafraîchissement renvoie directement 401.
 
 ### 6.2 Limitation des sessions concurrentes
 
@@ -389,7 +389,7 @@ Par exemple :
 
 ### 6.4 Vérification de signature des callbacks de paiement (fail-closed)
 
-La vérification de signature de `POST /api/payment/callback` (callbacks de recharge Stripe/PayPal) est **fail-closed** : toute configuration manquante ou anomalie de validation refuse le callback :
+La vérification de signature de `POST /api/v1/payment/callback` (callbacks de recharge Stripe/PayPal) est **fail-closed** : toute configuration manquante ou anomalie de validation refuse le callback :
 
 | Scénario | Comportement |
 |------|------|

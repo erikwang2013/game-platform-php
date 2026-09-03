@@ -8,10 +8,10 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 
 ## 1. 概要
 
-オープン管理画面 (open-admin) は webman v2 ベースで構築され、RESTful JSON API を提供します。すべての管理画面APIは JWT 認証と RBAC 権限チェックが必要で、公開APIは API バージョンヘッダーによってバージョン化されたコントローラーにルーティングされます。
+オープン管理画面 (open-admin) は webman v2 ベースで構築され、RESTful JSON API を提供します。すべての管理画面APIは JWT 認証と RBAC 権限チェックが必要で、公開APIは `/api/v1` プレフィックス配下、管理APIは `/admin/v1` プレフィックス配下にマウントされ、バージョンはURLパスで運ばれ、リクエストヘッダーは使いません。
 
 - **ベース URL**: `http://localhost:8787`
-- **API バージョン**: リクエストヘッダー `API-Version: v1` で制御（欠落時はデフォルト v1）
+- **API バージョン**: URLパスに埋め込まれます — 公開APIは `/api/v1`、管理APIは `/admin/v1` 配下。バージョンリクエストヘッダーは使用せず、将来の v2 は `/api/v2` グループとして登録します
 
 > **エンドポイント総数**: 認証(5) | ダッシュボード(1) | ユーザー(7) | ロール(4) | 権限(4) | 設定(4) | ログ(1) | 個人センター(3) | インポート・エクスポート(3) | アップロード(1) | 運用(4: health/metrics/docs/security.txt) | 合計 37 エンドポイント
 - **認証**: `Authorization: Bearer <token>`（JWT）
@@ -45,7 +45,7 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 
 ## 3. 公開エンドポイント
 
-すべての公開エンドポイントは `/api` グループ配下にマウントされ、`ApiVersion` 中間ウェアによって `API-Version` ヘッダーに応じて対応するバージョン化コントローラー（例：`app\api\v1\controller\AuthController`）に振り分けられます。
+すべての公開エンドポイントは `/api/v1` プレフィックス配下、管理エンドポイントは `/admin/v1` プレフィックス配下にマウントされ、バージョンはルートグループのプレフィックスで決まり、バージョンリクエストヘッダーは使いません。公開コントローラーの例：`app\api\v1\controller\AuthController`。
 
 ### 3.1 ヘルスチェック
 
@@ -88,11 +88,10 @@ GET /api/docs
 ### 3.3 クリック型CAPTCHAの生成
 
 ```
-POST /api/captcha/generate
+POST /api/v1/captcha/generate
 ```
 
 - **認証**: 不要
-- **リクエストヘッダー**: `API-Version: v1`（必須）
 - **レート制限**: グローバルデフォルト (60回/分)
 
 **リクエストボディ**:
@@ -134,11 +133,10 @@ POST /api/captcha/generate
 ### 3.4 クリック型CAPTCHAの検証
 
 ```
-POST /api/captcha/verify
+POST /api/v1/captcha/verify
 ```
 
 - **認証**: 不要
-- **リクエストヘッダー**: `API-Version: v1`（必須）
 - **レート制限**: グローバルデフォルト (60回/分)
 
 **リクエストボディ**:
@@ -171,11 +169,10 @@ POST /api/captcha/verify
 ### 3.5 ログイン
 
 ```
-POST /api/auth/login
+POST /api/v1/auth/login
 ```
 
 - **認証**: 不要
-- **リクエストヘッダー**: `API-Version: v1`（必須）
 - **レート制限**: 10 回/分（IP + パス単位）
 
 **リクエストボディ**:
@@ -235,11 +232,10 @@ POST /api/auth/login
 ### 3.6 登録
 
 ```
-POST /api/auth/register
+POST /api/v1/auth/register
 ```
 
 - **認証**: 不要
-- **リクエストヘッダー**: `API-Version: v1`（必須）
 - **レート制限**: 5 回/分（IP + パス単位）
 
 **リクエストボディ**:
@@ -287,11 +283,10 @@ POST /api/auth/register
 ### 3.7 トークン更新
 
 ```
-POST /api/auth/refresh
+POST /api/v1/auth/refresh
 ```
 
 - **認証**: 不要
-- **リクエストヘッダー**: `API-Version: v1`（必須）
 - **レート制限**: グローバルデフォルト (60回/分)
 
 **リクエストボディ**:
@@ -369,12 +364,12 @@ openadmin_memory_usage_bytes 18874368
 
 ## 4. ダッシュボード
 
-すべての管理画面APIは `/admin` グループ配下にマウントされ、`AdminAuth`（JWT 認証）、`AdminPermission`（RBAC 権限チェック）、`OperationLog`（操作記録）の3つの中間ウェアを通過します。
+すべての管理画面APIは `/admin/v1` プレフィックス配下にマウントされ、`AdminAuth`（JWT 認証）、`AdminPermission`（RBAC 権限チェック）、`OperationLog`（操作記録）の3つの中間ウェアを通過します。
 
 ### 4.1 ダッシュボードデータ
 
 ```
-GET /admin/dashboard
+GET /admin/v1/dashboard
 ```
 
 - **認証**: JWT + RBAC
@@ -431,7 +426,7 @@ GET /admin/dashboard
         "id": "hashid...",
         "action": "用户登录",
         "method": "POST",
-        "path": "/api/auth/login",
+        "path": "/api/v1/auth/login",
         "ip": "192.168.1.1",
         "user_name": "admin",
         "created_at": "2026-05-21 10:30:00"
@@ -461,7 +456,7 @@ GET /admin/dashboard
 ### 5.1 ユーザー一覧
 
 ```
-GET /admin/user
+GET /admin/v1/user
 ```
 
 - **認証**: JWT + RBAC
@@ -514,7 +509,7 @@ GET /admin/user
 ### 5.2 ユーザー作成
 
 ```
-POST /admin/user
+POST /admin/v1/user
 ```
 
 - **認証**: JWT + RBAC
@@ -564,7 +559,7 @@ POST /admin/user
 ### 5.3 ユーザー詳細
 
 ```
-GET /admin/user/{id}
+GET /admin/v1/user/{id}
 ```
 
 - **認証**: JWT + RBAC
@@ -598,7 +593,7 @@ GET /admin/user/{id}
 ### 5.4 ユーザー更新
 
 ```
-PUT /admin/user/{id}
+PUT /admin/v1/user/{id}
 ```
 
 - **認証**: JWT + RBAC
@@ -646,7 +641,7 @@ PUT /admin/user/{id}
 ### 5.5 ユーザー削除
 
 ```
-DELETE /admin/user/{id}
+DELETE /admin/v1/user/{id}
 ```
 
 - **認証**: JWT + RBAC
@@ -683,7 +678,7 @@ DELETE /admin/user/{id}
 ### 5.6 ユーザー一括削除
 
 ```
-POST /admin/user/batch/destroy
+POST /admin/v1/user/batch/destroy
 ```
 
 - **認証**: JWT + RBAC
@@ -723,7 +718,7 @@ POST /admin/user/batch/destroy
 ### 5.7 ユーザー一括有効化/無効化
 
 ```
-POST /admin/user/batch/status
+POST /admin/v1/user/batch/status
 ```
 
 - **認証**: JWT + RBAC
@@ -763,7 +758,7 @@ message は status 値に応じて `"批量启用成功"` または `"批量禁�
 ### 6.1 ロール一覧
 
 ```
-GET /admin/role
+GET /admin/v1/role
 ```
 
 - **認証**: JWT + RBAC
@@ -811,7 +806,7 @@ GET /admin/role
 ### 6.2 ロール作成
 
 ```
-POST /admin/role
+POST /admin/v1/role
 ```
 
 - **認証**: JWT + RBAC
@@ -853,7 +848,7 @@ POST /admin/role
 ### 6.3 ロール更新
 
 ```
-PUT /admin/role/{id}
+PUT /admin/v1/role/{id}
 ```
 
 - **認証**: JWT + RBAC
@@ -893,7 +888,7 @@ PUT /admin/role/{id}
 ### 6.4 ロール削除
 
 ```
-DELETE /admin/role/{id}
+DELETE /admin/v1/role/{id}
 ```
 
 - **認証**: JWT + RBAC
@@ -924,7 +919,7 @@ DELETE /admin/role/{id}
 ### 7.1 権限ツリー
 
 ```
-GET /admin/permission
+GET /admin/v1/permission
 ```
 
 - **認証**: JWT + RBAC
@@ -939,7 +934,7 @@ GET /admin/permission
       "id": "p1p2p3p4",
       "parent_id": "0",
       "name": "用户管理",
-      "slug": "/admin/user",
+      "slug": "/admin/v1/user",
       "type": 1,
       "icon": "people",
       "path": "/user",
@@ -950,7 +945,7 @@ GET /admin/permission
           "id": "p5p6p7p8",
           "parent_id": "p1p2p3p4",
           "name": "用户列表",
-          "slug": "/admin/user/index",
+          "slug": "/admin/v1/user/index",
           "type": 2,
           "icon": "",
           "path": "/user/index",
@@ -977,7 +972,7 @@ GET /admin/permission
 ### 7.2 権限作成
 
 ```
-POST /admin/permission
+POST /admin/v1/permission
 ```
 
 - **認証**: JWT + RBAC
@@ -987,7 +982,7 @@ POST /admin/permission
 {
   "parent_id": 0,
   "name": "系统设置",
-  "slug": "/admin/config",
+  "slug": "/admin/v1/config",
   "type": 1,
   "icon": "settings",
   "path": "/config",
@@ -1014,7 +1009,7 @@ POST /admin/permission
     "id": "p9p0a1b2",
     "parent_id": "0",
     "name": "系统设置",
-    "slug": "/admin/config",
+    "slug": "/admin/v1/config",
     "type": 1,
     "icon": "settings",
     "path": "/config",
@@ -1026,7 +1021,7 @@ POST /admin/permission
 ### 7.3 権限更新
 
 ```
-PUT /admin/permission/{id}
+PUT /admin/v1/permission/{id}
 ```
 
 - **認証**: JWT + RBAC
@@ -1051,7 +1046,7 @@ PUT /admin/permission/{id}
 ### 7.4 権限削除
 
 ```
-DELETE /admin/permission/{id}
+DELETE /admin/v1/permission/{id}
 ```
 
 - **認証**: JWT + RBAC
@@ -1082,7 +1077,7 @@ DELETE /admin/permission/{id}
 ### 8.1 設定一覧
 
 ```
-GET /admin/config
+GET /admin/v1/config
 ```
 
 - **認証**: JWT + RBAC
@@ -1131,7 +1126,7 @@ GET /admin/config
 ### 8.2 設定作成
 
 ```
-POST /admin/config
+POST /admin/v1/config
 ```
 
 - **認証**: JWT + RBAC
@@ -1177,7 +1172,7 @@ POST /admin/config
 ### 8.3 設定更新
 
 ```
-PUT /admin/config/{id}
+PUT /admin/v1/config/{id}
 ```
 
 - **認証**: JWT + RBAC
@@ -1200,7 +1195,7 @@ PUT /admin/config/{id}
 ### 8.4 設定削除
 
 ```
-DELETE /admin/config/{id}
+DELETE /admin/v1/config/{id}
 ```
 
 - **認証**: JWT + RBAC
@@ -1222,7 +1217,7 @@ DELETE /admin/config/{id}
 ### 9.1 操作ログ一覧
 
 ```
-GET /admin/log
+GET /admin/v1/log
 ```
 
 - **認証**: JWT + RBAC
@@ -1251,7 +1246,7 @@ GET /admin/log
         "user_name": "admin",
         "action": "用户登录",
         "method": "POST",
-        "path": "/api/auth/login",
+        "path": "/api/v1/auth/login",
         "ip": "192.168.1.1",
         "source": "web",
         "input": "{\"username\":\"admin\"}",
@@ -1284,7 +1279,7 @@ GET /admin/log
 ### 10.1 個人情報の更新
 
 ```
-PUT /admin/profile
+PUT /admin/v1/profile
 ```
 
 - **認証**: JWT
@@ -1326,7 +1321,7 @@ PUT /admin/profile
 ### 10.2 パスワード変更
 
 ```
-PUT /admin/profile/password
+PUT /admin/v1/profile/password
 ```
 
 - **認証**: JWT
@@ -1361,7 +1356,7 @@ PUT /admin/profile/password
 ### 10.3 ログアウト
 
 ```
-POST /admin/profile/logout
+POST /admin/v1/profile/logout
 ```
 
 - **認証**: JWT
@@ -1386,7 +1381,7 @@ token がない場合は 401 を返します。token が期限切れ/無効な�
 ### 11.1 Excel エクスポート
 
 ```
-POST /admin/export/excel
+POST /admin/v1/export/excel
 ```
 
 - **認証**: JWT + RBAC
@@ -1425,7 +1420,7 @@ POST /admin/export/excel
 ### 11.2 PDF エクスポート
 
 ```
-POST /admin/export/pdf
+POST /admin/v1/export/pdf
 ```
 
 - **認証**: JWT + RBAC
@@ -1472,7 +1467,7 @@ PDF テンプレートには著作権情報とエクスポート時刻が含ま�
 ### 11.3 ユーザーインポート (Excel)
 
 ```
-POST /admin/import/users
+POST /admin/v1/import/users
 ```
 
 - **認証**: JWT + RBAC
@@ -1524,7 +1519,7 @@ POST /admin/import/users
 ## 12. ファイルアップロード
 
 ```
-POST /admin/upload
+POST /admin/v1/upload
 ```
 
 - **認証**: JWT + RBAC
@@ -1573,8 +1568,8 @@ POST /admin/upload
 
 レート制限の詳細:
 - デフォルトのグローバル制限: 60 回/分 / IP+パス
-- ログインエンドポイント `/api/auth/login`: 10 回/分
-- 登録エンドポイント `/api/auth/register`: 5 回/分
+- ログインエンドポイント `/api/v1/auth/login`: 10 回/分
+- 登録エンドポイント `/api/v1/auth/register`: 5 回/分
 - Redis 原子化スライディングウィンドウアルゴリズム（Lua ZSET）を使用し、TOCTOU 競合を回避
 - Redis 利用不可時は fail-closed：503（`Retry-After: 5`）を返し、リクエストを通さない
 
@@ -1584,18 +1579,18 @@ POST /admin/upload
 
 | メソッド | パス | 説明 |
 |------|------|------|
-| GET | /admin/analytics/overview | プラットフォーム概要（今日/直近7日） |
-| GET | /admin/analytics/game-ranking | ゲームランキング（?days=7） |
-| GET | /admin/analytics/dau-trend | DAU トレンド（?days=30） |
-| GET | /admin/analytics/hourly-trend | 時間別トレンド |
-| GET | /admin/analytics/action-distribution | 行動分布 |
-| GET | /admin/analytics/revenue | 売上分析 |
-| GET | /admin/analytics/conversion | ゲームコンバージョン率 |
-| GET | /admin/analytics/probability | 結合/条件確率 |
-| GET | /admin/analytics/retention | リテンション分析 D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | コンバージョンファネル |
-| GET | /admin/analytics/arpu | ARPU/ARPPU トレンド |
-| GET | /admin/analytics/economy | ゲーム通貨の経済指標 |
+| GET | /admin/v1/analytics/overview | プラットフォーム概要（今日/直近7日） |
+| GET | /admin/v1/analytics/game-ranking | ゲームランキング（?days=7） |
+| GET | /admin/v1/analytics/dau-trend | DAU トレンド（?days=30） |
+| GET | /admin/v1/analytics/hourly-trend | 時間別トレンド |
+| GET | /admin/v1/analytics/action-distribution | 行動分布 |
+| GET | /admin/v1/analytics/revenue | 売上分析 |
+| GET | /admin/v1/analytics/conversion | ゲームコンバージョン率 |
+| GET | /admin/v1/analytics/probability | 結合/条件確率 |
+| GET | /admin/v1/analytics/retention | リテンション分析 D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | コンバージョンファネル |
+| GET | /admin/v1/analytics/arpu | ARPU/ARPPU トレンド |
+| GET | /admin/v1/analytics/economy | ゲーム通貨の経済指標 |
 
 ## 15. チケット管理 (Ticket)
 
@@ -1603,26 +1598,25 @@ POST /admin/upload
 
 | メソッド | パス | 説明 |
 |------|------|------|
-| GET | /admin/ticket/list | チケット一覧（?page=&limit=&status=&type=） |
-| GET | /admin/ticket/{hashid} | チケット詳細（返信含む） |
-| POST | /admin/ticket/{hashid}/reply | チケットに返信 |
-| POST | /admin/ticket/{hashid}/close | チケットをクローズ |
-| POST | /admin/ticket/{hashid}/assign | 処理担当者を指定（admin_id） |
+| GET | /admin/v1/ticket/list | チケット一覧（?page=&limit=&status=&type=） |
+| GET | /admin/v1/ticket/{hashid} | チケット詳細（返信含む） |
+| POST | /admin/v1/ticket/{hashid}/reply | チケットに返信 |
+| POST | /admin/v1/ticket/{hashid}/close | チケットをクローズ |
+| POST | /admin/v1/ticket/{hashid}/assign | 処理担当者を指定（admin_id） |
 
 ## 16. 認証フロー
 
 完全な認証シーケンス：
 
 ```
-1. 客户端请求 POST /api/captcha/generate
-   (请求头: API-Version: v1)
+1. 客户端请求 POST /api/v1/captcha/generate
     ↓
    服务端返回: key + base64 图片 + 点击目标提示
    
 2. 用户点击图片目标位置，前/客户端收集点击坐标
    
-3. 客户端请求 POST /api/auth/login
-   (请求头: API-Version: v1, Content-Type: application/json)
+3. 客户端请求 POST /api/v1/auth/login
+   (请求头: Content-Type: application/json)
    请求体: { username, password, captcha_key, clicks: [{x,y}, ...] }
     ↓
    服务端:
@@ -1655,7 +1649,7 @@ POST /admin/upload
    Response + X-RateLimit-* 头
 
 5. Access Token 过期前刷新
-   客户端请求 POST /api/auth/refresh
+   客户端请求 POST /api/v1/auth/refresh
    请求体: { refresh_token: "..." }
     ↓
    服务端解码 refresh_token → 签发新 access + refresh
@@ -1663,7 +1657,7 @@ POST /admin/upload
    客户端更新本地令牌
 
 6. 登出
-   客户端请求 POST /admin/profile/logout
+   客户端请求 POST /admin/v1/profile/logout
    请求头: Authorization: Bearer <access_token>
     ↓
    服务端:
@@ -1722,7 +1716,7 @@ docker-compose up -d
 ### 16.1 プラットフォーム概要
 
 ```
-GET /admin/analytics/overview
+GET /admin/v1/analytics/overview
 ```
 
 **レスポンス**: `today` / `week` にそれぞれ `dau`（アクティブユーザー数）、`revenue`（確認済み入金総額、文字列）、`new_users`（新規ユーザー数）を含む。
@@ -1730,7 +1724,7 @@ GET /admin/analytics/overview
 ### 16.2 ゲームランキング
 
 ```
-GET /admin/analytics/game-ranking?days=7
+GET /admin/v1/analytics/game-ranking?days=7
 ```
 
 **レスポンス**: ゲーム行動回数の降順で上位10件、各項目に `game_id`（hashid）、`name`、`plays`、`players` を含む。
@@ -1738,7 +1732,7 @@ GET /admin/analytics/game-ranking?days=7
 ### 16.3 DAU トレンド
 
 ```
-GET /admin/analytics/dau-trend?days=30
+GET /admin/v1/analytics/dau-trend?days=30
 ```
 
 **レスポンス**: `{ "日期": 活跃数, ... }`、欠落した日付は 0 で補完。
@@ -1746,7 +1740,7 @@ GET /admin/analytics/dau-trend?days=30
 ### 16.4 時間別トレンド
 
 ```
-GET /admin/analytics/hourly-trend?game_id=<hashid>
+GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
 ```
 
 **レスポンス**: `{ "0": 次数, ... "23": 次数 }` の24時間スロット。`game_id` が空の場合は全ゲームを集計。
@@ -1754,7 +1748,7 @@ GET /admin/analytics/hourly-trend?game_id=<hashid>
 ### 16.5 行動分布
 
 ```
-GET /admin/analytics/action-distribution?game_id=<hashid>&hours=24
+GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
 ```
 
 **レスポンス**: `{ "start": n, "end": n, "earn": n, "spend": n }` の4種類の行動カウント。`hours` 上限は 168。
@@ -1762,7 +1756,7 @@ GET /admin/analytics/action-distribution?game_id=<hashid>&hours=24
 ### 16.6 売上概要
 
 ```
-GET /admin/analytics/revenue?days=7
+GET /admin/v1/analytics/revenue?days=7
 ```
 
 **レスポンス**: `{ "total": "总额", "trend": { "日期": "当日额", ... } }`、`status=confirmed` の注文のみ集計。
@@ -1770,7 +1764,7 @@ GET /admin/analytics/revenue?days=7
 ### 16.7 ゲームコンバージョン率
 
 ```
-GET /admin/analytics/conversion?days=30
+GET /admin/v1/analytics/conversion?days=30
 ```
 
 **レスポンス**: 各ゲームに `game_id`（hashid）、`game_name`、`players`（重複除去済みプレイヤー数）、`depositors`（重複除去済み入金人数）、`conversion_rate`（入金コンバージョン率、0~1）を含む。
@@ -1778,7 +1772,7 @@ GET /admin/analytics/conversion?days=30
 ### 16.8 結合確率
 
 ```
-GET /admin/analytics/probability?game_a=<hashid>&game_b=<hashid>
+GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
 ```
 
 **レスポンス**: `{ "joint": { "joint_probability": 0.12, "confidence": 0.3 } }` — Jaccard 係数（両ゲームの共通プレイヤー / 和集合プレイヤー）と信頼度（共通プレイヤー / A ゲームのプレイヤー）。
@@ -1786,7 +1780,7 @@ GET /admin/analytics/probability?game_a=<hashid>&game_b=<hashid>
 ### 16.9 リテンション分析
 
 ```
-GET /admin/analytics/retention?days=30
+GET /admin/v1/analytics/retention?days=30
 ```
 
 **レスポンス**: `{ "D1": "8.5%", "D3": "...", "D7": "...", "D30": "..." }` 登録日でグループ化した翌日/3日/7日/30日リテンション率。
@@ -1794,7 +1788,7 @@ GET /admin/analytics/retention?days=30
 ### 16.10 コンバージョンファネル
 
 ```
-GET /admin/analytics/funnel?days=30
+GET /admin/v1/analytics/funnel?days=30
 ```
 
 **レスポンス**: 登録 → 初回入金 → 初回両替 → 初回ゲームプレイ の4ステップの `step`、`count`、`rate`（登録数に対するパーセンテージ）。
@@ -1802,7 +1796,7 @@ GET /admin/analytics/funnel?days=30
 ### 16.11 ARPU/ARPPU トレンド
 
 ```
-GET /admin/analytics/arpu?days=30
+GET /admin/v1/analytics/arpu?days=30
 ```
 
 **レスポンス**: `{ "dates": [...], "arpu": [...], "arppu": [...] }` 日次のユーザー一人あたり売上（ARPU）と課金ユーザー一人あたり売上（ARPPU）。
@@ -1810,7 +1804,7 @@ GET /admin/analytics/arpu?days=30
 ### 16.12 ゲーム経済指標
 
 ```
-GET /admin/analytics/economy
+GET /admin/v1/analytics/economy
 ```
 
 **レスポンス**: `currencies` 配列、各項目に `game_name`、`currency`、`symbol`、`total_minted`（鋳造総量）、`total_burned`（破棄総量）、`circulation`（流通量）、`inflation_rate`（インフレ率）を含み、bcmath 高精度計算を使用。
@@ -1821,16 +1815,16 @@ GET /admin/analytics/economy
 
 | メソッド | パス | 説明 |
 |------|------|------|
-| GET | /admin/payment/method/list | 支払方法リスト（sort 昇順） |
-| POST | /admin/payment/method/toggle | 支払方法の有効/無効切り替え |
-| POST | /admin/payment/method/create | 支払方法の作成 |
-| PUT | /admin/payment/method/{hashid} | 支払方法の更新 |
-| DELETE | /admin/payment/method/{hashid} | 支払方法の削除（pending 注文がある場合は拒否） |
+| GET | /admin/v1/payment/method/list | 支払方法リスト（sort 昇順） |
+| POST | /admin/v1/payment/method/toggle | 支払方法の有効/無効切り替え |
+| POST | /admin/v1/payment/method/create | 支払方法の作成 |
+| PUT | /admin/v1/payment/method/{hashid} | 支払方法の更新 |
+| DELETE | /admin/v1/payment/method/{hashid} | 支払方法の削除（pending 注文がある場合は拒否） |
 
 ### 17.1 支払方法リスト
 
 ```
-GET /admin/payment/method/list
+GET /admin/v1/payment/method/list
 ```
 
 - **認証**: JWT + RBAC
@@ -1878,7 +1872,7 @@ GET /admin/payment/method/list
 ### 17.2 支払方法の有効/無効切り替え
 
 ```
-POST /admin/payment/method/toggle
+POST /admin/v1/payment/method/toggle
 ```
 
 **リクエストボディ**:
@@ -1901,7 +1895,7 @@ POST /admin/payment/method/toggle
 ### 17.3 支払方法の作成
 
 ```
-POST /admin/payment/method/create
+POST /admin/v1/payment/method/create
 ```
 
 **リクエストボディ**:
@@ -1947,7 +1941,7 @@ POST /admin/payment/method/create
 ### 17.4 支払方法の更新
 
 ```
-PUT /admin/payment/method/{hashid}
+PUT /admin/v1/payment/method/{hashid}
 ```
 
 - **パスパラメータ**: `{hashid}` は hashid エンコードされた支払方法 ID
@@ -1960,7 +1954,7 @@ PUT /admin/payment/method/{hashid}
 ### 17.5 支払方法の削除
 
 ```
-DELETE /admin/payment/method/{hashid}
+DELETE /admin/v1/payment/method/{hashid}
 ```
 
 - **パスパラメータ**: `{hashid}` は hashid エンコードされた支払方法 ID

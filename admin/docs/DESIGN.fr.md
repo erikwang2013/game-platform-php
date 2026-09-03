@@ -66,7 +66,7 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.
 | Couche | Répertoire | Responsabilité |
 |---|------|------|
 | Routes | `config/route.php` | Mappage URL → contrôleur, liaison des middleware, routes versionnées |
-| Middleware | `app/middleware/` | Interception des attaques (SecurityFilter), rate-limit (RateLimit), authentification (JWT), autorisation (RBAC), version API (ApiVersion) |
+| Middleware | `app/middleware/` | Interception des attaques (SecurityFilter), rate-limit (RateLimit), authentification (JWT), autorisation (RBAC) |
 | Contrôleurs | 30 : Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (administration) + Captcha/Auth (API v1) | Validation des paramètres de requête, appel de la logique métier, formatage des réponses |
 | Services métier | `common/service/` | Analyse de données : GameDashboardService (vue d'ensemble/classement/tendances), DepositLogService (revenus/conversion), ProbabilityService (probabilités jointes/conditionnelles, constructeur SQL) ; renvoie des données vides (et non une erreur) si la base est en panne |
 | Modèles de données | `app/model/` | Mappage ORM, relations, chiffrement/déchiffrement des champs |
@@ -90,9 +90,6 @@ Chaîne de middleware:
   ▼
   RateLimit ───────────► rate-limit par fenêtre glissante Redis
   │ (échec → 429 + en-tête Retry-After)
-  ▼
-  ApiVersion ─────────► validation de l'en-tête API-Version, injection de $request->apiVersion
-  │ (échec → 400)
   ▼
   AdminAuth ──────────► validation JWT, injection de $request->adminId
   │ (échec → 401)
@@ -175,58 +172,50 @@ game_system_config (configuration système) — table indépendante
 ### 4.1 Normes URL
 
 ```
-Interfaces publiques :  /api/captcha/{generate|verify}
-           /api/auth/{login|register|refresh}
+Interfaces publiques :  /api/v1/captcha/{generate|verify}
+           /api/v1/auth/{login|register|refresh}
 
-Administration :   /admin/{resource}[/{hashid}]
-          /admin/export/{excel|pdf}
+Administration :   /admin/v1/{resource}[/{hashid}]
+          /admin/v1/export/{excel|pdf}
 
 Routes de ressources :
-  GET    /admin/user          → liste
-  POST   /admin/user          → création
-  GET    /admin/user/{hashid} → détails
-  PUT    /admin/user/{hashid} → mise à jour
-  DELETE /admin/user/{hashid} → suppression (confirmation par mot de passe requise)
+  GET    /admin/v1/user          → liste
+  POST   /admin/v1/user          → création
+  GET    /admin/v1/user/{hashid} → détails
+  PUT    /admin/v1/user/{hashid} → mise à jour
+  DELETE /admin/v1/user/{hashid} → suppression (confirmation par mot de passe requise)
 
-Configuration système :  /admin/config[/{hashid}]
-Journaux d'opérations :  /admin/log
-Espace personnel :       /admin/profile[/password|/logout]
-Import :     /admin/import/users
-Upload :     /admin/upload
-Par lots :   /admin/user/batch/{destroy|status}
+Configuration système :  /admin/v1/config[/{hashid}]
+Journaux d'opérations :  /admin/v1/log
+Espace personnel :       /admin/v1/profile[/password|/logout]
+Import :     /admin/v1/import/users
+Upload :     /admin/v1/upload
+Par lots :   /admin/v1/user/batch/{destroy|status}
 Documentation :     /api/docs     (OpenAPI 3.0)
 Health :     /health
 ```
 
 ### 4.2 Stratégie de versions API
 
-La version API est contrôlée par l'en-tête de requête, **pas présente dans le chemin URL** :
-
-```http
-API-Version: v1
-```
+La version figure dans le préfixe du chemin URL (par défaut `v1`) ; aucune en-tête de requête n'est utilisée :
 
 | Mécanisme | Description |
 |------|------|
-| Version par défaut | `v1` si l'en-tête `API-Version` est absent |
-| Validation | le middleware `ApiVersion` valide, version non prise en charge → 400 |
-| Routage | la fonction d'aide `v()` résout dynamiquement la classe de contrôleur selon la version |
+| Version par défaut | `v1` par défaut, déterminée par le préfixe du groupe de routes |
+| Routage | Les préfixes de groupes de routes `/api/v1`, `/admin/v1` mappent la version vers l'espace des contrôleurs ; la fonction d'aide `v()` résout la classe du contrôleur selon la version |
 | Répertoires | contrôleurs organisés par version : `app/api/{version}/controller/` |
 
 Exemple d'extension — ajouter une API v2 :
 1. Créer `app/api/v2/controller/AuthController.php`
-2. Ajouter `'v2'` à la constante `SUPPORTED` du middleware `ApiVersion`
-3. Les définitions de routes n'ont pas besoin d'être modifiées
+2. Enregistrer un groupe de routes `/api/v2` et y lier le contrôleur
+3. Passer la version explicitement à `v()` : `v('AuthController', 'login', 'v2')`
 
 ```bash
 # Utiliser v1
-curl -H "API-Version: v1" /api/auth/login
+curl http://host/api/v1/auth/login
 
 # Utiliser v2
-curl -H "API-Version: v2" /api/auth/login
-
-# Sans en-tête, v1 par défaut
-curl /api/auth/login
+curl http://host/api/v2/auth/login
 ```
 
 ### 4.3 Stratégie de rate-limit
@@ -236,8 +225,8 @@ Algorithme de fenêtre glissante Redis Sorted Set, exécution atomique via scrip
 | Interface | Limite |
 |------|------|
 | Par défaut | 60 requêtes/minute/IP/route |
-| POST /api/auth/login | 10 requêtes/minute |
-| POST /api/auth/register | 5 requêtes/minute |
+| POST /api/v1/auth/login | 10 requêtes/minute |
+| POST /api/v1/auth/register | 5 requêtes/minute |
 
 En cas de dépassement, renvoie 429, les en-têtes contiennent X-RateLimit-Limit / Remaining / Reset / Retry-After.
 
@@ -266,12 +255,12 @@ En cas de dépassement, renvoie 429, les en-têtes contiennent X-RateLimit-Limit
 ```
 Client                               Serveur
   │                                    │
-  │  ① POST /api/captcha/generate     │ captcha_create('click')
+  │  ① POST /api/v1/captcha/generate     │ captcha_create('click')
   │◄── {key, image(base64), targets}  │
   │                                    │
   │  ② l'utilisateur clique les positions des textes de l'image │
   │                                    │
-  │  ③ POST /api/auth/login           │
+  │  ③ POST /api/v1/auth/login           │
   │     {username, password,          │
   │      captcha_key, clicks}         │
   │────────────────────────────────►  │
@@ -280,7 +269,7 @@ Client                               Serveur
   │                                    │ ③ jwt()->create()
   │◄── {access_token, refresh_token}  │
   │                                    │
-  │  ④ GET /admin/dashboard           │
+  │  ④ GET /admin/v1/dashboard           │
   │     Authorization: Bearer xxx     │
   │────────────────────────────────►  │ AdminAuth → AdminPermission
   │◄── 200 {dashboard data}           │
@@ -308,7 +297,7 @@ Les opérations sensibles (suppression d'utilisateurs, de rôles, de permissions
 ```
 Client                            Serveur
   │                                │
-  │  DELETE /admin/user/{hashid}  │
+  │  DELETE /admin/v1/user/{hashid}  │
   │  { password: "******" }       │
   │────────────────────────────►  │
   │                                │ confirmPassword(adminId, password)
@@ -325,11 +314,11 @@ Le module de gestion des méthodes de paiement (`PaymentController` + Flutter `p
 
 | Méthode | Chemin | Description |
 |------|------|------|
-| GET | /admin/payment/method/list | Liste (tri croissant par sort) |
-| POST | /admin/payment/method/toggle | Activer/désactiver |
-| POST | /admin/payment/method/create | Créer |
-| PUT | /admin/payment/method/{hashid} | Mettre à jour (champs transmis uniquement) |
-| DELETE | /admin/payment/method/{hashid} | Supprimer (422 si des commandes en attente existent) |
+| GET | /admin/v1/payment/method/list | Liste (tri croissant par sort) |
+| POST | /admin/v1/payment/method/toggle | Activer/désactiver |
+| POST | /admin/v1/payment/method/create | Créer |
+| PUT | /admin/v1/payment/method/{hashid} | Mettre à jour (champs transmis uniquement) |
+| DELETE | /admin/v1/payment/method/{hashid} | Supprimer (422 si des commandes en attente existent) |
 
 - **Liste blanche provider** : `stripe` / `nowpayments` / `coinbase`
 - **Champs** : name / type (fiat|crypto) / provider / status / sort / countries[] (visibilité par pays, vide = mondial) / currency / min_amount / max_amount / config (JSON, stocké chiffré)
@@ -421,7 +410,7 @@ SCOUT_HOSTS         → adresse ES, déploiement en réseau interne
 ### 7.1 Export Excel
 
 ```
-Requête : POST /admin/export/excel { table, columns, conditions, title }
+Requête : POST /admin/v1/export/excel { table, columns, conditions, title }
   → fetchExportData() interroge les données (limit 10000)
   → masquage des champs sensibles
   → construction PhpSpreadsheet (en-tête blanc sur fond bleu + première ligne figée + filtre automatique)
@@ -431,7 +420,7 @@ Requête : POST /admin/export/excel { table, columns, conditions, title }
 ### 7.2 Export PDF
 
 ```
-Requête : POST /admin/export/pdf { type: table|dashboard, title, data }
+Requête : POST /admin/v1/export/pdf { type: table|dashboard, title, data }
   → buildPdfHtml() HTML + CSS inline + copyright en en-tête de page + copyright inamovible en pied de page
   → rendu Dompdf A4 paysage
   → écriture dans runtime/tmp/ → réponse download

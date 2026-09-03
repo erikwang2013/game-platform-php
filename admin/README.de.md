@@ -79,7 +79,7 @@ open-admin/
 │   │   ├── DocsController.php      # OpenAPI-Dokumentation
 │   │   └── BaseController.php      # Basis-Controller
 │   ├── api/
-│   │   └── v1/controller/          # API-v1-Controller (Version über Request-Header API-Version gesteuert)
+│   │   └── v1/controller/          # API-v1-Controller (Version über URL-Pfad: /api/v1, /admin/v1)
 │   │       ├── CaptchaController.php # Klick-CAPTCHA
 │   │       └── AuthController.php    # Login/Registrierung/Token-Refresh
 │   ├── common/                 # Gemeinsame Hilfsklassen
@@ -90,7 +90,6 @@ open-admin/
 │   │   ├── Cors.php            # Cross-Origin
 │   │   ├── SecurityFilter.php  # Angriffserkennung und -abwehr (HTTP-Methodenbegrenzung/XSS/SQL-Injection/Pfad-Traversal/Befehlsinjektion/CSRF)
 │   │   ├── RateLimit.php       # Redis-Rate-Limiting (Sliding Window + Response-Header)
-│   │   ├── ApiVersion.php      # API-Versionsprüfung
 │   │   ├── AdminAuth.php       # JWT-Authentifizierung + Blacklist
 │   │   ├── AdminPermission.php # RBAC-Berechtigungsprüfung
 │   │   └── OperationLog.php    # automatische Aufzeichnung von Operationsprotokollen (inkl. Quellen-Erkennung)
@@ -103,7 +102,7 @@ open-admin/
 │   │       └── layouts/        # Responsives Admin-Layout (Sidebar + Topbar + Inhaltsbereich)
 │   └── harmonyos/              # Natives HarmonyOS-Client (nahtloses Token-Refresh)
 ├── config/                     # Konfigurationsdateien (mit chinesischen Kommentaren)
-│   ├── route.php               # Routen + API-Versionsstrategie
+│   ├── route.php               # Routen + Versionsstrategie (URL-Pfad)
 │   ├── middleware.php           # Registrierung globaler Middleware
 │   └── ...                     # Komponentenkonfigurationen
 ├── install/        # SQL-Migrationsdateien (inkl. Berechtigungs-Seed-Daten)
@@ -242,20 +241,15 @@ docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 ### ID-Behandlung
 
 - **IDs in Anfragen/Antworten**: mit hashids zu Zeichenfolgen verschlüsselt, echte Datenbank-IDs werden nicht offengelegt
-- **Schnittstellenpfade**: `GET /admin/user/{hashid}` — `{id}` im Pfad ist eine Hashid-Zeichenfolge
+- **Schnittstellenpfade**: `GET /admin/v1/user/{hashid}` — `{id}` im Pfad ist eine Hashid-Zeichenfolge
 - **Datenbankspeicher**: BIGINT-Rohwert, von snowflake erzeugt
 
-### API-Versionierung
+### Versionierung der API
 
-Die API-Version wird über einen Request-Header gesteuert und **erscheint nicht in der URL**:
+Die Versionsnummer liegt im URL-Pfad — öffentliche Endpunkte nutzen `/api/v1/*`, Admin-Endpunkte `/admin/v1/*` (Standard `v1`); ein Request-Header wird nicht verwendet:
 
-```http
-API-Version: v1
-```
-
-- Ohne Versionsangabe wird standardmäßig `v1` verwendet
 - Nicht unterstützte Versionen geben `400 Bad Request` zurück
-- Für eine neue Version genügt ein Verzeichnis `app/api/{version}/controller/`; die Middleware registriert die neue Version
+- Für eine neue Version genügt ein Verzeichnis `app/api/{version}/controller/`; die neue Routengruppe wird in den Routen registriert (z. B. `/api/v2`)
 
 ### Rate-Limiting
 
@@ -273,10 +267,9 @@ Globale Middleware wirkt auf alle Anfragen und wird in Reihenfolge ausgeführt:
 Cors (Cross-Origin-Vorverarbeitung + Response-Header)
   → SecurityFilter (HTTP-Methodenbegrenzung/Requestbody-Größe/Content-Type-Prüfung/XSS/SQL-Injection/Pfad-Traversal/Befehlsinjektion/CSRF-Angriffsabwehr)
   → RateLimit (Redis-Sliding-Window-Rate-Limiting + Kontosperre: 5 fehlgeschlagene Logins sperren 15 Minuten)
-  → ApiVersion (API-Versionsprüfung, /api-Routengruppe)
-  → AdminAuth (JWT-Authentifizierung + Blacklist, /admin-Routengruppe)
-  → AdminPermission (RBAC-Autorisierung, /admin-Routengruppe)
-  → OperationLog (automatische Aufzeichnung von POST/PUT/DELETE, inkl. Quellen-Erkennung, /admin-Routengruppe)
+  → AdminAuth (JWT-Authentifizierung + Blacklist, /admin/v1-Routengruppe)
+  → AdminPermission (RBAC-Autorisierung, /admin/v1-Routengruppe)
+  → OperationLog (automatische Aufzeichnung von POST/PUT/DELETE, inkl. Quellen-Erkennung, /admin/v1-Routengruppe)
 ```
 
 `/health` und `/api/docs` sind öffentliche Endpunkte und durchlaufen nur `Cors → SecurityFilter → RateLimit`.
@@ -291,12 +284,12 @@ Sicherheitserweiterungen:
 
 Login und Registrierung erfordern zunächst die Prüfung des **Klick-CAPTCHAs**:
 
-1. Der Client fordert `POST /api/captcha/generate` an und erhält das CAPTCHA-Bild (base64 PNG) sowie die Liste der Textziele
+1. Der Client fordert `POST /api/v1/captcha/generate` an und erhält das CAPTCHA-Bild (base64 PNG) sowie die Liste der Textziele
 2. Der Benutzer klickt in der richtigen Reihenfolge auf die entsprechenden Textpositionen im Bild; die Klickkoordinaten `[{x, y}, ...]` werden gesammelt
 3. Beim Login werden `captcha_key` und `clicks` mitgesendet; der Server prüft zuerst das CAPTCHA und dann die Zugangsdaten
 
 ```http
-POST /api/auth/login
+POST /api/v1/auth/login
 Content-Type: application/json
 
 {
@@ -315,14 +308,14 @@ Authorization: Bearer <token>
 
 Nach erfolgreichem Login werden ein access_token (2 Stunden gültig) und ein refresh_token (14 Tage gültig) zurückgegeben.
 
-Beim Logout wird das Token in die Redis-Blacklist aufgenommen und kann bis zum Ablauf nicht wiederverwendet werden. POST /admin/profile/logout
+Beim Logout wird das Token in die Redis-Blacklist aufgenommen und kann bis zum Ablauf nicht wiederverwendet werden. POST /admin/v1/profile/logout
 
 ### Sekundäre Bestätigung bei sensiblen Aktionen
 
 Bei sensiblen Aktionen wie dem Löschen von Benutzern, Rollen oder Berechtigungen muss im Requestbody das `password` des aktuell angemeldeten Benutzers zur sekundären Identitätsbestätigung übergeben werden:
 
 ```http
-DELETE /admin/user/{id}
+DELETE /admin/v1/user/{id}
 Content-Type: application/json
 Authorization: Bearer <token>
 
@@ -331,7 +324,7 @@ Authorization: Bearer <token>
 
 ## API-Liste
 
-> Alle `/api/*`-Schnittstellen müssen den Header `API-Version: v1` mitführen (ohne Angabe standardmäßig v1).
+> Alle Endpunkte `/api/v1/*` und `/admin/v1/*` tragen die Versionsnummer im URL-Pfad; ein Versions-Request-Header wird nicht verwendet.
 
 ### Öffentliche Schnittstellen
 
@@ -339,45 +332,45 @@ Authorization: Bearer <token>
 |-----|------|------|
 | `GET` | `/health` | Health-Check (DB/Redis/ES-Status) |
 | `GET` | `/api/docs` | OpenAPI-3.0-Spezifikationsdokument |
-| `POST` | `/api/captcha/generate` | Klick-CAPTCHA erzeugen |
-| `POST` | `/api/captcha/verify` | Klick-CAPTCHA prüfen |
-| `POST` | `/api/auth/login` | Login (CAPTCHA erforderlich) |
-| `POST` | `/api/auth/register` | Registrierung (CAPTCHA erforderlich) |
-| `POST` | `/api/auth/refresh` | Token aktualisieren |
+| `POST` | `/api/v1/captcha/generate` | Klick-CAPTCHA erzeugen |
+| `POST` | `/api/v1/captcha/verify` | Klick-CAPTCHA prüfen |
+| `POST` | `/api/v1/auth/login` | Login (CAPTCHA erforderlich) |
+| `POST` | `/api/v1/auth/register` | Registrierung (CAPTCHA erforderlich) |
+| `POST` | `/api/v1/auth/refresh` | Token aktualisieren |
 | `GET` | `/metrics` | Prometheus-Monitoring-Metriken |
 
 ### Admin-Schnittstellen (JWT + RBAC erforderlich)
 
 | Methode | Pfad | Beschreibung |
 |-----|------|------|
-| `GET` | `/admin/dashboard` | Dashboard-Daten (Redis-Cache 5 Minuten) |
-| `GET` | `/admin/user` | Benutzerliste (Seitennummerierung + Suche) |
-| `POST` | `/admin/user` | Benutzer anlegen |
-| `GET` | `/admin/user/{id}` | Benutzerdetails |
-| `PUT` | `/admin/user/{id}` | Benutzer aktualisieren |
-| `DELETE` | `/admin/user/{id}` | Benutzer löschen (Soft-Delete, Passwortbestätigung erforderlich) |
-| `POST` | `/admin/user/batch/destroy` | Benutzer in Serie löschen (Passwortbestätigung erforderlich) |
-| `POST` | `/admin/user/batch/status` | Benutzer in Serie aktivieren/deaktivieren |
-| `GET` | `/admin/role` | Rollenliste |
-| `POST` | `/admin/role` | Rolle anlegen |
-| `PUT` | `/admin/role/{id}` | Rolle aktualisieren |
-| `DELETE` | `/admin/role/{id}` | Rolle löschen (Passwortbestätigung erforderlich) |
-| `GET` | `/admin/permission` | Berechtigungsbaum |
-| `POST` | `/admin/permission` | Berechtigung anlegen |
-| `PUT` | `/admin/permission/{id}` | Berechtigung aktualisieren |
-| `DELETE` | `/admin/permission/{id}` | Berechtigung löschen (kaskadierende Unterberechtigungen, Passwortbestätigung erforderlich) |
-| `GET` | `/admin/config` | Systemkonfigurationsliste |
-| `POST` | `/admin/config` | Konfigurationseintrag anlegen |
-| `PUT` | `/admin/config/{id}` | Konfigurationseintrag aktualisieren |
-| `DELETE` | `/admin/config/{id}` | Konfigurationseintrag löschen (Passwortbestätigung erforderlich) |
-| `GET` | `/admin/log` | Operationsprotokolle (Seitennummerierung + Filter) |
-| `PUT` | `/admin/profile` | Persönliche Daten aktualisieren |
-| `PUT` | `/admin/profile/password` | Passwort ändern |
-| `POST` | `/admin/profile/logout` | Logout (JWT-Blacklist) |
-| `POST` | `/admin/export/excel` | Excel exportieren |
-| `POST` | `/admin/export/pdf` | PDF exportieren |
-| `POST` | `/admin/import/users` | Benutzer per Excel importieren |
-| `POST` | `/admin/upload` | Datei-Upload (Bilder/Dokumente, max. 10MB) |
+| `GET` | `/admin/v1/dashboard` | Dashboard-Daten (Redis-Cache 5 Minuten) |
+| `GET` | `/admin/v1/user` | Benutzerliste (Seitennummerierung + Suche) |
+| `POST` | `/admin/v1/user` | Benutzer anlegen |
+| `GET` | `/admin/v1/user/{id}` | Benutzerdetails |
+| `PUT` | `/admin/v1/user/{id}` | Benutzer aktualisieren |
+| `DELETE` | `/admin/v1/user/{id}` | Benutzer löschen (Soft-Delete, Passwortbestätigung erforderlich) |
+| `POST` | `/admin/v1/user/batch/destroy` | Benutzer in Serie löschen (Passwortbestätigung erforderlich) |
+| `POST` | `/admin/v1/user/batch/status` | Benutzer in Serie aktivieren/deaktivieren |
+| `GET` | `/admin/v1/role` | Rollenliste |
+| `POST` | `/admin/v1/role` | Rolle anlegen |
+| `PUT` | `/admin/v1/role/{id}` | Rolle aktualisieren |
+| `DELETE` | `/admin/v1/role/{id}` | Rolle löschen (Passwortbestätigung erforderlich) |
+| `GET` | `/admin/v1/permission` | Berechtigungsbaum |
+| `POST` | `/admin/v1/permission` | Berechtigung anlegen |
+| `PUT` | `/admin/v1/permission/{id}` | Berechtigung aktualisieren |
+| `DELETE` | `/admin/v1/permission/{id}` | Berechtigung löschen (kaskadierende Unterberechtigungen, Passwortbestätigung erforderlich) |
+| `GET` | `/admin/v1/config` | Systemkonfigurationsliste |
+| `POST` | `/admin/v1/config` | Konfigurationseintrag anlegen |
+| `PUT` | `/admin/v1/config/{id}` | Konfigurationseintrag aktualisieren |
+| `DELETE` | `/admin/v1/config/{id}` | Konfigurationseintrag löschen (Passwortbestätigung erforderlich) |
+| `GET` | `/admin/v1/log` | Operationsprotokolle (Seitennummerierung + Filter) |
+| `PUT` | `/admin/v1/profile` | Persönliche Daten aktualisieren |
+| `PUT` | `/admin/v1/profile/password` | Passwort ändern |
+| `POST` | `/admin/v1/profile/logout` | Logout (JWT-Blacklist) |
+| `POST` | `/admin/v1/export/excel` | Excel exportieren |
+| `POST` | `/admin/v1/export/pdf` | PDF exportieren |
+| `POST` | `/admin/v1/import/users` | Benutzer per Excel importieren |
+| `POST` | `/admin/v1/upload` | Datei-Upload (Bilder/Dokumente, max. 10MB) |
 
 ## Frontend-Hinweise
 

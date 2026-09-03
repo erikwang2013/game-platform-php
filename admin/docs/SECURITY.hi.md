@@ -156,7 +156,7 @@ if (Redis::get("security_ban:{$ip}")) {
 
 लॉग प्रारूप उदाहरण:
 ```
-2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
+2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/v1/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
 2026-05-20 14:32:15 [SECURITY] IP banned 15min | IP: 192.168.1.100 | Triggers: 5
 ```
 
@@ -178,7 +178,7 @@ POST/PUT अनुरोधों में **अनिवार्य** `Conten
 |----|-----|------|
 | Access-Control-Allow-Origin | `*` | किसी भी स्रोत के क्रॉस-ओरिजिन की अनुमति (इंट्रानेट एडमिन बैकएंड परिदृश्य) |
 | Access-Control-Allow-Methods | `GET,POST,PUT,DELETE,OPTIONS` | अनुमत विधियों का समूह |
-| Access-Control-Allow-Headers | `Authorization,Content-Type,API-Version` | अनुमत कस्टम हेडर |
+| Access-Control-Allow-Headers | `Authorization,Content-Type` | अनुमत कस्टम हेडर |
 | Access-Control-Max-Age | `86400` | प्रीफ़्लाइट अनुरोध कैश 24 घंटे |
 | X-Content-Type-Options | `nosniff` | ब्राउज़र MIME स्निफिंग निषिद्ध |
 | X-Frame-Options | `DENY` | सभी iframe एम्बेड निषिद्ध, क्लिकजैकिंग रोकथाम |
@@ -230,8 +230,8 @@ Lua स्क्रिप्ट Redis सर्वर पर सिंगल-थ
 | रूट | सीमा | विंडो | परिदृश्य |
 |------|------|------|------|
 | डिफ़ॉल्ट (सभी रूट) | 60 बार/मिनट | 60s | सामान्य API |
-| `/api/auth/login` | 10 बार/मिनट | 60s | लॉगिन (ब्रूट-फोर्स रोकथाम) |
-| `/api/auth/register` | 5 बार/मिनट | 60s | पंजीकरण (बैच पंजीकरण रोकथाम) |
+| `/api/v1/auth/login` | 10 बार/मिनट | 60s | लॉगिन (ब्रूट-फोर्स रोकथाम) |
+| `/api/v1/auth/register` | 5 बार/मिनट | 60s | पंजीकरण (बैच पंजीकरण रोकथाम) |
 
 ### प्रतिक्रिया हेडर
 
@@ -322,7 +322,7 @@ AdminAuth मिडलवेयर लागू करता है, प्र�
 
 **ब्लैकलिस्ट तंत्र**: उपयोगकर्ता लॉगआउट पर `md5(token)` Redis में लिखा जाता है, TTL = JWT शेष वैधता। Redis विफलता पर ब्लैकलिस्ट जांच छोड़ी जाती है (fail-open), तब लॉगआउट किए गए Token थोड़े समय उपयोग हो सकते हैं, लेकिन JWT की अल्पकालिक वैधता (2h) बैकअप सुरक्षा है।
 
-**Token रीफ़्रेश**: `POST /api/auth/refresh` मूल refresh token (`token_type=refresh` और समाप्त नहीं/ब्लैकलिस्ट नहीं) सत्यापित करने के बाद ही नया जारी करता है, और `sub` वैध उपयोगकर्ता ID होना चाहिए — **sub=null वाला refresh token अब जारी नहीं होता**, रीफ़्रेश विफल पर सीधे 401।
+**Token रीफ़्रेश**: `POST /api/v1/auth/refresh` मूल refresh token (`token_type=refresh` और समाप्त नहीं/ब्लैकलिस्ट नहीं) सत्यापित करने के बाद ही नया जारी करता है, और `sub` वैध उपयोगकर्ता ID होना चाहिए — **sub=null वाला refresh token अब जारी नहीं होता**, रीफ़्रेश विफल पर सीधे 401।
 
 ### 6.2 समवर्ती सत्र सीमा
 
@@ -389,7 +389,7 @@ API अनुमति पहचान प्रारूप: `{method}.{path}`
 
 ### 6.4 भुगतान कॉलबैक सिग्नेचर सत्यापन (fail-closed)
 
-`POST /api/payment/callback` (Stripe/PayPal टॉप-अप कॉलबैक) सिग्नेचर सत्यापन **fail-closed** है, किसी भी कॉन्फ़िगरेशन की कमी या सत्यापन असामान्यता पर कॉलबैक अस्वीकार:
+`POST /api/v1/payment/callback` (Stripe/PayPal टॉप-अप कॉलबैक) सिग्नेचर सत्यापन **fail-closed** है, किसी भी कॉन्फ़िगरेशन की कमी या सत्यापन असामान्यता पर कॉलबैक अस्वीकार:
 
 | परिदृश्य | व्यवहार |
 |------|------|

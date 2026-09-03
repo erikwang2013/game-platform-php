@@ -156,7 +156,7 @@ if (Redis::get("security_ban:{$ip}")) {
 
 日志格式示例：
 ```
-2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
+2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/v1/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
 2026-05-20 14:32:15 [SECURITY] IP banned 15min | IP: 192.168.1.100 | Triggers: 5
 ```
 
@@ -178,7 +178,7 @@ POST/PUT 请求**必须**声明 `Content-Type` 为 `application/json` 或 `appli
 |----|-----|------|
 | Access-Control-Allow-Origin | `*` | 允许任意源跨域（内网管理后台场景） |
 | Access-Control-Allow-Methods | `GET,POST,PUT,DELETE,OPTIONS` | 允许的方法集合 |
-| Access-Control-Allow-Headers | `Authorization,Content-Type,API-Version` | 允许的自定义头 |
+| Access-Control-Allow-Headers | `Authorization,Content-Type` | 允许的自定义头 |
 | Access-Control-Max-Age | `86400` | 预检请求缓存 24 小时 |
 | X-Content-Type-Options | `nosniff` | 禁止浏览器 MIME 嗅探 |
 | X-Frame-Options | `DENY` | 禁止所有 iframe 嵌入，防点击劫持 |
@@ -230,8 +230,8 @@ Lua 脚本在 Redis 服务端单线程执行，**天然原子化**，消除 TOCT
 | 路由 | 限制 | 窗口 | 场景 |
 |------|------|------|------|
 | 默认（所有路由） | 60 次/分钟 | 60s | 通用 API |
-| `/api/auth/login` | 10 次/分钟 | 60s | 登录（防暴力破解） |
-| `/api/auth/register` | 5 次/分钟 | 60s | 注册（防批量注册） |
+| `/api/v1/auth/login` | 10 次/分钟 | 60s | 登录（防暴力破解） |
+| `/api/v1/auth/register` | 5 次/分钟 | 60s | 注册（防批量注册） |
 
 ### 响应头
 
@@ -322,7 +322,7 @@ AdminAuth 中间件实现，挂载在需要认证的路由组上。
 
 **黑名单机制**：用户登出时，将 `md5(token)` 写入 Redis，TTL 设为 JWT 剩余有效期。Redis 故障时黑名单检查被跳过（fail-open），此时已登出的 Token 仍可短期使用，但 JWT 本身的短期有效期（2h）作为兜底保护。
 
-**Token 刷新**：`POST /api/auth/refresh` 校验原 refresh token（`token_type=refresh` 且未过期/未拉黑）后才轮换签发，并校验 `sub` 必须为有效用户 ID —— **不再签发 sub=null 的 refresh token**，刷新失败直接返回 401。
+**Token 刷新**：`POST /api/v1/auth/refresh` 校验原 refresh token（`token_type=refresh` 且未过期/未拉黑）后才轮换签发，并校验 `sub` 必须为有效用户 ID —— **不再签发 sub=null 的 refresh token**，刷新失败直接返回 401。
 
 ### 6.2 并发会话限制
 
@@ -389,7 +389,7 @@ API 权限标识格式：`{method}.{path}`
 
 ### 6.4 支付回调验签（fail-closed）
 
-`POST /api/payment/callback`（Stripe/PayPal 充值回调）验签采用 **fail-closed**，任何配置缺失或校验异常均拒绝回调：
+`POST /api/v1/payment/callback`（Stripe/PayPal 充值回调）验签采用 **fail-closed**，任何配置缺失或校验异常均拒绝回调：
 
 | 场景 | 行为 |
 |------|------|

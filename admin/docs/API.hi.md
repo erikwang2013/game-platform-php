@@ -8,10 +8,10 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 
 ## 1. अवलोकन
 
-开放管理后台 (open-admin) webman v2 पर आधारित है और RESTful JSON API प्रदान करता है। सभी एडमिन इंटरफ़ेस के लिए JWT प्रमाणीकरण और RBAC अनुमति सत्यापन आवश्यक है; सार्वजनिक इंटरफ़ेस API संस्करण हेडर द्वारा वर्ज़न किए गए कंट्रोलर में रूट होते हैं।
+开放管理后台 (open-admin) webman v2 पर आधारित है और RESTful JSON API प्रदान करता है। सभी एडमिन इंटरफ़ेस के लिए JWT प्रमाणीकरण और RBAC अनुमति सत्यापन आवश्यक है; सार्वजनिक एंडपॉइंट `/api/v1` प्रीफ़िक्स पर और एडमिन एंडपॉइंट `/admin/v1` प्रीफ़िक्स पर माउंट हैं; संस्करण URL पथ से तय होता है, हेडर से नहीं।
 
 - **बेस URL**: `http://localhost:8787`
-- **API संस्करण**: अनुरोध हेडर `API-Version: v1` से नियंत्रित (अनुपस्थित पर डिफ़ॉल्ट v1)
+- **API संस्करण**: URL पथ में एन्कोडेड — सार्वजनिक एंडपॉइंट `/api/v1` पर, एडमिन एंडपॉइंट `/admin/v1` पर; कोई संस्करण हेडर उपयोग नहीं होता, भविष्य का v2 `/api/v2` समूह के रूप में पंजीकृत होगा
 
 > **एंडपॉइंट अवलोकन**: प्रमाणीकरण(5) | डैशबोर्ड(1) | उपयोगकर्ता(7) | भूमिका(4) | अनुमति(4) | कॉन्फ़िगरेशन(4) | लॉग(1) | प्रोफ़ाइल(3) | आयात-निर्यात(3) | अपलोड(1) | संचालन(4: health/metrics/docs/security.txt) | कुल 37 एंडपॉइंट
 - **प्रमाणीकरण**: `Authorization: Bearer <token>` (JWT)
@@ -45,7 +45,7 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 
 ## 3. सार्वजनिक एंडपॉइंट
 
-सभी सार्वजनिक एंडपॉइंट `/api` समूह में माउंट हैं, `ApiVersion` मिडलवेयर `API-Version` हेडर के अनुसार वर्ज़न किए गए कंट्रोलर में वितरित करता है (जैसे `app\api\v1\controller\AuthController`)।
+सभी सार्वजनिक एंडपॉइंट `/api/v1` प्रीफ़िक्स पर और एडमिन एंडपॉइंट `/admin/v1` प्रीफ़िक्स पर माउंट हैं; संस्करण रूट ग्रुप प्रीफ़िक्स से तय होता है; कोई संस्करण रिक्वेस्ट हेडर उपयोग नहीं होता। सार्वजनिक कंट्रोलर उदाहरण: `app\api\v1\controller\AuthController`।
 
 ### 3.1 स्वास्थ्य जांच
 
@@ -88,11 +88,10 @@ GET /api/docs
 ### 3.3 क्लिक कैप्चा उत्पन्न करें
 
 ```
-POST /api/captcha/generate
+POST /api/v1/captcha/generate
 ```
 
 - **प्रमाणीकरण**: आवश्यक नहीं
-- **अनुरोध हेडर**: `API-Version: v1` (अनिवार्य)
 - **दर सीमा**: वैश्विक डिफ़ॉल्ट (60 बार/मिनट)
 
 **अनुरोध निकाय**:
@@ -134,11 +133,10 @@ POST /api/captcha/generate
 ### 3.4 क्लिक कैप्चा सत्यापित करें
 
 ```
-POST /api/captcha/verify
+POST /api/v1/captcha/verify
 ```
 
 - **प्रमाणीकरण**: आवश्यक नहीं
-- **अनुरोध हेडर**: `API-Version: v1` (अनिवार्य)
 - **दर सीमा**: वैश्विक डिफ़ॉल्ट (60 बार/मिनट)
 
 **अनुरोध निकाय**:
@@ -171,11 +169,10 @@ POST /api/captcha/verify
 ### 3.5 लॉगिन
 
 ```
-POST /api/auth/login
+POST /api/v1/auth/login
 ```
 
 - **प्रमाणीकरण**: आवश्यक नहीं
-- **अनुरोध हेडर**: `API-Version: v1` (अनिवार्य)
 - **दर सीमा**: 10 बार/मिनट (IP + पथ के अनुसार)
 
 **अनुरोध निकाय**:
@@ -235,11 +232,10 @@ POST /api/auth/login
 ### 3.6 पंजीकरण
 
 ```
-POST /api/auth/register
+POST /api/v1/auth/register
 ```
 
 - **प्रमाणीकरण**: आवश्यक नहीं
-- **अनुरोध हेडर**: `API-Version: v1` (अनिवार्य)
 - **दर सीमा**: 5 बार/मिनट (IP + पथ के अनुसार)
 
 **अनुरोध निकाय**:
@@ -287,11 +283,10 @@ POST /api/auth/register
 ### 3.7 टोकन रीफ़्रेश
 
 ```
-POST /api/auth/refresh
+POST /api/v1/auth/refresh
 ```
 
 - **प्रमाणीकरण**: आवश्यक नहीं
-- **अनुरोध हेडर**: `API-Version: v1` (अनिवार्य)
 - **दर सीमा**: वैश्विक डिफ़ॉल्ट (60 बार/मिनट)
 
 **अनुरोध निकाय**:
@@ -369,12 +364,12 @@ openadmin_memory_usage_bytes 18874368
 
 ## 4. डैशबोर्ड
 
-सभी एडमिन इंटरफ़ेस `/admin` समूह में माउंट हैं, `AdminAuth` (JWT प्रमाणीकरण), `AdminPermission` (RBAC अनुमति सत्यापन), `OperationLog` (ऑपरेशन रिकॉर्ड) तीन मिडलवेयर से गुजरते हैं।
+सभी एडमिन इंटरफ़ेस `/admin/v1` प्रीफ़िक्स पर माउंट हैं, `AdminAuth` (JWT प्रमाणीकरण), `AdminPermission` (RBAC अनुमति सत्यापन), `OperationLog` (ऑपरेशन रिकॉर्ड) तीन मिडलवेयर से गुजरते हैं।
 
 ### 4.1 डैशबोर्ड डेटा
 
 ```
-GET /admin/dashboard
+GET /admin/v1/dashboard
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -431,7 +426,7 @@ GET /admin/dashboard
         "id": "hashid...",
         "action": "用户登录",
         "method": "POST",
-        "path": "/api/auth/login",
+        "path": "/api/v1/auth/login",
         "ip": "192.168.1.1",
         "user_name": "admin",
         "created_at": "2026-05-21 10:30:00"
@@ -461,7 +456,7 @@ GET /admin/dashboard
 ### 5.1 उपयोगकर्ता सूची
 
 ```
-GET /admin/user
+GET /admin/v1/user
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -514,7 +509,7 @@ GET /admin/user
 ### 5.2 उपयोगकर्ता बनाएं
 
 ```
-POST /admin/user
+POST /admin/v1/user
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -564,7 +559,7 @@ POST /admin/user
 ### 5.3 उपयोगकर्ता विवरण
 
 ```
-GET /admin/user/{id}
+GET /admin/v1/user/{id}
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -598,7 +593,7 @@ GET /admin/user/{id}
 ### 5.4 उपयोगकर्ता अपडेट
 
 ```
-PUT /admin/user/{id}
+PUT /admin/v1/user/{id}
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -646,7 +641,7 @@ PUT /admin/user/{id}
 ### 5.5 उपयोगकर्ता हटाएं
 
 ```
-DELETE /admin/user/{id}
+DELETE /admin/v1/user/{id}
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -683,7 +678,7 @@ DELETE /admin/user/{id}
 ### 5.6 बैच उपयोगकर्ता हटाएं
 
 ```
-POST /admin/user/batch/destroy
+POST /admin/v1/user/batch/destroy
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -723,7 +718,7 @@ POST /admin/user/batch/destroy
 ### 5.7 बैच सक्षम/अक्षम उपयोगकर्ता
 
 ```
-POST /admin/user/batch/status
+POST /admin/v1/user/batch/status
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -763,7 +758,7 @@ message status मान के अनुसार गतिशील रूप 
 ### 6.1 भूमिका सूची
 
 ```
-GET /admin/role
+GET /admin/v1/role
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -811,7 +806,7 @@ GET /admin/role
 ### 6.2 भूमिका बनाएं
 
 ```
-POST /admin/role
+POST /admin/v1/role
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -853,7 +848,7 @@ POST /admin/role
 ### 6.3 भूमिका अपडेट
 
 ```
-PUT /admin/role/{id}
+PUT /admin/v1/role/{id}
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -893,7 +888,7 @@ PUT /admin/role/{id}
 ### 6.4 भूमिका हटाएं
 
 ```
-DELETE /admin/role/{id}
+DELETE /admin/v1/role/{id}
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -924,7 +919,7 @@ DELETE /admin/role/{id}
 ### 7.1 अनुमति वृक्ष
 
 ```
-GET /admin/permission
+GET /admin/v1/permission
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -939,7 +934,7 @@ GET /admin/permission
       "id": "p1p2p3p4",
       "parent_id": "0",
       "name": "用户管理",
-      "slug": "/admin/user",
+      "slug": "/admin/v1/user",
       "type": 1,
       "icon": "people",
       "path": "/user",
@@ -950,7 +945,7 @@ GET /admin/permission
           "id": "p5p6p7p8",
           "parent_id": "p1p2p3p4",
           "name": "用户列表",
-          "slug": "/admin/user/index",
+          "slug": "/admin/v1/user/index",
           "type": 2,
           "icon": "",
           "path": "/user/index",
@@ -977,7 +972,7 @@ GET /admin/permission
 ### 7.2 अनुमति बनाएं
 
 ```
-POST /admin/permission
+POST /admin/v1/permission
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -987,7 +982,7 @@ POST /admin/permission
 {
   "parent_id": 0,
   "name": "系统设置",
-  "slug": "/admin/config",
+  "slug": "/admin/v1/config",
   "type": 1,
   "icon": "settings",
   "path": "/config",
@@ -1014,7 +1009,7 @@ POST /admin/permission
     "id": "p9p0a1b2",
     "parent_id": "0",
     "name": "系统设置",
-    "slug": "/admin/config",
+    "slug": "/admin/v1/config",
     "type": 1,
     "icon": "settings",
     "path": "/config",
@@ -1026,7 +1021,7 @@ POST /admin/permission
 ### 7.3 अनुमति अपडेट
 
 ```
-PUT /admin/permission/{id}
+PUT /admin/v1/permission/{id}
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -1051,7 +1046,7 @@ PUT /admin/permission/{id}
 ### 7.4 अनुमति हटाएं
 
 ```
-DELETE /admin/permission/{id}
+DELETE /admin/v1/permission/{id}
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -1082,7 +1077,7 @@ DELETE /admin/permission/{id}
 ### 8.1 कॉन्फ़िगरेशन सूची
 
 ```
-GET /admin/config
+GET /admin/v1/config
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -1131,7 +1126,7 @@ GET /admin/config
 ### 8.2 कॉन्फ़िगरेशन बनाएं
 
 ```
-POST /admin/config
+POST /admin/v1/config
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -1177,7 +1172,7 @@ POST /admin/config
 ### 8.3 कॉन्फ़िगरेशन अपडेट
 
 ```
-PUT /admin/config/{id}
+PUT /admin/v1/config/{id}
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -1200,7 +1195,7 @@ PUT /admin/config/{id}
 ### 8.4 कॉन्फ़िगरेशन हटाएं
 
 ```
-DELETE /admin/config/{id}
+DELETE /admin/v1/config/{id}
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -1222,7 +1217,7 @@ DELETE /admin/config/{id}
 ### 9.1 ऑपरेशन लॉग सूची
 
 ```
-GET /admin/log
+GET /admin/v1/log
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -1251,7 +1246,7 @@ GET /admin/log
         "user_name": "admin",
         "action": "用户登录",
         "method": "POST",
-        "path": "/api/auth/login",
+        "path": "/api/v1/auth/login",
         "ip": "192.168.1.1",
         "source": "web",
         "input": "{\"username\":\"admin\"}",
@@ -1284,7 +1279,7 @@ GET /admin/log
 ### 10.1 व्यक्तिगत जानकारी अपडेट
 
 ```
-PUT /admin/profile
+PUT /admin/v1/profile
 ```
 
 - **प्रमाणीकरण**: JWT
@@ -1326,7 +1321,7 @@ PUT /admin/profile
 ### 10.2 पासवर्ड बदलें
 
 ```
-PUT /admin/profile/password
+PUT /admin/v1/profile/password
 ```
 
 - **प्रमाणीकरण**: JWT
@@ -1361,7 +1356,7 @@ PUT /admin/profile/password
 ### 10.3 लॉगआउट
 
 ```
-POST /admin/profile/logout
+POST /admin/v1/profile/logout
 ```
 
 - **प्रमाणीकरण**: JWT
@@ -1386,7 +1381,7 @@ POST /admin/profile/logout
 ### 11.1 Excel निर्यात
 
 ```
-POST /admin/export/excel
+POST /admin/v1/export/excel
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -1425,7 +1420,7 @@ POST /admin/export/excel
 ### 11.2 PDF निर्यात
 
 ```
-POST /admin/export/pdf
+POST /admin/v1/export/pdf
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -1472,7 +1467,7 @@ PDF टेम्पलेट में कॉपीराइट जानका�
 ### 11.3 उपयोगकर्ता आयात (Excel)
 
 ```
-POST /admin/import/users
+POST /admin/v1/import/users
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -1524,7 +1519,7 @@ POST /admin/import/users
 ## 12. फ़ाइल अपलोड
 
 ```
-POST /admin/upload
+POST /admin/v1/upload
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -1573,8 +1568,8 @@ POST /admin/upload
 
 दर सीमा विवरण:
 - डिफ़ॉल्ट वैश्विक सीमा: 60 बार/मिनट / IP+पथ
-- लॉगिन एंडपॉइंट `/api/auth/login`: 10 बार/मिनट
-- पंजीकरण एंडपॉइंट `/api/auth/register`: 5 बार/मिनट
+- लॉगिन एंडपॉइंट `/api/v1/auth/login`: 10 बार/मिनट
+- पंजीकरण एंडपॉइंट `/api/v1/auth/register`: 5 बार/मिनट
 - Redis एटॉमिक स्लाइडिंग विंडो एल्गोरिदम (Lua ZSET), TOCTOU रेस से बचाव
 - Redis अनुपलब्ध पर fail-closed: 503 लौटता है (`Retry-After: 5`), अनुरोध पास नहीं होता
 
@@ -1584,18 +1579,18 @@ POST /admin/upload
 
 | विधि | पथ | विवरण |
 |------|------|------|
-| GET | /admin/analytics/overview | प्लेटफ़ॉर्म अवलोकन (आज/पिछले 7 दिन) |
-| GET | /admin/analytics/game-ranking | गेम रैंकिंग (?days=7) |
-| GET | /admin/analytics/dau-trend | DAU ट्रेंड (?days=30) |
-| GET | /admin/analytics/hourly-trend | घंटेवार ट्रेंड |
-| GET | /admin/analytics/action-distribution | व्यवहार वितरण |
-| GET | /admin/analytics/revenue | राजस्व विश्लेषण |
-| GET | /admin/analytics/conversion | गेम रूपांतरण दर |
-| GET | /admin/analytics/probability | संयुक्त/सशर्त संभाव्यता |
-| GET | /admin/analytics/retention | रिटेंशन विश्लेषण D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | रूपांतरण फ़नल |
-| GET | /admin/analytics/arpu | ARPU/ARPPU ट्रेंड |
-| GET | /admin/analytics/economy | गेम मुद्रा आर्थिक मेट्रिक्स |
+| GET | /admin/v1/analytics/overview | प्लेटफ़ॉर्म अवलोकन (आज/पिछले 7 दिन) |
+| GET | /admin/v1/analytics/game-ranking | गेम रैंकिंग (?days=7) |
+| GET | /admin/v1/analytics/dau-trend | DAU ट्रेंड (?days=30) |
+| GET | /admin/v1/analytics/hourly-trend | घंटेवार ट्रेंड |
+| GET | /admin/v1/analytics/action-distribution | व्यवहार वितरण |
+| GET | /admin/v1/analytics/revenue | राजस्व विश्लेषण |
+| GET | /admin/v1/analytics/conversion | गेम रूपांतरण दर |
+| GET | /admin/v1/analytics/probability | संयुक्त/सशर्त संभाव्यता |
+| GET | /admin/v1/analytics/retention | रिटेंशन विश्लेषण D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | रूपांतरण फ़नल |
+| GET | /admin/v1/analytics/arpu | ARPU/ARPPU ट्रेंड |
+| GET | /admin/v1/analytics/economy | गेम मुद्रा आर्थिक मेट्रिक्स |
 
 ## 15. टिकट प्रबंधन (Ticket)
 
@@ -1603,26 +1598,25 @@ POST /admin/upload
 
 | विधि | पथ | विवरण |
 |------|------|------|
-| GET | /admin/ticket/list | टिकट सूची (?page=&limit=&status=&type=) |
-| GET | /admin/ticket/{hashid} | टिकट विवरण (उत्तर सहित) |
-| POST | /admin/ticket/{hashid}/reply | टिकट का उत्तर |
-| POST | /admin/ticket/{hashid}/close | टिकट बंद करें |
-| POST | /admin/ticket/{hashid}/assign | प्रबंधक नियुक्त करें (admin_id) |
+| GET | /admin/v1/ticket/list | टिकट सूची (?page=&limit=&status=&type=) |
+| GET | /admin/v1/ticket/{hashid} | टिकट विवरण (उत्तर सहित) |
+| POST | /admin/v1/ticket/{hashid}/reply | टिकट का उत्तर |
+| POST | /admin/v1/ticket/{hashid}/close | टिकट बंद करें |
+| POST | /admin/v1/ticket/{hashid}/assign | प्रबंधक नियुक्त करें (admin_id) |
 
 ## 16. प्रमाणीकरण प्रवाह
 
 पूर्ण प्रमाणीकरण अनुक्रम:
 
 ```
-1. 客户端请求 POST /api/captcha/generate
-   (请求头: API-Version: v1)
+1. 客户端请求 POST /api/v1/captcha/generate
     ↓
    服务端返回: key + base64 图片 + 点击目标提示
    
 2. 用户点击图片目标位置，前/客户端收集点击坐标
    
-3. 客户端请求 POST /api/auth/login
-   (请求头: API-Version: v1, Content-Type: application/json)
+3. 客户端请求 POST /api/v1/auth/login
+   (请求头: Content-Type: application/json)
    请求体: { username, password, captcha_key, clicks: [{x,y}, ...] }
     ↓
    服务端:
@@ -1655,7 +1649,7 @@ POST /admin/upload
    Response + X-RateLimit-* 头
 
 5. Access Token 过期前刷新
-   客户端请求 POST /api/auth/refresh
+   客户端请求 POST /api/v1/auth/refresh
    请求体: { refresh_token: "..." }
     ↓
    服务端解码 refresh_token → 签发新 access + refresh
@@ -1663,7 +1657,7 @@ POST /admin/upload
    客户端更新本地令牌
 
 6. 登出
-   客户端请求 POST /admin/profile/logout
+   客户端请求 POST /admin/v1/profile/logout
    请求头: Authorization: Bearer <access_token>
     ↓
    服务端:
@@ -1722,7 +1716,7 @@ docker-compose up -d
 ### 16.1 प्लेटफ़ॉर्म अवलोकन
 
 ```
-GET /admin/analytics/overview
+GET /admin/v1/analytics/overview
 ```
 
 **प्रतिक्रिया**: `today` / `week` प्रत्येक में `dau` (सक्रिय उपयोगकर्ता संख्या), `revenue` (पुष्टि टॉप-अप कुल, स्ट्रिंग), `new_users` (नए उपयोगकर्ता संख्या)।
@@ -1730,7 +1724,7 @@ GET /admin/analytics/overview
 ### 16.2 गेम रैंकिंग
 
 ```
-GET /admin/analytics/game-ranking?days=7
+GET /admin/v1/analytics/game-ranking?days=7
 ```
 
 **प्रतिक्रिया**: गेम व्यवहार संख्या के अवरोही क्रम में शीर्ष 10, प्रत्येक में `game_id` (hashid), `name`, `plays`, `players`।
@@ -1738,7 +1732,7 @@ GET /admin/analytics/game-ranking?days=7
 ### 16.3 DAU ट्रेंड
 
 ```
-GET /admin/analytics/dau-trend?days=30
+GET /admin/v1/analytics/dau-trend?days=30
 ```
 
 **प्रतिक्रिया**: `{ "日期": 活跃数, ... }`, अनुपस्थित तिथि पर 0 भरा जाता है।
@@ -1746,7 +1740,7 @@ GET /admin/analytics/dau-trend?days=30
 ### 16.4 घंटेवार ट्रेंड
 
 ```
-GET /admin/analytics/hourly-trend?game_id=<hashid>
+GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
 ```
 
 **प्रतिक्रिया**: `{ "0": 次数, ... "23": 次数 }` 24 घंटे के स्लॉट; `game_id` खाली होने पर सभी गेमों की गणना।
@@ -1754,7 +1748,7 @@ GET /admin/analytics/hourly-trend?game_id=<hashid>
 ### 16.5 व्यवहार वितरण
 
 ```
-GET /admin/analytics/action-distribution?game_id=<hashid>&hours=24
+GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
 ```
 
 **प्रतिक्रिया**: `{ "start": n, "end": n, "earn": n, "spend": n }` चार प्रकार के व्यवहार गणना; `hours` अधिकतम 168।
@@ -1762,7 +1756,7 @@ GET /admin/analytics/action-distribution?game_id=<hashid>&hours=24
 ### 16.6 राजस्व अवलोकन
 
 ```
-GET /admin/analytics/revenue?days=7
+GET /admin/v1/analytics/revenue?days=7
 ```
 
 **प्रतिक्रिया**: `{ "total": "总额", "trend": { "日期": "当日额", ... } }`, केवल `status=confirmed` ऑर्डर गिने जाते हैं।
@@ -1770,7 +1764,7 @@ GET /admin/analytics/revenue?days=7
 ### 16.7 गेम रूपांतरण दर
 
 ```
-GET /admin/analytics/conversion?days=30
+GET /admin/v1/analytics/conversion?days=30
 ```
 
 **प्रतिक्रिया**: प्रत्येक गेम में `game_id` (hashid), `game_name`, `players` (अद्वितीय खिलाड़ी संख्या), `depositors` (अद्वितीय टॉप-अप संख्या), `conversion_rate` (टॉप-अप रूपांतरण दर, 0~1)।
@@ -1778,7 +1772,7 @@ GET /admin/analytics/conversion?days=30
 ### 16.8 संयुक्त संभाव्यता
 
 ```
-GET /admin/analytics/probability?game_a=<hashid>&game_b=<hashid>
+GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
 ```
 
 **प्रतिक्रिया**: `{ "joint": { "joint_probability": 0.12, "confidence": 0.3 } }` — Jaccard गुणांक (दोनों गेमों के साझा खिलाड़ी / यूनियन खिलाड़ी) और विश्वास (साझा खिलाड़ी / A गेम खिलाड़ी)।
@@ -1786,7 +1780,7 @@ GET /admin/analytics/probability?game_a=<hashid>&game_b=<hashid>
 ### 16.9 रिटेंशन विश्लेषण
 
 ```
-GET /admin/analytics/retention?days=30
+GET /admin/v1/analytics/retention?days=30
 ```
 
 **प्रतिक्रिया**: `{ "D1": "8.5%", "D3": "...", "D7": "...", "D30": "..." }` पंजीकरण दिवस समूह के अनुसार अगले दिन/3 दिन/7 दिन/30 दिन रिटेंशन दर।
@@ -1794,7 +1788,7 @@ GET /admin/analytics/retention?days=30
 ### 16.10 रूपांतरण फ़नल
 
 ```
-GET /admin/analytics/funnel?days=30
+GET /admin/v1/analytics/funnel?days=30
 ```
 
 **प्रतिक्रिया**: पंजीकरण → पहला टॉप-अप → पहला विनिमय → पहला गेम चार चरणों के `step`, `count`, `rate` (पंजीकरण संख्या के सापेक्ष प्रतिशत)।
@@ -1802,7 +1796,7 @@ GET /admin/analytics/funnel?days=30
 ### 16.11 ARPU/ARPPU ट्रेंड
 
 ```
-GET /admin/analytics/arpu?days=30
+GET /admin/v1/analytics/arpu?days=30
 ```
 
 **प्रतिक्रिया**: `{ "dates": [...], "arpu": [...], "arppu": [...] }` दैनिक प्रति-उपयोगकर्ता राजस्व (ARPU) और प्रति-भुगतान उपयोगकर्ता राजस्व (ARPPU)।
@@ -1810,7 +1804,7 @@ GET /admin/analytics/arpu?days=30
 ### 16.12 गेम आर्थिक मेट्रिक्स
 
 ```
-GET /admin/analytics/economy
+GET /admin/v1/analytics/economy
 ```
 
 **प्रतिक्रिया**: `currencies` सरणी, प्रत्येक में `game_name`, `currency`, `symbol`, `total_minted` (कुल ढलाई), `total_burned` (कुल विनाश), `circulation` (प्रचलन), `inflation_rate` (मुद्रास्फीति दर), bcmath उच्च-परिशुद्धता गणना।
@@ -1821,16 +1815,16 @@ GET /admin/analytics/economy
 
 | विधि | पथ | विवरण |
 |------|------|------|
-| GET | /admin/payment/method/list | भुगतान विधियों की सूची (sort के अनुसार आरोही) |
-| POST | /admin/payment/method/toggle | भुगतान विधि सक्षम/अक्षम करें |
-| POST | /admin/payment/method/create | भुगतान विधि बनाएं |
-| PUT | /admin/payment/method/{hashid} | भुगतान विधि अपडेट करें |
-| DELETE | /admin/payment/method/{hashid} | भुगतान विधि हटाएं (लंबित ऑर्डर होने पर अस्वीकृत) |
+| GET | /admin/v1/payment/method/list | भुगतान विधियों की सूची (sort के अनुसार आरोही) |
+| POST | /admin/v1/payment/method/toggle | भुगतान विधि सक्षम/अक्षम करें |
+| POST | /admin/v1/payment/method/create | भुगतान विधि बनाएं |
+| PUT | /admin/v1/payment/method/{hashid} | भुगतान विधि अपडेट करें |
+| DELETE | /admin/v1/payment/method/{hashid} | भुगतान विधि हटाएं (लंबित ऑर्डर होने पर अस्वीकृत) |
 
 ### 17.1 भुगतान विधियों की सूची
 
 ```
-GET /admin/payment/method/list
+GET /admin/v1/payment/method/list
 ```
 
 - **प्रमाणीकरण**: JWT + RBAC
@@ -1878,7 +1872,7 @@ GET /admin/payment/method/list
 ### 17.2 भुगतान विधि सक्षम/अक्षम करें
 
 ```
-POST /admin/payment/method/toggle
+POST /admin/v1/payment/method/toggle
 ```
 
 **अनुरोध निकाय**:
@@ -1901,7 +1895,7 @@ POST /admin/payment/method/toggle
 ### 17.3 भुगतान विधि बनाएं
 
 ```
-POST /admin/payment/method/create
+POST /admin/v1/payment/method/create
 ```
 
 **अनुरोध निकाय**:
@@ -1947,7 +1941,7 @@ POST /admin/payment/method/create
 ### 17.4 भुगतान विधि अपडेट करें
 
 ```
-PUT /admin/payment/method/{hashid}
+PUT /admin/v1/payment/method/{hashid}
 ```
 
 - **पथ पैरामीटर**: `{hashid}` hashid एन्कोडेड भुगतान विधि ID है
@@ -1960,7 +1954,7 @@ PUT /admin/payment/method/{hashid}
 ### 17.5 भुगतान विधि हटाएं
 
 ```
-DELETE /admin/payment/method/{hashid}
+DELETE /admin/v1/payment/method/{hashid}
 ```
 
 - **पथ पैरामीटर**: `{hashid}` hashid एन्कोडेड भुगतान विधि ID है

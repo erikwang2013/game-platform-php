@@ -8,10 +8,10 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 
 ## 1. ওভারভিউ
 
-ওপেন অ্যাডমিন প্যানেল (open-admin) webman v2-এর উপর নির্মিত, RESTful JSON API প্রদান করে। সব প্রশাসনিক প্যানেল ইন্টারফেসে JWT অথেনটিকেশন ও RBAC পারমিশন ভেরিফিকেশন প্রয়োজন, পাবলিক ইন্টারফেস API ভার্সন হেডারের মাধ্যমে ভার্সনযুক্ত কন্ট্রোলারে রাউট হয়।
+ওপেন অ্যাডমিন প্যানেল (open-admin) webman v2-এর উপর নির্মিত, RESTful JSON API প্রদান করে। সব প্রশাসনিক প্যানেল ইন্টারফেসে JWT অথেনটিকেশন ও RBAC পারমিশন ভেরিফিকেশন প্রয়োজন, পাবলিক এন্ডপয়েন্টগুলো `/api/v1` প্রিফিক্সে এবং অ্যাডমিন এন্ডপয়েন্টগুলো `/admin/v1` প্রিফিক্সে মাউন্ট করা হয়; ভার্সন URL পাথ থেকে নির্ধারিত হয়, হেডার থেকে নয়।
 
 - **বেস URL**: `http://localhost:8787`
-- **API ভার্সন**: রিকোয়েস্ট হেডার `API-Version: v1` দিয়ে নিয়ন্ত্রিত (না থাকলে ডিফল্ট v1)
+- **API ভার্সন**: URL পাথে এনকোড করা — পাবলিক এন্ডপয়েন্ট `/api/v1`-এ, অ্যাডমিন এন্ডপয়েন্ট `/admin/v1`-এ; কোনো ভার্সন হেডার নেই, ভবিষ্যত v2 `/api/v2` গ্রুপ হিসেবে নিবন্ধিত হবে
 
 > **এন্ডপয়েন্ট ওভারভিউ**: অথেনটিকেশন(৫) | ড্যাশবোর্ড(১) | ইউজার(৭) | রোল(৪) | পারমিশন(৪) | কনফিগ(৪) | লগ(১) | ব্যক্তিগত সেন্টার(৩) | ইমপোর্ট-এক্সপোর্ট(৩) | আপলোড(১) | অপারেশন(৪: health/metrics/docs/security.txt) | মোট ৩৭ এন্ডপয়েন্ট
 - **অথেনটিকেশন**: `Authorization: Bearer <token>` (JWT)
@@ -45,7 +45,7 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 
 ## 3. পাবলিক এন্ডপয়েন্ট
 
-সব পাবলিক এন্ডপয়েন্ট `/api` গ্রুপে মাউন্ট করা, `ApiVersion` মিডলওয়্যার `API-Version` হেডার অনুযায়ী সংশ্লিষ্ট ভার্সনযুক্ত কন্ট্রোলারে ডিসপ্যাচ করে (যেমন `app\api\v1\controller\AuthController`)।
+সব পাবলিক এন্ডপয়েন্ট `/api/v1` প্রিফিক্সে এবং অ্যাডমিন এন্ডপয়েন্ট `/admin/v1` প্রিফিক্সে মাউন্ট করা হয়; রুট গ্রুপ প্রিফিক্স দিয়ে ভার্সন নির্ধারিত হয়; কোনো ভার্সন রিকোয়েস্ট হেডার ব্যবহার হয় না। পাবলিক কন্ট্রোলারের উদাহরণ: `app\api\v1\controller\AuthController`।
 
 ### 3.1 হেলথ চেক
 
@@ -88,11 +88,10 @@ GET /api/docs
 ### 3.3 ক্লিক ক্যাপচা জেনারেট
 
 ```
-POST /api/captcha/generate
+POST /api/v1/captcha/generate
 ```
 
 - **অথেনটিকেশন**: প্রয়োজন নেই
-- **রিকোয়েস্ট হেডার**: `API-Version: v1` (বাধ্যতামূলক)
 - **রেট লিমিট**: গ্লোবাল ডিফল্ট (৬০ বার/মিনিট)
 
 **রিকোয়েস্ট বডি**:
@@ -134,11 +133,10 @@ POST /api/captcha/generate
 ### 3.4 ক্লিক ক্যাপচা ভেরিফাই
 
 ```
-POST /api/captcha/verify
+POST /api/v1/captcha/verify
 ```
 
 - **অথেনটিকেশন**: প্রয়োজন নেই
-- **রিকোয়েস্ট হেডার**: `API-Version: v1` (বাধ্যতামূলক)
 - **রেট লিমিট**: গ্লোবাল ডিফল্ট (৬০ বার/মিনিট)
 
 **রিকোয়েস্ট বডি**:
@@ -171,11 +169,10 @@ POST /api/captcha/verify
 ### 3.5 লগইন
 
 ```
-POST /api/auth/login
+POST /api/v1/auth/login
 ```
 
 - **অথেনটিকেশন**: প্রয়োজন নেই
-- **রিকোয়েস্ট হেডার**: `API-Version: v1` (বাধ্যতামূলক)
 - **রেট লিমিট**: ১০ বার/মিনিট (IP + পাথ অনুযায়ী)
 
 **রিকোয়েস্ট বডি**:
@@ -235,11 +232,10 @@ POST /api/auth/login
 ### 3.6 রেজিস্ট্রেশন
 
 ```
-POST /api/auth/register
+POST /api/v1/auth/register
 ```
 
 - **অথেনটিকেশন**: প্রয়োজন নেই
-- **রিকোয়েস্ট হেডার**: `API-Version: v1` (বাধ্যতামূলক)
 - **রেট লিমিট**: ৫ বার/মিনিট (IP + পাথ অনুযায়ী)
 
 **রিকোয়েস্ট বডি**:
@@ -287,11 +283,10 @@ POST /api/auth/register
 ### 3.7 টোকেন রিফ্রেশ
 
 ```
-POST /api/auth/refresh
+POST /api/v1/auth/refresh
 ```
 
 - **অথেনটিকেশন**: প্রয়োজন নেই
-- **রিকোয়েস্ট হেডার**: `API-Version: v1` (বাধ্যতামূলক)
 - **রেট লিমিট**: গ্লোবাল ডিফল্ট (৬০ বার/মিনিট)
 
 **রিকোয়েস্ট বডি**:
@@ -369,12 +364,12 @@ openadmin_memory_usage_bytes 18874368
 
 ## 4. ড্যাশবোর্ড
 
-সব প্রশাসনিক প্যানেল ইন্টারফেস `/admin` গ্রুপে মাউন্ট করা, `AdminAuth` (JWT অথেনটিকেশন), `AdminPermission` (RBAC পারমিশন ভেরিফিকেশন), `OperationLog` (অপারেশন রেকর্ড) তিনটি মিডলওয়্যারের মধ্য দিয়ে যায়।
+সব প্রশাসনিক প্যানেল ইন্টারফেস `/admin/v1` প্রিফিক্সে মাউন্ট করা, `AdminAuth` (JWT অথেনটিকেশন), `AdminPermission` (RBAC পারমিশন ভেরিফিকেশন), `OperationLog` (অপারেশন রেকর্ড) তিনটি মিডলওয়্যারের মধ্য দিয়ে যায়।
 
 ### 4.1 ড্যাশবোর্ড ডেটা
 
 ```
-GET /admin/dashboard
+GET /admin/v1/dashboard
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -431,7 +426,7 @@ GET /admin/dashboard
         "id": "hashid...",
         "action": "用户登录",
         "method": "POST",
-        "path": "/api/auth/login",
+        "path": "/api/v1/auth/login",
         "ip": "192.168.1.1",
         "user_name": "admin",
         "created_at": "2026-05-21 10:30:00"
@@ -461,7 +456,7 @@ GET /admin/dashboard
 ### 5.1 ইউজার তালিকা
 
 ```
-GET /admin/user
+GET /admin/v1/user
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -514,7 +509,7 @@ GET /admin/user
 ### 5.2 ইউজার তৈরি
 
 ```
-POST /admin/user
+POST /admin/v1/user
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -564,7 +559,7 @@ POST /admin/user
 ### 5.3 ইউজার ডিটেইল
 
 ```
-GET /admin/user/{id}
+GET /admin/v1/user/{id}
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -598,7 +593,7 @@ GET /admin/user/{id}
 ### 5.4 ইউজার আপডেট
 
 ```
-PUT /admin/user/{id}
+PUT /admin/v1/user/{id}
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -646,7 +641,7 @@ PUT /admin/user/{id}
 ### 5.5 ইউজার ডিলিট
 
 ```
-DELETE /admin/user/{id}
+DELETE /admin/v1/user/{id}
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -683,7 +678,7 @@ DELETE /admin/user/{id}
 ### 5.6 ব্যাচ ইউজার ডিলিট
 
 ```
-POST /admin/user/batch/destroy
+POST /admin/v1/user/batch/destroy
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -723,7 +718,7 @@ POST /admin/user/batch/destroy
 ### 5.7 ব্যাচ ইউজার এনাবল/ডিসেবল
 
 ```
-POST /admin/user/batch/status
+POST /admin/v1/user/batch/status
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -763,7 +758,7 @@ status মান অনুযায়ী message গতিশীলভাবে
 ### 6.1 রোল তালিকা
 
 ```
-GET /admin/role
+GET /admin/v1/role
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -811,7 +806,7 @@ GET /admin/role
 ### 6.2 রোল তৈরি
 
 ```
-POST /admin/role
+POST /admin/v1/role
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -853,7 +848,7 @@ POST /admin/role
 ### 6.3 রোল আপডেট
 
 ```
-PUT /admin/role/{id}
+PUT /admin/v1/role/{id}
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -893,7 +888,7 @@ PUT /admin/role/{id}
 ### 6.4 রোল ডিলিট
 
 ```
-DELETE /admin/role/{id}
+DELETE /admin/v1/role/{id}
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -924,7 +919,7 @@ DELETE /admin/role/{id}
 ### 7.1 পারমিশন ট্রি
 
 ```
-GET /admin/permission
+GET /admin/v1/permission
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -939,7 +934,7 @@ GET /admin/permission
       "id": "p1p2p3p4",
       "parent_id": "0",
       "name": "用户管理",
-      "slug": "/admin/user",
+      "slug": "/admin/v1/user",
       "type": 1,
       "icon": "people",
       "path": "/user",
@@ -950,7 +945,7 @@ GET /admin/permission
           "id": "p5p6p7p8",
           "parent_id": "p1p2p3p4",
           "name": "用户列表",
-          "slug": "/admin/user/index",
+          "slug": "/admin/v1/user/index",
           "type": 2,
           "icon": "",
           "path": "/user/index",
@@ -977,7 +972,7 @@ GET /admin/permission
 ### 7.2 পারমিশন তৈরি
 
 ```
-POST /admin/permission
+POST /admin/v1/permission
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -987,7 +982,7 @@ POST /admin/permission
 {
   "parent_id": 0,
   "name": "系统设置",
-  "slug": "/admin/config",
+  "slug": "/admin/v1/config",
   "type": 1,
   "icon": "settings",
   "path": "/config",
@@ -1014,7 +1009,7 @@ POST /admin/permission
     "id": "p9p0a1b2",
     "parent_id": "0",
     "name": "系统设置",
-    "slug": "/admin/config",
+    "slug": "/admin/v1/config",
     "type": 1,
     "icon": "settings",
     "path": "/config",
@@ -1026,7 +1021,7 @@ POST /admin/permission
 ### 7.3 পারমিশন আপডেট
 
 ```
-PUT /admin/permission/{id}
+PUT /admin/v1/permission/{id}
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -1051,7 +1046,7 @@ PUT /admin/permission/{id}
 ### 7.4 পারমিশন ডিলিট
 
 ```
-DELETE /admin/permission/{id}
+DELETE /admin/v1/permission/{id}
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -1082,7 +1077,7 @@ DELETE /admin/permission/{id}
 ### 8.1 কনফিগ তালিকা
 
 ```
-GET /admin/config
+GET /admin/v1/config
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -1131,7 +1126,7 @@ GET /admin/config
 ### 8.2 কনফিগ তৈরি
 
 ```
-POST /admin/config
+POST /admin/v1/config
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -1177,7 +1172,7 @@ POST /admin/config
 ### 8.3 কনফিগ আপডেট
 
 ```
-PUT /admin/config/{id}
+PUT /admin/v1/config/{id}
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -1200,7 +1195,7 @@ PUT /admin/config/{id}
 ### 8.4 কনফিগ ডিলিট
 
 ```
-DELETE /admin/config/{id}
+DELETE /admin/v1/config/{id}
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -1222,7 +1217,7 @@ DELETE /admin/config/{id}
 ### 9.1 অপারেশন লগ তালিকা
 
 ```
-GET /admin/log
+GET /admin/v1/log
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -1251,7 +1246,7 @@ GET /admin/log
         "user_name": "admin",
         "action": "用户登录",
         "method": "POST",
-        "path": "/api/auth/login",
+        "path": "/api/v1/auth/login",
         "ip": "192.168.1.1",
         "source": "web",
         "input": "{\"username\":\"admin\"}",
@@ -1284,7 +1279,7 @@ GET /admin/log
 ### 10.1 ব্যক্তিগত তথ্য আপডেট
 
 ```
-PUT /admin/profile
+PUT /admin/v1/profile
 ```
 
 - **অথেনটিকেশন**: JWT
@@ -1326,7 +1321,7 @@ PUT /admin/profile
 ### 10.2 পাসওয়ার্ড পরিবর্তন
 
 ```
-PUT /admin/profile/password
+PUT /admin/v1/profile/password
 ```
 
 - **অথেনটিকেশন**: JWT
@@ -1361,7 +1356,7 @@ PUT /admin/profile/password
 ### 10.3 লগআউট
 
 ```
-POST /admin/profile/logout
+POST /admin/v1/profile/logout
 ```
 
 - **অথেনটিকেশন**: JWT
@@ -1386,7 +1381,7 @@ token না থাকলে 401 ফেরত আসে। token মেয়া
 ### 11.1 Excel এক্সপোর্ট
 
 ```
-POST /admin/export/excel
+POST /admin/v1/export/excel
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -1425,7 +1420,7 @@ POST /admin/export/excel
 ### 11.2 PDF এক্সপোর্ট
 
 ```
-POST /admin/export/pdf
+POST /admin/v1/export/pdf
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -1472,7 +1467,7 @@ PDF টেমপ্লেটে কপিরাইট তথ্য ও এক্
 ### 11.3 ইউজার ইমপোর্ট (Excel)
 
 ```
-POST /admin/import/users
+POST /admin/v1/import/users
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -1524,7 +1519,7 @@ POST /admin/import/users
 ## 12. ফাইল আপলোড
 
 ```
-POST /admin/upload
+POST /admin/v1/upload
 ```
 
 - **অথেনটিকেশন**: JWT + RBAC
@@ -1573,8 +1568,8 @@ POST /admin/upload
 
 রেট লিমিট বিস্তারিত:
 - ডিফল্ট গ্লোবাল সীমা: ৬০ বার/মিনিট / IP+পাথ
-- লগইন এন্ডপয়েন্ট `/api/auth/login`: ১০ বার/মিনিট
-- রেজিস্ট্রেশন এন্ডপয়েন্ট `/api/auth/register`: ৫ বার/মিনিট
+- লগইন এন্ডপয়েন্ট `/api/v1/auth/login`: ১০ বার/মিনিট
+- রেজিস্ট্রেশন এন্ডপয়েন্ট `/api/v1/auth/register`: ৫ বার/মিনিট
 - Redis অ্যাটমিক স্লাইডিং উইন্ডো অ্যালগরিদম (Lua ZSET), TOCTOU রেস এড়ানো হয়
 - Redis অনুপলব্ধ হলে fail-closed: 503 ফেরত আসে (`Retry-After: 5`), রিকোয়েস্ট ছাড় দেওয়া হয় না
 
@@ -1584,18 +1579,18 @@ POST /admin/upload
 
 | মেথড | পাথ | বিবরণ |
 |------|------|------|
-| GET | /admin/analytics/overview | প্ল্যাটফর্ম ওভারভিউ (আজ/সাম্প্রতিক ৭ দিন) |
-| GET | /admin/analytics/game-ranking | গেম র্যাঙ্কিং (?days=7) |
-| GET | /admin/analytics/dau-trend | DAU ট্রেন্ড (?days=30) |
-| GET | /admin/analytics/hourly-trend | ঘণ্টাভিত্তিক ট্রেন্ড |
-| GET | /admin/analytics/action-distribution | আচরণ বিতরণ |
-| GET | /admin/analytics/revenue | রেভিনিউ অ্যানালাইসিস |
-| GET | /admin/analytics/conversion | গেম কনভার্সন রেট |
-| GET | /admin/analytics/probability | জয়েন্ট/কন্ডিশনাল প্রোবাবিলিটি |
-| GET | /admin/analytics/retention | রিটেনশন অ্যানালাইসিস D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | কনভার্সন ফানেল |
-| GET | /admin/analytics/arpu | ARPU/ARPPU ট্রেন্ড |
-| GET | /admin/analytics/economy | গেম কারেন্সি ইকোনমি মেট্রিক |
+| GET | /admin/v1/analytics/overview | প্ল্যাটফর্ম ওভারভিউ (আজ/সাম্প্রতিক ৭ দিন) |
+| GET | /admin/v1/analytics/game-ranking | গেম র্যাঙ্কিং (?days=7) |
+| GET | /admin/v1/analytics/dau-trend | DAU ট্রেন্ড (?days=30) |
+| GET | /admin/v1/analytics/hourly-trend | ঘণ্টাভিত্তিক ট্রেন্ড |
+| GET | /admin/v1/analytics/action-distribution | আচরণ বিতরণ |
+| GET | /admin/v1/analytics/revenue | রেভিনিউ অ্যানালাইসিস |
+| GET | /admin/v1/analytics/conversion | গেম কনভার্সন রেট |
+| GET | /admin/v1/analytics/probability | জয়েন্ট/কন্ডিশনাল প্রোবাবিলিটি |
+| GET | /admin/v1/analytics/retention | রিটেনশন অ্যানালাইসিস D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | কনভার্সন ফানেল |
+| GET | /admin/v1/analytics/arpu | ARPU/ARPPU ট্রেন্ড |
+| GET | /admin/v1/analytics/economy | গেম কারেন্সি ইকোনমি মেট্রিক |
 
 ## 15. টিকিট ম্যানেজমেন্ট (Ticket)
 
@@ -1603,26 +1598,25 @@ POST /admin/upload
 
 | মেথড | পাথ | বিবরণ |
 |------|------|------|
-| GET | /admin/ticket/list | টিকিট তালিকা (?page=&limit=&status=&type=) |
-| GET | /admin/ticket/{hashid} | টিকিট বিস্তারিত (রিপ্লাই সহ) |
-| POST | /admin/ticket/{hashid}/reply | টিকিটে রিপ্লাই |
-| POST | /admin/ticket/{hashid}/close | টিকিট বন্ধ |
-| POST | /admin/ticket/{hashid}/assign | হ্যান্ডলার নির্ধারণ (admin_id) |
+| GET | /admin/v1/ticket/list | টিকিট তালিকা (?page=&limit=&status=&type=) |
+| GET | /admin/v1/ticket/{hashid} | টিকিট বিস্তারিত (রিপ্লাই সহ) |
+| POST | /admin/v1/ticket/{hashid}/reply | টিকিটে রিপ্লাই |
+| POST | /admin/v1/ticket/{hashid}/close | টিকিট বন্ধ |
+| POST | /admin/v1/ticket/{hashid}/assign | হ্যান্ডলার নির্ধারণ (admin_id) |
 
 ## 16. অথেনটিকেশন ফ্লো
 
 সম্পূর্ণ অথেনটিকেশন সিকোয়েন্স:
 
 ```
-1. 客户端请求 POST /api/captcha/generate
-   (请求头: API-Version: v1)
+1. 客户端请求 POST /api/v1/captcha/generate
     ↓
    服务端返回: key + base64 图片 + 点击目标提示
    
 2. 用户点击图片目标位置，前/客户端收集点击坐标
    
-3. 客户端请求 POST /api/auth/login
-   (请求头: API-Version: v1, Content-Type: application/json)
+3. 客户端请求 POST /api/v1/auth/login
+   (请求头: Content-Type: application/json)
    请求体: { username, password, captcha_key, clicks: [{x,y}, ...] }
     ↓
    服务端:
@@ -1655,7 +1649,7 @@ POST /admin/upload
    Response + X-RateLimit-* 头
 
 5. Access Token 过期前刷新
-   客户端请求 POST /api/auth/refresh
+   客户端请求 POST /api/v1/auth/refresh
    请求体: { refresh_token: "..." }
     ↓
    服务端解码 refresh_token → 签发新 access + refresh
@@ -1663,7 +1657,7 @@ POST /admin/upload
    客户端更新本地令牌
 
 6. 登出
-   客户端请求 POST /admin/profile/logout
+   客户端请求 POST /admin/v1/profile/logout
    请求头: Authorization: Bearer <access_token>
     ↓
    服务端:
@@ -1722,7 +1716,7 @@ docker-compose up -d
 ### 16.1 প্ল্যাটফর্ম ওভারভিউ
 
 ```
-GET /admin/analytics/overview
+GET /admin/v1/analytics/overview
 ```
 
 **রেসপন্স**: `today` / `week` প্রতিটিতে `dau` (সক্রিয় ইউজার সংখ্যা), `revenue` (কনফার্মড টপ-আপ মোট, স্ট্রিং), `new_users` (নতুন ইউজার সংখ্যা)।
@@ -1730,7 +1724,7 @@ GET /admin/analytics/overview
 ### 16.2 গেম র্যাঙ্কিং
 
 ```
-GET /admin/analytics/game-ranking?days=7
+GET /admin/v1/analytics/game-ranking?days=7
 ```
 
 **রেসপন্স**: গেম আচরণ সংখ্যার অবরোহ ক্রমে শীর্ষ ১০, প্রতিটিতে `game_id` (hashid), `name`, `plays`, `players`।
@@ -1738,7 +1732,7 @@ GET /admin/analytics/game-ranking?days=7
 ### 16.3 DAU ট্রেন্ড
 
 ```
-GET /admin/analytics/dau-trend?days=30
+GET /admin/v1/analytics/dau-trend?days=30
 ```
 
 **রেসপন্স**: `{ "日期": 活跃数, ... }`, অনুপস্থিত তারিখে 0 বসে।
@@ -1746,7 +1740,7 @@ GET /admin/analytics/dau-trend?days=30
 ### 16.4 ঘণ্টাভিত্তিক ট্রেন্ড
 
 ```
-GET /admin/analytics/hourly-trend?game_id=<hashid>
+GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
 ```
 
 **রেসপন্স**: `{ "0": 次数, ... "23": 次数 }` ২৪টি ঘণ্টার স্লট; `game_id` খালি হলে সব গেমের হিসাব।
@@ -1754,7 +1748,7 @@ GET /admin/analytics/hourly-trend?game_id=<hashid>
 ### 16.5 আচরণ বিতরণ
 
 ```
-GET /admin/analytics/action-distribution?game_id=<hashid>&hours=24
+GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
 ```
 
 **রেসপন্স**: `{ "start": n, "end": n, "earn": n, "spend": n }` চার ধরনের আচরণ কাউন্ট; `hours` সর্বোচ্চ 168।
@@ -1762,7 +1756,7 @@ GET /admin/analytics/action-distribution?game_id=<hashid>&hours=24
 ### 16.6 রেভিনিউ ওভারভিউ
 
 ```
-GET /admin/analytics/revenue?days=7
+GET /admin/v1/analytics/revenue?days=7
 ```
 
 **রেসপন্স**: `{ "total": "总额", "trend": { "日期": "当日额", ... } }`, শুধুমাত্র `status=confirmed` অর্ডার গণনা করা হয়।
@@ -1770,7 +1764,7 @@ GET /admin/analytics/revenue?days=7
 ### 16.7 গেম কনভার্সন রেট
 
 ```
-GET /admin/analytics/conversion?days=30
+GET /admin/v1/analytics/conversion?days=30
 ```
 
 **রেসপন্স**: প্রতিটি গেমে `game_id` (hashid), `game_name`, `players` (ডিডুপ্লিকেটেড প্লেয়ার সংখ্যা), `depositors` (ডিডুপ্লিকেটেড টপ-আপ ইউজার সংখ্যা), `conversion_rate` (টপ-আপ কনভার্সন রেট, 0~1)।
@@ -1778,7 +1772,7 @@ GET /admin/analytics/conversion?days=30
 ### 16.8 জয়েন্ট প্রোবাবিলিটি
 
 ```
-GET /admin/analytics/probability?game_a=<hashid>&game_b=<hashid>
+GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
 ```
 
 **রেসপন্স**: `{ "joint": { "joint_probability": 0.12, "confidence": 0.3 } }` — Jaccard সহগ (দুই গেমের কমন প্লেয়ার / ইউনিয়ন প্লেয়ার) ও কনফিডেন্স (কমন প্লেয়ার / A গেমের প্লেয়ার)।
@@ -1786,7 +1780,7 @@ GET /admin/analytics/probability?game_a=<hashid>&game_b=<hashid>
 ### 16.9 রিটেনশন অ্যানালাইসিস
 
 ```
-GET /admin/analytics/retention?days=30
+GET /admin/v1/analytics/retention?days=30
 ```
 
 **রেসপন্স**: `{ "D1": "8.5%", "D3": "...", "D7": "...", "D30": "..." }` রেজিস্ট্রেশন তারিখ অনুযায়ী গ্রুপে পরের দিন/৩ দিন/৭ দিন/৩০ দিনের রিটেনশন রেট।
@@ -1794,7 +1788,7 @@ GET /admin/analytics/retention?days=30
 ### 16.10 কনভার্সন ফানেল
 
 ```
-GET /admin/analytics/funnel?days=30
+GET /admin/v1/analytics/funnel?days=30
 ```
 
 **রেসপন্স**: রেজিস্ট্রেশন → প্রথম টপ-আপ → প্রথম বিনিময় → প্রথম গেম চারটি ধাপের `step`, `count`, `rate` (রেজিস্ট্রেশন সংখ্যার সাপেক্ষে শতাংশ)।
@@ -1802,7 +1796,7 @@ GET /admin/analytics/funnel?days=30
 ### 16.11 ARPU/ARPPU ট্রেন্ড
 
 ```
-GET /admin/analytics/arpu?days=30
+GET /admin/v1/analytics/arpu?days=30
 ```
 
 **রেসপন্স**: `{ "dates": [...], "arpu": [...], "arppu": [...] }` দৈনিক জনপ্রতি রেভিনিউ (ARPU) ও পেইং ইউজার জনপ্রতি রেভিনিউ (ARPPU)।
@@ -1810,7 +1804,7 @@ GET /admin/analytics/arpu?days=30
 ### 16.12 গেম ইকোনমি মেট্রিক
 
 ```
-GET /admin/analytics/economy
+GET /admin/v1/analytics/economy
 ```
 
 **রেসপন্স**: `currencies` অ্যারে, প্রতিটিতে `game_name`, `currency`, `symbol`, `total_minted` (মোট মিন্টেড), `total_burned` (মোট বার্নড), `circulation` (সার্কুলেশন), `inflation_rate` (ইনফ্লেশন রেট), bcmath উচ্চ-নির্ভুলতা গণনা ব্যবহৃত।
@@ -1821,16 +1815,16 @@ GET /admin/analytics/economy
 
 | পদ্ধতি | পথ | বিবরণ |
 |------|------|------|
-| GET | /admin/payment/method/list | পেমেন্ট পদ্ধতির তালিকা (sort অনুযায়ী ঊর্ধ্বক্রম) |
-| POST | /admin/payment/method/toggle | পেমেন্ট পদ্ধতি সক্রিয়/নিষ্ক্রিয় করা |
-| POST | /admin/payment/method/create | পেমেন্ট পদ্ধতি তৈরি করা |
-| PUT | /admin/payment/method/{hashid} | পেমেন্ট পদ্ধতি আপডেট করা |
-| DELETE | /admin/payment/method/{hashid} | পেমেন্ট পদ্ধতি মুছে ফেলা (pending অর্ডার থাকলে প্রত্যাখ্যান) |
+| GET | /admin/v1/payment/method/list | পেমেন্ট পদ্ধতির তালিকা (sort অনুযায়ী ঊর্ধ্বক্রম) |
+| POST | /admin/v1/payment/method/toggle | পেমেন্ট পদ্ধতি সক্রিয়/নিষ্ক্রিয় করা |
+| POST | /admin/v1/payment/method/create | পেমেন্ট পদ্ধতি তৈরি করা |
+| PUT | /admin/v1/payment/method/{hashid} | পেমেন্ট পদ্ধতি আপডেট করা |
+| DELETE | /admin/v1/payment/method/{hashid} | পেমেন্ট পদ্ধতি মুছে ফেলা (pending অর্ডার থাকলে প্রত্যাখ্যান) |
 
 ### 17.1 পেমেন্ট পদ্ধতির তালিকা
 
 ```
-GET /admin/payment/method/list
+GET /admin/v1/payment/method/list
 ```
 
 - **প্রমাণীকরণ**: JWT + RBAC
@@ -1878,7 +1872,7 @@ GET /admin/payment/method/list
 ### 17.2 পেমেন্ট পদ্ধতি সক্রিয়/নিষ্ক্রিয় করা
 
 ```
-POST /admin/payment/method/toggle
+POST /admin/v1/payment/method/toggle
 ```
 
 **অনুরোধ বডি**:
@@ -1901,7 +1895,7 @@ POST /admin/payment/method/toggle
 ### 17.3 পেমেন্ট পদ্ধতি তৈরি করা
 
 ```
-POST /admin/payment/method/create
+POST /admin/v1/payment/method/create
 ```
 
 **অনুরোধ বডি**:
@@ -1947,7 +1941,7 @@ POST /admin/payment/method/create
 ### 17.4 পেমেন্ট পদ্ধতি আপডেট করা
 
 ```
-PUT /admin/payment/method/{hashid}
+PUT /admin/v1/payment/method/{hashid}
 ```
 
 - **পথ প্যারামিটার**: `{hashid}` হলো hashid এনকোডেড পেমেন্ট পদ্ধতি ID
@@ -1960,7 +1954,7 @@ PUT /admin/payment/method/{hashid}
 ### 17.5 পেমেন্ট পদ্ধতি মুছে ফেলা
 
 ```
-DELETE /admin/payment/method/{hashid}
+DELETE /admin/v1/payment/method/{hashid}
 ```
 
 - **পথ প্যারামিটার**: `{hashid}` হলো hashid এনকোডেড পেমেন্ট পদ্ধতি ID

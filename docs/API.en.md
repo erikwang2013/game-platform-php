@@ -24,7 +24,6 @@ Online interactive documentation (with live debugging support):
 
 ```
 Content-Type: application/json
-API-Version: v1
 Authorization: Bearer <token>    (需要认证的接口)
 ```
 
@@ -75,7 +74,7 @@ All IDs in API requests and responses are Hashids-encoded strings, not raw BIGIN
 
 ### 2.1 Authentication
 
-#### POST /api/auth/register — User Registration
+#### POST /api/v1/auth/register — User Registration
 ```
 请求: {
   "username": "player1",
@@ -95,7 +94,7 @@ All IDs in API requests and responses are Hashids-encoded strings, not raw BIGIN
 }
 ```
 
-#### POST /api/auth/login — User Login
+#### POST /api/v1/auth/login — User Login
 ```
 请求: {
   "username": "player1",
@@ -111,7 +110,7 @@ All IDs in API requests and responses are Hashids-encoded strings, not raw BIGIN
 
 错误: 401 用户名或密码错误 / 账号已被禁用
 
-#### POST /api/auth/refresh — Refresh Token
+#### POST /api/v1/auth/refresh — Refresh Token
 ```
 请求: (Authorization: Bearer <refresh_token>)
 
@@ -123,7 +122,7 @@ All IDs in API requests and responses are Hashids-encoded strings, not raw BIGIN
 
 ### 2.2 Wallet
 
-#### GET /api/wallet/info — Wallet Info
+#### GET /api/v1/wallet/info — Wallet Info
 ```
 需认证: 是
 
@@ -135,7 +134,7 @@ All IDs in API requests and responses are Hashids-encoded strings, not raw BIGIN
 }
 ```
 
-#### GET /api/wallet/transactions — Transaction Records
+#### GET /api/v1/wallet/transactions — Transaction Records
 ```
 需认证: 是
 参数: ?page=1&per_page=20&type=deposit    (type 可选)
@@ -161,7 +160,7 @@ type 可选值: deposit / withdraw / exchange_in / exchange_out / game_earn / ga
 
 ### 2.3 Deposit
 
-#### POST /api/deposit/create — Create Deposit Order
+#### POST /api/v1/deposit/create — Create Deposit Order
 ```
 需认证: 是
 
@@ -185,7 +184,7 @@ currency 可选值: USD / CNY / EUR
 
 checkout_url: payment gateway redirect link (filled in at order creation); expires_at: payment link expiry (1 hour after creation)
 
-#### GET /api/deposit/orders — Deposit Records
+#### GET /api/v1/deposit/orders — Deposit Records
 ```
 需认证: 是
 参数: ?page=1&per_page=20
@@ -213,7 +212,7 @@ status 可选值: pending / paid / confirmed / cancelled
 
 ### 2.4 Exchange
 
-#### POST /api/exchange/quote — Quote
+#### POST /api/v1/exchange/quote — Quote
 ```
 需认证: 是
 
@@ -235,7 +234,7 @@ status 可选值: pending / paid / confirmed / cancelled
 
 direction: in=买入游戏币 / out=卖出游戏币
 
-#### POST /api/exchange/buy — Buy Game Currency
+#### POST /api/v1/exchange/buy — Buy Game Currency
 ```
 需认证: 是
 
@@ -256,7 +255,7 @@ direction: in=买入游戏币 / out=卖出游戏币
 
 错误: 422 平台币余额不足 / 404 游戏不可用
 
-#### POST /api/exchange/sell — Sell Game Currency
+#### POST /api/v1/exchange/sell — Sell Game Currency
 ```
 需认证: 是
 
@@ -277,7 +276,7 @@ direction: in=买入游戏币 / out=卖出游戏币
 
 错误: 422 游戏币余额不足
 
-#### GET /api/exchange/records — Exchange Records
+#### GET /api/v1/exchange/records — Exchange Records
 ```
 需认证: 是
 参数: ?page=1&per_page=20
@@ -303,7 +302,7 @@ direction: in=买入游戏币 / out=卖出游戏币
 
 ### 2.5 Withdrawal
 
-#### POST /api/withdraw/apply — Withdrawal Application
+#### POST /api/v1/withdraw/apply — Withdrawal Application
 ```
 需认证: 是
 
@@ -332,7 +331,7 @@ status:
 - 400 超过每日提现限额
 - 400 余额不足
 
-#### GET /api/withdraw/orders — Withdrawal Records
+#### GET /api/v1/withdraw/orders — Withdrawal Records
 ```
 需认证: 是
 参数: ?page=1&per_page=20
@@ -357,7 +356,7 @@ status:
 
 ### 2.6 Games
 
-#### GET /api/game/list — Game List
+#### GET /api/v1/game/list — Game List
 ```
 参数: ?page=1&per_page=20&keyword=射击&type=self
 
@@ -390,7 +389,7 @@ status:
 
 type 可选值: self / third_party
 
-#### GET /api/game/{hashid} — Game Detail
+#### GET /api/v1/game/{hashid} — Game Detail
 ```
 响应: {
   "id": "...",
@@ -413,7 +412,7 @@ type 可选值: self / third_party
 }
 ```
 
-#### POST /api/game/launch — Launch Game
+#### POST /api/v1/game/launch — Launch Game
 ```
 需认证: 是
 
@@ -431,7 +430,7 @@ type 可选值: self / third_party
 
 7 platforms supported: Google / Facebook / Apple / X(Twitter) / Microsoft / LinkedIn / GitHub
 
-#### GET /api/auth/oauth/{provider} — Get Authorization URL
+#### GET /api/v1/auth/oauth/{provider} — Get Authorization URL
 ```
 参数: provider = google / facebook / apple / twitter / microsoft / linkedin / github
 
@@ -440,7 +439,7 @@ type 可选值: self / third_party
 }
 ```
 
-#### POST /api/auth/oauth/{provider}/callback — OAuth Callback
+#### POST /api/v1/auth/oauth/{provider}/callback — OAuth Callback
 ```
 请求: { "code": "授权码", "state": "防CSRF状态" }
 
@@ -456,7 +455,7 @@ is_new: true=新注册用户 / false=已有账号绑定
 
 ### 2.8 KYC Real-Name Verification
 
-#### GET /api/user/identity/status — Verification Status
+#### GET /api/v1/user/identity/status — Verification Status
 ```
 需认证: 是
 
@@ -470,7 +469,7 @@ is_new: true=新注册用户 / false=已有账号绑定
 }
 ```
 
-#### POST /api/user/identity/apply — Submit Verification
+#### POST /api/v1/user/identity/apply — Submit Verification
 ```
 需认证: 是
 
@@ -487,7 +486,7 @@ is_new: true=新注册用户 / false=已有账号绑定
 
 ### 2.9 Payments
 
-#### POST /api/payment/callback — Payment Callback (public)
+#### POST /api/v1/payment/callback — Payment Callback (public)
 ```
 请求: {
   "order_no": "DEP202605221030000123",
@@ -521,7 +520,7 @@ provider values: stripe / paypal / nowpayments / coinbase / skrill / neteller / 
 | mpesa | Kenya / Tanzania etc. (coming soon) | — | KES / TZS |
 | paystack | Nigeria (coming soon) | — | NGN |
 
-#### GET /api/payment/methods — Available Payment Methods (public)
+#### GET /api/v1/payment/methods — Available Payment Methods (public)
 ```
 响应: {
   "list": [
@@ -534,7 +533,7 @@ Filtered by user country (X-Language/Accept-Language → country code mapping): 
 
 ### 2.10 Game Play Logs
 
-#### GET /api/game/play-logs — Game Play Log List
+#### GET /api/v1/game/play-logs — Game Play Log List
 ```
 需认证: 是
 参数: ?page=1&per_page=20&game_id=xxx&action=start
@@ -553,7 +552,7 @@ Filtered by user country (X-Language/Accept-Language → country code mapping): 
 }
 ```
 
-#### GET /api/game/play-log/{hashid} — Game Play Log Detail
+#### GET /api/v1/game/play-log/{hashid} — Game Play Log Detail
 ```
 需认证: 是
 响应: { 完整记录，含 session_id / game_amount_before / after 等 }
@@ -561,7 +560,7 @@ Filtered by user country (X-Language/Accept-Language → country code mapping): 
 
 ### 2.12 Leaderboards
 
-#### GET /api/leaderboard/list — Leaderboard List
+#### GET /api/v1/leaderboard/list — Leaderboard List
 ```
 响应: {
   "list": [
@@ -570,7 +569,7 @@ Filtered by user country (X-Language/Accept-Language → country code mapping): 
 }
 ```
 
-#### GET /api/leaderboard/{hashid} — Leaderboard Detail
+#### GET /api/v1/leaderboard/{hashid} — Leaderboard Detail
 ```
 响应: {
   "id": "...",
@@ -584,20 +583,20 @@ Filtered by user country (X-Language/Accept-Language → country code mapping): 
 
 ### 2.13 Coupons
 
-#### GET /api/coupon/available — Available Coupons
+#### GET /api/v1/coupon/available — Available Coupons
 ```
 需认证: 是
 响应: { "list": [{ "id": "...", "name": "新人礼包", "type": "fixed", "value": "10.0000" }] }
 ```
 
-#### POST /api/coupon/claim — Claim Coupon
+#### POST /api/v1/coupon/claim — Claim Coupon
 ```
 需认证: 是
 请求: { "coupon_id": "hashid" }
 响应: { "coupon": { ... } }
 ```
 
-#### GET /api/coupon/my — My Coupons
+#### GET /api/v1/coupon/my — My Coupons
 ```
 需认证: 是
 参数: ?status=unused
@@ -606,7 +605,7 @@ Filtered by user country (X-Language/Accept-Language → country code mapping): 
 
 ### 2.14 Country Config
 
-#### GET /api/country/list — Country List
+#### GET /api/v1/country/list — Country List
 ```
 响应: {
   "list": [
@@ -615,7 +614,7 @@ Filtered by user country (X-Language/Accept-Language → country code mapping): 
 }
 ```
 
-#### GET /api/country/{code} — Country Detail
+#### GET /api/v1/country/{code} — Country Detail
 ```
 响应: {
   "country_code": "US",
@@ -628,7 +627,7 @@ Filtered by user country (X-Language/Accept-Language → country code mapping): 
 
 ### 2.16 Notifications
 
-#### GET /api/notification/list — Notification List
+#### GET /api/v1/notification/list — Notification List
 ```
 需认证: 是
 参数: ?page=1&per_page=20&is_read=0
@@ -641,13 +640,13 @@ Filtered by user country (X-Language/Accept-Language → country code mapping): 
 }
 ```
 
-#### GET /api/notification/unread-count — Unread Count
+#### GET /api/v1/notification/unread-count — Unread Count
 ```
 需认证: 是
 响应: { "count": 3 }
 ```
 
-#### POST /api/notification/read — Mark as Read
+#### POST /api/v1/notification/read — Mark as Read
 ```
 需认证: 是
 请求: { "id": "hashid" }  // 不传=全部已读
@@ -655,13 +654,13 @@ Filtered by user country (X-Language/Accept-Language → country code mapping): 
 
 ### 2.17 Referrals
 
-#### GET /api/referral/my-code — My Referral Code
+#### GET /api/v1/referral/my-code — My Referral Code
 ```
 需认证: 是
 响应: { "code": "ABC12345", "referral_count": 12, "total_rewards": "150.0000" }
 ```
 
-#### POST /api/referral/apply — Apply Referral Code
+#### POST /api/v1/referral/apply — Apply Referral Code
 ```
 需认证: 是
 请求: { "code": "ABC12345" }
@@ -670,26 +669,26 @@ Filtered by user country (X-Language/Accept-Language → country code mapping): 
 
 ### 2.18 2FA
 
-#### GET /api/user/2fa/status — 2FA Status
+#### GET /api/v1/user/2fa/status — 2FA Status
 ```
 需认证: 是
 响应: { "enabled": false }
 ```
 
-#### POST /api/user/2fa/setup — Set Up 2FA
+#### POST /api/v1/user/2fa/setup — Set Up 2FA
 ```
 需认证: 是
 响应: { "secret": "JBSWY3DPEHPK3PXP", "qr_url": "otpauth://totp/..." }
 ```
 
-#### POST /api/user/2fa/enable — Enable 2FA
+#### POST /api/v1/user/2fa/enable — Enable 2FA
 ```
 需认证: 是
 请求: { "code": "123456" }
 响应: { "backup_codes": ["abcd1234ef", ...] }
 ```
 
-#### POST /api/2fa/verify — Verify 2FA (public)
+#### POST /api/v1/2fa/verify — Verify 2FA (public)
 ```
 请求: { "user_id": "hashid", "code": "123456" }
 响应: { "valid": true }
@@ -697,13 +696,13 @@ Filtered by user country (X-Language/Accept-Language → country code mapping): 
 
 ### 2.19 Search
 
-#### GET /api/search — Global Search
+#### GET /api/v1/search — Global Search
 ```
 参数: ?q=keyword&type=game&page=1&per_page=20
 响应: { "list": [...], "total": 100 }
 ```
 
-#### GET /api/game/suggest — Search Suggestions
+#### GET /api/v1/game/suggest — Search Suggestions
 ```
 参数: ?q=shoot
 响应: { "suggestions": [{ "id": "...", "name": "Shooter Master" }] }
@@ -711,7 +710,7 @@ Filtered by user country (X-Language/Accept-Language → country code mapping): 
 
 ### 2.20 Languages
 
-#### GET /api/language/list — Available Languages
+#### GET /api/v1/language/list — Available Languages
 ```
 响应: {
   "current": "en-US",
@@ -724,7 +723,7 @@ Filtered by user country (X-Language/Accept-Language → country code mapping): 
 }
 ```
 
-#### POST /api/language/switch — Switch Language
+#### POST /api/v1/language/switch — Switch Language
 ```
 请求: { "locale": "zh-CN" }
 响应: { "locale": "zh-CN" }
@@ -734,7 +733,7 @@ locale 可选值: en-US / zh-CN / ja-JP / ko-KR
 
 ### 2.8 User
 
-#### GET /api/user/profile — Personal Profile
+#### GET /api/v1/user/profile — Personal Profile
 ```
 需认证: 是
 
@@ -752,7 +751,7 @@ locale 可选值: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
-#### PUT /api/user/profile — Edit Profile
+#### PUT /api/v1/user/profile — Edit Profile
 ```
 需认证: 是
 
@@ -775,7 +774,7 @@ language 可选值: en-US / zh-CN / ja-JP / ko-KR
 
 ### 2.9 Announcements
 
-#### GET /api/announcement/list — Announcement List
+#### GET /api/v1/announcement/list — Announcement List
 ```
 响应: {
   "list": [
@@ -789,7 +788,7 @@ language 可选值: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
-#### GET /api/announcement/detail/{hashid} — Announcement Detail
+#### GET /api/v1/announcement/detail/{hashid} — Announcement Detail
 ```
 响应: {
   "id": "...",
@@ -804,9 +803,9 @@ language 可选值: en-US / zh-CN / ja-JP / ko-KR
 
 | Method | Path | Description | Auth |
 |------|------|------|------|
-| GET | /api/platform/stats | Public platform stats (total games / total users / today's plays / 7-day active users) | No |
+| GET | /api/v1/platform/stats | Public platform stats (total games / total users / today's plays / 7-day active users) | No |
 
-#### GET /api/platform/stats — Platform Stats
+#### GET /api/v1/platform/stats — Platform Stats
 
 ```
 无需认证
@@ -1379,8 +1378,8 @@ All endpoints require authentication (AdminAuth + AdminPermission).
 | Endpoint | Limit |
 |------|------|
 | Default | 60 requests/minute/IP |
-| POST /api/auth/login | 10 requests/minute |
-| POST /api/auth/register | 5 requests/minute |
+| POST /api/v1/auth/login | 10 requests/minute |
+| POST /api/v1/auth/register | 5 requests/minute |
 
 Over limit returns 429, response headers include:
 ```
@@ -1509,7 +1508,7 @@ Retry-After: 60
 
 ### 7.2 Ticket APIs
 
-#### GET /api/ticket/list — Ticket List
+#### GET /api/v1/ticket/list — Ticket List
 ```
 需认证: 是
 参数: ?page=1&per_page=20
@@ -1533,7 +1532,7 @@ Retry-After: 60
 type: deposit / withdraw / game / account / other
 status: open / waiting / replied / closed
 
-#### POST /api/ticket/create — Create Ticket
+#### POST /api/v1/ticket/create — Create Ticket
 ```
 需认证: 是
 请求: {
@@ -1544,7 +1543,7 @@ status: open / waiting / replied / closed
 响应: { "code": 0, "message": "Ticket created", "data": { "id": "aB3xK..." } }
 ```
 
-#### GET /api/ticket/{hashid} — Ticket Detail
+#### GET /api/v1/ticket/{hashid} — Ticket Detail
 ```
 需认证: 是
 响应: {
@@ -1556,7 +1555,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### POST /api/ticket/{hashid}/reply — Reply to Ticket
+#### POST /api/v1/ticket/{hashid}/reply — Reply to Ticket
 ```
 需认证: 是
 请求: { "content": "已核实，将在24小时内处理" }
@@ -1565,7 +1564,7 @@ status: open / waiting / replied / closed
 
 ### 7.3 Email Verification APIs
 
-#### POST /api/verify/send-email — Send Email Verification Code
+#### POST /api/v1/verify/send-email — Send Email Verification Code
 ```
 需认证: 是
 请求: { "email": "user@example.com" }
@@ -1573,7 +1572,7 @@ status: open / waiting / replied / closed
 错误: 429 请60秒后重试
 ```
 
-#### POST /api/verify/confirm-email — Confirm Email
+#### POST /api/v1/verify/confirm-email — Confirm Email
 ```
 需认证: 是
 请求: { "code": "123456" }
@@ -1583,7 +1582,7 @@ status: open / waiting / replied / closed
 
 ### 7.4 VIP APIs
 
-#### GET /api/user/vip-status — VIP Status
+#### GET /api/v1/user/vip-status — VIP Status
 ```
 需认证: 是
 响应: {
@@ -1602,7 +1601,7 @@ status: open / waiting / replied / closed
 
 ### 7.5 Achievement APIs
 
-#### GET /api/user/achievements — Achievement List
+#### GET /api/v1/user/achievements — Achievement List
 ```
 需认证: 是
 响应: {
@@ -1792,10 +1791,10 @@ status: open / waiting / replied / closed
 | Endpoint | Limit |
 |------|------|
 | Default | 60 requests/minute/IP |
-| POST /api/auth/login | 10 requests/minute |
-| POST /api/auth/register | 5 requests/minute |
-| POST /api/auth/oauth | 10 requests/minute |
-| POST /api/payment/callback | 30 requests/minute |
+| POST /api/v1/auth/login | 10 requests/minute |
+| POST /api/v1/auth/register | 5 requests/minute |
+| POST /api/v1/auth/oauth | 10 requests/minute |
+| POST /api/v1/payment/callback | 30 requests/minute |
 | POST /api/provider/* | No limit (HMAC signature auth) |
 
 ## 9. Authentication Notes (Updated)
@@ -1811,43 +1810,43 @@ status: open / waiting / replied / closed
 
 ### 7.7 Friend APIs
 
-#### GET /api/friend/list — Friend List
+#### GET /api/v1/friend/list — Friend List
 ```
 需认证: 是
 响应: { "list": [{ "id": "...", "username": "...", "nickname": "...", "avatar": "..." }] }
 ```
 
-#### GET /api/friend/requests — Pending Requests
+#### GET /api/v1/friend/requests — Pending Requests
 ```
 需认证: 是
 响应: { "list": [{ "id": "...", "user": {...}, "created_at": "..." }] }
 ```
 
-#### POST /api/friend/request — Send Friend Request
+#### POST /api/v1/friend/request — Send Friend Request
 ```
 需认证: 是
 请求: { "friend_id": "hashid" }
 ```
 
-#### POST /api/friend/accept — Accept Request
+#### POST /api/v1/friend/accept — Accept Request
 ```
 需认证: 是
 请求: { "request_id": "hashid" }
 ```
 
-#### POST /api/friend/reject — Reject Request
+#### POST /api/v1/friend/reject — Reject Request
 ```
 需认证: 是
 请求: { "request_id": "hashid" }
 ```
 
-#### POST /api/friend/remove — Remove Friend
+#### POST /api/v1/friend/remove — Remove Friend
 ```
 需认证: 是
 请求: { "friend_id": "hashid" }
 ```
 
-#### GET /api/friend/search — Search Users
+#### GET /api/v1/friend/search — Search Users
 ```
 需认证: 是
 参数: ?q=username
@@ -1856,7 +1855,7 @@ status: open / waiting / replied / closed
 
 ### 7.8 Chat APIs
 
-#### GET /api/chat/conversations — Conversation List
+#### GET /api/v1/chat/conversations — Conversation List
 ```
 需认证: 是
 响应: {
@@ -1869,7 +1868,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /api/chat/messages/{peerHashid} — Message List
+#### GET /api/v1/chat/messages/{peerHashid} — Message List
 ```
 需认证: 是
 参数: ?page=1&per_page=50
@@ -1877,14 +1876,14 @@ status: open / waiting / replied / closed
 自动标记对端发来的未读消息为已读
 ```
 
-#### POST /api/chat/send — Send Message
+#### POST /api/v1/chat/send — Send Message
 ```
 需认证: 是
 请求: { "to_user_id": "hashid", "content": "Hello!" }
 错误: 403 非好友不可发
 ```
 
-#### GET /api/chat/unread-total — Unread Total
+#### GET /api/v1/chat/unread-total — Unread Total
 ```
 需认证: 是
 响应: { "count": 5 }
@@ -1902,20 +1901,20 @@ status: open / waiting / replied / closed
 
 ### 7.9 Webhook APIs
 
-#### GET /api/webhook/list — Subscription List
+#### GET /api/v1/webhook/list — Subscription List
 ```
 需认证: 是
 响应: { "list": [{ "id": "...", "url": "https://...", "events": ["deposit.completed"] }] }
 ```
 
-#### POST /api/webhook/register — Register Subscription
+#### POST /api/v1/webhook/register — Register Subscription
 ```
 需认证: 是
 请求: { "url": "https://my-server.com/hook", "events": ["deposit.completed", "game.played"] }
 可用事件: deposit.completed / withdraw.completed / exchange.completed / game.played / user.registered / risk.alert / user.vip_upgraded
 ```
 
-#### POST /api/webhook/delete — Delete Subscription
+#### POST /api/v1/webhook/delete — Delete Subscription
 ```
 需认证: 是
 请求: { "id": "hook_id" }
@@ -1964,18 +1963,18 @@ status: open / waiting / replied / closed
 
 ### 7.11 Tournament APIs
 
-#### GET /api/tournament/list — Tournament List
+#### GET /api/v1/tournament/list — Tournament List
 ```
 参数: ?status=active|upcoming|ended&page=1&per_page=20
 响应: { "items": [{ "id": "...", "name": "...", "prize_pool": "1000.0000", "player_count": 45, "max_players": 100 }], "total": 5 }
 ```
 
-#### GET /api/tournament/{hashid} — Tournament Detail
+#### GET /api/v1/tournament/{hashid} — Tournament Detail
 ```
 响应: { "id": "...", "name": "...", "leaderboard": [...], "my_entry": {...} }
 ```
 
-#### POST /api/tournament/{hashid}/join — Join Tournament
+#### POST /api/v1/tournament/{hashid}/join — Join Tournament
 ```
 需认证: 是
 错误: 422 已报名 / 400 已开始或已满员 / 503 FeatureFlag关闭
@@ -2001,7 +2000,7 @@ Referral commission adds a second level:
 
 | Endpoint | Limit |
 |------|------|
-| POST /api/tournament/{id}/join | 10 requests/minute |
+| POST /api/v1/tournament/{id}/join | 10 requests/minute |
 
 ---
 
@@ -2052,23 +2051,23 @@ Referral commission adds a second level:
 | POST /admin/activities/create | Create activity (Admin) |
 | PUT /admin/activities/{hashid} | Update activity (Admin) |
 | DELETE /admin/activities/{hashid} | Delete activity (Admin) |
-| GET /api/activities/list | Activity list (Client) |
-| GET /api/activities/progress | Participation progress (Client) |
-| GET /api/activities/{hashid} | Activity detail (Client) |
-| POST /api/activities/{hashid}/checkin | Check-in (Client) |
+| GET /api/v1/activities/list | Activity list (Client) |
+| GET /api/v1/activities/progress | Participation progress (Client) |
+| GET /api/v1/activities/{hashid} | Activity detail (Client) |
+| POST /api/v1/activities/{hashid}/checkin | Check-in (Client) |
 
 ### 10.4 Groups / Shares (Client :8788 + Admin :8787)
 
 | Endpoint | Description |
 |------|------|
-| POST /api/groups | Create group |
-| GET /api/groups/{hashid} | Group detail |
-| GET /api/groups/{hashid}/members | Member list |
-| POST /api/groups/{hashid}/join | Join group |
-| POST /api/groups/{hashid}/leave | Leave group |
-| PUT /api/groups/{hashid}/role | Member role |
-| POST /api/shares | Create share link |
-| POST /api/shares/visit | Share visit tracking |
+| POST /api/v1/groups | Create group |
+| GET /api/v1/groups/{hashid} | Group detail |
+| GET /api/v1/groups/{hashid}/members | Member list |
+| POST /api/v1/groups/{hashid}/join | Join group |
+| POST /api/v1/groups/{hashid}/leave | Leave group |
+| PUT /api/v1/groups/{hashid}/role | Member role |
+| POST /api/v1/shares | Create share link |
+| POST /api/v1/shares/visit | Share visit tracking |
 | GET /admin/groups | Group list (Admin) |
 | GET /admin/groups/{hashid}/audit | Group audit (Admin) |
 | GET /admin/share/stats | Share stats (Admin) |

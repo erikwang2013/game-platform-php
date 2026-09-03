@@ -8,10 +8,10 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 
 ## 1. Ringkasan
 
-Backend administrasi terbuka (open-admin) dibangun di atas webman v2, menyediakan RESTful JSON API. Semua antarmuka sisi admin memerlukan autentikasi JWT dan validasi izin RBAC, antarmuka publik dirutekan ke kontroler ber-versi melalui header versi API.
+Backend administrasi terbuka (open-admin) dibangun di atas webman v2, menyediakan RESTful JSON API. Semua antarmuka sisi admin memerlukan autentikasi JWT dan validasi izin RBAC, antarmuka publik terpasang di bawah prefiks `/api/v1` dan antarmuka admin di bawah prefiks `/admin/v1`; versi dibawa oleh jalur URL, bukan header permintaan.
 
 - **URL dasar**: `http://localhost:8787`
-- **Versi API**: dikontrol melalui header permintaan `API-Version: v1` (default v1 jika tidak ada)
+- **Versi API**: dikodekan dalam jalur URL — endpoint publik di bawah `/api/v1`, endpoint admin di bawah `/admin/v1`; tidak ada header versi yang dipakai, v2 masa depan akan didaftarkan sebagai grup `/api/v2`
 
 > **Ringkasan endpoint**: Autentikasi(5) | Dasbor(1) | Pengguna(7) | Peran(4) | Izin(4) | Konfigurasi(4) | Log(1) | Pusat pribadi(3) | Impor ekspor(3) | Unggah(1) | Operasional(4: health/metrics/docs/security.txt) | Total 37 endpoint
 - **Autentikasi**: `Authorization: Bearer <token>`（JWT）
@@ -45,7 +45,7 @@ Backend administrasi terbuka (open-admin) dibangun di atas webman v2, menyediaka
 
 ## 3. Endpoint Publik
 
-Semua endpoint publik terpasang di bawah grup `/api`, didistribusikan ke kontroler ber-versi yang sesuai (seperti `app\api\v1\controller\AuthController`) melalui middleware `ApiVersion` sesuai header `API-Version`.
+Semua endpoint publik terpasang di bawah prefiks `/api/v1`, dan endpoint admin di bawah prefiks `/admin/v1`; versi ditentukan oleh prefiks grup rute; tidak ada header versi yang digunakan. Contoh kontroler publik: `app\api\v1\controller\AuthController`.
 
 ### 3.1 Health Check
 
@@ -88,11 +88,10 @@ GET /api/docs
 ### 3.3 Membuat CAPTCHA Klik
 
 ```
-POST /api/captcha/generate
+POST /api/v1/captcha/generate
 ```
 
 - **Autentikasi**: Tidak diperlukan
-- **Header permintaan**: `API-Version: v1`（wajib）
 - **Rate limit**: Default global (60 kali/menit)
 
 **Body permintaan**:
@@ -134,11 +133,10 @@ POST /api/captcha/generate
 ### 3.4 Memvalidasi CAPTCHA Klik
 
 ```
-POST /api/captcha/verify
+POST /api/v1/captcha/verify
 ```
 
 - **Autentikasi**: Tidak diperlukan
-- **Header permintaan**: `API-Version: v1`（wajib）
 - **Rate limit**: Default global (60 kali/menit)
 
 **Body permintaan**:
@@ -171,11 +169,10 @@ Saat validasi gagal, `code` adalah 422, `message` adalah `"验证失败，请重
 ### 3.5 Login
 
 ```
-POST /api/auth/login
+POST /api/v1/auth/login
 ```
 
 - **Autentikasi**: Tidak diperlukan
-- **Header permintaan**: `API-Version: v1`（wajib）
 - **Rate limit**: 10 kali/menit (per IP + path)
 
 **Body permintaan**:
@@ -235,11 +232,10 @@ POST /api/auth/login
 ### 3.6 Registrasi
 
 ```
-POST /api/auth/register
+POST /api/v1/auth/register
 ```
 
 - **Autentikasi**: Tidak diperlukan
-- **Header permintaan**: `API-Version: v1`（wajib）
 - **Rate limit**: 5 kali/menit (per IP + path)
 
 **Body permintaan**:
@@ -287,11 +283,10 @@ Setelah registrasi berhasil, token JWT langsung dikembalikan, status pengguna de
 ### 3.7 Refresh Token
 
 ```
-POST /api/auth/refresh
+POST /api/v1/auth/refresh
 ```
 
 - **Autentikasi**: Tidak diperlukan
-- **Header permintaan**: `API-Version: v1`（wajib）
 - **Rate limit**: Default global (60 kali/menit)
 
 **Body permintaan**:
@@ -369,12 +364,12 @@ openadmin_memory_usage_bytes 18874368
 
 ## 4. Dasbor
 
-Semua antarmuka sisi admin terpasang di bawah grup `/admin`, melewati tiga middleware `AdminAuth` (autentikasi JWT), `AdminPermission` (validasi izin RBAC), `OperationLog` (pencatatan operasi).
+Semua antarmuka sisi admin terpasang di bawah prefiks `/admin/v1`, melewati tiga middleware `AdminAuth` (autentikasi JWT), `AdminPermission` (validasi izin RBAC), `OperationLog` (pencatatan operasi).
 
 ### 4.1 Data Dasbor
 
 ```
-GET /admin/dashboard
+GET /admin/v1/dashboard
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -431,7 +426,7 @@ GET /admin/dashboard
         "id": "hashid...",
         "action": "用户登录",
         "method": "POST",
-        "path": "/api/auth/login",
+        "path": "/api/v1/auth/login",
         "ip": "192.168.1.1",
         "user_name": "admin",
         "created_at": "2026-05-21 10:30:00"
@@ -461,7 +456,7 @@ Semua `id` yang dikembalikan antarmuka manajemen pengguna adalah string terenkri
 ### 5.1 Daftar Pengguna
 
 ```
-GET /admin/user
+GET /admin/v1/user
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -514,7 +509,7 @@ GET /admin/user
 ### 5.2 Membuat Pengguna
 
 ```
-POST /admin/user
+POST /admin/v1/user
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -564,7 +559,7 @@ POST /admin/user
 ### 5.3 Detail Pengguna
 
 ```
-GET /admin/user/{id}
+GET /admin/v1/user/{id}
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -598,7 +593,7 @@ Di antarmuka detail, `phone` dan `email` dikembalikan dalam teks biasa (di datab
 ### 5.4 Memperbarui Pengguna
 
 ```
-PUT /admin/user/{id}
+PUT /admin/v1/user/{id}
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -646,7 +641,7 @@ PUT /admin/user/{id}
 ### 5.5 Menghapus Pengguna
 
 ```
-DELETE /admin/user/{id}
+DELETE /admin/v1/user/{id}
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -683,7 +678,7 @@ Melakukan soft delete (Eloquent SoftDeletes), data ditandai deleted_at tanpa dih
 ### 5.6 Menghapus Pengguna Massal
 
 ```
-POST /admin/user/batch/destroy
+POST /admin/v1/user/batch/destroy
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -723,7 +718,7 @@ Melakukan soft delete, `data.count` adalah jumlah yang benar-benar dihapus.
 ### 5.7 Mengaktifkan/Menonaktifkan Pengguna Massal
 
 ```
-POST /admin/user/batch/status
+POST /admin/v1/user/batch/status
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -763,7 +758,7 @@ message berubah dinamis sesuai nilai status menjadi `"批量启用成功"` atau 
 ### 6.1 Daftar Peran
 
 ```
-GET /admin/role
+GET /admin/v1/role
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -811,7 +806,7 @@ GET /admin/role
 ### 6.2 Membuat Peran
 
 ```
-POST /admin/role
+POST /admin/v1/role
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -853,7 +848,7 @@ POST /admin/role
 ### 6.3 Memperbarui Peran
 
 ```
-PUT /admin/role/{id}
+PUT /admin/v1/role/{id}
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -893,7 +888,7 @@ PUT /admin/role/{id}
 ### 6.4 Menghapus Peran
 
 ```
-DELETE /admin/role/{id}
+DELETE /admin/v1/role/{id}
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -924,7 +919,7 @@ Izin menggunakan struktur pohon (self-referensi parent_id), dibagi menjadi tiga 
 ### 7.1 Pohon Izin
 
 ```
-GET /admin/permission
+GET /admin/v1/permission
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -939,7 +934,7 @@ GET /admin/permission
       "id": "p1p2p3p4",
       "parent_id": "0",
       "name": "用户管理",
-      "slug": "/admin/user",
+      "slug": "/admin/v1/user",
       "type": 1,
       "icon": "people",
       "path": "/user",
@@ -950,7 +945,7 @@ GET /admin/permission
           "id": "p5p6p7p8",
           "parent_id": "p1p2p3p4",
           "name": "用户列表",
-          "slug": "/admin/user/index",
+          "slug": "/admin/v1/user/index",
           "type": 2,
           "icon": "",
           "path": "/user/index",
@@ -977,7 +972,7 @@ GET /admin/permission
 ### 7.2 Membuat Izin
 
 ```
-POST /admin/permission
+POST /admin/v1/permission
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -987,7 +982,7 @@ POST /admin/permission
 {
   "parent_id": 0,
   "name": "系统设置",
-  "slug": "/admin/config",
+  "slug": "/admin/v1/config",
   "type": 1,
   "icon": "settings",
   "path": "/config",
@@ -1014,7 +1009,7 @@ POST /admin/permission
     "id": "p9p0a1b2",
     "parent_id": "0",
     "name": "系统设置",
-    "slug": "/admin/config",
+    "slug": "/admin/v1/config",
     "type": 1,
     "icon": "settings",
     "path": "/config",
@@ -1026,7 +1021,7 @@ POST /admin/permission
 ### 7.3 Memperbarui Izin
 
 ```
-PUT /admin/permission/{id}
+PUT /admin/v1/permission/{id}
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -1051,7 +1046,7 @@ PUT /admin/permission/{id}
 ### 7.4 Menghapus Izin
 
 ```
-DELETE /admin/permission/{id}
+DELETE /admin/v1/permission/{id}
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -1082,7 +1077,7 @@ Konfigurasi sistem unik berdasarkan kombinasi `group` + `key`.
 ### 8.1 Daftar Konfigurasi
 
 ```
-GET /admin/config
+GET /admin/v1/config
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -1131,7 +1126,7 @@ GET /admin/config
 ### 8.2 Membuat Konfigurasi
 
 ```
-POST /admin/config
+POST /admin/v1/config
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -1177,7 +1172,7 @@ POST /admin/config
 ### 8.3 Memperbarui Konfigurasi
 
 ```
-PUT /admin/config/{id}
+PUT /admin/v1/config/{id}
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -1200,7 +1195,7 @@ PUT /admin/config/{id}
 ### 8.4 Menghapus Konfigurasi
 
 ```
-DELETE /admin/config/{id}
+DELETE /admin/v1/config/{id}
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -1222,7 +1217,7 @@ Log operasi adalah antarmuka read-only, ditulis otomatis oleh middleware `Operat
 ### 9.1 Daftar Log Operasi
 
 ```
-GET /admin/log
+GET /admin/v1/log
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -1251,7 +1246,7 @@ GET /admin/log
         "user_name": "admin",
         "action": "用户登录",
         "method": "POST",
-        "path": "/api/auth/login",
+        "path": "/api/v1/auth/login",
         "ip": "192.168.1.1",
         "source": "web",
         "input": "{\"username\":\"admin\"}",
@@ -1284,7 +1279,7 @@ Antarmuka pusat pribadi hanya memerlukan autentikasi JWT (tidak memerlukan valid
 ### 10.1 Memperbarui Informasi Pribadi
 
 ```
-PUT /admin/profile
+PUT /admin/v1/profile
 ```
 
 - **Autentikasi**: JWT
@@ -1326,7 +1321,7 @@ Dalam respons, `phone` dan `email` dikembalikan dalam teks biasa, `password` dan
 ### 10.2 Mengubah Kata Sandi
 
 ```
-PUT /admin/profile/password
+PUT /admin/v1/profile/password
 ```
 
 - **Autentikasi**: JWT
@@ -1361,7 +1356,7 @@ PUT /admin/profile/password
 ### 10.3 Logout
 
 ```
-POST /admin/profile/logout
+POST /admin/v1/profile/logout
 ```
 
 - **Autentikasi**: JWT
@@ -1386,7 +1381,7 @@ Tanpa token mengembalikan 401. Token kedaluwarsa/tidak valid (pengecualian saat 
 ### 11.1 Ekspor Excel
 
 ```
-POST /admin/export/excel
+POST /admin/v1/export/excel
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -1425,7 +1420,7 @@ Kolom sensitif `phone`, `email`, `id_card` otomatis diredaksi saat ekspor. Batas
 ### 11.2 Ekspor PDF
 
 ```
-POST /admin/export/pdf
+POST /admin/v1/export/pdf
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -1472,7 +1467,7 @@ Template PDF berisi informasi hak cipta dan timestamp ekspor.
 ### 11.3 Impor Pengguna (Excel)
 
 ```
-POST /admin/import/users
+POST /admin/v1/import/users
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -1524,7 +1519,7 @@ Baris 1 adalah judul kolom (tidak sensitif huruf besar/kecil), mulai baris 2 ada
 ## 12. Unggah File
 
 ```
-POST /admin/upload
+POST /admin/v1/upload
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -1573,8 +1568,8 @@ Semua antarmuka (disuntikkan pada lapisan middleware global) berisi header respo
 
 Detail rate limit:
 - Limit global default: 60 kali/menit / IP+path
-- Endpoint login `/api/auth/login`: 10 kali/menit
-- Endpoint registrasi `/api/auth/register`: 5 kali/menit
+- Endpoint login `/api/v1/auth/login`: 10 kali/menit
+- Endpoint registrasi `/api/v1/auth/register`: 5 kali/menit
 - Menggunakan algoritma jendela geser atomik Redis (Lua ZSET), menghindari race condition TOCTOU
 - Saat Redis tidak tersedia fail-closed: mengembalikan 503 (`Retry-After: 5`), tidak meloloskan permintaan
 
@@ -1584,18 +1579,18 @@ Semua endpoint memerlukan autentikasi (`AdminAuth` + `AdminPermission`), agregas
 
 | Metode | Path | Deskripsi |
 |------|------|------|
-| GET | /admin/analytics/overview | Ringkasan platform (hari ini/7 hari terakhir) |
-| GET | /admin/analytics/game-ranking | Peringkat game (?days=7) |
-| GET | /admin/analytics/dau-trend | Tren DAU (?days=30) |
-| GET | /admin/analytics/hourly-trend | Tren per jam |
-| GET | /admin/analytics/action-distribution | Distribusi perilaku |
-| GET | /admin/analytics/revenue | Analisis pendapatan |
-| GET | /admin/analytics/conversion | Tingkat konversi game |
-| GET | /admin/analytics/probability | Probabilitas gabungan/kondisional |
-| GET | /admin/analytics/retention | Analisis retensi D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | Funnel konversi |
-| GET | /admin/analytics/arpu | Tren ARPU/ARPPU |
-| GET | /admin/analytics/economy | Metrik ekonomi mata uang game |
+| GET | /admin/v1/analytics/overview | Ringkasan platform (hari ini/7 hari terakhir) |
+| GET | /admin/v1/analytics/game-ranking | Peringkat game (?days=7) |
+| GET | /admin/v1/analytics/dau-trend | Tren DAU (?days=30) |
+| GET | /admin/v1/analytics/hourly-trend | Tren per jam |
+| GET | /admin/v1/analytics/action-distribution | Distribusi perilaku |
+| GET | /admin/v1/analytics/revenue | Analisis pendapatan |
+| GET | /admin/v1/analytics/conversion | Tingkat konversi game |
+| GET | /admin/v1/analytics/probability | Probabilitas gabungan/kondisional |
+| GET | /admin/v1/analytics/retention | Analisis retensi D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | Funnel konversi |
+| GET | /admin/v1/analytics/arpu | Tren ARPU/ARPPU |
+| GET | /admin/v1/analytics/economy | Metrik ekonomi mata uang game |
 
 ## 15. Manajemen Tiket (Ticket)
 
@@ -1603,26 +1598,25 @@ Semua endpoint memerlukan autentikasi (`AdminAuth` + `AdminPermission`), total 5
 
 | Metode | Path | Deskripsi |
 |------|------|------|
-| GET | /admin/ticket/list | Daftar tiket (?page=&limit=&status=&type=) |
-| GET | /admin/ticket/{hashid} | Detail tiket (termasuk balasan) |
-| POST | /admin/ticket/{hashid}/reply | Membalas tiket |
-| POST | /admin/ticket/{hashid}/close | Menutup tiket |
-| POST | /admin/ticket/{hashid}/assign | Menugaskan penangan (admin_id) |
+| GET | /admin/v1/ticket/list | Daftar tiket (?page=&limit=&status=&type=) |
+| GET | /admin/v1/ticket/{hashid} | Detail tiket (termasuk balasan) |
+| POST | /admin/v1/ticket/{hashid}/reply | Membalas tiket |
+| POST | /admin/v1/ticket/{hashid}/close | Menutup tiket |
+| POST | /admin/v1/ticket/{hashid}/assign | Menugaskan penangan (admin_id) |
 
 ## 16. Alur Autentikasi
 
 Urutan autentikasi lengkap:
 
 ```
-1. Klien meminta POST /api/captcha/generate
-   (Header permintaan: API-Version: v1)
+1. Klien meminta POST /api/v1/captcha/generate
     ↓
    Server mengembalikan: key + gambar base64 + petunjuk target klik
 
 2. Pengguna mengklik posisi target pada gambar, frontend/klien mengumpulkan koordinat klik
 
-3. Klien meminta POST /api/auth/login
-   (Header permintaan: API-Version: v1, Content-Type: application/json)
+3. Klien meminta POST /api/v1/auth/login
+   (Header permintaan: Content-Type: application/json)
    Body permintaan: { username, password, captcha_key, clicks: [{x,y}, ...] }
     ↓
    Server:
@@ -1655,7 +1649,7 @@ Urutan autentikasi lengkap:
    Response + header X-RateLimit-*
 
 5. Refresh sebelum Access Token kedaluwarsa
-   Klien meminta POST /api/auth/refresh
+   Klien meminta POST /api/v1/auth/refresh
    Body permintaan: { refresh_token: "..." }
     ↓
    Server mendekode refresh_token → menerbitkan access + refresh baru
@@ -1663,7 +1657,7 @@ Urutan autentikasi lengkap:
    Klien memperbarui token lokal
 
 6. Logout
-   Klien meminta POST /admin/profile/logout
+   Klien meminta POST /admin/v1/profile/logout
    Header permintaan: Authorization: Bearer <access_token>
     ↓
    Server:
@@ -1722,7 +1716,7 @@ Antarmuka analisis data disediakan oleh `AnalyticsController`, semuanya berbasis
 ### 16.1 Ringkasan Platform
 
 ```
-GET /admin/analytics/overview
+GET /admin/v1/analytics/overview
 ```
 
 **Respons**: `today` / `week` masing-masing berisi `dau` (jumlah pengguna aktif), `revenue` (total deposit terkonfirmasi, string), `new_users` (jumlah pengguna baru).
@@ -1730,7 +1724,7 @@ GET /admin/analytics/overview
 ### 16.2 Peringkat Game
 
 ```
-GET /admin/analytics/game-ranking?days=7
+GET /admin/v1/analytics/game-ranking?days=7
 ```
 
 **Respons**: 10 teratas diurutkan menurun berdasarkan jumlah perilaku game, setiap item berisi `game_id`（hashid）、`name`、`plays`、`players`.
@@ -1738,7 +1732,7 @@ GET /admin/analytics/game-ranking?days=7
 ### 16.3 Tren DAU
 
 ```
-GET /admin/analytics/dau-trend?days=30
+GET /admin/v1/analytics/dau-trend?days=30
 ```
 
 **Respons**: `{ "日期": 活跃数, ... }`, tanggal yang hilang diisi 0.
@@ -1746,7 +1740,7 @@ GET /admin/analytics/dau-trend?days=30
 ### 16.4 Tren Per Jam
 
 ```
-GET /admin/analytics/hourly-trend?game_id=<hashid>
+GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
 ```
 
 **Respons**: `{ "0": 次数, ... "23": 次数 }` 24 slot jam penuh; saat `game_id` kosong menghitung semua game.
@@ -1754,7 +1748,7 @@ GET /admin/analytics/hourly-trend?game_id=<hashid>
 ### 16.5 Distribusi Perilaku
 
 ```
-GET /admin/analytics/action-distribution?game_id=<hashid>&hours=24
+GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
 ```
 
 **Respons**: `{ "start": n, "end": n, "earn": n, "spend": n }` empat jenis penghitungan perilaku; `hours` maksimal 168.
@@ -1762,7 +1756,7 @@ GET /admin/analytics/action-distribution?game_id=<hashid>&hours=24
 ### 16.6 Ringkasan Pendapatan
 
 ```
-GET /admin/analytics/revenue?days=7
+GET /admin/v1/analytics/revenue?days=7
 ```
 
 **Respons**: `{ "total": "总额", "trend": { "日期": "当日额", ... } }`, hanya menghitung pesanan `status=confirmed`.
@@ -1770,7 +1764,7 @@ GET /admin/analytics/revenue?days=7
 ### 16.7 Tingkat Konversi Game
 
 ```
-GET /admin/analytics/conversion?days=30
+GET /admin/v1/analytics/conversion?days=30
 ```
 
 **Respons**: Setiap game berisi `game_id`（hashid）、`game_name`、`players`（jumlah pemain unik）、`depositors`（jumlah penyetor unik）、`conversion_rate`（tingkat konversi deposit, 0~1）.
@@ -1778,7 +1772,7 @@ GET /admin/analytics/conversion?days=30
 ### 16.8 Probabilitas Gabungan
 
 ```
-GET /admin/analytics/probability?game_a=<hashid>&game_b=<hashid>
+GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
 ```
 
 **Respons**: `{ "joint": { "joint_probability": 0.12, "confidence": 0.3 } }` — koefisien Jaccard (pemain bersama dua game / gabungan pemain) dan confidence (pemain bersama / pemain game A).
@@ -1786,7 +1780,7 @@ GET /admin/analytics/probability?game_a=<hashid>&game_b=<hashid>
 ### 16.9 Analisis Retensi
 
 ```
-GET /admin/analytics/retention?days=30
+GET /admin/v1/analytics/retention?days=30
 ```
 
 **Respons**: `{ "D1": "8.5%", "D3": "...", "D7": "...", "D30": "..." }` tingkat retensi hari ke-1/3/7/30 berdasarkan grup tanggal registrasi.
@@ -1794,7 +1788,7 @@ GET /admin/analytics/retention?days=30
 ### 16.10 Funnel Konversi
 
 ```
-GET /admin/analytics/funnel?days=30
+GET /admin/v1/analytics/funnel?days=30
 ```
 
 **Respons**: Empat langkah registrasi → deposit pertama → penukaran pertama → game pertama, berisi `step`、`count`、`rate`（persentase relatif terhadap jumlah registrasi）.
@@ -1802,7 +1796,7 @@ GET /admin/analytics/funnel?days=30
 ### 16.11 Tren ARPU/ARPPU
 
 ```
-GET /admin/analytics/arpu?days=30
+GET /admin/v1/analytics/arpu?days=30
 ```
 
 **Respons**: `{ "dates": [...], "arpu": [...], "arppu": [...] }` pendapatan rata-rata per pengguna harian (ARPU) dan pendapatan rata-rata per pengguna pembayar (ARPPU).
@@ -1810,7 +1804,7 @@ GET /admin/analytics/arpu?days=30
 ### 16.12 Metrik Ekonomi Game
 
 ```
-GET /admin/analytics/economy
+GET /admin/v1/analytics/economy
 ```
 
 **Respons**: array `currencies`, setiap item berisi `game_name`、`currency`、`symbol`、`total_minted`（total mint）、`total_burned`（total burn）、`circulation`（jumlah beredar）、`inflation_rate`（tingkat inflasi）, menggunakan perhitungan presisi tinggi bcmath.
@@ -1821,16 +1815,16 @@ Manajemen metode pembayaran disediakan oleh `PaymentController`; 5 endpoint semu
 
 | Metode | Jalur | Deskripsi |
 |------|------|------|
-| GET | /admin/payment/method/list | Daftar metode pembayaran (ascending by sort) |
-| POST | /admin/payment/method/toggle | Aktifkan/nonaktifkan metode pembayaran |
-| POST | /admin/payment/method/create | Buat metode pembayaran |
-| PUT | /admin/payment/method/{hashid} | Perbarui metode pembayaran |
-| DELETE | /admin/payment/method/{hashid} | Hapus metode pembayaran (ditolak jika ada pesanan pending) |
+| GET | /admin/v1/payment/method/list | Daftar metode pembayaran (ascending by sort) |
+| POST | /admin/v1/payment/method/toggle | Aktifkan/nonaktifkan metode pembayaran |
+| POST | /admin/v1/payment/method/create | Buat metode pembayaran |
+| PUT | /admin/v1/payment/method/{hashid} | Perbarui metode pembayaran |
+| DELETE | /admin/v1/payment/method/{hashid} | Hapus metode pembayaran (ditolak jika ada pesanan pending) |
 
 ### 17.1 Daftar Metode Pembayaran
 
 ```
-GET /admin/payment/method/list
+GET /admin/v1/payment/method/list
 ```
 
 - **Autentikasi**: JWT + RBAC
@@ -1878,7 +1872,7 @@ GET /admin/payment/method/list
 ### 17.2 Aktifkan/Nonaktifkan Metode Pembayaran
 
 ```
-POST /admin/payment/method/toggle
+POST /admin/v1/payment/method/toggle
 ```
 
 **Badan permintaan**:
@@ -1901,7 +1895,7 @@ POST /admin/payment/method/toggle
 ### 17.3 Buat Metode Pembayaran
 
 ```
-POST /admin/payment/method/create
+POST /admin/v1/payment/method/create
 ```
 
 **Badan permintaan**:
@@ -1947,7 +1941,7 @@ POST /admin/payment/method/create
 ### 17.4 Perbarui Metode Pembayaran
 
 ```
-PUT /admin/payment/method/{hashid}
+PUT /admin/v1/payment/method/{hashid}
 ```
 
 - **Parameter jalur**: `{hashid}` adalah ID metode pembayaran yang dikodekan hashid
@@ -1960,7 +1954,7 @@ PUT /admin/payment/method/{hashid}
 ### 17.5 Hapus Metode Pembayaran
 
 ```
-DELETE /admin/payment/method/{hashid}
+DELETE /admin/v1/payment/method/{hashid}
 ```
 
 - **Parameter jalur**: `{hashid}` adalah ID metode pembayaran yang dikodekan hashid

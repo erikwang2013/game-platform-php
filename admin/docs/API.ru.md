@@ -8,10 +8,10 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 
 ## 1. Обзор
 
-Открытая административная панель (open-admin) построена на webman v2 и предоставляет RESTful JSON API. Все интерфейсы панели требуют JWT-аутентификации и RBAC-проверки прав, публичные интерфейсы маршрутизируются через заголовок версии API к версионированным контроллерам.
+Открытая административная панель (open-admin) построена на webman v2 и предоставляет RESTful JSON API. Все интерфейсы панели требуют JWT-аутентификации и RBAC-проверки прав, публичные интерфейсы смонтированы под префиксом `/api/v1`, интерфейсы панели — под префиксом `/admin/v1`; версия задаётся путём URL, а не заголовком запроса.
 
 - **Базовый URL**: `http://localhost:8787`
-- **Версия API**: задается заголовком `API-Version: v1` (при отсутствии по умолчанию v1)
+- **Версия API**: указывается в пути URL — публичные эндпоинты под `/api/v1`, эндпоинты панели под `/admin/v1`; заголовок версии не используется, будущая v2 будет зарегистрирована как группа `/api/v2`
 
 > **Обзор эндпоинтов**: аутентификация(5) | дашборд(1) | пользователи(7) | роли(4) | права(4) | настройки(4) | журнал(1) | личный кабинет(3) | импорт/экспорт(3) | загрузка(1) | эксплуатация(4: health/metrics/docs/security.txt) | всего 37 эндпоинтов
 - **Аутентификация**: `Authorization: Bearer <token>` (JWT)
@@ -45,7 +45,7 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 
 ## 3. Публичные эндпоинты
 
-Все публичные эндпоинты смонтированы в группе `/api`, промежуточное ПО `ApiVersion` распределяет их по версионированным контроллерам в соответствии с заголовком `API-Version` (например, `app\api\v1\controller\AuthController`).
+Все публичные эндпоинты смонтированы под префиксом `/api/v1`, эндпоинты панели — под префиксом `/admin/v1`; версия определяется префиксом группы маршрутов; заголовок версии не используется. Пример публичного контроллера: `app\api\v1\controller\AuthController`.
 
 ### 3.1 Health check
 
@@ -88,11 +88,10 @@ GET /api/docs
 ### 3.3 Генерация клик-капчи
 
 ```
-POST /api/captcha/generate
+POST /api/v1/captcha/generate
 ```
 
 - **Аутентификация**: не требуется
-- **Заголовок**: `API-Version: v1` (обязателен)
 - **Ограничение частоты**: глобальное по умолчанию (60 раз/мин)
 
 **Тело запроса**:
@@ -134,11 +133,10 @@ POST /api/captcha/generate
 ### 3.4 Проверка клик-капчи
 
 ```
-POST /api/captcha/verify
+POST /api/v1/captcha/verify
 ```
 
 - **Аутентификация**: не требуется
-- **Заголовок**: `API-Version: v1` (обязателен)
 - **Ограничение частоты**: глобальное по умолчанию (60 раз/мин)
 
 **Тело запроса**:
@@ -171,11 +169,10 @@ POST /api/captcha/verify
 ### 3.5 Вход
 
 ```
-POST /api/auth/login
+POST /api/v1/auth/login
 ```
 
 - **Аутентификация**: не требуется
-- **Заголовок**: `API-Version: v1` (обязателен)
 - **Ограничение частоты**: 10 раз/мин (по IP + пути)
 
 **Тело запроса**:
@@ -235,11 +232,10 @@ POST /api/auth/login
 ### 3.6 Регистрация
 
 ```
-POST /api/auth/register
+POST /api/v1/auth/register
 ```
 
 - **Аутентификация**: не требуется
-- **Заголовок**: `API-Version: v1` (обязателен)
 - **Ограничение частоты**: 5 раз/мин (по IP + пути)
 
 **Тело запроса**:
@@ -287,11 +283,10 @@ POST /api/auth/register
 ### 3.7 Обновление токена
 
 ```
-POST /api/auth/refresh
+POST /api/v1/auth/refresh
 ```
 
 - **Аутентификация**: не требуется
-- **Заголовок**: `API-Version: v1` (обязателен)
 - **Ограничение частоты**: глобальное по умолчанию (60 раз/мин)
 
 **Тело запроса**:
@@ -369,12 +364,12 @@ openadmin_memory_usage_bytes 18874368
 
 ## 4. Дашборд
 
-Все интерфейсы панели смонтированы в группе `/admin` и проходят через три промежуточных ПО: `AdminAuth` (JWT-аутентификация), `AdminPermission` (RBAC-проверка прав), `OperationLog` (запись операций).
+Все интерфейсы панели смонтированы под префиксом `/admin/v1` и проходят через три промежуточных ПО: `AdminAuth` (JWT-аутентификация), `AdminPermission` (RBAC-проверка прав), `OperationLog` (запись операций).
 
 ### 4.1 Данные дашборда
 
 ```
-GET /admin/dashboard
+GET /admin/v1/dashboard
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -431,7 +426,7 @@ GET /admin/dashboard
         "id": "hashid...",
         "action": "用户登录",
         "method": "POST",
-        "path": "/api/auth/login",
+        "path": "/api/v1/auth/login",
         "ip": "192.168.1.1",
         "user_name": "admin",
         "created_at": "2026-05-21 10:30:00"
@@ -461,7 +456,7 @@ GET /admin/dashboard
 ### 5.1 Список пользователей
 
 ```
-GET /admin/user
+GET /admin/v1/user
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -514,7 +509,7 @@ GET /admin/user
 ### 5.2 Создание пользователя
 
 ```
-POST /admin/user
+POST /admin/v1/user
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -564,7 +559,7 @@ POST /admin/user
 ### 5.3 Детали пользователя
 
 ```
-GET /admin/user/{id}
+GET /admin/v1/user/{id}
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -598,7 +593,7 @@ GET /admin/user/{id}
 ### 5.4 Обновление пользователя
 
 ```
-PUT /admin/user/{id}
+PUT /admin/v1/user/{id}
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -646,7 +641,7 @@ PUT /admin/user/{id}
 ### 5.5 Удаление пользователя
 
 ```
-DELETE /admin/user/{id}
+DELETE /admin/v1/user/{id}
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -683,7 +678,7 @@ DELETE /admin/user/{id}
 ### 5.6 Массовое удаление пользователей
 
 ```
-POST /admin/user/batch/destroy
+POST /admin/v1/user/batch/destroy
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -723,7 +718,7 @@ POST /admin/user/batch/destroy
 ### 5.7 Массовое включение/отключение пользователей
 
 ```
-POST /admin/user/batch/status
+POST /admin/v1/user/batch/status
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -763,7 +758,7 @@ message динамически меняется по значению status: `"
 ### 6.1 Список ролей
 
 ```
-GET /admin/role
+GET /admin/v1/role
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -811,7 +806,7 @@ GET /admin/role
 ### 6.2 Создание роли
 
 ```
-POST /admin/role
+POST /admin/v1/role
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -853,7 +848,7 @@ POST /admin/role
 ### 6.3 Обновление роли
 
 ```
-PUT /admin/role/{id}
+PUT /admin/v1/role/{id}
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -893,7 +888,7 @@ PUT /admin/role/{id}
 ### 6.4 Удаление роли
 
 ```
-DELETE /admin/role/{id}
+DELETE /admin/v1/role/{id}
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -924,7 +919,7 @@ DELETE /admin/role/{id}
 ### 7.1 Дерево прав
 
 ```
-GET /admin/permission
+GET /admin/v1/permission
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -939,7 +934,7 @@ GET /admin/permission
       "id": "p1p2p3p4",
       "parent_id": "0",
       "name": "用户管理",
-      "slug": "/admin/user",
+      "slug": "/admin/v1/user",
       "type": 1,
       "icon": "people",
       "path": "/user",
@@ -950,7 +945,7 @@ GET /admin/permission
           "id": "p5p6p7p8",
           "parent_id": "p1p2p3p4",
           "name": "用户列表",
-          "slug": "/admin/user/index",
+          "slug": "/admin/v1/user/index",
           "type": 2,
           "icon": "",
           "path": "/user/index",
@@ -977,7 +972,7 @@ GET /admin/permission
 ### 7.2 Создание права
 
 ```
-POST /admin/permission
+POST /admin/v1/permission
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -987,7 +982,7 @@ POST /admin/permission
 {
   "parent_id": 0,
   "name": "系统设置",
-  "slug": "/admin/config",
+  "slug": "/admin/v1/config",
   "type": 1,
   "icon": "settings",
   "path": "/config",
@@ -1014,7 +1009,7 @@ POST /admin/permission
     "id": "p9p0a1b2",
     "parent_id": "0",
     "name": "系统设置",
-    "slug": "/admin/config",
+    "slug": "/admin/v1/config",
     "type": 1,
     "icon": "settings",
     "path": "/config",
@@ -1026,7 +1021,7 @@ POST /admin/permission
 ### 7.3 Обновление права
 
 ```
-PUT /admin/permission/{id}
+PUT /admin/v1/permission/{id}
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -1051,7 +1046,7 @@ PUT /admin/permission/{id}
 ### 7.4 Удаление права
 
 ```
-DELETE /admin/permission/{id}
+DELETE /admin/v1/permission/{id}
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -1082,7 +1077,7 @@ DELETE /admin/permission/{id}
 ### 8.1 Список настроек
 
 ```
-GET /admin/config
+GET /admin/v1/config
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -1131,7 +1126,7 @@ GET /admin/config
 ### 8.2 Создание настройки
 
 ```
-POST /admin/config
+POST /admin/v1/config
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -1177,7 +1172,7 @@ POST /admin/config
 ### 8.3 Обновление настройки
 
 ```
-PUT /admin/config/{id}
+PUT /admin/v1/config/{id}
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -1200,7 +1195,7 @@ PUT /admin/config/{id}
 ### 8.4 Удаление настройки
 
 ```
-DELETE /admin/config/{id}
+DELETE /admin/v1/config/{id}
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -1222,7 +1217,7 @@ DELETE /admin/config/{id}
 ### 9.1 Список журнала операций
 
 ```
-GET /admin/log
+GET /admin/v1/log
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -1251,7 +1246,7 @@ GET /admin/log
         "user_name": "admin",
         "action": "用户登录",
         "method": "POST",
-        "path": "/api/auth/login",
+        "path": "/api/v1/auth/login",
         "ip": "192.168.1.1",
         "source": "web",
         "input": "{\"username\":\"admin\"}",
@@ -1284,7 +1279,7 @@ GET /admin/log
 ### 10.1 Обновление личной информации
 
 ```
-PUT /admin/profile
+PUT /admin/v1/profile
 ```
 
 - **Аутентификация**: JWT
@@ -1326,7 +1321,7 @@ PUT /admin/profile
 ### 10.2 Смена пароля
 
 ```
-PUT /admin/profile/password
+PUT /admin/v1/profile/password
 ```
 
 - **Аутентификация**: JWT
@@ -1361,7 +1356,7 @@ PUT /admin/profile/password
 ### 10.3 Выход
 
 ```
-POST /admin/profile/logout
+POST /admin/v1/profile/logout
 ```
 
 - **Аутентификация**: JWT
@@ -1386,7 +1381,7 @@ POST /admin/profile/logout
 ### 11.1 Экспорт Excel
 
 ```
-POST /admin/export/excel
+POST /admin/v1/export/excel
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -1425,7 +1420,7 @@ POST /admin/export/excel
 ### 11.2 Экспорт PDF
 
 ```
-POST /admin/export/pdf
+POST /admin/v1/export/pdf
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -1472,7 +1467,7 @@ POST /admin/export/pdf
 ### 11.3 Импорт пользователей (Excel)
 
 ```
-POST /admin/import/users
+POST /admin/v1/import/users
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -1524,7 +1519,7 @@ POST /admin/import/users
 ## 12. Загрузка файлов
 
 ```
-POST /admin/upload
+POST /admin/v1/upload
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -1573,8 +1568,8 @@ POST /admin/upload
 
 Детали ограничения частоты:
 - Глобальный лимит по умолчанию: 60 раз/мин / IP+путь
-- Эндпоинт входа `/api/auth/login`: 10 раз/мин
-- Эндпоинт регистрации `/api/auth/register`: 5 раз/мин
+- Эндпоинт входа `/api/v1/auth/login`: 10 раз/мин
+- Эндпоинт регистрации `/api/v1/auth/register`: 5 раз/мин
 - Используется атомарный алгоритм скользящего окна Redis (Lua ZSET), исключающий TOCTOU-гонки
 - При недоступности Redis — fail-closed: возвращается 503 (`Retry-After: 5`), запросы не пропускаются
 
@@ -1584,18 +1579,18 @@ POST /admin/upload
 
 | Метод | Путь | Описание |
 |------|------|------|
-| GET | /admin/analytics/overview | Общий обзор платформы (сегодня/7 дней) |
-| GET | /admin/analytics/game-ranking | Рейтинг игр (?days=7) |
-| GET | /admin/analytics/dau-trend | Тренд DAU (?days=30) |
-| GET | /admin/analytics/hourly-trend | Часовой тренд |
-| GET | /admin/analytics/action-distribution | Распределение действий |
-| GET | /admin/analytics/revenue | Анализ выручки |
-| GET | /admin/analytics/conversion | Конверсия игр |
-| GET | /admin/analytics/probability | Совместные/условные вероятности |
-| GET | /admin/analytics/retention | Анализ удержания D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | Воронка конверсии |
-| GET | /admin/analytics/arpu | Тренд ARPU/ARPPU |
-| GET | /admin/analytics/economy | Экономические показатели игровых валют |
+| GET | /admin/v1/analytics/overview | Общий обзор платформы (сегодня/7 дней) |
+| GET | /admin/v1/analytics/game-ranking | Рейтинг игр (?days=7) |
+| GET | /admin/v1/analytics/dau-trend | Тренд DAU (?days=30) |
+| GET | /admin/v1/analytics/hourly-trend | Часовой тренд |
+| GET | /admin/v1/analytics/action-distribution | Распределение действий |
+| GET | /admin/v1/analytics/revenue | Анализ выручки |
+| GET | /admin/v1/analytics/conversion | Конверсия игр |
+| GET | /admin/v1/analytics/probability | Совместные/условные вероятности |
+| GET | /admin/v1/analytics/retention | Анализ удержания D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | Воронка конверсии |
+| GET | /admin/v1/analytics/arpu | Тренд ARPU/ARPPU |
+| GET | /admin/v1/analytics/economy | Экономические показатели игровых валют |
 
 ## 15. Управление тикетами (Ticket)
 
@@ -1603,26 +1598,25 @@ POST /admin/upload
 
 | Метод | Путь | Описание |
 |------|------|------|
-| GET | /admin/ticket/list | Список тикетов (?page=&limit=&status=&type=) |
-| GET | /admin/ticket/{hashid} | Детали тикета (включая ответы) |
-| POST | /admin/ticket/{hashid}/reply | Ответ на тикет |
-| POST | /admin/ticket/{hashid}/close | Закрытие тикета |
-| POST | /admin/ticket/{hashid}/assign | Назначение обработчика (admin_id) |
+| GET | /admin/v1/ticket/list | Список тикетов (?page=&limit=&status=&type=) |
+| GET | /admin/v1/ticket/{hashid} | Детали тикета (включая ответы) |
+| POST | /admin/v1/ticket/{hashid}/reply | Ответ на тикет |
+| POST | /admin/v1/ticket/{hashid}/close | Закрытие тикета |
+| POST | /admin/v1/ticket/{hashid}/assign | Назначение обработчика (admin_id) |
 
 ## 16. Процесс аутентификации
 
 Полная последовательность аутентификации:
 
 ```
-1. Клиент запрашивает POST /api/captcha/generate
-   (заголовок: API-Version: v1)
+1. Клиент запрашивает POST /api/v1/captcha/generate
     ↓
    Сервер возвращает: key + изображение base64 + подсказки целей кликов
    
 2. Пользователь кликает по целям на изображении, клиент собирает координаты кликов
    
-3. Клиент запрашивает POST /api/auth/login
-   (заголовки: API-Version: v1, Content-Type: application/json)
+3. Клиент запрашивает POST /api/v1/auth/login
+   (заголовки: Content-Type: application/json)
    Тело запроса: { username, password, captcha_key, clicks: [{x,y}, ...] }
     ↓
    Сервер:
@@ -1655,7 +1649,7 @@ POST /admin/upload
    Ответ + заголовки X-RateLimit-*
 
 5. Обновление перед истечением Access Token
-   Клиент запрашивает POST /api/auth/refresh
+   Клиент запрашивает POST /api/v1/auth/refresh
    Тело запроса: { refresh_token: "..." }
     ↓
    Сервер декодирует refresh_token → выпускает новые access + refresh
@@ -1663,7 +1657,7 @@ POST /admin/upload
    Клиент обновляет локальные токены
 
 6. Выход
-   Клиент запрашивает POST /admin/profile/logout
+   Клиент запрашивает POST /admin/v1/profile/logout
    Заголовок: Authorization: Bearer <access_token>
     ↓
    Сервер:
@@ -1722,7 +1716,7 @@ docker-compose up -d
 ### 16.1 Общий обзор платформы
 
 ```
-GET /admin/analytics/overview
+GET /admin/v1/analytics/overview
 ```
 
 **Ответ**: `today` / `week` содержат `dau` (число активных пользователей), `revenue` (общая сумма подтвержденных пополнений, строка), `new_users` (число новых пользователей).
@@ -1730,7 +1724,7 @@ GET /admin/analytics/overview
 ### 16.2 Рейтинг игр
 
 ```
-GET /admin/analytics/game-ranking?days=7
+GET /admin/v1/analytics/game-ranking?days=7
 ```
 
 **Ответ**: топ-10 по убыванию числа игровых действий, каждый элемент содержит `game_id` (hashid), `name`, `plays`, `players`.
@@ -1738,7 +1732,7 @@ GET /admin/analytics/game-ranking?days=7
 ### 16.3 Тренд DAU
 
 ```
-GET /admin/analytics/dau-trend?days=30
+GET /admin/v1/analytics/dau-trend?days=30
 ```
 
 **Ответ**: `{ "日期": 活跃数, ... }`, для отсутствующих дат — 0.
@@ -1746,7 +1740,7 @@ GET /admin/analytics/dau-trend?days=30
 ### 16.4 Часовой тренд
 
 ```
-GET /admin/analytics/hourly-trend?game_id=<hashid>
+GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
 ```
 
 **Ответ**: `{ "0": 次数, ... "23": 次数 }` — 24 часовых слота; при пустом `game_id` статистика по всем играм.
@@ -1754,7 +1748,7 @@ GET /admin/analytics/hourly-trend?game_id=<hashid>
 ### 16.5 Распределение действий
 
 ```
-GET /admin/analytics/action-distribution?game_id=<hashid>&hours=24
+GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
 ```
 
 **Ответ**: `{ "start": n, "end": n, "earn": n, "spend": n }` — счетчики четырех типов действий; лимит `hours` — 168.
@@ -1762,7 +1756,7 @@ GET /admin/analytics/action-distribution?game_id=<hashid>&hours=24
 ### 16.6 Обзор выручки
 
 ```
-GET /admin/analytics/revenue?days=7
+GET /admin/v1/analytics/revenue?days=7
 ```
 
 **Ответ**: `{ "total": "总额", "trend": { "日期": "当日额", ... } }`, учитываются только заказы `status=confirmed`.
@@ -1770,7 +1764,7 @@ GET /admin/analytics/revenue?days=7
 ### 16.7 Конверсия игр
 
 ```
-GET /admin/analytics/conversion?days=30
+GET /admin/v1/analytics/conversion?days=30
 ```
 
 **Ответ**: по каждой игре: `game_id` (hashid), `game_name`, `players` (число уникальных игроков), `depositors` (число уникальных пополнявших), `conversion_rate` (конверсия пополнений, 0~1).
@@ -1778,7 +1772,7 @@ GET /admin/analytics/conversion?days=30
 ### 16.8 Совместная вероятность
 
 ```
-GET /admin/analytics/probability?game_a=<hashid>&game_b=<hashid>
+GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
 ```
 
 **Ответ**: `{ "joint": { "joint_probability": 0.12, "confidence": 0.3 } }` — коэффициент Жаккара (общие игроки двух игр / объединение игроков) и уверенность (общие игроки / игроки игры A).
@@ -1786,7 +1780,7 @@ GET /admin/analytics/probability?game_a=<hashid>&game_b=<hashid>
 ### 16.9 Анализ удержания
 
 ```
-GET /admin/analytics/retention?days=30
+GET /admin/v1/analytics/retention?days=30
 ```
 
 **Ответ**: `{ "D1": "8.5%", "D3": "...", "D7": "...", "D30": "..." }` — удержание на 1-й/3-й/7-й/30-й день в когортах по дате регистрации.
@@ -1794,7 +1788,7 @@ GET /admin/analytics/retention?days=30
 ### 16.10 Воронка конверсии
 
 ```
-GET /admin/analytics/funnel?days=30
+GET /admin/v1/analytics/funnel?days=30
 ```
 
 **Ответ**: четыре шага «регистрация → первое пополнение → первый обмен → первая игра» с `step`, `count`, `rate` (процент относительно числа регистраций).
@@ -1802,7 +1796,7 @@ GET /admin/analytics/funnel?days=30
 ### 16.11 Тренд ARPU/ARPPU
 
 ```
-GET /admin/analytics/arpu?days=30
+GET /admin/v1/analytics/arpu?days=30
 ```
 
 **Ответ**: `{ "dates": [...], "arpu": [...], "arppu": [...] }` — ежедневная выручка на пользователя (ARPU) и на платящего пользователя (ARPPU).
@@ -1810,7 +1804,7 @@ GET /admin/analytics/arpu?days=30
 ### 16.12 Экономические показатели игр
 
 ```
-GET /admin/analytics/economy
+GET /admin/v1/analytics/economy
 ```
 
 **Ответ**: массив `currencies`, каждый элемент содержит `game_name`, `currency`, `symbol`, `total_minted` (общий объем эмиссии), `total_burned` (общий объем сжигания), `circulation` (объем в обращении), `inflation_rate` (уровень инфляции); расчеты выполняются с высокой точностью через bcmath.
@@ -1821,16 +1815,16 @@ GET /admin/analytics/economy
 
 | Метод | Путь | Описание |
 |------|------|------|
-| GET | /admin/payment/method/list | Список способов оплаты (по возрастанию sort) |
-| POST | /admin/payment/method/toggle | Включить/отключить способ оплаты |
-| POST | /admin/payment/method/create | Создать способ оплаты |
-| PUT | /admin/payment/method/{hashid} | Обновить способ оплаты |
-| DELETE | /admin/payment/method/{hashid} | Удалить способ оплаты (отказ при наличии ожидающих заказов) |
+| GET | /admin/v1/payment/method/list | Список способов оплаты (по возрастанию sort) |
+| POST | /admin/v1/payment/method/toggle | Включить/отключить способ оплаты |
+| POST | /admin/v1/payment/method/create | Создать способ оплаты |
+| PUT | /admin/v1/payment/method/{hashid} | Обновить способ оплаты |
+| DELETE | /admin/v1/payment/method/{hashid} | Удалить способ оплаты (отказ при наличии ожидающих заказов) |
 
 ### 17.1 Список способов оплаты
 
 ```
-GET /admin/payment/method/list
+GET /admin/v1/payment/method/list
 ```
 
 - **Аутентификация**: JWT + RBAC
@@ -1878,7 +1872,7 @@ GET /admin/payment/method/list
 ### 17.2 Включение/отключение способа оплаты
 
 ```
-POST /admin/payment/method/toggle
+POST /admin/v1/payment/method/toggle
 ```
 
 **Тело запроса**:
@@ -1901,7 +1895,7 @@ POST /admin/payment/method/toggle
 ### 17.3 Создание способа оплаты
 
 ```
-POST /admin/payment/method/create
+POST /admin/v1/payment/method/create
 ```
 
 **Тело запроса**:
@@ -1947,7 +1941,7 @@ POST /admin/payment/method/create
 ### 17.4 Обновление способа оплаты
 
 ```
-PUT /admin/payment/method/{hashid}
+PUT /admin/v1/payment/method/{hashid}
 ```
 
 - **Параметр пути**: `{hashid}` — ID способа оплаты в кодировке hashid
@@ -1960,7 +1954,7 @@ PUT /admin/payment/method/{hashid}
 ### 17.5 Удаление способа оплаты
 
 ```
-DELETE /admin/payment/method/{hashid}
+DELETE /admin/v1/payment/method/{hashid}
 ```
 
 - **Параметр пути**: `{hashid}` — ID способа оплаты в кодировке hashid

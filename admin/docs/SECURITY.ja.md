@@ -156,7 +156,7 @@ if (Redis::get("security_ban:{$ip}")) {
 
 ログ形式の例：
 ```
-2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
+2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/v1/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
 2026-05-20 14:32:15 [SECURITY] IP banned 15min | IP: 192.168.1.100 | Triggers: 5
 ```
 
@@ -178,7 +178,7 @@ POST/PUT リクエストは **必ず** `Content-Type` を `application/json` ま
 |----|-----|------|
 | Access-Control-Allow-Origin | `*` | 任意の送信元からのクロスドメインを許可（内網管理画面のシナリオ） |
 | Access-Control-Allow-Methods | `GET,POST,PUT,DELETE,OPTIONS` | 許可されるメソッドセット |
-| Access-Control-Allow-Headers | `Authorization,Content-Type,API-Version` | 許可されるカスタムヘッダー |
+| Access-Control-Allow-Headers | `Authorization,Content-Type` | 許可されるカスタムヘッダー |
 | Access-Control-Max-Age | `86400` | プリフライトリクエストを24時間キャッシュ |
 | X-Content-Type-Options | `nosniff` | ブラウザの MIME スニッフィングを禁止 |
 | X-Frame-Options | `DENY` | すべての iframe 埋め込みを禁止、クリックジャッキング防止 |
@@ -230,8 +230,8 @@ Lua スクリプトは Redis サーバー側でシングルスレッド実行さ
 | ルート | 制限 | ウィンドウ | シナリオ |
 |------|------|------|------|
 | デフォルト（全ルート） | 60 回/分 | 60s | 汎用 API |
-| `/api/auth/login` | 10 回/分 | 60s | ログイン（ブルートフォース防止） |
-| `/api/auth/register` | 5 回/分 | 60s | 登録（一括登録防止） |
+| `/api/v1/auth/login` | 10 回/分 | 60s | ログイン（ブルートフォース防止） |
+| `/api/v1/auth/register` | 5 回/分 | 60s | 登録（一括登録防止） |
 
 ### レスポンスヘッダー
 
@@ -322,7 +322,7 @@ AdminAuth 中間ウェアで実装され、認証が必要なルートグルー�
 
 **ブラックリストメカニズム**：ユーザーログアウト時、`md5(token)` を Redis に書き込み、TTL を JWT の残り有効期間に設定します。Redis 障害時はブラックリストチェックがスキップされ（fail-open）、その場合ログアウト済みの Token が短期間使用可能ですが、JWT 自体の短期有効期間（2h）がフォールバック保護となります。
 
-**Token 更新**：`POST /api/auth/refresh` は元の refresh token（`token_type=refresh` かつ期限切れでない/ブラックリスト入りしていない）を検証してからローテーション発行し、`sub` が有効なユーザー ID であることを検証します —— **sub=null の refresh token は発行しません**。更新失敗時は直接 401 を返します。
+**Token 更新**：`POST /api/v1/auth/refresh` は元の refresh token（`token_type=refresh` かつ期限切れでない/ブラックリスト入りしていない）を検証してからローテーション発行し、`sub` が有効なユーザー ID であることを検証します —— **sub=null の refresh token は発行しません**。更新失敗時は直接 401 を返します。
 
 ### 6.2 同時セッション制限
 
@@ -389,7 +389,7 @@ API 権限識別子の形式：`{method}.{path}`
 
 ### 6.4 決済コールバック署名検証（fail-closed）
 
-`POST /api/payment/callback`（Stripe/PayPal 入金コールバック）の署名検証は **fail-closed** を採用し、設定欠落や検証異常はいずれもコールバックを拒否します：
+`POST /api/v1/payment/callback`（Stripe/PayPal 入金コールバック）の署名検証は **fail-closed** を採用し、設定欠落や検証異常はいずれもコールバックを拒否します：
 
 | シナリオ | 挙動 |
 |------|------|

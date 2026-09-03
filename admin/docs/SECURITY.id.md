@@ -156,7 +156,7 @@ Lokasi file: `runtime/logs/security.log`
 
 Contoh format log:
 ```
-2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
+2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/v1/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
 2026-05-20 14:32:15 [SECURITY] IP banned 15min | IP: 192.168.1.100 | Triggers: 5
 ```
 
@@ -178,7 +178,7 @@ Semua header disuntikkan di middleware `Cors`, ditambahkan ke setiap respons mel
 |----|-----|------|
 | Access-Control-Allow-Origin | `*` | Mengizinkan lintas domain dari sumber mana pun (skenario backend admin intranet) |
 | Access-Control-Allow-Methods | `GET,POST,PUT,DELETE,OPTIONS` | Kumpulan metode yang diizinkan |
-| Access-Control-Allow-Headers | `Authorization,Content-Type,API-Version` | Header kustom yang diizinkan |
+| Access-Control-Allow-Headers | `Authorization,Content-Type` | Header kustom yang diizinkan |
 | Access-Control-Max-Age | `86400` | Cache permintaan preflight 24 jam |
 | X-Content-Type-Options | `nosniff` | Melarang MIME sniffing browser |
 | X-Frame-Options | `DENY` | Melarang semua embed iframe, mencegah clickjacking |
@@ -230,8 +230,8 @@ Skrip Lua dieksekusi single-threaded di server Redis, **secara alami atomik**, m
 | Rute | Batas | Jendela | Skenario |
 |------|------|------|------|
 | Default (semua rute) | 60 kali/menit | 60s | API umum |
-| `/api/auth/login` | 10 kali/menit | 60s | Login (mencegah brute force) |
-| `/api/auth/register` | 5 kali/menit | 60s | Registrasi (mencegah registrasi massal) |
+| `/api/v1/auth/login` | 10 kali/menit | 60s | Login (mencegah brute force) |
+| `/api/v1/auth/register` | 5 kali/menit | 60s | Registrasi (mencegah registrasi massal) |
 
 ### Header Respons
 
@@ -322,7 +322,7 @@ Diimplementasikan middleware AdminAuth, dipasang pada grup rute yang memerlukan 
 
 **Mekanisme daftar hitam**: saat pengguna logout, tulis `md5(token)` ke Redis, TTL diatur sebagai sisa masa berlaku JWT. Saat Redis bermasalah, pemeriksaan daftar hitam dilewati (fail-open), Token yang sudah logout masih dapat digunakan sementara, tetapi masa berlaku pendek JWT itu sendiri (2h) sebagai perlindungan cadangan.
 
-**Refresh Token**: `POST /api/auth/refresh` memvalidasi refresh token asli (`token_type=refresh` dan belum kedaluwarsa/belum diblokir) sebelum menerbitkan rotasi, dan memvalidasi `sub` harus berupa ID pengguna valid —— **tidak lagi menerbitkan refresh token dengan sub=null**, kegagalan refresh langsung mengembalikan 401.
+**Refresh Token**: `POST /api/v1/auth/refresh` memvalidasi refresh token asli (`token_type=refresh` dan belum kedaluwarsa/belum diblokir) sebelum menerbitkan rotasi, dan memvalidasi `sub` harus berupa ID pengguna valid —— **tidak lagi menerbitkan refresh token dengan sub=null**, kegagalan refresh langsung mengembalikan 401.
 
 ### 6.2 Batasan Sesi Bersamaan
 
@@ -389,7 +389,7 @@ Contoh:
 
 ### 6.4 Verifikasi Tanda Tangan Callback Pembayaran（fail-closed）
 
-`POST /api/payment/callback`（callback deposit Stripe/PayPal）verifikasi tanda tangan menggunakan **fail-closed**, konfigurasi yang hilang atau abnormal validasi apa pun menolak callback:
+`POST /api/v1/payment/callback`（callback deposit Stripe/PayPal）verifikasi tanda tangan menggunakan **fail-closed**, konfigurasi yang hilang atau abnormal validasi apa pun menolak callback:
 
 | Skenario | Perilaku |
 |------|------|

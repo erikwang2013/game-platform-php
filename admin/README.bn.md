@@ -79,7 +79,7 @@ open-admin/
 │   │   ├── DocsController.php      # OpenAPI ডকুমেন্ট
 │   │   └── BaseController.php      # বেস কন্ট্রোলার
 │   ├── api/
-│   │   └── v1/controller/          # API v1 কন্ট্রোলার (ভার্সন API-Version হেডার দিয়ে নিয়ন্ত্রিত)
+│   │   └── v1/controller/          # API v1 কন্ট্রোলার (URL পাথে ভার্সন: /api/v1, /admin/v1)
 │   │       ├── CaptchaController.php # ক্লিক ক্যাপচা
 │   │       └── AuthController.php    # লগইন/রেজিস্ট্রেশন/টোকেন রিফ্রেশ
 │   ├── common/                 # কমন ইউটিলিটি ক্লাস
@@ -90,7 +90,6 @@ open-admin/
 │   │   ├── Cors.php            # ক্রস-অরিজিন
 │   │   ├── SecurityFilter.php  # অ্যাটাক ডিটেকশন ও ব্লক (HTTP মেথড সীমা/XSS/SQL ইনজেকশন/পাথ ট্রাভার্সাল/কমান্ড ইনজেকশন/CSRF)
 │   │   ├── RateLimit.php       # Redis রেট লিমিট (স্লাইডিং উইন্ডো + রেসপন্স হেডার)
-│   │   ├── ApiVersion.php      # API ভার্সন ভেরিফিকেশন
 │   │   ├── AdminAuth.php       # JWT অথেনটিকেশন + ব্ল্যাকলিস্ট
 │   │   ├── AdminPermission.php # RBAC পারমিশন ভেরিফিকেশন
 │   │   └── OperationLog.php    # অপারেশন লগ স্বয়ংক্রিয় রেকর্ড (সোর্স ডিটেকশন সহ)
@@ -242,20 +241,15 @@ docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 ### ID হ্যান্ডলিং
 
 - **রিকোয়েস্ট/রেসপন্সে ID**: hashids দিয়ে স্ট্রিংয়ে এনক্রিপ্ট করা, প্রকৃত ডেটাবেস ID প্রকাশ হয় না
-- **ইন্টারফেস পাথ**: `GET /admin/user/{hashid}` — পাথে `{id}` হল hashid স্ট্রিং
+- **ইন্টারফেস পাথ**: `GET /admin/v1/user/{hashid}` — পাথে `{id}` হল hashid স্ট্রিং
 - **ডেটাবেস স্টোরেজ**: BIGINT আসল মান, snowflake দিয়ে তৈরি
 
 ### API ভার্সন
 
-API ভার্সন রিকোয়েস্ট হেডার দিয়ে নিয়ন্ত্রিত, **URL-এ প্রকাশ পায় না**:
+API ভার্সন নম্বর URL পাথে থাকে — পাবলিক এন্ডপয়েন্ট `/api/v1/*` এবং অ্যাডমিন এন্ডপয়েন্ট `/admin/v1/*` (ডিফল্ট `v1`) ব্যবহার করে; কোনো হেডার ব্যবহার করা হয় না:
 
-```http
-API-Version: v1
-```
-
-- ভার্সন হেডার না থাকলে ডিফল্ট `v1` ব্যবহৃত হয়
 - অসমর্থিত ভার্সনে `400 Bad Request` ফেরত আসে
-- নতুন ভার্সন যোগ করতে শুধু `app/api/{version}/controller/` ডিরেক্টরি তৈরি করুন এবং মিডলওয়্যারে নতুন ভার্সন রেজিস্টার করুন
+- নতুন ভার্সন যোগ করতে শুধু `app/api/{version}/controller/` ডিরেক্টরি তৈরি করুন এবং নতুন রুট গ্রুপ রেজিস্টার করুন (যেমন `/api/v2`)
 
 ### রেট লিমিট
 
@@ -273,10 +267,9 @@ Redis স্লাইডিং উইন্ডো অ্যালগরিদম
 Cors（跨域预处理 + 响应头）
   → SecurityFilter（HTTP方法限制/请求体大小/Content-Type校验/XSS/SQL注入/路径遍历/命令注入/CSRF 攻击拦截）
   → RateLimit（Redis 滑动窗口限流 + 账号锁定：5次登录失败锁定15分钟）
-  → ApiVersion（API 版本校验，/api 路由组）
-  → AdminAuth（JWT 认证 + 黑名单，/admin 路由组）
-  → AdminPermission（RBAC 鉴权，/admin 路由组）
-  → OperationLog（POST/PUT/DELETE 自动记录，含来源端检测，/admin 路由组）
+  → AdminAuth（JWT 认证 + 黑名单，/admin/v1 路由组）
+  → AdminPermission（RBAC 鉴权，/admin/v1 路由组）
+  → OperationLog（POST/PUT/DELETE 自动记录，含来源端检测，/admin/v1 路由组）
 ```
 
 `/health` এবং `/api/docs` হল পাবলিক এন্ডপয়েন্ট, শুধুমাত্র `Cors → SecurityFilter → RateLimit`-এর মধ্য দিয়ে যায়।
@@ -291,12 +284,12 @@ Cors（跨域预处理 + 响应头）
 
 লগইন ও রেজিস্ট্রেশনের আগে **ক্লিক ক্যাপচা** ভেরিফিকেশন পাস করতে হবে:
 
-1. ক্লায়েন্ট `POST /api/captcha/generate` রিকোয়েস্ট করে ক্যাপচা ইমেজ (base64 PNG) ও টার্গেট শব্দের তালিকা পায়
+1. ক্লায়েন্ট `POST /api/v1/captcha/generate` রিকোয়েস্ট করে ক্যাপচা ইমেজ (base64 PNG) ও টার্গেট শব্দের তালিকা পায়
 2. ব্যবহারকারী ক্রমানুসারে ছবিতে সংশ্লিষ্ট শব্দের অবস্থানে ক্লিক করে, ক্লিক কোঅর্ডিনেট `[{x, y}, ...]` সংগ্রহ হয়
 3. লগইনের সময় একসাথে `captcha_key` ও `clicks` জমা দিতে হয়, সার্ভার প্রথমে ক্যাপচা তারপর ক্রেডেনশিয়াল ভেরিফাই করে
 
 ```http
-POST /api/auth/login
+POST /api/v1/auth/login
 Content-Type: application/json
 
 {
@@ -315,14 +308,14 @@ Authorization: Bearer <token>
 
 লগইন সফল হলে access_token ফেরত আসে, মেয়াদ ২ ঘণ্টা; এছাড়াও refresh_token ফেরত আসে, মেয়াদ ১৪ দিন।
 
-লগআউটের সময় Token Redis ব্ল্যাকলিস্টে যায়, মেয়াদের মধ্যে পুনরায় ব্যবহার করা যায় না। POST /admin/profile/logout
+লগআউটের সময় Token Redis ব্ল্যাকলিস্টে যায়, মেয়াদের মধ্যে পুনরায় ব্যবহার করা যায় না। POST /admin/v1/profile/logout
 
 ### সংবেদনশীল অপারেশনের দ্বিতীয় নিশ্চিতকরণ
 
 ইউজার, রোল, পারমিশন ডিলিটের মতো সংবেদনশীল অপারেশনে রিকোয়েস্ট বডিতে বর্তমান লগইন ইউজারের `password` পাঠিয়ে পরিচয় দ্বিতীয়বার নিশ্চিত করতে হবে:
 
 ```http
-DELETE /admin/user/{id}
+DELETE /admin/v1/user/{id}
 Content-Type: application/json
 Authorization: Bearer <token>
 
@@ -331,7 +324,7 @@ Authorization: Bearer <token>
 
 ## API তালিকা
 
-> সব `/api/*` ইন্টারফেসে রিকোয়েস্ট হেডারে `API-Version: v1` পাঠাতে হবে (না পাঠালে ডিফল্ট v1)।
+> সব `/api/v1/*` ও `/admin/v1/*` এন্ডপয়েন্টের ভার্সন নম্বর URL পাথে থাকে; কোনো ভার্সন হেডার ব্যবহার করা হয় না।
 
 ### পাবলিক ইন্টারফেস
 
@@ -339,45 +332,45 @@ Authorization: Bearer <token>
 |-----|------|------|
 | `GET` | `/health` | হেলথ চেক (DB/Redis/ES অবস্থা) |
 | `GET` | `/api/docs` | OpenAPI 3.0 স্পেক ডকুমেন্ট |
-| `POST` | `/api/captcha/generate` | ক্লিক ক্যাপচা জেনারেট |
-| `POST` | `/api/captcha/verify` | ক্লিক ক্যাপচা ভেরিফাই |
-| `POST` | `/api/auth/login` | লগইন (ক্যাপচা প্রয়োজন) |
-| `POST` | `/api/auth/register` | রেজিস্ট্রেশন (ক্যাপচা প্রয়োজন) |
-| `POST` | `/api/auth/refresh` | টোকেন রিফ্রেশ |
+| `POST` | `/api/v1/captcha/generate` | ক্লিক ক্যাপচা জেনারেট |
+| `POST` | `/api/v1/captcha/verify` | ক্লিক ক্যাপচা ভেরিফাই |
+| `POST` | `/api/v1/auth/login` | লগইন (ক্যাপচা প্রয়োজন) |
+| `POST` | `/api/v1/auth/register` | রেজিস্ট্রেশন (ক্যাপচা প্রয়োজন) |
+| `POST` | `/api/v1/auth/refresh` | টোকেন রিফ্রেশ |
 | `GET` | `/metrics` | Prometheus মনিটরিং মেট্রিক |
 
 ### প্রশাসনিক প্যানেল ইন্টারফেস (JWT + RBAC প্রয়োজন)
 
 | মেথড | পাথ | বিবরণ |
 |-----|------|------|
-| `GET` | `/admin/dashboard` | ড্যাশবোর্ড ডেটা (Redis ক্যাশ ৫ মিনিট) |
-| `GET` | `/admin/user` | ইউজার তালিকা (পেজিনেশন + সার্চ) |
-| `POST` | `/admin/user` | ইউজার তৈরি |
-| `GET` | `/admin/user/{id}` | ইউজার বিস্তারিত |
-| `PUT` | `/admin/user/{id}` | ইউজার আপডেট |
-| `DELETE` | `/admin/user/{id}` | ইউজার ডিলিট (সফট ডিলিট, পাসওয়ার্ড নিশ্চিতকরণ প্রয়োজন) |
-| `POST` | `/admin/user/batch/destroy` | ব্যাচ ইউজার ডিলিট (পাসওয়ার্ড নিশ্চিতকরণ প্রয়োজন) |
-| `POST` | `/admin/user/batch/status` | ব্যাচ ইউজার এনাবল/ডিসেবল |
-| `GET` | `/admin/role` | রোল তালিকা |
-| `POST` | `/admin/role` | রোল তৈরি |
-| `PUT` | `/admin/role/{id}` | রোল আপডেট |
-| `DELETE` | `/admin/role/{id}` | রোল ডিলিট (পাসওয়ার্ড নিশ্চিতকরণ প্রয়োজন) |
-| `GET` | `/admin/permission` | পারমিশন ট্রি |
-| `POST` | `/admin/permission` | পারমিশন তৈরি |
-| `PUT` | `/admin/permission/{id}` | পারমিশন আপডেট |
-| `DELETE` | `/admin/permission/{id}` | পারমিশন ডিলিট (ক্যাসকেড সাব-পারমিশন, পাসওয়ার্ড নিশ্চিতকরণ প্রয়োজন) |
-| `GET` | `/admin/config` | সিস্টেম কনফিগারেশন তালিকা |
-| `POST` | `/admin/config` | কনফিগারেশন আইটেম তৈরি |
-| `PUT` | `/admin/config/{id}` | কনফিগারেশন আইটেম আপডেট |
-| `DELETE` | `/admin/config/{id}` | কনফিগারেশন আইটেম ডিলিট (পাসওয়ার্ড নিশ্চিতকরণ প্রয়োজন) |
-| `GET` | `/admin/log` | অপারেশন লগ (পেজিনেশন + ফিল্টার) |
-| `PUT` | `/admin/profile` | ব্যক্তিগত তথ্য আপডেট |
-| `PUT` | `/admin/profile/password` | পাসওয়ার্ড পরিবর্তন |
-| `POST` | `/admin/profile/logout` | লগআউট (JWT ব্ল্যাকলিস্ট) |
-| `POST` | `/admin/export/excel` | Excel এক্সপোর্ট |
-| `POST` | `/admin/export/pdf` | PDF এক্সপোর্ট |
-| `POST` | `/admin/import/users` | Excel ইউজার ইমপোর্ট |
-| `POST` | `/admin/upload` | ফাইল আপলোড (ছবি/ডকুমেন্ট, সর্বোচ্চ 10MB) |
+| `GET` | `/admin/v1/dashboard` | ড্যাশবোর্ড ডেটা (Redis ক্যাশ ৫ মিনিট) |
+| `GET` | `/admin/v1/user` | ইউজার তালিকা (পেজিনেশন + সার্চ) |
+| `POST` | `/admin/v1/user` | ইউজার তৈরি |
+| `GET` | `/admin/v1/user/{id}` | ইউজার বিস্তারিত |
+| `PUT` | `/admin/v1/user/{id}` | ইউজার আপডেট |
+| `DELETE` | `/admin/v1/user/{id}` | ইউজার ডিলিট (সফট ডিলিট, পাসওয়ার্ড নিশ্চিতকরণ প্রয়োজন) |
+| `POST` | `/admin/v1/user/batch/destroy` | ব্যাচ ইউজার ডিলিট (পাসওয়ার্ড নিশ্চিতকরণ প্রয়োজন) |
+| `POST` | `/admin/v1/user/batch/status` | ব্যাচ ইউজার এনাবল/ডিসেবল |
+| `GET` | `/admin/v1/role` | রোল তালিকা |
+| `POST` | `/admin/v1/role` | রোল তৈরি |
+| `PUT` | `/admin/v1/role/{id}` | রোল আপডেট |
+| `DELETE` | `/admin/v1/role/{id}` | রোল ডিলিট (পাসওয়ার্ড নিশ্চিতকরণ প্রয়োজন) |
+| `GET` | `/admin/v1/permission` | পারমিশন ট্রি |
+| `POST` | `/admin/v1/permission` | পারমিশন তৈরি |
+| `PUT` | `/admin/v1/permission/{id}` | পারমিশন আপডেট |
+| `DELETE` | `/admin/v1/permission/{id}` | পারমিশন ডিলিট (ক্যাসকেড সাব-পারমিশন, পাসওয়ার্ড নিশ্চিতকরণ প্রয়োজন) |
+| `GET` | `/admin/v1/config` | সিস্টেম কনফিগারেশন তালিকা |
+| `POST` | `/admin/v1/config` | কনফিগারেশন আইটেম তৈরি |
+| `PUT` | `/admin/v1/config/{id}` | কনফিগারেশন আইটেম আপডেট |
+| `DELETE` | `/admin/v1/config/{id}` | কনফিগারেশন আইটেম ডিলিট (পাসওয়ার্ড নিশ্চিতকরণ প্রয়োজন) |
+| `GET` | `/admin/v1/log` | অপারেশন লগ (পেজিনেশন + ফিল্টার) |
+| `PUT` | `/admin/v1/profile` | ব্যক্তিগত তথ্য আপডেট |
+| `PUT` | `/admin/v1/profile/password` | পাসওয়ার্ড পরিবর্তন |
+| `POST` | `/admin/v1/profile/logout` | লগআউট (JWT ব্ল্যাকলিস্ট) |
+| `POST` | `/admin/v1/export/excel` | Excel এক্সপোর্ট |
+| `POST` | `/admin/v1/export/pdf` | PDF এক্সপোর্ট |
+| `POST` | `/admin/v1/import/users` | Excel ইউজার ইমপোর্ট |
+| `POST` | `/admin/v1/upload` | ফাইল আপলোড (ছবি/ডকুমেন্ট, সর্বোচ্চ 10MB) |
 
 ## ফ্রন্টএন্ড বিবরণ
 

@@ -79,7 +79,7 @@ open-admin/
 │   │   ├── DocsController.php      # OpenAPI 文档
 │   │   └── BaseController.php      # 基础控制器
 │   ├── api/
-│   │   └── v1/controller/          # API v1 控制器（版本由请求头 API-Version 控制）
+│   │   └── v1/controller/          # API v1 控制器（URL 路径版本 /api/v1、/admin/v1）
 │   │       ├── CaptchaController.php # 点击验证码
 │   │       └── AuthController.php    # 登录/注册/刷新令牌
 │   ├── common/                 # 公共工具类
@@ -90,7 +90,6 @@ open-admin/
 │   │   ├── Cors.php            # 跨域
 │   │   ├── SecurityFilter.php  # 攻击检测拦截（HTTP方法限制/XSS/SQL注入/路径遍历/命令注入/CSRF）
 │   │   ├── RateLimit.php       # Redis 限流（滑动窗口 + 响应头）
-│   │   ├── ApiVersion.php      # API 版本校验
 │   │   ├── AdminAuth.php       # JWT 认证 + 黑名单
 │   │   ├── AdminPermission.php # RBAC 权限校验
 │   │   └── OperationLog.php    # 操作日志自动记录（含来源端检测）
@@ -242,20 +241,15 @@ docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 ### ID हैंडलिंग
 
 - **अनुरोध/प्रतिक्रिया में ID**: hashids से स्ट्रिंग में एन्क्रिप्ट, वास्तविक डेटाबेस ID उजागर नहीं
-- **इंटरफ़ेस पथ**: `GET /admin/user/{hashid}` — पथ में `{id}` hashid स्ट्रिंग है
+- **इंटरफ़ेस पथ**: `GET /admin/v1/user/{hashid}` — पथ में `{id}` hashid स्ट्रिंग है
 - **डेटाबेस स्टोरेज**: BIGINT मूल मान, snowflake द्वारा उत्पन्न
 
 ### API संस्करण
 
-API संस्करण अनुरोध हेडर से नियंत्रित होता है, **URL में प्रकट नहीं होता**:
+API संस्करण संख्या URL पथ में होती है — सार्वजनिक एंडपॉइंट `/api/v1/*` और एडमिन एंडपॉइंट `/admin/v1/*` (डिफ़ॉल्ट `v1`) उपयोग करते हैं; कोई हेडर उपयोग नहीं होता:
 
-```http
-API-Version: v1
-```
-
-- संस्करण न देने पर डिफ़ॉल्ट `v1` उपयोग होता है
 - असमर्थित संस्करण `400 Bad Request` लौटाता है
-- नया संस्करण जोड़ने के लिए केवल `app/api/{version}/controller/` निर्देशिका बनाएं और मिडलवेयर में नया संस्करण पंजीकृत करें
+- नया संस्करण जोड़ने के लिए केवल `app/api/{version}/controller/` निर्देशिका बनाएं और नया रूट ग्रुप पंजीकृत करें (जैसे `/api/v2`)
 
 ### दर सीमा
 
@@ -273,10 +267,9 @@ Redis स्लाइडिंग विंडो एल्गोरिदम �
 Cors（跨域预处理 + 响应头）
   → SecurityFilter（HTTP方法限制/请求体大小/Content-Type校验/XSS/SQL注入/路径遍历/命令注入/CSRF 攻击拦截）
   → RateLimit（Redis 滑动窗口限流 + 账号锁定：5次登录失败锁定15分钟）
-  → ApiVersion（API 版本校验，/api 路由组）
-  → AdminAuth（JWT 认证 + 黑名单，/admin 路由组）
-  → AdminPermission（RBAC 鉴权，/admin 路由组）
-  → OperationLog（POST/PUT/DELETE 自动记录，含来源端检测，/admin 路由组）
+  → AdminAuth（JWT 认证 + 黑名单，/admin/v1 路由组）
+  → AdminPermission（RBAC 鉴权，/admin/v1 路由组）
+  → OperationLog（POST/PUT/DELETE 自动记录，含来源端检测，/admin/v1 路由组）
 ```
 
 `/health` और `/api/docs` सार्वजनिक एंडपॉइंट हैं, केवल `Cors → SecurityFilter → RateLimit` से गुजरते हैं।
@@ -291,12 +284,12 @@ Cors（跨域预处理 + 响应头）
 
 लॉगिन और पंजीकरण से पहले **क्लिक कैप्चा** सत्यापन पास करना आवश्यक है:
 
-1. क्लाइंट `POST /api/captcha/generate` से कैप्चा छवि (base64 PNG) और टेक्स्ट लक्ष्य सूची प्राप्त करता है
+1. क्लाइंट `POST /api/v1/captcha/generate` से कैप्चा छवि (base64 PNG) और टेक्स्ट लक्ष्य सूची प्राप्त करता है
 2. उपयोगकर्ता छवि में संबंधित टेक्स्ट स्थानों पर क्रम से क्लिक करता है, क्लिक निर्देशांक `[{x, y}, ...]` एकत्र होते हैं
 3. लॉगिन के समय `captcha_key` और `clicks` साथ सबमिट करें, सर्वर पहले कैप्चा फिर क्रेडेंशियल सत्यापित करता है
 
 ```http
-POST /api/auth/login
+POST /api/v1/auth/login
 Content-Type: application/json
 
 {
@@ -315,14 +308,14 @@ Authorization: Bearer <token>
 
 लॉगिन सफल होने पर access_token लौटता है, वैधता 2 घंटे; साथ ही refresh_token, वैधता 14 दिन।
 
-लॉगआउट पर Token Redis ब्लैकलिस्ट में जाता है, वैधता अवधि में पुनः उपयोग नहीं हो सकता। POST /admin/profile/logout
+लॉगआउट पर Token Redis ब्लैकलिस्ट में जाता है, वैधता अवधि में पुनः उपयोग नहीं हो सकता। POST /admin/v1/profile/logout
 
 ### संवेदनशील ऑपरेशन की द्वितीय पुष्टि
 
 उपयोगकर्ता, भूमिका, अनुमति हटाने जैसे संवेदनशील ऑपरेशनों में अनुरोध निकाय में वर्तमान लॉगिन उपयोगकर्ता का `password` देना आवश्यक है:
 
 ```http
-DELETE /admin/user/{id}
+DELETE /admin/v1/user/{id}
 Content-Type: application/json
 Authorization: Bearer <token>
 
@@ -331,7 +324,7 @@ Authorization: Bearer <token>
 
 ## API सूची
 
-> सभी `/api/*` इंटरफ़ेस में अनुरोध हेडर `API-Version: v1` होना चाहिए (न देने पर डिफ़ॉल्ट v1)।
+> सभी `/api/v1/*` और `/admin/v1/*` एंडपॉइंट का संस्करण नंबर URL पथ में होता है; किसी संस्करण हेडर का उपयोग नहीं होता।
 
 ### सार्वजनिक इंटरफ़ेस
 
@@ -339,45 +332,45 @@ Authorization: Bearer <token>
 |-----|------|------|
 | `GET` | `/health` | स्वास्थ्य जांच (DB/Redis/ES स्थिति) |
 | `GET` | `/api/docs` | OpenAPI 3.0 विनिर्देश दस्तावेज़ |
-| `POST` | `/api/captcha/generate` | क्लिक कैप्चा उत्पन्न करें |
-| `POST` | `/api/captcha/verify` | क्लिक कैप्चा सत्यापित करें |
-| `POST` | `/api/auth/login` | लॉगिन (कैप्चा आवश्यक) |
-| `POST` | `/api/auth/register` | पंजीकरण (कैप्चा आवश्यक) |
-| `POST` | `/api/auth/refresh` | टोकन रीफ़्रेश |
+| `POST` | `/api/v1/captcha/generate` | क्लिक कैप्चा उत्पन्न करें |
+| `POST` | `/api/v1/captcha/verify` | क्लिक कैप्चा सत्यापित करें |
+| `POST` | `/api/v1/auth/login` | लॉगिन (कैप्चा आवश्यक) |
+| `POST` | `/api/v1/auth/register` | पंजीकरण (कैप्चा आवश्यक) |
+| `POST` | `/api/v1/auth/refresh` | टोकन रीफ़्रेश |
 | `GET` | `/metrics` | Prometheus मॉनिटरिंग मेट्रिक्स |
 
 ### एडमिन इंटरफ़ेस (JWT + RBAC आवश्यक)
 
 | विधि | पथ | विवरण |
 |-----|------|------|
-| `GET` | `/admin/dashboard` | डैशबोर्ड डेटा (Redis कैश 5 मिनट) |
-| `GET` | `/admin/user` | उपयोगकर्ता सूची (पेजिनेशन + खोज) |
-| `POST` | `/admin/user` | उपयोगकर्ता बनाएं |
-| `GET` | `/admin/user/{id}` | उपयोगकर्ता विवरण |
-| `PUT` | `/admin/user/{id}` | उपयोगकर्ता अपडेट |
-| `DELETE` | `/admin/user/{id}` | उपयोगकर्ता हटाएं (सॉफ्ट डिलीट, पासवर्ड पुष्टि आवश्यक) |
-| `POST` | `/admin/user/batch/destroy` | बैच उपयोगकर्ता हटाएं (पासवर्ड पुष्टि आवश्यक) |
-| `POST` | `/admin/user/batch/status` | बैच सक्षम/अक्षम करें |
-| `GET` | `/admin/role` | भूमिका सूची |
-| `POST` | `/admin/role` | भूमिका बनाएं |
-| `PUT` | `/admin/role/{id}` | भूमिका अपडेट |
-| `DELETE` | `/admin/role/{id}` | भूमिका हटाएं (पासवर्ड पुष्टि आवश्यक) |
-| `GET` | `/admin/permission` | अनुमति ट्री |
-| `POST` | `/admin/permission` | अनुमति बनाएं |
-| `PUT` | `/admin/permission/{id}` | अनुमति अपडेट |
-| `DELETE` | `/admin/permission/{id}` | अनुमति हटाएं (कैस्केड बाल अनुमतियाँ, पासवर्ड पुष्टि आवश्यक) |
-| `GET` | `/admin/config` | सिस्टम कॉन्फ़िगरेशन सूची |
-| `POST` | `/admin/config` | कॉन्फ़िगरेशन आइटम बनाएं |
-| `PUT` | `/admin/config/{id}` | कॉन्फ़िगरेशन आइटम अपडेट |
-| `DELETE` | `/admin/config/{id}` | कॉन्फ़िगरेशन आइटम हटाएं (पासवर्ड पुष्टि आवश्यक) |
-| `GET` | `/admin/log` | ऑपरेशन लॉग (पेजिनेशन + फ़िल्टर) |
-| `PUT` | `/admin/profile` | व्यक्तिगत जानकारी अपडेट |
-| `PUT` | `/admin/profile/password` | पासवर्ड बदलें |
-| `POST` | `/admin/profile/logout` | लॉगआउट (JWT ब्लैकलिस्ट) |
-| `POST` | `/admin/export/excel` | Excel निर्यात |
-| `POST` | `/admin/export/pdf` | PDF निर्यात |
-| `POST` | `/admin/import/users` | Excel उपयोगकर्ता आयात |
-| `POST` | `/admin/upload` | फ़ाइल अपलोड (छवि/दस्तावेज़, अधिकतम 10MB) |
+| `GET` | `/admin/v1/dashboard` | डैशबोर्ड डेटा (Redis कैश 5 मिनट) |
+| `GET` | `/admin/v1/user` | उपयोगकर्ता सूची (पेजिनेशन + खोज) |
+| `POST` | `/admin/v1/user` | उपयोगकर्ता बनाएं |
+| `GET` | `/admin/v1/user/{id}` | उपयोगकर्ता विवरण |
+| `PUT` | `/admin/v1/user/{id}` | उपयोगकर्ता अपडेट |
+| `DELETE` | `/admin/v1/user/{id}` | उपयोगकर्ता हटाएं (सॉफ्ट डिलीट, पासवर्ड पुष्टि आवश्यक) |
+| `POST` | `/admin/v1/user/batch/destroy` | बैच उपयोगकर्ता हटाएं (पासवर्ड पुष्टि आवश्यक) |
+| `POST` | `/admin/v1/user/batch/status` | बैच सक्षम/अक्षम करें |
+| `GET` | `/admin/v1/role` | भूमिका सूची |
+| `POST` | `/admin/v1/role` | भूमिका बनाएं |
+| `PUT` | `/admin/v1/role/{id}` | भूमिका अपडेट |
+| `DELETE` | `/admin/v1/role/{id}` | भूमिका हटाएं (पासवर्ड पुष्टि आवश्यक) |
+| `GET` | `/admin/v1/permission` | अनुमति ट्री |
+| `POST` | `/admin/v1/permission` | अनुमति बनाएं |
+| `PUT` | `/admin/v1/permission/{id}` | अनुमति अपडेट |
+| `DELETE` | `/admin/v1/permission/{id}` | अनुमति हटाएं (कैस्केड बाल अनुमतियाँ, पासवर्ड पुष्टि आवश्यक) |
+| `GET` | `/admin/v1/config` | सिस्टम कॉन्फ़िगरेशन सूची |
+| `POST` | `/admin/v1/config` | कॉन्फ़िगरेशन आइटम बनाएं |
+| `PUT` | `/admin/v1/config/{id}` | कॉन्फ़िगरेशन आइटम अपडेट |
+| `DELETE` | `/admin/v1/config/{id}` | कॉन्फ़िगरेशन आइटम हटाएं (पासवर्ड पुष्टि आवश्यक) |
+| `GET` | `/admin/v1/log` | ऑपरेशन लॉग (पेजिनेशन + फ़िल्टर) |
+| `PUT` | `/admin/v1/profile` | व्यक्तिगत जानकारी अपडेट |
+| `PUT` | `/admin/v1/profile/password` | पासवर्ड बदलें |
+| `POST` | `/admin/v1/profile/logout` | लॉगआउट (JWT ब्लैकलिस्ट) |
+| `POST` | `/admin/v1/export/excel` | Excel निर्यात |
+| `POST` | `/admin/v1/export/pdf` | PDF निर्यात |
+| `POST` | `/admin/v1/import/users` | Excel उपयोगकर्ता आयात |
+| `POST` | `/admin/v1/upload` | फ़ाइल अपलोड (छवि/दस्तावेज़, अधिकतम 10MB) |
 
 ## फ्रंटएंड विवरण
 

@@ -8,10 +8,10 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 
 ## 1. Aperçu
 
-La plateforme d'administration ouverte (open-admin) est construite sur webman v2 et fournit une API JSON RESTful. Toutes les interfaces d'administration nécessitent une authentification JWT et une vérification des permissions RBAC ; les interfaces publiques sont routées vers les contrôleurs versionnés via l'en-tête de version d'API.
+La plateforme d'administration ouverte (open-admin) est construite sur webman v2 et fournit une API JSON RESTful. Toutes les interfaces d'administration nécessitent une authentification JWT et une vérification des permissions RBAC ; les points d'extrémité publics sont montés sous le préfixe `/api/v1`, ceux d'administration sous le préfixe `/admin/v1` ; la version est portée par le chemin d'URL et non par un en-tête.
 
 - **URL de base** : `http://localhost:8787`
-- **Version de l'API** : contrôlée via l'en-tête de requête `API-Version: v1` (v1 par défaut si absent)
+- **Version de l'API** : encodée dans le chemin d'URL — points d'extrémité publics sous `/api/v1`, points d'extrémité d'administration sous `/admin/v1` ; aucun en-tête de version n'est utilisé, une future v2 serait enregistrée sous la forme d'un groupe `/api/v2`
 
 > **Aperçu des points d'extrémité** : authentification(5) | tableau de bord(1) | utilisateurs(7) | rôles(4) | permissions(4) | configuration(4) | journaux(1) | espace personnel(3) | import/export(3) | upload(1) | exploitation(4 : health/metrics/docs/security.txt) | soit 37 points d'extrémité au total
 - **Authentification** : `Authorization: Bearer <token>` (JWT)
@@ -45,7 +45,7 @@ La plateforme d'administration ouverte (open-admin) est construite sur webman v2
 
 ## 3. Points d'extrémité publics
 
-Tous les points d'extrémité publics sont montés sous le groupe `/api` et distribués par le middleware `ApiVersion` vers le contrôleur versionné correspondant selon l'en-tête `API-Version` (par ex. `app\api\v1\controller\AuthController`).
+Tous les points d'extrémité publics sont montés sous le préfixe `/api/v1`, et les points d'extrémité d'administration sous le préfixe `/admin/v1` ; la version est déterminée par le préfixe du groupe de routes ; aucun en-tête de version n'est utilisé. Exemple de contrôleur public : `app\api\v1\controller\AuthController`.
 
 ### 3.1 Health check
 
@@ -88,11 +88,10 @@ GET /api/docs
 ### 3.3 Génération du captcha à clic
 
 ```
-POST /api/captcha/generate
+POST /api/v1/captcha/generate
 ```
 
 - **Authentification** : aucune
-- **En-tête de requête** : `API-Version: v1` (obligatoire)
 - **Limitation** : défaut global (60 requêtes/minute)
 
 **Corps de requête** :
@@ -134,11 +133,10 @@ POST /api/captcha/generate
 ### 3.4 Vérification du captcha à clic
 
 ```
-POST /api/captcha/verify
+POST /api/v1/captcha/verify
 ```
 
 - **Authentification** : aucune
-- **En-tête de requête** : `API-Version: v1` (obligatoire)
 - **Limitation** : défaut global (60 requêtes/minute)
 
 **Corps de requête** :
@@ -171,11 +169,10 @@ En cas d'échec de vérification, `code` vaut 422, `message` vaut `"验证失败
 ### 3.5 Connexion
 
 ```
-POST /api/auth/login
+POST /api/v1/auth/login
 ```
 
 - **Authentification** : aucune
-- **En-tête de requête** : `API-Version: v1` (obligatoire)
 - **Limitation** : 10 requêtes/minute (par IP + chemin)
 
 **Corps de requête** :
@@ -235,11 +232,10 @@ POST /api/auth/login
 ### 3.6 Inscription
 
 ```
-POST /api/auth/register
+POST /api/v1/auth/register
 ```
 
 - **Authentification** : aucune
-- **En-tête de requête** : `API-Version: v1` (obligatoire)
 - **Limitation** : 5 requêtes/minute (par IP + chemin)
 
 **Corps de requête** :
@@ -287,11 +283,10 @@ Les jetons JWT sont renvoyés directement après une inscription réussie ; le s
 ### 3.7 Rafraîchissement du jeton
 
 ```
-POST /api/auth/refresh
+POST /api/v1/auth/refresh
 ```
 
 - **Authentification** : aucune
-- **En-tête de requête** : `API-Version: v1` (obligatoire)
 - **Limitation** : défaut global (60 requêtes/minute)
 
 **Corps de requête** :
@@ -369,12 +364,12 @@ openadmin_memory_usage_bytes 18874368
 
 ## 4. Tableau de bord
 
-Toutes les interfaces d'administration sont montées sous le groupe `/admin` et passent par trois middlewares : `AdminAuth` (authentification JWT), `AdminPermission` (vérification des permissions RBAC), `OperationLog` (journal des opérations).
+Toutes les interfaces d'administration sont montées sous le préfixe `/admin/v1` et passent par trois middlewares : `AdminAuth` (authentification JWT), `AdminPermission` (vérification des permissions RBAC), `OperationLog` (journal des opérations).
 
 ### 4.1 Données du tableau de bord
 
 ```
-GET /admin/dashboard
+GET /admin/v1/dashboard
 ```
 
 - **Authentification** : JWT + RBAC
@@ -431,7 +426,7 @@ GET /admin/dashboard
         "id": "hashid...",
         "action": "用户登录",
         "method": "POST",
-        "path": "/api/auth/login",
+        "path": "/api/v1/auth/login",
         "ip": "192.168.1.1",
         "user_name": "admin",
         "created_at": "2026-05-21 10:30:00"
@@ -461,7 +456,7 @@ Tous les `id` renvoyés par les interfaces de gestion des utilisateurs sont des 
 ### 5.1 Liste des utilisateurs
 
 ```
-GET /admin/user
+GET /admin/v1/user
 ```
 
 - **Authentification** : JWT + RBAC
@@ -514,7 +509,7 @@ GET /admin/user
 ### 5.2 Création d'un utilisateur
 
 ```
-POST /admin/user
+POST /admin/v1/user
 ```
 
 - **Authentification** : JWT + RBAC
@@ -564,7 +559,7 @@ POST /admin/user
 ### 5.3 Détail d'un utilisateur
 
 ```
-GET /admin/user/{id}
+GET /admin/v1/user/{id}
 ```
 
 - **Authentification** : JWT + RBAC
@@ -598,7 +593,7 @@ Dans l'interface de détail, `phone` et `email` sont renvoyés en clair (stockag
 ### 5.4 Mise à jour d'un utilisateur
 
 ```
-PUT /admin/user/{id}
+PUT /admin/v1/user/{id}
 ```
 
 - **Authentification** : JWT + RBAC
@@ -646,7 +641,7 @@ PUT /admin/user/{id}
 ### 5.5 Suppression d'un utilisateur
 
 ```
-DELETE /admin/user/{id}
+DELETE /admin/v1/user/{id}
 ```
 
 - **Authentification** : JWT + RBAC
@@ -683,7 +678,7 @@ Suppression douce (SoftDeletes Eloquent) : la donnée est marquée `deleted_at` 
 ### 5.6 Suppression groupée d'utilisateurs
 
 ```
-POST /admin/user/batch/destroy
+POST /admin/v1/user/batch/destroy
 ```
 
 - **Authentification** : JWT + RBAC
@@ -723,7 +718,7 @@ Suppression douce ; `data.count` est le nombre réellement supprimé.
 ### 5.7 Activation/désactivation groupée d'utilisateurs
 
 ```
-POST /admin/user/batch/status
+POST /admin/v1/user/batch/status
 ```
 
 - **Authentification** : JWT + RBAC
@@ -763,7 +758,7 @@ Le message varie dynamiquement selon la valeur de status : `"批量启用成功"
 ### 6.1 Liste des rôles
 
 ```
-GET /admin/role
+GET /admin/v1/role
 ```
 
 - **Authentification** : JWT + RBAC
@@ -811,7 +806,7 @@ GET /admin/role
 ### 6.2 Création d'un rôle
 
 ```
-POST /admin/role
+POST /admin/v1/role
 ```
 
 - **Authentification** : JWT + RBAC
@@ -853,7 +848,7 @@ POST /admin/role
 ### 6.3 Mise à jour d'un rôle
 
 ```
-PUT /admin/role/{id}
+PUT /admin/v1/role/{id}
 ```
 
 - **Authentification** : JWT + RBAC
@@ -893,7 +888,7 @@ PUT /admin/role/{id}
 ### 6.4 Suppression d'un rôle
 
 ```
-DELETE /admin/role/{id}
+DELETE /admin/v1/role/{id}
 ```
 
 - **Authentification** : JWT + RBAC
@@ -924,7 +919,7 @@ Les permissions utilisent une structure arborescente (auto-référence via paren
 ### 7.1 Arbre de permissions
 
 ```
-GET /admin/permission
+GET /admin/v1/permission
 ```
 
 - **Authentification** : JWT + RBAC
@@ -939,7 +934,7 @@ GET /admin/permission
       "id": "p1p2p3p4",
       "parent_id": "0",
       "name": "用户管理",
-      "slug": "/admin/user",
+      "slug": "/admin/v1/user",
       "type": 1,
       "icon": "people",
       "path": "/user",
@@ -950,7 +945,7 @@ GET /admin/permission
           "id": "p5p6p7p8",
           "parent_id": "p1p2p3p4",
           "name": "用户列表",
-          "slug": "/admin/user/index",
+          "slug": "/admin/v1/user/index",
           "type": 2,
           "icon": "",
           "path": "/user/index",
@@ -977,7 +972,7 @@ GET /admin/permission
 ### 7.2 Création d'une permission
 
 ```
-POST /admin/permission
+POST /admin/v1/permission
 ```
 
 - **Authentification** : JWT + RBAC
@@ -987,7 +982,7 @@ POST /admin/permission
 {
   "parent_id": 0,
   "name": "系统设置",
-  "slug": "/admin/config",
+  "slug": "/admin/v1/config",
   "type": 1,
   "icon": "settings",
   "path": "/config",
@@ -1014,7 +1009,7 @@ POST /admin/permission
     "id": "p9p0a1b2",
     "parent_id": "0",
     "name": "系统设置",
-    "slug": "/admin/config",
+    "slug": "/admin/v1/config",
     "type": 1,
     "icon": "settings",
     "path": "/config",
@@ -1026,7 +1021,7 @@ POST /admin/permission
 ### 7.3 Mise à jour d'une permission
 
 ```
-PUT /admin/permission/{id}
+PUT /admin/v1/permission/{id}
 ```
 
 - **Authentification** : JWT + RBAC
@@ -1051,7 +1046,7 @@ PUT /admin/permission/{id}
 ### 7.4 Suppression d'une permission
 
 ```
-DELETE /admin/permission/{id}
+DELETE /admin/v1/permission/{id}
 ```
 
 - **Authentification** : JWT + RBAC
@@ -1082,7 +1077,7 @@ La configuration système est unique par combinaison `group` + `key`.
 ### 8.1 Liste des configurations
 
 ```
-GET /admin/config
+GET /admin/v1/config
 ```
 
 - **Authentification** : JWT + RBAC
@@ -1131,7 +1126,7 @@ GET /admin/config
 ### 8.2 Création d'une configuration
 
 ```
-POST /admin/config
+POST /admin/v1/config
 ```
 
 - **Authentification** : JWT + RBAC
@@ -1177,7 +1172,7 @@ POST /admin/config
 ### 8.3 Mise à jour d'une configuration
 
 ```
-PUT /admin/config/{id}
+PUT /admin/v1/config/{id}
 ```
 
 - **Authentification** : JWT + RBAC
@@ -1200,7 +1195,7 @@ PUT /admin/config/{id}
 ### 8.4 Suppression d'une configuration
 
 ```
-DELETE /admin/config/{id}
+DELETE /admin/v1/config/{id}
 ```
 
 - **Authentification** : JWT + RBAC
@@ -1222,7 +1217,7 @@ Les journaux d'opérations sont des interfaces en lecture seule, écrits automat
 ### 9.1 Liste des journaux d'opérations
 
 ```
-GET /admin/log
+GET /admin/v1/log
 ```
 
 - **Authentification** : JWT + RBAC
@@ -1251,7 +1246,7 @@ GET /admin/log
         "user_name": "admin",
         "action": "用户登录",
         "method": "POST",
-        "path": "/api/auth/login",
+        "path": "/api/v1/auth/login",
         "ip": "192.168.1.1",
         "source": "web",
         "input": "{\"username\":\"admin\"}",
@@ -1284,7 +1279,7 @@ Les interfaces de l'espace personnel ne nécessitent qu'une authentification JWT
 ### 10.1 Mise à jour des informations personnelles
 
 ```
-PUT /admin/profile
+PUT /admin/v1/profile
 ```
 
 - **Authentification** : JWT
@@ -1326,7 +1321,7 @@ Dans la réponse, `phone` et `email` sont renvoyés en clair ; `password` et `id
 ### 10.2 Modification du mot de passe
 
 ```
-PUT /admin/profile/password
+PUT /admin/v1/profile/password
 ```
 
 - **Authentification** : JWT
@@ -1361,7 +1356,7 @@ PUT /admin/profile/password
 ### 10.3 Déconnexion
 
 ```
-POST /admin/profile/logout
+POST /admin/v1/profile/logout
 ```
 
 - **Authentification** : JWT
@@ -1386,7 +1381,7 @@ Sans token, 401 est renvoyé. Si le token est expiré/invalide (exception au dé
 ### 11.1 Export Excel
 
 ```
-POST /admin/export/excel
+POST /admin/v1/export/excel
 ```
 
 - **Authentification** : JWT + RBAC
@@ -1425,7 +1420,7 @@ Les champs sensibles `phone`, `email`, `id_card` sont automatiquement masqués �
 ### 11.2 Export PDF
 
 ```
-POST /admin/export/pdf
+POST /admin/v1/export/pdf
 ```
 
 - **Authentification** : JWT + RBAC
@@ -1472,7 +1467,7 @@ Le modèle PDF inclut les informations de copyright et l'horodatage d'export.
 ### 11.3 Import d'utilisateurs (Excel)
 
 ```
-POST /admin/import/users
+POST /admin/v1/import/users
 ```
 
 - **Authentification** : JWT + RBAC
@@ -1524,7 +1519,7 @@ La ligne 1 contient les titres de colonnes (insensibles à la casse), les donné
 ## 12. Upload de fichiers
 
 ```
-POST /admin/upload
+POST /admin/v1/upload
 ```
 
 - **Authentification** : JWT + RBAC
@@ -1573,8 +1568,8 @@ Toutes les interfaces (injectés au niveau des middlewares globaux) incluent les
 
 Détails de la limitation :
 - Limite globale par défaut : 60 requêtes/minute / IP+chemin
-- Point d'extrémité de connexion `/api/auth/login` : 10 requêtes/minute
-- Point d'extrémité d'inscription `/api/auth/register` : 5 requêtes/minute
+- Point d'extrémité de connexion `/api/v1/auth/login` : 10 requêtes/minute
+- Point d'extrémité d'inscription `/api/v1/auth/register` : 5 requêtes/minute
 - Algorithme de fenêtre glissante atomique Redis (Lua ZSET), évite la course TOCTOU
 - Si Redis est indisponible : fail-closed — renvoie 503 (`Retry-After: 5`), ne laisse pas passer les requêtes
 
@@ -1584,18 +1579,18 @@ Tous les points d'extrémité nécessitent une authentification (`AdminAuth` + `
 
 | Méthode | Chemin | Description |
 |------|------|------|
-| GET | /admin/analytics/overview | Aperçu de la plateforme (aujourd'hui/7 derniers jours) |
-| GET | /admin/analytics/game-ranking | Classement des jeux (?days=7) |
-| GET | /admin/analytics/dau-trend | Tendance DAU (?days=30) |
-| GET | /admin/analytics/hourly-trend | Tendance horaire |
-| GET | /admin/analytics/action-distribution | Répartition des comportements |
-| GET | /admin/analytics/revenue | Analyse des revenus |
-| GET | /admin/analytics/conversion | Taux de conversion des jeux |
-| GET | /admin/analytics/probability | Probabilités conjointes/conditionnelles |
-| GET | /admin/analytics/retention | Analyse de rétention D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | Entonnoir de conversion |
-| GET | /admin/analytics/arpu | Tendance ARPU/ARPPU |
-| GET | /admin/analytics/economy | Indicateurs économiques des devises de jeu |
+| GET | /admin/v1/analytics/overview | Aperçu de la plateforme (aujourd'hui/7 derniers jours) |
+| GET | /admin/v1/analytics/game-ranking | Classement des jeux (?days=7) |
+| GET | /admin/v1/analytics/dau-trend | Tendance DAU (?days=30) |
+| GET | /admin/v1/analytics/hourly-trend | Tendance horaire |
+| GET | /admin/v1/analytics/action-distribution | Répartition des comportements |
+| GET | /admin/v1/analytics/revenue | Analyse des revenus |
+| GET | /admin/v1/analytics/conversion | Taux de conversion des jeux |
+| GET | /admin/v1/analytics/probability | Probabilités conjointes/conditionnelles |
+| GET | /admin/v1/analytics/retention | Analyse de rétention D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | Entonnoir de conversion |
+| GET | /admin/v1/analytics/arpu | Tendance ARPU/ARPPU |
+| GET | /admin/v1/analytics/economy | Indicateurs économiques des devises de jeu |
 
 ## 15. Gestion des tickets (Ticket)
 
@@ -1603,26 +1598,25 @@ Tous les points d'extrémité nécessitent une authentification (`AdminAuth` + `
 
 | Méthode | Chemin | Description |
 |------|------|------|
-| GET | /admin/ticket/list | Liste des tickets (?page=&limit=&status=&type=) |
-| GET | /admin/ticket/{hashid} | Détail d'un ticket (avec réponses) |
-| POST | /admin/ticket/{hashid}/reply | Répondre à un ticket |
-| POST | /admin/ticket/{hashid}/close | Clôturer un ticket |
-| POST | /admin/ticket/{hashid}/assign | Attribuer un traitement (admin_id) |
+| GET | /admin/v1/ticket/list | Liste des tickets (?page=&limit=&status=&type=) |
+| GET | /admin/v1/ticket/{hashid} | Détail d'un ticket (avec réponses) |
+| POST | /admin/v1/ticket/{hashid}/reply | Répondre à un ticket |
+| POST | /admin/v1/ticket/{hashid}/close | Clôturer un ticket |
+| POST | /admin/v1/ticket/{hashid}/assign | Attribuer un traitement (admin_id) |
 
 ## 16. Flux d'authentification
 
 Séquence d'authentification complète :
 
 ```
-1. Le client appelle POST /api/captcha/generate
-   (En-tête de requête : API-Version: v1)
+1. Le client appelle POST /api/v1/captcha/generate
     ↓
    Le serveur renvoie : key + image base64 + indication des cibles à cliquer
    
 2. L'utilisateur clique sur les positions des cibles de l'image, le frontend/client collecte les coordonnées des clics
    
-3. Le client appelle POST /api/auth/login
-   (En-tête de requête : API-Version: v1, Content-Type: application/json)
+3. Le client appelle POST /api/v1/auth/login
+   (En-tête de requête : Content-Type: application/json)
    Corps de requête : { username, password, captcha_key, clicks: [{x,y}, ...] }
     ↓
    Serveur :
@@ -1655,7 +1649,7 @@ Séquence d'authentification complète :
    Réponse + en-têtes X-RateLimit-*
 
 5. Rafraîchissement avant expiration du token d'accès
-   Le client appelle POST /api/auth/refresh
+   Le client appelle POST /api/v1/auth/refresh
    Corps de requête : { refresh_token: "..." }
     ↓
    Le serveur décode le refresh_token → émet un nouveau access + refresh
@@ -1663,7 +1657,7 @@ Séquence d'authentification complète :
    Le client met à jour ses jetons locaux
 
 6. Déconnexion
-   Le client appelle POST /admin/profile/logout
+   Le client appelle POST /admin/v1/profile/logout
    En-tête de requête : Authorization: Bearer <access_token>
     ↓
    Serveur :
@@ -1722,7 +1716,7 @@ Les interfaces d'analyse de données sont fournies par `AnalyticsController`, to
 ### 16.1 Aperçu de la plateforme
 
 ```
-GET /admin/analytics/overview
+GET /admin/v1/analytics/overview
 ```
 
 **Réponse** : `today` / `week` contiennent chacun `dau` (utilisateurs actifs), `revenue` (total des recharges confirmées, chaîne), `new_users` (nouveaux utilisateurs).
@@ -1730,7 +1724,7 @@ GET /admin/analytics/overview
 ### 16.2 Classement des jeux
 
 ```
-GET /admin/analytics/game-ranking?days=7
+GET /admin/v1/analytics/game-ranking?days=7
 ```
 
 **Réponse** : top 10 par nombre décroissant de comportements de jeu, chaque élément contient `game_id` (hashid), `name`, `plays`, `players`.
@@ -1738,7 +1732,7 @@ GET /admin/analytics/game-ranking?days=7
 ### 16.3 Tendance DAU
 
 ```
-GET /admin/analytics/dau-trend?days=30
+GET /admin/v1/analytics/dau-trend?days=30
 ```
 
 **Réponse** : `{ "日期": nombre d'actifs, ... }`, les dates manquantes sont complétées par 0.
@@ -1746,7 +1740,7 @@ GET /admin/analytics/dau-trend?days=30
 ### 16.4 Tendance horaire
 
 ```
-GET /admin/analytics/hourly-trend?game_id=<hashid>
+GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
 ```
 
 **Réponse** : `{ "0": nombre, ... "23": nombre }` 24 créneaux horaires ; si `game_id` est vide, tous les jeux sont comptabilisés.
@@ -1754,7 +1748,7 @@ GET /admin/analytics/hourly-trend?game_id=<hashid>
 ### 16.5 Répartition des comportements
 
 ```
-GET /admin/analytics/action-distribution?game_id=<hashid>&hours=24
+GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
 ```
 
 **Réponse** : `{ "start": n, "end": n, "earn": n, "spend": n }` comptages des quatre catégories de comportements ; `hours` plafonné à 168.
@@ -1762,7 +1756,7 @@ GET /admin/analytics/action-distribution?game_id=<hashid>&hours=24
 ### 16.6 Aperçu des revenus
 
 ```
-GET /admin/analytics/revenue?days=7
+GET /admin/v1/analytics/revenue?days=7
 ```
 
 **Réponse** : `{ "total": "montant total", "trend": { "日期": "montant du jour", ... } }`, seules les commandes `status=confirmed` sont comptabilisées.
@@ -1770,7 +1764,7 @@ GET /admin/analytics/revenue?days=7
 ### 16.7 Taux de conversion des jeux
 
 ```
-GET /admin/analytics/conversion?days=30
+GET /admin/v1/analytics/conversion?days=30
 ```
 
 **Réponse** : chaque jeu contient `game_id` (hashid), `game_name`, `players` (joueurs uniques), `depositors` (rechargeurs uniques), `conversion_rate` (taux de conversion en recharge, 0~1).
@@ -1778,7 +1772,7 @@ GET /admin/analytics/conversion?days=30
 ### 16.8 Probabilité conjointe
 
 ```
-GET /admin/analytics/probability?game_a=<hashid>&game_b=<hashid>
+GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
 ```
 
 **Réponse** : `{ "joint": { "joint_probability": 0.12, "confidence": 0.3 } }` — coefficient de Jaccard (joueurs communs aux deux jeux / joueurs de l'union) et confiance (joueurs communs / joueurs du jeu A).
@@ -1786,7 +1780,7 @@ GET /admin/analytics/probability?game_a=<hashid>&game_b=<hashid>
 ### 16.9 Analyse de rétention
 
 ```
-GET /admin/analytics/retention?days=30
+GET /admin/v1/analytics/retention?days=30
 ```
 
 **Réponse** : `{ "D1": "8.5%", "D3": "...", "D7": "...", "D30": "..." }` taux de rétention à J+1/J+3/J+7/J+30 par cohorte de date d'inscription.
@@ -1794,7 +1788,7 @@ GET /admin/analytics/retention?days=30
 ### 16.10 Entonnoir de conversion
 
 ```
-GET /admin/analytics/funnel?days=30
+GET /admin/v1/analytics/funnel?days=30
 ```
 
 **Réponse** : les quatre étapes inscription → premier dépôt → premier échange → première partie de jeu, avec `step`, `count`, `rate` (pourcentage relatif au nombre d'inscriptions).
@@ -1802,7 +1796,7 @@ GET /admin/analytics/funnel?days=30
 ### 16.11 Tendance ARPU/ARPPU
 
 ```
-GET /admin/analytics/arpu?days=30
+GET /admin/v1/analytics/arpu?days=30
 ```
 
 **Réponse** : `{ "dates": [...], "arpu": [...], "arppu": [...] }` revenu moyen par utilisateur (ARPU) et revenu moyen par utilisateur payant (ARPPU) par jour.
@@ -1810,7 +1804,7 @@ GET /admin/analytics/arpu?days=30
 ### 16.12 Indicateurs économiques des jeux
 
 ```
-GET /admin/analytics/economy
+GET /admin/v1/analytics/economy
 ```
 
 **Réponse** : tableau `currencies`, chaque élément contient `game_name`, `currency`, `symbol`, `total_minted` (masse monétaire totale émise), `total_burned` (masse détruite totale), `circulation` (masse en circulation), `inflation_rate` (taux d'inflation), calculs haute précision via bcmath.
@@ -1821,16 +1815,16 @@ La gestion des méthodes de paiement est fournie par `PaymentController` ; les 5
 
 | Méthode | Chemin | Description |
 |------|------|------|
-| GET | /admin/payment/method/list | Liste des méthodes de paiement (tri croissant par sort) |
-| POST | /admin/payment/method/toggle | Activer/désactiver une méthode de paiement |
-| POST | /admin/payment/method/create | Créer une méthode de paiement |
-| PUT | /admin/payment/method/{hashid} | Mettre à jour une méthode de paiement |
-| DELETE | /admin/payment/method/{hashid} | Supprimer une méthode de paiement (refusé si des commandes en attente existent) |
+| GET | /admin/v1/payment/method/list | Liste des méthodes de paiement (tri croissant par sort) |
+| POST | /admin/v1/payment/method/toggle | Activer/désactiver une méthode de paiement |
+| POST | /admin/v1/payment/method/create | Créer une méthode de paiement |
+| PUT | /admin/v1/payment/method/{hashid} | Mettre à jour une méthode de paiement |
+| DELETE | /admin/v1/payment/method/{hashid} | Supprimer une méthode de paiement (refusé si des commandes en attente existent) |
 
 ### 17.1 Liste des méthodes de paiement
 
 ```
-GET /admin/payment/method/list
+GET /admin/v1/payment/method/list
 ```
 
 - **Authentification** : JWT + RBAC
@@ -1878,7 +1872,7 @@ GET /admin/payment/method/list
 ### 17.2 Activer/désactiver une méthode de paiement
 
 ```
-POST /admin/payment/method/toggle
+POST /admin/v1/payment/method/toggle
 ```
 
 **Corps de la requête** :
@@ -1901,7 +1895,7 @@ POST /admin/payment/method/toggle
 ### 17.3 Créer une méthode de paiement
 
 ```
-POST /admin/payment/method/create
+POST /admin/v1/payment/method/create
 ```
 
 **Corps de la requête** :
@@ -1947,7 +1941,7 @@ POST /admin/payment/method/create
 ### 17.4 Mettre à jour une méthode de paiement
 
 ```
-PUT /admin/payment/method/{hashid}
+PUT /admin/v1/payment/method/{hashid}
 ```
 
 - **Paramètre de chemin** : `{hashid}` est l'ID de la méthode de paiement codé en hashid
@@ -1960,7 +1954,7 @@ PUT /admin/payment/method/{hashid}
 ### 17.5 Supprimer une méthode de paiement
 
 ```
-DELETE /admin/payment/method/{hashid}
+DELETE /admin/v1/payment/method/{hashid}
 ```
 
 - **Paramètre de chemin** : `{hashid}` est l'ID de la méthode de paiement codé en hashid

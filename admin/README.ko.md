@@ -79,7 +79,7 @@ open-admin/
 │   │   ├── DocsController.php      # OpenAPI 문서
 │   │   └── BaseController.php      # 기본 컨트롤러
 │   ├── api/
-│   │   └── v1/controller/          # API v1 컨트롤러 (버전은 요청 헤더 API-Version으로 제어)
+│   │   └── v1/controller/          # API v1 컨트롤러 (버전은 URL 경로: /api/v1, /admin/v1)
 │   │       ├── CaptchaController.php # 클릭 캡차
 │   │       └── AuthController.php    # 로그인/가입/토큰 갱신
 │   ├── common/                 # 공용 유틸리티 클래스
@@ -90,7 +90,6 @@ open-admin/
 │   │   ├── Cors.php            # 크로스 도메인
 │   │   ├── SecurityFilter.php  # 공격 감지 차단 (HTTP 메서드 제한/XSS/SQL 인젝션/경로 탐색/명령 인젝션/CSRF)
 │   │   ├── RateLimit.php       # Redis 속도 제한 (슬라이딩 윈도우 + 응답 헤더)
-│   │   ├── ApiVersion.php      # API 버전 검증
 │   │   ├── AdminAuth.php       # JWT 인증 + 블랙리스트
 │   │   ├── AdminPermission.php # RBAC 권한 검증
 │   │   └── OperationLog.php    # 작업 로그 자동 기록 (출처 감지 포함)
@@ -242,20 +241,15 @@ docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 ### ID 처리
 
 - **요청/응답의 ID**: hashids로 문자열 암호화, 실제 데이터베이스 ID 노출 방지
-- **인터페이스 경로**: `GET /admin/user/{hashid}` — 경로의 `{id}`는 hashid 문자열
+- **인터페이스 경로**: `GET /admin/v1/user/{hashid}` — 경로의 `{id}`는 hashid 문자열
 - **데이터베이스 저장**: BIGINT 원값, snowflake로 생성
 
 ### API 버전
 
-API 버전은 요청 헤더로 제어하며, **URL에 표시하지 않습니다**:
+API 버전 번호는 URL 경로에 있습니다 — 공개 엔드포인트 `/api/v1/*`, 관리 엔드포인트 `/admin/v1/*`(기본 `v1`); 요청 헤더를 사용하지 않습니다:
 
-```http
-API-Version: v1
-```
-
-- 버전 미지정 시 기본 `v1` 사용
 - 지원하지 않는 버전은 `400 Bad Request` 반환
-- 새 버전 추가 시 `app/api/{version}/controller/` 디렉터리를 만들고 미들웨어에 새 버전을 등록하면 됩니다
+- 새 버전 추가 시 `app/api/{version}/controller/` 디렉터리를 만들고 새 라우트 그룹을 등록하면 됩니다 (예: `/api/v2`)
 
 ### 속도 제한
 
@@ -273,10 +267,9 @@ Redis 슬라이딩 윈도우 알고리즘 기반, 기본 60회/분/IP/라우트.
 Cors（크로스 도메인 전처리 + 응답 헤더）
   → SecurityFilter（HTTP 메서드 제한/요청 본문 크기/Content-Type 검증/XSS/SQL 인젝션/경로 탐색/명령 인젝션/CSRF 공격 차단）
   → RateLimit（Redis 슬라이딩 윈도우 속도 제한 + 계정 잠금: 5회 로그인 실패 시 15분 잠금）
-  → ApiVersion（API 버전 검증, /api 라우트 그룹）
-  → AdminAuth（JWT 인증 + 블랙리스트, /admin 라우트 그룹）
-  → AdminPermission（RBAC 인가, /admin 라우트 그룹）
-  → OperationLog（POST/PUT/DELETE 자동 기록, 출처 감지 포함, /admin 라우트 그룹）
+  → AdminAuth（JWT 인증 + 블랙리스트, /admin/v1 라우트 그룹）
+  → AdminPermission（RBAC 인가, /admin/v1 라우트 그룹）
+  → OperationLog（POST/PUT/DELETE 자동 기록, 출처 감지 포함, /admin/v1 라우트 그룹）
 ```
 
 `/health`와 `/api/docs`는 공개 엔드포인트로, `Cors → SecurityFilter → RateLimit`만 통과합니다.
@@ -291,12 +284,12 @@ Cors（크로스 도메인 전처리 + 응답 헤더）
 
 로그인과 가입은 먼저 **클릭 캡차** 검증을 통과해야 합니다:
 
-1. 클라이언트가 `POST /api/captcha/generate`로 캡차 이미지 (base64 PNG)와 텍스트 대상 목록 요청
+1. 클라이언트가 `POST /api/v1/captcha/generate`로 캡차 이미지 (base64 PNG)와 텍스트 대상 목록 요청
 2. 사용자가 그림의 해당 텍스트 위치를 순서대로 클릭, 클릭 좌표 `[{x, y}, ...]` 수집
 3. 로그인 시 `captcha_key`와 `clicks`를 함께 제출, 서버가 캡차를 먼저 검증한 후 자격 증명을 검증
 
 ```http
-POST /api/auth/login
+POST /api/v1/auth/login
 Content-Type: application/json
 
 {
@@ -315,14 +308,14 @@ Authorization: Bearer <token>
 
 로그인 성공 후 access_token 반환, 유효기간 2시간; refresh_token도 반환, 유효기간 14일.
 
-로그아웃 시 토큰이 Redis 블랙리스트에 추가되어 유효기간 내 재사용 불가. POST /admin/profile/logout
+로그아웃 시 토큰이 Redis 블랙리스트에 추가되어 유효기간 내 재사용 불가. POST /admin/v1/profile/logout
 
 ### 민감 작업 2차 확인
 
 사용자, 역할, 권한 삭제 등 민감 작업은 요청 본문에 현재 로그인 사용자의 `password`를 전달하여 신원 2차 확인을 해야 합니다:
 
 ```http
-DELETE /admin/user/{id}
+DELETE /admin/v1/user/{id}
 Content-Type: application/json
 Authorization: Bearer <token>
 
@@ -331,7 +324,7 @@ Authorization: Bearer <token>
 
 ## API 목록
 
-> 모든 `/api/*` 인터페이스는 요청 헤더에 `API-Version: v1`을 포함해야 합니다 (미전달 시 기본 v1).
+> 모든 `/api/v1/*` 및 `/admin/v1/*` 엔드포인트의 버전 번호는 URL 경로에 있으며, 버전 헤더를 사용하지 않습니다.
 
 ### 공개 인터페이스
 
@@ -339,45 +332,45 @@ Authorization: Bearer <token>
 |-----|------|------|
 | `GET` | `/health` | 헬스 체크 (DB/Redis/ES 상태) |
 | `GET` | `/api/docs` | OpenAPI 3.0 규범 문서 |
-| `POST` | `/api/captcha/generate` | 클릭 캡차 생성 |
-| `POST` | `/api/captcha/verify` | 클릭 캡차 검증 |
-| `POST` | `/api/auth/login` | 로그인 (캡차 필요) |
-| `POST` | `/api/auth/register` | 가입 (캡차 필요) |
-| `POST` | `/api/auth/refresh` | 토큰 갱신 |
+| `POST` | `/api/v1/captcha/generate` | 클릭 캡차 생성 |
+| `POST` | `/api/v1/captcha/verify` | 클릭 캡차 검증 |
+| `POST` | `/api/v1/auth/login` | 로그인 (캡차 필요) |
+| `POST` | `/api/v1/auth/register` | 가입 (캡차 필요) |
+| `POST` | `/api/v1/auth/refresh` | 토큰 갱신 |
 | `GET` | `/metrics` | Prometheus 모니터링 지표 |
 
 ### 관리자 인터페이스 (JWT + RBAC 필요)
 
 | 메서드 | 경로 | 설명 |
 |-----|------|------|
-| `GET` | `/admin/dashboard` | 대시보드 데이터 (Redis 캐시 5분) |
-| `GET` | `/admin/user` | 사용자 목록 (페이지네이션 + 검색) |
-| `POST` | `/admin/user` | 사용자 생성 |
-| `GET` | `/admin/user/{id}` | 사용자 상세 |
-| `PUT` | `/admin/user/{id}` | 사용자 수정 |
-| `DELETE` | `/admin/user/{id}` | 사용자 삭제 (소프트 삭제, 비밀번호 확인 필요) |
-| `POST` | `/admin/user/batch/destroy` | 사용자 일괄 삭제 (비밀번호 확인 필요) |
-| `POST` | `/admin/user/batch/status` | 사용자 일괄 활성/비활성 |
-| `GET` | `/admin/role` | 역할 목록 |
-| `POST` | `/admin/role` | 역할 생성 |
-| `PUT` | `/admin/role/{id}` | 역할 수정 |
-| `DELETE` | `/admin/role/{id}` | 역할 삭제 (비밀번호 확인 필요) |
-| `GET` | `/admin/permission` | 권한 트리 |
-| `POST` | `/admin/permission` | 권한 생성 |
-| `PUT` | `/admin/permission/{id}` | 권한 수정 |
-| `DELETE` | `/admin/permission/{id}` | 권한 삭제 (하위 권한 캐스케이드, 비밀번호 확인 필요) |
-| `GET` | `/admin/config` | 시스템 설정 목록 |
-| `POST` | `/admin/config` | 설정 항목 생성 |
-| `PUT` | `/admin/config/{id}` | 설정 항목 수정 |
-| `DELETE` | `/admin/config/{id}` | 설정 항목 삭제 (비밀번호 확인 필요) |
-| `GET` | `/admin/log` | 작업 로그 (페이지네이션 + 필터) |
-| `PUT` | `/admin/profile` | 개인 정보 수정 |
-| `PUT` | `/admin/profile/password` | 비밀번호 변경 |
-| `POST` | `/admin/profile/logout` | 로그아웃 (JWT 블랙리스트) |
-| `POST` | `/admin/export/excel` | Excel 내보내기 |
-| `POST` | `/admin/export/pdf` | PDF 내보내기 |
-| `POST` | `/admin/import/users` | Excel 사용자 가져오기 |
-| `POST` | `/admin/upload` | 파일 업로드 (이미지/문서, 최대 10MB) |
+| `GET` | `/admin/v1/dashboard` | 대시보드 데이터 (Redis 캐시 5분) |
+| `GET` | `/admin/v1/user` | 사용자 목록 (페이지네이션 + 검색) |
+| `POST` | `/admin/v1/user` | 사용자 생성 |
+| `GET` | `/admin/v1/user/{id}` | 사용자 상세 |
+| `PUT` | `/admin/v1/user/{id}` | 사용자 수정 |
+| `DELETE` | `/admin/v1/user/{id}` | 사용자 삭제 (소프트 삭제, 비밀번호 확인 필요) |
+| `POST` | `/admin/v1/user/batch/destroy` | 사용자 일괄 삭제 (비밀번호 확인 필요) |
+| `POST` | `/admin/v1/user/batch/status` | 사용자 일괄 활성/비활성 |
+| `GET` | `/admin/v1/role` | 역할 목록 |
+| `POST` | `/admin/v1/role` | 역할 생성 |
+| `PUT` | `/admin/v1/role/{id}` | 역할 수정 |
+| `DELETE` | `/admin/v1/role/{id}` | 역할 삭제 (비밀번호 확인 필요) |
+| `GET` | `/admin/v1/permission` | 권한 트리 |
+| `POST` | `/admin/v1/permission` | 권한 생성 |
+| `PUT` | `/admin/v1/permission/{id}` | 권한 수정 |
+| `DELETE` | `/admin/v1/permission/{id}` | 권한 삭제 (하위 권한 캐스케이드, 비밀번호 확인 필요) |
+| `GET` | `/admin/v1/config` | 시스템 설정 목록 |
+| `POST` | `/admin/v1/config` | 설정 항목 생성 |
+| `PUT` | `/admin/v1/config/{id}` | 설정 항목 수정 |
+| `DELETE` | `/admin/v1/config/{id}` | 설정 항목 삭제 (비밀번호 확인 필요) |
+| `GET` | `/admin/v1/log` | 작업 로그 (페이지네이션 + 필터) |
+| `PUT` | `/admin/v1/profile` | 개인 정보 수정 |
+| `PUT` | `/admin/v1/profile/password` | 비밀번호 변경 |
+| `POST` | `/admin/v1/profile/logout` | 로그아웃 (JWT 블랙리스트) |
+| `POST` | `/admin/v1/export/excel` | Excel 내보내기 |
+| `POST` | `/admin/v1/export/pdf` | PDF 내보내기 |
+| `POST` | `/admin/v1/import/users` | Excel 사용자 가져오기 |
+| `POST` | `/admin/v1/upload` | 파일 업로드 (이미지/문서, 최대 10MB) |
 
 ## 프론트엔드 설명
 

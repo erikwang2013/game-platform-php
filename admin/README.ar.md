@@ -79,7 +79,7 @@ open-admin/
 │   │   ├── DocsController.php      # وثائق OpenAPI
 │   │   └── BaseController.php      # وحدة التحكم الأساسية
 │   ├── api/
-│   │   └── v1/controller/          # وحدات تحكم API v1 (الإصدار يتحكم به ترويسة API-Version)
+│   │   └── v1/controller/          # وحدات تحكم API v1 (الإصدار في مسار URL: /api/v1, /admin/v1)
 │   │       ├── CaptchaController.php # رمز التحقق بالنقر
 │   │       └── AuthController.php    # تسجيل الدخول/التسجيل/تحديث الرمز
 │   ├── common/                 # فئات الأدوات العامة
@@ -90,7 +90,6 @@ open-admin/
 │   │   ├── Cors.php            # المشاركة عبر الأصول (CORS)
 │   │   ├── SecurityFilter.php  # كشف واعتراض الهجمات (تقييد طرق HTTP/XSS/حقن SQL/اجتياز المسار/حقن الأوامر/CSRF)
 │   │   ├── RateLimit.php       # الحد من المعدل في Redis (نافذة منزلقة + ترويسات استجابة)
-│   │   ├── ApiVersion.php      # التحقق من إصدار API
 │   │   ├── AdminAuth.php       # مصادقة JWT + قائمة سوداء
 │   │   ├── AdminPermission.php # التحقق من صلاحيات RBAC
 │   │   └── OperationLog.php    # تسجيل العمليات تلقائيًا (بما فيه كشف المصدر)
@@ -242,20 +241,15 @@ docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 ### معالجة المعرفات
 
 - **المعرفات في الطلبات/الاستجابات**: تُشفّر إلى سلاسل عبر hashids، دون كشف معرفات قاعدة البيانات الحقيقية
-- **مسار الواجهة**: `GET /admin/user/{hashid}` — `{id}` في المسار هو سلسلة hashid
+- **مسار الواجهة**: `GET /admin/v1/user/{hashid}` — `{id}` في المسار هو سلسلة hashid
 - **التخزين في قاعدة البيانات**: القيمة الأصلية BIGINT، يولّدها snowflake
 
 ### إصدار API
 
-يُتحكم بإصدار API عبر ترويسة الطلب، **ولا يظهر في URL**:
+يوضع رقم إصدار API في مسار URL — الواجهات العامة `/api/v1/*` وواجهات الإدارة `/admin/v1/*` (الافتراضي `v1`)، ولا تُستخدم أي ترويسة:
 
-```http
-API-Version: v1
-```
-
-- عند عدم حمل رقم الإصدار، يُستخدم `v1` افتراضيًا
 - الإصدارات غير المدعومة تُرجع `400 Bad Request`
-- عند إضافة إصدار جديد، يكفي إنشاء دليل `app/api/{version}/controller/` وتسجيل الإصدار الجديد في الوسيطة
+- عند إضافة إصدار جديد، يكفي إنشاء دليل `app/api/{version}/controller/` وتسجيل مجموعة المسارات الجديدة (مثل `/api/v2`)
 
 ### الحد من المعدل
 
@@ -273,10 +267,9 @@ API-Version: v1
 Cors (معالجة مسبقة للعمل عبر الأصول + ترويسات استجابة)
   → SecurityFilter (تقييد طرق HTTP/حجم الطلب/التحقق من Content-Type/اعتراض XSS/حقن SQL/اجتياز المسار/حقن الأوامر/CSRF)
   → RateLimit (الحد من المعدل بنافذة منزلقة في Redis + قفل الحساب: 5 محاولات فاشلة تقفل 15 دقيقة)
-  → ApiVersion (التحقق من إصدار API، مجموعة مسارات /api)
-  → AdminAuth (مصادقة JWT + قائمة سوداء، مجموعة مسارات /admin)
-  → AdminPermission (تحقق RBAC، مجموعة مسارات /admin)
-  → OperationLog (تسجيل تلقائي لـ POST/PUT/DELETE، بما فيه كشف المصدر، مجموعة مسارات /admin)
+  → AdminAuth (مصادقة JWT + قائمة سوداء، مجموعة مسارات /admin/v1)
+  → AdminPermission (تحقق RBAC، مجموعة مسارات /admin/v1)
+  → OperationLog (تسجيل تلقائي لـ POST/PUT/DELETE، بما فيه كشف المصدر، مجموعة مسارات /admin/v1)
 ```
 
 `/health` و`/api/docs` نقطتا نهاية عامتان، تمران عبر `Cors → SecurityFilter → RateLimit` فقط.
@@ -291,12 +284,12 @@ Cors (معالجة مسبقة للعمل عبر الأصول + ترويسات ا
 
 يتطلب تسجيل الدخول والتسجيل اجتياز **رمز التحقق بالنقر** أولاً:
 
-1. يطلب العميل `POST /api/captcha/generate` للحصول على صورة رمز التحقق (base64 PNG) وقائمة أهداف النص
+1. يطلب العميل `POST /api/v1/captcha/generate` للحصول على صورة رمز التحقق (base64 PNG) وقائمة أهداف النص
 2. ينقر المستخدم على مواضع النص المطابقة في الصورة بالترتيب، ويُجمع إحداثيات النقرات `[{x, y}, ...]`
 3. عند تسجيل الدخول، يُرسل `captcha_key` و`clicks` معًا، ويتحقق الخادم من رمز التحقق أولاً ثم من بيانات الاعتماد
 
 ```http
-POST /api/auth/login
+POST /api/v1/auth/login
 Content-Type: application/json
 
 {
@@ -315,14 +308,14 @@ Authorization: Bearer <token>
 
 بعد نجاح تسجيل الدخول، يُرجع access_token بصلاحية ساعتين؛ ويُرجع أيضًا refresh_token بصلاحية 14 يومًا.
 
-عند تسجيل الخروج، يُضاف الرمز إلى القائمة السوداء في Redis ولا يمكن إعادة استخدامه خلال فترة صلاحيته. POST /admin/profile/logout
+عند تسجيل الخروج، يُضاف الرمز إلى القائمة السوداء في Redis ولا يمكن إعادة استخدامه خلال فترة صلاحيته. POST /admin/v1/profile/logout
 
 ### التأكيد الثانوي للعمليات الحساسة
 
 تتطلب العمليات الحساسة مثل حذف المستخدمين والأدوار والصلاحيات تمرير `password` للمستخدم المسجل دخوله حاليًا في جسم الطلب للتأكيد الثانوي على الهوية:
 
 ```http
-DELETE /admin/user/{id}
+DELETE /admin/v1/user/{id}
 Content-Type: application/json
 Authorization: Bearer <token>
 
@@ -331,7 +324,7 @@ Authorization: Bearer <token>
 
 ## قائمة API
 
-> جميع واجهات `/api/*` تتطلب حمل `API-Version: v1` في ترويسة الطلب (افتراضي v1 عند عدم الإرسال).
+> جميع واجهات `/api/v1/*` و`/admin/v1/*` تحمل رقم الإصدار في مسار URL، ولا يُستخدم أي ترويسة إصدار.
 
 ### الواجهات العامة
 
@@ -339,45 +332,45 @@ Authorization: Bearer <token>
 |-----|------|------|
 | `GET` | `/health` | فحص الصحة (حالة DB/Redis/ES) |
 | `GET` | `/api/docs` | وثائق مواصفات OpenAPI 3.0 |
-| `POST` | `/api/captcha/generate` | توليد رمز التحقق بالنقر |
-| `POST` | `/api/captcha/verify` | التحقق من رمز التحقق بالنقر |
-| `POST` | `/api/auth/login` | تسجيل الدخول (يتطلب captcha) |
-| `POST` | `/api/auth/register` | التسجيل (يتطلب captcha) |
-| `POST` | `/api/auth/refresh` | تحديث الرمز |
+| `POST` | `/api/v1/captcha/generate` | توليد رمز التحقق بالنقر |
+| `POST` | `/api/v1/captcha/verify` | التحقق من رمز التحقق بالنقر |
+| `POST` | `/api/v1/auth/login` | تسجيل الدخول (يتطلب captcha) |
+| `POST` | `/api/v1/auth/register` | التسجيل (يتطلب captcha) |
+| `POST` | `/api/v1/auth/refresh` | تحديث الرمز |
 | `GET` | `/metrics` | مقاييس مراقبة Prometheus |
 
 ### واجهات لوحة الإدارة (تتطلب JWT + RBAC)
 
 | الطريقة | المسار | الوصف |
 |-----|------|------|
-| `GET` | `/admin/dashboard` | بيانات لوحة المعلومات (تخزين مؤقت في Redis لمدة 5 دقائق) |
-| `GET` | `/admin/user` | قائمة المستخدمين (ترقيم صفحات + بحث) |
-| `POST` | `/admin/user` | إنشاء مستخدم |
-| `GET` | `/admin/user/{id}` | تفاصيل المستخدم |
-| `PUT` | `/admin/user/{id}` | تحديث المستخدم |
-| `DELETE` | `/admin/user/{id}` | حذف المستخدم (حذف ناعم، يتطلب تأكيد كلمة المرور) |
-| `POST` | `/admin/user/batch/destroy` | حذف جماعي للمستخدمين (يتطلب تأكيد كلمة المرور) |
-| `POST` | `/admin/user/batch/status` | تفعيل/تعطيل جماعي للمستخدمين |
-| `GET` | `/admin/role` | قائمة الأدوار |
-| `POST` | `/admin/role` | إنشاء دور |
-| `PUT` | `/admin/role/{id}` | تحديث الدور |
-| `DELETE` | `/admin/role/{id}` | حذف الدور (يتطلب تأكيد كلمة المرور) |
-| `GET` | `/admin/permission` | شجرة الصلاحيات |
-| `POST` | `/admin/permission` | إنشاء صلاحية |
-| `PUT` | `/admin/permission/{id}` | تحديث الصلاحية |
-| `DELETE` | `/admin/permission/{id}` | حذف الصلاحية (حذف متسلسل للصلاحيات الفرعية، يتطلب تأكيد كلمة المرور) |
-| `GET` | `/admin/config` | قائمة إعدادات النظام |
-| `POST` | `/admin/config` | إنشاء عنصر إعداد |
-| `PUT` | `/admin/config/{id}` | تحديث عنصر الإعداد |
-| `DELETE` | `/admin/config/{id}` | حذف عنصر الإعداد (يتطلب تأكيد كلمة المرور) |
-| `GET` | `/admin/log` | سجلات العمليات (ترقيم صفحات + تصفية) |
-| `PUT` | `/admin/profile` | تحديث المعلومات الشخصية |
-| `PUT` | `/admin/profile/password` | تغيير كلمة المرور |
-| `POST` | `/admin/profile/logout` | تسجيل الخروج (القائمة السوداء JWT) |
-| `POST` | `/admin/export/excel` | تصدير Excel |
-| `POST` | `/admin/export/pdf` | تصدير PDF |
-| `POST` | `/admin/import/users` | استيراد المستخدمين من Excel |
-| `POST` | `/admin/upload` | رفع الملفات (صور/مستندات، بحد أقصى 10MB) |
+| `GET` | `/admin/v1/dashboard` | بيانات لوحة المعلومات (تخزين مؤقت في Redis لمدة 5 دقائق) |
+| `GET` | `/admin/v1/user` | قائمة المستخدمين (ترقيم صفحات + بحث) |
+| `POST` | `/admin/v1/user` | إنشاء مستخدم |
+| `GET` | `/admin/v1/user/{id}` | تفاصيل المستخدم |
+| `PUT` | `/admin/v1/user/{id}` | تحديث المستخدم |
+| `DELETE` | `/admin/v1/user/{id}` | حذف المستخدم (حذف ناعم، يتطلب تأكيد كلمة المرور) |
+| `POST` | `/admin/v1/user/batch/destroy` | حذف جماعي للمستخدمين (يتطلب تأكيد كلمة المرور) |
+| `POST` | `/admin/v1/user/batch/status` | تفعيل/تعطيل جماعي للمستخدمين |
+| `GET` | `/admin/v1/role` | قائمة الأدوار |
+| `POST` | `/admin/v1/role` | إنشاء دور |
+| `PUT` | `/admin/v1/role/{id}` | تحديث الدور |
+| `DELETE` | `/admin/v1/role/{id}` | حذف الدور (يتطلب تأكيد كلمة المرور) |
+| `GET` | `/admin/v1/permission` | شجرة الصلاحيات |
+| `POST` | `/admin/v1/permission` | إنشاء صلاحية |
+| `PUT` | `/admin/v1/permission/{id}` | تحديث الصلاحية |
+| `DELETE` | `/admin/v1/permission/{id}` | حذف الصلاحية (حذف متسلسل للصلاحيات الفرعية، يتطلب تأكيد كلمة المرور) |
+| `GET` | `/admin/v1/config` | قائمة إعدادات النظام |
+| `POST` | `/admin/v1/config` | إنشاء عنصر إعداد |
+| `PUT` | `/admin/v1/config/{id}` | تحديث عنصر الإعداد |
+| `DELETE` | `/admin/v1/config/{id}` | حذف عنصر الإعداد (يتطلب تأكيد كلمة المرور) |
+| `GET` | `/admin/v1/log` | سجلات العمليات (ترقيم صفحات + تصفية) |
+| `PUT` | `/admin/v1/profile` | تحديث المعلومات الشخصية |
+| `PUT` | `/admin/v1/profile/password` | تغيير كلمة المرور |
+| `POST` | `/admin/v1/profile/logout` | تسجيل الخروج (القائمة السوداء JWT) |
+| `POST` | `/admin/v1/export/excel` | تصدير Excel |
+| `POST` | `/admin/v1/export/pdf` | تصدير PDF |
+| `POST` | `/admin/v1/import/users` | استيراد المستخدمين من Excel |
+| `POST` | `/admin/v1/upload` | رفع الملفات (صور/مستندات، بحد أقصى 10MB) |
 
 ## ملاحظات الواجهة الأمامية
 

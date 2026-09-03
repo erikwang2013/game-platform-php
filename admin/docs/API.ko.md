@@ -8,10 +8,10 @@ Languages: [中文](API.md) · [English](API.en.md) · **한국어** · [Рус�
 
 ## 1. 개요
 
-开放管理后台 (open-admin)는 webman v2 기반으로 구축된 RESTful JSON API를 제공합니다. 모든 관리자 인터페이스는 JWT 인증과 RBAC 권한 검증이 필요하며, 공개 인터페이스는 API 버전 헤더를 통해 버전별 컨트롤러로 라우팅됩니다.
+开放管理后台 (open-admin)는 webman v2 기반으로 구축된 RESTful JSON API를 제공합니다. 모든 관리자 인터페이스는 JWT 인증과 RBAC 권한 검증이 필요하며, 공개 인터페이스는 `/api/v1` 프리픽스 아래에, 관리 인터페이스는 `/admin/v1` 프리픽스 아래에 마운트되며 버전은 URL 경로로 결정되고 요청 헤더는 사용하지 않습니다.
 
 - **기본 URL**: `http://localhost:8787`
-- **API 버전**: 요청 헤더 `API-Version: v1`로 제어 (누락 시 기본 v1)
+- **API 버전**: URL 경로에 포함됩니다 — 공개 엔드포인트는 `/api/v1`, 관리 엔드포인트는 `/admin/v1` 아래. 버전 요청 헤더는 사용하지 않으며, 향후 v2는 `/api/v2` 그룹으로 등록됩니다
 
 > **엔드포인트 개요**: 인증(5) | 대시보드(1) | 사용자(7) | 역할(4) | 권한(4) | 설정(4) | 로그(1) | 개인 센터(3) | 가져오기/내보내기(3) | 업로드(1) | 운영(4: health/metrics/docs/security.txt) | 총 37개 엔드포인트
 - **인증**: `Authorization: Bearer <token>`（JWT）
@@ -45,7 +45,7 @@ Languages: [中文](API.md) · [English](API.en.md) · **한국어** · [Рус�
 
 ## 3. 공개 엔드포인트
 
-모든 공개 엔드포인트는 `/api` 그룹에 마운트되며, `ApiVersion` 미들웨어가 `API-Version` 헤더에 따라 버전별 컨트롤러(예: `app\api\v1\controller\AuthController`)로 분배합니다.
+모든 공개 엔드포인트는 `/api/v1` 프리픽스 아래, 관리 엔드포인트는 `/admin/v1` 프리픽스 아래에 마운트됩니다. 버전은 라우트 그룹 프리픽스로 결정되며 버전 요청 헤더는 사용하지 않습니다. 공개 컨트롤러 예: `app\api\v1\controller\AuthController`.
 
 ### 3.1 헬스 체크
 
@@ -88,11 +88,10 @@ GET /api/docs
 ### 3.3 클릭 캡차 생성
 
 ```
-POST /api/captcha/generate
+POST /api/v1/captcha/generate
 ```
 
 - **인증**: 불필요
-- **요청 헤더**: `API-Version: v1`（필수）
 - **속도 제한**: 전역 기본값 (60회/분)
 
 **요청 본문**:
@@ -134,11 +133,10 @@ POST /api/captcha/generate
 ### 3.4 클릭 캡차 검증
 
 ```
-POST /api/captcha/verify
+POST /api/v1/captcha/verify
 ```
 
 - **인증**: 불필요
-- **요청 헤더**: `API-Version: v1`（필수）
 - **속도 제한**: 전역 기본값 (60회/분)
 
 **요청 본문**:
@@ -171,11 +169,10 @@ POST /api/captcha/verify
 ### 3.5 로그인
 
 ```
-POST /api/auth/login
+POST /api/v1/auth/login
 ```
 
 - **인증**: 불필요
-- **요청 헤더**: `API-Version: v1`（필수）
 - **속도 제한**: 10회/분 (IP + 경로 기준)
 
 **요청 본문**:
@@ -235,11 +232,10 @@ POST /api/auth/login
 ### 3.6 가입
 
 ```
-POST /api/auth/register
+POST /api/v1/auth/register
 ```
 
 - **인증**: 불필요
-- **요청 헤더**: `API-Version: v1`（필수）
 - **속도 제한**: 5회/분 (IP + 경로 기준)
 
 **요청 본문**:
@@ -287,11 +283,10 @@ POST /api/auth/register
 ### 3.7 토큰 갱신
 
 ```
-POST /api/auth/refresh
+POST /api/v1/auth/refresh
 ```
 
 - **인증**: 불필요
-- **요청 헤더**: `API-Version: v1`（필수）
 - **속도 제한**: 전역 기본값 (60회/분)
 
 **요청 본문**:
@@ -369,12 +364,12 @@ openadmin_memory_usage_bytes 18874368
 
 ## 4. 대시보드
 
-모든 관리자 인터페이스는 `/admin` 그룹에 마운트되며, `AdminAuth`（JWT 인증）, `AdminPermission`（RBAC 권한 검증）, `OperationLog`（작업 기록）세 가지 미들웨어를 통과합니다.
+모든 관리자 인터페이스는 `/admin/v1` 프리픽스에 마운트되며, `AdminAuth`（JWT 인증）, `AdminPermission`（RBAC 권한 검증）, `OperationLog`（작업 기록）세 가지 미들웨어를 통과합니다.
 
 ### 4.1 대시보드 데이터
 
 ```
-GET /admin/dashboard
+GET /admin/v1/dashboard
 ```
 
 - **인증**: JWT + RBAC
@@ -431,7 +426,7 @@ GET /admin/dashboard
         "id": "hashid...",
         "action": "用户登录",
         "method": "POST",
-        "path": "/api/auth/login",
+        "path": "/api/v1/auth/login",
         "ip": "192.168.1.1",
         "user_name": "admin",
         "created_at": "2026-05-21 10:30:00"
@@ -461,7 +456,7 @@ GET /admin/dashboard
 ### 5.1 사용자 목록
 
 ```
-GET /admin/user
+GET /admin/v1/user
 ```
 
 - **인증**: JWT + RBAC
@@ -514,7 +509,7 @@ GET /admin/user
 ### 5.2 사용자 생성
 
 ```
-POST /admin/user
+POST /admin/v1/user
 ```
 
 - **인증**: JWT + RBAC
@@ -564,7 +559,7 @@ POST /admin/user
 ### 5.3 사용자 상세
 
 ```
-GET /admin/user/{id}
+GET /admin/v1/user/{id}
 ```
 
 - **인증**: JWT + RBAC
@@ -598,7 +593,7 @@ GET /admin/user/{id}
 ### 5.4 사용자 수정
 
 ```
-PUT /admin/user/{id}
+PUT /admin/v1/user/{id}
 ```
 
 - **인증**: JWT + RBAC
@@ -646,7 +641,7 @@ PUT /admin/user/{id}
 ### 5.5 사용자 삭제
 
 ```
-DELETE /admin/user/{id}
+DELETE /admin/v1/user/{id}
 ```
 
 - **인증**: JWT + RBAC
@@ -683,7 +678,7 @@ DELETE /admin/user/{id}
 ### 5.6 사용자 일괄 삭제
 
 ```
-POST /admin/user/batch/destroy
+POST /admin/v1/user/batch/destroy
 ```
 
 - **인증**: JWT + RBAC
@@ -723,7 +718,7 @@ POST /admin/user/batch/destroy
 ### 5.7 사용자 일괄 활성/비활성
 
 ```
-POST /admin/user/batch/status
+POST /admin/v1/user/batch/status
 ```
 
 - **인증**: JWT + RBAC
@@ -763,7 +758,7 @@ message는 status 값에 따라 `"批量启用成功"` 또는 `"批量禁用成�
 ### 6.1 역할 목록
 
 ```
-GET /admin/role
+GET /admin/v1/role
 ```
 
 - **인증**: JWT + RBAC
@@ -811,7 +806,7 @@ GET /admin/role
 ### 6.2 역할 생성
 
 ```
-POST /admin/role
+POST /admin/v1/role
 ```
 
 - **인증**: JWT + RBAC
@@ -853,7 +848,7 @@ POST /admin/role
 ### 6.3 역할 수정
 
 ```
-PUT /admin/role/{id}
+PUT /admin/v1/role/{id}
 ```
 
 - **인증**: JWT + RBAC
@@ -893,7 +888,7 @@ PUT /admin/role/{id}
 ### 6.4 역할 삭제
 
 ```
-DELETE /admin/role/{id}
+DELETE /admin/v1/role/{id}
 ```
 
 - **인증**: JWT + RBAC
@@ -924,7 +919,7 @@ DELETE /admin/role/{id}
 ### 7.1 권한 트리
 
 ```
-GET /admin/permission
+GET /admin/v1/permission
 ```
 
 - **인증**: JWT + RBAC
@@ -939,7 +934,7 @@ GET /admin/permission
       "id": "p1p2p3p4",
       "parent_id": "0",
       "name": "用户管理",
-      "slug": "/admin/user",
+      "slug": "/admin/v1/user",
       "type": 1,
       "icon": "people",
       "path": "/user",
@@ -950,7 +945,7 @@ GET /admin/permission
           "id": "p5p6p7p8",
           "parent_id": "p1p2p3p4",
           "name": "用户列表",
-          "slug": "/admin/user/index",
+          "slug": "/admin/v1/user/index",
           "type": 2,
           "icon": "",
           "path": "/user/index",
@@ -977,7 +972,7 @@ GET /admin/permission
 ### 7.2 권한 생성
 
 ```
-POST /admin/permission
+POST /admin/v1/permission
 ```
 
 - **인증**: JWT + RBAC
@@ -987,7 +982,7 @@ POST /admin/permission
 {
   "parent_id": 0,
   "name": "系统设置",
-  "slug": "/admin/config",
+  "slug": "/admin/v1/config",
   "type": 1,
   "icon": "settings",
   "path": "/config",
@@ -1014,7 +1009,7 @@ POST /admin/permission
     "id": "p9p0a1b2",
     "parent_id": "0",
     "name": "系统设置",
-    "slug": "/admin/config",
+    "slug": "/admin/v1/config",
     "type": 1,
     "icon": "settings",
     "path": "/config",
@@ -1026,7 +1021,7 @@ POST /admin/permission
 ### 7.3 권한 수정
 
 ```
-PUT /admin/permission/{id}
+PUT /admin/v1/permission/{id}
 ```
 
 - **인증**: JWT + RBAC
@@ -1051,7 +1046,7 @@ PUT /admin/permission/{id}
 ### 7.4 권한 삭제
 
 ```
-DELETE /admin/permission/{id}
+DELETE /admin/v1/permission/{id}
 ```
 
 - **인증**: JWT + RBAC
@@ -1082,7 +1077,7 @@ DELETE /admin/permission/{id}
 ### 8.1 설정 목록
 
 ```
-GET /admin/config
+GET /admin/v1/config
 ```
 
 - **인증**: JWT + RBAC
@@ -1131,7 +1126,7 @@ GET /admin/config
 ### 8.2 설정 생성
 
 ```
-POST /admin/config
+POST /admin/v1/config
 ```
 
 - **인증**: JWT + RBAC
@@ -1177,7 +1172,7 @@ POST /admin/config
 ### 8.3 설정 수정
 
 ```
-PUT /admin/config/{id}
+PUT /admin/v1/config/{id}
 ```
 
 - **인증**: JWT + RBAC
@@ -1200,7 +1195,7 @@ PUT /admin/config/{id}
 ### 8.4 설정 삭제
 
 ```
-DELETE /admin/config/{id}
+DELETE /admin/v1/config/{id}
 ```
 
 - **인증**: JWT + RBAC
@@ -1222,7 +1217,7 @@ DELETE /admin/config/{id}
 ### 9.1 작업 로그 목록
 
 ```
-GET /admin/log
+GET /admin/v1/log
 ```
 
 - **인증**: JWT + RBAC
@@ -1251,7 +1246,7 @@ GET /admin/log
         "user_name": "admin",
         "action": "用户登录",
         "method": "POST",
-        "path": "/api/auth/login",
+        "path": "/api/v1/auth/login",
         "ip": "192.168.1.1",
         "source": "web",
         "input": "{\"username\":\"admin\"}",
@@ -1284,7 +1279,7 @@ GET /admin/log
 ### 10.1 개인 정보 수정
 
 ```
-PUT /admin/profile
+PUT /admin/v1/profile
 ```
 
 - **인증**: JWT
@@ -1326,7 +1321,7 @@ PUT /admin/profile
 ### 10.2 비밀번호 변경
 
 ```
-PUT /admin/profile/password
+PUT /admin/v1/profile/password
 ```
 
 - **인증**: JWT
@@ -1361,7 +1356,7 @@ PUT /admin/profile/password
 ### 10.3 로그아웃
 
 ```
-POST /admin/profile/logout
+POST /admin/v1/profile/logout
 ```
 
 - **인증**: JWT
@@ -1386,7 +1381,7 @@ POST /admin/profile/logout
 ### 11.1 Excel 내보내기
 
 ```
-POST /admin/export/excel
+POST /admin/v1/export/excel
 ```
 
 - **인증**: JWT + RBAC
@@ -1425,7 +1420,7 @@ POST /admin/export/excel
 ### 11.2 PDF 내보내기
 
 ```
-POST /admin/export/pdf
+POST /admin/v1/export/pdf
 ```
 
 - **인증**: JWT + RBAC
@@ -1472,7 +1467,7 @@ PDF 템플릿에는 저작권 정보와 내보내기 타임스탬프가 포함�
 ### 11.3 사용자 가져오기 (Excel)
 
 ```
-POST /admin/import/users
+POST /admin/v1/import/users
 ```
 
 - **인증**: JWT + RBAC
@@ -1524,7 +1519,7 @@ POST /admin/import/users
 ## 12. 파일 업로드
 
 ```
-POST /admin/upload
+POST /admin/v1/upload
 ```
 
 - **인증**: JWT + RBAC
@@ -1573,8 +1568,8 @@ POST /admin/upload
 
 속도 제한 상세:
 - 기본 전역 제한: 60회/분 / IP+경로
-- 로그인 엔드포인트 `/api/auth/login`: 10회/분
-- 가입 엔드포인트 `/api/auth/register`: 5회/분
+- 로그인 엔드포인트 `/api/v1/auth/login`: 10회/분
+- 가입 엔드포인트 `/api/v1/auth/register`: 5회/분
 - Redis 원자화 슬라이딩 윈도우 알고리즘 (Lua ZSET) 사용, TOCTOU 경쟁 상태 방지
 - Redis 사용 불가 시 fail-closed: 503 반환 (`Retry-After: 5`), 요청 통과시키지 않음
 
@@ -1584,18 +1579,18 @@ POST /admin/upload
 
 | 메서드 | 경로 | 설명 |
 |------|------|------|
-| GET | /admin/analytics/overview | 플랫폼 개요 (오늘/최근 7일) |
-| GET | /admin/analytics/game-ranking | 게임 랭킹 (?days=7) |
-| GET | /admin/analytics/dau-trend | DAU 추세 (?days=30) |
-| GET | /admin/analytics/hourly-trend | 시간대 추세 |
-| GET | /admin/analytics/action-distribution | 행동 분포 |
-| GET | /admin/analytics/revenue | 매출 분석 |
-| GET | /admin/analytics/conversion | 게임 전환율 |
-| GET | /admin/analytics/probability | 결합/조건부 확률 |
-| GET | /admin/analytics/retention | 리텐션 분석 D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | 전환 퍼널 |
-| GET | /admin/analytics/arpu | ARPU/ARPPU 추세 |
-| GET | /admin/analytics/economy | 게임 통화 경제 지표 |
+| GET | /admin/v1/analytics/overview | 플랫폼 개요 (오늘/최근 7일) |
+| GET | /admin/v1/analytics/game-ranking | 게임 랭킹 (?days=7) |
+| GET | /admin/v1/analytics/dau-trend | DAU 추세 (?days=30) |
+| GET | /admin/v1/analytics/hourly-trend | 시간대 추세 |
+| GET | /admin/v1/analytics/action-distribution | 행동 분포 |
+| GET | /admin/v1/analytics/revenue | 매출 분석 |
+| GET | /admin/v1/analytics/conversion | 게임 전환율 |
+| GET | /admin/v1/analytics/probability | 결합/조건부 확률 |
+| GET | /admin/v1/analytics/retention | 리텐션 분석 D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | 전환 퍼널 |
+| GET | /admin/v1/analytics/arpu | ARPU/ARPPU 추세 |
+| GET | /admin/v1/analytics/economy | 게임 통화 경제 지표 |
 
 ## 15. 티켓 관리 (Ticket)
 
@@ -1603,26 +1598,25 @@ POST /admin/upload
 
 | 메서드 | 경로 | 설명 |
 |------|------|------|
-| GET | /admin/ticket/list | 티켓 목록 (?page=&limit=&status=&type=) |
-| GET | /admin/ticket/{hashid} | 티켓 상세 (답변 포함) |
-| POST | /admin/ticket/{hashid}/reply | 티켓 답변 |
-| POST | /admin/ticket/{hashid}/close | 티켓 종료 |
-| POST | /admin/ticket/{hashid}/assign | 처리자 지정 (admin_id) |
+| GET | /admin/v1/ticket/list | 티켓 목록 (?page=&limit=&status=&type=) |
+| GET | /admin/v1/ticket/{hashid} | 티켓 상세 (답변 포함) |
+| POST | /admin/v1/ticket/{hashid}/reply | 티켓 답변 |
+| POST | /admin/v1/ticket/{hashid}/close | 티켓 종료 |
+| POST | /admin/v1/ticket/{hashid}/assign | 처리자 지정 (admin_id) |
 
 ## 16. 인증 흐름
 
 완전한 인증 시퀀스:
 
 ```
-1. 클라이언트가 POST /api/captcha/generate 요청
-   (요청 헤더: API-Version: v1)
+1. 클라이언트가 POST /api/v1/captcha/generate 요청
     ↓
    서버 반환: key + base64 이미지 + 클릭 대상 안내
    
 2. 사용자가 이미지의 대상 위치를 클릭, 프론트/클라이언트가 클릭 좌표 수집
    
-3. 클라이언트가 POST /api/auth/login 요청
-   (요청 헤더: API-Version: v1, Content-Type: application/json)
+3. 클라이언트가 POST /api/v1/auth/login 요청
+   (요청 헤더: Content-Type: application/json)
    요청 본문: { username, password, captcha_key, clicks: [{x,y}, ...] }
     ↓
    서버:
@@ -1655,7 +1649,7 @@ POST /admin/upload
    Response + X-RateLimit-* 헤더
 
 5. Access Token 만료 전 갱신
-   클라이언트가 POST /api/auth/refresh 요청
+   클라이언트가 POST /api/v1/auth/refresh 요청
    요청 본문: { refresh_token: "..." }
     ↓
    서버가 refresh_token 디코딩 → 새 access + refresh 발급
@@ -1663,7 +1657,7 @@ POST /admin/upload
    클라이언트가 로컬 토큰 업데이트
 
 6. 로그아웃
-   클라이언트가 POST /admin/profile/logout 요청
+   클라이언트가 POST /admin/v1/profile/logout 요청
    요청 헤더: Authorization: Bearer <access_token>
     ↓
    서버:
@@ -1722,7 +1716,7 @@ docker-compose up -d
 ### 16.1 플랫폼 개요
 
 ```
-GET /admin/analytics/overview
+GET /admin/v1/analytics/overview
 ```
 
 **응답**: `today` / `week` 각각 `dau`（활성 사용자 수）, `revenue`（확인된 충전 총액, 문자열）, `new_users`（신규 사용자 수）포함.
@@ -1730,7 +1724,7 @@ GET /admin/analytics/overview
 ### 16.2 게임 랭킹
 
 ```
-GET /admin/analytics/game-ranking?days=7
+GET /admin/v1/analytics/game-ranking?days=7
 ```
 
 **응답**: 게임 행동 횟수 내림차순 상위 10개, 각 항목은 `game_id`（hashid）, `name`, `plays`, `players` 포함.
@@ -1738,7 +1732,7 @@ GET /admin/analytics/game-ranking?days=7
 ### 16.3 DAU 추세
 
 ```
-GET /admin/analytics/dau-trend?days=30
+GET /admin/v1/analytics/dau-trend?days=30
 ```
 
 **응답**: `{ "日期": 活跃数, ... }`, 누락된 날짜는 0으로 채움.
@@ -1746,7 +1740,7 @@ GET /admin/analytics/dau-trend?days=30
 ### 16.4 시간대 추세
 
 ```
-GET /admin/analytics/hourly-trend?game_id=<hashid>
+GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
 ```
 
 **응답**: `{ "0": 次数, ... "23": 次数 }` 24개 정시 슬롯; `game_id`가 비어 있으면 전체 게임 집계.
@@ -1754,7 +1748,7 @@ GET /admin/analytics/hourly-trend?game_id=<hashid>
 ### 16.5 행동 분포
 
 ```
-GET /admin/analytics/action-distribution?game_id=<hashid>&hours=24
+GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
 ```
 
 **응답**: `{ "start": n, "end": n, "earn": n, "spend": n }` 네 가지 행동 카운트; `hours` 상한 168.
@@ -1762,7 +1756,7 @@ GET /admin/analytics/action-distribution?game_id=<hashid>&hours=24
 ### 16.6 매출 개요
 
 ```
-GET /admin/analytics/revenue?days=7
+GET /admin/v1/analytics/revenue?days=7
 ```
 
 **응답**: `{ "total": "总额", "trend": { "日期": "当日额", ... } }`, `status=confirmed` 주문만 집계.
@@ -1770,7 +1764,7 @@ GET /admin/analytics/revenue?days=7
 ### 16.7 게임 전환율
 
 ```
-GET /admin/analytics/conversion?days=30
+GET /admin/v1/analytics/conversion?days=30
 ```
 
 **응답**: 각 게임은 `game_id`（hashid）, `game_name`, `players`（중복 제거 플레이어 수）, `depositors`（중복 제거 충전 인원）, `conversion_rate`（충전 전환율, 0~1）포함.
@@ -1778,7 +1772,7 @@ GET /admin/analytics/conversion?days=30
 ### 16.8 결합 확률
 
 ```
-GET /admin/analytics/probability?game_a=<hashid>&game_b=<hashid>
+GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
 ```
 
 **응답**: `{ "joint": { "joint_probability": 0.12, "confidence": 0.3 } }` — Jaccard 계수 (두 게임 공동 플레이어 / 합집합 플레이어)와 신뢰도 (공동 플레이어 / A 게임 플레이어).
@@ -1786,7 +1780,7 @@ GET /admin/analytics/probability?game_a=<hashid>&game_b=<hashid>
 ### 16.9 리텐션 분석
 
 ```
-GET /admin/analytics/retention?days=30
+GET /admin/v1/analytics/retention?days=30
 ```
 
 **응답**: `{ "D1": "8.5%", "D3": "...", "D7": "...", "D30": "..." }` 가입일 기준 다음날/3일/7일/30일 리텐션율.
@@ -1794,7 +1788,7 @@ GET /admin/analytics/retention?days=30
 ### 16.10 전환 퍼널
 
 ```
-GET /admin/analytics/funnel?days=30
+GET /admin/v1/analytics/funnel?days=30
 ```
 
 **응답**: 가입 → 첫 충전 → 첫 환전 → 첫 게임 네 단계의 `step`, `count`, `rate`（가입 수 대비 퍼센트）.
@@ -1802,7 +1796,7 @@ GET /admin/analytics/funnel?days=30
 ### 16.11 ARPU/ARPPU 추세
 
 ```
-GET /admin/analytics/arpu?days=30
+GET /admin/v1/analytics/arpu?days=30
 ```
 
 **응답**: `{ "dates": [...], "arpu": [...], "arppu": [...] }` 일별 1인당 매출 (ARPU)과 유료 사용자 1인당 매출 (ARPPU).
@@ -1810,7 +1804,7 @@ GET /admin/analytics/arpu?days=30
 ### 16.12 게임 경제 지표
 
 ```
-GET /admin/analytics/economy
+GET /admin/v1/analytics/economy
 ```
 
 **응답**: `currencies` 배열, 각 항목은 `game_name`, `currency`, `symbol`, `total_minted`（발행 총량）, `total_burned`（소각 총량）, `circulation`（유통량）, `inflation_rate`（인플레이션율）포함, bcmath 고정밀 계산 사용.
@@ -1821,16 +1815,16 @@ GET /admin/analytics/economy
 
 | 메서드 | 경로 | 설명 |
 |------|------|------|
-| GET | /admin/payment/method/list | 결제 수단 목록(sort 오름차순) |
-| POST | /admin/payment/method/toggle | 결제 수단 활성/비활성 전환 |
-| POST | /admin/payment/method/create | 결제 수단 생성 |
-| PUT | /admin/payment/method/{hashid} | 결제 수단 업데이트 |
-| DELETE | /admin/payment/method/{hashid} | 결제 수단 삭제(pending 주문 존재 시 거부) |
+| GET | /admin/v1/payment/method/list | 결제 수단 목록(sort 오름차순) |
+| POST | /admin/v1/payment/method/toggle | 결제 수단 활성/비활성 전환 |
+| POST | /admin/v1/payment/method/create | 결제 수단 생성 |
+| PUT | /admin/v1/payment/method/{hashid} | 결제 수단 업데이트 |
+| DELETE | /admin/v1/payment/method/{hashid} | 결제 수단 삭제(pending 주문 존재 시 거부) |
 
 ### 17.1 결제 수단 목록
 
 ```
-GET /admin/payment/method/list
+GET /admin/v1/payment/method/list
 ```
 
 - **인증**: JWT + RBAC
@@ -1878,7 +1872,7 @@ GET /admin/payment/method/list
 ### 17.2 결제 수단 활성/비활성 전환
 
 ```
-POST /admin/payment/method/toggle
+POST /admin/v1/payment/method/toggle
 ```
 
 **요청 본문**:
@@ -1901,7 +1895,7 @@ POST /admin/payment/method/toggle
 ### 17.3 결제 수단 생성
 
 ```
-POST /admin/payment/method/create
+POST /admin/v1/payment/method/create
 ```
 
 **요청 본문**:
@@ -1947,7 +1941,7 @@ POST /admin/payment/method/create
 ### 17.4 결제 수단 업데이트
 
 ```
-PUT /admin/payment/method/{hashid}
+PUT /admin/v1/payment/method/{hashid}
 ```
 
 - **경로 파라미터**: `{hashid}`는 hashid 인코딩된 결제 수단 ID
@@ -1960,7 +1954,7 @@ PUT /admin/payment/method/{hashid}
 ### 17.5 결제 수단 삭제
 
 ```
-DELETE /admin/payment/method/{hashid}
+DELETE /admin/v1/payment/method/{hashid}
 ```
 
 - **경로 파라미터**: `{hashid}`는 hashid 인코딩된 결제 수단 ID

@@ -24,7 +24,6 @@ flowchart TB
     end
 
     subgraph "Couche application (webman v2)"
-        C0["Middleware ApiVersion<br/>Validation de l'en-tête API-Version"]
         C1["Middleware AdminAuth<br/>Validation JWT"]
         C2["Middleware AdminPermission<br/>Vérification des permissions RBAC"]
         C3["Contrôleur administration<br/>Dashboard / User / Role / Permission / Payment"]
@@ -45,11 +44,10 @@ flowchart TB
 
     A1 -->|"HTTPS / JSON<br/>JWT Bearer"| B1
     A2 -->|"HTTPS / JSON<br/>JWT Bearer"| B1
-    B1 --> C0
-    C0 --> C1
+    B1 --> C1
     C1 --> C2
     C2 --> C3
-    C0 --> C4
+    B1 --> C4
     C3 --> C5
     C4 --> C5
     C3 --> D1
@@ -61,7 +59,6 @@ flowchart TB
     style A1 fill:#1677FF,color:#fff
     style A2 fill:#1677FF,color:#fff
     style B1 fill:#722ED1,color:#fff
-    style C0 fill:#EB2F96,color:#fff
     style C1 fill:#FA8C16,color:#fff
     style C2 fill:#FA8C16,color:#fff
     style C3 fill:#52C41A,color:#fff
@@ -85,7 +82,6 @@ flowchart TD
     subgraph "Couche middleware Middleware Layer"
         M_RL["RateLimit<br/>Limitation à fenêtre glissante Redis<br/>En-têtes de réponse X-RateLimit"]
         M_SF["SecurityFilter<br/>Interception des attaques<br/>XSS/Injection SQL/Chemin d'accès/CSRF"]
-        M0["ApiVersion<br/>Validation de version d'API<br/>Injection de apiVersion"]
         M1["AdminAuth<br/>Validation du jeton JWT<br/>Injection de adminId"]
         M2["AdminPermission<br/>Autorisation RBAC<br/>Correspondance method.path<br/>Cache des permissions Redis 60s"]
     end
@@ -125,11 +121,10 @@ flowchart TD
         D3["Redis"]
     end
 
-    R1 --> M_SF --> M_RL --> M0
-    M0 --> M1
+    R1 --> M_SF --> M_RL --> M1
     M1 --> M2
     M2 --> CT2 & CT3 & CT4 & CT5 & CT6 & CT9
-    M0 --> CT7 & CT8
+    M_RL --> CT7 & CT8
     CT1 -.->|extends| CT2 & CT3 & CT4 & CT5 & CT6 & CT9
     CT2 & CT3 & CT4 & CT5 & CT6 & CT7 & CT8 & CT9 --> S1 & S2 & S3
     CT9 --> S4 & S5 & S6
@@ -142,7 +137,6 @@ flowchart TD
     style R1 fill:#722ED1,color:#fff
     style M_SF fill:#FF4D4F,color:#fff
     style M_RL fill:#EB2F96,color:#fff
-    style M0 fill:#EB2F96,color:#fff
     style M1 fill:#FA8C16,color:#fff
     style M2 fill:#FA8C16,color:#fff
     style CT1 fill:#1677FF,color:#fff
@@ -162,7 +156,6 @@ sequenceDiagram
     participant N as Nginx
     participant MW_SF as SecurityFilter
     participant MW_RL as RateLimit
-    participant MW0 as ApiVersion
     participant MW1 as AdminAuth
     participant MW2 as AdminPermission
     participant CTL as Controller
@@ -171,7 +164,7 @@ sequenceDiagram
     participant DB as MySQL
     participant OPLOG as OperationLog
 
-    C->>N: Requête HTTPS<br/>Header: API-Version: v1
+    C->>N: Requête HTTPS<br/>POST /admin/v1/*
     N->>MW_SF: Transmission
 
     alt Méthode HTTP non standard (TRACE/CONNECT/PATCH...)
@@ -190,13 +183,7 @@ sequenceDiagram
         MW_RL-->>C: 429 + Retry-After
     end
 
-    MW_RL->>MW0: Passage
-
-    alt Version non prise en charge
-        MW0-->>C: 400 Version d'API non prise en charge
-    else Version valide
-        MW0->>MW0: $request->apiVersion = v1
-    end
+    MW_RL->>MW1: Passage
 
     alt Jeton manquant ou invalide
         MW1-->>C: 401 Unauthorized
@@ -248,7 +235,7 @@ sequenceDiagram
     participant CAP as Captcha Service
 
     Note over U,CAP: === Étape 1: obtention du captcha ===
-    CL->>SV: POST /api/captcha/generate
+    CL->>SV: POST /api/v1/captcha/generate
     SV->>CAP: captcha_create('click')
     CAP->>CAP: Génération d'une image de fond 300×200
     CAP->>CAP: Placement aléatoire de N cibles chinoises
@@ -263,7 +250,7 @@ sequenceDiagram
     CL->>CL: Collecte des clics: [{x,y}, {x,y}, {x,y}]
 
     Note over U,CAP: === Étape 3: connexion ===
-    CL->>SV: POST /api/auth/login { username, password, captcha_key, clicks }
+    CL->>SV: POST /api/v1/auth/login { username, password, captcha_key, clicks }
     SV->>CAP: captcha_verify(key, 'click', clicks)
     alt Captcha erroné
         CAP-->>SV: false
@@ -283,7 +270,7 @@ sequenceDiagram
     end
 
     Note over U,CAP: === Requêtes suivantes ===
-    CL->>SV: GET /admin/dashboard<br/>Authorization: Bearer access_token
+    CL->>SV: GET /admin/v1/dashboard<br/>Authorization: Bearer access_token
     SV->>JWT: jwt()->verify(token)
     JWT-->>SV: { sub, username }
     SV-->>CL: 200 { données du tableau de bord }
@@ -538,7 +525,7 @@ sequenceDiagram
     participant FS as Système de fichiers
 
     Note over C,FS: === Export Excel ===
-    C->>CTL: POST /admin/export/excel<br/>{ table, columns, conditions }
+    C->>CTL: POST /admin/v1/export/excel<br/>{ table, columns, conditions }
     CTL->>DB: SELECT ... LIMIT 10000
     DB-->>CTL: Données
     CTL->>CTL: Déchiffrement des champs sensibles
@@ -548,7 +535,7 @@ sequenceDiagram
     CTL-->>C: Téléchargement du fichier
 
     Note over C,FS: === Export PDF ===
-    C->>CTL: POST /admin/export/pdf<br/>{ type, title, data }
+    C->>CTL: POST /admin/v1/export/pdf<br/>{ type, title, data }
     CTL->>CTL: buildPdfHtml()<br/>En-tête: titre + copyright + heure<br/>Contenu: tableau ou cartes<br/>Pied de page: copyright inamovible
     CTL->>CTL: Rendu Dompdf A4 paysage
     CTL->>FS: Écriture de runtime/tmp/export_*.pdf

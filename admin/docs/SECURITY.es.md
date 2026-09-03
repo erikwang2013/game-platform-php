@@ -156,7 +156,7 @@ Ubicación del archivo: `runtime/logs/security.log`
 
 Ejemplo de formato de registro:
 ```
-2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
+2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/v1/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
 2026-05-20 14:32:15 [SECURITY] IP banned 15min | IP: 192.168.1.100 | Triggers: 5
 ```
 
@@ -178,7 +178,7 @@ Todas las cabeceras se inyectan en el middleware `Cors` mediante `$response->wit
 |----|-----|------|
 | Access-Control-Allow-Origin | `*` | Permite CORS de cualquier origen (escenario de panel de administración en intranet) |
 | Access-Control-Allow-Methods | `GET,POST,PUT,DELETE,OPTIONS` | Conjunto de métodos permitidos |
-| Access-Control-Allow-Headers | `Authorization,Content-Type,API-Version` | Cabeceras personalizadas permitidas |
+| Access-Control-Allow-Headers | `Authorization,Content-Type` | Cabeceras personalizadas permitidas |
 | Access-Control-Max-Age | `86400` | Caché de solicitudes de preflight durante 24 horas |
 | X-Content-Type-Options | `nosniff` | Prohíbe la detección MIME del navegador |
 | X-Frame-Options | `DENY` | Prohíbe toda incrustación en iframe, contra clickjacking |
@@ -230,8 +230,8 @@ El script Lua se ejecuta en un único hilo del servidor Redis, lo que lo hace **
 | Ruta | Límite | Ventana | Escenario |
 |------|------|------|------|
 | Predeterminado (todas las rutas) | 60 veces/minuto | 60s | API general |
-| `/api/auth/login` | 10 veces/minuto | 60s | Inicio de sesión (contra fuerza bruta) |
-| `/api/auth/register` | 5 veces/minuto | 60s | Registro (contra registro masivo) |
+| `/api/v1/auth/login` | 10 veces/minuto | 60s | Inicio de sesión (contra fuerza bruta) |
+| `/api/v1/auth/register` | 5 veces/minuto | 60s | Registro (contra registro masivo) |
 
 ### Cabeceras de respuesta
 
@@ -322,7 +322,7 @@ Implementada en el middleware AdminAuth, montada en los grupos de rutas que requ
 
 **Mecanismo de lista negra**: al cerrar sesión, se escribe `md5(token)` en Redis con TTL igual a la validez restante del JWT. Si Redis falla, la comprobación de la lista negra se omite (fail-open): el token de una sesión cerrada puede usarse brevemente, pero la validez corta del propio JWT (2h) actúa como protección de respaldo.
 
-**Refresco del token**: `POST /api/auth/refresh` valida el refresh token original (`token_type=refresh` y sin caducar/sin estar en la lista negra) antes de emitir el nuevo par, y valida que `sub` sea un ID de usuario válido — **ya no se emiten refresh tokens con sub=null**; si el refresco falla, se devuelve 401 directamente.
+**Refresco del token**: `POST /api/v1/auth/refresh` valida el refresh token original (`token_type=refresh` y sin caducar/sin estar en la lista negra) antes de emitir el nuevo par, y valida que `sub` sea un ID de usuario válido — **ya no se emiten refresh tokens con sub=null**; si el refresco falla, se devuelve 401 directamente.
 
 ### 6.2 Límite de sesiones concurrentes
 
@@ -389,7 +389,7 @@ Por ejemplo:
 
 ### 6.4 Verificación de firma de callbacks de pago (fail-closed)
 
-La verificación de firma de `POST /api/payment/callback` (callbacks de recarga de Stripe/PayPal) es **fail-closed**: cualquier configuración ausente o anomalía de validación rechaza el callback:
+La verificación de firma de `POST /api/v1/payment/callback` (callbacks de recarga de Stripe/PayPal) es **fail-closed**: cualquier configuración ausente o anomalía de validación rechaza el callback:
 
 | Escenario | Comportamiento |
 |------|------|

@@ -24,7 +24,6 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 
 ```
 Content-Type: application/json
-API-Version: v1
 Authorization: Bearer <token>    (অথেনটিকেশন প্রয়োজন এমন ইন্টারফেস)
 ```
 
@@ -75,7 +74,7 @@ Authorization: Bearer <token>    (অথেনটিকেশন প্রয়
 
 ### 2.1 অথেনটিকেশন
 
-#### POST /api/auth/register — ইউজার রেজিস্ট্রেশন
+#### POST /api/v1/auth/register — ইউজার রেজিস্ট্রেশন
 
 ```
 রিকোয়েস্ট: {
@@ -96,7 +95,7 @@ Authorization: Bearer <token>    (অথেনটিকেশন প্রয়
 }
 ```
 
-#### POST /api/auth/login — ইউজার লগইন
+#### POST /api/v1/auth/login — ইউজার লগইন
 
 ```
 রিকোয়েস্ট: {
@@ -113,7 +112,7 @@ Authorization: Bearer <token>    (অথেনটিকেশন প্রয়
 
 ত্রুটি: 401 ইউজারনেম বা পাসওয়ার্ড ভুল / অ্যাকাউন্ট ডিসেবল করা হয়েছে
 
-#### POST /api/auth/refresh — Token রিফ্রেশ
+#### POST /api/v1/auth/refresh — Token রিফ্রেশ
 
 ```
 রিকোয়েস্ট: (Authorization: Bearer <refresh_token>)
@@ -126,7 +125,7 @@ Authorization: Bearer <token>    (অথেনটিকেশন প্রয়
 
 ### 2.2 ওয়ালেট
 
-#### GET /api/wallet/info — ওয়ালেট তথ্য
+#### GET /api/v1/wallet/info — ওয়ালেট তথ্য
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -139,7 +138,7 @@ Authorization: Bearer <token>    (অথেনটিকেশন প্রয়
 }
 ```
 
-#### GET /api/wallet/transactions — লেজার রেকর্ড
+#### GET /api/v1/wallet/transactions — লেজার রেকর্ড
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -166,7 +165,7 @@ type এর মান: deposit / withdraw / exchange_in / exchange_out / game_ea
 
 ### 2.3 টপ-আপ
 
-#### POST /api/deposit/create — টপ-আপ অর্ডার তৈরি
+#### POST /api/v1/deposit/create — টপ-আপ অর্ডার তৈরি
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -191,7 +190,7 @@ currency এর মান: USD / CNY / EUR
 
 checkout_url: পেমেন্ট গেটওয়ে রিডাইরেক্ট লিংক (অর্ডার তৈরির সময় পূরণ করা হয়); expires_at: পেমেন্ট লিংকের মেয়াদ (তৈরির ১ ঘণ্টা পরে)
 
-#### GET /api/deposit/orders — টপ-আপ রেকর্ড
+#### GET /api/v1/deposit/orders — টপ-আপ রেকর্ড
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -220,7 +219,7 @@ status এর মান: pending / paid / confirmed / cancelled
 
 ### 2.4 বিনিময়
 
-#### POST /api/exchange/quote — মূল্য জিজ্ঞাসা
+#### POST /api/v1/exchange/quote — মূল্য জিজ্ঞাসা
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -243,7 +242,7 @@ status এর মান: pending / paid / confirmed / cancelled
 
 direction: in=গেম কয়েন কেনা / out=গেম কয়েন বিক্রি
 
-#### POST /api/exchange/buy — গেম কয়েন কেনা
+#### POST /api/v1/exchange/buy — গেম কয়েন কেনা
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -265,7 +264,7 @@ direction: in=গেম কয়েন কেনা / out=গেম কয়�
 
 ত্রুটি: 422 প্ল্যাটফর্ম কয়েন ব্যালেন্স অপর্যাপ্ত / 404 গেম অনুপলব্ধ
 
-#### POST /api/exchange/sell — গেম কয়েন বিক্রি
+#### POST /api/v1/exchange/sell — গেম কয়েন বিক্রি
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -287,7 +286,7 @@ direction: in=গেম কয়েন কেনা / out=গেম কয়�
 
 ত্রুটি: 422 গেম কয়েন ব্যালেন্স অপর্যাপ্ত
 
-#### GET /api/exchange/records — বিনিময় রেকর্ড
+#### GET /api/v1/exchange/records — বিনিময় রেকর্ড
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -314,7 +313,7 @@ direction: in=গেম কয়েন কেনা / out=গেম কয়�
 
 ### 2.5 উত্তোলন
 
-#### POST /api/withdraw/apply — উত্তোলন আবেদন
+#### POST /api/v1/withdraw/apply — উত্তোলন আবেদন
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -344,7 +343,7 @@ status:
 - 400 দৈনিক উত্তোলন সীমা অতিক্রম করেছে
 - 400 ব্যালেন্স অপর্যাপ্ত
 
-#### GET /api/withdraw/orders — উত্তোলন রেকর্ড
+#### GET /api/v1/withdraw/orders — উত্তোলন রেকর্ড
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -370,7 +369,7 @@ status:
 
 ### 2.6 গেম
 
-#### GET /api/game/list — গেম তালিকা
+#### GET /api/v1/game/list — গেম তালিকা
 
 ```
 প্যারামিটার: ?page=1&per_page=20&keyword=射击&type=self
@@ -404,7 +403,7 @@ status:
 
 type এর মান: self / third_party
 
-#### GET /api/game/{hashid} — গেম বিবরণ
+#### GET /api/v1/game/{hashid} — গেম বিবরণ
 
 ```
 রেসপন্স: {
@@ -428,7 +427,7 @@ type এর মান: self / third_party
 }
 ```
 
-#### POST /api/game/launch — গেম লঞ্চ
+#### POST /api/v1/game/launch — গেম লঞ্চ
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -447,7 +446,7 @@ type এর মান: self / third_party
 
 ৭টি প্ল্যাটফর্ম সাপোর্ট করে: Google / Facebook / Apple / X(Twitter) / Microsoft / LinkedIn / GitHub
 
-#### GET /api/auth/oauth/{provider} — অথরাইজেশন URL পাওয়া
+#### GET /api/v1/auth/oauth/{provider} — অথরাইজেশন URL পাওয়া
 
 ```
 প্যারামিটার: provider = google / facebook / apple / twitter / microsoft / linkedin / github
@@ -457,7 +456,7 @@ type এর মান: self / third_party
 }
 ```
 
-#### POST /api/auth/oauth/{provider}/callback — OAuth কলব্যাক
+#### POST /api/v1/auth/oauth/{provider}/callback — OAuth কলব্যাক
 
 ```
 রিকোয়েস্ট: { "code": "授权码", "state": "防CSRF状态" }
@@ -474,7 +473,7 @@ is_new: true=নতুন রেজিস্টার্ড ইউজার / fa
 
 ### 2.8 KYC রিয়েল-নেম ভেরিফিকেশন
 
-#### GET /api/user/identity/status — ভেরিফিকেশন স্ট্যাটাস
+#### GET /api/v1/user/identity/status — ভেরিফিকেশন স্ট্যাটাস
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -489,7 +488,7 @@ is_new: true=নতুন রেজিস্টার্ড ইউজার / fa
 }
 ```
 
-#### POST /api/user/identity/apply — ভেরিফিকেশন সাবমিট
+#### POST /api/v1/user/identity/apply — ভেরিফিকেশন সাবমিট
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -507,7 +506,7 @@ is_new: true=নতুন রেজিস্টার্ড ইউজার / fa
 
 ### 2.9 পেমেন্ট
 
-#### POST /api/payment/callback — পেমেন্ট কলব্যাক (পাবলিক)
+#### POST /api/v1/payment/callback — পেমেন্ট কলব্যাক (পাবলিক)
 
 ```
 রিকোয়েস্ট: {
@@ -542,7 +541,7 @@ provider এর মান: stripe / paypal / nowpayments / coinbase / skrill / n
 | mpesa | কেনিয়া / তানজানিয়া ইত্যাদি (শীঘ্রই) | — | KES / TZS |
 | paystack | নাইজেরিয়া (শীঘ্রই) | — | NGN |
 
-#### GET /api/payment/methods — উপলব্ধ পেমেন্ট পদ্ধতি (পাবলিক)
+#### GET /api/v1/payment/methods — উপলব্ধ পেমেন্ট পদ্ধতি (পাবলিক)
 
 ```
 রেসপন্স: {
@@ -556,7 +555,7 @@ provider এর মান: stripe / paypal / nowpayments / coinbase / skrill / n
 
 ### 2.10 গেম রেকর্ড
 
-#### GET /api/game/play-logs — গেম রেকর্ড তালিকা
+#### GET /api/v1/game/play-logs — গেম রেকর্ড তালিকা
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -576,7 +575,7 @@ provider এর মান: stripe / paypal / nowpayments / coinbase / skrill / n
 }
 ```
 
-#### GET /api/game/play-log/{hashid} — গেম রেকর্ড বিবরণ
+#### GET /api/v1/game/play-log/{hashid} — গেম রেকর্ড বিবরণ
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -585,7 +584,7 @@ provider এর মান: stripe / paypal / nowpayments / coinbase / skrill / n
 
 ### 2.12 লিডারবোর্ড
 
-#### GET /api/leaderboard/list — লিডারবোর্ড তালিকা
+#### GET /api/v1/leaderboard/list — লিডারবোর্ড তালিকা
 
 ```
 রেসপন্স: {
@@ -595,7 +594,7 @@ provider এর মান: stripe / paypal / nowpayments / coinbase / skrill / n
 }
 ```
 
-#### GET /api/leaderboard/{hashid} — লিডারবোর্ড বিবরণ
+#### GET /api/v1/leaderboard/{hashid} — লিডারবোর্ড বিবরণ
 
 ```
 রেসপন্স: {
@@ -610,14 +609,14 @@ provider এর মান: stripe / paypal / nowpayments / coinbase / skrill / n
 
 ### 2.13 কুপন
 
-#### GET /api/coupon/available — গ্রহণযোগ্য কুপন
+#### GET /api/v1/coupon/available — গ্রহণযোগ্য কুপন
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রেসপন্স: { "list": [{ "id": "...", "name": "新人礼包", "type": "fixed", "value": "10.0000" }] }
 ```
 
-#### POST /api/coupon/claim — কুপন গ্রহণ
+#### POST /api/v1/coupon/claim — কুপন গ্রহণ
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -625,7 +624,7 @@ provider এর মান: stripe / paypal / nowpayments / coinbase / skrill / n
 রেসপন্স: { "coupon": { ... } }
 ```
 
-#### GET /api/coupon/my — আমার কুপন
+#### GET /api/v1/coupon/my — আমার কুপন
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -635,7 +634,7 @@ provider এর মান: stripe / paypal / nowpayments / coinbase / skrill / n
 
 ### 2.14 দেশ কনফিগ
 
-#### GET /api/country/list — দেশের তালিকা
+#### GET /api/v1/country/list — দেশের তালিকা
 
 ```
 রেসপন্স: {
@@ -645,7 +644,7 @@ provider এর মান: stripe / paypal / nowpayments / coinbase / skrill / n
 }
 ```
 
-#### GET /api/country/{code} — দেশের বিবরণ
+#### GET /api/v1/country/{code} — দেশের বিবরণ
 
 ```
 রেসপন্স: {
@@ -659,7 +658,7 @@ provider এর মান: stripe / paypal / nowpayments / coinbase / skrill / n
 
 ### 2.16 নোটিফিকেশন
 
-#### GET /api/notification/list — নোটিফিকেশন তালিকা
+#### GET /api/v1/notification/list — নোটিফিকেশন তালিকা
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -673,14 +672,14 @@ provider এর মান: stripe / paypal / nowpayments / coinbase / skrill / n
 }
 ```
 
-#### GET /api/notification/unread-count — অপঠিত সংখ্যা
+#### GET /api/v1/notification/unread-count — অপঠিত সংখ্যা
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রেসপন্স: { "count": 3 }
 ```
 
-#### POST /api/notification/read — পড়া হিসেবে চিহ্নিত
+#### POST /api/v1/notification/read — পড়া হিসেবে চিহ্নিত
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -689,14 +688,14 @@ provider এর মান: stripe / paypal / nowpayments / coinbase / skrill / n
 
 ### 2.17 রেফারেল
 
-#### GET /api/referral/my-code — আমার রেফারেল কোড
+#### GET /api/v1/referral/my-code — আমার রেফারেল কোড
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রেসপন্স: { "code": "ABC12345", "referral_count": 12, "total_rewards": "150.0000" }
 ```
 
-#### POST /api/referral/apply — রেফারেল কোড ব্যবহার
+#### POST /api/v1/referral/apply — রেফারেল কোড ব্যবহার
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -706,21 +705,21 @@ provider এর মান: stripe / paypal / nowpayments / coinbase / skrill / n
 
 ### 2.18 2FA
 
-#### GET /api/user/2fa/status — 2FA স্ট্যাটাস
+#### GET /api/v1/user/2fa/status — 2FA স্ট্যাটাস
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রেসপন্স: { "enabled": false }
 ```
 
-#### POST /api/user/2fa/setup — 2FA সেটআপ
+#### POST /api/v1/user/2fa/setup — 2FA সেটআপ
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রেসপন্স: { "secret": "JBSWY3DPEHPK3PXP", "qr_url": "otpauth://totp/..." }
 ```
 
-#### POST /api/user/2fa/enable — 2FA এনাবল
+#### POST /api/v1/user/2fa/enable — 2FA এনাবল
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -728,7 +727,7 @@ provider এর মান: stripe / paypal / nowpayments / coinbase / skrill / n
 রেসপন্স: { "backup_codes": ["abcd1234ef", ...] }
 ```
 
-#### POST /api/2fa/verify — 2FA ভেরিফাই (পাবলিক)
+#### POST /api/v1/2fa/verify — 2FA ভেরিফাই (পাবলিক)
 
 ```
 রিকোয়েস্ট: { "user_id": "hashid", "code": "123456" }
@@ -737,14 +736,14 @@ provider এর মান: stripe / paypal / nowpayments / coinbase / skrill / n
 
 ### 2.19 সার্চ
 
-#### GET /api/search — গ্লোবাল সার্চ
+#### GET /api/v1/search — গ্লোবাল সার্চ
 
 ```
 প্যারামিটার: ?q=keyword&type=game&page=1&per_page=20
 রেসপন্স: { "list": [...], "total": 100 }
 ```
 
-#### GET /api/game/suggest — সার্চ সাজেশন
+#### GET /api/v1/game/suggest — সার্চ সাজেশন
 
 ```
 প্যারামিটার: ?q=shoot
@@ -753,7 +752,7 @@ provider এর মান: stripe / paypal / nowpayments / coinbase / skrill / n
 
 ### 2.20 ভাষা
 
-#### GET /api/language/list — উপলব্ধ ভাষার তালিকা
+#### GET /api/v1/language/list — উপলব্ধ ভাষার তালিকা
 
 ```
 রেসপন্স: {
@@ -767,7 +766,7 @@ provider এর মান: stripe / paypal / nowpayments / coinbase / skrill / n
 }
 ```
 
-#### POST /api/language/switch — ভাষা পরিবর্তন
+#### POST /api/v1/language/switch — ভাষা পরিবর্তন
 
 ```
 রিকোয়েস্ট: { "locale": "zh-CN" }
@@ -778,7 +777,7 @@ locale এর মান: en-US / zh-CN / ja-JP / ko-KR
 
 ### 2.8 ইউজার
 
-#### GET /api/user/profile — ব্যক্তিগত তথ্য
+#### GET /api/v1/user/profile — ব্যক্তিগত তথ্য
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -797,7 +796,7 @@ locale এর মান: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
-#### PUT /api/user/profile — প্রোফাইল সম্পাদনা
+#### PUT /api/v1/user/profile — প্রোফাইল সম্পাদনা
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -821,7 +820,7 @@ language এর মান: en-US / zh-CN / ja-JP / ko-KR
 
 ### 2.9 ঘোষণা
 
-#### GET /api/announcement/list — ঘোষণা তালিকা
+#### GET /api/v1/announcement/list — ঘোষণা তালিকা
 
 ```
 রেসপন্স: {
@@ -836,7 +835,7 @@ language এর মান: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
-#### GET /api/announcement/detail/{hashid} — ঘোষণা বিবরণ
+#### GET /api/v1/announcement/detail/{hashid} — ঘোষণা বিবরণ
 
 ```
 রেসপন্স: {
@@ -852,9 +851,9 @@ language এর মান: en-US / zh-CN / ja-JP / ko-KR
 
 | মেথড | পাথ | বিবরণ | অথেনটিকেশন |
 |------|------|------|------|
-| GET | /api/platform/stats | প্ল্যাটফর্ম পাবলিক পরিসংখ্যান (মোট গেম/মোট ব্যবহারকারী/আজকের প্লে/৭ দিন সক্রিয়) | না |
+| GET | /api/v1/platform/stats | প্ল্যাটফর্ম পাবলিক পরিসংখ্যান (মোট গেম/মোট ব্যবহারকারী/আজকের প্লে/৭ দিন সক্রিয়) | না |
 
-#### GET /api/platform/stats — প্ল্যাটফর্ম পরিসংখ্যান
+#### GET /api/v1/platform/stats — প্ল্যাটফর্ম পরিসংখ্যান
 
 ```
 无需认证
@@ -1466,8 +1465,8 @@ action: approve / reject
 | ইন্টারফেস | সীমা |
 |------|------|
 | ডিফল্ট | ৬০ বার/মিনিট/IP |
-| POST /api/auth/login | ১০ বার/মিনিট |
-| POST /api/auth/register | ৫ বার/মিনিট |
+| POST /api/v1/auth/login | ১০ বার/মিনিট |
+| POST /api/v1/auth/register | ৫ বার/মিনিট |
 
 সীমা অতিক্রম করলে 429 রিটার্ন, রেসপন্স হেডারে থাকে:
 ```
@@ -1600,7 +1599,7 @@ Retry-After: 60
 
 ### 7.2 টিকিট API
 
-#### GET /api/ticket/list — টিকিট তালিকা
+#### GET /api/v1/ticket/list — টিকিট তালিকা
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1625,7 +1624,7 @@ Retry-After: 60
 type: deposit / withdraw / game / account / other
 status: open / waiting / replied / closed
 
-#### POST /api/ticket/create — টিকিট তৈরি
+#### POST /api/v1/ticket/create — টিকিট তৈরি
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1637,7 +1636,7 @@ status: open / waiting / replied / closed
 রেসপন্স: { "code": 0, "message": "Ticket created", "data": { "id": "aB3xK..." } }
 ```
 
-#### GET /api/ticket/{hashid} — টিকিট বিবরণ
+#### GET /api/v1/ticket/{hashid} — টিকিট বিবরণ
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1650,7 +1649,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### POST /api/ticket/{hashid}/reply — টিকিটে রিপ্লাই
+#### POST /api/v1/ticket/{hashid}/reply — টিকিটে রিপ্লাই
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1660,7 +1659,7 @@ status: open / waiting / replied / closed
 
 ### 7.3 ইমেইল ভেরিফিকেশন API
 
-#### POST /api/verify/send-email — ইমেইল ভেরিফিকেশন কোড পাঠান
+#### POST /api/v1/verify/send-email — ইমেইল ভেরিফিকেশন কোড পাঠান
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1669,7 +1668,7 @@ status: open / waiting / replied / closed
 ত্রুটি: 429 ৬০ সেকেন্ড পর আবার চেষ্টা করুন
 ```
 
-#### POST /api/verify/confirm-email — ইমেইল নিশ্চিতকরণ
+#### POST /api/v1/verify/confirm-email — ইমেইল নিশ্চিতকরণ
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1680,7 +1679,7 @@ status: open / waiting / replied / closed
 
 ### 7.4 VIP API
 
-#### GET /api/user/vip-status — VIP স্ট্যাটাস
+#### GET /api/v1/user/vip-status — VIP স্ট্যাটাস
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1700,7 +1699,7 @@ status: open / waiting / replied / closed
 
 ### 7.5 অ্যাচিভমেন্ট API
 
-#### GET /api/user/achievements — অ্যাচিভমেন্ট তালিকা
+#### GET /api/v1/user/achievements — অ্যাচিভমেন্ট তালিকা
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1899,10 +1898,10 @@ status: open / waiting / replied / closed
 | ইন্টারফেস | সীমা |
 |------|------|
 | ডিফল্ট | ৬০ বার/মিনিট/IP |
-| POST /api/auth/login | ১০ বার/মিনিট |
-| POST /api/auth/register | ৫ বার/মিনিট |
-| POST /api/auth/oauth | ১০ বার/মিনিট |
-| POST /api/payment/callback | ৩০ বার/মিনিট |
+| POST /api/v1/auth/login | ১০ বার/মিনিট |
+| POST /api/v1/auth/register | ৫ বার/মিনিট |
+| POST /api/v1/auth/oauth | ১০ বার/মিনিট |
+| POST /api/v1/payment/callback | ৩০ বার/মিনিট |
 | POST /api/provider/* | সীমাহীন (HMAC সিগনেচার অথেনটিকেশন) |
 
 ## 9. অথেনটিকেশন নোট (আপডেট)
@@ -1918,43 +1917,43 @@ status: open / waiting / replied / closed
 
 ### 7.7 ফ্রেন্ড API
 
-#### GET /api/friend/list — ফ্রেন্ড তালিকা
+#### GET /api/v1/friend/list — ফ্রেন্ড তালিকা
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রেসপন্স: { "list": [{ "id": "...", "username": "...", "nickname": "...", "avatar": "..." }] }
 ```
 
-#### GET /api/friend/requests — পেন্ডিং রিকোয়েস্ট
+#### GET /api/v1/friend/requests — পেন্ডিং রিকোয়েস্ট
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রেসপন্স: { "list": [{ "id": "...", "user": {...}, "created_at": "..." }] }
 ```
 
-#### POST /api/friend/request — ফ্রেন্ড রিকোয়েস্ট পাঠান
+#### POST /api/v1/friend/request — ফ্রেন্ড রিকোয়েস্ট পাঠান
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রিকোয়েস্ট: { "friend_id": "hashid" }
 ```
 
-#### POST /api/friend/accept — রিকোয়েস্ট গ্রহণ
+#### POST /api/v1/friend/accept — রিকোয়েস্ট গ্রহণ
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রিকোয়েস্ট: { "request_id": "hashid" }
 ```
 
-#### POST /api/friend/reject — রিকোয়েস্ট প্রত্যাখ্যান
+#### POST /api/v1/friend/reject — রিকোয়েস্ট প্রত্যাখ্যান
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রিকোয়েস্ট: { "request_id": "hashid" }
 ```
 
-#### POST /api/friend/remove — ফ্রেন্ড মুছুন
+#### POST /api/v1/friend/remove — ফ্রেন্ড মুছুন
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রিকোয়েস্ট: { "friend_id": "hashid" }
 ```
 
-#### GET /api/friend/search — ইউজার সার্চ
+#### GET /api/v1/friend/search — ইউজার সার্চ
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 প্যারামিটার: ?q=username
@@ -1963,7 +1962,7 @@ status: open / waiting / replied / closed
 
 ### 7.8 চ্যাট API
 
-#### GET /api/chat/conversations — কনভার্সেশন তালিকা
+#### GET /api/v1/chat/conversations — কনভার্সেশন তালিকা
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রেসপন্স: {
@@ -1976,7 +1975,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /api/chat/messages/{peerHashid} — মেসেজ তালিকা
+#### GET /api/v1/chat/messages/{peerHashid} — মেসেজ তালিকা
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 প্যারামিটার: ?page=1&per_page=50
@@ -1984,14 +1983,14 @@ status: open / waiting / replied / closed
 অন্য পাশ থেকে আসা অপঠিত মেসেজ স্বয়ংক্রিয়ভাবে পড়া হিসেবে চিহ্নিত হয়
 ```
 
-#### POST /api/chat/send — মেসেজ পাঠান
+#### POST /api/v1/chat/send — মেসেজ পাঠান
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রিকোয়েস্ট: { "to_user_id": "hashid", "content": "Hello!" }
 ত্রুটি: 403 ফ্রেন্ড না হলে পাঠানো যাবে না
 ```
 
-#### GET /api/chat/unread-total — অপঠিত মোট
+#### GET /api/v1/chat/unread-total — অপঠিত মোট
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রেসপন্স: { "count": 5 }
@@ -2009,20 +2008,20 @@ status: open / waiting / replied / closed
 
 ### 7.9 Webhook API
 
-#### GET /api/webhook/list — সাবস্ক্রিপশন তালিকা
+#### GET /api/v1/webhook/list — সাবস্ক্রিপশন তালিকা
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রেসপন্স: { "list": [{ "id": "...", "url": "https://...", "events": ["deposit.completed"] }] }
 ```
 
-#### POST /api/webhook/register — সাবস্ক্রিপশন রেজিস্টার
+#### POST /api/v1/webhook/register — সাবস্ক্রিপশন রেজিস্টার
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রিকোয়েস্ট: { "url": "https://my-server.com/hook", "events": ["deposit.completed", "game.played"] }
 উপলব্ধ ইভেন্ট: deposit.completed / withdraw.completed / exchange.completed / game.played / user.registered / risk.alert / user.vip_upgraded
 ```
 
-#### POST /api/webhook/delete — সাবস্ক্রিপশন মুছুন
+#### POST /api/v1/webhook/delete — সাবস্ক্রিপশন মুছুন
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রিকোয়েস্ট: { "id": "hook_id" }
@@ -2071,18 +2070,18 @@ status: open / waiting / replied / closed
 
 ### 7.11 টুর্নামেন্ট API
 
-#### GET /api/tournament/list — টুর্নামেন্ট তালিকা
+#### GET /api/v1/tournament/list — টুর্নামেন্ট তালিকা
 ```
 প্যারামিটার: ?status=active|upcoming|ended&page=1&per_page=20
 রেসপন্স: { "items": [{ "id": "...", "name": "...", "prize_pool": "1000.0000", "player_count": 45, "max_players": 100 }], "total": 5 }
 ```
 
-#### GET /api/tournament/{hashid} — টুর্নামেন্ট বিবরণ
+#### GET /api/v1/tournament/{hashid} — টুর্নামেন্ট বিবরণ
 ```
 রেসপন্স: { "id": "...", "name": "...", "leaderboard": [...], "my_entry": {...} }
 ```
 
-#### POST /api/tournament/{hashid}/join — অংশগ্রহণ রেজিস্ট্রেশন
+#### POST /api/v1/tournament/{hashid}/join — অংশগ্রহণ রেজিস্ট্রেশন
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 ত্রুটি: 422 ইতিমধ্যে নিবন্ধিত / 400 শুরু হয়ে গেছে বা পূর্ণ / 503 FeatureFlag বন্ধ
@@ -2108,7 +2107,7 @@ status: open / waiting / replied / closed
 
 | ইন্টারফেস | সীমা |
 |------|------|
-| POST /api/tournament/{id}/join | ১০ বার/মিনিট |
+| POST /api/v1/tournament/{id}/join | ১০ বার/মিনিট |
 
 ---
 
@@ -2159,23 +2158,23 @@ status: open / waiting / replied / closed
 | POST /admin/activities/create | অ্যাক্টিভিটি তৈরি (অ্যাডমিন) |
 | PUT /admin/activities/{hashid} | অ্যাক্টিভিটি আপডেট (অ্যাডমিন) |
 | DELETE /admin/activities/{hashid} | অ্যাক্টিভিটি মুছুন (অ্যাডমিন) |
-| GET /api/activities/list | অ্যাক্টিভিটি তালিকা (ক্লায়েন্ট) |
-| GET /api/activities/progress | অংশগ্রহণের অগ্রগতি (ক্লায়েন্ট) |
-| GET /api/activities/{hashid} | অ্যাক্টিভিটি বিবরণ (ক্লায়েন্ট) |
-| POST /api/activities/{hashid}/checkin | চেক-ইন (ক্লায়েন্ট) |
+| GET /api/v1/activities/list | অ্যাক্টিভিটি তালিকা (ক্লায়েন্ট) |
+| GET /api/v1/activities/progress | অংশগ্রহণের অগ্রগতি (ক্লায়েন্ট) |
+| GET /api/v1/activities/{hashid} | অ্যাক্টিভিটি বিবরণ (ক্লায়েন্ট) |
+| POST /api/v1/activities/{hashid}/checkin | চেক-ইন (ক্লায়েন্ট) |
 
 ### 10.4 গ্রুপ / শেয়ার (ক্লায়েন্ট :8788 + অ্যাডমিন :8787)
 
 | এন্ডপয়েন্ট | বর্ণনা |
 |------|------|
-| POST /api/groups | গ্রুপ তৈরি |
-| GET /api/groups/{hashid} | গ্রুপ বিবরণ |
-| GET /api/groups/{hashid}/members | সদস্য তালিকা |
-| POST /api/groups/{hashid}/join | গ্রুপে যোগ দিন |
-| POST /api/groups/{hashid}/leave | গ্রুপ ত্যাগ |
-| PUT /api/groups/{hashid}/role | সদস্য ভূমিকা |
-| POST /api/shares | শেয়ার লিংক তৈরি |
-| POST /api/shares/visit | শেয়ার ভিজিট ট্র্যাকিং |
+| POST /api/v1/groups | গ্রুপ তৈরি |
+| GET /api/v1/groups/{hashid} | গ্রুপ বিবরণ |
+| GET /api/v1/groups/{hashid}/members | সদস্য তালিকা |
+| POST /api/v1/groups/{hashid}/join | গ্রুপে যোগ দিন |
+| POST /api/v1/groups/{hashid}/leave | গ্রুপ ত্যাগ |
+| PUT /api/v1/groups/{hashid}/role | সদস্য ভূমিকা |
+| POST /api/v1/shares | শেয়ার লিংক তৈরি |
+| POST /api/v1/shares/visit | শেয়ার ভিজিট ট্র্যাকিং |
 | GET /admin/groups | গ্রুপ তালিকা (অ্যাডমিন) |
 | GET /admin/groups/{hashid}/audit | গ্রুপ অডিট (অ্যাডমিন) |
 | GET /admin/share/stats | শেয়ার পরিসংখ্যান (অ্যাডমিন) |

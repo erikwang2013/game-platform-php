@@ -156,7 +156,7 @@ if (Redis::get("security_ban:{$ip}")) {
 
 Пример формата журнала:
 ```
-2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
+2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/v1/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
 2026-05-20 14:32:15 [SECURITY] IP banned 15min | IP: 192.168.1.100 | Triggers: 5
 ```
 
@@ -178,7 +178,7 @@ if (Redis::get("security_ban:{$ip}")) {
 |----|-----|------|
 | Access-Control-Allow-Origin | `*` | Разрешение CORS с любого источника (сценарий интранет-панели) |
 | Access-Control-Allow-Methods | `GET,POST,PUT,DELETE,OPTIONS` | Разрешенный набор методов |
-| Access-Control-Allow-Headers | `Authorization,Content-Type,API-Version` | Разрешенные пользовательские заголовки |
+| Access-Control-Allow-Headers | `Authorization,Content-Type` | Разрешенные пользовательские заголовки |
 | Access-Control-Max-Age | `86400` | Кэш preflight-запросов 24 часа |
 | X-Content-Type-Options | `nosniff` | Запрет MIME-сниффинга браузером |
 | X-Frame-Options | `DENY` | Запрет встраивания в любые iframe, защита от кликджекинга |
@@ -230,8 +230,8 @@ Lua-скрипт выполняется на стороне Redis в одном 
 | Маршрут | Лимит | Окно | Сценарий |
 |------|------|------|------|
 | По умолчанию (все маршруты) | 60 раз/мин | 60s | Обычные API |
-| `/api/auth/login` | 10 раз/мин | 60s | Вход (защита от брутфорса) |
-| `/api/auth/register` | 5 раз/мин | 60s | Регистрация (защита от массовой регистрации) |
+| `/api/v1/auth/login` | 10 раз/мин | 60s | Вход (защита от брутфорса) |
+| `/api/v1/auth/register` | 5 раз/мин | 60s | Регистрация (защита от массовой регистрации) |
 
 ### Заголовки ответа
 
@@ -322,7 +322,7 @@ try {
 
 **Механизм черного списка**: при выходе пользователя `md5(token)` записывается в Redis с TTL, равным оставшемуся сроку действия JWT. При отказе Redis проверка черного списка пропускается (fail-open), тогда вышедший токен еще короткое время пригоден, но короткий срок самого JWT (2ч) служит страховкой.
 
-**Обновление токена**: `POST /api/auth/refresh` проверяет исходный refresh token (`token_type=refresh`, не истек, не в черном списке), только затем выпускает новую пару, и проверяет, что `sub` — действительный ID пользователя — **refresh token с sub=null больше не выпускается**, при неудаче обновления сразу возвращается 401.
+**Обновление токена**: `POST /api/v1/auth/refresh` проверяет исходный refresh token (`token_type=refresh`, не истек, не в черном списке), только затем выпускает новую пару, и проверяет, что `sub` — действительный ID пользователя — **refresh token с sub=null больше не выпускается**, при неудаче обновления сразу возвращается 401.
 
 ### 6.2 Ограничение параллельных сессий
 
@@ -389,7 +389,7 @@ try {
 
 ### 6.4 Проверка подписи платежных callback'ов (fail-closed)
 
-Проверка подписи `POST /api/payment/callback` (callback пополнений Stripe/PayPal) использует **fail-closed**: любой пропуск конфигурации или ошибка проверки отклоняет callback:
+Проверка подписи `POST /api/v1/payment/callback` (callback пополнений Stripe/PayPal) использует **fail-closed**: любой пропуск конфигурации или ошибка проверки отклоняет callback:
 
 | Сценарий | Поведение |
 |------|------|

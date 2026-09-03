@@ -156,7 +156,7 @@ if (Redis::get("security_ban:{$ip}")) {
 
 লগ ফরম্যাট উদাহরণ:
 ```
-2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
+2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/v1/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
 2026-05-20 14:32:15 [SECURITY] IP banned 15min | IP: 192.168.1.100 | Triggers: 5
 ```
 
@@ -178,7 +178,7 @@ POST/PUT রিকোয়েস্টে **অবশ্যই** `Content-Type`
 |----|-----|------|
 | Access-Control-Allow-Origin | `*` | যেকোনো উৎসের ক্রস-অরিজিন অনুমোদন (ইন্টারনেট প্রশাসনিক প্যানেল পরিস্থিতি) |
 | Access-Control-Allow-Methods | `GET,POST,PUT,DELETE,OPTIONS` | অনুমোদিত মেথড সেট |
-| Access-Control-Allow-Headers | `Authorization,Content-Type,API-Version` | অনুমোদিত কাস্টম হেডার |
+| Access-Control-Allow-Headers | `Authorization,Content-Type` | অনুমোদিত কাস্টম হেডার |
 | Access-Control-Max-Age | `86400` | প্রিফ্লাইট রিকোয়েস্ট ক্যাশ ২৪ ঘণ্টা |
 | X-Content-Type-Options | `nosniff` | ব্রাউজার MIME স্নিফিং নিষিদ্ধ |
 | X-Frame-Options | `DENY` | সব iframe এমবেড নিষিদ্ধ, ক্লিকজ্যাকিং রোধ |
@@ -230,8 +230,8 @@ Lua স্ক্রিপ্ট Redis সার্ভারে সিঙ্গ�
 | রুট | সীমা | উইন্ডো | পরিস্থিতি |
 |------|------|------|------|
 | ডিফল্ট (সব রুট) | ৬০ বার/মিনিট | 60s | সাধারণ API |
-| `/api/auth/login` | ১০ বার/মিনিট | 60s | লগইন (ব্রুট-ফোর্স রোধ) |
-| `/api/auth/register` | ৫ বার/মিনিট | 60s | রেজিস্ট্রেশন (বাল্ক রেজিস্ট্রেশন রোধ) |
+| `/api/v1/auth/login` | ১০ বার/মিনিট | 60s | লগইন (ব্রুট-ফোর্স রোধ) |
+| `/api/v1/auth/register` | ৫ বার/মিনিট | 60s | রেজিস্ট্রেশন (বাল্ক রেজিস্ট্রেশন রোধ) |
 
 ### রেসপন্স হেডার
 
@@ -322,7 +322,7 @@ AdminAuth মিডলওয়্যারে বাস্তবায়িত
 
 **ব্ল্যাকলিস্ট মেকানিজম**: ইউজার লগআউট করলে `md5(token)` Redis-এ লেখা হয়, TTL JWT-এর অবশিষ্ট মেয়াদে সেট হয়। Redis ব্যর্থ হলে ব্ল্যাকলিস্ট চেক এড়িয়ে যায় (fail-open), এই সময়ে লগআউট করা Token স্বল্প সময় ব্যবহারযোগ্য, কিন্তু JWT-এর স্বল্প মেয়াদ (2h) বটম-লাইন সুরক্ষা দেয়।
 
-**Token রিফ্রেশ**: `POST /api/auth/refresh` আসল refresh token ভেরিফাই করে (`token_type=refresh` ও মেয়াদোত্তীর্ণ নয়/ব্ল্যাকলিস্টে নয়) তারপরই ঘোরায় ও ইস্যু করে, এবং `sub` অবশ্যই বৈধ ইউজার ID হতে হবে — **sub=null সহ refresh token আর ইস্যু হয় না**, রিফ্রেশ ব্যর্থ হলে সরাসরি 401।
+**Token রিফ্রেশ**: `POST /api/v1/auth/refresh` আসল refresh token ভেরিফাই করে (`token_type=refresh` ও মেয়াদোত্তীর্ণ নয়/ব্ল্যাকলিস্টে নয়) তারপরই ঘোরায় ও ইস্যু করে, এবং `sub` অবশ্যই বৈধ ইউজার ID হতে হবে — **sub=null সহ refresh token আর ইস্যু হয় না**, রিফ্রেশ ব্যর্থ হলে সরাসরি 401।
 
 ### 6.2 কনকারেন্ট সেশন সীমা
 
@@ -389,7 +389,7 @@ API পারমিশন আইডেন্টিফায়ার ফরম�
 
 ### 6.4 পেমেন্ট কলব্যাক ভেরিফিকেশন (fail-closed)
 
-`POST /api/payment/callback` (Stripe/PayPal টপ-আপ কলব্যাক) ভেরিফিকেশন **fail-closed**, যেকোনো কনফিগ অনুপস্থিত বা ভেরিফিকেশন অস্বাভাবিক হলে কলব্যাক প্রত্যাখ্যান:
+`POST /api/v1/payment/callback` (Stripe/PayPal টপ-আপ কলব্যাক) ভেরিফিকেশন **fail-closed**, যেকোনো কনফিগ অনুপস্থিত বা ভেরিফিকেশন অস্বাভাবিক হলে কলব্যাক প্রত্যাখ্যান:
 
 | পরিস্থিতি | আচরণ |
 |------|------|

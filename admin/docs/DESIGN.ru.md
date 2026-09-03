@@ -64,7 +64,7 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.
 | Уровень | Каталог | Ответственность |
 |---|------|------|
 | Маршруты | `config/route.php` | Маппинг URL на контроллеры, привязка промежуточного ПО, версионированные маршруты |
-| Промежуточное ПО | `app/middleware/` | Блокировка атак (SecurityFilter), ограничение частоты (RateLimit), аутентификация (JWT), авторизация (RBAC), версия API (ApiVersion) |
+| Промежуточное ПО | `app/middleware/` | Блокировка атак (SecurityFilter), ограничение частоты (RateLimit), аутентификация (JWT), авторизация (RBAC) |
 | Контроллеры | 30 шт.: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (панель) + Captcha/Auth (API v1) | Проверка параметров запроса, вызов бизнес-логики, форматирование ответа |
 | Бизнес-сервисы | `common/service/` | Аналитика данных: GameDashboardService (обзор/рейтинги/тренды), DepositLogService (выручка/конверсия), ProbabilityService (совместные/условные вероятности, построитель SQL); при сбое БД — пустые данные вместо ошибки |
 | Модели данных | `app/model/` | ORM-маппинг, связи, шифрование/дешифрование полей |
@@ -88,9 +88,6 @@ Route 匹配
   ▼
   RateLimit ───────────► Redis 滑动窗口限流
   │ (失败返回 429 + Retry-After 头)
-  ▼
-  ApiVersion ─────────► API-Version 头校验，注入 $request->apiVersion
-  │ (失败返回 400)
   ▼
   AdminAuth ──────────► JWT 验证，注入 $request->adminId
   │ (失败返回 401)
@@ -173,58 +170,50 @@ game_system_config (系统配置) — 独立表
 ### 4.1 Стандарты URL
 
 ```
-公开接口:  /api/captcha/{generate|verify}
-           /api/auth/{login|register|refresh}
+公开接口:  /api/v1/captcha/{generate|verify}
+           /api/v1/auth/{login|register|refresh}
 
-管理端:   /admin/{resource}[/{hashid}]
-          /admin/export/{excel|pdf}
+管理端:   /admin/v1/{resource}[/{hashid}]
+          /admin/v1/export/{excel|pdf}
 
 资源路由:
-  GET    /admin/user          → 列表
-  POST   /admin/user          → 创建
-  GET    /admin/user/{hashid} → 详情
-  PUT    /admin/user/{hashid} → 更新
-  DELETE /admin/user/{hashid} → 删除（需密码确认）
+  GET    /admin/v1/user          → 列表
+  POST   /admin/v1/user          → 创建
+  GET    /admin/v1/user/{hashid} → 详情
+  PUT    /admin/v1/user/{hashid} → 更新
+  DELETE /admin/v1/user/{hashid} → 删除（需密码确认）
 
-系统配置:  /admin/config[/{hashid}]
-操作日志:  /admin/log
-个人中心:  /admin/profile[/password|/logout]
-导入:     /admin/import/users
-上传:     /admin/upload
-批量:     /admin/user/batch/{destroy|status}
+系统配置:  /admin/v1/config[/{hashid}]
+操作日志:  /admin/v1/log
+个人中心:  /admin/v1/profile[/password|/logout]
+导入:     /admin/v1/import/users
+上传:     /admin/v1/upload
+批量:     /admin/v1/user/batch/{destroy|status}
 文档:     /api/docs     (OpenAPI 3.0)
 健康:     /health
 ```
 
 ### 4.2 Стратегия версий API
 
-Версия API задается заголовком запроса, **не отражается в пути URL**:
-
-```http
-API-Version: v1
-```
+Версия указывается в префиксе пути URL (по умолчанию `v1`); заголовок запроса не используется:
 
 | Механизм | Описание |
 |------|------|
-| Версия по умолчанию | При отсутствии заголовка `API-Version` по умолчанию `v1` |
-| Проверка | Промежуточное ПО `ApiVersion` проверяет, неподдерживаемая версия возвращает 400 |
-| Маршрутизация | Вспомогательная функция `v()` динамически разрешает класс контроллера по версии |
+| Версия по умолчанию | По умолчанию `v1`, определяется префиксом группы маршрутов |
+| Маршрутизация | Префиксы групп маршрутов `/api/v1`, `/admin/v1` сопоставляют версию с пространством имен контроллеров; вспомогательная функция `v()` разрешает класс контроллера по версии |
 | Каталог | Контроллеры организованы по версиям: `app/api/{version}/controller/` |
 
 Пример расширения — добавление API v2:
 1. Создать `app/api/v2/controller/AuthController.php`
-2. В промежуточном ПО `ApiVersion` добавить `'v2'` в константу `SUPPORTED`
-3. Определения маршрутов менять не нужно
+2. Зарегистрировать группу маршрутов `/api/v2` и привязать контроллер
+3. Явно передать версию в `v()`: `v('AuthController', 'login', 'v2')`
 
 ```bash
 # Использование v1
-curl -H "API-Version: v1" /api/auth/login
+curl http://host/api/v1/auth/login
 
 # Использование v2
-curl -H "API-Version: v2" /api/auth/login
-
-# Без заголовка — по умолчанию v1
-curl /api/auth/login
+curl http://host/api/v2/auth/login
 ```
 
 ### 4.3 Стратегия ограничения частоты
@@ -234,8 +223,8 @@ curl /api/auth/login
 | Интерфейс | Лимит |
 |------|------|
 | По умолчанию | 60 раз/мин/IP/маршрут |
-| POST /api/auth/login | 10 раз/мин |
-| POST /api/auth/register | 5 раз/мин |
+| POST /api/v1/auth/login | 10 раз/мин |
+| POST /api/v1/auth/register | 5 раз/мин |
 
 При превышении возвращается 429, заголовки ответа содержат X-RateLimit-Limit / Remaining / Reset / Retry-After.
 
@@ -264,12 +253,12 @@ curl /api/auth/login
 ```
 客户端                               服务端
   │                                    │
-  │  ① POST /api/captcha/generate     │ captcha_create('click')
+  │  ① POST /api/v1/captcha/generate     │ captcha_create('click')
   │◄── {key, image(base64), targets}  │
   │                                    │
   │  ② 用户点击图中文字位置              │
   │                                    │
-  │  ③ POST /api/auth/login           │
+  │  ③ POST /api/v1/auth/login           │
   │     {username, password,          │
   │      captcha_key, clicks}         │
   │────────────────────────────────►  │
@@ -278,7 +267,7 @@ curl /api/auth/login
   │                                    │ ③ jwt()->create()
   │◄── {access_token, refresh_token}  │
   │                                    │
-  │  ④ GET /admin/dashboard           │
+  │  ④ GET /admin/v1/dashboard           │
   │     Authorization: Bearer xxx     │
   │────────────────────────────────►  │ AdminAuth → AdminPermission
   │◄── 200 {dashboard data}           │
@@ -306,7 +295,7 @@ curl /api/auth/login
 ```
 客户端                           服务端
   │                                │
-  │  DELETE /admin/user/{hashid}  │
+  │  DELETE /admin/v1/user/{hashid}  │
   │  { password: "******" }       │
   │────────────────────────────►  │
   │                                │ confirmPassword(adminId, password)
@@ -323,11 +312,11 @@ curl /api/auth/login
 
 | Метод | Путь | Описание |
 |------|------|------|
-| GET | /admin/payment/method/list | Список (по возрастанию sort) |
-| POST | /admin/payment/method/toggle | Включить/отключить |
-| POST | /admin/payment/method/create | Создать |
-| PUT | /admin/payment/method/{hashid} | Обновить (только переданные поля) |
-| DELETE | /admin/payment/method/{hashid} | Удалить (422 при наличии ожидающих заказов) |
+| GET | /admin/v1/payment/method/list | Список (по возрастанию sort) |
+| POST | /admin/v1/payment/method/toggle | Включить/отключить |
+| POST | /admin/v1/payment/method/create | Создать |
+| PUT | /admin/v1/payment/method/{hashid} | Обновить (только переданные поля) |
+| DELETE | /admin/v1/payment/method/{hashid} | Удалить (422 при наличии ожидающих заказов) |
 
 - **Белый список provider**: `stripe` / `nowpayments` / `coinbase`
 - **Поля**: name / type (fiat|crypto) / provider / status / sort / countries[] (видимость по странам, пусто = глобально) / currency / min_amount / max_amount / config (JSON, хранится зашифрованным)
@@ -419,7 +408,7 @@ SCOUT_HOSTS         → ES 地址，内网部署
 ### 7.1 Экспорт Excel
 
 ```
-请求: POST /admin/export/excel { table, columns, conditions, title }
+请求: POST /admin/v1/export/excel { table, columns, conditions, title }
   → fetchExportData() 查询数据 (limit 10000)
   → 脱敏敏感字段
   → PhpSpreadsheet 构建（蓝底白字表头 + 冻结首行 + 自动筛选）
@@ -429,7 +418,7 @@ SCOUT_HOSTS         → ES 地址，内网部署
 ### 7.2 Экспорт PDF
 
 ```
-请求: POST /admin/export/pdf { type: table|dashboard, title, data }
+请求: POST /admin/v1/export/pdf { type: table|dashboard, title, data }
   → buildPdfHtml() HTML + 内联CSS + 页头版权 + 页脚不可移除版权
   → Dompdf 渲染 A4 横向
   → 写入 runtime/tmp/ → download 响应

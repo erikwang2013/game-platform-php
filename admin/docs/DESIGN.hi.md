@@ -64,7 +64,7 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.
 | परत | निर्देशिका | ज़िम्मेदारी |
 |---|------|------|
 | रूटिंग | `config/route.php` | URL से कंट्रोलर मैपिंग, मिडलवेयर बाइंडिंग, वर्ज़न किए गए रूट |
-| मिडलवेयर | `app/middleware/` | आक्रमण अवरोध(SecurityFilter), दर सीमा(RateLimit), प्रमाणीकरण(JWT), प्राधिकरण(RBAC), API संस्करण(ApiVersion) |
+| मिडलवेयर | `app/middleware/` | आक्रमण अवरोध(SecurityFilter), दर सीमा(RateLimit), प्रमाणीकरण(JWT), प्राधिकरण(RBAC) |
 | कंट्रोलर | 30: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (एडमिन पक्ष) + Captcha/Auth (API v1) | अनुरोध पैरामीटर सत्यापन, व्यावसायिक तर्क कॉल, प्रतिक्रिया स्वरूपण |
 | व्यावसायिक सेवाएँ | `common/service/` | डेटा विश्लेषण: GameDashboardService (अवलोकन/रैंकिंग/ट्रेंड), DepositLogService (राजस्व/रूपांतरण), ProbabilityService (संयुक्त/सशर्त संभाव्यता, SQL बिल्डर); DB विफलता पर त्रुटि के बजाय खाली डेटा |
 | डेटा मॉडल | `app/model/` | ORM मैपिंग, संबंध, फ़ील्ड एन्क्रिप्शन/डिक्रिप्शन |
@@ -88,9 +88,6 @@ Route 匹配
   ▼
   RateLimit ───────────► Redis 滑动窗口限流
   │ (失败返回 429 + Retry-After 头)
-  ▼
-  ApiVersion ─────────► API-Version 头校验，注入 $request->apiVersion
-  │ (失败返回 400)
   ▼
   AdminAuth ──────────► JWT 验证，注入 $request->adminId
   │ (失败返回 401)
@@ -173,58 +170,50 @@ game_system_config (系统配置) — 独立表
 ### 4.1 URL मानक
 
 ```
-公开接口:  /api/captcha/{generate|verify}
-           /api/auth/{login|register|refresh}
+公开接口:  /api/v1/captcha/{generate|verify}
+           /api/v1/auth/{login|register|refresh}
 
-管理端:   /admin/{resource}[/{hashid}]
-          /admin/export/{excel|pdf}
+管理端:   /admin/v1/{resource}[/{hashid}]
+          /admin/v1/export/{excel|pdf}
 
 资源路由:
-  GET    /admin/user          → 列表
-  POST   /admin/user          → 创建
-  GET    /admin/user/{hashid} → 详情
-  PUT    /admin/user/{hashid} → 更新
-  DELETE /admin/user/{hashid} → 删除（需密码确认）
+  GET    /admin/v1/user          → 列表
+  POST   /admin/v1/user          → 创建
+  GET    /admin/v1/user/{hashid} → 详情
+  PUT    /admin/v1/user/{hashid} → 更新
+  DELETE /admin/v1/user/{hashid} → 删除（需密码确认）
 
-系统配置:  /admin/config[/{hashid}]
-操作日志:  /admin/log
-个人中心:  /admin/profile[/password|/logout]
-导入:     /admin/import/users
-上传:     /admin/upload
-批量:     /admin/user/batch/{destroy|status}
+系统配置:  /admin/v1/config[/{hashid}]
+操作日志:  /admin/v1/log
+个人中心:  /admin/v1/profile[/password|/logout]
+导入:     /admin/v1/import/users
+上传:     /admin/v1/upload
+批量:     /admin/v1/user/batch/{destroy|status}
 文档:     /api/docs     (OpenAPI 3.0)
 健康:     /health
 ```
 
 ### 4.2 API संस्करण नीति
 
-API संस्करण अनुरोध हेडर से नियंत्रित होता है, **URL पथ में प्रकट नहीं होता**:
-
-```http
-API-Version: v1
-```
+संस्करण URL पथ प्रीफ़िक्स में होता है (डिफ़ॉल्ट `v1`), अनुरोध हेडर का उपयोग नहीं होता:
 
 | तंत्र | विवरण |
 |------|------|
-| डिफ़ॉल्ट संस्करण | `API-Version` हेडर न होने पर डिफ़ॉल्ट `v1` |
-| सत्यापन | `ApiVersion` मिडलवेयर सत्यापन, असमर्थित संस्करण 400 लौटाता है |
-| रूटिंग | `v()` सहायक फ़ंक्शन संस्करण के अनुसार कंट्रोलर क्लास गतिशील रूप से हल करता है |
+| डिफ़ॉल्ट संस्करण | डिफ़ॉल्ट `v1`, रूट-ग्रुप प्रीफ़िक्स से निर्धारित |
+| रूटिंग | रूट-ग्रुप प्रीफ़िक्स `/api/v1`, `/admin/v1` संस्करण को कंट्रोलर नेमस्पेस से मैप करते हैं; `v()` सहायक फ़ंक्शन संस्करण के अनुसार कंट्रोलर क्लास हल करता है |
 | निर्देशिका | कंट्रोलर संस्करण के अनुसार: `app/api/{version}/controller/` |
 
 विस्तार उदाहरण — v2 API जोड़ना:
 1. `app/api/v2/controller/AuthController.php` बनाएं
-2. `ApiVersion` मिडलवेयर `SUPPORTED` स्थिरांक में `'v2'` जोड़ें
-3. रूट परिभाषा में कोई बदलाव आवश्यक नहीं
+2. `/api/v2` रूट ग्रुप रजिस्टर कर कंट्रोलर बांधें
+3. `v()` को स्पष्ट रूप से संस्करण दें: `v('AuthController', 'login', 'v2')`
 
 ```bash
 # 使用 v1
-curl -H "API-Version: v1" /api/auth/login
+curl http://host/api/v1/auth/login
 
 # 使用 v2
-curl -H "API-Version: v2" /api/auth/login
-
-# 不传，默认 v1
-curl /api/auth/login
+curl http://host/api/v2/auth/login
 ```
 
 ### 4.3 दर सीमा नीति
@@ -234,8 +223,8 @@ Redis Sorted Set स्लाइडिंग विंडो एल्गोर�
 | इंटरफ़ेस | सीमा |
 |------|------|
 | डिफ़ॉल्ट | 60 बार/मिनट/IP/रूट |
-| POST /api/auth/login | 10 बार/मिनट |
-| POST /api/auth/register | 5 बार/मिनट |
+| POST /api/v1/auth/login | 10 बार/मिनट |
+| POST /api/v1/auth/register | 5 बार/मिनट |
 
 सीमा से अधिक पर 429 लौटता है, प्रतिक्रिया हेडर में X-RateLimit-Limit / Remaining / Reset / Retry-After शामिल।
 
@@ -264,12 +253,12 @@ Redis Sorted Set स्लाइडिंग विंडो एल्गोर�
 ```
 客户端                               服务端
   │                                    │
-  │  ① POST /api/captcha/generate     │ captcha_create('click')
+  │  ① POST /api/v1/captcha/generate     │ captcha_create('click')
   │◄── {key, image(base64), targets}  │
   │                                    │
   │  ② 用户点击图中文字位置              │
   │                                    │
-  │  ③ POST /api/auth/login           │
+  │  ③ POST /api/v1/auth/login           │
   │     {username, password,          │
   │      captcha_key, clicks}         │
   │────────────────────────────────►  │
@@ -278,7 +267,7 @@ Redis Sorted Set स्लाइडिंग विंडो एल्गोर�
   │                                    │ ③ jwt()->create()
   │◄── {access_token, refresh_token}  │
   │                                    │
-  │  ④ GET /admin/dashboard           │
+  │  ④ GET /admin/v1/dashboard           │
   │     Authorization: Bearer xxx     │
   │────────────────────────────────►  │ AdminAuth → AdminPermission
   │◄── 200 {dashboard data}           │
@@ -306,7 +295,7 @@ Redis Sorted Set स्लाइडिंग विंडो एल्गोर�
 ```
 客户端                           服务端
   │                                │
-  │  DELETE /admin/user/{hashid}  │
+  │  DELETE /admin/v1/user/{hashid}  │
   │  { password: "******" }       │
   │────────────────────────────►  │
   │                                │ confirmPassword(adminId, password)
@@ -323,11 +312,11 @@ Redis Sorted Set स्लाइडिंग विंडो एल्गोर�
 
 | विधि | पथ | विवरण |
 |------|------|------|
-| GET | /admin/payment/method/list | सूची (sort आरोही) |
-| POST | /admin/payment/method/toggle | सक्षम/अक्षम करें |
-| POST | /admin/payment/method/create | बनाएं |
-| PUT | /admin/payment/method/{hashid} | अपडेट (केवल भेजे गए फ़ील्ड) |
-| DELETE | /admin/payment/method/{hashid} | हटाएं (pending ऑर्डर होने पर 422) |
+| GET | /admin/v1/payment/method/list | सूची (sort आरोही) |
+| POST | /admin/v1/payment/method/toggle | सक्षम/अक्षम करें |
+| POST | /admin/v1/payment/method/create | बनाएं |
+| PUT | /admin/v1/payment/method/{hashid} | अपडेट (केवल भेजे गए फ़ील्ड) |
+| DELETE | /admin/v1/payment/method/{hashid} | हटाएं (pending ऑर्डर होने पर 422) |
 
 - **provider व्हाइटलिस्ट**: `stripe` / `nowpayments` / `coinbase`
 - **फ़ील्ड**: name / type (fiat|crypto) / provider / status / sort / countries[] (देश दृश्यता, खाली = वैश्विक) / currency / min_amount / max_amount / config (JSON, एन्क्रिप्टेड संग्रहीत)
@@ -419,7 +408,7 @@ SCOUT_HOSTS         → ES 地址，内网部署
 ### 7.1 Excel निर्यात
 
 ```
-请求: POST /admin/export/excel { table, columns, conditions, title }
+请求: POST /admin/v1/export/excel { table, columns, conditions, title }
   → fetchExportData() 查询数据 (limit 10000)
   → 脱敏敏感字段
   → PhpSpreadsheet 构建（蓝底白字表头 + 冻结首行 + 自动筛选）
@@ -429,7 +418,7 @@ SCOUT_HOSTS         → ES 地址，内网部署
 ### 7.2 PDF निर्यात
 
 ```
-请求: POST /admin/export/pdf { type: table|dashboard, title, data }
+请求: POST /admin/v1/export/pdf { type: table|dashboard, title, data }
   → buildPdfHtml() HTML + 内联CSS + 页头版权 + 页脚不可移除版权
   → Dompdf 渲染 A4 横向
   → 写入 runtime/tmp/ → download 响应

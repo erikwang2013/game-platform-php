@@ -64,7 +64,7 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.
 | Lapisan | Direktori | Tanggung jawab |
 |---|------|------|
 | Rute | `config/route.php` | Pemetaan URL ke kontroler, pengikatan middleware, rute ber-versi |
-| Middleware | `app/middleware/` | Pemblokiran serangan (SecurityFilter), rate limit (RateLimit), autentikasi (JWT), otorisasi (RBAC), versi API (ApiVersion) |
+| Middleware | `app/middleware/` | Pemblokiran serangan (SecurityFilter), rate limit (RateLimit), autentikasi (JWT), otorisasi (RBAC) |
 | Kontroler | 30: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (sisi admin) + Captcha/Auth (API v1) | Validasi parameter permintaan, pemanggilan logika bisnis, format respons |
 | Layanan bisnis | `common/service/` | Analisis data: GameDashboardService（ringkasan/peringkat/trend）、DepositLogService（pendapatan/konversi）、ProbabilityService（probabilitas gabungan/kondisional, pembangun SQL）；saat DB bermasalah mengembalikan data kosong bukan error |
 | Model data | `app/model/` | Pemetaan ORM, relasi, enkripsi/dekripsi kolom |
@@ -88,9 +88,6 @@ Route 匹配
   ▼
 RateLimit ───────────► Redis 滑动窗口限流
   │ (失败返回 429 + Retry-After 头)
-  ▼
-ApiVersion ─────────► API-Version 头校验，注入 $request->apiVersion
-  │ (失败返回 400)
   ▼
 AdminAuth ──────────► JWT 验证，注入 $request->adminId
   │ (失败返回 401)
@@ -173,58 +170,50 @@ game_system_config (系统配置) — 独立表
 ### 4.1 Standar URL
 
 ```
-公开接口:  /api/captcha/{generate|verify}
-           /api/auth/{login|register|refresh}
+公开接口:  /api/v1/captcha/{generate|verify}
+           /api/v1/auth/{login|register|refresh}
 
-管理端:   /admin/{resource}[/{hashid}]
-          /admin/export/{excel|pdf}
+管理端:   /admin/v1/{resource}[/{hashid}]
+          /admin/v1/export/{excel|pdf}
 
 资源路由:
-  GET    /admin/user          → 列表
-  POST   /admin/user          → 创建
-  GET    /admin/user/{hashid} → 详情
-  PUT    /admin/user/{hashid} → 更新
-  DELETE /admin/user/{hashid} → 删除（需密码确认）
+  GET    /admin/v1/user          → 列表
+  POST   /admin/v1/user          → 创建
+  GET    /admin/v1/user/{hashid} → 详情
+  PUT    /admin/v1/user/{hashid} → 更新
+  DELETE /admin/v1/user/{hashid} → 删除（需密码确认）
 
-系统配置:  /admin/config[/{hashid}]
-操作日志:  /admin/log
-个人中心:  /admin/profile[/password|/logout]
-导入:     /admin/import/users
-上传:     /admin/upload
-批量:     /admin/user/batch/{destroy|status}
+系统配置:  /admin/v1/config[/{hashid}]
+操作日志:  /admin/v1/log
+个人中心:  /admin/v1/profile[/password|/logout]
+导入:     /admin/v1/import/users
+上传:     /admin/v1/upload
+批量:     /admin/v1/user/batch/{destroy|status}
 文档:     /api/docs     (OpenAPI 3.0)
 健康:     /health
 ```
 
 ### 4.2 Strategi Versi API
 
-Versi API dikontrol melalui header permintaan, **tidak tercermin di path URL**:
-
-```http
-API-Version: v1
-```
+Versi ditempatkan di prefiks path URL (default `v1`), tanpa menggunakan header permintaan:
 
 | Mekanisme | Deskripsi |
 |------|------|
-| Versi default | Saat tidak membawa header `API-Version`, default `v1` |
-| Validasi | Divalidasi middleware `ApiVersion`, versi tidak didukung mengembalikan 400 |
-| Rute | Fungsi bantu `v()` secara dinamis menyelesaikan kelas kontroler sesuai versi |
+| Versi default | Default `v1`, ditentukan oleh prefiks grup rute |
+| Rute | Prefiks grup rute `/api/v1`, `/admin/v1` memetakan versi ke namespace kontroler; fungsi bantu `v()` menyelesaikan kelas kontroler sesuai versi |
 | Direktori | Kontroler diorganisir per versi: `app/api/{version}/controller/` |
 
 Contoh ekstensi——menambahkan API v2:
 1. Buat `app/api/v2/controller/AuthController.php`
-2. Tambahkan `'v2'` pada konstanta `SUPPORTED` middleware `ApiVersion`
-3. Definisi rute tidak perlu diubah
+2. Daftarkan grup rute `/api/v2` dan ikat kontrolernya
+3. Berikan versi secara eksplisit ke `v()`: `v('AuthController', 'login', 'v2')`
 
 ```bash
 # 使用 v1
-curl -H "API-Version: v1" /api/auth/login
+curl http://host/api/v1/auth/login
 
 # 使用 v2
-curl -H "API-Version: v2" /api/auth/login
-
-# 不传，默认 v1
-curl /api/auth/login
+curl http://host/api/v2/auth/login
 ```
 
 ### 4.3 Strategi Rate Limit
@@ -234,8 +223,8 @@ Berbasis algoritma jendela geser Redis Sorted Set, dieksekusi skrip Lua atomik:
 | Antarmuka | Batas |
 |------|------|
 | Default | 60 kali/menit/IP/rute |
-| POST /api/auth/login | 10 kali/menit |
-| POST /api/auth/register | 5 kali/menit |
+| POST /api/v1/auth/login | 10 kali/menit |
+| POST /api/v1/auth/register | 5 kali/menit |
 
 Melebihi batas mengembalikan 429, header respons berisi X-RateLimit-Limit / Remaining / Reset / Retry-After.
 
@@ -264,12 +253,12 @@ Melebihi batas mengembalikan 429, header respons berisi X-RateLimit-Limit / Rema
 ```
 客户端                               服务端
   │                                    │
-  │  ① POST /api/captcha/generate     │ captcha_create('click')
+  │  ① POST /api/v1/captcha/generate     │ captcha_create('click')
   │◄── {key, image(base64), targets}  │
   │                                    │
   │  ② 用户点击图中文字位置              │
   │                                    │
-  │  ③ POST /api/auth/login           │
+  │  ③ POST /api/v1/auth/login           │
   │     {username, password,          │
   │      captcha_key, clicks}         │
   │────────────────────────────────►  │
@@ -278,7 +267,7 @@ Melebihi batas mengembalikan 429, header respons berisi X-RateLimit-Limit / Rema
   │                                    │ ③ jwt()->create()
   │◄── {access_token, refresh_token}  │
   │                                    │
-  │  ④ GET /admin/dashboard           │
+  │  ④ GET /admin/v1/dashboard           │
   │     Authorization: Bearer xxx     │
   │────────────────────────────────►  │ AdminAuth → AdminPermission
   │◄── 200 {dashboard data}           │
@@ -306,7 +295,7 @@ Operasi sensitif seperti menghapus pengguna, peran, izin, perlu mengirim kata sa
 ```
 客户端                           服务端
   │                                │
-  │  DELETE /admin/user/{hashid}  │
+  │  DELETE /admin/v1/user/{hashid}  │
   │  { password: "******" }       │
   │────────────────────────────►  │
   │                                │ confirmPassword(adminId, password)
@@ -323,11 +312,11 @@ Modul manajemen metode pembayaran (`PaymentController` + Flutter `payment_page.d
 
 | Metode | Jalur | Deskripsi |
 |------|------|------|
-| GET | /admin/payment/method/list | Daftar (ascending by sort) |
-| POST | /admin/payment/method/toggle | Aktifkan/nonaktifkan |
-| POST | /admin/payment/method/create | Buat |
-| PUT | /admin/payment/method/{hashid} | Perbarui (hanya kolom yang dikirim) |
-| DELETE | /admin/payment/method/{hashid} | Hapus (422 jika ada pesanan pending) |
+| GET | /admin/v1/payment/method/list | Daftar (ascending by sort) |
+| POST | /admin/v1/payment/method/toggle | Aktifkan/nonaktifkan |
+| POST | /admin/v1/payment/method/create | Buat |
+| PUT | /admin/v1/payment/method/{hashid} | Perbarui (hanya kolom yang dikirim) |
+| DELETE | /admin/v1/payment/method/{hashid} | Hapus (422 jika ada pesanan pending) |
 
 - **Daftar putih provider**: `stripe` / `nowpayments` / `coinbase`
 - **Kolom**: name / type (fiat|crypto) / provider / status / sort / countries[] (visibilitas negara, kosong = global) / currency / min_amount / max_amount / config (JSON, disimpan terenkripsi)
@@ -419,7 +408,7 @@ SCOUT_HOSTS         → ES 地址，内网部署
 ### 7.1 Ekspor Excel
 
 ```
-请求: POST /admin/export/excel { table, columns, conditions, title }
+请求: POST /admin/v1/export/excel { table, columns, conditions, title }
   → fetchExportData() 查询数据 (limit 10000)
   → 脱敏敏感字段
   → PhpSpreadsheet 构建（蓝底白字表头 + 冻结首行 + 自动筛选）
@@ -429,7 +418,7 @@ SCOUT_HOSTS         → ES 地址，内网部署
 ### 7.2 Ekspor PDF
 
 ```
-请求: POST /admin/export/pdf { type: table|dashboard, title, data }
+请求: POST /admin/v1/export/pdf { type: table|dashboard, title, data }
   → buildPdfHtml() HTML + 内联CSS + 页头版权 + 页脚不可移除版权
   → Dompdf 渲染 A4 横向
   → 写入 runtime/tmp/ → download 响应

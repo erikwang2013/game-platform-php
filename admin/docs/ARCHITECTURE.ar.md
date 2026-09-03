@@ -24,7 +24,6 @@ flowchart TB
     end
 
     subgraph "طبقة التطبيق (webman v2)"
-        C0["وسيطة ApiVersion<br/>التحقق من ترويسة API-Version"]
         C1["وسيطة AdminAuth<br/>التحقق من JWT"]
         C2["وسيطة AdminPermission<br/>التحقق من صلاحيات RBAC"]
         C3["وحدات تحكم الإدارة<br/>Dashboard / User / Role / Permission / Payment"]
@@ -45,11 +44,10 @@ flowchart TB
 
     A1 -->|"HTTPS / JSON<br/>JWT Bearer"| B1
     A2 -->|"HTTPS / JSON<br/>JWT Bearer"| B1
-    B1 --> C0
-    C0 --> C1
+    B1 --> C1
     C1 --> C2
     C2 --> C3
-    C0 --> C4
+    B1 --> C4
     C3 --> C5
     C4 --> C5
     C3 --> D1
@@ -61,7 +59,6 @@ flowchart TB
     style A1 fill:#1677FF,color:#fff
     style A2 fill:#1677FF,color:#fff
     style B1 fill:#722ED1,color:#fff
-    style C0 fill:#EB2F96,color:#fff
     style C1 fill:#FA8C16,color:#fff
     style C2 fill:#FA8C16,color:#fff
     style C3 fill:#52C41A,color:#fff
@@ -85,7 +82,6 @@ flowchart TD
     subgraph "طبقة الوسيطات Middleware Layer"
         M_RL["RateLimit<br/>نافذة منزلقة في Redis<br/>ترويسات X-RateLimit"]
         M_SF["SecurityFilter<br/>كشف واعتراض الهجمات<br/>XSS/حقن SQL/اجتياز المسار/CSRF"]
-        M0["ApiVersion<br/>التحقق من إصدار API<br/>حقن apiVersion"]
         M1["AdminAuth<br/>التحقق من رمز JWT<br/>حقن adminId"]
         M2["AdminPermission<br/>تحقق RBAC<br/>مطابقة method.path<br/>تخزين صلاحيات مؤقت في Redis 60s"]
     end
@@ -125,11 +121,10 @@ flowchart TD
         D3["Redis"]
     end
 
-    R1 --> M_SF --> M_RL --> M0
-    M0 --> M1
+    R1 --> M_SF --> M_RL --> M1
     M1 --> M2
     M2 --> CT2 & CT3 & CT4 & CT5 & CT6 & CT9
-    M0 --> CT7 & CT8
+    M_RL --> CT7 & CT8
     CT1 -.->|extends| CT2 & CT3 & CT4 & CT5 & CT6 & CT9
     CT2 & CT3 & CT4 & CT5 & CT6 & CT7 & CT8 & CT9 --> S1 & S2 & S3
     CT9 --> S4 & S5 & S6
@@ -142,7 +137,6 @@ flowchart TD
     style R1 fill:#722ED1,color:#fff
     style M_SF fill:#FF4D4F,color:#fff
     style M_RL fill:#EB2F96,color:#fff
-    style M0 fill:#EB2F96,color:#fff
     style M1 fill:#FA8C16,color:#fff
     style M2 fill:#FA8C16,color:#fff
     style CT1 fill:#1677FF,color:#fff
@@ -162,7 +156,6 @@ sequenceDiagram
     participant N as Nginx
     participant MW_SF as SecurityFilter
     participant MW_RL as RateLimit
-    participant MW0 as ApiVersion
     participant MW1 as AdminAuth
     participant MW2 as AdminPermission
     participant CTL as Controller
@@ -171,7 +164,7 @@ sequenceDiagram
     participant DB as MySQL
     participant OPLOG as OperationLog
 
-    C->>N: طلب HTTPS<br/>Header: API-Version: v1
+    C->>N: طلب HTTPS<br/>POST /admin/v1/*
     N->>MW_SF: إعادة توجيه
 
     alt طريقة HTTP غير قياسية (TRACE/CONNECT/PATCH...)
@@ -190,13 +183,7 @@ sequenceDiagram
         MW_RL-->>C: 429 + Retry-After
     end
 
-    MW_RL->>MW0: اجتاز
-
-    alt إصدار غير مدعوم
-        MW0-->>C: 400 إصدار API غير مدعوم
-    else إصدار صالح
-        MW0->>MW0: $request->apiVersion = v1
-    end
+    MW_RL->>MW1: اجتاز
 
     alt رمز مفقود أو غير صالح
         MW1-->>C: 401 Unauthorized
@@ -248,7 +235,7 @@ sequenceDiagram
     participant CAP as خدمة Captcha
 
     Note over U,CAP: === الخطوة الأولى: الحصول على رمز التحقق ===
-    CL->>SV: POST /api/captcha/generate
+    CL->>SV: POST /api/v1/captcha/generate
     SV->>CAP: captcha_create('click')
     CAP->>CAP: توليد صورة خلفية 300×200
     CAP->>CAP: وضع عشوائي لأهداف نصية
@@ -263,7 +250,7 @@ sequenceDiagram
     CL->>CL: جمع النقرات: [{x,y}, {x,y}, {x,y}]
 
     Note over U,CAP: === الخطوة الثالثة: تسجيل الدخول ===
-    CL->>SV: POST /api/auth/login { username, password, captcha_key, clicks }
+    CL->>SV: POST /api/v1/auth/login { username, password, captcha_key, clicks }
     SV->>CAP: captcha_verify(key, 'click', clicks)
     alt رمز تحقق خاطئ
         CAP-->>SV: false
@@ -283,7 +270,7 @@ sequenceDiagram
     end
 
     Note over U,CAP: === الطلبات اللاحقة ===
-    CL->>SV: GET /admin/dashboard<br/>Authorization: Bearer access_token
+    CL->>SV: GET /admin/v1/dashboard<br/>Authorization: Bearer access_token
     SV->>JWT: jwt()->verify(token)
     JWT-->>SV: { sub, username }
     SV-->>CL: 200 { dashboard data }
@@ -538,7 +525,7 @@ sequenceDiagram
     participant FS as نظام الملفات
 
     Note over C,FS: === تصدير Excel ===
-    C->>CTL: POST /admin/export/excel<br/>{ table, columns, conditions }
+    C->>CTL: POST /admin/v1/export/excel<br/>{ table, columns, conditions }
     CTL->>DB: SELECT ... LIMIT 10000
     DB-->>CTL: البيانات
     CTL->>CTL: فك تشفير الحقول الحساسة
@@ -548,7 +535,7 @@ sequenceDiagram
     CTL-->>C: تنزيل الملف
 
     Note over C,FS: === تصدير PDF ===
-    C->>CTL: POST /admin/export/pdf<br/>{ type, title, data }
+    C->>CTL: POST /admin/v1/export/pdf<br/>{ type, title, data }
     CTL->>CTL: buildPdfHtml()<br/>الترويسة: العنوان+حقوق النشر+الوقت<br/>المحتوى: جدول أو بطاقات<br/>التذييل: حقوق نشر غير قابلة للإزالة
     CTL->>CTL: عرض Dompdf A4 أفقي
     CTL->>FS: كتابة runtime/tmp/export_*.pdf

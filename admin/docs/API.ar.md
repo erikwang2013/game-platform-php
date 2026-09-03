@@ -8,10 +8,10 @@ Languages: **中文** · [English](API.en.md) · [한국어](API.ko.md) · [Ру
 
 ## 1. نظرة عامة
 
-نظام الإدارة الخلفية المفتوح (open-admin) مبني على webman v2 ويوفر واجهات RESTful JSON API. تتطلب جميع واجهات لوحة الإدارة مصادقة JWT والتحقق من صلاحيات RBAC، بينما تُوجَّه الواجهات العامة إلى وحدات التحكم المنسوخة حسب إصدار API عبر ترويسة الإصدار.
+نظام الإدارة الخلفية المفتوح (open-admin) مبني على webman v2 ويوفر واجهات RESTful JSON API. تتطلب جميع واجهات لوحة الإدارة مصادقة JWT والتحقق من صلاحيات RBAC، بينما تُركَّب الواجهات العامة تحت بادئة `/api/v1` وواجهات لوحة الإدارة تحت بادئة `/admin/v1`، وتُحدَّد النسخة من مسار URL بدلاً من الترويسة.
 
 - **URL الأساسي**: `http://localhost:8787`
-- **إصدار API**: يُتحكم به عبر ترويسة الطلب `API-Version: v1` (افتراضي v1 عند غيابها)
+- **إصدار API**: مضمّن في مسار URL — الواجهات العامة تحت `/api/v1` وواجهات لوحة الإدارة تحت `/admin/v1`؛ لا تُستخدم ترويسة إصدار، والإصدار v2 المستقبلي سيُسجَّل كمجموعة `/api/v2`
 
 > **نظرة عامة على نقاط النهاية**: المصادقة(5) | لوحة المعلومات(1) | المستخدمون(7) | الأدوار(4) | الصلاحيات(4) | الإعدادات(4) | السجلات(1) | المركز الشخصي(3) | الاستيراد/التصدير(3) | الرفع(1) | التشغيل والصيانة(4: health/metrics/docs/security.txt) | المجموع 37 نقطة نهاية
 - **المصادقة**: `Authorization: Bearer <token>` (JWT)
@@ -45,7 +45,7 @@ Languages: **中文** · [English](API.en.md) · [한국어](API.ko.md) · [Ру
 
 ## 3. نقاط النهاية العامة
 
-تُركَّب جميع نقاط النهاية العامة تحت مجموعة `/api`، وتُوزَّع عبر وسيطة `ApiVersion` حسب ترويسة `API-Version` إلى وحدات التحكم المنسوخة المقابلة (مثل `app\api\v1\controller\AuthController`).
+تُركَّب جميع نقاط النهاية العامة تحت بادئة `/api/v1` ونقاط نهاية لوحة الإدارة تحت بادئة `/admin/v1`؛ تُحدَّد النسخة ببادئة مجموعة المسارات ؛ ولا تُستخدم أي ترويسة نسخة. مثال على وحدة تحكم عامة: `app\api\v1\controller\AuthController`.
 
 ### 3.1 فحص الصحة
 
@@ -88,11 +88,10 @@ GET /api/docs
 ### 3.3 توليد رمز التحقق بالنقر
 
 ```
-POST /api/captcha/generate
+POST /api/v1/captcha/generate
 ```
 
 - **المصادقة**: غير مطلوبة
-- **ترويسة الطلب**: `API-Version: v1` (إلزامية)
 - **الحد من المعدل**: الافتراضي العام (60 مرة/دقيقة)
 
 **جسم الطلب**:
@@ -134,11 +133,10 @@ POST /api/captcha/generate
 ### 3.4 التحقق من رمز التحقق بالنقر
 
 ```
-POST /api/captcha/verify
+POST /api/v1/captcha/verify
 ```
 
 - **المصادقة**: غير مطلوبة
-- **ترويسة الطلب**: `API-Version: v1` (إلزامية)
 - **الحد من المعدل**: الافتراضي العام (60 مرة/دقيقة)
 
 **جسم الطلب**:
@@ -171,11 +169,10 @@ POST /api/captcha/verify
 ### 3.5 تسجيل الدخول
 
 ```
-POST /api/auth/login
+POST /api/v1/auth/login
 ```
 
 - **المصادقة**: غير مطلوبة
-- **ترويسة الطلب**: `API-Version: v1` (إلزامية)
 - **الحد من المعدل**: 10 مرات/دقيقة (حسب IP + المسار)
 
 **جسم الطلب**:
@@ -235,11 +232,10 @@ POST /api/auth/login
 ### 3.6 التسجيل
 
 ```
-POST /api/auth/register
+POST /api/v1/auth/register
 ```
 
 - **المصادقة**: غير مطلوبة
-- **ترويسة الطلب**: `API-Version: v1` (إلزامية)
 - **الحد من المعدل**: 5 مرات/دقيقة (حسب IP + المسار)
 
 **جسم الطلب**:
@@ -287,11 +283,10 @@ POST /api/auth/register
 ### 3.7 تحديث الرمز
 
 ```
-POST /api/auth/refresh
+POST /api/v1/auth/refresh
 ```
 
 - **المصادقة**: غير مطلوبة
-- **ترويسة الطلب**: `API-Version: v1` (إلزامية)
 - **الحد من المعدل**: الافتراضي العام (60 مرة/دقيقة)
 
 **جسم الطلب**:
@@ -369,12 +364,12 @@ openadmin_memory_usage_bytes 18874368
 
 ## 4. لوحة المعلومات
 
-تُركَّب جميع واجهات لوحة الإدارة تحت مجموعة `/admin`، وتمر عبر ثلاث وسيطات: `AdminAuth` (مصادقة JWT) و`AdminPermission` (التحقق من صلاحيات RBAC) و`OperationLog` (تسجيل العمليات).
+تُركَّب جميع واجهات لوحة الإدارة تحت بادئة `/admin/v1`، وتمر عبر ثلاث وسيطات: `AdminAuth` (مصادقة JWT) و`AdminPermission` (التحقق من صلاحيات RBAC) و`OperationLog` (تسجيل العمليات).
 
 ### 4.1 بيانات لوحة المعلومات
 
 ```
-GET /admin/dashboard
+GET /admin/v1/dashboard
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -431,7 +426,7 @@ GET /admin/dashboard
         "id": "hashid...",
         "action": "用户登录",
         "method": "POST",
-        "path": "/api/auth/login",
+        "path": "/api/v1/auth/login",
         "ip": "192.168.1.1",
         "user_name": "admin",
         "created_at": "2026-05-21 10:30:00"
@@ -461,7 +456,7 @@ GET /admin/dashboard
 ### 5.1 قائمة المستخدمين
 
 ```
-GET /admin/user
+GET /admin/v1/user
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -514,7 +509,7 @@ GET /admin/user
 ### 5.2 إنشاء مستخدم
 
 ```
-POST /admin/user
+POST /admin/v1/user
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -564,7 +559,7 @@ POST /admin/user
 ### 5.3 تفاصيل المستخدم
 
 ```
-GET /admin/user/{id}
+GET /admin/v1/user/{id}
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -598,7 +593,7 @@ GET /admin/user/{id}
 ### 5.4 تحديث المستخدم
 
 ```
-PUT /admin/user/{id}
+PUT /admin/v1/user/{id}
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -646,7 +641,7 @@ PUT /admin/user/{id}
 ### 5.5 حذف المستخدم
 
 ```
-DELETE /admin/user/{id}
+DELETE /admin/v1/user/{id}
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -683,7 +678,7 @@ DELETE /admin/user/{id}
 ### 5.6 حذف جماعي للمستخدمين
 
 ```
-POST /admin/user/batch/destroy
+POST /admin/v1/user/batch/destroy
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -723,7 +718,7 @@ POST /admin/user/batch/destroy
 ### 5.7 تفعيل/تعطيل جماعي للمستخدمين
 
 ```
-POST /admin/user/batch/status
+POST /admin/v1/user/batch/status
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -763,7 +758,7 @@ POST /admin/user/batch/status
 ### 6.1 قائمة الأدوار
 
 ```
-GET /admin/role
+GET /admin/v1/role
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -811,7 +806,7 @@ GET /admin/role
 ### 6.2 إنشاء دور
 
 ```
-POST /admin/role
+POST /admin/v1/role
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -853,7 +848,7 @@ POST /admin/role
 ### 6.3 تحديث الدور
 
 ```
-PUT /admin/role/{id}
+PUT /admin/v1/role/{id}
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -893,7 +888,7 @@ PUT /admin/role/{id}
 ### 6.4 حذف الدور
 
 ```
-DELETE /admin/role/{id}
+DELETE /admin/v1/role/{id}
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -924,7 +919,7 @@ DELETE /admin/role/{id}
 ### 7.1 شجرة الصلاحيات
 
 ```
-GET /admin/permission
+GET /admin/v1/permission
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -939,7 +934,7 @@ GET /admin/permission
       "id": "p1p2p3p4",
       "parent_id": "0",
       "name": "用户管理",
-      "slug": "/admin/user",
+      "slug": "/admin/v1/user",
       "type": 1,
       "icon": "people",
       "path": "/user",
@@ -950,7 +945,7 @@ GET /admin/permission
           "id": "p5p6p7p8",
           "parent_id": "p1p2p3p4",
           "name": "用户列表",
-          "slug": "/admin/user/index",
+          "slug": "/admin/v1/user/index",
           "type": 2,
           "icon": "",
           "path": "/user/index",
@@ -977,7 +972,7 @@ GET /admin/permission
 ### 7.2 إنشاء صلاحية
 
 ```
-POST /admin/permission
+POST /admin/v1/permission
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -987,7 +982,7 @@ POST /admin/permission
 {
   "parent_id": 0,
   "name": "系统设置",
-  "slug": "/admin/config",
+  "slug": "/admin/v1/config",
   "type": 1,
   "icon": "settings",
   "path": "/config",
@@ -1014,7 +1009,7 @@ POST /admin/permission
     "id": "p9p0a1b2",
     "parent_id": "0",
     "name": "系统设置",
-    "slug": "/admin/config",
+    "slug": "/admin/v1/config",
     "type": 1,
     "icon": "settings",
     "path": "/config",
@@ -1026,7 +1021,7 @@ POST /admin/permission
 ### 7.3 تحديث الصلاحية
 
 ```
-PUT /admin/permission/{id}
+PUT /admin/v1/permission/{id}
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -1051,7 +1046,7 @@ PUT /admin/permission/{id}
 ### 7.4 حذف الصلاحية
 
 ```
-DELETE /admin/permission/{id}
+DELETE /admin/v1/permission/{id}
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -1082,7 +1077,7 @@ DELETE /admin/permission/{id}
 ### 8.1 قائمة الإعدادات
 
 ```
-GET /admin/config
+GET /admin/v1/config
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -1131,7 +1126,7 @@ GET /admin/config
 ### 8.2 إنشاء إعداد
 
 ```
-POST /admin/config
+POST /admin/v1/config
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -1177,7 +1172,7 @@ POST /admin/config
 ### 8.3 تحديث الإعداد
 
 ```
-PUT /admin/config/{id}
+PUT /admin/v1/config/{id}
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -1200,7 +1195,7 @@ PUT /admin/config/{id}
 ### 8.4 حذف الإعداد
 
 ```
-DELETE /admin/config/{id}
+DELETE /admin/v1/config/{id}
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -1222,7 +1217,7 @@ DELETE /admin/config/{id}
 ### 9.1 قائمة سجلات العمليات
 
 ```
-GET /admin/log
+GET /admin/v1/log
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -1251,7 +1246,7 @@ GET /admin/log
         "user_name": "admin",
         "action": "用户登录",
         "method": "POST",
-        "path": "/api/auth/login",
+        "path": "/api/v1/auth/login",
         "ip": "192.168.1.1",
         "source": "web",
         "input": "{\"username\":\"admin\"}",
@@ -1284,7 +1279,7 @@ GET /admin/log
 ### 10.1 تحديث المعلومات الشخصية
 
 ```
-PUT /admin/profile
+PUT /admin/v1/profile
 ```
 
 - **المصادقة**: JWT
@@ -1326,7 +1321,7 @@ PUT /admin/profile
 ### 10.2 تغيير كلمة المرور
 
 ```
-PUT /admin/profile/password
+PUT /admin/v1/profile/password
 ```
 
 - **المصادقة**: JWT
@@ -1361,7 +1356,7 @@ PUT /admin/profile/password
 ### 10.3 تسجيل الخروج
 
 ```
-POST /admin/profile/logout
+POST /admin/v1/profile/logout
 ```
 
 - **المصادقة**: JWT
@@ -1386,7 +1381,7 @@ POST /admin/profile/logout
 ### 11.1 تصدير Excel
 
 ```
-POST /admin/export/excel
+POST /admin/v1/export/excel
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -1425,7 +1420,7 @@ POST /admin/export/excel
 ### 11.2 تصدير PDF
 
 ```
-POST /admin/export/pdf
+POST /admin/v1/export/pdf
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -1472,7 +1467,7 @@ POST /admin/export/pdf
 ### 11.3 استيراد المستخدمين (Excel)
 
 ```
-POST /admin/import/users
+POST /admin/v1/import/users
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -1524,7 +1519,7 @@ POST /admin/import/users
 ## 12. رفع الملفات
 
 ```
-POST /admin/upload
+POST /admin/v1/upload
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -1573,8 +1568,8 @@ POST /admin/upload
 
 تفاصيل الحد من المعدل:
 - الحد العام الافتراضي: 60 مرة/دقيقة / IP+مسار
-- نقطة تسجيل الدخول `/api/auth/login`: 10 مرات/دقيقة
-- نقطة التسجيل `/api/auth/register`: 5 مرات/دقيقة
+- نقطة تسجيل الدخول `/api/v1/auth/login`: 10 مرات/دقيقة
+- نقطة التسجيل `/api/v1/auth/register`: 5 مرات/دقيقة
 - استخدام خوارزمية النافذة المنزلقة الذرية في Redis (Lua ZSET)، لتجنب سباق TOCTOU
 - عند تعذر الوصول إلى Redis يكون الإغلاق آمنًا (fail-closed): يُرجع 503 (`Retry-After: 5`)، دون تمرير الطلبات
 
@@ -1584,18 +1579,18 @@ POST /admin/upload
 
 | الطريقة | المسار | الوصف |
 |------|------|------|
-| GET | /admin/analytics/overview | نظرة عامة على المنصة (اليوم/آخر 7 أيام) |
-| GET | /admin/analytics/game-ranking | ترتيب الألعاب (?days=7) |
-| GET | /admin/analytics/dau-trend | اتجاه DAU (?days=30) |
-| GET | /admin/analytics/hourly-trend | اتجاه الساعات |
-| GET | /admin/analytics/action-distribution | توزيع السلوك |
-| GET | /admin/analytics/revenue | تحليل الإيرادات |
-| GET | /admin/analytics/conversion | معدل تحويل الألعاب |
-| GET | /admin/analytics/probability | الاحتمال المشترك/الشرطي |
-| GET | /admin/analytics/retention | تحليل الاستبقاء D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | قمع التحويل |
-| GET | /admin/analytics/arpu | اتجاه ARPU/ARPPU |
-| GET | /admin/analytics/economy | المؤشرات الاقتصادية لعملات اللعبة |
+| GET | /admin/v1/analytics/overview | نظرة عامة على المنصة (اليوم/آخر 7 أيام) |
+| GET | /admin/v1/analytics/game-ranking | ترتيب الألعاب (?days=7) |
+| GET | /admin/v1/analytics/dau-trend | اتجاه DAU (?days=30) |
+| GET | /admin/v1/analytics/hourly-trend | اتجاه الساعات |
+| GET | /admin/v1/analytics/action-distribution | توزيع السلوك |
+| GET | /admin/v1/analytics/revenue | تحليل الإيرادات |
+| GET | /admin/v1/analytics/conversion | معدل تحويل الألعاب |
+| GET | /admin/v1/analytics/probability | الاحتمال المشترك/الشرطي |
+| GET | /admin/v1/analytics/retention | تحليل الاستبقاء D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | قمع التحويل |
+| GET | /admin/v1/analytics/arpu | اتجاه ARPU/ARPPU |
+| GET | /admin/v1/analytics/economy | المؤشرات الاقتصادية لعملات اللعبة |
 
 ## 15. إدارة التذاكر (Ticket)
 
@@ -1603,26 +1598,25 @@ POST /admin/upload
 
 | الطريقة | المسار | الوصف |
 |------|------|------|
-| GET | /admin/ticket/list | قائمة التذاكر (?page=&limit=&status=&type=) |
-| GET | /admin/ticket/{hashid} | تفاصيل التذكرة (بما فيها الردود) |
-| POST | /admin/ticket/{hashid}/reply | الرد على التذكرة |
-| POST | /admin/ticket/{hashid}/close | إغلاق التذكرة |
-| POST | /admin/ticket/{hashid}/assign | تعيين المعالِج (admin_id) |
+| GET | /admin/v1/ticket/list | قائمة التذاكر (?page=&limit=&status=&type=) |
+| GET | /admin/v1/ticket/{hashid} | تفاصيل التذكرة (بما فيها الردود) |
+| POST | /admin/v1/ticket/{hashid}/reply | الرد على التذكرة |
+| POST | /admin/v1/ticket/{hashid}/close | إغلاق التذكرة |
+| POST | /admin/v1/ticket/{hashid}/assign | تعيين المعالِج (admin_id) |
 
 ## 16. تدفق المصادقة
 
 التسلسل الكامل للمصادقة:
 
 ```
-1. يطلب العميل POST /api/captcha/generate
-   (ترويسة الطلب: API-Version: v1)
+1. يطلب العميل POST /api/v1/captcha/generate
     ↓
    يُرجع الخادم: key + صورة base64 + تلميحات أهداف النقر
    
 2. ينقر المستخدم على مواضع الأهداف في الصورة، يجمع العميل إحداثيات النقر
    
-3. يطلب العميل POST /api/auth/login
-   (ترويسة الطلب: API-Version: v1, Content-Type: application/json)
+3. يطلب العميل POST /api/v1/auth/login
+   (ترويسة الطلب: Content-Type: application/json)
    جسم الطلب: { username, password, captcha_key, clicks: [{x,y}, ...] }
     ↓
    الخادم:
@@ -1655,7 +1649,7 @@ POST /admin/upload
    Response + ترويسات X-RateLimit-*
 
 5. تحديث قبل انتهاء صلاحية Access Token
-   يطلب العميل POST /api/auth/refresh
+   يطلب العميل POST /api/v1/auth/refresh
    جسم الطلب: { refresh_token: "..." }
     ↓
    يفك الخادم refresh_token ← إصدار access + refresh جديدين
@@ -1663,7 +1657,7 @@ POST /admin/upload
    يحدّث العميل الرموز المحلية
 
 6. تسجيل الخروج
-   يطلب العميل POST /admin/profile/logout
+   يطلب العميل POST /admin/v1/profile/logout
    ترويسة الطلب: Authorization: Bearer <access_token>
     ↓
    الخادم:
@@ -1722,7 +1716,7 @@ docker-compose up -d
 ### 16.1 نظرة عامة على المنصة
 
 ```
-GET /admin/analytics/overview
+GET /admin/v1/analytics/overview
 ```
 
 **الاستجابة**: يتضمن `today` / `week` كلٌّ منهما `dau` (عدد المستخدمين النشطين) و`revenue` (إجمالي التعبئة المؤكدة، سلسلة) و`new_users` (عدد المستخدمين الجدد).
@@ -1730,7 +1724,7 @@ GET /admin/analytics/overview
 ### 16.2 ترتيب الألعاب
 
 ```
-GET /admin/analytics/game-ranking?days=7
+GET /admin/v1/analytics/game-ranking?days=7
 ```
 
 **الاستجابة**: أعلى 10 حسب عدد مرات سلوك اللعب تنازليًا، كل عنصر يتضمن `game_id` (hashid) و`name` و`plays` و`players`.
@@ -1738,7 +1732,7 @@ GET /admin/analytics/game-ranking?days=7
 ### 16.3 اتجاه DAU
 
 ```
-GET /admin/analytics/dau-trend?days=30
+GET /admin/v1/analytics/dau-trend?days=30
 ```
 
 **الاستجابة**: `{ "التاريخ": عدد النشطاء, ... }`، التاريخ المفقود يُكمل بـ 0.
@@ -1746,7 +1740,7 @@ GET /admin/analytics/dau-trend?days=30
 ### 16.4 اتجاه الساعات
 
 ```
-GET /admin/analytics/hourly-trend?game_id=<hashid>
+GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
 ```
 
 **الاستجابة**: `{ "0": عدد المرات, ... "23": عدد المرات }` 24 خانة زمنية؛ عند فراغ `game_id` تُحصى جميع الألعاب.
@@ -1754,7 +1748,7 @@ GET /admin/analytics/hourly-trend?game_id=<hashid>
 ### 16.5 توزيع السلوك
 
 ```
-GET /admin/analytics/action-distribution?game_id=<hashid>&hours=24
+GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
 ```
 
 **الاستجابة**: `{ "start": n, "end": n, "earn": n, "spend": n }` عدد أربعة أنواع من السلوك؛ حد `hours` هو 168.
@@ -1762,7 +1756,7 @@ GET /admin/analytics/action-distribution?game_id=<hashid>&hours=24
 ### 16.6 نظرة عامة على الإيرادات
 
 ```
-GET /admin/analytics/revenue?days=7
+GET /admin/v1/analytics/revenue?days=7
 ```
 
 **الاستجابة**: `{ "total": "الإجمالي", "trend": { "التاريخ": "قيمة اليوم", ... } }`، تُحصى طلبات `status=confirmed` فقط.
@@ -1770,7 +1764,7 @@ GET /admin/analytics/revenue?days=7
 ### 16.7 معدل تحويل الألعاب
 
 ```
-GET /admin/analytics/conversion?days=30
+GET /admin/v1/analytics/conversion?days=30
 ```
 
 **الاستجابة**: كل لعبة تتضمن `game_id` (hashid) و`game_name` و`players` (عدد اللاعبين الفريدين) و`depositors` (عدد المعبئين الفريدين) و`conversion_rate` (معدل تحويل التعبئة، 0~1).
@@ -1778,7 +1772,7 @@ GET /admin/analytics/conversion?days=30
 ### 16.8 الاحتمال المشترك
 
 ```
-GET /admin/analytics/probability?game_a=<hashid>&game_b=<hashid>
+GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
 ```
 
 **الاستجابة**: `{ "joint": { "joint_probability": 0.12, "confidence": 0.3 } }` — معامل Jaccard (اللاعبون المشتركون بين اللعبتين / اتحاد اللاعبين) والثقة (اللاعبون المشتركون / لاعبو اللعبة A).
@@ -1786,7 +1780,7 @@ GET /admin/analytics/probability?game_a=<hashid>&game_b=<hashid>
 ### 16.9 تحليل الاستبقاء
 
 ```
-GET /admin/analytics/retention?days=30
+GET /admin/v1/analytics/retention?days=30
 ```
 
 **الاستجابة**: `{ "D1": "8.5%", "D3": "...", "D7": "...", "D30": "..." }` معدلات الاستبقاء لليوم التالي/3 أيام/7 أيام/30 يومًا حسب مجموعات يوم التسجيل.
@@ -1794,7 +1788,7 @@ GET /admin/analytics/retention?days=30
 ### 16.10 قمع التحويل
 
 ```
-GET /admin/analytics/funnel?days=30
+GET /admin/v1/analytics/funnel?days=30
 ```
 
 **الاستجابة**: الخطوات الأربع التسجيل ← أول تعبئة ← أول صرف ← أول لعبة، مع `step` و`count` و`rate` (نسبة مئوية من عدد التسجيلات).
@@ -1802,7 +1796,7 @@ GET /admin/analytics/funnel?days=30
 ### 16.11 اتجاه ARPU/ARPPU
 
 ```
-GET /admin/analytics/arpu?days=30
+GET /admin/v1/analytics/arpu?days=30
 ```
 
 **الاستجابة**: `{ "dates": [...], "arpu": [...], "arppu": [...] }` متوسط الإيراد اليومي لكل مستخدم (ARPU) ومتوسط الإيراد اليومي لكل مستخدم مدفوع (ARPPU).
@@ -1810,7 +1804,7 @@ GET /admin/analytics/arpu?days=30
 ### 16.12 المؤشرات الاقتصادية للألعاب
 
 ```
-GET /admin/analytics/economy
+GET /admin/v1/analytics/economy
 ```
 
 **الاستجابة**: مصفوفة `currencies`، كل عنصر يتضمن `game_name` و`currency` و`symbol` و`total_minted` (إجمالي السك) و`total_burned` (إجمالي الإتلاف) و`circulation` (حجم التداول) و`inflation_rate` (معدل التضخم)، بحسابات bcmath عالية الدقة.
@@ -1821,16 +1815,16 @@ GET /admin/analytics/economy
 
 | الطريقة | المسار | الوصف |
 |------|------|------|
-| GET | /admin/payment/method/list | قائمة طرق الدفع (تصاعديًا حسب sort) |
-| POST | /admin/payment/method/toggle | تفعيل/تعطيل طريقة دفع |
-| POST | /admin/payment/method/create | إنشاء طريقة دفع |
-| PUT | /admin/payment/method/{hashid} | تحديث طريقة دفع |
-| DELETE | /admin/payment/method/{hashid} | حذف طريقة دفع (مرفوض إذا كانت هناك طلبات معلقة) |
+| GET | /admin/v1/payment/method/list | قائمة طرق الدفع (تصاعديًا حسب sort) |
+| POST | /admin/v1/payment/method/toggle | تفعيل/تعطيل طريقة دفع |
+| POST | /admin/v1/payment/method/create | إنشاء طريقة دفع |
+| PUT | /admin/v1/payment/method/{hashid} | تحديث طريقة دفع |
+| DELETE | /admin/v1/payment/method/{hashid} | حذف طريقة دفع (مرفوض إذا كانت هناك طلبات معلقة) |
 
 ### 17.1 قائمة طرق الدفع
 
 ```
-GET /admin/payment/method/list
+GET /admin/v1/payment/method/list
 ```
 
 - **المصادقة**: JWT + RBAC
@@ -1878,7 +1872,7 @@ GET /admin/payment/method/list
 ### 17.2 تفعيل/تعطيل طريقة دفع
 
 ```
-POST /admin/payment/method/toggle
+POST /admin/v1/payment/method/toggle
 ```
 
 **نص الطلب**:
@@ -1901,7 +1895,7 @@ POST /admin/payment/method/toggle
 ### 17.3 إنشاء طريقة دفع
 
 ```
-POST /admin/payment/method/create
+POST /admin/v1/payment/method/create
 ```
 
 **نص الطلب**:
@@ -1947,7 +1941,7 @@ POST /admin/payment/method/create
 ### 17.4 تحديث طريقة دفع
 
 ```
-PUT /admin/payment/method/{hashid}
+PUT /admin/v1/payment/method/{hashid}
 ```
 
 - **معامل المسار**: `{hashid}` هو معرف طريقة الدفع المشفر بـ hashid
@@ -1960,7 +1954,7 @@ PUT /admin/payment/method/{hashid}
 ### 17.5 حذف طريقة دفع
 
 ```
-DELETE /admin/payment/method/{hashid}
+DELETE /admin/v1/payment/method/{hashid}
 ```
 
 - **معامل المسار**: `{hashid}` هو معرف طريقة الدفع المشفر بـ hashid

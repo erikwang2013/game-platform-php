@@ -79,7 +79,7 @@ open-admin/
 │   │   ├── DocsController.php      # Documentación OpenAPI
 │   │   └── BaseController.php      # Controlador base
 │   ├── api/
-│   │   └── v1/controller/          # Controladores API v1 (la versión se controla por la cabecera API-Version)
+│   │   └── v1/controller/          # Controladores API v1 (versión en la ruta URL: /api/v1, /admin/v1)
 │   │       ├── CaptchaController.php # Captcha de clic
 │   │       └── AuthController.php    # Inicio de sesión/registro/refresco de token
 │   ├── common/                 # Clases de utilidad comunes
@@ -90,7 +90,6 @@ open-admin/
 │   │   ├── Cors.php            # CORS
 │   │   ├── SecurityFilter.php  # Intercepción de detección de ataques (restricción de métodos HTTP/XSS/inyección SQL/path traversal/inyección de comandos/CSRF)
 │   │   ├── RateLimit.php       # Límite de tasa Redis (ventana deslizante + cabeceras de respuesta)
-│   │   ├── ApiVersion.php      # Validación de versión de API
 │   │   ├── AdminAuth.php       # Autenticación JWT + lista negra
 │   │   ├── AdminPermission.php # Validación de permisos RBAC
 │   │   └── OperationLog.php    # Registro automático de operaciones (incluye detección de origen)
@@ -242,20 +241,15 @@ docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 ### Tratamiento de ID
 
 - **ID en solicitudes/respuestas**: cifrados como cadenas con hashids, no se expone el ID real de la base de datos
-- **Rutas de interfaz**: `GET /admin/user/{hashid}` — el `{id}` de la ruta es una cadena hashid
+- **Rutas de interfaz**: `GET /admin/v1/user/{hashid}` — el `{id}` de la ruta es una cadena hashid
 - **Almacenamiento en base de datos**: valor original BIGINT, generado por snowflake
 
 ### Versión de API
 
-La versión de API se controla mediante cabecera de solicitud, **no aparece en la URL**:
+La versión de la API va en la ruta de la URL — los endpoints públicos usan `/api/v1/*` y los de administración `/admin/v1/*` (por defecto `v1`); no se usa cabecera de solicitud:
 
-```http
-API-Version: v1
-```
-
-- Si no se envía versión, se usa `v1` por defecto
 - Las versiones no soportadas devuelven `400 Bad Request`
-- Para añadir una versión solo hay que crear el directorio `app/api/{version}/controller/` y registrar la nueva versión en el middleware
+- Para añadir una nueva versión solo hay que crear el directorio `app/api/{version}/controller/` y registrar el nuevo grupo de rutas (p. ej. `/api/v2`)
 
 ### Límite de tasa
 
@@ -273,10 +267,9 @@ El middleware global afecta a todas las solicitudes y se ejecuta en orden:
 Cors（preprocesamiento CORS + cabeceras de respuesta）
   → SecurityFilter（restricción de métodos HTTP/tamaño del cuerpo/validación Content-Type/XSS/inyección SQL/path traversal/inyección de comandos/CSRF）
   → RateLimit（límite de tasa de ventana deslizante Redis + bloqueo de cuenta: 5 inicios de sesión fallidos bloquean 15 minutos）
-  → ApiVersion（validación de versión de API, grupo de rutas /api）
-  → AdminAuth（autenticación JWT + lista negra, grupo de rutas /admin）
-  → AdminPermission（autorización RBAC, grupo de rutas /admin）
-  → OperationLog（registro automático de POST/PUT/DELETE, incluye detección de origen, grupo de rutas /admin）
+  → AdminAuth（autenticación JWT + lista negra, grupo de rutas /admin/v1）
+  → AdminPermission（autorización RBAC, grupo de rutas /admin/v1）
+  → OperationLog（registro automático de POST/PUT/DELETE, incluye detección de origen, grupo de rutas /admin/v1）
 ```
 
 `/health` y `/api/docs` son endpoints públicos y solo pasan por `Cors → SecurityFilter → RateLimit`.
@@ -291,12 +284,12 @@ Mejoras de seguridad:
 
 El inicio de sesión y el registro requieren pasar primero el **captcha de clic**:
 
-1. El cliente solicita `POST /api/captcha/generate` para obtener la imagen del captcha (PNG base64) y la lista de objetivos de texto
+1. El cliente solicita `POST /api/v1/captcha/generate` para obtener la imagen del captcha (PNG base64) y la lista de objetivos de texto
 2. El usuario hace clic en las posiciones del texto correspondiente de la imagen en orden y recoge las coordenadas `[{x, y}, ...]`
 3. Al iniciar sesión se envían también `captcha_key` y `clicks`; el servidor valida primero el captcha y después las credenciales
 
 ```http
-POST /api/auth/login
+POST /api/v1/auth/login
 Content-Type: application/json
 
 {
@@ -315,14 +308,14 @@ Authorization: Bearer <token>
 
 Tras iniciar sesión correctamente se devuelve access_token, con validez de 2 horas; también se devuelve refresh_token, con validez de 14 días.
 
-Al cerrar sesión, el Token se añade a la lista negra de Redis y no se puede reutilizar mientras esté vigente. POST /admin/profile/logout
+Al cerrar sesión, el Token se añade a la lista negra de Redis y no se puede reutilizar mientras esté vigente. POST /admin/v1/profile/logout
 
 ### Segunda confirmación de operaciones sensibles
 
 Las operaciones sensibles como eliminar usuarios, roles o permisos requieren enviar la `password` del usuario autenticado actualmente en el cuerpo de la solicitud para confirmar la identidad por segunda vez:
 
 ```http
-DELETE /admin/user/{id}
+DELETE /admin/v1/user/{id}
 Content-Type: application/json
 Authorization: Bearer <token>
 
@@ -331,7 +324,7 @@ Authorization: Bearer <token>
 
 ## Lista de API
 
-> Todas las interfaces `/api/*` requieren la cabecera `API-Version: v1` (si no se envía, se usa v1 por defecto).
+> Todos los endpoints `/api/v1/*` y `/admin/v1/*` llevan el número de versión en la ruta de la URL; no se usa ninguna cabecera de versión.
 
 ### Interfaces públicas
 
@@ -339,45 +332,45 @@ Authorization: Bearer <token>
 |-----|------|------|
 | `GET` | `/health` | Comprobación de salud (estado de DB/Redis/ES) |
 | `GET` | `/api/docs` | Documento de especificación OpenAPI 3.0 |
-| `POST` | `/api/captcha/generate` | Generar captcha de clic |
-| `POST` | `/api/captcha/verify` | Validar captcha de clic |
-| `POST` | `/api/auth/login` | Inicio de sesión (requiere captcha) |
-| `POST` | `/api/auth/register` | Registro (requiere captcha) |
-| `POST` | `/api/auth/refresh` | Refrescar token |
+| `POST` | `/api/v1/captcha/generate` | Generar captcha de clic |
+| `POST` | `/api/v1/captcha/verify` | Validar captcha de clic |
+| `POST` | `/api/v1/auth/login` | Inicio de sesión (requiere captcha) |
+| `POST` | `/api/v1/auth/register` | Registro (requiere captcha) |
+| `POST` | `/api/v1/auth/refresh` | Refrescar token |
 | `GET` | `/metrics` | Métricas de monitorización Prometheus |
 
 ### Interfaces del panel de administración (requieren JWT + RBAC)
 
 | Método | Ruta | Descripción |
 |-----|------|------|
-| `GET` | `/admin/dashboard` | Datos del panel (caché Redis de 5 minutos) |
-| `GET` | `/admin/user` | Lista de usuarios (paginación + búsqueda) |
-| `POST` | `/admin/user` | Crear usuario |
-| `GET` | `/admin/user/{id}` | Detalle del usuario |
-| `PUT` | `/admin/user/{id}` | Actualizar usuario |
-| `DELETE` | `/admin/user/{id}` | Eliminar usuario (borrado lógico, requiere confirmación de contraseña) |
-| `POST` | `/admin/user/batch/destroy` | Eliminar usuarios en lote (requiere confirmación de contraseña) |
-| `POST` | `/admin/user/batch/status` | Habilitar/deshabilitar usuarios en lote |
-| `GET` | `/admin/role` | Lista de roles |
-| `POST` | `/admin/role` | Crear rol |
-| `PUT` | `/admin/role/{id}` | Actualizar rol |
-| `DELETE` | `/admin/role/{id}` | Eliminar rol (requiere confirmación de contraseña) |
-| `GET` | `/admin/permission` | Árbol de permisos |
-| `POST` | `/admin/permission` | Crear permiso |
-| `PUT` | `/admin/permission/{id}` | Actualizar permiso |
-| `DELETE` | `/admin/permission/{id}` | Eliminar permiso (subpermisos en cascada, requiere confirmación de contraseña) |
-| `GET` | `/admin/config` | Lista de configuración del sistema |
-| `POST` | `/admin/config` | Crear elemento de configuración |
-| `PUT` | `/admin/config/{id}` | Actualizar elemento de configuración |
-| `DELETE` | `/admin/config/{id}` | Eliminar elemento de configuración (requiere confirmación de contraseña) |
-| `GET` | `/admin/log` | Registros de operaciones (paginación + filtros) |
-| `PUT` | `/admin/profile` | Actualizar información personal |
-| `PUT` | `/admin/profile/password` | Cambiar contraseña |
-| `POST` | `/admin/profile/logout` | Cerrar sesión (lista negra JWT) |
-| `POST` | `/admin/export/excel` | Exportar Excel |
-| `POST` | `/admin/export/pdf` | Exportar PDF |
-| `POST` | `/admin/import/users` | Importar usuarios por Excel |
-| `POST` | `/admin/upload` | Subida de archivos (imágenes/documentos, máximo 10 MB) |
+| `GET` | `/admin/v1/dashboard` | Datos del panel (caché Redis de 5 minutos) |
+| `GET` | `/admin/v1/user` | Lista de usuarios (paginación + búsqueda) |
+| `POST` | `/admin/v1/user` | Crear usuario |
+| `GET` | `/admin/v1/user/{id}` | Detalle del usuario |
+| `PUT` | `/admin/v1/user/{id}` | Actualizar usuario |
+| `DELETE` | `/admin/v1/user/{id}` | Eliminar usuario (borrado lógico, requiere confirmación de contraseña) |
+| `POST` | `/admin/v1/user/batch/destroy` | Eliminar usuarios en lote (requiere confirmación de contraseña) |
+| `POST` | `/admin/v1/user/batch/status` | Habilitar/deshabilitar usuarios en lote |
+| `GET` | `/admin/v1/role` | Lista de roles |
+| `POST` | `/admin/v1/role` | Crear rol |
+| `PUT` | `/admin/v1/role/{id}` | Actualizar rol |
+| `DELETE` | `/admin/v1/role/{id}` | Eliminar rol (requiere confirmación de contraseña) |
+| `GET` | `/admin/v1/permission` | Árbol de permisos |
+| `POST` | `/admin/v1/permission` | Crear permiso |
+| `PUT` | `/admin/v1/permission/{id}` | Actualizar permiso |
+| `DELETE` | `/admin/v1/permission/{id}` | Eliminar permiso (subpermisos en cascada, requiere confirmación de contraseña) |
+| `GET` | `/admin/v1/config` | Lista de configuración del sistema |
+| `POST` | `/admin/v1/config` | Crear elemento de configuración |
+| `PUT` | `/admin/v1/config/{id}` | Actualizar elemento de configuración |
+| `DELETE` | `/admin/v1/config/{id}` | Eliminar elemento de configuración (requiere confirmación de contraseña) |
+| `GET` | `/admin/v1/log` | Registros de operaciones (paginación + filtros) |
+| `PUT` | `/admin/v1/profile` | Actualizar información personal |
+| `PUT` | `/admin/v1/profile/password` | Cambiar contraseña |
+| `POST` | `/admin/v1/profile/logout` | Cerrar sesión (lista negra JWT) |
+| `POST` | `/admin/v1/export/excel` | Exportar Excel |
+| `POST` | `/admin/v1/export/pdf` | Exportar PDF |
+| `POST` | `/admin/v1/import/users` | Importar usuarios por Excel |
+| `POST` | `/admin/v1/upload` | Subida de archivos (imágenes/documentos, máximo 10 MB) |
 
 ## Notas sobre el frontend
 

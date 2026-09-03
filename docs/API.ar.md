@@ -24,7 +24,6 @@ Languages: **中文** · [English](API.en.md) · [한국어](API.ko.md) · [Ру
 
 ```
 Content-Type: application/json
-API-Version: v1
 Authorization: Bearer <token>    (الواجهات التي تتطلب مصادقة)
 ```
 
@@ -75,7 +74,7 @@ Authorization: Bearer <token>    (الواجهات التي تتطلب مصاد�
 
 ### 2.1 المصادقة
 
-#### POST /api/auth/register — تسجيل المستخدم
+#### POST /api/v1/auth/register — تسجيل المستخدم
 
 ```
 الطلب: {
@@ -96,7 +95,7 @@ Authorization: Bearer <token>    (الواجهات التي تتطلب مصاد�
 }
 ```
 
-#### POST /api/auth/login — تسجيل دخول المستخدم
+#### POST /api/v1/auth/login — تسجيل دخول المستخدم
 
 ```
 الطلب: {
@@ -113,7 +112,7 @@ Authorization: Bearer <token>    (الواجهات التي تتطلب مصاد�
 
 خطأ: 401 اسم المستخدم أو كلمة المرور غير صحيحة / الحساب معطّل
 
-#### POST /api/auth/refresh — تجديد Token
+#### POST /api/v1/auth/refresh — تجديد Token
 
 ```
 الطلب: (Authorization: Bearer <refresh_token>)
@@ -126,7 +125,7 @@ Authorization: Bearer <token>    (الواجهات التي تتطلب مصاد�
 
 ### 2.2 المحفظة
 
-#### GET /api/wallet/info — معلومات المحفظة
+#### GET /api/v1/wallet/info — معلومات المحفظة
 
 ```
 يتطلب مصادقة: نعم
@@ -139,7 +138,7 @@ Authorization: Bearer <token>    (الواجهات التي تتطلب مصاد�
 }
 ```
 
-#### GET /api/wallet/transactions — سجل الحركات
+#### GET /api/v1/wallet/transactions — سجل الحركات
 
 ```
 يتطلب مصادقة: نعم
@@ -166,7 +165,7 @@ Authorization: Bearer <token>    (الواجهات التي تتطلب مصاد�
 
 ### 2.3 الشحن
 
-#### POST /api/deposit/create — إنشاء طلب شحن
+#### POST /api/v1/deposit/create — إنشاء طلب شحن
 
 ```
 يتطلب مصادقة: نعم
@@ -191,7 +190,7 @@ Authorization: Bearer <token>    (الواجهات التي تتطلب مصاد�
 
 checkout_url: رابط إعادة التوجيه إلى بوابة الدفع (يُملأ عند إنشاء الطلب)؛ expires_at: انتهاء صلاحية رابط الدفع (بعد ساعة من الإنشاء)
 
-#### GET /api/deposit/orders — سجلات الشحن
+#### GET /api/v1/deposit/orders — سجلات الشحن
 
 ```
 يتطلب مصادقة: نعم
@@ -220,7 +219,7 @@ checkout_url: رابط إعادة التوجيه إلى بوابة الدفع (�
 
 ### 2.4 الاستبدال
 
-#### POST /api/exchange/quote — الاستعلام عن السعر
+#### POST /api/v1/exchange/quote — الاستعلام عن السعر
 
 ```
 يتطلب مصادقة: نعم
@@ -243,7 +242,7 @@ checkout_url: رابط إعادة التوجيه إلى بوابة الدفع (�
 
 direction: in=شراء عملات اللعبة / out=بيع عملات اللعبة
 
-#### POST /api/exchange/buy — شراء عملات اللعبة
+#### POST /api/v1/exchange/buy — شراء عملات اللعبة
 
 ```
 يتطلب مصادقة: نعم
@@ -265,7 +264,7 @@ direction: in=شراء عملات اللعبة / out=بيع عملات اللع�
 
 خطأ: 422 رصيد عملات المنصة غير كافٍ / 404 اللعبة غير متاحة
 
-#### POST /api/exchange/sell — بيع عملات اللعبة
+#### POST /api/v1/exchange/sell — بيع عملات اللعبة
 
 ```
 يتطلب مصادقة: نعم
@@ -287,7 +286,7 @@ direction: in=شراء عملات اللعبة / out=بيع عملات اللع�
 
 خطأ: 422 رصيد عملات اللعبة غير كافٍ
 
-#### GET /api/exchange/records — سجلات الاستبدال
+#### GET /api/v1/exchange/records — سجلات الاستبدال
 
 ```
 يتطلب مصادقة: نعم
@@ -314,7 +313,7 @@ direction: in=شراء عملات اللعبة / out=بيع عملات اللع�
 
 ### 2.5 السحب
 
-#### POST /api/withdraw/apply — تقديم طلب سحب
+#### POST /api/v1/withdraw/apply — تقديم طلب سحب
 
 ```
 يتطلب مصادقة: نعم
@@ -344,7 +343,7 @@ status:
 - 400 تجاوز حد السحب اليومي
 - 400 الرصيد غير كافٍ
 
-#### GET /api/withdraw/orders — سجلات السحب
+#### GET /api/v1/withdraw/orders — سجلات السحب
 
 ```
 يتطلب مصادقة: نعم
@@ -370,7 +369,7 @@ status:
 
 ### 2.6 الألعاب
 
-#### GET /api/game/list — قائمة الألعاب
+#### GET /api/v1/game/list — قائمة الألعاب
 
 ```
 المعلمات: ?page=1&per_page=20&keyword=射击&type=self
@@ -404,7 +403,7 @@ status:
 
 القيم الممكنة لـ type: self / third_party
 
-#### GET /api/game/{hashid} — تفاصيل اللعبة
+#### GET /api/v1/game/{hashid} — تفاصيل اللعبة
 
 ```
 الاستجابة: {
@@ -428,7 +427,7 @@ status:
 }
 ```
 
-#### POST /api/game/launch — تشغيل اللعبة
+#### POST /api/v1/game/launch — تشغيل اللعبة
 
 ```
 يتطلب مصادقة: نعم
@@ -447,7 +446,7 @@ status:
 
 يدعم 7 منصات: Google / Facebook / Apple / X(Twitter) / Microsoft / LinkedIn / GitHub
 
-#### GET /api/auth/oauth/{provider} — الحصول على عنوان التفويض
+#### GET /api/v1/auth/oauth/{provider} — الحصول على عنوان التفويض
 
 ```
 المعلمات: provider = google / facebook / apple / twitter / microsoft / linkedin / github
@@ -457,7 +456,7 @@ status:
 }
 ```
 
-#### POST /api/auth/oauth/{provider}/callback — استدعاء OAuth
+#### POST /api/v1/auth/oauth/{provider}/callback — استدعاء OAuth
 
 ```
 الطلب: { "code": "授权码", "state": "防CSRF状态" }
@@ -474,7 +473,7 @@ is_new: true=مستخدم مسجل حديثًا / false=حساب موجود تم
 
 ### 2.8 التحقق من الهوية KYC
 
-#### GET /api/user/identity/status — حالة التحقق
+#### GET /api/v1/user/identity/status — حالة التحقق
 
 ```
 يتطلب مصادقة: نعم
@@ -489,7 +488,7 @@ is_new: true=مستخدم مسجل حديثًا / false=حساب موجود تم
 }
 ```
 
-#### POST /api/user/identity/apply — تقديم التحقق
+#### POST /api/v1/user/identity/apply — تقديم التحقق
 
 ```
 يتطلب مصادقة: نعم
@@ -507,7 +506,7 @@ is_new: true=مستخدم مسجل حديثًا / false=حساب موجود تم
 
 ### 2.9 الدفع
 
-#### POST /api/payment/callback — استدعاء الدفع (عام)
+#### POST /api/v1/payment/callback — استدعاء الدفع (عام)
 
 ```
 الطلب: {
@@ -542,7 +541,7 @@ status: success / failed
 | mpesa | كينيا / تنزانيا وغيرها (قريباً) | — | KES / TZS |
 | paystack | نيجيريا (قريباً) | — | NGN |
 
-#### GET /api/payment/methods — طرق الدفع المتاحة (عام)
+#### GET /api/v1/payment/methods — طرق الدفع المتاحة (عام)
 
 ```
 الاستجابة: {
@@ -556,7 +555,7 @@ status: success / failed
 
 ### 2.10 سجلات اللعب
 
-#### GET /api/game/play-logs — قائمة سجلات اللعب
+#### GET /api/v1/game/play-logs — قائمة سجلات اللعب
 
 ```
 يتطلب مصادقة: نعم
@@ -576,7 +575,7 @@ status: success / failed
 }
 ```
 
-#### GET /api/game/play-log/{hashid} — تفاصيل سجل اللعب
+#### GET /api/v1/game/play-log/{hashid} — تفاصيل سجل اللعب
 
 ```
 يتطلب مصادقة: نعم
@@ -585,7 +584,7 @@ status: success / failed
 
 ### 2.12 لوحات المتصدرين
 
-#### GET /api/leaderboard/list — قائمة لوحات المتصدرين
+#### GET /api/v1/leaderboard/list — قائمة لوحات المتصدرين
 
 ```
 الاستجابة: {
@@ -595,7 +594,7 @@ status: success / failed
 }
 ```
 
-#### GET /api/leaderboard/{hashid} — تفاصيل لوحة المتصدرين
+#### GET /api/v1/leaderboard/{hashid} — تفاصيل لوحة المتصدرين
 
 ```
 الاستجابة: {
@@ -610,14 +609,14 @@ status: success / failed
 
 ### 2.13 القسائم
 
-#### GET /api/coupon/available — القسائم المتاحة للاستلام
+#### GET /api/v1/coupon/available — القسائم المتاحة للاستلام
 
 ```
 يتطلب مصادقة: نعم
 الاستجابة: { "list": [{ "id": "...", "name": "新人礼包", "type": "fixed", "value": "10.0000" }] }
 ```
 
-#### POST /api/coupon/claim — استلام قسيمة
+#### POST /api/v1/coupon/claim — استلام قسيمة
 
 ```
 يتطلب مصادقة: نعم
@@ -625,7 +624,7 @@ status: success / failed
 الاستجابة: { "coupon": { ... } }
 ```
 
-#### GET /api/coupon/my — قسائمي
+#### GET /api/v1/coupon/my — قسائمي
 
 ```
 يتطلب مصادقة: نعم
@@ -635,7 +634,7 @@ status: success / failed
 
 ### 2.14 إعدادات الدول
 
-#### GET /api/country/list — قائمة الدول
+#### GET /api/v1/country/list — قائمة الدول
 
 ```
 الاستجابة: {
@@ -645,7 +644,7 @@ status: success / failed
 }
 ```
 
-#### GET /api/country/{code} — تفاصيل الدولة
+#### GET /api/v1/country/{code} — تفاصيل الدولة
 
 ```
 الاستجابة: {
@@ -659,7 +658,7 @@ status: success / failed
 
 ### 2.16 الإشعارات
 
-#### GET /api/notification/list — قائمة الإشعارات
+#### GET /api/v1/notification/list — قائمة الإشعارات
 
 ```
 يتطلب مصادقة: نعم
@@ -673,14 +672,14 @@ status: success / failed
 }
 ```
 
-#### GET /api/notification/unread-count — عدد غير المقروء
+#### GET /api/v1/notification/unread-count — عدد غير المقروء
 
 ```
 يتطلب مصادقة: نعم
 الاستجابة: { "count": 3 }
 ```
 
-#### POST /api/notification/read — تحديد كمقروء
+#### POST /api/v1/notification/read — تحديد كمقروء
 
 ```
 يتطلب مصادقة: نعم
@@ -689,14 +688,14 @@ status: success / failed
 
 ### 2.17 الإحالات
 
-#### GET /api/referral/my-code — رمز الإحالة الخاص بي
+#### GET /api/v1/referral/my-code — رمز الإحالة الخاص بي
 
 ```
 يتطلب مصادقة: نعم
 الاستجابة: { "code": "ABC12345", "referral_count": 12, "total_rewards": "150.0000" }
 ```
 
-#### POST /api/referral/apply — استخدام رمز الإحالة
+#### POST /api/v1/referral/apply — استخدام رمز الإحالة
 
 ```
 يتطلب مصادقة: نعم
@@ -706,21 +705,21 @@ status: success / failed
 
 ### 2.18 المصادقة الثنائية 2FA
 
-#### GET /api/user/2fa/status — حالة 2FA
+#### GET /api/v1/user/2fa/status — حالة 2FA
 
 ```
 يتطلب مصادقة: نعم
 الاستجابة: { "enabled": false }
 ```
 
-#### POST /api/user/2fa/setup — إعداد 2FA
+#### POST /api/v1/user/2fa/setup — إعداد 2FA
 
 ```
 يتطلب مصادقة: نعم
 الاستجابة: { "secret": "JBSWY3DPEHPK3PXP", "qr_url": "otpauth://totp/..." }
 ```
 
-#### POST /api/user/2fa/enable — تفعيل 2FA
+#### POST /api/v1/user/2fa/enable — تفعيل 2FA
 
 ```
 يتطلب مصادقة: نعم
@@ -728,7 +727,7 @@ status: success / failed
 الاستجابة: { "backup_codes": ["abcd1234ef", ...] }
 ```
 
-#### POST /api/2fa/verify — التحقق من 2FA (عام)
+#### POST /api/v1/2fa/verify — التحقق من 2FA (عام)
 
 ```
 الطلب: { "user_id": "hashid", "code": "123456" }
@@ -737,14 +736,14 @@ status: success / failed
 
 ### 2.19 البحث
 
-#### GET /api/search — بحث عام
+#### GET /api/v1/search — بحث عام
 
 ```
 المعلمات: ?q=keyword&type=game&page=1&per_page=20
 الاستجابة: { "list": [...], "total": 100 }
 ```
 
-#### GET /api/game/suggest — اقتراحات البحث
+#### GET /api/v1/game/suggest — اقتراحات البحث
 
 ```
 المعلمات: ?q=shoot
@@ -753,7 +752,7 @@ status: success / failed
 
 ### 2.20 اللغات
 
-#### GET /api/language/list — قائمة اللغات المتاحة
+#### GET /api/v1/language/list — قائمة اللغات المتاحة
 
 ```
 الاستجابة: {
@@ -767,7 +766,7 @@ status: success / failed
 }
 ```
 
-#### POST /api/language/switch — تبديل اللغة
+#### POST /api/v1/language/switch — تبديل اللغة
 
 ```
 الطلب: { "locale": "zh-CN" }
@@ -778,7 +777,7 @@ status: success / failed
 
 ### 2.8 المستخدم
 
-#### GET /api/user/profile — المعلومات الشخصية
+#### GET /api/v1/user/profile — المعلومات الشخصية
 
 ```
 يتطلب مصادقة: نعم
@@ -797,7 +796,7 @@ status: success / failed
 }
 ```
 
-#### PUT /api/user/profile — تعديل الملف الشخصي
+#### PUT /api/v1/user/profile — تعديل الملف الشخصي
 
 ```
 يتطلب مصادقة: نعم
@@ -821,7 +820,7 @@ status: success / failed
 
 ### 2.9 الإعلانات
 
-#### GET /api/announcement/list — قائمة الإعلانات
+#### GET /api/v1/announcement/list — قائمة الإعلانات
 
 ```
 الاستجابة: {
@@ -836,7 +835,7 @@ status: success / failed
 }
 ```
 
-#### GET /api/announcement/detail/{hashid} — تفاصيل الإعلان
+#### GET /api/v1/announcement/detail/{hashid} — تفاصيل الإعلان
 
 ```
 الاستجابة: {
@@ -852,9 +851,9 @@ status: success / failed
 
 | الطريقة | المسار | الوصف | المصادقة |
 |------|------|------|------|
-| GET | /api/platform/stats | إحصائيات المنصة العامة (إجمالي الألعاب / إجمالي المستخدمين / جولات اليوم / نشطون خلال 7 أيام) | لا |
+| GET | /api/v1/platform/stats | إحصائيات المنصة العامة (إجمالي الألعاب / إجمالي المستخدمين / جولات اليوم / نشطون خلال 7 أيام) | لا |
 
-#### GET /api/platform/stats — إحصائيات المنصة
+#### GET /api/v1/platform/stats — إحصائيات المنصة
 
 ```
 无需认证
@@ -1466,8 +1465,8 @@ action: approve / reject
 | الواجهة | الحد |
 |------|------|
 | الافتراضي | 60 مرة/دقيقة/IP |
-| POST /api/auth/login | 10 مرات/دقيقة |
-| POST /api/auth/register | 5 مرات/دقيقة |
+| POST /api/v1/auth/login | 10 مرات/دقيقة |
+| POST /api/v1/auth/register | 5 مرات/دقيقة |
 
 تجاوز الحد يُرجع 429، وتشمل رؤوس الاستجابة:
 ```
@@ -1600,7 +1599,7 @@ Retry-After: 60
 
 ### 7.2 واجهات التذاكر
 
-#### GET /api/ticket/list — قائمة التذاكر
+#### GET /api/v1/ticket/list — قائمة التذاكر
 
 ```
 يتطلب مصادقة: نعم
@@ -1625,7 +1624,7 @@ Retry-After: 60
 type: deposit / withdraw / game / account / other
 status: open / waiting / replied / closed
 
-#### POST /api/ticket/create — إنشاء تذكرة
+#### POST /api/v1/ticket/create — إنشاء تذكرة
 
 ```
 يتطلب مصادقة: نعم
@@ -1637,7 +1636,7 @@ status: open / waiting / replied / closed
 الاستجابة: { "code": 0, "message": "Ticket created", "data": { "id": "aB3xK..." } }
 ```
 
-#### GET /api/ticket/{hashid} — تفاصيل التذكرة
+#### GET /api/v1/ticket/{hashid} — تفاصيل التذكرة
 
 ```
 يتطلب مصادقة: نعم
@@ -1650,7 +1649,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### POST /api/ticket/{hashid}/reply — الرد على التذكرة
+#### POST /api/v1/ticket/{hashid}/reply — الرد على التذكرة
 
 ```
 يتطلب مصادقة: نعم
@@ -1660,7 +1659,7 @@ status: open / waiting / replied / closed
 
 ### 7.3 واجهات التحقق من البريد الإلكتروني
 
-#### POST /api/verify/send-email — إرسال رمز التحقق للبريد
+#### POST /api/v1/verify/send-email — إرسال رمز التحقق للبريد
 
 ```
 يتطلب مصادقة: نعم
@@ -1669,7 +1668,7 @@ status: open / waiting / replied / closed
 خطأ: 429 يرجى إعادة المحاولة بعد 60 ثانية
 ```
 
-#### POST /api/verify/confirm-email — تأكيد البريد الإلكتروني
+#### POST /api/v1/verify/confirm-email — تأكيد البريد الإلكتروني
 
 ```
 يتطلب مصادقة: نعم
@@ -1680,7 +1679,7 @@ status: open / waiting / replied / closed
 
 ### 7.4 واجهات VIP
 
-#### GET /api/user/vip-status — حالة VIP
+#### GET /api/v1/user/vip-status — حالة VIP
 
 ```
 يتطلب مصادقة: نعم
@@ -1700,7 +1699,7 @@ status: open / waiting / replied / closed
 
 ### 7.5 واجهات الإنجازات
 
-#### GET /api/user/achievements — قائمة الإنجازات
+#### GET /api/v1/user/achievements — قائمة الإنجازات
 
 ```
 يتطلب مصادقة: نعم
@@ -1899,10 +1898,10 @@ status: open / waiting / replied / closed
 | الواجهة | الحد |
 |------|------|
 | الافتراضي | 60 مرة/دقيقة/IP |
-| POST /api/auth/login | 10 مرات/دقيقة |
-| POST /api/auth/register | 5 مرات/دقيقة |
-| POST /api/auth/oauth | 10 مرات/دقيقة |
-| POST /api/payment/callback | 30 مرة/دقيقة |
+| POST /api/v1/auth/login | 10 مرات/دقيقة |
+| POST /api/v1/auth/register | 5 مرات/دقيقة |
+| POST /api/v1/auth/oauth | 10 مرات/دقيقة |
+| POST /api/v1/payment/callback | 30 مرة/دقيقة |
 | POST /api/provider/* | بدون حد (مصادقة توقيع HMAC) |
 
 ## 9. شرح المصادقة (محدث)
@@ -1918,43 +1917,43 @@ status: open / waiting / replied / closed
 
 ### 7.7 واجهات الأصدقاء
 
-#### GET /api/friend/list — قائمة الأصدقاء
+#### GET /api/v1/friend/list — قائمة الأصدقاء
 ```
 يتطلب مصادقة: نعم
 الاستجابة: { "list": [{ "id": "...", "username": "...", "nickname": "...", "avatar": "..." }] }
 ```
 
-#### GET /api/friend/requests — الطلبات المعلقة
+#### GET /api/v1/friend/requests — الطلبات المعلقة
 ```
 يتطلب مصادقة: نعم
 الاستجابة: { "list": [{ "id": "...", "user": {...}, "created_at": "..." }] }
 ```
 
-#### POST /api/friend/request — إرسال طلب صداقة
+#### POST /api/v1/friend/request — إرسال طلب صداقة
 ```
 يتطلب مصادقة: نعم
 الطلب: { "friend_id": "hashid" }
 ```
 
-#### POST /api/friend/accept — قبول الطلب
+#### POST /api/v1/friend/accept — قبول الطلب
 ```
 يتطلب مصادقة: نعم
 الطلب: { "request_id": "hashid" }
 ```
 
-#### POST /api/friend/reject — رفض الطلب
+#### POST /api/v1/friend/reject — رفض الطلب
 ```
 يتطلب مصادقة: نعم
 الطلب: { "request_id": "hashid" }
 ```
 
-#### POST /api/friend/remove — حذف صديق
+#### POST /api/v1/friend/remove — حذف صديق
 ```
 يتطلب مصادقة: نعم
 الطلب: { "friend_id": "hashid" }
 ```
 
-#### GET /api/friend/search — البحث عن مستخدمين
+#### GET /api/v1/friend/search — البحث عن مستخدمين
 ```
 يتطلب مصادقة: نعم
 المعلمات: ?q=username
@@ -1963,7 +1962,7 @@ status: open / waiting / replied / closed
 
 ### 7.8 واجهات المحادثة
 
-#### GET /api/chat/conversations — قائمة المحادثات
+#### GET /api/v1/chat/conversations — قائمة المحادثات
 ```
 يتطلب مصادقة: نعم
 الاستجابة: {
@@ -1976,7 +1975,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /api/chat/messages/{peerHashid} — قائمة الرسائل
+#### GET /api/v1/chat/messages/{peerHashid} — قائمة الرسائل
 ```
 يتطلب مصادقة: نعم
 المعلمات: ?page=1&per_page=50
@@ -1984,14 +1983,14 @@ status: open / waiting / replied / closed
 وضع علامة قراءة تلقائيًا على الرسائل غير المقروءة الواردة من الطرف الآخر
 ```
 
-#### POST /api/chat/send — إرسال رسالة
+#### POST /api/v1/chat/send — إرسال رسالة
 ```
 يتطلب مصادقة: نعم
 الطلب: { "to_user_id": "hashid", "content": "Hello!" }
 خطأ: 403 لا يمكن الإرسال لغير الأصدقاء
 ```
 
-#### GET /api/chat/unread-total — إجمالي غير المقروء
+#### GET /api/v1/chat/unread-total — إجمالي غير المقروء
 ```
 يتطلب مصادقة: نعم
 الاستجابة: { "count": 5 }
@@ -2009,20 +2008,20 @@ status: open / waiting / replied / closed
 
 ### 7.9 واجهات Webhook
 
-#### GET /api/webhook/list — قائمة الاشتراكات
+#### GET /api/v1/webhook/list — قائمة الاشتراكات
 ```
 يتطلب مصادقة: نعم
 الاستجابة: { "list": [{ "id": "...", "url": "https://...", "events": ["deposit.completed"] }] }
 ```
 
-#### POST /api/webhook/register — تسجيل اشتراك
+#### POST /api/v1/webhook/register — تسجيل اشتراك
 ```
 يتطلب مصادقة: نعم
 الطلب: { "url": "https://my-server.com/hook", "events": ["deposit.completed", "game.played"] }
 الأحداث المتاحة: deposit.completed / withdraw.completed / exchange.completed / game.played / user.registered / risk.alert / user.vip_upgraded
 ```
 
-#### POST /api/webhook/delete — حذف الاشتراك
+#### POST /api/v1/webhook/delete — حذف الاشتراك
 ```
 يتطلب مصادقة: نعم
 الطلب: { "id": "hook_id" }
@@ -2071,18 +2070,18 @@ status: open / waiting / replied / closed
 
 ### 7.11 واجهات البطولات
 
-#### GET /api/tournament/list — قائمة البطولات
+#### GET /api/v1/tournament/list — قائمة البطولات
 ```
 المعلمات: ?status=active|upcoming|ended&page=1&per_page=20
 الاستجابة: { "items": [{ "id": "...", "name": "...", "prize_pool": "1000.0000", "player_count": 45, "max_players": 100 }], "total": 5 }
 ```
 
-#### GET /api/tournament/{hashid} — تفاصيل البطولة
+#### GET /api/v1/tournament/{hashid} — تفاصيل البطولة
 ```
 الاستجابة: { "id": "...", "name": "...", "leaderboard": [...], "my_entry": {...} }
 ```
 
-#### POST /api/tournament/{hashid}/join — التسجيل في البطولة
+#### POST /api/v1/tournament/{hashid}/join — التسجيل في البطولة
 ```
 يتطلب مصادقة: نعم
 خطأ: 422 مسجل مسبقًا / 400 بدأت أو اكتمل العدد / 503 ميزة FeatureFlag مغلقة
@@ -2108,7 +2107,7 @@ status: open / waiting / replied / closed
 
 | الواجهة | الحد |
 |------|------|
-| POST /api/tournament/{id}/join | 10 مرات/دقيقة |
+| POST /api/v1/tournament/{id}/join | 10 مرات/دقيقة |
 
 ---
 
@@ -2159,23 +2158,23 @@ status: open / waiting / replied / closed
 | POST /admin/activities/create | إنشاء نشاط (الإدارة) |
 | PUT /admin/activities/{hashid} | تحديث نشاط (الإدارة) |
 | DELETE /admin/activities/{hashid} | حذف نشاط (الإدارة) |
-| GET /api/activities/list | قائمة الأنشطة (العميل) |
-| GET /api/activities/progress | تقدم المشاركة (العميل) |
-| GET /api/activities/{hashid} | تفاصيل النشاط (العميل) |
-| POST /api/activities/{hashid}/checkin | تسجيل الحضور (العميل) |
+| GET /api/v1/activities/list | قائمة الأنشطة (العميل) |
+| GET /api/v1/activities/progress | تقدم المشاركة (العميل) |
+| GET /api/v1/activities/{hashid} | تفاصيل النشاط (العميل) |
+| POST /api/v1/activities/{hashid}/checkin | تسجيل الحضور (العميل) |
 
 ### 10.4 المجموعات / المشاركة (العميل :8788 + الإدارة :8787)
 
 | نقطة الوصول | الوصف |
 |------|------|
-| POST /api/groups | إنشاء مجموعة |
-| GET /api/groups/{hashid} | تفاصيل المجموعة |
-| GET /api/groups/{hashid}/members | قائمة الأعضاء |
-| POST /api/groups/{hashid}/join | الانضمام إلى مجموعة |
-| POST /api/groups/{hashid}/leave | مغادرة مجموعة |
-| PUT /api/groups/{hashid}/role | دور العضو |
-| POST /api/shares | إنشاء رابط مشاركة |
-| POST /api/shares/visit | تتبع زيارات المشاركة |
+| POST /api/v1/groups | إنشاء مجموعة |
+| GET /api/v1/groups/{hashid} | تفاصيل المجموعة |
+| GET /api/v1/groups/{hashid}/members | قائمة الأعضاء |
+| POST /api/v1/groups/{hashid}/join | الانضمام إلى مجموعة |
+| POST /api/v1/groups/{hashid}/leave | مغادرة مجموعة |
+| PUT /api/v1/groups/{hashid}/role | دور العضو |
+| POST /api/v1/shares | إنشاء رابط مشاركة |
+| POST /api/v1/shares/visit | تتبع زيارات المشاركة |
 | GET /admin/groups | قائمة المجموعات (الإدارة) |
 | GET /admin/groups/{hashid}/audit | تدقيق المجموعة (الإدارة) |
 | GET /admin/share/stats | إحصائيات المشاركة (الإدارة) |

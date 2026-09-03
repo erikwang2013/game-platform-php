@@ -24,7 +24,6 @@ Languages: [中文](API.md) · [English](API.en.md) · **한국어** · [Рус�
 
 ```
 Content-Type: application/json
-API-Version: v1
 Authorization: Bearer <token>    (인증이 필요한 인터페이스)
 ```
 
@@ -75,7 +74,7 @@ Authorization: Bearer <token>    (인증이 필요한 인터페이스)
 
 ### 2.1 인증
 
-#### POST /api/auth/register — 사용자 등록
+#### POST /api/v1/auth/register — 사용자 등록
 
 ```
 요청: {
@@ -96,7 +95,7 @@ Authorization: Bearer <token>    (인증이 필요한 인터페이스)
 }
 ```
 
-#### POST /api/auth/login — 사용자 로그인
+#### POST /api/v1/auth/login — 사용자 로그인
 
 ```
 요청: {
@@ -113,7 +112,7 @@ Authorization: Bearer <token>    (인증이 필요한 인터페이스)
 
 오류: 401 사용자 이름 또는 비밀번호 오류 / 계정이 비활성화됨
 
-#### POST /api/auth/refresh — Token 갱신
+#### POST /api/v1/auth/refresh — Token 갱신
 
 ```
 요청: (Authorization: Bearer <refresh_token>)
@@ -126,7 +125,7 @@ Authorization: Bearer <token>    (인증이 필요한 인터페이스)
 
 ### 2.2 지갑
 
-#### GET /api/wallet/info — 지갑 정보
+#### GET /api/v1/wallet/info — 지갑 정보
 
 ```
 인증 필요: 예
@@ -139,7 +138,7 @@ Authorization: Bearer <token>    (인증이 필요한 인터페이스)
 }
 ```
 
-#### GET /api/wallet/transactions — 거래 내역
+#### GET /api/v1/wallet/transactions — 거래 내역
 
 ```
 인증 필요: 예
@@ -166,7 +165,7 @@ type 선택값: deposit / withdraw / exchange_in / exchange_out / game_earn / ga
 
 ### 2.3 충전
 
-#### POST /api/deposit/create — 충전 주문 생성
+#### POST /api/v1/deposit/create — 충전 주문 생성
 
 ```
 인증 필요: 예
@@ -191,7 +190,7 @@ currency 선택값: USD / CNY / EUR
 
 checkout_url: 결제 게이트웨이 리다이렉트 링크(주문 생성 시 입력됨); expires_at: 결제 링크 만료 시간(생성 후 1시간)
 
-#### GET /api/deposit/orders — 충전 기록
+#### GET /api/v1/deposit/orders — 충전 기록
 
 ```
 인증 필요: 예
@@ -220,7 +219,7 @@ status 선택값: pending / paid / confirmed / cancelled
 
 ### 2.4 환전
 
-#### POST /api/exchange/quote — 견적
+#### POST /api/v1/exchange/quote — 견적
 
 ```
 인증 필요: 예
@@ -243,7 +242,7 @@ status 선택값: pending / paid / confirmed / cancelled
 
 direction: in=게임 코인 매수 / out=게임 코인 매도
 
-#### POST /api/exchange/buy — 게임 코인 매수
+#### POST /api/v1/exchange/buy — 게임 코인 매수
 
 ```
 인증 필요: 예
@@ -265,7 +264,7 @@ direction: in=게임 코인 매수 / out=게임 코인 매도
 
 오류: 422 플랫폼 코인 잔액 부족 / 404 게임을 사용할 수 없음
 
-#### POST /api/exchange/sell — 게임 코인 매도
+#### POST /api/v1/exchange/sell — 게임 코인 매도
 
 ```
 인증 필요: 예
@@ -287,7 +286,7 @@ direction: in=게임 코인 매수 / out=게임 코인 매도
 
 오류: 422 게임 코인 잔액 부족
 
-#### GET /api/exchange/records — 환전 기록
+#### GET /api/v1/exchange/records — 환전 기록
 
 ```
 인증 필요: 예
@@ -314,7 +313,7 @@ direction: in=게임 코인 매수 / out=게임 코인 매도
 
 ### 2.5 출금
 
-#### POST /api/withdraw/apply — 출금 신청
+#### POST /api/v1/withdraw/apply — 출금 신청
 
 ```
 인증 필요: 예
@@ -344,7 +343,7 @@ status:
 - 400 일일 출금 한도 초과
 - 400 잔액 부족
 
-#### GET /api/withdraw/orders — 출금 기록
+#### GET /api/v1/withdraw/orders — 출금 기록
 
 ```
 인증 필요: 예
@@ -370,7 +369,7 @@ status:
 
 ### 2.6 게임
 
-#### GET /api/game/list — 게임 목록
+#### GET /api/v1/game/list — 게임 목록
 
 ```
 파라미터: ?page=1&per_page=20&keyword=射击&type=self
@@ -404,7 +403,7 @@ status:
 
 type 선택값: self / third_party
 
-#### GET /api/game/{hashid} — 게임 상세
+#### GET /api/v1/game/{hashid} — 게임 상세
 
 ```
 응답: {
@@ -428,7 +427,7 @@ type 선택값: self / third_party
 }
 ```
 
-#### POST /api/game/launch — 게임 시작
+#### POST /api/v1/game/launch — 게임 시작
 
 ```
 인증 필요: 예
@@ -447,7 +446,7 @@ type 선택값: self / third_party
 
 7개 플랫폼 지원: Google / Facebook / Apple / X(Twitter) / Microsoft / LinkedIn / GitHub
 
-#### GET /api/auth/oauth/{provider} — 인증 URL 획득
+#### GET /api/v1/auth/oauth/{provider} — 인증 URL 획득
 
 ```
 파라미터: provider = google / facebook / apple / twitter / microsoft / linkedin / github
@@ -457,7 +456,7 @@ type 선택값: self / third_party
 }
 ```
 
-#### POST /api/auth/oauth/{provider}/callback — OAuth 콜백
+#### POST /api/v1/auth/oauth/{provider}/callback — OAuth 콜백
 
 ```
 요청: { "code": "授权码", "state": "防CSRF状态" }
@@ -474,7 +473,7 @@ is_new: true=신규 등록 사용자 / false=기존 계정 연동
 
 ### 2.8 KYC 실명 인증
 
-#### GET /api/user/identity/status — 인증 상태
+#### GET /api/v1/user/identity/status — 인증 상태
 
 ```
 인증 필요: 예
@@ -489,7 +488,7 @@ is_new: true=신규 등록 사용자 / false=기존 계정 연동
 }
 ```
 
-#### POST /api/user/identity/apply — 인증 제출
+#### POST /api/v1/user/identity/apply — 인증 제출
 
 ```
 인증 필요: 예
@@ -507,7 +506,7 @@ is_new: true=신규 등록 사용자 / false=기존 계정 연동
 
 ### 2.9 결제
 
-#### POST /api/payment/callback — 결제 콜백 (공개)
+#### POST /api/v1/payment/callback — 결제 콜백 (공개)
 
 ```
 요청: {
@@ -542,7 +541,7 @@ provider 값: stripe / paypal / nowpayments / coinbase / skrill / neteller / pay
 | mpesa | 케냐 / 탄자니아 등 (출시 예정) | — | KES / TZS |
 | paystack | 나이지리아 (출시 예정) | — | NGN |
 
-#### GET /api/payment/methods — 사용 가능한 결제 수단 (공개)
+#### GET /api/v1/payment/methods — 사용 가능한 결제 수단 (공개)
 
 ```
 응답: {
@@ -556,7 +555,7 @@ provider 값: stripe / paypal / nowpayments / coinbase / skrill / neteller / pay
 
 ### 2.10 게임 기록
 
-#### GET /api/game/play-logs — 게임 기록 목록
+#### GET /api/v1/game/play-logs — 게임 기록 목록
 
 ```
 인증 필요: 예
@@ -576,7 +575,7 @@ provider 값: stripe / paypal / nowpayments / coinbase / skrill / neteller / pay
 }
 ```
 
-#### GET /api/game/play-log/{hashid} — 게임 기록 상세
+#### GET /api/v1/game/play-log/{hashid} — 게임 기록 상세
 
 ```
 인증 필요: 예
@@ -585,7 +584,7 @@ provider 값: stripe / paypal / nowpayments / coinbase / skrill / neteller / pay
 
 ### 2.12 리더보드
 
-#### GET /api/leaderboard/list — 리더보드 목록
+#### GET /api/v1/leaderboard/list — 리더보드 목록
 
 ```
 응답: {
@@ -595,7 +594,7 @@ provider 값: stripe / paypal / nowpayments / coinbase / skrill / neteller / pay
 }
 ```
 
-#### GET /api/leaderboard/{hashid} — 리더보드 상세
+#### GET /api/v1/leaderboard/{hashid} — 리더보드 상세
 
 ```
 응답: {
@@ -610,14 +609,14 @@ provider 값: stripe / paypal / nowpayments / coinbase / skrill / neteller / pay
 
 ### 2.13 쿠폰
 
-#### GET /api/coupon/available — 수령 가능한 쿠폰
+#### GET /api/v1/coupon/available — 수령 가능한 쿠폰
 
 ```
 인증 필요: 예
 응답: { "list": [{ "id": "...", "name": "新人礼包", "type": "fixed", "value": "10.0000" }] }
 ```
 
-#### POST /api/coupon/claim — 쿠폰 수령
+#### POST /api/v1/coupon/claim — 쿠폰 수령
 
 ```
 인증 필요: 예
@@ -625,7 +624,7 @@ provider 값: stripe / paypal / nowpayments / coinbase / skrill / neteller / pay
 응답: { "coupon": { ... } }
 ```
 
-#### GET /api/coupon/my — 내 쿠폰
+#### GET /api/v1/coupon/my — 내 쿠폰
 
 ```
 인증 필요: 예
@@ -635,7 +634,7 @@ provider 값: stripe / paypal / nowpayments / coinbase / skrill / neteller / pay
 
 ### 2.14 국가 설정
 
-#### GET /api/country/list — 국가 목록
+#### GET /api/v1/country/list — 국가 목록
 
 ```
 응답: {
@@ -645,7 +644,7 @@ provider 값: stripe / paypal / nowpayments / coinbase / skrill / neteller / pay
 }
 ```
 
-#### GET /api/country/{code} — 국가 상세
+#### GET /api/v1/country/{code} — 국가 상세
 
 ```
 응답: {
@@ -659,7 +658,7 @@ provider 값: stripe / paypal / nowpayments / coinbase / skrill / neteller / pay
 
 ### 2.16 알림
 
-#### GET /api/notification/list — 알림 목록
+#### GET /api/v1/notification/list — 알림 목록
 
 ```
 인증 필요: 예
@@ -673,14 +672,14 @@ provider 값: stripe / paypal / nowpayments / coinbase / skrill / neteller / pay
 }
 ```
 
-#### GET /api/notification/unread-count — 읽지 않은 수
+#### GET /api/v1/notification/unread-count — 읽지 않은 수
 
 ```
 인증 필요: 예
 응답: { "count": 3 }
 ```
 
-#### POST /api/notification/read — 읽음 표시
+#### POST /api/v1/notification/read — 읽음 표시
 
 ```
 인증 필요: 예
@@ -689,14 +688,14 @@ provider 값: stripe / paypal / nowpayments / coinbase / skrill / neteller / pay
 
 ### 2.17 추천
 
-#### GET /api/referral/my-code — 내 추천 코드
+#### GET /api/v1/referral/my-code — 내 추천 코드
 
 ```
 인증 필요: 예
 응답: { "code": "ABC12345", "referral_count": 12, "total_rewards": "150.0000" }
 ```
 
-#### POST /api/referral/apply — 추천 코드 사용
+#### POST /api/v1/referral/apply — 추천 코드 사용
 
 ```
 인증 필요: 예
@@ -706,21 +705,21 @@ provider 값: stripe / paypal / nowpayments / coinbase / skrill / neteller / pay
 
 ### 2.18 2FA
 
-#### GET /api/user/2fa/status — 2FA 상태
+#### GET /api/v1/user/2fa/status — 2FA 상태
 
 ```
 인증 필요: 예
 응답: { "enabled": false }
 ```
 
-#### POST /api/user/2fa/setup — 2FA 설정
+#### POST /api/v1/user/2fa/setup — 2FA 설정
 
 ```
 인증 필요: 예
 응답: { "secret": "JBSWY3DPEHPK3PXP", "qr_url": "otpauth://totp/..." }
 ```
 
-#### POST /api/user/2fa/enable — 2FA 활성화
+#### POST /api/v1/user/2fa/enable — 2FA 활성화
 
 ```
 인증 필요: 예
@@ -728,7 +727,7 @@ provider 값: stripe / paypal / nowpayments / coinbase / skrill / neteller / pay
 응답: { "backup_codes": ["abcd1234ef", ...] }
 ```
 
-#### POST /api/2fa/verify — 2FA 검증 (공개)
+#### POST /api/v1/2fa/verify — 2FA 검증 (공개)
 
 ```
 요청: { "user_id": "hashid", "code": "123456" }
@@ -737,14 +736,14 @@ provider 값: stripe / paypal / nowpayments / coinbase / skrill / neteller / pay
 
 ### 2.19 검색
 
-#### GET /api/search — 전역 검색
+#### GET /api/v1/search — 전역 검색
 
 ```
 파라미터: ?q=keyword&type=game&page=1&per_page=20
 응답: { "list": [...], "total": 100 }
 ```
 
-#### GET /api/game/suggest — 검색 제안
+#### GET /api/v1/game/suggest — 검색 제안
 
 ```
 파라미터: ?q=shoot
@@ -753,7 +752,7 @@ provider 값: stripe / paypal / nowpayments / coinbase / skrill / neteller / pay
 
 ### 2.20 언어
 
-#### GET /api/language/list — 사용 가능한 언어 목록
+#### GET /api/v1/language/list — 사용 가능한 언어 목록
 
 ```
 응답: {
@@ -767,7 +766,7 @@ provider 값: stripe / paypal / nowpayments / coinbase / skrill / neteller / pay
 }
 ```
 
-#### POST /api/language/switch — 언어 전환
+#### POST /api/v1/language/switch — 언어 전환
 
 ```
 요청: { "locale": "zh-CN" }
@@ -778,7 +777,7 @@ locale 선택값: en-US / zh-CN / ja-JP / ko-KR
 
 ### 2.8 사용자
 
-#### GET /api/user/profile — 개인 정보
+#### GET /api/v1/user/profile — 개인 정보
 
 ```
 인증 필요: 예
@@ -797,7 +796,7 @@ locale 선택값: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
-#### PUT /api/user/profile — 프로필 편집
+#### PUT /api/v1/user/profile — 프로필 편집
 
 ```
 인증 필요: 예
@@ -821,7 +820,7 @@ language 선택값: en-US / zh-CN / ja-JP / ko-KR
 
 ### 2.9 공지
 
-#### GET /api/announcement/list — 공지 목록
+#### GET /api/v1/announcement/list — 공지 목록
 
 ```
 응답: {
@@ -836,7 +835,7 @@ language 선택값: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
-#### GET /api/announcement/detail/{hashid} — 공지 상세
+#### GET /api/v1/announcement/detail/{hashid} — 공지 상세
 
 ```
 응답: {
@@ -852,9 +851,9 @@ language 선택값: en-US / zh-CN / ja-JP / ko-KR
 
 | 메서드 | 경로 | 설명 | 인증 |
 |------|------|------|------|
-| GET | /api/platform/stats | 플랫폼 공개 통계 (게임 총수/사용자 총수/오늘 플레이 수/7일 활성 사용자) | 아니요 |
+| GET | /api/v1/platform/stats | 플랫폼 공개 통계 (게임 총수/사용자 총수/오늘 플레이 수/7일 활성 사용자) | 아니요 |
 
-#### GET /api/platform/stats — 플랫폼 통계
+#### GET /api/v1/platform/stats — 플랫폼 통계
 
 ```
 无需认证
@@ -1466,8 +1465,8 @@ action: approve / reject
 | 인터페이스 | 제한 |
 |------|------|
 | 기본 | 60회/분/IP |
-| POST /api/auth/login | 10회/분 |
-| POST /api/auth/register | 5회/분 |
+| POST /api/v1/auth/login | 10회/분 |
+| POST /api/v1/auth/register | 5회/분 |
 
 초과 시 429 반환, 응답 헤더 포함:
 ```
@@ -1600,7 +1599,7 @@ Retry-After: 60
 
 ### 7.2 티켓 API
 
-#### GET /api/ticket/list — 티켓 목록
+#### GET /api/v1/ticket/list — 티켓 목록
 
 ```
 인증 필요: 예
@@ -1625,7 +1624,7 @@ Retry-After: 60
 type: deposit / withdraw / game / account / other
 status: open / waiting / replied / closed
 
-#### POST /api/ticket/create — 티켓 생성
+#### POST /api/v1/ticket/create — 티켓 생성
 
 ```
 인증 필요: 예
@@ -1637,7 +1636,7 @@ status: open / waiting / replied / closed
 응답: { "code": 0, "message": "Ticket created", "data": { "id": "aB3xK..." } }
 ```
 
-#### GET /api/ticket/{hashid} — 티켓 상세
+#### GET /api/v1/ticket/{hashid} — 티켓 상세
 
 ```
 인증 필요: 예
@@ -1650,7 +1649,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### POST /api/ticket/{hashid}/reply — 티켓 답변
+#### POST /api/v1/ticket/{hashid}/reply — 티켓 답변
 
 ```
 인증 필요: 예
@@ -1660,7 +1659,7 @@ status: open / waiting / replied / closed
 
 ### 7.3 이메일 인증 API
 
-#### POST /api/verify/send-email — 이메일 인증 코드 발송
+#### POST /api/v1/verify/send-email — 이메일 인증 코드 발송
 
 ```
 인증 필요: 예
@@ -1669,7 +1668,7 @@ status: open / waiting / replied / closed
 오류: 429 60초 후 재시도
 ```
 
-#### POST /api/verify/confirm-email — 이메일 확인
+#### POST /api/v1/verify/confirm-email — 이메일 확인
 
 ```
 인증 필요: 예
@@ -1680,7 +1679,7 @@ status: open / waiting / replied / closed
 
 ### 7.4 VIP API
 
-#### GET /api/user/vip-status — VIP 상태
+#### GET /api/v1/user/vip-status — VIP 상태
 
 ```
 인증 필요: 예
@@ -1700,7 +1699,7 @@ status: open / waiting / replied / closed
 
 ### 7.5 업적 API
 
-#### GET /api/user/achievements — 업적 목록
+#### GET /api/v1/user/achievements — 업적 목록
 
 ```
 인증 필요: 예
@@ -1899,10 +1898,10 @@ status: open / waiting / replied / closed
 | 인터페이스 | 제한 |
 |------|------|
 | 기본 | 60회/분/IP |
-| POST /api/auth/login | 10회/분 |
-| POST /api/auth/register | 5회/분 |
-| POST /api/auth/oauth | 10회/분 |
-| POST /api/payment/callback | 30회/분 |
+| POST /api/v1/auth/login | 10회/분 |
+| POST /api/v1/auth/register | 5회/분 |
+| POST /api/v1/auth/oauth | 10회/분 |
+| POST /api/v1/payment/callback | 30회/분 |
 | POST /api/provider/* | 무제한 (HMAC 서명 인증) |
 
 ## 9. 인증 설명 (업데이트)
@@ -1918,43 +1917,43 @@ status: open / waiting / replied / closed
 
 ### 7.7 친구 API
 
-#### GET /api/friend/list — 친구 목록
+#### GET /api/v1/friend/list — 친구 목록
 ```
 인증 필요: 예
 응답: { "list": [{ "id": "...", "username": "...", "nickname": "...", "avatar": "..." }] }
 ```
 
-#### GET /api/friend/requests — 처리 대기 신청
+#### GET /api/v1/friend/requests — 처리 대기 신청
 ```
 인증 필요: 예
 응답: { "list": [{ "id": "...", "user": {...}, "created_at": "..." }] }
 ```
 
-#### POST /api/friend/request — 친구 신청 보내기
+#### POST /api/v1/friend/request — 친구 신청 보내기
 ```
 인증 필요: 예
 요청: { "friend_id": "hashid" }
 ```
 
-#### POST /api/friend/accept — 신청 수락
+#### POST /api/v1/friend/accept — 신청 수락
 ```
 인증 필요: 예
 요청: { "request_id": "hashid" }
 ```
 
-#### POST /api/friend/reject — 신청 거절
+#### POST /api/v1/friend/reject — 신청 거절
 ```
 인증 필요: 예
 요청: { "request_id": "hashid" }
 ```
 
-#### POST /api/friend/remove — 친구 삭제
+#### POST /api/v1/friend/remove — 친구 삭제
 ```
 인증 필요: 예
 요청: { "friend_id": "hashid" }
 ```
 
-#### GET /api/friend/search — 사용자 검색
+#### GET /api/v1/friend/search — 사용자 검색
 ```
 인증 필요: 예
 파라미터: ?q=username
@@ -1963,7 +1962,7 @@ status: open / waiting / replied / closed
 
 ### 7.8 채팅 API
 
-#### GET /api/chat/conversations — 대화 목록
+#### GET /api/v1/chat/conversations — 대화 목록
 ```
 인증 필요: 예
 응답: {
@@ -1976,7 +1975,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /api/chat/messages/{peerHashid} — 메시지 목록
+#### GET /api/v1/chat/messages/{peerHashid} — 메시지 목록
 ```
 인증 필요: 예
 파라미터: ?page=1&per_page=50
@@ -1984,14 +1983,14 @@ status: open / waiting / replied / closed
 상대가 보낸 읽지 않은 메시지를 자동으로 읽음 표시
 ```
 
-#### POST /api/chat/send — 메시지 보내기
+#### POST /api/v1/chat/send — 메시지 보내기
 ```
 인증 필요: 예
 요청: { "to_user_id": "hashid", "content": "Hello!" }
 오류: 403 친구가 아니면 전송 불가
 ```
 
-#### GET /api/chat/unread-total — 읽지 않은 총수
+#### GET /api/v1/chat/unread-total — 읽지 않은 총수
 ```
 인증 필요: 예
 응답: { "count": 5 }
@@ -2009,20 +2008,20 @@ status: open / waiting / replied / closed
 
 ### 7.9 Webhook API
 
-#### GET /api/webhook/list — 구독 목록
+#### GET /api/v1/webhook/list — 구독 목록
 ```
 인증 필요: 예
 응답: { "list": [{ "id": "...", "url": "https://...", "events": ["deposit.completed"] }] }
 ```
 
-#### POST /api/webhook/register — 구독 등록
+#### POST /api/v1/webhook/register — 구독 등록
 ```
 인증 필요: 예
 요청: { "url": "https://my-server.com/hook", "events": ["deposit.completed", "game.played"] }
 사용 가능 이벤트: deposit.completed / withdraw.completed / exchange.completed / game.played / user.registered / risk.alert / user.vip_upgraded
 ```
 
-#### POST /api/webhook/delete — 구독 삭제
+#### POST /api/v1/webhook/delete — 구독 삭제
 ```
 인증 필요: 예
 요청: { "id": "hook_id" }
@@ -2071,18 +2070,18 @@ status: open / waiting / replied / closed
 
 ### 7.11 토너먼트 API
 
-#### GET /api/tournament/list — 토너먼트 목록
+#### GET /api/v1/tournament/list — 토너먼트 목록
 ```
 파라미터: ?status=active|upcoming|ended&page=1&per_page=20
 응답: { "items": [{ "id": "...", "name": "...", "prize_pool": "1000.0000", "player_count": 45, "max_players": 100 }], "total": 5 }
 ```
 
-#### GET /api/tournament/{hashid} — 토너먼트 상세
+#### GET /api/v1/tournament/{hashid} — 토너먼트 상세
 ```
 응답: { "id": "...", "name": "...", "leaderboard": [...], "my_entry": {...} }
 ```
 
-#### POST /api/tournament/{hashid}/join — 대회 참가 신청
+#### POST /api/v1/tournament/{hashid}/join — 대회 참가 신청
 ```
 인증 필요: 예
 오류: 422 이미 신청함 / 400 시작되었거나 정원 초과 / 503 FeatureFlag 꺼짐
@@ -2108,7 +2107,7 @@ status: open / waiting / replied / closed
 
 | 인터페이스 | 제한 |
 |------|------|
-| POST /api/tournament/{id}/join | 10회/분 |
+| POST /api/v1/tournament/{id}/join | 10회/분 |
 
 ---
 
@@ -2159,23 +2158,23 @@ status: open / waiting / replied / closed
 | POST /admin/activities/create | 활동 생성 (관리자) |
 | PUT /admin/activities/{hashid} | 활동 수정 (관리자) |
 | DELETE /admin/activities/{hashid} | 활동 삭제 (관리자) |
-| GET /api/activities/list | 활동 목록 (C측) |
-| GET /api/activities/progress | 참여 진행 상황 (C측) |
-| GET /api/activities/{hashid} | 활동 상세 (C측) |
-| POST /api/activities/{hashid}/checkin | 체크인 (C측) |
+| GET /api/v1/activities/list | 활동 목록 (C측) |
+| GET /api/v1/activities/progress | 참여 진행 상황 (C측) |
+| GET /api/v1/activities/{hashid} | 활동 상세 (C측) |
+| POST /api/v1/activities/{hashid}/checkin | 체크인 (C측) |
 
 ### 10.4 그룹/공유 (C측 :8788 + 관리자 :8787)
 
 | 엔드포인트 | 설명 |
 |------|------|
-| POST /api/groups | 그룹 생성 |
-| GET /api/groups/{hashid} | 그룹 상세 |
-| GET /api/groups/{hashid}/members | 멤버 목록 |
-| POST /api/groups/{hashid}/join | 그룹 가입 |
-| POST /api/groups/{hashid}/leave | 그룹 탈퇴 |
-| PUT /api/groups/{hashid}/role | 멤버 역할 |
-| POST /api/shares | 공유 링크 생성 |
-| POST /api/shares/visit | 공유 방문 추적 |
+| POST /api/v1/groups | 그룹 생성 |
+| GET /api/v1/groups/{hashid} | 그룹 상세 |
+| GET /api/v1/groups/{hashid}/members | 멤버 목록 |
+| POST /api/v1/groups/{hashid}/join | 그룹 가입 |
+| POST /api/v1/groups/{hashid}/leave | 그룹 탈퇴 |
+| PUT /api/v1/groups/{hashid}/role | 멤버 역할 |
+| POST /api/v1/shares | 공유 링크 생성 |
+| POST /api/v1/shares/visit | 공유 방문 추적 |
 | GET /admin/groups | 그룹 목록 (관리자) |
 | GET /admin/groups/{hashid}/audit | 그룹 심사 (관리자) |
 | GET /admin/share/stats | 공유 통계 (관리자) |

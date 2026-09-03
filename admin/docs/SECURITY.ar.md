@@ -156,7 +156,7 @@ if (Redis::get("security_ban:{$ip}")) {
 
 مثال على تنسيق السجل:
 ```
-2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
+2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/v1/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
 2026-05-20 14:32:15 [SECURITY] IP banned 15min | IP: 192.168.1.100 | Triggers: 5
 ```
 
@@ -178,7 +178,7 @@ if (Redis::get("security_ban:{$ip}")) {
 |----|-----|------|
 | Access-Control-Allow-Origin | `*` | السماح بالعمل عبر الأصول من أي مصدر (سيناريو لوحة الإدارة داخل الشبكة) |
 | Access-Control-Allow-Methods | `GET,POST,PUT,DELETE,OPTIONS` | مجموعة الطرق المسموح بها |
-| Access-Control-Allow-Headers | `Authorization,Content-Type,API-Version` | الترويسات المخصصة المسموح بها |
+| Access-Control-Allow-Headers | `Authorization,Content-Type` | الترويسات المخصصة المسموح بها |
 | Access-Control-Max-Age | `86400` | تخزين طلبات الفحص المسبق 24 ساعة |
 | X-Content-Type-Options | `nosniff` | منع المتصفح من فحص MIME |
 | X-Frame-Options | `DENY` | منع التضمين في كل iframe، ضد اختطاف النقر |
@@ -230,8 +230,8 @@ redis.call('EXPIRE', KEYS[1], window + 10)
 | المسار | الحد | النافذة | السيناريو |
 |------|------|------|------|
 | الافتراضي (كل المسارات) | 60 مرة/دقيقة | 60s | API عام |
-| `/api/auth/login` | 10 مرات/دقيقة | 60s | تسجيل الدخول (منع التخمين العنيف) |
-| `/api/auth/register` | 5 مرات/دقيقة | 60s | التسجيل (منع التسجيل الجماعي) |
+| `/api/v1/auth/login` | 10 مرات/دقيقة | 60s | تسجيل الدخول (منع التخمين العنيف) |
+| `/api/v1/auth/register` | 5 مرات/دقيقة | 60s | التسجيل (منع التسجيل الجماعي) |
 
 ### ترويسات الاستجابة
 
@@ -322,7 +322,7 @@ try {
 
 **آلية القائمة السوداء**: عند تسجيل خروج المستخدم، يُكتب `md5(token)` في Redis مع TTL يساوي مدة JWT المتبقية. عند تعطل Redis يُتجاوز فحص القائمة السوداء (fail-open)، وعندها يمكن استخدام الرمز المسجل خروجه مؤقتًا، لكن المدة القصيرة لـ JWT نفسه (2h) تشكل حماية احتياطية.
 
-**تحديث الرمز**: يتحقق `POST /api/auth/refresh` من رمز التحديث الأصلي (`token_type=refresh` وغير منتهٍ/غير مُدرج في القائمة السوداء) قبل إصدار رموز متجددة، ويتحقق من أن `sub` معرف مستخدم صالح — **لا يُصدر بعد الآن refresh token بقيمة sub=null**، وفشل التحديث يُرجع 401 مباشرة.
+**تحديث الرمز**: يتحقق `POST /api/v1/auth/refresh` من رمز التحديث الأصلي (`token_type=refresh` وغير منتهٍ/غير مُدرج في القائمة السوداء) قبل إصدار رموز متجددة، ويتحقق من أن `sub` معرف مستخدم صالح — **لا يُصدر بعد الآن refresh token بقيمة sub=null**، وفشل التحديث يُرجع 401 مباشرة.
 
 ### 6.2 تقييد الجلسات المتزامنة
 
@@ -389,7 +389,7 @@ try {
 
 ### 6.4 التحقق من توقيع رد الدفع (fail-closed)
 
-يعتمد `POST /api/payment/callback` (رد تعبئة Stripe/PayPal) تحقق التوقيع بنمط **fail-closed**، أي غياب أي تكوين أو أي خلل في التحقق يرفض الرد:
+يعتمد `POST /api/v1/payment/callback` (رد تعبئة Stripe/PayPal) تحقق التوقيع بنمط **fail-closed**، أي غياب أي تكوين أو أي خلل في التحقق يرفض الرد:
 
 | السيناريو | السلوك |
 |------|------|

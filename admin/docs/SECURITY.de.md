@@ -156,7 +156,7 @@ Dateipfad: `runtime/logs/security.log`
 
 Beispiel des Protokollformats:
 ```
-2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
+2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/v1/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
 2026-05-20 14:32:15 [SECURITY] IP banned 15min | IP: 192.168.1.100 | Triggers: 5
 ```
 
@@ -178,7 +178,7 @@ Alle Header werden in der `Cors`-Middleware injiziert und über `$response->with
 |----|-----|------|
 | Access-Control-Allow-Origin | `*` | beliebige Quellen Cross-Origin erlauben (Intranet-Admin-Szenario) |
 | Access-Control-Allow-Methods | `GET,POST,PUT,DELETE,OPTIONS` | erlaubter Methodensatz |
-| Access-Control-Allow-Headers | `Authorization,Content-Type,API-Version` | erlaubte benutzerdefinierte Header |
+| Access-Control-Allow-Headers | `Authorization,Content-Type` | erlaubte benutzerdefinierte Header |
 | Access-Control-Max-Age | `86400` | Preflight-Cache 24 Stunden |
 | X-Content-Type-Options | `nosniff` | verhindert Browser-MIME-Sniffing |
 | X-Frame-Options | `DENY` | verhindert jede iframe-Einbettung, gegen Clickjacking |
@@ -230,8 +230,8 @@ Das Lua-Skript wird serverseitig in Redis single-threaded ausgeführt, **von Nat
 | Route | Limit | Fenster | Szenario |
 |------|------|------|------|
 | Standard (alle Routen) | 60/Minute | 60s | Allgemeine API |
-| `/api/auth/login` | 10/Minute | 60s | Login (gegen Brute-Force) |
-| `/api/auth/register` | 5/Minute | 60s | Registrierung (gegen Massen-Registrierung) |
+| `/api/v1/auth/login` | 10/Minute | 60s | Login (gegen Brute-Force) |
+| `/api/v1/auth/register` | 5/Minute | 60s | Registrierung (gegen Massen-Registrierung) |
 
 ### Response-Header
 
@@ -322,7 +322,7 @@ Implementiert in der AdminAuth-Middleware, an den authentifizierungspflichtigen 
 
 **Blacklist-Mechanismus**: Beim Logout wird `md5(token)` in Redis geschrieben, TTL = verbleibende JWT-Gültigkeitsdauer. Bei Redis-Ausfall wird die Blacklist-Prüfung übersprungen (fail-open); ausgeloggte Tokens bleiben dann kurz nutzbar, aber die kurze JWT-Gültigkeit (2h) selbst dient als Auffangschutz.
 
-**Token-Refresh**: `POST /api/auth/refresh` prüft das ursprüngliche Refresh-Token (`token_type=refresh` und nicht abgelaufen/nicht gesperrt), bevor neue Tokens ausgestellt werden, und prüft, dass `sub` eine gültige Benutzer-ID ist — **es werden keine Refresh-Tokens mit sub=null mehr ausgestellt**; bei Refresh-Fehler wird direkt 401 zurückgegeben.
+**Token-Refresh**: `POST /api/v1/auth/refresh` prüft das ursprüngliche Refresh-Token (`token_type=refresh` und nicht abgelaufen/nicht gesperrt), bevor neue Tokens ausgestellt werden, und prüft, dass `sub` eine gültige Benutzer-ID ist — **es werden keine Refresh-Tokens mit sub=null mehr ausgestellt**; bei Refresh-Fehler wird direkt 401 zurückgegeben.
 
 ### 6.2 Begrenzung paralleler Sitzungen
 
@@ -389,7 +389,7 @@ Zum Beispiel:
 
 ### 6.4 Zahlungs-Callback-Signaturprüfung (fail-closed)
 
-Der `POST /api/payment/callback` (Stripe/PayPal-Einzahlungs-Callback) verwendet für die Signaturprüfung **fail-closed**; jede fehlende Konfiguration oder Prüfanomalie lehnt den Callback ab:
+Der `POST /api/v1/payment/callback` (Stripe/PayPal-Einzahlungs-Callback) verwendet für die Signaturprüfung **fail-closed**; jede fehlende Konfiguration oder Prüfanomalie lehnt den Callback ab:
 
 | Szenario | Verhalten |
 |------|------|

@@ -156,7 +156,7 @@ File location: `runtime/logs/security.log`
 
 Example log format:
 ```
-2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
+2026-05-20 14:32:11 [SECURITY] XSS attack blocked | IP: 192.168.1.100 | Path: /admin/v1/user | Field: body.username | Source: body | Payload: <script>alert(1)</script>
 2026-05-20 14:32:15 [SECURITY] IP banned 15min | IP: 192.168.1.100 | Triggers: 5
 ```
 
@@ -178,7 +178,7 @@ All headers are injected in the `Cors` middleware via `$response->withHeaders()`
 |----|-----|------|
 | Access-Control-Allow-Origin | `*` | Allow cross-origin from any origin (intranet admin backend scenario) |
 | Access-Control-Allow-Methods | `GET,POST,PUT,DELETE,OPTIONS` | Allowed method set |
-| Access-Control-Allow-Headers | `Authorization,Content-Type,API-Version` | Allowed custom headers |
+| Access-Control-Allow-Headers | `Authorization,Content-Type` | Allowed custom headers |
 | Access-Control-Max-Age | `86400` | Preflight request cache for 24 hours |
 | X-Content-Type-Options | `nosniff` | Prevents browser MIME sniffing |
 | X-Frame-Options | `DENY` | Forbids all iframe embedding, preventing clickjacking |
@@ -230,8 +230,8 @@ The Lua script executes single-threaded on the Redis server side, **naturally at
 | Route | Limit | Window | Scenario |
 |------|------|------|------|
 | Default (all routes) | 60/min | 60s | General API |
-| `/api/auth/login` | 10/min | 60s | Login (anti-brute-force) |
-| `/api/auth/register` | 5/min | 60s | Registration (anti-batch-registration) |
+| `/api/v1/auth/login` | 10/min | 60s | Login (anti-brute-force) |
+| `/api/v1/auth/register` | 5/min | 60s | Registration (anti-batch-registration) |
 
 ### Response Headers
 
@@ -322,7 +322,7 @@ Implemented by the AdminAuth middleware, mounted on route groups requiring authe
 
 **Blacklist mechanism**: on user logout, `md5(token)` is written to Redis with TTL set to the JWT's remaining validity. On Redis failure, the blacklist check is skipped (fail-open); logged-out tokens remain usable for a short time, but the JWT's own short validity (2h) acts as a backstop.
 
-**Token refresh**: `POST /api/auth/refresh` validates the original refresh token (with `token_type=refresh`, not expired, not blacklisted) before rotating and issuing new tokens, and validates that `sub` must be a valid user ID — **refresh tokens with sub=null are no longer issued**; refresh failure directly returns 401.
+**Token refresh**: `POST /api/v1/auth/refresh` validates the original refresh token (with `token_type=refresh`, not expired, not blacklisted) before rotating and issuing new tokens, and validates that `sub` must be a valid user ID — **refresh tokens with sub=null are no longer issued**; refresh failure directly returns 401.
 
 ### 6.2 Concurrent Session Limit
 
@@ -389,7 +389,7 @@ For example:
 
 ### 6.4 Payment Callback Verification (fail-closed)
 
-`POST /api/payment/callback` (Stripe/PayPal deposit callback) verification is **fail-closed**: any missing config or validation anomaly rejects the callback:
+`POST /api/v1/payment/callback` (Stripe/PayPal deposit callback) verification is **fail-closed**: any missing config or validation anomaly rejects the callback:
 
 | Scenario | Behavior |
 |------|------|

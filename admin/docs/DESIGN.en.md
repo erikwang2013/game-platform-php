@@ -64,7 +64,7 @@ Languages: [中文](DESIGN.md) · **English** · [한국어](DESIGN.ko.md) · [�
 | Layer | Directory | Responsibility |
 |---|------|------|
 | Routing | `config/route.php` | URL-to-controller mapping, middleware binding, versioned routes |
-| Middleware | `app/middleware/` | Attack blocking (SecurityFilter), rate limiting (RateLimit), auth (JWT), authorization (RBAC), API version (ApiVersion) |
+| Middleware | `app/middleware/` | Attack blocking (SecurityFilter), rate limiting (RateLimit), auth (JWT), authorization (RBAC) |
 | Controllers | 30: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (admin) + Captcha/Auth (API v1) | Request parameter validation, business logic invocation, response formatting |
 | Business services | `common/service/` | Data analytics: GameDashboardService (overview/rankings/trends), DepositLogService (revenue/conversion), ProbabilityService (joint/conditional probability, SQL builder); returns empty data instead of errors on DB failure |
 | Data models | `app/model/` | ORM mapping, relations, field encryption/decryption |
@@ -88,9 +88,6 @@ Route 匹配
   ▼
   RateLimit ───────────► Redis 滑动窗口限流
   │ (失败返回 429 + Retry-After 头)
-  ▼
-  ApiVersion ─────────► API-Version 头校验，注入 $request->apiVersion
-  │ (失败返回 400)
   ▼
   AdminAuth ──────────► JWT 验证，注入 $request->adminId
   │ (失败返回 401)
@@ -173,58 +170,50 @@ game_system_config (系统配置) — 独立表
 ### 4.1 URL Conventions
 
 ```
-公开接口:  /api/captcha/{generate|verify}
-           /api/auth/{login|register|refresh}
+公开接口:  /api/v1/captcha/{generate|verify}
+           /api/v1/auth/{login|register|refresh}
 
-管理端:   /admin/{resource}[/{hashid}]
-          /admin/export/{excel|pdf}
+管理端:   /admin/v1/{resource}[/{hashid}]
+          /admin/v1/export/{excel|pdf}
 
 资源路由:
-  GET    /admin/user          → 列表
-  POST   /admin/user          → 创建
-  GET    /admin/user/{hashid} → 详情
-  PUT    /admin/user/{hashid} → 更新
-  DELETE /admin/user/{hashid} → 删除（需密码确认）
+  GET    /admin/v1/user          → 列表
+  POST   /admin/v1/user          → 创建
+  GET    /admin/v1/user/{hashid} → 详情
+  PUT    /admin/v1/user/{hashid} → 更新
+  DELETE /admin/v1/user/{hashid} → 删除（需密码确认）
 
-系统配置:  /admin/config[/{hashid}]
-操作日志:  /admin/log
-个人中心:  /admin/profile[/password|/logout]
-导入:     /admin/import/users
-上传:     /admin/upload
-批量:     /admin/user/batch/{destroy|status}
+系统配置:  /admin/v1/config[/{hashid}]
+操作日志:  /admin/v1/log
+个人中心:  /admin/v1/profile[/password|/logout]
+导入:     /admin/v1/import/users
+上传:     /admin/v1/upload
+批量:     /admin/v1/user/batch/{destroy|status}
 文档:     /api/docs     (OpenAPI 3.0)
 健康:     /health
 ```
 
 ### 4.2 API Version Strategy
 
-API versions are controlled via a request header, **not reflected in the URL path**:
-
-```http
-API-Version: v1
-```
+API versions are carried in the URL path prefix (default `v1`); no request header is used:
 
 | Mechanism | Description |
 |------|------|
-| Default version | Defaults to `v1` when the `API-Version` header is absent |
-| Validation | Validated by the `ApiVersion` middleware, unsupported versions return 400 |
-| Routing | The `v()` helper resolves the controller class dynamically based on version |
+| Default version | Defaults to `v1`, determined by the route-group prefix |
+| Routing | Route-group prefixes `/api/v1`, `/admin/v1` map the version to the controller namespace; the `v()` helper resolves the controller class by version |
 | Directory | Controllers organized by version: `app/api/{version}/controller/` |
 
 Extension example — adding a v2 API:
 1. Create `app/api/v2/controller/AuthController.php`
-2. Add `'v2'` to the `SUPPORTED` constant of the `ApiVersion` middleware
-3. No route definition changes needed
+2. Register an `/api/v2` route group and bind the controller
+3. Pass the version explicitly to `v()`: `v('AuthController', 'login', 'v2')`
 
 ```bash
 # Use v1
-curl -H "API-Version: v1" /api/auth/login
+curl http://host/api/v1/auth/login
 
 # Use v2
-curl -H "API-Version: v2" /api/auth/login
-
-# No header, defaults to v1
-curl /api/auth/login
+curl http://host/api/v2/auth/login
 ```
 
 ### 4.3 Rate Limit Strategy
@@ -234,8 +223,8 @@ Based on the Redis Sorted Set sliding window algorithm, executed atomically with
 | Endpoint | Limit |
 |------|------|
 | Default | 60/min/IP/route |
-| POST /api/auth/login | 10/min |
-| POST /api/auth/register | 5/min |
+| POST /api/v1/auth/login | 10/min |
+| POST /api/v1/auth/register | 5/min |
 
 Exceeding the limit returns 429, with X-RateLimit-Limit / Remaining / Reset / Retry-After response headers.
 
@@ -264,12 +253,12 @@ Exceeding the limit returns 429, with X-RateLimit-Limit / Remaining / Reset / Re
 ```
 客户端                               服务端
   │                                    │
-  │  ① POST /api/captcha/generate     │ captcha_create('click')
+  │  ① POST /api/v1/captcha/generate     │ captcha_create('click')
   │◄── {key, image(base64), targets}  │
   │                                    │
   │  ② 用户点击图中文字位置              │
   │                                    │
-  │  ③ POST /api/auth/login           │
+  │  ③ POST /api/v1/auth/login           │
   │     {username, password,          │
   │      captcha_key, clicks}         │
   │────────────────────────────────►  │
@@ -278,7 +267,7 @@ Exceeding the limit returns 429, with X-RateLimit-Limit / Remaining / Reset / Re
   │                                    │ ③ jwt()->create()
   │◄── {access_token, refresh_token}  │
   │                                    │
-  │  ④ GET /admin/dashboard           │
+  │  ④ GET /admin/v1/dashboard           │
   │     Authorization: Bearer xxx     │
   │────────────────────────────────►  │ AdminAuth → AdminPermission
   │◄── 200 {dashboard data}           │
@@ -306,7 +295,7 @@ Sensitive operations like deleting users, roles, and permissions require passing
 ```
 客户端                           服务端
   │                                │
-  │  DELETE /admin/user/{hashid}  │
+  │  DELETE /admin/v1/user/{hashid}  │
   │  { password: "******" }       │
   │────────────────────────────►  │
   │                                │ confirmPassword(adminId, password)
@@ -323,11 +312,11 @@ The payment method management module (`PaymentController` + Flutter `payment_pag
 
 | Method | Path | Description |
 |------|------|------|
-| GET | /admin/payment/method/list | List (ascending by sort) |
-| POST | /admin/payment/method/toggle | Enable/disable |
-| POST | /admin/payment/method/create | Create |
-| PUT | /admin/payment/method/{hashid} | Update (only provided fields) |
-| DELETE | /admin/payment/method/{hashid} | Delete (rejected with 422 if pending orders exist) |
+| GET | /admin/v1/payment/method/list | List (ascending by sort) |
+| POST | /admin/v1/payment/method/toggle | Enable/disable |
+| POST | /admin/v1/payment/method/create | Create |
+| PUT | /admin/v1/payment/method/{hashid} | Update (only provided fields) |
+| DELETE | /admin/v1/payment/method/{hashid} | Delete (rejected with 422 if pending orders exist) |
 
 - **provider whitelist**: `stripe` / `nowpayments` / `coinbase`
 - **Fields**: name / type (fiat|crypto) / provider / status / sort / countries[] (country visibility, empty = global) / currency / min_amount / max_amount / config (JSON, stored encrypted)
@@ -419,7 +408,7 @@ SCOUT_HOSTS         → ES 地址，内网部署
 ### 7.1 Excel Export
 
 ```
-请求: POST /admin/export/excel { table, columns, conditions, title }
+请求: POST /admin/v1/export/excel { table, columns, conditions, title }
   → fetchExportData() 查询数据 (limit 10000)
   → 脱敏敏感字段
   → PhpSpreadsheet 构建（蓝底白字表头 + 冻结首行 + 自动筛选）
@@ -429,7 +418,7 @@ SCOUT_HOSTS         → ES 地址，内网部署
 ### 7.2 PDF Export
 
 ```
-请求: POST /admin/export/pdf { type: table|dashboard, title, data }
+请求: POST /admin/v1/export/pdf { type: table|dashboard, title, data }
   → buildPdfHtml() HTML + 内联CSS + 页头版权 + 页脚不可移除版权
   → Dompdf 渲染 A4 横向
   → 写入 runtime/tmp/ → download 响应

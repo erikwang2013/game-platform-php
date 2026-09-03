@@ -24,7 +24,6 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 
 ```
 Content-Type: application/json
-API-Version: v1
 Authorization: Bearer <token>    (प्रमाणीकरण आवश्यक इंटरफ़ेस)
 ```
 
@@ -75,7 +74,7 @@ Authorization: Bearer <token>    (प्रमाणीकरण आवश्य
 
 ### 2.1 प्रमाणीकरण
 
-#### POST /api/auth/register — उपयोगकर्ता पंजीकरण
+#### POST /api/v1/auth/register — उपयोगकर्ता पंजीकरण
 
 ```
 अनुरोध: {
@@ -96,7 +95,7 @@ Authorization: Bearer <token>    (प्रमाणीकरण आवश्य
 }
 ```
 
-#### POST /api/auth/login — उपयोगकर्ता लॉगिन
+#### POST /api/v1/auth/login — उपयोगकर्ता लॉगिन
 
 ```
 अनुरोध: {
@@ -113,7 +112,7 @@ Authorization: Bearer <token>    (प्रमाणीकरण आवश्य
 
 त्रुटि: 401 उपयोगकर्ता नाम या पासवर्ड गलत / खाता अक्षम
 
-#### POST /api/auth/refresh — Token रिफ्रेश
+#### POST /api/v1/auth/refresh — Token रिफ्रेश
 
 ```
 अनुरोध: (Authorization: Bearer <refresh_token>)
@@ -126,7 +125,7 @@ Authorization: Bearer <token>    (प्रमाणीकरण आवश्य
 
 ### 2.2 वॉलेट
 
-#### GET /api/wallet/info — वॉलेट जानकारी
+#### GET /api/v1/wallet/info — वॉलेट जानकारी
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -139,7 +138,7 @@ Authorization: Bearer <token>    (प्रमाणीकरण आवश्य
 }
 ```
 
-#### GET /api/wallet/transactions — लेनदेन रिकॉर्ड
+#### GET /api/v1/wallet/transactions — लेनदेन रिकॉर्ड
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -166,7 +165,7 @@ type वैकल्पिक मान: deposit / withdraw / exchange_in / exch
 
 ### 2.3 रिचार्ज
 
-#### POST /api/deposit/create — रिचार्ज ऑर्डर बनाएं
+#### POST /api/v1/deposit/create — रिचार्ज ऑर्डर बनाएं
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -191,7 +190,7 @@ currency वैकल्पिक मान: USD / CNY / EUR
 
 checkout_url: भुगतान गेटवे रीडायरेक्ट लिंक (ऑर्डर बनाते समय भरा जाता है); expires_at: भुगतान लिंक की समाप्ति (बनाने के 1 घंटे बाद)
 
-#### GET /api/deposit/orders — रिचार्ज रिकॉर्ड
+#### GET /api/v1/deposit/orders — रिचार्ज रिकॉर्ड
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -220,7 +219,7 @@ status वैकल्पिक मान: pending / paid / confirmed / cancelle
 
 ### 2.4 विनिमय
 
-#### POST /api/exchange/quote — मूल्य पूछताछ
+#### POST /api/v1/exchange/quote — मूल्य पूछताछ
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -243,7 +242,7 @@ status वैकल्पिक मान: pending / paid / confirmed / cancelle
 
 direction: in=गेम कॉइन खरीदना / out=गेम कॉइन बेचना
 
-#### POST /api/exchange/buy — गेम कॉइन खरीदें
+#### POST /api/v1/exchange/buy — गेम कॉइन खरीदें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -265,7 +264,7 @@ direction: in=गेम कॉइन खरीदना / out=गेम कॉ�
 
 त्रुटि: 422 प्लेटफ़ॉर्म कॉइन शेष अपर्याप्त / 404 गेम अनुपलब्ध
 
-#### POST /api/exchange/sell — गेम कॉइन बेचें
+#### POST /api/v1/exchange/sell — गेम कॉइन बेचें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -287,7 +286,7 @@ direction: in=गेम कॉइन खरीदना / out=गेम कॉ�
 
 त्रुटि: 422 गेम कॉइन शेष अपर्याप्त
 
-#### GET /api/exchange/records — विनिमय रिकॉर्ड
+#### GET /api/v1/exchange/records — विनिमय रिकॉर्ड
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -314,7 +313,7 @@ direction: in=गेम कॉइन खरीदना / out=गेम कॉ�
 
 ### 2.5 निकासी
 
-#### POST /api/withdraw/apply — निकासी आवेदन
+#### POST /api/v1/withdraw/apply — निकासी आवेदन
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -344,7 +343,7 @@ status:
 - 400 दैनिक निकासी सीमा से अधिक
 - 400 शेष अपर्याप्त
 
-#### GET /api/withdraw/orders — निकासी रिकॉर्ड
+#### GET /api/v1/withdraw/orders — निकासी रिकॉर्ड
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -370,7 +369,7 @@ status:
 
 ### 2.6 गेम
 
-#### GET /api/game/list — गेम सूची
+#### GET /api/v1/game/list — गेम सूची
 
 ```
 पैरामीटर: ?page=1&per_page=20&keyword=射击&type=self
@@ -404,7 +403,7 @@ status:
 
 type वैकल्पिक मान: self / third_party
 
-#### GET /api/game/{hashid} — गेम विवरण
+#### GET /api/v1/game/{hashid} — गेम विवरण
 
 ```
 प्रतिक्रिया: {
@@ -428,7 +427,7 @@ type वैकल्पिक मान: self / third_party
 }
 ```
 
-#### POST /api/game/launch — गेम लॉन्च करें
+#### POST /api/v1/game/launch — गेम लॉन्च करें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -447,7 +446,7 @@ type वैकल्पिक मान: self / third_party
 
 7 प्लेटफ़ॉर्म समर्थित: Google / Facebook / Apple / X(Twitter) / Microsoft / LinkedIn / GitHub
 
-#### GET /api/auth/oauth/{provider} — प्राधिकरण URL प्राप्त करें
+#### GET /api/v1/auth/oauth/{provider} — प्राधिकरण URL प्राप्त करें
 
 ```
 पैरामीटर: provider = google / facebook / apple / twitter / microsoft / linkedin / github
@@ -457,7 +456,7 @@ type वैकल्पिक मान: self / third_party
 }
 ```
 
-#### POST /api/auth/oauth/{provider}/callback — OAuth कॉलबैक
+#### POST /api/v1/auth/oauth/{provider}/callback — OAuth कॉलबैक
 
 ```
 अनुरोध: { "code": "授权码", "state": "防CSRF状态" }
@@ -474,7 +473,7 @@ is_new: true=नया पंजीकृत उपयोगकर्ता / fa
 
 ### 2.8 KYC वास्तविक नाम प्रमाणीकरण
 
-#### GET /api/user/identity/status — प्रमाणीकरण स्थिति
+#### GET /api/v1/user/identity/status — प्रमाणीकरण स्थिति
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -489,7 +488,7 @@ is_new: true=नया पंजीकृत उपयोगकर्ता / fa
 }
 ```
 
-#### POST /api/user/identity/apply — प्रमाणीकरण जमा करें
+#### POST /api/v1/user/identity/apply — प्रमाणीकरण जमा करें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -507,7 +506,7 @@ is_new: true=नया पंजीकृत उपयोगकर्ता / fa
 
 ### 2.9 भुगतान
 
-#### POST /api/payment/callback — भुगतान कॉलबैक (सार्वजनिक)
+#### POST /api/v1/payment/callback — भुगतान कॉलबैक (सार्वजनिक)
 
 ```
 अनुरोध: {
@@ -542,7 +541,7 @@ provider के मान: stripe / paypal / nowpayments / coinbase / skrill / n
 | mpesa | केन्या / तंजानिया आदि (जल्द आ रहा है) | — | KES / TZS |
 | paystack | नाइजीरिया (जल्द आ रहा है) | — | NGN |
 
-#### GET /api/payment/methods — उपलब्ध भुगतान विधियाँ (सार्वजनिक)
+#### GET /api/v1/payment/methods — उपलब्ध भुगतान विधियाँ (सार्वजनिक)
 
 ```
 प्रतिक्रिया: {
@@ -556,7 +555,7 @@ provider के मान: stripe / paypal / nowpayments / coinbase / skrill / n
 
 ### 2.10 गेम रिकॉर्ड
 
-#### GET /api/game/play-logs — गेम रिकॉर्ड सूची
+#### GET /api/v1/game/play-logs — गेम रिकॉर्ड सूची
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -576,7 +575,7 @@ provider के मान: stripe / paypal / nowpayments / coinbase / skrill / n
 }
 ```
 
-#### GET /api/game/play-log/{hashid} — गेम रिकॉर्ड विवरण
+#### GET /api/v1/game/play-log/{hashid} — गेम रिकॉर्ड विवरण
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -585,7 +584,7 @@ provider के मान: stripe / paypal / nowpayments / coinbase / skrill / n
 
 ### 2.12 लीडरबोर्ड
 
-#### GET /api/leaderboard/list — लीडरबोर्ड सूची
+#### GET /api/v1/leaderboard/list — लीडरबोर्ड सूची
 
 ```
 प्रतिक्रिया: {
@@ -595,7 +594,7 @@ provider के मान: stripe / paypal / nowpayments / coinbase / skrill / n
 }
 ```
 
-#### GET /api/leaderboard/{hashid} — लीडरबोर्ड विवरण
+#### GET /api/v1/leaderboard/{hashid} — लीडरबोर्ड विवरण
 
 ```
 प्रतिक्रिया: {
@@ -610,14 +609,14 @@ provider के मान: stripe / paypal / nowpayments / coinbase / skrill / n
 
 ### 2.13 कूपन
 
-#### GET /api/coupon/available — उपलब्ध कूपन
+#### GET /api/v1/coupon/available — उपलब्ध कूपन
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
 प्रतिक्रिया: { "list": [{ "id": "...", "name": "新人礼包", "type": "fixed", "value": "10.0000" }] }
 ```
 
-#### POST /api/coupon/claim — कूपन प्राप्त करें
+#### POST /api/v1/coupon/claim — कूपन प्राप्त करें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -625,7 +624,7 @@ provider के मान: stripe / paypal / nowpayments / coinbase / skrill / n
 प्रतिक्रिया: { "coupon": { ... } }
 ```
 
-#### GET /api/coupon/my — मेरे कूपन
+#### GET /api/v1/coupon/my — मेरे कूपन
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -635,7 +634,7 @@ provider के मान: stripe / paypal / nowpayments / coinbase / skrill / n
 
 ### 2.14 देश कॉन्फ़िगरेशन
 
-#### GET /api/country/list — देश सूची
+#### GET /api/v1/country/list — देश सूची
 
 ```
 प्रतिक्रिया: {
@@ -645,7 +644,7 @@ provider के मान: stripe / paypal / nowpayments / coinbase / skrill / n
 }
 ```
 
-#### GET /api/country/{code} — देश विवरण
+#### GET /api/v1/country/{code} — देश विवरण
 
 ```
 प्रतिक्रिया: {
@@ -659,7 +658,7 @@ provider के मान: stripe / paypal / nowpayments / coinbase / skrill / n
 
 ### 2.16 अधिसूचनाएँ
 
-#### GET /api/notification/list — अधिसूचना सूची
+#### GET /api/v1/notification/list — अधिसूचना सूची
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -673,14 +672,14 @@ provider के मान: stripe / paypal / nowpayments / coinbase / skrill / n
 }
 ```
 
-#### GET /api/notification/unread-count — अपठित संख्या
+#### GET /api/v1/notification/unread-count — अपठित संख्या
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
 प्रतिक्रिया: { "count": 3 }
 ```
 
-#### POST /api/notification/read — पढ़ा हुआ चिह्नित करें
+#### POST /api/v1/notification/read — पढ़ा हुआ चिह्नित करें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -689,14 +688,14 @@ provider के मान: stripe / paypal / nowpayments / coinbase / skrill / n
 
 ### 2.17 रेफरल
 
-#### GET /api/referral/my-code — मेरा रेफरल कोड
+#### GET /api/v1/referral/my-code — मेरा रेफरल कोड
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
 प्रतिक्रिया: { "code": "ABC12345", "referral_count": 12, "total_rewards": "150.0000" }
 ```
 
-#### POST /api/referral/apply — रेफरल कोड का उपयोग करें
+#### POST /api/v1/referral/apply — रेफरल कोड का उपयोग करें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -706,21 +705,21 @@ provider के मान: stripe / paypal / nowpayments / coinbase / skrill / n
 
 ### 2.18 2FA
 
-#### GET /api/user/2fa/status — 2FA स्थिति
+#### GET /api/v1/user/2fa/status — 2FA स्थिति
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
 प्रतिक्रिया: { "enabled": false }
 ```
 
-#### POST /api/user/2fa/setup — 2FA सेट करें
+#### POST /api/v1/user/2fa/setup — 2FA सेट करें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
 प्रतिक्रिया: { "secret": "JBSWY3DPEHPK3PXP", "qr_url": "otpauth://totp/..." }
 ```
 
-#### POST /api/user/2fa/enable — 2FA सक्षम करें
+#### POST /api/v1/user/2fa/enable — 2FA सक्षम करें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -728,7 +727,7 @@ provider के मान: stripe / paypal / nowpayments / coinbase / skrill / n
 प्रतिक्रिया: { "backup_codes": ["abcd1234ef", ...] }
 ```
 
-#### POST /api/2fa/verify — 2FA सत्यापित करें (सार्वजनिक)
+#### POST /api/v1/2fa/verify — 2FA सत्यापित करें (सार्वजनिक)
 
 ```
 अनुरोध: { "user_id": "hashid", "code": "123456" }
@@ -737,14 +736,14 @@ provider के मान: stripe / paypal / nowpayments / coinbase / skrill / n
 
 ### 2.19 खोज
 
-#### GET /api/search — वैश्विक खोज
+#### GET /api/v1/search — वैश्विक खोज
 
 ```
 पैरामीटर: ?q=keyword&type=game&page=1&per_page=20
 प्रतिक्रिया: { "list": [...], "total": 100 }
 ```
 
-#### GET /api/game/suggest — खोज सुझाव
+#### GET /api/v1/game/suggest — खोज सुझाव
 
 ```
 पैरामीटर: ?q=shoot
@@ -753,7 +752,7 @@ provider के मान: stripe / paypal / nowpayments / coinbase / skrill / n
 
 ### 2.20 भाषा
 
-#### GET /api/language/list — उपलब्ध भाषा सूची
+#### GET /api/v1/language/list — उपलब्ध भाषा सूची
 
 ```
 प्रतिक्रिया: {
@@ -767,7 +766,7 @@ provider के मान: stripe / paypal / nowpayments / coinbase / skrill / n
 }
 ```
 
-#### POST /api/language/switch — भाषा बदलें
+#### POST /api/v1/language/switch — भाषा बदलें
 
 ```
 अनुरोध: { "locale": "zh-CN" }
@@ -778,7 +777,7 @@ locale वैकल्पिक मान: en-US / zh-CN / ja-JP / ko-KR
 
 ### 2.8 उपयोगकर्ता
 
-#### GET /api/user/profile — व्यक्तिगत जानकारी
+#### GET /api/v1/user/profile — व्यक्तिगत जानकारी
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -797,7 +796,7 @@ locale वैकल्पिक मान: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
-#### PUT /api/user/profile — प्रोफ़ाइल संपादित करें
+#### PUT /api/v1/user/profile — प्रोफ़ाइल संपादित करें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -821,7 +820,7 @@ language वैकल्पिक मान: en-US / zh-CN / ja-JP / ko-KR
 
 ### 2.9 घोषणाएँ
 
-#### GET /api/announcement/list — घोषणा सूची
+#### GET /api/v1/announcement/list — घोषणा सूची
 
 ```
 प्रतिक्रिया: {
@@ -836,7 +835,7 @@ language वैकल्पिक मान: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
-#### GET /api/announcement/detail/{hashid} — घोषणा विवरण
+#### GET /api/v1/announcement/detail/{hashid} — घोषणा विवरण
 
 ```
 प्रतिक्रिया: {
@@ -852,9 +851,9 @@ language वैकल्पिक मान: en-US / zh-CN / ja-JP / ko-KR
 
 | विधि | पथ | विवरण | प्रमाणीकरण |
 |------|------|------|------|
-| GET | /api/platform/stats | प्लेटफ़ॉर्म सार्वजनिक सांख्यिकी (कुल गेम / कुल उपयोगकर्ता / आज के प्ले / 7 दिन सक्रिय) | नहीं |
+| GET | /api/v1/platform/stats | प्लेटफ़ॉर्म सार्वजनिक सांख्यिकी (कुल गेम / कुल उपयोगकर्ता / आज के प्ले / 7 दिन सक्रिय) | नहीं |
 
-#### GET /api/platform/stats — प्लेटफ़ॉर्म सांख्यिकी
+#### GET /api/v1/platform/stats — प्लेटफ़ॉर्म सांख्यिकी
 
 ```
 无需认证
@@ -1466,8 +1465,8 @@ action: approve / reject
 | इंटरफ़ेस | सीमा |
 |------|------|
 | डिफ़ॉल्ट | 60 बार/मिनट/IP |
-| POST /api/auth/login | 10 बार/मिनट |
-| POST /api/auth/register | 5 बार/मिनट |
+| POST /api/v1/auth/login | 10 बार/मिनट |
+| POST /api/v1/auth/register | 5 बार/मिनट |
 
 सीमा पार होने पर 429 लौटाता है, प्रतिक्रिया हेडर शामिल है:
 ```
@@ -1600,7 +1599,7 @@ Retry-After: 60
 
 ### 7.2 टिकट API
 
-#### GET /api/ticket/list — टिकट सूची
+#### GET /api/v1/ticket/list — टिकट सूची
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1625,7 +1624,7 @@ Retry-After: 60
 type: deposit / withdraw / game / account / other
 status: open / waiting / replied / closed
 
-#### POST /api/ticket/create — टिकट बनाएं
+#### POST /api/v1/ticket/create — टिकट बनाएं
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1637,7 +1636,7 @@ status: open / waiting / replied / closed
 प्रतिक्रिया: { "code": 0, "message": "Ticket created", "data": { "id": "aB3xK..." } }
 ```
 
-#### GET /api/ticket/{hashid} — टिकट विवरण
+#### GET /api/v1/ticket/{hashid} — टिकट विवरण
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1650,7 +1649,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### POST /api/ticket/{hashid}/reply — टिकट का उत्तर दें
+#### POST /api/v1/ticket/{hashid}/reply — टिकट का उत्तर दें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1660,7 +1659,7 @@ status: open / waiting / replied / closed
 
 ### 7.3 ईमेल सत्यापन API
 
-#### POST /api/verify/send-email — ईमेल सत्यापन कोड भेजें
+#### POST /api/v1/verify/send-email — ईमेल सत्यापन कोड भेजें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1669,7 +1668,7 @@ status: open / waiting / replied / closed
 त्रुटि: 429 कृपया 60 सेकंड बाद पुनः प्रयास करें
 ```
 
-#### POST /api/verify/confirm-email — ईमेल की पुष्टि करें
+#### POST /api/v1/verify/confirm-email — ईमेल की पुष्टि करें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1680,7 +1679,7 @@ status: open / waiting / replied / closed
 
 ### 7.4 VIP API
 
-#### GET /api/user/vip-status — VIP स्थिति
+#### GET /api/v1/user/vip-status — VIP स्थिति
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1700,7 +1699,7 @@ status: open / waiting / replied / closed
 
 ### 7.5 उपलब्धि API
 
-#### GET /api/user/achievements — उपलब्धि सूची
+#### GET /api/v1/user/achievements — उपलब्धि सूची
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1899,10 +1898,10 @@ status: open / waiting / replied / closed
 | इंटरफ़ेस | सीमा |
 |------|------|
 | डिफ़ॉल्ट | 60 बार/मिनट/IP |
-| POST /api/auth/login | 10 बार/मिनट |
-| POST /api/auth/register | 5 बार/मिनट |
-| POST /api/auth/oauth | 10 बार/मिनट |
-| POST /api/payment/callback | 30 बार/मिनट |
+| POST /api/v1/auth/login | 10 बार/मिनट |
+| POST /api/v1/auth/register | 5 बार/मिनट |
+| POST /api/v1/auth/oauth | 10 बार/मिनट |
+| POST /api/v1/payment/callback | 30 बार/मिनट |
 | POST /api/provider/* | कोई सीमा नहीं (HMAC हस्ताक्षर प्रमाणीकरण) |
 
 ## 9. प्रमाणीकरण विवरण (अद्यतन)
@@ -1918,43 +1917,43 @@ status: open / waiting / replied / closed
 
 ### 7.7 मित्र API
 
-#### GET /api/friend/list — मित्र सूची
+#### GET /api/v1/friend/list — मित्र सूची
 ```
 प्रमाणीकरण आवश्यक: हाँ
 प्रतिक्रिया: { "list": [{ "id": "...", "username": "...", "nickname": "...", "avatar": "..." }] }
 ```
 
-#### GET /api/friend/requests — लंबित आवेदन
+#### GET /api/v1/friend/requests — लंबित आवेदन
 ```
 प्रमाणीकरण आवश्यक: हाँ
 प्रतिक्रिया: { "list": [{ "id": "...", "user": {...}, "created_at": "..." }] }
 ```
 
-#### POST /api/friend/request — मित्र आवेदन भेजें
+#### POST /api/v1/friend/request — मित्र आवेदन भेजें
 ```
 प्रमाणीकरण आवश्यक: हाँ
 अनुरोध: { "friend_id": "hashid" }
 ```
 
-#### POST /api/friend/accept — आवेदन स्वीकारें
+#### POST /api/v1/friend/accept — आवेदन स्वीकारें
 ```
 प्रमाणीकरण आवश्यक: हाँ
 अनुरोध: { "request_id": "hashid" }
 ```
 
-#### POST /api/friend/reject — आवेदन अस्वीकारें
+#### POST /api/v1/friend/reject — आवेदन अस्वीकारें
 ```
 प्रमाणीकरण आवश्यक: हाँ
 अनुरोध: { "request_id": "hashid" }
 ```
 
-#### POST /api/friend/remove — मित्र हटाएं
+#### POST /api/v1/friend/remove — मित्र हटाएं
 ```
 प्रमाणीकरण आवश्यक: हाँ
 अनुरोध: { "friend_id": "hashid" }
 ```
 
-#### GET /api/friend/search — उपयोगकर्ता खोजें
+#### GET /api/v1/friend/search — उपयोगकर्ता खोजें
 ```
 प्रमाणीकरण आवश्यक: हाँ
 पैरामीटर: ?q=username
@@ -1963,7 +1962,7 @@ status: open / waiting / replied / closed
 
 ### 7.8 चैट API
 
-#### GET /api/chat/conversations — वार्तालाप सूची
+#### GET /api/v1/chat/conversations — वार्तालाप सूची
 ```
 प्रमाणीकरण आवश्यक: हाँ
 प्रतिक्रिया: {
@@ -1976,7 +1975,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /api/chat/messages/{peerHashid} — संदेश सूची
+#### GET /api/v1/chat/messages/{peerHashid} — संदेश सूची
 ```
 प्रमाणीकरण आवश्यक: हाँ
 पैरामीटर: ?page=1&per_page=50
@@ -1984,14 +1983,14 @@ status: open / waiting / replied / closed
 स्वचालित रूप से दूसरे पक्ष से आए अपठित संदेशों को पढ़ा हुआ चिह्नित करता है
 ```
 
-#### POST /api/chat/send — संदेश भेजें
+#### POST /api/v1/chat/send — संदेश भेजें
 ```
 प्रमाणीकरण आवश्यक: हाँ
 अनुरोध: { "to_user_id": "hashid", "content": "Hello!" }
 त्रुटि: 403 गैर-मित्र को नहीं भेज सकते
 ```
 
-#### GET /api/chat/unread-total — अपठित कुल
+#### GET /api/v1/chat/unread-total — अपठित कुल
 ```
 प्रमाणीकरण आवश्यक: हाँ
 प्रतिक्रिया: { "count": 5 }
@@ -2009,20 +2008,20 @@ status: open / waiting / replied / closed
 
 ### 7.9 Webhook API
 
-#### GET /api/webhook/list — सदस्यता सूची
+#### GET /api/v1/webhook/list — सदस्यता सूची
 ```
 प्रमाणीकरण आवश्यक: हाँ
 प्रतिक्रिया: { "list": [{ "id": "...", "url": "https://...", "events": ["deposit.completed"] }] }
 ```
 
-#### POST /api/webhook/register — सदस्यता पंजीकृत करें
+#### POST /api/v1/webhook/register — सदस्यता पंजीकृत करें
 ```
 प्रमाणीकरण आवश्यक: हाँ
 अनुरोध: { "url": "https://my-server.com/hook", "events": ["deposit.completed", "game.played"] }
 उपलब्ध घटनाएँ: deposit.completed / withdraw.completed / exchange.completed / game.played / user.registered / risk.alert / user.vip_upgraded
 ```
 
-#### POST /api/webhook/delete — सदस्यता हटाएं
+#### POST /api/v1/webhook/delete — सदस्यता हटाएं
 ```
 प्रमाणीकरण आवश्यक: हाँ
 अनुरोध: { "id": "hook_id" }
@@ -2071,18 +2070,18 @@ status: open / waiting / replied / closed
 
 ### 7.11 टूर्नामेंट API
 
-#### GET /api/tournament/list — टूर्नामेंट सूची
+#### GET /api/v1/tournament/list — टूर्नामेंट सूची
 ```
 पैरामीटर: ?status=active|upcoming|ended&page=1&per_page=20
 प्रतिक्रिया: { "items": [{ "id": "...", "name": "...", "prize_pool": "1000.0000", "player_count": 45, "max_players": 100 }], "total": 5 }
 ```
 
-#### GET /api/tournament/{hashid} — टूर्नामेंट विवरण
+#### GET /api/v1/tournament/{hashid} — टूर्नामेंट विवरण
 ```
 प्रतिक्रिया: { "id": "...", "name": "...", "leaderboard": [...], "my_entry": {...} }
 ```
 
-#### POST /api/tournament/{hashid}/join — टूर्नामेंट में भाग लें
+#### POST /api/v1/tournament/{hashid}/join — टूर्नामेंट में भाग लें
 ```
 प्रमाणीकरण आवश्यक: हाँ
 त्रुटि: 422 पहले से नामांकित / 400 शुरू हो चुका या भरा हुआ / 503 FeatureFlag बंद
@@ -2108,7 +2107,7 @@ status: open / waiting / replied / closed
 
 | इंटरफ़ेस | सीमा |
 |------|------|
-| POST /api/tournament/{id}/join | 10 बार/मिनट |
+| POST /api/v1/tournament/{id}/join | 10 बार/मिनट |
 
 ---
 
@@ -2159,23 +2158,23 @@ status: open / waiting / replied / closed
 | POST /admin/activities/create | गतिविधि बनाएँ (एडमिन) |
 | PUT /admin/activities/{hashid} | गतिविधि अपडेट करें (एडमिन) |
 | DELETE /admin/activities/{hashid} | गतिविधि हटाएँ (एडमिन) |
-| GET /api/activities/list | गतिविधि सूची (क्लाइंट) |
-| GET /api/activities/progress | भागीदारी प्रगति (क्लाइंट) |
-| GET /api/activities/{hashid} | गतिविधि विवरण (क्लाइंट) |
-| POST /api/activities/{hashid}/checkin | चेक-इन (क्लाइंट) |
+| GET /api/v1/activities/list | गतिविधि सूची (क्लाइंट) |
+| GET /api/v1/activities/progress | भागीदारी प्रगति (क्लाइंट) |
+| GET /api/v1/activities/{hashid} | गतिविधि विवरण (क्लाइंट) |
+| POST /api/v1/activities/{hashid}/checkin | चेक-इन (क्लाइंट) |
 
 ### 10.4 समूह / शेयर (क्लाइंट :8788 + एडमिन :8787)
 
 | एंडपॉइंट | विवरण |
 |------|------|
-| POST /api/groups | समूह बनाएँ |
-| GET /api/groups/{hashid} | समूह विवरण |
-| GET /api/groups/{hashid}/members | सदस्य सूची |
-| POST /api/groups/{hashid}/join | समूह से जुड़ें |
-| POST /api/groups/{hashid}/leave | समूह छोड़ें |
-| PUT /api/groups/{hashid}/role | सदस्य भूमिका |
-| POST /api/shares | शेयर लिंक बनाएँ |
-| POST /api/shares/visit | शेयर विज़िट ट्रैकिंग |
+| POST /api/v1/groups | समूह बनाएँ |
+| GET /api/v1/groups/{hashid} | समूह विवरण |
+| GET /api/v1/groups/{hashid}/members | सदस्य सूची |
+| POST /api/v1/groups/{hashid}/join | समूह से जुड़ें |
+| POST /api/v1/groups/{hashid}/leave | समूह छोड़ें |
+| PUT /api/v1/groups/{hashid}/role | सदस्य भूमिका |
+| POST /api/v1/shares | शेयर लिंक बनाएँ |
+| POST /api/v1/shares/visit | शेयर विज़िट ट्रैकिंग |
 | GET /admin/groups | समूह सूची (एडमिन) |
 | GET /admin/groups/{hashid}/audit | समूह ऑडिट (एडमिन) |
 | GET /admin/share/stats | शेयर आँकड़े (एडमिन) |

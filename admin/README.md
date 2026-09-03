@@ -80,7 +80,7 @@ open-admin/
 │   │   ├── DocsController.php      # OpenAPI 文档
 │   │   └── BaseController.php      # 基础控制器
 │   ├── api/
-│   │   └── v1/controller/          # API v1 控制器（版本由请求头 API-Version 控制）
+│   │   └── v1/controller/          # API v1 控制器（URL 路径版本 /api/v1、/admin/v1）
 │   │       ├── CaptchaController.php # 点击验证码
 │   │       └── AuthController.php    # 登录/注册/刷新令牌
 │   ├── common/                 # 公共工具类
@@ -91,7 +91,6 @@ open-admin/
 │   │   ├── Cors.php            # 跨域
 │   │   ├── SecurityFilter.php  # 攻击检测拦截（HTTP方法限制/XSS/SQL注入/路径遍历/命令注入/CSRF）
 │   │   ├── RateLimit.php       # Redis 限流（滑动窗口 + 响应头）
-│   │   ├── ApiVersion.php      # API 版本校验
 │   │   ├── AdminAuth.php       # JWT 认证 + 黑名单
 │   │   ├── AdminPermission.php # RBAC 权限校验
 │   │   └── OperationLog.php    # 操作日志自动记录（含来源端检测）
@@ -243,20 +242,15 @@ docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 ### ID 处理
 
 - **请求/响应中的 ID**: 使用 hashids 加密为字符串，不暴露真实数据库 ID
-- **接口路径**: `GET /admin/user/{hashid}` — 路径中的 `{id}` 为 hashid 字符串
+- **接口路径**: `GET /admin/v1/user/{hashid}` — 路径中的 `{id}` 为 hashid 字符串
 - **数据库存储**: BIGINT 原值，由 snowflake 生成
 
 ### API 版本
 
-API 版本通过请求头控制，**不在 URL 中体现**：
+API 版本号置于 URL 路径（公开端点 `/api/v1/*`、管理端点 `/admin/v1/*`，默认 `v1`），不使用请求头：
 
-```http
-API-Version: v1
-```
-
-- 未携带版本号时默认使用 `v1`
 - 不支持的版本返回 `400 Bad Request`
-- 新增版本时只需创建 `app/api/{version}/controller/` 目录，中间件注册新版本即可
+- 新增版本时只需创建 `app/api/{version}/controller/` 目录，并在路由注册新版本路由组（如 `/api/v2`）
 
 ### 限流
 
@@ -274,10 +268,9 @@ API-Version: v1
 Cors（跨域预处理 + 响应头）
   → SecurityFilter（HTTP方法限制/请求体大小/Content-Type校验/XSS/SQL注入/路径遍历/命令注入/CSRF 攻击拦截）
   → RateLimit（Redis 滑动窗口限流 + 账号锁定：5次登录失败锁定15分钟）
-  → ApiVersion（API 版本校验，/api 路由组）
-  → AdminAuth（JWT 认证 + 黑名单，/admin 路由组）
-  → AdminPermission（RBAC 鉴权，/admin 路由组）
-  → OperationLog（POST/PUT/DELETE 自动记录，含来源端检测，/admin 路由组）
+  → AdminAuth（JWT 认证 + 黑名单，/admin/v1 路由组）
+  → AdminPermission（RBAC 鉴权，/admin/v1 路由组）
+  → OperationLog（POST/PUT/DELETE 自动记录，含来源端检测，/admin/v1 路由组）
 ```
 
 `/health` 和 `/api/docs` 为公开端点，仅经过 `Cors → SecurityFilter → RateLimit`。
@@ -292,12 +285,12 @@ Cors（跨域预处理 + 响应头）
 
 登录与注册需要先通过**点击验证码**校验：
 
-1. 客户端请求 `POST /api/captcha/generate` 获取验证码图片（base64 PNG）和文字目标列表
+1. 客户端请求 `POST /api/v1/captcha/generate` 获取验证码图片（base64 PNG）和文字目标列表
 2. 用户按顺序点击图中对应文字位置，收集点击坐标 `[{x, y}, ...]`
 3. 登录时一并提交 `captcha_key` 和 `clicks`，服务端先校验验证码再校验凭证
 
 ```http
-POST /api/auth/login
+POST /api/v1/auth/login
 Content-Type: application/json
 
 {
@@ -316,14 +309,14 @@ Authorization: Bearer <token>
 
 登录成功后返回 access_token，有效期 2 小时；另返回 refresh_token，有效期 14 天。
 
-登出时 Token 加入 Redis 黑名单，有效期内不可复用。POST /admin/profile/logout
+登出时 Token 加入 Redis 黑名单，有效期内不可复用。POST /admin/v1/profile/logout
 
 ### 敏感操作二次确认
 
 删除用户、角色、权限等敏感操作需要在请求体中传入当前登录用户的 `password` 进行身份二次确认：
 
 ```http
-DELETE /admin/user/{id}
+DELETE /admin/v1/user/{id}
 Content-Type: application/json
 Authorization: Bearer <token>
 
@@ -332,7 +325,7 @@ Authorization: Bearer <token>
 
 ## API 列表
 
-> 所有 `/api/*` 接口需要在请求头中携带 `API-Version: v1`（不传则默认 v1）。
+> 所有 `/api/v1/*` 与 `/admin/v1/*` 端点的版本号都位于 URL 路径中，不使用版本请求头。
 
 ### 公开接口
 
@@ -340,50 +333,50 @@ Authorization: Bearer <token>
 |-----|------|------|
 | `GET` | `/health` | 健康检查（DB/Redis/ES 状态） |
 | `GET` | `/api/docs` | OpenAPI 3.0 规范文档 |
-| `POST` | `/api/captcha/generate` | 生成点击验证码 |
-| `POST` | `/api/captcha/verify` | 校验点击验证码 |
-| `POST` | `/api/auth/login` | 登录（需 captcha） |
-| `POST` | `/api/auth/register` | 注册（需 captcha） |
-| `POST` | `/api/auth/refresh` | 刷新令牌 |
+| `POST` | `/api/v1/captcha/generate` | 生成点击验证码 |
+| `POST` | `/api/v1/captcha/verify` | 校验点击验证码 |
+| `POST` | `/api/v1/auth/login` | 登录（需 captcha） |
+| `POST` | `/api/v1/auth/register` | 注册（需 captcha） |
+| `POST` | `/api/v1/auth/refresh` | 刷新令牌 |
 | `GET` | `/metrics` | Prometheus 监控指标 |
 
 ### 管理端接口（需 JWT + RBAC）
 
 | 方法 | 路径 | 说明 |
 |-----|------|------|
-| `GET` | `/admin/dashboard` | 仪表盘数据（Redis 缓存 5 分钟） |
-| `GET` | `/admin/user` | 用户列表（分页 + 搜索） |
-| `POST` | `/admin/user` | 创建用户 |
-| `GET` | `/admin/user/{id}` | 用户详情 |
-| `PUT` | `/admin/user/{id}` | 更新用户 |
-| `DELETE` | `/admin/user/{id}` | 删除用户（软删除，需密码确认） |
-| `POST` | `/admin/user/batch/destroy` | 批量删除用户（需密码确认） |
-| `POST` | `/admin/user/batch/status` | 批量启用/禁用用户 |
-| `GET` | `/admin/role` | 角色列表 |
-| `POST` | `/admin/role` | 创建角色 |
-| `PUT` | `/admin/role/{id}` | 更新角色 |
-| `DELETE` | `/admin/role/{id}` | 删除角色（需密码确认） |
-| `GET` | `/admin/permission` | 权限树 |
-| `POST` | `/admin/permission` | 创建权限 |
-| `PUT` | `/admin/permission/{id}` | 更新权限 |
-| `DELETE` | `/admin/permission/{id}` | 删除权限（级联子权限，需密码确认） |
-| `GET` | `/admin/config` | 系统配置列表 |
-| `POST` | `/admin/config` | 创建配置项 |
-| `PUT` | `/admin/config/{id}` | 更新配置项 |
-| `DELETE` | `/admin/config/{id}` | 删除配置项（需密码确认） |
-| `GET` | `/admin/payment/method/list` | 支付方式列表 |
-| `POST` | `/admin/payment/method/toggle` | 支付方式启用/停用 |
-| `POST` | `/admin/payment/method/create` | 创建支付方式 |
-| `PUT` | `/admin/payment/method/{id}` | 更新支付方式 |
-| `DELETE` | `/admin/payment/method/{id}` | 删除支付方式（存在待支付订单时拒绝） |
-| `GET` | `/admin/log` | 操作日志（分页 + 筛选） |
-| `PUT` | `/admin/profile` | 更新个人信息 |
-| `PUT` | `/admin/profile/password` | 修改密码 |
-| `POST` | `/admin/profile/logout` | 登出（JWT 黑名单） |
-| `POST` | `/admin/export/excel` | 导出 Excel |
-| `POST` | `/admin/export/pdf` | 导出 PDF |
-| `POST` | `/admin/import/users` | Excel 导入用户 |
-| `POST` | `/admin/upload` | 文件上传（图片/文档，最大 10MB） |
+| `GET` | `/admin/v1/dashboard` | 仪表盘数据（Redis 缓存 5 分钟） |
+| `GET` | `/admin/v1/user` | 用户列表（分页 + 搜索） |
+| `POST` | `/admin/v1/user` | 创建用户 |
+| `GET` | `/admin/v1/user/{id}` | 用户详情 |
+| `PUT` | `/admin/v1/user/{id}` | 更新用户 |
+| `DELETE` | `/admin/v1/user/{id}` | 删除用户（软删除，需密码确认） |
+| `POST` | `/admin/v1/user/batch/destroy` | 批量删除用户（需密码确认） |
+| `POST` | `/admin/v1/user/batch/status` | 批量启用/禁用用户 |
+| `GET` | `/admin/v1/role` | 角色列表 |
+| `POST` | `/admin/v1/role` | 创建角色 |
+| `PUT` | `/admin/v1/role/{id}` | 更新角色 |
+| `DELETE` | `/admin/v1/role/{id}` | 删除角色（需密码确认） |
+| `GET` | `/admin/v1/permission` | 权限树 |
+| `POST` | `/admin/v1/permission` | 创建权限 |
+| `PUT` | `/admin/v1/permission/{id}` | 更新权限 |
+| `DELETE` | `/admin/v1/permission/{id}` | 删除权限（级联子权限，需密码确认） |
+| `GET` | `/admin/v1/config` | 系统配置列表 |
+| `POST` | `/admin/v1/config` | 创建配置项 |
+| `PUT` | `/admin/v1/config/{id}` | 更新配置项 |
+| `DELETE` | `/admin/v1/config/{id}` | 删除配置项（需密码确认） |
+| `GET` | `/admin/v1/payment/method/list` | 支付方式列表 |
+| `POST` | `/admin/v1/payment/method/toggle` | 支付方式启用/停用 |
+| `POST` | `/admin/v1/payment/method/create` | 创建支付方式 |
+| `PUT` | `/admin/v1/payment/method/{id}` | 更新支付方式 |
+| `DELETE` | `/admin/v1/payment/method/{id}` | 删除支付方式（存在待支付订单时拒绝） |
+| `GET` | `/admin/v1/log` | 操作日志（分页 + 筛选） |
+| `PUT` | `/admin/v1/profile` | 更新个人信息 |
+| `PUT` | `/admin/v1/profile/password` | 修改密码 |
+| `POST` | `/admin/v1/profile/logout` | 登出（JWT 黑名单） |
+| `POST` | `/admin/v1/export/excel` | 导出 Excel |
+| `POST` | `/admin/v1/export/pdf` | 导出 PDF |
+| `POST` | `/admin/v1/import/users` | Excel 导入用户 |
+| `POST` | `/admin/v1/upload` | 文件上传（图片/文档，最大 10MB） |
 
 ## 前端说明
 
