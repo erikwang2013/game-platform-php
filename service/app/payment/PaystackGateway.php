@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\payment;
 
+use common\BcMath;
 use common\model\DepositOrder;
 use common\model\PaymentMethod;
 use GuzzleHttp\Client;
@@ -104,7 +105,7 @@ class PaystackGateway implements PaymentGatewayInterface
             'valid'          => true,
             'order_no'       => $reference,
             'transaction_id' => $reference,
-            'amount'         => sprintf('%.4f', (int) ($verified['amount'] ?? 0) / 100),
+            'amount'         => bcdiv((string) (int) ($verified['amount'] ?? 0), '100', 4),
             'status'         => 'success',
         ];
     }
@@ -112,7 +113,7 @@ class PaystackGateway implements PaymentGatewayInterface
     /** Paystack 金额一律最小单位（kobo/分），转 4 位小数主单位与订单 bccomp 对齐 */
     public function toMinor(string $amount): int
     {
-        return (int) round((float) $amount * 100);
+        return (int) BcMath::round(bcmul($amount, '100', 4), 0);
     }
 
     /** 权威回查：GET /transaction/verify/:reference，返回 data 部分 */

@@ -191,6 +191,7 @@ class AntiCheatService
         $bucket    = (int) floor($now / $windowSec);
 
         $key   = "ac:payout:{$userId}:{$bucket}";
+        // ponytail: Redis INCRBYFLOAT 为原子浮点计数（无 bcmath 对应原语），豁免项；累计赔付仅作阈值比较/展示
         $total = (float) Redis::incrbyfloat($key, (float) $winAmount);
         Redis::expire($key, $windowSec + 60);
 

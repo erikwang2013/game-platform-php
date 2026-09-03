@@ -38,6 +38,7 @@ class AntiCheatDetector
         $trigger = (float) ($config['trigger_ratio'] ?? 0.6);
 
         // 1) 固定注: 变异系数 CV = stddev/mean < fixed_cv（n>=min_rounds 已保证）
+        // ponytail: 均值/方差/CV 为浮点统计特征（bcmath 无 sqrt/pow 原语），豁免项须保持 float；下同 mean/cv 输出 round()
         $fixed = ['matched' => false, 'ratio' => 0.0];
         $mean = array_sum($bets) / $n;
         if ($mean > 0) {
