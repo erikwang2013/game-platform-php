@@ -7,10 +7,13 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 use Throwable;
 
+#[Apidoc\Title("点击验证码")]
+#[Apidoc\Group("captcha")]
 class CaptchaController
 {
     /**
@@ -19,6 +22,12 @@ class CaptchaController
      *
      * 返回: { key, image (base64 PNG), extra: { texts: [{order, text}] } }
      */
+    #[Apidoc\Url("/api/v1/captcha/generate")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "difficulty", type: "string", default: "medium", desc: "验证码难度：easy/medium/hard")]
+    #[Apidoc\Returned(name: "key", type: "string", desc: "验证码 key，校验时回传")]
+    #[Apidoc\Returned(name: "image", type: "string", desc: "验证码图片（base64 PNG）")]
+    #[Apidoc\Returned(name: "extra", type: "object", desc: "附加数据，texts 为待点击文字列表（元素含 order/text）")]
     public function generate(Request $request): Response
     {
         $difficulty = $request->input('difficulty', 'medium');
@@ -52,6 +61,11 @@ class CaptchaController
      *
      * 请求: { key, clicks: [{x, y}, ...] }
      */
+    #[Apidoc\Url("/api/v1/captcha/verify")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "key", type: "string", require: true, desc: "验证码 key")]
+    #[Apidoc\Param(name: "clicks", type: "array", require: true, desc: "点击坐标集合，元素含 x/y")]
+    #[Apidoc\Returned(name: "valid", type: "boolean", desc: "是否验证通过")]
     public function verify(Request $request): Response
     {
         $key = $request->input('key', '');

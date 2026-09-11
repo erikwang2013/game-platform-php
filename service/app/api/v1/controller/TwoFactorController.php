@@ -9,24 +9,20 @@ namespace app\api\v1\controller;
 
 use common\model\User;
 use app\model\User2FA;
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Log;
 use support\Redis;
 use support\Request;
 use support\Response;
 
-/**
- * @Apidoc\Title("双因素认证")
- * @Apidoc\Group("auth")
- */
+#[Apidoc\Title("双因素认证")]
+#[Apidoc\Group("auth")]
 class TwoFactorController extends BaseController
 {
-    /**
-     * @Apidoc\Title("2FA状态")
-     * @Apidoc\Url("/api/v1/user/2fa/status")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("2FA状态")]
+    #[Apidoc\Url("/api/v1/user/2fa/status")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
     public function status(Request $request): Response
     {
         $user2FA = User2FA::where('user_id', $request->userId)
@@ -36,12 +32,10 @@ class TwoFactorController extends BaseController
         return $this->success(['enabled' => $user2FA !== null]);
     }
 
-    /**
-     * @Apidoc\Title("设置2FA")
-     * @Apidoc\Url("/api/v1/user/2fa/setup")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("设置2FA")]
+    #[Apidoc\Url("/api/v1/user/2fa/setup")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Auth(true)]
     public function setup(Request $request): Response
     {
         $userId = $request->userId;
@@ -71,13 +65,11 @@ class TwoFactorController extends BaseController
         ], '2FA setup initiated — verify with a TOTP code to enable');
     }
 
-    /**
-     * @Apidoc\Title("启用2FA")
-     * @Apidoc\Url("/api/v1/user/2fa/enable")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="code", type="string", require=true, desc="6位TOTP验证码")
-     */
+    #[Apidoc\Title("启用2FA")]
+    #[Apidoc\Url("/api/v1/user/2fa/enable")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "code", type: "string", require: true, desc: "6位TOTP验证码")]
     public function enable(Request $request): Response
     {
         $validator = validator($request->all(), [
@@ -119,13 +111,11 @@ class TwoFactorController extends BaseController
         ], '2FA enabled successfully');
     }
 
-    /**
-     * @Apidoc\Title("验证2FA")
-     * @Apidoc\Url("/api/v1/2fa/verify")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Param(name="pending_2fa_token", type="string", require=true, desc="登录返回的短期2FA票据")
-     * @Apidoc\Param(name="code", type="string", require=true, desc="6位TOTP验证码")
-     */
+    #[Apidoc\Title("验证2FA")]
+    #[Apidoc\Url("/api/v1/2fa/verify")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "pending_2fa_token", type: "string", require: true, desc: "登录返回的短期2FA票据")]
+    #[Apidoc\Param(name: "code", type: "string", require: true, desc: "6位TOTP验证码")]
     public function verify(Request $request): Response
     {
         $validator = validator($request->all(), [
@@ -203,14 +193,12 @@ class TwoFactorController extends BaseController
         return $this->fail('Invalid TOTP code', 422);
     }
 
-    /**
-     * @Apidoc\Title("禁用2FA")
-     * @Apidoc\Url("/api/v1/user/2fa/disable")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="password", type="string", require=true, desc="密码")
-     * @Apidoc\Param(name="code", type="string", require=true, desc="6位TOTP验证码")
-     */
+    #[Apidoc\Title("禁用2FA")]
+    #[Apidoc\Url("/api/v1/user/2fa/disable")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "password", type: "string", require: true, desc: "密码")]
+    #[Apidoc\Param(name: "code", type: "string", require: true, desc: "6位TOTP验证码")]
     public function disable(Request $request): Response
     {
         $validator = validator($request->all(), [

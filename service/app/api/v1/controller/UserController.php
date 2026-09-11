@@ -16,22 +16,18 @@ use common\model\UserOauth;
 use common\model\UserSession;
 use common\model\UserWallet;
 use common\model\WithdrawOrder;
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
-/**
- * @Apidoc\Title("用户管理")
- * @Apidoc\Group("user")
- */
+#[Apidoc\Title("用户管理")]
+#[Apidoc\Group("user")]
 class UserController extends BaseController
 {
-    /**
-     * @Apidoc\Title("个人信息")
-     * @Apidoc\Url("/api/v1/user/profile")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("个人信息")]
+    #[Apidoc\Url("/api/v1/user/profile")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
     public function profile(Request $request): Response
     {
         $userId = $request->userId;
@@ -55,15 +51,13 @@ class UserController extends BaseController
         ]);
     }
 
-    /**
-     * @Apidoc\Title("编辑资料")
-     * @Apidoc\Url("/api/v1/user/profile")
-     * @Apidoc\Method("PUT")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="nickname", type="string", require=false, desc="昵称")
-     * @Apidoc\Param(name="avatar", type="string", require=false, desc="头像")
-     * @Apidoc\Param(name="language", type="string", require=false, desc="语言")
-     */
+    #[Apidoc\Title("编辑资料")]
+    #[Apidoc\Url("/api/v1/user/profile")]
+    #[Apidoc\Method("PUT")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "nickname", type: "string", require: false, desc: "昵称")]
+    #[Apidoc\Param(name: "avatar", type: "string", require: false, desc: "头像")]
+    #[Apidoc\Param(name: "language", type: "string", require: false, desc: "语言")]
     public function updateProfile(Request $request): Response
     {
         $validator = validator($request->all(), [
@@ -107,12 +101,10 @@ class UserController extends BaseController
         ], 'Profile updated');
     }
 
-    /**
-     * @Apidoc\Title("导出个人数据(GDPR)")
-     * @Apidoc\Url("/api/v1/user/export-data")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("导出个人数据(GDPR)")]
+    #[Apidoc\Url("/api/v1/user/export-data")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
     public function exportData(Request $request): Response
     {
         $userId = $request->userId;
@@ -167,14 +159,12 @@ class UserController extends BaseController
         return $this->success($data, 'Data export ready');
     }
 
-    /**
-     * @Apidoc\Title("注销账号(GDPR)")
-     * @Apidoc\Url("/api/v1/user/delete-account")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="password", type="string", require=true, desc="密码")
-     * @Apidoc\Param(name="confirm", type="string", require=true, desc="确认输入yes")
-     */
+    #[Apidoc\Title("注销账号(GDPR)")]
+    #[Apidoc\Url("/api/v1/user/delete-account")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "password", type: "string", require: true, desc: "密码")]
+    #[Apidoc\Param(name: "confirm", type: "string", require: true, desc: "确认输入yes")]
     public function deleteAccount(Request $request): Response
     {
         $validator = validator($request->all(), [
@@ -230,12 +220,10 @@ class UserController extends BaseController
         return $this->success([], '账号已注销。感谢您的使用。');
     }
 
-    /**
-     * @Apidoc\Title("隐私设置")
-     * @Apidoc\Url("/api/v1/user/privacy")
-     * @Apidoc\Method("PUT")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("隐私设置")]
+    #[Apidoc\Url("/api/v1/user/privacy")]
+    #[Apidoc\Method("PUT")]
+    #[Apidoc\Auth(true)]
     public function updatePrivacy(Request $request): Response
     {
         $validator = validator($request->all(), [

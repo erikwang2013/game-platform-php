@@ -10,20 +10,16 @@ use common\model\User;
 use support\Redis;
 use support\Request;
 use support\Response;
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 
-/**
- * @Apidoc\Title("聊天消息")
- * @Apidoc\Group("chat")
- */
+#[Apidoc\Title("聊天消息")]
+#[Apidoc\Group("chat")]
 class ChatController extends BaseController
 {
-    /**
-     * @Apidoc\Title("会话列表")
-     * @Apidoc\Url("/api/v1/chat/conversations")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("会话列表")]
+    #[Apidoc\Url("/api/v1/chat/conversations")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
     public function conversations(Request $request): Response
     {
         $userId = $request->userId;
@@ -69,12 +65,10 @@ class ChatController extends BaseController
         return $this->success(['list' => $conversations]);
     }
 
-    /**
-     * @Apidoc\Title("消息列表")
-     * @Apidoc\Url("/api/v1/chat/messages/{peerHashid}")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("消息列表")]
+    #[Apidoc\Url("/api/v1/chat/messages/{peerHashid}")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
     public function messages(Request $request, string $peerHashid): Response
     {
         $userId = $request->userId;
@@ -108,12 +102,10 @@ class ChatController extends BaseController
         return $this->success(['items' => array_reverse($items), 'total' => $msgs->total(), 'page' => $page, 'last_page' => $msgs->lastPage()]);
     }
 
-    /**
-     * @Apidoc\Title("发送消息")
-     * @Apidoc\Url("/api/v1/chat/send")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("发送消息")]
+    #[Apidoc\Url("/api/v1/chat/send")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Auth(true)]
     public function send(Request $request): Response
     {
         $userId = $request->userId;
@@ -161,12 +153,10 @@ class ChatController extends BaseController
         return $this->success(['id' => $this->encodeId($msg->id), 'created_at' => $msg->created_at], 'Sent');
     }
 
-    /**
-     * @Apidoc\Title("标记已读")
-     * @Apidoc\Url("/api/v1/chat/read")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("标记已读")]
+    #[Apidoc\Url("/api/v1/chat/read")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Auth(true)]
     public function markRead(Request $request): Response
     {
         $peerId = $this->decodeId($request->input('from_user_id', '0'));
@@ -176,12 +166,10 @@ class ChatController extends BaseController
         return $this->success([], 'Marked read');
     }
 
-    /**
-     * @Apidoc\Title("未读总数")
-     * @Apidoc\Url("/api/v1/chat/unread-total")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("未读总数")]
+    #[Apidoc\Url("/api/v1/chat/unread-total")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
     public function unreadTotal(Request $request): Response
     {
         $count = Message::where('to_user_id', $request->userId)->where('is_read', 0)->count();

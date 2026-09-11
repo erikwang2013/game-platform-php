@@ -8,22 +8,18 @@ declare(strict_types=1);
 namespace app\api\v1\controller;
 
 use common\model\Notification;
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
-/**
- * @Apidoc\Title("通知管理")
- * @Apidoc\Group("notification")
- */
+#[Apidoc\Title("通知管理")]
+#[Apidoc\Group("notification")]
 class NotificationController extends BaseController
 {
-    /**
-     * @Apidoc\Title("通知列表")
-     * @Apidoc\Url("/api/v1/notification/list")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("通知列表")]
+    #[Apidoc\Url("/api/v1/notification/list")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
     public function list(Request $request): Response
     {
         $userId  = $request->userId;
@@ -63,12 +59,10 @@ class NotificationController extends BaseController
         ]);
     }
 
-    /**
-     * @Apidoc\Title("未读数量")
-     * @Apidoc\Url("/api/v1/notification/unread-count")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("未读数量")]
+    #[Apidoc\Url("/api/v1/notification/unread-count")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
     public function unreadCount(Request $request): Response
     {
         $count = Notification::where('user_id', $request->userId)
@@ -78,13 +72,11 @@ class NotificationController extends BaseController
         return $this->success(['count' => $count]);
     }
 
-    /**
-     * @Apidoc\Title("标记已读")
-     * @Apidoc\Url("/api/v1/notification/read")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="id", type="string", require=false, desc="通知ID(不传则全部已读)")
-     */
+    #[Apidoc\Title("标记已读")]
+    #[Apidoc\Url("/api/v1/notification/read")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "id", type: "string", require: false, desc: "通知ID(不传则全部已读)")]
     public function markRead(Request $request): Response
     {
         $userId = $request->userId;

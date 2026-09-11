@@ -8,28 +8,25 @@ declare(strict_types=1);
 namespace app\api\v1\controller;
 
 use common\model\ShareLink;
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
 /**
  * 分享短码（M4）：生成短码 + 落地页点击上报（匿名）。
  * 裂变转化（conversions）由注册链路按 short_code 落库（AuthController::register → ShareLink::bindConversion）。
- *
- * @Apidoc\Title("分享")
- * @Apidoc\Group("share")
  */
+#[Apidoc\Title("分享")]
+#[Apidoc\Group("share")]
 class ShareController extends BaseController
 {
     private const CODE_CHARS = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-    /**
-     * @Apidoc\Title("生成分享短码")
-     * @Apidoc\Url("/api/v1/shares")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="activity_id", type="string", require=false, desc="关联活动(hashid)")
-     */
+    #[Apidoc\Title("生成分享短码")]
+    #[Apidoc\Url("/api/v1/shares")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "activity_id", type: "string", require: false, desc: "关联活动(hashid)")]
     public function create(Request $request): Response
     {
         $activityId = 0;
@@ -50,12 +47,10 @@ class ShareController extends BaseController
         ], 'Created');
     }
 
-    /**
-     * @Apidoc\Title("分享落地页点击")
-     * @Apidoc\Url("/api/v1/shares/visit")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Param(name="short_code", type="string", require=true, desc="分享短码")
-     */
+    #[Apidoc\Title("分享落地页点击")]
+    #[Apidoc\Url("/api/v1/shares/visit")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "short_code", type: "string", require: true, desc: "分享短码")]
     public function visit(Request $request): Response
     {
         $validator = validator($request->all(), [

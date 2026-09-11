@@ -12,7 +12,7 @@ use common\model\Game;
 use common\model\GameCurrency;
 use common\model\UserGameWallet;
 use common\model\UserWallet;
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Log;
 use support\Request;
 use support\Response;
@@ -21,22 +21,18 @@ use app\event\EventBus;
 use common\service\NotificationService;
 use common\service\VipService;
 
-/**
- * @Apidoc\Title("兑换管理")
- * @Apidoc\Group("exchange")
- */
+#[Apidoc\Title("兑换管理")]
+#[Apidoc\Group("exchange")]
 class ExchangeController extends BaseController
 {
-    /**
-     * @Apidoc\Title("兑换询价")
-     * @Apidoc\Url("/api/v1/exchange/quote")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="game_id", type="string", require=true, desc="游戏ID")
-     * @Apidoc\Param(name="currency_id", type="string", require=true, desc="币种ID")
-     * @Apidoc\Param(name="direction", type="string", require=true, desc="方向(in/out)")
-     * @Apidoc\Param(name="platform_amount", type="float", require=true, desc="平台币数量")
-     */
+    #[Apidoc\Title("兑换询价")]
+    #[Apidoc\Url("/api/v1/exchange/quote")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "game_id", type: "string", require: true, desc: "游戏ID")]
+    #[Apidoc\Param(name: "currency_id", type: "string", require: true, desc: "币种ID")]
+    #[Apidoc\Param(name: "direction", type: "string", require: true, desc: "方向(in/out)")]
+    #[Apidoc\Param(name: "platform_amount", type: "float", require: true, desc: "平台币数量")]
     public function quote(Request $request): Response
     {
         $validator = validator($request->all(), [
@@ -106,40 +102,34 @@ class ExchangeController extends BaseController
         ]);
     }
 
-    /**
-     * @Apidoc\Title("买入游戏币")
-     * @Apidoc\Url("/api/v1/exchange/buy")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="game_id", type="string", require=true, desc="游戏ID")
-     * @Apidoc\Param(name="currency_id", type="string", require=true, desc="币种ID")
-     * @Apidoc\Param(name="platform_amount", type="float", require=true, desc="平台币数量")
-     */
+    #[Apidoc\Title("买入游戏币")]
+    #[Apidoc\Url("/api/v1/exchange/buy")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "game_id", type: "string", require: true, desc: "游戏ID")]
+    #[Apidoc\Param(name: "currency_id", type: "string", require: true, desc: "币种ID")]
+    #[Apidoc\Param(name: "platform_amount", type: "float", require: true, desc: "平台币数量")]
     public function buy(Request $request): Response
     {
         return $this->doExchange($request, 'in');
     }
 
-    /**
-     * @Apidoc\Title("卖出游戏币")
-     * @Apidoc\Url("/api/v1/exchange/sell")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="game_id", type="string", require=true, desc="游戏ID")
-     * @Apidoc\Param(name="currency_id", type="string", require=true, desc="币种ID")
-     * @Apidoc\Param(name="platform_amount", type="float", require=true, desc="平台币数量")
-     */
+    #[Apidoc\Title("卖出游戏币")]
+    #[Apidoc\Url("/api/v1/exchange/sell")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "game_id", type: "string", require: true, desc: "游戏ID")]
+    #[Apidoc\Param(name: "currency_id", type: "string", require: true, desc: "币种ID")]
+    #[Apidoc\Param(name: "platform_amount", type: "float", require: true, desc: "平台币数量")]
     public function sell(Request $request): Response
     {
         return $this->doExchange($request, 'out');
     }
 
-    /**
-     * @Apidoc\Title("兑换记录")
-     * @Apidoc\Url("/api/v1/exchange/records")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("兑换记录")]
+    #[Apidoc\Url("/api/v1/exchange/records")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
     public function records(Request $request): Response
     {
         $userId  = $request->userId;

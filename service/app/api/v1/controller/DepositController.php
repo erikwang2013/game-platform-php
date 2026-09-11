@@ -14,26 +14,22 @@ use app\payment\GatewayFactory;
 use app\service\ComplianceCheckService;
 use common\service\NotificationService;
 use common\service\DepositLogService;
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Log;
 use support\Request;
 use support\Response;
 
-/**
- * @Apidoc\Title("充值管理")
- * @Apidoc\Group("wallet")
- */
+#[Apidoc\Title("充值管理")]
+#[Apidoc\Group("wallet")]
 class DepositController extends BaseController
 {
-    /**
-     * @Apidoc\Title("创建充值订单")
-     * @Apidoc\Url("/api/v1/deposit/create")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="amount", type="float", require=true, desc="充值金额")
-     * @Apidoc\Param(name="currency", type="string", require=true, desc="货币(USD/CNY/EUR)")
-     * @Apidoc\Param(name="payment_method_id", type="string", require=true, desc="支付方式ID")
-     */
+    #[Apidoc\Title("创建充值订单")]
+    #[Apidoc\Url("/api/v1/deposit/create")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "amount", type: "float", require: true, desc: "充值金额")]
+    #[Apidoc\Param(name: "currency", type: "string", require: true, desc: "货币(USD/CNY/EUR)")]
+    #[Apidoc\Param(name: "payment_method_id", type: "string", require: true, desc: "支付方式ID")]
     public function create(Request $request): Response
     {
         $validator = validator($request->all(), [
@@ -132,12 +128,10 @@ class DepositController extends BaseController
         ], 'Deposit order created');
     }
 
-    /**
-     * @Apidoc\Title("充值记录")
-     * @Apidoc\Url("/api/v1/deposit/orders")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("充值记录")]
+    #[Apidoc\Url("/api/v1/deposit/orders")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
     public function orders(Request $request): Response
     {
         $userId  = $request->userId;

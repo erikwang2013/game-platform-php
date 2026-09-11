@@ -12,16 +12,14 @@ use common\model\UserOauth;
 use common\model\UserWallet;
 use Firebase\JWT\JWT;
 use Firebase\JWT\JWK;
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Db;
 use support\Log;
 use support\Request;
 use support\Response;
 
-/**
- * @Apidoc\Title("OAuth认证")
- * @Apidoc\Group("auth")
- */
+#[Apidoc\Title("OAuth认证")]
+#[Apidoc\Group("auth")]
 class OAuthController extends BaseController
 {
     const PROVIDERS = ['google', 'facebook', 'apple', 'twitter', 'microsoft', 'linkedin', 'github'];
@@ -56,12 +54,10 @@ class OAuthController extends BaseController
         'github'    => 'https://api.github.com/user',
     ];
 
-    /**
-     * @Apidoc\Title("OAuth授权跳转")
-     * @Apidoc\Url("/api/v1/auth/oauth/{provider}")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Param(name="provider", type="string", require=true, desc="第三方平台(google/facebook/apple/twitter/microsoft/linkedin/github)", in="path")
-     */
+    #[Apidoc\Title("OAuth授权跳转")]
+    #[Apidoc\Url("/api/v1/auth/oauth/{provider}")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Param(name: "provider", type: "string", require: true, desc: "第三方平台(google/facebook/apple/twitter/microsoft/linkedin/github)", in: "path")]
     public function redirect(Request $request, string $provider): Response
     {
         $provider = strtolower($provider);
@@ -105,14 +101,12 @@ class OAuthController extends BaseController
         return $this->success(['redirect_url' => $url]);
     }
 
-    /**
-     * @Apidoc\Title("OAuth回调")
-     * @Apidoc\Url("/api/v1/auth/oauth/{provider}/callback")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Param(name="provider", type="string", require=true, desc="第三方平台(google/facebook/apple/twitter/microsoft/linkedin/github)", in="path")
-     * @Apidoc\Param(name="code", type="string", require=true, desc="授权码")
-     * @Apidoc\Param(name="state", type="string", require=true, desc="状态码")
-     */
+    #[Apidoc\Title("OAuth回调")]
+    #[Apidoc\Url("/api/v1/auth/oauth/{provider}/callback")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "provider", type: "string", require: true, desc: "第三方平台(google/facebook/apple/twitter/microsoft/linkedin/github)", in: "path")]
+    #[Apidoc\Param(name: "code", type: "string", require: true, desc: "授权码")]
+    #[Apidoc\Param(name: "state", type: "string", require: true, desc: "状态码")]
     public function callback(Request $request, string $provider): Response
     {
         $provider = strtolower($provider);

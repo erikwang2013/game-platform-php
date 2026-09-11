@@ -55,7 +55,7 @@ Languages: **中文** · [English](docs/translations/README.en.md) · [한국어
 ```
 game-platform-php/
 ├── admin/                     # 管理后台 (webman v2, 端口 8787)
-│   ├── app/admin/controller/  #   管理端控制器
+│   ├── app/admin/v1/controller/  #   管理端控制器
 │   ├── app/middleware/        #   中间件 (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   游戏Provider层
 │   ├── app/event/             #   事件总线 (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission/ProviderAuth)

@@ -10,7 +10,7 @@ namespace app\api\v1\controller;
 use common\model\Game;
 use common\model\Group;
 use common\model\GroupMember;
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Db;
 use support\Request;
 use support\Response;
@@ -18,23 +18,20 @@ use support\Response;
 /**
  * 组队/公会（M4）：同表双形态，type=team 短时组队 / type=guild 长期公会。
  * 权限规则：team 任意成员可解散（expire_at 到期自动）；guild 仅 owner 可解散，转让（PUT /{id}/transfer）不在本期。
- *
- * @Apidoc\Title("组队/公会")
- * @Apidoc\Group("group")
  */
+#[Apidoc\Title("组队/公会")]
+#[Apidoc\Group("group")]
 class GroupController extends BaseController
 {
-    /**
-     * @Apidoc\Title("创建组/公会")
-     * @Apidoc\Url("/api/v1/groups")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="type", type="string", require=true, desc="team/guild")
-     * @Apidoc\Param(name="name", type="string", require=true, desc="名称")
-     * @Apidoc\Param(name="game_id", type="string", require=false, desc="归属游戏(hashid，team 必填)")
-     * @Apidoc\Param(name="expire_at", type="string", require=false, desc="到期时间(team 可传)")
-     * @Apidoc\Param(name="announcement", type="string", require=false, desc="公告(guild)")
-     */
+    #[Apidoc\Title("创建组/公会")]
+    #[Apidoc\Url("/api/v1/groups")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "type", type: "string", require: true, desc: "team/guild")]
+    #[Apidoc\Param(name: "name", type: "string", require: true, desc: "名称")]
+    #[Apidoc\Param(name: "game_id", type: "string", require: false, desc: "归属游戏(hashid，team 必填)")]
+    #[Apidoc\Param(name: "expire_at", type: "string", require: false, desc: "到期时间(team 可传)")]
+    #[Apidoc\Param(name: "announcement", type: "string", require: false, desc: "公告(guild)")]
     public function create(Request $request): Response
     {
         $validator = validator($request->all(), [
@@ -88,13 +85,11 @@ class GroupController extends BaseController
         return $this->success(['id' => $this->encodeId($groupId)], 'Created');
     }
 
-    /**
-     * @Apidoc\Title("组/公会详情")
-     * @Apidoc\Url("/api/v1/groups/{hashid}")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="hashid", type="string", require=true, desc="组ID", in="path")
-     */
+    #[Apidoc\Title("组/公会详情")]
+    #[Apidoc\Url("/api/v1/groups/{hashid}")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "hashid", type: "string", require: true, desc: "组ID", in: "path")]
     public function detail(Request $request, string $hashid): Response
     {
         $group = Group::find($this->decodeId($hashid));
@@ -107,16 +102,14 @@ class GroupController extends BaseController
         return $this->success($data);
     }
 
-    /**
-     * @Apidoc\Title("成员列表")
-     * @Apidoc\Url("/api/v1/groups/{hashid}/members")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="hashid", type="string", require=true, desc="组ID", in="path")
-     * @Apidoc\Param(name="sort", type="string", require=false, desc="contrib=按贡献值倒序(默认)")
-     * @Apidoc\Param(name="page", type="int", require=false, desc="页码")
-     * @Apidoc\Param(name="per_page", type="int", require=false, desc="每页条数")
-     */
+    #[Apidoc\Title("成员列表")]
+    #[Apidoc\Url("/api/v1/groups/{hashid}/members")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "hashid", type: "string", require: true, desc: "组ID", in: "path")]
+    #[Apidoc\Param(name: "sort", type: "string", require: false, desc: "contrib=按贡献值倒序(默认)")]
+    #[Apidoc\Param(name: "page", type: "int", require: false, desc: "页码")]
+    #[Apidoc\Param(name: "per_page", type: "int", require: false, desc: "每页条数")]
     public function members(Request $request, string $hashid): Response
     {
         $groupId = $this->decodeId($hashid);
@@ -154,13 +147,11 @@ class GroupController extends BaseController
         ]);
     }
 
-    /**
-     * @Apidoc\Title("加入组/公会")
-     * @Apidoc\Url("/api/v1/groups/{hashid}/join")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="hashid", type="string", require=true, desc="组ID", in="path")
-     */
+    #[Apidoc\Title("加入组/公会")]
+    #[Apidoc\Url("/api/v1/groups/{hashid}/join")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "hashid", type: "string", require: true, desc: "组ID", in: "path")]
     public function join(Request $request, string $hashid): Response
     {
         $groupId = $this->decodeId($hashid);
@@ -203,13 +194,11 @@ class GroupController extends BaseController
         return $this->success([], 'Joined');
     }
 
-    /**
-     * @Apidoc\Title("退出/解散")
-     * @Apidoc\Url("/api/v1/groups/{hashid}/leave")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="hashid", type="string", require=true, desc="组ID", in="path")
-     */
+    #[Apidoc\Title("退出/解散")]
+    #[Apidoc\Url("/api/v1/groups/{hashid}/leave")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "hashid", type: "string", require: true, desc: "组ID", in: "path")]
     public function leave(Request $request, string $hashid): Response
     {
         $groupId = $this->decodeId($hashid);
@@ -261,15 +250,13 @@ class GroupController extends BaseController
         return $this->success([], $result['dissolve'] ? 'Dissolved' : 'Left');
     }
 
-    /**
-     * @Apidoc\Title("成员角色变更")
-     * @Apidoc\Url("/api/v1/groups/{hashid}/role")
-     * @Apidoc\Method("PUT")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="hashid", type="string", require=true, desc="组ID", in="path")
-     * @Apidoc\Param(name="user_id", type="string", require=true, desc="目标用户(hashid)")
-     * @Apidoc\Param(name="role", type="string", require=true, desc="admin/member")
-     */
+    #[Apidoc\Title("成员角色变更")]
+    #[Apidoc\Url("/api/v1/groups/{hashid}/role")]
+    #[Apidoc\Method("PUT")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "hashid", type: "string", require: true, desc: "组ID", in: "path")]
+    #[Apidoc\Param(name: "user_id", type: "string", require: true, desc: "目标用户(hashid)")]
+    #[Apidoc\Param(name: "role", type: "string", require: true, desc: "admin/member")]
     public function role(Request $request, string $hashid): Response
     {
         $validator = validator($request->all(), [

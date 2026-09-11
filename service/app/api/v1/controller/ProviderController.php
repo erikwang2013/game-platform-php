@@ -12,6 +12,7 @@ use common\model\GamePlayLog;
 use app\provider\ProviderFactory;
 use app\service\AntiCheatService;
 use app\service\GamePlayRecorder;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Db;
 use support\Request;
 use support\Response;
@@ -22,12 +23,19 @@ use support\Response;
  * 第三方游戏通过此 API 与平台交互（查余额、下注、结算、退款）。
  * 所有接口需 ProviderAuth 中间件验证 HMAC-SHA256 签名。
  */
+#[Apidoc\Title("游戏提供商回调")]
+#[Apidoc\Group("provider")]
 class ProviderController extends BaseController
 {
     /**
      * 查询用户余额
      * POST /api/provider/balance
      */
+    #[Apidoc\Url("/api/provider/balance")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "user_id", type: "int", require: true, desc: "用户ID")]
+    #[Apidoc\Param(name: "currency_id", type: "int", desc: "货币ID，0 表示默认货币")]
+    #[Apidoc\Returned(name: "balance", type: "string", desc: "用户余额")]
     public function balance(Request $request): Response
     {
         $userId = (int) $request->input('user_id', 0);
@@ -47,6 +55,16 @@ class ProviderController extends BaseController
      * 通知下注
      * POST /api/provider/bet
      */
+    #[Apidoc\Url("/api/provider/bet")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "user_id", type: "int", require: true, desc: "用户ID")]
+    #[Apidoc\Param(name: "currency_id", type: "int", desc: "货币ID，0 表示默认货币")]
+    #[Apidoc\Param(name: "session_id", type: "string", require: true, desc: "游戏会话ID")]
+    #[Apidoc\Param(name: "amount", type: "string", require: true, desc: "下注金额（精确字符串，须大于 0）")]
+    #[Apidoc\Param(name: "round_id", type: "string", desc: "局ID")]
+    #[Apidoc\Param(name: "meta", type: "array", desc: "附加元数据")]
+    #[Apidoc\Returned(name: "success", type: "boolean", desc: "是否成功")]
+    #[Apidoc\Returned(name: "balance_after", type: "string", desc: "下注后余额")]
     public function bet(Request $request): Response
     {
         $userId = (int) $request->input('user_id', 0);
@@ -77,6 +95,17 @@ class ProviderController extends BaseController
      * 通知结算
      * POST /api/provider/settle
      */
+    #[Apidoc\Url("/api/provider/settle")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "user_id", type: "int", require: true, desc: "用户ID")]
+    #[Apidoc\Param(name: "currency_id", type: "int", desc: "货币ID，0 表示默认货币")]
+    #[Apidoc\Param(name: "session_id", type: "string", require: true, desc: "游戏会话ID")]
+    #[Apidoc\Param(name: "amount", type: "string", desc: "结算金额（精确字符串）")]
+    #[Apidoc\Param(name: "round_id", type: "string", desc: "局ID")]
+    #[Apidoc\Param(name: "meta", type: "array", desc: "附加元数据，result 字段用于反作弊事件")]
+    #[Apidoc\Returned(name: "success", type: "boolean", desc: "是否成功")]
+    #[Apidoc\Returned(name: "win_amount", type: "string", desc: "本局中奖金额")]
+    #[Apidoc\Returned(name: "balance_after", type: "string", desc: "结算后余额")]
     public function settle(Request $request): Response
     {
         $userId = (int) $request->input('user_id', 0);
@@ -123,6 +152,16 @@ class ProviderController extends BaseController
      * 通知退款
      * POST /api/provider/refund
      */
+    #[Apidoc\Url("/api/provider/refund")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "user_id", type: "int", require: true, desc: "用户ID")]
+    #[Apidoc\Param(name: "currency_id", type: "int", desc: "货币ID，0 表示默认货币")]
+    #[Apidoc\Param(name: "session_id", type: "string", require: true, desc: "游戏会话ID")]
+    #[Apidoc\Param(name: "amount", type: "string", require: true, desc: "退款金额（精确字符串，须大于 0）")]
+    #[Apidoc\Param(name: "round_id", type: "string", desc: "局ID")]
+    #[Apidoc\Param(name: "reason", type: "string", default: "unknown", desc: "退款原因")]
+    #[Apidoc\Returned(name: "success", type: "boolean", desc: "是否成功")]
+    #[Apidoc\Returned(name: "balance_after", type: "string", desc: "退款后余额")]
     public function refund(Request $request): Response
     {
         $userId = (int) $request->input('user_id', 0);

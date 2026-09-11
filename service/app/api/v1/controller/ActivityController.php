@@ -11,22 +11,18 @@ use common\model\Activity;
 use common\model\ActivityParticipation;
 use app\service\ActivityService;
 use common\service\FeatureFlag;
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
-/**
- * @Apidoc\Title("运营活动")
- * @Apidoc\Group("activity")
- */
+#[Apidoc\Title("运营活动")]
+#[Apidoc\Group("activity")]
 class ActivityController extends BaseController
 {
-    /**
-     * @Apidoc\Title("活动列表")
-     * @Apidoc\Url("/api/v1/activities/list")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("活动列表")]
+    #[Apidoc\Url("/api/v1/activities/list")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
     public function list(Request $request): Response
     {
         $now    = date('Y-m-d H:i:s');
@@ -58,12 +54,10 @@ class ActivityController extends BaseController
         return $this->success(['list' => $activities]);
     }
 
-    /**
-     * @Apidoc\Title("活动详情")
-     * @Apidoc\Url("/api/v1/activities/{hashid}")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("活动详情")]
+    #[Apidoc\Url("/api/v1/activities/{hashid}")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
     public function detail(Request $request, string $hashid): Response
     {
         $activity = Activity::find($this->decodeId($hashid));
@@ -86,12 +80,10 @@ class ActivityController extends BaseController
         return $this->success($data);
     }
 
-    /**
-     * @Apidoc\Title("签到")
-     * @Apidoc\Url("/api/v1/activities/{hashid}/checkin")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("签到")]
+    #[Apidoc\Url("/api/v1/activities/{hashid}/checkin")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Auth(true)]
     public function checkin(Request $request, string $hashid): Response
     {
         try {
@@ -103,12 +95,10 @@ class ActivityController extends BaseController
         return $this->success($result);
     }
 
-    /**
-     * @Apidoc\Title("我的活动进度")
-     * @Apidoc\Url("/api/v1/activities/progress")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("我的活动进度")]
+    #[Apidoc\Url("/api/v1/activities/progress")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
     public function progress(Request $request): Response
     {
         $userId = $request->userId;

@@ -8,21 +8,17 @@ declare(strict_types=1);
 namespace app\api\v1\controller;
 
 use common\model\Announcement;
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
-/**
- * @Apidoc\Title("公告管理")
- * @Apidoc\Group("announcement")
- */
+#[Apidoc\Title("公告管理")]
+#[Apidoc\Group("announcement")]
 class AnnouncementController extends BaseController
 {
-    /**
-     * @Apidoc\Title("公告列表")
-     * @Apidoc\Url("/api/v1/announcement/list")
-     * @Apidoc\Method("GET")
-     */
+    #[Apidoc\Title("公告列表")]
+    #[Apidoc\Url("/api/v1/announcement/list")]
+    #[Apidoc\Method("GET")]
     public function list(Request $request): Response
     {
         $list = Announcement::where('status', 1)
@@ -47,12 +43,10 @@ class AnnouncementController extends BaseController
         return $this->success(['list' => $list]);
     }
 
-    /**
-     * @Apidoc\Title("公告详情")
-     * @Apidoc\Url("/api/v1/announcement/detail/{hashid}")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Param(name="hashid", type="string", require=true, desc="公告hashid", in="path")
-     */
+    #[Apidoc\Title("公告详情")]
+    #[Apidoc\Url("/api/v1/announcement/detail/{hashid}")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Param(name: "hashid", type: "string", require: true, desc: "公告hashid", in: "path")]
     public function detail(Request $request, string $hashid): Response
     {
         $id = $this->decodeId($hashid);

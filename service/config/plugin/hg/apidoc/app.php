@@ -8,7 +8,9 @@
  * 访问: http://localhost:8788/apidoc/
  */
 return [
-    'enable' => true,
+    // 是否启用本插件。文档已迁移至 erikwang2013/apidoc-php：置 false 后 webman 不再 require 本插件
+    // route.php，避免与 erikwang2013/apidoc 重复注册 /apidoc 路由
+    'enable' => false,
     'apidoc' => [
         'title' => '全球游戏聚合平台 — C端业务 API',
         'desc' => '用户认证、钱包、充值、兑换、提现、游戏、公告、排行榜、优惠券、通知、推荐',

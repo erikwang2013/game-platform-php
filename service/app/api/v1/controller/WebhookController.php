@@ -7,14 +7,21 @@ namespace app\api\v1\controller;
 use app\event\EventBus;
 use app\model\EventOutbox;
 use common\model\PlatformConfig;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Log;
 use support\Request;
 use support\Response;
 
+#[Apidoc\Title("Webhook 订阅")]
+#[Apidoc\Group("webhook")]
 class WebhookController extends BaseController
 {
     private string $configGroup = 'webhook';
 
+    #[Apidoc\Title("Webhook 订阅列表")]
+    #[Apidoc\Url("/api/v1/webhook/list")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Returned(name: "list", type: "array", desc: "订阅列表，元素含 id/url/events/created_at")]
     public function list(Request $request): Response
     {
         // 转义 LIKE 通配符：key 为 "{userId}_{hookId}"，不转义时 userId=1 可匹配到 userId=10 的配置
@@ -26,6 +33,14 @@ class WebhookController extends BaseController
         return $this->success(['list' => $items]);
     }
 
+    #[Apidoc\Title("注册 Webhook 订阅")]
+    #[Apidoc\Url("/api/v1/webhook/register")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "url", type: "string", require: true, desc: "回调地址（仅支持 https 公网地址）")]
+    #[Apidoc\Param(name: "events", type: "array", require: true, desc: "订阅事件，可多选：deposit.completed/withdraw.completed/exchange.completed/game.played/user.registered/risk.alert/user.vip_upgraded")]
+    #[Apidoc\Returned(name: "id", type: "string", desc: "Webhook ID")]
+    #[Apidoc\Returned(name: "url", type: "string", desc: "回调地址")]
+    #[Apidoc\Returned(name: "events", type: "array", desc: "实际生效的订阅事件（已过滤非法事件）")]
     public function register(Request $request): Response
     {
         $url = $request->input('url', '');
@@ -46,6 +61,10 @@ class WebhookController extends BaseController
         return $this->success(['id' => $hookId, 'url' => $url, 'events' => $filtered], 'Webhook registered');
     }
 
+    #[Apidoc\Title("删除 Webhook 订阅")]
+    #[Apidoc\Url("/api/v1/webhook/delete")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "id", type: "string", require: true, desc: "Webhook ID")]
     public function delete(Request $request): Response
     {
         $hookId = $request->input('id', '');
@@ -59,6 +78,11 @@ class WebhookController extends BaseController
         return $this->success([], 'Webhook deleted');
     }
 
+    #[Apidoc\Title("测试 Webhook 投递")]
+    #[Apidoc\Url("/api/v1/webhook/test")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "id", type: "string", require: true, desc: "Webhook ID")]
+    #[Apidoc\Returned(name: "delivered", type: "boolean", desc: "测试事件是否投递成功")]
     public function test(Request $request): Response
     {
         $hookId = $request->input('id', '');
@@ -73,6 +97,7 @@ class WebhookController extends BaseController
         return $this->success(['delivered' => $result]);
     }
 
+    #[Apidoc\NotParse()]
     public static function dispatch(string $event, array $payload, ?string $eventId = null): void
     {
         // 幂等去重：Outbox 中已消费（status=1）的事件不重复投递，防止重放/崩溃窗口重复消费
@@ -132,6 +157,7 @@ class WebhookController extends BaseController
     /**
      * SSRF 防护: 仅允许 https 公网地址, 拒绝内网/环回/保留 IP 段
      */
+    #[Apidoc\NotParse()]
     public static function isSafeWebhookUrl(string $url): bool
     {
         if (!filter_var($url, FILTER_VALIDATE_URL)) return false;

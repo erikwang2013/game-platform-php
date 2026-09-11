@@ -11,26 +11,22 @@ use common\model\ShareLink;
 use common\model\User;
 use app\model\User2FA;
 use common\model\UserWallet;
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Db;
 use support\Request;
 use support\Response;
 
-/**
- * @Apidoc\Title("用户认证")
- * @Apidoc\Group("auth")
- */
+#[Apidoc\Title("用户认证")]
+#[Apidoc\Group("auth")]
 class AuthController extends BaseController
 {
-    /**
-     * @Apidoc\Title("用户注册")
-     * @Apidoc\Url("/api/v1/auth/register")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Param(name="username", type="string", require=true, desc="用户名")
-     * @Apidoc\Param(name="password", type="string", require=true, desc="密码")
-     * @Apidoc\Param(name="email", type="string", require=false, desc="邮箱")
-     * @Apidoc\Param(name="share_code", type="string", require=false, desc="分享短码(裂变转化)")
-     */
+    #[Apidoc\Title("用户注册")]
+    #[Apidoc\Url("/api/v1/auth/register")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "username", type: "string", require: true, desc: "用户名")]
+    #[Apidoc\Param(name: "password", type: "string", require: true, desc: "密码")]
+    #[Apidoc\Param(name: "email", type: "string", require: false, desc: "邮箱")]
+    #[Apidoc\Param(name: "share_code", type: "string", require: false, desc: "分享短码(裂变转化)")]
     public function register(Request $request): Response
     {
         $validator = validator($request->all(), [
@@ -109,13 +105,11 @@ class AuthController extends BaseController
         ], 'Registration successful');
     }
 
-    /**
-     * @Apidoc\Title("用户登录")
-     * @Apidoc\Url("/api/v1/auth/login")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Param(name="username", type="string", require=true, desc="用户名")
-     * @Apidoc\Param(name="password", type="string", require=true, desc="密码")
-     */
+    #[Apidoc\Title("用户登录")]
+    #[Apidoc\Url("/api/v1/auth/login")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "username", type: "string", require: true, desc: "用户名")]
+    #[Apidoc\Param(name: "password", type: "string", require: true, desc: "密码")]
     public function login(Request $request): Response
     {
         $validator = validator($request->all(), [
@@ -174,11 +168,9 @@ class AuthController extends BaseController
         ], 'Login successful');
     }
 
-    /**
-     * @Apidoc\Title("刷新Token")
-     * @Apidoc\Url("/api/v1/auth/refresh")
-     * @Apidoc\Method("POST")
-     */
+    #[Apidoc\Title("刷新Token")]
+    #[Apidoc\Url("/api/v1/auth/refresh")]
+    #[Apidoc\Method("POST")]
     public function refresh(Request $request): Response
     {
         try {

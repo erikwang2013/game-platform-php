@@ -7,22 +7,18 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
-/**
- * @Apidoc\Title("验证码")
- * @Apidoc\Group("captcha")
- */
+#[Apidoc\Title("验证码")]
+#[Apidoc\Group("captcha")]
 class CaptchaController extends BaseController
 {
-    /**
-     * @Apidoc\Title("获取验证码")
-     * @Apidoc\Url("/api/v1/captcha/generate")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Param(name="difficulty", type="string", require=false, desc="难度(easy/medium/hard)")
-     */
+    #[Apidoc\Title("获取验证码")]
+    #[Apidoc\Url("/api/v1/captcha/generate")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "difficulty", type: "string", require: false, desc: "难度(easy/medium/hard)")]
     public function generate(Request $request): Response
     {
         try {

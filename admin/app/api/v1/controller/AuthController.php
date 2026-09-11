@@ -9,6 +9,7 @@ namespace app\api\v1\controller;
 
 use app\model\AdminUser;
 use common\SnowflakeService;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Container;
 use support\Redis;
 use support\Request;
@@ -17,6 +18,8 @@ use Erikwang2013\Jwt\JWT;
 use Erikwang2013\Jwt\JWTFactory;
 use Throwable;
 
+#[Apidoc\Title("管理员认证")]
+#[Apidoc\Group("auth")]
 class AuthController
 {
     private static ?JWT $jwt = null;
@@ -34,6 +37,16 @@ class AuthController
      * 登录（需先通过点击验证码）
      * POST /api/auth/login
      */
+    #[Apidoc\Url("/api/v1/auth/login")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "username", type: "string", require: true, desc: "用户名（3-50 字符）")]
+    #[Apidoc\Param(name: "password", type: "string", require: true, desc: "密码（6-32 字符）")]
+    #[Apidoc\Param(name: "captcha_key", type: "string", require: true, desc: "点击验证码 key")]
+    #[Apidoc\Param(name: "clicks", type: "array", require: true, desc: "点击坐标集合，元素含 x/y（至少 2 个）")]
+    #[Apidoc\Returned(name: "access_token", type: "string", desc: "访问令牌")]
+    #[Apidoc\Returned(name: "refresh_token", type: "string", desc: "刷新令牌")]
+    #[Apidoc\Returned(name: "expires_in", type: "int", desc: "访问令牌有效期（秒）")]
+    #[Apidoc\Returned(name: "user", type: "object", desc: "管理员信息，含 id(hashid)/username/real_name")]
     public function login(Request $request): Response
     {
         $validator = validator($request->all(), [
@@ -122,6 +135,19 @@ class AuthController
      * 注册（需先通过点击验证码）
      * POST /api/auth/register
      */
+    #[Apidoc\Url("/api/v1/auth/register")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "username", type: "string", require: true, desc: "用户名（3-50 字符）")]
+    #[Apidoc\Param(name: "password", type: "string", require: true, desc: "密码（6-32 字符）")]
+    #[Apidoc\Param(name: "real_name", type: "string", require: true, desc: "真实姓名（最长 50）")]
+    #[Apidoc\Param(name: "captcha_key", type: "string", require: true, desc: "点击验证码 key")]
+    #[Apidoc\Param(name: "clicks", type: "array", require: true, desc: "点击坐标集合，元素含 x/y（至少 2 个）")]
+    #[Apidoc\Param(name: "phone", type: "string", desc: "手机号")]
+    #[Apidoc\Param(name: "email", type: "string", desc: "邮箱")]
+    #[Apidoc\Returned(name: "access_token", type: "string", desc: "访问令牌")]
+    #[Apidoc\Returned(name: "refresh_token", type: "string", desc: "刷新令牌")]
+    #[Apidoc\Returned(name: "expires_in", type: "int", desc: "访问令牌有效期（秒）")]
+    #[Apidoc\Returned(name: "user", type: "object", desc: "管理员信息，含 id(hashid)/username/real_name")]
     public function register(Request $request): Response
     {
         $validator = validator($request->all(), [
@@ -184,6 +210,12 @@ class AuthController
      * 刷新令牌
      * POST /api/auth/refresh
      */
+    #[Apidoc\Url("/api/v1/auth/refresh")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "refresh_token", type: "string", require: true, desc: "刷新令牌")]
+    #[Apidoc\Returned(name: "access_token", type: "string", desc: "新的访问令牌")]
+    #[Apidoc\Returned(name: "refresh_token", type: "string", desc: "新的刷新令牌")]
+    #[Apidoc\Returned(name: "expires_in", type: "int", desc: "访问令牌有效期（秒）")]
     public function refresh(Request $request): Response
     {
         $refreshToken = $request->input('refresh_token', '');

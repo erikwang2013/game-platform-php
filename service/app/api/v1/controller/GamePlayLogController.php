@@ -8,22 +8,18 @@ declare(strict_types=1);
 namespace app\api\v1\controller;
 
 use common\model\GamePlayLog;
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
-/**
- * @Apidoc\Title("游戏记录")
- * @Apidoc\Group("game")
- */
+#[Apidoc\Title("游戏记录")]
+#[Apidoc\Group("game")]
 class GamePlayLogController extends BaseController
 {
-    /**
-     * @Apidoc\Title("游戏记录")
-     * @Apidoc\Url("/api/v1/game/play-logs")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("游戏记录")]
+    #[Apidoc\Url("/api/v1/game/play-logs")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
     public function list(Request $request): Response
     {
         $userId  = $request->userId;
@@ -70,13 +66,11 @@ class GamePlayLogController extends BaseController
         ]);
     }
 
-    /**
-     * @Apidoc\Title("记录详情")
-     * @Apidoc\Url("/api/v1/game/play-log/{hashid}")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="hashid", type="string", require=true, desc="记录hashid", in="path")
-     */
+    #[Apidoc\Title("记录详情")]
+    #[Apidoc\Url("/api/v1/game/play-log/{hashid}")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "hashid", type: "string", require: true, desc: "记录hashid", in: "path")]
     public function detail(Request $request, string $hashid): Response
     {
         $userId = $request->userId;

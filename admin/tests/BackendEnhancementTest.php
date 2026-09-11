@@ -32,7 +32,7 @@ class BackendEnhancementTest extends TestCase
 
     public function test_health_controller_returns_correct_structure(): void
     {
-        $controller = new \app\admin\controller\HealthController();
+        $controller = new \app\admin\v1\controller\HealthController();
         $request = new Request('GET', '/health');
         $response = $controller->index($request);
 
@@ -51,7 +51,7 @@ class BackendEnhancementTest extends TestCase
 
     public function test_health_controller_values_are_strings(): void
     {
-        $controller = new \app\admin\controller\HealthController();
+        $controller = new \app\admin\v1\controller\HealthController();
         $request = new Request('GET', '/health');
         $response = $controller->index($request);
         $body = json_decode($response->rawBody(), true);
@@ -63,7 +63,7 @@ class BackendEnhancementTest extends TestCase
 
     public function test_health_controller_database_field_is_ok_or_unavailable(): void
     {
-        $controller = new \app\admin\controller\HealthController();
+        $controller = new \app\admin\v1\controller\HealthController();
         $request = new Request('GET', '/health');
         $response = $controller->index($request);
         $body = json_decode($response->rawBody(), true);
@@ -217,12 +217,12 @@ class BackendEnhancementTest extends TestCase
     public function test_all_new_controllers_exist(): void
     {
         $controllers = [
-            \app\admin\controller\HealthController::class,
-            \app\admin\controller\ConfigController::class,
-            \app\admin\controller\LogController::class,
-            \app\admin\controller\ProfileController::class,
-            \app\admin\controller\UploadController::class,
-            \app\admin\controller\ImportController::class,
+            \app\admin\v1\controller\HealthController::class,
+            \app\admin\v1\controller\ConfigController::class,
+            \app\admin\v1\controller\LogController::class,
+            \app\admin\v1\controller\ProfileController::class,
+            \app\admin\v1\controller\UploadController::class,
+            \app\admin\v1\controller\ImportController::class,
         ];
 
         foreach ($controllers as $class) {
@@ -232,7 +232,7 @@ class BackendEnhancementTest extends TestCase
 
     public function test_config_controller_has_crud_methods(): void
     {
-        $methods = get_class_methods(\app\admin\controller\ConfigController::class);
+        $methods = get_class_methods(\app\admin\v1\controller\ConfigController::class);
         $this->assertContains('index', $methods);
         $this->assertContains('store', $methods);
         $this->assertContains('update', $methods);
@@ -241,7 +241,7 @@ class BackendEnhancementTest extends TestCase
 
     public function test_profile_controller_has_required_methods(): void
     {
-        $methods = get_class_methods(\app\admin\controller\ProfileController::class);
+        $methods = get_class_methods(\app\admin\v1\controller\ProfileController::class);
         $this->assertContains('updateProfile', $methods);
         $this->assertContains('updatePassword', $methods);
         $this->assertContains('logout', $methods);
@@ -249,7 +249,7 @@ class BackendEnhancementTest extends TestCase
 
     public function test_user_controller_has_batch_methods(): void
     {
-        $methods = get_class_methods(\app\admin\controller\UserController::class);
+        $methods = get_class_methods(\app\admin\v1\controller\UserController::class);
         $this->assertContains('batchDestroy', $methods, 'UserController 应有 batchDestroy 方法');
         $this->assertContains('batchStatus', $methods, 'UserController 应有 batchStatus 方法');
     }
@@ -281,7 +281,7 @@ class BackendEnhancementTest extends TestCase
 
     public function test_health_endpoint_does_not_leak_error_details(): void
     {
-        $source = file_get_contents(__DIR__ . '/../app/admin/controller/HealthController.php');
+        $source = file_get_contents(__DIR__ . '/../app/admin/v1/controller/HealthController.php');
 
         $catchBlocks = [];
         preg_match_all('/catch\s*\([^)]*\)\s*\{[^}]*\}/s', $source, $catchBlocks);
@@ -317,12 +317,12 @@ class BackendEnhancementTest extends TestCase
             '/app/middleware/Cors.php',
             '/app/middleware/RateLimit.php',
             '/app/middleware/OperationLog.php',
-            '/app/admin/controller/HealthController.php',
-            '/app/admin/controller/ConfigController.php',
-            '/app/admin/controller/LogController.php',
-            '/app/admin/controller/ProfileController.php',
-            '/app/admin/controller/UploadController.php',
-            '/app/admin/controller/ImportController.php',
+            '/app/admin/v1/controller/HealthController.php',
+            '/app/admin/v1/controller/ConfigController.php',
+            '/app/admin/v1/controller/LogController.php',
+            '/app/admin/v1/controller/ProfileController.php',
+            '/app/admin/v1/controller/UploadController.php',
+            '/app/admin/v1/controller/ImportController.php',
         ];
 
         $basePath = dirname(__DIR__);

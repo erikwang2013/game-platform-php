@@ -9,21 +9,17 @@ namespace app\api\v1\controller;
 
 use common\model\Leaderboard;
 use common\service\LeaderboardService;
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
-/**
- * @Apidoc\Title("排行榜")
- * @Apidoc\Group("leaderboard")
- */
+#[Apidoc\Title("排行榜")]
+#[Apidoc\Group("leaderboard")]
 class LeaderboardController extends BaseController
 {
-    /**
-     * @Apidoc\Title("排行榜列表")
-     * @Apidoc\Url("/api/v1/leaderboard/list")
-     * @Apidoc\Method("GET")
-     */
+    #[Apidoc\Title("排行榜列表")]
+    #[Apidoc\Url("/api/v1/leaderboard/list")]
+    #[Apidoc\Method("GET")]
     public function list(Request $request): Response
     {
         $boards = Leaderboard::where('status', 1)
@@ -44,12 +40,10 @@ class LeaderboardController extends BaseController
         return $this->success(['list' => $items]);
     }
 
-    /**
-     * @Apidoc\Title("排行榜详情")
-     * @Apidoc\Url("/api/v1/leaderboard/{hashid}")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Param(name="hashid", type="string", require=true, desc="排行榜hashid", in="path")
-     */
+    #[Apidoc\Title("排行榜详情")]
+    #[Apidoc\Url("/api/v1/leaderboard/{hashid}")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Param(name: "hashid", type: "string", require: true, desc: "排行榜hashid", in: "path")]
     public function ranking(Request $request, string $hashid): Response
     {
         $boardId = $this->decodeId($hashid);

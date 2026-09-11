@@ -11,28 +11,24 @@ use common\model\Game;
 use common\model\GamePlayLog;
 use common\model\UserWallet;
 use common\service\GamePlayLogService;
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Db;
 use support\Request;
 use support\Response;
 use app\event\EventBus;
 
-/**
- * @Apidoc\Title("游戏管理")
- * @Apidoc\Group("game")
- */
+#[Apidoc\Title("游戏管理")]
+#[Apidoc\Group("game")]
 class GameController extends BaseController
 {
-    /**
-     * @Apidoc\Title("游戏列表")
-     * @Apidoc\Url("/api/v1/game/list")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Param(name="page", type="int", require=false, desc="页码")
-     * @Apidoc\Param(name="per_page", type="int", require=false, desc="每页条数")
-     * @Apidoc\Param(name="keyword", type="string", require=false, desc="搜索关键词")
-     * @Apidoc\Param(name="type", type="string", require=false, desc="游戏类型")
-     * @Apidoc\Param(name="category_id", type="string", require=false, desc="分类ID")
-     */
+    #[Apidoc\Title("游戏列表")]
+    #[Apidoc\Url("/api/v1/game/list")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Param(name: "page", type: "int", require: false, desc: "页码")]
+    #[Apidoc\Param(name: "per_page", type: "int", require: false, desc: "每页条数")]
+    #[Apidoc\Param(name: "keyword", type: "string", require: false, desc: "搜索关键词")]
+    #[Apidoc\Param(name: "type", type: "string", require: false, desc: "游戏类型")]
+    #[Apidoc\Param(name: "category_id", type: "string", require: false, desc: "分类ID")]
     public function list(Request $request): Response
     {
         $page       = (int) $request->input('page', 1);
@@ -120,12 +116,10 @@ class GameController extends BaseController
         ]);
     }
 
-    /**
-     * @Apidoc\Title("游戏详情")
-     * @Apidoc\Url("/api/v1/game/{hashid}")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Param(name="hashid", type="string", require=true, desc="游戏hashid", in="path")
-     */
+    #[Apidoc\Title("游戏详情")]
+    #[Apidoc\Url("/api/v1/game/{hashid}")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Param(name: "hashid", type: "string", require: true, desc: "游戏hashid", in: "path")]
     public function detail(Request $request, string $hashid): Response
     {
         $gameId = $this->decodeId($hashid);
@@ -163,13 +157,11 @@ class GameController extends BaseController
         ]);
     }
 
-    /**
-     * @Apidoc\Title("多游戏聚合余额")
-     * @Apidoc\Url("/api/v1/game/balance")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Desc("M5: 聚合用户在各游戏（上架）中的游戏币余额")
-     */
+    #[Apidoc\Title("多游戏聚合余额")]
+    #[Apidoc\Url("/api/v1/game/balance")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Desc("M5: 聚合用户在各游戏（上架）中的游戏币余额")]
     public function balance(Request $request): Response
     {
         $wallets = Db::table('user_game_wallet w')
@@ -206,14 +198,12 @@ class GameController extends BaseController
         return $this->success(['games' => array_values($games)]);
     }
 
-    /**
-     * @Apidoc\Title("签发 SDK 会话令牌")
-     * @Apidoc\Url("/api/v1/game/session")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="game_id", type="string", require=true, desc="游戏ID(hashid)")
-     * @Apidoc\Desc("M5: 自研/内嵌游戏启动前签发 5 分钟 HMAC 会话令牌（SdkSessionAuth 校验）")
-     */
+    #[Apidoc\Title("签发 SDK 会话令牌")]
+    #[Apidoc\Url("/api/v1/game/session")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "game_id", type: "string", require: true, desc: "游戏ID(hashid)")]
+    #[Apidoc\Desc("M5: 自研/内嵌游戏启动前签发 5 分钟 HMAC 会话令牌（SdkSessionAuth 校验）")]
     public function session(Request $request): Response
     {
         $gameId = $request->input('game_id', '');
@@ -242,13 +232,11 @@ class GameController extends BaseController
         ]);
     }
 
-    /**
-     * @Apidoc\Title("启动游戏")
-     * @Apidoc\Url("/api/v1/game/launch")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="game_id", type="string", require=true, desc="游戏ID")
-     */
+    #[Apidoc\Title("启动游戏")]
+    #[Apidoc\Url("/api/v1/game/launch")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "game_id", type: "string", require: true, desc: "游戏ID")]
     public function launch(Request $request): Response
     {
         $validator = validator($request->all(), [
@@ -302,12 +290,10 @@ class GameController extends BaseController
         ]);
     }
 
-    /**
-     * @Apidoc\Title("搜索建议")
-     * @Apidoc\Url("/api/v1/game/suggest")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Param(name="q", type="string", require=true, desc="搜索关键词")
-     */
+    #[Apidoc\Title("搜索建议")]
+    #[Apidoc\Url("/api/v1/game/suggest")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Param(name: "q", type: "string", require: true, desc: "搜索关键词")]
     public function suggest(Request $request): \support\Response
     {
         $q = $request->input('q', '');

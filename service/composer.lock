@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "622c45db59edf53c4ca8526f8493035f",
+    "content-hash": "6abfb11482801359dba30bd9360b23a8",
     "packages": [
         {
             "name": "adbario/php-dot-notation",
@@ -680,83 +680,6 @@
             "time": "2024-02-09T16:56:22+00:00"
         },
         {
-            "name": "doctrine/annotations",
-            "version": "2.0.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/doctrine/annotations.git",
-                "reference": "901c2ee5d26eb64ff43c47976e114bf00843acf7"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/annotations/zipball/901c2ee5d26eb64ff43c47976e114bf00843acf7",
-                "reference": "901c2ee5d26eb64ff43c47976e114bf00843acf7",
-                "shasum": ""
-            },
-            "require": {
-                "doctrine/lexer": "^2 || ^3",
-                "ext-tokenizer": "*",
-                "php": "^7.2 || ^8.0",
-                "psr/cache": "^1 || ^2 || ^3"
-            },
-            "require-dev": {
-                "doctrine/cache": "^2.0",
-                "doctrine/coding-standard": "^10",
-                "phpstan/phpstan": "^1.10.28",
-                "phpunit/phpunit": "^7.5 || ^8.5 || ^9.5",
-                "symfony/cache": "^5.4 || ^6.4 || ^7",
-                "vimeo/psalm": "^4.30 || ^5.14"
-            },
-            "suggest": {
-                "php": "PHP 8.0 or higher comes with attributes, a native replacement for annotations"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Doctrine\\Common\\Annotations\\": "lib/Doctrine/Common/Annotations"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Guilherme Blanco",
-                    "email": "guilhermeblanco@gmail.com"
-                },
-                {
-                    "name": "Roman Borschel",
-                    "email": "roman@code-factory.org"
-                },
-                {
-                    "name": "Benjamin Eberlei",
-                    "email": "kontakt@beberlei.de"
-                },
-                {
-                    "name": "Jonathan Wage",
-                    "email": "jonwage@gmail.com"
-                },
-                {
-                    "name": "Johannes Schmitt",
-                    "email": "schmittjoh@gmail.com"
-                }
-            ],
-            "description": "Docblock Annotations Parser",
-            "homepage": "https://www.doctrine-project.org/projects/annotations.html",
-            "keywords": [
-                "annotations",
-                "docblock",
-                "parser"
-            ],
-            "support": {
-                "issues": "https://github.com/doctrine/annotations/issues",
-                "source": "https://github.com/doctrine/annotations/tree/2.0.2"
-            },
-            "abandoned": true,
-            "time": "2024-09-05T10:17:24+00:00"
-        },
-        {
             "name": "doctrine/inflector",
             "version": "2.1.0",
             "source": {
@@ -1023,6 +946,75 @@
                 "symlink": true,
                 "relative": true
             }
+        },
+        {
+            "name": "erikwang2013/apidoc-php",
+            "version": "v1.0.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/erikwang2013/apidoc-php.git",
+                "reference": "2441b9b9bf66d377fdaf786de3015e34f1cb4216"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/erikwang2013/apidoc-php/zipball/2441b9b9bf66d377fdaf786de3015e34f1cb4216",
+                "reference": "2441b9b9bf66d377fdaf786de3015e34f1cb4216",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.0"
+            },
+            "type": "library",
+            "extra": {
+                "think": {
+                    "config": {
+                        "apidoc": "src/config.php"
+                    },
+                    "services": [
+                        "erikwang2013\\apidoc\\providers\\ThinkPHPService"
+                    ]
+                },
+                "hyperf": {
+                    "config": "erikwang2013\\apidoc\\ConfigProvider"
+                },
+                "laravel": {
+                    "providers": [
+                        "erikwang2013\\apidoc\\providers\\LaravelService"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "erikwang2013\\apidoc\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "erik",
+                    "email": "erik@erik.xyz",
+                    "homepage": "https://erik.xyz",
+                    "role": "Developer"
+                }
+            ],
+            "description": "基于PHP 8 attributes生成API文档，兼容Laravel、ThinkPHP、Hyperf、Webman等框架；在线调试、Markdown文档、多应用/多版本、Mock数据、授权访问、接口生成器、代码生成器等众多实用功能",
+            "keywords": [
+                "apidoc",
+                "api文档",
+                "attributes",
+                "attribute生成",
+                "markdown",
+                "php接口文档",
+                "接口文档",
+                "自动生成api"
+            ],
+            "support": {
+                "source": "https://github.com/erikwang2013/apidoc-php/tree/v1.0.4"
+            },
+            "time": "2026-09-05T10:58:51+00:00"
         },
         {
             "name": "erikwang2013/encryptable",
@@ -1320,16 +1312,16 @@
         },
         {
             "name": "erikwang2013/poster-php",
-            "version": "v1.2.3",
+            "version": "v1.2.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/erikwang2013/poster-php.git",
-                "reference": "f0e2f9efed86c8196d174296112326df821860ba"
+                "reference": "7a8add67f1e22406408f95589364d30ff20cb018"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/erikwang2013/poster-php/zipball/f0e2f9efed86c8196d174296112326df821860ba",
-                "reference": "f0e2f9efed86c8196d174296112326df821860ba",
+                "url": "https://api.github.com/repos/erikwang2013/poster-php/zipball/7a8add67f1e22406408f95589364d30ff20cb018",
+                "reference": "7a8add67f1e22406408f95589364d30ff20cb018",
                 "shasum": ""
             },
             "require": {
@@ -1391,9 +1383,9 @@
             ],
             "support": {
                 "issues": "https://github.com/erikwang2013/poster-php/issues",
-                "source": "https://github.com/erikwang2013/poster-php/tree/v1.2.3"
+                "source": "https://github.com/erikwang2013/poster-php/tree/v1.2.10"
             },
-            "time": "2026-08-17T05:41:56+00:00"
+            "time": "2026-09-08T15:42:44+00:00"
         },
         {
             "name": "erikwang2013/season",
@@ -2389,141 +2381,6 @@
                 "source": "https://github.com/vinkla/hashids/tree/5.0.2"
             },
             "time": "2023-02-23T15:00:54+00:00"
-        },
-        {
-            "name": "hg/apidoc",
-            "version": "v5.3.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/HGthecode/apidoc-php.git",
-                "reference": "cda7b825bfcce7e3167437a37da42b6be63a9550"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/HGthecode/apidoc-php/zipball/cda7b825bfcce7e3167437a37da42b6be63a9550",
-                "reference": "cda7b825bfcce7e3167437a37da42b6be63a9550",
-                "shasum": ""
-            },
-            "require": {
-                "doctrine/annotations": "^1 || ^2",
-                "php": "^7.1 || ^8.0"
-            },
-            "type": "library",
-            "extra": {
-                "think": {
-                    "config": {
-                        "apidoc": "src/config.php"
-                    },
-                    "services": [
-                        "hg\\apidoc\\providers\\ThinkPHPService"
-                    ]
-                },
-                "hyperf": {
-                    "config": "hg\\apidoc\\ConfigProvider"
-                },
-                "laravel": {
-                    "providers": [
-                        "hg\\apidoc\\providers\\LaravelService"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "hg\\apidoc\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "hg-code",
-                    "email": "376401263@qq.com"
-                }
-            ],
-            "description": "根据注解生成API文档，兼容Laravel、ThinkPHP、Hyperf、Webman等框架；在线调试、Markdown文档、多应用/多版本、Mock数据、授权访问、接口生成器、代码生成器等众多实用功能",
-            "keywords": [
-                "apidoc",
-                "api文档",
-                "markdown",
-                "php接口文档",
-                "接口文档",
-                "注解",
-                "注释生成",
-                "自动生成api"
-            ],
-            "support": {
-                "issues": "https://github.com/HGthecode/apidoc-php/issues",
-                "source": "https://github.com/HGthecode/apidoc-php/tree/v5.3.0"
-            },
-            "time": "2024-12-25T14:04:46+00:00"
-        },
-        {
-            "name": "hg/apidoc-export",
-            "version": "v1.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/HGthecode/apidoc-export.git",
-                "reference": "f347ee400fdac75aca307a292f5d2ab6afc85519"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/HGthecode/apidoc-export/zipball/f347ee400fdac75aca307a292f5d2ab6afc85519",
-                "reference": "f347ee400fdac75aca307a292f5d2ab6afc85519",
-                "shasum": ""
-            },
-            "require": {
-                "hg/apidoc": "^5.3 || dev-main",
-                "php": "^7.1 || ^8.0"
-            },
-            "type": "library",
-            "extra": {
-                "think": {
-                    "config": {
-                        "apidoc-export": "src/config.php"
-                    }
-                },
-                "hyperf": {
-                    "config": "hg\\apidoc\\ConfigProvider"
-                },
-                "laravel": {
-                    "providers": [
-                        "hg\\apidoc\\export\\providers\\LaravelService"
-                    ]
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "hg\\apidoc\\export\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "hg-code",
-                    "email": "376401263@qq.com"
-                }
-            ],
-            "description": "Apidoc文档导出插件",
-            "keywords": [
-                "apidoc",
-                "api文档",
-                "markdown",
-                "php接口文档",
-                "接口文档",
-                "文档导出插件",
-                "注释生成",
-                "自动生成api"
-            ],
-            "support": {
-                "issues": "https://github.com/HGthecode/apidoc-export/issues",
-                "source": "https://github.com/HGthecode/apidoc-export/tree/v1.0.0"
-            },
-            "time": "2024-12-25T13:58:03+00:00"
         },
         {
             "name": "huaweicloud/huaweicloud-sdk-php",
@@ -4374,55 +4231,6 @@
                 "source": "https://github.com/pohoc/crypto-sm"
             },
             "time": "2026-03-19T01:01:35+00:00"
-        },
-        {
-            "name": "psr/cache",
-            "version": "3.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/php-fig/cache.git",
-                "reference": "aa5030cfa5405eccfdcb1083ce040c2cb8d253bf"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/cache/zipball/aa5030cfa5405eccfdcb1083ce040c2cb8d253bf",
-                "reference": "aa5030cfa5405eccfdcb1083ce040c2cb8d253bf",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=8.0.0"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "1.0.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Psr\\Cache\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "PHP-FIG",
-                    "homepage": "https://www.php-fig.org/"
-                }
-            ],
-            "description": "Common interface for caching libraries",
-            "keywords": [
-                "cache",
-                "psr",
-                "psr-6"
-            ],
-            "support": {
-                "source": "https://github.com/php-fig/cache/tree/3.0.0"
-            },
-            "time": "2021-02-03T23:26:27+00:00"
         },
         {
             "name": "psr/clock",

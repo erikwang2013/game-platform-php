@@ -16,26 +16,22 @@ use common\model\UserWallet;
 use app\event\EventBus;
 use app\service\RiskService;
 use app\service\WalletScope;
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Db;
 use support\Log;
 use support\Request;
 use support\Response;
 
-/**
- * @Apidoc\Title("支付管理")
- * @Apidoc\Group("payment")
- */
+#[Apidoc\Title("支付管理")]
+#[Apidoc\Group("payment")]
 class PaymentController extends BaseController
 {
-    /**
-     * @Apidoc\Title("支付回调")
-     * @Apidoc\Url("/api/v1/payment/callback")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Param(name="order_no", type="string", require=true, desc="订单号")
-     * @Apidoc\Param(name="transaction_id", type="string", require=true, desc="交易ID")
-     * @Apidoc\Param(name="status", type="string", require=true, desc="支付状态(success/failed)")
-     */
+    #[Apidoc\Title("支付回调")]
+    #[Apidoc\Url("/api/v1/payment/callback")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "order_no", type: "string", require: true, desc: "订单号")]
+    #[Apidoc\Param(name: "transaction_id", type: "string", require: true, desc: "交易ID")]
+    #[Apidoc\Param(name: "status", type: "string", require: true, desc: "支付状态(success/failed)")]
     private const ALLOWED_PROVIDERS = [
         'stripe', 'paypal', 'nowpayments', 'coinbase',
         'skrill', 'neteller', 'paysafecard', 'paytm',
@@ -198,11 +194,9 @@ class PaymentController extends BaseController
         ], 'Deposit cancelled');
     }
 
-    /**
-     * @Apidoc\Title("支付方式列表")
-     * @Apidoc\Url("/api/v1/payment/methods")
-     * @Apidoc\Method("GET")
-     */
+    #[Apidoc\Title("支付方式列表")]
+    #[Apidoc\Url("/api/v1/payment/methods")]
+    #[Apidoc\Method("GET")]
     public function methods(Request $request): Response
     {
         $country = $this->resolveCountry($request);

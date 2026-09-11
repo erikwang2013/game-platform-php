@@ -12,6 +12,7 @@ use common\model\GamePlayLog;
 use app\provider\ProviderFactory;
 use app\service\AntiCheatService;
 use app\service\GamePlayRecorder;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Db;
 use support\Request;
 use support\Response;
@@ -22,12 +23,18 @@ use support\Response;
  * 与 /api/provider/* 相同的资金语义（SelfProvider，平台持有余额），
  * 认证基于 SDK 会话令牌（SdkSessionAuth），user_id 一律取自会话。
  */
+#[Apidoc\Title("游戏 SDK")]
+#[Apidoc\Group("game-sdk")]
 class GameSdkController extends BaseController
 {
     /**
      * 查询用户游戏余额
      * POST /api/game/balance
      */
+    #[Apidoc\Url("/api/game/balance")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "currency_id", type: "int", desc: "货币ID，0 表示默认货币")]
+    #[Apidoc\Returned(name: "balance", type: "string", desc: "游戏余额")]
     public function balance(Request $request): Response
     {
         if ($r = $this->checkType($request)) {
@@ -42,6 +49,15 @@ class GameSdkController extends BaseController
      * 通知下注
      * POST /api/game/bet
      */
+    #[Apidoc\Url("/api/game/bet")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "currency_id", type: "int", desc: "货币ID，0 表示默认货币")]
+    #[Apidoc\Param(name: "session_id", type: "string", require: true, desc: "游戏会话ID")]
+    #[Apidoc\Param(name: "amount", type: "string", require: true, desc: "下注金额（精确字符串，须大于 0）")]
+    #[Apidoc\Param(name: "round_id", type: "string", desc: "局ID")]
+    #[Apidoc\Param(name: "meta", type: "array", desc: "附加元数据")]
+    #[Apidoc\Returned(name: "success", type: "boolean", desc: "是否成功")]
+    #[Apidoc\Returned(name: "balance_after", type: "string", desc: "下注后余额")]
     public function bet(Request $request): Response
     {
         if ($r = $this->checkType($request)) {
@@ -74,6 +90,16 @@ class GameSdkController extends BaseController
      * 通知结算
      * POST /api/game/settle
      */
+    #[Apidoc\Url("/api/game/settle")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "currency_id", type: "int", desc: "货币ID，0 表示默认货币")]
+    #[Apidoc\Param(name: "session_id", type: "string", require: true, desc: "游戏会话ID")]
+    #[Apidoc\Param(name: "amount", type: "string", desc: "结算金额（精确字符串）")]
+    #[Apidoc\Param(name: "round_id", type: "string", desc: "局ID")]
+    #[Apidoc\Param(name: "meta", type: "array", desc: "附加元数据，result 字段用于事件映射")]
+    #[Apidoc\Returned(name: "success", type: "boolean", desc: "是否成功")]
+    #[Apidoc\Returned(name: "win_amount", type: "string", desc: "本局中奖金额")]
+    #[Apidoc\Returned(name: "balance_after", type: "string", desc: "结算后余额")]
     public function settle(Request $request): Response
     {
         if ($r = $this->checkType($request)) {
@@ -132,6 +158,15 @@ class GameSdkController extends BaseController
      * 通知退款
      * POST /api/game/refund
      */
+    #[Apidoc\Url("/api/game/refund")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "currency_id", type: "int", desc: "货币ID，0 表示默认货币")]
+    #[Apidoc\Param(name: "session_id", type: "string", require: true, desc: "游戏会话ID")]
+    #[Apidoc\Param(name: "amount", type: "string", require: true, desc: "退款金额（精确字符串，须大于 0）")]
+    #[Apidoc\Param(name: "round_id", type: "string", desc: "局ID")]
+    #[Apidoc\Param(name: "reason", type: "string", default: "unknown", desc: "退款原因")]
+    #[Apidoc\Returned(name: "success", type: "boolean", desc: "是否成功")]
+    #[Apidoc\Returned(name: "balance_after", type: "string", desc: "退款后余额")]
     public function refund(Request $request): Response
     {
         if ($r = $this->checkType($request)) {

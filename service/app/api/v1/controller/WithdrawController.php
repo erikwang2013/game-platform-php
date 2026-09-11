@@ -12,7 +12,7 @@ use common\model\UserIdentity;
 use common\model\UserWallet;
 use common\model\WithdrawLimit;
 use common\model\WithdrawOrder;
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Db;
 use support\Log;
 use support\Redis;
@@ -25,21 +25,17 @@ use common\service\NotificationService;
 use app\service\RiskService;
 use common\service\VipService;
 
-/**
- * @Apidoc\Title("提现管理")
- * @Apidoc\Group("withdraw")
- */
+#[Apidoc\Title("提现管理")]
+#[Apidoc\Group("withdraw")]
 class WithdrawController extends BaseController
 {
-    /**
-     * @Apidoc\Title("提现申请")
-     * @Apidoc\Url("/api/v1/withdraw/apply")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="platform_amount", type="float", require=true, desc="提现金额")
-     * @Apidoc\Param(name="method", type="string", require=true, desc="提现方式(paypal/bank/crypto)")
-     * @Apidoc\Param(name="account_info", type="string", require=true, desc="提现账户信息")
-     */
+    #[Apidoc\Title("提现申请")]
+    #[Apidoc\Url("/api/v1/withdraw/apply")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "platform_amount", type: "float", require: true, desc: "提现金额")]
+    #[Apidoc\Param(name: "method", type: "string", require: true, desc: "提现方式(paypal/bank/crypto)")]
+    #[Apidoc\Param(name: "account_info", type: "string", require: true, desc: "提现账户信息")]
     public function apply(Request $request): Response
     {
         // Check global withdraw switch
@@ -269,12 +265,10 @@ class WithdrawController extends BaseController
         }
     }
 
-    /**
-     * @Apidoc\Title("提现记录")
-     * @Apidoc\Url("/api/v1/withdraw/orders")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("提现记录")]
+    #[Apidoc\Url("/api/v1/withdraw/orders")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
     public function orders(Request $request): Response
     {
         $userId  = $request->userId;

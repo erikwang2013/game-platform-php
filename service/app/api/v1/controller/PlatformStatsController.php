@@ -10,22 +10,18 @@ namespace app\api\v1\controller;
 use common\model\Game;
 use common\model\GamePlayLog;
 use common\model\User;
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
-/**
- * @Apidoc\Title("平台统计")
- * @Apidoc\Group("platform")
- */
+#[Apidoc\Title("平台统计")]
+#[Apidoc\Group("platform")]
 class PlatformStatsController extends BaseController
 {
-    /**
-     * @Apidoc\Title("平台公开统计")
-     * @Apidoc\Desc("C端首页展示：游戏总数、用户总数、今日局数、7日活跃用户")
-     * @Apidoc\Url("/api/v1/platform/stats")
-     * @Apidoc\Method("GET")
-     */
+    #[Apidoc\Title("平台公开统计")]
+    #[Apidoc\Desc("C端首页展示：游戏总数、用户总数、今日局数、7日活跃用户")]
+    #[Apidoc\Url("/api/v1/platform/stats")]
+    #[Apidoc\Method("GET")]
     public function stats(Request $request): Response
     {
         return $this->success([

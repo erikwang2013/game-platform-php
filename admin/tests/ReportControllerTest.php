@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace tests;
 
-use app\admin\controller\ReportController;
+use app\admin\v1\controller\ReportController;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

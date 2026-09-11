@@ -10,6 +10,7 @@ namespace app\api\v1\controller;
 use common\HashidsService;
 use common\SnowflakeService;
 use common\model\CountryConfig;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
@@ -17,6 +18,7 @@ use support\Response;
  * C端基础控制器
  * 提供统一响应格式、ID编解码、snowflake ID 生成
  */
+#[Apidoc\NotParse()]
 class BaseController
 {
     /**

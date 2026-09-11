@@ -8,22 +8,18 @@ declare(strict_types=1);
 namespace app\api\v1\controller;
 
 use common\model\UserIdentity;
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
-/**
- * @Apidoc\Title("身份认证")
- * @Apidoc\Group("user")
- */
+#[Apidoc\Title("身份认证")]
+#[Apidoc\Group("user")]
 class IdentityController extends BaseController
 {
-    /**
-     * @Apidoc\Title("认证状态")
-     * @Apidoc\Url("/api/v1/user/identity/status")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("认证状态")]
+    #[Apidoc\Url("/api/v1/user/identity/status")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
     public function status(Request $request): Response
     {
         $identity = UserIdentity::where('user_id', $request->userId)->first();
@@ -44,17 +40,15 @@ class IdentityController extends BaseController
         ]);
     }
 
-    /**
-     * @Apidoc\Title("提交认证")
-     * @Apidoc\Url("/api/v1/user/identity/apply")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="real_name", type="string", require=true, desc="真实姓名")
-     * @Apidoc\Param(name="id_type", type="string", require=true, desc="证件类型(id_card/passport/driver_license)")
-     * @Apidoc\Param(name="id_number", type="string", require=true, desc="证件号码")
-     * @Apidoc\Param(name="id_front_photo", type="string", require=true, desc="证件正面照")
-     * @Apidoc\Param(name="selfie_photo", type="string", require=true, desc="自拍照")
-     */
+    #[Apidoc\Title("提交认证")]
+    #[Apidoc\Url("/api/v1/user/identity/apply")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "real_name", type: "string", require: true, desc: "真实姓名")]
+    #[Apidoc\Param(name: "id_type", type: "string", require: true, desc: "证件类型(id_card/passport/driver_license)")]
+    #[Apidoc\Param(name: "id_number", type: "string", require: true, desc: "证件号码")]
+    #[Apidoc\Param(name: "id_front_photo", type: "string", require: true, desc: "证件正面照")]
+    #[Apidoc\Param(name: "selfie_photo", type: "string", require: true, desc: "自拍照")]
     public function apply(Request $request): Response
     {
         $validator = validator($request->all(), [

@@ -9,22 +9,18 @@ namespace app\api\v1\controller;
 
 use common\model\Coupon;
 use common\model\UserCoupon;
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
-/**
- * @Apidoc\Title("优惠券")
- * @Apidoc\Group("coupon")
- */
+#[Apidoc\Title("优惠券")]
+#[Apidoc\Group("coupon")]
 class CouponController extends BaseController
 {
-    /**
-     * @Apidoc\Title("可领优惠券")
-     * @Apidoc\Url("/api/v1/coupon/available")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("可领优惠券")]
+    #[Apidoc\Url("/api/v1/coupon/available")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
     public function available(Request $request): Response
     {
         $now    = date('Y-m-d H:i:s');
@@ -71,13 +67,11 @@ class CouponController extends BaseController
         return $this->success($coupons);
     }
 
-    /**
-     * @Apidoc\Title("领取优惠券")
-     * @Apidoc\Url("/api/v1/coupon/claim")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="coupon_id", type="string", require=true, desc="优惠券ID")
-     */
+    #[Apidoc\Title("领取优惠券")]
+    #[Apidoc\Url("/api/v1/coupon/claim")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "coupon_id", type: "string", require: true, desc: "优惠券ID")]
     public function claim(Request $request): Response
     {
         $validator = validator($request->all(), [
@@ -171,12 +165,10 @@ class CouponController extends BaseController
         return $this->success(['coupon' => $data], '领取成功');
     }
 
-    /**
-     * @Apidoc\Title("我的优惠券")
-     * @Apidoc\Url("/api/v1/coupon/my")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("我的优惠券")]
+    #[Apidoc\Url("/api/v1/coupon/my")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
     public function my(Request $request): Response
     {
         $userId = $request->userId;

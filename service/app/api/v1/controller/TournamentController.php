@@ -9,19 +9,15 @@ use common\model\TournamentEntry;
 use common\service\FeatureFlag;
 use support\Request;
 use support\Response;
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 
-/**
- * @Apidoc\Title("赛事管理")
- * @Apidoc\Group("tournament")
- */
+#[Apidoc\Title("赛事管理")]
+#[Apidoc\Group("tournament")]
 class TournamentController extends BaseController
 {
-    /**
-     * @Apidoc\Title("赛事列表")
-     * @Apidoc\Url("/api/v1/tournament/list")
-     * @Apidoc\Method("GET")
-     */
+    #[Apidoc\Title("赛事列表")]
+    #[Apidoc\Url("/api/v1/tournament/list")]
+    #[Apidoc\Method("GET")]
     public function list(Request $request): Response
     {
         if (!FeatureFlag::isEnabled('tournament')) return $this->fail('Tournaments not available', 503);
@@ -55,11 +51,9 @@ class TournamentController extends BaseController
         return $this->success(['items' => $items, 'total' => $paginator->total(), 'page' => $page, 'last_page' => $paginator->lastPage()]);
     }
 
-    /**
-     * @Apidoc\Title("赛事详情")
-     * @Apidoc\Url("/api/v1/tournament/{hashid}")
-     * @Apidoc\Method("GET")
-     */
+    #[Apidoc\Title("赛事详情")]
+    #[Apidoc\Url("/api/v1/tournament/{hashid}")]
+    #[Apidoc\Method("GET")]
     public function detail(Request $request, string $hashid): Response
     {
         $t = Tournament::with(['game', 'entries' => function($q) { $q->orderBy('score', 'desc')->limit(100); }])
@@ -86,12 +80,10 @@ class TournamentController extends BaseController
         ]);
     }
 
-    /**
-     * @Apidoc\Title("报名参赛")
-     * @Apidoc\Url("/api/v1/tournament/{hashid}/join")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("报名参赛")]
+    #[Apidoc\Url("/api/v1/tournament/{hashid}/join")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Auth(true)]
     public function join(Request $request, string $hashid): Response
     {
         $t = Tournament::find($this->decodeId($hashid));

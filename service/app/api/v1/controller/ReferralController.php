@@ -12,24 +12,20 @@ use common\model\Referral;
 use app\model\ReferralReward;
 use common\model\UserWallet;
 use common\service\NotificationService;
-use hg\apidoc\annotation as Apidoc;
+use erikwang2013\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 use app\event\EventBus;
 use common\service\VipService;
 
-/**
- * @Apidoc\Title("推荐管理")
- * @Apidoc\Group("referral")
- */
+#[Apidoc\Title("推荐管理")]
+#[Apidoc\Group("referral")]
 class ReferralController extends BaseController
 {
-    /**
-     * @Apidoc\Title("我的推荐码")
-     * @Apidoc\Url("/api/v1/referral/my-code")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("我的推荐码")]
+    #[Apidoc\Url("/api/v1/referral/my-code")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
     public function myCode(Request $request): Response
     {
         $userId   = $request->userId;
@@ -54,12 +50,10 @@ class ReferralController extends BaseController
         ]);
     }
 
-    /**
-     * @Apidoc\Title("推荐统计")
-     * @Apidoc\Url("/api/v1/referral/stats")
-     * @Apidoc\Method("GET")
-     * @Apidoc\Auth(true)
-     */
+    #[Apidoc\Title("推荐统计")]
+    #[Apidoc\Url("/api/v1/referral/stats")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Auth(true)]
     public function stats(Request $request): Response
     {
         $userId = $request->userId;
@@ -82,13 +76,11 @@ class ReferralController extends BaseController
         ]);
     }
 
-    /**
-     * @Apidoc\Title("使用推荐码")
-     * @Apidoc\Url("/api/v1/referral/apply")
-     * @Apidoc\Method("POST")
-     * @Apidoc\Auth(true)
-     * @Apidoc\Param(name="code", type="string", require=true, desc="推荐码")
-     */
+    #[Apidoc\Title("使用推荐码")]
+    #[Apidoc\Url("/api/v1/referral/apply")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Auth(true)]
+    #[Apidoc\Param(name: "code", type: "string", require: true, desc: "推荐码")]
     public function apply(Request $request): Response
     {
         $validator = validator($request->all(), [
