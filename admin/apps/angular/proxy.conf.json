@@ -1,6 +1,6 @@
 {
-  "/admin/v1": { "target": "http://localhost:8787", "changeOrigin": true, "secure": false },
-  "/api/v1": { "target": "http://localhost:8787", "changeOrigin": true, "secure": false },
-  "/health": { "target": "http://localhost:8787", "changeOrigin": true, "secure": false },
-  "/metrics": { "target": "http://localhost:8787", "changeOrigin": true, "secure": false }
+  "/admin/v1": { "target": "http://localhost:8789", "changeOrigin": true, "secure": false },
+  "/api/v1": { "target": "http://localhost:8789", "changeOrigin": true, "secure": false },
+  "/health": { "target": "http://localhost:8789", "changeOrigin": true, "secure": false },
+  "/metrics": { "target": "http://localhost:8789", "changeOrigin": true, "secure": false }
 }

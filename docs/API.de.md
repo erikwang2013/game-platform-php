@@ -7,9 +7,9 @@ Languages: **中文** · [English](API.en.md) · [한국어](API.ko.md) · [Ру
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
 Online-interaktive Dokumentation (mit Online-Debugging):
-- C-End-Geschäft: http://localhost:8788/apidoc/
-- Verwaltungsbackend: http://localhost:8787/apidoc/
-- Passwort: admin123
+- C-End-Geschäft: http://localhost:8792/apidoc/
+- Verwaltungsbackend: http://localhost:8789/apidoc/
+- Passwort: siehe `APIDOC_PASSWORD` in der Deployment-Umgebung
 
 ## 1. Konventionen
 
@@ -17,8 +17,8 @@ Online-interaktive Dokumentation (mit Online-Debugging):
 
 | Endgerät | Adresse |
 |----|------|
-| Verwaltungsbackend | `http://localhost:8787` |
-| C-End-Geschäft | `http://localhost:8788` |
+| Verwaltungsbackend | `http://localhost:8789` |
+| C-End-Geschäft | `http://localhost:8792` |
 
 ### 1.2 Allgemeine Anfrage-Header
 
@@ -70,7 +70,7 @@ Antwort: {
 }
 ```
 
-## 2. C-End-Schnittstellen (service :8788)
+## 2. C-End-Schnittstellen (service :8792)
 
 ### 2.1 Authentifizierung
 
@@ -867,7 +867,7 @@ language 可选值: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
-## 3. Verwaltungsbackend-Schnittstellen (admin :8787)
+## 3. Verwaltungsbackend-Schnittstellen (admin :8789)
 
 ### 3.1 Plattform-Dashboard
 
@@ -2115,7 +2115,7 @@ Die Empfehlungsprovision erhält eine zweistufige Gewinnbeteiligung:
 
 ## 10. Neue APIs (v1.3.15-v1.3.22)
 
-### 10.1 Risikomanagement (Admin :8787)
+### 10.1 Risikomanagement (Admin :8789)
 
 | Endpunkt | Beschreibung |
 |------|------|
@@ -2144,7 +2144,7 @@ Die Empfehlungsprovision erhält eine zweistufige Gewinnbeteiligung:
 | GET /admin/risk/graph/{userId} | Benutzer-Verknüpfungsgraph |
 | GET /admin/risk/clusters | Risikoclusterliste |
 
-### 10.2 Anti-Cheat-Verwaltung (Admin :8787)
+### 10.2 Anti-Cheat-Verwaltung (Admin :8789)
 
 | Endpunkt | Beschreibung |
 |------|------|
@@ -2152,7 +2152,7 @@ Die Empfehlungsprovision erhält eine zweistufige Gewinnbeteiligung:
 | GET /admin/anticheat/events/{hashid} | Ereignisdetails |
 | POST /admin/anticheat/events/{hashid}/review | Ereignis prüfen |
 
-### 10.3 Aktionen (Admin :8787 + Client :8788)
+### 10.3 Aktionen (Admin :8789 + Client :8792)
 
 | Endpunkt | Beschreibung |
 |------|------|
@@ -2165,7 +2165,7 @@ Die Empfehlungsprovision erhält eine zweistufige Gewinnbeteiligung:
 | GET /api/v1/activities/{hashid} | Aktionsdetails (Client) |
 | POST /api/v1/activities/{hashid}/checkin | Check-in (Client) |
 
-### 10.4 Gruppen / Teilen (Client :8788 + Admin :8787)
+### 10.4 Gruppen / Teilen (Client :8792 + Admin :8789)
 
 | Endpunkt | Beschreibung |
 |------|------|

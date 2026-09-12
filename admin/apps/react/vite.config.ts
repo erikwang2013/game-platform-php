@@ -1,7 +1,7 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-const TARGET = 'http://localhost:8787'
+const TARGET = 'http://localhost:8789'
 
 // https://vite.dev/config/
 export default defineConfig({

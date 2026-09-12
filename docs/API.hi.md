@@ -7,9 +7,9 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
 ऑनलाइन इंटरैक्टिव दस्तावेज़ (ऑनलाइन डिबगिंग समर्थित):
-- C-छोर व्यवसाय: http://localhost:8788/apidoc/
-- प्रशासन कंसोल: http://localhost:8787/apidoc/
-- पासवर्ड: admin123
+- C-छोर व्यवसाय: http://localhost:8792/apidoc/
+- प्रशासन कंसोल: http://localhost:8789/apidoc/
+- पासवर्ड: डिप्लॉयमेंट वातावरण में `APIDOC_PASSWORD` कॉन्फ़िग देखें
 
 ## 1. सम्मेलन
 
@@ -17,8 +17,8 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 
 | छोर | पता |
 |----|------|
-| प्रशासन कंसोल | `http://localhost:8787` |
-| C-छोर व्यवसाय | `http://localhost:8788` |
+| प्रशासन कंसोल | `http://localhost:8789` |
+| C-छोर व्यवसाय | `http://localhost:8792` |
 
 ### 1.2 सामान्य अनुरोध हेडर
 
@@ -70,7 +70,7 @@ Authorization: Bearer <token>    (प्रमाणीकरण आवश्य
 }
 ```
 
-## 2. C-छोर इंटरफ़ेस (service :8788)
+## 2. C-छोर इंटरफ़ेस (service :8792)
 
 ### 2.1 प्रमाणीकरण
 
@@ -866,7 +866,7 @@ language वैकल्पिक मान: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
-## 3. प्रशासन कंसोल इंटरफ़ेस (admin :8787)
+## 3. प्रशासन कंसोल इंटरफ़ेस (admin :8789)
 
 ### 3.1 प्लेटफ़ॉर्म डैशबोर्ड
 
@@ -2113,7 +2113,7 @@ status: open / waiting / replied / closed
 
 ## 10. नए API (v1.3.15-v1.3.22)
 
-### 10.1 जोखिम प्रबंधन (एडमिन :8787)
+### 10.1 जोखिम प्रबंधन (एडमिन :8789)
 
 | एंडपॉइंट | विवरण |
 |------|------|
@@ -2142,7 +2142,7 @@ status: open / waiting / replied / closed
 | GET /admin/risk/graph/{userId} | उपयोगकर्ता लिंक ग्राफ |
 | GET /admin/risk/clusters | जोखिम क्लस्टर सूची |
 
-### 10.2 एंटी-चीट प्रबंधन (एडमिन :8787)
+### 10.2 एंटी-चीट प्रबंधन (एडमिन :8789)
 
 | एंडपॉइंट | विवरण |
 |------|------|
@@ -2150,7 +2150,7 @@ status: open / waiting / replied / closed
 | GET /admin/anticheat/events/{hashid} | इवेंट विवरण |
 | POST /admin/anticheat/events/{hashid}/review | इवेंट समीक्षा |
 
-### 10.3 गतिविधियाँ (एडमिन :8787 + क्लाइंट :8788)
+### 10.3 गतिविधियाँ (एडमिन :8789 + क्लाइंट :8792)
 
 | एंडपॉइंट | विवरण |
 |------|------|
@@ -2163,7 +2163,7 @@ status: open / waiting / replied / closed
 | GET /api/v1/activities/{hashid} | गतिविधि विवरण (क्लाइंट) |
 | POST /api/v1/activities/{hashid}/checkin | चेक-इन (क्लाइंट) |
 
-### 10.4 समूह / शेयर (क्लाइंट :8788 + एडमिन :8787)
+### 10.4 समूह / शेयर (क्लाइंट :8792 + एडमिन :8789)
 
 | एंडपॉइंट | विवरण |
 |------|------|

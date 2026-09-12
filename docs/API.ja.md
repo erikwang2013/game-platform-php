@@ -7,9 +7,9 @@ Languages: **中文** · [English](API.en.md) · [한국어](API.ko.md) · [Ру
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
 オンライン対話式ドキュメント（オンラインデバッグ対応）:
-- C端業務: http://localhost:8788/apidoc/
-- 管理バックエンド: http://localhost:8787/apidoc/
-- パスワード: admin123
+- C端業務: http://localhost:8792/apidoc/
+- 管理バックエンド: http://localhost:8789/apidoc/
+- パスワード: デプロイ環境の `APIDOC_PASSWORD` 設定を参照
 
 ## 1. 規約
 
@@ -17,8 +17,8 @@ Languages: **中文** · [English](API.en.md) · [한국어](API.ko.md) · [Ру
 
 | 端 | アドレス |
 |----|------|
-| 管理バックエンド | `http://localhost:8787` |
-| C端業務 | `http://localhost:8788` |
+| 管理バックエンド | `http://localhost:8789` |
+| C端業務 | `http://localhost:8792` |
 
 ### 1.2 共通リクエストヘッダー
 
@@ -70,7 +70,7 @@ Authorization: Bearer <token>    (需要认证的接口)
 }
 ```
 
-## 2. C端インターフェース (service :8788)
+## 2. C端インターフェース (service :8792)
 
 ### 2.1 認証
 
@@ -866,7 +866,7 @@ language 選択値: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
-## 3. 管理バックエンドインターフェース (admin :8787)
+## 3. 管理バックエンドインターフェース (admin :8789)
 
 ### 3.1 プラットフォームダッシュボード
 
@@ -2113,7 +2113,7 @@ status: open / waiting / replied / closed
 
 ## 10. v1.3.15-22 新規API
 
-### 10.1 リスク管理 (管理側 :8787)
+### 10.1 リスク管理 (管理側 :8789)
 
 | エンドポイント | 説明 |
 |------|------|
@@ -2142,7 +2142,7 @@ status: open / waiting / replied / closed
 | GET /admin/risk/graph/{userId} | ユーザー関連グラフ |
 | GET /admin/risk/clusters | リスククラスター一覧 |
 
-### 10.2 アンチチート管理 (管理側 :8787)
+### 10.2 アンチチート管理 (管理側 :8789)
 
 | エンドポイント | 説明 |
 |------|------|
@@ -2150,7 +2150,7 @@ status: open / waiting / replied / closed
 | GET /admin/anticheat/events/{hashid} | イベント詳細 |
 | POST /admin/anticheat/events/{hashid}/review | イベントレビュー |
 
-### 10.3 アクティビティ (管理側 :8787 + C側 :8788)
+### 10.3 アクティビティ (管理側 :8789 + C側 :8792)
 
 | エンドポイント | 説明 |
 |------|------|
@@ -2163,7 +2163,7 @@ status: open / waiting / replied / closed
 | GET /api/v1/activities/{hashid} | アクティビティ詳細（C側） |
 | POST /api/v1/activities/{hashid}/checkin | チェックイン（C側） |
 
-### 10.4 グループ／シェア (C側 :8788 + 管理側 :8787)
+### 10.4 グループ／シェア (C側 :8792 + 管理側 :8789)
 
 | エンドポイント | 説明 |
 |------|------|

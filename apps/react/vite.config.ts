@@ -8,7 +8,7 @@ export default defineConfig({
     port: 5173,
     // 前端一律用相对路径 /api/v1/...，由 dev server 转发到 service 应用
     proxy: {
-      '/api': { target: 'http://localhost:8788', changeOrigin: true },
+      '/api': { target: 'http://localhost:8792', changeOrigin: true },
     },
   },
 })

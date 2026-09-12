@@ -7,9 +7,9 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
 Dokumen interaktif online (mendukung debug online):
-- Bisnis sisi C: http://localhost:8788/apidoc/
-- Backend administrasi: http://localhost:8787/apidoc/
-- Kata sandi: admin123
+- Bisnis sisi C: http://localhost:8792/apidoc/
+- Backend administrasi: http://localhost:8789/apidoc/
+- Kata sandi: lihat konfigurasi `APIDOC_PASSWORD` di lingkungan penerapan
 
 ## 1. Konvensi
 
@@ -17,8 +17,8 @@ Dokumen interaktif online (mendukung debug online):
 
 | Ujung | Alamat |
 |----|------|
-| Backend administrasi | `http://localhost:8787` |
-| Bisnis sisi C | `http://localhost:8788` |
+| Backend administrasi | `http://localhost:8789` |
+| Bisnis sisi C | `http://localhost:8792` |
 
 ### 1.2 Header Permintaan Umum
 
@@ -70,7 +70,7 @@ Respons: {
 }
 ```
 
-## 2. Antarmuka Sisi C (service :8788)
+## 2. Antarmuka Sisi C (service :8792)
 
 ### 2.1 Autentikasi
 
@@ -866,7 +866,7 @@ Respons: {
 }
 ```
 
-## 3. Antarmuka Backend Administrasi (admin :8787)
+## 3. Antarmuka Backend Administrasi (admin :8789)
 
 ### 3.1 Dasbor Platform
 
@@ -2113,7 +2113,7 @@ Komisi referral menambahkan bagi hasil level dua:
 
 ## 10. API Baru (v1.3.15-v1.3.22)
 
-### 10.1 Manajemen Risiko (Admin :8787)
+### 10.1 Manajemen Risiko (Admin :8789)
 
 | Endpoint | Deskripsi |
 |------|------|
@@ -2142,7 +2142,7 @@ Komisi referral menambahkan bagi hasil level dua:
 | GET /admin/risk/graph/{userId} | Grafik keterkaitan pengguna |
 | GET /admin/risk/clusters | Daftar klaster risiko |
 
-### 10.2 Manajemen Anti-Cheat (Admin :8787)
+### 10.2 Manajemen Anti-Cheat (Admin :8789)
 
 | Endpoint | Deskripsi |
 |------|------|
@@ -2150,7 +2150,7 @@ Komisi referral menambahkan bagi hasil level dua:
 | GET /admin/anticheat/events/{hashid} | Detail event |
 | POST /admin/anticheat/events/{hashid}/review | Tinjau event |
 
-### 10.3 Aktivitas (Admin :8787 + Klien :8788)
+### 10.3 Aktivitas (Admin :8789 + Klien :8792)
 
 | Endpoint | Deskripsi |
 |------|------|
@@ -2163,7 +2163,7 @@ Komisi referral menambahkan bagi hasil level dua:
 | GET /api/v1/activities/{hashid} | Detail aktivitas (Klien) |
 | POST /api/v1/activities/{hashid}/checkin | Check-in (Klien) |
 
-### 10.4 Grup / Berbagi (Klien :8788 + Admin :8787)
+### 10.4 Grup / Berbagi (Klien :8792 + Admin :8789)
 
 | Endpoint | Deskripsi |
 |------|------|

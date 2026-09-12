@@ -7,9 +7,9 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
 Documentação online interativa (suporta teste em tempo real):
-- C-side: http://localhost:8788/apidoc/
-- Painel administrativo: http://localhost:8787/apidoc/
-- Senha: admin123
+- C-side: http://localhost:8792/apidoc/
+- Painel administrativo: http://localhost:8789/apidoc/
+- Senha: consulte `APIDOC_PASSWORD` no ambiente de implantação
 
 ## 1. Convenções
 
@@ -17,8 +17,8 @@ Documentação online interativa (suporta teste em tempo real):
 
 | Endpoint | Endereço |
 |----|------|
-| Painel administrativo | `http://localhost:8787` |
-| C-side | `http://localhost:8788` |
+| Painel administrativo | `http://localhost:8789` |
+| C-side | `http://localhost:8792` |
 
 ### 1.2 Cabeçalhos comuns de requisição
 
@@ -70,7 +70,7 @@ Resposta: {
 }
 ```
 
-## 2. Interfaces C-side (service :8788)
+## 2. Interfaces C-side (service :8792)
 
 ### 2.1 Autenticação
 
@@ -866,7 +866,7 @@ Resposta: {
 }
 ```
 
-## 3. Interfaces do painel administrativo (admin :8787)
+## 3. Interfaces do painel administrativo (admin :8789)
 
 ### 3.1 Dashboard da plataforma
 
@@ -2113,7 +2113,7 @@ A comissão de indicação adiciona repartição de segundo nível:
 
 ## 10. Novas APIs (v1.3.15-v1.3.22)
 
-### 10.1 Gestão de risco (admin :8787)
+### 10.1 Gestão de risco (admin :8789)
 
 | Endpoint | Descrição |
 |------|------|
@@ -2142,7 +2142,7 @@ A comissão de indicação adiciona repartição de segundo nível:
 | GET /admin/risk/graph/{userId} | Grafo de vínculos do usuário |
 | GET /admin/risk/clusters | Lista de clusters de risco |
 
-### 10.2 Gestão anti-cheat (admin :8787)
+### 10.2 Gestão anti-cheat (admin :8789)
 
 | Endpoint | Descrição |
 |------|------|
@@ -2150,7 +2150,7 @@ A comissão de indicação adiciona repartição de segundo nível:
 | GET /admin/anticheat/events/{hashid} | Detalhe do evento |
 | POST /admin/anticheat/events/{hashid}/review | Revisar evento |
 
-### 10.3 Atividades (admin :8787 + cliente :8788)
+### 10.3 Atividades (admin :8789 + cliente :8792)
 
 | Endpoint | Descrição |
 |------|------|
@@ -2163,7 +2163,7 @@ A comissão de indicação adiciona repartição de segundo nível:
 | GET /api/v1/activities/{hashid} | Detalhe da atividade (cliente) |
 | POST /api/v1/activities/{hashid}/checkin | Check-in (cliente) |
 
-### 10.4 Grupos / Compartilhamentos (cliente :8788 + admin :8787)
+### 10.4 Grupos / Compartilhamentos (cliente :8792 + admin :8789)
 
 | Endpoint | Descrição |
 |------|------|

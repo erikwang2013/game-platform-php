@@ -7,9 +7,9 @@ Languages: **中文** · [English](API.en.md) · [한국어](API.ko.md) · [Ру
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
 在线交互式文档（支持在线调试）：
-- C端业务：http://localhost:8788/apidoc/
-- 管理后台：http://localhost:8787/apidoc/
-- 密码：admin123
+- C端业务：http://localhost:8792/apidoc/
+- 管理后台：http://localhost:8789/apidoc/
+- 密码：见部署环境的 `APIDOC_PASSWORD` 配置
 
 ## 1. 约定
 
@@ -17,8 +17,8 @@ Languages: **中文** · [English](API.en.md) · [한국어](API.ko.md) · [Ру
 
 | 端 | 地址 |
 |----|------|
-| 管理后台 | `http://localhost:8787` |
-| C端业务 | `http://localhost:8788` |
+| 管理后台 | `http://localhost:8789` |
+| C端业务 | `http://localhost:8792` |
 
 ### 1.2 通用请求头
 
@@ -70,7 +70,7 @@ Authorization: Bearer <token>    (需要认证的接口)
 }
 ```
 
-## 2. C端接口 (service :8788)
+## 2. C端接口 (service :8792)
 
 ### 2.1 认证
 
@@ -866,7 +866,7 @@ language 可选值: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
-## 3. 管理后台接口 (admin :8787)
+## 3. 管理后台接口 (admin :8789)
 
 ### 3.1 平台仪表盘
 
@@ -2113,7 +2113,7 @@ status: open / waiting / replied / closed
 
 ## 10. v1.3.15-22 新增接口
 
-### 10.1 风控管理 (管理端 :8787)
+### 10.1 风控管理 (管理端 :8789)
 
 | 接口 | 说明 |
 |------|------|
@@ -2142,7 +2142,7 @@ status: open / waiting / replied / closed
 | GET /admin/risk/graph/{userId} | 用户关联图谱 |
 | GET /admin/risk/clusters | 风险簇列表 |
 
-### 10.2 反作弊管理 (管理端 :8787)
+### 10.2 反作弊管理 (管理端 :8789)
 
 | 接口 | 说明 |
 |------|------|
@@ -2150,7 +2150,7 @@ status: open / waiting / replied / closed
 | GET /admin/anticheat/events/{hashid} | 事件详情 |
 | POST /admin/anticheat/events/{hashid}/review | 事件复核 |
 
-### 10.3 活动 (管理端 :8787 + C端 :8788)
+### 10.3 活动 (管理端 :8789 + C端 :8792)
 
 | 接口 | 说明 |
 |------|------|
@@ -2163,7 +2163,7 @@ status: open / waiting / replied / closed
 | GET /api/v1/activities/{hashid} | 活动详情 (C端) |
 | POST /api/v1/activities/{hashid}/checkin | 签到 (C端) |
 
-### 10.4 群组/分享 (C端 :8788 + 管理端 :8787)
+### 10.4 群组/分享 (C端 :8792 + 管理端 :8789)
 
 | 接口 | 说明 |
 |------|------|

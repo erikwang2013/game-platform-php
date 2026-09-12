@@ -7,9 +7,9 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
 Documentación en línea interactiva (con soporte de depuración en línea):
-- Negocio del lado C: http://localhost:8788/apidoc/
-- Panel de administración: http://localhost:8787/apidoc/
-- Contraseña: admin123
+- Negocio del lado C: http://localhost:8792/apidoc/
+- Panel de administración: http://localhost:8789/apidoc/
+- Contraseña: consulte `APIDOC_PASSWORD` en el entorno de despliegue
 
 ## 1. Convenciones
 
@@ -17,8 +17,8 @@ Documentación en línea interactiva (con soporte de depuración en línea):
 
 | End | Dirección |
 |----|------|
-| Panel de administración | `http://localhost:8787` |
-| Negocio del lado C | `http://localhost:8788` |
+| Panel de administración | `http://localhost:8789` |
+| Negocio del lado C | `http://localhost:8792` |
 
 ### 1.2 Cabeceras de solicitud comunes
 
@@ -70,7 +70,7 @@ Respuesta: {
 }
 ```
 
-## 2. Interfaces del lado C (service :8788)
+## 2. Interfaces del lado C (service :8792)
 
 ### 2.1 Autenticación
 
@@ -866,7 +866,7 @@ Valores de language: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
-## 3. Interfaces del panel de administración (admin :8787)
+## 3. Interfaces del panel de administración (admin :8789)
 
 ### 3.1 Dashboard de la plataforma
 
@@ -2113,7 +2113,7 @@ La comisión por recomendación añade una segunda línea de reparto:
 
 ## 10. Nuevas API (v1.3.15-v1.3.22)
 
-### 10.1 Gestión de riesgos (admin :8787)
+### 10.1 Gestión de riesgos (admin :8789)
 
 | Endpoint | Descripción |
 |------|------|
@@ -2142,7 +2142,7 @@ La comisión por recomendación añade una segunda línea de reparto:
 | GET /admin/risk/graph/{userId} | Grafo de vínculos del usuario |
 | GET /admin/risk/clusters | Lista de clústeres de riesgo |
 
-### 10.2 Gestión anti-trampas (admin :8787)
+### 10.2 Gestión anti-trampas (admin :8789)
 
 | Endpoint | Descripción |
 |------|------|
@@ -2150,7 +2150,7 @@ La comisión por recomendación añade una segunda línea de reparto:
 | GET /admin/anticheat/events/{hashid} | Detalle del evento |
 | POST /admin/anticheat/events/{hashid}/review | Revisar evento |
 
-### 10.3 Actividades (admin :8787 + cliente :8788)
+### 10.3 Actividades (admin :8789 + cliente :8792)
 
 | Endpoint | Descripción |
 |------|------|
@@ -2163,7 +2163,7 @@ La comisión por recomendación añade una segunda línea de reparto:
 | GET /api/v1/activities/{hashid} | Detalle de actividad (cliente) |
 | POST /api/v1/activities/{hashid}/checkin | Check-in (cliente) |
 
-### 10.4 Grupos / Compartir (cliente :8788 + admin :8787)
+### 10.4 Grupos / Compartir (cliente :8792 + admin :8789)
 
 | Endpoint | Descripción |
 |------|------|

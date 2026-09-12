@@ -51,7 +51,7 @@ Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 ```
 open-admin/
 ├── app/
-│   ├── admin/controller/       # 管理端控制器 (30 个)
+│   ├── admin/v1/controller/    # 管理端控制器 (44 个)
 │   │   ├── BaseController.php      # 基础控制器
 │   │   ├── DashboardController.php # 仪表盘（Redis 缓存）
 │   │   ├── AnalyticsController.php # 数据分析（12 个端点）
@@ -71,28 +71,23 @@ open-admin/
 │   │   ├── CaptchaController.php
 │   │   └── AuthController.php
 │   ├── common/                 # 公共工具类
-│   │   ├── HashidsService.php
-│   │   ├── SnowflakeService.php
-│   │   └── EncryptionService.php
-│   ├── middleware/             # 中间件（6 个）
+│   │   └── CdnProbeService.php # CDN 连通性探测（Hashids/Snowflake/Encryption 由 composer 包提供）
+│   ├── middleware/             # 中间件（7 个）
 │   │   ├── Cors.php            # 跨域（全局）
 │   │   ├── SecurityFilter.php  # 攻击拦截（全局：XSS/SQL注入/路径遍历/命令注入/CSRF）
 │   │   ├── RateLimit.php       # Redis 限流（全局，Lua 原子化）
+│   │   ├── StaticFile.php      # 静态文件服务（webman 内置）
 │   │   ├── AdminAuth.php       # JWT 认证 + 黑名单
 │   │   ├── AdminPermission.php # RBAC 权限校验（Redis 60s 缓存）
 │   │   └── OperationLog.php    # 操作日志自动记录（含来源端检测）
-│   ├── model/                  # 数据模型
-│   ├── queue/                  # 队列任务
-│   └── process/                # 进程 (Http, Monitor)
-├── common/                     # 业务服务（数据分析）
-│   └── service/
-│       ├── GameDashboardService.php  # 总览/排行/DAU/小时/行为分布
-│       ├── DepositLogService.php     # 营收总览/游戏转化率
-│       └── ProbabilityService.php    # 联合/条件概率（SQL 构建器）
+│   ├── model/                  # 数据模型（8 个）
+│   └── process/                # 进程 (Http, Monitor, RiskIpCron)
 ├── apps/
+│   ├── angular/                # Angular Web 管理后台
+│   ├── react/                  # React Web 管理后台
 │   ├── flutter/                # Flutter Web 管理后台
 │   │   └── lib/app/
-│   │       ├── pages/          # 6 个完整页面
+│   │       ├── pages/          # 20 个页面目录（下列为节选）
 │   │       │   ├── dashboard/  # 仪表盘
 │   │       │   ├── login/      # 登录
 │   │       │   ├── user/       # 用户管理
@@ -142,15 +137,16 @@ open-admin/
 ## 中间件执行链
 
 ```
-全局:  Cors → SecurityFilter(方法检查→405) → RateLimit → {路由中间件}
-/admin: Cors → SecurityFilter(方法检查→405) → RateLimit → AdminAuth → AdminPermission → OperationLog → Controller
-/api:   Cors → SecurityFilter(方法检查→405) → RateLimit → Controller
-/health: Cors → SecurityFilter(方法检查→405) → RateLimit → Controller
+全局:  Cors → SecurityFilter → RateLimit → {路由中间件}
+/admin: Cors → SecurityFilter → RateLimit → AdminAuth → AdminPermission → OperationLog → Controller
+/api:   Cors → SecurityFilter → RateLimit → Controller
+/health: Cors → SecurityFilter → RateLimit → Controller
+/metrics、/api/docs: 同上再加 AdminAuth → AdminPermission
 ```
 
 ## 安全增强
 
-- **HTTP 方法限制**：SecurityFilter 仅允许 GET/POST/PUT/DELETE/OPTIONS/HEAD，非标准方法返回 405
+- **HTTP 方法限制**：无方法白名单。非法方法由 webman 框架层拒绝（`vendor/workerman/webman-framework/src/app/App.php:934`，返回纯文本 `405 Method Not Allowed` + `Allow` 头，非 JSON 信封）；实测 admin 的 `TRACE` 在 HTTP 解析层即被拒（400 空响应体）
 - **CSP 头**：Content-Security-Policy + X-Permitted-Cross-Domain-Policies 注入所有响应
 - **账号锁定**：连续 5 次登录失败，账号锁定 15 分钟
 - **并发会话限制**：同一用户最多 3 个有效 Token，超出时最旧 Token 加入黑名单
@@ -162,7 +158,7 @@ open-admin/
 版本号置于 URL 路径：公开端点 `/api/v1/*`、管理端点 `/admin/v1/*`（默认 v1），不使用请求头：
 
 ```bash
-curl http://localhost:8787/api/v1/auth/login
+curl http://localhost:8789/api/v1/auth/login
 ```
 
 新增 v2 只需创建 `app/api/v2/controller/` 目录并在路由注册 `/api/v2` 组。
@@ -233,9 +229,12 @@ docker-compose up -d
 
 ### 监控
 
-`GET /metrics` 端点（`MetricsController`）输出 Prometheus text format，包含 5 个 gauge 指标：
-- `openadmin_http_requests_total` — 请求总数
-- `openadmin_active_users` — 活跃用户数
-- `openadmin_db_connection_status` — 数据库连接状态 (0/1)
-- `openadmin_redis_connection_status` — Redis 连接状态 (0/1)
-- `openadmin_memory_usage_bytes` — 内存使用量
+`GET /metrics` 端点（`MetricsController`）**需认证**：`config/route.php:48` 挂 `AdminAuth` + `AdminPermission`，未认证返回 401 信封。
+输出 Prometheus text format（`text/plain`），指标前缀 `open_admin_`，共 20 个指标族（18 gauge + 2 counter）：
+- `open_admin_active_users` / `open_admin_total_users` — 活跃/累计用户数
+- `open_admin_db_up` / `open_admin_redis_up` / `open_admin_es_up` — 依赖可达性 (0/1)
+- `open_admin_memory_usage_bytes` / `open_admin_process_fd_count` / `open_admin_cpu_load_1m` / `open_admin_uptime_seconds` — 进程指标
+- `open_admin_withdraw_pending` / `open_admin_deposit_confirmed_today` / `open_admin_deposit_total_today` / `open_admin_deposit_success_rate_percent` / `open_admin_reconciliation_diff_pending` — 资金指标
+- `open_admin_mysql_connections` / `open_admin_redis_hit_rate_percent` / `open_admin_redis_memory_bytes` — 连接/缓存指标
+- `open_admin_event_emit_total` / `open_admin_event_consume_total` — 事件总线 counter
+- `open_admin_info` — 版本/运行时信息

@@ -7,9 +7,9 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
 Documentation interactive en ligne (avec débogage en ligne) :
-- Métier côté C : http://localhost:8788/apidoc/
-- Administration : http://localhost:8787/apidoc/
-- Mot de passe : admin123
+- Métier côté C : http://localhost:8792/apidoc/
+- Administration : http://localhost:8789/apidoc/
+- Mot de passe : voir la configuration `APIDOC_PASSWORD` de l'environnement de déploiement
 
 ## 1. Conventions
 
@@ -17,8 +17,8 @@ Documentation interactive en ligne (avec débogage en ligne) :
 
 | Extrémité | Adresse |
 |----|------|
-| Administration | `http://localhost:8787` |
-| Métier côté C | `http://localhost:8788` |
+| Administration | `http://localhost:8789` |
+| Métier côté C | `http://localhost:8792` |
 
 ### 1.2 En-têtes de requête courants
 
@@ -70,7 +70,7 @@ Réponse: {
 }
 ```
 
-## 2. Interfaces côté C (service :8788)
+## 2. Interfaces côté C (service :8792)
 
 ### 2.1 Authentification
 
@@ -866,7 +866,7 @@ Valeurs possibles de language : en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
-## 3. Interfaces d'administration (admin :8787)
+## 3. Interfaces d'administration (admin :8789)
 
 ### 3.1 Tableau de bord de la plateforme
 
@@ -2113,7 +2113,7 @@ La commission de parrainage ajoute une répartition de deuxième niveau :
 
 ## 10. Nouvelles API (v1.3.15-v1.3.22)
 
-### 10.1 Gestion des risques (admin :8787)
+### 10.1 Gestion des risques (admin :8789)
 
 | Point d'accès | Description |
 |------|------|
@@ -2142,7 +2142,7 @@ La commission de parrainage ajoute une répartition de deuxième niveau :
 | GET /admin/risk/graph/{userId} | Graphe de liens de l'utilisateur |
 | GET /admin/risk/clusters | Liste des clusters à risque |
 
-### 10.2 Gestion anti-triche (admin :8787)
+### 10.2 Gestion anti-triche (admin :8789)
 
 | Point d'accès | Description |
 |------|------|
@@ -2150,7 +2150,7 @@ La commission de parrainage ajoute une répartition de deuxième niveau :
 | GET /admin/anticheat/events/{hashid} | Détail de l'événement |
 | POST /admin/anticheat/events/{hashid}/review | Examiner l'événement |
 
-### 10.3 Activités (admin :8787 + client :8788)
+### 10.3 Activités (admin :8789 + client :8792)
 
 | Point d'accès | Description |
 |------|------|
@@ -2163,7 +2163,7 @@ La commission de parrainage ajoute une répartition de deuxième niveau :
 | GET /api/v1/activities/{hashid} | Détail de l'activité (client) |
 | POST /api/v1/activities/{hashid}/checkin | Check-in (client) |
 
-### 10.4 Groupes / Partage (client :8788 + admin :8787)
+### 10.4 Groupes / Partage (client :8792 + admin :8789)
 
 | Point d'accès | Description |
 |------|------|

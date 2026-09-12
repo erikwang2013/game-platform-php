@@ -7,9 +7,9 @@ Languages: [中文](API.md) · **English** · [한국어](API.ko.md) · [Рус�
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
 Online interactive documentation (with live debugging support):
-- C-end service: http://localhost:8788/apidoc/
-- Admin backend: http://localhost:8787/apidoc/
-- Password: admin123
+- C-end service: http://localhost:8792/apidoc/
+- Admin backend: http://localhost:8789/apidoc/
+- Password: see the `APIDOC_PASSWORD` setting of the deployment environment
 
 ## 1. Conventions
 
@@ -17,8 +17,8 @@ Online interactive documentation (with live debugging support):
 
 | End | URL |
 |----|------|
-| Admin backend | `http://localhost:8787` |
-| C-end service | `http://localhost:8788` |
+| Admin backend | `http://localhost:8789` |
+| C-end service | `http://localhost:8792` |
 
 ### 1.2 Common Request Headers
 
@@ -70,7 +70,7 @@ All IDs in API requests and responses are Hashids-encoded strings, not raw BIGIN
 }
 ```
 
-## 2. C-end APIs (service :8788)
+## 2. C-end APIs (service :8792)
 
 ### 2.1 Authentication
 
@@ -818,7 +818,7 @@ language 可选值: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
-## 3. Admin Backend APIs (admin :8787)
+## 3. Admin Backend APIs (admin :8789)
 
 ### 3.1 Platform Dashboard
 
@@ -2006,7 +2006,7 @@ Referral commission adds a second level:
 
 ## 10. New APIs (v1.3.15-v1.3.22)
 
-### 10.1 Risk Control Management (Admin :8787)
+### 10.1 Risk Control Management (Admin :8789)
 
 | Endpoint | Description |
 |------|------|
@@ -2035,7 +2035,7 @@ Referral commission adds a second level:
 | GET /admin/risk/graph/{userId} | User link graph |
 | GET /admin/risk/clusters | Risk cluster list |
 
-### 10.2 Anti-Cheat Management (Admin :8787)
+### 10.2 Anti-Cheat Management (Admin :8789)
 
 | Endpoint | Description |
 |------|------|
@@ -2043,7 +2043,7 @@ Referral commission adds a second level:
 | GET /admin/anticheat/events/{hashid} | Event detail |
 | POST /admin/anticheat/events/{hashid}/review | Review event |
 
-### 10.3 Activities (Admin :8787 + Client :8788)
+### 10.3 Activities (Admin :8789 + Client :8792)
 
 | Endpoint | Description |
 |------|------|
@@ -2056,7 +2056,7 @@ Referral commission adds a second level:
 | GET /api/v1/activities/{hashid} | Activity detail (Client) |
 | POST /api/v1/activities/{hashid}/checkin | Check-in (Client) |
 
-### 10.4 Groups / Shares (Client :8788 + Admin :8787)
+### 10.4 Groups / Shares (Client :8792 + Admin :8789)
 
 | Endpoint | Description |
 |------|------|

@@ -7,9 +7,9 @@ Languages: **中文** · [English](API.en.md) · [한국어](API.ko.md) · [Ру
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
 توثيق تفاعلي عبر الإنترنت (يدعم التصحيح عبر الإنترنت):
-- أعمال الطرف C: http://localhost:8788/apidoc/
-- لوحة الإدارة: http://localhost:8787/apidoc/
-- كلمة المرور: admin123
+- أعمال الطرف C: http://localhost:8792/apidoc/
+- لوحة الإدارة: http://localhost:8789/apidoc/
+- كلمة المرور: راجع إعداد `APIDOC_PASSWORD` في بيئة النشر
 
 ## 1. الاتفاقيات
 
@@ -17,8 +17,8 @@ Languages: **中文** · [English](API.en.md) · [한국어](API.ko.md) · [Ру
 
 | الطرف | العنوان |
 |----|------|
-| لوحة الإدارة | `http://localhost:8787` |
-| أعمال الطرف C | `http://localhost:8788` |
+| لوحة الإدارة | `http://localhost:8789` |
+| أعمال الطرف C | `http://localhost:8792` |
 
 ### 1.2 رؤوس الطلبات العامة
 
@@ -70,7 +70,7 @@ Authorization: Bearer <token>    (الواجهات التي تتطلب مصاد�
 }
 ```
 
-## 2. واجهات الطرف C (service :8788)
+## 2. واجهات الطرف C (service :8792)
 
 ### 2.1 المصادقة
 
@@ -866,7 +866,7 @@ status: success / failed
 }
 ```
 
-## 3. واجهات لوحة الإدارة (admin :8787)
+## 3. واجهات لوحة الإدارة (admin :8789)
 
 ### 3.1 لوحة تحكم المنصة
 
@@ -2113,7 +2113,7 @@ status: open / waiting / replied / closed
 
 ## 10. واجهات برمجة جديدة (v1.3.15-v1.3.22)
 
-### 10.1 إدارة المخاطر (الإدارة :8787)
+### 10.1 إدارة المخاطر (الإدارة :8789)
 
 | نقطة الوصول | الوصف |
 |------|------|
@@ -2142,7 +2142,7 @@ status: open / waiting / replied / closed
 | GET /admin/risk/graph/{userId} | رسم بياني لروابط المستخدم |
 | GET /admin/risk/clusters | قائمة عناقيد المخاطر |
 
-### 10.2 إدارة مكافحة الغش (الإدارة :8787)
+### 10.2 إدارة مكافحة الغش (الإدارة :8789)
 
 | نقطة الوصول | الوصف |
 |------|------|
@@ -2150,7 +2150,7 @@ status: open / waiting / replied / closed
 | GET /admin/anticheat/events/{hashid} | تفاصيل الحدث |
 | POST /admin/anticheat/events/{hashid}/review | مراجعة الحدث |
 
-### 10.3 الأنشطة (الإدارة :8787 + العميل :8788)
+### 10.3 الأنشطة (الإدارة :8789 + العميل :8792)
 
 | نقطة الوصول | الوصف |
 |------|------|
@@ -2163,7 +2163,7 @@ status: open / waiting / replied / closed
 | GET /api/v1/activities/{hashid} | تفاصيل النشاط (العميل) |
 | POST /api/v1/activities/{hashid}/checkin | تسجيل الحضور (العميل) |
 
-### 10.4 المجموعات / المشاركة (العميل :8788 + الإدارة :8787)
+### 10.4 المجموعات / المشاركة (العميل :8792 + الإدارة :8789)
 
 | نقطة الوصول | الوصف |
 |------|------|

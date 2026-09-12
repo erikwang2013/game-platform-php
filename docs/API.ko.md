@@ -7,9 +7,9 @@ Languages: [中文](API.md) · [English](API.en.md) · **한국어** · [Рус�
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
 온라인 인터랙티브 문서 (온라인 디버깅 지원):
-- C단 비즈니스: http://localhost:8788/apidoc/
-- 관리 백오피스: http://localhost:8787/apidoc/
-- 비밀번호: admin123
+- C단 비즈니스: http://localhost:8792/apidoc/
+- 관리 백오피스: http://localhost:8789/apidoc/
+- 비밀번호: 배포 환경의 `APIDOC_PASSWORD` 설정 참조
 
 ## 1. 규약
 
@@ -17,8 +17,8 @@ Languages: [中文](API.md) · [English](API.en.md) · **한국어** · [Рус�
 
 | 엔드 | 주소 |
 |----|------|
-| 관리 백오피스 | `http://localhost:8787` |
-| C단 비즈니스 | `http://localhost:8788` |
+| 관리 백오피스 | `http://localhost:8789` |
+| C단 비즈니스 | `http://localhost:8792` |
 
 ### 1.2 공통 요청 헤더
 
@@ -70,7 +70,7 @@ Authorization: Bearer <token>    (인증이 필요한 인터페이스)
 }
 ```
 
-## 2. C단 인터페이스 (service :8788)
+## 2. C단 인터페이스 (service :8792)
 
 ### 2.1 인증
 
@@ -866,7 +866,7 @@ language 선택값: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
-## 3. 관리 백오피스 인터페이스 (admin :8787)
+## 3. 관리 백오피스 인터페이스 (admin :8789)
 
 ### 3.1 플랫폼 대시보드
 
@@ -2113,7 +2113,7 @@ status: open / waiting / replied / closed
 
 ## 10. v1.3.15-22 신규 API
 
-### 10.1 리스크 관리 (관리자 :8787)
+### 10.1 리스크 관리 (관리자 :8789)
 
 | 엔드포인트 | 설명 |
 |------|------|
@@ -2142,7 +2142,7 @@ status: open / waiting / replied / closed
 | GET /admin/risk/graph/{userId} | 사용자 연관 그래프 |
 | GET /admin/risk/clusters | 리스크 클러스터 목록 |
 
-### 10.2 안티치트 관리 (관리자 :8787)
+### 10.2 안티치트 관리 (관리자 :8789)
 
 | 엔드포인트 | 설명 |
 |------|------|
@@ -2150,7 +2150,7 @@ status: open / waiting / replied / closed
 | GET /admin/anticheat/events/{hashid} | 이벤트 상세 |
 | POST /admin/anticheat/events/{hashid}/review | 이벤트 검토 |
 
-### 10.3 활동 (관리자 :8787 + C측 :8788)
+### 10.3 활동 (관리자 :8789 + C측 :8792)
 
 | 엔드포인트 | 설명 |
 |------|------|
@@ -2163,7 +2163,7 @@ status: open / waiting / replied / closed
 | GET /api/v1/activities/{hashid} | 활동 상세 (C측) |
 | POST /api/v1/activities/{hashid}/checkin | 체크인 (C측) |
 
-### 10.4 그룹/공유 (C측 :8788 + 관리자 :8787)
+### 10.4 그룹/공유 (C측 :8792 + 관리자 :8789)
 
 | 엔드포인트 | 설명 |
 |------|------|
