@@ -25,6 +25,61 @@ return [
                 'path' => 'app\admin\v1\controller',
                 // （必须）应用唯一 key，注解中通过它引用该应用
                 'key' => 'admin',
+                // （选配）多级分组树：title=显示名，name=控制器 #[Apidoc\Group] 字面量，children=子级
+                // 注意：控制器 #[Apidoc\Group] 的值必须命中 **叶子** name。若撞上容器 name，objtctGroupByTree
+                // 走 children 分支、同名桶永不被消费 → 该控制器从菜单静默消失（比落进「未分组」更隐蔽）。
+                'groups' => [
+                    ['title' => '数据概览', 'name' => 'overview', 'children' => [
+                        ['title' => '仪表盘',   'name' => 'dashboard'],
+                        ['title' => '数据分析', 'name' => 'analytics'],
+                        ['title' => '数据报表', 'name' => 'report'],
+                    ]],
+                    ['title' => '游戏运营', 'name' => 'game_ops', 'children' => [
+                        ['title' => '游戏管理', 'name' => 'game'],
+                        ['title' => '游戏分类', 'name' => 'gamecategory'],
+                        ['title' => '游戏区服', 'name' => 'gameserver'],
+                        ['title' => '排行榜',   'name' => 'leaderboard'],
+                        ['title' => '公告管理', 'name' => 'announcement'],
+                        ['title' => '分享统计', 'name' => 'share'],
+                        ['title' => '搜索',     'name' => 'search'],
+                        ['title' => '成就管理', 'name' => 'achievement'],
+                        ['title' => '运营活动', 'name' => 'activity'],
+                    ]],
+                    ['title' => '用户运营', 'name' => 'user_ops', 'children' => [
+                        ['title' => '平台用户',  'name' => 'platform_user'],
+                        ['title' => 'VIP 等级',  'name' => 'vip'],
+                        ['title' => '实名认证',  'name' => 'identity'],
+                        ['title' => '组队/公会', 'name' => 'group'],
+                        ['title' => '工单管理',  'name' => 'ticket'],
+                    ]],
+                    ['title' => '资金财务', 'name' => 'finance', 'children' => [
+                        ['title' => '提现管理', 'name' => 'withdraw'],
+                        ['title' => '支付管理', 'name' => 'payment'],
+                        ['title' => '优惠券',   'name' => 'coupon'],
+                    ]],
+                    ['title' => '风控安全', 'name' => 'risk_center', 'children' => [
+                        ['title' => '风控中心',   'name' => 'risk'],
+                        ['title' => '反作弊事件', 'name' => 'anticheat'],
+                    ]],
+                    ['title' => '系统权限', 'name' => 'system', 'children' => [
+                        ['title' => '管理员用户', 'name' => 'admin_user'],
+                        ['title' => '角色管理',   'name' => 'role'],
+                        ['title' => '权限管理',   'name' => 'permission'],
+                        ['title' => '系统配置',   'name' => 'config'],
+                        ['title' => '个人中心',   'name' => 'profile'],
+                        ['title' => '操作日志',   'name' => 'log'],
+                        ['title' => 'CDN 管理',   'name' => 'cdn'],
+                        ['title' => '国家配置',   'name' => 'country_config'],
+                    ]],
+                    ['title' => '运维工具', 'name' => 'ops', 'children' => [
+                        ['title' => '健康检查', 'name' => 'health'],
+                        ['title' => '监控指标', 'name' => 'metrics'],
+                        ['title' => 'API 文档', 'name' => 'docs'],
+                        ['title' => '数据导出', 'name' => 'export'],
+                        ['title' => '数据导入', 'name' => 'import'],
+                        ['title' => '文件上传', 'name' => 'upload'],
+                    ]],
+                ],
             ],
             [
                 // （必须）应用标题，显示在文档左侧导航
@@ -33,6 +88,15 @@ return [
                 'path' => 'app\api\v1\controller',
                 // （必须）应用唯一 key，注解中通过它引用该应用
                 'key' => 'admin_api',
+                // （选配）多级分组树：title=显示名，name=控制器 #[Apidoc\Group] 字面量，children=子级
+                // 注意：控制器 #[Apidoc\Group] 的值必须命中 **叶子** name。若撞上容器 name，objtctGroupByTree
+                // 走 children 分支、同名桶永不被消费 → 该控制器从菜单静默消失（比落进「未分组」更隐蔽）。
+                'groups' => [
+                    ['title' => '认证鉴权', 'name' => 'access', 'children' => [
+                        ['title' => '管理员认证', 'name' => 'auth'],
+                        ['title' => '点击验证码', 'name' => 'captcha'],
+                    ]],
+                ],
             ],
         ],
         // （必须）通用注释定义类，Returned 注解使用 ref 简写时以此类所在命名空间解析

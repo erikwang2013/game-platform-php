@@ -4,10 +4,13 @@
  */
 declare(strict_types=1);
 namespace app\admin\v1\controller;
+use erikwang2013\apidoc\annotation as Apidoc;
 use common\model\Achievement;
 use support\Request;
 use support\Response;
 
+#[Apidoc\Title("成就管理")]
+#[Apidoc\Group("achievement")]
 class AchievementController extends BaseController
 {
     public function list(Request $request): Response

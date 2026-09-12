@@ -5,6 +5,7 @@
 declare(strict_types=1);
 namespace app\admin\v1\controller;
 
+use erikwang2013\apidoc\annotation as Apidoc;
 use app\activity\ActivityHandlerFactory;
 use common\model\Activity;
 use support\Request;
@@ -14,6 +15,8 @@ use support\Response;
  * 活动管理 CRUD（最小区间：不做 stats/resend）。
  * config JSON 按 type 做轻量 schema 校验，兜底 handler 默认配置。
  */
+#[Apidoc\Title("运营活动")]
+#[Apidoc\Group("activity")]
 class ActivityController extends BaseController
 {
     public function list(Request $request): Response

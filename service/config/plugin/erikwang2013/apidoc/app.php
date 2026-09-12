@@ -25,6 +25,50 @@ return [
                 'path' => 'app\api\v1\controller',
                 // （必须）应用唯一 key，注解中通过它引用该应用
                 'key' => 'service',
+                // （选配）多级分组树：title=显示名，name=匹配键（须与控制器 #[Apidoc\Group("...")] 一致），children 递归
+                // 注意：控制器 #[Apidoc\Group] 的值必须命中 **叶子** name。若撞上容器 name，objtctGroupByTree
+                // 走 children 分支、同名桶永不被消费 → 该控制器从菜单静默消失（比落进「未分组」更隐蔽）。
+                'groups' => [
+                    ['title' => '账号与认证', 'name' => 'account', 'children' => [
+                        ['title' => '用户认证', 'name' => 'auth'],
+                        ['title' => '验证码', 'name' => 'captcha'],
+                        ['title' => '邮箱/手机验证', 'name' => 'verify'],
+                        ['title' => '设备令牌', 'name' => 'device'],
+                        ['title' => '用户管理', 'name' => 'user'],
+                    ]],
+                    ['title' => '游戏中心', 'name' => 'game_center', 'children' => [
+                        ['title' => '游戏管理', 'name' => 'game'],
+                        ['title' => '游戏 SDK', 'name' => 'game-sdk'],
+                        ['title' => '游戏提供商', 'name' => 'provider'],
+                        ['title' => '排行榜', 'name' => 'leaderboard'],
+                        ['title' => '赛事管理', 'name' => 'tournament'],
+                        ['title' => '组队/公会', 'name' => 'group'],
+                    ]],
+                    ['title' => '社交互动', 'name' => 'social', 'children' => [
+                        ['title' => '好友', 'name' => 'friend'],
+                        ['title' => '聊天消息', 'name' => 'chat'],
+                        ['title' => '分享', 'name' => 'share'],
+                        ['title' => '通知管理', 'name' => 'notification'],
+                        ['title' => '运营活动', 'name' => 'activity'],
+                    ]],
+                    ['title' => '资金钱包', 'name' => 'finance', 'children' => [
+                        ['title' => '钱包管理', 'name' => 'wallet'],
+                        ['title' => '提现管理', 'name' => 'withdraw'],
+                        ['title' => '支付管理', 'name' => 'payment'],
+                        ['title' => '兑换管理', 'name' => 'exchange'],
+                        ['title' => '优惠券', 'name' => 'coupon'],
+                        ['title' => '推荐管理', 'name' => 'referral'],
+                    ]],
+                    ['title' => '运营支撑', 'name' => 'support', 'children' => [
+                        ['title' => '工单', 'name' => 'ticket'],
+                        ['title' => '公告管理', 'name' => 'announcement'],
+                        ['title' => '语言管理', 'name' => 'language'],
+                        ['title' => '国家配置', 'name' => 'country'],
+                        ['title' => '全局搜索', 'name' => 'search'],
+                        ['title' => '平台统计', 'name' => 'platform'],
+                        ['title' => 'Webhook', 'name' => 'webhook'],
+                    ]],
+                ],
             ],
         ],
         // （必须）通用注释定义类，Returned 注解使用 ref 简写时以此类所在命名空间解析
