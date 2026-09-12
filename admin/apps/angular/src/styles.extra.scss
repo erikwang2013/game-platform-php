@@ -1,0 +1,317 @@
+/* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
+/* Slate Pro 扩展层 —— 在 styles.scss 之后加载，仅补充页面级组件类，不改动原设计令牌 */
+
+/* ---------- 页头与工具条 ---------- */
+.page-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.page-head h1 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+.page-head .sub {
+  color: var(--muted);
+  font-size: 12px;
+}
+.toolbar select.input {
+  min-width: 120px;
+}
+
+/* ---------- 标签页 ---------- */
+.tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+  overflow-x: auto;
+}
+.tabs button {
+  border: 0;
+  background: none;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+.tabs button:hover {
+  color: var(--text);
+}
+.tabs button.active {
+  color: var(--primary);
+  border-bottom-color: var(--primary);
+  font-weight: 600;
+}
+
+/* ---------- 键值表（详情面板） ---------- */
+.kv {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 6px 10px;
+  font-size: 13px;
+}
+.kv dt {
+  color: var(--muted);
+}
+.kv dd {
+  margin: 0;
+  word-break: break-all;
+}
+
+/* ---------- 表单行 ---------- */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+}
+.form-grid .full {
+  grid-column: 1 / -1;
+}
+.form-grid label {
+  display: block;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+.form-grid .input {
+  width: 100%;
+}
+textarea.input {
+  min-height: 72px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* ---------- 图表 ---------- */
+.chart svg {
+  display: block;
+  width: 100%;
+  height: 180px;
+  background: linear-gradient(var(--surface), var(--surface));
+}
+.chart .grid {
+  stroke: var(--border);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.chart .line {
+  fill: none;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+.chart .area {
+  opacity: 0.12;
+  stroke: none;
+}
+.chart .axis {
+  display: flex;
+  justify-content: space-between;
+  color: var(--dim);
+  font-size: 11px;
+  margin-top: 4px;
+}
+.chart .s1 {
+  stroke: var(--primary);
+  fill: var(--primary);
+}
+.chart .s2 {
+  stroke: #7c3aed;
+  fill: #7c3aed;
+}
+.chart .s3 {
+  stroke: var(--success);
+  fill: var(--success);
+}
+
+/* ---------- 横向条形 ---------- */
+.bar-row {
+  display: grid;
+  grid-template-columns: 120px 1fr 72px;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  padding: 3px 0;
+}
+.bar-row .track {
+  background: var(--content);
+  height: 10px;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.bar-row .fill {
+  background: var(--primary);
+  height: 100%;
+}
+.bar-row .val {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+/* ---------- 抽屉 ---------- */
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 460px;
+  max-width: 92vw;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+}
+.drawer > header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.drawer-body {
+  padding: 14px;
+  overflow: auto;
+  flex: 1;
+}
+.drawer .backdrop {
+  z-index: 50;
+}
+
+/* ---------- 尾部块（代码/指标原文） ---------- */
+pre.raw {
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 12px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  line-height: 1.5;
+  overflow: auto;
+  max-height: 420px;
+  margin: 0;
+}
+
+/* ---------- 移动端：表格横向滚动（首列 sticky 由 styles.scss 负责） ---------- */
+@media (max-width: 767px) {
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .bar-row {
+    grid-template-columns: 84px 1fr 56px;
+  }
+  .kv {
+    grid-template-columns: 84px 1fr;
+  }
+  .page-head {
+    flex-wrap: wrap;
+  }
+  .chart svg {
+    height: 140px;
+  }
+}
+
+/* ---------- 登录 / 点击验证码 ---------- */
+.login-wrap {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+.login-card {
+  width: 380px;
+  max-width: 100%;
+}
+.login-card h1 {
+  margin: 0;
+  font-size: 18px;
+}
+.login-card .sub {
+  margin: 2px 0 14px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.cap-wrap {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+.cap-img {
+  display: block;
+  max-width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: crosshair;
+}
+.cap-dot {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 11px;
+  font-style: normal;
+  line-height: 20px;
+  text-align: center;
+  pointer-events: none;
+  box-shadow: 0 0 0 2px #fff;
+}
+.cap-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ---------- 表格增强 ---------- */
+.table-wrap td.acts {
+  white-space: nowrap;
+}
+.table-wrap td.acts .btn {
+  margin-right: 4px;
+}
+.table-wrap td.acts .btn:last-child {
+  margin-right: 0;
+}
+tr.clickable {
+  cursor: pointer;
+}
+.btn.danger {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+details.raw-box {
+  margin-top: 10px;
+}
+details.raw-box > summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--muted);
+}
+details.raw-box > summary:hover {
+  color: var(--text);
+}
+.row-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}

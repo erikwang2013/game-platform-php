@@ -1,0 +1,51 @@
+/* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
+/* 仅 shell 私有样式；设计系统在 src/styles.scss */
+
+.brand-m {
+  display: inline-block;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  padding-right: 4px;
+}
+
+.search-wrap {
+  position: relative;
+  flex: 1;
+  max-width: 420px;
+}
+.search-wrap .search { max-width: none; width: 100%; }
+
+.dd {
+  position: absolute;
+  inset: calc(100% + 8px) 0 auto 0;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border-radius: var(--radius-sm);
+  background: rgba(18, 20, 42, 0.96);
+  border: 1px solid var(--stroke-2);
+  backdrop-filter: var(--blur);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+  z-index: 40;
+}
+.dd button {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 11px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+}
+.dd button:hover { background: var(--panel-2); }
+.dd .s { font-size: 11px; color: var(--muted); }
+
+.tab { position: relative; }
+
+@media (min-width: 768px) {
+  .brand-m, .signin { display: none; }
+}

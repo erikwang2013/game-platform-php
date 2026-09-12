@@ -1,0 +1,37 @@
+<!-- Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz -->
+@if (chrome()) {
+  <aside class="sidebar" [class.open]="menu()">
+    <div class="brand"><i></i> 游戏运营后台</div>
+    <nav class="nav">
+      @for (g of groups; track g.section) {
+        <div class="nav-title">{{ g.section }}</div>
+        @for (i of g.items; track i.path) {
+          <a [routerLink]="i.path" routerLinkActive="active">{{ i.label }}</a>
+        }
+      }
+    </nav>
+    <div class="sidebar-foot">Slate Pro · v1.0</div>
+  </aside>
+
+  @if (menu()) {
+    <div class="backdrop" (click)="menu.set(false)"></div>
+  }
+
+  <div class="main">
+    <header class="topbar">
+      <button class="hamburger" (click)="menu.set(true)" aria-label="打开菜单">☰</button>
+      <div class="crumb">
+        <span>{{ crumb().section }}</span>
+        <span>/</span>
+        <b>{{ crumb().label }}</b>
+      </div>
+      <div class="user">
+        <span class="who">{{ user()?.real_name || user()?.username || '未登录' }}</span>
+        <button class="btn" (click)="logout()">退出</button>
+      </div>
+    </header>
+    <main class="content"><router-outlet /></main>
+  </div>
+} @else {
+  <router-outlet />
+}

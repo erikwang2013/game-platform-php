@@ -1,0 +1,111 @@
+<div class="app">
+  <aside class="rail">
+    <div class="brand"><span class="dot"></span><span>Aurora</span></div>
+    @for (n of nav; track n.label) {
+      <a
+        class="nav-item"
+        [class.active]="active(n)"
+        [routerLink]="n.link"
+        [fragment]="n.frag || undefined"
+      >
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path [attr.d]="n.d" />
+        </svg>
+        <span>{{ n.label }}</span>
+      </a>
+    }
+    <div class="rail-foot">
+      @if (authed()) {
+        <button class="btn ghost wide" type="button" (click)="signout()">退出登录</button>
+      } @else {
+        <a class="btn primary wide" routerLink="/login">登录 / 注册</a>
+      }
+    </div>
+  </aside>
+
+  <div class="app-body">
+    <header class="topbar">
+      <a class="brand-m" routerLink="/">Aurora</a>
+      <div class="search-wrap">
+        <div class="search">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="m20 20-3.5-3.5" />
+          </svg>
+          <input
+            type="search"
+            placeholder="搜索游戏…"
+            aria-label="搜索游戏"
+            [ngModel]="q()"
+            (ngModelChange)="onQuery($event)"
+            (keydown.enter)="submit()"
+            (blur)="sugg.set([])"
+          />
+        </div>
+        @if (sugg().length) {
+          <ul class="dd">
+            @for (s of sugg(); track s.id) {
+              <li>
+                <button type="button" (mousedown)="open(s.id)">
+                  <span>{{ s.name }}</span>
+                  <span class="s">{{ s.slug }}</span>
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+      @if (!authed()) {
+        <a class="btn ghost signin" routerLink="/login">登录</a>
+      }
+    </header>
+
+    <main class="app-main"><router-outlet /></main>
+  </div>
+
+  <nav class="tabbar" aria-label="主导航">
+    @for (n of nav; track n.label) {
+      <a
+        class="tab"
+        [class.active]="active(n)"
+        [routerLink]="n.link"
+        [fragment]="n.frag || undefined"
+      >
+        <span class="tab-pip"></span>
+        <svg
+          width="21"
+          height="21"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path [attr.d]="n.d" />
+        </svg>
+        <span>{{ n.label }}</span>
+      </a>
+    }
+  </nav>
+</div>

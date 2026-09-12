@@ -1,0 +1,27 @@
+/* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
+/* 外壳专属样式；设计令牌与通用组件类在 src/styles.scss + styles.extra.scss */
+
+:host {
+  display: block;
+}
+
+.nav a {
+  position: relative;
+}
+.nav a.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  background: var(--primary);
+  border-radius: 0 2px 2px 0;
+}
+
+.user .who {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
