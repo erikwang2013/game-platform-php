@@ -63,7 +63,10 @@ class CountryConfig extends Model
 
     /**
      * 语言前缀映射国家（用于本国支付优先），查 game_country_config.lang_prefix 表。
-     * 未知语言或查表异常返回空串（与迁移前硬编码映射行为一致：zh->CN ja->JP ko->KR pt->BR hi->IN de->DE en->US）
+     * 迁移前的硬编码映射：zh->CN ja->JP ko->KR pt->BR hi->IN de->DE en->US。
+     *
+     * 返回空串仅表示"该语言无映射"（含空语言）；数据库查询失败一律向上抛出 \Throwable。
+     * 二者必须可区分：调用方据此决定重试/回退，而不是把 DB 故障当成"无国家"继续走支付与合规链路。
      */
     public static function fromLang(string $lang): string
     {
@@ -71,10 +74,6 @@ class CountryConfig extends Model
         if ($prefix === '') {
             return '';
         }
-        try {
-            return (string) (self::where('lang_prefix', $prefix)->value('country_code') ?? '');
-        } catch (\Throwable $e) {
-            return '';
-        }
+        return (string) (self::where('lang_prefix', $prefix)->value('country_code') ?? '');
     }
 }

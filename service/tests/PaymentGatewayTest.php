@@ -26,6 +26,7 @@ use app\payment\SkrillGateway;
 use app\payment\StripeGateway;
 use app\payment\TossGateway;
 use PHPUnit\Framework\TestCase;
+use support\Db;
 use support\Request;
 
 class PaymentGatewayTest extends TestCase
@@ -179,8 +180,29 @@ class PaymentGatewayTest extends TestCase
         }
     }
 
+    /**
+     * 与 CountryConfigTest::requireDb() 同款前置条件守卫：连接不可用或迁移未应用时跳过，
+     * 并说明原因；连接可用但映射错误时断言照常失败（不会把真实回归伪装成绿灯）。
+     */
+    private function requireCountryConfigTable(): void
+    {
+        try {
+            Db::selectOne('SELECT 1');
+            $col = Db::selectOne('SHOW COLUMNS FROM game_country_config LIKE "lang_prefix"');
+            if (!$col) {
+                $this->markTestSkipped('game_country_config.lang_prefix 不存在，请先执行迁移 2026_08_31_localization_compliance');
+            }
+        } catch (\Throwable $e) {
+            $this->markTestSkipped('Database connection not available: ' . $e->getMessage());
+        }
+    }
+
     public function testCountryConfigFromLangMapping(): void
     {
+        // fromLang 为 DB 查询，与 CountryConfigTest 同一前置条件：先确认连接可用且迁移已应用，
+        // 否则本用例的 '' 断言会与"DB 故障"混淆（fromLang 现已不再吞异常）。
+        $this->requireCountryConfigTable();
+
         $this->assertSame('CN', CountryConfig::fromLang('zh-CN'));
         $this->assertSame('JP', CountryConfig::fromLang('ja'));
         $this->assertSame('KR', CountryConfig::fromLang('ko-KR'));
