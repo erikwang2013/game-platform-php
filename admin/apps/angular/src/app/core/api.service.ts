@@ -184,7 +184,7 @@ export class Api {
   }
 
   // ---------- 认证 ----------
-  /** 点击验证码：POST 取图（route.php 注册为 POST，GET 会被 SecurityFilter 判 405） */
+  /** 点击验证码：POST 取图（route.php:301 只注册了 POST，用 GET 会命中框架层 405） */
   async captcha(): Promise<CaptchaChallenge> {
     const raw = await this.post<Row>('/api/v1/captcha/generate');
     const key = String(raw['captcha_key'] ?? raw['key'] ?? '');

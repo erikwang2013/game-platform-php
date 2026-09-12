@@ -5,9 +5,25 @@
 
 /**
  * erikwang2013/apidoc 配置 — 管理后台 API 文档
- * 访问: http://localhost:8787/apidoc/
- * 说明: 业务取值与 config/plugin/hg/apidoc/app.php 一致，按 erikwang2013/apidoc-php 的配置结构书写
+ * 访问: http://localhost:8789/apidoc/
+ * 说明: 按 erikwang2013/apidoc-php 的配置结构书写，文档前缀与真实路由组 /admin/v1 对齐
  */
+
+// 访问密码与加密盐一律从环境变量读取（.env 不纳入版本控制），杜绝明文口令入库。
+// fail-closed：APIDOC_PASSWORD 未配置时生成进程级随机口令，各 worker 互不相同 ⇒ 无人能通过校验，
+// 绝不退化成"空密码可进"。此处不用 throw：apidoc 是可选文档插件，配置加载期抛异常会拖垮整个应用启动，
+// 把故障面限制在文档页内部更稳妥（对比 config/hashids.php 的核心配置 fail-closed 语义）。
+$apidocPassword = (string) getenv('APIDOC_PASSWORD');
+if ($apidocPassword === '') {
+    $apidocPassword = bin2hex(random_bytes(32));
+}
+// secret_key 必须跨 worker 确定性：若随机则 token 互不认账、授权后立即失效（webman 各 worker 独立加载配置）。
+// 故由密码派生，配置一致结果即一致；密码随机时派生的盐同样不可预测。
+$apidocSecretKey = (string) getenv('APIDOC_SECRET_KEY');
+if ($apidocSecretKey === '') {
+    $apidocSecretKey = hash('sha256', 'apidoc-secret-key|' . $apidocPassword);
+}
+
 return [
     // 是否启用本插件
     'enable' => true,
@@ -119,10 +135,10 @@ return [
         'auth' => [
             // 是否启用访问密码验证；管理端文档需密码访问
             'enable' => true,
-            // 全局访问密码
-            'password' => "admin123",
-            // 密码加密盐
-            'secret_key' => "apidoc#erik.xyz",
+            // 全局访问密码，取自环境变量 APIDOC_PASSWORD（未配置则无人能登录，见文件头说明）
+            'password' => $apidocPassword,
+            // 密码加密盐，取自环境变量 APIDOC_SECRET_KEY
+            'secret_key' => $apidocSecretKey,
             // 授权访问后的有效期（秒）
             'expire' => 86400,
         ],

@@ -22,12 +22,20 @@ use support\Request;
 
 /**
  * 创建版本化 API 路由闭包
+ *
+ * ponytail: 闭包只能声明具名参数。Webman 反射(App.php getMethodParameterMetadata)
+ * 不识别 variadic：getType() 为 null 且 isDefaultValueAvailable() 为 false，会被记成
+ * “必填无默认值”输入，导致整组路由无条件抛 MissingInputException(HTTP 400)。
+ * 参数绑定分两条路径：注入路径按【名字】($request->all() 与占位符 $args 均为名字键)；
+ * 非注入路径由 App.php:398 `array_values($args)` 压平后按【位置】展开。分流条件是
+ * `array_keys($args) !== $keys`(App.php:575)：名字或顺序对不上，参数会被静默传 null 而不报错。
+ * 结论：v() 仅适用于【无占位符】路由；带 {id} 的路由请用数组可调用 [Controller::class, 'method']。
  */
 function v(string $controller, string $action, string $version = 'v1'): \Closure
 {
-    return function (Request $request, ...$params) use ($controller, $action, $version) {
+    return function (Request $request) use ($controller, $action, $version) {
         $class = "\\app\\api\\{$version}\\controller\\{$controller}";
-        return (new $class)->{$action}($request, ...$params);
+        return (new $class)->{$action}($request);
     };
 }
 
