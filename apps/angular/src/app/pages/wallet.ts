@@ -119,17 +119,13 @@ const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
     </div>
 
     @if (tab() === 'tx') {
-      <ng-container
-        *ngTemplateOutlet="list; context: { $implicit: tx, kind: 'tx' }"
-      ></ng-container>
+      <ng-container *ngTemplateOutlet="list; context: { $implicit: tx, kind: 'tx' }"></ng-container>
     } @else if (tab() === 'dep') {
       <ng-container
         *ngTemplateOutlet="list; context: { $implicit: dep, kind: 'dep' }"
       ></ng-container>
     } @else {
-      <ng-container
-        *ngTemplateOutlet="list; context: { $implicit: wd, kind: 'wd' }"
-      ></ng-container>
+      <ng-container *ngTemplateOutlet="list; context: { $implicit: wd, kind: 'wd' }"></ng-container>
     }
 
     <ng-template #list let-p let-kind="kind">
@@ -163,7 +159,11 @@ const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
                       <div class="s">{{ r.remark }}</div>
                     }
                   </div>
-                  <span class="amount" [class.in]="sign(r.amount) > 0" [class.out]="sign(r.amount) < 0">
+                  <span
+                    class="amount"
+                    [class.in]="sign(r.amount) > 0"
+                    [class.out]="sign(r.amount) < 0"
+                  >
                     {{ sign(r.amount) > 0 ? '+' : '' }}{{ money(r.amount) }}
                   </span>
                 } @else if (kind === 'dep') {

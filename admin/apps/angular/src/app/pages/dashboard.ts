@@ -1,6 +1,6 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { Component, computed, inject, signal } from '@angular/core';
-import { Api, Params, Row } from '../core/api.service';
+import { Api, Params } from '../core/api.service';
 import { json, rowsAny, scalarsOf } from '../core/render';
 import { errText } from '../core/util';
 import { StateBlock, StatCard } from '../components/ui';
@@ -133,9 +133,15 @@ export class Dashboard {
         this.text.set(await this.api.getText(c.path));
         return;
       }
-      const params: Params = this.searchable()
-        ? { keyword: this.keyword(), page: 1, page_size: 50 }
-        : {};
+      // 两个可检索 tab 的服务端读参口径不同，api.get 又不做别名扇出（page_size/keyword 谁都不认识），
+      // 所以按端点各发自己的名字，见 LogController / SearchController：
+      //   /admin/v1/log    → limit 分页 + path 模糊过滤（action 是精确匹配，不能收自由文本）
+      //   /admin/v1/search → per_page 分页 + q（必填，为空时服务端直接返回空列表）
+      const params: Params = !this.searchable()
+        ? {}
+        : this.tab() === 'search'
+          ? { q: this.keyword(), page: 1, per_page: 50 }
+          : { path: this.keyword(), page: 1, limit: 50 };
       this.data.set(await this.api.get<unknown>(c.path, params));
     } catch (e) {
       this.error.set(errText(e));

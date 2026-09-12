@@ -22,5 +22,8 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  // 测试跑在 node --test 下，用 node:test/node:assert 说明符；本 program 的 types 只有 vite/client，
+  // 解析不了 node:* ⇒ 排除出 tsc -b，否则 npm run build 直接失败（改 types 会把 Node 全局塞进浏览器工程）
+  "exclude": ["src/**/*.test.ts"]
 }

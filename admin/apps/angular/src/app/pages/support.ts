@@ -50,11 +50,7 @@ const S = '/admin/v1/';
       }
       <div class="card">
         <div class="card-body">
-          <ui-table
-            [rows]="rows()"
-            [clickable]="tab() === 'ticket'"
-            (pick)="open($event)"
-          />
+          <ui-table [rows]="rows()" [clickable]="tab() === 'ticket'" (pick)="open($event)" />
         </div>
       </div>
     </ui-state>
