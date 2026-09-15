@@ -54,7 +54,7 @@ Eine weltweit einsetzbare, internationalisierte Spiele-Aggregationsplattform. Na
 
 ```
 game-platform-php/
-├── admin/                     # Verwaltungs-Backend (webman v2, Port 8787)
+├── admin/                     # Verwaltungs-Backend (webman v2, Port 8789)
 │   ├── app/admin/controller/  #   Admin-Controller
 │   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   Spiel-Provider-Schicht
@@ -67,7 +67,7 @@ game-platform-php/
 │   ├── install/   #   SQL-Migrationsdateien
 │   └── apps/flutter/          #   Flutter-Web-PC-Verwaltungs-Backend
 │
-├── service/                   # C-End-Geschäftsdienst (webman v2, Port 8788)
+├── service/                   # C-End-Geschäftsdienst (webman v2, Port 8792)
 │   ├── app/api/v1/controller/ #   C-End-API-Controller
 │   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   Spiel-Provider-Schicht
@@ -124,7 +124,7 @@ cd service && composer install && cd ..
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. Verwaltungs-Backend öffnen: http://localhost:8787
+# 5. Verwaltungs-Backend öffnen: http://localhost:8789
 #    Mit dem bei der Installation eingerichteten Admin-Konto anmelden
 
 # 6. Nach der Installation Installationsverzeichnis löschen (Sicherheit)
@@ -196,13 +196,13 @@ flutter run -d chrome
 
 ```bash
 # Verwaltungs-Backend testen
-curl http://localhost:8787/health
+curl http://localhost:8789/health
 
 # C-End-Dienst testen
-curl http://localhost:8788/health
+curl http://localhost:8792/health
 
 # Benutzerregistrierung testen
-curl -X POST http://localhost:8788/api/auth/register \
+curl -X POST http://localhost:8792/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"testuser","password":"123456"}'
 ```
@@ -374,8 +374,8 @@ flowchart LR
 | [Funktionsdesign-Dokument](../FEATURE-DESIGN.de.md) | Geschäftsmodelle, Funktionsspezifikationen, Prozessdesign |
 | [Funktionsdokument](../FEATURES.de.md) | Funktionsliste, Modulbeschreibungen, Benutzerreisen |
 | [Schnittstellendokument](../API.de.md) | Vollständige API-Referenz (102 Schnittstellen) |
-| [Online-Dokumentation](http://localhost:8788/apidoc/) | hg/apidoc interaktive Dokumentation (C-End) |
-| [Online-Dokumentation](http://localhost:8787/apidoc/) | hg/apidoc interaktive Dokumentation (Verwaltungs-Backend) |
+| [Online-Dokumentation](http://localhost:8792/apidoc/) | hg/apidoc interaktive Dokumentation (C-End) |
+| [Online-Dokumentation](http://localhost:8789/apidoc/) | hg/apidoc interaktive Dokumentation (Verwaltungs-Backend) |
 | [ClickHouse-Installation](../CLICKHOUSE_INSTALL.de.md) | ClickHouse-Installation/Konfiguration/Migration/Verifikation |
 | [Provider-SDK-Integrationsdokument](../PROVIDER-SDK.de.md) | Anleitung zur Anbindung von Drittanbieter-Spielen (Signaturalgorithmus + PHP/Go/Python-Beispiele) |
 | [ClickHouse-Nutzung](../CLICKHOUSE_USAGE.de.md) | 4 ClickHouse-Service-APIs und Admin-Dashboard |

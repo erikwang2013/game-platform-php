@@ -55,5 +55,5 @@ RUN composer install --no-dev --no-interaction --optimize-autoloader
 
 COPY . .
 
-EXPOSE 8787
+EXPOSE 8789
 CMD ["php", "start.php", "start"]

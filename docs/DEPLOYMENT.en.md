@@ -46,7 +46,7 @@ cd service && php start.php start -d && cd ..
 # 6. Security cleanup
 rm -rf install/
 
-# 7. Access the admin backend: http://<server-IP>:8787
+# 7. Access the admin backend: http://<server-IP>:8789
 ```
 
 What the install wizard does:
@@ -87,8 +87,8 @@ docker-compose logs -f
 | Service | Container Name | Port | Description |
 |------|--------|------|------|
 | nginx | game-platform-nginx | 80, 443 | Reverse proxy + static files |
-| admin | game-platform-admin | 8787 | Admin backend API |
-| service | game-platform-service | 8788 | C-end business API |
+| admin | game-platform-admin | 8789 | Admin backend API |
+| service | game-platform-service | 8792 | C-end business API |
 | leaderboard-ws | game-platform-ws | 8789 | WebSocket leaderboard |
 | mysql | game-platform-mysql | 3306 | Main database |
 | redis | game-platform-redis | 6379 | Cache/rate limiting |
@@ -262,17 +262,17 @@ SITE_URL=https://your-domain.com  # 支付回调/跳转站点地址
 ### 3.4 Start the Services
 
 ```bash
-# Admin backend (port 8787)
+# Admin backend (port 8789)
 cd /opt/game-platform/admin
 php start.php start -d
 
-# C-end service (port 8788)
+# C-end service (port 8792)
 cd /opt/game-platform/service
 php start.php start -d
 
 # Verify
-curl http://localhost:8787/health
-curl http://localhost:8788/health
+curl http://localhost:8789/health
+curl http://localhost:8792/health
 ```
 
 ### 3.5 Process Management (Systemd)
@@ -321,7 +321,7 @@ server {
 
     # 管理后台 API
     location /admin/ {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -330,7 +330,7 @@ server {
 
     # C端 API
     location /api/ {
-        proxy_pass http://127.0.0.1:8788;
+        proxy_pass http://127.0.0.1:8792;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -349,12 +349,12 @@ server {
 
     # 健康检查
     location /health {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
     }
 
     # Prometheus 指标
     location /metrics {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
     }
 
     # 管理后台前端
@@ -429,10 +429,10 @@ The admin backend exposes the `/metrics` endpoint with the following metrics:
 
 ```bash
 # Admin backend
-curl -f http://localhost:8787/health || echo "Admin DOWN"
+curl -f http://localhost:8789/health || echo "Admin DOWN"
 
 # C-end service
-curl -f http://localhost:8788/health || echo "Service DOWN"
+curl -f http://localhost:8792/health || echo "Service DOWN"
 
 # Can be configured in a load balancer or monitoring system
 ```
@@ -525,7 +525,7 @@ ufw allow 443/tcp     # HTTPS
 ufw enable
 
 # Internal ports should not be exposed
-# 8787 (admin), 8788 (service), 8789 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
 # Only accessible via 127.0.0.1
 ```
 
@@ -551,7 +551,7 @@ chmod 600 /opt/game-platform/service/.env
 cd /opt/game-platform/admin && php start.php start
 
 # Check port usage
-ss -tlnp | grep -E '8787|8788'
+ss -tlnp | grep -E '8789|8792'
 
 # Check logs
 tail -f runtime/logs/workerman.log

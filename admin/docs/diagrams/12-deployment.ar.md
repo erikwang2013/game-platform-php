@@ -15,8 +15,8 @@ flowchart TB
     end
 
     subgraph "خدمات التطبيق"
-        ADM["admin :8787<br/>لوحة الإدارة"]
-        SVC["service :8788<br/>أعمال الطرف C"]
+        ADM["admin :8789<br/>لوحة الإدارة"]
+        SVC["service :8792<br/>أعمال الطرف C"]
         LB["leaderboard-ws :8789<br/>WebSocket لوحة المتصدرين"]
         CHAT["chat-ws :8790<br/>WebSocket الرسائل الخاصة"]
     end

@@ -257,10 +257,10 @@ admin/ et service/ prennent en charge les processus multi-workers. Avec le proxy
 
 ```
 Nginx (équilibrage de charge)
-  ├── admin-1 (:8787)
-  ├── admin-2 (:8787)
-  ├── service-1 (:8788)
-  └── service-2 (:8788)
+  ├── admin-1 (:8789)
+  ├── admin-2 (:8789)
+  ├── service-1 (:8792)
+  └── service-2 (:8792)
 ```
 
 ### 7.2 Chemin de découpage en modules
@@ -269,7 +269,7 @@ Lorsque service/ unique devient un goulot d'étranglement, découper selon ce ch
 
 ```
 service/ (monolithe)
-  → service-user/ (service utilisateur :8788)
+  → service-user/ (service utilisateur :8792)
   → service-wallet/ (service portefeuille :8789)
   → service-game/ (service jeux :8790)
   → service-payment/ (service paiement :8791)

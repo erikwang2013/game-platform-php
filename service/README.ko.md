@@ -82,7 +82,7 @@ cd service && composer install
 cp .env.example .env
 # .env 편집: 데이터베이스 연결 정보, JWT 키 등
 
-# 3. 서비스 시작(기본 포트 8788)
+# 3. 서비스 시작(기본 포트 8792)
 php start.php start        # 포그라운드
 php start.php start -d     # 백그라운드
 ```
@@ -90,8 +90,8 @@ php start.php start -d     # 백그라운드
 ## 사용 방법
 
 - API 문서: `docs/API.md`(전체 API 레퍼런스)
-- 온라인 문서: http://localhost:8788/apidoc/ (hg/apidoc 대화형 문서)
-- 헬스 체크: `GET http://localhost:8788/health`
+- 온라인 문서: http://localhost:8792/apidoc/ (hg/apidoc 대화형 문서)
+- 헬스 체크: `GET http://localhost:8792/health`
 - C측 프런트엔드: `apps/flutter/platform/`(Flutter Web 사용자 플랫폼)
 - 관리 백엔드: `admin/`(관리 백엔드 및 `admin/apps/flutter/` 프런트엔드)
 

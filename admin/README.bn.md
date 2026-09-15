@@ -162,7 +162,7 @@ mysql -u root -p < install/install.sql
 php start.php start
 ```
 
-ডিফল্টে `http://0.0.0.0:8787`-এ লিসেন করে।
+ডিফল্টে `http://0.0.0.0:8789`-এ লিসেন করে।
 
 ### 5. ফ্রন্টএন্ড চালু করুন (ঐচ্ছিক)
 
@@ -193,7 +193,7 @@ docker-compose up -d
 docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 # 4. প্রবেশ করুন
-# http://localhost:8787  (webman)
+# http://localhost:8789  (webman)
 # http://localhost:8080  (Nginx রিভার্স প্রক্সি)
 ```
 
@@ -408,7 +408,7 @@ Authorization: Bearer <token>
 | সার্ভিস | ইমেজ | পোর্ট |
 |------|------|------|
 | `nginx` | nginx:alpine | 80, 443 |
-| `app` | লোকাল `Dockerfile` দিয়ে বিল্ড | 8787 |
+| `app` | লোকাল `Dockerfile` দিয়ে বিল্ড | 8789 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

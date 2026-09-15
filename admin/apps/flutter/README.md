@@ -46,8 +46,8 @@ flutter pub get
 # 开发运行（Chrome）
 flutter run -d chrome
 
-# 指定后端地址（默认 http://localhost:8787）
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8787
+# 指定后端地址（默认 http://localhost:8789）
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8789
 
 # 构建 Web 生产版本（输出到 build/web/）
 flutter build web
@@ -55,6 +55,6 @@ flutter build web
 
 ## 使用说明
 
-1. 先启动管理后台后端服务：`cd admin && php start.php start -d`（默认端口 8787）
+1. 先启动管理后台后端服务：`cd admin && php start.php start -d`（默认端口 8789）
 2. 使用安装向导创建的管理员账号登录（支持 2FA）
-3. 平台用户端前端在 `apps/flutter/platform/`，与后台共用同一后端服务（默认端口 8788）
+3. 平台用户端前端在 `apps/flutter/platform/`，与后台共用同一后端服务（默认端口 8792）

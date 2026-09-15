@@ -431,7 +431,7 @@ Requête : POST /admin/v1/export/pdf { type: table|dashboard, title, data }
 ### 8.1 Topologie recommandée
 
 ```
-Nginx (:443 HTTPS) → workers webman × N (:8787) → MySQL + ES + Redis
+Nginx (:443 HTTPS) → workers webman × N (:8789) → MySQL + ES + Redis
                     fichiers statiques : build Flutter Web/
 ```
 
@@ -442,7 +442,7 @@ Le `docker-compose.yml` à la racine du projet orchestre tous les services de la
 | Service | Image/construction | Port | Description |
 |------|----------|------|------|
 | `nginx` | nginx:alpine | 80, 443 | Reverse proxy + fichiers statiques + Gzip |
-| `app` | construit via le `Dockerfile` local | 8787 | PHP 8.3 + OPcache + webman |
+| `app` | construit via le `Dockerfile` local | 8789 | PHP 8.3 + OPcache + webman |
 | `mysql` | mysql:8.0 | 3306 | Base principale, volume de données persistant |
 | `redis` | redis:7-alpine | 6379 | Cache / rate-limit / captcha |
 | `elasticsearch` | elasticsearch:8.x | 9200 | Recherche plein texte |

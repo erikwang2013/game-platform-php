@@ -54,7 +54,7 @@ Plataforma global de juegos universal e internacionalizada. Los usuarios se regi
 
 ```
 game-platform-php/
-├── admin/                     # Panel de administración (webman v2, puerto 8787)
+├── admin/                     # Panel de administración (webman v2, puerto 8789)
 │   ├── app/admin/controller/  #   Controladores del panel de administración
 │   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   Capa de proveedores de juegos
@@ -67,7 +67,7 @@ game-platform-php/
 │   ├── install/   #   Archivos de migración SQL
 │   └── apps/flutter/          #   Panel de administración Flutter Web PC
 │
-├── service/                   # Servicio del lado del usuario (webman v2, puerto 8788)
+├── service/                   # Servicio del lado del usuario (webman v2, puerto 8792)
 │   ├── app/api/v1/controller/ #   Controladores de API del lado del usuario
 │   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   Capa de proveedores de juegos
@@ -124,7 +124,7 @@ cd service && composer install && cd ..
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. Acceder al panel de administración: http://localhost:8787
+# 5. Acceder al panel de administración: http://localhost:8789
 #    Iniciar sesión con la cuenta de administrador configurada durante la instalación
 
 # 6. Eliminar el directorio de instalación tras completarla (seguridad)
@@ -196,13 +196,13 @@ flutter run -d chrome
 
 ```bash
 # Probar el panel de administración
-curl http://localhost:8787/health
+curl http://localhost:8789/health
 
 # Probar el servicio del lado del usuario
-curl http://localhost:8788/health
+curl http://localhost:8792/health
 
 # Probar el registro de usuarios
-curl -X POST http://localhost:8788/api/auth/register \
+curl -X POST http://localhost:8792/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"testuser","password":"123456"}'
 ```
@@ -374,8 +374,8 @@ flowchart LR
 | [Documento de diseño de funciones](../FEATURE-DESIGN.es.md) | Modelo de negocio, especificaciones de funciones, diseño de flujos |
 | [Documento de funciones](../FEATURES.es.md) | Lista de funciones, descripción de módulos, recorrido del usuario |
 | [Documento de API](../API.es.md) | Referencia completa de API (102 interfaces) |
-| [Documentación en línea](http://localhost:8788/apidoc/) | Documentación interactiva hg/apidoc (lado del usuario) |
-| [Documentación en línea](http://localhost:8787/apidoc/) | Documentación interactiva hg/apidoc (panel de administración) |
+| [Documentación en línea](http://localhost:8792/apidoc/) | Documentación interactiva hg/apidoc (lado del usuario) |
+| [Documentación en línea](http://localhost:8789/apidoc/) | Documentación interactiva hg/apidoc (panel de administración) |
 | [Instalación de ClickHouse](../CLICKHOUSE_INSTALL.es.md) | Instalación/configuración/migración/verificación de ClickHouse |
 | [Documento de integración del SDK de proveedores](../PROVIDER-SDK.es.md) | Guía de integración de juegos de terceros (algoritmo de firma + ejemplos PHP/Go/Python) |
 | [Uso de ClickHouse](../CLICKHOUSE_USAGE.es.md) | 4 servicios de API de ClickHouse y panel del backend |

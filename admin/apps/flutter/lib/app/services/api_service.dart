@@ -11,7 +11,7 @@ class ApiService {
   factory ApiService() => _instance;
 
   late final Dio dio;
-  static const String baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:8787');
+  static const String baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:8789');
 
   ApiService._() {
     dio = Dio(BaseOptions(

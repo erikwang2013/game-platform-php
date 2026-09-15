@@ -12,7 +12,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 ## أولًا: الوضع الحالي للمشروع
 
 **منصة تجميع الألعاب العالمية** — PHP 8.3 + webman v2، monorepo بتطبيقين:
-`admin/`(8787 لوحة الإدارة) + `service/`(8788 الطرف C) + `apps/`(Flutter + HarmonyOS) + `install/`(معالج التثبيت 43 جدولًا).
+`admin/`(8789 لوحة الإدارة) + `service/`(8792 الطرف C) + `apps/`(Flutter + HarmonyOS) + `install/`(معالج التثبيت 43 جدولًا).
 
 | البعد | الحجم الفعلي |
 |------|---------|

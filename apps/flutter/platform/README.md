@@ -40,8 +40,8 @@ flutter pub get
 # 开发运行（Chrome）
 flutter run -d chrome
 
-# 指定后端地址（默认 http://localhost:8788）
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8788
+# 指定后端地址（默认 http://localhost:8792）
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8792
 
 # 构建 Web 生产产物（输出到 build/web/）
 flutter build web
@@ -49,7 +49,7 @@ flutter build web
 
 ## 使用说明
 
-1. 先启动后端服务：`cd service && php start.php start -d`（默认端口 8788）
+1. 先启动后端服务：`cd service && php start.php start -d`（默认端口 8792）
 2. 注册账号并登录（支持用户名密码、OAuth、2FA）
 3. 充值后即可用平台币玩游戏、兑换游戏币；游戏币可转回钱包提现
 4. 管理后台见 `admin/` 目录（含 Flutter Web 前端 `admin/apps/flutter/`）

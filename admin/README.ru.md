@@ -162,7 +162,7 @@ mysql -u root -p < install/install.sql
 php start.php start
 ```
 
-По умолчанию слушает `http://0.0.0.0:8787`.
+По умолчанию слушает `http://0.0.0.0:8789`.
 
 ### 5. Запуск фронтенда (опционально)
 
@@ -193,7 +193,7 @@ docker-compose up -d
 docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 # 4. Доступ
-# http://localhost:8787  (webman)
+# http://localhost:8789  (webman)
 # http://localhost:8080  (обратный прокси Nginx)
 ```
 
@@ -408,7 +408,7 @@ Authorization: Bearer <token>
 | Сервис | Образ | Порт |
 |------|------|------|
 | `nginx` | nginx:alpine | 80, 443 |
-| `app` | сборка из локального `Dockerfile` | 8787 |
+| `app` | сборка из локального `Dockerfile` | 8789 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

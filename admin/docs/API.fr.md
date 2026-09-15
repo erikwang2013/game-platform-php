@@ -10,7 +10,7 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 
 La plateforme d'administration ouverte (open-admin) est construite sur webman v2 et fournit une API JSON RESTful. Toutes les interfaces d'administration nécessitent une authentification JWT et une vérification des permissions RBAC ; les points d'extrémité publics sont montés sous le préfixe `/api/v1`, ceux d'administration sous le préfixe `/admin/v1` ; la version est portée par le chemin d'URL et non par un en-tête.
 
-- **URL de base** : `http://localhost:8787`
+- **URL de base** : `http://localhost:8789`
 - **Version de l'API** : encodée dans le chemin d'URL — points d'extrémité publics sous `/api/v1`, points d'extrémité d'administration sous `/admin/v1` ; aucun en-tête de version n'est utilisé, une future v2 serait enregistrée sous la forme d'un groupe `/api/v2`
 
 > **Aperçu des points d'extrémité** : authentification(5) | tableau de bord(1) | utilisateurs(7) | rôles(4) | permissions(4) | configuration(4) | journaux(1) | espace personnel(3) | import/export(3) | upload(1) | exploitation(4 : health/metrics/docs/security.txt) | soit 37 points d'extrémité au total

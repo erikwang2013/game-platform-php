@@ -9,7 +9,7 @@ import 'package:printing/printing.dart';
 import '../../i18n/translations.dart';
 
 class DashboardController extends GetxController {
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:8787'));
+  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:8789'));
   final isLoading = true.obs;
 
   final stats = <Map<String, dynamic>>[].obs;

@@ -12,7 +12,7 @@ Languages: [中文](PROJECT-PLAN.md) · [English](PROJECT-PLAN.en.md) · [한국
 ## I. État actuel du projet
 
 **Plateforme mondiale d'agrégation de jeux** — PHP 8.3 + webman v2, monorepo à deux applications :
-`admin/` (8787 backend d'administration) + `service/` (8788 côté C) + `apps/` (Flutter + HarmonyOS) + `install/` (assistant d'installation, 43 tables).
+`admin/` (8789 backend d'administration) + `service/` (8792 côté C) + `apps/` (Flutter + HarmonyOS) + `install/` (assistant d'installation, 43 tables).
 
 | Dimension | Taille mesurée |
 |------|---------|

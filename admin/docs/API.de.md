@@ -10,7 +10,7 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 
 Das offene Verwaltungs-Backend (open-admin) basiert auf webman v2 und stellt eine RESTful-JSON-API bereit. Alle Admin-Schnittstellen erfordern JWT-Authentifizierung und RBAC-Berechtigungsprüfung; öffentliche Schnittstellen sind unter dem `/api/v1`-Präfix und Admin-Schnittstellen unter dem `/admin/v1`-Präfix gemountet; die Version steht im URL-Pfad statt in einem Request-Header.
 
-- **Basis-URL**: `http://localhost:8787`
+- **Basis-URL**: `http://localhost:8789`
 - **Versionierung**: steht im URL-Pfad — öffentliche Endpunkte unter `/api/v1`, Admin-Endpunkte unter `/admin/v1`; kein Versions-Request-Header, ein künftiges v2 würde als `/api/v2`-Gruppe registriert
 
 > **Endpunktübersicht**: Authentifizierung (5) | Dashboard (1) | Benutzer (7) | Rollen (4) | Berechtigungen (4) | Konfiguration (4) | Protokolle (1) | Persönlicher Bereich (3) | Import/Export (3) | Upload (1) | Betrieb (4: health/metrics/docs/security.txt) | insgesamt 37 Endpunkte

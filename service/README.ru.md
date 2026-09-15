@@ -82,7 +82,7 @@ cd service && composer install
 cp .env.example .env
 # Отредактируйте .env: подключение к БД, JWT-ключи и т.д.
 
-# 3. Запустите сервис (порт по умолчанию 8788)
+# 3. Запустите сервис (порт по умолчанию 8792)
 php start.php start        # на переднем плане
 php start.php start -d     # в фоне (демон)
 ```
@@ -90,8 +90,8 @@ php start.php start -d     # в фоне (демон)
 ## Использование
 
 - Справочник API: `docs/API.md` (полный справочник)
-- Онлайн-документация: http://localhost:8788/apidoc/ (интерактивная документация hg/apidoc)
-- Проверка здоровья: `GET http://localhost:8788/health`
+- Онлайн-документация: http://localhost:8792/apidoc/ (интерактивная документация hg/apidoc)
+- Проверка здоровья: `GET http://localhost:8792/health`
 - Фронтенд C-стороны: `apps/flutter/platform/` (пользовательская платформа Flutter Web)
 - Админка: `admin/` (бэкенд админки и фронтенд `admin/apps/flutter/`)
 

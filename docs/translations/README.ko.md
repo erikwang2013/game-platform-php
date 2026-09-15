@@ -54,7 +54,7 @@ Languages: [中文](../../README.md) · [English](README.en.md) · **한국어**
 
 ```
 game-platform-php/
-├── admin/                     # 관리 백엔드 (webman v2, 포트 8787)
+├── admin/                     # 관리 백엔드 (webman v2, 포트 8789)
 │   ├── app/admin/controller/  #   관리자 컨트롤러
 │   ├── app/middleware/        #   미들웨어 (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   게임 Provider 계층
@@ -67,7 +67,7 @@ game-platform-php/
 │   ├── install/   #   SQL 마이그레이션 파일
 │   └── apps/flutter/          #   Flutter Web PC 관리 백엔드
 │
-├── service/                   # C측 비즈니스 서버 (webman v2, 포트 8788)
+├── service/                   # C측 비즈니스 서버 (webman v2, 포트 8792)
 │   ├── app/api/v1/controller/ #   C측 API 컨트롤러
 │   ├── app/middleware/        #   미들웨어 (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   게임 Provider 계층
@@ -124,7 +124,7 @@ cd service && composer install && cd ..
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. 관리 백엔드 접속: http://localhost:8787
+# 5. 관리 백엔드 접속: http://localhost:8789
 #    설치 시 설정한 관리자 계정/비밀번호로 로그인
 
 # 6. 설치 완료 후 설치 디렉터리 삭제 (보안)
@@ -196,13 +196,13 @@ flutter run -d chrome
 
 ```bash
 # 관리 백엔드 테스트
-curl http://localhost:8787/health
+curl http://localhost:8789/health
 
 # C측 비즈니스 테스트
-curl http://localhost:8788/health
+curl http://localhost:8792/health
 
 # 사용자 가입 테스트
-curl -X POST http://localhost:8788/api/auth/register \
+curl -X POST http://localhost:8792/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"testuser","password":"123456"}'
 ```
@@ -374,8 +374,8 @@ flowchart LR
 | [기능 설계 문서](../FEATURE-DESIGN.ko.md) | 비즈니스 모델, 기능 사양, 프로세스 설계 |
 | [기능 문서](../FEATURES.ko.md) | 기능 목록, 모듈 설명, 사용자 여정 |
 | [API 문서](../API.ko.md) | 전체 API 레퍼런스 (102개 인터페이스) |
-| [온라인 문서](http://localhost:8788/apidoc/) | hg/apidoc 인터랙티브 문서 (C측) |
-| [온라인 문서](http://localhost:8787/apidoc/) | hg/apidoc 인터랙티브 문서 (관리 백엔드) |
+| [온라인 문서](http://localhost:8792/apidoc/) | hg/apidoc 인터랙티브 문서 (C측) |
+| [온라인 문서](http://localhost:8789/apidoc/) | hg/apidoc 인터랙티브 문서 (관리 백엔드) |
 | [ClickHouse 설치](../CLICKHOUSE_INSTALL.ko.md) | ClickHouse 설치/설정/마이그레이션/검증 |
 | [Provider SDK 연동 문서](../PROVIDER-SDK.ko.md) | 제3자 게임 연동 가이드 (서명 알고리즘+PHP/Go/Python 예제) |
 | [ClickHouse 사용](../CLICKHOUSE_USAGE.ko.md) | 4개 ClickHouse 서비스 API와 백엔드 대시보드 |

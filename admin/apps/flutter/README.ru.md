@@ -46,8 +46,8 @@ flutter pub get
 # Запуск в режиме разработки (Chrome)
 flutter run -d chrome
 
-# Указать адрес бэкенда (по умолчанию http://localhost:8787)
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8787
+# Указать адрес бэкенда (по умолчанию http://localhost:8789)
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8789
 
 # Сборка production-версии для Web (вывод в build/web/)
 flutter build web
@@ -55,6 +55,6 @@ flutter build web
 
 ## Использование
 
-1. Сначала запустите бэкенд админ-панели: `cd admin && php start.php start -d` (порт по умолчанию 8787)
+1. Сначала запустите бэкенд админ-панели: `cd admin && php start.php start -d` (порт по умолчанию 8789)
 2. Войдите с аккаунтом администратора, созданным мастером установки (поддерживается 2FA)
-3. Пользовательский фронтенд находится в `apps/flutter/platform/` и использует тот же бэкенд (порт по умолчанию 8788)
+3. Пользовательский фронтенд находится в `apps/flutter/platform/` и использует тот же бэкенд (порт по умолчанию 8792)

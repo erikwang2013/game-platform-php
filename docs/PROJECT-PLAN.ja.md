@@ -12,7 +12,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 ## 一、プロジェクト現状
 
 **グローバルゲームアグリゲーションプラットフォーム** — PHP 8.3 + webman v2、デュアルアプリケーション monorepo:
-`admin/`(8787 管理バックエンド) + `service/`(8788 C端) + `apps/`(Flutter + HarmonyOS) + `install/`(インストールウィザード 43 テーブル)。
+`admin/`(8789 管理バックエンド) + `service/`(8792 C端) + `apps/`(Flutter + HarmonyOS) + `install/`(インストールウィザード 43 テーブル)。
 
 | 観点 | 実測規模 |
 |------|---------|

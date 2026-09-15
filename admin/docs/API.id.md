@@ -10,7 +10,7 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 
 Backend administrasi terbuka (open-admin) dibangun di atas webman v2, menyediakan RESTful JSON API. Semua antarmuka sisi admin memerlukan autentikasi JWT dan validasi izin RBAC, antarmuka publik terpasang di bawah prefiks `/api/v1` dan antarmuka admin di bawah prefiks `/admin/v1`; versi dibawa oleh jalur URL, bukan header permintaan.
 
-- **URL dasar**: `http://localhost:8787`
+- **URL dasar**: `http://localhost:8789`
 - **Versi API**: dikodekan dalam jalur URL — endpoint publik di bawah `/api/v1`, endpoint admin di bawah `/admin/v1`; tidak ada header versi yang dipakai, v2 masa depan akan didaftarkan sebagai grup `/api/v2`
 
 > **Ringkasan endpoint**: Autentikasi(5) | Dasbor(1) | Pengguna(7) | Peran(4) | Izin(4) | Konfigurasi(4) | Log(1) | Pusat pribadi(3) | Impor ekspor(3) | Unggah(1) | Operasional(4: health/metrics/docs/security.txt) | Total 37 endpoint

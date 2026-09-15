@@ -10,7 +10,7 @@ Languages: **中文** · [English](API.en.md) · [한국어](API.ko.md) · [Ру
 
 开放管理后台 (open-admin) 基于 webman v2 构建，提供 RESTful JSON API。所有管理端接口需要 JWT 认证与 RBAC 权限校验，公开接口挂载在 `/api/v1` 前缀下，管理端接口挂载在 `/admin/v1` 前缀下，版本由 URL 路径决定而非请求头。
 
-- **基础 URL**: `http://localhost:8787`
+- **基础 URL**: `http://localhost:8789`
 - **API 版本**: 版本号置于 URL 路径——公开端点 `/api/v1`、管理端点 `/admin/v1`，不使用版本请求头；未来的 v2 将注册为 `/api/v2` 组
 
 > **端点总览**: 认证(5) | 仪表盘(1) | 用户(7) | 角色(4) | 权限(4) | 配置(4) | 日志(1) | 个人中心(3) | 导入导出(3) | 上传(1) | 运维(4: health/metrics/docs/security.txt) | 共 37 端点

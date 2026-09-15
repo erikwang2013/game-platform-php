@@ -10,7 +10,7 @@ Languages: [中文](API.md) · **English** · [한국어](API.ko.md) · [Рус�
 
 The open admin dashboard (open-admin) is built on webman v2 and provides RESTful JSON APIs. All admin endpoints require JWT authentication and RBAC permission validation; public endpoints are mounted under the `/api/v1` prefix and admin endpoints under the `/admin/v1` prefix; the version is carried by the URL path rather than a request header.
 
-- **Base URL**: `http://localhost:8787`
+- **Base URL**: `http://localhost:8789`
 - **API version**: encoded in the URL path — public endpoints under `/api/v1`, admin endpoints under `/admin/v1`; no version request header is used, a future v2 would register as an `/api/v2` group
 
 > **Endpoint overview**: auth(5) | dashboard(1) | users(7) | roles(4) | permissions(4) | config(4) | logs(1) | profile(3) | import/export(3) | upload(1) | operations(4: health/metrics/docs/security.txt) | 37 endpoints total

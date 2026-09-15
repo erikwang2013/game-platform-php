@@ -54,7 +54,7 @@ Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](R
 
 ```
 game-platform-php/
-├── admin/                     # لوحة الإدارة (webman v2, المنفذ 8787)
+├── admin/                     # لوحة الإدارة (webman v2, المنفذ 8789)
 │   ├── app/admin/controller/  #   وحدات تحكم لوحة الإدارة
 │   ├── app/middleware/        #   الوسيطات (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   طبقة مزوّدي الألعاب
@@ -67,7 +67,7 @@ game-platform-php/
 │   ├── install/   #   ملفات ترحيل SQL
 │   └── apps/flutter/          #   لوحة إدارة Flutter Web PC
 │
-├── service/                   # طرف C للأعمال (webman v2, المنفذ 8788)
+├── service/                   # طرف C للأعمال (webman v2, المنفذ 8792)
 │   ├── app/api/v1/controller/ #   وحدات تحكم API للطرف C
 │   ├── app/middleware/        #   الوسيطات (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   طبقة مزوّدي الألعاب
@@ -124,7 +124,7 @@ cd service && composer install && cd ..
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. الوصول إلى لوحة الإدارة: http://localhost:8787
+# 5. الوصول إلى لوحة الإدارة: http://localhost:8789
 #    تسجيل الدخول باسم مستخدم وكلمة مرور المدير المُعيّنين أثناء التثبيت
 
 # 6. حذف دليل التثبيت بعد اكتماله (للأمان)
@@ -196,13 +196,13 @@ flutter run -d chrome
 
 ```bash
 # اختبار لوحة الإدارة
-curl http://localhost:8787/health
+curl http://localhost:8789/health
 
 # اختبار طرف C للأعمال
-curl http://localhost:8788/health
+curl http://localhost:8792/health
 
 # اختبار تسجيل المستخدم
-curl -X POST http://localhost:8788/api/auth/register \
+curl -X POST http://localhost:8792/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"testuser","password":"123456"}'
 ```
@@ -374,8 +374,8 @@ flowchart LR
 | [وثيقة تصميم الميزات](../FEATURE-DESIGN.ar.md) | نماذج الأعمال، مواصفات الميزات، تصميم العمليات |
 | [وثيقة الميزات](../FEATURES.ar.md) | قائمة الميزات، أوصاف الوحدات، رحلة المستخدم |
 | [وثيقة الواجهات](../API.ar.md) | مرجع API الكامل (102 واجهة) |
-| [الوثائق التفاعلية](http://localhost:8788/apidoc/) | وثائق hg/apidoc التفاعلية (الطرف C) |
-| [الوثائق التفاعلية](http://localhost:8787/apidoc/) | وثائق hg/apidoc التفاعلية (لوحة الإدارة) |
+| [الوثائق التفاعلية](http://localhost:8792/apidoc/) | وثائق hg/apidoc التفاعلية (الطرف C) |
+| [الوثائق التفاعلية](http://localhost:8789/apidoc/) | وثائق hg/apidoc التفاعلية (لوحة الإدارة) |
 | [تثبيت ClickHouse](../CLICKHOUSE_INSTALL.ar.md) | تثبيت/تكوين/ترحيل/تحقق ClickHouse |
 | [وثيقة دمج Provider SDK](../PROVIDER-SDK.ar.md) | دليل دمج ألعاب الطرف الثالث (خوارزمية التوقيع + أمثلة PHP/Go/Python) |
 | [استخدام ClickHouse](../CLICKHOUSE_USAGE.ar.md) | 4 واجهات خدمة ClickHouse ولوحات الخلفية |

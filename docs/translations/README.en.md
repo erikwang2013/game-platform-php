@@ -54,7 +54,7 @@ A global, internationalized game aggregation platform. After registering, users 
 
 ```
 game-platform-php/
-├── admin/                     # Admin backend (webman v2, port 8787)
+├── admin/                     # Admin backend (webman v2, port 8789)
 │   ├── app/admin/controller/  #   Admin controllers
 │   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   Game Provider layer
@@ -67,7 +67,7 @@ game-platform-php/
 │   ├── install/   #   SQL migration files
 │   └── apps/flutter/          #   Flutter Web PC admin backend
 │
-├── service/                   # C-end business service (webman v2, port 8788)
+├── service/                   # C-end business service (webman v2, port 8792)
 │   ├── app/api/v1/controller/ #   C-end API controllers
 │   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   Game Provider layer
@@ -124,7 +124,7 @@ cd service && composer install && cd ..
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. Access the admin backend: http://localhost:8787
+# 5. Access the admin backend: http://localhost:8789
 #    Log in with the admin account and password set during installation
 
 # 6. Delete the install directory after installation (security)
@@ -196,13 +196,13 @@ flutter run -d chrome
 
 ```bash
 # Test the admin backend
-curl http://localhost:8787/health
+curl http://localhost:8789/health
 
 # Test the C-end business service
-curl http://localhost:8788/health
+curl http://localhost:8792/health
 
 # Test user registration
-curl -X POST http://localhost:8788/api/auth/register \
+curl -X POST http://localhost:8792/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"testuser","password":"123456"}'
 ```
@@ -374,8 +374,8 @@ flowchart LR
 | [Feature design doc](../FEATURE-DESIGN.en.md) | Business models, feature specs, flow design |
 | [Features doc](../FEATURES.en.md) | Feature list, module descriptions, user journeys |
 | [API doc](../API.en.md) | Complete API reference (102 endpoints) |
-| [Online docs](http://localhost:8788/apidoc/) | hg/apidoc interactive docs (C-end) |
-| [Online docs](http://localhost:8787/apidoc/) | hg/apidoc interactive docs (admin backend) |
+| [Online docs](http://localhost:8792/apidoc/) | hg/apidoc interactive docs (C-end) |
+| [Online docs](http://localhost:8789/apidoc/) | hg/apidoc interactive docs (admin backend) |
 | [ClickHouse installation](../CLICKHOUSE_INSTALL.en.md) | ClickHouse install/config/migration/verification |
 | [Provider SDK integration doc](../PROVIDER-SDK.en.md) | Third-party game integration guide (signing algorithm + PHP/Go/Python examples) |
 | [ClickHouse usage](../CLICKHOUSE_USAGE.en.md) | The 4 ClickHouse service APIs and admin dashboards |

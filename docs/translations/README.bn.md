@@ -54,7 +54,7 @@ Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](R
 
 ```
 game-platform-php/
-├── admin/                     # প্রশাসনিক প্যানেল (webman v2, পোর্ট 8787)
+├── admin/                     # প্রশাসনিক প্যানেল (webman v2, পোর্ট 8789)
 │   ├── app/admin/controller/  #   প্রশাসনিক কন্ট্রোলার
 │   ├── app/middleware/        #   মিডলওয়্যার (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   গেম Provider লেয়ার
@@ -67,7 +67,7 @@ game-platform-php/
 │   ├── install/   #   SQL মাইগ্রেশন ফাইল
 │   └── apps/flutter/          #   Flutter Web PC প্রশাসনিক প্যানেল
 │
-├── service/                   # C-এন্ড ব্যবসায়িক সার্ভার (webman v2, পোর্ট 8788)
+├── service/                   # C-এন্ড ব্যবসায়িক সার্ভার (webman v2, পোর্ট 8792)
 │   ├── app/api/v1/controller/ #   C-এন্ড API কন্ট্রোলার
 │   ├── app/middleware/        #   মিডলওয়্যার (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   গেম Provider লেয়ার
@@ -124,7 +124,7 @@ cd service && composer install && cd ..
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. প্রশাসনিক প্যানেলে প্রবেশ করুন: http://localhost:8787
+# 5. প্রশাসনিক প্যানেলে প্রবেশ করুন: http://localhost:8789
 #    ইনস্টলের সময় সেট করা অ্যাডমিন অ্যাকাউন্ট ও পাসওয়ার্ড দিয়ে লগইন করুন
 
 # 6. ইনস্টল শেষে ইনস্টলেশন ডিরেক্টরি মুছে ফেলুন (নিরাপত্তার জন্য)
@@ -196,13 +196,13 @@ flutter run -d chrome
 
 ```bash
 # প্রশাসনিক প্যানেল পরীক্ষা
-curl http://localhost:8787/health
+curl http://localhost:8789/health
 
 # C-এন্ড ব্যবসা পরীক্ষা
-curl http://localhost:8788/health
+curl http://localhost:8792/health
 
 # ইউজার রেজিস্ট্রেশন পরীক্ষা
-curl -X POST http://localhost:8788/api/auth/register \
+curl -X POST http://localhost:8792/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"testuser","password":"123456"}'
 ```
@@ -374,8 +374,8 @@ flowchart LR
 | [ফিচার ডিজাইন ডকুমেন্ট](../FEATURE-DESIGN.bn.md) | ব্যবসায়িক মডেল, ফিচার স্পেক, ফ্লো ডিজাইন |
 | [ফিচার ডকুমেন্ট](../FEATURES.bn.md) | ফিচার তালিকা, মডিউল বিবরণ, ইউজার জার্নি |
 | [API ডকুমেন্ট](../API.bn.md) | সম্পূর্ণ API রেফারেন্স (১০২টি এন্ডপয়েন্ট) |
-| [অনলাইন ডকুমেন্ট](http://localhost:8788/apidoc/) | hg/apidoc ইন্টারঅ্যাকটিভ ডকুমেন্ট (C-এন্ড) |
-| [অনলাইন ডকুমেন্ট](http://localhost:8787/apidoc/) | hg/apidoc ইন্টারঅ্যাকটিভ ডকুমেন্ট (প্রশাসনিক প্যানেল) |
+| [অনলাইন ডকুমেন্ট](http://localhost:8792/apidoc/) | hg/apidoc ইন্টারঅ্যাকটিভ ডকুমেন্ট (C-এন্ড) |
+| [অনলাইন ডকুমেন্ট](http://localhost:8789/apidoc/) | hg/apidoc ইন্টারঅ্যাকটিভ ডকুমেন্ট (প্রশাসনিক প্যানেল) |
 | [ClickHouse ইনস্টল](../CLICKHOUSE_INSTALL.bn.md) | ClickHouse ইনস্টল/কনফিগার/মাইগ্রেট/ভেরিফাই |
 | [Provider SDK সংযোগ ডকুমেন্ট](../PROVIDER-SDK.bn.md) | থার্ড-পার্টি গেম সংযোগ গাইড (সিগনেচার অ্যালগরিদম + PHP/Go/Python উদাহরণ) |
 | [ClickHouse ব্যবহার](../CLICKHOUSE_USAGE.bn.md) | ৪টি ClickHouse সার্ভিস API ও ব্যাকএন্ড ড্যাশবোর্ড |

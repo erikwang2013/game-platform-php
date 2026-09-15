@@ -40,8 +40,8 @@ flutter pub get
 # 開発実行（Chrome）
 flutter run -d chrome
 
-# バックエンドのアドレスを指定（デフォルト http://localhost:8788）
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8788
+# バックエンドのアドレスを指定（デフォルト http://localhost:8792）
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8792
 
 # Web 本番ビルド（出力先 build/web/）
 flutter build web
@@ -49,7 +49,7 @@ flutter build web
 
 ## 使い方
 
-1. 先にバックエンドを起動：`cd service && php start.php start -d`（デフォルトポート 8788）
+1. 先にバックエンドを起動：`cd service && php start.php start -d`（デフォルトポート 8792）
 2. アカウントを登録してログイン（ユーザー名・パスワード、OAuth、2FA に対応）
 3. 入金後、プラットフォームコインでゲームをプレイし、ゲームコインに両替できます。ゲームコインはウォレットに戻して出金も可能です
 4. 管理バックエンドは `admin/` ディレクトリ（Flutter Web フロントエンド `admin/apps/flutter/` 含む）

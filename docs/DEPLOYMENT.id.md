@@ -46,7 +46,7 @@ cd service && php start.php start -d && cd ..
 # 6. Pembersihan keamanan
 rm -rf install/
 
-# 7. Akses backend administrasi: http://<IP-server>:8787
+# 7. Akses backend administrasi: http://<IP-server>:8789
 ```
 
 Yang dilakukan wizard instalasi:
@@ -87,8 +87,8 @@ docker-compose logs -f
 | Layanan | Nama container | Port | Keterangan |
 |------|--------|------|------|
 | nginx | game-platform-nginx | 80, 443 | Reverse proxy + file statis |
-| admin | game-platform-admin | 8787 | API backend administrasi |
-| service | game-platform-service | 8788 | API bisnis sisi C |
+| admin | game-platform-admin | 8789 | API backend administrasi |
+| service | game-platform-service | 8792 | API bisnis sisi C |
 | leaderboard-ws | game-platform-ws | 8789 | WebSocket papan peringkat |
 | mysql | game-platform-mysql | 3306 | Database utama |
 | redis | game-platform-redis | 6379 | Cache/rate limit |
@@ -262,17 +262,17 @@ SITE_URL=https://your-domain.com  # URL situs untuk callback/redirect pembayaran
 ### 3.4 Mulai Layanan
 
 ```bash
-# Backend administrasi (port 8787)
+# Backend administrasi (port 8789)
 cd /opt/game-platform/admin
 php start.php start -d
 
-# Bisnis sisi C (port 8788)
+# Bisnis sisi C (port 8792)
 cd /opt/game-platform/service
 php start.php start -d
 
 # Verifikasi
-curl http://localhost:8787/health
-curl http://localhost:8788/health
+curl http://localhost:8789/health
+curl http://localhost:8792/health
 ```
 
 ### 3.5 Manajemen Proses (Systemd)
@@ -321,7 +321,7 @@ server {
 
     # API backend administrasi
     location /admin/ {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -330,7 +330,7 @@ server {
 
     # API sisi C
     location /api/ {
-        proxy_pass http://127.0.0.1:8788;
+        proxy_pass http://127.0.0.1:8792;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -349,12 +349,12 @@ server {
 
     # Pemeriksaan kesehatan
     location /health {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
     }
 
     # Metrik Prometheus
     location /metrics {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
     }
 
     # Frontend backend administrasi
@@ -429,10 +429,10 @@ Backend administrasi mengekspos endpoint `/metrics`, berisi metrik berikut:
 
 ```bash
 # Backend administrasi
-curl -f http://localhost:8787/health || echo "Admin DOWN"
+curl -f http://localhost:8789/health || echo "Admin DOWN"
 
 # Bisnis sisi C
-curl -f http://localhost:8788/health || echo "Service DOWN"
+curl -f http://localhost:8792/health || echo "Service DOWN"
 
 # Dapat dikonfigurasi di load balancer atau sistem monitoring
 ```
@@ -525,7 +525,7 @@ ufw allow 443/tcp     # HTTPS
 ufw enable
 
 # Port internal tidak boleh diekspos
-# 8787 (admin), 8788 (service), 8789 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
 # Hanya diakses melalui 127.0.0.1
 ```
 
@@ -551,7 +551,7 @@ chmod 600 /opt/game-platform/service/.env
 cd /opt/game-platform/admin && php start.php start
 
 # Periksa penggunaan port
-ss -tlnp | grep -E '8787|8788'
+ss -tlnp | grep -E '8789|8792'
 
 # Periksa log
 tail -f runtime/logs/workerman.log

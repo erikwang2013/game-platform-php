@@ -12,7 +12,7 @@ Languages: [中文](PROJECT-PLAN.md) · **English** · [한국어](PROJECT-PLAN.
 ## 1. Project Current State
 
 **Global Game Aggregation Platform** — PHP 8.3 + webman v2, dual-application monorepo:
-`admin/`(8787 admin backend) + `service/`(8788 C-end) + `apps/`(Flutter + HarmonyOS) + `install/`(install wizard, 43 tables).
+`admin/`(8789 admin backend) + `service/`(8792 C-end) + `apps/`(Flutter + HarmonyOS) + `install/`(install wizard, 43 tables).
 
 | Dimension | Measured Scale |
 |------|---------|

@@ -66,7 +66,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | Plattform-Statistik | Homepage-Statistik C-Seite (Spiele/User gesamt, Spiele heute, 7-Tage-aktiv) | Abgeschlossen |
 | Bereitstellung | Docker Compose 7 Dienste + Nginx-Reverse-Proxy | Abgeschlossen |
 | Daten | MySQL-Echtzeit-Aggregationsanalyse + Verbund-/Bedingte-Wahrscheinlichkeitsberechnung | Abgeschlossen |
-| HarmonyOS | admin-Seite 8 Seiten; C-End `apps/harmonyos/` mit Login/Lobby/Details/Wallet/Profil (zeigt auf 8788) | Teilweise abgeschlossen (Projekt läuft, echte Geräte benötigen IP-Anpassung) |
+| HarmonyOS | admin-Seite 8 Seiten; C-End `apps/harmonyos/` mit Login/Lobby/Details/Wallet/Profil (zeigt auf 8792) | Teilweise abgeschlossen (Projekt läuft, echte Geräte benötigen IP-Anpassung) |
 | API-Dokumentation | hg/apidoc interaktive Dokumentation | Abgeschlossen |
 | Ein-Klick-Installation | Browser-Installationsassistent: Admin erstellen, bestehende DB aktualisieren, install.lock verhindert Neuinstallation | Abgeschlossen |
 | Fehlertoleranz | CircuitBreaker + Retry + Degradationsschalter feature.provider_mock | Abgeschlossen |

@@ -54,7 +54,7 @@ Plateforme de jeux mondiale, universelle et internationalisée. Après inscripti
 
 ```
 game-platform-php/
-├── admin/                     # Backend d'administration (webman v2, port 8787)
+├── admin/                     # Backend d'administration (webman v2, port 8789)
 │   ├── app/admin/controller/  #   Contrôleurs du panneau d'administration
 │   ├── app/middleware/        #   Middlewares (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   Couche des providers de jeux
@@ -67,7 +67,7 @@ game-platform-php/
 │   ├── install/   #   Fichiers de migration SQL
 │   └── apps/flutter/          #   Backend d'administration Flutter Web PC
 │
-├── service/                   # Backend métier côté client C (webman v2, port 8788)
+├── service/                   # Backend métier côté client C (webman v2, port 8792)
 │   ├── app/api/v1/controller/ #   Contrôleurs API côté C
 │   ├── app/middleware/        #   Middlewares (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   Couche des providers de jeux
@@ -124,7 +124,7 @@ cd service && composer install && cd ..
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. Accéder au backend d'administration : http://localhost:8787
+# 5. Accéder au backend d'administration : http://localhost:8789
 #    Se connecter avec le compte administrateur défini lors de l'installation
 
 # 6. Supprimer le répertoire d'installation une fois terminé (sécurité)
@@ -196,13 +196,13 @@ flutter run -d chrome
 
 ```bash
 # Tester le backend d'administration
-curl http://localhost:8787/health
+curl http://localhost:8789/health
 
 # Tester le backend métier côté C
-curl http://localhost:8788/health
+curl http://localhost:8792/health
 
 # Tester l'inscription d'un utilisateur
-curl -X POST http://localhost:8788/api/auth/register \
+curl -X POST http://localhost:8792/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"testuser","password":"123456"}'
 ```
@@ -374,8 +374,8 @@ flowchart LR
 | [Document de conception fonctionnelle](../FEATURE-DESIGN.fr.md) | Modèle métier, spécifications fonctionnelles, conception des processus |
 | [Document des fonctionnalités](../FEATURES.fr.md) | Liste des fonctionnalités, description des modules, parcours utilisateur |
 | [Documentation des interfaces](../API.fr.md) | Référence API complète (102 interfaces) |
-| [Documentation en ligne](http://localhost:8788/apidoc/) | Documentation interactive hg/apidoc (côté C) |
-| [Documentation en ligne](http://localhost:8787/apidoc/) | Documentation interactive hg/apidoc (back-end d'administration) |
+| [Documentation en ligne](http://localhost:8792/apidoc/) | Documentation interactive hg/apidoc (côté C) |
+| [Documentation en ligne](http://localhost:8789/apidoc/) | Documentation interactive hg/apidoc (back-end d'administration) |
 | [Installation de ClickHouse](../CLICKHOUSE_INSTALL.fr.md) | Installation/configuration/migration/vérification de ClickHouse |
 | [Document d'intégration du SDK Provider](../PROVIDER-SDK.fr.md) | Guide d'intégration des jeux tiers (algorithme de signature + exemples PHP/Go/Python) |
 | [Utilisation de ClickHouse](../CLICKHOUSE_USAGE.fr.md) | 4 API de services ClickHouse et tableau de bord backend |

@@ -40,8 +40,8 @@ flutter pub get
 # विकास में चलाएँ (Chrome)
 flutter run -d chrome
 
-# बैकएंड पता निर्दिष्ट करें (डिफ़ॉल्ट http://localhost:8788)
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8788
+# बैकएंड पता निर्दिष्ट करें (डिफ़ॉल्ट http://localhost:8792)
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8792
 
 # वेब प्रोडक्शन बिल्ड (आउटपुट build/web/ में)
 flutter build web
@@ -49,7 +49,7 @@ flutter build web
 
 ## उपयोग
 
-1. पहले बैकएंड सेवा शुरू करें: `cd service && php start.php start -d` (डिफ़ॉल्ट पोर्ट 8788)
+1. पहले बैकएंड सेवा शुरू करें: `cd service && php start.php start -d` (डिफ़ॉल्ट पोर्ट 8792)
 2. खाता पंजीकृत करें और लॉगिन करें (यूज़रनेम+पासवर्ड, OAuth और 2FA समर्थित)
 3. जमा के बाद प्लेटफ़ॉर्म कॉइन से खेलें और गेम कॉइन में बदलें; गेम कॉइन को वापस वॉलेट में बदलकर निकासी की जा सकती है
 4. एडमिन बैकएंड `admin/` निर्देशिका में है (Flutter Web फ्रंटएंड `admin/apps/flutter/` सहित)

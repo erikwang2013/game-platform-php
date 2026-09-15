@@ -23,14 +23,14 @@ services:
       - service
     restart: unless-stopped
 
-  # 管理后台 (端口 8787)
+  # 管理后台 (端口 8789)
   admin:
     build:
       context: ./admin
       dockerfile: Dockerfile
     container_name: game-platform-admin
     ports:
-      - "8787:8787"
+      - "8789:8789"
     volumes:
       - ./admin:/app
       - ./common:/common
@@ -41,14 +41,14 @@ services:
       - redis
     restart: unless-stopped
 
-  # C端业务端 (端口 8788)
+  # C端业务端 (端口 8792)
   service:
     build:
       context: ./service
       dockerfile: Dockerfile
     container_name: game-platform-service
     ports:
-      - "8788:8788"
+      - "8792:8792"
     volumes:
       - ./service:/app
       - ./common:/common
@@ -60,7 +60,7 @@ services:
       - elasticsearch
     restart: unless-stopped
 
-  # WebSocket 排行榜 (端口 8789)
+  # WebSocket 排行榜/聊天 (端口 8790/8791)
   leaderboard-ws:
     build:
       context: ./service
@@ -68,7 +68,8 @@ services:
     container_name: game-platform-ws
     command: php start.php start
     ports:
-      - "8789:8789"
+      - "8790:8790"
+      - "8791:8791"
     volumes:
       - ./service:/app
       - ./common:/common

@@ -46,7 +46,7 @@ cd service && php start.php start -d && cd ..
 # 6. 보안 정리
 rm -rf install/
 
-# 7. 관리 백오피스 접속: http://<服务器IP>:8787
+# 7. 관리 백오피스 접속: http://<服务器IP>:8789
 ```
 
 설치 마법사가 수행하는 작업:
@@ -87,8 +87,8 @@ docker-compose logs -f
 | 서비스 | 컨테이너명 | 포트 | 설명 |
 |------|--------|------|------|
 | nginx | game-platform-nginx | 80, 443 | 리버스 프록시 + 정적 파일 |
-| admin | game-platform-admin | 8787 | 관리 백오피스 API |
-| service | game-platform-service | 8788 | C단 비즈니스 API |
+| admin | game-platform-admin | 8789 | 관리 백오피스 API |
+| service | game-platform-service | 8792 | C단 비즈니스 API |
 | leaderboard-ws | game-platform-ws | 8789 | WebSocket 리더보드 |
 | mysql | game-platform-mysql | 3306 | 메인 데이터베이스 |
 | redis | game-platform-redis | 6379 | 캐시/레이트 리밋 |
@@ -262,17 +262,17 @@ SITE_URL=https://your-domain.com  # 결제 콜백/리다이렉트 사이트 주�
 ### 3.4 서비스 시작
 
 ```bash
-# 관리 백오피스 (포트 8787)
+# 관리 백오피스 (포트 8789)
 cd /opt/game-platform/admin
 php start.php start -d
 
-# C단 비즈니스 (포트 8788)
+# C단 비즈니스 (포트 8792)
 cd /opt/game-platform/service
 php start.php start -d
 
 # 검증
-curl http://localhost:8787/health
-curl http://localhost:8788/health
+curl http://localhost:8789/health
+curl http://localhost:8792/health
 ```
 
 ### 3.5 프로세스 관리 (Systemd)
@@ -321,7 +321,7 @@ server {
 
     # 관리 백오피스 API
     location /admin/ {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -330,7 +330,7 @@ server {
 
     # C단 API
     location /api/ {
-        proxy_pass http://127.0.0.1:8788;
+        proxy_pass http://127.0.0.1:8792;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -349,12 +349,12 @@ server {
 
     # 헬스 체크
     location /health {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
     }
 
     # Prometheus 지표
     location /metrics {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
     }
 
     # 관리 백오피스 프론트엔드
@@ -429,10 +429,10 @@ crontab -e
 
 ```bash
 # 관리 백오피스
-curl -f http://localhost:8787/health || echo "Admin DOWN"
+curl -f http://localhost:8789/health || echo "Admin DOWN"
 
 # C단 비즈니스
-curl -f http://localhost:8788/health || echo "Service DOWN"
+curl -f http://localhost:8792/health || echo "Service DOWN"
 
 # 로드 밸런서나 모니터링 시스템에서 설정 가능
 ```
@@ -525,7 +525,7 @@ ufw allow 443/tcp     # HTTPS
 ufw enable
 
 # 내부 포트는 노출하면 안 됨
-# 8787 (admin), 8788 (service), 8789 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
 # 127.0.0.1로만 접근
 ```
 
@@ -551,7 +551,7 @@ chmod 600 /opt/game-platform/service/.env
 cd /opt/game-platform/admin && php start.php start
 
 # 포트 점유 확인
-ss -tlnp | grep -E '8787|8788'
+ss -tlnp | grep -E '8789|8792'
 
 # 로그 확인
 tail -f runtime/logs/workerman.log

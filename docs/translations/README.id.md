@@ -54,7 +54,7 @@ Platform agregasi game global, universal, dan berstandar internasional. Setelah 
 
 ```
 game-platform-php/
-├── admin/                     # Backend administrasi (webman v2, port 8787)
+├── admin/                     # Backend administrasi (webman v2, port 8789)
 │   ├── app/admin/controller/  #   Kontroler sisi admin
 │   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   Lapisan Provider game
@@ -67,7 +67,7 @@ game-platform-php/
 │   ├── install/   #   File migrasi SQL
 │   └── apps/flutter/          #   Backend administrasi Flutter Web PC
 │
-├── service/                   # Sisi bisnis C (webman v2, port 8788)
+├── service/                   # Sisi bisnis C (webman v2, port 8792)
 │   ├── app/api/v1/controller/ #   Kontroler API C
 │   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   Lapisan Provider game
@@ -124,7 +124,7 @@ cd service && composer install && cd ..
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. Akses backend admin: http://localhost:8787
+# 5. Akses backend admin: http://localhost:8789
 #    Masuk dengan akun dan kata sandi admin yang diatur saat instalasi
 
 # 6. Hapus direktori instalasi setelah selesai (keamanan)
@@ -196,13 +196,13 @@ flutter run -d chrome
 
 ```bash
 # Uji backend administrasi
-curl http://localhost:8787/health
+curl http://localhost:8789/health
 
 # Uji bisnis sisi C
-curl http://localhost:8788/health
+curl http://localhost:8792/health
 
 # Uji registrasi pengguna
-curl -X POST http://localhost:8788/api/auth/register \
+curl -X POST http://localhost:8792/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"testuser","password":"123456"}'
 ```
@@ -374,8 +374,8 @@ flowchart LR
 | [Dokumen desain fitur](../FEATURE-DESIGN.id.md) | Model bisnis, spesifikasi fitur, desain alur |
 | [Dokumen fitur](../FEATURES.id.md) | Daftar fitur, deskripsi modul, perjalanan pengguna |
 | [Dokumen API](../API.id.md) | Referensi API lengkap (102 endpoint) |
-| [Dokumen online](http://localhost:8788/apidoc/) | Dokumentasi interaktif hg/apidoc (sisi C) |
-| [Dokumen online](http://localhost:8787/apidoc/) | Dokumentasi interaktif hg/apidoc (backend admin) |
+| [Dokumen online](http://localhost:8792/apidoc/) | Dokumentasi interaktif hg/apidoc (sisi C) |
+| [Dokumen online](http://localhost:8789/apidoc/) | Dokumentasi interaktif hg/apidoc (backend admin) |
 | [Instalasi ClickHouse](../CLICKHOUSE_INSTALL.id.md) | Instalasi/konfigurasi/migrasi/verifikasi ClickHouse |
 | [Dokumen integrasi Provider SDK](../PROVIDER-SDK.id.md) | Panduan integrasi game pihak ketiga (algoritma tanda tangan + contoh PHP/Go/Python) |
 | [Penggunaan ClickHouse](../CLICKHOUSE_USAGE.id.md) | 4 layanan API ClickHouse dan dasbor backend |

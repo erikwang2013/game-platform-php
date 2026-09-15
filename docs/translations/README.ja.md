@@ -54,7 +54,7 @@ Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](R
 
 ```
 game-platform-php/
-├── admin/                     # 管理画面 (webman v2, ポート 8787)
+├── admin/                     # 管理画面 (webman v2, ポート 8789)
 │   ├── app/admin/controller/  #   管理端コントローラー
 │   ├── app/middleware/        #   中間ウェア (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   ゲームProvider層
@@ -67,7 +67,7 @@ game-platform-php/
 │   ├── install/   #   SQL 移行ファイル
 │   └── apps/flutter/          #   Flutter Web PC 管理画面
 │
-├── service/                   # C端業務端 (webman v2, ポート 8788)
+├── service/                   # C端業務端 (webman v2, ポート 8792)
 │   ├── app/api/v1/controller/ #   C端 API コントローラー
 │   ├── app/middleware/        #   中間ウェア (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   ゲームProvider層
@@ -124,7 +124,7 @@ cd service && composer install && cd ..
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. 管理画面にアクセス: http://localhost:8787
+# 5. 管理画面にアクセス: http://localhost:8789
 #    インストール時に設定した管理者アカウントのパスワードでログイン
 
 # 6. インストール完了後、インストールディレクトリを削除（セキュリティ）
@@ -196,13 +196,13 @@ flutter run -d chrome
 
 ```bash
 # 管理画面のテスト
-curl http://localhost:8787/health
+curl http://localhost:8789/health
 
 # C端業務のテスト
-curl http://localhost:8788/health
+curl http://localhost:8792/health
 
 # ユーザー登録のテスト
-curl -X POST http://localhost:8788/api/auth/register \
+curl -X POST http://localhost:8792/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"testuser","password":"123456"}'
 ```
@@ -374,8 +374,8 @@ flowchart LR
 | [機能設計ドキュメント](../FEATURE-DESIGN.ja.md) | ビジネスモデル、機能仕様、フロー設計 |
 | [機能ドキュメント](../FEATURES.ja.md) | 機能一覧、モジュール説明、ユーザージャーニー |
 | [APIドキュメント](../API.ja.md) | 完全な API リファレンス (102 エンドポイント) |
-| [オンラインドキュメント](http://localhost:8788/apidoc/) | hg/apidoc インタラクティブドキュメント (C端) |
-| [オンラインドキュメント](http://localhost:8787/apidoc/) | hg/apidoc インタラクティブドキュメント (管理画面) |
+| [オンラインドキュメント](http://localhost:8792/apidoc/) | hg/apidoc インタラクティブドキュメント (C端) |
+| [オンラインドキュメント](http://localhost:8789/apidoc/) | hg/apidoc インタラクティブドキュメント (管理画面) |
 | [ClickHouse インストール](../CLICKHOUSE_INSTALL.ja.md) | ClickHouse のインストール/設定/移行/検証 |
 | [Provider SDK 接続ドキュメント](../PROVIDER-SDK.ja.md) | サードパーティゲーム接続ガイド (署名アルゴリズム+PHP/Go/Pythonサンプル) |
 | [ClickHouse 使用方法](../CLICKHOUSE_USAGE.ja.md) | 4つの ClickHouse サービスAPIと管理画面ダッシュボード |

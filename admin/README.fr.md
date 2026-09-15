@@ -162,7 +162,7 @@ mysql -u root -p < install/install.sql
 php start.php start
 ```
 
-Écoute par défaut sur `http://0.0.0.0:8787`.
+Écoute par défaut sur `http://0.0.0.0:8789`.
 
 ### 5. Démarrer le frontend (optionnel)
 
@@ -193,7 +193,7 @@ docker-compose up -d
 docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 # 4. Accès
-# http://localhost:8787  (webman)
+# http://localhost:8789  (webman)
 # http://localhost:8080  (reverse proxy Nginx)
 ```
 
@@ -408,7 +408,7 @@ Le `docker-compose.yml` à la racine du projet orchestre 5 services :
 | Service | Image | Port |
 |------|------|------|
 | `nginx` | nginx:alpine | 80, 443 |
-| `app` | construit via le `Dockerfile` local | 8787 |
+| `app` | construit via le `Dockerfile` local | 8789 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

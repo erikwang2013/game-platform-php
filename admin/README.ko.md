@@ -162,7 +162,7 @@ mysql -u root -p < install/install.sql
 php start.php start
 ```
 
-기본적으로 `http://0.0.0.0:8787`을 수신합니다.
+기본적으로 `http://0.0.0.0:8789`을 수신합니다.
 
 ### 5. 프론트엔드 시작 (선택)
 
@@ -193,7 +193,7 @@ docker-compose up -d
 docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 # 4. 접속
-# http://localhost:8787  (webman)
+# http://localhost:8789  (webman)
 # http://localhost:8080  (Nginx 리버스 프록시)
 ```
 
@@ -408,7 +408,7 @@ Authorization: Bearer <token>
 | 서비스 | 이미지 | 포트 |
 |------|------|------|
 | `nginx` | nginx:alpine | 80, 443 |
-| `app` | 로컬 `Dockerfile` 빌드 | 8787 |
+| `app` | 로컬 `Dockerfile` 빌드 | 8789 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

@@ -40,8 +40,8 @@ flutter pub get
 # Executar em desenvolvimento (Chrome)
 flutter run -d chrome
 
-# Especificar o endereço do backend (padrão http://localhost:8788)
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8788
+# Especificar o endereço do backend (padrão http://localhost:8792)
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8792
 
 # Build web de produção (saída em build/web/)
 flutter build web
@@ -49,7 +49,7 @@ flutter build web
 
 ## Uso
 
-1. Inicie primeiro o backend: `cd service && php start.php start -d` (porta padrão 8788)
+1. Inicie primeiro o backend: `cd service && php start.php start -d` (porta padrão 8792)
 2. Cadastre uma conta e faça login (usuário+senha, OAuth e 2FA são suportados)
 3. Após depositar, jogue com moedas da plataforma e troque por moedas de jogo; as moedas de jogo podem ser convertidas de volta à carteira para saque
 4. O backend admin está no diretório `admin/` (incluindo o frontend Flutter Web `admin/apps/flutter/`)

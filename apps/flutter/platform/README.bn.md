@@ -40,8 +40,8 @@ flutter pub get
 # ডেভেলপমেন্টে চালান (Chrome)
 flutter run -d chrome
 
-# ব্যাকএন্ড ঠিকানা নির্ধারণ (ডিফল্ট http://localhost:8788)
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8788
+# ব্যাকএন্ড ঠিকানা নির্ধারণ (ডিফল্ট http://localhost:8792)
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8792
 
 # ওয়েব প্রোডাকশন বিল্ড (আউটপুট build/web/-এ)
 flutter build web
@@ -49,7 +49,7 @@ flutter build web
 
 ## ব্যবহার
 
-1. আগে ব্যাকএন্ড সার্ভিস চালু করুন: `cd service && php start.php start -d` (ডিফল্ট পোর্ট 8788)
+1. আগে ব্যাকএন্ড সার্ভিস চালু করুন: `cd service && php start.php start -d` (ডিফল্ট পোর্ট 8792)
 2. অ্যাকাউন্ট রেজিস্টার করে লগইন করুন (ইউজারনেম+পাসওয়ার্ড, OAuth ও 2FA সমর্থিত)
 3. ডিপোজিটের পর প্ল্যাটফর্ম কয়েনে খেলুন এবং গেম কয়েনে বিনিময় করুন; গেম কয়েন ফিরিয়ে ওয়ালেটে এনে উইথড্র করা যায়
 4. অ্যাডমিন ব্যাকএন্ড `admin/` ডিরেক্টরিতে (Flutter Web ফ্রন্টএন্ড `admin/apps/flutter/` সহ)

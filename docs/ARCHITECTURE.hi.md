@@ -21,8 +21,8 @@ flowchart TB
     end
 
     subgraph "应用层"
-        C1["admin/ webman<br/>管理后台 :8787<br/>AdminAuth → AdminPermission → OperationLog"]
-        C2["service/ webman<br/>C端业务 :8788<br/>UserAuth → [ProviderAuth]"]
+        C1["admin/ webman<br/>管理后台 :8789<br/>AdminAuth → AdminPermission → OperationLog"]
+        C2["service/ webman<br/>C端业务 :8792<br/>UserAuth → [ProviderAuth]"]
     end
 
     subgraph "服务层 (新增)"
@@ -312,8 +312,8 @@ game_achievement ── 1:N ── game_user_achievement
 
 ```
 एकल मशीन परिनियोजन:
-  admin/         :8787 (webman, 32 workers)
-  service/       :8788 (webman, 32 workers)
+  admin/         :8789 (webman, 32 workers)
+  service/       :8792 (webman, 32 workers)
   leaderboard-ws :8789 (WebSocket लीडरबोर्ड)
   chat-ws        :8791 (WebSocket चैट)
   MySQL          :3306
@@ -323,7 +323,7 @@ game_achievement ── 1:N ── game_user_achievement
 ### 6.2 Docker Compose (8 सेवाएँ)
 
 ```yaml
-nginx (80/443) → admin (8787) + service (8788) + static files
+nginx (80/443) → admin (8789) + service (8792) + static files
 leaderboard-ws (8789) — WebSocket लीडरबोर्ड वास्तविक समय पुश
 chat-ws (8791) — WebSocket निजी संदेश/चैट
 mysql (3306) — मुख्य डेटाबेस, डेटा वॉल्यूम स्थायीकरण
@@ -344,10 +344,10 @@ flowchart TB
     end
 
     subgraph "应用服务器"
-        ADM1["admin :8787"]
-        ADM2["admin :8787"]
-        SVC1["service :8788"]
-        SVC2["service :8788"]
+        ADM1["admin :8789"]
+        ADM2["admin :8789"]
+        SVC1["service :8792"]
+        SVC2["service :8792"]
         WS1["leaderboard-ws :8789"]
         WS2["chat-ws :8791"]
     end
@@ -387,8 +387,8 @@ tests/
 
 | सेवा | पोर्ट | विवरण |
 |------|------|------|
-| admin/ | 8787 | प्रशासन कंसोल API |
-| service/ | 8788 | C-छोर व्यवसाय API |
+| admin/ | 8789 | प्रशासन कंसोल API |
+| service/ | 8792 | C-छोर व्यवसाय API |
 | leaderboard-ws | 8789 | WebSocket वास्तविक समय लीडरबोर्ड |
 | chat-ws | 8791 | WebSocket निजी संदेश/चैट |
 | MySQL | 3306 | मुख्य डेटाबेस |
@@ -402,8 +402,8 @@ tests/
 
 | दस्तावेज़ | पता | कंट्रोलर | एंडपॉइंट |
 |------|------|--------|------|
-| प्रशासन कंसोल | :8787/apidoc/ | 28 | ~85 |
-| C-छोर व्यवसाय | :8788/apidoc/ | 25 | ~65 |
+| प्रशासन कंसोल | :8789/apidoc/ | 28 | ~85 |
+| C-छोर व्यवसाय | :8792/apidoc/ | 25 | ~65 |
 
 ## 10. डेटाबेस तालिका सूची
 

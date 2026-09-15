@@ -162,7 +162,7 @@ mysql -u root -p < install/install.sql
 php start.php start
 ```
 
-Default mendengarkan di `http://0.0.0.0:8787`.
+Default mendengarkan di `http://0.0.0.0:8789`.
 
 ### 5. Menjalankan Frontend (Opsional)
 
@@ -193,7 +193,7 @@ docker-compose up -d
 docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 # 4. Akses
-# http://localhost:8787  (webman)
+# http://localhost:8789  (webman)
 # http://localhost:8080  (proxy balik Nginx)
 ```
 
@@ -408,7 +408,7 @@ Direktori root proyek menyediakan `docker-compose.yml`, mengorkestrasi 5 layanan
 | Layanan | Image | Port |
 |------|------|------|
 | `nginx` | nginx:alpine | 80, 443 |
-| `app` | dibangun `Dockerfile` lokal | 8787 |
+| `app` | dibangun `Dockerfile` lokal | 8789 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

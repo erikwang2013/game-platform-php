@@ -12,7 +12,7 @@ Languages: [中文](PROJECT-PLAN.md) · [English](PROJECT-PLAN.en.md) · [한국
 ## 一、परियोजना की वर्तमान स्थिति
 
 **वैश्विक गेम एग्रीगेशन प्लेटफ़ॉर्म** — PHP 8.3 + webman v2, दोहरा एप्लिकेशन monorepo:
-`admin/`(8787 प्रशासन कंसोल) + `service/`(8788 C-छोर) + `apps/`(Flutter + HarmonyOS) + `install/`(स्थापना विज़ार्ड 43 तालिकाएँ)।
+`admin/`(8789 प्रशासन कंसोल) + `service/`(8792 C-छोर) + `apps/`(Flutter + HarmonyOS) + `install/`(स्थापना विज़ार्ड 43 तालिकाएँ)।
 
 | आयाम | वास्तविक आकार |
 |------|---------|

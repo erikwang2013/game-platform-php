@@ -66,7 +66,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | 平台统计 | C端首页统计（游戏总数/用户总数/今日局数/7 日活跃） | 已完成 |
 | 部署 | Docker Compose 7服务 + Nginx反向代理 | 已完成 |
 | 数据 | MySQL 实时聚合分析 + 联合/条件概率计算 | 已完成 |
-| HarmonyOS | admin 端 8 页；C 端 `apps/harmonyos/` 已实现登录/大厅/详情/钱包/个人（指向 8788） | 部分完成（工程可跑，真机需改 IP） |
+| HarmonyOS | admin 端 8 页；C 端 `apps/harmonyos/` 已实现登录/大厅/详情/钱包/个人（指向 8792） | 部分完成（工程可跑，真机需改 IP） |
 | API 文档 | hg/apidoc 交互式文档 | 已完成 |
 | 一键安装 | 浏览器安装向导：建管理员、存量库升级、install.lock 防重装 | 已完成 |
 | 容错 | CircuitBreaker 熔断 + Retry 重试 + feature.provider_mock 降级开关 | 已完成 |

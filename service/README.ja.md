@@ -82,7 +82,7 @@ cd service && composer install
 cp .env.example .env
 # .env を編集：データベース接続情報、JWT キー等
 
-# 3. サービスを起動（デフォルトポート 8788）
+# 3. サービスを起動（デフォルトポート 8792）
 php start.php start        # フォアグラウンド
 php start.php start -d     # バックグラウンド
 ```
@@ -90,8 +90,8 @@ php start.php start -d     # バックグラウンド
 ## 使い方
 
 - API ドキュメント：`docs/API.md`（完全な API リファレンス）
-- オンラインドキュメント：http://localhost:8788/apidoc/（hg/apidoc 対話型ドキュメント）
-- ヘルスチェック：`GET http://localhost:8788/health`
+- オンラインドキュメント：http://localhost:8792/apidoc/（hg/apidoc 対話型ドキュメント）
+- ヘルスチェック：`GET http://localhost:8792/health`
 - C端フロントエンド：`apps/flutter/platform/`（Flutter Web ユーザープラットフォーム）
 - 管理バックエンド：`admin/`（管理バックエンドと `admin/apps/flutter/` フロントエンド）
 

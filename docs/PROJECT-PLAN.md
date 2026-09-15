@@ -12,7 +12,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 ## 一、项目现状
 
 **全球游戏聚合平台** — PHP 8.3 + webman v2，双应用 monorepo：
-`admin/`(8787 管理后台) + `service/`(8788 C端) + `apps/`(Flutter + HarmonyOS) + `install/`(安装向导 43 表)。
+`admin/`(8789 管理后台) + `service/`(8792 C端) + `apps/`(Flutter + HarmonyOS) + `install/`(安装向导 43 表)。
 
 | 维度 | 实测规模 |
 |------|---------|

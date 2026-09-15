@@ -46,7 +46,7 @@ cd service && php start.php start -d && cd ..
 # 6. Nettoyage de sécurité
 rm -rf install/
 
-# 7. Accéder à l'administration : http://<IP-du-serveur>:8787
+# 7. Accéder à l'administration : http://<IP-du-serveur>:8789
 ```
 
 Opérations réalisées par l'assistant d'installation :
@@ -87,8 +87,8 @@ docker-compose logs -f
 | Service | Nom du conteneur | Port | Description |
 |------|--------|------|------|
 | nginx | game-platform-nginx | 80, 443 | Reverse proxy + fichiers statiques |
-| admin | game-platform-admin | 8787 | API d'administration |
-| service | game-platform-service | 8788 | API métier C |
+| admin | game-platform-admin | 8789 | API d'administration |
+| service | game-platform-service | 8792 | API métier C |
 | leaderboard-ws | game-platform-ws | 8789 | Classement WebSocket |
 | mysql | game-platform-mysql | 3306 | Base principale |
 | redis | game-platform-redis | 6379 | Cache/rate-limit |
@@ -262,17 +262,17 @@ SITE_URL=https://your-domain.com  # URL du site pour les retours/redirections de
 ### 4.4 Démarrage des services
 
 ```bash
-# Administration (port 8787)
+# Administration (port 8789)
 cd /opt/game-platform/admin
 php start.php start -d
 
-# Métier C (port 8788)
+# Métier C (port 8792)
 cd /opt/game-platform/service
 php start.php start -d
 
 # Vérification
-curl http://localhost:8787/health
-curl http://localhost:8788/health
+curl http://localhost:8789/health
+curl http://localhost:8792/health
 ```
 
 ### 4.5 Gestion des processus (Systemd)
@@ -321,7 +321,7 @@ server {
 
     # API d'administration
     location /admin/ {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -330,7 +330,7 @@ server {
 
     # API C
     location /api/ {
-        proxy_pass http://127.0.0.1:8788;
+        proxy_pass http://127.0.0.1:8792;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -349,12 +349,12 @@ server {
 
     # Health check
     location /health {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
     }
 
     # Métriques Prometheus
     location /metrics {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
     }
 
     # Frontend d'administration
@@ -429,10 +429,10 @@ L'administration expose le point `/metrics`, avec les métriques suivantes :
 
 ```bash
 # Administration
-curl -f http://localhost:8787/health || echo "Admin DOWN"
+curl -f http://localhost:8789/health || echo "Admin DOWN"
 
 # Métier C
-curl -f http://localhost:8788/health || echo "Service DOWN"
+curl -f http://localhost:8792/health || echo "Service DOWN"
 
 # Peut être configuré dans l'équilibreur de charge ou le système de monitoring
 ```
@@ -525,7 +525,7 @@ ufw allow 443/tcp     # HTTPS
 ufw enable
 
 # Les ports internes ne doivent pas être exposés
-# 8787 (admin), 8788 (service), 8789 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
 # Accessibles uniquement via 127.0.0.1
 ```
 
@@ -551,7 +551,7 @@ chmod 600 /opt/game-platform/service/.env
 cd /opt/game-platform/admin && php start.php start
 
 # Vérifier l'occupation des ports
-ss -tlnp | grep -E '8787|8788'
+ss -tlnp | grep -E '8789|8792'
 
 # Vérifier les journaux
 tail -f runtime/logs/workerman.log

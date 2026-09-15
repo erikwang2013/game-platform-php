@@ -46,7 +46,7 @@ cd service && php start.php start -d && cd ..
 # 6. Limpeza de segurança
 rm -rf install/
 
-# 7. Acessar o painel administrativo: http://<IP do servidor>:8787
+# 7. Acessar o painel administrativo: http://<IP do servidor>:8789
 ```
 
 Operações executadas pelo assistente de instalação:
@@ -87,8 +87,8 @@ docker-compose logs -f
 | Serviço | Nome do container | Porta | Observação |
 |------|--------|------|------|
 | nginx | game-platform-nginx | 80, 443 | proxy reverso + arquivos estáticos |
-| admin | game-platform-admin | 8787 | API do painel administrativo |
-| service | game-platform-service | 8788 | API de negócio C-side |
+| admin | game-platform-admin | 8789 | API do painel administrativo |
+| service | game-platform-service | 8792 | API de negócio C-side |
 | leaderboard-ws | game-platform-ws | 8789 | rankings WebSocket |
 | mysql | game-platform-mysql | 3306 | banco principal |
 | redis | game-platform-redis | 6379 | cache/rate limit |
@@ -262,17 +262,17 @@ SITE_URL=https://your-domain.com  # URL do site para callbacks/redirecionamentos
 ### 3.4 Iniciar os serviços
 
 ```bash
-# Painel administrativo (porta 8787)
+# Painel administrativo (porta 8789)
 cd /opt/game-platform/admin
 php start.php start -d
 
-# Negócio C-side (porta 8788)
+# Negócio C-side (porta 8792)
 cd /opt/game-platform/service
 php start.php start -d
 
 # Verificação
-curl http://localhost:8787/health
-curl http://localhost:8788/health
+curl http://localhost:8789/health
+curl http://localhost:8792/health
 ```
 
 ### 3.5 Gerenciamento de processos (Systemd)
@@ -321,7 +321,7 @@ server {
 
     # API do painel administrativo
     location /admin/ {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -330,7 +330,7 @@ server {
 
     # API C-side
     location /api/ {
-        proxy_pass http://127.0.0.1:8788;
+        proxy_pass http://127.0.0.1:8792;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -349,12 +349,12 @@ server {
 
     # Health check
     location /health {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
     }
 
     # Métricas Prometheus
     location /metrics {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
     }
 
     # Frontend do painel administrativo
@@ -429,10 +429,10 @@ O painel administrativo expõe o endpoint `/metrics`, com as seguintes métricas
 
 ```bash
 # Painel administrativo
-curl -f http://localhost:8787/health || echo "Admin DOWN"
+curl -f http://localhost:8789/health || echo "Admin DOWN"
 
 # Negócio C-side
-curl -f http://localhost:8788/health || echo "Service DOWN"
+curl -f http://localhost:8792/health || echo "Service DOWN"
 
 # Pode ser configurado no balanceador de carga ou sistema de monitoramento
 ```
@@ -525,7 +525,7 @@ ufw allow 443/tcp     # HTTPS
 ufw enable
 
 # Portas internas não devem ser expostas
-# 8787 (admin), 8788 (service), 8789 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
 # Acessar apenas via 127.0.0.1
 ```
 
@@ -551,7 +551,7 @@ chmod 600 /opt/game-platform/service/.env
 cd /opt/game-platform/admin && php start.php start
 
 # Verificar ocupação de portas
-ss -tlnp | grep -E '8787|8788'
+ss -tlnp | grep -E '8789|8792'
 
 # Verificar logs
 tail -f runtime/logs/workerman.log

@@ -257,10 +257,10 @@ admin/ и service/ поддерживают несколько worker-проце
 
 ```
 Nginx (负载均衡)
-  ├── admin-1 (:8787)
-  ├── admin-2 (:8787)
-  ├── service-1 (:8788)
-  └── service-2 (:8788)
+  ├── admin-1 (:8789)
+  ├── admin-2 (:8789)
+  ├── service-1 (:8792)
+  └── service-2 (:8792)
 ```
 
 ### 5.2 Путь разбиения на модули
@@ -269,7 +269,7 @@ Nginx (负载均衡)
 
 ```
 service/ (单体)
-  → service-user/ (用户服务 :8788)
+  → service-user/ (用户服务 :8792)
   → service-wallet/ (钱包服务 :8789)
   → service-game/ (游戏服务 :8790)
   → service-payment/ (支付服务 :8791)

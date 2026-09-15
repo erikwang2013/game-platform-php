@@ -429,7 +429,7 @@ SCOUT_HOSTS         → ES 주소, 내부망 배포
 ### 8.1 권장 토폴로지
 
 ```
-Nginx (:443 HTTPS) → webman worker × N (:8787) → MySQL + ES + Redis
+Nginx (:443 HTTPS) → webman worker × N (:8789) → MySQL + ES + Redis
                     정적 파일: Flutter Web build/
 ```
 
@@ -440,7 +440,7 @@ Nginx (:443 HTTPS) → webman worker × N (:8787) → MySQL + ES + Redis
 | 서비스 | 이미지/빌드 | 포트 | 설명 |
 |------|----------|------|------|
 | `nginx` | nginx:alpine | 80, 443 | 리버스 프록시 + 정적 파일 + Gzip |
-| `app` | 로컬 `Dockerfile` 빌드 | 8787 | PHP 8.3 + OPcache + webman |
+| `app` | 로컬 `Dockerfile` 빌드 | 8789 | PHP 8.3 + OPcache + webman |
 | `mysql` | mysql:8.0 | 3306 | 메인 데이터베이스, 데이터 볼륨 영속화 |
 | `redis` | redis:7-alpine | 6379 | 캐시 / 속도 제한 / 캡차 |
 | `elasticsearch` | elasticsearch:8.x | 9200 | 전문 검색 |

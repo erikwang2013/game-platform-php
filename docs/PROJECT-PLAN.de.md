@@ -12,7 +12,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 ## 一、Projektstand
 
 **Globale Spielaggregationsplattform** — PHP 8.3 + webman v2, Zwei-Anwendungs-Monorepo:
-`admin/`(8787 Verwaltungsbackend) + `service/`(8788 C-End) + `apps/`(Flutter + HarmonyOS) + `install/`(Installationsassistent, 43 Tabellen).
+`admin/`(8789 Verwaltungsbackend) + `service/`(8792 C-End) + `apps/`(Flutter + HarmonyOS) + `install/`(Installationsassistent, 43 Tabellen).
 
 | Dimension | Praktisch gemessener Umfang |
 |------|---------|

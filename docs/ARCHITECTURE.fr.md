@@ -21,8 +21,8 @@ flowchart TB
     end
 
     subgraph "Couche application"
-        C1["admin/ webman<br/>Administration :8787<br/>AdminAuth → AdminPermission → OperationLog"]
-        C2["service/ webman<br/>Métier C :8788<br/>UserAuth → [ProviderAuth]"]
+        C1["admin/ webman<br/>Administration :8789<br/>AdminAuth → AdminPermission → OperationLog"]
+        C2["service/ webman<br/>Métier C :8792<br/>UserAuth → [ProviderAuth]"]
     end
 
     subgraph "Couche services (nouveaux)"
@@ -312,8 +312,8 @@ game_achievement ── 1:N ── game_user_achievement
 
 ```
 Déploiement mono-machine:
-  admin/         :8787 (webman, 32 workers)
-  service/       :8788 (webman, 32 workers)
+  admin/         :8789 (webman, 32 workers)
+  service/       :8792 (webman, 32 workers)
   leaderboard-ws :8789 (WebSocket classement)
   chat-ws        :8791 (WebSocket chat)
   MySQL          :3306
@@ -323,7 +323,7 @@ Déploiement mono-machine:
 ### 6.2 Docker Compose (8 services)
 
 ```yaml
-nginx (80/443) → admin (8787) + service (8788) + fichiers statiques
+nginx (80/443) → admin (8789) + service (8792) + fichiers statiques
 leaderboard-ws (8789) — push temps réel du classement WebSocket
 chat-ws (8791) — messages privés/chat WebSocket
 mysql (3306) — base principale, volume de données persistant
@@ -344,10 +344,10 @@ flowchart TB
     end
 
     subgraph "Serveurs applicatifs"
-        ADM1["admin :8787"]
-        ADM2["admin :8787"]
-        SVC1["service :8788"]
-        SVC2["service :8788"]
+        ADM1["admin :8789"]
+        ADM2["admin :8789"]
+        SVC1["service :8792"]
+        SVC2["service :8792"]
         WS1["leaderboard-ws :8789"]
         WS2["chat-ws :8791"]
     end
@@ -387,8 +387,8 @@ tests/
 
 | Service | Port | Description |
 |------|------|------|
-| admin/ | 8787 | API d'administration |
-| service/ | 8788 | API métier C |
+| admin/ | 8789 | API d'administration |
+| service/ | 8792 | API métier C |
 | leaderboard-ws | 8789 | Classement WebSocket temps réel |
 | chat-ws | 8791 | Messages privés/chat WebSocket |
 | MySQL | 3306 | Base principale |
@@ -402,8 +402,8 @@ La documentation API interactive est générée automatiquement à partir des an
 
 | Documentation | Adresse | Contrôleurs | Points d'API |
 |------|------|--------|------|
-| Administration | :8787/apidoc/ | 28 | ~85 |
-| Métier C | :8788/apidoc/ | 25 | ~65 |
+| Administration | :8789/apidoc/ | 28 | ~85 |
+| Métier C | :8792/apidoc/ | 25 | ~65 |
 
 ## 10. Liste des tables de la base
 

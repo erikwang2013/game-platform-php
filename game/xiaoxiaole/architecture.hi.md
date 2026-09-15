@@ -37,7 +37,7 @@ Languages: [中文](architecture.md) · [English](architecture.en.md) · [한국
 Flutter / HarmonyOS / PC Web
         │  POST /api/game/launch { game_id }
         ▼
-service/ (webman :8788)
+service/ (webman :8792)
   GameController::launch  → session_id + seed + api_endpoint
   SelfProvider            → bet / settle / refund / getBalance
   GamePlayLog + EventBus  → game.played / उपलब्धियाँ / VIP

@@ -46,8 +46,8 @@ flutter pub get
 # التشغيل في وضع التطوير (Chrome)
 flutter run -d chrome
 
-# تحديد عنوان الخادم الخلفي (الافتراضي http://localhost:8787)
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8787
+# تحديد عنوان الخادم الخلفي (الافتراضي http://localhost:8789)
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8789
 
 # بناء نسخة الإنتاج للويب (الإخراج في build/web/)
 flutter build web
@@ -55,6 +55,6 @@ flutter build web
 
 ## الاستخدام
 
-1. شغّل أولاً خدمة الخادم الخلفي للوحة الإدارة: `cd admin && php start.php start -d` (المنفذ الافتراضي 8787)
+1. شغّل أولاً خدمة الخادم الخلفي للوحة الإدارة: `cd admin && php start.php start -d` (المنفذ الافتراضي 8789)
 2. سجّل الدخول بحساب المدير الذي أنشأه معالج التثبيت (يدعم 2FA)
-3. واجهة المستخدم موجودة في `apps/flutter/platform/` وتستخدم نفس خدمة الخادم الخلفي (المنفذ الافتراضي 8788)
+3. واجهة المستخدم موجودة في `apps/flutter/platform/` وتستخدم نفس خدمة الخادم الخلفي (المنفذ الافتراضي 8792)

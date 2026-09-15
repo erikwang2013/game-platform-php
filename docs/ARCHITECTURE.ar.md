@@ -21,8 +21,8 @@ flowchart TB
     end
 
     subgraph "طبقة التطبيق"
-        C1["admin/ webman<br/>لوحة الإدارة :8787<br/>AdminAuth → AdminPermission → OperationLog"]
-        C2["service/ webman<br/>أعمال الطرف C :8788<br/>UserAuth → [ProviderAuth]"]
+        C1["admin/ webman<br/>لوحة الإدارة :8789<br/>AdminAuth → AdminPermission → OperationLog"]
+        C2["service/ webman<br/>أعمال الطرف C :8792<br/>UserAuth → [ProviderAuth]"]
     end
 
     subgraph "طبقة الخدمات (جديدة)"
@@ -312,8 +312,8 @@ game_achievement ── 1:N ── game_user_achievement
 
 ```
 نشر على جهاز واحد:
-  admin/         :8787 (webman, 32 عمال)
-  service/       :8788 (webman, 32 عمال)
+  admin/         :8789 (webman, 32 عمال)
+  service/       :8792 (webman, 32 عمال)
   leaderboard-ws :8789 (WebSocket لوحة المتصدرين)
   chat-ws        :8791 (WebSocket المحادثة)
   MySQL          :3306
@@ -323,7 +323,7 @@ game_achievement ── 1:N ── game_user_achievement
 ### 6.2 Docker Compose (8 خدمات)
 
 ```yaml
-nginx (80/443) → admin (8787) + service (8788) + الملفات الثابتة
+nginx (80/443) → admin (8789) + service (8792) + الملفات الثابتة
 leaderboard-ws (8789) — دفع لحظي للوحة المتصدرين عبر WebSocket
 chat-ws (8791) — رسائل خاصة/محادثة عبر WebSocket
 mysql (3306) — قاعدة البيانات الرئيسية، استمرارية البيانات عبر وحدة التخزين
@@ -344,10 +344,10 @@ flowchart TB
     end
 
     subgraph "خوادم التطبيقات"
-        ADM1["admin :8787"]
-        ADM2["admin :8787"]
-        SVC1["service :8788"]
-        SVC2["service :8788"]
+        ADM1["admin :8789"]
+        ADM2["admin :8789"]
+        SVC1["service :8792"]
+        SVC2["service :8792"]
         WS1["leaderboard-ws :8789"]
         WS2["chat-ws :8791"]
     end
@@ -387,8 +387,8 @@ tests/
 
 | الخدمة | المنفذ | الوصف |
 |------|------|------|
-| admin/ | 8787 | واجهات لوحة الإدارة |
-| service/ | 8788 | واجهات أعمال الطرف C |
+| admin/ | 8789 | واجهات لوحة الإدارة |
+| service/ | 8792 | واجهات أعمال الطرف C |
 | leaderboard-ws | 8789 | WebSocket لوحة المتصدرين اللحظية |
 | chat-ws | 8791 | WebSocket الرسائل الخاصة/المحادثة |
 | MySQL | 3306 | قاعدة البيانات الرئيسية |
@@ -402,8 +402,8 @@ tests/
 
 | التوثيق | العنوان | وحدات التحكم | نقاط النهاية |
 |------|------|--------|------|
-| لوحة الإدارة | :8787/apidoc/ | 28 | ~85 |
-| أعمال الطرف C | :8788/apidoc/ | 25 | ~65 |
+| لوحة الإدارة | :8789/apidoc/ | 28 | ~85 |
+| أعمال الطرف C | :8792/apidoc/ | 25 | ~65 |
 
 ## 10. قائمة جداول قاعدة البيانات
 

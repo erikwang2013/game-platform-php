@@ -257,10 +257,10 @@ admin/ e service/ suportam múltiplos processos worker. Com o proxy reverso Ngin
 
 ```
 Nginx (balanceamento de carga)
-  ├── admin-1 (:8787)
-  ├── admin-2 (:8787)
-  ├── service-1 (:8788)
-  └── service-2 (:8788)
+  ├── admin-1 (:8789)
+  ├── admin-2 (:8789)
+  ├── service-1 (:8792)
+  └── service-2 (:8792)
 ```
 
 ### 5.2 Caminho de divisão de módulos
@@ -269,7 +269,7 @@ Quando um único service/ vira gargalo, divide-se seguindo este caminho:
 
 ```
 service/ (monólito)
-  → service-user/ (serviço de usuários :8788)
+  → service-user/ (serviço de usuários :8792)
   → service-wallet/ (serviço de carteira :8789)
   → service-game/ (serviço de jogos :8790)
   → service-payment/ (serviço de pagamentos :8791)

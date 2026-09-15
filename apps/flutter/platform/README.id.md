@@ -40,8 +40,8 @@ flutter pub get
 # Jalankan dalam pengembangan (Chrome)
 flutter run -d chrome
 
-# Tentukan alamat backend (default http://localhost:8788)
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8788
+# Tentukan alamat backend (default http://localhost:8792)
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8792
 
 # Build web produksi (output ke build/web/)
 flutter build web
@@ -49,7 +49,7 @@ flutter build web
 
 ## Penggunaan
 
-1. Mulai layanan backend terlebih dahulu: `cd service && php start.php start -d` (port default 8788)
+1. Mulai layanan backend terlebih dahulu: `cd service && php start.php start -d` (port default 8792)
 2. Daftar akun lalu masuk (mendukung nama pengguna+kata sandi, OAuth, dan 2FA)
 3. Setelah deposit, mainkan game dengan koin platform dan tukarkan dengan koin game; koin game dapat dikembalikan ke dompet untuk penarikan
 4. Backend admin ada di direktori `admin/` (termasuk frontend Flutter Web `admin/apps/flutter/`)

@@ -257,10 +257,10 @@ admin/과 service/ 모두 다중 worker 프로세스를 지원합니다. Nginx �
 
 ```
 Nginx (로드 밸런싱)
-  ├── admin-1 (:8787)
-  ├── admin-2 (:8787)
-  ├── service-1 (:8788)
-  └── service-2 (:8788)
+  ├── admin-1 (:8789)
+  ├── admin-2 (:8789)
+  ├── service-1 (:8792)
+  └── service-2 (:8792)
 ```
 
 ### 5.2 모듈 분리 경로
@@ -269,7 +269,7 @@ Nginx (로드 밸런싱)
 
 ```
 service/ (모놀리스)
-  → service-user/ (사용자 서비스 :8788)
+  → service-user/ (사용자 서비스 :8792)
   → service-wallet/ (지갑 서비스 :8789)
   → service-game/ (게임 서비스 :8790)
   → service-payment/ (결제 서비스 :8791)

@@ -363,7 +363,7 @@ class Installer
 
 APP_NAME=开放管理后台
 APP_DEBUG=false
-APP_URL=http://localhost:8787
+APP_URL=http://localhost:8789
 
 JWT_SECRET={$jwtSecret}
 JWT_ALGORITHM=HS256

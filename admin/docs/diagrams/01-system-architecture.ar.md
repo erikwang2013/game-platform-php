@@ -17,8 +17,8 @@ flowchart TB
     end
 
     subgraph "طبقة التطبيق"
-        C1["admin/ :8787<br/>إدارة API الخلفية<br/>28 وحدة تحكم"]
-        C2["service/ :8788<br/>API أعمال الطرف C<br/>25 وحدة تحكم"]
+        C1["admin/ :8789<br/>إدارة API الخلفية<br/>28 وحدة تحكم"]
+        C2["service/ :8792<br/>API أعمال الطرف C<br/>25 وحدة تحكم"]
     end
 
     subgraph "طبقة الخدمات v2.0"

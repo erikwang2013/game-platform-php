@@ -12,7 +12,7 @@ Languages: [中文](PROJECT-PLAN.md) · [English](PROJECT-PLAN.en.md) · [한국
 ## এক. প্রকল্পের বর্তমান অবস্থা
 
 **বিশ্বব্যাপী গেম অ্যাগ্রিগেশন প্ল্যাটফর্ম** — PHP 8.3 + webman v2, ডুয়াল-অ্যাপ monorepo:
-`admin/`(8787 অ্যাডমিন প্যানেল) + `service/`(8788 C-এন্ড) + `apps/`(Flutter + HarmonyOS) + `install/`(ইনস্টলেশন উইজার্ড ৪৩টি টেবিল)।
+`admin/`(8789 অ্যাডমিন প্যানেল) + `service/`(8792 C-এন্ড) + `apps/`(Flutter + HarmonyOS) + `install/`(ইনস্টলেশন উইজার্ড ৪৩টি টেবিল)।
 
 | মাত্রা | পরিমাপিত আকার |
 |------|---------|

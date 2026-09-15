@@ -66,7 +66,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Statistiques de la plateforme | Statistiques d'accueil C (total jeux/utilisateurs/parties du jour/actifs 7 jours) | Terminé |
 | Déploiement | Docker Compose 7 services + proxy inverse Nginx | Terminé |
 | Données | Analyse par agrégation MySQL en temps réel + calcul de probabilités conjointes/conditionnelles | Terminé |
-| HarmonyOS | 8 pages côté admin ; côté C `apps/harmonyos/` implémente connexion/hall/détail/portefeuille/profil (pointant vers 8788) | Partiellement terminé (le projet s'exécute, IP à modifier sur appareil réel) |
+| HarmonyOS | 8 pages côté admin ; côté C `apps/harmonyos/` implémente connexion/hall/détail/portefeuille/profil (pointant vers 8792) | Partiellement terminé (le projet s'exécute, IP à modifier sur appareil réel) |
 | Documentation API | Documentation interactive hg/apidoc | Terminé |
 | Installation en un clic | Assistant d'installation navigateur : créer l'admin, mettre à niveau la BDD existante, install.lock anti-réinstallation | Terminé |
 | Tolérance aux pannes | CircuitBreaker + Retry + interrupteur de dégradation feature.provider_mock | Terminé |

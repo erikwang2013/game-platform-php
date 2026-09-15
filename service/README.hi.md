@@ -82,7 +82,7 @@ cd service && composer install
 cp .env.example .env
 # .env संपादित करें: डेटाबेस कनेक्शन, JWT कुंजियाँ आदि
 
-# 3. सेवा शुरू करें (डिफ़ॉल्ट पोर्ट 8788)
+# 3. सेवा शुरू करें (डिफ़ॉल्ट पोर्ट 8792)
 php start.php start        # फोरग्राउंड
 php start.php start -d     # बैकग्राउंड (डेमॉन)
 ```
@@ -90,8 +90,8 @@ php start.php start -d     # बैकग्राउंड (डेमॉन)
 ## उपयोग
 
 - API दस्तावेज़: `docs/API.md` (पूर्ण API संदर्भ)
-- ऑनलाइन दस्तावेज़: http://localhost:8788/apidoc/ (hg/apidoc इंटरैक्टिव दस्तावेज़)
-- स्वास्थ्य जाँच: `GET http://localhost:8788/health`
+- ऑनलाइन दस्तावेज़: http://localhost:8792/apidoc/ (hg/apidoc इंटरैक्टिव दस्तावेज़)
+- स्वास्थ्य जाँच: `GET http://localhost:8792/health`
 - C-साइड फ्रंटएंड: `apps/flutter/platform/` (Flutter Web यूज़र प्लेटफ़ॉर्म)
 - व्यवस्थापक बैकएंड: `admin/` (व्यवस्थापक बैकएंड और `admin/apps/flutter/` फ्रंटएंड)
 

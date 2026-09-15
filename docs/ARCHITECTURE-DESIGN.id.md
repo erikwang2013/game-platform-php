@@ -257,10 +257,10 @@ admin/ dan service/ keduanya mendukung banyak proses worker. Dengan proxy balik 
 
 ```
 Nginx (load balancing)
-  ├── admin-1 (:8787)
-  ├── admin-2 (:8787)
-  ├── service-1 (:8788)
-  └── service-2 (:8788)
+  ├── admin-1 (:8789)
+  ├── admin-2 (:8789)
+  ├── service-1 (:8792)
+  └── service-2 (:8792)
 ```
 
 ### 5.2 Jalur Pemisahan Modul
@@ -269,7 +269,7 @@ Ketika satu service/ menjadi bottleneck, pisahkan sesuai jalur berikut:
 
 ```
 service/ (monolit)
-  → service-user/ (layanan pengguna :8788)
+  → service-user/ (layanan pengguna :8792)
   → service-wallet/ (layanan dompet :8789)
   → service-game/ (layanan game :8790)
   → service-payment/ (layanan pembayaran :8791)

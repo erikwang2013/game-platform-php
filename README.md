@@ -54,7 +54,7 @@ Languages: **中文** · [English](docs/translations/README.en.md) · [한국어
 
 ```
 game-platform-php/
-├── admin/                     # 管理后台 (webman v2, 端口 8787)
+├── admin/                     # 管理后台 (webman v2, 端口 8789)
 │   ├── app/admin/v1/controller/  #   管理端控制器
 │   ├── app/middleware/        #   中间件 (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   游戏Provider层
@@ -66,7 +66,7 @@ game-platform-php/
 │   ├── config/                #   配置文件
 │   └── apps/flutter/          #   Flutter Web PC 管理后台
 │
-├── service/                   # C端业务端 (webman v2, 端口 8788)
+├── service/                   # C端业务端 (webman v2, 端口 8792)
 │   ├── app/api/v1/controller/ #   C端 API 控制器
 │   ├── app/middleware/        #   中间件 (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   游戏Provider层
@@ -124,7 +124,7 @@ cd service && composer install && cd ..
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. 访问管理后台: http://localhost:8787
+# 5. 访问管理后台: http://localhost:8789
 #    使用安装时设置的管理员账号密码登录
 
 # 6. 安装完成后删除安装目录（安全）
@@ -196,15 +196,15 @@ flutter run -d chrome
 
 ```bash
 # 测试管理后台
-curl http://localhost:8787/health
+curl http://localhost:8789/health
 
 # 测试C端业务
-curl http://localhost:8788/health
+curl http://localhost:8792/health
 
 # 测试用户注册
-curl -X POST http://localhost:8788/api/auth/register \
+curl -X POST http://localhost:8792/api/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"username":"testuser","password":"123456"}'
+  -d '{"username":"testuser","password":"Abcdef12"}'
 ```
 
 ## 安全特性
@@ -391,8 +391,8 @@ flowchart LR
 | [功能设计文档](docs/FEATURE-DESIGN.md) | 业务模型、功能规格、流程设计 |
 | [功能文档](docs/FEATURES.md) | 功能清单、模块说明、用户旅程 |
 | [接口文档](docs/API.md) | 完整 API 参考 (102 个接口) |
-| [在线文档](http://localhost:8788/apidoc/) | hg/apidoc 交互式文档 (C端) |
-| [在线文档](http://localhost:8787/apidoc/) | hg/apidoc 交互式文档 (管理后台) |
+| [在线文档](http://localhost:8792/apidoc/) | hg/apidoc 交互式文档 (C端) |
+| [在线文档](http://localhost:8789/apidoc/) | hg/apidoc 交互式文档 (管理后台) |
 | [ClickHouse 安装](docs/CLICKHOUSE_INSTALL.md) | ClickHouse 安装/配置/迁移/验证 |
 | [Provider SDK 接入文档](docs/PROVIDER-SDK.md) | 第三方游戏接入指南 (签名算法+PHP/Go/Python示例) |
 | [ClickHouse 使用](docs/CLICKHOUSE_USAGE.md) | 4 个 ClickHouse 服务 API 与后台看板 |

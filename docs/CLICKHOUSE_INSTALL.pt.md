@@ -56,5 +56,5 @@ $r = ClickHouseService::query('SELECT 1 AS ok');
 | Serviço | Porta |
 |------|------|
 | ClickHouse HTTP | 8123 |
-| admin/ | 8787 |
-| service/ | 8788 |
+| admin/ | 8789 |
+| service/ | 8792 |

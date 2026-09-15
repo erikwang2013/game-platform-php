@@ -429,7 +429,7 @@ SCOUT_HOSTS         → ES 地址，内网部署
 ### 8.1 Рекомендуемая топология
 
 ```
-Nginx (:443 HTTPS) → webman worker × N (:8787) → MySQL + ES + Redis
+Nginx (:443 HTTPS) → webman worker × N (:8789) → MySQL + ES + Redis
                     静态文件: Flutter Web build/
 ```
 
@@ -440,7 +440,7 @@ Nginx (:443 HTTPS) → webman worker × N (:8787) → MySQL + ES + Redis
 | Сервис | Образ/сборка | Порт | Описание |
 |------|----------|------|------|
 | `nginx` | nginx:alpine | 80, 443 | Обратный прокси + статические файлы + Gzip |
-| `app` | сборка из локального `Dockerfile` | 8787 | PHP 8.3 + OPcache + webman |
+| `app` | сборка из локального `Dockerfile` | 8789 | PHP 8.3 + OPcache + webman |
 | `mysql` | mysql:8.0 | 3306 | Основная БД, персистентность томов данных |
 | `redis` | redis:7-alpine | 6379 | Кэш / ограничение частоты / капча |
 | `elasticsearch` | elasticsearch:8.x | 9200 | Полнотекстовый поиск |

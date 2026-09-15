@@ -12,7 +12,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 ## 1. Estado atual do projeto
 
 **Plataforma global de agregação de jogos** — PHP 8.3 + webman v2, monorepo de dois aplicativos:
-`admin/`(8787 painel administrativo) + `service/`(8788 C-side) + `apps/`(Flutter + HarmonyOS) + `install/`(assistente de instalação, 43 tabelas).
+`admin/`(8789 painel administrativo) + `service/`(8792 C-side) + `apps/`(Flutter + HarmonyOS) + `install/`(assistente de instalação, 43 tabelas).
 
 | Dimensão | Escala verificada |
 |------|---------|

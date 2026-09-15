@@ -40,8 +40,8 @@ flutter pub get
 # Запуск в режиме разработки (Chrome)
 flutter run -d chrome
 
-# Указать адрес бэкенда (по умолчанию http://localhost:8788)
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8788
+# Указать адрес бэкенда (по умолчанию http://localhost:8792)
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8792
 
 # Сборка web-версии для продакшена (вывод в build/web/)
 flutter build web
@@ -49,7 +49,7 @@ flutter build web
 
 ## Использование
 
-1. Сначала запустите бэкенд: `cd service && php start.php start -d` (порт по умолчанию 8788)
+1. Сначала запустите бэкенд: `cd service && php start.php start -d` (порт по умолчанию 8792)
 2. Зарегистрируйте аккаунт и войдите (поддерживаются логин+пароль, OAuth, 2FA)
 3. После пополнения можно играть на платформенные монеты и обменивать их на игровые; игровые монеты можно вернуть в кошелёк и вывести
 4. Админка — в каталоге `admin/` (включая веб-фронтенд `admin/apps/flutter/`)

@@ -40,8 +40,8 @@ flutter pub get
 # 개발 실행(Chrome)
 flutter run -d chrome
 
-# 백엔드 주소 지정(기본값 http://localhost:8788)
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8788
+# 백엔드 주소 지정(기본값 http://localhost:8792)
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8792
 
 # Web 프로덕션 빌드(build/web/로 출력)
 flutter build web
@@ -49,7 +49,7 @@ flutter build web
 
 ## 사용 방법
 
-1. 먼저 백엔드를 시작: `cd service && php start.php start -d`(기본 포트 8788)
+1. 먼저 백엔드를 시작: `cd service && php start.php start -d`(기본 포트 8792)
 2. 계정을 등록하고 로그인(아이디·비밀번호, OAuth, 2FA 지원)
 3. 충전 후 플랫폼 코인으로 게임을 즐기고 게임 코인으로 환전할 수 있습니다. 게임 코인은 지갑으로 되돌려 출금도 가능합니다
 4. 관리 백엔드는 `admin/` 디렉터리(Flutter Web 프런트엔드 `admin/apps/flutter/` 포함)

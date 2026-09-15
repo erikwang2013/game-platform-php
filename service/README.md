@@ -82,7 +82,7 @@ cd service && composer install
 cp .env.example .env
 # 编辑 .env：数据库连接信息、JWT 密钥等
 
-# 3. 启动服务（默认端口 8788）
+# 3. 启动服务（默认端口 8792）
 php start.php start        # 前台运行
 php start.php start -d     # 后台运行
 ```
@@ -90,8 +90,8 @@ php start.php start -d     # 后台运行
 ## 使用说明
 
 - 接口文档：`docs/API.md`（完整 API 参考）
-- 在线文档：http://localhost:8788/apidoc/（hg/apidoc 交互式文档）
-- 健康检查：`GET http://localhost:8788/health`
+- 在线文档：http://localhost:8792/apidoc/（hg/apidoc 交互式文档）
+- 健康检查：`GET http://localhost:8792/health`
 - C端前端：`apps/flutter/platform/`（Flutter Web 用户平台）
 - 管理后台：`admin/`（管理后台与 `admin/apps/flutter/` 前端）
 

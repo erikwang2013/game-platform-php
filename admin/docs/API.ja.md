@@ -10,7 +10,7 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 
 オープン管理画面 (open-admin) は webman v2 ベースで構築され、RESTful JSON API を提供します。すべての管理画面APIは JWT 認証と RBAC 権限チェックが必要で、公開APIは `/api/v1` プレフィックス配下、管理APIは `/admin/v1` プレフィックス配下にマウントされ、バージョンはURLパスで運ばれ、リクエストヘッダーは使いません。
 
-- **ベース URL**: `http://localhost:8787`
+- **ベース URL**: `http://localhost:8789`
 - **API バージョン**: URLパスに埋め込まれます — 公開APIは `/api/v1`、管理APIは `/admin/v1` 配下。バージョンリクエストヘッダーは使用せず、将来の v2 は `/api/v2` グループとして登録します
 
 > **エンドポイント総数**: 認証(5) | ダッシュボード(1) | ユーザー(7) | ロール(4) | 権限(4) | 設定(4) | ログ(1) | 個人センター(3) | インポート・エクスポート(3) | アップロード(1) | 運用(4: health/metrics/docs/security.txt) | 合計 37 エンドポイント

@@ -66,7 +66,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | プラットフォーム統計 | C端ホーム統計（ゲーム総数/ユーザー総数/今日の対局/7日間アクティブ） | 完了 |
 | デプロイ | Docker Compose 7サービス + Nginxリバースプロキシ | 完了 |
 | データ | MySQL リアルタイム集計分析 + 結合/条件確率計算 | 完了 |
-| HarmonyOS | admin 端 8 ページ；C 端 `apps/harmonyos/` にログイン/ロビー/詳細/ウォレット/マイページ実装（8788 を指す） | 一部完了（工程は実行可能、実機では IP 変更が必要） |
+| HarmonyOS | admin 端 8 ページ；C 端 `apps/harmonyos/` にログイン/ロビー/詳細/ウォレット/マイページ実装（8792 を指す） | 一部完了（工程は実行可能、実機では IP 変更が必要） |
 | API ドキュメント | hg/apidoc インタラクティブドキュメント | 完了 |
 | ワンクリックインストール | ブラウザインストールウィザード：管理者作成、既存DBアップグレード、install.lock で再インストール防止 | 完了 |
 | 耐障害性 | CircuitBreaker 遮断 + Retry 再試行 + feature.provider_mock 縮退スイッチ | 完了 |

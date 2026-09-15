@@ -46,8 +46,8 @@ flutter pub get
 # ডেভেলপমেন্টে চালান (Chrome)
 flutter run -d chrome
 
-# ব্যাকএন্ড ঠিকানা নির্ধারণ (ডিফল্ট http://localhost:8787)
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8787
+# ব্যাকএন্ড ঠিকানা নির্ধারণ (ডিফল্ট http://localhost:8789)
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8789
 
 # ওয়েব প্রোডাকশন বিল্ড (আউটপুট build/web/-এ)
 flutter build web
@@ -55,6 +55,6 @@ flutter build web
 
 ## ব্যবহার
 
-1. আগে অ্যাডমিন ব্যাকএন্ড সার্ভিস চালু করুন: `cd admin && php start.php start -d` (ডিফল্ট পোর্ট 8787)
+1. আগে অ্যাডমিন ব্যাকএন্ড সার্ভিস চালু করুন: `cd admin && php start.php start -d` (ডিফল্ট পোর্ট 8789)
 2. ইনস্টল উইজার্ডে তৈরি অ্যাডমিন অ্যাকাউন্ট দিয়ে লগইন করুন (2FA সমর্থিত)
-3. ব্যবহারকারী ফ্রন্টএন্ড `apps/flutter/platform/`-এ রয়েছে, যা একই ব্যাকএন্ড সার্ভিস (ডিফল্ট পোর্ট 8788) ব্যবহার করে
+3. ব্যবহারকারী ফ্রন্টএন্ড `apps/flutter/platform/`-এ রয়েছে, যা একই ব্যাকএন্ড সার্ভিস (ডিফল্ট পোর্ট 8792) ব্যবহার করে

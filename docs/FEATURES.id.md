@@ -66,7 +66,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Statistik platform | Statistik beranda sisi C (total game/pengguna/permainan hari ini/aktif 7 hari) | Selesai |
 | Deployment | Docker Compose 7 layanan + reverse proxy Nginx | Selesai |
 | Data | Analisis agregasi real-time MySQL + perhitungan probabilitas gabungan/bersyarat | Selesai |
-| HarmonyOS | admin 8 halaman; sisi C `apps/harmonyos/` sudah mengimplementasikan login/lobi/detail/dompet/profil (menunjuk 8788) | Sebagian selesai (proyek dapat berjalan, perangkat nyata perlu ubah IP) |
+| HarmonyOS | admin 8 halaman; sisi C `apps/harmonyos/` sudah mengimplementasikan login/lobi/detail/dompet/profil (menunjuk 8792) | Sebagian selesai (proyek dapat berjalan, perangkat nyata perlu ubah IP) |
 | Dokumentasi API | Dokumentasi interaktif hg/apidoc | Selesai |
 | Instal satu klik | Wizard instalasi browser: buat admin, upgrade DB lama, install.lock mencegah instal ulang | Selesai |
 | Toleransi kegagalan | CircuitBreaker + Retry + saklar degradasi feature.provider_mock | Selesai |

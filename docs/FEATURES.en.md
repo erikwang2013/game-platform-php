@@ -66,7 +66,7 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 | Platform stats | C-side homepage stats (total games/users/today's plays/7-day active) | Completed |
 | Deployment | Docker Compose 7 services + Nginx reverse proxy | Completed |
 | Data | MySQL real-time aggregation analytics + joint/conditional probability | Completed |
-| HarmonyOS | admin 8 pages; C-end `apps/harmonyos/` implements login/lobby/detail/wallet/profile (pointing to 8788) | Partially complete (project runs, device needs IP change) |
+| HarmonyOS | admin 8 pages; C-end `apps/harmonyos/` implements login/lobby/detail/wallet/profile (pointing to 8792) | Partially complete (project runs, device needs IP change) |
 | API docs | hg/apidoc interactive documentation | Completed |
 | One-click install | Browser install wizard: create admin, upgrade existing DB, install.lock prevents reinstall | Completed |
 | Fault tolerance | CircuitBreaker + Retry + feature.provider_mock degradation switch | Completed |

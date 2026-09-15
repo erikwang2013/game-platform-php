@@ -46,7 +46,7 @@ cd service && php start.php start -d && cd ..
 # 6. सुरक्षा सफाई
 rm -rf install/
 
-# 7. प्रशासन कंसोल तक पहुँचें: http://<सर्वरIP>:8787
+# 7. प्रशासन कंसोल तक पहुँचें: http://<सर्वरIP>:8789
 ```
 
 स्थापना विज़ार्ड द्वारा पूर्ण किए गए कार्य:
@@ -87,8 +87,8 @@ docker-compose logs -f
 | सेवा | कंटेनर नाम | पोर्ट | विवरण |
 |------|--------|------|------|
 | nginx | game-platform-nginx | 80, 443 | रिवर्स प्रॉक्सी + स्थिर फ़ाइलें |
-| admin | game-platform-admin | 8787 | प्रशासन कंसोल API |
-| service | game-platform-service | 8788 | C-छोर व्यवसाय API |
+| admin | game-platform-admin | 8789 | प्रशासन कंसोल API |
+| service | game-platform-service | 8792 | C-छोर व्यवसाय API |
 | leaderboard-ws | game-platform-ws | 8789 | WebSocket लीडरबोर्ड |
 | mysql | game-platform-mysql | 3306 | मुख्य डेटाबेस |
 | redis | game-platform-redis | 6379 | कैश/दर सीमा |
@@ -262,17 +262,17 @@ SITE_URL=https://your-domain.com  # भुगतान कॉलबैक/री
 ### 3.4 सेवाएँ शुरू करें
 
 ```bash
-# प्रशासन कंसोल (पोर्ट 8787)
+# प्रशासन कंसोल (पोर्ट 8789)
 cd /opt/game-platform/admin
 php start.php start -d
 
-# C-छोर व्यवसाय (पोर्ट 8788)
+# C-छोर व्यवसाय (पोर्ट 8792)
 cd /opt/game-platform/service
 php start.php start -d
 
 # सत्यापन
-curl http://localhost:8787/health
-curl http://localhost:8788/health
+curl http://localhost:8789/health
+curl http://localhost:8792/health
 ```
 
 ### 3.5 प्रक्रिया प्रबंधन (Systemd)
@@ -321,7 +321,7 @@ server {
 
     # प्रशासन कंसोल API
     location /admin/ {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -330,7 +330,7 @@ server {
 
     # C-छोर API
     location /api/ {
-        proxy_pass http://127.0.0.1:8788;
+        proxy_pass http://127.0.0.1:8792;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -349,12 +349,12 @@ server {
 
     # स्वास्थ्य जाँच
     location /health {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
     }
 
     # Prometheus मीट्रिक्स
     location /metrics {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
     }
 
     # प्रशासन कंसोल फ्रंटएंड
@@ -429,10 +429,10 @@ crontab -e
 
 ```bash
 # प्रशासन कंसोल
-curl -f http://localhost:8787/health || echo "Admin DOWN"
+curl -f http://localhost:8789/health || echo "Admin DOWN"
 
 # C-छोर व्यवसाय
-curl -f http://localhost:8788/health || echo "Service DOWN"
+curl -f http://localhost:8792/health || echo "Service DOWN"
 
 # लोड बैलेंसर या निगरानी प्रणाली में कॉन्फ़िगर किया जा सकता है
 ```
@@ -525,7 +525,7 @@ ufw allow 443/tcp     # HTTPS
 ufw enable
 
 # आंतरिक पोर्ट उजागर नहीं होने चाहिए
-# 8787 (admin), 8788 (service), 8789 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
 # केवल 127.0.0.1 के माध्यम से पहुँच
 ```
 
@@ -551,7 +551,7 @@ chmod 600 /opt/game-platform/service/.env
 cd /opt/game-platform/admin && php start.php start
 
 # पोर्ट अधिग्रहण जाँचें
-ss -tlnp | grep -E '8787|8788'
+ss -tlnp | grep -E '8789|8792'
 
 # लॉग जाँचें
 tail -f runtime/logs/workerman.log

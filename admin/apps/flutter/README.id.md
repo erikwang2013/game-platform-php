@@ -46,8 +46,8 @@ flutter pub get
 # Jalankan dalam pengembangan (Chrome)
 flutter run -d chrome
 
-# Tentukan alamat backend (default http://localhost:8787)
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8787
+# Tentukan alamat backend (default http://localhost:8789)
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8789
 
 # Build web produksi (output ke build/web/)
 flutter build web
@@ -55,6 +55,6 @@ flutter build web
 
 ## Penggunaan
 
-1. Mulai layanan backend admin terlebih dahulu: `cd admin && php start.php start -d` (port default 8787)
+1. Mulai layanan backend admin terlebih dahulu: `cd admin && php start.php start -d` (port default 8789)
 2. Masuk dengan akun admin yang dibuat oleh wizard instalasi (mendukung 2FA)
-3. Frontend pengguna ada di `apps/flutter/platform/` dan menggunakan layanan backend yang sama (port default 8788)
+3. Frontend pengguna ada di `apps/flutter/platform/` dan menggunakan layanan backend yang sama (port default 8792)

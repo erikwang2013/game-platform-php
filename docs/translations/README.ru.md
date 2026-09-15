@@ -54,7 +54,7 @@ Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](R
 
 ```
 game-platform-php/
-├── admin/                     # Административная панель (webman v2, порт 8787)
+├── admin/                     # Административная панель (webman v2, порт 8789)
 │   ├── app/admin/controller/  #   Контроллеры панели
 │   ├── app/middleware/        #   Промежуточное ПО (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   Слой игровых провайдеров
@@ -67,7 +67,7 @@ game-platform-php/
 │   ├── install/   #   SQL-миграции
 │   └── apps/flutter/          #   Flutter Web PC административная панель
 │
-├── service/                   # C-бизнес (webman v2, порт 8788)
+├── service/                   # C-бизнес (webman v2, порт 8792)
 │   ├── app/api/v1/controller/ #   API-контроллеры C-стороны
 │   ├── app/middleware/        #   Промежуточное ПО (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   Слой игровых провайдеров
@@ -124,7 +124,7 @@ cd service && composer install && cd ..
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. Откройте админ-панель: http://localhost:8787
+# 5. Откройте админ-панель: http://localhost:8789
 #    Войдите с логином и паролем администратора, заданными при установке
 
 # 6. После установки удалите каталог установки (безопасность)
@@ -196,13 +196,13 @@ flutter run -d chrome
 
 ```bash
 # Проверка админ-панели
-curl http://localhost:8787/health
+curl http://localhost:8789/health
 
 # Проверка C-бизнеса
-curl http://localhost:8788/health
+curl http://localhost:8792/health
 
 # Проверка регистрации пользователя
-curl -X POST http://localhost:8788/api/auth/register \
+curl -X POST http://localhost:8792/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"testuser","password":"123456"}'
 ```
@@ -374,8 +374,8 @@ flowchart LR
 | [Проектирование функций](../FEATURE-DESIGN.ru.md) | Бизнес-модели, функциональные спецификации, проектирование процессов |
 | [Функции](../FEATURES.ru.md) | Перечень функций, описание модулей, пользовательские сценарии |
 | [API](../API.ru.md) | Полный справочник API (102 интерфейса) |
-| [Онлайн-документация](http://localhost:8788/apidoc/) | Интерактивная документация hg/apidoc (C-сторона) |
-| [Онлайн-документация](http://localhost:8787/apidoc/) | Интерактивная документация hg/apidoc (админ-панель) |
+| [Онлайн-документация](http://localhost:8792/apidoc/) | Интерактивная документация hg/apidoc (C-сторона) |
+| [Онлайн-документация](http://localhost:8789/apidoc/) | Интерактивная документация hg/apidoc (админ-панель) |
 | [Установка ClickHouse](../CLICKHOUSE_INSTALL.ru.md) | Установка/настройка/миграция/проверка ClickHouse |
 | [Документация Provider SDK](../PROVIDER-SDK.ru.md) | Руководство по подключению сторонних игр (алгоритм подписи + примеры PHP/Go/Python) |
 | [Использование ClickHouse](../CLICKHOUSE_USAGE.ru.md) | 4 сервисных API ClickHouse и панель в админке |

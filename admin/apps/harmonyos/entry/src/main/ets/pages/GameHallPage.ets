@@ -22,7 +22,7 @@ struct GameHallPage {
     try {
       const token = TokenManager.getAccessToken();
       const request = http.createHttp();
-      const response = await request.request('http://10.0.2.2:8788/api/v1/game/list', {
+      const response = await request.request('http://10.0.2.2:8792/api/v1/game/list', {
         method: http.RequestMethod.GET,
         header: {
           'Content-Type': 'application/json',

@@ -429,7 +429,7 @@ SCOUT_HOSTS         → ES 地址，内网部署
 ### 8.1 अनुशंसित टोपोलॉजी
 
 ```
-Nginx (:443 HTTPS) → webman worker × N (:8787) → MySQL + ES + Redis
+Nginx (:443 HTTPS) → webman worker × N (:8789) → MySQL + ES + Redis
                     静态文件: Flutter Web build/
 ```
 
@@ -440,7 +440,7 @@ Nginx (:443 HTTPS) → webman worker × N (:8787) → MySQL + ES + Redis
 | सेवा | इमेज/निर्माण | पोर्ट | विवरण |
 |------|----------|------|------|
 | `nginx` | nginx:alpine | 80, 443 | रिवर्स प्रॉक्सी + स्टैटिक फ़ाइलें + Gzip |
-| `app` | स्थानीय `Dockerfile` निर्माण | 8787 | PHP 8.3 + OPcache + webman |
+| `app` | स्थानीय `Dockerfile` निर्माण | 8789 | PHP 8.3 + OPcache + webman |
 | `mysql` | mysql:8.0 | 3306 | मुख्य डेटाबेस, डेटा वॉल्यूम पर्सिस्टेंस |
 | `redis` | redis:7-alpine | 6379 | कैश / दर सीमा / कैप्चा |
 | `elasticsearch` | elasticsearch:8.x | 9200 | पूर्ण-पाठ खोज |

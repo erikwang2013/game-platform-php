@@ -21,8 +21,8 @@ flowchart TB
     end
 
     subgraph "应用层"
-        C1["admin/ webman<br/>管理后台 :8787<br/>AdminAuth → AdminPermission → OperationLog"]
-        C2["service/ webman<br/>C端业务 :8788<br/>UserAuth → [ProviderAuth]"]
+        C1["admin/ webman<br/>管理后台 :8789<br/>AdminAuth → AdminPermission → OperationLog"]
+        C2["service/ webman<br/>C端业务 :8792<br/>UserAuth → [ProviderAuth]"]
     end
 
     subgraph "服务层 (新增)"
@@ -312,8 +312,8 @@ game_achievement ── 1:N ── game_user_achievement
 
 ```
 单机部署:
-  admin/         :8787 (webman, 32 workers)
-  service/       :8788 (webman, 32 workers)
+  admin/         :8789 (webman, 32 workers)
+  service/       :8792 (webman, 32 workers)
   leaderboard-ws :8789 (WebSocket 排行榜)
   chat-ws        :8791 (WebSocket 聊天)
   MySQL          :3306
@@ -323,7 +323,7 @@ game_achievement ── 1:N ── game_user_achievement
 ### 6.2 Docker Compose（8 サービス）
 
 ```yaml
-nginx (80/443) → admin (8787) + service (8788) + static files
+nginx (80/443) → admin (8789) + service (8792) + static files
 leaderboard-ws (8789) — WebSocket 排行榜实时推送
 chat-ws (8791) — WebSocket 私信/聊天
 mysql (3306) — 主数据库，数据卷持久化
@@ -344,10 +344,10 @@ flowchart TB
     end
 
     subgraph "应用服务器"
-        ADM1["admin :8787"]
-        ADM2["admin :8787"]
-        SVC1["service :8788"]
-        SVC2["service :8788"]
+        ADM1["admin :8789"]
+        ADM2["admin :8789"]
+        SVC1["service :8792"]
+        SVC2["service :8792"]
         WS1["leaderboard-ws :8789"]
         WS2["chat-ws :8791"]
     end
@@ -387,8 +387,8 @@ tests/
 
 | サービス | ポート | 説明 |
 |------|------|------|
-| admin/ | 8787 | 管理バックエンド API |
-| service/ | 8788 | C端業務 API |
+| admin/ | 8789 | 管理バックエンド API |
+| service/ | 8792 | C端業務 API |
 | leaderboard-ws | 8789 | WebSocket リアルタイムランキング |
 | chat-ws | 8791 | WebSocket ダイレクトメッセージ/チャット |
 | MySQL | 3306 | メインデータベース |
@@ -402,8 +402,8 @@ tests/
 
 | ドキュメント | アドレス | コントローラー | エンドポイント |
 |------|------|--------|------|
-| 管理バックエンド | :8787/apidoc/ | 28 | ~85 |
-| C端業務 | :8788/apidoc/ | 25 | ~65 |
+| 管理バックエンド | :8789/apidoc/ | 28 | ~85 |
+| C端業務 | :8792/apidoc/ | 25 | ~65 |
 
 ## 10. データベーステーブル一覧
 

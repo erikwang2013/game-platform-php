@@ -17,8 +17,8 @@ flowchart TB
     end
 
     subgraph "应用层"
-        C1["admin/ :8787<br/>管理后台 API<br/>28 控制器"]
-        C2["service/ :8788<br/>C端业务 API<br/>25 控制器"]
+        C1["admin/ :8789<br/>管理后台 API<br/>28 控制器"]
+        C2["service/ :8792<br/>C端业务 API<br/>25 控制器"]
     end
 
     subgraph "服务层 v2.0"

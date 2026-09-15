@@ -66,7 +66,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | 플랫폼 통계 | C측 홈 통계 (게임 총수/사용자 총수/오늘 플레이/7일 활성) | 완료 |
 | 배포 | Docker Compose 7서비스 + Nginx 리버스 프록시 | 완료 |
 | 데이터 | MySQL 실시간 집계 분석 + 결합/조건부 확률 계산 | 완료 |
-| HarmonyOS | admin 단 8페이지; C단 `apps/harmonyos/`에 로그인/로비/상세/지갑/개인 구현 (8788 지시) | 부분 완료 (프로젝트 실행 가능, 실기기 IP 변경 필요) |
+| HarmonyOS | admin 단 8페이지; C단 `apps/harmonyos/`에 로그인/로비/상세/지갑/개인 구현 (8792 지시) | 부분 완료 (프로젝트 실행 가능, 실기기 IP 변경 필요) |
 | API 문서 | hg/apidoc 인터랙티브 문서 | 완료 |
 | 원클릭 설치 | 브라우저 설치 마법사: 관리자 생성, 기존 DB 업그레이드, install.lock 재설치 방지 | 완료 |
 | 내결함성 | CircuitBreaker 차단 + Retry 재시도 + feature.provider_mock 다운그레이드 스위치 | 완료 |

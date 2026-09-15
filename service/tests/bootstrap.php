@@ -10,6 +10,10 @@ $worker = $worker ?? null;
 
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
+// support/helpers.php（validator()/jwt_wrapper()）不在 composer files 自动加载里，
+// 运行期由 webman 的 support/bootstrap.php 载入；PHPUnit 下没有这层引导，必须显式 require。
+require_once dirname(__DIR__) . '/support/helpers.php';
+
 // 注册 support\Model 别名 (PHPUnit 环境下需手动注册)
 if (!class_exists('support\Model')) {
     class_alias('Illuminate\Database\Eloquent\Model', 'support\Model');

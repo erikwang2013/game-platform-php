@@ -163,7 +163,7 @@ open-admin/
 版本号置于 URL 路径：公开端点 `/api/v1/*`、管理端点 `/admin/v1/*`（默认 v1），不使用请求头：
 
 ```bash
-curl http://localhost:8787/api/v1/auth/login
+curl http://localhost:8789/api/v1/auth/login
 ```
 
 新增 v2 只需创建 `app/api/v2/controller/` 目录并在路由注册 `/api/v2` 组。

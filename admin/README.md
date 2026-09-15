@@ -163,7 +163,7 @@ mysql -u root -p < install/install.sql
 php start.php start
 ```
 
-默认监听 `http://0.0.0.0:8787`。
+默认监听 `http://0.0.0.0:8789`。
 
 ### 5. 启动前端（可选）
 
@@ -194,7 +194,7 @@ docker-compose up -d
 docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 # 4. 访问
-# http://localhost:8787  (webman)
+# http://localhost:8789  (webman)
 # http://localhost:8080  (Nginx 反向代理)
 ```
 
@@ -414,7 +414,7 @@ Authorization: Bearer <token>
 | 服务 | 镜像 | 端口 |
 |------|------|------|
 | `nginx` | nginx:alpine | 80, 443 |
-| `app` | 本地 `Dockerfile` 构建 | 8787 |
+| `app` | 本地 `Dockerfile` 构建 | 8789 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

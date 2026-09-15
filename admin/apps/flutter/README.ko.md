@@ -46,8 +46,8 @@ flutter pub get
 # 개발 모드로 실행 (Chrome)
 flutter run -d chrome
 
-# 백엔드 주소 지정 (기본값 http://localhost:8787)
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8787
+# 백엔드 주소 지정 (기본값 http://localhost:8789)
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8789
 
 # 웹 프로덕션 빌드 (출력: build/web/)
 flutter build web
@@ -55,6 +55,6 @@ flutter build web
 
 ## 사용 방법
 
-1. 먼저 관리자 백엔드 서비스를 시작합니다: `cd admin && php start.php start -d` (기본 포트 8787)
+1. 먼저 관리자 백엔드 서비스를 시작합니다: `cd admin && php start.php start -d` (기본 포트 8789)
 2. 설치 마법사에서 생성한 관리자 계정으로 로그인합니다 (2FA 지원)
-3. 사용자용 프론트엔드는 `apps/flutter/platform/`에 있으며 동일한 백엔드 서비스(기본 포트 8788)를 사용합니다
+3. 사용자용 프론트엔드는 `apps/flutter/platform/`에 있으며 동일한 백엔드 서비스(기본 포트 8792)를 사용합니다

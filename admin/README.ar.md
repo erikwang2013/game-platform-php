@@ -162,7 +162,7 @@ mysql -u root -p < install/install.sql
 php start.php start
 ```
 
-يستمع افتراضيًا على `http://0.0.0.0:8787`.
+يستمع افتراضيًا على `http://0.0.0.0:8789`.
 
 ### 5. تشغيل الواجهة الأمامية (اختياري)
 
@@ -193,7 +193,7 @@ docker-compose up -d
 docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 # 4. الوصول
-# http://localhost:8787  (webman)
+# http://localhost:8789  (webman)
 # http://localhost:8080  (وكيل Nginx العكسي)
 ```
 
@@ -408,7 +408,7 @@ Authorization: Bearer <token>
 | الخدمة | الصورة | المنفذ |
 |------|------|------|
 | `nginx` | nginx:alpine | 80, 443 |
-| `app` | بناء محلي عبر `Dockerfile` | 8787 |
+| `app` | بناء محلي عبر `Dockerfile` | 8789 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

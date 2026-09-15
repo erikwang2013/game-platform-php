@@ -10,7 +10,7 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 
 El panel de administración abierto (open-admin), construido sobre webman v2, ofrece una API JSON RESTful. Todas las interfaces del panel de administración requieren autenticación JWT y validación de permisos RBAC; los endpoints públicos se montan bajo el prefijo `/api/v1` y los de administración bajo el prefijo `/admin/v1`; la versión va en la ruta URL y no en una cabecera.
 
-- **URL base**: `http://localhost:8787`
+- **URL base**: `http://localhost:8789`
 - **Versión de API**: codificada en la ruta URL — endpoints públicos bajo `/api/v1`, endpoints de administración bajo `/admin/v1`; no se usa cabecera de versión, un futuro v2 se registraría como grupo `/api/v2`
 
 > **Resumen de endpoints**: autenticación(5) | panel(1) | usuarios(7) | roles(4) | permisos(4) | configuración(4) | registros(1) | centro personal(3) | importación/exportación(3) | subida(1) | operación y mantenimiento(4: health/metrics/docs/security.txt) | 37 endpoints en total

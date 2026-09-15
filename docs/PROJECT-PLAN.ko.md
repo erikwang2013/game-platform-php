@@ -12,7 +12,7 @@ Languages: [中文](PROJECT-PLAN.md) · [English](PROJECT-PLAN.en.md) · **한�
 ## 一、프로젝트 현황
 
 **글로벌 게임 통합 플랫폼** — PHP 8.3 + webman v2, 이중 애플리케이션 monorepo:
-`admin/`(8787 관리 백오피스) + `service/`(8788 C단) + `apps/`(Flutter + HarmonyOS) + `install/`(설치 마법사 43 테이블).
+`admin/`(8789 관리 백오피스) + `service/`(8792 C단) + `apps/`(Flutter + HarmonyOS) + `install/`(설치 마법사 43 테이블).
 
 | 차원 | 실측 규모 |
 |------|---------|

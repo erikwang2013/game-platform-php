@@ -46,8 +46,8 @@ flutter pub get
 # विकास में चलाएँ (Chrome)
 flutter run -d chrome
 
-# बैकएंड पता निर्दिष्ट करें (डिफ़ॉल्ट http://localhost:8787)
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8787
+# बैकएंड पता निर्दिष्ट करें (डिफ़ॉल्ट http://localhost:8789)
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8789
 
 # वेब प्रोडक्शन बिल्ड (आउटपुट build/web/ में)
 flutter build web
@@ -55,6 +55,6 @@ flutter build web
 
 ## उपयोग
 
-1. पहले एडमिन बैकएंड सेवा शुरू करें: `cd admin && php start.php start -d` (डिफ़ॉल्ट पोर्ट 8787)
+1. पहले एडमिन बैकएंड सेवा शुरू करें: `cd admin && php start.php start -d` (डिफ़ॉल्ट पोर्ट 8789)
 2. इंस्टॉल विज़ार्ड द्वारा बनाए गए एडमिन खाते से लॉगिन करें (2FA समर्थित)
-3. उपयोगकर्ता फ्रंटएंड `apps/flutter/platform/` में है, जो समान बैकएंड सेवा (डिफ़ॉल्ट पोर्ट 8788) का उपयोग करता है
+3. उपयोगकर्ता फ्रंटएंड `apps/flutter/platform/` में है, जो समान बैकएंड सेवा (डिफ़ॉल्ट पोर्ट 8792) का उपयोग करता है

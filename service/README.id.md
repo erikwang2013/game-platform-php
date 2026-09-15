@@ -82,7 +82,7 @@ cd service && composer install
 cp .env.example .env
 # Edit .env: koneksi database, kunci JWT, dll.
 
-# 3. Mulai layanan (port default 8788)
+# 3. Mulai layanan (port default 8792)
 php start.php start        # latar depan
 php start.php start -d     # latar belakang (daemon)
 ```
@@ -90,8 +90,8 @@ php start.php start -d     # latar belakang (daemon)
 ## Penggunaan
 
 - Referensi API: `docs/API.md` (referensi lengkap)
-- Dokumentasi daring: http://localhost:8788/apidoc/ (dokumentasi interaktif hg/apidoc)
-- Pemeriksaan kesehatan: `GET http://localhost:8788/health`
+- Dokumentasi daring: http://localhost:8792/apidoc/ (dokumentasi interaktif hg/apidoc)
+- Pemeriksaan kesehatan: `GET http://localhost:8792/health`
 - Frontend sisi C: `apps/flutter/platform/` (platform pengguna Flutter Web)
 - Backend admin: `admin/` (backend admin dan frontend `admin/apps/flutter/`)
 

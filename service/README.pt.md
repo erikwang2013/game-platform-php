@@ -82,7 +82,7 @@ cd service && composer install
 cp .env.example .env
 # Editar .env: conexão com o banco, chaves JWT, etc.
 
-# 3. Iniciar o serviço (porta padrão 8788)
+# 3. Iniciar o serviço (porta padrão 8792)
 php start.php start        # primeiro plano
 php start.php start -d     # segundo plano (daemon)
 ```
@@ -90,8 +90,8 @@ php start.php start -d     # segundo plano (daemon)
 ## Uso
 
 - Referência da API: `docs/API.md` (referência completa)
-- Documentação on-line: http://localhost:8788/apidoc/ (documentação interativa hg/apidoc)
-- Verificação de saúde: `GET http://localhost:8788/health`
+- Documentação on-line: http://localhost:8792/apidoc/ (documentação interativa hg/apidoc)
+- Verificação de saúde: `GET http://localhost:8792/health`
 - Frontend lado C: `apps/flutter/platform/` (plataforma de usuário Flutter Web)
 - Backend admin: `admin/` (backend admin e frontend `admin/apps/flutter/`)
 

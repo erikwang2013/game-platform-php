@@ -40,8 +40,8 @@ flutter pub get
 # التشغيل في وضع التطوير (Chrome)
 flutter run -d chrome
 
-# تحديد عنوان الخادم الخلفي (الافتراضي http://localhost:8788)
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8788
+# تحديد عنوان الخادم الخلفي (الافتراضي http://localhost:8792)
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8792
 
 # بناء نسخة الإنتاج للويب (الإخراج في build/web/)
 flutter build web
@@ -49,7 +49,7 @@ flutter build web
 
 ## الاستخدام
 
-1. شغّل أولاً الخدمة الخلفية: `cd service && php start.php start -d` (المنفذ الافتراضي 8788)
+1. شغّل أولاً الخدمة الخلفية: `cd service && php start.php start -d` (المنفذ الافتراضي 8792)
 2. سجّل حسابًا ثم ادخل (يدعم اسم المستخدم+كلمة المرور وOAuth و2FA)
 3. بعد الإيداع، يمكنك اللعب بعملات المنصة وتحويلها إلى عملات اللعبة؛ ويمكن إرجاع عملات اللعبة إلى المحفظة للسحب
 4. لوحة الإدارة في دليل `admin/` (بما في ذلك الواجهة الأمامية `admin/apps/flutter/`)

@@ -21,8 +21,8 @@ flowchart TB
     end
 
     subgraph "应用层"
-        C1["admin/ webman<br/>管理后台 :8787<br/>AdminAuth → AdminPermission → OperationLog"]
-        C2["service/ webman<br/>C端业务 :8788<br/>UserAuth → [ProviderAuth]"]
+        C1["admin/ webman<br/>管理后台 :8789<br/>AdminAuth → AdminPermission → OperationLog"]
+        C2["service/ webman<br/>C端业务 :8792<br/>UserAuth → [ProviderAuth]"]
     end
 
     subgraph "服务层 (新增)"
@@ -312,8 +312,8 @@ game_achievement ── 1:N ── game_user_achievement
 
 ```
 Deployment satu mesin:
-  admin/         :8787 (webman, 32 workers)
-  service/       :8788 (webman, 32 workers)
+  admin/         :8789 (webman, 32 workers)
+  service/       :8792 (webman, 32 workers)
   leaderboard-ws :8789 (WebSocket papan peringkat)
   chat-ws        :8791 (WebSocket chat)
   MySQL          :3306
@@ -323,7 +323,7 @@ Deployment satu mesin:
 ### 6.2 Docker Compose (8 layanan)
 
 ```yaml
-nginx (80/443) → admin (8787) + service (8788) + static files
+nginx (80/443) → admin (8789) + service (8792) + static files
 leaderboard-ws (8789) — push real-time papan peringkat WebSocket
 chat-ws (8791) — WebSocket pesan pribadi/chat
 mysql (3306) — database utama, persistensi volume data
@@ -344,10 +344,10 @@ flowchart TB
     end
 
     subgraph "应用服务器"
-        ADM1["admin :8787"]
-        ADM2["admin :8787"]
-        SVC1["service :8788"]
-        SVC2["service :8788"]
+        ADM1["admin :8789"]
+        ADM2["admin :8789"]
+        SVC1["service :8792"]
+        SVC2["service :8792"]
         WS1["leaderboard-ws :8789"]
         WS2["chat-ws :8791"]
     end
@@ -387,8 +387,8 @@ tests/
 
 | Layanan | Port | Keterangan |
 |------|------|------|
-| admin/ | 8787 | API backend administrasi |
-| service/ | 8788 | API bisnis sisi C |
+| admin/ | 8789 | API backend administrasi |
+| service/ | 8792 | API bisnis sisi C |
 | leaderboard-ws | 8789 | Papan peringkat real-time WebSocket |
 | chat-ws | 8791 | WebSocket pesan pribadi/chat |
 | MySQL | 3306 | Database utama |
@@ -402,8 +402,8 @@ Menggunakan `hg/apidoc` untuk membuat dokumentasi API interaktif otomatis melalu
 
 | Dokumentasi | Alamat | Controller | Endpoint |
 |------|------|--------|------|
-| Backend administrasi | :8787/apidoc/ | 28 | ~85 |
-| Bisnis sisi C | :8788/apidoc/ | 25 | ~65 |
+| Backend administrasi | :8789/apidoc/ | 28 | ~85 |
+| Bisnis sisi C | :8792/apidoc/ | 25 | ~65 |
 
 ## 10. Daftar Tabel Database
 

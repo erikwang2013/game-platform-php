@@ -54,7 +54,7 @@ Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](R
 
 ```
 game-platform-php/
-├── admin/                     # 管理后台 (webman v2, 端口 8787)
+├── admin/                     # 管理后台 (webman v2, 端口 8789)
 │   ├── app/admin/controller/  #   管理端控制器
 │   ├── app/middleware/        #   中间件 (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   游戏Provider层
@@ -67,7 +67,7 @@ game-platform-php/
 │   ├── install/   #   SQL 迁移文件
 │   └── apps/flutter/          #   Flutter Web PC 管理后台
 │
-├── service/                   # C端业务端 (webman v2, 端口 8788)
+├── service/                   # C端业务端 (webman v2, 端口 8792)
 │   ├── app/api/v1/controller/ #   C端 API 控制器
 │   ├── app/middleware/        #   中间件 (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   游戏Provider层
@@ -124,7 +124,7 @@ cd service && composer install && cd ..
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. 访问管理后台: http://localhost:8787
+# 5. 访问管理后台: http://localhost:8789
 #    使用安装时设置的管理员账号密码登录
 
 # 6. 安装完成后删除安装目录（安全）
@@ -196,13 +196,13 @@ flutter run -d chrome
 
 ```bash
 # 测试管理后台
-curl http://localhost:8787/health
+curl http://localhost:8789/health
 
 # 测试C端业务
-curl http://localhost:8788/health
+curl http://localhost:8792/health
 
 # 测试用户注册
-curl -X POST http://localhost:8788/api/auth/register \
+curl -X POST http://localhost:8792/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"testuser","password":"123456"}'
 ```
@@ -374,8 +374,8 @@ flowchart LR
 | [功能设计文档](../FEATURE-DESIGN.hi.md) | व्यावसायिक मॉडल, फ़ीचर विनिर्देश, प्रवाह डिज़ाइन |
 | [功能文档](../FEATURES.hi.md) | फ़ीचर सूची, मॉड्यूल विवरण, उपयोगकर्ता यात्रा |
 | [接口文档](../API.hi.md) | पूर्ण API संदर्भ (102 इंटरफ़ेस) |
-| [在线文档](http://localhost:8788/apidoc/) | hg/apidoc इंटरैक्टिव दस्तावेज़ (C-एंड) |
-| [在线文档](http://localhost:8787/apidoc/) | hg/apidoc इंटरैक्टिव दस्तावेज़ (प्रशासन बैकएंड) |
+| [在线文档](http://localhost:8792/apidoc/) | hg/apidoc इंटरैक्टिव दस्तावेज़ (C-एंड) |
+| [在线文档](http://localhost:8789/apidoc/) | hg/apidoc इंटरैक्टिव दस्तावेज़ (प्रशासन बैकएंड) |
 | [ClickHouse 安装](../CLICKHOUSE_INSTALL.hi.md) | ClickHouse इंस्टॉलेशन/कॉन्फ़िगरेशन/माइग्रेशन/सत्यापन |
 | [Provider SDK 接入文档](../PROVIDER-SDK.hi.md) | तृतीय-पक्ष गेम एकीकरण गाइड (सिग्नेचर एल्गोरिदम + PHP/Go/Python उदाहरण) |
 | [ClickHouse 使用](../CLICKHOUSE_USAGE.hi.md) | 4 ClickHouse सेवा API और बैकएंड डैशबोर्ड |

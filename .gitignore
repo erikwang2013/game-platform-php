@@ -76,6 +76,9 @@ apps/flutter//android/app/debug
 apps/flutter//android/app/profile
 apps/flutter//android/app/release
 
+# HarmonyOS 构建缓存
+.hvigor/
+
 
 admin/apps/flutter/# Miscellaneous
 admin/apps/flutter/*.class

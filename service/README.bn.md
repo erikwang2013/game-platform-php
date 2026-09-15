@@ -82,7 +82,7 @@ cd service && composer install
 cp .env.example .env
 # .env এডিট করুন: ডেটাবেস সংযোগ, JWT কী ইত্যাদি
 
-# 3. সার্ভিস চালু করুন (ডিফল্ট পোর্ট 8788)
+# 3. সার্ভিস চালু করুন (ডিফল্ট পোর্ট 8792)
 php start.php start        # ফোরগ্রাউন্ড
 php start.php start -d     # ব্যাকগ্রাউন্ড (ডেমন)
 ```
@@ -90,8 +90,8 @@ php start.php start -d     # ব্যাকগ্রাউন্ড (ডেম�
 ## ব্যবহার
 
 - API ডক: `docs/API.md` (সম্পূর্ণ API রেফারেন্স)
-- অনলাইন ডক: http://localhost:8788/apidoc/ (hg/apidoc ইন্টারঅ্যাকটিভ ডক)
-- হেলথ চেক: `GET http://localhost:8788/health`
+- অনলাইন ডক: http://localhost:8792/apidoc/ (hg/apidoc ইন্টারঅ্যাকটিভ ডক)
+- হেলথ চেক: `GET http://localhost:8792/health`
 - C-সাইড ফ্রন্টএন্ড: `apps/flutter/platform/` (Flutter Web ইউজার প্ল্যাটফর্ম)
 - অ্যাডমিন ব্যাকএন্ড: `admin/` (অ্যাডমিন ব্যাকএন্ড ও `admin/apps/flutter/` ফ্রন্টএন্ড)
 

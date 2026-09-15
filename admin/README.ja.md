@@ -162,7 +162,7 @@ mysql -u root -p < install/install.sql
 php start.php start
 ```
 
-デフォルトでは `http://0.0.0.0:8787` をリッスンします。
+デフォルトでは `http://0.0.0.0:8789` をリッスンします。
 
 ### 5. フロントエンドの起動（任意）
 
@@ -193,7 +193,7 @@ docker-compose up -d
 docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 # 4. アクセス
-# http://localhost:8787  (webman)
+# http://localhost:8789  (webman)
 # http://localhost:8080  (Nginx リバースプロキシ)
 ```
 
@@ -408,7 +408,7 @@ Authorization: Bearer <token>
 | サービス | イメージ | ポート |
 |------|------|------|
 | `nginx` | nginx:alpine | 80, 443 |
-| `app` | ローカル `Dockerfile` でビルド | 8787 |
+| `app` | ローカル `Dockerfile` でビルド | 8789 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

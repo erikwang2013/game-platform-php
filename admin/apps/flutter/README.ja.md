@@ -46,8 +46,8 @@ flutter pub get
 # 開発実行（Chrome）
 flutter run -d chrome
 
-# バックエンドのアドレスを指定（デフォルト http://localhost:8787）
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8787
+# バックエンドのアドレスを指定（デフォルト http://localhost:8789）
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8789
 
 # Web 本番ビルド（出力先 build/web/）
 flutter build web
@@ -55,6 +55,6 @@ flutter build web
 
 ## 使い方
 
-1. 先に管理后台バックエンドを起動：`cd admin && php start.php start -d`（デフォルトポート 8787）
+1. 先に管理后台バックエンドを起動：`cd admin && php start.php start -d`（デフォルトポート 8789）
 2. インストールウィザードで作成した管理者アカウントでログイン（2FA 対応）
-3. ユーザー向けフロントエンドは `apps/flutter/platform/` にあり、同じバックエンドサービス（デフォルトポート 8788）を利用します
+3. ユーザー向けフロントエンドは `apps/flutter/platform/` にあり、同じバックエンドサービス（デフォルトポート 8792）を利用します

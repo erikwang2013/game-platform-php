@@ -12,7 +12,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 ## I. Status Proyek Saat Ini
 
 **Platform agregasi game global** — PHP 8.3 + webman v2, monorepo dua aplikasi:
-`admin/` (8787 Backend Administrasi) + `service/` (8788 C-side) + `apps/` (Flutter + HarmonyOS) + `install/` (wizard instalasi 43 tabel).
+`admin/` (8789 Backend Administrasi) + `service/` (8792 C-side) + `apps/` (Flutter + HarmonyOS) + `install/` (wizard instalasi 43 tabel).
 
 | Dimensi | Ukuran terukur |
 |------|---------|

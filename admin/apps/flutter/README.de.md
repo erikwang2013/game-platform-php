@@ -46,8 +46,8 @@ flutter pub get
 # Entwicklung ausführen (Chrome)
 flutter run -d chrome
 
-# Backend-Adresse festlegen (Standard http://localhost:8787)
-flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8787
+# Backend-Adresse festlegen (Standard http://localhost:8789)
+flutter run -d chrome --dart-define=API_BASE_URL=http://localhost:8789
 
 # Web-Produktionsbuild (Ausgabe nach build/web/)
 flutter build web
@@ -55,6 +55,6 @@ flutter build web
 
 ## Verwendung
 
-1. Zuerst den Admin-Backend-Dienst starten: `cd admin && php start.php start -d` (Standardport 8787)
+1. Zuerst den Admin-Backend-Dienst starten: `cd admin && php start.php start -d` (Standardport 8789)
 2. Mit dem vom Installationsassistenten erstellten Admin-Konto anmelden (2FA wird unterstützt)
-3. Das Benutzer-Frontend befindet sich in `apps/flutter/platform/` und nutzt denselben Backend-Dienst (Standardport 8788)
+3. Das Benutzer-Frontend befindet sich in `apps/flutter/platform/` und nutzt denselben Backend-Dienst (Standardport 8792)

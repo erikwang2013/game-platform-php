@@ -417,9 +417,9 @@ function step5Page(array $result): string
             <ol>
                 <li>进入 <code>admin/</code> 目录，运行 <code>composer install</code> 安装 PHP 依赖</li>
                 <li>进入 <code>service/</code> 目录，运行 <code>composer install</code> 安装 PHP 依赖</li>
-                <li>启动管理后台: <code>cd admin && php start.php start -d</code>（端口 8787）</li>
-                <li>启动C端业务: <code>cd service && php start.php start -d</code>（端口 8788）</li>
-                <li>访问管理后台: <a href="http://localhost:8787" target="_blank">http://localhost:8787</a></li>
+                <li>启动管理后台: <code>cd admin && php start.php start -d</code>（端口 8789）</li>
+                <li>启动C端业务: <code>cd service && php start.php start -d</code>（端口 8792）</li>
+                <li>访问管理后台: <a href="http://localhost:8789" target="_blank">http://localhost:8789</a></li>
                 <li>使用设置的用户名和密码登录管理后台</li>
             </ol>
         </div>

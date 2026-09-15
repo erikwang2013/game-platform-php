@@ -82,7 +82,7 @@ cd service && composer install
 cp .env.example .env
 # عدّل .env: اتصال قاعدة البيانات، مفاتيح JWT وغيرها
 
-# 3. شغّل الخدمة (المنفذ الافتراضي 8788)
+# 3. شغّل الخدمة (المنفذ الافتراضي 8792)
 php start.php start        # في المقدمة
 php start.php start -d     # في الخلفية (daemon)
 ```
@@ -90,8 +90,8 @@ php start.php start -d     # في الخلفية (daemon)
 ## الاستخدام
 
 - مرجع API: `docs/API.md` (مرجع كامل)
-- التوثيق عبر الإنترنت: http://localhost:8788/apidoc/ (توثيق hg/apidoc التفاعلي)
-- فحص الصحة: `GET http://localhost:8788/health`
+- التوثيق عبر الإنترنت: http://localhost:8792/apidoc/ (توثيق hg/apidoc التفاعلي)
+- فحص الصحة: `GET http://localhost:8792/health`
 - واجهة الجانب C: `apps/flutter/platform/` (منصة المستخدم Flutter Web)
 - لوحة الإدارة: `admin/` (الخلفية وواجهة `admin/apps/flutter/`)
 

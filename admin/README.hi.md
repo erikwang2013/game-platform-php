@@ -162,7 +162,7 @@ mysql -u root -p < install/install.sql
 php start.php start
 ```
 
-डिफ़ॉल्ट रूप से `http://0.0.0.0:8787` पर सुनता है।
+डिफ़ॉल्ट रूप से `http://0.0.0.0:8789` पर सुनता है।
 
 ### 5. फ्रंटएंड शुरू करें (वैकल्पिक)
 
@@ -193,7 +193,7 @@ docker-compose up -d
 docker-compose exec app mysql -h mysql -u root -p < install/install.sql
 
 # 4. 访问
-# http://localhost:8787  (webman)
+# http://localhost:8789  (webman)
 # http://localhost:8080  (Nginx 反向代理)
 ```
 
@@ -408,7 +408,7 @@ Authorization: Bearer <token>
 | सेवा | इमेज | पोर्ट |
 |------|------|------|
 | `nginx` | nginx:alpine | 80, 443 |
-| `app` | स्थानीय `Dockerfile` निर्माण | 8787 |
+| `app` | स्थानीय `Dockerfile` निर्माण | 8789 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

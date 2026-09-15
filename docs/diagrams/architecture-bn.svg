@@ -31,13 +31,13 @@
 
   <!-- App Layer -->
   <rect x="60" y="262" width="280" height="138" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
-  <text x="200" y="286" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">Admin অ্যাডমিন প্যানেল :8787</text>
+  <text x="200" y="286" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">Admin অ্যাডমিন প্যানেল :8789</text>
   <rect x="80" y="298" width="240" height="22" rx="4" fill="#dbeafe"/><text x="200" y="314" text-anchor="middle" fill="#1e3a5f" font-size="11">AuthController / CaptchaController</text>
   <rect x="80" y="326" width="240" height="22" rx="4" fill="#dbeafe"/><text x="200" y="342" text-anchor="middle" fill="#1e3a5f" font-size="11">২৭টি অ্যাডমিন কন্ট্রোলার (RBAC)</text>
   <rect x="80" y="354" width="240" height="22" rx="4" fill="#dbeafe"/><text x="200" y="370" text-anchor="middle" fill="#1e3a5f" font-size="11">৮-স্তরের মিডলওয়্যার চেইন</text>
 
   <rect x="360" y="262" width="240" height="138" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5"/>
-  <text x="480" y="286" text-anchor="middle" fill="#854d0e" font-size="13" font-weight="bold">Service C-এন্ড সার্ভিস :8788</text>
+  <text x="480" y="286" text-anchor="middle" fill="#854d0e" font-size="13" font-weight="bold">Service C-এন্ড সার্ভিস :8792</text>
   <rect x="380" y="298" width="200" height="22" rx="4" fill="#fef9c3"/><text x="480" y="314" text-anchor="middle" fill="#713f12" font-size="11">২২টি API কন্ট্রোলার (v1)</text>
   <rect x="380" y="326" width="200" height="22" rx="4" fill="#fef9c3"/><text x="480" y="342" text-anchor="middle" fill="#713f12" font-size="11">LanguageMiddleware (i18n)</text>
   <rect x="380" y="354" width="200" height="22" rx="4" fill="#fef9c3"/><text x="480" y="370" text-anchor="middle" fill="#713f12" font-size="11">RiskService / NotificationService</text>

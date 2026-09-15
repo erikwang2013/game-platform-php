@@ -37,7 +37,7 @@ O planejamento é a visão da jogabilidade; as decisões abaixo resolvem a contr
 Flutter / HarmonyOS / PC Web
         │  POST /api/game/launch { game_id }
         ▼
-service/ (webman :8788)
+service/ (webman :8792)
   GameController::launch  → session_id + seed + api_endpoint
   SelfProvider            → bet / settle / refund / getBalance
   GamePlayLog + EventBus  → game.played / conquistas / VIP

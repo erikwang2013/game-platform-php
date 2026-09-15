@@ -46,7 +46,7 @@ cd service && php start.php start -d && cd ..
 # 6. 安全清理
 rm -rf install/
 
-# 7. 访问管理后台: http://<服务器IP>:8787
+# 7. 访问管理后台: http://<服务器IP>:8789
 ```
 
 Operaciones realizadas por el asistente de instalación:
@@ -87,8 +87,8 @@ docker-compose logs -f
 | Servicio | Nombre del contenedor | Puerto | Descripción |
 |------|--------|------|------|
 | nginx | game-platform-nginx | 80, 443 | Proxy inverso + archivos estáticos |
-| admin | game-platform-admin | 8787 | API del panel de administración |
-| service | game-platform-service | 8788 | API de negocio del lado C |
+| admin | game-platform-admin | 8789 | API del panel de administración |
+| service | game-platform-service | 8792 | API de negocio del lado C |
 | leaderboard-ws | game-platform-ws | 8789 | Clasificación WebSocket |
 | mysql | game-platform-mysql | 3306 | Base de datos principal |
 | redis | game-platform-redis | 6379 | Caché/limitación |
@@ -262,17 +262,17 @@ SITE_URL=https://your-domain.com  # 支付回调/跳转站点地址
 ### 3.4 Arranque de los servicios
 
 ```bash
-# 管理后台 (端口 8787)
+# 管理后台 (端口 8789)
 cd /opt/game-platform/admin
 php start.php start -d
 
-# C端业务 (端口 8788)
+# C端业务 (端口 8792)
 cd /opt/game-platform/service
 php start.php start -d
 
 # 验证
-curl http://localhost:8787/health
-curl http://localhost:8788/health
+curl http://localhost:8789/health
+curl http://localhost:8792/health
 ```
 
 ### 3.5 Gestión de procesos (Systemd)
@@ -321,7 +321,7 @@ server {
 
     # 管理后台 API
     location /admin/ {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -330,7 +330,7 @@ server {
 
     # C端 API
     location /api/ {
-        proxy_pass http://127.0.0.1:8788;
+        proxy_pass http://127.0.0.1:8792;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -349,12 +349,12 @@ server {
 
     # 健康检查
     location /health {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
     }
 
     # Prometheus 指标
     location /metrics {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
     }
 
     # 管理后台前端
@@ -429,10 +429,10 @@ El panel de administración expone el endpoint `/metrics`, con las siguientes m�
 
 ```bash
 # 管理后台
-curl -f http://localhost:8787/health || echo "Admin DOWN"
+curl -f http://localhost:8789/health || echo "Admin DOWN"
 
 # C端业务
-curl -f http://localhost:8788/health || echo "Service DOWN"
+curl -f http://localhost:8792/health || echo "Service DOWN"
 
 # 可在负载均衡器或监控系统中配置
 ```
@@ -525,7 +525,7 @@ ufw allow 443/tcp     # HTTPS
 ufw enable
 
 # 内部端口不应暴露
-# 8787 (admin), 8788 (service), 8789 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
 # 仅通过 127.0.0.1 访问
 ```
 
@@ -551,7 +551,7 @@ chmod 600 /opt/game-platform/service/.env
 cd /opt/game-platform/admin && php start.php start
 
 # 检查端口占用
-ss -tlnp | grep -E '8787|8788'
+ss -tlnp | grep -E '8789|8792'
 
 # 检查日志
 tail -f runtime/logs/workerman.log

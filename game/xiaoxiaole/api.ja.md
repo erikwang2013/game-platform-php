@@ -14,7 +14,7 @@ Languages: **中文** · [English](api.en.md) · [한국어](api.ko.md) · [Ру
 Flutter / HarmonyOS / PC Web
         │  POST /api/game/launch { game_id }
         ▼
-service/ (webman :8788)
+service/ (webman :8792)
   GameController::launch  → session_id + seed + api_endpoint
   SelfProvider            → bet / settle / refund / getBalance
   GamePlayLog + EventBus  → game.played / 成就 / VIP

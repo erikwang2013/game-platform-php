@@ -21,8 +21,8 @@ flowchart TB
     end
 
     subgraph "应用层"
-        C1["admin/ webman<br/>管理后台 :8787<br/>AdminAuth → AdminPermission → OperationLog"]
-        C2["service/ webman<br/>C端业务 :8788<br/>UserAuth → [ProviderAuth]"]
+        C1["admin/ webman<br/>管理后台 :8789<br/>AdminAuth → AdminPermission → OperationLog"]
+        C2["service/ webman<br/>C端业务 :8792<br/>UserAuth → [ProviderAuth]"]
     end
 
     subgraph "服务层 (新增)"
@@ -312,8 +312,8 @@ game_achievement ── 1:N ── game_user_achievement
 
 ```
 Implantação em uma máquina:
-  admin/         :8787 (webman, 32 workers)
-  service/       :8788 (webman, 32 workers)
+  admin/         :8789 (webman, 32 workers)
+  service/       :8792 (webman, 32 workers)
   leaderboard-ws :8789 (WebSocket de rankings)
   chat-ws        :8791 (WebSocket de chat)
   MySQL          :3306
@@ -323,7 +323,7 @@ Implantação em uma máquina:
 ### 6.2 Docker Compose (8 serviços)
 
 ```yaml
-nginx (80/443) → admin (8787) + service (8788) + arquivos estáticos
+nginx (80/443) → admin (8789) + service (8792) + arquivos estáticos
 leaderboard-ws (8789) — push em tempo real de rankings via WebSocket
 chat-ws (8791) — mensagens privadas/chat via WebSocket
 mysql (3306) — banco principal, persistência com volume de dados
@@ -344,10 +344,10 @@ flowchart TB
     end
 
     subgraph "应用服务器"
-        ADM1["admin :8787"]
-        ADM2["admin :8787"]
-        SVC1["service :8788"]
-        SVC2["service :8788"]
+        ADM1["admin :8789"]
+        ADM2["admin :8789"]
+        SVC1["service :8792"]
+        SVC2["service :8792"]
         WS1["leaderboard-ws :8789"]
         WS2["chat-ws :8791"]
     end
@@ -387,8 +387,8 @@ tests/
 
 | Serviço | Porta | Observação |
 |------|------|------|
-| admin/ | 8787 | API do painel administrativo |
-| service/ | 8788 | API de negócio C-side |
+| admin/ | 8789 | API do painel administrativo |
+| service/ | 8792 | API de negócio C-side |
 | leaderboard-ws | 8789 | Rankings em tempo real via WebSocket |
 | chat-ws | 8791 | Mensagens privadas/chat via WebSocket |
 | MySQL | 3306 | Banco principal |
@@ -402,8 +402,8 @@ Documentação interativa de API gerada automaticamente a partir das anotações
 
 | Documentação | Endereço | Controllers | Endpoints |
 |------|------|--------|------|
-| Painel administrativo | :8787/apidoc/ | 28 | ~85 |
-| C-side | :8788/apidoc/ | 25 | ~65 |
+| Painel administrativo | :8789/apidoc/ | 28 | ~85 |
+| C-side | :8792/apidoc/ | 25 | ~65 |
 
 ## 10. Lista de tabelas do banco de dados
 

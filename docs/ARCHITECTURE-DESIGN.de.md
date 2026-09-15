@@ -257,10 +257,10 @@ admin/ und service/ unterstützen beide mehrere Worker-Prozesse. In Kombination 
 
 ```
 Nginx (Load Balancer)
-  ├── admin-1 (:8787)
-  ├── admin-2 (:8787)
-  ├── service-1 (:8788)
-  └── service-2 (:8788)
+  ├── admin-1 (:8789)
+  ├── admin-2 (:8789)
+  ├── service-1 (:8792)
+  └── service-2 (:8792)
 ```
 
 ### 5.2 Modul-Splitting-Pfad
@@ -269,7 +269,7 @@ Wenn ein einzelnes service/ zum Engpass wird, wird nach folgendem Pfad aufgeteil
 
 ```
 service/ (Monolith)
-  → service-user/ (Benutzerservice :8788)
+  → service-user/ (Benutzerservice :8792)
   → service-wallet/ (Wallet-Service :8789)
   → service-game/ (Spieleservice :8790)
   → service-payment/ (Zahlungsservice :8791)

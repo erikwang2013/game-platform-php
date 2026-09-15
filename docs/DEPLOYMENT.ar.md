@@ -46,7 +46,7 @@ cd service && php start.php start -d && cd ..
 # 6. التنظيف الأمني
 rm -rf install/
 
-# 7. الوصول إلى لوحة الإدارة: http://<服务器IP>:8787
+# 7. الوصول إلى لوحة الإدارة: http://<服务器IP>:8789
 ```
 
 العمليات التي يكملها معالج التثبيت:
@@ -87,8 +87,8 @@ docker-compose logs -f
 | الخدمة | اسم الحاوية | المنفذ | الوصف |
 |------|--------|------|------|
 | nginx | game-platform-nginx | 80, 443 | وكيل عكسي + ملفات ثابتة |
-| admin | game-platform-admin | 8787 | واجهات لوحة الإدارة |
-| service | game-platform-service | 8788 | واجهات أعمال الطرف C |
+| admin | game-platform-admin | 8789 | واجهات لوحة الإدارة |
+| service | game-platform-service | 8792 | واجهات أعمال الطرف C |
 | leaderboard-ws | game-platform-ws | 8789 | WebSocket لوحة المتصدرين |
 | mysql | game-platform-mysql | 3306 | قاعدة البيانات الرئيسية |
 | redis | game-platform-redis | 6379 | تخزين مؤقت/تقييد |
@@ -262,17 +262,17 @@ SITE_URL=https://your-domain.com  # عنوان الموقع للاستدعاء/�
 ### 3.4 تشغيل الخدمات
 
 ```bash
-# لوحة الإدارة (المنفذ 8787)
+# لوحة الإدارة (المنفذ 8789)
 cd /opt/game-platform/admin
 php start.php start -d
 
-# أعمال الطرف C (المنفذ 8788)
+# أعمال الطرف C (المنفذ 8792)
 cd /opt/game-platform/service
 php start.php start -d
 
 # التحقق
-curl http://localhost:8787/health
-curl http://localhost:8788/health
+curl http://localhost:8789/health
+curl http://localhost:8792/health
 ```
 
 ### 3.5 إدارة العمليات (Systemd)
@@ -321,7 +321,7 @@ server {
 
     # واجهات لوحة الإدارة
     location /admin/ {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -330,7 +330,7 @@ server {
 
     # واجهات الطرف C
     location /api/ {
-        proxy_pass http://127.0.0.1:8788;
+        proxy_pass http://127.0.0.1:8792;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -349,12 +349,12 @@ server {
 
     # فحص الصحة
     location /health {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
     }
 
     # مؤشرات Prometheus
     location /metrics {
-        proxy_pass http://127.0.0.1:8787;
+        proxy_pass http://127.0.0.1:8789;
     }
 
     # واجهة لوحة الإدارة الأمامية
@@ -429,10 +429,10 @@ crontab -e
 
 ```bash
 # لوحة الإدارة
-curl -f http://localhost:8787/health || echo "Admin DOWN"
+curl -f http://localhost:8789/health || echo "Admin DOWN"
 
 # أعمال الطرف C
-curl -f http://localhost:8788/health || echo "Service DOWN"
+curl -f http://localhost:8792/health || echo "Service DOWN"
 
 # يمكن إعداده في موازن الحمل أو نظام المراقبة
 ```
@@ -525,7 +525,7 @@ ufw allow 443/tcp     # HTTPS
 ufw enable
 
 # لا ينبغي كشف المنافذ الداخلية
-# 8787 (admin), 8788 (service), 8789 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
 # تُوصَل عبر 127.0.0.1 فقط
 ```
 
@@ -551,7 +551,7 @@ chmod 600 /opt/game-platform/service/.env
 cd /opt/game-platform/admin && php start.php start
 
 # فحص احتلال المنفذ
-ss -tlnp | grep -E '8787|8788'
+ss -tlnp | grep -E '8789|8792'
 
 # فحص السجلات
 tail -f runtime/logs/workerman.log
