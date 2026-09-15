@@ -8,9 +8,9 @@ import http from '@ohos.net.http';
 import { TokenManager } from '../utils/TokenManager';
 
 // 开发环境地址 — 真机部署时修改为实际服务器地址
-// 模拟器: http://10.0.2.2:8787
-// 真机: http://<服务器IP>:8787
-const BASE_URL = 'http://10.0.2.2:8787';
+// 模拟器: http://10.0.2.2:8792
+// 真机: http://<服务器IP>:8792
+const BASE_URL = 'http://10.0.2.2:8792';
 
 interface CaptchaTarget {
   order: number;

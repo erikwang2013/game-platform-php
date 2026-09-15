@@ -20,18 +20,25 @@ use support\Response;
 #[Apidoc\Group("auth")]
 class AuthController extends BaseController
 {
+    /**
+     * 注册密码强度策略：8-32 位，且同时含小写字母、大写字母、数字。
+     * 与此前 admin 侧 UserController/ProfileController 的策略保持一致。
+     * 仅约束注册（新口令）；登录不校验强度，否则存量短口令用户无法登录。
+     */
+    private const PASSWORD_RULE = 'required|string|min:8|max:32|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/';
+
     #[Apidoc\Title("用户注册")]
     #[Apidoc\Url("/api/v1/auth/register")]
     #[Apidoc\Method("POST")]
     #[Apidoc\Param(name: "username", type: "string", require: true, desc: "用户名")]
-    #[Apidoc\Param(name: "password", type: "string", require: true, desc: "密码")]
+    #[Apidoc\Param(name: "password", type: "string", require: true, desc: "密码（8-32位，需含大小写字母和数字）")]
     #[Apidoc\Param(name: "email", type: "string", require: false, desc: "邮箱")]
     #[Apidoc\Param(name: "share_code", type: "string", require: false, desc: "分享短码(裂变转化)")]
     public function register(Request $request): Response
     {
         $validator = validator($request->all(), [
             'username'   => 'required|min:3|max:50|regex:/^[a-zA-Z0-9_]+$/',
-            'password'   => 'required|min:6|max:32',
+            'password'   => self::PASSWORD_RULE,
             'email'      => 'nullable|email',
             'share_code' => 'nullable|string|max:12',
         ]);

@@ -27,7 +27,16 @@ struct LoginPage {
       this.loginError = '请输入密码';
       return;
     }
-    if (this.password.length < 6) {
+    if (this.isRegister) {
+      if (
+        this.password.length < 8 ||
+        this.password.length > 32 ||
+        !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/.test(this.password)
+      ) {
+        this.loginError = '密码 8-32 位，需含大小写字母和数字';
+        return;
+      }
+    } else if (this.password.length < 6) {
       this.loginError = '密码至少 6 位';
       return;
     }

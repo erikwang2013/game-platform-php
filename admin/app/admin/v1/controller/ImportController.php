@@ -76,6 +76,12 @@ class ImportController extends BaseController
                 continue;
             }
 
+            if (strlen($password) < 8 || strlen($password) > 32 || !preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/', $password)) {
+                $failed++;
+                $errors[] = ['row' => $idx + 1, 'reason' => '密码需 8-32 位，且包含大小写字母和数字'];
+                continue;
+            }
+
             if (AdminUser::where('username', $username)->exists()) {
                 $failed++;
                 $errors[] = ['row' => $idx + 1, 'reason' => "用户名 {$username} 已存在"];

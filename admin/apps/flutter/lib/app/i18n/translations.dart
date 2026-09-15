@@ -600,7 +600,7 @@ class AppTranslations {
       'profile.title': '个人中心',
       'profile.update_password': '修改密码',
       'profile.old_password': '旧密码',
-      'profile.new_password': '新密码 (6-32位)',
+      'profile.new_password': '新密码 (8-32位，需含大小写字母和数字)',
       'profile.confirm_password': '确认新密码',
       'profile.logout': '退出登录',
       'profile.logout_confirm': '确定要退出登录吗？',

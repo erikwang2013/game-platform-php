@@ -92,10 +92,10 @@ import { Api, ApiError, AuthResult, tokens } from '../core/api.service';
                 type="password"
                 formControlName="password"
                 autocomplete="new-password"
-                placeholder="至少 6 个字符"
+                placeholder="8-32 位，含大小写字母和数字"
               />
               @if (show(regForm.controls.password)) {
-                <span class="err">密码至少 6 个字符</span>
+                <span class="err">密码 8-32 个字符，需含大小写字母和数字</span>
               }
             </label>
             <label class="field">
@@ -155,7 +155,15 @@ export class LoginPage {
   protected readonly regForm = this.fb.nonNullable.group({
     username: ['', [Validators.required, Validators.minLength(3)]],
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]],
+    password: [
+      '',
+      [
+        Validators.required,
+        Validators.minLength(8),
+        Validators.maxLength(32),
+        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/),
+      ],
+    ],
     nickname: [''],
   });
 

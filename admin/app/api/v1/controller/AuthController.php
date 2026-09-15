@@ -22,6 +22,11 @@ use Throwable;
 #[Apidoc\Group("auth")]
 class AuthController
 {
+    // 注册口令强度：8-32 位且同时包含小写字母、大写字母、数字
+    // 与 admin 侧 UserController 的策略字符串保持一致
+    // 仅约束注册（新口令）；登录为 verify-only 不校验强度，否则存量短口令用户无法登录
+    private const PASSWORD_RULE = 'required|string|min:8|max:32|regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/';
+
     private static ?JWT $jwt = null;
 
     private static function getJWT(): JWT
@@ -40,7 +45,7 @@ class AuthController
     #[Apidoc\Url("/api/v1/auth/login")]
     #[Apidoc\Method("POST")]
     #[Apidoc\Param(name: "username", type: "string", require: true, desc: "用户名（3-50 字符）")]
-    #[Apidoc\Param(name: "password", type: "string", require: true, desc: "密码（6-32 字符）")]
+    #[Apidoc\Param(name: "password", type: "string", require: true, desc: "密码")]
     #[Apidoc\Param(name: "captcha_key", type: "string", require: true, desc: "点击验证码 key")]
     #[Apidoc\Param(name: "clicks", type: "array", require: true, desc: "点击坐标集合，元素含 x/y（至少 2 个）")]
     #[Apidoc\Returned(name: "access_token", type: "string", desc: "访问令牌")]
@@ -138,7 +143,7 @@ class AuthController
     #[Apidoc\Url("/api/v1/auth/register")]
     #[Apidoc\Method("POST")]
     #[Apidoc\Param(name: "username", type: "string", require: true, desc: "用户名（3-50 字符）")]
-    #[Apidoc\Param(name: "password", type: "string", require: true, desc: "密码（6-32 字符）")]
+    #[Apidoc\Param(name: "password", type: "string", require: true, desc: "密码（8-32位，需含大小写字母和数字）")]
     #[Apidoc\Param(name: "real_name", type: "string", require: true, desc: "真实姓名（最长 50）")]
     #[Apidoc\Param(name: "captcha_key", type: "string", require: true, desc: "点击验证码 key")]
     #[Apidoc\Param(name: "clicks", type: "array", require: true, desc: "点击坐标集合，元素含 x/y（至少 2 个）")]
@@ -152,7 +157,7 @@ class AuthController
     {
         $validator = validator($request->all(), [
             'username'    => 'required|string|min:3|max:50',
-            'password'    => 'required|string|min:6|max:32',
+            'password'    => self::PASSWORD_RULE,
             'real_name'   => 'required|string|max:50',
             'captcha_key' => 'required|string',
             'clicks'      => 'required|array|min:2',

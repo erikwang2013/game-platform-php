@@ -6,6 +6,10 @@ import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth.tsx';
 
+/** 与后端 AuthController::PASSWORD_RULE 对齐；HTML pattern 隐含整串匹配，故省去 ^$ */
+const REGISTER_PASSWORD_PATTERN = '(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+';
+const REGISTER_PASSWORD_TITLE = '8-32 位，需含大小写字母和数字';
+
 export function Login() {
   const { user, login, register } = useAuth();
   const navigate = useNavigate();
@@ -119,7 +123,10 @@ export function Login() {
                 type="password"
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                 required
-                minLength={6}
+                minLength={mode === 'login' ? 6 : 8}
+                maxLength={mode === 'login' ? undefined : 32}
+                pattern={mode === 'login' ? undefined : REGISTER_PASSWORD_PATTERN}
+                title={mode === 'login' ? undefined : REGISTER_PASSWORD_TITLE}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />

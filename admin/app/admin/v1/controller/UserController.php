@@ -77,7 +77,7 @@ class UserController extends BaseController
     #[Apidoc\Method("POST")]
     #[Apidoc\Author("erik")]
     #[Apidoc\Param(name: "username", type: "string", require: true, desc: "用户名(3-50位)")]
-    #[Apidoc\Param(name: "password", type: "string", require: true, desc: "密码(6-32位)")]
+    #[Apidoc\Param(name: "password", type: "string", require: true, desc: "密码(8-32位，需含大小写字母和数字)")]
     #[Apidoc\Param(name: "real_name", type: "string", require: true, desc: "真实姓名")]
     #[Apidoc\Param(name: "status", type: "int", require: false, desc: "状态(0禁用,1启用)")]
     #[Apidoc\Param(name: "phone", type: "string", require: false, desc: "手机号")]
@@ -143,7 +143,7 @@ class UserController extends BaseController
     #[Apidoc\Author("erik")]
     #[Apidoc\Param(name: "real_name", type: "string", require: false, desc: "真实姓名")]
     #[Apidoc\Param(name: "status", type: "int", require: false, desc: "状态(0禁用,1启用)")]
-    #[Apidoc\Param(name: "password", type: "string", require: false, desc: "新密码(6-32位)")]
+    #[Apidoc\Param(name: "password", type: "string", require: false, desc: "新密码(8-32位，需含大小写字母和数字)")]
     #[Apidoc\Param(name: "phone", type: "string", require: false, desc: "手机号")]
     #[Apidoc\Param(name: "email", type: "string", require: false, desc: "邮箱")]
     public function update(Request $request, string $hashid): Response

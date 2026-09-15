@@ -71,7 +71,7 @@ class ProfileController extends BaseController
     #[Apidoc\Method("PUT")]
     #[Apidoc\Author("erik")]
     #[Apidoc\Param(name: "old_password", type: "string", require: true, desc: "旧密码")]
-    #[Apidoc\Param(name: "new_password", type: "string", require: true, desc: "新密码(6-32位)")]
+    #[Apidoc\Param(name: "new_password", type: "string", require: true, desc: "新密码(8-32位，需含大小写字母和数字)")]
     public function updatePassword(Request $request): Response
     {
         $adminId = $request->adminId ?? 0;
