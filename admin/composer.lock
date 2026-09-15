@@ -1386,21 +1386,21 @@
         },
         {
             "name": "erikwang2013/security-php",
-            "version": "v1.2.0",
+            "version": "v1.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/erikwang2013/security-php.git",
-                "reference": "767d100115e90fad6b17d1b48b4c8cfb1ebb458d"
+                "reference": "bf76b31dc61d80dc59383e79928858df28730bcb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/erikwang2013/security-php/zipball/767d100115e90fad6b17d1b48b4c8cfb1ebb458d",
-                "reference": "767d100115e90fad6b17d1b48b4c8cfb1ebb458d",
+                "url": "https://api.github.com/repos/erikwang2013/security-php/zipball/bf76b31dc61d80dc59383e79928858df28730bcb",
+                "reference": "bf76b31dc61d80dc59383e79928858df28730bcb",
                 "shasum": ""
             },
             "require": {
                 "composer-plugin-api": "^2.0",
-                "php": ">=8.1"
+                "php": ">=8.0"
             },
             "require-dev": {
                 "phpunit/phpunit": "^12.5"
@@ -1440,19 +1440,23 @@
                     "homepage": "https://erik.xyz"
                 }
             ],
-            "description": "A PHP security attack detection plugin featuring 31 threat detectors and compatibility with Laravel, Webman, ThinkPHP, and Hyperf.",
+            "description": "A PHP security attack detection plugin with 31 stateless threat detectors and 4 cross-request identity checks (session hijack, unusual login, data tamper, brute-force lockout). Works with Laravel, Webman, ThinkPHP, and Hyperf, or with no framework at all via global functions.",
             "keywords": [
                 "attack-detection",
+                "brute-force",
+                "framework-agnostic",
+                "identity",
                 "security",
+                "session-hijack",
                 "sql-injection",
                 "waf",
                 "xss"
             ],
             "support": {
                 "issues": "https://github.com/erikwang2013/security-php/issues",
-                "source": "https://github.com/erikwang2013/security-php/tree/v1.2.0"
+                "source": "https://github.com/erikwang2013/security-php/tree/v1.3.2"
             },
-            "time": "2026-08-17T03:01:48+00:00"
+            "time": "2026-09-15T10:31:04+00:00"
         },
         {
             "name": "erikwang2013/snowflake-php",
