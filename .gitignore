@@ -6,6 +6,7 @@ vendor/
 .vscode/
 *.swp
 *.swo
+composer.lock
 admin/vendor
 admin/runtime/
 admin/.env
