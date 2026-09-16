@@ -46,14 +46,20 @@ return [
     'connections' => [
 
         'main' => [
+            // 盐值：由 HASHIDS_SALT 环境变量注入，每个连接必须使用独立随机盐
             'salt' => $hashidsMainSalt,
-            'length' => 0,
+            // 最小哈希长度：固定 16 位，避免过短的 hashid 通过长度泄露 snowflake ID 量级；须与 service 端保持一致
+            'length' => 16,
+            // 自定义字符集：省略时使用 hashids 默认的 62 字符集（大小写字母 + 数字）
             // 'alphabet' => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890',
         ],
 
         'alternative' => [
+            // 备用盐值：由 HASHIDS_ALT_SALT 环境变量注入，供密钥轮换使用
             'salt' => $hashidsAltSalt,
-            'length' => 0,
+            // 同 main，固定 16 位
+            'length' => 16,
+            // 同上
             // 'alphabet' => 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890',
         ],
 
