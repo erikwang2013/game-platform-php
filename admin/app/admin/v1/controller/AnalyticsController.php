@@ -65,11 +65,13 @@ class AnalyticsController extends BaseController
     #[Apidoc\Url("/admin/v1/analytics/action-distribution")]
     #[Apidoc\Method("GET")]
     #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer Token")]
-    #[Apidoc\Query(name: "game_id", type: "string", require: true, desc: "Game hashid")]
+    #[Apidoc\Query(name: "game_id", type: "string", require: false, desc: "Game hashid (empty=all)")]
     #[Apidoc\Query(name: "hours", type: "integer", require: false, desc: "Hours back (default 24)")]
     public function actionDistribution(Request $request): Response
     {
-        $gameId = $this->decodeId($request->input('game_id', '0'));
+        // 空值即"全部游戏"(gameId=0)，与 hourlyTrend 一致；直接 decode('0') 会抛 400 无效的加密ID
+        $hashid = $request->input('game_id', '');
+        $gameId = $hashid ? $this->decodeId($hashid) : 0;
         $hours = (int)$request->input('hours', 24);
         return $this->success(GameDashboardService::actionDistribution($gameId, $hours));
     }
@@ -103,8 +105,10 @@ class AnalyticsController extends BaseController
     #[Apidoc\Query(name: "game_b", type: "string", require: true, desc: "Game B hashid")]
     public function probability(Request $request): Response
     {
-        $a = $this->decodeId($request->input('game_a', '0'));
-        $b = $this->decodeId($request->input('game_b', '0'));
+        $ha = $request->input('game_a', '');
+        $hb = $request->input('game_b', '');
+        $a = $ha ? $this->decodeId($ha) : 0;
+        $b = $hb ? $this->decodeId($hb) : 0;
         if ($a <= 0 || $b <= 0) return $this->fail('game_a and game_b required', 422);
         return $this->success(['joint' => ProbabilityService::joint(
             ['table' => 'game_game_play_log', 'alias' => 'user_id', 'where' => ['game_id' => $a]],

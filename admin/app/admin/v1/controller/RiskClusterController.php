@@ -115,13 +115,13 @@ class RiskClusterController extends BaseController
         $name = mb_substr((string) $request->post('name', ''), 0, 100);
 
         if (!in_array($type, ['same_ip', 'same_device', 'same_pay_account', 'manual'], true)) {
-            return $this->fail('type 非法');
+            return $this->fail('type 非法', 422);
         }
         if ($name === '') {
-            return $this->fail('name 必填');
+            return $this->fail('name 必填', 422);
         }
         if (in_array($type, ['same_ip', 'same_device'], true) && $fingerprint === '') {
-            return $this->fail('fingerprint 必填');
+            return $this->fail('fingerprint 必填', 422);
         }
 
         $members = [];

@@ -51,7 +51,7 @@ class RiskRuleController extends BaseController
             $this->fill($rule, $request->post());
             $rule->save();
         } catch (\InvalidArgumentException $e) {
-            return $this->fail($e->getMessage());
+            return $this->fail($e->getMessage(), 422);
         }
 
         return $this->success(['id' => $this->encodeId((int) $rule->id)]);
@@ -68,7 +68,7 @@ class RiskRuleController extends BaseController
             $this->fill($rule, $request->post());
             $rule->save();
         } catch (\InvalidArgumentException $e) {
-            return $this->fail($e->getMessage());
+            return $this->fail($e->getMessage(), 422);
         }
 
         return $this->success();

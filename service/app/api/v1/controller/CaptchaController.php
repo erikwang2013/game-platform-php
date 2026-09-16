@@ -27,15 +27,20 @@ class CaptchaController extends BaseController
 
             return $this->success([
                 'key' => $result['key'],
-                'image' => $result['image'], // base64 encoded PNG
-                'targets' => $result['extra']['targets'] ?? [],
+                'image' => explode(',', $result['image'], 2)[1] ?? $result['image'], // base64 PNG(剥离 data URI 前缀)
+                // 库只下发 texts(text/order, 刻意不含 x/y: 坐标为服务端校验依据, 下发即泄题)
+                'extra' => [
+                    'texts' => $result['extra']['texts'] ?? [],
+                ],
             ]);
         } catch (\Throwable $e) {
             // Fallback to stub if captcha library not available
             return $this->success([
                 'key' => 'stub',
                 'image' => '',
-                'targets' => [],
+                'extra' => [
+                    'texts' => [],
+                ],
             ]);
         }
     }

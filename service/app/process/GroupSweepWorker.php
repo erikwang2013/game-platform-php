@@ -41,8 +41,8 @@ class GroupSweepWorker
                 }
 
                 // member_count 校正：以成员表实际有效行数为准
-                $counts = Db::table('group g')
-                    ->join('group_member m', 'm.group_id', '=', 'g.id')
+                $counts = Db::table('group as g')
+                    ->join('group_member as m', 'm.group_id', '=', 'g.id')
                     ->whereNull('m.left_at')
                     ->selectRaw('g.id, COUNT(*) AS cnt')
                     ->groupBy('g.id')

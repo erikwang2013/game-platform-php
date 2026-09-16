@@ -9,7 +9,7 @@ namespace app\middleware;
 
 use support\Log;
 use support\Request;
-use support\Response;
+use Webman\Http\Response;
 
 /**
  * 链路追踪中间件（L4 可观测性）：

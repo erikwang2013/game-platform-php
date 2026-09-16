@@ -32,7 +32,7 @@ class RiskDashboardController extends BaseController
             ->get()->pluck('cnt', 'action')->all();
 
         $recent = RiskLog::where('created_at', '>=', $since24h)
-            ->orderBy('id', 'desc')->limit(5)->get();
+            ->orderBy('id', 'desc')->limit(5)->get()->all();
 
         return $this->success([
             'total_events_24h' => $total24h,

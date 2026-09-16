@@ -164,9 +164,9 @@ class GameController extends BaseController
     #[Apidoc\Desc("M5: 聚合用户在各游戏（上架）中的游戏币余额")]
     public function balance(Request $request): Response
     {
-        $wallets = Db::table('user_game_wallet w')
-            ->join('game g', 'g.id', '=', 'w.game_id')
-            ->join('game_currency c', 'c.id', '=', 'w.currency_id')
+        $wallets = Db::table('user_game_wallet as w')
+            ->join('game as g', 'g.id', '=', 'w.game_id')
+            ->join('game_currency as c', 'c.id', '=', 'w.currency_id')
             ->where('w.user_id', $request->userId)
             ->where('g.status', 1)
             ->get([

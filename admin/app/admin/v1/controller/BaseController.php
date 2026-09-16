@@ -10,8 +10,10 @@ namespace app\admin\v1\controller;
 use common\HashidsService;
 use common\SnowflakeService;
 use app\model\AdminUser;
+use InvalidArgumentException;
 use support\Request;
 use support\Response;
+use Webman\Exception\BusinessException;
 
 /**
  * 管理端基础控制器
@@ -45,10 +47,16 @@ class BaseController
 
     /**
      * 将 hashid 字符串解码为原始 ID
+     *
+     * 非法/伪造 hashid 属客户端错误：转 400 业务异常，避免 500 并泄漏堆栈路径
      */
     protected function decodeId(string $hashid): int
     {
-        return HashidsService::decode($hashid);
+        try {
+            return HashidsService::decode($hashid);
+        } catch (InvalidArgumentException $e) {
+            throw new BusinessException($e->getMessage(), 400);
+        }
     }
 
     /**

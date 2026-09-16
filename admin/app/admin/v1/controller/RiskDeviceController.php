@@ -63,7 +63,7 @@ class RiskDeviceController extends BaseController
             $fpHash = $this->fpHash((string) $request->post('fp_hash', ''));
             Redis::setex(self::BLOCK_KEY . $fpHash, 30 * 86400, '1');
         } catch (\InvalidArgumentException $e) {
-            return $this->fail($e->getMessage());
+            return $this->fail($e->getMessage(), 400);
         } catch (\Throwable) {
             return $this->fail('Redis 不可用');
         }
@@ -78,7 +78,7 @@ class RiskDeviceController extends BaseController
             $fpHash = $this->fpHash((string) $request->post('fp_hash', ''));
             Redis::del(self::BLOCK_KEY . $fpHash);
         } catch (\InvalidArgumentException $e) {
-            return $this->fail($e->getMessage());
+            return $this->fail($e->getMessage(), 400);
         } catch (\Throwable) {
             return $this->fail('Redis 不可用');
         }

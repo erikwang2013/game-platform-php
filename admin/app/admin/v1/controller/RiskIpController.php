@@ -83,7 +83,7 @@ class RiskIpController extends BaseController
             $ipHash = hash('sha256', $this->ip((string) $request->post('ip', '')));
             Redis::del(self::CACHE_PREFIX . $ipHash);
         } catch (\InvalidArgumentException $e) {
-            return $this->fail($e->getMessage());
+            return $this->fail($e->getMessage(), 400);
         } catch (\Throwable) {
             // Redis 不可用时缓存随 TTL 自然过期
         }
@@ -119,7 +119,7 @@ class RiskIpController extends BaseController
                 // 缓存删不掉则 TTL 内稍后失效
             }
         } catch (\InvalidArgumentException $e) {
-            return $this->fail($e->getMessage());
+            return $this->fail($e->getMessage(), 400);
         }
 
         return $this->success(['ip_masked' => substr($ipHash, 0, 8) . '****', 'source' => $source]);

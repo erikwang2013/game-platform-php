@@ -4,7 +4,6 @@
  */
 
 use Webman\Route;
-use support\Request;
 
 /**
  * C端 API 路由配置
@@ -20,12 +19,11 @@ use support\Request;
  * - /api/provider/*（第三方 HMAC）与 /api/game/*（SDK）为无版本外部契约，保持原样
  */
 
-function v(string $controller, string $action, string $version = 'v1'): \Closure
+// 控制器数组（webman 原生分发）：闭包 + 变参会被 isNeedInject 当成必填参数 params，
+// 抛 MissingInputException；数组形式走框架按名注入，URL 占位符可正常传入
+function v(string $controller, string $action, string $version = 'v1'): array
 {
-    return function (Request $request, ...$params) use ($controller, $action, $version) {
-        $class = "\\app\\api\\{$version}\\controller\\{$controller}";
-        return (new $class)->{$action}($request, ...$params);
-    };
+    return ["app\\api\\{$version}\\controller\\{$controller}", $action];
 }
 
 // 健康检查
