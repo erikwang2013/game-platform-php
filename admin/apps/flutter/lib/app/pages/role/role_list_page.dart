@@ -50,9 +50,7 @@ class RoleListPage extends GetView<RoleController> {
                     IconButton(icon: const Icon(Icons.delete, size: 18, color: Colors.red), onPressed: () {
                       final pwdCtrl = TextEditingController();
                       showDialog(context: context, builder: (_) => AlertDialog(
-                        title: Text("${AppTranslations.t('app.confirm')}"
-          + ' '
-          + "${AppTranslations.t('app.delete')}"),
+                        title: Text("${AppTranslations.t('app.confirm')} ${AppTranslations.t('app.delete')}"),
                         content: Column(mainAxisSize: MainAxisSize.min, children: [
                           Text('确定要删除角色「${r['name']}」吗？'),
                           TextField(controller: pwdCtrl, obscureText: true, decoration: InputDecoration(labelText: '${AppTranslations.t('user.password_confirm_hint')}')),
@@ -73,7 +71,7 @@ class RoleListPage extends GetView<RoleController> {
     );
   }
 
-  void _showRoleDialog(BuildContext context, RoleController ctrl, {dynamic? role}) {
+  void _showRoleDialog(BuildContext context, RoleController ctrl, {dynamic role}) {
     final nameCtrl = TextEditingController(text: role?['name'] ?? '');
     final slugCtrl = TextEditingController(text: role?['slug'] ?? '');
     final descCtrl = TextEditingController(text: role?['description'] ?? '');

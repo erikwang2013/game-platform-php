@@ -98,7 +98,7 @@ class ReportPage extends GetView<ReportController> {
   }
 
   Widget _presetChip(int days) {
-    final active = controller._days(controller.start, controller.end) == days;
+    final active = controller.presetDays == days;
     return ChoiceChip(
       label: Text("${AppTranslations.t('report.preset_$days')}"),
       selected: active,

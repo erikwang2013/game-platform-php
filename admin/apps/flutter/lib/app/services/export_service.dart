@@ -35,7 +35,7 @@ class ExportService {
 
     final isXlsx = format == 'xlsx';
     final ext = isXlsx ? 'xlsx' : 'csv';
-    final filename = 'report_${start}_${end}.$ext';
+    final filename = 'report_${start}_$end.$ext';
     await FileSaver.instance.saveFile(name: filename, bytes: response.data, ext: ext);
   }
 

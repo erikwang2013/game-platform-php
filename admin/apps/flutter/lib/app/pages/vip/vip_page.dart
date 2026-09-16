@@ -69,7 +69,7 @@ class VipPage extends GetView<VipController> {
             return Card(child: ListTile(
               leading: CircleAvatar(child: Text('${item['level'] ?? ''}')),
               title: Text('${item['name']}', style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text('Exp: ${item['required_exp']}\n${benefits}'),
+              subtitle: Text('Exp: ${item['required_exp']}\n$benefits'),
               isThreeLine: true,
               trailing: Row(mainAxisSize: MainAxisSize.min, children: [
                 IconButton(icon: const Icon(Icons.edit, size: 18), onPressed: () => _showDialog(context, ctrl, item: item)),
@@ -93,7 +93,7 @@ class VipPage extends GetView<VipController> {
     ));
   }
 
-  void _showDialog(BuildContext ctx, VipController ctrl, {dynamic? item}) {
+  void _showDialog(BuildContext ctx, VipController ctrl, {dynamic item}) {
     final lCtrl = TextEditingController(text: item != null ? '${item['level']}' : '');
     final nCtrl = TextEditingController(text: item?['name'] ?? '');
     final eCtrl = TextEditingController(text: item != null ? '${item['required_exp']}' : '');

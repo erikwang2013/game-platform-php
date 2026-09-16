@@ -75,9 +75,9 @@ class _BigscreenPageState extends State<BigscreenPage> {
 
   Future<void> _toggleFullscreen() async {
     if (_fullscreenElement == null) {
-      await _requestFullscreen();
+      await _requestFullscreen().toDart;
     } else {
-      await _exitFullscreen();
+      await _exitFullscreen().toDart;
     }
     if (mounted) setState(() {});
   }

@@ -166,7 +166,7 @@ class GameListPage extends GetView<GameListController> {
                 TextField(controller: slugCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('game.slug')}')),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: type,
+                  initialValue: type,
                   decoration: InputDecoration(labelText: '${AppTranslations.t('game.type')}'),
                   items: [
                     DropdownMenuItem(value: 'self', child: Text('${AppTranslations.t('game.self')}')),
@@ -229,9 +229,7 @@ class GameListPage extends GetView<GameListController> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text("${AppTranslations.t('app.confirm')}"
-          + ' '
-          + "${AppTranslations.t('app.delete')}"),
+        title: Text("${AppTranslations.t('app.confirm')} ${AppTranslations.t('app.delete')}"),
         content: Text('确定要删除游戏「${game['name']}」吗？'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),

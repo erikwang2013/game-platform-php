@@ -190,6 +190,7 @@ class RiskClusterTab extends GetView<RiskClusterController> {
                 'user_count': cand['user_count'],
               });
               Get.snackbar('成功', '团伙已确认');
+              if (!ctx.mounted) return;
               Navigator.pop(ctx);
               Navigator.pop(ctx);
             } catch (e) {

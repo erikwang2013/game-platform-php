@@ -95,7 +95,7 @@ class _UserFormPageState extends State<UserFormPage> {
                 const SizedBox(height: 16),
                 TextFormField(controller: _emailCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('user.email')}')),
                 const SizedBox(height: 16),
-                DropdownButtonFormField<int>(value: _status, decoration: InputDecoration(labelText: '${AppTranslations.t('user.status')}'), items: [
+                DropdownButtonFormField<int>(initialValue: _status, decoration: InputDecoration(labelText: '${AppTranslations.t('user.status')}'), items: [
                   DropdownMenuItem(value: 1, child: Text("${AppTranslations.t('app.enabled')}")),
                   DropdownMenuItem(value: 0, child: Text("${AppTranslations.t('app.disabled')}")),
                 ], onChanged: (v) => setState(() => _status = v ?? 1)),

@@ -125,7 +125,7 @@ class AnnouncementPage extends GetView<AnnouncementController> {
                 ),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
-                  value: type,
+                  initialValue: type,
                   decoration: InputDecoration(labelText: '${AppTranslations.t('game.type')}'),
                   items: const [
                     DropdownMenuItem(value: 'system', child: Text('系统公告')),

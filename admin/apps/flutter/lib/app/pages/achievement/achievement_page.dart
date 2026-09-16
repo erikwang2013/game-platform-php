@@ -90,7 +90,7 @@ class AchievementPage extends GetView<AchievementAdminController> {
     ));
   }
 
-  void _showDialog(BuildContext ctx, AchievementAdminController ctrl, {dynamic? item}) {
+  void _showDialog(BuildContext ctx, AchievementAdminController ctrl, {dynamic item}) {
     final kCtrl = TextEditingController(text: item?['key'] ?? '');
     final nCtrl = TextEditingController(text: item?['name'] ?? '');
     final dCtrl = TextEditingController(text: item?['description'] ?? '');

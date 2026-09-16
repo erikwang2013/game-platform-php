@@ -136,9 +136,7 @@ class UserListPage extends GetView<UserController> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: Text("${AppTranslations.t('app.confirm')}"
-          + ' '
-          + "${AppTranslations.t('app.delete')}"),
+        title: Text("${AppTranslations.t('app.confirm')} ${AppTranslations.t('app.delete')}"),
         content: Column(mainAxisSize: MainAxisSize.min, children: [
           Text('确定要删除用户「${user['username']}」吗？'),
           const SizedBox(height: 8),

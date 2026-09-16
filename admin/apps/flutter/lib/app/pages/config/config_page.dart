@@ -83,9 +83,7 @@ class ConfigPage extends GetView<ConfigController> {
                 IconButton(icon: const Icon(Icons.edit, size: 18), onPressed: () => _showDialog(context, ctrl, item: c)),
                 IconButton(icon: const Icon(Icons.delete, size: 18, color: Colors.red), onPressed: () {
                   final p = TextEditingController();
-                  showDialog(context: context, builder: (_) => AlertDialog(title: Text("${AppTranslations.t('app.confirm')}"
-          + ' '
-          + "${AppTranslations.t('app.delete')}"), content: TextField(controller: p, obscureText: true, decoration: InputDecoration(labelText: '输入密码确认')), actions: [
+                  showDialog(context: context, builder: (_) => AlertDialog(title: Text("${AppTranslations.t('app.confirm')} ${AppTranslations.t('app.delete')}"), content: TextField(controller: p, obscureText: true, decoration: InputDecoration(labelText: '输入密码确认')), actions: [
                     TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),
                     ElevatedButton(onPressed: () { ctrl.remove(c['id'], p.text); Navigator.pop(context); }, style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white), child: Text("${AppTranslations.t('app.delete')}")),
                   ]));
@@ -98,7 +96,7 @@ class ConfigPage extends GetView<ConfigController> {
     ]);
   }
 
-  void _showDialog(BuildContext context, ConfigController ctrl, {dynamic? item}) {
+  void _showDialog(BuildContext context, ConfigController ctrl, {dynamic item}) {
     final gCtrl = TextEditingController(text: item?['group'] ?? '');
     final kCtrl = TextEditingController(text: item?['key'] ?? '');
     final vCtrl = TextEditingController(text: item?['value'] ?? '');

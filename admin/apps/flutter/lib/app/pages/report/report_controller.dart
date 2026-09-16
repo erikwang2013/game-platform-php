@@ -20,6 +20,7 @@ class ReportController extends GetxController {
   DateTime get end => _end;
   String get startText => _fmt(_start);
   String get endText => _fmt(_end);
+  int get presetDays => _days(_start, _end);
 
   static String _fmt(DateTime d) =>
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';

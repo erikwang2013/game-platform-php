@@ -7,6 +7,7 @@ import 'app/layouts/admin_layout.dart';
 import 'app/i18n/locale_controller.dart';
 import 'app/pages/login/login_page.dart';
 import 'app/pages/dashboard/dashboard_page.dart';
+import 'app/pages/report/report_page.dart';
 import 'app/pages/user/user_list_page.dart';
 import 'app/pages/role/role_list_page.dart';
 import 'app/pages/config/config_page.dart';
@@ -17,8 +18,13 @@ import 'app/pages/withdraw/withdraw_page.dart';
 import 'app/pages/platform_user/platform_user_page.dart';
 import 'app/pages/identity/identity_page.dart';
 import 'app/pages/risk/risk_log_page.dart';
+import 'app/pages/risk/risk_dashboard_page.dart';
 import 'app/pages/payment/payment_page.dart';
+import 'app/pages/cdn/cdn_page.dart';
 import 'app/pages/announcement/announcement_page.dart';
+import 'app/pages/vip/vip_page.dart';
+import 'app/pages/achievement/achievement_page.dart';
+import 'app/pages/activity/activity_page.dart';
 import 'app/pages/bigscreen/bigscreen_page.dart';
 
 void main() {
@@ -46,20 +52,27 @@ class AdminApp extends StatelessWidget {
           const Breakpoint(start: 1200, end: 4500, name: DESKTOP),
         ],
       ),
+      // 路由顺序与 AdminLayout._pages 下标一一对应, initialIndex 即该下标
       getPages: [
         GetPage(name: '/login', page: () => const LoginPage()),
         GetPage(name: '/dashboard', page: () => const AdminLayout(child: DashboardPage())),
-        GetPage(name: '/users', page: () => const AdminLayout(child: UserListPage(), initialIndex: 2)),
-        GetPage(name: '/roles', page: () => const AdminLayout(child: RoleListPage(), initialIndex: 3)),
-        GetPage(name: '/config', page: () => const AdminLayout(child: ConfigPage(), initialIndex: 4)),
-        GetPage(name: '/logs', page: () => const AdminLayout(child: LogPage(), initialIndex: 5)),
-        GetPage(name: '/games', page: () => const AdminLayout(child: GameListPage(), initialIndex: 6)),
-        GetPage(name: '/withdraws', page: () => const AdminLayout(child: WithdrawPage(), initialIndex: 7)),
-        GetPage(name: '/platform-users', page: () => const AdminLayout(child: PlatformUserPage(), initialIndex: 8)),
-        GetPage(name: '/identities', page: () => const AdminLayout(child: IdentityPage(), initialIndex: 9)),
-        GetPage(name: '/risk-logs', page: () => const AdminLayout(child: RiskLogPage(), initialIndex: 10)),
-        GetPage(name: '/payments', page: () => const AdminLayout(child: PaymentPage(), initialIndex: 12)),
-        GetPage(name: '/announcements', page: () => const AdminLayout(child: AnnouncementPage(), initialIndex: 14)),
+        GetPage(name: '/reports', page: () => const AdminLayout(initialIndex: 1, child: ReportPage())),
+        GetPage(name: '/users', page: () => const AdminLayout(initialIndex: 2, child: UserListPage())),
+        GetPage(name: '/roles', page: () => const AdminLayout(initialIndex: 3, child: RoleListPage())),
+        GetPage(name: '/config', page: () => const AdminLayout(initialIndex: 4, child: ConfigPage())),
+        GetPage(name: '/logs', page: () => const AdminLayout(initialIndex: 5, child: LogPage())),
+        GetPage(name: '/games', page: () => const AdminLayout(initialIndex: 6, child: GameListPage())),
+        GetPage(name: '/withdraws', page: () => const AdminLayout(initialIndex: 7, child: WithdrawPage())),
+        GetPage(name: '/platform-users', page: () => const AdminLayout(initialIndex: 8, child: PlatformUserPage())),
+        GetPage(name: '/identities', page: () => const AdminLayout(initialIndex: 9, child: IdentityPage())),
+        GetPage(name: '/risk-logs', page: () => const AdminLayout(initialIndex: 10, child: RiskLogPage())),
+        GetPage(name: '/risk-dashboard', page: () => const AdminLayout(initialIndex: 11, child: RiskDashboardPage())),
+        GetPage(name: '/payments', page: () => const AdminLayout(initialIndex: 12, child: PaymentPage())),
+        GetPage(name: '/cdn', page: () => const AdminLayout(initialIndex: 13, child: CdnPage())),
+        GetPage(name: '/announcements', page: () => const AdminLayout(initialIndex: 14, child: AnnouncementPage())),
+        GetPage(name: '/vip', page: () => const AdminLayout(initialIndex: 15, child: VipPage())),
+        GetPage(name: '/achievement', page: () => const AdminLayout(initialIndex: 16, child: AchievementPage())),
+        GetPage(name: '/activity', page: () => const AdminLayout(initialIndex: 17, child: ActivityPage())),
         GetPage(name: '/bigscreen', page: () => const BigscreenPage()),
         GetPage(name: '/profile', page: () => const ProfilePage()),
       ],

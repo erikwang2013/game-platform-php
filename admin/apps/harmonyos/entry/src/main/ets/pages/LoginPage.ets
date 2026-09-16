@@ -12,17 +12,16 @@ import { TokenManager } from '../utils/TokenManager';
 // 真机: http://<服务器IP>:8792
 const BASE_URL = 'http://10.0.2.2:8792';
 
+// 库仅下发 text/order, 刻意不含 x/y: 坐标为服务端校验依据, 下发即泄题
 interface CaptchaTarget {
   order: number;
   text: string;
-  x: number;
-  y: number;
 }
 
 interface CaptchaData {
   key: string;
-  image: string; // base64
-  targets: CaptchaTarget[];
+  image: string; // base64(无 data URI 前缀)
+  texts: CaptchaTarget[];
 }
 
 interface ClickPoint {
@@ -69,8 +68,9 @@ struct LoginPage {
 
       const result = JSON.parse(resp.result as string);
       if (result.code === 0) {
-        this.captchaData = result.data;
-        this.captchaData!.targets.sort((a, b) => a.order - b.order);
+        const d = result.data;
+        this.captchaData = { key: d.key, image: d.image, texts: d.extra?.texts ?? [] };
+        this.captchaData!.texts.sort((a, b) => a.order - b.order);
       } else {
         this.captchaError = '验证码加载失败';
       }
@@ -82,7 +82,7 @@ struct LoginPage {
   }
 
   onCaptchaClick(event: ClickEvent): void {
-    if (!this.captchaData || this.clicks.length >= this.captchaData.targets.length) return;
+    if (!this.captchaData || this.clicks.length >= this.captchaData.texts.length) return;
 
     // 点击坐标 (相对于组件)
     const widgetW = 400; // 组件近似宽度
@@ -111,8 +111,8 @@ struct LoginPage {
       this.loginError = '请输入密码';
       return;
     }
-    if (!this.captchaData || this.clicks.length < this.captchaData.targets.length) {
-      const next = this.captchaData?.targets[this.clicks.length];
+    if (!this.captchaData || this.clicks.length < this.captchaData.texts.length) {
+      const next = this.captchaData?.texts[this.clicks.length];
       this.loginError = next ? `请点击图中文字『${next.text}』` : '请完成验证码验证';
       return;
     }
@@ -237,7 +237,7 @@ struct LoginPage {
                   Text('请按顺序点击图中文字: ')
                     .fontSize(12)
                     .fontColor('#666666')
-                  ForEach(this.captchaData!.targets, (t: CaptchaTarget, i: number) => {
+                  ForEach(this.captchaData!.texts, (t: CaptchaTarget, i: number) => {
                     Text(i > 0 ? ' → ' : '')
                       .fontSize(12)
                       .fontColor('#999999')
@@ -280,7 +280,7 @@ struct LoginPage {
 
                 // 操作栏
                 Row() {
-                  Text(`已点击 ${this.clicks.length}/${this.captchaData!.targets.length}`)
+                  Text(`已点击 ${this.clicks.length}/${this.captchaData!.texts.length}`)
                     .fontSize(12)
                     .fontColor('#999999')
 

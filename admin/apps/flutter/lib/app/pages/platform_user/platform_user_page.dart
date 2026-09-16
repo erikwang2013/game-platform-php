@@ -162,7 +162,7 @@ class PlatformUserPage extends GetView<PlatformUserController> {
     final id = user['id']?.toString() ?? '';
     final detail = await ctrl.getUserDetail(id);
 
-    if (detail == null) return;
+    if (detail == null || !context.mounted) return;
 
     showDialog(
       context: context,

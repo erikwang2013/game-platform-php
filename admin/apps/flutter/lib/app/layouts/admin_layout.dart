@@ -141,8 +141,10 @@ class _AdminLayoutState extends State<AdminLayout> {
       return KeyEventResult.handled;
     }
     if (HardwareKeyboard.instance.isAltPressed) {
-      if (key >= LogicalKeyboardKey.digit1 && key <= LogicalKeyboardKey.digit9) {
-        _onNavChanged(key.keyId - LogicalKeyboardKey.digit1.keyId);
+      // LogicalKeyboardKey 无 >=/<= 运算符，按 keyId 偏移判定 Alt+1..9
+      final n = key.keyId - LogicalKeyboardKey.digit1.keyId;
+      if (n >= 0 && n <= 8) {
+        _onNavChanged(n);
         return KeyEventResult.handled;
       }
       if (key == LogicalKeyboardKey.keyL) {
@@ -431,9 +433,10 @@ class _AdminLayoutState extends State<AdminLayout> {
                 ),
                 TextButton(
                   onPressed: () async {
+                    final nav = Navigator.of(context);
                     Navigator.pop(ctx);
                     await AuthService.clearToken();
-                    Navigator.of(context).pushReplacementNamed('/login');
+                    nav.pushReplacementNamed('/login');
                   },
                   child: Text("${AppTranslations.t('app.confirm')}",
                       style: const TextStyle(color: Colors.red)),
@@ -524,7 +527,7 @@ class _CommandPaletteState extends State<_CommandPalette> {
                   ? Center(child: Text("${AppTranslations.t('app.no_data')}"))
                   : ListView.separated(
                       itemCount: filtered.length,
-                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      separatorBuilder: (_, _) => const Divider(height: 1),
                       itemBuilder: (_, i) {
                         final (key, icon, index) = filtered[i];
                         return ListTile(

@@ -151,6 +151,7 @@ class RiskUserTab extends GetView<RiskUserController> {
             try {
               await ctrl.hold('${u['user_id']}');
               Get.snackbar('成功', '已冻结');
+              if (!ctx.mounted) return;
               Navigator.pop(ctx);
             } catch (e) {
               Get.snackbar('失败', '$e');
