@@ -89,7 +89,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · **한국어** �
 | 대시보드 실제 차트 | - | - | ✓ fl_chart |
 | 쿠폰 시스템 | - | - | ✓ |
 | 랭킹 (일/주/월/총) | - | - | ✓ Redis 캐시 |
-| WebSocket 실시간 랭킹 | - | - | ✓ 포트 8789 |
+| WebSocket 실시간 랭킹 | - | - | ✓ 포트 8790 |
 | 알림 시스템 (사이트 내+이메일) | - | - | ✓ |
 | 추천 리베이트 | - | - | ✓ |
 | 일별 통계 스냅샷 | - | ✓ | ✓ |
@@ -136,7 +136,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · **한국어** �
 | Crontab 예약 작업 | - | ✓ | ✓ |
 | Prometheus 모니터링 | ✓ | ✓ | ✓ `/metrics` 비즈니스 gauge + 이벤트 counter |
 | 헬스 체크 | ✓ | ✓ | ✓ |
-| hg/apidoc 온라인 문서 | - | - | ✓ 41컨트롤러 |
+| erikwang2013/apidoc-php 온라인 문서 | - | - | ✓ 80컨트롤러 |
 
 ---
 
@@ -222,7 +222,7 @@ game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, gam
 | VIP 체계 | 5단계, 경험치 누적, 자동 승급, 환전 할인, 출금 감면, 환율 보너스 |
 | 업적 시스템 | 내장 업적 12개, 이벤트 주도 검출, 진행도 추적 |
 | 친구 시스템 | 신청/수락/거절/삭제/검색 |
-| 쪽지/채팅 | REST + WebSocket 실시간 메시지 (포트 8790) |
+| 쪽지/채팅 | REST + WebSocket 실시간 메시지 (포트 8791) |
 | 이벤트 버스 | Redis Pub/Sub; emit INCR `metrics:event_*`; 소비 프로세스 `EventConsumer` 구축 완료 |
 | 기능 스위치 | FeatureFlag DB 기반; `inRollout`/`abTest`가 `feature.{name}_percent` 읽음 |
 | Webhook | - | - | ✓ 7가지 이벤트+Pub/Sub 전달 |
@@ -272,4 +272,21 @@ GET  /admin/analytics/retention  — 리텐션 분석
 GET  /admin/analytics/funnel     — 전환 퍼널
 GET  /admin/analytics/arpu       — ARPU 추세
 GET  /admin/analytics/economy    — 경제 지표
+```
+
+---
+
+## v1.3.23-30 추가
+
+```
+apidoc 多级目录分类   注解按功能菜单还原为多级分组；凭据改由环境变量注入（缺失即拒绝启动）
+端口迁移              管理端 8787→8789、C端 8788→8792
+                      WebSocket 排行榜 8790 / 聊天 8791
+API 版本策略          版本号由请求头改为 URL 路径：/api/v1/*、/admin/v1/*
+                      /api/provider/*（第三方 HMAC）与 /api/game/*（SDK）保持无版本
+口令强度              统一为 8-32 位且需含大小写字母和数字
+依赖升级              hg/apidoc → erikwang2013/apidoc-php ^1.0
+                      erikwang2013/security-php v1.2.0 → v1.3.3
+composer.lock         纳入 .gitignore，不随仓库分发
+金额计算              统一 bcmath（common\BcMath::round / percent），禁用 float/double 参与金额运算
 ```

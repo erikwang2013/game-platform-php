@@ -89,7 +89,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Реальные графики дашборда | - | - | ✓ fl_chart |
 | Система купонов | - | - | ✓ |
 | Рейтинги (дневной/недельный/месячный/общий) | - | - | ✓ кэш Redis |
-| WebSocket-рейтинг в реальном времени | - | - | ✓ порт 8789 |
+| WebSocket-рейтинг в реальном времени | - | - | ✓ порт 8790 |
 | Система уведомлений (внутри + email) | - | - | ✓ |
 | Реферальные вознаграждения | - | - | ✓ |
 | Ежедневный статистический снимок | - | ✓ | ✓ |
@@ -136,7 +136,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Планировщик Crontab | - | ✓ | ✓ |
 | Мониторинг Prometheus | ✓ | ✓ | ✓ `/metrics` бизнес-gauge + счётчики событий |
 | Проверка работоспособности | ✓ | ✓ | ✓ |
-| Онлайн-документация hg/apidoc | - | - | ✓ 41 контроллер |
+| Онлайн-документация erikwang2013/apidoc-php | - | - | ✓ 80 контроллер |
 
 ---
 
@@ -222,7 +222,7 @@ game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, gam
 | Система VIP | 5 уровней, накопление опыта, автоповышение, скидка на обмен, снижение комиссии за вывод, бонус курса |
 | Система достижений | 12 встроенных достижений, событийно-управляемая детекция, отслеживание прогресса |
 | Система друзей | заявка/принятие/отклонение/удаление/поиск |
-| Личные сообщения/чат | REST + WebSocket в реальном времени (порт 8790) |
+| Личные сообщения/чат | REST + WebSocket в реальном времени (порт 8791) |
 | Шина событий | Redis Pub/Sub; emit INCR `metrics:event_*`; процесс-потребитель `EventConsumer` развёрнут |
 | Функциональные переключатели | FeatureFlag на базе БД; `inRollout`/`abTest` читают `feature.{name}_percent` |
 | Webhook | - | - | ✓ 7 типов событий + доставка Pub/Sub |
@@ -272,4 +272,21 @@ GET  /admin/analytics/retention  — 留存分析
 GET  /admin/analytics/funnel     — 转化漏斗
 GET  /admin/analytics/arpu       — ARPU趋势
 GET  /admin/analytics/economy    — 经济指标
+```
+
+---
+
+## Новые в v1.3.23-30
+
+```
+apidoc 多级目录分类   注解按功能菜单还原为多级分组；凭据改由环境变量注入（缺失即拒绝启动）
+端口迁移              管理端 8787→8789、C端 8788→8792
+                      WebSocket 排行榜 8790 / 聊天 8791
+API 版本策略          版本号由请求头改为 URL 路径：/api/v1/*、/admin/v1/*
+                      /api/provider/*（第三方 HMAC）与 /api/game/*（SDK）保持无版本
+口令强度              统一为 8-32 位且需含大小写字母和数字
+依赖升级              hg/apidoc → erikwang2013/apidoc-php ^1.0
+                      erikwang2013/security-php v1.2.0 → v1.3.3
+composer.lock         纳入 .gitignore，不随仓库分发
+金额计算              统一 bcmath（common\BcMath::round / percent），禁用 float/double 参与金额运算
 ```

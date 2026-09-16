@@ -89,7 +89,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | ダッシュボード実グラフ | - | - | ✓ fl_chart |
 | クーポンシステム | - | - | ✓ |
 | ランキング (日/週/月/総合) | - | - | ✓ Redisキャッシュ |
-| WebSocket リアルタイムランキング | - | - | ✓ ポート8789 |
+| WebSocket リアルタイムランキング | - | - | ✓ ポート8790 |
 | 通知システム (サイト内+メール) | - | - | ✓ |
 | 紹介報酬 | - | - | ✓ |
 | 日次統計スナップショット | - | ✓ | ✓ |
@@ -136,7 +136,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Crontab 定期タスク | - | ✓ | ✓ |
 | Prometheus モニタリング | ✓ | ✓ | ✓ `/metrics` 業務 gauge + イベント counter |
 | ヘルスチェック | ✓ | ✓ | ✓ |
-| hg/apidoc オンラインドキュメント | - | - | ✓ 41コントローラー |
+| erikwang2013/apidoc-php オンラインドキュメント | - | - | ✓ 80コントローラー |
 
 ---
 
@@ -222,7 +222,7 @@ game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, gam
 | VIP 体系 | 5級、経験値累積、自動昇格、交換割引、出金減免、レートボーナス |
 | アチーブメントシステム | 12個の内蔵アチーブメント、イベント駆動検出、進捗トラッキング |
 | フレンドシステム | 申請/承認/拒否/削除/検索 |
-| ダイレクトメッセージ/チャット | REST + WebSocket リアルタイムメッセージ (ポート8790) |
+| ダイレクトメッセージ/チャット | REST + WebSocket リアルタイムメッセージ (ポート8791) |
 | イベントバス | Redis Pub/Sub；emit INCR `metrics:event_*`；消費プロセス `EventConsumer` 実装済み |
 | フィーチャーフラグ | FeatureFlag は DB ベース；`inRollout`/`abTest` は `feature.{name}_percent` を参照 |
 | Webhook | - | - | ✓ 7種イベント+Pub/Sub配信 |
@@ -272,4 +272,21 @@ GET  /admin/analytics/retention  — 留存分析
 GET  /admin/analytics/funnel     — 转化漏斗
 GET  /admin/analytics/arpu       — ARPU趋势
 GET  /admin/analytics/economy    — 经济指标
+```
+
+---
+
+## v1.3.23-30 追加
+
+```
+apidoc 多级目录分类   注解按功能菜单还原为多级分组；凭据改由环境变量注入（缺失即拒绝启动）
+端口迁移              管理端 8787→8789、C端 8788→8792
+                      WebSocket 排行榜 8790 / 聊天 8791
+API 版本策略          版本号由请求头改为 URL 路径：/api/v1/*、/admin/v1/*
+                      /api/provider/*（第三方 HMAC）与 /api/game/*（SDK）保持无版本
+口令强度              统一为 8-32 位且需含大小写字母和数字
+依赖升级              hg/apidoc → erikwang2013/apidoc-php ^1.0
+                      erikwang2013/security-php v1.2.0 → v1.3.3
+composer.lock         纳入 .gitignore，不随仓库分发
+金额计算              统一 bcmath（common\BcMath::round / percent），禁用 float/double 参与金额运算
 ```

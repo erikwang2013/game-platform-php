@@ -89,7 +89,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 | Vrais graphiques du tableau de bord | - | - | ✓ fl_chart |
 | Système de coupons | - | - | ✓ |
 | Classements (jour/semaine/mois/total) | - | - | ✓ cache Redis |
-| Classement temps réel WebSocket | - | - | ✓ port 8789 |
+| Classement temps réel WebSocket | - | - | ✓ port 8790 |
 | Système de notifications (interne + e-mail) | - | - | ✓ |
 | Rétrocommission de parrainage | - | - | ✓ |
 | Instantané de statistiques quotidien | - | ✓ | ✓ |
@@ -136,7 +136,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 | Tâches planifiées Crontab | - | ✓ | ✓ |
 | Surveillance Prometheus | ✓ | ✓ | ✓ `/metrics` gauges métier + compteurs d'événements |
 | Contrôle de santé | ✓ | ✓ | ✓ |
-| Documentation en ligne hg/apidoc | - | - | ✓ 41 contrôleurs |
+| Documentation en ligne erikwang2013/apidoc-php | - | - | ✓ 80 contrôleurs |
 
 ---
 
@@ -222,7 +222,7 @@ game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, gam
 | Système VIP | 5 niveaux, accumulation d'expérience, montée automatique, remise d'échange, exemption de frais de retrait, bonus de taux |
 | Système de succès | 12 succès intégrés, détection pilotée par événements, suivi de progression |
 | Système d'amis | demande/acceptation/refus/suppression/recherche |
-| Messages privés/chat | messages temps réel REST + WebSocket (port 8790) |
+| Messages privés/chat | messages temps réel REST + WebSocket (port 8791) |
 | Bus d'événements | Redis Pub/Sub ; emit INCR `metrics:event_*` ; processus de consommation `EventConsumer` livré |
 | Interrupteurs de fonctionnalités | FeatureFlag basé DB ; `inRollout`/`abTest` lisent `feature.{name}_percent` |
 | Webhook | - | - | ✓ 7 types d'événements + livraison Pub/Sub |
@@ -272,4 +272,21 @@ GET  /admin/analytics/retention  — analyse de rétention
 GET  /admin/analytics/funnel     — entonnoir de conversion
 GET  /admin/analytics/arpu       — tendance ARPU
 GET  /admin/analytics/economy    — indicateurs économiques
+```
+
+---
+
+## Ajouts v1.3.23-30
+
+```
+apidoc 多级目录分类   注解按功能菜单还原为多级分组；凭据改由环境变量注入（缺失即拒绝启动）
+端口迁移              管理端 8787→8789、C端 8788→8792
+                      WebSocket 排行榜 8790 / 聊天 8791
+API 版本策略          版本号由请求头改为 URL 路径：/api/v1/*、/admin/v1/*
+                      /api/provider/*（第三方 HMAC）与 /api/game/*（SDK）保持无版本
+口令强度              统一为 8-32 位且需含大小写字母和数字
+依赖升级              hg/apidoc → erikwang2013/apidoc-php ^1.0
+                      erikwang2013/security-php v1.2.0 → v1.3.3
+composer.lock         纳入 .gitignore，不随仓库分发
+金额计算              统一 bcmath（common\BcMath::round / percent），禁用 float/double 参与金额运算
 ```

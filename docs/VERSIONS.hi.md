@@ -89,7 +89,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 | डैशबोर्ड वास्तविक चार्ट | - | - | ✓ fl_chart |
 | कूपन प्रणाली | - | - | ✓ |
 | लीडरबोर्ड (दैनिक/साप्ताहिक/मासिक/कुल) | - | - | ✓ Redis कैश |
-| WebSocket रीयल-टाइम लीडरबोर्ड | - | - | ✓ पोर्ट 8789 |
+| WebSocket रीयल-टाइम लीडरबोर्ड | - | - | ✓ पोर्ट 8790 |
 | सूचना प्रणाली (साइट + ईमेल) | - | - | ✓ |
 | रेफरल कमीशन | - | - | ✓ |
 | दैनिक सांख्यिकी स्नैपशॉट | - | ✓ | ✓ |
@@ -136,7 +136,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 | Crontab निर्धारित कार्य | - | ✓ | ✓ |
 | Prometheus निगरानी | ✓ | ✓ | ✓ `/metrics` व्यावसायिक gauge + इवेंट counter |
 | स्वास्थ्य जाँच | ✓ | ✓ | ✓ |
-| hg/apidoc ऑनलाइन दस्तावेज़ | - | - | ✓ 41 कंट्रोलर |
+| erikwang2013/apidoc-php ऑनलाइन दस्तावेज़ | - | - | ✓ 80 कंट्रोलर |
 
 ---
 
@@ -222,7 +222,7 @@ game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, gam
 | VIP प्रणाली | 5 स्तर, अनुभव अंक संचय, स्वचालित उन्नयन, विनिमय छूट, निकासी राहत, विनिमय दर लाभ |
 | उपलब्धि प्रणाली | 12 अंतर्निहित उपलब्धियाँ, इवेंट-संचालित डिटेक्शन, प्रगति ट्रैकिंग |
 | मित्र प्रणाली | आवेदन/स्वीकार/अस्वीकार/हटाना/खोज |
-| निजी संदेश/चैट | REST + WebSocket रीयल-टाइम संदेश (पोर्ट 8790) |
+| निजी संदेश/चैट | REST + WebSocket रीयल-टाइम संदेश (पोर्ट 8791) |
 | इवेंट बस | Redis Pub/Sub; emit INCR `metrics:event_*`; उपभोक्ता प्रक्रिया `EventConsumer` लागू |
 | फ़ीचर स्विच | FeatureFlag DB-आधारित; `inRollout`/`abTest` `feature.{name}_percent` पढ़ता है |
 | Webhook | - | - | ✓ 7 प्रकार के इवेंट + Pub/Sub डिलीवरी |
@@ -272,4 +272,21 @@ GET  /admin/analytics/retention  — प्रतिधारण विश्ल
 GET  /admin/analytics/funnel     — रूपांतरण फ़नल
 GET  /admin/analytics/arpu       — ARPU प्रवृत्ति
 GET  /admin/analytics/economy    — आर्थिक मीट्रिक
+```
+
+---
+
+## v1.3.23-30 में नई
+
+```
+apidoc 多级目录分类   注解按功能菜单还原为多级分组；凭据改由环境变量注入（缺失即拒绝启动）
+端口迁移              管理端 8787→8789、C端 8788→8792
+                      WebSocket 排行榜 8790 / 聊天 8791
+API 版本策略          版本号由请求头改为 URL 路径：/api/v1/*、/admin/v1/*
+                      /api/provider/*（第三方 HMAC）与 /api/game/*（SDK）保持无版本
+口令强度              统一为 8-32 位且需含大小写字母和数字
+依赖升级              hg/apidoc → erikwang2013/apidoc-php ^1.0
+                      erikwang2013/security-php v1.2.0 → v1.3.3
+composer.lock         纳入 .gitignore，不随仓库分发
+金额计算              统一 bcmath（common\BcMath::round / percent），禁用 float/double 参与金额运算
 ```

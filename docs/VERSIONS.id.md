@@ -89,7 +89,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Grafik dasbor nyata | - | - | ✓ fl_chart |
 | Sistem kupon | - | - | ✓ |
 | Papan peringkat (harian/mingguan/bulanan/total) | - | - | ✓ cache Redis |
-| Papan peringkat real-time WebSocket | - | - | ✓ port 8789 |
+| Papan peringkat real-time WebSocket | - | - | ✓ port 8790 |
 | Sistem notifikasi (pesan dalam situs+email) | - | - | ✓ |
 | Komisi referral | - | - | ✓ |
 | Snapshot statistik harian | - | ✓ | ✓ |
@@ -136,7 +136,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Tugas terjadwal Crontab | - | ✓ | ✓ |
 | Monitoring Prometheus | ✓ | ✓ | ✓ `/metrics` gauge bisnis + counter event |
 | Pemeriksaan kesehatan | ✓ | ✓ | ✓ |
-| Dokumentasi online hg/apidoc | - | - | ✓ 41 controller |
+| Dokumentasi online erikwang2013/apidoc-php | - | - | ✓ 80 controller |
 
 ---
 
@@ -222,7 +222,7 @@ game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, gam
 | Sistem VIP | 5 level, akumulasi EXP, upgrade otomatis, diskon penukaran, keringanan penarikan, bonus kurs |
 | Sistem pencapaian | 12 pencapaian bawaan, deteksi berbasis event, pelacakan progres |
 | Sistem teman | Ajukan/terima/tolak/hapus/cari |
-| Pesan pribadi/chat | REST + pesan real-time WebSocket (port 8790) |
+| Pesan pribadi/chat | REST + pesan real-time WebSocket (port 8791) |
 | Bus event | Redis Pub/Sub; emit INCR `metrics:event_*`; proses konsumen `EventConsumer` sudah diwujudkan |
 | Saklar fitur | FeatureFlag berbasis DB; `inRollout`/`abTest` membaca `feature.{name}_percent` |
 | Webhook | - | - | ✓ 7 jenis event+penyampaian Pub/Sub |
@@ -272,4 +272,21 @@ GET  /admin/analytics/retention  — Analisis retensi
 GET  /admin/analytics/funnel     — Funnel konversi
 GET  /admin/analytics/arpu       — Tren ARPU
 GET  /admin/analytics/economy    — Metrik ekonomi
+```
+
+---
+
+## Penambahan v1.3.23-30
+
+```
+apidoc 多级目录分类   注解按功能菜单还原为多级分组；凭据改由环境变量注入（缺失即拒绝启动）
+端口迁移              管理端 8787→8789、C端 8788→8792
+                      WebSocket 排行榜 8790 / 聊天 8791
+API 版本策略          版本号由请求头改为 URL 路径：/api/v1/*、/admin/v1/*
+                      /api/provider/*（第三方 HMAC）与 /api/game/*（SDK）保持无版本
+口令强度              统一为 8-32 位且需含大小写字母和数字
+依赖升级              hg/apidoc → erikwang2013/apidoc-php ^1.0
+                      erikwang2013/security-php v1.2.0 → v1.3.3
+composer.lock         纳入 .gitignore，不随仓库分发
+金额计算              统一 bcmath（common\BcMath::round / percent），禁用 float/double 参与金额运算
 ```

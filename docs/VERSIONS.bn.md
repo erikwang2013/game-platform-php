@@ -89,7 +89,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 | ড্যাশবোর্ড বাস্তব চার্ট | - | - | ✓ fl_chart |
 | কুপন সিস্টেম | - | - | ✓ |
 | লিডারবোর্ড (দৈনিক/সাপ্তাহিক/মাসিক/সর্বকালীন) | - | - | ✓ Redis ক্যাশ |
-| WebSocket রিয়েল-টাইম লিডারবোর্ড | - | - | ✓ পোর্ট 8789 |
+| WebSocket রিয়েল-টাইম লিডারবোর্ড | - | - | ✓ পোর্ট 8790 |
 | নোটিফিকেশন সিস্টেম (ইন-অ্যাপ+ইমেইল) | - | - | ✓ |
 | রেফারেল কমিশন | - | - | ✓ |
 | দৈনিক পরিসংখ্যান স্ন্যাপশট | - | ✓ | ✓ |
@@ -136,7 +136,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 | Crontab শিডিউলড টাস্ক | - | ✓ | ✓ |
 | Prometheus মনিটরিং | ✓ | ✓ | ✓ `/metrics` ব্যবসায়িক gauge + ইভেন্ট counter |
 | হেলথ চেক | ✓ | ✓ | ✓ |
-| hg/apidoc অনলাইন ডক | - | - | ✓ ৪১ কন্ট্রোলার |
+| erikwang2013/apidoc-php অনলাইন ডক | - | - | ✓ ৮০ কন্ট্রোলার |
 
 ---
 
@@ -222,7 +222,7 @@ game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, gam
 | VIP সিস্টেম | ৫ লেভেল, অভিজ্ঞতা পয়েন্ট সঞ্চয়, অটো আপগ্রেড, বিনিময় ডিসকাউন্ট, উত্তোলন ছাড়, এক্সচেঞ্জ রেট বোনাস |
 | অ্যাচিভমেন্ট সিস্টেম | ১২টি বিল্ট-ইন অ্যাচিভমেন্ট, ইভেন্ট-চালিত ডিটেকশন, প্রগ্রেস ট্র্যাকিং |
 | ফ্রেন্ড সিস্টেম | রিকোয়েস্ট/অ্যাকসেপ্ট/রিজেক্ট/ডিলিট/সার্চ |
-| প্রাইভেট মেসেজ/চ্যাট | REST + WebSocket রিয়েল-টাইম মেসেজ (পোর্ট 8790) |
+| প্রাইভেট মেসেজ/চ্যাট | REST + WebSocket রিয়েল-টাইম মেসেজ (পোর্ট 8791) |
 | ইভেন্ট বাস | Redis Pub/Sub; emit INCR `metrics:event_*`; কনজিউম প্রসেস `EventConsumer` বাস্তবায়িত |
 | ফিচার সুইচ | FeatureFlag DB-ভিত্তিক; `inRollout`/`abTest` `feature.{name}_percent` পড়ে |
 | Webhook | - | - | ✓ ৭ ধরনের ইভেন্ট+Pub/Sub ডেলিভারি |
@@ -272,4 +272,21 @@ GET  /admin/analytics/retention  — 留存分析
 GET  /admin/analytics/funnel     — 转化漏斗
 GET  /admin/analytics/arpu       — ARPU趋势
 GET  /admin/analytics/economy    — 经济指标
+```
+
+---
+
+## v1.3.23-30-এ নতুন
+
+```
+apidoc 多级目录分类   注解按功能菜单还原为多级分组；凭据改由环境变量注入（缺失即拒绝启动）
+端口迁移              管理端 8787→8789、C端 8788→8792
+                      WebSocket 排行榜 8790 / 聊天 8791
+API 版本策略          版本号由请求头改为 URL 路径：/api/v1/*、/admin/v1/*
+                      /api/provider/*（第三方 HMAC）与 /api/game/*（SDK）保持无版本
+口令强度              统一为 8-32 位且需含大小写字母和数字
+依赖升级              hg/apidoc → erikwang2013/apidoc-php ^1.0
+                      erikwang2013/security-php v1.2.0 → v1.3.3
+composer.lock         纳入 .gitignore，不随仓库分发
+金额计算              统一 bcmath（common\BcMath::round / percent），禁用 float/double 参与金额运算
 ```

@@ -89,7 +89,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | 仪表盘真实图表 | - | - | ✓ fl_chart |
 | 优惠券系统 | - | - | ✓ |
 | 排行榜 (日/周/月/总) | - | - | ✓ Redis缓存 |
-| WebSocket 实时排行榜 | - | - | ✓ 端口8789 |
+| WebSocket 实时排行榜 | - | - | ✓ 端口8790 |
 | 通知系统 (站内+邮件) | - | - | ✓ |
 | 推荐返利 | - | - | ✓ |
 | 日统计快照 | - | ✓ | ✓ |
@@ -136,7 +136,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Crontab 定时任务 | - | ✓ | ✓ |
 | Prometheus 监控 | ✓ | ✓ | ✓ `/metrics` 业务 gauge + 事件 counter |
 | 健康检查 | ✓ | ✓ | ✓ |
-| hg/apidoc 在线文档 | - | - | ✓ 41控制器 |
+| erikwang2013/apidoc-php 在线文档 | - | - | ✓ 80控制器 |
 
 ---
 
@@ -222,7 +222,7 @@ game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, gam
 | VIP 体系 | 5级、经验值累计、自动升级、兑换折扣、提现减免、汇率加成 |
 | 成就系统 | 12个内置成就、事件驱动检测、进度追踪 |
 | 好友系统 | 申请/接受/拒绝/删除/搜索 |
-| 私信/聊天 | REST + WebSocket 实时消息 (端口8790) |
+| 私信/聊天 | REST + WebSocket 实时消息 (端口8791) |
 | 事件总线 | Redis Pub/Sub；emit INCR `metrics:event_*`；消费进程 `EventConsumer` 已落地 |
 | 特性开关 | FeatureFlag 基于DB；`inRollout`/`abTest` 读 `feature.{name}_percent` |
 | Webhook | - | - | ✓ 7种事件+Pub/Sub投递 |
@@ -272,4 +272,21 @@ GET  /admin/analytics/retention  — 留存分析
 GET  /admin/analytics/funnel     — 转化漏斗
 GET  /admin/analytics/arpu       — ARPU趋势
 GET  /admin/analytics/economy    — 经济指标
+```
+
+---
+
+## v1.3.23-30 新增
+
+```
+apidoc 多级目录分类   注解按功能菜单还原为多级分组；凭据改由环境变量注入（缺失即拒绝启动）
+端口迁移              管理端 8787→8789、C端 8788→8792
+                      WebSocket 排行榜 8790 / 聊天 8791
+API 版本策略          版本号由请求头改为 URL 路径：/api/v1/*、/admin/v1/*
+                      /api/provider/*（第三方 HMAC）与 /api/game/*（SDK）保持无版本
+口令强度              统一为 8-32 位且需含大小写字母和数字
+依赖升级              hg/apidoc → erikwang2013/apidoc-php ^1.0
+                      erikwang2013/security-php v1.2.0 → v1.3.3
+composer.lock         纳入 .gitignore，不随仓库分发
+金额计算              统一 bcmath（common\BcMath::round / percent），禁用 float/double 参与金额运算
 ```
