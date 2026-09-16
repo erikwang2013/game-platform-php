@@ -11,7 +11,7 @@ use support\Model;
 
 class RiskCluster extends Model
 {
-    protected $table = 'game_risk_cluster';
+    protected $table = 'risk_cluster';
 
     public $incrementing = false;
     protected $keyType = 'int';

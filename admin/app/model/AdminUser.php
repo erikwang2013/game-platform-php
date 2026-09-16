@@ -9,13 +9,13 @@ namespace app\model;
 
 use Erikwang2013\Encryptable\Encryptable;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Erikwang2013\WebmanScout\Searchable;
 use support\Model;
 
+// 勿加 Searchable：全仓无任何地方搜索管理员，而该 trait 在 saved 钩子里解析搜索引擎，
+// 会让登录写 last_login_at 时硬依赖 OpenSearch（未安装 opensearch-php 则注册/登录 500）
 class AdminUser extends Model
 {
     use SoftDeletes;
-    use Searchable;
 
     protected $table = 'admin_user';
     protected $primaryKey = 'id';
@@ -42,13 +42,5 @@ class AdminUser extends Model
     public function roles()
     {
         return $this->belongsToMany(AdminRole::class, 'admin_user_role', 'user_id', 'role_id');
-    }
-
-    public function toSearchableArray(): array
-    {
-        return [
-            'username'  => $this->username,
-            'real_name' => $this->real_name,
-        ];
     }
 }
