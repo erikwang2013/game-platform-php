@@ -37,10 +37,44 @@ class HuaweiProvider implements CdnProviderInterface
                 'secret' => $config['sk'] ?? '',
             ],
         ]);
-        $this->cdn = $cdn ?? CdnClient::newBuilder()
-            ->withCredentials(new GlobalCredentials($config['ak'] ?? '', $config['sk'] ?? ''))
-            ->withEndpoint('https://cdn.myhuaweicloud.com')
-            ->build();
+        $this->cdn = $cdn ?? self::buildCdnClient($config);
+    }
+
+    /**
+     * 构造华为 CDN 客户端，并回收 SDK 泄漏的错误处理器。
+     *
+     * SDK 的 UserAgent::GetAppFilePath() 会 set_error_handler 却从不 restore
+     * （vendor/huaweicloud/huaweicloud-sdk-php/Core/src/Http/UserAgent.php:192，
+     * 经 ClientBuilder::build() -> GetUserAgentMessage() 触发）。而 webman 在
+     * vendor/workerman/webman-framework/src/support/bootstrap.php:31 装的处理器
+     * 负责把 PHP 错误转成异常——被返回 false 的处理器顶掉后，本 worker 进程后续
+     * 所有 PHP 错误都只落 stderr、不再抛异常，是长驻进程里的静默降级。
+     *
+     * SDK 在 ClientBuilder::__construct(:63) 与 Client::__construct(:52) 各装一次、
+     * 都不还原，故一次 build 压两层；按层弹回调用前的处理器为止，用身份比对而非
+     * 固定次数——未来 SDK 增删安装点仍收敛，也不会误弹 webman 自己的处理器。
+     */
+    private static function buildCdnClient(array $config): CdnClient
+    {
+        $prev = set_error_handler(static fn () => false);
+        restore_error_handler();
+
+        try {
+            return CdnClient::newBuilder()
+                ->withCredentials(new GlobalCredentials($config['ak'] ?? '', $config['sk'] ?? ''))
+                ->withEndpoint('https://cdn.myhuaweicloud.com')
+                ->build();
+        } finally {
+            // 先探后弹：$now === $prev 说明已回到调用前状态，此时不能再弹
+            for ($i = 0; $i < 8; $i++) {
+                $now = set_error_handler(static fn () => false);
+                restore_error_handler();
+                if ($now === $prev) {
+                    break;
+                }
+                restore_error_handler();
+            }
+        }
     }
 
     public function upload(string $key, string $localPath, array $options = []): string
