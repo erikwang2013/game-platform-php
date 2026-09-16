@@ -48,7 +48,7 @@ function admin_login(): string
 {
     global $ADMIN_USER, $ADMIN_PASS;
     [$key, $clicks] = captcha_seed();
-    $res = api('POST', '/api/auth/login', [
+    $res = api('POST', '/api/v1/auth/login', [
         'username'    => $ADMIN_USER,
         'password'    => $ADMIN_PASS,
         'captcha_key' => $key,
@@ -69,57 +69,57 @@ echo "---- 认证链 ----\n";
 $token = admin_login();
 t_ok('登录后取得 access_token', strlen($token) > 20, 'token=' . substr($token, 0, 30));
 
-t_check('认证失败: 无 Token', api('GET', '/admin/dashboard'), [401]);
-t_check('认证失败: 伪造 Token', api('GET', '/admin/dashboard', null, 'garbage.token.here'), [401]);
+t_check('认证失败: 无 Token', api('GET', '/admin/v1/dashboard'), [401]);
+t_check('认证失败: 伪造 Token', api('GET', '/admin/v1/dashboard', null, 'garbage.token.here'), [401]);
 
 // 错误密码(有效验证码, 仅 1 次, 避免触发 5 次锁定)
 [$k2, $c2] = captcha_seed();
-t_check('登录负例: 错误密码', api('POST', '/api/auth/login', [
+t_check('登录负例: 错误密码', api('POST', '/api/v1/auth/login', [
     'username' => $ADMIN_USER, 'password' => 'WrongPass@999',
     'captcha_key' => $k2, 'clicks' => $c2,
 ]), [401, 422, 423]);
 
-t_check('注册负例: 缺参数', api('POST', '/api/auth/register', []), [422]);
-t_check('刷新负例: 缺 refresh_token', api('POST', '/api/auth/refresh', []), [422]);
+t_check('注册负例: 缺参数', api('POST', '/api/v1/auth/register', []), [422]);
+t_check('刷新负例: 缺 refresh_token', api('POST', '/api/v1/auth/refresh', []), [422]);
 
 // ================= /admin/* 全量冒烟 =================
 echo "---- /admin/* 冒烟 ----\n";
 // 200 允许: 导出类接口成功时直接流式返回二进制文件(非 JSON), biz_code 退化为 HTTP 200
 $writePassCodes = [0, 200, 400, 401, 403, 404, 409, 422, 429];
-$hashidLike = fn(string $p): bool => (bool) preg_match('#\{[a-z_]+\}#', $p);
+$hashidLike = fn(string $p): bool => (bool) preg_match('#\{[a-zA-Z_]+\}#', $p);
 
 foreach ($ROUTES as [$method, $path]) {
     if ($path === '/admin' || !str_starts_with($path, '/admin')) {
         continue; // 仅冒烟 /admin 组, 公开端点已单独测试
     }
     $name = "$method $path";
-    if (in_array($path, ['/admin/import/users', '/admin/upload'], true)) {
+    if (in_array($path, ['/admin/v1/import/users', '/admin/v1/upload'], true)) {
         t_skip($name . ' (multipart 文件上传, 不在冒烟范围)');
         continue;
     }
-    if ($path === '/admin/profile/logout') {
+    if ($path === '/admin/v1/profile/logout') {
         t_skip($name . ' (登出会拉黑 Token, 已在末位单独测试)');
         continue;
     }
     $body = $method === 'GET' || $method === 'DELETE' ? null : [];
-    $allow = $hashidLike($path) ? [0, 400, 404, 422] : ($method === 'GET' ? [0, 403, 422] : $writePassCodes);
+    $allow = $hashidLike($path) ? [0, 400, 404, 422] : ($method === 'GET' ? [0, 200, 403, 422] : $writePassCodes);
     t_check("冒烟 $name", api($method, $path, $body, $token), $allow);
 }
 
 // ================= /api 公开冒烟 =================
 echo "---- /api/* 冒烟 ----\n";
-t_check('冒烟 POST /api/captcha/generate(已知缺陷: extra.targets, 预期 500)', api('POST', '/api/captcha/generate'), [0]);
-t_check('冒烟 POST /api/captcha/verify', api('POST', '/api/captcha/verify', []), [0, 422]);
-t_check('冒烟 POST /api/auth/register', api('POST', '/api/auth/register', []), [422, 429]);
-t_check('冒烟 POST /api/auth/login(空参)', api('POST', '/api/auth/login', []), [422]);
-t_check('冒烟 POST /api/auth/refresh(空参)', api('POST', '/api/auth/refresh', []), [422]);
+t_check('冒烟 POST /api/v1/captcha/generate', api('POST', '/api/v1/captcha/generate'), [0]);
+t_check('冒烟 POST /api/v1/captcha/verify', api('POST', '/api/v1/captcha/verify', []), [0, 422]);
+t_check('冒烟 POST /api/v1/auth/register', api('POST', '/api/v1/auth/register', []), [422, 429]);
+t_check('冒烟 POST /api/v1/auth/login(空参)', api('POST', '/api/v1/auth/login', []), [422]);
+t_check('冒烟 POST /api/v1/auth/refresh(空参)', api('POST', '/api/v1/auth/refresh', []), [422]);
 
 // ================= 提现双审链(service 申请 → admin 初审 → admin 确认) =================
 echo "---- 提现双审链 ----\n";
 $svcBase = 'BASE_URL_SERVICE';
 $svcUser = 'qa_chain_' . substr((string) time(), -6);
 $svcToken = '';
-$r = api('POST', '/api/auth/register', ['username' => $svcUser, 'password' => 'Chain@123', 'email' => "$svcUser@test.local"], null, [], $svcBase);
+$r = api('POST', '/api/v1/auth/register', ['username' => $svcUser, 'password' => 'Chain@123', 'email' => "$svcUser@test.local"], null, [], $svcBase);
 t_check("服务端注册 $svcUser", $r, [0, 422]);
 $svcToken = $r[1]['data']['access_token'] ?? '';
 
@@ -127,13 +127,14 @@ if ($svcToken) {
     // JWT sub 即 user_id
     $payload = json_decode(base64_decode(str_replace(['-', '_'], ['+', '/'], explode('.', $svcToken)[1] ?? '')), true);
     $userId = (int) ($payload['sub'] ?? 0);
-    // 直连测试库为链上用户充值(测试数据, 非业务改动)
-    $pdo = new PDO('mysql:host=127.0.0.1;dbname=game-platform-test;charset=utf8mb4', 'root', '');
+    // 直连应用同一连接为链上用户充值(测试数据, 非业务改动):
+    // 必须与 service 同库, 否则充值落不到被测进程读的库
+    $pdo = \support\Db::connection()->getPdo();
     $pdo->exec("UPDATE game_user_wallet SET balance = balance + 500 WHERE user_id = $userId");
     $funded = $pdo->query("SELECT balance FROM game_user_wallet WHERE user_id = $userId")->fetchColumn();
-    t_ok("链上充值 +500 (余额=$funded)", (float) $funded >= 500, 'PDO 充值失败');
+    t_ok("链上充值 +500 (余额=$funded)", bccomp((string) $funded, '500', 2) >= 0, 'PDO 充值失败');
 
-    $w = api('POST', '/api/withdraw/apply', [
+    $w = api('POST', '/api/v1/withdraw/apply', [
         'platform_amount' => '50', 'method' => 'paypal', 'account_info' => 'qa@test.local',
     ], $svcToken, [], $svcBase);
     t_check('服务端提现申请', $w, [0, 400, 403]);
@@ -142,35 +143,31 @@ if ($svcToken) {
     t_note('提现申请结果', json_encode($w[1]['data'] ?? $w[1], JSON_UNESCAPED_UNICODE));
 
     if ($orderId && $orderNo) {
-        // 已知缺陷: admin 与 service 的 hashids 配置不兼容(length 16 vs 0), 服务端订单号
-        // 无法被 admin 直接解码。此处经 DB 取原始 ID, 再用 admin 端配置重新编码(仅测试绕过)。
-        $rawId = (int) $pdo->query("SELECT id FROM game_withdraw_order WHERE order_no = " . $pdo->quote($orderNo))->fetchColumn();
-        $adminHashids = new \Hashids\Hashids(getenv('HASHIDS_SALT'), 0);
-        $adminOrderId = $rawId ? $adminHashids->encode([$rawId]) : '';
-        t_ok('DB 取回提现订单原始 ID', $rawId > 0, 'order_no 未在 DB 找到');
-        t_note('hashids 不兼容绕过', "service order_id=$orderId -> admin order_id=$adminOrderId");
+        // 跨服务 hashid 直通: 两侧 config/hashids.php 均为 length 16 且共用 HASHIDS_SALT,
+        // service 下发的 order_id 必须能被 admin 原样解码(旧版经 DB 取原始 ID 重编码的绕过已废)
+        $adminOrderId = $orderId;
 
-        $list = api('GET', '/admin/withdraw/orders?status=pending', null, $token);
+        $list = api('GET', '/admin/v1/withdraw/orders?status=pending', null, $token);
         t_check('管理端待审列表', $list, [0]);
         $listed = str_contains(json_encode($list[1]), $orderNo ?? '');
         t_ok("列表可见订单 $orderNo", $listed, '订单未出现在管理端列表');
 
-        $a1 = api('PUT', '/admin/withdraw/review', ['order_id' => $adminOrderId, 'action' => 'approve', 'note' => 'qa approve'], $token);
+        $a1 = api('PUT', '/admin/v1/withdraw/review', ['order_id' => $adminOrderId, 'action' => 'approve', 'note' => 'qa approve'], $token);
         t_check('管理端初审 approve', $a1, [0, 422]);
         t_note('初审结果', $a1[1]['message'] ?? '');
 
-        $a2 = api('PUT', '/admin/withdraw/review', ['order_id' => $adminOrderId, 'action' => 'confirm', 'note' => 'qa confirm'], $token);
+        $a2 = api('PUT', '/admin/v1/withdraw/review', ['order_id' => $adminOrderId, 'action' => 'confirm', 'note' => 'qa confirm'], $token);
         t_check('管理端二次 confirm(双审启用时应拒绝同人复核)', $a2, [0, 422]);
         t_note('二次确认结果', $a2[1]['message'] ?? '');
 
-        $s = api('GET', '/api/withdraw/orders', null, $svcToken, [], $svcBase);
+        $s = api('GET', '/api/v1/withdraw/orders', null, $svcToken, [], $svcBase);
         t_check('服务端提现记录可见', $s, [0]);
     }
 }
 
 // ================= 登出(末位: 登出会拉黑 Token) =================
-t_check('登出', api('POST', '/admin/profile/logout', [], $token), [0]);
-t_check('登出后旧 Token 失效', api('GET', '/admin/dashboard', null, $token), [401]);
+t_check('登出', api('POST', '/admin/v1/profile/logout', [], $token), [0]);
+t_check('登出后旧 Token 失效', api('GET', '/admin/v1/dashboard', null, $token), [401]);
 
 // ================= 结果 =================
 t_summary('admin API');

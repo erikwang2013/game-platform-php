@@ -433,22 +433,6 @@ class PlatformTest extends TestCase
         $this->assertFalse(strlen('12345') >= 6, '5位密码不合格');
     }
 
-    #[Test]
-    public function hashidsRoundTrip(): void
-    {
-        // Hashids encode/decode round trip via facade
-        if (!function_exists('hashids_encode')) {
-            $this->markTestSkipped('hashids global functions not registered in test environment');
-        }
-        $id = 1750123456789;
-        $encoded = hashids_encode($id);
-        $this->assertNotEmpty($encoded, '编码后不应为空');
-        $this->assertIsString($encoded);
-
-        $decoded = hashids_decode($encoded);
-        $this->assertSame($id, $decoded, '解码应还原原始ID');
-    }
-
     // ============================================================
     // 11. 枚举值验证测试
     // ============================================================

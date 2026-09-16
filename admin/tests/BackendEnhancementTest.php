@@ -133,19 +133,13 @@ class BackendEnhancementTest extends TestCase
         $this->assertStringContainsString('use SoftDeletes;', $source);
     }
 
-    public function test_admin_user_source_contains_searchable(): void
+    public function test_admin_user_source_omits_searchable(): void
     {
+        // 反向守卫：AdminUser 挂上 Searchable 后，trait 的 saved 钩子会解析搜索引擎，
+        // 未装 opensearch-php 的环境登录写 last_login_at 即 500。全仓无搜索管理员的入口，勿补回。
         $source = file_get_contents(__DIR__ . '/../app/model/AdminUser.php');
-        $this->assertStringContainsString('Searchable', $source);
-        $this->assertStringContainsString('use Searchable;', $source);
-    }
-
-    public function test_admin_user_source_contains_to_searchable_array(): void
-    {
-        $source = file_get_contents(__DIR__ . '/../app/model/AdminUser.php');
-        $this->assertStringContainsString('toSearchableArray', $source);
-        $this->assertStringContainsString("'username'", $source);
-        $this->assertStringContainsString("'real_name'", $source);
+        $this->assertStringNotContainsString('use Searchable;', $source);
+        $this->assertStringNotContainsString('toSearchableArray', $source);
     }
 
     public function test_operation_log_source_has_timestamps_disabled(): void

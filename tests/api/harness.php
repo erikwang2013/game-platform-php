@@ -15,9 +15,9 @@ function api(string $method, string $path, ?array $body = null, ?string $token =
 {
     $base = rtrim(getenv($baseKey) ?: '', '/');
     if ($base === '') {
-        $base = $baseKey === 'BASE_URL_SERVICE' ? 'http://127.0.0.1:8795' : 'http://127.0.0.1:8789';
+        $base = $baseKey === 'BASE_URL_SERVICE' ? 'http://127.0.0.1:8792' : 'http://127.0.0.1:8789';
     }
-    $headers = ['Content-Type: application/json'];
+    $headers = ['Content-Type: application/json', 'Accept: application/json'];
     if ($token !== null && $token !== '') {
         $headers[] = 'Authorization: Bearer ' . $token;
     }

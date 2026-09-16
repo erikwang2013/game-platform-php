@@ -19,9 +19,10 @@ use support\Response;
  * 注册口令强度策略守卫。
  *
  * 策略常量被回退（如 min:8+regex → min:6）时本测试必须失败，否则形同虚设。
- * 两条独立防线：
+ * 三条独立防线：
  *   1. 控制器级：弱口令必须被 422 拒绝，且拒绝理由必须来自口令规则本身；
- *   2. 规则级：直接对 PASSWORD_RULE 常量求值，强口令必须通过（防规则整体失效）。
+ *   2. 规则级正例：直接对 PASSWORD_RULE 常量求值，强口令必须通过（防规则整体失效）；
+ *   3. 规则级负例：同一常量对 7 个弱口令必须全部失败（防规则被回退成 min:6）。
  *
  * 弱点说明：admin register() 在校验与首次落库之间还夹着一道 captcha 闸门
  * （AuthController.php:170，captcha_verify 只返回 bool、不抛异常），
@@ -71,6 +72,24 @@ class AuthControllerRegisterTest extends TestCase
         $this->assertFalse(
             validator(['password' => 'Abcdef12'], ['password' => $rule])->fails(),
             '强口令 Abcdef12 应通过注册策略'
+        );
+    }
+
+    /**
+     * 与 registerPasswordRuleAcceptsStrongPassword 同源（同一反射取的 PASSWORD_RULE），
+     * 但为负例：规则回退成 min:6 后 7 个弱口令会通过校验，断言直接 Failures。
+     * 不经控制器，故不看 captcha 闸门与 MySQL 的脸色。
+     */
+    #[Test]
+    #[DataProvider('weakPasswords')]
+    public function registerPasswordRuleRejectsWeakPassword(string $password): void
+    {
+        $rule = (new ReflectionClass(AuthController::class))
+            ->getReflectionConstant('PASSWORD_RULE')->getValue();
+
+        $this->assertTrue(
+            validator(['password' => $password], ['password' => $rule])->fails(),
+            "弱口令 `{$password}` 应被注册策略拒绝"
         );
     }
 
