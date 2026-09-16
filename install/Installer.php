@@ -49,83 +49,83 @@ class Installer
         $phpVersion = PHP_VERSION;
         $phpOk = version_compare($phpVersion, '8.1.0', '>=');
         $results[] = [
-            'name' => 'PHP 版本',
-            'current' => $phpVersion,
-            'required' => '>= 8.1.0',
+            'name_key' => 'check_php_version',
+            'current' => ['text' => $phpVersion],
             'ok' => $phpOk,
-            'message' => $phpOk ? '通过' : '需要 PHP 8.1 或更高版本',
+            'blocking' => true,
+            'fail_key' => 'check_php_version_fail',
         ];
 
         $pdoOk = extension_loaded('pdo_mysql');
         $results[] = [
-            'name' => 'PDO MySQL',
-            'current' => $pdoOk ? '已安装' : '未安装',
-            'required' => '必须',
+            'name_key' => 'check_pdo',
+            'current' => ['key' => $pdoOk ? 'installed' : 'not_installed'],
             'ok' => $pdoOk,
-            'message' => $pdoOk ? '通过' : '请安装 pdo_mysql 扩展',
+            'blocking' => true,
+            'fail_key' => 'check_pdo_fail',
         ];
 
         $mbOk = extension_loaded('mbstring');
         $results[] = [
-            'name' => 'MBString',
-            'current' => $mbOk ? '已安装' : '未安装',
-            'required' => '必须',
+            'name_key' => 'check_mbstring',
+            'current' => ['key' => $mbOk ? 'installed' : 'not_installed'],
             'ok' => $mbOk,
-            'message' => $mbOk ? '通过' : '请安装 mbstring 扩展',
+            'blocking' => true,
+            'fail_key' => 'check_mbstring_fail',
         ];
 
         $jsonOk = extension_loaded('json');
         $results[] = [
-            'name' => 'JSON',
-            'current' => $jsonOk ? '已安装' : '未安装',
-            'required' => '必须',
+            'name_key' => 'check_json',
+            'current' => ['key' => $jsonOk ? 'installed' : 'not_installed'],
             'ok' => $jsonOk,
-            'message' => $jsonOk ? '通过' : '请安装 json 扩展',
+            'blocking' => true,
+            'fail_key' => 'check_json_fail',
         ];
 
         $sslOk = extension_loaded('openssl');
         $results[] = [
-            'name' => 'OpenSSL',
-            'current' => $sslOk ? '已安装' : '未安装',
-            'required' => '必须',
+            'name_key' => 'check_openssl',
+            'current' => ['key' => $sslOk ? 'installed' : 'not_installed'],
             'ok' => $sslOk,
-            'message' => $sslOk ? '通过' : '请安装 openssl 扩展',
+            'blocking' => true,
+            'fail_key' => 'check_openssl_fail',
         ];
 
         $pcntlOk = extension_loaded('pcntl');
         $results[] = [
-            'name' => 'PCNTL',
-            'current' => $pcntlOk ? '已安装' : '未安装',
-            'required' => '必须',
+            'name_key' => 'check_pcntl',
+            'current' => ['key' => $pcntlOk ? 'installed' : 'not_installed'],
             'ok' => $pcntlOk,
-            'message' => $pcntlOk ? '通过' : 'webman 框架需要 pcntl 扩展，请安装 php-pcntl',
+            'blocking' => true,
+            'fail_key' => 'check_pcntl_fail',
         ];
 
         $gdOk = extension_loaded('gd');
         $results[] = [
-            'name' => 'GD',
-            'current' => $gdOk ? '已安装' : '未安装',
-            'required' => '建议',
+            'name_key' => 'check_gd',
+            'current' => ['key' => $gdOk ? 'installed' : 'not_installed'],
             'ok' => $gdOk,
-            'message' => $gdOk ? '通过' : '验证码功能需要 GD 扩展（非阻塞）',
+            'blocking' => false,
+            'fail_key' => 'check_gd_fail',
         ];
 
         $xmlOk = extension_loaded('xml');
         $results[] = [
-            'name' => 'XML',
-            'current' => $xmlOk ? '已安装' : '未安装',
-            'required' => '建议',
+            'name_key' => 'check_xml',
+            'current' => ['key' => $xmlOk ? 'installed' : 'not_installed'],
             'ok' => $xmlOk,
-            'message' => $xmlOk ? '通过' : 'Excel 导入导出需要 XML 扩展（非阻塞）',
+            'blocking' => false,
+            'fail_key' => 'check_xml_fail',
         ];
 
         $redisOk = extension_loaded('redis');
         $results[] = [
-            'name' => 'Redis',
-            'current' => $redisOk ? '已安装' : '未安装',
-            'required' => '建议',
+            'name_key' => 'check_redis',
+            'current' => ['key' => $redisOk ? 'installed' : 'not_installed'],
             'ok' => $redisOk,
-            'message' => $redisOk ? '通过' : '缓存/限流/Session 需要 Redis 扩展（非阻塞）',
+            'blocking' => false,
+            'fail_key' => 'check_redis_fail',
         ];
 
         $adminRuntime = dirname(__DIR__) . '/admin/runtime';
@@ -152,20 +152,31 @@ class Installer
         }
 
         $results[] = [
-            'name' => '目录权限',
-            'current' => $writableOk ? '可写 (' . implode(', ', $writableDirs) . ')' : '部分不可写',
-            'required' => '必须',
+            'name_key' => 'check_dirs',
+            'current' => $writableOk
+                ? ['key' => 'check_dirs_current_ok', 'params' => ['dirs' => implode(', ', $writableDirs)]]
+                : ['key' => 'check_dirs_current_fail'],
             'ok' => $writableOk,
-            'message' => $writableOk ? '通过' : '请确保 admin/runtime 和 service/runtime 目录可写',
+            'blocking' => true,
+            'fail_key' => 'check_dirs_fail',
         ];
 
         $sqlOk = file_exists($this->sqlFile) && is_readable($this->sqlFile);
         $results[] = [
-            'name' => '安装 SQL 文件',
-            'current' => $sqlOk ? '存在' : '不存在',
-            'required' => '必须',
+            'name_key' => 'check_sql',
+            'current' => ['key' => $sqlOk ? 'exists' : 'missing'],
             'ok' => $sqlOk,
-            'message' => $sqlOk ? '通过' : 'install/install.sql 文件不存在或不可读',
+            'blocking' => true,
+            'fail_key' => 'check_sql_fail',
+        ];
+
+        $envTemplateOk = is_readable($this->envTemplatePath('admin')) && is_readable($this->envTemplatePath('service'));
+        $results[] = [
+            'name_key' => 'check_env_template',
+            'current' => ['key' => $envTemplateOk ? 'exists' : 'missing'],
+            'ok' => $envTemplateOk,
+            'blocking' => true,
+            'fail_key' => 'check_env_template_fail',
         ];
 
         $this->envCheckResults = $results;
@@ -175,7 +186,7 @@ class Installer
     public function allEnvChecksPassed(): bool
     {
         foreach ($this->envCheckResults as $result) {
-            if ($result['required'] === '必须' && !$result['ok']) {
+            if (!empty($result['blocking']) && !$result['ok']) {
                 return false;
             }
         }
@@ -217,34 +228,46 @@ class Installer
                 'existing_tables' => $existingTables,
             ];
         } catch (PDOException $e) {
+            [$key, $params] = $this->parseDbError($e);
             return [
                 'success' => false,
-                'message' => $this->parseDbError($e),
+                'message_key' => $key,
+                'message_params' => $params,
             ];
         }
     }
 
-    private function parseDbError(PDOException $e): string
+    /**
+     * @return array{0: string, 1: array<string, string>} 文案键 + 插值参数
+     */
+    private function parseDbError(PDOException $e): array
     {
         $msg = $e->getMessage();
         if (str_contains($msg, 'SQLSTATE[HY000] [2002]')) {
-            return '无法连接到数据库服务器，请检查主机地址和端口';
+            return ['db_err_conn', []];
         }
         if (str_contains($msg, 'Access denied')) {
-            return '数据库认证失败，请检查用户名和密码';
+            return ['db_err_auth', []];
         }
         if (str_contains($msg, 'Unknown database')) {
-            return '数据库不存在且无法自动创建';
+            return ['db_err_no_db', []];
         }
-        return '数据库连接失败: ' . $msg;
+        return ['db_err_generic', ['error' => $msg]];
     }
 
     // ── Step 3-4: 执行安装 ──
 
-    public function runInstall(array $dbConfig, string $adminUsername, string $adminPassword, bool $configureService = false, array $serviceDbConfig = []): array
+    public function runInstall(array $dbConfig, string $adminUsername, string $adminPassword, bool $configureService = false, array $serviceDbConfig = [], bool $installTestData = false, ?callable $onProgress = null): array
     {
         @set_time_limit(120);
         $steps = [];
+        // 进度上报: 每完成一步回调一次 ($key, $completed, $total)，供前端弹框进度条流式展示
+        $total = 4 + (int) $installTestData + (int) $configureService;
+        $emit = static function (string $key, int $completed) use ($onProgress, $total): void {
+            if ($onProgress !== null) {
+                $onProgress($key, $completed, $total);
+            }
+        };
 
         try {
             $dsn = "mysql:host={$dbConfig['host']};port={$dbConfig['port']};dbname={$dbConfig['database']};charset=utf8mb4";
@@ -268,12 +291,13 @@ class Installer
 
             $sql = file_get_contents($this->sqlFile);
             if (!$sql) {
-                return ['success' => false, 'message' => '无法读取 install.sql 文件'];
+                return ['success' => false, 'message_key' => 'install_fail_sql_unreadable', 'steps' => $steps];
             }
 
             $pdo->exec($sql);
             $tableCount = $this->countTables($pdo);
-            $steps[] = ['name' => '数据库初始化', 'ok' => true, 'message' => "成功创建 {$tableCount} 张数据表并导入种子数据"];
+            $steps[] = ['name_key' => 'step_db_init', 'ok' => true, 'message_key' => 'step_db_init_ok', 'params' => ['count' => $tableCount]];
+            $emit('step_db_init', count($steps));
 
             $adminId = $this->snowflakeId(1);
             $hashedPassword = password_hash($adminPassword, PASSWORD_BCRYPT, ['cost' => 12]);
@@ -284,38 +308,78 @@ class Installer
             $stmt = $pdo->prepare('INSERT INTO `game_admin_user_role` (`user_id`, `role_id`) VALUES (?, 10000000000000001)');
             $stmt->execute([$adminId]);
 
-            $steps[] = ['name' => '管理员账户', 'ok' => true, 'message' => "创建管理员 {$adminUsername} 并关联超级管理员角色"];
+            $steps[] = ['name_key' => 'step_admin', 'ok' => true, 'message_key' => 'step_admin_ok', 'params' => ['username' => $adminUsername]];
+            $emit('step_admin', count($steps));
+
+            if ($installTestData) {
+                $testDataSql = @file_get_contents($this->installDir . '/test-data.sql');
+                if ($testDataSql === false) {
+                    throw new \RuntimeException('无法读取 install/test-data.sql');
+                }
+                $pdo->exec($testDataSql);
+                $steps[] = ['name_key' => 'step_test_data', 'ok' => true, 'message_key' => 'step_test_data_ok'];
+                $emit('step_test_data', count($steps));
+            }
 
             $jwtSecret = $this->randomString(64);
             $serviceJwtSecret = $this->randomString(64);
             $hashidsSalt = $this->randomString(32);
+            $hashidsAltSalt = $this->randomString(32);
             $encryptionKey = $this->randomString(32);
-            $openSearchPass = $this->randomString(16);
-            $clickHousePass = $this->randomString(16);
+            $encryptableKey = $this->randomString(32);
 
-            $this->writeAdminEnv($dbConfig, $jwtSecret, $hashidsSalt, $encryptionKey, $openSearchPass);
-            $steps[] = ['name' => 'Admin .env 配置', 'ok' => true, 'message' => '已写入 admin/.env'];
+            // 覆盖前先备份已有 .env（原备份时机在写入之后，备份到的是新内容，等于没备份）
+            $this->backupEnvFiles();
+
+            $this->writeEnvFromTemplate('admin', [
+                'DB_HOST' => (string) $dbConfig['host'],
+                'DB_PORT' => (string) $dbConfig['port'],
+                'DB_DATABASE' => (string) $dbConfig['database'],
+                'DB_USERNAME' => (string) $dbConfig['username'],
+                'DB_PASSWORD' => (string) $dbConfig['password'],
+                'ADMIN_JWT_SECRET_KEY' => $jwtSecret,
+                'HASHIDS_SALT' => $hashidsSalt,
+                'HASHIDS_ALT_SALT' => $hashidsAltSalt,
+                'ENCRYPTION_KEY' => $encryptionKey,
+                'ENCRYPTABLE_KEY' => $encryptableKey,
+            ]);
+            $steps[] = ['name_key' => 'step_admin_env', 'ok' => true, 'message_key' => 'step_admin_env_ok'];
+            $emit('step_admin_env', count($steps));
 
             if ($configureService) {
                 $svcDb = $serviceDbConfig ?: $dbConfig;
-                $this->writeServiceEnv($svcDb, $serviceJwtSecret, $hashidsSalt, $encryptionKey, $openSearchPass, $clickHousePass);
-                $steps[] = ['name' => 'Service .env 配置', 'ok' => true, 'message' => '已写入 service/.env'];
+                // HASHIDS_SALT / 加密密钥与 admin 保持一致: 两侧共用 salt，hashid 才能跨服务直通
+                $this->writeEnvFromTemplate('service', [
+                    'DB_HOST' => (string) $svcDb['host'],
+                    'DB_PORT' => (string) $svcDb['port'],
+                    'DB_DATABASE' => (string) $svcDb['database'],
+                    'DB_USERNAME' => (string) $svcDb['username'],
+                    'DB_PASSWORD' => (string) $svcDb['password'],
+                    'JWT_SECRET' => $serviceJwtSecret,
+                    'SERVICE_JWT_SECRET_KEY' => $serviceJwtSecret,
+                    'HASHIDS_SALT' => $hashidsSalt,
+                    'HASHIDS_ALT_SALT' => $hashidsAltSalt,
+                    'ENCRYPTION_KEY' => $encryptionKey,
+                    'ENCRYPTABLE_KEY' => $encryptableKey,
+                ]);
+                $steps[] = ['name_key' => 'step_service_env', 'ok' => true, 'message_key' => 'step_service_env_ok'];
+                $emit('step_service_env', count($steps));
             }
 
             file_put_contents($this->lockFile, json_encode([
                 'installed_at' => date('Y-m-d H:i:s'),
                 'admin_username' => $adminUsername,
                 'version' => '1.0.0',
+                'test_data' => $installTestData,
             ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-            $steps[] = ['name' => '安装锁定', 'ok' => true, 'message' => '已生成 install.lock，防止重复安装'];
-
-            $this->backupEnvFiles();
+            $steps[] = ['name_key' => 'step_lock', 'ok' => true, 'message_key' => 'step_lock_ok'];
+            $emit('step_lock', count($steps));
 
             return ['success' => true, 'steps' => $steps, 'admin_id' => $adminId];
         } catch (PDOException $e) {
-            return ['success' => false, 'message' => '数据库操作失败: ' . $e->getMessage(), 'steps' => $steps ?? []];
+            return ['success' => false, 'message_key' => 'install_fail_db', 'params' => ['error' => $e->getMessage()], 'steps' => $steps ?? []];
         } catch (\Throwable $e) {
-            return ['success' => false, 'message' => '安装失败: ' . $e->getMessage(), 'steps' => $steps ?? []];
+            return ['success' => false, 'message_key' => 'install_fail_generic', 'params' => ['error' => $e->getMessage()], 'steps' => $steps ?? []];
         }
     }
 
@@ -346,190 +410,44 @@ class Installer
         return $str;
     }
 
-    private function writeAdminEnv(array $db, string $jwtSecret, string $hashidsSalt, string $encryptionKey, string $openSearchPass): void
+    private function envTemplatePath(string $app): string
     {
-        $envFile = dirname(__DIR__) . '/admin/.env';
-        file_put_contents($envFile, $this->buildAdminEnvContent($db, $jwtSecret, $hashidsSalt, $encryptionKey, $openSearchPass));
+        return dirname(__DIR__) . '/' . $app . '/.env.example';
     }
 
-    private function buildAdminEnvContent(array $db, string $jwtSecret, string $hashidsSalt, string $encryptionKey, string $openSearchPass): string
+    /**
+     * 以仓库 .env.example 为模板生成 .env：仅替换 $values 里的键，其余内容（键/注释/顺序）逐字节保留
+     */
+    private function writeEnvFromTemplate(string $app, array $values): void
     {
-        $encryptionKey32 = str_pad($encryptionKey, 32, '0');
-        return <<<EOF
-# ============================================================
-# 开放管理后台 — 环境变量（由安装向导自动生成）
-# Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
-# ============================================================
-
-APP_NAME=开放管理后台
-APP_DEBUG=false
-APP_URL=http://localhost:8789
-
-JWT_SECRET={$jwtSecret}
-JWT_ALGORITHM=HS256
-JWT_TTL=7200
-JWT_REFRESH_TTL=1209600
-JWT_ISSUER=game-platform
-JWT_AUDIENCE=game-platform
-
-HASHIDS_SALT={$hashidsSalt}
-HASHIDS_ALT_SALT={$hashidsSalt}_alt
-
-SNOWFLAKE_DATACENTER_ID=1
-SNOWFLAKE_WORKER_ID=1
-SNOWFLAKE_START_TIMESTAMP=1700000000000
-
-ENCRYPTION_KEY={$encryptionKey32}
-ENCRYPTION_CIPHER=AES-256-CBC
-ENCRYPTION_IV=
-
-ENCRYPTABLE_KEY={$encryptionKey32}-db
-ENCRYPTABLE_CIPHER=AES-256-CBC
-ENCRYPTION_PREVIOUS_KEYS=
-
-SCOUT_DRIVER=opensearch
-SCOUT_HOSTS=http://localhost:9200
-SCOUT_PREFIX=game_
-SCOUT_SHARDS=1
-SCOUT_REPLICAS=0
-SCOUT_CHUNK_SIZE=500
-SCOUT_SOFT_DELETE=true
-
-OPENSEARCH_HTTP_HOST=http://localhost:37831
-OPENSEARCH_USERNAME=admin
-OPENSEARCH_PASSWORD={$openSearchPass}
-OPENSEARCH_INDEX_PREFIX=game_
-OPENSEARCH_SSL_VERIFICATION=false
-OPENSEARCH_SSL_CERT=
-OPENSEARCH_SSL_KEY=
-OPENSEARCH_RETRIES=2
-OPENSEARCH_CONNECTION_TIMEOUT=10
-OPENSEARCH_TIMEOUT=30
-
-POSTER_IMAGE_DRIVER=auto
-POSTER_IMAGE_QUALITY=90
-POSTER_CAPTCHA_STORAGE=auto
-POSTER_CAPTCHA_TTL=300
-POSTER_CAPTCHA_MAX_ATTEMPTS=3
-POSTER_CAPTCHA_DIFFICULTY=medium
-
-DB_CONNECTION=mysql
-DB_HOST={$db['host']}
-DB_PORT={$db['port']}
-DB_DATABASE={$db['database']}
-DB_USERNAME={$db['username']}
-DB_PASSWORD={$db['password']}
-
-REDIS_HOST=127.0.0.1
-REDIS_PORT=6379
-REDIS_PASSWORD=
-REDIS_DATABASE=0
-
-ADMIN_JWT_SECRET_KEY={$jwtSecret}
-JWT_DEFAULT_EXPIRE=7200
-JWT_REFRESH_EXPIRE=1209600
-EOF;
+        $content = @file_get_contents($this->envTemplatePath($app));
+        if ($content === false) {
+            throw new \RuntimeException("无法读取配置模板 {$app}/.env.example");
+        }
+        foreach ($values as $key => $value) {
+            if (!preg_match('/^' . preg_quote($key, '/') . '=/m', $content)) {
+                // 模板缺键说明仓库模板已变更，fail-fast 而不是静默写出缺配置的 .env
+                throw new \RuntimeException("配置模板 {$app}/.env.example 缺少键 {$key}");
+            }
+            $content = preg_replace_callback(
+                '/^' . preg_quote($key, '/') . '=.*$/m',
+                static fn (): string => $key . '=' . self::envValue($value),
+                $content,
+                1
+            );
+        }
+        file_put_contents(dirname(__DIR__) . "/{$app}/.env", $content);
     }
 
-    private function writeServiceEnv(array $db, string $jwtSecret, string $hashidsSalt, string $encryptionKey, string $openSearchPass, string $clickHousePass): void
+    /**
+     * phpdotenv v5 未加引号的值遇空格/#/$ 会被截断或插值，含这些字符时必须双引号包裹并转义
+     */
+    private static function envValue(string $value): string
     {
-        $envFile = dirname(__DIR__) . '/service/.env';
-        file_put_contents($envFile, $this->buildServiceEnvContent($db, $jwtSecret, $hashidsSalt, $encryptionKey, $openSearchPass, $clickHousePass));
-    }
-
-    private function buildServiceEnvContent(array $db, string $jwtSecret, string $hashidsSalt, string $encryptionKey, string $openSearchPass, string $clickHousePass): string
-    {
-        $encryptionKey32 = str_pad($encryptionKey, 32, '0');
-        return <<<EOF
-# ============================================================
-# 全球游戏聚合平台 — C端业务端环境变量（由安装向导自动生成）
-# Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
-# ============================================================
-
-APP_ENV=local
-APP_DEBUG=false
-
-DB_CONNECTION=mysql
-DB_HOST={$db['host']}
-DB_PORT={$db['port']}
-DB_DATABASE={$db['database']}
-DB_USERNAME={$db['username']}
-DB_PASSWORD={$db['password']}
-
-JWT_SECRET={$jwtSecret}
-SERVICE_JWT_SECRET_KEY={$jwtSecret}
-JWT_TTL=7200
-JWT_REFRESH_TTL=1209600
-
-HASHIDS_SALT={$hashidsSalt}
-HASHIDS_ALPHABET=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890
-HASHIDS_MIN_LENGTH=16
-
-SNOWFLAKE_DATACENTER_ID=1
-SNOWFLAKE_WORKER_ID=2
-
-ENCRYPTION_KEY={$encryptionKey32}
-ENCRYPTION_CIPHER=AES-256-CBC
-ENCRYPTABLE_KEY={$encryptionKey32}-db
-ENCRYPTABLE_CIPHER=AES-256-CBC
-
-REDIS_HOST=127.0.0.1
-REDIS_PORT=6379
-REDIS_PASSWORD=
-
-CLICKHOUSE_HOST=127.0.0.1
-CLICKHOUSE_PORT=8123
-CLICKHOUSE_DB={$db['database']}
-CLICKHOUSE_USER=default
-CLICKHOUSE_PASS={$clickHousePass}
-
-OAUTH_GOOGLE_CLIENT_ID=
-OAUTH_GOOGLE_CLIENT_SECRET=
-OAUTH_GOOGLE_REDIRECT_URI=
-OAUTH_FACEBOOK_CLIENT_ID=
-OAUTH_FACEBOOK_CLIENT_SECRET=
-OAUTH_FACEBOOK_REDIRECT_URI=
-OAUTH_APPLE_CLIENT_ID=
-OAUTH_APPLE_CLIENT_SECRET=
-OAUTH_APPLE_REDIRECT_URI=
-
-STRIPE_WEBHOOK_SECRET=
-PAYPAL_WEBHOOK_ID=
-PAYPAL_VERIFY_URL=
-PAYPAL_CLIENT_ID=
-PAYPAL_CLIENT_SECRET=
-PAYPAL_MODE=sandbox
-FCM_SERVER_KEY=
-FCM_SERVICE_ACCOUNT_JSON=
-APNS_KEY_ID=
-APNS_TEAM_ID=
-APNS_KEY_FILE=
-APNS_TOPIC=
-APNS_MODE=sandbox
-HUAWEI_APP_ID=
-HUAWEI_APP_SECRET=
-
-CORS_ORIGIN=*
-
-SCOUT_DRIVER=opensearch
-SCOUT_HOSTS=http://localhost:9200
-SCOUT_PREFIX=game_
-SCOUT_SHARDS=1
-SCOUT_REPLICAS=0
-SCOUT_CHUNK_SIZE=500
-SCOUT_SOFT_DELETE=true
-
-OPENSEARCH_HTTP_HOST=http://localhost:37831
-OPENSEARCH_USERNAME=admin
-OPENSEARCH_PASSWORD={$openSearchPass}
-OPENSEARCH_INDEX_PREFIX=game_
-OPENSEARCH_SSL_VERIFICATION=false
-OPENSEARCH_SSL_CERT=
-OPENSEARCH_SSL_KEY=
-OPENSEARCH_RETRIES=2
-OPENSEARCH_CONNECTION_TIMEOUT=10
-OPENSEARCH_TIMEOUT=30
-EOF;
+        if ($value === '' || preg_match('/^[A-Za-z0-9._\/:@-]+$/', $value)) {
+            return $value;
+        }
+        return '"' . strtr($value, ['\\' => '\\\\', '"' => '\\"', '$' => '\\$']) . '"';
     }
 
     private function backupEnvFiles(): void

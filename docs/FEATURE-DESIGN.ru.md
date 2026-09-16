@@ -301,7 +301,7 @@ signature = HMAC-SHA256(
 
 ### 9.6 WebSocket-рейтинг в реальном времени
 
-- Протокол: WebSocket (ws://host:8789)
+- Протокол: WebSocket (ws://host:8790)
 - Подписка: {action: "subscribe", leaderboard_id: 123}
 - Пуш: {type: "ranking_update", rankings: [...]}
 - Поддерживается keep-alive через ping/pong

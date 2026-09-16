@@ -39,14 +39,14 @@ php -S 0.0.0.0:8888 -t install/
 cd admin && composer install && cd ..
 cd service && composer install && cd ..
 
-# 5. Iniciar os serviços
+# 5. Iniciar os serviços (portas padrão admin 8789 / service 8792, alteráveis via APP_PORT no respectivo .env)
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
 # 6. Limpeza de segurança
 rm -rf install/
 
-# 7. Acessar o painel administrativo: http://<IP do servidor>:8789
+# 7. Acessar o painel administrativo: http://<IP do servidor>:8789 (porta padrão)
 ```
 
 Operações executadas pelo assistente de instalação:
@@ -69,6 +69,7 @@ git clone <repo-url> /opt/game-platform
 cd /opt/game-platform
 
 # 2. Usar o assistente de instalação com um clique para configurar o ambiente (ou configurar manualmente o arquivo .env)
+#    Parâmetros do Docker, como portas, ficam no .env da raiz do projeto (modelo .env.example): cp .env.example .env
 php -S 0.0.0.0:8888 -t install/
 # Manual: cp admin/.env.example admin/.env && cp service/.env.example service/.env
 
@@ -89,10 +90,15 @@ docker-compose logs -f
 | nginx | game-platform-nginx | 80, 443 | proxy reverso + arquivos estáticos |
 | admin | game-platform-admin | 8789 | API do painel administrativo |
 | service | game-platform-service | 8792 | API de negócio C-side |
-| leaderboard-ws | game-platform-ws | 8789 | rankings WebSocket |
+| leaderboard-ws | game-platform-ws | 8790, 8791 | rankings WebSocket/chat |
 | mysql | game-platform-mysql | 3306 | banco principal |
 | redis | game-platform-redis | 6379 | cache/rate limit |
 | elasticsearch | game-platform-es | 9200 | busca full-text |
+
+> **Configuração de portas**: As portas da tabela são os valores padrão e todas podem ser alteradas no `.env` da raiz do projeto (modelo `.env.example`; edite após `cp .env.example .env`):
+> `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `LEADERBOARD_WS_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
+> As portas upstream do `nginx.conf.template` são renderizadas automaticamente pelo envsubst da imagem oficial; não é necessário alterar manualmente a configuração do Nginx.
+> Observação: alterar `ADMIN_PORT` / `SERVICE_PORT` não atualiza automaticamente o `APP_URL` em `admin/.env` nem o `SITE_URL` em `service/.env`; os endereços de acesso externo também precisam ser alterados.
 
 ### 2.3 Inicialização do banco de dados
 
@@ -163,6 +169,8 @@ composer install --no-dev --optimize-autoloader
 ```ini
 APP_ENV=production
 APP_DEBUG=false
+APP_PORT=8789  # porta de escuta HTTP do webman (deve ser igual ao APP_URL)
+APP_URL=http://localhost:8789  # endereço de acesso externo (baseUrl da documentação da API, etc.)
 
 DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -192,6 +200,9 @@ SCOUT_HOSTS=127.0.0.1:9200
 **Configurações-chave de service/.env:**
 ```ini
 # Mesmas configurações de banco, Redis e ES que o admin
+APP_PORT=8792  # porta de escuta HTTP do webman
+LEADERBOARD_WS_PORT=8790  # WebSocket de rankings (deve coincidir com o endereço de conexão do frontend)
+CHAT_WS_PORT=8791  # WebSocket de chat
 SNOWFLAKE_WORKER_ID=2  # deve ser diferente do admin
 
 # OAuth
@@ -262,11 +273,11 @@ SITE_URL=https://your-domain.com  # URL do site para callbacks/redirecionamentos
 ### 3.4 Iniciar os serviços
 
 ```bash
-# Painel administrativo (porta 8789)
+# Painel administrativo (porta padrão 8789, alterável via APP_PORT em admin/.env)
 cd /opt/game-platform/admin
 php start.php start -d
 
-# Negócio C-side (porta 8792)
+# Negócio C-side (porta padrão 8792, alterável via APP_PORT em service/.env)
 cd /opt/game-platform/service
 php start.php start -d
 
@@ -315,6 +326,7 @@ systemctl enable --now game-platform-admin game-platform-service
 Crie `/etc/nginx/sites-available/game-platform`:
 
 ```nginx
+# Portas com valores padrão (admin 8789 / service 8792 / ws 8790); se o .env foi alterado, ajuste-as também
 server {
     listen 80;
     server_name your-domain.com;
@@ -337,9 +349,9 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # Rankings WebSocket
+    # Rankings WebSocket (porta padrão 8790, igual ao LEADERBOARD_WS_PORT em service/.env)
     location /ws/ {
-        proxy_pass http://127.0.0.1:8789;
+        proxy_pass http://127.0.0.1:8790;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -526,6 +538,7 @@ ufw enable
 
 # Portas internas não devem ser expostas
 # 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# Estas são as portas padrão; se o .env da raiz ou os .env respectivos foram alterados, valem os valores reais
 # Acessar apenas via 127.0.0.1
 ```
 

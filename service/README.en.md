@@ -72,6 +72,8 @@ Or start everything with Docker Compose (project root):
 docker compose up -d
 ```
 
+Ports and other parameters are configured in the project root .env (template .env.example).
+
 ## Manual Installation
 
 ```bash
@@ -82,9 +84,10 @@ cd service && composer install
 cp .env.example .env
 # Edit .env: database connection, JWT keys, etc.
 
-# 3. Start the service (default port 8792)
+# 3. Start the service (default port 8792, changeable via APP_PORT in .env)
 php start.php start        # foreground
 php start.php start -d     # background (daemon)
+# WebSocket ports (leaderboard 8790 / chat 8791) can be changed via LEADERBOARD_WS_PORT / CHAT_WS_PORT in .env
 ```
 
 ## Usage

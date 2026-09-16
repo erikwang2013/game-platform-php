@@ -59,7 +59,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | 2FA | Google Authenticator TOTP + 备用恢复码 | 已完成 |
 | 推荐 | 推荐码、注册奖励、充值返佣 | 已完成 |
 | 搜索 | ES 搜索API + 游戏建议 + LIKE回退 | 已完成 |
-| 排行榜 | WebSocket 实时推送 (端口8789) | 已完成 |
+| 排行榜 | WebSocket 实时推送 (端口8790) | 已完成 |
 | CDN | 五厂商接入（Cloudflare R2 / AWS S3 / 阿里OSS / 腾讯COS / 华为OBS 上传+刷新+预热） | 已完成 |
 | CDN 管理 | 管理端配置五厂商（凭据加密存储/启停/连通测试 HeadBucket），service 纯 DB 读取 | 已完成 |
 | 报表 | 管理端数据报表（汇总/日报/CSV 导出，Redis 5 分钟缓存，跨度 ≤90 天） | 已完成 |
@@ -87,7 +87,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | VIP 权益 | 兑换折扣 2-15%、提现手续费减免 10-100%、汇率加成 0.1-1.0% | 已完成 |
 | 成就系统 | 12个内置成就；EventConsumer → AchievementService 事件驱动检测与 VIP 经验 | 已完成 |
 | 好友系统 | 申请/接受/拒绝/删除/搜索、pending/accepted/blocked 状态 | 已完成 |
-| 私信/聊天 | REST 私信 + WebSocket 实时消息 (端口8790)、仅好友可发 | 已完成 |
+| 私信/聊天 | REST 私信 + WebSocket 实时消息 (端口8791)、仅好友可发 | 已完成 |
 | 事件总线 | Redis Pub/Sub；emit + EventConsumer 消费成就/Webhook + metrics INCR | 已完成 |
 | 特性开关 | FeatureFlag 基于DB；`inRollout`/`abTest` crc32 分桶读 `feature.{name}_percent` | 已完成 |
 | 高级分析 | 留存/D1-D30、转化漏斗、ARPU/ARPPU、游戏币种经济指标 (MySQL 实时聚合) | 已完成 |

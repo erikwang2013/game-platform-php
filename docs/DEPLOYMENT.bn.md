@@ -39,14 +39,14 @@ php -S 0.0.0.0:8888 -t install/
 cd admin && composer install && cd ..
 cd service && composer install && cd ..
 
-# 5. 启动服务
+# 5. 启动服务（默认端口 admin 8789 / service 8792，可在各自 .env 的 APP_PORT 修改）
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
 # 6. 安全清理
 rm -rf install/
 
-# 7. 访问管理后台: http://<服务器IP>:8789
+# 7. 访问管理后台: http://<服务器IP>:8789（默认端口）
 ```
 
 ইনস্টল উইজার্ড যা সম্পন্ন করে:
@@ -69,6 +69,7 @@ git clone <repo-url> /opt/game-platform
 cd /opt/game-platform
 
 # 2. 使用一键安装向导配置环境（或手动配置 .env 文件）
+#    端口等 Docker 参数在根目录 .env（模板 .env.example）: cp .env.example .env
 php -S 0.0.0.0:8888 -t install/
 # 手动方式: cp admin/.env.example admin/.env && cp service/.env.example service/.env
 
@@ -89,10 +90,15 @@ docker-compose logs -f
 | nginx | game-platform-nginx | 80, 443 | রিভার্স প্রক্সি + স্ট্যাটিক ফাইল |
 | admin | game-platform-admin | 8789 | অ্যাডমিন প্যানেল API |
 | service | game-platform-service | 8792 | C-এন্ড ব্যবসা API |
-| leaderboard-ws | game-platform-ws | 8789 | WebSocket লিডারবোর্ড |
+| leaderboard-ws | game-platform-ws | 8790, 8791 | WebSocket লিডারবোর্ড/চ্যাট |
 | mysql | game-platform-mysql | 3306 | মূল ডেটাবেস |
 | redis | game-platform-redis | 6379 | ক্যাশ/রেট লিমিট |
 | elasticsearch | game-platform-es | 9200 | ফুল-টেক্সট সার্চ |
+
+> **পোর্ট কনফিগারেশন**: উপরের টেবিলটি ডিফল্ট পোর্ট দেখায়, সবগুলো প্রজেক্টের রুট ডিরেক্টরির `.env`-এ পরিবর্তন করা যায় (টেমপ্লেট `.env.example`, `cp .env.example .env` করে সম্পাদনা করুন):
+> `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `LEADERBOARD_WS_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
+> `nginx.conf.template`-এর upstream পোর্ট অফিসিয়াল ইমেজের envsubst দিয়ে স্বয়ংক্রিয়ভাবে রেন্ডার হয়, ম্যানুয়ালি Nginx কনফিগ পরিবর্তনের প্রয়োজন নেই।
+> দ্রষ্টব্য: `ADMIN_PORT` / `SERVICE_PORT` পরিবর্তন করলে `admin/.env`-এর `APP_URL` ও `service/.env`-এর `SITE_URL` স্বয়ংক্রিয়ভাবে আপডেট হবে না, বাইরের অ্যাক্সেস ঠিকানাও একসাথে পরিবর্তন করতে হবে।
 
 ### 2.3 ডেটাবেস ইনিশিয়ালাইজেশন
 
@@ -163,6 +169,8 @@ composer install --no-dev --optimize-autoloader
 ```ini
 APP_ENV=production
 APP_DEBUG=false
+APP_PORT=8789  # webman HTTP 监听端口（与 APP_URL 保持一致）
+APP_URL=http://localhost:8789  # 对外访问地址（API 文档 baseUrl 等）
 
 DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -192,6 +200,9 @@ SCOUT_HOSTS=127.0.0.1:9200
 **service/.env গুরুত্বপূর্ণ কনফিগ:**
 ```ini
 # 与 admin 相同的数据库、Redis、ES 配置
+APP_PORT=8792
+LEADERBOARD_WS_PORT=8790  # 排行榜 WebSocket
+CHAT_WS_PORT=8791  # 聊天 WebSocket
 SNOWFLAKE_WORKER_ID=2  # 必须与 admin 不同
 
 # OAuth
@@ -262,11 +273,11 @@ SITE_URL=https://your-domain.com  # 支付回调/跳转站点地址
 ### 3.4 সার্ভিস স্টার্ট
 
 ```bash
-# 管理后台 (端口 8789)
+# 管理后台 (默认端口 8789，admin/.env 的 APP_PORT 可改)
 cd /opt/game-platform/admin
 php start.php start -d
 
-# C端业务 (端口 8792)
+# C端业务 (默认端口 8792，service/.env 的 APP_PORT 可改)
 cd /opt/game-platform/service
 php start.php start -d
 
@@ -315,6 +326,7 @@ systemctl enable --now game-platform-admin game-platform-service
 `/etc/nginx/sites-available/game-platform` তৈরি করুন:
 
 ```nginx
+# 端口为默认值（admin 8789 / service 8792 / ws 8790）；如已修改 .env，请同步调整
 server {
     listen 80;
     server_name your-domain.com;
@@ -337,9 +349,9 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # WebSocket 排行榜
+    # WebSocket 排行榜（默认端口 8790，与 service/.env 的 LEADERBOARD_WS_PORT 一致）
     location /ws/ {
-        proxy_pass http://127.0.0.1:8789;
+        proxy_pass http://127.0.0.1:8790;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -526,6 +538,7 @@ ufw enable
 
 # 内部端口不应暴露
 # 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# 以上为默认端口；如修改过根 .env / 各自 .env，以实际配置为准
 # 仅通过 127.0.0.1 访问
 ```
 

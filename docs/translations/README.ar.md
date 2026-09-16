@@ -54,7 +54,7 @@ Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](R
 
 ```
 game-platform-php/
-├── admin/                     # لوحة الإدارة (webman v2, المنفذ 8789)
+├── admin/                     # لوحة الإدارة (webman v2, المنفذ الافتراضي 8789، قابل للتكوين عبر APP_PORT)
 │   ├── app/admin/controller/  #   وحدات تحكم لوحة الإدارة
 │   ├── app/middleware/        #   الوسيطات (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   طبقة مزوّدي الألعاب
@@ -67,7 +67,7 @@ game-platform-php/
 │   ├── install/   #   ملفات ترحيل SQL
 │   └── apps/flutter/          #   لوحة إدارة Flutter Web PC
 │
-├── service/                   # طرف C للأعمال (webman v2, المنفذ 8792)
+├── service/                   # طرف C للأعمال (webman v2, المنفذ الافتراضي 8792، قابل للتكوين عبر APP_PORT)
 │   ├── app/api/v1/controller/ #   وحدات تحكم API للطرف C
 │   ├── app/middleware/        #   الوسيطات (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   طبقة مزوّدي الألعاب
@@ -91,8 +91,12 @@ game-platform-php/
 │   ├── ARCHITECTURE-DESIGN.md #   وثيقة التصميم المعماري
 │   ├── FEATURES.md            #   وثيقة الميزات
 │   ├── FEATURE-DESIGN.md      #   وثيقة تصميم الميزات
-│   └── API.md                 #   وثيقة الواجهات
+│   ├── API.md                 #   وثيقة الواجهات
+│   └── DEPLOYMENT.md          #   وثيقة النشر (Docker/يدوي/تكوين المنافذ)
 │
+├── docker-compose.yml         # تنظيم Docker Compose (المنافذ الافتراضية من .env الجذر)
+├── nginx.conf.template        # قالب تكوين Nginx (منافذ upstream تُرسم عبر envsubst)
+├── .env.example               # قالب .env الجذر (متغيرات منافذ Docker، انسخه إلى .env للاستخدام)
 └── admin/docs/superpowers/    # معايير التطوير والخطط
     ├── specs/                 #   مواصفات التصميم
     └── plans/                 #   خطط التنفيذ
@@ -120,11 +124,11 @@ php -S 0.0.0.0:8888 -t install/
 cd admin && composer install && cd ..
 cd service && composer install && cd ..
 
-# 4. تشغيل الخدمات
+# 4. تشغيل الخدمات (المنفذ الافتراضي admin 8789 / service 8792، يمكن تعديله في APP_PORT بملف .env لكل منهما)
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. الوصول إلى لوحة الإدارة: http://localhost:8789
+# 5. الوصول إلى لوحة الإدارة: http://localhost:8789 (المنفذ الافتراضي)
 #    تسجيل الدخول باسم مستخدم وكلمة مرور المدير المُعيّنين أثناء التثبيت
 
 # 6. حذف دليل التثبيت بعد اكتماله (للأمان)
@@ -195,10 +199,10 @@ flutter run -d chrome
 ### التحقق
 
 ```bash
-# اختبار لوحة الإدارة
+# اختبار لوحة الإدارة (المنفذ الافتراضي 8789)
 curl http://localhost:8789/health
 
-# اختبار طرف C للأعمال
+# اختبار طرف C للأعمال (المنفذ الافتراضي 8792)
 curl http://localhost:8792/health
 
 # اختبار تسجيل المستخدم
@@ -248,7 +252,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | KYC | تقديم التحقق من الهوية + المراجعة، نظام تحقق ثلاثي المستويات |
 | الألعاب | CRUD + التصنيفات (10 فئات) + الخوادم + تتبع سجلات اللعب |
 | البحث | بحث نصي كامل عبر Elasticsearch (مع التراجع إلى LIKE) |
-| لوحة الصدارة | يومية/أسبوعية/شهرية/إجمالية، تخزين مؤقت في Redis، دفع فوري عبر WebSocket (8789) |
+| لوحة الصدارة | يومية/أسبوعية/شهرية/إجمالية، تخزين مؤقت في Redis، دفع فوري عبر WebSocket (المنفذ الافتراضي 8790، قابل للتكوين عبر LEADERBOARD_WS_PORT) |
 | CDN | تكامل خمسة موفّرين (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS رفع + مسح + تسخين) + إعداد/تفعيل/اختبار الاتصال من لوحة الإدارة |
 | القسائم | مبلغ ثابت + خصم نسبي، محدودة بالوقت والكمية، تتبع الاكتساب والاستخدام |
 | الإشعارات | رسائل داخلية + بريد إلكتروني، إشعارات تلقائية للتعبئة/السحب/KYC/القسائم |
@@ -269,12 +273,12 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | تذاكر الدعم | إنشاء/رد من الطرف C + معالجة/تعيين/إغلاق من لوحة الإدارة |
 | VIP | 5 مستويات ولاء، تراكم نقاط الخبرة، خصم صرف / تخفيض سحب / زيادة سعر صرف |
 | الإنجازات | 12 إنجازًا مدمجًا، كشف مدفوع بالأحداث، تتبع التقدم |
-| التواصل الاجتماعي | نظام أصدقاء + رسائل خاصة فورية عبر WebSocket (المنفذ 8791)، إرسال للأصدقاء فقط |
+| التواصل الاجتماعي | نظام أصدقاء + رسائل خاصة فورية عبر WebSocket (المنفذ الافتراضي 8791، قابل للتكوين عبر CHAT_WS_PORT)، إرسال للأصدقاء فقط |
 | البطولات | نظام بطولات (مفتاح FeatureFlag) + لوحة صدارة + حد أقصى للعدد |
 | العمولة | توزيع أرباح الإحالة بمستويين (معدلات عمولة قابلة للتكوين) |
 | القسائم | قيود مشروطة (min_deposit/first_user/game_id) |
 | الأحداث | ناقل أحداث Redis Pub/Sub + تسليم اشتراكات Webhook (7 أنواع أحداث) |
-| النشر | تنظيم Docker Compose لـ 8 خدمات + وكيل عكسي Nginx |
+| النشر | تنظيم Docker Compose لـ 7 خدمات (المنافذ تُكوَّن من .env الجذر) + وكيل عكسي Nginx |
 | العملاء | Flutter Admin (17 صفحة) + Platform (10 صفحات) + HarmonyOS (5 صفحات) |
 
 ## نموذج الأعمال

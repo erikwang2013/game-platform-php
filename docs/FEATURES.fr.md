@@ -59,7 +59,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | 2FA | TOTP Google Authenticator + codes de secours de rechange | Terminé |
 | Parrainage | Code de parrainage, récompense d'inscription, commission de recharge | Terminé |
 | Recherche | API de recherche ES + suggestions de jeux + repli LIKE | Terminé |
-| Classements | Push temps réel WebSocket (port 8789) | Terminé |
+| Classements | Push temps réel WebSocket (port 8790) | Terminé |
 | CDN | Intégration de cinq fournisseurs (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + préchargement) | Terminé |
 | Administration CDN | Configuration des cinq fournisseurs côté admin (identifiants chiffrés/activation-désactivation/test de connexion HeadBucket), le service lit uniquement la base de données | Terminé |
 | Rapports | Rapports de données côté admin (résumé/quotidien/export CSV, cache Redis 5 min, période ≤90 jours) | Terminé |
@@ -87,7 +87,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Droits VIP | Remise d'échange 2-15 %, exemption de frais de retrait 10-100 %, bonus de taux 0,1-1,0 % | Terminé |
 | Système de succès | 12 succès intégrés ; EventConsumer → détection pilotée par événements AchievementService et expérience VIP | Terminé |
 | Système d'amis | Demande/acceptation/refus/suppression/recherche, statuts pending/accepted/blocked | Terminé |
-| Messages privés/chat | Messages privés REST + messages temps réel WebSocket (port 8790), seuls les amis peuvent écrire | Terminé |
+| Messages privés/chat | Messages privés REST + messages temps réel WebSocket (port 8791), seuls les amis peuvent écrire | Terminé |
 | Bus d'événements | Redis Pub/Sub ; emit + EventConsumer consomme succès/Webhook + INCR de métriques | Terminé |
 | Interrupteurs de fonctionnalités | FeatureFlag basé DB ; `inRollout`/`abTest` en buckets crc32 lisant `feature.{name}_percent` | Terminé |
 | Analyses avancées | Rétention/D1-D30, entonnoir de conversion, ARPU/ARPPU, indicateurs économiques des devises de jeu (agrégation MySQL en temps réel) | Terminé |

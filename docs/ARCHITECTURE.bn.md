@@ -314,18 +314,17 @@ game_achievement ── 1:N ── game_user_achievement
 单机部署:
   admin/         :8789 (webman, 32 workers)
   service/       :8792 (webman, 32 workers)
-  leaderboard-ws :8789 (WebSocket 排行榜)
+  leaderboard-ws :8790 (WebSocket 排行榜)
   chat-ws        :8791 (WebSocket 聊天)
   MySQL          :3306
   Redis          :6379
 ```
 
-### 6.2 Docker Compose (৮ সার্ভিস)
+### 6.2 Docker Compose (৭ সার্ভিস)
 
 ```yaml
 nginx (80/443) → admin (8789) + service (8792) + static files
-leaderboard-ws (8789) — WebSocket 排行榜实时推送
-chat-ws (8791) — WebSocket 私信/聊天
+leaderboard-ws (8790/8791) — WebSocket 排行榜实时推送 + 私信/聊天
 mysql (3306) — 主数据库，数据卷持久化
 redis (6379) — 缓存/限流/WebSocket/EventBus
 elasticsearch (9200) — 全文检索
@@ -348,7 +347,7 @@ flowchart TB
         ADM2["admin :8789"]
         SVC1["service :8792"]
         SVC2["service :8792"]
-        WS1["leaderboard-ws :8789"]
+        WS1["leaderboard-ws :8790"]
         WS2["chat-ws :8791"]
     end
 
@@ -389,7 +388,7 @@ tests/
 |------|------|------|
 | admin/ | 8789 | অ্যাডমিন প্যানেল API |
 | service/ | 8792 | C-এন্ড ব্যবসা API |
-| leaderboard-ws | 8789 | WebSocket রিয়েল-টাইম লিডারবোর্ড |
+| leaderboard-ws | 8790 | WebSocket রিয়েল-টাইম লিডারবোর্ড |
 | chat-ws | 8791 | WebSocket প্রাইভেট মেসেজ/চ্যাট |
 | MySQL | 3306 | মূল ডেটাবেস |
 | Redis | 6379 | ক্যাশ/রেট লিমিট/WebSocket/EventBus |

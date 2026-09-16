@@ -301,7 +301,7 @@ signature = HMAC-SHA256(
 
 ### 9.6 WebSocket 实时排行榜
 
-- 协议：WebSocket (ws://host:8789)
+- 协议：WebSocket (ws://host:8790)
 - 订阅：{action: "subscribe", leaderboard_id: 123}
 - 推送：{type: "ranking_update", rankings: [...]}
 - 支持 ping/pong 心跳保活

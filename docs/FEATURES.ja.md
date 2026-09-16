@@ -59,7 +59,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | 2FA | Google Authenticator TOTP + 予備リカバリーコード | 完了 |
 | 紹介 | 紹介コード、登録報酬、チャージコミッション | 完了 |
 | 検索 | ES検索API + ゲーム提案 + LIKEフォールバック | 完了 |
-| ランキング | WebSocket リアルタイムプッシュ (ポート8789) | 完了 |
+| ランキング | WebSocket リアルタイムプッシュ (ポート8790) | 完了 |
 | CDN | 5社連携 (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS アップロード + キャッシュ削除 + プリロード) | 完了 |
 | CDN 管理 | 管理画面で5社設定 (暗号化保存した認証情報/有効·無効/HeadBucket 接続テスト)、service は DB のみ参照 | 完了 |
 | レポート | 管理側データレポート（集計/日報/CSV エクスポート、Redis 5分キャッシュ、期間 ≤90日） | 完了 |
@@ -87,7 +87,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | VIP 特典 | 交換割引 2-15%、出金手数料免除 10-100%、レート加成 0.1-1.0% | 完了 |
 | 成就システム | 12個の内蔵成就；EventConsumer → AchievementService イベント駆動検知と VIP 経験値 | 完了 |
 | フレンドシステム | 申請/承認/拒否/削除/検索、pending/accepted/blocked 状態 | 完了 |
-| 私信/チャット | REST 私信 + WebSocket リアルタイムメッセージ (ポート8790)、友人のみ送信可 | 完了 |
+| 私信/チャット | REST 私信 + WebSocket リアルタイムメッセージ (ポート8791)、友人のみ送信可 | 完了 |
 | イベントバス | Redis Pub/Sub；emit + EventConsumer 消費成就/Webhook + metrics INCR | 完了 |
 | フィーチャーフラグ | FeatureFlag DBベース；`inRollout`/`abTest` crc32 分桶で `feature.{name}_percent` を読む | 完了 |
 | 高度な分析 | リテンション/D1-D30、コンバージョンファネル、ARPU/ARPPU、ゲーム通貨経済指標 (MySQL リアルタイム集計) | 完了 |

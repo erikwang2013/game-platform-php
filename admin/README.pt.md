@@ -139,6 +139,8 @@ Itens de configuração principais:
 
 | Variável de ambiente | Descrição | Valor padrão |
 |---------|------|--------|
+| `APP_PORT` | Porta de escuta HTTP do webman | `8789` |
+| `APP_URL` | Endereço de acesso externo (links da página de sucesso do instalador, baseUrl da documentação da API, etc.) | `http://localhost:8789` |
 | `JWT_SECRET` | Chave de assinatura JWT | `open-admin-jwt-secret-change-in-production` |
 | `HASHIDS_SALT` | Salt do Hashids | `open-admin-hashids-salt-2026` |
 | `ENCRYPTION_KEY` | Chave de criptografia da API | valor padrão de 32 bytes |
@@ -162,7 +164,7 @@ mysql -u root -p < install/install.sql
 php start.php start
 ```
 
-Por padrão, escuta em `http://0.0.0.0:8789`.
+Por padrão, escuta em `http://0.0.0.0:8789` (pode ser alterado via `APP_PORT` no `.env`; deve ser consistente com `APP_URL`).
 
 ### 5. Iniciar o frontend (opcional)
 

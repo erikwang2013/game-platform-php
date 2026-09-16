@@ -3,6 +3,8 @@ version: '3.8'
 # ============================================================
 # Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 # 全球游戏聚合平台 — Docker Compose 完整部署
+# 端口全部来自根目录 .env（模板 .env.example）：cp .env.example .env
+# 应用端口由 ADMIN_PORT 等透传为容器内 APP_PORT，监听/映射/Nginx 三处一致
 # ============================================================
 
 services:
@@ -10,11 +12,16 @@ services:
   nginx:
     image: nginx:alpine
     container_name: game-platform-nginx
+    environment:
+      # 模板渲染 upstream 端口（官方镜像 envsubst 机制，输出到 /etc/nginx/nginx.conf）
+      - ADMIN_PORT=${ADMIN_PORT:-8789}
+      - SERVICE_PORT=${SERVICE_PORT:-8792}
+      - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
     ports:
-      - "80:80"
-      - "443:443"
+      - "${NGINX_HTTP_PORT:-80}:80"
+      - "${NGINX_HTTPS_PORT:-443}:443"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx.conf.template:/etc/nginx/templates/nginx.conf.template:ro
       - ./admin/public:/var/www/admin/public:ro
       - ./apps/flutter/platform/build/web:/var/www/platform:ro
       - ./ssl:/etc/nginx/ssl:ro
@@ -23,14 +30,17 @@ services:
       - service
     restart: unless-stopped
 
-  # 管理后台 (端口 8789)
+  # 管理后台 (默认端口 8789，根 .env 的 ADMIN_PORT 可改)
   admin:
     build:
       context: ./admin
       dockerfile: Dockerfile
     container_name: game-platform-admin
+    environment:
+      # 容器内监听端口 = 宿主映射端口（environment 优先于 env_file）
+      - APP_PORT=${ADMIN_PORT:-8789}
     ports:
-      - "8789:8789"
+      - "${ADMIN_PORT:-8789}:${ADMIN_PORT:-8789}"
     volumes:
       - ./admin:/app
       - ./common:/common
@@ -41,14 +51,18 @@ services:
       - redis
     restart: unless-stopped
 
-  # C端业务端 (端口 8792)
+  # C端业务端 (默认端口 8792，根 .env 的 SERVICE_PORT 可改)
   service:
     build:
       context: ./service
       dockerfile: Dockerfile
     container_name: game-platform-service
+    environment:
+      - APP_PORT=${SERVICE_PORT:-8792}
+      - LEADERBOARD_WS_PORT=${LEADERBOARD_WS_PORT:-8790}
+      - CHAT_WS_PORT=${CHAT_WS_PORT:-8791}
     ports:
-      - "8792:8792"
+      - "${SERVICE_PORT:-8792}:${SERVICE_PORT:-8792}"
     volumes:
       - ./service:/app
       - ./common:/common
@@ -60,16 +74,20 @@ services:
       - elasticsearch
     restart: unless-stopped
 
-  # WebSocket 排行榜/聊天 (端口 8790/8791)
+  # WebSocket 排行榜/聊天 (默认端口 8790/8791，根 .env 可改)
   leaderboard-ws:
     build:
       context: ./service
       dockerfile: Dockerfile
     container_name: game-platform-ws
     command: php start.php start
+    environment:
+      - APP_PORT=${SERVICE_PORT:-8792}
+      - LEADERBOARD_WS_PORT=${LEADERBOARD_WS_PORT:-8790}
+      - CHAT_WS_PORT=${CHAT_WS_PORT:-8791}
     ports:
-      - "8790:8790"
-      - "8791:8791"
+      - "${LEADERBOARD_WS_PORT:-8790}:${LEADERBOARD_WS_PORT:-8790}"
+      - "${CHAT_WS_PORT:-8791}:${CHAT_WS_PORT:-8791}"
     volumes:
       - ./service:/app
       - ./common:/common
@@ -85,7 +103,7 @@ services:
     image: mysql:8.0
     container_name: game-platform-mysql
     ports:
-      - "3306:3306"
+      - "${MYSQL_PORT:-3306}:3306"
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
       MYSQL_DATABASE: ${DB_DATABASE:-game-platform}
@@ -100,7 +118,7 @@ services:
     image: redis:7-alpine
     container_name: game-platform-redis
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
@@ -111,7 +129,7 @@ services:
     image: elasticsearch:8.11.0
     container_name: game-platform-es
     ports:
-      - "9200:9200"
+      - "${ES_PORT:-9200}:9200"
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false

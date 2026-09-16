@@ -39,14 +39,14 @@ php -S 0.0.0.0:8888 -t install/
 cd admin && composer install && cd ..
 cd service && composer install && cd ..
 
-# 5. Start the services
+# 5. Start the services (default ports: admin 8789 / service 8792; change APP_PORT in each .env)
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
 # 6. Security cleanup
 rm -rf install/
 
-# 7. Access the admin backend: http://<server-IP>:8789
+# 7. Access the admin backend: http://<server-IP>:8789 (default port)
 ```
 
 What the install wizard does:
@@ -69,6 +69,7 @@ git clone <repo-url> /opt/game-platform
 cd /opt/game-platform
 
 # 2. Configure the environment with the one-click install wizard (or configure .env files manually)
+#    Docker parameters such as ports live in the root .env (template .env.example): cp .env.example .env
 php -S 0.0.0.0:8888 -t install/
 # Manual: cp admin/.env.example admin/.env && cp service/.env.example service/.env
 
@@ -89,10 +90,15 @@ docker-compose logs -f
 | nginx | game-platform-nginx | 80, 443 | Reverse proxy + static files |
 | admin | game-platform-admin | 8789 | Admin backend API |
 | service | game-platform-service | 8792 | C-end business API |
-| leaderboard-ws | game-platform-ws | 8789 | WebSocket leaderboard |
+| leaderboard-ws | game-platform-ws | 8790, 8791 | WebSocket leaderboard/chat |
 | mysql | game-platform-mysql | 3306 | Main database |
 | redis | game-platform-redis | 6379 | Cache/rate limiting |
 | elasticsearch | game-platform-es | 9200 | Full-text search |
+
+> **Port configuration**: the table above lists the default ports; all of them can be changed in the project root `.env` (template `.env.example`; run `cp .env.example .env` and edit):
+> `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `LEADERBOARD_WS_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
+> The upstream ports in `nginx.conf.template` are rendered automatically by the official image's envsubst — no manual Nginx config changes needed.
+> Note: changing `ADMIN_PORT` / `SERVICE_PORT` does not automatically update `APP_URL` in `admin/.env` or `SITE_URL` in `service/.env`; the public access URLs must be updated in sync.
 
 ### 2.3 Database Initialization
 
@@ -163,6 +169,8 @@ composer install --no-dev --optimize-autoloader
 ```ini
 APP_ENV=production
 APP_DEBUG=false
+APP_PORT=8789  # webman HTTP listen port (keep in sync with APP_URL)
+APP_URL=http://localhost:8789  # public access URL (API docs baseUrl, etc.)
 
 DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -192,6 +200,9 @@ SCOUT_HOSTS=127.0.0.1:9200
 **Key service/.env config:**
 ```ini
 # 与 admin 相同的数据库、Redis、ES 配置
+APP_PORT=8792  # webman HTTP listen port
+LEADERBOARD_WS_PORT=8790  # leaderboard WebSocket port (must match the frontend connection address)
+CHAT_WS_PORT=8791  # chat WebSocket port
 SNOWFLAKE_WORKER_ID=2  # 必须与 admin 不同
 
 # OAuth
@@ -262,11 +273,11 @@ SITE_URL=https://your-domain.com  # 支付回调/跳转站点地址
 ### 3.4 Start the Services
 
 ```bash
-# Admin backend (port 8789)
+# Admin backend (default port 8789; change APP_PORT in admin/.env)
 cd /opt/game-platform/admin
 php start.php start -d
 
-# C-end service (port 8792)
+# C-end service (default port 8792; change APP_PORT in service/.env)
 cd /opt/game-platform/service
 php start.php start -d
 
@@ -315,6 +326,7 @@ systemctl enable --now game-platform-admin game-platform-service
 Create `/etc/nginx/sites-available/game-platform`:
 
 ```nginx
+# Ports are defaults (admin 8789 / service 8792 / ws 8790); if you changed .env, adjust these accordingly
 server {
     listen 80;
     server_name your-domain.com;
@@ -337,9 +349,9 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # WebSocket 排行榜
+    # WebSocket leaderboard (default port 8790, matching LEADERBOARD_WS_PORT in service/.env)
     location /ws/ {
-        proxy_pass http://127.0.0.1:8789;
+        proxy_pass http://127.0.0.1:8790;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -526,6 +538,7 @@ ufw enable
 
 # Internal ports should not be exposed
 # 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# The above are default ports; if you changed the root .env or the individual .env files, use the actual values
 # Only accessible via 127.0.0.1
 ```
 

@@ -59,7 +59,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | 2FA | Google Authenticator TOTP + Backup-Wiederherstellungscodes | Abgeschlossen |
 | Empfehlung | Empfehlungscode, Registrierungsbelohnung, Einzahlungsprovision | Abgeschlossen |
 | Suche | ES-Such-API + Spielvorschläge + LIKE-Fallback | Abgeschlossen |
-| Rangliste | WebSocket-Echtzeit-Push (Port 8789) | Abgeschlossen |
+| Rangliste | WebSocket-Echtzeit-Push (Port 8790) | Abgeschlossen |
 | CDN | Integration von fünf Anbietern (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS Upload + Purge + Preload) | Abgeschlossen |
 | CDN-Verwaltung | Admin-Konfiguration der fünf Anbieter (verschlüsselte Zugangsdaten/Aktivierung/Verbindungstest per HeadBucket), Service liest nur aus DB | Abgeschlossen |
 | Berichte | Admin-Datenberichte (Zusammenfassung/Tagesbericht/CSV-Export, Redis-5-min-Cache, Zeitraum ≤90 Tage) | Abgeschlossen |
@@ -87,7 +87,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | VIP-Vorteile | Umtauschrabatt 2-15 %, Auszahlungsgebührenermäßigung 10-100 %, Wechselkursbonus 0.1-1.0 % | Abgeschlossen |
 | Erfolge-System | 12 eingebaute Erfolge; EventConsumer → AchievementService ereignisgesteuerte Erkennung und VIP-EXP | Abgeschlossen |
 | Freundesystem | Antrag/Annehmen/Ablehnen/Löschen/Suche, pending/accepted/blocked-Status | Abgeschlossen |
-| Direktnachrichten/Chat | REST-Direktnachrichten + WebSocket-Echtzeitnachrichten (Port 8790), nur Freunde können senden | Abgeschlossen |
+| Direktnachrichten/Chat | REST-Direktnachrichten + WebSocket-Echtzeitnachrichten (Port 8791), nur Freunde können senden | Abgeschlossen |
 | Event-Bus | Redis Pub/Sub; emit + EventConsumer verarbeitet Erfolge/Webhook + metrics INCR | Abgeschlossen |
 | Feature-Schalter | FeatureFlag auf DB-Basis; `inRollout`/`abTest` crc32-Bucketing liest `feature.{name}_percent` | Abgeschlossen |
 | Erweiterte Analysen | Retention/D1-D30, Conversion-Funnel, ARPU/ARPPU, Spielwährungs-Wirtschaftsindikatoren (MySQL-Echtzeitaggregation) | Abgeschlossen |

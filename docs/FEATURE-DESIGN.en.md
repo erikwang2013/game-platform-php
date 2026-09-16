@@ -301,7 +301,7 @@ Configured via PlatformConfig or environment variables; requests automatically f
 
 ### 9.6 WebSocket Real-Time Leaderboard
 
-- Protocol: WebSocket (ws://host:8789)
+- Protocol: WebSocket (ws://host:8790)
 - Subscribe: {action: "subscribe", leaderboard_id: 123}
 - Push: {type: "ranking_update", rankings: [...]}
 - ping/pong heartbeat keepalive supported

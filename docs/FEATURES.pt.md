@@ -59,7 +59,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | 2FA | Google Authenticator TOTP + códigos de recuperação reserva | Concluído |
 | Indicação | código de indicação, recompensa de registro, comissão de depósito | Concluído |
 | Busca | API de busca ES + sugestões de jogos + fallback LIKE | Concluído |
-| Rankings | push em tempo real via WebSocket (porta 8789) | Concluído |
+| Rankings | push em tempo real via WebSocket (porta 8790) | Concluído |
 | CDN | Integração de cinco provedores (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purga + preload) | Concluído |
 | Administração CDN | Configuração dos cinco provedores no admin (credenciais criptografadas/ativação-desativação/teste de conectividade HeadBucket), o serviço só lê do banco de dados | Concluído |
 | Relatórios | Relatórios de dados do admin (resumo/diário/exportação CSV, cache Redis 5 min, período ≤90 dias) | Concluído |
@@ -87,7 +87,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Benefícios VIP | desconto de troca 2-15%, redução de tarifa de saque 10-100%, bônus de câmbio 0.1-1.0% | Concluído |
 | Sistema de conquistas | 12 conquistas integradas; detecção orientada a eventos com EventConsumer → AchievementService e experiência VIP | Concluído |
 | Sistema de amigos | solicitação/aceite/recusa/remoção/busca, status pending/accepted/blocked | Concluído |
-| Mensagens privadas/chat | mensagens privadas REST + mensagens em tempo real WebSocket (porta 8790), apenas entre amigos | Concluído |
+| Mensagens privadas/chat | mensagens privadas REST + mensagens em tempo real WebSocket (porta 8791), apenas entre amigos | Concluído |
 | Barramento de eventos | Redis Pub/Sub; emit + EventConsumer consome conquistas/Webhook + INCR em metrics | Concluído |
 | Feature flags | FeatureFlag baseado em DB; `inRollout`/`abTest` com buckets crc32 lendo `feature.{name}_percent` | Concluído |
 | Análise avançada | retenção/D1-D30, funil de conversão, ARPU/ARPPU, indicadores econômicos das moedas de jogo (agregação em tempo real no MySQL) | Concluído |

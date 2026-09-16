@@ -54,7 +54,7 @@ Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](R
 
 ```
 game-platform-php/
-├── admin/                     # 管理画面 (webman v2, ポート 8789)
+├── admin/                     # 管理画面 (webman v2, デフォルトポート 8789, APP_PORT で変更可)
 │   ├── app/admin/controller/  #   管理端コントローラー
 │   ├── app/middleware/        #   中間ウェア (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   ゲームProvider層
@@ -67,7 +67,7 @@ game-platform-php/
 │   ├── install/   #   SQL 移行ファイル
 │   └── apps/flutter/          #   Flutter Web PC 管理画面
 │
-├── service/                   # C端業務端 (webman v2, ポート 8792)
+├── service/                   # C端業務端 (webman v2, デフォルトポート 8792, APP_PORT で変更可)
 │   ├── app/api/v1/controller/ #   C端 API コントローラー
 │   ├── app/middleware/        #   中間ウェア (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   ゲームProvider層
@@ -91,8 +91,12 @@ game-platform-php/
 │   ├── ARCHITECTURE-DESIGN.md #   アーキテクチャ設計ドキュメント
 │   ├── FEATURES.md            #   機能ドキュメント
 │   ├── FEATURE-DESIGN.md      #   機能設計ドキュメント
-│   └── API.md                 #   API ドキュメント
+│   ├── API.md                 #   API ドキュメント
+│   └── DEPLOYMENT.md          #   デプロイドキュメント（Docker/手動/ポート設定）
 │
+├── docker-compose.yml         # Docker Compose 構成（デフォルトポートはルート .env から）
+├── nginx.conf.template        # Nginx 設定テンプレート（upstream ポートは envsubst でレンダリング）
+├── .env.example               # ルート .env テンプレート（Docker ポート変数、.env にコピーして使用）
 └── admin/docs/superpowers/    # 開発規約と計画
     ├── specs/                 #   設計仕様
     └── plans/                 #   実装計画
@@ -120,11 +124,11 @@ php -S 0.0.0.0:8888 -t install/
 cd admin && composer install && cd ..
 cd service && composer install && cd ..
 
-# 4. サービスを起動
+# 4. サービスを起動（デフォルトポート admin 8789 / service 8792、各自の .env の APP_PORT で変更可）
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. 管理画面にアクセス: http://localhost:8789
+# 5. 管理画面にアクセス: http://localhost:8789（デフォルトポート）
 #    インストール時に設定した管理者アカウントのパスワードでログイン
 
 # 6. インストール完了後、インストールディレクトリを削除（セキュリティ）
@@ -195,10 +199,10 @@ flutter run -d chrome
 ### 動作確認
 
 ```bash
-# 管理画面のテスト
+# 管理画面のテスト（デフォルトポート 8789）
 curl http://localhost:8789/health
 
-# C端業務のテスト
+# C端業務のテスト（デフォルトポート 8792）
 curl http://localhost:8792/health
 
 # ユーザー登録のテスト
@@ -248,7 +252,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | KYC | 実名認証の提出+審査、3段階認証制度 |
 | ゲーム | CRUD + カテゴリ(10種) + サーバー区分 + ゲーム記録トラッキング |
 | 検索 | Elasticsearch 全文検索(LIKE フォールバック含む) |
-| ランキング | 日/週/月/総合ランキング、Redisキャッシュ、WebSocketリアルタイム配信(8789) |
+| ランキング | 日/週/月/総合ランキング、Redisキャッシュ、WebSocketリアルタイム配信（デフォルトポート 8790、LEADERBOARD_WS_PORT で変更可） |
 | CDN | 5社プロバイダー連携 (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS アップロード+パージ+プリロード) + 管理画面での設定/有効無効/接続テスト |
 | クーポン | 固定額+比率割引、期間・数量限定、獲得・使用の追跡 |
 | 通知 | サイト内メッセージ+メール、入金/出金/KYC/クーポンの自動通知 |
@@ -269,12 +273,12 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | チケット | C端で作成/返信 + 管理端で処理/割り当て/クローズ |
 | VIP | 5段階ロイヤルティ、経験値累積、両替割引/出金手数料減免/レート加算 |
 | 実績 | 12個の内蔵実績、イベント駆動検出、進捗トラッキング |
-| ソーシャル | 友達システム + WebSocket リアルタイムダイレクトメッセージ (ポート8791)、友達のみ送信可 |
+| ソーシャル | 友達システム + WebSocket リアルタイムダイレクトメッセージ（デフォルトポート 8791、CHAT_WS_PORT で変更可）、友達のみ送信可 |
 | トーナメント | トーナメントシステム (FeatureFlagスイッチ) + ランキング + 参加人数上限 |
 | リベート | 2段階紹介収益分配 (コミッション率設定可能) |
 | クーポン | 条件制限 (min_deposit/first_user/game_id) |
 | イベント | Redis Pub/Sub イベントバス + Webhookサブスクリプション配信 (7種類のイベント) |
-| デプロイ | Docker Compose 8サービス構成 + Nginxリバースプロキシ |
+| デプロイ | Docker Compose 7サービス構成（ポートはルート .env で設定） + Nginxリバースプロキシ |
 | クライアント | Flutter Admin(17ページ) + Platform(10ページ) + HarmonyOS(5ページ) |
 
 ## ビジネスモデル

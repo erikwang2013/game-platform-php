@@ -139,6 +139,8 @@ cp .env.example .env
 
 | 環境変数 | 説明 | デフォルト値 |
 |---------|------|--------|
+| `APP_PORT` | webman HTTP リッスンポート | `8789` |
+| `APP_URL` | 外部アクセスアドレス（インストーラーの成功ページのリンク、API ドキュメントの baseUrl など） | `http://localhost:8789` |
 | `JWT_SECRET` | JWT 署名キー | `open-admin-jwt-secret-change-in-production` |
 | `HASHIDS_SALT` | Hashids ソルト値 | `open-admin-hashids-salt-2026` |
 | `ENCRYPTION_KEY` | API 暗号化キー | 32バイトのデフォルト値 |
@@ -162,7 +164,7 @@ mysql -u root -p < install/install.sql
 php start.php start
 ```
 
-デフォルトでは `http://0.0.0.0:8789` をリッスンします。
+デフォルトでは `http://0.0.0.0:8789` をリッスンします（`.env` の `APP_PORT` で変更可能、`APP_URL` と一致させる必要があります）。
 
 ### 5. フロントエンドの起動（任意）
 

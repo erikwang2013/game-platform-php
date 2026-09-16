@@ -72,6 +72,8 @@ php -S 0.0.0.0:8888 -t install/
 docker compose up -d
 ```
 
+تُضبط المنافذ وغيرها من المعاملات في ملف .env بجذر المشروع (القالب .env.example).
+
 ## التثبيت اليدوي
 
 ```bash
@@ -82,9 +84,10 @@ cd service && composer install
 cp .env.example .env
 # عدّل .env: اتصال قاعدة البيانات، مفاتيح JWT وغيرها
 
-# 3. شغّل الخدمة (المنفذ الافتراضي 8792)
+# 3. شغّل الخدمة (المنفذ الافتراضي 8792، يمكن تغييره عبر APP_PORT في .env)
 php start.php start        # في المقدمة
 php start.php start -d     # في الخلفية (daemon)
+# منافذ WebSocket (لوحة الترتيب 8790 / الدردشة 8791) يمكن تغييرها عبر LEADERBOARD_WS_PORT / CHAT_WS_PORT في .env
 ```
 
 ## الاستخدام

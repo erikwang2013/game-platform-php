@@ -39,14 +39,14 @@ php -S 0.0.0.0:8888 -t install/
 cd admin && composer install && cd ..
 cd service && composer install && cd ..
 
-# 5. 서비스 시작
+# 5. 서비스 시작 (기본 포트 admin 8789 / service 8792, 각 .env의 APP_PORT에서 변경 가능)
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
 # 6. 보안 정리
 rm -rf install/
 
-# 7. 관리 백오피스 접속: http://<服务器IP>:8789
+# 7. 관리 백오피스 접속: http://<服务器IP>:8789 (기본 포트)
 ```
 
 설치 마법사가 수행하는 작업:
@@ -69,6 +69,7 @@ git clone <repo-url> /opt/game-platform
 cd /opt/game-platform
 
 # 2. 원클릭 설치 마법사로 환경 설정 (또는 .env 파일 수동 설정)
+#    포트 등 Docker 파라미터는 루트 디렉터리 .env에 있습니다 (템플릿 .env.example): cp .env.example .env
 php -S 0.0.0.0:8888 -t install/
 # 수동 방식: cp admin/.env.example admin/.env && cp service/.env.example service/.env
 
@@ -89,10 +90,15 @@ docker-compose logs -f
 | nginx | game-platform-nginx | 80, 443 | 리버스 프록시 + 정적 파일 |
 | admin | game-platform-admin | 8789 | 관리 백오피스 API |
 | service | game-platform-service | 8792 | C단 비즈니스 API |
-| leaderboard-ws | game-platform-ws | 8789 | WebSocket 리더보드 |
+| leaderboard-ws | game-platform-ws | 8790, 8791 | WebSocket 리더보드/채팅 |
 | mysql | game-platform-mysql | 3306 | 메인 데이터베이스 |
 | redis | game-platform-redis | 6379 | 캐시/레이트 리밋 |
 | elasticsearch | game-platform-es | 9200 | 전문 검색 |
+
+> **포트 구성**: 위 표는 기본 포트이며, 모두 프로젝트 루트의 `.env`에서 변경할 수 있습니다 (템플릿 `.env.example`, `cp .env.example .env` 후 편집):
+> `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `LEADERBOARD_WS_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
+> `nginx.conf.template`의 upstream 포트는 공식 이미지의 envsubst로 자동 렌더링되므로 Nginx 설정을 수동으로 수정할 필요가 없습니다.
+> 주의: `ADMIN_PORT` / `SERVICE_PORT`를 변경해도 `admin/.env`의 `APP_URL`과 `service/.env`의 `SITE_URL`은 자동으로 갱신되지 않으므로 외부 접속 주소도 함께 수정해야 합니다.
 
 ### 2.3 데이터베이스 초기화
 
@@ -163,6 +169,8 @@ composer install --no-dev --optimize-autoloader
 ```ini
 APP_ENV=production
 APP_DEBUG=false
+APP_PORT=8789  # webman HTTP 리슨 포트 (APP_URL과 일치)
+APP_URL=http://localhost:8789  # 외부 접속 주소 (API 문서 baseUrl 등)
 
 DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -192,6 +200,9 @@ SCOUT_HOSTS=127.0.0.1:9200
 **service/.env 핵심 설정:**
 ```ini
 # admin과 동일한 데이터베이스, Redis, ES 설정
+APP_PORT=8792
+LEADERBOARD_WS_PORT=8790  # 리더보드 WebSocket
+CHAT_WS_PORT=8791  # 채팅 WebSocket
 SNOWFLAKE_WORKER_ID=2  # admin과 반드시 달라야 함
 
 # OAuth
@@ -262,11 +273,11 @@ SITE_URL=https://your-domain.com  # 결제 콜백/리다이렉트 사이트 주�
 ### 3.4 서비스 시작
 
 ```bash
-# 관리 백오피스 (포트 8789)
+# 관리 백오피스 (기본 포트 8789, admin/.env의 APP_PORT로 변경 가능)
 cd /opt/game-platform/admin
 php start.php start -d
 
-# C단 비즈니스 (포트 8792)
+# C단 비즈니스 (기본 포트 8792, service/.env의 APP_PORT로 변경 가능)
 cd /opt/game-platform/service
 php start.php start -d
 
@@ -315,6 +326,7 @@ systemctl enable --now game-platform-admin game-platform-service
 `/etc/nginx/sites-available/game-platform` 생성:
 
 ```nginx
+# 포트는 기본값입니다 (admin 8789 / service 8792 / ws 8790). .env를 수정했다면 함께 조정하세요
 server {
     listen 80;
     server_name your-domain.com;
@@ -337,9 +349,9 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # WebSocket 리더보드
+    # WebSocket 리더보드 (기본 포트 8790, service/.env의 LEADERBOARD_WS_PORT와 일치)
     location /ws/ {
-        proxy_pass http://127.0.0.1:8789;
+        proxy_pass http://127.0.0.1:8790;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -526,6 +538,7 @@ ufw enable
 
 # 내부 포트는 노출하면 안 됨
 # 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# 위는 기본 포트입니다. 루트 .env / 각 .env를 수정했다면 실제 설정을 기준으로 하세요
 # 127.0.0.1로만 접근
 ```
 

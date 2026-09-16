@@ -72,6 +72,8 @@ php -S 0.0.0.0:8888 -t install/
 docker compose up -d
 ```
 
+端口等参数在项目根目录 .env 配置（模板 .env.example）。
+
 ## 手动安装
 
 ```bash
@@ -82,9 +84,10 @@ cd service && composer install
 cp .env.example .env
 # 编辑 .env：数据库连接信息、JWT 密钥等
 
-# 3. 启动服务（默认端口 8792）
+# 3. 启动服务（默认端口 8792，可在 .env 中经 APP_PORT 修改）
 php start.php start        # 前台运行
 php start.php start -d     # 后台运行
+# WebSocket 端口（排行榜 8790 / 聊天 8791）可在 .env 中经 LEADERBOARD_WS_PORT / CHAT_WS_PORT 修改
 ```
 
 ## 使用说明

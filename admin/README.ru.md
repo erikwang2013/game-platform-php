@@ -139,6 +139,8 @@ cp .env.example .env
 
 | Переменная окружения | Описание | Значение по умолчанию |
 |---------|------|--------|
+| `APP_PORT` | Порт прослушивания HTTP webman | `8789` |
+| `APP_URL` | Внешний адрес доступа (ссылки на странице успеха мастера установки, baseUrl документации API и т. д.) | `http://localhost:8789` |
 | `JWT_SECRET` | Секрет подписи JWT | `open-admin-jwt-secret-change-in-production` |
 | `HASHIDS_SALT` | Соль Hashids | `open-admin-hashids-salt-2026` |
 | `ENCRYPTION_KEY` | Ключ шифрования API | 32-байтовое значение по умолчанию |
@@ -162,7 +164,7 @@ mysql -u root -p < install/install.sql
 php start.php start
 ```
 
-По умолчанию слушает `http://0.0.0.0:8789`.
+По умолчанию слушает `http://0.0.0.0:8789` (можно изменить через `APP_PORT` в `.env`; должен соответствовать `APP_URL`).
 
 ### 5. Запуск фронтенда (опционально)
 

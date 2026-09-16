@@ -25,7 +25,8 @@ global $argv;
 return [
     'webman' => [
         'handler' => Http::class,
-        'listen' => 'http://0.0.0.0:8792',
+        // 监听端口由 service/.env 的 APP_PORT 配置，默认 8792
+        'listen' => 'http://0.0.0.0:' . (getenv('APP_PORT') ?: '8792'),
         'count' => 3,//cpu_count() * 4,
         'user' => '',
         'group' => '',
@@ -42,12 +43,14 @@ return [
     // File update detection and automatic reload
     'leaderboard-ws' => [
         'handler' => app\process\LeaderboardWebSocket::class,
-        'listen' => 'websocket://0.0.0.0:8790',
+        // 端口由 service/.env 的 LEADERBOARD_WS_PORT 配置，默认 8790
+        'listen' => 'websocket://0.0.0.0:' . (getenv('LEADERBOARD_WS_PORT') ?: '8790'),
         'count' => 1,
     ],
     'chat-ws' => [
         'handler' => app\process\ChatWebSocket::class,
-        'listen' => 'websocket://0.0.0.0:8791',
+        // 端口由 service/.env 的 CHAT_WS_PORT 配置，默认 8791
+        'listen' => 'websocket://0.0.0.0:' . (getenv('CHAT_WS_PORT') ?: '8791'),
         'count' => 1,
     ],
 

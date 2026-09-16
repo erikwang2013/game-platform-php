@@ -72,6 +72,8 @@ php -S 0.0.0.0:8888 -t install/
 docker compose up -d
 ```
 
+Порты и другие параметры настраиваются в .env в корне проекта (шаблон .env.example).
+
 ## Ручная установка
 
 ```bash
@@ -82,9 +84,10 @@ cd service && composer install
 cp .env.example .env
 # Отредактируйте .env: подключение к БД, JWT-ключи и т.д.
 
-# 3. Запустите сервис (порт по умолчанию 8792)
+# 3. Запустите сервис (порт по умолчанию 8792, можно изменить через APP_PORT в .env)
 php start.php start        # на переднем плане
 php start.php start -d     # в фоне (демон)
+# Порты WebSocket (рейтинги 8790 / чат 8791) можно изменить через LEADERBOARD_WS_PORT / CHAT_WS_PORT в .env
 ```
 
 ## Использование

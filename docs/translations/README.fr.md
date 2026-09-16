@@ -54,7 +54,7 @@ Plateforme de jeux mondiale, universelle et internationalisée. Après inscripti
 
 ```
 game-platform-php/
-├── admin/                     # Backend d'administration (webman v2, port 8789)
+├── admin/                     # Backend d'administration (webman v2, port par défaut 8789, configurable via APP_PORT)
 │   ├── app/admin/controller/  #   Contrôleurs du panneau d'administration
 │   ├── app/middleware/        #   Middlewares (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   Couche des providers de jeux
@@ -67,7 +67,7 @@ game-platform-php/
 │   ├── install/   #   Fichiers de migration SQL
 │   └── apps/flutter/          #   Backend d'administration Flutter Web PC
 │
-├── service/                   # Backend métier côté client C (webman v2, port 8792)
+├── service/                   # Backend métier côté client C (webman v2, port par défaut 8792, configurable via APP_PORT)
 │   ├── app/api/v1/controller/ #   Contrôleurs API côté C
 │   ├── app/middleware/        #   Middlewares (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   Couche des providers de jeux
@@ -91,8 +91,12 @@ game-platform-php/
 │   ├── ARCHITECTURE-DESIGN.md #   Document de conception d'architecture
 │   ├── FEATURES.md            #   Document des fonctionnalités
 │   ├── FEATURE-DESIGN.md      #   Document de conception fonctionnelle
-│   └── API.md                 #   Documentation des interfaces
+│   ├── API.md                 #   Documentation des interfaces
+│   └── DEPLOYMENT.md          #   Document de déploiement (Docker/manuel/configuration des ports)
 │
+├── docker-compose.yml         # Orchestration Docker Compose (ports par défaut depuis le .env racine)
+├── nginx.conf.template        # Modèle de configuration Nginx (ports upstream rendus par envsubst)
+├── .env.example               # Modèle .env racine (variables de ports Docker, copier vers .env pour l'utiliser)
 └── admin/docs/superpowers/    # Normes de développement et plans
     ├── specs/                 #   Spécifications de conception
     └── plans/                 #   Plans d'implémentation
@@ -120,11 +124,11 @@ php -S 0.0.0.0:8888 -t install/
 cd admin && composer install && cd ..
 cd service && composer install && cd ..
 
-# 4. Démarrer les services
+# 4. Démarrer les services (ports par défaut admin 8789 / service 8792, modifiables via APP_PORT dans le .env respectif)
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. Accéder au backend d'administration : http://localhost:8789
+# 5. Accéder au backend d'administration : http://localhost:8789 (port par défaut)
 #    Se connecter avec le compte administrateur défini lors de l'installation
 
 # 6. Supprimer le répertoire d'installation une fois terminé (sécurité)
@@ -195,10 +199,10 @@ flutter run -d chrome
 ### Vérification
 
 ```bash
-# Tester le backend d'administration
+# Tester le backend d'administration (port par défaut 8789)
 curl http://localhost:8789/health
 
-# Tester le backend métier côté C
+# Tester le backend métier côté C (port par défaut 8792)
 curl http://localhost:8792/health
 
 # Tester l'inscription d'un utilisateur
@@ -248,7 +252,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | KYC | Soumission de vérification d'identité + validation, système de certification à trois niveaux |
 | Jeux | CRUD + catégories (10) + serveurs + suivi des parties |
 | Recherche | Recherche plein texte Elasticsearch (avec repli LIKE) |
-| Classements | Quotidien/hebdomadaire/mensuel/général, cache Redis, push temps réel WebSocket (8789) |
+| Classements | Quotidien/hebdomadaire/mensuel/général, cache Redis, push temps réel WebSocket (port par défaut 8790, configurable via LEADERBOARD_WS_PORT) |
 | CDN | Intégration de cinq fournisseurs (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + préchargement) + configuration/activation/test de connectivité admin |
 | Coupons | Montant fixe + remise proportionnelle, limites de temps et de quantité, suivi d'obtention et d'utilisation |
 | Notifications | Messages internes + e-mails, notifications automatiques recharge/retrait/KYC/coupon |
@@ -269,12 +273,12 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Tickets | Création/réponse côté C + traitement/attribution/fermeture côté admin |
 | VIP | 5 niveaux de fidélité, accumulation d'expérience, remise d'échange/exemption de frais de retrait/bonus de taux |
 | Succès | 12 succès intégrés, détection pilotée par événements, suivi de progression |
-| Social | Système d'amis + messagerie privée temps réel WebSocket (port 8791), seuls les amis peuvent écrire |
+| Social | Système d'amis + messagerie privée temps réel WebSocket (port par défaut 8791, configurable via CHAT_WS_PORT), seuls les amis peuvent écrire |
 | Tournois | Système de tournois (interrupteur FeatureFlag) + classement + plafond de participants |
 | Commission | Partage des revenus de parrainage à deux niveaux (taux de commission configurable) |
 | Coupons | Restrictions conditionnelles (min_deposit/first_user/game_id) |
 | Événements | Bus d'événements Redis Pub/Sub + livraison d'abonnements Webhook (7 types d'événements) |
-| Déploiement | Orchestration Docker Compose 8 services + proxy inverse Nginx |
+| Déploiement | Orchestration Docker Compose 7 services (ports configurés dans le .env racine) + proxy inverse Nginx |
 | Clients | Flutter Admin (17 pages) + Platform (10 pages) + HarmonyOS (5 pages) |
 
 ## Modèle métier

@@ -139,6 +139,8 @@ cp .env.example .env
 
 | पर्यावरण चर | विवरण | डिफ़ॉल्ट मान |
 |---------|------|--------|
+| `APP_PORT` | webman HTTP लिसनिंग पोर्ट | `8789` |
+| `APP_URL` | बाहरी एक्सेस पता (इंस्टॉलर सफलता पृष्ठ लिंक, API दस्तावेज़ baseUrl आदि) | `http://localhost:8789` |
 | `JWT_SECRET` | JWT सिग्नेचर कुंजी | `open-admin-jwt-secret-change-in-production` |
 | `HASHIDS_SALT` | Hashids सॉल्ट | `open-admin-hashids-salt-2026` |
 | `ENCRYPTION_KEY` | API एन्क्रिप्शन कुंजी | 32 बाइट डिफ़ॉल्ट मान |
@@ -162,7 +164,7 @@ mysql -u root -p < install/install.sql
 php start.php start
 ```
 
-डिफ़ॉल्ट रूप से `http://0.0.0.0:8789` पर सुनता है।
+डिफ़ॉल्ट रूप से `http://0.0.0.0:8789` पर सुनता है (`.env` में `APP_PORT` से बदला जा सकता है, `APP_URL` के साथ मेल खाना चाहिए)।
 
 ### 5. फ्रंटएंड शुरू करें (वैकल्पिक)
 

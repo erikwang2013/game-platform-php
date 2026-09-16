@@ -314,18 +314,17 @@ game_achievement ── 1:N ── game_user_achievement
 نشر على جهاز واحد:
   admin/         :8789 (webman, 32 عمال)
   service/       :8792 (webman, 32 عمال)
-  leaderboard-ws :8789 (WebSocket لوحة المتصدرين)
+  leaderboard-ws :8790 (WebSocket لوحة المتصدرين)
   chat-ws        :8791 (WebSocket المحادثة)
   MySQL          :3306
   Redis          :6379
 ```
 
-### 6.2 Docker Compose (8 خدمات)
+### 6.2 Docker Compose (7 خدمات)
 
 ```yaml
 nginx (80/443) → admin (8789) + service (8792) + الملفات الثابتة
-leaderboard-ws (8789) — دفع لحظي للوحة المتصدرين عبر WebSocket
-chat-ws (8791) — رسائل خاصة/محادثة عبر WebSocket
+leaderboard-ws (8790/8791) — دفع لحظي للوحة المتصدرين عبر WebSocket + رسائل خاصة/محادثة عبر WebSocket
 mysql (3306) — قاعدة البيانات الرئيسية، استمرارية البيانات عبر وحدة التخزين
 redis (6379) — تخزين مؤقت/تقييد/WebSocket/EventBus
 elasticsearch (9200) — بحث نصي كامل
@@ -348,7 +347,7 @@ flowchart TB
         ADM2["admin :8789"]
         SVC1["service :8792"]
         SVC2["service :8792"]
-        WS1["leaderboard-ws :8789"]
+        WS1["leaderboard-ws :8790"]
         WS2["chat-ws :8791"]
     end
 
@@ -389,7 +388,7 @@ tests/
 |------|------|------|
 | admin/ | 8789 | واجهات لوحة الإدارة |
 | service/ | 8792 | واجهات أعمال الطرف C |
-| leaderboard-ws | 8789 | WebSocket لوحة المتصدرين اللحظية |
+| leaderboard-ws | 8790 | WebSocket لوحة المتصدرين اللحظية |
 | chat-ws | 8791 | WebSocket الرسائل الخاصة/المحادثة |
 | MySQL | 3306 | قاعدة البيانات الرئيسية |
 | Redis | 6379 | تخزين مؤقت/تقييد/WebSocket/EventBus |

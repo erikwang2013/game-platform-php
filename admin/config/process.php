@@ -25,7 +25,8 @@ global $argv;
 return [
     'webman' => [
         'handler' => Http::class,
-        'listen' => 'http://0.0.0.0:8789',
+        // 监听端口由 admin/.env 的 APP_PORT 配置，默认 8789
+        'listen' => 'http://0.0.0.0:' . (getenv('APP_PORT') ?: '8789'),
         'count' => 3,//cpu_count() * 4,
         'user' => '',
         'group' => '',

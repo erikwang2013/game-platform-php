@@ -301,7 +301,7 @@ signature = HMAC-SHA256(
 
 ### 9.6 WebSocket リアルタイムランキング
 
-- プロトコル：WebSocket (ws://host:8789)
+- プロトコル：WebSocket (ws://host:8790)
 - 購読：{action: "subscribe", leaderboard_id: 123}
 - プッシュ：{type: "ranking_update", rankings: [...]}
 - ping/pong ハートビートのキープアライブをサポート

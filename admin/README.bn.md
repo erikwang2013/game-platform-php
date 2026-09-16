@@ -139,6 +139,8 @@ cp .env.example .env
 
 | এনভায়রনমেন্ট ভেরিয়েবল | বিবরণ | ডিফল্ট মান |
 |---------|------|--------|
+| `APP_PORT` | webman HTTP লিসেনিং পোর্ট | `8789` |
+| `APP_URL` | বাহ্যিক অ্যাক্সেস ঠিকানা (ইনস্টলার সফলতা পৃষ্ঠার লিঙ্ক, API ডকুমেন্টেশন baseUrl ইত্যাদি) | `http://localhost:8789` |
 | `JWT_SECRET` | JWT সিগনেচার কী | `open-admin-jwt-secret-change-in-production` |
 | `HASHIDS_SALT` | Hashids সল্ট | `open-admin-hashids-salt-2026` |
 | `ENCRYPTION_KEY` | API এনক্রিপশন কী | ৩২ বাইট ডিফল্ট মান |
@@ -162,7 +164,7 @@ mysql -u root -p < install/install.sql
 php start.php start
 ```
 
-ডিফল্টে `http://0.0.0.0:8789`-এ লিসেন করে।
+ডিফল্টে `http://0.0.0.0:8789`-এ লিসেন করে (`.env`-এ `APP_PORT` দিয়ে পরিবর্তন করা যায়, `APP_URL`-এর সাথে সামঞ্জস্যপূর্ণ হতে হবে)।
 
 ### 5. ফ্রন্টএন্ড চালু করুন (ঐচ্ছিক)
 

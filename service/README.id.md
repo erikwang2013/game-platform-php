@@ -72,6 +72,8 @@ Atau jalankan semuanya dengan Docker Compose (akar proyek):
 docker compose up -d
 ```
 
+Port dan parameter lain dikonfigurasi di .env akar proyek (template .env.example).
+
 ## Instalasi Manual
 
 ```bash
@@ -82,9 +84,10 @@ cd service && composer install
 cp .env.example .env
 # Edit .env: koneksi database, kunci JWT, dll.
 
-# 3. Mulai layanan (port default 8792)
+# 3. Mulai layanan (port default 8792, dapat diubah via APP_PORT di .env)
 php start.php start        # latar depan
 php start.php start -d     # latar belakang (daemon)
+# Port WebSocket (papan peringkat 8790 / chat 8791) dapat diubah via LEADERBOARD_WS_PORT / CHAT_WS_PORT di .env
 ```
 
 ## Penggunaan

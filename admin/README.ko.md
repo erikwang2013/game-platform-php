@@ -139,6 +139,8 @@ cp .env.example .env
 
 | 환경 변수 | 설명 | 기본값 |
 |---------|------|--------|
+| `APP_PORT` | webman HTTP 수신 포트 | `8789` |
+| `APP_URL` | 외부 접속 주소(설치 마법사 성공 페이지 링크, API 문서 baseUrl 등) | `http://localhost:8789` |
 | `JWT_SECRET` | JWT 서명 키 | `open-admin-jwt-secret-change-in-production` |
 | `HASHIDS_SALT` | Hashids 솔트 | `open-admin-hashids-salt-2026` |
 | `ENCRYPTION_KEY` | API 암호화 키 | 32바이트 기본값 |
@@ -162,7 +164,7 @@ mysql -u root -p < install/install.sql
 php start.php start
 ```
 
-기본적으로 `http://0.0.0.0:8789`을 수신합니다.
+기본적으로 `http://0.0.0.0:8789`을 수신합니다(`.env`의 `APP_PORT`로 변경 가능하며, `APP_URL`과 일치해야 합니다).
 
 ### 5. 프론트엔드 시작 (선택)
 

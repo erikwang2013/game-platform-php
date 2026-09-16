@@ -301,7 +301,7 @@ signature = HMAC-SHA256(
 
 ### 9.6 WebSocket वास्तविक समय लीडरबोर्ड
 
-- प्रोटोकॉल: WebSocket (ws://host:8789)
+- प्रोटोकॉल: WebSocket (ws://host:8790)
 - सदस्यता: {action: "subscribe", leaderboard_id: 123}
 - पुश: {type: "ranking_update", rankings: [...]}
 - ping/pong हार्टबीट जीवनरक्षा समर्थित

@@ -301,7 +301,7 @@ signature = HMAC-SHA256(
 
 ### 9.6 WebSocket لوحات المتصدرين اللحظية
 
-- البروتوكول: WebSocket (ws://host:8789)
+- البروتوكول: WebSocket (ws://host:8790)
 - الاشتراك: {action: "subscribe", leaderboard_id: 123}
 - الدفع: {type: "ranking_update", rankings: [...]}
 - دعم ping/pong لإبقاء الاتصال حيًا

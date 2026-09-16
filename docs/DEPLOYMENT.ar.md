@@ -39,14 +39,14 @@ php -S 0.0.0.0:8888 -t install/
 cd admin && composer install && cd ..
 cd service && composer install && cd ..
 
-# 5. تشغيل الخدمات
+# 5. تشغيل الخدمات (المنفذ الافتراضي admin 8789 / service 8792، يمكن التعديل عبر APP_PORT في ملف .env الخاص بكل منهما)
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
 # 6. التنظيف الأمني
 rm -rf install/
 
-# 7. الوصول إلى لوحة الإدارة: http://<服务器IP>:8789
+# 7. الوصول إلى لوحة الإدارة: http://<服务器IP>:8789 (المنفذ الافتراضي)
 ```
 
 العمليات التي يكملها معالج التثبيت:
@@ -69,6 +69,7 @@ git clone <repo-url> /opt/game-platform
 cd /opt/game-platform
 
 # 2. استخدام معالج التثبيت لتكوين البيئة (أو تكوين ملف .env يدويًا)
+#    معاملات Docker مثل المنافذ موجودة في ملف .env بالدليل الجذر (القالب .env.example): cp .env.example .env
 php -S 0.0.0.0:8888 -t install/
 # الطريقة اليدوية: cp admin/.env.example admin/.env && cp service/.env.example service/.env
 
@@ -89,10 +90,15 @@ docker-compose logs -f
 | nginx | game-platform-nginx | 80, 443 | وكيل عكسي + ملفات ثابتة |
 | admin | game-platform-admin | 8789 | واجهات لوحة الإدارة |
 | service | game-platform-service | 8792 | واجهات أعمال الطرف C |
-| leaderboard-ws | game-platform-ws | 8789 | WebSocket لوحة المتصدرين |
+| leaderboard-ws | game-platform-ws | 8790, 8791 | WebSocket لوحة المتصدرين/الدردشة |
 | mysql | game-platform-mysql | 3306 | قاعدة البيانات الرئيسية |
 | redis | game-platform-redis | 6379 | تخزين مؤقت/تقييد |
 | elasticsearch | game-platform-es | 9200 | بحث نصي كامل |
+
+> **إعداد المنافذ**: الجدول أعلاه يعرض المنافذ الافتراضية، ويمكن تعديلها جميعًا في ملف `.env` بالدليل الجذر للمشروع (القالب `.env.example`، بعد `cp .env.example .env` قم بالتحرير):
+> `NGINX_HTTP_PORT`، `NGINX_HTTPS_PORT`، `ADMIN_PORT`، `SERVICE_PORT`، `LEADERBOARD_WS_PORT`، `CHAT_WS_PORT`، `MYSQL_PORT`، `REDIS_PORT`، `ES_PORT`.
+> منافذ upstream في `nginx.conf.template` يُرندرها envsubst في الصورة الرسمية تلقائيًا، دون حاجة لتعديل إعداد Nginx يدويًا.
+> ملاحظة: تعديل `ADMIN_PORT` / `SERVICE_PORT` لا يحدّث تلقائيًا `APP_URL` في `admin/.env` ولا `SITE_URL` في `service/.env`، ويجب تعديل عنوان الوصول الخارجي بشكل متزامن.
 
 ### 2.3 تهيئة قاعدة البيانات
 
@@ -163,6 +169,8 @@ composer install --no-dev --optimize-autoloader
 ```ini
 APP_ENV=production
 APP_DEBUG=false
+APP_PORT=8789  # منفذ استماع webman HTTP (متوافق مع APP_URL)
+APP_URL=http://localhost:8789  # عنوان الوصول الخارجي (baseUrl لتوثيق API وغيره)
 
 DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -192,6 +200,9 @@ SCOUT_HOSTS=127.0.0.1:9200
 **الإعدادات الرئيسية لـ service/.env:**
 ```ini
 # نفس إعدادات قاعدة البيانات وRedis وES الموجودة في admin
+APP_PORT=8792
+LEADERBOARD_WS_PORT=8790  # WebSocket لوحة المتصدرين
+CHAT_WS_PORT=8791  # WebSocket الدردشة
 SNOWFLAKE_WORKER_ID=2  # يجب أن يختلف عن admin
 
 # OAuth
@@ -262,11 +273,11 @@ SITE_URL=https://your-domain.com  # عنوان الموقع للاستدعاء/�
 ### 3.4 تشغيل الخدمات
 
 ```bash
-# لوحة الإدارة (المنفذ 8789)
+# لوحة الإدارة (المنفذ الافتراضي 8789، يمكن تغييره عبر APP_PORT في admin/.env)
 cd /opt/game-platform/admin
 php start.php start -d
 
-# أعمال الطرف C (المنفذ 8792)
+# أعمال الطرف C (المنفذ الافتراضي 8792، يمكن تغييره عبر APP_PORT في service/.env)
 cd /opt/game-platform/service
 php start.php start -d
 
@@ -315,6 +326,7 @@ systemctl enable --now game-platform-admin game-platform-service
 أنشئ `/etc/nginx/sites-available/game-platform`:
 
 ```nginx
+# المنافذ هي القيم الافتراضية (admin 8789 / service 8792 / ws 8790). إذا عدّلت .env فاضبطها بما يتوافق
 server {
     listen 80;
     server_name your-domain.com;
@@ -337,9 +349,9 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # WebSocket لوحة المتصدرين
+    # WebSocket لوحة المتصدرين (المنفذ الافتراضي 8790، متوافق مع LEADERBOARD_WS_PORT في service/.env)
     location /ws/ {
-        proxy_pass http://127.0.0.1:8789;
+        proxy_pass http://127.0.0.1:8790;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -526,6 +538,7 @@ ufw enable
 
 # لا ينبغي كشف المنافذ الداخلية
 # 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# ما سبق منافذ افتراضية. إذا عدّلت .env الجذر أو ملفات .env الخاصة، فاعتمد على الإعداد الفعلي
 # تُوصَل عبر 127.0.0.1 فقط
 ```
 

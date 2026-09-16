@@ -54,7 +54,7 @@ Plataforma de agregação de jogos global, universal e internacionalizada. Após
 
 ```
 game-platform-php/
-├── admin/                     # Painel administrativo (webman v2, porta 8789)
+├── admin/                     # Painel administrativo (webman v2, porta padrão 8789, configurável via APP_PORT)
 │   ├── app/admin/controller/  #   Controladores do painel administrativo
 │   ├── app/middleware/        #   Middlewares (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   Camada de Providers de jogos
@@ -67,7 +67,7 @@ game-platform-php/
 │   ├── install/   #   Arquivos de migração SQL
 │   └── apps/flutter/          #   Painel administrativo Flutter Web PC
 │
-├── service/                   # Serviço de negócios do lado C (webman v2, porta 8792)
+├── service/                   # Serviço de negócios do lado C (webman v2, porta padrão 8792, configurável via APP_PORT)
 │   ├── app/api/v1/controller/ #   Controladores da API do lado C
 │   ├── app/middleware/        #   Middlewares (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   Camada de Providers de jogos
@@ -91,8 +91,12 @@ game-platform-php/
 │   ├── ARCHITECTURE-DESIGN.md #   Documento de design de arquitetura
 │   ├── FEATURES.md            #   Documento de funcionalidades
 │   ├── FEATURE-DESIGN.md      #   Documento de design de funcionalidades
-│   └── API.md                 #   Documento de interfaces
+│   ├── API.md                 #   Documento de interfaces
+│   └── DEPLOYMENT.md          #   Documento de deploy (Docker/manual/configuração de portas)
 │
+├── docker-compose.yml         # Orquestração Docker Compose (portas padrão do .env raiz)
+├── nginx.conf.template        # Modelo de configuração do Nginx (portas upstream renderizadas por envsubst)
+├── .env.example               # Modelo do .env raiz (variáveis de portas Docker, copie para .env para usar)
 └── admin/docs/superpowers/    # Padrões de desenvolvimento e planos
     ├── specs/                 #   Especificações de design
     └── plans/                 #   Planos de implementação
@@ -120,11 +124,11 @@ php -S 0.0.0.0:8888 -t install/
 cd admin && composer install && cd ..
 cd service && composer install && cd ..
 
-# 4. Iniciar os serviços
+# 4. Iniciar os serviços (portas padrão admin 8789 / service 8792, alteráveis no APP_PORT de cada .env)
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. Acessar o painel administrativo: http://localhost:8789
+# 5. Acessar o painel administrativo: http://localhost:8789 (porta padrão)
 #    Fazer login com a conta de administrador definida na instalação
 
 # 6. Após a instalação, excluir o diretório de instalação (segurança)
@@ -195,10 +199,10 @@ flutter run -d chrome
 ### Verificação
 
 ```bash
-# Testar o painel administrativo
+# Testar o painel administrativo (porta padrão 8789)
 curl http://localhost:8789/health
 
-# Testar o serviço do lado C
+# Testar o serviço do lado C (porta padrão 8792)
 curl http://localhost:8792/health
 
 # Testar o registro de usuário
@@ -248,7 +252,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | KYC | Envio e revisão de verificação de identidade, sistema de certificação em três níveis |
 | Jogos | CRUD + categorias (10 tipos) + servidores/regiões + rastreamento de registros de jogo |
 | Busca | Busca em texto completo no Elasticsearch (com fallback LIKE) |
-| Rankings | Diário/semanal/mensal/geral, cache Redis, push em tempo real via WebSocket (8789) |
+| Rankings | Diário/semanal/mensal/geral, cache Redis, push em tempo real via WebSocket (porta padrão 8790, configurável via LEADERBOARD_WS_PORT) |
 | CDN | Integração com cinco provedores (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + preload) + configuração/ativação/teste de conectividade no admin |
 | Cupons | Valor fixo + desconto percentual, limite de tempo e quantidade, rastreamento de uso |
 | Notificações | Mensagens internas + e-mail, notificações automáticas de recarga/saque/KYC/cupons |
@@ -269,12 +273,12 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Tickets | Criação/resposta no lado C + tratamento/atribuição/fechamento no painel administrativo |
 | VIP | Lealdade em 5 níveis, acúmulo de pontos de experiência, desconto em trocas/redução de saque/bônus de câmbio |
 | Conquistas | 12 conquistas integradas, detecção orientada a eventos, rastreamento de progresso |
-| Social | Sistema de amigos + mensagens privadas em tempo real via WebSocket (porta 8791), apenas amigos podem enviar |
+| Social | Sistema de amigos + mensagens privadas em tempo real via WebSocket (porta padrão 8791, configurável via CHAT_WS_PORT), apenas amigos podem enviar |
 | Torneios | Sistema de campeonatos (controlado por FeatureFlag) + ranking + limite de participantes |
 | Comissão | Participação de lucros em dois níveis de indicação (taxa de comissão configurável) |
 | Cupons | Restrições de condição (min_deposit/first_user/game_id) |
 | Eventos | Barramento de eventos Redis Pub/Sub + entrega por assinatura Webhook (7 tipos de eventos) |
-| Deploy | Orquestração Docker Compose com 8 serviços + proxy reverso Nginx |
+| Deploy | Orquestração Docker Compose com 7 serviços (portas configuradas no .env raiz) + proxy reverso Nginx |
 | Clientes | Flutter Admin (17 páginas) + Platform (10 páginas) + HarmonyOS (5 páginas) |
 
 ## Modelo de negócio

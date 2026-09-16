@@ -54,7 +54,7 @@ Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](R
 
 ```
 game-platform-php/
-├── admin/                     # 管理后台 (webman v2, 端口 8789)
+├── admin/                     # एडमिन बैकएंड (webman v2, डिफ़ॉल्ट पोर्ट 8789, APP_PORT से कॉन्फ़िगर करने योग्य)
 │   ├── app/admin/controller/  #   管理端控制器
 │   ├── app/middleware/        #   中间件 (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   游戏Provider层
@@ -67,7 +67,7 @@ game-platform-php/
 │   ├── install/   #   SQL 迁移文件
 │   └── apps/flutter/          #   Flutter Web PC 管理后台
 │
-├── service/                   # C端业务端 (webman v2, 端口 8792)
+├── service/                   # C-एंड व्यवसाय सेवा (webman v2, डिफ़ॉल्ट पोर्ट 8792, APP_PORT से कॉन्फ़िगर करने योग्य)
 │   ├── app/api/v1/controller/ #   C端 API 控制器
 │   ├── app/middleware/        #   中间件 (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   游戏Provider层
@@ -91,8 +91,12 @@ game-platform-php/
 │   ├── ARCHITECTURE-DESIGN.md #   架构设计文档
 │   ├── FEATURES.md            #   功能文档
 │   ├── FEATURE-DESIGN.md      #   功能设计文档
-│   └── API.md                 #   接口文档
+│   ├── API.md                 #   接口文档
+│   └── DEPLOYMENT.md          #   डिप्लॉयमेंट डॉक्यूमेंट (Docker/मैन्युअल/पोर्ट कॉन्फ़िगरेशन)
 │
+├── docker-compose.yml         # Docker Compose ऑर्केस्ट्रेशन (डिफ़ॉल्ट पोर्ट रूट .env से)
+├── nginx.conf.template        # Nginx कॉन्फ़िगरेशन टेम्पलेट (upstream पोर्ट envsubst से रेंडर)
+├── .env.example               # रूट .env टेम्पलेट (Docker पोर्ट वेरिएबल, उपयोग के लिए .env में कॉपी करें)
 └── admin/docs/superpowers/    # 开发规范与计划
     ├── specs/                 #   设计规范
     └── plans/                 #   实现计划
@@ -120,11 +124,11 @@ php -S 0.0.0.0:8888 -t install/
 cd admin && composer install && cd ..
 cd service && composer install && cd ..
 
-# 4. 启动服务
+# 4. सेवाएँ शुरू करें (डिफ़ॉल्ट पोर्ट admin 8789 / service 8792, संबंधित .env के APP_PORT में बदलें)
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. 访问管理后台: http://localhost:8789
+# 5. एडमिन बैकएंड खोलें: http://localhost:8789 (डिफ़ॉल्ट पोर्ट)
 #    使用安装时设置的管理员账号密码登录
 
 # 6. 安装完成后删除安装目录（安全）
@@ -195,10 +199,10 @@ flutter run -d chrome
 ### सत्यापन
 
 ```bash
-# 测试管理后台
+# एडमिन बैकएंड का परीक्षण (डिफ़ॉल्ट पोर्ट 8789)
 curl http://localhost:8789/health
 
-# 测试C端业务
+# C-एंड व्यवसाय का परीक्षण (डिफ़ॉल्ट पोर्ट 8792)
 curl http://localhost:8792/health
 
 # 测试用户注册
@@ -248,7 +252,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | KYC | वास्तविक-नाम सत्यापन सबमिशन + ऑडिट, त्रि-स्तरीय सत्यापन प्रणाली |
 | गेम | CRUD + श्रेणियाँ (10 श्रेणियाँ) + सर्वर + गेम रिकॉर्ड ट्रैकिंग |
 | खोज | Elasticsearch पूर्ण-पाठ खोज (LIKE फ़ॉलबैक सहित) |
-| लीडरबोर्ड | दैनिक/साप्ताहिक/मासिक/कुल बोर्ड, Redis कैश, WebSocket रीयल-टाइम पुश (8789) |
+| लीडरबोर्ड | दैनिक/साप्ताहिक/मासिक/कुल बोर्ड, Redis कैश, WebSocket रीयल-टाइम पुश (डिफ़ॉल्ट पोर्ट 8790, LEADERBOARD_WS_PORT से कॉन्फ़िगर करने योग्य) |
 | CDN | पाँच प्रदाता एकीकरण (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS अपलोड + पर्ज + प्रीलोड) + एडमिन कॉन्फ़िग/टॉगल/कनेक्टिविटी टेस्ट |
 | कूपन | निश्चित राशि + प्रतिशत छूट, समय/मात्रा सीमित, क्लेम और उपयोग ट्रैकिंग |
 | सूचनाएँ | इन-साइट संदेश + ईमेल, टॉप-अप/निकासी/KYC/कूपन स्वचालित सूचनाएँ |
@@ -269,12 +273,12 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | टिकट | C-एंड निर्माण/जवाब + प्रशासनिक हैंडलिंग/असाइनमेंट/बंद |
 | VIP | 5 स्तरीय लॉयल्टी, अनुभव संचय, विनिमय छूट/निकासी राहत/विनिमय दर बोनस |
 | उपलब्धियाँ | 12 अंतर्निहित उपलब्धियाँ, इवेंट-संचालित पहचान, प्रगति ट्रैकिंग |
-| सोशल | मित्र प्रणाली + WebSocket रीयल-टाइम निजी संदेश (पोर्ट 8791), केवल मित्रों को भेजना |
+| सोशल | मित्र प्रणाली + WebSocket रीयल-टाइम निजी संदेश (डिफ़ॉल्ट पोर्ट 8791, CHAT_WS_PORT से कॉन्फ़िगर करने योग्य), केवल मित्रों को भेजना |
 | प्रतियोगिता | टूर्नामेंट प्रणाली (FeatureFlag स्विच) + लीडरबोर्ड + सदस्य सीमा |
 | कमीशन | द्वि-स्तरीय रेफ़रल प्रॉफ़िट-शेयरिंग (कॉन्फ़िगर करने योग्य कमीशन दर) |
 | कूपन | शर्त सीमाएँ (min_deposit/first_user/game_id) |
 | इवेंट | Redis Pub/Sub इवेंट बस + Webhook सब्सक्रिप्शन डिलीवरी (7 प्रकार के इवेंट) |
-| डिप्लॉयमेंट | Docker Compose 8 सेवा ऑर्केस्ट्रेशन + Nginx रिवर्स प्रॉक्सी |
+| डिप्लॉयमेंट | Docker Compose 7 सेवा ऑर्केस्ट्रेशन (पोर्ट रूट .env से कॉन्फ़िगर) + Nginx रिवर्स प्रॉक्सी |
 | क्लाइंट | Flutter Admin (17 पेज) + Platform (10 पेज) + HarmonyOS (5 पेज) |
 
 ## व्यावसायिक मॉडल

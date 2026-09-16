@@ -72,6 +72,8 @@ php -S 0.0.0.0:8888 -t install/
 docker compose up -d
 ```
 
+포트 등 파라미터는 프로젝트 루트 .env에서 설정합니다(템플릿 .env.example).
+
 ## 수동 설치
 
 ```bash
@@ -82,9 +84,10 @@ cd service && composer install
 cp .env.example .env
 # .env 편집: 데이터베이스 연결 정보, JWT 키 등
 
-# 3. 서비스 시작(기본 포트 8792)
+# 3. 서비스 시작(기본 포트 8792, .env에서 APP_PORT로 변경 가능)
 php start.php start        # 포그라운드
 php start.php start -d     # 백그라운드
+# WebSocket 포트(랭킹 8790 / 채팅 8791)는 .env에서 LEADERBOARD_WS_PORT / CHAT_WS_PORT로 변경 가능
 ```
 
 ## 사용 방법

@@ -314,18 +314,17 @@ game_achievement ── 1:N ── game_user_achievement
 Implantação em uma máquina:
   admin/         :8789 (webman, 32 workers)
   service/       :8792 (webman, 32 workers)
-  leaderboard-ws :8789 (WebSocket de rankings)
+  leaderboard-ws :8790 (WebSocket de rankings)
   chat-ws        :8791 (WebSocket de chat)
   MySQL          :3306
   Redis          :6379
 ```
 
-### 6.2 Docker Compose (8 serviços)
+### 6.2 Docker Compose (7 serviços)
 
 ```yaml
 nginx (80/443) → admin (8789) + service (8792) + arquivos estáticos
-leaderboard-ws (8789) — push em tempo real de rankings via WebSocket
-chat-ws (8791) — mensagens privadas/chat via WebSocket
+leaderboard-ws (8790/8791) — push em tempo real de rankings via WebSocket + mensagens privadas/chat
 mysql (3306) — banco principal, persistência com volume de dados
 redis (6379) — cache/rate limit/WebSocket/EventBus
 elasticsearch (9200) — busca full-text
@@ -348,7 +347,7 @@ flowchart TB
         ADM2["admin :8789"]
         SVC1["service :8792"]
         SVC2["service :8792"]
-        WS1["leaderboard-ws :8789"]
+        WS1["leaderboard-ws :8790"]
         WS2["chat-ws :8791"]
     end
 
@@ -389,7 +388,7 @@ tests/
 |------|------|------|
 | admin/ | 8789 | API do painel administrativo |
 | service/ | 8792 | API de negócio C-side |
-| leaderboard-ws | 8789 | Rankings em tempo real via WebSocket |
+| leaderboard-ws | 8790 | Rankings em tempo real via WebSocket |
 | chat-ws | 8791 | Mensagens privadas/chat via WebSocket |
 | MySQL | 3306 | Banco principal |
 | Redis | 6379 | Cache/rate limit/WebSocket/EventBus |

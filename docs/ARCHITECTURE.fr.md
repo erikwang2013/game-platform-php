@@ -314,18 +314,17 @@ game_achievement ── 1:N ── game_user_achievement
 Déploiement mono-machine:
   admin/         :8789 (webman, 32 workers)
   service/       :8792 (webman, 32 workers)
-  leaderboard-ws :8789 (WebSocket classement)
+  leaderboard-ws :8790 (WebSocket classement)
   chat-ws        :8791 (WebSocket chat)
   MySQL          :3306
   Redis          :6379
 ```
 
-### 6.2 Docker Compose (8 services)
+### 6.2 Docker Compose (7 services)
 
 ```yaml
 nginx (80/443) → admin (8789) + service (8792) + fichiers statiques
-leaderboard-ws (8789) — push temps réel du classement WebSocket
-chat-ws (8791) — messages privés/chat WebSocket
+leaderboard-ws (8790/8791) — push temps réel du classement WebSocket + messages privés/chat
 mysql (3306) — base principale, volume de données persistant
 redis (6379) — cache/rate-limit/WebSocket/EventBus
 elasticsearch (9200) — recherche plein texte
@@ -348,7 +347,7 @@ flowchart TB
         ADM2["admin :8789"]
         SVC1["service :8792"]
         SVC2["service :8792"]
-        WS1["leaderboard-ws :8789"]
+        WS1["leaderboard-ws :8790"]
         WS2["chat-ws :8791"]
     end
 
@@ -389,7 +388,7 @@ tests/
 |------|------|------|
 | admin/ | 8789 | API d'administration |
 | service/ | 8792 | API métier C |
-| leaderboard-ws | 8789 | Classement WebSocket temps réel |
+| leaderboard-ws | 8790 | Classement WebSocket temps réel |
 | chat-ws | 8791 | Messages privés/chat WebSocket |
 | MySQL | 3306 | Base principale |
 | Redis | 6379 | Cache/rate-limit/WebSocket/EventBus |

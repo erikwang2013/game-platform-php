@@ -301,7 +301,7 @@ Konfigurasi melalui PlatformConfig atau variabel lingkungan, saat permintaan gag
 
 ### 9.6 Papan Peringkat Real-time WebSocket
 
-- Protokol: WebSocket (ws://host:8789)
+- Protokol: WebSocket (ws://host:8790)
 - Langganan: {action: "subscribe", leaderboard_id: 123}
 - Push: {type: "ranking_update", rankings: [...]}
 - Mendukung ping/pong heartbeat untuk menjaga koneksi

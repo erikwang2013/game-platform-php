@@ -314,18 +314,17 @@ game_achievement ── 1:N ── game_user_achievement
 단일 머신 배포:
   admin/         :8789 (webman, 32 workers)
   service/       :8792 (webman, 32 workers)
-  leaderboard-ws :8789 (WebSocket 리더보드)
+  leaderboard-ws :8790 (WebSocket 리더보드)
   chat-ws        :8791 (WebSocket 채팅)
   MySQL          :3306
   Redis          :6379
 ```
 
-### 6.2 Docker Compose (8 서비스)
+### 6.2 Docker Compose (7 서비스)
 
 ```yaml
 nginx (80/443) → admin (8789) + service (8792) + static files
-leaderboard-ws (8789) — WebSocket 리더보드 실시간 푸시
-chat-ws (8791) — WebSocket 쪽지/채팅
+leaderboard-ws (8790/8791) — WebSocket 리더보드 실시간 푸시 + 쪽지/채팅
 mysql (3306) — 메인 데이터베이스, 데이터 볼륨 영속화
 redis (6379) — 캐시/레이트 리밋/WebSocket/EventBus
 elasticsearch (9200) — 전문 검색
@@ -348,7 +347,7 @@ flowchart TB
         ADM2["admin :8789"]
         SVC1["service :8792"]
         SVC2["service :8792"]
-        WS1["leaderboard-ws :8789"]
+        WS1["leaderboard-ws :8790"]
         WS2["chat-ws :8791"]
     end
 
@@ -389,7 +388,7 @@ tests/
 |------|------|------|
 | admin/ | 8789 | 관리 백오피스 API |
 | service/ | 8792 | C단 비즈니스 API |
-| leaderboard-ws | 8789 | WebSocket 실시간 리더보드 |
+| leaderboard-ws | 8790 | WebSocket 실시간 리더보드 |
 | chat-ws | 8791 | WebSocket 쪽지/채팅 |
 | MySQL | 3306 | 메인 데이터베이스 |
 | Redis | 6379 | 캐시/레이트 리밋/WebSocket/EventBus |

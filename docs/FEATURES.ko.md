@@ -59,7 +59,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | 2FA | Google Authenticator TOTP + 백업 복구 코드 | 완료 |
 | 추천 | 추천 코드, 등록 보상, 충전 커미션 | 완료 |
 | 검색 | ES 검색 API + 게임 제안 + LIKE 폴백 | 완료 |
-| 리더보드 | WebSocket 실시간 푸시 (포트 8789) | 완료 |
+| 리더보드 | WebSocket 실시간 푸시 (포트 8790) | 완료 |
 | CDN | 5개 업체 연동 (Cloudflare R2 / AWS S3 / 알리 OSS / 텐센트 COS / 화웨이 OBS 업로드 + 캐시 제거 + 프리로드) | 완료 |
 | CDN 관리 | 관리자가 5개 업체 설정 (자격증명 암호화 저장/활성·비활성/HeadBucket 연결 테스트), service는 DB만 읽음 | 완료 |
 | 리포트 | 관리자 데이터 리포트 (요약/일일/CSV 내보내기, Redis 5분 캐시, 기간 ≤90일) | 완료 |
@@ -87,7 +87,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | VIP 혜택 | 환전 할인 2-15%, 출금 수수료 감면 10-100%, 환율 보너스 0.1-1.0% | 완료 |
 | 업적 시스템 | 내장 업적 12개; EventConsumer → AchievementService 이벤트 주도 검출과 VIP 경험치 | 완료 |
 | 친구 시스템 | 신청/수락/거절/삭제/검색, pending/accepted/blocked 상태 | 완료 |
-| 쪽지/채팅 | REST 쪽지 + WebSocket 실시간 메시지 (포트 8790), 친구만 전송 가능 | 완료 |
+| 쪽지/채팅 | REST 쪽지 + WebSocket 실시간 메시지 (포트 8791), 친구만 전송 가능 | 완료 |
 | 이벤트 버스 | Redis Pub/Sub; emit + EventConsumer가 업적/Webhook 소비 + metrics INCR | 완료 |
 | 기능 스위치 | FeatureFlag DB 기반; `inRollout`/`abTest` crc32 버킷으로 `feature.{name}_percent` 읽기 | 완료 |
 | 고급 분석 | 리텐션/D1-D30, 전환 퍼널, ARPU/ARPPU, 게임 코인 경제 지표 (MySQL 실시간 집계) | 완료 |

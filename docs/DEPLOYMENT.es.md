@@ -39,14 +39,14 @@ php -S 0.0.0.0:8888 -t install/
 cd admin && composer install && cd ..
 cd service && composer install && cd ..
 
-# 5. 启动服务
+# 5. Iniciar los servicios (puertos por defecto admin 8789 / service 8792, modificables con APP_PORT en el .env correspondiente)
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
 # 6. 安全清理
 rm -rf install/
 
-# 7. 访问管理后台: http://<服务器IP>:8789
+# 7. Acceder al panel de administración: http://<IP del servidor>:8789 (puerto por defecto)
 ```
 
 Operaciones realizadas por el asistente de instalación:
@@ -69,6 +69,7 @@ git clone <repo-url> /opt/game-platform
 cd /opt/game-platform
 
 # 2. 使用一键安装向导配置环境（或手动配置 .env 文件）
+#    Los parámetros de Docker como los puertos están en el .env de la raíz del proyecto (plantilla .env.example): cp .env.example .env
 php -S 0.0.0.0:8888 -t install/
 # 手动方式: cp admin/.env.example admin/.env && cp service/.env.example service/.env
 
@@ -89,10 +90,15 @@ docker-compose logs -f
 | nginx | game-platform-nginx | 80, 443 | Proxy inverso + archivos estáticos |
 | admin | game-platform-admin | 8789 | API del panel de administración |
 | service | game-platform-service | 8792 | API de negocio del lado C |
-| leaderboard-ws | game-platform-ws | 8789 | Clasificación WebSocket |
+| leaderboard-ws | game-platform-ws | 8790, 8791 | Clasificación WebSocket/Chat |
 | mysql | game-platform-mysql | 3306 | Base de datos principal |
 | redis | game-platform-redis | 6379 | Caché/limitación |
 | elasticsearch | game-platform-es | 9200 | Búsqueda de texto completo |
+
+> **Configuración de puertos**: Los puertos de la tabla son valores por defecto y todos pueden modificarse en el `.env` de la raíz del proyecto (plantilla `.env.example`; editar tras `cp .env.example .env`):
+> `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `LEADERBOARD_WS_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
+> Los puertos upstream de `nginx.conf.template` se renderizan automáticamente mediante el envsubst de la imagen oficial; no hace falta editar manualmente la configuración de Nginx.
+> Nota: modificar `ADMIN_PORT` / `SERVICE_PORT` no actualiza automáticamente `APP_URL` en `admin/.env` ni `SITE_URL` en `service/.env`; las direcciones de acceso externas deben modificarse también.
 
 ### 2.3 Inicialización de la base de datos
 
@@ -163,6 +169,8 @@ composer install --no-dev --optimize-autoloader
 ```ini
 APP_ENV=production
 APP_DEBUG=false
+APP_PORT=8789  # puerto de escucha HTTP de webman (debe coincidir con APP_URL)
+APP_URL=http://localhost:8789  # dirección de acceso externa (baseUrl de la documentación de API, etc.)
 
 DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -192,6 +200,9 @@ SCOUT_HOSTS=127.0.0.1:9200
 **Configuración clave de service/.env:**
 ```ini
 # 与 admin 相同的数据库、Redis、ES 配置
+APP_PORT=8792  # puerto de escucha HTTP de webman
+LEADERBOARD_WS_PORT=8790  # WebSocket de clasificación (debe coincidir con la dirección de conexión del frontend)
+CHAT_WS_PORT=8791  # WebSocket de chat
 SNOWFLAKE_WORKER_ID=2  # 必须与 admin 不同
 
 # OAuth
@@ -262,11 +273,11 @@ SITE_URL=https://your-domain.com  # 支付回调/跳转站点地址
 ### 3.4 Arranque de los servicios
 
 ```bash
-# 管理后台 (端口 8789)
+# Panel de administración (puerto por defecto 8789, modificable vía APP_PORT en admin/.env)
 cd /opt/game-platform/admin
 php start.php start -d
 
-# C端业务 (端口 8792)
+# Negocio del lado C (puerto por defecto 8792, modificable vía APP_PORT en service/.env)
 cd /opt/game-platform/service
 php start.php start -d
 
@@ -315,6 +326,7 @@ systemctl enable --now game-platform-admin game-platform-service
 Crear `/etc/nginx/sites-available/game-platform`:
 
 ```nginx
+# Puertos con valores por defecto (admin 8789 / service 8792 / ws 8790); si ha modificado el .env, ajústelos también
 server {
     listen 80;
     server_name your-domain.com;
@@ -337,9 +349,9 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # WebSocket 排行榜
+    # Clasificación WebSocket (puerto por defecto 8790, coincide con LEADERBOARD_WS_PORT de service/.env)
     location /ws/ {
-        proxy_pass http://127.0.0.1:8789;
+        proxy_pass http://127.0.0.1:8790;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -526,6 +538,7 @@ ufw enable
 
 # 内部端口不应暴露
 # 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# Los anteriores son los puertos por defecto; si ha modificado el .env de la raíz o los .env respectivos, prevalecen los valores reales
 # 仅通过 127.0.0.1 访问
 ```
 

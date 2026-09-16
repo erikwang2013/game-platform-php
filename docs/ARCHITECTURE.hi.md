@@ -314,18 +314,17 @@ game_achievement ── 1:N ── game_user_achievement
 एकल मशीन परिनियोजन:
   admin/         :8789 (webman, 32 workers)
   service/       :8792 (webman, 32 workers)
-  leaderboard-ws :8789 (WebSocket लीडरबोर्ड)
+  leaderboard-ws :8790 (WebSocket लीडरबोर्ड)
   chat-ws        :8791 (WebSocket चैट)
   MySQL          :3306
   Redis          :6379
 ```
 
-### 6.2 Docker Compose (8 सेवाएँ)
+### 6.2 Docker Compose (7 सेवाएँ)
 
 ```yaml
 nginx (80/443) → admin (8789) + service (8792) + static files
-leaderboard-ws (8789) — WebSocket लीडरबोर्ड वास्तविक समय पुश
-chat-ws (8791) — WebSocket निजी संदेश/चैट
+leaderboard-ws (8790/8791) — WebSocket लीडरबोर्ड वास्तविक समय पुश + निजी संदेश/चैट
 mysql (3306) — मुख्य डेटाबेस, डेटा वॉल्यूम स्थायीकरण
 redis (6379) — कैश/दर सीमा/WebSocket/EventBus
 elasticsearch (9200) — पूर्ण-पाठ खोज
@@ -348,7 +347,7 @@ flowchart TB
         ADM2["admin :8789"]
         SVC1["service :8792"]
         SVC2["service :8792"]
-        WS1["leaderboard-ws :8789"]
+        WS1["leaderboard-ws :8790"]
         WS2["chat-ws :8791"]
     end
 
@@ -389,7 +388,7 @@ tests/
 |------|------|------|
 | admin/ | 8789 | प्रशासन कंसोल API |
 | service/ | 8792 | C-छोर व्यवसाय API |
-| leaderboard-ws | 8789 | WebSocket वास्तविक समय लीडरबोर्ड |
+| leaderboard-ws | 8790 | WebSocket वास्तविक समय लीडरबोर्ड |
 | chat-ws | 8791 | WebSocket निजी संदेश/चैट |
 | MySQL | 3306 | मुख्य डेटाबेस |
 | Redis | 6379 | कैश/दर सीमा/WebSocket/EventBus |

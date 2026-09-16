@@ -72,6 +72,8 @@ Oder alles per Docker Compose starten (Projektstamm):
 docker compose up -d
 ```
 
+Ports und weitere Parameter werden in der .env im Projektstamm konfiguriert (Vorlage .env.example).
+
 ## Manuelle Installation
 
 ```bash
@@ -82,9 +84,10 @@ cd service && composer install
 cp .env.example .env
 # .env bearbeiten: Datenbankverbindung, JWT-Schlüssel usw.
 
-# 3. Dienst starten (Standardport 8792)
+# 3. Dienst starten (Standardport 8792, änderbar über APP_PORT in .env)
 php start.php start        # Vordergrund
 php start.php start -d     # Hintergrund (Daemon)
+# WebSocket-Ports (Rangliste 8790 / Chat 8791) sind über LEADERBOARD_WS_PORT / CHAT_WS_PORT in .env änderbar
 ```
 
 ## Verwendung

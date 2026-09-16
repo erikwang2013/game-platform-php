@@ -59,7 +59,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | 2FA | Google Authenticator TOTP + códigos de recuperación de respaldo | Completada |
 | Recomendación | Código de recomendación, recompensa de registro, comisión por recarga | Completada |
 | Búsqueda | API de búsqueda ES + sugerencias de juegos + fallback LIKE | Completada |
-| Clasificaciones | Push en tiempo real por WebSocket (puerto 8789) | Completada |
+| Clasificaciones | Push en tiempo real por WebSocket (puerto 8790) | Completada |
 | CDN | Integración de cinco proveedores (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS carga + purga + precarga) | Completada |
 | Administración CDN | Configuración de los cinco proveedores en el panel (credenciales cifradas/activación-desactivación/prueba de conexión HeadBucket), el servicio solo lee de la base de datos | Completada |
 | Informes | Informes de datos del panel (resumen/diario/exportación CSV, caché Redis 5 min, período ≤90 días) | Completada |
@@ -87,7 +87,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Beneficios VIP | Descuento de conversión 2-15%, reducción de comisión de retiro 10-100%, bonificación de tipo de cambio 0.1-1.0% | Completada |
 | Sistema de logros | 12 logros integrados; EventConsumer → detección basada en eventos de AchievementService y experiencia VIP | Completada |
 | Sistema de amigos | Solicitud/aceptación/rechazo/eliminación/búsqueda, estados pending/accepted/blocked | Completada |
-| Mensajes privados/chat | Mensajes privados REST + mensajes en tiempo real WebSocket (puerto 8790), solo entre amigos | Completada |
+| Mensajes privados/chat | Mensajes privados REST + mensajes en tiempo real WebSocket (puerto 8791), solo entre amigos | Completada |
 | Bus de eventos | Redis Pub/Sub; emit + EventConsumer consume logros/Webhook + INCR de metrics | Completada |
 | Feature flags | FeatureFlag basado en DB; `inRollout`/`abTest` leen `feature.{name}_percent` con buckets crc32 | Completada |
 | Análisis avanzado | Retención/D1-D30, embudo de conversión, ARPU/ARPPU, indicadores económicos de monedas de juego (agregación en tiempo real MySQL) | Completada |

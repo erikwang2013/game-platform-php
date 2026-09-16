@@ -139,6 +139,8 @@ Key config items:
 
 | Environment variable | Description | Default value |
 |---------|------|--------|
+| `APP_PORT` | webman HTTP listening port | `8789` |
+| `APP_URL` | External access URL (installer success page links, API docs baseUrl, etc.) | `http://localhost:8789` |
 | `JWT_SECRET` | JWT signing secret | `open-admin-jwt-secret-change-in-production` |
 | `HASHIDS_SALT` | Hashids salt | `open-admin-hashids-salt-2026` |
 | `ENCRYPTION_KEY` | API encryption key | 32-byte default value |
@@ -162,7 +164,7 @@ mysql -u root -p < install/install.sql
 php start.php start
 ```
 
-Listens on `http://0.0.0.0:8789` by default.
+Listens on `http://0.0.0.0:8789` by default (can be changed via `APP_PORT` in `.env`; must stay consistent with `APP_URL`).
 
 ### 5. Start the frontend (optional)
 

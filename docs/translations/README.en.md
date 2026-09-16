@@ -54,7 +54,7 @@ A global, internationalized game aggregation platform. After registering, users 
 
 ```
 game-platform-php/
-├── admin/                     # Admin backend (webman v2, port 8789)
+├── admin/                     # Admin backend (webman v2, default port 8789, configurable via APP_PORT)
 │   ├── app/admin/controller/  #   Admin controllers
 │   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   Game Provider layer
@@ -67,7 +67,7 @@ game-platform-php/
 │   ├── install/   #   SQL migration files
 │   └── apps/flutter/          #   Flutter Web PC admin backend
 │
-├── service/                   # C-end business service (webman v2, port 8792)
+├── service/                   # C-end business service (webman v2, default port 8792, configurable via APP_PORT)
 │   ├── app/api/v1/controller/ #   C-end API controllers
 │   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   Game Provider layer
@@ -91,8 +91,12 @@ game-platform-php/
 │   ├── ARCHITECTURE-DESIGN.md #   Architecture design doc
 │   ├── FEATURES.md            #   Features doc
 │   ├── FEATURE-DESIGN.md      #   Feature design doc
-│   └── API.md                 #   API doc
+│   ├── API.md                 #   API doc
+│   └── DEPLOYMENT.md          #   Deployment doc (Docker/manual/port config)
 │
+├── docker-compose.yml         # Docker Compose orchestration (default ports from root .env)
+├── nginx.conf.template        # Nginx config template (upstream ports rendered via envsubst)
+├── .env.example               # Root .env template (Docker port variables, cp to .env to use)
 └── admin/docs/superpowers/    # Development standards and plans
     ├── specs/                 #   Design specs
     └── plans/                 #   Implementation plans
@@ -120,11 +124,11 @@ php -S 0.0.0.0:8888 -t install/
 cd admin && composer install && cd ..
 cd service && composer install && cd ..
 
-# 4. Start the services
+# 4. Start the services (default ports: admin 8789 / service 8792, change APP_PORT in each .env)
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. Access the admin backend: http://localhost:8789
+# 5. Access the admin backend: http://localhost:8789 (default port)
 #    Log in with the admin account and password set during installation
 
 # 6. Delete the install directory after installation (security)
@@ -195,10 +199,10 @@ flutter run -d chrome
 ### Verification
 
 ```bash
-# Test the admin backend
+# Test the admin backend (default port 8789)
 curl http://localhost:8789/health
 
-# Test the C-end business service
+# Test the C-end business service (default port 8792)
 curl http://localhost:8792/health
 
 # Test user registration
@@ -248,7 +252,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | KYC | Real-name verification submission + review, three-tier verification system |
 | Games | CRUD + categories (10) + servers/regions + game record tracking |
 | Search | Elasticsearch full-text search (with LIKE fallback) |
-| Leaderboards | Daily/weekly/monthly/all-time, Redis cache, WebSocket real-time push (8789) |
+| Leaderboards | Daily/weekly/monthly/all-time, Redis cache, WebSocket real-time push (default port 8790, configurable via LEADERBOARD_WS_PORT) |
 | CDN | Five-provider integration (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + preload) + admin config/toggle/connectivity test |
 | Coupons | Fixed amount + percentage discount, time/quantity limited, claim and usage tracking |
 | Notifications | In-app messages + email, automatic notifications for deposits/withdrawals/KYC/coupons |
@@ -269,12 +273,12 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Tickets | C-end create/reply + admin handle/assign/close |
 | VIP | 5 loyalty levels, XP accumulation, exchange discounts/withdrawal fee waivers/exchange rate bonuses |
 | Achievements | 12 built-in achievements, event-driven detection, progress tracking |
-| Social | Friend system + WebSocket real-time private messaging (port 8791), friends-only messaging |
+| Social | Friend system + WebSocket real-time private messaging (default port 8791, configurable via CHAT_WS_PORT), friends-only messaging |
 | Tournaments | Championship system (FeatureFlag switch) + leaderboards + participant caps |
 | Rebates | Two-tier referral profit sharing (configurable commission rates) |
 | Coupons | Conditional restrictions (min_deposit/first_user/game_id) |
 | Events | Redis Pub/Sub event bus + Webhook subscription delivery (7 event types) |
-| Deployment | Docker Compose 8-service orchestration + Nginx reverse proxy |
+| Deployment | Docker Compose 7-service orchestration (ports configured in root .env) + Nginx reverse proxy |
 | Clients | Flutter Admin (17 pages) + Platform (10 pages) + HarmonyOS (5 pages) |
 
 ## Business Model

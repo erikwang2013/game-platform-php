@@ -139,6 +139,8 @@ cp .env.example .env
 
 | متغير البيئة | الوصف | القيمة الافتراضية |
 |---------|------|--------|
+| `APP_PORT` | منفذ استماع HTTP الخاص بـ webman | `8789` |
+| `APP_URL` | عنوان الوصول الخارجي (روابط صفحة نجاح المثبّت، baseUrl لوثائق API، إلخ) | `http://localhost:8789` |
 | `JWT_SECRET` | مفتاح توقيع JWT | `open-admin-jwt-secret-change-in-production` |
 | `HASHIDS_SALT` | ملح Hashids | `open-admin-hashids-salt-2026` |
 | `ENCRYPTION_KEY` | مفتاح تشفير API | قيمة افتراضية بـ 32 بايت |
@@ -162,7 +164,7 @@ mysql -u root -p < install/install.sql
 php start.php start
 ```
 
-يستمع افتراضيًا على `http://0.0.0.0:8789`.
+يستمع افتراضيًا على `http://0.0.0.0:8789` (يمكن تغييره عبر `APP_PORT` في `.env`، ويجب أن يتوافق مع `APP_URL`).
 
 ### 5. تشغيل الواجهة الأمامية (اختياري)
 

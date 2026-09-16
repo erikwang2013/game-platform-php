@@ -314,18 +314,17 @@ game_achievement ── 1:N ── game_user_achievement
 Deployment satu mesin:
   admin/         :8789 (webman, 32 workers)
   service/       :8792 (webman, 32 workers)
-  leaderboard-ws :8789 (WebSocket papan peringkat)
+  leaderboard-ws :8790 (WebSocket papan peringkat)
   chat-ws        :8791 (WebSocket chat)
   MySQL          :3306
   Redis          :6379
 ```
 
-### 6.2 Docker Compose (8 layanan)
+### 6.2 Docker Compose (7 layanan)
 
 ```yaml
 nginx (80/443) → admin (8789) + service (8792) + static files
-leaderboard-ws (8789) — push real-time papan peringkat WebSocket
-chat-ws (8791) — WebSocket pesan pribadi/chat
+leaderboard-ws (8790/8791) — push real-time papan peringkat WebSocket + pesan pribadi/chat
 mysql (3306) — database utama, persistensi volume data
 redis (6379) — cache/rate limit/WebSocket/EventBus
 elasticsearch (9200) — pencarian full-text
@@ -348,7 +347,7 @@ flowchart TB
         ADM2["admin :8789"]
         SVC1["service :8792"]
         SVC2["service :8792"]
-        WS1["leaderboard-ws :8789"]
+        WS1["leaderboard-ws :8790"]
         WS2["chat-ws :8791"]
     end
 
@@ -389,7 +388,7 @@ tests/
 |------|------|------|
 | admin/ | 8789 | API backend administrasi |
 | service/ | 8792 | API bisnis sisi C |
-| leaderboard-ws | 8789 | Papan peringkat real-time WebSocket |
+| leaderboard-ws | 8790 | Papan peringkat real-time WebSocket |
 | chat-ws | 8791 | WebSocket pesan pribadi/chat |
 | MySQL | 3306 | Database utama |
 | Redis | 6379 | Cache/rate limit/WebSocket/EventBus |

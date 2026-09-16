@@ -72,6 +72,8 @@ php -S 0.0.0.0:8888 -t install/
 docker compose up -d
 ```
 
+पोर्ट और अन्य पैरामीटर प्रोजेक्ट रूट के .env में कॉन्फ़िगर होते हैं (टेम्पलेट .env.example)।
+
 ## मैनुअल इंस्टॉलेशन
 
 ```bash
@@ -82,9 +84,10 @@ cd service && composer install
 cp .env.example .env
 # .env संपादित करें: डेटाबेस कनेक्शन, JWT कुंजियाँ आदि
 
-# 3. सेवा शुरू करें (डिफ़ॉल्ट पोर्ट 8792)
+# 3. सेवा शुरू करें (डिफ़ॉल्ट पोर्ट 8792, .env में APP_PORT से बदला जा सकता है)
 php start.php start        # फोरग्राउंड
 php start.php start -d     # बैकग्राउंड (डेमॉन)
+# WebSocket पोर्ट (लीडरबोर्ड 8790 / चैट 8791) .env में LEADERBOARD_WS_PORT / CHAT_WS_PORT से बदले जा सकते हैं
 ```
 
 ## उपयोग

@@ -59,7 +59,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | 2FA | Google Authenticator TOTP + kode pemulihan cadangan | Selesai |
 | Referral | Kode referral, hadiah pendaftaran, komisi deposit | Selesai |
 | Pencarian | API pencarian ES + saran game + fallback LIKE | Selesai |
-| Papan peringkat | Push real-time WebSocket (port 8789) | Selesai |
+| Papan peringkat | Push real-time WebSocket (port 8790) | Selesai |
 | CDN | Integrasi lima penyedia (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + preload) | Selesai |
 | Manajemen CDN | Konfigurasi lima penyedia di admin (kredensial terenkripsi/aktif-nonaktif/tes konektivitas HeadBucket), service hanya membaca dari DB | Selesai |
 | Laporan | Laporan data admin (ringkasan/harian/ekspor CSV, cache Redis 5 menit, rentang ≤90 hari) | Selesai |
@@ -87,7 +87,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Hak VIP | Diskon penukaran 2-15%, keringanan biaya penarikan 10-100%, bonus kurs 0.1-1.0% | Selesai |
 | Sistem pencapaian | 12 pencapaian bawaan; EventConsumer → deteksi berbasis event AchievementService dan pengalaman VIP | Selesai |
 | Sistem teman | Ajukan/terima/tolak/hapus/cari, status pending/accepted/blocked | Selesai |
-| Pesan pribadi/chat | Pesan pribadi REST + pesan real-time WebSocket (port 8790), hanya teman yang dapat mengirim | Selesai |
+| Pesan pribadi/chat | Pesan pribadi REST + pesan real-time WebSocket (port 8791), hanya teman yang dapat mengirim | Selesai |
 | Bus event | Redis Pub/Sub; emit + EventConsumer mengonsumsi pencapaian/Webhook + INCR metrics | Selesai |
 | Fitur saklar | FeatureFlag berbasis DB; `inRollout`/`abTest` pengelompokan crc32 membaca `feature.{name}_percent` | Selesai |
 | Analisis lanjutan | Retensi/D1-D30, funnel konversi, ARPU/ARPPU, metrik ekonomi mata uang game (agregasi real-time MySQL) | Selesai |

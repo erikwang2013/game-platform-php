@@ -301,7 +301,7 @@ Konfiguration über PlatformConfig oder Umgebungsvariablen; bei Anfragefehlern a
 
 ### 9.6 WebSocket-Echtzeit-Rangliste
 
-- Protokoll: WebSocket (ws://host:8789)
+- Protokoll: WebSocket (ws://host:8790)
 - Abonnement: {action: "subscribe", leaderboard_id: 123}
 - Push: {type: "ranking_update", rankings: [...]}
 - Unterstützt ping/pong-Heartbeat zur Verbindungserhaltung

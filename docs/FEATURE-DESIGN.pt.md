@@ -301,7 +301,7 @@ Configuração via PlatformConfig ou variáveis de ambiente; em caso de falha de
 
 ### 9.6 Rankings em tempo real via WebSocket
 
-- Protocolo: WebSocket (ws://host:8789)
+- Protocolo: WebSocket (ws://host:8790)
 - Assinatura: {action: "subscribe", leaderboard_id: 123}
 - Push: {type: "ranking_update", rankings: [...]}
 - Suporta heartbeat ping/pong para manter a conexão

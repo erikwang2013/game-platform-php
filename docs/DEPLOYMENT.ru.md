@@ -39,14 +39,14 @@ php -S 0.0.0.0:8888 -t install/
 cd admin && composer install && cd ..
 cd service && composer install && cd ..
 
-# 5. 启动服务
+# 5. Запуск сервисов (порты по умолчанию: admin 8789 / service 8792, изменяются через APP_PORT в соответствующем .env)
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
 # 6. 安全清理
 rm -rf install/
 
-# 7. 访问管理后台: http://<服务器IP>:8789
+# 7. Доступ к админ-панели: http://<IP-сервера>:8789 (порт по умолчанию)
 ```
 
 Что выполняет мастер установки:
@@ -69,6 +69,7 @@ git clone <repo-url> /opt/game-platform
 cd /opt/game-platform
 
 # 2. 使用一键安装向导配置环境（或手动配置 .env 文件）
+#    Параметры Docker, такие как порты, находятся в .env в корне проекта (шаблон .env.example): cp .env.example .env
 php -S 0.0.0.0:8888 -t install/
 # 手动方式: cp admin/.env.example admin/.env && cp service/.env.example service/.env
 
@@ -89,10 +90,15 @@ docker-compose logs -f
 | nginx | game-platform-nginx | 80, 443 | обратный прокси + статические файлы |
 | admin | game-platform-admin | 8789 | API админ-панели |
 | service | game-platform-service | 8792 | API C-стороннего бизнеса |
-| leaderboard-ws | game-platform-ws | 8789 | WebSocket-рейтинг |
+| leaderboard-ws | game-platform-ws | 8790, 8791 | WebSocket-рейтинг/чат |
 | mysql | game-platform-mysql | 3306 | основная база данных |
 | redis | game-platform-redis | 6379 | кэш/лимиты |
 | elasticsearch | game-platform-es | 9200 | полнотекстовый поиск |
+
+> **Настройка портов**: Порты в таблице — значения по умолчанию; все они изменяются в `.env` в корне проекта (шаблон `.env.example`; отредактируйте после `cp .env.example .env`):
+> `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `LEADERBOARD_WS_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
+> Порты upstream в `nginx.conf.template` автоматически подставляются официальным образом через envsubst — вручную править конфигурацию Nginx не нужно.
+> Внимание: изменение `ADMIN_PORT` / `SERVICE_PORT` не обновляет автоматически `APP_URL` в `admin/.env` и `SITE_URL` в `service/.env`; внешние адреса доступа нужно изменить отдельно.
 
 ### 2.3 Инициализация базы данных
 
@@ -163,6 +169,8 @@ composer install --no-dev --optimize-autoloader
 ```ini
 APP_ENV=production
 APP_DEBUG=false
+APP_PORT=8789  # порт прослушивания HTTP webman (должен совпадать с APP_URL)
+APP_URL=http://localhost:8789  # внешний адрес доступа (baseUrl документации API и т. п.)
 
 DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -192,6 +200,9 @@ SCOUT_HOSTS=127.0.0.1:9200
 **Ключевые параметры service/.env:**
 ```ini
 # 与 admin 相同的数据库、Redis、ES 配置
+APP_PORT=8792  # порт прослушивания HTTP webman
+LEADERBOARD_WS_PORT=8790  # WebSocket рейтинга (должен совпадать с адресом подключения фронтенда)
+CHAT_WS_PORT=8791  # WebSocket чата
 SNOWFLAKE_WORKER_ID=2  # 必须与 admin 不同
 
 # OAuth
@@ -262,11 +273,11 @@ SITE_URL=https://your-domain.com  # 支付回调/跳转站点地址
 ### 3.4 Запуск сервисов
 
 ```bash
-# 管理后台 (端口 8789)
+# Админ-панель (порт по умолчанию 8789, изменяется через APP_PORT в admin/.env)
 cd /opt/game-platform/admin
 php start.php start -d
 
-# C端业务 (端口 8792)
+# C-сторонний бизнес (порт по умолчанию 8792, изменяется через APP_PORT в service/.env)
 cd /opt/game-platform/service
 php start.php start -d
 
@@ -315,6 +326,7 @@ systemctl enable --now game-platform-admin game-platform-service
 Создайте `/etc/nginx/sites-available/game-platform`:
 
 ```nginx
+# Порты — значения по умолчанию (admin 8789 / service 8792 / ws 8790); при изменении .env скорректируйте их здесь
 server {
     listen 80;
     server_name your-domain.com;
@@ -337,9 +349,9 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # WebSocket 排行榜
+    # WebSocket-рейтинг (порт по умолчанию 8790, совпадает с LEADERBOARD_WS_PORT в service/.env)
     location /ws/ {
-        proxy_pass http://127.0.0.1:8789;
+        proxy_pass http://127.0.0.1:8790;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
@@ -526,6 +538,7 @@ ufw enable
 
 # 内部端口不应暴露
 # 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# Выше указаны порты по умолчанию; если .env в корне или соответствующие .env изменены, ориентируйтесь на фактические значения
 # 仅通过 127.0.0.1 访问
 ```
 

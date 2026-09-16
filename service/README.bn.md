@@ -72,6 +72,8 @@ php -S 0.0.0.0:8888 -t install/
 docker compose up -d
 ```
 
+পোর্ট ও অন্যান্য প্যারামিটার প্রজেক্ট রুটের .env-এ কনফিগার করা হয় (টেমপ্লেট .env.example)।
+
 ## ম্যানুয়াল ইনস্টলেশন
 
 ```bash
@@ -82,9 +84,10 @@ cd service && composer install
 cp .env.example .env
 # .env এডিট করুন: ডেটাবেস সংযোগ, JWT কী ইত্যাদি
 
-# 3. সার্ভিস চালু করুন (ডিফল্ট পোর্ট 8792)
+# 3. সার্ভিস চালু করুন (ডিফল্ট পোর্ট 8792, .env-এ APP_PORT দিয়ে পরিবর্তনযোগ্য)
 php start.php start        # ফোরগ্রাউন্ড
 php start.php start -d     # ব্যাকগ্রাউন্ড (ডেমন)
+# WebSocket পোর্ট (লিডারবোর্ড 8790 / চ্যাট 8791) .env-এ LEADERBOARD_WS_PORT / CHAT_WS_PORT দিয়ে পরিবর্তনযোগ্য
 ```
 
 ## ব্যবহার

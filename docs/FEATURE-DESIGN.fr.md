@@ -301,7 +301,7 @@ Configuration via PlatformConfig ou variables d'environnement, repli automatique
 
 ### 9.6 Classement WebSocket temps réel
 
-- Protocole : WebSocket (ws://host:8789)
+- Protocole : WebSocket (ws://host:8790)
 - Abonnement : {action: "subscribe", leaderboard_id: 123}
 - Push : {type: "ranking_update", rankings: [...]}
 - Heartbeat ping/pong pour le maintien de la connexion

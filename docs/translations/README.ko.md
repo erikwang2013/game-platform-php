@@ -54,7 +54,7 @@ Languages: [中文](../../README.md) · [English](README.en.md) · **한국어**
 
 ```
 game-platform-php/
-├── admin/                     # 관리 백엔드 (webman v2, 포트 8789)
+├── admin/                     # 관리 백엔드 (webman v2, 기본 포트 8789, APP_PORT로 변경 가능)
 │   ├── app/admin/controller/  #   관리자 컨트롤러
 │   ├── app/middleware/        #   미들웨어 (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   게임 Provider 계층
@@ -67,7 +67,7 @@ game-platform-php/
 │   ├── install/   #   SQL 마이그레이션 파일
 │   └── apps/flutter/          #   Flutter Web PC 관리 백엔드
 │
-├── service/                   # C측 비즈니스 서버 (webman v2, 포트 8792)
+├── service/                   # C측 비즈니스 서버 (webman v2, 기본 포트 8792, APP_PORT로 변경 가능)
 │   ├── app/api/v1/controller/ #   C측 API 컨트롤러
 │   ├── app/middleware/        #   미들웨어 (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   게임 Provider 계층
@@ -91,8 +91,12 @@ game-platform-php/
 │   ├── ARCHITECTURE-DESIGN.md #   아키텍처 설계 문서
 │   ├── FEATURES.md            #   기능 문서
 │   ├── FEATURE-DESIGN.md      #   기능 설계 문서
-│   └── API.md                 #   API 문서
+│   ├── API.md                 #   API 문서
+│   └── DEPLOYMENT.md          #   배포 문서 (Docker/수동/포트 구성)
 │
+├── docker-compose.yml         # Docker Compose 오케스트레이션 (기본 포트는 루트 .env에서)
+├── nginx.conf.template        # Nginx 구성 템플릿 (upstream 포트는 envsubst로 렌더링)
+├── .env.example               # 루트 .env 템플릿 (Docker 포트 변수, 사용하려면 .env로 복사)
 └── admin/docs/superpowers/    # 개발 규범 및 계획
     ├── specs/                 #   설계 규범
     └── plans/                 #   구현 계획
@@ -120,11 +124,11 @@ php -S 0.0.0.0:8888 -t install/
 cd admin && composer install && cd ..
 cd service && composer install && cd ..
 
-# 4. 서비스 시작
+# 4. 서비스 시작 (기본 포트 admin 8789 / service 8792, 각 .env의 APP_PORT에서 변경 가능)
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. 관리 백엔드 접속: http://localhost:8789
+# 5. 관리 백엔드 접속: http://localhost:8789 (기본 포트)
 #    설치 시 설정한 관리자 계정/비밀번호로 로그인
 
 # 6. 설치 완료 후 설치 디렉터리 삭제 (보안)
@@ -195,10 +199,10 @@ flutter run -d chrome
 ### 검증
 
 ```bash
-# 관리 백엔드 테스트
+# 관리 백엔드 테스트 (기본 포트 8789)
 curl http://localhost:8789/health
 
-# C측 비즈니스 테스트
+# C측 비즈니스 테스트 (기본 포트 8792)
 curl http://localhost:8792/health
 
 # 사용자 가입 테스트
@@ -248,7 +252,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | KYC | 실명 인증 제출+심사, 3단계 인증 체계 |
 | 게임 | CRUD + 분류(10종) + 서버 + 게임 기록 추적 |
 | 검색 | Elasticsearch 전문 검색(LIKE 폴백 포함) |
-| 랭킹 | 일/주/월/전체 랭킹, Redis 캐시, WebSocket 실시간 푸시(8789) |
+| 랭킹 | 일/주/월/전체 랭킹, Redis 캐시, WebSocket 실시간 푸시 (기본 포트 8790, LEADERBOARD_WS_PORT로 변경 가능) |
 | CDN | 5개 업체 연동 (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS 업로드+퍼지+프리로드) + 관리자 설정/활성화/연결 테스트 |
 | 쿠폰 | 고정 금액+비율 할인, 기간/수량 한정, 사용 추적 |
 | 알림 | 사이트 내 메시지+이메일, 충전/출금/KYC/쿠폰 자동 알림 |
@@ -269,12 +273,12 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | 티켓 | C측 생성/답변 + 관리측 처리/배정/종료 |
 | VIP | 5단계 충성도, 경험치 누적, 환전 할인/출금 감면/환율 가산 |
 | 업적 | 12개 내장 업적, 이벤트 기반 감지, 진행 추적 |
-| 소셜 | 친구 시스템 + WebSocket 실시간 쪽지 (포트 8791), 친구만 발송 가능 |
+| 소셜 | 친구 시스템 + WebSocket 실시간 쪽지 (기본 포트 8791, CHAT_WS_PORT로 변경 가능), 친구만 발송 가능 |
 | 대회 | 토너먼트 시스템 (FeatureFlag 스위치) + 랭킹 + 인원 상한 |
 | 리베이트 | 2단계 추천 수익 배분 (커미션율 설정 가능) |
 | 쿠폰 | 조건 제한 (min_deposit/first_user/game_id) |
 | 이벤트 | Redis Pub/Sub 이벤트 버스 + Webhook 구독 전달 (7종 이벤트) |
-| 배포 | Docker Compose 8개 서비스 오케스트레이션 + Nginx 리버스 프록시 |
+| 배포 | Docker Compose 7개 서비스 오케스트레이션 (포트는 루트 .env에서 구성) + Nginx 리버스 프록시 |
 | 클라이언트 | Flutter Admin(17페이지) + Platform(10페이지) + HarmonyOS(5페이지) |
 
 ## 비즈니스 모델

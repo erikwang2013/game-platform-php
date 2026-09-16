@@ -54,7 +54,7 @@ Platform agregasi game global, universal, dan berstandar internasional. Setelah 
 
 ```
 game-platform-php/
-├── admin/                     # Backend administrasi (webman v2, port 8789)
+├── admin/                     # Backend administrasi (webman v2, port default 8789, dapat dikonfigurasi via APP_PORT)
 │   ├── app/admin/controller/  #   Kontroler sisi admin
 │   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   Lapisan Provider game
@@ -67,7 +67,7 @@ game-platform-php/
 │   ├── install/   #   File migrasi SQL
 │   └── apps/flutter/          #   Backend administrasi Flutter Web PC
 │
-├── service/                   # Sisi bisnis C (webman v2, port 8792)
+├── service/                   # Sisi bisnis C (webman v2, port default 8792, dapat dikonfigurasi via APP_PORT)
 │   ├── app/api/v1/controller/ #   Kontroler API C
 │   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   Lapisan Provider game
@@ -91,8 +91,12 @@ game-platform-php/
 │   ├── ARCHITECTURE-DESIGN.md #   Dokumen desain arsitektur
 │   ├── FEATURES.md            #   Dokumen fitur
 │   ├── FEATURE-DESIGN.md      #   Dokumen desain fitur
-│   └── API.md                 #   Dokumen API
+│   ├── API.md                 #   Dokumen API
+│   └── DEPLOYMENT.md          #   Dokumen deployment (Docker/manual/konfigurasi port)
 │
+├── docker-compose.yml         # Orkestrasi Docker Compose (port default dari .env root)
+├── nginx.conf.template        # Template konfigurasi Nginx (port upstream dirender oleh envsubst)
+├── .env.example               # Template .env root (variabel port Docker, salin ke .env untuk digunakan)
 └── admin/docs/superpowers/    # Standar dan rencana pengembangan
     ├── specs/                 #   Spesifikasi desain
     └── plans/                 #   Rencana implementasi
@@ -120,11 +124,11 @@ php -S 0.0.0.0:8888 -t install/
 cd admin && composer install && cd ..
 cd service && composer install && cd ..
 
-# 4. Jalankan layanan
+# 4. Jalankan layanan (port default admin 8789 / service 8792, dapat diubah di APP_PORT masing-masing .env)
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. Akses backend admin: http://localhost:8789
+# 5. Akses backend admin: http://localhost:8789 (port default)
 #    Masuk dengan akun dan kata sandi admin yang diatur saat instalasi
 
 # 6. Hapus direktori instalasi setelah selesai (keamanan)
@@ -195,10 +199,10 @@ flutter run -d chrome
 ### Verifikasi
 
 ```bash
-# Uji backend administrasi
+# Uji backend administrasi (port default 8789)
 curl http://localhost:8789/health
 
-# Uji bisnis sisi C
+# Uji bisnis sisi C (port default 8792)
 curl http://localhost:8792/health
 
 # Uji registrasi pengguna
@@ -248,7 +252,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | KYC | Pengajuan verifikasi identitas + audit, sistem sertifikasi tiga tingkat |
 | Game | CRUD + kategori (10 kategori) + server wilayah + pelacakan catatan game |
 | Pencarian | Pencarian teks penuh Elasticsearch (dengan fallback LIKE) |
-| Peringkat | Harian/mingguan/bulanan/keseluruhan, cache Redis, push real-time WebSocket (8789) |
+| Peringkat | Harian/mingguan/bulanan/keseluruhan, cache Redis, push real-time WebSocket (port default 8790, dapat dikonfigurasi via LEADERBOARD_WS_PORT) |
 | CDN | Integrasi lima penyedia (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + preload) + konfigurasi/aktif-nonaktif/uji konektivitas admin |
 | Kupon | Jumlah tetap + diskon persentase, terbatas waktu & kuota, pelacakan klaim dan penggunaan |
 | Notifikasi | Pesan internal + email, notifikasi otomatis deposit/penarikan/KYC/kupon |
@@ -269,12 +273,12 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Tiket dukungan | Pembuatan/balasan sisi C + penanganan/penugasan/penutupan sisi admin |
 | VIP | Loyalitas 5 tingkat, akumulasi poin pengalaman, diskon penukaran/pengurangan penarikan/bonus kurs |
 | Prestasi | 12 prestasi bawaan, deteksi berbasis event, pelacakan progres |
-| Sosial | Sistem pertemanan + pesan pribadi real-time WebSocket (port 8791), hanya teman yang bisa mengirim |
+| Sosial | Sistem pertemanan + pesan pribadi real-time WebSocket (port default 8791, dapat dikonfigurasi via CHAT_WS_PORT), hanya teman yang bisa mengirim |
 | Turnamen | Sistem turnamen (saklar FeatureFlag) + peringkat + batas peserta |
 | Komisi | Bagi hasil referral dua tingkat (tingkat komisi dapat dikonfigurasi) |
 | Kupon | Batasan kondisi (min_deposit/first_user/game_id) |
 | Event | Event bus Redis Pub/Sub + pengiriman langganan Webhook (7 jenis event) |
-| Deployment | Orkestrasi Docker Compose 8 layanan + proxy balik Nginx |
+| Deployment | Orkestrasi Docker Compose 7 layanan (port dikonfigurasi dari .env root) + proxy balik Nginx |
 | Klien | Flutter Admin (17 halaman) + Platform (10 halaman) + HarmonyOS (5 halaman) |
 
 ## Model Bisnis

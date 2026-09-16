@@ -139,6 +139,8 @@ Item konfigurasi utama:
 
 | Variabel Lingkungan | Deskripsi | Nilai Default |
 |---------|------|--------|
+| `APP_PORT` | Port listening HTTP webman | `8789` |
+| `APP_URL` | Alamat akses eksternal (tautan halaman sukses installer, baseUrl dokumentasi API, dll.) | `http://localhost:8789` |
 | `JWT_SECRET` | Kunci tanda tangan JWT | `open-admin-jwt-secret-change-in-production` |
 | `HASHIDS_SALT` | Nilai salt Hashids | `open-admin-hashids-salt-2026` |
 | `ENCRYPTION_KEY` | Kunci enkripsi API | Nilai default 32 byte |
@@ -162,7 +164,7 @@ mysql -u root -p < install/install.sql
 php start.php start
 ```
 
-Default mendengarkan di `http://0.0.0.0:8789`.
+Default mendengarkan di `http://0.0.0.0:8789` (dapat diubah melalui `APP_PORT` di `.env`; harus konsisten dengan `APP_URL`).
 
 ### 5. Menjalankan Frontend (Opsional)
 

@@ -59,7 +59,7 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 | 2FA | Google Authenticator TOTP + backup recovery codes | Completed |
 | Referrals | Referral codes, signup rewards, deposit commissions | Completed |
 | Search | ES search API + game suggestions + LIKE fallback | Completed |
-| Leaderboards | WebSocket real-time push (port 8789) | Completed |
+| Leaderboards | WebSocket real-time push (port 8790) | Completed |
 | CDN | Five-provider integration (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + preload) | Completed |
 | CDN Admin | Admin-configurable five providers (encrypted credentials/toggle/connectivity test via HeadBucket), service reads from DB only | Completed |
 | Reports | Admin data reports (summary/daily/CSV export, Redis 5-min cache, span ≤90 days) | Completed |
@@ -87,7 +87,7 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 | VIP benefits | Exchange discount 2-15%, withdrawal fee reduction 10-100%, rate bonus 0.1-1.0% | Completed |
 | Achievement system | 12 built-in achievements; EventConsumer → AchievementService event-driven detection and VIP EXP | Completed |
 | Friend system | Request/accept/reject/remove/search, pending/accepted/blocked states | Completed |
-| DM/chat | REST DMs + WebSocket real-time messages (port 8790), friends only | Completed |
+| DM/chat | REST DMs + WebSocket real-time messages (port 8791), friends only | Completed |
 | Event bus | Redis Pub/Sub; emit + EventConsumer consuming achievements/Webhooks + metrics INCR | Completed |
 | Feature flags | DB-based FeatureFlag; `inRollout`/`abTest` crc32 bucketing reads `feature.{name}_percent` | Completed |
 | Advanced analytics | Retention/D1-D30, conversion funnel, ARPU/ARPPU, game currency economy metrics (MySQL real-time aggregation) | Completed |

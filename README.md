@@ -54,7 +54,7 @@ Languages: **中文** · [English](docs/translations/README.en.md) · [한국어
 
 ```
 game-platform-php/
-├── admin/                     # 管理后台 (webman v2, 端口 8789)
+├── admin/                     # 管理后台 (webman v2, 默认端口 8789，APP_PORT 可配)
 │   ├── app/admin/v1/controller/  #   管理端控制器
 │   ├── app/middleware/        #   中间件 (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   游戏Provider层
@@ -66,7 +66,7 @@ game-platform-php/
 │   ├── config/                #   配置文件
 │   └── apps/flutter/          #   Flutter Web PC 管理后台
 │
-├── service/                   # C端业务端 (webman v2, 端口 8792)
+├── service/                   # C端业务端 (webman v2, 默认端口 8792，APP_PORT 可配)
 │   ├── app/api/v1/controller/ #   C端 API 控制器
 │   ├── app/middleware/        #   中间件 (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   游戏Provider层
@@ -91,8 +91,12 @@ game-platform-php/
 │   ├── ARCHITECTURE-DESIGN.md #   架构设计文档
 │   ├── FEATURES.md            #   功能文档
 │   ├── FEATURE-DESIGN.md      #   功能设计文档
-│   └── API.md                 #   接口文档
+│   ├── API.md                 #   接口文档
+│   └── DEPLOYMENT.md          #   部署文档（Docker/手动/端口配置）
 │
+├── docker-compose.yml         # Docker Compose 编排（默认端口来自根 .env）
+├── nginx.conf.template        # Nginx 配置模板（upstream 端口由 envsubst 渲染）
+├── .env.example               # 根 .env 模板（Docker 端口变量，cp 为 .env 使用）
 └── admin/docs/superpowers/    # 开发规范与计划
     ├── specs/                 #   设计规范
     └── plans/                 #   实现计划
@@ -120,11 +124,11 @@ php -S 0.0.0.0:8888 -t install/
 cd admin && composer install && cd ..
 cd service && composer install && cd ..
 
-# 4. 启动服务
+# 4. 启动服务（默认端口 admin 8789 / service 8792，可在各自 .env 的 APP_PORT 修改）
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. 访问管理后台: http://localhost:8789
+# 5. 访问管理后台: http://localhost:8789（默认端口）
 #    使用安装时设置的管理员账号密码登录
 
 # 6. 安装完成后删除安装目录（安全）
@@ -195,10 +199,10 @@ flutter run -d chrome
 ### 验证
 
 ```bash
-# 测试管理后台
+# 测试管理后台（默认端口 8789）
 curl http://localhost:8789/health
 
-# 测试C端业务
+# 测试C端业务（默认端口 8792）
 curl http://localhost:8792/health
 
 # 测试用户注册
@@ -265,7 +269,7 @@ cd admin/apps/flutter && flutter test --timeout 300s
 | KYC | 实名认证提交+审核、三级认证体系 |
 | 游戏 | CRUD + 分类(10类) + 区服 + 游戏记录追踪 |
 | 搜索 | Elasticsearch 全文检索(含LIKE回退) |
-| 排行榜 | 日/周/月/总榜、Redis缓存、WebSocket实时推送(8789) |
+| 排行榜 | 日/周/月/总榜、Redis缓存、WebSocket实时推送(默认端口 8790，LEADERBOARD_WS_PORT 可配) |
 | CDN | 五厂商接入（Cloudflare R2 / AWS S3 / 阿里OSS / 腾讯COS / 华为OBS 上传+刷新+预热）+ 管理端配置/启停/连通测试 |
 | 优惠券 | 固定金额+比例折扣、限时限量、领取使用追踪 |
 | 通知 | 站内信+邮件、充值/提现/KYC/优惠券自动通知 |
@@ -286,12 +290,12 @@ cd admin/apps/flutter && flutter test --timeout 300s
 | 工单 | C端创建/回复 + 管理端处理/分配/关闭 |
 | VIP | 5级忠诚度、经验值累计、兑换折扣/提现减免/汇率加成 |
 | 成就 | 12个内置成就、事件驱动检测、进度追踪 |
-| 社交 | 好友系统 + WebSocket 实时私信 (端口8791)、仅好友可发 |
+| 社交 | 好友系统 + WebSocket 实时私信 (默认端口 8791，CHAT_WS_PORT 可配)、仅好友可发 |
 | 赛事 | 锦标赛系统 (FeatureFlag开关) + 排行榜 + 人数上限 |
 | 返佣 | 二级推荐分润 (可配置佣金率) |
 | 优惠券 | 条件限制 (min_deposit/first_user/game_id) |
 | 事件 | Redis Pub/Sub 事件总线 + Webhook订阅投递 (7种事件) |
-| 部署 | Docker Compose 8服务编排 + Nginx反向代理 |
+| 部署 | Docker Compose 7 服务编排（端口由根 .env 配置） + Nginx反向代理 |
 | 客户端 | Flutter Admin(17页) + Platform(10页) + HarmonyOS(5页) |
 
 ## 业务模型

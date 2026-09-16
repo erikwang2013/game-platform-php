@@ -301,7 +301,7 @@ signature = HMAC-SHA256(
 
 ### 9.6 WebSocket 실시간 리더보드
 
-- 프로토콜: WebSocket (ws://host:8789)
+- 프로토콜: WebSocket (ws://host:8790)
 - 구독: {action: "subscribe", leaderboard_id: 123}
 - 푸시: {type: "ranking_update", rankings: [...]}
 - ping/pong 하트비트 유지 지원

@@ -140,6 +140,8 @@ cp .env.example .env
 
 | 环境变量 | 说明 | 默认值 |
 |---------|------|--------|
+| `APP_PORT` | webman HTTP 监听端口 | `8789` |
+| `APP_URL` | 对外访问地址（安装向导成功页链接、API 文档 baseUrl 等） | `http://localhost:8789` |
 | `JWT_SECRET` | JWT 签名密钥 | `open-admin-jwt-secret-change-in-production` |
 | `HASHIDS_SALT` | Hashids 盐值 | `open-admin-hashids-salt-2026` |
 | `ENCRYPTION_KEY` | API 加密密钥 | 32 字节默认值 |
@@ -163,7 +165,7 @@ mysql -u root -p < install/install.sql
 php start.php start
 ```
 
-默认监听 `http://0.0.0.0:8789`。
+默认监听 `http://0.0.0.0:8789`（可在 `.env` 中经 `APP_PORT` 修改，须与 `APP_URL` 保持一致）。
 
 ### 5. 启动前端（可选）
 

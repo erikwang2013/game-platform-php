@@ -54,7 +54,7 @@ Eine weltweit einsetzbare, internationalisierte Spiele-Aggregationsplattform. Na
 
 ```
 game-platform-php/
-├── admin/                     # Verwaltungs-Backend (webman v2, Port 8789)
+├── admin/                     # Verwaltungs-Backend (webman v2, Standardport 8789, über APP_PORT konfigurierbar)
 │   ├── app/admin/controller/  #   Admin-Controller
 │   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   Spiel-Provider-Schicht
@@ -67,7 +67,7 @@ game-platform-php/
 │   ├── install/   #   SQL-Migrationsdateien
 │   └── apps/flutter/          #   Flutter-Web-PC-Verwaltungs-Backend
 │
-├── service/                   # C-End-Geschäftsdienst (webman v2, Port 8792)
+├── service/                   # C-End-Geschäftsdienst (webman v2, Standardport 8792, über APP_PORT konfigurierbar)
 │   ├── app/api/v1/controller/ #   C-End-API-Controller
 │   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
 │   ├── app/provider/          #   Spiel-Provider-Schicht
@@ -91,8 +91,12 @@ game-platform-php/
 │   ├── ARCHITECTURE-DESIGN.md #   Architektur-Design-Dokument
 │   ├── FEATURES.md            #   Funktionsdokument
 │   ├── FEATURE-DESIGN.md      #   Funktionsdesign-Dokument
-│   └── API.md                 #   Schnittstellendokument
+│   ├── API.md                 #   Schnittstellendokument
+│   └── DEPLOYMENT.md          #   Bereitstellungsdokument (Docker/manuell/Portkonfiguration)
 │
+├── docker-compose.yml         # Docker-Compose-Orchestrierung (Standardports aus der Root-.env)
+├── nginx.conf.template        # Nginx-Konfigurationsvorlage (Upstream-Ports per envsubst gerendert)
+├── .env.example               # Root-.env-Vorlage (Docker-Portvariablen, für die Nutzung zu .env kopieren)
 └── admin/docs/superpowers/    # Entwicklungsstandards und Pläne
     ├── specs/                 #   Design-Spezifikationen
     └── plans/                 #   Umsetzungspläne
@@ -120,11 +124,11 @@ php -S 0.0.0.0:8888 -t install/
 cd admin && composer install && cd ..
 cd service && composer install && cd ..
 
-# 4. Dienste starten
+# 4. Dienste starten (Standardports admin 8789 / service 8792, in der jeweiligen .env über APP_PORT änderbar)
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 5. Verwaltungs-Backend öffnen: http://localhost:8789
+# 5. Verwaltungs-Backend öffnen: http://localhost:8789 (Standardport)
 #    Mit dem bei der Installation eingerichteten Admin-Konto anmelden
 
 # 6. Nach der Installation Installationsverzeichnis löschen (Sicherheit)
@@ -195,10 +199,10 @@ flutter run -d chrome
 ### Verifikation
 
 ```bash
-# Verwaltungs-Backend testen
+# Verwaltungs-Backend testen (Standardport 8789)
 curl http://localhost:8789/health
 
-# C-End-Dienst testen
+# C-End-Dienst testen (Standardport 8792)
 curl http://localhost:8792/health
 
 # Benutzerregistrierung testen
@@ -248,7 +252,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | KYC | Echte-Name-Verifizierung einreichen + prüfen, dreistufiges Verifikationssystem |
 | Spiele | CRUD + Kategorien (10) + Server/Regionen + Spielverlaufs-Tracking |
 | Suche | Elasticsearch-Volltextsuche (mit LIKE-Fallback) |
-| Ranglisten | Tages/Wochen/Monats/Gesamt-Rankings, Redis-Cache, WebSocket-Echtzeit-Push (8789) |
+| Ranglisten | Tages/Wochen/Monats/Gesamt-Rankings, Redis-Cache, WebSocket-Echtzeit-Push (Standardport 8790, über LEADERBOARD_WS_PORT konfigurierbar) |
 | CDN | Fünf-Anbieter-Integration (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS Upload + Purge + Preload) + Admin-Konfiguration/Aktivierung/Konnektivitätstest |
 | Gutscheine | Festbetrag + Prozentrabatt, zeit-/mengenbegrenzt, Einlösung- und Nutzungs-Tracking |
 | Benachrichtigungen | Interne Nachrichten + E-Mail, automatische Benachrichtigung bei Einzahlung/Auszahlung/KYC/Gutschein |
@@ -269,12 +273,12 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Tickets | C-End erstellen/antworten + Admin-Seite bearbeiten/zuweisen/schließen |
 | VIP | 5 Loyalitätsstufen, Erfahrungspunkte-Akkumulation, Umtauschrabatt/Auszahlungsnachlass/Kursbonus |
 | Erfolge | 12 integrierte Erfolge, ereignisgesteuerte Erkennung, Fortschritts-Tracking |
-| Soziales | Freundessystem + WebSocket-Echtzeit-Privatnachrichten (Port 8791), nur Freunde können schreiben |
+| Soziales | Freundessystem + WebSocket-Echtzeit-Privatnachrichten (Standardport 8791, über CHAT_WS_PORT konfigurierbar), nur Freunde können schreiben |
 | Turniere | Turniersystem (FeatureFlag-Schalter) + Ranglisten + Teilnehmerlimit |
 | Provision | Zweistufige Empfehlungs-Vergütung (konfigurierbarer Provisionssatz) |
 | Gutscheine | Bedingungsbeschränkungen (min_deposit/first_user/game_id) |
 | Events | Redis-Pub/Sub-Event-Bus + Webhook-Abo-Zustellung (7 Eventtypen) |
-| Bereitstellung | Docker-Compose-Orchestrierung mit 8 Diensten + Nginx-Reverse-Proxy |
+| Bereitstellung | Docker-Compose-Orchestrierung mit 7 Diensten (Ports in der Root-.env konfiguriert) + Nginx-Reverse-Proxy |
 | Clients | Flutter Admin (17 Seiten) + Platform (10 Seiten) + HarmonyOS (5 Seiten) |
 
 ## Geschäftsmodell

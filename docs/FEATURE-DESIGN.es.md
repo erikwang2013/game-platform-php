@@ -301,7 +301,7 @@ La configuración se hace mediante PlatformConfig o variables de entorno; si la 
 
 ### 9.6 Clasificación en tiempo real por WebSocket
 
-- Protocolo: WebSocket (ws://host:8789)
+- Protocolo: WebSocket (ws://host:8790)
 - Suscripción: {action: "subscribe", leaderboard_id: 123}
 - Push: {type: "ranking_update", rankings: [...]}
 - Soporta heartbeat ping/pong para mantener la conexión
