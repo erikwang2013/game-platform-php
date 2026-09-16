@@ -1216,7 +1216,9 @@ INSERT IGNORE INTO `game_admin_permission` (`id`, `parent_id`, `name`, `slug`, `
 (21000000000000091, '0', '导出Excel', 'post.admin/export/excel', 3, '', '', 1, NOW(), NOW()),
 (21000000000000092, '0', '导出PDF',   'post.admin/export/pdf',   3, '', '', 2, NOW(), NOW()),
 (21000000000000093, '0', '导入用户', 'post.admin/import/users', 3, '', '', 1, NOW(), NOW()),
-(21000000000000094, '0', '文件上传', 'post.admin/upload', 3, '', '', 1, NOW(), NOW());
+(21000000000000094, '0', '文件上传', 'post.admin/upload', 3, '', '', 1, NOW(), NOW()),
+-- 通配权限：slug='*' 直接命中 AdminPermission 中间件的短路分支，授予该角色访问全部端点
+(900000000000000001, '0', '全部权限', '*', 3, '', '', 99, NOW(), NOW());
 
 -- 超级管理员角色关联所有权限（幂等：跳过已存在的关联）
 INSERT INTO `game_admin_role_permission` (`role_id`, `permission_id`)
@@ -1533,5 +1535,205 @@ CREATE TABLE IF NOT EXISTS `game_share_link` (
     KEY `idx_user` (`user_id`),
     KEY `idx_activity` (`activity_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='分享短码表';
+
+-- ============================================================
+-- 补充：VIP / 成就 / 工单 / 好友 / 私信 / 经验 / 锦标赛 / 二级返佣
+-- 这 12 张表原先只在 Eloquent 模型中定义，install.sql 与 install/migrations/
+-- 均无对应 DDL，导致相关 API 首次访问即 1146 Table doesn't exist。
+-- 列名与类型以模型 $fillable/$casts 及各调用点实际读写字段为准。
+-- ============================================================
+
+-- ============================================================
+-- VIP 等级配置表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_vip_level` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `level` INT UNSIGNED NOT NULL COMMENT 'VIP等级（保留字，必须反引号）',
+    `name` VARCHAR(50) NOT NULL DEFAULT '' COMMENT '等级名称',
+    `required_exp` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '升到本级所需经验',
+    `benefits` JSON DEFAULT NULL COMMENT '权益配置JSON：exchange_discount/withdraw_fee_discount/rate_bonus',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_level` (`level`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='VIP等级配置表';
+
+-- ============================================================
+-- 用户 VIP 状态表（每用户一行）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_user_vip` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
+    `level` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '当前VIP等级',
+    `exp` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '当前等级周期内经验',
+    `total_exp` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '累计经验（只增不减）',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_user` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户VIP状态表';
+
+-- ============================================================
+-- 成就定义表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_achievement` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `key` VARCHAR(64) NOT NULL COMMENT '成就唯一标识（保留字，必须反引号）',
+    `name` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '成就名称',
+    `description` VARCHAR(500) NOT NULL DEFAULT '' COMMENT '成就描述',
+    `icon` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '图标地址',
+    `condition_json` JSON DEFAULT NULL COMMENT '达成条件JSON，需用 -> 语法做SQL过滤，故必须为JSON列',
+    `points` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '成就积分',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_key` (`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='成就定义表';
+
+-- ============================================================
+-- 用户成就进度表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_user_achievement` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
+    `achievement_id` BIGINT UNSIGNED NOT NULL COMMENT '成就ID',
+    `progress` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '当前进度值',
+    `completed` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '是否已完成：0否 1是',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_user_achievement` (`user_id`, `achievement_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户成就进度表';
+
+-- ============================================================
+-- 客服工单表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_ticket` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `user_id` BIGINT UNSIGNED NOT NULL COMMENT '提交用户ID',
+    `type` VARCHAR(20) NOT NULL DEFAULT 'other' COMMENT '类型：deposit/withdraw/game/account/other',
+    `subject` VARCHAR(200) NOT NULL DEFAULT '' COMMENT '工单标题',
+    `content` TEXT NOT NULL COMMENT '工单内容',
+    `status` VARCHAR(20) NOT NULL DEFAULT 'open' COMMENT '状态：open/closed',
+    `priority` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '优先级，数值越大越优先',
+    `assigned_to` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '受理管理员ID，0=未分配',
+    `resolved_at` DATETIME DEFAULT NULL COMMENT '办结时间',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_user_status` (`user_id`, `status`),
+    KEY `idx_assigned_to` (`assigned_to`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='客服工单表';
+
+-- ============================================================
+-- 工单回复表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_ticket_reply` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `ticket_id` BIGINT UNSIGNED NOT NULL COMMENT '所属工单ID',
+    `user_id` BIGINT UNSIGNED NOT NULL COMMENT '回复者ID（用户或管理员）',
+    `content` TEXT NOT NULL COMMENT '回复内容',
+    `is_admin` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '是否管理员回复：0否 1是',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_ticket` (`ticket_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='工单回复表';
+
+-- ============================================================
+-- 好友关系表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_friend` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `user_id` BIGINT UNSIGNED NOT NULL COMMENT '发起方用户ID',
+    `friend_id` BIGINT UNSIGNED NOT NULL COMMENT '被添加方用户ID',
+    `status` VARCHAR(20) NOT NULL DEFAULT 'pending' COMMENT '状态：pending/accepted',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_user_friend` (`user_id`, `friend_id`),
+    KEY `idx_friend_status` (`friend_id`, `status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='好友关系表';
+
+-- ============================================================
+-- 私信表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_message` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `from_user_id` BIGINT UNSIGNED NOT NULL COMMENT '发送者ID',
+    `to_user_id` BIGINT UNSIGNED NOT NULL COMMENT '接收者ID',
+    `content` TEXT NOT NULL COMMENT '消息内容',
+    `is_read` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '是否已读：0未读 1已读',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_from_to` (`from_user_id`, `to_user_id`),
+    KEY `idx_to_read` (`to_user_id`, `is_read`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='私信表';
+
+-- ============================================================
+-- 经验变动流水表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_exp_log` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
+    `amount` INT NOT NULL DEFAULT 0 COMMENT '经验变动值，可为负（有符号）',
+    `source` VARCHAR(32) NOT NULL DEFAULT '' COMMENT '来源标识',
+    `ref_type` VARCHAR(32) NOT NULL DEFAULT '' COMMENT '关联业务类型',
+    `ref_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '关联业务ID',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_user_created` (`user_id`, `created_at`),
+    KEY `idx_ref` (`ref_type`, `ref_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='经验变动流水表';
+
+-- ============================================================
+-- 锦标赛表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_tournament` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `name` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '锦标赛名称',
+    `slug` VARCHAR(64) NOT NULL DEFAULT '' COMMENT '唯一别名',
+    `type` VARCHAR(32) NOT NULL DEFAULT '' COMMENT '赛制类型',
+    `description` TEXT COMMENT '赛事说明',
+    `game_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '关联游戏ID，0=通用',
+    `start_at` DATETIME NOT NULL COMMENT '开始时间',
+    `end_at` DATETIME NOT NULL COMMENT '结束时间',
+    `prize_pool` DECIMAL(18,4) NOT NULL DEFAULT 0.0000 COMMENT '奖池总额',
+    `entry_fee` DECIMAL(18,4) NOT NULL DEFAULT 0.0000 COMMENT '报名费',
+    `max_players` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '人数上限，0=不限',
+    `status` TINYINT NOT NULL DEFAULT 0 COMMENT '状态：1=已发布',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_slug` (`slug`),
+    KEY `idx_status_time` (`status`, `start_at`, `end_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='锦标赛表';
+
+-- ============================================================
+-- 锦标赛报名/成绩表
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_tournament_entry` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `tournament_id` BIGINT UNSIGNED NOT NULL COMMENT '锦标赛ID',
+    `user_id` BIGINT UNSIGNED NOT NULL COMMENT '参赛用户ID',
+    `score` DECIMAL(18,4) NOT NULL DEFAULT 0.0000 COMMENT '当前得分',
+    `rank` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '名次（保留字，必须反引号）',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '报名时间',
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_tournament_user` (`tournament_id`, `user_id`),
+    KEY `idx_tournament_score` (`tournament_id`, `score` DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='锦标赛报名/成绩表';
+
+-- ============================================================
+-- 多级返佣流水表（二级及以上）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_referral_commission` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
+    `referral_id` BIGINT UNSIGNED NOT NULL COMMENT '关联 game_referral.id',
+    `user_id` BIGINT UNSIGNED NOT NULL COMMENT '获得返佣的用户ID',
+    `level` TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '返佣层级（保留字，必须反引号）',
+    `source_user_id` BIGINT UNSIGNED NOT NULL COMMENT '产生返佣的来源用户ID',
+    `source_amount` DECIMAL(18,4) NOT NULL DEFAULT 0.0000 COMMENT '来源金额',
+    `commission_rate` DECIMAL(18,8) NOT NULL DEFAULT 0.00000000 COMMENT '返佣比例',
+    `commission_amount` DECIMAL(18,4) NOT NULL DEFAULT 0.0000 COMMENT '返佣金额',
+    `source_type` VARCHAR(32) NOT NULL DEFAULT '' COMMENT '来源业务类型',
+    `source_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '来源业务ID',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_user` (`user_id`),
+    KEY `idx_referral` (`referral_id`),
+    KEY `idx_source` (`source_type`, `source_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='多级返佣流水表';
 
 COMMIT;
