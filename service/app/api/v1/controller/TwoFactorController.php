@@ -55,7 +55,7 @@ class TwoFactorController extends BaseController
 
         // Build otpauth:// URL for QR code generation
         $user    = User::find($userId);
-        $issuer  = rawurlencode(getenv('APP_NAME', 'Game Platform'));
+        $issuer  = rawurlencode(getenv('APP_NAME') ?: 'Game Platform');
         $label   = rawurlencode($user ? ($user->email ?: $user->username) : 'user');
         $qrUrl   = "otpauth://totp/{$issuer}:{$label}?secret={$secret}&issuer={$issuer}&algorithm=SHA1&digits=6&period=30";
 

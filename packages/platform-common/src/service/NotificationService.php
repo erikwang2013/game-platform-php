@@ -81,7 +81,7 @@ class NotificationService
             }
 
             $to = $user->email;
-            $subject = '[' . getenv('APP_NAME', 'Game Platform') . '] ' . $title;
+            $subject = '[' . (getenv('APP_NAME') ?: 'Game Platform') . '] ' . $title;
             $body = strip_tags($content);
             $headers = [
                 'Content-Type: text/plain; charset=UTF-8',

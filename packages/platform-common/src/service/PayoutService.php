@@ -204,7 +204,7 @@ final class PayoutService
 
     private static function baseUrl(): string
     {
-        $mode = getenv('PAYPAL_MODE', 'sandbox');
+        $mode = getenv('PAYPAL_MODE') ?: 'sandbox';
         return $mode === 'live'
             ? 'https://api-m.paypal.com'
             : 'https://api-m.sandbox.paypal.com';

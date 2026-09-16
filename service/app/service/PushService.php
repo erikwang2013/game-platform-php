@@ -140,7 +140,7 @@ class PushService
             return;
         }
 
-        $mode = getenv('APNS_MODE', 'sandbox');
+        $mode = getenv('APNS_MODE') ?: 'sandbox';
         $host = $mode === 'production' ? 'api.push.apple.com' : 'api.sandbox.push.apple.com';
 
         $header = self::base64urlEncode(json_encode(['alg' => 'ES256', 'kid' => $keyId]));
