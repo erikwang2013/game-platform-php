@@ -20,6 +20,9 @@ class Database implements Bootstrap
             $capsule->addConnection($connection, $name);
         }
 
+        // Capsule 构造时把 database.default 硬编码为字面量 'default'，不设会一直报 "connection [default] not configured"
+        $capsule->getDatabaseManager()->setDefaultConnection($config['default']);
+
         $capsule->setAsGlobal();
         $capsule->bootEloquent();
     }
