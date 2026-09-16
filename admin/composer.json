@@ -61,7 +61,8 @@
       "": "./",
       "app\\": "./app",
       "App\\": "./app",
-      "app\\View\\Components\\": "./app/view/components"
+      "app\\View\\Components\\": "./app/view/components",
+      "support\\": "support/"
     }
   },
   "scripts": {
