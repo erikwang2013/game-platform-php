@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace app\admin\v1\controller;
 
 use erikwang2013\apidoc\annotation as Apidoc;
+use Erikwang2013\Encryptable\Encryption;
 use common\model\DepositOrder;
 use common\model\PaymentMethod;
 use support\Request;
@@ -30,13 +31,11 @@ class PaymentController extends BaseController
                              ->map(function ($item) {
                                  $row = $this->encodeIds($item->toArray());
 
-                                 // config 列经 cast 解密后已还原为 array；本端点的对外线格式仍是
-                                 // JSON 文本（Flutter 端按文本回填，吐对象会被 Dart 的 Map.toString()
-                                 // 拼成非法 JSON 而静默存坏配置）——此处保住原线格式，契约零变化
-                                 $config = $row['config'] ?? null;
-                                 $row['config'] = is_array($config)
-                                     ? ($config === [] ? '{}' : json_encode($config, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
-                                     : $config;
+                                 // config 的对外线格式是「解密后的原文」：取库内原值（种子行=明文
+                                 // JSON 文本、后台行=密文）解密，与 cast 的父类 get() 同语义。
+                                 // 不能对 cast 解出的 array 再 json_encode —— 那个往返会把大整数写成
+                                 // 科学计数法（精度丢失）、把 1.0 写成 1（Dart 侧 double→int 会抛）
+                                 $row['config'] = Encryption::php()->decrypt($item->getRawOriginal('config'));
 
                                  return $row;
                              });
