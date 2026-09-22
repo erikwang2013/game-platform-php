@@ -81,7 +81,7 @@
   <rect x="340" y="356" width="310" height="60" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
   <text x="495" y="378" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">L14: Criptografia da camada de armazenamento</text>
   <text x="495" y="396" text-anchor="middle" fill="#22c55e" font-size="10">erikwang2013/encryptable</text>
-  <text x="495" y="410" text-anchor="middle" fill="#22c55e" font-size="10">Criptografia/descriptografia automática de campos sensíveis + rotação de chaves</text>
+  <text x="495" y="410" text-anchor="middle" fill="#22c55e" font-size="10">Criptografia automática de campos sensíveis + rotação de chaves</text>
 
   <rect x="665" y="356" width="320" height="60" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
   <text x="825" y="378" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">L15: IDs não dedutíveis</text>
@@ -95,8 +95,8 @@
   <text x="170" y="482" text-anchor="middle" fill="#3b82f6" font-size="10">Evita débito concorrente/crédito duplicado</text>
 
   <rect x="340" y="428" width="310" height="60" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
-  <text x="495" y="450" text-anchor="middle" fill="#1e40af" font-size="12" font-weight="bold">L17: Verificação de assinatura do callback de pagamento</text>
-  <text x="495" y="468" text-anchor="middle" fill="#3b82f6" font-size="10">Assinatura do Webhook Stripe (Alipay/WeChat Pay via Stripe APM)</text>
+  <text x="495" y="450" text-anchor="middle" fill="#1e40af" font-size="12" font-weight="bold">L17: Verificação de assinatura do callback pgto.</text>
+  <text x="495" y="468" text-anchor="middle" fill="#3b82f6" font-size="10">Assinatura Webhook Stripe (Alipay/WeChat Pay via Stripe APM)</text>
   <text x="495" y="482" text-anchor="middle" fill="#3b82f6" font-size="10">Verificação de callbacks PayPal / NOWPayments / Coinbase</text>
 
   <rect x="665" y="428" width="320" height="60" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
@@ -109,16 +109,16 @@
   <text x="500" y="526" text-anchor="middle" fill="#475569" font-size="13" font-weight="bold">Medidas de segurança complementares</text>
 
   <rect x="30" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="120" y="553" text-anchor="middle" fill="#475569" font-size="11">Hash bcrypt de senha</text>
-  <rect x="220" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="553" text-anchor="middle" fill="#475569" font-size="11">Confirmação de senha (operações sensíveis)</text>
+  <rect x="220" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="553" text-anchor="middle" fill="#475569" font-size="11">Confirmação de senha</text>
   <rect x="410" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="500" y="553" text-anchor="middle" fill="#475569" font-size="11">security.txt RFC 9116</text>
-  <rect x="600" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="690" y="553" text-anchor="middle" fill="#475569" font-size="11">Configuração de reforço do Nginx</text>
-  <rect x="790" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="880" y="553" text-anchor="middle" fill="#475569" font-size="11">Métricas de monitoramento Prometheus</text>
+  <rect x="600" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="690" y="553" text-anchor="middle" fill="#475569" font-size="11">Config. de reforço do Nginx</text>
+  <rect x="790" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="880" y="553" text-anchor="middle" fill="#475569" font-size="11">Métricas Prometheus</text>
 
-  <rect x="30" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="120" y="583" text-anchor="middle" fill="#475569" font-size="11">Isolamento por contêineres Docker</text>
-  <rect x="220" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="583" text-anchor="middle" fill="#475569" font-size="11">Segurança de transporte HTTPS/TLS</text>
+  <rect x="30" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="120" y="583" text-anchor="middle" fill="#475569" font-size="11">Isolamento por contêiner Docker</text>
+  <rect x="220" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="583" text-anchor="middle" fill="#475569" font-size="11">Seg. de transporte HTTPS/TLS</text>
   <rect x="410" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="500" y="583" text-anchor="middle" fill="#475569" font-size="11">Senha do banco no .gitignore</text>
   <rect x="600" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="690" y="583" text-anchor="middle" fill="#475569" font-size="11">Backup gzip + retenção 30 dias</text>
-  <rect x="790" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="880" y="583" text-anchor="middle" fill="#475569" font-size="11">Verificação automática de segurança no CI/CD</text>
+  <rect x="790" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="880" y="583" text-anchor="middle" fill="#475569" font-size="11">Verif. de segurança no CI/CD</text>
 
   <!-- Architecture flow -->
   <rect x="15" y="612" width="970" height="82" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5"/>

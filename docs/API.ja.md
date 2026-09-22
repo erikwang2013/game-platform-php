@@ -520,7 +520,7 @@ is_new: true=新規登録ユーザー / false=既存アカウント連携
 
 status: success / failed
 
-provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash（toss / mpesa / paystack は準備中）
+provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash / mpesa / paystack / toss / adyen / grabpay
 
 | provider | 地域 | 署名方式 | 対応通貨 |
 |----------|------|----------|----------|
@@ -537,9 +537,11 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 | paypay | 日本 | PayPay-Signature HMAC-SHA256 | JPY |
 | kakaopay | 韓国 | Webhook なし（ready/approve 2 段階） | KRW |
 | gcash | フィリピン | Paymongo-Signature HMAC-SHA256 | PHP |
-| toss | 韓国（準備中） | — | KRW |
-| mpesa | ケニア / タンザニアなど（準備中） | — | KES / TZS |
-| paystack | ナイジェリア（準備中） | — | NGN |
+| toss | 韓国 | Server-side verify + amount check | KRW |
+| mpesa | ケニア | Trusted IP (CALLBACK_TRUSTED_IPS), no signature | KES |
+| paystack | ナイジェリア | x-paystack-signature HMAC-SHA512 | NGN |
+| adyen | 全世界（通貨は注文ごと） | additionalData.hmacSignature HMAC-SHA256 (ADYEN_HMAC_KEY) | 注文ごと |
+| grabpay | シンガポール（国は設定可能、既定は SG） | x-signature HMAC-SHA256 (sorted key:value) | 注文ごと |
 
 #### GET /api/v1/payment/methods — 利用可能な決済方法（公開）
 
@@ -1121,6 +1123,58 @@ action: approve=通過 / reject=拒否 / confirm=確認（拒否時は自動的�
   "global_switch": true
 }
 ```
+
+#### POST /admin/v1/withdraw/batch-review — 出金の一括審査
+
+```
+需认证: 是
+
+请求: {
+  "ids": ["aB3xK...", "cD4yL..."],
+  "action": "approve",
+  "note": "批量审核通过"
+}
+
+响应: {
+  "processed": 2,
+  "failed": []
+}
+```
+
+action: approve=承認 / reject=却下（注文ごとに処理し、却下分は自動返金。失敗した注文は failed に入り、残りには影響しない）
+
+#### POST /admin/v1/withdraw/execute-payout — 出金実行
+
+```
+需认证: 是
+
+请求: { "order_id": "aB3xK..." }
+
+响应: {
+  "payout_batch_id": "PAYOUT-123456",
+  "payout_item_id": "ITEM-123456",
+  "payout_status": "success",
+  "payout_attempts": 1
+}
+```
+
+approved 状態の注文のみ出金可能（processing へ原子的に切り替え）。重複呼び出しは 422 を返す。二重審査が有効な場合は先に二人目の確認が必要
+
+#### POST /admin/v1/withdraw/sync-payout — 出金ステータスの同期
+
+```
+需认证: 是
+
+请求: { "order_id": "aB3xK..." }
+
+响应: {
+  "payout_status": "success",
+  "order_status": "completed",
+  "synced_status": "success"
+}
+```
+
+エラー: 422 この注文はまだ出金が実行されていない
 
 ### 3.4 プラットフォームユーザー管理
 
@@ -2205,6 +2259,13 @@ status: open / waiting / replied / closed
 | GET /admin/v1/risk/graph/clusters | クラスター一覧 |
 | GET /admin/v1/risk/graph/{userId} | ユーザー関連グラフ |
 | GET /admin/v1/risk/clusters | リスククラスター一覧 |
+| POST /admin/v1/risk/clusters/detect | クラスター検出（直近 7 日で同一 IP に 5 アカウント以上 / 同一デバイス指紋に 3 アカウント以上。候補のみで保存しない） |
+| POST /admin/v1/risk/clusters/confirm | クラスターを手動確認して保存 |
+| GET /admin/v1/risk/clusters/{hashid}/members | クラスターのメンバー一覧（指紋からメンバーを解決） |
+| PUT /admin/v1/risk/clusters/{hashid}/status | クラスターのステータス更新（1=監視中 2=対応済み 0=誤検知） |
+| GET /admin/v1/risk/users | 異常ユーザーキュー（信頼スコアと最終検知で絞り込み） |
+| GET /admin/v1/risk/users/{hashid}/timeline | ユーザーのリスクタイムライン（リスク / プレイ / アンチチートのイベントを統合） |
+| POST /admin/v1/risk/users/{hashid}/hold | ユーザーのプラットフォーム残高を凍結し、記録を残す |
 
 ### 10.2 アンチチート管理 (管理側 :8789)
 
@@ -2249,3 +2310,20 @@ status: open / waiting / replied / closed
 |------|------|
 | Adyen | 新規決済ゲートウェイ（入金/コールバック検証/自動入金） |
 | GrabPay | 新規決済ゲートウェイ（入金/コールバック検証/自動入金） |
+
+### 10.6 VIP／実績／検索／領収書 (管理側 :8789)
+
+VIP レベル、実績設定、グローバル検索、領収書の書き出し（管理側）。
+
+| エンドポイント | 説明 |
+|------|------|
+| GET /admin/v1/vip/level/list | VIP レベル一覧 |
+| POST /admin/v1/vip/level/create | VIP レベル作成（level は一意） |
+| PUT /admin/v1/vip/level/{hashid} | VIP レベル更新 |
+| DELETE /admin/v1/vip/level/{hashid} | VIP レベル削除（該当レベルのユーザーがいる場合は拒否） |
+| GET /admin/v1/achievement/list | 実績一覧 |
+| POST /admin/v1/achievement/create | 実績作成（key の重複は拒否） |
+| PUT /admin/v1/achievement/{hashid} | 実績更新 |
+| DELETE /admin/v1/achievement/{hashid} | 実績削除 |
+| GET /admin/v1/search | グローバル検索（?q= キーワード、type=game または user） |
+| POST /admin/v1/export/receipt | 領収書 PDF を出力（type=deposit または withdraw と order_id） |

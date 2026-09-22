@@ -210,9 +210,9 @@ signature = HMAC-SHA256(
   put.admin/withdraw/switch → 출금 스위치 조작 (슈퍼 관리자 전용)
 ```
 
-## 呼. 스탠다드 에디션 신규 설계
+## 7. 스탠다드 에디션 신규 설계
 
-### 8.1 리스크 엔진
+### 7.1 리스크 엔진
 
 4가지 규칙 유형:
 - `ip_blacklist` — IP 블랙리스트 매칭, 적중 시 즉시 차단
@@ -222,7 +222,7 @@ signature = HMAC-SHA256(
 
 규칙은 priority 내림차순으로 실행되며, 첫 매칭 규칙이 결과를 결정합니다 (block > warn > log).
 
-### 8.2 OAuth 서드파티 로그인
+### 7.2 OAuth 서드파티 로그인
 
 지원 제공사: Google, Facebook, Apple
 
@@ -232,7 +232,7 @@ signature = HMAC-SHA256(
 3. 콜백 `POST /api/auth/oauth/{provider}/callback`이 인증 코드 전달
 4. 백엔드가 기존 연동 조회 → 바로 로그인; 연동 없음 → 자동 등록+연동+지갑 생성
 
-### 8.3 KYC 한도 체계
+### 7.3 KYC 한도 체계
 
 | 등급 | 획득 방식 | 단건 상한 | 일 한도 | 수수료 |
 |------|---------|---------|--------|--------|
@@ -240,11 +240,11 @@ signature = HMAC-SHA256(
 | verified | KYC 심사 통과 | 5,000 | 50,000 | 0.50% |
 | vip | 운영 부여 | 20,000 | 200,000 | 0.00% |
 
-### 8.4 게임 서버/구역
+### 7.4 게임 서버/구역
 
 각 게임은 여러 구역을 설정할 수 있으며(region: global/asia/eu/na), 구역 상태: 점검/정상/인기/신규 서버.
 
-### 8.5 일별 통계 스냅샷
+### 7.5 일별 통계 스냅샷
 
 매일 새벽 crontab으로 `ComputeDailyStats::run()` 실행, 5개 지표 계산:
 - 사용자 통계 (신규/활성/누적)
@@ -253,9 +253,9 @@ signature = HMAC-SHA256(
 - 환전 통계 (건수/수수료 총액)
 - 게임 통계 (플레이어 수/세션 수)
 
-## 9. 프로덕션급 기능
+## 8. 프로덕션급 기능
 
-### 9.1 알림 시스템
+### 8.1 알림 시스템
 
 알림 유형: system/deposit/withdraw/kyc/coupon/announcement
 
@@ -268,7 +268,7 @@ signature = HMAC-SHA256(
 
 사이트 내 메시지 + 이메일 이중 채널 지원 (이메일은 MAIL_HOST 환경 변수 설정 필요).
 
-### 9.2 추천 리베이트
+### 8.2 추천 리베이트
 
 ```
 사용자A 추천 코드 생성 → 사용자B에게 공유
@@ -276,14 +276,14 @@ signature = HMAC-SHA256(
 사용자B 충전 → A가 충전 커미션(deposit_commission_pct%) 획득
 ```
 
-### 9.3 2FA 이중 인증
+### 8.3 2FA 이중 인증
 
 - TOTP 표준 프로토콜 (RFC 6238), Google Authenticator 호환
 - 활성화 플로우: 키 획득 → QR 스캔 연동 → TOTP 검증 → 8개 백업 복구 코드 생성
 - 로그인 2차 검증: POST /api/2fa/verify
 - ±1 시간 창 허용 오차 지원 (30초)
 
-### 9.4 실제 OAuth 연동
+### 8.4 실제 OAuth 연동
 
 | 제공사 | Token 엔드포인트 | 사용자 정보 엔드포인트 |
 |--------|----------|------------|
@@ -293,22 +293,22 @@ signature = HMAC-SHA256(
 
 설정은 PlatformConfig 또는 환경 변수로 구성하며, 요청 실패 시 mock 모드로 자동 폴백.
 
-### 9.5 결제 Webhook 서명 검증
+### 8.5 결제 Webhook 서명 검증
 
 - Stripe: HMAC-SHA256 서명 검증 (Stripe-Signature 헤더)
 - PayPal: POST로 PayPal 검증 엔드포인트 재조회
 - 키 미설정 시 검증 자동 건너뜀 (개발 모드)
 
-### 9.6 WebSocket 실시간 리더보드
+### 8.6 WebSocket 실시간 리더보드
 
 - 프로토콜: WebSocket (ws://host:8790)
 - 구독: {action: "subscribe", leaderboard_id: 123}
 - 푸시: {type: "ranking_update", rankings: [...]}
 - ping/pong 하트비트 유지 지원
 
-## 7. 국제화 설계
+## 9. 국제화 설계
 
-### 7.1 지원 언어
+### 9.1 지원 언어
 
 | 코드 | 이름 | 현지어 | 아이콘 |
 |------|------|--------|------|
@@ -317,7 +317,7 @@ signature = HMAC-SHA256(
 | ja-JP | Japanese | 日本語 | jp |
 | ko-KR | Korean | 한국어 | kr |
 
-### 7.2 번역 관리
+### 9.2 번역 관리
 
 - 번역은 `group.key` 형식으로 구성 (예: `auth.login_success`)
 - 데이터베이스 테이블 `game_translation`에 저장, Redis 캐시 (TTL 1시간)
@@ -325,13 +325,13 @@ signature = HMAC-SHA256(
 - 프론트엔드는 `X-Language` 요청 헤더 또는 `Accept-Language`로 자동 감지
 - 번역 누락 시 en-US로 폴백, en-US에도 없으면 원본 key 반환
 
-### 7.3 사용자 언어 선호도
+### 9.3 사용자 언어 선호도
 
 - 사용자 등록 시 브라우저 `Accept-Language`에 따라 자동 설정
 - 로그인 후 `PUT /api/user/profile`로 `language` 필드 수정 가능
 - 언어 전환 시 사용자 기록 동시 업데이트
 
-## 8. 플랫폼 수익 모델
+## 10. 플랫폼 수익 모델
 
 | 수익원 | 계산 방식 | 설명 |
 |---------|---------|------|

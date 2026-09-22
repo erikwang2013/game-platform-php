@@ -210,7 +210,7 @@ OAUTH_GOOGLE_CLIENT_ID=<从Google Cloud Console获取>
 OAUTH_GOOGLE_CLIENT_SECRET=<密钥>
 OAUTH_GOOGLE_REDIRECT_URI=https://your-domain.com/api/auth/oauth/google/callback
 
-# 결제 Webhook (toss / mpesa / paystack 연동 예정)
+# 결제 Webhook
 STRIPE_SECRET_KEY=<Stripe 비밀 키>
 STRIPE_WEBHOOK_SECRET=<Stripe Dashboard에서 획득>
 PAYPAL_WEBHOOK_ID=<PayPal Developer에서 획득>
@@ -257,7 +257,7 @@ KAKAOPAY_API_URL=https://kapi.kakao.com
 PAYMONGO_API_KEY=<PayMongo API 키>
 PAYMONGO_WEBHOOK_SECRET=<Webhook 서명 검증 키 Paymongo-Signature>
 PAYMONGO_API_URL=https://api.paymongo.com/v1
-# 연동 예정
+# M-Pesa / Paystack / Toss
 MPESA_CONSUMER_KEY=<M-Pesa Consumer Key>
 MPESA_CONSUMER_SECRET=<M-Pesa Consumer Secret>
 MPESA_PASSKEY=<M-Pesa STK Push Passkey>

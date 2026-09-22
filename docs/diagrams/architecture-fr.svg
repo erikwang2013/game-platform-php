@@ -16,7 +16,7 @@
   <rect x="360" y="110" width="130" height="26" rx="6" fill="#bbf7d0"/><text x="425" y="128" text-anchor="middle" fill="#14532d" font-size="12">HarmonyOS App</text>
   <rect x="510" y="110" width="130" height="26" rx="6" fill="#bbf7d0"/><text x="575" y="128" text-anchor="middle" fill="#14532d" font-size="12">API tierces</text>
   <rect x="660" y="110" width="130" height="26" rx="6" fill="#bbf7d0"/><text x="725" y="128" text-anchor="middle" fill="#14532d" font-size="12">Serveurs de jeux</text>
-  <rect x="810" y="110" width="100" height="26" rx="6" fill="#bbf7d0"/><text x="860" y="128" text-anchor="middle" fill="#14532d" font-size="12">Passerelle de paiement</text>
+  <rect x="810" y="110" width="100" height="26" rx="6" fill="#bbf7d0"/><text x="860" y="128" text-anchor="middle" fill="#14532d" font-size="12">Paiement</text>
   <text x="860" y="148" text-anchor="middle" fill="#14532d" font-size="9">NOWPayments · Coinbase · Alipay/WeChat Pay</text>
 
   <line x1="480" y1="148" x2="480" y2="176" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
@@ -64,11 +64,11 @@
   <!-- Data -->
   <rect x="30" y="526" width="900" height="78" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="480" y="552" text-anchor="middle" fill="#475569" font-size="13" font-weight="bold">Couche données</text>
-  <rect x="60" y="564" width="150" height="30" rx="6" fill="#dbeafe"/><text x="135" y="584" text-anchor="middle" fill="#1e3a5f" font-size="12">MySQL 8.0 (stockage principal)</text>
-  <rect x="230" y="564" width="140" height="30" rx="6" fill="#fce7f3"/><text x="300" y="584" text-anchor="middle" fill="#831843" font-size="12">Redis 7 (cache/limitation)</text>
-  <rect x="390" y="564" width="160" height="30" rx="6" fill="#e0e7ff"/><text x="470" y="584" text-anchor="middle" fill="#312e81" font-size="12">ClickHouse (analyse OLAP)</text>
-  <rect x="570" y="564" width="170" height="30" rx="6" fill="#ecfdf5"/><text x="655" y="584" text-anchor="middle" fill="#064e3b" font-size="12">Elasticsearch (recherche plein texte)</text>
-  <rect x="760" y="564" width="140" height="30" rx="6" fill="#fef2f2"/><text x="830" y="584" text-anchor="middle" fill="#7f1d1d" font-size="12">OpenSearch (alternative)</text>
+  <rect x="60" y="564" width="150" height="30" rx="6" fill="#dbeafe"/><text x="135" y="584" text-anchor="middle" fill="#1e3a5f" font-size="12">MySQL 8.0 (stockage)</text>
+  <rect x="230" y="564" width="140" height="30" rx="6" fill="#fce7f3"/><text x="300" y="584" text-anchor="middle" fill="#831843" font-size="12">Redis 7 (cache/limite)</text>
+  <rect x="390" y="564" width="160" height="30" rx="6" fill="#e0e7ff"/><text x="470" y="584" text-anchor="middle" fill="#312e81" font-size="12">ClickHouse (OLAP)</text>
+  <rect x="570" y="564" width="170" height="30" rx="6" fill="#ecfdf5"/><text x="655" y="584" text-anchor="middle" fill="#064e3b" font-size="12">Elasticsearch (plein texte)</text>
+  <rect x="760" y="564" width="140" height="30" rx="6" fill="#fef2f2"/><text x="830" y="584" text-anchor="middle" fill="#7f1d1d" font-size="12">OpenSearch (alt.)</text>
 
   <!-- Common -->
   <rect x="88" y="618" width="783" height="56" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="1" stroke-dasharray="6,3"/>

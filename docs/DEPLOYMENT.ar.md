@@ -210,7 +210,7 @@ OAUTH_GOOGLE_CLIENT_ID=<从Google Cloud Console获取>
 OAUTH_GOOGLE_CLIENT_SECRET=<密钥>
 OAUTH_GOOGLE_REDIRECT_URI=https://your-domain.com/api/auth/oauth/google/callback
 
-# Webhook الدفع (toss / mpesa / paystack قيد الإضافة)
+# Webhook الدفع
 STRIPE_SECRET_KEY=<مفتاح Stripe>
 STRIPE_WEBHOOK_SECRET=<من Stripe Dashboard>
 PAYPAL_WEBHOOK_ID=<من PayPal Developer>
@@ -257,7 +257,7 @@ KAKAOPAY_API_URL=https://kapi.kakao.com
 PAYMONGO_API_KEY=<مفتاح PayMongo API>
 PAYMONGO_WEBHOOK_SECRET=<مفتاح التحقق من Webhook Paymongo-Signature>
 PAYMONGO_API_URL=https://api.paymongo.com/v1
-# قيد الإضافة
+# M-Pesa / Paystack / Toss
 MPESA_CONSUMER_KEY=<مفتاح مستهلك M-Pesa>
 MPESA_CONSUMER_SECRET=<سر مستهلك M-Pesa>
 MPESA_PASSKEY=<مفتاح مرور STK Push M-Pesa>

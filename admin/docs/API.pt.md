@@ -1792,7 +1792,7 @@ GET /admin/v1/analytics/economy
 
 ## 18. Gerenciamento de pagamentos (Payment)
 
-O gerenciamento de métodos de pagamento é fornecido por `PaymentController`; os 5 endpoints exigem autenticação JWT + RBAC. Lista branca de `provider`: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`. `config` é uma string JSON de configuração de pagamento (armazenada criptografada no banco).
+O gerenciamento de métodos de pagamento é fornecido por `PaymentController`; os 5 endpoints exigem autenticação JWT + RBAC. Lista branca de `provider`: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` / `mpesa` / `paystack` / `toss` / `adyen` / `grabpay`. `config` é uma string JSON de configuração de pagamento (armazenada criptografada no banco).
 
 | Método | Caminho | Descrição |
 |------|------|------|
@@ -1842,7 +1842,7 @@ GET /admin/v1/payment/method/list
 | id | string | ID do método de pagamento (codificado em hashid) |
 | name | string | Nome do método de pagamento |
 | type | string | `fiat` (moeda fiduciária) / `crypto` (criptomoeda) |
-| provider | string | Provedor de gateway: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` |
+| provider | string | Provedor de gateway: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` / `mpesa` / `paystack` / `toss` / `adyen` / `grabpay` |
 | status | int | 1=ativo, 0=inativo |
 | sort | int | Valor de ordenação (crescente) |
 | countries | array{string} | Códigos de país visíveis (array vazio = visível globalmente) |
@@ -1899,7 +1899,7 @@ POST /admin/v1/payment/method/create
 |------|------|------|---------|------|
 | name | string | Sim | max:50 | Nome do método de pagamento |
 | type | string | Sim | in:fiat,crypto | Tipo: fiduciário/cripto |
-| provider | string | Sim | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash | Lista branca de provedores de gateway |
+| provider | string | Sim | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash,mpesa,paystack,toss,adyen,grabpay | Lista branca de provedores de gateway |
 | status | int | Sim | in:0,1 | Status |
 | sort | int | Não | integer,min:0 | Ordenação, padrão 0 |
 | countries | array{string} | Não | max:2 | Códigos de país visíveis, vazio = global |
@@ -1943,3 +1943,69 @@ DELETE /admin/v1/payment/method/{hashid}
 **Erros possíveis**:
 - 404: método de pagamento não encontrado
 - 422: existem pedidos de depósito pendentes (status=pending), não é possível excluir
+
+## 19. Endpoints de administração estendidos (Extended Admin APIs)
+
+Os 20 endpoints abaixo estão agrupados em 6 seções; todos são endpoints de administração `/admin/v1` e exigem autenticação JWT e validação de permissões RBAC.
+
+### 19.1 Revisão em lote e execução de saques
+
+Endpoints complementares para a revisão manual de saques e o pagamento via PayPal.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/withdraw/batch-review | Aprovar ou rejeitar solicitações de saque em lote | JWT + RBAC |
+| POST | /admin/v1/withdraw/execute-payout | Executar o pagamento PayPal de um pedido de saque aprovado | JWT + RBAC |
+| POST | /admin/v1/withdraw/sync-payout | Sincronizar o status do lote de pagamentos a partir do PayPal | JWT + RBAC |
+
+### 19.2 Clusters de risco e usuários anômalos
+
+Detecção de clusters de risco, confirmação manual e tratamento de usuários anômalos.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/risk/clusters/detect | Detectar clusters candidatos (mesmo IP / mesma impressão de dispositivo nos últimos 7 dias; apenas candidatos, sem persistência) | JWT + RBAC |
+| POST | /admin/v1/risk/clusters/confirm | Confirmar manualmente um cluster e gravá-lo em game_risk_cluster | JWT + RBAC |
+| GET | /admin/v1/risk/clusters/{hashid}/members | Listar os membros do cluster | JWT + RBAC |
+| PUT | /admin/v1/risk/clusters/{hashid}/status | Atualizar o status do cluster (0=falso positivo, 1=em observação, 2=tratado) | JWT + RBAC |
+| GET | /admin/v1/risk/users | Fila de usuários anômalos (score_min=limite superior de confiança, from/to=janela da última ocorrência) | JWT + RBAC |
+| GET | /admin/v1/risk/users/{hashid}/timeline | Linha do tempo de risco do usuário (eventos de risco/jogo/antifraude combinados, do mais recente ao mais antigo) | JWT + RBAC |
+| POST | /admin/v1/risk/users/{hashid}/hold | Congelar o saldo disponível do usuário na plataforma e registrar em risk_log | JWT + RBAC |
+
+### 19.3 Níveis VIP
+
+Endpoints CRUD de níveis VIP.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/vip/level/list | Lista de níveis VIP | JWT + RBAC |
+| POST | /admin/v1/vip/level/create | Criar um nível VIP | JWT + RBAC |
+| PUT | /admin/v1/vip/level/{hashid} | Atualizar um nível VIP | JWT + RBAC |
+| DELETE | /admin/v1/vip/level/{hashid} | Excluir um nível VIP | JWT + RBAC |
+
+### 19.4 Conquistas
+
+Endpoints CRUD de definições de conquistas.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/achievement/list | Lista de conquistas | JWT + RBAC |
+| POST | /admin/v1/achievement/create | Criar uma conquista | JWT + RBAC |
+| PUT | /admin/v1/achievement/{hashid} | Atualizar uma conquista | JWT + RBAC |
+| DELETE | /admin/v1/achievement/{hashid} | Excluir uma conquista | JWT + RBAC |
+
+### 19.5 Busca global
+
+Endpoint de busca entre entidades.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/search | Busca global de jogos ou usuários (texto completo no ES com fallback LIKE no banco de dados) | JWT + RBAC |
+
+### 19.6 Exportação de recibos
+
+Endpoint de exportação de comprovantes.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/export/receipt | Exportar em PDF o recibo de um depósito ou saque | JWT + RBAC |

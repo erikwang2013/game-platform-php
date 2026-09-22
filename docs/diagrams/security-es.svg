@@ -21,7 +21,7 @@
 
   <rect x="665" y="68" width="320" height="60" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
   <text x="825" y="90" text-anchor="middle" fill="#991b1b" font-size="12" font-weight="bold">L3: Lista blanca de métodos HTTP</text>
-  <text x="825" y="108" text-anchor="middle" fill="#ef4444" font-size="10">Solo se permiten GET/POST/PUT/DELETE/HEAD/OPTIONS/PATCH</text>
+  <text x="825" y="108" text-anchor="middle" fill="#ef4444" font-size="10">Permitidos: GET/POST/PUT/DELETE/HEAD/OPTIONS/PATCH</text>
   <text x="825" y="122" text-anchor="middle" fill="#ef4444" font-size="10">Métodos no estándar devuelven 405 Method Not Allowed</text>
 
   <!-- L4-L6 -->
@@ -69,7 +69,7 @@
 
   <rect x="665" y="284" width="320" height="60" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
   <text x="825" y="306" text-anchor="middle" fill="#854d0e" font-size="12" font-weight="bold">L12: Auditoría de operaciones</text>
-  <text x="825" y="324" text-anchor="middle" fill="#ca8a04" font-size="10">Registro completo de operaciones + detección de origen en 8 plataformas</text>
+  <text x="825" y="324" text-anchor="middle" fill="#ca8a04" font-size="10">Registro de operaciones + detección de origen en 8 plataformas</text>
   <text x="825" y="338" text-anchor="middle" fill="#ca8a04" font-size="10">ipados/macos/windows/linux/ios/android/harmonyos/web</text>
 
   <!-- L13-L15 -->
@@ -81,7 +81,7 @@
   <rect x="340" y="356" width="310" height="60" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
   <text x="495" y="378" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">L14: Cifrado en la capa de almacenamiento</text>
   <text x="495" y="396" text-anchor="middle" fill="#22c55e" font-size="10">erikwang2013/encryptable</text>
-  <text x="495" y="410" text-anchor="middle" fill="#22c55e" font-size="10">Campos sensibles con cifrado/descifrado automático + rotación de claves</text>
+  <text x="495" y="410" text-anchor="middle" fill="#22c55e" font-size="10">Campos sensibles cifrado/descifrado autom. + rotación de claves</text>
 
   <rect x="665" y="356" width="320" height="60" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
   <text x="825" y="378" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">L15: IDs no reversibles</text>
@@ -109,13 +109,13 @@
   <text x="500" y="526" text-anchor="middle" fill="#475569" font-size="13" font-weight="bold">Medidas de seguridad complementarias</text>
 
   <rect x="30" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="120" y="553" text-anchor="middle" fill="#475569" font-size="11">Hash de contraseñas bcrypt</text>
-  <rect x="220" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="553" text-anchor="middle" fill="#475569" font-size="11">Confirmación de contraseña (operaciones sensibles)</text>
+  <rect x="220" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="553" text-anchor="middle" fill="#475569" font-size="11">Reautenticación (ops. sensibles)</text>
   <rect x="410" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="500" y="553" text-anchor="middle" fill="#475569" font-size="11">security.txt RFC 9116</text>
-  <rect x="600" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="690" y="553" text-anchor="middle" fill="#475569" font-size="11">Configuración de refuerzo de Nginx</text>
-  <rect x="790" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="880" y="553" text-anchor="middle" fill="#475569" font-size="11">Métricas de monitorización Prometheus</text>
+  <rect x="600" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="690" y="553" text-anchor="middle" fill="#475569" font-size="11">Config. de refuerzo Nginx</text>
+  <rect x="790" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="880" y="553" text-anchor="middle" fill="#475569" font-size="11">Métricas Prometheus</text>
 
-  <rect x="30" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="120" y="583" text-anchor="middle" fill="#475569" font-size="11">Aislamiento por contenedores Docker</text>
-  <rect x="220" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="583" text-anchor="middle" fill="#475569" font-size="11">Seguridad de transmisión HTTPS/TLS</text>
+  <rect x="30" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="120" y="583" text-anchor="middle" fill="#475569" font-size="11">Contenedores Docker aislados</text>
+  <rect x="220" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="583" text-anchor="middle" fill="#475569" font-size="11">Transmisión segura HTTPS/TLS</text>
   <rect x="410" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="500" y="583" text-anchor="middle" fill="#475569" font-size="11">Contraseñas de DB en .gitignore</text>
   <rect x="600" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="690" y="583" text-anchor="middle" fill="#475569" font-size="11">Backup gzip + retención 30 días</text>
   <rect x="790" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="880" y="583" text-anchor="middle" fill="#475569" font-size="11">Seguridad automatizada CI/CD</text>

@@ -1792,7 +1792,7 @@ GET /admin/v1/analytics/economy
 
 ## 18. Manajemen Pembayaran (Payment)
 
-Manajemen metode pembayaran disediakan oleh `PaymentController`; 5 endpoint semuanya memerlukan autentikasi JWT + RBAC. Daftar putih `provider`: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`. `config` adalah string JSON konfigurasi pembayaran (disimpan terenkripsi di database).
+Manajemen metode pembayaran disediakan oleh `PaymentController`; 5 endpoint semuanya memerlukan autentikasi JWT + RBAC. Daftar putih `provider`: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` / `mpesa` / `paystack` / `toss` / `adyen` / `grabpay`. `config` adalah string JSON konfigurasi pembayaran (disimpan terenkripsi di database).
 
 | Metode | Jalur | Deskripsi |
 |------|------|------|
@@ -1842,7 +1842,7 @@ GET /admin/v1/payment/method/list
 | id | string | ID metode pembayaran (dikodekan hashid) |
 | name | string | Nama metode pembayaran |
 | type | string | `fiat` (mata uang fiat) / `crypto` (kripto) |
-| provider | string | Penyedia gateway: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` |
+| provider | string | Penyedia gateway: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` / `mpesa` / `paystack` / `toss` / `adyen` / `grabpay` |
 | status | int | 1=aktif, 0=nonaktif |
 | sort | int | Nilai urutan (ascending) |
 | countries | array{string} | Array kode negara yang terlihat (array kosong = terlihat global) |
@@ -1899,7 +1899,7 @@ POST /admin/v1/payment/method/create
 |------|------|------|---------|------|
 | name | string | Ya | max:50 | Nama metode pembayaran |
 | type | string | Ya | in:fiat,crypto | Tipe: fiat/kripto |
-| provider | string | Ya | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash | Daftar putih penyedia gateway |
+| provider | string | Ya | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash,mpesa,paystack,toss,adyen,grabpay | Daftar putih penyedia gateway |
 | status | int | Ya | in:0,1 | Status |
 | sort | int | Tidak | integer,min:0 | Urutan, default 0 |
 | countries | array{string} | Tidak | max:2 | Kode negara terlihat, kosong = global |
@@ -1943,3 +1943,69 @@ DELETE /admin/v1/payment/method/{hashid}
 **Kemungkinan error**:
 - 404: metode pembayaran tidak ditemukan
 - 422: ada pesanan deposit pending (status=pending), tidak dapat dihapus
+
+## 19. Endpoint Admin Tambahan (Extended Admin APIs)
+
+20 endpoint berikut dikelompokkan dalam 6 bagian; semuanya endpoint admin `/admin/v1` dan memerlukan autentikasi JWT serta validasi izin RBAC.
+
+### 19.1 Peninjauan Batch dan Pembayaran Penarikan
+
+Endpoint tambahan untuk peninjauan penarikan manual dan pembayaran PayPal.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/withdraw/batch-review | Setujui atau tolak permintaan penarikan secara batch | JWT + RBAC |
+| POST | /admin/v1/withdraw/execute-payout | Jalankan pembayaran PayPal untuk pesanan penarikan yang disetujui | JWT + RBAC |
+| POST | /admin/v1/withdraw/sync-payout | Sinkronkan status batch pembayaran dari PayPal | JWT + RBAC |
+
+### 19.2 Cluster Risiko dan Pengguna Abnormal
+
+Deteksi cluster risiko, konfirmasi manual, dan penanganan pengguna abnormal.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/risk/clusters/detect | Deteksi cluster kandidat (IP sama / fingerprint perangkat sama dalam 7 hari terakhir; hanya kandidat, tidak disimpan) | JWT + RBAC |
+| POST | /admin/v1/risk/clusters/confirm | Konfirmasi cluster secara manual dan tulis ke game_risk_cluster | JWT + RBAC |
+| GET | /admin/v1/risk/clusters/{hashid}/members | Daftar anggota cluster | JWT + RBAC |
+| PUT | /admin/v1/risk/clusters/{hashid}/status | Perbarui status cluster (0=salah deteksi, 1=dalam pengawasan, 2=ditangani) | JWT + RBAC |
+| GET | /admin/v1/risk/users | Antrean pengguna abnormal (score_min=batas atas skor kepercayaan, from/to=jendela hit terakhir) | JWT + RBAC |
+| GET | /admin/v1/risk/users/{hashid}/timeline | Timeline risiko pengguna (event risiko/permainan/anti-cheat digabung, terbaru lebih dulu) | JWT + RBAC |
+| POST | /admin/v1/risk/users/{hashid}/hold | Bekukan saldo tersedia pengguna di platform dan catat ke risk_log | JWT + RBAC |
+
+### 19.3 Tingkat VIP
+
+Endpoint CRUD tingkat VIP.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/vip/level/list | Daftar tingkat VIP | JWT + RBAC |
+| POST | /admin/v1/vip/level/create | Buat tingkat VIP | JWT + RBAC |
+| PUT | /admin/v1/vip/level/{hashid} | Perbarui tingkat VIP | JWT + RBAC |
+| DELETE | /admin/v1/vip/level/{hashid} | Hapus tingkat VIP | JWT + RBAC |
+
+### 19.4 Pencapaian
+
+Endpoint CRUD definisi pencapaian.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/achievement/list | Daftar pencapaian | JWT + RBAC |
+| POST | /admin/v1/achievement/create | Buat pencapaian | JWT + RBAC |
+| PUT | /admin/v1/achievement/{hashid} | Perbarui pencapaian | JWT + RBAC |
+| DELETE | /admin/v1/achievement/{hashid} | Hapus pencapaian | JWT + RBAC |
+
+### 19.5 Pencarian Global
+
+Endpoint pencarian lintas entitas.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/search | Pencarian global game atau pengguna (full-text ES dengan fallback LIKE database) | JWT + RBAC |
+
+### 19.6 Ekspor Kuitansi
+
+Endpoint ekspor bukti transaksi.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/export/receipt | Ekspor kuitansi deposit atau penarikan dalam PDF | JWT + RBAC |

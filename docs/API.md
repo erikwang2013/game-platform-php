@@ -520,7 +520,7 @@ is_new: true=新注册用户 / false=已有账号绑定
 
 status: success / failed
 
-provider 可选值: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash（toss / mpesa / paystack 接入中）
+provider 可选值: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash / mpesa / paystack / toss / adyen / grabpay
 
 | provider | 区域 | 签名方案 | 支持币种 |
 |----------|------|----------|----------|
@@ -537,9 +537,11 @@ provider 可选值: stripe / paypal / nowpayments / coinbase / skrill / neteller
 | paypay | 日本 | PayPay-Signature HMAC-SHA256 | JPY |
 | kakaopay | 韩国 | 无 Webhook（ready/approve 两步） | KRW |
 | gcash | 菲律宾 | Paymongo-Signature HMAC-SHA256 | PHP |
-| toss | 韩国（接入中） | — | KRW |
-| mpesa | 肯尼亚 / 坦桑尼亚等（接入中） | — | KES / TZS |
-| paystack | 尼日利亚（接入中） | — | NGN |
+| toss | 韩国 | Server-side verify + amount check | KRW |
+| mpesa | 肯尼亚 | Trusted IP (CALLBACK_TRUSTED_IPS), no signature | KES |
+| paystack | 尼日利亚 | x-paystack-signature HMAC-SHA512 | NGN |
+| adyen | 全球（币种随订单） | additionalData.hmacSignature HMAC-SHA256 (ADYEN_HMAC_KEY) | 随订单 |
+| grabpay | 新加坡（国家可配，默认 SG） | x-signature HMAC-SHA256 (sorted key:value) | 随订单 |
 
 #### GET /api/v1/payment/methods — 可用支付方式（公开）
 
@@ -1123,6 +1125,58 @@ action: approve=通过 / reject=拒绝 / confirm=确认打款（拒绝时自动�
   "global_switch": true
 }
 ```
+
+#### POST /admin/v1/withdraw/batch-review — 批量审核提现
+
+```
+需认证: 是
+
+请求: {
+  "ids": ["aB3xK...", "cD4yL..."],
+  "action": "approve",
+  "note": "批量审核通过"
+}
+
+响应: {
+  "processed": 2,
+  "failed": []
+}
+```
+
+action: approve=通过 / reject=拒绝（逐单处理，拒单自动退款；失败订单计入 failed，不影响其余）
+
+#### POST /admin/v1/withdraw/execute-payout — 执行打款
+
+```
+需认证: 是
+
+请求: { "order_id": "aB3xK..." }
+
+响应: {
+  "payout_batch_id": "PAYOUT-123456",
+  "payout_item_id": "ITEM-123456",
+  "payout_status": "success",
+  "payout_attempts": 1
+}
+```
+
+仅 approved 状态的订单可打款（原子翻转为 processing），重复调用返回 422；开启双重审核时需先完成双人确认
+
+#### POST /admin/v1/withdraw/sync-payout — 同步打款状态
+
+```
+需认证: 是
+
+请求: { "order_id": "aB3xK..." }
+
+响应: {
+  "payout_status": "success",
+  "order_status": "completed",
+  "synced_status": "success"
+}
+```
+
+错误: 422 该订单尚未执行打款
 
 ### 3.4 平台用户管理
 
@@ -2207,6 +2261,13 @@ status: open / waiting / replied / closed
 | GET /admin/v1/risk/graph/clusters | 关联簇列表 |
 | GET /admin/v1/risk/graph/{userId} | 用户关联图谱 |
 | GET /admin/v1/risk/clusters | 风险簇列表 |
+| POST /admin/v1/risk/clusters/detect | 聚类检测（近 7 天同 IP ≥5 账户 / 同设备指纹 ≥3 账户，只返回候选不落库） |
+| POST /admin/v1/risk/clusters/confirm | 人工确认团伙并写入风险簇 |
+| GET /admin/v1/risk/clusters/{hashid}/members | 团伙成员列表（按指纹解析成员） |
+| PUT /admin/v1/risk/clusters/{hashid}/status | 团伙状态更新（1=观察中 2=已处置 0=误判） |
+| GET /admin/v1/risk/users | 异常用户队列（按信任分与命中时间过滤） |
+| GET /admin/v1/risk/users/{hashid}/timeline | 用户风控时间线（风控/对局/反作弊事件合并） |
+| POST /admin/v1/risk/users/{hashid}/hold | 冻结该用户平台可用余额并留痕 |
 
 ### 10.2 反作弊管理 (管理端 :8789)
 
@@ -2251,3 +2312,20 @@ status: open / waiting / replied / closed
 |------|------|
 | Adyen | 新增支付网关（充值/回调验签/自动到账） |
 | GrabPay | 新增支付网关（充值/回调验签/自动到账） |
+
+### 10.6 VIP/成就/搜索/收据 (管理端 :8789)
+
+VIP 等级、成就配置、全局搜索与电子收据导出（管理端）。
+
+| 接口 | 说明 |
+|------|------|
+| GET /admin/v1/vip/level/list | VIP 等级列表 |
+| POST /admin/v1/vip/level/create | 新增 VIP 等级（level 唯一） |
+| PUT /admin/v1/vip/level/{hashid} | 更新 VIP 等级 |
+| DELETE /admin/v1/vip/level/{hashid} | 删除 VIP 等级（该等级下有用户时拒绝） |
+| GET /admin/v1/achievement/list | 成就列表 |
+| POST /admin/v1/achievement/create | 创建成就（key 重复拒绝） |
+| PUT /admin/v1/achievement/{hashid} | 更新成就 |
+| DELETE /admin/v1/achievement/{hashid} | 删除成就 |
+| GET /admin/v1/search | 全局搜索（?q= 关键词，type=game 或 user） |
+| POST /admin/v1/export/receipt | 导出收据 PDF（type=deposit 或 withdraw 与 order_id） |

@@ -210,9 +210,9 @@ Condiciones de verificación:
   put.admin/withdraw/switch → 操作提现开关（仅超级管理员）
 ```
 
-## 呼. Nuevo diseño de la versión estándar
+## 7. Nuevo diseño de la versión estándar
 
-### 8.1 Motor de control de riesgos
+### 7.1 Motor de control de riesgos
 
 Cuatro tipos de reglas:
 - `ip_blacklist` — coincidencia de lista negra de IP; si coincide, bloqueo directo
@@ -222,7 +222,7 @@ Cuatro tipos de reglas:
 
 Las reglas se ejecutan en orden descendente de priority; la primera regla que coincida decide el resultado (block > warn > log).
 
-### 8.2 Inicio de sesión OAuth de terceros
+### 7.2 Inicio de sesión OAuth de terceros
 
 Proveedores admitidos: Google, Facebook, Apple
 
@@ -232,7 +232,7 @@ Flujo:
 3. El callback `POST /api/auth/oauth/{provider}/callback` llega con el código de autorización
 4. El backend busca la vinculación existente → inicio de sesión directo; sin vinculación → registro automático + vinculación + creación de billetera
 
-### 8.3 Sistema de límites KYC
+### 7.3 Sistema de límites KYC
 
 | Nivel | Forma de obtención | Máx. por operación | Límite diario | Comisión |
 |------|---------|---------|--------|--------|
@@ -240,11 +240,11 @@ Flujo:
 | verified | KYC aprobado | 5,000 | 50,000 | 0.50% |
 | vip | Otorgado por operación | 20,000 | 200,000 | 0.00% |
 
-### 8.4 Servidores del juego
+### 7.4 Servidores del juego
 
 Cada juego puede configurar varios servidores (region: global/asia/eu/na). Estados del servidor: mantenimiento/normal/popular/nuevo.
 
-### 8.5 Instantáneas de estadísticas diarias
+### 7.5 Instantáneas de estadísticas diarias
 
 El crontab ejecuta `ComputeDailyStats::run()` cada madrugada y calcula cinco métricas:
 - Estadísticas de usuarios (nuevos/activos/acumulados)
@@ -253,9 +253,9 @@ El crontab ejecuta `ComputeDailyStats::run()` cada madrugada y calcula cinco mé
 - Estadísticas de conversiones (número/total de comisiones)
 - Estadísticas de juegos (número de jugadores/número de sesiones)
 
-## 9. Funcionalidades de nivel producción
+## 8. Funcionalidades de nivel producción
 
-### 9.1 Sistema de notificaciones
+### 8.1 Sistema de notificaciones
 
 Tipos de notificación: system/deposit/withdraw/kyc/coupon/announcement
 
@@ -268,7 +268,7 @@ Escenarios de activación automática:
 
 Soporta doble canal: mensajes internos + email (para el email se necesita configurar la variable de entorno MAIL_HOST).
 
-### 9.2 Comisión por recomendación
+### 8.2 Comisión por recomendación
 
 ```
 用户A 生成推荐码 → 分享给用户B
@@ -276,14 +276,14 @@ Soporta doble canal: mensajes internos + email (para el email se necesita config
 用户B 充值 → A 获得充值返佣(deposit_commission_pct%)
 ```
 
-### 9.3 Autenticación de dos factores (2FA)
+### 8.3 Autenticación de dos factores (2FA)
 
 - Protocolo estándar TOTP (RFC 6238), compatible con Google Authenticator
 - Flujo de habilitación: obtener clave → escanear QR para vincular → verificar TOTP → generar 8 códigos de recuperación de respaldo
 - Segunda verificación en el inicio de sesión: POST /api/2fa/verify
 - Soporta tolerancia de ±1 ventana de tiempo (30 segundos)
 
-### 9.4 Integración OAuth real
+### 8.4 Integración OAuth real
 
 | Proveedor | Endpoint de token | Endpoint de información de usuario |
 |--------|----------|------------|
@@ -293,22 +293,22 @@ Soporta doble canal: mensajes internos + email (para el email se necesita config
 
 La configuración se hace mediante PlatformConfig o variables de entorno; si la solicitud falla, se vuelve automáticamente al modo mock.
 
-### 9.5 Verificación de firma de webhooks de pago
+### 8.5 Verificación de firma de webhooks de pago
 
 - Stripe: verificación de firma HMAC-SHA256 (cabecera Stripe-Signature)
 - PayPal: POST de vuelta al endpoint de verificación de PayPal
 - Si la clave no está configurada, la verificación se omite automáticamente (modo desarrollo)
 
-### 9.6 Clasificación en tiempo real por WebSocket
+### 8.6 Clasificación en tiempo real por WebSocket
 
 - Protocolo: WebSocket (ws://host:8790)
 - Suscripción: {action: "subscribe", leaderboard_id: 123}
 - Push: {type: "ranking_update", rankings: [...]}
 - Soporta heartbeat ping/pong para mantener la conexión
 
-## 7. Diseño de internacionalización
+## 9. Diseño de internacionalización
 
-### 7.1 Idiomas admitidos
+### 9.1 Idiomas admitidos
 
 | Código | Nombre | Idioma nativo | Icono |
 |------|------|--------|------|
@@ -317,7 +317,7 @@ La configuración se hace mediante PlatformConfig o variables de entorno; si la 
 | ja-JP | Japanese | 日本語 | jp |
 | ko-KR | Korean | 한국어 | kr |
 
-### 7.2 Gestión de traducciones
+### 9.2 Gestión de traducciones
 
 - Las traducciones se organizan en formato `group.key` (por ejemplo, `auth.login_success`)
 - Se almacenan en la tabla `game_translation` con caché Redis (TTL 1 hora)
@@ -325,13 +325,13 @@ La configuración se hace mediante PlatformConfig o variables de entorno; si la 
 - El frontend detecta automáticamente mediante la cabecera `X-Language` o `Accept-Language`
 - Si falta la traducción, se vuelve a en-US; si tampoco está en en-US, se devuelve la clave original
 
-### 7.3 Preferencia de idioma del usuario
+### 9.3 Preferencia de idioma del usuario
 
 - Al registrar, se configura automáticamente según el `Accept-Language` del navegador
 - Tras iniciar sesión, se puede modificar el campo `language` con `PUT /api/user/profile`
 - Al cambiar de idioma, el registro del usuario se actualiza sincronizadamente
 
-## 8. Modelo de ingresos de la plataforma
+## 10. Modelo de ingresos de la plataforma
 
 | Fuente de ingresos | Cálculo | Descripción |
 |---------|---------|------|

@@ -64,10 +64,10 @@
   <!-- Data -->
   <rect x="30" y="526" width="900" height="78" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="480" y="552" text-anchor="middle" fill="#475569" font-size="13" font-weight="bold">طبقة البيانات</text>
-  <rect x="60" y="564" width="150" height="30" rx="6" fill="#dbeafe"/><text x="135" y="584" text-anchor="middle" fill="#1e3a5f" font-size="12">MySQL 8.0 (التخزين الرئيسي)</text>
-  <rect x="230" y="564" width="140" height="30" rx="6" fill="#fce7f3"/><text x="300" y="584" text-anchor="middle" fill="#831843" font-size="12">Redis 7 (تخزين مؤقت/تحديد معدل)</text>
+  <rect x="60" y="564" width="150" height="30" rx="6" fill="#dbeafe"/><text x="135" y="584" text-anchor="middle" fill="#1e3a5f" font-size="12">MySQL 8.0 (التخزين)</text>
+  <rect x="230" y="564" width="140" height="30" rx="6" fill="#fce7f3"/><text x="300" y="584" text-anchor="middle" fill="#831843" font-size="12">Redis 7 (كاش/معدل)</text>
   <rect x="390" y="564" width="160" height="30" rx="6" fill="#e0e7ff"/><text x="470" y="584" text-anchor="middle" fill="#312e81" font-size="12">ClickHouse (تحليل OLAP)</text>
-  <rect x="570" y="564" width="170" height="30" rx="6" fill="#ecfdf5"/><text x="655" y="584" text-anchor="middle" fill="#064e3b" font-size="12">Elasticsearch (بحث نصي كامل)</text>
+  <rect x="570" y="564" width="170" height="30" rx="6" fill="#ecfdf5"/><text x="655" y="584" text-anchor="middle" fill="#064e3b" font-size="12">Elasticsearch (بحث نصي)</text>
   <rect x="760" y="564" width="140" height="30" rx="6" fill="#fef2f2"/><text x="830" y="584" text-anchor="middle" fill="#7f1d1d" font-size="12">OpenSearch (بديل)</text>
 
   <!-- Common -->

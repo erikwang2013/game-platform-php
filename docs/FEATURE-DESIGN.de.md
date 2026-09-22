@@ -210,9 +210,9 @@ Verifizierungsbedingungen:
   put.admin/withdraw/switch → 操作提现开关（仅超级管理员）
 ```
 
-## 呼. Neu hinzugefügtes Standardversion-Design
+## 7. Neu hinzugefügtes Standardversion-Design
 
-### 8.1 Risikokontroll-Engine
+### 7.1 Risikokontroll-Engine
 
 Vier Regeltypen:
 - `ip_blacklist` — IP-Blacklist-Treffer, direkt blockieren
@@ -222,7 +222,7 @@ Vier Regeltypen:
 
 Regeln werden in absteigender priority-Reihenfolge ausgeführt, die erste übereinstimmende Regel entscheidet (block > warn > log).
 
-### 8.2 OAuth-Drittanbieter-Login
+### 7.2 OAuth-Drittanbieter-Login
 
 Unterstützte Anbieter: Google, Facebook, Apple
 
@@ -232,7 +232,7 @@ Ablauf:
 3. Callback `POST /api/auth/oauth/{provider}/callback` übermittelt den Autorisierungscode
 4. Backend findet bestehende Verknüpfung → direkter Login; keine Verknüpfung → automatische Registrierung + Verknüpfung + Wallet-Erstellung
 
-### 8.3 KYC-Limitsystem
+### 7.3 KYC-Limitsystem
 
 | Stufe | Erhaltungsweise | Einzelbetragsobergrenze | Tageslimit | Gebühr |
 |------|---------|---------|--------|--------|
@@ -240,11 +240,11 @@ Ablauf:
 | verified | KYC-Prüfung bestanden | 5,000 | 50,000 | 0.50% |
 | vip | Von der Betriebsabteilung vergeben | 20,000 | 200,000 | 0.00% |
 
-### 8.4 Spielregionen/-server
+### 7.4 Spielregionen/-server
 
 Jedes Spiel kann mehrere Regionen konfigurieren (region: global/asia/eu/na), Serverstatus: Wartung/Normal/Voll/Neu.
 
-### 8.5 Tägliche Statistik-Snapshots
+### 7.5 Tägliche Statistik-Snapshots
 
 Täglich um Mitternacht führt crontab `ComputeDailyStats::run()` aus und berechnet fünf Kennzahlen:
 - Benutzerstatistik (neu/aktiv/kumuliert)
@@ -253,9 +253,9 @@ Täglich um Mitternacht führt crontab `ComputeDailyStats::run()` aus und berech
 - Umtauschstatistik (Anzahl/Gebührengesamt)
 - Spielstatistik (Spielerzahl/Sessionszahl)
 
-## 9. Produktionsreife Funktionen
+## 8. Produktionsreife Funktionen
 
-### 9.1 Benachrichtigungssystem
+### 8.1 Benachrichtigungssystem
 
 Benachrichtigungstypen: system/deposit/withdraw/kyc/coupon/announcement
 
@@ -268,7 +268,7 @@ Automatisch ausgelöste Szenarien:
 
 Unterstützt In-App-Nachrichten + E-Mail als duale Kanäle (E-Mail erfordert die MAIL_HOST-Umgebungsvariable).
 
-### 9.2 Empfehlungsprovision
+### 8.2 Empfehlungsprovision
 
 ```
 用户A 生成推荐码 → 分享给用户B
@@ -276,14 +276,14 @@ Unterstützt In-App-Nachrichten + E-Mail als duale Kanäle (E-Mail erfordert die
 用户B 充值 → A 获得充值返佣(deposit_commission_pct%)
 ```
 
-### 9.3 2FA-Zwei-Faktor-Authentifizierung
+### 8.3 2FA-Zwei-Faktor-Authentifizierung
 
 - TOTP-Standardprotokoll (RFC 6238), kompatibel mit Google Authenticator
 - Aktivierungsablauf: Schlüssel abrufen → QR-Code scannen und binden → TOTP verifizieren → 8 Backup-Wiederherstellungscodes generieren
 - Zweite Anmeldeverifizierung: POST /api/2fa/verify
 - Unterstützt ±1 Zeitfenster-Toleranz (30 Sekunden)
 
-### 9.4 Echte OAuth-Anbindung
+### 8.4 Echte OAuth-Anbindung
 
 | Anbieter | Token-Endpunkt | Benutzerinfo-Endpunkt |
 |--------|----------|------------|
@@ -293,22 +293,22 @@ Unterstützt In-App-Nachrichten + E-Mail als duale Kanäle (E-Mail erfordert die
 
 Konfiguration über PlatformConfig oder Umgebungsvariablen; bei Anfragefehlern automatischer Fallback auf den Mock-Modus.
 
-### 9.5 Zahlungs-Webhook-Verifizierung
+### 8.5 Zahlungs-Webhook-Verifizierung
 
 - Stripe: HMAC-SHA256-Signaturprüfung (Stripe-Signature-Header)
 - PayPal: POST zurück zum PayPal-Verifizierungsendpunkt
 - Bei nicht konfiguriertem Schlüssel wird die Prüfung automatisch übersprungen (Entwicklungsmodus)
 
-### 9.6 WebSocket-Echtzeit-Rangliste
+### 8.6 WebSocket-Echtzeit-Rangliste
 
 - Protokoll: WebSocket (ws://host:8790)
 - Abonnement: {action: "subscribe", leaderboard_id: 123}
 - Push: {type: "ranking_update", rankings: [...]}
 - Unterstützt ping/pong-Heartbeat zur Verbindungserhaltung
 
-## 7. Internationalisierungsdesign
+## 9. Internationalisierungsdesign
 
-### 7.1 Unterstützte Sprachen
+### 9.1 Unterstützte Sprachen
 
 | Code | Name | Lokale Bezeichnung | Symbol |
 |------|------|--------|------|
@@ -317,7 +317,7 @@ Konfiguration über PlatformConfig oder Umgebungsvariablen; bei Anfragefehlern a
 | ja-JP | Japanese | 日本語 | jp |
 | ko-KR | Korean | 한국어 | kr |
 
-### 7.2 Übersetzungsverwaltung
+### 9.2 Übersetzungsverwaltung
 
 - Übersetzungen sind im Format `group.key` organisiert (z. B. `auth.login_success`)
 - Speicherung in der Datenbanktabelle `game_translation`, Redis-Cache (TTL 1 Stunde)
@@ -325,13 +325,13 @@ Konfiguration über PlatformConfig oder Umgebungsvariablen; bei Anfragefehlern a
 - Das Frontend erkennt automatisch über den `X-Language`-Request-Header oder `Accept-Language`
 - Bei fehlender Übersetzung Fallback auf en-US; auch en-US fehlt → Rückgabe des Original-keys
 
-### 7.3 Benutzersprachpräferenz
+### 9.3 Benutzersprachpräferenz
 
 - Bei der Registrierung automatisch anhand des Browser-`Accept-Language` gesetzt
 - Nach dem Login über `PUT /api/user/profile` das Feld `language` änderbar
 - Beim Sprachwechsel wird der Benutzerdatensatz synchron aktualisiert
 
-## 8. Plattform-Erlösmodell
+## 10. Plattform-Erlösmodell
 
 | Einnahmequelle | Berechnungsweise | Beschreibung |
 |---------|---------|------|

@@ -23,7 +23,7 @@
   <line x1="325" y1="141" x2="365" y2="141" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="370" y="118" width="130" height="46" rx="10" fill="#d1fae5" stroke="#10b981" stroke-width="2" filter="url(#sh)"/>
-  <text x="435" y="146" text-anchor="middle" fill="#065f46" font-size="13" font-weight="bold">Recarregar e jogar</text>
+  <text x="435" y="146" text-anchor="middle" fill="#065f46" font-size="13" font-weight="bold">Recarregar/jogar</text>
 
   <line x1="500" y1="141" x2="540" y2="141" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
@@ -47,7 +47,7 @@
   <line x1="180" y1="286" x2="230" y2="286" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="235" y="261" width="130" height="50" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" filter="url(#sh)"/>
-  <text x="300" y="292" text-anchor="middle" fill="#92400e" font-size="13" font-weight="bold">Aguardando pagamento</text>
+  <text x="300" y="292" text-anchor="middle" fill="#92400e" font-size="13" font-weight="bold">Pgto. pendente</text>
 
   <line x1="365" y1="286" x2="415" y2="286" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
@@ -77,7 +77,7 @@
   <line x1="230" y1="431" x2="300" y2="431" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="305" y="406" width="180" height="50" rx="10" fill="#fce7f3" stroke="#ec4899" stroke-width="2" filter="url(#sh)"/>
-  <text x="395" y="437" text-anchor="middle" fill="#831843" font-size="13" font-weight="bold">Jogo em andamento (earn/spend)</text>
+  <text x="395" y="437" text-anchor="middle" fill="#831843" font-size="13" font-weight="bold">Jogando (ganhar/gastar)</text>
 
   <line x1="485" y1="431" x2="555" y2="431" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
@@ -99,15 +99,15 @@
   <line x1="210" y1="621" x2="270" y2="621" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="275" y="598" width="140" height="46" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" filter="url(#sh)"/>
-  <text x="345" y="626" text-anchor="middle" fill="#92400e" font-size="13" font-weight="bold">Aguardando revisão pending</text>
+  <text x="345" y="626" text-anchor="middle" fill="#92400e" font-size="13" font-weight="bold">Revisão pending</text>
 
   <line x1="415" y1="621" x2="475" y2="621" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="480" y="612" width="120" height="32" rx="8" fill="#f0fdf4" stroke="#22c55e" stroke-width="2" filter="url(#sh)"/>
-  <text x="540" y="633" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">Aprovado → verified</text>
+  <text x="540" y="633" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">Aprovado verified</text>
 
   <rect x="640" y="612" width="120" height="32" rx="8" fill="#fef2f2" stroke="#ef4444" stroke-width="2" filter="url(#sh)"/>
-  <text x="700" y="633" text-anchor="middle" fill="#991b1b" font-size="12" font-weight="bold">Recusado → rejected</text>
+  <text x="700" y="633" text-anchor="middle" fill="#991b1b" font-size="12" font-weight="bold">Negado rejected</text>
 
   <text x="500" y="680" text-anchor="middle" fill="#64748b" font-size="11">Após a aprovação, upgrade: default → verified (limites de saque maiores); desconto VIP em tarifas à parte por EXP</text>
 

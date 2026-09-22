@@ -520,7 +520,7 @@ is_new : true=nouvel utilisateur enregistré / false=compte existant lié
 
 status : success / failed
 
-Valeurs de provider : stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash (toss / mpesa / paystack bientôt disponibles)
+Valeurs de provider : stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash / mpesa / paystack / toss / adyen / grabpay
 
 | provider | Région | Schéma de signature | Devises prises en charge |
 |----------|--------|---------------------|--------------------------|
@@ -537,9 +537,11 @@ Valeurs de provider : stripe / paypal / nowpayments / coinbase / skrill / netell
 | paypay | Japon | PayPay-Signature HMAC-SHA256 | JPY |
 | kakaopay | Corée du Sud | Pas de webhook (flux en deux étapes ready/approve) | KRW |
 | gcash | Philippines | Paymongo-Signature HMAC-SHA256 | PHP |
-| toss | Corée du Sud (bientôt) | — | KRW |
-| mpesa | Kenya / Tanzanie, etc. (bientôt) | — | KES / TZS |
-| paystack | Nigéria (bientôt) | — | NGN |
+| toss | Corée du Sud | Server-side verify + amount check | KRW |
+| mpesa | Kenya | Trusted IP (CALLBACK_TRUSTED_IPS), no signature | KES |
+| paystack | Nigéria | x-paystack-signature HMAC-SHA512 | NGN |
+| adyen | Mondial (devise selon l'ordre) | additionalData.hmacSignature HMAC-SHA256 (ADYEN_HMAC_KEY) | selon l'ordre |
+| grabpay | Singapour (pays configurable, par défaut SG) | x-signature HMAC-SHA256 (sorted key:value) | selon l'ordre |
 
 #### GET /api/v1/payment/methods — Modes de paiement disponibles (public)
 
@@ -1121,6 +1123,58 @@ Erreurs : 422 l'état de la commande n'est pas « en attente de validation »
   "global_switch": true
 }
 ```
+
+#### POST /admin/v1/withdraw/batch-review — Révision groupée des retraits
+
+```
+需认证: 是
+
+请求: {
+  "ids": ["aB3xK...", "cD4yL..."],
+  "action": "approve",
+  "note": "批量审核通过"
+}
+
+响应: {
+  "processed": 2,
+  "failed": []
+}
+```
+
+action: approve=approuver / reject=rejeter (traitement ordre par ordre ; les ordres rejetés sont remboursés automatiquement ; les échecs sont listés dans failed et ne bloquent pas les autres)
+
+#### POST /admin/v1/withdraw/execute-payout — Exécuter le paiement
+
+```
+需认证: 是
+
+请求: { "order_id": "aB3xK..." }
+
+响应: {
+  "payout_batch_id": "PAYOUT-123456",
+  "payout_item_id": "ITEM-123456",
+  "payout_status": "success",
+  "payout_attempts": 1
+}
+```
+
+Seul un ordre au statut approved peut être payé (bascule atomique vers processing) ; un appel répété renvoie 422. Si la double validation est activée, l'ordre doit d'abord être confirmé par une seconde personne
+
+#### POST /admin/v1/withdraw/sync-payout — Synchroniser le statut du paiement
+
+```
+需认证: 是
+
+请求: { "order_id": "aB3xK..." }
+
+响应: {
+  "payout_status": "success",
+  "order_status": "completed",
+  "synced_status": "success"
+}
+```
+
+Erreur : 422 Aucun paiement n'a encore été exécuté pour cet ordre
 
 ### 3.4 Gestion des utilisateurs de la plateforme
 
@@ -2205,6 +2259,13 @@ La commission de parrainage ajoute une répartition de deuxième niveau :
 | GET /admin/v1/risk/graph/clusters | Liste des clusters |
 | GET /admin/v1/risk/graph/{userId} | Graphe de liens de l'utilisateur |
 | GET /admin/v1/risk/clusters | Liste des clusters à risque |
+| POST /admin/v1/risk/clusters/detect | Détection de grappes (même IP avec ≥5 comptes / même empreinte d'appareil avec ≥3 comptes sur les 7 derniers jours ; candidats uniquement, aucune écriture) |
+| POST /admin/v1/risk/clusters/confirm | Confirmer manuellement une grappe et l'enregistrer |
+| GET /admin/v1/risk/clusters/{hashid}/members | Liste des membres de la grappe (membres résolus depuis l'empreinte) |
+| PUT /admin/v1/risk/clusters/{hashid}/status | Mettre à jour le statut de la grappe (1=en observation 2=traité 0=faux positif) |
+| GET /admin/v1/risk/users | File des utilisateurs anormaux (filtrée par score de confiance et dernière détection) |
+| GET /admin/v1/risk/users/{hashid}/timeline | Chronologie des risques de l'utilisateur (événements risque / parties / anti-triche fusionnés) |
+| POST /admin/v1/risk/users/{hashid}/hold | Geler le solde disponible de l'utilisateur et journaliser l'action |
 
 ### 10.2 Gestion anti-triche (admin :8789)
 
@@ -2249,3 +2310,20 @@ La commission de parrainage ajoute une répartition de deuxième niveau :
 |------|------|
 | Adyen | Nouvelle passerelle de paiement (dépôt / vérification du callback / crédit automatique) |
 | GrabPay | Nouvelle passerelle de paiement (dépôt / vérification du callback / crédit automatique) |
+
+### 10.6 VIP / Succès / Recherche / Reçus (admin :8789)
+
+Niveaux VIP, configuration des succès, recherche globale et export de reçus (admin).
+
+| Point d'accès | Description |
+|------|------|
+| GET /admin/v1/vip/level/list | Liste des niveaux VIP |
+| POST /admin/v1/vip/level/create | Créer un niveau VIP (level doit être unique) |
+| PUT /admin/v1/vip/level/{hashid} | Mettre à jour un niveau VIP |
+| DELETE /admin/v1/vip/level/{hashid} | Supprimer un niveau VIP (refusé si des utilisateurs ont ce niveau) |
+| GET /admin/v1/achievement/list | Liste des succès |
+| POST /admin/v1/achievement/create | Créer un succès (key en double refusée) |
+| PUT /admin/v1/achievement/{hashid} | Mettre à jour un succès |
+| DELETE /admin/v1/achievement/{hashid} | Supprimer un succès |
+| GET /admin/v1/search | Recherche globale (?q= mot-clé, type=game ou user) |
+| POST /admin/v1/export/receipt | Exporter un reçu PDF (type=deposit ou withdraw, plus order_id) |

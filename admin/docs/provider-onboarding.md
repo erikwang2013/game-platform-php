@@ -124,6 +124,7 @@ abstract public function verifySignature(array $payload, string $signature): boo
 | paytm | 回调 NVP checksum 验签（`verifyNvp`） | 无 |
 | toss | 服务端回查 + 金额比对 | 无 |
 | 其余 | 依赖网关侧签名 / 可信来源 IP + 金额比对 + 幂等 | 无 |
+| paystack | `x-paystack-signature` HMAC-SHA512 over raw body，密钥 `PAYSTACK_SECRET_KEY` | 无（依赖网关签名 + 幂等） |
 
 **新增支付网关的必做检查项**：回调报文必须携带可校验的防重放要素——优先实现网关签名协议内的时间戳窗口（参照 Stripe 的 ±300s 检查）；协议不提供时间戳的，必须在接入文档中明确「依赖网关签名 + 订单幂等键防重放」并落实到校验代码（`already processed` 分支已存在，`PaymentController.php:122`）。
 

@@ -520,7 +520,7 @@ is_new: true=usuario recién registrado / false=cuenta existente vinculada
 
 status: success / failed
 
-Valores de provider: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash (toss / mpesa / paystack próximamente)
+Valores de provider: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash / mpesa / paystack / toss / adyen / grabpay
 
 | provider | Región | Esquema de firma | Monedas compatibles |
 |----------|--------|------------------|---------------------|
@@ -537,9 +537,11 @@ Valores de provider: stripe / paypal / nowpayments / coinbase / skrill / netelle
 | paypay | Japón | PayPay-Signature HMAC-SHA256 | JPY |
 | kakaopay | Corea del Sur | Sin webhook (flujo de dos pasos ready/approve) | KRW |
 | gcash | Filipinas | Paymongo-Signature HMAC-SHA256 | PHP |
-| toss | Corea del Sur (próximamente) | — | KRW |
-| mpesa | Kenia / Tanzania, etc. (próximamente) | — | KES / TZS |
-| paystack | Nigeria (próximamente) | — | NGN |
+| toss | Corea del Sur | Server-side verify + amount check | KRW |
+| mpesa | Kenia | Trusted IP (CALLBACK_TRUSTED_IPS), no signature | KES |
+| paystack | Nigeria | x-paystack-signature HMAC-SHA512 | NGN |
+| adyen | Global (moneda según el pedido) | additionalData.hmacSignature HMAC-SHA256 (ADYEN_HMAC_KEY) | según el pedido |
+| grabpay | Singapur (país configurable, por defecto SG) | x-signature HMAC-SHA256 (sorted key:value) | según el pedido |
 
 #### GET /api/v1/payment/methods — Métodos de pago disponibles (público)
 
@@ -1121,6 +1123,58 @@ Error: 422 el estado de la orden no es pendiente de revisión
   "global_switch": true
 }
 ```
+
+#### POST /admin/v1/withdraw/batch-review — Revisión masiva de retiros
+
+```
+需认证: 是
+
+请求: {
+  "ids": ["aB3xK...", "cD4yL..."],
+  "action": "approve",
+  "note": "批量审核通过"
+}
+
+响应: {
+  "processed": 2,
+  "failed": []
+}
+```
+
+action: approve=aprobar / reject=rechazar (procesado pedido a pedido; los rechazados se reembolsan automáticamente; los fallos van a failed y no afectan al resto)
+
+#### POST /admin/v1/withdraw/execute-payout — Ejecutar pago
+
+```
+需认证: 是
+
+请求: { "order_id": "aB3xK..." }
+
+响应: {
+  "payout_batch_id": "PAYOUT-123456",
+  "payout_item_id": "ITEM-123456",
+  "payout_status": "success",
+  "payout_attempts": 1
+}
+```
+
+Solo se puede pagar un pedido en estado approved (cambio atómico a processing); una llamada repetida devuelve 422. Con la doble revisión activada, el pedido debe confirmarse antes por una segunda persona
+
+#### POST /admin/v1/withdraw/sync-payout — Sincronizar estado del pago
+
+```
+需认证: 是
+
+请求: { "order_id": "aB3xK..." }
+
+响应: {
+  "payout_status": "success",
+  "order_status": "completed",
+  "synced_status": "success"
+}
+```
+
+Error: 422 Este pedido aún no tiene un pago ejecutado
 
 ### 3.4 Gestión de usuarios de la plataforma
 
@@ -2205,6 +2259,13 @@ La comisión por recomendación añade una segunda línea de reparto:
 | GET /admin/v1/risk/graph/clusters | Lista de clústeres |
 | GET /admin/v1/risk/graph/{userId} | Grafo de vínculos del usuario |
 | GET /admin/v1/risk/clusters | Lista de clústeres de riesgo |
+| POST /admin/v1/risk/clusters/detect | Detección de clústeres (misma IP con ≥5 cuentas / misma huella de dispositivo con ≥3 cuentas en los últimos 7 días; solo candidatos, sin persistencia) |
+| POST /admin/v1/risk/clusters/confirm | Confirmar manualmente un clúster y guardarlo |
+| GET /admin/v1/risk/clusters/{hashid}/members | Lista de miembros del clúster (miembros resueltos desde la huella) |
+| PUT /admin/v1/risk/clusters/{hashid}/status | Actualizar el estado del clúster (1=en observación 2=tratado 0=falso positivo) |
+| GET /admin/v1/risk/users | Cola de usuarios anómalos (filtrada por puntuación de confianza y última detección) |
+| GET /admin/v1/risk/users/{hashid}/timeline | Cronología de riesgo del usuario (eventos de riesgo / partidas / anti-fraude combinados) |
+| POST /admin/v1/risk/users/{hashid}/hold | Congelar el saldo disponible del usuario y dejar registro |
 
 ### 10.2 Gestión anti-trampas (admin :8789)
 
@@ -2249,3 +2310,20 @@ La comisión por recomendación añade una segunda línea de reparto:
 |------|------|
 | Adyen | Nueva pasarela de pago (depósito / verificación de callback / acreditación automática) |
 | GrabPay | Nueva pasarela de pago (depósito / verificación de callback / acreditación automática) |
+
+### 10.6 VIP / Logros / Búsqueda / Recibos (Admin :8789)
+
+Niveles VIP, configuración de logros, búsqueda global y exportación de recibos (admin).
+
+| Endpoint | Descripción |
+|------|------|
+| GET /admin/v1/vip/level/list | Lista de niveles VIP |
+| POST /admin/v1/vip/level/create | Crear nivel VIP (level debe ser único) |
+| PUT /admin/v1/vip/level/{hashid} | Actualizar nivel VIP |
+| DELETE /admin/v1/vip/level/{hashid} | Eliminar nivel VIP (rechazado si hay usuarios en ese nivel) |
+| GET /admin/v1/achievement/list | Lista de logros |
+| POST /admin/v1/achievement/create | Crear logro (key duplicada rechazada) |
+| PUT /admin/v1/achievement/{hashid} | Actualizar logro |
+| DELETE /admin/v1/achievement/{hashid} | Eliminar logro |
+| GET /admin/v1/search | Búsqueda global (?q= término, type=game o user) |
+| POST /admin/v1/export/receipt | Exportar recibo en PDF (type=deposit o withdraw más order_id) |

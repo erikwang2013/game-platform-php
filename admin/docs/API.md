@@ -1792,7 +1792,7 @@ GET /admin/v1/analytics/economy
 
 ## 18. 支付管理 (Payment)
 
-支付方式管理由 `PaymentController` 提供，5 个端点均需 JWT + RBAC 认证。`provider` 白名单：`stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`。`config` 为支付配置 JSON 字符串（数据库加密存储）。
+支付方式管理由 `PaymentController` 提供，5 个端点均需 JWT + RBAC 认证。`provider` 白名单：`stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` / `mpesa` / `paystack` / `toss` / `adyen` / `grabpay`。`config` 为支付配置 JSON 字符串（数据库加密存储）。
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -1842,7 +1842,7 @@ GET /admin/v1/payment/method/list
 | id | string | hashid 加密的支付方式 ID |
 | name | string | 支付方式名称 |
 | type | string | `fiat`（法币）/ `crypto`（加密货币） |
-| provider | string | 网关提供商：`stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` |
+| provider | string | 网关提供商：`stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` / `mpesa` / `paystack` / `toss` / `adyen` / `grabpay` |
 | status | int | 1=启用, 0=禁用 |
 | sort | int | 排序值（升序） |
 | countries | array{string} | 可见国家码数组（空数组=全球可见） |
@@ -1899,7 +1899,7 @@ POST /admin/v1/payment/method/create
 |------|------|------|---------|------|
 | name | string | 是 | max:50 | 支付方式名称 |
 | type | string | 是 | in:fiat,crypto | 类型：法币/加密货币 |
-| provider | string | 是 | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash | 网关提供商白名单 |
+| provider | string | 是 | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash,mpesa,paystack,toss,adyen,grabpay | 网关提供商白名单 |
 | status | int | 是 | in:0,1 | 状态 |
 | sort | int | 否 | integer,min:0 | 排序值，默认 0 |
 | countries | array{string} | 否 | max:2 | 可见国家码数组，空=全球 |
@@ -1943,3 +1943,69 @@ DELETE /admin/v1/payment/method/{hashid}
 **可能的错误**:
 - 404: 支付方式不存在
 - 422: 存在待支付订单（status=pending），无法删除
+
+## 19. 扩展管理端点 (Extended Admin APIs)
+
+以下 20 个端点分 6 组列出，均为 `/admin/v1` 管理端点，需 JWT 认证与 RBAC 权限校验。
+
+### 19.1 提现批量审核与打款
+
+提现人工审核与 PayPal 出款的补充端点。
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/withdraw/batch-review | 批量通过或拒绝提现申请 | JWT + RBAC |
+| POST | /admin/v1/withdraw/execute-payout | 对已审批的提现订单执行 PayPal 打款 | JWT + RBAC |
+| POST | /admin/v1/withdraw/sync-payout | 从 PayPal 同步打款批次状态 | JWT + RBAC |
+
+### 19.2 风险团伙聚类与异常用户
+
+风控团伙聚类检测、人工确认与异常用户处置。
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/risk/clusters/detect | 检测候选团伙（近 7 天同 IP / 同设备指纹，仅返回候选不落库） | JWT + RBAC |
+| POST | /admin/v1/risk/clusters/confirm | 人工确认团伙并写入 game_risk_cluster | JWT + RBAC |
+| GET | /admin/v1/risk/clusters/{hashid}/members | 团伙成员列表 | JWT + RBAC |
+| PUT | /admin/v1/risk/clusters/{hashid}/status | 更新团伙状态（0=误判, 1=观察中, 2=已处置） | JWT + RBAC |
+| GET | /admin/v1/risk/users | 异常用户队列（score_min=信任分上限，from/to=最近命中时间窗口） | JWT + RBAC |
+| GET | /admin/v1/risk/users/{hashid}/timeline | 用户风控时间线（合并风控/游戏/反作弊事件，按时间倒序） | JWT + RBAC |
+| POST | /admin/v1/risk/users/{hashid}/hold | 冻结用户平台可用余额并写入 risk_log | JWT + RBAC |
+
+### 19.3 VIP 等级
+
+VIP 等级的增删改查端点。
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/vip/level/list | VIP 等级列表 | JWT + RBAC |
+| POST | /admin/v1/vip/level/create | 新增 VIP 等级 | JWT + RBAC |
+| PUT | /admin/v1/vip/level/{hashid} | 更新 VIP 等级 | JWT + RBAC |
+| DELETE | /admin/v1/vip/level/{hashid} | 删除 VIP 等级 | JWT + RBAC |
+
+### 19.4 成就
+
+成就定义的增删改查端点。
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/achievement/list | 成就列表 | JWT + RBAC |
+| POST | /admin/v1/achievement/create | 新增成就 | JWT + RBAC |
+| PUT | /admin/v1/achievement/{hashid} | 更新成就 | JWT + RBAC |
+| DELETE | /admin/v1/achievement/{hashid} | 删除成就 | JWT + RBAC |
+
+### 19.5 全局搜索
+
+跨游戏与用户的全局检索端点。
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/search | 全局搜索游戏或用户（ES 全文检索，失败回退数据库 LIKE） | JWT + RBAC |
+
+### 19.6 收据导出
+
+资金凭证导出端点。
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/export/receipt | 导出充值或提现订单的收据 PDF | JWT + RBAC |

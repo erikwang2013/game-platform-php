@@ -1792,7 +1792,7 @@ GET /admin/v1/analytics/economy
 
 ## 18. পেমেন্ট ম্যানেজমেন্ট (Payment)
 
-পেমেন্ট পদ্ধতি ব্যবস্থাপনা `PaymentController` দ্বারা সরবরাহ করা হয়; ৫টি এন্ডপয়েন্টেরই JWT + RBAC প্রমাণীকরণ প্রয়োজন। `provider` হোয়াইটলিস্ট: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`। `config` হল পেমেন্ট কনফিগারেশনের JSON স্ট্রিং (ডাটাবেসে এনক্রিপ্টেড সংরক্ষিত)।
+পেমেন্ট পদ্ধতি ব্যবস্থাপনা `PaymentController` দ্বারা সরবরাহ করা হয়; ৫টি এন্ডপয়েন্টেরই JWT + RBAC প্রমাণীকরণ প্রয়োজন। `provider` হোয়াইটলিস্ট: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` / `mpesa` / `paystack` / `toss` / `adyen` / `grabpay`। `config` হল পেমেন্ট কনফিগারেশনের JSON স্ট্রিং (ডাটাবেসে এনক্রিপ্টেড সংরক্ষিত)।
 
 | পদ্ধতি | পথ | বিবরণ |
 |------|------|------|
@@ -1842,7 +1842,7 @@ GET /admin/v1/payment/method/list
 | id | string | পেমেন্ট পদ্ধতি ID (hashid এনকোডেড) |
 | name | string | পেমেন্ট পদ্ধতির নাম |
 | type | string | `fiat` (ফিয়াট মুদ্রা) / `crypto` (ক্রিপ্টোকারেন্সি) |
-| provider | string | গেটওয়ে প্রদানকারী: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` |
+| provider | string | গেটওয়ে প্রদানকারী: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` / `mpesa` / `paystack` / `toss` / `adyen` / `grabpay` |
 | status | int | 1=সক্রিয়, 0=নিষ্ক্রিয় |
 | sort | int | ক্রম মান (ঊর্ধ্বক্রম) |
 | countries | array{string} | দৃশ্যমান দেশের কোড অ্যারে (খালি অ্যারে = বিশ্বব্যাপী দৃশ্যমান) |
@@ -1899,7 +1899,7 @@ POST /admin/v1/payment/method/create
 |------|------|------|---------|------|
 | name | string | হ্যাঁ | max:50 | পেমেন্ট পদ্ধতির নাম |
 | type | string | হ্যাঁ | in:fiat,crypto | ধরন: ফিয়াট/ক্রিপ্টো |
-| provider | string | হ্যাঁ | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash | গেটওয়ে প্রদানকারী হোয়াইটলিস্ট |
+| provider | string | হ্যাঁ | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash,mpesa,paystack,toss,adyen,grabpay | গেটওয়ে প্রদানকারী হোয়াইটলিস্ট |
 | status | int | হ্যাঁ | in:0,1 | অবস্থা |
 | sort | int | না | integer,min:0 | ক্রম মান, ডিফল্ট 0 |
 | countries | array{string} | না | max:2 | দৃশ্যমান দেশের কোড, খালি = বিশ্বব্যাপী |
@@ -1943,3 +1943,69 @@ DELETE /admin/v1/payment/method/{hashid}
 **সম্ভাব্য ত্রুটি**:
 - 404: পেমেন্ট পদ্ধতি পাওয়া যায়নি
 - 422: pending ডিপোজিট অর্ডার (status=pending) আছে, মুছে ফেলা সম্ভব নয়
+
+## 19. বর্ধিত অ্যাডমিন এন্ডপয়েন্ট (Extended Admin APIs)
+
+নিচের ২০টি এন্ডপয়েন্ট ৬টি বিভাগে সাজানো; সবই `/admin/v1` অ্যাডমিন এন্ডপয়েন্ট এবং এদের JWT প্রমাণীকরণ ও RBAC অনুমতি যাচাই প্রয়োজন।
+
+### 19.1 উইথড্র ব্যাচ পর্যালোচনা ও পেআউট
+
+ম্যানুয়াল উইথড্র পর্যালোচনা ও PayPal পেআউটের জন্য সম্পূরক এন্ডপয়েন্ট।
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/withdraw/batch-review | উইথড্র অনুরোধ ব্যাচে অনুমোদন বা প্রত্যাখ্যান করুন | JWT + RBAC |
+| POST | /admin/v1/withdraw/execute-payout | অনুমোদিত উইথড্র অর্ডারের জন্য PayPal পেআউট সম্পাদন করুন | JWT + RBAC |
+| POST | /admin/v1/withdraw/sync-payout | PayPal থেকে পেআউট ব্যাচের অবস্থা সিঙ্ক করুন | JWT + RBAC |
+
+### 19.2 রিস্ক ক্লাস্টার ও অস্বাভাবিক ব্যবহারকারী
+
+রিস্ক ক্লাস্টার শনাক্তকরণ, ম্যানুয়াল নিশ্চিতকরণ ও অস্বাভাবিক ব্যবহারকারী ব্যবস্থাপনা।
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/risk/clusters/detect | প্রার্থী ক্লাস্টার শনাক্ত করুন (গত ৭ দিনে একই IP / একই ডিভাইস ফিঙ্গারপ্রিন্ট; শুধু প্রার্থী, সংরক্ষণ নয়) | JWT + RBAC |
+| POST | /admin/v1/risk/clusters/confirm | ম্যানুয়ালি ক্লাস্টার নিশ্চিত করে game_risk_cluster-এ লিখুন | JWT + RBAC |
+| GET | /admin/v1/risk/clusters/{hashid}/members | ক্লাস্টার সদস্যদের তালিকা | JWT + RBAC |
+| PUT | /admin/v1/risk/clusters/{hashid}/status | ক্লাস্টারের অবস্থা আপডেট করুন (0=ভুল শনাক্ত, 1=পর্যবেক্ষণে, 2=সমাধান হয়েছে) | JWT + RBAC |
+| GET | /admin/v1/risk/users | অস্বাভাবিক ব্যবহারকারীর তালিকা (score_min=বিশ্বাস স্কোরের ঊর্ধ্বসীমা, from/to=শেষ হিটের সময় উইন্ডো) | JWT + RBAC |
+| GET | /admin/v1/risk/users/{hashid}/timeline | ব্যবহারকারীর রিস্ক টাইমলাইন (রিস্ক/গেম/অ্যান্টি-চিট ইভেন্ট একত্রিত, সময় অনুযায়ী অবরোহ) | JWT + RBAC |
+| POST | /admin/v1/risk/users/{hashid}/hold | ব্যবহারকারীর প্ল্যাটফর্মে উপলব্ধ ব্যালেন্স স্থগিত করে risk_log-এ লিপিবদ্ধ করুন | JWT + RBAC |
+
+### 19.3 VIP স্তর
+
+VIP স্তরের CRUD এন্ডপয়েন্ট।
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/vip/level/list | VIP স্তরের তালিকা | JWT + RBAC |
+| POST | /admin/v1/vip/level/create | VIP স্তর তৈরি করুন | JWT + RBAC |
+| PUT | /admin/v1/vip/level/{hashid} | VIP স্তর আপডেট করুন | JWT + RBAC |
+| DELETE | /admin/v1/vip/level/{hashid} | VIP স্তর মুছে ফেলুন | JWT + RBAC |
+
+### 19.4 অ্যাচিভমেন্ট
+
+অ্যাচিভমেন্ট সংজ্ঞার CRUD এন্ডপয়েন্ট।
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/achievement/list | অ্যাচিভমেন্ট তালিকা | JWT + RBAC |
+| POST | /admin/v1/achievement/create | অ্যাচিভমেন্ট তৈরি করুন | JWT + RBAC |
+| PUT | /admin/v1/achievement/{hashid} | অ্যাচিভমেন্ট আপডেট করুন | JWT + RBAC |
+| DELETE | /admin/v1/achievement/{hashid} | অ্যাচিভমেন্ট মুছে ফেলুন | JWT + RBAC |
+
+### 19.5 গ্লোবাল সার্চ
+
+সর্বজনীন অনুসন্ধান এন্ডপয়েন্ট।
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/search | গেম বা ব্যবহারকারীর গ্লোবাল সার্চ (ES ফুল-টেক্সট, ব্যর্থ হলে ডাটাবেস LIKE ফলব্যাক) | JWT + RBAC |
+
+### 19.6 রসিদ এক্সপোর্ট
+
+অর্থপ্রদানের প্রমাণপত্র এক্সপোর্ট এন্ডপয়েন্ট।
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/export/receipt | জমা বা উইথড্র অর্ডারের রসিদ PDF এক্সপোর্ট করুন | JWT + RBAC |

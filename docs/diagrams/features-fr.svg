@@ -10,20 +10,20 @@
 
   <rect x="30" y="72" width="220" height="95" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
   <text x="140" y="96" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">Authentification</text>
-  <text x="140" y="116" text-anchor="middle" fill="#3b82f6" font-size="11">Connexion/inscription nom d'utilisateur + mot de passe</text>
+  <text x="140" y="116" text-anchor="middle" fill="#3b82f6" font-size="11">Connexion/inscription identifiant + mdp</text>
   <text x="140" y="135" text-anchor="middle" fill="#3b82f6" font-size="11">OAuth Google/Facebook/Apple</text>
-  <text x="140" y="154" text-anchor="middle" fill="#3b82f6" font-size="11">Authentification à deux facteurs 2FA TOTP</text>
+  <text x="140" y="154" text-anchor="middle" fill="#3b82f6" font-size="11">Authentification à 2 facteurs 2FA TOTP</text>
 
   <rect x="265" y="72" width="220" height="95" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
   <text x="375" y="96" text-anchor="middle" fill="#854d0e" font-size="13" font-weight="bold">Système de portefeuille</text>
-  <text x="375" y="116" text-anchor="middle" fill="#ca8a04" font-size="11">Portefeuille de pièces de plateforme (verrou optimiste anti-concurrence)</text>
-  <text x="375" y="135" text-anchor="middle" fill="#ca8a04" font-size="11">Portefeuille de pièces de jeu (indépendant par jeu)</text>
-  <text x="375" y="154" text-anchor="middle" fill="#ca8a04" font-size="11">Suivi complet des transactions de bout en bout</text>
+  <text x="375" y="116" text-anchor="middle" fill="#ca8a04" font-size="11">Portefeuille pièces plateforme (verrou)</text>
+  <text x="375" y="135" text-anchor="middle" fill="#ca8a04" font-size="11">Portefeuille pièces de jeu (indépendant)</text>
+  <text x="375" y="154" text-anchor="middle" fill="#ca8a04" font-size="11">Suivi des transactions de bout en bout</text>
 
   <rect x="500" y="72" width="220" height="95" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
   <text x="610" y="96" text-anchor="middle" fill="#166534" font-size="13" font-weight="bold">Système de dépôt</text>
   <text x="610" y="116" text-anchor="middle" fill="#22c55e" font-size="11">Création d'une commande de dépôt</text>
-  <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">Vérification des callbacks Stripe/PayPal/Alipay/WeChat Pay</text>
+  <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">Vérif. Stripe/PayPal/Alipay/WeChat Pay</text>
   <text x="610" y="174" text-anchor="middle" fill="#22c55e" font-size="10">Vérification des callbacks NOWPayments/Coinbase</text>
   <text x="610" y="154" text-anchor="middle" fill="#22c55e" font-size="11">Crédit automatique + notification interne</text>
 
@@ -31,7 +31,7 @@
   <text x="850" y="96" text-anchor="middle" fill="#9a3412" font-size="13" font-weight="bold">Système de retrait</text>
   <text x="850" y="116" text-anchor="middle" fill="#ea580c" font-size="11">Demande → Vérification → Paiement</text>
   <text x="850" y="135" text-anchor="middle" fill="#ea580c" font-size="11">Interrupteur global / Limites KYC par palier</text>
-  <text x="850" y="154" text-anchor="middle" fill="#ea580c" font-size="11">Seuil d'approbation automatique configurable</text>
+  <text x="850" y="154" text-anchor="middle" fill="#ea580c" font-size="11">Seuil d'approbation automatique réglable</text>
 
   <rect x="30" y="182" width="220" height="95" rx="8" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5" filter="url(#sh)"/>
   <text x="140" y="206" text-anchor="middle" fill="#5b21b6" font-size="13" font-weight="bold">Moteur de conversion</text>
@@ -42,13 +42,13 @@
   <rect x="265" y="182" width="220" height="95" rx="8" fill="#fce7f3" stroke="#f9a8d4" stroke-width="1.5" filter="url(#sh)"/>
   <text x="375" y="206" text-anchor="middle" fill="#831843" font-size="13" font-weight="bold">Gestion des jeux</text>
   <text x="375" y="226" text-anchor="middle" fill="#ec4899" font-size="11">CRUD + types maison/tiers</text>
-  <text x="375" y="245" text-anchor="middle" fill="#ec4899" font-size="11">10 grandes catégories de jeux + gestion des serveurs</text>
+  <text x="375" y="245" text-anchor="middle" fill="#ec4899" font-size="11">10 catégories de jeux + gestion serveurs</text>
   <text x="375" y="264" text-anchor="middle" fill="#ec4899" font-size="11">Suivi complet des sessions de jeu</text>
 
   <rect x="500" y="182" width="220" height="95" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
   <text x="610" y="206" text-anchor="middle" fill="#991b1b" font-size="13" font-weight="bold">KYC Vérification d'identité</text>
-  <text x="610" y="226" text-anchor="middle" fill="#ef4444" font-size="11">Soumission de la vérification + contrôle en back-office</text>
-  <text x="610" y="245" text-anchor="middle" fill="#ef4444" font-size="11">Carte d'identité / Passeport / Permis de conduire</text>
+  <text x="610" y="226" text-anchor="middle" fill="#ef4444" font-size="11">Soumission KYC + contrôle back-office</text>
+  <text x="610" y="245" text-anchor="middle" fill="#ef4444" font-size="11">Carte d'identité / Passeport / Permis</text>
   <text x="610" y="264" text-anchor="middle" fill="#ef4444" font-size="11">Niveaux + limites par palier</text>
 
   <rect x="735" y="182" width="230" height="95" rx="8" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5" filter="url(#sh)"/>
@@ -60,22 +60,22 @@
   <rect x="30" y="292" width="220" height="95" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#sh)"/>
   <text x="140" y="316" text-anchor="middle" fill="#064e3b" font-size="13" font-weight="bold">Coupons</text>
   <text x="140" y="336" text-anchor="middle" fill="#10b981" font-size="11">Montant fixe / remise en pourcentage</text>
-  <text x="140" y="355" text-anchor="middle" fill="#10b981" font-size="11">Durée limitée / quantité limitée / suivi d'utilisation</text>
+  <text x="140" y="355" text-anchor="middle" fill="#10b981" font-size="11">Durée / quantité limitées / suivi d'usage</text>
 
   <rect x="265" y="292" width="220" height="95" rx="8" fill="#fff1f2" stroke="#fda4af" stroke-width="1.5" filter="url(#sh)"/>
   <text x="375" y="316" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">Système de parrainage</text>
-  <text x="375" y="336" text-anchor="middle" fill="#f43f5e" font-size="11">Génération d'un code de parrainage unique</text>
-  <text x="375" y="355" text-anchor="middle" fill="#f43f5e" font-size="11">Bonus d'inscription + commission sur les dépôts</text>
+  <text x="375" y="336" text-anchor="middle" fill="#f43f5e" font-size="11">Génération code de parrainage unique</text>
+  <text x="375" y="355" text-anchor="middle" fill="#f43f5e" font-size="11">Bonus d'inscription + commission dépôts</text>
 
   <rect x="500" y="292" width="220" height="95" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" filter="url(#sh)"/>
   <text x="610" y="316" text-anchor="middle" fill="#7c2d12" font-size="13" font-weight="bold">Système de gestion des risques</text>
   <text x="610" y="336" text-anchor="middle" fill="#f97316" font-size="11">Liste noire IP / alertes gros montants</text>
-  <text x="610" y="355" text-anchor="middle" fill="#f97316" font-size="11">Détection de fréquence / vitesse anormale</text>
+  <text x="610" y="355" text-anchor="middle" fill="#f97316" font-size="11">Détection fréquence / vitesse anormale</text>
 
   <rect x="735" y="292" width="230" height="95" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" filter="url(#sh)"/>
   <text x="850" y="316" text-anchor="middle" fill="#334155" font-size="13" font-weight="bold">Internationalisation i18n</text>
   <text x="850" y="336" text-anchor="middle" fill="#64748b" font-size="11">4 langues en/zh/ja/ko</text>
-  <text x="850" y="355" text-anchor="middle" fill="#64748b" font-size="11">Tables de traduction + mécanisme de cache</text>
+  <text x="850" y="355" text-anchor="middle" fill="#64748b" font-size="11">Tables de traduction + cache</text>
 
   <rect x="30" y="402" width="220" height="95" rx="8" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1.5" filter="url(#sh)"/>
   <text x="140" y="426" text-anchor="middle" fill="#0c4a6e" font-size="13" font-weight="bold">Centre de notifications</text>
@@ -84,12 +84,12 @@
 
   <rect x="265" y="402" width="220" height="95" rx="8" fill="#fefce8" stroke="#fef08a" stroke-width="1.5" filter="url(#sh)"/>
   <text x="375" y="426" text-anchor="middle" fill="#713f12" font-size="13" font-weight="bold">Différenciation par pays</text>
-  <text x="375" y="446" text-anchor="middle" fill="#eab308" font-size="11">Configuration des paiements/retraits pour 18 pays</text>
+  <text x="375" y="446" text-anchor="middle" fill="#eab308" font-size="11">Config. paiements/retraits pour 18 pays</text>
   <text x="375" y="465" text-anchor="middle" fill="#eab308" font-size="11">Montants minimums de dépôt différenciés</text>
 
   <rect x="500" y="402" width="220" height="95" rx="8" fill="#f5f3ff" stroke="#e9d5ff" stroke-width="1.5" filter="url(#sh)"/>
   <text x="610" y="426" text-anchor="middle" fill="#581c87" font-size="13" font-weight="bold">Analyse statistique</text>
-  <text x="610" y="446" text-anchor="middle" fill="#a855f7" font-size="11">Instantanés quotidiens (5 types de métriques)</text>
+  <text x="610" y="446" text-anchor="middle" fill="#a855f7" font-size="11">Instantanés quotidiens (5 métriques)</text>
   <text x="610" y="465" text-anchor="middle" fill="#a855f7" font-size="11">Suivi des revenus de la plateforme</text>
   <text x="610" y="484" text-anchor="middle" fill="#a855f7" font-size="11">Rapports · Statistiques</text>
 
@@ -101,8 +101,8 @@
   <rect x="30" y="518" width="940" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="500" y="546" text-anchor="middle" fill="#475569" font-size="14" font-weight="bold">Résumé des capacités de la plateforme</text>
   <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">Authentification · Portefeuille (verrou optimiste) · Dépôt (Stripe/PayPal/Alipay/WeChat Pay) · Conversion (taux temps réel) · Retrait (vérif./auto) · KYC (identité)</text>
-  <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">CRUD jeux (10 catégories + serveurs) · Classements (WebSocket temps réel) · Coupons · Parrainage (bonus inscription + commission) · Gestion des risques (4 types de règles)</text>
-  <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">Notifications (interne + e-mail) · Différenciation par pays (18 pays) · Internationalisation (4 langues) · Statistiques (instantanés quotidiens + revenus) · Recherche plein texte (ES)</text>
+  <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">CRUD jeux (10 catégories + serveurs) · Classements (WebSocket temps réel) · Coupons · Parrainage (bonus inscription + comm.) · Gestion des risques (4 types de règles)</text>
+  <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">Notifications (interne + e-mail) · Différenciation par pays (18 pays) · i18n (4 langues) · Statistiques (instantanés quotidiens + revenus) · Recherche plein texte (ES)</text>
 
   <text x="500" y="662" text-anchor="middle" fill="#94a3b8" font-size="11">Clients : 8 cibles — administration 4 + côté C 4 (Flutter/React/Angular/HarmonyOS)</text>
   <text x="500" y="682" text-anchor="middle" fill="#94a3b8" font-size="11">Déploiement : orchestration Docker Compose de 7 services + Nginx reverse proxy + CI/CD (GitHub Actions)</text>

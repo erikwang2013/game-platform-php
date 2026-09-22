@@ -23,7 +23,7 @@
   <line x1="325" y1="141" x2="365" y2="141" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="370" y="118" width="130" height="46" rx="10" fill="#d1fae5" stroke="#10b981" stroke-width="2" filter="url(#sh)"/>
-  <text x="435" y="146" text-anchor="middle" fill="#065f46" font-size="13" font-weight="bold">チャージしてプレイ</text>
+  <text x="435" y="146" text-anchor="middle" fill="#065f46" font-size="13" font-weight="bold">チャージとプレイ</text>
 
   <line x1="500" y1="141" x2="540" y2="141" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 

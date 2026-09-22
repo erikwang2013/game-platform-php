@@ -520,7 +520,7 @@ is_new: true=신규 등록 사용자 / false=기존 계정 연동
 
 status: success / failed
 
-provider 값: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash (toss / mpesa / paystack 출시 예정)
+provider 값: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash / mpesa / paystack / toss / adyen / grabpay
 
 | provider | 지역 | 서명 방식 | 지원 통화 |
 |----------|------|-----------|----------|
@@ -537,9 +537,11 @@ provider 값: stripe / paypal / nowpayments / coinbase / skrill / neteller / pay
 | paypay | 일본 | PayPay-Signature HMAC-SHA256 | JPY |
 | kakaopay | 한국 | Webhook 없음 (ready/approve 2단계) | KRW |
 | gcash | 필리핀 | Paymongo-Signature HMAC-SHA256 | PHP |
-| toss | 한국 (출시 예정) | — | KRW |
-| mpesa | 케냐 / 탄자니아 등 (출시 예정) | — | KES / TZS |
-| paystack | 나이지리아 (출시 예정) | — | NGN |
+| toss | 한국 | Server-side verify + amount check | KRW |
+| mpesa | 케냐 | Trusted IP (CALLBACK_TRUSTED_IPS), no signature | KES |
+| paystack | 나이지리아 | x-paystack-signature HMAC-SHA512 | NGN |
+| adyen | 전 세계 (통화는 주문별) | additionalData.hmacSignature HMAC-SHA256 (ADYEN_HMAC_KEY) | 주문별 |
+| grabpay | 싱가포르 (국가 설정 가능, 기본 SG) | x-signature HMAC-SHA256 (sorted key:value) | 주문별 |
 
 #### GET /api/v1/payment/methods — 사용 가능한 결제 수단 (공개)
 
@@ -1121,6 +1123,58 @@ action: approve=승인 / reject=거부 / confirm=확인 (거부 시 플랫폼 �
   "global_switch": true
 }
 ```
+
+#### POST /admin/v1/withdraw/batch-review — 출금 일괄 심사
+
+```
+需认证: 是
+
+请求: {
+  "ids": ["aB3xK...", "cD4yL..."],
+  "action": "approve",
+  "note": "批量审核通过"
+}
+
+响应: {
+  "processed": 2,
+  "failed": []
+}
+```
+
+action: approve=승인 / reject=거절 (주문별로 처리하며 거절된 주문은 자동 환불됩니다. 실패한 주문은 failed에 담기고 나머지에는 영향을 주지 않습니다)
+
+#### POST /admin/v1/withdraw/execute-payout — 지급 실행
+
+```
+需认证: 是
+
+请求: { "order_id": "aB3xK..." }
+
+响应: {
+  "payout_batch_id": "PAYOUT-123456",
+  "payout_item_id": "ITEM-123456",
+  "payout_status": "success",
+  "payout_attempts": 1
+}
+```
+
+approved 상태의 주문만 지급할 수 있습니다(processing으로 원자적 전환). 중복 호출은 422를 반환합니다. 이중 심사가 켜져 있으면 먼저 두 번째 관리자의 확인이 필요합니다
+
+#### POST /admin/v1/withdraw/sync-payout — 지급 상태 동기화
+
+```
+需认证: 是
+
+请求: { "order_id": "aB3xK..." }
+
+响应: {
+  "payout_status": "success",
+  "order_status": "completed",
+  "synced_status": "success"
+}
+```
+
+오류: 422 이 주문은 아직 지급이 실행되지 않았습니다
 
 ### 3.4 플랫폼 사용자 관리
 
@@ -2205,6 +2259,13 @@ status: open / waiting / replied / closed
 | GET /admin/v1/risk/graph/clusters | 클러스터 목록 |
 | GET /admin/v1/risk/graph/{userId} | 사용자 연관 그래프 |
 | GET /admin/v1/risk/clusters | 리스크 클러스터 목록 |
+| POST /admin/v1/risk/clusters/detect | 클러스터 탐지 (최근 7일 기준 동일 IP에 계정 5개 이상 / 동일 기기 지문에 계정 3개 이상, 후보만 반환하고 저장하지 않음) |
+| POST /admin/v1/risk/clusters/confirm | 클러스터를 수동으로 확정하고 저장 |
+| GET /admin/v1/risk/clusters/{hashid}/members | 클러스터 구성원 목록 (지문으로 구성원 확인) |
+| PUT /admin/v1/risk/clusters/{hashid}/status | 클러스터 상태 업데이트 (1=관찰 중 2=처리 완료 0=오탐) |
+| GET /admin/v1/risk/users | 이상 사용자 큐 (신뢰 점수와 최근 적발 시각으로 필터) |
+| GET /admin/v1/risk/users/{hashid}/timeline | 사용자 리스크 타임라인 (리스크 / 플레이 / 안티치트 이벤트 통합) |
+| POST /admin/v1/risk/users/{hashid}/hold | 사용자의 플랫폼 가용 잔액을 동결하고 기록을 남김 |
 
 ### 10.2 안티치트 관리 (관리자 :8789)
 
@@ -2249,3 +2310,20 @@ status: open / waiting / replied / closed
 |------|------|
 | Adyen | 신규 결제 게이트웨이 (입금/콜백 검증/자동 입금) |
 | GrabPay | 신규 결제 게이트웨이 (입금/콜백 검증/자동 입금) |
+
+### 10.6 VIP / 업적 / 검색 / 영수증 (관리자 :8789)
+
+VIP 레벨, 업적 설정, 전체 검색, 영수증 내보내기(관리자).
+
+| 엔드포인트 | 설명 |
+|------|------|
+| GET /admin/v1/vip/level/list | VIP 레벨 목록 |
+| POST /admin/v1/vip/level/create | VIP 레벨 생성 (level은 고유해야 함) |
+| PUT /admin/v1/vip/level/{hashid} | VIP 레벨 수정 |
+| DELETE /admin/v1/vip/level/{hashid} | VIP 레벨 삭제 (해당 레벨의 사용자가 있으면 거부) |
+| GET /admin/v1/achievement/list | 업적 목록 |
+| POST /admin/v1/achievement/create | 업적 생성 (key 중복 거부) |
+| PUT /admin/v1/achievement/{hashid} | 업적 수정 |
+| DELETE /admin/v1/achievement/{hashid} | 업적 삭제 |
+| GET /admin/v1/search | 전체 검색 (?q= 키워드, type=game 또는 user) |
+| POST /admin/v1/export/receipt | 영수증 PDF 내보내기 (type=deposit 또는 withdraw 와 order_id) |

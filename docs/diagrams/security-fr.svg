@@ -81,7 +81,7 @@
   <rect x="340" y="356" width="310" height="60" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
   <text x="495" y="378" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">L14 : Chiffrement de la couche stockage</text>
   <text x="495" y="396" text-anchor="middle" fill="#22c55e" font-size="10">erikwang2013/encryptable</text>
-  <text x="495" y="410" text-anchor="middle" fill="#22c55e" font-size="10">Chiffrement/déchiffrement auto des champs sensibles + rotation des clés</text>
+  <text x="495" y="410" text-anchor="middle" fill="#22c55e" font-size="10">Chiffrement/déchiffrement auto champs sensibles + rotation clés</text>
 
   <rect x="665" y="356" width="320" height="60" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
   <text x="825" y="378" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">L15 : IDs non déductibles</text>
@@ -109,16 +109,16 @@
   <text x="500" y="526" text-anchor="middle" fill="#475569" font-size="13" font-weight="bold">Mesures de sécurité complémentaires</text>
 
   <rect x="30" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="120" y="553" text-anchor="middle" fill="#475569" font-size="11">Hachage de mot de passe bcrypt</text>
-  <rect x="220" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="553" text-anchor="middle" fill="#475569" font-size="11">Double confirmation du mot de passe (opérations sensibles)</text>
+  <rect x="220" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="553" text-anchor="middle" fill="#475569" font-size="11">Double confirmation (mdp)</text>
   <rect x="410" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="500" y="553" text-anchor="middle" fill="#475569" font-size="11">security.txt RFC 9116</text>
-  <rect x="600" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="690" y="553" text-anchor="middle" fill="#475569" font-size="11">Configuration de durcissement Nginx</text>
-  <rect x="790" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="880" y="553" text-anchor="middle" fill="#475569" font-size="11">Métriques de surveillance Prometheus</text>
+  <rect x="600" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="690" y="553" text-anchor="middle" fill="#475569" font-size="11">Config. durcissement Nginx</text>
+  <rect x="790" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="880" y="553" text-anchor="middle" fill="#475569" font-size="11">Métriques Prometheus</text>
 
-  <rect x="30" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="120" y="583" text-anchor="middle" fill="#475569" font-size="11">Isolation par conteneurisation Docker</text>
-  <rect x="220" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="583" text-anchor="middle" fill="#475569" font-size="11">Sécurité du transport HTTPS/TLS</text>
-  <rect x="410" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="500" y="583" text-anchor="middle" fill="#475569" font-size="11">Mot de passe de base de données dans .gitignore</text>
+  <rect x="30" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="120" y="583" text-anchor="middle" fill="#475569" font-size="11">Isolation par conteneurs Docker</text>
+  <rect x="220" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="583" text-anchor="middle" fill="#475569" font-size="11">Sécurité transport HTTPS/TLS</text>
+  <rect x="410" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="500" y="583" text-anchor="middle" fill="#475569" font-size="11">Mdp BDD dans .gitignore</text>
   <rect x="600" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="690" y="583" text-anchor="middle" fill="#475569" font-size="11">Sauvegardes gzip + 30 jours</text>
-  <rect x="790" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="880" y="583" text-anchor="middle" fill="#475569" font-size="11">Contrôles de sécurité automatisés CI/CD</text>
+  <rect x="790" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="880" y="583" text-anchor="middle" fill="#475569" font-size="11">Contrôles de sécurité CI/CD</text>
 
   <!-- Architecture flow -->
   <rect x="15" y="612" width="970" height="82" rx="8" fill="#fef2f2" stroke="#fecaca" stroke-width="1.5"/>

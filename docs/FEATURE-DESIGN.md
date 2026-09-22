@@ -210,9 +210,9 @@ signature = HMAC-SHA256(
   put.admin/withdraw/switch → 操作提现开关（仅超级管理员）
 ```
 
-## 呼. 标准版新增设计
+## 7. 标准版新增设计
 
-### 8.1 风控引擎
+### 7.1 风控引擎
 
 四种规则类型：
 - `ip_blacklist` — IP 黑名单匹配，命中直接阻断
@@ -222,7 +222,7 @@ signature = HMAC-SHA256(
 
 规则按 priority 降序执行，首个匹配的规则决定结果（block > warn > log）。
 
-### 8.2 OAuth 第三方登录
+### 7.2 OAuth 第三方登录
 
 支持的提供商：Google、Facebook、Apple
 
@@ -232,7 +232,7 @@ signature = HMAC-SHA256(
 3. 回调 `POST /api/auth/oauth/{provider}/callback` 携带授权码
 4. 后端查找已有绑定 → 直接登录；无绑定 → 自动注册+绑定+创建钱包
 
-### 8.3 KYC 限额体系
+### 7.3 KYC 限额体系
 
 | 等级 | 获取方式 | 单笔上限 | 日限额 | 手续费 |
 |------|---------|---------|--------|--------|
@@ -240,11 +240,11 @@ signature = HMAC-SHA256(
 | verified | KYC审核通过 | 5,000 | 50,000 | 0.50% |
 | vip | 运营授予 | 20,000 | 200,000 | 0.00% |
 
-### 8.4 游戏区服
+### 7.4 游戏区服
 
 每个游戏可配置多个区服（region: global/asia/eu/na），区服状态：维护/正常/火爆/新服。
 
-### 8.5 日统计快照
+### 7.5 日统计快照
 
 每日凌晨 crontab 执行 `ComputeDailyStats::run()`，计算五项指标：
 - 用户统计（新增/活跃/累计）
@@ -253,9 +253,9 @@ signature = HMAC-SHA256(
 - 兑换统计（笔数/手续费总额）
 - 游戏统计（玩家数/会话数）
 
-## 9. 生产级功能
+## 8. 生产级功能
 
-### 9.1 通知系统
+### 8.1 通知系统
 
 通知类型：system/deposit/withdraw/kyc/coupon/announcement
 
@@ -268,7 +268,7 @@ signature = HMAC-SHA256(
 
 支持站内信 + 邮件双通道（邮件需配置 MAIL_HOST 环境变量）。
 
-### 9.2 推荐返利
+### 8.2 推荐返利
 
 ```
 用户A 生成推荐码 → 分享给用户B
@@ -276,14 +276,14 @@ signature = HMAC-SHA256(
 用户B 充值 → A 获得充值返佣(deposit_commission_pct%)
 ```
 
-### 9.3 2FA 双因素认证
+### 8.3 2FA 双因素认证
 
 - TOTP 标准协议 (RFC 6238)，兼容 Google Authenticator
 - 启用流程：获取密钥 → 扫码绑定 → 验证TOTP → 生成8个备用恢复码
 - 登录二次验证：POST /api/2fa/verify
 - 支持 ±1 时间窗口容差 (30秒)
 
-### 9.4 真实 OAuth 对接
+### 8.4 真实 OAuth 对接
 
 | 提供商 | Token端点 | 用户信息端点 |
 |--------|----------|------------|
@@ -293,22 +293,22 @@ signature = HMAC-SHA256(
 
 配置通过 PlatformConfig 或环境变量，请求失败自动回退 mock 模式。
 
-### 9.5 支付 Webhook 验签
+### 8.5 支付 Webhook 验签
 
 - Stripe: HMAC-SHA256 签名验证 (Stripe-Signature 头)
 - PayPal: POST 回 PayPal 验证端点
 - 未配置密钥时自动跳过验证（开发模式）
 
-### 9.6 WebSocket 实时排行榜
+### 8.6 WebSocket 实时排行榜
 
 - 协议：WebSocket (ws://host:8790)
 - 订阅：{action: "subscribe", leaderboard_id: 123}
 - 推送：{type: "ranking_update", rankings: [...]}
 - 支持 ping/pong 心跳保活
 
-## 7. 国际化设计
+## 9. 国际化设计
 
-### 7.1 支持语言
+### 9.1 支持语言
 
 | 代码 | 名称 | 本地语 | 图标 |
 |------|------|--------|------|
@@ -317,7 +317,7 @@ signature = HMAC-SHA256(
 | ja-JP | Japanese | 日本語 | jp |
 | ko-KR | Korean | 한국어 | kr |
 
-### 7.2 翻译管理
+### 9.2 翻译管理
 
 - 翻译以 `group.key` 格式组织（如 `auth.login_success`）
 - 数据库表 `game_translation` 存储，Redis 缓存（TTL 1小时）
@@ -325,13 +325,13 @@ signature = HMAC-SHA256(
 - 前端通过 `X-Language` 请求头或 `Accept-Language` 自动检测
 - 翻译缺失时回退到 en-US，en-US 也无则返回原始 key
 
-### 7.3 用户语言偏好
+### 9.3 用户语言偏好
 
 - 用户注册时根据浏览器 `Accept-Language` 自动设置
 - 登录后可通过 `PUT /api/user/profile` 修改 `language` 字段
 - 切换语言时同步更新用户记录
 
-## 8. 平台收益模型
+## 10. 平台收益模型
 
 | 收益来源 | 计算方式 | 说明 |
 |---------|---------|------|

@@ -1792,7 +1792,7 @@ GET /admin/v1/analytics/economy
 
 ## 18. Payment Management
 
-Payment method management is provided by `PaymentController`; all 5 endpoints require JWT + RBAC authentication. `provider` whitelist: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`. `config` is a JSON string of payment configuration (stored encrypted in the database).
+Payment method management is provided by `PaymentController`; all 5 endpoints require JWT + RBAC authentication. `provider` whitelist: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` / `mpesa` / `paystack` / `toss` / `adyen` / `grabpay`. `config` is a JSON string of payment configuration (stored encrypted in the database).
 
 | Method | Path | Description |
 |------|------|------|
@@ -1842,7 +1842,7 @@ GET /admin/v1/payment/method/list
 | id | string | Payment method ID (hashid encoded) |
 | name | string | Payment method name |
 | type | string | `fiat` (fiat currency) / `crypto` (cryptocurrency) |
-| provider | string | Gateway provider: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` |
+| provider | string | Gateway provider: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` / `mpesa` / `paystack` / `toss` / `adyen` / `grabpay` |
 | status | int | 1=enabled, 0=disabled |
 | sort | int | Sort order (ascending) |
 | countries | array{string} | Visible country code array (empty array = visible globally) |
@@ -1899,7 +1899,7 @@ POST /admin/v1/payment/method/create
 |------|------|------|---------|------|
 | name | string | Yes | max:50 | Payment method name |
 | type | string | Yes | in:fiat,crypto | Type: fiat/crypto |
-| provider | string | Yes | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash | Gateway provider whitelist |
+| provider | string | Yes | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash,mpesa,paystack,toss,adyen,grabpay | Gateway provider whitelist |
 | status | int | Yes | in:0,1 | Status |
 | sort | int | No | integer,min:0 | Sort order, default 0 |
 | countries | array{string} | No | max:2 | Visible country codes, empty = global |
@@ -1943,3 +1943,69 @@ DELETE /admin/v1/payment/method/{hashid}
 **Possible errors**:
 - 404: payment method not found
 - 422: pending deposit orders (status=pending) exist, cannot delete
+
+## 19. Extended Admin APIs
+
+The 20 endpoints below are listed in 6 groups; all are `/admin/v1` admin endpoints requiring JWT authentication and RBAC permission validation.
+
+### 19.1 Withdrawal Batch Review and Payout
+
+Supplementary endpoints for manual withdrawal review and PayPal payout.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/withdraw/batch-review | Batch approve or reject withdrawal requests | JWT + RBAC |
+| POST | /admin/v1/withdraw/execute-payout | Execute PayPal payout for an approved withdrawal order | JWT + RBAC |
+| POST | /admin/v1/withdraw/sync-payout | Sync the payout batch status from PayPal | JWT + RBAC |
+
+### 19.2 Risk Clusters and Abnormal Users
+
+Risk cluster detection, manual confirmation and abnormal user handling.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/risk/clusters/detect | Detect candidate clusters (same IP / same device fingerprint in the last 7 days; candidates only, not persisted) | JWT + RBAC |
+| POST | /admin/v1/risk/clusters/confirm | Manually confirm a cluster and write it to game_risk_cluster | JWT + RBAC |
+| GET | /admin/v1/risk/clusters/{hashid}/members | List cluster members | JWT + RBAC |
+| PUT | /admin/v1/risk/clusters/{hashid}/status | Update cluster status (0=mistaken, 1=under watch, 2=handled) | JWT + RBAC |
+| GET | /admin/v1/risk/users | Abnormal user queue (score_min=trust score upper bound, from/to=last-hit time window) | JWT + RBAC |
+| GET | /admin/v1/risk/users/{hashid}/timeline | User risk timeline (merged risk/play/anti-cheat events, newest first) | JWT + RBAC |
+| POST | /admin/v1/risk/users/{hashid}/hold | Freeze the user's available platform balance and write to risk_log | JWT + RBAC |
+
+### 19.3 VIP Levels
+
+CRUD endpoints for VIP levels.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/vip/level/list | List VIP levels | JWT + RBAC |
+| POST | /admin/v1/vip/level/create | Create a VIP level | JWT + RBAC |
+| PUT | /admin/v1/vip/level/{hashid} | Update a VIP level | JWT + RBAC |
+| DELETE | /admin/v1/vip/level/{hashid} | Delete a VIP level | JWT + RBAC |
+
+### 19.4 Achievements
+
+CRUD endpoints for achievement definitions.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/achievement/list | List achievements | JWT + RBAC |
+| POST | /admin/v1/achievement/create | Create an achievement | JWT + RBAC |
+| PUT | /admin/v1/achievement/{hashid} | Update an achievement | JWT + RBAC |
+| DELETE | /admin/v1/achievement/{hashid} | Delete an achievement | JWT + RBAC |
+
+### 19.5 Global Search
+
+Cross-entity search endpoint.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/search | Global search over games and users (ES full-text with database LIKE fallback) | JWT + RBAC |
+
+### 19.6 Receipt Export
+
+Receipt export endpoint.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/export/receipt | Export a deposit or withdrawal receipt as PDF | JWT + RBAC |

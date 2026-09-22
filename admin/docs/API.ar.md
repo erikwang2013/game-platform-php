@@ -1792,7 +1792,7 @@ GET /admin/v1/analytics/economy
 
 ## 18. إدارة الدفع (Payment)
 
-توفر إدارة طرق الدفع عبر `PaymentController`؛ جميع نقاط النهاية الخمس تتطلب مصادقة JWT + RBAC. القائمة البيضاء لـ `provider`: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`. `config` عبارة عن سلسلة JSON لإعدادات الدفع (مخزنة مشفرة في قاعدة البيانات).
+توفر إدارة طرق الدفع عبر `PaymentController`؛ جميع نقاط النهاية الخمس تتطلب مصادقة JWT + RBAC. القائمة البيضاء لـ `provider`: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` / `mpesa` / `paystack` / `toss` / `adyen` / `grabpay`. `config` عبارة عن سلسلة JSON لإعدادات الدفع (مخزنة مشفرة في قاعدة البيانات).
 
 | الطريقة | المسار | الوصف |
 |------|------|------|
@@ -1842,7 +1842,7 @@ GET /admin/v1/payment/method/list
 | id | string | معرف طريقة الدفع (مشفر hashid) |
 | name | string | اسم طريقة الدفع |
 | type | string | `fiat` (عملة ورقية) / `crypto` (عملة رقمية) |
-| provider | string | مزود البوابة: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` |
+| provider | string | مزود البوابة: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` / `mpesa` / `paystack` / `toss` / `adyen` / `grabpay` |
 | status | int | 1=مفعل, 0=معطل |
 | sort | int | قيمة الترتيب (تصاعديًا) |
 | countries | array{string} | مصفوفة رموز الدول المرئية (مصفوفة فارغة = مرئي عالميًا) |
@@ -1899,7 +1899,7 @@ POST /admin/v1/payment/method/create
 |------|------|------|---------|------|
 | name | string | نعم | max:50 | اسم طريقة الدفع |
 | type | string | نعم | in:fiat,crypto | النوع: ورقية/رقمية |
-| provider | string | نعم | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash | القائمة البيضاء لمزودي البوابة |
+| provider | string | نعم | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash,mpesa,paystack,toss,adyen,grabpay | القائمة البيضاء لمزودي البوابة |
 | status | int | نعم | in:0,1 | الحالة |
 | sort | int | لا | integer,min:0 | الترتيب، الافتراضي 0 |
 | countries | array{string} | لا | max:2 | رموز الدول المرئية، فارغ = عالمي |
@@ -1943,3 +1943,69 @@ DELETE /admin/v1/payment/method/{hashid}
 **الأخطاء المحتملة**:
 - 404: طريقة الدفع غير موجودة
 - 422: توجد طلبات إيداع معلقة (status=pending)، لا يمكن الحذف
+
+## 19. نقاط نهاية الإدارة الموسّعة (Extended Admin APIs)
+
+نقاط النهاية العشرون التالية مجمّعة في 6 أقسام؛ جميعها نقاط نهاية إدارية تحت `/admin/v1` وتتطلب مصادقة JWT والتحقق من صلاحيات RBAC.
+
+### 19.1 المراجعة الجماعية للسحب وتنفيذ الدفع
+
+نقاط نهاية تكميلية للمراجعة اليدوية لطلبات السحب والدفع عبر PayPal.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/withdraw/batch-review | الموافقة على طلبات السحب أو رفضها بشكل جماعي | JWT + RBAC |
+| POST | /admin/v1/withdraw/execute-payout | تنفيذ الدفع عبر PayPal لطلب سحب تمت الموافقة عليه | JWT + RBAC |
+| POST | /admin/v1/withdraw/sync-payout | مزامنة حالة دفعة المدفوعات من PayPal | JWT + RBAC |
+
+### 19.2 عناقيد المخاطر والمستخدمون غير الطبيعيين
+
+كشف عناقيد المخاطر والتأكيد اليدوي ومعالجة المستخدمين غير الطبيعيين.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/risk/clusters/detect | كشف العناقيد المرشحة (نفس IP / نفس بصمة الجهاز خلال آخر 7 أيام؛ مرشحات فقط دون تخزين) | JWT + RBAC |
+| POST | /admin/v1/risk/clusters/confirm | تأكيد العنقود يدويًا وكتابته في game_risk_cluster | JWT + RBAC |
+| GET | /admin/v1/risk/clusters/{hashid}/members | قائمة أعضاء العنقود | JWT + RBAC |
+| PUT | /admin/v1/risk/clusters/{hashid}/status | تحديث حالة العنقود (0=إنذار خاطئ، 1=تحت المراقبة، 2=تمت المعالجة) | JWT + RBAC |
+| GET | /admin/v1/risk/users | قائمة المستخدمين غير الطبيعيين (score_min=الحد الأعلى لدرجة الثقة، from/to=نافذة آخر إصابة) | JWT + RBAC |
+| GET | /admin/v1/risk/users/{hashid}/timeline | الخط الزمني لمخاطر المستخدم (أحداث المخاطر/اللعب/مكافحة الغش مدموجة، من الأحدث إلى الأقدم) | JWT + RBAC |
+| POST | /admin/v1/risk/users/{hashid}/hold | تجميد الرصيد المتاح للمستخدم على المنصة وتسجيله في risk_log | JWT + RBAC |
+
+### 19.3 مستويات VIP
+
+نقاط نهاية CRUD لمستويات VIP.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/vip/level/list | قائمة مستويات VIP | JWT + RBAC |
+| POST | /admin/v1/vip/level/create | إنشاء مستوى VIP | JWT + RBAC |
+| PUT | /admin/v1/vip/level/{hashid} | تحديث مستوى VIP | JWT + RBAC |
+| DELETE | /admin/v1/vip/level/{hashid} | حذف مستوى VIP | JWT + RBAC |
+
+### 19.4 الإنجازات
+
+نقاط نهاية CRUD لتعريفات الإنجازات.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/achievement/list | قائمة الإنجازات | JWT + RBAC |
+| POST | /admin/v1/achievement/create | إنشاء إنجاز | JWT + RBAC |
+| PUT | /admin/v1/achievement/{hashid} | تحديث إنجاز | JWT + RBAC |
+| DELETE | /admin/v1/achievement/{hashid} | حذف إنجاز | JWT + RBAC |
+
+### 19.5 البحث العام
+
+نقطة نهاية للبحث الشامل.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/search | بحث عام عن الألعاب أو المستخدمين (بحث نصي كامل في ES مع الرجوع إلى LIKE في قاعدة البيانات) | JWT + RBAC |
+
+### 19.6 تصدير الإيصالات
+
+نقطة نهاية لتصدير المستندات المالية.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/export/receipt | تصدير إيصال الإيداع أو السحب بصيغة PDF | JWT + RBAC |

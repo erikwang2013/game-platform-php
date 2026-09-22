@@ -15,7 +15,7 @@
   <text x="250" y="100" text-anchor="middle" fill="#1e40af" font-size="15" font-weight="bold">Fase 1: SDK de Provider de jogos</text>
   <rect x="50" y="115" width="190" height="45" rx="6" fill="#dbeafe"/><text x="145" y="138" text-anchor="middle" fill="#1e3a5f" font-size="12">GameProvider (abstração)</text><text x="145" y="152" text-anchor="middle" fill="#64748b" font-size="10">balance/bet/settle/refund</text>
   <rect x="260" y="115" width="190" height="45" rx="6" fill="#dbeafe"/><text x="355" y="138" text-anchor="middle" fill="#1e3a5f" font-size="12">Middleware ProviderAuth</text><text x="355" y="152" text-anchor="middle" fill="#64748b" font-size="10">HMAC-SHA256 + janela de 5 minutos</text>
-  <rect x="50" y="175" width="190" height="40" rx="6" fill="#bfdbfe"/><text x="145" y="194" text-anchor="middle" fill="#1e40af" font-size="11">SelfProvider</text><text x="145" y="208" text-anchor="middle" fill="#64748b" font-size="10">Transação de banco (SELECT FOR UPDATE)</text>
+  <rect x="50" y="175" width="190" height="40" rx="6" fill="#bfdbfe"/><text x="145" y="194" text-anchor="middle" fill="#1e40af" font-size="11">SelfProvider</text><text x="145" y="208" text-anchor="middle" fill="#64748b" font-size="10">Transação (SELECT FOR UPDATE)</text>
   <rect x="260" y="175" width="190" height="40" rx="6" fill="#bfdbfe"/><text x="355" y="194" text-anchor="middle" fill="#1e40af" font-size="11">ThirdPartyProvider</text><text x="355" y="208" text-anchor="middle" fill="#64748b" font-size="10">Guzzle HTTP + assinatura</text>
   <rect x="50" y="230" width="400" height="35" rx="6" fill="#93c5fd"/><text x="250" y="244" text-anchor="middle" fill="#fff" font-size="12">SdkSessionAuth — Token de sessão assinado com HMAC (TTL 5 min)</text>
 
@@ -29,9 +29,9 @@
   <!-- Phase 3: Engagement -->
   <rect x="30" y="296" width="440" height="180" rx="10" fill="#fef3c7" stroke="#fcd34d" stroke-width="2"/>
   <text x="250" y="320" text-anchor="middle" fill="#92400e" font-size="15" font-weight="bold">Fase 3: Interação com usuários</text>
-  <rect x="50" y="340" width="190" height="55" rx="6" fill="#fde68a"/><text x="145" y="358" text-anchor="middle" fill="#78350f" font-size="12">Sistema VIP (5 níveis)</text><text x="145" y="373" text-anchor="middle" fill="#64748b" font-size="10">EXP: recarga/login/KYC/indicação</text><text x="145" y="386" text-anchor="middle" fill="#64748b" font-size="10">Descontos: câmbio 2-15% / tarifa 10-100%</text>
-  <rect x="260" y="340" width="190" height="55" rx="6" fill="#fde68a"/><text x="355" y="358" text-anchor="middle" fill="#78350f" font-size="12">Sistema de conquistas</text><text x="355" y="373" text-anchor="middle" fill="#64748b" font-size="10">12 conquistas integradas</text><text x="355" y="386" text-anchor="middle" fill="#64748b" font-size="10">Orientado a eventos + rastreamento de progresso</text>
-  <rect x="50" y="410" width="400" height="55" rx="6" fill="#fde68a"/><text x="250" y="430" text-anchor="middle" fill="#78350f" font-size="12">VipService: acúmulo de EXP + upgrade automático + cálculo de benefícios</text><text x="250" y="445" text-anchor="middle" fill="#64748b" font-size="10">AchievementService: julgamento de condições (contagem/soma/deduplicação/sequência)</text>
+  <rect x="50" y="340" width="190" height="55" rx="6" fill="#fde68a"/><text x="145" y="358" text-anchor="middle" fill="#78350f" font-size="12">Sistema VIP (5 níveis)</text><text x="145" y="373" text-anchor="middle" fill="#64748b" font-size="10">EXP: recarga/login/KYC/indicação</text><text x="145" y="386" text-anchor="middle" fill="#64748b" font-size="10">Desc.: câmbio 2-15% / tarifa 10-100%</text>
+  <rect x="260" y="340" width="190" height="55" rx="6" fill="#fde68a"/><text x="355" y="358" text-anchor="middle" fill="#78350f" font-size="12">Sistema de conquistas</text><text x="355" y="373" text-anchor="middle" fill="#64748b" font-size="10">12 conquistas integradas</text><text x="355" y="386" text-anchor="middle" fill="#64748b" font-size="10">Orientado a eventos + rastr. progresso</text>
+  <rect x="50" y="410" width="400" height="55" rx="6" fill="#fde68a"/><text x="250" y="430" text-anchor="middle" fill="#78350f" font-size="12">VipService: acúmulo de EXP + upgrade autom. + cálculo de benefícios</text><text x="250" y="445" text-anchor="middle" fill="#64748b" font-size="10">AchievementService: julgamento de condições (contagem/soma/dedup./sequência)</text>
   <text x="250" y="468" text-anchor="middle" fill="#92400e" font-size="11" font-style="italic">ExchangeController / WithdrawController — integração de descontos VIP</text>
 
   <!-- Phase 4: Social -->
@@ -52,7 +52,7 @@
   <!-- Database Summary -->
   <rect x="30" y="656" width="900" height="70" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="480" y="680" text-anchor="middle" fill="#334155" font-size="14" font-weight="bold">Banco de dados: 42 → 52 tabelas</text>
-  <text x="480" y="700" text-anchor="middle" fill="#64748b" font-size="11">Novas: game_ticket, game_ticket_reply, game_device_token, game_vip_level, game_user_vip, game_exp_log, game_achievement, game_user_achievement, game_friend, game_message</text>
+  <text x="480" y="700" text-anchor="middle" fill="#64748b" font-size="11">game_ticket,game_ticket_reply,game_device_token,game_vip_level,game_user_vip,game_exp_log,game_achievement,game_user_achievement,game_friend,game_message</text>
   <text x="480" y="716" text-anchor="middle" fill="#64748b" font-size="11">Modificadas: game_game (+provider_config JSON), game_game_play_log (+round_id, +bet_amount, +win_amount)</text>
 
   <!-- Footer -->

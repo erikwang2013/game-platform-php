@@ -520,7 +520,7 @@ is_new: true=নতুন রেজিস্টার্ড ইউজার / fa
 
 status: success / failed
 
-provider এর মান: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash (toss / mpesa / paystack শীঘ্রই আসছে)
+provider এর মান: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash / mpesa / paystack / toss / adyen / grabpay
 
 | provider | অঞ্চল | স্বাক্ষর পদ্ধতি | সমর্থিত মুদ্রা |
 |----------|-------|----------------|----------------|
@@ -537,9 +537,11 @@ provider এর মান: stripe / paypal / nowpayments / coinbase / skrill / n
 | paypay | জাপান | PayPay-Signature HMAC-SHA256 | JPY |
 | kakaopay | দক্ষিণ কোরিয়া | Webhook নেই (ready/approve দুই-ধাপ) | KRW |
 | gcash | ফিলিপাইন | Paymongo-Signature HMAC-SHA256 | PHP |
-| toss | দক্ষিণ কোরিয়া (শীঘ্রই) | — | KRW |
-| mpesa | কেনিয়া / তানজানিয়া ইত্যাদি (শীঘ্রই) | — | KES / TZS |
-| paystack | নাইজেরিয়া (শীঘ্রই) | — | NGN |
+| toss | দক্ষিণ কোরিয়া | Server-side verify + amount check | KRW |
+| mpesa | কেনিয়া | Trusted IP (CALLBACK_TRUSTED_IPS), no signature | KES |
+| paystack | নাইজেরিয়া | x-paystack-signature HMAC-SHA512 | NGN |
+| adyen | বিশ্বব্যাপী (মুদ্রা অর্ডার অনুযায়ী) | additionalData.hmacSignature HMAC-SHA256 (ADYEN_HMAC_KEY) | অর্ডার অনুযায়ী |
+| grabpay | সিঙ্গাপুর (দেশ কনফিগারযোগ্য, ডিফল্ট SG) | x-signature HMAC-SHA256 (sorted key:value) | অর্ডার অনুযায়ী |
 
 #### GET /api/v1/payment/methods — উপলব্ধ পেমেন্ট পদ্ধতি (পাবলিক)
 
@@ -1121,6 +1123,58 @@ action: approve=অনুমোদন / reject=প্রত্যাখ্যা
   "global_switch": true
 }
 ```
+
+#### POST /admin/v1/withdraw/batch-review — একসাথে উইথড্র পর্যালোচনা
+
+```
+需认证: 是
+
+请求: {
+  "ids": ["aB3xK...", "cD4yL..."],
+  "action": "approve",
+  "note": "批量审核通过"
+}
+
+响应: {
+  "processed": 2,
+  "failed": []
+}
+```
+
+action: approve=অনুমোদন / reject=প্রত্যাখ্যান (প্রতি অর্ডারে প্রক্রিয়া; প্রত্যাখ্যাত অর্ডার স্বয়ংক্রিয়ভাবে ফেরত হয়; ব্যর্থ অর্ডার failed-এ যায় এবং বাকিগুলোকে প্রভাবিত করে না)
+
+#### POST /admin/v1/withdraw/execute-payout — পেআউট সম্পাদন
+
+```
+需认证: 是
+
+请求: { "order_id": "aB3xK..." }
+
+响应: {
+  "payout_batch_id": "PAYOUT-123456",
+  "payout_item_id": "ITEM-123456",
+  "payout_status": "success",
+  "payout_attempts": 1
+}
+```
+
+শুধু approved অবস্থার অর্ডার পেআউট করা যায় (processing-এ পরমাণবিক পরিবর্তন); পুনরায় কল করলে 422 ফেরে। দ্বৈত পর্যালোচনা চালু থাকলে অর্ডারটি আগে দ্বিতীয় ব্যক্তির দ্বারা নিশ্চিত হতে হবে
+
+#### POST /admin/v1/withdraw/sync-payout — পেআউট স্ট্যাটাস সিঙ্ক
+
+```
+需认证: 是
+
+请求: { "order_id": "aB3xK..." }
+
+响应: {
+  "payout_status": "success",
+  "order_status": "completed",
+  "synced_status": "success"
+}
+```
+
+ত্রুটি: 422 এই অর্ডারের কোনো পেআউট এখনও সম্পাদিত হয়নি
 
 ### 3.4 প্ল্যাটফর্ম ইউজার ম্যানেজমেন্ট
 
@@ -2205,6 +2259,13 @@ status: open / waiting / replied / closed
 | GET /admin/v1/risk/graph/clusters | ক্লাস্টার তালিকা |
 | GET /admin/v1/risk/graph/{userId} | ব্যবহারকারী লিংক গ্রাফ |
 | GET /admin/v1/risk/clusters | রিস্ক ক্লাস্টার তালিকা |
+| POST /admin/v1/risk/clusters/detect | ক্লাস্টার শনাক্তকরণ (গত ৭ দিনে একই IP-তে ৫+ অ্যাকাউন্ট / একই ডিভাইস ফিঙ্গারপ্রিন্টে ৩+ অ্যাকাউন্ট; শুধু প্রার্থী, সংরক্ষণ নয়) |
+| POST /admin/v1/risk/clusters/confirm | ম্যানুয়ালি ক্লাস্টার নিশ্চিত করে সংরক্ষণ |
+| GET /admin/v1/risk/clusters/{hashid}/members | ক্লাস্টার সদস্য তালিকা (ফিঙ্গারপ্রিন্ট থেকে সদস্য নির্ধারণ) |
+| PUT /admin/v1/risk/clusters/{hashid}/status | ক্লাস্টার স্ট্যাটাস হালনাগাদ (1=পর্যবেক্ষণে 2=সম্পন্ন 0=ভুল শনাক্ত) |
+| GET /admin/v1/risk/users | অস্বাভাবিক ব্যবহারকারীর সারি (ট্রাস্ট স্কোর ও সর্বশেষ শনাক্তকরণ অনুযায়ী ফিল্টার) |
+| GET /admin/v1/risk/users/{hashid}/timeline | ব্যবহারকারীর ঝুঁকি টাইমলাইন (ঝুঁকি / গেমপ্লে / অ্যান্টি-চিট ইভেন্ট একত্রে) |
+| POST /admin/v1/risk/users/{hashid}/hold | ব্যবহারকারীর প্ল্যাটফর্ম ব্যালেন্স জমাট করে লগ রাখা |
 
 ### 10.2 অ্যান্টি-চিট ব্যবস্থাপনা (অ্যাডমিন :8789)
 
@@ -2249,3 +2310,20 @@ status: open / waiting / replied / closed
 |------|------|
 | Adyen | নতুন পেমেন্ট গেটওয়ে (ডিপোজিট/কলব্যাক যাচাই/স্বয়ংক্রিয় ক্রেডিট) |
 | GrabPay | নতুন পেমেন্ট গেটওয়ে (ডিপোজিট/কলব্যাক যাচাই/স্বয়ংক্রিয় ক্রেডিট) |
+
+### 10.6 VIP / অ্যাচিভমেন্ট / সার্চ / রসিদ (অ্যাডমিন :8789)
+
+VIP লেভেল, অ্যাচিভমেন্ট কনফিগারেশন, গ্লোবাল সার্চ ও রসিদ এক্সপোর্ট (অ্যাডমিন)।
+
+| এন্ডপয়েন্ট | বর্ণনা |
+|------|------|
+| GET /admin/v1/vip/level/list | VIP লেভেল তালিকা |
+| POST /admin/v1/vip/level/create | VIP লেভেল তৈরি (level অনন্য হতে হবে) |
+| PUT /admin/v1/vip/level/{hashid} | VIP লেভেল হালনাগাদ |
+| DELETE /admin/v1/vip/level/{hashid} | VIP লেভেল মুছুন (ওই লেভেলে ব্যবহারকারী থাকলে প্রত্যাখ্যাত) |
+| GET /admin/v1/achievement/list | অ্যাচিভমেন্ট তালিকা |
+| POST /admin/v1/achievement/create | অ্যাচিভমেন্ট তৈরি (key ডুপ্লিকেট প্রত্যাখ্যাত) |
+| PUT /admin/v1/achievement/{hashid} | অ্যাচিভমেন্ট হালনাগাদ |
+| DELETE /admin/v1/achievement/{hashid} | অ্যাচিভমেন্ট মুছুন |
+| GET /admin/v1/search | গ্লোবাল সার্চ (?q= কীওয়ার্ড, type=game বা user) |
+| POST /admin/v1/export/receipt | রসিদ PDF এক্সপোর্ট (type=deposit বা withdraw এবং order_id) |

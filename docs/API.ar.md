@@ -520,7 +520,7 @@ is_new: true=مستخدم مسجل حديثًا / false=حساب موجود تم
 
 status: success / failed
 
-القيم الممكنة لـ provider: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash (toss / mpesa / paystack قريباً)
+القيم الممكنة لـ provider: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash / mpesa / paystack / toss / adyen / grabpay
 
 | provider | المنطقة | آلية التوقيع | العملات المدعومة |
 |----------|---------|--------------|-------------------|
@@ -537,9 +537,11 @@ status: success / failed
 | paypay | اليابان | PayPay-Signature HMAC-SHA256 | JPY |
 | kakaopay | كوريا الجنوبية | بدون Webhook (خطوتان ready/approve) | KRW |
 | gcash | الفلبين | Paymongo-Signature HMAC-SHA256 | PHP |
-| toss | كوريا الجنوبية (قريباً) | — | KRW |
-| mpesa | كينيا / تنزانيا وغيرها (قريباً) | — | KES / TZS |
-| paystack | نيجيريا (قريباً) | — | NGN |
+| toss | كوريا الجنوبية | Server-side verify + amount check | KRW |
+| mpesa | كينيا | Trusted IP (CALLBACK_TRUSTED_IPS), no signature | KES |
+| paystack | نيجيريا | x-paystack-signature HMAC-SHA512 | NGN |
+| adyen | عالمي (العملة حسب الطلب) | additionalData.hmacSignature HMAC-SHA256 (ADYEN_HMAC_KEY) | حسب الطلب |
+| grabpay | سنغافورة (الدولة قابلة للتهيئة، الافتراضي SG) | x-signature HMAC-SHA256 (sorted key:value) | حسب الطلب |
 
 #### GET /api/v1/payment/methods — طرق الدفع المتاحة (عام)
 
@@ -1121,6 +1123,58 @@ action: approve=موافقة / reject=رفض / confirm=تأكيد (عند الر
   "global_switch": true
 }
 ```
+
+#### POST /admin/v1/withdraw/batch-review — مراجعة جماعية لطلبات السحب
+
+```
+需认证: 是
+
+请求: {
+  "ids": ["aB3xK...", "cD4yL..."],
+  "action": "approve",
+  "note": "批量审核通过"
+}
+
+响应: {
+  "processed": 2,
+  "failed": []
+}
+```
+
+action: approve=موافقة / reject=رفض (تتم المعالجة لكل طلب؛ الطلبات المرفوضة تُرد تلقائيًا؛ الطلبات الفاشلة تُدرج في failed ولا تؤثر على البقية)
+
+#### POST /admin/v1/withdraw/execute-payout — تنفيذ الدفع
+
+```
+需认证: 是
+
+请求: { "order_id": "aB3xK..." }
+
+响应: {
+  "payout_batch_id": "PAYOUT-123456",
+  "payout_item_id": "ITEM-123456",
+  "payout_status": "success",
+  "payout_attempts": 1
+}
+```
+
+لا يمكن التنفيذ إلا للطلبات في حالة approved (تحويل ذري إلى processing)؛ والنداء المكرر يعيد 422. عند تفعيل المراجعة المزدوجة يجب تأكيد الطلب مسبقًا من شخص ثانٍ
+
+#### POST /admin/v1/withdraw/sync-payout — مزامنة حالة الدفع
+
+```
+需认证: 是
+
+请求: { "order_id": "aB3xK..." }
+
+响应: {
+  "payout_status": "success",
+  "order_status": "completed",
+  "synced_status": "success"
+}
+```
+
+خطأ: 422 لم يتم تنفيذ أي دفع لهذا الطلب بعد
 
 ### 3.4 إدارة مستخدمي المنصة
 
@@ -2205,6 +2259,13 @@ status: open / waiting / replied / closed
 | GET /admin/v1/risk/graph/clusters | قائمة العناقيد |
 | GET /admin/v1/risk/graph/{userId} | رسم بياني لروابط المستخدم |
 | GET /admin/v1/risk/clusters | قائمة عناقيد المخاطر |
+| POST /admin/v1/risk/clusters/detect | كشف العناقيد (نفس IP مع 5 حسابات أو أكثر / نفس بصمة الجهاز مع 3 حسابات أو أكثر خلال آخر 7 أيام؛ مرشحون فقط دون حفظ) |
+| POST /admin/v1/risk/clusters/confirm | تأكيد العنقود يدويًا وحفظه |
+| GET /admin/v1/risk/clusters/{hashid}/members | قائمة أعضاء العنقود (تُستخرج الأعضاء من البصمة) |
+| PUT /admin/v1/risk/clusters/{hashid}/status | تحديث حالة العنقود (1=تحت المراقبة 2=تمت المعالجة 0=إنذار خاطئ) |
+| GET /admin/v1/risk/users | قائمة المستخدمين غير الطبيعيين (تصفية حسب درجة الثقة ووقت آخر رصد) |
+| GET /admin/v1/risk/users/{hashid}/timeline | الخط الزمني لمخاطر المستخدم (دمج أحداث المخاطر واللعب ومكافحة الغش) |
+| POST /admin/v1/risk/users/{hashid}/hold | تجميد الرصيد المتاح للمستخدم وتسجيل الإجراء |
 
 ### 10.2 إدارة مكافحة الغش (الإدارة :8789)
 
@@ -2249,3 +2310,20 @@ status: open / waiting / replied / closed
 |------|------|
 | Adyen | بوابة دفع جديدة (إيداع / التحقق من الاستدعاء / إضافة تلقائية) |
 | GrabPay | بوابة دفع جديدة (إيداع / التحقق من الاستدعاء / إضافة تلقائية) |
+
+### 10.6 VIP / الإنجازات / البحث / الإيصالات (الإدارة :8789)
+
+مستويات VIP وإعداد الإنجازات والبحث الشامل وتصدير الإيصالات (الإدارة).
+
+| نقطة الوصول | الوصف |
+|------|------|
+| GET /admin/v1/vip/level/list | قائمة مستويات VIP |
+| POST /admin/v1/vip/level/create | إنشاء مستوى VIP (يجب أن يكون level فريدًا) |
+| PUT /admin/v1/vip/level/{hashid} | تحديث مستوى VIP |
+| DELETE /admin/v1/vip/level/{hashid} | حذف مستوى VIP (يُرفض إذا كان هناك مستخدمون في هذا المستوى) |
+| GET /admin/v1/achievement/list | قائمة الإنجازات |
+| POST /admin/v1/achievement/create | إنشاء إنجاز (تكرار key مرفوض) |
+| PUT /admin/v1/achievement/{hashid} | تحديث إنجاز |
+| DELETE /admin/v1/achievement/{hashid} | حذف إنجاز |
+| GET /admin/v1/search | بحث شامل (?q= كلمة البحث، type=game أو user) |
+| POST /admin/v1/export/receipt | تصدير إيصال PDF (type=deposit أو withdraw مع order_id) |

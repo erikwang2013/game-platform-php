@@ -520,7 +520,7 @@ Respons: { "message": "success" }
 
 status: success / failed
 
-Nilai provider: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash (toss / mpesa / paystack segera hadir)
+Nilai provider: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash / mpesa / paystack / toss / adyen / grabpay
 
 | provider | Wilayah | Skema tanda tangan | Mata uang yang didukung |
 |----------|---------|--------------------|-------------------------|
@@ -537,9 +537,11 @@ Nilai provider: stripe / paypal / nowpayments / coinbase / skrill / neteller / p
 | paypay | Jepang | PayPay-Signature HMAC-SHA256 | JPY |
 | kakaopay | Korea Selatan | Tanpa webhook (dua langkah ready/approve) | KRW |
 | gcash | Filipina | Paymongo-Signature HMAC-SHA256 | PHP |
-| toss | Korea Selatan (segera hadir) | — | KRW |
-| mpesa | Kenya / Tanzania dll. (segera hadir) | — | KES / TZS |
-| paystack | Nigeria (segera hadir) | — | NGN |
+| toss | Korea Selatan | Server-side verify + amount check | KRW |
+| mpesa | Kenya | Trusted IP (CALLBACK_TRUSTED_IPS), no signature | KES |
+| paystack | Nigeria | x-paystack-signature HMAC-SHA512 | NGN |
+| adyen | Global (mata uang sesuai pesanan) | additionalData.hmacSignature HMAC-SHA256 (ADYEN_HMAC_KEY) | sesuai pesanan |
+| grabpay | Singapura (negara dapat dikonfigurasi, default SG) | x-signature HMAC-SHA256 (sorted key:value) | sesuai pesanan |
 
 #### GET /api/v1/payment/methods — Metode Pembayaran Tersedia (publik)
 
@@ -1121,6 +1123,58 @@ Respons: {
   "global_switch": true
 }
 ```
+
+#### POST /admin/v1/withdraw/batch-review — Tinjau massal penarikan
+
+```
+需认证: 是
+
+请求: {
+  "ids": ["aB3xK...", "cD4yL..."],
+  "action": "approve",
+  "note": "批量审核通过"
+}
+
+响应: {
+  "processed": 2,
+  "failed": []
+}
+```
+
+action: approve=setujui / reject=tolak (diproses per pesanan; pesanan yang ditolak dikembalikan otomatis; kegagalan masuk ke failed dan tidak memengaruhi sisanya)
+
+#### POST /admin/v1/withdraw/execute-payout — Jalankan pembayaran
+
+```
+需认证: 是
+
+请求: { "order_id": "aB3xK..." }
+
+响应: {
+  "payout_batch_id": "PAYOUT-123456",
+  "payout_item_id": "ITEM-123456",
+  "payout_status": "success",
+  "payout_attempts": 1
+}
+```
+
+Hanya pesanan berstatus approved yang dapat dibayarkan (peralihan atomik ke processing); panggilan berulang mengembalikan 422. Jika tinjauan ganda aktif, pesanan harus dikonfirmasi lebih dulu oleh orang kedua
+
+#### POST /admin/v1/withdraw/sync-payout — Sinkronkan status pembayaran
+
+```
+需认证: 是
+
+请求: { "order_id": "aB3xK..." }
+
+响应: {
+  "payout_status": "success",
+  "order_status": "completed",
+  "synced_status": "success"
+}
+```
+
+Kesalahan: 422 Pesanan ini belum menjalankan pembayaran
 
 ### 3.4 Manajemen Pengguna Platform
 
@@ -2205,6 +2259,13 @@ Komisi referral menambahkan bagi hasil level dua:
 | GET /admin/v1/risk/graph/clusters | Daftar klaster |
 | GET /admin/v1/risk/graph/{userId} | Grafik keterkaitan pengguna |
 | GET /admin/v1/risk/clusters | Daftar klaster risiko |
+| POST /admin/v1/risk/clusters/detect | Deteksi klaster (IP sama dengan 5+ akun / sidik perangkat sama dengan 3+ akun dalam 7 hari terakhir; hanya kandidat, tidak disimpan) |
+| POST /admin/v1/risk/clusters/confirm | Konfirmasi klaster secara manual lalu simpan |
+| GET /admin/v1/risk/clusters/{hashid}/members | Daftar anggota klaster (anggota ditelusuri dari sidik) |
+| PUT /admin/v1/risk/clusters/{hashid}/status | Perbarui status klaster (1=dalam pemantauan 2=ditangani 0=salah deteksi) |
+| GET /admin/v1/risk/users | Antrean pengguna tidak normal (difilter berdasarkan skor kepercayaan dan waktu deteksi terakhir) |
+| GET /admin/v1/risk/users/{hashid}/timeline | Linimasa risiko pengguna (peristiwa risiko / permainan / anti-kecurangan digabung) |
+| POST /admin/v1/risk/users/{hashid}/hold | Bekukan saldo platform pengguna dan catat jejaknya |
 
 ### 10.2 Manajemen Anti-Cheat (Admin :8789)
 
@@ -2249,3 +2310,20 @@ Komisi referral menambahkan bagi hasil level dua:
 |------|------|
 | Adyen | Gerbang pembayaran baru (deposit / verifikasi callback / kredit otomatis) |
 | GrabPay | Gerbang pembayaran baru (deposit / verifikasi callback / kredit otomatis) |
+
+### 10.6 VIP / Pencapaian / Pencarian / Kuitansi (Admin :8789)
+
+Level VIP, konfigurasi pencapaian, pencarian global, dan ekspor kuitansi (admin).
+
+| Endpoint | Deskripsi |
+|------|------|
+| GET /admin/v1/vip/level/list | Daftar level VIP |
+| POST /admin/v1/vip/level/create | Buat level VIP (level harus unik) |
+| PUT /admin/v1/vip/level/{hashid} | Perbarui level VIP |
+| DELETE /admin/v1/vip/level/{hashid} | Hapus level VIP (ditolak jika ada pengguna pada level itu) |
+| GET /admin/v1/achievement/list | Daftar pencapaian |
+| POST /admin/v1/achievement/create | Buat pencapaian (key duplikat ditolak) |
+| PUT /admin/v1/achievement/{hashid} | Perbarui pencapaian |
+| DELETE /admin/v1/achievement/{hashid} | Hapus pencapaian |
+| GET /admin/v1/search | Pencarian global (?q= kata kunci, type=game atau user) |
+| POST /admin/v1/export/receipt | Ekspor kuitansi PDF (type=deposit atau withdraw plus order_id) |

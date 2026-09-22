@@ -29,7 +29,7 @@
   <!-- Phase 3: Engagement -->
   <rect x="30" y="296" width="440" height="180" rx="10" fill="#fef3c7" stroke="#fcd34d" stroke-width="2"/>
   <text x="250" y="320" text-anchor="middle" fill="#92400e" font-size="15" font-weight="bold">Fase 3: Interaksi Pengguna</text>
-  <rect x="50" y="340" width="190" height="55" rx="6" fill="#fde68a"/><text x="145" y="358" text-anchor="middle" fill="#78350f" font-size="12">Sistem VIP (5 level)</text><text x="145" y="373" text-anchor="middle" fill="#64748b" font-size="10">EXP: deposit/login/KYC/referral</text><text x="145" y="386" text-anchor="middle" fill="#64748b" font-size="10">Diskon: penukaran 2-15% / biaya 10-100%</text>
+  <rect x="50" y="340" width="190" height="55" rx="6" fill="#fde68a"/><text x="145" y="358" text-anchor="middle" fill="#78350f" font-size="12">Sistem VIP (5 level)</text><text x="145" y="373" text-anchor="middle" fill="#64748b" font-size="10">EXP: deposit/login/KYC/referral</text><text x="145" y="386" text-anchor="middle" fill="#64748b" font-size="10">Diskon: tukar 2-15% / biaya 10-100%</text>
   <rect x="260" y="340" width="190" height="55" rx="6" fill="#fde68a"/><text x="355" y="358" text-anchor="middle" fill="#78350f" font-size="12">Sistem pencapaian</text><text x="355" y="373" text-anchor="middle" fill="#64748b" font-size="10">12 pencapaian bawaan</text><text x="355" y="386" text-anchor="middle" fill="#64748b" font-size="10">Berbasis event + pelacakan progres</text>
   <rect x="50" y="410" width="400" height="55" rx="6" fill="#fde68a"/><text x="250" y="430" text-anchor="middle" fill="#78350f" font-size="12">VipService: akumulasi EXP + upgrade otomatis + perhitungan hak</text><text x="250" y="445" text-anchor="middle" fill="#64748b" font-size="10">AchievementService: penentuan kondisi (hitung/jumlah/dedup/berurutan)</text>
   <text x="250" y="468" text-anchor="middle" fill="#92400e" font-size="11" font-style="italic">ExchangeController / WithdrawController — integrasi diskon VIP</text>
@@ -52,7 +52,7 @@
   <!-- Database Summary -->
   <rect x="30" y="656" width="900" height="70" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="480" y="680" text-anchor="middle" fill="#334155" font-size="14" font-weight="bold">Database: 42 → 52 tabel</text>
-  <text x="480" y="700" text-anchor="middle" fill="#64748b" font-size="11">Baru: game_ticket, game_ticket_reply, game_device_token, game_vip_level, game_user_vip, game_exp_log, game_achievement, game_user_achievement, game_friend, game_message</text>
+  <text x="480" y="700" text-anchor="middle" fill="#64748b" font-size="11">Baru:game_ticket,game_ticket_reply,game_device_token,game_vip_level,game_user_vip,game_exp_log,game_achievement,game_user_achievement,game_friend,game_message</text>
   <text x="480" y="716" text-anchor="middle" fill="#64748b" font-size="11">Modifikasi: game_game (+provider_config JSON), game_game_play_log (+round_id, +bet_amount, +win_amount)</text>
 
   <!-- Footer -->

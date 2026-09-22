@@ -1792,7 +1792,7 @@ GET /admin/v1/analytics/economy
 
 ## 18. 결제 관리 (Payment)
 
-결제 수단 관리는 `PaymentController`가 제공하며, 5개 엔드포인트 모두 JWT + RBAC 인증이 필요합니다. `provider` 화이트리스트: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`. `config`는 결제 설정 JSON 문자열(DB에 암호화 저장)입니다.
+결제 수단 관리는 `PaymentController`가 제공하며, 5개 엔드포인트 모두 JWT + RBAC 인증이 필요합니다. `provider` 화이트리스트: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` / `mpesa` / `paystack` / `toss` / `adyen` / `grabpay`. `config`는 결제 설정 JSON 문자열(DB에 암호화 저장)입니다.
 
 | 메서드 | 경로 | 설명 |
 |------|------|------|
@@ -1842,7 +1842,7 @@ GET /admin/v1/payment/method/list
 | id | string | 결제 수단 ID(hashid 인코딩) |
 | name | string | 결제 수단 이름 |
 | type | string | `fiat`(법정화폐) / `crypto`(암호화폐) |
-| provider | string | 게이트웨이 제공자: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` |
+| provider | string | 게이트웨이 제공자: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` / `mpesa` / `paystack` / `toss` / `adyen` / `grabpay` |
 | status | int | 1=활성, 0=비활성 |
 | sort | int | 정렬값(오름차순) |
 | countries | array{string} | 표시 대상 국가 코드 배열(빈 배열=전 세계 표시) |
@@ -1899,7 +1899,7 @@ POST /admin/v1/payment/method/create
 |------|------|------|---------|------|
 | name | string | 예 | max:50 | 결제 수단 이름 |
 | type | string | 예 | in:fiat,crypto | 유형: 법정화폐/암호화폐 |
-| provider | string | 예 | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash | 게이트웨이 제공자 화이트리스트 |
+| provider | string | 예 | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash,mpesa,paystack,toss,adyen,grabpay | 게이트웨이 제공자 화이트리스트 |
 | status | int | 예 | in:0,1 | 상태 |
 | sort | int | 아니요 | integer,min:0 | 정렬값, 기본 0 |
 | countries | array{string} | 아니요 | max:2 | 표시 국가 코드, 비어 있으면 전 세계 |
@@ -1943,3 +1943,69 @@ DELETE /admin/v1/payment/method/{hashid}
 **가능한 오류**:
 - 404: 결제 수단이 존재하지 않음
 - 422: 대기 중인 입금 주문(status=pending)이 존재하여 삭제 불가
+
+## 19. 확장 관리 엔드포인트 (Extended Admin APIs)
+
+아래 20개 엔드포인트는 6개 섹션으로 나뉘며, 모두 `/admin/v1` 관리 엔드포인트로서 JWT 인증과 RBAC 권한 검증이 필요합니다.
+
+### 19.1 출금 일괄 심사 및 지급 실행
+
+수동 출금 심사와 PayPal 지급을 위한 보조 엔드포인트입니다.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/withdraw/batch-review | 출금 신청을 일괄 승인 또는 거부합니다 | JWT + RBAC |
+| POST | /admin/v1/withdraw/execute-payout | 승인된 출금 주문에 대해 PayPal 지급을 실행합니다 | JWT + RBAC |
+| POST | /admin/v1/withdraw/sync-payout | PayPal에서 지급 배치 상태를 동기화합니다 | JWT + RBAC |
+
+### 19.2 리스크 클러스터 및 이상 사용자
+
+리스크 클러스터 탐지, 수동 확인, 이상 사용자 처리입니다.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/risk/clusters/detect | 후보 클러스터를 탐지합니다(최근 7일 동일 IP / 동일 기기 지문, 후보만 반환하고 저장하지 않음) | JWT + RBAC |
+| POST | /admin/v1/risk/clusters/confirm | 클러스터를 수동으로 확인하고 game_risk_cluster에 기록합니다 | JWT + RBAC |
+| GET | /admin/v1/risk/clusters/{hashid}/members | 클러스터 구성원 목록 | JWT + RBAC |
+| PUT | /admin/v1/risk/clusters/{hashid}/status | 클러스터 상태를 업데이트합니다(0=오탐, 1=관찰 중, 2=처리 완료) | JWT + RBAC |
+| GET | /admin/v1/risk/users | 이상 사용자 큐(score_min=신뢰 점수 상한, from/to=최근 적중 시간 범위) | JWT + RBAC |
+| GET | /admin/v1/risk/users/{hashid}/timeline | 사용자 리스크 타임라인(리스크/플레이/부정행위 이벤트 병합, 최신순) | JWT + RBAC |
+| POST | /admin/v1/risk/users/{hashid}/hold | 사용자의 플랫폼 가용 잔액을 동결하고 risk_log에 기록합니다 | JWT + RBAC |
+
+### 19.3 VIP 등급
+
+VIP 등급 CRUD 엔드포인트입니다.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/vip/level/list | VIP 등급 목록 | JWT + RBAC |
+| POST | /admin/v1/vip/level/create | VIP 등급 생성 | JWT + RBAC |
+| PUT | /admin/v1/vip/level/{hashid} | VIP 등급 업데이트 | JWT + RBAC |
+| DELETE | /admin/v1/vip/level/{hashid} | VIP 등급 삭제 | JWT + RBAC |
+
+### 19.4 업적
+
+업적 정의 CRUD 엔드포인트입니다.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/achievement/list | 업적 목록 | JWT + RBAC |
+| POST | /admin/v1/achievement/create | 업적 생성 | JWT + RBAC |
+| PUT | /admin/v1/achievement/{hashid} | 업적 업데이트 | JWT + RBAC |
+| DELETE | /admin/v1/achievement/{hashid} | 업적 삭제 | JWT + RBAC |
+
+### 19.5 전역 검색
+
+교차 검색 엔드포인트입니다.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/search | 게임 또는 사용자 전역 검색(ES 전문 검색, 실패 시 데이터베이스 LIKE 폴백) | JWT + RBAC |
+
+### 19.6 영수증 내보내기
+
+거래 증빙 내보내기 엔드포인트입니다.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/export/receipt | 입금 또는 출금 주문 영수증을 PDF로 내보냅니다 | JWT + RBAC |

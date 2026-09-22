@@ -499,7 +499,7 @@ is_new: true=新注册用户 / false=已有账号绑定
 
 status: success / failed
 
-provider values: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash (toss / mpesa / paystack coming soon)
+provider values: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash / mpesa / paystack / toss / adyen / grabpay
 
 | provider | Region | Signature scheme | Supported currencies |
 |----------|--------|------------------|----------------------|
@@ -516,9 +516,11 @@ provider values: stripe / paypal / nowpayments / coinbase / skrill / neteller / 
 | paypay | Japan | PayPay-Signature HMAC-SHA256 | JPY |
 | kakaopay | South Korea | No webhook (ready/approve two-step) | KRW |
 | gcash | Philippines | Paymongo-Signature HMAC-SHA256 | PHP |
-| toss | South Korea (coming soon) | — | KRW |
-| mpesa | Kenya / Tanzania etc. (coming soon) | — | KES / TZS |
-| paystack | Nigeria (coming soon) | — | NGN |
+| toss | South Korea | Server-side verify + amount check | KRW |
+| mpesa | Kenya | Trusted IP (CALLBACK_TRUSTED_IPS), no signature | KES |
+| paystack | Nigeria | x-paystack-signature HMAC-SHA512 | NGN |
+| adyen | Global (currency per order) | additionalData.hmacSignature HMAC-SHA256 (ADYEN_HMAC_KEY) | per order |
+| grabpay | Singapore (country configurable, default SG) | x-signature HMAC-SHA256 (sorted key:value) | per order |
 
 #### GET /api/v1/payment/methods — Available Payment Methods (public)
 ```
@@ -1064,6 +1066,58 @@ action: approve=通过 / reject=拒绝 / confirm=确认打款（拒绝时自动�
   "global_switch": true
 }
 ```
+
+#### POST /admin/v1/withdraw/batch-review — Batch Review Withdrawals
+
+```
+需认证: 是
+
+请求: {
+  "ids": ["aB3xK...", "cD4yL..."],
+  "action": "approve",
+  "note": "批量审核通过"
+}
+
+响应: {
+  "processed": 2,
+  "failed": []
+}
+```
+
+action: approve / reject (processed per order; rejected orders are refunded automatically; failures are listed in failed and do not affect the rest)
+
+#### POST /admin/v1/withdraw/execute-payout — Execute Payout
+
+```
+需认证: 是
+
+请求: { "order_id": "aB3xK..." }
+
+响应: {
+  "payout_batch_id": "PAYOUT-123456",
+  "payout_item_id": "ITEM-123456",
+  "payout_status": "success",
+  "payout_attempts": 1
+}
+```
+
+Only orders in approved status can be paid out (atomic flip to processing); a repeated call returns 422. With dual review enabled, the order must first be confirmed by a second admin
+
+#### POST /admin/v1/withdraw/sync-payout — Sync Payout Status
+
+```
+需认证: 是
+
+请求: { "order_id": "aB3xK..." }
+
+响应: {
+  "payout_status": "success",
+  "order_status": "completed",
+  "synced_status": "success"
+}
+```
+
+Error: 422 no payout has been executed for this order yet
 
 ### 3.4 Platform User Management
 
@@ -2100,6 +2154,13 @@ Referral commission adds a second level:
 | GET /admin/v1/risk/graph/clusters | Cluster list |
 | GET /admin/v1/risk/graph/{userId} | User link graph |
 | GET /admin/v1/risk/clusters | Risk cluster list |
+| POST /admin/v1/risk/clusters/detect | Cluster detection (same IP with 5+ accounts / same device fingerprint with 3+ accounts in the last 7 days; candidates only, nothing persisted) |
+| POST /admin/v1/risk/clusters/confirm | Manually confirm a cluster and persist it |
+| GET /admin/v1/risk/clusters/{hashid}/members | Cluster member list (members resolved from the fingerprint) |
+| PUT /admin/v1/risk/clusters/{hashid}/status | Update cluster status (1=watching 2=handled 0=false positive) |
+| GET /admin/v1/risk/users | Suspicious user queue (filtered by trust score and last hit time) |
+| GET /admin/v1/risk/users/{hashid}/timeline | User risk timeline (risk / gameplay / anti-cheat events merged) |
+| POST /admin/v1/risk/users/{hashid}/hold | Freeze the user's available platform balance and write a risk log |
 
 ### 10.2 Anti-Cheat Management (Admin :8789)
 
@@ -2144,3 +2205,20 @@ Referral commission adds a second level:
 |------|------|
 | Adyen | New payment gateway (deposit / callback verification / auto-credit) |
 | GrabPay | New payment gateway (deposit / callback verification / auto-credit) |
+
+### 10.6 VIP / Achievements / Search / Receipts (Admin :8789)
+
+VIP levels, achievement configuration, global search and electronic receipt export (admin).
+
+| Endpoint | Description |
+|------|------|
+| GET /admin/v1/vip/level/list | VIP level list |
+| POST /admin/v1/vip/level/create | Create VIP level (level must be unique) |
+| PUT /admin/v1/vip/level/{hashid} | Update VIP level |
+| DELETE /admin/v1/vip/level/{hashid} | Delete VIP level (rejected while users hold that level) |
+| GET /admin/v1/achievement/list | Achievement list |
+| POST /admin/v1/achievement/create | Create achievement (duplicate key rejected) |
+| PUT /admin/v1/achievement/{hashid} | Update achievement |
+| DELETE /admin/v1/achievement/{hashid} | Delete achievement |
+| GET /admin/v1/search | Global search (?q= keyword, type=game or user) |
+| POST /admin/v1/export/receipt | Export receipt PDF (type=deposit or withdraw, plus order_id) |

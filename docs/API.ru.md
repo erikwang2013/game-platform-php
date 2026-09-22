@@ -520,7 +520,7 @@ is_new: true=новый зарегистрированный пользоват�
 
 status: success / failed
 
-Допустимые значения provider: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash (toss / mpesa / paystack скоро)
+Допустимые значения provider: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash / mpesa / paystack / toss / adyen / grabpay
 
 | provider | Регион | Схема подписи | Поддерживаемые валюты |
 |----------|--------|---------------|-----------------------|
@@ -537,9 +537,11 @@ status: success / failed
 | paypay | Япония | PayPay-Signature HMAC-SHA256 | JPY |
 | kakaopay | Южная Корея | Без webhook (двухэтапный ready/approve) | KRW |
 | gcash | Филиппины | Paymongo-Signature HMAC-SHA256 | PHP |
-| toss | Южная Корея (скоро) | — | KRW |
-| mpesa | Кения / Танзания и др. (скоро) | — | KES / TZS |
-| paystack | Нигерия (скоро) | — | NGN |
+| toss | Южная Корея | Server-side verify + amount check | KRW |
+| mpesa | Кения | Trusted IP (CALLBACK_TRUSTED_IPS), no signature | KES |
+| paystack | Нигерия | x-paystack-signature HMAC-SHA512 | NGN |
+| adyen | Весь мир (валюта по заказу) | additionalData.hmacSignature HMAC-SHA256 (ADYEN_HMAC_KEY) | по заказу |
+| grabpay | Сингапур (страна настраивается, по умолчанию SG) | x-signature HMAC-SHA256 (sorted key:value) | по заказу |
 
 #### GET /api/v1/payment/methods — доступные способы оплаты (публичный)
 
@@ -1121,6 +1123,58 @@ action: approve=одобрить / reject=отклонить / confirm=подт�
   "global_switch": true
 }
 ```
+
+#### POST /admin/v1/withdraw/batch-review — Пакетная проверка выводов
+
+```
+需认证: 是
+
+请求: {
+  "ids": ["aB3xK...", "cD4yL..."],
+  "action": "approve",
+  "note": "批量审核通过"
+}
+
+响应: {
+  "processed": 2,
+  "failed": []
+}
+```
+
+action: approve=одобрить / reject=отклонить (обработка по каждому заказу; отклонённые заказы возвращаются автоматически; неудачные попадают в failed и не влияют на остальные)
+
+#### POST /admin/v1/withdraw/execute-payout — Выполнить выплату
+
+```
+需认证: 是
+
+请求: { "order_id": "aB3xK..." }
+
+响应: {
+  "payout_batch_id": "PAYOUT-123456",
+  "payout_item_id": "ITEM-123456",
+  "payout_status": "success",
+  "payout_attempts": 1
+}
+```
+
+Выплата возможна только для заказов в статусе approved (атомарный перевод в processing); повторный вызов возвращает 422. При включённой двойной проверке заказ должен быть предварительно подтверждён вторым сотрудником
+
+#### POST /admin/v1/withdraw/sync-payout — Синхронизировать статус выплаты
+
+```
+需认证: 是
+
+请求: { "order_id": "aB3xK..." }
+
+响应: {
+  "payout_status": "success",
+  "order_status": "completed",
+  "synced_status": "success"
+}
+```
+
+Ошибка: 422 Для этого заказа выплата ещё не выполнялась
 
 ### 3.4 Управление пользователями платформы
 
@@ -2205,6 +2259,13 @@ JSON `conditions` купона поддерживает:
 | GET /admin/v1/risk/graph/clusters | Список кластеров |
 | GET /admin/v1/risk/graph/{userId} | Граф связей пользователя |
 | GET /admin/v1/risk/clusters | Список кластеров риска |
+| POST /admin/v1/risk/clusters/detect | Обнаружение кластеров (один IP с ≥5 аккаунтами / один отпечаток устройства с ≥3 аккаунтами за последние 7 дней; только кандидаты, без сохранения) |
+| POST /admin/v1/risk/clusters/confirm | Подтвердить кластер вручную и сохранить его |
+| GET /admin/v1/risk/clusters/{hashid}/members | Список участников кластера (участники определяются по отпечатку) |
+| PUT /admin/v1/risk/clusters/{hashid}/status | Обновить статус кластера (1=наблюдение 2=обработан 0=ложное срабатывание) |
+| GET /admin/v1/risk/users | Очередь подозрительных пользователей (фильтр по рейтингу доверия и времени последнего срабатывания) |
+| GET /admin/v1/risk/users/{hashid}/timeline | Хронология рисков пользователя (события риска / игры / античита объединены) |
+| POST /admin/v1/risk/users/{hashid}/hold | Заморозить доступный баланс пользователя и оставить запись в журнале |
 
 ### 10.2 Управление античитом (админ :8789)
 
@@ -2249,3 +2310,20 @@ JSON `conditions` купона поддерживает:
 |------|------|
 | Adyen | Новый платёжный шлюз (депозит / проверка колбэка / автоматическое зачисление) |
 | GrabPay | Новый платёжный шлюз (депозит / проверка колбэка / автоматическое зачисление) |
+
+### 10.6 VIP / Достижения / Поиск / Квитанции (админ :8789)
+
+Уровни VIP, настройка достижений, глобальный поиск и экспорт квитанций (админ).
+
+| Эндпоинт | Описание |
+|------|------|
+| GET /admin/v1/vip/level/list | Список уровней VIP |
+| POST /admin/v1/vip/level/create | Создать уровень VIP (level должен быть уникальным) |
+| PUT /admin/v1/vip/level/{hashid} | Обновить уровень VIP |
+| DELETE /admin/v1/vip/level/{hashid} | Удалить уровень VIP (отказ, если на этом уровне есть пользователи) |
+| GET /admin/v1/achievement/list | Список достижений |
+| POST /admin/v1/achievement/create | Создать достижение (дубликат key отклоняется) |
+| PUT /admin/v1/achievement/{hashid} | Обновить достижение |
+| DELETE /admin/v1/achievement/{hashid} | Удалить достижение |
+| GET /admin/v1/search | Глобальный поиск (?q= запрос, type=game или user) |
+| POST /admin/v1/export/receipt | Экспорт квитанции в PDF (type=deposit или withdraw и order_id) |

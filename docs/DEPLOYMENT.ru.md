@@ -210,7 +210,7 @@ OAUTH_GOOGLE_CLIENT_ID=<从Google Cloud Console获取>
 OAUTH_GOOGLE_CLIENT_SECRET=<密钥>
 OAUTH_GOOGLE_REDIRECT_URI=https://your-domain.com/api/auth/oauth/google/callback
 
-# 支付 Webhook（toss / mpesa / paystack 接入中）
+# 支付 Webhook
 STRIPE_SECRET_KEY=<Stripe 密钥>
 STRIPE_WEBHOOK_SECRET=<从Stripe Dashboard获取>
 PAYPAL_WEBHOOK_ID=<从PayPal Developer获取>
@@ -257,7 +257,7 @@ KAKAOPAY_API_URL=https://kapi.kakao.com
 PAYMONGO_API_KEY=<PayMongo API 密钥>
 PAYMONGO_WEBHOOK_SECRET=<Webhook 验签密钥 Paymongo-Signature>
 PAYMONGO_API_URL=https://api.paymongo.com/v1
-# 接入中
+# M-Pesa / Paystack / Toss
 MPESA_CONSUMER_KEY=<M-Pesa Consumer Key>
 MPESA_CONSUMER_SECRET=<M-Pesa Consumer Secret>
 MPESA_PASSKEY=<M-Pesa STK Push Passkey>

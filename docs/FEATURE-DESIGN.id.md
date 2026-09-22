@@ -210,9 +210,9 @@ Contoh:
   put.admin/withdraw/switch → operasikan saklar penarikan (hanya super admin)
 ```
 
-## 呼. Desain Baru Versi Standar
+## 7. Desain Baru Versi Standar
 
-### 8.1 Mesin Kontrol Risiko
+### 7.1 Mesin Kontrol Risiko
 
 Empat tipe aturan:
 - `ip_blacklist` — pencocokan daftar hitam IP, terkena langsung diblokir
@@ -222,7 +222,7 @@ Empat tipe aturan:
 
 Aturan dieksekusi urut berdasarkan priority menurun, aturan pertama yang cocok menentukan hasil (block > warn > log).
 
-### 8.2 Login Pihak Ketiga OAuth
+### 7.2 Login Pihak Ketiga OAuth
 
 Penyedia yang didukung: Google, Facebook, Apple
 
@@ -232,7 +232,7 @@ Alur:
 3. Callback `POST /api/auth/oauth/{provider}/callback` membawa kode otorisasi
 4. Backend mencari tautan yang ada → langsung login; tanpa tautan → otomatis daftar+tautkan+buat dompet
 
-### 8.3 Sistem Batas KYC
+### 7.3 Sistem Batas KYC
 
 | Level | Cara didapat | Batas per transaksi | Batas harian | Biaya |
 |------|---------|---------|--------|--------|
@@ -240,11 +240,11 @@ Alur:
 | verified | Lolos review KYC | 5,000 | 50,000 | 0.50% |
 | vip | Diberikan operasional | 20,000 | 200,000 | 0.00% |
 
-### 8.4 Server Game
+### 7.4 Server Game
 
 Setiap game dapat mengonfigurasi beberapa server (region: global/asia/eu/na), status server: pemeliharaan/normal/populer/server baru.
 
-### 8.5 Snapshot Statistik Harian
+### 7.5 Snapshot Statistik Harian
 
 Crontab dini hari setiap hari menjalankan `ComputeDailyStats::run()`, menghitung lima metrik:
 - Statistik pengguna (baru/aktif/kumulatif)
@@ -253,9 +253,9 @@ Crontab dini hari setiap hari menjalankan `ComputeDailyStats::run()`, menghitung
 - Statistik penukaran (jumlah transaksi/total biaya)
 - Statistik game (jumlah pemain/jumlah sesi)
 
-## 9. Fitur Tingkat Produksi
+## 8. Fitur Tingkat Produksi
 
-### 9.1 Sistem Notifikasi
+### 8.1 Sistem Notifikasi
 
 Tipe notifikasi: system/deposit/withdraw/kyc/coupon/announcement
 
@@ -268,7 +268,7 @@ Skenario pemicu otomatis:
 
 Mendukung dua saluran pesan dalam situs + email (email perlu konfigurasi variabel lingkungan MAIL_HOST).
 
-### 9.2 Komisi Referral
+### 8.2 Komisi Referral
 
 ```
 Pengguna A membuat kode referral → bagikan ke pengguna B
@@ -276,14 +276,14 @@ Pengguna B mengisi kode referral saat daftar → keduanya mendapat hadiah pendaf
 Pengguna B deposit → A mendapat komisi deposit (deposit_commission_pct%)
 ```
 
-### 9.3 Autentikasi Dua Faktor 2FA
+### 8.3 Autentikasi Dua Faktor 2FA
 
 - Protokol standar TOTP (RFC 6238), kompatibel dengan Google Authenticator
 - Alur aktivasi: dapatkan kunci → pindai kode QR untuk tautkan → verifikasi TOTP → buat 8 kode pemulihan cadangan
 - Verifikasi kedua saat login: POST /api/2fa/verify
 - Mendukung toleransi jendela waktu ±1 (30 detik)
 
-### 9.4 Integrasi OAuth Nyata
+### 8.4 Integrasi OAuth Nyata
 
 | Penyedia | Endpoint Token | Endpoint Info Pengguna |
 |--------|----------|------------|
@@ -293,22 +293,22 @@ Pengguna B deposit → A mendapat komisi deposit (deposit_commission_pct%)
 
 Konfigurasi melalui PlatformConfig atau variabel lingkungan, saat permintaan gagal otomatis fallback ke mode mock.
 
-### 9.5 Verifikasi Tanda Tangan Webhook Pembayaran
+### 8.5 Verifikasi Tanda Tangan Webhook Pembayaran
 
 - Stripe: verifikasi tanda tangan HMAC-SHA256 (header Stripe-Signature)
 - PayPal: POST kembali ke endpoint verifikasi PayPal
 - Saat kunci belum dikonfigurasi, verifikasi dilewati otomatis (mode pengembangan)
 
-### 9.6 Papan Peringkat Real-time WebSocket
+### 8.6 Papan Peringkat Real-time WebSocket
 
 - Protokol: WebSocket (ws://host:8790)
 - Langganan: {action: "subscribe", leaderboard_id: 123}
 - Push: {type: "ranking_update", rankings: [...]}
 - Mendukung ping/pong heartbeat untuk menjaga koneksi
 
-## 7. Desain Internasionalisasi
+## 9. Desain Internasionalisasi
 
-### 7.1 Bahasa yang Didukung
+### 9.1 Bahasa yang Didukung
 
 | Kode | Nama | Bahasa asli | Ikon |
 |------|------|--------|------|
@@ -317,7 +317,7 @@ Konfigurasi melalui PlatformConfig atau variabel lingkungan, saat permintaan gag
 | ja-JP | Japanese | 日本語 | jp |
 | ko-KR | Korean | 한국어 | kr |
 
-### 7.2 Manajemen Terjemahan
+### 9.2 Manajemen Terjemahan
 
 - Terjemahan diorganisir dalam format `group.key` (seperti `auth.login_success`)
 - Disimpan di tabel database `game_translation`, cache Redis (TTL 1 jam)
@@ -325,13 +325,13 @@ Konfigurasi melalui PlatformConfig atau variabel lingkungan, saat permintaan gag
 - Frontend mendeteksi otomatis melalui header `X-Language` atau `Accept-Language`
 - Saat terjemahan tidak ada, fallback ke en-US; en-US juga tidak ada, kembalikan key asli
 
-### 7.3 Preferensi Bahasa Pengguna
+### 9.3 Preferensi Bahasa Pengguna
 
 - Saat pengguna mendaftar, diatur otomatis sesuai `Accept-Language` browser
 - Setelah login dapat mengubah kolom `language` melalui `PUT /api/user/profile`
 - Saat mengganti bahasa, catatan pengguna disinkronkan
 
-## 8. Model Pendapatan Platform
+## 10. Model Pendapatan Platform
 
 | Sumber pendapatan | Cara perhitungan | Keterangan |
 |---------|---------|------|

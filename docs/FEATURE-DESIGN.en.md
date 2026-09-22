@@ -210,9 +210,9 @@ Verification conditions:
   put.admin/withdraw/switch → 操作提现开关（仅超级管理员）
 ```
 
-## 呼. Standard Version Additional Designs
+## 7. Standard Version Additional Designs
 
-### 8.1 Risk Control Engine
+### 7.1 Risk Control Engine
 
 Four rule types:
 - `ip_blacklist` — IP blacklist matching, direct block on hit
@@ -222,7 +222,7 @@ Four rule types:
 
 Rules execute in descending priority order; the first matching rule decides the outcome (block > warn > log).
 
-### 8.2 OAuth Third-Party Login
+### 7.2 OAuth Third-Party Login
 
 Supported providers: Google, Facebook, Apple
 
@@ -232,7 +232,7 @@ Flow:
 3. Callback `POST /api/auth/oauth/{provider}/callback` carries the authorization code
 4. Backend looks up an existing binding → direct login; no binding → auto register + bind + create wallet
 
-### 8.3 KYC Limit System
+### 7.3 KYC Limit System
 
 | Level | How to Obtain | Single Limit | Daily Limit | Fee |
 |------|---------|---------|--------|--------|
@@ -240,11 +240,11 @@ Flow:
 | verified | KYC review approved | 5,000 | 50,000 | 0.50% |
 | vip | Granted by operations | 20,000 | 200,000 | 0.00% |
 
-### 8.4 Game Servers
+### 7.4 Game Servers
 
 Each game can configure multiple servers (region: global/asia/eu/na); server status: maintenance/normal/popular/new.
 
-### 8.5 Daily Statistics Snapshot
+### 7.5 Daily Statistics Snapshot
 
 `ComputeDailyStats::run()` runs via crontab in the early morning daily, computing five metrics:
 - User stats (new/active/cumulative)
@@ -253,9 +253,9 @@ Each game can configure multiple servers (region: global/asia/eu/na); server sta
 - Exchange stats (count/total fees)
 - Game stats (player count/session count)
 
-## 9. Production-Grade Features
+## 8. Production-Grade Features
 
-### 9.1 Notification System
+### 8.1 Notification System
 
 Notification types: system/deposit/withdraw/kyc/coupon/announcement
 
@@ -268,7 +268,7 @@ Auto-trigger scenarios:
 
 Supports dual channels: in-app messages + email (email requires the MAIL_HOST environment variable).
 
-### 9.2 Referral Rebates
+### 8.2 Referral Rebates
 
 ```
 用户A 生成推荐码 → 分享给用户B
@@ -276,14 +276,14 @@ Supports dual channels: in-app messages + email (email requires the MAIL_HOST en
 用户B 充值 → A 获得充值返佣(deposit_commission_pct%)
 ```
 
-### 9.3 2FA Two-Factor Authentication
+### 8.3 2FA Two-Factor Authentication
 
 - TOTP standard protocol (RFC 6238), compatible with Google Authenticator
 - Enable flow: get secret → scan to bind → verify TOTP → generate 8 backup recovery codes
 - Login second-step verification: POST /api/2fa/verify
 - ±1 time-window tolerance supported (30 seconds)
 
-### 9.4 Real OAuth Integration
+### 8.4 Real OAuth Integration
 
 | Provider | Token Endpoint | User Info Endpoint |
 |--------|----------|------------|
@@ -293,22 +293,22 @@ Supports dual channels: in-app messages + email (email requires the MAIL_HOST en
 
 Configured via PlatformConfig or environment variables; requests automatically fall back to mock mode on failure.
 
-### 9.5 Payment Webhook Verification
+### 8.5 Payment Webhook Verification
 
 - Stripe: HMAC-SHA256 signature verification (Stripe-Signature header)
 - PayPal: POST back to PayPal's verification endpoint
 - Verification is skipped when keys are not configured (development mode)
 
-### 9.6 WebSocket Real-Time Leaderboard
+### 8.6 WebSocket Real-Time Leaderboard
 
 - Protocol: WebSocket (ws://host:8790)
 - Subscribe: {action: "subscribe", leaderboard_id: 123}
 - Push: {type: "ranking_update", rankings: [...]}
 - ping/pong heartbeat keepalive supported
 
-## 7. Internationalization Design
+## 9. Internationalization Design
 
-### 7.1 Supported Languages
+### 9.1 Supported Languages
 
 | Code | Name | Native Name | Icon |
 |------|------|--------|------|
@@ -317,7 +317,7 @@ Configured via PlatformConfig or environment variables; requests automatically f
 | ja-JP | Japanese | 日本語 | jp |
 | ko-KR | Korean | 한국어 | kr |
 
-### 7.2 Translation Management
+### 9.2 Translation Management
 
 - Translations are organized in `group.key` format (e.g. `auth.login_success`)
 - Stored in the `game_translation` table, cached in Redis (TTL 1 hour)
@@ -325,13 +325,13 @@ Configured via PlatformConfig or environment variables; requests automatically f
 - Frontend auto-detects via the `X-Language` request header or `Accept-Language`
 - Falls back to en-US when a translation is missing; returns the raw key if en-US also lacks it
 
-### 7.3 User Language Preference
+### 9.3 User Language Preference
 
 - Auto-set from the browser's `Accept-Language` on registration
 - Users can modify the `language` field via `PUT /api/user/profile` after login
 - The user record is updated in sync when switching languages
 
-## 8. Platform Revenue Model
+## 10. Platform Revenue Model
 
 | Revenue Source | Calculation | Description |
 |---------|---------|------|

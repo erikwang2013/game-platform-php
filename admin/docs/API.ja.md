@@ -1792,7 +1792,7 @@ GET /admin/v1/analytics/economy
 
 ## 18. 支払管理 (Payment)
 
-支払方法の管理は `PaymentController` が提供し、5 つのエンドポイントはいずれも JWT + RBAC 認証が必要です。`provider` ホワイトリスト: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`。`config` は支払設定の JSON 文字列（DB に暗号化して保存）です。
+支払方法の管理は `PaymentController` が提供し、5 つのエンドポイントはいずれも JWT + RBAC 認証が必要です。`provider` ホワイトリスト: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` / `mpesa` / `paystack` / `toss` / `adyen` / `grabpay`。`config` は支払設定の JSON 文字列（DB に暗号化して保存）です。
 
 | メソッド | パス | 説明 |
 |------|------|------|
@@ -1842,7 +1842,7 @@ GET /admin/v1/payment/method/list
 | id | string | 支払方法 ID（hashid エンコード） |
 | name | string | 支払方法名 |
 | type | string | `fiat`（法定通貨）/ `crypto`（暗号通貨） |
-| provider | string | ゲートウェイ提供元: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` |
+| provider | string | ゲートウェイ提供元: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` / `mpesa` / `paystack` / `toss` / `adyen` / `grabpay` |
 | status | int | 1=有効, 0=無効 |
 | sort | int | 並び順（昇順） |
 | countries | array{string} | 表示対象国のコード配列（空配列=全世界表示） |
@@ -1899,7 +1899,7 @@ POST /admin/v1/payment/method/create
 |------|------|------|---------|------|
 | name | string | はい | max:50 | 支払方法名 |
 | type | string | はい | in:fiat,crypto | 種別: 法定通貨/暗号通貨 |
-| provider | string | はい | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash | ゲートウェイ提供元ホワイトリスト |
+| provider | string | はい | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash,mpesa,paystack,toss,adyen,grabpay | ゲートウェイ提供元ホワイトリスト |
 | status | int | はい | in:0,1 | 状態 |
 | sort | int | いいえ | integer,min:0 | 並び順、デフォルト 0 |
 | countries | array{string} | いいえ | max:2 | 表示対象国のコード、空=全世界 |
@@ -1943,3 +1943,69 @@ DELETE /admin/v1/payment/method/{hashid}
 **考えられるエラー**:
 - 404: 支払方法が存在しない
 - 422: 保留中の入金注文（status=pending）が存在するため削除不可
+
+## 19. 拡張管理エンドポイント (Extended Admin APIs)
+
+以下 20 個のエンドポイントを 6 つのセクションに分けて示します。いずれも `/admin/v1` の管理エンドポイントで、JWT 認証と RBAC 権限検証が必要です。
+
+### 19.1 出金の一括審査と支払実行
+
+出金の手動審査と PayPal 支払のための補足エンドポイントです。
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/withdraw/batch-review | 出金申請を一括で承認または却下します | JWT + RBAC |
+| POST | /admin/v1/withdraw/execute-payout | 承認済みの出金注文に対して PayPal 支払を実行します | JWT + RBAC |
+| POST | /admin/v1/withdraw/sync-payout | PayPal から支払バッチの状態を同期します | JWT + RBAC |
+
+### 19.2 リスククラスタと異常ユーザー
+
+リスククラスタの検出、手動確認、異常ユーザーの処理です。
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/risk/clusters/detect | 候補クラスタを検出します（直近 7 日間の同一 IP / 同一デバイスフィンガープリント。候補のみで保存はしません） | JWT + RBAC |
+| POST | /admin/v1/risk/clusters/confirm | クラスタを手動で確認し game_risk_cluster に書き込みます | JWT + RBAC |
+| GET | /admin/v1/risk/clusters/{hashid}/members | クラスタのメンバー一覧 | JWT + RBAC |
+| PUT | /admin/v1/risk/clusters/{hashid}/status | クラスタの状態を更新します（0=誤検知, 1=監視中, 2=対応済み） | JWT + RBAC |
+| GET | /admin/v1/risk/users | 異常ユーザーキュー（score_min=信頼スコア上限、from/to=最終ヒット時間帯） | JWT + RBAC |
+| GET | /admin/v1/risk/users/{hashid}/timeline | ユーザーのリスクタイムライン（リスク/プレイ/不正対策イベントを統合し、新しい順） | JWT + RBAC |
+| POST | /admin/v1/risk/users/{hashid}/hold | ユーザーのプラットフォーム利用可能残高を凍結し risk_log に記録します | JWT + RBAC |
+
+### 19.3 VIP レベル
+
+VIP レベルの CRUD エンドポイントです。
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/vip/level/list | VIP レベル一覧 | JWT + RBAC |
+| POST | /admin/v1/vip/level/create | VIP レベルを作成します | JWT + RBAC |
+| PUT | /admin/v1/vip/level/{hashid} | VIP レベルを更新します | JWT + RBAC |
+| DELETE | /admin/v1/vip/level/{hashid} | VIP レベルを削除します | JWT + RBAC |
+
+### 19.4 実績
+
+実績定義の CRUD エンドポイントです。
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/achievement/list | 実績一覧 | JWT + RBAC |
+| POST | /admin/v1/achievement/create | 実績を作成します | JWT + RBAC |
+| PUT | /admin/v1/achievement/{hashid} | 実績を更新します | JWT + RBAC |
+| DELETE | /admin/v1/achievement/{hashid} | 実績を削除します | JWT + RBAC |
+
+### 19.5 グローバル検索
+
+横断検索エンドポイントです。
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/search | ゲームまたはユーザーのグローバル検索（ES 全文検索、失敗時はデータベース LIKE にフォールバック） | JWT + RBAC |
+
+### 19.6 レシート出力
+
+支払証明書の出力エンドポイントです。
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/export/receipt | 入金または出金注文のレシートを PDF で出力します | JWT + RBAC |

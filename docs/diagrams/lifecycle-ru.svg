@@ -18,17 +18,17 @@
   <line x1="150" y1="141" x2="190" y2="141" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="195" y="118" width="130" height="46" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" filter="url(#sh)"/>
-  <text x="260" y="146" text-anchor="middle" fill="#92400e" font-size="13" font-weight="bold">Верификация KYC</text>
+  <text x="260" y="146" text-anchor="middle" fill="#92400e" font-size="13" font-weight="bold">Проверка KYC</text>
 
   <line x1="325" y1="141" x2="365" y2="141" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="370" y="118" width="130" height="46" rx="10" fill="#d1fae5" stroke="#10b981" stroke-width="2" filter="url(#sh)"/>
-  <text x="435" y="146" text-anchor="middle" fill="#065f46" font-size="13" font-weight="bold">Пополнение и игра</text>
+  <text x="435" y="146" text-anchor="middle" fill="#065f46" font-size="13" font-weight="bold">Пополнение/игра</text>
 
   <line x1="500" y1="141" x2="540" y2="141" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="545" y="118" width="130" height="46" rx="10" fill="#fce7f3" stroke="#ec4899" stroke-width="2" filter="url(#sh)"/>
-  <text x="610" y="146" text-anchor="middle" fill="#831843" font-size="13" font-weight="bold">Вывод / повторное пополнение</text>
+  <text x="610" y="146" text-anchor="middle" fill="#831843" font-size="13" font-weight="bold">Вывод / повтор.</text>
 
   <line x1="675" y1="141" x2="715" y2="141" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
@@ -94,20 +94,20 @@
   <text x="500" y="577" text-anchor="middle" fill="#991b1b" font-size="14" font-weight="bold">Жизненный цикл верификации KYC</text>
 
   <rect x="70" y="598" width="140" height="46" rx="10" fill="#dbeafe" stroke="#3b82f6" stroke-width="2" filter="url(#sh)"/>
-  <text x="140" y="626" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">Подача данных верификации</text>
+  <text x="140" y="626" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">Подача данных</text>
 
   <line x1="210" y1="621" x2="270" y2="621" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="275" y="598" width="140" height="46" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" filter="url(#sh)"/>
-  <text x="345" y="626" text-anchor="middle" fill="#92400e" font-size="13" font-weight="bold">Ожидает проверки pending</text>
+  <text x="345" y="626" text-anchor="middle" fill="#92400e" font-size="13" font-weight="bold">Ожидает pending</text>
 
   <line x1="415" y1="621" x2="475" y2="621" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
 
   <rect x="480" y="612" width="120" height="32" rx="8" fill="#f0fdf4" stroke="#22c55e" stroke-width="2" filter="url(#sh)"/>
-  <text x="540" y="633" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">Одобрено → verified</text>
+  <text x="540" y="633" text-anchor="middle" fill="#166534" font-size="12" font-weight="bold">ОК → verified</text>
 
   <rect x="640" y="612" width="120" height="32" rx="8" fill="#fef2f2" stroke="#ef4444" stroke-width="2" filter="url(#sh)"/>
-  <text x="700" y="633" text-anchor="middle" fill="#991b1b" font-size="12" font-weight="bold">Отклонено → rejected</text>
+  <text x="700" y="633" text-anchor="middle" fill="#991b1b" font-size="12" font-weight="bold">Отказ → rejected</text>
 
   <text x="500" y="680" text-anchor="middle" fill="#64748b" font-size="11">После одобрения повышение: default → verified (выше лимит вывода); скидка VIP на комиссию отдельно по опыту</text>
 

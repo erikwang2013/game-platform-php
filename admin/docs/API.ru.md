@@ -1792,7 +1792,7 @@ GET /admin/v1/analytics/economy
 
 ## 18. Управление платежами (Payment)
 
-Управление способами оплаты предоставляется `PaymentController`; все 5 эндпоинтов требуют аутентификации JWT + RBAC. Белый список `provider`: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`. `config` — строка JSON с конфигурацией оплаты (хранится в БД в зашифрованном виде).
+Управление способами оплаты предоставляется `PaymentController`; все 5 эндпоинтов требуют аутентификации JWT + RBAC. Белый список `provider`: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` / `mpesa` / `paystack` / `toss` / `adyen` / `grabpay`. `config` — строка JSON с конфигурацией оплаты (хранится в БД в зашифрованном виде).
 
 | Метод | Путь | Описание |
 |------|------|------|
@@ -1842,7 +1842,7 @@ GET /admin/v1/payment/method/list
 | id | string | ID способа оплаты (кодировка hashid) |
 | name | string | Название способа оплаты |
 | type | string | `fiat` (фиатная валюта) / `crypto` (криптовалюта) |
-| provider | string | Провайдер шлюза: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` |
+| provider | string | Провайдер шлюза: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash` / `mpesa` / `paystack` / `toss` / `adyen` / `grabpay` |
 | status | int | 1=включен, 0=отключен |
 | sort | int | Порядок сортировки (по возрастанию) |
 | countries | array{string} | Массив видимых кодов стран (пустой массив = виден глобально) |
@@ -1899,7 +1899,7 @@ POST /admin/v1/payment/method/create
 |------|------|------|---------|------|
 | name | string | Да | max:50 | Название способа оплаты |
 | type | string | Да | in:fiat,crypto | Тип: фиат/крипто |
-| provider | string | Да | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash | Белый список провайдеров шлюза |
+| provider | string | Да | in:stripe,paypal,nowpayments,coinbase,skrill,neteller,paysafecard,paytm,mercadopago,astropay,paypay,kakaopay,gcash,mpesa,paystack,toss,adyen,grabpay | Белый список провайдеров шлюза |
 | status | int | Да | in:0,1 | Статус |
 | sort | int | Нет | integer,min:0 | Порядок сортировки, по умолчанию 0 |
 | countries | array{string} | Нет | max:2 | Коды видимых стран, пусто = глобально |
@@ -1943,3 +1943,69 @@ DELETE /admin/v1/payment/method/{hashid}
 **Возможные ошибки**:
 - 404: способ оплаты не найден
 - 422: существуют ожидающие платежные заказы (status=pending), удаление невозможно
+
+## 19. Расширенные административные эндпоинты (Extended Admin APIs)
+
+Ниже 20 эндпоинтов сгруппированы в 6 разделов; все они относятся к административным эндпоинтам `/admin/v1` и требуют аутентификации JWT и проверки прав RBAC.
+
+### 19.1 Пакетная проверка и выплата выводов
+
+Дополнительные эндпоинты для ручной проверки выводов и выплаты через PayPal.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/withdraw/batch-review | Пакетно одобрить или отклонить заявки на вывод | JWT + RBAC |
+| POST | /admin/v1/withdraw/execute-payout | Выполнить выплату через PayPal для одобренного заказа на вывод | JWT + RBAC |
+| POST | /admin/v1/withdraw/sync-payout | Синхронизировать статус пакета выплат из PayPal | JWT + RBAC |
+
+### 19.2 Кластеры риска и аномальные пользователи
+
+Обнаружение кластеров риска, ручное подтверждение и обработка аномальных пользователей.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/risk/clusters/detect | Обнаружить кластеры-кандидаты (один IP / один отпечаток устройства за последние 7 дней; только кандидаты, без сохранения) | JWT + RBAC |
+| POST | /admin/v1/risk/clusters/confirm | Вручную подтвердить кластер и записать его в game_risk_cluster | JWT + RBAC |
+| GET | /admin/v1/risk/clusters/{hashid}/members | Список участников кластера | JWT + RBAC |
+| PUT | /admin/v1/risk/clusters/{hashid}/status | Обновить статус кластера (0=ложное срабатывание, 1=наблюдение, 2=обработано) | JWT + RBAC |
+| GET | /admin/v1/risk/users | Очередь аномальных пользователей (score_min=верхняя граница доверия, from/to=окно последнего срабатывания) | JWT + RBAC |
+| GET | /admin/v1/risk/users/{hashid}/timeline | Хронология рисков пользователя (объединённые события риска/игры/антифрода, от новых к старым) | JWT + RBAC |
+| POST | /admin/v1/risk/users/{hashid}/hold | Заморозить доступный баланс пользователя на платформе и записать в risk_log | JWT + RBAC |
+
+### 19.3 VIP-уровни
+
+CRUD-эндпоинты VIP-уровней.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/vip/level/list | Список VIP-уровней | JWT + RBAC |
+| POST | /admin/v1/vip/level/create | Создать VIP-уровень | JWT + RBAC |
+| PUT | /admin/v1/vip/level/{hashid} | Обновить VIP-уровень | JWT + RBAC |
+| DELETE | /admin/v1/vip/level/{hashid} | Удалить VIP-уровень | JWT + RBAC |
+
+### 19.4 Достижения
+
+CRUD-эндпоинты определений достижений.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/achievement/list | Список достижений | JWT + RBAC |
+| POST | /admin/v1/achievement/create | Создать достижение | JWT + RBAC |
+| PUT | /admin/v1/achievement/{hashid} | Обновить достижение | JWT + RBAC |
+| DELETE | /admin/v1/achievement/{hashid} | Удалить достижение | JWT + RBAC |
+
+### 19.5 Глобальный поиск
+
+Эндпоинт сквозного поиска.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| GET | /admin/v1/search | Глобальный поиск игр или пользователей (полнотекстовый поиск в ES с откатом на LIKE в базе данных) | JWT + RBAC |
+
+### 19.6 Экспорт квитанций
+
+Эндпоинт экспорта платёжных документов.
+
+| Method | Path | Description | Auth |
+|------|------|------|------|
+| POST | /admin/v1/export/receipt | Экспортировать квитанцию пополнения или вывода в PDF | JWT + RBAC |

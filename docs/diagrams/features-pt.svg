@@ -16,21 +16,21 @@
 
   <rect x="265" y="72" width="220" height="95" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
   <text x="375" y="96" text-anchor="middle" fill="#854d0e" font-size="13" font-weight="bold">Sistema de carteira</text>
-  <text x="375" y="116" text-anchor="middle" fill="#ca8a04" font-size="11">Carteira de moeda da plataforma (lock otimista anti-concorrência)</text>
-  <text x="375" y="135" text-anchor="middle" fill="#ca8a04" font-size="11">Carteira de moeda de jogo (independente por jogo)</text>
-  <text x="375" y="154" text-anchor="middle" fill="#ca8a04" font-size="11">Rastreamento de transações de ponta a ponta</text>
+  <text x="375" y="116" text-anchor="middle" fill="#ca8a04" font-size="11">Carteira moeda plataforma (lock otimista)</text>
+  <text x="375" y="135" text-anchor="middle" fill="#ca8a04" font-size="11">Carteira de moeda de jogo (por jogo)</text>
+  <text x="375" y="154" text-anchor="middle" fill="#ca8a04" font-size="11">Rastreio de transações ponta a ponta</text>
 
   <rect x="500" y="72" width="220" height="95" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>
   <text x="610" y="96" text-anchor="middle" fill="#166534" font-size="13" font-weight="bold">Sistema de recarga</text>
   <text x="610" y="116" text-anchor="middle" fill="#22c55e" font-size="11">Criação de ordem de recarga</text>
-  <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">Verificação de assinatura do callback Stripe/PayPal/Alipay/WeChat Pay</text>
+  <text x="610" y="135" text-anchor="middle" fill="#22c55e" font-size="11">Assin. Stripe/PayPal/Alipay/WeChat Pay</text>
   <text x="610" y="174" text-anchor="middle" fill="#22c55e" font-size="10">Verificação de assinatura do callback NOWPayments/Coinbase</text>
   <text x="610" y="154" text-anchor="middle" fill="#22c55e" font-size="11">Crédito automático + notificação no site</text>
 
   <rect x="735" y="72" width="230" height="95" rx="8" fill="#fff7ed" stroke="#fdba74" stroke-width="1.5" filter="url(#sh)"/>
   <text x="850" y="96" text-anchor="middle" fill="#9a3412" font-size="13" font-weight="bold">Sistema de saque</text>
   <text x="850" y="116" text-anchor="middle" fill="#ea580c" font-size="11">Solicitação → revisão → pagamento</text>
-  <text x="850" y="135" text-anchor="middle" fill="#ea580c" font-size="11">Interruptor global / limites escalonados por KYC</text>
+  <text x="850" y="135" text-anchor="middle" fill="#ea580c" font-size="11">Interruptor global, limites escalonados KYC</text>
   <text x="850" y="154" text-anchor="middle" fill="#ea580c" font-size="11">Limite de revisão automática configurável</text>
 
   <rect x="30" y="182" width="220" height="95" rx="8" fill="#ede9fe" stroke="#c4b5fd" stroke-width="1.5" filter="url(#sh)"/>
@@ -42,13 +42,13 @@
   <rect x="265" y="182" width="220" height="95" rx="8" fill="#fce7f3" stroke="#f9a8d4" stroke-width="1.5" filter="url(#sh)"/>
   <text x="375" y="206" text-anchor="middle" fill="#831843" font-size="13" font-weight="bold">Gestão de jogos</text>
   <text x="375" y="226" text-anchor="middle" fill="#ec4899" font-size="11">CRUD + tipos próprio/terceiros</text>
-  <text x="375" y="245" text-anchor="middle" fill="#ec4899" font-size="11">10 categorias de jogos + gestão de servidores</text>
-  <text x="375" y="264" text-anchor="middle" fill="#ec4899" font-size="11">Rastreamento completo de registros de partidas</text>
+  <text x="375" y="245" text-anchor="middle" fill="#ec4899" font-size="11">10 categorias + gestão de servidores</text>
+  <text x="375" y="264" text-anchor="middle" fill="#ec4899" font-size="11">Rastreio de registros de partidas</text>
 
   <rect x="500" y="182" width="220" height="95" rx="8" fill="#fef2f2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
   <text x="610" y="206" text-anchor="middle" fill="#991b1b" font-size="13" font-weight="bold">Verificação de identidade KYC</text>
   <text x="610" y="226" text-anchor="middle" fill="#ef4444" font-size="11">Envio de verificação + revisão no painel</text>
-  <text x="610" y="245" text-anchor="middle" fill="#ef4444" font-size="11">Documento de identidade / passaporte / CNH</text>
+  <text x="610" y="245" text-anchor="middle" fill="#ef4444" font-size="11">Doc. de identidade / passaporte / CNH</text>
   <text x="610" y="264" text-anchor="middle" fill="#ef4444" font-size="11">Níveis + limites escalonados</text>
 
   <rect x="735" y="182" width="230" height="95" rx="8" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5" filter="url(#sh)"/>
@@ -65,17 +65,17 @@
   <rect x="265" y="292" width="220" height="95" rx="8" fill="#fff1f2" stroke="#fda4af" stroke-width="1.5" filter="url(#sh)"/>
   <text x="375" y="316" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">Sistema de indicação</text>
   <text x="375" y="336" text-anchor="middle" fill="#f43f5e" font-size="11">Geração de código de indicação único</text>
-  <text x="375" y="355" text-anchor="middle" fill="#f43f5e" font-size="11">Recompensa de registro + comissão de recarga</text>
+  <text x="375" y="355" text-anchor="middle" fill="#f43f5e" font-size="11">Bônus de registro + comissão de recarga</text>
 
   <rect x="500" y="292" width="220" height="95" rx="8" fill="#fff7ed" stroke="#fed7aa" stroke-width="1.5" filter="url(#sh)"/>
   <text x="610" y="316" text-anchor="middle" fill="#7c2d12" font-size="13" font-weight="bold">Sistema de risco</text>
   <text x="610" y="336" text-anchor="middle" fill="#f97316" font-size="11">Blacklist de IP / alerta de valores altos</text>
-  <text x="610" y="355" text-anchor="middle" fill="#f97316" font-size="11">Detecção de frequência / anomalia de velocidade</text>
+  <text x="610" y="355" text-anchor="middle" fill="#f97316" font-size="11">Detecção de frequência / velocidade</text>
 
   <rect x="735" y="292" width="230" height="95" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5" filter="url(#sh)"/>
   <text x="850" y="316" text-anchor="middle" fill="#334155" font-size="13" font-weight="bold">Internacionalização i18n</text>
   <text x="850" y="336" text-anchor="middle" fill="#64748b" font-size="11">4 idiomas en/zh/ja/ko</text>
-  <text x="850" y="355" text-anchor="middle" fill="#64748b" font-size="11">Tabela de traduções + mecanismo de cache</text>
+  <text x="850" y="355" text-anchor="middle" fill="#64748b" font-size="11">Tabela de traduções + cache</text>
 
   <rect x="30" y="402" width="220" height="95" rx="8" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1.5" filter="url(#sh)"/>
   <text x="140" y="426" text-anchor="middle" fill="#0c4a6e" font-size="13" font-weight="bold">Central de notificações</text>
@@ -84,12 +84,12 @@
 
   <rect x="265" y="402" width="220" height="95" rx="8" fill="#fefce8" stroke="#fef08a" stroke-width="1.5" filter="url(#sh)"/>
   <text x="375" y="426" text-anchor="middle" fill="#713f12" font-size="13" font-weight="bold">Diferenciação por país</text>
-  <text x="375" y="446" text-anchor="middle" fill="#eab308" font-size="11">Configuração de pagamento/saque de 18 países</text>
+  <text x="375" y="446" text-anchor="middle" fill="#eab308" font-size="11">Config. de pagamento/saque 18 países</text>
   <text x="375" y="465" text-anchor="middle" fill="#eab308" font-size="11">Recarga mínima diferenciada</text>
 
   <rect x="500" y="402" width="220" height="95" rx="8" fill="#f5f3ff" stroke="#e9d5ff" stroke-width="1.5" filter="url(#sh)"/>
   <text x="610" y="426" text-anchor="middle" fill="#581c87" font-size="13" font-weight="bold">Análise estatística</text>
-  <text x="610" y="446" text-anchor="middle" fill="#a855f7" font-size="11">Snapshot de estatísticas diárias (5 tipos de indicadores)</text>
+  <text x="610" y="446" text-anchor="middle" fill="#a855f7" font-size="11">Snapshot diário (5 indicadores)</text>
   <text x="610" y="465" text-anchor="middle" fill="#a855f7" font-size="11">Rastreamento de receita da plataforma</text>
   <text x="610" y="484" text-anchor="middle" fill="#a855f7" font-size="11">Relatórios · Estatísticas</text>
 

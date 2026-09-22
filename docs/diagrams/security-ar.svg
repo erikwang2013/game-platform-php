@@ -109,14 +109,14 @@
   <text x="500" y="526" text-anchor="middle" fill="#475569" font-size="13" font-weight="bold">إجراءات أمنية تكميلية</text>
 
   <rect x="30" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="120" y="553" text-anchor="middle" fill="#475569" font-size="11">تجزئة bcrypt لكلمات المرور</text>
-  <rect x="220" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="553" text-anchor="middle" fill="#475569" font-size="11">تأكيد كلمة المرور (العمليات الحساسة)</text>
+  <rect x="220" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="553" text-anchor="middle" fill="#475569" font-size="11">تأكيد كلمة المرور(عمليات حساسة)</text>
   <rect x="410" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="500" y="553" text-anchor="middle" fill="#475569" font-size="11">security.txt RFC 9116</text>
   <rect x="600" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="690" y="553" text-anchor="middle" fill="#475569" font-size="11">تقوية إعداد Nginx الأمني</text>
   <rect x="790" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="880" y="553" text-anchor="middle" fill="#475569" font-size="11">مؤشرات مراقبة Prometheus</text>
 
   <rect x="30" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="120" y="583" text-anchor="middle" fill="#475569" font-size="11">عزل حاويات Docker</text>
   <rect x="220" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="583" text-anchor="middle" fill="#475569" font-size="11">أمان نقل HTTPS/TLS</text>
-  <rect x="410" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="500" y="583" text-anchor="middle" fill="#475569" font-size="11">كلمات مرور قاعدة البيانات في .gitignore</text>
+  <rect x="410" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="500" y="583" text-anchor="middle" fill="#475569" font-size="11">كلمات مرور DB في .gitignore</text>
   <rect x="600" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="690" y="583" text-anchor="middle" fill="#475569" font-size="11">نسخ gzip + احتفاظ 30 يومًا</text>
   <rect x="790" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="880" y="583" text-anchor="middle" fill="#475569" font-size="11">فحص أمني تلقائي CI/CD</text>
 
@@ -147,7 +147,7 @@
   <text x="935" y="662" fill="#22c55e" font-size="11">→</text>
   <text x="950" y="662" text-anchor="middle" fill="#166534" font-size="11">OK</text>
 
-  <text x="500" y="690" text-anchor="middle" fill="#991b1b" font-size="11">الطلب ← ترويسات CSP ← فحص CORS ← قائمة طرق بيضاء ← فلترة الهجمات ← تحديد المعدل ← تحقق الإصدار ← مصادقة JWT ← فحص الجلسة ← فحص القفل ← RBAC ← سجل التدقيق ← Controller</text>
+  <text x="500" y="690" text-anchor="middle" fill="#991b1b" font-size="11">الطلب ← ترويسات CSP ← فحص CORS ← قائمة بيضاء ← فلترة الهجمات ← تحديد المعدل ← تحقق الإصدار ← مصادقة JWT ← فحص الجلسة ← فحص القفل ← RBAC ← سجل التدقيق ← Controller</text>
 
   <text x="500" y="740" text-anchor="middle" fill="#94a3b8" font-size="11">المكونات الأمنية: erikwang2013/jwt-webman · erikwang2013/encryption · erikwang2013/encryptable · erikwang2013/security-php · erikwang2013/poster-php · erikwang2013/hashids</text>
   <text x="500" y="762" text-anchor="middle" fill="#94a3b8" font-size="11">الامتثال: security.txt (RFC 9116) · Prometheus Metrics · سجلات تدقيق العمليات · تشفير البيانات (AES-256-CBC)</text>

@@ -15,7 +15,7 @@
   <text x="250" y="100" text-anchor="middle" fill="#1e40af" font-size="15" font-weight="bold">Phase 1: Game Provider SDK</text>
   <rect x="50" y="115" width="190" height="45" rx="6" fill="#dbeafe"/><text x="145" y="138" text-anchor="middle" fill="#1e3a5f" font-size="12">GameProvider (abstract)</text><text x="145" y="152" text-anchor="middle" fill="#64748b" font-size="10">balance/bet/settle/refund</text>
   <rect x="260" y="115" width="190" height="45" rx="6" fill="#dbeafe"/><text x="355" y="138" text-anchor="middle" fill="#1e3a5f" font-size="12">ProviderAuth middleware</text><text x="355" y="152" text-anchor="middle" fill="#64748b" font-size="10">HMAC-SHA256 + 5-minute window</text>
-  <rect x="50" y="175" width="190" height="40" rx="6" fill="#bfdbfe"/><text x="145" y="194" text-anchor="middle" fill="#1e40af" font-size="11">SelfProvider</text><text x="145" y="208" text-anchor="middle" fill="#64748b" font-size="10">DB transactions (SELECT FOR UPDATE)</text>
+  <rect x="50" y="175" width="190" height="40" rx="6" fill="#bfdbfe"/><text x="145" y="194" text-anchor="middle" fill="#1e40af" font-size="11">SelfProvider</text><text x="145" y="208" text-anchor="middle" fill="#64748b" font-size="10">DB txns (SELECT FOR UPDATE)</text>
   <rect x="260" y="175" width="190" height="40" rx="6" fill="#bfdbfe"/><text x="355" y="194" text-anchor="middle" fill="#1e40af" font-size="11">ThirdPartyProvider</text><text x="355" y="208" text-anchor="middle" fill="#64748b" font-size="10">Guzzle HTTP + signature</text>
   <rect x="50" y="230" width="400" height="35" rx="6" fill="#93c5fd"/><text x="250" y="244" text-anchor="middle" fill="#fff" font-size="12">SdkSessionAuth — HMAC-signed session token (5-minute TTL)</text>
 
@@ -29,7 +29,7 @@
   <!-- Phase 3: Engagement -->
   <rect x="30" y="296" width="440" height="180" rx="10" fill="#fef3c7" stroke="#fcd34d" stroke-width="2"/>
   <text x="250" y="320" text-anchor="middle" fill="#92400e" font-size="15" font-weight="bold">Phase 3: User Engagement</text>
-  <rect x="50" y="340" width="190" height="55" rx="6" fill="#fde68a"/><text x="145" y="358" text-anchor="middle" fill="#78350f" font-size="12">VIP system (5 levels)</text><text x="145" y="373" text-anchor="middle" fill="#64748b" font-size="10">EXP: deposit/login/KYC/referral</text><text x="145" y="386" text-anchor="middle" fill="#64748b" font-size="10">Discounts: exchange 2-15% / fees 10-100%</text>
+  <rect x="50" y="340" width="190" height="55" rx="6" fill="#fde68a"/><text x="145" y="358" text-anchor="middle" fill="#78350f" font-size="12">VIP system (5 levels)</text><text x="145" y="373" text-anchor="middle" fill="#64748b" font-size="10">EXP: deposit/login/KYC/referral</text><text x="145" y="386" text-anchor="middle" fill="#64748b" font-size="10">Discounts: exch 2-15% / fees 10-100%</text>
   <rect x="260" y="340" width="190" height="55" rx="6" fill="#fde68a"/><text x="355" y="358" text-anchor="middle" fill="#78350f" font-size="12">Achievement system</text><text x="355" y="373" text-anchor="middle" fill="#64748b" font-size="10">12 built-in achievements</text><text x="355" y="386" text-anchor="middle" fill="#64748b" font-size="10">Event-driven + progress tracking</text>
   <rect x="50" y="410" width="400" height="55" rx="6" fill="#fde68a"/><text x="250" y="430" text-anchor="middle" fill="#78350f" font-size="12">VipService: EXP accumulation + auto upgrade + benefits</text><text x="250" y="445" text-anchor="middle" fill="#64748b" font-size="10">AchievementService: condition checks (count/sum/dedupe/streak)</text>
   <text x="250" y="468" text-anchor="middle" fill="#92400e" font-size="11" font-style="italic">ExchangeController / WithdrawController — VIP discount integration</text>
@@ -52,7 +52,7 @@
   <!-- Database Summary -->
   <rect x="30" y="656" width="900" height="70" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="480" y="680" text-anchor="middle" fill="#334155" font-size="14" font-weight="bold">Database: 42 → 52 tables</text>
-  <text x="480" y="700" text-anchor="middle" fill="#64748b" font-size="11">New: game_ticket, game_ticket_reply, game_device_token, game_vip_level, game_user_vip, game_exp_log, game_achievement, game_user_achievement, game_friend, game_message</text>
+  <text x="480" y="700" text-anchor="middle" fill="#64748b" font-size="11">New:game_ticket,game_ticket_reply,game_device_token,game_vip_level,game_user_vip,game_exp_log,game_achievement,game_user_achievement,game_friend,game_message</text>
   <text x="480" y="716" text-anchor="middle" fill="#64748b" font-size="11">Modified: game_game (+provider_config JSON), game_game_play_log (+round_id, +bet_amount, +win_amount)</text>
 
   <!-- Footer -->

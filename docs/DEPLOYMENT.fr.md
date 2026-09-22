@@ -210,7 +210,7 @@ OAUTH_GOOGLE_CLIENT_ID=<obtenu sur Google Cloud Console>
 OAUTH_GOOGLE_CLIENT_SECRET=<secret>
 OAUTH_GOOGLE_REDIRECT_URI=https://your-domain.com/api/auth/oauth/google/callback
 
-# Webhooks de paiement (toss / mpesa / paystack bientôt disponibles)
+# Webhooks de paiement
 STRIPE_SECRET_KEY=<clé secrète Stripe>
 STRIPE_WEBHOOK_SECRET=<obtenu sur le dashboard Stripe>
 PAYPAL_WEBHOOK_ID=<obtenu sur PayPal Developer>
@@ -257,7 +257,7 @@ KAKAOPAY_API_URL=https://kapi.kakao.com
 PAYMONGO_API_KEY=<clé API PayMongo>
 PAYMONGO_WEBHOOK_SECRET=<clé de vérification Paymongo-Signature>
 PAYMONGO_API_URL=https://api.paymongo.com/v1
-# bientôt disponibles
+# M-Pesa / Paystack / Toss
 MPESA_CONSUMER_KEY=<clé consommateur M-Pesa>
 MPESA_CONSUMER_SECRET=<secret consommateur M-Pesa>
 MPESA_PASSKEY=<passkey STK Push M-Pesa>

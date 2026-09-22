@@ -520,7 +520,7 @@ is_new: true=neu registrierter Benutzer / false=vorhandenes Konto verknüpft
 
 status: success / failed
 
-provider-Werte: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash (toss / mpesa / paystack in Arbeit)
+provider-Werte: stripe / paypal / nowpayments / coinbase / skrill / neteller / paysafecard / paytm / mercadopago / astropay / paypay / kakaopay / gcash / mpesa / paystack / toss / adyen / grabpay
 
 | provider | Region | Signaturverfahren | Unterstützte Währungen |
 |----------|--------|-------------------|-------------------------|
@@ -537,9 +537,11 @@ provider-Werte: stripe / paypal / nowpayments / coinbase / skrill / neteller / p
 | paypay | Japan | PayPay-Signature HMAC-SHA256 | JPY |
 | kakaopay | Südkorea | Kein Webhook (ready/approve zweistufig) | KRW |
 | gcash | Philippinen | Paymongo-Signature HMAC-SHA256 | PHP |
-| toss | Südkorea (in Arbeit) | — | KRW |
-| mpesa | Kenia / Tansania usw. (in Arbeit) | — | KES / TZS |
-| paystack | Nigeria (in Arbeit) | — | NGN |
+| toss | Südkorea | Server-side verify + amount check | KRW |
+| mpesa | Kenia | Trusted IP (CALLBACK_TRUSTED_IPS), no signature | KES |
+| paystack | Nigeria | x-paystack-signature HMAC-SHA512 | NGN |
+| adyen | Global (Währung je Auftrag) | additionalData.hmacSignature HMAC-SHA256 (ADYEN_HMAC_KEY) | je Auftrag |
+| grabpay | Singapur (Land konfigurierbar, Standard SG) | x-signature HMAC-SHA256 (sorted key:value) | je Auftrag |
 
 #### GET /api/v1/payment/methods — Verfügbare Zahlungsmethoden (öffentlich)
 
@@ -1121,6 +1123,58 @@ Fehler: 422 Auftragsstatus ist nicht "Prüfung ausstehend"
   "global_switch": true
 }
 ```
+
+#### POST /admin/v1/withdraw/batch-review — Sammelprüfung von Auszahlungen
+
+```
+需认证: 是
+
+请求: {
+  "ids": ["aB3xK...", "cD4yL..."],
+  "action": "approve",
+  "note": "批量审核通过"
+}
+
+响应: {
+  "processed": 2,
+  "failed": []
+}
+```
+
+action: approve=genehmigen / reject=ablehnen (Verarbeitung pro Auftrag; abgelehnte Aufträge werden automatisch erstattet; Fehler landen in failed und blockieren die übrigen nicht)
+
+#### POST /admin/v1/withdraw/execute-payout — Auszahlung ausführen
+
+```
+需认证: 是
+
+请求: { "order_id": "aB3xK..." }
+
+响应: {
+  "payout_batch_id": "PAYOUT-123456",
+  "payout_item_id": "ITEM-123456",
+  "payout_status": "success",
+  "payout_attempts": 1
+}
+```
+
+Auszahlung nur im Status approved möglich (atomare Umschaltung auf processing); ein wiederholter Aufruf liefert 422. Bei aktivierter Doppelprüfung muss der Auftrag zuvor von einer zweiten Person bestätigt werden
+
+#### POST /admin/v1/withdraw/sync-payout — Auszahlungsstatus synchronisieren
+
+```
+需认证: 是
+
+请求: { "order_id": "aB3xK..." }
+
+响应: {
+  "payout_status": "success",
+  "order_status": "completed",
+  "synced_status": "success"
+}
+```
+
+Fehler: 422 Für diesen Auftrag wurde noch keine Auszahlung ausgeführt
 
 ### 3.4 Plattform-Benutzerverwaltung
 
@@ -2205,6 +2259,13 @@ Die Empfehlungsprovision erhält eine zweistufige Gewinnbeteiligung:
 | GET /admin/v1/risk/graph/clusters | Clusterliste |
 | GET /admin/v1/risk/graph/{userId} | Benutzer-Verknüpfungsgraph |
 | GET /admin/v1/risk/clusters | Risikoclusterliste |
+| POST /admin/v1/risk/clusters/detect | Cluster-Erkennung (gleiche IP mit ≥5 Konten / gleicher Geräte-Fingerprint mit ≥3 Konten in den letzten 7 Tagen; nur Kandidaten, keine Speicherung) |
+| POST /admin/v1/risk/clusters/confirm | Cluster manuell bestätigen und speichern |
+| GET /admin/v1/risk/clusters/{hashid}/members | Mitgliederliste des Clusters (Mitglieder aus dem Fingerprint aufgelöst) |
+| PUT /admin/v1/risk/clusters/{hashid}/status | Cluster-Status aktualisieren (1=Beobachtung 2=erledigt 0=Fehlalarm) |
+| GET /admin/v1/risk/users | Warteschlange auffälliger Benutzer (Filter nach Vertrauenswert und letztem Treffer) |
+| GET /admin/v1/risk/users/{hashid}/timeline | Risiko-Zeitachse des Benutzers (Risiko-/Spiel-/Anti-Cheat-Ereignisse zusammengeführt) |
+| POST /admin/v1/risk/users/{hashid}/hold | Verfügbares Plattform-Guthaben des Benutzers einfrieren und protokollieren |
 
 ### 10.2 Anti-Cheat-Verwaltung (Admin :8789)
 
@@ -2249,3 +2310,20 @@ Die Empfehlungsprovision erhält eine zweistufige Gewinnbeteiligung:
 |------|------|
 | Adyen | Neues Zahlungs-Gateway (Einzahlung / Callback-Verifizierung / automatische Gutschrift) |
 | GrabPay | Neues Zahlungs-Gateway (Einzahlung / Callback-Verifizierung / automatische Gutschrift) |
+
+### 10.6 VIP / Erfolge / Suche / Belege (Admin :8789)
+
+VIP-Stufen, Erfolgskonfiguration, globale Suche und Belegexport (Admin).
+
+| Endpunkt | Beschreibung |
+|------|------|
+| GET /admin/v1/vip/level/list | VIP-Stufenliste |
+| POST /admin/v1/vip/level/create | VIP-Stufe erstellen (level muss eindeutig sein) |
+| PUT /admin/v1/vip/level/{hashid} | VIP-Stufe aktualisieren |
+| DELETE /admin/v1/vip/level/{hashid} | VIP-Stufe löschen (abgelehnt, solange Benutzer diese Stufe haben) |
+| GET /admin/v1/achievement/list | Erfolgsliste |
+| POST /admin/v1/achievement/create | Erfolg erstellen (doppelter key wird abgelehnt) |
+| PUT /admin/v1/achievement/{hashid} | Erfolg aktualisieren |
+| DELETE /admin/v1/achievement/{hashid} | Erfolg löschen |
+| GET /admin/v1/search | Globale Suche (?q= Suchbegriff, type=game oder user) |
+| POST /admin/v1/export/receipt | Beleg als PDF exportieren (type=deposit oder withdraw plus order_id) |
