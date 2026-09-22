@@ -192,7 +192,7 @@ DevEco Studio で `apps/harmonyos/` ディレクトリを開き、実機また�
 
 ```bash
 # 1. Docker 環境変数の設定
-cp .env.docker .env
+cp .env.example .env
 
 # 2. 全サービスの起動
 docker-compose up -d
@@ -431,7 +431,7 @@ Authorization: Bearer <token>
 PHP イメージは `Dockerfile` で構築され、ベースイメージは `php:8.3-cli`、OPcache を有効化。
 
 ```bash
-cp .env.docker .env
+cp .env.example .env
 docker-compose up -d
 ```
 

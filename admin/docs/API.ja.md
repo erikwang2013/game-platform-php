@@ -1669,7 +1669,7 @@ POST /admin/v1/upload
 プロジェクトルートに `docker-compose.yml` があり、7つのサービス（Nginx、admin、service、leaderboard-ws、MySQL、Redis、Elasticsearch）を構成。PHP は `Dockerfile` でビルド（`php:8.3-cli` ベース、OPcache 有効）。
 
 ```bash
-cp .env.docker .env
+cp .env.example .env
 docker-compose up -d
 ```
 

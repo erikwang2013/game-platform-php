@@ -192,7 +192,7 @@ Proyek menyediakan solusi orkestrasi Docker lengkap, mencakup 7 layanan: Nginx, 
 
 ```bash
 # 1. Konfigurasi variabel lingkungan Docker
-cp .env.docker .env
+cp .env.example .env
 
 # 2. Menjalankan semua layanan
 docker-compose up -d
@@ -431,7 +431,7 @@ Direktori root proyek menyediakan `docker-compose.yml`, mengorkestrasi 7 layanan
 Image PHP dibangun melalui `Dockerfile`, image dasar `php:8.3-cli`, dengan OPcache diaktifkan.
 
 ```bash
-cp .env.docker .env
+cp .env.example .env
 docker-compose up -d
 ```
 

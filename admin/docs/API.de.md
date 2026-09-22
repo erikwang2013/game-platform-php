@@ -1669,7 +1669,7 @@ Vollständige Authentifizierungs-Sequenz:
 Im Projektstamm liegt `docker-compose.yml`, das 7 Dienste orchestriert (Nginx, admin, service, leaderboard-ws, MySQL, Redis, Elasticsearch). PHP wird über die `Dockerfile` gebaut (basiert auf `php:8.3-cli`, mit OPcache).
 
 ```bash
-cp .env.docker .env
+cp .env.example .env
 docker-compose up -d
 ```
 

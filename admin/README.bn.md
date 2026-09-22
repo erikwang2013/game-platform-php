@@ -192,7 +192,7 @@ DevEco Studio দিয়ে `apps/harmonyos/` ডিরেক্টরি খ�
 
 ```bash
 # 1. Docker এনভায়রনমেন্ট ভেরিয়েবল কনফিগার
-cp .env.docker .env
+cp .env.example .env
 
 # 2. সব সার্ভিস চালু করুন
 docker-compose up -d
@@ -431,7 +431,7 @@ Authorization: Bearer <token>
 PHP ইমেজ `Dockerfile` দিয়ে বিল্ড হয়, বেস ইমেজ `php:8.3-cli`, OPcache সক্ষম।
 
 ```bash
-cp .env.docker .env
+cp .env.example .env
 docker-compose up -d
 ```
 

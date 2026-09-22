@@ -13,17 +13,17 @@ flowchart TD
     app --> login["/login<br/>LoginPage"]
     app --> dashboard["/dashboard<br/>AdminLayout"]
 
-    login --> form["登录表单<br/>用户名+密码"]
-    login --> captcha["点击验证码组件<br/>GestureDetector+Stack<br/>Image.memory(base64)<br/>点击标记Circle"]
+    login --> form["লগইন ফর্ম<br/>ইউজারনেম+পাসওয়ার্ড"]
+    login --> captcha["ক্লিক ক্যাপচা কম্পোনেন্ট<br/>GestureDetector+Stack<br/>Image.memory(base64)<br/>ক্লিক মার্ক Circle"]
 
-    dashboard --> sidebar["侧边栏NavigationDrawer<br/>可折叠64px/240px<br/>仪表盘/用户/角色/配置/日志"]
-    dashboard --> header["顶栏56px<br/>折叠按钮+用户菜单<br/>退出确认AlertDialog"]
-    dashboard --> content["内容区"]
+    dashboard --> sidebar["সাইডবার NavigationDrawer<br/>কোলাপ্সযোগ্য 64px/240px<br/>ড্যাশবোর্ড/ইউজার/ভূমিকা/কনফিগ/লগ"]
+    dashboard --> header["টপ বার 56px<br/>কোলাপ্স বোতাম+ইউজার মেনু<br/>এক্সিট কনফার্মেশন AlertDialog"]
+    dashboard --> content["কনটেন্ট এরিয়া"]
 
-    content --> stats["统计卡片GridView×4"]
-    content --> chart["趋势折线图LineChart"]
-    content --> pie["分布饼图PieChart"]
-    content --> logs["最近操作ListTile×8"]
+    content --> stats["পরিসংখ্যান কার্ড GridView×৪"]
+    content --> chart["ট্রেন্ড লাইন চার্ট LineChart"]
+    content --> pie["ডিস্ট্রিবিউশন পাই চার্ট PieChart"]
+    content --> logs["সাম্প্রতিক অপারেশন ListTile×৮"]
 
     style app fill:#1677FF,color:#fff
     style captcha fill:#FA8C16,color:#fff
@@ -35,10 +35,10 @@ flowchart TD
 ```mermaid
 flowchart LR
     entry["EntryAbility"]
-    entry -->|"无Token"| loginH["LoginPage"]
-    entry -->|"有Token"| dashH["DashboardPage"]
+    entry -->|"Token নেই"| loginH["LoginPage"]
+    entry -->|"Token আছে"| dashH["DashboardPage"]
 
-    loginH -->|"登录成功replaceUrl"| dashH
+    loginH -->|"লগইন সফল replaceUrl"| dashH
 
     dashH -->|"pushUrl"| userList["UserListPage"]
     dashH -->|"pushUrl"| profile["ProfilePage"]
@@ -47,7 +47,7 @@ flowchart LR
     userList -->|"router.back"| dashH
     userDetail -->|"router.back"| userList
 
-    profile -->|"退出确认replaceUrl"| loginH
+    profile -->|"এক্সিট কনফার্মেশন replaceUrl"| loginH
     profile -->|"router.back"| dashH
 
     style loginH fill:#1677FF,color:#fff

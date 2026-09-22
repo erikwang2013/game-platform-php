@@ -6,23 +6,23 @@ Languages: [中文](07-encryption-layers.md) · [English](07-encryption-layers.e
 
 ```mermaid
 flowchart TB
-    subgraph transport["传输层加密 - encryption"]
-        e1["客户端发送敏感数据"]
-        e2["AES-256-CBC 加密"]
-        e3["API传输密文"]
-        e4["服务端解密处理"]
+    subgraph transport["ট্রান্সপোর্ট লেয়ার এনক্রিপশন - encryption"]
+        e1["ক্লায়েন্ট সেনসিটিভ ডেটা পাঠায়"]
+        e2["AES-256-CBC এনক্রিপশন"]
+        e3["API ট্রান্সপোর্ট সাইফারটেক্সট"]
+        e4["সার্ভার ডিক্রিপ্ট প্রসেসিং"]
         e1 --> e2 --> e3 --> e4
     end
 
-    subgraph storage["存储层加密 - encryptable"]
-        d1["Model casts配置<br/>email=>Encryptable::class<br/>phone=>Encryptable::class<br/>id_card=>Encryptable::class"]
-        d2["写入时自动加密"]
-        d3["MySQL VARCHAR(500)存储密文"]
-        d4["读取时自动解密"]
+    subgraph storage["স্টোরেজ লেয়ার এনক্রিপশন - encryptable"]
+        d1["Model casts কনফিগ<br/>email=>Encryptable::class<br/>phone=>Encryptable::class<br/>id_card=>Encryptable::class"]
+        d2["রাইটের সময় অটো এনক্রিপ্ট"]
+        d3["MySQL VARCHAR(500) সাইফারটেক্সট সংরক্ষণ"]
+        d4["রিডের সময় অটো ডিক্রিপ্ট"]
         d1 --> d2 --> d3 --> d4
     end
 
-    subgraph mask["展示层脱敏"]
+    subgraph mask["প্রেজেন্টেশন লেয়ার মাস্কিং"]
         m1["phone: 138****1234"]
         m2["email: a***@example.com"]
         m3["id_card: ********"]

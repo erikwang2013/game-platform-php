@@ -6,35 +6,35 @@ Languages: [中文](01-system-architecture.md) · [English](01-system-architectu
 
 ```mermaid
 flowchart TB
-    subgraph "客户端层"
-        A1["Flutter Web PC<br/>管理后台"]
-        A2["Flutter Web PC<br/>C端用户平台"]
-        A3["HarmonyOS ArkTS<br/>手机/平板客户端"]
+    subgraph "Couche client"
+        A1["Flutter Web PC<br/>Administration"]
+        A2["Flutter Web PC<br/>Plateforme utilisateur côté C"]
+        A3["HarmonyOS ArkTS<br/>Client mobile/tablette"]
     end
 
-    subgraph "网关层"
-        B1["Nginx<br/>反向代理 + HTTPS"]
+    subgraph "Couche passerelle"
+        B1["Nginx<br/>Reverse proxy + HTTPS"]
     end
 
-    subgraph "应用层"
-        C1["admin/ :8789<br/>管理后台 API<br/>45 控制器"]
-        C2["service/ :8792<br/>C端业务 API<br/>34 控制器"]
+    subgraph "Couche application"
+        C1["admin/ :8789<br/>API administration<br/>45 contrôleurs"]
+        C2["service/ :8792<br/>API métier côté C<br/>34 contrôleurs"]
     end
 
-    subgraph "服务层 v2.0"
-        D1["GameProvider<br/>Provider SDK<br/>HMAC-SHA256 签名"]
-        D2["EventBus<br/>Redis Pub/Sub<br/>异步事件分发"]
-        D3["VIP 引擎<br/>经验值/升级/权益"]
-        D4["成就引擎<br/>12 内置成就"]
-        D5["FeatureFlag<br/>特性开关"]
-        D6["SdkSessionAuth<br/>HMAC 签名会话令牌"]
+    subgraph "Couche services v2.0"
+        D1["GameProvider<br/>Provider SDK<br/>Signature HMAC-SHA256"]
+        D2["EventBus<br/>Redis Pub/Sub<br/>Diffusion d'événements asynchrone"]
+        D3["Moteur VIP<br/>XP/montée de niveau/avantages"]
+        D4["Moteur de succès<br/>12 succès intégrés"]
+        D5["FeatureFlag<br/>Interrupteur de fonctionnalité"]
+        D6["SdkSessionAuth<br/>Jeton de session signé HMAC"]
     end
 
-    subgraph "存储层"
-        E1[("MySQL 8.0<br/>78 张表")]
-        E2[("Redis 7.x<br/>缓存/限流/事件")]
-        E3[("Elasticsearch<br/>全文检索")]
-        E4[("ClickHouse<br/>OLAP 分析")]
+    subgraph "Couche stockage"
+        E1[("MySQL 8.0<br/>78 tables")]
+        E2[("Redis 7.x<br/>Cache/limitation de débit/événements")]
+        E3[("Elasticsearch<br/>Recherche plein texte")]
+        E4[("ClickHouse<br/>Analyse OLAP")]
     end
 
     A1 & A2 & A3 --> B1

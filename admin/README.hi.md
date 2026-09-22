@@ -192,7 +192,7 @@ DevEco Studio से `apps/harmonyos/` निर्देशिका खोल�
 
 ```bash
 # 1. Docker पर्यावरण चर सेट करें
-cp .env.docker .env
+cp .env.example .env
 
 # 2. सभी सेवाएँ शुरू करें
 docker-compose up -d
@@ -431,7 +431,7 @@ Authorization: Bearer <token>
 PHP इमेज `Dockerfile` से निर्मित, आधार इमेज `php:8.3-cli`, OPcache सक्षम।
 
 ```bash
-cp .env.docker .env
+cp .env.example .env
 docker-compose up -d
 ```
 

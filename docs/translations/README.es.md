@@ -400,29 +400,29 @@ La plataforma adopta un sistema de liquidación con tres capas de moneda aislada
 
 ```mermaid
 flowchart LR
-    subgraph FIAT["法币层 Fiat"]
-        A["用户充值<br/>USD / CNY / EUR / JPY / KRW / GBP / BRL / INR<br/>Stripe / PayPal"]
-        H["提现到账<br/>PayPal Payout"]
+    subgraph FIAT["Capa fiat"]
+        A["Recarga del usuario<br/>USD / CNY / EUR / JPY / KRW / GBP / BRL / INR<br/>Stripe / PayPal"]
+        H["Retiro recibido<br/>PayPal Payout"]
     end
 
-    subgraph PLAT["平台币层 Platform Token"]
-        B["平台币钱包<br/>decimal(18,4) 乐观锁"]
-        E["提现订单<br/>platform_amount<br/>fiat_amount / currency"]
+    subgraph PLAT["Capa de token de plataforma"]
+        B["Monedero de plataforma<br/>decimal(18,4) bloqueo optimista"]
+        E["Orden de retiro<br/>platform_amount<br/>fiat_amount / currency"]
     end
 
-    subgraph GAME["游戏币层 Game Currency"]
-        D["游戏币种<br/>exchange_rate<br/>spread_pct"]
-        C["游戏币钱包<br/>UserGameWallet"]
-        G["游戏 Provider<br/>settle 结算回调"]
+    subgraph GAME["Capa de moneda de juego"]
+        D["Monedas de juego<br/>exchange_rate<br/>spread_pct"]
+        C["Monedero de juego<br/>UserGameWallet"]
+        G["Proveedor de juego<br/>callback de liquidación settle"]
     end
 
-    A -->|"充值回调验签<br/>平台币 = 法币 × default_exchange_rate"| B
-    B -->|"兑换买入 in<br/>扣除点差"| C
-    C -->|"兑换卖出 out<br/>按汇率折算"| B
-    D -.->|"独立汇率 + VIP 加成"| C
-    G <-->|"玩游戏赚/花"| C
-    B -->|"提现申请（扣款）"| E
-    E -->|"管理端审批<br/>PayPal Payout 打款"| H
+    A -->|"Verificación de firma del callback de recarga<br/>moneda de plataforma = fiat × default_exchange_rate"| B
+    B -->|"Conversión compra in<br/>deduce el diferencial"| C
+    C -->|"Conversión venta out<br/>convertido al tipo de cambio"| B
+    D -.->|"Tipo de cambio propio + bonificación VIP"| C
+    G <-->|"Jugar para ganar/gastar"| C
+    B -->|"Solicitud de retiro (cargo)"| E
+    E -->|"Aprobación del admin<br/>pago con PayPal Payout"| H
 ```
 
 ## Diagrama de arquitectura
@@ -478,11 +478,11 @@ Si este proyecto te resulta útil, invita al autor a un café ☕
   <table align="center" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <td align="center" width="200">
-        <img src="../weixinpay-130.png" width="130" height="130" alt="微信支付"><br>
+        <img src="../weixinpay-130.png" width="130" height="130" alt="WeChat Pay"><br>
         <b>WeChat Pay</b>
       </td>
       <td align="center" width="200">
-        <img src="../alipay-130.png" width="130" height="130" alt="支付宝"><br>
+        <img src="../alipay-130.png" width="130" height="130" alt="Alipay"><br>
         <b>Alipay</b>
       </td>
     </tr>

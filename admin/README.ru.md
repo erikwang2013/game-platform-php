@@ -192,7 +192,7 @@ flutter run -d chrome    # Web-версия (стиль PC-панели)
 
 ```bash
 # 1. Настройте переменные окружения Docker
-cp .env.docker .env
+cp .env.example .env
 
 # 2. Запустите все сервисы
 docker-compose up -d
@@ -431,7 +431,7 @@ Authorization: Bearer <token>
 PHP-образ собирается через `Dockerfile`, базовый образ `php:8.3-cli`, включен OPcache.
 
 ```bash
-cp .env.docker .env
+cp .env.example .env
 docker-compose up -d
 ```
 

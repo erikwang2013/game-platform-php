@@ -1669,7 +1669,7 @@ Secuencia completa de autenticación:
 La raíz del proyecto incluye `docker-compose.yml`, con orquestación de 7 servicios (Nginx, admin, service, leaderboard-ws, MySQL, Redis, Elasticsearch). PHP se construye con el `Dockerfile` (basado en `php:8.3-cli`, con OPcache habilitado).
 
 ```bash
-cp .env.docker .env
+cp .env.example .env
 docker-compose up -d
 ```
 

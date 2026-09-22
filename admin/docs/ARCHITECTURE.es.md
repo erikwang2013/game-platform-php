@@ -14,32 +14,32 @@ Languages: [中文](ARCHITECTURE.md) · [English](ARCHITECTURE.en.md) · [한국
 
 ```mermaid
 flowchart TB
-    subgraph "客户端层"
-        A1["Flutter Web<br/>PC 管理后台<br/>(Port 3000)"]
-        A2["HarmonyOS ArkTS<br/>手机/平板客户端"]
+    subgraph "Capa de clientes"
+        A1["Flutter Web<br/>Panel de administración PC<br/>(Port 3000)"]
+        A2["HarmonyOS ArkTS<br/>Cliente móvil/tableta"]
     end
 
-    subgraph "网关/边缘层 (Nginx Edge)"
-        B1["Nginx Edge Node<br/>Docker nginx:alpine<br/>反向代理 + HTTPS + Gzip<br/>静态文件服务"]
+    subgraph "Capa de pasarela/borde (Nginx Edge)"
+        B1["Nodo perimetral Nginx<br/>Docker nginx:alpine<br/>Proxy inverso + HTTPS + Gzip<br/>Servicio de archivos estáticos"]
     end
 
-    subgraph "应用层 (webman v2)"
-        C1["AdminAuth 中间件<br/>JWT 验证"]
-        C2["AdminPermission 中间件<br/>RBAC 权限校验"]
-        C3["管理端 Controller<br/>Dashboard / User / Role / Permission / Payment"]
-        C4["公开 Controller v1<br/>Captcha / Auth"]
+    subgraph "Capa de aplicación (webman v2)"
+        C1["Middleware AdminAuth<br/>Verificación JWT"]
+        C2["Middleware AdminPermission<br/>Validación de permisos RBAC"]
+        C3["Controlador de admin<br/>Dashboard / User / Role / Permission / Payment"]
+        C4["Controlador público v1<br/>Captcha / Auth"]
         C5["Common Services<br/>Hashids / Snowflake / Encryption"]
     end
 
-    subgraph "存储层"
-        D1[("MySQL 8.0<br/>主存储<br/>表前缀 game_")]
-        D2[("Elasticsearch<br/>全文检索<br/>索引前缀 game_")]
-        D3[("Redis<br/>Session / 缓存<br/>Captcha 存储")]
+    subgraph "Capa de datos"
+        D1[("MySQL 8.0<br/>Almacenamiento principal<br/>Prefijo de tablas game_")]
+        D2[("Elasticsearch<br/>Búsqueda de texto completo<br/>Prefijo de índices game_")]
+        D3[("Redis<br/>Session / caché<br/>Almacenamiento de captcha")]
     end
 
-    subgraph "外部"
-        E1["DevEco Studio<br/>HarmonyOS 构建"]
-        E2["Flutter SDK<br/>Web 构建"]
+    subgraph "Externo"
+        E1["DevEco Studio<br/>Compilación HarmonyOS"]
+        E2["Flutter SDK<br/>Compilación web"]
     end
 
     A1 -->|"HTTPS / JSON<br/>JWT Bearer"| B1
@@ -75,39 +75,39 @@ flowchart TB
 
 ```mermaid
 flowchart TD
-    subgraph "路由层 Route Layer"
-        R1["config/route.php<br/>URL → Controller 映射"]
+    subgraph "Capa de enrutamiento"
+        R1["config/route.php<br/>Mapeo URL → Controller"]
     end
 
-    subgraph "中间件层 Middleware Layer"
-        M_RL["RateLimit<br/>Redis 滑动窗口限流<br/>X-RateLimit 响应头"]
-        M_SF["SecurityFilter<br/>攻击检测拦截<br/>XSS/SQL注入/路径遍历/CSRF"]
-        M1["AdminAuth<br/>JWT Token 校验<br/>注入 adminId"]
-        M2["AdminPermission<br/>RBAC 鉴权<br/>method.path 匹配<br/>Redis 60s 缓存权限"]
+    subgraph "Capa de middleware"
+        M_RL["RateLimit<br/>Límite de frecuencia por ventana deslizante en Redis<br/>Cabecera de respuesta X-RateLimit"]
+        M_SF["SecurityFilter<br/>Detección e intercepción de ataques<br/>XSS/inyección SQL/path traversal/CSRF"]
+        M1["AdminAuth<br/>Verificación del token JWT<br/>Inyecta adminId"]
+        M2["AdminPermission<br/>Autorización RBAC<br/>Coincidencia de method.path<br/>Caché de permisos en Redis 60s"]
     end
 
-    subgraph "控制器层 Controller Layer"
+    subgraph "Capa de controladores"
         CT1["BaseController<br/>success/fail<br/>encodeId/decodeId<br/>generateId<br/>confirmPassword"]
-        CT2["UserController<br/>CRUD + 搜索 + 分页"]
-        CT3["RoleController<br/>CRUD + 权限同步"]
-        CT4["PermissionController<br/>CRUD + 树构建"]
-        CT5["DashboardController<br/>统计/趋势/分布"]
-        CT6["ExportController<br/>Excel/PDF 导出"]
-        CT7["CaptchaController<br/>验证码生成/校验"]
-        CT8["AuthController<br/>登录/注册/刷新"]
-        CT9["AnalyticsController<br/>12 个数据分析端点<br/>总览/排行/概率/留存/漏斗/ARPU"]
+        CT2["UserController<br/>CRUD + búsqueda + paginación"]
+        CT3["RoleController<br/>CRUD + sincronización de permisos"]
+        CT4["PermissionController<br/>CRUD + construcción del árbol"]
+        CT5["DashboardController<br/>Estadísticas/tendencias/distribución"]
+        CT6["ExportController<br/>Exportación a Excel/PDF"]
+        CT7["CaptchaController<br/>Generación/validación de captcha"]
+        CT8["AuthController<br/>Inicio de sesión/registro/refresco"]
+        CT9["AnalyticsController<br/>12 endpoints de análisis<br/>Resumen/clasificaciones/probabilidad/retención/embudo/ARPU"]
     end
 
-    subgraph "服务层 Service Layer"
-        S1["HashidsService<br/>ID 编解码"]
-        S2["SnowflakeService<br/>全局唯一 ID 生成"]
-        S3["EncryptionService<br/>加解密 + 脱敏"]
-        S4["GameDashboardService<br/>总览/排行/DAU/小时/行为分布<br/>MySQL 实时聚合，DB 故障返回空数据"]
-        S5["DepositLogService<br/>营收总览/游戏转化率<br/>confirmed 订单统计"]
-        S6["ProbabilityService<br/>联合/条件概率<br/>SQL 构建器（转义/引用/IN）"]
+    subgraph "Capa de servicios"
+        S1["HashidsService<br/>Codificación/decodificación de ID"]
+        S2["SnowflakeService<br/>Generación global de ID único"]
+        S3["EncryptionService<br/>Cifrado/descifrado + enmascaramiento"]
+        S4["GameDashboardService<br/>Resumen/clasificaciones/DAU/por hora/distribución de comportamiento<br/>Agregación en tiempo real en MySQL; datos vacíos si falla la BD"]
+        S5["DepositLogService<br/>Resumen de ingresos/tasa de conversión de juego<br/>Estadísticas de órdenes confirmed"]
+        S6["ProbabilityService<br/>Probabilidad conjunta/condicional<br/>Constructor SQL (escape/quoting/IN)"]
     end
 
-    subgraph "模型层 Model Layer"
+    subgraph "Capa de modelos"
         MD1["AdminUser<br/>encryptable casts"]
         MD2["AdminRole"]
         MD3["AdminPermission"]
@@ -115,7 +115,7 @@ flowchart TD
         MD5["SystemConfig"]
     end
 
-    subgraph "驱动层 Driver Layer"
+    subgraph "Capa de drivers"
         D1["MySQL PDO"]
         D2["Elasticsearch HTTP"]
         D3["Redis"]
@@ -152,7 +152,7 @@ flowchart TD
 
 ```mermaid
 sequenceDiagram
-    participant C as 客户端
+    participant C as Cliente
     participant N as Nginx
     participant MW_SF as SecurityFilter
     participant MW_RL as RateLimit
@@ -164,52 +164,52 @@ sequenceDiagram
     participant DB as MySQL
     participant OPLOG as OperationLog
 
-    C->>N: HTTPS 请求<br/>POST /admin/v1/*
-    N->>MW_SF: 转发
+    C->>N: Solicitud HTTPS<br/>POST /admin/v1/*
+    N->>MW_SF: Reenvío
 
-    alt 非标准 HTTP 方法 (TRACE/CONNECT/PATCH...)
+    alt Método HTTP no estándar (TRACE/CONNECT/PATCH...)
         MW_SF-->>C: 405 Method Not Allowed
-    else 方法合法 (GET/POST/PUT/DELETE/OPTIONS/HEAD)
-        Note over MW_SF: 方法白名单检查通过
+    else Método permitido (GET/POST/PUT/DELETE/OPTIONS/HEAD)
+        Note over MW_SF: Comprobación de lista blanca de métodos superada
     end
 
-    alt 攻击检测触发
+    alt Detección de ataques activada
         MW_SF-->>C: 403 Forbidden
     end
 
-    MW_SF->>MW_RL: 通过
+    MW_SF->>MW_RL: Correcto
 
-    alt 限流触发
+    alt Límite de frecuencia activado
         MW_RL-->>C: 429 + Retry-After
     end
 
-    MW_RL->>MW1: 通过
+    MW_RL->>MW1: Correcto
 
-    alt Token 缺失或无效
+    alt Token ausente o no válido
         MW1-->>C: 401 Unauthorized
-    else Token 有效
+    else Token válido
         MW1->>MW1: jwt()->verify(token)
         MW1->>MW2: $request->adminId = sub
     end
 
-    alt 无权限
+    alt Sin permiso
         MW2-->>C: 403 Forbidden
-    else 有权限
-        MW2->>CTL: 进入控制器
+    else Con permiso
+        MW2->>CTL: Entrar al controlador
     end
 
-    CTL->>CTL: 参数验证 (validator)
+    CTL->>CTL: Validación de parámetros (validator)
     CTL->>CTL: decodeId(hashid) → BIGINT
 
-    alt 敏感操作 (DELETE)
+    alt Operación sensible (DELETE)
         CTL->>CTL: confirmPassword(adminId, password)
-        alt 密码错误
-            CTL-->>C: 422 密码验证失败
+        alt Contraseña incorrecta
+            CTL-->>C: 422 Verificación de contraseña fallida
         end
     end
 
     CTL->>MDL: AdminUser::find(id)
-    MDL->>MDL: encryptable cast 自动解密
+    MDL->>MDL: descifrado automático del cast encryptable
     MDL->>DB: SELECT
     DB-->>MDL: Row
     MDL-->>CTL: Model
@@ -217,9 +217,9 @@ sequenceDiagram
     CTL->>SVC: encodeId(id) → hashid
     SVC-->>CTL: hash string
 
-    CTL->>CTL: 构建响应 JSON
+    CTL->>CTL: Construir JSON de respuesta
     CTL-->>C: 200 { code: 0, data: {...} }
-    CTL-->>OPLOG: 记录操作日志 (POST/PUT/DELETE)
+    CTL-->>OPLOG: Registrar la operación (POST/PUT/DELETE)
 ```
 
 ---
@@ -228,39 +228,39 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant U as 用户
-    participant CL as 客户端
-    participant SV as 服务端
+    participant U as Usuario
+    participant CL as Cliente
+    participant SV as Servidor
     participant JWT as JWT Service
     participant CAP as Captcha Service
 
-    Note over U,CAP: === 第一步: 获取验证码 ===
+    Note over U,CAP: === Paso 1: Obtener captcha ===
     CL->>SV: POST /api/v1/captcha/generate
     SV->>CAP: captcha_create('click')
-    CAP->>CAP: 生成 300×200 背景图
-    CAP->>CAP: 随机放置 N 个中文目标
-    CAP->>CAP: 生成 key, 存储 targets
+    CAP->>CAP: Generar imagen de fondo de 300×200
+    CAP->>CAP: Colocar aleatoriamente N objetivos chinos
+    CAP->>CAP: Generar key, almacenar targets
     CAP-->>SV: { key, image(PNG base64), targets }
     SV-->>CL: 200 { key, image, extra.targets }
 
-    Note over U,CAP: === 第二步: 用户点击 ===
-    CL->>CL: 渲染验证码图片
-    CL->>CL: 提示 "请按顺序点击: 树 → 鸟 → 花"
-    U->>CL: 依次点击图中文字位置
-    CL->>CL: 收集 clicks: [{x,y}, {x,y}, {x,y}]
+    Note over U,CAP: === Paso 2: El usuario hace clic ===
+    CL->>CL: Renderizar la imagen del captcha
+    CL->>CL: Aviso "Haga clic en orden: árbol → pájaro → flor"
+    U->>CL: Hacer clic sucesivamente en las posiciones de los caracteres de la imagen
+    CL->>CL: Recopilar clics: [{x,y}, {x,y}, {x,y}]
 
-    Note over U,CAP: === 第三步: 登录 ===
+    Note over U,CAP: === Paso 3: Inicio de sesión ===
     CL->>SV: POST /api/v1/auth/login { username, password, captcha_key, clicks }
     SV->>CAP: captcha_verify(key, 'click', clicks)
-    alt 验证码错误
+    alt Captcha incorrecto
         CAP-->>SV: false
-        SV-->>CL: 422 验证码错误
-    else 验证码正确
+        SV-->>CL: 422 Captcha incorrecto
+    else Captcha correcto
         CAP-->>SV: true
         SV->>SV: password_verify()
-        alt 凭证错误
-            SV-->>CL: 401 用户名或密码错误
-        else 凭证正确
+        alt Credenciales incorrectas
+            SV-->>CL: 401 Nombre de usuario o contraseña incorrectos
+        else Credenciales correctas
             SV->>JWT: jwt()->create({sub, username})
             JWT-->>SV: access_token (2h)
             SV->>JWT: jwt()->refresh()
@@ -269,7 +269,7 @@ sequenceDiagram
         end
     end
 
-    Note over U,CAP: === 后续请求 ===
+    Note over U,CAP: === Solicitudes posteriores ===
     CL->>SV: GET /admin/v1/dashboard<br/>Authorization: Bearer access_token
     SV->>JWT: jwt()->verify(token)
     JWT-->>SV: { sub, username }
@@ -282,32 +282,32 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-    subgraph "用户 User"
-        U1["admin<br/>(超级管理员)"]
-        U2["editor<br/>(编辑)"]
-        U3["viewer<br/>(只读)"]
+    subgraph "Usuario"
+        U1["admin<br/>(superadministrador)"]
+        U2["editor<br/>(editor)"]
+        U3["viewer<br/>(solo lectura)"]
     end
 
-    subgraph "角色 Role"
-        R1["super_admin<br/>权限标识: *"]
-        R2["editor<br/>权限标识: get.*, post.*"]
-        R3["viewer<br/>权限标识: get.*"]
+    subgraph "Rol"
+        R1["super_admin<br/>slug de permiso: *"]
+        R2["editor<br/>slug de permiso: get.*, post.*"]
+        R3["viewer<br/>slug de permiso: get.*"]
     end
 
-    subgraph "权限 Permission (树)"
-        P1["dashboard<br/>type=1 菜单"]
-        P2["user<br/>type=1 菜单"]
+    subgraph "Permiso (árbol)"
+        P1["dashboard<br/>type=1 menú"]
+        P2["user<br/>type=1 menú"]
         P3["get.admin/user<br/>type=3 API"]
         P4["post.admin/user<br/>type=3 API"]
         P5["delete.admin/user<br/>type=3 API"]
-        P6["export.excel<br/>type=2 按钮"]
+        P6["export.excel<br/>type=2 botón"]
     end
 
     U1 --> R1
     U2 --> R2
     U3 --> R3
 
-    R1 -->|"* (全权限)"| P1 & P2 & P3 & P4 & P5 & P6
+    R1 -->|"* (permisos completos)"| P1 & P2 & P3 & P4 & P5 & P6
     R2 --> P1 & P2 & P3 & P4
     R3 --> P1 & P3
 
@@ -321,31 +321,31 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    subgraph "权限类型"
-        T1["type=1 菜单<br/>控制侧边栏显示/隐藏"]
-        T2["type=2 按钮<br/>控制页面操作按钮"]
-        T3["type=3 API<br/>控制接口访问"]
+    subgraph "Tipos de permiso"
+        T1["type=1 menú<br/>controla mostrar/ocultar la barra lateral"]
+        T2["type=2 botón<br/>controla los botones de acción de la página"]
+        T3["type=3 API<br/>controla el acceso a la API"]
     end
 
-    subgraph "权限标识格式"
-        F1["{method}.{path}<br/>例: get.admin/user<br/>例: post.admin/user<br/>例: delete.admin/role"]
+    subgraph "Formato del slug de permiso"
+        F1["{method}.{path}<br/>ej.: get.admin/user<br/>ej.: post.admin/user<br/>ej.: delete.admin/role"]
     end
 
-    subgraph "判定流程"
-        J1["提取 Token → adminId"]
-        J2["查找用户角色"]
-        J3["收集所有权限 slug"]
-        J4["构造 method.path"]
-        J5{"匹配?"}
-        J6["放行"]
+    subgraph "Flujo de decisión"
+        J1["Extraer Token → adminId"]
+        J2["Buscar los roles del usuario"]
+        J3["Recopilar todos los slugs de permisos"]
+        J4["Construir method.path"]
+        J5{"¿Coincidencia?"}
+        J6["Permitir"]
         J7["403 Forbidden"]
 
         J1 --> J2
         J2 --> J3
         J3 --> J4
         J4 --> J5
-        J5 -->|"是 / slug=*"| J6
-        J5 -->|否| J7
+        J5 -->|"Sí / slug=*"| J6
+        J5 -->|No| J7
     end
 
     style J6 fill:#52C41A,color:#fff
@@ -358,28 +358,28 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    subgraph "1. 生成"
+    subgraph "1. Generar"
         G1["SnowflakeService<br/>::generate()"]
         G2["datacenter_id(5bit)<br/>+ worker_id(5bit)<br/>+ timestamp(41bit)<br/>+ sequence(12bit)"]
-        G3["BIGINT(18)<br/>例: 1750123456789"]
+        G3["BIGINT(18)<br/>ej.: 1750123456789"]
         G1 --> G2 --> G3
     end
 
-    subgraph "2. 存储"
-        S1["MySQL game_* 表<br/>id BIGINT UNSIGNED<br/>NOT NULL"]
-        S2["敏感字段<br/>encryptable cast<br/>AES-128-ECB 加密"]
+    subgraph "2. Almacenar"
+        S1["Tabla game_* de MySQL<br/>id BIGINT UNSIGNED<br/>NOT NULL"]
+        S2["Campos sensibles<br/>cast encryptable<br/>cifrado AES-128-ECB"]
         G3 --> S1
         S1 --> S2
     end
 
-    subgraph "3. 传输"
+    subgraph "3. Transmitir"
         T1["HashidsService<br/>::encode(bigint)"]
-        T2["hashid 字符串<br/>例: aB3xK9mW2pQ7rT5v"]
+        T2["cadena hashid<br/>ej.: aB3xK9mW2pQ7rT5v"]
         S1 --> T1
         T1 --> T2
     end
 
-    subgraph "4. 反向解码"
+    subgraph "4. Decodificación inversa"
         R1["HashidsService<br/>::decode(hashid)"]
         R2["BIGINT"]
         T2 --> R1 --> R2
@@ -396,23 +396,23 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    subgraph "传输层加密 (encryption)"
-        E1["客户端发送敏感数据"]
-        E2["AES-256-CBC 加密"]
-        E3["API 传输密文"]
-        E4["服务端解密处理"]
+    subgraph "Cifrado en la capa de transmisión (encryption)"
+        E1["El cliente envía datos sensibles"]
+        E2["Cifrado AES-256-CBC"]
+        E3["Texto cifrado transmitido por la API"]
+        E4["El servidor descifra y procesa"]
         E1 --> E2 --> E3 --> E4
     end
 
-    subgraph "存储层加密 (encryptable)"
+    subgraph "Cifrado en la capa de almacenamiento (encryptable)"
         D1["Model $casts<br/>email => Encryptable::class<br/>phone => Encryptable::class<br/>id_card => Encryptable::class"]
-        D2["写入: 自动加密"]
-        D3["MySQL VARCHAR(500)<br/>存储密文"]
-        D4["读取: 自动解密"]
+        D2["Al escribir: cifrado automático"]
+        D3["MySQL VARCHAR(500)<br/>almacena texto cifrado"]
+        D4["Al leer: descifrado automático"]
         D1 --> D2 --> D3 --> D4
     end
 
-    subgraph "展示层脱敏 (mask)"
+    subgraph "Enmascaramiento en la capa de presentación (mask)"
         M1["phone: 138****1234"]
         M2["email: a***@example.com"]
         M3["id_card: ********"]
@@ -438,15 +438,15 @@ erDiagram
         VARCHAR password "bcrypt"
         VARCHAR real_name
         VARCHAR avatar
-        VARCHAR email "加密"
-        VARCHAR phone "加密"
-        VARCHAR id_card "加密"
+        VARCHAR email "Cifrado"
+        VARCHAR phone "Cifrado"
+        VARCHAR id_card "Cifrado"
         TINYINT status
         DATETIME last_login_at
         VARCHAR last_login_ip
         DATETIME created_at
         DATETIME updated_at
-        DATETIME deleted_at "软删除"
+        DATETIME deleted_at "Borrado lógico"
     }
 
     game_admin_role {
@@ -461,10 +461,10 @@ erDiagram
 
     game_admin_permission {
         BIGINT id PK "Snowflake"
-        BIGINT parent_id FK "自引用"
+        BIGINT parent_id FK "Autorreferencia"
         VARCHAR name
         VARCHAR slug
-        TINYINT type "1菜单2按钮3API"
+        TINYINT type "1 menú 2 botón 3 API"
         VARCHAR icon
         VARCHAR path
         INT sort
@@ -489,8 +489,8 @@ erDiagram
         VARCHAR method
         VARCHAR path
         VARCHAR ip
-        VARCHAR source "来源端"
-        TEXT input "脱敏"
+        VARCHAR source "Plataforma de origen"
+        TEXT input "Enmascarado"
         DATETIME created_at
     }
 
@@ -519,27 +519,27 @@ erDiagram
 
 ```mermaid
 sequenceDiagram
-    participant C as 客户端
+    participant C as Cliente
     participant CTL as ExportController
     participant DB as MySQL
-    participant FS as 文件系统
+    participant FS as Sistema de archivos
 
-    Note over C,FS: === Excel 导出 ===
+    Note over C,FS: === Exportación a Excel ===
     C->>CTL: POST /admin/v1/export/excel<br/>{ table, columns, conditions }
     CTL->>DB: SELECT ... LIMIT 10000
-    DB-->>CTL: 数据
-    CTL->>CTL: 解密敏感字段
-    CTL->>CTL: 脱敏处理 (maskPhone/maskEmail)
-    CTL->>CTL: PhpSpreadsheet 构建<br/>表头蓝底白字<br/>数据行细边框<br/>冻结首行<br/>自动筛选
-    CTL->>FS: 写入 runtime/tmp/export_*.xlsx
-    CTL-->>C: 文件下载
+    DB-->>CTL: Datos
+    CTL->>CTL: Descifrar campos sensibles
+    CTL->>CTL: Enmascaramiento (maskPhone/maskEmail)
+    CTL->>CTL: Construcción con PhpSpreadsheet<br/>Encabezado azul con texto blanco<br/>Bordes finos en las filas de datos<br/>Congelar primera fila<br/>Filtro automático
+    CTL->>FS: Escribir en runtime/tmp/export_*.xlsx
+    CTL-->>C: Descarga del archivo
 
-    Note over C,FS: === PDF 导出 ===
+    Note over C,FS: === Exportación a PDF ===
     C->>CTL: POST /admin/v1/export/pdf<br/>{ type, title, data }
-    CTL->>CTL: buildPdfHtml()<br/>页头: 标题+版权+时间<br/>内容: 表格或卡片<br/>页脚: 不可移除版权
-    CTL->>CTL: Dompdf 渲染 A4 横向
-    CTL->>FS: 写入 runtime/tmp/export_*.pdf
-    CTL-->>C: 文件下载
+    CTL->>CTL: buildPdfHtml()<br/>Encabezado: título + copyright + hora<br/>Contenido: tabla o tarjetas<br/>Pie: copyright no eliminable
+    CTL->>CTL: Dompdf renderiza A4 horizontal
+    CTL->>FS: Escribir en runtime/tmp/export_*.pdf
+    CTL-->>C: Descarga del archivo
 ```
 
 ---
@@ -552,13 +552,13 @@ flowchart TD
     APP --> LP["/login<br/>LoginPage"]
     APP --> DB["/dashboard<br/>AdminLayout"]
 
-    LP --> LF["登录表单<br/>用户名/密码/验证码"]
-    LF --> CAPTCHA["点击验证码组件<br/>GestureDetector + Stack<br/>Image.memory(base64)<br/>点击标记 Circle"]
+    LP --> LF["Formulario de inicio de sesión<br/>Usuario/contraseña/captcha"]
+    LF --> CAPTCHA["Widget de captcha por clic<br/>GestureDetector + Stack<br/>Image.memory(base64)<br/>El clic marca Circle"]
 
-    DB --> SIDEBAR["侧边栏 NavigationDrawer<br/>可折叠 64px / 240px<br/>仪表盘/用户/角色/配置/日志/支付"]
-    DB --> HEADER["顶栏 56px<br/>折叠按钮 + 用户菜单<br/>退出登录 AlertDialog"]
-    DB --> CONTENT["内容区"]
-    CONTENT --> DASH["DashboardPage<br/>统计卡片 GridView<br/>趋势折线图 LineChart<br/>分布饼图 PieChart<br/>最近操作 ListTile"]
+    DB --> SIDEBAR["Barra lateral NavigationDrawer<br/>Plegable 64px / 240px<br/>Panel/usuarios/roles/configuración/registros/pagos"]
+    DB --> HEADER["Barra superior 56px<br/>Botón de plegado + menú de usuario<br/>Cerrar sesión AlertDialog"]
+    DB --> CONTENT["Área de contenido"]
+    CONTENT --> DASH["DashboardPage<br/>Tarjetas de estadísticas GridView<br/>Gráfico de líneas de tendencia LineChart<br/>Gráfico circular de distribución PieChart<br/>Operaciones recientes ListTile"]
 
     style APP fill:#1677FF,color:#fff
     style CAPTCHA fill:#FA8C16,color:#fff
@@ -572,20 +572,20 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    EA["EntryAbility<br/>启动"]
-    EA -->|"无 Token"| LP["LoginPage<br/>登录页"]
-    EA -->|"有 Token"| DP["DashboardPage<br/>仪表盘"]
+    EA["EntryAbility<br/>Inicio"]
+    EA -->|"Sin Token"| LP["LoginPage<br/>Página de inicio de sesión"]
+    EA -->|"Con Token"| DP["DashboardPage<br/>Panel"]
 
-    LP -->|"登录成功<br/>replaceUrl"| DP
+    LP -->|"Inicio de sesión correcto<br/>replaceUrl"| DP
 
-    DP -->|"pushUrl"| ULP["UserListPage<br/>用户列表"]
-    DP -->|"pushUrl"| PP["ProfilePage<br/>个人中心"]
+    DP -->|"pushUrl"| ULP["UserListPage<br/>Lista de usuarios"]
+    DP -->|"pushUrl"| PP["ProfilePage<br/>Perfil"]
 
-    ULP -->|"pushUrl"| UDP["UserDetailPage<br/>用户详情/新增/编辑"]
+    ULP -->|"pushUrl"| UDP["UserDetailPage<br/>Detalles del usuario/crear/editar"]
     ULP -->|"router.back"| DP
     UDP -->|"router.back"| ULP
 
-    PP -->|"退出登录<br/>replaceUrl"| LP
+    PP -->|"Cerrar sesión<br/>replaceUrl"| LP
     PP -->|"router.back"| DP
 
     style LP fill:#1677FF,color:#fff
@@ -601,32 +601,32 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    subgraph "第1层: 人机验证"
-        L1["点击验证码<br/>Click Captcha<br/>登录/注册强制"]
+    subgraph "Capa 1: Verificación humano-máquina"
+        L1["Captcha de clic<br/>Click Captcha<br/>Obligatorio en login/registro"]
     end
 
-    subgraph "第2层: 操作确认"
-        L2["密码二次确认<br/>confirmPassword()<br/>DELETE 操作必须"]
+    subgraph "Capa 2: Confirmación de operación"
+        L2["Confirmación de contraseña<br/>confirmPassword()<br/>Obligatorio en DELETE"]
     end
 
-    subgraph "第3层: 传输安全"
+    subgraph "Capa 3: Seguridad de transmisión"
         L3["HTTPS<br/>JWT Bearer Token<br/>AES-256-CBC"]
     end
 
-    subgraph "第4层: 身份认证"
+    subgraph "Capa 4: Autenticación"
         L4["JWT HS256<br/>access_token 2h<br/>refresh_token 14d"]
     end
 
-    subgraph "第5层: 权限鉴权"
-        L5["RBAC<br/>method.path 粒度<br/>超级管理员 * "]
+    subgraph "Capa 5: Autorización"
+        L5["RBAC<br/>granularidad de method.path<br/>superadministrador * "]
     end
 
-    subgraph "第6层: 数据保护"
-        L6["接口 ID: Hashids 加密<br/>请求体: Encryption 加密<br/>存储层: Encryptable 加密<br/>导出: 脱敏+版权"]
+    subgraph "Capa 6: Protección de datos"
+        L6["IDs de API: cifrado Hashids<br/>Cuerpo de la petición: cifrado Encryption<br/>Capa de almacenamiento: cifrado Encryptable<br/>Exportación: enmascaramiento + copyright"]
     end
 
-    subgraph "第7层: 审计追溯"
-        L7["OperationLog<br/>记录所有操作<br/>用户/IP/时间/来源端/参数"]
+    subgraph "Capa 7: Trazabilidad de auditoría"
+        L7["OperationLog<br/>registra todas las operaciones<br/>usuario/IP/hora/plataforma de origen/parámetros"]
     end
 
     L1 --> L2 --> L3 --> L4 --> L5 --> L6 --> L7
@@ -650,24 +650,24 @@ flowchart TB
         DNS["erik.xyz"]
     end
 
-    subgraph "Web 服务器"
+    subgraph "Servidor web"
         NGX["Nginx<br/>:443 HTTPS<br/>:80 → 443 redirect<br/>gzip on"]
-        STA["静态文件<br/>Flutter Web build/"]
+        STA["Archivos estáticos<br/>Flutter Web build/"]
     end
 
-    subgraph "应用服务器 (可横向扩展)"
+    subgraph "Servidores de aplicación (escalables horizontalmente)"
         WM1["webman worker 1<br/>:8789"]
         WM2["webman worker 2<br/>:8789"]
         WM3["webman worker N<br/>:8789"]
     end
 
-    subgraph "数据层"
-        MYSQL["MySQL 8.0<br/>主从复制<br/>game_ 前缀"]
-        ES["Elasticsearch 8.x<br/>3 节点集群<br/>game_ 前缀"]
-        REDIS["Redis 7.x<br/>哨兵模式<br/>poster:captcha:*"]
+    subgraph "Capa de datos"
+        MYSQL["MySQL 8.0<br/>Replicación maestro-esclavo<br/>prefijo game_"]
+        ES["Elasticsearch 8.x<br/>clúster de 3 nodos<br/>prefijo game_"]
+        REDIS["Redis 7.x<br/>modo Sentinel<br/>poster:captcha:*"]
     end
 
-    subgraph "监控"
+    subgraph "Monitorización"
         MON["Grafana<br/>+ Prometheus"]
     end
 

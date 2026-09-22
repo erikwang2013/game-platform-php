@@ -6,13 +6,13 @@ Languages: [中文](11-security-defense.md) · **English** · [한국어](11-sec
 
 ```mermaid
 flowchart TB
-    l1["第1层: 人机验证<br/>点击验证码ClickCaptcha<br/>登录/注册强制校验"]
-    l2["第2层: 操作确认<br/>密码二次确认<br/>DELETE操作必须"]
-    l3["第3层: 传输安全<br/>HTTPS + JWT Bearer<br/>AES-256-CBC"]
-    l4["第4层: 身份认证<br/>JWT HS256<br/>access_token 2h<br/>refresh_token 14d"]
-    l5["第5层: 权限鉴权<br/>RBAC method.path粒度<br/>超级管理员*"]
-    l6["第6层: 数据保护<br/>ID:Hashids加密<br/>请求:Encryption加密<br/>存储:Encryptable加密<br/>导出:脱敏+版权"]
-    l7["第7层: 审计追溯<br/>OperationLog<br/>用户/IP/时间/参数"]
+    l1["Layer 1: Human verification<br/>Click captcha ClickCaptcha<br/>Mandatory for login/register"]
+    l2["Layer 2: Operation confirmation<br/>Password re-confirmation<br/>Required for DELETE"]
+    l3["Layer 3: Transport security<br/>HTTPS + JWT Bearer<br/>AES-256-CBC"]
+    l4["Layer 4: Authentication<br/>JWT HS256<br/>access_token 2h<br/>refresh_token 14d"]
+    l5["Layer 5: Authorization<br/>RBAC method.path granularity<br/>super administrator*"]
+    l6["Layer 6: Data protection<br/>ID: Hashids-encoded<br/>Request: Encryption-encrypted<br/>Storage: Encryptable-encrypted<br/>Export: masked + copyright"]
+    l7["Layer 7: Audit trail<br/>OperationLog<br/>user/IP/time/parameters"]
 
     l1 --> l2 --> l3 --> l4 --> l5 --> l6 --> l7
 

@@ -6,16 +6,16 @@ Languages: **中文** · [English](02-backend-layers.en.md) · [한국어](02-ba
 
 ```mermaid
 flowchart TD
-    subgraph route["路由层"]
-        r1["config/route.php<br/>URL→Controller映射"]
+    subgraph route["Слой маршрутизации"]
+        r1["config/route.php<br/>Отображение URL→Controller"]
     end
 
-    subgraph middleware["中间件层"]
-        m1["AdminAuth<br/>JWT Token校验<br/>注入adminId"]
-        m2["AdminPermission<br/>RBAC鉴权<br/>method.path匹配"]
+    subgraph middleware["Слой middleware"]
+        m1["AdminAuth<br/>Проверка JWT Token<br/>Внедрение adminId"]
+        m2["AdminPermission<br/>Авторизация RBAC<br/>Сопоставление method.path"]
     end
 
-    subgraph controller["控制器层"]
+    subgraph controller["Слой контроллеров"]
         base["BaseController<br/>success/fail<br/>encodeId/decodeId<br/>generateId<br/>confirmPassword"]
         user["UserController"]
         role["RoleController"]
@@ -26,13 +26,13 @@ flowchart TD
         auth["AuthController"]
     end
 
-    subgraph service["服务层"]
-        s1["HashidsService<br/>ID编解码"]
-        s2["SnowflakeService<br/>全局ID生成"]
-        s3["EncryptionService<br/>加解密+脱敏"]
+    subgraph service["Слой сервисов"]
+        s1["HashidsService<br/>Кодирование/декодирование ID"]
+        s2["SnowflakeService<br/>Генерация глобальных ID"]
+        s3["EncryptionService<br/>Шифрование/расшифровка + маскирование"]
     end
 
-    subgraph model["模型层"]
+    subgraph model["Слой моделей"]
         md1["AdminUser<br/>encryptable casts"]
         md2["AdminRole"]
         md3["AdminPermission"]
@@ -40,7 +40,7 @@ flowchart TD
         md5["SystemConfig"]
     end
 
-    subgraph driver["驱动层"]
+    subgraph driver["Слой драйверов"]
         d1["MySQL PDO"]
         d2["Elasticsearch HTTP"]
         d3["Redis"]

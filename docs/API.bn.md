@@ -860,7 +860,7 @@ language এর মান: en-US / zh-CN / ja-JP / ko-KR
 ```
 无需认证
 
-响应: {
+রেসপন্স: {
   "total_games": 12,
   "total_users": 1500,
   "today_game_plays": 320,
@@ -918,10 +918,10 @@ language এর মান: en-US / zh-CN / ja-JP / ko-KR
 #### GET /admin/v1/game/{hashid} — গেম বিবরণ
 
 ```
-需认证: 是
-参数: hashid 为游戏的 hashid 编码（路径参数）
+অথেনটিকেশন প্রয়োজন: হ্যাঁ
+প্যারামিটার: hashid 为游戏的 hashid 编码（路径参数）
 
-响应: {
+রেসপন্স: {
   "id": "aB3xK...",
   "name": "射击大师",
   "slug": "shooter-master",
@@ -951,13 +951,13 @@ language এর মান: en-US / zh-CN / ja-JP / ko-KR
 #### POST /admin/v1/game/launch — গেম প্রিভিউ
 
 ```
-需认证: 是
+অথেনটিকেশন প্রয়োজন: হ্যাঁ
 
-请求: {
+রিকোয়েস্ট: {
   "game_id": "aB3xK..."      // 游戏 ID(hashid)
 }
 
-响应: {
+রেসপন্স: {
   "id": "aB3xK...",
   "name": "射击大师",
   "slug": "shooter-master",
@@ -1127,15 +1127,15 @@ action: approve=অনুমোদন / reject=প্রত্যাখ্যা
 #### POST /admin/v1/withdraw/batch-review — একসাথে উইথড্র পর্যালোচনা
 
 ```
-需认证: 是
+অথেনটিকেশন প্রয়োজন: হ্যাঁ
 
-请求: {
+রিকোয়েস্ট: {
   "ids": ["aB3xK...", "cD4yL..."],
   "action": "approve",
   "note": "批量审核通过"
 }
 
-响应: {
+রেসপন্স: {
   "processed": 2,
   "failed": []
 }
@@ -1146,11 +1146,11 @@ action: approve=অনুমোদন / reject=প্রত্যাখ্যা
 #### POST /admin/v1/withdraw/execute-payout — পেআউট সম্পাদন
 
 ```
-需认证: 是
+অথেনটিকেশন প্রয়োজন: হ্যাঁ
 
-请求: { "order_id": "aB3xK..." }
+রিকোয়েস্ট: { "order_id": "aB3xK..." }
 
-响应: {
+রেসপন্স: {
   "payout_batch_id": "PAYOUT-123456",
   "payout_item_id": "ITEM-123456",
   "payout_status": "success",
@@ -1163,11 +1163,11 @@ action: approve=অনুমোদন / reject=প্রত্যাখ্যা
 #### POST /admin/v1/withdraw/sync-payout — পেআউট স্ট্যাটাস সিঙ্ক
 
 ```
-需认证: 是
+অথেনটিকেশন প্রয়োজন: হ্যাঁ
 
-请求: { "order_id": "aB3xK..." }
+রিকোয়েস্ট: { "order_id": "aB3xK..." }
 
-响应: {
+রেসপন্স: {
   "payout_status": "success",
   "order_status": "completed",
   "synced_status": "success"
@@ -1980,9 +1980,9 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/report/summary — রিপোর্ট সারাংশ
 
 ```
-需认证: 是
-参数: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
-响应: {
+অথেনটিকেশন প্রয়োজন: হ্যাঁ
+প্যারামিটার: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
+রেসপন্স: {
   "start": "2026-08-01", "end": "2026-08-31",
   "new_users": 120, "deposit_amount": "5000.0000", "deposit_count": 45,
   "withdraw_amount": "1200.0000", "withdraw_count": 8,
@@ -1994,9 +1994,9 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/report/daily — দৈনিক রিপোর্ট
 
 ```
-需认证: 是
-参数: ?start=Y-m-d&end=Y-m-d
-响应: {
+অথেনটিকেশন প্রয়োজন: হ্যাঁ
+প্যারামিটার: ?start=Y-m-d&end=Y-m-d
+রেসপন্স: {
   "start": "2026-08-01", "end": "2026-08-31",
   "rows": [ { "date": "2026-08-01", "new_users": 12, "deposit_amount": "500.0000", "deposit_count": 4, "withdraw_amount": "100.0000", "withdraw_count": 1, "exchange_amount": "300.0000", "play_count": 150 } ]
 }
@@ -2006,9 +2006,9 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/report/export — দৈনিক রিপোর্ট CSV এক্সপোর্ট
 
 ```
-需认证: 是
-参数: ?start=Y-m-d&end=Y-m-d&format=excel
-响应: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
+অথেনটিকেশন প্রয়োজন: হ্যাঁ
+প্যারামিটার: ?start=Y-m-d&end=Y-m-d&format=excel
+রেসপন্স: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
 ```
 
 ## 8. রেট লিমিট পলিসি (আপডেট)

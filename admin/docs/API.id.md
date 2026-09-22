@@ -1669,7 +1669,7 @@ Urutan autentikasi lengkap:
 Direktori root proyek menyediakan `docker-compose.yml`, mengorkestrasi 7 layanan (Nginx, admin, service, leaderboard-ws, MySQL, Redis, Elasticsearch). PHP dibangun melalui `Dockerfile` (berbasis `php:8.3-cli`, OPcache diaktifkan).
 
 ```bash
-cp .env.docker .env
+cp .env.example .env
 docker-compose up -d
 ```
 

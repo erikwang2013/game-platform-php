@@ -860,7 +860,7 @@ language 선택값: en-US / zh-CN / ja-JP / ko-KR
 ```
 无需认证
 
-响应: {
+응답: {
   "total_games": 12,
   "total_users": 1500,
   "today_game_plays": 320,
@@ -918,10 +918,10 @@ language 선택값: en-US / zh-CN / ja-JP / ko-KR
 #### GET /admin/v1/game/{hashid} — 게임 상세
 
 ```
-需认证: 是
-参数: hashid 为游戏的 hashid 编码（路径参数）
+인증 필요: 예
+파라미터: hashid 为游戏的 hashid 编码（路径参数）
 
-响应: {
+응답: {
   "id": "aB3xK...",
   "name": "射击大师",
   "slug": "shooter-master",
@@ -951,13 +951,13 @@ language 선택값: en-US / zh-CN / ja-JP / ko-KR
 #### POST /admin/v1/game/launch — 게임 미리보기
 
 ```
-需认证: 是
+인증 필요: 예
 
-请求: {
+요청: {
   "game_id": "aB3xK..."      // 游戏 ID(hashid)
 }
 
-响应: {
+응답: {
   "id": "aB3xK...",
   "name": "射击大师",
   "slug": "shooter-master",
@@ -1127,15 +1127,15 @@ action: approve=승인 / reject=거부 / confirm=확인 (거부 시 플랫폼 �
 #### POST /admin/v1/withdraw/batch-review — 출금 일괄 심사
 
 ```
-需认证: 是
+인증 필요: 예
 
-请求: {
+요청: {
   "ids": ["aB3xK...", "cD4yL..."],
   "action": "approve",
   "note": "批量审核通过"
 }
 
-响应: {
+응답: {
   "processed": 2,
   "failed": []
 }
@@ -1146,11 +1146,11 @@ action: approve=승인 / reject=거절 (주문별로 처리하며 거절된 주�
 #### POST /admin/v1/withdraw/execute-payout — 지급 실행
 
 ```
-需认证: 是
+인증 필요: 예
 
-请求: { "order_id": "aB3xK..." }
+요청: { "order_id": "aB3xK..." }
 
-响应: {
+응답: {
   "payout_batch_id": "PAYOUT-123456",
   "payout_item_id": "ITEM-123456",
   "payout_status": "success",
@@ -1163,11 +1163,11 @@ approved 상태의 주문만 지급할 수 있습니다(processing으로 원자�
 #### POST /admin/v1/withdraw/sync-payout — 지급 상태 동기화
 
 ```
-需认证: 是
+인증 필요: 예
 
-请求: { "order_id": "aB3xK..." }
+요청: { "order_id": "aB3xK..." }
 
-响应: {
+응답: {
   "payout_status": "success",
   "order_status": "completed",
   "synced_status": "success"
@@ -1980,9 +1980,9 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/report/summary — 리포트 요약
 
 ```
-需认证: 是
-参数: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
-响应: {
+인증 필요: 예
+파라미터: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
+응답: {
   "start": "2026-08-01", "end": "2026-08-31",
   "new_users": 120, "deposit_amount": "5000.0000", "deposit_count": 45,
   "withdraw_amount": "1200.0000", "withdraw_count": 8,
@@ -1994,9 +1994,9 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/report/daily — 일일 리포트
 
 ```
-需认证: 是
-参数: ?start=Y-m-d&end=Y-m-d
-响应: {
+인증 필요: 예
+파라미터: ?start=Y-m-d&end=Y-m-d
+응답: {
   "start": "2026-08-01", "end": "2026-08-31",
   "rows": [ { "date": "2026-08-01", "new_users": 12, "deposit_amount": "500.0000", "deposit_count": 4, "withdraw_amount": "100.0000", "withdraw_count": 1, "exchange_amount": "300.0000", "play_count": 150 } ]
 }
@@ -2006,9 +2006,9 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/report/export — 일일 리포트 CSV 내보내기
 
 ```
-需认证: 是
-参数: ?start=Y-m-d&end=Y-m-d&format=excel
-响应: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
+인증 필요: 예
+파라미터: ?start=Y-m-d&end=Y-m-d&format=excel
+응답: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
 ```
 
 ## 8. 레이트 리밋 정책 (업데이트)

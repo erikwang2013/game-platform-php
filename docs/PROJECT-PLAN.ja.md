@@ -22,7 +22,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 | テスト | 132 ケース / 8 ファイル (admin プロジェクト)、service プロジェクトは **ゼロテスト** |
 | バージョン | v1.1 (2026-08-07)：Redis プラグイン、分析サービス、Redis ダウングレード、テスト修正 |
 
-実装済み機能: JWT+RBAC、ウォレット楽観ロック、チャージ(Stripe/PayPal/NowPayments/Coinbase 署名検証)、交換差益、出金審査+PayPal 送金、ゲーム CRUD/Provider ゲートウェイ(HMAC)、クーポン/VIP/アチーブメント/チケット/紹介報酬/2FA/ソーシャル(友達/チャット WS)/トーナメント/Webhook/プッシュ(FCM/APNs/华为)/i18n バイリンガル。
+実装済み機能: JWT+RBAC、ウォレット楽観ロック、チャージ(Stripe/PayPal/NowPayments/Coinbase 署名検証)、交換差益、出金審査+PayPal 送金、ゲーム CRUD/Provider ゲートウェイ(HMAC)、クーポン/VIP/アチーブメント/チケット/紹介報酬/2FA/ソーシャル(友達/チャット WS)/トーナメント/Webhook/プッシュ(FCM/APNs/Huawei)/i18n バイリンガル。
 
 ---
 

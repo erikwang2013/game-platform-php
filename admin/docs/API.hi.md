@@ -1669,7 +1669,7 @@ POST /admin/v1/upload
 प्रोजेक्ट रूट में `docker-compose.yml` उपलब्ध है, 7 सेवाओं का ऑर्केस्ट्रेशन (Nginx, admin, service, leaderboard-ws, MySQL, Redis, Elasticsearch)। PHP `Dockerfile` से निर्मित (`php:8.3-cli` पर आधारित, OPcache सक्षम)।
 
 ```bash
-cp .env.docker .env
+cp .env.example .env
 docker-compose up -d
 ```
 

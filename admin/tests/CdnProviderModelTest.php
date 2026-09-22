@@ -22,7 +22,20 @@ class CdnProviderModelTest extends TestCase
         $json = '{"bucket":"static","region":"auto","access_key_id":"AK","secret_access_key":"SK"}';
         $m = new CdnProvider();
         $m->config = $json;
-        $this->assertSame($json, $m->config);
+        // config 是 JSON 语义字段：读取侧按 array 取值（json_decode 后还原），不再回落硬编码默认
+        $this->assertSame(json_decode($json, true), $m->config);
+    }
+
+    #[Test]
+    public function configNonJsonValueStaysString(): void
+    {
+        // 正控：非 JSON 的 config 值不得被 json_decode 误伤（标量原样读回；纯数字串尤甚，不得变 int）
+        $m = new CdnProvider();
+        $m->config = 'plain-token-abc';
+        $this->assertSame('plain-token-abc', $m->config);
+
+        $m->config = '1234567890';
+        $this->assertSame('1234567890', $m->config);
     }
 
     #[Test]

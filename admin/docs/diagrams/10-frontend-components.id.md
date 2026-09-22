@@ -13,17 +13,17 @@ flowchart TD
     app --> login["/login<br/>LoginPage"]
     app --> dashboard["/dashboard<br/>AdminLayout"]
 
-    login --> form["登录表单<br/>用户名+密码"]
-    login --> captcha["点击验证码组件<br/>GestureDetector+Stack<br/>Image.memory(base64)<br/>点击标记Circle"]
+    login --> form["Formulir masuk<br/>Nama pengguna+kata sandi"]
+    login --> captcha["Komponen captcha klik<br/>GestureDetector+Stack<br/>Image.memory(base64)<br/>Tanda klik Circle"]
 
-    dashboard --> sidebar["侧边栏NavigationDrawer<br/>可折叠64px/240px<br/>仪表盘/用户/角色/配置/日志"]
-    dashboard --> header["顶栏56px<br/>折叠按钮+用户菜单<br/>退出确认AlertDialog"]
-    dashboard --> content["内容区"]
+    dashboard --> sidebar["Sidebar NavigationDrawer<br/>Dapat dilipat 64px/240px<br/>Dasbor/pengguna/peran/konfigurasi/log"]
+    dashboard --> header["Header atas 56px<br/>Tombol lipat+menu pengguna<br/>Konfirmasi keluar AlertDialog"]
+    dashboard --> content["Area konten"]
 
-    content --> stats["统计卡片GridView×4"]
-    content --> chart["趋势折线图LineChart"]
-    content --> pie["分布饼图PieChart"]
-    content --> logs["最近操作ListTile×8"]
+    content --> stats["Kartu statistik GridView×4"]
+    content --> chart["Grafik garis tren LineChart"]
+    content --> pie["Diagram lingkaran distribusi PieChart"]
+    content --> logs["Operasi terbaru ListTile×8"]
 
     style app fill:#1677FF,color:#fff
     style captcha fill:#FA8C16,color:#fff
@@ -35,10 +35,10 @@ flowchart TD
 ```mermaid
 flowchart LR
     entry["EntryAbility"]
-    entry -->|"无Token"| loginH["LoginPage"]
-    entry -->|"有Token"| dashH["DashboardPage"]
+    entry -->|"Tanpa Token"| loginH["LoginPage"]
+    entry -->|"Dengan Token"| dashH["DashboardPage"]
 
-    loginH -->|"登录成功replaceUrl"| dashH
+    loginH -->|"Berhasil masuk replaceUrl"| dashH
 
     dashH -->|"pushUrl"| userList["UserListPage"]
     dashH -->|"pushUrl"| profile["ProfilePage"]
@@ -47,7 +47,7 @@ flowchart LR
     userList -->|"router.back"| dashH
     userDetail -->|"router.back"| userList
 
-    profile -->|"退出确认replaceUrl"| loginH
+    profile -->|"Konfirmasi keluar replaceUrl"| loginH
     profile -->|"router.back"| dashH
 
     style loginH fill:#1677FF,color:#fff

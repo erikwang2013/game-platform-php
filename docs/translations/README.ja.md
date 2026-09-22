@@ -478,12 +478,12 @@ flowchart LR
   <table align="center" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <td align="center" width="200">
-        <img src="../weixinpay-130.png" width="130" height="130" alt="微信支付"><br>
-        <b>微信支付</b>
+        <img src="../weixinpay-130.png" width="130" height="130" alt="WeChat Pay"><br>
+        <b>WeChat Pay</b>
       </td>
       <td align="center" width="200">
-        <img src="../alipay-130.png" width="130" height="130" alt="支付宝"><br>
-        <b>支付宝</b>
+        <img src="../alipay-130.png" width="130" height="130" alt="Alipay"><br>
+        <b>Alipay</b>
       </td>
     </tr>
   </table>

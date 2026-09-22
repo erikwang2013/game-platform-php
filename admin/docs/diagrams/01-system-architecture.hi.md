@@ -6,35 +6,35 @@ Languages: [中文](01-system-architecture.md) · [English](01-system-architectu
 
 ```mermaid
 flowchart TB
-    subgraph "客户端层"
-        A1["Flutter Web PC<br/>管理后台"]
-        A2["Flutter Web PC<br/>C端用户平台"]
-        A3["HarmonyOS ArkTS<br/>手机/平板客户端"]
+    subgraph "क्लाइंट परत"
+        A1["Flutter Web PC<br/>प्रशासन कंसोल"]
+        A2["Flutter Web PC<br/>C-छोर उपयोगकर्ता प्लेटफ़ॉर्म"]
+        A3["HarmonyOS ArkTS<br/>मोबाइल/टैबलेट क्लाइंट"]
     end
 
-    subgraph "网关层"
-        B1["Nginx<br/>反向代理 + HTTPS"]
+    subgraph "गेटवे परत"
+        B1["Nginx<br/>रिवर्स प्रॉक्सी + HTTPS"]
     end
 
-    subgraph "应用层"
-        C1["admin/ :8789<br/>管理后台 API<br/>45 控制器"]
-        C2["service/ :8792<br/>C端业务 API<br/>34 控制器"]
+    subgraph "एप्लिकेशन परत"
+        C1["admin/ :8789<br/>प्रशासन कंसोल API<br/>45 कंट्रोलर"]
+        C2["service/ :8792<br/>C-छोर व्यवसाय API<br/>34 कंट्रोलर"]
     end
 
-    subgraph "服务层 v2.0"
-        D1["GameProvider<br/>Provider SDK<br/>HMAC-SHA256 签名"]
-        D2["EventBus<br/>Redis Pub/Sub<br/>异步事件分发"]
-        D3["VIP 引擎<br/>经验值/升级/权益"]
-        D4["成就引擎<br/>12 内置成就"]
-        D5["FeatureFlag<br/>特性开关"]
-        D6["SdkSessionAuth<br/>HMAC 签名会话令牌"]
+    subgraph "सेवा परत v2.0"
+        D1["GameProvider<br/>Provider SDK<br/>HMAC-SHA256 हस्ताक्षर"]
+        D2["EventBus<br/>Redis Pub/Sub<br/>अतुल्यकालिक इवेंट वितरण"]
+        D3["VIP इंजन<br/>अनुभव/उन्नयन/लाभ"]
+        D4["उपलब्धि इंजन<br/>12 अंतर्निहित उपलब्धियाँ"]
+        D5["FeatureFlag<br/>फ़ीचर स्विच"]
+        D6["SdkSessionAuth<br/>HMAC हस्ताक्षरित सत्र टोकन"]
     end
 
-    subgraph "存储层"
-        E1[("MySQL 8.0<br/>78 张表")]
-        E2[("Redis 7.x<br/>缓存/限流/事件")]
-        E3[("Elasticsearch<br/>全文检索")]
-        E4[("ClickHouse<br/>OLAP 分析")]
+    subgraph "भंडारण परत"
+        E1[("MySQL 8.0<br/>78 तालिकाएँ")]
+        E2[("Redis 7.x<br/>कैश/दर सीमा/इवेंट")]
+        E3[("Elasticsearch<br/>पूर्ण-पाठ खोज")]
+        E4[("ClickHouse<br/>OLAP विश्लेषण")]
     end
 
     A1 & A2 & A3 --> B1

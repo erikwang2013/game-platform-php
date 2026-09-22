@@ -199,75 +199,75 @@ SCOUT_HOSTS=127.0.0.1:9200
 
 **service/.env গুরুত্বপূর্ণ কনফিগ:**
 ```ini
-# 与 admin 相同的数据库、Redis、ES 配置
+# admin-এর মতো একই ডেটাবেস, Redis, ES কনফিগারেশন
 APP_PORT=8792
 LEADERBOARD_WS_PORT=8790  # লিডারবোর্ড WebSocket পোর্ট (ফ্রন্টএন্ডের সংযোগ ঠিকানার সাথে সামঞ্জস্যপূর্ণ)
 CHAT_WS_PORT=8791  # চ্যাট WebSocket পোর্ট
-SNOWFLAKE_WORKER_ID=2  # 必须与 admin 不同
+SNOWFLAKE_WORKER_ID=2  # admin থেকে আলাদা হতে হবে
 
 # OAuth
-OAUTH_GOOGLE_CLIENT_ID=<从Google Cloud Console获取>
-OAUTH_GOOGLE_CLIENT_SECRET=<密钥>
+OAUTH_GOOGLE_CLIENT_ID=<Google Cloud Console থেকে প্রাপ্ত>
+OAUTH_GOOGLE_CLIENT_SECRET=<গোপন কী>
 OAUTH_GOOGLE_REDIRECT_URI=https://your-domain.com/api/auth/oauth/google/callback
 
-# 支付 Webhook
-STRIPE_SECRET_KEY=<Stripe 密钥>
-STRIPE_WEBHOOK_SECRET=<从Stripe Dashboard获取>
-PAYPAL_WEBHOOK_ID=<从PayPal Developer获取>
-PAYPAL_VERIFY_URL=<PayPal Webhook 验签地址>
+# পেমেন্ট Webhook
+STRIPE_SECRET_KEY=<Stripe গোপন কী>
+STRIPE_WEBHOOK_SECRET=<Stripe Dashboard থেকে প্রাপ্ত>
+PAYPAL_WEBHOOK_ID=<PayPal Developer থেকে প্রাপ্ত>
+PAYPAL_VERIFY_URL=<PayPal Webhook স্বাক্ষর যাচাইয়ের ঠিকানা>
 PAYPAL_CLIENT_ID=<PayPal Client ID>
 PAYPAL_CLIENT_SECRET=<PayPal Client Secret>
 PAYPAL_MODE=sandbox  # sandbox / live
-NOWPAYMENTS_API_KEY=<NOWPayments API 密钥>
-NOWPAYMENTS_IPN_SECRET=<IPN 签名密钥>
-NOWPAYMENTS_API_URL=https://api.nowpayments.io  # 默认地址
-COINBASE_COMMERCE_API_KEY=<Coinbase Commerce API 密钥>
-COINBASE_COMMERCE_WEBHOOK_SECRET=<Coinbase Commerce Webhook 密钥>
+NOWPAYMENTS_API_KEY=<NOWPayments API কী>
+NOWPAYMENTS_IPN_SECRET=<IPN স্বাক্ষর কী>
+NOWPAYMENTS_API_URL=https://api.nowpayments.io  # ডিফল্ট ঠিকানা
+COINBASE_COMMERCE_API_KEY=<Coinbase Commerce API কী>
+COINBASE_COMMERCE_WEBHOOK_SECRET=<Coinbase Commerce Webhook কী>
 SKRILL_API_URL=https://pay.skrill.com
-SKRILL_API_KEY=<Skrill API 密钥>
-SKRILL_MERCHANT_ID=<Skrill 商户号>
-SKRILL_SECRET_WORD=<回调验签密钥 md5sig>
+SKRILL_API_KEY=<Skrill API কী>
+SKRILL_MERCHANT_ID=<Skrill মার্চেন্ট আইডি>
+SKRILL_SECRET_WORD=<কলব্যাক স্বাক্ষর যাচাই কী md5sig>
 NETELLER_API_URL=https://api.neteller.com
 NETELLER_CLIENT_ID=<Neteller Client ID>
 NETELLER_CLIENT_SECRET=<Neteller Client Secret>
-NETELLER_SECRET=<回调验签密钥>
+NETELLER_SECRET=<কলব্যাক স্বাক্ষর যাচাই কী>
 PAYSAFECARD_API_URL=https://api.paysafecard.com
-PAYSAFECARD_API_KEY=<Paysafecard API 密钥>
-PAYSAFECARD_SECRET=<回调验签密钥 X-Signature HMAC-SHA256>
-PAYTM_MID=<Paytm 商户号>
-PAYTM_KEY=<Paytm 密钥>
+PAYSAFECARD_API_KEY=<Paysafecard API কী>
+PAYSAFECARD_SECRET=<কলব্যাক স্বাক্ষর যাচাই কী X-Signature HMAC-SHA256>
+PAYTM_MID=<Paytm মার্চেন্ট আইডি>
+PAYTM_KEY=<Paytm কী>
 PAYTM_API_URL=https://securegw.paytm.in
-PAYTM_WEBSITE=DEFAULT  # 正式 DEFAULT / staging WEBSTAGING
+PAYTM_WEBSITE=DEFAULT  # প্রোডাকশন DEFAULT / staging WEBSTAGING
 MERCADOPAGO_CLIENT_ID=<Mercado Pago Client ID>
 MERCADOPAGO_CLIENT_SECRET=<Mercado Pago Client Secret>
-MERCADOPAGO_WEBHOOK_SECRET=<Webhook 验签密钥 X-Signature>
+MERCADOPAGO_WEBHOOK_SECRET=<Webhook স্বাক্ষর যাচাই কী X-Signature>
 MERCADOPAGO_API_URL=https://api.mercadopago.com
-ASTROPAY_LOGIN=<AstroPay 登录名>
-ASTROPAY_API_KEY=<AstroPay API 密钥>
-ASTROPAY_SECRET=<回调验签密钥 MD5>
+ASTROPAY_LOGIN=<AstroPay লগইন নাম>
+ASTROPAY_API_KEY=<AstroPay API কী>
+ASTROPAY_SECRET=<কলব্যাক স্বাক্ষর যাচাই কী MD5>
 ASTROPAY_API_URL=https://api.astropaycard.com
 PAYPAY_CLIENT_ID=<PayPay Client ID>
 PAYPAY_CLIENT_SECRET=<PayPay Client Secret>
-PAYPAY_SIGNING_KEY=<Webhook 验签密钥 PayPay-Signature>
+PAYPAY_SIGNING_KEY=<Webhook স্বাক্ষর যাচাই কী PayPay-Signature>
 PAYPAY_API_URL=https://api.paypay.ne.jp
 KAKAOPAY_ADMIN_KEY=<KakaoPay Admin Key>
-KAKAOPAY_CID=<KakaoPay 商户 CID>
-KAKAOPAY_APPROVAL_URL=<付款后审批跳转 URL>
+KAKAOPAY_CID=<KakaoPay মার্চেন্ট CID>
+KAKAOPAY_APPROVAL_URL=<পেমেন্টের পর অনুমোদন রিডাইরেক্ট URL>
 KAKAOPAY_API_URL=https://kapi.kakao.com
-PAYMONGO_API_KEY=<PayMongo API 密钥>
-PAYMONGO_WEBHOOK_SECRET=<Webhook 验签密钥 Paymongo-Signature>
+PAYMONGO_API_KEY=<PayMongo API কী>
+PAYMONGO_WEBHOOK_SECRET=<Webhook স্বাক্ষর যাচাই কী Paymongo-Signature>
 PAYMONGO_API_URL=https://api.paymongo.com/v1
 # M-Pesa / Paystack / Toss
 MPESA_CONSUMER_KEY=<M-Pesa Consumer Key>
 MPESA_CONSUMER_SECRET=<M-Pesa Consumer Secret>
 MPESA_PASSKEY=<M-Pesa STK Push Passkey>
-MPESA_SHORTCODE=<M-Pesa 短码>
+MPESA_SHORTCODE=<M-Pesa শর্ট কোড>
 MPESA_API_URL=https://api.safaricom.co.ke
 PAYSTACK_SECRET_KEY=<Paystack Secret Key>
 PAYSTACK_API_URL=https://api.paystack.co
 TOSS_SECRET_KEY=<Toss Secret Key>
 TOSS_API_URL=https://api.tosspayments.com
-SITE_URL=https://your-domain.com  # 支付回调/跳转站点地址
+SITE_URL=https://your-domain.com  # পেমেন্ট কলব্যাক/রিডাইরেক্ট সাইট URL
 ```
 
 ### 4.4 সার্ভিস স্টার্ট

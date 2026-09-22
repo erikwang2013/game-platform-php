@@ -13,17 +13,17 @@ flowchart TD
     app --> login["/login<br/>LoginPage"]
     app --> dashboard["/dashboard<br/>AdminLayout"]
 
-    login --> form["登录表单<br/>用户名+密码"]
-    login --> captcha["点击验证码组件<br/>GestureDetector+Stack<br/>Image.memory(base64)<br/>点击标记Circle"]
+    login --> form["Форма входа<br/>Имя пользователя+пароль"]
+    login --> captcha["Компонент клик-капчи<br/>GestureDetector+Stack<br/>Image.memory(base64)<br/>Circle для метки клика"]
 
-    dashboard --> sidebar["侧边栏NavigationDrawer<br/>可折叠64px/240px<br/>仪表盘/用户/角色/配置/日志"]
-    dashboard --> header["顶栏56px<br/>折叠按钮+用户菜单<br/>退出确认AlertDialog"]
-    dashboard --> content["内容区"]
+    dashboard --> sidebar["Боковая панель NavigationDrawer<br/>Сворачиваемая 64px/240px<br/>Дашборд/Пользователи/Роли/Конфигурация/Логи"]
+    dashboard --> header["Верхняя панель 56px<br/>Кнопка сворачивания+меню пользователя<br/>AlertDialog подтверждения выхода"]
+    dashboard --> content["Область контента"]
 
-    content --> stats["统计卡片GridView×4"]
-    content --> chart["趋势折线图LineChart"]
-    content --> pie["分布饼图PieChart"]
-    content --> logs["最近操作ListTile×8"]
+    content --> stats["Карточки статистики GridView×4"]
+    content --> chart["График тренда LineChart"]
+    content --> pie["Круговая диаграмма PieChart"]
+    content --> logs["Последние операции ListTile×8"]
 
     style app fill:#1677FF,color:#fff
     style captcha fill:#FA8C16,color:#fff
@@ -35,10 +35,10 @@ flowchart TD
 ```mermaid
 flowchart LR
     entry["EntryAbility"]
-    entry -->|"无Token"| loginH["LoginPage"]
-    entry -->|"有Token"| dashH["DashboardPage"]
+    entry -->|"Нет Token"| loginH["LoginPage"]
+    entry -->|"Есть Token"| dashH["DashboardPage"]
 
-    loginH -->|"登录成功replaceUrl"| dashH
+    loginH -->|"Успешный вход replaceUrl"| dashH
 
     dashH -->|"pushUrl"| userList["UserListPage"]
     dashH -->|"pushUrl"| profile["ProfilePage"]
@@ -47,7 +47,7 @@ flowchart LR
     userList -->|"router.back"| dashH
     userDetail -->|"router.back"| userList
 
-    profile -->|"退出确认replaceUrl"| loginH
+    profile -->|"Подтверждение выхода replaceUrl"| loginH
     profile -->|"router.back"| dashH
 
     style loginH fill:#1677FF,color:#fff

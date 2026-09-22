@@ -192,7 +192,7 @@ O projeto oferece uma solução completa de orquestração Docker com 7 serviço
 
 ```bash
 # 1. Configurar variáveis de ambiente do Docker
-cp .env.docker .env
+cp .env.example .env
 
 # 2. Iniciar todos os serviços
 docker-compose up -d
@@ -431,7 +431,7 @@ A raiz do projeto fornece `docker-compose.yml`, orquestrando 7 serviços:
 A imagem PHP é construída via `Dockerfile`, com imagem base `php:8.3-cli` e OPcache habilitado.
 
 ```bash
-cp .env.docker .env
+cp .env.example .env
 docker-compose up -d
 ```
 

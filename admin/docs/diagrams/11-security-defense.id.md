@@ -6,13 +6,13 @@ Languages: [中文](11-security-defense.md) · [English](11-security-defense.en.
 
 ```mermaid
 flowchart TB
-    l1["第1层: 人机验证<br/>点击验证码ClickCaptcha<br/>登录/注册强制校验"]
-    l2["第2层: 操作确认<br/>密码二次确认<br/>DELETE操作必须"]
-    l3["第3层: 传输安全<br/>HTTPS + JWT Bearer<br/>AES-256-CBC"]
-    l4["第4层: 身份认证<br/>JWT HS256<br/>access_token 2h<br/>refresh_token 14d"]
-    l5["第5层: 权限鉴权<br/>RBAC method.path粒度<br/>超级管理员*"]
-    l6["第6层: 数据保护<br/>ID:Hashids加密<br/>请求:Encryption加密<br/>存储:Encryptable加密<br/>导出:脱敏+版权"]
-    l7["第7层: 审计追溯<br/>OperationLog<br/>用户/IP/时间/参数"]
+    l1["Lapisan 1: Verifikasi manusia-mesin<br/>Captcha klik ClickCaptcha<br/>Wajib saat login/registrasi"]
+    l2["Lapisan 2: Konfirmasi operasi<br/>Konfirmasi kata sandi kedua<br/>Wajib untuk operasi DELETE"]
+    l3["Lapisan 3: Keamanan transmisi<br/>HTTPS + JWT Bearer<br/>AES-256-CBC"]
+    l4["Lapisan 4: Autentikasi identitas<br/>JWT HS256<br/>access_token 2h<br/>refresh_token 14d"]
+    l5["Lapisan 5: Otorisasi izin<br/>RBAC granularitas method.path<br/>Super admin*"]
+    l6["Lapisan 6: Perlindungan data<br/>ID:Enkripsi Hashids<br/>Permintaan:Enkripsi Encryption<br/>Penyimpanan:Enkripsi Encryptable<br/>Ekspor:Penyamaran+hak cipta"]
+    l7["Lapisan 7: Jejak audit<br/>OperationLog<br/>Pengguna/IP/waktu/parameter"]
 
     l1 --> l2 --> l3 --> l4 --> l5 --> l6 --> l7
 

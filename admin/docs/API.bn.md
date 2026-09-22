@@ -1669,7 +1669,7 @@ POST /admin/v1/upload
 প্রজেক্ট রুটে `docker-compose.yml` রয়েছে, 7টি সার্ভিস অর্কেস্ট্রেট করে (Nginx, admin, service, leaderboard-ws, MySQL, Redis, Elasticsearch)। PHP `Dockerfile` দিয়ে বিল্ড হয় (`php:8.3-cli` ভিত্তিক, OPcache সক্ষম)।
 
 ```bash
-cp .env.docker .env
+cp .env.example .env
 docker-compose up -d
 ```
 

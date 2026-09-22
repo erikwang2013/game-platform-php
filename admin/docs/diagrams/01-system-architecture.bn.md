@@ -6,35 +6,35 @@ Languages: [中文](01-system-architecture.md) · [English](01-system-architectu
 
 ```mermaid
 flowchart TB
-    subgraph "客户端层"
-        A1["Flutter Web PC<br/>管理后台"]
-        A2["Flutter Web PC<br/>C端用户平台"]
-        A3["HarmonyOS ArkTS<br/>手机/平板客户端"]
+    subgraph "ক্লায়েন্ট লেয়ার"
+        A1["Flutter Web PC<br/>অ্যাডমিন প্যানেল"]
+        A2["Flutter Web PC<br/>C-এন্ড ইউজার প্ল্যাটফর্ম"]
+        A3["HarmonyOS ArkTS<br/>মোবাইল/ট্যাবলেট ক্লায়েন্ট"]
     end
 
-    subgraph "网关层"
-        B1["Nginx<br/>反向代理 + HTTPS"]
+    subgraph "গেটওয়ে লেয়ার"
+        B1["Nginx<br/>রিভার্স প্রক্সি + HTTPS"]
     end
 
-    subgraph "应用层"
-        C1["admin/ :8789<br/>管理后台 API<br/>45 控制器"]
-        C2["service/ :8792<br/>C端业务 API<br/>34 控制器"]
+    subgraph "অ্যাপ্লিকেশন লেয়ার"
+        C1["admin/ :8789<br/>অ্যাডমিন প্যানেল API<br/>৪৫টি কন্ট্রোলার"]
+        C2["service/ :8792<br/>C-এন্ড বিজনেস API<br/>৩৪টি কন্ট্রোলার"]
     end
 
-    subgraph "服务层 v2.0"
-        D1["GameProvider<br/>Provider SDK<br/>HMAC-SHA256 签名"]
-        D2["EventBus<br/>Redis Pub/Sub<br/>异步事件分发"]
-        D3["VIP 引擎<br/>经验值/升级/权益"]
-        D4["成就引擎<br/>12 内置成就"]
-        D5["FeatureFlag<br/>特性开关"]
-        D6["SdkSessionAuth<br/>HMAC 签名会话令牌"]
+    subgraph "সার্ভিস লেয়ার v2.0"
+        D1["GameProvider<br/>Provider SDK<br/>HMAC-SHA256 সিগনেচার"]
+        D2["EventBus<br/>Redis Pub/Sub<br/>অ্যাসিনক্রোনাস ইভেন্ট ডিস্ট্রিবিউশন"]
+        D3["VIP ইঞ্জিন<br/>অভিজ্ঞতা/আপগ্রেড/বেনিফিট"]
+        D4["অ্যাচিভমেন্ট ইঞ্জিন<br/>১২টি বিল্ট-ইন অ্যাচিভমেন্ট"]
+        D5["FeatureFlag<br/>ফিচার ফ্ল্যাগ"]
+        D6["SdkSessionAuth<br/>HMAC স্বাক্ষরিত সেশন টোকেন"]
     end
 
-    subgraph "存储层"
-        E1[("MySQL 8.0<br/>78 张表")]
-        E2[("Redis 7.x<br/>缓存/限流/事件")]
-        E3[("Elasticsearch<br/>全文检索")]
-        E4[("ClickHouse<br/>OLAP 分析")]
+    subgraph "স্টোরেজ লেয়ার"
+        E1[("MySQL 8.0<br/>৭৮টি টেবিল")]
+        E2[("Redis 7.x<br/>ক্যাশ/রেট লিমিট/ইভেন্ট")]
+        E3[("Elasticsearch<br/>ফুলটেক্সট সার্চ")]
+        E4[("ClickHouse<br/>OLAP বিশ্লেষণ")]
     end
 
     A1 & A2 & A3 --> B1

@@ -192,7 +192,7 @@ flutter run -d chrome    # Web 端（PC 管理后台风格）
 
 ```bash
 # 1. 配置 Docker 环境变量
-cp .env.docker .env
+cp .env.example .env
 
 # 2. 启动所有服务
 docker-compose up -d
@@ -431,7 +431,7 @@ Authorization: Bearer <token>
 PHP 镜像通过 `Dockerfile` 构建，基础镜像 `php:8.3-cli`，启用 OPcache。
 
 ```bash
-cp .env.docker .env
+cp .env.example .env
 docker-compose up -d
 ```
 

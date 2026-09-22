@@ -14,32 +14,32 @@ Languages: [中文](ARCHITECTURE.md) · [English](ARCHITECTURE.en.md) · [한국
 
 ```mermaid
 flowchart TB
-    subgraph "客户端层"
-        A1["Flutter Web<br/>PC 管理后台<br/>(Port 3000)"]
-        A2["HarmonyOS ArkTS<br/>手机/平板客户端"]
+    subgraph "क्लाइंट परत"
+        A1["Flutter Web<br/>PC प्रशासन कंसोल<br/>(Port 3000)"]
+        A2["HarmonyOS ArkTS<br/>मोबाइल/टैबलेट क्लाइंट"]
     end
 
-    subgraph "网关/边缘层 (Nginx Edge)"
-        B1["Nginx Edge Node<br/>Docker nginx:alpine<br/>反向代理 + HTTPS + Gzip<br/>静态文件服务"]
+    subgraph "गेटवे/एज परत (Nginx Edge)"
+        B1["Nginx Edge Node<br/>Docker nginx:alpine<br/>रिवर्स प्रॉक्सी + HTTPS + Gzip<br/>स्टैटिक फ़ाइल सेवा"]
     end
 
-    subgraph "应用层 (webman v2)"
-        C1["AdminAuth 中间件<br/>JWT 验证"]
-        C2["AdminPermission 中间件<br/>RBAC 权限校验"]
-        C3["管理端 Controller<br/>Dashboard / User / Role / Permission / Payment"]
-        C4["公开 Controller v1<br/>Captcha / Auth"]
+    subgraph "एप्लिकेशन परत (webman v2)"
+        C1["AdminAuth मिडलवेयर<br/>JWT सत्यापन"]
+        C2["AdminPermission मिडलवेयर<br/>RBAC अनुमति सत्यापन"]
+        C3["प्रशासनिक Controller<br/>Dashboard / User / Role / Permission / Payment"]
+        C4["सार्वजनिक Controller v1<br/>Captcha / Auth"]
         C5["Common Services<br/>Hashids / Snowflake / Encryption"]
     end
 
-    subgraph "存储层"
-        D1[("MySQL 8.0<br/>主存储<br/>表前缀 game_")]
-        D2[("Elasticsearch<br/>全文检索<br/>索引前缀 game_")]
-        D3[("Redis<br/>Session / 缓存<br/>Captcha 存储")]
+    subgraph "भंडारण परत"
+        D1[("MySQL 8.0<br/>मुख्य भंडारण<br/>तालिका उपसर्ग game_")]
+        D2[("Elasticsearch<br/>पूर्ण-पाठ खोज<br/>इंडेक्स उपसर्ग game_")]
+        D3[("Redis<br/>Session / कैश<br/>Captcha भंडारण")]
     end
 
-    subgraph "外部"
-        E1["DevEco Studio<br/>HarmonyOS 构建"]
-        E2["Flutter SDK<br/>Web 构建"]
+    subgraph "बाहरी"
+        E1["DevEco Studio<br/>HarmonyOS बिल्ड"]
+        E2["Flutter SDK<br/>Web बिल्ड"]
     end
 
     A1 -->|"HTTPS / JSON<br/>JWT Bearer"| B1
@@ -75,39 +75,39 @@ flowchart TB
 
 ```mermaid
 flowchart TD
-    subgraph "路由层 Route Layer"
-        R1["config/route.php<br/>URL → Controller 映射"]
+    subgraph "रूट परत Route Layer"
+        R1["config/route.php<br/>URL → Controller मैपिंग"]
     end
 
-    subgraph "中间件层 Middleware Layer"
-        M_RL["RateLimit<br/>Redis 滑动窗口限流<br/>X-RateLimit 响应头"]
-        M_SF["SecurityFilter<br/>攻击检测拦截<br/>XSS/SQL注入/路径遍历/CSRF"]
-        M1["AdminAuth<br/>JWT Token 校验<br/>注入 adminId"]
-        M2["AdminPermission<br/>RBAC 鉴权<br/>method.path 匹配<br/>Redis 60s 缓存权限"]
+    subgraph "मिडलवेयर परत Middleware Layer"
+        M_RL["RateLimit<br/>Redis स्लाइडिंग विंडो दर सीमा<br/>X-RateLimit प्रतिक्रिया हेडर"]
+        M_SF["SecurityFilter<br/>आक्रमण पहचान अवरोधन<br/>XSS/SQL इंजेक्शन/पाथ ट्रैवर्सल/CSRF"]
+        M1["AdminAuth<br/>JWT Token सत्यापन<br/>adminId इंजेक्ट करें"]
+        M2["AdminPermission<br/>RBAC अनुमति सत्यापन<br/>method.path मिलान<br/>Redis 60s अनुमति कैश"]
     end
 
-    subgraph "控制器层 Controller Layer"
+    subgraph "कंट्रोलर परत Controller Layer"
         CT1["BaseController<br/>success/fail<br/>encodeId/decodeId<br/>generateId<br/>confirmPassword"]
-        CT2["UserController<br/>CRUD + 搜索 + 分页"]
-        CT3["RoleController<br/>CRUD + 权限同步"]
-        CT4["PermissionController<br/>CRUD + 树构建"]
-        CT5["DashboardController<br/>统计/趋势/分布"]
-        CT6["ExportController<br/>Excel/PDF 导出"]
-        CT7["CaptchaController<br/>验证码生成/校验"]
-        CT8["AuthController<br/>登录/注册/刷新"]
-        CT9["AnalyticsController<br/>12 个数据分析端点<br/>总览/排行/概率/留存/漏斗/ARPU"]
+        CT2["UserController<br/>CRUD + खोज + पेजिनेशन"]
+        CT3["RoleController<br/>CRUD + अनुमति समकालिक"]
+        CT4["PermissionController<br/>CRUD + ट्री निर्माण"]
+        CT5["DashboardController<br/>सांख्यिकी/प्रवृत्ति/वितरण"]
+        CT6["ExportController<br/>Excel/PDF निर्यात"]
+        CT7["CaptchaController<br/>कैप्चा जनरेशन/सत्यापन"]
+        CT8["AuthController<br/>लॉगिन/पंजीकरण/रिफ़्रेश"]
+        CT9["AnalyticsController<br/>12 डेटा विश्लेषण एंडपॉइंट<br/>अवलोकन/रैंकिंग/प्रायिकता/प्रतिधारण/फ़नल/ARPU"]
     end
 
-    subgraph "服务层 Service Layer"
-        S1["HashidsService<br/>ID 编解码"]
-        S2["SnowflakeService<br/>全局唯一 ID 生成"]
-        S3["EncryptionService<br/>加解密 + 脱敏"]
-        S4["GameDashboardService<br/>总览/排行/DAU/小时/行为分布<br/>MySQL 实时聚合，DB 故障返回空数据"]
-        S5["DepositLogService<br/>营收总览/游戏转化率<br/>confirmed 订单统计"]
-        S6["ProbabilityService<br/>联合/条件概率<br/>SQL 构建器（转义/引用/IN）"]
+    subgraph "सेवा परत Service Layer"
+        S1["HashidsService<br/>ID एन्कोड/डिकोड"]
+        S2["SnowflakeService<br/>वैश्विक अद्वितीय ID जनरेशन"]
+        S3["EncryptionService<br/>एन्क्रिप्शन/डिक्रिप्शन + मास्किंग"]
+        S4["GameDashboardService<br/>अवलोकन/रैंकिंग/DAU/घंटा/व्यवहार वितरण<br/>MySQL रीयल-टाइम एकत्रीकरण, DB विफलता पर खाली डेटा"]
+        S5["DepositLogService<br/>राजस्व अवलोकन/गेम रूपांतरण दर<br/>confirmed ऑर्डर सांख्यिकी"]
+        S6["ProbabilityService<br/>संयुक्त/सशर्त प्रायिकता<br/>SQL बिल्डर (एस्केप/कोट/IN)"]
     end
 
-    subgraph "模型层 Model Layer"
+    subgraph "मॉडल परत Model Layer"
         MD1["AdminUser<br/>encryptable casts"]
         MD2["AdminRole"]
         MD3["AdminPermission"]
@@ -115,7 +115,7 @@ flowchart TD
         MD5["SystemConfig"]
     end
 
-    subgraph "驱动层 Driver Layer"
+    subgraph "ड्राइवर परत Driver Layer"
         D1["MySQL PDO"]
         D2["Elasticsearch HTTP"]
         D3["Redis"]
@@ -152,7 +152,7 @@ flowchart TD
 
 ```mermaid
 sequenceDiagram
-    participant C as 客户端
+    participant C as क्लाइंट
     participant N as Nginx
     participant MW_SF as SecurityFilter
     participant MW_RL as RateLimit
@@ -164,52 +164,52 @@ sequenceDiagram
     participant DB as MySQL
     participant OPLOG as OperationLog
 
-    C->>N: HTTPS 请求<br/>POST /admin/v1/*
-    N->>MW_SF: 转发
+    C->>N: HTTPS अनुरोध<br/>POST /admin/v1/*
+    N->>MW_SF: फॉरवर्ड
 
-    alt 非标准 HTTP 方法 (TRACE/CONNECT/PATCH...)
+    alt गैर-मानक HTTP विधि (TRACE/CONNECT/PATCH...)
         MW_SF-->>C: 405 Method Not Allowed
-    else 方法合法 (GET/POST/PUT/DELETE/OPTIONS/HEAD)
-        Note over MW_SF: 方法白名单检查通过
+    else विधि वैध (GET/POST/PUT/DELETE/OPTIONS/HEAD)
+        Note over MW_SF: विधि श्वेतसूची जाँच पास
     end
 
-    alt 攻击检测触发
+    alt आक्रमण पहचान सक्रिय
         MW_SF-->>C: 403 Forbidden
     end
 
-    MW_SF->>MW_RL: 通过
+    MW_SF->>MW_RL: पास
 
-    alt 限流触发
+    alt दर सीमा सक्रिय
         MW_RL-->>C: 429 + Retry-After
     end
 
-    MW_RL->>MW1: 通过
+    MW_RL->>MW1: पास
 
-    alt Token 缺失或无效
+    alt Token अनुपस्थित या अमान्य
         MW1-->>C: 401 Unauthorized
-    else Token 有效
+    else Token मान्य
         MW1->>MW1: jwt()->verify(token)
         MW1->>MW2: $request->adminId = sub
     end
 
-    alt 无权限
+    alt अनुमति नहीं
         MW2-->>C: 403 Forbidden
-    else 有权限
-        MW2->>CTL: 进入控制器
+    else अनुमति है
+        MW2->>CTL: कंट्रोलर में प्रवेश
     end
 
-    CTL->>CTL: 参数验证 (validator)
+    CTL->>CTL: पैरामीटर सत्यापन (validator)
     CTL->>CTL: decodeId(hashid) → BIGINT
 
-    alt 敏感操作 (DELETE)
+    alt संवेदनशील ऑपरेशन (DELETE)
         CTL->>CTL: confirmPassword(adminId, password)
-        alt 密码错误
-            CTL-->>C: 422 密码验证失败
+        alt पासवर्ड गलत
+            CTL-->>C: 422 पासवर्ड सत्यापन विफल
         end
     end
 
     CTL->>MDL: AdminUser::find(id)
-    MDL->>MDL: encryptable cast 自动解密
+    MDL->>MDL: encryptable cast स्वचालित डिक्रिप्शन
     MDL->>DB: SELECT
     DB-->>MDL: Row
     MDL-->>CTL: Model
@@ -217,9 +217,9 @@ sequenceDiagram
     CTL->>SVC: encodeId(id) → hashid
     SVC-->>CTL: hash string
 
-    CTL->>CTL: 构建响应 JSON
+    CTL->>CTL: प्रतिक्रिया JSON बनाएँ
     CTL-->>C: 200 { code: 0, data: {...} }
-    CTL-->>OPLOG: 记录操作日志 (POST/PUT/DELETE)
+    CTL-->>OPLOG: ऑपरेशन लॉग दर्ज करें (POST/PUT/DELETE)
 ```
 
 ---
@@ -228,39 +228,39 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant U as 用户
-    participant CL as 客户端
-    participant SV as 服务端
+    participant U as उपयोगकर्ता
+    participant CL as क्लाइंट
+    participant SV as सर्वर
     participant JWT as JWT Service
     participant CAP as Captcha Service
 
-    Note over U,CAP: === 第一步: 获取验证码 ===
+    Note over U,CAP: === चरण 1: कैप्चा प्राप्त करें ===
     CL->>SV: POST /api/v1/captcha/generate
     SV->>CAP: captcha_create('click')
-    CAP->>CAP: 生成 300×200 背景图
-    CAP->>CAP: 随机放置 N 个中文目标
-    CAP->>CAP: 生成 key, 存储 targets
+    CAP->>CAP: 300×200 पृष्ठभूमि छवि बनाएँ
+    CAP->>CAP: बेतरतीब ढंग से N चीनी लक्ष्य रखें
+    CAP->>CAP: key बनाएँ, targets संग्रहीत करें
     CAP-->>SV: { key, image(PNG base64), targets }
     SV-->>CL: 200 { key, image, extra.targets }
 
-    Note over U,CAP: === 第二步: 用户点击 ===
-    CL->>CL: 渲染验证码图片
-    CL->>CL: 提示 "请按顺序点击: 树 → 鸟 → 花"
-    U->>CL: 依次点击图中文字位置
-    CL->>CL: 收集 clicks: [{x,y}, {x,y}, {x,y}]
+    Note over U,CAP: === चरण 2: उपयोगकर्ता क्लिक ===
+    CL->>CL: कैप्चा छवि रेंडर करें
+    CL->>CL: संकेत "क्रम से क्लिक करें: पेड़ → पक्षी → फूल"
+    U->>CL: छवि में अक्षर स्थानों पर क्रम से क्लिक करें
+    CL->>CL: clicks एकत्र करें: [{x,y}, {x,y}, {x,y}]
 
-    Note over U,CAP: === 第三步: 登录 ===
+    Note over U,CAP: === चरण 3: लॉगिन ===
     CL->>SV: POST /api/v1/auth/login { username, password, captcha_key, clicks }
     SV->>CAP: captcha_verify(key, 'click', clicks)
-    alt 验证码错误
+    alt कैप्चा गलत
         CAP-->>SV: false
-        SV-->>CL: 422 验证码错误
-    else 验证码正确
+        SV-->>CL: 422 कैप्चा गलत
+    else कैप्चा सही
         CAP-->>SV: true
         SV->>SV: password_verify()
-        alt 凭证错误
-            SV-->>CL: 401 用户名或密码错误
-        else 凭证正确
+        alt क्रेडेंशियल गलत
+            SV-->>CL: 401 उपयोगकर्ता नाम या पासवर्ड गलत
+        else क्रेडेंशियल सही
             SV->>JWT: jwt()->create({sub, username})
             JWT-->>SV: access_token (2h)
             SV->>JWT: jwt()->refresh()
@@ -269,7 +269,7 @@ sequenceDiagram
         end
     end
 
-    Note over U,CAP: === 后续请求 ===
+    Note over U,CAP: === बाद के अनुरोध ===
     CL->>SV: GET /admin/v1/dashboard<br/>Authorization: Bearer access_token
     SV->>JWT: jwt()->verify(token)
     JWT-->>SV: { sub, username }
@@ -282,32 +282,32 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-    subgraph "用户 User"
-        U1["admin<br/>(超级管理员)"]
-        U2["editor<br/>(编辑)"]
-        U3["viewer<br/>(只读)"]
+    subgraph "उपयोगकर्ता User"
+        U1["admin<br/>(सुपर एडमिन)"]
+        U2["editor<br/>(संपादक)"]
+        U3["viewer<br/>(रीड-ओनली)"]
     end
 
-    subgraph "角色 Role"
-        R1["super_admin<br/>权限标识: *"]
-        R2["editor<br/>权限标识: get.*, post.*"]
-        R3["viewer<br/>权限标识: get.*"]
+    subgraph "भूमिका Role"
+        R1["super_admin<br/>अनुमति पहचानकर्ता: *"]
+        R2["editor<br/>अनुमति पहचानकर्ता: get.*, post.*"]
+        R3["viewer<br/>अनुमति पहचानकर्ता: get.*"]
     end
 
-    subgraph "权限 Permission (树)"
-        P1["dashboard<br/>type=1 菜单"]
-        P2["user<br/>type=1 菜单"]
+    subgraph "अनुमति Permission (ट्री)"
+        P1["dashboard<br/>type=1 मेनू"]
+        P2["user<br/>type=1 मेनू"]
         P3["get.admin/user<br/>type=3 API"]
         P4["post.admin/user<br/>type=3 API"]
         P5["delete.admin/user<br/>type=3 API"]
-        P6["export.excel<br/>type=2 按钮"]
+        P6["export.excel<br/>type=2 बटन"]
     end
 
     U1 --> R1
     U2 --> R2
     U3 --> R3
 
-    R1 -->|"* (全权限)"| P1 & P2 & P3 & P4 & P5 & P6
+    R1 -->|"* (पूर्ण अनुमति)"| P1 & P2 & P3 & P4 & P5 & P6
     R2 --> P1 & P2 & P3 & P4
     R3 --> P1 & P3
 
@@ -321,31 +321,31 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    subgraph "权限类型"
-        T1["type=1 菜单<br/>控制侧边栏显示/隐藏"]
-        T2["type=2 按钮<br/>控制页面操作按钮"]
-        T3["type=3 API<br/>控制接口访问"]
+    subgraph "अनुमति प्रकार"
+        T1["type=1 मेनू<br/>साइडबार दिखाना/छिपाना नियंत्रित करें"]
+        T2["type=2 बटन<br/>पेज ऑपरेशन बटन नियंत्रित करें"]
+        T3["type=3 API<br/>API एक्सेस नियंत्रित करें"]
     end
 
-    subgraph "权限标识格式"
-        F1["{method}.{path}<br/>例: get.admin/user<br/>例: post.admin/user<br/>例: delete.admin/role"]
+    subgraph "अनुमति पहचानकर्ता प्रारूप"
+        F1["{method}.{path}<br/>उदा.: get.admin/user<br/>उदा.: post.admin/user<br/>उदा.: delete.admin/role"]
     end
 
-    subgraph "判定流程"
-        J1["提取 Token → adminId"]
-        J2["查找用户角色"]
-        J3["收集所有权限 slug"]
-        J4["构造 method.path"]
-        J5{"匹配?"}
-        J6["放行"]
+    subgraph "निर्धारण प्रवाह"
+        J1["Token → adminId निकालें"]
+        J2["उपयोगकर्ता भूमिका खोजें"]
+        J3["सभी अनुमति slug एकत्र करें"]
+        J4["method.path बनाएँ"]
+        J5{"मेल खाता है?"}
+        J6["पास करें"]
         J7["403 Forbidden"]
 
         J1 --> J2
         J2 --> J3
         J3 --> J4
         J4 --> J5
-        J5 -->|"是 / slug=*"| J6
-        J5 -->|否| J7
+        J5 -->|"हाँ / slug=*"| J6
+        J5 -->|नहीं| J7
     end
 
     style J6 fill:#52C41A,color:#fff
@@ -358,28 +358,28 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    subgraph "1. 生成"
+    subgraph "1. जनरेशन"
         G1["SnowflakeService<br/>::generate()"]
         G2["datacenter_id(5bit)<br/>+ worker_id(5bit)<br/>+ timestamp(41bit)<br/>+ sequence(12bit)"]
-        G3["BIGINT(18)<br/>例: 1750123456789"]
+        G3["BIGINT(18)<br/>उदा.: 1750123456789"]
         G1 --> G2 --> G3
     end
 
-    subgraph "2. 存储"
-        S1["MySQL game_* 表<br/>id BIGINT UNSIGNED<br/>NOT NULL"]
-        S2["敏感字段<br/>encryptable cast<br/>AES-128-ECB 加密"]
+    subgraph "2. भंडारण"
+        S1["MySQL game_* तालिका<br/>id BIGINT UNSIGNED<br/>NOT NULL"]
+        S2["संवेदनशील फ़ील्ड<br/>encryptable cast<br/>AES-128-ECB एन्क्रिप्शन"]
         G3 --> S1
         S1 --> S2
     end
 
-    subgraph "3. 传输"
+    subgraph "3. ट्रांसमिशन"
         T1["HashidsService<br/>::encode(bigint)"]
-        T2["hashid 字符串<br/>例: aB3xK9mW2pQ7rT5v"]
+        T2["hashid स्ट्रिंग<br/>उदा.: aB3xK9mW2pQ7rT5v"]
         S1 --> T1
         T1 --> T2
     end
 
-    subgraph "4. 反向解码"
+    subgraph "4. रिवर्स डिकोडिंग"
         R1["HashidsService<br/>::decode(hashid)"]
         R2["BIGINT"]
         T2 --> R1 --> R2
@@ -396,23 +396,23 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    subgraph "传输层加密 (encryption)"
-        E1["客户端发送敏感数据"]
-        E2["AES-256-CBC 加密"]
-        E3["API 传输密文"]
-        E4["服务端解密处理"]
+    subgraph "ट्रांसमिशन परत एन्क्रिप्शन (encryption)"
+        E1["क्लाइंट संवेदनशील डेटा भेजता है"]
+        E2["AES-256-CBC एन्क्रिप्शन"]
+        E3["API ट्रांसमिशन सिफरटेक्स्ट"]
+        E4["सर्वर डिक्रिप्शन प्रोसेसिंग"]
         E1 --> E2 --> E3 --> E4
     end
 
-    subgraph "存储层加密 (encryptable)"
+    subgraph "भंडारण परत एन्क्रिप्शन (encryptable)"
         D1["Model $casts<br/>email => Encryptable::class<br/>phone => Encryptable::class<br/>id_card => Encryptable::class"]
-        D2["写入: 自动加密"]
-        D3["MySQL VARCHAR(500)<br/>存储密文"]
-        D4["读取: 自动解密"]
+        D2["लेखन: स्वचालित एन्क्रिप्शन"]
+        D3["MySQL VARCHAR(500)<br/>सिफरटेक्स्ट संग्रह"]
+        D4["पठन: स्वचालित डिक्रिप्शन"]
         D1 --> D2 --> D3 --> D4
     end
 
-    subgraph "展示层脱敏 (mask)"
+    subgraph "प्रदर्शन परत मास्किंग (mask)"
         M1["phone: 138****1234"]
         M2["email: a***@example.com"]
         M3["id_card: ********"]
@@ -438,15 +438,15 @@ erDiagram
         VARCHAR password "bcrypt"
         VARCHAR real_name
         VARCHAR avatar
-        VARCHAR email "加密"
-        VARCHAR phone "加密"
-        VARCHAR id_card "加密"
+        VARCHAR email "एन्क्रिप्शन"
+        VARCHAR phone "एन्क्रिप्शन"
+        VARCHAR id_card "एन्क्रिप्शन"
         TINYINT status
         DATETIME last_login_at
         VARCHAR last_login_ip
         DATETIME created_at
         DATETIME updated_at
-        DATETIME deleted_at "软删除"
+        DATETIME deleted_at "सॉफ्ट डिलीट"
     }
 
     game_admin_role {
@@ -461,10 +461,10 @@ erDiagram
 
     game_admin_permission {
         BIGINT id PK "Snowflake"
-        BIGINT parent_id FK "自引用"
+        BIGINT parent_id FK "स्व-संदर्भ"
         VARCHAR name
         VARCHAR slug
-        TINYINT type "1菜单2按钮3API"
+        TINYINT type "1 मेनू 2 बटन 3 API"
         VARCHAR icon
         VARCHAR path
         INT sort
@@ -489,8 +489,8 @@ erDiagram
         VARCHAR method
         VARCHAR path
         VARCHAR ip
-        VARCHAR source "来源端"
-        TEXT input "脱敏"
+        VARCHAR source "स्रोत छोर"
+        TEXT input "मास्किंग"
         DATETIME created_at
     }
 
@@ -519,27 +519,27 @@ erDiagram
 
 ```mermaid
 sequenceDiagram
-    participant C as 客户端
+    participant C as क्लाइंट
     participant CTL as ExportController
     participant DB as MySQL
-    participant FS as 文件系统
+    participant FS as फ़ाइल सिस्टम
 
-    Note over C,FS: === Excel 导出 ===
+    Note over C,FS: === Excel निर्यात ===
     C->>CTL: POST /admin/v1/export/excel<br/>{ table, columns, conditions }
     CTL->>DB: SELECT ... LIMIT 10000
-    DB-->>CTL: 数据
-    CTL->>CTL: 解密敏感字段
-    CTL->>CTL: 脱敏处理 (maskPhone/maskEmail)
-    CTL->>CTL: PhpSpreadsheet 构建<br/>表头蓝底白字<br/>数据行细边框<br/>冻结首行<br/>自动筛选
-    CTL->>FS: 写入 runtime/tmp/export_*.xlsx
-    CTL-->>C: 文件下载
+    DB-->>CTL: डेटा
+    CTL->>CTL: संवेदनशील फ़ील्ड डिक्रिप्ट करें
+    CTL->>CTL: मास्किंग (maskPhone/maskEmail)
+    CTL->>CTL: PhpSpreadsheet बिल्ड<br/>हेडर नीली पृष्ठभूमि सफ़ेद अक्षर<br/>डेटा पंक्ति पतली सीमा<br/>पहली पंक्ति फ़्रीज़<br/>स्वचालित फ़िल्टर
+    CTL->>FS: runtime/tmp/export_*.xlsx में लिखें
+    CTL-->>C: फ़ाइल डाउनलोड
 
-    Note over C,FS: === PDF 导出 ===
+    Note over C,FS: === PDF निर्यात ===
     C->>CTL: POST /admin/v1/export/pdf<br/>{ type, title, data }
-    CTL->>CTL: buildPdfHtml()<br/>页头: 标题+版权+时间<br/>内容: 表格或卡片<br/>页脚: 不可移除版权
-    CTL->>CTL: Dompdf 渲染 A4 横向
-    CTL->>FS: 写入 runtime/tmp/export_*.pdf
-    CTL-->>C: 文件下载
+    CTL->>CTL: buildPdfHtml()<br/>हेडर: शीर्षक+कॉपीराइट+समय<br/>सामग्री: तालिका या कार्ड<br/>फ़ुटर: कॉपीराइट हटाना असंभव
+    CTL->>CTL: Dompdf A4 लैंडस्केप रेंडरिंग
+    CTL->>FS: runtime/tmp/export_*.pdf में लिखें
+    CTL-->>C: फ़ाइल डाउनलोड
 ```
 
 ---
@@ -552,13 +552,13 @@ flowchart TD
     APP --> LP["/login<br/>LoginPage"]
     APP --> DB["/dashboard<br/>AdminLayout"]
 
-    LP --> LF["登录表单<br/>用户名/密码/验证码"]
-    LF --> CAPTCHA["点击验证码组件<br/>GestureDetector + Stack<br/>Image.memory(base64)<br/>点击标记 Circle"]
+    LP --> LF["लॉगिन फ़ॉर्म<br/>उपयोगकर्ता नाम/पासवर्ड/कैप्चा"]
+    LF --> CAPTCHA["क्लिक कैप्चा कंपोनेंट<br/>GestureDetector + Stack<br/>Image.memory(base64)<br/>क्लिक मार्कर Circle"]
 
-    DB --> SIDEBAR["侧边栏 NavigationDrawer<br/>可折叠 64px / 240px<br/>仪表盘/用户/角色/配置/日志/支付"]
-    DB --> HEADER["顶栏 56px<br/>折叠按钮 + 用户菜单<br/>退出登录 AlertDialog"]
-    DB --> CONTENT["内容区"]
-    CONTENT --> DASH["DashboardPage<br/>统计卡片 GridView<br/>趋势折线图 LineChart<br/>分布饼图 PieChart<br/>最近操作 ListTile"]
+    DB --> SIDEBAR["साइडबार NavigationDrawer<br/>संक्षेपणीय 64px / 240px<br/>डैशबोर्ड/उपयोगकर्ता/भूमिका/कॉन्फ़िग/लॉग/भुगतान"]
+    DB --> HEADER["टॉपबार 56px<br/>संक्षेपण बटन + उपयोगकर्ता मेनू<br/>लॉगआउट AlertDialog"]
+    DB --> CONTENT["सामग्री क्षेत्र"]
+    CONTENT --> DASH["DashboardPage<br/>सांख्यिकी कार्ड GridView<br/>प्रवृत्ति लाइन चार्ट LineChart<br/>वितरण पाई चार्ट PieChart<br/>हाल के ऑपरेशन ListTile"]
 
     style APP fill:#1677FF,color:#fff
     style CAPTCHA fill:#FA8C16,color:#fff
@@ -572,20 +572,20 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    EA["EntryAbility<br/>启动"]
-    EA -->|"无 Token"| LP["LoginPage<br/>登录页"]
-    EA -->|"有 Token"| DP["DashboardPage<br/>仪表盘"]
+    EA["EntryAbility<br/>लॉन्च"]
+    EA -->|"Token नहीं"| LP["LoginPage<br/>लॉगिन पेज"]
+    EA -->|"Token है"| DP["DashboardPage<br/>डैशबोर्ड"]
 
-    LP -->|"登录成功<br/>replaceUrl"| DP
+    LP -->|"लॉगिन सफल<br/>replaceUrl"| DP
 
-    DP -->|"pushUrl"| ULP["UserListPage<br/>用户列表"]
-    DP -->|"pushUrl"| PP["ProfilePage<br/>个人中心"]
+    DP -->|"pushUrl"| ULP["UserListPage<br/>उपयोगकर्ता सूची"]
+    DP -->|"pushUrl"| PP["ProfilePage<br/>व्यक्तिगत केंद्र"]
 
-    ULP -->|"pushUrl"| UDP["UserDetailPage<br/>用户详情/新增/编辑"]
+    ULP -->|"pushUrl"| UDP["UserDetailPage<br/>उपयोगकर्ता विवरण/जोड़ें/संपादन"]
     ULP -->|"router.back"| DP
     UDP -->|"router.back"| ULP
 
-    PP -->|"退出登录<br/>replaceUrl"| LP
+    PP -->|"लॉगआउट<br/>replaceUrl"| LP
     PP -->|"router.back"| DP
 
     style LP fill:#1677FF,color:#fff
@@ -601,32 +601,32 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    subgraph "第1层: 人机验证"
-        L1["点击验证码<br/>Click Captcha<br/>登录/注册强制"]
+    subgraph "परत 1: मानव-मशीन सत्यापन"
+        L1["क्लिक कैप्चा<br/>Click Captcha<br/>लॉगिन/पंजीकरण अनिवार्य"]
     end
 
-    subgraph "第2层: 操作确认"
-        L2["密码二次确认<br/>confirmPassword()<br/>DELETE 操作必须"]
+    subgraph "परत 2: ऑपरेशन पुष्टि"
+        L2["पासवर्ड पुनः पुष्टि<br/>confirmPassword()<br/>DELETE ऑपरेशन अनिवार्य"]
     end
 
-    subgraph "第3层: 传输安全"
+    subgraph "परत 3: ट्रांसमिशन सुरक्षा"
         L3["HTTPS<br/>JWT Bearer Token<br/>AES-256-CBC"]
     end
 
-    subgraph "第4层: 身份认证"
+    subgraph "परत 4: पहचान प्रमाणीकरण"
         L4["JWT HS256<br/>access_token 2h<br/>refresh_token 14d"]
     end
 
-    subgraph "第5层: 权限鉴权"
-        L5["RBAC<br/>method.path 粒度<br/>超级管理员 * "]
+    subgraph "परत 5: अनुमति सत्यापन"
+        L5["RBAC<br/>method.path ग्रेन्युलरिटी<br/>सुपर एडमिन * "]
     end
 
-    subgraph "第6层: 数据保护"
-        L6["接口 ID: Hashids 加密<br/>请求体: Encryption 加密<br/>存储层: Encryptable 加密<br/>导出: 脱敏+版权"]
+    subgraph "परत 6: डेटा सुरक्षा"
+        L6["API ID: Hashids एन्क्रिप्शन<br/>रिक्वेस्ट बॉडी: Encryption एन्क्रिप्शन<br/>भंडारण परत: Encryptable एन्क्रिप्शन<br/>निर्यात: मास्किंग+कॉपीराइट"]
     end
 
-    subgraph "第7层: 审计追溯"
-        L7["OperationLog<br/>记录所有操作<br/>用户/IP/时间/来源端/参数"]
+    subgraph "परत 7: ऑडिट ट्रेसिंग"
+        L7["OperationLog<br/>सभी ऑपरेशन रिकॉर्ड करें<br/>उपयोगकर्ता/IP/समय/स्रोत छोर/पैरामीटर"]
     end
 
     L1 --> L2 --> L3 --> L4 --> L5 --> L6 --> L7
@@ -650,24 +650,24 @@ flowchart TB
         DNS["erik.xyz"]
     end
 
-    subgraph "Web 服务器"
+    subgraph "Web सर्वर"
         NGX["Nginx<br/>:443 HTTPS<br/>:80 → 443 redirect<br/>gzip on"]
-        STA["静态文件<br/>Flutter Web build/"]
+        STA["स्टैटिक फ़ाइल<br/>Flutter Web build/"]
     end
 
-    subgraph "应用服务器 (可横向扩展)"
+    subgraph "एप्लिकेशन सर्वर (क्षैतिज स्केलिंग संभव)"
         WM1["webman worker 1<br/>:8789"]
         WM2["webman worker 2<br/>:8789"]
         WM3["webman worker N<br/>:8789"]
     end
 
-    subgraph "数据层"
-        MYSQL["MySQL 8.0<br/>主从复制<br/>game_ 前缀"]
-        ES["Elasticsearch 8.x<br/>3 节点集群<br/>game_ 前缀"]
-        REDIS["Redis 7.x<br/>哨兵模式<br/>poster:captcha:*"]
+    subgraph "डेटा परत"
+        MYSQL["MySQL 8.0<br/>मास्टर-स्लेव रेप्लिकेशन<br/>game_ उपसर्ग"]
+        ES["Elasticsearch 8.x<br/>3 नोड क्लस्टर<br/>game_ उपसर्ग"]
+        REDIS["Redis 7.x<br/>सेंटिनल मोड<br/>poster:captcha:*"]
     end
 
-    subgraph "监控"
+    subgraph "मॉनिटरिंग"
         MON["Grafana<br/>+ Prometheus"]
     end
 

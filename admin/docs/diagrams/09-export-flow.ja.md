@@ -11,18 +11,18 @@ sequenceDiagram
     participant C as クライアント
     participant CTL as ExportController
     participant DB as MySQL
-    participant FS as 文件系统
+    participant FS as ファイルシステム
 
     C->>CTL: POST /admin/export/excel
     Note right of C: {table,columns,conditions,title}
     CTL->>DB: SELECT ... LIMIT 10000
-    DB-->>CTL: 查询结果
-    CTL->>CTL: 解密敏感字段
-    CTL->>CTL: 脱敏(maskPhone/maskEmail)
-    CTL->>CTL: PhpSpreadsheet构建
-    Note right of CTL: 表头蓝底白字<br/>数据行细边框<br/>冻结首行<br/>自动筛选
-    CTL->>FS: 写入runtime/tmp/export_*.xlsx
-    CTL-->>C: 文件下载
+    DB-->>CTL: クエリ結果
+    CTL->>CTL: 機密フィールドの復号
+    CTL->>CTL: マスキング (maskPhone/maskEmail)
+    CTL->>CTL: PhpSpreadsheet で構築
+    Note right of CTL: ヘッダー: 青背景に白文字<br/>データ行の細い罫線<br/>先頭行の固定<br/>オートフィルター
+    CTL->>FS: runtime/tmp/export_*.xlsx へ書き込み
+    CTL-->>C: ファイルダウンロード
 ```
 
 ## PDF エクスポート
@@ -31,13 +31,13 @@ sequenceDiagram
 sequenceDiagram
     participant C as クライアント
     participant CTL as ExportController
-    participant FS as 文件系统
+    participant FS as ファイルシステム
 
     C->>CTL: POST /admin/export/pdf
     Note right of C: {type,title,data}
     CTL->>CTL: buildPdfHtml()
-    Note right of CTL: 页头:标题+版权+时间<br/>内容:表格或卡片<br/>页脚:不可移除版权
-    CTL->>CTL: Dompdf渲染(A4横向)
-    CTL->>FS: 写入runtime/tmp/export_*.pdf
-    CTL-->>C: 文件下载
+    Note right of CTL: ヘッダー: タイトル+著作権+時刻<br/>本文: 表またはカード<br/>フッター: 削除不可の著作権
+    CTL->>CTL: Dompdf でレンダリング (A4 横向き)
+    CTL->>FS: runtime/tmp/export_*.pdf へ書き込み
+    CTL-->>C: ファイルダウンロード
 ```

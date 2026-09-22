@@ -6,7 +6,7 @@ Languages: [中文](03-request-lifecycle.md) · [English](03-request-lifecycle.e
 
 ```mermaid
 sequenceDiagram
-    actor C as 客户端
+    actor C as ক্লায়েন্ট
     participant N as Nginx
     participant MW1 as AdminAuth
     participant MW2 as AdminPermission
@@ -15,40 +15,40 @@ sequenceDiagram
     participant MDL as Model
     participant DB as MySQL
 
-    C->>N: HTTPS 请求
-    N->>MW1: 转发请求
+    C->>N: HTTPS অনুরোধ
+    N->>MW1: অনুরোধ ফরওয়ার্ড
 
-    alt Token缺失或无效
+    alt Token অনুপস্থিত বা অকার্যকর
         MW1-->>C: 401 Unauthorized
-    else Token有效
+    else Token কার্যকর
         MW1->>MW1: jwt()->verify(token)
-        MW1->>MW2: 设置 $request->adminId
+        MW1->>MW2: $request->adminId সেট
     end
 
-    alt 无权限
+    alt পারমিশন নেই
         MW2-->>C: 403 Forbidden
-    else 有权限
-        MW2->>CTL: 进入控制器
+    else পারমিশন আছে
+        MW2->>CTL: কন্ট্রোলারে প্রবেশ
     end
 
-    CTL->>CTL: 参数验证
+    CTL->>CTL: প্যারামিটার ভ্যালিডেশন
     CTL->>CTL: decodeId(hashid)
 
-    opt 敏感操作
+    opt সেনসিটিভ অপারেশন
         CTL->>CTL: confirmPassword()
-        alt 密码错误
+        alt পাসওয়ার্ড ভুল
             CTL-->>C: 422
         end
     end
 
     CTL->>MDL: AdminUser::find(id)
-    MDL->>MDL: encryptable自动解密
+    MDL->>MDL: encryptable অটো ডিক্রিপ্ট
     MDL->>DB: SELECT
     DB-->>MDL: Row
     MDL-->>CTL: Model
 
     CTL->>SVC: encodeId()
-    SVC-->>CTL: hashid字符串
+    SVC-->>CTL: hashid স্ট্রিং
 
     CTL-->>C: 200 JSON
 ```

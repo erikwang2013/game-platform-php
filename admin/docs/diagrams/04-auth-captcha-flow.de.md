@@ -6,14 +6,14 @@ Languages: **中文** · [English](04-auth-captcha-flow.en.md) · [한국어](04
 
 ```mermaid
 sequenceDiagram
-    actor U as 用户
-    participant CL as 客户端
-    participant SV as 服务端
+    actor U as Benutzer
+    participant CL as Client
+    participant SV as Server
     participant CAP as Captcha
     participant JWT as JWT Service
 
     rect rgb(230, 240, 255)
-    Note over U,CAP: 第一步: 获取验证码
+    Note over U,CAP: Schritt 1: Captcha abrufen
     CL->>SV: POST /api/captcha/generate
     SV->>CAP: captcha_create('click')
     CAP-->>SV: key, image(base64 PNG), targets
@@ -21,26 +21,26 @@ sequenceDiagram
     end
 
     rect rgb(230, 255, 230)
-    Note over U,CAP: 第二步: 用户点击
-    CL->>CL: 渲染图片，提示"请点击:树→鸟→花"
-    U->>CL: 依次点击图中文字位置
-    CL->>CL: 收集clicks:[{x,y},{x,y},{x,y}]
+    Note over U,CAP: Schritt 2: Benutzer klickt
+    CL->>CL: Bild rendern, Hinweis "Klicken: Baum→Vogel→Blume"
+    U->>CL: Nacheinander die Zeichenpositionen im Bild anklicken
+    CL->>CL: clicks sammeln:[{x,y},{x,y},{x,y}]
     end
 
     rect rgb(255, 240, 230)
-    Note over U,CAP: 第三步: 登录验证
+    Note over U,CAP: Schritt 3: Anmeldeprüfung
     CL->>SV: POST /api/auth/login {username,password,captcha_key,clicks}
     SV->>CAP: captcha_verify(key,'click',clicks)
 
-    alt 验证码错误
+    alt Captcha falsch
         CAP-->>SV: false
-        SV-->>CL: 422 验证码错误
-    else 验证码正确
+        SV-->>CL: 422 Captcha falsch
+    else Captcha korrekt
         CAP-->>SV: true
         SV->>SV: password_verify()
-        alt 凭证错误
-            SV-->>CL: 401 用户名或密码错误
-        else 凭证正确
+        alt Ungültige Anmeldedaten
+            SV-->>CL: 401 Benutzername oder Passwort falsch
+        else Anmeldedaten korrekt
             SV->>JWT: jwt()->create()
             JWT-->>SV: access_token(2h)
             SV->>JWT: jwt()->refresh()
@@ -51,7 +51,7 @@ sequenceDiagram
     end
 
     rect rgb(245, 245, 255)
-    Note over U,CL: 第四步: 后续请求
+    Note over U,CL: Schritt 4: Nachfolgende Anfragen
     CL->>SV: GET /admin/dashboard
     Note right of CL: Authorization: Bearer token
     SV->>JWT: jwt()->verify()

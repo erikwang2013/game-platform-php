@@ -1669,7 +1669,7 @@ POST /admin/v1/upload
 项目根目录提供 `docker-compose.yml`，编排 7 个服务（Nginx、admin、service、leaderboard-ws、MySQL、Redis、Elasticsearch）。PHP 通过 `Dockerfile` 构建（基于 `php:8.3-cli`，启用 OPcache）。
 
 ```bash
-cp .env.docker .env
+cp .env.example .env
 docker-compose up -d
 ```
 

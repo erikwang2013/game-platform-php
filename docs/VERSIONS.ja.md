@@ -228,7 +228,7 @@ game_tournament, game_tournament_entry
 | Provider API ゲートウェイ | balance/bet/settle/refund コールバック + ProviderAuth 中間件 |
 | チケットシステム | C側作成/返信 + 管理画面処理/割り当て/クローズ |
 | メール検証 | 6桁認証コード、Redis 10分で失効、60秒再送制限 |
-| プッシュ通知 | PushService (FCM/APNs/华为推送) |
+| プッシュ通知 | PushService (FCM/APNs/Huawei プッシュ) |
 | VIP 体系 | 5級、経験値累積、自動昇格、交換割引、出金減免、レートボーナス |
 | アチーブメントシステム | 12個の内蔵アチーブメント、イベント駆動検出、進捗トラッキング |
 | フレンドシステム | 申請/承認/拒否/削除/検索 |

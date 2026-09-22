@@ -6,30 +6,30 @@ Languages: [中文](12-deployment.md) · [English](12-deployment.en.md) · [한�
 
 ```mermaid
 flowchart TB
-    subgraph "入口"
+    subgraph "प्रवेश"
         DNS["DNS: erik.xyz"]
     end
 
-    subgraph "Nginx 反向代理"
-        NGX["HTTPS :443<br/>路由分发 + Gzip<br/>CSP + HSTS"]
+    subgraph "Nginx रिवर्स प्रॉक्सी"
+        NGX["HTTPS :443<br/>रूट वितरण + Gzip<br/>CSP + HSTS"]
     end
 
-    subgraph "应用服务"
-        ADM["admin :8789<br/>管理后台"]
-        SVC["service :8792<br/>C端业务"]
-        LB["leaderboard-ws :8790<br/>WebSocket 排行榜"]
-        CHAT["chat-ws :8791<br/>WebSocket 私信"]
+    subgraph "एप्लिकेशन सेवा"
+        ADM["admin :8789<br/>प्रशासन कंसोल"]
+        SVC["service :8792<br/>C-छोर व्यवसाय"]
+        LB["leaderboard-ws :8790<br/>WebSocket लीडरबोर्ड"]
+        CHAT["chat-ws :8791<br/>WebSocket निजी संदेश"]
     end
 
-    subgraph "数据服务"
-        MYSQL["MySQL 8.0 :3306<br/>78 张表"]
-        REDIS["Redis 7 :6379<br/>缓存/限流/EventBus"]
-        ES["Elasticsearch :9200<br/>全文检索"]
-        CH["ClickHouse :8123<br/>OLAP 分析"]
+    subgraph "डेटा सेवा"
+        MYSQL["MySQL 8.0 :3306<br/>78 तालिकाएँ"]
+        REDIS["Redis 7 :6379<br/>कैश/दर सीमा/EventBus"]
+        ES["Elasticsearch :9200<br/>पूर्ण-पाठ खोज"]
+        CH["ClickHouse :8123<br/>OLAP विश्लेषण"]
     end
 
-    subgraph "监控"
-        MON["Grafana + Prometheus<br/>健康检查 /metrics"]
+    subgraph "मॉनिटरिंग"
+        MON["Grafana + Prometheus<br/>हेल्थ चेक /metrics"]
     end
 
     DNS --> NGX

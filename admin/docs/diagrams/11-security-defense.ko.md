@@ -6,13 +6,13 @@ Languages: [中文](11-security-defense.md) · [English](11-security-defense.en.
 
 ```mermaid
 flowchart TB
-    l1["第1层: 人机验证<br/>点击验证码ClickCaptcha<br/>登录/注册强制校验"]
-    l2["第2层: 操作确认<br/>密码二次确认<br/>DELETE操作必须"]
-    l3["第3层: 传输安全<br/>HTTPS + JWT Bearer<br/>AES-256-CBC"]
-    l4["第4层: 身份认证<br/>JWT HS256<br/>access_token 2h<br/>refresh_token 14d"]
-    l5["第5层: 权限鉴权<br/>RBAC method.path粒度<br/>超级管理员*"]
-    l6["第6层: 数据保护<br/>ID:Hashids加密<br/>请求:Encryption加密<br/>存储:Encryptable加密<br/>导出:脱敏+版权"]
-    l7["第7层: 审计追溯<br/>OperationLog<br/>用户/IP/时间/参数"]
+    l1["1계층: 휴먼 검증<br/>클릭형 캡차 ClickCaptcha<br/>로그인/회원가입 필수 검증"]
+    l2["2계층: 작업 확인<br/>비밀번호 2차 확인<br/>DELETE 작업 필수"]
+    l3["3계층: 전송 보안<br/>HTTPS + JWT Bearer<br/>AES-256-CBC"]
+    l4["4계층: 인증<br/>JWT HS256<br/>access_token 2h<br/>refresh_token 14d"]
+    l5["5계층: 권한 검증<br/>RBAC method.path 세분화<br/>슈퍼 관리자*"]
+    l6["6계층: 데이터 보호<br/>ID:Hashids 암호화<br/>요청:Encryption 암호화<br/>저장:Encryptable 암호화<br/>내보내기:마스킹+저작권"]
+    l7["7계층: 감사 추적<br/>OperationLog<br/>사용자/IP/시간/파라미터"]
 
     l1 --> l2 --> l3 --> l4 --> l5 --> l6 --> l7
 

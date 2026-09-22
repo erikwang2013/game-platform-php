@@ -60,9 +60,9 @@ Authorization: Bearer <token>    (需要认证的接口)
 ### 1.5 ページネーション形式
 
 ```
-请求: ?page=1&per_page=20
+リクエスト: ?page=1&per_page=20
 
-响应: {
+レスポンス: {
   "list": [...],
   "total": 150,
   "page": 1,
@@ -77,13 +77,13 @@ Authorization: Bearer <token>    (需要认证的接口)
 #### POST /api/v1/auth/register — ユーザー登録
 
 ```
-请求: {
+リクエスト: {
   "username": "player1",
   "password": "123456",
   "email": "player@example.com"     // 可选
 }
 
-响应: {
+レスポンス: {
   "access_token": "eyJhbG...",
   "refresh_token": "eyJhbG...",
   "user": {
@@ -98,12 +98,12 @@ Authorization: Bearer <token>    (需要认证的接口)
 #### POST /api/v1/auth/login — ユーザーログイン
 
 ```
-请求: {
+リクエスト: {
   "username": "player1",
   "password": "123456"
 }
 
-响应: {
+レスポンス: {
   "access_token": "eyJhbG...",
   "refresh_token": "eyJhbG...",
   "user": { "id": "...", "username": "...", ... }
@@ -115,9 +115,9 @@ Authorization: Bearer <token>    (需要认证的接口)
 #### POST /api/v1/auth/refresh — Token リフレッシュ
 
 ```
-请求: (Authorization: Bearer <refresh_token>)
+リクエスト: (Authorization: Bearer <refresh_token>)
 
-响应: {
+レスポンス: {
   "access_token": "eyJhbG...",
   "refresh_token": "eyJhbG..."
 }
@@ -128,9 +128,9 @@ Authorization: Bearer <token>    (需要认证的接口)
 #### GET /api/v1/wallet/info — ウォレット情報
 
 ```
-需认证: 是
+認証が必要: はい
 
-响应: {
+レスポンス: {
   "balance": "100.5000",
   "frozen_balance": "0.0000",
   "total_earned": "500.0000",
@@ -141,10 +141,10 @@ Authorization: Bearer <token>    (需要认证的接口)
 #### GET /api/v1/wallet/transactions — 流水記録
 
 ```
-需认证: 是
-参数: ?page=1&per_page=20&type=deposit    (type 可选)
+認証が必要: はい
+パラメータ: ?page=1&per_page=20&type=deposit    (type 可选)
 
-响应: {
+レスポンス: {
   "list": [
     {
       "id": "...",
@@ -168,15 +168,15 @@ type 可选值: deposit / withdraw / exchange_in / exchange_out / game_earn / ga
 #### POST /api/v1/deposit/create — チャージ注文の作成
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: {
+リクエスト: {
   "amount": "10.00",
   "currency": "USD",
   "payment_method_id": "aB3xK..."
 }
 
-响应: {
+レスポンス: {
   "order_id": "aB3xK...",
   "order_no": "DEP202605221030000123",
   "amount": "10.00",
@@ -193,10 +193,10 @@ checkout_url: 決済ゲートウェイのリダイレクトリンク（注文作
 #### GET /api/v1/deposit/orders — チャージ記録
 
 ```
-需认证: 是
-参数: ?page=1&per_page=20
+認証が必要: はい
+パラメータ: ?page=1&per_page=20
 
-响应: {
+レスポンス: {
   "list": [
     {
       "id": "...",
@@ -222,16 +222,16 @@ status 選択値: pending / paid / confirmed / cancelled
 #### POST /api/v1/exchange/quote — 見積
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: {
+リクエスト: {
   "game_id": "aB3xK...",
   "currency_id": "aB3xK...",
   "direction": "in",
   "platform_amount": "10.0000"
 }
 
-响应: {
+レスポンス: {
   "platform_amount": "10.0000",
   "game_amount": "950.0000",
   "spread_fee": "50.0000",
@@ -245,15 +245,15 @@ direction: in=ゲームコイン購入 / out=ゲームコイン売却
 #### POST /api/v1/exchange/buy — ゲームコイン購入
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: {
+リクエスト: {
   "game_id": "aB3xK...",
   "currency_id": "aB3xK...",
   "platform_amount": "10.0000"
 }
 
-响应: {
+レスポンス: {
   "exchange_id": "aB3xK...",
   "platform_amount": "10.0000",
   "game_amount": "950.0000",
@@ -267,15 +267,15 @@ direction: in=ゲームコイン購入 / out=ゲームコイン売却
 #### POST /api/v1/exchange/sell — ゲームコイン売却
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: {
+リクエスト: {
   "game_id": "aB3xK...",
   "currency_id": "aB3xK...",
   "platform_amount": "950.0000"
 }
 
-响应: {
+レスポンス: {
   "exchange_id": "aB3xK...",
   "platform_amount": "9.0250",
   "game_amount": "950.0000",
@@ -289,10 +289,10 @@ direction: in=ゲームコイン購入 / out=ゲームコイン売却
 #### GET /api/v1/exchange/records — 交換記録
 
 ```
-需认证: 是
-参数: ?page=1&per_page=20
+認証が必要: はい
+パラメータ: ?page=1&per_page=20
 
-响应: {
+レスポンス: {
   "list": [
     {
       "id": "...",
@@ -316,15 +316,15 @@ direction: in=ゲームコイン購入 / out=ゲームコイン売却
 #### POST /api/v1/withdraw/apply — 出金申請
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: {
+リクエスト: {
   "platform_amount": "50.0000",
   "method": "paypal",
   "account_info": "user@paypal.com"
 }
 
-响应: {
+レスポンス: {
   "order_id": "...",
   "order_no": "WTH202605221030000456",
   "status": "approved"
@@ -346,10 +346,10 @@ status:
 #### GET /api/v1/withdraw/orders — 出金記録
 
 ```
-需认证: 是
-参数: ?page=1&per_page=20
+認証が必要: はい
+パラメータ: ?page=1&per_page=20
 
-响应: {
+レスポンス: {
   "list": [
     {
       "id": "...",
@@ -372,9 +372,9 @@ status:
 #### GET /api/v1/game/list — ゲーム一覧
 
 ```
-参数: ?page=1&per_page=20&keyword=射击&type=self
+パラメータ: ?page=1&per_page=20&keyword=射击&type=self
 
-响应: {
+レスポンス: {
   "list": [
     {
       "id": "aB3xK...",
@@ -406,7 +406,7 @@ type 選択値: self / embedded / third_party
 #### GET /api/v1/game/detail/{hashid} — ゲーム詳細
 
 ```
-响应: {
+レスポンス: {
   "id": "...",
   "name": "射击大师",
   "slug": "shooter-master",
@@ -430,11 +430,11 @@ type 選択値: self / embedded / third_party
 #### POST /api/v1/game/launch — ゲーム起動
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: { "game_id": "aB3xK..." }
+リクエスト: { "game_id": "aB3xK..." }
 
-响应: {
+レスポンス: {
   "id": "...",
   "name": "射击大师",
   "type": "self",
@@ -449,9 +449,9 @@ type 選択値: self / embedded / third_party
 #### GET /api/v1/auth/oauth/{provider} — 認可 URL の取得
 
 ```
-参数: provider = google / facebook / apple / twitter / microsoft / linkedin / github
+パラメータ: provider = google / facebook / apple / twitter / microsoft / linkedin / github
 
-响应: {
+レスポンス: {
   "redirect_url": "https://accounts.google.com/o/oauth2/auth?..."
 }
 ```
@@ -459,9 +459,9 @@ type 選択値: self / embedded / third_party
 #### POST /api/v1/auth/oauth/{provider}/callback — OAuth コールバック
 
 ```
-请求: { "code": "授权码", "state": "防CSRF状态" }
+リクエスト: { "code": "授权码", "state": "防CSRF状态" }
 
-响应: {
+レスポンス: {
   "access_token": "eyJhbG...",
   "refresh_token": "eyJhbG...",
   "user": { "id": "...", "username": "google_abc123", ... },
@@ -476,9 +476,9 @@ is_new: true=新規登録ユーザー / false=既存アカウント連携
 #### GET /api/v1/user/identity/status — 認証状態
 
 ```
-需认证: 是
+認証が必要: はい
 
-响应: {
+レスポンス: {
   "status": "approved",          // not_submitted / pending / approved / rejected
   "real_name": "J***",
   "id_type": "id_card",
@@ -491,9 +491,9 @@ is_new: true=新規登録ユーザー / false=既存アカウント連携
 #### POST /api/v1/user/identity/apply — 認証の提出
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: {
+リクエスト: {
   "real_name": "John Doe",
   "id_type": "id_card",
   "id_number": "123456789",
@@ -501,7 +501,7 @@ is_new: true=新規登録ユーザー / false=既存アカウント連携
   "selfie_photo": "https://..."
 }
 
-响应: { "message": "KYC submitted successfully" }
+レスポンス: { "message": "KYC submitted successfully" }
 ```
 
 ### 2.9 決済
@@ -509,13 +509,13 @@ is_new: true=新規登録ユーザー / false=既存アカウント連携
 #### POST /api/v1/payment/callback — 決済コールバック（公開）
 
 ```
-请求: {
+リクエスト: {
   "order_no": "DEP202605221030000123",
   "transaction_id": "txn_abc123",
   "status": "success"
 }
 
-响应: { "message": "success" }
+レスポンス: { "message": "success" }
 ```
 
 status: success / failed
@@ -546,7 +546,7 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 #### GET /api/v1/payment/methods — 利用可能な決済方法（公開）
 
 ```
-响应: {
+レスポンス: {
   "list": [
     { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "min_amount": "10.00", "max_amount": "5000.00" }
   ]
@@ -560,10 +560,10 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 #### GET /api/v1/game/play-logs — ゲーム記録一覧
 
 ```
-需认证: 是
-参数: ?page=1&per_page=20&game_id=xxx&action=start
+認証が必要: はい
+パラメータ: ?page=1&per_page=20&game_id=xxx&action=start
 
-响应: {
+レスポンス: {
   "list": [
     {
       "id": "...",
@@ -580,8 +580,8 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 #### GET /api/v1/game/play-log/{hashid} — ゲーム記録詳細
 
 ```
-需认证: 是
-响应: { 完整记录，含 session_id / game_amount_before / after 等 }
+認証が必要: はい
+レスポンス: { 完整记录，含 session_id / game_amount_before / after 等 }
 ```
 
 ### 2.12 ランキング
@@ -589,7 +589,7 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 #### GET /api/v1/leaderboard/list — ランキング一覧
 
 ```
-响应: {
+レスポンス: {
   "list": [
     { "id": "...", "name": "全服累计收入榜", "type": "total", "metric": "earned" }
   ]
@@ -599,7 +599,7 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 #### GET /api/v1/leaderboard/{hashid} — ランキング詳細
 
 ```
-响应: {
+レスポンス: {
   "id": "...",
   "name": "全服累计收入榜",
   "type": "total",
@@ -614,24 +614,24 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 #### GET /api/v1/coupon/available — 取得可能なクーポン
 
 ```
-需认证: 是
-响应: { "list": [{ "id": "...", "name": "新人礼包", "type": "fixed", "value": "10.0000" }] }
+認証が必要: はい
+レスポンス: { "list": [{ "id": "...", "name": "新人礼包", "type": "fixed", "value": "10.0000" }] }
 ```
 
 #### POST /api/v1/coupon/claim — クーポン取得
 
 ```
-需认证: 是
-请求: { "coupon_id": "hashid" }
-响应: { "coupon": { ... } }
+認証が必要: はい
+リクエスト: { "coupon_id": "hashid" }
+レスポンス: { "coupon": { ... } }
 ```
 
 #### GET /api/v1/coupon/my — マイクーポン
 
 ```
-需认证: 是
-参数: ?status=unused
-响应: { "list": [{ "id": "...", "coupon": {...}, "status": "unused" }] }
+認証が必要: はい
+パラメータ: ?status=unused
+レスポンス: { "list": [{ "id": "...", "coupon": {...}, "status": "unused" }] }
 ```
 
 ### 2.14 国別設定
@@ -639,7 +639,7 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 #### GET /api/v1/country/list — 国一覧
 
 ```
-响应: {
+レスポンス: {
   "list": [
     { "country_code": "US", "currency": "USD", "min_deposit": "1.0000" }
   ]
@@ -649,7 +649,7 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 #### GET /api/v1/country/{code} — 国の詳細
 
 ```
-响应: {
+レスポンス: {
   "country_code": "US",
   "currency": "USD",
   "payment_methods": ["stripe", "paypal", "crypto"],
@@ -663,10 +663,10 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 #### GET /api/v1/notification/list — 通知一覧
 
 ```
-需认证: 是
-参数: ?page=1&per_page=20&is_read=0
+認証が必要: はい
+パラメータ: ?page=1&per_page=20&is_read=0
 
-响应: {
+レスポンス: {
   "list": [
     { "id": "...", "type": "deposit", "title": "Deposit Received", "is_read": 0, "created_at": "..." }
   ],
@@ -677,15 +677,15 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 #### GET /api/v1/notification/unread-count — 未読数
 
 ```
-需认证: 是
-响应: { "count": 3 }
+認証が必要: はい
+レスポンス: { "count": 3 }
 ```
 
 #### POST /api/v1/notification/read — 既読化
 
 ```
-需认证: 是
-请求: { "id": "hashid" }  // 不传=全部已读
+認証が必要: はい
+リクエスト: { "id": "hashid" }  // 不传=全部已读
 ```
 
 ### 2.17 紹介
@@ -693,16 +693,16 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 #### GET /api/v1/referral/my-code — マイ紹介コード
 
 ```
-需认证: 是
-响应: { "code": "ABC12345", "referral_count": 12, "total_rewards": "150.0000" }
+認証が必要: はい
+レスポンス: { "code": "ABC12345", "referral_count": 12, "total_rewards": "150.0000" }
 ```
 
 #### POST /api/v1/referral/apply — 紹介コードの使用
 
 ```
-需认证: 是
-请求: { "code": "ABC12345" }
-响应: { "message": "Referral applied" }
+認証が必要: はい
+リクエスト: { "code": "ABC12345" }
+レスポンス: { "message": "Referral applied" }
 ```
 
 ### 2.18 2FA
@@ -710,30 +710,30 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 #### GET /api/v1/user/2fa/status — 2FA状態
 
 ```
-需认证: 是
-响应: { "enabled": false }
+認証が必要: はい
+レスポンス: { "enabled": false }
 ```
 
 #### POST /api/v1/user/2fa/setup — 2FA設定
 
 ```
-需认证: 是
-响应: { "secret": "JBSWY3DPEHPK3PXP", "qr_url": "otpauth://totp/..." }
+認証が必要: はい
+レスポンス: { "secret": "JBSWY3DPEHPK3PXP", "qr_url": "otpauth://totp/..." }
 ```
 
 #### POST /api/v1/user/2fa/enable — 2FA有効化
 
 ```
-需认证: 是
-请求: { "code": "123456" }
-响应: { "backup_codes": ["abcd1234ef", ...] }
+認証が必要: はい
+リクエスト: { "code": "123456" }
+レスポンス: { "backup_codes": ["abcd1234ef", ...] }
 ```
 
 #### POST /api/v1/2fa/verify — 2FA検証（公開）
 
 ```
-请求: { "user_id": "hashid", "code": "123456" }
-响应: { "valid": true }
+リクエスト: { "user_id": "hashid", "code": "123456" }
+レスポンス: { "valid": true }
 ```
 
 ### 2.19 検索
@@ -741,15 +741,15 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 #### GET /api/v1/search — グローバル検索
 
 ```
-参数: ?q=keyword&type=game&page=1&per_page=20
-响应: { "list": [...], "total": 100 }
+パラメータ: ?q=keyword&type=game&page=1&per_page=20
+レスポンス: { "list": [...], "total": 100 }
 ```
 
 #### GET /api/v1/game/suggest — 検索サジェスト
 
 ```
-参数: ?q=shoot
-响应: { "suggestions": [{ "id": "...", "name": "Shooter Master" }] }
+パラメータ: ?q=shoot
+レスポンス: { "suggestions": [{ "id": "...", "name": "Shooter Master" }] }
 ```
 
 ### 2.20 言語
@@ -757,7 +757,7 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 #### GET /api/v1/language/list — 利用可能な言語一覧
 
 ```
-响应: {
+レスポンス: {
   "current": "en-US",
   "languages": {
     "en-US": { "name": "English", "nativeName": "English", "icon": "us" },
@@ -771,8 +771,8 @@ provider 選択値: stripe / paypal / nowpayments / coinbase / skrill / neteller
 #### POST /api/v1/language/switch — 言語切り替え
 
 ```
-请求: { "locale": "zh-CN" }
-响应: { "locale": "zh-CN" }
+リクエスト: { "locale": "zh-CN" }
+レスポンス: { "locale": "zh-CN" }
 ```
 
 locale 選択値: en-US / zh-CN / ja-JP / ko-KR
@@ -782,9 +782,9 @@ locale 選択値: en-US / zh-CN / ja-JP / ko-KR
 #### GET /api/v1/user/profile — 個人情報
 
 ```
-需认证: 是
+認証が必要: はい
 
-响应: {
+レスポンス: {
   "id": "...",
   "username": "player1",
   "nickname": "Player One",
@@ -801,15 +801,15 @@ locale 選択値: en-US / zh-CN / ja-JP / ko-KR
 #### PUT /api/v1/user/profile — プロフィール編集
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: {
+リクエスト: {
   "nickname": "New Name",
   "avatar": "https://...",
   "language": "zh-CN"
 }
 
-响应: {
+レスポンス: {
   "id": "...",
   "username": "player1",
   "nickname": "New Name",
@@ -825,7 +825,7 @@ language 選択値: en-US / zh-CN / ja-JP / ko-KR
 #### GET /api/v1/announcement/list — 公告一覧
 
 ```
-响应: {
+レスポンス: {
   "list": [
     {
       "id": "...",
@@ -840,7 +840,7 @@ language 選択値: en-US / zh-CN / ja-JP / ko-KR
 #### GET /api/v1/announcement/detail/{hashid} — 公告詳細
 
 ```
-响应: {
+レスポンス: {
   "id": "...",
   "title": "系统维护通知",
   "content": "将于2026年5月23日凌晨2:00-4:00进行系统维护...",
@@ -860,7 +860,7 @@ language 選択値: en-US / zh-CN / ja-JP / ko-KR
 ```
 无需认证
 
-响应: {
+レスポンス: {
   "total_games": 12,
   "total_users": 1500,
   "today_game_plays": 320,
@@ -875,9 +875,9 @@ language 選択値: en-US / zh-CN / ja-JP / ko-KR
 #### GET /admin/v1/dashboard/platform
 
 ```
-需认证: 是 (AdminAuth + AdminPermission)
+認証が必要: はい (AdminAuth + AdminPermission)
 
-响应: {
+レスポンス: {
   "total_users": 1500,
   "active_users_7d": 320,
   "total_games": 12,
@@ -893,10 +893,10 @@ language 選択値: en-US / zh-CN / ja-JP / ko-KR
 #### GET /admin/v1/game/list — ゲーム一覧
 
 ```
-需认证: 是
-参数: ?page=1&limit=20&keyword=射击
+認証が必要: はい
+パラメータ: ?page=1&limit=20&keyword=射击
 
-响应: {
+レスポンス: {
   "list": [
     {
       "id": "...",
@@ -918,10 +918,10 @@ language 選択値: en-US / zh-CN / ja-JP / ko-KR
 #### GET /admin/v1/game/{hashid} — ゲーム詳細
 
 ```
-需认证: 是
-参数: hashid 为游戏的 hashid 编码（路径参数）
+認証が必要: はい
+パラメータ: hashid 为游戏的 hashid 编码（路径参数）
 
-响应: {
+レスポンス: {
   "id": "aB3xK...",
   "name": "射击大师",
   "slug": "shooter-master",
@@ -951,13 +951,13 @@ language 選択値: en-US / zh-CN / ja-JP / ko-KR
 #### POST /admin/v1/game/launch — ゲーム試遊プレビュー
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: {
+リクエスト: {
   "game_id": "aB3xK..."      // 游戏 ID(hashid)
 }
 
-响应: {
+レスポンス: {
   "id": "aB3xK...",
   "name": "射击大师",
   "slug": "shooter-master",
@@ -974,9 +974,9 @@ language 選択値: en-US / zh-CN / ja-JP / ko-KR
 #### POST /admin/v1/game/create — ゲーム作成
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: {
+リクエスト: {
   "name": "新游戏",
   "slug": "new-game",
   "type": "self",
@@ -989,7 +989,7 @@ language 選択値: en-US / zh-CN / ja-JP / ko-KR
   "sort": 0                        // 可选, 默认0
 }
 
-响应: { "id": "aB3xK..." }
+レスポンス: { "id": "aB3xK..." }
 ```
 
 type 選択値: self / embedded / third_party
@@ -997,30 +997,30 @@ type 選択値: self / embedded / third_party
 #### PUT /admin/v1/game/{hashid} — ゲーム編集
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: {
+リクエスト: {
   "name": "新名称",
   "status": 1
   // 可部分更新，字段同 create
 }
 
-响应: { "message": "更新成功" }
+レスポンス: { "message": "更新成功" }
 ```
 
 #### DELETE /admin/v1/game/{hashid} — ゲーム削除
 
 ```
-需认证: 是
-响应: { "message": "删除成功" }
+認証が必要: はい
+レスポンス: { "message": "删除成功" }
 ```
 
 #### POST /admin/v1/game/currency/manage — 通貨管理
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: {
+リクエスト: {
   "game_id": "aB3xK...",
   "currencies": [
     {
@@ -1035,7 +1035,7 @@ type 選択値: self / embedded / third_party
   ]
 }
 
-响应: { "message": "操作成功" }
+レスポンス: { "message": "操作成功" }
 ```
 
 `game_id` が無いか `currencies` が配列でない場合は 422 を返し、ゲームが存在しない場合は 404 を返す。
@@ -1047,10 +1047,10 @@ type 選択値: self / embedded / third_party
 #### GET /admin/v1/withdraw/orders — 出金注文一覧
 
 ```
-需认证: 是
-参数: ?page=1&limit=20&status=pending
+認証が必要: はい
+パラメータ: ?page=1&limit=20&status=pending
 
-响应: {
+レスポンス: {
   "list": [
     {
       "id": "...",
@@ -1077,15 +1077,15 @@ type 選択値: self / embedded / third_party
 #### PUT /admin/v1/withdraw/review — 出金審査
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: {
+リクエスト: {
   "order_id": "aB3xK...",
   "action": "approve",
   "note": "审核通过"
 }
 
-响应: { "message": "已通过" }
+レスポンス: { "message": "已通过" }
 ```
 
 action: approve=通過 / reject=拒否 / confirm=確認（拒否時は自動的にプラットフォームコインへ戻す）
@@ -1095,11 +1095,11 @@ action: approve=通過 / reject=拒否 / confirm=確認（拒否時は自動的�
 #### PUT /admin/v1/withdraw/switch — グローバル出金スイッチ
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: { "enabled": 1 }
+リクエスト: { "enabled": 1 }
 
-响应: {
+レスポンス: {
   "global_switch": true,
   "message": "提现功能已开启"
 }
@@ -1108,15 +1108,15 @@ action: approve=通過 / reject=拒否 / confirm=確認（拒否時は自動的�
 #### POST /admin/v1/withdraw/limits/set — 出金限度額の設定
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: {
+リクエスト: {
   "daily_limit": "10000.0000",             // 可选
   "min_amount": "1.0000",                  // 可选
   "auto_approve_threshold": "100.0000"     // 可选
 }
 
-响应: {
+レスポンス: {
   "daily_limit": "10000.0000",
   "min_amount": "1.0000",
   "auto_approve_threshold": "100.0000",
@@ -1127,15 +1127,15 @@ action: approve=通過 / reject=拒否 / confirm=確認（拒否時は自動的�
 #### POST /admin/v1/withdraw/batch-review — 出金の一括審査
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: {
+リクエスト: {
   "ids": ["aB3xK...", "cD4yL..."],
   "action": "approve",
   "note": "批量审核通过"
 }
 
-响应: {
+レスポンス: {
   "processed": 2,
   "failed": []
 }
@@ -1146,11 +1146,11 @@ action: approve=承認 / reject=却下（注文ごとに処理し、却下分は
 #### POST /admin/v1/withdraw/execute-payout — 出金実行
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: { "order_id": "aB3xK..." }
+リクエスト: { "order_id": "aB3xK..." }
 
-响应: {
+レスポンス: {
   "payout_batch_id": "PAYOUT-123456",
   "payout_item_id": "ITEM-123456",
   "payout_status": "success",
@@ -1163,11 +1163,11 @@ approved 状態の注文のみ出金可能（processing へ原子的に切り替
 #### POST /admin/v1/withdraw/sync-payout — 出金ステータスの同期
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: { "order_id": "aB3xK..." }
+リクエスト: { "order_id": "aB3xK..." }
 
-响应: {
+レスポンス: {
   "payout_status": "success",
   "order_status": "completed",
   "synced_status": "success"
@@ -1181,10 +1181,10 @@ approved 状態の注文のみ出金可能（processing へ原子的に切り替
 #### GET /admin/v1/platform/user/list — C側ユーザー一覧
 
 ```
-需认证: 是
-参数: ?page=1&limit=20&keyword=player&status=1
+認証が必要: はい
+パラメータ: ?page=1&limit=20&keyword=player&status=1
 
-响应: {
+レスポンス: {
   "list": [
     {
       "id": "...",
@@ -1205,9 +1205,9 @@ approved 状態の注文のみ出金可能（processing へ原子的に切り替
 #### GET /admin/v1/platform/user/{hashid} — ユーザー詳細
 
 ```
-需认证: 是
+認証が必要: はい
 
-响应: {
+レスポンス: {
   "id": "...",
   "username": "player1",
   "nickname": "Player One",
@@ -1228,14 +1228,14 @@ approved 状態の注文のみ出金可能（processing へ原子的に切り替
 #### PUT /admin/v1/platform/user/{hashid} — ユーザー編集/凍結
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: {
+リクエスト: {
   "status": 0,         // 0=禁用 1=启用
   "nickname": "..."    // 可选
 }
 
-响应: { "message": "更新成功" }
+レスポンス: { "message": "更新成功" }
 ```
 
 ### 3.5 決済管理
@@ -1243,9 +1243,9 @@ approved 状態の注文のみ出金可能（processing へ原子的に切り替
 #### GET /admin/v1/payment/method/list
 
 ```
-需认证: 是
+認証が必要: はい
 
-响应: {
+レスポンス: {
   "list": [
     {
       "id": "...",
@@ -1261,11 +1261,11 @@ approved 状態の注文のみ出金可能（processing へ原子的に切り替
 #### POST /admin/v1/payment/method/toggle — 決済方法の有効/無効
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: { "id": "aB3xK...", "status": 0 }
+リクエスト: { "id": "aB3xK...", "status": 0 }
 
-响应: { "message": "已更新" }
+レスポンス: { "message": "已更新" }
 ```
 
 ### 3.6 公告管理
@@ -1273,10 +1273,10 @@ approved 状態の注文のみ出金可能（processing へ原子的に切り替
 #### GET /admin/v1/announcement/list
 
 ```
-需认证: 是
-参数: ?page=1&limit=20
+認証が必要: はい
+パラメータ: ?page=1&limit=20
 
-响应: {
+レスポンス: {
   "list": [
     {
       "id": "...",
@@ -1297,9 +1297,9 @@ approved 状態の注文のみ出金可能（processing へ原子的に切り替
 #### POST /admin/v1/announcement/create — 公告の公開
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: {
+リクエスト: {
   "title": "系统维护通知",
   "content": "将于2026年5月23日凌晨2:00-4:00进行系统维护。",
   "type": "system",           // 可选, 默认"system"
@@ -1309,7 +1309,7 @@ approved 状態の注文のみ出金可能（processing へ原子的に切り替
   "end_at": "2026-05-23 04:00:00"     // 可选
 }
 
-响应: { "id": "aB3xK..." }
+レスポンス: { "id": "aB3xK..." }
 ```
 
 ### 3.7 KYC 審査
@@ -1317,10 +1317,10 @@ approved 状態の注文のみ出金可能（processing へ原子的に切り替
 #### GET /admin/v1/identity/list — KYC一覧
 
 ```
-需认证: 是
-参数: ?page=1&limit=20&status=pending
+認証が必要: はい
+パラメータ: ?page=1&limit=20&status=pending
 
-响应: {
+レスポンス: {
   "list": [
     {
       "id": "...",
@@ -1338,11 +1338,11 @@ approved 状態の注文のみ出金可能（processing へ原子的に切り替
 #### PUT /admin/v1/identity/review — KYC審査
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: { "id": "hashid", "action": "approve", "note": "" }
+リクエスト: { "id": "hashid", "action": "approve", "note": "" }
 
-响应: { "message": "Approved" }
+レスポンス: { "message": "Approved" }
 ```
 
 action: approve / reject
@@ -1352,10 +1352,10 @@ action: approve / reject
 #### GET /admin/v1/game/server/list — 区サーバー一覧
 
 ```
-需认证: 是
-参数: ?game_id=hashid
+認証が必要: はい
+パラメータ: ?game_id=hashid
 
-响应: {
+レスポンス: {
   "list": [
     { "id": "...", "name": "亚洲1服", "region": "asia", "status": 1, "sort": 0 }
   ]
@@ -1365,22 +1365,22 @@ action: approve / reject
 #### POST /admin/v1/game/server/create — 区サーバー作成
 
 ```
-需认证: 是
-请求: { "game_id": "hashid", "name": "亚洲1服", "region": "asia", "status": 1 }
-响应: { "id": "hashid" }
+認証が必要: はい
+リクエスト: { "game_id": "hashid", "name": "亚洲1服", "region": "asia", "status": 1 }
+レスポンス: { "id": "hashid" }
 ```
 
 #### PUT /admin/v1/game/server/{hashid} — 区サーバー編集
 
 ```
-需认证: 是
-请求: { "name": "新名称", "status": 2 }
+認証が必要: はい
+リクエスト: { "name": "新名称", "status": 2 }
 ```
 
 #### DELETE /admin/v1/game/server/{hashid} — 区サーバー削除
 
 ```
-需认证: 是
+認証が必要: はい
 ```
 
 ### 3.9 出金段階別限度額管理
@@ -1388,9 +1388,9 @@ action: approve / reject
 #### GET /admin/v1/withdraw/limits/list
 
 ```
-需认证: 是
+認証が必要: はい
 
-响应: {
+レスポンス: {
   "list": [
     {
       "id": "...",
@@ -1410,9 +1410,9 @@ action: approve / reject
 #### PUT /admin/v1/withdraw/limits/{hashid} — 限度額の更新
 
 ```
-需认证: 是
+認証が必要: はい
 
-请求: { "single_max": "10000.0000", "fee_pct": "0.25" }
+リクエスト: { "single_max": "10000.0000", "fee_pct": "0.25" }
 // 可部分更新
 ```
 
@@ -1421,16 +1421,16 @@ action: approve / reject
 #### GET /admin/v1/game/category/list
 
 ```
-需认证: 是
-响应: { "list": [{ "id": "...", "name": "动作", "slug": "action", "sort": 1 }] }
+認証が必要: はい
+レスポンス: { "list": [{ "id": "...", "name": "动作", "slug": "action", "sort": 1 }] }
 ```
 
 #### POST /admin/v1/game/category/create
 
 ```
-需认证: 是
-请求: { "name": "新分类", "slug": "new-cat", "icon": "star", "sort": 10 }
-响应: { "id": "hashid" }
+認証が必要: はい
+リクエスト: { "name": "新分类", "slug": "new-cat", "icon": "star", "sort": 10 }
+レスポンス: { "id": "hashid" }
 ```
 
 #### PUT /admin/v1/game/category/{hashid} — カテゴリ編集
@@ -1440,8 +1440,8 @@ action: approve / reject
 #### POST /admin/v1/game/category/assign — ゲーム割り当て
 
 ```
-需认证: 是
-请求: { "category_id": "hashid", "game_ids": ["hash1", "hash2"] }
+認証が必要: はい
+リクエスト: { "category_id": "hashid", "game_ids": ["hash1", "hash2"] }
 ```
 
 ### 3.12 ランキング管理
@@ -1449,15 +1449,15 @@ action: approve / reject
 #### GET /admin/v1/leaderboard/list — ランキング一覧
 
 ```
-需认证: 是
-响应: { "list": [{ "id": "...", "name": "...", "type": "total", "metric": "earned" }] }
+認証が必要: はい
+レスポンス: { "list": [{ "id": "...", "name": "...", "type": "total", "metric": "earned" }] }
 ```
 
 #### POST /admin/v1/leaderboard/create — ランキング作成
 
 ```
-需认证: 是
-请求: { "name": "周收入榜", "type": "weekly", "metric": "earned", "game_id": "hashid(可选)" }
+認証が必要: はい
+リクエスト: { "name": "周收入榜", "type": "weekly", "metric": "earned", "game_id": "hashid(可选)" }
 ```
 
 #### PUT /admin/v1/leaderboard/{hashid} — ランキング編集
@@ -1473,8 +1473,8 @@ action: approve / reject
 #### POST /admin/v1/coupon/create — クーポン作成
 
 ```
-需认证: 是
-请求: { "name": "新人礼包", "type": "fixed", "value": "10.0000", "total_qty": 1000 }
+認証が必要: はい
+リクエスト: { "name": "新人礼包", "type": "fixed", "value": "10.0000", "total_qty": 1000 }
 ```
 
 #### PUT /admin/v1/coupon/{hashid} — 編集（未取得時のみ）
@@ -1484,7 +1484,7 @@ action: approve / reject
 #### GET /admin/v1/coupon/{hashid}/stats — 取得統計
 
 ```
-响应: { "total_qty": 1000, "used_qty": 234, "remaining": 766, "usage_rate": "23.40%" }
+レスポンス: { "total_qty": 1000, "used_qty": 234, "remaining": 766, "usage_rate": "23.40%" }
 ```
 
 ### 3.14 国別設定管理
@@ -1494,8 +1494,8 @@ action: approve / reject
 #### POST /admin/v1/country/config/create — 国別設定の作成
 
 ```
-需认证: 是
-请求: { "country_code": "JP", "currency": "JPY", "payment_methods": "[\"stripe\",\"paypal\"]", "min_deposit": "100.0000" }
+認証が必要: はい
+リクエスト: { "country_code": "JP", "currency": "JPY", "payment_methods": "[\"stripe\",\"paypal\"]", "min_deposit": "100.0000" }
 ```
 
 #### PUT /admin/v1/country/config/{hashid} — 国別設定の編集
@@ -1505,19 +1505,19 @@ action: approve / reject
 #### POST /admin/v1/export/users — C側ユーザーのエクスポート
 
 ```
-需认证: 是
-参数(JSON): { "status": 1 }   // 可选筛选
+認証が必要: はい
+パラメータ(JSON): { "status": 1 }   // 可选筛选
 
-响应: Excel 文件下载 (xlsx)
+レスポンス: Excel 文件下载 (xlsx)
 ```
 
 #### POST /admin/v1/export/transactions — プラットフォーム流水のエクスポート
 
 ```
-需认证: 是
-参数(JSON): { "type": "deposit" }   // 可选筛选
+認証が必要: はい
+パラメータ(JSON): { "type": "deposit" }   // 可选筛选
 
-响应: Excel 文件下载 (xlsx)
+レスポンス: Excel 文件下载 (xlsx)
 ```
 
 ### 3.16 データ分析（MySQL リアルタイム集計）
@@ -1629,18 +1629,18 @@ Retry-After: 60
 #### POST /api/provider/balance — ユーザー残高の照会
 
 ```
-请求头:
+リクエストヘッダー:
   X-Game-Id: 1234567890
   X-Timestamp: 1716400830
   X-Signature: abc123...
 
-请求: {
+リクエスト: {
   "user_id": 1234567890,
   "game_id": 9876543210,
   "currency_id": 5555555555
 }
 
-响应: {
+レスポンス: {
   "code": 0,
   "message": "success",
   "data": { "balance": "1000.50000000" }
@@ -1650,7 +1650,7 @@ Retry-After: 60
 #### POST /api/provider/bet — 下注通知
 
 ```
-请求: {
+リクエスト: {
   "user_id": 1234567890,
   "session_id": "GAME_SESSION_202608041030001234",
   "amount": "10.00000000",
@@ -1658,7 +1658,7 @@ Retry-After: 60
   "meta": { "bet_type": "straight" }
 }
 
-响应: {
+レスポンス: {
   "code": 0,
   "data": {
     "success": true,
@@ -1671,7 +1671,7 @@ Retry-After: 60
 #### POST /api/provider/settle — 決算通知
 
 ```
-请求: {
+リクエスト: {
   "user_id": 1234567890,
   "session_id": "GAME_SESSION_202608041030001234",
   "amount": "50.00000000",
@@ -1679,7 +1679,7 @@ Retry-After: 60
   "meta": { "win_type": "jackpot" }
 }
 
-响应: {
+レスポンス: {
   "code": 0,
   "data": {
     "success": true,
@@ -1693,7 +1693,7 @@ Retry-After: 60
 #### POST /api/provider/refund — 返金通知
 
 ```
-请求: {
+リクエスト: {
   "user_id": 1234567890,
   "session_id": "GAME_SESSION_202608041030001234",
   "amount": "10.00000000",
@@ -1701,7 +1701,7 @@ Retry-After: 60
   "reason": "game_crash"
 }
 
-响应: {
+レスポンス: {
   "code": 0,
   "data": {
     "success": true,
@@ -1716,10 +1716,10 @@ Retry-After: 60
 #### GET /api/v1/ticket/list — チケット一覧
 
 ```
-需认证: 是
-参数: ?page=1&per_page=20
+認証が必要: はい
+パラメータ: ?page=1&per_page=20
 
-响应: {
+レスポンス: {
   "list": [
     {
       "id": "aB3xK...",
@@ -1741,20 +1741,20 @@ status: open / waiting / replied / closed
 #### POST /api/v1/ticket/create — チケット作成
 
 ```
-需认证: 是
-请求: {
+認証が必要: はい
+リクエスト: {
   "type": "deposit",
   "subject": "充值未到账",
   "content": "我充值了100元但余额未更新..."
 }
-响应: { "code": 0, "message": "Ticket created", "data": { "id": "aB3xK..." } }
+レスポンス: { "code": 0, "message": "Ticket created", "data": { "id": "aB3xK..." } }
 ```
 
 #### GET /api/v1/ticket/{hashid} — チケット詳細
 
 ```
-需认证: 是
-响应: {
+認証が必要: はい
+レスポンス: {
   "id": "...", "type": "deposit", "subject": "...",
   "content": "...", "status": "open",
   "replies": [
@@ -1766,9 +1766,9 @@ status: open / waiting / replied / closed
 #### POST /api/v1/ticket/{hashid}/reply — チケット返信
 
 ```
-需认证: 是
-请求: { "content": "已核实，将在24小时内处理" }
-响应: { "code": 0, "message": "Reply sent" }
+認証が必要: はい
+リクエスト: { "content": "已核实，将在24小时内处理" }
+レスポンス: { "code": 0, "message": "Reply sent" }
 ```
 
 ### 7.3 メール検証 API
@@ -1776,19 +1776,19 @@ status: open / waiting / replied / closed
 #### POST /api/v1/verify/send-email — メール認証コード送信
 
 ```
-需认证: 是
-请求: { "email": "user@example.com" }
-响应: { "code": 0, "message": "Verification code sent" }
-错误: 429 请60秒后重试
+認証が必要: はい
+リクエスト: { "email": "user@example.com" }
+レスポンス: { "code": 0, "message": "Verification code sent" }
+エラー: 429 请60秒后重试
 ```
 
 #### POST /api/v1/verify/confirm-email — メール確認
 
 ```
-需认证: 是
-请求: { "code": "123456" }
-响应: { "code": 0, "message": "Email verified" }
-错误: 422 验证码无效或已过期
+認証が必要: はい
+リクエスト: { "code": "123456" }
+レスポンス: { "code": 0, "message": "Email verified" }
+エラー: 422 验证码无效或已过期
 ```
 
 ### 7.4 VIP API
@@ -1798,8 +1798,8 @@ status: open / waiting / replied / closed
 > **未実装**：C側のルートは未登録（`service/config/route.php` に対応エントリなし）、現在のリクエストは 404 を返します。実装後にこの行を削除してください。
 
 ```
-需认证: 是
-响应: {
+認証が必要: はい
+レスポンス: {
   "level": 2,
   "level_name": "Gold",
   "exp": 300,
@@ -1820,8 +1820,8 @@ status: open / waiting / replied / closed
 > **未実装**：C側のルートは未登録（`service/config/route.php` に対応エントリなし）、現在のリクエストは 404 を返します。実装後にこの行を削除してください。
 
 ```
-需认证: 是
-响应: {
+認証が必要: はい
+レスポンス: {
   "achievements": [
     {
       "key": "first_deposit",
@@ -1841,10 +1841,10 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/ticket/list — チケット一覧
 
 ```
-需认证: 是
-参数: ?page=1&limit=20&status=pending&type=deposit
+認証が必要: はい
+パラメータ: ?page=1&limit=20&status=pending&type=deposit
 
-响应: {
+レスポンス: {
   "list": [
     {
       "id": "...", "user_name": "player1",
@@ -1860,32 +1860,32 @@ status: open / waiting / replied / closed
 #### POST /admin/v1/ticket/{hashid}/reply — チケット返信
 
 ```
-需认证: 是
-请求: { "content": "已处理" }
-响应: { "code": 0, "message": "Reply sent" }
+認証が必要: はい
+リクエスト: { "content": "已处理" }
+レスポンス: { "code": 0, "message": "Reply sent" }
 ```
 
 #### POST /admin/v1/ticket/{hashid}/close — チケットクローズ
 
 ```
-需认证: 是
-响应: { "code": 0, "message": "Ticket closed" }
+認証が必要: はい
+レスポンス: { "code": 0, "message": "Ticket closed" }
 ```
 
 #### POST /admin/v1/ticket/{hashid}/assign — 担当者指定
 
 ```
-需认证: 是
-请求: { "admin_id": 1234567890 }
-响应: { "code": 0, "message": "Assigned" }
+認証が必要: はい
+リクエスト: { "admin_id": 1234567890 }
+レスポンス: { "code": 0, "message": "Assigned" }
 ```
 
 #### GET /admin/v1/analytics/retention — リテンション分析
 
 ```
-需认证: 是
-参数: ?days=30
-响应: {
+認証が必要: はい
+パラメータ: ?days=30
+レスポンス: {
   "D1": "45.2%", "D3": "28.7%",
   "D7": "18.3%", "D30": "8.1%"
 }
@@ -1894,8 +1894,8 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/analytics/funnel — コンバージョンファネル
 
 ```
-需认证: 是
-响应: {
+認証が必要: はい
+レスポンス: {
   "funnel": [
     { "step": "register", "count": 1500, "rate": "100%" },
     { "step": "first_deposit", "count": 450, "rate": "30.0%" },
@@ -1908,16 +1908,16 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/analytics/arpu — ARPU/ARPPU トレンド
 
 ```
-需认证: 是
-参数: ?days=30
-响应: { "arpu": [...], "arppu": [...], "dates": [...] }
+認証が必要: はい
+パラメータ: ?days=30
+レスポンス: { "arpu": [...], "arppu": [...], "dates": [...] }
 ```
 
 #### GET /admin/v1/analytics/economy — ゲーム通貨経済指標
 
 ```
-需认证: 是
-响应: {
+認証が必要: はい
+レスポンス: {
   "currencies": [
     {
       "game_name": "Shooter Master",
@@ -1935,54 +1935,54 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/cdn/provider/list — CDN プロバイダー一覧（config 認証情報は返却されない）
 
 ```
-需认证: 是
-响应: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
+認証が必要: はい
+レスポンス: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
 ```
 
 #### POST /admin/v1/cdn/provider/toggle — プロバイダー有効/無効 {id, status}
 
 ```
-需认证: 是
-请求: { "id": "...", "status": 1 }
-响应: { "code": 0, "message": "..." }
+認証が必要: はい
+リクエスト: { "id": "...", "status": 1 }
+レスポンス: { "code": 0, "message": "..." }
 ```
 
 #### POST /admin/v1/cdn/provider/create — 新規追加 {name, provider, config(JSON), status, sort}，provider 重複チェック
 
 ```
-需认证: 是
-请求: { "name": "...", "provider": "aliyun", "config": "{...}", "status": 1, "sort": 0 }
-响应: { "code": 0, "data": { "id": "..." } }
+認証が必要: はい
+リクエスト: { "name": "...", "provider": "aliyun", "config": "{...}", "status": 1, "sort": 0 }
+レスポンス: { "code": 0, "data": { "id": "..." } }
 ```
 
 #### PUT /admin/v1/cdn/provider/{hashid} — 編集（config 空欄なら変更なし）
 
 ```
-需认证: 是
-请求: { "name": "...", "config": "" }
-响应: { "code": 0, "message": "..." }
+認証が必要: はい
+リクエスト: { "name": "...", "config": "" }
+レスポンス: { "code": 0, "message": "..." }
 ```
 
 #### DELETE /admin/v1/cdn/provider/{hashid} — 削除
 
 ```
-需认证: 是
-响应: { "code": 0, "message": "..." }
+認証が必要: はい
+レスポンス: { "code": 0, "message": "..." }
 ```
 
 #### POST /admin/v1/cdn/provider/test — 接続テスト HeadBucket {id}
 
 ```
-需认证: 是
-请求: { "id": "..." }
-响应: { "code": 0, "data": { "ok": true } }
+認証が必要: はい
+リクエスト: { "id": "..." }
+レスポンス: { "code": 0, "data": { "ok": true } }
 ```
 #### GET /admin/v1/report/summary — レポート集計
 
 ```
-需认证: 是
-参数: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
-响应: {
+認証が必要: はい
+パラメータ: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
+レスポンス: {
   "start": "2026-08-01", "end": "2026-08-31",
   "new_users": 120, "deposit_amount": "5000.0000", "deposit_count": 45,
   "withdraw_amount": "1200.0000", "withdraw_count": 8,
@@ -1994,9 +1994,9 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/report/daily — 日報
 
 ```
-需认证: 是
-参数: ?start=Y-m-d&end=Y-m-d
-响应: {
+認証が必要: はい
+パラメータ: ?start=Y-m-d&end=Y-m-d
+レスポンス: {
   "start": "2026-08-01", "end": "2026-08-31",
   "rows": [ { "date": "2026-08-01", "new_users": 12, "deposit_amount": "500.0000", "deposit_count": 4, "withdraw_amount": "100.0000", "withdraw_count": 1, "exchange_amount": "300.0000", "play_count": 150 } ]
 }
@@ -2006,9 +2006,9 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/report/export — 日報 CSV エクスポート
 
 ```
-需认证: 是
-参数: ?start=Y-m-d&end=Y-m-d&format=excel
-响应: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
+認証が必要: はい
+パラメータ: ?start=Y-m-d&end=Y-m-d&format=excel
+レスポンス: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
 ```
 
 ## 8. レートリミット戦略（更新）
@@ -2037,53 +2037,53 @@ status: open / waiting / replied / closed
 
 #### GET /api/v1/friend/list — フレンド一覧
 ```
-需认证: 是
-响应: { "list": [{ "id": "...", "username": "...", "nickname": "...", "avatar": "..." }] }
+認証が必要: はい
+レスポンス: { "list": [{ "id": "...", "username": "...", "nickname": "...", "avatar": "..." }] }
 ```
 
 #### GET /api/v1/friend/requests — 未処理の申請
 ```
-需认证: 是
-响应: { "list": [{ "id": "...", "user": {...}, "created_at": "..." }] }
+認証が必要: はい
+レスポンス: { "list": [{ "id": "...", "user": {...}, "created_at": "..." }] }
 ```
 
 #### POST /api/v1/friend/request — フレンド申請の送信
 ```
-需认证: 是
-请求: { "friend_id": "hashid" }
+認証が必要: はい
+リクエスト: { "friend_id": "hashid" }
 ```
 
 #### POST /api/v1/friend/accept — 申請の承認
 ```
-需认证: 是
-请求: { "request_id": "hashid" }
+認証が必要: はい
+リクエスト: { "request_id": "hashid" }
 ```
 
 #### POST /api/v1/friend/reject — 申請の拒否
 ```
-需认证: 是
-请求: { "request_id": "hashid" }
+認証が必要: はい
+リクエスト: { "request_id": "hashid" }
 ```
 
 #### POST /api/v1/friend/remove — フレンド削除
 ```
-需认证: 是
-请求: { "friend_id": "hashid" }
+認証が必要: はい
+リクエスト: { "friend_id": "hashid" }
 ```
 
 #### GET /api/v1/friend/search — ユーザー検索
 ```
-需认证: 是
-参数: ?q=username
-响应: { "list": [{ "id": "...", "username": "...", "nickname": "...", "avatar": "..." }] }
+認証が必要: はい
+パラメータ: ?q=username
+レスポンス: { "list": [{ "id": "...", "username": "...", "nickname": "...", "avatar": "..." }] }
 ```
 
 ### 7.8 チャット API
 
 #### GET /api/v1/chat/conversations — 会話一覧
 ```
-需认证: 是
-响应: {
+認証が必要: はい
+レスポンス: {
   "list": [{
     "peer": { "id": "...", "username": "...", "nickname": "...", "avatar": "..." },
     "last_message": "最近一条消息",
@@ -2095,23 +2095,23 @@ status: open / waiting / replied / closed
 
 #### GET /api/v1/chat/messages/{peerHashid} — メッセージ一覧
 ```
-需认证: 是
-参数: ?page=1&per_page=50
-响应: { "items": [{ "id": "...", "content": "...", "is_read": 1 }], "total": 100 }
+認証が必要: はい
+パラメータ: ?page=1&per_page=50
+レスポンス: { "items": [{ "id": "...", "content": "...", "is_read": 1 }], "total": 100 }
 自动标记对端发来的未读消息为已读
 ```
 
 #### POST /api/v1/chat/send — メッセージ送信
 ```
-需认证: 是
-请求: { "to_user_id": "hashid", "content": "Hello!" }
-错误: 403 非好友不可发
+認証が必要: はい
+リクエスト: { "to_user_id": "hashid", "content": "Hello!" }
+エラー: 403 非好友不可发
 ```
 
 #### GET /api/v1/chat/unread-total — 未読総数
 ```
-需认证: 是
-响应: { "count": 5 }
+認証が必要: はい
+レスポンス: { "count": 5 }
 ```
 
 **WebSocket 接続**: `ws://host:8791`
@@ -2128,35 +2128,35 @@ status: open / waiting / replied / closed
 
 #### GET /api/v1/webhook/list — 購読一覧
 ```
-需认证: 是
-响应: { "list": [{ "id": "...", "url": "https://...", "events": ["deposit.completed"] }] }
+認証が必要: はい
+レスポンス: { "list": [{ "id": "...", "url": "https://...", "events": ["deposit.completed"] }] }
 ```
 
 #### POST /api/v1/webhook/register — 購読登録
 ```
-需认证: 是
-请求: { "url": "https://my-server.com/hook", "events": ["deposit.completed", "game.played"] }
-可用事件: deposit.completed / withdraw.completed / exchange.completed / game.played / user.registered / risk.alert / user.vip_upgraded
+認証が必要: はい
+リクエスト: { "url": "https://my-server.com/hook", "events": ["deposit.completed", "game.played"] }
+利用可能なイベント: deposit.completed / withdraw.completed / exchange.completed / game.played / user.registered / risk.alert / user.vip_upgraded
 ```
 
 #### POST /api/v1/webhook/delete — 購読削除
 ```
-需认证: 是
-请求: { "id": "hook_id" }
+認証が必要: はい
+リクエスト: { "id": "hook_id" }
 ```
 
 ### 7.10 高度な分析 API
 
 #### GET /admin/v1/analytics/retention — リテンション分析
 ```
-需认证: 是
-响应: { "D1": "45.2%", "D3": "28.7%", "D7": "18.3%", "D30": "8.1%" }
+認証が必要: はい
+レスポンス: { "D1": "45.2%", "D3": "28.7%", "D7": "18.3%", "D30": "8.1%" }
 ```
 
 #### GET /admin/v1/analytics/funnel — コンバージョンファネル
 ```
-需认证: 是
-响应: {
+認証が必要: はい
+レスポンス: {
   "funnel": [
     { "step": "register", "count": 1500, "rate": "100%" },
     { "step": "first_deposit", "count": 450, "rate": "30.0%" },
@@ -2168,15 +2168,15 @@ status: open / waiting / replied / closed
 
 #### GET /admin/v1/analytics/arpu — ARPU/ARPPU トレンド
 ```
-需认证: 是
-参数: ?days=30
-响应: { "dates": [...], "arpu": [...], "arppu": [...] }
+認証が必要: はい
+パラメータ: ?days=30
+レスポンス: { "dates": [...], "arpu": [...], "arppu": [...] }
 ```
 
 #### GET /admin/v1/analytics/economy — ゲーム経済指標
 ```
-需认证: 是
-响应: {
+認証が必要: はい
+レスポンス: {
   "currencies": [{
     "game_name": "Shooter Master", "currency": "Gold", "symbol": "G",
     "total_minted": "500000.00000000", "total_burned": "320000.00000000",
@@ -2190,19 +2190,19 @@ status: open / waiting / replied / closed
 
 #### GET /api/v1/tournament/list — トーナメント一覧
 ```
-参数: ?status=active|upcoming|ended&page=1&per_page=20
-响应: { "items": [{ "id": "...", "name": "...", "prize_pool": "1000.0000", "player_count": 45, "max_players": 100 }], "total": 5 }
+パラメータ: ?status=active|upcoming|ended&page=1&per_page=20
+レスポンス: { "items": [{ "id": "...", "name": "...", "prize_pool": "1000.0000", "player_count": 45, "max_players": 100 }], "total": 5 }
 ```
 
 #### GET /api/v1/tournament/{hashid} — トーナメント詳細
 ```
-响应: { "id": "...", "name": "...", "leaderboard": [...], "my_entry": {...} }
+レスポンス: { "id": "...", "name": "...", "leaderboard": [...], "my_entry": {...} }
 ```
 
 #### POST /api/v1/tournament/{hashid}/join — 大会参加登録
 ```
-需认证: 是
-错误: 422 已报名 / 400 已开始或已满员 / 503 FeatureFlag关闭
+認証が必要: はい
+エラー: 422 已报名 / 400 已开始或已满员 / 503 FeatureFlag关闭
 ```
 
 ### 7.12 クーポン条件（追加）

@@ -8,25 +8,25 @@ Languages: [中文](05-rbac-model.md) · **English** · [한국어](05-rbac-mode
 
 ```mermaid
 flowchart LR
-    subgraph users["用户"]
-        u1["admin(超级管理员)"]
-        u2["editor(编辑)"]
-        u3["viewer(只读)"]
+    subgraph users["User"]
+        u1["admin(super administrator)"]
+        u2["editor(editor)"]
+        u3["viewer(read-only)"]
     end
 
-    subgraph roles["角色"]
-        r1["super_admin<br/>权限标识: *"]
-        r2["editor<br/>权限标识: get.* post.*"]
-        r3["viewer<br/>权限标识: get.*"]
+    subgraph roles["Role"]
+        r1["super_admin<br/>permission slug: *"]
+        r2["editor<br/>permission slug: get.* post.*"]
+        r3["viewer<br/>permission slug: get.*"]
     end
 
-    subgraph permissions["权限(树)"]
-        p1["dashboard(菜单)"]
-        p2["user(菜单)"]
+    subgraph permissions["Permission (tree)"]
+        p1["dashboard(menu)"]
+        p2["user(menu)"]
         p3["get.admin/user(API)"]
         p4["post.admin/user(API)"]
         p5["delete.admin/user(API)"]
-        p6["export.excel(按钮)"]
+        p6["export.excel(button)"]
     end
 
     u1 --> r1
@@ -47,13 +47,13 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    start["请求到达"] --> extract["提取Token→adminId"]
-    extract --> findRoles["查询用户角色"]
-    findRoles --> collectSlug["收集所有permission.slug"]
-    collectSlug --> buildKey["构造method.path"]
-    buildKey --> check{"slug==* 或<br/>slug匹配?"}
-    check -->|"是"| allow["200 放行"]
-    check -->|"否"| deny["403 Forbidden"]
+    start["Request arrives"] --> extract["Extract Token→adminId"]
+    extract --> findRoles["Query user roles"]
+    findRoles --> collectSlug["Collect all permission.slug"]
+    collectSlug --> buildKey["Build method.path"]
+    buildKey --> check{"slug==* or<br/>slug match?"}
+    check -->|"Yes"| allow["200 Allow"]
+    check -->|"No"| deny["403 Forbidden"]
 
     style allow fill:#52C41A,color:#fff
     style deny fill:#FF4D4F,color:#fff
@@ -63,9 +63,9 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    t1["type=1 菜单<br/>控制侧边栏显示"]
-    t2["type=2 按钮<br/>控制操作按钮"]
-    t3["type=3 API<br/>控制接口访问"]
+    t1["type=1 menu<br/>Controls sidebar visibility"]
+    t2["type=2 button<br/>Controls action buttons"]
+    t3["type=3 API<br/>Controls API access"]
 
     style t1 fill:#1677FF,color:#fff
     style t2 fill:#FA8C16,color:#fff

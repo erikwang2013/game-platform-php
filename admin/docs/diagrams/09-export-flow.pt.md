@@ -8,36 +8,36 @@ Languages: [中文](09-export-flow.md) · [English](09-export-flow.en.md) · [�
 
 ```mermaid
 sequenceDiagram
-    participant C as 客户端
+    participant C as Cliente
     participant CTL as ExportController
     participant DB as MySQL
-    participant FS as 文件系统
+    participant FS as Sistema de arquivos
 
     C->>CTL: POST /admin/export/excel
     Note right of C: {table,columns,conditions,title}
     CTL->>DB: SELECT ... LIMIT 10000
-    DB-->>CTL: 查询结果
-    CTL->>CTL: 解密敏感字段
-    CTL->>CTL: 脱敏(maskPhone/maskEmail)
-    CTL->>CTL: PhpSpreadsheet构建
-    Note right of CTL: 表头蓝底白字<br/>数据行细边框<br/>冻结首行<br/>自动筛选
-    CTL->>FS: 写入runtime/tmp/export_*.xlsx
-    CTL-->>C: 文件下载
+    DB-->>CTL: Resultado da consulta
+    CTL->>CTL: Descriptografa campos sensíveis
+    CTL->>CTL: Mascaramento(maskPhone/maskEmail)
+    CTL->>CTL: Montagem com PhpSpreadsheet
+    Note right of CTL: Cabeçalho azul com texto branco<br/>Bordas finas nas linhas de dados<br/>Congela a primeira linha<br/>Filtro automático
+    CTL->>FS: Grava em runtime/tmp/export_*.xlsx
+    CTL-->>C: Download do arquivo
 ```
 
 ## Exportação PDF
 
 ```mermaid
 sequenceDiagram
-    participant C as 客户端
+    participant C as Cliente
     participant CTL as ExportController
-    participant FS as 文件系统
+    participant FS as Sistema de arquivos
 
     C->>CTL: POST /admin/export/pdf
     Note right of C: {type,title,data}
     CTL->>CTL: buildPdfHtml()
-    Note right of CTL: 页头:标题+版权+时间<br/>内容:表格或卡片<br/>页脚:不可移除版权
-    CTL->>CTL: Dompdf渲染(A4横向)
-    CTL->>FS: 写入runtime/tmp/export_*.pdf
-    CTL-->>C: 文件下载
+    Note right of CTL: Cabeçalho: título + copyright + hora<br/>Conteúdo: tabela ou cartões<br/>Rodapé: copyright não removível
+    CTL->>CTL: Renderização com Dompdf (A4 paisagem)
+    CTL->>FS: Grava em runtime/tmp/export_*.pdf
+    CTL-->>C: Download do arquivo
 ```

@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace common\model;
 
 use support\Model;
-use Erikwang2013\Encryptable\Encryptable;
+use common\JsonEncryptable;
 
 class CdnProvider extends Model
 {
@@ -28,6 +28,6 @@ class CdnProvider extends Model
     protected $casts = [
         'status' => 'int',
         'sort' => 'int',
-        'config' => Encryptable::class,
+        'config' => JsonEncryptable::class,
     ];
 }

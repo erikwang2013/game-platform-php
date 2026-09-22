@@ -860,7 +860,7 @@ language वैकल्पिक मान: en-US / zh-CN / ja-JP / ko-KR
 ```
 无需认证
 
-响应: {
+प्रतिक्रिया: {
   "total_games": 12,
   "total_users": 1500,
   "today_game_plays": 320,
@@ -918,10 +918,10 @@ language वैकल्पिक मान: en-US / zh-CN / ja-JP / ko-KR
 #### GET /admin/v1/game/{hashid} — गेम विवरण
 
 ```
-需认证: 是
-参数: hashid 为游戏的 hashid 编码（路径参数）
+प्रमाणीकरण आवश्यक: हाँ
+पैरामीटर: hashid 为游戏的 hashid 编码（路径参数）
 
-响应: {
+प्रतिक्रिया: {
   "id": "aB3xK...",
   "name": "射击大师",
   "slug": "shooter-master",
@@ -951,13 +951,13 @@ language वैकल्पिक मान: en-US / zh-CN / ja-JP / ko-KR
 #### POST /admin/v1/game/launch — गेम पूर्वावलोकन
 
 ```
-需认证: 是
+प्रमाणीकरण आवश्यक: हाँ
 
-请求: {
+अनुरोध: {
   "game_id": "aB3xK..."      // 游戏 ID(hashid)
 }
 
-响应: {
+प्रतिक्रिया: {
   "id": "aB3xK...",
   "name": "射击大师",
   "slug": "shooter-master",
@@ -1127,15 +1127,15 @@ action: approve=स्वीकृति / reject=अस्वीकृति / 
 #### POST /admin/v1/withdraw/batch-review — विथड्रॉल की बैच समीक्षा
 
 ```
-需认证: 是
+प्रमाणीकरण आवश्यक: हाँ
 
-请求: {
+अनुरोध: {
   "ids": ["aB3xK...", "cD4yL..."],
   "action": "approve",
   "note": "批量审核通过"
 }
 
-响应: {
+प्रतिक्रिया: {
   "processed": 2,
   "failed": []
 }
@@ -1146,11 +1146,11 @@ action: approve=स्वीकृत / reject=अस्वीकृत (प्�
 #### POST /admin/v1/withdraw/execute-payout — पेआउट निष्पादित करें
 
 ```
-需认证: 是
+प्रमाणीकरण आवश्यक: हाँ
 
-请求: { "order_id": "aB3xK..." }
+अनुरोध: { "order_id": "aB3xK..." }
 
-响应: {
+प्रतिक्रिया: {
   "payout_batch_id": "PAYOUT-123456",
   "payout_item_id": "ITEM-123456",
   "payout_status": "success",
@@ -1163,11 +1163,11 @@ action: approve=स्वीकृत / reject=अस्वीकृत (प्�
 #### POST /admin/v1/withdraw/sync-payout — पेआउट स्थिति सिंक करें
 
 ```
-需认证: 是
+प्रमाणीकरण आवश्यक: हाँ
 
-请求: { "order_id": "aB3xK..." }
+अनुरोध: { "order_id": "aB3xK..." }
 
-响应: {
+प्रतिक्रिया: {
   "payout_status": "success",
   "order_status": "completed",
   "synced_status": "success"
@@ -1980,9 +1980,9 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/report/summary — रिपोर्ट सारांश
 
 ```
-需认证: 是
-参数: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
-响应: {
+प्रमाणीकरण आवश्यक: हाँ
+पैरामीटर: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
+प्रतिक्रिया: {
   "start": "2026-08-01", "end": "2026-08-31",
   "new_users": 120, "deposit_amount": "5000.0000", "deposit_count": 45,
   "withdraw_amount": "1200.0000", "withdraw_count": 8,
@@ -1994,9 +1994,9 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/report/daily — दैनिक रिपोर्ट
 
 ```
-需认证: 是
-参数: ?start=Y-m-d&end=Y-m-d
-响应: {
+प्रमाणीकरण आवश्यक: हाँ
+पैरामीटर: ?start=Y-m-d&end=Y-m-d
+प्रतिक्रिया: {
   "start": "2026-08-01", "end": "2026-08-31",
   "rows": [ { "date": "2026-08-01", "new_users": 12, "deposit_amount": "500.0000", "deposit_count": 4, "withdraw_amount": "100.0000", "withdraw_count": 1, "exchange_amount": "300.0000", "play_count": 150 } ]
 }
@@ -2006,9 +2006,9 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/report/export — दैनिक रिपोर्ट CSV निर्यात
 
 ```
-需认证: 是
-参数: ?start=Y-m-d&end=Y-m-d&format=excel
-响应: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
+प्रमाणीकरण आवश्यक: हाँ
+पैरामीटर: ?start=Y-m-d&end=Y-m-d&format=excel
+प्रतिक्रिया: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
 ```
 
 ## 8. दर सीमा रणनीति (अद्यतन)

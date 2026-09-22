@@ -6,16 +6,16 @@ Languages: [中文](02-backend-layers.md) · [English](02-backend-layers.en.md) 
 
 ```mermaid
 flowchart TD
-    subgraph route["路由层"]
-        r1["config/route.php<br/>URL→Controller映射"]
+    subgraph route["রাউট লেয়ার"]
+        r1["config/route.php<br/>URL→Controller ম্যাপিং"]
     end
 
-    subgraph middleware["中间件层"]
-        m1["AdminAuth<br/>JWT Token校验<br/>注入adminId"]
-        m2["AdminPermission<br/>RBAC鉴权<br/>method.path匹配"]
+    subgraph middleware["মিডলওয়্যার লেয়ার"]
+        m1["AdminAuth<br/>JWT Token যাচাই<br/>adminId ইনজেক্ট"]
+        m2["AdminPermission<br/>RBAC পারমিশন চেক<br/>method.path ম্যাচিং"]
     end
 
-    subgraph controller["控制器层"]
+    subgraph controller["কন্ট্রোলার লেয়ার"]
         base["BaseController<br/>success/fail<br/>encodeId/decodeId<br/>generateId<br/>confirmPassword"]
         user["UserController"]
         role["RoleController"]
@@ -26,13 +26,13 @@ flowchart TD
         auth["AuthController"]
     end
 
-    subgraph service["服务层"]
-        s1["HashidsService<br/>ID编解码"]
-        s2["SnowflakeService<br/>全局ID生成"]
-        s3["EncryptionService<br/>加解密+脱敏"]
+    subgraph service["সার্ভিস লেয়ার"]
+        s1["HashidsService<br/>ID এনকোড/ডিকোড"]
+        s2["SnowflakeService<br/>গ্লোবাল ID জেনারেশন"]
+        s3["EncryptionService<br/>এনক্রিপ্ট/ডিক্রিপ্ট+মাস্কিং"]
     end
 
-    subgraph model["模型层"]
+    subgraph model["মডেল লেয়ার"]
         md1["AdminUser<br/>encryptable casts"]
         md2["AdminRole"]
         md3["AdminPermission"]
@@ -40,7 +40,7 @@ flowchart TD
         md5["SystemConfig"]
     end
 
-    subgraph driver["驱动层"]
+    subgraph driver["ড্রাইভার লেয়ার"]
         d1["MySQL PDO"]
         d2["Elasticsearch HTTP"]
         d3["Redis"]

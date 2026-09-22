@@ -10,42 +10,42 @@ Languages: **中文** · [English](ARCHITECTURE.en.md) · [한국어](ARCHITECTU
 
 ```mermaid
 flowchart TB
-    subgraph "客户端层"
-        A1["Flutter Web PC<br/>管理后台"]
-        A2["Flutter Web PC<br/>C端用户平台"]
-        A3["HarmonyOS ArkTS<br/>手机/平板客户端"]
-        A4["React · Angular<br/>管理后台"]
-        A5["React · Angular<br/>C端用户平台"]
+    subgraph "Client-Ebene"
+        A1["Flutter Web PC<br/>Admin-Panel"]
+        A2["Flutter Web PC<br/>C-End-Nutzerplattform"]
+        A3["HarmonyOS ArkTS<br/>Handy-/Tablet-Client"]
+        A4["React · Angular<br/>Admin-Panel"]
+        A5["React · Angular<br/>C-End-Nutzerplattform"]
     end
 
-    subgraph "网关层 (Nginx)"
-        B1["反向代理 + HTTPS<br/>路由分发 + Gzip<br/>静态文件服务"]
+    subgraph "Gateway-Ebene (Nginx)"
+        B1["Reverse-Proxy + HTTPS<br/>Routing-Verteilung + Gzip<br/>Statische Dateiauslieferung"]
     end
 
-    subgraph "应用层"
-        C1["admin/ webman<br/>管理后台 :8789<br/>AdminAuth → AdminPermission → OperationLog"]
-        C2["service/ webman<br/>C端业务 :8792<br/>UserAuth → [ProviderAuth]"]
+    subgraph "Anwendungsebene"
+        C1["admin/ webman<br/>Admin-Panel :8789<br/>AdminAuth → AdminPermission → OperationLog"]
+        C2["service/ webman<br/>C-End-Geschäft :8792<br/>UserAuth → [ProviderAuth]"]
     end
 
-    subgraph "服务层 (新增)"
-        D0["GameProvider 抽象层<br/>SelfProvider / ThirdPartyProvider<br/>HMAC-SHA256 签名<br/>事务一致性保证"]
-        D1["EventBus<br/>Redis Pub/Sub<br/>异步事件分发<br/>成就/通知/审计 解耦"]
-        D2["VIP 引擎<br/>经验值累计→自动升级<br/>兑换折扣/提现减免<br/>汇率加成"]
-        D3["成就引擎<br/>12 内置成就<br/>进度追踪<br/>事件驱动检测"]
-        D4["特性开关<br/>FeatureFlag<br/>零依赖动态配置"]
+    subgraph "Service-Ebene (neu)"
+        D0["GameProvider-Abstraktionsschicht<br/>SelfProvider / ThirdPartyProvider<br/>HMAC-SHA256-Signatur<br/>Gewährleistung der Transaktionskonsistenz"]
+        D1["EventBus<br/>Redis Pub/Sub<br/>asynchroner Ereignisversand<br/>Entkopplung von Erfolgen/Benachrichtigungen/Audit"]
+        D2["VIP-Engine<br/>Erfahrungssammlung→Autostufenaufstieg<br/>Tauschrabatt/Auszahlungsnachlass<br/>Wechselkursbonus"]
+        D3["Erfolgs-Engine<br/>12 integrierte Erfolge<br/>Fortschrittsverfolgung<br/>ereignisgesteuerte Erkennung"]
+        D4["Feature-Flags<br/>FeatureFlag<br/>abhängigkeitsfreie dynamische Konfiguration"]
     end
 
-    subgraph "存储层"
-        E1[("MySQL 8.0<br/>主存储<br/>78 张表")]
-        E2[("Redis<br/>Session/缓存/限流<br/>EventBus/心跳")]
-        E3[("Elasticsearch<br/>全文检索")]
-        E4[("ClickHouse<br/>OLAP 分析<br/>概率计算")]
+    subgraph "Datenschicht"
+        E1[("MySQL 8.0<br/>Primärspeicher<br/>78 Tabellen")]
+        E2[("Redis<br/>Session/Cache/Ratenbegrenzung<br/>EventBus/Heartbeat")]
+        E3[("Elasticsearch<br/>Volltextsuche")]
+        E4[("ClickHouse<br/>OLAP-Analyse<br/>Wahrscheinlichkeitsberechnung")]
     end
 
-    subgraph "外部集成"
-        F1["第三方游戏<br/>Provider API<br/>余额/下注/结算/退款"]
-        F2["推送通道<br/>FCM / APNs<br/>华为推送"]
-        F3["OAuth (7平台)<br/>Google/Facebook/Apple<br/>X(Twitter)/Microsoft<br/>LinkedIn/GitHub"]
+    subgraph "Externe Integrationen"
+        F1["Drittanbieter-Spiele<br/>Provider-API<br/>Guthaben/Einsatz/Abrechnung/Rückerstattung"]
+        F2["Push-Kanäle<br/>FCM / APNs<br/>Huawei Push"]
+        F3["OAuth (7 Plattformen)<br/>Google/Facebook/Apple<br/>X(Twitter)/Microsoft<br/>LinkedIn/GitHub"]
     end
 
     A1 & A2 & A3 & A4 & A5 -->|"HTTPS/JSON<br/>JWT Bearer"| B1
@@ -340,11 +340,11 @@ flowchart TB
         DNS["erik.xyz"]
     end
 
-    subgraph "Web 服务器 (Nginx)"
-        NGX["反向代理 :443 HTTPS<br/>静态文件服务<br/>gzip + CSP + HSTS<br/>limit_req 限流"]
+    subgraph "Webserver (Nginx)"
+        NGX["Reverse-Proxy :443 HTTPS<br/>Statische Dateiauslieferung<br/>gzip + CSP + HSTS<br/>limit_req-Ratenbegrenzung"]
     end
 
-    subgraph "应用服务器"
+    subgraph "Anwendungsserver"
         ADM1["admin :8789"]
         ADM2["admin :8789"]
         SVC1["service :8792"]
@@ -353,15 +353,15 @@ flowchart TB
         WS2["chat-ws :8791"]
     end
 
-    subgraph "数据层"
-        MYSQL["MySQL 8.0 主从复制"]
-        REDIS["Redis 7.x 哨兵模式<br/>EventBus Pub/Sub"]
+    subgraph "Datenschicht"
+        MYSQL["MySQL 8.0 Primär-Replik-Replikation"]
+        REDIS["Redis 7.x Sentinel-Modus<br/>EventBus Pub/Sub"]
         ES["Elasticsearch 8.x"]
         CH["ClickHouse OLAP"]
     end
 
-    subgraph "监控"
-        MON["Grafana + Prometheus<br/>健康检查 /metrics"]
+    subgraph "Monitoring"
+        MON["Grafana + Prometheus<br/>Health-Check /metrics"]
     end
 
     DNS --> NGX

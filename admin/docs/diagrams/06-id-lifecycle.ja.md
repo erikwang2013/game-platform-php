@@ -13,19 +13,19 @@ flowchart LR
         g1 --> g2 --> g3
     end
 
-    subgraph store["2.存储"]
-        s1["MySQL game_* 表<br/>id BIGINT UNSIGNED NOT NULL"]
-        s2["敏感字段 encryptable cast<br/>AES-128-ECB 加密存储"]
+    subgraph store["2.保存"]
+        s1["MySQL game_* テーブル<br/>id BIGINT UNSIGNED NOT NULL"]
+        s2["機密フィールド encryptable cast<br/>AES-128-ECB 暗号化保存"]
         g3 --> s1 --> s2
     end
 
-    subgraph transfer["3.传输"]
+    subgraph transfer["3.転送"]
         t1["HashidsService::encode(bigint)"]
-        t2["hashid字符串<br/>例: aB3xK9mW2pQ7rT5v"]
+        t2["hashid 文字列<br/>例: aB3xK9mW2pQ7rT5v"]
         s1 --> t1 --> t2
     end
 
-    subgraph reverse["4.反向解码"]
+    subgraph reverse["4.逆デコード"]
         r1["HashidsService::decode(hashid)"]
         r2["BIGINT"]
         t2 --> r1 --> r2

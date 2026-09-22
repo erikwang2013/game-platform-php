@@ -860,7 +860,7 @@ status: success / failed
 ```
 无需认证
 
-响应: {
+الاستجابة: {
   "total_games": 12,
   "total_users": 1500,
   "today_game_plays": 320,
@@ -918,10 +918,10 @@ status: success / failed
 #### GET /admin/v1/game/{hashid} — تفاصيل اللعبة
 
 ```
-需认证: 是
-参数: hashid 为游戏的 hashid 编码（路径参数）
+يتطلب مصادقة: نعم
+المعلمات: hashid 为游戏的 hashid 编码（路径参数）
 
-响应: {
+الاستجابة: {
   "id": "aB3xK...",
   "name": "射击大师",
   "slug": "shooter-master",
@@ -951,13 +951,13 @@ status: success / failed
 #### POST /admin/v1/game/launch — معاينة تشغيل اللعبة
 
 ```
-需认证: 是
+يتطلب مصادقة: نعم
 
-请求: {
+الطلب: {
   "game_id": "aB3xK..."      // 游戏 ID(hashid)
 }
 
-响应: {
+الاستجابة: {
   "id": "aB3xK...",
   "name": "射击大师",
   "slug": "shooter-master",
@@ -1127,15 +1127,15 @@ action: approve=موافقة / reject=رفض / confirm=تأكيد (عند الر
 #### POST /admin/v1/withdraw/batch-review — مراجعة جماعية لطلبات السحب
 
 ```
-需认证: 是
+يتطلب مصادقة: نعم
 
-请求: {
+الطلب: {
   "ids": ["aB3xK...", "cD4yL..."],
   "action": "approve",
   "note": "批量审核通过"
 }
 
-响应: {
+الاستجابة: {
   "processed": 2,
   "failed": []
 }
@@ -1146,11 +1146,11 @@ action: approve=موافقة / reject=رفض (تتم المعالجة لكل ط�
 #### POST /admin/v1/withdraw/execute-payout — تنفيذ الدفع
 
 ```
-需认证: 是
+يتطلب مصادقة: نعم
 
-请求: { "order_id": "aB3xK..." }
+الطلب: { "order_id": "aB3xK..." }
 
-响应: {
+الاستجابة: {
   "payout_batch_id": "PAYOUT-123456",
   "payout_item_id": "ITEM-123456",
   "payout_status": "success",
@@ -1163,11 +1163,11 @@ action: approve=موافقة / reject=رفض (تتم المعالجة لكل ط�
 #### POST /admin/v1/withdraw/sync-payout — مزامنة حالة الدفع
 
 ```
-需认证: 是
+يتطلب مصادقة: نعم
 
-请求: { "order_id": "aB3xK..." }
+الطلب: { "order_id": "aB3xK..." }
 
-响应: {
+الاستجابة: {
   "payout_status": "success",
   "order_status": "completed",
   "synced_status": "success"
@@ -1980,9 +1980,9 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/report/summary — ملخص التقارير
 
 ```
-需认证: 是
-参数: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
-响应: {
+يتطلب مصادقة: نعم
+المعلمات: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
+الاستجابة: {
   "start": "2026-08-01", "end": "2026-08-31",
   "new_users": 120, "deposit_amount": "5000.0000", "deposit_count": 45,
   "withdraw_amount": "1200.0000", "withdraw_count": 8,
@@ -1994,9 +1994,9 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/report/daily — تقرير يومي
 
 ```
-需认证: 是
-参数: ?start=Y-m-d&end=Y-m-d
-响应: {
+يتطلب مصادقة: نعم
+المعلمات: ?start=Y-m-d&end=Y-m-d
+الاستجابة: {
   "start": "2026-08-01", "end": "2026-08-31",
   "rows": [ { "date": "2026-08-01", "new_users": 12, "deposit_amount": "500.0000", "deposit_count": 4, "withdraw_amount": "100.0000", "withdraw_count": 1, "exchange_amount": "300.0000", "play_count": 150 } ]
 }
@@ -2006,9 +2006,9 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/report/export — تصدير التقرير اليومي CSV
 
 ```
-需认证: 是
-参数: ?start=Y-m-d&end=Y-m-d&format=excel
-响应: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
+يتطلب مصادقة: نعم
+المعلمات: ?start=Y-m-d&end=Y-m-d&format=excel
+الاستجابة: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
 ```
 
 ## 8. سياسة حد المعدل (محدثة)

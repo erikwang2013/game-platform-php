@@ -77,13 +77,13 @@ Respuesta: {
 #### POST /api/v1/auth/register — Registro de usuario
 
 ```
-请求: {
+Solicitud: {
   "username": "player1",
   "password": "123456",
   "email": "player@example.com"     // 可选
 }
 
-响应: {
+Respuesta: {
   "access_token": "eyJhbG...",
   "refresh_token": "eyJhbG...",
   "user": {
@@ -98,12 +98,12 @@ Respuesta: {
 #### POST /api/v1/auth/login — Inicio de sesión de usuario
 
 ```
-请求: {
+Solicitud: {
   "username": "player1",
   "password": "123456"
 }
 
-响应: {
+Respuesta: {
   "access_token": "eyJhbG...",
   "refresh_token": "eyJhbG...",
   "user": { "id": "...", "username": "...", ... }
@@ -115,9 +115,9 @@ Error: 401 nombre de usuario o contraseña incorrectos / cuenta deshabilitada
 #### POST /api/v1/auth/refresh — Refrescar Token
 
 ```
-请求: (Authorization: Bearer <refresh_token>)
+Solicitud: (Authorization: Bearer <refresh_token>)
 
-响应: {
+Respuesta: {
   "access_token": "eyJhbG...",
   "refresh_token": "eyJhbG..."
 }
@@ -128,9 +128,9 @@ Error: 401 nombre de usuario o contraseña incorrectos / cuenta deshabilitada
 #### GET /api/v1/wallet/info — Información de la billetera
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-响应: {
+Respuesta: {
   "balance": "100.5000",
   "frozen_balance": "0.0000",
   "total_earned": "500.0000",
@@ -141,10 +141,10 @@ Error: 401 nombre de usuario o contraseña incorrectos / cuenta deshabilitada
 #### GET /api/v1/wallet/transactions — Registro de movimientos
 
 ```
-需认证: 是
-参数: ?page=1&per_page=20&type=deposit    (type 可选)
+Requiere autenticación: Sí
+Parámetros: ?page=1&per_page=20&type=deposit    (type 可选)
 
-响应: {
+Respuesta: {
   "list": [
     {
       "id": "...",
@@ -168,15 +168,15 @@ type 可选值: deposit / withdraw / exchange_in / exchange_out / game_earn / ga
 #### POST /api/v1/deposit/create — Crear orden de recarga
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: {
+Solicitud: {
   "amount": "10.00",
   "currency": "USD",
   "payment_method_id": "aB3xK..."
 }
 
-响应: {
+Respuesta: {
   "order_id": "aB3xK...",
   "order_no": "DEP202605221030000123",
   "amount": "10.00",
@@ -193,10 +193,10 @@ checkout_url: enlace de redirección a la pasarela de pago (se rellena al crear 
 #### GET /api/v1/deposit/orders — Registros de recarga
 
 ```
-需认证: 是
-参数: ?page=1&per_page=20
+Requiere autenticación: Sí
+Parámetros: ?page=1&per_page=20
 
-响应: {
+Respuesta: {
   "list": [
     {
       "id": "...",
@@ -222,16 +222,16 @@ Valores de status: pending / paid / confirmed / cancelled
 #### POST /api/v1/exchange/quote — Cotización
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: {
+Solicitud: {
   "game_id": "aB3xK...",
   "currency_id": "aB3xK...",
   "direction": "in",
   "platform_amount": "10.0000"
 }
 
-响应: {
+Respuesta: {
   "platform_amount": "10.0000",
   "game_amount": "950.0000",
   "spread_fee": "50.0000",
@@ -245,15 +245,15 @@ direction: in=comprar moneda de juego / out=vender moneda de juego
 #### POST /api/v1/exchange/buy — Comprar moneda de juego
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: {
+Solicitud: {
   "game_id": "aB3xK...",
   "currency_id": "aB3xK...",
   "platform_amount": "10.0000"
 }
 
-响应: {
+Respuesta: {
   "exchange_id": "aB3xK...",
   "platform_amount": "10.0000",
   "game_amount": "950.0000",
@@ -267,15 +267,15 @@ Error: 422 saldo insuficiente de moneda de plataforma / 404 juego no disponible
 #### POST /api/v1/exchange/sell — Vender moneda de juego
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: {
+Solicitud: {
   "game_id": "aB3xK...",
   "currency_id": "aB3xK...",
   "platform_amount": "950.0000"
 }
 
-响应: {
+Respuesta: {
   "exchange_id": "aB3xK...",
   "platform_amount": "9.0250",
   "game_amount": "950.0000",
@@ -289,10 +289,10 @@ Error: 422 saldo insuficiente de moneda de juego
 #### GET /api/v1/exchange/records — Registros de conversión
 
 ```
-需认证: 是
-参数: ?page=1&per_page=20
+Requiere autenticación: Sí
+Parámetros: ?page=1&per_page=20
 
-响应: {
+Respuesta: {
   "list": [
     {
       "id": "...",
@@ -316,15 +316,15 @@ Error: 422 saldo insuficiente de moneda de juego
 #### POST /api/v1/withdraw/apply — Solicitud de retiro
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: {
+Solicitud: {
   "platform_amount": "50.0000",
   "method": "paypal",
   "account_info": "user@paypal.com"
 }
 
-响应: {
+Respuesta: {
   "order_id": "...",
   "order_no": "WTH202605221030000456",
   "status": "approved"
@@ -346,10 +346,10 @@ Errores:
 #### GET /api/v1/withdraw/orders — Registros de retiro
 
 ```
-需认证: 是
-参数: ?page=1&per_page=20
+Requiere autenticación: Sí
+Parámetros: ?page=1&per_page=20
 
-响应: {
+Respuesta: {
   "list": [
     {
       "id": "...",
@@ -372,9 +372,9 @@ Errores:
 #### GET /api/v1/game/list — Lista de juegos
 
 ```
-参数: ?page=1&per_page=20&keyword=射击&type=self
+Parámetros: ?page=1&per_page=20&keyword=射击&type=self
 
-响应: {
+Respuesta: {
   "list": [
     {
       "id": "aB3xK...",
@@ -406,7 +406,7 @@ Valores de type: self / embedded / third_party
 #### GET /api/v1/game/detail/{hashid} — Detalle del juego
 
 ```
-响应: {
+Respuesta: {
   "id": "...",
   "name": "射击大师",
   "slug": "shooter-master",
@@ -430,11 +430,11 @@ Valores de type: self / embedded / third_party
 #### POST /api/v1/game/launch — Iniciar juego
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: { "game_id": "aB3xK..." }
+Solicitud: { "game_id": "aB3xK..." }
 
-响应: {
+Respuesta: {
   "id": "...",
   "name": "射击大师",
   "type": "self",
@@ -449,9 +449,9 @@ Admite 7 plataformas: Google / Facebook / Apple / X(Twitter) / Microsoft / Linke
 #### GET /api/v1/auth/oauth/{provider} — Obtener URL de autorización
 
 ```
-参数: provider = google / facebook / apple / twitter / microsoft / linkedin / github
+Parámetros: provider = google / facebook / apple / twitter / microsoft / linkedin / github
 
-响应: {
+Respuesta: {
   "redirect_url": "https://accounts.google.com/o/oauth2/auth?..."
 }
 ```
@@ -459,9 +459,9 @@ Admite 7 plataformas: Google / Facebook / Apple / X(Twitter) / Microsoft / Linke
 #### POST /api/v1/auth/oauth/{provider}/callback — Callback de OAuth
 
 ```
-请求: { "code": "授权码", "state": "防CSRF状态" }
+Solicitud: { "code": "授权码", "state": "防CSRF状态" }
 
-响应: {
+Respuesta: {
   "access_token": "eyJhbG...",
   "refresh_token": "eyJhbG...",
   "user": { "id": "...", "username": "google_abc123", ... },
@@ -476,9 +476,9 @@ is_new: true=usuario recién registrado / false=cuenta existente vinculada
 #### GET /api/v1/user/identity/status — Estado de verificación
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-响应: {
+Respuesta: {
   "status": "approved",          // not_submitted / pending / approved / rejected
   "real_name": "J***",
   "id_type": "id_card",
@@ -491,9 +491,9 @@ is_new: true=usuario recién registrado / false=cuenta existente vinculada
 #### POST /api/v1/user/identity/apply — Enviar verificación
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: {
+Solicitud: {
   "real_name": "John Doe",
   "id_type": "id_card",
   "id_number": "123456789",
@@ -501,7 +501,7 @@ is_new: true=usuario recién registrado / false=cuenta existente vinculada
   "selfie_photo": "https://..."
 }
 
-响应: { "message": "KYC submitted successfully" }
+Respuesta: { "message": "KYC submitted successfully" }
 ```
 
 ### 2.9 Pagos
@@ -509,13 +509,13 @@ is_new: true=usuario recién registrado / false=cuenta existente vinculada
 #### POST /api/v1/payment/callback — Callback de pago (público)
 
 ```
-请求: {
+Solicitud: {
   "order_no": "DEP202605221030000123",
   "transaction_id": "txn_abc123",
   "status": "success"
 }
 
-响应: { "message": "success" }
+Respuesta: { "message": "success" }
 ```
 
 status: success / failed
@@ -546,7 +546,7 @@ Valores de provider: stripe / paypal / nowpayments / coinbase / skrill / netelle
 #### GET /api/v1/payment/methods — Métodos de pago disponibles (público)
 
 ```
-响应: {
+Respuesta: {
   "list": [
     { "id": "...", "name": "Stripe", "type": "fiat", "provider": "stripe", "min_amount": "10.00", "max_amount": "5000.00" }
   ]
@@ -560,10 +560,10 @@ Filtrado por país del usuario (X-Language/Accept-Language → código de país)
 #### GET /api/v1/game/play-logs — Lista de registros de juego
 
 ```
-需认证: 是
-参数: ?page=1&per_page=20&game_id=xxx&action=start
+Requiere autenticación: Sí
+Parámetros: ?page=1&per_page=20&game_id=xxx&action=start
 
-响应: {
+Respuesta: {
   "list": [
     {
       "id": "...",
@@ -580,8 +580,8 @@ Filtrado por país del usuario (X-Language/Accept-Language → código de país)
 #### GET /api/v1/game/play-log/{hashid} — Detalle del registro de juego
 
 ```
-需认证: 是
-响应: { 完整记录，含 session_id / game_amount_before / after 等 }
+Requiere autenticación: Sí
+Respuesta: { 完整记录，含 session_id / game_amount_before / after 等 }
 ```
 
 ### 2.12 Clasificaciones
@@ -589,7 +589,7 @@ Filtrado por país del usuario (X-Language/Accept-Language → código de país)
 #### GET /api/v1/leaderboard/list — Lista de clasificaciones
 
 ```
-响应: {
+Respuesta: {
   "list": [
     { "id": "...", "name": "全服累计收入榜", "type": "total", "metric": "earned" }
   ]
@@ -599,7 +599,7 @@ Filtrado por país del usuario (X-Language/Accept-Language → código de país)
 #### GET /api/v1/leaderboard/{hashid} — Detalle de clasificación
 
 ```
-响应: {
+Respuesta: {
   "id": "...",
   "name": "全服累计收入榜",
   "type": "total",
@@ -614,24 +614,24 @@ Filtrado por país del usuario (X-Language/Accept-Language → código de país)
 #### GET /api/v1/coupon/available — Cupones disponibles para reclamar
 
 ```
-需认证: 是
-响应: { "list": [{ "id": "...", "name": "新人礼包", "type": "fixed", "value": "10.0000" }] }
+Requiere autenticación: Sí
+Respuesta: { "list": [{ "id": "...", "name": "新人礼包", "type": "fixed", "value": "10.0000" }] }
 ```
 
 #### POST /api/v1/coupon/claim — Reclamar cupón
 
 ```
-需认证: 是
-请求: { "coupon_id": "hashid" }
-响应: { "coupon": { ... } }
+Requiere autenticación: Sí
+Solicitud: { "coupon_id": "hashid" }
+Respuesta: { "coupon": { ... } }
 ```
 
 #### GET /api/v1/coupon/my — Mis cupones
 
 ```
-需认证: 是
-参数: ?status=unused
-响应: { "list": [{ "id": "...", "coupon": {...}, "status": "unused" }] }
+Requiere autenticación: Sí
+Parámetros: ?status=unused
+Respuesta: { "list": [{ "id": "...", "coupon": {...}, "status": "unused" }] }
 ```
 
 ### 2.14 Configuración de países
@@ -639,7 +639,7 @@ Filtrado por país del usuario (X-Language/Accept-Language → código de país)
 #### GET /api/v1/country/list — Lista de países
 
 ```
-响应: {
+Respuesta: {
   "list": [
     { "country_code": "US", "currency": "USD", "min_deposit": "1.0000" }
   ]
@@ -649,7 +649,7 @@ Filtrado por país del usuario (X-Language/Accept-Language → código de país)
 #### GET /api/v1/country/{code} — Detalle de país
 
 ```
-响应: {
+Respuesta: {
   "country_code": "US",
   "currency": "USD",
   "payment_methods": ["stripe", "paypal", "crypto"],
@@ -663,10 +663,10 @@ Filtrado por país del usuario (X-Language/Accept-Language → código de país)
 #### GET /api/v1/notification/list — Lista de notificaciones
 
 ```
-需认证: 是
-参数: ?page=1&per_page=20&is_read=0
+Requiere autenticación: Sí
+Parámetros: ?page=1&per_page=20&is_read=0
 
-响应: {
+Respuesta: {
   "list": [
     { "id": "...", "type": "deposit", "title": "Deposit Received", "is_read": 0, "created_at": "..." }
   ],
@@ -677,15 +677,15 @@ Filtrado por país del usuario (X-Language/Accept-Language → código de país)
 #### GET /api/v1/notification/unread-count — Cantidad de no leídas
 
 ```
-需认证: 是
-响应: { "count": 3 }
+Requiere autenticación: Sí
+Respuesta: { "count": 3 }
 ```
 
 #### POST /api/v1/notification/read — Marcar como leídas
 
 ```
-需认证: 是
-请求: { "id": "hashid" }  // 不传=全部已读
+Requiere autenticación: Sí
+Solicitud: { "id": "hashid" }  // 不传=全部已读
 ```
 
 ### 2.17 Recomendación
@@ -693,16 +693,16 @@ Filtrado por país del usuario (X-Language/Accept-Language → código de país)
 #### GET /api/v1/referral/my-code — Mi código de recomendación
 
 ```
-需认证: 是
-响应: { "code": "ABC12345", "referral_count": 12, "total_rewards": "150.0000" }
+Requiere autenticación: Sí
+Respuesta: { "code": "ABC12345", "referral_count": 12, "total_rewards": "150.0000" }
 ```
 
 #### POST /api/v1/referral/apply — Usar código de recomendación
 
 ```
-需认证: 是
-请求: { "code": "ABC12345" }
-响应: { "message": "Referral applied" }
+Requiere autenticación: Sí
+Solicitud: { "code": "ABC12345" }
+Respuesta: { "message": "Referral applied" }
 ```
 
 ### 2.18 2FA
@@ -710,30 +710,30 @@ Filtrado por país del usuario (X-Language/Accept-Language → código de país)
 #### GET /api/v1/user/2fa/status — Estado de 2FA
 
 ```
-需认证: 是
-响应: { "enabled": false }
+Requiere autenticación: Sí
+Respuesta: { "enabled": false }
 ```
 
 #### POST /api/v1/user/2fa/setup — Configurar 2FA
 
 ```
-需认证: 是
-响应: { "secret": "JBSWY3DPEHPK3PXP", "qr_url": "otpauth://totp/..." }
+Requiere autenticación: Sí
+Respuesta: { "secret": "JBSWY3DPEHPK3PXP", "qr_url": "otpauth://totp/..." }
 ```
 
 #### POST /api/v1/user/2fa/enable — Habilitar 2FA
 
 ```
-需认证: 是
-请求: { "code": "123456" }
-响应: { "backup_codes": ["abcd1234ef", ...] }
+Requiere autenticación: Sí
+Solicitud: { "code": "123456" }
+Respuesta: { "backup_codes": ["abcd1234ef", ...] }
 ```
 
 #### POST /api/v1/2fa/verify — Verificar 2FA (público)
 
 ```
-请求: { "user_id": "hashid", "code": "123456" }
-响应: { "valid": true }
+Solicitud: { "user_id": "hashid", "code": "123456" }
+Respuesta: { "valid": true }
 ```
 
 ### 2.19 Búsqueda
@@ -741,15 +741,15 @@ Filtrado por país del usuario (X-Language/Accept-Language → código de país)
 #### GET /api/v1/search — Búsqueda global
 
 ```
-参数: ?q=keyword&type=game&page=1&per_page=20
-响应: { "list": [...], "total": 100 }
+Parámetros: ?q=keyword&type=game&page=1&per_page=20
+Respuesta: { "list": [...], "total": 100 }
 ```
 
 #### GET /api/v1/game/suggest — Sugerencias de búsqueda
 
 ```
-参数: ?q=shoot
-响应: { "suggestions": [{ "id": "...", "name": "Shooter Master" }] }
+Parámetros: ?q=shoot
+Respuesta: { "suggestions": [{ "id": "...", "name": "Shooter Master" }] }
 ```
 
 ### 2.20 Idiomas
@@ -757,7 +757,7 @@ Filtrado por país del usuario (X-Language/Accept-Language → código de país)
 #### GET /api/v1/language/list — Lista de idiomas disponibles
 
 ```
-响应: {
+Respuesta: {
   "current": "en-US",
   "languages": {
     "en-US": { "name": "English", "nativeName": "English", "icon": "us" },
@@ -771,8 +771,8 @@ Filtrado por país del usuario (X-Language/Accept-Language → código de país)
 #### POST /api/v1/language/switch — Cambiar idioma
 
 ```
-请求: { "locale": "zh-CN" }
-响应: { "locale": "zh-CN" }
+Solicitud: { "locale": "zh-CN" }
+Respuesta: { "locale": "zh-CN" }
 ```
 
 Valores de locale: en-US / zh-CN / ja-JP / ko-KR
@@ -782,9 +782,9 @@ Valores de locale: en-US / zh-CN / ja-JP / ko-KR
 #### GET /api/v1/user/profile — Información personal
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-响应: {
+Respuesta: {
   "id": "...",
   "username": "player1",
   "nickname": "Player One",
@@ -801,15 +801,15 @@ Valores de locale: en-US / zh-CN / ja-JP / ko-KR
 #### PUT /api/v1/user/profile — Editar perfil
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: {
+Solicitud: {
   "nickname": "New Name",
   "avatar": "https://...",
   "language": "zh-CN"
 }
 
-响应: {
+Respuesta: {
   "id": "...",
   "username": "player1",
   "nickname": "New Name",
@@ -825,7 +825,7 @@ Valores de language: en-US / zh-CN / ja-JP / ko-KR
 #### GET /api/v1/announcement/list — Lista de anuncios
 
 ```
-响应: {
+Respuesta: {
   "list": [
     {
       "id": "...",
@@ -840,7 +840,7 @@ Valores de language: en-US / zh-CN / ja-JP / ko-KR
 #### GET /api/v1/announcement/detail/{hashid} — Detalle de anuncio
 
 ```
-响应: {
+Respuesta: {
   "id": "...",
   "title": "系统维护通知",
   "content": "将于2026年5月23日凌晨2:00-4:00进行系统维护...",
@@ -860,7 +860,7 @@ Valores de language: en-US / zh-CN / ja-JP / ko-KR
 ```
 无需认证
 
-响应: {
+Respuesta: {
   "total_games": 12,
   "total_users": 1500,
   "today_game_plays": 320,
@@ -875,9 +875,9 @@ Valores de language: en-US / zh-CN / ja-JP / ko-KR
 #### GET /admin/v1/dashboard/platform
 
 ```
-需认证: 是 (AdminAuth + AdminPermission)
+Requiere autenticación: Sí (AdminAuth + AdminPermission)
 
-响应: {
+Respuesta: {
   "total_users": 1500,
   "active_users_7d": 320,
   "total_games": 12,
@@ -893,10 +893,10 @@ Valores de language: en-US / zh-CN / ja-JP / ko-KR
 #### GET /admin/v1/game/list — Lista de juegos
 
 ```
-需认证: 是
-参数: ?page=1&limit=20&keyword=射击
+Requiere autenticación: Sí
+Parámetros: ?page=1&limit=20&keyword=射击
 
-响应: {
+Respuesta: {
   "list": [
     {
       "id": "...",
@@ -918,10 +918,10 @@ Valores de language: en-US / zh-CN / ja-JP / ko-KR
 #### GET /admin/v1/game/{hashid} — Detalle del juego
 
 ```
-需认证: 是
-参数: hashid 为游戏的 hashid 编码（路径参数）
+Requiere autenticación: Sí
+Parámetros: hashid 为游戏的 hashid 编码（路径参数）
 
-响应: {
+Respuesta: {
   "id": "aB3xK...",
   "name": "射击大师",
   "slug": "shooter-master",
@@ -951,13 +951,13 @@ Devuelve code 404 si el juego no existe.
 #### POST /admin/v1/game/launch — Vista previa del juego
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: {
+Solicitud: {
   "game_id": "aB3xK..."      // 游戏 ID(hashid)
 }
 
-响应: {
+Respuesta: {
   "id": "aB3xK...",
   "name": "射击大师",
   "slug": "shooter-master",
@@ -974,9 +974,9 @@ La vista previa del panel es una vista previa pura: solo valida la disponibilida
 #### POST /admin/v1/game/create — Crear juego
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: {
+Solicitud: {
   "name": "新游戏",
   "slug": "new-game",
   "type": "self",
@@ -989,7 +989,7 @@ La vista previa del panel es una vista previa pura: solo valida la disponibilida
   "sort": 0                        // 可选, 默认0
 }
 
-响应: { "id": "aB3xK..." }
+Respuesta: { "id": "aB3xK..." }
 ```
 
 Valores de type: self / embedded / third_party
@@ -997,30 +997,30 @@ Valores de type: self / embedded / third_party
 #### PUT /admin/v1/game/{hashid} — Editar juego
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: {
+Solicitud: {
   "name": "新名称",
   "status": 1
   // 可部分更新，字段同 create
 }
 
-响应: { "message": "更新成功" }
+Respuesta: { "message": "更新成功" }
 ```
 
 #### DELETE /admin/v1/game/{hashid} — Eliminar juego
 
 ```
-需认证: 是
-响应: { "message": "删除成功" }
+Requiere autenticación: Sí
+Respuesta: { "message": "删除成功" }
 ```
 
 #### POST /admin/v1/game/currency/manage — Gestionar monedas
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: {
+Solicitud: {
   "game_id": "aB3xK...",
   "currencies": [
     {
@@ -1035,7 +1035,7 @@ Valores de type: self / embedded / third_party
   ]
 }
 
-响应: { "message": "操作成功" }
+Respuesta: { "message": "操作成功" }
 ```
 
 Si falta `game_id` o `currencies` no es un array, devuelve 422; si el juego no existe, devuelve 404.
@@ -1047,10 +1047,10 @@ Solo cuando se envían se validan `exchange_rate` y `spread_pct`: `exchange_rate
 #### GET /admin/v1/withdraw/orders — Lista de órdenes de retiro
 
 ```
-需认证: 是
-参数: ?page=1&limit=20&status=pending
+Requiere autenticación: Sí
+Parámetros: ?page=1&limit=20&status=pending
 
-响应: {
+Respuesta: {
   "list": [
     {
       "id": "...",
@@ -1077,15 +1077,15 @@ Solo cuando se envían se validan `exchange_rate` y `spread_pct`: `exchange_rate
 #### PUT /admin/v1/withdraw/review — Revisar retiro
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: {
+Solicitud: {
   "order_id": "aB3xK...",
   "action": "approve",
   "note": "审核通过"
 }
 
-响应: { "message": "已通过" }
+Respuesta: { "message": "已通过" }
 ```
 
 action: approve=aprobar / reject=rechazar / confirm=confirmar (al rechazar se devuelve automáticamente la moneda de plataforma)
@@ -1095,11 +1095,11 @@ Error: 422 el estado de la orden no es pendiente de revisión
 #### PUT /admin/v1/withdraw/switch — Interruptor global de retiros
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: { "enabled": 1 }
+Solicitud: { "enabled": 1 }
 
-响应: {
+Respuesta: {
   "global_switch": true,
   "message": "提现功能已开启"
 }
@@ -1108,15 +1108,15 @@ Error: 422 el estado de la orden no es pendiente de revisión
 #### POST /admin/v1/withdraw/limits/set — Configurar límites de retiro
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: {
+Solicitud: {
   "daily_limit": "10000.0000",             // 可选
   "min_amount": "1.0000",                  // 可选
   "auto_approve_threshold": "100.0000"     // 可选
 }
 
-响应: {
+Respuesta: {
   "daily_limit": "10000.0000",
   "min_amount": "1.0000",
   "auto_approve_threshold": "100.0000",
@@ -1127,15 +1127,15 @@ Error: 422 el estado de la orden no es pendiente de revisión
 #### POST /admin/v1/withdraw/batch-review — Revisión masiva de retiros
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: {
+Solicitud: {
   "ids": ["aB3xK...", "cD4yL..."],
   "action": "approve",
   "note": "批量审核通过"
 }
 
-响应: {
+Respuesta: {
   "processed": 2,
   "failed": []
 }
@@ -1146,11 +1146,11 @@ action: approve=aprobar / reject=rechazar (procesado pedido a pedido; los rechaz
 #### POST /admin/v1/withdraw/execute-payout — Ejecutar pago
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: { "order_id": "aB3xK..." }
+Solicitud: { "order_id": "aB3xK..." }
 
-响应: {
+Respuesta: {
   "payout_batch_id": "PAYOUT-123456",
   "payout_item_id": "ITEM-123456",
   "payout_status": "success",
@@ -1163,11 +1163,11 @@ Solo se puede pagar un pedido en estado approved (cambio atómico a processing);
 #### POST /admin/v1/withdraw/sync-payout — Sincronizar estado del pago
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: { "order_id": "aB3xK..." }
+Solicitud: { "order_id": "aB3xK..." }
 
-响应: {
+Respuesta: {
   "payout_status": "success",
   "order_status": "completed",
   "synced_status": "success"
@@ -1181,10 +1181,10 @@ Error: 422 Este pedido aún no tiene un pago ejecutado
 #### GET /admin/v1/platform/user/list — Lista de usuarios del lado C
 
 ```
-需认证: 是
-参数: ?page=1&limit=20&keyword=player&status=1
+Requiere autenticación: Sí
+Parámetros: ?page=1&limit=20&keyword=player&status=1
 
-响应: {
+Respuesta: {
   "list": [
     {
       "id": "...",
@@ -1205,9 +1205,9 @@ Error: 422 Este pedido aún no tiene un pago ejecutado
 #### GET /admin/v1/platform/user/{hashid} — Detalle de usuario
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-响应: {
+Respuesta: {
   "id": "...",
   "username": "player1",
   "nickname": "Player One",
@@ -1228,14 +1228,14 @@ Error: 422 Este pedido aún no tiene un pago ejecutado
 #### PUT /admin/v1/platform/user/{hashid} — Editar/banear usuario
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: {
+Solicitud: {
   "status": 0,         // 0=禁用 1=启用
   "nickname": "..."    // 可选
 }
 
-响应: { "message": "更新成功" }
+Respuesta: { "message": "更新成功" }
 ```
 
 ### 3.5 Gestión de pagos
@@ -1243,9 +1243,9 @@ Error: 422 Este pedido aún no tiene un pago ejecutado
 #### GET /admin/v1/payment/method/list
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-响应: {
+Respuesta: {
   "list": [
     {
       "id": "...",
@@ -1261,11 +1261,11 @@ Error: 422 Este pedido aún no tiene un pago ejecutado
 #### POST /admin/v1/payment/method/toggle — Habilitar/deshabilitar método de pago
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: { "id": "aB3xK...", "status": 0 }
+Solicitud: { "id": "aB3xK...", "status": 0 }
 
-响应: { "message": "已更新" }
+Respuesta: { "message": "已更新" }
 ```
 
 ### 3.6 Gestión de anuncios
@@ -1273,10 +1273,10 @@ Error: 422 Este pedido aún no tiene un pago ejecutado
 #### GET /admin/v1/announcement/list
 
 ```
-需认证: 是
-参数: ?page=1&limit=20
+Requiere autenticación: Sí
+Parámetros: ?page=1&limit=20
 
-响应: {
+Respuesta: {
   "list": [
     {
       "id": "...",
@@ -1297,9 +1297,9 @@ Error: 422 Este pedido aún no tiene un pago ejecutado
 #### POST /admin/v1/announcement/create — Publicar anuncio
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: {
+Solicitud: {
   "title": "系统维护通知",
   "content": "将于2026年5月23日凌晨2:00-4:00进行系统维护。",
   "type": "system",           // 可选, 默认"system"
@@ -1309,7 +1309,7 @@ Error: 422 Este pedido aún no tiene un pago ejecutado
   "end_at": "2026-05-23 04:00:00"     // 可选
 }
 
-响应: { "id": "aB3xK..." }
+Respuesta: { "id": "aB3xK..." }
 ```
 
 ### 3.7 Revisión KYC
@@ -1317,10 +1317,10 @@ Error: 422 Este pedido aún no tiene un pago ejecutado
 #### GET /admin/v1/identity/list — Lista KYC
 
 ```
-需认证: 是
-参数: ?page=1&limit=20&status=pending
+Requiere autenticación: Sí
+Parámetros: ?page=1&limit=20&status=pending
 
-响应: {
+Respuesta: {
   "list": [
     {
       "id": "...",
@@ -1338,11 +1338,11 @@ Error: 422 Este pedido aún no tiene un pago ejecutado
 #### PUT /admin/v1/identity/review — Revisar KYC
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: { "id": "hashid", "action": "approve", "note": "" }
+Solicitud: { "id": "hashid", "action": "approve", "note": "" }
 
-响应: { "message": "Approved" }
+Respuesta: { "message": "Approved" }
 ```
 
 action: approve / reject
@@ -1352,10 +1352,10 @@ action: approve / reject
 #### GET /admin/v1/game/server/list — Lista de servidores
 
 ```
-需认证: 是
-参数: ?game_id=hashid
+Requiere autenticación: Sí
+Parámetros: ?game_id=hashid
 
-响应: {
+Respuesta: {
   "list": [
     { "id": "...", "name": "亚洲1服", "region": "asia", "status": 1, "sort": 0 }
   ]
@@ -1365,22 +1365,22 @@ action: approve / reject
 #### POST /admin/v1/game/server/create — Crear servidor
 
 ```
-需认证: 是
-请求: { "game_id": "hashid", "name": "亚洲1服", "region": "asia", "status": 1 }
-响应: { "id": "hashid" }
+Requiere autenticación: Sí
+Solicitud: { "game_id": "hashid", "name": "亚洲1服", "region": "asia", "status": 1 }
+Respuesta: { "id": "hashid" }
 ```
 
 #### PUT /admin/v1/game/server/{hashid} — Editar servidor
 
 ```
-需认证: 是
-请求: { "name": "新名称", "status": 2 }
+Requiere autenticación: Sí
+Solicitud: { "name": "新名称", "status": 2 }
 ```
 
 #### DELETE /admin/v1/game/server/{hashid} — Eliminar servidor
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 ```
 
 ### 3.9 Gestión de límites escalonados de retiro
@@ -1388,9 +1388,9 @@ action: approve / reject
 #### GET /admin/v1/withdraw/limits/list
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-响应: {
+Respuesta: {
   "list": [
     {
       "id": "...",
@@ -1410,9 +1410,9 @@ action: approve / reject
 #### PUT /admin/v1/withdraw/limits/{hashid} — Actualizar límite
 
 ```
-需认证: 是
+Requiere autenticación: Sí
 
-请求: { "single_max": "10000.0000", "fee_pct": "0.25" }
+Solicitud: { "single_max": "10000.0000", "fee_pct": "0.25" }
 // 可部分更新
 ```
 
@@ -1421,16 +1421,16 @@ action: approve / reject
 #### GET /admin/v1/game/category/list
 
 ```
-需认证: 是
-响应: { "list": [{ "id": "...", "name": "动作", "slug": "action", "sort": 1 }] }
+Requiere autenticación: Sí
+Respuesta: { "list": [{ "id": "...", "name": "动作", "slug": "action", "sort": 1 }] }
 ```
 
 #### POST /admin/v1/game/category/create
 
 ```
-需认证: 是
-请求: { "name": "新分类", "slug": "new-cat", "icon": "star", "sort": 10 }
-响应: { "id": "hashid" }
+Requiere autenticación: Sí
+Solicitud: { "name": "新分类", "slug": "new-cat", "icon": "star", "sort": 10 }
+Respuesta: { "id": "hashid" }
 ```
 
 #### PUT /admin/v1/game/category/{hashid} — Editar categoría
@@ -1440,8 +1440,8 @@ action: approve / reject
 #### POST /admin/v1/game/category/assign — Asignar juegos
 
 ```
-需认证: 是
-请求: { "category_id": "hashid", "game_ids": ["hash1", "hash2"] }
+Requiere autenticación: Sí
+Solicitud: { "category_id": "hashid", "game_ids": ["hash1", "hash2"] }
 ```
 
 ### 3.12 Gestión de clasificaciones
@@ -1449,15 +1449,15 @@ action: approve / reject
 #### GET /admin/v1/leaderboard/list — Lista de clasificaciones
 
 ```
-需认证: 是
-响应: { "list": [{ "id": "...", "name": "...", "type": "total", "metric": "earned" }] }
+Requiere autenticación: Sí
+Respuesta: { "list": [{ "id": "...", "name": "...", "type": "total", "metric": "earned" }] }
 ```
 
 #### POST /admin/v1/leaderboard/create — Crear clasificación
 
 ```
-需认证: 是
-请求: { "name": "周收入榜", "type": "weekly", "metric": "earned", "game_id": "hashid(可选)" }
+Requiere autenticación: Sí
+Solicitud: { "name": "周收入榜", "type": "weekly", "metric": "earned", "game_id": "hashid(可选)" }
 ```
 
 #### PUT /admin/v1/leaderboard/{hashid} — Editar clasificación
@@ -1473,8 +1473,8 @@ action: approve / reject
 #### POST /admin/v1/coupon/create — Crear cupón
 
 ```
-需认证: 是
-请求: { "name": "新人礼包", "type": "fixed", "value": "10.0000", "total_qty": 1000 }
+Requiere autenticación: Sí
+Solicitud: { "name": "新人礼包", "type": "fixed", "value": "10.0000", "total_qty": 1000 }
 ```
 
 #### PUT /admin/v1/coupon/{hashid} — Editar (cuando no está reclamado)
@@ -1484,7 +1484,7 @@ action: approve / reject
 #### GET /admin/v1/coupon/{hashid}/stats — Estadísticas de reclamo
 
 ```
-响应: { "total_qty": 1000, "used_qty": 234, "remaining": 766, "usage_rate": "23.40%" }
+Respuesta: { "total_qty": 1000, "used_qty": 234, "remaining": 766, "usage_rate": "23.40%" }
 ```
 
 ### 3.14 Gestión de configuración de países
@@ -1494,8 +1494,8 @@ action: approve / reject
 #### POST /admin/v1/country/config/create — Crear configuración de país
 
 ```
-需认证: 是
-请求: { "country_code": "JP", "currency": "JPY", "payment_methods": "[\"stripe\",\"paypal\"]", "min_deposit": "100.0000" }
+Requiere autenticación: Sí
+Solicitud: { "country_code": "JP", "currency": "JPY", "payment_methods": "[\"stripe\",\"paypal\"]", "min_deposit": "100.0000" }
 ```
 
 #### PUT /admin/v1/country/config/{hashid} — Editar configuración de país
@@ -1505,19 +1505,19 @@ action: approve / reject
 #### POST /admin/v1/export/users — Exportar usuarios del lado C
 
 ```
-需认证: 是
-参数(JSON): { "status": 1 }   // 可选筛选
+Requiere autenticación: Sí
+Parámetros(JSON): { "status": 1 }   // 可选筛选
 
-响应: Excel 文件下载 (xlsx)
+Respuesta: Excel 文件下载 (xlsx)
 ```
 
 #### POST /admin/v1/export/transactions — Exportar movimientos de la plataforma
 
 ```
-需认证: 是
-参数(JSON): { "type": "deposit" }   // 可选筛选
+Requiere autenticación: Sí
+Parámetros(JSON): { "type": "deposit" }   // 可选筛选
 
-响应: Excel 文件下载 (xlsx)
+Respuesta: Excel 文件下载 (xlsx)
 ```
 
 ### 3.16 Análisis de datos (agregación en tiempo real de MySQL)
@@ -1629,18 +1629,18 @@ Retry-After: 60
 #### POST /api/provider/balance — Consultar saldo del usuario
 
 ```
-请求头:
+Cabeceras de solicitud:
   X-Game-Id: 1234567890
   X-Timestamp: 1716400830
   X-Signature: abc123...
 
-请求: {
+Solicitud: {
   "user_id": 1234567890,
   "game_id": 9876543210,
   "currency_id": 5555555555
 }
 
-响应: {
+Respuesta: {
   "code": 0,
   "message": "success",
   "data": { "balance": "1000.50000000" }
@@ -1650,7 +1650,7 @@ Retry-After: 60
 #### POST /api/provider/bet — Notificar apuesta
 
 ```
-请求: {
+Solicitud: {
   "user_id": 1234567890,
   "session_id": "GAME_SESSION_202608041030001234",
   "amount": "10.00000000",
@@ -1658,7 +1658,7 @@ Retry-After: 60
   "meta": { "bet_type": "straight" }
 }
 
-响应: {
+Respuesta: {
   "code": 0,
   "data": {
     "success": true,
@@ -1671,7 +1671,7 @@ Retry-After: 60
 #### POST /api/provider/settle — Notificar liquidación
 
 ```
-请求: {
+Solicitud: {
   "user_id": 1234567890,
   "session_id": "GAME_SESSION_202608041030001234",
   "amount": "50.00000000",
@@ -1679,7 +1679,7 @@ Retry-After: 60
   "meta": { "win_type": "jackpot" }
 }
 
-响应: {
+Respuesta: {
   "code": 0,
   "data": {
     "success": true,
@@ -1693,7 +1693,7 @@ Retry-After: 60
 #### POST /api/provider/refund — Notificar reembolso
 
 ```
-请求: {
+Solicitud: {
   "user_id": 1234567890,
   "session_id": "GAME_SESSION_202608041030001234",
   "amount": "10.00000000",
@@ -1701,7 +1701,7 @@ Retry-After: 60
   "reason": "game_crash"
 }
 
-响应: {
+Respuesta: {
   "code": 0,
   "data": {
     "success": true,
@@ -1716,10 +1716,10 @@ Retry-After: 60
 #### GET /api/v1/ticket/list — Lista de tickets
 
 ```
-需认证: 是
-参数: ?page=1&per_page=20
+Requiere autenticación: Sí
+Parámetros: ?page=1&per_page=20
 
-响应: {
+Respuesta: {
   "list": [
     {
       "id": "aB3xK...",
@@ -1741,20 +1741,20 @@ status: open / waiting / replied / closed
 #### POST /api/v1/ticket/create — Crear ticket
 
 ```
-需认证: 是
-请求: {
+Requiere autenticación: Sí
+Solicitud: {
   "type": "deposit",
   "subject": "充值未到账",
   "content": "我充值了100元但余额未更新..."
 }
-响应: { "code": 0, "message": "Ticket created", "data": { "id": "aB3xK..." } }
+Respuesta: { "code": 0, "message": "Ticket created", "data": { "id": "aB3xK..." } }
 ```
 
 #### GET /api/v1/ticket/{hashid} — Detalle de ticket
 
 ```
-需认证: 是
-响应: {
+Requiere autenticación: Sí
+Respuesta: {
   "id": "...", "type": "deposit", "subject": "...",
   "content": "...", "status": "open",
   "replies": [
@@ -1766,9 +1766,9 @@ status: open / waiting / replied / closed
 #### POST /api/v1/ticket/{hashid}/reply — Responder ticket
 
 ```
-需认证: 是
-请求: { "content": "已核实，将在24小时内处理" }
-响应: { "code": 0, "message": "Reply sent" }
+Requiere autenticación: Sí
+Solicitud: { "content": "已核实，将在24小时内处理" }
+Respuesta: { "code": 0, "message": "Reply sent" }
 ```
 
 ### 7.3 API de verificación de email
@@ -1776,19 +1776,19 @@ status: open / waiting / replied / closed
 #### POST /api/v1/verify/send-email — Enviar código de verificación de email
 
 ```
-需认证: 是
-请求: { "email": "user@example.com" }
-响应: { "code": 0, "message": "Verification code sent" }
-错误: 429 请60秒后重试
+Requiere autenticación: Sí
+Solicitud: { "email": "user@example.com" }
+Respuesta: { "code": 0, "message": "Verification code sent" }
+Error: 429 请60秒后重试
 ```
 
 #### POST /api/v1/verify/confirm-email — Confirmar email
 
 ```
-需认证: 是
-请求: { "code": "123456" }
-响应: { "code": 0, "message": "Email verified" }
-错误: 422 验证码无效或已过期
+Requiere autenticación: Sí
+Solicitud: { "code": "123456" }
+Respuesta: { "code": 0, "message": "Email verified" }
+Error: 422 验证码无效或已过期
 ```
 
 ### 7.4 API VIP
@@ -1798,8 +1798,8 @@ status: open / waiting / replied / closed
 > **Sin implementar**: la ruta del lado C no está registrada (sin entrada en `service/config/route.php`), las peticiones devuelven 404 actualmente. Elimina esta línea cuando se implemente.
 
 ```
-需认证: 是
-响应: {
+Requiere autenticación: Sí
+Respuesta: {
   "level": 2,
   "level_name": "Gold",
   "exp": 300,
@@ -1820,8 +1820,8 @@ status: open / waiting / replied / closed
 > **Sin implementar**: la ruta del lado C no está registrada (sin entrada en `service/config/route.php`), las peticiones devuelven 404 actualmente. Elimina esta línea cuando se implemente.
 
 ```
-需认证: 是
-响应: {
+Requiere autenticación: Sí
+Respuesta: {
   "achievements": [
     {
       "key": "first_deposit",
@@ -1841,10 +1841,10 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/ticket/list — Lista de tickets
 
 ```
-需认证: 是
-参数: ?page=1&limit=20&status=pending&type=deposit
+Requiere autenticación: Sí
+Parámetros: ?page=1&limit=20&status=pending&type=deposit
 
-响应: {
+Respuesta: {
   "list": [
     {
       "id": "...", "user_name": "player1",
@@ -1860,32 +1860,32 @@ status: open / waiting / replied / closed
 #### POST /admin/v1/ticket/{hashid}/reply — Responder ticket
 
 ```
-需认证: 是
-请求: { "content": "已处理" }
-响应: { "code": 0, "message": "Reply sent" }
+Requiere autenticación: Sí
+Solicitud: { "content": "已处理" }
+Respuesta: { "code": 0, "message": "Reply sent" }
 ```
 
 #### POST /admin/v1/ticket/{hashid}/close — Cerrar ticket
 
 ```
-需认证: 是
-响应: { "code": 0, "message": "Ticket closed" }
+Requiere autenticación: Sí
+Respuesta: { "code": 0, "message": "Ticket closed" }
 ```
 
 #### POST /admin/v1/ticket/{hashid}/assign — Asignar responsable
 
 ```
-需认证: 是
-请求: { "admin_id": 1234567890 }
-响应: { "code": 0, "message": "Assigned" }
+Requiere autenticación: Sí
+Solicitud: { "admin_id": 1234567890 }
+Respuesta: { "code": 0, "message": "Assigned" }
 ```
 
 #### GET /admin/v1/analytics/retention — Análisis de retención
 
 ```
-需认证: 是
-参数: ?days=30
-响应: {
+Requiere autenticación: Sí
+Parámetros: ?days=30
+Respuesta: {
   "D1": "45.2%", "D3": "28.7%",
   "D7": "18.3%", "D30": "8.1%"
 }
@@ -1894,8 +1894,8 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/analytics/funnel — Embudo de conversión
 
 ```
-需认证: 是
-响应: {
+Requiere autenticación: Sí
+Respuesta: {
   "funnel": [
     { "step": "register", "count": 1500, "rate": "100%" },
     { "step": "first_deposit", "count": 450, "rate": "30.0%" },
@@ -1908,16 +1908,16 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/analytics/arpu — Tendencia ARPU/ARPPU
 
 ```
-需认证: 是
-参数: ?days=30
-响应: { "arpu": [...], "arppu": [...], "dates": [...] }
+Requiere autenticación: Sí
+Parámetros: ?days=30
+Respuesta: { "arpu": [...], "arppu": [...], "dates": [...] }
 ```
 
 #### GET /admin/v1/analytics/economy — Indicadores económicos de monedas de juego
 
 ```
-需认证: 是
-响应: {
+Requiere autenticación: Sí
+Respuesta: {
   "currencies": [
     {
       "game_name": "Shooter Master",
@@ -1935,54 +1935,54 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/cdn/provider/list — Lista de proveedores CDN (las credenciales no se devuelven)
 
 ```
-需认证: 是
-响应: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
+Requiere autenticación: Sí
+Respuesta: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
 ```
 
 #### POST /admin/v1/cdn/provider/toggle — Activar/desactivar proveedor {id, status}
 
 ```
-需认证: 是
-请求: { "id": "...", "status": 1 }
-响应: { "code": 0, "message": "..." }
+Requiere autenticación: Sí
+Solicitud: { "id": "...", "status": 1 }
+Respuesta: { "code": 0, "message": "..." }
 ```
 
 #### POST /admin/v1/cdn/provider/create — Crear {name, provider, config(JSON), status, sort}, verificación de unicidad de provider
 
 ```
-需认证: 是
-请求: { "name": "...", "provider": "aliyun", "config": "{...}", "status": 1, "sort": 0 }
-响应: { "code": 0, "data": { "id": "..." } }
+Requiere autenticación: Sí
+Solicitud: { "name": "...", "provider": "aliyun", "config": "{...}", "status": 1, "sort": 0 }
+Respuesta: { "code": 0, "data": { "id": "..." } }
 ```
 
 #### PUT /admin/v1/cdn/provider/{hashid} — Editar (config vacío = sin cambios)
 
 ```
-需认证: 是
-请求: { "name": "...", "config": "" }
-响应: { "code": 0, "message": "..." }
+Requiere autenticación: Sí
+Solicitud: { "name": "...", "config": "" }
+Respuesta: { "code": 0, "message": "..." }
 ```
 
 #### DELETE /admin/v1/cdn/provider/{hashid} — Eliminar
 
 ```
-需认证: 是
-响应: { "code": 0, "message": "..." }
+Requiere autenticación: Sí
+Respuesta: { "code": 0, "message": "..." }
 ```
 
 #### POST /admin/v1/cdn/provider/test — Prueba de conectividad HeadBucket {id}
 
 ```
-需认证: 是
-请求: { "id": "..." }
-响应: { "code": 0, "data": { "ok": true } }
+Requiere autenticación: Sí
+Solicitud: { "id": "..." }
+Respuesta: { "code": 0, "data": { "ok": true } }
 ```
 #### GET /admin/v1/report/summary — Resumen de informes
 
 ```
-需认证: 是
-参数: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
-响应: {
+Requiere autenticación: Sí
+Parámetros: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
+Respuesta: {
   "start": "2026-08-01", "end": "2026-08-31",
   "new_users": 120, "deposit_amount": "5000.0000", "deposit_count": 45,
   "withdraw_amount": "1200.0000", "withdraw_count": 8,
@@ -1994,9 +1994,9 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/report/daily — Informe diario
 
 ```
-需认证: 是
-参数: ?start=Y-m-d&end=Y-m-d
-响应: {
+Requiere autenticación: Sí
+Parámetros: ?start=Y-m-d&end=Y-m-d
+Respuesta: {
   "start": "2026-08-01", "end": "2026-08-31",
   "rows": [ { "date": "2026-08-01", "new_users": 12, "deposit_amount": "500.0000", "deposit_count": 4, "withdraw_amount": "100.0000", "withdraw_count": 1, "exchange_amount": "300.0000", "play_count": 150 } ]
 }
@@ -2006,9 +2006,9 @@ status: open / waiting / replied / closed
 #### GET /admin/v1/report/export — Exportación del informe diario CSV
 
 ```
-需认证: 是
-参数: ?start=Y-m-d&end=Y-m-d&format=excel
-响应: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
+Requiere autenticación: Sí
+Parámetros: ?start=Y-m-d&end=Y-m-d&format=excel
+Respuesta: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
 ```
 
 ## 8. Política de limitación de velocidad (actualizada)
@@ -2037,53 +2037,53 @@ status: open / waiting / replied / closed
 
 #### GET /api/v1/friend/list — Lista de amigos
 ```
-需认证: 是
-响应: { "list": [{ "id": "...", "username": "...", "nickname": "...", "avatar": "..." }] }
+Requiere autenticación: Sí
+Respuesta: { "list": [{ "id": "...", "username": "...", "nickname": "...", "avatar": "..." }] }
 ```
 
 #### GET /api/v1/friend/requests — Solicitudes pendientes
 ```
-需认证: 是
-响应: { "list": [{ "id": "...", "user": {...}, "created_at": "..." }] }
+Requiere autenticación: Sí
+Respuesta: { "list": [{ "id": "...", "user": {...}, "created_at": "..." }] }
 ```
 
 #### POST /api/v1/friend/request — Enviar solicitud de amistad
 ```
-需认证: 是
-请求: { "friend_id": "hashid" }
+Requiere autenticación: Sí
+Solicitud: { "friend_id": "hashid" }
 ```
 
 #### POST /api/v1/friend/accept — Aceptar solicitud
 ```
-需认证: 是
-请求: { "request_id": "hashid" }
+Requiere autenticación: Sí
+Solicitud: { "request_id": "hashid" }
 ```
 
 #### POST /api/v1/friend/reject — Rechazar solicitud
 ```
-需认证: 是
-请求: { "request_id": "hashid" }
+Requiere autenticación: Sí
+Solicitud: { "request_id": "hashid" }
 ```
 
 #### POST /api/v1/friend/remove — Eliminar amigo
 ```
-需认证: 是
-请求: { "friend_id": "hashid" }
+Requiere autenticación: Sí
+Solicitud: { "friend_id": "hashid" }
 ```
 
 #### GET /api/v1/friend/search — Buscar usuarios
 ```
-需认证: 是
-参数: ?q=username
-响应: { "list": [{ "id": "...", "username": "...", "nickname": "...", "avatar": "..." }] }
+Requiere autenticación: Sí
+Parámetros: ?q=username
+Respuesta: { "list": [{ "id": "...", "username": "...", "nickname": "...", "avatar": "..." }] }
 ```
 
 ### 7.8 API de chat
 
 #### GET /api/v1/chat/conversations — Lista de conversaciones
 ```
-需认证: 是
-响应: {
+Requiere autenticación: Sí
+Respuesta: {
   "list": [{
     "peer": { "id": "...", "username": "...", "nickname": "...", "avatar": "..." },
     "last_message": "最近一条消息",
@@ -2095,23 +2095,23 @@ status: open / waiting / replied / closed
 
 #### GET /api/v1/chat/messages/{peerHashid} — Lista de mensajes
 ```
-需认证: 是
-参数: ?page=1&per_page=50
-响应: { "items": [{ "id": "...", "content": "...", "is_read": 1 }], "total": 100 }
+Requiere autenticación: Sí
+Parámetros: ?page=1&per_page=50
+Respuesta: { "items": [{ "id": "...", "content": "...", "is_read": 1 }], "total": 100 }
 自动标记对端发来的未读消息为已读
 ```
 
 #### POST /api/v1/chat/send — Enviar mensaje
 ```
-需认证: 是
-请求: { "to_user_id": "hashid", "content": "Hello!" }
-错误: 403 非好友不可发
+Requiere autenticación: Sí
+Solicitud: { "to_user_id": "hashid", "content": "Hello!" }
+Error: 403 非好友不可发
 ```
 
 #### GET /api/v1/chat/unread-total — Total de no leídos
 ```
-需认证: 是
-响应: { "count": 5 }
+Requiere autenticación: Sí
+Respuesta: { "count": 5 }
 ```
 
 **Conexión WebSocket**: `ws://host:8791`
@@ -2128,35 +2128,35 @@ status: open / waiting / replied / closed
 
 #### GET /api/v1/webhook/list — Lista de suscripciones
 ```
-需认证: 是
-响应: { "list": [{ "id": "...", "url": "https://...", "events": ["deposit.completed"] }] }
+Requiere autenticación: Sí
+Respuesta: { "list": [{ "id": "...", "url": "https://...", "events": ["deposit.completed"] }] }
 ```
 
 #### POST /api/v1/webhook/register — Registrar suscripción
 ```
-需认证: 是
-请求: { "url": "https://my-server.com/hook", "events": ["deposit.completed", "game.played"] }
-可用事件: deposit.completed / withdraw.completed / exchange.completed / game.played / user.registered / risk.alert / user.vip_upgraded
+Requiere autenticación: Sí
+Solicitud: { "url": "https://my-server.com/hook", "events": ["deposit.completed", "game.played"] }
+Eventos disponibles: deposit.completed / withdraw.completed / exchange.completed / game.played / user.registered / risk.alert / user.vip_upgraded
 ```
 
 #### POST /api/v1/webhook/delete — Eliminar suscripción
 ```
-需认证: 是
-请求: { "id": "hook_id" }
+Requiere autenticación: Sí
+Solicitud: { "id": "hook_id" }
 ```
 
 ### 7.10 API de análisis avanzado
 
 #### GET /admin/v1/analytics/retention — Análisis de retención
 ```
-需认证: 是
-响应: { "D1": "45.2%", "D3": "28.7%", "D7": "18.3%", "D30": "8.1%" }
+Requiere autenticación: Sí
+Respuesta: { "D1": "45.2%", "D3": "28.7%", "D7": "18.3%", "D30": "8.1%" }
 ```
 
 #### GET /admin/v1/analytics/funnel — Embudo de conversión
 ```
-需认证: 是
-响应: {
+Requiere autenticación: Sí
+Respuesta: {
   "funnel": [
     { "step": "register", "count": 1500, "rate": "100%" },
     { "step": "first_deposit", "count": 450, "rate": "30.0%" },
@@ -2168,15 +2168,15 @@ status: open / waiting / replied / closed
 
 #### GET /admin/v1/analytics/arpu — Tendencia ARPU/ARPPU
 ```
-需认证: 是
-参数: ?days=30
-响应: { "dates": [...], "arpu": [...], "arppu": [...] }
+Requiere autenticación: Sí
+Parámetros: ?days=30
+Respuesta: { "dates": [...], "arpu": [...], "arppu": [...] }
 ```
 
 #### GET /admin/v1/analytics/economy — Indicadores de economía del juego
 ```
-需认证: 是
-响应: {
+Requiere autenticación: Sí
+Respuesta: {
   "currencies": [{
     "game_name": "Shooter Master", "currency": "Gold", "symbol": "G",
     "total_minted": "500000.00000000", "total_burned": "320000.00000000",
@@ -2190,19 +2190,19 @@ status: open / waiting / replied / closed
 
 #### GET /api/v1/tournament/list — Lista de torneos
 ```
-参数: ?status=active|upcoming|ended&page=1&per_page=20
-响应: { "items": [{ "id": "...", "name": "...", "prize_pool": "1000.0000", "player_count": 45, "max_players": 100 }], "total": 5 }
+Parámetros: ?status=active|upcoming|ended&page=1&per_page=20
+Respuesta: { "items": [{ "id": "...", "name": "...", "prize_pool": "1000.0000", "player_count": 45, "max_players": 100 }], "total": 5 }
 ```
 
 #### GET /api/v1/tournament/{hashid} — Detalle de torneo
 ```
-响应: { "id": "...", "name": "...", "leaderboard": [...], "my_entry": {...} }
+Respuesta: { "id": "...", "name": "...", "leaderboard": [...], "my_entry": {...} }
 ```
 
 #### POST /api/v1/tournament/{hashid}/join — Inscribirse en el torneo
 ```
-需认证: 是
-错误: 422 已报名 / 400 已开始或已满员 / 503 FeatureFlag关闭
+Requiere autenticación: Sí
+Error: 422 已报名 / 400 已开始或已满员 / 503 FeatureFlag关闭
 ```
 
 ### 7.12 Condiciones de cupones (nuevo)

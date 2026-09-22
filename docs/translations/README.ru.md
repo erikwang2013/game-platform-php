@@ -400,29 +400,29 @@ cd admin/apps/flutter && flutter test --timeout 300s
 
 ```mermaid
 flowchart LR
-    subgraph FIAT["法币层 Fiat"]
-        A["用户充值<br/>USD / CNY / EUR / JPY / KRW / GBP / BRL / INR<br/>Stripe / PayPal"]
-        H["提现到账<br/>PayPal Payout"]
+    subgraph FIAT["Слой фиата Fiat"]
+        A["Пополнение пользователя<br/>USD / CNY / EUR / JPY / KRW / GBP / BRL / INR<br/>Stripe / PayPal"]
+        H["Зачисление вывода<br/>PayPal Payout"]
     end
 
-    subgraph PLAT["平台币层 Platform Token"]
-        B["平台币钱包<br/>decimal(18,4) 乐观锁"]
-        E["提现订单<br/>platform_amount<br/>fiat_amount / currency"]
+    subgraph PLAT["Слой платформенной валюты Platform Token"]
+        B["Кошелёк платформенной валюты<br/>decimal(18,4) оптимистичная блокировка"]
+        E["Заказ на вывод<br/>platform_amount<br/>fiat_amount / currency"]
     end
 
-    subgraph GAME["游戏币层 Game Currency"]
-        D["游戏币种<br/>exchange_rate<br/>spread_pct"]
-        C["游戏币钱包<br/>UserGameWallet"]
-        G["游戏 Provider<br/>settle 结算回调"]
+    subgraph GAME["Слой игровой валюты Game Currency"]
+        D["Игровая валюта<br/>exchange_rate<br/>spread_pct"]
+        C["Кошелёк игровой валюты<br/>UserGameWallet"]
+        G["Игровой Provider<br/>Колбэк settle"]
     end
 
-    A -->|"充值回调验签<br/>平台币 = 法币 × default_exchange_rate"| B
-    B -->|"兑换买入 in<br/>扣除点差"| C
-    C -->|"兑换卖出 out<br/>按汇率折算"| B
-    D -.->|"独立汇率 + VIP 加成"| C
-    G <-->|"玩游戏赚/花"| C
-    B -->|"提现申请（扣款）"| E
-    E -->|"管理端审批<br/>PayPal Payout 打款"| H
+    A -->|"Проверка подписи колбэка пополнения<br/>платформенная валюта = фиат × default_exchange_rate"| B
+    B -->|"Обмен покупка in<br/>вычет спреда"| C
+    C -->|"Обмен продажа out<br/>конвертация по курсу"| B
+    D -.->|"Отдельный курс + надбавка VIP"| C
+    G <-->|"Играть: зарабатывать/тратить"| C
+    B -->|"Заявка на вывод (списание)"| E
+    E -->|"Одобрение админ-панели<br/>выплата через PayPal Payout"| H
 ```
 
 ## Архитектура
@@ -478,11 +478,11 @@ flowchart LR
   <table align="center" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <td align="center" width="200">
-        <img src="../weixinpay-130.png" width="130" height="130" alt="微信支付"><br>
+        <img src="../weixinpay-130.png" width="130" height="130" alt="WeChat Pay"><br>
         <b>WeChat Pay</b>
       </td>
       <td align="center" width="200">
-        <img src="../alipay-130.png" width="130" height="130" alt="支付宝"><br>
+        <img src="../alipay-130.png" width="130" height="130" alt="Alipay"><br>
         <b>Alipay</b>
       </td>
     </tr>

@@ -6,35 +6,35 @@ Languages: [中文](01-system-architecture.md) · [English](01-system-architectu
 
 ```mermaid
 flowchart TB
-    subgraph "客户端层"
-        A1["Flutter Web PC<br/>管理后台"]
-        A2["Flutter Web PC<br/>C端用户平台"]
-        A3["HarmonyOS ArkTS<br/>手机/平板客户端"]
+    subgraph "Camada de Clientes"
+        A1["Flutter Web PC<br/>Painel administrativo"]
+        A2["Flutter Web PC<br/>Plataforma do usuário C-side"]
+        A3["HarmonyOS ArkTS<br/>Cliente mobile/tablet"]
     end
 
-    subgraph "网关层"
-        B1["Nginx<br/>反向代理 + HTTPS"]
+    subgraph "Camada de Gateway"
+        B1["Nginx<br/>Proxy reverso + HTTPS"]
     end
 
-    subgraph "应用层"
-        C1["admin/ :8789<br/>管理后台 API<br/>45 控制器"]
-        C2["service/ :8792<br/>C端业务 API<br/>34 控制器"]
+    subgraph "Camada de Aplicação"
+        C1["admin/ :8789<br/>API do painel administrativo<br/>45 controllers"]
+        C2["service/ :8792<br/>API de negócio C-side<br/>34 controllers"]
     end
 
-    subgraph "服务层 v2.0"
-        D1["GameProvider<br/>Provider SDK<br/>HMAC-SHA256 签名"]
-        D2["EventBus<br/>Redis Pub/Sub<br/>异步事件分发"]
-        D3["VIP 引擎<br/>经验值/升级/权益"]
-        D4["成就引擎<br/>12 内置成就"]
-        D5["FeatureFlag<br/>特性开关"]
-        D6["SdkSessionAuth<br/>HMAC 签名会话令牌"]
+    subgraph "Camada de Serviços v2.0"
+        D1["GameProvider<br/>Provider SDK<br/>Assinatura HMAC-SHA256"]
+        D2["EventBus<br/>Redis Pub/Sub<br/>Distribuição assíncrona de eventos"]
+        D3["Motor VIP<br/>EXP/nível/benefícios"]
+        D4["Motor de conquistas<br/>12 conquistas integradas"]
+        D5["FeatureFlag<br/>Chave de funcionalidades"]
+        D6["SdkSessionAuth<br/>Token de sessão assinado com HMAC"]
     end
 
-    subgraph "存储层"
-        E1[("MySQL 8.0<br/>78 张表")]
-        E2[("Redis 7.x<br/>缓存/限流/事件")]
-        E3[("Elasticsearch<br/>全文检索")]
-        E4[("ClickHouse<br/>OLAP 分析")]
+    subgraph "Camada de Armazenamento"
+        E1[("MySQL 8.0<br/>78 tabelas")]
+        E2[("Redis 7.x<br/>cache/limite/eventos")]
+        E3[("Elasticsearch<br/>busca fulltext")]
+        E4[("ClickHouse<br/>análise OLAP")]
     end
 
     A1 & A2 & A3 --> B1

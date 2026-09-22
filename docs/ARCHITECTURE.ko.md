@@ -10,42 +10,42 @@ Languages: [中文](ARCHITECTURE.md) · [English](ARCHITECTURE.en.md) · **한�
 
 ```mermaid
 flowchart TB
-    subgraph "客户端层"
-        A1["Flutter Web PC<br/>管理后台"]
-        A2["Flutter Web PC<br/>C端用户平台"]
-        A3["HarmonyOS ArkTS<br/>手机/平板客户端"]
-        A4["React · Angular<br/>管理后台"]
-        A5["React · Angular<br/>C端用户平台"]
+    subgraph "클라이언트 레이어"
+        A1["Flutter Web PC<br/>관리 백오피스"]
+        A2["Flutter Web PC<br/>C단 사용자 플랫폼"]
+        A3["HarmonyOS ArkTS<br/>모바일/태블릿 클라이언트"]
+        A4["React · Angular<br/>관리 백오피스"]
+        A5["React · Angular<br/>C단 사용자 플랫폼"]
     end
 
-    subgraph "网关层 (Nginx)"
-        B1["反向代理 + HTTPS<br/>路由分发 + Gzip<br/>静态文件服务"]
+    subgraph "게이트웨이 레이어 (Nginx)"
+        B1["리버스 프록시 + HTTPS<br/>라우팅 분배 + Gzip<br/>정적 파일 서비스"]
     end
 
-    subgraph "应用层"
-        C1["admin/ webman<br/>管理后台 :8789<br/>AdminAuth → AdminPermission → OperationLog"]
-        C2["service/ webman<br/>C端业务 :8792<br/>UserAuth → [ProviderAuth]"]
+    subgraph "애플리케이션 레이어"
+        C1["admin/ webman<br/>관리 백오피스 :8789<br/>AdminAuth → AdminPermission → OperationLog"]
+        C2["service/ webman<br/>C단 비즈니스 :8792<br/>UserAuth → [ProviderAuth]"]
     end
 
-    subgraph "服务层 (新增)"
-        D0["GameProvider 抽象层<br/>SelfProvider / ThirdPartyProvider<br/>HMAC-SHA256 签名<br/>事务一致性保证"]
-        D1["EventBus<br/>Redis Pub/Sub<br/>异步事件分发<br/>成就/通知/审计 解耦"]
-        D2["VIP 引擎<br/>经验值累计→自动升级<br/>兑换折扣/提现减免<br/>汇率加成"]
-        D3["成就引擎<br/>12 内置成就<br/>进度追踪<br/>事件驱动检测"]
-        D4["特性开关<br/>FeatureFlag<br/>零依赖动态配置"]
+    subgraph "서비스 레이어 (신규)"
+        D0["GameProvider 추상 레이어<br/>SelfProvider / ThirdPartyProvider<br/>HMAC-SHA256 서명<br/>트랜잭션 일관성 보장"]
+        D1["EventBus<br/>Redis Pub/Sub<br/>비동기 이벤트 분배<br/>업적/알림/감사 디커플링"]
+        D2["VIP 엔진<br/>경험치 누적→자동 승급<br/>환전 할인/출금 감면<br/>환율 가산"]
+        D3["업적 엔진<br/>내장 업적 12개<br/>진행도 추적<br/>이벤트 기반 감지"]
+        D4["기능 스위치<br/>FeatureFlag<br/>제로 의존성 동적 설정"]
     end
 
-    subgraph "存储层"
-        E1[("MySQL 8.0<br/>主存储<br/>78 张表")]
-        E2[("Redis<br/>Session/缓存/限流<br/>EventBus/心跳")]
-        E3[("Elasticsearch<br/>全文检索")]
-        E4[("ClickHouse<br/>OLAP 分析<br/>概率计算")]
+    subgraph "저장 레이어"
+        E1[("MySQL 8.0<br/>주 저장소<br/>78장 테이블")]
+        E2[("Redis<br/>Session/캐시/레이트 리밋<br/>EventBus/하트비트")]
+        E3[("Elasticsearch<br/>전문 검색")]
+        E4[("ClickHouse<br/>OLAP 분석<br/>확률 계산")]
     end
 
-    subgraph "外部集成"
-        F1["第三方游戏<br/>Provider API<br/>余额/下注/结算/退款"]
-        F2["推送通道<br/>FCM / APNs<br/>华为推送"]
-        F3["OAuth (7平台)<br/>Google/Facebook/Apple<br/>X(Twitter)/Microsoft<br/>LinkedIn/GitHub"]
+    subgraph "외부 연동"
+        F1["서드파티 게임<br/>Provider API<br/>잔액/베팅/정산/환불"]
+        F2["푸시 채널<br/>FCM / APNs<br/>화웨이 푸시"]
+        F3["OAuth (7개 플랫폼)<br/>Google/Facebook/Apple<br/>X(Twitter)/Microsoft<br/>LinkedIn/GitHub"]
     end
 
     A1 & A2 & A3 & A4 & A5 -->|"HTTPS/JSON<br/>JWT Bearer"| B1
@@ -340,11 +340,11 @@ flowchart TB
         DNS["erik.xyz"]
     end
 
-    subgraph "Web 服务器 (Nginx)"
-        NGX["反向代理 :443 HTTPS<br/>静态文件服务<br/>gzip + CSP + HSTS<br/>limit_req 限流"]
+    subgraph "웹 서버 (Nginx)"
+        NGX["리버스 프록시 :443 HTTPS<br/>정적 파일 서비스<br/>gzip + CSP + HSTS<br/>limit_req 레이트 리밋"]
     end
 
-    subgraph "应用服务器"
+    subgraph "애플리케이션 서버"
         ADM1["admin :8789"]
         ADM2["admin :8789"]
         SVC1["service :8792"]
@@ -353,15 +353,15 @@ flowchart TB
         WS2["chat-ws :8791"]
     end
 
-    subgraph "数据层"
-        MYSQL["MySQL 8.0 主从复制"]
-        REDIS["Redis 7.x 哨兵模式<br/>EventBus Pub/Sub"]
+    subgraph "데이터 레이어"
+        MYSQL["MySQL 8.0 마스터-슬레이브 복제"]
+        REDIS["Redis 7.x 센티널 모드<br/>EventBus Pub/Sub"]
         ES["Elasticsearch 8.x"]
         CH["ClickHouse OLAP"]
     end
 
-    subgraph "监控"
-        MON["Grafana + Prometheus<br/>健康检查 /metrics"]
+    subgraph "모니터링"
+        MON["Grafana + Prometheus<br/>헬스 체크 /metrics"]
     end
 
     DNS --> NGX

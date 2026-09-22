@@ -8,36 +8,36 @@ Languages: [中文](09-export-flow.md) · [English](09-export-flow.en.md) · [�
 
 ```mermaid
 sequenceDiagram
-    participant C as 客户端
+    participant C as ক্লায়েন্ট
     participant CTL as ExportController
     participant DB as MySQL
-    participant FS as 文件系统
+    participant FS as ফাইল সিস্টেম
 
     C->>CTL: POST /admin/export/excel
     Note right of C: {table,columns,conditions,title}
     CTL->>DB: SELECT ... LIMIT 10000
-    DB-->>CTL: 查询结果
-    CTL->>CTL: 解密敏感字段
-    CTL->>CTL: 脱敏(maskPhone/maskEmail)
-    CTL->>CTL: PhpSpreadsheet构建
-    Note right of CTL: 表头蓝底白字<br/>数据行细边框<br/>冻结首行<br/>自动筛选
-    CTL->>FS: 写入runtime/tmp/export_*.xlsx
-    CTL-->>C: 文件下载
+    DB-->>CTL: কোয়েরি ফলাফল
+    CTL->>CTL: সেনসিটিভ ফিল্ড ডিক্রিপ্ট
+    CTL->>CTL: মাস্কিং(maskPhone/maskEmail)
+    CTL->>CTL: PhpSpreadsheet নির্মাণ
+    Note right of CTL: হেডারে নীল ব্যাকগ্রাউন্ড সাদা টেক্সট<br/>ডেটা রোতে সূক্ষ্ম বর্ডার<br/>প্রথম রো ফ্রিজ<br/>অটো ফিল্টার
+    CTL->>FS: runtime/tmp/export_*.xlsx ফাইলে লেখা
+    CTL-->>C: ফাইল ডাউনলোড
 ```
 
 ## PDF এক্সপোর্ট
 
 ```mermaid
 sequenceDiagram
-    participant C as 客户端
+    participant C as ক্লায়েন্ট
     participant CTL as ExportController
-    participant FS as 文件系统
+    participant FS as ফাইল সিস্টেম
 
     C->>CTL: POST /admin/export/pdf
     Note right of C: {type,title,data}
     CTL->>CTL: buildPdfHtml()
-    Note right of CTL: 页头:标题+版权+时间<br/>内容:表格或卡片<br/>页脚:不可移除版权
-    CTL->>CTL: Dompdf渲染(A4横向)
-    CTL->>FS: 写入runtime/tmp/export_*.pdf
-    CTL-->>C: 文件下载
+    Note right of CTL: পেজ হেডার:টাইটেল+কপিরাইট+সময়<br/>কনটেন্ট:টেবিল বা কার্ড<br/>পেজ ফুটার:অপসারণযোগ্য নয় এমন কপিরাইট
+    CTL->>CTL: Dompdf রেন্ডার(A4 ল্যান্ডস্কেপ)
+    CTL->>FS: runtime/tmp/export_*.pdf ফাইলে লেখা
+    CTL-->>C: ফাইল ডাউনলোড
 ```

@@ -10,42 +10,42 @@ Languages: [中文](ARCHITECTURE.md) · [English](ARCHITECTURE.en.md) · [한국
 
 ```mermaid
 flowchart TB
-    subgraph "客户端层"
-        A1["Flutter Web PC<br/>管理后台"]
-        A2["Flutter Web PC<br/>C端用户平台"]
-        A3["HarmonyOS ArkTS<br/>手机/平板客户端"]
-        A4["React · Angular<br/>管理后台"]
-        A5["React · Angular<br/>C端用户平台"]
+    subgraph "क्लाइंट परत"
+        A1["Flutter Web PC<br/>प्रशासन कंसोल"]
+        A2["Flutter Web PC<br/>C-छोर उपयोगकर्ता प्लेटफ़ॉर्म"]
+        A3["HarmonyOS ArkTS<br/>मोबाइल/टैबलेट क्लाइंट"]
+        A4["React · Angular<br/>प्रशासन कंसोल"]
+        A5["React · Angular<br/>C-छोर उपयोगकर्ता प्लेटफ़ॉर्म"]
     end
 
-    subgraph "网关层 (Nginx)"
-        B1["反向代理 + HTTPS<br/>路由分发 + Gzip<br/>静态文件服务"]
+    subgraph "गेटवे परत (Nginx)"
+        B1["रिवर्स प्रॉक्सी + HTTPS<br/>रूट वितरण + Gzip<br/>स्टैटिक फ़ाइल सेवा"]
     end
 
-    subgraph "应用层"
-        C1["admin/ webman<br/>管理后台 :8789<br/>AdminAuth → AdminPermission → OperationLog"]
-        C2["service/ webman<br/>C端业务 :8792<br/>UserAuth → [ProviderAuth]"]
+    subgraph "एप्लिकेशन परत"
+        C1["admin/ webman<br/>प्रशासन कंसोल :8789<br/>AdminAuth → AdminPermission → OperationLog"]
+        C2["service/ webman<br/>C-छोर व्यवसाय :8792<br/>UserAuth → [ProviderAuth]"]
     end
 
-    subgraph "服务层 (新增)"
-        D0["GameProvider 抽象层<br/>SelfProvider / ThirdPartyProvider<br/>HMAC-SHA256 签名<br/>事务一致性保证"]
-        D1["EventBus<br/>Redis Pub/Sub<br/>异步事件分发<br/>成就/通知/审计 解耦"]
-        D2["VIP 引擎<br/>经验值累计→自动升级<br/>兑换折扣/提现减免<br/>汇率加成"]
-        D3["成就引擎<br/>12 内置成就<br/>进度追踪<br/>事件驱动检测"]
-        D4["特性开关<br/>FeatureFlag<br/>零依赖动态配置"]
+    subgraph "सेवा परत (नया)"
+        D0["GameProvider अमूर्त परत<br/>SelfProvider / ThirdPartyProvider<br/>HMAC-SHA256 हस्ताक्षर<br/>लेन-देन संगति गारंटी"]
+        D1["EventBus<br/>Redis Pub/Sub<br/>अतुल्यकालिक इवेंट वितरण<br/>उपलब्धि/अधिसूचना/ऑडिट डिकपलिंग"]
+        D2["VIP इंजन<br/>अनुभव संचय→स्वचालित उन्नयन<br/>विनिमय छूट/निकासी राहत<br/>विनिमय दर बोनस"]
+        D3["उपलब्धि इंजन<br/>12 अंतर्निहित उपलब्धियाँ<br/>प्रगति ट्रैकिंग<br/>इवेंट-संचालित पहचान"]
+        D4["फ़ीचर स्विच<br/>FeatureFlag<br/>शून्य-निर्भरता गतिशील कॉन्फ़िग"]
     end
 
-    subgraph "存储层"
-        E1[("MySQL 8.0<br/>主存储<br/>78 张表")]
-        E2[("Redis<br/>Session/缓存/限流<br/>EventBus/心跳")]
-        E3[("Elasticsearch<br/>全文检索")]
-        E4[("ClickHouse<br/>OLAP 分析<br/>概率计算")]
+    subgraph "भंडारण परत"
+        E1[("MySQL 8.0<br/>मुख्य भंडारण<br/>78 तालिकाएँ")]
+        E2[("Redis<br/>Session/कैश/दर सीमा<br/>EventBus/हार्टबीट")]
+        E3[("Elasticsearch<br/>पूर्ण-पाठ खोज")]
+        E4[("ClickHouse<br/>OLAP विश्लेषण<br/>प्रायिकता गणना")]
     end
 
-    subgraph "外部集成"
-        F1["第三方游戏<br/>Provider API<br/>余额/下注/结算/退款"]
-        F2["推送通道<br/>FCM / APNs<br/>华为推送"]
-        F3["OAuth (7平台)<br/>Google/Facebook/Apple<br/>X(Twitter)/Microsoft<br/>LinkedIn/GitHub"]
+    subgraph "बाहरी एकीकरण"
+        F1["तृतीय-पक्ष गेम<br/>Provider API<br/>शेष/बेट/निपटान/रिफ़ंड"]
+        F2["पुश चैनल<br/>FCM / APNs<br/>हुआवेई पुश"]
+        F3["OAuth (7 प्लेटफ़ॉर्म)<br/>Google/Facebook/Apple<br/>X(Twitter)/Microsoft<br/>LinkedIn/GitHub"]
     end
 
     A1 & A2 & A3 & A4 & A5 -->|"HTTPS/JSON<br/>JWT Bearer"| B1
@@ -340,11 +340,11 @@ flowchart TB
         DNS["erik.xyz"]
     end
 
-    subgraph "Web 服务器 (Nginx)"
-        NGX["反向代理 :443 HTTPS<br/>静态文件服务<br/>gzip + CSP + HSTS<br/>limit_req 限流"]
+    subgraph "Web सर्वर (Nginx)"
+        NGX["रिवर्स प्रॉक्सी :443 HTTPS<br/>स्टैटिक फ़ाइल सेवा<br/>gzip + CSP + HSTS<br/>limit_req दर सीमा"]
     end
 
-    subgraph "应用服务器"
+    subgraph "एप्लिकेशन सर्वर"
         ADM1["admin :8789"]
         ADM2["admin :8789"]
         SVC1["service :8792"]
@@ -353,15 +353,15 @@ flowchart TB
         WS2["chat-ws :8791"]
     end
 
-    subgraph "数据层"
-        MYSQL["MySQL 8.0 主从复制"]
-        REDIS["Redis 7.x 哨兵模式<br/>EventBus Pub/Sub"]
+    subgraph "डेटा परत"
+        MYSQL["MySQL 8.0 मास्टर-स्लेव रेप्लिकेशन"]
+        REDIS["Redis 7.x सेंटिनल मोड<br/>EventBus Pub/Sub"]
         ES["Elasticsearch 8.x"]
         CH["ClickHouse OLAP"]
     end
 
-    subgraph "监控"
-        MON["Grafana + Prometheus<br/>健康检查 /metrics"]
+    subgraph "मॉनिटरिंग"
+        MON["Grafana + Prometheus<br/>हेल्थ चेक /metrics"]
     end
 
     DNS --> NGX

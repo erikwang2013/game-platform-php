@@ -1669,7 +1669,7 @@ POST /admin/v1/upload
 يوفر دليل جذر المشروع `docker-compose.yml`، ينظم 7 خدمات (Nginx وadmin وservice وleaderboard-ws وMySQL وRedis وElasticsearch). يُبنى PHP عبر `Dockerfile` (مبني على `php:8.3-cli` مع تفعيل OPcache).
 
 ```bash
-cp .env.docker .env
+cp .env.example .env
 docker-compose up -d
 ```
 

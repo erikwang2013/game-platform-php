@@ -8,36 +8,36 @@ Languages: [中文](09-export-flow.md) · [English](09-export-flow.en.md) · **�
 
 ```mermaid
 sequenceDiagram
-    participant C as 客户端
+    participant C as 클라이언트
     participant CTL as ExportController
     participant DB as MySQL
-    participant FS as 文件系统
+    participant FS as 파일 시스템
 
     C->>CTL: POST /admin/export/excel
     Note right of C: {table,columns,conditions,title}
     CTL->>DB: SELECT ... LIMIT 10000
-    DB-->>CTL: 查询结果
-    CTL->>CTL: 解密敏感字段
-    CTL->>CTL: 脱敏(maskPhone/maskEmail)
-    CTL->>CTL: PhpSpreadsheet构建
-    Note right of CTL: 表头蓝底白字<br/>数据行细边框<br/>冻结首行<br/>自动筛选
-    CTL->>FS: 写入runtime/tmp/export_*.xlsx
-    CTL-->>C: 文件下载
+    DB-->>CTL: 조회 결과
+    CTL->>CTL: 민감 필드 복호화
+    CTL->>CTL: 마스킹(maskPhone/maskEmail)
+    CTL->>CTL: PhpSpreadsheet 구성
+    Note right of CTL: 헤더 파란 배경 흰 글자<br/>데이터 행 얇은 테두리<br/>첫 행 고정<br/>자동 필터
+    CTL->>FS: runtime/tmp/export_*.xlsx 쓰기
+    CTL-->>C: 파일 다운로드
 ```
 
 ## PDF 내보내기
 
 ```mermaid
 sequenceDiagram
-    participant C as 客户端
+    participant C as 클라이언트
     participant CTL as ExportController
-    participant FS as 文件系统
+    participant FS as 파일 시스템
 
     C->>CTL: POST /admin/export/pdf
     Note right of C: {type,title,data}
     CTL->>CTL: buildPdfHtml()
-    Note right of CTL: 页头:标题+版权+时间<br/>内容:表格或卡片<br/>页脚:不可移除版权
-    CTL->>CTL: Dompdf渲染(A4横向)
-    CTL->>FS: 写入runtime/tmp/export_*.pdf
-    CTL-->>C: 文件下载
+    Note right of CTL: 머리글:제목+저작권+시간<br/>본문:표 또는 카드<br/>바닥글:저작권 제거 불가
+    CTL->>CTL: Dompdf 렌더링(A4 가로)
+    CTL->>FS: runtime/tmp/export_*.pdf 쓰기
+    CTL-->>C: 파일 다운로드
 ```

@@ -478,11 +478,11 @@ Jika proyek ini bermanfaat bagi Anda, kami persilakan untuk mentraktir penulis s
   <table align="center" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <td align="center" width="200">
-        <img src="../weixinpay-130.png" width="130" height="130" alt="微信支付"><br>
+        <img src="../weixinpay-130.png" width="130" height="130" alt="WeChat Pay"><br>
         <b>WeChat Pay</b>
       </td>
       <td align="center" width="200">
-        <img src="../alipay-130.png" width="130" height="130" alt="支付宝"><br>
+        <img src="../alipay-130.png" width="130" height="130" alt="Alipay"><br>
         <b>Alipay</b>
       </td>
     </tr>

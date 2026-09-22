@@ -400,29 +400,29 @@ cd admin/apps/flutter && flutter test --timeout 300s
 
 ```mermaid
 flowchart LR
-    subgraph FIAT["法币层 Fiat"]
-        A["用户充值<br/>USD / CNY / EUR / JPY / KRW / GBP / BRL / INR<br/>Stripe / PayPal"]
-        H["提现到账<br/>PayPal Payout"]
+    subgraph FIAT["फ़िएट परत Fiat"]
+        A["उपयोगकर्ता रिचार्ज<br/>USD / CNY / EUR / JPY / KRW / GBP / BRL / INR<br/>Stripe / PayPal"]
+        H["निकासी प्राप्ति<br/>PayPal Payout"]
     end
 
-    subgraph PLAT["平台币层 Platform Token"]
-        B["平台币钱包<br/>decimal(18,4) 乐观锁"]
-        E["提现订单<br/>platform_amount<br/>fiat_amount / currency"]
+    subgraph PLAT["प्लेटफ़ॉर्म कॉइन परत Platform Token"]
+        B["प्लेटफ़ॉर्म कॉइन वॉलेट<br/>decimal(18,4) ऑप्टिमिस्टिक लॉक"]
+        E["निकासी ऑर्डर<br/>platform_amount<br/>fiat_amount / currency"]
     end
 
-    subgraph GAME["游戏币层 Game Currency"]
-        D["游戏币种<br/>exchange_rate<br/>spread_pct"]
-        C["游戏币钱包<br/>UserGameWallet"]
-        G["游戏 Provider<br/>settle 结算回调"]
+    subgraph GAME["गेम कॉइन परत Game Currency"]
+        D["गेम मुद्रा<br/>exchange_rate<br/>spread_pct"]
+        C["गेम कॉइन वॉलेट<br/>UserGameWallet"]
+        G["गेम Provider<br/>settle निपटान कॉलबैक"]
     end
 
-    A -->|"充值回调验签<br/>平台币 = 法币 × default_exchange_rate"| B
-    B -->|"兑换买入 in<br/>扣除点差"| C
-    C -->|"兑换卖出 out<br/>按汇率折算"| B
-    D -.->|"独立汇率 + VIP 加成"| C
-    G <-->|"玩游戏赚/花"| C
-    B -->|"提现申请（扣款）"| E
-    E -->|"管理端审批<br/>PayPal Payout 打款"| H
+    A -->|"रिचार्ज कॉलबैक हस्ताक्षर सत्यापन<br/>प्लेटफ़ॉर्म कॉइन = फ़िएट × default_exchange_rate"| B
+    B -->|"विनिमय खरीद in<br/>स्प्रेड कटौती"| C
+    C -->|"विनिमय बिक्री out<br/>विनिमय दर से गणना"| B
+    D -.->|"स्वतंत्र विनिमय दर + VIP बोनस"| C
+    G <-->|"गेम खेलें और कमाएँ/खर्च करें"| C
+    B -->|"निकासी आवेदन (डेबिट)"| E
+    E -->|"प्रशासनिक अनुमोदन<br/>PayPal Payout भुगतान"| H
 ```
 
 ## आर्किटेक्चर आरेख
@@ -478,11 +478,11 @@ flowchart LR
   <table align="center" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <td align="center" width="200">
-        <img src="../weixinpay-130.png" width="130" height="130" alt="微信支付"><br>
+        <img src="../weixinpay-130.png" width="130" height="130" alt="WeChat Pay"><br>
         <b>WeChat Pay</b>
       </td>
       <td align="center" width="200">
-        <img src="../alipay-130.png" width="130" height="130" alt="支付宝"><br>
+        <img src="../alipay-130.png" width="130" height="130" alt="Alipay"><br>
         <b>Alipay</b>
       </td>
     </tr>

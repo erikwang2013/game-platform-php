@@ -400,29 +400,29 @@ La plateforme adopte un système de règlement à trois niveaux de devises isol�
 
 ```mermaid
 flowchart LR
-    subgraph FIAT["法币层 Fiat"]
-        A["用户充值<br/>USD / CNY / EUR / JPY / KRW / GBP / BRL / INR<br/>Stripe / PayPal"]
-        H["提现到账<br/>PayPal Payout"]
+    subgraph FIAT["Couche devises fiduciaires Fiat"]
+        A["Recharge utilisateur<br/>USD / CNY / EUR / JPY / KRW / GBP / BRL / INR<br/>Stripe / PayPal"]
+        H["Retrait reçu<br/>PayPal Payout"]
     end
 
-    subgraph PLAT["平台币层 Platform Token"]
-        B["平台币钱包<br/>decimal(18,4) 乐观锁"]
-        E["提现订单<br/>platform_amount<br/>fiat_amount / currency"]
+    subgraph PLAT["Couche devises de plateforme Platform Token"]
+        B["Portefeuille de devises de plateforme<br/>decimal(18,4) verrou optimiste"]
+        E["Commande de retrait<br/>platform_amount<br/>fiat_amount / currency"]
     end
 
-    subgraph GAME["游戏币层 Game Currency"]
-        D["游戏币种<br/>exchange_rate<br/>spread_pct"]
-        C["游戏币钱包<br/>UserGameWallet"]
-        G["游戏 Provider<br/>settle 结算回调"]
+    subgraph GAME["Couche devises de jeu Game Currency"]
+        D["Devises de jeu<br/>exchange_rate<br/>spread_pct"]
+        C["Portefeuille de devises de jeu<br/>UserGameWallet"]
+        G["Provider de jeu<br/>rappel de règlement settle"]
     end
 
-    A -->|"充值回调验签<br/>平台币 = 法币 × default_exchange_rate"| B
-    B -->|"兑换买入 in<br/>扣除点差"| C
-    C -->|"兑换卖出 out<br/>按汇率折算"| B
-    D -.->|"独立汇率 + VIP 加成"| C
-    G <-->|"玩游戏赚/花"| C
-    B -->|"提现申请（扣款）"| E
-    E -->|"管理端审批<br/>PayPal Payout 打款"| H
+    A -->|"Vérification de la signature du rappel de recharge<br/>devises de plateforme = devise fiduciaire × default_exchange_rate"| B
+    B -->|"Échange achat in<br/>prélèvement de l'écart"| C
+    C -->|"Échange vente out<br/>conversion au taux de change"| B
+    D -.->|"Taux de change indépendant + bonus VIP"| C
+    G <-->|"Jouer pour gagner/dépenser"| C
+    B -->|"Demande de retrait (débit)"| E
+    E -->|"Approbation côté admin<br/>versement PayPal Payout"| H
 ```
 
 ## Schéma d'architecture
@@ -478,11 +478,11 @@ Si ce projet vous est utile, n'hésitez pas à offrir un café à l'auteur ☕
   <table align="center" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <td align="center" width="200">
-        <img src="../weixinpay-130.png" width="130" height="130" alt="微信支付"><br>
+        <img src="../weixinpay-130.png" width="130" height="130" alt="WeChat Pay"><br>
         <b>WeChat Pay</b>
       </td>
       <td align="center" width="200">
-        <img src="../alipay-130.png" width="130" height="130" alt="支付宝"><br>
+        <img src="../alipay-130.png" width="130" height="130" alt="Alipay"><br>
         <b>Alipay</b>
       </td>
     </tr>

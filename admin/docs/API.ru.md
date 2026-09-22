@@ -1669,7 +1669,7 @@ POST /admin/v1/upload
 В корне проекта есть `docker-compose.yml` с оркестрацией 7 сервисов (Nginx, admin, service, leaderboard-ws, MySQL, Redis, Elasticsearch). PHP собирается через `Dockerfile` (на базе `php:8.3-cli`, включен OPcache).
 
 ```bash
-cp .env.docker .env
+cp .env.example .env
 docker-compose up -d
 ```
 

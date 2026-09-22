@@ -6,35 +6,35 @@ Languages: [中文](01-system-architecture.md) · [English](01-system-architectu
 
 ```mermaid
 flowchart TB
-    subgraph "客户端层"
-        A1["Flutter Web PC<br/>管理后台"]
-        A2["Flutter Web PC<br/>C端用户平台"]
-        A3["HarmonyOS ArkTS<br/>手机/平板客户端"]
+    subgraph "Lapisan Klien"
+        A1["Flutter Web PC<br/>Backend administrasi"]
+        A2["Flutter Web PC<br/>Platform pengguna sisi C"]
+        A3["HarmonyOS ArkTS<br/>Klien ponsel/tablet"]
     end
 
-    subgraph "网关层"
-        B1["Nginx<br/>反向代理 + HTTPS"]
+    subgraph "Lapisan gateway"
+        B1["Nginx<br/>Reverse proxy + HTTPS"]
     end
 
-    subgraph "应用层"
-        C1["admin/ :8789<br/>管理后台 API<br/>45 控制器"]
-        C2["service/ :8792<br/>C端业务 API<br/>34 控制器"]
+    subgraph "Lapisan aplikasi"
+        C1["admin/ :8789<br/>API backend administrasi<br/>45 controller"]
+        C2["service/ :8792<br/>API bisnis sisi C<br/>34 controller"]
     end
 
-    subgraph "服务层 v2.0"
-        D1["GameProvider<br/>Provider SDK<br/>HMAC-SHA256 签名"]
-        D2["EventBus<br/>Redis Pub/Sub<br/>异步事件分发"]
-        D3["VIP 引擎<br/>经验值/升级/权益"]
-        D4["成就引擎<br/>12 内置成就"]
-        D5["FeatureFlag<br/>特性开关"]
-        D6["SdkSessionAuth<br/>HMAC 签名会话令牌"]
+    subgraph "Lapisan layanan v2.0"
+        D1["GameProvider<br/>SDK Provider<br/>Tanda tangan HMAC-SHA256"]
+        D2["EventBus<br/>Redis Pub/Sub<br/>Distribusi event asinkron"]
+        D3["Mesin VIP<br/>EXP/upgrade/hak"]
+        D4["Mesin pencapaian<br/>12 pencapaian bawaan"]
+        D5["FeatureFlag<br/>Sakelar fitur"]
+        D6["SdkSessionAuth<br/>Token sesi bertanda tangan HMAC"]
     end
 
-    subgraph "存储层"
-        E1[("MySQL 8.0<br/>78 张表")]
-        E2[("Redis 7.x<br/>缓存/限流/事件")]
-        E3[("Elasticsearch<br/>全文检索")]
-        E4[("ClickHouse<br/>OLAP 分析")]
+    subgraph "Lapisan penyimpanan"
+        E1[("MySQL 8.0<br/>78 tabel")]
+        E2[("Redis 7.x<br/>Cache/pembatasan/event")]
+        E3[("Elasticsearch<br/>Pencarian full-text")]
+        E4[("ClickHouse<br/>Analisis OLAP")]
     end
 
     A1 & A2 & A3 --> B1

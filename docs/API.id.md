@@ -860,7 +860,7 @@ Respons: {
 ```
 无需认证
 
-响应: {
+Respons: {
   "total_games": 12,
   "total_users": 1500,
   "today_game_plays": 320,
@@ -918,10 +918,10 @@ Respons: {
 #### GET /admin/v1/game/{hashid} — Detail Game
 
 ```
-需认证: 是
-参数: hashid 为游戏的 hashid 编码（路径参数）
+Perlu autentikasi: ya
+Parameter: hashid 为游戏的 hashid 编码（路径参数）
 
-响应: {
+Respons: {
   "id": "aB3xK...",
   "name": "射击大师",
   "slug": "shooter-master",
@@ -951,13 +951,13 @@ Mengembalikan code 404 jika game tidak ada.
 #### POST /admin/v1/game/launch — Pratinjau Game
 
 ```
-需认证: 是
+Perlu autentikasi: ya
 
-请求: {
+Permintaan: {
   "game_id": "aB3xK..."      // 游戏 ID(hashid)
 }
 
-响应: {
+Respons: {
   "id": "aB3xK...",
   "name": "射击大师",
   "slug": "shooter-master",
@@ -1127,15 +1127,15 @@ Respons: {
 #### POST /admin/v1/withdraw/batch-review — Tinjau massal penarikan
 
 ```
-需认证: 是
+Perlu autentikasi: ya
 
-请求: {
+Permintaan: {
   "ids": ["aB3xK...", "cD4yL..."],
   "action": "approve",
   "note": "批量审核通过"
 }
 
-响应: {
+Respons: {
   "processed": 2,
   "failed": []
 }
@@ -1146,11 +1146,11 @@ action: approve=setujui / reject=tolak (diproses per pesanan; pesanan yang ditol
 #### POST /admin/v1/withdraw/execute-payout — Jalankan pembayaran
 
 ```
-需认证: 是
+Perlu autentikasi: ya
 
-请求: { "order_id": "aB3xK..." }
+Permintaan: { "order_id": "aB3xK..." }
 
-响应: {
+Respons: {
   "payout_batch_id": "PAYOUT-123456",
   "payout_item_id": "ITEM-123456",
   "payout_status": "success",
@@ -1163,11 +1163,11 @@ Hanya pesanan berstatus approved yang dapat dibayarkan (peralihan atomik ke proc
 #### POST /admin/v1/withdraw/sync-payout — Sinkronkan status pembayaran
 
 ```
-需认证: 是
+Perlu autentikasi: ya
 
-请求: { "order_id": "aB3xK..." }
+Permintaan: { "order_id": "aB3xK..." }
 
-响应: {
+Respons: {
   "payout_status": "success",
   "order_status": "completed",
   "synced_status": "success"
@@ -1980,9 +1980,9 @@ Respons: { "code": 0, "data": { "ok": true } }
 #### GET /admin/v1/report/summary — Ringkasan laporan
 
 ```
-需认证: 是
-参数: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
-响应: {
+Perlu autentikasi: ya
+Parameter: ?start=Y-m-d&end=Y-m-d (缺省最近30天，跨度 ≤90 天，Redis 缓存5分钟)
+Respons: {
   "start": "2026-08-01", "end": "2026-08-31",
   "new_users": 120, "deposit_amount": "5000.0000", "deposit_count": 45,
   "withdraw_amount": "1200.0000", "withdraw_count": 8,
@@ -1994,9 +1994,9 @@ Respons: { "code": 0, "data": { "ok": true } }
 #### GET /admin/v1/report/daily — Laporan harian
 
 ```
-需认证: 是
-参数: ?start=Y-m-d&end=Y-m-d
-响应: {
+Perlu autentikasi: ya
+Parameter: ?start=Y-m-d&end=Y-m-d
+Respons: {
   "start": "2026-08-01", "end": "2026-08-31",
   "rows": [ { "date": "2026-08-01", "new_users": 12, "deposit_amount": "500.0000", "deposit_count": 4, "withdraw_amount": "100.0000", "withdraw_count": 1, "exchange_amount": "300.0000", "play_count": 150 } ]
 }
@@ -2006,9 +2006,9 @@ Respons: { "code": 0, "data": { "ok": true } }
 #### GET /admin/v1/report/export — Ekspor laporan harian CSV
 
 ```
-需认证: 是
-参数: ?start=Y-m-d&end=Y-m-d&format=excel
-响应: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
+Perlu autentikasi: ya
+Parameter: ?start=Y-m-d&end=Y-m-d&format=excel
+Respons: CSV 文件（UTF-8 BOM），文件名 report_{start}_{end}.csv，Excel 可直接打开
 ```
 
 ## 8. Strategi Rate Limit (Diperbarui)

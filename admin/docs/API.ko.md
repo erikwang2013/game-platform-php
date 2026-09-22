@@ -1669,7 +1669,7 @@ POST /admin/v1/upload
 프로젝트 루트에 `docker-compose.yml` 제공, 7개 서비스 (Nginx, admin, service, leaderboard-ws, MySQL, Redis, Elasticsearch) 오케스트레이션. PHP는 `Dockerfile`로 빌드 (`php:8.3-cli` 기반, OPcache 활성화).
 
 ```bash
-cp .env.docker .env
+cp .env.example .env
 docker-compose up -d
 ```
 

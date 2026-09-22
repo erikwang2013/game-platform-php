@@ -88,7 +88,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 |------|------|
 | `model/VipLevel.php` + `UserVip.php` + `ExpLog.php` | 5 段階 VIP, 経験値システム |
 | `service/VipService.php` (admin+service) | addExp/自動昇格/特典照会 |
-| **ExchangeController** 統合 | quote() に VIP 割引 + レート加成を適用 |
+| **ExchangeController** 統合 | quote() に VIP 割引 + レートボーナスを適用 |
 | **WithdrawController** 統合 | apply() に VIP 手数料免除を適用 |
 | **ReferralController** 統合 | apply() に紹介者の EXP を追加 |
 | `model/Achievement.php` + `UserAchievement.php` | 12 個の内蔵成就 |

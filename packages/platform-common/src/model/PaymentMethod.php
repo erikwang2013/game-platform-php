@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace common\model;
 
 use support\Model;
-use Erikwang2013\Encryptable\Encryptable;
+use common\JsonEncryptable;
 
 class PaymentMethod extends Model
 {
@@ -36,7 +36,7 @@ class PaymentMethod extends Model
         'countries' => 'array',
         'min_amount' => 'string',
         'max_amount' => 'string',
-        'config' => Encryptable::class,
+        'config' => JsonEncryptable::class,
     ];
 
     /** 支付方式在指定国家是否可见（空国家或空/通配国家列表视为不限制） */

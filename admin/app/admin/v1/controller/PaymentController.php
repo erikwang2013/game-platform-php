@@ -27,7 +27,19 @@ class PaymentController extends BaseController
     {
         $list = PaymentMethod::orderBy('sort', 'asc')
                              ->get()
-                             ->map(fn($item) => $this->encodeIds($item->toArray()));
+                             ->map(function ($item) {
+                                 $row = $this->encodeIds($item->toArray());
+
+                                 // config 列经 cast 解密后已还原为 array；本端点的对外线格式仍是
+                                 // JSON 文本（Flutter 端按文本回填，吐对象会被 Dart 的 Map.toString()
+                                 // 拼成非法 JSON 而静默存坏配置）——此处保住原线格式，契约零变化
+                                 $config = $row['config'] ?? null;
+                                 $row['config'] = is_array($config)
+                                     ? ($config === [] ? '{}' : json_encode($config, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
+                                     : $config;
+
+                                 return $row;
+                             });
 
         return $this->success(['list' => $list]);
     }

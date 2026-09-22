@@ -10,42 +10,42 @@ Languages: [中文](ARCHITECTURE.md) · [English](ARCHITECTURE.en.md) · [한국
 
 ```mermaid
 flowchart TB
-    subgraph "客户端层"
-        A1["Flutter Web PC<br/>管理后台"]
-        A2["Flutter Web PC<br/>C端用户平台"]
-        A3["HarmonyOS ArkTS<br/>手机/平板客户端"]
-        A4["React · Angular<br/>管理后台"]
-        A5["React · Angular<br/>C端用户平台"]
+    subgraph "ক্লায়েন্ট লেয়ার"
+        A1["Flutter Web PC<br/>অ্যাডমিন প্যানেল"]
+        A2["Flutter Web PC<br/>C-এন্ড ইউজার প্ল্যাটফর্ম"]
+        A3["HarmonyOS ArkTS<br/>মোবাইল/ট্যাবলেট ক্লায়েন্ট"]
+        A4["React · Angular<br/>অ্যাডমিন প্যানেল"]
+        A5["React · Angular<br/>C-এন্ড ইউজার প্ল্যাটফর্ম"]
     end
 
-    subgraph "网关层 (Nginx)"
-        B1["反向代理 + HTTPS<br/>路由分发 + Gzip<br/>静态文件服务"]
+    subgraph "গেটওয়ে লেয়ার (Nginx)"
+        B1["রিভার্স প্রক্সি + HTTPS<br/>রাউট ডিস্ট্রিবিউশন + Gzip<br/>স্ট্যাটিক ফাইল সার্ভিস"]
     end
 
-    subgraph "应用层"
-        C1["admin/ webman<br/>管理后台 :8789<br/>AdminAuth → AdminPermission → OperationLog"]
-        C2["service/ webman<br/>C端业务 :8792<br/>UserAuth → [ProviderAuth]"]
+    subgraph "অ্যাপ্লিকেশন লেয়ার"
+        C1["admin/ webman<br/>অ্যাডমিন প্যানেল :8789<br/>AdminAuth → AdminPermission → OperationLog"]
+        C2["service/ webman<br/>C-এন্ড বিজনেস :8792<br/>UserAuth → [ProviderAuth]"]
     end
 
-    subgraph "服务层 (新增)"
-        D0["GameProvider 抽象层<br/>SelfProvider / ThirdPartyProvider<br/>HMAC-SHA256 签名<br/>事务一致性保证"]
-        D1["EventBus<br/>Redis Pub/Sub<br/>异步事件分发<br/>成就/通知/审计 解耦"]
-        D2["VIP 引擎<br/>经验值累计→自动升级<br/>兑换折扣/提现减免<br/>汇率加成"]
-        D3["成就引擎<br/>12 内置成就<br/>进度追踪<br/>事件驱动检测"]
-        D4["特性开关<br/>FeatureFlag<br/>零依赖动态配置"]
+    subgraph "সার্ভিস লেয়ার (নতুন)"
+        D0["GameProvider অ্যাবস্ট্রাকশন লেয়ার<br/>SelfProvider / ThirdPartyProvider<br/>HMAC-SHA256 সিগনেচার<br/>ট্রান্সজেকশন কনসিস্টেন্সি গ্যারান্টি"]
+        D1["EventBus<br/>Redis Pub/Sub<br/>অ্যাসিনক্রোনাস ইভেন্ট ডিস্ট্রিবিউশন<br/>অ্যাচিভমেন্ট/নোটিফিকেশন/অডিট ডিকাপলিং"]
+        D2["VIP ইঞ্জিন<br/>অভিজ্ঞতা সঞ্চয়→অটো-আপগ্রেড<br/>বিনিময় ডিসকাউন্ট/উত্তোলন ছাড়<br/>রেট বোনাস"]
+        D3["অ্যাচিভমেন্ট ইঞ্জিন<br/>১২টি বিল্ট-ইন অ্যাচিভমেন্ট<br/>প্রোগ্রেস ট্র্যাকিং<br/>ইভেন্ট-ড্রিভেন ডিটেকশন"]
+        D4["ফিচার ফ্ল্যাগ<br/>FeatureFlag<br/>জিরো-ডিপেন্ডেন্সি ডায়নামিক কনফিগ"]
     end
 
-    subgraph "存储层"
-        E1[("MySQL 8.0<br/>主存储<br/>78 张表")]
-        E2[("Redis<br/>Session/缓存/限流<br/>EventBus/心跳")]
-        E3[("Elasticsearch<br/>全文检索")]
-        E4[("ClickHouse<br/>OLAP 分析<br/>概率计算")]
+    subgraph "স্টোরেজ লেয়ার"
+        E1[("MySQL 8.0<br/>মূল স্টোরেজ<br/>৭৮টি টেবিল")]
+        E2[("Redis<br/>Session/ক্যাশ/রেট লিমিট<br/>EventBus/হার্টবিট")]
+        E3[("Elasticsearch<br/>ফুলটেক্সট সার্চ")]
+        E4[("ClickHouse<br/>OLAP বিশ্লেষণ<br/>প্রোবাবিলিটি গণনা")]
     end
 
-    subgraph "外部集成"
-        F1["第三方游戏<br/>Provider API<br/>余额/下注/结算/退款"]
-        F2["推送通道<br/>FCM / APNs<br/>华为推送"]
-        F3["OAuth (7平台)<br/>Google/Facebook/Apple<br/>X(Twitter)/Microsoft<br/>LinkedIn/GitHub"]
+    subgraph "এক্সটার্নাল ইন্টিগ্রেশন"
+        F1["থার্ড-পার্টি গেম<br/>Provider API<br/>ব্যালেন্স/বাজি/সেটেলমেন্ট/রিফান্ড"]
+        F2["পুশ চ্যানেল<br/>FCM / APNs<br/>হুয়াওয়ে পুশ"]
+        F3["OAuth (৭টি প্ল্যাটফর্ম)<br/>Google/Facebook/Apple<br/>X(Twitter)/Microsoft<br/>LinkedIn/GitHub"]
     end
 
     A1 & A2 & A3 & A4 & A5 -->|"HTTPS/JSON<br/>JWT Bearer"| B1
@@ -340,11 +340,11 @@ flowchart TB
         DNS["erik.xyz"]
     end
 
-    subgraph "Web 服务器 (Nginx)"
-        NGX["反向代理 :443 HTTPS<br/>静态文件服务<br/>gzip + CSP + HSTS<br/>limit_req 限流"]
+    subgraph "Web সার্ভার (Nginx)"
+        NGX["রিভার্স প্রক্সি :443 HTTPS<br/>স্ট্যাটিক ফাইল সার্ভিস<br/>gzip + CSP + HSTS<br/>limit_req রেট লিমিট"]
     end
 
-    subgraph "应用服务器"
+    subgraph "অ্যাপ্লিকেশন সার্ভার"
         ADM1["admin :8789"]
         ADM2["admin :8789"]
         SVC1["service :8792"]
@@ -353,15 +353,15 @@ flowchart TB
         WS2["chat-ws :8791"]
     end
 
-    subgraph "数据层"
-        MYSQL["MySQL 8.0 主从复制"]
-        REDIS["Redis 7.x 哨兵模式<br/>EventBus Pub/Sub"]
+    subgraph "ডেটা লেয়ার"
+        MYSQL["MySQL 8.0 মাস্টার-রেপ্লিকা রেপ্লিকেশন"]
+        REDIS["Redis 7.x সেন্টিনেল মোড<br/>EventBus Pub/Sub"]
         ES["Elasticsearch 8.x"]
         CH["ClickHouse OLAP"]
     end
 
-    subgraph "监控"
-        MON["Grafana + Prometheus<br/>健康检查 /metrics"]
+    subgraph "মনিটরিং"
+        MON["Grafana + Prometheus<br/>হেলথ চেক /metrics"]
     end
 
     DNS --> NGX

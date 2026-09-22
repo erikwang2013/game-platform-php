@@ -206,8 +206,8 @@ CHAT_WS_PORT=8791  # 채팅 WebSocket
 SNOWFLAKE_WORKER_ID=2  # admin과 반드시 달라야 함
 
 # OAuth
-OAUTH_GOOGLE_CLIENT_ID=<从Google Cloud Console获取>
-OAUTH_GOOGLE_CLIENT_SECRET=<密钥>
+OAUTH_GOOGLE_CLIENT_ID=<Google Cloud Console에서 획득>
+OAUTH_GOOGLE_CLIENT_SECRET=<비밀 키>
 OAUTH_GOOGLE_REDIRECT_URI=https://your-domain.com/api/auth/oauth/google/callback
 
 # 결제 Webhook

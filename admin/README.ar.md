@@ -192,7 +192,7 @@ flutter run -d chrome    # الويب (نمط لوحة إدارة PC)
 
 ```bash
 # 1. تكوين متغيرات بيئة Docker
-cp .env.docker .env
+cp .env.example .env
 
 # 2. تشغيل جميع الخدمات
 docker-compose up -d
@@ -431,7 +431,7 @@ Authorization: Bearer <token>
 تُبنى صورة PHP عبر `Dockerfile`، الصورة الأساسية `php:8.3-cli`، مع تفعيل OPcache.
 
 ```bash
-cp .env.docker .env
+cp .env.example .env
 docker-compose up -d
 ```
 

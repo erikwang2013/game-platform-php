@@ -6,23 +6,23 @@ Languages: **中文** · [English](07-encryption-layers.en.md) · [한국어](07
 
 ```mermaid
 flowchart TB
-    subgraph transport["传输层加密 - encryption"]
+    subgraph transport["トランスポート層暗号化 - encryption"]
         e1["クライアントが機密データを送信"]
-        e2["AES-256-CBC 加密"]
-        e3["API传输密文"]
+        e2["AES-256-CBC 暗号化"]
+        e3["API で暗号文を転送"]
         e4["サーバーがデータを復号"]
         e1 --> e2 --> e3 --> e4
     end
 
-    subgraph storage["存储层加密 - encryptable"]
-        d1["Model casts配置<br/>email=>Encryptable::class<br/>phone=>Encryptable::class<br/>id_card=>Encryptable::class"]
-        d2["写入时自动加密"]
-        d3["MySQL VARCHAR(500)存储密文"]
-        d4["读取时自动解密"]
+    subgraph storage["ストレージ層暗号化 - encryptable"]
+        d1["Model casts 設定<br/>email=>Encryptable::class<br/>phone=>Encryptable::class<br/>id_card=>Encryptable::class"]
+        d2["書き込み時に自動暗号化"]
+        d3["MySQL VARCHAR(500) に暗号文を保存"]
+        d4["読み取り時に自動復号"]
         d1 --> d2 --> d3 --> d4
     end
 
-    subgraph mask["展示层脱敏"]
+    subgraph mask["表示層マスキング"]
         m1["phone: 138****1234"]
         m2["email: a***@example.com"]
         m3["id_card: ********"]

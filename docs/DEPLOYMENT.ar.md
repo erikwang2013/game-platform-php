@@ -206,8 +206,8 @@ CHAT_WS_PORT=8791  # WebSocket الدردشة
 SNOWFLAKE_WORKER_ID=2  # يجب أن يختلف عن admin
 
 # OAuth
-OAUTH_GOOGLE_CLIENT_ID=<从Google Cloud Console获取>
-OAUTH_GOOGLE_CLIENT_SECRET=<密钥>
+OAUTH_GOOGLE_CLIENT_ID=<من Google Cloud Console>
+OAUTH_GOOGLE_CLIENT_SECRET=<مفتاح سري>
 OAUTH_GOOGLE_REDIRECT_URI=https://your-domain.com/api/auth/oauth/google/callback
 
 # Webhook الدفع
