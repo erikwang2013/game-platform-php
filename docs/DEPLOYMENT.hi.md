@@ -51,7 +51,7 @@ rm -rf install/
 
 स्थापना विज़ार्ड द्वारा पूर्ण किए गए कार्य:
 - PHP पर्यावरण जाँच (संस्करण, एक्सटेंशन, निर्देशिका अनुमतियाँ)
-- संयुक्त SQL (`install/install.sql`) निष्पादित करें, 52 तालिकाएँ बनाएं और सीड डेटा आयात करें
+- संयुक्त SQL (`install/install.sql`) निष्पादित करें, 78 तालिकाएँ बनाएं और सीड डेटा आयात करें
 - सुपर एडमिन खाता बनाएं (bcrypt एन्क्रिप्टेड, super_admin भूमिका से संबद्ध)
 - JWT/Encryption/Hashids कुंजियाँ स्वचालित रूप से उत्पन्न करें
 - `admin/.env` और `service/.env` लिखें
@@ -83,7 +83,7 @@ docker-compose ps
 docker-compose logs -f
 ```
 
-### 2.2 सेवा सूची
+### 3.2 सेवा सूची
 
 | सेवा | कंटेनर नाम | पोर्ट | विवरण |
 |------|--------|------|------|
@@ -98,9 +98,9 @@ docker-compose logs -f
 > **पोर्ट कॉन्फ़िगरेशन**: ऊपर की तालिका डिफ़ॉल्ट पोर्ट दिखाती है, सभी को प्रोजेक्ट की रूट डायरेक्टरी के `.env` में बदला जा सकता है (टेम्पलेट `.env.example`, `cp .env.example .env` के बाद संपादित करें):
 > `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `LEADERBOARD_WS_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
 > `nginx.conf.template` के upstream पोर्ट आधिकारिक इमेज के envsubst द्वारा स्वचालित रूप से रेंडर होते हैं, Nginx कॉन्फ़िग मैन्युअल रूप से बदलने की आवश्यकता नहीं।
-> ध्यान दें: `ADMIN_PORT` / `SERVICE_PORT` बदलने से `admin/.env` का `APP_URL` और `service/.env` का `SITE_URL` स्वचालित रूप से अपडेट नहीं होते, बाहरी पहुँच पता भी साथ में बदलना होगा।
+> Docker परिनियोजन में, सार्वजनिक पते (`APP_URL` / `SITE_URL`) डिफ़ॉल्ट रूप से `ADMIN_PORT` / `SERVICE_PORT` का स्वतः अनुसरण करते हैं (प्रारूप `http://localhost:पोर्ट`); कस्टम डोमेन या HTTPS के लिए रूट `.env` में `APP_URL` / `SITE_URL` सेट करें (यह `admin/.env` और `service/.env` की समान कुंजियों को ओवरराइड करता है)। बेयर-मेटल (मैनुअल) परिनियोजन में पोर्ट बदलते समय पते स्वयं अपडेट करने होंगे।
 
-### 2.3 डेटाबेस आरंभीकरण
+### 3.3 डेटाबेस आरंभीकरण
 
 ```bash
 # माइग्रेशन फ़ाइलें MySQL के पहले प्रारंभ पर स्वचालित रूप से निष्पादित होती हैं
@@ -108,7 +108,7 @@ docker-compose logs -f
 docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform < install/install.sql
 ```
 
-### 2.4 डेटा स्थायीकरण
+### 3.4 डेटा स्थायीकरण
 
 डेटा वॉल्यूम स्वचालित रूप से बनते हैं, मैन्युअल प्रबंधन की आवश्यकता नहीं:
 
@@ -129,9 +129,9 @@ gunzip < backup_20260101.sql.gz | docker exec -i game-platform-mysql mysql -uroo
 
 ---
 
-## 3. मैन्युअल परिनियोजन
+## 4. मैन्युअल परिनियोजन
 
-### 3.1 PHP पर्यावरण कॉन्फ़िगरेशन
+### 4.1 PHP पर्यावरण कॉन्फ़िगरेशन
 
 ```bash
 # Ubuntu/Debian
@@ -145,7 +145,7 @@ echo "opcache.enable=1" >> /etc/php/8.3/cli/php.ini
 echo "opcache.enable_cli=1" >> /etc/php/8.3/cli/php.ini
 ```
 
-### 3.2 निर्भरताएँ स्थापित करें
+### 4.2 निर्भरताएँ स्थापित करें
 
 ```bash
 cd /opt/game-platform
@@ -163,7 +163,7 @@ cp .env.example .env
 composer install --no-dev --optimize-autoloader
 ```
 
-### 3.3 .env कॉन्फ़िगरेशन
+### 4.3 .env कॉन्फ़िगरेशन
 
 **admin/.env मुख्य कॉन्फ़िग:**
 ```ini
@@ -270,7 +270,7 @@ TOSS_API_URL=https://api.tosspayments.com
 SITE_URL=https://your-domain.com  # भुगतान कॉलबैक/रीडायरेक्ट साइट URL
 ```
 
-### 3.4 सेवाएँ शुरू करें
+### 4.4 सेवाएँ शुरू करें
 
 ```bash
 # प्रशासन कंसोल (डिफ़ॉल्ट पोर्ट 8789, admin/.env का APP_PORT बदला जा सकता है)
@@ -286,7 +286,7 @@ curl http://localhost:8789/health
 curl http://localhost:8792/health
 ```
 
-### 3.5 प्रक्रिया प्रबंधन (Systemd)
+### 4.5 प्रक्रिया प्रबंधन (Systemd)
 
 `/etc/systemd/system/game-platform-admin.service` बनाएं:
 
@@ -319,9 +319,9 @@ systemctl enable --now game-platform-admin game-platform-service
 
 ---
 
-## 4. Nginx रिवर्स प्रॉक्सी
+## 5. Nginx रिवर्स प्रॉक्सी
 
-### 4.1 कॉन्फ़िग फ़ाइल
+### 5.1 कॉन्फ़िग फ़ाइल
 
 `/etc/nginx/sites-available/game-platform` बनाएं:
 
@@ -330,6 +330,11 @@ systemctl enable --now game-platform-admin game-platform-service
 server {
     listen 80;
     server_name your-domain.com;
+
+    # nginx 自身发出的 301（如目录补斜杠 /admin-panel → /admin-panel/）改用相对
+    # Location，客户端按当前 host:port 解析；默认绝对跳转会退回 listen 端口，
+    # 非 80 端口部署（如 8080）时会跳错端口。
+    absolute_redirect off;
 
     # प्रशासन कंसोल API
     location /admin/ {
@@ -364,24 +369,96 @@ server {
         proxy_pass http://127.0.0.1:8789;
     }
 
-    # Prometheus मीट्रिक्स
+    # Prometheus 指标
     location /metrics {
         proxy_pass http://127.0.0.1:8789;
     }
 
-    # प्रशासन कंसोल फ्रंटएंड
-    location /admin-panel {
-        alias /opt/game-platform/admin/apps/flutter/build/web;
-        try_files $uri $uri/ /admin-panel/index.html;
-    }
+    # ================================================================
+    # 静态前端。两套前端定位不同：
+    #   apps/*         = C 端玩家端（调 /api/ → service）
+    #   admin/apps/*   = 管理台（调 /admin/ → admin）
+    # 各产物需先构建；React/Angular 必须带子路径前缀构建，否则资源 404：
+    #   apps/react            npm run build                （已含 --base=/app-react/）
+    #   apps/angular          npm run build                （已含 --base-href=/app-angular/）
+    #   admin/apps/react      npm run build                （已含 --base=/admin-react/）
+    #   admin/apps/angular    npm run build                （已含 --base-href=/admin-angular/）
+    #   admin/apps/flutter    flutter build web --base-href=/admin-flutter/
+    #   apps/flutter/platform flutter build web            （挂在根路径）
+    # try_files 末项是【内部重定向】，目标 index.html 不存在时会重新匹配同一 location
+    # 形成重定向环，nginx 报 500 而非 404。规避方式按 location 类型二选一：
+    #   root  型 → 末项追加 =404，把它降级为文件存在性判断；
+    #   alias 型 → 追加 =404 会让兜底不再经 alias 解析，已构建的 SPA 深链接也会 404，
+    #              所以保留原样，另加 location = 精确匹配兜底 URI（精确匹配优先，
+    #              不会再回到前缀 location，环不成立）。
+    # alias 的结尾斜杠必须与 location 的结尾斜杠一致（location /x 配 alias .../x，
+    # location /x/ 配 alias .../x/）。错配时 /x../<路径> 会越级解析到上级目录，可读
+    # 取 docroot 之外的任意文件，且 nginx -t 完全查不出来。
+    # ================================================================
 
-    # C-छोर प्लेटफ़ॉर्म फ्रंटएंड
+    # C 端主入口 — Flutter Web
     location / {
         root /opt/game-platform/apps/flutter/platform/build/web;
-        try_files $uri $uri/ /index.html;
+        try_files $uri $uri/ /index.html =404;
+    }
+
+    # C 端 React / Angular Web（URL 前缀与产物目录名不同，用 alias 直接指向产物）
+    location /app-react/ {
+        alias /opt/game-platform/apps/react/dist/;
+        try_files $uri $uri/ /app-react/index.html;
+    }
+    location = /app-react/index.html {
+        alias /opt/game-platform/apps/react/dist/index.html;
+    }
+
+    location /app-angular/ {
+        alias /opt/game-platform/apps/angular/dist/game-client-angular/browser/;
+        try_files $uri $uri/ /app-angular/index.html;
+    }
+    location = /app-angular/index.html {
+        alias /opt/game-platform/apps/angular/dist/game-client-angular/browser/index.html;
+    }
+
+    # 管理台 — 通用投放位：把任一控制台产物拷进 admin/public 即可
+    # 注意：location 不以 / 结尾时 alias 也【不能】以 / 结尾，否则 /admin-panel../.env
+    # 会解析到上级目录（admin/.env）造成任意文件读取；nginx -t 查不出这类错配。
+    location /admin-panel {
+        alias /opt/game-platform/admin/public;
+        try_files $uri $uri/ /admin-panel/index.html;
+    }
+    location = /admin-panel/index.html {
+        alias /opt/game-platform/admin/public/index.html;
+    }
+
+    # 管理台 React / Angular / Flutter
+    location /admin-react/ {
+        alias /opt/game-platform/admin/apps/react/dist/;
+        try_files $uri $uri/ /admin-react/index.html;
+    }
+    location = /admin-react/index.html {
+        alias /opt/game-platform/admin/apps/react/dist/index.html;
+    }
+
+    location /admin-angular/ {
+        alias /opt/game-platform/admin/apps/angular/dist/game-admin-angular/browser/;
+        try_files $uri $uri/ /admin-angular/index.html;
+    }
+    location = /admin-angular/index.html {
+        alias /opt/game-platform/admin/apps/angular/dist/game-admin-angular/browser/index.html;
+    }
+
+    location /admin-flutter/ {
+        alias /opt/game-platform/admin/apps/flutter/build/web/;
+        try_files $uri $uri/ /admin-flutter/index.html;
+    }
+    location = /admin-flutter/index.html {
+        alias /opt/game-platform/admin/apps/flutter/build/web/index.html;
     }
 }
 ```
+
+> मैनुअल डिप्लॉयमेंट में ये बिल्ड आर्टिफ़ैक्ट आप स्वयं इन निर्देशिकाओं में रखते हैं (C-छोर के चार ट्री: `apps/flutter/platform`, `apps/react`, `apps/angular`, `apps/harmonyos`; सभी कंसोल फ्रंटएंड `admin/apps/*` तथा सामान्य प्लेसमेंट स्थान `admin/public` पर माउंट होते हैं)।
+> Docker डिप्लॉयमेंट के लिए `docker-compose.yml` के nginx वॉल्यूम माउंट और `nginx.conf.template` देखें (समान पथ, कंटेनर के भीतर रूट `/var/www/...`)। HarmonyOS `.hap` के रूप में वितरित होता है और nginx से नहीं जाता।
 
 साइट सक्षम करें:
 ```bash
@@ -389,7 +466,7 @@ ln -s /etc/nginx/sites-available/game-platform /etc/nginx/sites-enabled/
 nginx -t && systemctl reload nginx
 ```
 
-### 4.2 SSL प्रमाणपत्र
+### 5.2 SSL प्रमाणपत्र
 
 ```bash
 # Certbot से Let's Encrypt प्रमाणपत्र स्वचालित रूप से प्राप्त करें
@@ -402,7 +479,7 @@ certbot --nginx -d your-domain.com
 
 ---
 
-## 5. निर्धारित कार्य (Crontab)
+## 6. निर्धारित कार्य (Crontab)
 
 ```bash
 # crontab संपादित करें
@@ -423,9 +500,9 @@ crontab -e
 
 ---
 
-## 6. निगरानी
+## 7. निगरानी
 
-### 6.1 Prometheus मीट्रिक्स
+### 7.1 Prometheus मीट्रिक्स
 
 प्रशासन कंसोल `/metrics` एंडपॉइंट उजागर करता है, निम्न मीट्रिक्स शामिल:
 
@@ -437,7 +514,7 @@ crontab -e
 | openadmin_redis_connection_status | Redis कनेक्शन (0/1) |
 | openadmin_memory_usage_bytes | मेमोरी उपयोग |
 
-### 6.2 स्वास्थ्य जाँच
+### 7.2 स्वास्थ्य जाँच
 
 ```bash
 # प्रशासन कंसोल
@@ -449,23 +526,23 @@ curl -f http://localhost:8792/health || echo "Service DOWN"
 # लोड बैलेंसर या निगरानी प्रणाली में कॉन्फ़िगर किया जा सकता है
 ```
 
-### 6.3 लॉग
+### 7.3 लॉग
 
 ```
 admin/runtime/logs/
 ├── stdout.log          # मानक आउटपुट
-└── workerman.log       # Workerman लॉग
+└── webman-<date>.log   # Webman लॉग
 
 service/runtime/logs/
 ├── stdout.log
-└── workerman.log
+└── webman-<date>.log
 ```
 
 ---
 
-## 7. प्रदर्शन अनुकूलन
+## 8. प्रदर्शन अनुकूलन
 
-### 7.1 PHP OPcache
+### 8.1 PHP OPcache
 
 ```ini
 ; /etc/php/8.3/cli/php.ini
@@ -476,7 +553,7 @@ opcache.max_accelerated_files=10000
 opcache.validate_timestamps=0  # उत्पादन में फ़ाइल जाँच बंद करें
 ```
 
-### 7.2 MySQL अनुकूलन
+### 8.2 MySQL अनुकूलन
 
 ```ini
 # /etc/mysql/conf.d/game-platform.cnf
@@ -488,14 +565,14 @@ max_connections = 200
 query_cache_type = 0               # MySQL 8.0 में हटा दिया गया
 ```
 
-### 7.3 Worker प्रक्रिया संख्या
+### 8.3 Worker प्रक्रिया संख्या
 
 ```php
 // config/process.php
 'count' => cpu_count() * 2,  // उत्पादन में CPU कोर की 2-4 गुना अनुशंसित
 ```
 
-### 7.4 Redis कैश रणनीति
+### 8.4 Redis कैश रणनीति
 
 | कैश कुंजी | TTL | विवरण |
 |--------|-----|------|
@@ -506,9 +583,9 @@ query_cache_type = 0               # MySQL 8.0 में हटा दिया 
 
 ---
 
-## 8. सुरक्षा सुदृढ़ीकरण
+## 9. सुरक्षा सुदृढ़ीकरण
 
-### 8.1 कुंजी उत्पादन
+### 9.1 कुंजी उत्पादन
 
 ```bash
 # यादृच्छिक कुंजियाँ उत्पन्न करें
@@ -525,7 +602,7 @@ echo "ENCRYPTION_KEY=$ENCRYPTION_KEY"
 echo "ENCRYPTABLE_KEY=$ENCRYPTABLE_KEY"
 ```
 
-### 8.2 फ़ायरवॉल
+### 9.2 फ़ायरवॉल
 
 ```bash
 # केवल आवश्यक पोर्ट खोलें
@@ -542,7 +619,7 @@ ufw enable
 # केवल 127.0.0.1 के माध्यम से पहुँच
 ```
 
-### 8.3 फ़ाइल अनुमतियाँ
+### 9.3 फ़ाइल अनुमतियाँ
 
 ```bash
 chown -R www-data:www-data /opt/game-platform
@@ -555,9 +632,9 @@ chmod 600 /opt/game-platform/service/.env
 
 ---
 
-## 9. समस्या निवारण
+## 10. समस्या निवारण
 
-### 9.1 सेवा प्रारंभ नहीं हो सकती
+### 10.1 सेवा प्रारंभ नहीं हो सकती
 
 ```bash
 # त्रुटि देखने के लिए फोरग्राउंड में चलाएं
@@ -567,10 +644,10 @@ cd /opt/game-platform/admin && php start.php start
 ss -tlnp | grep -E '8789|8792'
 
 # लॉग जाँचें
-tail -f runtime/logs/workerman.log
+tail -f runtime/logs/webman-$(date +%F).log
 ```
 
-### 9.2 डेटाबेस कनेक्शन विफल
+### 10.2 डेटाबेस कनेक्शन विफल
 
 ```bash
 # कनेक्शन परीक्षण
@@ -580,7 +657,7 @@ mysql -h 127.0.0.1 -u game-platform -p game-platform -e "SELECT 1"
 grep DB_ admin/.env
 ```
 
-### 9.3 Redis कनेक्शन विफल
+### 10.3 Redis कनेक्शन विफल
 
 ```bash
 # कनेक्शन परीक्षण
@@ -589,7 +666,7 @@ redis-cli -h 127.0.0.1 -p 6379 -a <password> ping
 # अपेक्षित रिटर्न PONG
 ```
 
-### 9.4 Elasticsearch अनुपलब्ध
+### 10.4 Elasticsearch अनुपलब्ध
 
 ```bash
 # कनेक्शन परीक्षण
@@ -598,7 +675,7 @@ curl http://127.0.0.1:9200
 # खोज फ़ंक्शन स्वचालित रूप से LIKE क्वेरी पर रोलबैक होता है, सेवा बाधित नहीं होती
 ```
 
-### 9.5 प्रदर्शन समस्याएँ
+### 10.5 प्रदर्शन समस्याएँ
 
 ```bash
 # worker प्रक्रिया संख्या जाँचें
@@ -613,7 +690,7 @@ mysql -e "SHOW VARIABLES LIKE 'slow_query_log';"
 
 ---
 
-## 10. उन्नयन मार्गदर्शिका
+## 11. उन्नयन मार्गदर्शिका
 
 ```bash
 # 1. नवीनतम कोड खींचें

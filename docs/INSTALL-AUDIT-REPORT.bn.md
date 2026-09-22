@@ -1,11 +1,11 @@
-# 安装系统审查报告
+# ইনস্টল সিস্টেম অডিট রিপোর্ট
 <!-- lang-nav -->
 
 Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](INSTALL-AUDIT-REPORT.ko.md) · [Русский](INSTALL-AUDIT-REPORT.ru.md) · [Deutsch](INSTALL-AUDIT-REPORT.de.md) · [Français](INSTALL-AUDIT-REPORT.fr.md) · [Español](INSTALL-AUDIT-REPORT.es.md) · [Português](INSTALL-AUDIT-REPORT.pt.md) · [हिन्दी](INSTALL-AUDIT-REPORT.hi.md) · [العربية](INSTALL-AUDIT-REPORT.ar.md) · **বাংলা** · [Bahasa Indonesia](INSTALL-AUDIT-REPORT.id.md) · [日本語](INSTALL-AUDIT-REPORT.ja.md)
 
 
-> 审查日期: 2026-08-04
-> 审查范围: `install/` 目录下所有文件 + 相关文档变更
+> অডিট তারিখ: 2026-08-04
+> অডিট পরিধি: `install/` ডিরেক্টরির সব ফাইল + সংশ্লিষ্ট ডকুমেন্টেশন পরিবর্তন
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
 ---
@@ -41,7 +41,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 | `game_admin_role` | INSERT IGNORE (নির্দিষ্ট ID) |
 | `game_admin_permission` | INSERT IGNORE (নির্দিষ্ট ID) - ৪ বার |
 | `game_admin_role_permission` | WHERE NOT EXISTS সাবকুয়েরি |
-| `game-platform_config` | INSERT IGNORE (নির্দিষ্ট ID) - ২ বার |
+| `game_platform_config` | INSERT IGNORE (নির্দিষ্ট ID) - ২ বার |
 | `game_language` | INSERT IGNORE (নির্দিষ্ট ID) |
 | `game_translation` | INSERT IGNORE (নির্দিষ্ট ID) |
 | `game_risk_rule` | INSERT IGNORE (নির্দিষ্ট ID) |

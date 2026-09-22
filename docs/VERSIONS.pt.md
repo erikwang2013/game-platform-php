@@ -121,7 +121,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Suporte a vários idiomas | Chinês/inglês | 4 idiomas | 4 idiomas |
 | Tabela de traduções + cache | ✓ | ✓ | ✓ |
 | Detecção automática de idioma | ✓ | ✓ | ✓ |
-| Configuração diferenciada por país | - | - | ✓ 8 países |
+| Configuração diferenciada por país | - | - | ✓ 18 países |
 
 ---
 
@@ -162,7 +162,7 @@ Painel administrativo (7):  game_admin_user, game_admin_role, game_admin_permiss
 Núcleo da plataforma (12): game_user, game_user_wallet, game_user_game_wallet,
                game_game, game_game_currency, game_deposit_order,
                game_withdraw_order, game_exchange_record, game_transaction,
-               game_payment_method, game_announcement, game-platform_config
+               game_payment_method, game_announcement, game_platform_config
 ```
 
 ### Novas na versão padrão (10 tabelas)
@@ -176,7 +176,7 @@ game_withdraw_limit, game_risk_rule, game_risk_log, game_stat_daily
 ```
 game_game_category, game_game_category_rel, game_leaderboard,
 game_coupon, game_user_coupon, game_language, game_translation,
-game_country_config, game-platform_revenue,
+game_country_config, game_platform_revenue,
 game_notification, game_referral, game_referral_reward, game_user_2fa
 ```
 
@@ -190,6 +190,16 @@ game_anticheat_event, game_anticheat_daily_stat,
 game_group, game_group_member, game_share_link,
 game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, game_risk_cluster
 ```
+
+### Adições ecossistema v2.0 (14 tabelas)
+```
+game_ticket, game_ticket_reply, game_device_token, game_vip_level,
+game_user_vip, game_exp_log, game_achievement, game_user_achievement,
+game_friend, game_message, game_cdn_provider, game_referral_commission,
+game_tournament, game_tournament_entry
+```
+
+**Total: 78 tabelas**
 
 ---
 
@@ -218,7 +228,7 @@ game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, gam
 | Gateway da Provider API | callbacks balance/bet/settle/refund + middleware ProviderAuth |
 | Sistema de tickets | criação/resposta C-side + tratamento/atribuição/fechamento no admin |
 | Verificação de email | código de 6 dígitos, expiração Redis 10 min, limite de reenvio 60s |
-| Push notifications | PushService (FCM/APNs/华为推送) |
+| Push notifications | PushService (FCM/APNs/push Huawei) |
 | Sistema VIP | 5 níveis, acúmulo de experiência, upgrade automático, desconto de câmbio, redução de saque, bônus de taxa de câmbio |
 | Sistema de conquistas | 12 conquistas integradas, detecção orientada a eventos, rastreamento de progresso |
 | Sistema de amigos | solicitação/aceite/recusa/remoção/busca |

@@ -1,10 +1,10 @@
-# 田园消消乐 — Plattform-Integrations-API
+# Landleben-Match-3 — Plattform-Integrations-API
 <!-- lang-nav -->
 
 Languages: **中文** · [English](api.en.md) · [한국어](api.ko.md) · [Русский](api.ru.md) · [Deutsch](api.de.md) · [Français](api.fr.md) · [Español](api.es.md) · [Português](api.pt.md) · [हिन्दी](api.hi.md) · [العربية](api.ar.md) · [বাংলা](api.bn.md) · [Bahasa Indonesia](api.id.md) · [日本語](api.ja.md)
 
 
-> Dieses Dokument ist der vollständige Schnittstellenvertrag zwischen dem Spiel 《田园消消乐》 (Landleben-Match-3) und der Spielplattform. Technische Schichtung siehe `architecture.md`, Zeitplan siehe `plan.md`, Spielerfunktionen siehe `functional-design.md`.
+> Dieses Dokument ist der vollständige Schnittstellenvertrag zwischen dem Spiel Landleben-Match-3 und der Spielplattform. Technische Schichtung siehe `architecture.md`, Zeitplan siehe `plan.md`, Spielerfunktionen siehe `functional-design.md`.
 
 ---
 

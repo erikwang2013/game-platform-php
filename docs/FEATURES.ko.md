@@ -44,7 +44,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | 게임 로비 | 프리셋 분류 10개, 분류 필터, 게임-분류 연관 | 완료 |
 | 리더보드 | 일간/주간/월간/총 누적, Redis 캐시, 다중 지표 | 완료 |
 | 쿠폰 | 고정 금액+비율 할인, 기한/수량 제한, 수령/사용 추적 | 완료 |
-| 국가 설정 | 8개국 프리셋, 차등 결제/출금 방식, 최소 충전액 | 완료 |
+| 국가 설정 | 18개국 프리셋, 차등 결제/출금 방식, 최소 충전액 | 완료 |
 | 통계 | 일별 통계 스냅샷 + 플랫폼 수익 추적 | 완료 |
 | 검색 | Elasticsearch 전문 검색 (모델 레이어 통합) | 완료 |
 
@@ -67,7 +67,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | 배포 | Docker Compose 7서비스 + Nginx 리버스 프록시 | 완료 |
 | 데이터 | MySQL 실시간 집계 분석 + 결합/조건부 확률 계산 | 완료 |
 | HarmonyOS | admin 단 8페이지; C단 `apps/harmonyos/`에 로그인/로비/상세/지갑/개인 구현 (8792 지시) | 부분 완료 (프로젝트 실행 가능, 실기기 IP 변경 필요) |
-| API 문서 | hg/apidoc 인터랙티브 문서 | 완료 |
+| API 문서 | erikwang2013/apidoc-php 인터랙티브 문서 | 완료 |
 | 원클릭 설치 | 브라우저 설치 마법사: 관리자 생성, 기존 DB 업그레이드, install.lock 재설치 방지 | 완료 |
 | 내결함성 | CircuitBreaker 차단 + Retry 재시도 + feature.provider_mock 다운그레이드 스위치 | 완료 |
 | 결제 수단 | 백오피스 CRUD + 국가별 표시 + 금액 구간 + 통화 제한 | 완료 |
@@ -79,10 +79,10 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 |----|------|------|
 | 게임 연동 | GameProvider 추상 레이어 (Self/ThirdParty) + HMAC-SHA256 서명 | 완료 |
 | 게임 콜백 | Provider API 게이트웨이 (balance/bet/settle/refund) + ProviderAuth 미들웨어 | 완료 |
-| 게임 세션 | Redis 하트비트 + 15분 타임아웃 자동 정산 + GameSessionService | 완료 |
+| 게임 세션 | SDK 세션 토큰: HMAC-SHA256 서명 + 5분 TTL(`GET /api/v1/game/session` 발급, `SdkSessionAuth` 검증) | 완료 |
 | 티켓 시스템 | C단 생성/답변 + 관리단 처리/할당/닫기, 5가지 티켓 유형 | 완료 |
 | 이메일 검증 | 6자리 인증 코드, Redis 10분 만료, 60초 재발송 제한 | 완료 |
-| 푸시 알림 | PushService (FCM/APNs/华为推送) + DeviceToken 모델 | 완료 |
+| 푸시 알림 | PushService (FCM/APNs/Huawei 푸시) + DeviceToken 모델 | 완료 |
 | VIP 체계 | 5단계 (일반/실버/골드/플래티넘/다이아몬드) + 경험치 + 자동 승급 | 완료 |
 | VIP 혜택 | 환전 할인 2-15%, 출금 수수료 감면 10-100%, 환율 보너스 0.1-1.0% | 완료 |
 | 업적 시스템 | 내장 업적 12개; EventConsumer → AchievementService 이벤트 주도 검출과 VIP 경험치 | 완료 |
@@ -119,62 +119,64 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 
 | 메서드 | 경로 | 설명 | 인증 |
 |------|------|------|------|
-| POST | /api/auth/register | 사용자 등록 | 아니요 |
-| POST | /api/auth/login | 사용자 로그인 | 아니요 |
-| POST | /api/auth/refresh | Token 갱신 | 아니요 |
-| GET | /api/game/list | 게임 목록 | 아니요 |
-| GET | /api/game/detail/{id} | 게임 상세 | 아니요 |
-| GET | /api/announcement/list | 공지 목록 | 아니요 |
-| GET | /api/wallet/info | 지갑 잔액 | 예 |
-| GET | /api/wallet/transactions | 거래 내역 | 예 |
-| POST | /api/deposit/create | 충전 주문 생성 | 예 |
-| GET | /api/payment/methods | 결제 수단 목록 (국가별 라우팅) | 예 |
-| POST | /api/exchange/quote | 환전 견적 (VIP 할인) | 예 |
-| POST | /api/exchange/buy | 게임 코인 매수 | 예 |
-| POST | /api/exchange/sell | 게임 코인 매도 | 예 |
-| POST | /api/withdraw/apply | 출금 신청 (VIP 감면) | 예 |
-| POST | /api/game/launch | 게임 시작 | 예 |
-| GET | /api/game/play-logs | 게임 기록 | 예 |
-| POST | /api/referral/apply | 추천 코드 사용 | 예 |
-| POST | /api/verify/send-email | 이메일 인증 코드 발송 | 예 |
-| POST | /api/verify/confirm-email | 이메일 확인 | 예 |
-| GET | /api/ticket/list | 티켓 목록 | 예 |
-| POST | /api/ticket/create | 티켓 생성 | 예 |
-| POST | /api/ticket/{id}/reply | 티켓 답변 | 예 |
+| POST | /api/v1/auth/register | 사용자 등록 | 아니요 |
+| POST | /api/v1/auth/login | 사용자 로그인 | 아니요 |
+| POST | /api/v1/auth/refresh | Token 갱신 | 아니요 |
+| GET | /api/v1/game/list | 게임 목록 | 아니요 |
+| GET | /api/v1/game/detail/{id} | 게임 상세 | 아니요 |
+| GET | /api/v1/announcement/list | 공지 목록 | 아니요 |
+| GET | /api/v1/wallet/info | 지갑 잔액 | 예 |
+| GET | /api/v1/wallet/transactions | 거래 내역 | 예 |
+| POST | /api/v1/deposit/create | 충전 주문 생성 | 예 |
+| GET | /api/v1/payment/methods | 결제 수단 목록 (국가별 라우팅) | 예 |
+| POST | /api/v1/exchange/quote | 환전 견적 (VIP 할인) | 예 |
+| POST | /api/v1/exchange/buy | 게임 코인 매수 | 예 |
+| POST | /api/v1/exchange/sell | 게임 코인 매도 | 예 |
+| POST | /api/v1/withdraw/apply | 출금 신청 (VIP 감면) | 예 |
+| POST | /api/v1/game/launch | 게임 시작 | 예 |
+| GET | /api/v1/game/play-logs | 게임 기록 | 예 |
+| POST | /api/v1/referral/apply | 추천 코드 사용 | 예 |
+| POST | /api/v1/verify/send-email | 이메일 인증 코드 발송 | 예 |
+| POST | /api/v1/verify/confirm-email | 이메일 확인 | 예 |
+| GET | /api/v1/ticket/list | 티켓 목록 | 예 |
+| POST | /api/v1/ticket/create | 티켓 생성 | 예 |
+| POST | /api/v1/ticket/{id}/reply | 티켓 답변 | 예 |
+| GET | /api/v1/platform/stats | 플랫폼 통계 | 아니요 |
 
-| GET | /api/platform/stats | 플랫폼 통계 | 아니요 |
 ## 3. 관리 백오피스 기능
 
 ### 3.1 API 인터페이스 (신규)
 
 | 메서드 | 경로 | 설명 |
 |------|------|------|
-| GET | /admin/dashboard/platform | 플랫폼 대시보드 데이터 |
-| GET | /admin/analytics/overview | 플랫폼 총괄 (MySQL 실시간 집계) |
-| GET | /admin/analytics/game-ranking | 게임 랭킹 |
-| GET | /admin/analytics/dau-trend | DAU 추세 |
-| GET | /admin/analytics/hourly-trend | 시간대별 추세 |
-| GET | /admin/analytics/action-distribution | 행동 분포 |
-| GET | /admin/analytics/revenue | 수익 분석 |
-| GET | /admin/analytics/conversion | 게임 전환율 |
-| GET | /admin/analytics/probability | 결합/조건부 확률 |
-| GET | /admin/analytics/retention | 리텐션 분석 D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | 전환 퍼널 |
-| GET | /admin/analytics/arpu | ARPU/ARPPU 추세 |
-| GET | /admin/analytics/economy | 게임 코인 경제 지표 |
-| GET | /admin/report/summary | 리포트 요약 (신규 사용자/입금/출금/환전/게임 플레이 수) |
-| GET | /admin/report/daily | 일일 리포트 (일별 집계, 데이터 없는 날짜는 0 채움) |
-| GET | /admin/report/export | 일일 리포트 CSV 내보내기 (UTF-8 BOM) |
-| GET | /admin/game/list | 게임 목록 |
-| POST | /admin/game/create | 게임 생성 (provider_config 포함) |
-| PUT | /admin/game/{id} | 게임 편집 |
-| GET | /admin/withdraw/orders | 출금 주문 목록 |
-| PUT | /admin/withdraw/review | 출금 심사 |
-| GET | /admin/ticket/list | 티켓 목록 |
-| GET | /admin/ticket/{id} | 티켓 상세 |
-| POST | /admin/ticket/{id}/reply | 티켓 답변 |
-| POST | /admin/ticket/{id}/close | 티켓 닫기 |
-| POST | /admin/ticket/{id}/assign | 처리 담당자 지정 |
+| GET | /admin/v1/dashboard/platform | 플랫폼 대시보드 데이터 |
+| GET | /admin/v1/analytics/overview | 플랫폼 총괄 (MySQL 실시간 집계) |
+| GET | /admin/v1/analytics/game-ranking | 게임 랭킹 |
+| GET | /admin/v1/analytics/dau-trend | DAU 추세 |
+| GET | /admin/v1/analytics/hourly-trend | 시간대별 추세 |
+| GET | /admin/v1/analytics/action-distribution | 행동 분포 |
+| GET | /admin/v1/analytics/revenue | 수익 분석 |
+| GET | /admin/v1/analytics/conversion | 게임 전환율 |
+| GET | /admin/v1/analytics/probability | 결합/조건부 확률 |
+| GET | /admin/v1/analytics/retention | 리텐션 분석 D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | 전환 퍼널 |
+| GET | /admin/v1/analytics/arpu | ARPU/ARPPU 추세 |
+| GET | /admin/v1/analytics/economy | 게임 코인 경제 지표 |
+| GET | /admin/v1/report/summary | 리포트 요약 (신규 사용자/입금/출금/환전/게임 플레이 수) |
+| GET | /admin/v1/report/daily | 일일 리포트 (일별 집계, 데이터 없는 날짜는 0 채움) |
+| GET | /admin/v1/report/export | 일일 리포트 CSV 내보내기 (UTF-8 BOM) |
+| GET | /admin/v1/game/list | 게임 목록 |
+| GET | /admin/v1/game/{id} | 게임 상세 |
+| POST | /admin/v1/game/launch | 게임 미리보기 (읽기 전용) |
+| POST | /admin/v1/game/create | 게임 생성 (provider_config 포함) |
+| PUT | /admin/v1/game/{id} | 게임 편집 |
+| GET | /admin/v1/withdraw/orders | 출금 주문 목록 |
+| PUT | /admin/v1/withdraw/review | 출금 심사 |
+| GET | /admin/v1/ticket/list | 티켓 목록 |
+| GET | /admin/v1/ticket/{id} | 티켓 상세 |
+| POST | /admin/v1/ticket/{id}/reply | 티켓 답변 |
+| POST | /admin/v1/ticket/{id}/close | 티켓 닫기 |
+| POST | /admin/v1/ticket/{id}/assign | 처리 담당자 지정 |
 
 ## 4. Provider API (게임사 콜백)
 
@@ -250,21 +252,21 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | game_game | +provider_config (JSON) |
 | game_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**총계: install.sql 43장 테이블** (생태계 확장 10장은 `install/`에 있으며 install.sql에 미통합). 모델은 공유되지 않음: admin 46 / service 44 각각 1벌.
+**총계: install.sql 78장 테이블**. 모델: `packages/platform-common/src/model/`에 52개 공유; admin/app/model/의 8개와 service/app/model/의 10개는 각 호스트 전용 (파일명 중복 없음).
 
 ## 8. 테스트 커버리지
 
 | 테스트 파일 | 케이스 수 | 커버 범위 |
 |---------|--------|---------|
-| PlatformTest | 56 | bcmath 정밀도/환전 계산/출금 수수료/한도/리스크/쿠폰/KYC/i18n |
-| BackendEnhancementTest | 23 | 암호화 서비스/Hashids/Snowflake |
-| CaptchaTest | 7 | 캡차 생성/검증 |
-| EncryptionServiceTest | 6 | AES 암복호화/마스킹 |
-| EnvConfigTest | 4 | 환경 변수 설정 |
-| HashidsServiceTest | 8 | ID 인코딩/디코딩 왕복 |
-| SnowflakeServiceTest | 6 | ID 생성 고유성 |
+| PlatformTest | 55 | bcmath 정밀도/환전 계산/출금 수수료/한도/리스크/쿠폰/KYC/i18n |
+| BackendEnhancementTest | 27 | 암호화 서비스/Hashids/Snowflake |
+| CaptchaTest | 5 | 캡차 생성/검증 |
+| EncryptionServiceTest | 8 | AES 암복호화/마스킹 |
+| EnvConfigTest | 6 | 환경 변수 설정 |
+| HashidsServiceTest | 6 | ID 인코딩/디코딩 왕복 |
+| SnowflakeServiceTest | 5 | ID 생성 고유성 |
 
-**총계: admin ~132 케이스 / 8 파일; service 3 케이스 (WebhookUrlSafety + EventBusMessageFormat). service는 CI 실패 차단 미적용.**
+**총계 (phpunit --list-tests 현재 측정): admin 200 케이스 / 21 파일, service 273 케이스 / 42 파일 (WebhookUrlSafety + EventBusMessageFormat 포함; 보고서: 09-22 재실행 admin 190 + service 273, 08-27 스냅샷 admin 153 + service 45). service는 CI 실패 차단 미적용 (미검증).**
 
 ---
 

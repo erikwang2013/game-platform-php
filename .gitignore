@@ -19,6 +19,15 @@ service/*.log
 install/install.lock
 admin/.env.backup.*
 service/.env.backup.*
+
+# .env 变体防护（*.env.example 模板与 admin/.env.docker 保留可跟踪）
+/.env.*
+!/.env.example
+admin/.env.*
+!admin/.env.example
+!admin/.env.docker
+service/.env.*
+!service/.env.example
 .cursor
 .claude
 .claude-flow

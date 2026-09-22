@@ -186,7 +186,7 @@ type 선택값: deposit / withdraw / exchange_in / exchange_out / game_earn / ga
 }
 ```
 
-currency 선택값: USD / CNY / EUR
+currency 선택값: USD / CNY / EUR / JPY / KRW / GBP / BRL / INR
 
 checkout_url: 결제 게이트웨이 리다이렉트 링크(주문 생성 시 입력됨); expires_at: 결제 링크 만료 시간(생성 후 1시간)
 
@@ -401,9 +401,9 @@ status:
 }
 ```
 
-type 선택값: self / third_party
+type 선택값: self / embedded / third_party
 
-#### GET /api/v1/game/{hashid} — 게임 상세
+#### GET /api/v1/game/detail/{hashid} — 게임 상세
 
 ```
 응답: {
@@ -870,7 +870,7 @@ language 선택값: en-US / zh-CN / ja-JP / ko-KR
 
 ### 3.1 플랫폼 대시보드
 
-#### GET /admin/dashboard/platform
+#### GET /admin/v1/dashboard/platform
 
 ```
 인증 필요: 예 (AdminAuth + AdminPermission)
@@ -888,11 +888,11 @@ language 선택값: en-US / zh-CN / ja-JP / ko-KR
 
 ### 3.2 게임 관리
 
-#### GET /admin/game/list — 게임 목록
+#### GET /admin/v1/game/list — 게임 목록
 
 ```
 인증 필요: 예
-파라미터: ?page=1&per_page=20&keyword=射击
+파라미터: ?page=1&limit=20&keyword=射击
 
 응답: {
   "list": [
@@ -909,11 +909,67 @@ language 선택값: en-US / zh-CN / ja-JP / ko-KR
   ],
   "total": 12,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### POST /admin/game/create — 게임 생성
+#### GET /admin/v1/game/{hashid} — 게임 상세
+
+```
+需认证: 是
+参数: hashid 为游戏的 hashid 编码（路径参数）
+
+响应: {
+  "id": "aB3xK...",
+  "name": "射击大师",
+  "slug": "shooter-master",
+  "type": "self",
+  "description": "游戏描述",
+  "cover_image": "https://...",
+  "api_endpoint": "https://...",
+  "sdk_version": "1.0.0",
+  "platform": "h5",
+  "region": "global",
+  "currencies": [
+    {
+      "id": "cD4yL...",
+      "name": "金币",
+      "symbol": "G",
+      "exchange_rate": "100.00000000",
+      "spread_pct": "5.00000000",
+      "min_exchange": "1.00000000",
+      "max_exchange": "10000.00000000"
+    }
+  ]
+}
+```
+
+게임이 존재하지 않으면 code 404 를 반환합니다.
+
+#### POST /admin/v1/game/launch — 게임 미리보기
+
+```
+需认证: 是
+
+请求: {
+  "game_id": "aB3xK..."      // 游戏 ID(hashid)
+}
+
+响应: {
+  "id": "aB3xK...",
+  "name": "射击大师",
+  "slug": "shooter-master",
+  "type": "self",
+  "api_endpoint": "https://...",
+  "preview": true
+}
+```
+
+`game_id`가 없으면 code 422를 반환하고, 게임이 없으면 404를 반환하며, 게임이 게시되지 않았으면(`status`가 1이 아님) 403을 반환합니다.
+
+관리 백오피스 시험 플레이는 순수한 미리보기입니다: 게임 사용 가능 여부만 검증하고 실행 정보를 반환하며, **게임 기록을 쓰지 않고 지갑도 건드리지 않습니다**. 관리 백오피스 신원에는 `adminId`(`AdminAuth`가 주입)만 있고 C단 `userId`가 없으므로, 이 엔드포인트는 의도적으로 사용자 측 쓰기를 전혀 수행하지 않습니다 — C단 `POST /api/v1/game/launch`를 그대로 옮기면 소유자가 잘못된 `game_game_play_log`가 기록됩니다.
+
+#### POST /admin/v1/game/create — 게임 생성
 
 ```
 인증 필요: 예
@@ -934,9 +990,9 @@ language 선택값: en-US / zh-CN / ja-JP / ko-KR
 응답: { "id": "aB3xK..." }
 ```
 
-type 선택값: self / third_party
+type 선택값: self / embedded / third_party
 
-#### PUT /admin/game/{hashid} — 게임 편집
+#### PUT /admin/v1/game/{hashid} — 게임 편집
 
 ```
 인증 필요: 예
@@ -950,14 +1006,14 @@ type 선택값: self / third_party
 응답: { "message": "更新成功" }
 ```
 
-#### DELETE /admin/game/{hashid} — 게임 삭제
+#### DELETE /admin/v1/game/{hashid} — 게임 삭제
 
 ```
 인증 필요: 예
 응답: { "message": "删除成功" }
 ```
 
-#### POST /admin/game/currency/manage — 코인 관리
+#### POST /admin/v1/game/currency/manage — 코인 관리
 
 ```
 인증 필요: 예
@@ -977,16 +1033,20 @@ type 선택값: self / third_party
   ]
 }
 
-응답: { "message": "币种更新成功" }
+응답: { "message": "操作成功" }
 ```
+
+`game_id`가 없거나 `currencies`가 배열이 아니면 422를 반환하고, 게임이 없으면 404를 반환합니다.
+
+`exchange_rate`와 `spread_pct`는 전달된 경우에만 검증됩니다: `exchange_rate`는 0보다 큰 숫자여야 하고 `spread_pct`는 [0, 100) 범위여야 하며, 하나라도 위반하면 422 반환되고 어떤 코인도 기록되지 않습니다(기록 전에 배치 전체를 검증). 전달하지 않은 필드는 검증되지 않습니다: 생성 시 기본값(`exchange_rate`는 `1.00000000`, 나머지는 `0.00000000`)이 적용되고, 수정 시 기존 값이 유지됩니다.
 
 ### 3.3 출금 관리
 
-#### GET /admin/withdraw/orders — 출금 주문 목록
+#### GET /admin/v1/withdraw/orders — 출금 주문 목록
 
 ```
 인증 필요: 예
-파라미터: ?page=1&per_page=20&status=pending
+파라미터: ?page=1&limit=20&status=pending
 
 응답: {
   "list": [
@@ -1008,11 +1068,11 @@ type 선택값: self / third_party
   ],
   "total": 5,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### PUT /admin/withdraw/review — 출금 심사
+#### PUT /admin/v1/withdraw/review — 출금 심사
 
 ```
 인증 필요: 예
@@ -1026,11 +1086,11 @@ type 선택값: self / third_party
 응답: { "message": "已通过" }
 ```
 
-action: approve=승인 / reject=거부 (거부 시 플랫폼 코인 자동 반환)
+action: approve=승인 / reject=거부 / confirm=확인 (거부 시 플랫폼 코인 자동 반환)
 
 오류: 422 주문 상태가 심사 대기가 아님
 
-#### PUT /admin/withdraw/switch — 전역 출금 스위치
+#### PUT /admin/v1/withdraw/switch — 전역 출금 스위치
 
 ```
 인증 필요: 예
@@ -1043,7 +1103,7 @@ action: approve=승인 / reject=거부 (거부 시 플랫폼 코인 자동 반�
 }
 ```
 
-#### POST /admin/withdraw/limits/set — 출금 한도 설정
+#### POST /admin/v1/withdraw/limits/set — 출금 한도 설정
 
 ```
 인증 필요: 예
@@ -1064,11 +1124,11 @@ action: approve=승인 / reject=거부 (거부 시 플랫폼 코인 자동 반�
 
 ### 3.4 플랫폼 사용자 관리
 
-#### GET /admin/platform/user/list — C단 사용자 목록
+#### GET /admin/v1/platform/user/list — C단 사용자 목록
 
 ```
 인증 필요: 예
-파라미터: ?page=1&per_page=20&keyword=player&status=1
+파라미터: ?page=1&limit=20&keyword=player&status=1
 
 응답: {
   "list": [
@@ -1084,11 +1144,11 @@ action: approve=승인 / reject=거부 (거부 시 플랫폼 코인 자동 반�
   ],
   "total": 1500,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### GET /admin/platform/user/{hashid} — 사용자 상세
+#### GET /admin/v1/platform/user/{hashid} — 사용자 상세
 
 ```
 인증 필요: 예
@@ -1111,7 +1171,7 @@ action: approve=승인 / reject=거부 (거부 시 플랫폼 코인 자동 반�
 }
 ```
 
-#### PUT /admin/platform/user/{hashid} — 사용자 편집/차단
+#### PUT /admin/v1/platform/user/{hashid} — 사용자 편집/차단
 
 ```
 인증 필요: 예
@@ -1126,7 +1186,7 @@ action: approve=승인 / reject=거부 (거부 시 플랫폼 코인 자동 반�
 
 ### 3.5 결제 관리
 
-#### GET /admin/payment/method/list
+#### GET /admin/v1/payment/method/list
 
 ```
 인증 필요: 예
@@ -1144,7 +1204,7 @@ action: approve=승인 / reject=거부 (거부 시 플랫폼 코인 자동 반�
 }
 ```
 
-#### POST /admin/payment/method/toggle — 결제 수단 활성/비활성
+#### POST /admin/v1/payment/method/toggle — 결제 수단 활성/비활성
 
 ```
 인증 필요: 예
@@ -1156,11 +1216,11 @@ action: approve=승인 / reject=거부 (거부 시 플랫폼 코인 자동 반�
 
 ### 3.6 공지 관리
 
-#### GET /admin/announcement/list
+#### GET /admin/v1/announcement/list
 
 ```
 인증 필요: 예
-파라미터: ?page=1&per_page=20
+파라미터: ?page=1&limit=20
 
 응답: {
   "list": [
@@ -1176,11 +1236,11 @@ action: approve=승인 / reject=거부 (거부 시 플랫폼 코인 자동 반�
   ],
   "total": 5,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### POST /admin/announcement/create — 공지 발행
+#### POST /admin/v1/announcement/create — 공지 발행
 
 ```
 인증 필요: 예
@@ -1200,11 +1260,11 @@ action: approve=승인 / reject=거부 (거부 시 플랫폼 코인 자동 반�
 
 ### 3.7 KYC 심사
 
-#### GET /admin/identity/list — KYC 목록
+#### GET /admin/v1/identity/list — KYC 목록
 
 ```
 인증 필요: 예
-파라미터: ?page=1&per_page=20&status=pending
+파라미터: ?page=1&limit=20&status=pending
 
 응답: {
   "list": [
@@ -1217,11 +1277,11 @@ action: approve=승인 / reject=거부 (거부 시 플랫폼 코인 자동 반�
       "created_at": "2026-05-22 10:00:00"
     }
   ],
-  "total": 5, "page": 1, "per_page": 20
+  "total": 5, "page": 1, "limit": 20
 }
 ```
 
-#### PUT /admin/identity/review — KYC 심사
+#### PUT /admin/v1/identity/review — KYC 심사
 
 ```
 인증 필요: 예
@@ -1235,7 +1295,7 @@ action: approve / reject
 
 ### 3.8 게임 서버/구역 관리
 
-#### GET /admin/game/server/list — 구역 목록
+#### GET /admin/v1/game/server/list — 구역 목록
 
 ```
 인증 필요: 예
@@ -1248,7 +1308,7 @@ action: approve / reject
 }
 ```
 
-#### POST /admin/game/server/create — 구역 생성
+#### POST /admin/v1/game/server/create — 구역 생성
 
 ```
 인증 필요: 예
@@ -1256,14 +1316,14 @@ action: approve / reject
 응답: { "id": "hashid" }
 ```
 
-#### PUT /admin/game/server/{hashid} — 구역 편집
+#### PUT /admin/v1/game/server/{hashid} — 구역 편집
 
 ```
 인증 필요: 예
 요청: { "name": "新名称", "status": 2 }
 ```
 
-#### DELETE /admin/game/server/{hashid} — 구역 삭제
+#### DELETE /admin/v1/game/server/{hashid} — 구역 삭제
 
 ```
 인증 필요: 예
@@ -1271,7 +1331,7 @@ action: approve / reject
 
 ### 3.9 출금 단계별 한도 관리
 
-#### GET /admin/withdraw/limits/list
+#### GET /admin/v1/withdraw/limits/list
 
 ```
 인증 필요: 예
@@ -1293,7 +1353,7 @@ action: approve / reject
 }
 ```
 
-#### PUT /admin/withdraw/limits/{hashid} — 한도 업데이트
+#### PUT /admin/v1/withdraw/limits/{hashid} — 한도 업데이트
 
 ```
 인증 필요: 예
@@ -1304,14 +1364,14 @@ action: approve / reject
 
 ### 3.11 게임 분류 관리
 
-#### GET /admin/game/category/list
+#### GET /admin/v1/game/category/list
 
 ```
 인증 필요: 예
 응답: { "list": [{ "id": "...", "name": "动作", "slug": "action", "sort": 1 }] }
 ```
 
-#### POST /admin/game/category/create
+#### POST /admin/v1/game/category/create
 
 ```
 인증 필요: 예
@@ -1319,11 +1379,11 @@ action: approve / reject
 응답: { "id": "hashid" }
 ```
 
-#### PUT /admin/game/category/{hashid} — 분류 편집
+#### PUT /admin/v1/game/category/{hashid} — 분류 편집
 
-#### DELETE /admin/game/category/{hashid} — 분류 삭제
+#### DELETE /admin/v1/game/category/{hashid} — 분류 삭제
 
-#### POST /admin/game/category/assign — 게임 할당
+#### POST /admin/v1/game/category/assign — 게임 할당
 
 ```
 인증 필요: 예
@@ -1332,42 +1392,42 @@ action: approve / reject
 
 ### 3.12 리더보드 관리
 
-#### GET /admin/leaderboard/list — 리더보드 목록
+#### GET /admin/v1/leaderboard/list — 리더보드 목록
 
 ```
 인증 필요: 예
 응답: { "list": [{ "id": "...", "name": "...", "type": "total", "metric": "earned" }] }
 ```
 
-#### POST /admin/leaderboard/create — 리더보드 생성
+#### POST /admin/v1/leaderboard/create — 리더보드 생성
 
 ```
 인증 필요: 예
 요청: { "name": "周收入榜", "type": "weekly", "metric": "earned", "game_id": "hashid(선택)" }
 ```
 
-#### PUT /admin/leaderboard/{hashid} — 리더보드 편집
+#### PUT /admin/v1/leaderboard/{hashid} — 리더보드 편집
 
-#### DELETE /admin/leaderboard/{hashid} — 리더보드 삭제
+#### DELETE /admin/v1/leaderboard/{hashid} — 리더보드 삭제
 
-#### POST /admin/leaderboard/{hashid}/refresh — 캐시 갱신
+#### POST /admin/v1/leaderboard/{hashid}/refresh — 캐시 갱신
 
 ### 3.13 쿠폰 관리
 
-#### GET /admin/coupon/list — 쿠폰 목록
+#### GET /admin/v1/coupon/list — 쿠폰 목록
 
-#### POST /admin/coupon/create — 쿠폰 생성
+#### POST /admin/v1/coupon/create — 쿠폰 생성
 
 ```
 인증 필요: 예
 요청: { "name": "新人礼包", "type": "fixed", "value": "10.0000", "total_qty": 1000 }
 ```
 
-#### PUT /admin/coupon/{hashid} — 편집 (미수령 시)
+#### PUT /admin/v1/coupon/{hashid} — 편집 (미수령 시)
 
-#### DELETE /admin/coupon/{hashid} — 삭제
+#### DELETE /admin/v1/coupon/{hashid} — 삭제
 
-#### GET /admin/coupon/{hashid}/stats — 수령 통계
+#### GET /admin/v1/coupon/{hashid}/stats — 수령 통계
 
 ```
 응답: { "total_qty": 1000, "used_qty": 234, "remaining": 766, "usage_rate": "23.40%" }
@@ -1375,20 +1435,20 @@ action: approve / reject
 
 ### 3.14 국가 설정 관리
 
-#### GET /admin/country/config/list — 국가 설정 목록
+#### GET /admin/v1/country/config/list — 국가 설정 목록
 
-#### POST /admin/country/config/create — 국가 설정 생성
+#### POST /admin/v1/country/config/create — 국가 설정 생성
 
 ```
 인증 필요: 예
 요청: { "country_code": "JP", "currency": "JPY", "payment_methods": "[\"stripe\",\"paypal\"]", "min_deposit": "100.0000" }
 ```
 
-#### PUT /admin/country/config/{hashid} — 국가 설정 편집
+#### PUT /admin/v1/country/config/{hashid} — 국가 설정 편집
 
 ### 3.15 데이터 내보내기
 
-#### POST /admin/export/users — C단 사용자 내보내기
+#### POST /admin/v1/export/users — C단 사용자 내보내기
 
 ```
 인증 필요: 예
@@ -1397,7 +1457,7 @@ action: approve / reject
 응답: Excel 파일 다운로드 (xlsx)
 ```
 
-#### POST /admin/export/transactions — 플랫폼 거래 내역 내보내기
+#### POST /admin/v1/export/transactions — 플랫폼 거래 내역 내보내기
 
 ```
 인증 필요: 예
@@ -1412,18 +1472,18 @@ action: approve / reject
 
 | 메서드 | 경로 | 설명 |
 |------|------|------|
-| GET | /admin/analytics/overview | 플랫폼 총괄 (오늘/최근 7일) |
-| GET | /admin/analytics/game-ranking | 게임 랭킹 (?days=7) |
-| GET | /admin/analytics/dau-trend | DAU 추세 (?days=30) |
-| GET | /admin/analytics/hourly-trend | 시간대별 추세 |
-| GET | /admin/analytics/action-distribution | 행동 분포 |
-| GET | /admin/analytics/revenue | 수익 분석 |
-| GET | /admin/analytics/conversion | 게임 전환율 |
-| GET | /admin/analytics/probability | 결합/조건부 확률 |
-| GET | /admin/analytics/retention | 리텐션 분석 D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | 전환 퍼널 |
-| GET | /admin/analytics/arpu | ARPU/ARPPU 추세 |
-| GET | /admin/analytics/economy | 게임 코인 경제 지표 |
+| GET | /admin/v1/analytics/overview | 플랫폼 총괄 (오늘/최근 7일) |
+| GET | /admin/v1/analytics/game-ranking | 게임 랭킹 (?days=7) |
+| GET | /admin/v1/analytics/dau-trend | DAU 추세 (?days=30) |
+| GET | /admin/v1/analytics/hourly-trend | 시간대별 추세 |
+| GET | /admin/v1/analytics/action-distribution | 행동 분포 |
+| GET | /admin/v1/analytics/revenue | 수익 분석 |
+| GET | /admin/v1/analytics/conversion | 게임 전환율 |
+| GET | /admin/v1/analytics/probability | 결합/조건부 확률 |
+| GET | /admin/v1/analytics/retention | 리텐션 분석 D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | 전환 퍼널 |
+| GET | /admin/v1/analytics/arpu | ARPU/ARPPU 추세 |
+| GET | /admin/v1/analytics/economy | 게임 코인 경제 지표 |
 
 ### 3.17 티켓 관리
 
@@ -1431,11 +1491,11 @@ action: approve / reject
 
 | 메서드 | 경로 | 설명 |
 |------|------|------|
-| GET | /admin/ticket/list | 티켓 목록 (?page=&limit=&status=&type=) |
-| GET | /admin/ticket/{hashid} | 티켓 상세 (답변 포함) |
-| POST | /admin/ticket/{hashid}/reply | 티켓 답변 |
-| POST | /admin/ticket/{hashid}/close | 티켓 닫기 |
-| POST | /admin/ticket/{hashid}/assign | 처리 담당자 지정 (admin_id) |
+| GET | /admin/v1/ticket/list | 티켓 목록 (?page=&limit=&status=&type=) |
+| GET | /admin/v1/ticket/{hashid} | 티켓 상세 (답변 포함) |
+| POST | /admin/v1/ticket/{hashid}/reply | 티켓 답변 |
+| POST | /admin/v1/ticket/{hashid}/close | 티켓 닫기 |
+| POST | /admin/v1/ticket/{hashid}/assign | 처리 담당자 지정 (admin_id) |
 
 ### 3.18 CDN 구성 관리
 
@@ -1443,12 +1503,12 @@ action: approve / reject
 
 | 메서드 | 경로 | 설명 | 인증 |
 |------|------|------|------|
-| GET | /admin/cdn/provider/list | CDN 업체 목록（config 자격증명 미반환） | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/toggle | 업체 활성/비활성 {id, status} | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/create | 추가 {name, provider, config(JSON), status, sort}，provider 중복 확인 | AdminAuth + RBAC: cdn |
-| PUT | /admin/cdn/provider/{hashid} | 수정（config 비우면 변경 안 함） | AdminAuth + RBAC: cdn |
-| DELETE | /admin/cdn/provider/{hashid} | 삭제 | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/test | 연결 테스트 HeadBucket {id} | AdminAuth + RBAC: cdn |
+| GET | /admin/v1/cdn/provider/list | CDN 업체 목록（config 자격증명 미반환） | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/toggle | 업체 활성/비활성 {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/create | 추가 {name, provider, config(JSON), status, sort}，provider 중복 확인 | AdminAuth + RBAC: cdn |
+| PUT | /admin/v1/cdn/provider/{hashid} | 수정（config 비우면 변경 안 함） | AdminAuth + RBAC: cdn |
+| DELETE | /admin/v1/cdn/provider/{hashid} | 삭제 | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/test | 연결 테스트 HeadBucket {id} | AdminAuth + RBAC: cdn |
 
 ### 3.19 데이터 리포트
 
@@ -1456,9 +1516,9 @@ action: approve / reject
 
 | 메서드 | 경로 | 설명 | 인증 |
 |------|------|------|------|
-| GET | /admin/report/summary | 리포트 요약 (신규 사용자/입금/출금/환전/게임 플레이 수) | AdminAuth + RBAC: report |
-| GET | /admin/report/daily | 일일 리포트 (일별 집계, 데이터 없는 날짜는 0 채움) | AdminAuth + RBAC: report |
-| GET | /admin/report/export | 일일 리포트 CSV 내보내기 (UTF-8 BOM) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/summary | 리포트 요약 (신규 사용자/입금/출금/환전/게임 플레이 수) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/daily | 일일 리포트 (일별 집계, 데이터 없는 날짜는 0 채움) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/export | 일일 리포트 CSV 내보내기 (UTF-8 BOM) | AdminAuth + RBAC: report |
 
 ## 4. 레이트 리밋 정책
 
@@ -1681,6 +1741,8 @@ status: open / waiting / replied / closed
 
 #### GET /api/v1/user/vip-status — VIP 상태
 
+> **미구현**: C측 라우트가 등록되지 않았습니다 (`service/config/route.php` 에 해당 항목 없음). 현재 요청은 404 를 반환합니다. 구현 후 이 줄을 삭제하세요.
+
 ```
 인증 필요: 예
 응답: {
@@ -1701,6 +1763,8 @@ status: open / waiting / replied / closed
 
 #### GET /api/v1/user/achievements — 업적 목록
 
+> **미구현**: C측 라우트가 등록되지 않았습니다 (`service/config/route.php` 에 해당 항목 없음). 현재 요청은 404 를 반환합니다. 구현 후 이 줄을 삭제하세요.
+
 ```
 인증 필요: 예
 응답: {
@@ -1720,7 +1784,7 @@ status: open / waiting / replied / closed
 
 ### 7.6 관리 백오피스 신규 API
 
-#### GET /admin/ticket/list — 티켓 목록
+#### GET /admin/v1/ticket/list — 티켓 목록
 
 ```
 인증 필요: 예
@@ -1739,7 +1803,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### POST /admin/ticket/{hashid}/reply — 티켓 답변
+#### POST /admin/v1/ticket/{hashid}/reply — 티켓 답변
 
 ```
 인증 필요: 예
@@ -1747,14 +1811,14 @@ status: open / waiting / replied / closed
 응답: { "code": 0, "message": "Reply sent" }
 ```
 
-#### POST /admin/ticket/{hashid}/close — 티켓 닫기
+#### POST /admin/v1/ticket/{hashid}/close — 티켓 닫기
 
 ```
 인증 필요: 예
 응답: { "code": 0, "message": "Ticket closed" }
 ```
 
-#### POST /admin/ticket/{hashid}/assign — 처리 담당자 지정
+#### POST /admin/v1/ticket/{hashid}/assign — 처리 담당자 지정
 
 ```
 인증 필요: 예
@@ -1762,7 +1826,7 @@ status: open / waiting / replied / closed
 응답: { "code": 0, "message": "Assigned" }
 ```
 
-#### GET /admin/analytics/retention — 리텐션 분석
+#### GET /admin/v1/analytics/retention — 리텐션 분석
 
 ```
 인증 필요: 예
@@ -1773,7 +1837,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/funnel — 전환 퍼널
+#### GET /admin/v1/analytics/funnel — 전환 퍼널
 
 ```
 인증 필요: 예
@@ -1787,7 +1851,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/arpu — ARPU/ARPPU 추세
+#### GET /admin/v1/analytics/arpu — ARPU/ARPPU 추세
 
 ```
 인증 필요: 예
@@ -1795,7 +1859,7 @@ status: open / waiting / replied / closed
 응답: { "arpu": [...], "arppu": [...], "dates": [...] }
 ```
 
-#### GET /admin/analytics/economy — 게임 코인 경제 지표
+#### GET /admin/v1/analytics/economy — 게임 코인 경제 지표
 
 ```
 인증 필요: 예
@@ -1814,14 +1878,14 @@ status: open / waiting / replied / closed
 ```
 
 
-#### GET /admin/cdn/provider/list — CDN 업체 목록（config 자격증명 미반환）
+#### GET /admin/v1/cdn/provider/list — CDN 업체 목록（config 자격증명 미반환）
 
 ```
 인증 필요: 예
 응답: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
 ```
 
-#### POST /admin/cdn/provider/toggle — 업체 활성/비활성 {id, status}
+#### POST /admin/v1/cdn/provider/toggle — 업체 활성/비활성 {id, status}
 
 ```
 인증 필요: 예
@@ -1829,7 +1893,7 @@ status: open / waiting / replied / closed
 응답: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/cdn/provider/create — 추가 {name, provider, config(JSON), status, sort}，provider 중복 확인
+#### POST /admin/v1/cdn/provider/create — 추가 {name, provider, config(JSON), status, sort}，provider 중복 확인
 
 ```
 인증 필요: 예
@@ -1837,7 +1901,7 @@ status: open / waiting / replied / closed
 응답: { "code": 0, "data": { "id": "..." } }
 ```
 
-#### PUT /admin/cdn/provider/{hashid} — 수정（config 비우면 변경 안 함）
+#### PUT /admin/v1/cdn/provider/{hashid} — 수정（config 비우면 변경 안 함）
 
 ```
 인증 필요: 예
@@ -1845,21 +1909,21 @@ status: open / waiting / replied / closed
 응답: { "code": 0, "message": "..." }
 ```
 
-#### DELETE /admin/cdn/provider/{hashid} — 삭제
+#### DELETE /admin/v1/cdn/provider/{hashid} — 삭제
 
 ```
 인증 필요: 예
 응답: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/cdn/provider/test — 연결 테스트 HeadBucket {id}
+#### POST /admin/v1/cdn/provider/test — 연결 테스트 HeadBucket {id}
 
 ```
 인증 필요: 예
 요청: { "id": "..." }
 응답: { "code": 0, "data": { "ok": true } }
 ```
-#### GET /admin/report/summary — 리포트 요약
+#### GET /admin/v1/report/summary — 리포트 요약
 
 ```
 需认证: 是
@@ -1873,7 +1937,7 @@ status: open / waiting / replied / closed
 ```
 
 
-#### GET /admin/report/daily — 일일 리포트
+#### GET /admin/v1/report/daily — 일일 리포트
 
 ```
 需认证: 是
@@ -1885,7 +1949,7 @@ status: open / waiting / replied / closed
 ```
 
 
-#### GET /admin/report/export — 일일 리포트 CSV 내보내기
+#### GET /admin/v1/report/export — 일일 리포트 CSV 내보내기
 
 ```
 需认证: 是
@@ -2029,13 +2093,13 @@ status: open / waiting / replied / closed
 
 ### 7.10 고급 분석 API
 
-#### GET /admin/analytics/retention — 리텐션 분석
+#### GET /admin/v1/analytics/retention — 리텐션 분석
 ```
 인증 필요: 예
 응답: { "D1": "45.2%", "D3": "28.7%", "D7": "18.3%", "D30": "8.1%" }
 ```
 
-#### GET /admin/analytics/funnel — 전환 퍼널
+#### GET /admin/v1/analytics/funnel — 전환 퍼널
 ```
 인증 필요: 예
 응답: {
@@ -2048,14 +2112,14 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/arpu — ARPU/ARPPU 추세
+#### GET /admin/v1/analytics/arpu — ARPU/ARPPU 추세
 ```
 인증 필요: 예
 파라미터: ?days=30
 응답: { "dates": [...], "arpu": [...], "arppu": [...] }
 ```
 
-#### GET /admin/analytics/economy — 게임 경제 지표
+#### GET /admin/v1/analytics/economy — 게임 경제 지표
 ```
 인증 필요: 예
 응답: {
@@ -2117,47 +2181,47 @@ status: open / waiting / replied / closed
 
 | 엔드포인트 | 설명 |
 |------|------|
-| GET /admin/risk/dashboard | 리스크 대시보드 개요 |
-| GET /admin/risk/overview | 리스크 개요 지표 |
-| GET /admin/risk/hit-trend | 히트 추세 |
-| GET /admin/risk/action-distribution | 처리 액션 분포 |
-| GET /admin/risk/rule-performance | 규칙 성능 |
-| GET /admin/risk/rule/list | 규칙 목록 |
-| POST /admin/risk/rule/create | 규칙 생성 |
-| PUT /admin/risk/rule/{hashid} | 규칙 수정 |
-| POST /admin/risk/rule/{hashid}/toggle | 규칙 활성/비활성 |
-| POST /admin/risk/rule/test | 규칙 테스트 |
-| GET /admin/risk/event/list | 리스크 이벤트 목록 |
-| GET /admin/risk/event/{hashid} | 이벤트 상세 |
-| POST /admin/risk/event/{hashid}/handle | 이벤트 처리 |
-| GET /admin/risk/device/list | 디바이스 핑거프린트 목록 |
-| POST /admin/risk/device/block | 디바이스 차단 |
-| POST /admin/risk/device/unblock | 디바이스 차단 해제 |
-| GET /admin/risk/ip/list | IP 목록 |
-| POST /admin/risk/ip/block | IP 차단 |
-| POST /admin/risk/ip/whitelist | IP 화이트리스트 |
-| POST /admin/risk/ip/appeal | IP 이의 제기 |
-| POST /admin/risk/ip/recheck | IP 재검토 |
-| GET /admin/risk/graph/clusters | 클러스터 목록 |
-| GET /admin/risk/graph/{userId} | 사용자 연관 그래프 |
-| GET /admin/risk/clusters | 리스크 클러스터 목록 |
+| GET /admin/v1/risk/dashboard | 리스크 대시보드 개요 |
+| GET /admin/v1/risk/overview | 리스크 개요 지표 |
+| GET /admin/v1/risk/hit-trend | 히트 추세 |
+| GET /admin/v1/risk/action-distribution | 처리 액션 분포 |
+| GET /admin/v1/risk/rule-performance | 규칙 성능 |
+| GET /admin/v1/risk/rule/list | 규칙 목록 |
+| POST /admin/v1/risk/rule/create | 규칙 생성 |
+| PUT /admin/v1/risk/rule/{hashid} | 규칙 수정 |
+| POST /admin/v1/risk/rule/{hashid}/toggle | 규칙 활성/비활성 |
+| POST /admin/v1/risk/rule/test | 규칙 테스트 |
+| GET /admin/v1/risk/event/list | 리스크 이벤트 목록 |
+| GET /admin/v1/risk/event/{hashid} | 이벤트 상세 |
+| POST /admin/v1/risk/event/{hashid}/handle | 이벤트 처리 |
+| GET /admin/v1/risk/device/list | 디바이스 핑거프린트 목록 |
+| POST /admin/v1/risk/device/block | 디바이스 차단 |
+| POST /admin/v1/risk/device/unblock | 디바이스 차단 해제 |
+| GET /admin/v1/risk/ip/list | IP 목록 |
+| POST /admin/v1/risk/ip/block | IP 차단 |
+| POST /admin/v1/risk/ip/whitelist | IP 화이트리스트 |
+| POST /admin/v1/risk/ip/appeal | IP 이의 제기 |
+| POST /admin/v1/risk/ip/recheck | IP 재검토 |
+| GET /admin/v1/risk/graph/clusters | 클러스터 목록 |
+| GET /admin/v1/risk/graph/{userId} | 사용자 연관 그래프 |
+| GET /admin/v1/risk/clusters | 리스크 클러스터 목록 |
 
 ### 10.2 안티치트 관리 (관리자 :8789)
 
 | 엔드포인트 | 설명 |
 |------|------|
-| GET /admin/anticheat/events | 안티치트 이벤트 목록 |
-| GET /admin/anticheat/events/{hashid} | 이벤트 상세 |
-| POST /admin/anticheat/events/{hashid}/review | 이벤트 검토 |
+| GET /admin/v1/anticheat/events | 안티치트 이벤트 목록 |
+| GET /admin/v1/anticheat/events/{hashid} | 이벤트 상세 |
+| POST /admin/v1/anticheat/events/{hashid}/review | 이벤트 검토 |
 
 ### 10.3 활동 (관리자 :8789 + C측 :8792)
 
 | 엔드포인트 | 설명 |
 |------|------|
-| GET /admin/activities/list | 활동 목록 (관리자) |
-| POST /admin/activities/create | 활동 생성 (관리자) |
-| PUT /admin/activities/{hashid} | 활동 수정 (관리자) |
-| DELETE /admin/activities/{hashid} | 활동 삭제 (관리자) |
+| GET /admin/v1/activities/list | 활동 목록 (관리자) |
+| POST /admin/v1/activities/create | 활동 생성 (관리자) |
+| PUT /admin/v1/activities/{hashid} | 활동 수정 (관리자) |
+| DELETE /admin/v1/activities/{hashid} | 활동 삭제 (관리자) |
 | GET /api/v1/activities/list | 활동 목록 (C측) |
 | GET /api/v1/activities/progress | 참여 진행 상황 (C측) |
 | GET /api/v1/activities/{hashid} | 활동 상세 (C측) |
@@ -2175,9 +2239,9 @@ status: open / waiting / replied / closed
 | PUT /api/v1/groups/{hashid}/role | 멤버 역할 |
 | POST /api/v1/shares | 공유 링크 생성 |
 | POST /api/v1/shares/visit | 공유 방문 추적 |
-| GET /admin/groups | 그룹 목록 (관리자) |
-| GET /admin/groups/{hashid}/audit | 그룹 심사 (관리자) |
-| GET /admin/share/stats | 공유 통계 (관리자) |
+| GET /admin/v1/groups | 그룹 목록 (관리자) |
+| GET /admin/v1/groups/{hashid}/audit | 그룹 심사 (관리자) |
+| GET /admin/v1/share/stats | 공유 통계 (관리자) |
 
 ### 10.5 결제 게이트웨이 확장 (L1)
 

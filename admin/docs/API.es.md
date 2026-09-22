@@ -1573,26 +1573,7 @@ Detalles del límite de tasa:
 - Usa algoritmo de ventana deslizante atómico de Redis (Lua ZSET) para evitar condiciones de carrera TOCTOU
 - Fail-closed si Redis no está disponible: devuelve 503 (`Retry-After: 5`), no deja pasar las solicitudes
 
-## 14. Análisis de datos (Analytics)
-
-Todos los endpoints requieren autenticación (`AdminAuth` + `AdminPermission`), agregación en tiempo real en MySQL, 12 en total:
-
-| Método | Ruta | Descripción |
-|------|------|------|
-| GET | /admin/v1/analytics/overview | Resumen de la plataforma (hoy/últimos 7 días) |
-| GET | /admin/v1/analytics/game-ranking | Ranking de juegos (?days=7) |
-| GET | /admin/v1/analytics/dau-trend | Tendencia DAU (?days=30) |
-| GET | /admin/v1/analytics/hourly-trend | Tendencia por horas |
-| GET | /admin/v1/analytics/action-distribution | Distribución de comportamientos |
-| GET | /admin/v1/analytics/revenue | Análisis de ingresos |
-| GET | /admin/v1/analytics/conversion | Tasa de conversión de juegos |
-| GET | /admin/v1/analytics/probability | Probabilidad conjunta/condicional |
-| GET | /admin/v1/analytics/retention | Análisis de retención D1/D3/D7/D30 |
-| GET | /admin/v1/analytics/funnel | Embudo de conversión |
-| GET | /admin/v1/analytics/arpu | Tendencia ARPU/ARPPU |
-| GET | /admin/v1/analytics/economy | Indicadores económicos de las monedas de juego |
-
-## 15. Gestión de tickets (Ticket)
+## 14. Gestión de tickets (Ticket)
 
 Todos los endpoints requieren autenticación (`AdminAuth` + `AdminPermission`), 5 en total:
 
@@ -1604,66 +1585,66 @@ Todos los endpoints requieren autenticación (`AdminAuth` + `AdminPermission`), 
 | POST | /admin/v1/ticket/{hashid}/close | Cerrar el ticket |
 | POST | /admin/v1/ticket/{hashid}/assign | Asignar responsable (admin_id) |
 
-## 16. Flujo de autenticación
+## 15. Flujo de autenticación
 
 Secuencia completa de autenticación:
 
 ```
-1. 客户端请求 POST /api/v1/captcha/generate
+1. El cliente solicita POST /api/v1/captcha/generate
     ↓
-   服务端返回: key + base64 图片 + 点击目标提示
+   El servidor devuelve: key + imagen base64 + indicaciones de los objetivos a clicar
    
-2. 用户点击图片目标位置，前/客户端收集点击坐标
+2. El usuario hace clic en las posiciones objetivo de la imagen; el frontend/cliente recopila las coordenadas de los clics
    
-3. 客户端请求 POST /api/v1/auth/login
-   (请求头: Content-Type: application/json)
-   请求体: { username, password, captcha_key, clicks: [{x,y}, ...] }
+3. El cliente solicita POST /api/v1/auth/login
+   (cabeceras: Content-Type: application/json)
+   cuerpo de la solicitud: { username, password, captcha_key, clicks: [{x,y}, ...] }
     ↓
-   服务端:
-   a. 参数校验 → 422
-   b. 校验验证码 → 422
-   c. 校验用户凭证 → 401
-   d. 检查账号状态 → 403
-   e. 签发 JWT (access + refresh) → 200
-   f. 更新 last_login_at / last_login_ip
+   Servidor:
+   a. Validación de parámetros → 422
+   b. Verificación del captcha → 422
+   c. Verificación de las credenciales del usuario → 401
+   d. Comprobación del estado de la cuenta → 403
+   e. Emisión del JWT (access + refresh) → 200
+   f. Actualización de last_login_at / last_login_ip
     ↓
-   客户端保存: access_token, refresh_token, expires_in
+   El cliente guarda: access_token, refresh_token, expires_in
 
-4. 后续请求携带 JWT
-   请求头: Authorization: Bearer <access_token>
+4. Las solicitudes posteriores llevan el JWT
+   cabecera: Authorization: Bearer <access_token>
     ↓
-   AdminAuth 中间件:
-   a. 提取 Bearer token
-   b. 检查黑名单 (Redis jwt_blacklist:{md5}) → 401
-   c. 解码 JWT，校验过期 → 401
-   d. 设置 $request->adminId = sub 字段
+   Middleware AdminAuth:
+   a. Extraer el token Bearer
+   b. Comprobar la lista negra (Redis jwt_blacklist:{md5}) → 401
+   c. Decodificar el JWT y verificar la expiración → 401
+   d. Establecer $request->adminId = campo sub
     ↓
-   AdminPermission 中间件:
-   a. 未登录（adminId 为空）→ 401
-   b. 对资源路由解析权限标识
-   c. 查询用户角色 → 角色权限，进行匹配
-   d. 无权限 → 403
+   Middleware AdminPermission:
+   a. Sin sesión iniciada (adminId vacío) → 401
+   b. Resolver el identificador de permiso para la ruta del recurso
+   c. Consultar los roles del usuario → permisos de rol, y compararlos
+   d. Sin permiso → 403
     ↓
-   Controller 处理请求
+   El controlador procesa la solicitud
     ↓
-   Response + X-RateLimit-* 头
+   Respuesta + cabeceras X-RateLimit-*
 
-5. Access Token 过期前刷新
-   客户端请求 POST /api/v1/auth/refresh
-   请求体: { refresh_token: "..." }
+5. Refrescar el Access Token antes de que expire
+   El cliente solicita POST /api/v1/auth/refresh
+   cuerpo de la solicitud: { refresh_token: "..." }
     ↓
-   服务端解码 refresh_token → 签发新 access + refresh
+   El servidor decodifica el refresh_token → emite un nuevo access + refresh
     ↓
-   客户端更新本地令牌
+   El cliente actualiza los tokens locales
 
-6. 登出
-   客户端请求 POST /admin/v1/profile/logout
-   请求头: Authorization: Bearer <access_token>
+6. Cierre de sesión
+   El cliente solicita POST /admin/v1/profile/logout
+   cabecera: Authorization: Bearer <access_token>
     ↓
-   服务端:
-   a. 解码 JWT 获取剩余 TTL
-   b. 写入 Redis 黑名单: jwt_blacklist:{md5(token)} = 1, TTL = 剩余有效期
-   c. 返回成功
+   Servidor:
+   a. Decodificar el JWT para obtener el TTL restante
+   b. Escribir en la lista negra de Redis: jwt_blacklist:{md5(token)} = 1, TTL = validez restante
+   c. Devolver éxito
 ```
 
 ### Estructura del JWT
@@ -1681,11 +1662,11 @@ Secuencia completa de autenticación:
 - Límite de sesiones concurrentes: máximo 3 tokens válidos por usuario; al iniciar sesión un cuarto dispositivo, el token más antiguo se fuerza a la lista negra
 - Bloqueo de cuenta: 5 inicios de sesión fallidos consecutivos disparan un bloqueo de 15 minutos; durante el bloqueo se devuelve 429
 
-## 15. Despliegue y operación
+## 16. Despliegue y operación
 
 ### Docker Compose
 
-La raíz del proyecto incluye `docker-compose.yml`, con orquestación de 5 servicios (Nginx, aplicación webman, MySQL, Redis, Elasticsearch). PHP se construye con el `Dockerfile` (basado en `php:8.3-cli`, con OPcache habilitado).
+La raíz del proyecto incluye `docker-compose.yml`, con orquestación de 7 servicios (Nginx, admin, service, leaderboard-ws, MySQL, Redis, Elasticsearch). PHP se construye con el `Dockerfile` (basado en `php:8.3-cli`, con OPcache habilitado).
 
 ```bash
 cp .env.docker .env
@@ -1709,11 +1690,11 @@ El directorio `database/backup/` ofrece scripts de copia de seguridad y restaura
 
 Para despliegues en producción, consulta `docs/nginx-security.conf` para el refuerzo de seguridad del proxy inverso.
 
-## 16. Análisis de datos (Analytics)
+## 17. Análisis de datos (Analytics)
 
 Las interfaces de análisis de datos las proporciona `AnalyticsController` y se basan todas en agregación en tiempo real en MySQL (`game_game_play_log` registros de comportamiento de juego / `game_deposit_order` pedidos de recarga); ante un fallo de la base de datos devuelven datos vacíos en lugar de 500. Salvo indicación contraria, todas requieren autenticación JWT + RBAC y el formato de respuesta envuelto es uniforme: `{ "code": 0, "message": "success", "data": ... }`.
 
-### 16.1 Resumen de la plataforma
+### 17.1 Resumen de la plataforma
 
 ```
 GET /admin/v1/analytics/overview
@@ -1721,7 +1702,7 @@ GET /admin/v1/analytics/overview
 
 **Respuesta**: `today` / `week` contienen cada uno `dau` (número de usuarios activos), `revenue` (total de recargas confirmadas, cadena) y `new_users` (número de nuevos usuarios).
 
-### 16.2 Ranking de juegos
+### 17.2 Ranking de juegos
 
 ```
 GET /admin/v1/analytics/game-ranking?days=7
@@ -1729,23 +1710,23 @@ GET /admin/v1/analytics/game-ranking?days=7
 
 **Respuesta**: las 10 primeras posiciones en orden descendente por número de comportamientos de juego; cada elemento contiene `game_id` (hashid), `name`, `plays`, `players`.
 
-### 16.3 Tendencia DAU
+### 17.3 Tendencia DAU
 
 ```
 GET /admin/v1/analytics/dau-trend?days=30
 ```
 
-**Respuesta**: `{ "日期": 活跃数, ... }`; las fechas ausentes se rellenan con 0.
+**Respuesta**: `{ "fecha": número de activos, ... }`, las fechas ausentes se rellenan con 0.
 
-### 16.4 Tendencia por horas
+### 17.4 Tendencia por horas
 
 ```
 GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
 ```
 
-**Respuesta**: `{ "0": 次数, ... "23": 次数 }` 24 franjas horarias; si `game_id` está vacío, se cuentan todos los juegos.
+**Respuesta**: `{ "0": recuento, ... "23": recuento }` 24 franjas horarias; si `game_id` está vacío, se cuentan todos los juegos.
 
-### 16.5 Distribución de comportamientos
+### 17.5 Distribución de comportamientos
 
 ```
 GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
@@ -1753,15 +1734,15 @@ GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
 
 **Respuesta**: `{ "start": n, "end": n, "earn": n, "spend": n }` recuento de cuatro tipos de comportamiento; `hours` tiene un máximo de 168.
 
-### 16.6 Resumen de ingresos
+### 17.6 Resumen de ingresos
 
 ```
 GET /admin/v1/analytics/revenue?days=7
 ```
 
-**Respuesta**: `{ "total": "总额", "trend": { "日期": "当日额", ... } }`; solo se cuentan los pedidos con `status=confirmed`.
+**Respuesta**: `{ "total": "importe total", "trend": { "fecha": "importe del día", ... } }`; solo se cuentan los pedidos con `status=confirmed`.
 
-### 16.7 Tasa de conversión de juegos
+### 17.7 Tasa de conversión de juegos
 
 ```
 GET /admin/v1/analytics/conversion?days=30
@@ -1769,7 +1750,7 @@ GET /admin/v1/analytics/conversion?days=30
 
 **Respuesta**: cada juego contiene `game_id` (hashid), `game_name`, `players` (número de jugadores únicos), `depositors` (número de personas con recargas únicas), `conversion_rate` (tasa de conversión de recargas, 0~1).
 
-### 16.8 Probabilidad conjunta
+### 17.8 Probabilidad conjunta
 
 ```
 GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
@@ -1777,7 +1758,7 @@ GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
 
 **Respuesta**: `{ "joint": { "joint_probability": 0.12, "confidence": 0.3 } }` — coeficiente de Jaccard (jugadores comunes de ambos juegos / jugadores de la unión) y confianza (jugadores comunes / jugadores del juego A).
 
-### 16.9 Análisis de retención
+### 17.9 Análisis de retención
 
 ```
 GET /admin/v1/analytics/retention?days=30
@@ -1785,7 +1766,7 @@ GET /admin/v1/analytics/retention?days=30
 
 **Respuesta**: `{ "D1": "8.5%", "D3": "...", "D7": "...", "D30": "..." }` tasa de retención al día siguiente/3/7/30 días, agrupada por día de registro.
 
-### 16.10 Embudo de conversión
+### 17.10 Embudo de conversión
 
 ```
 GET /admin/v1/analytics/funnel?days=30
@@ -1793,7 +1774,7 @@ GET /admin/v1/analytics/funnel?days=30
 
 **Respuesta**: los cuatro pasos registro → primera recarga → primera conversión → primer juego, con `step`, `count`, `rate` (porcentaje relativo al número de registros).
 
-### 16.11 Tendencia ARPU/ARPPU
+### 17.11 Tendencia ARPU/ARPPU
 
 ```
 GET /admin/v1/analytics/arpu?days=30
@@ -1801,7 +1782,7 @@ GET /admin/v1/analytics/arpu?days=30
 
 **Respuesta**: `{ "dates": [...], "arpu": [...], "arppu": [...] }` ingresos diarios por usuario (ARPU) e ingresos por usuario de pago (ARPPU).
 
-### 16.12 Indicadores económicos de los juegos
+### 17.12 Indicadores económicos de los juegos
 
 ```
 GET /admin/v1/analytics/economy
@@ -1809,7 +1790,7 @@ GET /admin/v1/analytics/economy
 
 **Respuesta**: array `currencies`; cada elemento contiene `game_name`, `currency`, `symbol`, `total_minted` (total acuñado), `total_burned` (total quemado), `circulation` (en circulación), `inflation_rate` (tasa de inflación), calculado con aritmética de alta precisión bcmath.
 
-## 17. Gestión de pagos (Payment)
+## 18. Gestión de pagos (Payment)
 
 La gestión de métodos de pago la proporciona `PaymentController`; los 5 endpoints requieren autenticación JWT + RBAC. Lista blanca de `provider`: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`. `config` es una cadena JSON de configuración de pago (almacenada cifrada en la base de datos).
 
@@ -1821,7 +1802,7 @@ La gestión de métodos de pago la proporciona `PaymentController`; los 5 endpoi
 | PUT | /admin/v1/payment/method/{hashid} | Actualizar un método de pago |
 | DELETE | /admin/v1/payment/method/{hashid} | Eliminar un método de pago (rechazado si existen pedidos pendientes) |
 
-### 17.1 Lista de métodos de pago
+### 18.1 Lista de métodos de pago
 
 ```
 GET /admin/v1/payment/method/list
@@ -1869,7 +1850,7 @@ GET /admin/v1/payment/method/list
 | min_amount / max_amount | string | Rango de importes (string conserva precisión), 0 = sin límite |
 | config | string? | JSON de configuración de pago (cifrado; null si no está definido) |
 
-### 17.2 Activar/desactivar método de pago
+### 18.2 Activar/desactivar método de pago
 
 ```
 POST /admin/v1/payment/method/toggle
@@ -1892,7 +1873,7 @@ POST /admin/v1/payment/method/toggle
 - 422: validación fallida (id/status ausente o status no es 0/1)
 - 404: método de pago no encontrado
 
-### 17.3 Crear método de pago
+### 18.3 Crear método de pago
 
 ```
 POST /admin/v1/payment/method/create
@@ -1938,20 +1919,20 @@ POST /admin/v1/payment/method/create
 **Posibles errores**:
 - 422: validación fallida
 
-### 17.4 Actualizar método de pago
+### 18.4 Actualizar método de pago
 
 ```
 PUT /admin/v1/payment/method/{hashid}
 ```
 
 - **Parámetro de ruta**: `{hashid}` es el ID del método de pago codificado con hashid
-- **Cuerpo de la solicitud**: igual que al crear (17.3), todos los campos opcionales; solo se actualizan los campos enviados
+- **Cuerpo de la solicitud**: igual que al crear (18.3), todos los campos opcionales; solo se actualizan los campos enviados
 
 **Posibles errores**:
 - 404: método de pago no encontrado
 - 422: validación fallida
 
-### 17.5 Eliminar método de pago
+### 18.5 Eliminar método de pago
 
 ```
 DELETE /admin/v1/payment/method/{hashid}

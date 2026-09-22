@@ -35,7 +35,7 @@
   <rect x="720" y="118" width="130" height="46" rx="10" fill="#ede9fe" stroke="#8b5cf6" stroke-width="2" filter="url(#sh)"/>
   <text x="785" y="146" text-anchor="middle" fill="#5b21b6" font-size="13" font-weight="bold">VIP আপগ্রেড</text>
 
-  <text x="480" y="190" text-anchor="middle" fill="#64748b" font-size="11">রেজিস্ট্রেশন → KYC (তিন-স্তর) → টপ-আপ (ফিয়াট→প্ল্যাটফর্ম কয়েন→গেম কয়েন) → গেম (আয়/খরচ) → উত্তোলন বা আরও টপ-আপ (ইতিবাচক চক্র)</text>
+  <text x="480" y="190" text-anchor="middle" fill="#64748b" font-size="11">রেজিস্ট্রেশন → KYC (পরিচয় যাচাই) → টপ-আপ (ফিয়াট→প্ল্যাটফর্ম কয়েন→গেম কয়েন) → গেম (আয়/খরচ) → উত্তোলন বা আরও টপ-আপ (ইতিবাচক চক্র)</text>
 
   <!-- Order Lifecycle -->
   <rect x="20" y="215" width="960" height="30" rx="6" fill="#fef3c7"/>
@@ -109,7 +109,7 @@
   <rect x="640" y="612" width="120" height="32" rx="8" fill="#fef2f2" stroke="#ef4444" stroke-width="2" filter="url(#sh)"/>
   <text x="700" y="633" text-anchor="middle" fill="#991b1b" font-size="12" font-weight="bold">প্রত্যাখ্যান → rejected</text>
 
-  <text x="500" y="680" text-anchor="middle" fill="#64748b" font-size="11">পাসের পর আপগ্রেড: default → verified → vip (উচ্চতর উত্তোলন লিমিট + কম ফি)</text>
+  <text x="500" y="680" text-anchor="middle" fill="#64748b" font-size="11">পাসের পর আপগ্রেড: default → verified (উচ্চতর উত্তোলন লিমিট); VIP ফি ছাড় অভিজ্ঞতা অনুযায়ী আলাদাভাবে গণনা</text>
 
   <text x="500" y="710" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>
 </svg>

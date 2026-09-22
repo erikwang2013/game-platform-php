@@ -1,4 +1,4 @@
-# API 参考文档
+# API 레퍼런스 문서
 <!-- lang-nav -->
 
 Languages: [中文](API.md) · [English](API.en.md) · **한국어** · [Русский](API.ru.md) · [Deutsch](API.de.md) · [Français](API.fr.md) · [Español](API.es.md) · [Português](API.pt.md) · [हिन्दी](API.hi.md) · [العربية](API.ar.md) · [বাংলা](API.bn.md) · [Bahasa Indonesia](API.id.md) · [日本語](API.ja.md)
@@ -8,7 +8,7 @@ Languages: [中文](API.md) · [English](API.en.md) · **한국어** · [Рус�
 
 ## 1. 개요
 
-开放管理后台 (open-admin)는 webman v2 기반으로 구축된 RESTful JSON API를 제공합니다. 모든 관리자 인터페이스는 JWT 인증과 RBAC 권한 검증이 필요하며, 공개 인터페이스는 `/api/v1` 프리픽스 아래에, 관리 인터페이스는 `/admin/v1` 프리픽스 아래에 마운트되며 버전은 URL 경로로 결정되고 요청 헤더는 사용하지 않습니다.
+오픈 관리자 (open-admin)는 webman v2 기반으로 구축된 RESTful JSON API를 제공합니다. 모든 관리자 인터페이스는 JWT 인증과 RBAC 권한 검증이 필요하며, 공개 인터페이스는 `/api/v1` 프리픽스 아래에, 관리 인터페이스는 `/admin/v1` 프리픽스 아래에 마운트되며 버전은 URL 경로로 결정되고 요청 헤더는 사용하지 않습니다.
 
 - **기본 URL**: `http://localhost:8789`
 - **API 버전**: URL 경로에 포함됩니다 — 공개 엔드포인트는 `/api/v1`, 관리 엔드포인트는 `/admin/v1` 아래. 버전 요청 헤더는 사용하지 않으며, 향후 v2는 `/api/v2` 그룹으로 등록됩니다
@@ -1573,26 +1573,7 @@ POST /admin/v1/upload
 - Redis 원자화 슬라이딩 윈도우 알고리즘 (Lua ZSET) 사용, TOCTOU 경쟁 상태 방지
 - Redis 사용 불가 시 fail-closed: 503 반환 (`Retry-After: 5`), 요청 통과시키지 않음
 
-## 14. 데이터 분석 (Analytics)
-
-모든 엔드포인트는 인증 (`AdminAuth` + `AdminPermission`) 필요, MySQL 실시간 집계, 총 12개:
-
-| 메서드 | 경로 | 설명 |
-|------|------|------|
-| GET | /admin/v1/analytics/overview | 플랫폼 개요 (오늘/최근 7일) |
-| GET | /admin/v1/analytics/game-ranking | 게임 랭킹 (?days=7) |
-| GET | /admin/v1/analytics/dau-trend | DAU 추세 (?days=30) |
-| GET | /admin/v1/analytics/hourly-trend | 시간대 추세 |
-| GET | /admin/v1/analytics/action-distribution | 행동 분포 |
-| GET | /admin/v1/analytics/revenue | 매출 분석 |
-| GET | /admin/v1/analytics/conversion | 게임 전환율 |
-| GET | /admin/v1/analytics/probability | 결합/조건부 확률 |
-| GET | /admin/v1/analytics/retention | 리텐션 분석 D1/D3/D7/D30 |
-| GET | /admin/v1/analytics/funnel | 전환 퍼널 |
-| GET | /admin/v1/analytics/arpu | ARPU/ARPPU 추세 |
-| GET | /admin/v1/analytics/economy | 게임 통화 경제 지표 |
-
-## 15. 티켓 관리 (Ticket)
+## 14. 티켓 관리 (Ticket)
 
 모든 엔드포인트는 인증 (`AdminAuth` + `AdminPermission`) 필요, 총 5개:
 
@@ -1604,7 +1585,7 @@ POST /admin/v1/upload
 | POST | /admin/v1/ticket/{hashid}/close | 티켓 종료 |
 | POST | /admin/v1/ticket/{hashid}/assign | 처리자 지정 (admin_id) |
 
-## 16. 인증 흐름
+## 15. 인증 흐름
 
 완전한 인증 시퀀스:
 
@@ -1681,11 +1662,11 @@ POST /admin/v1/upload
 - 동시 세션 제한: 동일 사용자 최대 3개 유효 토큰, 4번째 기기 로그인 시 가장 오래된 토큰이 강제로 블랙리스트에 추가
 - 계정 잠금: 연속 5회 로그인 실패 시 15분 계정 잠금 트리거, 잠금 중 429 반환
 
-## 15. 배포 운영
+## 16. 배포 운영
 
 ### Docker Compose
 
-프로젝트 루트에 `docker-compose.yml` 제공, 5개 서비스 (Nginx, webman app, MySQL, Redis, Elasticsearch) 오케스트레이션. PHP는 `Dockerfile`로 빌드 (`php:8.3-cli` 기반, OPcache 활성화).
+프로젝트 루트에 `docker-compose.yml` 제공, 7개 서비스 (Nginx, admin, service, leaderboard-ws, MySQL, Redis, Elasticsearch) 오케스트레이션. PHP는 `Dockerfile`로 빌드 (`php:8.3-cli` 기반, OPcache 활성화).
 
 ```bash
 cp .env.docker .env
@@ -1709,11 +1690,11 @@ docker-compose up -d
 
 프로덕션 환경 배포 시 `docs/nginx-security.conf`를 참조하여 리버스 프록시 보안 강화 설정을 하세요.
 
-## 16. 데이터 분석 (Analytics)
+## 17. 데이터 분석 (Analytics)
 
 데이터 분석 인터페이스는 `AnalyticsController`가 제공하며, 모두 MySQL 실시간 집계 (`game_game_play_log` 게임 행동 로그 / `game_deposit_order` 충전 주문) 기반, 데이터베이스 장애 시 500이 아닌 빈 데이터를 반환합니다. 특별한 언급이 없으면 모두 JWT + RBAC 인증이 필요하며, 응답 포장 형식은 통일적으로 `{ "code": 0, "message": "success", "data": ... }`입니다.
 
-### 16.1 플랫폼 개요
+### 17.1 플랫폼 개요
 
 ```
 GET /admin/v1/analytics/overview
@@ -1721,7 +1702,7 @@ GET /admin/v1/analytics/overview
 
 **응답**: `today` / `week` 각각 `dau`（활성 사용자 수）, `revenue`（확인된 충전 총액, 문자열）, `new_users`（신규 사용자 수）포함.
 
-### 16.2 게임 랭킹
+### 17.2 게임 랭킹
 
 ```
 GET /admin/v1/analytics/game-ranking?days=7
@@ -1729,23 +1710,23 @@ GET /admin/v1/analytics/game-ranking?days=7
 
 **응답**: 게임 행동 횟수 내림차순 상위 10개, 각 항목은 `game_id`（hashid）, `name`, `plays`, `players` 포함.
 
-### 16.3 DAU 추세
+### 17.3 DAU 추세
 
 ```
 GET /admin/v1/analytics/dau-trend?days=30
 ```
 
-**응답**: `{ "日期": 活跃数, ... }`, 누락된 날짜는 0으로 채움.
+**응답**: `{ "날짜": 활성 수, ... }`, 누락된 날짜는 0으로 채움.
 
-### 16.4 시간대 추세
+### 17.4 시간대 추세
 
 ```
 GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
 ```
 
-**응답**: `{ "0": 次数, ... "23": 次数 }` 24개 정시 슬롯; `game_id`가 비어 있으면 전체 게임 집계.
+**응답**: `{ "0": 횟수, ... "23": 횟수 }` 24개 정시 슬롯; `game_id`가 비어 있으면 전체 게임 집계.
 
-### 16.5 행동 분포
+### 17.5 행동 분포
 
 ```
 GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
@@ -1753,15 +1734,15 @@ GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
 
 **응답**: `{ "start": n, "end": n, "earn": n, "spend": n }` 네 가지 행동 카운트; `hours` 상한 168.
 
-### 16.6 매출 개요
+### 17.6 매출 개요
 
 ```
 GET /admin/v1/analytics/revenue?days=7
 ```
 
-**응답**: `{ "total": "总额", "trend": { "日期": "当日额", ... } }`, `status=confirmed` 주문만 집계.
+**응답**: `{ "total": "총액", "trend": { "날짜": "일일 금액", ... } }`, `status=confirmed` 주문만 집계.
 
-### 16.7 게임 전환율
+### 17.7 게임 전환율
 
 ```
 GET /admin/v1/analytics/conversion?days=30
@@ -1769,7 +1750,7 @@ GET /admin/v1/analytics/conversion?days=30
 
 **응답**: 각 게임은 `game_id`（hashid）, `game_name`, `players`（중복 제거 플레이어 수）, `depositors`（중복 제거 충전 인원）, `conversion_rate`（충전 전환율, 0~1）포함.
 
-### 16.8 결합 확률
+### 17.8 결합 확률
 
 ```
 GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
@@ -1777,7 +1758,7 @@ GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
 
 **응답**: `{ "joint": { "joint_probability": 0.12, "confidence": 0.3 } }` — Jaccard 계수 (두 게임 공동 플레이어 / 합집합 플레이어)와 신뢰도 (공동 플레이어 / A 게임 플레이어).
 
-### 16.9 리텐션 분석
+### 17.9 리텐션 분석
 
 ```
 GET /admin/v1/analytics/retention?days=30
@@ -1785,7 +1766,7 @@ GET /admin/v1/analytics/retention?days=30
 
 **응답**: `{ "D1": "8.5%", "D3": "...", "D7": "...", "D30": "..." }` 가입일 기준 다음날/3일/7일/30일 리텐션율.
 
-### 16.10 전환 퍼널
+### 17.10 전환 퍼널
 
 ```
 GET /admin/v1/analytics/funnel?days=30
@@ -1793,7 +1774,7 @@ GET /admin/v1/analytics/funnel?days=30
 
 **응답**: 가입 → 첫 충전 → 첫 환전 → 첫 게임 네 단계의 `step`, `count`, `rate`（가입 수 대비 퍼센트）.
 
-### 16.11 ARPU/ARPPU 추세
+### 17.11 ARPU/ARPPU 추세
 
 ```
 GET /admin/v1/analytics/arpu?days=30
@@ -1801,7 +1782,7 @@ GET /admin/v1/analytics/arpu?days=30
 
 **응답**: `{ "dates": [...], "arpu": [...], "arppu": [...] }` 일별 1인당 매출 (ARPU)과 유료 사용자 1인당 매출 (ARPPU).
 
-### 16.12 게임 경제 지표
+### 17.12 게임 경제 지표
 
 ```
 GET /admin/v1/analytics/economy
@@ -1809,7 +1790,7 @@ GET /admin/v1/analytics/economy
 
 **응답**: `currencies` 배열, 각 항목은 `game_name`, `currency`, `symbol`, `total_minted`（발행 총량）, `total_burned`（소각 총량）, `circulation`（유통량）, `inflation_rate`（인플레이션율）포함, bcmath 고정밀 계산 사용.
 
-## 17. 결제 관리 (Payment)
+## 18. 결제 관리 (Payment)
 
 결제 수단 관리는 `PaymentController`가 제공하며, 5개 엔드포인트 모두 JWT + RBAC 인증이 필요합니다. `provider` 화이트리스트: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`. `config`는 결제 설정 JSON 문자열(DB에 암호화 저장)입니다.
 
@@ -1821,7 +1802,7 @@ GET /admin/v1/analytics/economy
 | PUT | /admin/v1/payment/method/{hashid} | 결제 수단 업데이트 |
 | DELETE | /admin/v1/payment/method/{hashid} | 결제 수단 삭제(pending 주문 존재 시 거부) |
 
-### 17.1 결제 수단 목록
+### 18.1 결제 수단 목록
 
 ```
 GET /admin/v1/payment/method/list
@@ -1869,7 +1850,7 @@ GET /admin/v1/payment/method/list
 | min_amount / max_amount | string | 금액 범위(정밀도 유지용 문자열), 0=제한 없음 |
 | config | string? | 결제 설정 JSON(암호화, 미설정 시 null) |
 
-### 17.2 결제 수단 활성/비활성 전환
+### 18.2 결제 수단 활성/비활성 전환
 
 ```
 POST /admin/v1/payment/method/toggle
@@ -1892,7 +1873,7 @@ POST /admin/v1/payment/method/toggle
 - 422: 검증 실패(id/status 누락 또는 status가 0/1 아님)
 - 404: 결제 수단이 존재하지 않음
 
-### 17.3 결제 수단 생성
+### 18.3 결제 수단 생성
 
 ```
 POST /admin/v1/payment/method/create
@@ -1938,20 +1919,20 @@ POST /admin/v1/payment/method/create
 **가능한 오류**:
 - 422: 검증 실패
 
-### 17.4 결제 수단 업데이트
+### 18.4 결제 수단 업데이트
 
 ```
 PUT /admin/v1/payment/method/{hashid}
 ```
 
 - **경로 파라미터**: `{hashid}`는 hashid 인코딩된 결제 수단 ID
-- **요청 본문**: 생성(17.3)과 동일, 모든 필드 선택, 전달된 필드만 업데이트
+- **요청 본문**: 생성(18.3)과 동일, 모든 필드 선택, 전달된 필드만 업데이트
 
 **가능한 오류**:
 - 404: 결제 수단이 존재하지 않음
 - 422: 검증 실패
 
-### 17.5 결제 수단 삭제
+### 18.5 결제 수단 삭제
 
 ```
 DELETE /admin/v1/payment/method/{hashid}

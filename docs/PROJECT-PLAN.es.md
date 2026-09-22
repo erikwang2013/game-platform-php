@@ -9,7 +9,7 @@ Languages: [中文](PROJECT-PLAN.md) · [English](PROJECT-PLAN.en.md) · [한국
 
 ---
 
-## 一、Estado actual del proyecto
+## 1. Estado actual del proyecto
 
 **Plataforma global de agregación de juegos** — PHP 8.3 + webman v2, monorepo de dos aplicaciones:
 `admin/`(8789 panel de administración) + `service/`(8792 lado C) + `apps/`(Flutter + HarmonyOS) + `install/`(asistente de instalación, 43 tablas).
@@ -22,11 +22,11 @@ Languages: [中文](PROJECT-PLAN.md) · [English](PROJECT-PLAN.en.md) · [한국
 | Pruebas | 132 casos / 8 archivos (proyecto admin); el proyecto service tiene **cero pruebas** |
 | Versión | v1.1 (2026-08-07): plugin Redis, servicio de análisis, degradación Redis, correcciones de pruebas |
 
-Capacidades implementadas: JWT+RBAC, bloqueo optimista de billetera, recargas (verificación de firma Stripe/PayPal/NowPayments/Coinbase), diferencial de conversión, revisión de retiros + pago PayPal, CRUD de juegos/gestión de proveedores (HMAC), cupones/VIP/logros/tickets/comisión por recomendación/2FA/social (amigos/chat WS)/torneos/Webhook/push (FCM/APNs/华为)/i18n bilingüe.
+Capacidades implementadas: JWT+RBAC, bloqueo optimista de billetera, recargas (verificación de firma Stripe/PayPal/NowPayments/Coinbase), diferencial de conversión, revisión de retiros + pago PayPal, CRUD de juegos/gestión de proveedores (HMAC), cupones/VIP/logros/tickets/comisión por recomendación/2FA/social (amigos/chat WS)/torneos/Webhook/push (FCM/APNs/Huawei)/i18n bilingüe.
 
 ---
 
-## 二、Problemas y riesgos (verificados empíricamente)
+## 2. Problemas y riesgos (verificados empíricamente)
 
 ### CRITICAL — Seguridad de fondos
 
@@ -71,7 +71,7 @@ El bloqueo optimista de billetera con actualización condicional de versión es 
 
 ---
 
-## 三、Hoja de ruta
+## 3. Hoja de ruta
 
 ### P0 — Seguridad de fondos + correctitud (primero, bloquea el lanzamiento)
 
@@ -110,13 +110,13 @@ El bloqueo optimista de billetera con actualización condicional de versión es 
 
 ---
 
-## 四、Puertas de calidad (colaboración en equipo)
+## 4. Puertas de calidad (colaboración en equipo)
 
 - Cada cambio de código: todas las pruebas de admin `vendor/bin/phpunit` deben pasar (quitar el `|| echo warning`)
 - Las rutas sensibles nuevas (pago/retiro/autenticación) deben incluir pruebas
 - Al modificar common/model hay que sincronizar ambos lados admin+service (hasta que la capa compartida esté implementada)
 - Puntos clave recomendados por el informe de revisión: firma de ProviderAuth, cifrado AES, SQL escrito a mano de ProbabilityService
 
-## 五、Equipo
+## 5. Equipo
 
 El equipo de game-platform (6 miembros: researcher/architect/backend-dev/frontend-dev/tester/reviewer) está listo y puede ejecutar P0 directamente.

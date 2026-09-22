@@ -63,7 +63,7 @@ class HealthController
     private function checkES(): string
     {
         try {
-            $hosts = config('plugin.erikwang2013.webman-scout.scout.hosts', ['http://localhost:9200']);
+            $hosts = (array) config('scout.hosts', ['http://localhost:9200']);
             $client = new \GuzzleHttp\Client(['timeout' => 2]);
             $resp = $client->get(rtrim($hosts[0], '/') . '/_cluster/health');
             $body = json_decode((string) $resp->getBody(), true);

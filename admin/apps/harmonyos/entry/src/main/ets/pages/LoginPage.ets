@@ -6,11 +6,7 @@ import router from '@ohos.router';
 import promptAction from '@ohos.promptAction';
 import http from '@ohos.net.http';
 import { TokenManager } from '../utils/TokenManager';
-
-// 开发环境地址 — 真机部署时修改为实际服务器地址
-// 模拟器: http://10.0.2.2:8792
-// 真机: http://<服务器IP>:8792
-const BASE_URL = 'http://10.0.2.2:8792';
+import { API_BASE_URL } from '../common/AppConfig';
 
 // 库仅下发 text/order, 刻意不含 x/y: 坐标为服务端校验依据, 下发即泄题
 interface CaptchaTarget {
@@ -58,7 +54,7 @@ struct LoginPage {
     this.captchaError = '';
 
     try {
-      const resp = await this.httpClient.request(`${BASE_URL}/api/v1/captcha/generate`, {
+      const resp = await this.httpClient.request(`${API_BASE_URL}/api/v1/captcha/generate`, {
         method: http.RequestMethod.POST,
         header: { 'Content-Type': 'application/json', 'X-Client-Platform': 'harmonyos' },
         extraData: JSON.stringify({ difficulty: 'medium' }),
@@ -121,7 +117,7 @@ struct LoginPage {
     this.loginError = '';
 
     try {
-      const resp = await this.httpClient.request(`${BASE_URL}/api/v1/auth/login`, {
+      const resp = await this.httpClient.request(`${API_BASE_URL}/api/v1/auth/login`, {
         method: http.RequestMethod.POST,
         header: { 'Content-Type': 'application/json', 'X-Client-Platform': 'harmonyos' },
         extraData: JSON.stringify({

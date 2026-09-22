@@ -10,7 +10,7 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 ---
 
-## 一、Prüfzusammenfassung
+## 1. Prüfzusammenfassung
 
 | Dimension | Bewertung | Beschreibung |
 |------|------|------|
@@ -24,7 +24,7 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 ---
 
-## 二、Erstellte Dateien
+## 2. Erstellte Dateien
 
 ### 2.1 `install/install.sql` (988 Zeilen)
 - 8 ursprüngliche Migrationsdateien zusammengeführt
@@ -41,7 +41,7 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 | `game_admin_role` | INSERT IGNORE (feste ID) |
 | `game_admin_permission` | INSERT IGNORE (feste ID) - 4x |
 | `game_admin_role_permission` | WHERE-NOT-EXISTS-Subquery |
-| `game-platform_config` | INSERT IGNORE (feste ID) - 2x |
+| `game_platform_config` | INSERT IGNORE (feste ID) - 2x |
 | `game_language` | INSERT IGNORE (feste ID) |
 | `game_translation` | INSERT IGNORE (feste ID) |
 | `game_risk_rule` | INSERT IGNORE (feste ID) |
@@ -71,7 +71,7 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 ---
 
-## 三、Umgebungsprüfungs-Abdeckung (11 Punkte)
+## 3. Umgebungsprüfungs-Abdeckung (11 Punkte)
 
 | # | Prüfpunkt | Ebene | Status |
 |---|--------|------|------|
@@ -89,7 +89,7 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 ---
 
-## 四、Vollständigkeit der Ökosystem-Konfiguration
+## 4. Vollständigkeit der Ökosystem-Konfiguration
 
 ### 4.1 Admin-`.env`-Generierung (70 Konfigurationseinträge)
 
@@ -130,7 +130,7 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 ---
 
-## 五、Sicherheitsprüfung
+## 5. Sicherheitsprüfung
 
 ### 5.1 Umgesetzte Sicherheitsmaßnahmen
 
@@ -161,7 +161,7 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 
 ---
 
-## 六、Testergebnisse
+## 6. Testergebnisse
 
 ### 6.1 PHP-Syntaxprüfung
 ```
@@ -188,7 +188,7 @@ Bestanden WHERE-NOT-EXISTS-Wächter wiederhergestellt (identisch mit Originalmig
 
 ---
 
-## 七、Gefundene und behobene Probleme
+## 7. Gefundene und behobene Probleme
 
 | # | Problem | Schweregrad | Status |
 |---|------|--------|------|
@@ -201,7 +201,7 @@ Bestanden WHERE-NOT-EXISTS-Wächter wiederhergestellt (identisch mit Originalmig
 
 ---
 
-## 八、Dokumentationsänderungen
+## 8. Dokumentationsänderungen
 
 | Datei | Änderungsinhalt |
 |------|---------|
@@ -212,7 +212,7 @@ Bestanden WHERE-NOT-EXISTS-Wächter wiederhergestellt (identisch mit Originalmig
 
 ---
 
-## 九、Gesamtbewertung
+## 9. Gesamtbewertung
 
 Das Installationssystem ist funktional vollständig, die Codequalität gut und die Sicherheitsmaßnahmen angemessen. Der 5-Schritte-Installationsablauf ist klar und intuitiv, die Umgebungsprüfung deckt alle für den webman-Betrieb erforderlichen Schlüsselerweiterungen ab, generiert automatisch starke Schlüssel und die Konfigurationsdateien sind vollständig mit dem bestehenden System kompatibel. Der SQL-Zusammenführungsprozess bleibt exakt konsistent mit den ursprünglichen Migrationsdateien (42 Tabellen), und die Idempotenz-Behandlung stellt sicher, dass eine erneute Ausführung keine Fehler verursacht.
 
@@ -220,7 +220,7 @@ Das Installationssystem ist funktional vollständig, die Codequalität gut und d
 
 ---
 
-## 十、Statusbestätigung 2026-08-18
+## 10. Statusbestätigung 2026-08-18
 
 Diese Sicherheitsrunde (Zahlungs-Callback fail-closed, JWT-Startprüfung, einheitliches Tabellenpräfix) **betrifft das Installationssystem nicht**, keine neuen Probleme:
 

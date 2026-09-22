@@ -13,7 +13,7 @@ C측 사용자 플랫폼 API 서비스. webman v2(Workerman) 기반의 고성능
 |------|------|
 | 사용자 | 회원가입/로그인(아이디·비밀번호 + 7개 플랫폼 OAuth + 2FA TOTP), 프로필 |
 | 지갑 | 플랫폼 코인 지갑(낙관적 잠금) + 게임 코인 지갑 + 거래 내역 |
-| 충전 | 13개 결제 게이트웨이(Stripe/PayPal/NowPayments/Coinbase 등) 콜백 서명 검증, 자동 입금 |
+| 충전 | 18개 결제 게이트웨이(Stripe/PayPal/NowPayments/Coinbase 등) 콜백 서명 검증, 자동 입금 |
 | 출금 | 신청 → 심사 → 지급, KYC 단계별 한도 |
 | 환전 | 플랫폼 코인 ⇄ 게임 코인 실시간 견적, VIP 할인 및 환율 가산 |
 | 게임 | 게임 목록/카테고리/검색, 플레이 기록, Provider 정산 콜백 |
@@ -39,8 +39,12 @@ C측 사용자 플랫폼 API 서비스. webman v2(Workerman) 기반의 고성능
 ```
 service/
 ├── app/
-│   ├── api/v1/controller/  # C측 API 컨트롤러(35개)
-│   ├── middleware/         # 미들웨어(Cors/SecurityFilter/RateLimit/ApiVersion/UserAuth/ProviderAuth)
+│   ├── activity/           # 활동 핸들러
+│   ├── api/v1/controller/  # C측 API 컨트롤러(34개)
+│   ├── bootstrap/          # 알림 부트스트랩
+│   ├── cdn/                # CDN 멀티 벤더 (Alibaba Cloud/Tencent Cloud/Huawei Cloud/Cloudflare/CloudFront + CdnFactory)
+│   ├── common/             # 공통
+│   ├── middleware/         # 미들웨어(Cors/SecurityFilter/RateLimit/TraceId/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
 │   ├── model/              # 데이터 모델
 │   ├── service/            # 비즈니스 서비스(VIP/랭킹/리스크/알림 등)
 │   ├── event/              # 이벤트 버스(EventBus Redis Pub/Sub)
@@ -49,9 +53,14 @@ service/
 ├── common/                 # 공유 서비스 디렉터리(실체는 erik/platform-common 패키지)
 ├── config/                 # 설정 파일
 ├── public/                 # Web 진입점
+├── runtime/                # 런타임 파일
+├── support/                # 보조 클래스
 ├── tests/                  # PHPUnit 테스트
 ├── start.php               # 시작 진입점
-└── composer.json
+├── windows.php             # Windows 시작 진입점
+├── composer.json
+├── phpunit.xml             # PHPUnit 설정
+└── Dockerfile              # 이미지 빌드
 ```
 
 ## 원클릭 설치
@@ -93,7 +102,7 @@ php start.php start -d     # 백그라운드
 ## 사용 방법
 
 - API 문서: `docs/API.md`(전체 API 레퍼런스)
-- 온라인 문서: http://localhost:8792/apidoc/ (hg/apidoc 대화형 문서)
+- 온라인 문서: http://localhost:8792/apidoc/ (erikwang2013/apidoc-php 대화형 문서)
 - 헬스 체크: `GET http://localhost:8792/health`
 - C측 프런트엔드: `apps/flutter/platform/`(Flutter Web 사용자 플랫폼)
 - 관리 백엔드: `admin/`(관리 백엔드 및 `admin/apps/flutter/` 프런트엔드)

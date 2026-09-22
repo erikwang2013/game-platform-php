@@ -13,7 +13,7 @@ Layanan API platform pengguna (sisi C) adalah backend PHP berkinerja tinggi berb
 |------|------|
 | Pengguna | Registrasi/login (nama pengguna+kata sandi + OAuth 7 platform + 2FA TOTP), profil |
 | Dompet | Dompet koin platform (kunci optimistis) + dompet koin game + riwayat transaksi |
-| Deposit | 13 gateway pembayaran (Stripe/PayPal/NowPayments/Coinbase, dll.) verifikasi tanda tangan callback dan kredit otomatis |
+| Deposit | 18 gateway pembayaran (Stripe/PayPal/NowPayments/Coinbase, dll.) verifikasi tanda tangan callback dan kredit otomatis |
 | Penarikan | Pengajuan → peninjauan → pembayaran, batas berjenjang KYC |
 | Penukaran | Kuotasi real-time koin platform ⇄ koin game, diskon VIP dan bonus kurs |
 | Game | Daftar/kategori/pencarian game, riwayat bermain, callback penyelesaian Provider |
@@ -39,8 +39,12 @@ Layanan API platform pengguna (sisi C) adalah backend PHP berkinerja tinggi berb
 ```
 service/
 ├── app/
-│   ├── api/v1/controller/  # Kontroler API sisi C (35)
-│   ├── middleware/         # Middleware (Cors/SecurityFilter/RateLimit/ApiVersion/UserAuth/ProviderAuth)
+│   ├── activity/           # Handler aktivitas
+│   ├── api/v1/controller/  # Kontroler API sisi C (34)
+│   ├── bootstrap/          # Bootstrap notifikasi
+│   ├── cdn/                # CDN multi-vendor (Aliyun/Tencent/Huawei/Cloudflare/CloudFront + CdnFactory)
+│   ├── common/             # Umum
+│   ├── middleware/         # Middleware (Cors/SecurityFilter/RateLimit/TraceId/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
 │   ├── model/              # Model data
 │   ├── service/            # Layanan bisnis (VIP/papan peringkat/risiko/notifikasi, dll.)
 │   ├── event/              # Bus peristiwa (EventBus Redis Pub/Sub)
@@ -49,9 +53,14 @@ service/
 ├── common/                 # Direktori layanan bersama (diimplementasikan di paket erik/platform-common)
 ├── config/                 # File konfigurasi
 ├── public/                 # Pintu masuk web
+├── runtime/                # File runtime
+├── support/                # Kelas pendukung
 ├── tests/                  # Tes PHPUnit
 ├── start.php               # Pintu masuk startup
-└── composer.json
+├── windows.php             # Entri startup Windows
+├── composer.json
+├── phpunit.xml             # Konfigurasi PHPUnit
+└── Dockerfile              # Build image
 ```
 
 ## Instalasi Sekali Klik
@@ -93,7 +102,7 @@ php start.php start -d     # latar belakang (daemon)
 ## Penggunaan
 
 - Referensi API: `docs/API.md` (referensi lengkap)
-- Dokumentasi daring: http://localhost:8792/apidoc/ (dokumentasi interaktif hg/apidoc)
+- Dokumentasi daring: http://localhost:8792/apidoc/ (dokumentasi interaktif erikwang2013/apidoc-php)
 - Pemeriksaan kesehatan: `GET http://localhost:8792/health`
 - Frontend sisi C: `apps/flutter/platform/` (platform pengguna Flutter Web)
 - Backend admin: `admin/` (backend admin dan frontend `admin/apps/flutter/`)

@@ -14,6 +14,8 @@ flowchart TB
         A1["Flutter Web PC<br/>管理后台"]
         A2["Flutter Web PC<br/>C端用户平台"]
         A3["HarmonyOS ArkTS<br/>手机/平板客户端"]
+        A4["React · Angular<br/>管理后台"]
+        A5["React · Angular<br/>C端用户平台"]
     end
 
     subgraph "网关层 (Nginx)"
@@ -34,7 +36,7 @@ flowchart TB
     end
 
     subgraph "存储层"
-        E1[("MySQL 8.0<br/>主存储<br/>52 张表")]
+        E1[("MySQL 8.0<br/>主存储<br/>78 张表")]
         E2[("Redis<br/>Session/缓存/限流<br/>EventBus/心跳")]
         E3[("Elasticsearch<br/>全文检索")]
         E4[("ClickHouse<br/>OLAP 分析<br/>概率计算")]
@@ -46,7 +48,7 @@ flowchart TB
         F3["OAuth (7平台)<br/>Google/Facebook/Apple<br/>X(Twitter)/Microsoft<br/>LinkedIn/GitHub"]
     end
 
-    A1 & A2 & A3 -->|"HTTPS/JSON<br/>JWT Bearer"| B1
+    A1 & A2 & A3 & A4 & A5 -->|"HTTPS/JSON<br/>JWT Bearer"| B1
     B1 -->|"/admin/*"| C1
     B1 -->|"/api/*"| C2
     C1 & C2 --> D0 & D1 & D2 & D3 & D4
@@ -64,7 +66,7 @@ Lapisan rute: config/route.php
   ↓
 Rantai middleware: Cors → SecurityFilter → RateLimit → AdminAuth → AdminPermission → OperationLog
   ↓
-Lapisan controller (28):
+Lapisan controller (45):
   ┌──────────────────────────────────────────────────────────┐
   │ Dashboard / User / Role / Permission / Config / Log      │ ← original
   │ Profile / Export / Import / Upload / Health / Docs       │ ← original
@@ -86,9 +88,9 @@ Lapisan penyimpanan: MySQL / Redis / Elasticsearch / ClickHouse
 ```
 Lapisan rute: config/route.php
   ↓
-Rantai middleware: Cors → SecurityFilter → RateLimit → Language → ApiVersion → [UserAuth | ProviderAuth]
+Rantai middleware: TraceId → Cors → SecurityFilter → RateLimit → Language → [UserAuth | ProviderAuth | SdkSessionAuth]
   ↓
-Lapisan controller (25):
+Lapisan controller (34):
   ┌──────────────────────────────────────────────────────────┐
   │ Auth / Wallet / Deposit / Exchange / Withdraw            │ ← original
   │ Game / User / Announcement / Captcha                     │ ← original
@@ -98,7 +100,7 @@ Lapisan controller (25):
   │ Provider / Ticket / Verification                         │ ← baru
   └──────────────────────────────────────────────────────────┘
   ↓
-Lapisan layanan: VIP / Achievement / EventBus / FeatureFlag / Risk / GameSession
+Lapisan layanan: VIP / Achievement / EventBus / FeatureFlag / Risk
   ↓
 Lapisan Provider: GameProvider → SelfProvider / ThirdPartyProvider
   ↓
@@ -181,7 +183,7 @@ Permintaan → Cors (CORS)
 
 ```
 API biasa:
-  Permintaan → Cors → SecurityFilter → RateLimit → Language → ApiVersion
+  Permintaan → TraceId → Cors → SecurityFilter → RateLimit → Language
        → [UserAuth] (JWT→401) → Controller → Respons
 
 Provider API:
@@ -195,10 +197,10 @@ Provider API:
 ### 4.1 Alur Deposit
 
 ```
-Pengguna → POST /api/deposit/create → buat pesanan (status=pending)
+Pengguna → POST /api/v1/deposit/create → buat pesanan (status=pending)
      → buat pembayaran via GatewayFactory (Stripe Checkout (incl. Alipay/WeChat Pay APM)/invoice NowPayments/charge Coinbase) → isi checkout_url + expires_at(+1h); jika gagal, batalkan pesanan via CAS dan coba lagi
      → lompat ke pembayaran pihak ketiga (Stripe (incl. Alipay/WeChat Pay)/PayPal/NowPayments[USDT TRC20/ERC20]/Coinbase[USDC/BTC/ETH])
-     → pembayaran sukses → callback /api/payment/callback
+     → pembayaran sukses → callback /api/v1/payment/callback
      → daftar putih provider (hanya stripe/paypal/nowpayments/coinbase/skrill/neteller/paysafecard/paytm/mercadopago/astropay/paypay/kakaopay/gcash) + validasi penggunaan lintas saluran + verifikasi tanda tangan (fail-closed) + timestamp ±300s + bccomp perbandingan jumlah
      → perbarui pesanan (status=confirmed, transaksional)
      → UserWallet::addBalance() → koin platform masuk
@@ -211,10 +213,10 @@ Pengguna → POST /api/deposit/create → buat pesanan (status=pending)
 ### 4.2 Alur Penukaran
 
 ```
-Pengguna → POST /api/exchange/quote → kueri harga
+Pengguna → POST /api/v1/exchange/quote → kueri harga
      → VipService::getExchangeDiscount() → terapkan diskon VIP
      → VipService::getRateBonus() → terapkan bonus kurs VIP
-     → konfirmasi → POST /api/exchange/buy (atau sell)
+     → konfirmasi → POST /api/v1/exchange/buy (atau sell)
      → DB::beginTransaction()
      ├─ kurangi mata uang sumber (lockForUpdate)
      ├─ tambah mata uang target
@@ -228,7 +230,7 @@ Pengguna → POST /api/exchange/quote → kueri harga
 ### 4.3 Alur Penarikan
 
 ```
-Pengguna → POST /api/withdraw/apply
+Pengguna → POST /api/v1/withdraw/apply
      → VipService::getWithdrawFeeDiscount() → terapkan keringanan biaya VIP
      → periksa saklar global (PlatformConfig)
      → periksa batas (min_amount / daily_limit)
@@ -237,7 +239,7 @@ Pengguna → POST /api/withdraw/apply
      → jumlah≥threshold → pending (review manual)
      → catat Transaction
 
-Admin → PUT /admin/withdraw/review
+Admin → PUT /admin/v1/withdraw/review
        → approve: tandai selesai
        → reject: kembalikan koin platform + transaksi pengembalian
 ```
@@ -371,15 +373,28 @@ flowchart TB
 ## 7. Arsitektur Pengujian
 
 ```
-tests/
+tests/                             # 21 file · 200 kasus uji
 ├── bootstrap.php                  # Bootstrap PHPUnit
-├── PlatformTest.php               # 56 tes logika bisnis
-├── BackendEnhancementTest.php     # 23 tes layanan enkripsi/ID
-├── CaptchaTest.php                # 7 tes CAPTCHA
-├── EncryptionServiceTest.php      # 6 tes enkripsi/dekripsi
-├── EnvConfigTest.php              # 4 tes konfigurasi lingkungan
-├── HashidsServiceTest.php         # 8 tes encode/decode ID
-└── SnowflakeServiceTest.php       # 6 tes ID Snowflake
+├── AuthControllerRegisterTest.php # 15 tes kekuatan kata sandi pendaftaran
+├── BackendEnhancementTest.php     # 27 tes layanan enkripsi/ID
+├── CaptchaTest.php                # 5 tes CAPTCHA
+├── CdnProbeServiceTest.php        # 5 tes probe CDN
+├── CdnProviderModelTest.php       # 3 tes model penyedia CDN
+├── ClickHouseServiceTest.php      # 16 tes layanan ClickHouse
+├── ConfigDefaultsTest.php         # 4 tes nilai default konfigurasi
+├── EncryptionServiceTest.php      # 8 tes enkripsi/dekripsi
+├── EnvConfigTest.php              # 6 tes konfigurasi lingkungan
+├── GameControllerTest.php         # 5 tes controller game
+├── GameRouteTest.php              # 5 tes rute game
+├── HashidsServiceTest.php         # 6 tes encode/decode ID
+├── LeaderboardServiceTest.php     # 4 tes layanan papan peringkat
+├── NotificationServiceTest.php    # 3 tes layanan notifikasi
+├── PayoutServiceTest.php          # 9 tes layanan pembayaran
+├── PlatformCommonTest.php         # 6 tes pembuat kueri bersama
+├── PlatformTest.php               # 55 tes logika bisnis
+├── ReportControllerTest.php       # 5 tes rentang tanggal laporan
+├── SnowflakeServiceTest.php       # 5 tes ID Snowflake
+└── TranslationServiceTest.php     # 8 tes layanan terjemahan
 ```
 
 ## 8. Alokasi Port
@@ -397,42 +412,59 @@ tests/
 
 ## 9. Dokumentasi API
 
-Menggunakan `hg/apidoc` untuk membuat dokumentasi API interaktif otomatis melalui anotasi controller:
+Menggunakan `erikwang2013/apidoc-php` untuk membuat dokumentasi API interaktif otomatis melalui anotasi controller:
 
 | Dokumentasi | Alamat | Controller | Endpoint |
 |------|------|--------|------|
-| Backend administrasi | :8789/apidoc/ | 28 | ~85 |
-| Bisnis sisi C | :8792/apidoc/ | 25 | ~65 |
+| Backend administrasi | :8789/apidoc/ | 45 | 154 |
+| Bisnis sisi C | :8792/apidoc/ | 34 | 107 |
 
 ## 10. Daftar Tabel Database
 
-### Versi Dasar (14 tabel) + admin (7 tabel)
-game_user, game_user_wallet, game_user_game_wallet, game_game, game_game_currency,
-game_deposit_order, game_withdraw_order, game_exchange_record, game_transaction,
-game_payment_method, game_announcement, game-platform_config, game_language, game_translation,
-game_admin_user, game_admin_role, game_admin_permission, game_admin_user_role,
-game_admin_role_permission, game_operation_log, game_system_config
+### Versi Dasar (12 tabel) + admin (7 tabel)
+game_user, game_user_wallet, game_user_game_wallet,
+game_game, game_game_currency, game_deposit_order,
+game_withdraw_order, game_exchange_record, game_transaction,
+game_payment_method, game_announcement, game_platform_config,
+game_admin_user, game_admin_role, game_admin_permission,
+game_admin_user_role, game_admin_role_permission, game_operation_log,
+game_system_config
 
 ### Versi Standar (10 tabel)
-game_user_oauth, game_user_session, game_user_identity, game_user_payment_account,
-game_withdraw_limit, game_game_server, game_game_play_log, game_risk_rule,
-game_risk_log, game_stat_daily
+game_user_identity, game_user_oauth, game_user_payment_account,
+game_user_session, game_game_server, game_game_play_log,
+game_withdraw_limit, game_risk_rule, game_risk_log,
+game_stat_daily
 
-### Versi Lengkap (8 tabel)
-game_game_category, game_game_category_rel, game_leaderboard, game_coupon,
-game_user_coupon, game_country_config, game-platform_revenue
+### Versi Lengkap (13 tabel)
+game_game_category, game_game_category_rel, game_leaderboard,
+game_coupon, game_user_coupon, game_language,
+game_translation, game_country_config, game_platform_revenue,
+game_notification, game_referral, game_referral_reward,
+game_user_2fa
 
-### Perluasan Ekosistem (10 tabel) ← baru
+### Perluasan Ekosistem (14 tabel) ← baru
 game_ticket, game_ticket_reply, game_device_token,
 game_vip_level, game_user_vip, game_exp_log,
-game_achievement, game_user_achievement,
-game_friend, game_message
+game_achievement, game_user_achievement, game_friend,
+game_message, game_cdn_provider, game_referral_commission,
+game_tournament, game_tournament_entry
 
-**Total: 52 tabel**
+### Penambahan v1.3.15-22 (22 tabel)
+game_event_outbox, game_reconciliation_batch, game_reconciliation_diff,
+game_reconciliation_statement, game_device_fingerprint, game_device_account_map,
+game_ip_reputation, game_account_account_link, game_activity,
+game_activity_participation, game_activity_reward_log, game_anticheat_event,
+game_anticheat_daily_stat, game_group, game_group_member,
+game_share_link, game_aml_rule, game_aml_hit,
+game_kyc_level, game_user_kyc, game_user_trust,
+game_risk_cluster
+
+**Total: 78 tabel**
 
 ## 11. Fitur Saklar
 
-Berdasarkan namespace `feature.*` di `game-platform_config`, nol dependensi tambahan:
+Berdasarkan namespace `feature.*` di `game_platform_config`, nol dependensi tambahan:
 
 | Saklar | Default | Fungsi |
 |------|------|------|

@@ -51,7 +51,7 @@ rm -rf install/
 
 Operações executadas pelo assistente de instalação:
 - Verificação do ambiente PHP (versão, extensões, permissões de diretório)
-- Execução do SQL consolidado (`install/install.sql`), criando 52 tabelas e importando os dados de seed
+- Execução do SQL consolidado (`install/install.sql`), criando 78 tabelas e importando os dados de seed
 - Criação da conta de superadministrador (criptografia bcrypt, vinculada ao role super_admin)
 - Geração automática das chaves JWT/Encryption/Hashids
 - Gravação em `admin/.env` e `service/.env`
@@ -83,7 +83,7 @@ docker-compose ps
 docker-compose logs -f
 ```
 
-### 2.2 Lista de serviços
+### 3.2 Lista de serviços
 
 | Serviço | Nome do container | Porta | Observação |
 |------|--------|------|------|
@@ -98,9 +98,9 @@ docker-compose logs -f
 > **Configuração de portas**: As portas da tabela são os valores padrão e todas podem ser alteradas no `.env` da raiz do projeto (modelo `.env.example`; edite após `cp .env.example .env`):
 > `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `LEADERBOARD_WS_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
 > As portas upstream do `nginx.conf.template` são renderizadas automaticamente pelo envsubst da imagem oficial; não é necessário alterar manualmente a configuração do Nginx.
-> Observação: alterar `ADMIN_PORT` / `SERVICE_PORT` não atualiza automaticamente o `APP_URL` em `admin/.env` nem o `SITE_URL` em `service/.env`; os endereços de acesso externo também precisam ser alterados.
+> Em implantações Docker, os endereços públicos (`APP_URL` / `SITE_URL`) seguem automaticamente `ADMIN_PORT` / `SERVICE_PORT` por padrão (formato `http://localhost:porta`); para domínio personalizado ou HTTPS, defina `APP_URL` / `SITE_URL` no `.env` raiz (sobrescreve as chaves de mesmo nome em `admin/.env` e `service/.env`). Em implantações bare-metal (manuais), atualize os endereços manualmente ao alterar as portas.
 
-### 2.3 Inicialização do banco de dados
+### 3.3 Inicialização do banco de dados
 
 ```bash
 # Os arquivos de migração são executados automaticamente no primeiro start do MySQL
@@ -108,7 +108,7 @@ docker-compose logs -f
 docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform < install/install.sql
 ```
 
-### 2.4 Persistência de dados
+### 3.4 Persistência de dados
 
 Os volumes de dados são criados automaticamente, sem gerenciamento manual:
 
@@ -129,9 +129,9 @@ gunzip < backup_20260101.sql.gz | docker exec -i game-platform-mysql mysql -uroo
 
 ---
 
-## 3. Implantação manual
+## 4. Implantação manual
 
-### 3.1 Configuração do ambiente PHP
+### 4.1 Configuração do ambiente PHP
 
 ```bash
 # Ubuntu/Debian
@@ -145,7 +145,7 @@ echo "opcache.enable=1" >> /etc/php/8.3/cli/php.ini
 echo "opcache.enable_cli=1" >> /etc/php/8.3/cli/php.ini
 ```
 
-### 3.2 Instalar dependências
+### 4.2 Instalar dependências
 
 ```bash
 cd /opt/game-platform
@@ -163,7 +163,7 @@ cp .env.example .env
 composer install --no-dev --optimize-autoloader
 ```
 
-### 3.3 Configurar o .env
+### 4.3 Configurar o .env
 
 **Configurações-chave de admin/.env:**
 ```ini
@@ -270,7 +270,7 @@ TOSS_API_URL=https://api.tosspayments.com
 SITE_URL=https://your-domain.com  # URL do site para callbacks/redirecionamentos de pagamento
 ```
 
-### 3.4 Iniciar os serviços
+### 4.4 Iniciar os serviços
 
 ```bash
 # Painel administrativo (porta padrão 8789, alterável via APP_PORT em admin/.env)
@@ -286,7 +286,7 @@ curl http://localhost:8789/health
 curl http://localhost:8792/health
 ```
 
-### 3.5 Gerenciamento de processos (Systemd)
+### 4.5 Gerenciamento de processos (Systemd)
 
 Crie `/etc/systemd/system/game-platform-admin.service`:
 
@@ -319,9 +319,9 @@ systemctl enable --now game-platform-admin game-platform-service
 
 ---
 
-## 4. Proxy reverso Nginx
+## 5. Proxy reverso Nginx
 
-### 4.1 Arquivo de configuração
+### 5.1 Arquivo de configuração
 
 Crie `/etc/nginx/sites-available/game-platform`:
 
@@ -330,6 +330,11 @@ Crie `/etc/nginx/sites-available/game-platform`:
 server {
     listen 80;
     server_name your-domain.com;
+
+    # nginx 自身发出的 301（如目录补斜杠 /admin-panel → /admin-panel/）改用相对
+    # Location，客户端按当前 host:port 解析；默认绝对跳转会退回 listen 端口，
+    # 非 80 端口部署（如 8080）时会跳错端口。
+    absolute_redirect off;
 
     # API do painel administrativo
     location /admin/ {
@@ -364,24 +369,96 @@ server {
         proxy_pass http://127.0.0.1:8789;
     }
 
-    # Métricas Prometheus
+    # Prometheus 指标
     location /metrics {
         proxy_pass http://127.0.0.1:8789;
     }
 
-    # Frontend do painel administrativo
-    location /admin-panel {
-        alias /opt/game-platform/admin/apps/flutter/build/web;
-        try_files $uri $uri/ /admin-panel/index.html;
-    }
+    # ================================================================
+    # 静态前端。两套前端定位不同：
+    #   apps/*         = C 端玩家端（调 /api/ → service）
+    #   admin/apps/*   = 管理台（调 /admin/ → admin）
+    # 各产物需先构建；React/Angular 必须带子路径前缀构建，否则资源 404：
+    #   apps/react            npm run build                （已含 --base=/app-react/）
+    #   apps/angular          npm run build                （已含 --base-href=/app-angular/）
+    #   admin/apps/react      npm run build                （已含 --base=/admin-react/）
+    #   admin/apps/angular    npm run build                （已含 --base-href=/admin-angular/）
+    #   admin/apps/flutter    flutter build web --base-href=/admin-flutter/
+    #   apps/flutter/platform flutter build web            （挂在根路径）
+    # try_files 末项是【内部重定向】，目标 index.html 不存在时会重新匹配同一 location
+    # 形成重定向环，nginx 报 500 而非 404。规避方式按 location 类型二选一：
+    #   root  型 → 末项追加 =404，把它降级为文件存在性判断；
+    #   alias 型 → 追加 =404 会让兜底不再经 alias 解析，已构建的 SPA 深链接也会 404，
+    #              所以保留原样，另加 location = 精确匹配兜底 URI（精确匹配优先，
+    #              不会再回到前缀 location，环不成立）。
+    # alias 的结尾斜杠必须与 location 的结尾斜杠一致（location /x 配 alias .../x，
+    # location /x/ 配 alias .../x/）。错配时 /x../<路径> 会越级解析到上级目录，可读
+    # 取 docroot 之外的任意文件，且 nginx -t 完全查不出来。
+    # ================================================================
 
-    # Frontend da plataforma C-side
+    # C 端主入口 — Flutter Web
     location / {
         root /opt/game-platform/apps/flutter/platform/build/web;
-        try_files $uri $uri/ /index.html;
+        try_files $uri $uri/ /index.html =404;
+    }
+
+    # C 端 React / Angular Web（URL 前缀与产物目录名不同，用 alias 直接指向产物）
+    location /app-react/ {
+        alias /opt/game-platform/apps/react/dist/;
+        try_files $uri $uri/ /app-react/index.html;
+    }
+    location = /app-react/index.html {
+        alias /opt/game-platform/apps/react/dist/index.html;
+    }
+
+    location /app-angular/ {
+        alias /opt/game-platform/apps/angular/dist/game-client-angular/browser/;
+        try_files $uri $uri/ /app-angular/index.html;
+    }
+    location = /app-angular/index.html {
+        alias /opt/game-platform/apps/angular/dist/game-client-angular/browser/index.html;
+    }
+
+    # 管理台 — 通用投放位：把任一控制台产物拷进 admin/public 即可
+    # 注意：location 不以 / 结尾时 alias 也【不能】以 / 结尾，否则 /admin-panel../.env
+    # 会解析到上级目录（admin/.env）造成任意文件读取；nginx -t 查不出这类错配。
+    location /admin-panel {
+        alias /opt/game-platform/admin/public;
+        try_files $uri $uri/ /admin-panel/index.html;
+    }
+    location = /admin-panel/index.html {
+        alias /opt/game-platform/admin/public/index.html;
+    }
+
+    # 管理台 React / Angular / Flutter
+    location /admin-react/ {
+        alias /opt/game-platform/admin/apps/react/dist/;
+        try_files $uri $uri/ /admin-react/index.html;
+    }
+    location = /admin-react/index.html {
+        alias /opt/game-platform/admin/apps/react/dist/index.html;
+    }
+
+    location /admin-angular/ {
+        alias /opt/game-platform/admin/apps/angular/dist/game-admin-angular/browser/;
+        try_files $uri $uri/ /admin-angular/index.html;
+    }
+    location = /admin-angular/index.html {
+        alias /opt/game-platform/admin/apps/angular/dist/game-admin-angular/browser/index.html;
+    }
+
+    location /admin-flutter/ {
+        alias /opt/game-platform/admin/apps/flutter/build/web/;
+        try_files $uri $uri/ /admin-flutter/index.html;
+    }
+    location = /admin-flutter/index.html {
+        alias /opt/game-platform/admin/apps/flutter/build/web/index.html;
     }
 }
 ```
+
+> No deployment manual você mesmo coloca os artefatos compilados nesses diretórios (quatro árvores do lado C: `apps/flutter/platform`, `apps/react`, `apps/angular`, `apps/harmonyos`; os frontends de console ficam todos montados em `admin/apps/*` e no ponto genérico `admin/public`).
+> Para Docker, veja os mounts de volume do nginx em `docker-compose.yml` e `nginx.conf.template` (os mesmos caminhos, raiz do contêiner `/var/www/...`). O HarmonyOS é distribuído como `.hap` e não passa pelo nginx.
 
 Habilitar o site:
 ```bash
@@ -389,7 +466,7 @@ ln -s /etc/nginx/sites-available/game-platform /etc/nginx/sites-enabled/
 nginx -t && systemctl reload nginx
 ```
 
-### 4.2 Certificado SSL
+### 5.2 Certificado SSL
 
 ```bash
 # Usar o Certbot para obter certificado Let's Encrypt automaticamente
@@ -402,7 +479,7 @@ certbot --nginx -d your-domain.com
 
 ---
 
-## 5. Tarefas agendadas (Crontab)
+## 6. Tarefas agendadas (Crontab)
 
 ```bash
 # Editar o crontab
@@ -423,9 +500,9 @@ crontab -e
 
 ---
 
-## 6. Monitoramento
+## 7. Monitoramento
 
-### 6.1 Métricas Prometheus
+### 7.1 Métricas Prometheus
 
 O painel administrativo expõe o endpoint `/metrics`, com as seguintes métricas:
 
@@ -437,7 +514,7 @@ O painel administrativo expõe o endpoint `/metrics`, com as seguintes métricas
 | openadmin_redis_connection_status | conexão com o Redis (0/1) |
 | openadmin_memory_usage_bytes | uso de memória |
 
-### 6.2 Health check
+### 7.2 Health check
 
 ```bash
 # Painel administrativo
@@ -449,23 +526,23 @@ curl -f http://localhost:8792/health || echo "Service DOWN"
 # Pode ser configurado no balanceador de carga ou sistema de monitoramento
 ```
 
-### 6.3 Logs
+### 7.3 Logs
 
 ```
 admin/runtime/logs/
 ├── stdout.log          # saída padrão
-└── workerman.log       # logs do Workerman
+└── webman-<date>.log   # logs do Webman
 
 service/runtime/logs/
 ├── stdout.log
-└── workerman.log
+└── webman-<date>.log
 ```
 
 ---
 
-## 7. Otimização de performance
+## 8. Otimização de performance
 
-### 7.1 PHP OPcache
+### 8.1 PHP OPcache
 
 ```ini
 ; /etc/php/8.3/cli/php.ini
@@ -476,7 +553,7 @@ opcache.max_accelerated_files=10000
 opcache.validate_timestamps=0  # desligar verificação de arquivos em produção
 ```
 
-### 7.2 Otimização do MySQL
+### 8.2 Otimização do MySQL
 
 ```ini
 # /etc/mysql/conf.d/game-platform.cnf
@@ -488,14 +565,14 @@ max_connections = 200
 query_cache_type = 0               # removido no MySQL 8.0
 ```
 
-### 7.3 Número de processos worker
+### 8.3 Número de processos worker
 
 ```php
 // config/process.php
 'count' => cpu_count() * 2,  // recomendado 2-4x o número de núcleos da CPU em produção
 ```
 
-### 7.4 Estratégia de cache Redis
+### 8.4 Estratégia de cache Redis
 
 | Chave de cache | TTL | Observação |
 |--------|-----|------|
@@ -506,9 +583,9 @@ query_cache_type = 0               # removido no MySQL 8.0
 
 ---
 
-## 8. Reforço de segurança
+## 9. Reforço de segurança
 
-### 8.1 Geração de chaves
+### 9.1 Geração de chaves
 
 ```bash
 # Gerar chaves aleatórias
@@ -525,7 +602,7 @@ echo "ENCRYPTION_KEY=$ENCRYPTION_KEY"
 echo "ENCRYPTABLE_KEY=$ENCRYPTABLE_KEY"
 ```
 
-### 8.2 Firewall
+### 9.2 Firewall
 
 ```bash
 # Abrir apenas as portas necessárias
@@ -542,7 +619,7 @@ ufw enable
 # Acessar apenas via 127.0.0.1
 ```
 
-### 8.3 Permissões de arquivos
+### 9.3 Permissões de arquivos
 
 ```bash
 chown -R www-data:www-data /opt/game-platform
@@ -555,9 +632,9 @@ chmod 600 /opt/game-platform/service/.env
 
 ---
 
-## 9. Solução de problemas
+## 10. Solução de problemas
 
-### 9.1 Serviço não inicia
+### 10.1 Serviço não inicia
 
 ```bash
 # Executar em primeiro plano para ver o erro
@@ -567,10 +644,10 @@ cd /opt/game-platform/admin && php start.php start
 ss -tlnp | grep -E '8789|8792'
 
 # Verificar logs
-tail -f runtime/logs/workerman.log
+tail -f runtime/logs/webman-$(date +%F).log
 ```
 
-### 9.2 Falha de conexão com o banco
+### 10.2 Falha de conexão com o banco
 
 ```bash
 # Testar conexão
@@ -580,7 +657,7 @@ mysql -h 127.0.0.1 -u game-platform -p game-platform -e "SELECT 1"
 grep DB_ admin/.env
 ```
 
-### 9.3 Falha de conexão com o Redis
+### 10.3 Falha de conexão com o Redis
 
 ```bash
 # Testar conexão
@@ -589,7 +666,7 @@ redis-cli -h 127.0.0.1 -p 6379 -a <password> ping
 # Espera-se retorno PONG
 ```
 
-### 9.4 Elasticsearch indisponível
+### 10.4 Elasticsearch indisponível
 
 ```bash
 # Testar conexão
@@ -598,7 +675,7 @@ curl http://127.0.0.1:9200
 # A busca cai automaticamente para consulta LIKE, sem interromper o serviço
 ```
 
-### 9.5 Problemas de performance
+### 10.5 Problemas de performance
 
 ```bash
 # Verificar número de processos worker
@@ -613,7 +690,7 @@ mysql -e "SHOW VARIABLES LIKE 'slow_query_log';"
 
 ---
 
-## 10. Guia de upgrade
+## 11. Guia de upgrade
 
 ```bash
 # 1. Baixar o código mais recente

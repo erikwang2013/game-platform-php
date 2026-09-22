@@ -186,7 +186,7 @@ type 可选值: deposit / withdraw / exchange_in / exchange_out / game_earn / ga
 }
 ```
 
-currency 可选值: USD / CNY / EUR
+currency 可选值: USD / CNY / EUR / JPY / KRW / GBP / BRL / INR
 
 checkout_url: ссылка перехода на платёжный шлюз (заполняется при создании заказа); expires_at: срок действия платёжной ссылки (1 час после создания)
 
@@ -401,9 +401,9 @@ status:
 }
 ```
 
-type 可选值: self / third_party
+type 可选值: self / embedded / third_party
 
-#### GET /api/v1/game/{hashid} — детали игры
+#### GET /api/v1/game/detail/{hashid} — детали игры
 
 ```
 响应: {
@@ -870,7 +870,7 @@ language 可选值: en-US / zh-CN / ja-JP / ko-KR
 
 ### 3.1 Дашборд платформы
 
-#### GET /admin/dashboard/platform
+#### GET /admin/v1/dashboard/platform
 
 ```
 需认证: 是 (AdminAuth + AdminPermission)
@@ -888,11 +888,11 @@ language 可选值: en-US / zh-CN / ja-JP / ko-KR
 
 ### 3.2 Управление играми
 
-#### GET /admin/game/list — список игр
+#### GET /admin/v1/game/list — список игр
 
 ```
 需认证: 是
-参数: ?page=1&per_page=20&keyword=射击
+参数: ?page=1&limit=20&keyword=射击
 
 响应: {
   "list": [
@@ -909,11 +909,67 @@ language 可选值: en-US / zh-CN / ja-JP / ko-KR
   ],
   "total": 12,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### POST /admin/game/create — создание игры
+#### GET /admin/v1/game/{hashid} — детали игры
+
+```
+需认证: 是
+参数: hashid 为游戏的 hashid 编码（路径参数）
+
+响应: {
+  "id": "aB3xK...",
+  "name": "射击大师",
+  "slug": "shooter-master",
+  "type": "self",
+  "description": "游戏描述",
+  "cover_image": "https://...",
+  "api_endpoint": "https://...",
+  "sdk_version": "1.0.0",
+  "platform": "h5",
+  "region": "global",
+  "currencies": [
+    {
+      "id": "cD4yL...",
+      "name": "金币",
+      "symbol": "G",
+      "exchange_rate": "100.00000000",
+      "spread_pct": "5.00000000",
+      "min_exchange": "1.00000000",
+      "max_exchange": "10000.00000000"
+    }
+  ]
+}
+```
+
+Возвращает code 404, если игра не найдена.
+
+#### POST /admin/v1/game/launch — предварительный просмотр игры
+
+```
+需认证: 是
+
+请求: {
+  "game_id": "aB3xK..."      // 游戏 ID(hashid)
+}
+
+响应: {
+  "id": "aB3xK...",
+  "name": "射击大师",
+  "slug": "shooter-master",
+  "type": "self",
+  "api_endpoint": "https://...",
+  "preview": true
+}
+```
+
+Если `game_id` отсутствует, возвращается code 422; если игры не существует, возвращается 404; если игра не опубликована (`status` не 1), возвращается 403.
+
+Админ-превью — это чистое превью: оно только проверяет доступность игры и возвращает информацию о запуске, **не записывает игровые записи и не затрагивает кошелёк**. Админ-идентичности содержат только `adminId` (внедряется `AdminAuth`) и не имеют `userId` C-стороны, поэтому этот эндпоинт намеренно не выполняет никаких пользовательских записей — копирование `POST /api/v1/game/launch` C-стороны создало бы строки `game_game_play_log` с неверной привязкой.
+
+#### POST /admin/v1/game/create — создание игры
 
 ```
 需认证: 是
@@ -934,9 +990,9 @@ language 可选值: en-US / zh-CN / ja-JP / ko-KR
 响应: { "id": "aB3xK..." }
 ```
 
-type 可选值: self / third_party
+type 可选值: self / embedded / third_party
 
-#### PUT /admin/game/{hashid} — редактирование игры
+#### PUT /admin/v1/game/{hashid} — редактирование игры
 
 ```
 需认证: 是
@@ -950,14 +1006,14 @@ type 可选值: self / third_party
 响应: { "message": "更新成功" }
 ```
 
-#### DELETE /admin/game/{hashid} — удаление игры
+#### DELETE /admin/v1/game/{hashid} — удаление игры
 
 ```
 需认证: 是
 响应: { "message": "删除成功" }
 ```
 
-#### POST /admin/game/currency/manage — управление валютами
+#### POST /admin/v1/game/currency/manage — управление валютами
 
 ```
 需认证: 是
@@ -977,16 +1033,20 @@ type 可选值: self / third_party
   ]
 }
 
-响应: { "message": "币种更新成功" }
+响应: { "message": "操作成功" }
 ```
+
+Если `game_id` отсутствует или `currencies` не является массивом, возвращается 422; если игры не существует, возвращается 404.
+
+`exchange_rate` и `spread_pct` проверяются только при передаче: `exchange_rate` должен быть числом больше 0, а `spread_pct` должен находиться в диапазоне [0, 100); нарушение любого из условий возвращает 422, и ни одна валюта не записывается (пакет полностью проверяется перед записью). Непереданные поля не проходят проверку: при создании берутся значения по умолчанию (`exchange_rate` — `1.00000000`, остальные — `0.00000000`), при обновлении сохраняется прежнее значение.
 
 ### 3.3 Управление выводами
 
-#### GET /admin/withdraw/orders — список ордеров на вывод
+#### GET /admin/v1/withdraw/orders — список ордеров на вывод
 
 ```
 需认证: 是
-参数: ?page=1&per_page=20&status=pending
+参数: ?page=1&limit=20&status=pending
 
 响应: {
   "list": [
@@ -1008,11 +1068,11 @@ type 可选值: self / third_party
   ],
   "total": 5,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### PUT /admin/withdraw/review — проверка вывода
+#### PUT /admin/v1/withdraw/review — проверка вывода
 
 ```
 需认证: 是
@@ -1026,11 +1086,11 @@ type 可选值: self / third_party
 响应: { "message": "已通过" }
 ```
 
-action: approve=одобрить / reject=отклонить (при отказе платформенная валюта автоматически возвращается)
+action: approve=одобрить / reject=отклонить / confirm=подтвердить (при отказе платформенная валюта автоматически возвращается)
 
 Ошибка: 422 статус ордера не в ожидании проверки
 
-#### PUT /admin/withdraw/switch — глобальный переключатель вывода
+#### PUT /admin/v1/withdraw/switch — глобальный переключатель вывода
 
 ```
 需认证: 是
@@ -1043,7 +1103,7 @@ action: approve=одобрить / reject=отклонить (при отказ�
 }
 ```
 
-#### POST /admin/withdraw/limits/set — установка лимитов вывода
+#### POST /admin/v1/withdraw/limits/set — установка лимитов вывода
 
 ```
 需认证: 是
@@ -1064,11 +1124,11 @@ action: approve=одобрить / reject=отклонить (при отказ�
 
 ### 3.4 Управление пользователями платформы
 
-#### GET /admin/platform/user/list — список пользователей C-стороны
+#### GET /admin/v1/platform/user/list — список пользователей C-стороны
 
 ```
 需认证: 是
-参数: ?page=1&per_page=20&keyword=player&status=1
+参数: ?page=1&limit=20&keyword=player&status=1
 
 响应: {
   "list": [
@@ -1084,11 +1144,11 @@ action: approve=одобрить / reject=отклонить (при отказ�
   ],
   "total": 1500,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### GET /admin/platform/user/{hashid} — детали пользователя
+#### GET /admin/v1/platform/user/{hashid} — детали пользователя
 
 ```
 需认证: 是
@@ -1111,7 +1171,7 @@ action: approve=одобрить / reject=отклонить (при отказ�
 }
 ```
 
-#### PUT /admin/platform/user/{hashid} — редактирование/блокировка пользователя
+#### PUT /admin/v1/platform/user/{hashid} — редактирование/блокировка пользователя
 
 ```
 需认证: 是
@@ -1126,7 +1186,7 @@ action: approve=одобрить / reject=отклонить (при отказ�
 
 ### 3.5 Управление платежами
 
-#### GET /admin/payment/method/list
+#### GET /admin/v1/payment/method/list
 
 ```
 需认证: 是
@@ -1144,7 +1204,7 @@ action: approve=одобрить / reject=отклонить (при отказ�
 }
 ```
 
-#### POST /admin/payment/method/toggle — включение/отключение способа оплаты
+#### POST /admin/v1/payment/method/toggle — включение/отключение способа оплаты
 
 ```
 需认证: 是
@@ -1156,11 +1216,11 @@ action: approve=одобрить / reject=отклонить (при отказ�
 
 ### 3.6 Управление объявлениями
 
-#### GET /admin/announcement/list
+#### GET /admin/v1/announcement/list
 
 ```
 需认证: 是
-参数: ?page=1&per_page=20
+参数: ?page=1&limit=20
 
 响应: {
   "list": [
@@ -1176,11 +1236,11 @@ action: approve=одобрить / reject=отклонить (при отказ�
   ],
   "total": 5,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### POST /admin/announcement/create — публикация объявления
+#### POST /admin/v1/announcement/create — публикация объявления
 
 ```
 需认证: 是
@@ -1200,11 +1260,11 @@ action: approve=одобрить / reject=отклонить (при отказ�
 
 ### 3.7 Проверка KYC
 
-#### GET /admin/identity/list — список KYC
+#### GET /admin/v1/identity/list — список KYC
 
 ```
 需认证: 是
-参数: ?page=1&per_page=20&status=pending
+参数: ?page=1&limit=20&status=pending
 
 响应: {
   "list": [
@@ -1217,11 +1277,11 @@ action: approve=одобрить / reject=отклонить (при отказ�
       "created_at": "2026-05-22 10:00:00"
     }
   ],
-  "total": 5, "page": 1, "per_page": 20
+  "total": 5, "page": 1, "limit": 20
 }
 ```
 
-#### PUT /admin/identity/review — проверка KYC
+#### PUT /admin/v1/identity/review — проверка KYC
 
 ```
 需认证: 是
@@ -1235,7 +1295,7 @@ action: approve / reject
 
 ### 3.8 Управление игровыми серверами
 
-#### GET /admin/game/server/list — список серверов
+#### GET /admin/v1/game/server/list — список серверов
 
 ```
 需认证: 是
@@ -1248,7 +1308,7 @@ action: approve / reject
 }
 ```
 
-#### POST /admin/game/server/create — создание сервера
+#### POST /admin/v1/game/server/create — создание сервера
 
 ```
 需认证: 是
@@ -1256,14 +1316,14 @@ action: approve / reject
 响应: { "id": "hashid" }
 ```
 
-#### PUT /admin/game/server/{hashid} — редактирование сервера
+#### PUT /admin/v1/game/server/{hashid} — редактирование сервера
 
 ```
 需认证: 是
 请求: { "name": "新名称", "status": 2 }
 ```
 
-#### DELETE /admin/game/server/{hashid} — удаление сервера
+#### DELETE /admin/v1/game/server/{hashid} — удаление сервера
 
 ```
 需认证: 是
@@ -1271,7 +1331,7 @@ action: approve / reject
 
 ### 3.9 Управление ступенчатыми лимитами вывода
 
-#### GET /admin/withdraw/limits/list
+#### GET /admin/v1/withdraw/limits/list
 
 ```
 需认证: 是
@@ -1293,7 +1353,7 @@ action: approve / reject
 }
 ```
 
-#### PUT /admin/withdraw/limits/{hashid} — обновление лимита
+#### PUT /admin/v1/withdraw/limits/{hashid} — обновление лимита
 
 ```
 需认证: 是
@@ -1304,14 +1364,14 @@ action: approve / reject
 
 ### 3.11 Управление категориями игр
 
-#### GET /admin/game/category/list
+#### GET /admin/v1/game/category/list
 
 ```
 需认证: 是
 响应: { "list": [{ "id": "...", "name": "动作", "slug": "action", "sort": 1 }] }
 ```
 
-#### POST /admin/game/category/create
+#### POST /admin/v1/game/category/create
 
 ```
 需认证: 是
@@ -1319,11 +1379,11 @@ action: approve / reject
 响应: { "id": "hashid" }
 ```
 
-#### PUT /admin/game/category/{hashid} — редактирование категории
+#### PUT /admin/v1/game/category/{hashid} — редактирование категории
 
-#### DELETE /admin/game/category/{hashid} — удаление категории
+#### DELETE /admin/v1/game/category/{hashid} — удаление категории
 
-#### POST /admin/game/category/assign — назначение игр
+#### POST /admin/v1/game/category/assign — назначение игр
 
 ```
 需认证: 是
@@ -1332,42 +1392,42 @@ action: approve / reject
 
 ### 3.12 Управление рейтингами
 
-#### GET /admin/leaderboard/list — список рейтингов
+#### GET /admin/v1/leaderboard/list — список рейтингов
 
 ```
 需认证: 是
 响应: { "list": [{ "id": "...", "name": "...", "type": "total", "metric": "earned" }] }
 ```
 
-#### POST /admin/leaderboard/create — создание рейтинга
+#### POST /admin/v1/leaderboard/create — создание рейтинга
 
 ```
 需认证: 是
 请求: { "name": "周收入榜", "type": "weekly", "metric": "earned", "game_id": "hashid(可选)" }
 ```
 
-#### PUT /admin/leaderboard/{hashid} — редактирование рейтинга
+#### PUT /admin/v1/leaderboard/{hashid} — редактирование рейтинга
 
-#### DELETE /admin/leaderboard/{hashid} — удаление рейтинга
+#### DELETE /admin/v1/leaderboard/{hashid} — удаление рейтинга
 
-#### POST /admin/leaderboard/{hashid}/refresh — обновление кэша
+#### POST /admin/v1/leaderboard/{hashid}/refresh — обновление кэша
 
 ### 3.13 Управление купонами
 
-#### GET /admin/coupon/list — список купонов
+#### GET /admin/v1/coupon/list — список купонов
 
-#### POST /admin/coupon/create — создание купона
+#### POST /admin/v1/coupon/create — создание купона
 
 ```
 需认证: 是
 请求: { "name": "新人礼包", "type": "fixed", "value": "10.0000", "total_qty": 1000 }
 ```
 
-#### PUT /admin/coupon/{hashid} — редактирование (если ещё не выдавался)
+#### PUT /admin/v1/coupon/{hashid} — редактирование (если ещё не выдавался)
 
-#### DELETE /admin/coupon/{hashid} — удаление
+#### DELETE /admin/v1/coupon/{hashid} — удаление
 
-#### GET /admin/coupon/{hashid}/stats — статистика выдачи
+#### GET /admin/v1/coupon/{hashid}/stats — статистика выдачи
 
 ```
 响应: { "total_qty": 1000, "used_qty": 234, "remaining": 766, "usage_rate": "23.40%" }
@@ -1375,20 +1435,20 @@ action: approve / reject
 
 ### 3.14 Управление конфигурацией стран
 
-#### GET /admin/country/config/list — список конфигураций стран
+#### GET /admin/v1/country/config/list — список конфигураций стран
 
-#### POST /admin/country/config/create — создание конфигурации страны
+#### POST /admin/v1/country/config/create — создание конфигурации страны
 
 ```
 需认证: 是
 请求: { "country_code": "JP", "currency": "JPY", "payment_methods": "[\"stripe\",\"paypal\"]", "min_deposit": "100.0000" }
 ```
 
-#### PUT /admin/country/config/{hashid} — редактирование конфигурации страны
+#### PUT /admin/v1/country/config/{hashid} — редактирование конфигурации страны
 
 ### 3.15 Экспорт данных
 
-#### POST /admin/export/users — экспорт пользователей C-стороны
+#### POST /admin/v1/export/users — экспорт пользователей C-стороны
 
 ```
 需认证: 是
@@ -1397,7 +1457,7 @@ action: approve / reject
 响应: Excel 文件下载 (xlsx)
 ```
 
-#### POST /admin/export/transactions — экспорт операций платформы
+#### POST /admin/v1/export/transactions — экспорт операций платформы
 
 ```
 需认证: 是
@@ -1412,18 +1472,18 @@ action: approve / reject
 
 | Метод | Путь | Описание |
 |------|------|------|
-| GET | /admin/analytics/overview | Общий обзор платформы (сегодня/за 7 дней) |
-| GET | /admin/analytics/game-ranking | Рейтинг игр (?days=7) |
-| GET | /admin/analytics/dau-trend | Тренд DAU (?days=30) |
-| GET | /admin/analytics/hourly-trend | Почасовая динамика |
-| GET | /admin/analytics/action-distribution | Распределение действий |
-| GET | /admin/analytics/revenue | Анализ выручки |
-| GET | /admin/analytics/conversion | Конверсия игр |
-| GET | /admin/analytics/probability | Совместная/условная вероятность |
-| GET | /admin/analytics/retention | Анализ удержания D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | Конверсионная воронка |
-| GET | /admin/analytics/arpu | Тренд ARPU/ARPPU |
-| GET | /admin/analytics/economy | Экономические метрики игровых валют |
+| GET | /admin/v1/analytics/overview | Общий обзор платформы (сегодня/за 7 дней) |
+| GET | /admin/v1/analytics/game-ranking | Рейтинг игр (?days=7) |
+| GET | /admin/v1/analytics/dau-trend | Тренд DAU (?days=30) |
+| GET | /admin/v1/analytics/hourly-trend | Почасовая динамика |
+| GET | /admin/v1/analytics/action-distribution | Распределение действий |
+| GET | /admin/v1/analytics/revenue | Анализ выручки |
+| GET | /admin/v1/analytics/conversion | Конверсия игр |
+| GET | /admin/v1/analytics/probability | Совместная/условная вероятность |
+| GET | /admin/v1/analytics/retention | Анализ удержания D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | Конверсионная воронка |
+| GET | /admin/v1/analytics/arpu | Тренд ARPU/ARPPU |
+| GET | /admin/v1/analytics/economy | Экономические метрики игровых валют |
 
 ### 3.17 Управление тикетами
 
@@ -1431,11 +1491,11 @@ action: approve / reject
 
 | Метод | Путь | Описание |
 |------|------|------|
-| GET | /admin/ticket/list | Список тикетов (?page=&limit=&status=&type=) |
-| GET | /admin/ticket/{hashid} | Детали тикета (с ответами) |
-| POST | /admin/ticket/{hashid}/reply | Ответ на тикет |
-| POST | /admin/ticket/{hashid}/close | Закрытие тикета |
-| POST | /admin/ticket/{hashid}/assign | Назначение обработчика (admin_id) |
+| GET | /admin/v1/ticket/list | Список тикетов (?page=&limit=&status=&type=) |
+| GET | /admin/v1/ticket/{hashid} | Детали тикета (с ответами) |
+| POST | /admin/v1/ticket/{hashid}/reply | Ответ на тикет |
+| POST | /admin/v1/ticket/{hashid}/close | Закрытие тикета |
+| POST | /admin/v1/ticket/{hashid}/assign | Назначение обработчика (admin_id) |
 
 ### 3.18 Управление конфигурацией CDN
 
@@ -1443,12 +1503,12 @@ action: approve / reject
 
 | Метод | Путь | Описание | Аутентификация |
 |------|------|------|------|
-| GET | /admin/cdn/provider/list | Список CDN-провайдеров (учётные данные не возвращаются) | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/toggle | Включение/отключение провайдера {id, status} | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/create | Создание {name, provider, config(JSON), status, sort}, проверка уникальности provider | AdminAuth + RBAC: cdn |
-| PUT | /admin/cdn/provider/{hashid} | Обновление (пустой config = без изменений) | AdminAuth + RBAC: cdn |
-| DELETE | /admin/cdn/provider/{hashid} | Удаление | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/test | Тест подключения HeadBucket {id} | AdminAuth + RBAC: cdn |
+| GET | /admin/v1/cdn/provider/list | Список CDN-провайдеров (учётные данные не возвращаются) | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/toggle | Включение/отключение провайдера {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/create | Создание {name, provider, config(JSON), status, sort}, проверка уникальности provider | AdminAuth + RBAC: cdn |
+| PUT | /admin/v1/cdn/provider/{hashid} | Обновление (пустой config = без изменений) | AdminAuth + RBAC: cdn |
+| DELETE | /admin/v1/cdn/provider/{hashid} | Удаление | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/test | Тест подключения HeadBucket {id} | AdminAuth + RBAC: cdn |
 
 ### 3.19 Отчёты по данным
 
@@ -1456,9 +1516,9 @@ action: approve / reject
 
 | Метод | Путь | Описание | Аутентификация |
 |------|------|------|------|
-| GET | /admin/report/summary | Сводный отчёт (новые пользователи/депозиты/выводы/обмены/игры) | AdminAuth + RBAC: report |
-| GET | /admin/report/daily | Ежедневный отчёт (агрегация по дням, пустые даты заполняются 0) | AdminAuth + RBAC: report |
-| GET | /admin/report/export | Экспорт ежедневного отчёта в CSV (UTF-8 BOM) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/summary | Сводный отчёт (новые пользователи/депозиты/выводы/обмены/игры) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/daily | Ежедневный отчёт (агрегация по дням, пустые даты заполняются 0) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/export | Экспорт ежедневного отчёта в CSV (UTF-8 BOM) | AdminAuth + RBAC: report |
 
 ## 4. Стратегия лимитов запросов
 
@@ -1681,6 +1741,8 @@ status: open / waiting / replied / closed
 
 #### GET /api/v1/user/vip-status — статус VIP
 
+> **Не реализовано**: маршрут C-стороны не зарегистрирован (нет записи в `service/config/route.php`), запросы сейчас возвращают 404. Удалите эту строку после реализации.
+
 ```
 需认证: 是
 响应: {
@@ -1701,6 +1763,8 @@ status: open / waiting / replied / closed
 
 #### GET /api/v1/user/achievements — список достижений
 
+> **Не реализовано**: маршрут C-стороны не зарегистрирован (нет записи в `service/config/route.php`), запросы сейчас возвращают 404. Удалите эту строку после реализации.
+
 ```
 需认证: 是
 响应: {
@@ -1720,7 +1784,7 @@ status: open / waiting / replied / closed
 
 ### 7.6 Новые API админ-панели
 
-#### GET /admin/ticket/list — список тикетов
+#### GET /admin/v1/ticket/list — список тикетов
 
 ```
 需认证: 是
@@ -1739,7 +1803,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### POST /admin/ticket/{hashid}/reply — ответ на тикет
+#### POST /admin/v1/ticket/{hashid}/reply — ответ на тикет
 
 ```
 需认证: 是
@@ -1747,14 +1811,14 @@ status: open / waiting / replied / closed
 响应: { "code": 0, "message": "Reply sent" }
 ```
 
-#### POST /admin/ticket/{hashid}/close — закрытие тикета
+#### POST /admin/v1/ticket/{hashid}/close — закрытие тикета
 
 ```
 需认证: 是
 响应: { "code": 0, "message": "Ticket closed" }
 ```
 
-#### POST /admin/ticket/{hashid}/assign — назначение обработчика
+#### POST /admin/v1/ticket/{hashid}/assign — назначение обработчика
 
 ```
 需认证: 是
@@ -1762,7 +1826,7 @@ status: open / waiting / replied / closed
 响应: { "code": 0, "message": "Assigned" }
 ```
 
-#### GET /admin/analytics/retention — анализ удержания
+#### GET /admin/v1/analytics/retention — анализ удержания
 
 ```
 需认证: 是
@@ -1773,7 +1837,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/funnel — конверсионная воронка
+#### GET /admin/v1/analytics/funnel — конверсионная воронка
 
 ```
 需认证: 是
@@ -1787,7 +1851,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/arpu — тренд ARPU/ARPPU
+#### GET /admin/v1/analytics/arpu — тренд ARPU/ARPPU
 
 ```
 需认证: 是
@@ -1795,7 +1859,7 @@ status: open / waiting / replied / closed
 响应: { "arpu": [...], "arppu": [...], "dates": [...] }
 ```
 
-#### GET /admin/analytics/economy — экономические метрики игровых валют
+#### GET /admin/v1/analytics/economy — экономические метрики игровых валют
 
 ```
 需认证: 是
@@ -1814,14 +1878,14 @@ status: open / waiting / replied / closed
 ```
 
 
-#### GET /admin/cdn/provider/list — Список CDN-провайдеров (учётные данные не возвращаются)
+#### GET /admin/v1/cdn/provider/list — Список CDN-провайдеров (учётные данные не возвращаются)
 
 ```
 需认证: 是
 响应: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
 ```
 
-#### POST /admin/cdn/provider/toggle — Включение/отключение провайдера {id, status}
+#### POST /admin/v1/cdn/provider/toggle — Включение/отключение провайдера {id, status}
 
 ```
 需认证: 是
@@ -1829,7 +1893,7 @@ status: open / waiting / replied / closed
 响应: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/cdn/provider/create — Создание {name, provider, config(JSON), status, sort}, проверка уникальности provider
+#### POST /admin/v1/cdn/provider/create — Создание {name, provider, config(JSON), status, sort}, проверка уникальности provider
 
 ```
 需认证: 是
@@ -1837,7 +1901,7 @@ status: open / waiting / replied / closed
 响应: { "code": 0, "data": { "id": "..." } }
 ```
 
-#### PUT /admin/cdn/provider/{hashid} — Обновление (пустой config = без изменений)
+#### PUT /admin/v1/cdn/provider/{hashid} — Обновление (пустой config = без изменений)
 
 ```
 需认证: 是
@@ -1845,21 +1909,21 @@ status: open / waiting / replied / closed
 响应: { "code": 0, "message": "..." }
 ```
 
-#### DELETE /admin/cdn/provider/{hashid} — Удаление
+#### DELETE /admin/v1/cdn/provider/{hashid} — Удаление
 
 ```
 需认证: 是
 响应: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/cdn/provider/test — Тест подключения HeadBucket {id}
+#### POST /admin/v1/cdn/provider/test — Тест подключения HeadBucket {id}
 
 ```
 需认证: 是
 请求: { "id": "..." }
 响应: { "code": 0, "data": { "ok": true } }
 ```
-#### GET /admin/report/summary — Сводный отчёт
+#### GET /admin/v1/report/summary — Сводный отчёт
 
 ```
 需认证: 是
@@ -1873,7 +1937,7 @@ status: open / waiting / replied / closed
 ```
 
 
-#### GET /admin/report/daily — Ежедневный отчёт
+#### GET /admin/v1/report/daily — Ежедневный отчёт
 
 ```
 需认证: 是
@@ -1885,7 +1949,7 @@ status: open / waiting / replied / closed
 ```
 
 
-#### GET /admin/report/export — Экспорт отчёта в CSV
+#### GET /admin/v1/report/export — Экспорт отчёта в CSV
 
 ```
 需认证: 是
@@ -2029,13 +2093,13 @@ status: open / waiting / replied / closed
 
 ### 7.10 API расширенной аналитики
 
-#### GET /admin/analytics/retention — анализ удержания
+#### GET /admin/v1/analytics/retention — анализ удержания
 ```
 需认证: 是
 响应: { "D1": "45.2%", "D3": "28.7%", "D7": "18.3%", "D30": "8.1%" }
 ```
 
-#### GET /admin/analytics/funnel — конверсионная воронка
+#### GET /admin/v1/analytics/funnel — конверсионная воронка
 ```
 需认证: 是
 响应: {
@@ -2048,14 +2112,14 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/arpu — тренд ARPU/ARPPU
+#### GET /admin/v1/analytics/arpu — тренд ARPU/ARPPU
 ```
 需认证: 是
 参数: ?days=30
 响应: { "dates": [...], "arpu": [...], "arppu": [...] }
 ```
 
-#### GET /admin/analytics/economy — экономические метрики игр
+#### GET /admin/v1/analytics/economy — экономические метрики игр
 ```
 需认证: 是
 响应: {
@@ -2117,47 +2181,47 @@ JSON `conditions` купона поддерживает:
 
 | Эндпоинт | Описание |
 |------|------|
-| GET /admin/risk/dashboard | Обзор дашборда рисков |
-| GET /admin/risk/overview | Метрики обзора рисков |
-| GET /admin/risk/hit-trend | Тренд срабатываний |
-| GET /admin/risk/action-distribution | Распределение действий |
-| GET /admin/risk/rule-performance | Производительность правил |
-| GET /admin/risk/rule/list | Список правил |
-| POST /admin/risk/rule/create | Создать правило |
-| PUT /admin/risk/rule/{hashid} | Обновить правило |
-| POST /admin/risk/rule/{hashid}/toggle | Включить/выключить правило |
-| POST /admin/risk/rule/test | Тест правила |
-| GET /admin/risk/event/list | Список событий рисков |
-| GET /admin/risk/event/{hashid} | Детали события |
-| POST /admin/risk/event/{hashid}/handle | Обработать событие |
-| GET /admin/risk/device/list | Список отпечатков устройств |
-| POST /admin/risk/device/block | Заблокировать устройство |
-| POST /admin/risk/device/unblock | Разблокировать устройство |
-| GET /admin/risk/ip/list | Список IP |
-| POST /admin/risk/ip/block | Заблокировать IP |
-| POST /admin/risk/ip/whitelist | Белый список IP |
-| POST /admin/risk/ip/appeal | Апелляция IP |
-| POST /admin/risk/ip/recheck | Перепроверка IP |
-| GET /admin/risk/graph/clusters | Список кластеров |
-| GET /admin/risk/graph/{userId} | Граф связей пользователя |
-| GET /admin/risk/clusters | Список кластеров риска |
+| GET /admin/v1/risk/dashboard | Обзор дашборда рисков |
+| GET /admin/v1/risk/overview | Метрики обзора рисков |
+| GET /admin/v1/risk/hit-trend | Тренд срабатываний |
+| GET /admin/v1/risk/action-distribution | Распределение действий |
+| GET /admin/v1/risk/rule-performance | Производительность правил |
+| GET /admin/v1/risk/rule/list | Список правил |
+| POST /admin/v1/risk/rule/create | Создать правило |
+| PUT /admin/v1/risk/rule/{hashid} | Обновить правило |
+| POST /admin/v1/risk/rule/{hashid}/toggle | Включить/выключить правило |
+| POST /admin/v1/risk/rule/test | Тест правила |
+| GET /admin/v1/risk/event/list | Список событий рисков |
+| GET /admin/v1/risk/event/{hashid} | Детали события |
+| POST /admin/v1/risk/event/{hashid}/handle | Обработать событие |
+| GET /admin/v1/risk/device/list | Список отпечатков устройств |
+| POST /admin/v1/risk/device/block | Заблокировать устройство |
+| POST /admin/v1/risk/device/unblock | Разблокировать устройство |
+| GET /admin/v1/risk/ip/list | Список IP |
+| POST /admin/v1/risk/ip/block | Заблокировать IP |
+| POST /admin/v1/risk/ip/whitelist | Белый список IP |
+| POST /admin/v1/risk/ip/appeal | Апелляция IP |
+| POST /admin/v1/risk/ip/recheck | Перепроверка IP |
+| GET /admin/v1/risk/graph/clusters | Список кластеров |
+| GET /admin/v1/risk/graph/{userId} | Граф связей пользователя |
+| GET /admin/v1/risk/clusters | Список кластеров риска |
 
 ### 10.2 Управление античитом (админ :8789)
 
 | Эндпоинт | Описание |
 |------|------|
-| GET /admin/anticheat/events | Список событий античита |
-| GET /admin/anticheat/events/{hashid} | Детали события |
-| POST /admin/anticheat/events/{hashid}/review | Проверка события |
+| GET /admin/v1/anticheat/events | Список событий античита |
+| GET /admin/v1/anticheat/events/{hashid} | Детали события |
+| POST /admin/v1/anticheat/events/{hashid}/review | Проверка события |
 
 ### 10.3 Акции (админ :8789 + клиент :8792)
 
 | Эндпоинт | Описание |
 |------|------|
-| GET /admin/activities/list | Список акций (админ) |
-| POST /admin/activities/create | Создать акцию (админ) |
-| PUT /admin/activities/{hashid} | Обновить акцию (админ) |
-| DELETE /admin/activities/{hashid} | Удалить акцию (админ) |
+| GET /admin/v1/activities/list | Список акций (админ) |
+| POST /admin/v1/activities/create | Создать акцию (админ) |
+| PUT /admin/v1/activities/{hashid} | Обновить акцию (админ) |
+| DELETE /admin/v1/activities/{hashid} | Удалить акцию (админ) |
 | GET /api/v1/activities/list | Список акций (клиент) |
 | GET /api/v1/activities/progress | Прогресс участия (клиент) |
 | GET /api/v1/activities/{hashid} | Детали акции (клиент) |
@@ -2175,9 +2239,9 @@ JSON `conditions` купона поддерживает:
 | PUT /api/v1/groups/{hashid}/role | Роль участника |
 | POST /api/v1/shares | Создать ссылку для поделиться |
 | POST /api/v1/shares/visit | Отслеживание переходов по ссылке |
-| GET /admin/groups | Список групп (админ) |
-| GET /admin/groups/{hashid}/audit | Аудит группы (админ) |
-| GET /admin/share/stats | Статистика поделиться (админ) |
+| GET /admin/v1/groups | Список групп (админ) |
+| GET /admin/v1/groups/{hashid}/audit | Аудит группы (админ) |
+| GET /admin/v1/share/stats | Статистика поделиться (админ) |
 
 ### 10.5 Расширение платёжных шлюзов (L1)
 

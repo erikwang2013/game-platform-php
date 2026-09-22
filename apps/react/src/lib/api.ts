@@ -117,6 +117,80 @@ export interface WithdrawOrder {
   created_at: string;
 }
 
+export interface PaymentMethod {
+  id: string;
+  name: string;
+  type: string;
+  provider: string;
+  /** 最小金额，十进制字符串；max_amount 数值为 0（形如 "0.0000"）表示不限 */
+  min_amount: string;
+  max_amount: string;
+}
+
+export interface DepositCreated {
+  order_id: string;
+  order_no: string;
+  amount: string;
+  platform_amount: string;
+  /** 支付必须在此链接完成，非 http(s) 时不要跳转 */
+  checkout_url: string;
+  expires_at: string;
+}
+
+export interface WithdrawApplied {
+  order_id: string;
+  order_no: string;
+  platform_amount: string;
+  fee: string;
+  actual_amount: string;
+  status: string;
+  balance_after: string;
+  created_at: string;
+}
+
+export type ExchangeDirection = 'in' | 'out';
+
+export interface ExchangeRequest {
+  game_id: string;
+  currency_id: string;
+  direction: ExchangeDirection;
+  /** direction='out'（卖）时，后端复用该字段承载「游戏币」数量，见 ExchangeController::quote */
+  platform_amount: string;
+}
+
+/** direction='in'（买）的询价结果 */
+export interface ExchangeQuoteIn {
+  platform_amount: string;
+  game_amount: string;
+  spread_fee: string;
+  actual_game_amount: string;
+  rate: string;
+  spread_pct: string;
+}
+
+/** direction='out'（卖）的询价结果 */
+export interface ExchangeQuoteOut {
+  platform_amount: string;
+  platform_equivalent: string;
+  spread_fee: string;
+  actual_platform_amount: string;
+  rate: string;
+  spread_pct: string;
+}
+
+export type ExchangeQuote = ExchangeQuoteIn | ExchangeQuoteOut;
+
+/** 两个金额字段随方向换位：in=支出平台币/到账游戏币，out=卖出游戏币/到账平台币（到账侧为扣点差净额）。 */
+export interface ExchangeDone {
+  exchange_id: string;
+  direction: ExchangeDirection;
+  platform_amount: string;
+  game_amount: string;
+  spread_fee: string;
+  rate: string;
+  balance_after: string;
+}
+
 export interface Notice {
   id: string;
   type: string;
@@ -261,6 +335,16 @@ export const api = {
   transactions: (p: PageQuery = {}) => get<Paged<Transaction>>(`/wallet/transactions${qs(p)}`),
   deposits: (p: PageQuery = {}) => get<Paged<DepositOrder>>(`/deposit/orders${qs(p)}`),
   withdraws: (p: PageQuery = {}) => get<Paged<WithdrawOrder>>(`/withdraw/orders${qs(p)}`),
+
+  // 钱包写操作：金额一律字符串透传，UI 层不做数值运算
+  paymentMethods: () => get<{ list: PaymentMethod[] }>('/payment/methods'),
+  createDeposit: (p: { amount: string; currency: string; payment_method_id: string }) =>
+    post<DepositCreated>('/deposit/create', p),
+  applyWithdraw: (p: { platform_amount: string; method: string; account_info: string }) =>
+    post<WithdrawApplied>('/withdraw/apply', p),
+  exchangeQuote: (p: ExchangeRequest) => post<ExchangeQuote>('/exchange/quote', p),
+  exchangeBuy: (p: ExchangeRequest) => post<ExchangeDone>('/exchange/buy', p),
+  exchangeSell: (p: ExchangeRequest) => post<ExchangeDone>('/exchange/sell', p),
 
   // notifications
   notices: (p: PageQuery = {}) => get<Paged<Notice>>(`/notification/list${qs(p)}`),

@@ -143,7 +143,7 @@ return [
     'next_step_2' => 'Inicie el servicio de API: cd service && php start.php start -d (opcional)',
     'next_step_3' => 'Inicie sesión en el backend de administración con la cuenta de administrador que acaba de crear',
     'next_step_4' => 'Complete los canales de pago, el CDN y las credenciales de correo en "System Config" del panel de administración',
-    'next_step_5' => 'Abra el backend de administración (dirección predeterminada):',
+    'next_step_5' => 'Abra el backend de administración (dirección desde APP_URL en admin/.env):',
     'next_step_6' => 'Antes de publicar, elimine el directorio install o deniegue el acceso en Nginx (consulte docs/nginx-security.conf)',
     'security_title' => 'Notas de seguridad',
     'security_1' => 'Elimine el directorio install o restrinja su acceso (incluido install.lock)',

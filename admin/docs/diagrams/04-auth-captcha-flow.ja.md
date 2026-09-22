@@ -7,8 +7,8 @@ Languages: **中文** · [English](04-auth-captcha-flow.en.md) · [한국어](04
 ```mermaid
 sequenceDiagram
     actor U as 用户
-    participant CL as 客户端
-    participant SV as 服务端
+    participant CL as クライアント
+    participant SV as サーバー
     participant CAP as Captcha
     participant JWT as JWT Service
 

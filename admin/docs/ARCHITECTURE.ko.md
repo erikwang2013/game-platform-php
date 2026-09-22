@@ -1,4 +1,4 @@
-# 架构设计图与业务逻辑图
+# 아키텍처 설계도 및 비즈니스 로직 다이어그램
 <!-- lang-nav -->
 
 Languages: [中文](ARCHITECTURE.md) · [English](ARCHITECTURE.en.md) · **한국어** · [Русский](ARCHITECTURE.ru.md) · [Deutsch](ARCHITECTURE.de.md) · [Français](ARCHITECTURE.fr.md) · [Español](ARCHITECTURE.es.md) · [Português](ARCHITECTURE.pt.md) · [हिन्दी](ARCHITECTURE.hi.md) · [العربية](ARCHITECTURE.ar.md) · [বাংলা](ARCHITECTURE.bn.md) · [Bahasa Indonesia](ARCHITECTURE.id.md) · [日本語](ARCHITECTURE.ja.md)

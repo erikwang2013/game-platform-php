@@ -1573,26 +1573,7 @@ Rate-Limit-Details:
 - nutzt den atomaren Redis-Sliding-Window-Algorithmus (Lua ZSET), vermeidet TOCTOU-Race-Conditions
 - Bei nicht verfügbarem Redis fail-closed: 503 zurückgeben (`Retry-After: 5`), Anfrage nicht durchlassen
 
-## 14. Datenanalyse (Analytics)
-
-Alle Endpunkte benötigen Authentifizierung (`AdminAuth` + `AdminPermission`), Echtzeit-Aggregation in MySQL, insgesamt 12:
-
-| Methode | Pfad | Beschreibung |
-|------|------|------|
-| GET | /admin/v1/analytics/overview | Plattform-Übersicht (heute/letzte 7 Tage) |
-| GET | /admin/v1/analytics/game-ranking | Spiel-Ranking (?days=7) |
-| GET | /admin/v1/analytics/dau-trend | DAU-Trend (?days=30) |
-| GET | /admin/v1/analytics/hourly-trend | Stunden-Trend |
-| GET | /admin/v1/analytics/action-distribution | Verhaltensverteilung |
-| GET | /admin/v1/analytics/revenue | Umsatzanalyse |
-| GET | /admin/v1/analytics/conversion | Spiel-Konversionsrate |
-| GET | /admin/v1/analytics/probability | Gemeinsame/bedingte Wahrscheinlichkeit |
-| GET | /admin/v1/analytics/retention | Retentionsanalyse D1/D3/D7/D30 |
-| GET | /admin/v1/analytics/funnel | Konversions-Funnel |
-| GET | /admin/v1/analytics/arpu | ARPU/ARPPU-Trend |
-| GET | /admin/v1/analytics/economy | Wirtschaftsindikatoren der Spielwährungen |
-
-## 15. Ticketverwaltung (Ticket)
+## 14. Ticketverwaltung (Ticket)
 
 Alle Endpunkte benötigen Authentifizierung (`AdminAuth` + `AdminPermission`), insgesamt 5:
 
@@ -1604,7 +1585,7 @@ Alle Endpunkte benötigen Authentifizierung (`AdminAuth` + `AdminPermission`), i
 | POST | /admin/v1/ticket/{hashid}/close | Ticket schließen |
 | POST | /admin/v1/ticket/{hashid}/assign | Bearbeiter zuweisen (admin_id) |
 
-## 16. Authentifizierungsablauf
+## 15. Authentifizierungsablauf
 
 Vollständige Authentifizierungs-Sequenz:
 
@@ -1681,11 +1662,11 @@ Vollständige Authentifizierungs-Sequenz:
 - Begrenzung paralleler Sitzungen: maximal 3 gültige Tokens pro Benutzer; beim Login vom 4. Gerät wird das älteste Token erzwungen in die Blacklist aufgenommen
 - Kontosperre: 5 fehlgeschlagene Logins in Folge lösen eine 15-minütige Kontosperre aus; während der Sperre wird 429 zurückgegeben
 
-## 17. Bereitstellung und Betrieb
+## 16. Bereitstellung und Betrieb
 
 ### Docker Compose
 
-Im Projektstamm liegt `docker-compose.yml`, das 5 Dienste orchestriert (Nginx, webman app, MySQL, Redis, Elasticsearch). PHP wird über die `Dockerfile` gebaut (basiert auf `php:8.3-cli`, mit OPcache).
+Im Projektstamm liegt `docker-compose.yml`, das 7 Dienste orchestriert (Nginx, admin, service, leaderboard-ws, MySQL, Redis, Elasticsearch). PHP wird über die `Dockerfile` gebaut (basiert auf `php:8.3-cli`, mit OPcache).
 
 ```bash
 cp .env.docker .env
@@ -1709,11 +1690,11 @@ Das Verzeichnis `database/backup/` stellt Backup- und Wiederherstellungsskripte 
 
 Für die Produktionsumgebung `docs/nginx-security.conf` als Referenz zur Härtung des Reverse-Proxys verwenden.
 
-## 18. Datenanalyse (Analytics)
+## 17. Datenanalyse (Analytics)
 
 Die Datenanalyse-Schnittstellen werden vom `AnalyticsController` bereitgestellt und basieren alle auf Echtzeit-Aggregation in MySQL (`game_game_play_log`-Spielverhaltensprotokolle / `game_deposit_order`-Einzahlungsaufträge); bei Datenbankfehlern werden leere Daten statt 500 zurückgegeben. Sofern nicht anders angegeben, ist JWT- + RBAC-Authentifizierung erforderlich; das Antwortformat ist einheitlich `{ "code": 0, "message": "success", "data": ... }`.
 
-### 18.1 Plattform-Übersicht
+### 17.1 Plattform-Übersicht
 
 ```
 GET /admin/v1/analytics/overview
@@ -1721,7 +1702,7 @@ GET /admin/v1/analytics/overview
 
 **Antwort**: `today` / `week` enthalten jeweils `dau` (aktive Benutzer), `revenue` (bestätigter Einzahlungsgesamtbetrag, Zeichenfolge), `new_users` (neue Benutzer).
 
-### 18.2 Spiel-Ranking
+### 17.2 Spiel-Ranking
 
 ```
 GET /admin/v1/analytics/game-ranking?days=7
@@ -1729,23 +1710,23 @@ GET /admin/v1/analytics/game-ranking?days=7
 
 **Antwort**: die Top 10 absteigend nach Anzahl der Spielaktionen, jeder Eintrag mit `game_id` (hashid), `name`, `plays`, `players`.
 
-### 18.3 DAU-Trend
+### 17.3 DAU-Trend
 
 ```
 GET /admin/v1/analytics/dau-trend?days=30
 ```
 
-**Antwort**: `{ "日期": 活跃数, ... }`, fehlende Daten werden mit 0 ergänzt.
+**Antwort**: `{ "Datum": Anzahl aktiver Nutzer, ... }`, fehlende Daten werden mit 0 ergänzt.
 
-### 18.4 Stunden-Trend
+### 17.4 Stunden-Trend
 
 ```
 GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
 ```
 
-**Antwort**: `{ "0": 次数, ... "23": 次数 }` mit 24 Stunden-Slots; bei leerem `game_id` werden alle Spiele gezählt.
+**Antwort**: `{ "0": Anzahl, ... "23": Anzahl }` mit 24 Stunden-Slots; bei leerem `game_id` werden alle Spiele gezählt.
 
-### 18.5 Verhaltensverteilung
+### 17.5 Verhaltensverteilung
 
 ```
 GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
@@ -1753,15 +1734,15 @@ GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
 
 **Antwort**: `{ "start": n, "end": n, "earn": n, "spend": n }` mit vier Verhaltenstypen; `hours` maximal 168.
 
-### 18.6 Umsatzübersicht
+### 17.6 Umsatzübersicht
 
 ```
 GET /admin/v1/analytics/revenue?days=7
 ```
 
-**Antwort**: `{ "total": "总额", "trend": { "日期": "当日额", ... } }`, zählt nur Aufträge mit `status=confirmed`.
+**Antwort**: `{ "total": "Gesamtbetrag", "trend": { "Datum": "Tagesbetrag", ... } }`, zählt nur Aufträge mit `status=confirmed`.
 
-### 18.7 Spiel-Konversionsrate
+### 17.7 Spiel-Konversionsrate
 
 ```
 GET /admin/v1/analytics/conversion?days=30
@@ -1769,7 +1750,7 @@ GET /admin/v1/analytics/conversion?days=30
 
 **Antwort**: jedes Spiel mit `game_id` (hashid), `game_name`, `players` (deduplizierte Spielerzahl), `depositors` (deduplizierte Einzahlerzahl), `conversion_rate` (Einzahlungs-Konversionsrate, 0~1).
 
-### 18.8 Gemeinsame Wahrscheinlichkeit
+### 17.8 Gemeinsame Wahrscheinlichkeit
 
 ```
 GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
@@ -1777,7 +1758,7 @@ GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
 
 **Antwort**: `{ "joint": { "joint_probability": 0.12, "confidence": 0.3 } }` — Jaccard-Koeffizient (gemeinsame Spieler beider Spiele / Vereinigungsmenge der Spieler) und Konfidenz (gemeinsame Spieler / Spieler von Spiel A).
 
-### 18.9 Retentionsanalyse
+### 17.9 Retentionsanalyse
 
 ```
 GET /admin/v1/analytics/retention?days=30
@@ -1785,7 +1766,7 @@ GET /admin/v1/analytics/retention?days=30
 
 **Antwort**: `{ "D1": "8.5%", "D3": "...", "D7": "...", "D30": "..." }` mit 1-/3-/7-/30-Tages-Retentionsraten gruppiert nach Registrierungsdatum.
 
-### 18.10 Konversions-Funnel
+### 17.10 Konversions-Funnel
 
 ```
 GET /admin/v1/analytics/funnel?days=30
@@ -1793,7 +1774,7 @@ GET /admin/v1/analytics/funnel?days=30
 
 **Antwort**: Registrierung → erste Einzahlung → erster Umtausch → erstes Spiel, vier Schritte mit `step`, `count`, `rate` (Prozentsatz relativ zur Registrierungszahl).
 
-### 18.11 ARPU/ARPPU-Trend
+### 17.11 ARPU/ARPPU-Trend
 
 ```
 GET /admin/v1/analytics/arpu?days=30
@@ -1801,7 +1782,7 @@ GET /admin/v1/analytics/arpu?days=30
 
 **Antwort**: `{ "dates": [...], "arpu": [...], "arppu": [...] }` mit täglichem Umsatz pro Benutzer (ARPU) und Umsatz pro zahlendem Benutzer (ARPPU).
 
-### 18.12 Wirtschaftsindikatoren der Spielwährungen
+### 17.12 Wirtschaftsindikatoren der Spielwährungen
 
 ```
 GET /admin/v1/analytics/economy
@@ -1809,7 +1790,7 @@ GET /admin/v1/analytics/economy
 
 **Antwort**: Array `currencies`, jeder Eintrag mit `game_name`, `currency`, `symbol`, `total_minted` (Gesamtmenge geprägt), `total_burned` (Gesamtmenge vernichtet), `circulation` (Umlaufmenge), `inflation_rate` (Inflationsrate), berechnet mit bcmath-Hochpräzisionsarithmetik.
 
-## 17. Zahlungsverwaltung (Payment)
+## 18. Zahlungsverwaltung (Payment)
 
 Die Zahlungsmethoden-Verwaltung wird von `PaymentController` bereitgestellt; alle 5 Endpunkte erfordern JWT + RBAC-Authentifizierung. `provider`-Whitelist: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`. `config` ist ein JSON-String der Zahlungskonfiguration (verschlüsselt in der Datenbank gespeichert).
 
@@ -1821,7 +1802,7 @@ Die Zahlungsmethoden-Verwaltung wird von `PaymentController` bereitgestellt; all
 | PUT | /admin/v1/payment/method/{hashid} | Zahlungsmethode aktualisieren |
 | DELETE | /admin/v1/payment/method/{hashid} | Zahlungsmethode löschen (abgelehnt, wenn ausstehende Bestellungen existieren) |
 
-### 17.1 Liste der Zahlungsmethoden
+### 18.1 Liste der Zahlungsmethoden
 
 ```
 GET /admin/v1/payment/method/list
@@ -1869,7 +1850,7 @@ GET /admin/v1/payment/method/list
 | min_amount / max_amount | string | Betragsbereich (String erhält Präzision), 0 = keine Begrenzung |
 | config | string? | Zahlungskonfiguration JSON (verschlüsselt; null, wenn nicht gesetzt) |
 
-### 17.2 Zahlungsmethode aktivieren/deaktivieren
+### 18.2 Zahlungsmethode aktivieren/deaktivieren
 
 ```
 POST /admin/v1/payment/method/toggle
@@ -1892,7 +1873,7 @@ POST /admin/v1/payment/method/toggle
 - 422: Validierung fehlgeschlagen (id/status fehlt oder status nicht 0/1)
 - 404: Zahlungsmethode nicht gefunden
 
-### 17.3 Zahlungsmethode erstellen
+### 18.3 Zahlungsmethode erstellen
 
 ```
 POST /admin/v1/payment/method/create
@@ -1938,20 +1919,20 @@ POST /admin/v1/payment/method/create
 **Mögliche Fehler**:
 - 422: Validierung fehlgeschlagen
 
-### 17.4 Zahlungsmethode aktualisieren
+### 18.4 Zahlungsmethode aktualisieren
 
 ```
 PUT /admin/v1/payment/method/{hashid}
 ```
 
 - **Pfadparameter**: `{hashid}` ist die hashid-kodierte Zahlungsmethoden-ID
-- **Anfragekörper**: wie bei Erstellen (17.3), alle Felder optional, nur übergebene Felder werden aktualisiert
+- **Anfragekörper**: wie bei Erstellen (18.3), alle Felder optional, nur übergebene Felder werden aktualisiert
 
 **Mögliche Fehler**:
 - 404: Zahlungsmethode nicht gefunden
 - 422: Validierung fehlgeschlagen
 
-### 17.5 Zahlungsmethode löschen
+### 18.5 Zahlungsmethode löschen
 
 ```
 DELETE /admin/v1/payment/method/{hashid}

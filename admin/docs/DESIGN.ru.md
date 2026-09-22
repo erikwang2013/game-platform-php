@@ -42,7 +42,7 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.
 │  │                   Model 层                            │    │
 │  │  ┌──────────────────────────────────────────────┐    │    │
 │  │  │  Snowflake ID ← encryptable → Encryption     │    │    │
-│  │  │ (主键生成)     (DB字段加密)   (API传输加密)    │    │    │
+│  │  │  (主键生成)     (DB字段加密)   (API传输加密)    │    │    │
 │  │  └──────────────────────────────────────────────┘    │    │
 │  └──────────────────────────┬───────────────────────────┘    │
 │                             │                                  │
@@ -65,10 +65,10 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.
 |---|------|------|
 | Маршруты | `config/route.php` | Маппинг URL на контроллеры, привязка промежуточного ПО, версионированные маршруты |
 | Промежуточное ПО | `app/middleware/` | Блокировка атак (SecurityFilter), ограничение частоты (RateLimit), аутентификация (JWT), авторизация (RBAC) |
-| Контроллеры | 30 шт.: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (панель) + Captcha/Auth (API v1) | Проверка параметров запроса, вызов бизнес-логики, форматирование ответа |
-| Бизнес-сервисы | `common/service/` | Аналитика данных: GameDashboardService (обзор/рейтинги/тренды), DepositLogService (выручка/конверсия), ProbabilityService (совместные/условные вероятности, построитель SQL); при сбое БД — пустые данные вместо ошибки |
+| Контроллеры | 45 шт.: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (панель) + Captcha/Auth (API v1) | Проверка параметров запроса, вызов бизнес-логики, форматирование ответа |
+| Бизнес-сервисы | `packages/platform-common/src/service/` | Аналитика данных: GameDashboardService (обзор/рейтинги/тренды), DepositLogService (выручка/конверсия), ProbabilityService (совместные/условные вероятности, построитель SQL); при сбое БД — пустые данные вместо ошибки |
 | Модели данных | `app/model/` | ORM-маппинг, связи, шифрование/дешифрование полей |
-| Общие утилиты | `app/common/` | Сервисы Hashids, Snowflake, Encryption |
+| Общие утилиты | `packages/platform-common/src/` | Сервисы Hashids, Snowflake, Encryption |
 
 ### 2.2 Жизненный цикл запроса
 
@@ -466,7 +466,7 @@ docker-compose up -d
 
 ### 8.5 Мониторинг
 
-Эндпоинт `GET /metrics` (`MetricsController`) в текстовом формате Prometheus раскрывает 5 метрик gauge: общее число HTTP-запросов, число активных пользователей, статус соединений с БД/Redis, потребление памяти.
+Эндпоинт `GET /metrics` (`MetricsController`) в текстовом формате Prometheus раскрывает 18 метрик gauge: активные/всего пользователей, статус соединений с БД/Redis/ES, метрики памяти/CPU/процессов, ожидающие выводы и расхождения сверки.
 
 ### 8.6 Требования к окружению
 

@@ -10,7 +10,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 
 ---
 
-## 一、Überblick
+## 1. Überblick
 
 | Kategorie | Bewertung | Veränderung |
 |------|------|------|
@@ -22,7 +22,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 
 ---
 
-## 二、Verifizierte Punkte
+## 2. Verifizierte Punkte
 
 ### 2.1 PHP-Syntaxprüfung
 - Alle `.php`-Dateien in admin/ und service/: **0 Fehler**
@@ -57,7 +57,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 
 ---
 
-## 三、Funktionslieferliste
+## 3. Funktionslieferliste
 
 ### Phase 1 — Spiel-Anbindungsschicht
 
@@ -124,7 +124,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 
 ---
 
-## 四、Gefundene und behobene Probleme
+## 4. Gefundene und behobene Probleme
 
 | # | Problem | Schweregrad | Fix |
 |---|------|--------|------|
@@ -137,7 +137,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 
 ---
 
-## 五、Statistikdaten
+## 5. Statistikdaten
 
 ### Codeumfang
 
@@ -165,7 +165,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 
 ---
 
-## 六、Ökosystem-Erweiterungsraum (nicht abgeschlossene Punkte)
+## 6. Ökosystem-Erweiterungsraum (nicht abgeschlossene Punkte)
 
 | Funktion | Priorität | Beschreibung |
 |------|--------|------|
@@ -182,7 +182,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 
 ---
 
-## 八、Erweiterungsraum-Reparaturen (2026-08-04, dritte Runde)
+## 7. Erweiterungsraum-Reparaturen (2026-08-04, dritte Runde)
 
 ### P2 umgesetzt
 
@@ -213,7 +213,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 - 4 API-Endpunkt-Dokumente (balance/bet/settle/refund)
 - Anbindungsleitfaden für eigene Spiele + Sitzungsverwaltung + Spielkonfiguration
 
-## 九、Endbewertung (aktualisiert)
+## 8. Endbewertung (aktualisiert)
 
 | Kategorie | Initial (v1) | v2.0 Ökosystem-Erweiterung | v2.1 Erweiterungsreparaturen | Veränderung |
 |------|-----------|---------------|---------------|------|
@@ -227,7 +227,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 
 ---
 
-## 十、Bestätigung der Sicherheits- und Verfügbarkeitsreparaturen 2026-08-18
+## 9. Bestätigung der Sicherheits- und Verfügbarkeitsreparaturen 2026-08-18
 
 Diese Runde (2026-08-18) abgeschlossene Sicherheits- und Verfügbarkeitsreparaturen (Arbeitsbereich nicht committet, folgt mit Version 1.1):
 

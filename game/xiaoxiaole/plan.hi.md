@@ -1,4 +1,4 @@
-# 田园消消乐 — विकास योजना
+# ग्रामीण मैच-3 — विकास योजना
 <!-- lang-nav -->
 
 Languages: [中文](plan.md) · [English](plan.en.md) · [한국어](plan.ko.md) · [Русский](plan.ru.md) · [Deutsch](plan.de.md) · [Français](plan.fr.md) · [Español](plan.es.md) · [Português](plan.pt.md) · **हिन्दी** · [العربية](plan.ar.md) · [বাংলা](plan.bn.md) · [Bahasa Indonesia](plan.id.md) · [日本語](plan.ja.md)

@@ -186,7 +186,7 @@ type 可选值: deposit / withdraw / exchange_in / exchange_out / game_earn / ga
 }
 ```
 
-Valeurs possibles de currency : USD / CNY / EUR
+Valeurs possibles de currency : USD / CNY / EUR / JPY / KRW / GBP / BRL / INR
 
 checkout_url : lien de redirection de la passerelle de paiement (rempli à la création de la commande) ; expires_at : expiration du lien de paiement (1 heure après la création)
 
@@ -401,9 +401,9 @@ Erreurs :
 }
 ```
 
-Valeurs possibles de type : self / third_party
+Valeurs possibles de type : self / embedded / third_party
 
-#### GET /api/v1/game/{hashid} — Détail d'un jeu
+#### GET /api/v1/game/detail/{hashid} — Détail d'un jeu
 
 ```
 响应: {
@@ -870,7 +870,7 @@ Valeurs possibles de language : en-US / zh-CN / ja-JP / ko-KR
 
 ### 3.1 Tableau de bord de la plateforme
 
-#### GET /admin/dashboard/platform
+#### GET /admin/v1/dashboard/platform
 
 ```
 需认证: 是 (AdminAuth + AdminPermission)
@@ -888,11 +888,11 @@ Valeurs possibles de language : en-US / zh-CN / ja-JP / ko-KR
 
 ### 3.2 Gestion des jeux
 
-#### GET /admin/game/list — Liste des jeux
+#### GET /admin/v1/game/list — Liste des jeux
 
 ```
 需认证: 是
-参数: ?page=1&per_page=20&keyword=射击
+参数: ?page=1&limit=20&keyword=射击
 
 响应: {
   "list": [
@@ -909,11 +909,67 @@ Valeurs possibles de language : en-US / zh-CN / ja-JP / ko-KR
   ],
   "total": 12,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### POST /admin/game/create — Créer un jeu
+#### GET /admin/v1/game/{hashid} — Détail d'un jeu
+
+```
+需认证: 是
+参数: hashid 为游戏的 hashid 编码（路径参数）
+
+响应: {
+  "id": "aB3xK...",
+  "name": "射击大师",
+  "slug": "shooter-master",
+  "type": "self",
+  "description": "游戏描述",
+  "cover_image": "https://...",
+  "api_endpoint": "https://...",
+  "sdk_version": "1.0.0",
+  "platform": "h5",
+  "region": "global",
+  "currencies": [
+    {
+      "id": "cD4yL...",
+      "name": "金币",
+      "symbol": "G",
+      "exchange_rate": "100.00000000",
+      "spread_pct": "5.00000000",
+      "min_exchange": "1.00000000",
+      "max_exchange": "10000.00000000"
+    }
+  ]
+}
+```
+
+Renvoie code 404 si le jeu n'existe pas.
+
+#### POST /admin/v1/game/launch — Aperçu du jeu
+
+```
+需认证: 是
+
+请求: {
+  "game_id": "aB3xK..."      // 游戏 ID(hashid)
+}
+
+响应: {
+  "id": "aB3xK...",
+  "name": "射击大师",
+  "slug": "shooter-master",
+  "type": "self",
+  "api_endpoint": "https://...",
+  "preview": true
+}
+```
+
+Si `game_id` est absent, code 422 est renvoyé ; si le jeu n'existe pas, 404 est renvoyé ; si le jeu n'est pas publié (`status` différent de 1), 403 est renvoyé.
+
+L'aperçu admin est un aperçu pur : il ne valide que la disponibilité du jeu et renvoie les informations de lancement, et **n'écrit aucun enregistrement de jeu et ne touche pas au portefeuille**. Les identités admin ne portent que `adminId` (injecté par `AdminAuth`) et aucun `userId` côté C, donc cet endpoint n'effectue délibérément aucune écriture côté utilisateur — copier le `POST /api/v1/game/launch` côté C écrirait des lignes `game_game_play_log` avec un mauvais propriétaire.
+
+#### POST /admin/v1/game/create — Créer un jeu
 
 ```
 需认证: 是
@@ -934,9 +990,9 @@ Valeurs possibles de language : en-US / zh-CN / ja-JP / ko-KR
 响应: { "id": "aB3xK..." }
 ```
 
-Valeurs possibles de type : self / third_party
+Valeurs possibles de type : self / embedded / third_party
 
-#### PUT /admin/game/{hashid} — Modifier un jeu
+#### PUT /admin/v1/game/{hashid} — Modifier un jeu
 
 ```
 需认证: 是
@@ -950,14 +1006,14 @@ Valeurs possibles de type : self / third_party
 响应: { "message": "更新成功" }
 ```
 
-#### DELETE /admin/game/{hashid} — Supprimer un jeu
+#### DELETE /admin/v1/game/{hashid} — Supprimer un jeu
 
 ```
 需认证: 是
 响应: { "message": "删除成功" }
 ```
 
-#### POST /admin/game/currency/manage — Gérer les devises
+#### POST /admin/v1/game/currency/manage — Gérer les devises
 
 ```
 需认证: 是
@@ -977,16 +1033,20 @@ Valeurs possibles de type : self / third_party
   ]
 }
 
-响应: { "message": "币种更新成功" }
+响应: { "message": "操作成功" }
 ```
+
+Si `game_id` est absent ou si `currencies` n'est pas un tableau, 422 est renvoyé ; si le jeu n'existe pas, 404 est renvoyé.
+
+Les champs `exchange_rate` et `spread_pct` ne sont validés que s'ils sont fournis : `exchange_rate` doit être un nombre supérieur à 0 et `spread_pct` doit être dans l'intervalle [0, 100) ; toute violation renvoie 422 et aucune devise du lot n'est écrite (le lot est validé en totalité avant l'écriture). Les champs omis ne déclenchent pas de validation : à la création les valeurs par défaut s'appliquent (`exchange_rate` = `1.00000000`, les autres `0.00000000`), à la mise à jour la valeur existante est conservée.
 
 ### 3.3 Gestion des retraits
 
-#### GET /admin/withdraw/orders — Liste des commandes de retrait
+#### GET /admin/v1/withdraw/orders — Liste des commandes de retrait
 
 ```
 需认证: 是
-参数: ?page=1&per_page=20&status=pending
+参数: ?page=1&limit=20&status=pending
 
 响应: {
   "list": [
@@ -1008,11 +1068,11 @@ Valeurs possibles de type : self / third_party
   ],
   "total": 5,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### PUT /admin/withdraw/review — Valider un retrait
+#### PUT /admin/v1/withdraw/review — Valider un retrait
 
 ```
 需认证: 是
@@ -1026,11 +1086,11 @@ Valeurs possibles de type : self / third_party
 响应: { "message": "已通过" }
 ```
 
-action : approve=approuver / reject=refuser (en cas de refus, les devises de plateforme sont automatiquement retournées)
+action : approve=approuver / reject=refuser / confirm=confirmer (en cas de refus, les devises de plateforme sont automatiquement retournées)
 
 Erreurs : 422 l'état de la commande n'est pas « en attente de validation »
 
-#### PUT /admin/withdraw/switch — Interrupteur global des retraits
+#### PUT /admin/v1/withdraw/switch — Interrupteur global des retraits
 
 ```
 需认证: 是
@@ -1043,7 +1103,7 @@ Erreurs : 422 l'état de la commande n'est pas « en attente de validation »
 }
 ```
 
-#### POST /admin/withdraw/limits/set — Définir les limites de retrait
+#### POST /admin/v1/withdraw/limits/set — Définir les limites de retrait
 
 ```
 需认证: 是
@@ -1064,11 +1124,11 @@ Erreurs : 422 l'état de la commande n'est pas « en attente de validation »
 
 ### 3.4 Gestion des utilisateurs de la plateforme
 
-#### GET /admin/platform/user/list — Liste des utilisateurs côté C
+#### GET /admin/v1/platform/user/list — Liste des utilisateurs côté C
 
 ```
 需认证: 是
-参数: ?page=1&per_page=20&keyword=player&status=1
+参数: ?page=1&limit=20&keyword=player&status=1
 
 响应: {
   "list": [
@@ -1084,11 +1144,11 @@ Erreurs : 422 l'état de la commande n'est pas « en attente de validation »
   ],
   "total": 1500,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### GET /admin/platform/user/{hashid} — Détail d'un utilisateur
+#### GET /admin/v1/platform/user/{hashid} — Détail d'un utilisateur
 
 ```
 需认证: 是
@@ -1111,7 +1171,7 @@ Erreurs : 422 l'état de la commande n'est pas « en attente de validation »
 }
 ```
 
-#### PUT /admin/platform/user/{hashid} — Modifier/bannir un utilisateur
+#### PUT /admin/v1/platform/user/{hashid} — Modifier/bannir un utilisateur
 
 ```
 需认证: 是
@@ -1126,7 +1186,7 @@ Erreurs : 422 l'état de la commande n'est pas « en attente de validation »
 
 ### 3.5 Gestion des paiements
 
-#### GET /admin/payment/method/list
+#### GET /admin/v1/payment/method/list
 
 ```
 需认证: 是
@@ -1144,7 +1204,7 @@ Erreurs : 422 l'état de la commande n'est pas « en attente de validation »
 }
 ```
 
-#### POST /admin/payment/method/toggle — Activer/désactiver un mode de paiement
+#### POST /admin/v1/payment/method/toggle — Activer/désactiver un mode de paiement
 
 ```
 需认证: 是
@@ -1156,11 +1216,11 @@ Erreurs : 422 l'état de la commande n'est pas « en attente de validation »
 
 ### 3.6 Gestion des annonces
 
-#### GET /admin/announcement/list
+#### GET /admin/v1/announcement/list
 
 ```
 需认证: 是
-参数: ?page=1&per_page=20
+参数: ?page=1&limit=20
 
 响应: {
   "list": [
@@ -1176,11 +1236,11 @@ Erreurs : 422 l'état de la commande n'est pas « en attente de validation »
   ],
   "total": 5,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### POST /admin/announcement/create — Publier une annonce
+#### POST /admin/v1/announcement/create — Publier une annonce
 
 ```
 需认证: 是
@@ -1200,11 +1260,11 @@ Erreurs : 422 l'état de la commande n'est pas « en attente de validation »
 
 ### 3.7 Validation KYC
 
-#### GET /admin/identity/list — Liste KYC
+#### GET /admin/v1/identity/list — Liste KYC
 
 ```
 需认证: 是
-参数: ?page=1&per_page=20&status=pending
+参数: ?page=1&limit=20&status=pending
 
 响应: {
   "list": [
@@ -1217,11 +1277,11 @@ Erreurs : 422 l'état de la commande n'est pas « en attente de validation »
       "created_at": "2026-05-22 10:00:00"
     }
   ],
-  "total": 5, "page": 1, "per_page": 20
+  "total": 5, "page": 1, "limit": 20
 }
 ```
 
-#### PUT /admin/identity/review — Valider le KYC
+#### PUT /admin/v1/identity/review — Valider le KYC
 
 ```
 需认证: 是
@@ -1235,7 +1295,7 @@ action : approve / reject
 
 ### 3.8 Gestion des serveurs de jeux
 
-#### GET /admin/game/server/list — Liste des serveurs
+#### GET /admin/v1/game/server/list — Liste des serveurs
 
 ```
 需认证: 是
@@ -1248,7 +1308,7 @@ action : approve / reject
 }
 ```
 
-#### POST /admin/game/server/create — Créer un serveur
+#### POST /admin/v1/game/server/create — Créer un serveur
 
 ```
 需认证: 是
@@ -1256,14 +1316,14 @@ action : approve / reject
 响应: { "id": "hashid" }
 ```
 
-#### PUT /admin/game/server/{hashid} — Modifier un serveur
+#### PUT /admin/v1/game/server/{hashid} — Modifier un serveur
 
 ```
 需认证: 是
 请求: { "name": "新名称", "status": 2 }
 ```
 
-#### DELETE /admin/game/server/{hashid} — Supprimer un serveur
+#### DELETE /admin/v1/game/server/{hashid} — Supprimer un serveur
 
 ```
 需认证: 是
@@ -1271,7 +1331,7 @@ action : approve / reject
 
 ### 3.9 Gestion des limites de retrait par paliers
 
-#### GET /admin/withdraw/limits/list
+#### GET /admin/v1/withdraw/limits/list
 
 ```
 需认证: 是
@@ -1293,7 +1353,7 @@ action : approve / reject
 }
 ```
 
-#### PUT /admin/withdraw/limits/{hashid} — Mettre à jour les limites
+#### PUT /admin/v1/withdraw/limits/{hashid} — Mettre à jour les limites
 
 ```
 需认证: 是
@@ -1304,14 +1364,14 @@ action : approve / reject
 
 ### 3.11 Gestion des catégories de jeux
 
-#### GET /admin/game/category/list
+#### GET /admin/v1/game/category/list
 
 ```
 需认证: 是
 响应: { "list": [{ "id": "...", "name": "动作", "slug": "action", "sort": 1 }] }
 ```
 
-#### POST /admin/game/category/create
+#### POST /admin/v1/game/category/create
 
 ```
 需认证: 是
@@ -1319,11 +1379,11 @@ action : approve / reject
 响应: { "id": "hashid" }
 ```
 
-#### PUT /admin/game/category/{hashid} — Modifier une catégorie
+#### PUT /admin/v1/game/category/{hashid} — Modifier une catégorie
 
-#### DELETE /admin/game/category/{hashid} — Supprimer une catégorie
+#### DELETE /admin/v1/game/category/{hashid} — Supprimer une catégorie
 
-#### POST /admin/game/category/assign — Attribuer des jeux
+#### POST /admin/v1/game/category/assign — Attribuer des jeux
 
 ```
 需认证: 是
@@ -1332,42 +1392,42 @@ action : approve / reject
 
 ### 3.12 Gestion des classements
 
-#### GET /admin/leaderboard/list — Liste des classements
+#### GET /admin/v1/leaderboard/list — Liste des classements
 
 ```
 需认证: 是
 响应: { "list": [{ "id": "...", "name": "...", "type": "total", "metric": "earned" }] }
 ```
 
-#### POST /admin/leaderboard/create — Créer un classement
+#### POST /admin/v1/leaderboard/create — Créer un classement
 
 ```
 需认证: 是
 请求: { "name": "周收入榜", "type": "weekly", "metric": "earned", "game_id": "hashid(可选)" }
 ```
 
-#### PUT /admin/leaderboard/{hashid} — Modifier un classement
+#### PUT /admin/v1/leaderboard/{hashid} — Modifier un classement
 
-#### DELETE /admin/leaderboard/{hashid} — Supprimer un classement
+#### DELETE /admin/v1/leaderboard/{hashid} — Supprimer un classement
 
-#### POST /admin/leaderboard/{hashid}/refresh — Rafraîchir le cache
+#### POST /admin/v1/leaderboard/{hashid}/refresh — Rafraîchir le cache
 
 ### 3.13 Gestion des coupons
 
-#### GET /admin/coupon/list — Liste des coupons
+#### GET /admin/v1/coupon/list — Liste des coupons
 
-#### POST /admin/coupon/create — Créer un coupon
+#### POST /admin/v1/coupon/create — Créer un coupon
 
 ```
 需认证: 是
 请求: { "name": "新人礼包", "type": "fixed", "value": "10.0000", "total_qty": 1000 }
 ```
 
-#### PUT /admin/coupon/{hashid} — Modifier (tant que non réclamé)
+#### PUT /admin/v1/coupon/{hashid} — Modifier (tant que non réclamé)
 
-#### DELETE /admin/coupon/{hashid} — Supprimer
+#### DELETE /admin/v1/coupon/{hashid} — Supprimer
 
-#### GET /admin/coupon/{hashid}/stats — Statistiques de réclamation
+#### GET /admin/v1/coupon/{hashid}/stats — Statistiques de réclamation
 
 ```
 响应: { "total_qty": 1000, "used_qty": 234, "remaining": 766, "usage_rate": "23.40%" }
@@ -1375,20 +1435,20 @@ action : approve / reject
 
 ### 3.14 Gestion de la configuration des pays
 
-#### GET /admin/country/config/list — Liste des configurations de pays
+#### GET /admin/v1/country/config/list — Liste des configurations de pays
 
-#### POST /admin/country/config/create — Créer une configuration de pays
+#### POST /admin/v1/country/config/create — Créer une configuration de pays
 
 ```
 需认证: 是
 请求: { "country_code": "JP", "currency": "JPY", "payment_methods": "[\"stripe\",\"paypal\"]", "min_deposit": "100.0000" }
 ```
 
-#### PUT /admin/country/config/{hashid} — Modifier une configuration de pays
+#### PUT /admin/v1/country/config/{hashid} — Modifier une configuration de pays
 
 ### 3.15 Export de données
 
-#### POST /admin/export/users — Exporter les utilisateurs côté C
+#### POST /admin/v1/export/users — Exporter les utilisateurs côté C
 
 ```
 需认证: 是
@@ -1397,7 +1457,7 @@ action : approve / reject
 响应: Excel 文件下载 (xlsx)
 ```
 
-#### POST /admin/export/transactions — Exporter les transactions de la plateforme
+#### POST /admin/v1/export/transactions — Exporter les transactions de la plateforme
 
 ```
 需认证: 是
@@ -1412,18 +1472,18 @@ Tous les points d'extrémité nécessitent une authentification (AdminAuth + Adm
 
 | Méthode | Chemin | Description |
 |------|------|------|
-| GET | /admin/analytics/overview | Aperçu de la plateforme (aujourd'hui/7 derniers jours) |
-| GET | /admin/analytics/game-ranking | Classement des jeux (?days=7) |
-| GET | /admin/analytics/dau-trend | Tendance DAU (?days=30) |
-| GET | /admin/analytics/hourly-trend | Tendance horaire |
-| GET | /admin/analytics/action-distribution | Répartition des comportements |
-| GET | /admin/analytics/revenue | Analyse des revenus |
-| GET | /admin/analytics/conversion | Taux de conversion des jeux |
-| GET | /admin/analytics/probability | Probabilités conjointes/conditionnelles |
-| GET | /admin/analytics/retention | Analyse de rétention D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | Entonnoir de conversion |
-| GET | /admin/analytics/arpu | Tendance ARPU/ARPPU |
-| GET | /admin/analytics/economy | Indicateurs économiques des devises de jeu |
+| GET | /admin/v1/analytics/overview | Aperçu de la plateforme (aujourd'hui/7 derniers jours) |
+| GET | /admin/v1/analytics/game-ranking | Classement des jeux (?days=7) |
+| GET | /admin/v1/analytics/dau-trend | Tendance DAU (?days=30) |
+| GET | /admin/v1/analytics/hourly-trend | Tendance horaire |
+| GET | /admin/v1/analytics/action-distribution | Répartition des comportements |
+| GET | /admin/v1/analytics/revenue | Analyse des revenus |
+| GET | /admin/v1/analytics/conversion | Taux de conversion des jeux |
+| GET | /admin/v1/analytics/probability | Probabilités conjointes/conditionnelles |
+| GET | /admin/v1/analytics/retention | Analyse de rétention D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | Entonnoir de conversion |
+| GET | /admin/v1/analytics/arpu | Tendance ARPU/ARPPU |
+| GET | /admin/v1/analytics/economy | Indicateurs économiques des devises de jeu |
 
 ### 3.17 Gestion des tickets
 
@@ -1431,11 +1491,11 @@ Tous les points d'extrémité nécessitent une authentification (AdminAuth + Adm
 
 | Méthode | Chemin | Description |
 |------|------|------|
-| GET | /admin/ticket/list | Liste des tickets (?page=&limit=&status=&type=) |
-| GET | /admin/ticket/{hashid} | Détail d'un ticket (avec réponses) |
-| POST | /admin/ticket/{hashid}/reply | Répondre à un ticket |
-| POST | /admin/ticket/{hashid}/close | Clôturer un ticket |
-| POST | /admin/ticket/{hashid}/assign | Attribuer un traitement (admin_id) |
+| GET | /admin/v1/ticket/list | Liste des tickets (?page=&limit=&status=&type=) |
+| GET | /admin/v1/ticket/{hashid} | Détail d'un ticket (avec réponses) |
+| POST | /admin/v1/ticket/{hashid}/reply | Répondre à un ticket |
+| POST | /admin/v1/ticket/{hashid}/close | Clôturer un ticket |
+| POST | /admin/v1/ticket/{hashid}/assign | Attribuer un traitement (admin_id) |
 
 ### 3.18 Gestion de la configuration CDN
 
@@ -1443,12 +1503,12 @@ Tous les points d'extrémité nécessitent une authentification (AdminAuth + Adm
 
 | Méthode | Chemin | Description | Authentification |
 |------|------|------|------|
-| GET | /admin/cdn/provider/list | Liste des fournisseurs CDN (les identifiants ne sont pas renvoyés) | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/toggle | Activer/désactiver le fournisseur {id, status} | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/create | Créer {name, provider, config(JSON), status, sort}, vérification d'unicité de provider | AdminAuth + RBAC: cdn |
-| PUT | /admin/cdn/provider/{hashid} | Modifier (config vide = inchangé) | AdminAuth + RBAC: cdn |
-| DELETE | /admin/cdn/provider/{hashid} | Supprimer | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/test | Test de connectivité HeadBucket {id} | AdminAuth + RBAC: cdn |
+| GET | /admin/v1/cdn/provider/list | Liste des fournisseurs CDN (les identifiants ne sont pas renvoyés) | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/toggle | Activer/désactiver le fournisseur {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/create | Créer {name, provider, config(JSON), status, sort}, vérification d'unicité de provider | AdminAuth + RBAC: cdn |
+| PUT | /admin/v1/cdn/provider/{hashid} | Modifier (config vide = inchangé) | AdminAuth + RBAC: cdn |
+| DELETE | /admin/v1/cdn/provider/{hashid} | Supprimer | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/test | Test de connectivité HeadBucket {id} | AdminAuth + RBAC: cdn |
 
 ### 3.19 Rapports de données
 
@@ -1456,9 +1516,9 @@ Tous les points d'extrémité nécessitent une authentification (AdminAuth + Adm
 
 | Méthode | Chemin | Description | Authentification |
 |------|------|------|------|
-| GET | /admin/report/summary | Récapitulatif des rapports (nouveaux utilisateurs/dépôts/retraits/échanges/parties) | AdminAuth + RBAC: report |
-| GET | /admin/report/daily | Rapport quotidien (agrégation par jour, jours sans données remplis à 0) | AdminAuth + RBAC: report |
-| GET | /admin/report/export | Export du rapport quotidien en CSV (UTF-8 BOM) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/summary | Récapitulatif des rapports (nouveaux utilisateurs/dépôts/retraits/échanges/parties) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/daily | Rapport quotidien (agrégation par jour, jours sans données remplis à 0) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/export | Export du rapport quotidien en CSV (UTF-8 BOM) | AdminAuth + RBAC: report |
 
 ## 4. Stratégie de limitation
 
@@ -1681,6 +1741,8 @@ status : open / waiting / replied / closed
 
 #### GET /api/v1/user/vip-status — État VIP
 
+> **Non implémenté** : la route côté C n'est pas enregistrée (aucune entrée dans `service/config/route.php`), les requêtes renvoient actuellement 404. Supprimez cette ligne une fois implémenté.
+
 ```
 需认证: 是
 响应: {
@@ -1701,6 +1763,8 @@ status : open / waiting / replied / closed
 
 #### GET /api/v1/user/achievements — Liste des succès
 
+> **Non implémenté** : la route côté C n'est pas enregistrée (aucune entrée dans `service/config/route.php`), les requêtes renvoient actuellement 404. Supprimez cette ligne une fois implémenté.
+
 ```
 需认证: 是
 响应: {
@@ -1720,7 +1784,7 @@ status : open / waiting / replied / closed
 
 ### 7.6 Nouvelles API d'administration
 
-#### GET /admin/ticket/list — Liste des tickets
+#### GET /admin/v1/ticket/list — Liste des tickets
 
 ```
 需认证: 是
@@ -1739,7 +1803,7 @@ status : open / waiting / replied / closed
 }
 ```
 
-#### POST /admin/ticket/{hashid}/reply — Répondre à un ticket
+#### POST /admin/v1/ticket/{hashid}/reply — Répondre à un ticket
 
 ```
 需认证: 是
@@ -1747,14 +1811,14 @@ status : open / waiting / replied / closed
 响应: { "code": 0, "message": "Reply sent" }
 ```
 
-#### POST /admin/ticket/{hashid}/close — Clôturer un ticket
+#### POST /admin/v1/ticket/{hashid}/close — Clôturer un ticket
 
 ```
 需认证: 是
 响应: { "code": 0, "message": "Ticket closed" }
 ```
 
-#### POST /admin/ticket/{hashid}/assign — Attribuer un traitement
+#### POST /admin/v1/ticket/{hashid}/assign — Attribuer un traitement
 
 ```
 需认证: 是
@@ -1762,7 +1826,7 @@ status : open / waiting / replied / closed
 响应: { "code": 0, "message": "Assigned" }
 ```
 
-#### GET /admin/analytics/retention — Analyse de rétention
+#### GET /admin/v1/analytics/retention — Analyse de rétention
 
 ```
 需认证: 是
@@ -1773,7 +1837,7 @@ status : open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/funnel — Entonnoir de conversion
+#### GET /admin/v1/analytics/funnel — Entonnoir de conversion
 
 ```
 需认证: 是
@@ -1787,7 +1851,7 @@ status : open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/arpu — Tendance ARPU/ARPPU
+#### GET /admin/v1/analytics/arpu — Tendance ARPU/ARPPU
 
 ```
 需认证: 是
@@ -1795,7 +1859,7 @@ status : open / waiting / replied / closed
 响应: { "arpu": [...], "arppu": [...], "dates": [...] }
 ```
 
-#### GET /admin/analytics/economy — Indicateurs économiques des devises de jeu
+#### GET /admin/v1/analytics/economy — Indicateurs économiques des devises de jeu
 
 ```
 需认证: 是
@@ -1814,14 +1878,14 @@ status : open / waiting / replied / closed
 ```
 
 
-#### GET /admin/cdn/provider/list — Liste des fournisseurs CDN (les identifiants ne sont pas renvoyés)
+#### GET /admin/v1/cdn/provider/list — Liste des fournisseurs CDN (les identifiants ne sont pas renvoyés)
 
 ```
 需认证: 是
 响应: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
 ```
 
-#### POST /admin/cdn/provider/toggle — Activer/désactiver le fournisseur {id, status}
+#### POST /admin/v1/cdn/provider/toggle — Activer/désactiver le fournisseur {id, status}
 
 ```
 需认证: 是
@@ -1829,7 +1893,7 @@ status : open / waiting / replied / closed
 响应: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/cdn/provider/create — Créer {name, provider, config(JSON), status, sort}, vérification d'unicité de provider
+#### POST /admin/v1/cdn/provider/create — Créer {name, provider, config(JSON), status, sort}, vérification d'unicité de provider
 
 ```
 需认证: 是
@@ -1837,7 +1901,7 @@ status : open / waiting / replied / closed
 响应: { "code": 0, "data": { "id": "..." } }
 ```
 
-#### PUT /admin/cdn/provider/{hashid} — Modifier (config vide = inchangé)
+#### PUT /admin/v1/cdn/provider/{hashid} — Modifier (config vide = inchangé)
 
 ```
 需认证: 是
@@ -1845,21 +1909,21 @@ status : open / waiting / replied / closed
 响应: { "code": 0, "message": "..." }
 ```
 
-#### DELETE /admin/cdn/provider/{hashid} — Supprimer
+#### DELETE /admin/v1/cdn/provider/{hashid} — Supprimer
 
 ```
 需认证: 是
 响应: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/cdn/provider/test — Test de connectivité HeadBucket {id}
+#### POST /admin/v1/cdn/provider/test — Test de connectivité HeadBucket {id}
 
 ```
 需认证: 是
 请求: { "id": "..." }
 响应: { "code": 0, "data": { "ok": true } }
 ```
-#### GET /admin/report/summary — Récapitulatif des rapports
+#### GET /admin/v1/report/summary — Récapitulatif des rapports
 
 ```
 需认证: 是
@@ -1873,7 +1937,7 @@ status : open / waiting / replied / closed
 ```
 
 
-#### GET /admin/report/daily — Rapport quotidien
+#### GET /admin/v1/report/daily — Rapport quotidien
 
 ```
 需认证: 是
@@ -1885,7 +1949,7 @@ status : open / waiting / replied / closed
 ```
 
 
-#### GET /admin/report/export — Export CSV du rapport quotidien
+#### GET /admin/v1/report/export — Export CSV du rapport quotidien
 
 ```
 需认证: 是
@@ -2029,13 +2093,13 @@ status : open / waiting / replied / closed
 
 ### 7.10 API d'analyse avancée
 
-#### GET /admin/analytics/retention — Analyse de rétention
+#### GET /admin/v1/analytics/retention — Analyse de rétention
 ```
 需认证: 是
 响应: { "D1": "45.2%", "D3": "28.7%", "D7": "18.3%", "D30": "8.1%" }
 ```
 
-#### GET /admin/analytics/funnel — Entonnoir de conversion
+#### GET /admin/v1/analytics/funnel — Entonnoir de conversion
 ```
 需认证: 是
 响应: {
@@ -2048,14 +2112,14 @@ status : open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/arpu — Tendance ARPU/ARPPU
+#### GET /admin/v1/analytics/arpu — Tendance ARPU/ARPPU
 ```
 需认证: 是
 参数: ?days=30
 响应: { "dates": [...], "arpu": [...], "arppu": [...] }
 ```
 
-#### GET /admin/analytics/economy — Indicateurs économiques des jeux
+#### GET /admin/v1/analytics/economy — Indicateurs économiques des jeux
 ```
 需认证: 是
 响应: {
@@ -2117,47 +2181,47 @@ La commission de parrainage ajoute une répartition de deuxième niveau :
 
 | Point d'accès | Description |
 |------|------|
-| GET /admin/risk/dashboard | Vue d'ensemble du tableau de bord des risques |
-| GET /admin/risk/overview | Indicateurs d'ensemble des risques |
-| GET /admin/risk/hit-trend | Tendance des déclenchements |
-| GET /admin/risk/action-distribution | Répartition des actions |
-| GET /admin/risk/rule-performance | Performance des règles |
-| GET /admin/risk/rule/list | Liste des règles |
-| POST /admin/risk/rule/create | Créer une règle |
-| PUT /admin/risk/rule/{hashid} | Mettre à jour une règle |
-| POST /admin/risk/rule/{hashid}/toggle | Activer/désactiver une règle |
-| POST /admin/risk/rule/test | Tester une règle |
-| GET /admin/risk/event/list | Liste des événements à risque |
-| GET /admin/risk/event/{hashid} | Détail de l'événement |
-| POST /admin/risk/event/{hashid}/handle | Traiter l'événement |
-| GET /admin/risk/device/list | Liste des empreintes d'appareils |
-| POST /admin/risk/device/block | Bloquer l'appareil |
-| POST /admin/risk/device/unblock | Débloquer l'appareil |
-| GET /admin/risk/ip/list | Liste des IP |
-| POST /admin/risk/ip/block | Bloquer une IP |
-| POST /admin/risk/ip/whitelist | Liste blanche IP |
-| POST /admin/risk/ip/appeal | Appel d'IP |
-| POST /admin/risk/ip/recheck | Revérification d'IP |
-| GET /admin/risk/graph/clusters | Liste des clusters |
-| GET /admin/risk/graph/{userId} | Graphe de liens de l'utilisateur |
-| GET /admin/risk/clusters | Liste des clusters à risque |
+| GET /admin/v1/risk/dashboard | Vue d'ensemble du tableau de bord des risques |
+| GET /admin/v1/risk/overview | Indicateurs d'ensemble des risques |
+| GET /admin/v1/risk/hit-trend | Tendance des déclenchements |
+| GET /admin/v1/risk/action-distribution | Répartition des actions |
+| GET /admin/v1/risk/rule-performance | Performance des règles |
+| GET /admin/v1/risk/rule/list | Liste des règles |
+| POST /admin/v1/risk/rule/create | Créer une règle |
+| PUT /admin/v1/risk/rule/{hashid} | Mettre à jour une règle |
+| POST /admin/v1/risk/rule/{hashid}/toggle | Activer/désactiver une règle |
+| POST /admin/v1/risk/rule/test | Tester une règle |
+| GET /admin/v1/risk/event/list | Liste des événements à risque |
+| GET /admin/v1/risk/event/{hashid} | Détail de l'événement |
+| POST /admin/v1/risk/event/{hashid}/handle | Traiter l'événement |
+| GET /admin/v1/risk/device/list | Liste des empreintes d'appareils |
+| POST /admin/v1/risk/device/block | Bloquer l'appareil |
+| POST /admin/v1/risk/device/unblock | Débloquer l'appareil |
+| GET /admin/v1/risk/ip/list | Liste des IP |
+| POST /admin/v1/risk/ip/block | Bloquer une IP |
+| POST /admin/v1/risk/ip/whitelist | Liste blanche IP |
+| POST /admin/v1/risk/ip/appeal | Appel d'IP |
+| POST /admin/v1/risk/ip/recheck | Revérification d'IP |
+| GET /admin/v1/risk/graph/clusters | Liste des clusters |
+| GET /admin/v1/risk/graph/{userId} | Graphe de liens de l'utilisateur |
+| GET /admin/v1/risk/clusters | Liste des clusters à risque |
 
 ### 10.2 Gestion anti-triche (admin :8789)
 
 | Point d'accès | Description |
 |------|------|
-| GET /admin/anticheat/events | Liste des événements anti-triche |
-| GET /admin/anticheat/events/{hashid} | Détail de l'événement |
-| POST /admin/anticheat/events/{hashid}/review | Examiner l'événement |
+| GET /admin/v1/anticheat/events | Liste des événements anti-triche |
+| GET /admin/v1/anticheat/events/{hashid} | Détail de l'événement |
+| POST /admin/v1/anticheat/events/{hashid}/review | Examiner l'événement |
 
 ### 10.3 Activités (admin :8789 + client :8792)
 
 | Point d'accès | Description |
 |------|------|
-| GET /admin/activities/list | Liste des activités (admin) |
-| POST /admin/activities/create | Créer une activité (admin) |
-| PUT /admin/activities/{hashid} | Mettre à jour une activité (admin) |
-| DELETE /admin/activities/{hashid} | Supprimer une activité (admin) |
+| GET /admin/v1/activities/list | Liste des activités (admin) |
+| POST /admin/v1/activities/create | Créer une activité (admin) |
+| PUT /admin/v1/activities/{hashid} | Mettre à jour une activité (admin) |
+| DELETE /admin/v1/activities/{hashid} | Supprimer une activité (admin) |
 | GET /api/v1/activities/list | Liste des activités (client) |
 | GET /api/v1/activities/progress | Progression de participation (client) |
 | GET /api/v1/activities/{hashid} | Détail de l'activité (client) |
@@ -2175,9 +2239,9 @@ La commission de parrainage ajoute une répartition de deuxième niveau :
 | PUT /api/v1/groups/{hashid}/role | Rôle du membre |
 | POST /api/v1/shares | Créer un lien de partage |
 | POST /api/v1/shares/visit | Suivi des visites de partage |
-| GET /admin/groups | Liste des groupes (admin) |
-| GET /admin/groups/{hashid}/audit | Audit du groupe (admin) |
-| GET /admin/share/stats | Statistiques de partage (admin) |
+| GET /admin/v1/groups | Liste des groupes (admin) |
+| GET /admin/v1/groups/{hashid}/audit | Audit du groupe (admin) |
+| GET /admin/v1/share/stats | Statistiques de partage (admin) |
 
 ### 10.5 Extensions de passerelle de paiement (L1)
 

@@ -182,7 +182,10 @@ class AuthController extends BaseController
     {
         try {
             // 校验原 refresh token（token_type=refresh 且未过期/未拉黑），并轮换为新 refresh token
-            $newRefresh = jwt_wrapper()->refresh();
+            // 优先取请求体 refresh_token（Angular/React/Flutter/HarmonyOS 客户端的回传方式），
+            // 缺省回退 Authorization 头（读 currentToken()，供 header 型客户端使用）
+            $refreshToken = $request->input('refresh_token');
+            $newRefresh = jwt_wrapper()->refresh(is_string($refreshToken) && $refreshToken !== '' ? $refreshToken : null);
             $payload = jwt_wrapper()->decode($newRefresh);
             $sub = (int) ($payload['sub'] ?? 0);
             if ($sub <= 0) {

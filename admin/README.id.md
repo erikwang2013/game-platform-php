@@ -27,6 +27,7 @@ Sistem backend administrasi full-stack berbasis webman v2 + Flutter.
 | | Impor massal Excel | Validasi per baris + laporan kesalahan |
 | 🔒 Peran & izin | CRUD peran + pohon izin | Otorisasi RBAC granular method.path |
 | ⚙ Konfigurasi sistem | CRUD pasangan kunci-nilai | Manajemen grup |
+| 💳 Metode pembayaran | CRUD multi-gateway + aktif/nonaktif | 18 gateway (stripe/paypal/nowpayments/coinbase, dll.) + visibilitas per negara |
 | 🖥 Manajemen CDN | CRUD konfigurasi 5 penyedia + aktif/nonaktif + tes konektivitas | Kredensial terenkripsi AES, service hanya membaca dari DB |
 | 📋 Audit operasi | Kueri log + deteksi sumber | Identifikasi otomatis 8 platform |
 | 📁 Manajemen file | Unggah/Ekspor Excel/Ekspor PDF | Data sensitif otomatis diredaksi |
@@ -64,48 +65,53 @@ Sistem backend administrasi full-stack berbasis webman v2 + Flutter.
 ```
 open-admin/
 ├── app/
-│   ├── admin/controller/       # Kontroler sisi admin
-│   │   ├── DashboardController.php # Dasbor (cache Redis)
-│   │   ├── UserController.php      # CRUD pengguna + operasi massal
-│   │   ├── RoleController.php      # CRUD peran
-│   │   ├── PermissionController.php# CRUD izin
-│   │   ├── ConfigController.php    # CRUD konfigurasi sistem
-│   │   ├── LogController.php       # Kueri log operasi
-│   │   ├── ProfileController.php   # Pusat pribadi + logout
-│   │   ├── ExportController.php    # Ekspor Excel/PDF
-│   │   ├── ImportController.php    # Impor pengguna Excel
-│   │   ├── UploadController.php    # Unggah file
-│   │   ├── HealthController.php    # Health check
-│   │   ├── DocsController.php      # Dokumen OpenAPI
-│   │   └── BaseController.php      # Kontroler dasar
+│   ├── admin/v1/controller/    # Kontroler sisi admin (45)
+│   │   ├── DashboardController.php  # Dasbor (cache Redis)
+│   │   ├── UserController.php       # CRUD pengguna + operasi massal
+│   │   ├── RoleController.php       # CRUD peran
+│   │   ├── PermissionController.php # CRUD izin
+│   │   ├── ConfigController.php     # CRUD konfigurasi sistem
+│   │   ├── LogController.php        # Kueri log operasi
+│   │   ├── ProfileController.php    # Pusat pribadi + logout
+│   │   ├── ExportController.php     # Ekspor Excel/PDF
+│   │   ├── ImportController.php     # Impor pengguna Excel
+│   │   ├── UploadController.php     # Unggah file
+│   │   ├── HealthController.php     # Health check
+│   │   ├── DocsController.php       # Dokumen OpenAPI
+│   │   └── BaseController.php       # Kontroler dasar
 │   ├── api/
 │   │   └── v1/controller/          # Kontroler API v1 (versi di path URL: /api/v1, /admin/v1)
 │   │       ├── CaptchaController.php # CAPTCHA klik
 │   │       └── AuthController.php    # Login/Registrasi/Refresh token
 │   ├── common/                 # Kelas utilitas publik
-│   │   ├── HashidsService.php  # Enkode/dekode ID
-│   │   ├── SnowflakeService.php# Pembuatan ID Snowflake
-│   │   └── EncryptionService.php # Enkripsi/dekripsi data + redaksi
+│   │   └── CdnProbeService.php # Probe konektivitas CDN (Hashids/Snowflake/Encryption dari paket composer)
 │   ├── middleware/             # Middleware
 │   │   ├── Cors.php            # CORS
 │   │   ├── SecurityFilter.php  # Deteksi & pemblokiran serangan (batasan metode HTTP/XSS/Injeksi SQL/path traversal/injeksi perintah/CSRF)
 │   │   ├── RateLimit.php       # Rate limit Redis (jendela geser + header respons)
+│   │   ├── StaticFile.php      # Layanan file statis (bawaan webman)
 │   │   ├── AdminAuth.php       # Autentikasi JWT + daftar hitam
 │   │   ├── AdminPermission.php # Validasi izin RBAC
 │   │   └── OperationLog.php    # Pencatatan log operasi otomatis (termasuk deteksi sumber)
-│   └── model/                  # Model data
+│   ├── activity/               # Handler aktivitas (check-in/undangan/tugas harian)
+│   ├── model/                  # Model data
+│   ├── process/                # Proses (Http, Monitor, RiskIpCron)
+│   ├── provider/               # Lapisan Provider game (Self/ThirdParty/Factory)
+│   ├── service/                # Layanan (dompet/sandbox risiko)
+│   └── view/                   # Template view
 ├── apps/
+│   ├── angular/                # Backend admin web Angular
+│   ├── react/                  # Backend admin web React
 │   ├── flutter/                # Backend administrasi Flutter Web (gaya PC)
 │   │   └── lib/app/
-│   │       ├── pages/          # 5 halaman lengkap (dasbor/pengguna/peran/konfigurasi/log/pusat pribadi)
+│   │       ├── pages/          # 20 direktori halaman
 │   │       ├── services/       # ApiService (interceptor JWT) + AuthService (persistensi Token)
 │   │       └── layouts/        # Tata letak backend admin responsif (sidebar+topbar+area konten)
 │   └── harmonyos/              # Klien native HarmonyOS (refresh Token tanpa terasa)
 ├── config/                     # File konfigurasi (termasuk komentar bahasa China)
 │   ├── route.php               # Rute + strategi versi API
 │   ├── middleware.php           # Registrasi middleware global
-│   └── ...                     # Konfigurasi tiap komponen
-├── install/        # File migrasi SQL (termasuk data seed izin)
+│   └── server.php              # Konfigurasi port/proses
 ├── public/                     # Titik masuk publik
 ├── runtime/                    # File runtime
 └── vendor/                     # Dependensi Composer
@@ -182,7 +188,7 @@ Gunakan DevEco Studio untuk membuka direktori `apps/harmonyos/`, lalu jalankan d
 
 ### 6. Deployment Docker Compose Satu-Klik (disarankan untuk produksi)
 
-Proyek menyediakan solusi orkestrasi Docker lengkap, mencakup 5 layanan: Nginx, PHP (aplikasi webman), MySQL, Redis, Elasticsearch.
+Proyek menyediakan solusi orkestrasi Docker lengkap, mencakup 7 layanan: Nginx, admin (webman), service (webman), leaderboard-ws (WebSocket), MySQL, Redis, Elasticsearch.
 
 ```bash
 # 1. Konfigurasi variabel lingkungan Docker
@@ -191,16 +197,16 @@ cp .env.docker .env
 # 2. Menjalankan semua layanan
 docker-compose up -d
 
-# 3. Inisialisasi database (jalankan di dalam kontainer app)
-docker-compose exec app mysql -h mysql -u root -p < install/install.sql
+# 3. Inisialisasi database (impor melalui kontainer mysql)
+docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform < install/install.sql
 
 # 4. Akses
 # http://localhost:8789  (webman)
-# http://localhost:8080  (proxy balik Nginx)
+# http://localhost  (proxy balik Nginx)
 ```
 
 - `Dockerfile`: PHP 8.3 + OPcache + Composer, berbasis `php:8.3-cli`
-- `docker-compose.yml`: Orkestrasi 5 layanan, isolasi jaringan, persistensi volume data
+- `docker-compose.yml`: Orkestrasi 7 layanan, isolasi jaringan, persistensi volume data
 - `.env.docker`: Variabel lingkungan khusus lingkungan Docker
 
 ## Standar Database
@@ -274,7 +280,7 @@ Cors（praproses CORS + header respons）
   → OperationLog（pencatatan otomatis POST/PUT/DELETE，termasuk deteksi sumber，grup rute /admin/v1）
 ```
 
-`/health` dan `/api/docs` adalah endpoint publik, hanya melewati `Cors → SecurityFilter → RateLimit`.
+`/health` adalah endpoint publik dan hanya melewati `Cors → SecurityFilter → RateLimit`; `/metrics` dan `/api/docs` memerlukan tambahan `AdminAuth → AdminPermission`.
 
 Penguatan keamanan:
 - **Penguncian akun**: 5 kali gagal login berturut-turut, akun otomatis dikunci 15 menit, login selama masa kunci mengembalikan 429
@@ -365,6 +371,11 @@ Authorization: Bearer <token>
 | `POST` | `/admin/v1/config` | Membuat item konfigurasi |
 | `PUT` | `/admin/v1/config/{id}` | Memperbarui item konfigurasi |
 | `DELETE` | `/admin/v1/config/{id}` | Menghapus item konfigurasi (perlu konfirmasi kata sandi) |
+| `GET` | `/admin/v1/payment/method/list` | Daftar metode pembayaran |
+| `POST` | `/admin/v1/payment/method/toggle` | Mengaktifkan/menonaktifkan metode pembayaran |
+| `POST` | `/admin/v1/payment/method/create` | Membuat metode pembayaran |
+| `PUT` | `/admin/v1/payment/method/{id}` | Memperbarui metode pembayaran |
+| `DELETE` | `/admin/v1/payment/method/{id}` | Menghapus metode pembayaran (ditolak jika ada pesanan tertunda) |
 | `GET` | `/admin/v1/log` | Log operasi (paginasi + filter) |
 | `PUT` | `/admin/v1/profile` | Memperbarui informasi pribadi |
 | `PUT` | `/admin/v1/profile/password` | Mengubah kata sandi |
@@ -405,12 +416,14 @@ Authorization: Bearer <token>
 
 ### Docker Compose (disarankan)
 
-Direktori root proyek menyediakan `docker-compose.yml`, mengorkestrasi 5 layanan:
+Direktori root proyek menyediakan `docker-compose.yml`, mengorkestrasi 7 layanan:
 
 | Layanan | Image | Port |
 |------|------|------|
 | `nginx` | nginx:alpine | 80, 443 |
-| `app` | dibangun `Dockerfile` lokal | 8789 |
+| `admin` | dibangun `Dockerfile` lokal | 8789 |
+| `service` | dibangun `Dockerfile` lokal | 8792 |
+| `leaderboard-ws` | dibangun `Dockerfile` lokal | 8790, 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

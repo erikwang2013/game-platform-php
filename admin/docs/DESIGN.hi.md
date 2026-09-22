@@ -1,4 +1,4 @@
-# 开放管理后台 — 设计文档
+# ओपन एडमिन — डिज़ाइन दस्तावेज़
 <!-- lang-nav -->
 
 Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.ko.md) · [Русский](DESIGN.ru.md) · [Deutsch](DESIGN.de.md) · [Français](DESIGN.fr.md) · [Español](DESIGN.es.md) · [Português](DESIGN.pt.md) · **हिन्दी** · [العربية](DESIGN.ar.md) · [বাংলা](DESIGN.bn.md) · [Bahasa Indonesia](DESIGN.id.md) · [日本語](DESIGN.ja.md)
@@ -65,10 +65,10 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.
 |---|------|------|
 | रूटिंग | `config/route.php` | URL से कंट्रोलर मैपिंग, मिडलवेयर बाइंडिंग, वर्ज़न किए गए रूट |
 | मिडलवेयर | `app/middleware/` | आक्रमण अवरोध(SecurityFilter), दर सीमा(RateLimit), प्रमाणीकरण(JWT), प्राधिकरण(RBAC) |
-| कंट्रोलर | 30: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (एडमिन पक्ष) + Captcha/Auth (API v1) | अनुरोध पैरामीटर सत्यापन, व्यावसायिक तर्क कॉल, प्रतिक्रिया स्वरूपण |
-| व्यावसायिक सेवाएँ | `common/service/` | डेटा विश्लेषण: GameDashboardService (अवलोकन/रैंकिंग/ट्रेंड), DepositLogService (राजस्व/रूपांतरण), ProbabilityService (संयुक्त/सशर्त संभाव्यता, SQL बिल्डर); DB विफलता पर त्रुटि के बजाय खाली डेटा |
+| कंट्रोलर | 45: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (एडमिन पक्ष) + Captcha/Auth (API v1) | अनुरोध पैरामीटर सत्यापन, व्यावसायिक तर्क कॉल, प्रतिक्रिया स्वरूपण |
+| व्यावसायिक सेवाएँ | `packages/platform-common/src/service/` | डेटा विश्लेषण: GameDashboardService (अवलोकन/रैंकिंग/ट्रेंड), DepositLogService (राजस्व/रूपांतरण), ProbabilityService (संयुक्त/सशर्त संभाव्यता, SQL बिल्डर); DB विफलता पर त्रुटि के बजाय खाली डेटा |
 | डेटा मॉडल | `app/model/` | ORM मैपिंग, संबंध, फ़ील्ड एन्क्रिप्शन/डिक्रिप्शन |
-| सामान्य उपकरण | `app/common/` | Hashids, Snowflake, Encryption सेवाएँ |
+| सामान्य उपकरण | `packages/platform-common/src/` | Hashids, Snowflake, Encryption सेवाएँ |
 
 ### 2.2 अनुरोध जीवनचक्र
 
@@ -209,10 +209,10 @@ game_system_config (系统配置) — 独立表
 3. `v()` को स्पष्ट रूप से संस्करण दें: `v('AuthController', 'login', 'v2')`
 
 ```bash
-# 使用 v1
+# v1 का उपयोग करें
 curl http://host/api/v1/auth/login
 
-# 使用 v2
+# v2 का उपयोग करें
 curl http://host/api/v2/auth/login
 ```
 
@@ -466,7 +466,7 @@ GitHub Actions निरंतर एकीकरण `.github/workflows/ci.yml` 
 
 ### 8.5 मॉनिटरिंग
 
-`GET /metrics` एंडपॉइट (`MetricsController`) Prometheus text format में 5 gauge मेट्रिक्स उजागर करता है: HTTP अनुरोध कुल, सक्रिय उपयोगकर्ता संख्या, डेटाबेस/Redis कनेक्शन स्थिति, मेमोरी उपयोग।
+`GET /metrics` एंडपॉइट (`MetricsController`) Prometheus text format में 18 gauge मेट्रिक्स उजागर करता है: सक्रिय/कुल उपयोगकर्ता, डेटाबेस/Redis/ES कनेक्शन स्थिति, मेमोरी/CPU/प्रोसेस मेट्रिक्स, लंबित निकासी और मिलान अंतर।
 
 ### 8.6 पर्यावरण आवश्यकताएँ
 

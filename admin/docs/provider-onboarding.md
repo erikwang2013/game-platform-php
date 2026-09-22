@@ -9,12 +9,12 @@
 | 层 | 入口 | 策略 | 失败语义 |
 |---|---|---|---|
 | 支付 | `GatewayFactory::resolve(string $provider)` | `match` 硬编码 16 分支 + `PaymentGatewayInterface` | 未知 provider 抛 `InvalidArgumentException` |
-| 游戏 | `ProviderFactory::create(Game)` / `createById(int)` | `match` `game.type`（`self` / `third_party`）+ `GameProvider` 抽象类 | 未知 type 抛 `InvalidArgumentException` |
+| 游戏 | `ProviderFactory::create(Game)` / `createById(int)` | `match` `game.type`（`self` / `embedded` / `third_party`）+ `GameProvider` 抽象类 | 未知 type 抛 `InvalidArgumentException` |
 
 **已知短板与规避**（接入时注意，不需要现在修）：
 
 - `match` 新增分支必须改工厂代码，不是 SPI 自动发现。可接受——16 个网关不值得引入反射/扫描机制；新增时按第 4 节清单改即可。
-- 游戏 type 目前只有 `self` / `third_party` 两种。接入内嵌 H5 游戏需要第三种 type（`embedded`），属于 M5 多游戏聚合的范围，见 [2026-08-31-medium-priority-extensions-plan.md](superpowers/plans/2026-08-31-medium-priority-extensions-plan.md) M5 章节；在此之前内嵌游戏按 `third_party` 处理。
+- 游戏 type 现有三种：`self`（自研）、`embedded`（内嵌 H5 / Unity SDK）与 `third_party`（第三方），由 `ProviderFactory::create()` 分派（`self` 与 `embedded` 同走平台持有余额的资金路径）；设计背景见 [2026-08-31-medium-priority-extensions-plan.md](superpowers/plans/2026-08-31-medium-priority-extensions-plan.md) M5 章节。
 - `self` 与 `embedded` 共用 Provider 时入口区分在 `ProviderController`（SDK 签名 vs 内部调用），不在 Provider 类内。
 
 ### 横切能力（所有 Provider 自动享有，接入时直接复用）
@@ -149,7 +149,7 @@ abstract public function verifySignature(array $payload, string $signature): boo
 1. [ ] 建 `game_game` 记录：`type='third_party'`、`api_endpoint`、`api_secret`、`provider_config`（JSON，厂商特有字段如 `notify_url`、`region`）。
 2. [ ] 协议是标准 HTTP 回调（字段名/签名与本规范一致）→ 直接用 `ThirdPartyProvider`，**零新代码**，跳过 3。
 3. [ ] 协议非标准（字段名不同、签名算法不同、需要轮询而非回调）→ 建 `service/app/provider/<Vendor>Provider.php` 继承 `GameProvider`，只重写差异方法（通常只重写 `verifySignature` 与请求封装），沿用 `$this->request()` 的熔断/重试/mock 模式。
-4. [ ] 游戏类型不属于 self/third_party（如内嵌 H5、Unity SDK）→ 属于 M5 范围，先按 `third_party` 接入并注释 TODO，不要自行扩 type。
+4. [ ] 游戏类型不属于 self/embedded/third_party → 不要自行扩 type，先与平台确认接入方式（内嵌 H5 / Unity SDK 归 `embedded`）。
 5. [ ] 本地开 `provider_mock` 验证 `ProviderController` 全链路（balance→bet→settle→refund），确认 `GamePlayLog` 落行后再切真实 endpoint。
 6. [ ] 提交 contract test（6 方法字段断言 + `settle` 重放幂等断言）+ 联调对账单。
 

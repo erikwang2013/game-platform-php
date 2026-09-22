@@ -143,7 +143,7 @@ return [
     'next_step_2' => 'API-Dienst starten: cd service && php start.php start -d (optional)',
     'next_step_3' => 'Melden Sie sich mit dem soeben erstellten Administratorkonto am Admin-Backend an',
     'next_step_4' => 'Vervollständigen Sie Zahlungskanäle, CDN und E-Mail-Zugangsdaten unter „System Config“ im Admin-Panel',
-    'next_step_5' => 'Admin-Backend öffnen (Standardadresse):',
+    'next_step_5' => 'Admin-Backend öffnen (Adresse aus APP_URL in admin/.env):',
     'next_step_6' => 'Vor dem Livegang das install-Verzeichnis entfernen oder den Zugriff in Nginx verweigern (siehe docs/nginx-security.conf)',
     'security_title' => 'Sicherheitshinweise',
     'security_1' => 'Das install-Verzeichnis entfernen oder den Zugriff darauf beschränken (einschließlich install.lock)',

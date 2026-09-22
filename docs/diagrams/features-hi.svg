@@ -49,13 +49,13 @@
   <text x="610" y="206" text-anchor="middle" fill="#991b1b" font-size="13" font-weight="bold">KYC सत्यापन</text>
   <text x="610" y="226" text-anchor="middle" fill="#ef4444" font-size="11">सत्यापन जानकारी जमा + कंसोल समीक्षा</text>
   <text x="610" y="245" text-anchor="middle" fill="#ef4444" font-size="11">पहचान पत्र / पासपोर्ट / ड्राइविंग लाइसेंस</text>
-  <text x="610" y="264" text-anchor="middle" fill="#ef4444" font-size="11">तीन-स्तरीय सत्यापन प्रणाली</text>
+  <text x="610" y="264" text-anchor="middle" fill="#ef4444" font-size="11">सत्यापन स्तर + चरणबद्ध सीमाएँ</text>
 
   <rect x="735" y="182" width="230" height="95" rx="8" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5" filter="url(#sh)"/>
   <text x="850" y="206" text-anchor="middle" fill="#4c1d95" font-size="13" font-weight="bold">लीडरबोर्ड</text>
   <text x="850" y="226" text-anchor="middle" fill="#7c3aed" font-size="11">दैनिक / साप्ताहिक / मासिक / कुल</text>
   <text x="850" y="245" text-anchor="middle" fill="#7c3aed" font-size="11">Redis कैश + रीयल-टाइम सॉर्टिंग</text>
-  <text x="850" y="264" text-anchor="middle" fill="#7c3aed" font-size="11">WebSocket रीयल-टाइम पुश (:8789)</text>
+  <text x="850" y="264" text-anchor="middle" fill="#7c3aed" font-size="11">WebSocket रीयल-टाइम पुश (:8790)</text>
 
   <rect x="30" y="292" width="220" height="95" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#sh)"/>
   <text x="140" y="316" text-anchor="middle" fill="#064e3b" font-size="13" font-weight="bold">कूपन</text>
@@ -84,7 +84,7 @@
 
   <rect x="265" y="402" width="220" height="95" rx="8" fill="#fefce8" stroke="#fef08a" stroke-width="1.5" filter="url(#sh)"/>
   <text x="375" y="426" text-anchor="middle" fill="#713f12" font-size="13" font-weight="bold">देश विभेदीकरण</text>
-  <text x="375" y="446" text-anchor="middle" fill="#eab308" font-size="11">8 देश भुगतान/निकासी विधि कॉन्फ़िगरेशन</text>
+  <text x="375" y="446" text-anchor="middle" fill="#eab308" font-size="11">18 देश भुगतान/निकासी विधि कॉन्फ़िगरेशन</text>
   <text x="375" y="465" text-anchor="middle" fill="#eab308" font-size="11">न्यूनतम रिचार्ज राशि विभेदित</text>
 
   <rect x="500" y="402" width="220" height="95" rx="8" fill="#f5f3ff" stroke="#e9d5ff" stroke-width="1.5" filter="url(#sh)"/>
@@ -100,11 +100,11 @@
 
   <rect x="30" y="518" width="940" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="500" y="546" text-anchor="middle" fill="#475569" font-size="14" font-weight="bold">प्लेटफ़ॉर्म क्षमता सारांश</text>
-  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">उपयोगकर्ता प्रमाणीकरण · वॉलेट (ऑप्टिमिस्टिक लॉक) · रिचार्ज (Stripe/PayPal/Alipay/WeChat Pay) · विनिमय (रीयल-टाइम विनिमय दर) · निकासी (समीक्षा/स्वचालित) · KYC (तीन-स्तरीय)</text>
+  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">उपयोगकर्ता प्रमाणीकरण · वॉलेट (ऑप्टिमिस्टिक लॉक) · रिचार्ज (Stripe/PayPal/Alipay/WeChat Pay) · विनिमय (रीयल-टाइम विनिमय दर) · निकासी (समीक्षा/स्वचालित) · KYC (पहचान सत्यापन)</text>
   <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">गेम CRUD (10 श्रेणियाँ + सर्वर) · लीडरबोर्ड (WebSocket रीयल-टाइम) · कूपन · रेफरल (पंजीकरण पुरस्कार + कमीशन) · जोखिम नियंत्रण (4 प्रकार नियम)</text>
-  <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">सूचना (साइट + ईमेल) · देश विभेदीकरण (8 देश) · अंतर्राष्ट्रीयकरण (4 भाषाएँ) · सांख्यिकी (दैनिक स्नैपशॉट + आय) · पूर्ण-पाठ खोज (ES)</text>
+  <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">सूचना (साइट + ईमेल) · देश विभेदीकरण (18 देश) · अंतर्राष्ट्रीयकरण (4 भाषाएँ) · सांख्यिकी (दैनिक स्नैपशॉट + आय) · पूर्ण-पाठ खोज (ES)</text>
 
-  <text x="500" y="662" text-anchor="middle" fill="#94a3b8" font-size="11">तीन क्लाइंट: Flutter Admin (15 पेज) + Flutter Platform (10 पेज) + HarmonyOS (5 पेज)</text>
+  <text x="500" y="662" text-anchor="middle" fill="#94a3b8" font-size="11">क्लाइंट: 8 रूप — एडमिन 4 + C-छोर 4 (Flutter/React/Angular/HarmonyOS)</text>
   <text x="500" y="682" text-anchor="middle" fill="#94a3b8" font-size="11">परिनियोजन: Docker Compose 7 सेवा ऑर्केस्ट्रेशन + Nginx रिवर्स प्रॉक्सी + CI/CD (GitHub Actions)</text>
 
   <text x="500" y="740" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>

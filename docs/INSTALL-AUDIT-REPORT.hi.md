@@ -10,7 +10,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ---
 
-## 一、समीक्षा सारांश
+## 1. समीक्षा सारांश
 
 | आयाम | रेटिंग | विवरण |
 |------|------|------|
@@ -24,7 +24,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ---
 
-## 二、बनाई गई फ़ाइलें
+## 2. बनाई गई फ़ाइलें
 
 ### 2.1 `install/install.sql` (988 पंक्तियाँ)
 - 8 मूल माइग्रेशन फ़ाइलें विलीन की गईं
@@ -41,7 +41,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 | `game_admin_role` | INSERT IGNORE (निश्चित ID) |
 | `game_admin_permission` | INSERT IGNORE (निश्चित ID) - 4 बार |
 | `game_admin_role_permission` | WHERE NOT EXISTS उप-क्वेरी |
-| `game-platform_config` | INSERT IGNORE (निश्चित ID) - 2 बार |
+| `game_platform_config` | INSERT IGNORE (निश्चित ID) - 2 बार |
 | `game_language` | INSERT IGNORE (निश्चित ID) |
 | `game_translation` | INSERT IGNORE (निश्चित ID) |
 | `game_risk_rule` | INSERT IGNORE (निश्चित ID) |
@@ -71,7 +71,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ---
 
-## 三、पर्यावरण जाँच कवरेज (11 आइटम)
+## 3. पर्यावरण जाँच कवरेज (11 आइटम)
 
 | # | जाँच आइटम | स्तर | स्थिति |
 |---|--------|------|------|
@@ -89,7 +89,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ---
 
-## 四、पारिस्थितिकी कॉन्फ़िगरेशन पूर्णता
+## 4. पारिस्थितिकी कॉन्फ़िगरेशन पूर्णता
 
 ### 4.1 Admin `.env` निर्माण (70 कॉन्फ़िगरेशन आइटम)
 
@@ -130,7 +130,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ---
 
-## 五、सुरक्षा समीक्षा
+## 5. सुरक्षा समीक्षा
 
 ### 5.1 लागू किए गए सुरक्षा उपाय
 
@@ -161,7 +161,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ---
 
-## 六、परीक्षण परिणाम
+## 6. परीक्षण परिणाम
 
 ### 6.1 PHP सिंटैक्स जाँच
 ```
@@ -188,7 +188,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ---
 
-## 七、पाए गए और ठीक किए गए समस्याएँ
+## 7. पाए गए और ठीक किए गए समस्याएँ
 
 | # | समस्या | गंभीरता | स्थिति |
 |---|------|--------|------|
@@ -201,7 +201,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ---
 
-## 八、दस्तावेज़ परिवर्तन
+## 8. दस्तावेज़ परिवर्तन
 
 | फ़ाइल | परिवर्तन सामग्री |
 |------|---------|
@@ -212,7 +212,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ---
 
-## 九、समग्र मूल्यांकन
+## 9. समग्र मूल्यांकन
 
 स्थापना प्रणाली कार्यात्मक रूप से पूर्ण है, कोड गुणवत्ता अच्छी है, सुरक्षा उपाय पर्याप्त हैं। 5-चरणीय स्थापना प्रक्रिया स्पष्ट और सहज है, पर्यावरण जाँच webman संचालन के लिए आवश्यक सभी प्रमुख एक्सटेंशन को कवर करती है, उच्च-शक्ति कुंजियाँ स्वचालित रूप से उत्पन्न होती हैं, और कॉन्फ़िगरेशन फ़ाइलें मौजूदा सिस्टम के साथ पूरी तरह संगत हैं। SQL विलय प्रक्रिया ने मूल माइग्रेशन फ़ाइलों (42 तालिकाएँ) के साथ पूर्ण समानता बनाए रखी है, शक्ति-समानता प्रसंस्करण यह सुनिश्चित करता है कि दोहरा निष्पादन त्रुटि नहीं देगा।
 
@@ -220,7 +220,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ---
 
-## 十、2026-08-18 स्थिति पुष्टि
+## 10. 2026-08-18 स्थिति पुष्टि
 
 इस दौर की सुरक्षा मरम्मत (भुगतान कॉलबैक fail-closed、JWT स्टार्टअप सत्यापन、तालिका उपसर्ग एकीकरण) **स्थापना प्रणाली को शामिल नहीं करती**, कोई नई समस्या नहीं:
 

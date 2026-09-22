@@ -1,4 +1,4 @@
-# 田园消消乐 — तकनीकी आर्किटेक्चर
+# ग्रामीण मैच-3 — तकनीकी आर्किटेक्चर
 <!-- lang-nav -->
 
 Languages: [中文](architecture.md) · [English](architecture.en.md) · [한국어](architecture.ko.md) · [Русский](architecture.ru.md) · [Deutsch](architecture.de.md) · [Français](architecture.fr.md) · [Español](architecture.es.md) · [Português](architecture.pt.md) · **हिन्दी** · [العربية](architecture.ar.md) · [বাংলা](architecture.bn.md) · [Bahasa Indonesia](architecture.id.md) · [日本語](architecture.ja.md)

@@ -268,24 +268,23 @@ $result = $provider->refund($userId, $gameId, $sessionId, $amount, $roundId, 'ga
 
 ## 5. Gestion des sessions
 
-Après le lancement du jeu, un heartbeat doit être envoyé toutes les 15 minutes :
+Les appels SDK des jeux self/embedded sont authentifiés par un token de session : le C-end connecté appelle `GET /api/v1/game/session?game_id={game_id}` pour l'émettre (TTL 5 minutes, jeux `self` / `embedded` uniquement) :
 
-```php
-use app\service\GameSessionService;
+```
+GET /api/v1/game/session?game_id=1234567890
+Authorization: Bearer <user_token>
 
-// Au lancement
-GameSessionService::heartbeat($userId, $gameId, $sessionId);
-
-// Heartbeat périodique (recommandé toutes les 5 minutes)
-if (!GameSessionService::isActive($sessionId)) {
-    // La session a expiré, il faut terminer le jeu
+200
+{
+    "code": 0,
+    "data": { "token": "<payload>.<signature>", "expires_in": 300 }
 }
 
-// À la fin
-GameSessionService::endSession($sessionId);
+POST /api/game/balance
+Authorization: Bearer <payload>.<signature>
 ```
 
-Les sessions expirées sont réglées automatiquement (`GameSessionService::expireStaleSessions()`).
+Le middleware `SdkSessionAuth` vérifie la signature HMAC-SHA256 et l'expiration ; `user_id` provient uniquement du token (le corps de la requête ne peut pas le remplacer). Réémettez le token après expiration et utilisez-le pour appeler `/api/game/balance`, `/api/game/bet`, `/api/game/settle`, `/api/game/refund`.
 
 ## 6. Configuration du jeu
 

@@ -1,4 +1,4 @@
-# 田园消消乐 — تصميم الوظائف
+# المطابقة الثلاثية الريفية — تصميم الوظائف
 <!-- lang-nav -->
 
 Languages: **中文** · [English](functional-design.en.md) · [한국어](functional-design.ko.md) · [Русский](functional-design.ru.md) · [Deutsch](functional-design.de.md) · [Français](functional-design.fr.md) · [Español](functional-design.es.md) · [Português](functional-design.pt.md) · [हिन्दी](functional-design.hi.md) · [العربية](functional-design.ar.md) · [বাংলা](functional-design.bn.md) · [Bahasa Indonesia](functional-design.id.md) · [日本語](functional-design.ja.md)
@@ -14,7 +14,7 @@ Languages: **中文** · [English](functional-design.en.md) · [한국어](funct
 
 | البند | المحتوى |
 |----|------|
-| الاسم | 田园消消乐 |
+| الاسم | المطابقة الثلاثية الريفية |
 | النوع | مطابقة ثلاثية 8×8 + قهر بيئي |
 | المنظور | صندوق رمل متعامد 2.5D ثابت، غير قابل للتدوير |
 | التشغيل | النقر على قطعين متجاورين للتبادل (فوق/تحت/يمين/يسار فقط) |

@@ -598,14 +598,14 @@ Le projet fournit `docs/nginx-security.conf` comme configuration de référence 
 
 | Type de menace | Vecteur d'attaque | Couches de défense |
 |----------|---------|---------|
-| Abus de méthodes HTTP | Attaques XST TRACE/TRACK, proxy tunnel CONNECT, sondage de méthodes WebDAV | Liste blanche 405 de SecurityFilter (GET/POST/PUT/DELETE/OPTIONS/HEAD) |
+| Abus de méthodes HTTP | Attaques XST TRACE/TRACK, proxy tunnel CONNECT, sondage de méthodes WebDAV | Liste blanche 405 de SecurityFilter (GET/POST/PUT/DELETE/HEAD/OPTIONS/PATCH) |
 | Force brute ciblée | Tentatives de mot de passe répétées contre un utilisateur précis | Verrouillage de compte (5 échecs = 15 min) + RateLimit (login 10/min) + Captcha |
 | Force brute | Tentatives distribuées multi-IP sur identifiants | RateLimit (login 10/min) + Captcha |
-| XSS script inter-sites | `<script>`, onerror, javascript: | SecurityFilter (5 motifs) + en-tête X-XSS-Protection + CSP |
-| Injection SQL | UNION SELECT, OR 1=1, contournement par commentaire | SecurityFilter (6 motifs) + requêtes paramétrées Eloquent ORM |
+| XSS script inter-sites | `<script>`, onerror, javascript: | SecurityFilter (13 motifs) + en-tête X-XSS-Protection + CSP |
+| Injection SQL | UNION SELECT, OR 1=1, contournement par commentaire | SecurityFilter (14 motifs) + requêtes paramétrées Eloquent ORM |
 | CSRF falsification de requête inter-sites | Site malveillant émettant des requêtes à la place de l'utilisateur | Validation Origin/Referer de SecurityFilter |
 | Traversée de chemin | `../../etc/passwd` | Motifs de traversée de SecurityFilter + liste blanche d'extensions UploadController |
-| Injection de commandes | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (4 motifs) |
+| Injection de commandes | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (13 motifs) |
 | Vol de session | Vol du token JWT | JWT à courte validité (2h) + déconnexion par liste noire + confirmation par mot de passe des opérations sensibles |
 | Énumération d'ID | Parcourir les ID numériques pour deviner le volume de données | Obscurcissement Hashids en chaînes aléatoires |
 | Fuite de données | Vol de base / homme du milieu / fuite de journaux | Triple chiffrement/masquage + filtrage des champs sensibles OperationLog |

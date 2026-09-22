@@ -1,4 +1,4 @@
-# 田园消消乐 — Architecture technique
+# Match-3 Champêtre — Architecture technique
 <!-- lang-nav -->
 
 Languages: [中文](architecture.md) · [English](architecture.en.md) · [한국어](architecture.ko.md) · [Русский](architecture.ru.md) · [Deutsch](architecture.de.md) · **Français** · [Español](architecture.es.md) · [Português](architecture.pt.md) · [हिन्दी](architecture.hi.md) · [العربية](architecture.ar.md) · [বাংলা](architecture.bn.md) · [Bahasa Indonesia](architecture.id.md) · [日本語](architecture.ja.md)
@@ -18,7 +18,7 @@ Le plan est une vision de gameplay ; les décisions suivantes résolvent la cont
 
 | ID | Décision | Raison |
 |----|------|------|
-| D1 | **图鉴 ≠ pièces du plateau** : 100+ espèces sont le catalogue et l'apparence ; le pool de rafraîchissement d'un niveau ne tire que **5–8 espèces** | Avec des dizaines d'espèces simultanées sur 8×8, presque aucun alignement n'est possible |
+| D1 | **Encyclopédie ≠ pièces du plateau** : 100+ espèces sont le catalogue et l'apparence ; le pool de rafraîchissement d'un niveau ne tire que **5–8 espèces** | Avec des dizaines d'espèces simultanées sur 8×8, presque aucun alignement n'est possible |
 | D2 | Le matching a deux niveaux : **même espèce via `speciesId`**, **écologie via `role` + table de prédation** | Le plan exige à la fois « trois pommes » et « poule + insecte + insecte » |
 | D3 | Priorité des règles d'un même segment : **éléphant > écologie > même espèce** ; mutuellement exclusives, pas de double comptage | Éviter qu'une ligne soit scorée deux fois |
 | D4 | **Les outils agricoles n'entrent pas sur le plateau**, uniquement dans les cases de compétences du HUD ; pierre/flaque/arbre sont des obstacles non échangeables | Le chapitre 5 du plan entre en conflit avec la bibliothèque de pièces ; retenir compétences + obstacles |

@@ -1573,26 +1573,7 @@ Detail rate limit:
 - Menggunakan algoritma jendela geser atomik Redis (Lua ZSET), menghindari race condition TOCTOU
 - Saat Redis tidak tersedia fail-closed: mengembalikan 503 (`Retry-After: 5`), tidak meloloskan permintaan
 
-## 14. Analisis Data (Analytics)
-
-Semua endpoint memerlukan autentikasi (`AdminAuth` + `AdminPermission`), agregasi real-time MySQL, total 12:
-
-| Metode | Path | Deskripsi |
-|------|------|------|
-| GET | /admin/v1/analytics/overview | Ringkasan platform (hari ini/7 hari terakhir) |
-| GET | /admin/v1/analytics/game-ranking | Peringkat game (?days=7) |
-| GET | /admin/v1/analytics/dau-trend | Tren DAU (?days=30) |
-| GET | /admin/v1/analytics/hourly-trend | Tren per jam |
-| GET | /admin/v1/analytics/action-distribution | Distribusi perilaku |
-| GET | /admin/v1/analytics/revenue | Analisis pendapatan |
-| GET | /admin/v1/analytics/conversion | Tingkat konversi game |
-| GET | /admin/v1/analytics/probability | Probabilitas gabungan/kondisional |
-| GET | /admin/v1/analytics/retention | Analisis retensi D1/D3/D7/D30 |
-| GET | /admin/v1/analytics/funnel | Funnel konversi |
-| GET | /admin/v1/analytics/arpu | Tren ARPU/ARPPU |
-| GET | /admin/v1/analytics/economy | Metrik ekonomi mata uang game |
-
-## 15. Manajemen Tiket (Ticket)
+## 14. Manajemen Tiket (Ticket)
 
 Semua endpoint memerlukan autentikasi (`AdminAuth` + `AdminPermission`), total 5:
 
@@ -1604,7 +1585,7 @@ Semua endpoint memerlukan autentikasi (`AdminAuth` + `AdminPermission`), total 5
 | POST | /admin/v1/ticket/{hashid}/close | Menutup tiket |
 | POST | /admin/v1/ticket/{hashid}/assign | Menugaskan penangan (admin_id) |
 
-## 16. Alur Autentikasi
+## 15. Alur Autentikasi
 
 Urutan autentikasi lengkap:
 
@@ -1681,11 +1662,11 @@ Urutan autentikasi lengkap:
 - Batasan sesi bersamaan: maksimal 3 Token valid per pengguna, saat perangkat ke-4 login, Token paling lama dipaksa masuk daftar hitam
 - Penguncian akun: 5 kali gagal login berturut-turut memicu penguncian akun 15 menit, selama masa kunci mengembalikan 429
 
-## 15. Deployment & Operasional
+## 16. Deployment & Operasional
 
 ### Docker Compose
 
-Direktori root proyek menyediakan `docker-compose.yml`, mengorkestrasi 5 layanan (Nginx, aplikasi webman, MySQL, Redis, Elasticsearch). PHP dibangun melalui `Dockerfile` (berbasis `php:8.3-cli`, OPcache diaktifkan).
+Direktori root proyek menyediakan `docker-compose.yml`, mengorkestrasi 7 layanan (Nginx, admin, service, leaderboard-ws, MySQL, Redis, Elasticsearch). PHP dibangun melalui `Dockerfile` (berbasis `php:8.3-cli`, OPcache diaktifkan).
 
 ```bash
 cp .env.docker .env
@@ -1709,11 +1690,11 @@ Direktori `database/backup/` menyediakan skrip backup dan pemulihan:
 
 Untuk deployment produksi, lihat `docs/nginx-security.conf` untuk konfigurasi penguatan keamanan proxy balik.
 
-## 16. Analisis Data (Analytics)
+## 17. Analisis Data (Analytics)
 
 Antarmuka analisis data disediakan oleh `AnalyticsController`, semuanya berbasis agregasi real-time MySQL (`game_game_play_log` log perilaku game / `game_deposit_order` pesanan deposit), saat database bermasalah mengembalikan data kosong bukan 500. Kecuali disebutkan khusus, semuanya memerlukan autentikasi JWT + RBAC, format pembungkus respons terpadu `{ "code": 0, "message": "success", "data": ... }`.
 
-### 16.1 Ringkasan Platform
+### 17.1 Ringkasan Platform
 
 ```
 GET /admin/v1/analytics/overview
@@ -1721,7 +1702,7 @@ GET /admin/v1/analytics/overview
 
 **Respons**: `today` / `week` masing-masing berisi `dau` (jumlah pengguna aktif), `revenue` (total deposit terkonfirmasi, string), `new_users` (jumlah pengguna baru).
 
-### 16.2 Peringkat Game
+### 17.2 Peringkat Game
 
 ```
 GET /admin/v1/analytics/game-ranking?days=7
@@ -1729,23 +1710,23 @@ GET /admin/v1/analytics/game-ranking?days=7
 
 **Respons**: 10 teratas diurutkan menurun berdasarkan jumlah perilaku game, setiap item berisi `game_id`（hashid）、`name`、`plays`、`players`.
 
-### 16.3 Tren DAU
+### 17.3 Tren DAU
 
 ```
 GET /admin/v1/analytics/dau-trend?days=30
 ```
 
-**Respons**: `{ "日期": 活跃数, ... }`, tanggal yang hilang diisi 0.
+**Respons**: `{ "tanggal": jumlah aktif, ... }`, tanggal yang hilang diisi 0.
 
-### 16.4 Tren Per Jam
+### 17.4 Tren Per Jam
 
 ```
 GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
 ```
 
-**Respons**: `{ "0": 次数, ... "23": 次数 }` 24 slot jam penuh; saat `game_id` kosong menghitung semua game.
+**Respons**: `{ "0": jumlah, ... "23": jumlah }` 24 slot jam penuh; saat `game_id` kosong menghitung semua game.
 
-### 16.5 Distribusi Perilaku
+### 17.5 Distribusi Perilaku
 
 ```
 GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
@@ -1753,15 +1734,15 @@ GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
 
 **Respons**: `{ "start": n, "end": n, "earn": n, "spend": n }` empat jenis penghitungan perilaku; `hours` maksimal 168.
 
-### 16.6 Ringkasan Pendapatan
+### 17.6 Ringkasan Pendapatan
 
 ```
 GET /admin/v1/analytics/revenue?days=7
 ```
 
-**Respons**: `{ "total": "总额", "trend": { "日期": "当日额", ... } }`, hanya menghitung pesanan `status=confirmed`.
+**Respons**: `{ "total": "total", "trend": { "tanggal": "jumlah harian", ... } }`, hanya menghitung pesanan `status=confirmed`.
 
-### 16.7 Tingkat Konversi Game
+### 17.7 Tingkat Konversi Game
 
 ```
 GET /admin/v1/analytics/conversion?days=30
@@ -1769,7 +1750,7 @@ GET /admin/v1/analytics/conversion?days=30
 
 **Respons**: Setiap game berisi `game_id`（hashid）、`game_name`、`players`（jumlah pemain unik）、`depositors`（jumlah penyetor unik）、`conversion_rate`（tingkat konversi deposit, 0~1）.
 
-### 16.8 Probabilitas Gabungan
+### 17.8 Probabilitas Gabungan
 
 ```
 GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
@@ -1777,7 +1758,7 @@ GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
 
 **Respons**: `{ "joint": { "joint_probability": 0.12, "confidence": 0.3 } }` — koefisien Jaccard (pemain bersama dua game / gabungan pemain) dan confidence (pemain bersama / pemain game A).
 
-### 16.9 Analisis Retensi
+### 17.9 Analisis Retensi
 
 ```
 GET /admin/v1/analytics/retention?days=30
@@ -1785,7 +1766,7 @@ GET /admin/v1/analytics/retention?days=30
 
 **Respons**: `{ "D1": "8.5%", "D3": "...", "D7": "...", "D30": "..." }` tingkat retensi hari ke-1/3/7/30 berdasarkan grup tanggal registrasi.
 
-### 16.10 Funnel Konversi
+### 17.10 Funnel Konversi
 
 ```
 GET /admin/v1/analytics/funnel?days=30
@@ -1793,7 +1774,7 @@ GET /admin/v1/analytics/funnel?days=30
 
 **Respons**: Empat langkah registrasi → deposit pertama → penukaran pertama → game pertama, berisi `step`、`count`、`rate`（persentase relatif terhadap jumlah registrasi）.
 
-### 16.11 Tren ARPU/ARPPU
+### 17.11 Tren ARPU/ARPPU
 
 ```
 GET /admin/v1/analytics/arpu?days=30
@@ -1801,7 +1782,7 @@ GET /admin/v1/analytics/arpu?days=30
 
 **Respons**: `{ "dates": [...], "arpu": [...], "arppu": [...] }` pendapatan rata-rata per pengguna harian (ARPU) dan pendapatan rata-rata per pengguna pembayar (ARPPU).
 
-### 16.12 Metrik Ekonomi Game
+### 17.12 Metrik Ekonomi Game
 
 ```
 GET /admin/v1/analytics/economy
@@ -1809,7 +1790,7 @@ GET /admin/v1/analytics/economy
 
 **Respons**: array `currencies`, setiap item berisi `game_name`、`currency`、`symbol`、`total_minted`（total mint）、`total_burned`（total burn）、`circulation`（jumlah beredar）、`inflation_rate`（tingkat inflasi）, menggunakan perhitungan presisi tinggi bcmath.
 
-## 17. Manajemen Pembayaran (Payment)
+## 18. Manajemen Pembayaran (Payment)
 
 Manajemen metode pembayaran disediakan oleh `PaymentController`; 5 endpoint semuanya memerlukan autentikasi JWT + RBAC. Daftar putih `provider`: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`. `config` adalah string JSON konfigurasi pembayaran (disimpan terenkripsi di database).
 
@@ -1821,7 +1802,7 @@ Manajemen metode pembayaran disediakan oleh `PaymentController`; 5 endpoint semu
 | PUT | /admin/v1/payment/method/{hashid} | Perbarui metode pembayaran |
 | DELETE | /admin/v1/payment/method/{hashid} | Hapus metode pembayaran (ditolak jika ada pesanan pending) |
 
-### 17.1 Daftar Metode Pembayaran
+### 18.1 Daftar Metode Pembayaran
 
 ```
 GET /admin/v1/payment/method/list
@@ -1869,7 +1850,7 @@ GET /admin/v1/payment/method/list
 | min_amount / max_amount | string | Rentang jumlah (string menjaga presisi), 0 = tanpa batas |
 | config | string? | JSON konfigurasi pembayaran (terenkripsi; null jika tidak diatur) |
 
-### 17.2 Aktifkan/Nonaktifkan Metode Pembayaran
+### 18.2 Aktifkan/Nonaktifkan Metode Pembayaran
 
 ```
 POST /admin/v1/payment/method/toggle
@@ -1892,7 +1873,7 @@ POST /admin/v1/payment/method/toggle
 - 422: validasi gagal (id/status hilang atau status bukan 0/1)
 - 404: metode pembayaran tidak ditemukan
 
-### 17.3 Buat Metode Pembayaran
+### 18.3 Buat Metode Pembayaran
 
 ```
 POST /admin/v1/payment/method/create
@@ -1938,20 +1919,20 @@ POST /admin/v1/payment/method/create
 **Kemungkinan error**:
 - 422: validasi gagal
 
-### 17.4 Perbarui Metode Pembayaran
+### 18.4 Perbarui Metode Pembayaran
 
 ```
 PUT /admin/v1/payment/method/{hashid}
 ```
 
 - **Parameter jalur**: `{hashid}` adalah ID metode pembayaran yang dikodekan hashid
-- **Badan permintaan**: sama dengan buat (17.3), semua kolom opsional, hanya kolom yang dikirim yang diperbarui
+- **Badan permintaan**: sama dengan buat (18.3), semua kolom opsional, hanya kolom yang dikirim yang diperbarui
 
 **Kemungkinan error**:
 - 404: metode pembayaran tidak ditemukan
 - 422: validasi gagal
 
-### 17.5 Hapus Metode Pembayaran
+### 18.5 Hapus Metode Pembayaran
 
 ```
 DELETE /admin/v1/payment/method/{hashid}

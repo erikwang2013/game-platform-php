@@ -1,4 +1,4 @@
-# 安全架构设计文档
+# 보안 아키텍처 디자인 문서
 <!-- lang-nav -->
 
 Languages: [中文](SECURITY.md) · [English](SECURITY.en.md) · **한국어** · [Русский](SECURITY.ru.md) · [Deutsch](SECURITY.de.md) · [Français](SECURITY.fr.md) · [Español](SECURITY.es.md) · [Português](SECURITY.pt.md) · [हिन्दी](SECURITY.hi.md) · [العربية](SECURITY.ar.md) · [বাংলা](SECURITY.bn.md) · [Bahasa Indonesia](SECURITY.id.md) · [日本語](SECURITY.ja.md)
@@ -598,14 +598,14 @@ Policy: https://erik.xyz/security-policy
 
 | 위협 유형 | 공격 벡터 | 방어 계층 |
 |----------|---------|---------|
-| HTTP 메서드 남용 | TRACE/TRACK XST 공격, CONNECT 터널 프록시, WebDAV 메서드 프로빙 | SecurityFilter 405 메서드 화이트리스트 (GET/POST/PUT/DELETE/OPTIONS/HEAD) |
+| HTTP 메서드 남용 | TRACE/TRACK XST 공격, CONNECT 터널 프록시, WebDAV 메서드 프로빙 | SecurityFilter 405 메서드 화이트리스트 (GET/POST/PUT/DELETE/HEAD/OPTIONS/PATCH) |
 | 특정 대상 무차별 대입 | 특정 사용자를 겨냥한 반복 비밀번호 시도 | 계정 잠금 (5회 실패 시 15분 잠금) + RateLimit (로그인 10/min) + Captcha |
 | 무차별 대입 | 분산 IP로 아이디/비밀번호 반복 시도 | RateLimit (로그인 10/min) + Captcha |
-| XSS 크로스 사이트 스크립트 | `<script>`, onerror, javascript: | SecurityFilter (5가지 패턴) + X-XSS-Protection 응답 헤더 + CSP |
-| SQL 인젝션 | UNION SELECT, OR 1=1, 주석 우회 | SecurityFilter (6가지 패턴) + Eloquent ORM 파라미터화 쿼리 |
+| XSS 크로스 사이트 스크립트 | `<script>`, onerror, javascript: | SecurityFilter (13가지 패턴) + X-XSS-Protection 응답 헤더 + CSP |
+| SQL 인젝션 | UNION SELECT, OR 1=1, 주석 우회 | SecurityFilter (14가지 패턴) + Eloquent ORM 파라미터화 쿼리 |
 | CSRF 크로스 사이트 요청 위조 | 악성 사이트가 대신 요청 발송 | SecurityFilter Origin/Referer 검증 |
 | 경로 탐색 | `../../etc/passwd` | SecurityFilter 경로 탐색 패턴 + UploadController 확장자 화이트리스트 |
-| 명령 인젝션 | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (4가지 패턴) |
+| 명령 인젝션 | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (13가지 패턴) |
 | 세션 하이재킹 | JWT Token 탈취 | JWT 단기 유효 (2h) + 블랙리스트 로그아웃 + 민감 작업 2차 비밀번호 확인 |
 | ID 열거 | 숫자 ID 순회로 데이터 규모 추측 | Hashids로 무작위 문자열 난독화 |
 | 데이터 유출 | DB 유출 / 중간자 / 로그 유출 | 3계층 암호화/마스킹 + OperationLog 민감 필드 필터 |

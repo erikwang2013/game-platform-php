@@ -143,7 +143,7 @@ return [
     'next_step_2' => 'Mulai layanan API: cd service && php start.php start -d (opsional)',
     'next_step_3' => 'Masuk ke backend admin dengan akun administrator yang baru saja Anda buat',
     'next_step_4' => 'Lengkapi kanal pembayaran, CDN, dan kredensial email di "System Config" pada panel admin',
-    'next_step_5' => 'Buka backend admin (alamat default):',
+    'next_step_5' => 'Buka backend admin (alamat dari APP_URL di admin/.env):',
     'next_step_6' => 'Sebelum dirilis ke publik, hapus direktori install atau tolak aksesnya di Nginx (lihat docs/nginx-security.conf)',
     'security_title' => 'Catatan Keamanan',
     'security_1' => 'Hapus direktori install atau batasi aksesnya (termasuk install.lock)',

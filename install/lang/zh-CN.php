@@ -143,7 +143,7 @@ return [
     'next_step_2' => '启动接口服务: cd service && php start.php start -d（可选）',
     'next_step_3' => '用安装时设置的管理员账号登录管理后台',
     'next_step_4' => '在管理端「系统配置」中完善支付渠道、CDN 与邮件等凭据',
-    'next_step_5' => '访问管理后台（默认地址）:',
+    'next_step_5' => '访问管理后台（地址取自 admin/.env 的 APP_URL）:',
     'next_step_6' => '对外发布前请删除 install 目录或配置 Nginx 拒绝访问（参考 docs/nginx-security.conf）',
     'security_title' => '安全提示',
     'security_1' => '请删除或限制 install 目录访问（含 install.lock）',

@@ -143,7 +143,7 @@ return [
     'next_step_2' => 'تشغيل خدمة الواجهة البرمجية: cd service && php start.php start -d (اختياري)',
     'next_step_3' => 'سجّل الدخول إلى لوحة الإدارة بحساب المدير الذي أنشأته للتو',
     'next_step_4' => 'أكمل بيانات قنوات الدفع وCDN والبريد الإلكتروني من قسم "System Config" في لوحة الإدارة',
-    'next_step_5' => 'افتح لوحة الإدارة (العنوان الافتراضي):',
+    'next_step_5' => 'افتح لوحة الإدارة (العنوان من APP_URL في admin/.env):',
     'next_step_6' => 'قبل النشر العام، احذف دليل install أو امنع الوصول إليه في Nginx (راجع docs/nginx-security.conf)',
     'security_title' => 'ملاحظات أمنية',
     'security_1' => 'احذف دليل install أو قيّد الوصول إليه (بما في ذلك install.lock)',

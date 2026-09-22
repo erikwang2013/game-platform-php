@@ -1573,26 +1573,7 @@ POST /admin/v1/upload
 - Redis অ্যাটমিক স্লাইডিং উইন্ডো অ্যালগরিদম (Lua ZSET), TOCTOU রেস এড়ানো হয়
 - Redis অনুপলব্ধ হলে fail-closed: 503 ফেরত আসে (`Retry-After: 5`), রিকোয়েস্ট ছাড় দেওয়া হয় না
 
-## 14. ডেটা অ্যানালাইসিস (Analytics)
-
-সব এন্ডপয়েন্টে অথেনটিকেশন প্রয়োজন (`AdminAuth` + `AdminPermission`), MySQL রিয়েল-টাইম অ্যাগ্রিগেশন, মোট ১২টি:
-
-| মেথড | পাথ | বিবরণ |
-|------|------|------|
-| GET | /admin/v1/analytics/overview | প্ল্যাটফর্ম ওভারভিউ (আজ/সাম্প্রতিক ৭ দিন) |
-| GET | /admin/v1/analytics/game-ranking | গেম র্যাঙ্কিং (?days=7) |
-| GET | /admin/v1/analytics/dau-trend | DAU ট্রেন্ড (?days=30) |
-| GET | /admin/v1/analytics/hourly-trend | ঘণ্টাভিত্তিক ট্রেন্ড |
-| GET | /admin/v1/analytics/action-distribution | আচরণ বিতরণ |
-| GET | /admin/v1/analytics/revenue | রেভিনিউ অ্যানালাইসিস |
-| GET | /admin/v1/analytics/conversion | গেম কনভার্সন রেট |
-| GET | /admin/v1/analytics/probability | জয়েন্ট/কন্ডিশনাল প্রোবাবিলিটি |
-| GET | /admin/v1/analytics/retention | রিটেনশন অ্যানালাইসিস D1/D3/D7/D30 |
-| GET | /admin/v1/analytics/funnel | কনভার্সন ফানেল |
-| GET | /admin/v1/analytics/arpu | ARPU/ARPPU ট্রেন্ড |
-| GET | /admin/v1/analytics/economy | গেম কারেন্সি ইকোনমি মেট্রিক |
-
-## 15. টিকিট ম্যানেজমেন্ট (Ticket)
+## 14. টিকিট ম্যানেজমেন্ট (Ticket)
 
 সব এন্ডপয়েন্টে অথেনটিকেশন প্রয়োজন (`AdminAuth` + `AdminPermission`), মোট ৫টি:
 
@@ -1604,66 +1585,66 @@ POST /admin/v1/upload
 | POST | /admin/v1/ticket/{hashid}/close | টিকিট বন্ধ |
 | POST | /admin/v1/ticket/{hashid}/assign | হ্যান্ডলার নির্ধারণ (admin_id) |
 
-## 16. অথেনটিকেশন ফ্লো
+## 15. অথেনটিকেশন ফ্লো
 
 সম্পূর্ণ অথেনটিকেশন সিকোয়েন্স:
 
 ```
-1. 客户端请求 POST /api/v1/captcha/generate
+1. ক্লায়েন্ট POST /api/v1/captcha/generate অনুরোধ করে
     ↓
-   服务端返回: key + base64 图片 + 点击目标提示
+   সার্ভার রিটার্ন করে: key + base64 ছবি + ক্লিক টার্গেটের সংকেত
    
-2. 用户点击图片目标位置，前/客户端收集点击坐标
+2. ব্যবহারকারী ছবির টার্গেট অবস্থানে ক্লিক করেন; ফ্রন্টএন্ড/ক্লায়েন্ট ক্লিক কোঅর্ডিনেট সংগ্রহ করে
    
-3. 客户端请求 POST /api/v1/auth/login
-   (请求头: Content-Type: application/json)
-   请求体: { username, password, captcha_key, clicks: [{x,y}, ...] }
+3. ক্লায়েন্ট POST /api/v1/auth/login অনুরোধ করে
+   (হেডার: Content-Type: application/json)
+   রিকোয়েস্ট বডি: { username, password, captcha_key, clicks: [{x,y}, ...] }
     ↓
-   服务端:
-   a. 参数校验 → 422
-   b. 校验验证码 → 422
-   c. 校验用户凭证 → 401
-   d. 检查账号状态 → 403
-   e. 签发 JWT (access + refresh) → 200
-   f. 更新 last_login_at / last_login_ip
+   সার্ভার:
+   a. প্যারামিটার ভ্যালিডেশন → 422
+   b. ক্যাপচা ভেরিফিকেশন → 422
+   c. ব্যবহারকারীর ক্রেডেনশিয়াল ভেরিফিকেশন → 401
+   d. অ্যাকাউন্ট স্ট্যাটাস পরীক্ষা → 403
+   e. JWT ইস্যু (access + refresh) → 200
+   f. last_login_at / last_login_ip আপডেট
     ↓
-   客户端保存: access_token, refresh_token, expires_in
+   ক্লায়েন্ট সংরক্ষণ করে: access_token, refresh_token, expires_in
 
-4. 后续请求携带 JWT
-   请求头: Authorization: Bearer <access_token>
+4. পরবর্তী অনুরোধে JWT বহন করে
+   হেডার: Authorization: Bearer <access_token>
     ↓
-   AdminAuth 中间件:
-   a. 提取 Bearer token
-   b. 检查黑名单 (Redis jwt_blacklist:{md5}) → 401
-   c. 解码 JWT，校验过期 → 401
-   d. 设置 $request->adminId = sub 字段
+   AdminAuth মিডলওয়্যার:
+   a. Bearer টোকেন বের করুন
+   b. ব্ল্যাকলিস্ট পরীক্ষা (Redis jwt_blacklist:{md5}) → 401
+   c. JWT ডিকোড, মেয়াদ যাচাই → 401
+   d. $request->adminId = sub ফিল্ড সেট করুন
     ↓
-   AdminPermission 中间件:
-   a. 未登录（adminId 为空）→ 401
-   b. 对资源路由解析权限标识
-   c. 查询用户角色 → 角色权限，进行匹配
-   d. 无权限 → 403
+   AdminPermission মিডলওয়্যার:
+   a. লগইন নেই (adminId খালি) → 401
+   b. রিসোর্স রুটের জন্য পারমিশন আইডেন্টিফায়ার রিজলভ করুন
+   c. ব্যবহারকারীর রোল → রোল পারমিশন কোয়েরি, মিলান
+   d. পারমিশন নেই → 403
     ↓
-   Controller 处理请求
+   কন্ট্রোলার অনুরোধ প্রক্রিয়া করে
     ↓
-   Response + X-RateLimit-* 头
+   রেসপন্স + X-RateLimit-* হেডার
 
-5. Access Token 过期前刷新
-   客户端请求 POST /api/v1/auth/refresh
-   请求体: { refresh_token: "..." }
+5. Access Token মেয়াদ শেষ হওয়ার আগে রিফ্রেশ
+   ক্লায়েন্ট POST /api/v1/auth/refresh অনুরোধ করে
+   রিকোয়েস্ট বডি: { refresh_token: "..." }
     ↓
-   服务端解码 refresh_token → 签发新 access + refresh
+   সার্ভার refresh_token ডিকোড করে → নতুন access + refresh ইস্যু করে
     ↓
-   客户端更新本地令牌
+   ক্লায়েন্ট স্থানীয় টোকেন আপডেট করে
 
-6. 登出
-   客户端请求 POST /admin/v1/profile/logout
-   请求头: Authorization: Bearer <access_token>
+6. লগআউট
+   ক্লায়েন্ট POST /admin/v1/profile/logout অনুরোধ করে
+   হেডার: Authorization: Bearer <access_token>
     ↓
-   服务端:
-   a. 解码 JWT 获取剩余 TTL
-   b. 写入 Redis 黑名单: jwt_blacklist:{md5(token)} = 1, TTL = 剩余有效期
-   c. 返回成功
+   সার্ভার:
+   a. অবশিষ্ট TTL পেতে JWT ডিকোড করুন
+   b. Redis ব্ল্যাকলিস্ট লিখুন: jwt_blacklist:{md5(token)} = 1, TTL = অবশিষ্ট মেয়াদ
+   c. সফলতা রিটার্ন করুন
 ```
 
 ### JWT স্ট্রাকচার
@@ -1681,11 +1662,11 @@ POST /admin/v1/upload
 - কনকারেন্ট সেশন সীমা: একই ইউজারের সর্বোচ্চ ৩টি ভ্যালিড Token, ৪র্থ ডিভাইস লগইন করলে সবচেয়ে পুরনো Token বাধ্যতামূলকভাবে ব্ল্যাকলিস্টে যায়
 - অ্যাকাউন্ট লক: টানা ৫ বার লগইন ব্যর্থ হলে ১৫ মিনিট অ্যাকাউন্ট লক, লক থাকা অবস্থায় 429 ফেরত আসে
 
-## 15. ডিপ্লয়মেন্ট ও অপারেশন
+## 16. ডিপ্লয়মেন্ট ও অপারেশন
 
 ### Docker Compose
 
-প্রজেক্ট রুটে `docker-compose.yml` রয়েছে, ৫টি সার্ভিস অর্কেস্ট্রেট করে (Nginx, webman app, MySQL, Redis, Elasticsearch)। PHP `Dockerfile` দিয়ে বিল্ড হয় (`php:8.3-cli` ভিত্তিক, OPcache সক্ষম)।
+প্রজেক্ট রুটে `docker-compose.yml` রয়েছে, 7টি সার্ভিস অর্কেস্ট্রেট করে (Nginx, admin, service, leaderboard-ws, MySQL, Redis, Elasticsearch)। PHP `Dockerfile` দিয়ে বিল্ড হয় (`php:8.3-cli` ভিত্তিক, OPcache সক্ষম)।
 
 ```bash
 cp .env.docker .env
@@ -1709,11 +1690,11 @@ docker-compose up -d
 
 প্রোডাকশন ডিপ্লয়মেন্টে রিভার্স প্রক্সি নিরাপত্তা হার্ডেনিং কনফিগারেশনের জন্য `docs/nginx-security.conf` দেখুন।
 
-## 16. ডেটা অ্যানালাইসিস (Analytics)
+## 17. ডেটা অ্যানালাইসিস (Analytics)
 
 ডেটা অ্যানালাইসিস ইন্টারফেস `AnalyticsController` প্রদান করে, সবগুলো MySQL রিয়েল-টাইম অ্যাগ্রিগেশন ভিত্তিক (`game_game_play_log` গেম আচরণ লগ / `game_deposit_order` টপ-আপ অর্ডার), ডেটাবেস ব্যর্থ হলে 500 নয় বরং খালি ডেটা ফেরত আসে। বিশেষ উল্লেখ ছাড়া সবগুলিতে JWT + RBAC অথেনটিকেশন প্রয়োজন, রেসপন্স র্যাপার ফরম্যাট একীভূত `{ "code": 0, "message": "success", "data": ... }`।
 
-### 16.1 প্ল্যাটফর্ম ওভারভিউ
+### 17.1 প্ল্যাটফর্ম ওভারভিউ
 
 ```
 GET /admin/v1/analytics/overview
@@ -1721,7 +1702,7 @@ GET /admin/v1/analytics/overview
 
 **রেসপন্স**: `today` / `week` প্রতিটিতে `dau` (সক্রিয় ইউজার সংখ্যা), `revenue` (কনফার্মড টপ-আপ মোট, স্ট্রিং), `new_users` (নতুন ইউজার সংখ্যা)।
 
-### 16.2 গেম র্যাঙ্কিং
+### 17.2 গেম র্যাঙ্কিং
 
 ```
 GET /admin/v1/analytics/game-ranking?days=7
@@ -1729,23 +1710,23 @@ GET /admin/v1/analytics/game-ranking?days=7
 
 **রেসপন্স**: গেম আচরণ সংখ্যার অবরোহ ক্রমে শীর্ষ ১০, প্রতিটিতে `game_id` (hashid), `name`, `plays`, `players`।
 
-### 16.3 DAU ট্রেন্ড
+### 17.3 DAU ট্রেন্ড
 
 ```
 GET /admin/v1/analytics/dau-trend?days=30
 ```
 
-**রেসপন্স**: `{ "日期": 活跃数, ... }`, অনুপস্থিত তারিখে 0 বসে।
+**রেসপন্স**: `{ "তারিখ": সক্রিয় সংখ্যা, ... }`, অনুপস্থিত তারিখে 0 বসে।
 
-### 16.4 ঘণ্টাভিত্তিক ট্রেন্ড
+### 17.4 ঘণ্টাভিত্তিক ট্রেন্ড
 
 ```
 GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
 ```
 
-**রেসপন্স**: `{ "0": 次数, ... "23": 次数 }` ২৪টি ঘণ্টার স্লট; `game_id` খালি হলে সব গেমের হিসাব।
+**রেসপন্স**: `{ "0": সংখ্যা, ... "23": সংখ্যা }` ২৪টি ঘণ্টার স্লট; `game_id` খালি হলে সব গেমের হিসাব।
 
-### 16.5 আচরণ বিতরণ
+### 17.5 আচরণ বিতরণ
 
 ```
 GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
@@ -1753,15 +1734,15 @@ GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
 
 **রেসপন্স**: `{ "start": n, "end": n, "earn": n, "spend": n }` চার ধরনের আচরণ কাউন্ট; `hours` সর্বোচ্চ 168।
 
-### 16.6 রেভিনিউ ওভারভিউ
+### 17.6 রেভিনিউ ওভারভিউ
 
 ```
 GET /admin/v1/analytics/revenue?days=7
 ```
 
-**রেসপন্স**: `{ "total": "总额", "trend": { "日期": "当日额", ... } }`, শুধুমাত্র `status=confirmed` অর্ডার গণনা করা হয়।
+**রেসপন্স**: `{ "total": "মোট", "trend": { "তারিখ": "দৈনিক পরিমাণ", ... } }`, শুধুমাত্র `status=confirmed` অর্ডার গণনা করা হয়।
 
-### 16.7 গেম কনভার্সন রেট
+### 17.7 গেম কনভার্সন রেট
 
 ```
 GET /admin/v1/analytics/conversion?days=30
@@ -1769,7 +1750,7 @@ GET /admin/v1/analytics/conversion?days=30
 
 **রেসপন্স**: প্রতিটি গেমে `game_id` (hashid), `game_name`, `players` (ডিডুপ্লিকেটেড প্লেয়ার সংখ্যা), `depositors` (ডিডুপ্লিকেটেড টপ-আপ ইউজার সংখ্যা), `conversion_rate` (টপ-আপ কনভার্সন রেট, 0~1)।
 
-### 16.8 জয়েন্ট প্রোবাবিলিটি
+### 17.8 জয়েন্ট প্রোবাবিলিটি
 
 ```
 GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
@@ -1777,7 +1758,7 @@ GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
 
 **রেসপন্স**: `{ "joint": { "joint_probability": 0.12, "confidence": 0.3 } }` — Jaccard সহগ (দুই গেমের কমন প্লেয়ার / ইউনিয়ন প্লেয়ার) ও কনফিডেন্স (কমন প্লেয়ার / A গেমের প্লেয়ার)।
 
-### 16.9 রিটেনশন অ্যানালাইসিস
+### 17.9 রিটেনশন অ্যানালাইসিস
 
 ```
 GET /admin/v1/analytics/retention?days=30
@@ -1785,7 +1766,7 @@ GET /admin/v1/analytics/retention?days=30
 
 **রেসপন্স**: `{ "D1": "8.5%", "D3": "...", "D7": "...", "D30": "..." }` রেজিস্ট্রেশন তারিখ অনুযায়ী গ্রুপে পরের দিন/৩ দিন/৭ দিন/৩০ দিনের রিটেনশন রেট।
 
-### 16.10 কনভার্সন ফানেল
+### 17.10 কনভার্সন ফানেল
 
 ```
 GET /admin/v1/analytics/funnel?days=30
@@ -1793,7 +1774,7 @@ GET /admin/v1/analytics/funnel?days=30
 
 **রেসপন্স**: রেজিস্ট্রেশন → প্রথম টপ-আপ → প্রথম বিনিময় → প্রথম গেম চারটি ধাপের `step`, `count`, `rate` (রেজিস্ট্রেশন সংখ্যার সাপেক্ষে শতাংশ)।
 
-### 16.11 ARPU/ARPPU ট্রেন্ড
+### 17.11 ARPU/ARPPU ট্রেন্ড
 
 ```
 GET /admin/v1/analytics/arpu?days=30
@@ -1801,7 +1782,7 @@ GET /admin/v1/analytics/arpu?days=30
 
 **রেসপন্স**: `{ "dates": [...], "arpu": [...], "arppu": [...] }` দৈনিক জনপ্রতি রেভিনিউ (ARPU) ও পেইং ইউজার জনপ্রতি রেভিনিউ (ARPPU)।
 
-### 16.12 গেম ইকোনমি মেট্রিক
+### 17.12 গেম ইকোনমি মেট্রিক
 
 ```
 GET /admin/v1/analytics/economy
@@ -1809,7 +1790,7 @@ GET /admin/v1/analytics/economy
 
 **রেসপন্স**: `currencies` অ্যারে, প্রতিটিতে `game_name`, `currency`, `symbol`, `total_minted` (মোট মিন্টেড), `total_burned` (মোট বার্নড), `circulation` (সার্কুলেশন), `inflation_rate` (ইনফ্লেশন রেট), bcmath উচ্চ-নির্ভুলতা গণনা ব্যবহৃত।
 
-## 17. পেমেন্ট ম্যানেজমেন্ট (Payment)
+## 18. পেমেন্ট ম্যানেজমেন্ট (Payment)
 
 পেমেন্ট পদ্ধতি ব্যবস্থাপনা `PaymentController` দ্বারা সরবরাহ করা হয়; ৫টি এন্ডপয়েন্টেরই JWT + RBAC প্রমাণীকরণ প্রয়োজন। `provider` হোয়াইটলিস্ট: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`। `config` হল পেমেন্ট কনফিগারেশনের JSON স্ট্রিং (ডাটাবেসে এনক্রিপ্টেড সংরক্ষিত)।
 
@@ -1821,7 +1802,7 @@ GET /admin/v1/analytics/economy
 | PUT | /admin/v1/payment/method/{hashid} | পেমেন্ট পদ্ধতি আপডেট করা |
 | DELETE | /admin/v1/payment/method/{hashid} | পেমেন্ট পদ্ধতি মুছে ফেলা (pending অর্ডার থাকলে প্রত্যাখ্যান) |
 
-### 17.1 পেমেন্ট পদ্ধতির তালিকা
+### 18.1 পেমেন্ট পদ্ধতির তালিকা
 
 ```
 GET /admin/v1/payment/method/list
@@ -1869,7 +1850,7 @@ GET /admin/v1/payment/method/list
 | min_amount / max_amount | string | পরিমাণ সীমা (স্পষ্টতার জন্য স্ট্রিং), 0 = সীমাহীন |
 | config | string? | পেমেন্ট কনফিগ JSON (এনক্রিপ্টেড; সেট না থাকলে null) |
 
-### 17.2 পেমেন্ট পদ্ধতি সক্রিয়/নিষ্ক্রিয় করা
+### 18.2 পেমেন্ট পদ্ধতি সক্রিয়/নিষ্ক্রিয় করা
 
 ```
 POST /admin/v1/payment/method/toggle
@@ -1892,7 +1873,7 @@ POST /admin/v1/payment/method/toggle
 - 422: ভ্যালিডেশন ব্যর্থ (id/status অনুপস্থিত বা status 0/1 নয়)
 - 404: পেমেন্ট পদ্ধতি পাওয়া যায়নি
 
-### 17.3 পেমেন্ট পদ্ধতি তৈরি করা
+### 18.3 পেমেন্ট পদ্ধতি তৈরি করা
 
 ```
 POST /admin/v1/payment/method/create
@@ -1938,20 +1919,20 @@ POST /admin/v1/payment/method/create
 **সম্ভাব্য ত্রুটি**:
 - 422: ভ্যালিডেশন ব্যর্থ
 
-### 17.4 পেমেন্ট পদ্ধতি আপডেট করা
+### 18.4 পেমেন্ট পদ্ধতি আপডেট করা
 
 ```
 PUT /admin/v1/payment/method/{hashid}
 ```
 
 - **পথ প্যারামিটার**: `{hashid}` হলো hashid এনকোডেড পেমেন্ট পদ্ধতি ID
-- **অনুরোধ বডি**: তৈরি (17.3) এর মতোই, সব ফিল্ড ঐচ্ছিক, শুধুমাত্র পাঠানো ফিল্ড আপডেট হয়
+- **অনুরোধ বডি**: তৈরি (18.3) এর মতোই, সব ফিল্ড ঐচ্ছিক, শুধুমাত্র পাঠানো ফিল্ড আপডেট হয়
 
 **সম্ভাব্য ত্রুটি**:
 - 404: পেমেন্ট পদ্ধতি পাওয়া যায়নি
 - 422: ভ্যালিডেশন ব্যর্থ
 
-### 17.5 পেমেন্ট পদ্ধতি মুছে ফেলা
+### 18.5 পেমেন্ট পদ্ধতি মুছে ফেলা
 
 ```
 DELETE /admin/v1/payment/method/{hashid}

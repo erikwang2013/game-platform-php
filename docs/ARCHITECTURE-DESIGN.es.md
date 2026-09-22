@@ -200,10 +200,10 @@ Las reglas se almacenan en la tabla `game_risk_rule`, configuradas como JSON, co
 
 ### 6.2 Verificación de identidad KYC
 
-Sistema de verificación de tres niveles:
+Niveles de límite de retiro (game_withdraw_limit):
 - `default` — sin verificar, límites básicos
 - `verified` — KYC aprobado, límites más altos + comisión reducida
-- `vip` — nivel VIP, límites máximos + comisión cero
+- `vip` — nivel reservado (límites máximos + comisión cero); el código actual solo lee default/verified, el descuento de comisión VIP se calcula aparte según la experiencia
 
 Flujo de verificación:
 ```
@@ -219,9 +219,9 @@ Admite inicio de sesión con Google / Facebook / Apple:
 
 ```
 El frontend pulsa el botón OAuth
-  → GET /api/auth/oauth/{provider} → obtener URL de autorización
+  → GET /api/v1/auth/oauth/{provider} → obtener URL de autorización
   → Redirigir a la página de autorización del tercero → el usuario acepta
-  → Callback POST /api/auth/oauth/{provider}/callback
+  → Callback POST /api/v1/auth/oauth/{provider}/callback
   → Si existe vinculación → inicio de sesión directo
   → Sin vinculación → registrar automáticamente un nuevo usuario + vincular + crear billetera
 ```
@@ -229,7 +229,7 @@ El frontend pulsa el botón OAuth
 ### 6.4 Callback de pago
 
 ```
-El pago del tercero se completa → POST /api/payment/callback
+El pago del tercero se completa → POST /api/v1/payment/callback
   → Validación de lista blanca de providers (solo stripe/paypal)
   → Verificación de firma fail-closed (sin secret/webhook_id configurado, firma inválida o marca de tiempo fuera de ±300s: rechazar siempre)
   → Comparación bccomp entre el importe del callback y el de la orden (previene suplantación entre canales)
@@ -251,7 +251,7 @@ Se aplican límites y comisiones distintos según el nivel KYC del usuario:
 
 ## 7. Diseño de escalabilidad
 
-### 5.1 Escalado horizontal
+### 7.1 Escalado horizontal
 
 admin/ y service/ soportan ambos múltiples procesos worker. Junto con el proxy inverso Nginx, se pueden desplegar varias máquinas para escalar horizontalmente:
 
@@ -263,7 +263,7 @@ Nginx (balanceo de carga)
   └── service-2 (:8792)
 ```
 
-### 5.2 Ruta de división de módulos
+### 7.2 Ruta de división de módulos
 
 Cuando un único service/ se convierte en el cuello de botella, dividir según la siguiente ruta:
 

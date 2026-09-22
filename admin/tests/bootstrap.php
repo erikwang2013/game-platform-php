@@ -96,12 +96,28 @@ foreach (config('plugin', []) as $firm => $projects) {
     }
 }
 
-// 初始化 Eloquent 与 support\Db。
-// 注意：不能用 Webman\Database\Initializer::init()——support\Db 首次被 autoload 时
-// 会 require Initializer.php，其文件尾部立即调用 init() 消耗一次性 $initialized 守卫；
-// 随后 support\bootstrap\Database::start 又用未设置默认连接的裸 Capsule 覆盖全局实例，
-// 使后续 init() 全部空转，默认连接 'default' 缺失。这里在 bootstrap 之后统一用裸 Capsule
-// 重建（与 support\Db 共享同一 static 实例）；MySQL 不可用时由各测试用例自行跳过。
+// 初始化 Eloquent 与 support\Db，全程钉在测试库上。两处会抢全局解析器，都要处理：
+//
+// 一、上面的 bootstrap 循环跑过 support\bootstrap\Database::start，它按 config('database')
+// 装了一个指向开发库的 Capsule 并 setAsGlobal()。Webman\Config 没有 set()，本文件只能改
+// $dbConfig 这个本地副本，动不了它，所以下面手工重建一个指向测试库的 Capsule 覆盖掉
+// （与 support\Db 共享同一 static 实例）；MySQL 不可用时由各测试用例自行跳过。
+//
+// 二、更隐蔽的是 vendor/webman/database/src/Initializer.php：文件尾部是一句裸露的
+// `Initializer::init(config('database', []))`，在 include 那一刻就执行，而 support/Db.php:21
+// 正是 require_once 这个文件。于是第一个碰 support\Db 的用例（现为 BackendEnhancementTest
+// 经 HealthController::checkDb()）会触发这次 init——读到的还是开发库配置，它会消耗掉一次性
+// $initialized 守卫并用 setAsGlobal() 把全局解析器改指开发库；此后没有别的 setAsGlobal()
+// 再执行（本文件末尾那个测试库 Capsule 就是用来顶掉它的），解析器便停在开发库上，
+// 整套跑时所有用例（包括清理逻辑）全落到开发库了。
+// 注意不能改成"直接调 Initializer::init($dbConfig)"：一提类名就会 autoload 该文件，文件尾
+// 那次 init(开发库) 先跑并吃掉守卫，显式调用只会静默空转，真正落笔的仍是下面这个测试库
+// Capsule（只有连 Capsule 一起省掉，开发库才会赢）。
+// 解法是抢在下面那个测试库 Capsule 之前把该文件整个 include 掉，让开发库那次 init 先发生、
+// 先烧掉守卫，再由测试库 Capsule 最后 setAsGlobal() 落笔。此后任何 support\Db autoload 都空转。
+// 顺序是关键：把下面这行 require_once 挪到 Capsule 之后，开发库会重新赢。
+require_once __DIR__ . '/../vendor/webman/database/src/Initializer.php';
+
 $capsule = new \Illuminate\Database\Capsule\Manager();
 foreach ($dbConfig['connections'] as $name => $connection) {
     $capsule->addConnection($connection, $name);

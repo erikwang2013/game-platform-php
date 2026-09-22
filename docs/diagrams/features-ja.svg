@@ -6,7 +6,7 @@
   <rect width="1000" height="750" fill="#fafbfc"/>
 
   <rect x="0" y="0" width="1000" height="52" fill="url(#hd)"/>
-  <text x="500" y="34" text-anchor="middle" fill="#fff" font-size="21" font-weight="bold">全球游戏聚合平台 — 機能全景図</text>
+  <text x="500" y="34" text-anchor="middle" fill="#fff" font-size="21" font-weight="bold">グローバルゲームアグリゲーションプラットフォーム — 機能全景図</text>
 
   <rect x="30" y="72" width="220" height="95" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
   <text x="140" y="96" text-anchor="middle" fill="#1e40af" font-size="13" font-weight="bold">ユーザー認証</text>
@@ -49,13 +49,13 @@
   <text x="610" y="206" text-anchor="middle" fill="#991b1b" font-size="13" font-weight="bold">KYC 実名認証</text>
   <text x="610" y="226" text-anchor="middle" fill="#ef4444" font-size="11">実名認証の提出 + バックエンド審査</text>
   <text x="610" y="245" text-anchor="middle" fill="#ef4444" font-size="11">身分証 / パスポート / 運転免許証</text>
-  <text x="610" y="264" text-anchor="middle" fill="#ef4444" font-size="11">三級認証レベルの体系</text>
+  <text x="610" y="264" text-anchor="middle" fill="#ef4444" font-size="11">認証レベル + 段階制限</text>
 
   <rect x="735" y="182" width="230" height="95" rx="8" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5" filter="url(#sh)"/>
   <text x="850" y="206" text-anchor="middle" fill="#4c1d95" font-size="13" font-weight="bold">ランキング</text>
   <text x="850" y="226" text-anchor="middle" fill="#7c3aed" font-size="11">日 / 週 / 月 / 総合ランキング</text>
   <text x="850" y="245" text-anchor="middle" fill="#7c3aed" font-size="11">Redis キャッシュ + リアルタイムソート</text>
-  <text x="850" y="264" text-anchor="middle" fill="#7c3aed" font-size="11">WebSocket リアルタイム配信 (:8789)</text>
+  <text x="850" y="264" text-anchor="middle" fill="#7c3aed" font-size="11">WebSocket リアルタイム配信 (:8790)</text>
 
   <rect x="30" y="292" width="220" height="95" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#sh)"/>
   <text x="140" y="316" text-anchor="middle" fill="#064e3b" font-size="13" font-weight="bold">クーポン</text>
@@ -84,7 +84,7 @@
 
   <rect x="265" y="402" width="220" height="95" rx="8" fill="#fefce8" stroke="#fef08a" stroke-width="1.5" filter="url(#sh)"/>
   <text x="375" y="426" text-anchor="middle" fill="#713f12" font-size="13" font-weight="bold">国別差別化</text>
-  <text x="375" y="446" text-anchor="middle" fill="#eab308" font-size="11">8カ国の決済/出金方法の設定</text>
+  <text x="375" y="446" text-anchor="middle" fill="#eab308" font-size="11">18カ国の決済/出金方法の設定</text>
   <text x="375" y="465" text-anchor="middle" fill="#eab308" font-size="11">最低チャージ額の差別化</text>
 
   <rect x="500" y="402" width="220" height="95" rx="8" fill="#f5f3ff" stroke="#e9d5ff" stroke-width="1.5" filter="url(#sh)"/>
@@ -100,11 +100,11 @@
 
   <rect x="30" y="518" width="940" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="500" y="546" text-anchor="middle" fill="#475569" font-size="14" font-weight="bold">プラットフォーム能力まとめ</text>
-  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">ユーザー認証 · ウォレット(楽観ロック) · チャージ(Stripe/PayPal/Alipay/WeChat Pay) · 交換(リアルタイム為替レート) · 出金(審査/自動) · KYC(三級認証)</text>
+  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">ユーザー認証 · ウォレット(楽観ロック) · チャージ(Stripe/PayPal/Alipay/WeChat Pay) · 交換(リアルタイム為替レート) · 出金(審査/自動) · KYC(本人確認)</text>
   <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">ゲームCRUD(10カテゴリ+サーバー) · ランキング(WebSocketリアルタイム) · クーポン · 紹介(登録ボーナス+コミッション) · リスク管理(4種のルール)</text>
-  <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">通知(サイト内+メール) · 国別差別化(8カ国) · 国際化(4言語) · 統計(日次スナップショット+収益) · 全文検索(ES)</text>
+  <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">通知(サイト内+メール) · 国別差別化(18カ国) · 国際化(4言語) · 統計(日次スナップショット+収益) · 全文検索(ES)</text>
 
-  <text x="500" y="662" text-anchor="middle" fill="#94a3b8" font-size="11">三端クライアント: Flutter Admin (15ページ) + Flutter Platform (10ページ) + HarmonyOS (5ページ)</text>
+  <text x="500" y="662" text-anchor="middle" fill="#94a3b8" font-size="11">クライアント: 8 種 — 管理画面 4 種 + C側 4 種 (Flutter/React/Angular/HarmonyOS)</text>
   <text x="500" y="682" text-anchor="middle" fill="#94a3b8" font-size="11">デプロイ: Docker Compose 7サービス編成 + Nginxリバースプロキシ + CI/CD (GitHub Actions)</text>
 
   <text x="500" y="740" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>

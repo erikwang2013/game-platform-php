@@ -263,9 +263,7 @@ return [
 
 
     'elasticsearch' => [
-        'hosts' => [
-            'http://127.0.0.1:9200'
-        ],
+        'hosts' => array_map('trim', explode(',', getenv('SCOUT_HOSTS') ?: 'http://127.0.0.1:9200')),
         'auth' => [
             'user'   =>  null,
             'pass'   =>  null,
@@ -282,7 +280,7 @@ return [
     ],
 
     'opensearch' => [
-        'host' => getenv('OPENSEARCH_HTTP_HOST', 'https://127.0.0.1:6205'),
+        'host' => getenv('OPENSEARCH_HTTP_HOST') ?: 'http://127.0.0.1:9200',
         'username' => getenv('OPENSEARCH_USERNAME', 'admin'),
         'password' => getenv('OPENSEARCH_PASSWORD', 'admin'),
         'prefix' => getenv('OPENSEARCH_INDEX_PREFIX'),

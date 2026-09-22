@@ -7,9 +7,10 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import '../../i18n/translations.dart';
+import '../../services/api_service.dart';
 
 class DashboardController extends GetxController {
-  final Dio _dio = Dio(BaseOptions(baseUrl: 'http://localhost:8789'));
+  final Dio _dio = Dio(BaseOptions(baseUrl: ApiService.baseUrl));
   final isLoading = true.obs;
 
   final stats = <Map<String, dynamic>>[].obs;

@@ -65,10 +65,10 @@ Languages: [中文](DESIGN.md) · **English** · [한국어](DESIGN.ko.md) · [�
 |---|------|------|
 | Routing | `config/route.php` | URL-to-controller mapping, middleware binding, versioned routes |
 | Middleware | `app/middleware/` | Attack blocking (SecurityFilter), rate limiting (RateLimit), auth (JWT), authorization (RBAC) |
-| Controllers | 30: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (admin) + Captcha/Auth (API v1) | Request parameter validation, business logic invocation, response formatting |
-| Business services | `common/service/` | Data analytics: GameDashboardService (overview/rankings/trends), DepositLogService (revenue/conversion), ProbabilityService (joint/conditional probability, SQL builder); returns empty data instead of errors on DB failure |
+| Controllers | 45: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (admin) + Captcha/Auth (API v1) | Request parameter validation, business logic invocation, response formatting |
+| Business services | `packages/platform-common/src/service/` | Data analytics: GameDashboardService (overview/rankings/trends), DepositLogService (revenue/conversion), ProbabilityService (joint/conditional probability, SQL builder); returns empty data instead of errors on DB failure |
 | Data models | `app/model/` | ORM mapping, relations, field encryption/decryption |
-| Common utilities | `app/common/` | Hashids, Snowflake, Encryption services |
+| Common utilities | `packages/platform-common/src/` | Hashids, Snowflake, Encryption services |
 
 ### 2.2 Request Lifecycle
 
@@ -466,7 +466,7 @@ The GitHub Actions continuous integration is defined in `.github/workflows/ci.ym
 
 ### 8.5 Monitoring
 
-The `GET /metrics` endpoint (`MetricsController`) exposes 5 gauge metrics in Prometheus text format: total HTTP requests, active users, database/Redis connection status, memory usage.
+The `GET /metrics` endpoint (`MetricsController`) exposes 18 gauge metrics in Prometheus text format: active/total users, database/Redis/ES connection status, memory/CPU/process metrics, pending withdrawals and reconciliation differences.
 
 ### 8.6 Environment Requirements
 

@@ -1,4 +1,4 @@
-# 田园消消乐 — Technische Architektur
+# Landleben-Match-3 — Technische Architektur
 <!-- lang-nav -->
 
 Languages: **中文** · [English](architecture.en.md) · [한국어](architecture.ko.md) · [Русский](architecture.ru.md) · [Deutsch](architecture.de.md) · [Français](architecture.fr.md) · [Español](architecture.es.md) · [Português](architecture.pt.md) · [हिन्दी](architecture.hi.md) · [العربية](architecture.ar.md) · [বাংলা](architecture.bn.md) · [Bahasa Indonesia](architecture.id.md) · [日本語](architecture.ja.md)
@@ -203,11 +203,11 @@ Auswertung: **genau 1 Unterdrücker + der Rest sind ausschließlich Beutetiere d
 
 | Unterdrücker | Beutematching |
 |--------|----------|
-| 鸡、鸭、鹅 (Huhn, Ente, Gans) | faction ∈ {flora, veg, fruit, insect}；**不含 crop（五谷）** |
-| 狗 (Hund) | faction = poultry (Hühner, Enten, Gänse, Tauben usw.) |
-| 猪 (Schwein) | faction ∈ {tree, flora, veg, fruit, insect, crop}；**不含狗** |
-| 牛、马 (Rind, Pferd) | faction ∈ {flora, crop} oder tag `tree_seedling`; keine Insekten und kein Fleisch |
-| 大象 (Elefant) | siehe 5.5, nicht über diese Tabelle |
+| Huhn, Ente, Gans | faction ∈ {flora, veg, fruit, insect}; **nicht crop (Getreide)** |
+| Hund | faction = poultry (Hühner, Enten, Gänse, Tauben usw.) |
+| Schwein | faction ∈ {tree, flora, veg, fruit, insect, crop}; **nicht Hund** |
+| Rind, Pferd | faction ∈ {flora, crop} oder tag `tree_seedling`; keine Insekten und kein Fleisch |
+| Elefant | siehe 5.5, nicht über diese Tabelle |
 
 Effekte:
 
@@ -247,9 +247,9 @@ Eimer-Fähigkeit: eine Wasserpfützen-Zelle wählen → overlay entfernen, diese
 
 | Fähigkeit | Freischaltung | Effekt |
 |------|------|------|
-| 镰刀 (Sichel) | 3 aufeinanderfolgende resolves mit Ökologie | Eine Zeile oder Spalte wählen, alle **plant-Figuren** (crop/veg/fruit/flora) dieser Linie entfernen, kein Schrittverbrauch, kostet Aufladung |
-| 锄头 (Hacke) | wie links, oder Level-Vorabgabe | Stein/Baum anklicken, direkt HP=0 oder -3 (Levelkonfiguration) |
-| 水桶 (Eimer) | Level-Vorabgabe oder Aufladung | Eine Wasserpfütze trockenlegen |
+| Sichel | 3 aufeinanderfolgende resolves mit Ökologie | Eine Zeile oder Spalte wählen, alle **plant-Figuren** (crop/veg/fruit/flora) dieser Linie entfernen, kein Schrittverbrauch, kostet Aufladung |
+| Hacke | wie links, oder Level-Vorabgabe | Stein/Baum anklicken, direkt HP=0 oder -3 (Levelkonfiguration) |
+| Eimer | Level-Vorabgabe oder Aufladung | Eine Wasserpfütze trockenlegen |
 
 Aufladeregeln: `ecoResolveCount` erreicht 3 → Slot +1, Zähler wird zurückgesetzt. Slot-Obergrenze 2. Welche der Fähigkeiten Sichel/Hacke/Eimer erscheinen, bestimmt `allowedSkills[]` des Levels.
 
@@ -271,10 +271,10 @@ obstacle   = 20 * brokenCount
 
 | Level | Pool | Sieg | Niederlage | Besonderheit |
 |------|----|------|------|------|
-| 丰收 (Ernte) | crop/veg/fruit + hohes Gewicht poultry | Innerhalb von 20 Schritten 50 plant eliminieren | Schritte verbraucht | Hühner/Enten/Gänse stören die Gleichart-Eliminierung von Pflanzen |
-| 驱赶 (Vertreiben) | poultry + dog, keine Pflanzen | Innerhalb der Zeit mit Hund-Ökologie 15 Hühner/Enten eliminieren | Zeitüberschreitung | Gleichart-Geflügel zählt nicht für das Ziel, Ökologie ist Pflicht |
-| 破坏王 (Zerstörer) | Pflanzen + wenig pig + 3 Bäume (HP5) | Schwein wühlt 3 Bäume um | Schritte verbraucht | Drei Schweine in einer Linie lösen **3×3-Wühlangriff** aus (Levelregel, nicht global) |
-| 大象狂欢 (Elefantenparty) | Mischpool + Start-Lock-Elefant | Elefantenregel eliminiert 30 Figuren | Elefant abnormal entfernt (sollte nicht passieren) oder Schritte verbraucht | Elefanten schützen; das System spawnt keinen zweiten |
+| Ernte | crop/veg/fruit + hohes Gewicht poultry | Innerhalb von 20 Schritten 50 plant eliminieren | Schritte verbraucht | Hühner/Enten/Gänse stören die Gleichart-Eliminierung von Pflanzen |
+| Vertreiben | poultry + dog, keine Pflanzen | Innerhalb der Zeit mit Hund-Ökologie 15 Hühner/Enten eliminieren | Zeitüberschreitung | Gleichart-Geflügel zählt nicht für das Ziel, Ökologie ist Pflicht |
+| Zerstörer | Pflanzen + wenig pig + 3 Bäume (HP5) | Schwein wühlt 3 Bäume um | Schritte verbraucht | Drei Schweine in einer Linie lösen **3×3-Wühlangriff** aus (Levelregel, nicht global) |
+| Elefantenparty | Mischpool + Start-Lock-Elefant | Elefantenregel eliminiert 30 Figuren | Elefant abnormal entfernt (sollte nicht passieren) oder Schritte verbraucht | Elefanten schützen; das System spawnt keinen zweiten |
 
 Gemeinsames HUD: Zielfortschritt, Schritte oder Countdown, combo, Fähigkeitsslots, Pause/Beenden.
 

@@ -13,7 +13,7 @@ C端用户平台 API 服务，基于 webman v2（Workerman）的高性能 PHP �
 |------|------|
 | 用户 | 注册/登录（用户名密码 + 7 平台 OAuth + 2FA TOTP）、个人资料 |
 | 钱包 | 平台币钱包（乐观锁）+ 游戏币钱包 + 流水记录 |
-| 充值 | 13 家支付网关（Stripe/PayPal/NowPayments/Coinbase 等）回调验签、自动到账 |
+| 充值 | 18 家支付网关（Stripe/PayPal/NowPayments/Coinbase 等）回调验签、自动到账 |
 | 提现 | 申请 → 审核 → 打款，KYC 阶梯限额 |
 | 兑换 | 平台币 ⇄ 游戏币实时询价，VIP 折扣与汇率加成 |
 | 游戏 | 游戏列表/分类/搜索、游戏记录、Provider 结算回调 |
@@ -39,8 +39,12 @@ C端用户平台 API 服务，基于 webman v2（Workerman）的高性能 PHP �
 ```
 service/
 ├── app/
-│   ├── api/v1/controller/  # C端 API 控制器（35 个）
-│   ├── middleware/         # 中间件（Cors/SecurityFilter/RateLimit/ApiVersion/UserAuth/ProviderAuth）
+│   ├── activity/           # 活动处理器
+│   ├── api/v1/controller/  # C端 API 控制器（34 个）
+│   ├── bootstrap/          # 通知引导
+│   ├── cdn/                # CDN 多厂商（阿里云/腾讯云/华为云/Cloudflare/CloudFront + CdnFactory）
+│   ├── common/             # 公共
+│   ├── middleware/         # 中间件（Cors/SecurityFilter/RateLimit/TraceId/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth）
 │   ├── model/              # 数据模型
 │   ├── service/            # 业务服务（VIP/排行榜/风控/通知等）
 │   ├── event/              # 事件总线（EventBus Redis Pub/Sub）
@@ -49,9 +53,14 @@ service/
 ├── common/                 # 共享服务目录（实现在 erik/platform-common 包）
 ├── config/                 # 配置文件
 ├── public/                 # Web 入口
+├── runtime/                # 运行时文件
+├── support/                # 辅助类
 ├── tests/                  # PHPUnit 测试
 ├── start.php               # 启动入口
-└── composer.json
+├── windows.php             # Windows 启动入口
+├── composer.json
+├── phpunit.xml             # PHPUnit 配置
+└── Dockerfile              # 镜像构建
 ```
 
 ## 一键安装
@@ -93,7 +102,7 @@ php start.php start -d     # 后台运行
 ## 使用说明
 
 - 接口文档：`docs/API.md`（完整 API 参考）
-- 在线文档：http://localhost:8792/apidoc/（hg/apidoc 交互式文档）
+- 在线文档：http://localhost:8792/apidoc/（erikwang2013/apidoc-php 交互式文档）
 - 健康检查：`GET http://localhost:8792/health`
 - C端前端：`apps/flutter/platform/`（Flutter Web 用户平台）
 - 管理后台：`admin/`（管理后台与 `admin/apps/flutter/` 前端）

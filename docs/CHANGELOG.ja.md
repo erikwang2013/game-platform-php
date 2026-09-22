@@ -38,7 +38,7 @@ Languages: **中文** · [English](CHANGELOG.en.md) · [한국어](CHANGELOG.ko.
 ### クライアント / 共有（同日に補完）
 
 - Flutter Platform: `app_pages.dart` ルートテーブル；2FA 設定/検証、クーポン、ランキング、通知、OAuth コールバックページを補完；ロビーのエントリをナビゲーションに接続。
-- HarmonyOS C 端: `apps/harmonyos/` の 5 ページ（ログイン/ロビー/詳細/ウォレット/個人）、デフォルト `BASE_URL` は service `8788` を指す。
+- HarmonyOS C側: `apps/harmonyos/` の 5 ページ（ログイン/ロビー/詳細/ウォレット/個人）、デフォルト `BASE_URL` は service `8788` を指す。
 - 共有レイヤー: `packages/platform-common`（`erik/platform-common` path repo）に DepositLog / GameDashboard / Probability / GamePlayLog を抽出；model は依然二重。
 - ClickHouse: composer 依存を除去；分析は引き続き MySQL リアルタイム集計。
 - CI: admin / service を分けた job で phpunit を実行、失敗で即ブロック。
@@ -79,6 +79,6 @@ Languages: **中文** · [English](CHANGELOG.en.md) · [한국어](CHANGELOG.ko.
 ## [1.1] reports — 2026-08-31
 
 - データレポート：管理側 `/admin/report/summary|daily|export`（集計/日報/CSV エクスポート、Redis 5分キャッシュ、期間 ≤90日）。
-- C端プラットフォーム統計：`GET /api/platform/stats`（ゲーム総数/ユーザー総数/今日の対局数/7日間アクティブ）、ホーム統計表示に接続。
+- C側プラットフォーム統計：`GET /api/platform/stats`（ゲーム総数/ユーザー総数/今日の対局数/7日間アクティブ）、ホーム統計表示に接続。
 - 管理側 Flutter：ダッシュボード統計カードを実データに接続、レポートページ ReportsPage（/reports）を新設。
 - ドキュメント同期：FEATURES/VERSIONS/API にレポートと統計の項目を13言語で追記、機能全景図の統計分析ボックスを更新。

@@ -186,7 +186,7 @@ Authorization: Bearer <token>    (الواجهات التي تتطلب مصاد�
 }
 ```
 
-القيم الممكنة لـ currency: USD / CNY / EUR
+القيم الممكنة لـ currency: USD / CNY / EUR / JPY / KRW / GBP / BRL / INR
 
 checkout_url: رابط إعادة التوجيه إلى بوابة الدفع (يُملأ عند إنشاء الطلب)؛ expires_at: انتهاء صلاحية رابط الدفع (بعد ساعة من الإنشاء)
 
@@ -401,9 +401,9 @@ status:
 }
 ```
 
-القيم الممكنة لـ type: self / third_party
+القيم الممكنة لـ type: self / embedded / third_party
 
-#### GET /api/v1/game/{hashid} — تفاصيل اللعبة
+#### GET /api/v1/game/detail/{hashid} — تفاصيل اللعبة
 
 ```
 الاستجابة: {
@@ -870,7 +870,7 @@ status: success / failed
 
 ### 3.1 لوحة تحكم المنصة
 
-#### GET /admin/dashboard/platform
+#### GET /admin/v1/dashboard/platform
 
 ```
 يتطلب مصادقة: نعم (AdminAuth + AdminPermission)
@@ -888,11 +888,11 @@ status: success / failed
 
 ### 3.2 إدارة الألعاب
 
-#### GET /admin/game/list — قائمة الألعاب
+#### GET /admin/v1/game/list — قائمة الألعاب
 
 ```
 يتطلب مصادقة: نعم
-المعلمات: ?page=1&per_page=20&keyword=射击
+المعلمات: ?page=1&limit=20&keyword=射击
 
 الاستجابة: {
   "list": [
@@ -909,11 +909,67 @@ status: success / failed
   ],
   "total": 12,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### POST /admin/game/create — إنشاء لعبة
+#### GET /admin/v1/game/{hashid} — تفاصيل اللعبة
+
+```
+需认证: 是
+参数: hashid 为游戏的 hashid 编码（路径参数）
+
+响应: {
+  "id": "aB3xK...",
+  "name": "射击大师",
+  "slug": "shooter-master",
+  "type": "self",
+  "description": "游戏描述",
+  "cover_image": "https://...",
+  "api_endpoint": "https://...",
+  "sdk_version": "1.0.0",
+  "platform": "h5",
+  "region": "global",
+  "currencies": [
+    {
+      "id": "cD4yL...",
+      "name": "金币",
+      "symbol": "G",
+      "exchange_rate": "100.00000000",
+      "spread_pct": "5.00000000",
+      "min_exchange": "1.00000000",
+      "max_exchange": "10000.00000000"
+    }
+  ]
+}
+```
+
+يعيد code 404 إذا لم تكن اللعبة موجودة.
+
+#### POST /admin/v1/game/launch — معاينة تشغيل اللعبة
+
+```
+需认证: 是
+
+请求: {
+  "game_id": "aB3xK..."      // 游戏 ID(hashid)
+}
+
+响应: {
+  "id": "aB3xK...",
+  "name": "射击大师",
+  "slug": "shooter-master",
+  "type": "self",
+  "api_endpoint": "https://...",
+  "preview": true
+}
+```
+
+عند غياب `game_id` يُرجع code 422؛ وإذا لم توجد اللعبة يُرجع 404؛ وإذا لم تكن اللعبة منشورة (`status` ليس 1) يُرجع 403.
+
+معاينة لوحة الإدارة معاينة خالصة: تتحقق فقط من توفر اللعبة وتُرجع معلومات التشغيل، و**لا تكتب سجلات اللعبة ولا تمس المحفظة**. هوية لوحة الإدارة تحمل `adminId` فقط (الذي يحقنه `AdminAuth`) ولا تحمل `userId` الخاص بالطرف C، لذا لا تقوم نقطة النهاية هذه عن قصد بأي كتابة على جانب المستخدم — فنقل `POST /api/v1/game/launch` الخاص بالطرف C كما هو سيكتب سجلات `game_game_play_log` بإسناد خاطئ.
+
+#### POST /admin/v1/game/create — إنشاء لعبة
 
 ```
 يتطلب مصادقة: نعم
@@ -934,9 +990,9 @@ status: success / failed
 الاستجابة: { "id": "aB3xK..." }
 ```
 
-القيم الممكنة لـ type: self / third_party
+القيم الممكنة لـ type: self / embedded / third_party
 
-#### PUT /admin/game/{hashid} — تعديل اللعبة
+#### PUT /admin/v1/game/{hashid} — تعديل اللعبة
 
 ```
 يتطلب مصادقة: نعم
@@ -950,14 +1006,14 @@ status: success / failed
 الاستجابة: { "message": "更新成功" }
 ```
 
-#### DELETE /admin/game/{hashid} — حذف اللعبة
+#### DELETE /admin/v1/game/{hashid} — حذف اللعبة
 
 ```
 يتطلب مصادقة: نعم
 الاستجابة: { "message": "删除成功" }
 ```
 
-#### POST /admin/game/currency/manage — إدارة العملات
+#### POST /admin/v1/game/currency/manage — إدارة العملات
 
 ```
 يتطلب مصادقة: نعم
@@ -977,16 +1033,20 @@ status: success / failed
   ]
 }
 
-الاستجابة: { "message": "币种更新成功" }
+الاستجابة: { "message": "操作成功" }
 ```
+
+عند غياب `game_id` أو إذا لم تكن `currencies` مصفوفة يُرجع 422؛ وإذا لم توجد اللعبة يُرجع 404.
+
+يُتحقق من `exchange_rate` و`spread_pct` فقط عند تمريرهما: يجب أن يكون `exchange_rate` رقمًا أكبر من 0، وأن يقع `spread_pct` ضمن النطاق [0, 100)؛ ومخالفة أيٍّ منهما تُرجع 422 ولا تُكتب أي عملة (يتم التحقق من الدفعة بالكامل قبل الكتابة). الحقول غير المُمرَّرة لا تُفعّل التحقق: عند الإنشاء تُستخدم القيم الافتراضية (`exchange_rate` = `1.00000000` والبقية `0.00000000`)، وعند التحديث تُحفظ القيمة الحالية.
 
 ### 3.3 إدارة السحب
 
-#### GET /admin/withdraw/orders — قائمة طلبات السحب
+#### GET /admin/v1/withdraw/orders — قائمة طلبات السحب
 
 ```
 يتطلب مصادقة: نعم
-المعلمات: ?page=1&per_page=20&status=pending
+المعلمات: ?page=1&limit=20&status=pending
 
 الاستجابة: {
   "list": [
@@ -1008,11 +1068,11 @@ status: success / failed
   ],
   "total": 5,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### PUT /admin/withdraw/review — مراجعة السحب
+#### PUT /admin/v1/withdraw/review — مراجعة السحب
 
 ```
 يتطلب مصادقة: نعم
@@ -1026,11 +1086,11 @@ status: success / failed
 الاستجابة: { "message": "已通过" }
 ```
 
-action: approve=موافقة / reject=رفض (عند الرفض تُعاد عملات المنصة تلقائيًا)
+action: approve=موافقة / reject=رفض / confirm=تأكيد (عند الرفض تُعاد عملات المنصة تلقائيًا)
 
 خطأ: 422 حالة الطلب ليست قيد المراجعة
 
-#### PUT /admin/withdraw/switch — المفتاح العام للسحب
+#### PUT /admin/v1/withdraw/switch — المفتاح العام للسحب
 
 ```
 يتطلب مصادقة: نعم
@@ -1043,7 +1103,7 @@ action: approve=موافقة / reject=رفض (عند الرفض تُعاد عم�
 }
 ```
 
-#### POST /admin/withdraw/limits/set — تعيين حدود السحب
+#### POST /admin/v1/withdraw/limits/set — تعيين حدود السحب
 
 ```
 يتطلب مصادقة: نعم
@@ -1064,11 +1124,11 @@ action: approve=موافقة / reject=رفض (عند الرفض تُعاد عم�
 
 ### 3.4 إدارة مستخدمي المنصة
 
-#### GET /admin/platform/user/list — قائمة مستخدمي الطرف C
+#### GET /admin/v1/platform/user/list — قائمة مستخدمي الطرف C
 
 ```
 يتطلب مصادقة: نعم
-المعلمات: ?page=1&per_page=20&keyword=player&status=1
+المعلمات: ?page=1&limit=20&keyword=player&status=1
 
 الاستجابة: {
   "list": [
@@ -1084,11 +1144,11 @@ action: approve=موافقة / reject=رفض (عند الرفض تُعاد عم�
   ],
   "total": 1500,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### GET /admin/platform/user/{hashid} — تفاصيل المستخدم
+#### GET /admin/v1/platform/user/{hashid} — تفاصيل المستخدم
 
 ```
 يتطلب مصادقة: نعم
@@ -1111,7 +1171,7 @@ action: approve=موافقة / reject=رفض (عند الرفض تُعاد عم�
 }
 ```
 
-#### PUT /admin/platform/user/{hashid} — تعديل/حظر المستخدم
+#### PUT /admin/v1/platform/user/{hashid} — تعديل/حظر المستخدم
 
 ```
 يتطلب مصادقة: نعم
@@ -1126,7 +1186,7 @@ action: approve=موافقة / reject=رفض (عند الرفض تُعاد عم�
 
 ### 3.5 إدارة الدفع
 
-#### GET /admin/payment/method/list
+#### GET /admin/v1/payment/method/list
 
 ```
 يتطلب مصادقة: نعم
@@ -1144,7 +1204,7 @@ action: approve=موافقة / reject=رفض (عند الرفض تُعاد عم�
 }
 ```
 
-#### POST /admin/payment/method/toggle — تفعيل/تعطيل طريقة الدفع
+#### POST /admin/v1/payment/method/toggle — تفعيل/تعطيل طريقة الدفع
 
 ```
 يتطلب مصادقة: نعم
@@ -1156,11 +1216,11 @@ action: approve=موافقة / reject=رفض (عند الرفض تُعاد عم�
 
 ### 3.6 إدارة الإعلانات
 
-#### GET /admin/announcement/list
+#### GET /admin/v1/announcement/list
 
 ```
 يتطلب مصادقة: نعم
-المعلمات: ?page=1&per_page=20
+المعلمات: ?page=1&limit=20
 
 الاستجابة: {
   "list": [
@@ -1176,11 +1236,11 @@ action: approve=موافقة / reject=رفض (عند الرفض تُعاد عم�
   ],
   "total": 5,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### POST /admin/announcement/create — نشر إعلان
+#### POST /admin/v1/announcement/create — نشر إعلان
 
 ```
 يتطلب مصادقة: نعم
@@ -1200,11 +1260,11 @@ action: approve=موافقة / reject=رفض (عند الرفض تُعاد عم�
 
 ### 3.7 مراجعة KYC
 
-#### GET /admin/identity/list — قائمة KYC
+#### GET /admin/v1/identity/list — قائمة KYC
 
 ```
 يتطلب مصادقة: نعم
-المعلمات: ?page=1&per_page=20&status=pending
+المعلمات: ?page=1&limit=20&status=pending
 
 الاستجابة: {
   "list": [
@@ -1217,11 +1277,11 @@ action: approve=موافقة / reject=رفض (عند الرفض تُعاد عم�
       "created_at": "2026-05-22 10:00:00"
     }
   ],
-  "total": 5, "page": 1, "per_page": 20
+  "total": 5, "page": 1, "limit": 20
 }
 ```
 
-#### PUT /admin/identity/review — مراجعة KYC
+#### PUT /admin/v1/identity/review — مراجعة KYC
 
 ```
 يتطلب مصادقة: نعم
@@ -1235,7 +1295,7 @@ action: approve / reject
 
 ### 3.8 إدارة خوادم الألعاب
 
-#### GET /admin/game/server/list — قائمة الخوادم
+#### GET /admin/v1/game/server/list — قائمة الخوادم
 
 ```
 يتطلب مصادقة: نعم
@@ -1248,7 +1308,7 @@ action: approve / reject
 }
 ```
 
-#### POST /admin/game/server/create — إنشاء خادم
+#### POST /admin/v1/game/server/create — إنشاء خادم
 
 ```
 يتطلب مصادقة: نعم
@@ -1256,14 +1316,14 @@ action: approve / reject
 الاستجابة: { "id": "hashid" }
 ```
 
-#### PUT /admin/game/server/{hashid} — تعديل الخادم
+#### PUT /admin/v1/game/server/{hashid} — تعديل الخادم
 
 ```
 يتطلب مصادقة: نعم
 الطلب: { "name": "新名称", "status": 2 }
 ```
 
-#### DELETE /admin/game/server/{hashid} — حذف الخادم
+#### DELETE /admin/v1/game/server/{hashid} — حذف الخادم
 
 ```
 يتطلب مصادقة: نعم
@@ -1271,7 +1331,7 @@ action: approve / reject
 
 ### 3.9 إدارة حدود السحب المتدرجة
 
-#### GET /admin/withdraw/limits/list
+#### GET /admin/v1/withdraw/limits/list
 
 ```
 يتطلب مصادقة: نعم
@@ -1293,7 +1353,7 @@ action: approve / reject
 }
 ```
 
-#### PUT /admin/withdraw/limits/{hashid} — تحديث الحدود
+#### PUT /admin/v1/withdraw/limits/{hashid} — تحديث الحدود
 
 ```
 يتطلب مصادقة: نعم
@@ -1304,14 +1364,14 @@ action: approve / reject
 
 ### 3.11 إدارة تصنيفات الألعاب
 
-#### GET /admin/game/category/list
+#### GET /admin/v1/game/category/list
 
 ```
 يتطلب مصادقة: نعم
 الاستجابة: { "list": [{ "id": "...", "name": "动作", "slug": "action", "sort": 1 }] }
 ```
 
-#### POST /admin/game/category/create
+#### POST /admin/v1/game/category/create
 
 ```
 يتطلب مصادقة: نعم
@@ -1319,11 +1379,11 @@ action: approve / reject
 الاستجابة: { "id": "hashid" }
 ```
 
-#### PUT /admin/game/category/{hashid} — تعديل التصنيف
+#### PUT /admin/v1/game/category/{hashid} — تعديل التصنيف
 
-#### DELETE /admin/game/category/{hashid} — حذف التصنيف
+#### DELETE /admin/v1/game/category/{hashid} — حذف التصنيف
 
-#### POST /admin/game/category/assign — توزيع الألعاب
+#### POST /admin/v1/game/category/assign — توزيع الألعاب
 
 ```
 يتطلب مصادقة: نعم
@@ -1332,42 +1392,42 @@ action: approve / reject
 
 ### 3.12 إدارة لوحات المتصدرين
 
-#### GET /admin/leaderboard/list — قائمة لوحات المتصدرين
+#### GET /admin/v1/leaderboard/list — قائمة لوحات المتصدرين
 
 ```
 يتطلب مصادقة: نعم
 الاستجابة: { "list": [{ "id": "...", "name": "...", "type": "total", "metric": "earned" }] }
 ```
 
-#### POST /admin/leaderboard/create — إنشاء لوحة متصدرين
+#### POST /admin/v1/leaderboard/create — إنشاء لوحة متصدرين
 
 ```
 يتطلب مصادقة: نعم
 الطلب: { "name": "周收入榜", "type": "weekly", "metric": "earned", "game_id": "hashid(اختياري)" }
 ```
 
-#### PUT /admin/leaderboard/{hashid} — تعديل لوحة المتصدرين
+#### PUT /admin/v1/leaderboard/{hashid} — تعديل لوحة المتصدرين
 
-#### DELETE /admin/leaderboard/{hashid} — حذف لوحة المتصدرين
+#### DELETE /admin/v1/leaderboard/{hashid} — حذف لوحة المتصدرين
 
-#### POST /admin/leaderboard/{hashid}/refresh — تحديث التخزين المؤقت
+#### POST /admin/v1/leaderboard/{hashid}/refresh — تحديث التخزين المؤقت
 
 ### 3.13 إدارة القسائم
 
-#### GET /admin/coupon/list — قائمة القسائم
+#### GET /admin/v1/coupon/list — قائمة القسائم
 
-#### POST /admin/coupon/create — إنشاء قسيمة
+#### POST /admin/v1/coupon/create — إنشاء قسيمة
 
 ```
 يتطلب مصادقة: نعم
 الطلب: { "name": "新人礼包", "type": "fixed", "value": "10.0000", "total_qty": 1000 }
 ```
 
-#### PUT /admin/coupon/{hashid} — تعديل (قبل الاستلام)
+#### PUT /admin/v1/coupon/{hashid} — تعديل (قبل الاستلام)
 
-#### DELETE /admin/coupon/{hashid} — حذف
+#### DELETE /admin/v1/coupon/{hashid} — حذف
 
-#### GET /admin/coupon/{hashid}/stats — إحصائيات الاستلام
+#### GET /admin/v1/coupon/{hashid}/stats — إحصائيات الاستلام
 
 ```
 الاستجابة: { "total_qty": 1000, "used_qty": 234, "remaining": 766, "usage_rate": "23.40%" }
@@ -1375,20 +1435,20 @@ action: approve / reject
 
 ### 3.14 إدارة إعدادات الدول
 
-#### GET /admin/country/config/list — قائمة إعدادات الدول
+#### GET /admin/v1/country/config/list — قائمة إعدادات الدول
 
-#### POST /admin/country/config/create — إنشاء إعداد دولة
+#### POST /admin/v1/country/config/create — إنشاء إعداد دولة
 
 ```
 يتطلب مصادقة: نعم
 الطلب: { "country_code": "JP", "currency": "JPY", "payment_methods": "[\"stripe\",\"paypal\"]", "min_deposit": "100.0000" }
 ```
 
-#### PUT /admin/country/config/{hashid} — تعديل إعداد الدولة
+#### PUT /admin/v1/country/config/{hashid} — تعديل إعداد الدولة
 
 ### 3.15 تصدير البيانات
 
-#### POST /admin/export/users — تصدير مستخدمي الطرف C
+#### POST /admin/v1/export/users — تصدير مستخدمي الطرف C
 
 ```
 يتطلب مصادقة: نعم
@@ -1397,7 +1457,7 @@ action: approve / reject
 الاستجابة: تنزيل ملف Excel (xlsx)
 ```
 
-#### POST /admin/export/transactions — تصدير حركات المنصة
+#### POST /admin/v1/export/transactions — تصدير حركات المنصة
 
 ```
 يتطلب مصادقة: نعم
@@ -1412,18 +1472,18 @@ action: approve / reject
 
 | الطريقة | المسار | الوصف |
 |------|------|------|
-| GET | /admin/analytics/overview | نظرة عامة على المنصة (اليوم/آخر 7 أيام) |
-| GET | /admin/analytics/game-ranking | ترتيب الألعاب (?days=7) |
-| GET | /admin/analytics/dau-trend | اتجاه DAU (?days=30) |
-| GET | /admin/analytics/hourly-trend | الاتجاه بالساعة |
-| GET | /admin/analytics/action-distribution | توزيع السلوكيات |
-| GET | /admin/analytics/revenue | تحليل الإيرادات |
-| GET | /admin/analytics/conversion | معدل تحويل الألعاب |
-| GET | /admin/analytics/probability | الاحتمال المشترك/الشرطي |
-| GET | /admin/analytics/retention | تحليل الاحتفاظ D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | قمع التحويل |
-| GET | /admin/analytics/arpu | اتجاه ARPU/ARPPU |
-| GET | /admin/analytics/economy | مؤشرات اقتصاد عملات الألعاب |
+| GET | /admin/v1/analytics/overview | نظرة عامة على المنصة (اليوم/آخر 7 أيام) |
+| GET | /admin/v1/analytics/game-ranking | ترتيب الألعاب (?days=7) |
+| GET | /admin/v1/analytics/dau-trend | اتجاه DAU (?days=30) |
+| GET | /admin/v1/analytics/hourly-trend | الاتجاه بالساعة |
+| GET | /admin/v1/analytics/action-distribution | توزيع السلوكيات |
+| GET | /admin/v1/analytics/revenue | تحليل الإيرادات |
+| GET | /admin/v1/analytics/conversion | معدل تحويل الألعاب |
+| GET | /admin/v1/analytics/probability | الاحتمال المشترك/الشرطي |
+| GET | /admin/v1/analytics/retention | تحليل الاحتفاظ D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | قمع التحويل |
+| GET | /admin/v1/analytics/arpu | اتجاه ARPU/ARPPU |
+| GET | /admin/v1/analytics/economy | مؤشرات اقتصاد عملات الألعاب |
 
 ### 3.17 إدارة التذاكر
 
@@ -1431,11 +1491,11 @@ action: approve / reject
 
 | الطريقة | المسار | الوصف |
 |------|------|------|
-| GET | /admin/ticket/list | قائمة التذاكر (?page=&limit=&status=&type=) |
-| GET | /admin/ticket/{hashid} | تفاصيل التذكرة (تشمل الردود) |
-| POST | /admin/ticket/{hashid}/reply | الرد على التذكرة |
-| POST | /admin/ticket/{hashid}/close | إغلاق التذكرة |
-| POST | /admin/ticket/{hashid}/assign | تعيين المعالج (admin_id) |
+| GET | /admin/v1/ticket/list | قائمة التذاكر (?page=&limit=&status=&type=) |
+| GET | /admin/v1/ticket/{hashid} | تفاصيل التذكرة (تشمل الردود) |
+| POST | /admin/v1/ticket/{hashid}/reply | الرد على التذكرة |
+| POST | /admin/v1/ticket/{hashid}/close | إغلاق التذكرة |
+| POST | /admin/v1/ticket/{hashid}/assign | تعيين المعالج (admin_id) |
 
 ### 3.18 إدارة تكوين CDN
 
@@ -1443,12 +1503,12 @@ action: approve / reject
 
 | الطريقة | المسار | الوصف | المصادقة |
 |------|------|------|------|
-| GET | /admin/cdn/provider/list | قائمة مزودي CDN (لا تُعاد بيانات الاعتماد) | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/toggle | تفعيل/تعطيل المزود {id, status} | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/create | إنشاء {name, provider, config(JSON), status, sort}، فحص تفرد provider | AdminAuth + RBAC: cdn |
-| PUT | /admin/cdn/provider/{hashid} | تعديل (config فارغ = بدون تغيير) | AdminAuth + RBAC: cdn |
-| DELETE | /admin/cdn/provider/{hashid} | حذف | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/test | اختبار الاتصال HeadBucket {id} | AdminAuth + RBAC: cdn |
+| GET | /admin/v1/cdn/provider/list | قائمة مزودي CDN (لا تُعاد بيانات الاعتماد) | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/toggle | تفعيل/تعطيل المزود {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/create | إنشاء {name, provider, config(JSON), status, sort}، فحص تفرد provider | AdminAuth + RBAC: cdn |
+| PUT | /admin/v1/cdn/provider/{hashid} | تعديل (config فارغ = بدون تغيير) | AdminAuth + RBAC: cdn |
+| DELETE | /admin/v1/cdn/provider/{hashid} | حذف | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/test | اختبار الاتصال HeadBucket {id} | AdminAuth + RBAC: cdn |
 
 ### 3.19 تقارير البيانات
 
@@ -1456,9 +1516,9 @@ action: approve / reject
 
 | الطريقة | المسار | الوصف | المصادقة |
 |------|------|------|------|
-| GET | /admin/report/summary | ملخص التقارير (مستخدمون جدد/إيداعات/سحوبات/تحويلات/جولات) | AdminAuth + RBAC: report |
-| GET | /admin/report/daily | تقرير يومي (تجميع يومي، الأيام بدون بيانات تُعبأ بـ 0) | AdminAuth + RBAC: report |
-| GET | /admin/report/export | تصدير التقرير اليومي CSV (UTF-8 BOM) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/summary | ملخص التقارير (مستخدمون جدد/إيداعات/سحوبات/تحويلات/جولات) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/daily | تقرير يومي (تجميع يومي، الأيام بدون بيانات تُعبأ بـ 0) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/export | تصدير التقرير اليومي CSV (UTF-8 BOM) | AdminAuth + RBAC: report |
 
 ## 4. سياسة حد المعدل
 
@@ -1681,6 +1741,8 @@ status: open / waiting / replied / closed
 
 #### GET /api/v1/user/vip-status — حالة VIP
 
+> **غير مُنفَّذ**: مسار طرف C غير مُسجَّل (لا يوجد مدخل في `service/config/route.php`)، والطلبات تعيد حاليًا 404. احذف هذا السطر بعد التنفيذ.
+
 ```
 يتطلب مصادقة: نعم
 الاستجابة: {
@@ -1701,6 +1763,8 @@ status: open / waiting / replied / closed
 
 #### GET /api/v1/user/achievements — قائمة الإنجازات
 
+> **غير مُنفَّذ**: مسار طرف C غير مُسجَّل (لا يوجد مدخل في `service/config/route.php`)، والطلبات تعيد حاليًا 404. احذف هذا السطر بعد التنفيذ.
+
 ```
 يتطلب مصادقة: نعم
 الاستجابة: {
@@ -1720,7 +1784,7 @@ status: open / waiting / replied / closed
 
 ### 7.6 واجهات لوحة الإدارة الجديدة
 
-#### GET /admin/ticket/list — قائمة التذاكر
+#### GET /admin/v1/ticket/list — قائمة التذاكر
 
 ```
 يتطلب مصادقة: نعم
@@ -1739,7 +1803,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### POST /admin/ticket/{hashid}/reply — الرد على التذكرة
+#### POST /admin/v1/ticket/{hashid}/reply — الرد على التذكرة
 
 ```
 يتطلب مصادقة: نعم
@@ -1747,14 +1811,14 @@ status: open / waiting / replied / closed
 الاستجابة: { "code": 0, "message": "Reply sent" }
 ```
 
-#### POST /admin/ticket/{hashid}/close — إغلاق التذكرة
+#### POST /admin/v1/ticket/{hashid}/close — إغلاق التذكرة
 
 ```
 يتطلب مصادقة: نعم
 الاستجابة: { "code": 0, "message": "Ticket closed" }
 ```
 
-#### POST /admin/ticket/{hashid}/assign — تعيين المعالج
+#### POST /admin/v1/ticket/{hashid}/assign — تعيين المعالج
 
 ```
 يتطلب مصادقة: نعم
@@ -1762,7 +1826,7 @@ status: open / waiting / replied / closed
 الاستجابة: { "code": 0, "message": "Assigned" }
 ```
 
-#### GET /admin/analytics/retention — تحليل الاحتفاظ
+#### GET /admin/v1/analytics/retention — تحليل الاحتفاظ
 
 ```
 يتطلب مصادقة: نعم
@@ -1773,7 +1837,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/funnel — قمع التحويل
+#### GET /admin/v1/analytics/funnel — قمع التحويل
 
 ```
 يتطلب مصادقة: نعم
@@ -1787,7 +1851,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/arpu — اتجاه ARPU/ARPPU
+#### GET /admin/v1/analytics/arpu — اتجاه ARPU/ARPPU
 
 ```
 يتطلب مصادقة: نعم
@@ -1795,7 +1859,7 @@ status: open / waiting / replied / closed
 الاستجابة: { "arpu": [...], "arppu": [...], "dates": [...] }
 ```
 
-#### GET /admin/analytics/economy — مؤشرات اقتصاد عملات الألعاب
+#### GET /admin/v1/analytics/economy — مؤشرات اقتصاد عملات الألعاب
 
 ```
 يتطلب مصادقة: نعم
@@ -1814,14 +1878,14 @@ status: open / waiting / replied / closed
 ```
 
 
-#### GET /admin/cdn/provider/list — قائمة مزودي CDN (لا تُعاد بيانات الاعتماد)
+#### GET /admin/v1/cdn/provider/list — قائمة مزودي CDN (لا تُعاد بيانات الاعتماد)
 
 ```
 يتطلب مصادقة: نعم
 الاستجابة: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
 ```
 
-#### POST /admin/cdn/provider/toggle — تفعيل/تعطيل المزود {id, status}
+#### POST /admin/v1/cdn/provider/toggle — تفعيل/تعطيل المزود {id, status}
 
 ```
 يتطلب مصادقة: نعم
@@ -1829,7 +1893,7 @@ status: open / waiting / replied / closed
 الاستجابة: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/cdn/provider/create — إنشاء {name, provider, config(JSON), status, sort}، فحص تفرد provider
+#### POST /admin/v1/cdn/provider/create — إنشاء {name, provider, config(JSON), status, sort}، فحص تفرد provider
 
 ```
 يتطلب مصادقة: نعم
@@ -1837,7 +1901,7 @@ status: open / waiting / replied / closed
 الاستجابة: { "code": 0, "data": { "id": "..." } }
 ```
 
-#### PUT /admin/cdn/provider/{hashid} — تعديل (config فارغ = بدون تغيير)
+#### PUT /admin/v1/cdn/provider/{hashid} — تعديل (config فارغ = بدون تغيير)
 
 ```
 يتطلب مصادقة: نعم
@@ -1845,21 +1909,21 @@ status: open / waiting / replied / closed
 الاستجابة: { "code": 0, "message": "..." }
 ```
 
-#### DELETE /admin/cdn/provider/{hashid} — حذف
+#### DELETE /admin/v1/cdn/provider/{hashid} — حذف
 
 ```
 يتطلب مصادقة: نعم
 الاستجابة: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/cdn/provider/test — اختبار الاتصال HeadBucket {id}
+#### POST /admin/v1/cdn/provider/test — اختبار الاتصال HeadBucket {id}
 
 ```
 يتطلب مصادقة: نعم
 الطلب: { "id": "..." }
 الاستجابة: { "code": 0, "data": { "ok": true } }
 ```
-#### GET /admin/report/summary — ملخص التقارير
+#### GET /admin/v1/report/summary — ملخص التقارير
 
 ```
 需认证: 是
@@ -1873,7 +1937,7 @@ status: open / waiting / replied / closed
 ```
 
 
-#### GET /admin/report/daily — تقرير يومي
+#### GET /admin/v1/report/daily — تقرير يومي
 
 ```
 需认证: 是
@@ -1885,7 +1949,7 @@ status: open / waiting / replied / closed
 ```
 
 
-#### GET /admin/report/export — تصدير التقرير اليومي CSV
+#### GET /admin/v1/report/export — تصدير التقرير اليومي CSV
 
 ```
 需认证: 是
@@ -2029,13 +2093,13 @@ status: open / waiting / replied / closed
 
 ### 7.10 واجهات التحليل المتقدم
 
-#### GET /admin/analytics/retention — تحليل الاحتفاظ
+#### GET /admin/v1/analytics/retention — تحليل الاحتفاظ
 ```
 يتطلب مصادقة: نعم
 الاستجابة: { "D1": "45.2%", "D3": "28.7%", "D7": "18.3%", "D30": "8.1%" }
 ```
 
-#### GET /admin/analytics/funnel — قمع التحويل
+#### GET /admin/v1/analytics/funnel — قمع التحويل
 ```
 يتطلب مصادقة: نعم
 الاستجابة: {
@@ -2048,14 +2112,14 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/arpu — اتجاه ARPU/ARPPU
+#### GET /admin/v1/analytics/arpu — اتجاه ARPU/ARPPU
 ```
 يتطلب مصادقة: نعم
 المعلمات: ?days=30
 الاستجابة: { "dates": [...], "arpu": [...], "arppu": [...] }
 ```
 
-#### GET /admin/analytics/economy — مؤشرات اقتصاد الألعاب
+#### GET /admin/v1/analytics/economy — مؤشرات اقتصاد الألعاب
 ```
 يتطلب مصادقة: نعم
 الاستجابة: {
@@ -2117,47 +2181,47 @@ status: open / waiting / replied / closed
 
 | نقطة الوصول | الوصف |
 |------|------|
-| GET /admin/risk/dashboard | نظرة عامة على لوحة المخاطر |
-| GET /admin/risk/overview | مؤشرات نظرة المخاطر |
-| GET /admin/risk/hit-trend | اتجاه الإصابات |
-| GET /admin/risk/action-distribution | توزيع الإجراءات |
-| GET /admin/risk/rule-performance | أداء القواعد |
-| GET /admin/risk/rule/list | قائمة القواعد |
-| POST /admin/risk/rule/create | إنشاء قاعدة |
-| PUT /admin/risk/rule/{hashid} | تحديث قاعدة |
-| POST /admin/risk/rule/{hashid}/toggle | تفعيل/تعطيل قاعدة |
-| POST /admin/risk/rule/test | اختبار قاعدة |
-| GET /admin/risk/event/list | قائمة أحداث المخاطر |
-| GET /admin/risk/event/{hashid} | تفاصيل الحدث |
-| POST /admin/risk/event/{hashid}/handle | معالجة الحدث |
-| GET /admin/risk/device/list | قائمة بصمات الأجهزة |
-| POST /admin/risk/device/block | حظر الجهاز |
-| POST /admin/risk/device/unblock | إلغاء حظر الجهاز |
-| GET /admin/risk/ip/list | قائمة عناوين IP |
-| POST /admin/risk/ip/block | حظر عنوان IP |
-| POST /admin/risk/ip/whitelist | قائمة IP البيضاء |
-| POST /admin/risk/ip/appeal | استئناف عنوان IP |
-| POST /admin/risk/ip/recheck | إعادة فحص عنوان IP |
-| GET /admin/risk/graph/clusters | قائمة العناقيد |
-| GET /admin/risk/graph/{userId} | رسم بياني لروابط المستخدم |
-| GET /admin/risk/clusters | قائمة عناقيد المخاطر |
+| GET /admin/v1/risk/dashboard | نظرة عامة على لوحة المخاطر |
+| GET /admin/v1/risk/overview | مؤشرات نظرة المخاطر |
+| GET /admin/v1/risk/hit-trend | اتجاه الإصابات |
+| GET /admin/v1/risk/action-distribution | توزيع الإجراءات |
+| GET /admin/v1/risk/rule-performance | أداء القواعد |
+| GET /admin/v1/risk/rule/list | قائمة القواعد |
+| POST /admin/v1/risk/rule/create | إنشاء قاعدة |
+| PUT /admin/v1/risk/rule/{hashid} | تحديث قاعدة |
+| POST /admin/v1/risk/rule/{hashid}/toggle | تفعيل/تعطيل قاعدة |
+| POST /admin/v1/risk/rule/test | اختبار قاعدة |
+| GET /admin/v1/risk/event/list | قائمة أحداث المخاطر |
+| GET /admin/v1/risk/event/{hashid} | تفاصيل الحدث |
+| POST /admin/v1/risk/event/{hashid}/handle | معالجة الحدث |
+| GET /admin/v1/risk/device/list | قائمة بصمات الأجهزة |
+| POST /admin/v1/risk/device/block | حظر الجهاز |
+| POST /admin/v1/risk/device/unblock | إلغاء حظر الجهاز |
+| GET /admin/v1/risk/ip/list | قائمة عناوين IP |
+| POST /admin/v1/risk/ip/block | حظر عنوان IP |
+| POST /admin/v1/risk/ip/whitelist | قائمة IP البيضاء |
+| POST /admin/v1/risk/ip/appeal | استئناف عنوان IP |
+| POST /admin/v1/risk/ip/recheck | إعادة فحص عنوان IP |
+| GET /admin/v1/risk/graph/clusters | قائمة العناقيد |
+| GET /admin/v1/risk/graph/{userId} | رسم بياني لروابط المستخدم |
+| GET /admin/v1/risk/clusters | قائمة عناقيد المخاطر |
 
 ### 10.2 إدارة مكافحة الغش (الإدارة :8789)
 
 | نقطة الوصول | الوصف |
 |------|------|
-| GET /admin/anticheat/events | قائمة أحداث مكافحة الغش |
-| GET /admin/anticheat/events/{hashid} | تفاصيل الحدث |
-| POST /admin/anticheat/events/{hashid}/review | مراجعة الحدث |
+| GET /admin/v1/anticheat/events | قائمة أحداث مكافحة الغش |
+| GET /admin/v1/anticheat/events/{hashid} | تفاصيل الحدث |
+| POST /admin/v1/anticheat/events/{hashid}/review | مراجعة الحدث |
 
 ### 10.3 الأنشطة (الإدارة :8789 + العميل :8792)
 
 | نقطة الوصول | الوصف |
 |------|------|
-| GET /admin/activities/list | قائمة الأنشطة (الإدارة) |
-| POST /admin/activities/create | إنشاء نشاط (الإدارة) |
-| PUT /admin/activities/{hashid} | تحديث نشاط (الإدارة) |
-| DELETE /admin/activities/{hashid} | حذف نشاط (الإدارة) |
+| GET /admin/v1/activities/list | قائمة الأنشطة (الإدارة) |
+| POST /admin/v1/activities/create | إنشاء نشاط (الإدارة) |
+| PUT /admin/v1/activities/{hashid} | تحديث نشاط (الإدارة) |
+| DELETE /admin/v1/activities/{hashid} | حذف نشاط (الإدارة) |
 | GET /api/v1/activities/list | قائمة الأنشطة (العميل) |
 | GET /api/v1/activities/progress | تقدم المشاركة (العميل) |
 | GET /api/v1/activities/{hashid} | تفاصيل النشاط (العميل) |
@@ -2175,9 +2239,9 @@ status: open / waiting / replied / closed
 | PUT /api/v1/groups/{hashid}/role | دور العضو |
 | POST /api/v1/shares | إنشاء رابط مشاركة |
 | POST /api/v1/shares/visit | تتبع زيارات المشاركة |
-| GET /admin/groups | قائمة المجموعات (الإدارة) |
-| GET /admin/groups/{hashid}/audit | تدقيق المجموعة (الإدارة) |
-| GET /admin/share/stats | إحصائيات المشاركة (الإدارة) |
+| GET /admin/v1/groups | قائمة المجموعات (الإدارة) |
+| GET /admin/v1/groups/{hashid}/audit | تدقيق المجموعة (الإدارة) |
+| GET /admin/v1/share/stats | إحصائيات المشاركة (الإدارة) |
 
 ### 10.5 توسعات بوابة الدفع (L1)
 

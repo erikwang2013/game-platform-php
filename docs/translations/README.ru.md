@@ -33,8 +33,14 @@ Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](R
 - Шифрование данных: AES-256-CBC на транспортном уровне API + AES-128-ECB на уровне хранения в БД
 
 ### Фронтенд
-- Flutter 3.x (Web в стиле PC)
-- HarmonyOS ArkTS (мобильная версия)
+
+Есть два отдельных дерева каталогов фронтенда, **каждое обращается только к бэкенду своей стороны**, без пересечений:
+
+| Дерево каталогов | Назначение | Префикс запроса | Бэкенд | Технологии |
+|--------|------|---------|---------|--------|
+| `apps/*` | **Платформа игрока C-части** | `/api/v1/...` | service (по умолчанию 8792) | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
+| `admin/apps/*` | **Консоль администрирования** | `/admin/v1/...` | admin (по умолчанию 8789) | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
+
 - Адаптивная верстка (Phone / Tablet / Desktop)
 - Интернационализация (i18n): английский / упрощенный китайский
 
@@ -55,44 +61,79 @@ Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](R
 ```
 game-platform-php/
 ├── admin/                     # Административная панель (webman v2, порт по умолчанию 8789, настраивается через APP_PORT)
-│   ├── app/admin/controller/  #   Контроллеры панели
-│   ├── app/middleware/        #   Промежуточное ПО (Cors/Security/RateLimit/Auth/ProviderAuth)
-│   ├── app/provider/          #   Слой игровых провайдеров
-│   ├── app/event/             #   Шина событий (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission/ProviderAuth)
+│   ├── app/admin/v1/controller/  #   Контроллеры административной части
+│   ├── app/middleware/        #   Промежуточное ПО (Cors/SecurityFilter/RateLimit/AdminAuth/AdminPermission/OperationLog)
+│   ├── app/model/             #   Модели только для admin (8; остальные 52 общих модели — в packages/)
+│   ├── app/service/           #   Сервисы только для admin (WalletService/WalletScope/RiskSandboxService)
+│   ├── app/process/           #   Постоянные процессы (Http/Monitor/RiskIpCron)
 │   ├── app/provider/          #   Слой игровых провайдеров (Self/ThirdParty/Factory)
-│   ├── app/middleware/        #   Промежуточное ПО (Cors/Security/RateLimit/Auth/ProviderAuth)
-│   ├── app/provider/          #   Слой игровых провайдеров
-│   ├── app/event/             #   Шина событий (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission)
+│   ├── app/activity/          #   Движок активностей (ежедневный вход/приглашения/ежедневные задания)
+│   ├── app/event/             #   Шина событий (EventBus Redis Pub/Sub)
 │   ├── config/                #   Файлы конфигурации
-│   ├── install/   #   SQL-миграции
-│   └── apps/flutter/          #   Flutter Web PC административная панель
+│   └── apps/                  #   Фронтенды админки (4 варианта, обращаются к /admin/v1 → admin:8789)
+│       ├── flutter/           #     Flutter Web PC административная панель
+│       ├── react/             #     Консоль администрирования React 19 (Vite)
+│       ├── angular/           #     Консоль администрирования Angular 21
+│       └── harmonyos/         #     Консоль администрирования HarmonyOS ArkTS (.hap, минуя nginx)
 │
 ├── service/                   # C-бизнес (webman v2, порт по умолчанию 8792, настраивается через APP_PORT)
 │   ├── app/api/v1/controller/ #   API-контроллеры C-стороны
-│   ├── app/middleware/        #   Промежуточное ПО (Cors/Security/RateLimit/Auth/ProviderAuth)
+│   ├── app/middleware/        #   Промежуточное ПО (TraceId/Cors/SecurityFilter/RateLimit/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
+│   ├── app/model/             #   Модели только для service (10; остальные 52 общих модели — в packages/)
+│   ├── app/service/           #   Сервисы только для service (кошелёк/риски/комплаенс/сверка/push/достижения/антифрод и т. д.)
+│   ├── app/payment/           #   18 адаптеров платёжных шлюзов (Stripe/PayPal/Adyen/NowPayments/Skrill…) + GatewayFactory
+│   ├── app/cdn/               #   CDN-адаптеры пяти провайдеров (Cloudflare/CloudFront/Alibaba/Tencent/Huawei) + CdnFactory
+│   ├── app/process/           #   Постоянные процессы (Http/Monitor/LeaderboardWS:8790/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
 │   ├── app/provider/          #   Слой игровых провайдеров
+│   ├── app/activity/          #   Движок активностей
 │   ├── app/event/             #   Шина событий (EventBus Redis Pub/Sub)
 │   └── config/                #   Файлы конфигурации
 │
-├── install/                   # Мастер установки в один клик
+├── packages/platform-common/  # Общий слой: admin и service подключают его через composer path-репозиторий, чтобы избежать двух копий
+│   ├── src/model/             #   Общие Eloquent-модели (52, один источник для обеих сторон)
+│   ├── src/service/           #   Общие сервисы (DepositLogService / VipService и др., 11 штук, включая вычисление вероятностей в ClickHouse)
+│   ├── src/BcMath.php         #   Высокоточные вычисления сумм/курсов (обёртка над bcmath), округление, проценты
+│   ├── src/EncryptionService.php  #   Шифрование/расшифровка AES и маскирование
+│   ├── src/CircuitBreaker.php #   Предохранитель (плюс Retry.php для повторов)
+│   ├── src/HashidsService.php #   Кодирование/декодирование ID на уровне API
+│   └── src/SnowflakeService.php   #   Глобально уникальные BIGINT-идентификаторы
+│
+├── apps/                      # Фронтенды игроков C-части (4 варианта, обращаются к /api/v1 → service:8792)
+│   ├── flutter/platform/      #   Flutter Web PC пользовательская платформа C-стороны
+│   ├── react/                 #   React 19 (Vite) C-часть
+│   ├── angular/               #   Angular 21 C-часть
+│   └── harmonyos/             #   HarmonyOS ArkTS C-часть (.hap, минуя nginx)
+│
+├── game/xiaoxiaole/           # Встроенная мини-игра «Деревенский три-в-ряд»: TypeScript + Vite + Vitest, движок src/domain + дизайн из четырёх уровней + tests/, документы дизайна на 13 языках
+│
+├── install/                   # Мастер установки в один клик + SQL инициализации базы данных
 │   ├── index.php              #   Точка входа установки
 │   ├── Installer.php          #   Основная логика установки
-│   ├── install.sql            #   Объединенный SQL установки (43 таблицы + стартовые данные)
+│   ├── install.sql            #   Объединенный SQL установки (78 таблиц + стартовые данные)
+│   ├── clickhouse.sql         #   DDL аналитической базы ClickHouse (отдельный движок, импортируется отдельно)
+│   ├── test-data.sql          #   Демонстрационные/тестовые данные
+│   ├── migrations/            #   Скрипты инкрементального обновления существующих баз (*.sql)
+│   ├── lang/ + lang.php       #   Переводы интерфейса мастера установки (13 языков)
 │   └── assets/                #   Статические ресурсы
 │
-├── admin/common/ 与 service/common/   # Общие сервисы в каждой части (DepositLogService и др., ожидают выделения в общий слой)
-│   └── service/               #   Общие сервисы (включая вычисление вероятностей в ClickHouse)
-│
-├── apps/
-│   └── flutter/platform/      # Flutter Web PC пользовательская платформа C-стороны
-│
-├── docs/                      # Документация проекта
+├── docs/                      # Документация проекта (все тексты на 13 языках: .md — китайский исходник, рядом переводы .{lang}.md)
 │   ├── ARCHITECTURE.md        #   Документ по архитектуре
 │   ├── ARCHITECTURE-DESIGN.md #   Документ по проектированию архитектуры
 │   ├── FEATURES.md            #   Документ по функциям
 │   ├── FEATURE-DESIGN.md      #   Документ по проектированию функций
 │   ├── API.md                 #   Документация по API
-│   └── DEPLOYMENT.md          #   Документ по развертыванию (Docker/вручную/настройка портов)
+│   ├── DEPLOYMENT.md          #   Документ по развертыванию (Docker/вручную/настройка портов)
+│   ├── PROVIDER-SDK.md        #   Руководство по подключению сторонних игр (алгоритм подписи + примеры на PHP/Go/Python)
+│   ├── CLICKHOUSE_INSTALL.md  #   Установка/настройка/миграция/проверка ClickHouse
+│   ├── CLICKHOUSE_USAGE.md    #   4 сервисных API ClickHouse и админ-панель
+│   ├── translations/          #   Переводы этого README на 12 языков
+│   ├── diagrams/              #   SVG по архитектуре/потокам/функциям/жизненному циклу/безопасности/расширению экосистемы (по 13 языков)
+│   ├── test-reports/          #   Отчёты о тестах (php-unit / api / resilience / ui / SUMMARY)
+│   └── superpowers/           #   Проектные спецификации и планы реализации этого репозитория (исторический архив)
+│
+├── scripts/                   # Эксплуатационные скрипты (проверка дрейфа моделей / миграция аннотаций apidoc / миграция семантики выплат exchange / проверка подписи)
+├── tests/api/                 # Автотесты API (run_all.sh)
+├── runtime/                   # Каталог времени выполнения webman (логи/pid, создаётся во время работы)
 │
 ├── docker-compose.yml         # Оркестрация Docker Compose (порты по умолчанию из корневого .env)
 ├── nginx.conf.template        # Шаблон конфигурации Nginx (порты upstream рендерятся через envsubst)
@@ -137,7 +178,7 @@ rm -rf install/
 
 Мастер установки автоматически выполнит:
 - Проверку окружения (версия PHP, расширения, права на каталоги)
-- Создание базы данных и таблиц (объединенный SQL, 43 таблицы + стартовые данные)
+- Создание базы данных и таблиц (объединенный SQL, 78 таблиц + стартовые данные)
 - Создание аккаунта супер-администратора (шифрование bcrypt)
 - Автоматическую генерацию JWT/ключей шифрования и запись в файл .env
 - Создание install.lock для предотвращения повторной установки
@@ -184,17 +225,40 @@ cd ../service && composer install && php start.php start -d
 
 ### Запуск фронтенда (опционально)
 
-```bash
-# Административная панель (Flutter Web PC)
-cd admin/apps/flutter
-flutter pub get
-flutter run -d chrome
+В режиме разработки каждая сторона запускает свой dev-сервер; он проксирует запросы к соответствующему бэкенду (см. `proxy.conf.json` / `vite.config.ts` в каждом каталоге):
 
-# Пользовательская платформа C-стороны (Flutter Web PC)
-cd apps/flutter/platform
-flutter pub get
-flutter run -d chrome
+```bash
+# --- Платформа игрока C-части (/api/v1 → service:8792) ---
+cd apps/react            && npm install && npm run dev      # http://localhost:5173
+cd apps/angular          && npm install && npm start        # http://localhost:4200
+cd apps/flutter/platform && flutter pub get && flutter run -d chrome
+
+# --- Консоль администрирования (/admin/v1 → admin:8789) ---
+cd admin/apps/react      && npm install && npm run dev      # http://localhost:5273
+cd admin/apps/angular    && npm install && npm start        # http://localhost:4300
+cd admin/apps/flutter    && flutter pub get && flutter run -d chrome
 ```
+
+> Порты dev-серверов Angular: консоль администрирования явно задаёт 4300 в `angular.json`, а C-часть использует стандартный для Angular 4200; чтобы запустить оба сразу, добавьте `--port` одному из них.
+> Цели HarmonyOS (`apps/harmonyos`, `admin/apps/harmonyos`) открываются и собираются в DevEco Studio;
+> эмулятор обращается к бэкенду на хост-машине по `http://10.0.2.2:<port>` (см. константу в начале соответствующего `ApiService.ets`).
+
+### Развёртывание фронтенда (Docker/Nginx)
+
+Сервис nginx из `docker-compose.yml` монтирует артефакты сборки каждого фронтенда в контейнер только для чтения, а `nginx.conf.template` отдаёт их по путям ниже.
+Если артефакт не собран, каталог пуст: запросы к пути возвращают 404, запросы к «голому» каталогу (например, `/app-react/`) — 403.
+
+| URL | Точка монтирования артефакта | Команда сборки |
+|-----|-----------|---------|
+| `/` | `apps/flutter/platform/build/web` | `flutter build web` |
+| `/app-react/` | `apps/react/dist` | `npm run build` (скрипт содержит `--base=/app-react/`) |
+| `/app-angular/` | `apps/angular/dist/game-client-angular/browser` | `npm run build` (скрипт содержит `--base-href=/app-angular/`) |
+| `/admin-panel/` | `admin/public` | Универсальное место размещения: скопируйте артефакт любой консоли в `admin/public`; если его нет, ответ тоже 404 («голый» каталог — 403). Артефакт должен быть собран с `--base=/admin-panel/` (для Flutter — `--base-href=/admin-panel/`), иначе его ресурсы по-прежнему указывают на исходный префикс и дают 404. Форма без слэша перенаправляется 301 на этот адрес; в `nginx.conf.template` задан `absolute_redirect off`, поэтому перенаправление — относительный Location, и развёртывания на портах, отличных от 80, больше не теряют порт |
+| `/admin-react/` | `admin/apps/react/dist` | `npm run build` (скрипт содержит `--base=/admin-react/`) |
+| `/admin-angular/` | `admin/apps/angular/dist/game-admin-angular/browser` | `npm run build` (скрипт содержит `--base-href=/admin-angular/`) |
+| `/admin-flutter/` | `admin/apps/flutter/build/web` | `flutter build web --base-href=/admin-flutter/` |
+
+`/admin/` (API) → контейнер admin, `/api/` (API) → контейнер service; клиент HarmonyOS распространяется пакетом `.hap` и не проходит через nginx.
 
 ### Проверка
 
@@ -206,9 +270,9 @@ curl http://localhost:8789/health
 curl http://localhost:8792/health
 
 # Проверка регистрации пользователя
-curl -X POST http://localhost:8792/api/auth/register \
+curl -X POST http://localhost:8792/api/v1/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"username":"testuser","password":"123456"}'
+  -d '{"username":"testuser","password":"Abcdef12"}'
 ```
 
 ## Функции безопасности
@@ -231,14 +295,31 @@ curl -X POST http://localhost:8792/api/auth/register \
 
 ## Тестирование
 
+Отчёты о тестах (хранятся локально): [docs/test-reports/](../test-reports/)
+
+| Тип теста | Кейсы/покрытие | Результат |
+|---------|----------|------|
+| Модульные тесты PHP | текущий замер `phpunit --list-tests`: admin 200 + service 273 кейса (в отчёте `docs/test-reports/php-unit.md` зафиксированы повторный прогон 09-22 admin 190 + service 273 и снимок 08-27 admin 153 + service 45; сторона admin ещё дополняется) | service всё проходит (701 утверждение, 3 skipped, 2 warnings + 35 deprecations); admin 437 утверждений, 3 skipped, 1 сбой (`EnvConfigTest` проверяет реальный `admin/.env` и не находит `REDIS_CLUSTER_NODES`; с ним тест станет зелёным) |
+| Тесты механизмов стабильности | предохранитель/повторы/переключатель деградации, 15 кейсов (CircuitBreakerTest/RetryTest/ResilienceMockTest) | всё проходит |
+| Автотесты API | 187 эндпоинтов (источник: `docs/test-reports/api.md`, 2026-08-27); сейчас route.php регистрирует 261 эндпоинт | 171 прошёл / 50 сбоев / 4 пропущено (все сбои — детерминированные дефекты, см. отчёт) |
+| UI-тесты Flutter | 12 кейсов (вход/дашборд/навигация/смена языка) | всё проходит |
+| Go/Rust | кода на Go/Rust в репозитории нет | пропущено, зафиксировано |
+
 ```bash
-cd admin
-phpunit --bootstrap tests/bootstrap.php tests/
+# Модульные тесты PHP (сначала экспортируйте переменные окружения с секретом JWT)
+cd admin && ADMIN_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
+cd service && SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
+# Автотесты API (сервисы должны быть запущены, см. tests/api/run_all.sh)
+bash tests/api/run_all.sh
+# UI-тесты Flutter
+cd admin/apps/flutter && flutter test --timeout 300s
 ```
 
-- PHPUnit 12.x, 116 тестовых случаев
-- 56 тестов бизнес-логики (PlatformTest) + 60 тестов инфраструктуры
-- Покрытие: точность bcmath, расчет обмена, комиссии за вывод, лимиты, риск-контроль, купоны, KYC, i18n
+Подробные отчёты:
+- [Отчёт о модульных тестах PHP](../test-reports/php-unit.md)
+- [Отчёт о тестах механизмов стабильности (предохранитель/повторы/деградация)](../test-reports/resilience.md)
+- [Отчёт об автотестах API](../test-reports/api.md)
+- [Отчёт о UI-тестах Flutter](../test-reports/ui.md)
 
 ## Обзор возможностей платформы
 
@@ -249,7 +330,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Пополнение | Создание заказа + проверка подписи callback'ов Stripe/PayPal + автоматическое зачисление |
 | Обмен | Платформенные монеты ⇄ игровая валюта, котировки в реальном времени, доход со спреда |
 | Вывод | Заявка→проверка→выплата, глобальный переключатель, KYC-ступенчатые лимиты + комиссии |
-| KYC | Подача и проверка верификации личности, трехуровневая система |
+| KYC | Подача и проверка верификации личности, повышает лимит вывода после одобрения |
 | Игры | CRUD + категории (10 категорий) + серверы + отслеживание игровых записей |
 | Поиск | Полнотекстовый поиск Elasticsearch (с откатом на LIKE) |
 | Рейтинги | Дневной/недельный/месячный/общий, кэш Redis, push в реальном времени по WebSocket (порт по умолчанию 8790, настраивается через LEADERBOARD_WS_PORT) |
@@ -266,7 +347,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Социальный рост | Группы + отслеживание реферальных ссылок |
 | Платёжные шлюзы | Новые шлюзы Adyen / GrabPay (L1) |
 | Интернационализация | 4 языка (en-US/zh-CN/ja-JP/ko-KR), таблицы переводов + кэш |
-| Настройка стран | 8 стран с разными способами оплаты/вывода, минимальными суммами пополнения |
+| Настройка стран | 18 стран с разными способами оплаты/вывода, минимальными суммами пополнения |
 | Статистика | Ежедневные снимки (5 типов метрик) + отслеживание дохода платформы |
 | Капча | Клик-капча человеко-машинной проверки (poster-php) |
 | Подключение игр | Provider SDK (Self+ThirdParty) + подпись HMAC-SHA256 + шлюз callback'ов |
@@ -279,7 +360,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Купоны | Ограничения по условиям (min_deposit/first_user/game_id) |
 | События | Шина событий Redis Pub/Sub + доставка Webhook-подписок (7 типов событий) |
 | Деплой | Оркестрация Docker Compose из 7 сервисов (порты настраиваются в корневом .env) + обратный прокси Nginx |
-| Клиенты | Flutter Admin (17 страниц) + Platform (10 страниц) + HarmonyOS (5 страниц) |
+| Клиенты | Админка 4 варианта (Flutter/React/Angular/HarmonyOS) + C-часть 4 варианта (Flutter/React/Angular/HarmonyOS) |
 
 ## Бизнес-модель
 
@@ -298,13 +379,13 @@ phpunit --bootstrap tests/bootstrap.php tests/
 
 ## Мультивалютные расчеты
 
-Платформа использует трехуровневую валютную изоляцию «фиат → платформенные монеты → игровая валюта»: поддерживается пополнение в нескольких фиатных валютах (USD/CNY/EUR), у каждой игры своя расчетная валюта; все денежные расчеты выполняются с высокой точностью через bcmath, исключая ошибки с плавающей точкой.
+Платформа использует трехуровневую валютную изоляцию «фиат → платформенные монеты → игровая валюта»: поддерживается пополнение в нескольких фиатных валютах (USD/CNY/EUR/JPY/KRW/GBP/BRL/INR), у каждой игры своя расчетная валюта; все денежные расчеты выполняются с высокой точностью через bcmath, исключая ошибки с плавающей точкой.
 
 ### Трехуровневая валютная модель
 
 | Уровень | Валюта | Описание |
 |------|------|------|
-| Фиатный уровень | USD / CNY / EUR | Реальная платежная валюта пополнений/выводов пользователя, обрабатывается Stripe / PayPal |
+| Фиатный уровень | USD / CNY / EUR / JPY / KRW / GBP / BRL / INR | Реальная платежная валюта пополнений/выводов пользователя, обрабатывается Stripe / PayPal |
 | Уровень платформенных монет | Платформенные монеты (единые на всю платформу) | Единая внутренняя расчетная валюта (decimal(18,4)), оптимистичные блокировки кошелька против параллельного списания/повторного зачисления |
 | Уровень игровой валюты | У каждой игры своя валюта | У каждой игры свой курс `exchange_rate` и спред `spread_pct`, отдельный кошелек игровой валюты |
 
@@ -320,7 +401,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 ```mermaid
 flowchart LR
     subgraph FIAT["法币层 Fiat"]
-        A["用户充值<br/>USD / CNY / EUR<br/>Stripe / PayPal"]
+        A["用户充值<br/>USD / CNY / EUR / JPY / KRW / GBP / BRL / INR<br/>Stripe / PayPal"]
         H["提现到账<br/>PayPal Payout"]
     end
 
@@ -377,9 +458,9 @@ flowchart LR
 | [Архитектура](../ARCHITECTURE.ru.md) | Топология системы, модульная архитектура, потоки данных |
 | [Проектирование функций](../FEATURE-DESIGN.ru.md) | Бизнес-модели, функциональные спецификации, проектирование процессов |
 | [Функции](../FEATURES.ru.md) | Перечень функций, описание модулей, пользовательские сценарии |
-| [API](../API.ru.md) | Полный справочник API (102 интерфейса) |
-| [Онлайн-документация](http://localhost:8792/apidoc/) | Интерактивная документация hg/apidoc (C-сторона) |
-| [Онлайн-документация](http://localhost:8789/apidoc/) | Интерактивная документация hg/apidoc (админ-панель) |
+| [API](../API.ru.md) | Полный справочник API (146 интерфейса) |
+| [Онлайн-документация](http://localhost:8792/apidoc/) | Интерактивная документация erikwang2013/apidoc-php (C-сторона) |
+| [Онлайн-документация](http://localhost:8789/apidoc/) | Интерактивная документация erikwang2013/apidoc-php (админ-панель) |
 | [Установка ClickHouse](../CLICKHOUSE_INSTALL.ru.md) | Установка/настройка/миграция/проверка ClickHouse |
 | [Документация Provider SDK](../PROVIDER-SDK.ru.md) | Руководство по подключению сторонних игр (алгоритм подписи + примеры PHP/Go/Python) |
 | [Использование ClickHouse](../CLICKHOUSE_USAGE.ru.md) | 4 сервисных API ClickHouse и панель в админке |
@@ -397,12 +478,12 @@ flowchart LR
   <table align="center" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <td align="center" width="200">
-        <img src="docs/weixinpay-130.png" width="130" height="130" alt="微信支付"><br>
-        <b>微信支付</b>
+        <img src="../weixinpay-130.png" width="130" height="130" alt="微信支付"><br>
+        <b>WeChat Pay</b>
       </td>
       <td align="center" width="200">
-        <img src="docs/alipay-130.png" width="130" height="130" alt="支付宝"><br>
-        <b>支付宝</b>
+        <img src="../alipay-130.png" width="130" height="130" alt="支付宝"><br>
+        <b>Alipay</b>
       </td>
     </tr>
   </table>

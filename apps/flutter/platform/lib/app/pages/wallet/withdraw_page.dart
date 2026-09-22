@@ -3,6 +3,7 @@ import '../../i18n/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
+import 'wallet_amount.dart';
 
 class WithdrawPage extends StatefulWidget {
   const WithdrawPage({super.key});
@@ -27,10 +28,9 @@ class _WithdrawPageState extends State<WithdrawPage> {
     'crypto': 'Crypto Wallet',
   };
 
-  // ponytail: 后端无 /config/withdraw_limits 路由（已有 withdraw 限额逻辑在 apply 内），
-  // 请求必然失败走默认值；直接用默认值，待后端提供限额接口后再接回
-  double _minAmount = 10;
-  double _dailyLimit = 10000;
+  // PayPal 出款由服务端从 account_info 提取邮箱（PayoutService::extractPaypalEmail），
+  // 客户端先挡一次明显非邮箱的输入，避免订单走到打款才失败
+  static final _emailRe = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
 
   @override
   void dispose() {
@@ -47,21 +47,17 @@ class _WithdrawPageState extends State<WithdrawPage> {
       setState(() => _error = "${AppTranslations.t('withdraw.enter_amount')}");
       return;
     }
-    final amount = double.tryParse(amountText);
-    if (amount == null || amount <= 0) {
-      setState(() => _error = "${AppTranslations.t('deposit.invalid_amount')}");
-      return;
-    }
-    if (amount < _minAmount) {
-      setState(() => _error = '${AppTranslations.t("withdraw.min_limit_error")}' + _minAmount.toString());
-      return;
-    }
-    if (amount > _dailyLimit) {
-      setState(() => _error = '${AppTranslations.t("withdraw.daily_limit_error")}' + _dailyLimit.toString());
+    // 金额原样提交（服务端按 numeric|min:0.0001 与限额校验，超额/超限由其 400 报文反馈）
+    if (!isPositiveAmount(amountText)) {
+      setState(() => _error = "${AppTranslations.t('withdraw.invalid_amount')}");
       return;
     }
     if (accountInfo.isEmpty) {
       setState(() => _error = "${AppTranslations.t('withdraw.enter_account')}");
+      return;
+    }
+    if (_method == 'paypal' && !_emailRe.hasMatch(accountInfo)) {
+      setState(() => _error = "${AppTranslations.t('withdraw.invalid_paypal')}");
       return;
     }
 
@@ -74,7 +70,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
 
     try {
       final resp = await _api.post('/api/v1/withdraw/apply', data: {
-        'amount': amount,
+        'platform_amount': amountText,
         'method': _method,
         'account_info': accountInfo,
       });
@@ -122,29 +118,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
                       Text("${AppTranslations.t('withdraw.title')}", style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
                       const SizedBox(height: 8),
                       Text("${AppTranslations.t('withdraw.subtitle')}", style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant)),
-                      const SizedBox(height: 20),
-
-                      // Limits info
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: colorScheme.primaryContainer.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.info_outline, size: 18, color: colorScheme.primary),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                '${AppTranslations.t("withdraw.limits")}'.replaceAll('{min}', _minAmount.toString()).replaceAll('{daily}', _dailyLimit.toString()),
-                                style: TextStyle(fontSize: 13, color: colorScheme.onPrimaryContainer),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 24),
 
                       // Amount
                       TextField(

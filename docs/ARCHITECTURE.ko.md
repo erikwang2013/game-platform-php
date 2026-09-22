@@ -14,6 +14,8 @@ flowchart TB
         A1["Flutter Web PC<br/>管理后台"]
         A2["Flutter Web PC<br/>C端用户平台"]
         A3["HarmonyOS ArkTS<br/>手机/平板客户端"]
+        A4["React · Angular<br/>管理后台"]
+        A5["React · Angular<br/>C端用户平台"]
     end
 
     subgraph "网关层 (Nginx)"
@@ -34,7 +36,7 @@ flowchart TB
     end
 
     subgraph "存储层"
-        E1[("MySQL 8.0<br/>主存储<br/>52 张表")]
+        E1[("MySQL 8.0<br/>主存储<br/>78 张表")]
         E2[("Redis<br/>Session/缓存/限流<br/>EventBus/心跳")]
         E3[("Elasticsearch<br/>全文检索")]
         E4[("ClickHouse<br/>OLAP 分析<br/>概率计算")]
@@ -46,7 +48,7 @@ flowchart TB
         F3["OAuth (7平台)<br/>Google/Facebook/Apple<br/>X(Twitter)/Microsoft<br/>LinkedIn/GitHub"]
     end
 
-    A1 & A2 & A3 -->|"HTTPS/JSON<br/>JWT Bearer"| B1
+    A1 & A2 & A3 & A4 & A5 -->|"HTTPS/JSON<br/>JWT Bearer"| B1
     B1 -->|"/admin/*"| C1
     B1 -->|"/api/*"| C2
     C1 & C2 --> D0 & D1 & D2 & D3 & D4
@@ -64,7 +66,7 @@ flowchart TB
   ↓
 미들웨어 체인: Cors → SecurityFilter → RateLimit → AdminAuth → AdminPermission → OperationLog
   ↓
-컨트롤러 레이어 (28개):
+컨트롤러 레이어 (45개):
   ┌──────────────────────────────────────────────────────────┐
   │ Dashboard / User / Role / Permission / Config / Log      │ ← 기존
   │ Profile / Export / Import / Upload / Health / Docs       │ ← 기존
@@ -86,9 +88,9 @@ Provider 레이어: GameProvider → SelfProvider / ThirdPartyProvider
 ```
 라우트 레이어: config/route.php
   ↓
-미들웨어 체인: Cors → SecurityFilter → RateLimit → Language → ApiVersion → [UserAuth | ProviderAuth]
+미들웨어 체인: TraceId → Cors → SecurityFilter → RateLimit → Language → [UserAuth | ProviderAuth | SdkSessionAuth]
   ↓
-컨트롤러 레이어 (25개):
+컨트롤러 레이어 (34개):
   ┌──────────────────────────────────────────────────────────┐
   │ Auth / Wallet / Deposit / Exchange / Withdraw            │ ← 기존
   │ Game / User / Announcement / Captcha                     │ ← 기존
@@ -98,7 +100,7 @@ Provider 레이어: GameProvider → SelfProvider / ThirdPartyProvider
   │ Provider / Ticket / Verification                         │ ← 신규
   └──────────────────────────────────────────────────────────┘
   ↓
-서비스 레이어: VIP / Achievement / EventBus / FeatureFlag / Risk / GameSession
+서비스 레이어: VIP / Achievement / EventBus / FeatureFlag / Risk
   ↓
 Provider 레이어: GameProvider → SelfProvider / ThirdPartyProvider
   ↓
@@ -181,7 +183,7 @@ packages/platform-common/src/
 
 ```
 일반 API:
-  요청 → Cors → SecurityFilter → RateLimit → Language → ApiVersion
+  요청 → TraceId → Cors → SecurityFilter → RateLimit → Language
        → [UserAuth] (JWT→401) → Controller → 응답
 
 Provider API:
@@ -195,10 +197,10 @@ Provider API:
 ### 4.1 충전 플로우
 
 ```
-사용자 → POST /api/deposit/create → 주문 생성 (status=pending)
+사용자 → POST /api/v1/deposit/create → 주문 생성 (status=pending)
      → GatewayFactory로 결제 생성 (Stripe Checkout (incl. Alipay/WeChat Pay APM)/NowPayments invoice/Coinbase charge) → checkout_url + expires_at(+1h) 반영; 실패 시 CAS로 주문 취소 후 재시도
      → 서드파티 결제로 이동 (Stripe (incl. Alipay/WeChat Pay)/PayPal/NowPayments[USDT TRC20/ERC20]/Coinbase[USDC/BTC/ETH])
-     → 결제 성공 → 콜백 /api/payment/callback
+     → 결제 성공 → 콜백 /api/v1/payment/callback
      → provider 화이트리스트(stripe/paypal/nowpayments/coinbase/skrill/neteller/paysafecard/paytm/mercadopago/astropay/paypay/kakaopay/gcash만) + 채널 간 도용 검증 + 서명 검증(fail-closed) + 타임스탬프±300s + bccomp 금액 대조
      → 주문 업데이트 (status=confirmed, 트랜잭션화)
      → UserWallet::addBalance() → 플랫폼 코인 입금
@@ -211,10 +213,10 @@ Provider API:
 ### 4.2 환전 플로우
 
 ```
-사용자 → POST /api/exchange/quote → 견적
+사용자 → POST /api/v1/exchange/quote → 견적
      → VipService::getExchangeDiscount() → VIP 할인 적용
      → VipService::getRateBonus() → VIP 환율 보너스 적용
-     → 확인 → POST /api/exchange/buy(또는 sell)
+     → 확인 → POST /api/v1/exchange/buy(또는 sell)
      → DB::beginTransaction()
      ├─ 소스 코인 차감 (lockForUpdate)
      ├─ 타겟 코인 증가
@@ -228,7 +230,7 @@ Provider API:
 ### 4.3 출금 플로우
 
 ```
-사용자 → POST /api/withdraw/apply
+사용자 → POST /api/v1/withdraw/apply
      → VipService::getWithdrawFeeDiscount() → VIP 수수료 할인 적용
      → 전역 스위치 확인 (PlatformConfig)
      → 한도 확인 (min_amount / daily_limit)
@@ -237,7 +239,7 @@ Provider API:
      → 금액≥임계값 → pending (수동 심사)
      → Transaction 기록
 
-관리자 → PUT /admin/withdraw/review
+관리자 → PUT /admin/v1/withdraw/review
        → approve: 완료 표시
        → reject: 플랫폼 코인 반환 + 환불 거래 내역
 ```
@@ -371,15 +373,28 @@ flowchart TB
 ## 7. 테스트 아키텍처
 
 ```
-tests/
+tests/                             # 파일 21개 · 테스트 200개
 ├── bootstrap.php                  # PHPUnit 부트스트랩
-├── PlatformTest.php               # 비즈니스 로직 테스트 56개
-├── BackendEnhancementTest.php     # 암호화/ID 서비스 테스트 23개
-├── CaptchaTest.php                # 캡차 테스트 7개
-├── EncryptionServiceTest.php      # 암복호화 테스트 6개
-├── EnvConfigTest.php              # 환경 설정 테스트 4개
-├── HashidsServiceTest.php         # ID 인코딩/디코딩 테스트 8개
-└── SnowflakeServiceTest.php       # Snowflake ID 테스트 6개
+├── AuthControllerRegisterTest.php # 비밀번호 강도 테스트 15개
+├── BackendEnhancementTest.php     # 암호화/ID 서비스 테스트 27개
+├── CaptchaTest.php                # 캡차 테스트 5개
+├── CdnProbeServiceTest.php        # CDN 탐지 테스트 5개
+├── CdnProviderModelTest.php       # CDN 제공자 모델 테스트 3개
+├── ClickHouseServiceTest.php      # ClickHouse 서비스 테스트 16개
+├── ConfigDefaultsTest.php         # 설정 기본값 테스트 4개
+├── EncryptionServiceTest.php      # 암복호화 테스트 8개
+├── EnvConfigTest.php              # 환경 설정 테스트 6개
+├── GameControllerTest.php         # 게임 컨트롤러 테스트 5개
+├── GameRouteTest.php              # 게임 라우트 테스트 5개
+├── HashidsServiceTest.php         # ID 인코딩/디코딩 테스트 6개
+├── LeaderboardServiceTest.php     # 리더보드 서비스 테스트 4개
+├── NotificationServiceTest.php    # 알림 서비스 테스트 3개
+├── PayoutServiceTest.php          # 지급 서비스 테스트 9개
+├── PlatformCommonTest.php         # 공용 쿼리 빌더 테스트 6개
+├── PlatformTest.php               # 비즈니스 로직 테스트 55개
+├── ReportControllerTest.php       # 리포트 날짜 범위 테스트 5개
+├── SnowflakeServiceTest.php       # Snowflake ID 테스트 5개
+└── TranslationServiceTest.php     # 번역 서비스 테스트 8개
 ```
 
 ## 8. 포트 할당
@@ -397,42 +412,59 @@ tests/
 
 ## 9. API 문서
 
-`hg/apidoc`로 컨트롤러 주석을 통해 인터랙티브 API 문서를 자동 생성:
+`erikwang2013/apidoc-php`로 컨트롤러 주석을 통해 인터랙티브 API 문서를 자동 생성:
 
 | 문서 | 주소 | 컨트롤러 | 엔드포인트 |
 |------|------|--------|------|
-| 관리 백오피스 | :8789/apidoc/ | 28 | ~85 |
-| C단 비즈니스 | :8792/apidoc/ | 25 | ~65 |
+| 관리 백오피스 | :8789/apidoc/ | 45 | 154 |
+| C단 비즈니스 | :8792/apidoc/ | 34 | 107 |
 
 ## 10. 데이터베이스 테이블 목록
 
-### 베이직 에디션 (14장) + admin (7장)
-game_user, game_user_wallet, game_user_game_wallet, game_game, game_game_currency,
-game_deposit_order, game_withdraw_order, game_exchange_record, game_transaction,
-game_payment_method, game_announcement, game-platform_config, game_language, game_translation,
-game_admin_user, game_admin_role, game_admin_permission, game_admin_user_role,
-game_admin_role_permission, game_operation_log, game_system_config
+### 베이직 에디션 (12장) + admin (7장)
+game_user, game_user_wallet, game_user_game_wallet,
+game_game, game_game_currency, game_deposit_order,
+game_withdraw_order, game_exchange_record, game_transaction,
+game_payment_method, game_announcement, game_platform_config,
+game_admin_user, game_admin_role, game_admin_permission,
+game_admin_user_role, game_admin_role_permission, game_operation_log,
+game_system_config
 
 ### 스탠다드 에디션 (10장)
-game_user_oauth, game_user_session, game_user_identity, game_user_payment_account,
-game_withdraw_limit, game_game_server, game_game_play_log, game_risk_rule,
-game_risk_log, game_stat_daily
+game_user_identity, game_user_oauth, game_user_payment_account,
+game_user_session, game_game_server, game_game_play_log,
+game_withdraw_limit, game_risk_rule, game_risk_log,
+game_stat_daily
 
-### 풀 에디션 (8장)
-game_game_category, game_game_category_rel, game_leaderboard, game_coupon,
-game_user_coupon, game_country_config, game-platform_revenue
+### 풀 에디션 (13장)
+game_game_category, game_game_category_rel, game_leaderboard,
+game_coupon, game_user_coupon, game_language,
+game_translation, game_country_config, game_platform_revenue,
+game_notification, game_referral, game_referral_reward,
+game_user_2fa
 
-### 생태계 확장 (10장) ← 신규
+### 생태계 확장 (14장) ← 신규
 game_ticket, game_ticket_reply, game_device_token,
 game_vip_level, game_user_vip, game_exp_log,
-game_achievement, game_user_achievement,
-game_friend, game_message
+game_achievement, game_user_achievement, game_friend,
+game_message, game_cdn_provider, game_referral_commission,
+game_tournament, game_tournament_entry
 
-**총계: 52장 테이블**
+### v1.3.15-22 추가 (22개)
+game_event_outbox, game_reconciliation_batch, game_reconciliation_diff,
+game_reconciliation_statement, game_device_fingerprint, game_device_account_map,
+game_ip_reputation, game_account_account_link, game_activity,
+game_activity_participation, game_activity_reward_log, game_anticheat_event,
+game_anticheat_daily_stat, game_group, game_group_member,
+game_share_link, game_aml_rule, game_aml_hit,
+game_kyc_level, game_user_kyc, game_user_trust,
+game_risk_cluster
+
+**총계: 78장 테이블**
 
 ## 11. 기능 스위치
 
-`game-platform_config`의 `feature.*` 네임스페이스 기반, 추가 의존성 없음:
+`game_platform_config`의 `feature.*` 네임스페이스 기반, 추가 의존성 없음:
 
 | 스위치 | 기본값 | 기능 |
 |------|------|------|

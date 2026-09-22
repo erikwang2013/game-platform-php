@@ -8,7 +8,7 @@ Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) ·
 
 ## 1. अवलोकन
 
-开放管理后台 (open-admin) webman v2 पर आधारित है और RESTful JSON API प्रदान करता है। सभी एडमिन इंटरफ़ेस के लिए JWT प्रमाणीकरण और RBAC अनुमति सत्यापन आवश्यक है; सार्वजनिक एंडपॉइंट `/api/v1` प्रीफ़िक्स पर और एडमिन एंडपॉइंट `/admin/v1` प्रीफ़िक्स पर माउंट हैं; संस्करण URL पथ से तय होता है, हेडर से नहीं।
+ओपन एडमिन पैनल (open-admin) webman v2 पर आधारित है और RESTful JSON API प्रदान करता है। सभी एडमिन इंटरफ़ेस के लिए JWT प्रमाणीकरण और RBAC अनुमति सत्यापन आवश्यक है; सार्वजनिक एंडपॉइंट `/api/v1` प्रीफ़िक्स पर और एडमिन एंडपॉइंट `/admin/v1` प्रीफ़िक्स पर माउंट हैं; संस्करण URL पथ से तय होता है, हेडर से नहीं।
 
 - **बेस URL**: `http://localhost:8789`
 - **API संस्करण**: URL पथ में एन्कोडेड — सार्वजनिक एंडपॉइंट `/api/v1` पर, एडमिन एंडपॉइंट `/admin/v1` पर; कोई संस्करण हेडर उपयोग नहीं होता, भविष्य का v2 `/api/v2` समूह के रूप में पंजीकृत होगा
@@ -442,7 +442,7 @@ GET /admin/v1/dashboard
 | value | string | मेट्रिक्स मान (स्ट्रिंग प्रकार) |
 | icon | string | Material आइकन नाम |
 | color | string | कार्ड रंग मान |
-| trend | float? | दैनिक चक्रवृद्धि दर (प्रतिशत), केवल "用户总数" में है |
+| trend | float? | दैनिक चक्रवृद्धि दर (प्रतिशत), केवल "कुल उपयोगकर्ता" में है |
 
 | trends फ़ील्ड | प्रकार | विवरण |
 |------|------|------|
@@ -1263,7 +1263,7 @@ GET /admin/v1/log
 | फ़ील्ड | प्रकार | विवरण |
 |------|------|------|
 | id | string | hashid |
-| user_name | string | ऑपरेटिंग उपयोगकर्ता नाम (user संबंध से प्राप्त, बिना लॉगिन ऑपरेशन "系统" दिखाता है) |
+| user_name | string | ऑपरेटिंग उपयोगकर्ता नाम (user संबंध से प्राप्त, बिना लॉगिन ऑपरेशन "सिस्टम" दिखाता है) |
 | action | string | ऑपरेशन क्रिया विवरण |
 | method | string | HTTP विधि (POST/PUT/DELETE) |
 | path | string | अनुरोध पथ |
@@ -1573,26 +1573,7 @@ POST /admin/v1/upload
 - Redis एटॉमिक स्लाइडिंग विंडो एल्गोरिदम (Lua ZSET), TOCTOU रेस से बचाव
 - Redis अनुपलब्ध पर fail-closed: 503 लौटता है (`Retry-After: 5`), अनुरोध पास नहीं होता
 
-## 14. डेटा विश्लेषण (Analytics)
-
-सभी एंडपॉइंट के लिए प्रमाणीकरण आवश्यक (`AdminAuth` + `AdminPermission`), MySQL रीयल-टाइम एग्रीगेशन, कुल 12:
-
-| विधि | पथ | विवरण |
-|------|------|------|
-| GET | /admin/v1/analytics/overview | प्लेटफ़ॉर्म अवलोकन (आज/पिछले 7 दिन) |
-| GET | /admin/v1/analytics/game-ranking | गेम रैंकिंग (?days=7) |
-| GET | /admin/v1/analytics/dau-trend | DAU ट्रेंड (?days=30) |
-| GET | /admin/v1/analytics/hourly-trend | घंटेवार ट्रेंड |
-| GET | /admin/v1/analytics/action-distribution | व्यवहार वितरण |
-| GET | /admin/v1/analytics/revenue | राजस्व विश्लेषण |
-| GET | /admin/v1/analytics/conversion | गेम रूपांतरण दर |
-| GET | /admin/v1/analytics/probability | संयुक्त/सशर्त संभाव्यता |
-| GET | /admin/v1/analytics/retention | रिटेंशन विश्लेषण D1/D3/D7/D30 |
-| GET | /admin/v1/analytics/funnel | रूपांतरण फ़नल |
-| GET | /admin/v1/analytics/arpu | ARPU/ARPPU ट्रेंड |
-| GET | /admin/v1/analytics/economy | गेम मुद्रा आर्थिक मेट्रिक्स |
-
-## 15. टिकट प्रबंधन (Ticket)
+## 14. टिकट प्रबंधन (Ticket)
 
 सभी एंडपॉइंट के लिए प्रमाणीकरण आवश्यक (`AdminAuth` + `AdminPermission`), कुल 5:
 
@@ -1604,66 +1585,66 @@ POST /admin/v1/upload
 | POST | /admin/v1/ticket/{hashid}/close | टिकट बंद करें |
 | POST | /admin/v1/ticket/{hashid}/assign | प्रबंधक नियुक्त करें (admin_id) |
 
-## 16. प्रमाणीकरण प्रवाह
+## 15. प्रमाणीकरण प्रवाह
 
 पूर्ण प्रमाणीकरण अनुक्रम:
 
 ```
-1. 客户端请求 POST /api/v1/captcha/generate
+1. क्लाइंट POST /api/v1/captcha/generate अनुरोध करता है
     ↓
-   服务端返回: key + base64 图片 + 点击目标提示
+   सर्वर लौटाता है: key + base64 छवि + क्लिक लक्ष्य संकेत
    
-2. 用户点击图片目标位置，前/客户端收集点击坐标
+2. उपयोगकर्ता छवि में लक्ष्य स्थानों पर क्लिक करता है; फ्रंटएंड/क्लाइंट क्लिक निर्देशांक एकत्र करता है
    
-3. 客户端请求 POST /api/v1/auth/login
-   (请求头: Content-Type: application/json)
-   请求体: { username, password, captcha_key, clicks: [{x,y}, ...] }
+3. क्लाइंट POST /api/v1/auth/login अनुरोध करता है
+   (हेडर: Content-Type: application/json)
+   अनुरोध निकाय: { username, password, captcha_key, clicks: [{x,y}, ...] }
     ↓
-   服务端:
-   a. 参数校验 → 422
-   b. 校验验证码 → 422
-   c. 校验用户凭证 → 401
-   d. 检查账号状态 → 403
-   e. 签发 JWT (access + refresh) → 200
-   f. 更新 last_login_at / last_login_ip
+   सर्वर:
+   a. पैरामीटर सत्यापन → 422
+   b. कैप्चा सत्यापन → 422
+   c. उपयोगकर्ता क्रेडेंशियल सत्यापन → 401
+   d. खाता स्थिति जाँच → 403
+   e. JWT जारी करना (access + refresh) → 200
+   f. last_login_at / last_login_ip अद्यतन
     ↓
-   客户端保存: access_token, refresh_token, expires_in
+   क्लाइंट सहेजता है: access_token, refresh_token, expires_in
 
-4. 后续请求携带 JWT
-   请求头: Authorization: Bearer <access_token>
+4. बाद के अनुरोध JWT साथ ले जाते हैं
+   हेडर: Authorization: Bearer <access_token>
     ↓
-   AdminAuth 中间件:
-   a. 提取 Bearer token
-   b. 检查黑名单 (Redis jwt_blacklist:{md5}) → 401
-   c. 解码 JWT，校验过期 → 401
-   d. 设置 $request->adminId = sub 字段
+   AdminAuth मिडलवेयर:
+   a. Bearer टोकन निकालें
+   b. ब्लैकलिस्ट जाँचें (Redis jwt_blacklist:{md5}) → 401
+   c. JWT डिकोड करें, समाप्ति सत्यापित करें → 401
+   d. $request->adminId = sub फ़ील्ड सेट करें
     ↓
-   AdminPermission 中间件:
-   a. 未登录（adminId 为空）→ 401
-   b. 对资源路由解析权限标识
-   c. 查询用户角色 → 角色权限，进行匹配
-   d. 无权限 → 403
+   AdminPermission मिडलवेयर:
+   a. लॉगिन नहीं (adminId खाली) → 401
+   b. रिसोर्स रूट के लिए अनुमति पहचानकर्ता हल करें
+   c. उपयोगकर्ता भूमिकाएँ → भूमिका अनुमतियाँ query करें, मिलान करें
+   d. अनुमति नहीं → 403
     ↓
-   Controller 处理请求
+   कंट्रोलर अनुरोध संसाधित करता है
     ↓
-   Response + X-RateLimit-* 头
+   प्रतिक्रिया + X-RateLimit-* हेडर
 
-5. Access Token 过期前刷新
-   客户端请求 POST /api/v1/auth/refresh
-   请求体: { refresh_token: "..." }
+5. Access Token समाप्त होने से पहले रीफ़्रेश करें
+   क्लाइंट POST /api/v1/auth/refresh अनुरोध करता है
+   अनुरोध निकाय: { refresh_token: "..." }
     ↓
-   服务端解码 refresh_token → 签发新 access + refresh
+   सर्वर refresh_token डिकोड करता है → नया access + refresh जारी करता है
     ↓
-   客户端更新本地令牌
+   क्लाइंट स्थानीय टोकन अद्यतन करता है
 
-6. 登出
-   客户端请求 POST /admin/v1/profile/logout
-   请求头: Authorization: Bearer <access_token>
+6. लॉगआउट
+   क्लाइंट POST /admin/v1/profile/logout अनुरोध करता है
+   हेडर: Authorization: Bearer <access_token>
     ↓
-   服务端:
-   a. 解码 JWT 获取剩余 TTL
-   b. 写入 Redis 黑名单: jwt_blacklist:{md5(token)} = 1, TTL = 剩余有效期
-   c. 返回成功
+   सर्वर:
+   a. शेष TTL पाने के लिए JWT डिकोड करें
+   b. Redis ब्लैकलिस्ट लिखें: jwt_blacklist:{md5(token)} = 1, TTL = शेष वैधता
+   c. सफलता लौटाएँ
 ```
 
 ### JWT संरचना
@@ -1681,11 +1662,11 @@ POST /admin/v1/upload
 - समवर्ती सत्र सीमा: एक उपयोगकर्ता के अधिकतम 3 सक्रिय Token, चौथे डिवाइस से लॉगिन पर सबसे पुराना Token ब्लैकलिस्ट में जाता है
 - खाता लॉक: लगातार 5 असफल लॉगिन पर 15 मिनट खाता लॉक, लॉक अवधि में 429 लौटता है
 
-## 15. डिप्लॉयमेंट और संचालन
+## 16. डिप्लॉयमेंट और संचालन
 
 ### Docker Compose
 
-प्रोजेक्ट रूट में `docker-compose.yml` उपलब्ध है, 5 सेवाओं का ऑर्केस्ट्रेशन (Nginx, webman app, MySQL, Redis, Elasticsearch)। PHP `Dockerfile` से निर्मित (`php:8.3-cli` पर आधारित, OPcache सक्षम)।
+प्रोजेक्ट रूट में `docker-compose.yml` उपलब्ध है, 7 सेवाओं का ऑर्केस्ट्रेशन (Nginx, admin, service, leaderboard-ws, MySQL, Redis, Elasticsearch)। PHP `Dockerfile` से निर्मित (`php:8.3-cli` पर आधारित, OPcache सक्षम)।
 
 ```bash
 cp .env.docker .env
@@ -1709,11 +1690,11 @@ docker-compose up -d
 
 प्रोडक्शन डिप्लॉयमेंट में रिवर्स प्रॉक्सी सुरक्षा हार्डनिंग के लिए `docs/nginx-security.conf` देखें।
 
-## 16. डेटा विश्लेषण (Analytics)
+## 17. डेटा विश्लेषण (Analytics)
 
 डेटा विश्लेषण इंटरफ़ेस `AnalyticsController` द्वारा प्रदान किए जाते हैं, सभी MySQL रीयल-टाइम एग्रीगेशन पर आधारित (`game_game_play_log` गेम व्यवहार लॉग / `game_deposit_order` टॉप-अप ऑर्डर), डेटाबेस विफलता पर 500 के बजाय खाली डेटा लौटता है। विशेष उल्लेख के अलावा सभी के लिए JWT + RBAC प्रमाणीकरण आवश्यक है, प्रतिक्रिया प्रारूप समान है: `{ "code": 0, "message": "success", "data": ... }`।
 
-### 16.1 प्लेटफ़ॉर्म अवलोकन
+### 17.1 प्लेटफ़ॉर्म अवलोकन
 
 ```
 GET /admin/v1/analytics/overview
@@ -1721,7 +1702,7 @@ GET /admin/v1/analytics/overview
 
 **प्रतिक्रिया**: `today` / `week` प्रत्येक में `dau` (सक्रिय उपयोगकर्ता संख्या), `revenue` (पुष्टि टॉप-अप कुल, स्ट्रिंग), `new_users` (नए उपयोगकर्ता संख्या)।
 
-### 16.2 गेम रैंकिंग
+### 17.2 गेम रैंकिंग
 
 ```
 GET /admin/v1/analytics/game-ranking?days=7
@@ -1729,23 +1710,23 @@ GET /admin/v1/analytics/game-ranking?days=7
 
 **प्रतिक्रिया**: गेम व्यवहार संख्या के अवरोही क्रम में शीर्ष 10, प्रत्येक में `game_id` (hashid), `name`, `plays`, `players`।
 
-### 16.3 DAU ट्रेंड
+### 17.3 DAU ट्रेंड
 
 ```
 GET /admin/v1/analytics/dau-trend?days=30
 ```
 
-**प्रतिक्रिया**: `{ "日期": 活跃数, ... }`, अनुपस्थित तिथि पर 0 भरा जाता है।
+**प्रतिक्रिया**: `{ "तिथि": सक्रिय संख्या, ... }`, अनुपस्थित तिथि पर 0 भरा जाता है।
 
-### 16.4 घंटेवार ट्रेंड
+### 17.4 घंटेवार ट्रेंड
 
 ```
 GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
 ```
 
-**प्रतिक्रिया**: `{ "0": 次数, ... "23": 次数 }` 24 घंटे के स्लॉट; `game_id` खाली होने पर सभी गेमों की गणना।
+**प्रतिक्रिया**: `{ "0": गणना, ... "23": गणना }` 24 घंटे के स्लॉट; `game_id` खाली होने पर सभी गेमों की गणना।
 
-### 16.5 व्यवहार वितरण
+### 17.5 व्यवहार वितरण
 
 ```
 GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
@@ -1753,15 +1734,15 @@ GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
 
 **प्रतिक्रिया**: `{ "start": n, "end": n, "earn": n, "spend": n }` चार प्रकार के व्यवहार गणना; `hours` अधिकतम 168।
 
-### 16.6 राजस्व अवलोकन
+### 17.6 राजस्व अवलोकन
 
 ```
 GET /admin/v1/analytics/revenue?days=7
 ```
 
-**प्रतिक्रिया**: `{ "total": "总额", "trend": { "日期": "当日额", ... } }`, केवल `status=confirmed` ऑर्डर गिने जाते हैं।
+**प्रतिक्रिया**: `{ "total": "कुल", "trend": { "तिथि": "दैनिक राशि", ... } }`, केवल `status=confirmed` ऑर्डर गिने जाते हैं।
 
-### 16.7 गेम रूपांतरण दर
+### 17.7 गेम रूपांतरण दर
 
 ```
 GET /admin/v1/analytics/conversion?days=30
@@ -1769,7 +1750,7 @@ GET /admin/v1/analytics/conversion?days=30
 
 **प्रतिक्रिया**: प्रत्येक गेम में `game_id` (hashid), `game_name`, `players` (अद्वितीय खिलाड़ी संख्या), `depositors` (अद्वितीय टॉप-अप संख्या), `conversion_rate` (टॉप-अप रूपांतरण दर, 0~1)।
 
-### 16.8 संयुक्त संभाव्यता
+### 17.8 संयुक्त संभाव्यता
 
 ```
 GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
@@ -1777,7 +1758,7 @@ GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
 
 **प्रतिक्रिया**: `{ "joint": { "joint_probability": 0.12, "confidence": 0.3 } }` — Jaccard गुणांक (दोनों गेमों के साझा खिलाड़ी / यूनियन खिलाड़ी) और विश्वास (साझा खिलाड़ी / A गेम खिलाड़ी)।
 
-### 16.9 रिटेंशन विश्लेषण
+### 17.9 रिटेंशन विश्लेषण
 
 ```
 GET /admin/v1/analytics/retention?days=30
@@ -1785,7 +1766,7 @@ GET /admin/v1/analytics/retention?days=30
 
 **प्रतिक्रिया**: `{ "D1": "8.5%", "D3": "...", "D7": "...", "D30": "..." }` पंजीकरण दिवस समूह के अनुसार अगले दिन/3 दिन/7 दिन/30 दिन रिटेंशन दर।
 
-### 16.10 रूपांतरण फ़नल
+### 17.10 रूपांतरण फ़नल
 
 ```
 GET /admin/v1/analytics/funnel?days=30
@@ -1793,7 +1774,7 @@ GET /admin/v1/analytics/funnel?days=30
 
 **प्रतिक्रिया**: पंजीकरण → पहला टॉप-अप → पहला विनिमय → पहला गेम चार चरणों के `step`, `count`, `rate` (पंजीकरण संख्या के सापेक्ष प्रतिशत)।
 
-### 16.11 ARPU/ARPPU ट्रेंड
+### 17.11 ARPU/ARPPU ट्रेंड
 
 ```
 GET /admin/v1/analytics/arpu?days=30
@@ -1801,7 +1782,7 @@ GET /admin/v1/analytics/arpu?days=30
 
 **प्रतिक्रिया**: `{ "dates": [...], "arpu": [...], "arppu": [...] }` दैनिक प्रति-उपयोगकर्ता राजस्व (ARPU) और प्रति-भुगतान उपयोगकर्ता राजस्व (ARPPU)।
 
-### 16.12 गेम आर्थिक मेट्रिक्स
+### 17.12 गेम आर्थिक मेट्रिक्स
 
 ```
 GET /admin/v1/analytics/economy
@@ -1809,7 +1790,7 @@ GET /admin/v1/analytics/economy
 
 **प्रतिक्रिया**: `currencies` सरणी, प्रत्येक में `game_name`, `currency`, `symbol`, `total_minted` (कुल ढलाई), `total_burned` (कुल विनाश), `circulation` (प्रचलन), `inflation_rate` (मुद्रास्फीति दर), bcmath उच्च-परिशुद्धता गणना।
 
-## 17. भुगतान प्रबंधन (Payment)
+## 18. भुगतान प्रबंधन (Payment)
 
 भुगतान विधि प्रबंधन `PaymentController` द्वारा प्रदान किया जाता है; सभी 5 एंडपॉइंट्स को JWT + RBAC प्रमाणीकरण की आवश्यकता होती है। `provider` व्हाइटलिस्ट: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`। `config` भुगतान कॉन्फ़िगरेशन का JSON स्ट्रिंग है (डेटाबेस में एन्क्रिप्टेड संग्रहीत)।
 
@@ -1821,7 +1802,7 @@ GET /admin/v1/analytics/economy
 | PUT | /admin/v1/payment/method/{hashid} | भुगतान विधि अपडेट करें |
 | DELETE | /admin/v1/payment/method/{hashid} | भुगतान विधि हटाएं (लंबित ऑर्डर होने पर अस्वीकृत) |
 
-### 17.1 भुगतान विधियों की सूची
+### 18.1 भुगतान विधियों की सूची
 
 ```
 GET /admin/v1/payment/method/list
@@ -1869,7 +1850,7 @@ GET /admin/v1/payment/method/list
 | min_amount / max_amount | string | राशि सीमा (सटीकता के लिए स्ट्रिंग), 0 = कोई सीमा नहीं |
 | config | string? | भुगतान कॉन्फ़िग JSON (एन्क्रिप्टेड; सेट न होने पर null) |
 
-### 17.2 भुगतान विधि सक्षम/अक्षम करें
+### 18.2 भुगतान विधि सक्षम/अक्षम करें
 
 ```
 POST /admin/v1/payment/method/toggle
@@ -1892,7 +1873,7 @@ POST /admin/v1/payment/method/toggle
 - 422: सत्यापन विफल (id/status अनुपस्थित या status 0/1 नहीं)
 - 404: भुगतान विधि मौजूद नहीं
 
-### 17.3 भुगतान विधि बनाएं
+### 18.3 भुगतान विधि बनाएं
 
 ```
 POST /admin/v1/payment/method/create
@@ -1938,20 +1919,20 @@ POST /admin/v1/payment/method/create
 **संभावित त्रुटियाँ**:
 - 422: सत्यापन विफल
 
-### 17.4 भुगतान विधि अपडेट करें
+### 18.4 भुगतान विधि अपडेट करें
 
 ```
 PUT /admin/v1/payment/method/{hashid}
 ```
 
 - **पथ पैरामीटर**: `{hashid}` hashid एन्कोडेड भुगतान विधि ID है
-- **अनुरोध निकाय**: बनाने (17.3) जैसा ही, सभी फ़ील्ड वैकल्पिक, केवल भेजे गए फ़ील्ड अपडेट होते हैं
+- **अनुरोध निकाय**: बनाने (18.3) जैसा ही, सभी फ़ील्ड वैकल्पिक, केवल भेजे गए फ़ील्ड अपडेट होते हैं
 
 **संभावित त्रुटियाँ**:
 - 404: भुगतान विधि मौजूद नहीं
 - 422: सत्यापन विफल
 
-### 17.5 भुगतान विधि हटाएं
+### 18.5 भुगतान विधि हटाएं
 
 ```
 DELETE /admin/v1/payment/method/{hashid}

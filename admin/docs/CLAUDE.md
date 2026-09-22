@@ -17,9 +17,11 @@ Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 | 认证 | 登录/注册/刷新/登出 + 验证码 + 账号锁定 + 会话限制 |
 | 仪表盘 | 实时统计/趋势/分布/日志（Redis 5m 缓存）|
 | 数据分析 | 12 个端点：总览/排行/DAU/小时/行为分布/营收/转化/概率/留存/漏斗/ARPU/经济指标（MySQL 实时聚合）|
+| 工单 | 列表/详情/回复/关闭/指派（5 个端点，AdminAuth + AdminPermission）|
 | 用户 | CRUD + 批量删除/启禁用 + Excel 导入 |
 | 角色权限 | CRUD + 权限树 + RBAC method.path 鉴权 |
 | 系统配置 | 键值对 CRUD |
+| CDN 管理 | 五厂商 CRUD + 启停 + 连通测试（凭据加密存储，service 纯 DB 读取）|
 | 操作审计 | 日志查询 + 8 平台来源端自动检测 |
 | 文件 | 上传 + Excel/PDF 导出（敏感数据脱敏）|
 | 安全 | 18 层纵深防御（XSS/SQL注入/CSRF/限流/CSP...）|
@@ -49,48 +51,43 @@ Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 ```
 open-admin/
 ├── app/
-│   ├── admin/controller/       # 管理端控制器 (30 个)
-│   │   ├── BaseController.php      # 基础控制器
-│   │   ├── DashboardController.php # 仪表盘（Redis 缓存）
-│   │   ├── AnalyticsController.php # 数据分析（12 个端点）
-│   │   ├── UserController.php      # 用户 CRUD + 批量操作
-│   │   ├── RoleController.php      # 角色 CRUD
-│   │   ├── PermissionController.php# 权限 CRUD
-│   │   ├── ConfigController.php    # 系统配置 CRUD
-│   │   ├── LogController.php       # 操作日志查询
-│   │   ├── ProfileController.php   # 个人中心 + 登出
-│   │   ├── ExportController.php    # Excel/PDF 导出
-│   │   ├── ImportController.php    # Excel 导入用户
-│   │   ├── UploadController.php    # 文件上传
-│   │   ├── HealthController.php    # 健康检查
-│   │   ├── DocsController.php      # OpenAPI 文档
-│   │   └── MetricsController.php   # Prometheus 监控指标
+│   ├── admin/v1/controller/    # 管理端控制器 (45 个)
+│   │   ├── BaseController.php       # 基础控制器
+│   │   ├── DashboardController.php  # 仪表盘（Redis 缓存）
+│   │   ├── AnalyticsController.php  # 数据分析（12 个端点）
+│   │   ├── UserController.php       # 用户 CRUD + 批量操作
+│   │   ├── RoleController.php       # 角色 CRUD
+│   │   ├── PermissionController.php # 权限 CRUD
+│   │   ├── ConfigController.php     # 系统配置 CRUD
+│   │   ├── LogController.php        # 操作日志查询
+│   │   ├── ProfileController.php    # 个人中心 + 登出
+│   │   ├── ExportController.php     # Excel/PDF 导出
+│   │   ├── ImportController.php     # Excel 导入用户
+│   │   ├── UploadController.php     # 文件上传
+│   │   ├── HealthController.php     # 健康检查
+│   │   ├── DocsController.php       # OpenAPI 文档
+│   │   └── MetricsController.php    # Prometheus 监控指标
 │   ├── api/v1/controller/      # API v1 控制器（URL 路径版本）
 │   │   ├── CaptchaController.php
 │   │   └── AuthController.php
 │   ├── common/                 # 公共工具类
-│   │   ├── HashidsService.php
-│   │   ├── SnowflakeService.php
-│   │   └── EncryptionService.php
-│   ├── middleware/             # 中间件（6 个）
+│   │   └── CdnProbeService.php # CDN 连通性探测（Hashids/Snowflake/Encryption 由 composer 包提供）
+│   ├── middleware/             # 中间件（7 个）
 │   │   ├── Cors.php            # 跨域（全局）
 │   │   ├── SecurityFilter.php  # 攻击拦截（全局：XSS/SQL注入/路径遍历/命令注入/CSRF）
 │   │   ├── RateLimit.php       # Redis 限流（全局，Lua 原子化）
+│   │   ├── StaticFile.php      # 静态文件服务（webman 内置）
 │   │   ├── AdminAuth.php       # JWT 认证 + 黑名单
 │   │   ├── AdminPermission.php # RBAC 权限校验（Redis 60s 缓存）
 │   │   └── OperationLog.php    # 操作日志自动记录（含来源端检测）
-│   ├── model/                  # 数据模型
-│   ├── queue/                  # 队列任务
-│   └── process/                # 进程 (Http, Monitor)
-├── common/                     # 业务服务（数据分析）
-│   └── service/
-│       ├── GameDashboardService.php  # 总览/排行/DAU/小时/行为分布
-│       ├── DepositLogService.php     # 营收总览/游戏转化率
-│       └── ProbabilityService.php    # 联合/条件概率（SQL 构建器）
+│   ├── model/                  # 数据模型（8 个）
+│   └── process/                # 进程 (Http, Monitor, RiskIpCron)
 ├── apps/
+│   ├── angular/                # Angular Web 管理后台
+│   ├── react/                  # React Web 管理后台
 │   ├── flutter/                # Flutter Web 管理后台
 │   │   └── lib/app/
-│   │       ├── pages/          # 6 个完整页面
+│   │       ├── pages/          # 20 个页面目录（下列为节选）
 │   │       │   ├── dashboard/  # 仪表盘
 │   │       │   ├── login/      # 登录
 │   │       │   ├── user/       # 用户管理
@@ -106,9 +103,6 @@ open-admin/
 │   ├── route.php               # 路由 + API 版本策略
 │   └── middleware.php           # 全局中间件注册
 ├── database/
-│   ├── migrations/             # SQL 迁移文件
-│   │   ├── 2026_05_16_000000_init_tables.sql
-│   │   └── 2026_05_20_000001_seed_permissions.sql
 │   └── backup/                 # 数据库备份脚本
 │       ├── backup.sh           # mysqldump+gzip，30天保留
 │       └── restore.sh          # 交互式恢复
@@ -143,15 +137,16 @@ open-admin/
 ## 中间件执行链
 
 ```
-全局:  Cors → SecurityFilter(方法检查→405) → RateLimit → {路由中间件}
-/admin: Cors → SecurityFilter(方法检查→405) → RateLimit → AdminAuth → AdminPermission → OperationLog → Controller
-/api:   Cors → SecurityFilter(方法检查→405) → RateLimit → Controller
-/health: Cors → SecurityFilter(方法检查→405) → RateLimit → Controller
+全局:  Cors → SecurityFilter → RateLimit → {路由中间件}
+/admin: Cors → SecurityFilter → RateLimit → AdminAuth → AdminPermission → OperationLog → Controller
+/api:   Cors → SecurityFilter → RateLimit → Controller
+/health: Cors → SecurityFilter → RateLimit → Controller
+/metrics、/api/docs: 同上再加 AdminAuth → AdminPermission
 ```
 
 ## 安全增强
 
-- **HTTP 方法限制**：SecurityFilter 仅允许 GET/POST/PUT/DELETE/OPTIONS/HEAD，非标准方法返回 405
+- **HTTP 方法限制**：无方法白名单。非法方法由 webman 框架层拒绝（`vendor/workerman/webman-framework/src/app/App.php:934`，返回纯文本 `405 Method Not Allowed` + `Allow` 头，非 JSON 信封）；实测 admin 的 `TRACE` 在 HTTP 解析层即被拒（400 空响应体）
 - **CSP 头**：Content-Security-Policy + X-Permitted-Cross-Domain-Policies 注入所有响应
 - **账号锁定**：连续 5 次登录失败，账号锁定 15 分钟
 - **并发会话限制**：同一用户最多 3 个有效 Token，超出时最旧 Token 加入黑名单
@@ -181,6 +176,7 @@ Redis 滑动窗口（Lua 原子化），默认 60 次/分钟/IP/路由：
 - 全局函数/类引用不加前置 `\`，使用 `use` 导入
 - 配置文件必须包含中文注释说明每个配置项的含义
 - 所有新建 `.php` 文件头必须包含版权声明
+- 金额/价格运算必须使用 bcmath 扩展函数（bcadd/bcmul/bcdiv/bcsub），禁止 float 参与；比率/百分比/概率等十进制指标同样必须经 bcmath（百分比统一 `common\BcMath::percent`），四舍五入统一 `common\BcMath::round`（bc 函数截断不进位）。(float)/(int) 转型仅允许在 JSON/文本输出边界；无 bcmath 原语的算法豁免项（sqrt/方差等统计特征、Redis INCRBYFLOAT 原子计数、计时/系统遥测）必须加 ponytail 行内注释注明
 
 ### 数据库
 - 表前缀: `game_`
@@ -233,9 +229,12 @@ docker-compose up -d
 
 ### 监控
 
-`GET /metrics` 端点（`MetricsController`）输出 Prometheus text format，包含 5 个 gauge 指标：
-- `openadmin_http_requests_total` — 请求总数
-- `openadmin_active_users` — 活跃用户数
-- `openadmin_db_connection_status` — 数据库连接状态 (0/1)
-- `openadmin_redis_connection_status` — Redis 连接状态 (0/1)
-- `openadmin_memory_usage_bytes` — 内存使用量
+`GET /metrics` 端点（`MetricsController`）**需认证**：`config/route.php:48` 挂 `AdminAuth` + `AdminPermission`，未认证返回 401 信封。
+输出 Prometheus text format（`text/plain`），指标前缀 `open_admin_`，共 20 个指标族（18 gauge + 2 counter）：
+- `open_admin_active_users` / `open_admin_total_users` — 活跃/累计用户数
+- `open_admin_db_up` / `open_admin_redis_up` / `open_admin_es_up` — 依赖可达性 (0/1)
+- `open_admin_memory_usage_bytes` / `open_admin_process_fd_count` / `open_admin_cpu_load_1m` / `open_admin_uptime_seconds` — 进程指标
+- `open_admin_withdraw_pending` / `open_admin_deposit_confirmed_today` / `open_admin_deposit_total_today` / `open_admin_deposit_success_rate_percent` / `open_admin_reconciliation_diff_pending` — 资金指标
+- `open_admin_mysql_connections` / `open_admin_redis_hit_rate_percent` / `open_admin_redis_memory_bytes` — 连接/缓存指标
+- `open_admin_event_emit_total` / `open_admin_event_consume_total` — 事件总线 counter
+- `open_admin_info` — 版本/运行时信息

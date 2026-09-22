@@ -13,7 +13,7 @@ Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.
 |------|------|
 | المستخدمون | التسجيل/تسجيل الدخول (اسم المستخدم + كلمة المرور + OAuth لـ 7 منصات + 2FA TOTP)، الملف الشخصي |
 | المحفظة | محفظة عملات المنصة (قفل متفائل) + محفظة عملات اللعبة + سجل المعاملات |
-| الإيداع | 13 بوابة دفع (Stripe/PayPal/NowPayments/Coinbase وغيرها) مع التحقق من توقيع الاستدعاءات والإيداع التلقائي |
+| الإيداع | 18 بوابة دفع (Stripe/PayPal/NowPayments/Coinbase وغيرها) مع التحقق من توقيع الاستدعاءات والإيداع التلقائي |
 | السحب | طلب ← مراجعة ← دفع، حدود KYC متدرجة |
 | التحويل | عروض أسعار فورية عملات المنصة ⇄ عملات اللعبة، خصومات VIP ومكافآت سعر صرف |
 | الألعاب | قائمة/تصنيفات/بحث الألعاب، سجل اللعب، استدعاءات تسوية Provider |
@@ -39,8 +39,12 @@ Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.
 ```
 service/
 ├── app/
-│   ├── api/v1/controller/  # وحدات تحكم API للجانب C (35)
-│   ├── middleware/         # Middleware (Cors/SecurityFilter/RateLimit/ApiVersion/UserAuth/ProviderAuth)
+│   ├── activity/           # معالجات الأنشطة
+│   ├── api/v1/controller/  # وحدات تحكم API للجانب C (34)
+│   ├── bootstrap/          # تهيئة الإشعارات
+│   ├── cdn/                # CDN متعدد المزودين (Aliyun/Tencent/Huawei/Cloudflare/CloudFront + CdnFactory)
+│   ├── common/             # عام
+│   ├── middleware/         # Middleware (Cors/SecurityFilter/RateLimit/TraceId/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
 │   ├── model/              # نماذج البيانات
 │   ├── service/            # الخدمات التجارية (VIP/لوحات الترتيب/المخاطر/الإشعارات وغيرها)
 │   ├── event/              # ناقل الأحداث (EventBus Redis Pub/Sub)
@@ -49,9 +53,14 @@ service/
 ├── common/                 # الخدمات المشتركة (منفّذة في حزمة erik/platform-common)
 ├── config/                 # ملفات الإعداد
 ├── public/                 # مدخل الويب
+├── runtime/                # ملفات وقت التشغيل
+├── support/                # فئات مساعدة
 ├── tests/                  # اختبارات PHPUnit
 ├── start.php               # نقطة البدء
-└── composer.json
+├── windows.php             # مدخل تشغيل Windows
+├── composer.json
+├── phpunit.xml             # إعداد PHPUnit
+└── Dockerfile              # بناء الصورة
 ```
 
 ## التثبيت بنقرة واحدة
@@ -93,7 +102,7 @@ php start.php start -d     # في الخلفية (daemon)
 ## الاستخدام
 
 - مرجع API: `docs/API.md` (مرجع كامل)
-- التوثيق عبر الإنترنت: http://localhost:8792/apidoc/ (توثيق hg/apidoc التفاعلي)
+- التوثيق عبر الإنترنت: http://localhost:8792/apidoc/ (توثيق erikwang2013/apidoc-php التفاعلي)
 - فحص الصحة: `GET http://localhost:8792/health`
 - واجهة الجانب C: `apps/flutter/platform/` (منصة المستخدم Flutter Web)
 - لوحة الإدارة: `admin/` (الخلفية وواجهة `admin/apps/flutter/`)

@@ -44,7 +44,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | اللوبي | 10 تصنيفات مسبقة، فلترة التصنيفات، ربط الألعاب-التصنيفات | مكتمل |
 | لوحات المتصدرين | يومية/أسبوعية/شهرية/إجمالية، تخزين مؤقت Redis، مؤشرات متعددة | مكتمل |
 | القسائم | مبلغ ثابت + خصم نسبي، محدودة بالوقت والكمية، تتبع الاستلام/الاستخدام | مكتمل |
-| إعدادات الدول | 8 دول مسبقة، طرق دفع/سحب مختلفة، حد أدنى للشحن | مكتمل |
+| إعدادات الدول | 18 دولة مسبقة، طرق دفع/سحب مختلفة، حد أدنى للشحن | مكتمل |
 | الإحصائيات | لقطة الإحصائيات اليومية + تتبع إيراد المنصة | مكتمل |
 | البحث | بحث نصي كامل Elasticsearch (مدمج في طبقة النماذج) | مكتمل |
 
@@ -67,7 +67,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | النشر | Docker Compose 7 خدمات + وكيل Nginx عكسي | مكتمل |
 | البيانات | تحليل تجميع MySQL لحظي + حساب الاحتمالات المشتركة/الشرطية | مكتمل |
 | HarmonyOS | إدارة 8 صفحات؛ الطرف C في `apps/harmonyos/` نفّذ تسجيل الدخول/اللوبي/التفاصيل/المحفظة/الملف الشخصي (يشير إلى 8792) | مكتمل جزئيًا (المشروع يعمل، الجهاز الحقيقي يحتاج تغيير IP) |
-| توثيق API | توثيق تفاعلي hg/apidoc | مكتمل |
+| توثيق API | توثيق تفاعلي erikwang2013/apidoc-php | مكتمل |
 | تثبيت بنقرة واحدة | معالج تثبيت بالمتصفح: إنشاء مدير، ترقية قاعدة بيانات موجودة، install.lock يمنع إعادة التثبيت | مكتمل |
 | تحمل الأعطال | CircuitBreaker + Retry + مفتاح التدهور feature.provider_mock | مكتمل |
 | طرق الدفع | CRUD في الإدارة + رؤية حسب الدولة + نطاق المبالغ + تقييد العملة | مكتمل |
@@ -79,7 +79,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 |----|------|------|
 | ربط الألعاب | طبقة GameProvider التجريدية (Self/ThirdParty) + توقيع HMAC-SHA256 | مكتمل |
 | استدعاءات الألعاب | بوابة واجهات Provider (balance/bet/settle/refund) + وسيطة ProviderAuth | مكتمل |
-| جلسات الألعاب | نبض Redis + تسوية تلقائية عند انتهاء المهلة 15 دقيقة + GameSessionService | مكتمل |
+| جلسات الألعاب | رمز جلسة SDK: توقيع HMAC-SHA256 + مدة TTL 5 دقائق (يُصدر عبر `GET /api/v1/game/session`، ويتحقق منه `SdkSessionAuth`) | مكتمل |
 | نظام التذاكر | إنشاء/رد من الطرف C + معالجة/توزيع/إغلاق من الإدارة، 5 أنواع تذاكر | مكتمل |
 | التحقق من البريد | رمز 6 أرقام، انتهاء Redis 10 دقائق، حد إعادة إرسال 60 ثانية | مكتمل |
 | إشعارات الدفع | PushService (FCM/APNs/دفع هواوي) + نموذج DeviceToken | مكتمل |
@@ -119,62 +119,64 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 
 | الطريقة | المسار | الوصف | المصادقة |
 |------|------|------|------|
-| POST | /api/auth/register | تسجيل المستخدم | لا |
-| POST | /api/auth/login | دخول المستخدم | لا |
-| POST | /api/auth/refresh | تجديد Token | لا |
-| GET | /api/game/list | قائمة الألعاب | لا |
-| GET | /api/game/detail/{id} | تفاصيل اللعبة | لا |
-| GET | /api/announcement/list | قائمة الإعلانات | لا |
-| GET | /api/wallet/info | رصيد المحفظة | نعم |
-| GET | /api/wallet/transactions | سجلات الحركات | نعم |
-| POST | /api/deposit/create | إنشاء طلب شحن | نعم |
-| GET | /api/payment/methods | قائمة طرق الدفع (حسب الدولة) | نعم |
-| POST | /api/exchange/quote | استعلام سعر الاستبدال (خصم VIP) | نعم |
-| POST | /api/exchange/buy | شراء عملات اللعبة | نعم |
-| POST | /api/exchange/sell | بيع عملات اللعبة | نعم |
-| POST | /api/withdraw/apply | طلب السحب (تخفيض VIP) | نعم |
-| POST | /api/game/launch | تشغيل اللعبة | نعم |
-| GET | /api/game/play-logs | سجلات اللعب | نعم |
-| POST | /api/referral/apply | استخدام رمز الإحالة | نعم |
-| POST | /api/verify/send-email | إرسال رمز التحقق للبريد | نعم |
-| POST | /api/verify/confirm-email | تأكيد البريد الإلكتروني | نعم |
-| GET | /api/ticket/list | قائمة التذاكر | نعم |
-| POST | /api/ticket/create | إنشاء تذكرة | نعم |
-| POST | /api/ticket/{id}/reply | الرد على التذكرة | نعم |
+| POST | /api/v1/auth/register | تسجيل المستخدم | لا |
+| POST | /api/v1/auth/login | دخول المستخدم | لا |
+| POST | /api/v1/auth/refresh | تجديد Token | لا |
+| GET | /api/v1/game/list | قائمة الألعاب | لا |
+| GET | /api/v1/game/detail/{id} | تفاصيل اللعبة | لا |
+| GET | /api/v1/announcement/list | قائمة الإعلانات | لا |
+| GET | /api/v1/wallet/info | رصيد المحفظة | نعم |
+| GET | /api/v1/wallet/transactions | سجلات الحركات | نعم |
+| POST | /api/v1/deposit/create | إنشاء طلب شحن | نعم |
+| GET | /api/v1/payment/methods | قائمة طرق الدفع (حسب الدولة) | نعم |
+| POST | /api/v1/exchange/quote | استعلام سعر الاستبدال (خصم VIP) | نعم |
+| POST | /api/v1/exchange/buy | شراء عملات اللعبة | نعم |
+| POST | /api/v1/exchange/sell | بيع عملات اللعبة | نعم |
+| POST | /api/v1/withdraw/apply | طلب السحب (تخفيض VIP) | نعم |
+| POST | /api/v1/game/launch | تشغيل اللعبة | نعم |
+| GET | /api/v1/game/play-logs | سجلات اللعب | نعم |
+| POST | /api/v1/referral/apply | استخدام رمز الإحالة | نعم |
+| POST | /api/v1/verify/send-email | إرسال رمز التحقق للبريد | نعم |
+| POST | /api/v1/verify/confirm-email | تأكيد البريد الإلكتروني | نعم |
+| GET | /api/v1/ticket/list | قائمة التذاكر | نعم |
+| POST | /api/v1/ticket/create | إنشاء تذكرة | نعم |
+| POST | /api/v1/ticket/{id}/reply | الرد على التذكرة | نعم |
+| GET | /api/v1/platform/stats | إحصائيات المنصة | لا |
 
-| GET | /api/platform/stats | إحصائيات المنصة | لا |
 ## 3. وظائف لوحة الإدارة
 
 ### 3.1 واجهات API (جديدة)
 
 | الطريقة | المسار | الوصف |
 |------|------|------|
-| GET | /admin/dashboard/platform | بيانات لوحة تحكم المنصة |
-| GET | /admin/analytics/overview | نظرة عامة على المنصة (تجميع MySQL لحظي) |
-| GET | /admin/analytics/game-ranking | ترتيب الألعاب |
-| GET | /admin/analytics/dau-trend | اتجاه DAU |
-| GET | /admin/analytics/hourly-trend | الاتجاه بالساعة |
-| GET | /admin/analytics/action-distribution | توزيع السلوكيات |
-| GET | /admin/analytics/revenue | تحليل الإيرادات |
-| GET | /admin/analytics/conversion | معدل تحويل الألعاب |
-| GET | /admin/analytics/probability | الاحتمال المشترك/الشرطي |
-| GET | /admin/analytics/retention | تحليل الاحتفاظ D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | قمع التحويل |
-| GET | /admin/analytics/arpu | اتجاه ARPU/ARPPU |
-| GET | /admin/analytics/economy | مؤشرات اقتصاد عملات الألعاب |
-| GET | /admin/report/summary | ملخص التقارير (مستخدمون جدد/إيداعات/سحوبات/تحويلات/جولات) |
-| GET | /admin/report/daily | تقرير يومي (تجميع يومي، الأيام بدون بيانات تُعبأ بـ 0) |
-| GET | /admin/report/export | تصدير التقرير اليومي CSV (UTF-8 BOM) |
-| GET | /admin/game/list | قائمة الألعاب |
-| POST | /admin/game/create | إنشاء لعبة (تشمل provider_config) |
-| PUT | /admin/game/{id} | تعديل اللعبة |
-| GET | /admin/withdraw/orders | قائمة طلبات السحب |
-| PUT | /admin/withdraw/review | مراجعة السحب |
-| GET | /admin/ticket/list | قائمة التذاكر |
-| GET | /admin/ticket/{id} | تفاصيل التذكرة |
-| POST | /admin/ticket/{id}/reply | الرد على التذكرة |
-| POST | /admin/ticket/{id}/close | إغلاق التذكرة |
-| POST | /admin/ticket/{id}/assign | تعيين المعالج |
+| GET | /admin/v1/dashboard/platform | بيانات لوحة تحكم المنصة |
+| GET | /admin/v1/analytics/overview | نظرة عامة على المنصة (تجميع MySQL لحظي) |
+| GET | /admin/v1/analytics/game-ranking | ترتيب الألعاب |
+| GET | /admin/v1/analytics/dau-trend | اتجاه DAU |
+| GET | /admin/v1/analytics/hourly-trend | الاتجاه بالساعة |
+| GET | /admin/v1/analytics/action-distribution | توزيع السلوكيات |
+| GET | /admin/v1/analytics/revenue | تحليل الإيرادات |
+| GET | /admin/v1/analytics/conversion | معدل تحويل الألعاب |
+| GET | /admin/v1/analytics/probability | الاحتمال المشترك/الشرطي |
+| GET | /admin/v1/analytics/retention | تحليل الاحتفاظ D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | قمع التحويل |
+| GET | /admin/v1/analytics/arpu | اتجاه ARPU/ARPPU |
+| GET | /admin/v1/analytics/economy | مؤشرات اقتصاد عملات الألعاب |
+| GET | /admin/v1/report/summary | ملخص التقارير (مستخدمون جدد/إيداعات/سحوبات/تحويلات/جولات) |
+| GET | /admin/v1/report/daily | تقرير يومي (تجميع يومي، الأيام بدون بيانات تُعبأ بـ 0) |
+| GET | /admin/v1/report/export | تصدير التقرير اليومي CSV (UTF-8 BOM) |
+| GET | /admin/v1/game/list | قائمة الألعاب |
+| GET | /admin/v1/game/{id} | تفاصيل اللعبة |
+| POST | /admin/v1/game/launch | معاينة تشغيل اللعبة (للقراءة فقط) |
+| POST | /admin/v1/game/create | إنشاء لعبة (تشمل provider_config) |
+| PUT | /admin/v1/game/{id} | تعديل اللعبة |
+| GET | /admin/v1/withdraw/orders | قائمة طلبات السحب |
+| PUT | /admin/v1/withdraw/review | مراجعة السحب |
+| GET | /admin/v1/ticket/list | قائمة التذاكر |
+| GET | /admin/v1/ticket/{id} | تفاصيل التذكرة |
+| POST | /admin/v1/ticket/{id}/reply | الرد على التذكرة |
+| POST | /admin/v1/ticket/{id}/close | إغلاق التذكرة |
+| POST | /admin/v1/ticket/{id}/assign | تعيين المعالج |
 
 ## 4. واجهات Provider (استدعاءات جهة اللعبة)
 
@@ -250,21 +252,21 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | game_game | +provider_config (JSON) |
 | game_game_play_log | +round_id، +bet_amount، +win_amount |
 
-**الإجمالي: 43 جدولًا في install.sql** (جداول التوسعة البيئية العشرة في `install/`، غير مدمجة في install.sql). النماذج غير مشتركة: نسخة لكل من admin 46 / service 44.
+**الإجمالي: 78 جدولًا في install.sql**. النماذج: 52 مشتركة في `packages/platform-common/src/model/`؛ أما 8 في admin/app/model/ و10 في service/app/model/ فهي خاصة بكل مضيف (لا تداخل في أسماء الملفات).
 
 ## 8. تغطية الاختبارات
 
 | ملف الاختبار | عدد الحالات | نطاق التغطية |
 |---------|--------|---------|
-| PlatformTest | 56 | دقة bcmath/حسابات الاستبدال/رسوم السحب/الحدود/المخاطر/القسائم/KYC/i18n |
-| BackendEnhancementTest | 23 | خدمة التشفير/Hashids/Snowflake |
-| CaptchaTest | 7 | توليد/التحقق من الكابتشا |
-| EncryptionServiceTest | 6 | تشفير AES/إخفاء البيانات |
-| EnvConfigTest | 4 | إعدادات متغيرات البيئة |
-| HashidsServiceTest | 8 | دورة ترميز وفك ترميز المعرّفات |
-| SnowflakeServiceTest | 6 | تفرد توليد المعرّفات |
+| PlatformTest | 55 | دقة bcmath/حسابات الاستبدال/رسوم السحب/الحدود/المخاطر/القسائم/KYC/i18n |
+| BackendEnhancementTest | 27 | خدمة التشفير/Hashids/Snowflake |
+| CaptchaTest | 5 | توليد/التحقق من الكابتشا |
+| EncryptionServiceTest | 8 | تشفير AES/إخفاء البيانات |
+| EnvConfigTest | 6 | إعدادات متغيرات البيئة |
+| HashidsServiceTest | 6 | دورة ترميز وفك ترميز المعرّفات |
+| SnowflakeServiceTest | 5 | تفرد توليد المعرّفات |
 
-**الإجمالي: admin ~132 حالة / 8 ملفات؛ service 3 حالات (WebhookUrlSafety + EventBusMessageFormat). service غير مدمج في كسر CI عند الفشل.**
+**الإجمالي (phpunit --list-tests، القياس الحالي): admin 200 حالة / 21 ملفًا، service 273 حالة / 42 ملفًا (بما فيها WebhookUrlSafety + EventBusMessageFormat؛ التقرير: إعادة تشغيل 09-22 admin 190 + service 273، ولقطة 08-27 admin 153 + service 45). service غير مدمج في كسر CI عند الفشل (غير مُتحقَّق منه).**
 
 ---
 

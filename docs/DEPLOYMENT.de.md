@@ -25,17 +25,17 @@ Languages: **中文** · [English](DEPLOYMENT.en.md) · [한국어](DEPLOYMENT.k
 ## 2. Ein-Klick-Installationsassistent (empfohlen für neue Deployments)
 
 ```bash
-# 1. 克隆项目
+# 1. Projekt klonen
 git clone <repo-url> /opt/game-platform
 cd /opt/game-platform
 
-# 2. 启动安装向导
+# 2. Installationsassistenten starten
 php -S 0.0.0.0:8888 -t install/
 
-# 3. 浏览器打开 http://<服务器IP>:8888
-#    按向导完成：环境检查 → 数据库配置 → 管理员账户 → 自动安装
+# 3. Im Browser http://<Server-IP>:8888 öffnen
+#    Assistenten durchlaufen: Umgebungsprüfung → Datenbankkonfiguration → Administratorkonto → automatische Installation
 
-# 4. 安装依赖
+# 4. Abhängigkeiten installieren
 cd admin && composer install && cd ..
 cd service && composer install && cd ..
 
@@ -43,7 +43,7 @@ cd service && composer install && cd ..
 cd admin && php start.php start -d && cd ..
 cd service && php start.php start -d && cd ..
 
-# 6. 安全清理
+# 6. Sicherheitsbereinigung
 rm -rf install/
 
 # 7. Zugriff auf das Verwaltungsbackend: http://<Server-IP>:8789 (Standardport)
@@ -51,7 +51,7 @@ rm -rf install/
 
 Vom Installationsassistenten durchgeführte Schritte:
 - PHP-Umgebungsprüfung (Version, Erweiterungen, Verzeichnisrechte)
-- Ausführen des zusammengeführten SQL (`install/install.sql`), Erstellen von 52 Tabellen und Importieren der Seed-Daten
+- Ausführen des zusammengeführten SQL (`install/install.sql`), Erstellen von 78 Tabellen und Importieren der Seed-Daten
 - Erstellen des Super-Admin-Kontos (bcrypt-verschlüsselt, verknüpft mit der super_admin-Rolle)
 - Automatische Generierung der JWT-/Encryption-/Hashids-Schlüssel
 - Schreiben von `admin/.env` und `service/.env`
@@ -64,26 +64,26 @@ Vom Installationsassistenten durchgeführte Schritte:
 ### 3.1 Ein-Klick-Start
 
 ```bash
-# 1. 克隆项目
+# 1. Projekt klonen
 git clone <repo-url> /opt/game-platform
 cd /opt/game-platform
 
-# 2. 使用一键安装向导配置环境（或手动配置 .env 文件）
+# 2. Umgebung mit dem Ein-Klick-Installationsassistenten konfigurieren (oder .env-Dateien manuell konfigurieren)
 #    Docker-Parameter wie Ports stehen in der .env im Projektstamm (Vorlage .env.example): cp .env.example .env
 php -S 0.0.0.0:8888 -t install/
-# 手动方式: cp admin/.env.example admin/.env && cp service/.env.example service/.env
+# Manuell: cp admin/.env.example admin/.env && cp service/.env.example service/.env
 
-# 3. 构建并启动所有服务
+# 3. Alle Dienste bauen und starten
 docker-compose up -d
 
-# 4. 查看状态
+# 4. Status prüfen
 docker-compose ps
 
-# 5. 查看日志
+# 5. Logs ansehen
 docker-compose logs -f
 ```
 
-### 2.2 Dienstübersicht
+### 3.2 Dienstübersicht
 
 | Dienst | Container-Name | Port | Beschreibung |
 |------|--------|------|------|
@@ -98,17 +98,17 @@ docker-compose logs -f
 > **Portkonfiguration**: Die Ports in der Tabelle sind Standardwerte und können alle in der `.env` im Projektstamm geändert werden (Vorlage `.env.example`; nach `cp .env.example .env` bearbeiten):
 > `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `LEADERBOARD_WS_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
 > Die upstream-Ports in `nginx.conf.template` werden vom offiziellen Image per envsubst automatisch gerendert; die Nginx-Konfiguration muss nicht manuell angepasst werden.
-> Hinweis: Eine Änderung von `ADMIN_PORT` / `SERVICE_PORT` aktualisiert nicht automatisch `APP_URL` in `admin/.env` und `SITE_URL` in `service/.env`; die externen Zugriffsadressen müssen ebenfalls angepasst werden.
+> Bei Docker-Bereitstellungen folgen die öffentlichen Adressen (`APP_URL` / `SITE_URL`) standardmäßig automatisch `ADMIN_PORT` / `SERVICE_PORT` (Format `http://localhost:Port`); für eine eigene Domain oder HTTPS `APP_URL` / `SITE_URL` in der Root-`.env` setzen (überschreibt die gleichnamigen Einträge in `admin/.env` und `service/.env`). Bei Bare-Metal-Bereitstellungen (manuell) müssen die Adressen bei Portänderungen weiterhin selbst angepasst werden.
 
-### 2.3 Datenbankinitialisierung
+### 3.3 Datenbankinitialisierung
 
 ```bash
-# 迁移文件会在 MySQL 首次启动时自动执行
-# 或手动执行:
+# Migrationsdateien werden beim ersten Start von MySQL automatisch ausgeführt
+# Oder manuell ausführen:
 docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform < install/install.sql
 ```
 
-### 2.4 Datenpersistenz
+### 3.4 Datenpersistenz
 
 Datenvolumes werden automatisch erstellt, keine manuelle Verwaltung erforderlich:
 
@@ -120,18 +120,18 @@ Datenvolumes werden automatisch erstellt, keine manuelle Verwaltung erforderlich
 
 Backup:
 ```bash
-# MySQL 备份
+# MySQL-Backup
 docker exec game-platform-mysql mysqldump -uroot -p${DB_PASSWORD} game-platform | gzip > backup_$(date +%Y%m%d).sql.gz
 
-# 恢复
+# Wiederherstellung
 gunzip < backup_20260101.sql.gz | docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform
 ```
 
 ---
 
-## 3. Manuelle Bereitstellung
+## 4. Manuelle Bereitstellung
 
-### 3.1 PHP-Umgebungskonfiguration
+### 4.1 PHP-Umgebungskonfiguration
 
 ```bash
 # Ubuntu/Debian
@@ -140,30 +140,30 @@ apt update && apt install -y php8.3-cli php8.3-mysql php8.3-mbstring php8.3-gd p
 # CentOS/RHEL
 dnf install -y php8.3-cli php8.3-mysqlnd php8.3-mbstring php8.3-gd php8.3-xml php8.3-pcntl php8.3-redis unzip git
 
-# 启用 OPcache（生产环境必须）
+# OPcache aktivieren (in Produktion erforderlich)
 echo "opcache.enable=1" >> /etc/php/8.3/cli/php.ini
 echo "opcache.enable_cli=1" >> /etc/php/8.3/cli/php.ini
 ```
 
-### 3.2 Abhängigkeiten installieren
+### 4.2 Abhängigkeiten installieren
 
 ```bash
 cd /opt/game-platform
 
-# 管理后台
+# Verwaltungsbackend
 cd admin
 cp .env.example .env
-# 编辑 .env: 数据库连接、JWT_SECRET、HASHIDS_SALT 等
+# .env bearbeiten: Datenbankverbindung, JWT_SECRET, HASHIDS_SALT usw.
 composer install --no-dev --optimize-autoloader
 
-# C端业务
+# C-End-Geschäft
 cd ../service
 cp .env.example .env
-# 编辑 .env (注意: SNOWFLAKE_WORKER_ID=2)
+# .env bearbeiten (Hinweis: SNOWFLAKE_WORKER_ID=2)
 composer install --no-dev --optimize-autoloader
 ```
 
-### 3.3 .env konfigurieren
+### 4.3 .env konfigurieren
 
 **Wichtige Konfiguration für admin/.env:**
 ```ini
@@ -270,7 +270,7 @@ TOSS_API_URL=https://api.tosspayments.com
 SITE_URL=https://your-domain.com  # 支付回调/跳转站点地址
 ```
 
-### 3.4 Dienste starten
+### 4.4 Dienste starten
 
 ```bash
 # Verwaltungsbackend (Standardport 8789, änderbar über APP_PORT in admin/.env)
@@ -281,12 +281,12 @@ php start.php start -d
 cd /opt/game-platform/service
 php start.php start -d
 
-# 验证
+# Verifizieren
 curl http://localhost:8789/health
 curl http://localhost:8792/health
 ```
 
-### 3.5 Prozessverwaltung (Systemd)
+### 4.5 Prozessverwaltung (Systemd)
 
 `/etc/systemd/system/game-platform-admin.service` erstellen:
 
@@ -319,9 +319,9 @@ systemctl enable --now game-platform-admin game-platform-service
 
 ---
 
-## 4. Nginx-Reverse-Proxy
+## 5. Nginx-Reverse-Proxy
 
-### 4.1 Konfigurationsdatei
+### 5.1 Konfigurationsdatei
 
 `/etc/nginx/sites-available/game-platform` erstellen:
 
@@ -330,6 +330,11 @@ systemctl enable --now game-platform-admin game-platform-service
 server {
     listen 80;
     server_name your-domain.com;
+
+    # nginx 自身发出的 301（如目录补斜杠 /admin-panel → /admin-panel/）改用相对
+    # Location，客户端按当前 host:port 解析；默认绝对跳转会退回 listen 端口，
+    # 非 80 端口部署（如 8080）时会跳错端口。
+    absolute_redirect off;
 
     # 管理后台 API
     location /admin/ {
@@ -369,19 +374,91 @@ server {
         proxy_pass http://127.0.0.1:8789;
     }
 
-    # 管理后台前端
-    location /admin-panel {
-        alias /opt/game-platform/admin/apps/flutter/build/web;
-        try_files $uri $uri/ /admin-panel/index.html;
-    }
+    # ================================================================
+    # 静态前端。两套前端定位不同：
+    #   apps/*         = C 端玩家端（调 /api/ → service）
+    #   admin/apps/*   = 管理台（调 /admin/ → admin）
+    # 各产物需先构建；React/Angular 必须带子路径前缀构建，否则资源 404：
+    #   apps/react            npm run build                （已含 --base=/app-react/）
+    #   apps/angular          npm run build                （已含 --base-href=/app-angular/）
+    #   admin/apps/react      npm run build                （已含 --base=/admin-react/）
+    #   admin/apps/angular    npm run build                （已含 --base-href=/admin-angular/）
+    #   admin/apps/flutter    flutter build web --base-href=/admin-flutter/
+    #   apps/flutter/platform flutter build web            （挂在根路径）
+    # try_files 末项是【内部重定向】，目标 index.html 不存在时会重新匹配同一 location
+    # 形成重定向环，nginx 报 500 而非 404。规避方式按 location 类型二选一：
+    #   root  型 → 末项追加 =404，把它降级为文件存在性判断；
+    #   alias 型 → 追加 =404 会让兜底不再经 alias 解析，已构建的 SPA 深链接也会 404，
+    #              所以保留原样，另加 location = 精确匹配兜底 URI（精确匹配优先，
+    #              不会再回到前缀 location，环不成立）。
+    # alias 的结尾斜杠必须与 location 的结尾斜杠一致（location /x 配 alias .../x，
+    # location /x/ 配 alias .../x/）。错配时 /x../<路径> 会越级解析到上级目录，可读
+    # 取 docroot 之外的任意文件，且 nginx -t 完全查不出来。
+    # ================================================================
 
-    # C端平台前端
+    # C 端主入口 — Flutter Web
     location / {
         root /opt/game-platform/apps/flutter/platform/build/web;
-        try_files $uri $uri/ /index.html;
+        try_files $uri $uri/ /index.html =404;
+    }
+
+    # C 端 React / Angular Web（URL 前缀与产物目录名不同，用 alias 直接指向产物）
+    location /app-react/ {
+        alias /opt/game-platform/apps/react/dist/;
+        try_files $uri $uri/ /app-react/index.html;
+    }
+    location = /app-react/index.html {
+        alias /opt/game-platform/apps/react/dist/index.html;
+    }
+
+    location /app-angular/ {
+        alias /opt/game-platform/apps/angular/dist/game-client-angular/browser/;
+        try_files $uri $uri/ /app-angular/index.html;
+    }
+    location = /app-angular/index.html {
+        alias /opt/game-platform/apps/angular/dist/game-client-angular/browser/index.html;
+    }
+
+    # 管理台 — 通用投放位：把任一控制台产物拷进 admin/public 即可
+    # 注意：location 不以 / 结尾时 alias 也【不能】以 / 结尾，否则 /admin-panel../.env
+    # 会解析到上级目录（admin/.env）造成任意文件读取；nginx -t 查不出这类错配。
+    location /admin-panel {
+        alias /opt/game-platform/admin/public;
+        try_files $uri $uri/ /admin-panel/index.html;
+    }
+    location = /admin-panel/index.html {
+        alias /opt/game-platform/admin/public/index.html;
+    }
+
+    # 管理台 React / Angular / Flutter
+    location /admin-react/ {
+        alias /opt/game-platform/admin/apps/react/dist/;
+        try_files $uri $uri/ /admin-react/index.html;
+    }
+    location = /admin-react/index.html {
+        alias /opt/game-platform/admin/apps/react/dist/index.html;
+    }
+
+    location /admin-angular/ {
+        alias /opt/game-platform/admin/apps/angular/dist/game-admin-angular/browser/;
+        try_files $uri $uri/ /admin-angular/index.html;
+    }
+    location = /admin-angular/index.html {
+        alias /opt/game-platform/admin/apps/angular/dist/game-admin-angular/browser/index.html;
+    }
+
+    location /admin-flutter/ {
+        alias /opt/game-platform/admin/apps/flutter/build/web/;
+        try_files $uri $uri/ /admin-flutter/index.html;
+    }
+    location = /admin-flutter/index.html {
+        alias /opt/game-platform/admin/apps/flutter/build/web/index.html;
     }
 }
 ```
+
+> Beim manuellen Deployment legen Sie die Build-Artefakte selbst in diese Verzeichnisse (vier C-End-Bäume: `apps/flutter/platform`, `apps/react`, `apps/angular`, `apps/harmonyos`; alle Konsolen-Frontends liegen unter `admin/apps/*` sowie im generischen Ablageplatz `admin/public`).
+> Beim Docker-Deployment siehe die nginx-Volume-Mounts in `docker-compose.yml` und `nginx.conf.template` (dieselben Pfade, Container-Wurzel `/var/www/...`). HarmonyOS wird als `.hap` verteilt und läuft nicht über nginx.
 
 Site aktivieren:
 ```bash
@@ -389,43 +466,43 @@ ln -s /etc/nginx/sites-available/game-platform /etc/nginx/sites-enabled/
 nginx -t && systemctl reload nginx
 ```
 
-### 4.2 SSL-Zertifikate
+### 5.2 SSL-Zertifikate
 
 ```bash
-# 使用 Certbot 自动获取 Let's Encrypt 证书
+# Mit Certbot automatisch ein Let's-Encrypt-Zertifikat beziehen
 apt install certbot python3-certbot-nginx
 certbot --nginx -d your-domain.com
 
-# 自动续期 (crontab)
+# Automatische Verlängerung (crontab)
 0 3 * * * certbot renew --quiet && systemctl reload nginx
 ```
 
 ---
 
-## 5. Geplante Aufgaben (Crontab)
+## 6. Geplante Aufgaben (Crontab)
 
 ```bash
-# 编辑 crontab
+# crontab bearbeiten
 crontab -e
 
-# 日统计快照 (每天凌晨 1:00)
+# Täglicher Statistik-Snapshot (täglich 1:00 Uhr)
 0 1 * * * cd /opt/game-platform/admin && php start.php queue ComputeDailyStats
 
-# 数据库备份 (每天凌晨 2:00)
+# Datenbank-Backup (täglich 2:00 Uhr)
 0 2 * * * cd /opt/game-platform/admin/database/backup && bash backup.sh
 
-# SSL 证书自动续期
+# Automatische Verlängerung des SSL-Zertifikats
 0 3 * * * certbot renew --quiet && systemctl reload nginx
 
-# 排行榜缓存刷新 (每小时)
+# Aktualisierung des Ranglisten-Caches (stündlich)
 0 * * * * cd /opt/game-platform/admin && php start.php queue RefreshLeaderboards
 ```
 
 ---
 
-## 6. Überwachung
+## 7. Überwachung
 
-### 6.1 Prometheus-Metriken
+### 7.1 Prometheus-Metriken
 
 Das Verwaltungsbackend stellt den `/metrics`-Endpunkt mit folgenden Metriken bereit:
 
@@ -437,35 +514,35 @@ Das Verwaltungsbackend stellt den `/metrics`-Endpunkt mit folgenden Metriken ber
 | openadmin_redis_connection_status | Redis-Verbindung (0/1) |
 | openadmin_memory_usage_bytes | Speichernutzung |
 
-### 6.2 Gesundheitschecks
+### 7.2 Gesundheitschecks
 
 ```bash
-# 管理后台
+# Verwaltungsbackend
 curl -f http://localhost:8789/health || echo "Admin DOWN"
 
-# C端业务
+# C-End-Geschäft
 curl -f http://localhost:8792/health || echo "Service DOWN"
 
-# 可在负载均衡器或监控系统中配置
+# Kann im Load Balancer oder Monitoring-System konfiguriert werden
 ```
 
-### 6.3 Logs
+### 7.3 Logs
 
 ```
 admin/runtime/logs/
 ├── stdout.log          # 标准输出
-└── workerman.log       # Workerman 日志
+└── webman-<date>.log   # Webman 日志
 
 service/runtime/logs/
 ├── stdout.log
-└── workerman.log
+└── webman-<date>.log
 ```
 
 ---
 
-## 7. Leistungsoptimierung
+## 8. Leistungsoptimierung
 
-### 7.1 PHP-OPcache
+### 8.1 PHP-OPcache
 
 ```ini
 ; /etc/php/8.3/cli/php.ini
@@ -476,7 +553,7 @@ opcache.max_accelerated_files=10000
 opcache.validate_timestamps=0  # 生产环境关闭文件检查
 ```
 
-### 7.2 MySQL-Optimierung
+### 8.2 MySQL-Optimierung
 
 ```ini
 # /etc/mysql/conf.d/game-platform.cnf
@@ -488,14 +565,14 @@ max_connections = 200
 query_cache_type = 0               # MySQL 8.0 已移除
 ```
 
-### 7.3 Anzahl der Worker-Prozesse
+### 8.3 Anzahl der Worker-Prozesse
 
 ```php
 // config/process.php
 'count' => cpu_count() * 2,  // 生产环境建议 2-4 倍 CPU 核心数
 ```
 
-### 7.4 Redis-Cache-Strategie
+### 8.4 Redis-Cache-Strategie
 
 | Cache-Schlüssel | TTL | Beschreibung |
 |--------|-----|------|
@@ -506,12 +583,12 @@ query_cache_type = 0               # MySQL 8.0 已移除
 
 ---
 
-## 8. Sicherheitshärtung
+## 9. Sicherheitshärtung
 
-### 8.1 Schlüsselgenerierung
+### 9.1 Schlüsselgenerierung
 
 ```bash
-# 生成随机密钥
+# Zufällige Schlüssel generieren
 JWT_SECRET=$(openssl rand -hex 32)
 HASHIDS_SALT=$(openssl rand -hex 16)
 ENCRYPTION_KEY=$(openssl rand -hex 16)
@@ -525,10 +602,10 @@ echo "ENCRYPTION_KEY=$ENCRYPTION_KEY"
 echo "ENCRYPTABLE_KEY=$ENCRYPTABLE_KEY"
 ```
 
-### 8.2 Firewall
+### 9.2 Firewall
 
 ```bash
-# 仅开放必要端口
+# Nur die notwendigen Ports öffnen
 ufw default deny incoming
 ufw default allow outgoing
 ufw allow 22/tcp      # SSH
@@ -536,13 +613,13 @@ ufw allow 80/tcp      # HTTP
 ufw allow 443/tcp     # HTTPS
 ufw enable
 
-# 内部端口不应暴露
+# Interne Ports sollten nicht exponiert werden
 # 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
 # Oben stehen die Standardports; wurden die .env im Projektstamm bzw. die jeweiligen .env geändert, gelten die tatsächlichen Werte
-# 仅通过 127.0.0.1 访问
+# Nur über 127.0.0.1 erreichbar
 ```
 
-### 8.3 Dateiberechtigungen
+### 9.3 Dateiberechtigungen
 
 ```bash
 chown -R www-data:www-data /opt/game-platform
@@ -555,78 +632,78 @@ chmod 600 /opt/game-platform/service/.env
 
 ---
 
-## 9. Fehlerbehebung
+## 10. Fehlerbehebung
 
-### 9.1 Dienst startet nicht
+### 10.1 Dienst startet nicht
 
 ```bash
-# 前台运行查看错误
+# Im Vordergrund ausführen, um Fehler zu sehen
 cd /opt/game-platform/admin && php start.php start
 
-# 检查端口占用
+# Portbelegung prüfen
 ss -tlnp | grep -E '8789|8792'
 
-# 检查日志
-tail -f runtime/logs/workerman.log
+# Logs prüfen
+tail -f runtime/logs/webman-$(date +%F).log
 ```
 
-### 9.2 Datenbankverbindung fehlgeschlagen
+### 10.2 Datenbankverbindung fehlgeschlagen
 
 ```bash
-# 测试连接
+# Verbindung testen
 mysql -h 127.0.0.1 -u game-platform -p game-platform -e "SELECT 1"
 
-# 检查 .env 配置
+# .env-Konfiguration prüfen
 grep DB_ admin/.env
 ```
 
-### 9.3 Redis-Verbindung fehlgeschlagen
+### 10.3 Redis-Verbindung fehlgeschlagen
 
 ```bash
-# 测试连接
+# Verbindung testen
 redis-cli -h 127.0.0.1 -p 6379 -a <password> ping
 
-# 预期返回 PONG
+# PONG wird erwartet
 ```
 
-### 9.4 Elasticsearch nicht verfügbar
+### 10.4 Elasticsearch nicht verfügbar
 
 ```bash
-# 测试连接
+# Verbindung testen
 curl http://127.0.0.1:9200
 
-# 搜索功能会自动回退到 LIKE 查询，不会中断服务
+# Die Suche fällt automatisch auf LIKE-Abfragen zurück, der Dienst wird nicht unterbrochen
 ```
 
-### 9.5 Leistungsprobleme
+### 10.5 Leistungsprobleme
 
 ```bash
-# 检查 worker 进程数
+# Anzahl der Worker-Prozesse prüfen
 php start.php status
 
-# 查看内存使用
+# Speicherverbrauch ansehen
 free -h
 
-# 检查数据库慢查询
+# Langsame Datenbankabfragen prüfen
 mysql -e "SHOW VARIABLES LIKE 'slow_query_log';"
 ```
 
 ---
 
-## 10. Upgrade-Anleitung
+## 11. Upgrade-Anleitung
 
 ```bash
-# 1. 拉取最新代码
+# 1. Neuesten Code ziehen
 cd /opt/game-platform && git pull origin main
 
-# 2. 更新依赖
+# 2. Abhängigkeiten aktualisieren
 cd admin && composer install --no-dev --optimize-autoloader
 cd ../service && composer install --no-dev --optimize-autoloader
 
-# 3. 执行新迁移（如有）
+# 3. Neue Migrationen ausführen (falls vorhanden)
 mysql -u game-platform -p game-platform < install/新迁移文件.sql
 
-# 4. 平滑重启（不中断服务）
+# 4. Sanfter Neustart (ohne Dienstunterbrechung)
 cd /opt/game-platform/admin && php start.php reload
 cd /opt/game-platform/service && php start.php reload
 ```

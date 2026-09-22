@@ -14,6 +14,8 @@ flowchart TB
         A1["Flutter Web PC<br/>Administration"]
         A2["Flutter Web PC<br/>Plateforme utilisateur C"]
         A3["HarmonyOS ArkTS<br/>Client mobile/tablette"]
+        A4["React · Angular<br/>Administration"]
+        A5["React · Angular<br/>Plateforme utilisateur C"]
     end
 
     subgraph "Couche passerelle (Nginx)"
@@ -34,7 +36,7 @@ flowchart TB
     end
 
     subgraph "Couche stockage"
-        E1[("MySQL 8.0<br/>Stockage principal<br/>52 tables")]
+        E1[("MySQL 8.0<br/>Stockage principal<br/>78 tables")]
         E2[("Redis<br/>Session/cache/rate-limit<br/>EventBus/heartbeat")]
         E3[("Elasticsearch<br/>Recherche plein texte")]
         E4[("ClickHouse<br/>Analyse OLAP<br/>Calculs de probabilité")]
@@ -46,7 +48,7 @@ flowchart TB
         F3["OAuth (7 plateformes)<br/>Google/Facebook/Apple<br/>X(Twitter)/Microsoft<br/>LinkedIn/GitHub"]
     end
 
-    A1 & A2 & A3 -->|"HTTPS/JSON<br/>JWT Bearer"| B1
+    A1 & A2 & A3 & A4 & A5 -->|"HTTPS/JSON<br/>JWT Bearer"| B1
     B1 -->|"/admin/*"| C1
     B1 -->|"/api/*"| C2
     C1 & C2 --> D0 & D1 & D2 & D3 & D4
@@ -64,7 +66,7 @@ Couche de routes: config/route.php
   ↓
 Chaîne de middleware: Cors → SecurityFilter → RateLimit → AdminAuth → AdminPermission → OperationLog
   ↓
-Couche contrôleurs (28):
+Couche contrôleurs (45):
   ┌──────────────────────────────────────────────────────────┐
   │ Dashboard / User / Role / Permission / Config / Log      │ ← existant
   │ Profile / Export / Import / Upload / Health / Docs       │ ← existant
@@ -86,9 +88,9 @@ Couche stockage: MySQL / Redis / Elasticsearch / ClickHouse
 ```
 Couche de routes: config/route.php
   ↓
-Chaîne de middleware: Cors → SecurityFilter → RateLimit → Language → ApiVersion → [UserAuth | ProviderAuth]
+Chaîne de middleware: TraceId → Cors → SecurityFilter → RateLimit → Language → [UserAuth | ProviderAuth | SdkSessionAuth]
   ↓
-Couche contrôleurs (25):
+Couche contrôleurs (34):
   ┌──────────────────────────────────────────────────────────┐
   │ Auth / Wallet / Deposit / Exchange / Withdraw            │ ← existant
   │ Game / User / Announcement / Captcha                     │ ← existant
@@ -98,7 +100,7 @@ Couche contrôleurs (25):
   │ Provider / Ticket / Verification                         │ ← nouveau
   └──────────────────────────────────────────────────────────┘
   ↓
-Couche services: VIP / Achievement / EventBus / FeatureFlag / Risk / GameSession
+Couche services: VIP / Achievement / EventBus / FeatureFlag / Risk
   ↓
 Couche Provider: GameProvider → SelfProvider / ThirdPartyProvider
   ↓
@@ -181,7 +183,7 @@ Requête → Cors (cross-origin)
 
 ```
 API classiques:
-  Requête → Cors → SecurityFilter → RateLimit → Language → ApiVersion
+  Requête → TraceId → Cors → SecurityFilter → RateLimit → Language
        → [UserAuth] (JWT→401) → Controller → Réponse
 
 API Provider:
@@ -195,10 +197,10 @@ API Provider:
 ### 4.1 Flux de recharge
 
 ```
-Utilisateur → POST /api/deposit/create → création de la commande (status=pending)
+Utilisateur → POST /api/v1/deposit/create → création de la commande (status=pending)
      → création du paiement via GatewayFactory (Stripe Checkout (incl. Alipay/WeChat Pay APM)/facture NowPayments/charge Coinbase) → remplir checkout_url + expires_at(+1h) ; en cas d'échec, annulation CAS de la commande et nouvelle tentative
      → redirection vers le paiement tiers (Stripe (incl. Alipay/WeChat Pay)/PayPal/NowPayments[USDT TRC20/ERC20]/Coinbase[USDC/BTC/ETH])
-     → paiement réussi → callback /api/payment/callback
+     → paiement réussi → callback /api/v1/payment/callback
      → liste blanche des providers (stripe/paypal/nowpayments/coinbase/skrill/neteller/paysafecard/paytm/mercadopago/astropay/paypay/kakaopay/gcash uniquement) + contrôle d'usurpation inter-canaux + vérification de signature (fail-closed) + horodatage ±300s + contrôle bccomp du montant
      → mise à jour de la commande (status=confirmed, transactionnel)
      → UserWallet::addBalance() → crédit des devises de plateforme
@@ -211,10 +213,10 @@ Utilisateur → POST /api/deposit/create → création de la commande (status=pe
 ### 4.2 Flux d'échange
 
 ```
-Utilisateur → POST /api/exchange/quote → cotation
+Utilisateur → POST /api/v1/exchange/quote → cotation
      → VipService::getExchangeDiscount() → application de la remise VIP
      → VipService::getRateBonus() → application du bonus de taux VIP
-     → confirmation → POST /api/exchange/buy (ou sell)
+     → confirmation → POST /api/v1/exchange/buy (ou sell)
      → DB::beginTransaction()
      ├─ débit de la devise source (lockForUpdate)
      ├─ crédit de la devise cible
@@ -228,7 +230,7 @@ Utilisateur → POST /api/exchange/quote → cotation
 ### 4.3 Flux de retrait
 
 ```
-Utilisateur → POST /api/withdraw/apply
+Utilisateur → POST /api/v1/withdraw/apply
      → VipService::getWithdrawFeeDiscount() → application de l'exemption de frais VIP
      → contrôle de l'interrupteur global (PlatformConfig)
      → contrôle des plafonds (min_amount / daily_limit)
@@ -237,7 +239,7 @@ Utilisateur → POST /api/withdraw/apply
      → montant ≥ seuil → pending (validation manuelle)
      → enregistrement Transaction
 
-Administrateur → PUT /admin/withdraw/review
+Administrateur → PUT /admin/v1/withdraw/review
        → approve: marquer comme terminé
        → reject: retour des devises de plateforme + flux de remboursement
 ```
@@ -371,15 +373,28 @@ flowchart TB
 ## 7. Architecture des tests
 
 ```
-tests/
+tests/                             # 21 fichiers · 200 cas de test
 ├── bootstrap.php                  # Bootstrap PHPUnit
-├── PlatformTest.php               # 56 tests de logique métier
-├── BackendEnhancementTest.php     # 23 tests de chiffrement/services d'ID
-├── CaptchaTest.php                # 7 tests de captcha
-├── EncryptionServiceTest.php      # 6 tests de chiffrement/déchiffrement
-├── EnvConfigTest.php              # 4 tests de configuration d'environnement
-├── HashidsServiceTest.php         # 8 tests d'encodage/décodage d'ID
-└── SnowflakeServiceTest.php       # 6 tests d'ID Snowflake
+├── AuthControllerRegisterTest.php # 15 tests de robustesse des mots de passe à l'inscription
+├── BackendEnhancementTest.php     # 27 tests de chiffrement/services d'ID
+├── CaptchaTest.php                # 5 tests de captcha
+├── CdnProbeServiceTest.php        # 5 tests de sondage CDN
+├── CdnProviderModelTest.php       # 3 tests de modèle de fournisseur CDN
+├── ClickHouseServiceTest.php      # 16 tests de service ClickHouse
+├── ConfigDefaultsTest.php         # 4 tests de valeurs par défaut de configuration
+├── EncryptionServiceTest.php      # 8 tests de chiffrement/déchiffrement
+├── EnvConfigTest.php              # 6 tests de configuration d'environnement
+├── GameControllerTest.php         # 5 tests de contrôleur de jeu
+├── GameRouteTest.php              # 5 tests de routes de jeu
+├── HashidsServiceTest.php         # 6 tests d'encodage/décodage d'ID
+├── LeaderboardServiceTest.php     # 4 tests de service de classement
+├── NotificationServiceTest.php    # 3 tests de service de notification
+├── PayoutServiceTest.php          # 9 tests de service de paiement
+├── PlatformCommonTest.php         # 6 tests de constructeurs de requêtes communes
+├── PlatformTest.php               # 55 tests de logique métier
+├── ReportControllerTest.php       # 5 tests de plages de dates des rapports
+├── SnowflakeServiceTest.php       # 5 tests d'ID Snowflake
+└── TranslationServiceTest.php     # 8 tests de service de traduction
 ```
 
 ## 8. Attribution des ports
@@ -397,42 +412,59 @@ tests/
 
 ## 9. Documentation API
 
-La documentation API interactive est générée automatiquement à partir des annotations des contrôleurs via `hg/apidoc` :
+La documentation API interactive est générée automatiquement à partir des annotations des contrôleurs via `erikwang2013/apidoc-php` :
 
 | Documentation | Adresse | Contrôleurs | Points d'API |
 |------|------|--------|------|
-| Administration | :8789/apidoc/ | 28 | ~85 |
-| Métier C | :8792/apidoc/ | 25 | ~65 |
+| Administration | :8789/apidoc/ | 45 | 154 |
+| Métier C | :8792/apidoc/ | 34 | 107 |
 
 ## 10. Liste des tables de la base
 
-### Édition de base (14) + admin (7)
-game_user, game_user_wallet, game_user_game_wallet, game_game, game_game_currency,
-game_deposit_order, game_withdraw_order, game_exchange_record, game_transaction,
-game_payment_method, game_announcement, game-platform_config, game_language, game_translation,
-game_admin_user, game_admin_role, game_admin_permission, game_admin_user_role,
-game_admin_role_permission, game_operation_log, game_system_config
+### Édition de base (12) + admin (7)
+game_user, game_user_wallet, game_user_game_wallet,
+game_game, game_game_currency, game_deposit_order,
+game_withdraw_order, game_exchange_record, game_transaction,
+game_payment_method, game_announcement, game_platform_config,
+game_admin_user, game_admin_role, game_admin_permission,
+game_admin_user_role, game_admin_role_permission, game_operation_log,
+game_system_config
 
 ### Édition standard (10)
-game_user_oauth, game_user_session, game_user_identity, game_user_payment_account,
-game_withdraw_limit, game_game_server, game_game_play_log, game_risk_rule,
-game_risk_log, game_stat_daily
+game_user_identity, game_user_oauth, game_user_payment_account,
+game_user_session, game_game_server, game_game_play_log,
+game_withdraw_limit, game_risk_rule, game_risk_log,
+game_stat_daily
 
-### Édition complète (8)
-game_game_category, game_game_category_rel, game_leaderboard, game_coupon,
-game_user_coupon, game_country_config, game-platform_revenue
+### Édition complète (13)
+game_game_category, game_game_category_rel, game_leaderboard,
+game_coupon, game_user_coupon, game_language,
+game_translation, game_country_config, game_platform_revenue,
+game_notification, game_referral, game_referral_reward,
+game_user_2fa
 
-### Extension écosystème (10) ← nouveau
+### Extension écosystème (14) ← nouveau
 game_ticket, game_ticket_reply, game_device_token,
 game_vip_level, game_user_vip, game_exp_log,
-game_achievement, game_user_achievement,
-game_friend, game_message
+game_achievement, game_user_achievement, game_friend,
+game_message, game_cdn_provider, game_referral_commission,
+game_tournament, game_tournament_entry
 
-**Total : 52 tables**
+### Ajouts v1.3.15-22 (22 tables)
+game_event_outbox, game_reconciliation_batch, game_reconciliation_diff,
+game_reconciliation_statement, game_device_fingerprint, game_device_account_map,
+game_ip_reputation, game_account_account_link, game_activity,
+game_activity_participation, game_activity_reward_log, game_anticheat_event,
+game_anticheat_daily_stat, game_group, game_group_member,
+game_share_link, game_aml_rule, game_aml_hit,
+game_kyc_level, game_user_kyc, game_user_trust,
+game_risk_cluster
+
+**Total : 78 tables**
 
 ## 11. Feature flags
 
-Basés sur l'espace de noms `feature.*` de `game-platform_config`, sans dépendance supplémentaire :
+Basés sur l'espace de noms `feature.*` de `game_platform_config`, sans dépendance supplémentaire :
 
 | Interrupteur | Défaut | Fonction |
 |------|------|------|

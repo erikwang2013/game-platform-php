@@ -65,10 +65,10 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.
 |---|------|------|
 | Rute | `config/route.php` | Pemetaan URL ke kontroler, pengikatan middleware, rute ber-versi |
 | Middleware | `app/middleware/` | Pemblokiran serangan (SecurityFilter), rate limit (RateLimit), autentikasi (JWT), otorisasi (RBAC) |
-| Kontroler | 30: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (sisi admin) + Captcha/Auth (API v1) | Validasi parameter permintaan, pemanggilan logika bisnis, format respons |
-| Layanan bisnis | `common/service/` | Analisis data: GameDashboardService（ringkasan/peringkat/trend）、DepositLogService（pendapatan/konversi）、ProbabilityService（probabilitas gabungan/kondisional, pembangun SQL）；saat DB bermasalah mengembalikan data kosong bukan error |
+| Kontroler | 45: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (sisi admin) + Captcha/Auth (API v1) | Validasi parameter permintaan, pemanggilan logika bisnis, format respons |
+| Layanan bisnis | `packages/platform-common/src/service/` | Analisis data: GameDashboardService（ringkasan/peringkat/trend）、DepositLogService（pendapatan/konversi）、ProbabilityService（probabilitas gabungan/kondisional, pembangun SQL）；saat DB bermasalah mengembalikan data kosong bukan error |
 | Model data | `app/model/` | Pemetaan ORM, relasi, enkripsi/dekripsi kolom |
-| Utilitas publik | `app/common/` | Layanan Hashids, Snowflake, Encryption |
+| Utilitas publik | `packages/platform-common/src/` | Layanan Hashids, Snowflake, Encryption |
 
 ### 2.2 Siklus Hidup Permintaan
 
@@ -86,16 +86,16 @@ Route 匹配
   SecurityFilter ──────► HTTP方法检查 → 405 (仅允许 GET/POST/PUT/DELETE/OPTIONS/HEAD)
   │                     XSS/SQL注入/路径遍历/命令注入/CSRF 攻击拦截 (403)
   ▼
-RateLimit ───────────► Redis 滑动窗口限流
+  RateLimit ───────────► Redis 滑动窗口限流
   │ (失败返回 429 + Retry-After 头)
   ▼
-AdminAuth ──────────► JWT 验证，注入 $request->adminId
+  AdminAuth ──────────► JWT 验证，注入 $request->adminId
   │ (失败返回 401)
   ▼
-AdminPermission ────► RBAC 权限校验（Redis 60s 缓存）
+  AdminPermission ────► RBAC 权限校验（Redis 60s 缓存）
   │ (失败返回 403)
   ▼
-OperationLog ───────► 操作日志记录 (POST/PUT/DELETE)，自动检测来源端
+  OperationLog ───────► 操作日志记录 (POST/PUT/DELETE)，自动检测来源端
   │
   ▼
 Controller::method()
@@ -209,10 +209,10 @@ Contoh ekstensi——menambahkan API v2:
 3. Berikan versi secara eksplisit ke `v()`: `v('AuthController', 'login', 'v2')`
 
 ```bash
-# 使用 v1
+# Gunakan v1
 curl http://host/api/v1/auth/login
 
-# 使用 v2
+# Gunakan v2
 curl http://host/api/v2/auth/login
 ```
 
@@ -466,7 +466,7 @@ Integrasi berkelanjutan GitHub Actions didefinisikan di `.github/workflows/ci.ym
 
 ### 8.5 Monitoring
 
-Endpoint `GET /metrics`（`MetricsController`）mengekspos 5 metrik gauge dalam format teks Prometheus: total permintaan HTTP, jumlah pengguna aktif, status koneksi database/Redis, penggunaan memori.
+Endpoint `GET /metrics`（`MetricsController`）mengekspos 18 metrik gauge dalam format teks Prometheus: pengguna aktif/total, status koneksi database/Redis/ES, metrik memori/CPU/proses, penarikan tertunda dan selisih rekonsiliasi.
 
 ### 8.6 Persyaratan Lingkungan
 

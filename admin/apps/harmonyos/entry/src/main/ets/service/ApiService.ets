@@ -5,11 +5,7 @@
 import http from '@ohos.net.http';
 import { ApiResponse } from '../model/DataModels';
 import { TokenManager } from '../utils/TokenManager';
-
-// 开发环境地址 — 真机部署时修改为实际服务器地址
-// 模拟器: http://10.0.2.2:8792
-// 真机: http://<服务器IP>:8792
-const BASE_URL = 'http://10.0.2.2:8792'; // 模拟器访问宿主机
+import { API_BASE_URL } from '../common/AppConfig';
 
 /**
  * HTTP API 服务 — 支持 JWT 无感刷新
@@ -43,7 +39,7 @@ export class ApiService {
       options.extraData = JSON.stringify(body);
     }
 
-    const url = `${BASE_URL}${path}`;
+    const url = `${API_BASE_URL}${path}`;
     const response = await this.httpRequest.request(url, options);
 
     // 401 时先尝试刷新 token，而不是直接踢回登录页
@@ -79,7 +75,7 @@ export class ApiService {
 
     try {
       const refreshResponse = await this.httpRequest.request(
-        `${BASE_URL}/api/v1/auth/refresh`,
+        `${API_BASE_URL}/api/v1/auth/refresh`,
         {
           method: http.RequestMethod.POST,
           header: {

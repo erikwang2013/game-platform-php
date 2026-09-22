@@ -29,7 +29,7 @@ Languages: **中文** · [English](ARCHITECTURE-DESIGN.en.md) · [한국어](ARC
 | 拡張性 | 将来モジュール単位でマイクロサービスに分割可能 | 独立したスケールアウトをネイティブサポート |
 | チーム規模 | 小規模チーム向き (1-5人) | 複数チームの並行開発向き |
 
-**決定**: admin/（管理バックエンド）と service/（C端業務）は 2 つの独立した webman インスタンスで、同機デプロイ（異なるポート）も分離デプロイも可能。共有レイヤー common/ は PSR-4 autoload でコード重複を解消。将来の業務量拡大後、service/ は複数のマイクロサービス（ユーザーサービス、ウォレットサービス、ゲームサービス）に分割可能。
+**決定**: admin/（管理バックエンド）と service/（C側業務）は 2 つの独立した webman インスタンスで、同機デプロイ（異なるポート）も分離デプロイも可能。共有レイヤー common/ は PSR-4 autoload でコード重複を解消。将来の業務量拡大後、service/ は複数のマイクロサービス（ユーザーサービス、ウォレットサービス、ゲームサービス）に分割可能。
 
 ### 2.2 なぜ伝統的な PHP-FPM ではなく webman v2 なのか？
 
@@ -200,10 +200,10 @@ block  → 拒绝操作
 
 ### 6.2 KYC 実名認証
 
-3 段階認証体系:
+出金限度額ティア（game_withdraw_limit）:
 - `default` — 未認証、基本限度額
 - `verified` — KYC 審査通過、限度額引き上げ + 手数料引き下げ
-- `vip` — VIP レベル、最高限度額 + 手数料ゼロ
+- `vip` — 予約ティア（最高限度額 + 手数料ゼロ）。現在のコードは default/verified のみを読み取り、VIP 手数料割引は経験値に応じて別途計算されます
 
 認証フロー:
 ```
@@ -219,9 +219,9 @@ Google / Facebook / Apple ログインをサポート:
 
 ```
 前端点击 OAuth 按钮
-  → GET /api/auth/oauth/{provider} → 获取授权URL
+  → GET /api/v1/auth/oauth/{provider} → 获取授权URL
   → 跳转第三方授权页 → 用户同意
-  → 回调 POST /api/auth/oauth/{provider}/callback
+  → 回调 POST /api/v1/auth/oauth/{provider}/callback
   → 查找已有绑定 → 直接登录
   → 无绑定 → 自动注册新用户 + 绑定 + 创建钱包
 ```
@@ -229,7 +229,7 @@ Google / Facebook / Apple ログインをサポート:
 ### 6.4 決済コールバック
 
 ```
-第三方支付完成 → POST /api/payment/callback
+第三方支付完成 → POST /api/v1/payment/callback
   → provider 白名单校验（仅 stripe/paypal）
   → 验签 fail-closed（未配 secret/webhook_id、验签失败、时间戳超 ±300s 一律拒绝）
   → 回调金额与订单金额 bccomp 核对（防跨渠道冒用）
@@ -251,7 +251,7 @@ Google / Facebook / Apple ログインをサポート:
 
 ## 7. 拡張性設計
 
-### 5.1 水平拡張
+### 7.1 水平拡張
 
 admin/ と service/ はどちらも複数 worker プロセスをサポート。Nginx リバースプロキシと組み合わせて複数マシンにデプロイし水平拡張を実現可能:
 
@@ -263,7 +263,7 @@ Nginx (负载均衡)
   └── service-2 (:8792)
 ```
 
-### 5.2 モジュール分割パス
+### 7.2 モジュール分割パス
 
 単一の service/ がボトルネックになった場合、以下のパスで分割:
 

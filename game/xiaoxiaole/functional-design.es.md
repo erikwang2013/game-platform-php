@@ -1,4 +1,4 @@
-# 田园消消乐 — Diseño funcional
+# Match-3 Campestre — Diseño funcional
 <!-- lang-nav -->
 
 Languages: [中文](functional-design.md) · [English](functional-design.en.md) · [한국어](functional-design.ko.md) · [Русский](functional-design.ru.md) · [Deutsch](functional-design.de.md) · [Français](functional-design.fr.md) · **Español** · [Português](functional-design.pt.md) · [हिन्दी](functional-design.hi.md) · [العربية](functional-design.ar.md) · [বাংলা](functional-design.bn.md) · [Bahasa Indonesia](functional-design.id.md) · [日本語](functional-design.ja.md)
@@ -14,7 +14,7 @@ Languages: [中文](functional-design.md) · [English](functional-design.en.md) 
 
 | Elemento | Contenido |
 |----|------|
-| Nombre | 田园消消乐 |
+| Nombre | Match-3 Campestre |
 | Tipo | match-3 de 8×8 + contención del ecosistema |
 | Perspectiva | maqueta ortográfica 2.5D fija, no rotable |
 | Operación | clic en dos piezas adyacentes para intercambiar (solo arriba/abajo/izquierda/derecha) |
@@ -152,7 +152,7 @@ La victoria/derrota se liquida **cuando termina toda la animación de la cadena*
 
 ### 8.1 Nivel cosecha
 
-- Pool: 小麦, 水稻, 玉米, 白菜, 西红柿, 苹果, 鸡, 鸭; hormigas/mariquitas con peso bajo.
+- Pool: trigo, arroz, maíz, col, tomate, manzana, gallina, pato; hormigas/mariquitas con peso bajo.
 - Victoria: eliminar **50** roles plant en 20 pasos (cereales+verduras+frutas+flores). Las aves eliminadas no cuentan.
 - Derrota: pasos en 0 y objetivo sin cumplir.
 - Habilidades: hoz (usable tras cargar).
@@ -160,7 +160,7 @@ La victoria/derrota se liquida **cuando termina toda la animación de la cadena*
 
 ### 8.2 Nivel ahuyentar
 
-- Pool: 鸡, 鸭, 鹅, 鸽, 狗. Sin plantas.
+- Pool: gallina, pato, ganso, paloma, perro. Sin plantas.
 - Victoria: en **90 segundos**, eliminar 15 aves de corral con la **eliminación ecológica del perro**.
 - Derrota: timeout.
 - **Eliminar tres gallinas por mismo tipo no cuenta para el objetivo** (hay que completar la ecológica del perro comiendo aves).
@@ -168,7 +168,7 @@ La victoria/derrota se liquida **cuando termina toda la animación de la cadena*
 
 ### 8.3 Nivel destructor de árboles
 
-- Pool: 小麦, 苹果, 玫瑰, 猪 (peso bajo). 3 pinos fijos, HP=5, no intercambiables y la caída no los atraviesa.
+- Pool: trigo, manzana, rosa, cerdo (peso bajo). 3 pinos fijos, HP=5, no intercambiables y la caída no los atraviesa.
 - Victoria: el HP de los 3 árboles llega a cero.
 - Derrota: se agotan los 25 pasos.
 - Daño a los árboles: ecológica del cerdo (el árbol está en el run de presas) -2; tres cerdos en línea disparan el **socavado 3×3** (árboles en el radio -5); azada sobre un árbol -3; match-3 normal adyacente -1.
@@ -176,7 +176,7 @@ La victoria/derrota se liquida **cuando termina toda la animación de la cadena*
 
 ### 8.4 Carnaval del elefante
 
-- Pool: 小麦, 苹果, 鸡, 狗, 猪. Al inicio, 1 elefante bloqueado cerca del centro.
+- Pool: trigo, manzana, gallina, perro, cerdo. Al inicio, 1 elefante bloqueado cerca del centro.
 - Victoria: eliminar 30 celdas con la **regla del elefante** (el mismo tipo/la ecológica no cuentan para este objetivo).
 - Derrota: se agotan los 30 pasos.
 - No se refresca un segundo elefante. El jugador intercambia las presas hasta colocarlas a los lados, arriba o abajo del elefante.

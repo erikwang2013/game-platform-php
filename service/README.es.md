@@ -13,7 +13,7 @@ El servicio API de la plataforma de usuarios (lado C) es un backend PHP de alto 
 |------|------|
 | Usuarios | Registro/inicio de sesión (usuario+contraseña + OAuth de 7 plataformas + 2FA TOTP), perfil |
 | Billetera | Billetera de monedas de plataforma (bloqueo optimista) + billetera de monedas de juego + historial de transacciones |
-| Depósito | 13 pasarelas de pago (Stripe/PayPal/NowPayments/Coinbase, etc.) con verificación de firma de callbacks y acreditación automática |
+| Depósito | 18 pasarelas de pago (Stripe/PayPal/NowPayments/Coinbase, etc.) con verificación de firma de callbacks y acreditación automática |
 | Retiro | Solicitud → revisión → pago, límites escalonados por KYC |
 | Cambio | Cotización en tiempo real moneda de plataforma ⇄ moneda de juego, descuentos VIP y bonos de tipo de cambio |
 | Juegos | Lista/categorías/búsqueda de juegos, historial de partidas, callbacks de liquidación de Provider |
@@ -39,8 +39,12 @@ El servicio API de la plataforma de usuarios (lado C) es un backend PHP de alto 
 ```
 service/
 ├── app/
-│   ├── api/v1/controller/  # Controladores API lado C (35)
-│   ├── middleware/         # Middleware (Cors/SecurityFilter/RateLimit/ApiVersion/UserAuth/ProviderAuth)
+│   ├── activity/           # Manejadores de actividades
+│   ├── api/v1/controller/  # Controladores API lado C (34)
+│   ├── bootstrap/          # Arranque de notificaciones
+│   ├── cdn/                # CDN multi-proveedor (Aliyun/Tencent/Huawei/Cloudflare/CloudFront + CdnFactory)
+│   ├── common/             # Común
+│   ├── middleware/         # Middleware (Cors/SecurityFilter/RateLimit/TraceId/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
 │   ├── model/              # Modelos de datos
 │   ├── service/            # Servicios de negocio (VIP/clasificaciones/riesgo/notificaciones, etc.)
 │   ├── event/              # Bus de eventos (EventBus Redis Pub/Sub)
@@ -49,9 +53,14 @@ service/
 ├── common/                 # Servicios compartidos (implementados en el paquete erik/platform-common)
 ├── config/                 # Archivos de configuración
 ├── public/                 # Entrada web
+├── runtime/                # Archivos de tiempo de ejecución
+├── support/                # Clases auxiliares
 ├── tests/                  # Pruebas PHPUnit
 ├── start.php               # Entrada de arranque
-└── composer.json
+├── windows.php             # Entrada de inicio en Windows
+├── composer.json
+├── phpunit.xml             # Configuración de PHPUnit
+└── Dockerfile              # Construcción de imagen
 ```
 
 ## Instalación en un clic
@@ -93,7 +102,7 @@ php start.php start -d     # segundo plano (demonio)
 ## Uso
 
 - Referencia de API: `docs/API.md` (referencia completa)
-- Documentación en línea: http://localhost:8792/apidoc/ (documentación interactiva hg/apidoc)
+- Documentación en línea: http://localhost:8792/apidoc/ (documentación interactiva erikwang2013/apidoc-php)
 - Comprobación de salud: `GET http://localhost:8792/health`
 - Frontend lado C: `apps/flutter/platform/` (plataforma de usuario Flutter Web)
 - Backend admin: `admin/` (backend admin y frontend `admin/apps/flutter/`)

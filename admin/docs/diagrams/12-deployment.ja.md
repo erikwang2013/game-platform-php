@@ -16,13 +16,13 @@ flowchart TB
 
     subgraph "应用服务"
         ADM["admin :8789<br/>管理后台"]
-        SVC["service :8792<br/>C端业务"]
+        SVC["service :8792<br/>C側業務"]
         LB["leaderboard-ws :8790<br/>WebSocket 排行榜"]
         CHAT["chat-ws :8791<br/>WebSocket 私信"]
     end
 
     subgraph "数据服务"
-        MYSQL["MySQL 8.0 :3306<br/>52 张表"]
+        MYSQL["MySQL 8.0 :3306<br/>78 张表"]
         REDIS["Redis 7 :6379<br/>缓存/限流/EventBus"]
         ES["Elasticsearch :9200<br/>全文检索"]
         CH["ClickHouse :8123<br/>OLAP 分析"]

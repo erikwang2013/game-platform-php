@@ -1,10 +1,10 @@
-# 导出业务流程
+# এক্সপোর্ট ব্যবসায়িক ফ্লো
 <!-- lang-nav -->
 
 Languages: [中文](09-export-flow.md) · [English](09-export-flow.en.md) · [한국어](09-export-flow.ko.md) · [Русский](09-export-flow.ru.md) · [Deutsch](09-export-flow.de.md) · [Français](09-export-flow.fr.md) · [Español](09-export-flow.es.md) · [Português](09-export-flow.pt.md) · [हिन्दी](09-export-flow.hi.md) · [العربية](09-export-flow.ar.md) · **বাংলা** · [Bahasa Indonesia](09-export-flow.id.md) · [日本語](09-export-flow.ja.md)
 
 
-## Excel 导出
+## Excel এক্সপোর্ট
 
 ```mermaid
 sequenceDiagram
@@ -25,7 +25,7 @@ sequenceDiagram
     CTL-->>C: 文件下载
 ```
 
-## PDF 导出
+## PDF এক্সপোর্ট
 
 ```mermaid
 sequenceDiagram

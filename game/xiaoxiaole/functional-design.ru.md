@@ -1,4 +1,4 @@
-# 田园消消乐 — функциональный дизайн
+# Деревенский три-в-ряд — функциональный дизайн
 <!-- lang-nav -->
 
 Languages: **中文** · [English](functional-design.en.md) · [한국어](functional-design.ko.md) · [Русский](functional-design.ru.md) · [Deutsch](functional-design.de.md) · [Français](functional-design.fr.md) · [Español](functional-design.es.md) · [Português](functional-design.pt.md) · [हिन्दी](functional-design.hi.md) · [العربية](functional-design.ar.md) · [বাংলা](functional-design.bn.md) · [Bahasa Indonesia](functional-design.id.md) · [日本語](functional-design.ja.md)
@@ -14,7 +14,7 @@ Languages: **中文** · [English](functional-design.en.md) · [한국어](funct
 
 | Пункт | Содержание |
 |----|------|
-| Название | 田园消消乐 |
+| Название | Деревенский три-в-ряд |
 | Тип | три-в-ряд 8×8 + экологическая сдержанность |
 | Обзор | фиксированный 2.5D-ортогональный макет, без вращения |
 | Управление | клик по двум соседним фигурам для обмена (только вверх/вниз/влево/вправо) |

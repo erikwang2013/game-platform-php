@@ -1,4 +1,4 @@
-# 开放管理后台 (open-admin)
+# ओपन एडमिन पैनल (open-admin)
 
 ## प्रोजेक्ट मास्कट
 
@@ -11,7 +11,7 @@ Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.
 
 webman v2 + Flutter पर आधारित फुल-स्टैक एडमिन बैकएंड प्रणाली।
 
-> [English version](README.en.md) | [架构设计图](docs/ARCHITECTURE.hi.md) | [设计文档](docs/DESIGN.hi.md) | [安全架构](docs/SECURITY.hi.md) | [API 参考](docs/API.hi.md)
+> [English version](README.en.md) | [आर्किटेक्चर डिज़ाइन आरेख](docs/ARCHITECTURE.hi.md) | [डिज़ाइन दस्तावेज़](docs/DESIGN.hi.md) | [सुरक्षा आर्किटेक्चर](docs/SECURITY.hi.md) | [API संदर्भ](docs/API.hi.md)
 
 ## सुविधा सूची
 
@@ -27,6 +27,7 @@ webman v2 + Flutter पर आधारित फुल-स्टैक एड�
 | | Excel बैच आयात | पंक्ति-दर-पंक्ति सत्यापन + त्रुटि रिपोर्ट |
 | 🔒 भूमिका अनुमतियाँ | भूमिका CRUD + अनुमति ट्री | RBAC method.path ग्रैन्युलैरिटी प्रमाणीकरण |
 | ⚙ सिस्टम कॉन्फ़िगरेशन | कुंजी-मान CRUD | समूह प्रबंधन |
+| 💳 पेमेंट विधि प्रबंधन | मल्टी-गेटवे बनाएं/अपडेट/हटाएं + सक्षम/अक्षम | 18 गेटवे (stripe/paypal/nowpayments/coinbase आदि) + देश-वार दृश्यता |
 | 🖥 CDN प्रबंधन | 5 प्रदाता कॉन्फ़िग CRUD + सक्षम/अक्षम + कनेक्टिविटी टेस्ट | क्रेडेंशियल AES एन्क्रिप्टेड, service केवल DB से पढ़ता है |
 | 📋 ऑपरेशन ऑडिट | लॉग क्वेरी + स्रोत पहचान | 8 प्लेटफ़ॉर्म स्वचालित पहचान |
 | 📁 फ़ाइल प्रबंधन | अपलोड/Excel निर्यात/PDF निर्यात | संवेदनशील डेटा स्वचालित मास्किंग |
@@ -64,51 +65,56 @@ webman v2 + Flutter पर आधारित फुल-स्टैक एड�
 ```
 open-admin/
 ├── app/
-│   ├── admin/controller/       # 管理端控制器
-│   │   ├── DashboardController.php # 仪表盘（Redis缓存）
-│   │   ├── UserController.php      # 用户 CRUD + 批量操作
-│   │   ├── RoleController.php      # 角色 CRUD
-│   │   ├── PermissionController.php# 权限 CRUD
-│   │   ├── ConfigController.php    # 系统配置 CRUD
-│   │   ├── LogController.php       # 操作日志查询
-│   │   ├── ProfileController.php   # 个人中心 + 登出
-│   │   ├── ExportController.php    # Excel/PDF 导出
-│   │   ├── ImportController.php    # Excel 导入用户
-│   │   ├── UploadController.php    # 文件上传
-│   │   ├── HealthController.php    # 健康检查
-│   │   ├── DocsController.php      # OpenAPI 文档
-│   │   └── BaseController.php      # 基础控制器
+│   ├── admin/v1/controller/    # प्रशासनिक नियंत्रक (45)
+│   │   ├── DashboardController.php  # डैशबोर्ड (Redis कैश)
+│   │   ├── UserController.php       # उपयोगकर्ता CRUD + बैच ऑपरेशन
+│   │   ├── RoleController.php       # भूमिका CRUD
+│   │   ├── PermissionController.php # अनुमति CRUD
+│   │   ├── ConfigController.php     # सिस्टम कॉन्फ़िगरेशन CRUD
+│   │   ├── LogController.php        # ऑपरेशन लॉग क्वेरी
+│   │   ├── ProfileController.php    # प्रोफ़ाइल + लॉगआउट
+│   │   ├── ExportController.php     # Excel/PDF निर्यात
+│   │   ├── ImportController.php     # Excel उपयोगकर्ता आयात
+│   │   ├── UploadController.php     # फ़ाइल अपलोड
+│   │   ├── HealthController.php     # स्वास्थ्य जाँच
+│   │   ├── DocsController.php       # OpenAPI दस्तावेज़
+│   │   └── BaseController.php       # आधार कंट्रोलर
 │   ├── api/
-│   │   └── v1/controller/          # API v1 控制器（URL 路径版本 /api/v1、/admin/v1）
-│   │       ├── CaptchaController.php # 点击验证码
-│   │       └── AuthController.php    # 登录/注册/刷新令牌
-│   ├── common/                 # 公共工具类
-│   │   ├── HashidsService.php  # ID 编解码
-│   │   ├── SnowflakeService.php# Snowflake ID 生成
-│   │   └── EncryptionService.php # 数据加解密 + 脱敏
-│   ├── middleware/             # 中间件
-│   │   ├── Cors.php            # 跨域
-│   │   ├── SecurityFilter.php  # 攻击检测拦截（HTTP方法限制/XSS/SQL注入/路径遍历/命令注入/CSRF）
-│   │   ├── RateLimit.php       # Redis 限流（滑动窗口 + 响应头）
-│   │   ├── AdminAuth.php       # JWT 认证 + 黑名单
-│   │   ├── AdminPermission.php # RBAC 权限校验
-│   │   └── OperationLog.php    # 操作日志自动记录（含来源端检测）
-│   └── model/                  # 数据模型
+│   │   └── v1/controller/          # API v1 कंट्रोलर (URL पथ से संस्करण: /api/v1, /admin/v1)
+│   │       ├── CaptchaController.php # क्लिक कैप्चा
+│   │       └── AuthController.php    # लॉगिन/पंजीकरण/टोकन रीफ़्रेश
+│   ├── common/                 # सामान्य उपयोगिता क्लास
+│   │   └── CdnProbeService.php # CDN कनेक्टिविटी जाँच (Hashids/Snowflake/Encryption composer पैकेज से)
+│   ├── middleware/             # मिडलवेयर
+│   │   ├── Cors.php            # क्रॉस-ओरिजिन
+│   │   ├── SecurityFilter.php  # आक्रमण डिटेक्शन और अवरोध (HTTP मेथड प्रतिबंध/XSS/SQL इंजेक्शन/पाथ ट्रैवर्सल/कमांड इंजेक्शन/CSRF)
+│   │   ├── RateLimit.php       # Redis दर सीमा (स्लाइडिंग विंडो + प्रतिक्रिया हेडर)
+│   │   ├── StaticFile.php      # स्थिर फ़ाइल सेवा (webman अंतर्निहित)
+│   │   ├── AdminAuth.php       # JWT प्रमाणीकरण + ब्लैकलिस्ट
+│   │   ├── AdminPermission.php # RBAC अनुमति सत्यापन
+│   │   └── OperationLog.php    # ऑपरेशन लॉग स्वचालित रिकॉर्ड (स्रोत पहचान सहित)
+│   ├── activity/               # गतिविधि हैंडलर (साइन-इन/आमंत्रण/दैनिक कार्य)
+│   ├── model/                  # डेटा मॉडल
+│   ├── process/                # प्रक्रियाएँ (Http, Monitor, RiskIpCron)
+│   ├── provider/               # गेम Provider परत (Self/ThirdParty/Factory)
+│   ├── service/                # सेवाएँ (वॉलेट/जोखिम सैंडबॉक्स)
+│   └── view/                   # व्यू टेम्पलेट
 ├── apps/
-│   ├── flutter/                # Flutter Web 管理后台（PC 风格）
+│   ├── angular/                # Angular वेब एडमिन बैकएंड
+│   ├── react/                  # React वेब एडमिन बैकएंड
+│   ├── flutter/                # Flutter Web एडमिन बैकएंड (PC शैली)
 │   │   └── lib/app/
-│   │       ├── pages/          # 5 个完整页面（仪表盘/用户/角色/配置/日志/个人中心）
-│   │       ├── services/       # ApiService（JWT 拦截器）+ AuthService（Token 持久化）
-│   │       └── layouts/        # 响应式管理后台布局（侧边栏+顶栏+内容区）
-│   └── harmonyos/              # HarmonyOS 原生客户端（Token 无感刷新）
-├── config/                     # 配置文件（含中文注释）
-│   ├── route.php               # 路由 + API 版本策略
-│   ├── middleware.php           # 全局中间件注册
-│   └── ...                     # 各组件配置
-├── install/        # SQL 迁移文件（含权限种子数据）
-├── public/                     # 公共入口
-├── runtime/                    # 运行时文件
-└── vendor/                     # Composer 依赖
+│   │       ├── pages/          # 20 पेज निर्देशिकाएँ
+│   │       ├── services/       # ApiService (JWT इंटरसेप्टर) + AuthService (Token पर्सिस्टेंस)
+│   │       └── layouts/        # रिस्पॉन्सिव एडमिन लेआउट (साइडबार+टॉपबार+कंटेंट क्षेत्र)
+│   └── harmonyos/              # HarmonyOS नेटिव क्लाइंट (Token साइलेंट रीफ़्रेश)
+├── config/                     # कॉन्फ़िगरेशन फ़ाइलें (चीनी टिप्पणियों सहित)
+│   ├── route.php               # रूट + API संस्करण रणनीति
+│   ├── middleware.php           # ग्लोबल मिडलवेयर रजिस्ट्रेशन
+│   └── server.php              # पोर्ट/प्रक्रिया कॉन्फ़िग
+├── public/                     # सार्वजनिक प्रवेश बिंदु
+├── runtime/                    # रनटाइम फ़ाइलें
+└── vendor/                     # Composer निर्भरताएँ
 ```
 
 ## पर्यावरण आवश्यकताएँ
@@ -173,7 +179,7 @@ php start.php start
 ```bash
 cd apps/flutter
 flutter pub get
-flutter run -d chrome    # Web 端（PC 管理后台风格）
+flutter run -d chrome    # वेब (PC एडमिन पैनल शैली)
 ```
 
 **HarmonyOS क्लाइंट (फ़ोन):**
@@ -182,25 +188,25 @@ DevEco Studio से `apps/harmonyos/` निर्देशिका खोल�
 
 ### 6. Docker Compose वन-क्लिक डिप्लॉयमेंट (प्रोडक्शन के लिए अनुशंसित)
 
-प्रोजेक्ट पूर्ण Docker ऑर्केस्ट्रेशन प्रदान करता है, जिसमें 5 सेवाएँ: Nginx, PHP (webman app), MySQL, Redis, Elasticsearch।
+प्रोजेक्ट पूर्ण Docker ऑर्केस्ट्रेशन प्रदान करता है, जिसमें 7 सेवाएँ: Nginx, admin (webman), service (webman), leaderboard-ws (WebSocket), MySQL, Redis, Elasticsearch।
 
 ```bash
-# 1. 配置 Docker 环境变量
+# 1. Docker पर्यावरण चर सेट करें
 cp .env.docker .env
 
-# 2. 启动所有服务
+# 2. सभी सेवाएँ शुरू करें
 docker-compose up -d
 
-# 3. 初始化数据库（进入 app 容器执行）
-docker-compose exec app mysql -h mysql -u root -p < install/install.sql
+# 3. डेटाबेस आरंभ करें (mysql कंटेनर से आयात करें)
+docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform < install/install.sql
 
-# 4. 访问
+# 4. एक्सेस करें
 # http://localhost:8789  (webman)
-# http://localhost:8080  (Nginx 反向代理)
+# http://localhost  (Nginx रिवर्स प्रॉक्सी)
 ```
 
 - `Dockerfile`: PHP 8.3 + OPcache + Composer, `php:8.3-cli` पर आधारित
-- `docker-compose.yml`: 5 सेवा ऑर्केस्ट्रेशन, नेटवर्क आइसोलेशन, डेटा वॉल्यूम पर्सिस्टेंस
+- `docker-compose.yml`: 7 सेवा ऑर्केस्ट्रेशन, नेटवर्क आइसोलेशन, डेटा वॉल्यूम पर्सिस्टेंस
 - `.env.docker`: Docker पर्यावरण के लिए विशेष पर्यावरण चर
 
 ## डेटाबेस मानक
@@ -266,15 +272,15 @@ Redis स्लाइडिंग विंडो एल्गोरिदम �
 वैश्विक मिडलवेयर सभी अनुरोधों पर क्रम से लागू होता है:
 
 ```
-Cors（跨域预处理 + 响应头）
-  → SecurityFilter（HTTP方法限制/请求体大小/Content-Type校验/XSS/SQL注入/路径遍历/命令注入/CSRF 攻击拦截）
-  → RateLimit（Redis 滑动窗口限流 + 账号锁定：5次登录失败锁定15分钟）
-  → AdminAuth（JWT 认证 + 黑名单，/admin/v1 路由组）
-  → AdminPermission（RBAC 鉴权，/admin/v1 路由组）
-  → OperationLog（POST/PUT/DELETE 自动记录，含来源端检测，/admin/v1 路由组）
+Cors (क्रॉस-ओरिजिन पूर्व-प्रसंस्करण + प्रतिक्रिया हेडर)
+  → SecurityFilter (HTTP मेथड प्रतिबंध/रिक्वेस्ट बॉडी आकार/Content-Type सत्यापन/XSS/SQL इंजेक्शन/पाथ ट्रैवर्सल/कमांड इंजेक्शन/CSRF आक्रमण अवरोध)
+  → RateLimit (Redis स्लाइडिंग विंडो दर सीमा + खाता लॉक: 5 बार लॉगिन विफल होने पर 15 मिनट लॉक)
+  → AdminAuth (JWT प्रमाणीकरण + ब्लैकलिस्ट, /admin/v1 रूट समूह)
+  → AdminPermission (RBAC प्राधिकरण, /admin/v1 रूट समूह)
+  → OperationLog (POST/PUT/DELETE स्वचालित रिकॉर्ड, स्रोत पहचान सहित, /admin/v1 रूट समूह)
 ```
 
-`/health` और `/api/docs` सार्वजनिक एंडपॉइंट हैं, केवल `Cors → SecurityFilter → RateLimit` से गुजरते हैं।
+`/health` सार्वजनिक एंडपॉइंट है और केवल `Cors → SecurityFilter → RateLimit` से गुजरता है; `/metrics` और `/api/docs` को अतिरिक्त रूप से `AdminAuth → AdminPermission` चाहिए।
 
 सुरक्षा संवर्द्धन:
 - **खाता लॉक**: लगातार 5 असफल लॉगिन पर खाता स्वचालित रूप से 15 मिनट लॉक, इस दौरान लॉगिन 429 लौटाता है
@@ -365,6 +371,11 @@ Authorization: Bearer <token>
 | `POST` | `/admin/v1/config` | कॉन्फ़िगरेशन आइटम बनाएं |
 | `PUT` | `/admin/v1/config/{id}` | कॉन्फ़िगरेशन आइटम अपडेट |
 | `DELETE` | `/admin/v1/config/{id}` | कॉन्फ़िगरेशन आइटम हटाएं (पासवर्ड पुष्टि आवश्यक) |
+| `GET` | `/admin/v1/payment/method/list` | पेमेंट विधि सूची |
+| `POST` | `/admin/v1/payment/method/toggle` | पेमेंट विधि सक्षम/अक्षम करें |
+| `POST` | `/admin/v1/payment/method/create` | पेमेंट विधि बनाएं |
+| `PUT` | `/admin/v1/payment/method/{id}` | पेमेंट विधि अपडेट करें |
+| `DELETE` | `/admin/v1/payment/method/{id}` | पेमेंट विधि हटाएं (लंबित ऑर्डर होने पर अस्वीकार) |
 | `GET` | `/admin/v1/log` | ऑपरेशन लॉग (पेजिनेशन + फ़िल्टर) |
 | `PUT` | `/admin/v1/profile` | व्यक्तिगत जानकारी अपडेट |
 | `PUT` | `/admin/v1/profile/password` | पासवर्ड बदलें |
@@ -405,12 +416,14 @@ Authorization: Bearer <token>
 
 ### Docker Compose (अनुशंसित)
 
-प्रोजेक्ट रूट में `docker-compose.yml` उपलब्ध है, 5 सेवाओं का ऑर्केस्ट्रेशन:
+प्रोजेक्ट रूट में `docker-compose.yml` उपलब्ध है, 7 सेवाओं का ऑर्केस्ट्रेशन:
 
 | सेवा | इमेज | पोर्ट |
 |------|------|------|
 | `nginx` | nginx:alpine | 80, 443 |
-| `app` | स्थानीय `Dockerfile` निर्माण | 8789 |
+| `admin` | स्थानीय `Dockerfile` निर्माण | 8789 |
+| `service` | स्थानीय `Dockerfile` निर्माण | 8792 |
+| `leaderboard-ws` | स्थानीय `Dockerfile` निर्माण | 8790, 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |
@@ -443,7 +456,7 @@ GitHub Actions निरंतर एकीकरण पाइपलाइन: `
 
 ## ओपन-सोर्स आसान नहीं, समर्थन का स्वागत है
 
-| 微信 | 支付宝 |
+| वीचैट भुगतान | अलीपे |
 |:---:|:---:|
 | ![微信](./docs/weixinpay.png "微信") | ![支付宝](./docs/alipay.png "支付宝") |
 

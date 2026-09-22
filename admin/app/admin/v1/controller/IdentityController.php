@@ -23,7 +23,7 @@ class IdentityController extends BaseController
     #[Apidoc\Method("GET")]
     #[Apidoc\Author("erik")]
     #[Apidoc\Param(name: "page", type: "int", require: false, desc: "页码")]
-    #[Apidoc\Param(name: "per_page", type: "int", require: false, desc: "每页数量")]
+    #[Apidoc\Param(name: "limit", type: "int", require: false, desc: "每页数量")]
     #[Apidoc\Param(name: "status", type: "string", require: false, desc: "审核状态(pending,approved,rejected)")]
     #[Apidoc\Returned(name: "id", type: "string", desc: "记录ID(hashid编码)")]
     public function list(Request $request): Response

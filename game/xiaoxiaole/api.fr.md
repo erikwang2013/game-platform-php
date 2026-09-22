@@ -1,10 +1,10 @@
-# 田园消消乐 — API d'intégration à la plateforme
+# Match-3 Champêtre — API d'intégration à la plateforme
 <!-- lang-nav -->
 
 Languages: [中文](api.md) · [English](api.en.md) · [한국어](api.ko.md) · [Русский](api.ru.md) · [Deutsch](api.de.md) · **Français** · [Español](api.es.md) · [Português](api.pt.md) · [हिन्दी](api.hi.md) · [العربية](api.ar.md) · [বাংলা](api.bn.md) · [Bahasa Indonesia](api.id.md) · [日本語](api.ja.md)
 
 
-> Ce document est le contrat d'interface complet entre 《田园消消乐》 et la plateforme de jeux. La stratification technique est dans `architecture.fr.md`, le calendrier dans `plan.fr.md`, les fonctionnalités joueurs dans `functional-design.fr.md`.
+> Ce document est le contrat d'interface complet entre Match-3 Champêtre et la plateforme de jeux. La stratification technique est dans `architecture.fr.md`, le calendrier dans `plan.fr.md`, les fonctionnalités joueurs dans `functional-design.fr.md`.
 
 ---
 

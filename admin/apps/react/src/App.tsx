@@ -9,8 +9,11 @@ import './App.css';
 
 /** 路由与 Shell 的 NAV 一一对应；每个页面按标签切换端点。 */
 export default function App() {
+  // 生产构建挂在子路径（build 脚本带 --base=/admin-react/），BASE_URL 随之变化。
+  // 必须去掉结尾斜杠：react-router 的 stripBasename 遇到以 "/" 结尾的 basename 会匹配不到子路径
+  const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/';
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />

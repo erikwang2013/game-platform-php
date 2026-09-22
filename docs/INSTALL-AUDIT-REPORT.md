@@ -41,7 +41,7 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 | `game_admin_role` | INSERT IGNORE (固定ID) |
 | `game_admin_permission` | INSERT IGNORE (固定ID) - 4次 |
 | `game_admin_role_permission` | WHERE NOT EXISTS 子查询 |
-| `game-platform_config` | INSERT IGNORE (固定ID) - 2次 |
+| `game_platform_config` | INSERT IGNORE (固定ID) - 2次 |
 | `game_language` | INSERT IGNORE (固定ID) |
 | `game_translation` | INSERT IGNORE (固定ID) |
 | `game_risk_rule` | INSERT IGNORE (固定ID) |

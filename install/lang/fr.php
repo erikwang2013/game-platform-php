@@ -143,7 +143,7 @@ return [
     'next_step_2' => 'Démarrez le service API : cd service && php start.php start -d (optionnel)',
     'next_step_3' => 'Connectez-vous au back-office avec le compte administrateur que vous venez de créer',
     'next_step_4' => 'Configurez les canaux de paiement, le CDN et les identifiants de messagerie dans « System Config » du panneau d\'administration',
-    'next_step_5' => 'Ouvrez le back-office (adresse par défaut) :',
+    'next_step_5' => 'Ouvrez le back-office (adresse issue de APP_URL dans admin/.env) :',
     'next_step_6' => 'Avant la mise en production, supprimez le répertoire install ou refusez l\'accès dans Nginx (voir docs/nginx-security.conf)',
     'security_title' => 'Notes de sécurité',
     'security_1' => 'Supprimez le répertoire install ou restreignez-y l\'accès (y compris install.lock)',

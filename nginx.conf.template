@@ -29,6 +29,11 @@ http {
         listen 80;
         server_name _;
 
+        # nginx 自身发出的 301（如目录补斜杠 /admin-panel → /admin-panel/）改用相对
+        # Location，客户端按当前 host:port 解析；默认的绝对跳转会退回 listen 端口，
+        # 非 80 端口发布（如 docker 映射 8080:80）时会跳错端口。
+        absolute_redirect off;
+
         # 管理后台 API
         location /admin/ {
             proxy_pass http://admin_api;
@@ -52,16 +57,73 @@ http {
             proxy_pass http://admin_api;
         }
 
-        # 静态文件 — 管理后台 Flutter Web
+        # ================================================================
+        # 静态前端。两套前端定位不同，产物挂载点也不同：
+        #   apps/*         = C 端玩家端（调 /api/ → service:${SERVICE_PORT}）
+        #   admin/apps/*   = 管理台（调 /admin/ → admin:${ADMIN_PORT}）
+        # 各产物需先构建（见 docker-compose.yml 卷注释里的构建命令）；
+        # 未构建时路径请求返回 404（裸目录请求由 nginx 目录索引规则返回 403）。
+        #
+        # try_files 末项是【内部重定向】，目标 index.html 不存在时会重新匹配同一
+        # location 形成重定向环，nginx 报 500 而非 404。规避方式按 location 类型二选一：
+        #   root  型 → 末项追加 =404，把它降级为文件存在性判断；
+        #   alias 型 → 追加 =404 会让兜底不再经 alias 解析（实测失效：已构建的 SPA
+        #              深链接也会 404），故保留原样，另加一个 location = 精确匹配
+        #              兜底 URI 指向真实 index.html —— 精确匹配优先，不会再回到前缀
+        #              location，环不成立。见下方 /admin-panel。
+        #
+        # alias 的结尾斜杠必须与 location 的结尾斜杠一致（location /x 配 alias .../x，
+        # location /x/ 配 alias .../x/）。错配时 /x../<路径> 会越级解析到上级目录，
+        # 可读取 docroot 之外的任意文件，且 nginx -t 完全查不出来。
+        # ================================================================
+
+        # C 端主入口 — Flutter Web（apps/flutter/platform）
+        location / {
+            root /var/www/platform;
+            try_files $uri $uri/ /index.html =404;
+        }
+
+        # C 端 React Web（apps/react，构建需 --base=/app-react/）
+        location /app-react/ {
+            root /var/www/sites;
+            try_files $uri $uri/ /app-react/index.html =404;
+        }
+
+        # C 端 Angular Web（apps/angular，构建需 --base-href=/app-angular/）
+        location /app-angular/ {
+            root /var/www/sites;
+            try_files $uri $uri/ /app-angular/index.html =404;
+        }
+
+        # 管理台 — 自定义产物目录（admin/public，可放入任一控制台构建产物）
         location /admin-panel {
             alias /var/www/admin/public;
             try_files $uri $uri/ /admin-panel/index.html;
         }
-
-        # 静态文件 — C端平台 Flutter Web
-        location / {
-            root /var/www/platform;
-            try_files $uri $uri/ /index.html;
+        # 兜底 URI 的精确匹配（alias 型 location 不能加 =404，原因见上方注释）
+        location = /admin-panel/index.html {
+            alias /var/www/admin/public/index.html;
         }
+
+        # 管理台 React（admin/apps/react，构建需 --base=/admin-react/）
+        location /admin-react/ {
+            root /var/www/sites;
+            try_files $uri $uri/ /admin-react/index.html =404;
+        }
+
+        # 管理台 Angular（admin/apps/angular，构建需 --base-href=/admin-angular/）
+        location /admin-angular/ {
+            root /var/www/sites;
+            try_files $uri $uri/ /admin-angular/index.html =404;
+        }
+
+        # 管理台 Flutter Web（admin/apps/flutter，构建需 --base-href=/admin-flutter/）
+        location /admin-flutter/ {
+            root /var/www/sites;
+            try_files $uri $uri/ /admin-flutter/index.html =404;
+        }
+
+        # HarmonyOS 客户端（apps/harmonyos、admin/apps/harmonyos）为原生应用，
+        # 构建产物是 .hap 安装包，不经 nginx 分发。
     }
 }

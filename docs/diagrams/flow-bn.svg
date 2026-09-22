@@ -26,7 +26,7 @@
   <text x="490" y="102" text-anchor="middle" fill="#92400e" font-size="14" font-weight="bold">প্ল্যাটফর্ম কয়েন জমা</text>
   <text x="490" y="120" text-anchor="middle" fill="#f59e0b" font-size="11">Platform Currency</text>
 
-  <text x="345" y="156" text-anchor="middle" fill="#64748b" font-size="11">Stripe | PayPal | 支付宝 | 微信支付</text>
+  <text x="345" y="156" text-anchor="middle" fill="#64748b" font-size="11">Stripe | PayPal | Alipay | WeChat Pay</text>
   <text x="345" y="172" text-anchor="middle" fill="#64748b" font-size="11">Stripe APM (Alipay/WeChat Pay) | NOWPayments | Coinbase — USDT/USDC/BTC/ETH</text>
 
   <line x1="490" y1="132" x2="490" y2="184" stroke="#64748b" stroke-width="2" marker-end="url(#arr)"/>
@@ -70,9 +70,9 @@
   <text x="665" y="544" text-anchor="middle" fill="#166534" font-size="14" font-weight="bold">ফিয়াট জমা</text>
   <text x="665" y="564" text-anchor="middle" fill="#22c55e" font-size="11">Fiat Received</text>
 
-  <rect x="80" y="608" width="840" height="72" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="500" y="634" text-anchor="middle" fill="#475569" font-size="13" font-weight="bold">মূল ক্লোজড লুপ: রেজিস্ট্রেশন → টপ-আপ(ফিয়াট→প্ল্যাটফর্ম কয়েন) → বিনিময়(প্ল্যাটফর্ম কয়েন⇄গেম কয়েন) → গেম(আয়/খরচ) → ফেরত → উত্তোলন(প্ল্যাটফর্ম কয়েন→ফিয়াট)</text>
-  <text x="500" y="656" text-anchor="middle" fill="#94a3b8" font-size="11">সাপোর্টেড কারেন্সি: USD / CNY / EUR / JPY / KRW / GBP / BRL / INR  |  পেমেন্ট চ্যানেল: Stripe / PayPal / 支付宝 / 微信支付 / ক্রিপ্টোকারেন্সি</text>
+  <rect x="40" y="608" width="920" height="72" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="500" y="634" text-anchor="middle" fill="#475569" font-size="13" font-weight="bold">মূল ক্লোজড লুপ: রেজিস্ট্রেশন → টপ-আপ → বিনিময়(প্ল্যাটফর্ম কয়েন⇄গেম কয়েন) → গেম(আয়/খরচ) → ফেরত → উত্তোলন(প্ল্যাটফর্ম কয়েন→ফিয়াট)</text>
+  <text x="500" y="656" text-anchor="middle" fill="#94a3b8" font-size="11">সাপোর্টেড কারেন্সি: USD / CNY / EUR / JPY / KRW / GBP / BRL / INR  |  পেমেন্ট চ্যানেল: Stripe / PayPal / Alipay / WeChat Pay / ক্রিপ্টোকারেন্সি</text>
 
   <text x="500" y="695" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>
 </svg>

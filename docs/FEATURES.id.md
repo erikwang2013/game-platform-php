@@ -21,7 +21,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Manajemen | Manajemen game/review penarikan/manajemen pengguna/manajemen pembayaran/manajemen pengumuman | Selesai |
 | Panel | Dasbor platform (DAU/transaksi/pendapatan/peringkat) | Selesai |
 | Ekspor | Ekspor Excel pengguna/transaksi/penarikan | Selesai |
-| Internasionalisasi | Peralihan 中/Inggris, tabel terjemahan, middleware deteksi bahasa | Selesai |
+| Internasionalisasi | Peralihan Cina/Inggris, tabel terjemahan, middleware deteksi bahasa | Selesai |
 | Frontend | Backend administrasi Flutter PC + platform pengguna sisi C (termasuk i18n) | Selesai |
 
 ### Versi Standar — Selesai
@@ -44,7 +44,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Lobi game | 10 kategori prasetel, filter kategori, relasi game-kategori | Selesai |
 | Papan peringkat | Peringkat harian/mingguan/bulanan/total, cache Redis, banyak metrik | Selesai |
 | Kupon | Diskon jumlah tetap + rasio, batas waktu dan jumlah, pelacakan pengambilan/penggunaan | Selesai |
-| Konfigurasi negara | 8 negara prasetel, metode pembayaran/penarikan terdiferensiasi, deposit minimum | Selesai |
+| Konfigurasi negara | 18 negara prasetel, metode pembayaran/penarikan terdiferensiasi, deposit minimum | Selesai |
 | Statistik | Snapshot statistik harian + pelacakan pendapatan platform | Selesai |
 | Pencarian | Pencarian full-text Elasticsearch (terintegrasi di lapisan model) | Selesai |
 
@@ -67,7 +67,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Deployment | Docker Compose 7 layanan + reverse proxy Nginx | Selesai |
 | Data | Analisis agregasi real-time MySQL + perhitungan probabilitas gabungan/bersyarat | Selesai |
 | HarmonyOS | admin 8 halaman; sisi C `apps/harmonyos/` sudah mengimplementasikan login/lobi/detail/dompet/profil (menunjuk 8792) | Sebagian selesai (proyek dapat berjalan, perangkat nyata perlu ubah IP) |
-| Dokumentasi API | Dokumentasi interaktif hg/apidoc | Selesai |
+| Dokumentasi API | Dokumentasi interaktif erikwang2013/apidoc-php | Selesai |
 | Instal satu klik | Wizard instalasi browser: buat admin, upgrade DB lama, install.lock mencegah instal ulang | Selesai |
 | Toleransi kegagalan | CircuitBreaker + Retry + saklar degradasi feature.provider_mock | Selesai |
 | Metode pembayaran | CRUD admin + visibilitas negara + rentang jumlah + batasan mata uang | Selesai |
@@ -79,10 +79,10 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 |----|------|------|
 | Integrasi game | Lapisan abstraksi GameProvider (Self/ThirdParty) + tanda tangan HMAC-SHA256 | Selesai |
 | Callback game | Gateway API Provider (balance/bet/settle/refund) + middleware ProviderAuth | Selesai |
-| Sesi game | Heartbeat Redis + timeout 15 menit penyelesaian otomatis + GameSessionService | Selesai |
+| Sesi game | Token sesi SDK: tanda tangan HMAC-SHA256 + TTL 5 menit (diterbitkan `GET /api/v1/game/session`, diverifikasi `SdkSessionAuth`) | Selesai |
 | Sistem tiket | Buat/balas sisi C + penanganan/penugasan/penutupan sisi admin, 5 tipe tiket | Selesai |
 | Verifikasi email | Kode 6 digit, kedaluwarsa Redis 10 menit, batas kirim ulang 60 detik | Selesai |
-| Notifikasi push | PushService (FCM/APNs/推送 Huawei) + model DeviceToken | Selesai |
+| Notifikasi push | PushService (FCM/APNs/push Huawei) + model DeviceToken | Selesai |
 | Sistem VIP | 5 level (biasa/perak/emas/platina/berlian) + poin pengalaman + upgrade otomatis | Selesai |
 | Hak VIP | Diskon penukaran 2-15%, keringanan biaya penarikan 10-100%, bonus kurs 0.1-1.0% | Selesai |
 | Sistem pencapaian | 12 pencapaian bawaan; EventConsumer → deteksi berbasis event AchievementService dan pengalaman VIP | Selesai |
@@ -119,62 +119,64 @@ Dukungan tiket
 
 | Metode | Jalur | Keterangan | Autentikasi |
 |------|------|------|------|
-| POST | /api/auth/register | Registrasi pengguna | Tidak |
-| POST | /api/auth/login | Login pengguna | Tidak |
-| POST | /api/auth/refresh | Perbarui Token | Tidak |
-| GET | /api/game/list | Daftar game | Tidak |
-| GET | /api/game/detail/{id} | Detail game | Tidak |
-| GET | /api/announcement/list | Daftar pengumuman | Tidak |
-| GET | /api/wallet/info | Saldo dompet | Ya |
-| GET | /api/wallet/transactions | Catatan transaksi | Ya |
-| POST | /api/deposit/create | Buat pesanan deposit | Ya |
-| GET | /api/payment/methods | Daftar metode pembayaran (dirutekan per negara) | Ya |
-| POST | /api/exchange/quote | Kueri harga penukaran (diskon VIP) | Ya |
-| POST | /api/exchange/buy | Beli koin game | Ya |
-| POST | /api/exchange/sell | Jual koin game | Ya |
-| POST | /api/withdraw/apply | Ajukan penarikan (keringanan VIP) | Ya |
-| POST | /api/game/launch | Luncurkan game | Ya |
-| GET | /api/game/play-logs | Catatan game | Ya |
-| POST | /api/referral/apply | Gunakan kode referral | Ya |
-| POST | /api/verify/send-email | Kirim kode verifikasi email | Ya |
-| POST | /api/verify/confirm-email | Konfirmasi email | Ya |
-| GET | /api/ticket/list | Daftar tiket | Ya |
-| POST | /api/ticket/create | Buat tiket | Ya |
-| POST | /api/ticket/{id}/reply | Balas tiket | Ya |
+| POST | /api/v1/auth/register | Registrasi pengguna | Tidak |
+| POST | /api/v1/auth/login | Login pengguna | Tidak |
+| POST | /api/v1/auth/refresh | Perbarui Token | Tidak |
+| GET | /api/v1/game/list | Daftar game | Tidak |
+| GET | /api/v1/game/detail/{id} | Detail game | Tidak |
+| GET | /api/v1/announcement/list | Daftar pengumuman | Tidak |
+| GET | /api/v1/wallet/info | Saldo dompet | Ya |
+| GET | /api/v1/wallet/transactions | Catatan transaksi | Ya |
+| POST | /api/v1/deposit/create | Buat pesanan deposit | Ya |
+| GET | /api/v1/payment/methods | Daftar metode pembayaran (dirutekan per negara) | Ya |
+| POST | /api/v1/exchange/quote | Kueri harga penukaran (diskon VIP) | Ya |
+| POST | /api/v1/exchange/buy | Beli koin game | Ya |
+| POST | /api/v1/exchange/sell | Jual koin game | Ya |
+| POST | /api/v1/withdraw/apply | Ajukan penarikan (keringanan VIP) | Ya |
+| POST | /api/v1/game/launch | Luncurkan game | Ya |
+| GET | /api/v1/game/play-logs | Catatan game | Ya |
+| POST | /api/v1/referral/apply | Gunakan kode referral | Ya |
+| POST | /api/v1/verify/send-email | Kirim kode verifikasi email | Ya |
+| POST | /api/v1/verify/confirm-email | Konfirmasi email | Ya |
+| GET | /api/v1/ticket/list | Daftar tiket | Ya |
+| POST | /api/v1/ticket/create | Buat tiket | Ya |
+| POST | /api/v1/ticket/{id}/reply | Balas tiket | Ya |
+| GET | /api/v1/platform/stats | Statistik Platform | Tidak |
 
-| GET | /api/platform/stats | Statistik Platform | Tidak |
 ## 3. Fitur Backend Administrasi
 
 ### 3.1 Antarmuka API (baru)
 
 | Metode | Jalur | Keterangan |
 |------|------|------|
-| GET | /admin/dashboard/platform | Data dasbor platform |
-| GET | /admin/analytics/overview | Ringkasan platform (agregasi real-time MySQL) |
-| GET | /admin/analytics/game-ranking | Peringkat game |
-| GET | /admin/analytics/dau-trend | Tren DAU |
-| GET | /admin/analytics/hourly-trend | Tren per jam |
-| GET | /admin/analytics/action-distribution | Distribusi perilaku |
-| GET | /admin/analytics/revenue | Analisis pendapatan |
-| GET | /admin/analytics/conversion | Rasio konversi game |
-| GET | /admin/analytics/probability | Probabilitas gabungan/bersyarat |
-| GET | /admin/analytics/retention | Analisis retensi D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | Funnel konversi |
-| GET | /admin/analytics/arpu | Tren ARPU/ARPPU |
-| GET | /admin/analytics/economy | Metrik ekonomi mata uang game |
-| GET | /admin/report/summary | Ringkasan laporan (pengguna baru/deposit/penarikan/penukaran/permainan) |
-| GET | /admin/report/daily | Laporan harian (agregasi per hari, tanggal tanpa data diisi 0) |
-| GET | /admin/report/export | Ekspor laporan harian CSV (UTF-8 BOM) |
-| GET | /admin/game/list | Daftar game |
-| POST | /admin/game/create | Buat game (termasuk provider_config) |
-| PUT | /admin/game/{id} | Edit game |
-| GET | /admin/withdraw/orders | Daftar pesanan penarikan |
-| PUT | /admin/withdraw/review | Review penarikan |
-| GET | /admin/ticket/list | Daftar tiket |
-| GET | /admin/ticket/{id} | Detail tiket |
-| POST | /admin/ticket/{id}/reply | Balas tiket |
-| POST | /admin/ticket/{id}/close | Tutup tiket |
-| POST | /admin/ticket/{id}/assign | Tetapkan penangan |
+| GET | /admin/v1/dashboard/platform | Data dasbor platform |
+| GET | /admin/v1/analytics/overview | Ringkasan platform (agregasi real-time MySQL) |
+| GET | /admin/v1/analytics/game-ranking | Peringkat game |
+| GET | /admin/v1/analytics/dau-trend | Tren DAU |
+| GET | /admin/v1/analytics/hourly-trend | Tren per jam |
+| GET | /admin/v1/analytics/action-distribution | Distribusi perilaku |
+| GET | /admin/v1/analytics/revenue | Analisis pendapatan |
+| GET | /admin/v1/analytics/conversion | Rasio konversi game |
+| GET | /admin/v1/analytics/probability | Probabilitas gabungan/bersyarat |
+| GET | /admin/v1/analytics/retention | Analisis retensi D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | Funnel konversi |
+| GET | /admin/v1/analytics/arpu | Tren ARPU/ARPPU |
+| GET | /admin/v1/analytics/economy | Metrik ekonomi mata uang game |
+| GET | /admin/v1/report/summary | Ringkasan laporan (pengguna baru/deposit/penarikan/penukaran/permainan) |
+| GET | /admin/v1/report/daily | Laporan harian (agregasi per hari, tanggal tanpa data diisi 0) |
+| GET | /admin/v1/report/export | Ekspor laporan harian CSV (UTF-8 BOM) |
+| GET | /admin/v1/game/list | Daftar game |
+| GET | /admin/v1/game/{id} | Detail game |
+| POST | /admin/v1/game/launch | Pratinjau game (hanya baca) |
+| POST | /admin/v1/game/create | Buat game (termasuk provider_config) |
+| PUT | /admin/v1/game/{id} | Edit game |
+| GET | /admin/v1/withdraw/orders | Daftar pesanan penarikan |
+| PUT | /admin/v1/withdraw/review | Review penarikan |
+| GET | /admin/v1/ticket/list | Daftar tiket |
+| GET | /admin/v1/ticket/{id} | Detail tiket |
+| POST | /admin/v1/ticket/{id}/reply | Balas tiket |
+| POST | /admin/v1/ticket/{id}/close | Tutup tiket |
+| POST | /admin/v1/ticket/{id}/assign | Tetapkan penangan |
 
 ## 4. Provider API (callback pihak game)
 
@@ -250,21 +252,21 @@ Jendela waktu: 5 menit
 | game_game | +provider_config (JSON) |
 | game_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**Total: 43 tabel di install.sql** (10 tabel perluasan ekosistem di `install/`, tidak digabung ke install.sql). Model tidak dibagikan: admin 46 / service 44 masing-masing satu salinan.
+**Total: 78 tabel di install.sql**. Model: 52 dibagikan di `packages/platform-common/src/model/`; 8 di admin/app/model/ dan 10 di service/app/model/ khusus untuk host masing-masing (tanpa tumpang tindih nama file).
 
 ## 8. Cakupan Pengujian
 
 | File pengujian | Jumlah kasus | Cakupan |
 |---------|--------|---------|
-| PlatformTest | 56 | presisi bcmath/perhitungan penukaran/biaya penarikan/batas/kontrol risiko/kupon/KYC/i18n |
-| BackendEnhancementTest | 23 | layanan enkripsi/Hashids/Snowflake |
-| CaptchaTest | 7 | pembuatan/validasi CAPTCHA |
-| EncryptionServiceTest | 6 | enkripsi/dekripsi AES/desensitisasi |
-| EnvConfigTest | 4 | konfigurasi variabel lingkungan |
-| HashidsServiceTest | 8 | roundtrip encode/decode ID |
-| SnowflakeServiceTest | 6 | keunikan pembuatan ID |
+| PlatformTest | 55 | presisi bcmath/perhitungan penukaran/biaya penarikan/batas/kontrol risiko/kupon/KYC/i18n |
+| BackendEnhancementTest | 27 | layanan enkripsi/Hashids/Snowflake |
+| CaptchaTest | 5 | pembuatan/validasi CAPTCHA |
+| EncryptionServiceTest | 8 | enkripsi/dekripsi AES/desensitisasi |
+| EnvConfigTest | 6 | konfigurasi variabel lingkungan |
+| HashidsServiceTest | 6 | roundtrip encode/decode ID |
+| SnowflakeServiceTest | 5 | keunikan pembuatan ID |
 
-**Total: admin ~132 kasus / 8 file; service 3 kasus (WebhookUrlSafety + EventBusMessageFormat). service belum termasuk dalam blokir kegagalan CI.**
+**Total (phpunit --list-tests, pengukuran saat ini): admin 200 kasus / 21 file, service 273 kasus / 42 file (termasuk WebhookUrlSafety + EventBusMessageFormat; laporan: pengulangan 09-22 admin 190 + service 273, snapshot 08-27 admin 153 + service 45). service belum termasuk dalam blokir kegagalan CI (belum diverifikasi).**
 
 ---
 

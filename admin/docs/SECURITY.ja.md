@@ -93,9 +93,9 @@ GET, POST, PUT, DELETE, OPTIONS, HEAD
 検証ロジックは `SecurityFilter::checkCsrf()` に実装されています：
 
 ```php
-// 仅 POST/PUT/DELETE 触发校验
-// Origin 头和 Referer 均为空 → 放行（非浏览器客户端）
-// Origin 非空 → 解析 Origin 域名与 Host 比对
+// POST/PUT/DELETE のみ検証を実行
+// Origin と Referer がいずれも空 → 許可（非ブラウザクライアント）
+// Origin が非空 → Origin ドメインを解析し Host と比較
 ```
 
 照合ルール：

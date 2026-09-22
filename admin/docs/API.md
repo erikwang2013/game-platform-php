@@ -1573,26 +1573,7 @@ POST /admin/v1/upload
 - 使用 Redis 原子化滑动窗口算法（Lua ZSET），避免 TOCTOU 竞态
 - Redis 不可用时 fail-closed：返回 503（`Retry-After: 5`），不放行请求
 
-## 14. 数据分析 (Analytics)
-
-全部端点需认证（`AdminAuth` + `AdminPermission`），MySQL 实时聚合，共 12 个：
-
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | /admin/v1/analytics/overview | 平台总览（今日/近7天） |
-| GET | /admin/v1/analytics/game-ranking | 游戏排行（?days=7） |
-| GET | /admin/v1/analytics/dau-trend | DAU 趋势（?days=30） |
-| GET | /admin/v1/analytics/hourly-trend | 小时趋势 |
-| GET | /admin/v1/analytics/action-distribution | 行为分布 |
-| GET | /admin/v1/analytics/revenue | 营收分析 |
-| GET | /admin/v1/analytics/conversion | 游戏转化率 |
-| GET | /admin/v1/analytics/probability | 联合/条件概率 |
-| GET | /admin/v1/analytics/retention | 留存分析 D1/D3/D7/D30 |
-| GET | /admin/v1/analytics/funnel | 转化漏斗 |
-| GET | /admin/v1/analytics/arpu | ARPU/ARPPU 趋势 |
-| GET | /admin/v1/analytics/economy | 游戏币种经济指标 |
-
-## 15. 工单管理 (Ticket)
+## 14. 工单管理 (Ticket)
 
 全部端点需认证（`AdminAuth` + `AdminPermission`），共 5 个：
 
@@ -1604,7 +1585,7 @@ POST /admin/v1/upload
 | POST | /admin/v1/ticket/{hashid}/close | 关闭工单 |
 | POST | /admin/v1/ticket/{hashid}/assign | 指定处理人（admin_id） |
 
-## 16. 认证流程
+## 15. 认证流程
 
 完整的认证时序：
 
@@ -1681,11 +1662,11 @@ POST /admin/v1/upload
 - 并发会话限制：同一用户最多 3 个有效 Token，第 4 个设备登录时最旧 Token 被强制加入黑名单
 - 账号锁定：连续 5 次登录失败触发 15 分钟账号锁定，锁定期间返回 429
 
-## 15. 部署运维
+## 16. 部署运维
 
 ### Docker Compose
 
-项目根目录提供 `docker-compose.yml`，编排 5 个服务（Nginx、webman app、MySQL、Redis、Elasticsearch）。PHP 通过 `Dockerfile` 构建（基于 `php:8.3-cli`，启用 OPcache）。
+项目根目录提供 `docker-compose.yml`，编排 7 个服务（Nginx、admin、service、leaderboard-ws、MySQL、Redis、Elasticsearch）。PHP 通过 `Dockerfile` 构建（基于 `php:8.3-cli`，启用 OPcache）。
 
 ```bash
 cp .env.docker .env
@@ -1709,11 +1690,11 @@ docker-compose up -d
 
 生产环境部署请参考 `docs/nginx-security.conf` 进行反向代理安全加固配置。
 
-## 16. 数据分析 (Analytics)
+## 17. 数据分析 (Analytics)
 
 数据分析接口由 `AnalyticsController` 提供，全部基于 MySQL 实时聚合（`game_game_play_log` 游戏行为日志 / `game_deposit_order` 充值订单），数据库故障时返回空数据而非 500。除特别说明外均需 JWT + RBAC 认证，响应包装格式统一为 `{ "code": 0, "message": "success", "data": ... }`。
 
-### 16.1 平台总览
+### 17.1 平台总览
 
 ```
 GET /admin/v1/analytics/overview
@@ -1721,7 +1702,7 @@ GET /admin/v1/analytics/overview
 
 **响应**: `today` / `week` 各含 `dau`（活跃用户数）、`revenue`（已确认充值总额，字符串）、`new_users`（新增用户数）。
 
-### 16.2 游戏排行
+### 17.2 游戏排行
 
 ```
 GET /admin/v1/analytics/game-ranking?days=7
@@ -1729,7 +1710,7 @@ GET /admin/v1/analytics/game-ranking?days=7
 
 **响应**: 按游戏行为次数降序取前 10，每项含 `game_id`（hashid）、`name`、`plays`、`players`。
 
-### 16.3 DAU 趋势
+### 17.3 DAU 趋势
 
 ```
 GET /admin/v1/analytics/dau-trend?days=30
@@ -1737,7 +1718,7 @@ GET /admin/v1/analytics/dau-trend?days=30
 
 **响应**: `{ "日期": 活跃数, ... }`，缺失日期补 0。
 
-### 16.4 小时趋势
+### 17.4 小时趋势
 
 ```
 GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
@@ -1745,7 +1726,7 @@ GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
 
 **响应**: `{ "0": 次数, ... "23": 次数 }` 24 个整点槽位；`game_id` 为空时统计全部游戏。
 
-### 16.5 行为分布
+### 17.5 行为分布
 
 ```
 GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
@@ -1753,7 +1734,7 @@ GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
 
 **响应**: `{ "start": n, "end": n, "earn": n, "spend": n }` 四类行为计数；`hours` 上限 168。
 
-### 16.6 营收总览
+### 17.6 营收总览
 
 ```
 GET /admin/v1/analytics/revenue?days=7
@@ -1761,7 +1742,7 @@ GET /admin/v1/analytics/revenue?days=7
 
 **响应**: `{ "total": "总额", "trend": { "日期": "当日额", ... } }`，仅统计 `status=confirmed` 订单。
 
-### 16.7 游戏转化率
+### 17.7 游戏转化率
 
 ```
 GET /admin/v1/analytics/conversion?days=30
@@ -1769,7 +1750,7 @@ GET /admin/v1/analytics/conversion?days=30
 
 **响应**: 每款游戏含 `game_id`（hashid）、`game_name`、`players`（去重玩家数）、`depositors`（去重充值人数）、`conversion_rate`（充值转化率，0~1）。
 
-### 16.8 联合概率
+### 17.8 联合概率
 
 ```
 GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
@@ -1777,7 +1758,7 @@ GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
 
 **响应**: `{ "joint": { "joint_probability": 0.12, "confidence": 0.3 } }` — Jaccard 系数（两游戏共同玩家 / 并集玩家）与置信度（共同玩家 / A 游戏玩家）。
 
-### 16.9 留存分析
+### 17.9 留存分析
 
 ```
 GET /admin/v1/analytics/retention?days=30
@@ -1785,7 +1766,7 @@ GET /admin/v1/analytics/retention?days=30
 
 **响应**: `{ "D1": "8.5%", "D3": "...", "D7": "...", "D30": "..." }` 按注册日分群的次日/3日/7日/30日留存率。
 
-### 16.10 转化漏斗
+### 17.10 转化漏斗
 
 ```
 GET /admin/v1/analytics/funnel?days=30
@@ -1793,7 +1774,7 @@ GET /admin/v1/analytics/funnel?days=30
 
 **响应**: 注册 → 首充 → 首次兑换 → 首次游戏 四个步骤的 `step`、`count`、`rate`（相对注册数百分比）。
 
-### 16.11 ARPU/ARPPU 趋势
+### 17.11 ARPU/ARPPU 趋势
 
 ```
 GET /admin/v1/analytics/arpu?days=30
@@ -1801,7 +1782,7 @@ GET /admin/v1/analytics/arpu?days=30
 
 **响应**: `{ "dates": [...], "arpu": [...], "arppu": [...] }` 每日人均营收（ARPU）与付费用户人均营收（ARPPU）。
 
-### 16.12 游戏经济指标
+### 17.12 游戏经济指标
 
 ```
 GET /admin/v1/analytics/economy
@@ -1809,7 +1790,7 @@ GET /admin/v1/analytics/economy
 
 **响应**: `currencies` 数组，每项含 `game_name`、`currency`、`symbol`、`total_minted`（铸币总量）、`total_burned`（销毁总量）、`circulation`（流通量）、`inflation_rate`（通胀率），使用 bcmath 高精度计算。
 
-## 17. 支付管理 (Payment)
+## 18. 支付管理 (Payment)
 
 支付方式管理由 `PaymentController` 提供，5 个端点均需 JWT + RBAC 认证。`provider` 白名单：`stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`。`config` 为支付配置 JSON 字符串（数据库加密存储）。
 
@@ -1821,7 +1802,7 @@ GET /admin/v1/analytics/economy
 | PUT | /admin/v1/payment/method/{hashid} | 更新支付方式 |
 | DELETE | /admin/v1/payment/method/{hashid} | 删除支付方式（存在 pending 订单时拒绝） |
 
-### 17.1 支付方式列表
+### 18.1 支付方式列表
 
 ```
 GET /admin/v1/payment/method/list
@@ -1869,7 +1850,7 @@ GET /admin/v1/payment/method/list
 | min_amount / max_amount | string | 金额区间（字符串保留精度），0=不限制 |
 | config | string? | 支付配置 JSON（加密存储，未设置时为 null） |
 
-### 17.2 启禁用支付方式
+### 18.2 启禁用支付方式
 
 ```
 POST /admin/v1/payment/method/toggle
@@ -1892,7 +1873,7 @@ POST /admin/v1/payment/method/toggle
 - 422: 参数验证失败（id/status 缺失或 status 非 0/1）
 - 404: 支付方式不存在
 
-### 17.3 创建支付方式
+### 18.3 创建支付方式
 
 ```
 POST /admin/v1/payment/method/create
@@ -1938,20 +1919,20 @@ POST /admin/v1/payment/method/create
 **可能的错误**:
 - 422: 参数验证失败
 
-### 17.4 更新支付方式
+### 18.4 更新支付方式
 
 ```
 PUT /admin/v1/payment/method/{hashid}
 ```
 
 - **路径参数**: `{hashid}` 为 hashid 加密的支付方式 ID
-- **请求体**: 同创建（17.3），所有字段可选，仅更新传入字段
+- **请求体**: 同创建（18.3），所有字段可选，仅更新传入字段
 
 **可能的错误**:
 - 404: 支付方式不存在
 - 422: 参数验证失败
 
-### 17.5 删除支付方式
+### 18.5 删除支付方式
 
 ```
 DELETE /admin/v1/payment/method/{hashid}

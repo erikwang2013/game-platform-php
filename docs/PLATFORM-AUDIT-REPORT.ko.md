@@ -10,7 +10,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 ---
 
-## 一、총괄
+## 1. 총괄
 
 | 카테고리 | 평점 | 변화 |
 |------|------|------|
@@ -22,7 +22,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 ---
 
-## 二、검증된 항목
+## 2. 검증된 항목
 
 ### 2.1 PHP 문법 검사
 - admin/ 및 service/의 모든 `.php` 파일: **0 오류**
@@ -57,7 +57,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 ---
 
-## 三、기능 인도 목록
+## 3. 기능 인도 목록
 
 ### Phase 1 — 게임 연동 레이어
 
@@ -79,7 +79,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 | `controller/TicketController.php` (service + admin) | C단 4엔드포인트 + 관리단 5엔드포인트 |
 | `service/VerificationService.php` (admin+service) | 6자리 인증 코드, Redis 10min, 60s 쿨다운 |
 | `controller/VerificationController.php` (service) | 4개 엔드포인트: sendEmail/confirmEmail/sendSms/confirmPhone |
-| `service/PushService.php` (admin+service) | FCM/APNs/华为推送 추상화 |
+| `service/PushService.php` (admin+service) | FCM/APNs/Huawei 푸시 추상화 |
 | `model/DeviceToken.php` (admin+service) | 기기 토큰 저장 |
 
 ### Phase 3 — 사용자 리텐션
@@ -124,7 +124,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 ---
 
-## 四、발견 및 수정된 문제
+## 4. 발견 및 수정된 문제
 
 | # | 문제 | 심각성 | 수정 |
 |---|------|--------|------|
@@ -137,7 +137,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 ---
 
-## 五、통계 데이터
+## 5. 통계 데이터
 
 ### 코드량
 
@@ -165,7 +165,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 ---
 
-## 六、생태계 확장 공간 (미완료 항목)
+## 6. 생태계 확장 공간 (미완료 항목)
 
 | 기능 | 우선순위 | 설명 |
 |------|--------|------|
@@ -182,7 +182,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 ---
 
-## 八、확장 공간 수정 (2026-08-04 3차 라운드)
+## 7. 확장 공간 수정 (2026-08-04 3차 라운드)
 
 ### P2 구현됨
 
@@ -213,7 +213,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 - API 엔드포인트 4개 문서 (balance/bet/settle/refund)
 - 자체 개발 게임 연동 가이드 + 세션 관리 + 게임 설정
 
-## 九、최종 평점 (업데이트)
+## 8. 최종 평점 (업데이트)
 
 | 카테고리 | 초기 (v1) | v2.0 생태계 확장 | v2.1 확장 수정 | 변화 |
 |------|-----------|---------------|---------------|------|
@@ -227,7 +227,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 ---
 
-## 十、2026-08-18 보안 및 가용성 수정 확인
+## 9. 2026-08-18 보안 및 가용성 수정 확인
 
 이번 라운드(2026-08-18)에서 완료한 보안 및 가용성 수정(작업 영역 미커밋, 버전 1.1 후속 릴리스):
 

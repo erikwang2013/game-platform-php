@@ -268,24 +268,23 @@ $result = $provider->refund($userId, $gameId, $sessionId, $amount, $roundId, 'ga
 
 ## 5. セッション管理
 
-ゲーム起動後は 15 分以内ごとにハートビートを送信する必要があります：
+self / embedded ゲームの SDK 呼び出しはセッショントークンで認証します：ログイン済みの C側が `GET /api/v1/game/session?game_id={game_id}` を呼び出してトークンを発行します（TTL 5 分、`self` / `embedded` タイプのゲームのみ）：
 
-```php
-use app\service\GameSessionService;
+```
+GET /api/v1/game/session?game_id=1234567890
+Authorization: Bearer <user_token>
 
-// 起動時
-GameSessionService::heartbeat($userId, $gameId, $sessionId);
-
-// 定期ハートビート（5 分ごとを推奨）
-if (!GameSessionService::isActive($sessionId)) {
-    // セッションがタイムアウトしたため、ゲームを終了する必要があります
+200
+{
+    "code": 0,
+    "data": { "token": "<payload>.<signature>", "expires_in": 300 }
 }
 
-// 終了時
-GameSessionService::endSession($sessionId);
+POST /api/game/balance
+Authorization: Bearer <payload>.<signature>
 ```
 
-タイムアウトしたセッションは自動的に決済されます（`GameSessionService::expireStaleSessions()`）。
+`SdkSessionAuth` ミドルウェアが HMAC-SHA256 署名と有効期限を検証し、`user_id` はトークンからのみ取得します（リクエストボディでは上書きできません）。期限切れ後は再発行し、`/api/game/balance`、`/api/game/bet`、`/api/game/settle`、`/api/game/refund` の呼び出しに使用します。
 
 ## 6. ゲーム設定
 

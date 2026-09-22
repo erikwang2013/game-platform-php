@@ -9,7 +9,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 
 ---
 
-## 一、Projektstand
+## 1. Projektstand
 
 **Globale Spielaggregationsplattform** — PHP 8.3 + webman v2, Zwei-Anwendungs-Monorepo:
 `admin/`(8789 Verwaltungsbackend) + `service/`(8792 C-End) + `apps/`(Flutter + HarmonyOS) + `install/`(Installationsassistent, 43 Tabellen).
@@ -26,7 +26,7 @@ Bereits implementierte Fähigkeiten: JWT+RBAC, Wallet-Optimistic-Lock, Einzahlun
 
 ---
 
-## 二、Probleme und Risiken (praktisch verifiziert)
+## 2. Probleme und Risiken (praktisch verifiziert)
 
 ### KRITISCH — Finanzsicherheit
 
@@ -71,7 +71,7 @@ Wallet-Optimistic-Lock + Versionsbedingtes Update korrekt; Callback-Idempotenz `
 
 ---
 
-## 三、Roadmap
+## 3. Roadmap
 
 ### P0 — Finanzsicherheit + Korrektheit (zuerst, blockiert den Release)
 
@@ -106,17 +106,17 @@ Wallet-Optimistic-Lock + Versionsbedingtes Update korrekt; Callback-Idempotenz `
 18. **Wahrscheinlichkeitsberechnung auf ClickHouse migrieren** oder MySQL-materialisierte Statistiktabelle + Cache; Retention nach echter Cohort neu berechnen
 19. **Prometheus-Geschäftskennzahlen** (Event-Zustellungs-/Konsumrate, Warteschlangentiefe) + Canary-AB-Verteilungs-Middleware (FeatureFlag wiederverwenden) — 🔶 teilweise abgeschlossen (2026-08-18: `GET /metrics` ausstehende Auszahlungsprüfungen/heute bestätigte Einzahlungen/Event-emit·consume-Zähler; FeatureFlag `inRollout`/`abTest` crc32-Bucketing. Warteschlangentiefe offen)
 20. **WebSocket-Datenkette schließen**: Bestätigung der Persistierung von Ranglisten/Chat
-21. **Dokumente angleichen**: Tabellen-/Dienstanzahl-/Gemeinsame-Schicht-Beschreibungen korrigieren, API-Dokumentation mit Implementierung angleichen, CHANGELOG ergänzen — ✅ abgeschlossen (2026-08-18: siehe `docs/CHANGELOG.md`, FEATURES/VERSIONS/PROJECT-PLAN/Audit-Berichte §十)
+21. **Dokumente angleichen**: Tabellen-/Dienstanzahl-/Gemeinsame-Schicht-Beschreibungen korrigieren, API-Dokumentation mit Implementierung angleichen, CHANGELOG ergänzen — ✅ abgeschlossen (2026-08-18: siehe `docs/CHANGELOG.md`, FEATURES/VERSIONS/PROJECT-PLAN/Audit-Berichte §10)
 
 ---
 
-## 四、Qualitätstore (Teamkoordination)
+## 4. Qualitätstore (Teamkoordination)
 
 - Bei jeder Codeänderung: admin-Gesamttests `vendor/bin/phpunit` müssen bestehen (ohne `|| echo warning`)
 - Neue sensible Pfade (Zahlung/Auszahlung/Authentifizierung) müssen Tests mitbringen
 - Bei Änderungen an common/model beide Seiten admin+service synchronisieren (bis zur gemeinsamen Schicht)
 - Review-Bericht-Empfehlungen mit Schwerpunkt: ProviderAuth-Signatur, AES-Verschlüsselung, handgeschriebenes SQL in ProbabilityService
 
-## 五、Team
+## 5. Team
 
 Das game-platform-Team (6 Mitglieder: researcher/architect/backend-dev/frontend-dev/tester/reviewer) ist bereit, P0 direkt auszuführen.

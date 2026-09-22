@@ -598,14 +598,14 @@ Proyek menyediakan `docs/nginx-security.conf` sebagai konfigurasi referensi peng
 
 | Jenis ancaman | Vektor serangan | Lapisan pertahanan |
 |----------|---------|---------|
-| Penyalahgunaan metode HTTP | Serangan XST TRACE/TRACK, proxy terowongan CONNECT, deteksi metode WebDAV | SecurityFilter 405 whitelist metode (GET/POST/PUT/DELETE/OPTIONS/HEAD) |
+| Penyalahgunaan metode HTTP | Serangan XST TRACE/TRACK, proxy terowongan CONNECT, deteksi metode WebDAV | SecurityFilter 405 whitelist metode (GET/POST/PUT/DELETE/HEAD/OPTIONS/PATCH) |
 | Brute force terarah | Percobaan kata sandi berulang terhadap pengguna tertentu | Penguncian akun (5 gagal terkunci 15 menit) + RateLimit (login 10/min) + Captcha |
 | Brute force | Percobaan nama pengguna/kata sandi berulang dari IP terdistribusi | RateLimit (login 10/min) + Captcha |
-| XSS | `<script>`, onerror, javascript: | SecurityFilter (5 pola) + header respons X-XSS-Protection + CSP |
-| Injeksi SQL | UNION SELECT, OR 1=1, bypass komentar | SecurityFilter (6 pola) + kueri terparameterisasi Eloquent ORM |
+| XSS | `<script>`, onerror, javascript: | SecurityFilter (13 pola) + header respons X-XSS-Protection + CSP |
+| Injeksi SQL | UNION SELECT, OR 1=1, bypass komentar | SecurityFilter (14 pola) + kueri terparameterisasi Eloquent ORM |
 | CSRF | Situs jahat mengirim permintaan atas nama | Validasi Origin/Referer SecurityFilter |
 | Path traversal | `../../etc/passwd` | Pola path traversal SecurityFilter + whitelist ekstensi UploadController |
-| Injeksi perintah | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (4 pola) |
+| Injeksi perintah | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (13 pola) |
 | Pembajakan sesi | Mencuri Token JWT | Masa berlaku pendek JWT (2h) + logout daftar hitam + konfirmasi ulang kata sandi operasi sensitif |
 | Enumerasi ID | Menelusuri ID numerik menebak volume data | Hashids diobfuskasi menjadi string acak |
 | Kebocoran data | Pencurian DB / man-in-the-middle / kebocoran log | Enkripsi/redaksi tiga lapis + filter kolom sensitif OperationLog |

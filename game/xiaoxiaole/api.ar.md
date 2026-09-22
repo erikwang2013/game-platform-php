@@ -1,10 +1,10 @@
-# 田园消消乐 — واجهات الربط مع المنصة
+# المطابقة الثلاثية الريفية — واجهات الربط مع المنصة
 <!-- lang-nav -->
 
 Languages: **中文** · [English](api.en.md) · [한국어](api.ko.md) · [Русский](api.ru.md) · [Deutsch](api.de.md) · [Français](api.fr.md) · [Español](api.es.md) · [Português](api.pt.md) · [हिन्दी](api.hi.md) · [العربية](api.ar.md) · [বাংলা](api.bn.md) · [Bahasa Indonesia](api.id.md) · [日本語](api.ja.md)
 
 
-> هذه الوثيقة هي عقد الواجهات الكامل بين لعبة «田园消消乐» ومنصة الألعاب. التقنية الطبقات في `architecture.md`، والجدولة في `plan.md`، ووظائف اللاعبين في `functional-design.md`.
+> هذه الوثيقة هي عقد الواجهات الكامل بين لعبة «المطابقة الثلاثية الريفية» ومنصة الألعاب. التقنية الطبقات في `architecture.md`، والجدولة في `plan.md`، ووظائف اللاعبين في `functional-design.md`.
 
 ---
 

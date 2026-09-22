@@ -121,7 +121,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · **한국어** �
 | 다국어 지원 | 중/영문 | 4언어 | 4언어 |
 | 번역 테이블+캐시 | ✓ | ✓ | ✓ |
 | 언어 자동 감지 | ✓ | ✓ | ✓ |
-| 국가 차등 설정 | - | - | ✓ 8개국 |
+| 국가 차등 설정 | - | - | ✓ 18개국 |
 
 ---
 
@@ -162,7 +162,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · **한국어** �
 플랫폼 코어 (12): game_user, game_user_wallet, game_user_game_wallet,
                game_game, game_game_currency, game_deposit_order,
                game_withdraw_order, game_exchange_record, game_transaction,
-               game_payment_method, game_announcement, game-platform_config
+               game_payment_method, game_announcement, game_platform_config
 ```
 
 ### 스탠다드 에디션 추가 (10장)
@@ -176,7 +176,7 @@ game_withdraw_limit, game_risk_rule, game_risk_log, game_stat_daily
 ```
 game_game_category, game_game_category_rel, game_leaderboard,
 game_coupon, game_user_coupon, game_language, game_translation,
-game_country_config, game-platform_revenue,
+game_country_config, game_platform_revenue,
 game_notification, game_referral, game_referral_reward, game_user_2fa
 ```
 
@@ -190,6 +190,16 @@ game_anticheat_event, game_anticheat_daily_stat,
 game_group, game_group_member, game_share_link,
 game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, game_risk_cluster
 ```
+
+### 생태계 v2.0 추가 (14장)
+```
+game_ticket, game_ticket_reply, game_device_token, game_vip_level,
+game_user_vip, game_exp_log, game_achievement, game_user_achievement,
+game_friend, game_message, game_cdn_provider, game_referral_commission,
+game_tournament, game_tournament_entry
+```
+
+**총계: 78장**
 
 ---
 
@@ -218,7 +228,7 @@ game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, gam
 | Provider API 게이트웨이 | balance/bet/settle/refund 콜백 + ProviderAuth 미들웨어 |
 | 티켓 시스템 | C단 생성/답변 + 관리단 처리/할당/닫기 |
 | 이메일 검증 | 6자리 인증 코드, Redis 10분 만료, 60초 재발송 제한 |
-| 푸시 알림 | PushService (FCM/APNs/华为推送) |
+| 푸시 알림 | PushService (FCM/APNs/Huawei 푸시) |
 | VIP 체계 | 5단계, 경험치 누적, 자동 승급, 환전 할인, 출금 감면, 환율 보너스 |
 | 업적 시스템 | 내장 업적 12개, 이벤트 주도 검출, 진행도 추적 |
 | 친구 시스템 | 신청/수락/거절/삭제/검색 |

@@ -41,7 +41,7 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 | `game_admin_role` | INSERT IGNORE (фиксированные ID) |
 | `game_admin_permission` | INSERT IGNORE (фиксированные ID) - 4 раза |
 | `game_admin_role_permission` | подзапрос WHERE NOT EXISTS |
-| `game-platform_config` | INSERT IGNORE (фиксированные ID) - 2 раза |
+| `game_platform_config` | INSERT IGNORE (фиксированные ID) - 2 раза |
 | `game_language` | INSERT IGNORE (фиксированные ID) |
 | `game_translation` | INSERT IGNORE (фиксированные ID) |
 | `game_risk_rule` | INSERT IGNORE (фиксированные ID) |

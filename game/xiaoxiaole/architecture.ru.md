@@ -1,4 +1,4 @@
-# 田园消消乐 — техническая архитектура
+# Деревенский три-в-ряд — техническая архитектура
 <!-- lang-nav -->
 
 Languages: **中文** · [English](architecture.en.md) · [한국어](architecture.ko.md) · [Русский](architecture.ru.md) · [Deutsch](architecture.de.md) · [Français](architecture.fr.md) · [Español](architecture.es.md) · [Português](architecture.pt.md) · [हिन्दी](architecture.hi.md) · [العربية](architecture.ar.md) · [বাংলা](architecture.bn.md) · [Bahasa Indonesia](architecture.id.md) · [日本語](architecture.ja.md)
@@ -206,7 +206,7 @@ SpawnPool
 | Курица, утка, гусь | faction ∈ {flora, veg, fruit, insect}；**не crop（зерновые）** |
 | Собака | faction = poultry（куры/утки/гуси/голуби и т.п.） |
 | Свинья | faction ∈ {tree, flora, veg, fruit, insect, crop}；**не собака** |
-| Корова, лошадь | faction ∈ {flora, crop} 或 tag `tree_seedling`；без насекомых и мяса |
+| Корова, лошадь | faction ∈ {flora, crop} или tag `tree_seedling`; без насекомых и мяса |
 | Слон | см. 5.5, вне этой таблицы |
 
 Эффект:

@@ -10,7 +10,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ---
 
-## 一、심사 개요
+## 1. 심사 개요
 
 | 차원 | 평점 | 설명 |
 |------|------|------|
@@ -24,7 +24,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ---
 
-## 二、생성된 파일
+## 2. 생성된 파일
 
 ### 2.1 `install/install.sql` (988줄)
 - 원본 마이그레이션 파일 8개 병합
@@ -41,7 +41,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 | `game_admin_role` | INSERT IGNORE (고정 ID) |
 | `game_admin_permission` | INSERT IGNORE (고정 ID) - 4회 |
 | `game_admin_role_permission` | WHERE NOT EXISTS 서브쿼리 |
-| `game-platform_config` | INSERT IGNORE (고정 ID) - 2회 |
+| `game_platform_config` | INSERT IGNORE (고정 ID) - 2회 |
 | `game_language` | INSERT IGNORE (고정 ID) |
 | `game_translation` | INSERT IGNORE (고정 ID) |
 | `game_risk_rule` | INSERT IGNORE (고정 ID) |
@@ -71,7 +71,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ---
 
-## 三、환경 검사 커버리지 (11항목)
+## 3. 환경 검사 커버리지 (11항목)
 
 | # | 검사 항목 | 레벨 | 상태 |
 |---|--------|------|------|
@@ -89,7 +89,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ---
 
-## 四、생태계 설정 완전성
+## 4. 생태계 설정 완전성
 
 ### 4.1 Admin `.env` 생성 (70개 설정 항목)
 
@@ -130,7 +130,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ---
 
-## 五、보안 심사
+## 5. 보안 심사
 
 ### 5.1 구현된 보안 조치
 
@@ -161,7 +161,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ---
 
-## 六、테스트 결과
+## 6. 테스트 결과
 
 ### 6.1 PHP 문법 검사
 ```
@@ -188,7 +188,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ---
 
-## 七、발견 및 수정된 문제
+## 7. 발견 및 수정된 문제
 
 | # | 문제 | 심각도 | 상태 |
 |---|------|--------|------|
@@ -201,7 +201,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ---
 
-## 八、문서 변경
+## 8. 문서 변경
 
 | 파일 | 변경 내용 |
 |------|---------|
@@ -212,7 +212,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ---
 
-## 九、총평
+## 9. 총평
 
 설치 시스템은 기능이 완전하고 코드 품질이 좋으며 보안 조치가 적절합니다. 5단계 설치 플로우가 명확하고 직관적이며, 환경 검사가 webman 실행에 필요한 모든 핵심 확장을 커버하고, 고강도 키를 자동 생성하며, 설정 파일이 기존 시스템과 완전히 호환됩니다. SQL 병합 과정에서 원본 마이그레이션 파일과의 완전한 일치(42장 테이블)를 유지했고, 멱등 처리는 재실행 시 오류가 나지 않도록 보장합니다.
 
@@ -220,7 +220,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 
 ---
 
-## 十、2026-08-18 상태 확인
+## 10. 2026-08-18 상태 확인
 
 이번 라운드의 보안 수정(결제 콜백 fail-closed, JWT 기동 검증, 테이블 접두사 통일)은 **설치 시스템을 다루지 않았으며**, 새로 발견된 문제는 없습니다:
 

@@ -1,4 +1,4 @@
-# 功能文档
+# ফিচার ডকুমেন্ট
 <!-- lang-nav -->
 
 Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md) · [Русский](FEATURES.ru.md) · [Deutsch](FEATURES.de.md) · [Français](FEATURES.fr.md) · [Español](FEATURES.es.md) · [Português](FEATURES.pt.md) · [हिन्दी](FEATURES.hi.md) · [العربية](FEATURES.ar.md) · **বাংলা** · [Bahasa Indonesia](FEATURES.id.md) · [日本語](FEATURES.ja.md)
@@ -44,7 +44,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | গেম লবি | ১০টি প্রিসেট ক্যাটাগরি, ক্যাটাগরি ফিল্টার, গেম-ক্যাটাগরি সম্পর্ক | সম্পন্ন |
 | লিডারবোর্ড | দৈনিক/সাপ্তাহিক/মাসিক/সর্বকালীন, Redis ক্যাশ, মাল্টি-মেট্রিক | সম্পন্ন |
 | কুপন | ফিক্সড অঙ্ক+অনুপাত ডিসকাউন্ট, সময় ও পরিমাণ সীমিত, গ্রহণ/ব্যবহার ট্র্যাকিং | সম্পন্ন |
-| দেশ কনফিগ | ৮ দেশ প্রিসেট, আলাদা পেমেন্ট/উত্তোলন মাধ্যম, ন্যূনতম টপ-আপ অঙ্ক | সম্পন্ন |
+| দেশ কনফিগ | ১৮ দেশ প্রিসেট, আলাদা পেমেন্ট/উত্তোলন মাধ্যম, ন্যূনতম টপ-আপ অঙ্ক | সম্পন্ন |
 | পরিসংখ্যান | দৈনিক পরিসংখ্যান স্ন্যাপশট + প্ল্যাটফর্ম রাজস্ব ট্র্যাকিং | সম্পন্ন |
 | সার্চ | Elasticsearch ফুল-টেক্সট সার্চ (মডেল লেয়ারে ইন্টিগ্রেটেড) | সম্পন্ন |
 
@@ -67,7 +67,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | ডিপ্লয় | Docker Compose ৭ সার্ভিস + Nginx রিভার্স প্রক্সি | সম্পন্ন |
 | ডেটা | MySQL রিয়েল-টাইম অ্যাগ্রিগেশন অ্যানালাইসিস + জয়েন্ট/কন্ডিশনাল প্রোবাবিলিটি | সম্পন্ন |
 | HarmonyOS | admin প্রান্ত ৮ পেজ; C-এন্ড `apps/harmonyos/`-এ লগইন/লবি/ডিটেইল/ওয়ালেট/প্রোফাইল বাস্তবায়িত (8792-এ নির্দেশিত) | আংশিক সম্পন্ন (প্রজেক্ট চলে, আসল ডিভাইসে IP পরিবর্তন প্রয়োজন) |
-| API ডকুমেন্টেশন | hg/apidoc ইন্টারঅ্যাকটিভ ডকুমেন্টেশন | সম্পন্ন |
+| API ডকুমেন্টেশন | erikwang2013/apidoc-php ইন্টারঅ্যাকটিভ ডকুমেন্টেশন | সম্পন্ন |
 | ওয়ান-ক্লিক ইনস্টল | ব্রাউজার ইনস্টল উইজার্ড: অ্যাডমিন তৈরি, বিদ্যমান DB আপগ্রেড, install.lock পুনঃইনস্টল প্রতিরোধ | সম্পন্ন |
 | ফল্ট টলারেন্স | CircuitBreaker + Retry + feature.provider_mock ডিগ্রেডেশন সুইচ | সম্পন্ন |
 | পেমেন্ট মাধ্যম | অ্যাডমিন CRUD + দেশ ভিজিবিলিটি + অঙ্কের রেঞ্জ + মুদ্রা সীমা | সম্পন্ন |
@@ -79,7 +79,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 |----|------|------|
 | গেম ইন্টিগ্রেশন | GameProvider অ্যাবস্ট্রাকশন লেয়ার (Self/ThirdParty) + HMAC-SHA256 সিগনেচার | সম্পন্ন |
 | গেম কলব্যাক | Provider API গেটওয়ে (balance/bet/settle/refund) + ProviderAuth মিডলওয়্যার | সম্পন্ন |
-| গেম সেশন | Redis হার্টবিট + ১৫ মিনিট টাইমআউটে অটো সেটেলমেন্ট + GameSessionService | সম্পন্ন |
+| গেম সেশন | SDK সেশন টোকেন: HMAC-SHA256 স্বাক্ষর + ৫ মিনিট TTL (`GET /api/v1/game/session` ইস্যু করে, `SdkSessionAuth` যাচাই করে) | সম্পন্ন |
 | টিকিট সিস্টেম | C-এন্ড তৈরি/রিপ্লাই + অ্যাডমিন প্রসেস/অ্যাসাইন/ক্লোজ, ৫ ধরনের টিকিট | সম্পন্ন |
 | ইমেইল ভেরিফিকেশন | ৬ সংখ্যার কোড, Redis ১০ মিনিট মেয়াদ, ৬০ সেকেন্ড রিসেন্ড সীমা | সম্পন্ন |
 | পুশ নোটিফিকেশন | PushService (FCM/APNs/হুয়াওয়ে পুশ) + DeviceToken মডেল | সম্পন্ন |
@@ -119,62 +119,64 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 
 | মেথড | পাথ | বিবরণ | অথেনটিকেশন |
 |------|------|------|------|
-| POST | /api/auth/register | ইউজার রেজিস্ট্রেশন | না |
-| POST | /api/auth/login | ইউজার লগইন | না |
-| POST | /api/auth/refresh | Token রিফ্রেশ | না |
-| GET | /api/game/list | গেম তালিকা | না |
-| GET | /api/game/detail/{id} | গেম ডিটেইল | না |
-| GET | /api/announcement/list | ঘোষণা তালিকা | না |
-| GET | /api/wallet/info | ওয়ালেট ব্যালেন্স | হ্যাঁ |
-| GET | /api/wallet/transactions | লেজার রেকর্ড | হ্যাঁ |
-| POST | /api/deposit/create | টপ-আপ অর্ডার তৈরি | হ্যাঁ |
-| GET | /api/payment/methods | পেমেন্ট পদ্ধতির তালিকা (দেশ অনুযায়ী) | হ্যাঁ |
-| POST | /api/exchange/quote | বিনিময় কোটেশন (VIP ডিসকাউন্ট) | হ্যাঁ |
-| POST | /api/exchange/buy | গেম কয়েন বাই | হ্যাঁ |
-| POST | /api/exchange/sell | গেম কয়েন সেল | হ্যাঁ |
-| POST | /api/withdraw/apply | উত্তোলন আবেদন (VIP ছাড়) | হ্যাঁ |
-| POST | /api/game/launch | গেম লঞ্চ | হ্যাঁ |
-| GET | /api/game/play-logs | গেম রেকর্ড | হ্যাঁ |
-| POST | /api/referral/apply | রেফারেল কোড ব্যবহার | হ্যাঁ |
-| POST | /api/verify/send-email | ইমেইল ভেরিফিকেশন কোড পাঠান | হ্যাঁ |
-| POST | /api/verify/confirm-email | ইমেইল নিশ্চিত | হ্যাঁ |
-| GET | /api/ticket/list | টিকিট তালিকা | হ্যাঁ |
-| POST | /api/ticket/create | টিকিট তৈরি | হ্যাঁ |
-| POST | /api/ticket/{id}/reply | টিকিট রিপ্লাই | হ্যাঁ |
+| POST | /api/v1/auth/register | ইউজার রেজিস্ট্রেশন | না |
+| POST | /api/v1/auth/login | ইউজার লগইন | না |
+| POST | /api/v1/auth/refresh | Token রিফ্রেশ | না |
+| GET | /api/v1/game/list | গেম তালিকা | না |
+| GET | /api/v1/game/detail/{id} | গেম ডিটেইল | না |
+| GET | /api/v1/announcement/list | ঘোষণা তালিকা | না |
+| GET | /api/v1/wallet/info | ওয়ালেট ব্যালেন্স | হ্যাঁ |
+| GET | /api/v1/wallet/transactions | লেজার রেকর্ড | হ্যাঁ |
+| POST | /api/v1/deposit/create | টপ-আপ অর্ডার তৈরি | হ্যাঁ |
+| GET | /api/v1/payment/methods | পেমেন্ট পদ্ধতির তালিকা (দেশ অনুযায়ী) | হ্যাঁ |
+| POST | /api/v1/exchange/quote | বিনিময় কোটেশন (VIP ডিসকাউন্ট) | হ্যাঁ |
+| POST | /api/v1/exchange/buy | গেম কয়েন বাই | হ্যাঁ |
+| POST | /api/v1/exchange/sell | গেম কয়েন সেল | হ্যাঁ |
+| POST | /api/v1/withdraw/apply | উত্তোলন আবেদন (VIP ছাড়) | হ্যাঁ |
+| POST | /api/v1/game/launch | গেম লঞ্চ | হ্যাঁ |
+| GET | /api/v1/game/play-logs | গেম রেকর্ড | হ্যাঁ |
+| POST | /api/v1/referral/apply | রেফারেল কোড ব্যবহার | হ্যাঁ |
+| POST | /api/v1/verify/send-email | ইমেইল ভেরিফিকেশন কোড পাঠান | হ্যাঁ |
+| POST | /api/v1/verify/confirm-email | ইমেইল নিশ্চিত | হ্যাঁ |
+| GET | /api/v1/ticket/list | টিকিট তালিকা | হ্যাঁ |
+| POST | /api/v1/ticket/create | টিকিট তৈরি | হ্যাঁ |
+| POST | /api/v1/ticket/{id}/reply | টিকিট রিপ্লাই | হ্যাঁ |
+| GET | /api/v1/platform/stats | প্ল্যাটফর্ম পরিসংখ্যান | না |
 
-| GET | /api/platform/stats | প্ল্যাটফর্ম পরিসংখ্যান | না |
 ## 3. অ্যাডমিন প্যানেল ফিচার
 
 ### 3.1 API ইন্টারফেস (নতুন)
 
 | মেথড | পাথ | বিবরণ |
 |------|------|------|
-| GET | /admin/dashboard/platform | প্ল্যাটফর্ম ড্যাশবোর্ড ডেটা |
-| GET | /admin/analytics/overview | প্ল্যাটফর্ম ওভারভিউ (MySQL রিয়েল-টাইম অ্যাগ্রিগেশন) |
-| GET | /admin/analytics/game-ranking | গেম র্যাংকিং |
-| GET | /admin/analytics/dau-trend | DAU ট্রেন্ড |
-| GET | /admin/analytics/hourly-trend | ঘণ্টাভিত্তিক ট্রেন্ড |
-| GET | /admin/analytics/action-distribution | আচরণ বিতরণ |
-| GET | /admin/analytics/revenue | রাজস্ব বিশ্লেষণ |
-| GET | /admin/analytics/conversion | গেম কনভার্সন রেট |
-| GET | /admin/analytics/probability | জয়েন্ট/কন্ডিশনাল প্রোবাবিলিটি |
-| GET | /admin/analytics/retention | রিটেনশন অ্যানালাইসিস D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | কনভার্সন ফানেল |
-| GET | /admin/analytics/arpu | ARPU/ARPPU ট্রেন্ড |
-| GET | /admin/analytics/economy | গেম কয়েন ইকোনমি মেট্রিক |
-| GET | /admin/report/summary | রিপোর্ট সারাংশ (নতুন ব্যবহারকারী/ডিপোজিট/উইথড্রয়াল/এক্সচেঞ্জ/গেম প্লে) |
-| GET | /admin/report/daily | দৈনিক রিপোর্ট (দিনভিত্তিক সমষ্টি, ডেটাবিহীন তারিখে 0 পূরণ) |
-| GET | /admin/report/export | দৈনিক রিপোর্ট CSV এক্সপোর্ট (UTF-8 BOM) |
-| GET | /admin/game/list | গেম তালিকা |
-| POST | /admin/game/create | গেম তৈরি (provider_config সহ) |
-| PUT | /admin/game/{id} | গেম সম্পাদনা |
-| GET | /admin/withdraw/orders | উত্তোলন অর্ডার তালিকা |
-| PUT | /admin/withdraw/review | উত্তোলন রিভিউ |
-| GET | /admin/ticket/list | টিকিট তালিকা |
-| GET | /admin/ticket/{id} | টিকিট ডিটেইল |
-| POST | /admin/ticket/{id}/reply | টিকিট রিপ্লাই |
-| POST | /admin/ticket/{id}/close | টিকিট ক্লোজ |
-| POST | /admin/ticket/{id}/assign | হ্যান্ডলার নির্ধারণ |
+| GET | /admin/v1/dashboard/platform | প্ল্যাটফর্ম ড্যাশবোর্ড ডেটা |
+| GET | /admin/v1/analytics/overview | প্ল্যাটফর্ম ওভারভিউ (MySQL রিয়েল-টাইম অ্যাগ্রিগেশন) |
+| GET | /admin/v1/analytics/game-ranking | গেম র্যাংকিং |
+| GET | /admin/v1/analytics/dau-trend | DAU ট্রেন্ড |
+| GET | /admin/v1/analytics/hourly-trend | ঘণ্টাভিত্তিক ট্রেন্ড |
+| GET | /admin/v1/analytics/action-distribution | আচরণ বিতরণ |
+| GET | /admin/v1/analytics/revenue | রাজস্ব বিশ্লেষণ |
+| GET | /admin/v1/analytics/conversion | গেম কনভার্সন রেট |
+| GET | /admin/v1/analytics/probability | জয়েন্ট/কন্ডিশনাল প্রোবাবিলিটি |
+| GET | /admin/v1/analytics/retention | রিটেনশন অ্যানালাইসিস D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | কনভার্সন ফানেল |
+| GET | /admin/v1/analytics/arpu | ARPU/ARPPU ট্রেন্ড |
+| GET | /admin/v1/analytics/economy | গেম কয়েন ইকোনমি মেট্রিক |
+| GET | /admin/v1/report/summary | রিপোর্ট সারাংশ (নতুন ব্যবহারকারী/ডিপোজিট/উইথড্রয়াল/এক্সচেঞ্জ/গেম প্লে) |
+| GET | /admin/v1/report/daily | দৈনিক রিপোর্ট (দিনভিত্তিক সমষ্টি, ডেটাবিহীন তারিখে 0 পূরণ) |
+| GET | /admin/v1/report/export | দৈনিক রিপোর্ট CSV এক্সপোর্ট (UTF-8 BOM) |
+| GET | /admin/v1/game/list | গেম তালিকা |
+| GET | /admin/v1/game/{id} | গেম ডিটেইল |
+| POST | /admin/v1/game/launch | গেম প্রিভিউ (শুধু পড়া) |
+| POST | /admin/v1/game/create | গেম তৈরি (provider_config সহ) |
+| PUT | /admin/v1/game/{id} | গেম সম্পাদনা |
+| GET | /admin/v1/withdraw/orders | উত্তোলন অর্ডার তালিকা |
+| PUT | /admin/v1/withdraw/review | উত্তোলন রিভিউ |
+| GET | /admin/v1/ticket/list | টিকিট তালিকা |
+| GET | /admin/v1/ticket/{id} | টিকিট ডিটেইল |
+| POST | /admin/v1/ticket/{id}/reply | টিকিট রিপ্লাই |
+| POST | /admin/v1/ticket/{id}/close | টিকিট ক্লোজ |
+| POST | /admin/v1/ticket/{id}/assign | হ্যান্ডলার নির্ধারণ |
 
 ## 4. Provider API (গেম পক্ষের কলব্যাক)
 
@@ -250,21 +252,21 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | game_game | +provider_config (JSON) |
 | game_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**মোট: install.sql ৪৩টি টেবিল** (ইকোসিস্টেম এক্সটেনশনের ১০টি `install/`-এ, install.sql-এ একীভূত নয়)। মডেল শেয়ার্ড নয়: admin 46 / service 44 প্রত্যেকে আলাদা।
+**মোট: install.sql ৭৮টি টেবিল**। মডেল: `packages/platform-common/src/model/`-এ ৫২টি শেয়ার্ড; admin/app/model/-এর ৮টি ও service/app/model/-এর ১০টি নিজ নিজ হোস্টের জন্য একচেটিয়া (ফাইলের নামের কোনো ওভারল্যাপ নেই)।
 
 ## 8. টেস্ট কভারেজ
 
 | টেস্ট ফাইল | কেস সংখ্যা | কভারেজ |
 |---------|--------|---------|
-| PlatformTest | 56 | bcmath নির্ভুলতা/বিনিময় হিসাব/উত্তোলন ফি/সীমা/রিস্ক কন্ট্রোল/কুপন/KYC/i18n |
-| BackendEnhancementTest | 23 | এনক্রিপশন সার্ভিস/Hashids/Snowflake |
-| CaptchaTest | 7 | ক্যাপচা তৈরি/ভেরিফিকেশন |
-| EncryptionServiceTest | 6 | AES এনক্রিপশন/মাস্কিং |
-| EnvConfigTest | 4 | এনভায়রনমেন্ট ভেরিয়েবল কনফিগ |
-| HashidsServiceTest | 8 | ID এনকোড/ডিকোড রাউন্ড-ট্রিপ |
-| SnowflakeServiceTest | 6 | ID জেনারেশন ইউনিকনেস |
+| PlatformTest | 55 | bcmath নির্ভুলতা/বিনিময় হিসাব/উত্তোলন ফি/সীমা/রিস্ক কন্ট্রোল/কুপন/KYC/i18n |
+| BackendEnhancementTest | 27 | এনক্রিপশন সার্ভিস/Hashids/Snowflake |
+| CaptchaTest | 5 | ক্যাপচা তৈরি/ভেরিফিকেশন |
+| EncryptionServiceTest | 8 | AES এনক্রিপশন/মাস্কিং |
+| EnvConfigTest | 6 | এনভায়রনমেন্ট ভেরিয়েবল কনফিগ |
+| HashidsServiceTest | 6 | ID এনকোড/ডিকোড রাউন্ড-ট্রিপ |
+| SnowflakeServiceTest | 5 | ID জেনারেশন ইউনিকনেস |
 
-**মোট: admin ~132 কেস / 8 ফাইল; service ৩ কেস (WebhookUrlSafety + EventBusMessageFormat)। service CI-তে ব্যর্থতা ব্লকিংয়ে অন্তর্ভুক্ত নয়।**
+**মোট (phpunit --list-tests, বর্তমান পরিমাপ): admin ২০০টি কেস / ২১টি ফাইল, service ২৭৩টি কেস / ৪২টি ফাইল (WebhookUrlSafety + EventBusMessageFormat সহ; রিপোর্ট: 09-22 পুনরায় চালানোর ফল admin 190 + service 273, 08-27 স্ন্যাপশট admin 153 + service 45)। service CI-তে ব্যর্থতা ব্লকিংয়ে অন্তর্ভুক্ত নয় (যাচাই করা হয়নি)।**
 
 ---
 

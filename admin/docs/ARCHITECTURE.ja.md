@@ -14,9 +14,9 @@ Languages: [中文](ARCHITECTURE.md) · [English](ARCHITECTURE.en.md) · [한국
 
 ```mermaid
 flowchart TB
-    subgraph "客户端层"
+    subgraph "クライアント層"
         A1["Flutter Web<br/>PC 管理后台<br/>(Port 3000)"]
-        A2["HarmonyOS ArkTS<br/>手机/平板客户端"]
+        A2["HarmonyOS ArkTS<br/>スマホ/タブレットクライアント"]
     end
 
     subgraph "网关/边缘层 (Nginx Edge)"
@@ -26,7 +26,7 @@ flowchart TB
     subgraph "应用层 (webman v2)"
         C1["AdminAuth 中间件<br/>JWT 验证"]
         C2["AdminPermission 中间件<br/>RBAC 权限校验"]
-        C3["管理端 Controller<br/>Dashboard / User / Role / Permission / Payment"]
+        C3["管理画面 Controller<br/>Dashboard / User / Role / Permission / Payment"]
         C4["公开 Controller v1<br/>Captcha / Auth"]
         C5["Common Services<br/>Hashids / Snowflake / Encryption"]
     end
@@ -152,7 +152,7 @@ flowchart TD
 
 ```mermaid
 sequenceDiagram
-    participant C as 客户端
+    participant C as クライアント
     participant N as Nginx
     participant MW_SF as SecurityFilter
     participant MW_RL as RateLimit
@@ -229,8 +229,8 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant U as 用户
-    participant CL as 客户端
-    participant SV as 服务端
+    participant CL as クライアント
+    participant SV as サーバー
     participant JWT as JWT Service
     participant CAP as Captcha Service
 
@@ -397,10 +397,10 @@ flowchart LR
 ```mermaid
 flowchart TB
     subgraph "传输层加密 (encryption)"
-        E1["客户端发送敏感数据"]
+        E1["クライアントが機密データを送信"]
         E2["AES-256-CBC 加密"]
         E3["API 传输密文"]
-        E4["服务端解密处理"]
+        E4["サーバーがデータを復号"]
         E1 --> E2 --> E3 --> E4
     end
 
@@ -519,7 +519,7 @@ erDiagram
 
 ```mermaid
 sequenceDiagram
-    participant C as 客户端
+    participant C as クライアント
     participant CTL as ExportController
     participant DB as MySQL
     participant FS as 文件系统

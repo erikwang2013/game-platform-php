@@ -51,22 +51,22 @@ Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 ```
 open-admin/
 ├── app/
-│   ├── admin/v1/controller/    # 管理端控制器 (44 个)
-│   │   ├── BaseController.php      # 基础控制器
-│   │   ├── DashboardController.php # 仪表盘（Redis 缓存）
-│   │   ├── AnalyticsController.php # 数据分析（12 个端点）
-│   │   ├── UserController.php      # 用户 CRUD + 批量操作
-│   │   ├── RoleController.php      # 角色 CRUD
-│   │   ├── PermissionController.php# 权限 CRUD
-│   │   ├── ConfigController.php    # 系统配置 CRUD
-│   │   ├── LogController.php       # 操作日志查询
-│   │   ├── ProfileController.php   # 个人中心 + 登出
-│   │   ├── ExportController.php    # Excel/PDF 导出
-│   │   ├── ImportController.php    # Excel 导入用户
-│   │   ├── UploadController.php    # 文件上传
-│   │   ├── HealthController.php    # 健康检查
-│   │   ├── DocsController.php      # OpenAPI 文档
-│   │   └── MetricsController.php   # Prometheus 监控指标
+│   ├── admin/v1/controller/    # 管理端控制器 (45 个)
+│   │   ├── BaseController.php       # 基础控制器
+│   │   ├── DashboardController.php  # 仪表盘（Redis 缓存）
+│   │   ├── AnalyticsController.php  # 数据分析（12 个端点）
+│   │   ├── UserController.php       # 用户 CRUD + 批量操作
+│   │   ├── RoleController.php       # 角色 CRUD
+│   │   ├── PermissionController.php # 权限 CRUD
+│   │   ├── ConfigController.php     # 系统配置 CRUD
+│   │   ├── LogController.php        # 操作日志查询
+│   │   ├── ProfileController.php    # 个人中心 + 登出
+│   │   ├── ExportController.php     # Excel/PDF 导出
+│   │   ├── ImportController.php     # Excel 导入用户
+│   │   ├── UploadController.php     # 文件上传
+│   │   ├── HealthController.php     # 健康检查
+│   │   ├── DocsController.php       # OpenAPI 文档
+│   │   └── MetricsController.php    # Prometheus 监控指标
 │   ├── api/v1/controller/      # API v1 控制器（URL 路径版本）
 │   │   ├── CaptchaController.php
 │   │   └── AuthController.php

@@ -143,7 +143,7 @@ return [
     'next_step_2' => 'API サービスを起動: cd service && php start.php start -d（任意）',
     'next_step_3' => '先ほど作成した管理者アカウントで管理バックエンドにログインします',
     'next_step_4' => '管理画面の "System Config" で決済チャネル、CDN、メールなどの認証情報を設定します',
-    'next_step_5' => '管理バックエンドを開きます（デフォルトアドレス）:',
+    'next_step_5' => '管理バックエンドを開きます（アドレスは admin/.env の APP_URL から）:',
     'next_step_6' => '公開前に install ディレクトリを削除するか、Nginx でアクセスを拒否してください（docs/nginx-security.conf を参照）',
     'security_title' => 'セキュリティに関する注意',
     'security_1' => 'install ディレクトリへのアクセスを削除または制限してください（install.lock を含む）',

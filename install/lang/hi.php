@@ -143,7 +143,7 @@ return [
     'next_step_2' => 'API सेवा शुरू करें: cd service && php start.php start -d (वैकल्पिक)',
     'next_step_3' => 'अभी बनाए गए प्रशासक खाते से एडमिन बैकएंड में लॉग इन करें',
     'next_step_4' => 'एडमिन पैनल में "System Config" के अंतर्गत पेमेंट चैनल, CDN और मेल क्रेडेंशियल पूर्ण करें',
-    'next_step_5' => 'एडमिन बैकएंड खोलें (डिफ़ॉल्ट पता):',
+    'next_step_5' => 'एडमिन बैकएंड खोलें (पता admin/.env के APP_URL से):',
     'next_step_6' => 'सार्वजनिक रूप से जारी करने से पहले install डायरेक्टरी हटाएँ या Nginx में उस तक पहुँच अस्वीकार करें (देखें docs/nginx-security.conf)',
     'security_title' => 'सुरक्षा नोट्स',
     'security_1' => 'install डायरेक्टरी हटाएँ या उस तक पहुँच प्रतिबंधित करें (install.lock सहित)',

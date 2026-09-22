@@ -598,14 +598,14 @@ Policy: https://erik.xyz/security-policy
 
 | 威胁类型 | 攻击向量 | 防御层次 |
 |----------|---------|---------|
-| HTTP 方法滥用 | TRACE/TRACK XST 攻击、CONNECT 隧道代理、WebDAV 方法探测 | SecurityFilter 405 方法白名单 (GET/POST/PUT/DELETE/OPTIONS/HEAD) |
+| HTTP 方法滥用 | TRACE/TRACK XST 攻击、CONNECT 隧道代理、WebDAV 方法探测 | SecurityFilter 405 方法白名单 (GET/POST/PUT/DELETE/HEAD/OPTIONS/PATCH) |
 | 定向暴力破解 | 针对特定用户反复尝试密码 | 账号锁定 (5次失败锁定15分钟) + RateLimit (登录 10/min) + Captcha |
 | 暴力破解 | 分布式 IP 反复尝试用户名/密码 | RateLimit (登录 10/min) + Captcha |
-| XSS 跨站脚本 | `<script>`, onerror, javascript: | SecurityFilter (5 种模式) + X-XSS-Protection 响应头 + CSP |
-| SQL 注入 | UNION SELECT, OR 1=1, 注释绕过 | SecurityFilter (6 种模式) + Eloquent ORM 参数化查询 |
+| XSS 跨站脚本 | `<script>`, onerror, javascript: | SecurityFilter (13 种模式) + X-XSS-Protection 响应头 + CSP |
+| SQL 注入 | UNION SELECT, OR 1=1, 注释绕过 | SecurityFilter (14 种模式) + Eloquent ORM 参数化查询 |
 | CSRF 跨站请求伪造 | 恶意网站代发请求 | SecurityFilter Origin/Referer 校验 |
 | 路径遍历 | `../../etc/passwd` | SecurityFilter 路径遍历模式 + UploadController 扩展名白名单 |
-| 命令注入 | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (4 种模式) |
+| 命令注入 | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (13 种模式) |
 | 会话劫持 | 窃取 JWT Token | JWT 短期有效 (2h) + 黑名单登出 + 敏感操作二次密码确认 |
 | ID 枚举 | 遍历数字 ID 猜测数据量 | Hashids 混淆为随机字符串 |
 | 数据泄露 | DB 拖库 / 中间人 / 日志泄露 | 三层加密/脱敏 + OperationLog 敏感字段过滤 |

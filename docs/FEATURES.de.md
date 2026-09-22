@@ -44,7 +44,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | Spielelobby | 10 voreingestellte Kategorien, Kategoriefilter, Spiel-Kategorie-Verknüpfung | Abgeschlossen |
 | Rangliste | Tages-/Wochen-/Monats-/Gesamtrangliste, Redis-Cache, mehrere Metriken | Abgeschlossen |
 | Gutscheine | Festbetrag + Prozentrabatt, zeit-/mengenbegrenzt, Einlösungs-/Nutzungsverfolgung | Abgeschlossen |
-| Länderkonfiguration | 8 Länder voreingestellt, differenzierte Zahlungs-/Auszahlungsmethoden, Mindesteinzahlung | Abgeschlossen |
+| Länderkonfiguration | 18 Länder voreingestellt, differenzierte Zahlungs-/Auszahlungsmethoden, Mindesteinzahlung | Abgeschlossen |
 | Statistik | Tägliche Statistik-Snapshots + Plattform-Erlösverfolgung | Abgeschlossen |
 | Suche | Elasticsearch-Volltextsuche (auf Modell-Ebene integriert) | Abgeschlossen |
 
@@ -67,7 +67,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | Bereitstellung | Docker Compose 7 Dienste + Nginx-Reverse-Proxy | Abgeschlossen |
 | Daten | MySQL-Echtzeit-Aggregationsanalyse + Verbund-/Bedingte-Wahrscheinlichkeitsberechnung | Abgeschlossen |
 | HarmonyOS | admin-Seite 8 Seiten; C-End `apps/harmonyos/` mit Login/Lobby/Details/Wallet/Profil (zeigt auf 8792) | Teilweise abgeschlossen (Projekt läuft, echte Geräte benötigen IP-Anpassung) |
-| API-Dokumentation | hg/apidoc interaktive Dokumentation | Abgeschlossen |
+| API-Dokumentation | erikwang2013/apidoc-php interaktive Dokumentation | Abgeschlossen |
 | Ein-Klick-Installation | Browser-Installationsassistent: Admin erstellen, bestehende DB aktualisieren, install.lock verhindert Neuinstallation | Abgeschlossen |
 | Fehlertoleranz | CircuitBreaker + Retry + Degradationsschalter feature.provider_mock | Abgeschlossen |
 | Zahlungsarten | Admin-CRUD + Sichtbarkeit nach Land + Betragsbereich + Währungsbeschränkung | Abgeschlossen |
@@ -79,7 +79,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 |----|------|------|
 | Spielanbindung | GameProvider-Abstraktionsschicht (Self/ThirdParty) + HMAC-SHA256-Signatur | Abgeschlossen |
 | Spiel-Callback | Provider-API-Gateway (balance/bet/settle/refund) + ProviderAuth-Middleware | Abgeschlossen |
-| Spielsession | Redis-Heartbeat + 15-Minuten-Timeout-Automatikabrechnung + GameSessionService | Abgeschlossen |
+| Spielsession | SDK-Session-Token: HMAC-SHA256-Signatur + 5-Minuten-TTL (ausgestellt von `GET /api/v1/game/session`, geprüft von `SdkSessionAuth`) | Abgeschlossen |
 | Ticket-System | C-End-Erstellung/Antwort + Verwaltungsseite Bearbeitung/Zuweisung/Schließung, 5 Tickettypen | Abgeschlossen |
 | E-Mail-Verifizierung | 6-stelliger Code, Redis 10 Minuten Ablauf, 60 Sekunden Wiedersendelimit | Abgeschlossen |
 | Push-Benachrichtigung | PushService (FCM/APNs/Huawei-Push) + DeviceToken-Modell | Abgeschlossen |
@@ -119,62 +119,64 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 
 | Methode | Pfad | Beschreibung | Authentifizierung |
 |------|------|------|------|
-| POST | /api/auth/register | Benutzerregistrierung | nein |
-| POST | /api/auth/login | Benutzerlogin | nein |
-| POST | /api/auth/refresh | Token aktualisieren | nein |
-| GET | /api/game/list | Spielliste | nein |
-| GET | /api/game/detail/{id} | Spieldetails | nein |
-| GET | /api/announcement/list | Ankündigungsliste | nein |
-| GET | /api/wallet/info | Wallet-Guthaben | ja |
-| GET | /api/wallet/transactions | Transaktionsverlauf | ja |
-| POST | /api/deposit/create | Einzahlungsauftrag erstellen | ja |
-| GET | /api/payment/methods | Zahlungsarten auflisten (nach Land geroutet) | ja |
-| POST | /api/exchange/quote | Umtausch-Preisangebot (VIP-Rabatt) | ja |
-| POST | /api/exchange/buy | Spielwährung kaufen | ja |
-| POST | /api/exchange/sell | Spielwährung verkaufen | ja |
-| POST | /api/withdraw/apply | Auszahlungsantrag (VIP-Ermäßigung) | ja |
-| POST | /api/game/launch | Spiel starten | ja |
-| GET | /api/game/play-logs | Spielverlauf | ja |
-| POST | /api/referral/apply | Empfehlungscode verwenden | ja |
-| POST | /api/verify/send-email | E-Mail-Verifizierungscode senden | ja |
-| POST | /api/verify/confirm-email | E-Mail bestätigen | ja |
-| GET | /api/ticket/list | Ticketliste | ja |
-| POST | /api/ticket/create | Ticket erstellen | ja |
-| POST | /api/ticket/{id}/reply | Ticket beantworten | ja |
+| POST | /api/v1/auth/register | Benutzerregistrierung | nein |
+| POST | /api/v1/auth/login | Benutzerlogin | nein |
+| POST | /api/v1/auth/refresh | Token aktualisieren | nein |
+| GET | /api/v1/game/list | Spielliste | nein |
+| GET | /api/v1/game/detail/{id} | Spieldetails | nein |
+| GET | /api/v1/announcement/list | Ankündigungsliste | nein |
+| GET | /api/v1/wallet/info | Wallet-Guthaben | ja |
+| GET | /api/v1/wallet/transactions | Transaktionsverlauf | ja |
+| POST | /api/v1/deposit/create | Einzahlungsauftrag erstellen | ja |
+| GET | /api/v1/payment/methods | Zahlungsarten auflisten (nach Land geroutet) | ja |
+| POST | /api/v1/exchange/quote | Umtausch-Preisangebot (VIP-Rabatt) | ja |
+| POST | /api/v1/exchange/buy | Spielwährung kaufen | ja |
+| POST | /api/v1/exchange/sell | Spielwährung verkaufen | ja |
+| POST | /api/v1/withdraw/apply | Auszahlungsantrag (VIP-Ermäßigung) | ja |
+| POST | /api/v1/game/launch | Spiel starten | ja |
+| GET | /api/v1/game/play-logs | Spielverlauf | ja |
+| POST | /api/v1/referral/apply | Empfehlungscode verwenden | ja |
+| POST | /api/v1/verify/send-email | E-Mail-Verifizierungscode senden | ja |
+| POST | /api/v1/verify/confirm-email | E-Mail bestätigen | ja |
+| GET | /api/v1/ticket/list | Ticketliste | ja |
+| POST | /api/v1/ticket/create | Ticket erstellen | ja |
+| POST | /api/v1/ticket/{id}/reply | Ticket beantworten | ja |
+| GET | /api/v1/platform/stats | Plattform-Statistik | nein |
 
-| GET | /api/platform/stats | Plattform-Statistik | nein |
 ## 3. Verwaltungsbackend-Funktionen
 
 ### 3.1 API-Schnittstellen (neu)
 
 | Methode | Pfad | Beschreibung |
 |------|------|------|
-| GET | /admin/dashboard/platform | Plattform-Dashboard-Daten |
-| GET | /admin/analytics/overview | Plattformübersicht (MySQL-Echtzeitaggregation) |
-| GET | /admin/analytics/game-ranking | Spielrangliste |
-| GET | /admin/analytics/dau-trend | DAU-Trend |
-| GET | /admin/analytics/hourly-trend | Stundentrend |
-| GET | /admin/analytics/action-distribution | Verhaltensverteilung |
-| GET | /admin/analytics/revenue | Umsatzanalyse |
-| GET | /admin/analytics/conversion | Spielkonversion |
-| GET | /admin/analytics/probability | Verbund-/Bedingte Wahrscheinlichkeit |
-| GET | /admin/analytics/retention | Retentionsanalyse D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | Conversion-Funnel |
-| GET | /admin/analytics/arpu | ARPU/ARPPU-Trend |
-| GET | /admin/analytics/economy | Spielwährungs-Wirtschaftsindikatoren |
-| GET | /admin/report/summary | Berichtszusammenfassung (neue Nutzer/Einzahlungen/Auszahlungen/Umrechnungen/Spiele) |
-| GET | /admin/report/daily | Tagesbericht (tägliche Aggregation, leere Tage mit 0 aufgefüllt) |
-| GET | /admin/report/export | Tagesbericht als CSV exportieren (UTF-8 BOM) |
-| GET | /admin/game/list | Spielliste |
-| POST | /admin/game/create | Spiel erstellen (inkl. provider_config) |
-| PUT | /admin/game/{id} | Spiel bearbeiten |
-| GET | /admin/withdraw/orders | Auszahlungsauftragsliste |
-| PUT | /admin/withdraw/review | Auszahlung prüfen |
-| GET | /admin/ticket/list | Ticketliste |
-| GET | /admin/ticket/{id} | Ticketdetails |
-| POST | /admin/ticket/{id}/reply | Ticket beantworten |
-| POST | /admin/ticket/{id}/close | Ticket schließen |
-| POST | /admin/ticket/{id}/assign | Bearbeiter zuweisen |
+| GET | /admin/v1/dashboard/platform | Plattform-Dashboard-Daten |
+| GET | /admin/v1/analytics/overview | Plattformübersicht (MySQL-Echtzeitaggregation) |
+| GET | /admin/v1/analytics/game-ranking | Spielrangliste |
+| GET | /admin/v1/analytics/dau-trend | DAU-Trend |
+| GET | /admin/v1/analytics/hourly-trend | Stundentrend |
+| GET | /admin/v1/analytics/action-distribution | Verhaltensverteilung |
+| GET | /admin/v1/analytics/revenue | Umsatzanalyse |
+| GET | /admin/v1/analytics/conversion | Spielkonversion |
+| GET | /admin/v1/analytics/probability | Verbund-/Bedingte Wahrscheinlichkeit |
+| GET | /admin/v1/analytics/retention | Retentionsanalyse D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | Conversion-Funnel |
+| GET | /admin/v1/analytics/arpu | ARPU/ARPPU-Trend |
+| GET | /admin/v1/analytics/economy | Spielwährungs-Wirtschaftsindikatoren |
+| GET | /admin/v1/report/summary | Berichtszusammenfassung (neue Nutzer/Einzahlungen/Auszahlungen/Umrechnungen/Spiele) |
+| GET | /admin/v1/report/daily | Tagesbericht (tägliche Aggregation, leere Tage mit 0 aufgefüllt) |
+| GET | /admin/v1/report/export | Tagesbericht als CSV exportieren (UTF-8 BOM) |
+| GET | /admin/v1/game/list | Spielliste |
+| GET | /admin/v1/game/{id} | Spieldetails |
+| POST | /admin/v1/game/launch | Spielvorschau (schreibgeschützt) |
+| POST | /admin/v1/game/create | Spiel erstellen (inkl. provider_config) |
+| PUT | /admin/v1/game/{id} | Spiel bearbeiten |
+| GET | /admin/v1/withdraw/orders | Auszahlungsauftragsliste |
+| PUT | /admin/v1/withdraw/review | Auszahlung prüfen |
+| GET | /admin/v1/ticket/list | Ticketliste |
+| GET | /admin/v1/ticket/{id} | Ticketdetails |
+| POST | /admin/v1/ticket/{id}/reply | Ticket beantworten |
+| POST | /admin/v1/ticket/{id}/close | Ticket schließen |
+| POST | /admin/v1/ticket/{id}/assign | Bearbeiter zuweisen |
 
 ## 4. Provider-API (Spiel-Callbacks)
 
@@ -250,21 +252,21 @@ Zeitfenster: 5 Minuten
 | game_game | +provider_config (JSON) |
 | game_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**Gesamt: install.sql 43 Tabellen** (die 10 Ökosystem-Erweiterungs-Tabellen liegen in `install/` und sind nicht in install.sql zusammengeführt). Modelle nicht geteilt: admin 46 / service 44, jeweils eigene Kopie.
+**Gesamt: 78 Tabellen in install.sql**. Modelle: 52 gemeinsam in `packages/platform-common/src/model/`; die 8 in admin/app/model/ und 10 in service/app/model/ sind host-exklusiv (keine Dateinamen-Überschneidung).
 
 ## 8. Testabdeckung
 
 | Testdatei | Testfälle | Abdeckung |
 |---------|--------|---------|
-| PlatformTest | 56 | bcmath-Präzision/Umtauschberechnung/Auszahlungsgebühren/Limits/Risikokontrolle/Gutscheine/KYC/i18n |
-| BackendEnhancementTest | 23 | Verschlüsselungsdienst/Hashids/Snowflake |
-| CaptchaTest | 7 | Captcha-Erzeugung/-Prüfung |
-| EncryptionServiceTest | 6 | AES-Ver-/Entschlüsselung/Maskierung |
-| EnvConfigTest | 4 | Umgebungsvariablen-Konfiguration |
-| HashidsServiceTest | 8 | ID-Codierung/Decodierung-Roundtrip |
-| SnowflakeServiceTest | 6 | Eindeutigkeit der ID-Generierung |
+| PlatformTest | 55 | bcmath-Präzision/Umtauschberechnung/Auszahlungsgebühren/Limits/Risikokontrolle/Gutscheine/KYC/i18n |
+| BackendEnhancementTest | 27 | Verschlüsselungsdienst/Hashids/Snowflake |
+| CaptchaTest | 5 | Captcha-Erzeugung/-Prüfung |
+| EncryptionServiceTest | 8 | AES-Ver-/Entschlüsselung/Maskierung |
+| EnvConfigTest | 6 | Umgebungsvariablen-Konfiguration |
+| HashidsServiceTest | 6 | ID-Codierung/Decodierung-Roundtrip |
+| SnowflakeServiceTest | 5 | Eindeutigkeit der ID-Generierung |
 
-**Gesamt: admin ~132 Testfälle / 8 Dateien; service 3 Testfälle (WebhookUrlSafety + EventBusMessageFormat). service ist nicht in die CI-Fehlschlag-Sperre einbezogen.**
+**Gesamt (phpunit --list-tests, aktuelle Messung): admin 200 Testfälle / 21 Dateien, service 273 Testfälle / 42 Dateien (inkl. WebhookUrlSafety + EventBusMessageFormat; Bericht: Wiederholung 09-22 admin 190 + service 273, Snapshot 08-27 admin 153 + service 45). service ist nicht in die CI-Fehlschlag-Sperre einbezogen (nicht verifiziert).**
 
 ---
 

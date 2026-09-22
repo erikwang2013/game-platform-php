@@ -268,24 +268,23 @@ $result = $provider->refund($userId, $gameId, $sessionId, $amount, $roundId, 'ga
 
 ## 5. Управление сессиями
 
-После запуска игры необходимо отправлять heartbeat каждые 15 минут:
+SDK-вызовы игр self/embedded аутентифицируются токеном сессии: авторизованный C-конец вызывает `GET /api/v1/game/session?game_id={game_id}`, чтобы его выпустить (TTL 5 минут, только игры `self` / `embedded`):
 
-```php
-use app\service\GameSessionService;
+```
+GET /api/v1/game/session?game_id=1234567890
+Authorization: Bearer <user_token>
 
-// 启动时
-GameSessionService::heartbeat($userId, $gameId, $sessionId);
-
-// 定期心跳（建议每 5 分钟）
-if (!GameSessionService::isActive($sessionId)) {
-    // 会话已超时，需结束游戏
+200
+{
+    "code": 0,
+    "data": { "token": "<payload>.<signature>", "expires_in": 300 }
 }
 
-// 结束时
-GameSessionService::endSession($sessionId);
+POST /api/game/balance
+Authorization: Bearer <payload>.<signature>
 ```
 
-Просроченные сессии автоматически расчитываются (`GameSessionService::expireStaleSessions()`).
+Middleware `SdkSessionAuth` проверяет подпись HMAC-SHA256 и срок действия; `user_id` берётся только из токена (тело запроса не может его переопределить). По истечении выпустите токен заново и используйте его для вызовов `/api/game/balance`, `/api/game/bet`, `/api/game/settle`, `/api/game/refund`.
 
 ## 6. Конфигурация игры
 

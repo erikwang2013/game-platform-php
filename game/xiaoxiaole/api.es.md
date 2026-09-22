@@ -1,10 +1,10 @@
-# 田园消消乐 — API de integración con la plataforma
+# Match-3 Campestre — API de integración con la plataforma
 <!-- lang-nav -->
 
 Languages: [中文](api.md) · [English](api.en.md) · [한국어](api.ko.md) · [Русский](api.ru.md) · [Deutsch](api.de.md) · [Français](api.fr.md) · **Español** · [Português](api.pt.md) · [हिन्दी](api.hi.md) · [العربية](api.ar.md) · [বাংলা](api.bn.md) · [Bahasa Indonesia](api.id.md) · [日本語](api.ja.md)
 
 
-> Este documento es el contrato completo de interfaces entre 《田园消消乐》 y la plataforma de juegos. La división técnica está en `architecture.md`, la planificación en `plan.md`, y las funcionalidades para jugadores en `functional-design.md`.
+> Este documento es el contrato completo de interfaces entre «Match-3 Campestre» y la plataforma de juegos. La división técnica está en `architecture.md`, la planificación en `plan.md`, y las funcionalidades para jugadores en `functional-design.md`.
 
 ---
 

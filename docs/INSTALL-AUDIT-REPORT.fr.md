@@ -41,7 +41,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 | `game_admin_role` | INSERT IGNORE (ID fixe) |
 | `game_admin_permission` | INSERT IGNORE (ID fixe) - 4 fois |
 | `game_admin_role_permission` | Sous-requête WHERE NOT EXISTS |
-| `game-platform_config` | INSERT IGNORE (ID fixe) - 2 fois |
+| `game_platform_config` | INSERT IGNORE (ID fixe) - 2 fois |
 | `game_language` | INSERT IGNORE (ID fixe) |
 | `game_translation` | INSERT IGNORE (ID fixe) |
 | `game_risk_rule` | INSERT IGNORE (ID fixe) |

@@ -44,7 +44,7 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 | Game lobby | 10 preset categories, category filtering, game-category relations | Completed |
 | Leaderboards | Daily/weekly/monthly/total, Redis cache, multiple metrics | Completed |
 | Coupons | Fixed amount + percentage discount, time/quantity limited, claim/usage tracking | Completed |
-| Country config | 8 preset countries, differentiated payment/withdrawal methods, minimum deposit | Completed |
+| Country config | 18 preset countries, differentiated payment/withdrawal methods, minimum deposit | Completed |
 | Statistics | Daily stats snapshots + platform revenue tracking | Completed |
 | Search | Elasticsearch full-text search (model layer integrated) | Completed |
 
@@ -67,7 +67,7 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 | Deployment | Docker Compose 7 services + Nginx reverse proxy | Completed |
 | Data | MySQL real-time aggregation analytics + joint/conditional probability | Completed |
 | HarmonyOS | admin 8 pages; C-end `apps/harmonyos/` implements login/lobby/detail/wallet/profile (pointing to 8792) | Partially complete (project runs, device needs IP change) |
-| API docs | hg/apidoc interactive documentation | Completed |
+| API docs | erikwang2013/apidoc-php interactive documentation | Completed |
 | One-click install | Browser install wizard: create admin, upgrade existing DB, install.lock prevents reinstall | Completed |
 | Fault tolerance | CircuitBreaker + Retry + feature.provider_mock degradation switch | Completed |
 | Payment methods | Admin CRUD + country visibility + amount range + currency restriction | Completed |
@@ -79,7 +79,7 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 |----|------|------|
 | Game integration | GameProvider abstraction layer (Self/ThirdParty) + HMAC-SHA256 signature | Completed |
 | Game callbacks | Provider API gateway (balance/bet/settle/refund) + ProviderAuth middleware | Completed |
-| Game sessions | Redis heartbeat + 15-minute timeout auto-settlement + GameSessionService | Completed |
+| Game sessions | SDK session token: HMAC-SHA256 signature + 5-minute TTL (issued by `GET /api/v1/game/session`, verified by `SdkSessionAuth`) | Completed |
 | Ticket system | C-end create/reply + admin handle/assign/close, 5 ticket types | Completed |
 | Email verification | 6-digit code, Redis 10-minute expiry, 60s resend limit | Completed |
 | Push notifications | PushService (FCM/APNs/Huawei push) + DeviceToken model | Completed |
@@ -119,62 +119,64 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 
 | Method | Path | Description | Auth |
 |------|------|------|------|
-| POST | /api/auth/register | User registration | No |
-| POST | /api/auth/login | User login | No |
-| POST | /api/auth/refresh | Refresh token | No |
-| GET | /api/game/list | Game list | No |
-| GET | /api/game/detail/{id} | Game detail | No |
-| GET | /api/announcement/list | Announcement list | No |
-| GET | /api/wallet/info | Wallet balance | Yes |
-| GET | /api/wallet/transactions | Transaction records | Yes |
-| POST | /api/deposit/create | Create deposit order | Yes |
-| GET | /api/payment/methods | List payment methods (routed by country) | Yes |
-| POST | /api/exchange/quote | Exchange quote (VIP discount) | Yes |
-| POST | /api/exchange/buy | Buy game currency | Yes |
-| POST | /api/exchange/sell | Sell game currency | Yes |
-| POST | /api/withdraw/apply | Withdrawal application (VIP reduction) | Yes |
-| POST | /api/game/launch | Launch game | Yes |
-| GET | /api/game/play-logs | Game play logs | Yes |
-| POST | /api/referral/apply | Apply referral code | Yes |
-| POST | /api/verify/send-email | Send email verification code | Yes |
-| POST | /api/verify/confirm-email | Confirm email | Yes |
-| GET | /api/ticket/list | Ticket list | Yes |
-| POST | /api/ticket/create | Create ticket | Yes |
-| POST | /api/ticket/{id}/reply | Reply to ticket | Yes |
+| POST | /api/v1/auth/register | User registration | No |
+| POST | /api/v1/auth/login | User login | No |
+| POST | /api/v1/auth/refresh | Refresh token | No |
+| GET | /api/v1/game/list | Game list | No |
+| GET | /api/v1/game/detail/{id} | Game detail | No |
+| GET | /api/v1/announcement/list | Announcement list | No |
+| GET | /api/v1/wallet/info | Wallet balance | Yes |
+| GET | /api/v1/wallet/transactions | Transaction records | Yes |
+| POST | /api/v1/deposit/create | Create deposit order | Yes |
+| GET | /api/v1/payment/methods | List payment methods (routed by country) | Yes |
+| POST | /api/v1/exchange/quote | Exchange quote (VIP discount) | Yes |
+| POST | /api/v1/exchange/buy | Buy game currency | Yes |
+| POST | /api/v1/exchange/sell | Sell game currency | Yes |
+| POST | /api/v1/withdraw/apply | Withdrawal application (VIP reduction) | Yes |
+| POST | /api/v1/game/launch | Launch game | Yes |
+| GET | /api/v1/game/play-logs | Game play logs | Yes |
+| POST | /api/v1/referral/apply | Apply referral code | Yes |
+| POST | /api/v1/verify/send-email | Send email verification code | Yes |
+| POST | /api/v1/verify/confirm-email | Confirm email | Yes |
+| GET | /api/v1/ticket/list | Ticket list | Yes |
+| POST | /api/v1/ticket/create | Create ticket | Yes |
+| POST | /api/v1/ticket/{id}/reply | Reply to ticket | Yes |
+| GET | /api/v1/platform/stats | Platform Stats | No |
 
-| GET | /api/platform/stats | Platform Stats | No |
 ## 3. Admin Backend Features
 
 ### 3.1 APIs (New)
 
 | Method | Path | Description |
 |------|------|------|
-| GET | /admin/dashboard/platform | Platform dashboard data |
-| GET | /admin/analytics/overview | Platform overview (MySQL real-time aggregation) |
-| GET | /admin/analytics/game-ranking | Game ranking |
-| GET | /admin/analytics/dau-trend | DAU trend |
-| GET | /admin/analytics/hourly-trend | Hourly trend |
-| GET | /admin/analytics/action-distribution | Action distribution |
-| GET | /admin/analytics/revenue | Revenue analysis |
-| GET | /admin/analytics/conversion | Game conversion rate |
-| GET | /admin/analytics/probability | Joint/conditional probability |
-| GET | /admin/analytics/retention | Retention analysis D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | Conversion funnel |
-| GET | /admin/analytics/arpu | ARPU/ARPPU trend |
-| GET | /admin/analytics/economy | Game currency economy metrics |
-| GET | /admin/report/summary | Report summary (new users / deposits / withdrawals / exchanges / game plays) |
-| GET | /admin/report/daily | Daily report (daily aggregation, zero-filled for empty days) |
-| GET | /admin/report/export | Daily report export as CSV (UTF-8 BOM) |
-| GET | /admin/game/list | Game list |
-| POST | /admin/game/create | Create game (incl. provider_config) |
-| PUT | /admin/game/{id} | Edit game |
-| GET | /admin/withdraw/orders | Withdrawal order list |
-| PUT | /admin/withdraw/review | Review withdrawal |
-| GET | /admin/ticket/list | Ticket list |
-| GET | /admin/ticket/{id} | Ticket detail |
-| POST | /admin/ticket/{id}/reply | Reply to ticket |
-| POST | /admin/ticket/{id}/close | Close ticket |
-| POST | /admin/ticket/{id}/assign | Assign handler |
+| GET | /admin/v1/dashboard/platform | Platform dashboard data |
+| GET | /admin/v1/analytics/overview | Platform overview (MySQL real-time aggregation) |
+| GET | /admin/v1/analytics/game-ranking | Game ranking |
+| GET | /admin/v1/analytics/dau-trend | DAU trend |
+| GET | /admin/v1/analytics/hourly-trend | Hourly trend |
+| GET | /admin/v1/analytics/action-distribution | Action distribution |
+| GET | /admin/v1/analytics/revenue | Revenue analysis |
+| GET | /admin/v1/analytics/conversion | Game conversion rate |
+| GET | /admin/v1/analytics/probability | Joint/conditional probability |
+| GET | /admin/v1/analytics/retention | Retention analysis D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | Conversion funnel |
+| GET | /admin/v1/analytics/arpu | ARPU/ARPPU trend |
+| GET | /admin/v1/analytics/economy | Game currency economy metrics |
+| GET | /admin/v1/report/summary | Report summary (new users / deposits / withdrawals / exchanges / game plays) |
+| GET | /admin/v1/report/daily | Daily report (daily aggregation, zero-filled for empty days) |
+| GET | /admin/v1/report/export | Daily report export as CSV (UTF-8 BOM) |
+| GET | /admin/v1/game/list | Game list |
+| GET | /admin/v1/game/{id} | Game detail |
+| POST | /admin/v1/game/launch | Game launch preview (read-only) |
+| POST | /admin/v1/game/create | Create game (incl. provider_config) |
+| PUT | /admin/v1/game/{id} | Edit game |
+| GET | /admin/v1/withdraw/orders | Withdrawal order list |
+| PUT | /admin/v1/withdraw/review | Review withdrawal |
+| GET | /admin/v1/ticket/list | Ticket list |
+| GET | /admin/v1/ticket/{id} | Ticket detail |
+| POST | /admin/v1/ticket/{id}/reply | Reply to ticket |
+| POST | /admin/v1/ticket/{id}/close | Close ticket |
+| POST | /admin/v1/ticket/{id}/assign | Assign handler |
 
 ## 4. Provider API (Game Provider Callbacks)
 
@@ -250,21 +252,21 @@ Time window: 5 minutes
 | game_game | +provider_config (JSON) |
 | game_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**Total: 43 tables in install.sql** (the 10 ecosystem expansion tables live in `install/`, not merged into install.sql). Models are not shared: admin 46 / service 44, one copy each.
+**Total: 78 tables in install.sql**. Models: 52 shared in `packages/platform-common/src/model/`; the 8 in admin/app/model/ and 10 in service/app/model/ are host-only (zero filename overlap).
 
 ## 8. Test Coverage
 
 | Test File | Cases | Coverage |
 |---------|--------|---------|
-| PlatformTest | 56 | bcmath precision/exchange calculations/withdrawal fees/limits/risk control/coupons/KYC/i18n |
-| BackendEnhancementTest | 23 | encryption service/Hashids/Snowflake |
-| CaptchaTest | 7 | captcha generation/verification |
-| EncryptionServiceTest | 6 | AES encryption/decryption/masking |
-| EnvConfigTest | 4 | environment variable configuration |
-| HashidsServiceTest | 8 | ID encode/decode round-trip |
-| SnowflakeServiceTest | 6 | ID generation uniqueness |
+| PlatformTest | 55 | bcmath precision/exchange calculations/withdrawal fees/limits/risk control/coupons/KYC/i18n |
+| BackendEnhancementTest | 27 | encryption service/Hashids/Snowflake |
+| CaptchaTest | 5 | captcha generation/verification |
+| EncryptionServiceTest | 8 | AES encryption/decryption/masking |
+| EnvConfigTest | 6 | environment variable configuration |
+| HashidsServiceTest | 6 | ID encode/decode round-trip |
+| SnowflakeServiceTest | 5 | ID generation uniqueness |
 
-**Total: admin ~132 cases / 8 files; service 3 cases (WebhookUrlSafety + EventBusMessageFormat). service is not included in CI failure blocking.**
+**Total (phpunit --list-tests, measured now): admin 200 cases / 21 files, service 273 cases / 42 files (including WebhookUrlSafety + EventBusMessageFormat; report: 09-22 rerun admin 190 + service 273, 08-27 snapshot admin 153 + service 45). service is not included in CI failure blocking (unverified).**
 
 ---
 

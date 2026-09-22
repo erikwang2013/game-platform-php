@@ -1573,26 +1573,7 @@ POST /admin/v1/upload
 - Redis 原子化スライディングウィンドウアルゴリズム（Lua ZSET）を使用し、TOCTOU 競合を回避
 - Redis 利用不可時は fail-closed：503（`Retry-After: 5`）を返し、リクエストを通さない
 
-## 14. データ分析 (Analytics)
-
-全エンドポイントで認証（`AdminAuth` + `AdminPermission`）が必要、MySQL リアルタイム集計、合計 12 個：
-
-| メソッド | パス | 説明 |
-|------|------|------|
-| GET | /admin/v1/analytics/overview | プラットフォーム概要（今日/直近7日） |
-| GET | /admin/v1/analytics/game-ranking | ゲームランキング（?days=7） |
-| GET | /admin/v1/analytics/dau-trend | DAU トレンド（?days=30） |
-| GET | /admin/v1/analytics/hourly-trend | 時間別トレンド |
-| GET | /admin/v1/analytics/action-distribution | 行動分布 |
-| GET | /admin/v1/analytics/revenue | 売上分析 |
-| GET | /admin/v1/analytics/conversion | ゲームコンバージョン率 |
-| GET | /admin/v1/analytics/probability | 結合/条件確率 |
-| GET | /admin/v1/analytics/retention | リテンション分析 D1/D3/D7/D30 |
-| GET | /admin/v1/analytics/funnel | コンバージョンファネル |
-| GET | /admin/v1/analytics/arpu | ARPU/ARPPU トレンド |
-| GET | /admin/v1/analytics/economy | ゲーム通貨の経済指標 |
-
-## 15. チケット管理 (Ticket)
+## 14. チケット管理 (Ticket)
 
 全エンドポイントで認証（`AdminAuth` + `AdminPermission`）が必要、合計 5 個：
 
@@ -1604,66 +1585,66 @@ POST /admin/v1/upload
 | POST | /admin/v1/ticket/{hashid}/close | チケットをクローズ |
 | POST | /admin/v1/ticket/{hashid}/assign | 処理担当者を指定（admin_id） |
 
-## 16. 認証フロー
+## 15. 認証フロー
 
 完全な認証シーケンス：
 
 ```
-1. 客户端请求 POST /api/v1/captcha/generate
+1. クライアントが POST /api/v1/captcha/generate をリクエスト
     ↓
-   服务端返回: key + base64 图片 + 点击目标提示
+   サーバーが返却: key + base64 画像 + クリック目標のヒント
    
-2. 用户点击图片目标位置，前/客户端收集点击坐标
+2. ユーザーが画像内の目標位置をクリック、フロント/クライアントがクリック座標を収集
    
-3. 客户端请求 POST /api/v1/auth/login
-   (请求头: Content-Type: application/json)
-   请求体: { username, password, captcha_key, clicks: [{x,y}, ...] }
+3. クライアントが POST /api/v1/auth/login をリクエスト
+   (リクエストヘッダー: Content-Type: application/json)
+   リクエストボディ: { username, password, captcha_key, clicks: [{x,y}, ...] }
     ↓
-   服务端:
-   a. 参数校验 → 422
-   b. 校验验证码 → 422
-   c. 校验用户凭证 → 401
-   d. 检查账号状态 → 403
-   e. 签发 JWT (access + refresh) → 200
-   f. 更新 last_login_at / last_login_ip
+   サーバー:
+   a. パラメータ検証 → 422
+   b. CAPTCHA 検証 → 422
+   c. ユーザー認証情報の検証 → 401
+   d. アカウント状態の確認 → 403
+   e. JWT 発行 (access + refresh) → 200
+   f. last_login_at / last_login_ip の更新
     ↓
-   客户端保存: access_token, refresh_token, expires_in
+   クライアントが保存: access_token, refresh_token, expires_in
 
-4. 后续请求携带 JWT
-   请求头: Authorization: Bearer <access_token>
+4. 以降のリクエストは JWT を付与
+   リクエストヘッダー: Authorization: Bearer <access_token>
     ↓
-   AdminAuth 中间件:
-   a. 提取 Bearer token
-   b. 检查黑名单 (Redis jwt_blacklist:{md5}) → 401
-   c. 解码 JWT，校验过期 → 401
-   d. 设置 $request->adminId = sub 字段
+   AdminAuth ミドルウェア:
+   a. Bearer トークンの抽出
+   b. ブラックリスト確認 (Redis jwt_blacklist:{md5}) → 401
+   c. JWT をデコードし、有効期限を検証 → 401
+   d. $request->adminId = sub フィールドを設定
     ↓
-   AdminPermission 中间件:
-   a. 未登录（adminId 为空）→ 401
-   b. 对资源路由解析权限标识
-   c. 查询用户角色 → 角色权限，进行匹配
-   d. 无权限 → 403
+   AdminPermission ミドルウェア:
+   a. 未ログイン（adminId が空）→ 401
+   b. リソースルートの権限識別子を解決
+   c. ユーザーロールを照会 → ロール権限をマッチング
+   d. 権限なし → 403
     ↓
-   Controller 处理请求
+   Controller がリクエストを処理
     ↓
-   Response + X-RateLimit-* 头
+   Response + X-RateLimit-* ヘッダー
 
-5. Access Token 过期前刷新
-   客户端请求 POST /api/v1/auth/refresh
-   请求体: { refresh_token: "..." }
+5. Access Token の有効期限前にリフレッシュ
+   クライアントが POST /api/v1/auth/refresh をリクエスト
+   リクエストボディ: { refresh_token: "..." }
     ↓
-   服务端解码 refresh_token → 签发新 access + refresh
+   サーバーが refresh_token をデコード → 新しい access + refresh を発行
     ↓
-   客户端更新本地令牌
+   クライアントがローカルトークンを更新
 
-6. 登出
-   客户端请求 POST /admin/v1/profile/logout
-   请求头: Authorization: Bearer <access_token>
+6. ログアウト
+   クライアントが POST /admin/v1/profile/logout をリクエスト
+   リクエストヘッダー: Authorization: Bearer <access_token>
     ↓
-   服务端:
-   a. 解码 JWT 获取剩余 TTL
-   b. 写入 Redis 黑名单: jwt_blacklist:{md5(token)} = 1, TTL = 剩余有效期
-   c. 返回成功
+   サーバー:
+   a. JWT をデコードして残り TTL を取得
+   b. Redis ブラックリストに書き込み: jwt_blacklist:{md5(token)} = 1, TTL = 残り有効期間
+   c. 成功を返却
 ```
 
 ### JWT 構造
@@ -1681,11 +1662,11 @@ POST /admin/v1/upload
 - 同時セッション制限：同一ユーザーの有効 Token は最大3つ、4つ目のデバイスでログインすると最も古い Token が強制的にブラックリスト入り
 - アカウントロック：ログイン連続5回失敗で15分のアカウントロックが発動、ロック中は 429 を返す
 
-## 15. デプロイ運用
+## 16. デプロイ運用
 
 ### Docker Compose
 
-プロジェクトルートに `docker-compose.yml` があり、5つのサービス（Nginx、webman app、MySQL、Redis、Elasticsearch）を構成。PHP は `Dockerfile` でビルド（`php:8.3-cli` ベース、OPcache 有効）。
+プロジェクトルートに `docker-compose.yml` があり、7つのサービス（Nginx、admin、service、leaderboard-ws、MySQL、Redis、Elasticsearch）を構成。PHP は `Dockerfile` でビルド（`php:8.3-cli` ベース、OPcache 有効）。
 
 ```bash
 cp .env.docker .env
@@ -1709,11 +1690,11 @@ docker-compose up -d
 
 本番環境のデプロイでは `docs/nginx-security.conf` を参照してリバースプロキシのセキュリティ強化を設定してください。
 
-## 16. データ分析 (Analytics)
+## 17. データ分析 (Analytics)
 
 データ分析APIは `AnalyticsController` が提供し、すべて MySQL リアルタイム集計（`game_game_play_log` ゲーム行動ログ / `game_deposit_order` 入金注文）に基づきます。データベース障害時は 500 ではなく空データを返します。特に記載がない限り JWT + RBAC 認証が必要で、レスポンスのラッパー形式は統一して `{ "code": 0, "message": "success", "data": ... }` です。
 
-### 16.1 プラットフォーム概要
+### 17.1 プラットフォーム概要
 
 ```
 GET /admin/v1/analytics/overview
@@ -1721,7 +1702,7 @@ GET /admin/v1/analytics/overview
 
 **レスポンス**: `today` / `week` にそれぞれ `dau`（アクティブユーザー数）、`revenue`（確認済み入金総額、文字列）、`new_users`（新規ユーザー数）を含む。
 
-### 16.2 ゲームランキング
+### 17.2 ゲームランキング
 
 ```
 GET /admin/v1/analytics/game-ranking?days=7
@@ -1729,7 +1710,7 @@ GET /admin/v1/analytics/game-ranking?days=7
 
 **レスポンス**: ゲーム行動回数の降順で上位10件、各項目に `game_id`（hashid）、`name`、`plays`、`players` を含む。
 
-### 16.3 DAU トレンド
+### 17.3 DAU トレンド
 
 ```
 GET /admin/v1/analytics/dau-trend?days=30
@@ -1737,7 +1718,7 @@ GET /admin/v1/analytics/dau-trend?days=30
 
 **レスポンス**: `{ "日期": 活跃数, ... }`、欠落した日付は 0 で補完。
 
-### 16.4 時間別トレンド
+### 17.4 時間別トレンド
 
 ```
 GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
@@ -1745,7 +1726,7 @@ GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
 
 **レスポンス**: `{ "0": 次数, ... "23": 次数 }` の24時間スロット。`game_id` が空の場合は全ゲームを集計。
 
-### 16.5 行動分布
+### 17.5 行動分布
 
 ```
 GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
@@ -1753,7 +1734,7 @@ GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
 
 **レスポンス**: `{ "start": n, "end": n, "earn": n, "spend": n }` の4種類の行動カウント。`hours` 上限は 168。
 
-### 16.6 売上概要
+### 17.6 売上概要
 
 ```
 GET /admin/v1/analytics/revenue?days=7
@@ -1761,7 +1742,7 @@ GET /admin/v1/analytics/revenue?days=7
 
 **レスポンス**: `{ "total": "总额", "trend": { "日期": "当日额", ... } }`、`status=confirmed` の注文のみ集計。
 
-### 16.7 ゲームコンバージョン率
+### 17.7 ゲームコンバージョン率
 
 ```
 GET /admin/v1/analytics/conversion?days=30
@@ -1769,7 +1750,7 @@ GET /admin/v1/analytics/conversion?days=30
 
 **レスポンス**: 各ゲームに `game_id`（hashid）、`game_name`、`players`（重複除去済みプレイヤー数）、`depositors`（重複除去済み入金人数）、`conversion_rate`（入金コンバージョン率、0~1）を含む。
 
-### 16.8 結合確率
+### 17.8 結合確率
 
 ```
 GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
@@ -1777,7 +1758,7 @@ GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
 
 **レスポンス**: `{ "joint": { "joint_probability": 0.12, "confidence": 0.3 } }` — Jaccard 係数（両ゲームの共通プレイヤー / 和集合プレイヤー）と信頼度（共通プレイヤー / A ゲームのプレイヤー）。
 
-### 16.9 リテンション分析
+### 17.9 リテンション分析
 
 ```
 GET /admin/v1/analytics/retention?days=30
@@ -1785,7 +1766,7 @@ GET /admin/v1/analytics/retention?days=30
 
 **レスポンス**: `{ "D1": "8.5%", "D3": "...", "D7": "...", "D30": "..." }` 登録日でグループ化した翌日/3日/7日/30日リテンション率。
 
-### 16.10 コンバージョンファネル
+### 17.10 コンバージョンファネル
 
 ```
 GET /admin/v1/analytics/funnel?days=30
@@ -1793,7 +1774,7 @@ GET /admin/v1/analytics/funnel?days=30
 
 **レスポンス**: 登録 → 初回入金 → 初回両替 → 初回ゲームプレイ の4ステップの `step`、`count`、`rate`（登録数に対するパーセンテージ）。
 
-### 16.11 ARPU/ARPPU トレンド
+### 17.11 ARPU/ARPPU トレンド
 
 ```
 GET /admin/v1/analytics/arpu?days=30
@@ -1801,7 +1782,7 @@ GET /admin/v1/analytics/arpu?days=30
 
 **レスポンス**: `{ "dates": [...], "arpu": [...], "arppu": [...] }` 日次のユーザー一人あたり売上（ARPU）と課金ユーザー一人あたり売上（ARPPU）。
 
-### 16.12 ゲーム経済指標
+### 17.12 ゲーム経済指標
 
 ```
 GET /admin/v1/analytics/economy
@@ -1809,7 +1790,7 @@ GET /admin/v1/analytics/economy
 
 **レスポンス**: `currencies` 配列、各項目に `game_name`、`currency`、`symbol`、`total_minted`（鋳造総量）、`total_burned`（破棄総量）、`circulation`（流通量）、`inflation_rate`（インフレ率）を含み、bcmath 高精度計算を使用。
 
-## 17. 支払管理 (Payment)
+## 18. 支払管理 (Payment)
 
 支払方法の管理は `PaymentController` が提供し、5 つのエンドポイントはいずれも JWT + RBAC 認証が必要です。`provider` ホワイトリスト: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`。`config` は支払設定の JSON 文字列（DB に暗号化して保存）です。
 
@@ -1821,7 +1802,7 @@ GET /admin/v1/analytics/economy
 | PUT | /admin/v1/payment/method/{hashid} | 支払方法の更新 |
 | DELETE | /admin/v1/payment/method/{hashid} | 支払方法の削除（pending 注文がある場合は拒否） |
 
-### 17.1 支払方法リスト
+### 18.1 支払方法リスト
 
 ```
 GET /admin/v1/payment/method/list
@@ -1869,7 +1850,7 @@ GET /admin/v1/payment/method/list
 | min_amount / max_amount | string | 金額範囲（精度保持のため文字列）、0=制限なし |
 | config | string? | 支払設定 JSON（暗号化、未設定なら null） |
 
-### 17.2 支払方法の有効/無効切り替え
+### 18.2 支払方法の有効/無効切り替え
 
 ```
 POST /admin/v1/payment/method/toggle
@@ -1892,7 +1873,7 @@ POST /admin/v1/payment/method/toggle
 - 422: バリデーション失敗（id/status 欠落または status が 0/1 以外）
 - 404: 支払方法が存在しない
 
-### 17.3 支払方法の作成
+### 18.3 支払方法の作成
 
 ```
 POST /admin/v1/payment/method/create
@@ -1938,20 +1919,20 @@ POST /admin/v1/payment/method/create
 **考えられるエラー**:
 - 422: バリデーション失敗
 
-### 17.4 支払方法の更新
+### 18.4 支払方法の更新
 
 ```
 PUT /admin/v1/payment/method/{hashid}
 ```
 
 - **パスパラメータ**: `{hashid}` は hashid エンコードされた支払方法 ID
-- **リクエストボディ**: 作成（17.3）と同じ、全フィールド任意、渡されたフィールドのみ更新
+- **リクエストボディ**: 作成（18.3）と同じ、全フィールド任意、渡されたフィールドのみ更新
 
 **考えられるエラー**:
 - 404: 支払方法が存在しない
 - 422: バリデーション失敗
 
-### 17.5 支払方法の削除
+### 18.5 支払方法の削除
 
 ```
 DELETE /admin/v1/payment/method/{hashid}

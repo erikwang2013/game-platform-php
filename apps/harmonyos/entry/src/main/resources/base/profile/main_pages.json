@@ -4,6 +4,9 @@
     "pages/GameHallPage",
     "pages/GameDetailPage",
     "pages/WalletPage",
+    "pages/DepositPage",
+    "pages/WithdrawPage",
+    "pages/ExchangePage",
     "pages/ProfilePage"
   ]
 }

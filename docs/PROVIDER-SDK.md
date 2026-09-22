@@ -268,24 +268,23 @@ $result = $provider->refund($userId, $gameId, $sessionId, $amount, $roundId, 'ga
 
 ## 5. 会话管理
 
-游戏启动后需每 15 分钟内发送心跳：
+自研/内嵌游戏的 SDK 调用使用会话令牌认证：已登录的 C 端调 `GET /api/v1/game/session?game_id={game_id}` 签发令牌（TTL 5 分钟，仅 `self` / `embedded` 类型游戏）：
 
-```php
-use app\service\GameSessionService;
+```
+GET /api/v1/game/session?game_id=1234567890
+Authorization: Bearer <user_token>
 
-// 启动时
-GameSessionService::heartbeat($userId, $gameId, $sessionId);
-
-// 定期心跳（建议每 5 分钟）
-if (!GameSessionService::isActive($sessionId)) {
-    // 会话已超时，需结束游戏
+200
+{
+    "code": 0,
+    "data": { "token": "<payload>.<signature>", "expires_in": 300 }
 }
 
-// 结束时
-GameSessionService::endSession($sessionId);
+POST /api/game/balance
+Authorization: Bearer <payload>.<signature>
 ```
 
-超时的会话会被自动结算（`GameSessionService::expireStaleSessions()`）。
+`SdkSessionAuth` 中间件校验 HMAC-SHA256 签名与有效期，`user_id` 只取自令牌（请求体不可覆盖）；令牌过期后重新签发，用于调用 `/api/game/balance`、`/api/game/bet`、`/api/game/settle`、`/api/game/refund`。
 
 ## 6. 游戏配置
 

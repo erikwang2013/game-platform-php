@@ -4,8 +4,8 @@
 Languages: [中文](PROJECT-PLAN.md) · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PLAN.ko.md) · [Русский](PROJECT-PLAN.ru.md) · [Deutsch](PROJECT-PLAN.de.md) · [Français](PROJECT-PLAN.fr.md) · [Español](PROJECT-PLAN.es.md) · [Português](PROJECT-PLAN.pt.md) · [हिन्दी](PROJECT-PLAN.hi.md) · [العربية](PROJECT-PLAN.ar.md) · **বাংলা** · [Bahasa Indonesia](PROJECT-PLAN.id.md) · [日本語](PROJECT-PLAN.ja.md)
 
 
-> 生成日期: 2026-08-16 · 基于 6 人团队 (researcher/architect/backend-dev/frontend-dev/tester/reviewer) 只读盘点 + 关键论断实测验证
-> 覆盖: 现状总结 / 问题与风险 / P0-P1-P2 路线图 / 文档修复 / 质量门
+> তৈরি: 2026-08-16 · ৬ সদস্যের টিম (researcher/architect/backend-dev/frontend-dev/tester/reviewer) কর্তৃক রিড-অনলি ইনভেন্টরি + মূল দাবির ব্যবহারিক যাচাই
+> কভারেজ: বর্তমান অবস্থার সারসংক্ষেপ / সমস্যা ও ঝুঁকি / P0-P1-P2 রোডম্যাপ / ডকুমেন্টেশন সংশোধন / কোয়ালিটি গেট
 
 ---
 
@@ -106,7 +106,7 @@ Languages: [中文](PROJECT-PLAN.md) · [English](PROJECT-PLAN.en.md) · [한국
 18. **প্রোবাবিলিটি গণনা ClickHouse-এ স্থানান্তর** বা MySQL মেটেরিয়ালাইজড স্ট্যাট টেবিল + ক্যাশ; রিটেনশন প্রকৃত cohort অনুযায়ী পুনর্গণনা
 19. **Prometheus ব্যবসায়িক মেট্রিক** (ইভেন্ট ডেলিভারি/কনজিউম রেট, কিউ ডেপথ) + গ্রেস্কেল AB ডিভিশন মিডলওয়্যার (FeatureFlag পুনঃব্যবহার) — 🔶 আংশিক সম্পন্ন (2026-08-18: `GET /metrics` অপেক্ষমাণ রিভিউ উত্তোলন/আজকের নিশ্চিত টপ-আপ/ইভেন্ট emit·consume কাউন্ট; FeatureFlag `inRollout`/`abTest` crc32 বাকেট। কিউ ডেপথ করা হয়নি)
 20. **WebSocket ডেটা লিংক ক্লোজড-লুপ**: লিডারবোর্ড/চ্যাট পারসিস্টেন্স নিশ্চিতকরণ
-21. **ডকুমেন্টেশন অ্যালাইনমেন্ট**: টেবিল সংখ্যা/সার্ভিস সংখ্যা/শেয়ার্ড লেয়ার বর্ণনা সংশোধন, API ডকুমেন্টেশন বাস্তবায়নের সাথে মিলানো, CHANGELOG যোগ — ✅ সম্পন্ন (2026-08-18: দেখুন `docs/CHANGELOG.md`, FEATURES/VERSIONS/PROJECT-PLAN/অডিট রিপোর্ট §十)
+21. **ডকুমেন্টেশন অ্যালাইনমেন্ট**: টেবিল সংখ্যা/সার্ভিস সংখ্যা/শেয়ার্ড লেয়ার বর্ণনা সংশোধন, API ডকুমেন্টেশন বাস্তবায়নের সাথে মিলানো, CHANGELOG যোগ — ✅ সম্পন্ন (2026-08-18: দেখুন `docs/CHANGELOG.md`, FEATURES/VERSIONS/PROJECT-PLAN/অডিট রিপোর্ট §10)
 
 ---
 

@@ -1,4 +1,4 @@
-# 开放管理后台 (open-admin)
+# نظام الإدارة الخلفية المفتوح (open-admin)
 
 ## تميمة المشروع
 
@@ -27,6 +27,7 @@ Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.
 | | استيراد جماعي من Excel | تحقق سطرًا بسطر + تقرير بالأخطاء |
 | 🔒 صلاحيات الأدوار | CRUD للأدوار + شجرة الصلاحيات | تحكم RBAC على مستوى method.path |
 | ⚙ إعدادات النظام | CRUD لزوج المفتاح-القيمة | إدارة بالمجموعات |
+| 💳 إدارة طرق الدفع | إنشاء/تحديث/حذف متعدد البوابات + تفعيل/تعطيل | 18 بوابة (stripe/paypal/nowpayments/coinbase وغيرها) + الظهور حسب الدولة |
 | 🖥 إدارة CDN | CRUD لإعدادات 5 موفري خدمة + تفعيل/إيقاف + اختبار الاتصال | بيانات الاعتماد مشفرة بـ AES، service يقرأ من قاعدة البيانات فقط |
 | 📋 تدقيق العمليات | استعلام السجلات + كشف المصدر | تحديد تلقائي لـ 8 منصات |
 | 📁 إدارة الملفات | رفع/تصدير Excel/تصدير PDF | إخفاء تلقائي للبيانات الحساسة |
@@ -64,48 +65,53 @@ Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.
 ```
 open-admin/
 ├── app/
-│   ├── admin/controller/       # وحدات تحكم لوحة الإدارة
-│   │   ├── DashboardController.php # لوحة المعلومات (تخزين مؤقت في Redis)
-│   │   ├── UserController.php      # CRUD للمستخدمين + عمليات جماعية
-│   │   ├── RoleController.php      # CRUD للأدوار
-│   │   ├── PermissionController.php# CRUD للصلاحيات
-│   │   ├── ConfigController.php    # CRUD لإعدادات النظام
-│   │   ├── LogController.php       # استعلام سجلات العمليات
-│   │   ├── ProfileController.php   # المركز الشخصي + تسجيل الخروج
-│   │   ├── ExportController.php    # تصدير Excel/PDF
-│   │   ├── ImportController.php    # استيراد المستخدمين من Excel
-│   │   ├── UploadController.php    # رفع الملفات
-│   │   ├── HealthController.php    # فحص الصحة
-│   │   ├── DocsController.php      # وثائق OpenAPI
-│   │   └── BaseController.php      # وحدة التحكم الأساسية
+│   ├── admin/v1/controller/    # وحدات تحكم لوحة الإدارة (45)
+│   │   ├── DashboardController.php  # لوحة المعلومات (تخزين مؤقت في Redis)
+│   │   ├── UserController.php       # CRUD للمستخدمين + عمليات جماعية
+│   │   ├── RoleController.php       # CRUD للأدوار
+│   │   ├── PermissionController.php # CRUD للصلاحيات
+│   │   ├── ConfigController.php     # CRUD لإعدادات النظام
+│   │   ├── LogController.php        # استعلام سجلات العمليات
+│   │   ├── ProfileController.php    # المركز الشخصي + تسجيل الخروج
+│   │   ├── ExportController.php     # تصدير Excel/PDF
+│   │   ├── ImportController.php     # استيراد المستخدمين من Excel
+│   │   ├── UploadController.php     # رفع الملفات
+│   │   ├── HealthController.php     # فحص الصحة
+│   │   ├── DocsController.php       # وثائق OpenAPI
+│   │   └── BaseController.php       # وحدة التحكم الأساسية
 │   ├── api/
 │   │   └── v1/controller/          # وحدات تحكم API v1 (الإصدار في مسار URL: /api/v1, /admin/v1)
 │   │       ├── CaptchaController.php # رمز التحقق بالنقر
 │   │       └── AuthController.php    # تسجيل الدخول/التسجيل/تحديث الرمز
 │   ├── common/                 # فئات الأدوات العامة
-│   │   ├── HashidsService.php  # ترميز/فك ترميز المعرفات
-│   │   ├── SnowflakeService.php# توليد معرفات Snowflake
-│   │   └── EncryptionService.php # تشفير/فك تشفير البيانات + إخفاء البيانات
+│   │   └── CdnProbeService.php # فحص اتصال CDN (Hashids/Snowflake/Encryption من حزم composer)
 │   ├── middleware/             # الوسيطات
 │   │   ├── Cors.php            # المشاركة عبر الأصول (CORS)
 │   │   ├── SecurityFilter.php  # كشف واعتراض الهجمات (تقييد طرق HTTP/XSS/حقن SQL/اجتياز المسار/حقن الأوامر/CSRF)
 │   │   ├── RateLimit.php       # الحد من المعدل في Redis (نافذة منزلقة + ترويسات استجابة)
+│   │   ├── StaticFile.php      # خدمة الملفات الثابتة (مدمجة في webman)
 │   │   ├── AdminAuth.php       # مصادقة JWT + قائمة سوداء
 │   │   ├── AdminPermission.php # التحقق من صلاحيات RBAC
 │   │   └── OperationLog.php    # تسجيل العمليات تلقائيًا (بما فيه كشف المصدر)
-│   └── model/                  # نماذج البيانات
+│   ├── activity/               # معالجات الأنشطة (تسجيل الدخول/الدعوة/المهام اليومية)
+│   ├── model/                  # نماذج البيانات
+│   ├── process/                # العمليات (Http, Monitor, RiskIpCron)
+│   ├── provider/               # طبقة مزوّد الألعاب (Self/ThirdParty/Factory)
+│   ├── service/                # الخدمات (المحفظة/بيئة المخاطر المعزولة)
+│   └── view/                   # قوالب العرض
 ├── apps/
+│   ├── angular/                # لوحة إدارة ويب Angular
+│   ├── react/                  # لوحة إدارة ويب React
 │   ├── flutter/                # لوحة إدارة Flutter Web (نمط PC)
 │   │   └── lib/app/
-│   │       ├── pages/          # 5 صفحات كاملة (لوحة المعلومات/المستخدمون/الأدوار/الإعدادات/السجلات/المركز الشخصي)
+│   │       ├── pages/          # 20 دليل صفحات
 │   │       ├── services/       # ApiService (معترض JWT) + AuthService (استمرار الرمز)
 │   │       └── layouts/        # تخطيط لوحة إدارة متجاوب (شريط جانبي + شريط علوي + منطقة محتوى)
 │   └── harmonyos/              # عميل HarmonyOS الأصلي (تحديث الرمز دون إحساس)
 ├── config/                     # ملفات التكوين (بما فيها تعليقات بالصينية)
 │   ├── route.php               # المسارات + استراتيجية إصدار API
 │   ├── middleware.php           # تسجيل الوسيطات العامة
-│   └── ...                     # تكوينات المكونات
-├── install/        # ملفات ترحيل SQL (بما فيها بيانات صلاحيات أولية)
+│   └── server.php              # إعدادات المنفذ/العمليات
 ├── public/                     # نقطة الدخول العامة
 ├── runtime/                    # ملفات التشغيل
 └── vendor/                     # تبعيات Composer
@@ -182,7 +188,7 @@ flutter run -d chrome    # الويب (نمط لوحة إدارة PC)
 
 ### 6. النشر بخطوة واحدة عبر Docker Compose (موصى به للإنتاج)
 
-يوفر المشروع حلاً كاملاً لتنظيم Docker، يتضمن 5 خدمات: Nginx وPHP (تطبيق webman) وMySQL وRedis وElasticsearch.
+يوفر المشروع حلاً كاملاً لتنظيم Docker، يتضمن 7 خدمات: Nginx وadmin (webman) وservice (webman) وleaderboard-ws (WebSocket) وMySQL وRedis وElasticsearch.
 
 ```bash
 # 1. تكوين متغيرات بيئة Docker
@@ -191,16 +197,16 @@ cp .env.docker .env
 # 2. تشغيل جميع الخدمات
 docker-compose up -d
 
-# 3. تهيئة قاعدة البيانات (نفّذ داخل حاوية app)
-docker-compose exec app mysql -h mysql -u root -p < install/install.sql
+# 3. تهيئة قاعدة البيانات (استورد عبر حاوية mysql)
+docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform < install/install.sql
 
 # 4. الوصول
 # http://localhost:8789  (webman)
-# http://localhost:8080  (وكيل Nginx العكسي)
+# http://localhost  (وكيل Nginx العكسي)
 ```
 
 - `Dockerfile`: PHP 8.3 + OPcache + Composer، مبني على `php:8.3-cli`
-- `docker-compose.yml`: تنظيم 5 خدمات، عزل الشبكة، استمرارية البيانات عبر أحجام
+- `docker-compose.yml`: تنظيم 7 خدمات، عزل الشبكة، استمرارية البيانات عبر أحجام
 - `.env.docker`: متغيرات بيئة مخصصة لبيئة Docker
 
 ## مواصفات قاعدة البيانات
@@ -274,7 +280,7 @@ Cors (معالجة مسبقة للعمل عبر الأصول + ترويسات ا
   → OperationLog (تسجيل تلقائي لـ POST/PUT/DELETE، بما فيه كشف المصدر، مجموعة مسارات /admin/v1)
 ```
 
-`/health` و`/api/docs` نقطتا نهاية عامتان، تمران عبر `Cors → SecurityFilter → RateLimit` فقط.
+`/health` نقطة النهاية العامة، تمر فقط عبر `Cors → SecurityFilter → RateLimit`؛ `/metrics` و`/api/docs` تتطلبان إضافة `AdminAuth → AdminPermission`.
 
 تحسينات أمنية:
 - **قفل الحساب**: بعد 5 محاولات تسجيل دخول فاشلة متتالية، يُقفل الحساب تلقائيًا لمدة 15 دقيقة، وترجع محاولات الدخول خلالها 429
@@ -365,6 +371,11 @@ Authorization: Bearer <token>
 | `POST` | `/admin/v1/config` | إنشاء عنصر إعداد |
 | `PUT` | `/admin/v1/config/{id}` | تحديث عنصر الإعداد |
 | `DELETE` | `/admin/v1/config/{id}` | حذف عنصر الإعداد (يتطلب تأكيد كلمة المرور) |
+| `GET` | `/admin/v1/payment/method/list` | قائمة طرق الدفع |
+| `POST` | `/admin/v1/payment/method/toggle` | تفعيل/تعطيل طريقة الدفع |
+| `POST` | `/admin/v1/payment/method/create` | إنشاء طريقة دفع |
+| `PUT` | `/admin/v1/payment/method/{id}` | تحديث طريقة الدفع |
+| `DELETE` | `/admin/v1/payment/method/{id}` | حذف طريقة الدفع (يُرفض عند وجود طلبات معلّقة) |
 | `GET` | `/admin/v1/log` | سجلات العمليات (ترقيم صفحات + تصفية) |
 | `PUT` | `/admin/v1/profile` | تحديث المعلومات الشخصية |
 | `PUT` | `/admin/v1/profile/password` | تغيير كلمة المرور |
@@ -405,12 +416,14 @@ Authorization: Bearer <token>
 
 ### Docker Compose (موصى به)
 
-يوفر دليل جذر المشروع `docker-compose.yml`، ينظم 5 خدمات:
+يوفر دليل جذر المشروع `docker-compose.yml`، ينظم 7 خدمات:
 
 | الخدمة | الصورة | المنفذ |
 |------|------|------|
 | `nginx` | nginx:alpine | 80, 443 |
-| `app` | بناء محلي عبر `Dockerfile` | 8789 |
+| `admin` | بناء محلي عبر `Dockerfile` | 8789 |
+| `service` | بناء محلي عبر `Dockerfile` | 8792 |
+| `leaderboard-ws` | بناء محلي عبر `Dockerfile` | 8790, 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

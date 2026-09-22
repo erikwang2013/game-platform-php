@@ -268,24 +268,23 @@ $result = $provider->refund($userId, $gameId, $sessionId, $amount, $roundId, 'ga
 
 ## 5. Manajemen Sesi
 
-Setelah game dimulai, perlu mengirim heartbeat setiap 15 menit:
+Panggilan SDK untuk game self/embedded diautentikasi dengan token sesi: C-end yang sudah login memanggil `GET /api/v1/game/session?game_id={game_id}` untuk menerbitkannya (TTL 5 menit, hanya game `self` / `embedded`):
 
-```php
-use app\service\GameSessionService;
+```
+GET /api/v1/game/session?game_id=1234567890
+Authorization: Bearer <user_token>
 
-// Saat dimulai
-GameSessionService::heartbeat($userId, $gameId, $sessionId);
-
-// Heartbeat berkala (disarankan setiap 5 menit)
-if (!GameSessionService::isActive($sessionId)) {
-    // Sesi sudah timeout, perlu mengakhiri game
+200
+{
+    "code": 0,
+    "data": { "token": "<payload>.<signature>", "expires_in": 300 }
 }
 
-// Saat berakhir
-GameSessionService::endSession($sessionId);
+POST /api/game/balance
+Authorization: Bearer <payload>.<signature>
 ```
 
-Sesi yang timeout akan disettlement otomatis (`GameSessionService::expireStaleSessions()`).
+Middleware `SdkSessionAuth` memverifikasi tanda tangan HMAC-SHA256 dan masa berlaku; `user_id` hanya diambil dari token (body permintaan tidak dapat menimpanya). Terbitkan ulang setelah kedaluwarsa dan gunakan untuk memanggil `/api/game/balance`, `/api/game/bet`, `/api/game/settle`, `/api/game/refund`.
 
 ## 6. Konfigurasi Game
 

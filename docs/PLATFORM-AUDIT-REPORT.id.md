@@ -79,7 +79,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 | `controller/TicketController.php` (service + admin) | 4 endpoint sisi C + 5 endpoint sisi admin |
 | `service/VerificationService.php` (admin+service) | Kode 6 digit, Redis 10 menit, cooldown 60 detik |
 | `controller/VerificationController.php` (service) | 4 endpoint: sendEmail/confirmEmail/sendSms/confirmPhone |
-| `service/PushService.php` (admin+service) | Abstraksi FCM/APNs/推送 Huawei |
+| `service/PushService.php` (admin+service) | Abstraksi FCM/APNs/push Huawei |
 | `model/DeviceToken.php` (admin+service) | Penyimpanan token perangkat |
 
 ### Phase 3 — Retensi Pengguna
@@ -182,7 +182,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 ---
 
-## VIII. Perbaikan Ruang Perluasan (Putaran Ketiga 2026-08-04)
+## VII. Perbaikan Ruang Perluasan (Putaran Ketiga 2026-08-04)
 
 ### P2 Telah Diimplementasikan
 
@@ -213,7 +213,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 - Dokumentasi 4 endpoint API (balance/bet/settle/refund)
 - Panduan integrasi game buatan sendiri + manajemen sesi + konfigurasi game
 
-## IX. Nilai Akhir (Diperbarui)
+## VIII. Nilai Akhir (Diperbarui)
 
 | Kategori | Awal (v1) | Perluasan v2.0 | Perbaikan v2.1 | Perubahan |
 |------|-----------|---------------|---------------|------|
@@ -227,7 +227,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 ---
 
-## X. Konfirmasi Perbaikan Keamanan dan Ketersediaan 2026-08-18
+## IX. Konfirmasi Perbaikan Keamanan dan Ketersediaan 2026-08-18
 
 Perbaikan keamanan dan ketersediaan yang diselesaikan putaran ini (2026-08-18) (belum di-commit di working area, dirilis menyusul dengan versi 1.1):
 

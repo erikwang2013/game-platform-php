@@ -27,6 +27,7 @@ Sistema de panel de administración full-stack basado en webman v2 + Flutter.
 | | Importación masiva de Excel | Validación fila por fila + informe de errores |
 | 🔒 Roles y permisos | CRUD de roles + árbol de permisos | Autorización RBAC con granularidad method.path |
 | ⚙ Configuración del sistema | CRUD de pares clave-valor | Gestión por grupos |
+| 💳 Métodos de pago | CRUD multi-pasarela + activar/desactivar | 18 pasarelas (stripe/paypal/nowpayments/coinbase, etc.) + visibilidad por país |
 | 🖥 Gestión de CDN | CRUD de configuración de 5 proveedores + activar/desactivar + prueba de conectividad | Credenciales cifradas con AES, service solo lee de la BD |
 | 📋 Auditoría de operaciones | Consulta de registros + detección de origen | Reconocimiento automático de 8 plataformas |
 | 📁 Gestión de archivos | Subida/exportación Excel/exportación PDF | Enmascarado automático de datos sensibles |
@@ -64,48 +65,53 @@ Sistema de panel de administración full-stack basado en webman v2 + Flutter.
 ```
 open-admin/
 ├── app/
-│   ├── admin/controller/       # Controladores del panel de administración
-│   │   ├── DashboardController.php # Panel (caché Redis)
-│   │   ├── UserController.php      # CRUD de usuarios + operaciones masivas
-│   │   ├── RoleController.php      # CRUD de roles
-│   │   ├── PermissionController.php# CRUD de permisos
-│   │   ├── ConfigController.php    # CRUD de configuración del sistema
-│   │   ├── LogController.php       # Consulta de registros de operaciones
-│   │   ├── ProfileController.php   # Centro personal + cierre de sesión
-│   │   ├── ExportController.php    # Exportación Excel/PDF
-│   │   ├── ImportController.php    # Importación de usuarios por Excel
-│   │   ├── UploadController.php    # Subida de archivos
-│   │   ├── HealthController.php    # Comprobación de salud
-│   │   ├── DocsController.php      # Documentación OpenAPI
-│   │   └── BaseController.php      # Controlador base
+│   ├── admin/v1/controller/    # Controladores del panel de administración (45)
+│   │   ├── DashboardController.php  # Panel (caché Redis)
+│   │   ├── UserController.php       # CRUD de usuarios + operaciones masivas
+│   │   ├── RoleController.php       # CRUD de roles
+│   │   ├── PermissionController.php # CRUD de permisos
+│   │   ├── ConfigController.php     # CRUD de configuración del sistema
+│   │   ├── LogController.php        # Consulta de registros de operaciones
+│   │   ├── ProfileController.php    # Centro personal + cierre de sesión
+│   │   ├── ExportController.php     # Exportación Excel/PDF
+│   │   ├── ImportController.php     # Importación de usuarios por Excel
+│   │   ├── UploadController.php     # Subida de archivos
+│   │   ├── HealthController.php     # Comprobación de salud
+│   │   ├── DocsController.php       # Documentación OpenAPI
+│   │   └── BaseController.php       # Controlador base
 │   ├── api/
 │   │   └── v1/controller/          # Controladores API v1 (versión en la ruta URL: /api/v1, /admin/v1)
 │   │       ├── CaptchaController.php # Captcha de clic
 │   │       └── AuthController.php    # Inicio de sesión/registro/refresco de token
 │   ├── common/                 # Clases de utilidad comunes
-│   │   ├── HashidsService.php  # Codificación/decodificación de ID
-│   │   ├── SnowflakeService.php# Generación de ID Snowflake
-│   │   └── EncryptionService.php # Cifrado/descifrado de datos + enmascarado
+│   │   └── CdnProbeService.php # Prueba de conectividad CDN (Hashids/Snowflake/Encryption los aportan paquetes de Composer)
 │   ├── middleware/             # Middleware
 │   │   ├── Cors.php            # CORS
 │   │   ├── SecurityFilter.php  # Intercepción de detección de ataques (restricción de métodos HTTP/XSS/inyección SQL/path traversal/inyección de comandos/CSRF)
 │   │   ├── RateLimit.php       # Límite de tasa Redis (ventana deslizante + cabeceras de respuesta)
+│   │   ├── StaticFile.php      # Servicio de archivos estáticos (integrado en webman)
 │   │   ├── AdminAuth.php       # Autenticación JWT + lista negra
 │   │   ├── AdminPermission.php # Validación de permisos RBAC
 │   │   └── OperationLog.php    # Registro automático de operaciones (incluye detección de origen)
-│   └── model/                  # Modelos de datos
+│   ├── activity/               # Manejadores de actividades (check-in/invitación/tareas diarias)
+│   ├── model/                  # Modelos de datos
+│   ├── process/                # Procesos (Http, Monitor, RiskIpCron)
+│   ├── provider/               # Capa Provider de juegos (Self/ThirdParty/Factory)
+│   ├── service/                # Servicios (monedero/sandbox de riesgo)
+│   └── view/                   # Plantillas de vista
 ├── apps/
+│   ├── angular/                # Backend de administración web Angular
+│   ├── react/                  # Backend de administración web React
 │   ├── flutter/                # Panel de administración Flutter Web (estilo PC)
 │   │   └── lib/app/
-│   │       ├── pages/          # 5 páginas completas (panel/usuarios/roles/configuración/registros/centro personal)
+│   │       ├── pages/          # 20 directorios de páginas
 │   │       ├── services/       # ApiService (interceptor JWT) + AuthService (persistencia de Token)
 │   │       └── layouts/        # Diseño de panel responsive (barra lateral + barra superior + área de contenido)
 │   └── harmonyos/              # Cliente nativo HarmonyOS (refresco transparente de Token)
 ├── config/                     # Archivos de configuración (con comentarios en chino)
 │   ├── route.php               # Rutas + estrategia de versión de API
 │   ├── middleware.php           # Registro de middleware global
-│   └── ...                     # Configuraciones de componentes
-├── install/        # Archivos de migración SQL (incluyen datos semilla de permisos)
+│   └── server.php              # Configuración de puertos/procesos
 ├── public/                     # Punto de entrada público
 ├── runtime/                    # Archivos en tiempo de ejecución
 └── vendor/                     # Dependencias Composer
@@ -182,7 +188,7 @@ Usa DevEco Studio para abrir el directorio `apps/harmonyos/` y ejecutar en un di
 
 ### 6. Despliegue con un clic mediante Docker Compose (recomendado para producción)
 
-El proyecto incluye una solución completa de orquestación Docker con 5 servicios: Nginx, PHP (aplicación webman), MySQL, Redis, Elasticsearch.
+El proyecto incluye una solución completa de orquestación Docker con 7 servicios: Nginx, admin (webman), service (webman), leaderboard-ws (WebSocket), MySQL, Redis, Elasticsearch.
 
 ```bash
 # 1. Configurar variables de entorno de Docker
@@ -191,16 +197,16 @@ cp .env.docker .env
 # 2. Iniciar todos los servicios
 docker-compose up -d
 
-# 3. Inicializar la base de datos (ejecutar dentro del contenedor de la aplicación)
-docker-compose exec app mysql -h mysql -u root -p < install/install.sql
+# 3. Inicializar la base de datos (importar mediante el contenedor mysql)
+docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform < install/install.sql
 
 # 4. Acceso
 # http://localhost:8789  (webman)
-# http://localhost:8080  (proxy inverso Nginx)
+# http://localhost  (proxy inverso Nginx)
 ```
 
 - `Dockerfile`: PHP 8.3 + OPcache + Composer, basado en `php:8.3-cli`
-- `docker-compose.yml`: orquestación de 5 servicios, aislamiento de red, persistencia de volúmenes de datos
+- `docker-compose.yml`: orquestación de 7 servicios, aislamiento de red, persistencia de volúmenes de datos
 - `.env.docker`: variables de entorno específicas para el entorno Docker
 
 ## Estándares de base de datos
@@ -274,7 +280,7 @@ Cors（preprocesamiento CORS + cabeceras de respuesta）
   → OperationLog（registro automático de POST/PUT/DELETE, incluye detección de origen, grupo de rutas /admin/v1）
 ```
 
-`/health` y `/api/docs` son endpoints públicos y solo pasan por `Cors → SecurityFilter → RateLimit`.
+`/health` es el endpoint público y solo pasa por `Cors → SecurityFilter → RateLimit`; `/metrics` y `/api/docs` requieren además `AdminAuth → AdminPermission`.
 
 Mejoras de seguridad:
 - **Bloqueo de cuenta**: 5 inicios de sesión fallidos consecutivos bloquean la cuenta automáticamente 15 minutos; durante el bloqueo el inicio de sesión devuelve 429
@@ -365,6 +371,11 @@ Authorization: Bearer <token>
 | `POST` | `/admin/v1/config` | Crear elemento de configuración |
 | `PUT` | `/admin/v1/config/{id}` | Actualizar elemento de configuración |
 | `DELETE` | `/admin/v1/config/{id}` | Eliminar elemento de configuración (requiere confirmación de contraseña) |
+| `GET` | `/admin/v1/payment/method/list` | Lista de métodos de pago |
+| `POST` | `/admin/v1/payment/method/toggle` | Activar/desactivar método de pago |
+| `POST` | `/admin/v1/payment/method/create` | Crear método de pago |
+| `PUT` | `/admin/v1/payment/method/{id}` | Actualizar método de pago |
+| `DELETE` | `/admin/v1/payment/method/{id}` | Eliminar método de pago (se rechaza si hay pedidos pendientes) |
 | `GET` | `/admin/v1/log` | Registros de operaciones (paginación + filtros) |
 | `PUT` | `/admin/v1/profile` | Actualizar información personal |
 | `PUT` | `/admin/v1/profile/password` | Cambiar contraseña |
@@ -405,12 +416,14 @@ Authorization: Bearer <token>
 
 ### Docker Compose (recomendado)
 
-La raíz del proyecto incluye `docker-compose.yml`, con orquestación de 5 servicios:
+La raíz del proyecto incluye `docker-compose.yml`, con orquestación de 7 servicios:
 
 | Servicio | Imagen | Puerto |
 |------|------|------|
 | `nginx` | nginx:alpine | 80, 443 |
-| `app` | construido con el `Dockerfile` local | 8789 |
+| `admin` | construido con el `Dockerfile` local | 8789 |
+| `service` | construido con el `Dockerfile` local | 8792 |
+| `leaderboard-ws` | construido con el `Dockerfile` local | 8790, 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

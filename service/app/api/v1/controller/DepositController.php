@@ -10,6 +10,7 @@ namespace app\api\v1\controller;
 use common\model\DepositOrder;
 use common\model\PaymentMethod;
 use common\model\PlatformConfig;
+use app\payment\CurrencyUtils;
 use app\payment\GatewayFactory;
 use app\service\ComplianceCheckService;
 use common\service\NotificationService;
@@ -28,7 +29,7 @@ class DepositController extends BaseController
     #[Apidoc\Method("POST")]
     #[Apidoc\Auth(true)]
     #[Apidoc\Param(name: "amount", type: "float", require: true, desc: "充值金额")]
-    #[Apidoc\Param(name: "currency", type: "string", require: true, desc: "货币(USD/CNY/EUR)")]
+    #[Apidoc\Param(name: "currency", type: "string", require: true, desc: "货币(USD/CNY/EUR/JPY/KRW/GBP/BRL/INR)")]
     #[Apidoc\Param(name: "payment_method_id", type: "string", require: true, desc: "支付方式ID")]
     public function create(Request $request): Response
     {
@@ -46,9 +47,8 @@ class DepositController extends BaseController
         $amount          = $request->input('amount');
         $currency        = $request->input('currency');
 
-        // 精度对齐支付商最小单位转换：JPY/KRW 零小数币，其余最多 2 位小数，否则 Stripe 分转换回环不一致
-        $maxDecimals = in_array(strtoupper((string) $currency), ['JPY', 'KRW'], true) ? 0 : 2;
-        if (!preg_match('/^\d+(\.\d{1,' . $maxDecimals . '})?$/', (string) $amount)) {
+        // 精度对齐支付商最小单位转换：零小数币种不接受小数，其余最多 2 位小数，否则 Stripe 分转换回环不一致
+        if (!CurrencyUtils::precisionOk((string) $amount, (string) $currency)) {
             return $this->fail('Amount precision not supported', 422);
         }
         $paymentMethodId = $this->decodeId($request->input('payment_method_id'));

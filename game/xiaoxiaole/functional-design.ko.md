@@ -1,4 +1,4 @@
-# 전원 소소락 (田园消消乐) — 기능 설계
+# 전원 소소락 — 기능 설계
 <!-- lang-nav -->
 
 Languages: [中文](functional-design.md) · [English](functional-design.en.md) · **한국어** · [Русский](functional-design.ru.md) · [Deutsch](functional-design.de.md) · [Français](functional-design.fr.md) · [Español](functional-design.es.md) · [Português](functional-design.pt.md) · [हिन्दी](functional-design.hi.md) · [العربية](functional-design.ar.md) · [বাংলা](functional-design.bn.md) · [Bahasa Indonesia](functional-design.id.md) · [日本語](functional-design.ja.md)

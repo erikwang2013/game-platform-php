@@ -14,6 +14,8 @@ flowchart TB
         A1["Flutter Web PC<br/>管理后台"]
         A2["Flutter Web PC<br/>C端用户平台"]
         A3["HarmonyOS ArkTS<br/>手机/平板客户端"]
+        A4["React · Angular<br/>管理后台"]
+        A5["React · Angular<br/>C端用户平台"]
     end
 
     subgraph "网关层 (Nginx)"
@@ -34,7 +36,7 @@ flowchart TB
     end
 
     subgraph "存储层"
-        E1[("MySQL 8.0<br/>主存储<br/>52 张表")]
+        E1[("MySQL 8.0<br/>主存储<br/>78 张表")]
         E2[("Redis<br/>Session/缓存/限流<br/>EventBus/心跳")]
         E3[("Elasticsearch<br/>全文检索")]
         E4[("ClickHouse<br/>OLAP 分析<br/>概率计算")]
@@ -46,7 +48,7 @@ flowchart TB
         F3["OAuth (7平台)<br/>Google/Facebook/Apple<br/>X(Twitter)/Microsoft<br/>LinkedIn/GitHub"]
     end
 
-    A1 & A2 & A3 -->|"HTTPS/JSON<br/>JWT Bearer"| B1
+    A1 & A2 & A3 & A4 & A5 -->|"HTTPS/JSON<br/>JWT Bearer"| B1
     B1 -->|"/admin/*"| C1
     B1 -->|"/api/*"| C2
     C1 & C2 --> D0 & D1 & D2 & D3 & D4
@@ -64,7 +66,7 @@ flowchart TB
   ↓
 中间件链: Cors → SecurityFilter → RateLimit → AdminAuth → AdminPermission → OperationLog
   ↓
-控制器层 (28 个):
+控制器层 (45 个):
   ┌──────────────────────────────────────────────────────────┐
   │ Dashboard / User / Role / Permission / Config / Log      │ ← 原有
   │ Profile / Export / Import / Upload / Health / Docs       │ ← 原有
@@ -86,9 +88,9 @@ Provider 层: GameProvider → SelfProvider / ThirdPartyProvider
 ```
 路由层: config/route.php
   ↓
-中间件链: Cors → SecurityFilter → RateLimit → Language → ApiVersion → [UserAuth | ProviderAuth]
+中间件链: TraceId → Cors → SecurityFilter → RateLimit → Language → [UserAuth | ProviderAuth | SdkSessionAuth]
   ↓
-控制器层 (25 个):
+控制器层 (34 个):
   ┌──────────────────────────────────────────────────────────┐
   │ Auth / Wallet / Deposit / Exchange / Withdraw            │ ← 原有
   │ Game / User / Announcement / Captcha                     │ ← 原有
@@ -98,7 +100,7 @@ Provider 层: GameProvider → SelfProvider / ThirdPartyProvider
   │ Provider / Ticket / Verification                         │ ← 新增
   └──────────────────────────────────────────────────────────┘
   ↓
-服务层: VIP / Achievement / EventBus / FeatureFlag / Risk / GameSession
+服务层: VIP / Achievement / EventBus / FeatureFlag / Risk
   ↓
 Provider 层: GameProvider → SelfProvider / ThirdPartyProvider
   ↓
@@ -181,7 +183,7 @@ Alle echten Netzwerkaufrufe sind in `Retry::run → CircuitBreaker::call` gekaps
 
 ```
 常规API:
-  请求 → Cors → SecurityFilter → RateLimit → Language → ApiVersion
+  请求 → TraceId → Cors → SecurityFilter → RateLimit → Language
        → [UserAuth] (JWT→401) → Controller → 响应
 
 Provider API:
@@ -195,10 +197,10 @@ Provider API:
 ### 4.1 Einzahlungsablauf
 
 ```
-用户 → POST /api/deposit/create → 生成订单 (status=pending)
+用户 → POST /api/v1/deposit/create → 生成订单 (status=pending)
      → GatewayFactory 创建支付 (Stripe Checkout (incl. Alipay/WeChat Pay APM)/NowPayments invoice/Coinbase charge) → 回填 checkout_url + expires_at(+1h)；失败则 CAS 取消订单可重试
      → 跳转第三方支付 (Stripe (incl. Alipay/WeChat Pay)/PayPal/NowPayments[USDT TRC20/ERC20]/Coinbase[USDC/BTC/ETH])
-     → 支付成功 → 回调 /api/payment/callback
+     → 支付成功 → 回调 /api/v1/payment/callback
      → provider 白名单(仅 stripe/paypal/nowpayments/coinbase/skrill/neteller/paysafecard/paytm/mercadopago/astropay/paypay/kakaopay/gcash) + 跨渠道冒用校验 + 验签(fail-closed) + 时间戳±300s + bccomp 金额核对
      → 更新订单 (status=confirmed, 事务化)
      → UserWallet::addBalance() → 平台币到账
@@ -211,10 +213,10 @@ Provider API:
 ### 4.2 Umtauschablauf
 
 ```
-用户 → POST /api/exchange/quote → 询价
+用户 → POST /api/v1/exchange/quote → 询价
      → VipService::getExchangeDiscount() → 应用VIP折扣
      → VipService::getRateBonus() → 应用VIP汇率加成
-     → 确认 → POST /api/exchange/buy(或sell)
+     → 确认 → POST /api/v1/exchange/buy(或sell)
      → DB::beginTransaction()
      ├─ 扣减源币种 (lockForUpdate)
      ├─ 增加目标币种
@@ -228,7 +230,7 @@ Provider API:
 ### 4.3 Auszahlungsablauf
 
 ```
-用户 → POST /api/withdraw/apply
+用户 → POST /api/v1/withdraw/apply
      → VipService::getWithdrawFeeDiscount() → 应用VIP手续费减免
      → 检查全局开关 (PlatformConfig)
      → 检查限额 (min_amount / daily_limit)
@@ -237,7 +239,7 @@ Provider API:
      → 金额≥阈值 → pending (人工审核)
      → 记录 Transaction
 
-管理员 → PUT /admin/withdraw/review
+管理员 → PUT /admin/v1/withdraw/review
        → approve: 标记完成
        → reject: 退回平台币 + 退款流水
 ```
@@ -371,15 +373,28 @@ flowchart TB
 ## 7. Testarchitektur
 
 ```
-tests/
+tests/                             # 21 个文件 · 200 个用例
 ├── bootstrap.php                  # PHPUnit 引导
-├── PlatformTest.php               # 56 个业务逻辑测试
-├── BackendEnhancementTest.php     # 23 个加密/ID服务测试
-├── CaptchaTest.php                # 7 个验证码测试
-├── EncryptionServiceTest.php      # 6 个加解密测试
-├── EnvConfigTest.php              # 4 个环境配置测试
-├── HashidsServiceTest.php         # 8 个 ID 编解码测试
-└── SnowflakeServiceTest.php       # 6 个 Snowflake ID 测试
+├── AuthControllerRegisterTest.php # 15 个注册口令强度测试
+├── BackendEnhancementTest.php     # 27 个加密/ID服务测试
+├── CaptchaTest.php                # 5 个验证码测试
+├── CdnProbeServiceTest.php        # 5 个 CDN 探测测试
+├── CdnProviderModelTest.php       # 3 个 CDN 供应商模型测试
+├── ClickHouseServiceTest.php      # 16 个 ClickHouse 服务测试
+├── ConfigDefaultsTest.php         # 4 个配置默认值测试
+├── EncryptionServiceTest.php      # 8 个加解密测试
+├── EnvConfigTest.php              # 6 个环境配置测试
+├── GameControllerTest.php         # 5 个游戏控制器测试
+├── GameRouteTest.php              # 5 个游戏路由测试
+├── HashidsServiceTest.php         # 6 个 ID 编解码测试
+├── LeaderboardServiceTest.php     # 4 个排行榜服务测试
+├── NotificationServiceTest.php    # 3 个通知服务测试
+├── PayoutServiceTest.php          # 9 个代付服务测试
+├── PlatformCommonTest.php         # 6 个公共查询构造测试
+├── PlatformTest.php               # 55 个业务逻辑测试
+├── ReportControllerTest.php       # 5 个报表日期区间测试
+├── SnowflakeServiceTest.php       # 5 个 Snowflake ID 测试
+└── TranslationServiceTest.php     # 8 个翻译服务测试
 ```
 
 ## 8. Portzuordnung
@@ -397,42 +412,59 @@ tests/
 
 ## 9. API-Dokumentation
 
-Interaktive API-Dokumentation wird mit `hg/apidoc` automatisch aus Controller-Annotationen generiert:
+Interaktive API-Dokumentation wird mit `erikwang2013/apidoc-php` automatisch aus Controller-Annotationen generiert:
 
 | Dokumentation | Adresse | Controller | Endpunkte |
 |------|------|--------|------|
-| Verwaltungsbackend | :8789/apidoc/ | 28 | ~85 |
-| C-End-Geschäft | :8792/apidoc/ | 25 | ~65 |
+| Verwaltungsbackend | :8789/apidoc/ | 45 | 154 |
+| C-End-Geschäft | :8792/apidoc/ | 34 | 107 |
 
 ## 10. Datenbanktabellen-Liste
 
-### Basisversion (14 Tabellen) + admin (7 Tabellen)
-game_user, game_user_wallet, game_user_game_wallet, game_game, game_game_currency,
-game_deposit_order, game_withdraw_order, game_exchange_record, game_transaction,
-game_payment_method, game_announcement, game-platform_config, game_language, game_translation,
-game_admin_user, game_admin_role, game_admin_permission, game_admin_user_role,
-game_admin_role_permission, game_operation_log, game_system_config
+### Basisversion (12 Tabellen) + admin (7 Tabellen)
+game_user, game_user_wallet, game_user_game_wallet,
+game_game, game_game_currency, game_deposit_order,
+game_withdraw_order, game_exchange_record, game_transaction,
+game_payment_method, game_announcement, game_platform_config,
+game_admin_user, game_admin_role, game_admin_permission,
+game_admin_user_role, game_admin_role_permission, game_operation_log,
+game_system_config
 
 ### Standardversion (10 Tabellen)
-game_user_oauth, game_user_session, game_user_identity, game_user_payment_account,
-game_withdraw_limit, game_game_server, game_game_play_log, game_risk_rule,
-game_risk_log, game_stat_daily
+game_user_identity, game_user_oauth, game_user_payment_account,
+game_user_session, game_game_server, game_game_play_log,
+game_withdraw_limit, game_risk_rule, game_risk_log,
+game_stat_daily
 
-### Vollversion (8 Tabellen)
-game_game_category, game_game_category_rel, game_leaderboard, game_coupon,
-game_user_coupon, game_country_config, game-platform_revenue
+### Vollversion (13 Tabellen)
+game_game_category, game_game_category_rel, game_leaderboard,
+game_coupon, game_user_coupon, game_language,
+game_translation, game_country_config, game_platform_revenue,
+game_notification, game_referral, game_referral_reward,
+game_user_2fa
 
-### Ökosystem-Erweiterung (10 Tabellen) ← neu
+### Ökosystem-Erweiterung (14 Tabellen) ← neu
 game_ticket, game_ticket_reply, game_device_token,
 game_vip_level, game_user_vip, game_exp_log,
-game_achievement, game_user_achievement,
-game_friend, game_message
+game_achievement, game_user_achievement, game_friend,
+game_message, game_cdn_provider, game_referral_commission,
+game_tournament, game_tournament_entry
 
-**Gesamt: 52 Tabellen**
+### Neu in v1.3.15-22 (22 Tabellen)
+game_event_outbox, game_reconciliation_batch, game_reconciliation_diff,
+game_reconciliation_statement, game_device_fingerprint, game_device_account_map,
+game_ip_reputation, game_account_account_link, game_activity,
+game_activity_participation, game_activity_reward_log, game_anticheat_event,
+game_anticheat_daily_stat, game_group, game_group_member,
+game_share_link, game_aml_rule, game_aml_hit,
+game_kyc_level, game_user_kyc, game_user_trust,
+game_risk_cluster
+
+**Gesamt: 78 Tabellen**
 
 ## 11. Feature-Schalter
 
-Basierend auf dem `feature.*`-Namensraum in `game-platform_config`, ohne zusätzliche Abhängigkeiten:
+Basierend auf dem `feature.*`-Namensraum in `game_platform_config`, ohne zusätzliche Abhängigkeiten:
 
 | Schalter | Standard | Funktion |
 |------|------|------|

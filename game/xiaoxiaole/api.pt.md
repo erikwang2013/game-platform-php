@@ -1,10 +1,10 @@
-# 田园消消乐 — API de integração com a plataforma
+# Match-3 Rural — API de integração com a plataforma
 <!-- lang-nav -->
 
 Languages: **中文** · [English](api.en.md) · [한국어](api.ko.md) · [Русский](api.ru.md) · [Deutsch](api.de.md) · [Français](api.fr.md) · [Español](api.es.md) · [Português](api.pt.md) · [हिन्दी](api.hi.md) · [العربية](api.ar.md) · [বাংলা](api.bn.md) · [Bahasa Indonesia](api.id.md) · [日本語](api.ja.md)
 
 
-> Este documento é o contrato completo de interfaces entre o 《田园消消乐》 e a plataforma de jogos. A divisão técnica está em `architecture.md`, o cronograma em `plan.md`, e as funcionalidades para jogadores em `functional-design.md`.
+> Este documento é o contrato completo de interfaces entre o Match-3 Rural e a plataforma de jogos. A divisão técnica está em `architecture.md`, o cronograma em `plan.md`, e as funcionalidades para jogadores em `functional-design.md`.
 
 ---
 

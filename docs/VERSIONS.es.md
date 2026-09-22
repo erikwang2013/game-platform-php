@@ -121,7 +121,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 | Soporte multilingüe | chino/inglés | 4 idiomas | 4 idiomas |
 | Tabla de traducciones + caché | ✓ | ✓ | ✓ |
 | Detección automática de idioma | ✓ | ✓ | ✓ |
-| Configuración diferenciada por país | - | - | ✓ 8 países |
+| Configuración diferenciada por país | - | - | ✓ 18 países |
 
 ---
 
@@ -162,7 +162,7 @@ Panel de administración (7):  game_admin_user, game_admin_role, game_admin_perm
 Núcleo de la plataforma (12): game_user, game_user_wallet, game_user_game_wallet,
                game_game, game_game_currency, game_deposit_order,
                game_withdraw_order, game_exchange_record, game_transaction,
-               game_payment_method, game_announcement, game-platform_config
+               game_payment_method, game_announcement, game_platform_config
 ```
 
 ### Nuevas de la edición estándar (10 tablas)
@@ -176,7 +176,7 @@ game_withdraw_limit, game_risk_rule, game_risk_log, game_stat_daily
 ```
 game_game_category, game_game_category_rel, game_leaderboard,
 game_coupon, game_user_coupon, game_language, game_translation,
-game_country_config, game-platform_revenue,
+game_country_config, game_platform_revenue,
 game_notification, game_referral, game_referral_reward, game_user_2fa
 ```
 
@@ -190,6 +190,16 @@ game_anticheat_event, game_anticheat_daily_stat,
 game_group, game_group_member, game_share_link,
 game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, game_risk_cluster
 ```
+
+### Adiciones ecosistema v2.0 (14 tablas)
+```
+game_ticket, game_ticket_reply, game_device_token, game_vip_level,
+game_user_vip, game_exp_log, game_achievement, game_user_achievement,
+game_friend, game_message, game_cdn_provider, game_referral_commission,
+game_tournament, game_tournament_entry
+```
+
+**Total: 78 tablas**
 
 ---
 
@@ -218,7 +228,7 @@ game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, gam
 | Puerta de enlace de la Provider API | callbacks balance/bet/settle/refund + middleware ProviderAuth |
 | Sistema de tickets | creación/respuesta en el lado C + gestión/asignación/cierre en el panel admin |
 | Verificación de email | código de 6 dígitos, expiración en Redis de 10 minutos, límite de reenvío de 60 segundos |
-| Notificaciones push | PushService (FCM/APNs/华为推送) |
+| Notificaciones push | PushService (FCM/APNs/push de Huawei) |
 | Sistema VIP | 5 niveles, acumulación de experiencia, subida automática, descuento de conversión, reducción de retiro, bonificación de tipo de cambio |
 | Sistema de logros | 12 logros integrados, detección basada en eventos, seguimiento de progreso |
 | Sistema de amigos | solicitud/aceptación/rechazo/eliminación/búsqueda |

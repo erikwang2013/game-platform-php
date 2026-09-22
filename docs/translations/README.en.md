@@ -33,8 +33,14 @@ A global, internationalized game aggregation platform. After registering, users 
 - Data encryption: AES-256-CBC at the API transport layer + AES-128-ECB at the database storage layer
 
 ### Frontend
-- Flutter 3.x (Web PC style)
-- HarmonyOS ArkTS (mobile)
+
+There are two separate front-end directory trees, **each calling only its own side's backend**, with no cross-over:
+
+| Directory tree | Role | Request prefix | Backend | Tech stack |
+|--------|------|---------|---------|--------|
+| `apps/*` | **C-end player platform** | `/api/v1/...` | service (default 8792) | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
+| `admin/apps/*` | **Admin console** | `/admin/v1/...` | admin (default 8789) | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
+
 - Responsive layout (Phone / Tablet / Desktop)
 - Internationalization (i18n): English / Simplified Chinese switching
 
@@ -55,44 +61,79 @@ A global, internationalized game aggregation platform. After registering, users 
 ```
 game-platform-php/
 ├── admin/                     # Admin backend (webman v2, default port 8789, configurable via APP_PORT)
-│   ├── app/admin/controller/  #   Admin controllers
-│   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
-│   ├── app/provider/          #   Game Provider layer
-│   ├── app/event/             #   Event bus (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission/ProviderAuth)
+│   ├── app/admin/v1/controller/  #   Admin-side controllers
+│   ├── app/middleware/        #   Middleware (Cors/SecurityFilter/RateLimit/AdminAuth/AdminPermission/OperationLog)
+│   ├── app/model/             #   Admin-only models (8; the other 52 shared models live in packages/)
+│   ├── app/service/           #   Admin-only services (WalletService/WalletScope/RiskSandboxService)
+│   ├── app/process/           #   Resident processes (Http/Monitor/RiskIpCron)
 │   ├── app/provider/          #   Game Provider layer (Self/ThirdParty/Factory)
-│   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
-│   ├── app/provider/          #   Game Provider layer
-│   ├── app/event/             #   Event bus (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission)
+│   ├── app/activity/          #   Activity engine (check-in/invite/daily tasks)
+│   ├── app/event/             #   Event bus (EventBus Redis Pub/Sub)
 │   ├── config/                #   Config files
-│   ├── install/   #   SQL migration files
-│   └── apps/flutter/          #   Flutter Web PC admin backend
+│   └── apps/                  #   Admin front-ends (4 targets, call /admin/v1 → admin:8789)
+│       ├── flutter/           #     Flutter Web PC admin backend
+│       ├── react/             #     React 19 (Vite) admin console
+│       ├── angular/           #     Angular 21 admin console
+│       └── harmonyos/         #     HarmonyOS ArkTS admin console (.hap, bypasses nginx)
 │
 ├── service/                   # C-end business service (webman v2, default port 8792, configurable via APP_PORT)
 │   ├── app/api/v1/controller/ #   C-end API controllers
-│   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
+│   ├── app/middleware/        #   Middleware (TraceId/Cors/SecurityFilter/RateLimit/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
+│   ├── app/model/             #   Service-only models (10; the other 52 shared models live in packages/)
+│   ├── app/service/           #   Service-only services (wallet/risk/compliance/reconciliation/push/achievements/anti-cheat etc.)
+│   ├── app/payment/           #   18 payment gateway adapters (Stripe/PayPal/Adyen/NowPayments/Skrill…) + GatewayFactory
+│   ├── app/cdn/               #   Five-vendor CDN adapters (Cloudflare/CloudFront/Alibaba/Tencent/Huawei) + CdnFactory
+│   ├── app/process/           #   Resident processes (Http/Monitor/LeaderboardWS:8790/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
 │   ├── app/provider/          #   Game Provider layer
+│   ├── app/activity/          #   Activity engine
 │   ├── app/event/             #   Event bus (EventBus Redis Pub/Sub)
 │   └── config/                #   Config files
 │
-├── install/                   # One-click install wizard
+├── packages/platform-common/  # Shared layer: admin and service pull it in via a composer path repository, avoiding two copies
+│   ├── src/model/             #   Shared Eloquent models (52, same source for both sides)
+│   ├── src/service/           #   Shared services (DepositLogService / VipService etc., 11 in total, incl. ClickHouse probability calculation)
+│   ├── src/BcMath.php         #   High-precision money/ratio arithmetic (bcmath wrapper), rounding, percentages
+│   ├── src/EncryptionService.php  #   AES encryption/decryption and masking
+│   ├── src/CircuitBreaker.php #   Circuit breaker (plus Retry.php for retries)
+│   ├── src/HashidsService.php #   API-layer ID encode/decode
+│   └── src/SnowflakeService.php   #   Globally unique BIGINT IDs
+│
+├── apps/                      # C-end player front-ends (4 targets, call /api/v1 → service:8792)
+│   ├── flutter/platform/      #   Flutter Web PC C-end user platform
+│   ├── react/                 #   React 19 (Vite) C-end
+│   ├── angular/               #   Angular 21 C-end
+│   └── harmonyos/             #   HarmonyOS ArkTS C-end (.hap, bypasses nginx)
+│
+├── game/xiaoxiaole/           # Built-in mini-game “Pastoral Match-3”: TypeScript + Vite + Vitest, src/domain game engine + four-level design + tests/, design docs in 13 languages
+│
+├── install/                   # One-click install wizard + database initialization SQL
 │   ├── index.php              #   Installation entry
 │   ├── Installer.php          #   Installation core logic
-│   ├── install.sql            #   Merged install SQL (43 tables + seed data)
+│   ├── install.sql            #   Merged install SQL (78 tables + seed data)
+│   ├── clickhouse.sql         #   ClickHouse analytics DDL (separate engine, imported on its own)
+│   ├── test-data.sql          #   Demo/test data
+│   ├── migrations/            #   Incremental upgrade scripts for existing databases (*.sql)
+│   ├── lang/ + lang.php       #   Install wizard UI translations (13 languages)
 │   └── assets/                #   Static assets
 │
-├── admin/common/ 与 service/common/   # Shared services duplicated in each (DepositLogService etc., pending extraction into a shared layer)
-│   └── service/               #   Shared services (incl. ClickHouse probability calculation)
-│
-├── apps/
-│   └── flutter/platform/      # Flutter Web PC C-end user platform
-│
-├── docs/                      # Project documentation
+├── docs/                      # Project documentation (all documents are in 13 languages: .md is the Chinese source, with .{lang}.md translations alongside)
 │   ├── ARCHITECTURE.md        #   Architecture doc
 │   ├── ARCHITECTURE-DESIGN.md #   Architecture design doc
 │   ├── FEATURES.md            #   Features doc
 │   ├── FEATURE-DESIGN.md      #   Feature design doc
 │   ├── API.md                 #   API doc
-│   └── DEPLOYMENT.md          #   Deployment doc (Docker/manual/port config)
+│   ├── DEPLOYMENT.md          #   Deployment doc (Docker/manual/port config)
+│   ├── PROVIDER-SDK.md        #   Third-party game integration guide (signature algorithm + PHP/Go/Python examples)
+│   ├── CLICKHOUSE_INSTALL.md  #   ClickHouse install/config/migrate/verify
+│   ├── CLICKHOUSE_USAGE.md    #   The 4 ClickHouse service APIs and the admin dashboard
+│   ├── translations/          #   The 12 language translations of this README
+│   ├── diagrams/              #   Architecture/flow/feature/lifecycle/security/ecosystem-expansion SVGs (13 languages each)
+│   ├── test-reports/          #   Test reports (php-unit / api / resilience / ui / SUMMARY)
+│   └── superpowers/           #   Design specs and implementation plans for this repo (historical record)
+│
+├── scripts/                   # Ops scripts (model drift check / apidoc annotation migration / exchange payout semantics migration / signature verification)
+├── tests/api/                 # Automated API tests (run_all.sh)
+├── runtime/                   # webman runtime directory (logs/pid, generated at runtime)
 │
 ├── docker-compose.yml         # Docker Compose orchestration (default ports from root .env)
 ├── nginx.conf.template        # Nginx config template (upstream ports rendered via envsubst)
@@ -137,7 +178,7 @@ rm -rf install/
 
 The install wizard automatically:
 - Checks the environment (PHP version, extensions, directory permissions)
-- Creates the database and tables (merged SQL, 43 tables + seed data)
+- Creates the database and tables (merged SQL, 78 tables + seed data)
 - Creates the super admin account (bcrypt encrypted)
 - Auto-generates JWT/encryption keys and writes them to the .env file
 - Generates install.lock to prevent re-installation
@@ -184,17 +225,40 @@ You need to manually insert the admin account into the database (password bcrypt
 
 ### Frontend Startup (Optional)
 
-```bash
-# Admin backend (Flutter Web PC)
-cd admin/apps/flutter
-flutter pub get
-flutter run -d chrome
+In development each front-end starts its own dev server; requests are proxied by the dev server to the matching backend (see `proxy.conf.json` / `vite.config.ts` in each directory):
 
-# C-end user platform (Flutter Web PC)
-cd apps/flutter/platform
-flutter pub get
-flutter run -d chrome
+```bash
+# --- C-end player platform (/api/v1 → service:8792) ---
+cd apps/react            && npm install && npm run dev      # http://localhost:5173
+cd apps/angular          && npm install && npm start        # http://localhost:4200
+cd apps/flutter/platform && flutter pub get && flutter run -d chrome
+
+# --- Admin console (/admin/v1 → admin:8789) ---
+cd admin/apps/react      && npm install && npm run dev      # http://localhost:5273
+cd admin/apps/angular    && npm install && npm start        # http://localhost:4300
+cd admin/apps/flutter    && flutter pub get && flutter run -d chrome
 ```
+
+> Angular dev server ports: the admin console sets 4300 explicitly in `angular.json`, while the C-end keeps Angular's default 4200; to run both at once, add `--port` to one of them.
+> The HarmonyOS targets (`apps/harmonyos`, `admin/apps/harmonyos`) are opened and built with DevEco Studio;
+> an emulator reaches the host backend at `http://10.0.2.2:<port>` (see the constant at the top of each `ApiService.ets`).
+
+### Frontend Deployment (Docker/Nginx)
+
+The nginx service in `docker-compose.yml` mounts each frontend's build output read-only into the container, and `nginx.conf.template` serves it at the paths below.
+When an artifact has not been built the directory is empty: a path request returns 404, a bare-directory request (e.g. `/app-react/`) returns 403.
+
+| URL | Artifact mount point | Build command |
+|-----|-----------|---------|
+| `/` | `apps/flutter/platform/build/web` | `flutter build web` |
+| `/app-react/` | `apps/react/dist` | `npm run build` (script includes `--base=/app-react/`) |
+| `/app-angular/` | `apps/angular/dist/game-client-angular/browser` | `npm run build` (script includes `--base-href=/app-angular/`) |
+| `/admin-panel/` | `admin/public` | Generic drop-in slot: copy any console build into `admin/public`; when absent it likewise returns 404 (bare directory 403). Note the build must use `--base=/admin-panel/` (`--base-href=/admin-panel/` for Flutter), otherwise its assets still point at the original prefix and 404. The slashless form 301-redirects here; `nginx.conf.template` sets `absolute_redirect off`, so the redirect is a relative Location and non-80-port deployments no longer lose the port |
+| `/admin-react/` | `admin/apps/react/dist` | `npm run build` (script includes `--base=/admin-react/`) |
+| `/admin-angular/` | `admin/apps/angular/dist/game-admin-angular/browser` | `npm run build` (script includes `--base-href=/admin-angular/`) |
+| `/admin-flutter/` | `admin/apps/flutter/build/web` | `flutter build web --base-href=/admin-flutter/` |
+
+`/admin/` (API) → admin container, `/api/` (API) → service container; the HarmonyOS build ships as a `.hap` package and does not go through nginx.
 
 ### Verification
 
@@ -206,9 +270,9 @@ curl http://localhost:8789/health
 curl http://localhost:8792/health
 
 # Test user registration
-curl -X POST http://localhost:8792/api/auth/register \
+curl -X POST http://localhost:8792/api/v1/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"username":"testuser","password":"123456"}'
+  -d '{"username":"testuser","password":"Abcdef12"}'
 ```
 
 ## Security Features
@@ -231,14 +295,31 @@ curl -X POST http://localhost:8792/api/auth/register \
 
 ## Testing
 
+Test reports (stored locally): [docs/test-reports/](../test-reports/)
+
+| Test type | Cases/coverage | Result |
+|---------|----------|------|
+| PHP unit tests | measured now with `phpunit --list-tests`: admin 200 + service 273 cases (the report `docs/test-reports/php-unit.md` records the 09-22 rerun admin 190 + service 273 and the 08-27 snapshot admin 153 + service 45; the admin side is still being extended) | service all pass (701 assertions, 3 skipped, 2 warnings + 35 deprecations); admin 437 assertions, 3 skipped, 1 failure (`EnvConfigTest` checks the real `admin/.env` and finds `REDIS_CLUSTER_NODES` missing; adding it turns it green) |
+| Stability mechanism tests | circuit breaker/retry/degradation switch, 15 cases (CircuitBreakerTest/RetryTest/ResilienceMockTest) | all pass |
+| Automated API tests | 187 endpoints (source: `docs/test-reports/api.md`, 2026-08-27); route.php currently registers 261 endpoints | 171 pass / 50 fail / 4 skipped (every failure is a deterministic defect, see the report) |
+| Flutter UI tests | 12 cases (login/dashboard/navigation/language switch) | all pass |
+| Go/Rust | no Go/Rust code in the repository | skipped, recorded |
+
 ```bash
-cd admin
-phpunit --bootstrap tests/bootstrap.php tests/
+# PHP unit tests (export the JWT secret environment variables first)
+cd admin && ADMIN_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
+cd service && SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
+# Automated API tests (the services must be running, see tests/api/run_all.sh)
+bash tests/api/run_all.sh
+# Flutter UI tests
+cd admin/apps/flutter && flutter test --timeout 300s
 ```
 
-- PHPUnit 12.x, 116 test cases
-- 56 business logic tests (PlatformTest) + 60 infrastructure tests
-- Coverage: bcmath precision, exchange calculations, withdrawal fees, limits, risk control, coupons, KYC, i18n
+Detailed reports:
+- [PHP unit test report](../test-reports/php-unit.md)
+- [Stability mechanism tests report (circuit breaker/retry/degradation)](../test-reports/resilience.md)
+- [Automated API tests report](../test-reports/api.md)
+- [Flutter UI test report](../test-reports/ui.md)
 
 ## Platform Capability Overview
 
@@ -249,7 +330,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Deposit | Create order + Stripe/PayPal callback verification + automatic crediting |
 | Exchange | Platform coins ⇄ game coins, real-time quotes, spread profit |
 | Withdrawal | Apply → review → payout, global switch, KYC tiered limits + fees |
-| KYC | Real-name verification submission + review, three-tier verification system |
+| KYC | Real-name verification submission + review, raises withdrawal limits once approved |
 | Games | CRUD + categories (10) + servers/regions + game record tracking |
 | Search | Elasticsearch full-text search (with LIKE fallback) |
 | Leaderboards | Daily/weekly/monthly/all-time, Redis cache, WebSocket real-time push (default port 8790, configurable via LEADERBOARD_WS_PORT) |
@@ -266,7 +347,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Social growth | Groups + share-link tracking |
 | Payment gateways | New Adyen / GrabPay gateways (L1) |
 | Internationalization | 4 languages (en-US/zh-CN/ja-JP/ko-KR), translation tables + cache |
-| Country config | 8 countries with differentiated payment/withdrawal methods, minimum deposit amounts |
+| Country config | 18 countries with differentiated payment/withdrawal methods, minimum deposit amounts |
 | Statistics | Daily statistics snapshots (5 metric types) + platform revenue tracking |
 | Captcha | Click-based human verification (poster-php) |
 | Game integration | Provider SDK (Self+ThirdParty) + HMAC-SHA256 signing + callback gateway |
@@ -279,7 +360,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Coupons | Conditional restrictions (min_deposit/first_user/game_id) |
 | Events | Redis Pub/Sub event bus + Webhook subscription delivery (7 event types) |
 | Deployment | Docker Compose 7-service orchestration (ports configured in root .env) + Nginx reverse proxy |
-| Clients | Flutter Admin (17 pages) + Platform (10 pages) + HarmonyOS (5 pages) |
+| Clients | Admin 4 targets (Flutter/React/Angular/HarmonyOS) + C-end 4 targets (Flutter/React/Angular/HarmonyOS) |
 
 ## Business Model
 
@@ -298,13 +379,13 @@ Platform coins ← convert back → Withdraw (review/automatic)
 
 ## Multi-Currency Settlement
 
-The platform uses a "fiat → platform coin → game coin" three-tier currency-isolated settlement system: supports multi-fiat deposits in USD/CNY/EUR, and each game has its own pricing currency; all amount calculations use bcmath high-precision arithmetic to eliminate floating-point errors.
+The platform uses a "fiat → platform coin → game coin" three-tier currency-isolated settlement system: supports multi-fiat deposits in USD/CNY/EUR/JPY/KRW/GBP/BRL/INR, and each game has its own pricing currency; all amount calculations use bcmath high-precision arithmetic to eliminate floating-point errors.
 
 ### Three-Tier Currency Model
 
 | Tier | Currency | Description |
 |------|------|------|
-| Fiat tier | USD / CNY / EUR | The actual payment currency for user deposits/withdrawals, handled by Stripe / PayPal |
+| Fiat tier | USD / CNY / EUR / JPY / KRW / GBP / BRL / INR | The actual payment currency for user deposits/withdrawals, handled by Stripe / PayPal |
 | Platform coin tier | Platform coin (unified across the platform) | Internal unified settlement currency (decimal(18,4)), wallet optimistic lock against concurrent deductions/duplicate credits |
 | Game coin tier | Per-game independent currency | Each game has its own `exchange_rate` and `spread_pct`, with an independent game coin wallet |
 
@@ -320,7 +401,7 @@ The platform uses a "fiat → platform coin → game coin" three-tier currency-i
 ```mermaid
 flowchart LR
     subgraph FIAT["法币层 Fiat"]
-        A["用户充值<br/>USD / CNY / EUR<br/>Stripe / PayPal"]
+        A["用户充值<br/>USD / CNY / EUR / JPY / KRW / GBP / BRL / INR<br/>Stripe / PayPal"]
         H["提现到账<br/>PayPal Payout"]
     end
 
@@ -377,9 +458,9 @@ flowchart LR
 | [Architecture doc](../ARCHITECTURE.en.md) | System topology, module architecture, data flows |
 | [Feature design doc](../FEATURE-DESIGN.en.md) | Business models, feature specs, flow design |
 | [Features doc](../FEATURES.en.md) | Feature list, module descriptions, user journeys |
-| [API doc](../API.en.md) | Complete API reference (102 endpoints) |
-| [Online docs](http://localhost:8792/apidoc/) | hg/apidoc interactive docs (C-end) |
-| [Online docs](http://localhost:8789/apidoc/) | hg/apidoc interactive docs (admin backend) |
+| [API doc](../API.en.md) | Complete API reference (146 endpoints) |
+| [Online docs](http://localhost:8792/apidoc/) | erikwang2013/apidoc-php interactive docs (C-end) |
+| [Online docs](http://localhost:8789/apidoc/) | erikwang2013/apidoc-php interactive docs (admin backend) |
 | [ClickHouse installation](../CLICKHOUSE_INSTALL.en.md) | ClickHouse install/config/migration/verification |
 | [Provider SDK integration doc](../PROVIDER-SDK.en.md) | Third-party game integration guide (signing algorithm + PHP/Go/Python examples) |
 | [ClickHouse usage](../CLICKHOUSE_USAGE.en.md) | The 4 ClickHouse service APIs and admin dashboards |
@@ -397,11 +478,11 @@ If this project helps you, feel free to buy the author a coffee ☕
   <table align="center" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <td align="center" width="200">
-        <img src="docs/weixinpay-130.png" width="130" height="130" alt="微信支付"><br>
+        <img src="../weixinpay-130.png" width="130" height="130" alt="微信支付"><br>
         <b>WeChat Pay</b>
       </td>
       <td align="center" width="200">
-        <img src="docs/alipay-130.png" width="130" height="130" alt="支付宝"><br>
+        <img src="../alipay-130.png" width="130" height="130" alt="支付宝"><br>
         <b>Alipay</b>
       </td>
     </tr>

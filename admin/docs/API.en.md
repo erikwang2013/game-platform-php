@@ -1573,26 +1573,7 @@ Rate limit details:
 - Uses the Redis atomic sliding window algorithm (Lua ZSET) to avoid TOCTOU races
 - Fails closed when Redis is unavailable: returns 503 (`Retry-After: 5`), requests are not let through
 
-## 14. Data Analytics
-
-All endpoints require authentication (`AdminAuth` + `AdminPermission`), MySQL real-time aggregation, 12 in total:
-
-| Method | Path | Description |
-|------|------|------|
-| GET | /admin/v1/analytics/overview | Platform overview (today/last 7 days) |
-| GET | /admin/v1/analytics/game-ranking | Game rankings (?days=7) |
-| GET | /admin/v1/analytics/dau-trend | DAU trend (?days=30) |
-| GET | /admin/v1/analytics/hourly-trend | Hourly trend |
-| GET | /admin/v1/analytics/action-distribution | Action distribution |
-| GET | /admin/v1/analytics/revenue | Revenue analysis |
-| GET | /admin/v1/analytics/conversion | Game conversion rate |
-| GET | /admin/v1/analytics/probability | Joint/conditional probability |
-| GET | /admin/v1/analytics/retention | Retention analysis D1/D3/D7/D30 |
-| GET | /admin/v1/analytics/funnel | Conversion funnel |
-| GET | /admin/v1/analytics/arpu | ARPU/ARPPU trend |
-| GET | /admin/v1/analytics/economy | Game currency economy metrics |
-
-## 15. Ticket Management
+## 14. Ticket Management
 
 All endpoints require authentication (`AdminAuth` + `AdminPermission`), 5 in total:
 
@@ -1604,7 +1585,7 @@ All endpoints require authentication (`AdminAuth` + `AdminPermission`), 5 in tot
 | POST | /admin/v1/ticket/{hashid}/close | Close ticket |
 | POST | /admin/v1/ticket/{hashid}/assign | Assign handler (admin_id) |
 
-## 16. Authentication Flow
+## 15. Authentication Flow
 
 The complete authentication sequence:
 
@@ -1681,11 +1662,11 @@ The complete authentication sequence:
 - Concurrent session limit: max 3 valid tokens per user; when a 4th device logs in, the oldest token is forcibly blacklisted
 - Account lockout: 5 consecutive failed logins trigger a 15-minute account lockout, returning 429 during the lockout
 
-## 15. Deployment & Operations
+## 16. Deployment & Operations
 
 ### Docker Compose
 
-A `docker-compose.yml` is provided at the project root, orchestrating 5 services (Nginx, webman app, MySQL, Redis, Elasticsearch). PHP is built via the `Dockerfile` (based on `php:8.3-cli`, with OPcache enabled).
+A `docker-compose.yml` is provided at the project root, orchestrating 7 services (Nginx, admin, service, leaderboard-ws, MySQL, Redis, Elasticsearch). PHP is built via the `Dockerfile` (based on `php:8.3-cli`, with OPcache enabled).
 
 ```bash
 cp .env.docker .env
@@ -1709,11 +1690,11 @@ The `database/backup/` directory provides backup and restore scripts:
 
 For production deployment, see `docs/nginx-security.conf` for reverse-proxy security hardening configuration.
 
-## 16. Data Analytics
+## 17. Data Analytics
 
 The analytics endpoints are provided by `AnalyticsController`, all based on MySQL real-time aggregation (`game_game_play_log` game behavior logs / `game_deposit_order` deposit orders); on database failure, empty data is returned instead of 500. Unless otherwise noted, JWT + RBAC authentication is required, and the response is uniformly wrapped as `{ "code": 0, "message": "success", "data": ... }`.
 
-### 16.1 Platform Overview
+### 17.1 Platform Overview
 
 ```
 GET /admin/v1/analytics/overview
@@ -1721,7 +1702,7 @@ GET /admin/v1/analytics/overview
 
 **Response**: `today` / `week` each contain `dau` (active users), `revenue` (confirmed deposit total, string), `new_users` (new users).
 
-### 16.2 Game Rankings
+### 17.2 Game Rankings
 
 ```
 GET /admin/v1/analytics/game-ranking?days=7
@@ -1729,7 +1710,7 @@ GET /admin/v1/analytics/game-ranking?days=7
 
 **Response**: top 10 by game play count in descending order, each entry contains `game_id` (hashid), `name`, `plays`, `players`.
 
-### 16.3 DAU Trend
+### 17.3 DAU Trend
 
 ```
 GET /admin/v1/analytics/dau-trend?days=30
@@ -1737,7 +1718,7 @@ GET /admin/v1/analytics/dau-trend?days=30
 
 **Response**: `{ "date": active_count, ... }`, missing dates are padded with 0.
 
-### 16.4 Hourly Trend
+### 17.4 Hourly Trend
 
 ```
 GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
@@ -1745,7 +1726,7 @@ GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
 
 **Response**: `{ "0": count, ... "23": count }` across 24 hourly slots; when `game_id` is empty, all games are aggregated.
 
-### 16.5 Action Distribution
+### 17.5 Action Distribution
 
 ```
 GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
@@ -1753,7 +1734,7 @@ GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
 
 **Response**: `{ "start": n, "end": n, "earn": n, "spend": n }` counts for four action types; `hours` capped at 168.
 
-### 16.6 Revenue Overview
+### 17.6 Revenue Overview
 
 ```
 GET /admin/v1/analytics/revenue?days=7
@@ -1761,7 +1742,7 @@ GET /admin/v1/analytics/revenue?days=7
 
 **Response**: `{ "total": "total", "trend": { "date": "daily amount", ... } }`, only `status=confirmed` orders are counted.
 
-### 16.7 Game Conversion Rate
+### 17.7 Game Conversion Rate
 
 ```
 GET /admin/v1/analytics/conversion?days=30
@@ -1769,7 +1750,7 @@ GET /admin/v1/analytics/conversion?days=30
 
 **Response**: each game contains `game_id` (hashid), `game_name`, `players` (deduplicated player count), `depositors` (deduplicated depositor count), `conversion_rate` (deposit conversion rate, 0~1).
 
-### 16.8 Joint Probability
+### 17.8 Joint Probability
 
 ```
 GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
@@ -1777,7 +1758,7 @@ GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
 
 **Response**: `{ "joint": { "joint_probability": 0.12, "confidence": 0.3 } }` — the Jaccard coefficient (players of both games / union of players) and confidence (shared players / game A players).
 
-### 16.9 Retention Analysis
+### 17.9 Retention Analysis
 
 ```
 GET /admin/v1/analytics/retention?days=30
@@ -1785,7 +1766,7 @@ GET /admin/v1/analytics/retention?days=30
 
 **Response**: `{ "D1": "8.5%", "D3": "...", "D7": "...", "D30": "..." }` — next-day/3-day/7-day/30-day retention rates grouped by registration date.
 
-### 16.10 Conversion Funnel
+### 17.10 Conversion Funnel
 
 ```
 GET /admin/v1/analytics/funnel?days=30
@@ -1793,7 +1774,7 @@ GET /admin/v1/analytics/funnel?days=30
 
 **Response**: the four steps register → first deposit → first exchange → first game, with `step`, `count`, `rate` (percentage relative to registrations).
 
-### 16.11 ARPU/ARPPU Trend
+### 17.11 ARPU/ARPPU Trend
 
 ```
 GET /admin/v1/analytics/arpu?days=30
@@ -1801,7 +1782,7 @@ GET /admin/v1/analytics/arpu?days=30
 
 **Response**: `{ "dates": [...], "arpu": [...], "arppu": [...] }` — daily revenue per user (ARPU) and revenue per paying user (ARPPU).
 
-### 16.12 Game Economy Metrics
+### 17.12 Game Economy Metrics
 
 ```
 GET /admin/v1/analytics/economy
@@ -1809,7 +1790,7 @@ GET /admin/v1/analytics/economy
 
 **Response**: a `currencies` array, each entry contains `game_name`, `currency`, `symbol`, `total_minted` (total minted), `total_burned` (total burned), `circulation` (in circulation), `inflation_rate` (inflation rate), computed with bcmath high precision.
 
-## 17. Payment Management
+## 18. Payment Management
 
 Payment method management is provided by `PaymentController`; all 5 endpoints require JWT + RBAC authentication. `provider` whitelist: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`. `config` is a JSON string of payment configuration (stored encrypted in the database).
 
@@ -1821,7 +1802,7 @@ Payment method management is provided by `PaymentController`; all 5 endpoints re
 | PUT | /admin/v1/payment/method/{hashid} | Update a payment method |
 | DELETE | /admin/v1/payment/method/{hashid} | Delete a payment method (rejected if pending orders exist) |
 
-### 17.1 List Payment Methods
+### 18.1 List Payment Methods
 
 ```
 GET /admin/v1/payment/method/list
@@ -1869,7 +1850,7 @@ GET /admin/v1/payment/method/list
 | min_amount / max_amount | string | Amount range (string preserves precision), 0 = no limit |
 | config | string? | Payment config JSON (encrypted; null if not set) |
 
-### 17.2 Enable/Disable Payment Method
+### 18.2 Enable/Disable Payment Method
 
 ```
 POST /admin/v1/payment/method/toggle
@@ -1892,7 +1873,7 @@ POST /admin/v1/payment/method/toggle
 - 422: validation failed (id/status missing or status not 0/1)
 - 404: payment method not found
 
-### 17.3 Create Payment Method
+### 18.3 Create Payment Method
 
 ```
 POST /admin/v1/payment/method/create
@@ -1938,20 +1919,20 @@ POST /admin/v1/payment/method/create
 **Possible errors**:
 - 422: validation failed
 
-### 17.4 Update Payment Method
+### 18.4 Update Payment Method
 
 ```
 PUT /admin/v1/payment/method/{hashid}
 ```
 
 - **Path parameter**: `{hashid}` is the hashid-encoded payment method ID
-- **Request body**: same as create (17.3), all fields optional, only provided fields are updated
+- **Request body**: same as create (18.3), all fields optional, only provided fields are updated
 
 **Possible errors**:
 - 404: payment method not found
 - 422: validation failed
 
-### 17.5 Delete Payment Method
+### 18.5 Delete Payment Method
 
 ```
 DELETE /admin/v1/payment/method/{hashid}

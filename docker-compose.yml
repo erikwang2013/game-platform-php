@@ -5,6 +5,10 @@ version: '3.8'
 # 全球游戏聚合平台 — Docker Compose 完整部署
 # 端口全部来自根目录 .env（模板 .env.example）：cp .env.example .env
 # 应用端口由 ADMIN_PORT 等透传为容器内 APP_PORT，监听/映射/Nginx 三处一致
+# 对外展示地址（APP_URL/SITE_URL）默认跟随端口（http://localhost:端口）；
+# 自定义域名/HTTPS 时在根 .env 设置 APP_URL/SITE_URL（会覆盖各应用 .env 同名项）
+# 注入容器时键名改为 PUBLIC_APP_URL/PUBLIC_SITE_URL：同名键会被 worker 启动时
+# 按 .env 的重载覆盖，改用 .env 中不存在的键名传递，由应用侧还原
 # ============================================================
 
 services:
@@ -22,8 +26,22 @@ services:
       - "${NGINX_HTTPS_PORT:-443}:443"
     volumes:
       - ./nginx.conf.template:/etc/nginx/templates/nginx.conf.template:ro
+      # 静态前端产物。apps/* = C 端玩家端（/api/ → service），admin/apps/* = 管理台（/admin/ → admin）；
+      # 未构建时宿主机目录不存在，docker 会创建空目录，nginx 对路径请求返回 404（裸目录 403）。
+      # 构建命令（各自目录内执行）：
+      #   apps/react            npm run build                              → dist（含 --base=/app-react/）
+      #   apps/angular          npm run build                              → dist/game-client-angular/browser（含 --base-href=/app-angular/）
+      #   admin/apps/react      npm run build                              → dist（含 --base=/admin-react/）
+      #   admin/apps/angular    npm run build                              → dist/game-admin-angular/browser（含 --base-href=/admin-angular/）
+      #   admin/apps/flutter    flutter build web --base-href=/admin-flutter/
+      #   apps/flutter/platform flutter build web                          → 挂到 /
       - ./admin/public:/var/www/admin/public:ro
       - ./apps/flutter/platform/build/web:/var/www/platform:ro
+      - ./apps/react/dist:/var/www/sites/app-react:ro
+      - ./apps/angular/dist/game-client-angular/browser:/var/www/sites/app-angular:ro
+      - ./admin/apps/react/dist:/var/www/sites/admin-react:ro
+      - ./admin/apps/angular/dist/game-admin-angular/browser:/var/www/sites/admin-angular:ro
+      - ./admin/apps/flutter/build/web:/var/www/sites/admin-flutter:ro
       - ./ssl:/etc/nginx/ssl:ro
     depends_on:
       - admin
@@ -39,6 +57,9 @@ services:
     environment:
       # 容器内监听端口 = 宿主映射端口（environment 优先于 env_file）
       - APP_PORT=${ADMIN_PORT:-8789}
+      # 对外地址默认跟随 ADMIN_PORT；根 .env 设 APP_URL 可改（含覆盖 admin/.env 的值）
+      # PUBLIC_ 键名原因见文件头；由 admin/config/app.php 读取
+      - PUBLIC_APP_URL=${APP_URL:-http://localhost:${ADMIN_PORT:-8789}}
     ports:
       - "${ADMIN_PORT:-8789}:${ADMIN_PORT:-8789}"
     volumes:
@@ -59,6 +80,9 @@ services:
     container_name: game-platform-service
     environment:
       - APP_PORT=${SERVICE_PORT:-8792}
+      # 对外地址默认跟随 SERVICE_PORT；根 .env 设 SITE_URL 可改（含覆盖 service/.env 的值）
+      # PUBLIC_ 键名原因见文件头；由 service/support/bootstrap.php 还原为 SITE_URL
+      - PUBLIC_SITE_URL=${SITE_URL:-http://localhost:${SERVICE_PORT:-8792}}
       - LEADERBOARD_WS_PORT=${LEADERBOARD_WS_PORT:-8790}
       - CHAT_WS_PORT=${CHAT_WS_PORT:-8791}
     ports:
@@ -83,6 +107,8 @@ services:
     command: php start.php start
     environment:
       - APP_PORT=${SERVICE_PORT:-8792}
+      # 同 service：对外地址默认跟随 SERVICE_PORT（根 .env 的 SITE_URL 可覆盖）
+      - PUBLIC_SITE_URL=${SITE_URL:-http://localhost:${SERVICE_PORT:-8792}}
       - LEADERBOARD_WS_PORT=${LEADERBOARD_WS_PORT:-8790}
       - CHAT_WS_PORT=${CHAT_WS_PORT:-8791}
     ports:

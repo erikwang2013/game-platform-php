@@ -1,4 +1,4 @@
-# 田园消消乐 — Design fonctionnel
+# Match-3 Champêtre — Design fonctionnel
 <!-- lang-nav -->
 
 Languages: [中文](functional-design.md) · [English](functional-design.en.md) · [한국어](functional-design.ko.md) · [Русский](functional-design.ru.md) · [Deutsch](functional-design.de.md) · **Français** · [Español](functional-design.es.md) · [Português](functional-design.pt.md) · [हिन्दी](functional-design.hi.md) · [العربية](functional-design.ar.md) · [বাংলা](functional-design.bn.md) · [Bahasa Indonesia](functional-design.id.md) · [日本語](functional-design.ja.md)
@@ -14,7 +14,7 @@ Languages: [中文](functional-design.md) · [English](functional-design.en.md) 
 
 | Élément | Contenu |
 |----|------|
-| Nom | 田园消消乐 |
+| Nom | Match-3 Champêtre |
 | Type | Match-3 8×8 + contrainte écologique |
 | Vue | Bac à sable orthographique 2.5D fixe, non rotatif |
 | Opération | Clic sur deux pièces adjacentes pour échanger (haut/bas/gauche/droite uniquement) |

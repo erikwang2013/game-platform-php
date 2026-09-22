@@ -6,25 +6,25 @@ De acuerdo, como tu diseñador de juego y responsable técnico de 3D, te prepara
 
 ---
 
-### 一、 Ampliación de elementos del juego (diseño de la biblioteca de piezas)
+### 1. Ampliación de elementos del juego (diseño de la biblioteca de piezas)
 
 Para enriquecer el tablero, partiendo de lo que aportaste, divido los elementos en **6 grandes facciones**, con un total de **24 piezas básicas** + **4 accesorios especiales**:
 
 | Facción | Elementos incluidos | Notas complementarias |
 | :--- | :--- | :--- |
-| **🌾 Cultivos** | Piezas básicas de eliminación | 水稻、小麦、玉米、高粱、大麦、燕麦、黑麦、小米、芝麻、花生、棉花、油菜、茶叶、黄米、薏米、荞麦、黄豆、绿豆、红豆、黑豆、蚕豆、豌豆、红薯、土豆、山药、芋头、木薯 |
-| **🥬 Verduras** | Piezas básicas de eliminación | 白菜、萝卜、黄瓜、西红柿、辣椒、茄子、葱、姜、蒜、生菜、胡萝卜、苦瓜、芫荽、小葱、芥菜、芹菜、菠菜、花菜、冬瓜、南瓜、韭菜 |
-| **🥬 Frutas** | Piezas básicas de eliminación | 苹果、梨、桃、杏、李子、草莓、西瓜、葡萄、酸枣、欧李、枣、核桃、杏仁、无花果、橘子、香蕉、柿子、石榴、猕猴桃、车厘子、樱桃 |
-| **🥬 Flores y plantas** | Piezas básicas de eliminación | 玫瑰、向日葵、月季、烧汤花、指甲花、鸡冠花、木槿花、山茶花、牡丹花、茉莉花、紫藤花、蝴蝶兰、菊花、梅花、兰花、荷花、车前草、地黄、枸杞、狗尾草、蒲公英、牛筋草、云酱菜 |
-| **🐜 Animales** | Piezas básicas de eliminación | 蚂蚁、蜜蜂、七星瓢虫、毛毛虫、蝉、马蜂、蟋蟀、蚂蚱、蜥蜴、老鼠、倾听、水蛭、青蛙、蛤蟆、虾、鱼、狐狸、松鼠、蝴蝶、螳螂、蜘蛛、萤火虫 |
-| **🐓 Aves de corral/volátiles** | Depredadores de nivel medio | 鸡、鸭、鹅、鸽子、麻雀、喜鹊、燕子、乌鸦、猫头鹰、老鹰 |
-| **🐕 Ganado/animales grandes** | Piezas de nivel alto | 猪、狗、牛、马、羊、兔子、猫、驴、骡子、骆驼 |
-| **🌳 Árboles/naturaleza** | Obstáculos/piezas especiales | 松树、柳树、杨树、槐树、泡桐、梧桐、杉树、银杏、榆树、竹子、桦树、枫树 |
-| **🔧 Herramientas agrícolas** | Accesorios de habilidad | 镰刀、锄头、水桶、锤子、耙子、簸箕、背篓、草帽、蓑衣、手电筒、石磙、架子车、自行车、斧头、扁担、犁、磨盘 |
+| **🌾 Cultivos** | Piezas básicas de eliminación | arroz, trigo, maíz, sorgo, cebada, avena, centeno, mijo, sésamo, cacahuetes, algodón, colza, té, mijo amarillo, cebada perlada, trigo sarraceno, soja, judías mung, judías rojas, judías negras, habas, guisantes, batatas, patatas, ñames, taro, yuca |
+| **🥬 Verduras** | Piezas básicas de eliminación | col, rábano, pepino, tomate, chile, berenjena, cebolleta, jengibre, ajo, lechuga, zanahoria, melón amargo, cilantro, cebollino, hojas de mostaza, apio, espinaca, coliflor, calabaza de invierno, calabaza, puerro |
+| **🥬 Frutas** | Piezas básicas de eliminación | manzana, pera, melocotón, albaricoque, ciruela, fresa, sandía, uva, azufaifa agria, cereza enana china, azufaifa, nuez, almendra, higo, naranja, plátano, caqui, granada, kiwi, cereza |
+| **🥬 Flores y plantas** | Piezas básicas de eliminación | rosa, girasol, rosa mensual, onagra, henna, cresta de gallo, hibisco, camelia, peonía, jazmín, glicinia, orquídea phalaenopsis, crisantemo, flor de ciruelo, orquídea, loto, llantén, rehmannia, baya de goji, cola de zorro, diente de león, pata de gallina, verdura de nube |
+| **🐜 Animales** | Piezas básicas de eliminación | hormiga, abeja, mariquita de siete puntos, oruga, cigarra, avispón, grillo, saltamontes, lagarto, ratón, ciempiés, sanguijuela, rana, sapo, gamba, pez, zorro, ardilla, mariposa, mantis, araña, luciérnaga |
+| **🐓 Aves de corral/volátiles** | Depredadores de nivel medio | gallina, pato, ganso, paloma, gorrión, urraca, golondrina, cuervo, búho, águila |
+| **🐕 Ganado/animales grandes** | Piezas de nivel alto | cerdo, perro, vaca, caballo, oveja, conejo, gato, burro, mula, camello |
+| **🌳 Árboles/naturaleza** | Obstáculos/piezas especiales | pino, sauce, álamo, sófora, paulonia, firmiana, abeto, ginkgo, olmo, bambú, abedul, arce |
+| **🔧 Herramientas agrícolas** | Accesorios de habilidad | hoz, azada, cubo de agua, martillo, rastrillo, criba, mochila, sombrero de paja, capa de paja, linterna, rodillo de piedra, carreta, bicicleta, hacha, balancín, arado, piedra de molino |
 
 ---
 
-### 二、 Ampliación de las reglas centrales (diseño de la «cadena de contención del ecosistema»)
+### 2. Ampliación de las reglas centrales (diseño de la «cadena de contención del ecosistema»)
 
 La lógica de tus reglas es esencialmente **«eliminación dirigida»**. Sobre el match-3 clásico (tres iguales se eliminan), incrustamos el **«emparejamiento depredador/presa»**. Cuando el jugador junta al **depredador** con sus **presas** en una línea de tres (o una forma concreta), se dispara la eliminación avanzada.
 
@@ -42,7 +42,7 @@ Esta es la **matriz de contención completa** que te amplío (A contiene a B):
 
 ---
 
-### 三、 Diseño de los mecanismos de juego (cómo se juega al «match-3»)
+### 3. Diseño de los mecanismos de juego (cómo se juega al «match-3»)
 
 En la escena 3D de Three.js adoptamos el modo combinado de **«clic para intercambiar + juicio ecológico»**:
 
@@ -55,7 +55,7 @@ En la escena 3D de Three.js adoptamos el modo combinado de **«clic para interca
 
 ---
 
-### 四、 Escena Three.js y planificación visual (sin código)
+### 4. Escena Three.js y planificación visual (sin código)
 
 Para que el match-3 en 3D tenga más cuerpo que el 2D, la planificación es la siguiente:
 
@@ -69,7 +69,7 @@ Para que el match-3 en 3D tenga más cuerpo que el 2D, la planificación es la s
 
 ---
 
-### 五、 Ampliación de accesorios especiales y obstáculos
+### 5. Ampliación de accesorios especiales y obstáculos
 
 Para dar profundidad estratégica al juego, se añaden estos mecanismos:
 
@@ -81,7 +81,7 @@ Para dar profundidad estratégica al juego, se añaden estos mecanismos:
 
 ---
 
-### 六、 Planificación de niveles y objetivos
+### 6. Planificación de niveles y objetivos
 
 | Tipo de nivel | Condición de victoria | Restricciones características |
 | :--- | :--- | :--- |
@@ -92,7 +92,7 @@ Para dar profundidad estratégica al juego, se añaden estos mecanismos:
 
 ---
 
-### 七、 Puntos destacados del resumen de la planificación
+### 7. Puntos destacados del resumen de la planificación
 
 1. **Reglas coherentes**: la cadena alimentaria biológica (la gallina come insectos, el perro muerde a la gallina, el elefante es invencible) se transforma a la perfección en «condiciones de emparejamiento» del match-3, con más valor educativo y estratégico que un simple «match-3».
 2. **Expresividad 3D**: aprovechando el motor físico de Three.js (o animaciones simuladas), las piezas tienen «caída por gravedad» y «rebotes elásticos», con una tridimensionalidad muy superior a los sprites 2D.

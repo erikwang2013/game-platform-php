@@ -14,6 +14,8 @@ flowchart TB
         A1["Flutter Web PC<br/>لوحة الإدارة"]
         A2["Flutter Web PC<br/>منصة مستخدمي الطرف C"]
         A3["HarmonyOS ArkTS<br/>عميل الهاتف/الجهاز اللوحي"]
+        A4["React · Angular<br/>لوحة الإدارة"]
+        A5["React · Angular<br/>منصة مستخدمي الطرف C"]
     end
 
     subgraph "طبقة البوابة (Nginx)"
@@ -34,7 +36,7 @@ flowchart TB
     end
 
     subgraph "طبقة التخزين"
-        E1[("MySQL 8.0<br/>التخزين الرئيسي<br/>52 جدولًا")]
+        E1[("MySQL 8.0<br/>التخزين الرئيسي<br/>78 جدولًا")]
         E2[("Redis<br/>Session/تخزين مؤقت/تقييد<br/>EventBus/نبض")]
         E3[("Elasticsearch<br/>بحث نصي كامل")]
         E4[("ClickHouse<br/>تحليل OLAP<br/>حساب الاحتمالات")]
@@ -46,7 +48,7 @@ flowchart TB
         F3["OAuth (7 منصات)<br/>Google/Facebook/Apple<br/>X(Twitter)/Microsoft<br/>LinkedIn/GitHub"]
     end
 
-    A1 & A2 & A3 -->|"HTTPS/JSON<br/>JWT Bearer"| B1
+    A1 & A2 & A3 & A4 & A5 -->|"HTTPS/JSON<br/>JWT Bearer"| B1
     B1 -->|"/admin/*"| C1
     B1 -->|"/api/*"| C2
     C1 & C2 --> D0 & D1 & D2 & D3 & D4
@@ -64,7 +66,7 @@ flowchart TB
   ↓
 سلسلة الوسائط: Cors → SecurityFilter → RateLimit → AdminAuth → AdminPermission → OperationLog
   ↓
-طبقة وحدات التحكم (28):
+طبقة وحدات التحكم (45):
   ┌──────────────────────────────────────────────────────────┐
   │ Dashboard / User / Role / Permission / Config / Log      │ ← أصلي
   │ Profile / Export / Import / Upload / Health / Docs       │ ← أصلي
@@ -86,9 +88,9 @@ flowchart TB
 ```
 طبقة المسارات: config/route.php
   ↓
-سلسلة الوسائط: Cors → SecurityFilter → RateLimit → Language → ApiVersion → [UserAuth | ProviderAuth]
+سلسلة الوسائط: TraceId → Cors → SecurityFilter → RateLimit → Language → [UserAuth | ProviderAuth | SdkSessionAuth]
   ↓
-طبقة وحدات التحكم (25):
+طبقة وحدات التحكم (34):
   ┌──────────────────────────────────────────────────────────┐
   │ Auth / Wallet / Deposit / Exchange / Withdraw            │ ← أصلي
   │ Game / User / Announcement / Captcha                     │ ← أصلي
@@ -98,7 +100,7 @@ flowchart TB
   │ Provider / Ticket / Verification                         │ ← جديد
   └──────────────────────────────────────────────────────────┘
   ↓
-طبقة الخدمات: VIP / Achievement / EventBus / FeatureFlag / Risk / GameSession
+طبقة الخدمات: VIP / Achievement / EventBus / FeatureFlag / Risk
   ↓
 طبقة Provider: GameProvider → SelfProvider / ThirdPartyProvider
   ↓
@@ -181,7 +183,7 @@ packages/platform-common/src/
 
 ```
 واجهات عادية:
-  الطلب → Cors → SecurityFilter → RateLimit → Language → ApiVersion
+  الطلب → TraceId → Cors → SecurityFilter → RateLimit → Language
        → [UserAuth] (JWT →401) → Controller → الاستجابة
 
 واجهات Provider:
@@ -195,10 +197,10 @@ packages/platform-common/src/
 ### 4.1 عملية الشحن
 
 ```
-المستخدم → POST /api/deposit/create → إنشاء الطلب (status=pending)
+المستخدم → POST /api/v1/deposit/create → إنشاء الطلب (status=pending)
      → إنشاء الدفع عبر GatewayFactory (Stripe Checkout (incl. Alipay/WeChat Pay APM)/NowPayments invoice/Coinbase charge) → تعبئة checkout_url + expires_at(+1h)؛ عند الفشل إلغاء الطلب عبر CAS وإعادة المحاولة
      → الانتقال إلى الدفع عبر الطرف الثالث (Stripe (incl. Alipay/WeChat Pay)/PayPal/NowPayments[USDT TRC20/ERC20]/Coinbase[USDC/BTC/ETH])
-     → نجاح الدفع → استدعاء /api/payment/callback
+     → نجاح الدفع → استدعاء /api/v1/payment/callback
      → القائمة البيضاء للمزود (stripe/paypal/nowpayments/coinbase/skrill/neteller/paysafecard/paytm/mercadopago/astropay/paypay/kakaopay/gcash فقط) + التحقق من انتحال القنوات المتقاطعة + التحقق من التوقيع (fail-closed) + الطابع الزمني ±300s + مطابقة المبلغ bccomp
      → تحديث الطلب (status=confirmed، معاملاتي)
      → UserWallet::addBalance() → إيداع عملات المنصة
@@ -211,10 +213,10 @@ packages/platform-common/src/
 ### 4.2 عملية الاستبدال
 
 ```
-المستخدم → POST /api/exchange/quote → الاستعلام عن السعر
+المستخدم → POST /api/v1/exchange/quote → الاستعلام عن السعر
      → VipService::getExchangeDiscount() → تطبيق خصم VIP
      → VipService::getRateBonus() → تطبيق مكافأة سعر الصرف VIP
-     → التأكيد → POST /api/exchange/buy (أو sell)
+     → التأكيد → POST /api/v1/exchange/buy (أو sell)
      → DB::beginTransaction()
      ├─ خصم العملة المصدر (lockForUpdate)
      ├─ زيادة العملة الهدف
@@ -228,7 +230,7 @@ packages/platform-common/src/
 ### 4.3 عملية السحب
 
 ```
-المستخدم → POST /api/withdraw/apply
+المستخدم → POST /api/v1/withdraw/apply
      → VipService::getWithdrawFeeDiscount() → تطبيق تخفيض رسوم السحب VIP
      → فحص المفتاح العام (PlatformConfig)
      → فحص الحدود (min_amount / daily_limit)
@@ -237,7 +239,7 @@ packages/platform-common/src/
      → المبلغ >= العتبة → pending (مراجعة بشرية)
      → تسجيل Transaction
 
-المشرف → PUT /admin/withdraw/review
+المشرف → PUT /admin/v1/withdraw/review
        → approve: وضع علامة مكتمل
        → reject: إعادة عملات المنصة + سجل الاسترداد
 ```
@@ -371,15 +373,28 @@ flowchart TB
 ## 7. بنية الاختبارات
 
 ```
-tests/
+tests/                             # 21 ملفًا · 200 حالة اختبار
 ├── bootstrap.php                  # إقلاع PHPUnit
-├── PlatformTest.php               # 56 اختبارًا لمنطق الأعمال
-├── BackendEnhancementTest.php     # 23 اختبارًا للتشفير/خدمات المعرّفات
-├── CaptchaTest.php                # 7 اختبارات للكابتشا
-├── EncryptionServiceTest.php      # 6 اختبارات للتشفير وفك التشفير
-├── EnvConfigTest.php              # 4 اختبارات لإعدادات البيئة
-├── HashidsServiceTest.php         # 8 اختبارات لترميز وفك ترميز المعرّفات
-└── SnowflakeServiceTest.php       # 6 اختبارات لمعرّفات Snowflake
+├── AuthControllerRegisterTest.php # 15 اختبارًا لصرامة كلمة المرور
+├── BackendEnhancementTest.php     # 27 اختبارًا للتشفير/خدمات المعرّفات
+├── CaptchaTest.php                # 5 اختبارات للكابتشا
+├── CdnProbeServiceTest.php        # 5 اختبارات لاستكشاف CDN
+├── CdnProviderModelTest.php       # 3 اختبارات لنموذج مزوّد CDN
+├── ClickHouseServiceTest.php      # 16 اختبارًا لخدمة ClickHouse
+├── ConfigDefaultsTest.php         # 4 اختبارات للقيم الافتراضية للإعدادات
+├── EncryptionServiceTest.php      # 8 اختبارات للتشفير وفك التشفير
+├── EnvConfigTest.php              # 6 اختبارات لإعدادات البيئة
+├── GameControllerTest.php         # 5 اختبارات لوحدة تحكم الألعاب
+├── GameRouteTest.php              # 5 اختبارات لمسارات الألعاب
+├── HashidsServiceTest.php         # 6 اختبارات لترميز وفك ترميز المعرّفات
+├── LeaderboardServiceTest.php     # 4 اختبارات لخدمة لوحة الصدارة
+├── NotificationServiceTest.php    # 3 اختبارات لخدمة الإشعارات
+├── PayoutServiceTest.php          # 9 اختبارات لخدمة الدفع
+├── PlatformCommonTest.php         # 6 اختبارات لبنّاءات الاستعلام المشتركة
+├── PlatformTest.php               # 55 اختبارًا لمنطق الأعمال
+├── ReportControllerTest.php       # 5 اختبارات لنطاقات تواريخ التقارير
+├── SnowflakeServiceTest.php       # 5 اختبارات لمعرّفات Snowflake
+└── TranslationServiceTest.php     # 8 اختبارات لخدمة الترجمة
 ```
 
 ## 8. توزيع المنافذ
@@ -397,42 +412,59 @@ tests/
 
 ## 9. توثيق الواجهات
 
-يُستخدَم `hg/apidoc` لتوليد توثيق واجهات تفاعلي تلقائيًا عبر شروحات وحدات التحكم:
+يُستخدَم `erikwang2013/apidoc-php` لتوليد توثيق واجهات تفاعلي تلقائيًا عبر شروحات وحدات التحكم:
 
 | التوثيق | العنوان | وحدات التحكم | نقاط النهاية |
 |------|------|--------|------|
-| لوحة الإدارة | :8789/apidoc/ | 28 | ~85 |
-| أعمال الطرف C | :8792/apidoc/ | 25 | ~65 |
+| لوحة الإدارة | :8789/apidoc/ | 45 | 154 |
+| أعمال الطرف C | :8792/apidoc/ | 34 | 107 |
 
 ## 10. قائمة جداول قاعدة البيانات
 
-### الإصدار الأساسي (14 جدولًا) + admin (7 جداول)
-game_user, game_user_wallet, game_user_game_wallet, game_game, game_game_currency,
-game_deposit_order, game_withdraw_order, game_exchange_record, game_transaction,
-game_payment_method, game_announcement, game-platform_config, game_language, game_translation,
-game_admin_user, game_admin_role, game_admin_permission, game_admin_user_role,
-game_admin_role_permission, game_operation_log, game_system_config
+### الإصدار الأساسي (12 جدولًا) + admin (7 جداول)
+game_user, game_user_wallet, game_user_game_wallet,
+game_game, game_game_currency, game_deposit_order,
+game_withdraw_order, game_exchange_record, game_transaction,
+game_payment_method, game_announcement, game_platform_config,
+game_admin_user, game_admin_role, game_admin_permission,
+game_admin_user_role, game_admin_role_permission, game_operation_log,
+game_system_config
 
 ### الإصدار القياسي (10 جداول)
-game_user_oauth, game_user_session, game_user_identity, game_user_payment_account,
-game_withdraw_limit, game_game_server, game_game_play_log, game_risk_rule,
-game_risk_log, game_stat_daily
+game_user_identity, game_user_oauth, game_user_payment_account,
+game_user_session, game_game_server, game_game_play_log,
+game_withdraw_limit, game_risk_rule, game_risk_log,
+game_stat_daily
 
-### الإصدار الكامل (8 جداول)
-game_game_category, game_game_category_rel, game_leaderboard, game_coupon,
-game_user_coupon, game_country_config, game-platform_revenue
+### الإصدار الكامل (13 جداول)
+game_game_category, game_game_category_rel, game_leaderboard,
+game_coupon, game_user_coupon, game_language,
+game_translation, game_country_config, game_platform_revenue,
+game_notification, game_referral, game_referral_reward,
+game_user_2fa
 
-### التوسعة البيئية (10 جداول) ← جديدة
+### التوسعة البيئية (14 جداول) ← جديدة
 game_ticket, game_ticket_reply, game_device_token,
 game_vip_level, game_user_vip, game_exp_log,
-game_achievement, game_user_achievement,
-game_friend, game_message
+game_achievement, game_user_achievement, game_friend,
+game_message, game_cdn_provider, game_referral_commission,
+game_tournament, game_tournament_entry
 
-**الإجمالي: 52 جدولًا**
+### إضافات v1.3.15-22 (22 جدولًا)
+game_event_outbox, game_reconciliation_batch, game_reconciliation_diff,
+game_reconciliation_statement, game_device_fingerprint, game_device_account_map,
+game_ip_reputation, game_account_account_link, game_activity,
+game_activity_participation, game_activity_reward_log, game_anticheat_event,
+game_anticheat_daily_stat, game_group, game_group_member,
+game_share_link, game_aml_rule, game_aml_hit,
+game_kyc_level, game_user_kyc, game_user_trust,
+game_risk_cluster
+
+**الإجمالي: 78 جدولًا**
 
 ## 11. مفاتيح الميزات
 
-استنادًا إلى مساحة أسماء `feature.*` في `game-platform_config`، بدون أي تبعيات إضافية:
+استنادًا إلى مساحة أسماء `feature.*` في `game_platform_config`، بدون أي تبعيات إضافية:
 
 | المفتاح | الافتراضي | الوظيفة |
 |------|------|------|

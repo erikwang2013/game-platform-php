@@ -14,10 +14,10 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                        客户端层                               │
+│                        クライアント層                         │
 │  ┌──────────────────────┐  ┌──────────────────────────────┐  │
 │  │  Flutter Web (PC)    │  │  HarmonyOS ArkTS (Mobile)    │  │
-│  │  管理后台 (桌面风格)   │  │  客户端 (手机/平板/2in1)      │  │
+│  │  デスクトップ管理画面  │  │  スマホ/タブレットクライアント│  │
 │  └──────────┬───────────┘  └──────────────┬───────────────┘  │
 └─────────────┼──────────────────────────────┼─────────────────┘
               │        HTTPS / JSON          │
@@ -65,7 +65,7 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.
 |---|------|------|
 | ルート | `config/route.php` | URL からコントローラーへのマッピング、中間ウェアバインド、バージョン化ルート |
 | 中間ウェア | `app/middleware/` | 攻撃遮断(SecurityFilter)、レート制限(RateLimit)、認証(JWT)、認可(RBAC) |
-| コントローラー | 30個：Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (管理端) + Captcha/Auth (API v1) | リクエストパラメータ検証、ビジネスロジック呼び出し、レスポンス整形 |
+| コントローラー | 45個：Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (管理画面) + Captcha/Auth (API v1) | リクエストパラメータ検証、ビジネスロジック呼び出し、レスポンス整形 |
 | 業務サービス | `common/service/` | データ分析：GameDashboardService（概要/ランキング/トレンド）、DepositLogService（売上/コンバージョン）、ProbabilityService（結合/条件確率、SQL ビルダー）；DB 障害時はエラーではなく空データを返す |
 | データモデル | `app/model/` | ORM マッピング、関連関係、フィールド暗号化・復号 |
 | 共通ユーティリティ | `app/common/` | Hashids、Snowflake、Encryption サービス |
@@ -73,7 +73,7 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.
 ### 2.2 リクエストライフサイクル
 
 ```
-客户端请求
+クライアントリクエスト
   │
   ▼
 webman HTTP Server (workerman)
@@ -173,7 +173,7 @@ game_system_config (系统配置) — 独立表
 公开接口:  /api/v1/captcha/{generate|verify}
            /api/v1/auth/{login|register|refresh}
 
-管理端:   /admin/v1/{resource}[/{hashid}]
+管理画面:   /admin/v1/{resource}[/{hashid}]
           /admin/v1/export/{excel|pdf}
 
 资源路由:
@@ -251,7 +251,7 @@ Redis Sorted Set スライディングウィンドウアルゴリズム、原子
 ### 4.5 認証フロー（クリック型CAPTCHA含む）
 
 ```
-客户端                               服务端
+クライアント                               サーバー
   │                                    │
   │  ① POST /api/v1/captcha/generate     │ captcha_create('click')
   │◄── {key, image(base64), targets}  │
@@ -293,7 +293,7 @@ Redis Sorted Set スライディングウィンドウアルゴリズム、原子
 ユーザー・ロール・権限の削除などの機密操作では、リクエストボディに現在のユーザーのパスワードを渡して本人確認を再度行う必要があります：
 
 ```
-客户端                           服务端
+クライアント                           サーバー
   │                                │
   │  DELETE /admin/v1/user/{hashid}  │
   │  { password: "******" }       │

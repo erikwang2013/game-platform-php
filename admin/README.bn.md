@@ -27,6 +27,7 @@ webman v2 + Flutter ভিত্তিক ফুল-স্ট্যাক প্
 | | Excel ব্যাচ ইমপোর্ট | লাইন-বাই-লাইন ভ্যালিডেশন + এরর রিপোর্ট |
 | 🔒 রোল ও পারমিশন | রোল CRUD + পারমিশন ট্রি | RBAC method.path গ্রানুলারিটি অথোরাইজেশন |
 | ⚙ সিস্টেম কনফিগারেশন | কী-ভ্যালু CRUD | গ্রুপ ম্যানেজমেন্ট |
+| 💳 পেমেন্ট পদ্ধতি ব্যবস্থাপনা | মাল্টি-গেটওয়ে তৈরি/আপডেট/ডিলিট + সক্রিয়/নিষ্ক্রিয় | 18টি গেটওয়ে (stripe/paypal/nowpayments/coinbase ইত্যাদি) + দেশভিত্তিক দৃশ্যমানতা |
 | 🖥 CDN ম্যানেজমেন্ট | ৫ প্রোভাইডার কনফিগ CRUD + সক্রিয়/নিষ্ক্রিয় + কানেক্টিভিটি টেস্ট | ক্রেডেনশিয়াল AES এনক্রিপ্টেড, service শুধু DB থেকে পড়ে |
 | 📋 অপারেশন অডিট | লগ কোয়েরি + সোর্স ডিটেকশন | ৮ প্ল্যাটফর্ম স্বয়ংক্রিয় শনাক্তকরণ |
 | 📁 ফাইল ম্যানেজমেন্ট | আপলোড/Excel এক্সপোর্ট/PDF এক্সপোর্ট | সংবেদনশীল ডেটা স্বয়ংক্রিয় মাস্কিং |
@@ -64,48 +65,53 @@ webman v2 + Flutter ভিত্তিক ফুল-স্ট্যাক প্
 ```
 open-admin/
 ├── app/
-│   ├── admin/controller/       # প্রশাসনিক কন্ট্রোলার
-│   │   ├── DashboardController.php # ড্যাশবোর্ড (Redis ক্যাশ)
-│   │   ├── UserController.php      # ইউজার CRUD + ব্যাচ অপারেশন
-│   │   ├── RoleController.php      # রোল CRUD
-│   │   ├── PermissionController.php# পারমিশন CRUD
-│   │   ├── ConfigController.php    # সিস্টেম কনফিগারেশন CRUD
-│   │   ├── LogController.php       # অপারেশন লগ কোয়েরি
-│   │   ├── ProfileController.php   # ব্যক্তিগত সেন্টার + লগআউট
-│   │   ├── ExportController.php    # Excel/PDF এক্সপোর্ট
-│   │   ├── ImportController.php    # Excel ইউজার ইমপোর্ট
-│   │   ├── UploadController.php    # ফাইল আপলোড
-│   │   ├── HealthController.php    # হেলথ চেক
-│   │   ├── DocsController.php      # OpenAPI ডকুমেন্ট
-│   │   └── BaseController.php      # বেস কন্ট্রোলার
+│   ├── admin/v1/controller/    # প্রশাসনিক কন্ট্রোলার (45)
+│   │   ├── DashboardController.php  # ড্যাশবোর্ড (Redis ক্যাশ)
+│   │   ├── UserController.php       # ইউজার CRUD + ব্যাচ অপারেশন
+│   │   ├── RoleController.php       # রোল CRUD
+│   │   ├── PermissionController.php # পারমিশন CRUD
+│   │   ├── ConfigController.php     # সিস্টেম কনফিগারেশন CRUD
+│   │   ├── LogController.php        # অপারেশন লগ কোয়েরি
+│   │   ├── ProfileController.php    # ব্যক্তিগত সেন্টার + লগআউট
+│   │   ├── ExportController.php     # Excel/PDF এক্সপোর্ট
+│   │   ├── ImportController.php     # Excel ইউজার ইমপোর্ট
+│   │   ├── UploadController.php     # ফাইল আপলোড
+│   │   ├── HealthController.php     # হেলথ চেক
+│   │   ├── DocsController.php       # OpenAPI ডকুমেন্ট
+│   │   └── BaseController.php       # বেস কন্ট্রোলার
 │   ├── api/
 │   │   └── v1/controller/          # API v1 কন্ট্রোলার (URL পাথে ভার্সন: /api/v1, /admin/v1)
 │   │       ├── CaptchaController.php # ক্লিক ক্যাপচা
 │   │       └── AuthController.php    # লগইন/রেজিস্ট্রেশন/টোকেন রিফ্রেশ
 │   ├── common/                 # কমন ইউটিলিটি ক্লাস
-│   │   ├── HashidsService.php  # ID এনকোড/ডিকোড
-│   │   ├── SnowflakeService.php# Snowflake ID জেনারেশন
-│   │   └── EncryptionService.php # ডেটা এনক্রিপশন/ডিক্রিপশন + মাস্কিং
+│   │   └── CdnProbeService.php # CDN কানেক্টিভিটি প্রোব (Hashids/Snowflake/Encryption composer প্যাকেজ থেকে)
 │   ├── middleware/             # মিডলওয়্যার
 │   │   ├── Cors.php            # ক্রস-অরিজিন
 │   │   ├── SecurityFilter.php  # অ্যাটাক ডিটেকশন ও ব্লক (HTTP মেথড সীমা/XSS/SQL ইনজেকশন/পাথ ট্রাভার্সাল/কমান্ড ইনজেকশন/CSRF)
 │   │   ├── RateLimit.php       # Redis রেট লিমিট (স্লাইডিং উইন্ডো + রেসপন্স হেডার)
+│   │   ├── StaticFile.php      # স্ট্যাটিক ফাইল সার্ভিং (webman অন্তর্নির্মিত)
 │   │   ├── AdminAuth.php       # JWT অথেনটিকেশন + ব্ল্যাকলিস্ট
 │   │   ├── AdminPermission.php # RBAC পারমিশন ভেরিফিকেশন
 │   │   └── OperationLog.php    # অপারেশন লগ স্বয়ংক্রিয় রেকর্ড (সোর্স ডিটেকশন সহ)
-│   └── model/                  # ডেটা মডেল
+│   ├── activity/               # অ্যাক্টিভিটি হ্যান্ডলার (সাইন-ইন/আমন্ত্রণ/দৈনিক কাজ)
+│   ├── model/                  # ডেটা মডেল
+│   ├── process/                # প্রসেস (Http, Monitor, RiskIpCron)
+│   ├── provider/               # গেম Provider লেয়ার (Self/ThirdParty/Factory)
+│   ├── service/                # সার্ভিস (ওয়ালেট/রিস্ক স্যান্ডবক্স)
+│   └── view/                   # ভিউ টেমপ্লেট
 ├── apps/
+│   ├── angular/                # Angular ওয়েব অ্যাডমিন ব্যাকএন্ড
+│   ├── react/                  # React ওয়েব অ্যাডমিন ব্যাকএন্ড
 │   ├── flutter/                # Flutter Web প্রশাসনিক প্যানেল (PC স্টাইল)
 │   │   └── lib/app/
-│   │       ├── pages/          # ৫টি সম্পূর্ণ পেজ (ড্যাশবোর্ড/ইউজার/রোল/কনফিগ/লগ/প্রোফাইল)
+│   │       ├── pages/          # ২০টি পেজ ডিরেক্টরি
 │   │       ├── services/       # ApiService (JWT ইন্টারসেপ্টর) + AuthService (Token পারসিস্টেন্স)
 │   │       └── layouts/        # রেসপন্সিভ প্রশাসনিক প্যানেল লেআউট (সাইডবার+টপবার+কনটেন্ট)
 │   └── harmonyos/              # HarmonyOS নেটিভ ক্লায়েন্ট (Token সিলেন্ট রিফ্রেশ)
 ├── config/                     # কনফিগারেশন ফাইল (চীনা কমেন্ট সহ)
 │   ├── route.php               # রাউট + API ভার্সন কৌশল
 │   ├── middleware.php           # গ্লোবাল মিডলওয়্যার রেজিস্ট্রেশন
-│   └── ...                     # প্রতিটি কম্পোনেন্টের কনফিগারেশন
-├── install/        # SQL মাইগ্রেশন ফাইল (পারমিশন সিড ডেটা সহ)
+│   └── server.php              # পোর্ট/প্রসেস কনফিগ
 ├── public/                     # পাবলিক এন্ট্রি
 ├── runtime/                    # রানটাইম ফাইল
 └── vendor/                     # Composer ডিপেন্ডেন্সি
@@ -182,7 +188,7 @@ DevEco Studio দিয়ে `apps/harmonyos/` ডিরেক্টরি খ�
 
 ### 6. Docker Compose ওয়ান-ক্লিক ডিপ্লয়মেন্ট (প্রোডাকশনে সুপারিশকৃত)
 
-প্রজেক্টে সম্পূর্ণ Docker অর্কেস্ট্রেশন সমাধান রয়েছে, ৫টি সার্ভিস সহ: Nginx, PHP (webman app), MySQL, Redis, Elasticsearch।
+প্রজেক্টে সম্পূর্ণ Docker অর্কেস্ট্রেশন সমাধান রয়েছে, ৭টি সার্ভিস সহ: Nginx, admin (webman), service (webman), leaderboard-ws (WebSocket), MySQL, Redis, Elasticsearch।
 
 ```bash
 # 1. Docker এনভায়রনমেন্ট ভেরিয়েবল কনফিগার
@@ -191,16 +197,16 @@ cp .env.docker .env
 # 2. সব সার্ভিস চালু করুন
 docker-compose up -d
 
-# 3. ডেটাবেস ইনিশিয়ালাইজ (app কন্টেইনারে প্রবেশ করে চালান)
-docker-compose exec app mysql -h mysql -u root -p < install/install.sql
+# 3. ডেটাবেস ইনিশিয়ালাইজ (mysql কন্টেইনার দিয়ে ইমপোর্ট করুন)
+docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform < install/install.sql
 
 # 4. প্রবেশ করুন
 # http://localhost:8789  (webman)
-# http://localhost:8080  (Nginx রিভার্স প্রক্সি)
+# http://localhost  (Nginx রিভার্স প্রক্সি)
 ```
 
 - `Dockerfile`: PHP 8.3 + OPcache + Composer, `php:8.3-cli` ভিত্তিক
-- `docker-compose.yml`: ৫টি সার্ভিস অর্কেস্ট্রেশন, নেটওয়ার্ক আইসোলেশন, ডেটা ভলিউম পারসিস্টেন্স
+- `docker-compose.yml`: ৭টি সার্ভিস অর্কেস্ট্রেশন, নেটওয়ার্ক আইসোলেশন, ডেটা ভলিউম পারসিস্টেন্স
 - `.env.docker`: Docker এনভায়রনমেন্ট বিশেষ এনভায়রনমেন্ট ভেরিয়েবল
 
 ## ডেটাবেস স্ট্যান্ডার্ড
@@ -266,15 +272,15 @@ Redis স্লাইডিং উইন্ডো অ্যালগরিদম
 গ্লোবাল মিডলওয়্যার সব রিকোয়েস্টে ক্রমানুসারে প্রযোজ্য:
 
 ```
-Cors（跨域预处理 + 响应头）
-  → SecurityFilter（HTTP方法限制/请求体大小/Content-Type校验/XSS/SQL注入/路径遍历/命令注入/CSRF 攻击拦截）
-  → RateLimit（Redis 滑动窗口限流 + 账号锁定：5次登录失败锁定15分钟）
-  → AdminAuth（JWT 认证 + 黑名单，/admin/v1 路由组）
-  → AdminPermission（RBAC 鉴权，/admin/v1 路由组）
-  → OperationLog（POST/PUT/DELETE 自动记录，含来源端检测，/admin/v1 路由组）
+Cors (ক্রস-অরিজিন প্রি-প্রসেসিং + রেসপন্স হেডার)
+  → SecurityFilter (HTTP মেথড সীমা/রিকোয়েস্ট বডি সাইজ/Content-Type ভ্যালিডেশন/XSS/SQL ইনজেকশন/পাথ ট্রাভার্সাল/কমান্ড ইনজেকশন/CSRF ডিটেকশন ও ব্লক)
+  → RateLimit (Redis স্লাইডিং উইন্ডো রেট লিমিট + অ্যাকাউন্ট লক: 5 বার লগইন ব্যর্থ হলে 15 মিনিট লক)
+  → AdminAuth (JWT অথেনটিকেশন + ব্ল্যাকলিস্ট, /admin/v1 রাউট গ্রুপ)
+  → AdminPermission (RBAC অথোরাইজেশন, /admin/v1 রাউট গ্রুপ)
+  → OperationLog (POST/PUT/DELETE স্বয়ংক্রিয় রেকর্ড, সোর্স ডিটেকশন সহ, /admin/v1 রাউট গ্রুপ)
 ```
 
-`/health` এবং `/api/docs` হল পাবলিক এন্ডপয়েন্ট, শুধুমাত্র `Cors → SecurityFilter → RateLimit`-এর মধ্য দিয়ে যায়।
+`/health` পাবলিক এন্ডপয়েন্ট, শুধুমাত্র `Cors → SecurityFilter → RateLimit`-এর মধ্য দিয়ে যায়; `/metrics` ও `/api/docs`-এর জন্য অতিরিক্ত `AdminAuth → AdminPermission` প্রয়োজন।
 
 নিরাপত্তা বৃদ্ধি:
 - **অ্যাকাউন্ট লক**: টানা ৫ বার লগইন ব্যর্থ হলে অ্যাকাউন্ট স্বয়ংক্রিয়ভাবে ১৫ মিনিট লক হয়, এই সময়ে লগইনে 429 ফেরত আসে
@@ -365,6 +371,11 @@ Authorization: Bearer <token>
 | `POST` | `/admin/v1/config` | কনফিগারেশন আইটেম তৈরি |
 | `PUT` | `/admin/v1/config/{id}` | কনফিগারেশন আইটেম আপডেট |
 | `DELETE` | `/admin/v1/config/{id}` | কনফিগারেশন আইটেম ডিলিট (পাসওয়ার্ড নিশ্চিতকরণ প্রয়োজন) |
+| `GET` | `/admin/v1/payment/method/list` | পেমেন্ট পদ্ধতি তালিকা |
+| `POST` | `/admin/v1/payment/method/toggle` | পেমেন্ট পদ্ধতি সক্রিয়/নিষ্ক্রিয় |
+| `POST` | `/admin/v1/payment/method/create` | পেমেন্ট পদ্ধতি তৈরি |
+| `PUT` | `/admin/v1/payment/method/{id}` | পেমেন্ট পদ্ধতি আপডেট |
+| `DELETE` | `/admin/v1/payment/method/{id}` | পেমেন্ট পদ্ধতি ডিলিট (মুলতুবি অর্ডার থাকলে প্রত্যাখ্যান) |
 | `GET` | `/admin/v1/log` | অপারেশন লগ (পেজিনেশন + ফিল্টার) |
 | `PUT` | `/admin/v1/profile` | ব্যক্তিগত তথ্য আপডেট |
 | `PUT` | `/admin/v1/profile/password` | পাসওয়ার্ড পরিবর্তন |
@@ -405,12 +416,14 @@ Authorization: Bearer <token>
 
 ### Docker Compose (সুপারিশকৃত)
 
-প্রজেক্ট রুটে `docker-compose.yml` রয়েছে, ৫টি সার্ভিস অর্কেস্ট্রেট করে:
+প্রজেক্ট রুটে `docker-compose.yml` রয়েছে, ৭টি সার্ভিস অর্কেস্ট্রেট করে:
 
 | সার্ভিস | ইমেজ | পোর্ট |
 |------|------|------|
 | `nginx` | nginx:alpine | 80, 443 |
-| `app` | লোকাল `Dockerfile` দিয়ে বিল্ড | 8789 |
+| `admin` | লোকাল `Dockerfile` দিয়ে বিল্ড | 8789 |
+| `service` | লোকাল `Dockerfile` দিয়ে বিল্ড | 8792 |
+| `leaderboard-ws` | লোকাল `Dockerfile` দিয়ে বিল্ড | 8790, 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

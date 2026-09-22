@@ -31,7 +31,7 @@ class WithdrawController extends BaseController
     #[Apidoc\Method("GET")]
     #[Apidoc\Author("erik")]
     #[Apidoc\Param(name: "page", type: "int", require: false, desc: "页码")]
-    #[Apidoc\Param(name: "per_page", type: "int", require: false, desc: "每页数量")]
+    #[Apidoc\Param(name: "limit", type: "int", require: false, desc: "每页数量")]
     #[Apidoc\Param(name: "status", type: "string", require: false, desc: "订单状态(pending,approved,rejected,completed)")]
     #[Apidoc\Returned(name: "id", type: "string", desc: "订单ID(hashid编码)")]
     public function orders(Request $request): Response
@@ -76,7 +76,7 @@ class WithdrawController extends BaseController
     #[Apidoc\Method("PUT")]
     #[Apidoc\Author("erik")]
     #[Apidoc\Param(name: "order_id", type: "string", require: true, desc: "订单ID(hashid编码)")]
-    #[Apidoc\Param(name: "action", type: "string", require: true, desc: "操作(approve通过,reject拒绝)")]
+    #[Apidoc\Param(name: "action", type: "string", require: true, desc: "操作(approve通过,reject拒绝,confirm确认打款)")]
     #[Apidoc\Param(name: "note", type: "string", require: false, desc: "审核备注")]
     public function review(Request $request): Response
     {

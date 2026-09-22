@@ -3,19 +3,18 @@
  */
 
 import http from '@ohos.net.http';
-import { ApiResponse } from '../model/DataModels';
+import { ApiResponse, LoginResponse } from '../model/DataModels';
 import { TokenManager } from '../utils/TokenManager';
-
-// 开发环境地址 — 真机部署时修改为实际服务器地址
-// 模拟器: http://10.0.2.2:8792  （映射宿主机 localhost:8792，C 端 service 端口）
-// 真机:   http://<电脑局域网IP>:8792  （与手机同一局域网，并放行 8792）
-const BASE_URL = 'http://10.0.2.2:8792';
+import { API_BASE_URL } from '../common/AppConfig';
 
 /**
  * HTTP API 服务 — 支持 JWT 无感刷新
  */
 export class ApiService {
   private httpRequest: http.HttpRequest;
+
+  /** 进行中的刷新（单飞），见 tryRefreshToken */
+  private static refreshInFlight: Promise<boolean> | null = null;
 
   constructor() {
     this.httpRequest = http.createHttp();
@@ -43,7 +42,7 @@ export class ApiService {
       options.extraData = JSON.stringify(body);
     }
 
-    const url = `${BASE_URL}${path}`;
+    const url = `${API_BASE_URL}${path}`;
     const response = await this.httpRequest.request(url, options);
 
     if (response.responseCode === 401 && retryCount === 0) {
@@ -61,13 +60,40 @@ export class ApiService {
     }
 
     const result: ApiResponse<T> = JSON.parse(response.result as string);
+
+    // 服务端 json() 信封恒为 HTTP 200，鉴权失败体现在 body.code，上面的状态码分支看不到
+    if (result.code === 401) {
+      if (retryCount === 0) {
+        const refreshed = await this.tryRefreshToken();
+        if (refreshed) {
+          return this.request<T>(method, path, body, retryCount + 1);
+        }
+      }
+      TokenManager.clearTokens();
+      throw new Error('UNAUTHORIZED');
+    }
+
     return result;
   }
 
   /**
-   * 尝试用 refresh_token 刷新 access_token
+   * 尝试用 refresh_token 刷新 access_token。
+   * 单飞：并发请求同时撞 401 时只发一次刷新请求——refresh token 是一次性轮换的，
+   * 第二次刷新会因旧 token 已进黑名单而失败，进而误清 token 登出。
    */
-  private async tryRefreshToken(): Promise<boolean> {
+  private tryRefreshToken(): Promise<boolean> {
+    const inFlight = ApiService.refreshInFlight;
+    if (inFlight !== null) {
+      return inFlight;
+    }
+    const started = this.doRefreshToken().finally(() => {
+      ApiService.refreshInFlight = null;
+    });
+    ApiService.refreshInFlight = started;
+    return started;
+  }
+
+  private async doRefreshToken(): Promise<boolean> {
     const refreshToken = TokenManager.getRefreshToken();
     if (!refreshToken) {
       return false;
@@ -75,7 +101,7 @@ export class ApiService {
 
     try {
       const refreshResponse = await this.httpRequest.request(
-        `${BASE_URL}/api/v1/auth/refresh`,
+        `${API_BASE_URL}/api/v1/auth/refresh`,
         {
           method: http.RequestMethod.POST,
           header: {
@@ -91,7 +117,8 @@ export class ApiService {
       );
 
       if (refreshResponse.responseCode === 200) {
-        const data = JSON.parse(refreshResponse.result as string);
+        // 刷新接口的 data 与登录同为 token 对
+        const data: ApiResponse<LoginResponse> = JSON.parse(refreshResponse.result as string);
         if (data.code === 0 && data.data) {
           TokenManager.saveTokens(
             data.data.access_token,

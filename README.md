@@ -33,8 +33,14 @@ Languages: **中文** · [English](docs/translations/README.en.md) · [한국어
 - 数据加密：API 传输层 AES-256-CBC + 数据库存储层 AES-128-ECB
 
 ### 前端
-- Flutter 3.x (Web PC 风格)
-- HarmonyOS ArkTS (移动端)
+
+前端分两套目录树，**各自只调用自己那一侧的后端**，互不交叉：
+
+| 目录树 | 定位 | 请求前缀 | 对应后端 | 技术栈 |
+|--------|------|---------|---------|--------|
+| `apps/*` | **C 端玩家端** | `/api/v1/...` | service（默认 8792） | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
+| `admin/apps/*` | **管理台** | `/admin/v1/...` | admin（默认 8789） | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
+
 - 响应式布局 (Phone / Tablet / Desktop)
 - 国际化 (i18n)：英文 / 简体中文切换
 
@@ -56,43 +62,78 @@ Languages: **中文** · [English](docs/translations/README.en.md) · [한국어
 game-platform-php/
 ├── admin/                     # 管理后台 (webman v2, 默认端口 8789，APP_PORT 可配)
 │   ├── app/admin/v1/controller/  #   管理端控制器
-│   ├── app/middleware/        #   中间件 (Cors/Security/RateLimit/Auth/ProviderAuth)
-│   ├── app/provider/          #   游戏Provider层
-│   ├── app/event/             #   事件总线 (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission/ProviderAuth)
+│   ├── app/middleware/        #   中间件 (Cors/SecurityFilter/RateLimit/AdminAuth/AdminPermission/OperationLog)
+│   ├── app/model/             #   仅 admin 独有的模型 (8 个，其余 52 个共享模型在 packages/)
+│   ├── app/service/           #   仅 admin 独有的服务 (WalletService/WalletScope/RiskSandboxService)
+│   ├── app/process/           #   常驻进程 (Http/Monitor/RiskIpCron)
 │   ├── app/provider/          #   游戏Provider层 (Self/ThirdParty/Factory)
-│   ├── app/middleware/        #   中间件 (Cors/Security/RateLimit/Auth/ProviderAuth)
-│   ├── app/provider/          #   游戏Provider层
-│   ├── app/event/             #   事件总线 (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission)
+│   ├── app/activity/          #   活动引擎 (签到/邀请/每日任务)
+│   ├── app/event/             #   事件总线 (EventBus Redis Pub/Sub)
 │   ├── config/                #   配置文件
-│   └── apps/flutter/          #   Flutter Web PC 管理后台
+│   └── apps/                  #   管理台前端（4 端，调 /admin/v1 → admin:8789）
+│       ├── flutter/           #     Flutter Web PC 管理后台
+│       ├── react/             #     React 19 (Vite) 管理台
+│       ├── angular/           #     Angular 21 管理台
+│       └── harmonyos/         #     HarmonyOS ArkTS 管理台（.hap，不经 nginx）
 │
 ├── service/                   # C端业务端 (webman v2, 默认端口 8792，APP_PORT 可配)
 │   ├── app/api/v1/controller/ #   C端 API 控制器
-│   ├── app/middleware/        #   中间件 (Cors/Security/RateLimit/Auth/ProviderAuth)
+│   ├── app/middleware/        #   中间件 (TraceId/Cors/SecurityFilter/RateLimit/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
+│   ├── app/model/             #   仅 service 独有的模型 (10 个，其余 52 个共享模型在 packages/)
+│   ├── app/service/           #   仅 service 独有的服务 (钱包/风控/合规/对账/推送/成就/反作弊等)
+│   ├── app/payment/           #   18 个支付网关适配器 (Stripe/PayPal/Adyen/NowPayments/Skrill…) + GatewayFactory
+│   ├── app/cdn/               #   五厂商 CDN 适配器 (Cloudflare/CloudFront/阿里/腾讯/华为) + CdnFactory
+│   ├── app/process/           #   常驻进程 (Http/Monitor/LeaderboardWS:8790/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
 │   ├── app/provider/          #   游戏Provider层
+│   ├── app/activity/          #   活动引擎
 │   ├── app/event/             #   事件总线 (EventBus Redis Pub/Sub)
 │   └── config/                #   配置文件
+│
+├── packages/platform-common/  # 共享层：admin 与 service 通过 composer path 仓库引入，避免两套副本
+│   ├── src/model/             #   共享 Eloquent 模型 (52 个，两侧同源)
+│   ├── src/service/           #   共享服务 (DepositLogService / VipService 等 11 个，含 ClickHouse 概率计算)
+│   ├── src/BcMath.php         #   金额/比率高精度运算 (bcmath 封装)、四舍五入、百分比
+│   ├── src/EncryptionService.php  #   AES 加解密与脱敏
+│   ├── src/CircuitBreaker.php #   熔断 (另有 Retry.php 重试)
+│   ├── src/HashidsService.php #   API 层 ID 编解码
+│   └── src/SnowflakeService.php   #   全局唯一 BIGINT ID
+│
+├── apps/                      # C 端玩家端前端（4 端，调 /api/v1 → service:8792）
+│   ├── flutter/platform/      #   Flutter Web PC C端用户平台
+│   ├── react/                 #   React 19 (Vite) C端
+│   ├── angular/               #   Angular 21 C端
+│   └── harmonyos/             #   HarmonyOS ArkTS C端（.hap，不经 nginx）
+│
+├── game/xiaoxiaole/           # 内置小游戏「田园消消乐」：TypeScript + Vite + Vitest，src/domain 领域引擎 + 四关设计 + tests/，13 语言设计文档
 │
 ├── install/                   # 一键安装向导 + 数据库初始化 SQL
 │   ├── index.php              #   安装入口
 │   ├── Installer.php          #   安装核心逻辑
-│   ├── install.sql            #   合并安装 SQL（MySQL 全量：43张表+种子数据）
+│   ├── install.sql            #   合并安装 SQL（MySQL 全量：78张表+种子数据）
 │   ├── clickhouse.sql         #   ClickHouse 分析库 DDL（独立引擎，单独导入）
+│   ├── test-data.sql          #   演示/测试数据
+│   ├── migrations/            #   存量库增量升级脚本 (*.sql)
+│   ├── lang/ + lang.php       #   安装向导界面翻译 (13 语言)
 │   └── assets/                #   静态资源
 │
-├── admin/common/ 与 service/common/   # 共享服务各一份 (DepositLogService 等，待抽共享层)
-│   └── service/               #   共享服务 (含 ClickHouse 概率计算)
-│
-├── apps/
-│   └── flutter/platform/      # Flutter Web PC C端用户平台
-│
-├── docs/                      # 项目文档
+├── docs/                      # 项目文档（正文均为 13 语言：.md 为中文源，同目录另有 .{lang}.md 译本）
 │   ├── ARCHITECTURE.md        #   架构文档
 │   ├── ARCHITECTURE-DESIGN.md #   架构设计文档
 │   ├── FEATURES.md            #   功能文档
 │   ├── FEATURE-DESIGN.md      #   功能设计文档
 │   ├── API.md                 #   接口文档
-│   └── DEPLOYMENT.md          #   部署文档（Docker/手动/端口配置）
+│   ├── DEPLOYMENT.md          #   部署文档（Docker/手动/端口配置）
+│   ├── PROVIDER-SDK.md        #   第三方游戏接入指南（签名算法 + PHP/Go/Python 示例）
+│   ├── CLICKHOUSE_INSTALL.md  #   ClickHouse 安装/配置/迁移/验证
+│   ├── CLICKHOUSE_USAGE.md    #   4 个 ClickHouse 服务 API 与后台看板
+│   ├── translations/          #   本 README 的 12 语言译本
+│   ├── diagrams/              #   架构/流程/功能/生命周期/安全/生态扩展 SVG（各 13 语言）
+│   ├── test-reports/          #   测试报告 (php-unit / api / resilience / ui / SUMMARY)
+│   └── superpowers/           #   本仓库的设计规范与实现计划（历史记录）
+│
+├── scripts/                   # 运维脚本 (模型漂移检查 / apidoc 注解迁移 / 兑换出款语义迁移 / 签名验证)
+├── tests/api/                 # API 接口自动化测试 (run_all.sh)
+├── runtime/                   # webman 运行时目录（日志/pid，运行时生成）
 │
 ├── docker-compose.yml         # Docker Compose 编排（默认端口来自根 .env）
 ├── nginx.conf.template        # Nginx 配置模板（upstream 端口由 envsubst 渲染）
@@ -137,7 +178,7 @@ rm -rf install/
 
 安装向导会自动完成：
 - 环境检查（PHP版本、扩展、目录权限）
-- 创建数据库和数据表（合并 SQL，43 张表 + 种子数据）
+- 创建数据库和数据表（合并 SQL，78 张表 + 种子数据）
 - 创建超级管理员账户（bcrypt 加密）
 - 自动生成 JWT/加密密钥并写入 .env 文件
 - 生成 install.lock 防止重复安装
@@ -184,17 +225,40 @@ cd ../service && composer install && php start.php start -d
 
 ### 前端启动（可选）
 
-```bash
-# 管理后台 (Flutter Web PC)
-cd admin/apps/flutter
-flutter pub get
-flutter run -d chrome
+开发态各自起 dev server，请求由 dev server 代理到对应后端（见各目录的 `proxy.conf.json` / `vite.config.ts`）：
 
-# C端用户平台 (Flutter Web PC)
-cd apps/flutter/platform
-flutter pub get
-flutter run -d chrome
+```bash
+# --- C 端玩家端（/api/v1 → service:8792）---
+cd apps/react            && npm install && npm run dev      # http://localhost:5173
+cd apps/angular          && npm install && npm start        # http://localhost:4200
+cd apps/flutter/platform && flutter pub get && flutter run -d chrome
+
+# --- 管理台（/admin/v1 → admin:8789）---
+cd admin/apps/react      && npm install && npm run dev      # http://localhost:5273
+cd admin/apps/angular    && npm install && npm start        # http://localhost:4300
+cd admin/apps/flutter    && flutter pub get && flutter run -d chrome
 ```
+
+> Angular dev server 端口：管理台在 `angular.json` 里显式配了 4300，C 端沿用 Angular 默认 4200；同时跑需给其中一个加 `--port`。
+> HarmonyOS 端（`apps/harmonyos`、`admin/apps/harmonyos`）用 DevEco Studio 打开构建，
+> 模拟器访问宿主机后端用 `http://10.0.2.2:<端口>`（见各自 `ApiService.ets` 顶部常量）。
+
+### 前端部署（Docker/Nginx）
+
+`docker-compose.yml` 的 nginx 服务把各端构建产物只读挂载进容器，`nginx.conf.template` 按下列路径对外提供。
+产物未构建时目录为空：路径请求返回 404，裸目录请求（如 `/app-react/`）返回 403。
+
+| URL | 产物挂载点 | 构建命令 |
+|-----|-----------|---------|
+| `/` | `apps/flutter/platform/build/web` | `flutter build web` |
+| `/app-react/` | `apps/react/dist` | `npm run build`（脚本内含 `--base=/app-react/`） |
+| `/app-angular/` | `apps/angular/dist/game-client-angular/browser` | `npm run build`（脚本内含 `--base-href=/app-angular/`） |
+| `/admin-panel/` | `admin/public` | 通用投放位：把任一控制台产物拷进 `admin/public` 即可；未放入时同样返回 404（裸目录 403）。注意产物须以 `--base=/admin-panel/`（Flutter 为 `--base-href=/admin-panel/`）构建，否则其资源仍指向原前缀而 404。无斜杠形式会 301 到本地址；`nginx.conf.template` 已设 `absolute_redirect off`，该跳转为相对 Location，非 80 端口部署不再丢端口 |
+| `/admin-react/` | `admin/apps/react/dist` | `npm run build`（脚本内含 `--base=/admin-react/`） |
+| `/admin-angular/` | `admin/apps/angular/dist/game-admin-angular/browser` | `npm run build`（脚本内含 `--base-href=/admin-angular/`） |
+| `/admin-flutter/` | `admin/apps/flutter/build/web` | `flutter build web --base-href=/admin-flutter/` |
+
+`/admin/`（API）→ admin 容器，`/api/`（API）→ service 容器；HarmonyOS 端分发 `.hap` 安装包，不经 nginx。
 
 ### 验证
 
@@ -206,7 +270,7 @@ curl http://localhost:8789/health
 curl http://localhost:8792/health
 
 # 测试用户注册
-curl -X POST http://localhost:8792/api/auth/register \
+curl -X POST http://localhost:8792/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"testuser","password":"Abcdef12"}'
 ```
@@ -235,9 +299,9 @@ curl -X POST http://localhost:8792/api/auth/register \
 
 | 测试类型 | 用例/覆盖 | 结果 |
 |---------|----------|------|
-| PHP 单元测试 | admin 153 + service 60 + 新增 63 用例 | service 全过；admin 6 errors + 1 failure 为既有问题（详见报告） |
+| PHP 单元测试 | 现测 `phpunit --list-tests`：admin 200 + service 273 用例（报告 `docs/test-reports/php-unit.md` 记 09-22 复跑 admin 190 + service 273、08-27 快照 admin 153 + service 45；admin 侧后续补测） | service 全通过（701 断言、3 skipped、2 warnings + 35 deprecations）；admin 437 断言、3 skipped、1 例失败（`EnvConfigTest` 校验真实 `admin/.env` 缺少 `REDIS_CLUSTER_NODES`，补上即绿） |
 | 稳定性机制测试 | 熔断/重试/降级开关 15 用例（CircuitBreakerTest/RetryTest/ResilienceMockTest） | 全部通过 |
-| API 接口自动化 | 187 端点全量覆盖，225 断言 | 171 通过 / 50 失败 / 4 跳过（失败均为确定性缺陷，详见报告） |
+| API 接口自动化 | 187 端点（来源：`docs/test-reports/api.md`，2026-08-27）；当前 route.php 注册 261 个端点 | 171 通过 / 50 失败 / 4 跳过（失败均为确定性缺陷，详见报告） |
 | Flutter UI 测试 | 12 用例（登录/仪表盘/导航/语言切换） | 全部通过 |
 | Go/Rust | 仓库无 Go/Rust 代码 | 跳过，已记录 |
 
@@ -263,10 +327,10 @@ cd admin/apps/flutter && flutter test --timeout 300s
 |------|------|
 | 用户认证 | 用户名密码 + 7平台 OAuth (Google/Facebook/Apple/X(Twitter)/Microsoft/LinkedIn/GitHub) + 2FA TOTP |
 | 钱包 | 平台币钱包(乐观锁) + 游戏币钱包 + 流水记录 |
-| 充值 | 创建订单(回填 checkout_url/expires_at) + Stripe/PayPal/NowPayments/Coinbase 等 13 网关回调验签 + 自动到账 |
+| 充值 | 创建订单(回填 checkout_url/expires_at) + Stripe/PayPal/NowPayments/Coinbase 等 18 网关回调验签 + 自动到账 |
 | 兑换 | 平台币⇄游戏币、实时询价、差价收益 |
 | 提现 | 申请→审核→打款、全局开关、KYC阶梯限额+手续费 |
-| KYC | 实名认证提交+审核、三级认证体系 |
+| KYC | 实名认证提交+审核、通过后提升提现限额 |
 | 游戏 | CRUD + 分类(10类) + 区服 + 游戏记录追踪 |
 | 搜索 | Elasticsearch 全文检索(含LIKE回退) |
 | 排行榜 | 日/周/月/总榜、Redis缓存、WebSocket实时推送(默认端口 8790，LEADERBOARD_WS_PORT 可配) |
@@ -283,7 +347,7 @@ cd admin/apps/flutter && flutter test --timeout 300s
 | 社交拉新 | 群组 + 分享链接追踪 |
 | 支付网关 | Adyen / GrabPay 新增网关 (L1) |
 | 国际化 | 4语言(en-US/zh-CN/ja-JP/ko-KR)、翻译表+缓存 |
-| 国家配置 | 8国差异化支付/提现方式、最低充值额 |
+| 国家配置 | 18国差异化支付/提现方式、最低充值额 |
 | 统计 | 日统计快照(5类指标) + 平台收益追踪 |
 | 验证码 | 点击式人机验证(poster-php) |
 | 游戏接入 | Provider SDK (Self+ThirdParty) + HMAC-SHA256 签名 + 回调网关 |
@@ -296,7 +360,7 @@ cd admin/apps/flutter && flutter test --timeout 300s
 | 优惠券 | 条件限制 (min_deposit/first_user/game_id) |
 | 事件 | Redis Pub/Sub 事件总线 + Webhook订阅投递 (7种事件) |
 | 部署 | Docker Compose 7 服务编排（端口由根 .env 配置） + Nginx反向代理 |
-| 客户端 | Flutter Admin(17页) + Platform(10页) + HarmonyOS(5页) |
+| 客户端 | 管理台 4 端（Flutter/React/Angular/HarmonyOS）+ C 端 4 端（Flutter/React/Angular/HarmonyOS） |
 
 ## 业务模型
 
@@ -315,19 +379,19 @@ cd admin/apps/flutter && flutter test --timeout 300s
 
 ## 多币种结算
 
-平台采用「法币 → 平台币 → 游戏币」三层币种隔离的结算体系：支持 USD/CNY/EUR 多法币充值，每款游戏拥有独立计价币种；金额计算全程使用 bcmath 高精度运算，杜绝浮点误差。
+平台采用「法币 → 平台币 → 游戏币」三层币种隔离的结算体系：支持 USD/CNY/EUR/JPY/KRW/GBP/BRL/INR 多法币充值，每款游戏拥有独立计价币种；金额计算全程使用 bcmath 高精度运算，杜绝浮点误差。
 
 ### 三层币种模型
 
 | 层级 | 币种 | 说明 |
 |------|------|------|
-| 法币层 | USD / CNY / EUR | 用户充值/提现的实际支付货币，由 Stripe / PayPal / NOWPayments / Coinbase 等 13 个网关 处理 |
+| 法币层 | USD / CNY / EUR / JPY / KRW / GBP / BRL / INR | 用户充值/提现的实际支付货币，由 Stripe / PayPal / NOWPayments / Coinbase 等 18 个网关 处理 |
 | 平台币层 | 平台币（全平台统一） | 内部统一结算货币（decimal(18,4)），钱包乐观锁防并发扣款/重复到账 |
 | 游戏币层 | 每款游戏独立币种 | 每款游戏独立 `exchange_rate` 汇率与 `spread_pct` 点差，独立游戏币钱包 |
 
 ### 结算路径
 
-- **充值结算**：用户以法币支付（Stripe / PayPal / NowPayments / Coinbase 等 13 个网关回调验签、幂等防重）→ 按 `default_exchange_rate` 换算平台币入账，充值订单同时记录 `amount + currency + platform_amount`
+- **充值结算**：用户以法币支付（Stripe / PayPal / NowPayments / Coinbase 等 18 个网关回调验签、幂等防重）→ 按 `default_exchange_rate` 换算平台币入账，充值订单同时记录 `amount + currency + platform_amount`
 - **兑换结算**：平台币 ⇄ 游戏币按游戏币种汇率实时询价（quote），扣除 `spread_pct` 点差作为平台差价收益，VIP 享兑换折扣与汇率加成
 - **游戏结算**：游戏 Provider 通过 `/api/provider/settle` 回调增减用户游戏币（HMAC-SHA256 签名），游戏会话超时自动结算
 - **提现结算**：平台币扣款 → 生成提现订单（记录 `platform_amount / fiat_amount / currency`）→ 管理端审批 → PayPal Payout 打款 → 批次状态同步至完成
@@ -337,7 +401,7 @@ cd admin/apps/flutter && flutter test --timeout 300s
 ```mermaid
 flowchart LR
     subgraph FIAT["法币层 Fiat"]
-        A["用户充值<br/>USD / CNY / EUR<br/>Stripe / PayPal / NOWPayments / Coinbase 等 13 个网关"]
+        A["用户充值<br/>USD / CNY / EUR / JPY / KRW / GBP / BRL / INR<br/>Stripe / PayPal / NOWPayments / Coinbase 等 18 个网关"]
         H["提现到账<br/>PayPal Payout"]
     end
 
@@ -394,9 +458,9 @@ flowchart LR
 | [架构文档](docs/ARCHITECTURE.md) | 系统拓扑、模块架构、数据流 |
 | [功能设计文档](docs/FEATURE-DESIGN.md) | 业务模型、功能规格、流程设计 |
 | [功能文档](docs/FEATURES.md) | 功能清单、模块说明、用户旅程 |
-| [接口文档](docs/API.md) | 完整 API 参考 (102 个接口) |
-| [在线文档](http://localhost:8792/apidoc/) | hg/apidoc 交互式文档 (C端) |
-| [在线文档](http://localhost:8789/apidoc/) | hg/apidoc 交互式文档 (管理后台) |
+| [接口文档](docs/API.md) | 完整 API 参考 (146 个接口) |
+| [在线文档](http://localhost:8792/apidoc/) | erikwang2013/apidoc-php 交互式文档 (C端) |
+| [在线文档](http://localhost:8789/apidoc/) | erikwang2013/apidoc-php 交互式文档 (管理后台) |
 | [ClickHouse 安装](docs/CLICKHOUSE_INSTALL.md) | ClickHouse 安装/配置/迁移/验证 |
 | [Provider SDK 接入文档](docs/PROVIDER-SDK.md) | 第三方游戏接入指南 (签名算法+PHP/Go/Python示例) |
 | [ClickHouse 使用](docs/CLICKHOUSE_USAGE.md) | 4 个 ClickHouse 服务 API 与后台看板 |

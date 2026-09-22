@@ -17,12 +17,12 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | チャージ | チャージ注文の作成（Stripe 125+ ローカル決済、Alipay/WeChat Pay APM を含む / NOWPayments USDT TRC20·ERC20 / Coinbase USDC·BTC·ETH / PayPal コールバック） | 完了 |
 | 交換 | プラットフォームコイン⇄ゲームコイン（固定レート+差額） | 完了 |
 | 出金 | 申請/照会/グローバルスイッチ/自動審査/人工審査 | 完了 |
-| ゲーム | バックエンドCRUD/通貨管理/C端リスト/詳細/起動 | 完了 |
+| ゲーム | バックエンドCRUD/通貨管理/C側リスト/詳細/起動 | 完了 |
 | 管理 | ゲーム管理/出金審査/ユーザー管理/決済管理/お知らせ管理 | 完了 |
 | パネル | プラットフォームダッシュボード（DAU/明細/収益/ランキング） | 完了 |
 | エクスポート | Excelエクスポート ユーザー/明細/出金 | 完了 |
 | 国際化 | 中/英切替、翻訳テーブル、言語検出ミドルウェア | 完了 |
-| フロントエンド | Flutter PC管理バックエンド + C端ユーザープラットフォーム（i18n含む） | 完了 |
+| フロントエンド | Flutter PC管理バックエンド + C側ユーザープラットフォーム（i18n含む） | 完了 |
 
 ### 標準版 — 完了
 
@@ -44,7 +44,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | ゲームロビー | 10個のプリセット分類、分類フィルター、ゲーム-分類関連付け | 完了 |
 | ランキング | 日榜/週榜/月榜/総榜、Redisキャッシュ、複数指標 | 完了 |
 | クーポン | 固定額+比率割引、期限・数量限定、受取/利用の追跡 | 完了 |
-| 国別設定 | 8ヶ国プリセット、差別化された決済/出金方法、最低チャージ額 | 完了 |
+| 国別設定 | 18ヶ国プリセット、差別化された決済/出金方法、最低チャージ額 | 完了 |
 | 統計 | 日次統計スナップショット + プラットフォーム収益追跡 | 完了 |
 | 検索 | Elasticsearch 全文検索（モデル層に統合済み） | 完了 |
 
@@ -63,11 +63,11 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | CDN | 5社連携 (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS アップロード + キャッシュ削除 + プリロード) | 完了 |
 | CDN 管理 | 管理画面で5社設定 (暗号化保存した認証情報/有効·無効/HeadBucket 接続テスト)、service は DB のみ参照 | 完了 |
 | レポート | 管理側データレポート（集計/日報/CSV エクスポート、Redis 5分キャッシュ、期間 ≤90日） | 完了 |
-| プラットフォーム統計 | C端ホーム統計（ゲーム総数/ユーザー総数/今日の対局/7日間アクティブ） | 完了 |
+| プラットフォーム統計 | C側ホーム統計（ゲーム総数/ユーザー総数/今日の対局/7日間アクティブ） | 完了 |
 | デプロイ | Docker Compose 7サービス + Nginxリバースプロキシ | 完了 |
 | データ | MySQL リアルタイム集計分析 + 結合/条件確率計算 | 完了 |
-| HarmonyOS | admin 端 8 ページ；C 端 `apps/harmonyos/` にログイン/ロビー/詳細/ウォレット/マイページ実装（8792 を指す） | 一部完了（工程は実行可能、実機では IP 変更が必要） |
-| API ドキュメント | hg/apidoc インタラクティブドキュメント | 完了 |
+| HarmonyOS | admin 側 8 ページ；C側 `apps/harmonyos/` にログイン/ロビー/詳細/ウォレット/マイページ実装（8792 を指す） | 一部完了（工程は実行可能、実機では IP 変更が必要） |
+| API ドキュメント | erikwang2013/apidoc-php インタラクティブドキュメント | 完了 |
 | ワンクリックインストール | ブラウザインストールウィザード：管理者作成、既存DBアップグレード、install.lock で再インストール防止 | 完了 |
 | 耐障害性 | CircuitBreaker 遮断 + Retry 再試行 + feature.provider_mock 縮退スイッチ | 完了 |
 | 決済手段 | 管理CRUD + 国別表示 + 金額範囲 + 通貨制限 | 完了 |
@@ -79,8 +79,8 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 |----|------|------|
 | ゲーム接続 | GameProvider 抽象層 (Self/ThirdParty) + HMAC-SHA256 署名 | 完了 |
 | ゲームコールバック | Provider API ゲートウェイ (balance/bet/settle/refund) + ProviderAuth ミドルウェア | 完了 |
-| ゲームセッション | Redis ハートビート + 15分タイムアウト自動決済 + GameSessionService | 完了 |
-| チケットシステム | C端作成/返信 + 管理端処理/割当/クローズ、5種のチケットタイプ | 完了 |
+| ゲームセッション | SDK セッショントークン：HMAC-SHA256 署名 + 5 分 TTL（`GET /api/v1/game/session` が発行、`SdkSessionAuth` が検証） | 完了 |
+| チケットシステム | C側作成/返信 + 管理画面処理/割当/クローズ、5種のチケットタイプ | 完了 |
 | メール検証 | 6桁認証コード、Redis 10分期限切れ、60秒再送制限 | 完了 |
 | プッシュ通知 | PushService (FCM/APNs/華為プッシュ) + DeviceToken モデル | 完了 |
 | VIP 体系 | 5段階 (普通/白銀/黄金/白金/钻石) + 経験値 + 自動昇格 | 完了 |
@@ -99,7 +99,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | SDK ドキュメント | Provider 接続ドキュメント (PHP/Go/Python 例 + 4 API エンドポイント) | 完了 |
 | ミニゲーム | Farm Match-3 P0（ドメインエンジン + 4レベル設計、TypeScript/Vite/Vitest 単体テスト） | 完了 |
 
-## 2. C端ユーザー機能
+## 2. C側ユーザー機能
 
 ### 2.1 ユーザージャーニー
 
@@ -119,62 +119,64 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 
 | メソッド | パス | 説明 | 認証 |
 |------|------|------|------|
-| POST | /api/auth/register | ユーザー登録 | なし |
-| POST | /api/auth/login | ユーザーログイン | なし |
-| POST | /api/auth/refresh | Token更新 | なし |
-| GET | /api/game/list | ゲーム一覧 | なし |
-| GET | /api/game/detail/{id} | ゲーム詳細 | なし |
-| GET | /api/announcement/list | お知らせ一覧 | なし |
-| GET | /api/wallet/info | ウォレット残高 | あり |
-| GET | /api/wallet/transactions | 明細記録 | あり |
-| POST | /api/deposit/create | チャージ注文の作成 | あり |
-| GET | /api/payment/methods | 決済手段一覧（国別ルーティング） | あり |
-| POST | /api/exchange/quote | 交換の見積り (VIP割引) | あり |
-| POST | /api/exchange/buy | ゲームコインの購入 | あり |
-| POST | /api/exchange/sell | ゲームコインの売却 | あり |
-| POST | /api/withdraw/apply | 出金申請 (VIP免除) | あり |
-| POST | /api/game/launch | ゲーム起動 | あり |
-| GET | /api/game/play-logs | ゲーム記録 | あり |
-| POST | /api/referral/apply | 紹介コードの利用 | あり |
-| POST | /api/verify/send-email | メール認証コード送信 | あり |
-| POST | /api/verify/confirm-email | メール確認 | あり |
-| GET | /api/ticket/list | チケット一覧 | あり |
-| POST | /api/ticket/create | チケット作成 | あり |
-| POST | /api/ticket/{id}/reply | チケット返信 | あり |
+| POST | /api/v1/auth/register | ユーザー登録 | なし |
+| POST | /api/v1/auth/login | ユーザーログイン | なし |
+| POST | /api/v1/auth/refresh | Token更新 | なし |
+| GET | /api/v1/game/list | ゲーム一覧 | なし |
+| GET | /api/v1/game/detail/{id} | ゲーム詳細 | なし |
+| GET | /api/v1/announcement/list | お知らせ一覧 | なし |
+| GET | /api/v1/wallet/info | ウォレット残高 | あり |
+| GET | /api/v1/wallet/transactions | 明細記録 | あり |
+| POST | /api/v1/deposit/create | チャージ注文の作成 | あり |
+| GET | /api/v1/payment/methods | 決済手段一覧（国別ルーティング） | あり |
+| POST | /api/v1/exchange/quote | 交換の見積り (VIP割引) | あり |
+| POST | /api/v1/exchange/buy | ゲームコインの購入 | あり |
+| POST | /api/v1/exchange/sell | ゲームコインの売却 | あり |
+| POST | /api/v1/withdraw/apply | 出金申請 (VIP免除) | あり |
+| POST | /api/v1/game/launch | ゲーム起動 | あり |
+| GET | /api/v1/game/play-logs | ゲーム記録 | あり |
+| POST | /api/v1/referral/apply | 紹介コードの利用 | あり |
+| POST | /api/v1/verify/send-email | メール認証コード送信 | あり |
+| POST | /api/v1/verify/confirm-email | メール確認 | あり |
+| GET | /api/v1/ticket/list | チケット一覧 | あり |
+| POST | /api/v1/ticket/create | チケット作成 | あり |
+| POST | /api/v1/ticket/{id}/reply | チケット返信 | あり |
+| GET | /api/v1/platform/stats | プラットフォーム統計 | なし |
 
-| GET | /api/platform/stats | プラットフォーム統計 | なし |
 ## 3. 管理バックエンド機能
 
 ### 3.1 API エンドポイント（追加）
 
 | メソッド | パス | 説明 |
 |------|------|------|
-| GET | /admin/dashboard/platform | プラットフォームダッシュボードデータ |
-| GET | /admin/analytics/overview | プラットフォーム総覧 (MySQL リアルタイム集計) |
-| GET | /admin/analytics/game-ranking | ゲームランキング |
-| GET | /admin/analytics/dau-trend | DAU トレンド |
-| GET | /admin/analytics/hourly-trend | 時間別トレンド |
-| GET | /admin/analytics/action-distribution | 行動分布 |
-| GET | /admin/analytics/revenue | 収益分析 |
-| GET | /admin/analytics/conversion | ゲーム転換率 |
-| GET | /admin/analytics/probability | 結合/条件確率 |
-| GET | /admin/analytics/retention | リテンション分析 D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | 転換ファネル |
-| GET | /admin/analytics/arpu | ARPU/ARPPU トレンド |
-| GET | /admin/analytics/economy | ゲーム通貨経済指標 |
-| GET | /admin/report/summary | レポート集計（新規ユーザー/入金/出金/両替/ゲーム対局数） |
-| GET | /admin/report/daily | 日報（日次集計、データのない日は 0 補完） |
-| GET | /admin/report/export | 日報 CSV エクスポート（UTF-8 BOM） |
-| GET | /admin/game/list | ゲーム一覧 |
-| POST | /admin/game/create | ゲーム作成 (provider_config 含む) |
-| PUT | /admin/game/{id} | ゲーム編集 |
-| GET | /admin/withdraw/orders | 出金注文一覧 |
-| PUT | /admin/withdraw/review | 出金審査 |
-| GET | /admin/ticket/list | チケット一覧 |
-| GET | /admin/ticket/{id} | チケット詳細 |
-| POST | /admin/ticket/{id}/reply | チケット返信 |
-| POST | /admin/ticket/{id}/close | チケットクローズ |
-| POST | /admin/ticket/{id}/assign | 処理担当者の指定 |
+| GET | /admin/v1/dashboard/platform | プラットフォームダッシュボードデータ |
+| GET | /admin/v1/analytics/overview | プラットフォーム総覧 (MySQL リアルタイム集計) |
+| GET | /admin/v1/analytics/game-ranking | ゲームランキング |
+| GET | /admin/v1/analytics/dau-trend | DAU トレンド |
+| GET | /admin/v1/analytics/hourly-trend | 時間別トレンド |
+| GET | /admin/v1/analytics/action-distribution | 行動分布 |
+| GET | /admin/v1/analytics/revenue | 収益分析 |
+| GET | /admin/v1/analytics/conversion | ゲーム転換率 |
+| GET | /admin/v1/analytics/probability | 結合/条件確率 |
+| GET | /admin/v1/analytics/retention | リテンション分析 D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | 転換ファネル |
+| GET | /admin/v1/analytics/arpu | ARPU/ARPPU トレンド |
+| GET | /admin/v1/analytics/economy | ゲーム通貨経済指標 |
+| GET | /admin/v1/report/summary | レポート集計（新規ユーザー/入金/出金/両替/ゲーム対局数） |
+| GET | /admin/v1/report/daily | 日報（日次集計、データのない日は 0 補完） |
+| GET | /admin/v1/report/export | 日報 CSV エクスポート（UTF-8 BOM） |
+| GET | /admin/v1/game/list | ゲーム一覧 |
+| GET | /admin/v1/game/{id} | ゲーム詳細 |
+| POST | /admin/v1/game/launch | ゲーム試遊プレビュー（読み取り専用） |
+| POST | /admin/v1/game/create | ゲーム作成 (provider_config 含む) |
+| PUT | /admin/v1/game/{id} | ゲーム編集 |
+| GET | /admin/v1/withdraw/orders | 出金注文一覧 |
+| PUT | /admin/v1/withdraw/review | 出金審査 |
+| GET | /admin/v1/ticket/list | チケット一覧 |
+| GET | /admin/v1/ticket/{id} | チケット詳細 |
+| POST | /admin/v1/ticket/{id}/reply | チケット返信 |
+| POST | /admin/v1/ticket/{id}/close | チケットクローズ |
+| POST | /admin/v1/ticket/{id}/assign | 処理担当者の指定 |
 
 ## 4. Provider API（ゲーム側コールバック）
 
@@ -250,21 +252,21 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | game_game | +provider_config (JSON) |
 | game_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**合計: install.sql 43 枚のテーブル**（エコシステム拡張の 10 枚は `install/` にあり、install.sql には未統合）。モデルは非共有：admin 46 / service 44 各1部。
+**合計: install.sql 78 枚のテーブル**。モデル: 52 個は `packages/platform-common/src/model/` で共有、admin/app/model/ の 8 個と service/app/model/ の 10 個は各ホスト専用（ファイル名の重複なし）。
 
 ## 8. テストカバレッジ
 
 | テストファイル | ケース数 | カバレッジ範囲 |
 |---------|--------|---------|
-| PlatformTest | 56 | bcmath精度/交換計算/出金手数料/限度額/リスク管理/クーポン/KYC/i18n |
-| BackendEnhancementTest | 23 | 暗号化サービス/Hashids/Snowflake |
-| CaptchaTest | 7 | 認証コードの生成/検証 |
-| EncryptionServiceTest | 6 | AES暗号化/復号/マスキング |
-| EnvConfigTest | 4 | 環境変数設定 |
-| HashidsServiceTest | 8 | IDエンコード/デコード往復 |
-| SnowflakeServiceTest | 6 | ID生成の一意性 |
+| PlatformTest | 55 | bcmath精度/交換計算/出金手数料/限度額/リスク管理/クーポン/KYC/i18n |
+| BackendEnhancementTest | 27 | 暗号化サービス/Hashids/Snowflake |
+| CaptchaTest | 5 | 認証コードの生成/検証 |
+| EncryptionServiceTest | 8 | AES暗号化/復号/マスキング |
+| EnvConfigTest | 6 | 環境変数設定 |
+| HashidsServiceTest | 6 | IDエンコード/デコード往復 |
+| SnowflakeServiceTest | 5 | ID生成の一意性 |
 
-**合計: admin ~132 ケース / 8 ファイル；service 3 ケース（WebhookUrlSafety + EventBusMessageFormat）。service は CI 失敗のブロッカーには含まれない。**
+**合計（phpunit --list-tests 現測）: admin 200 ケース / 21 ファイル、service 273 ケース / 42 ファイル（WebhookUrlSafety + EventBusMessageFormat を含む。レポート: 09-22 再実行 admin 190 + service 273、08-27 スナップショット admin 153 + service 45）。service は CI 失敗のブロッカーには含まれない（未検証）。**
 
 ---
 

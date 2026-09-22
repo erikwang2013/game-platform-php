@@ -1,4 +1,4 @@
-# 安全架构设计文档
+# सुरक्षा आर्किटेक्चर डिज़ाइन दस्तावेज़
 <!-- lang-nav -->
 
 Languages: [中文](SECURITY.md) · [English](SECURITY.en.md) · [한국어](SECURITY.ko.md) · [Русский](SECURITY.ru.md) · [Deutsch](SECURITY.de.md) · [Français](SECURITY.fr.md) · [Español](SECURITY.es.md) · [Português](SECURITY.pt.md) · **हिन्दी** · [العربية](SECURITY.ar.md) · [বাংলা](SECURITY.bn.md) · [Bahasa Indonesia](SECURITY.id.md) · [日本語](SECURITY.ja.md)
@@ -598,14 +598,14 @@ Policy: https://erik.xyz/security-policy
 
 | खतरा प्रकार | आक्रमण वेक्टर | रक्षा परतें |
 |----------|---------|---------|
-| HTTP विधि दुरुपयोग | TRACE/TRACK XST आक्रमण, CONNECT टनल प्रॉक्सी, WebDAV विधि प्रोबिंग | SecurityFilter 405 विधि व्हाइटलिस्ट (GET/POST/PUT/DELETE/OPTIONS/HEAD) |
+| HTTP विधि दुरुपयोग | TRACE/TRACK XST आक्रमण, CONNECT टनल प्रॉक्सी, WebDAV विधि प्रोबिंग | SecurityFilter 405 विधि व्हाइटलिस्ट (GET/POST/PUT/DELETE/HEAD/OPTIONS/PATCH) |
 | लक्षित ब्रूट-फोर्स | विशेष उपयोगकर्ता के लिए बार-बार पासवर्ड प्रयास | खाता लॉक (5 विफलता पर 15 मिनट लॉक) + RateLimit (लॉगिन 10/मिनट) + Captcha |
 | ब्रूट-फोर्स | वितरित IP से बार-बार उपयोगकर्ता नाम/पासवर्ड प्रयास | RateLimit (लॉगिन 10/मिनट) + Captcha |
-| XSS क्रॉस-साइट स्क्रिप्टिंग | `<script>`, onerror, javascript: | SecurityFilter (5 पैटर्न) + X-XSS-Protection प्रतिक्रिया हेडर + CSP |
-| SQL इंजेक्शन | UNION SELECT, OR 1=1, टिप्पणी बाइपास | SecurityFilter (6 पैटर्न) + Eloquent ORM पैरामीटराइज़्ड क्वेरी |
+| XSS क्रॉस-साइट स्क्रिप्टिंग | `<script>`, onerror, javascript: | SecurityFilter (13 पैटर्न) + X-XSS-Protection प्रतिक्रिया हेडर + CSP |
+| SQL इंजेक्शन | UNION SELECT, OR 1=1, टिप्पणी बाइपास | SecurityFilter (14 पैटर्न) + Eloquent ORM पैरामीटराइज़्ड क्वेरी |
 | CSRF क्रॉस-साइट अनुरोध फोर्जरी | दुर्भावनापूर्ण साइट द्वारा अनुरोध भेजना | SecurityFilter Origin/Referer सत्यापन |
 | पाथ ट्रैवर्सल | `../../etc/passwd` | SecurityFilter पाथ ट्रैवर्सल पैटर्न + UploadController एक्सटेंशन व्हाइटलिस्ट |
-| कमांड इंजेक्शन | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (4 पैटर्न) |
+| कमांड इंजेक्शन | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (13 पैटर्न) |
 | सत्र अपहरण | JWT Token चोरी | JWT अल्पकालिक वैधता (2h) + ब्लैकलिस्ट लॉगआउट + संवेदनशील ऑपरेशन द्वितीय पासवर्ड पुष्टि |
 | ID गणना | संख्यात्मक ID ट्रैवर्स कर डेटा मात्रा अनुमान | Hashids यादृच्छिक स्ट्रिंग अस्पष्टीकरण |
 | डेटा लीक | DB डंप / मिडलमैन / लॉग लीक | तीन-परत एन्क्रिप्शन/मास्किंग + OperationLog संवेदनशील फ़ील्ड फ़िल्टर |

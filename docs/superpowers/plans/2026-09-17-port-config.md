@@ -1,5 +1,7 @@
 # 端口/请求地址配置化 实现计划
 
+> **落地注记（2026-09-22 补记）**：本计划内容已由 commit `8ff4e87` 落地；上式复选框于 2026-09-22 对照磁盘产物逐条复核后补勾。前端 apps、tests、docs 端口表当时明确不在范围内，由《端口/请求地址配置化（第二阶段）实现计划》（`2026-09-22-port-config-phase2.md`）承接。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 把 admin/service 的监听端口、Docker 编排端口、Nginx upstream 端口、安装向导后台链接全部收敛到配置文件，改一个端口只改一处。
@@ -44,7 +46,7 @@
 - Modify: `admin/config/app.php:24`
 - Test: `/tmp/portcheck/probe.php`（新建，沙箱探针）
 
-- [ ] **Step 1: `admin/.env.example` 新增 APP_PORT**
+- [x] **Step 1: `admin/.env.example` 新增 APP_PORT**
 
 在 `APP_URL=http://localhost:8789` 之后插入：
 
@@ -55,7 +57,7 @@
 +APP_PORT=8789
 ```
 
-- [ ] **Step 2: `service/.env.example` 新增三个端口键**
+- [x] **Step 2: `service/.env.example` 新增三个端口键**
 
 在 `APP_DEBUG=true` 之后插入：
 
@@ -69,7 +71,7 @@
 +CHAT_WS_PORT=8791
 ```
 
-- [ ] **Step 3: `admin/config/process.php` 读 APP_PORT**
+- [x] **Step 3: `admin/config/process.php` 读 APP_PORT**
 
 ```diff
      'webman' => [
@@ -80,7 +82,7 @@
          'count' => 3,//cpu_count() * 4,
 ```
 
-- [ ] **Step 4: `service/config/process.php` 读三个端口键**
+- [x] **Step 4: `service/config/process.php` 读三个端口键**
 
 ```diff
      'webman' => [
@@ -108,7 +110,7 @@
      ],
 ```
 
-- [ ] **Step 5: `admin/config/app.php` 新增 url 键**
+- [x] **Step 5: `admin/config/app.php` 新增 url 键**
 
 在 `'default_timezone' => 'Asia/Shanghai',` 之后插入：
 
@@ -119,7 +121,7 @@
      'request_class' => Request::class,
 ```
 
-- [ ] **Step 6: 写配置解析探针 `/tmp/portcheck/probe.php`**
+- [x] **Step 6: 写配置解析探针 `/tmp/portcheck/probe.php`**
 
 以最小 stub 加载 webman 配置文件（不启动任何服务），完整内容：
 
@@ -152,7 +154,7 @@ namespace {
 }
 ```
 
-- [ ] **Step 7: 运行探针（默认值）**
+- [x] **Step 7: 运行探针（默认值）**
 
 ```bash
 mkdir -p /tmp/portcheck && php /tmp/portcheck/probe.php admin
@@ -174,7 +176,7 @@ leaderboard-ws=websocket://0.0.0.0:8790
 chat-ws=websocket://0.0.0.0:8791
 ```
 
-- [ ] **Step 8: 运行探针（自定义端口）**
+- [x] **Step 8: 运行探针（自定义端口）**
 
 ```bash
 APP_PORT=19001 php /tmp/portcheck/probe.php admin
@@ -193,7 +195,7 @@ leaderboard-ws=websocket://0.0.0.0:19010
 chat-ws=websocket://0.0.0.0:19011
 ```
 
-- [ ] **Step 9: 验证 app.php 的 url 键 + 语法**
+- [x] **Step 9: 验证 app.php 的 url 键 + 语法**
 
 ```bash
 APP_URL=https://admin.example.com:8443 php -r '
@@ -218,7 +220,7 @@ Expected: 三行 `No syntax errors detected`。
 - Modify: `install/index.php:642-646`（新增 `envConfigValue()` 函数 + 改 `$nextUrl`）
 - Test: `/tmp/instsim2/run_e2e.sh`（沙箱 E2E，扩展 2 处）
 
-- [ ] **Step 1: `install/index.php` 新增读取函数**
+- [x] **Step 1: `install/index.php` 新增读取函数**
 
 在 `function step5Page(array $result): string` 之前插入：
 
@@ -240,7 +242,7 @@ function envConfigValue(string $file, string $key): string
 }
 ```
 
-- [ ] **Step 2: `install/index.php` 改 $nextUrl**
+- [x] **Step 2: `install/index.php` 改 $nextUrl**
 
 ```diff
  function step5Page(array $result): string
@@ -252,7 +254,7 @@ function envConfigValue(string $file, string $key): string
 +    $nextUrl = envConfigValue(dirname(__DIR__) . '/admin/.env', 'APP_URL') ?: 'http://localhost:8789';
 ```
 
-- [ ] **Step 3: 扩展沙箱 E2E `/tmp/instsim2/run_e2e.sh`（沙箱副本，非仓库文件）**
+- [x] **Step 3: 扩展沙箱 E2E `/tmp/instsim2/run_e2e.sh`（沙箱副本，非仓库文件）**
 
 在第 26 行（`cp -r $SRC/install/assets ...` 那一行）之后插入：
 
@@ -266,7 +268,7 @@ sed -i 's|^APP_URL=.*|APP_URL=http://127.0.0.1:19999|' $SB/admin/.env.example
 t $SB/ndjson.txt 'http://127.0.0.1:19999' "成功页链接跟随 admin/.env 的 APP_URL"
 ```
 
-- [ ] **Step 4: 跑 E2E**
+- [x] **Step 4: 跑 E2E**
 
 ```bash
 bash /tmp/instsim2/run_e2e.sh
@@ -284,13 +286,13 @@ Expected: 新增一行 `PASS 成功页链接跟随 admin/.env 的 APP_URL`，末
 - Rewrite: `docker-compose.yml`（全文如下）
 - Create: `.env.example`（根）
 
-- [ ] **Step 1: 重命名 nginx 配置**
+- [x] **Step 1: 重命名 nginx 配置**
 
 ```bash
 git mv nginx.conf nginx.conf.template
 ```
 
-- [ ] **Step 2: `nginx.conf.template` 两处 upstream 改插值**
+- [x] **Step 2: `nginx.conf.template` 两处 upstream 改插值**
 
 ```diff
      # 管理后台 API
@@ -308,7 +310,7 @@ git mv nginx.conf nginx.conf.template
 
 （文件其余 `$host`、`$remote_addr` 等 nginx 变量不受官方镜像 envsubst 影响——它只替换容器环境里存在的变量名。）
 
-- [ ] **Step 3: 重写 `docker-compose.yml` 为以下完整内容**
+- [x] **Step 3: 重写 `docker-compose.yml` 为以下完整内容**
 
 ```yaml
 version: '3.8'
@@ -457,7 +459,7 @@ volumes:
   es_data:
 ```
 
-- [ ] **Step 4: 新建根 `.env.example`**
+- [x] **Step 4: 新建根 `.env.example`**
 
 ```bash
 # ============================================================
@@ -492,7 +494,7 @@ DB_PASSWORD=root
 DB_DATABASE=game-platform
 ```
 
-- [ ] **Step 5: 校验 compose 插值（默认值）**
+- [x] **Step 5: 校验 compose 插值（默认值）**
 
 ```bash
 cd /home/wwwroot/game-platform-php && docker compose config > /tmp/portcheck/compose_default.yml 2>/tmp/portcheck/compose_default.err; echo "exit=$?"; grep -c '\${' /tmp/portcheck/compose_default.yml
@@ -500,7 +502,7 @@ cd /home/wwwroot/game-platform-php && docker compose config > /tmp/portcheck/com
 
 Expected: `exit=0`；grep 输出 `0`（无未解析变量）。
 
-- [ ] **Step 6: 校验 compose 插值（自定义端口走通全链路）**
+- [x] **Step 6: 校验 compose 插值（自定义端口走通全链路）**
 
 ```bash
 cd /home/wwwroot/game-platform-php && ADMIN_PORT=19001 SERVICE_PORT=19002 LEADERBOARD_WS_PORT=19010 CHAT_WS_PORT=19011 NGINX_HTTP_PORT=8080 docker compose config | grep -E '"(19001|19002|19010|19011|8080)"'
@@ -508,7 +510,7 @@ cd /home/wwwroot/game-platform-php && ADMIN_PORT=19001 SERVICE_PORT=19002 LEADER
 
 Expected: 输出包含 `published: "19001"`、`target: 19001`（admin 两处）、19002、19010、19011、8080 等行，全部为自定义值。
 
-- [ ] **Step 7: 校验 nginx 模板渲染（替换 + 语法）**
+- [x] **Step 7: 校验 nginx 模板渲染（替换 + 语法）**
 
 ```bash
 cd /home/wwwroot/game-platform-php && docker run --rm \
@@ -540,7 +542,7 @@ Expected: `syntax is ok` + `test is successful`（首次运行会拉取 nginx:al
 - Modify: `admin/docs/nginx-security.conf:78`
 - Delete: `service/config/process.php.bak`
 
-- [ ] **Step 1: 修 `admin/docs/nginx-security.conf` 的 proxy_pass**
+- [x] **Step 1: 修 `admin/docs/nginx-security.conf` 的 proxy_pass**
 
 该文件被 `admin/docker-compose.yml` 挂载为 nginx 真实配置，容器内 `127.0.0.1` 指向 nginx 自己，必然 502；compose 中应用服务名为 `app`：
 
@@ -551,7 +553,7 @@ Expected: `syntax is ok` + `test is successful`（首次运行会拉取 nginx:al
 +    proxy_pass http://app:8789;
 ```
 
-- [ ] **Step 2: 删除残留备份**
+- [x] **Step 2: 删除残留备份**
 
 该文件在 `.gitignore:32:*.bak` 内（未跟踪），直接删除：
 
@@ -559,7 +561,7 @@ Expected: `syntax is ok` + `test is successful`（首次运行会拉取 nginx:al
 rm /home/wwwroot/game-platform-php/service/config/process.php.bak
 ```
 
-- [ ] **Step 3: 验证**
+- [x] **Step 3: 验证**
 
 ```bash
 cd /home/wwwroot/game-platform-php && grep -n 'proxy_pass' admin/docs/nginx-security.conf && ls service/config/process.php.bak 2>&1
@@ -573,7 +575,7 @@ Expected: `78:    proxy_pass http://app:8789;` 和 `ls: cannot access 'service/c
 
 **Files:** 无新改动；验证范围 = 全部改动文件。
 
-- [ ] **Step 1: service 真实启动验证自定义端口（本机实测可行）**
+- [x] **Step 1: service 真实启动验证自定义端口（本机实测可行）**
 
 ```bash
 cd /home/wwwroot/game-platform-php/service
@@ -588,7 +590,7 @@ ss -ltn | grep -E ':(19010|19011|19012)\b' || echo "stopped OK"
 
 Expected: 三行 LISTEN（19010/19011/19012），随后 `stopped OK`。若进程未退净：`php start.php stop`。（shell 传入的 env 优先于 .env——`createUnsafeImmutable` 不覆盖既有环境变量。）
 
-- [ ] **Step 2: 重跑浏览器套件（Task E 无回归 + 成功页新链接渲染）**
+- [x] **Step 2: 重跑浏览器套件（Task E 无回归 + 成功页新链接渲染）**
 
 ```bash
 bash /tmp/pwtest/run_browser_test.sh
@@ -596,7 +598,7 @@ bash /tmp/pwtest/run_browser_test.sh
 
 Expected: `BROWSER: ALL PASS`（34 项，含弹框进度、原生回退、localStorage 清理、已安装页拦截）。
 
-- [ ] **Step 3: 最终硬编码审计**
+- [x] **Step 3: 最终硬编码审计**
 
 ```bash
 cd /home/wwwroot/game-platform-php && grep -rn --include='*.php' --include='*.yml' --include='*.conf' -E '\b(8789|8790|8791|8792)\b' admin/config service/config docker-compose.yml nginx.conf.template install/index.php admin/docs/nginx-security.conf admin/Dockerfile service/Dockerfile
@@ -614,7 +616,7 @@ Expected 剩余项（全部是"默认值/回退"，即配置化后的合法形�
 
 任何此列表之外的新命中 = 遗漏，需处理。
 
-- [ ] **Step 4: 独立验证 agent**
+- [x] **Step 4: 独立验证 agent**
 
 按契约派 `verification` 子代理：传原始需求（"所有启动端口或请求地址放到对应的配置文件中"，范围=后端+部署编排）、全部改动文件清单（Task 1-4）、方法与证据（探针输出、compose config、nginx 模板测试、E2E、浏览器套件）。FAIL 则修复后重验，PASS 后抽查 2-3 条命令复跑。
 

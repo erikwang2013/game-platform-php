@@ -598,14 +598,14 @@ The project provides `docs/nginx-security.conf` as a reference security-hardenin
 
 | Threat type | Attack vector | Defense layers |
 |----------|---------|---------|
-| HTTP method abuse | TRACE/TRACK XST attacks, CONNECT tunnel proxy, WebDAV method probing | SecurityFilter 405 method whitelist (GET/POST/PUT/DELETE/OPTIONS/HEAD) |
+| HTTP method abuse | TRACE/TRACK XST attacks, CONNECT tunnel proxy, WebDAV method probing | SecurityFilter 405 method whitelist (GET/POST/PUT/DELETE/HEAD/OPTIONS/PATCH) |
 | Targeted brute force | Repeatedly trying passwords for a specific user | Account lockout (15-min lock after 5 failures) + RateLimit (login 10/min) + Captcha |
 | Brute force | Distributed IPs repeatedly trying usernames/passwords | RateLimit (login 10/min) + Captcha |
-| XSS cross-site scripting | `<script>`, onerror, javascript: | SecurityFilter (5 patterns) + X-XSS-Protection response header + CSP |
-| SQL injection | UNION SELECT, OR 1=1, comment bypass | SecurityFilter (6 patterns) + Eloquent ORM parameterized queries |
+| XSS cross-site scripting | `<script>`, onerror, javascript: | SecurityFilter (13 patterns) + X-XSS-Protection response header + CSP |
+| SQL injection | UNION SELECT, OR 1=1, comment bypass | SecurityFilter (14 patterns) + Eloquent ORM parameterized queries |
 | CSRF cross-site request forgery | Malicious sites forging requests | SecurityFilter Origin/Referer validation |
 | Path traversal | `../../etc/passwd` | SecurityFilter path traversal patterns + UploadController extension whitelist |
-| Command injection | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (4 patterns) |
+| Command injection | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (13 patterns) |
 | Session hijacking | Stealing JWT tokens | Short JWT validity (2h) + blacklist logout + password re-confirmation for sensitive operations |
 | ID enumeration | Iterating numeric IDs to guess data volume | Hashids obfuscation into random strings |
 | Data leakage | DB theft / man-in-the-middle / log leakage | Three-layer encryption/masking + OperationLog sensitive field filtering |

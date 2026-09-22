@@ -200,10 +200,10 @@ block  → 拒绝操作
 
 ### 6.2 KYC 实名认证
 
-三级认证体系：
+提现限额档位（game_withdraw_limit）：
 - `default` — 未认证，基础限额
 - `verified` — KYC 审核通过，提高限额+降低手续费
-- `vip` — VIP 等级，最高限额+零手续费
+- `vip` — 预留档位（最高限额+零手续费）；当前代码只解析 default/verified，VIP 手续费优惠按经验值另行计算
 
 认证流程：
 ```
@@ -219,9 +219,9 @@ reject → 用户可重新提交
 
 ```
 前端点击 OAuth 按钮
-  → GET /api/auth/oauth/{provider} → 获取授权URL
+  → GET /api/v1/auth/oauth/{provider} → 获取授权URL
   → 跳转第三方授权页 → 用户同意
-  → 回调 POST /api/auth/oauth/{provider}/callback
+  → 回调 POST /api/v1/auth/oauth/{provider}/callback
   → 查找已有绑定 → 直接登录
   → 无绑定 → 自动注册新用户 + 绑定 + 创建钱包
 ```
@@ -229,7 +229,7 @@ reject → 用户可重新提交
 ### 6.4 支付回调
 
 ```
-第三方支付完成 → POST /api/payment/callback
+第三方支付完成 → POST /api/v1/payment/callback
   → provider 白名单校验（仅 stripe/paypal）
   → 验签 fail-closed（未配 secret/webhook_id、验签失败、时间戳超 ±300s 一律拒绝）
   → 回调金额与订单金额 bccomp 核对（防跨渠道冒用）
@@ -251,7 +251,7 @@ reject → 用户可重新提交
 
 ## 7. 扩展性设计
 
-### 5.1 水平扩展
+### 7.1 水平扩展
 
 admin/ 和 service/ 均支持多 worker 进程。配合 Nginx 反向代理，可部署多台机器实现水平扩展：
 
@@ -263,7 +263,7 @@ Nginx (负载均衡)
   └── service-2 (:8792)
 ```
 
-### 5.2 模块拆分路径
+### 7.2 模块拆分路径
 
 当单一 service/ 成为瓶颈时，按以下路径拆分：
 

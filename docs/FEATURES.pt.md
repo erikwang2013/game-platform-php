@@ -44,7 +44,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Lobby de jogos | 10 categorias predefinidas, filtro por categoria, associação jogo-categoria | Concluído |
 | Rankings | ranking diário/semanal/mensal/total, cache Redis, múltiplas métricas | Concluído |
 | Cupons | valor fixo + desconto percentual, limitado por tempo/quantidade, rastreamento de resgate/uso | Concluído |
-| Configuração de países | 8 países predefinidos, pagamento/saque diferenciados, depósito mínimo | Concluído |
+| Configuração de países | 18 países predefinidos, pagamento/saque diferenciados, depósito mínimo | Concluído |
 | Estatísticas | snapshot de estatísticas diárias + rastreamento de receita da plataforma | Concluído |
 | Busca | busca full-text Elasticsearch (integrada na camada de modelos) | Concluído |
 
@@ -67,7 +67,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Implantação | Docker Compose 7 serviços + proxy reverso Nginx | Concluído |
 | Dados | análise com agregação em tempo real no MySQL + cálculo de probabilidade conjunta/condicional | Concluído |
 | HarmonyOS | admin 8 páginas; C-side `apps/harmonyos/` com login/lobby/detalhes/carteira/perfil implementados (aponta para 8792) | Parcialmente concluído (projeto compila; em dispositivo real, alterar o IP) |
-| Documentação da API | documentação interativa hg/apidoc | Concluído |
+| Documentação da API | documentação interativa erikwang2013/apidoc-php | Concluído |
 | Instalação em um clique | Assistente de instalação no navegador: criar admin, atualizar banco existente, install.lock evita reinstalação | Concluído |
 | Tolerância a falhas | CircuitBreaker + Retry + interruptor de degradação feature.provider_mock | Concluído |
 | Métodos de pagamento | CRUD no admin + visibilidade por país + faixa de valores + restrição de moeda | Concluído |
@@ -79,10 +79,10 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 |----|------|------|
 | Integração de jogos | camada de abstração GameProvider (Self/ThirdParty) + assinatura HMAC-SHA256 | Concluído |
 | Callbacks de jogos | gateway Provider API (balance/bet/settle/refund) + middleware ProviderAuth | Concluído |
-| Sessões de jogo | heartbeat Redis + liquidação automática por timeout de 15 min + GameSessionService | Concluído |
+| Sessões de jogo | Token de sessão SDK: assinatura HMAC-SHA256 + TTL de 5 minutos (emitido por `GET /api/v1/game/session`, validado por `SdkSessionAuth`) | Concluído |
 | Sistema de tickets | criação/resposta C-side + tratamento/atribuição/fechamento no admin, 5 tipos de ticket | Concluído |
 | Verificação de email | código de 6 dígitos, expiração Redis 10 min, limite de reenvio 60s | Concluído |
-| Push notifications | PushService (FCM/APNs/华为推送) + modelo DeviceToken | Concluído |
+| Push notifications | PushService (FCM/APNs/push Huawei) + modelo DeviceToken | Concluído |
 | Sistema VIP | 5 níveis (normal/prata/ouro/platina/diamante) + pontos de experiência + upgrade automático | Concluído |
 | Benefícios VIP | desconto de troca 2-15%, redução de tarifa de saque 10-100%, bônus de câmbio 0.1-1.0% | Concluído |
 | Sistema de conquistas | 12 conquistas integradas; detecção orientada a eventos com EventConsumer → AchievementService e experiência VIP | Concluído |
@@ -119,62 +119,64 @@ Suporte via tickets
 
 | Método | Caminho | Observação | Autenticação |
 |------|------|------|------|
-| POST | /api/auth/register | registro de usuário | Não |
-| POST | /api/auth/login | login de usuário | Não |
-| POST | /api/auth/refresh | refresh do Token | Não |
-| GET | /api/game/list | lista de jogos | Não |
-| GET | /api/game/detail/{id} | detalhes do jogo | Não |
-| GET | /api/announcement/list | lista de anúncios | Não |
-| GET | /api/wallet/info | saldo da carteira | Sim |
-| GET | /api/wallet/transactions | registro de transações | Sim |
-| POST | /api/deposit/create | criar ordem de depósito | Sim |
-| GET | /api/payment/methods | lista de métodos de pagamento (rota por país) | Sim |
-| POST | /api/exchange/quote | cotação de troca (desconto VIP) | Sim |
-| POST | /api/exchange/buy | comprar moeda de jogo | Sim |
-| POST | /api/exchange/sell | vender moeda de jogo | Sim |
-| POST | /api/withdraw/apply | solicitação de saque (redução VIP) | Sim |
-| POST | /api/game/launch | iniciar jogo | Sim |
-| GET | /api/game/play-logs | registros de partidas | Sim |
-| POST | /api/referral/apply | usar código de indicação | Sim |
-| POST | /api/verify/send-email | enviar código de verificação de email | Sim |
-| POST | /api/verify/confirm-email | confirmar email | Sim |
-| GET | /api/ticket/list | lista de tickets | Sim |
-| POST | /api/ticket/create | criar ticket | Sim |
-| POST | /api/ticket/{id}/reply | responder ticket | Sim |
+| POST | /api/v1/auth/register | registro de usuário | Não |
+| POST | /api/v1/auth/login | login de usuário | Não |
+| POST | /api/v1/auth/refresh | refresh do Token | Não |
+| GET | /api/v1/game/list | lista de jogos | Não |
+| GET | /api/v1/game/detail/{id} | detalhes do jogo | Não |
+| GET | /api/v1/announcement/list | lista de anúncios | Não |
+| GET | /api/v1/wallet/info | saldo da carteira | Sim |
+| GET | /api/v1/wallet/transactions | registro de transações | Sim |
+| POST | /api/v1/deposit/create | criar ordem de depósito | Sim |
+| GET | /api/v1/payment/methods | lista de métodos de pagamento (rota por país) | Sim |
+| POST | /api/v1/exchange/quote | cotação de troca (desconto VIP) | Sim |
+| POST | /api/v1/exchange/buy | comprar moeda de jogo | Sim |
+| POST | /api/v1/exchange/sell | vender moeda de jogo | Sim |
+| POST | /api/v1/withdraw/apply | solicitação de saque (redução VIP) | Sim |
+| POST | /api/v1/game/launch | iniciar jogo | Sim |
+| GET | /api/v1/game/play-logs | registros de partidas | Sim |
+| POST | /api/v1/referral/apply | usar código de indicação | Sim |
+| POST | /api/v1/verify/send-email | enviar código de verificação de email | Sim |
+| POST | /api/v1/verify/confirm-email | confirmar email | Sim |
+| GET | /api/v1/ticket/list | lista de tickets | Sim |
+| POST | /api/v1/ticket/create | criar ticket | Sim |
+| POST | /api/v1/ticket/{id}/reply | responder ticket | Sim |
+| GET | /api/v1/platform/stats | Estatísticas da plataforma | Não |
 
-| GET | /api/platform/stats | Estatísticas da plataforma | Não |
 ## 3. Funcionalidades do painel administrativo
 
 ### 3.1 Interfaces de API (novas)
 
 | Método | Caminho | Observação |
 |------|------|------|
-| GET | /admin/dashboard/platform | dados do dashboard da plataforma |
-| GET | /admin/analytics/overview | visão geral da plataforma (agregação em tempo real no MySQL) |
-| GET | /admin/analytics/game-ranking | ranking de jogos |
-| GET | /admin/analytics/dau-trend | tendência de DAU |
-| GET | /admin/analytics/hourly-trend | tendência por hora |
-| GET | /admin/analytics/action-distribution | distribuição de ações |
-| GET | /admin/analytics/revenue | análise de receita |
-| GET | /admin/analytics/conversion | taxa de conversão de jogos |
-| GET | /admin/analytics/probability | probabilidade conjunta/condicional |
-| GET | /admin/analytics/retention | análise de retenção D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | funil de conversão |
-| GET | /admin/analytics/arpu | tendência ARPU/ARPPU |
-| GET | /admin/analytics/economy | indicadores econômicos das moedas de jogo |
-| GET | /admin/report/summary | Resumo de relatórios (novos usuários/depósitos/saques/câmbios/partidas) |
-| GET | /admin/report/daily | Relatório diário (agregação por dia, datas sem dados preenchidas com 0) |
-| GET | /admin/report/export | Exportação do relatório diário em CSV (UTF-8 BOM) |
-| GET | /admin/game/list | lista de jogos |
-| POST | /admin/game/create | criar jogo (incl. provider_config) |
-| PUT | /admin/game/{id} | editar jogo |
-| GET | /admin/withdraw/orders | lista de ordens de saque |
-| PUT | /admin/withdraw/review | revisar saque |
-| GET | /admin/ticket/list | lista de tickets |
-| GET | /admin/ticket/{id} | detalhes do ticket |
-| POST | /admin/ticket/{id}/reply | responder ticket |
-| POST | /admin/ticket/{id}/close | fechar ticket |
-| POST | /admin/ticket/{id}/assign | designar responsável |
+| GET | /admin/v1/dashboard/platform | dados do dashboard da plataforma |
+| GET | /admin/v1/analytics/overview | visão geral da plataforma (agregação em tempo real no MySQL) |
+| GET | /admin/v1/analytics/game-ranking | ranking de jogos |
+| GET | /admin/v1/analytics/dau-trend | tendência de DAU |
+| GET | /admin/v1/analytics/hourly-trend | tendência por hora |
+| GET | /admin/v1/analytics/action-distribution | distribuição de ações |
+| GET | /admin/v1/analytics/revenue | análise de receita |
+| GET | /admin/v1/analytics/conversion | taxa de conversão de jogos |
+| GET | /admin/v1/analytics/probability | probabilidade conjunta/condicional |
+| GET | /admin/v1/analytics/retention | análise de retenção D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | funil de conversão |
+| GET | /admin/v1/analytics/arpu | tendência ARPU/ARPPU |
+| GET | /admin/v1/analytics/economy | indicadores econômicos das moedas de jogo |
+| GET | /admin/v1/report/summary | Resumo de relatórios (novos usuários/depósitos/saques/câmbios/partidas) |
+| GET | /admin/v1/report/daily | Relatório diário (agregação por dia, datas sem dados preenchidas com 0) |
+| GET | /admin/v1/report/export | Exportação do relatório diário em CSV (UTF-8 BOM) |
+| GET | /admin/v1/game/list | lista de jogos |
+| GET | /admin/v1/game/{id} | detalhes do jogo |
+| POST | /admin/v1/game/launch | Pré-visualização do jogo (somente leitura) |
+| POST | /admin/v1/game/create | criar jogo (incl. provider_config) |
+| PUT | /admin/v1/game/{id} | editar jogo |
+| GET | /admin/v1/withdraw/orders | lista de ordens de saque |
+| PUT | /admin/v1/withdraw/review | revisar saque |
+| GET | /admin/v1/ticket/list | lista de tickets |
+| GET | /admin/v1/ticket/{id} | detalhes do ticket |
+| POST | /admin/v1/ticket/{id}/reply | responder ticket |
+| POST | /admin/v1/ticket/{id}/close | fechar ticket |
+| POST | /admin/v1/ticket/{id}/assign | designar responsável |
 
 ## 4. Provider API (callbacks do provedor de jogos)
 
@@ -250,21 +252,21 @@ Janela de tempo: 5 minutos
 | game_game | +provider_config (JSON) |
 | game_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**Total: 43 tabelas no install.sql** (as 10 da expansão do ecossistema ficam em `install/`, não incorporadas ao install.sql). Modelos não compartilhados: admin 46 / service 44, uma cópia cada.
+**Total: 78 tabelas no install.sql**. Modelos: 52 compartilhados em `packages/platform-common/src/model/`; os 8 em admin/app/model/ e 10 em service/app/model/ são exclusivos de cada host (sem sobreposição de nomes de arquivo).
 
 ## 8. Cobertura de testes
 
 | Arquivo de teste | Nº de casos | Cobertura |
 |---------|--------|---------|
-| PlatformTest | 56 | precisão bcmath/cálculos de troca/tarifas de saque/limites/risco/cupons/KYC/i18n |
-| BackendEnhancementTest | 23 | serviços de criptografia/Hashids/Snowflake |
-| CaptchaTest | 7 | geração/validação de captcha |
-| EncryptionServiceTest | 6 | AES criptografia/descriptografia/mascaramento |
-| EnvConfigTest | 4 | configuração de variáveis de ambiente |
-| HashidsServiceTest | 8 | ida e volta de codificação/decodificação de IDs |
-| SnowflakeServiceTest | 6 | unicidade de geração de IDs |
+| PlatformTest | 55 | precisão bcmath/cálculos de troca/tarifas de saque/limites/risco/cupons/KYC/i18n |
+| BackendEnhancementTest | 27 | serviços de criptografia/Hashids/Snowflake |
+| CaptchaTest | 5 | geração/validação de captcha |
+| EncryptionServiceTest | 8 | AES criptografia/descriptografia/mascaramento |
+| EnvConfigTest | 6 | configuração de variáveis de ambiente |
+| HashidsServiceTest | 6 | ida e volta de codificação/decodificação de IDs |
+| SnowflakeServiceTest | 5 | unicidade de geração de IDs |
 
-**Total: admin ~132 casos / 8 arquivos; service 3 casos (WebhookUrlSafety + EventBusMessageFormat). service não incluído no bloqueio de falhas do CI.**
+**Total (phpunit --list-tests, medição atual): admin 200 casos / 21 arquivos, service 273 casos / 42 arquivos (incl. WebhookUrlSafety + EventBusMessageFormat; relatório: repetição de 09-22 admin 190 + service 273, snapshot de 08-27 admin 153 + service 45). service não incluído no bloqueio de falhas do CI (não verificado).**
 
 ---
 

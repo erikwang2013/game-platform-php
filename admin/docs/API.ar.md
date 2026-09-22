@@ -442,7 +442,7 @@ GET /admin/v1/dashboard
 | value | string | قيمة المؤشر (نوع سلسلة) |
 | icon | string | اسم أيقونة Material |
 | color | string | قيمة لون البطاقة |
-| trend | float? | معدل النمو اليومي (نسبة مئوية)، فقط "用户总数" يتضمن هذا الحقل |
+| trend | float? | معدل النمو اليومي (نسبة مئوية)، فقط "إجمالي المستخدمين" يتضمن هذا الحقل |
 
 | حقل trends | النوع | الوصف |
 |------|------|------|
@@ -1263,7 +1263,7 @@ GET /admin/v1/log
 | الحقل | النوع | الوصف |
 |------|------|------|
 | id | string | hashid |
-| user_name | string | اسم مستخدم العملية (يُحصل عليه عبر ربط user، ويعرض "系统" للعمليات غير المسجلة الدخول) |
+| user_name | string | اسم مستخدم العملية (يُحصل عليه عبر ربط user، ويعرض "النظام" للعمليات غير المسجلة الدخول) |
 | action | string | وصف إجراء العملية |
 | method | string | طريقة HTTP (POST/PUT/DELETE) |
 | path | string | مسار الطلب |
@@ -1573,26 +1573,7 @@ POST /admin/v1/upload
 - استخدام خوارزمية النافذة المنزلقة الذرية في Redis (Lua ZSET)، لتجنب سباق TOCTOU
 - عند تعذر الوصول إلى Redis يكون الإغلاق آمنًا (fail-closed): يُرجع 503 (`Retry-After: 5`)، دون تمرير الطلبات
 
-## 14. تحليل البيانات (Analytics)
-
-تتطلب جميع نقاط النهاية المصادقة (`AdminAuth` + `AdminPermission`)، تجميع فوري في MySQL، بإجمالي 12:
-
-| الطريقة | المسار | الوصف |
-|------|------|------|
-| GET | /admin/v1/analytics/overview | نظرة عامة على المنصة (اليوم/آخر 7 أيام) |
-| GET | /admin/v1/analytics/game-ranking | ترتيب الألعاب (?days=7) |
-| GET | /admin/v1/analytics/dau-trend | اتجاه DAU (?days=30) |
-| GET | /admin/v1/analytics/hourly-trend | اتجاه الساعات |
-| GET | /admin/v1/analytics/action-distribution | توزيع السلوك |
-| GET | /admin/v1/analytics/revenue | تحليل الإيرادات |
-| GET | /admin/v1/analytics/conversion | معدل تحويل الألعاب |
-| GET | /admin/v1/analytics/probability | الاحتمال المشترك/الشرطي |
-| GET | /admin/v1/analytics/retention | تحليل الاستبقاء D1/D3/D7/D30 |
-| GET | /admin/v1/analytics/funnel | قمع التحويل |
-| GET | /admin/v1/analytics/arpu | اتجاه ARPU/ARPPU |
-| GET | /admin/v1/analytics/economy | المؤشرات الاقتصادية لعملات اللعبة |
-
-## 15. إدارة التذاكر (Ticket)
+## 14. إدارة التذاكر (Ticket)
 
 تتطلب جميع نقاط النهاية المصادقة (`AdminAuth` + `AdminPermission`)، بإجمالي 5:
 
@@ -1604,7 +1585,7 @@ POST /admin/v1/upload
 | POST | /admin/v1/ticket/{hashid}/close | إغلاق التذكرة |
 | POST | /admin/v1/ticket/{hashid}/assign | تعيين المعالِج (admin_id) |
 
-## 16. تدفق المصادقة
+## 15. تدفق المصادقة
 
 التسلسل الكامل للمصادقة:
 
@@ -1681,11 +1662,11 @@ POST /admin/v1/upload
 - تقييد الجلسات المتزامنة: 3 رموز صالحة كحد أقصى لكل مستخدم، وعند تسجيل دخول الجهاز الرابع يُضاف أقدم رمز قسريًا إلى القائمة السوداء
 - قفل الحساب: 5 محاولات تسجيل دخول فاشلة متتالية تُطلق قفل الحساب لمدة 15 دقيقة، وخلالها يُرجع 429
 
-## 15. النشر والتشغيل
+## 16. النشر والتشغيل
 
 ### Docker Compose
 
-يوفر دليل جذر المشروع `docker-compose.yml`، ينظم 5 خدمات (Nginx وتطبيق webman وMySQL وRedis وElasticsearch). يُبنى PHP عبر `Dockerfile` (مبني على `php:8.3-cli` مع تفعيل OPcache).
+يوفر دليل جذر المشروع `docker-compose.yml`، ينظم 7 خدمات (Nginx وadmin وservice وleaderboard-ws وMySQL وRedis وElasticsearch). يُبنى PHP عبر `Dockerfile` (مبني على `php:8.3-cli` مع تفعيل OPcache).
 
 ```bash
 cp .env.docker .env
@@ -1709,11 +1690,11 @@ docker-compose up -d
 
 يرجى الرجوع إلى `docs/nginx-security.conf` في النشر الإنتاجي لتكوين تحصين الوكيل العكسي.
 
-## 16. تحليل البيانات (Analytics)
+## 17. تحليل البيانات (Analytics)
 
 توفر واجهات تحليل البيانات عبر `AnalyticsController`، وكلها تعتمد التجميع الفوري في MySQL (`game_game_play_log` سجلات سلوك اللعب / `game_deposit_order` طلبات التعبئة)، وعند تعطل قاعدة البيانات تُرجع بيانات فارغة بدلاً من 500. ما لم يُذكر خلاف ذلك، تتطلب جميعها مصادقة JWT + RBAC، وتنسيق الاستجابة الموحد `{ "code": 0, "message": "success", "data": ... }`.
 
-### 16.1 نظرة عامة على المنصة
+### 17.1 نظرة عامة على المنصة
 
 ```
 GET /admin/v1/analytics/overview
@@ -1721,7 +1702,7 @@ GET /admin/v1/analytics/overview
 
 **الاستجابة**: يتضمن `today` / `week` كلٌّ منهما `dau` (عدد المستخدمين النشطين) و`revenue` (إجمالي التعبئة المؤكدة، سلسلة) و`new_users` (عدد المستخدمين الجدد).
 
-### 16.2 ترتيب الألعاب
+### 17.2 ترتيب الألعاب
 
 ```
 GET /admin/v1/analytics/game-ranking?days=7
@@ -1729,7 +1710,7 @@ GET /admin/v1/analytics/game-ranking?days=7
 
 **الاستجابة**: أعلى 10 حسب عدد مرات سلوك اللعب تنازليًا، كل عنصر يتضمن `game_id` (hashid) و`name` و`plays` و`players`.
 
-### 16.3 اتجاه DAU
+### 17.3 اتجاه DAU
 
 ```
 GET /admin/v1/analytics/dau-trend?days=30
@@ -1737,7 +1718,7 @@ GET /admin/v1/analytics/dau-trend?days=30
 
 **الاستجابة**: `{ "التاريخ": عدد النشطاء, ... }`، التاريخ المفقود يُكمل بـ 0.
 
-### 16.4 اتجاه الساعات
+### 17.4 اتجاه الساعات
 
 ```
 GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
@@ -1745,7 +1726,7 @@ GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
 
 **الاستجابة**: `{ "0": عدد المرات, ... "23": عدد المرات }` 24 خانة زمنية؛ عند فراغ `game_id` تُحصى جميع الألعاب.
 
-### 16.5 توزيع السلوك
+### 17.5 توزيع السلوك
 
 ```
 GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
@@ -1753,7 +1734,7 @@ GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
 
 **الاستجابة**: `{ "start": n, "end": n, "earn": n, "spend": n }` عدد أربعة أنواع من السلوك؛ حد `hours` هو 168.
 
-### 16.6 نظرة عامة على الإيرادات
+### 17.6 نظرة عامة على الإيرادات
 
 ```
 GET /admin/v1/analytics/revenue?days=7
@@ -1761,7 +1742,7 @@ GET /admin/v1/analytics/revenue?days=7
 
 **الاستجابة**: `{ "total": "الإجمالي", "trend": { "التاريخ": "قيمة اليوم", ... } }`، تُحصى طلبات `status=confirmed` فقط.
 
-### 16.7 معدل تحويل الألعاب
+### 17.7 معدل تحويل الألعاب
 
 ```
 GET /admin/v1/analytics/conversion?days=30
@@ -1769,7 +1750,7 @@ GET /admin/v1/analytics/conversion?days=30
 
 **الاستجابة**: كل لعبة تتضمن `game_id` (hashid) و`game_name` و`players` (عدد اللاعبين الفريدين) و`depositors` (عدد المعبئين الفريدين) و`conversion_rate` (معدل تحويل التعبئة، 0~1).
 
-### 16.8 الاحتمال المشترك
+### 17.8 الاحتمال المشترك
 
 ```
 GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
@@ -1777,7 +1758,7 @@ GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
 
 **الاستجابة**: `{ "joint": { "joint_probability": 0.12, "confidence": 0.3 } }` — معامل Jaccard (اللاعبون المشتركون بين اللعبتين / اتحاد اللاعبين) والثقة (اللاعبون المشتركون / لاعبو اللعبة A).
 
-### 16.9 تحليل الاستبقاء
+### 17.9 تحليل الاستبقاء
 
 ```
 GET /admin/v1/analytics/retention?days=30
@@ -1785,7 +1766,7 @@ GET /admin/v1/analytics/retention?days=30
 
 **الاستجابة**: `{ "D1": "8.5%", "D3": "...", "D7": "...", "D30": "..." }` معدلات الاستبقاء لليوم التالي/3 أيام/7 أيام/30 يومًا حسب مجموعات يوم التسجيل.
 
-### 16.10 قمع التحويل
+### 17.10 قمع التحويل
 
 ```
 GET /admin/v1/analytics/funnel?days=30
@@ -1793,7 +1774,7 @@ GET /admin/v1/analytics/funnel?days=30
 
 **الاستجابة**: الخطوات الأربع التسجيل ← أول تعبئة ← أول صرف ← أول لعبة، مع `step` و`count` و`rate` (نسبة مئوية من عدد التسجيلات).
 
-### 16.11 اتجاه ARPU/ARPPU
+### 17.11 اتجاه ARPU/ARPPU
 
 ```
 GET /admin/v1/analytics/arpu?days=30
@@ -1801,7 +1782,7 @@ GET /admin/v1/analytics/arpu?days=30
 
 **الاستجابة**: `{ "dates": [...], "arpu": [...], "arppu": [...] }` متوسط الإيراد اليومي لكل مستخدم (ARPU) ومتوسط الإيراد اليومي لكل مستخدم مدفوع (ARPPU).
 
-### 16.12 المؤشرات الاقتصادية للألعاب
+### 17.12 المؤشرات الاقتصادية للألعاب
 
 ```
 GET /admin/v1/analytics/economy
@@ -1809,7 +1790,7 @@ GET /admin/v1/analytics/economy
 
 **الاستجابة**: مصفوفة `currencies`، كل عنصر يتضمن `game_name` و`currency` و`symbol` و`total_minted` (إجمالي السك) و`total_burned` (إجمالي الإتلاف) و`circulation` (حجم التداول) و`inflation_rate` (معدل التضخم)، بحسابات bcmath عالية الدقة.
 
-## 17. إدارة الدفع (Payment)
+## 18. إدارة الدفع (Payment)
 
 توفر إدارة طرق الدفع عبر `PaymentController`؛ جميع نقاط النهاية الخمس تتطلب مصادقة JWT + RBAC. القائمة البيضاء لـ `provider`: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`. `config` عبارة عن سلسلة JSON لإعدادات الدفع (مخزنة مشفرة في قاعدة البيانات).
 
@@ -1821,7 +1802,7 @@ GET /admin/v1/analytics/economy
 | PUT | /admin/v1/payment/method/{hashid} | تحديث طريقة دفع |
 | DELETE | /admin/v1/payment/method/{hashid} | حذف طريقة دفع (مرفوض إذا كانت هناك طلبات معلقة) |
 
-### 17.1 قائمة طرق الدفع
+### 18.1 قائمة طرق الدفع
 
 ```
 GET /admin/v1/payment/method/list
@@ -1869,7 +1850,7 @@ GET /admin/v1/payment/method/list
 | min_amount / max_amount | string | نطاق المبالغ (سلسلة تحافظ على الدقة)، 0 = بلا حد |
 | config | string? | JSON إعدادات الدفع (مشفر؛ null إذا لم يُحدد) |
 
-### 17.2 تفعيل/تعطيل طريقة دفع
+### 18.2 تفعيل/تعطيل طريقة دفع
 
 ```
 POST /admin/v1/payment/method/toggle
@@ -1892,7 +1873,7 @@ POST /admin/v1/payment/method/toggle
 - 422: فشل التحقق (id/status مفقود أو status ليس 0/1)
 - 404: طريقة الدفع غير موجودة
 
-### 17.3 إنشاء طريقة دفع
+### 18.3 إنشاء طريقة دفع
 
 ```
 POST /admin/v1/payment/method/create
@@ -1938,20 +1919,20 @@ POST /admin/v1/payment/method/create
 **الأخطاء المحتملة**:
 - 422: فشل التحقق
 
-### 17.4 تحديث طريقة دفع
+### 18.4 تحديث طريقة دفع
 
 ```
 PUT /admin/v1/payment/method/{hashid}
 ```
 
 - **معامل المسار**: `{hashid}` هو معرف طريقة الدفع المشفر بـ hashid
-- **نص الطلب**: كما في الإنشاء (17.3)، جميع الحقول اختيارية، يتم تحديث الحقول المرسلة فقط
+- **نص الطلب**: كما في الإنشاء (18.3)، جميع الحقول اختيارية، يتم تحديث الحقول المرسلة فقط
 
 **الأخطاء المحتملة**:
 - 404: طريقة الدفع غير موجودة
 - 422: فشل التحقق
 
-### 17.5 حذف طريقة دفع
+### 18.5 حذف طريقة دفع
 
 ```
 DELETE /admin/v1/payment/method/{hashid}

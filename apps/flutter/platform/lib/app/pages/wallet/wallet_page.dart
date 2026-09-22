@@ -7,6 +7,7 @@ import '../../i18n/locale_controller.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 import '../profile/profile_page.dart';
+import 'wallet_amount.dart';
 
 class WalletPage extends StatefulWidget {
   const WalletPage({super.key});
@@ -67,8 +68,10 @@ class _WalletPageState extends State<WalletPage> {
     try {
       final resp = await _api.get('/api/v1/wallet/transactions');
       final data = resp['data'];
+      // 服务端是分页信封 {items,total,page,...}，不是裸数组
+      final items = data is Map ? data['items'] : null;
       setState(() {
-        _transactions = data is List ? List<Map<String, dynamic>>.from(data) : [];
+        _transactions = items is List ? List<Map<String, dynamic>>.from(items) : [];
         _txLoading = false;
       });
     } catch (e) {
@@ -290,9 +293,10 @@ class _WalletPageState extends State<WalletPage> {
       );
     }
 
-    final balance = (_wallet?['balance'] ?? 0).toDouble();
-    final frozen = (_wallet?['frozen_balance'] ?? 0).toDouble();
-    final currency = _wallet?['currency'] ?? 'USD';
+    final balance = displayAmount(_wallet?['balance']);
+    final frozen = displayAmount(_wallet?['frozen_balance']);
+    // 后端 /wallet/info 只回 id/balance/frozen_balance/total_earned/total_spent，
+    // 没有币种字段（平台币不是法币），不编造 USD 前缀；与 React/Angular 两棵树一致只显示数值
 
     return Container(
       color: colorScheme.surfaceContainerLowest,
@@ -316,10 +320,10 @@ class _WalletPageState extends State<WalletPage> {
                       Row(
                         children: [
                           _buildBalanceItem('${AppTranslations.t('wallet.available_balance')}',
-                              balance.toStringAsFixed(2), currency.toString(), colorScheme.primary),
+                              balance, colorScheme.primary),
                           const SizedBox(width: 32),
                           _buildBalanceItem('${AppTranslations.t('wallet.frozen_balance')}',
-                              frozen.toStringAsFixed(2), currency.toString(), colorScheme.error),
+                              frozen, colorScheme.error),
                         ],
                       ),
                       const SizedBox(height: 20),
@@ -392,20 +396,13 @@ class _WalletPageState extends State<WalletPage> {
     );
   }
 
-  Widget _buildBalanceItem(String label, String amount, String currency, Color color) {
+  Widget _buildBalanceItem(String label, String amount, Color color) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant)),
         const SizedBox(height: 4),
-        Text.rich(
-          TextSpan(
-            children: [
-              TextSpan(text: '$currency ', style: TextStyle(fontSize: 14, color: color)),
-              TextSpan(text: amount, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color)),
-            ],
-          ),
-        ),
+        Text(amount, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: color)),
       ],
     );
   }

@@ -1,4 +1,4 @@
-# 田园消消乐 — Funktionsdesign
+# Landleben-Match-3 — Funktionsdesign
 <!-- lang-nav -->
 
 Languages: **中文** · [English](functional-design.en.md) · [한국어](functional-design.ko.md) · [Русский](functional-design.ru.md) · [Deutsch](functional-design.de.md) · [Français](functional-design.fr.md) · [Español](functional-design.es.md) · [Português](functional-design.pt.md) · [हिन्दी](functional-design.hi.md) · [العربية](functional-design.ar.md) · [বাংলা](functional-design.bn.md) · [Bahasa Indonesia](functional-design.id.md) · [日本語](functional-design.ja.md)
@@ -14,7 +14,7 @@ Languages: **中文** · [English](functional-design.en.md) · [한국어](funct
 
 | Punkt | Inhalt |
 |----|------|
-| Name | 田园消消乐 (Landleben-Match-3) |
+| Name | Landleben-Match-3 |
 | Typ | 8×8 Match-3 + ökologische Kette |
 | Perspektive | Feste 2.5D-Orthografie-Sandmodell, nicht drehbar |
 | Bedienung | Zwei benachbarte Figuren per Klick tauschen (nur oben/unten/links/rechts) |
@@ -104,11 +104,11 @@ In einer Linie **genau 1 Unterdrücker**, der Rest sind seine Beutetiere; die Be
 
 | Unterdrücker | Kann fressen | Kann nicht fressen |
 |--------|------|--------|
-| 鸡、鸭、鹅 (Huhn, Ente, Gans) | Blumen, Gemüse, Obst, Insekten | Getreide |
-| 狗 (Hund) | Huhn, Ente, Gans, Taube usw. Geflügel | Pflanzen, Insekten |
-| 猪 (Schwein) | Bäume, Blumen, Gemüse, Obst, Insekten, Getreide | Hund |
-| 牛、马 (Rind, Pferd) | Blumen, Getreide, Baumschösslinge | Insekten, Fleisch |
-| 大象 (Elefant) | siehe 6.3 | Hindernisse, Werkzeuge |
+| Huhn, Ente, Gans | Blumen, Gemüse, Obst, Insekten | Getreide |
+| Hund | Huhn, Ente, Gans, Taube usw. Geflügel | Pflanzen, Insekten |
+| Schwein | Bäume, Blumen, Gemüse, Obst, Insekten, Getreide | Hund |
+| Rind, Pferd | Blumen, Getreide, Baumschösslinge | Insekten, Fleisch |
+| Elefant | siehe 6.3 | Hindernisse, Werkzeuge |
 
 Was der Spieler sieht: Jagdanimation → alle drei Felder leeren sich (V1: Unterdrücker verlässt mit zusammen das Brett) → auf dem Ursprungsfeld des Unterdrückers bleibt Dünger.
 

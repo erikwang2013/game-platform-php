@@ -1,4 +1,4 @@
-# 开放管理后台 (open-admin)
+# 오픈 관리자 (open-admin)
 
 ## 프로젝트 마스코트
 
@@ -27,6 +27,7 @@ webman v2 + Flutter 기반의 풀스택 관리 백엔드 시스템입니다.
 | | Excel 일괄 가져오기 | 행 단위 검증 + 오류 보고서 |
 | 🔒 역할 권한 | 역할 CRUD + 권한 트리 | RBAC method.path 단위 인가 |
 | ⚙ 시스템 설정 | 키-값 CRUD | 그룹 관리 |
+| 💳 결제 수단 관리 | 다중 게이트웨이 생성/수정/삭제 + 활성/비활성 | 18개 게이트웨이 (stripe/paypal/nowpayments/coinbase 등) + 국가별 표시 |
 | 🖥 CDN 관리 | 5개 업체 설정 CRUD + 활성/비활성 + 연결 테스트 | 자격 증명 AES 암호화 저장, service는 DB에서만 읽음 |
 | 📋 작업 감사 | 로그 조회 + 출처 감지 | 8개 플랫폼 자동 인식 |
 | 📁 파일 관리 | 업로드/Excel 내보내기/PDF 내보내기 | 민감 데이터 자동 마스킹 |
@@ -64,48 +65,53 @@ webman v2 + Flutter 기반의 풀스택 관리 백엔드 시스템입니다.
 ```
 open-admin/
 ├── app/
-│   ├── admin/controller/       # 관리자 컨트롤러
-│   │   ├── DashboardController.php # 대시보드 (Redis 캐시)
-│   │   ├── UserController.php      # 사용자 CRUD + 일괄 작업
-│   │   ├── RoleController.php      # 역할 CRUD
-│   │   ├── PermissionController.php# 권한 CRUD
-│   │   ├── ConfigController.php    # 시스템 설정 CRUD
-│   │   ├── LogController.php       # 작업 로그 조회
-│   │   ├── ProfileController.php   # 개인 센터 + 로그아웃
-│   │   ├── ExportController.php    # Excel/PDF 내보내기
-│   │   ├── ImportController.php    # Excel 사용자 가져오기
-│   │   ├── UploadController.php    # 파일 업로드
-│   │   ├── HealthController.php    # 헬스 체크
-│   │   ├── DocsController.php      # OpenAPI 문서
-│   │   └── BaseController.php      # 기본 컨트롤러
+│   ├── admin/v1/controller/    # 관리자 컨트롤러 (45)
+│   │   ├── DashboardController.php  # 대시보드 (Redis 캐시)
+│   │   ├── UserController.php       # 사용자 CRUD + 일괄 작업
+│   │   ├── RoleController.php       # 역할 CRUD
+│   │   ├── PermissionController.php # 권한 CRUD
+│   │   ├── ConfigController.php     # 시스템 설정 CRUD
+│   │   ├── LogController.php        # 작업 로그 조회
+│   │   ├── ProfileController.php    # 개인 센터 + 로그아웃
+│   │   ├── ExportController.php     # Excel/PDF 내보내기
+│   │   ├── ImportController.php     # Excel 사용자 가져오기
+│   │   ├── UploadController.php     # 파일 업로드
+│   │   ├── HealthController.php     # 헬스 체크
+│   │   ├── DocsController.php       # OpenAPI 문서
+│   │   └── BaseController.php       # 기본 컨트롤러
 │   ├── api/
 │   │   └── v1/controller/          # API v1 컨트롤러 (버전은 URL 경로: /api/v1, /admin/v1)
 │   │       ├── CaptchaController.php # 클릭 캡차
 │   │       └── AuthController.php    # 로그인/가입/토큰 갱신
 │   ├── common/                 # 공용 유틸리티 클래스
-│   │   ├── HashidsService.php  # ID 인코딩/디코딩
-│   │   ├── SnowflakeService.php# Snowflake ID 생성
-│   │   └── EncryptionService.php # 데이터 암복호화 + 마스킹
+│   │   └── CdnProbeService.php # CDN 연결 테스트 (Hashids/Snowflake/Encryption은 composer 패키지 제공)
 │   ├── middleware/             # 미들웨어
 │   │   ├── Cors.php            # 크로스 도메인
 │   │   ├── SecurityFilter.php  # 공격 감지 차단 (HTTP 메서드 제한/XSS/SQL 인젝션/경로 탐색/명령 인젝션/CSRF)
 │   │   ├── RateLimit.php       # Redis 속도 제한 (슬라이딩 윈도우 + 응답 헤더)
+│   │   ├── StaticFile.php      # 정적 파일 서비스 (webman 내장)
 │   │   ├── AdminAuth.php       # JWT 인증 + 블랙리스트
 │   │   ├── AdminPermission.php # RBAC 권한 검증
 │   │   └── OperationLog.php    # 작업 로그 자동 기록 (출처 감지 포함)
-│   └── model/                  # 데이터 모델
+│   ├── activity/               # 활동 핸들러 (출석/초대/일일 미션)
+│   ├── model/                  # 데이터 모델
+│   ├── process/                # 프로세스 (Http, Monitor, RiskIpCron)
+│   ├── provider/               # 게임 Provider 계층 (Self/ThirdParty/Factory)
+│   ├── service/                # 서비스 (지갑/리스크 샌드박스)
+│   └── view/                   # 뷰 템플릿
 ├── apps/
+│   ├── angular/                # Angular 웹 관리자 백엔드
+│   ├── react/                  # React 웹 관리자 백엔드
 │   ├── flutter/                # Flutter 웹 관리 백엔드 (PC 스타일)
 │   │   └── lib/app/
-│   │       ├── pages/          # 완전한 페이지들 (대시보드/사용자/역할/설정/로그/개인 센터)
+│   │       ├── pages/          # 20개 페이지 디렉터리
 │   │       ├── services/       # ApiService (JWT 인터셉터) + AuthService (토큰 영속화)
 │   │       └── layouts/        # 반응형 관리 백엔드 레이아웃 (사이드바+상단바+콘텐츠 영역)
 │   └── harmonyos/              # HarmonyOS 네이티브 클라이언트 (토큰 무감각 갱신)
 ├── config/                     # 설정 파일 (중국어 주석 포함)
 │   ├── route.php               # 라우트 + API 버전 정책
 │   ├── middleware.php           # 전역 미들웨어 등록
-│   └── ...                     # 각 컴포넌트 설정
-├── install/        # SQL 마이그레이션 파일 (권한 시드 데이터 포함)
+│   └── server.php              # 포트/프로세스 설정
 ├── public/                     # 공용 진입점
 ├── runtime/                    # 런타임 파일
 └── vendor/                     # Composer 의존성
@@ -182,7 +188,7 @@ DevEco Studio로 `apps/harmonyos/` 디렉터리를 열고, 실기기 또는 에�
 
 ### 6. Docker Compose 원클릭 배포 (프로덕션 권장)
 
-프로젝트는 5개 서비스로 구성된 완전한 Docker 오케스트레이션을 제공합니다: Nginx, PHP (webman app), MySQL, Redis, Elasticsearch.
+프로젝트는 7개 서비스로 구성된 완전한 Docker 오케스트레이션을 제공합니다: Nginx, admin (webman), service (webman), leaderboard-ws (WebSocket), MySQL, Redis, Elasticsearch.
 
 ```bash
 # 1. Docker 환경 변수 설정
@@ -191,16 +197,16 @@ cp .env.docker .env
 # 2. 모든 서비스 시작
 docker-compose up -d
 
-# 3. 데이터베이스 초기화 (app 컨테이너에서 실행)
-docker-compose exec app mysql -h mysql -u root -p < install/install.sql
+# 3. 데이터베이스 초기화 (mysql 컨테이너를 통해 가져오기)
+docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform < install/install.sql
 
 # 4. 접속
 # http://localhost:8789  (webman)
-# http://localhost:8080  (Nginx 리버스 프록시)
+# http://localhost  (Nginx 리버스 프록시)
 ```
 
 - `Dockerfile`: PHP 8.3 + OPcache + Composer, `php:8.3-cli` 기반
-- `docker-compose.yml`: 5개 서비스 오케스트레이션, 네트워크 격리, 데이터 볼륨 영속화
+- `docker-compose.yml`: 7개 서비스 오케스트레이션, 네트워크 격리, 데이터 볼륨 영속화
 - `.env.docker`: Docker 환경 전용 환경 변수
 
 ## 데이터베이스 규범
@@ -274,7 +280,7 @@ Cors（크로스 도메인 전처리 + 응답 헤더）
   → OperationLog（POST/PUT/DELETE 자동 기록, 출처 감지 포함, /admin/v1 라우트 그룹）
 ```
 
-`/health`와 `/api/docs`는 공개 엔드포인트로, `Cors → SecurityFilter → RateLimit`만 통과합니다.
+`/health`는 공개 엔드포인트로 `Cors → SecurityFilter → RateLimit`만 통과합니다. `/metrics`와 `/api/docs`는 추가로 `AdminAuth → AdminPermission`이 필요합니다.
 
 보안 강화:
 - **계정 잠금**: 연속 5회 로그인 실패 시 계정 자동 15분 잠금, 잠금 중 로그인은 429 반환
@@ -365,6 +371,11 @@ Authorization: Bearer <token>
 | `POST` | `/admin/v1/config` | 설정 항목 생성 |
 | `PUT` | `/admin/v1/config/{id}` | 설정 항목 수정 |
 | `DELETE` | `/admin/v1/config/{id}` | 설정 항목 삭제 (비밀번호 확인 필요) |
+| `GET` | `/admin/v1/payment/method/list` | 결제 수단 목록 |
+| `POST` | `/admin/v1/payment/method/toggle` | 결제 수단 활성/비활성 |
+| `POST` | `/admin/v1/payment/method/create` | 결제 수단 생성 |
+| `PUT` | `/admin/v1/payment/method/{id}` | 결제 수단 수정 |
+| `DELETE` | `/admin/v1/payment/method/{id}` | 결제 수단 삭제 (대기 중인 주문이 있으면 거부) |
 | `GET` | `/admin/v1/log` | 작업 로그 (페이지네이션 + 필터) |
 | `PUT` | `/admin/v1/profile` | 개인 정보 수정 |
 | `PUT` | `/admin/v1/profile/password` | 비밀번호 변경 |
@@ -405,12 +416,14 @@ Authorization: Bearer <token>
 
 ### Docker Compose (권장)
 
-프로젝트 루트에 `docker-compose.yml` 제공, 5개 서비스 오케스트레이션:
+프로젝트 루트에 `docker-compose.yml` 제공, 7개 서비스 오케스트레이션:
 
 | 서비스 | 이미지 | 포트 |
 |------|------|------|
 | `nginx` | nginx:alpine | 80, 443 |
-| `app` | 로컬 `Dockerfile` 빌드 | 8789 |
+| `admin` | 로컬 `Dockerfile` 빌드 | 8789 |
+| `service` | 로컬 `Dockerfile` 빌드 | 8792 |
+| `leaderboard-ws` | 로컬 `Dockerfile` 빌드 | 8790, 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

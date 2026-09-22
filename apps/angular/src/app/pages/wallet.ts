@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { Component, inject, signal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import {
   Api,
@@ -87,7 +88,7 @@ const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
 
 @Component({
   selector: 'app-wallet',
-  imports: [NgTemplateOutlet],
+  imports: [NgTemplateOutlet, RouterLink],
   template: `
     <div class="card bal">
       <div class="main">
@@ -104,6 +105,12 @@ const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
       @if (balanceError()) {
         <div class="alert">{{ balanceError() }}</div>
       }
+    </div>
+
+    <div class="acts">
+      <a class="btn primary" routerLink="/wallet/deposit">充值</a>
+      <a class="btn" routerLink="/wallet/withdraw">提现</a>
+      <a class="btn" routerLink="/wallet/exchange">兑换</a>
     </div>
 
     <div class="chips tabs">
@@ -223,6 +230,12 @@ const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
       }
       .sub .chip {
         font-variant-numeric: tabular-nums;
+      }
+      .acts {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 14px;
       }
       .tabs {
         margin: 18px 0 14px;

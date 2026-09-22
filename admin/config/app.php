@@ -22,8 +22,10 @@ return [
     'debug' => true,
     'error_reporting' => E_ALL,
     'default_timezone' => 'Asia/Shanghai',
-    // 应用对外地址（API 文档 baseUrl 等），由 admin/.env 的 APP_URL 配置
-    'url' => getenv('APP_URL') ?: 'http://localhost:8789',
+    // 应用对外地址（API 文档 baseUrl 等）
+    // PUBLIC_APP_URL: compose 注入的键名（.env 中不存在，worker 启动按 .env 重载时不会被覆盖）；
+    // 未注入时回退 admin/.env 的 APP_URL
+    'url' => getenv('PUBLIC_APP_URL') ?: (getenv('APP_URL') ?: 'http://localhost:8789'),
     'request_class' => Request::class,
     'public_path' => base_path() . DIRECTORY_SEPARATOR . 'public',
     'runtime_path' => base_path(false) . DIRECTORY_SEPARATOR . 'runtime',

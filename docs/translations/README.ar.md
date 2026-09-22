@@ -1,4 +1,4 @@
-# 全球游戏聚合平台 (Global Game Platform)
+# منصة ألعاب مجمّعة عالمية (Global Game Platform)
 
 ## تميمة المشروع
 
@@ -33,8 +33,14 @@ Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](R
 - تشفير البيانات: AES-256-CBC على طبقة نقل API + AES-128-ECB على طبقة تخزين قاعدة البيانات
 
 ### الواجهة الأمامية
-- Flutter 3.x (نمط PC للويب)
-- HarmonyOS ArkTS (الهاتف المحمول)
+
+هناك شجرتا مجلدات منفصلتان للواجهة الأمامية، **كل واحدة تستدعي خلفية جانبها فقط**، دون تقاطع:
+
+| شجرة المجلدات | التوصيف | بادئة الطلب | الخلفية المقابلة | التقنيات |
+|--------|------|---------|---------|--------|
+| `apps/*` | **منصة اللاعب في جهة C** | `/api/v1/...` | service (افتراضيًا 8792) | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
+| `admin/apps/*` | **لوحة الإدارة** | `/admin/v1/...` | admin (افتراضيًا 8789) | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
+
 - تخطيط متجاوب (هاتف / لوحي / مكتبي)
 - التدويل (i18n): تبديل الإنجليزية / الصينية المبسطة
 
@@ -55,44 +61,79 @@ Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](R
 ```
 game-platform-php/
 ├── admin/                     # لوحة الإدارة (webman v2, المنفذ الافتراضي 8789، قابل للتكوين عبر APP_PORT)
-│   ├── app/admin/controller/  #   وحدات تحكم لوحة الإدارة
-│   ├── app/middleware/        #   الوسيطات (Cors/Security/RateLimit/Auth/ProviderAuth)
-│   ├── app/provider/          #   طبقة مزوّدي الألعاب
-│   ├── app/event/             #   ناقل الأحداث (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission/ProviderAuth)
+│   ├── app/admin/v1/controller/  #   متحكمات جهة الإدارة
+│   ├── app/middleware/        #   الوسيطات (Cors/SecurityFilter/RateLimit/AdminAuth/AdminPermission/OperationLog)
+│   ├── app/model/             #   نماذج خاصة بـ admin فقط (8؛ والنماذج الـ 52 المشتركة الأخرى في packages/)
+│   ├── app/service/           #   خدمات خاصة بـ admin فقط (WalletService/WalletScope/RiskSandboxService)
+│   ├── app/process/           #   عمليات مقيمة (Http/Monitor/RiskIpCron)
 │   ├── app/provider/          #   طبقة مزوّدي الألعاب (Self/ThirdParty/Factory)
-│   ├── app/middleware/        #   الوسيطات (Cors/Security/RateLimit/Auth/ProviderAuth)
-│   ├── app/provider/          #   طبقة مزوّدي الألعاب
-│   ├── app/event/             #   ناقل الأحداث (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission)
+│   ├── app/activity/          #   محرّك الأنشطة (تسجيل الحضور/الدعوات/المهام اليومية)
+│   ├── app/event/             #   ناقل الأحداث (EventBus Redis Pub/Sub)
 │   ├── config/                #   ملفات التكوين
-│   ├── install/   #   ملفات ترحيل SQL
-│   └── apps/flutter/          #   لوحة إدارة Flutter Web PC
+│   └── apps/                  #   واجهات الإدارة الأمامية (4 نسخ، تستدعي /admin/v1 → admin:8789)
+│       ├── flutter/           #     لوحة إدارة Flutter Web PC
+│       ├── react/             #     لوحة إدارة React 19 (Vite)
+│       ├── angular/           #     لوحة إدارة Angular 21
+│       └── harmonyos/         #     لوحة إدارة HarmonyOS ArkTS (.hap، دون المرور بـ nginx)
 │
 ├── service/                   # طرف C للأعمال (webman v2, المنفذ الافتراضي 8792، قابل للتكوين عبر APP_PORT)
 │   ├── app/api/v1/controller/ #   وحدات تحكم API للطرف C
-│   ├── app/middleware/        #   الوسيطات (Cors/Security/RateLimit/Auth/ProviderAuth)
+│   ├── app/middleware/        #   الوسيطات (TraceId/Cors/SecurityFilter/RateLimit/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
+│   ├── app/model/             #   نماذج خاصة بـ service فقط (10؛ والنماذج الـ 52 المشتركة الأخرى في packages/)
+│   ├── app/service/           #   خدمات خاصة بـ service فقط (المحفظة/المخاطر/الامتثال/التسوية/الإشعارات/الإنجازات/مكافحة الغش وغيرها)
+│   ├── app/payment/           #   18 محوّلًا لبوابات الدفع (Stripe/PayPal/Adyen/NowPayments/Skrill…) + GatewayFactory
+│   ├── app/cdn/               #   محوّلات CDN لخمسة مزوّدين (Cloudflare/CloudFront/Alibaba/Tencent/Huawei) + CdnFactory
+│   ├── app/process/           #   عمليات مقيمة (Http/Monitor/LeaderboardWS:8790/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
 │   ├── app/provider/          #   طبقة مزوّدي الألعاب
+│   ├── app/activity/          #   محرّك الأنشطة
 │   ├── app/event/             #   ناقل الأحداث (EventBus Redis Pub/Sub)
 │   └── config/                #   ملفات التكوين
 │
-├── install/                   # معالج التثبيت بخطوة واحدة
+├── packages/platform-common/  # طبقة مشتركة: يستوردها admin و service عبر مستودع composer path لتجنّب نسختين
+│   ├── src/model/             #   نماذج Eloquent مشتركة (52، من مصدر واحد للطرفين)
+│   ├── src/service/           #   الخدمات المشتركة (DepositLogService / VipService وغيرها، 11 خدمة، بما فيها الحساب الاحتمالي ClickHouse)
+│   ├── src/BcMath.php         #   حساب عالي الدقة للمبالغ/الأسعار (غلاف bcmath)، والتقريب، والنسب المئوية
+│   ├── src/EncryptionService.php  #   تشفير/فك تشفير AES والإخفاء
+│   ├── src/CircuitBreaker.php #   قاطع الدائرة (إضافة إلى Retry.php لإعادة المحاولة)
+│   ├── src/HashidsService.php #   ترميز/فك ترميز المعرّفات في طبقة API
+│   └── src/SnowflakeService.php   #   معرّفات BIGINT فريدة عالميًا
+│
+├── apps/                      # واجهات اللاعبين في جهة C (4 نسخ، تستدعي /api/v1 → service:8792)
+│   ├── flutter/platform/      #   منصة مستخدمي طرف C على Flutter Web PC
+│   ├── react/                 #   واجهة React 19 (Vite) لجهة C
+│   ├── angular/               #   واجهة Angular 21 لجهة C
+│   └── harmonyos/             #   واجهة HarmonyOS ArkTS لجهة C (.hap، دون المرور بـ nginx)
+│
+├── game/xiaoxiaole/           # لعبة مصغّرة مدمجة «المطابقة الثلاثية الريفية»: TypeScript + Vite + Vitest، ومحرّك src/domain + تصميم بأربعة مستويات + tests/، ووثائق تصميم بـ 13 لغة
+│
+├── install/                   # معالج التثبيت بخطوة واحدة + SQL لتهيئة قاعدة البيانات
 │   ├── index.php              #   نقطة دخول التثبيت
 │   ├── Installer.php          #   المنطق الأساسي للتثبيت
-│   ├── install.sql            #   SQL التثبيت المدمج (43 جدولًا + بيانات أولية)
+│   ├── install.sql            #   SQL التثبيت المدمج (78 جدولًا + بيانات أولية)
+│   ├── clickhouse.sql         #   DDL لقاعدة ClickHouse التحليلية (محرّك مستقل، يُستورد منفردًا)
+│   ├── test-data.sql          #   بيانات تجريبية/اختبارية
+│   ├── migrations/            #   نصوص ترقية تدريجية لقواعد موجودة (*.sql)
+│   ├── lang/ + lang.php       #   ترجمات واجهة معالج التثبيت (13 لغة)
 │   └── assets/                #   الموارد الثابتة
 │
-├── admin/common/ و service/common/   # نسخة من الخدمات المشتركة لكل طرف (DepositLogService وغيرها، بانتظار استخراج طبقة مشتركة)
-│   └── service/               #   الخدمات المشتركة (بما فيها الحساب الاحتمالي ClickHouse)
-│
-├── apps/
-│   └── flutter/platform/      # منصة مستخدمي طرف C على Flutter Web PC
-│
-├── docs/                      # وثائق المشروع
+├── docs/                      # وثائق المشروع (جميع النصوص بـ 13 لغة: ملف .md هو المصدر الصيني، وبجانبه ترجمات .{lang}.md)
 │   ├── ARCHITECTURE.md        #   وثيقة البنية
 │   ├── ARCHITECTURE-DESIGN.md #   وثيقة التصميم المعماري
 │   ├── FEATURES.md            #   وثيقة الميزات
 │   ├── FEATURE-DESIGN.md      #   وثيقة تصميم الميزات
 │   ├── API.md                 #   وثيقة الواجهات
-│   └── DEPLOYMENT.md          #   وثيقة النشر (Docker/يدوي/تكوين المنافذ)
+│   ├── DEPLOYMENT.md          #   وثيقة النشر (Docker/يدوي/تكوين المنافذ)
+│   ├── PROVIDER-SDK.md        #   دليل ربط الألعاب الخارجية (خوارزمية التوقيع + أمثلة PHP/Go/Python)
+│   ├── CLICKHOUSE_INSTALL.md  #   تثبيت/تهيئة/ترحيل/تحقق ClickHouse
+│   ├── CLICKHOUSE_USAGE.md    #   واجهات خدمات ClickHouse الأربع ولوحة الإدارة
+│   ├── translations/          #   ترجمات هذا README إلى 12 لغة
+│   ├── diagrams/              #   رسومات SVG للمعمارية/التدفق/الميزات/دورة الحياة/الأمان/التوسّع البيئي (13 لغة لكل منها)
+│   ├── test-reports/          #   تقارير الاختبار (php-unit / api / resilience / ui / SUMMARY)
+│   └── superpowers/           #   مواصفات التصميم وخطط التنفيذ لهذا المستودع (سجل تاريخي)
+│
+├── scripts/                   # نصوص تشغيلية (فحص انحراف النماذج / ترحيل تعليقات apidoc / ترحيل دلالات مدفوعات exchange / التحقق من التوقيع)
+├── tests/api/                 # اختبارات آلية لواجهات API (run_all.sh)
+├── runtime/                   # دليل تشغيل webman (السجلات/pid، يُنشأ وقت التشغيل)
 │
 ├── docker-compose.yml         # تنظيم Docker Compose (المنافذ الافتراضية من .env الجذر)
 ├── nginx.conf.template        # قالب تكوين Nginx (منافذ upstream تُرسم عبر envsubst)
@@ -137,7 +178,7 @@ rm -rf install/
 
 يقوم معالج التثبيت تلقائيًا بما يلي:
 - فحص البيئة (إصدار PHP، الامتدادات، أذونات الدلائل)
-- إنشاء قاعدة البيانات والجداول (SQL مدمج، 43 جدولًا + بيانات أولية)
+- إنشاء قاعدة البيانات والجداول (SQL مدمج، 78 جدولًا + بيانات أولية)
 - إنشاء حساب المدير الفائق (مشفّر بـ bcrypt)
 - توليد مفاتيح JWT/التشفير تلقائيًا وكتابتها في ملف .env
 - إنشاء install.lock لمنع إعادة التثبيت
@@ -184,17 +225,40 @@ cd ../service && composer install && php start.php start -d
 
 ### تشغيل الواجهة الأمامية (اختياري)
 
-```bash
-# لوحة الإدارة (Flutter Web PC)
-cd admin/apps/flutter
-flutter pub get
-flutter run -d chrome
+في وضع التطوير تشغّل كل جهة خادم تطوير خاصًا بها، ويقوم بتمرير الطلبات إلى الخلفية المقابلة لها (انظر `proxy.conf.json` / `vite.config.ts` في كل مجلد):
 
-# منصة مستخدمي الطرف C (Flutter Web PC)
-cd apps/flutter/platform
-flutter pub get
-flutter run -d chrome
+```bash
+# --- منصة اللاعب في جهة C ‏(/api/v1 → service:8792) ---
+cd apps/react            && npm install && npm run dev      # http://localhost:5173
+cd apps/angular          && npm install && npm start        # http://localhost:4200
+cd apps/flutter/platform && flutter pub get && flutter run -d chrome
+
+# --- لوحة الإدارة ‏(/admin/v1 → admin:8789) ---
+cd admin/apps/react      && npm install && npm run dev      # http://localhost:5273
+cd admin/apps/angular    && npm install && npm start        # http://localhost:4300
+cd admin/apps/flutter    && flutter pub get && flutter run -d chrome
 ```
+
+> منافذ خادم تطوير Angular: لوحة الإدارة تضبط 4300 صراحةً في `angular.json`، بينما تحتفظ جهة C بالمنفذ الافتراضي 4200 في Angular؛ لتشغيلهما معًا أضف `--port` لأحدهما.
+> أهداف HarmonyOS ‏(`apps/harmonyos`، `admin/apps/harmonyos`) تُفتح وتُبنى عبر DevEco Studio؛
+> ويصل المحاكي إلى خلفية المضيف عبر `http://10.0.2.2:<port>` (انظر الثابت في أعلى كل ملف `ApiService.ets`).
+
+### نشر الواجهة الأمامية (Docker/Nginx)
+
+تقوم خدمة nginx في `docker-compose.yml` بتركيب مخرجات بناء كل واجهة داخل الحاوية للقراءة فقط، ويعرضها `nginx.conf.template` على المسارات المذكورة أدناه.
+إذا لم يُبنَ الناتج يكون الدليل فارغًا: طلبات المسار تعيد 404، وطلبات الدليل المجرد (مثل `/app-react/`) تعيد 403.
+
+| URL | نقطة تركيب الناتج | أمر البناء |
+|-----|-----------|---------|
+| `/` | `apps/flutter/platform/build/web` | `flutter build web` |
+| `/app-react/` | `apps/react/dist` | `npm run build` (يتضمن السكربت `--base=/app-react/`) |
+| `/app-angular/` | `apps/angular/dist/game-client-angular/browser` | `npm run build` (يتضمن السكربت `--base-href=/app-angular/`) |
+| `/admin-panel/` | `admin/public` | موضع نشر عام: انسخ ناتج أي لوحة إلى `admin/public`؛ وعند عدم وجوده يعيد 404 أيضًا (الدليل المجرد 403). يجب أن يكون الناتج مبنيًا بـ `--base=/admin-panel/` (وللـ Flutter بـ `--base-href=/admin-panel/`)، وإلا بقيت موارده تشير إلى البادئة الأصلية وتعيد 404. الصيغة بلا شرطة مائلة تُحوَّل بـ 301 إلى هذا العنوان؛ وقد ضبط `nginx.conf.template` الخيار `absolute_redirect off`، فيكون التحويل Location نسبيًا ولا تفقد عمليات النشر على منافذ غير 80 المنفذ |
+| `/admin-react/` | `admin/apps/react/dist` | `npm run build` (يتضمن السكربت `--base=/admin-react/`) |
+| `/admin-angular/` | `admin/apps/angular/dist/game-admin-angular/browser` | `npm run build` (يتضمن السكربت `--base-href=/admin-angular/`) |
+| `/admin-flutter/` | `admin/apps/flutter/build/web` | `flutter build web --base-href=/admin-flutter/` |
+
+`/admin/` (API) إلى حاوية admin، و`/api/` (API) إلى حاوية service؛ ويُوزَّع طرف HarmonyOS كحزمة `.hap` دون المرور بـ nginx.
 
 ### التحقق
 
@@ -206,9 +270,9 @@ curl http://localhost:8789/health
 curl http://localhost:8792/health
 
 # اختبار تسجيل المستخدم
-curl -X POST http://localhost:8792/api/auth/register \
+curl -X POST http://localhost:8792/api/v1/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"username":"testuser","password":"123456"}'
+  -d '{"username":"testuser","password":"Abcdef12"}'
 ```
 
 ## ميزات الأمان
@@ -231,14 +295,31 @@ curl -X POST http://localhost:8792/api/auth/register \
 
 ## الاختبارات
 
+تقارير الاختبار (مخزّنة محليًا): [docs/test-reports/](../test-reports/)
+
+| نوع الاختبار | الحالات/التغطية | النتيجة |
+|---------|----------|------|
+| اختبارات وحدة PHP | القياس الحالي عبر `phpunit --list-tests`: admin 200 + service 273 حالة (يسجّل التقرير `docs/test-reports/php-unit.md` إعادة تشغيل 09-22 admin 190 + service 273 ولقطة 08-27 admin 153 + service 45؛ وجانب admin قيد التوسيع) | service كلها ناجحة (701 تأكيدًا، 3 skipped، 2 warnings + 35 deprecations)؛ admin 437 تأكيدًا، 3 skipped، وحالة فاشلة واحدة (`EnvConfigTest` يفحص ملف `admin/.env` الحقيقي ويفتقد `REDIS_CLUSTER_NODES`؛ وإضافته تجعله أخضر) |
+| اختبارات آليات الاستقرار | قاطع الدائرة/إعادة المحاولة/مفتاح التخفيض، 15 حالة (CircuitBreakerTest/RetryTest/ResilienceMockTest) | كلها ناجحة |
+| اختبارات API الآلية | 187 نقطة نهاية (المصدر: `docs/test-reports/api.md`، 2026-08-27)؛ وroute.php يسجّل حاليًا 261 نقطة نهاية | 171 ناجحة / 50 فاشلة / 4 متجاوزة (كل الإخفاقات عيوب حتمية، راجع التقرير) |
+| اختبارات واجهة Flutter | 12 حالة (تسجيل الدخول/لوحة المعلومات/التنقل/تبديل اللغة) | كلها ناجحة |
+| Go/Rust | لا يوجد كود Go/Rust في المستودع | متجاوز، ومسجّل |
+
 ```bash
-cd admin
-phpunit --bootstrap tests/bootstrap.php tests/
+# اختبارات وحدة PHP (صدّر أولًا متغيرات بيئة سر JWT)
+cd admin && ADMIN_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
+cd service && SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
+# اختبارات API الآلية (يجب أن تكون الخدمات قيد التشغيل، انظر tests/api/run_all.sh)
+bash tests/api/run_all.sh
+# اختبارات واجهة Flutter
+cd admin/apps/flutter && flutter test --timeout 300s
 ```
 
-- PHPUnit 12.x، 116 حالة اختبار
-- 56 اختبارًا لمنطق الأعمال (PlatformTest) + 60 اختبارًا للبنية التحتية
-- تغطية: دقة bcmath، حسابات الصرف، رسوم السحب، الحدود، إدارة المخاطر، القسائم، KYC، i18n
+التقارير التفصيلية:
+- [تقرير اختبارات وحدة PHP](../test-reports/php-unit.md)
+- [تقرير اختبارات آليات الاستقرار (قاطع الدائرة/إعادة المحاولة/التخفيض)](../test-reports/resilience.md)
+- [تقرير اختبارات API الآلية](../test-reports/api.md)
+- [تقرير اختبارات واجهة Flutter](../test-reports/ui.md)
 
 ## نظرة عامة على قدرات المنصة
 
@@ -249,7 +330,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | التعبئة | إنشاء الطلب + التحقق من توقيع رد Stripe/PayPal + الإيداع التلقائي |
 | الصرف | عملة المنصة ⇄ عملة اللعبة، تسعير فوري، أرباح فرق السعر |
 | السحب | تقديم طلب ← مراجعة ← تحويل، مفتاح عام، حدود KYC المتدرجة + رسوم |
-| KYC | تقديم التحقق من الهوية + المراجعة، نظام تحقق ثلاثي المستويات |
+| KYC | تقديم التحقق من الهوية + المراجعة، يرفع حد السحب بعد الموافقة |
 | الألعاب | CRUD + التصنيفات (10 فئات) + الخوادم + تتبع سجلات اللعب |
 | البحث | بحث نصي كامل عبر Elasticsearch (مع التراجع إلى LIKE) |
 | لوحة الصدارة | يومية/أسبوعية/شهرية/إجمالية، تخزين مؤقت في Redis، دفع فوري عبر WebSocket (المنفذ الافتراضي 8790، قابل للتكوين عبر LEADERBOARD_WS_PORT) |
@@ -266,7 +347,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | النمو الاجتماعي | المجموعات + تتبع روابط المشاركة |
 | بوابات الدفع | بوابات Adyen / GrabPay الجديدة (L1) |
 | التدويل | 4 لغات (en-US/zh-CN/ja-JP/ko-KR)، جدول ترجمة + تخزين مؤقت |
-| تكوين الدول | طرق دفع/سحب متمايزة لـ 8 دول، حد أدنى للتعبئة |
+| تكوين الدول | طرق دفع/سحب متمايزة لـ 18 دولة، حد أدنى للتعبئة |
 | الإحصاءات | لقطات إحصائية يومية (5 مؤشرات) + تتبع إيرادات المنصة |
 | رمز التحقق | تحقق بشري بالنقر (poster-php) |
 | ربط الألعاب | Provider SDK (Self+ThirdParty) + توقيع HMAC-SHA256 + بوابة الاستدعاءات |
@@ -279,7 +360,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | القسائم | قيود مشروطة (min_deposit/first_user/game_id) |
 | الأحداث | ناقل أحداث Redis Pub/Sub + تسليم اشتراكات Webhook (7 أنواع أحداث) |
 | النشر | تنظيم Docker Compose لـ 7 خدمات (المنافذ تُكوَّن من .env الجذر) + وكيل عكسي Nginx |
-| العملاء | Flutter Admin (17 صفحة) + Platform (10 صفحات) + HarmonyOS (5 صفحات) |
+| العملاء | لوحة الإدارة 4 نسخ (Flutter/React/Angular/HarmonyOS) + جهة C 4 نسخ (Flutter/React/Angular/HarmonyOS) |
 
 ## نموذج الأعمال
 
@@ -298,13 +379,13 @@ phpunit --bootstrap tests/bootstrap.php tests/
 
 ## التسوية متعددة العملات
 
-تعتمد المنصة نظام تسوية بعزل ثلاثي الطبقات «العملة الورقية ← عملة المنصة ← عملة اللعبة»: تدعم التعبئة بعملات ورقية متعددة USD/CNY/EUR، ولكل لعبة عملة تسعير مستقلة؛ وتُستخدم حسابات bcmath عالية الدقة في جميع حسابات المبالغ لاستبعاد أخطاء الفاصلة العائمة.
+تعتمد المنصة نظام تسوية بعزل ثلاثي الطبقات «العملة الورقية ← عملة المنصة ← عملة اللعبة»: تدعم التعبئة بعملات ورقية متعددة USD/CNY/EUR/JPY/KRW/GBP/BRL/INR، ولكل لعبة عملة تسعير مستقلة؛ وتُستخدم حسابات bcmath عالية الدقة في جميع حسابات المبالغ لاستبعاد أخطاء الفاصلة العائمة.
 
 ### نموذج العملات الثلاثي الطبقات
 
 | الطبقة | العملة | الوصف |
 |------|------|------|
-| طبقة العملة الورقية | USD / CNY / EUR | العملة الفعلية لدفع التعبئة/السحب، تُعالَج عبر Stripe / PayPal |
+| طبقة العملة الورقية | USD / CNY / EUR / JPY / KRW / GBP / BRL / INR | العملة الفعلية لدفع التعبئة/السحب، تُعالَج عبر Stripe / PayPal |
 | طبقة عملة المنصة | عملة المنصة (موحدة عبر المنصة) | عملة التسوية الداخلية الموحدة (decimal(18,4))، مع قفل تفاؤلي للمحفظة يمنع الخصم المتزامن/الإيداع المكرر |
 | طبقة عملة اللعبة | عملة مستقلة لكل لعبة | لكل لعبة `exchange_rate` مستقل و`spread_pct` خاص، مع محفظة عملة لعبة مستقلة |
 
@@ -320,7 +401,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 ```mermaid
 flowchart LR
     subgraph FIAT["طبقة العملة الورقية Fiat"]
-        A["تعبئة المستخدم<br/>USD / CNY / EUR<br/>Stripe / PayPal"]
+        A["تعبئة المستخدم<br/>USD / CNY / EUR / JPY / KRW / GBP / BRL / INR<br/>Stripe / PayPal"]
         H["إيداع السحب<br/>PayPal Payout"]
     end
 
@@ -377,9 +458,9 @@ flowchart LR
 | [وثيقة البنية](../ARCHITECTURE.ar.md) | طوبولوجيا النظام، بنية الوحدات، تدفق البيانات |
 | [وثيقة تصميم الميزات](../FEATURE-DESIGN.ar.md) | نماذج الأعمال، مواصفات الميزات، تصميم العمليات |
 | [وثيقة الميزات](../FEATURES.ar.md) | قائمة الميزات، أوصاف الوحدات، رحلة المستخدم |
-| [وثيقة الواجهات](../API.ar.md) | مرجع API الكامل (102 واجهة) |
-| [الوثائق التفاعلية](http://localhost:8792/apidoc/) | وثائق hg/apidoc التفاعلية (الطرف C) |
-| [الوثائق التفاعلية](http://localhost:8789/apidoc/) | وثائق hg/apidoc التفاعلية (لوحة الإدارة) |
+| [وثيقة الواجهات](../API.ar.md) | مرجع API الكامل (146 واجهة) |
+| [الوثائق التفاعلية](http://localhost:8792/apidoc/) | وثائق erikwang2013/apidoc-php التفاعلية (الطرف C) |
+| [الوثائق التفاعلية](http://localhost:8789/apidoc/) | وثائق erikwang2013/apidoc-php التفاعلية (لوحة الإدارة) |
 | [تثبيت ClickHouse](../CLICKHOUSE_INSTALL.ar.md) | تثبيت/تكوين/ترحيل/تحقق ClickHouse |
 | [وثيقة دمج Provider SDK](../PROVIDER-SDK.ar.md) | دليل دمج ألعاب الطرف الثالث (خوارزمية التوقيع + أمثلة PHP/Go/Python) |
 | [استخدام ClickHouse](../CLICKHOUSE_USAGE.ar.md) | 4 واجهات خدمة ClickHouse ولوحات الخلفية |
@@ -397,11 +478,11 @@ flowchart LR
   <table align="center" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <td align="center" width="200">
-        <img src="docs/weixinpay-130.png" width="130" height="130" alt="WeChat Pay"><br>
+        <img src="../weixinpay-130.png" width="130" height="130" alt="WeChat Pay"><br>
         <b>WeChat Pay</b>
       </td>
       <td align="center" width="200">
-        <img src="docs/alipay-130.png" width="130" height="130" alt="Alipay"><br>
+        <img src="../alipay-130.png" width="130" height="130" alt="Alipay"><br>
         <b>Alipay</b>
       </td>
     </tr>

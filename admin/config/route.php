@@ -118,6 +118,10 @@ Route::group('/admin/v1', function () {
 
     // 游戏管理
     Route::get('/game/list', [app\admin\v1\controller\GameController::class, 'list']);
+    // 试玩入口：纯预览，不写游玩日志、不动钱包（管理端身份没有 C 端 userId）
+    Route::post('/game/launch', [app\admin\v1\controller\GameController::class, 'launch']);
+    // 放在 /game/list 之后：FastRoute 静态段优先，不会遮蔽列表路由
+    Route::get('/game/{hashid}', [app\admin\v1\controller\GameController::class, 'detail']);
 
     // 游戏区服管理
     Route::get('/game/server/list', [app\admin\v1\controller\GameServerController::class, 'list']);

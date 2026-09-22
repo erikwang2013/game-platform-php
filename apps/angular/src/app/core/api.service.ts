@@ -8,154 +8,32 @@ import { Injectable, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, catchError, from, lastValueFrom, map, of, switchMap, throwError } from 'rxjs';
 
-/* ---------------- 后端契约类型 ---------------- */
+/* 契约类型集中在 api.types.ts，此处 re-export 保持既有 import 路径可用 */
+import type {
+  AuthResult,
+  DepositCreated,
+  DepositOrder,
+  Envelope,
+  ExchangeDone,
+  ExchangePayload,
+  ExchangeQuote,
+  Game,
+  GameDetail,
+  LaunchResult,
+  Notify,
+  Num,
+  Paged,
+  PaymentMethodInfo,
+  PlatformStats,
+  Suggestion,
+  Transaction,
+  UserProfile,
+  WalletInfo,
+  WithdrawApplied,
+  WithdrawOrder,
+} from './api.types';
 
-export interface Envelope<T> {
-  code: number;
-  message: string;
-  data: T;
-}
-
-export interface Paged<T> {
-  items: T[];
-  total: number;
-  page: number;
-  per_page: number;
-  last_page: number;
-}
-
-/** 金额字段后端可能返回 string(decimal) 或 number，仅用于展示。 */
-type Num = number | string;
-
-export interface UserBrief {
-  id: string;
-  username: string;
-  nickname: string;
-  avatar: string;
-}
-
-export interface UserProfile extends UserBrief {
-  email: string;
-  phone: string;
-  country: string;
-  language: string;
-  last_login_at: string;
-  created_at: string;
-}
-
-export interface AuthResult {
-  access_token: string;
-  refresh_token: string;
-  user?: UserBrief;
-  require_2fa?: boolean;
-  pending_2fa_token?: string;
-}
-
-export interface PlatformStats {
-  total_games: number;
-  total_users: number;
-  today_game_plays: number;
-  active_users_7d: number;
-}
-
-export interface Currency {
-  id: string;
-  name: string;
-  symbol: string;
-  exchange_rate: Num;
-  min_exchange?: Num;
-  max_exchange?: Num;
-  spread_pct?: Num;
-}
-
-export interface GameCategory {
-  name: string;
-  slug: string;
-}
-
-export interface Game {
-  id: string;
-  name: string;
-  slug: string;
-  type: string;
-  description: string;
-  cover_image: string;
-  sdk_version: string;
-  platform: string;
-  region: string;
-  currencies: Currency[];
-  categories: GameCategory[];
-}
-
-export interface GameDetail extends Omit<Game, 'categories'> {
-  api_endpoint: string;
-}
-
-export interface Suggestion {
-  id: string;
-  name: string;
-  slug: string;
-}
-
-export interface WalletInfo {
-  id: string;
-  balance: Num;
-  frozen_balance: Num;
-  total_earned: Num;
-  total_spent: Num;
-}
-
-export interface Transaction {
-  id: string;
-  type: string;
-  amount: Num;
-  balance_after: Num;
-  ref_type: string;
-  ref_id: string;
-  remark: string;
-  created_at: string;
-}
-
-export interface DepositOrder {
-  id: string;
-  order_no: string;
-  amount: Num;
-  currency: string;
-  platform_amount: Num;
-  status: string;
-  paid_at: string;
-  created_at: string;
-}
-
-export interface WithdrawOrder {
-  id: string;
-  order_no: string;
-  platform_amount: Num;
-  method: string;
-  status: string;
-  review_note: string;
-  created_at: string;
-}
-
-export interface Notify {
-  id: string;
-  type: string;
-  title: string;
-  content: string;
-  is_read: boolean;
-  ref_type: string;
-  ref_id: string;
-  created_at: string;
-}
-
-export interface LaunchResult {
-  id: string;
-  name: string;
-  slug: string;
-  type: string;
-  api_endpoint: string;
-  session_id: string;
-}
+export * from './api.types';
 
 /* ---------------- token 存取 ---------------- */
 
@@ -214,6 +92,18 @@ export function dt(s: string): string {
   if (!s) return '—';
   const d = new Date(s.replace(' ', 'T'));
   return Number.isNaN(d.getTime()) ? s : d.toLocaleString();
+}
+
+/** 充值零小数币种（与后端 DepositController 的精度校验一致） */
+const ZERO_DECIMAL = ['JPY', 'KRW'];
+
+/**
+ * 充值金额精度预检，与后端同规则：JPY/KRW 零小数，其余最多 2 位小数。
+ * 纯字符串格式校验，不做任何金额换算或舍入；后端仍会二次校验。
+ */
+export function depositAmountOk(amount: string, currency: string): boolean {
+  const max = ZERO_DECIMAL.includes(currency.toUpperCase()) ? 0 : 2;
+  return max === 0 ? /^\d+$/.test(amount) : new RegExp(`^\\d+(\\.\\d{1,${max}})?$`).test(amount);
 }
 
 /* ---------------- 错误 ---------------- */
@@ -352,6 +242,11 @@ export class Api {
     return this.request<GameDetail>('GET', `${BASE}/game/detail/${hashid}`);
   }
 
+  /** 支付方式列表（公开接口）；createDeposit 的 payment_method_id 取自此处 */
+  paymentMethods(): Observable<{ list: PaymentMethodInfo[] }> {
+    return this.request<{ list: PaymentMethodInfo[] }>('GET', `${BASE}/payment/methods`);
+  }
+
   /* ---- 认证 ---- */
 
   login(username: string, password: string): Observable<AuthResult> {
@@ -399,6 +294,41 @@ export class Api {
       page,
       per_page: perPage,
     });
+  }
+
+  /* ---- 资金写操作（金额一律传字符串原文，不得经过 float） ---- */
+
+  /** 创建充值订单；502 表示支付网关不可用，可提示重试 */
+  createDeposit(payload: {
+    amount: string;
+    currency: string;
+    payment_method_id: string;
+  }): Observable<DepositCreated> {
+    return this.request<DepositCreated>('POST', `${BASE}/deposit/create`, undefined, payload);
+  }
+
+  /** 申请提现（服务端可能因全局开关/风控/限额/审核锁返回 403/400/429/503） */
+  applyWithdraw(payload: {
+    platform_amount: string;
+    method: string;
+    account_info: string;
+  }): Observable<WithdrawApplied> {
+    return this.request<WithdrawApplied>('POST', `${BASE}/withdraw/apply`, undefined, payload);
+  }
+
+  /** 兑换询价；不产生订单，仅用于展示汇率/点差/预计到账 */
+  quoteExchange(payload: ExchangePayload): Observable<ExchangeQuote> {
+    return this.request<ExchangeQuote>('POST', `${BASE}/exchange/quote`, undefined, payload);
+  }
+
+  /** 买入：平台币 → 游戏币（服务端按路径固定 direction='in'，请求体里的 direction 被忽略） */
+  exchangeBuy(payload: ExchangePayload): Observable<ExchangeDone> {
+    return this.request<ExchangeDone>('POST', `${BASE}/exchange/buy`, undefined, payload);
+  }
+
+  /** 卖出：游戏币 → 平台币（服务端按路径固定 direction='out'） */
+  exchangeSell(payload: ExchangePayload): Observable<ExchangeDone> {
+    return this.request<ExchangeDone>('POST', `${BASE}/exchange/sell`, undefined, payload);
   }
 
   profile(): Observable<UserProfile> {

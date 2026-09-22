@@ -65,10 +65,10 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.
 |---|------|------|
 | Rutas | `config/route.php` | Mapeo de URL a controladores, enlace de middleware, rutas versionadas |
 | Middleware | `app/middleware/` | Intercepción de ataques (SecurityFilter), límite de tasa (RateLimit), autenticación (JWT), autorización (RBAC) |
-| Controladores | 30: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (panel de administración) + Captcha/Auth (API v1) | Validación de parámetros de solicitud, lógica de negocio, formato de respuesta |
-| Servicios de negocio | `common/service/` | Análisis de datos: GameDashboardService (resumen/ranking/tendencias), DepositLogService (ingresos/conversión), ProbabilityService (probabilidad conjunta/condicional, constructor SQL); ante fallo de BD devuelve datos vacíos en lugar de errores |
+| Controladores | 45: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (panel de administración) + Captcha/Auth (API v1) | Validación de parámetros de solicitud, lógica de negocio, formato de respuesta |
+| Servicios de negocio | `packages/platform-common/src/service/` | Análisis de datos: GameDashboardService (resumen/ranking/tendencias), DepositLogService (ingresos/conversión), ProbabilityService (probabilidad conjunta/condicional, constructor SQL); ante fallo de BD devuelve datos vacíos en lugar de errores |
 | Modelos de datos | `app/model/` | Mapeo ORM, relaciones, cifrado/descifrado de campos |
-| Utilidades comunes | `app/common/` | Servicios Hashids, Snowflake, Encryption |
+| Utilidades comunes | `packages/platform-common/src/` | Servicios Hashids, Snowflake, Encryption |
 
 ### 2.2 Ciclo de vida de las solicitudes
 
@@ -466,7 +466,7 @@ La integración continua de GitHub Actions se define en `.github/workflows/ci.ym
 
 ### 8.5 Monitorización
 
-El endpoint `GET /metrics` (`MetricsController`) expone 5 métricas gauge en formato texto de Prometheus: total de solicitudes HTTP, usuarios activos, estado de conexión de base de datos/Redis, uso de memoria.
+El endpoint `GET /metrics` (`MetricsController`) expone 18 métricas gauge en formato texto de Prometheus: usuarios activos/totales, estado de conexión de base de datos/Redis/ES, métricas de memoria/CPU/procesos, retiros pendientes y diferencias de conciliación.
 
 ### 8.6 Requisitos del entorno
 

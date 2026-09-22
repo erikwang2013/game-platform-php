@@ -268,24 +268,23 @@ $result = $provider->refund($userId, $gameId, $sessionId, $amount, $roundId, 'ga
 
 ## 5. सत्र प्रबंधन
 
-गेम शुरू होने के बाद हर 15 मिनट के भीतर हार्टबीट भेजना अनिवार्य है:
+self/embedded गेम के SDK कॉल सत्र टोकन से प्रमाणित होते हैं: लॉग-इन C-छोर `GET /api/v1/game/session?game_id={game_id}` कॉल करके टोकन जारी करता है (TTL 5 मिनट, केवल `self` / `embedded` गेम):
 
-```php
-use app\service\GameSessionService;
+```
+GET /api/v1/game/session?game_id=1234567890
+Authorization: Bearer <user_token>
 
-// शुरुआत में
-GameSessionService::heartbeat($userId, $gameId, $sessionId);
-
-// नियमित हार्टबीट (हर 5 मिनट का सुझाव)
-if (!GameSessionService::isActive($sessionId)) {
-    // सत्र समय-समाप्त हो गया, गेम समाप्त करना आवश्यक
+200
+{
+    "code": 0,
+    "data": { "token": "<payload>.<signature>", "expires_in": 300 }
 }
 
-// समाप्ति पर
-GameSessionService::endSession($sessionId);
+POST /api/game/balance
+Authorization: Bearer <payload>.<signature>
 ```
 
-समय-समाप्त सत्र स्वचालित रूप से निपटाए जाते हैं (`GameSessionService::expireStaleSessions()`)।
+`SdkSessionAuth` मिडलवेयर HMAC-SHA256 हस्ताक्षर और वैधता जाँचता है; `user_id` केवल टोकन से लिया जाता है (रिक्वेस्ट बॉडी उसे बदल नहीं सकती)। समाप्ति पर दोबारा जारी करें और `/api/game/balance`, `/api/game/bet`, `/api/game/settle`, `/api/game/refund` कॉल करने में उपयोग करें।
 
 ## 6. गेम कॉन्फ़िगरेशन
 

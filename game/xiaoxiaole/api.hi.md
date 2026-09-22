@@ -1,10 +1,10 @@
-# 田园消消乐 — प्लेटफ़ॉर्म एकीकरण API
+# ग्रामीण मैच-3 — प्लेटफ़ॉर्म एकीकरण API
 <!-- lang-nav -->
 
 Languages: [中文](api.md) · [English](api.en.md) · [한국어](api.ko.md) · [Русский](api.ru.md) · [Deutsch](api.de.md) · [Français](api.fr.md) · [Español](api.es.md) · [Português](api.pt.md) · **हिन्दी** · [العربية](api.ar.md) · [বাংলা](api.bn.md) · [Bahasa Indonesia](api.id.md) · [日本語](api.ja.md)
 
 
-> यह दस्तावेज़ 《田园消消乐》 और गेम प्लेटफ़ॉर्म के बीच का संपूर्ण इंटरफ़ेस अनुबंध है। तकनीकी परतों के लिए `architecture.md` देखें, शेड्यूल के लिए `plan.md`, खिलाड़ी कार्यात्मकताओं के लिए `functional-design.md`।
+> यह दस्तावेज़ ग्रामीण मैच-3 और गेम प्लेटफ़ॉर्म के बीच का संपूर्ण इंटरफ़ेस अनुबंध है। तकनीकी परतों के लिए `architecture.md` देखें, शेड्यूल के लिए `plan.md`, खिलाड़ी कार्यात्मकताओं के लिए `functional-design.md`।
 
 ---
 

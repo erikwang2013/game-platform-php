@@ -13,7 +13,7 @@ Der API-Dienst der Benutzerplattform (C-Seite) ist ein leistungsstarkes PHP-Back
 |------|------|
 | Benutzer | Registrierung/Login (Benutzername/Passwort + 7-Plattform-OAuth + 2FA TOTP), Profil |
 | Wallet | Plattform-Token-Wallet (optimistisches Sperren) + Spielwährungs-Wallet + Transaktionsverlauf |
-| Einzahlung | 13 Zahlungsanbieter (Stripe/PayPal/NowPayments/Coinbase usw.) mit Callback-Signaturprüfung und automatischer Gutschrift |
+| Einzahlung | 18 Zahlungsanbieter (Stripe/PayPal/NowPayments/Coinbase usw.) mit Callback-Signaturprüfung und automatischer Gutschrift |
 | Auszahlung | Antrag → Prüfung → Auszahlung, gestaffelte KYC-Limits |
 | Tausch | Echtzeitkurse Plattform-Token ⇄ Spielwährung, VIP-Rabatte und Kurszuschläge |
 | Spiele | Spielliste/Kategorien/Suche, Spielverlauf, Provider-Settlement-Callbacks |
@@ -39,8 +39,12 @@ Der API-Dienst der Benutzerplattform (C-Seite) ist ein leistungsstarkes PHP-Back
 ```
 service/
 ├── app/
-│   ├── api/v1/controller/  # C-Seiten-API-Controller (35)
-│   ├── middleware/         # Middleware (Cors/SecurityFilter/RateLimit/ApiVersion/UserAuth/ProviderAuth)
+│   ├── activity/           # Event-Handler
+│   ├── api/v1/controller/  # C-Seiten-API-Controller (34)
+│   ├── bootstrap/          # Benachrichtigungs-Bootstrap
+│   ├── cdn/                # Multi-Provider-CDN (Aliyun/Tencent/Huawei/Cloudflare/CloudFront + CdnFactory)
+│   ├── common/             # Allgemein
+│   ├── middleware/         # Middleware (Cors/SecurityFilter/RateLimit/TraceId/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
 │   ├── model/              # Datenmodelle
 │   ├── service/            # Geschäftsdienste (VIP/Ranglisten/Risiko/Benachrichtigungen usw.)
 │   ├── event/              # Event-Bus (EventBus Redis Pub/Sub)
@@ -49,9 +53,14 @@ service/
 ├── common/                 # Gemeinsame Dienste (implementiert im Paket erik/platform-common)
 ├── config/                 # Konfigurationsdateien
 ├── public/                 # Web-Einstieg
+├── runtime/                # Laufzeitdateien
+├── support/                # Hilfsklassen
 ├── tests/                  # PHPUnit-Tests
 ├── start.php               # Startpunkt
-└── composer.json
+├── windows.php             # Windows-Starteinstieg
+├── composer.json
+├── phpunit.xml             # PHPUnit-Konfiguration
+└── Dockerfile              # Image-Build
 ```
 
 ## Ein-Klick-Installation
@@ -93,7 +102,7 @@ php start.php start -d     # Hintergrund (Daemon)
 ## Verwendung
 
 - API-Referenz: `docs/API.md` (vollständige Referenz)
-- Online-Dokumentation: http://localhost:8792/apidoc/ (interaktive hg/apidoc-Dokumentation)
+- Online-Dokumentation: http://localhost:8792/apidoc/ (interaktive erikwang2013/apidoc-php-Dokumentation)
 - Health-Check: `GET http://localhost:8792/health`
 - C-Seiten-Frontend: `apps/flutter/platform/` (Flutter-Web-Benutzerplattform)
 - Admin-Backend: `admin/` (Backend und Frontend unter `admin/apps/flutter/`)

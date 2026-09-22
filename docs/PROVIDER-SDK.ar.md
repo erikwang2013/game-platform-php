@@ -32,7 +32,7 @@ Languages: **中文** · [English](PROVIDER-SDK.en.md) · [한국어](PROVIDER-S
 ### رؤوس الطلب
 
 ```
-X-Game-Id: <游戏ID>
+X-Game-Id: <معرّف اللعبة>
 X-Timestamp: <Unix 秒级时间戳>
 X-Signature: <HMAC-SHA256 签名>
 Content-Type: application/json
@@ -129,18 +129,18 @@ def provider_request(game_id, api_secret, base_url, path, body):
 ```
 POST /api/provider/balance
 Content-Type: application/json
-X-Game-Id: <游戏ID>
+X-Game-Id: <معرّف اللعبة>
 X-Timestamp: <时间戳>
 X-Signature: <签名>
 
-请求体:
+جسم الطلب:
 {
     "user_id": 9876543210,
     "game_id": 1234567890,
     "currency_id": 5555555555
 }
 
-响应:
+الاستجابة:
 {
     "code": 0,
     "message": "success",
@@ -155,7 +155,7 @@ X-Signature: <签名>
 ```
 POST /api/provider/bet
 
-请求体:
+جسم الطلب:
 {
     "user_id": 9876543210,
     "session_id": "GAME_SESSION_202608041030001234",
@@ -167,7 +167,7 @@ POST /api/provider/bet
     }
 }
 
-响应:
+الاستجابة:
 {
     "code": 0,
     "data": {
@@ -177,7 +177,7 @@ POST /api/provider/bet
     }
 }
 
-错误响应:
+استجابة الخطأ:
 {
     "code": 400,
     "message": "Insufficient balance",
@@ -193,7 +193,7 @@ POST /api/provider/bet
 ```
 POST /api/provider/settle
 
-请求体:
+جسم الطلب:
 {
     "user_id": 9876543210,
     "session_id": "GAME_SESSION_202608041030001234",
@@ -205,7 +205,7 @@ POST /api/provider/settle
     }
 }
 
-响应:
+الاستجابة:
 {
     "code": 0,
     "data": {
@@ -222,7 +222,7 @@ POST /api/provider/settle
 ```
 POST /api/provider/refund
 
-请求体:
+جسم الطلب:
 {
     "user_id": 9876543210,
     "session_id": "GAME_SESSION_202608041030001234",
@@ -231,7 +231,7 @@ POST /api/provider/refund
     "reason": "game_crash"
 }
 
-响应:
+الاستجابة:
 {
     "code": 0,
     "data": {
@@ -251,40 +251,39 @@ use app\provider\ProviderFactory;
 
 $provider = ProviderFactory::createById($gameId);
 
-// 查询余额
+// استعلام الرصيد
 $balance = $provider->getBalance($userId, $gameId, $currencyId);
 
-// 下注（平台DB事务内扣款）
+// المراهنة (خصم الرصيد داخل معاملة قاعدة بيانات المنصة)
 $result = $provider->bet($userId, $gameId, $sessionId, $amount, $roundId, $meta);
-if (!$result['success']) { /* 余额不足 */ }
+if (!$result['success']) { /* الرصيد غير كافٍ */ }
 
-// 结算（平台DB事务内加款）
+// التسوية (زيادة الرصيد داخل معاملة قاعدة بيانات المنصة)
 $result = $provider->settle($userId, $gameId, $sessionId, $amount, $roundId, $meta);
 
-// 退款
+// الاسترداد
 $result = $provider->refund($userId, $gameId, $sessionId, $amount, $roundId, 'game_crash');
 ```
 
 ## 5. إدارة الجلسات
 
-بعد بدء اللعبة يجب إرسال نبضة كل 15 دقيقة:
+تستخدم استدعاءات SDK لألعاب self/embedded مصادقة برمز الجلسة: تستدعي واجهة C-end المسجَّلة الدخول `GET /api/v1/game/session?game_id={game_id}` لإصداره (TTL 5 دقائق، لألعاب `self` / `embedded` فقط):
 
-```php
-use app\service\GameSessionService;
+```
+GET /api/v1/game/session?game_id=1234567890
+Authorization: Bearer <user_token>
 
-// 启动时
-GameSessionService::heartbeat($userId, $gameId, $sessionId);
-
-// 定期心跳（建议每 5 分钟）
-if (!GameSessionService::isActive($sessionId)) {
-    // 会话已超时，需结束游戏
+200
+{
+    "code": 0,
+    "data": { "token": "<payload>.<signature>", "expires_in": 300 }
 }
 
-// 结束时
-GameSessionService::endSession($sessionId);
+POST /api/game/balance
+Authorization: Bearer <payload>.<signature>
 ```
 
-يُسوَّى تلقائيًا أي جلسة انتهت مهلتها (`GameSessionService::expireStaleSessions()`).
+يتحقق وسيط `SdkSessionAuth` من توقيع HMAC-SHA256 ومن الصلاحية؛ ويُؤخذ `user_id` من الرمز فقط (لا يمكن لجسم الطلب تجاوزه). أعد الإصدار بعد انتهاء الصلاحية واستخدمه لاستدعاء `/api/game/balance` و`/api/game/bet` و`/api/game/settle` و`/api/game/refund`.
 
 ## 6. إعداد اللعبة
 
@@ -307,14 +306,14 @@ GameSessionService::endSession($sessionId);
 
 ## 7. رموز الخطأ
 
-| code | 含义 |
+| code | المعنى |
 |------|------|
-| 0 | 成功 |
-| 400 | 参数错误或余额不足 |
-| 401 | 签名无效或时间戳过期 |
-| 404 | 游戏不存在或已禁用 |
-| 422 | 参数验证失败 |
-| 500 | 服务端错误 |
+| 0 | نجاح |
+| 400 | خطأ في المعاملات أو الرصيد غير كافٍ |
+| 401 | توقيع غير صالح أو طابع زمني منتهي الصلاحية |
+| 404 | اللعبة غير موجودة أو معطّلة |
+| 422 | فشل التحقق من المعاملات |
+| 500 | خطأ في الخادم |
 
 ---
 

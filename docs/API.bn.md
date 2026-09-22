@@ -1,4 +1,4 @@
-# 接口文档
+# ইন্টারফেস ডকুমেন্টেশন
 <!-- lang-nav -->
 
 Languages: [中文](API.md) · [English](API.en.md) · [한국어](API.ko.md) · [Русский](API.ru.md) · [Deutsch](API.de.md) · [Français](API.fr.md) · [Español](API.es.md) · [Português](API.pt.md) · [हिन्दी](API.hi.md) · [العربية](API.ar.md) · **বাংলা** · [Bahasa Indonesia](API.id.md) · [日本語](API.ja.md)
@@ -186,7 +186,7 @@ type এর মান: deposit / withdraw / exchange_in / exchange_out / game_ea
 }
 ```
 
-currency এর মান: USD / CNY / EUR
+currency এর মান: USD / CNY / EUR / JPY / KRW / GBP / BRL / INR
 
 checkout_url: পেমেন্ট গেটওয়ে রিডাইরেক্ট লিংক (অর্ডার তৈরির সময় পূরণ করা হয়); expires_at: পেমেন্ট লিংকের মেয়াদ (তৈরির ১ ঘণ্টা পরে)
 
@@ -401,9 +401,9 @@ status:
 }
 ```
 
-type এর মান: self / third_party
+type এর মান: self / embedded / third_party
 
-#### GET /api/v1/game/{hashid} — গেম বিবরণ
+#### GET /api/v1/game/detail/{hashid} — গেম বিবরণ
 
 ```
 রেসপন্স: {
@@ -870,7 +870,7 @@ language এর মান: en-US / zh-CN / ja-JP / ko-KR
 
 ### 3.1 প্ল্যাটফর্ম ড্যাশবোর্ড
 
-#### GET /admin/dashboard/platform
+#### GET /admin/v1/dashboard/platform
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ (AdminAuth + AdminPermission)
@@ -888,11 +888,11 @@ language এর মান: en-US / zh-CN / ja-JP / ko-KR
 
 ### 3.2 গেম ম্যানেজমেন্ট
 
-#### GET /admin/game/list — গেম তালিকা
+#### GET /admin/v1/game/list — গেম তালিকা
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
-প্যারামিটার: ?page=1&per_page=20&keyword=射击
+প্যারামিটার: ?page=1&limit=20&keyword=射击
 
 রেসপন্স: {
   "list": [
@@ -909,11 +909,67 @@ language এর মান: en-US / zh-CN / ja-JP / ko-KR
   ],
   "total": 12,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### POST /admin/game/create — গেম তৈরি
+#### GET /admin/v1/game/{hashid} — গেম বিবরণ
+
+```
+需认证: 是
+参数: hashid 为游戏的 hashid 编码（路径参数）
+
+响应: {
+  "id": "aB3xK...",
+  "name": "射击大师",
+  "slug": "shooter-master",
+  "type": "self",
+  "description": "游戏描述",
+  "cover_image": "https://...",
+  "api_endpoint": "https://...",
+  "sdk_version": "1.0.0",
+  "platform": "h5",
+  "region": "global",
+  "currencies": [
+    {
+      "id": "cD4yL...",
+      "name": "金币",
+      "symbol": "G",
+      "exchange_rate": "100.00000000",
+      "spread_pct": "5.00000000",
+      "min_exchange": "1.00000000",
+      "max_exchange": "10000.00000000"
+    }
+  ]
+}
+```
+
+গেম না থাকলে code 404 ফেরে।
+
+#### POST /admin/v1/game/launch — গেম প্রিভিউ
+
+```
+需认证: 是
+
+请求: {
+  "game_id": "aB3xK..."      // 游戏 ID(hashid)
+}
+
+响应: {
+  "id": "aB3xK...",
+  "name": "射击大师",
+  "slug": "shooter-master",
+  "type": "self",
+  "api_endpoint": "https://...",
+  "preview": true
+}
+```
+
+`game_id` অনুপস্থিত হলে code 422 রিটার্ন করে; গেম না থাকলে 404 রিটার্ন করে; গেম পাবলিশ না হলে (`status` 1 নয়) 403 রিটার্ন করে।
+
+অ্যাডমিন প্যানেলের ট্রায়াল প্লে একটি বিশুদ্ধ প্রিভিউ: এটি শুধু গেমের প্রাপ্যতা যাচাই করে ও লঞ্চ তথ্য ফেরত দেয়, **কোনো গেম রেকর্ড লেখে না এবং ওয়ালেট স্পর্শ করে না**। অ্যাডমিন পরিচয়ে শুধু `adminId` থাকে (`AdminAuth` দ্বারা ইনজেক্ট করা) এবং C-এন্ড `userId` থাকে না, তাই এই এন্ডপয়েন্ট সচেতনভাবে কোনো ইউজার-সাইড লেখা করে না — C-এন্ড `POST /api/v1/game/launch` হুবহু ব্যবহার করলে ভুল মালিকানার `game_game_play_log` লেখা হতো।
+
+#### POST /admin/v1/game/create — গেম তৈরি
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -934,9 +990,9 @@ language এর মান: en-US / zh-CN / ja-JP / ko-KR
 রেসপন্স: { "id": "aB3xK..." }
 ```
 
-type এর মান: self / third_party
+type এর মান: self / embedded / third_party
 
-#### PUT /admin/game/{hashid} — গেম সম্পাদনা
+#### PUT /admin/v1/game/{hashid} — গেম সম্পাদনা
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -950,14 +1006,14 @@ type এর মান: self / third_party
 রেসপন্স: { "message": "更新成功" }
 ```
 
-#### DELETE /admin/game/{hashid} — গেম মুছুন
+#### DELETE /admin/v1/game/{hashid} — গেম মুছুন
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রেসপন্স: { "message": "删除成功" }
 ```
 
-#### POST /admin/game/currency/manage — কয়েন ম্যানেজমেন্ট
+#### POST /admin/v1/game/currency/manage — কয়েন ম্যানেজমেন্ট
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -977,16 +1033,20 @@ type এর মান: self / third_party
   ]
 }
 
-রেসপন্স: { "message": "币种更新成功" }
+রেসপন্স: { "message": "操作成功" }
 ```
+
+`game_id` অনুপস্থিত হলে বা `currencies` অ্যারে না হলে 422 রিটার্ন করে; গেম না থাকলে 404 রিটার্ন করে।
+
+`exchange_rate` এবং `spread_pct` কেবল পাঠানো হলেই যাচাই করা হয়: `exchange_rate` অবশ্যই 0-এর চেয়ে বড় সংখ্যা হতে হবে এবং `spread_pct` অবশ্যই [0, 100) সীমার মধ্যে থাকতে হবে; যেকোনো একটি লঙ্ঘন করলে 422 রিটার্ন এবং কোনো কয়েন লেখা হয় না (লেখার আগে সম্পূর্ণ ব্যাচ যাচাই করা হয়)। না পাঠানো ফিল্ডে যাচাই হয় না: তৈরির সময় ডিফল্ট মান প্রযোজ্য (`exchange_rate` = `1.00000000`, বাকিগুলো `0.00000000`), আর হালনাগাদের সময় বিদ্যমান মান অপরিবর্তিত থাকে।
 
 ### 3.3 উত্তোলন ম্যানেজমেন্ট
 
-#### GET /admin/withdraw/orders — উত্তোলন অর্ডার তালিকা
+#### GET /admin/v1/withdraw/orders — উত্তোলন অর্ডার তালিকা
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
-প্যারামিটার: ?page=1&per_page=20&status=pending
+প্যারামিটার: ?page=1&limit=20&status=pending
 
 রেসপন্স: {
   "list": [
@@ -1008,11 +1068,11 @@ type এর মান: self / third_party
   ],
   "total": 5,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### PUT /admin/withdraw/review — উত্তোলন রিভিউ
+#### PUT /admin/v1/withdraw/review — উত্তোলন রিভিউ
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1026,11 +1086,11 @@ type এর মান: self / third_party
 রেসপন্স: { "message": "已通过" }
 ```
 
-action: approve=অনুমোদন / reject=প্রত্যাখ্যান (প্রত্যাখ্যান করলে স্বয়ংক্রিয়ভাবে প্ল্যাটফর্ম কয়েন ফেরত)
+action: approve=অনুমোদন / reject=প্রত্যাখ্যান / confirm=নিশ্চিতকরণ (প্রত্যাখ্যান করলে স্বয়ংক্রিয়ভাবে প্ল্যাটফর্ম কয়েন ফেরত)
 
 ত্রুটি: 422 অর্ডারের স্ট্যাটাস রিভিউ-অপেক্ষমাণ নয়
 
-#### PUT /admin/withdraw/switch — গ্লোবাল উত্তোলন সুইচ
+#### PUT /admin/v1/withdraw/switch — গ্লোবাল উত্তোলন সুইচ
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1043,7 +1103,7 @@ action: approve=অনুমোদন / reject=প্রত্যাখ্যা
 }
 ```
 
-#### POST /admin/withdraw/limits/set — উত্তোলন সীমা সেট
+#### POST /admin/v1/withdraw/limits/set — উত্তোলন সীমা সেট
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1064,11 +1124,11 @@ action: approve=অনুমোদন / reject=প্রত্যাখ্যা
 
 ### 3.4 প্ল্যাটফর্ম ইউজার ম্যানেজমেন্ট
 
-#### GET /admin/platform/user/list — C-এন্ড ইউজার তালিকা
+#### GET /admin/v1/platform/user/list — C-এন্ড ইউজার তালিকা
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
-প্যারামিটার: ?page=1&per_page=20&keyword=player&status=1
+প্যারামিটার: ?page=1&limit=20&keyword=player&status=1
 
 রেসপন্স: {
   "list": [
@@ -1084,11 +1144,11 @@ action: approve=অনুমোদন / reject=প্রত্যাখ্যা
   ],
   "total": 1500,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### GET /admin/platform/user/{hashid} — ইউজার বিবরণ
+#### GET /admin/v1/platform/user/{hashid} — ইউজার বিবরণ
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1111,7 +1171,7 @@ action: approve=অনুমোদন / reject=প্রত্যাখ্যা
 }
 ```
 
-#### PUT /admin/platform/user/{hashid} — ইউজার সম্পাদনা/ব্যান
+#### PUT /admin/v1/platform/user/{hashid} — ইউজার সম্পাদনা/ব্যান
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1126,7 +1186,7 @@ action: approve=অনুমোদন / reject=প্রত্যাখ্যা
 
 ### 3.5 পেমেন্ট ম্যানেজমেন্ট
 
-#### GET /admin/payment/method/list
+#### GET /admin/v1/payment/method/list
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1144,7 +1204,7 @@ action: approve=অনুমোদন / reject=প্রত্যাখ্যা
 }
 ```
 
-#### POST /admin/payment/method/toggle — পেমেন্ট পদ্ধতি এনাবল/ডিসেবল
+#### POST /admin/v1/payment/method/toggle — পেমেন্ট পদ্ধতি এনাবল/ডিসেবল
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1156,11 +1216,11 @@ action: approve=অনুমোদন / reject=প্রত্যাখ্যা
 
 ### 3.6 ঘোষণা ম্যানেজমেন্ট
 
-#### GET /admin/announcement/list
+#### GET /admin/v1/announcement/list
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
-প্যারামিটার: ?page=1&per_page=20
+প্যারামিটার: ?page=1&limit=20
 
 রেসপন্স: {
   "list": [
@@ -1176,11 +1236,11 @@ action: approve=অনুমোদন / reject=প্রত্যাখ্যা
   ],
   "total": 5,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### POST /admin/announcement/create — ঘোষণা প্রকাশ
+#### POST /admin/v1/announcement/create — ঘোষণা প্রকাশ
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1200,11 +1260,11 @@ action: approve=অনুমোদন / reject=প্রত্যাখ্যা
 
 ### 3.7 KYC রিভিউ
 
-#### GET /admin/identity/list — KYC তালিকা
+#### GET /admin/v1/identity/list — KYC তালিকা
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
-প্যারামিটার: ?page=1&per_page=20&status=pending
+প্যারামিটার: ?page=1&limit=20&status=pending
 
 রেসপন্স: {
   "list": [
@@ -1217,11 +1277,11 @@ action: approve=অনুমোদন / reject=প্রত্যাখ্যা
       "created_at": "2026-05-22 10:00:00"
     }
   ],
-  "total": 5, "page": 1, "per_page": 20
+  "total": 5, "page": 1, "limit": 20
 }
 ```
 
-#### PUT /admin/identity/review — KYC রিভিউ
+#### PUT /admin/v1/identity/review — KYC রিভিউ
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1235,7 +1295,7 @@ action: approve / reject
 
 ### 3.8 গেম সার্ভার ম্যানেজমেন্ট
 
-#### GET /admin/game/server/list — সার্ভার তালিকা
+#### GET /admin/v1/game/server/list — সার্ভার তালিকা
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1248,7 +1308,7 @@ action: approve / reject
 }
 ```
 
-#### POST /admin/game/server/create — সার্ভার তৈরি
+#### POST /admin/v1/game/server/create — সার্ভার তৈরি
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1256,14 +1316,14 @@ action: approve / reject
 রেসপন্স: { "id": "hashid" }
 ```
 
-#### PUT /admin/game/server/{hashid} — সার্ভার সম্পাদনা
+#### PUT /admin/v1/game/server/{hashid} — সার্ভার সম্পাদনা
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রিকোয়েস্ট: { "name": "新名称", "status": 2 }
 ```
 
-#### DELETE /admin/game/server/{hashid} — সার্ভার মুছুন
+#### DELETE /admin/v1/game/server/{hashid} — সার্ভার মুছুন
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1271,7 +1331,7 @@ action: approve / reject
 
 ### 3.9 উত্তোলন টায়ার্ড লিমিট ম্যানেজমেন্ট
 
-#### GET /admin/withdraw/limits/list
+#### GET /admin/v1/withdraw/limits/list
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1293,7 +1353,7 @@ action: approve / reject
 }
 ```
 
-#### PUT /admin/withdraw/limits/{hashid} — লিমিট আপডেট
+#### PUT /admin/v1/withdraw/limits/{hashid} — লিমিট আপডেট
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1304,14 +1364,14 @@ action: approve / reject
 
 ### 3.11 গেম ক্যাটাগরি ম্যানেজমেন্ট
 
-#### GET /admin/game/category/list
+#### GET /admin/v1/game/category/list
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রেসপন্স: { "list": [{ "id": "...", "name": "动作", "slug": "action", "sort": 1 }] }
 ```
 
-#### POST /admin/game/category/create
+#### POST /admin/v1/game/category/create
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1319,11 +1379,11 @@ action: approve / reject
 রেসপন্স: { "id": "hashid" }
 ```
 
-#### PUT /admin/game/category/{hashid} — ক্যাটাগরি সম্পাদনা
+#### PUT /admin/v1/game/category/{hashid} — ক্যাটাগরি সম্পাদনা
 
-#### DELETE /admin/game/category/{hashid} — ক্যাটাগরি মুছুন
+#### DELETE /admin/v1/game/category/{hashid} — ক্যাটাগরি মুছুন
 
-#### POST /admin/game/category/assign — গেম অ্যাসাইন
+#### POST /admin/v1/game/category/assign — গেম অ্যাসাইন
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1332,42 +1392,42 @@ action: approve / reject
 
 ### 3.12 লিডারবোর্ড ম্যানেজমেন্ট
 
-#### GET /admin/leaderboard/list — লিডারবোর্ড তালিকা
+#### GET /admin/v1/leaderboard/list — লিডারবোর্ড তালিকা
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রেসপন্স: { "list": [{ "id": "...", "name": "...", "type": "total", "metric": "earned" }] }
 ```
 
-#### POST /admin/leaderboard/create — লিডারবোর্ড তৈরি
+#### POST /admin/v1/leaderboard/create — লিডারবোর্ড তৈরি
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রিকোয়েস্ট: { "name": "周收入榜", "type": "weekly", "metric": "earned", "game_id": "hashid(ঐচ্ছিক)" }
 ```
 
-#### PUT /admin/leaderboard/{hashid} — লিডারবোর্ড সম্পাদনা
+#### PUT /admin/v1/leaderboard/{hashid} — লিডারবোর্ড সম্পাদনা
 
-#### DELETE /admin/leaderboard/{hashid} — লিডারবোর্ড মুছুন
+#### DELETE /admin/v1/leaderboard/{hashid} — লিডারবোর্ড মুছুন
 
-#### POST /admin/leaderboard/{hashid}/refresh — ক্যাশ রিফ্রেশ
+#### POST /admin/v1/leaderboard/{hashid}/refresh — ক্যাশ রিফ্রেশ
 
 ### 3.13 কুপন ম্যানেজমেন্ট
 
-#### GET /admin/coupon/list — কুপন তালিকা
+#### GET /admin/v1/coupon/list — কুপন তালিকা
 
-#### POST /admin/coupon/create — কুপন তৈরি
+#### POST /admin/v1/coupon/create — কুপন তৈরি
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রিকোয়েস্ট: { "name": "新人礼包", "type": "fixed", "value": "10.0000", "total_qty": 1000 }
 ```
 
-#### PUT /admin/coupon/{hashid} — সম্পাদনা (অনাক্লেইমড হলে)
+#### PUT /admin/v1/coupon/{hashid} — সম্পাদনা (অনাক্লেইমড হলে)
 
-#### DELETE /admin/coupon/{hashid} — মুছুন
+#### DELETE /admin/v1/coupon/{hashid} — মুছুন
 
-#### GET /admin/coupon/{hashid}/stats — ক্লেইম পরিসংখ্যান
+#### GET /admin/v1/coupon/{hashid}/stats — ক্লেইম পরিসংখ্যান
 
 ```
 রেসপন্স: { "total_qty": 1000, "used_qty": 234, "remaining": 766, "usage_rate": "23.40%" }
@@ -1375,20 +1435,20 @@ action: approve / reject
 
 ### 3.14 দেশ কনফিগ ম্যানেজমেন্ট
 
-#### GET /admin/country/config/list — দেশ কনফিগ তালিকা
+#### GET /admin/v1/country/config/list — দেশ কনফিগ তালিকা
 
-#### POST /admin/country/config/create — দেশ কনফিগ তৈরি
+#### POST /admin/v1/country/config/create — দেশ কনফিগ তৈরি
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রিকোয়েস্ট: { "country_code": "JP", "currency": "JPY", "payment_methods": "[\"stripe\",\"paypal\"]", "min_deposit": "100.0000" }
 ```
 
-#### PUT /admin/country/config/{hashid} — দেশ কনফিগ সম্পাদনা
+#### PUT /admin/v1/country/config/{hashid} — দেশ কনফিগ সম্পাদনা
 
 ### 3.15 ডেটা এক্সপোর্ট
 
-#### POST /admin/export/users — C-এন্ড ইউজার এক্সপোর্ট
+#### POST /admin/v1/export/users — C-এন্ড ইউজার এক্সপোর্ট
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1397,7 +1457,7 @@ action: approve / reject
 রেসপন্স: Excel ফাইল ডাউনলোড (xlsx)
 ```
 
-#### POST /admin/export/transactions — প্ল্যাটফর্ম লেজার এক্সপোর্ট
+#### POST /admin/v1/export/transactions — প্ল্যাটফর্ম লেজার এক্সপোর্ট
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1412,18 +1472,18 @@ action: approve / reject
 
 | মেথড | পাথ | বিবরণ |
 |------|------|------|
-| GET | /admin/analytics/overview | প্ল্যাটফর্ম ওভারভিউ (আজ/সাম্প্রতিক ৭ দিন) |
-| GET | /admin/analytics/game-ranking | গেম র্যাংকিং (?days=7) |
-| GET | /admin/analytics/dau-trend | DAU ট্রেন্ড (?days=30) |
-| GET | /admin/analytics/hourly-trend | ঘণ্টাভিত্তিক ট্রেন্ড |
-| GET | /admin/analytics/action-distribution | আচরণ বিতরণ |
-| GET | /admin/analytics/revenue | রেভিনিউ অ্যানালাইসিস |
-| GET | /admin/analytics/conversion | গেম কনভার্সন রেট |
-| GET | /admin/analytics/probability | জয়েন্ট/কন্ডিশনাল প্রোবাবিলিটি |
-| GET | /admin/analytics/retention | রিটেনশন অ্যানালাইসিস D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | কনভার্সন ফানেল |
-| GET | /admin/analytics/arpu | ARPU/ARPPU ট্রেন্ড |
-| GET | /admin/analytics/economy | গেম কয়েন অর্থনীতি মেট্রিক |
+| GET | /admin/v1/analytics/overview | প্ল্যাটফর্ম ওভারভিউ (আজ/সাম্প্রতিক ৭ দিন) |
+| GET | /admin/v1/analytics/game-ranking | গেম র্যাংকিং (?days=7) |
+| GET | /admin/v1/analytics/dau-trend | DAU ট্রেন্ড (?days=30) |
+| GET | /admin/v1/analytics/hourly-trend | ঘণ্টাভিত্তিক ট্রেন্ড |
+| GET | /admin/v1/analytics/action-distribution | আচরণ বিতরণ |
+| GET | /admin/v1/analytics/revenue | রেভিনিউ অ্যানালাইসিস |
+| GET | /admin/v1/analytics/conversion | গেম কনভার্সন রেট |
+| GET | /admin/v1/analytics/probability | জয়েন্ট/কন্ডিশনাল প্রোবাবিলিটি |
+| GET | /admin/v1/analytics/retention | রিটেনশন অ্যানালাইসিস D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | কনভার্সন ফানেল |
+| GET | /admin/v1/analytics/arpu | ARPU/ARPPU ট্রেন্ড |
+| GET | /admin/v1/analytics/economy | গেম কয়েন অর্থনীতি মেট্রিক |
 
 ### 3.17 টিকিট ম্যানেজমেন্ট
 
@@ -1431,11 +1491,11 @@ action: approve / reject
 
 | মেথড | পাথ | বিবরণ |
 |------|------|------|
-| GET | /admin/ticket/list | টিকিট তালিকা (?page=&limit=&status=&type=) |
-| GET | /admin/ticket/{hashid} | টিকিট বিবরণ (রিপ্লাই সহ) |
-| POST | /admin/ticket/{hashid}/reply | টিকিটে রিপ্লাই |
-| POST | /admin/ticket/{hashid}/close | টিকিট বন্ধ |
-| POST | /admin/ticket/{hashid}/assign | হ্যান্ডলার নিয়োগ (admin_id) |
+| GET | /admin/v1/ticket/list | টিকিট তালিকা (?page=&limit=&status=&type=) |
+| GET | /admin/v1/ticket/{hashid} | টিকিট বিবরণ (রিপ্লাই সহ) |
+| POST | /admin/v1/ticket/{hashid}/reply | টিকিটে রিপ্লাই |
+| POST | /admin/v1/ticket/{hashid}/close | টিকিট বন্ধ |
+| POST | /admin/v1/ticket/{hashid}/assign | হ্যান্ডলার নিয়োগ (admin_id) |
 
 ### 3.18 CDN কনফিগারেশন ম্যানেজমেন্ট
 
@@ -1443,12 +1503,12 @@ action: approve / reject
 
 | মেথড | পাথ | বিবরণ | অথেনটিকেশন |
 |------|------|------|------|
-| GET | /admin/cdn/provider/list | CDN প্রোভাইডার তালিকা (ক্রেডেনশিয়াল ফেরত দেওয়া হয় না) | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/toggle | প্রোভাইডার চালু/বন্ধ {id, status} | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/create | তৈরি {name, provider, config(JSON), status, sort}，provider স্বতন্ত্রতা যাচাই | AdminAuth + RBAC: cdn |
-| PUT | /admin/cdn/provider/{hashid} | সম্পাদনা (খালি config = অপরিবর্তিত) | AdminAuth + RBAC: cdn |
-| DELETE | /admin/cdn/provider/{hashid} | মুছুন | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/test | সংযোগ পরীক্ষা HeadBucket {id} | AdminAuth + RBAC: cdn |
+| GET | /admin/v1/cdn/provider/list | CDN প্রোভাইডার তালিকা (ক্রেডেনশিয়াল ফেরত দেওয়া হয় না) | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/toggle | প্রোভাইডার চালু/বন্ধ {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/create | তৈরি {name, provider, config(JSON), status, sort}，provider স্বতন্ত্রতা যাচাই | AdminAuth + RBAC: cdn |
+| PUT | /admin/v1/cdn/provider/{hashid} | সম্পাদনা (খালি config = অপরিবর্তিত) | AdminAuth + RBAC: cdn |
+| DELETE | /admin/v1/cdn/provider/{hashid} | মুছুন | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/test | সংযোগ পরীক্ষা HeadBucket {id} | AdminAuth + RBAC: cdn |
 
 ### 3.19 ডেটা রিপোর্ট
 
@@ -1456,9 +1516,9 @@ action: approve / reject
 
 | মেথড | পাথ | বিবরণ | অথেনটিকেশন |
 |------|------|------|------|
-| GET | /admin/report/summary | রিপোর্ট সারাংশ (নতুন ব্যবহারকারী/ডিপোজিট/উইথড্রয়াল/এক্সচেঞ্জ/গেম প্লে) | AdminAuth + RBAC: report |
-| GET | /admin/report/daily | দৈনিক রিপোর্ট (দিনভিত্তিক সমষ্টি, ডেটাবিহীন তারিখে 0 পূরণ) | AdminAuth + RBAC: report |
-| GET | /admin/report/export | দৈনিক রিপোর্ট CSV এক্সপোর্ট (UTF-8 BOM) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/summary | রিপোর্ট সারাংশ (নতুন ব্যবহারকারী/ডিপোজিট/উইথড্রয়াল/এক্সচেঞ্জ/গেম প্লে) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/daily | দৈনিক রিপোর্ট (দিনভিত্তিক সমষ্টি, ডেটাবিহীন তারিখে 0 পূরণ) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/export | দৈনিক রিপোর্ট CSV এক্সপোর্ট (UTF-8 BOM) | AdminAuth + RBAC: report |
 
 ## 4. রেট লিমিট পলিসি
 
@@ -1681,6 +1741,8 @@ status: open / waiting / replied / closed
 
 #### GET /api/v1/user/vip-status — VIP স্ট্যাটাস
 
+> **এখনও বাস্তবায়িত নয়**: C-এন্ড রুট নিবন্ধিত নয় (`service/config/route.php`-এ কোনো এন্ট্রি নেই), অনুরোধ এখন 404 ফেরে। বাস্তবায়নের পর এই লাইনটি মুছে দিন।
+
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রেসপন্স: {
@@ -1701,6 +1763,8 @@ status: open / waiting / replied / closed
 
 #### GET /api/v1/user/achievements — অ্যাচিভমেন্ট তালিকা
 
+> **এখনও বাস্তবায়িত নয়**: C-এন্ড রুট নিবন্ধিত নয় (`service/config/route.php`-এ কোনো এন্ট্রি নেই), অনুরোধ এখন 404 ফেরে। বাস্তবায়নের পর এই লাইনটি মুছে দিন।
+
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রেসপন্স: {
@@ -1720,7 +1784,7 @@ status: open / waiting / replied / closed
 
 ### 7.6 অ্যাডমিন প্যানেলের নতুন API
 
-#### GET /admin/ticket/list — টিকিট তালিকা
+#### GET /admin/v1/ticket/list — টিকিট তালিকা
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1739,7 +1803,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### POST /admin/ticket/{hashid}/reply — টিকিটে রিপ্লাই
+#### POST /admin/v1/ticket/{hashid}/reply — টিকিটে রিপ্লাই
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1747,14 +1811,14 @@ status: open / waiting / replied / closed
 রেসপন্স: { "code": 0, "message": "Reply sent" }
 ```
 
-#### POST /admin/ticket/{hashid}/close — টিকিট বন্ধ
+#### POST /admin/v1/ticket/{hashid}/close — টিকিট বন্ধ
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রেসপন্স: { "code": 0, "message": "Ticket closed" }
 ```
 
-#### POST /admin/ticket/{hashid}/assign — হ্যান্ডলার নিয়োগ
+#### POST /admin/v1/ticket/{hashid}/assign — হ্যান্ডলার নিয়োগ
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1762,7 +1826,7 @@ status: open / waiting / replied / closed
 রেসপন্স: { "code": 0, "message": "Assigned" }
 ```
 
-#### GET /admin/analytics/retention — রিটেনশন অ্যানালাইসিস
+#### GET /admin/v1/analytics/retention — রিটেনশন অ্যানালাইসিস
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1773,7 +1837,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/funnel — কনভার্সন ফানেল
+#### GET /admin/v1/analytics/funnel — কনভার্সন ফানেল
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1787,7 +1851,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/arpu — ARPU/ARPPU ট্রেন্ড
+#### GET /admin/v1/analytics/arpu — ARPU/ARPPU ট্রেন্ড
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1795,7 +1859,7 @@ status: open / waiting / replied / closed
 রেসপন্স: { "arpu": [...], "arppu": [...], "dates": [...] }
 ```
 
-#### GET /admin/analytics/economy — গেম কয়েন অর্থনীতি মেট্রিক
+#### GET /admin/v1/analytics/economy — গেম কয়েন অর্থনীতি মেট্রিক
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1814,14 +1878,14 @@ status: open / waiting / replied / closed
 ```
 
 
-#### GET /admin/cdn/provider/list — CDN প্রোভাইডার তালিকা (ক্রেডেনশিয়াল ফেরত দেওয়া হয় না)
+#### GET /admin/v1/cdn/provider/list — CDN প্রোভাইডার তালিকা (ক্রেডেনশিয়াল ফেরত দেওয়া হয় না)
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রেসপন্স: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
 ```
 
-#### POST /admin/cdn/provider/toggle — প্রোভাইডার চালু/বন্ধ {id, status}
+#### POST /admin/v1/cdn/provider/toggle — প্রোভাইডার চালু/বন্ধ {id, status}
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1829,7 +1893,7 @@ status: open / waiting / replied / closed
 রেসপন্স: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/cdn/provider/create — তৈরি {name, provider, config(JSON), status, sort}，provider স্বতন্ত্রতা যাচাই
+#### POST /admin/v1/cdn/provider/create — তৈরি {name, provider, config(JSON), status, sort}，provider স্বতন্ত্রতা যাচাই
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1837,7 +1901,7 @@ status: open / waiting / replied / closed
 রেসপন্স: { "code": 0, "data": { "id": "..." } }
 ```
 
-#### PUT /admin/cdn/provider/{hashid} — সম্পাদনা (খালি config = অপরিবর্তিত)
+#### PUT /admin/v1/cdn/provider/{hashid} — সম্পাদনা (খালি config = অপরিবর্তিত)
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
@@ -1845,21 +1909,21 @@ status: open / waiting / replied / closed
 রেসপন্স: { "code": 0, "message": "..." }
 ```
 
-#### DELETE /admin/cdn/provider/{hashid} — মুছুন
+#### DELETE /admin/v1/cdn/provider/{hashid} — মুছুন
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রেসপন্স: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/cdn/provider/test — সংযোগ পরীক্ষা HeadBucket {id}
+#### POST /admin/v1/cdn/provider/test — সংযোগ পরীক্ষা HeadBucket {id}
 
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 অনুরোধ: { "id": "..." }
 রেসপন্স: { "code": 0, "data": { "ok": true } }
 ```
-#### GET /admin/report/summary — রিপোর্ট সারাংশ
+#### GET /admin/v1/report/summary — রিপোর্ট সারাংশ
 
 ```
 需认证: 是
@@ -1873,7 +1937,7 @@ status: open / waiting / replied / closed
 ```
 
 
-#### GET /admin/report/daily — দৈনিক রিপোর্ট
+#### GET /admin/v1/report/daily — দৈনিক রিপোর্ট
 
 ```
 需认证: 是
@@ -1885,7 +1949,7 @@ status: open / waiting / replied / closed
 ```
 
 
-#### GET /admin/report/export — দৈনিক রিপোর্ট CSV এক্সপোর্ট
+#### GET /admin/v1/report/export — দৈনিক রিপোর্ট CSV এক্সপোর্ট
 
 ```
 需认证: 是
@@ -2029,13 +2093,13 @@ status: open / waiting / replied / closed
 
 ### 7.10 অ্যাডভান্সড অ্যানালিটিক্স API
 
-#### GET /admin/analytics/retention — রিটেনশন অ্যানালাইসিস
+#### GET /admin/v1/analytics/retention — রিটেনশন অ্যানালাইসিস
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রেসপন্স: { "D1": "45.2%", "D3": "28.7%", "D7": "18.3%", "D30": "8.1%" }
 ```
 
-#### GET /admin/analytics/funnel — কনভার্সন ফানেল
+#### GET /admin/v1/analytics/funnel — কনভার্সন ফানেল
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রেসপন্স: {
@@ -2048,14 +2112,14 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/arpu — ARPU/ARPPU ট্রেন্ড
+#### GET /admin/v1/analytics/arpu — ARPU/ARPPU ট্রেন্ড
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 প্যারামিটার: ?days=30
 রেসপন্স: { "dates": [...], "arpu": [...], "arppu": [...] }
 ```
 
-#### GET /admin/analytics/economy — গেম অর্থনীতি মেট্রিক
+#### GET /admin/v1/analytics/economy — গেম অর্থনীতি মেট্রিক
 ```
 অথেনটিকেশন প্রয়োজন: হ্যাঁ
 রেসপন্স: {
@@ -2117,47 +2181,47 @@ status: open / waiting / replied / closed
 
 | এন্ডপয়েন্ট | বর্ণনা |
 |------|------|
-| GET /admin/risk/dashboard | রিস্ক ড্যাশবোর্ড ওভারভিউ |
-| GET /admin/risk/overview | রিস্ক ওভারভিউ মেট্রিক্স |
-| GET /admin/risk/hit-trend | হিট ট্রেন্ড |
-| GET /admin/risk/action-distribution | অ্যাকশন বিতরণ |
-| GET /admin/risk/rule-performance | রুল পারফরম্যান্স |
-| GET /admin/risk/rule/list | রুল তালিকা |
-| POST /admin/risk/rule/create | রুল তৈরি |
-| PUT /admin/risk/rule/{hashid} | রুল আপডেট |
-| POST /admin/risk/rule/{hashid}/toggle | রুল সক্রিয়/নিষ্ক্রিয় |
-| POST /admin/risk/rule/test | রুল টেস্ট |
-| GET /admin/risk/event/list | রিস্ক ইভেন্ট তালিকা |
-| GET /admin/risk/event/{hashid} | ইভেন্ট বিবরণ |
-| POST /admin/risk/event/{hashid}/handle | ইভেন্ট নিষ্পত্তি |
-| GET /admin/risk/device/list | ডিভাইস ফিঙ্গারপ্রিন্ট তালিকা |
-| POST /admin/risk/device/block | ডিভাইস ব্লক |
-| POST /admin/risk/device/unblock | ডিভাইস আনব্লক |
-| GET /admin/risk/ip/list | IP তালিকা |
-| POST /admin/risk/ip/block | IP ব্লক |
-| POST /admin/risk/ip/whitelist | IP হোয়াইটলিস্ট |
-| POST /admin/risk/ip/appeal | IP আপিল |
-| POST /admin/risk/ip/recheck | IP পুনঃপরীক্ষা |
-| GET /admin/risk/graph/clusters | ক্লাস্টার তালিকা |
-| GET /admin/risk/graph/{userId} | ব্যবহারকারী লিংক গ্রাফ |
-| GET /admin/risk/clusters | রিস্ক ক্লাস্টার তালিকা |
+| GET /admin/v1/risk/dashboard | রিস্ক ড্যাশবোর্ড ওভারভিউ |
+| GET /admin/v1/risk/overview | রিস্ক ওভারভিউ মেট্রিক্স |
+| GET /admin/v1/risk/hit-trend | হিট ট্রেন্ড |
+| GET /admin/v1/risk/action-distribution | অ্যাকশন বিতরণ |
+| GET /admin/v1/risk/rule-performance | রুল পারফরম্যান্স |
+| GET /admin/v1/risk/rule/list | রুল তালিকা |
+| POST /admin/v1/risk/rule/create | রুল তৈরি |
+| PUT /admin/v1/risk/rule/{hashid} | রুল আপডেট |
+| POST /admin/v1/risk/rule/{hashid}/toggle | রুল সক্রিয়/নিষ্ক্রিয় |
+| POST /admin/v1/risk/rule/test | রুল টেস্ট |
+| GET /admin/v1/risk/event/list | রিস্ক ইভেন্ট তালিকা |
+| GET /admin/v1/risk/event/{hashid} | ইভেন্ট বিবরণ |
+| POST /admin/v1/risk/event/{hashid}/handle | ইভেন্ট নিষ্পত্তি |
+| GET /admin/v1/risk/device/list | ডিভাইস ফিঙ্গারপ্রিন্ট তালিকা |
+| POST /admin/v1/risk/device/block | ডিভাইস ব্লক |
+| POST /admin/v1/risk/device/unblock | ডিভাইস আনব্লক |
+| GET /admin/v1/risk/ip/list | IP তালিকা |
+| POST /admin/v1/risk/ip/block | IP ব্লক |
+| POST /admin/v1/risk/ip/whitelist | IP হোয়াইটলিস্ট |
+| POST /admin/v1/risk/ip/appeal | IP আপিল |
+| POST /admin/v1/risk/ip/recheck | IP পুনঃপরীক্ষা |
+| GET /admin/v1/risk/graph/clusters | ক্লাস্টার তালিকা |
+| GET /admin/v1/risk/graph/{userId} | ব্যবহারকারী লিংক গ্রাফ |
+| GET /admin/v1/risk/clusters | রিস্ক ক্লাস্টার তালিকা |
 
 ### 10.2 অ্যান্টি-চিট ব্যবস্থাপনা (অ্যাডমিন :8789)
 
 | এন্ডপয়েন্ট | বর্ণনা |
 |------|------|
-| GET /admin/anticheat/events | অ্যান্টি-চিট ইভেন্ট তালিকা |
-| GET /admin/anticheat/events/{hashid} | ইভেন্ট বিবরণ |
-| POST /admin/anticheat/events/{hashid}/review | ইভেন্ট রিভিউ |
+| GET /admin/v1/anticheat/events | অ্যান্টি-চিট ইভেন্ট তালিকা |
+| GET /admin/v1/anticheat/events/{hashid} | ইভেন্ট বিবরণ |
+| POST /admin/v1/anticheat/events/{hashid}/review | ইভেন্ট রিভিউ |
 
 ### 10.3 কার্যক্রম (অ্যাডমিন :8789 + ক্লায়েন্ট :8792)
 
 | এন্ডপয়েন্ট | বর্ণনা |
 |------|------|
-| GET /admin/activities/list | অ্যাক্টিভিটি তালিকা (অ্যাডমিন) |
-| POST /admin/activities/create | অ্যাক্টিভিটি তৈরি (অ্যাডমিন) |
-| PUT /admin/activities/{hashid} | অ্যাক্টিভিটি আপডেট (অ্যাডমিন) |
-| DELETE /admin/activities/{hashid} | অ্যাক্টিভিটি মুছুন (অ্যাডমিন) |
+| GET /admin/v1/activities/list | অ্যাক্টিভিটি তালিকা (অ্যাডমিন) |
+| POST /admin/v1/activities/create | অ্যাক্টিভিটি তৈরি (অ্যাডমিন) |
+| PUT /admin/v1/activities/{hashid} | অ্যাক্টিভিটি আপডেট (অ্যাডমিন) |
+| DELETE /admin/v1/activities/{hashid} | অ্যাক্টিভিটি মুছুন (অ্যাডমিন) |
 | GET /api/v1/activities/list | অ্যাক্টিভিটি তালিকা (ক্লায়েন্ট) |
 | GET /api/v1/activities/progress | অংশগ্রহণের অগ্রগতি (ক্লায়েন্ট) |
 | GET /api/v1/activities/{hashid} | অ্যাক্টিভিটি বিবরণ (ক্লায়েন্ট) |
@@ -2175,9 +2239,9 @@ status: open / waiting / replied / closed
 | PUT /api/v1/groups/{hashid}/role | সদস্য ভূমিকা |
 | POST /api/v1/shares | শেয়ার লিংক তৈরি |
 | POST /api/v1/shares/visit | শেয়ার ভিজিট ট্র্যাকিং |
-| GET /admin/groups | গ্রুপ তালিকা (অ্যাডমিন) |
-| GET /admin/groups/{hashid}/audit | গ্রুপ অডিট (অ্যাডমিন) |
-| GET /admin/share/stats | শেয়ার পরিসংখ্যান (অ্যাডমিন) |
+| GET /admin/v1/groups | গ্রুপ তালিকা (অ্যাডমিন) |
+| GET /admin/v1/groups/{hashid}/audit | গ্রুপ অডিট (অ্যাডমিন) |
+| GET /admin/v1/share/stats | শেয়ার পরিসংখ্যান (অ্যাডমিন) |
 
 ### 10.5 পেমেন্ট গেটওয়ে এক্সটেনশন (L1)
 

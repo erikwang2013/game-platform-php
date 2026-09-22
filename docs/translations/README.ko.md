@@ -1,4 +1,4 @@
-# 全球游戏聚合平台 (Global Game Platform)
+# 국제화 게임 통합 플랫폼 (Global Game Platform)
 
 ## 프로젝트 마스코트
 
@@ -33,8 +33,14 @@ Languages: [中文](../../README.md) · [English](README.en.md) · **한국어**
 - 데이터 암호화: API 전송 계층 AES-256-CBC + 데이터베이스 저장 계층 AES-128-ECB
 
 ### 프론트엔드
-- Flutter 3.x (Web PC 스타일)
-- HarmonyOS ArkTS (모바일)
+
+프런트엔드는 두 개의 별도 디렉터리 트리로 나뉘며, **각각 자기 쪽 백엔드만 호출하고** 서로 교차하지 않습니다:
+
+| 디렉터리 트리 | 역할 | 요청 접두사 | 대응 백엔드 | 기술 스택 |
+|--------|------|---------|---------|--------|
+| `apps/*` | **C측 플레이어 플랫폼** | `/api/v1/...` | service (기본 8792) | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
+| `admin/apps/*` | **관리 콘솔** | `/admin/v1/...` | admin (기본 8789) | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
+
 - 반응형 레이아웃 (Phone / Tablet / Desktop)
 - 국제화 (i18n): 영어 / 중국어 간체 전환
 
@@ -55,44 +61,79 @@ Languages: [中文](../../README.md) · [English](README.en.md) · **한국어**
 ```
 game-platform-php/
 ├── admin/                     # 관리 백엔드 (webman v2, 기본 포트 8789, APP_PORT로 변경 가능)
-│   ├── app/admin/controller/  #   관리자 컨트롤러
-│   ├── app/middleware/        #   미들웨어 (Cors/Security/RateLimit/Auth/ProviderAuth)
-│   ├── app/provider/          #   게임 Provider 계층
-│   ├── app/event/             #   이벤트 버스 (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission/ProviderAuth)
+│   ├── app/admin/v1/controller/  #   관리 측 컨트롤러
+│   ├── app/middleware/        #   미들웨어 (Cors/SecurityFilter/RateLimit/AdminAuth/AdminPermission/OperationLog)
+│   ├── app/model/             #   admin 전용 모델 (8개, 나머지 52개 공유 모델은 packages/에 있음)
+│   ├── app/service/           #   admin 전용 서비스 (WalletService/WalletScope/RiskSandboxService)
+│   ├── app/process/           #   상주 프로세스 (Http/Monitor/RiskIpCron)
 │   ├── app/provider/          #   게임 Provider 계층 (Self/ThirdParty/Factory)
-│   ├── app/middleware/        #   미들웨어 (Cors/Security/RateLimit/Auth/ProviderAuth)
-│   ├── app/provider/          #   게임 Provider 계층
-│   ├── app/event/             #   이벤트 버스 (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission)
+│   ├── app/activity/          #   액티비티 엔진 (출석/초대/일일 작업)
+│   ├── app/event/             #   이벤트 버스 (EventBus Redis Pub/Sub)
 │   ├── config/                #   설정 파일
-│   ├── install/   #   SQL 마이그레이션 파일
-│   └── apps/flutter/          #   Flutter Web PC 관리 백엔드
+│   └── apps/                  #   관리 프런트엔드 (4종, /admin/v1 → admin:8789 호출)
+│       ├── flutter/           #     Flutter Web PC 관리 백엔드
+│       ├── react/             #     React 19 (Vite) 관리 콘솔
+│       ├── angular/           #     Angular 21 관리 콘솔
+│       └── harmonyos/         #     HarmonyOS ArkTS 관리 콘솔 (.hap, nginx를 거치지 않음)
 │
 ├── service/                   # C측 비즈니스 서버 (webman v2, 기본 포트 8792, APP_PORT로 변경 가능)
 │   ├── app/api/v1/controller/ #   C측 API 컨트롤러
-│   ├── app/middleware/        #   미들웨어 (Cors/Security/RateLimit/Auth/ProviderAuth)
+│   ├── app/middleware/        #   미들웨어 (TraceId/Cors/SecurityFilter/RateLimit/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
+│   ├── app/model/             #   service 전용 모델 (10개, 나머지 52개 공유 모델은 packages/에 있음)
+│   ├── app/service/           #   service 전용 서비스 (지갑/리스크/컴플라이언스/대사/푸시/업적/부정행위 방지 등)
+│   ├── app/payment/           #   18개 결제 게이트웨이 어댑터 (Stripe/PayPal/Adyen/NowPayments/Skrill…) + GatewayFactory
+│   ├── app/cdn/               #   5개 사업자 CDN 어댑터 (Cloudflare/CloudFront/Alibaba/Tencent/Huawei) + CdnFactory
+│   ├── app/process/           #   상주 프로세스 (Http/Monitor/LeaderboardWS:8790/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
 │   ├── app/provider/          #   게임 Provider 계층
+│   ├── app/activity/          #   액티비티 엔진
 │   ├── app/event/             #   이벤트 버스 (EventBus Redis Pub/Sub)
 │   └── config/                #   설정 파일
 │
-├── install/                   # 원클릭 설치 마법사
+├── packages/platform-common/  # 공유 계층: admin과 service가 composer path 저장소로 가져와 두 벌의 사본을 피함
+│   ├── src/model/             #   공유 Eloquent 모델 (52개, 양쪽 동일 소스)
+│   ├── src/service/           #   공유 서비스 (DepositLogService / VipService 등 11개, ClickHouse 확률 계산 포함)
+│   ├── src/BcMath.php         #   금액/환율 고정밀 연산 (bcmath 래퍼), 반올림, 백분율
+│   ├── src/EncryptionService.php  #   AES 암호화/복호화 및 마스킹
+│   ├── src/CircuitBreaker.php #   서킷 브레이커 (재시도용 Retry.php 별도)
+│   ├── src/HashidsService.php #   API 계층 ID 인코딩/디코딩
+│   └── src/SnowflakeService.php   #   전역 고유 BIGINT ID
+│
+├── apps/                      # C측 플레이어 프런트엔드 (4종, /api/v1 → service:8792 호출)
+│   ├── flutter/platform/      #   Flutter Web PC C측 사용자 플랫폼
+│   ├── react/                 #   React 19 (Vite) C측
+│   ├── angular/               #   Angular 21 C측
+│   └── harmonyos/             #   HarmonyOS ArkTS C측 (.hap, nginx를 거치지 않음)
+│
+├── game/xiaoxiaole/           # 내장 미니게임 「전원 소소락」: TypeScript + Vite + Vitest, src/domain 엔진 + 4개 레벨 설계 + tests/, 13개 언어 설계 문서
+│
+├── install/                   # 원클릭 설치 마법사 + 데이터베이스 초기화 SQL
 │   ├── index.php              #   설치 진입점
 │   ├── Installer.php          #   설치 핵심 로직
-│   ├── install.sql            #   통합 설치 SQL（43개 테이블 + 시드 데이터）
+│   ├── install.sql            #   통합 설치 SQL（78개 테이블 + 시드 데이터）
+│   ├── clickhouse.sql         #   ClickHouse 분석용 DDL (독립 엔진, 별도로 가져옴)
+│   ├── test-data.sql          #   데모/테스트 데이터
+│   ├── migrations/            #   기존 데이터베이스용 증분 업그레이드 스크립트 (*.sql)
+│   ├── lang/ + lang.php       #   설치 마법사 UI 번역 (13개 언어)
 │   └── assets/                #   정적 리소스
 │
-├── admin/common/ 와 service/common/   # 공유 서비스 각각 1부 (DepositLogService 등, 공유 계층 추출 예정)
-│   └── service/               #   공유 서비스 (ClickHouse 확률 계산 포함)
-│
-├── apps/
-│   └── flutter/platform/      # Flutter Web PC C측 사용자 플랫폼
-│
-├── docs/                      # 프로젝트 문서
+├── docs/                      # 프로젝트 문서 (본문은 모두 13개 언어: .md는 중국어 원본이며 같은 디렉터리에 .{lang}.md 번역이 있음)
 │   ├── ARCHITECTURE.md        #   아키텍처 문서
 │   ├── ARCHITECTURE-DESIGN.md #   아키텍처 설계 문서
 │   ├── FEATURES.md            #   기능 문서
 │   ├── FEATURE-DESIGN.md      #   기능 설계 문서
 │   ├── API.md                 #   API 문서
-│   └── DEPLOYMENT.md          #   배포 문서 (Docker/수동/포트 구성)
+│   ├── DEPLOYMENT.md          #   배포 문서 (Docker/수동/포트 구성)
+│   ├── PROVIDER-SDK.md        #   서드파티 게임 연동 가이드 (서명 알고리즘 + PHP/Go/Python 예제)
+│   ├── CLICKHOUSE_INSTALL.md  #   ClickHouse 설치/설정/마이그레이션/검증
+│   ├── CLICKHOUSE_USAGE.md    #   ClickHouse의 4개 서비스 API와 관리 대시보드
+│   ├── translations/          #   이 README의 12개 언어 번역
+│   ├── diagrams/              #   아키텍처/흐름/기능/수명주기/보안/생태계 확장 SVG (각 13개 언어)
+│   ├── test-reports/          #   테스트 보고서 (php-unit / api / resilience / ui / SUMMARY)
+│   └── superpowers/           #   이 저장소의 설계 명세와 구현 계획 (역사 기록)
+│
+├── scripts/                   # 운영 스크립트 (모델 드리프트 점검 / apidoc 애노테이션 마이그레이션 / exchange 출금 의미론 마이그레이션 / 서명 검증)
+├── tests/api/                 # API 자동 테스트 (run_all.sh)
+├── runtime/                   # webman 런타임 디렉터리 (로그/pid, 런타임에 생성)
 │
 ├── docker-compose.yml         # Docker Compose 오케스트레이션 (기본 포트는 루트 .env에서)
 ├── nginx.conf.template        # Nginx 구성 템플릿 (upstream 포트는 envsubst로 렌더링)
@@ -137,7 +178,7 @@ rm -rf install/
 
 설치 마법사가 자동으로 수행하는 작업:
 - 환경 점검 (PHP 버전, 확장, 디렉터리 권한)
-- 데이터베이스 및 테이블 생성 (통합 SQL, 43개 테이블 + 시드 데이터)
+- 데이터베이스 및 테이블 생성 (통합 SQL, 78개 테이블 + 시드 데이터)
 - 슈퍼 관리자 계정 생성 (bcrypt 암호화)
 - JWT/암호화 키 자동 생성 및 .env 파일에 기록
 - install.lock 생성으로 중복 설치 방지
@@ -184,17 +225,40 @@ cd ../service && composer install && php start.php start -d
 
 ### 프론트엔드 시작 (선택)
 
-```bash
-# 관리 백엔드 (Flutter Web PC)
-cd admin/apps/flutter
-flutter pub get
-flutter run -d chrome
+개발 시 각 프런트엔드는 자체 dev 서버를 띄우고, 요청은 그 서버가 해당 백엔드로 프록시합니다 (각 디렉터리의 `proxy.conf.json` / `vite.config.ts` 참고):
 
-# C측 사용자 플랫폼 (Flutter Web PC)
-cd apps/flutter/platform
-flutter pub get
-flutter run -d chrome
+```bash
+# --- C측 플레이어 플랫폼 (/api/v1 → service:8792) ---
+cd apps/react            && npm install && npm run dev      # http://localhost:5173
+cd apps/angular          && npm install && npm start        # http://localhost:4200
+cd apps/flutter/platform && flutter pub get && flutter run -d chrome
+
+# --- 관리 콘솔 (/admin/v1 → admin:8789) ---
+cd admin/apps/react      && npm install && npm run dev      # http://localhost:5273
+cd admin/apps/angular    && npm install && npm start        # http://localhost:4300
+cd admin/apps/flutter    && flutter pub get && flutter run -d chrome
 ```
+
+> Angular dev 서버 포트: 관리 콘솔은 `angular.json`에 4300을 명시했고, C측은 Angular 기본값 4200을 그대로 씁니다. 둘을 동시에 띄우려면 한쪽에 `--port`를 주세요.
+> HarmonyOS 대상(`apps/harmonyos`, `admin/apps/harmonyos`)은 DevEco Studio로 열어 빌드합니다;
+> 에뮬레이터에서 호스트 백엔드로는 `http://10.0.2.2:<port>`로 접근합니다 (각 `ApiService.ets` 상단 상수 참고).
+
+### 프론트엔드 배포 (Docker/Nginx)
+
+`docker-compose.yml` 의 nginx 서비스가 각 프론트엔드의 빌드 산출물을 읽기 전용으로 컨테이너에 마운트하고, `nginx.conf.template` 이 아래 경로로 제공합니다.
+산출물을 빌드하지 않으면 디렉터리가 비어 있어 경로 요청은 404, 디렉터리 자체 요청(예: `/app-react/`)은 403 을 반환합니다.
+
+| URL | 산출물 마운트 지점 | 빌드 명령 |
+|-----|-----------|---------|
+| `/` | `apps/flutter/platform/build/web` | `flutter build web` |
+| `/app-react/` | `apps/react/dist` | `npm run build` (스크립트에 `--base=/app-react/` 포함) |
+| `/app-angular/` | `apps/angular/dist/game-client-angular/browser` | `npm run build` (스크립트에 `--base-href=/app-angular/` 포함) |
+| `/admin-panel/` | `admin/public` | 범용 배치 슬롯: 아무 콘솔 산출물이나 `admin/public` 에 복사하면 됩니다. 넣지 않으면 마찬가지로 404 (디렉터리 자체는 403)를 반환합니다. 산출물은 반드시 `--base=/admin-panel/` (Flutter 는 `--base-href=/admin-panel/`) 로 빌드해야 하며, 그렇지 않으면 리소스가 원래 접두사를 가리켜 404 가 됩니다. 슬래시 없는 형식은 이 주소로 301 되며, `nginx.conf.template` 에 `absolute_redirect off` 가 설정되어 있어 이 리디렉션은 상대 Location 이므로 80 이외의 포트에 배포해도 포트를 잃지 않습니다 |
+| `/admin-react/` | `admin/apps/react/dist` | `npm run build` (스크립트에 `--base=/admin-react/` 포함) |
+| `/admin-angular/` | `admin/apps/angular/dist/game-admin-angular/browser` | `npm run build` (스크립트에 `--base-href=/admin-angular/` 포함) |
+| `/admin-flutter/` | `admin/apps/flutter/build/web` | `flutter build web --base-href=/admin-flutter/` |
+
+`/admin/` (API) → admin 컨테이너, `/api/` (API) → service 컨테이너이며, HarmonyOS 단말은 `.hap` 패키지로 배포되어 nginx 를 거치지 않습니다.
 
 ### 검증
 
@@ -206,9 +270,9 @@ curl http://localhost:8789/health
 curl http://localhost:8792/health
 
 # 사용자 가입 테스트
-curl -X POST http://localhost:8792/api/auth/register \
+curl -X POST http://localhost:8792/api/v1/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"username":"testuser","password":"123456"}'
+  -d '{"username":"testuser","password":"Abcdef12"}'
 ```
 
 ## 보안 기능
@@ -231,14 +295,31 @@ curl -X POST http://localhost:8792/api/auth/register \
 
 ## 테스트
 
+테스트 보고서 (로컬 저장): [docs/test-reports/](../test-reports/)
+
+| 테스트 유형 | 케이스/커버리지 | 결과 |
+|---------|----------|------|
+| PHP 단위 테스트 | 현재 측정 `phpunit --list-tests`: admin 200 + service 273 케이스 (보고서 `docs/test-reports/php-unit.md`에 09-22 재실행 admin 190 + service 273, 08-27 스냅샷 admin 153 + service 45 기재. admin 측은 아직 확충 중) | service 전부 통과 (701 어서션, 3 skipped, 2 warnings + 35 deprecations). admin 437 어서션, 3 skipped, 1건 실패 (`EnvConfigTest`가 실제 `admin/.env`를 검증하며 `REDIS_CLUSTER_NODES` 누락을 발견. 추가하면 초록이 됩니다) |
+| 안정성 메커니즘 테스트 | 서킷 브레이커/재시도/디그레이드 스위치 15 케이스 (CircuitBreakerTest/RetryTest/ResilienceMockTest) | 전부 통과 |
+| API 자동 테스트 | 187 엔드포인트 (출처: `docs/test-reports/api.md`, 2026-08-27). 현재 route.php는 261개 엔드포인트 등록 | 171 통과 / 50 실패 / 4 건너뜀 (실패는 모두 확정된 결함, 보고서 참고) |
+| Flutter UI 테스트 | 12 케이스 (로그인/대시보드/내비게이션/언어 전환) | 전부 통과 |
+| Go/Rust | 저장소에 Go/Rust 코드 없음 | 건너뜀, 기록됨 |
+
 ```bash
-cd admin
-phpunit --bootstrap tests/bootstrap.php tests/
+# PHP 단위 테스트 (먼저 JWT 시크릿 환경 변수를 내보내세요)
+cd admin && ADMIN_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
+cd service && SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
+# API 자동 테스트 (서비스가 실행 중이어야 합니다, tests/api/run_all.sh 참고)
+bash tests/api/run_all.sh
+# Flutter UI 테스트
+cd admin/apps/flutter && flutter test --timeout 300s
 ```
 
-- PHPUnit 12.x, 116개 테스트 케이스
-- 56개 비즈니스 로직 테스트 (PlatformTest) + 60개 인프라 테스트
-- 커버리지: bcmath 정밀도, 환전 계산, 출금 수수료, 한도, 리스크 관리, 쿠폰, KYC, i18n
+상세 보고서:
+- [PHP 단위 테스트 보고서](../test-reports/php-unit.md)
+- [안정성 메커니즘 테스트 보고서 (서킷 브레이커/재시도/디그레이드)](../test-reports/resilience.md)
+- [API 자동 테스트 보고서](../test-reports/api.md)
+- [Flutter UI 테스트 보고서](../test-reports/ui.md)
 
 ## 플랫폼 기능 개요
 
@@ -249,7 +330,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | 충전 | 주문 생성 + Stripe/PayPal 콜백 서명 검증 + 자동 입금 |
 | 환전 | 플랫폼 코인⇄게임 코인, 실시간 견적, 차액 수익 |
 | 출금 | 신청→심사→송금, 전역 스위치, KYC 단계별 한도+수수료 |
-| KYC | 실명 인증 제출+심사, 3단계 인증 체계 |
+| KYC | 실명 인증 제출+심사, 승인 후 출금 한도 상향 |
 | 게임 | CRUD + 분류(10종) + 서버 + 게임 기록 추적 |
 | 검색 | Elasticsearch 전문 검색(LIKE 폴백 포함) |
 | 랭킹 | 일/주/월/전체 랭킹, Redis 캐시, WebSocket 실시간 푸시 (기본 포트 8790, LEADERBOARD_WS_PORT로 변경 가능) |
@@ -266,7 +347,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | 소셜 성장 | 그룹 + 공유 링크 추적 |
 | 결제 게이트웨이 | 신규 Adyen / GrabPay 게이트웨이 (L1) |
 | 국제화 | 4개 언어(en-US/zh-CN/ja-JP/ko-KR), 번역 테이블+캐시 |
-| 국가 설정 | 8개국 차등 결제/출금 방식, 최소 충전액 |
+| 국가 설정 | 18개국 차등 결제/출금 방식, 최소 충전액 |
 | 통계 | 일일 통계 스냅샷(5종 지표) + 플랫폼 수익 추적 |
 | 캡차 | 클릭식 사람-기계 검증(poster-php) |
 | 게임 연동 | Provider SDK (Self+ThirdParty) + HMAC-SHA256 서명 + 콜백 게이트웨이 |
@@ -279,7 +360,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | 쿠폰 | 조건 제한 (min_deposit/first_user/game_id) |
 | 이벤트 | Redis Pub/Sub 이벤트 버스 + Webhook 구독 전달 (7종 이벤트) |
 | 배포 | Docker Compose 7개 서비스 오케스트레이션 (포트는 루트 .env에서 구성) + Nginx 리버스 프록시 |
-| 클라이언트 | Flutter Admin(17페이지) + Platform(10페이지) + HarmonyOS(5페이지) |
+| 클라이언트 | 관리 4종 (Flutter/React/Angular/HarmonyOS) + C측 4종 (Flutter/React/Angular/HarmonyOS) |
 
 ## 비즈니스 모델
 
@@ -298,13 +379,13 @@ phpunit --bootstrap tests/bootstrap.php tests/
 
 ## 다중 통화 정산
 
-플랫폼은 「법정화폐 → 플랫폼 코인 → 게임 코인」 3계층 통화 분리 정산 체계를 채택합니다: USD/CNY/EUR 다중 법정화폐 충전을 지원하며, 각 게임은 독립적인 결제 통화를 보유합니다. 금액 계산은 전 과정에서 bcmath 고정밀 연산을 사용하여 부동소수점 오차를 방지합니다.
+플랫폼은 「법정화폐 → 플랫폼 코인 → 게임 코인」 3계층 통화 분리 정산 체계를 채택합니다: USD/CNY/EUR/JPY/KRW/GBP/BRL/INR 다중 법정화폐 충전을 지원하며, 각 게임은 독립적인 결제 통화를 보유합니다. 금액 계산은 전 과정에서 bcmath 고정밀 연산을 사용하여 부동소수점 오차를 방지합니다.
 
 ### 3계층 통화 모델
 
 | 계층 | 통화 | 설명 |
 |------|------|------|
-| 법정화폐 계층 | USD / CNY / EUR | 사용자 충전/출금의 실제 결제 통화, Stripe / PayPal이 처리 |
+| 법정화폐 계층 | USD / CNY / EUR / JPY / KRW / GBP / BRL / INR | 사용자 충전/출금의 실제 결제 통화, Stripe / PayPal이 처리 |
 | 플랫폼 코인 계층 | 플랫폼 코인 (전 플랫폼 통일) | 내부 통일 정산 통화 (decimal(18,4)), 지갑 낙관적 잠금으로 동시 출금/중복 입금 방지 |
 | 게임 코인 계층 | 게임마다 독립 통화 | 게임마다 독립 `exchange_rate` 환율과 `spread_pct` 스프레드, 독립 게임 코인 지갑 |
 
@@ -320,7 +401,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 ```mermaid
 flowchart LR
     subgraph FIAT["法币层 Fiat"]
-        A["用户充值<br/>USD / CNY / EUR<br/>Stripe / PayPal"]
+        A["用户充值<br/>USD / CNY / EUR / JPY / KRW / GBP / BRL / INR<br/>Stripe / PayPal"]
         H["提现到账<br/>PayPal Payout"]
     end
 
@@ -377,9 +458,9 @@ flowchart LR
 | [아키텍처 문서](../ARCHITECTURE.ko.md) | 시스템 토폴로지, 모듈 아키텍처, 데이터 흐름 |
 | [기능 설계 문서](../FEATURE-DESIGN.ko.md) | 비즈니스 모델, 기능 사양, 프로세스 설계 |
 | [기능 문서](../FEATURES.ko.md) | 기능 목록, 모듈 설명, 사용자 여정 |
-| [API 문서](../API.ko.md) | 전체 API 레퍼런스 (102개 인터페이스) |
-| [온라인 문서](http://localhost:8792/apidoc/) | hg/apidoc 인터랙티브 문서 (C측) |
-| [온라인 문서](http://localhost:8789/apidoc/) | hg/apidoc 인터랙티브 문서 (관리 백엔드) |
+| [API 문서](../API.ko.md) | 전체 API 레퍼런스 (146개 인터페이스) |
+| [온라인 문서](http://localhost:8792/apidoc/) | erikwang2013/apidoc-php 인터랙티브 문서 (C측) |
+| [온라인 문서](http://localhost:8789/apidoc/) | erikwang2013/apidoc-php 인터랙티브 문서 (관리 백엔드) |
 | [ClickHouse 설치](../CLICKHOUSE_INSTALL.ko.md) | ClickHouse 설치/설정/마이그레이션/검증 |
 | [Provider SDK 연동 문서](../PROVIDER-SDK.ko.md) | 제3자 게임 연동 가이드 (서명 알고리즘+PHP/Go/Python 예제) |
 | [ClickHouse 사용](../CLICKHOUSE_USAGE.ko.md) | 4개 ClickHouse 서비스 API와 백엔드 대시보드 |
@@ -397,11 +478,11 @@ flowchart LR
   <table align="center" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <td align="center" width="200">
-        <img src="docs/weixinpay-130.png" width="130" height="130" alt="微信支付"><br>
+        <img src="../weixinpay-130.png" width="130" height="130" alt="微信支付"><br>
         <b>위챗페이</b>
       </td>
       <td align="center" width="200">
-        <img src="docs/alipay-130.png" width="130" height="130" alt="支付宝"><br>
+        <img src="../alipay-130.png" width="130" height="130" alt="支付宝"><br>
         <b>알리페이</b>
       </td>
     </tr>

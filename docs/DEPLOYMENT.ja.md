@@ -51,7 +51,7 @@ rm -rf install/
 
 インストールウィザードが実行する操作:
 - PHP 環境チェック（バージョン、拡張、ディレクトリ権限）
-- 結合 SQL（`install/install.sql`）を実行し、52 枚のテーブルを作成してシードデータをインポート
+- 結合 SQL（`install/install.sql`）を実行し、78 枚のテーブルを作成してシードデータをインポート
 - スーパー管理者アカウントを作成（bcrypt 暗号化、super_admin ロールに紐付け）
 - JWT/Encryption/Hashids 鍵を自動生成
 - `admin/.env` と `service/.env` に書き込み
@@ -83,13 +83,13 @@ docker-compose ps
 docker-compose logs -f
 ```
 
-### 2.2 サービス一覧
+### 3.2 サービス一覧
 
 | サービス | コンテナ名 | ポート | 説明 |
 |------|--------|------|------|
 | nginx | game-platform-nginx | 80, 443 | リバースプロキシ + 静的ファイル |
 | admin | game-platform-admin | 8789 | 管理バックエンド API |
-| service | game-platform-service | 8792 | C端業務 API |
+| service | game-platform-service | 8792 | C側業務 API |
 | leaderboard-ws | game-platform-ws | 8790, 8791 | WebSocket ランキング/チャット |
 | mysql | game-platform-mysql | 3306 | メインデータベース |
 | redis | game-platform-redis | 6379 | キャッシュ/レートリミット |
@@ -98,9 +98,9 @@ docker-compose logs -f
 > **ポート設定**: 上表はデフォルトポートであり、すべてプロジェクトルートの `.env` で変更できます（テンプレート `.env.example`、`cp .env.example .env` 後に編集）:
 > `NGINX_HTTP_PORT`、`NGINX_HTTPS_PORT`、`ADMIN_PORT`、`SERVICE_PORT`、`LEADERBOARD_WS_PORT`、`CHAT_WS_PORT`、`MYSQL_PORT`、`REDIS_PORT`、`ES_PORT`。
 > `nginx.conf.template` の upstream ポートは公式イメージの envsubst により自動レンダリングされるため、Nginx 設定を手動で変更する必要はありません。
-> 注意: `ADMIN_PORT` / `SERVICE_PORT` を変更しても `admin/.env` の `APP_URL` と `service/.env` の `SITE_URL` は自動更新されないため、外部アクセスアドレスも合わせて変更してください。
+> Docker デプロイでは、外部公開アドレス（`APP_URL` / `SITE_URL`）はデフォルトで `ADMIN_PORT` / `SERVICE_PORT` に自動追従します（`http://localhost:ポート番号` の形式）。カスタムドメインや HTTPS の場合はルート `.env` で `APP_URL` / `SITE_URL` を設定してください（`admin/.env`・`service/.env` の同名項目を上書きします）。ベアメタル（手動）デプロイでポートを変更する場合は、引き続きアドレスを手動で更新してください。
 
-### 2.3 データベース初期化
+### 3.3 データベース初期化
 
 ```bash
 # 迁移文件会在 MySQL 首次启动时自动执行
@@ -108,7 +108,7 @@ docker-compose logs -f
 docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform < install/install.sql
 ```
 
-### 2.4 データ永続化
+### 3.4 データ永続化
 
 データボリュームは自動作成され、手動管理は不要:
 
@@ -129,9 +129,9 @@ gunzip < backup_20260101.sql.gz | docker exec -i game-platform-mysql mysql -uroo
 
 ---
 
-## 3. 手動デプロイ
+## 4. 手動デプロイ
 
-### 3.1 PHP 環境設定
+### 4.1 PHP 環境設定
 
 ```bash
 # Ubuntu/Debian
@@ -145,7 +145,7 @@ echo "opcache.enable=1" >> /etc/php/8.3/cli/php.ini
 echo "opcache.enable_cli=1" >> /etc/php/8.3/cli/php.ini
 ```
 
-### 3.2 依存関係のインストール
+### 4.2 依存関係のインストール
 
 ```bash
 cd /opt/game-platform
@@ -156,14 +156,14 @@ cp .env.example .env
 # 编辑 .env: 数据库连接、JWT_SECRET、HASHIDS_SALT 等
 composer install --no-dev --optimize-autoloader
 
-# C端业务
+# C側業務
 cd ../service
 cp .env.example .env
 # 编辑 .env (注意: SNOWFLAKE_WORKER_ID=2)
 composer install --no-dev --optimize-autoloader
 ```
 
-### 3.3 .env の設定
+### 4.3 .env の設定
 
 **admin/.env の主要設定:**
 ```ini
@@ -270,14 +270,14 @@ TOSS_API_URL=https://api.tosspayments.com
 SITE_URL=https://your-domain.com  # 支付回调/跳转站点地址
 ```
 
-### 3.4 サービスの起動
+### 4.4 サービスの起動
 
 ```bash
 # 管理后台 (默认端口 8789，admin/.env 的 APP_PORT 可改)
 cd /opt/game-platform/admin
 php start.php start -d
 
-# C端业务 (默认端口 8792，service/.env 的 APP_PORT 可改)
+# C側業務 (既定ポート 8792、service/.env の APP_PORT で変更可)
 cd /opt/game-platform/service
 php start.php start -d
 
@@ -286,7 +286,7 @@ curl http://localhost:8789/health
 curl http://localhost:8792/health
 ```
 
-### 3.5 プロセス管理（Systemd）
+### 4.5 プロセス管理（Systemd）
 
 `/etc/systemd/system/game-platform-admin.service` を作成:
 
@@ -319,9 +319,9 @@ systemctl enable --now game-platform-admin game-platform-service
 
 ---
 
-## 4. Nginx リバースプロキシ
+## 5. Nginx リバースプロキシ
 
-### 4.1 設定ファイル
+### 5.1 設定ファイル
 
 `/etc/nginx/sites-available/game-platform` を作成:
 
@@ -330,6 +330,11 @@ systemctl enable --now game-platform-admin game-platform-service
 server {
     listen 80;
     server_name your-domain.com;
+
+    # nginx 自身发出的 301（如目录补斜杠 /admin-panel → /admin-panel/）改用相对
+    # Location、クライアントは現在の host:port で解決；デフォルトの絶対リダイレクトは listen ポートにフォールバック、
+    # 非 80 端口部署（如 8080）时会跳错端口。
+    absolute_redirect off;
 
     # 管理后台 API
     location /admin/ {
@@ -340,7 +345,7 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # C端 API
+    # C側 API
     location /api/ {
         proxy_pass http://127.0.0.1:8792;
         proxy_set_header Host $host;
@@ -369,19 +374,91 @@ server {
         proxy_pass http://127.0.0.1:8789;
     }
 
-    # 管理后台前端
-    location /admin-panel {
-        alias /opt/game-platform/admin/apps/flutter/build/web;
-        try_files $uri $uri/ /admin-panel/index.html;
-    }
+    # ================================================================
+    # 静态前端。两套前端定位不同：
+    #   apps/*         = C側プレイヤー向け（/api/ → service を呼び出す）
+    #   admin/apps/*   = 管理台（调 /admin/ → admin）
+    # 各产物需先构建；React/Angular 必须带子路径前缀构建，否则资源 404：
+    #   apps/react            npm run build                （已含 --base=/app-react/）
+    #   apps/angular          npm run build                （已含 --base-href=/app-angular/）
+    #   admin/apps/react      npm run build                （已含 --base=/admin-react/）
+    #   admin/apps/angular    npm run build                （已含 --base-href=/admin-angular/）
+    #   admin/apps/flutter    flutter build web --base-href=/admin-flutter/
+    #   apps/flutter/platform flutter build web            （挂在根路径）
+    # try_files 末项是【内部重定向】，目标 index.html 不存在时会重新匹配同一 location
+    # 形成重定向环，nginx 报 500 而非 404。规避方式按 location 类型二选一：
+    #   root  型 → 末项追加 =404，把它降级为文件存在性判断；
+    #   alias 型 → 追加 =404 会让兜底不再经 alias 解析，已构建的 SPA 深链接也会 404，
+    #              所以保留原样，另加 location = 精确匹配兜底 URI（精确匹配优先，
+    #              不会再回到前缀 location，环不成立）。
+    # alias 的结尾斜杠必须与 location 的结尾斜杠一致（location /x 配 alias .../x，
+    # location /x/ 配 alias .../x/）。错配时 /x../<路径> 会越级解析到上级目录，可读
+    # 取 docroot 之外的任意文件，且 nginx -t 完全查不出来。
+    # ================================================================
 
-    # C端平台前端
+    # C側メインエントリ — Flutter Web
     location / {
         root /opt/game-platform/apps/flutter/platform/build/web;
-        try_files $uri $uri/ /index.html;
+        try_files $uri $uri/ /index.html =404;
+    }
+
+    # C側 React / Angular Web（URL プレフィックスとビルド成果物ディレクトリ名が異なるため、alias で直接成果物を指す）
+    location /app-react/ {
+        alias /opt/game-platform/apps/react/dist/;
+        try_files $uri $uri/ /app-react/index.html;
+    }
+    location = /app-react/index.html {
+        alias /opt/game-platform/apps/react/dist/index.html;
+    }
+
+    location /app-angular/ {
+        alias /opt/game-platform/apps/angular/dist/game-client-angular/browser/;
+        try_files $uri $uri/ /app-angular/index.html;
+    }
+    location = /app-angular/index.html {
+        alias /opt/game-platform/apps/angular/dist/game-client-angular/browser/index.html;
+    }
+
+    # 管理台 — 通用投放位：把任一控制台产物拷进 admin/public 即可
+    # 注意：location 不以 / 结尾时 alias 也【不能】以 / 结尾，否则 /admin-panel../.env
+    # 会解析到上级目录（admin/.env）造成任意文件读取；nginx -t 查不出这类错配。
+    location /admin-panel {
+        alias /opt/game-platform/admin/public;
+        try_files $uri $uri/ /admin-panel/index.html;
+    }
+    location = /admin-panel/index.html {
+        alias /opt/game-platform/admin/public/index.html;
+    }
+
+    # 管理台 React / Angular / Flutter
+    location /admin-react/ {
+        alias /opt/game-platform/admin/apps/react/dist/;
+        try_files $uri $uri/ /admin-react/index.html;
+    }
+    location = /admin-react/index.html {
+        alias /opt/game-platform/admin/apps/react/dist/index.html;
+    }
+
+    location /admin-angular/ {
+        alias /opt/game-platform/admin/apps/angular/dist/game-admin-angular/browser/;
+        try_files $uri $uri/ /admin-angular/index.html;
+    }
+    location = /admin-angular/index.html {
+        alias /opt/game-platform/admin/apps/angular/dist/game-admin-angular/browser/index.html;
+    }
+
+    location /admin-flutter/ {
+        alias /opt/game-platform/admin/apps/flutter/build/web/;
+        try_files $uri $uri/ /admin-flutter/index.html;
+    }
+    location = /admin-flutter/index.html {
+        alias /opt/game-platform/admin/apps/flutter/build/web/index.html;
     }
 }
 ```
+
+> 手動デプロイでは、これらのディレクトリにビルド成果物を直接配置します（C側の 4 ツリー：`apps/flutter/platform`、`apps/react`、`apps/angular`、`apps/harmonyos`。管理コンソールのフロントエンドは `admin/apps/*` と汎用配置先 `admin/public` にまとめてマウント）。
+> Docker デプロイは `docker-compose.yml` の nginx ボリュームマウントと `nginx.conf.template` を参照（同一のパス構成、コンテナ内ルートは `/var/www/...`）。HarmonyOS は `.hap` 配布のため nginx を経由しません。
 
 サイトを有効化:
 ```bash
@@ -389,7 +466,7 @@ ln -s /etc/nginx/sites-available/game-platform /etc/nginx/sites-enabled/
 nginx -t && systemctl reload nginx
 ```
 
-### 4.2 SSL 証明書
+### 5.2 SSL 証明書
 
 ```bash
 # 使用 Certbot 自动获取 Let's Encrypt 证书
@@ -402,7 +479,7 @@ certbot --nginx -d your-domain.com
 
 ---
 
-## 5. 定期タスク (Crontab)
+## 6. 定期タスク (Crontab)
 
 ```bash
 # 编辑 crontab
@@ -423,9 +500,9 @@ crontab -e
 
 ---
 
-## 6. モニタリング
+## 7. モニタリング
 
-### 6.1 Prometheus 指標
+### 7.1 Prometheus 指標
 
 管理バックエンドは `/metrics` エンドポイントを公開し、以下の指標を含む:
 
@@ -437,35 +514,35 @@ crontab -e
 | openadmin_redis_connection_status | Redis 接続 (0/1) |
 | openadmin_memory_usage_bytes | メモリ使用量 |
 
-### 6.2 ヘルスチェック
+### 7.2 ヘルスチェック
 
 ```bash
 # 管理后台
 curl -f http://localhost:8789/health || echo "Admin DOWN"
 
-# C端业务
+# C側業務
 curl -f http://localhost:8792/health || echo "Service DOWN"
 
 # 可在负载均衡器或监控系统中配置
 ```
 
-### 6.3 ログ
+### 7.3 ログ
 
 ```
 admin/runtime/logs/
 ├── stdout.log          # 标准输出
-└── workerman.log       # Workerman 日志
+└── webman-<date>.log   # Webman 日志
 
 service/runtime/logs/
 ├── stdout.log
-└── workerman.log
+└── webman-<date>.log
 ```
 
 ---
 
-## 7. パフォーマンス最適化
+## 8. パフォーマンス最適化
 
-### 7.1 PHP OPcache
+### 8.1 PHP OPcache
 
 ```ini
 ; /etc/php/8.3/cli/php.ini
@@ -476,7 +553,7 @@ opcache.max_accelerated_files=10000
 opcache.validate_timestamps=0  # 生产环境关闭文件检查
 ```
 
-### 7.2 MySQL 最適化
+### 8.2 MySQL 最適化
 
 ```ini
 # /etc/mysql/conf.d/game-platform.cnf
@@ -488,14 +565,14 @@ max_connections = 200
 query_cache_type = 0               # MySQL 8.0 已移除
 ```
 
-### 7.3 Worker プロセス数
+### 8.3 Worker プロセス数
 
 ```php
 // config/process.php
 'count' => cpu_count() * 2,  // 生产环境建议 2-4 倍 CPU 核心数
 ```
 
-### 7.4 Redis キャッシュ戦略
+### 8.4 Redis キャッシュ戦略
 
 | キャッシュキー | TTL | 説明 |
 |--------|-----|------|
@@ -506,9 +583,9 @@ query_cache_type = 0               # MySQL 8.0 已移除
 
 ---
 
-## 8. セキュリティ強化
+## 9. セキュリティ強化
 
-### 8.1 鍵の生成
+### 9.1 鍵の生成
 
 ```bash
 # 生成随机密钥
@@ -525,7 +602,7 @@ echo "ENCRYPTION_KEY=$ENCRYPTION_KEY"
 echo "ENCRYPTABLE_KEY=$ENCRYPTABLE_KEY"
 ```
 
-### 8.2 ファイアウォール
+### 9.2 ファイアウォール
 
 ```bash
 # 仅开放必要端口
@@ -542,7 +619,7 @@ ufw enable
 # 仅通过 127.0.0.1 访问
 ```
 
-### 8.3 ファイル権限
+### 9.3 ファイル権限
 
 ```bash
 chown -R www-data:www-data /opt/game-platform
@@ -555,9 +632,9 @@ chmod 600 /opt/game-platform/service/.env
 
 ---
 
-## 9. トラブルシューティング
+## 10. トラブルシューティング
 
-### 9.1 サービスが起動しない
+### 10.1 サービスが起動しない
 
 ```bash
 # 前台运行查看错误
@@ -567,10 +644,10 @@ cd /opt/game-platform/admin && php start.php start
 ss -tlnp | grep -E '8789|8792'
 
 # 检查日志
-tail -f runtime/logs/workerman.log
+tail -f runtime/logs/webman-$(date +%F).log
 ```
 
-### 9.2 データベース接続失敗
+### 10.2 データベース接続失敗
 
 ```bash
 # 测试连接
@@ -580,7 +657,7 @@ mysql -h 127.0.0.1 -u game-platform -p game-platform -e "SELECT 1"
 grep DB_ admin/.env
 ```
 
-### 9.3 Redis 接続失敗
+### 10.3 Redis 接続失敗
 
 ```bash
 # 测试连接
@@ -589,7 +666,7 @@ redis-cli -h 127.0.0.1 -p 6379 -a <password> ping
 # 预期返回 PONG
 ```
 
-### 9.4 Elasticsearch が利用不可
+### 10.4 Elasticsearch が利用不可
 
 ```bash
 # 测试连接
@@ -598,7 +675,7 @@ curl http://127.0.0.1:9200
 # 搜索功能会自动回退到 LIKE 查询，不会中断服务
 ```
 
-### 9.5 パフォーマンス問題
+### 10.5 パフォーマンス問題
 
 ```bash
 # 检查 worker 进程数
@@ -613,7 +690,7 @@ mysql -e "SHOW VARIABLES LIKE 'slow_query_log';"
 
 ---
 
-## 10. アップグレードガイド
+## 11. アップグレードガイド
 
 ```bash
 # 1. 拉取最新代码

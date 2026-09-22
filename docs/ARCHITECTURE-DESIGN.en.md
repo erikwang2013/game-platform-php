@@ -200,10 +200,10 @@ Rules are stored in the `game_risk_rule` table, configured as JSON, with dynamic
 
 ### 6.2 KYC Real-Name Verification
 
-Three-tier verification system:
+Withdrawal limit tiers (game_withdraw_limit):
 - `default` — unverified, basic limits
 - `verified` — KYC approved, higher limits + lower fees
-- `vip` — VIP level, highest limits + zero fees
+- `vip` — reserved tier (highest limits + zero fees); current code only reads default/verified, the VIP fee discount is calculated separately from experience
 
 Verification flow:
 ```
@@ -219,9 +219,9 @@ Google / Facebook / Apple login supported:
 
 ```
 前端点击 OAuth 按钮
-  → GET /api/auth/oauth/{provider} → 获取授权URL
+  → GET /api/v1/auth/oauth/{provider} → 获取授权URL
   → 跳转第三方授权页 → 用户同意
-  → 回调 POST /api/auth/oauth/{provider}/callback
+  → 回调 POST /api/v1/auth/oauth/{provider}/callback
   → 查找已有绑定 → 直接登录
   → 无绑定 → 自动注册新用户 + 绑定 + 创建钱包
 ```
@@ -229,7 +229,7 @@ Google / Facebook / Apple login supported:
 ### 6.4 Payment Callback
 
 ```
-第三方支付完成 → POST /api/payment/callback
+第三方支付完成 → POST /api/v1/payment/callback
   → provider 白名单校验（仅 stripe/paypal）
   → 验签 fail-closed（未配 secret/webhook_id、验签失败、时间戳超 ±300s 一律拒绝）
   → 回调金额与订单金额 bccomp 核对（防跨渠道冒用）
@@ -251,7 +251,7 @@ Different limits and fees are applied by the user's KYC level:
 
 ## 7. Scalability Design
 
-### 5.1 Horizontal Scaling
+### 7.1 Horizontal Scaling
 
 Both admin/ and service/ support multiple worker processes. Combined with an Nginx reverse proxy, multiple machines can be deployed for horizontal scaling:
 
@@ -263,7 +263,7 @@ Nginx (负载均衡)
   └── service-2 (:8792)
 ```
 
-### 5.2 Module Splitting Path
+### 7.2 Module Splitting Path
 
 When a single service/ becomes the bottleneck, split along the following path:
 

@@ -7,7 +7,7 @@ Languages: **中文** · [English](API.en.md) · [한국어](API.ko.md) · [Ру
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
 オンライン対話式ドキュメント（オンラインデバッグ対応）:
-- C端業務: http://localhost:8792/apidoc/
+- C側業務: http://localhost:8792/apidoc/
 - 管理バックエンド: http://localhost:8789/apidoc/
 - パスワード: デプロイ環境の `APIDOC_PASSWORD` 設定を参照
 
@@ -18,7 +18,7 @@ Languages: **中文** · [English](API.en.md) · [한국어](API.ko.md) · [Ру
 | 端 | アドレス |
 |----|------|
 | 管理バックエンド | `http://localhost:8789` |
-| C端業務 | `http://localhost:8792` |
+| C側業務 | `http://localhost:8792` |
 
 ### 1.2 共通リクエストヘッダー
 
@@ -70,7 +70,7 @@ Authorization: Bearer <token>    (需要认证的接口)
 }
 ```
 
-## 2. C端インターフェース (service :8792)
+## 2. C側インターフェース (service :8792)
 
 ### 2.1 認証
 
@@ -186,7 +186,7 @@ type 可选值: deposit / withdraw / exchange_in / exchange_out / game_earn / ga
 }
 ```
 
-currency 選択値: USD / CNY / EUR
+currency 選択値: USD / CNY / EUR / JPY / KRW / GBP / BRL / INR
 
 checkout_url: 決済ゲートウェイのリダイレクトリンク（注文作成時に設定済み）；expires_at: 決済リンクの有効期限（作成から1時間）
 
@@ -401,9 +401,9 @@ status:
 }
 ```
 
-type 選択値: self / third_party
+type 選択値: self / embedded / third_party
 
-#### GET /api/v1/game/{hashid} — ゲーム詳細
+#### GET /api/v1/game/detail/{hashid} — ゲーム詳細
 
 ```
 响应: {
@@ -870,7 +870,7 @@ language 選択値: en-US / zh-CN / ja-JP / ko-KR
 
 ### 3.1 プラットフォームダッシュボード
 
-#### GET /admin/dashboard/platform
+#### GET /admin/v1/dashboard/platform
 
 ```
 需认证: 是 (AdminAuth + AdminPermission)
@@ -888,11 +888,11 @@ language 選択値: en-US / zh-CN / ja-JP / ko-KR
 
 ### 3.2 ゲーム管理
 
-#### GET /admin/game/list — ゲーム一覧
+#### GET /admin/v1/game/list — ゲーム一覧
 
 ```
 需认证: 是
-参数: ?page=1&per_page=20&keyword=射击
+参数: ?page=1&limit=20&keyword=射击
 
 响应: {
   "list": [
@@ -909,11 +909,67 @@ language 選択値: en-US / zh-CN / ja-JP / ko-KR
   ],
   "total": 12,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### POST /admin/game/create — ゲーム作成
+#### GET /admin/v1/game/{hashid} — ゲーム詳細
+
+```
+需认证: 是
+参数: hashid 为游戏的 hashid 编码（路径参数）
+
+响应: {
+  "id": "aB3xK...",
+  "name": "射击大师",
+  "slug": "shooter-master",
+  "type": "self",
+  "description": "游戏描述",
+  "cover_image": "https://...",
+  "api_endpoint": "https://...",
+  "sdk_version": "1.0.0",
+  "platform": "h5",
+  "region": "global",
+  "currencies": [
+    {
+      "id": "cD4yL...",
+      "name": "金币",
+      "symbol": "G",
+      "exchange_rate": "100.00000000",
+      "spread_pct": "5.00000000",
+      "min_exchange": "1.00000000",
+      "max_exchange": "10000.00000000"
+    }
+  ]
+}
+```
+
+ゲームが存在しない場合は code 404 を返します。
+
+#### POST /admin/v1/game/launch — ゲーム試遊プレビュー
+
+```
+需认证: 是
+
+请求: {
+  "game_id": "aB3xK..."      // 游戏 ID(hashid)
+}
+
+响应: {
+  "id": "aB3xK...",
+  "name": "射击大师",
+  "slug": "shooter-master",
+  "type": "self",
+  "api_endpoint": "https://...",
+  "preview": true
+}
+```
+
+`game_id` が無い場合は code 422 を返し、ゲームが存在しない場合は 404 を返し、ゲームが未公開（`status` が 1 以外）の場合は 403 を返す。
+
+管理バックエンドの試遊は純粋なプレビューです：ゲームの可用性のみを検証して起動情報を返し、**ゲーム記録を書かず、ウォレットにも触れません**。管理バックエンドの身元には `adminId`（`AdminAuth` が注入）しかなく C側の `userId` が無いため、このエンドポイントは意図的にユーザー側の書き込みを一切行いません — C側の `POST /api/v1/game/launch` をそのまま流用すると帰属が誤った `game_game_play_log` を書き出すことになります。
+
+#### POST /admin/v1/game/create — ゲーム作成
 
 ```
 需认证: 是
@@ -934,9 +990,9 @@ language 選択値: en-US / zh-CN / ja-JP / ko-KR
 响应: { "id": "aB3xK..." }
 ```
 
-type 選択値: self / third_party
+type 選択値: self / embedded / third_party
 
-#### PUT /admin/game/{hashid} — ゲーム編集
+#### PUT /admin/v1/game/{hashid} — ゲーム編集
 
 ```
 需认证: 是
@@ -950,14 +1006,14 @@ type 選択値: self / third_party
 响应: { "message": "更新成功" }
 ```
 
-#### DELETE /admin/game/{hashid} — ゲーム削除
+#### DELETE /admin/v1/game/{hashid} — ゲーム削除
 
 ```
 需认证: 是
 响应: { "message": "删除成功" }
 ```
 
-#### POST /admin/game/currency/manage — 通貨管理
+#### POST /admin/v1/game/currency/manage — 通貨管理
 
 ```
 需认证: 是
@@ -977,16 +1033,20 @@ type 選択値: self / third_party
   ]
 }
 
-响应: { "message": "币种更新成功" }
+响应: { "message": "操作成功" }
 ```
+
+`game_id` が無いか `currencies` が配列でない場合は 422 を返し、ゲームが存在しない場合は 404 を返す。
+
+`exchange_rate` と `spread_pct` は渡された場合のみ検証されます：`exchange_rate` は 0 より大きい数値である必要があり、`spread_pct` は [0, 100) の範囲内である必要があります。いずれかに違反した場合は 422 を返し、通貨は一切書き込まれません（書き込み前にバッチ全体を検証）。渡さなかったフィールドは検証されません：新規作成時は既定値（`exchange_rate` は `1.00000000`、その他は `0.00000000`）、更新時は既存の値が保持されます。
 
 ### 3.3 出金管理
 
-#### GET /admin/withdraw/orders — 出金注文一覧
+#### GET /admin/v1/withdraw/orders — 出金注文一覧
 
 ```
 需认证: 是
-参数: ?page=1&per_page=20&status=pending
+参数: ?page=1&limit=20&status=pending
 
 响应: {
   "list": [
@@ -1008,11 +1068,11 @@ type 選択値: self / third_party
   ],
   "total": 5,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### PUT /admin/withdraw/review — 出金審査
+#### PUT /admin/v1/withdraw/review — 出金審査
 
 ```
 需认证: 是
@@ -1026,11 +1086,11 @@ type 選択値: self / third_party
 响应: { "message": "已通过" }
 ```
 
-action: approve=通過 / reject=拒否（拒否時は自動的にプラットフォームコインへ戻す）
+action: approve=通過 / reject=拒否 / confirm=確認（拒否時は自動的にプラットフォームコインへ戻す）
 
 エラー: 422 注文ステータスが審査待ちではない
 
-#### PUT /admin/withdraw/switch — グローバル出金スイッチ
+#### PUT /admin/v1/withdraw/switch — グローバル出金スイッチ
 
 ```
 需认证: 是
@@ -1043,7 +1103,7 @@ action: approve=通過 / reject=拒否（拒否時は自動的にプラットフ
 }
 ```
 
-#### POST /admin/withdraw/limits/set — 出金限度額の設定
+#### POST /admin/v1/withdraw/limits/set — 出金限度額の設定
 
 ```
 需认证: 是
@@ -1064,11 +1124,11 @@ action: approve=通過 / reject=拒否（拒否時は自動的にプラットフ
 
 ### 3.4 プラットフォームユーザー管理
 
-#### GET /admin/platform/user/list — C端ユーザー一覧
+#### GET /admin/v1/platform/user/list — C側ユーザー一覧
 
 ```
 需认证: 是
-参数: ?page=1&per_page=20&keyword=player&status=1
+参数: ?page=1&limit=20&keyword=player&status=1
 
 响应: {
   "list": [
@@ -1084,11 +1144,11 @@ action: approve=通過 / reject=拒否（拒否時は自動的にプラットフ
   ],
   "total": 1500,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### GET /admin/platform/user/{hashid} — ユーザー詳細
+#### GET /admin/v1/platform/user/{hashid} — ユーザー詳細
 
 ```
 需认证: 是
@@ -1111,7 +1171,7 @@ action: approve=通過 / reject=拒否（拒否時は自動的にプラットフ
 }
 ```
 
-#### PUT /admin/platform/user/{hashid} — ユーザー編集/凍結
+#### PUT /admin/v1/platform/user/{hashid} — ユーザー編集/凍結
 
 ```
 需认证: 是
@@ -1126,7 +1186,7 @@ action: approve=通過 / reject=拒否（拒否時は自動的にプラットフ
 
 ### 3.5 決済管理
 
-#### GET /admin/payment/method/list
+#### GET /admin/v1/payment/method/list
 
 ```
 需认证: 是
@@ -1144,7 +1204,7 @@ action: approve=通過 / reject=拒否（拒否時は自動的にプラットフ
 }
 ```
 
-#### POST /admin/payment/method/toggle — 決済方法の有効/無効
+#### POST /admin/v1/payment/method/toggle — 決済方法の有効/無効
 
 ```
 需认证: 是
@@ -1156,11 +1216,11 @@ action: approve=通過 / reject=拒否（拒否時は自動的にプラットフ
 
 ### 3.6 公告管理
 
-#### GET /admin/announcement/list
+#### GET /admin/v1/announcement/list
 
 ```
 需认证: 是
-参数: ?page=1&per_page=20
+参数: ?page=1&limit=20
 
 响应: {
   "list": [
@@ -1176,11 +1236,11 @@ action: approve=通過 / reject=拒否（拒否時は自動的にプラットフ
   ],
   "total": 5,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### POST /admin/announcement/create — 公告の公開
+#### POST /admin/v1/announcement/create — 公告の公開
 
 ```
 需认证: 是
@@ -1200,11 +1260,11 @@ action: approve=通過 / reject=拒否（拒否時は自動的にプラットフ
 
 ### 3.7 KYC 審査
 
-#### GET /admin/identity/list — KYC一覧
+#### GET /admin/v1/identity/list — KYC一覧
 
 ```
 需认证: 是
-参数: ?page=1&per_page=20&status=pending
+参数: ?page=1&limit=20&status=pending
 
 响应: {
   "list": [
@@ -1217,11 +1277,11 @@ action: approve=通過 / reject=拒否（拒否時は自動的にプラットフ
       "created_at": "2026-05-22 10:00:00"
     }
   ],
-  "total": 5, "page": 1, "per_page": 20
+  "total": 5, "page": 1, "limit": 20
 }
 ```
 
-#### PUT /admin/identity/review — KYC審査
+#### PUT /admin/v1/identity/review — KYC審査
 
 ```
 需认证: 是
@@ -1235,7 +1295,7 @@ action: approve / reject
 
 ### 3.8 ゲーム区サーバー管理
 
-#### GET /admin/game/server/list — 区サーバー一覧
+#### GET /admin/v1/game/server/list — 区サーバー一覧
 
 ```
 需认证: 是
@@ -1248,7 +1308,7 @@ action: approve / reject
 }
 ```
 
-#### POST /admin/game/server/create — 区サーバー作成
+#### POST /admin/v1/game/server/create — 区サーバー作成
 
 ```
 需认证: 是
@@ -1256,14 +1316,14 @@ action: approve / reject
 响应: { "id": "hashid" }
 ```
 
-#### PUT /admin/game/server/{hashid} — 区サーバー編集
+#### PUT /admin/v1/game/server/{hashid} — 区サーバー編集
 
 ```
 需认证: 是
 请求: { "name": "新名称", "status": 2 }
 ```
 
-#### DELETE /admin/game/server/{hashid} — 区サーバー削除
+#### DELETE /admin/v1/game/server/{hashid} — 区サーバー削除
 
 ```
 需认证: 是
@@ -1271,7 +1331,7 @@ action: approve / reject
 
 ### 3.9 出金段階別限度額管理
 
-#### GET /admin/withdraw/limits/list
+#### GET /admin/v1/withdraw/limits/list
 
 ```
 需认证: 是
@@ -1293,7 +1353,7 @@ action: approve / reject
 }
 ```
 
-#### PUT /admin/withdraw/limits/{hashid} — 限度額の更新
+#### PUT /admin/v1/withdraw/limits/{hashid} — 限度額の更新
 
 ```
 需认证: 是
@@ -1304,14 +1364,14 @@ action: approve / reject
 
 ### 3.11 ゲームカテゴリ管理
 
-#### GET /admin/game/category/list
+#### GET /admin/v1/game/category/list
 
 ```
 需认证: 是
 响应: { "list": [{ "id": "...", "name": "动作", "slug": "action", "sort": 1 }] }
 ```
 
-#### POST /admin/game/category/create
+#### POST /admin/v1/game/category/create
 
 ```
 需认证: 是
@@ -1319,11 +1379,11 @@ action: approve / reject
 响应: { "id": "hashid" }
 ```
 
-#### PUT /admin/game/category/{hashid} — カテゴリ編集
+#### PUT /admin/v1/game/category/{hashid} — カテゴリ編集
 
-#### DELETE /admin/game/category/{hashid} — カテゴリ削除
+#### DELETE /admin/v1/game/category/{hashid} — カテゴリ削除
 
-#### POST /admin/game/category/assign — ゲーム割り当て
+#### POST /admin/v1/game/category/assign — ゲーム割り当て
 
 ```
 需认证: 是
@@ -1332,42 +1392,42 @@ action: approve / reject
 
 ### 3.12 ランキング管理
 
-#### GET /admin/leaderboard/list — ランキング一覧
+#### GET /admin/v1/leaderboard/list — ランキング一覧
 
 ```
 需认证: 是
 响应: { "list": [{ "id": "...", "name": "...", "type": "total", "metric": "earned" }] }
 ```
 
-#### POST /admin/leaderboard/create — ランキング作成
+#### POST /admin/v1/leaderboard/create — ランキング作成
 
 ```
 需认证: 是
 请求: { "name": "周收入榜", "type": "weekly", "metric": "earned", "game_id": "hashid(可选)" }
 ```
 
-#### PUT /admin/leaderboard/{hashid} — ランキング編集
+#### PUT /admin/v1/leaderboard/{hashid} — ランキング編集
 
-#### DELETE /admin/leaderboard/{hashid} — ランキング削除
+#### DELETE /admin/v1/leaderboard/{hashid} — ランキング削除
 
-#### POST /admin/leaderboard/{hashid}/refresh — キャッシュリフレッシュ
+#### POST /admin/v1/leaderboard/{hashid}/refresh — キャッシュリフレッシュ
 
 ### 3.13 クーポン管理
 
-#### GET /admin/coupon/list — クーポン一覧
+#### GET /admin/v1/coupon/list — クーポン一覧
 
-#### POST /admin/coupon/create — クーポン作成
+#### POST /admin/v1/coupon/create — クーポン作成
 
 ```
 需认证: 是
 请求: { "name": "新人礼包", "type": "fixed", "value": "10.0000", "total_qty": 1000 }
 ```
 
-#### PUT /admin/coupon/{hashid} — 編集（未取得時のみ）
+#### PUT /admin/v1/coupon/{hashid} — 編集（未取得時のみ）
 
-#### DELETE /admin/coupon/{hashid} — 削除
+#### DELETE /admin/v1/coupon/{hashid} — 削除
 
-#### GET /admin/coupon/{hashid}/stats — 取得統計
+#### GET /admin/v1/coupon/{hashid}/stats — 取得統計
 
 ```
 响应: { "total_qty": 1000, "used_qty": 234, "remaining": 766, "usage_rate": "23.40%" }
@@ -1375,20 +1435,20 @@ action: approve / reject
 
 ### 3.14 国別設定管理
 
-#### GET /admin/country/config/list — 国別設定一覧
+#### GET /admin/v1/country/config/list — 国別設定一覧
 
-#### POST /admin/country/config/create — 国別設定の作成
+#### POST /admin/v1/country/config/create — 国別設定の作成
 
 ```
 需认证: 是
 请求: { "country_code": "JP", "currency": "JPY", "payment_methods": "[\"stripe\",\"paypal\"]", "min_deposit": "100.0000" }
 ```
 
-#### PUT /admin/country/config/{hashid} — 国別設定の編集
+#### PUT /admin/v1/country/config/{hashid} — 国別設定の編集
 
 ### 3.15 データエクスポート
 
-#### POST /admin/export/users — C端ユーザーのエクスポート
+#### POST /admin/v1/export/users — C側ユーザーのエクスポート
 
 ```
 需认证: 是
@@ -1397,7 +1457,7 @@ action: approve / reject
 响应: Excel 文件下载 (xlsx)
 ```
 
-#### POST /admin/export/transactions — プラットフォーム流水のエクスポート
+#### POST /admin/v1/export/transactions — プラットフォーム流水のエクスポート
 
 ```
 需认证: 是
@@ -1412,18 +1472,18 @@ action: approve / reject
 
 | 方法 | パス | 説明 |
 |------|------|------|
-| GET | /admin/analytics/overview | プラットフォーム総覧（今日/直近7日） |
-| GET | /admin/analytics/game-ranking | ゲームランキング（?days=7） |
-| GET | /admin/analytics/dau-trend | DAU トレンド（?days=30） |
-| GET | /admin/analytics/hourly-trend | 時間別トレンド |
-| GET | /admin/analytics/action-distribution | 行動分布 |
-| GET | /admin/analytics/revenue | 収益分析 |
-| GET | /admin/analytics/conversion | ゲームコンバージョン率 |
-| GET | /admin/analytics/probability | 結合/条件確率 |
-| GET | /admin/analytics/retention | リテンション分析 D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | コンバージョンファネル |
-| GET | /admin/analytics/arpu | ARPU/ARPPU トレンド |
-| GET | /admin/analytics/economy | ゲーム通貨経済指標 |
+| GET | /admin/v1/analytics/overview | プラットフォーム総覧（今日/直近7日） |
+| GET | /admin/v1/analytics/game-ranking | ゲームランキング（?days=7） |
+| GET | /admin/v1/analytics/dau-trend | DAU トレンド（?days=30） |
+| GET | /admin/v1/analytics/hourly-trend | 時間別トレンド |
+| GET | /admin/v1/analytics/action-distribution | 行動分布 |
+| GET | /admin/v1/analytics/revenue | 収益分析 |
+| GET | /admin/v1/analytics/conversion | ゲームコンバージョン率 |
+| GET | /admin/v1/analytics/probability | 結合/条件確率 |
+| GET | /admin/v1/analytics/retention | リテンション分析 D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | コンバージョンファネル |
+| GET | /admin/v1/analytics/arpu | ARPU/ARPPU トレンド |
+| GET | /admin/v1/analytics/economy | ゲーム通貨経済指標 |
 
 ### 3.17 チケット管理
 
@@ -1431,11 +1491,11 @@ action: approve / reject
 
 | 方法 | パス | 説明 |
 |------|------|------|
-| GET | /admin/ticket/list | チケット一覧（?page=&limit=&status=&type=） |
-| GET | /admin/ticket/{hashid} | チケット詳細（返信含む） |
-| POST | /admin/ticket/{hashid}/reply | チケット返信 |
-| POST | /admin/ticket/{hashid}/close | チケットクローズ |
-| POST | /admin/ticket/{hashid}/assign | 担当者の指定（admin_id） |
+| GET | /admin/v1/ticket/list | チケット一覧（?page=&limit=&status=&type=） |
+| GET | /admin/v1/ticket/{hashid} | チケット詳細（返信含む） |
+| POST | /admin/v1/ticket/{hashid}/reply | チケット返信 |
+| POST | /admin/v1/ticket/{hashid}/close | チケットクローズ |
+| POST | /admin/v1/ticket/{hashid}/assign | 担当者の指定（admin_id） |
 
 ### 3.18 CDN 構成管理
 
@@ -1443,12 +1503,12 @@ action: approve / reject
 
 | 方法 | パス | 説明 | 認証 |
 |------|------|------|------|
-| GET | /admin/cdn/provider/list | CDN プロバイダー一覧（config 認証情報は返却されない） | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/toggle | プロバイダー有効/無効 {id, status} | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/create | 新規追加 {name, provider, config(JSON), status, sort}，provider 重複チェック | AdminAuth + RBAC: cdn |
-| PUT | /admin/cdn/provider/{hashid} | 編集（config 空欄なら変更なし） | AdminAuth + RBAC: cdn |
-| DELETE | /admin/cdn/provider/{hashid} | 削除 | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/test | 接続テスト HeadBucket {id} | AdminAuth + RBAC: cdn |
+| GET | /admin/v1/cdn/provider/list | CDN プロバイダー一覧（config 認証情報は返却されない） | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/toggle | プロバイダー有効/無効 {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/create | 新規追加 {name, provider, config(JSON), status, sort}，provider 重複チェック | AdminAuth + RBAC: cdn |
+| PUT | /admin/v1/cdn/provider/{hashid} | 編集（config 空欄なら変更なし） | AdminAuth + RBAC: cdn |
+| DELETE | /admin/v1/cdn/provider/{hashid} | 削除 | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/test | 接続テスト HeadBucket {id} | AdminAuth + RBAC: cdn |
 
 ### 3.19 データレポート
 
@@ -1456,9 +1516,9 @@ action: approve / reject
 
 | メソッド | パス | 説明 | 認証 |
 |------|------|------|------|
-| GET | /admin/report/summary | レポート集計（新規ユーザー/入金/出金/両替/ゲーム対局数） | AdminAuth + RBAC: report |
-| GET | /admin/report/daily | 日報（日次集計、データのない日は 0 補完） | AdminAuth + RBAC: report |
-| GET | /admin/report/export | 日報 CSV エクスポート（UTF-8 BOM） | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/summary | レポート集計（新規ユーザー/入金/出金/両替/ゲーム対局数） | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/daily | 日報（日次集計、データのない日は 0 補完） | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/export | 日報 CSV エクスポート（UTF-8 BOM） | AdminAuth + RBAC: report |
 
 ## 4. レートリミット戦略
 
@@ -1478,7 +1538,7 @@ Retry-After: 60
 
 ## 5. 認証の説明
 
-### C端 (UserAuth)
+### C側 (UserAuth)
 
 1. `Authorization: Bearer <token>` から Token を抽出
 2. JWT 署名検証（HS256）、`sub`（ユーザーID）を解析
@@ -1681,6 +1741,8 @@ status: open / waiting / replied / closed
 
 #### GET /api/v1/user/vip-status — VIP状態
 
+> **未実装**：C側のルートは未登録（`service/config/route.php` に対応エントリなし）、現在のリクエストは 404 を返します。実装後にこの行を削除してください。
+
 ```
 需认证: 是
 响应: {
@@ -1701,6 +1763,8 @@ status: open / waiting / replied / closed
 
 #### GET /api/v1/user/achievements — アチーブメント一覧
 
+> **未実装**：C側のルートは未登録（`service/config/route.php` に対応エントリなし）、現在のリクエストは 404 を返します。実装後にこの行を削除してください。
+
 ```
 需认证: 是
 响应: {
@@ -1720,7 +1784,7 @@ status: open / waiting / replied / closed
 
 ### 7.6 管理バックエンド追加 API
 
-#### GET /admin/ticket/list — チケット一覧
+#### GET /admin/v1/ticket/list — チケット一覧
 
 ```
 需认证: 是
@@ -1739,7 +1803,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### POST /admin/ticket/{hashid}/reply — チケット返信
+#### POST /admin/v1/ticket/{hashid}/reply — チケット返信
 
 ```
 需认证: 是
@@ -1747,14 +1811,14 @@ status: open / waiting / replied / closed
 响应: { "code": 0, "message": "Reply sent" }
 ```
 
-#### POST /admin/ticket/{hashid}/close — チケットクローズ
+#### POST /admin/v1/ticket/{hashid}/close — チケットクローズ
 
 ```
 需认证: 是
 响应: { "code": 0, "message": "Ticket closed" }
 ```
 
-#### POST /admin/ticket/{hashid}/assign — 担当者指定
+#### POST /admin/v1/ticket/{hashid}/assign — 担当者指定
 
 ```
 需认证: 是
@@ -1762,7 +1826,7 @@ status: open / waiting / replied / closed
 响应: { "code": 0, "message": "Assigned" }
 ```
 
-#### GET /admin/analytics/retention — リテンション分析
+#### GET /admin/v1/analytics/retention — リテンション分析
 
 ```
 需认证: 是
@@ -1773,7 +1837,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/funnel — コンバージョンファネル
+#### GET /admin/v1/analytics/funnel — コンバージョンファネル
 
 ```
 需认证: 是
@@ -1787,7 +1851,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/arpu — ARPU/ARPPU トレンド
+#### GET /admin/v1/analytics/arpu — ARPU/ARPPU トレンド
 
 ```
 需认证: 是
@@ -1795,7 +1859,7 @@ status: open / waiting / replied / closed
 响应: { "arpu": [...], "arppu": [...], "dates": [...] }
 ```
 
-#### GET /admin/analytics/economy — ゲーム通貨経済指標
+#### GET /admin/v1/analytics/economy — ゲーム通貨経済指標
 
 ```
 需认证: 是
@@ -1814,14 +1878,14 @@ status: open / waiting / replied / closed
 ```
 
 
-#### GET /admin/cdn/provider/list — CDN プロバイダー一覧（config 認証情報は返却されない）
+#### GET /admin/v1/cdn/provider/list — CDN プロバイダー一覧（config 認証情報は返却されない）
 
 ```
 需认证: 是
 响应: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
 ```
 
-#### POST /admin/cdn/provider/toggle — プロバイダー有効/無効 {id, status}
+#### POST /admin/v1/cdn/provider/toggle — プロバイダー有効/無効 {id, status}
 
 ```
 需认证: 是
@@ -1829,7 +1893,7 @@ status: open / waiting / replied / closed
 响应: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/cdn/provider/create — 新規追加 {name, provider, config(JSON), status, sort}，provider 重複チェック
+#### POST /admin/v1/cdn/provider/create — 新規追加 {name, provider, config(JSON), status, sort}，provider 重複チェック
 
 ```
 需认证: 是
@@ -1837,7 +1901,7 @@ status: open / waiting / replied / closed
 响应: { "code": 0, "data": { "id": "..." } }
 ```
 
-#### PUT /admin/cdn/provider/{hashid} — 編集（config 空欄なら変更なし）
+#### PUT /admin/v1/cdn/provider/{hashid} — 編集（config 空欄なら変更なし）
 
 ```
 需认证: 是
@@ -1845,21 +1909,21 @@ status: open / waiting / replied / closed
 响应: { "code": 0, "message": "..." }
 ```
 
-#### DELETE /admin/cdn/provider/{hashid} — 削除
+#### DELETE /admin/v1/cdn/provider/{hashid} — 削除
 
 ```
 需认证: 是
 响应: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/cdn/provider/test — 接続テスト HeadBucket {id}
+#### POST /admin/v1/cdn/provider/test — 接続テスト HeadBucket {id}
 
 ```
 需认证: 是
 请求: { "id": "..." }
 响应: { "code": 0, "data": { "ok": true } }
 ```
-#### GET /admin/report/summary — レポート集計
+#### GET /admin/v1/report/summary — レポート集計
 
 ```
 需认证: 是
@@ -1873,7 +1937,7 @@ status: open / waiting / replied / closed
 ```
 
 
-#### GET /admin/report/daily — 日報
+#### GET /admin/v1/report/daily — 日報
 
 ```
 需认证: 是
@@ -1885,7 +1949,7 @@ status: open / waiting / replied / closed
 ```
 
 
-#### GET /admin/report/export — 日報 CSV エクスポート
+#### GET /admin/v1/report/export — 日報 CSV エクスポート
 
 ```
 需认证: 是
@@ -2029,13 +2093,13 @@ status: open / waiting / replied / closed
 
 ### 7.10 高度な分析 API
 
-#### GET /admin/analytics/retention — リテンション分析
+#### GET /admin/v1/analytics/retention — リテンション分析
 ```
 需认证: 是
 响应: { "D1": "45.2%", "D3": "28.7%", "D7": "18.3%", "D30": "8.1%" }
 ```
 
-#### GET /admin/analytics/funnel — コンバージョンファネル
+#### GET /admin/v1/analytics/funnel — コンバージョンファネル
 ```
 需认证: 是
 响应: {
@@ -2048,14 +2112,14 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/arpu — ARPU/ARPPU トレンド
+#### GET /admin/v1/analytics/arpu — ARPU/ARPPU トレンド
 ```
 需认证: 是
 参数: ?days=30
 响应: { "dates": [...], "arpu": [...], "arppu": [...] }
 ```
 
-#### GET /admin/analytics/economy — ゲーム経済指標
+#### GET /admin/v1/analytics/economy — ゲーム経済指標
 ```
 需认证: 是
 响应: {
@@ -2117,47 +2181,47 @@ status: open / waiting / replied / closed
 
 | エンドポイント | 説明 |
 |------|------|
-| GET /admin/risk/dashboard | リスクダッシュボード概要 |
-| GET /admin/risk/overview | リスク概要指標 |
-| GET /admin/risk/hit-trend | ヒット傾向 |
-| GET /admin/risk/action-distribution | 処置アクション分布 |
-| GET /admin/risk/rule-performance | ルール性能 |
-| GET /admin/risk/rule/list | ルール一覧 |
-| POST /admin/risk/rule/create | ルール作成 |
-| PUT /admin/risk/rule/{hashid} | ルール更新 |
-| POST /admin/risk/rule/{hashid}/toggle | ルール有効/無効 |
-| POST /admin/risk/rule/test | ルールテスト |
-| GET /admin/risk/event/list | リスクイベント一覧 |
-| GET /admin/risk/event/{hashid} | イベント詳細 |
-| POST /admin/risk/event/{hashid}/handle | イベント処置 |
-| GET /admin/risk/device/list | デバイスフィンガープリント一覧 |
-| POST /admin/risk/device/block | デバイス禁止 |
-| POST /admin/risk/device/unblock | デバイス禁止解除 |
-| GET /admin/risk/ip/list | IP一覧 |
-| POST /admin/risk/ip/block | IP禁止 |
-| POST /admin/risk/ip/whitelist | IPホワイトリスト |
-| POST /admin/risk/ip/appeal | IP異議申立 |
-| POST /admin/risk/ip/recheck | IP再審査 |
-| GET /admin/risk/graph/clusters | クラスター一覧 |
-| GET /admin/risk/graph/{userId} | ユーザー関連グラフ |
-| GET /admin/risk/clusters | リスククラスター一覧 |
+| GET /admin/v1/risk/dashboard | リスクダッシュボード概要 |
+| GET /admin/v1/risk/overview | リスク概要指標 |
+| GET /admin/v1/risk/hit-trend | ヒット傾向 |
+| GET /admin/v1/risk/action-distribution | 処置アクション分布 |
+| GET /admin/v1/risk/rule-performance | ルール性能 |
+| GET /admin/v1/risk/rule/list | ルール一覧 |
+| POST /admin/v1/risk/rule/create | ルール作成 |
+| PUT /admin/v1/risk/rule/{hashid} | ルール更新 |
+| POST /admin/v1/risk/rule/{hashid}/toggle | ルール有効/無効 |
+| POST /admin/v1/risk/rule/test | ルールテスト |
+| GET /admin/v1/risk/event/list | リスクイベント一覧 |
+| GET /admin/v1/risk/event/{hashid} | イベント詳細 |
+| POST /admin/v1/risk/event/{hashid}/handle | イベント処置 |
+| GET /admin/v1/risk/device/list | デバイスフィンガープリント一覧 |
+| POST /admin/v1/risk/device/block | デバイス禁止 |
+| POST /admin/v1/risk/device/unblock | デバイス禁止解除 |
+| GET /admin/v1/risk/ip/list | IP一覧 |
+| POST /admin/v1/risk/ip/block | IP禁止 |
+| POST /admin/v1/risk/ip/whitelist | IPホワイトリスト |
+| POST /admin/v1/risk/ip/appeal | IP異議申立 |
+| POST /admin/v1/risk/ip/recheck | IP再審査 |
+| GET /admin/v1/risk/graph/clusters | クラスター一覧 |
+| GET /admin/v1/risk/graph/{userId} | ユーザー関連グラフ |
+| GET /admin/v1/risk/clusters | リスククラスター一覧 |
 
 ### 10.2 アンチチート管理 (管理側 :8789)
 
 | エンドポイント | 説明 |
 |------|------|
-| GET /admin/anticheat/events | アンチチートイベント一覧 |
-| GET /admin/anticheat/events/{hashid} | イベント詳細 |
-| POST /admin/anticheat/events/{hashid}/review | イベントレビュー |
+| GET /admin/v1/anticheat/events | アンチチートイベント一覧 |
+| GET /admin/v1/anticheat/events/{hashid} | イベント詳細 |
+| POST /admin/v1/anticheat/events/{hashid}/review | イベントレビュー |
 
 ### 10.3 アクティビティ (管理側 :8789 + C側 :8792)
 
 | エンドポイント | 説明 |
 |------|------|
-| GET /admin/activities/list | アクティビティ一覧（管理側） |
-| POST /admin/activities/create | アクティビティ作成（管理側） |
-| PUT /admin/activities/{hashid} | アクティビティ更新（管理側） |
-| DELETE /admin/activities/{hashid} | アクティビティ削除（管理側） |
+| GET /admin/v1/activities/list | アクティビティ一覧（管理側） |
+| POST /admin/v1/activities/create | アクティビティ作成（管理側） |
+| PUT /admin/v1/activities/{hashid} | アクティビティ更新（管理側） |
+| DELETE /admin/v1/activities/{hashid} | アクティビティ削除（管理側） |
 | GET /api/v1/activities/list | アクティビティ一覧（C側） |
 | GET /api/v1/activities/progress | 参加進捗（C側） |
 | GET /api/v1/activities/{hashid} | アクティビティ詳細（C側） |
@@ -2175,9 +2239,9 @@ status: open / waiting / replied / closed
 | PUT /api/v1/groups/{hashid}/role | メンバー役割 |
 | POST /api/v1/shares | シェアリンク作成 |
 | POST /api/v1/shares/visit | シェア訪問追跡 |
-| GET /admin/groups | グループ一覧（管理側） |
-| GET /admin/groups/{hashid}/audit | グループ監査（管理側） |
-| GET /admin/share/stats | シェア統計（管理側） |
+| GET /admin/v1/groups | グループ一覧（管理側） |
+| GET /admin/v1/groups/{hashid}/audit | グループ監査（管理側） |
+| GET /admin/v1/share/stats | シェア統計（管理側） |
 
 ### 10.5 決済ゲートウェイ拡張 (L1)
 

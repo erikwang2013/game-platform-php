@@ -143,7 +143,7 @@ return [
     'next_step_2' => 'Start the API service: cd service && php start.php start -d (optional)',
     'next_step_3' => 'Log in to the admin backend with the administrator account you just created',
     'next_step_4' => 'Complete payment channels, CDN and mail credentials under "System Config" in the admin panel',
-    'next_step_5' => 'Open the admin backend (default address):',
+    'next_step_5' => 'Open the admin backend (address from APP_URL in admin/.env):',
     'next_step_6' => 'Before going public, remove the install directory or deny access in Nginx (see docs/nginx-security.conf)',
     'security_title' => 'Security Notes',
     'security_1' => 'Remove the install directory or restrict access to it (including install.lock)',

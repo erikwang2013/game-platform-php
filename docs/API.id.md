@@ -186,7 +186,7 @@ Respons: {
 }
 ```
 
-Nilai opsional currency: USD / CNY / EUR
+Nilai opsional currency: USD / CNY / EUR / JPY / KRW / GBP / BRL / INR
 
 checkout_url: tautan pengalihan gateway pembayaran (diisi saat pesanan dibuat); expires_at: kedaluwarsa tautan pembayaran (1 jam setelah dibuat)
 
@@ -401,9 +401,9 @@ Respons: {
 }
 ```
 
-Nilai opsional type: self / third_party
+Nilai opsional type: self / embedded / third_party
 
-#### GET /api/v1/game/{hashid} — Detail Game
+#### GET /api/v1/game/detail/{hashid} — Detail Game
 
 ```
 Respons: {
@@ -870,7 +870,7 @@ Respons: {
 
 ### 3.1 Dasbor Platform
 
-#### GET /admin/dashboard/platform
+#### GET /admin/v1/dashboard/platform
 
 ```
 Perlu autentikasi: ya (AdminAuth + AdminPermission)
@@ -888,11 +888,11 @@ Respons: {
 
 ### 3.2 Manajemen Game
 
-#### GET /admin/game/list — Daftar Game
+#### GET /admin/v1/game/list — Daftar Game
 
 ```
 Perlu autentikasi: ya
-Parameter: ?page=1&per_page=20&keyword=射击
+Parameter: ?page=1&limit=20&keyword=射击
 
 Respons: {
   "list": [
@@ -909,11 +909,67 @@ Respons: {
   ],
   "total": 12,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### POST /admin/game/create — Buat Game
+#### GET /admin/v1/game/{hashid} — Detail Game
+
+```
+需认证: 是
+参数: hashid 为游戏的 hashid 编码（路径参数）
+
+响应: {
+  "id": "aB3xK...",
+  "name": "射击大师",
+  "slug": "shooter-master",
+  "type": "self",
+  "description": "游戏描述",
+  "cover_image": "https://...",
+  "api_endpoint": "https://...",
+  "sdk_version": "1.0.0",
+  "platform": "h5",
+  "region": "global",
+  "currencies": [
+    {
+      "id": "cD4yL...",
+      "name": "金币",
+      "symbol": "G",
+      "exchange_rate": "100.00000000",
+      "spread_pct": "5.00000000",
+      "min_exchange": "1.00000000",
+      "max_exchange": "10000.00000000"
+    }
+  ]
+}
+```
+
+Mengembalikan code 404 jika game tidak ada.
+
+#### POST /admin/v1/game/launch — Pratinjau Game
+
+```
+需认证: 是
+
+请求: {
+  "game_id": "aB3xK..."      // 游戏 ID(hashid)
+}
+
+响应: {
+  "id": "aB3xK...",
+  "name": "射击大师",
+  "slug": "shooter-master",
+  "type": "self",
+  "api_endpoint": "https://...",
+  "preview": true
+}
+```
+
+Jika `game_id` tidak ada, mengembalikan code 422; jika game tidak ada, mengembalikan 404; jika game belum dipublikasikan (`status` bukan 1), mengembalikan 403.
+
+Pratinjau admin adalah pratinjau murni: hanya memvalidasi ketersediaan game dan mengembalikan informasi peluncuran, dan **tidak menulis catatan game dan tidak menyentuh dompet**. Identitas admin hanya membawa `adminId` (disuntikkan oleh `AdminAuth`) dan tidak memiliki `userId` Sisi C, sehingga endpoint ini sengaja tidak melakukan penulisan apa pun di sisi pengguna — meniru `POST /api/v1/game/launch` Sisi C akan menulis `game_game_play_log` dengan kepemilikan yang salah.
+
+#### POST /admin/v1/game/create — Buat Game
 
 ```
 Perlu autentikasi: ya
@@ -934,9 +990,9 @@ Permintaan: {
 Respons: { "id": "aB3xK..." }
 ```
 
-Nilai opsional type: self / third_party
+Nilai opsional type: self / embedded / third_party
 
-#### PUT /admin/game/{hashid} — Edit Game
+#### PUT /admin/v1/game/{hashid} — Edit Game
 
 ```
 Perlu autentikasi: ya
@@ -950,14 +1006,14 @@ Permintaan: {
 Respons: { "message": "更新成功" }
 ```
 
-#### DELETE /admin/game/{hashid} — Hapus Game
+#### DELETE /admin/v1/game/{hashid} — Hapus Game
 
 ```
 Perlu autentikasi: ya
 Respons: { "message": "删除成功" }
 ```
 
-#### POST /admin/game/currency/manage — Kelola Mata Uang
+#### POST /admin/v1/game/currency/manage — Kelola Mata Uang
 
 ```
 Perlu autentikasi: ya
@@ -977,16 +1033,20 @@ Permintaan: {
   ]
 }
 
-Respons: { "message": "币种更新成功" }
+Respons: { "message": "操作成功" }
 ```
+
+Jika `game_id` tidak ada atau `currencies` bukan array, mengembalikan 422; jika game tidak ada, mengembalikan 404.
+
+`exchange_rate` dan `spread_pct` hanya divalidasi jika dikirim: `exchange_rate` harus berupa angka lebih besar dari 0 dan `spread_pct` harus berada dalam rentang [0, 100); melanggar salah satunya mengembalikan 422 dan tidak ada mata uang yang ditulis (seluruh batch divalidasi terlebih dahulu sebelum penulisan). Field yang tidak dikirim tidak memicu validasi: saat dibuat digunakan nilai default (`exchange_rate` = `1.00000000`, sisanya `0.00000000`), saat diperbarui nilai yang ada dipertahankan.
 
 ### 3.3 Manajemen Penarikan
 
-#### GET /admin/withdraw/orders — Daftar Pesanan Penarikan
+#### GET /admin/v1/withdraw/orders — Daftar Pesanan Penarikan
 
 ```
 Perlu autentikasi: ya
-Parameter: ?page=1&per_page=20&status=pending
+Parameter: ?page=1&limit=20&status=pending
 
 Respons: {
   "list": [
@@ -1008,11 +1068,11 @@ Respons: {
   ],
   "total": 5,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### PUT /admin/withdraw/review — Review Penarikan
+#### PUT /admin/v1/withdraw/review — Review Penarikan
 
 ```
 Perlu autentikasi: ya
@@ -1026,11 +1086,11 @@ Permintaan: {
 Respons: { "message": "已通过" }
 ```
 
-action: approve=lolos / reject=tolak (saat ditolak, koin platform otomatis dikembalikan)
+action: approve=lolos / reject=tolak / confirm=konfirmasi (saat ditolak, koin platform otomatis dikembalikan)
 
 Error: 422 status pesanan bukan menunggu review
 
-#### PUT /admin/withdraw/switch — Saklar Penarikan Global
+#### PUT /admin/v1/withdraw/switch — Saklar Penarikan Global
 
 ```
 Perlu autentikasi: ya
@@ -1043,7 +1103,7 @@ Respons: {
 }
 ```
 
-#### POST /admin/withdraw/limits/set — Atur Batas Penarikan
+#### POST /admin/v1/withdraw/limits/set — Atur Batas Penarikan
 
 ```
 Perlu autentikasi: ya
@@ -1064,11 +1124,11 @@ Respons: {
 
 ### 3.4 Manajemen Pengguna Platform
 
-#### GET /admin/platform/user/list — Daftar Pengguna Sisi C
+#### GET /admin/v1/platform/user/list — Daftar Pengguna Sisi C
 
 ```
 Perlu autentikasi: ya
-Parameter: ?page=1&per_page=20&keyword=player&status=1
+Parameter: ?page=1&limit=20&keyword=player&status=1
 
 Respons: {
   "list": [
@@ -1084,11 +1144,11 @@ Respons: {
   ],
   "total": 1500,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### GET /admin/platform/user/{hashid} — Detail Pengguna
+#### GET /admin/v1/platform/user/{hashid} — Detail Pengguna
 
 ```
 Perlu autentikasi: ya
@@ -1111,7 +1171,7 @@ Respons: {
 }
 ```
 
-#### PUT /admin/platform/user/{hashid} — Edit/Banned Pengguna
+#### PUT /admin/v1/platform/user/{hashid} — Edit/Banned Pengguna
 
 ```
 Perlu autentikasi: ya
@@ -1126,7 +1186,7 @@ Respons: { "message": "更新成功" }
 
 ### 3.5 Manajemen Pembayaran
 
-#### GET /admin/payment/method/list
+#### GET /admin/v1/payment/method/list
 
 ```
 Perlu autentikasi: ya
@@ -1144,7 +1204,7 @@ Respons: {
 }
 ```
 
-#### POST /admin/payment/method/toggle — Aktifkan/Nonaktifkan Metode Pembayaran
+#### POST /admin/v1/payment/method/toggle — Aktifkan/Nonaktifkan Metode Pembayaran
 
 ```
 Perlu autentikasi: ya
@@ -1156,11 +1216,11 @@ Respons: { "message": "已更新" }
 
 ### 3.6 Manajemen Pengumuman
 
-#### GET /admin/announcement/list
+#### GET /admin/v1/announcement/list
 
 ```
 Perlu autentikasi: ya
-Parameter: ?page=1&per_page=20
+Parameter: ?page=1&limit=20
 
 Respons: {
   "list": [
@@ -1176,11 +1236,11 @@ Respons: {
   ],
   "total": 5,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### POST /admin/announcement/create — Terbitkan Pengumuman
+#### POST /admin/v1/announcement/create — Terbitkan Pengumuman
 
 ```
 Perlu autentikasi: ya
@@ -1200,11 +1260,11 @@ Respons: { "id": "aB3xK..." }
 
 ### 3.7 Review KYC
 
-#### GET /admin/identity/list — Daftar KYC
+#### GET /admin/v1/identity/list — Daftar KYC
 
 ```
 Perlu autentikasi: ya
-Parameter: ?page=1&per_page=20&status=pending
+Parameter: ?page=1&limit=20&status=pending
 
 Respons: {
   "list": [
@@ -1217,11 +1277,11 @@ Respons: {
       "created_at": "2026-05-22 10:00:00"
     }
   ],
-  "total": 5, "page": 1, "per_page": 20
+  "total": 5, "page": 1, "limit": 20
 }
 ```
 
-#### PUT /admin/identity/review — Review KYC
+#### PUT /admin/v1/identity/review — Review KYC
 
 ```
 Perlu autentikasi: ya
@@ -1235,7 +1295,7 @@ action: approve / reject
 
 ### 3.8 Manajemen Server Game
 
-#### GET /admin/game/server/list — Daftar Server
+#### GET /admin/v1/game/server/list — Daftar Server
 
 ```
 Perlu autentikasi: ya
@@ -1248,7 +1308,7 @@ Respons: {
 }
 ```
 
-#### POST /admin/game/server/create — Buat Server
+#### POST /admin/v1/game/server/create — Buat Server
 
 ```
 Perlu autentikasi: ya
@@ -1256,14 +1316,14 @@ Permintaan: { "game_id": "hashid", "name": "亚洲1服", "region": "asia", "stat
 Respons: { "id": "hashid" }
 ```
 
-#### PUT /admin/game/server/{hashid} — Edit Server
+#### PUT /admin/v1/game/server/{hashid} — Edit Server
 
 ```
 Perlu autentikasi: ya
 Permintaan: { "name": "新名称", "status": 2 }
 ```
 
-#### DELETE /admin/game/server/{hashid} — Hapus Server
+#### DELETE /admin/v1/game/server/{hashid} — Hapus Server
 
 ```
 Perlu autentikasi: ya
@@ -1271,7 +1331,7 @@ Perlu autentikasi: ya
 
 ### 3.9 Manajemen Batas Penarikan Bertingkat
 
-#### GET /admin/withdraw/limits/list
+#### GET /admin/v1/withdraw/limits/list
 
 ```
 Perlu autentikasi: ya
@@ -1293,7 +1353,7 @@ Respons: {
 }
 ```
 
-#### PUT /admin/withdraw/limits/{hashid} — Perbarui Batas
+#### PUT /admin/v1/withdraw/limits/{hashid} — Perbarui Batas
 
 ```
 Perlu autentikasi: ya
@@ -1304,14 +1364,14 @@ Permintaan: { "single_max": "10000.0000", "fee_pct": "0.25" }
 
 ### 3.11 Manajemen Kategori Game
 
-#### GET /admin/game/category/list
+#### GET /admin/v1/game/category/list
 
 ```
 Perlu autentikasi: ya
 Respons: { "list": [{ "id": "...", "name": "动作", "slug": "action", "sort": 1 }] }
 ```
 
-#### POST /admin/game/category/create
+#### POST /admin/v1/game/category/create
 
 ```
 Perlu autentikasi: ya
@@ -1319,11 +1379,11 @@ Permintaan: { "name": "新分类", "slug": "new-cat", "icon": "star", "sort": 10
 Respons: { "id": "hashid" }
 ```
 
-#### PUT /admin/game/category/{hashid} — Edit Kategori
+#### PUT /admin/v1/game/category/{hashid} — Edit Kategori
 
-#### DELETE /admin/game/category/{hashid} — Hapus Kategori
+#### DELETE /admin/v1/game/category/{hashid} — Hapus Kategori
 
-#### POST /admin/game/category/assign — Tetapkan Game
+#### POST /admin/v1/game/category/assign — Tetapkan Game
 
 ```
 Perlu autentikasi: ya
@@ -1332,42 +1392,42 @@ Permintaan: { "category_id": "hashid", "game_ids": ["hash1", "hash2"] }
 
 ### 3.12 Manajemen Papan Peringkat
 
-#### GET /admin/leaderboard/list — Daftar Papan Peringkat
+#### GET /admin/v1/leaderboard/list — Daftar Papan Peringkat
 
 ```
 Perlu autentikasi: ya
 Respons: { "list": [{ "id": "...", "name": "...", "type": "total", "metric": "earned" }] }
 ```
 
-#### POST /admin/leaderboard/create — Buat Papan Peringkat
+#### POST /admin/v1/leaderboard/create — Buat Papan Peringkat
 
 ```
 Perlu autentikasi: ya
 Permintaan: { "name": "周收入榜", "type": "weekly", "metric": "earned", "game_id": "hashid(opsional)" }
 ```
 
-#### PUT /admin/leaderboard/{hashid} — Edit Papan Peringkat
+#### PUT /admin/v1/leaderboard/{hashid} — Edit Papan Peringkat
 
-#### DELETE /admin/leaderboard/{hashid} — Hapus Papan Peringkat
+#### DELETE /admin/v1/leaderboard/{hashid} — Hapus Papan Peringkat
 
-#### POST /admin/leaderboard/{hashid}/refresh — Segarkan Cache
+#### POST /admin/v1/leaderboard/{hashid}/refresh — Segarkan Cache
 
 ### 3.13 Manajemen Kupon
 
-#### GET /admin/coupon/list — Daftar Kupon
+#### GET /admin/v1/coupon/list — Daftar Kupon
 
-#### POST /admin/coupon/create — Buat Kupon
+#### POST /admin/v1/coupon/create — Buat Kupon
 
 ```
 Perlu autentikasi: ya
 Permintaan: { "name": "新人礼包", "type": "fixed", "value": "10.0000", "total_qty": 1000 }
 ```
 
-#### PUT /admin/coupon/{hashid} — Edit (saat belum diambil)
+#### PUT /admin/v1/coupon/{hashid} — Edit (saat belum diambil)
 
-#### DELETE /admin/coupon/{hashid} — Hapus
+#### DELETE /admin/v1/coupon/{hashid} — Hapus
 
-#### GET /admin/coupon/{hashid}/stats — Statistik Pengambilan
+#### GET /admin/v1/coupon/{hashid}/stats — Statistik Pengambilan
 
 ```
 Respons: { "total_qty": 1000, "used_qty": 234, "remaining": 766, "usage_rate": "23.40%" }
@@ -1375,20 +1435,20 @@ Respons: { "total_qty": 1000, "used_qty": 234, "remaining": 766, "usage_rate": "
 
 ### 3.14 Manajemen Konfigurasi Negara
 
-#### GET /admin/country/config/list — Daftar Konfigurasi Negara
+#### GET /admin/v1/country/config/list — Daftar Konfigurasi Negara
 
-#### POST /admin/country/config/create — Buat Konfigurasi Negara
+#### POST /admin/v1/country/config/create — Buat Konfigurasi Negara
 
 ```
 Perlu autentikasi: ya
 Permintaan: { "country_code": "JP", "currency": "JPY", "payment_methods": "[\"stripe\",\"paypal\"]", "min_deposit": "100.0000" }
 ```
 
-#### PUT /admin/country/config/{hashid} — Edit Konfigurasi Negara
+#### PUT /admin/v1/country/config/{hashid} — Edit Konfigurasi Negara
 
 ### 3.15 Ekspor Data
 
-#### POST /admin/export/users — Ekspor Pengguna Sisi C
+#### POST /admin/v1/export/users — Ekspor Pengguna Sisi C
 
 ```
 Perlu autentikasi: ya
@@ -1397,7 +1457,7 @@ Parameter (JSON): { "status": 1 }   // filter opsional
 Respons: unduhan file Excel (xlsx)
 ```
 
-#### POST /admin/export/transactions — Ekspor Transaksi Platform
+#### POST /admin/v1/export/transactions — Ekspor Transaksi Platform
 
 ```
 Perlu autentikasi: ya
@@ -1412,18 +1472,18 @@ Semua endpoint memerlukan autentikasi (AdminAuth + AdminPermission), data diagre
 
 | Metode | Jalur | Keterangan |
 |------|------|------|
-| GET | /admin/analytics/overview | Ringkasan platform (hari ini/7 hari terakhir) |
-| GET | /admin/analytics/game-ranking | Peringkat game (?days=7) |
-| GET | /admin/analytics/dau-trend | Tren DAU (?days=30) |
-| GET | /admin/analytics/hourly-trend | Tren per jam |
-| GET | /admin/analytics/action-distribution | Distribusi perilaku |
-| GET | /admin/analytics/revenue | Analisis pendapatan |
-| GET | /admin/analytics/conversion | Rasio konversi game |
-| GET | /admin/analytics/probability | Probabilitas gabungan/bersyarat |
-| GET | /admin/analytics/retention | Analisis retensi D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | Funnel konversi |
-| GET | /admin/analytics/arpu | Tren ARPU/ARPPU |
-| GET | /admin/analytics/economy | Metrik ekonomi mata uang game |
+| GET | /admin/v1/analytics/overview | Ringkasan platform (hari ini/7 hari terakhir) |
+| GET | /admin/v1/analytics/game-ranking | Peringkat game (?days=7) |
+| GET | /admin/v1/analytics/dau-trend | Tren DAU (?days=30) |
+| GET | /admin/v1/analytics/hourly-trend | Tren per jam |
+| GET | /admin/v1/analytics/action-distribution | Distribusi perilaku |
+| GET | /admin/v1/analytics/revenue | Analisis pendapatan |
+| GET | /admin/v1/analytics/conversion | Rasio konversi game |
+| GET | /admin/v1/analytics/probability | Probabilitas gabungan/bersyarat |
+| GET | /admin/v1/analytics/retention | Analisis retensi D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | Funnel konversi |
+| GET | /admin/v1/analytics/arpu | Tren ARPU/ARPPU |
+| GET | /admin/v1/analytics/economy | Metrik ekonomi mata uang game |
 
 ### 3.17 Manajemen Tiket
 
@@ -1431,11 +1491,11 @@ Semua endpoint memerlukan autentikasi (AdminAuth + AdminPermission).
 
 | Metode | Jalur | Keterangan |
 |------|------|------|
-| GET | /admin/ticket/list | Daftar tiket (?page=&limit=&status=&type=) |
-| GET | /admin/ticket/{hashid} | Detail tiket (termasuk balasan) |
-| POST | /admin/ticket/{hashid}/reply | Balas tiket |
-| POST | /admin/ticket/{hashid}/close | Tutup tiket |
-| POST | /admin/ticket/{hashid}/assign | Tetapkan penangan (admin_id) |
+| GET | /admin/v1/ticket/list | Daftar tiket (?page=&limit=&status=&type=) |
+| GET | /admin/v1/ticket/{hashid} | Detail tiket (termasuk balasan) |
+| POST | /admin/v1/ticket/{hashid}/reply | Balas tiket |
+| POST | /admin/v1/ticket/{hashid}/close | Tutup tiket |
+| POST | /admin/v1/ticket/{hashid}/assign | Tetapkan penangan (admin_id) |
 
 ### 3.18 Manajemen Konfigurasi CDN
 
@@ -1443,12 +1503,12 @@ Semua endpoint memerlukan autentikasi (AdminAuth + AdminPermission).
 
 | Metode | Jalur | Keterangan | Autentikasi |
 |------|------|------|------|
-| GET | /admin/cdn/provider/list | Daftar penyedia CDN (kredensial tidak dikembalikan) | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/toggle | Aktifkan/nonaktifkan penyedia {id, status} | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/create | Buat {name, provider, config(JSON), status, sort}, pemeriksaan keunikan provider | AdminAuth + RBAC: cdn |
-| PUT | /admin/cdn/provider/{hashid} | Edit (config kosong = tidak berubah) | AdminAuth + RBAC: cdn |
-| DELETE | /admin/cdn/provider/{hashid} | Hapus | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/test | Uji konektivitas HeadBucket {id} | AdminAuth + RBAC: cdn |
+| GET | /admin/v1/cdn/provider/list | Daftar penyedia CDN (kredensial tidak dikembalikan) | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/toggle | Aktifkan/nonaktifkan penyedia {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/create | Buat {name, provider, config(JSON), status, sort}, pemeriksaan keunikan provider | AdminAuth + RBAC: cdn |
+| PUT | /admin/v1/cdn/provider/{hashid} | Edit (config kosong = tidak berubah) | AdminAuth + RBAC: cdn |
+| DELETE | /admin/v1/cdn/provider/{hashid} | Hapus | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/test | Uji konektivitas HeadBucket {id} | AdminAuth + RBAC: cdn |
 
 ### 3.19 Laporan Data
 
@@ -1456,9 +1516,9 @@ Semua endpoint memerlukan autentikasi (AdminAuth + AdminPermission).
 
 | Metode | Jalur | Keterangan | Autentikasi |
 |------|------|------|------|
-| GET | /admin/report/summary | Ringkasan laporan (pengguna baru/deposit/penarikan/penukaran/permainan) | AdminAuth + RBAC: report |
-| GET | /admin/report/daily | Laporan harian (agregasi per hari, tanggal tanpa data diisi 0) | AdminAuth + RBAC: report |
-| GET | /admin/report/export | Ekspor laporan harian CSV (UTF-8 BOM) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/summary | Ringkasan laporan (pengguna baru/deposit/penarikan/penukaran/permainan) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/daily | Laporan harian (agregasi per hari, tanggal tanpa data diisi 0) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/export | Ekspor laporan harian CSV (UTF-8 BOM) | AdminAuth + RBAC: report |
 
 ## 4. Strategi Rate Limit
 
@@ -1681,6 +1741,8 @@ Error: 422 kode verifikasi tidak valid atau sudah kedaluwarsa
 
 #### GET /api/v1/user/vip-status — Status VIP
 
+> **Belum diimplementasikan**: rute sisi C belum terdaftar (tidak ada entri di `service/config/route.php`), permintaan saat ini mengembalikan 404. Hapus baris ini setelah diimplementasikan.
+
 ```
 Perlu autentikasi: ya
 Respons: {
@@ -1701,6 +1763,8 @@ Respons: {
 
 #### GET /api/v1/user/achievements — Daftar Pencapaian
 
+> **Belum diimplementasikan**: rute sisi C belum terdaftar (tidak ada entri di `service/config/route.php`), permintaan saat ini mengembalikan 404. Hapus baris ini setelah diimplementasikan.
+
 ```
 Perlu autentikasi: ya
 Respons: {
@@ -1720,7 +1784,7 @@ Respons: {
 
 ### 7.6 API Baru Backend Administrasi
 
-#### GET /admin/ticket/list — Daftar Tiket
+#### GET /admin/v1/ticket/list — Daftar Tiket
 
 ```
 Perlu autentikasi: ya
@@ -1739,7 +1803,7 @@ Respons: {
 }
 ```
 
-#### POST /admin/ticket/{hashid}/reply — Balas Tiket
+#### POST /admin/v1/ticket/{hashid}/reply — Balas Tiket
 
 ```
 Perlu autentikasi: ya
@@ -1747,14 +1811,14 @@ Permintaan: { "content": "已处理" }
 Respons: { "code": 0, "message": "Reply sent" }
 ```
 
-#### POST /admin/ticket/{hashid}/close — Tutup Tiket
+#### POST /admin/v1/ticket/{hashid}/close — Tutup Tiket
 
 ```
 Perlu autentikasi: ya
 Respons: { "code": 0, "message": "Ticket closed" }
 ```
 
-#### POST /admin/ticket/{hashid}/assign — Tetapkan Penangan
+#### POST /admin/v1/ticket/{hashid}/assign — Tetapkan Penangan
 
 ```
 Perlu autentikasi: ya
@@ -1762,7 +1826,7 @@ Permintaan: { "admin_id": 1234567890 }
 Respons: { "code": 0, "message": "Assigned" }
 ```
 
-#### GET /admin/analytics/retention — Analisis Retensi
+#### GET /admin/v1/analytics/retention — Analisis Retensi
 
 ```
 Perlu autentikasi: ya
@@ -1773,7 +1837,7 @@ Respons: {
 }
 ```
 
-#### GET /admin/analytics/funnel — Funnel Konversi
+#### GET /admin/v1/analytics/funnel — Funnel Konversi
 
 ```
 Perlu autentikasi: ya
@@ -1787,7 +1851,7 @@ Respons: {
 }
 ```
 
-#### GET /admin/analytics/arpu — Tren ARPU/ARPPU
+#### GET /admin/v1/analytics/arpu — Tren ARPU/ARPPU
 
 ```
 Perlu autentikasi: ya
@@ -1795,7 +1859,7 @@ Parameter: ?days=30
 Respons: { "arpu": [...], "arppu": [...], "dates": [...] }
 ```
 
-#### GET /admin/analytics/economy — Metrik Ekonomi Mata Uang Game
+#### GET /admin/v1/analytics/economy — Metrik Ekonomi Mata Uang Game
 
 ```
 Perlu autentikasi: ya
@@ -1814,14 +1878,14 @@ Respons: {
 ```
 
 
-#### GET /admin/cdn/provider/list — Daftar penyedia CDN (kredensial tidak dikembalikan)
+#### GET /admin/v1/cdn/provider/list — Daftar penyedia CDN (kredensial tidak dikembalikan)
 
 ```
 Perlu autentikasi: ya
 Respons: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
 ```
 
-#### POST /admin/cdn/provider/toggle — Aktifkan/nonaktifkan penyedia {id, status}
+#### POST /admin/v1/cdn/provider/toggle — Aktifkan/nonaktifkan penyedia {id, status}
 
 ```
 Perlu autentikasi: ya
@@ -1829,7 +1893,7 @@ Permintaan: { "id": "...", "status": 1 }
 Respons: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/cdn/provider/create — Buat {name, provider, config(JSON), status, sort}, pemeriksaan keunikan provider
+#### POST /admin/v1/cdn/provider/create — Buat {name, provider, config(JSON), status, sort}, pemeriksaan keunikan provider
 
 ```
 Perlu autentikasi: ya
@@ -1837,7 +1901,7 @@ Permintaan: { "name": "...", "provider": "aliyun", "config": "{...}", "status": 
 Respons: { "code": 0, "data": { "id": "..." } }
 ```
 
-#### PUT /admin/cdn/provider/{hashid} — Edit (config kosong = tidak berubah)
+#### PUT /admin/v1/cdn/provider/{hashid} — Edit (config kosong = tidak berubah)
 
 ```
 Perlu autentikasi: ya
@@ -1845,21 +1909,21 @@ Permintaan: { "name": "...", "config": "" }
 Respons: { "code": 0, "message": "..." }
 ```
 
-#### DELETE /admin/cdn/provider/{hashid} — Hapus
+#### DELETE /admin/v1/cdn/provider/{hashid} — Hapus
 
 ```
 Perlu autentikasi: ya
 Respons: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/cdn/provider/test — Uji konektivitas HeadBucket {id}
+#### POST /admin/v1/cdn/provider/test — Uji konektivitas HeadBucket {id}
 
 ```
 Perlu autentikasi: ya
 Permintaan: { "id": "..." }
 Respons: { "code": 0, "data": { "ok": true } }
 ```
-#### GET /admin/report/summary — Ringkasan laporan
+#### GET /admin/v1/report/summary — Ringkasan laporan
 
 ```
 需认证: 是
@@ -1873,7 +1937,7 @@ Respons: { "code": 0, "data": { "ok": true } }
 ```
 
 
-#### GET /admin/report/daily — Laporan harian
+#### GET /admin/v1/report/daily — Laporan harian
 
 ```
 需认证: 是
@@ -1885,7 +1949,7 @@ Respons: { "code": 0, "data": { "ok": true } }
 ```
 
 
-#### GET /admin/report/export — Ekspor laporan harian CSV
+#### GET /admin/v1/report/export — Ekspor laporan harian CSV
 
 ```
 需认证: 是
@@ -2029,13 +2093,13 @@ Permintaan: { "id": "hook_id" }
 
 ### 7.10 API Analisis Lanjutan
 
-#### GET /admin/analytics/retention — Analisis Retensi
+#### GET /admin/v1/analytics/retention — Analisis Retensi
 ```
 Perlu autentikasi: ya
 Respons: { "D1": "45.2%", "D3": "28.7%", "D7": "18.3%", "D30": "8.1%" }
 ```
 
-#### GET /admin/analytics/funnel — Funnel Konversi
+#### GET /admin/v1/analytics/funnel — Funnel Konversi
 ```
 Perlu autentikasi: ya
 Respons: {
@@ -2048,14 +2112,14 @@ Respons: {
 }
 ```
 
-#### GET /admin/analytics/arpu — Tren ARPU/ARPPU
+#### GET /admin/v1/analytics/arpu — Tren ARPU/ARPPU
 ```
 Perlu autentikasi: ya
 Parameter: ?days=30
 Respons: { "dates": [...], "arpu": [...], "arppu": [...] }
 ```
 
-#### GET /admin/analytics/economy — Metrik Ekonomi Game
+#### GET /admin/v1/analytics/economy — Metrik Ekonomi Game
 ```
 Perlu autentikasi: ya
 Respons: {
@@ -2117,47 +2181,47 @@ Komisi referral menambahkan bagi hasil level dua:
 
 | Endpoint | Deskripsi |
 |------|------|
-| GET /admin/risk/dashboard | Ringkasan dasbor risiko |
-| GET /admin/risk/overview | Metrik ringkasan risiko |
-| GET /admin/risk/hit-trend | Tren pemicuan |
-| GET /admin/risk/action-distribution | Distribusi tindakan |
-| GET /admin/risk/rule-performance | Kinerja aturan |
-| GET /admin/risk/rule/list | Daftar aturan |
-| POST /admin/risk/rule/create | Buat aturan |
-| PUT /admin/risk/rule/{hashid} | Perbarui aturan |
-| POST /admin/risk/rule/{hashid}/toggle | Aktifkan/nonaktifkan aturan |
-| POST /admin/risk/rule/test | Uji aturan |
-| GET /admin/risk/event/list | Daftar event risiko |
-| GET /admin/risk/event/{hashid} | Detail event |
-| POST /admin/risk/event/{hashid}/handle | Tangani event |
-| GET /admin/risk/device/list | Daftar sidik jari perangkat |
-| POST /admin/risk/device/block | Blokir perangkat |
-| POST /admin/risk/device/unblock | Buka blokir perangkat |
-| GET /admin/risk/ip/list | Daftar IP |
-| POST /admin/risk/ip/block | Blokir IP |
-| POST /admin/risk/ip/whitelist | Daftar putih IP |
-| POST /admin/risk/ip/appeal | Banding IP |
-| POST /admin/risk/ip/recheck | Periksa ulang IP |
-| GET /admin/risk/graph/clusters | Daftar klaster |
-| GET /admin/risk/graph/{userId} | Grafik keterkaitan pengguna |
-| GET /admin/risk/clusters | Daftar klaster risiko |
+| GET /admin/v1/risk/dashboard | Ringkasan dasbor risiko |
+| GET /admin/v1/risk/overview | Metrik ringkasan risiko |
+| GET /admin/v1/risk/hit-trend | Tren pemicuan |
+| GET /admin/v1/risk/action-distribution | Distribusi tindakan |
+| GET /admin/v1/risk/rule-performance | Kinerja aturan |
+| GET /admin/v1/risk/rule/list | Daftar aturan |
+| POST /admin/v1/risk/rule/create | Buat aturan |
+| PUT /admin/v1/risk/rule/{hashid} | Perbarui aturan |
+| POST /admin/v1/risk/rule/{hashid}/toggle | Aktifkan/nonaktifkan aturan |
+| POST /admin/v1/risk/rule/test | Uji aturan |
+| GET /admin/v1/risk/event/list | Daftar event risiko |
+| GET /admin/v1/risk/event/{hashid} | Detail event |
+| POST /admin/v1/risk/event/{hashid}/handle | Tangani event |
+| GET /admin/v1/risk/device/list | Daftar sidik jari perangkat |
+| POST /admin/v1/risk/device/block | Blokir perangkat |
+| POST /admin/v1/risk/device/unblock | Buka blokir perangkat |
+| GET /admin/v1/risk/ip/list | Daftar IP |
+| POST /admin/v1/risk/ip/block | Blokir IP |
+| POST /admin/v1/risk/ip/whitelist | Daftar putih IP |
+| POST /admin/v1/risk/ip/appeal | Banding IP |
+| POST /admin/v1/risk/ip/recheck | Periksa ulang IP |
+| GET /admin/v1/risk/graph/clusters | Daftar klaster |
+| GET /admin/v1/risk/graph/{userId} | Grafik keterkaitan pengguna |
+| GET /admin/v1/risk/clusters | Daftar klaster risiko |
 
 ### 10.2 Manajemen Anti-Cheat (Admin :8789)
 
 | Endpoint | Deskripsi |
 |------|------|
-| GET /admin/anticheat/events | Daftar event anti-cheat |
-| GET /admin/anticheat/events/{hashid} | Detail event |
-| POST /admin/anticheat/events/{hashid}/review | Tinjau event |
+| GET /admin/v1/anticheat/events | Daftar event anti-cheat |
+| GET /admin/v1/anticheat/events/{hashid} | Detail event |
+| POST /admin/v1/anticheat/events/{hashid}/review | Tinjau event |
 
 ### 10.3 Aktivitas (Admin :8789 + Klien :8792)
 
 | Endpoint | Deskripsi |
 |------|------|
-| GET /admin/activities/list | Daftar aktivitas (Admin) |
-| POST /admin/activities/create | Buat aktivitas (Admin) |
-| PUT /admin/activities/{hashid} | Perbarui aktivitas (Admin) |
-| DELETE /admin/activities/{hashid} | Hapus aktivitas (Admin) |
+| GET /admin/v1/activities/list | Daftar aktivitas (Admin) |
+| POST /admin/v1/activities/create | Buat aktivitas (Admin) |
+| PUT /admin/v1/activities/{hashid} | Perbarui aktivitas (Admin) |
+| DELETE /admin/v1/activities/{hashid} | Hapus aktivitas (Admin) |
 | GET /api/v1/activities/list | Daftar aktivitas (Klien) |
 | GET /api/v1/activities/progress | Progres partisipasi (Klien) |
 | GET /api/v1/activities/{hashid} | Detail aktivitas (Klien) |
@@ -2175,9 +2239,9 @@ Komisi referral menambahkan bagi hasil level dua:
 | PUT /api/v1/groups/{hashid}/role | Peran anggota |
 | POST /api/v1/shares | Buat tautan berbagi |
 | POST /api/v1/shares/visit | Pelacakan kunjungan berbagi |
-| GET /admin/groups | Daftar grup (Admin) |
-| GET /admin/groups/{hashid}/audit | Audit grup (Admin) |
-| GET /admin/share/stats | Statistik berbagi (Admin) |
+| GET /admin/v1/groups | Daftar grup (Admin) |
+| GET /admin/v1/groups/{hashid}/audit | Audit grup (Admin) |
+| GET /admin/v1/share/stats | Statistik berbagi (Admin) |
 
 ### 10.5 Ekstensi Gerbang Pembayaran (L1)
 

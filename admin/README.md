@@ -27,7 +27,7 @@ Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) ·
 | | Excel 批量导入 | 逐行校验 + 错误报告 |
 | 🔒 角色权限 | 角色 CRUD + 权限树 | RBAC method.path 粒度鉴权 |
 | ⚙ 系统配置 | 键值对 CRUD | 分组管理 |
-| 💳 支付方式管理 | 多网关增删改 + 启停 | 13 个网关（stripe/paypal/nowpayments/coinbase 等）+ 国家可见性 |
+| 💳 支付方式管理 | 多网关增删改 + 启停 | 18 个网关（stripe/paypal/nowpayments/coinbase 等）+ 国家可见性 |
 | 🖥 CDN 管理 | 五厂商配置 CRUD + 启停 + 连通测试 | 凭据 AES 加密存储，service 纯 DB 读取 |
 | 📋 操作审计 | 日志查询 + 来源端检测 | 8 平台自动识别 |
 | 📁 文件管理 | 上传/Excel 导出/PDF 导出 | 敏感数据自动脱敏 |
@@ -65,48 +65,53 @@ Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) ·
 ```
 open-admin/
 ├── app/
-│   ├── admin/controller/       # 管理端控制器
-│   │   ├── DashboardController.php # 仪表盘（Redis缓存）
-│   │   ├── UserController.php      # 用户 CRUD + 批量操作
-│   │   ├── RoleController.php      # 角色 CRUD
-│   │   ├── PermissionController.php# 权限 CRUD
-│   │   ├── ConfigController.php    # 系统配置 CRUD
-│   │   ├── LogController.php       # 操作日志查询
-│   │   ├── ProfileController.php   # 个人中心 + 登出
-│   │   ├── ExportController.php    # Excel/PDF 导出
-│   │   ├── ImportController.php    # Excel 导入用户
-│   │   ├── UploadController.php    # 文件上传
-│   │   ├── HealthController.php    # 健康检查
-│   │   ├── DocsController.php      # OpenAPI 文档
-│   │   └── BaseController.php      # 基础控制器
+│   ├── admin/v1/controller/    # 管理端控制器 (45)
+│   │   ├── DashboardController.php  # 仪表盘（Redis缓存）
+│   │   ├── UserController.php       # 用户 CRUD + 批量操作
+│   │   ├── RoleController.php       # 角色 CRUD
+│   │   ├── PermissionController.php # 权限 CRUD
+│   │   ├── ConfigController.php     # 系统配置 CRUD
+│   │   ├── LogController.php        # 操作日志查询
+│   │   ├── ProfileController.php    # 个人中心 + 登出
+│   │   ├── ExportController.php     # Excel/PDF 导出
+│   │   ├── ImportController.php     # Excel 导入用户
+│   │   ├── UploadController.php     # 文件上传
+│   │   ├── HealthController.php     # 健康检查
+│   │   ├── DocsController.php       # OpenAPI 文档
+│   │   └── BaseController.php       # 基础控制器
 │   ├── api/
 │   │   └── v1/controller/          # API v1 控制器（URL 路径版本 /api/v1、/admin/v1）
 │   │       ├── CaptchaController.php # 点击验证码
 │   │       └── AuthController.php    # 登录/注册/刷新令牌
 │   ├── common/                 # 公共工具类
-│   │   ├── HashidsService.php  # ID 编解码
-│   │   ├── SnowflakeService.php# Snowflake ID 生成
-│   │   └── EncryptionService.php # 数据加解密 + 脱敏
+│   │   └── CdnProbeService.php # CDN 连通性探测（Hashids/Snowflake/Encryption 由 composer 包提供）
 │   ├── middleware/             # 中间件
 │   │   ├── Cors.php            # 跨域
 │   │   ├── SecurityFilter.php  # 攻击检测拦截（HTTP方法限制/XSS/SQL注入/路径遍历/命令注入/CSRF）
 │   │   ├── RateLimit.php       # Redis 限流（滑动窗口 + 响应头）
+│   │   ├── StaticFile.php      # 静态文件服务（webman 内置）
 │   │   ├── AdminAuth.php       # JWT 认证 + 黑名单
 │   │   ├── AdminPermission.php # RBAC 权限校验
 │   │   └── OperationLog.php    # 操作日志自动记录（含来源端检测）
-│   └── model/                  # 数据模型
+│   ├── activity/               # 活动处理器（签到/邀请/每日任务）
+│   ├── model/                  # 数据模型
+│   ├── process/                # 进程 (Http, Monitor, RiskIpCron)
+│   ├── provider/               # 游戏 Provider 层（Self/ThirdParty/Factory）
+│   ├── service/                # 服务（钱包/风控沙箱）
+│   └── view/                   # 视图模板
 ├── apps/
+│   ├── angular/                # Angular Web 管理后台
+│   ├── react/                  # React Web 管理后台
 │   ├── flutter/                # Flutter Web 管理后台（PC 风格）
 │   │   └── lib/app/
-│   │       ├── pages/          # 5 个完整页面（仪表盘/用户/角色/配置/日志/个人中心）
+│   │       ├── pages/          # 20 个页面目录
 │   │       ├── services/       # ApiService（JWT 拦截器）+ AuthService（Token 持久化）
 │   │       └── layouts/        # 响应式管理后台布局（侧边栏+顶栏+内容区）
 │   └── harmonyos/              # HarmonyOS 原生客户端（Token 无感刷新）
 ├── config/                     # 配置文件（含中文注释）
 │   ├── route.php               # 路由 + API 版本策略
 │   ├── middleware.php           # 全局中间件注册
-│   └── ...                     # 各组件配置
-├── install/        # SQL 迁移文件（含权限种子数据）
+│   └── server.php              # 端口/进程配置
 ├── public/                     # 公共入口
 ├── runtime/                    # 运行时文件
 └── vendor/                     # Composer 依赖
@@ -183,7 +188,7 @@ flutter run -d chrome    # Web 端（PC 管理后台风格）
 
 ### 6. Docker Compose 一键部署（推荐生产环境）
 
-项目提供完整的 Docker 编排方案，包含 5 个服务：Nginx、PHP (webman app)、MySQL、Redis、Elasticsearch。
+项目提供完整的 Docker 编排方案，包含 7 个服务：Nginx、admin (webman)、service (webman)、leaderboard-ws (WebSocket)、MySQL、Redis、Elasticsearch。
 
 ```bash
 # 1. 配置 Docker 环境变量
@@ -192,16 +197,16 @@ cp .env.docker .env
 # 2. 启动所有服务
 docker-compose up -d
 
-# 3. 初始化数据库（进入 app 容器执行）
-docker-compose exec app mysql -h mysql -u root -p < install/install.sql
+# 3. 初始化数据库（通过 mysql 容器导入）
+docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform < install/install.sql
 
 # 4. 访问
 # http://localhost:8789  (webman)
-# http://localhost:8080  (Nginx 反向代理)
+# http://localhost  (Nginx 反向代理)
 ```
 
 - `Dockerfile`: PHP 8.3 + OPcache + Composer，基于 `php:8.3-cli`
-- `docker-compose.yml`: 5 个服务编排，网络隔离，数据卷持久化
+- `docker-compose.yml`: 7 个服务编排，网络隔离，数据卷持久化
 - `.env.docker`: Docker 环境专用环境变量
 
 ## 数据库规范
@@ -275,7 +280,7 @@ Cors（跨域预处理 + 响应头）
   → OperationLog（POST/PUT/DELETE 自动记录，含来源端检测，/admin/v1 路由组）
 ```
 
-`/health` 和 `/api/docs` 为公开端点，仅经过 `Cors → SecurityFilter → RateLimit`。
+`/health` 为公开端点，仅经过 `Cors → SecurityFilter → RateLimit`；`/metrics` 与 `/api/docs` 需额外经过 `AdminAuth → AdminPermission`。
 
 安全增强：
 - **账号锁定**：连续 5 次登录失败，账号自动锁定 15 分钟，期间登录返回 429
@@ -411,12 +416,14 @@ Authorization: Bearer <token>
 
 ### Docker Compose（推荐）
 
-项目根目录提供 `docker-compose.yml`，编排 5 个服务：
+项目根目录提供 `docker-compose.yml`，编排 7 个服务：
 
 | 服务 | 镜像 | 端口 |
 |------|------|------|
 | `nginx` | nginx:alpine | 80, 443 |
-| `app` | 本地 `Dockerfile` 构建 | 8789 |
+| `admin` | 本地 `Dockerfile` 构建 | 8789 |
+| `service` | 本地 `Dockerfile` 构建 | 8792 |
+| `leaderboard-ws` | 本地 `Dockerfile` 构建 | 8790, 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

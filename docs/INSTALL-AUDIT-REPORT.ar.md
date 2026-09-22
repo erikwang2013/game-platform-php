@@ -41,7 +41,7 @@ Languages: **中文** · [English](INSTALL-AUDIT-REPORT.en.md) · [한국어](IN
 | `game_admin_role` | INSERT IGNORE (معرّف ثابت) |
 | `game_admin_permission` | INSERT IGNORE (معرّف ثابت) - 4 مرات |
 | `game_admin_role_permission` | استعلام فرعي WHERE NOT EXISTS |
-| `game-platform_config` | INSERT IGNORE (معرّف ثابت) - مرتين |
+| `game_platform_config` | INSERT IGNORE (معرّف ثابت) - مرتين |
 | `game_language` | INSERT IGNORE (معرّف ثابت) |
 | `game_translation` | INSERT IGNORE (معرّف ثابت) |
 | `game_risk_rule` | INSERT IGNORE (معرّف ثابت) |

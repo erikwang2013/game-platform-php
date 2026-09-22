@@ -598,14 +598,14 @@ O projeto fornece `docs/nginx-security.conf` como configuração de referência 
 
 | Tipo de ameaça | Vetor de ataque | Camadas de defesa |
 |----------|---------|---------|
-| Abuso de método HTTP | Ataque XST com TRACE/TRACK, proxy de túnel CONNECT, sondagem de métodos WebDAV | Lista branca de métodos do SecurityFilter 405 (GET/POST/PUT/DELETE/OPTIONS/HEAD) |
+| Abuso de método HTTP | Ataque XST com TRACE/TRACK, proxy de túnel CONNECT, sondagem de métodos WebDAV | Lista branca de métodos do SecurityFilter 405 (GET/POST/PUT/DELETE/HEAD/OPTIONS/PATCH) |
 | Força bruta direcionada | Tentativas repetidas de senha contra usuários específicos | Bloqueio de conta (5 falhas bloqueiam 15 min) + RateLimit (login 10/min) + Captcha |
 | Força bruta | Tentativas distribuídas de usuário/senha por vários IPs | RateLimit (login 10/min) + Captcha |
-| XSS (script entre sites) | `<script>`, onerror, javascript: | SecurityFilter (5 padrões) + cabeçalho de resposta X-XSS-Protection + CSP |
-| Injeção SQL | UNION SELECT, OR 1=1, bypass por comentário | SecurityFilter (6 padrões) + consultas parametrizadas do ORM Eloquent |
+| XSS (script entre sites) | `<script>`, onerror, javascript: | SecurityFilter (13 padrões) + cabeçalho de resposta X-XSS-Protection + CSP |
+| Injeção SQL | UNION SELECT, OR 1=1, bypass por comentário | SecurityFilter (14 padrões) + consultas parametrizadas do ORM Eloquent |
 | CSRF (falsificação de requisição entre sites) | Sites maliciosos enviam requisições em nome do usuário | Validação Origin/Referer do SecurityFilter |
 | Traversal de caminho | `../../etc/passwd` | Padrões de traversal do SecurityFilter + lista branca de extensões do UploadController |
-| Injeção de comandos | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (4 padrões) |
+| Injeção de comandos | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (13 padrões) |
 | Sequestro de sessão | Roubo de Token JWT | JWT de curta validade (2h) + logout com lista negra + confirmação secundária de senha em operações sensíveis |
 | Enumeração de IDs | Percorrer IDs numéricos para estimar volume de dados | Ofuscação com Hashids para strings aleatórias |
 | Vazamento de dados | Exfiltração do DB / homem no meio / vazamento de logs | Criptografia/mascaramento em três camadas + filtro de campos sensíveis do OperationLog |

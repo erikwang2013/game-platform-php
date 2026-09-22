@@ -1,10 +1,10 @@
-# 田园消消乐 — API подключения к платформе
+# Деревенский три-в-ряд — API подключения к платформе
 <!-- lang-nav -->
 
 Languages: **中文** · [English](api.en.md) · [한국어](api.ko.md) · [Русский](api.ru.md) · [Deutsch](api.de.md) · [Français](api.fr.md) · [Español](api.es.md) · [Português](api.pt.md) · [हिन्दी](api.hi.md) · [العربية](api.ar.md) · [বাংলা](api.bn.md) · [Bahasa Indonesia](api.id.md) · [日本語](api.ja.md)
 
 
-> Этот документ — полный контракт интерфейсов между «田园消消乐» и игровой платформой. Техническая декомпозиция — в `architecture.ru.md`, расписание — в `plan.ru.md`, функции для игроков — в `functional-design.ru.md`.
+> Этот документ — полный контракт интерфейсов между «Деревенский три-в-ряд» и игровой платформой. Техническая декомпозиция — в `architecture.ru.md`, расписание — в `plan.ru.md`, функции для игроков — в `functional-design.ru.md`.
 
 ---
 

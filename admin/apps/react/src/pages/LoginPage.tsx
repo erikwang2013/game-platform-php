@@ -3,13 +3,12 @@ import { useCallback, useEffect, useState, type FormEvent, type MouseEvent } fro
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../lib/api';
 import { useAuth, type Click } from '../lib/auth';
+import { describeCaptcha, type CaptchaData } from '../lib/captcha';
 import { Loading } from '../components/ui';
 
-type Captcha = { key?: string; image?: string };
-
-/** 无图时的兜底尺寸，与 .cap-ph 的高度一致，保证坐标换算不跳变。 */
+/** 无图时的兜底尺寸，与 .cap-ph 的高度一致（验证码画布 300x200），保证坐标换算不跳变。 */
 const FALLBACK_W = 300;
-const FALLBACK_H = 150;
+const FALLBACK_H = 200;
 
 export function LoginPage() {
   const { user, login } = useAuth();
@@ -17,7 +16,7 @@ export function LoginPage() {
   const location = useLocation();
   const from = (location.state as { from?: string } | null)?.from ?? '/';
 
-  const [captcha, setCaptcha] = useState<Captcha | null>(null);
+  const [captcha, setCaptcha] = useState<CaptchaData | null>(null);
   const [loadingCap, setLoadingCap] = useState(true);
   const [capError, setCapError] = useState<string | null>(null);
   const [size, setSize] = useState({ w: FALLBACK_W, h: FALLBACK_H });
@@ -27,13 +26,15 @@ export function LoginPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const { imgSrc, required, hint } = describeCaptcha(captcha);
+
   const loadCaptcha = useCallback(async () => {
     setLoadingCap(true);
     setCapError(null);
     setDots([]);
     setSize({ w: FALLBACK_W, h: FALLBACK_H });
     try {
-      const data = await api<Captcha>('/api/v1/captcha/generate', {
+      const data = await api<CaptchaData>('/api/v1/captcha/generate', {
         method: 'POST',
         body: { difficulty: 'easy' },
         auth: false,
@@ -54,14 +55,19 @@ export function LoginPage() {
   const onPick = (event: MouseEvent<HTMLDivElement>) => {
     const box = event.currentTarget.getBoundingClientRect();
     if (!box.width || !box.height) return;
-    // 点击坐标由显示尺寸换算回图片原始像素，服务端按原图坐标校验
-    setDots((prev) => [
-      ...prev,
-      {
-        x: Math.round(((event.clientX - box.left) / box.width) * size.w),
-        y: Math.round(((event.clientY - box.top) / box.height) * size.h),
-      },
-    ]);
+    // 点击坐标由显示尺寸换算回图片原始像素，服务端按原图坐标校验；
+    // 目标数固定且逐点顺序校验，多点无效，标满即止
+    setDots((prev) =>
+      prev.length >= required
+        ? prev
+        : [
+            ...prev,
+            {
+              x: Math.round(((event.clientX - box.left) / box.width) * size.w),
+              y: Math.round(((event.clientY - box.top) / box.height) * size.h),
+            },
+          ],
+    );
   };
 
   // 放在所有 hook 之后，避免条件渲染跳过 hook
@@ -69,7 +75,7 @@ export function LoginPage() {
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    if (busy || dots.length < 2) return;
+    if (busy || dots.length !== required) return;
     setBusy(true);
     setError(null);
     try {
@@ -84,14 +90,12 @@ export function LoginPage() {
     }
   };
 
-  const hasImage = Boolean(captcha?.image);
-
   return (
     <div className="login">
       <div className="login-card">
         <div className="login-h">
           <h1 className="h1">游戏运营台</h1>
-          <p className="sub">点击图中至少 2 个位置完成验证</p>
+          <p className="sub">{hint}</p>
         </div>
 
         <form className="form" onSubmit={submit}>
@@ -119,10 +123,10 @@ export function LoginPage() {
           <div className="label">
             验证码
             <div className="cap" onClick={onPick} role="presentation">
-              {hasImage ? (
+              {imgSrc ? (
                 <img
                   className="cap-img"
-                  src={captcha?.image}
+                  src={imgSrc}
                   alt="点击验证码"
                   draggable={false}
                   onLoad={(event) => {
@@ -144,7 +148,7 @@ export function LoginPage() {
               ))}
             </div>
             <div className="cap-bar">
-              <span>已标 {dots.length} 点（至少 2 点）</span>
+              <span>已标 {dots.length} 点（需 {required} 点）</span>
               <span className="pagehead-a">
                 <button
                   type="button"
@@ -165,7 +169,7 @@ export function LoginPage() {
           {capError ? <p className="sub" style={{ color: 'var(--amber)' }}>{capError}</p> : null}
           {error ? <p className="errnote">{error}</p> : null}
 
-          <button className="btn" type="submit" disabled={busy || dots.length < 2 || !username || !password}>
+          <button className="btn" type="submit" disabled={busy || dots.length !== required || !username || !password}>
             {busy ? '登录中…' : '登录'}
           </button>
         </form>

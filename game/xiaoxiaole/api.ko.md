@@ -1,4 +1,4 @@
-# 전원 소소락 (田园消消乐) — 플랫폼 연동 API
+# 전원 소소락 — 플랫폼 연동 API
 <!-- lang-nav -->
 
 Languages: [中文](api.md) · [English](api.en.md) · **한국어** · [Русский](api.ru.md) · [Deutsch](api.de.md) · [Français](api.fr.md) · [Español](api.es.md) · [Português](api.pt.md) · [हिन्दी](api.hi.md) · [العربية](api.ar.md) · [বাংলা](api.bn.md) · [Bahasa Indonesia](api.id.md) · [日本語](api.ja.md)

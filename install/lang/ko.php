@@ -143,7 +143,7 @@ return [
     'next_step_2' => 'API 서비스 시작: cd service && php start.php start -d (선택 사항)',
     'next_step_3' => '방금 생성한 관리자 계정으로 관리자 백엔드에 로그인하세요',
     'next_step_4' => '관리자 패널의 "System Config"에서 결제 채널, CDN 및 메일 자격 증명을 설정하세요',
-    'next_step_5' => '관리자 백엔드 접속 (기본 주소):',
+    'next_step_5' => '관리자 백엔드 접속 (주소는 admin/.env의 APP_URL에서):',
     'next_step_6' => '공개 전에 install 디렉터리를 삭제하거나 Nginx에서 접근을 차단하세요 (docs/nginx-security.conf 참고)',
     'security_title' => '보안 안내',
     'security_1' => 'install 디렉터리(install.lock 포함)를 삭제하거나 접근을 제한하세요',

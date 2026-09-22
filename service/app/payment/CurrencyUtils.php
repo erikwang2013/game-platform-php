@@ -41,4 +41,15 @@ class CurrencyUtils
         }
         return bcdiv($amount, '100', 4);
     }
+
+    /**
+     * 金额精度是否符合该币种最小单位：零小数币种不接受小数点，其余最多 2 位。
+     * 零小数币种必须走独立分支——写成 \d{1,0} 的 PCRE2 量词非法，
+     * preg_match 返回 false（Internal error），会把合法金额全部判为非法。
+     */
+    public static function precisionOk(string $amount, string $currency): bool
+    {
+        $pattern = self::isZeroDecimal($currency) ? '/^\d+$/' : '/^\d+(\.\d{1,2})?$/';
+        return (bool) preg_match($pattern, $amount);
+    }
 }

@@ -24,7 +24,7 @@ class GameController extends BaseController
     #[Apidoc\Method("GET")]
     #[Apidoc\Author("erik")]
     #[Apidoc\Param(name: "page", type: "int", require: false, desc: "页码")]
-    #[Apidoc\Param(name: "per_page", type: "int", require: false, desc: "每页数量")]
+    #[Apidoc\Param(name: "limit", type: "int", require: false, desc: "每页数量")]
     #[Apidoc\Param(name: "keyword", type: "string", require: false, desc: "搜索关键词")]
     #[Apidoc\Returned(name: "id", type: "string", desc: "ID(hashid编码)")]
     public function list(Request $request): Response
@@ -65,6 +65,85 @@ class GameController extends BaseController
         ]);
     }
 
+    #[Apidoc\Title("游戏详情")]
+    #[Apidoc\Desc("按 hashid 获取单个游戏详情，供管理端客户端游戏详情页使用")]
+    #[Apidoc\Url("/admin/v1/game/{hashid}")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Author("erik")]
+    #[Apidoc\Param(name: "hashid", type: "string", require: true, desc: "游戏ID(hashid编码)", in: "path")]
+    public function detail(Request $request, string $hashid): Response
+    {
+        $game = Game::with('currencies')->find($this->decodeId($hashid));
+        if (!$game) {
+            return $this->fail('游戏不存在', 404);
+        }
+
+        $currencies = [];
+        foreach ($game->currencies as $currency) {
+            $currencies[] = [
+                'id'            => $this->encodeId($currency->id),
+                'name'          => $currency->name,
+                'symbol'        => $currency->symbol,
+                'exchange_rate' => $currency->exchange_rate,
+                'spread_pct'    => $currency->spread_pct,
+                'min_exchange'  => $currency->min_exchange,
+                'max_exchange'  => $currency->max_exchange,
+            ];
+        }
+
+        return $this->success([
+            'id'           => $this->encodeId($game->id),
+            'name'         => $game->name,
+            'slug'         => $game->slug,
+            'type'         => $game->type,
+            'description'  => $game->description,
+            'cover_image'  => $game->cover_image,
+            'api_endpoint' => $game->api_endpoint,
+            'sdk_version'  => $game->sdk_version,
+            'platform'     => $game->platform,
+            'region'       => $game->region,
+            'currencies'   => $currencies,
+        ]);
+    }
+
+    #[Apidoc\Title("游戏试玩预览")]
+    #[Apidoc\Desc("管理端试玩入口：校验游戏可用性并回传启动信息，不产生任何用户侧副作用")]
+    #[Apidoc\Url("/admin/v1/game/launch")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Author("erik")]
+    #[Apidoc\Param(name: "game_id", type: "string", require: true, desc: "游戏ID(hashid编码)")]
+    public function launch(Request $request): Response
+    {
+        $validator = validator($request->all(), [
+            'game_id' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
+        }
+
+        $game = Game::find($this->decodeId($request->input('game_id')));
+        if (!$game) {
+            return $this->fail('游戏不存在', 404);
+        }
+
+        if ((int) $game->status !== 1) {
+            return $this->fail('游戏未上架', 403);
+        }
+
+        // 纯预览：管理端身份只注入 adminId（AdminAuth.php），没有 C 端 userId。
+        // 照搬 C 端 launch 会拿 adminId 当 user_id 写 game_play_log 并误查 UserWallet，
+        // 产生归属错误的游玩记录，故此处不做任何用户侧写入。
+        return $this->success([
+            'id'           => $this->encodeId($game->id),
+            'name'         => $game->name,
+            'slug'         => $game->slug,
+            'type'         => $game->type,
+            'api_endpoint' => $game->api_endpoint,
+            'preview'      => true,
+        ]);
+    }
+
     #[Apidoc\Title("创建游戏")]
     #[Apidoc\Desc("创建一个新游戏")]
     #[Apidoc\Url("/admin/v1/game/create")]
@@ -72,7 +151,7 @@ class GameController extends BaseController
     #[Apidoc\Author("erik")]
     #[Apidoc\Param(name: "name", type: "string", require: true, desc: "游戏名称")]
     #[Apidoc\Param(name: "slug", type: "string", require: true, desc: "游戏标识")]
-    #[Apidoc\Param(name: "type", type: "string", require: true, desc: "游戏类型(self,third_party)")]
+    #[Apidoc\Param(name: "type", type: "string", require: true, desc: "游戏类型(self,embedded,third_party)")]
     #[Apidoc\Param(name: "description", type: "string", require: false, desc: "游戏描述")]
     #[Apidoc\Param(name: "cover_image", type: "string", require: false, desc: "封面图片")]
     #[Apidoc\Param(name: "api_endpoint", type: "string", require: false, desc: "API端点")]
@@ -197,6 +276,25 @@ class GameController extends BaseController
         }
 
         $currencies = $request->input('currencies', []);
+
+        // 全量校验后再落库：避免前面几条已保存、后面才拒绝的部分写入
+        foreach ($currencies as $item) {
+            // 汇率必须为正：0 会让 C 端卖出（out）的 bcdiv 抛除零错误，负值会算出负金额
+            if (isset($item['exchange_rate'])) {
+                $rate = (string) $item['exchange_rate'];
+                // bcmath 遇到非规范数字串会抛 ValueError，先用正则卡住形式再用 bccomp 比较
+                if (!preg_match('/^\d+(\.\d+)?$/', $rate) || bccomp($rate, '0', 8) <= 0) {
+                    return $this->fail('汇率必须为大于 0 的数字', 422);
+                }
+            }
+            // 点差百分比区间 [0, 100)
+            if (isset($item['spread_pct'])) {
+                $spread = (string) $item['spread_pct'];
+                if (!preg_match('/^\d+(\.\d+)?$/', $spread) || bccomp($spread, '100', 8) >= 0) {
+                    return $this->fail('点差百分比必须在 0（含）到 100（不含）之间', 422);
+                }
+            }
+        }
 
         foreach ($currencies as $item) {
             if (!empty($item['id'])) {

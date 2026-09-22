@@ -2,29 +2,29 @@
 
 Languages: [中文](design.md) · [English](design.en.md) · [한국어](design.ko.md) · [Русский](design.ru.md) · **Deutsch** · [Français](design.fr.md) · [Español](design.es.md) · [Português](design.pt.md) · [हिन्दी](design.hi.md) · [العربية](design.ar.md) · [বাংলা](design.bn.md) · [Bahasa Indonesia](design.id.md) · [日本語](design.ja.md)
 
-Gut, als dein Game-Designer und 3D-Technologieverantwortlicher erstelle ich dir eine vollständige Design- und Planungsspezifikation für das 《Three.js 消消乐》 (Three.js Match-3). Diese Spezifikation enthält keinen Code und konzentriert sich auf die **Elementerweiterung**, die **Regelmatrix**, den **Gameplay-Fusionsmechanismus** sowie die **Three.js-Szenenaufbaustrategie**.
+Gut, als dein Game-Designer und 3D-Technologieverantwortlicher erstelle ich dir eine vollständige Design- und Planungsspezifikation für das Three.js-Match-3-Spiel. Diese Spezifikation enthält keinen Code und konzentriert sich auf die **Elementerweiterung**, die **Regelmatrix**, den **Gameplay-Fusionsmechanismus** sowie die **Three.js-Szenenaufbaustrategie**.
 
 ---
 
-### 一、 Spielelemente-Erweiterung (Figurenbibliothek-Design)
+### 1. Spielelemente-Erweiterung (Figurenbibliothek-Design)
 
 Um das Brett reicher zu gestalten, habe ich auf Basis deiner Vorgaben die Elemente in **6 große Fraktionen** unterteilt, insgesamt **24** Grundfiguren + **4** Spezial-Items:
 
 | Fraktion | Enthaltene Elemente | Ergänzende Erläuterung |
 | :--- | :--- | :--- |
-| **🌾 Feldfrüchte** | Basis-Eliminierungsfiguren | 水稻、小麦、玉米、高粱、大麦、燕麦、黑麦、小米、芝麻、花生、棉花、油菜、茶叶、黄米、薏米、荞麦、黄豆、绿豆、红豆、黑豆、蚕豆、豌豆、红薯、土豆、山药、芋头、木薯 |
-| **🥬 Gemüse** | Basis-Eliminierungsfiguren | 白菜、萝卜、黄瓜、西红柿、辣椒、茄子、葱、姜、蒜、生菜、胡萝卜、苦瓜、芫荽、小葱、芥菜、芹菜、菠菜、花菜、冬瓜、南瓜、韭菜 |
-| **🥬 Obst** | Basis-Eliminierungsfiguren | 苹果、梨、桃、杏、李子、草莓、西瓜、葡萄、酸枣、欧李、枣、核桃、杏仁、无花果、橘子、香蕉、柿子、石榴、猕猴桃、车厘子、樱桃 |
-| **🥬 Blumen und Kräuter** | Basis-Eliminierungsfiguren | 玫瑰、向日葵、月季、烧汤花、指甲花、鸡冠花、木槿花、山茶花、牡丹花、茉莉花、紫藤花、蝴蝶兰、菊花、梅花、兰花、荷花、车前草、地黄、枸杞、狗尾草、蒲公英、牛筋草、云酱菜 |
-| **🐜 Tiere** | Basis-Eliminierungsfiguren | 蚂蚁、蜜蜂、七星瓢虫、毛毛虫、蝉、马蜂、蟋蟀、蚂蚱、蜥蜴、老鼠、倾听、水蛭、青蛙、蛤蟆、虾、鱼、狐狸、松鼠、蝴蝶、螳螂、蜘蛛、萤火虫 |
-| **🐓 Geflügel/Gefieder** | Mittlere Raubtiere | 鸡、鸭、鹅、鸽子、麻雀、喜鹊、燕子、乌鸦、猫头鹰、老鹰 |
-| **🐕 Nutztiere/Großtiere** | Hochwertige Figuren | 猪、狗、牛、马、羊、兔子、猫、驴、骡子、骆驼 |
-| **🌳 Bäume/Natur** | Hindernisse/Spezialfiguren | 松树、柳树、杨树、槐树、泡桐、梧桐、杉树、银杏、榆树、竹子、桦树、枫树 |
-| **🔧 Werkzeuge** | Fähigkeits-Items | 镰刀、锄头、水桶、锤子、耙子、簸箕、背篓、草帽、蓑衣、手电筒、石磙、架子车、自行车、斧头、扁担、犁、磨盘 |
+| **🌾 Feldfrüchte** | Basis-Eliminierungsfiguren | Reis, Weizen, Mais, Sorghum, Gerste, Hafer, Roggen, Hirse, Sesam, Erdnüsse, Baumwolle, Raps, Tee, Gelbhirse, Perlgerste, Buchweizen, Sojabohnen, Mungbohnen, rote Bohnen, schwarze Bohnen, Ackerbohnen, Erbsen, Süßkartoffeln, Kartoffeln, Yams, Taro, Maniok |
+| **🥬 Gemüse** | Basis-Eliminierungsfiguren | Kohl, Rettich, Gurke, Tomate, Chili, Aubergine, Frühlingszwiebel, Ingwer, Knoblauch, Kopfsalat, Karotte, Bittermelone, Koriander, Schnittlauch, Senfblätter, Sellerie, Spinat, Blumenkohl, Wintermelone, Kürbis, Lauch |
+| **🥬 Obst** | Basis-Eliminierungsfiguren | Apfel, Birne, Pfirsich, Aprikose, Pflaume, Erdbeere, Wassermelone, Weintraube, Sauerjujube, Chinesische Zwergkirsche, Jujube, Walnuss, Mandel, Feige, Orange, Banane, Kaki, Granatapfel, Kiwi, Kirsche |
+| **🥬 Blumen und Kräuter** | Basis-Eliminierungsfiguren | Rose, Sonnenblume, Monatsrose, Nachtkerze, Henna, Hahnenkamm, Hibiskus, Kamelie, Pfingstrose, Jasmin, Glyzinie, Phalaenopsis, Chrysantheme, Pflaumenblüte, Orchidee, Lotus, Spitzwegerich, Rehmannia, Goji-Beere, Fuchsschwanzgras, Löwenzahn, Hühnerhirse, Wolkengemüse |
+| **🐜 Tiere** | Basis-Eliminierungsfiguren | Ameise, Biene, Siebenpunkt-Marienkäfer, Raupe, Zikade, Hornisse, Grille, Grashüpfer, Eidechse, Maus, Tausendfüßer, Blutegel, Frosch, Kröte, Garnele, Fisch, Fuchs, Eichhörnchen, Schmetterling, Gottesanbeterin, Spinne, Glühwürmchen |
+| **🐓 Geflügel/Gefieder** | Mittlere Raubtiere | Huhn, Ente, Gans, Taube, Spatz, Elster, Schwalbe, Krähe, Eule, Adler |
+| **🐕 Nutztiere/Großtiere** | Hochwertige Figuren | Schwein, Hund, Rind, Pferd, Schaf, Kaninchen, Katze, Esel, Maultier, Kamel |
+| **🌳 Bäume/Natur** | Hindernisse/Spezialfiguren | Kiefer, Weide, Pappel, Schnurbaum, Paulownie, Firmiana, Tanne, Ginkgo, Ulme, Bambus, Birke, Ahorn |
+| **🔧 Werkzeuge** | Fähigkeits-Items | Sichel, Hacke, Wassereimer, Hammer, Rechen, Worfelkorb, Rückentrage, Strohhut, Strohumhang, Taschenlampe, Steinwalze, Karren, Fahrrad, Axt, Schulterjoch, Pflug, Mühlstein |
 
 ---
 
-### 二、 Erweiterung der Kernregeln („Ökologische Kettmechanik"-Design)
+### 2. Erweiterung der Kernregeln („Ökologische Kettmechanik"-Design)
 
 Deine Regellogik ist im Kern ein **„gerichtetes Eliminieren"**. Beim klassischen Match-3 (drei Gleiche eliminieren) betten wir eine **„Fressen/Unterdrücken-Matching"**-Mechanik ein. Wenn der Spieler einen **Unterdrücker** und **Unterdrückte** zu einer Drei-in-einer-Reihe (oder einer bestimmten Form) anordnet, wird eine erweiterte Eliminierung ausgelöst.
 
@@ -32,17 +32,17 @@ Im Folgenden die von mir erweiterte **vollständige Unterdrückungsmatrix** (A u
 
 | Unterdrücker (A) | Unterdrückungsweise | Unterdrückte (B) | Erläuterung der erweiterten Regel |
 | :--- | :--- | :--- | :--- |
-| **鸡、鸭、鹅 (Huhn, Ente, Gans)** | Picken / Jagen | 花草、蔬果、昆虫（蚂蚁/瓢虫/毛毛虫） (Blumen, Gemüse/Obst, Insekten) | Ergänzung: Sie **fressen keine** Getreidesorten (Feldfrüchte), weil das Korn zu hart ist und separat eliminiert werden muss. |
-| **狗 (Hund)** | Beißen | 鸡、鸭、鹅、鸽子 (Huhn, Ente, Gans, Taube) | Der Hund beißt nicht nur Geflügel; ergänzend **nagt der Hund auch an Knochen (entspricht Schweine/Rinder/Pferdeknochen)**, aber im Spiel vereinfacht unterdrückt er alle kleinen und mittleren Geflügelarten. |
-| **猪 (Schwein)** | Wühlen / Verwüsten | 树木、花草、蔬果、昆虫、**所有五谷庄稼** (Bäume, Blumen, Gemüse/Obst, Insekten, **alle Getreidefeldfrüchte**) | Das Schwein ist der Zerstörer; Ergänzung: Das Schwein **wühlt nicht gegen** den Hund (weil der Hund das Schwein beißt), wodurch ein Unterdrückungszyklus entsteht. |
-| **牛、马 (Rind, Pferd)** | Fressen / Zertreten | 花草、**五谷庄稼**、果树苗 (Blumen, **Getreidefeldfrüchte**, Obstbaum-Setzlinge) | Ergänzung: Rind und Pferd sind große pflanzenfressende Zugtiere, die speziell Feldfrüchte unterdrücken, aber keine Insekten und kein Fleisch fressen. |
-| **大象 (Elefant)** | Absolute Dominanz (Treten/Schleudern) | **除大象外所有元素（包括猪狗牛马）** (alle Elemente außer dem Elefanten, einschließlich Schwein, Hund, Rind, Pferd) | Der Elefant ist die höchste Kampfkraft. Für die Balance: Der Elefant **kann** „Werkzeuge" (Items) **nicht** eliminieren, und die Auftrittswahrscheinlichkeit des Elefanten auf dem Brett ist extrem gering (seltene Figur). |
-| **镰刀（道具）(Sichel, Item)** | Ernten | 所有五谷庄稼、花草 (alle Getreidefeldfrüchte, Blumen) | Entfernt einmalig alle Pflanzenreihen oder -spalten. |
-| **锄头（道具）(Hacke, Item)** | Zerschlagen | 树木、石头（障碍） (Bäume, Steine/Hindernisse) | Beseitigt gezielt Hindernisse mit hoher Lebenspunktezahl. |
+| **Huhn, Ente, Gans** | Picken / Jagen | Blumen, Gemüse/Obst, Insekten | Ergänzung: Sie **fressen keine** Getreidesorten (Feldfrüchte), weil das Korn zu hart ist und separat eliminiert werden muss. |
+| **Hund** | Beißen | Huhn, Ente, Gans, Taube | Der Hund beißt nicht nur Geflügel; ergänzend **nagt der Hund auch an Knochen (entspricht Schweine/Rinder/Pferdeknochen)**, aber im Spiel vereinfacht unterdrückt er alle kleinen und mittleren Geflügelarten. |
+| **Schwein** | Wühlen / Verwüsten | Bäume, Blumen, Gemüse/Obst, Insekten, **alle Getreidefeldfrüchte** | Das Schwein ist der Zerstörer; Ergänzung: Das Schwein **wühlt nicht gegen** den Hund (weil der Hund das Schwein beißt), wodurch ein Unterdrückungszyklus entsteht. |
+| **Rind, Pferd** | Fressen / Zertreten | Blumen, **Getreidefeldfrüchte**, Obstbaum-Setzlinge | Ergänzung: Rind und Pferd sind große pflanzenfressende Zugtiere, die speziell Feldfrüchte unterdrücken, aber keine Insekten und kein Fleisch fressen. |
+| **Elefant** | Absolute Dominanz (Treten/Schleudern) | **alle Elemente außer dem Elefanten (einschließlich Schwein, Hund, Rind, Pferd)** | Der Elefant ist die höchste Kampfkraft. Für die Balance: Der Elefant **kann** „Werkzeuge" (Items) **nicht** eliminieren, und die Auftrittswahrscheinlichkeit des Elefanten auf dem Brett ist extrem gering (seltene Figur). |
+| **Sichel (Item)** | Ernten | alle Getreidefeldfrüchte, Blumen | Entfernt einmalig alle Pflanzenreihen oder -spalten. |
+| **Hacke (Item)** | Zerschlagen | Bäume, Steine/Hindernisse | Beseitigt gezielt Hindernisse mit hoher Lebenspunktezahl. |
 
 ---
 
-### 三、 Gameplay-Mechanik-Design (Wie funktioniert das Match-3?)
+### 3. Gameplay-Mechanik-Design (Wie funktioniert das Match-3?)
 
 In der Three.js-3D-Szene verwenden wir den Fusionsmodus **„Klicken-tauschen + Ökologische-Auswertung"**:
 
@@ -55,7 +55,7 @@ In der Three.js-3D-Szene verwenden wir den Fusionsmodus **„Klicken-tauschen + 
 
 ---
 
-### 四、 Three.js-Szenen- und Visualisierungsplanung (ohne Code)
+### 4. Three.js-Szenen- und Visualisierungsplanung (ohne Code)
 
 Damit das 3D-Match-3 hochwertiger wirkt als 2D, ist folgende Planung vorgesehen:
 
@@ -69,7 +69,7 @@ Damit das 3D-Match-3 hochwertiger wirkt als 2D, ist folgende Planung vorgesehen:
 
 ---
 
-### 五、 Erweiterung von Spezial-Items und Hindernissen
+### 5. Erweiterung von Spezial-Items und Hindernissen
 
 Für zusätzliche strategische Tiefe werden folgende Mechanismen ergänzt:
 
@@ -81,7 +81,7 @@ Für zusätzliche strategische Tiefe werden folgende Mechanismen ergänzt:
 
 ---
 
-### 六、 Level- und Zielplanung
+### 6. Level- und Zielplanung
 
 | Leveltyp | Siegbedingung | Besondere Einschränkung |
 | :--- | :--- | :--- |
@@ -92,7 +92,7 @@ Für zusätzliche strategische Tiefe werden folgende Mechanismen ergänzt:
 
 ---
 
-### 七、 Zusammenfassung der Planungshighlights
+### 7. Zusammenfassung der Planungshighlights
 
 1. **In sich stimmige Regeln**: Die biologische Nahrungskette (Huhn frisst Käfer, Hund beißt Huhn, Elefant unbesiegbar) wird perfekt in die „Paarungsbedingungen" des Match-3 übersetzt — lehrreicher und strategischer als reines Match-3.
 2. **3D-Ausdruckskraft**: Mit der Three.js-Physikengine (oder simulierten Animationen) erhalten die Figuren „Schwerkraft-Fall" und „elastisches Hüpfen" — deutlich mehr Räumlichkeit als 2D-Sprites.

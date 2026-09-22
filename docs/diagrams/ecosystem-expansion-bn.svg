@@ -17,7 +17,7 @@
   <rect x="260" y="115" width="190" height="45" rx="6" fill="#dbeafe"/><text x="355" y="138" text-anchor="middle" fill="#1e3a5f" font-size="12">ProviderAuth মিডলওয়্যার</text><text x="355" y="152" text-anchor="middle" fill="#64748b" font-size="10">HMAC-SHA256 + ৫ মিনিট উইন্ডো</text>
   <rect x="50" y="175" width="190" height="40" rx="6" fill="#bfdbfe"/><text x="145" y="194" text-anchor="middle" fill="#1e40af" font-size="11">SelfProvider</text><text x="145" y="208" text-anchor="middle" fill="#64748b" font-size="10">ডাটাবেস ট্রানজেকশন (SELECT FOR UPDATE)</text>
   <rect x="260" y="175" width="190" height="40" rx="6" fill="#bfdbfe"/><text x="355" y="194" text-anchor="middle" fill="#1e40af" font-size="11">ThirdPartyProvider</text><text x="355" y="208" text-anchor="middle" fill="#64748b" font-size="10">Guzzle HTTP + সিগনেচার</text>
-  <rect x="50" y="230" width="400" height="35" rx="6" fill="#93c5fd"/><text x="250" y="244" text-anchor="middle" fill="#fff" font-size="12">GameSessionService — Redis হার্টবিট + ১৫ মিনিট অটো-সেটলমেন্ট</text>
+  <rect x="50" y="230" width="400" height="35" rx="6" fill="#93c5fd"/><text x="250" y="244" text-anchor="middle" fill="#fff" font-size="12">SdkSessionAuth — HMAC স্বাক্ষরিত সেশন টোকেন (৫ মিনিট TTL)</text>
 
   <!-- Phase 2: Operations -->
   <rect x="490" y="76" width="440" height="200" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="2"/>
@@ -38,7 +38,7 @@
   <rect x="490" y="296" width="440" height="180" rx="10" fill="#fce7f3" stroke="#f9a8d4" stroke-width="2"/>
   <text x="710" y="320" text-anchor="middle" fill="#9d174d" font-size="15" font-weight="bold">পর্যায় ৪: সোশ্যাল লেয়ার</text>
   <rect x="510" y="340" width="190" height="55" rx="6" fill="#fbcfe8"/><text x="605" y="358" text-anchor="middle" fill="#831843" font-size="12">ফ্রেন্ড সিস্টেম</text><text x="605" y="373" text-anchor="middle" fill="#64748b" font-size="10">রিকোয়েস্ট/অ্যাকসেপ্ট/রিজেক্ট/ডিলিট</text><text x="605" y="386" text-anchor="middle" fill="#64748b" font-size="10">পেন্ডিং/অ্যাকসেপ্টেড/ব্ল্যাকলিস্টেড</text>
-  <rect x="720" y="340" width="190" height="55" rx="6" fill="#fbcfe8"/><text x="815" y="358" text-anchor="middle" fill="#831843" font-size="12">চ্যাট মেসেজ</text><text x="815" y="373" text-anchor="middle" fill="#64748b" font-size="10">REST + WebSocket :8790</text><text x="815" y="386" text-anchor="middle" fill="#64748b" font-size="10">শুধু ফ্রেন্ডরাই মেসেজ পাঠাতে পারে</text>
+  <rect x="720" y="340" width="190" height="55" rx="6" fill="#fbcfe8"/><text x="815" y="358" text-anchor="middle" fill="#831843" font-size="12">চ্যাট মেসেজ</text><text x="815" y="373" text-anchor="middle" fill="#64748b" font-size="10">REST + WebSocket :8791</text><text x="815" y="386" text-anchor="middle" fill="#64748b" font-size="10">শুধু ফ্রেন্ডরাই মেসেজ পাঠাতে পারে</text>
   <rect x="510" y="410" width="400" height="55" rx="6" fill="#f9a8d4"/><text x="710" y="430" text-anchor="middle" fill="#831843" font-size="12">ChatWebSocket প্রসেস — workerman WebSocket + Redis Pub/Sub</text><text x="710" y="445" text-anchor="middle" fill="#64748b" font-size="10">game_friend টেবিল + game_message টেবিল</text>
 
   <!-- Phase 5: Infrastructure -->
@@ -58,5 +58,5 @@
   <!-- Footer -->
   <rect x="0" y="750" width="960" height="50" fill="#7c3aed"/>
   <text x="480" y="775" text-anchor="middle" fill="#ddd6fe" font-size="12">Copyright (c) 2026 erik — https://erik.xyz | গেম প্ল্যাটফর্ম v2.0 ইকোসিস্টেম</text>
-  <text x="480" y="792" text-anchor="middle" fill="#a78bfa" font-size="10">৫টি পর্যায় · ১৬টি ফিচার · ১২টি টেবিল · শূন্য নতুন থার্ড-পার্টি ডিপেন্ডেন্সি</text>
+  <text x="480" y="792" text-anchor="middle" fill="#a78bfa" font-size="10">৫টি পর্যায় · ১৬টি ফিচার · ১০টি টেবিল · শূন্য নতুন থার্ড-পার্টি ডিপেন্ডেন্সি</text>
 </svg>

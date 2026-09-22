@@ -48,6 +48,13 @@ export interface UserProfile {
   created_at: string;
 }
 
+/** 个人资料更新 — PUT /api/v1/user/profile，服务端仅接受 nickname / avatar / language */
+export interface UserProfileUpdateRequest {
+  nickname?: string;
+  avatar?: string;
+  language?: string;
+}
+
 /**
  * 游戏币种
  */
@@ -83,13 +90,22 @@ export interface GameItem {
   api_endpoint?: string;
 }
 
-export interface GameListResult {
-  items?: GameItem[];
-  list?: GameItem[];
+/**
+ * 分页列表信封 — 服务端历史原因存在 items / list 两种字段名
+ */
+export interface PagedListResult<T> {
+  items?: T[];
+  list?: T[];
   total: number;
   page: number;
   per_page: number;
   last_page?: number;
+}
+
+export interface GameListResult extends PagedListResult<GameItem> {}
+
+export interface GameLaunchRequest {
+  game_id: string;
 }
 
 export interface GameLaunchResult {
@@ -123,11 +139,97 @@ export interface TransactionItem {
   created_at: string;
 }
 
-export interface TransactionListResult {
-  items?: TransactionItem[];
-  list?: TransactionItem[];
-  total: number;
-  page: number;
-  per_page: number;
-  last_page?: number;
+export interface TransactionListResult extends PagedListResult<TransactionItem> {}
+
+/**
+ * 支付方式 — GET /api/v1/payment/methods
+ * min_amount / max_amount 为字符串（DECIMAL 下发形如 "5000.0000"）；
+ * max_amount 数值为 0 表示不限上限
+ */
+export interface PaymentMethodItem {
+  id: string;
+  name: string;
+  type: string;
+  provider: string;
+  min_amount: string;
+  max_amount: string;
+}
+
+export interface PaymentMethodListResult {
+  list?: PaymentMethodItem[];
+}
+
+/**
+ * 充值 — POST /api/v1/deposit/create
+ * 金额一律以字符串传递，不在客户端做任何数值转换
+ */
+export interface DepositCreateRequest {
+  amount: string;
+  currency: string;
+  payment_method_id: string;
+}
+
+export interface DepositCreateResult {
+  order_id: string;
+  order_no: string;
+  amount: string;
+  platform_amount: string;
+  checkout_url: string;
+  expires_at: string;
+}
+
+/**
+ * 提现 — POST /api/v1/withdraw/apply
+ * account_info 为自由文本（服务端加密存储），三种方式共用同一字段
+ */
+export interface WithdrawApplyRequest {
+  platform_amount: string;
+  method: string;
+  account_info: string;
+}
+
+export interface WithdrawApplyResult {
+  order_id: string;
+  order_no: string;
+  platform_amount: string;
+  fee: string;
+  actual_amount: string;
+  status: string;
+  balance_after: string;
+  created_at: string;
+}
+
+/**
+ * 兑换 — POST /api/v1/exchange/quote | buy | sell
+ * direction 'out'（卖出）时 platform_amount 承载的是【游戏币】数量，
+ * 服务端复用了同一字段名，不要改成 game_amount
+ */
+export interface ExchangeRequest {
+  game_id: string;
+  currency_id: string;
+  direction: string;
+  platform_amount: string;
+}
+
+/** 询价响应：in 返回 game_amount/actual_game_amount，out 返回 platform_equivalent/actual_platform_amount */
+export interface ExchangeQuoteResult {
+  platform_amount: string;
+  game_amount?: string;
+  platform_equivalent?: string;
+  spread_fee: string;
+  actual_game_amount?: string;
+  actual_platform_amount?: string;
+  rate: string;
+  spread_pct: string;
+}
+
+/** 成交结果：金额字段随方向换位。in=支出平台币/到账游戏币；out=卖出游戏币/到账平台币（到账侧为扣点差净额）。 */
+export interface ExchangeDoneResult {
+  exchange_id: string;
+  direction: string;
+  platform_amount: string;
+  game_amount: string;
+  spread_fee: string;
+  rate: string;
+  balance_after: string;
 }

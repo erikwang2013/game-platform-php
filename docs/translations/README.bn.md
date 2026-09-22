@@ -1,4 +1,4 @@
-# 全球游戏聚合平台 (Global Game Platform)
+# বৈশ্বিক গেম অ্যাগ্রিগেশন প্ল্যাটফর্ম (Global Game Platform)
 
 ## প্রকল্প মাসকট
 
@@ -33,8 +33,14 @@ Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](R
 - ডেটা এনক্রিপশন: API ট্রান্সপোর্ট লেয়ার AES-256-CBC + ডেটাবেস স্টোরেজ লেয়ার AES-128-ECB
 
 ### ফ্রন্টএন্ড
-- Flutter 3.x (Web PC স্টাইল)
-- HarmonyOS ArkTS (মোবাইল)
+
+ফ্রন্টএন্ডের দুটি আলাদা ডিরেক্টরি-ট্রি আছে, **প্রতিটি কেবল নিজের পাশের ব্যাকএন্ড কল করে**, কোনো ক্রসওভার নেই:
+
+| ডিরেক্টরি ট্রি | ভূমিকা | অনুরোধ উপসর্গ | সংশ্লিষ্ট ব্যাকএন্ড | টেক স্ট্যাক |
+|--------|------|---------|---------|--------|
+| `apps/*` | **C-প্রান্তের প্লেয়ার প্ল্যাটফর্ম** | `/api/v1/...` | service (ডিফল্ট 8792) | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
+| `admin/apps/*` | **অ্যাডমিন কনসোল** | `/admin/v1/...` | admin (ডিফল্ট 8789) | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
+
 - রেসপন্সিভ লেআউট (Phone / Tablet / Desktop)
 - আন্তর্জাতিকীকরণ (i18n): ইংরেজি / সরলীকৃত চীনা স্যুইচিং
 
@@ -55,44 +61,79 @@ Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](R
 ```
 game-platform-php/
 ├── admin/                     # প্রশাসনিক প্যানেল (webman v2, ডিফল্ট পোর্ট 8789, APP_PORT দিয়ে পরিবর্তনযোগ্য)
-│   ├── app/admin/controller/  #   প্রশাসনিক কন্ট্রোলার
-│   ├── app/middleware/        #   মিডলওয়্যার (Cors/Security/RateLimit/Auth/ProviderAuth)
-│   ├── app/provider/          #   গেম Provider লেয়ার
-│   ├── app/event/             #   ইভেন্ট বাস (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission/ProviderAuth)
-│   ├── app/provider/          #   গেম Provider লেয়ার (Self/ThirdParty/Factory)
-│   ├── app/middleware/        #   মিডলওয়্যার (Cors/Security/RateLimit/Auth/ProviderAuth)
-│   ├── app/provider/          #   গেম Provider লেয়ার
-│   ├── app/event/             #   ইভেন্ট বাস (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission)
+│   ├── app/admin/v1/controller/  #   অ্যাডমিন-পাশের কন্ট্রোলার
+│   ├── app/middleware/        #   মিডলওয়্যার (Cors/SecurityFilter/RateLimit/AdminAuth/AdminPermission/OperationLog)
+│   ├── app/model/             #   শুধু admin-এ থাকা মডেল (৮টি; বাকি ৫২টি শেয়ার্ড মডেল packages/-এ)
+│   ├── app/service/           #   শুধু admin-এ থাকা সার্ভিস (WalletService/WalletScope/RiskSandboxService)
+│   ├── app/process/           #   স্থায়ী প্রসেস (Http/Monitor/RiskIpCron)
+│   ├── app/provider/          #   গেম Provider স্তর (Self/ThirdParty/Factory)
+│   ├── app/activity/          #   অ্যাক্টিভিটি ইঞ্জিন (চেক-ইন/রেফারেল/দৈনিক টাস্ক)
+│   ├── app/event/             #   ইভেন্ট বাস (EventBus Redis Pub/Sub)
 │   ├── config/                #   কনফিগারেশন ফাইল
-│   ├── install/   #   SQL মাইগ্রেশন ফাইল
-│   └── apps/flutter/          #   Flutter Web PC প্রশাসনিক প্যানেল
+│   └── apps/                  #   অ্যাডমিন ফ্রন্টএন্ড (৪টি রূপ, /admin/v1 → admin:8789-এ কল করে)
+│       ├── flutter/           #     Flutter Web PC প্রশাসনিক প্যানেল
+│       ├── react/             #     React 19 (Vite) অ্যাডমিন কনসোল
+│       ├── angular/           #     Angular 21 অ্যাডমিন কনসোল
+│       └── harmonyos/         #     HarmonyOS ArkTS অ্যাডমিন কনসোল (.hap, nginx এড়িয়ে যায়)
 │
 ├── service/                   # C-এন্ড ব্যবসায়িক সার্ভার (webman v2, ডিফল্ট পোর্ট 8792, APP_PORT দিয়ে পরিবর্তনযোগ্য)
 │   ├── app/api/v1/controller/ #   C-এন্ড API কন্ট্রোলার
-│   ├── app/middleware/        #   মিডলওয়্যার (Cors/Security/RateLimit/Auth/ProviderAuth)
+│   ├── app/middleware/        #   মিডলওয়্যার (TraceId/Cors/SecurityFilter/RateLimit/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
+│   ├── app/model/             #   শুধু service-এ থাকা মডেল (১০টি; বাকি ৫২টি শেয়ার্ড মডেল packages/-এ)
+│   ├── app/service/           #   শুধু service-এ থাকা সার্ভিস (ওয়ালেট/ঝুঁকি/কমপ্লায়েন্স/মিলকরণ/পুশ/অ্যাচিভমেন্ট/অ্যান্টি-চিট ইত্যাদি)
+│   ├── app/payment/           #   ১৮টি পেমেন্ট গেটওয়ে অ্যাডাপ্টার (Stripe/PayPal/Adyen/NowPayments/Skrill…) + GatewayFactory
+│   ├── app/cdn/               #   পাঁচটি সরবরাহকারীর CDN অ্যাডাপ্টার (Cloudflare/CloudFront/Alibaba/Tencent/Huawei) + CdnFactory
+│   ├── app/process/           #   স্থায়ী প্রসেস (Http/Monitor/LeaderboardWS:8790/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
 │   ├── app/provider/          #   গেম Provider লেয়ার
+│   ├── app/activity/          #   অ্যাক্টিভিটি ইঞ্জিন
 │   ├── app/event/             #   ইভেন্ট বাস (EventBus Redis Pub/Sub)
 │   └── config/                #   কনফিগারেশন ফাইল
 │
-├── install/                   # ওয়ান-ক্লিক ইনস্টলেশন উইজার্ড
+├── packages/platform-common/  # শেয়ার্ড স্তর: admin ও service এটি composer path রিপোজিটরি দিয়ে আনে, যাতে দুটি কপি না থাকে
+│   ├── src/model/             #   শেয়ার্ড Eloquent মডেল (৫২টি, দুই পাশে একই উৎস)
+│   ├── src/service/           #   শেয়ার্ড সার্ভিস (DepositLogService / VipService ইত্যাদি, ১১টি, ClickHouse প্রোবাবিলিটি গণনা সহ)
+│   ├── src/BcMath.php         #   পরিমাণ/হারের উচ্চ-নির্ভুল গণনা (bcmath মোড়ক), রাউন্ডিং, শতকরা
+│   ├── src/EncryptionService.php  #   AES এনক্রিপশন/ডিক্রিপশন ও মাস্কিং
+│   ├── src/CircuitBreaker.php #   সার্কিট ব্রেকার (সাথে Retry.php পুনঃপ্রচেষ্টার জন্য)
+│   ├── src/HashidsService.php #   API স্তরের ID এনকোড/ডিকোড
+│   └── src/SnowflakeService.php   #   বিশ্বব্যাপী অনন্য BIGINT ID
+│
+├── apps/                      # C-প্রান্তের প্লেয়ার ফ্রন্টএন্ড (৪টি রূপ, /api/v1 → service:8792-এ কল করে)
+│   ├── flutter/platform/      #   Flutter Web PC C-এন্ড ইউজার প্ল্যাটফর্ম
+│   ├── react/                 #   React 19 (Vite) C-প্রান্ত
+│   ├── angular/               #   Angular 21 C-প্রান্ত
+│   └── harmonyos/             #   HarmonyOS ArkTS C-প্রান্ত (.hap, nginx এড়িয়ে যায়)
+│
+├── game/xiaoxiaole/           # অন্তর্নির্মিত মিনি গেম «গ্রামীণ থ্রি-ম্যাচ»: TypeScript + Vite + Vitest, src/domain ইঞ্জিন + চার স্তরের ডিজাইন + tests/, ১৩ ভাষার ডিজাইন ডকুমেন্ট
+│
+├── install/                   # এক-ক্লিকে ইনস্টলেশন উইজার্ড + ডেটাবেস আরম্ভের SQL
 │   ├── index.php              #   ইনস্টলেশন এন্ট্রি
 │   ├── Installer.php          #   ইনস্টলেশনের মূল লজিক
-│   ├── install.sql            #   মার্জড ইনস্টলেশন SQL (৪৩টি টেবিল + সিড ডেটা)
+│   ├── install.sql            #   মার্জড ইনস্টলেশন SQL (৭৮টি টেবিল + সিড ডেটা)
+│   ├── clickhouse.sql         #   ClickHouse বিশ্লেষণী DDL (আলাদা ইঞ্জিন, আলাদাভাবে আমদানি)
+│   ├── test-data.sql          #   ডেমো/পরীক্ষা ডেটা
+│   ├── migrations/            #   বিদ্যমান ডেটাবেসের জন্য ইনক্রিমেন্টাল আপগ্রেড স্ক্রিপ্ট (*.sql)
+│   ├── lang/ + lang.php       #   ইনস্টল উইজার্ড ইন্টারফেস অনুবাদ (১৩ ভাষা)
 │   └── assets/                #   স্ট্যাটিক রিসোর্স
 │
-├── admin/common/ 与 service/common/   # শেয়ার্ড সার্ভিসের প্রতিটি কপি (DepositLogService ইত্যাদি, শেয়ার্ড লেয়ার বের করা বাকি)
-│   └── service/               #   শেয়ার্ড সার্ভিস (ClickHouse প্রোবাবিলিটি গণনা সহ)
-│
-├── apps/
-│   └── flutter/platform/      # Flutter Web PC C-এন্ড ইউজার প্ল্যাটফর্ম
-│
-├── docs/                      # প্রজেক্ট ডকুমেন্টেশন
+├── docs/                      # প্রকল্প ডকুমেন্টেশন (সব লেখা ১৩ ভাষায়: .md চীনা মূল, পাশে .{lang}.md অনুবাদ)
 │   ├── ARCHITECTURE.md        #   আর্কিটেকচার ডকুমেন্ট
 │   ├── ARCHITECTURE-DESIGN.md #   আর্কিটেকচার ডিজাইন ডকুমেন্ট
 │   ├── FEATURES.md            #   ফিচার ডকুমেন্ট
 │   ├── FEATURE-DESIGN.md      #   ফিচার ডিজাইন ডকুমেন্ট
 │   ├── API.md                 #   API ডকুমেন্ট
-│   └── DEPLOYMENT.md          #   ডিপ্লয়মেন্ট ডকুমেন্ট (Docker/ম্যানুয়াল/পোর্ট কনফিগারেশন)
+│   ├── DEPLOYMENT.md          #   ডিপ্লয়মেন্ট ডকুমেন্ট (Docker/ম্যানুয়াল/পোর্ট কনফিগারেশন)
+│   ├── PROVIDER-SDK.md        #   তৃতীয় পক্ষের গেম সংযোগ গাইড (সিগনেচার অ্যালগরিদম + PHP/Go/Python উদাহরণ)
+│   ├── CLICKHOUSE_INSTALL.md  #   ClickHouse ইনস্টল/কনফিগার/মাইগ্রেট/যাচাই
+│   ├── CLICKHOUSE_USAGE.md    #   ClickHouse-এর ৪টি সার্ভিস API ও অ্যাডমিন ড্যাশবোর্ড
+│   ├── translations/          #   এই README-এর ১২ ভাষার অনুবাদ
+│   ├── diagrams/              #   আর্কিটেকচার/প্রবাহ/ফিচার/লাইফসাইকেল/নিরাপত্তা/ইকোসিস্টেম-সম্প্রসারণের SVG (প্রতিটি ১৩ ভাষায়)
+│   ├── test-reports/          #   টেস্ট রিপোর্ট (php-unit / api / resilience / ui / SUMMARY)
+│   └── superpowers/           #   এই রিপোজিটরির ডিজাইন স্পেসিফিকেশন ও বাস্তবায়ন পরিকল্পনা (ঐতিহাসিক নথি)
+│
+├── scripts/                   # অপ্স স্ক্রিপ্ট (মডেল ড্রিফট পরীক্ষা / apidoc অ্যানোটেশন মাইগ্রেশন / exchange পেআউট শব্দার্থ মাইগ্রেশন / সিগনেচার যাচাই)
+├── tests/api/                 # API স্বয়ংক্রিয় টেস্ট (run_all.sh)
+├── runtime/                   # webman রানটাইম ডিরেক্টরি (লগ/pid, রানটাইমে তৈরি)
 │
 ├── docker-compose.yml         # Docker Compose অর্কেস্ট্রেশন (ডিফল্ট পোর্ট রুট .env থেকে)
 ├── nginx.conf.template        # Nginx কনফিগারেশন টেমপ্লেট (upstream পোর্ট envsubst দিয়ে রেন্ডার)
@@ -137,7 +178,7 @@ rm -rf install/
 
 ইনস্টলেশন উইজার্ড স্বয়ংক্রিয়ভাবে সম্পন্ন করবে:
 - এনভায়রনমেন্ট চেক (PHP ভার্সন, এক্সটেনশন, ডিরেক্টরি পারমিশন)
-- ডেটাবেস ও টেবিল তৈরি (মার্জড SQL, ৪৩টি টেবিল + সিড ডেটা)
+- ডেটাবেস ও টেবিল তৈরি (মার্জড SQL, ৭৮টি টেবিল + সিড ডেটা)
 - সুপার অ্যাডমিন অ্যাকাউন্ট তৈরি (bcrypt এনক্রিপশন)
 - স্বয়ংক্রিয়ভাবে JWT/এনক্রিপশন কী তৈরি করে .env ফাইলে লিখবে
 - পুনরায় ইনস্টল রোধে install.lock তৈরি করবে
@@ -184,17 +225,40 @@ cd ../service && composer install && php start.php start -d
 
 ### ফ্রন্টএন্ড চালু করুন (ঐচ্ছিক)
 
-```bash
-# প্রশাসনিক প্যানেল (Flutter Web PC)
-cd admin/apps/flutter
-flutter pub get
-flutter run -d chrome
+ডেভেলপমেন্টে প্রতিটি ফ্রন্টএন্ড নিজের dev সার্ভার চালায়; অনুরোধগুলি তা দিয়েই সংশ্লিষ্ট ব্যাকএন্ডে পাঠানো হয় (প্রতিটি ডিরেক্টরির `proxy.conf.json` / `vite.config.ts` দেখুন):
 
-# C-এন্ড ইউজার প্ল্যাটফর্ম (Flutter Web PC)
-cd apps/flutter/platform
-flutter pub get
-flutter run -d chrome
+```bash
+# --- C-প্রান্তের প্লেয়ার প্ল্যাটফর্ম (/api/v1 → service:8792) ---
+cd apps/react            && npm install && npm run dev      # http://localhost:5173
+cd apps/angular          && npm install && npm start        # http://localhost:4200
+cd apps/flutter/platform && flutter pub get && flutter run -d chrome
+
+# --- অ্যাডমিন কনসোল (/admin/v1 → admin:8789) ---
+cd admin/apps/react      && npm install && npm run dev      # http://localhost:5273
+cd admin/apps/angular    && npm install && npm start        # http://localhost:4300
+cd admin/apps/flutter    && flutter pub get && flutter run -d chrome
 ```
+
+> Angular dev সার্ভার পোর্ট: অ্যাডমিন কনসোল `angular.json`-এ স্পষ্টভাবে 4300 সেট করে, আর C-প্রান্ত Angular-এর ডিফল্ট 4200 রাখে; দুটি একসাথে চালাতে একটিতে `--port` দিন।
+> HarmonyOS লক্ষ্য (`apps/harmonyos`, `admin/apps/harmonyos`) DevEco Studio দিয়ে খোলা ও বিল্ড করা হয়;
+> এমুলেটর হোস্ট ব্যাকএন্ডে পৌঁছায় `http://10.0.2.2:<port>` দিয়ে (প্রতিটি `ApiService.ets`-এর শীর্ষে থাকা ধ্রুবক দেখুন)।
+
+### ফ্রন্টএন্ড ডিপ্লয়মেন্ট (Docker/Nginx)
+
+`docker-compose.yml`-এর nginx সার্ভিস প্রতিটি ফ্রন্টএন্ডের বিল্ড আউটপুট কন্টেইনারে রিড-অনলি হিসেবে মাউন্ট করে, আর `nginx.conf.template` নিচের পাথগুলোতে তা পরিবেশন করে।
+বিল্ড না করা থাকলে ডিরেক্টরিটি খালি: পাথ রিকোয়েস্টে 404, খালি ডিরেক্টরি রিকোয়েস্টে (যেমন `/app-react/`) 403 ফেরে।
+
+| URL | আর্টিফ্যাক্ট মাউন্ট পয়েন্ট | বিল্ড কমান্ড |
+|-----|-----------|---------|
+| `/` | `apps/flutter/platform/build/web` | `flutter build web` |
+| `/app-react/` | `apps/react/dist` | `npm run build` (স্ক্রিপ্টে `--base=/app-react/` আছে) |
+| `/app-angular/` | `apps/angular/dist/game-client-angular/browser` | `npm run build` (স্ক্রিপ্টে `--base-href=/app-angular/` আছে) |
+| `/admin-panel/` | `admin/public` | সাধারণ প্লেসমেন্ট স্লট: যেকোনো কনসোলের আর্টিফ্যাক্ট `admin/public`-এ কপি করুন; না রাখলে তাও 404 ফেরে (খালি ডিরেক্টরি 403)। মনে রাখবেন, আর্টিফ্যাক্টটি `--base=/admin-panel/` দিয়ে বিল্ড করতে হবে (Flutter-এর ক্ষেত্রে `--base-href=/admin-panel/`), নইলে এর রিসোর্সগুলো আগের প্রিফিক্সেই নির্দেশ করবে ও 404 হবে। স্ল্যাশ ছাড়া রূপটি এখানে 301 রিডাইরেক্ট হয়; `nginx.conf.template`-এ `absolute_redirect off` সেট করা, তাই রিডাইরেক্টটি আপেক্ষিক Location এবং 80 ছাড়া অন্য পোর্টে ডিপ্লয় করলে পোর্ট হারায় না |
+| `/admin-react/` | `admin/apps/react/dist` | `npm run build` (স্ক্রিপ্টে `--base=/admin-react/` আছে) |
+| `/admin-angular/` | `admin/apps/angular/dist/game-admin-angular/browser` | `npm run build` (স্ক্রিপ্টে `--base-href=/admin-angular/` আছে) |
+| `/admin-flutter/` | `admin/apps/flutter/build/web` | `flutter build web --base-href=/admin-flutter/` |
+
+`/admin/` (API) → admin কন্টেইনার, `/api/` (API) → service কন্টেইনার; HarmonyOS অংশটি `.hap` প্যাকেজ হিসেবে বিতরণ হয়, nginx দিয়ে যায় না।
 
 ### যাচাইকরণ
 
@@ -206,9 +270,9 @@ curl http://localhost:8789/health
 curl http://localhost:8792/health
 
 # ইউজার রেজিস্ট্রেশন পরীক্ষা
-curl -X POST http://localhost:8792/api/auth/register \
+curl -X POST http://localhost:8792/api/v1/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"username":"testuser","password":"123456"}'
+  -d '{"username":"testuser","password":"Abcdef12"}'
 ```
 
 ## নিরাপত্তা ফিচার
@@ -231,14 +295,31 @@ curl -X POST http://localhost:8792/api/auth/register \
 
 ## টেস্ট
 
+টেস্ট রিপোর্ট (স্থানীয়ভাবে সংরক্ষিত): [docs/test-reports/](../test-reports/)
+
+| টেস্টের ধরন | কেস/কভারেজ | ফলাফল |
+|---------|----------|------|
+| PHP ইউনিট টেস্ট | বর্তমান পরিমাপ `phpunit --list-tests`: admin 200 + service 273 কেস (রিপোর্ট `docs/test-reports/php-unit.md`-এ 09-22 পুনরায় চালানোর ফল admin 190 + service 273 এবং 08-27 স্ন্যাপশট admin 153 + service 45 লিপিবদ্ধ; admin পাশ এখনও বাড়ানো হচ্ছে) | service সবই পাস (701 দাবি, 3 skipped, 2 warnings + 35 deprecations); admin 437 দাবি, 3 skipped, ১টি ব্যর্থতা (`EnvConfigTest` প্রকৃত `admin/.env` যাচাই করে এবং `REDIS_CLUSTER_NODES` নেই পায়; যোগ করলেই সবুজ হবে) |
+| স্থিতিশীলতা ব্যবস্থার টেস্ট | সার্কিট ব্রেকার/পুনঃপ্রচেষ্টা/ডিগ্রেডেশন সুইচ, 15 কেস (CircuitBreakerTest/RetryTest/ResilienceMockTest) | সবই পাস |
+| স্বয়ংক্রিয় API টেস্ট | 187 এন্ডপয়েন্ট (সূত্র: `docs/test-reports/api.md`, 2026-08-27); route.php বর্তমানে 261 এন্ডপয়েন্ট নিবন্ধন করে | 171 পাস / 50 ব্যর্থ / 4 বাদ (সব ব্যর্থতাই নির্ধারিত ত্রুটি, রিপোর্ট দেখুন) |
+| Flutter UI টেস্ট | 12 কেস (লগইন/ড্যাশবোর্ড/নেভিগেশন/ভাষা পরিবর্তন) | সবই পাস |
+| Go/Rust | রিপোজিটরিতে Go/Rust কোড নেই | বাদ দেওয়া হয়েছে, লিপিবদ্ধ |
+
 ```bash
-cd admin
-phpunit --bootstrap tests/bootstrap.php tests/
+# PHP ইউনিট টেস্ট (প্রথমে JWT সিক্রেট এনভায়রনমেন্ট ভেরিয়েবল এক্সপোর্ট করুন)
+cd admin && ADMIN_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
+cd service && SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
+# স্বয়ংক্রিয় API টেস্ট (সার্ভিসগুলি চালু থাকতে হবে, tests/api/run_all.sh দেখুন)
+bash tests/api/run_all.sh
+# Flutter UI টেস্ট
+cd admin/apps/flutter && flutter test --timeout 300s
 ```
 
-- PHPUnit 12.x, ১১৬টি টেস্ট কেস
-- ৫৬টি ব্যবসায়িক লজিক টেস্ট (PlatformTest) + ৬০টি ইনফ্রাস্ট্রাকচার টেস্ট
-- কভারেজ: bcmath নির্ভুলতা, বিনিময় হিসাব, উত্তোলন ফি, সীমা, রিস্ক কন্ট্রোল, কুপন, KYC, i18n
+বিস্তারিত রিপোর্ট:
+- [PHP ইউনিট টেস্ট রিপোর্ট](../test-reports/php-unit.md)
+- [স্থিতিশীলতা ব্যবস্থার টেস্ট রিপোর্ট (সার্কিট ব্রেকার/পুনঃপ্রচেষ্টা/ডিগ্রেডেশন)](../test-reports/resilience.md)
+- [স্বয়ংক্রিয় API টেস্ট রিপোর্ট](../test-reports/api.md)
+- [Flutter UI টেস্ট রিপোর্ট](../test-reports/ui.md)
 
 ## প্ল্যাটফর্ম ক্ষমতা ওভারভিউ
 
@@ -249,7 +330,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | টপ-আপ | অর্ডার তৈরি + Stripe/PayPal কলব্যাক ভেরিফিকেশন + অটো ক্রেডিট |
 | বিনিময় | প্ল্যাটফর্ম কয়েন⇄গেম কয়েন, রিয়েল-টাইম কোয়োট, স্প্রেড আয় |
 | উত্তোলন | আবেদন→অনুমোদন→পেমেন্ট, গ্লোবাল সুইচ, KYC স্তরভিত্তিক সীমা+ফি |
-| KYC | রিয়েল-নেম ভেরিফিকেশন সাবমিট+অনুমোদন, তিন-স্তরের অথেনটিকেশন সিস্টেম |
+| KYC | রিয়েল-নেম ভেরিফিকেশন সাবমিট+অনুমোদন, অনুমোদনের পর উইথড্রয়াল সীমা বাড়ায় |
 | গেম | CRUD + ক্যাটাগরি (১০টি) + সার্ভার অঞ্চল + গেম রেকর্ড ট্র্যাকিং |
 | সার্চ | Elasticsearch ফুল-টেক্সট সার্চ (LIKE ফলব্যাক সহ) |
 | র্যাঙ্কিং | দৈনিক/সাপ্তাহিক/মাসিক/সর্বকাল, Redis ক্যাশ, WebSocket রিয়েল-টাইম পুশ (ডিফল্ট পোর্ট 8790, LEADERBOARD_WS_PORT দিয়ে পরিবর্তনযোগ্য) |
@@ -266,7 +347,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | সামাজিক বৃদ্ধি | গ্রুপ + শেয়ার-লিংক ট্র্যাকিং |
 | পেমেন্ট গেটওয়ে | নতুন Adyen / GrabPay গেটওয়ে (L1) |
 | আন্তর্জাতিকীকরণ | ৪টি ভাষা (en-US/zh-CN/ja-JP/ko-KR), অনুবাদ টেবিল+ক্যাশ |
-| দেশ কনফিগারেশন | ৮ দেশের ভিন্ন পেমেন্ট/উত্তোলন পদ্ধতি, সর্বনিম্ন টপ-আপ পরিমাণ |
+| দেশ কনফিগারেশন | ১৮ দেশের ভিন্ন পেমেন্ট/উত্তোলন পদ্ধতি, সর্বনিম্ন টপ-আপ পরিমাণ |
 | পরিসংখ্যান | দৈনিক স্ন্যাপশট (৫ ধরনের মেট্রিক) + প্ল্যাটফর্ম আয় ট্র্যাকিং |
 | ক্যাপচা | ক্লিক-টাইপ হিউম্যান ভেরিফিকেশন (poster-php) |
 | গেম সংযোগ | Provider SDK (Self+ThirdParty) + HMAC-SHA256 সিগনেচার + কলব্যাক গেটওয়ে |
@@ -279,7 +360,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | কুপন | শর্ত সীমা (min_deposit/first_user/game_id) |
 | ইভেন্ট | Redis Pub/Sub ইভেন্ট বাস + Webhook সাবস্ক্রিপশন ডেলিভারি (৭ ধরনের ইভেন্ট) |
 | ডিপ্লয়মেন্ট | Docker Compose ৭ সার্ভিস অর্কেস্ট্রেশন (পোর্ট রুট .env থেকে কনফিগার) + Nginx রিভার্স প্রক্সি |
-| ক্লায়েন্ট | Flutter Admin (১৭ পেজ) + Platform (১০ পেজ) + HarmonyOS (৫ পেজ) |
+| ক্লায়েন্ট | অ্যাডমিন ৪টি রূপ (Flutter/React/Angular/HarmonyOS) + C-প্রান্ত ৪টি রূপ (Flutter/React/Angular/HarmonyOS) |
 
 ## ব্যবসায়িক মডেল
 
@@ -298,13 +379,13 @@ phpunit --bootstrap tests/bootstrap.php tests/
 
 ## মাল্টি-কারেন্সি সেটেলমেন্ট
 
-প্ল্যাটফর্মটি «ফিয়াট → প্ল্যাটফর্ম কয়েন → গেম কয়েন» তিন-স্তরের কারেন্সি আইসোলেশন সেটেলমেন্ট সিস্টেম ব্যবহার করে: USD/CNY/EUR মাল্টি-ফিয়াট টপ-আপ সমর্থিত, প্রতিটি গেমের আলাদা মূল্যায়ন কারেন্সি রয়েছে; সব অ্যামাউন্ট হিসাব bcmath উচ্চ-নির্ভুলতা অপারেশনে করা হয়, ফ্লোটিং পয়েন্ট ত্রুটি সম্পূর্ণ এড়ানো হয়।
+প্ল্যাটফর্মটি «ফিয়াট → প্ল্যাটফর্ম কয়েন → গেম কয়েন» তিন-স্তরের কারেন্সি আইসোলেশন সেটেলমেন্ট সিস্টেম ব্যবহার করে: USD/CNY/EUR/JPY/KRW/GBP/BRL/INR মাল্টি-ফিয়াট টপ-আপ সমর্থিত, প্রতিটি গেমের আলাদা মূল্যায়ন কারেন্সি রয়েছে; সব অ্যামাউন্ট হিসাব bcmath উচ্চ-নির্ভুলতা অপারেশনে করা হয়, ফ্লোটিং পয়েন্ট ত্রুটি সম্পূর্ণ এড়ানো হয়।
 
 ### তিন-স্তরের কারেন্সি মডেল
 
 | স্তর | কারেন্সি | বিবরণ |
 |------|------|------|
-| ফিয়াট স্তর | USD / CNY / EUR | ব্যবহারকারীর টপ-আপ/উত্তোলনের প্রকৃত পেমেন্ট কারেন্সি, Stripe / PayPal দ্বারা প্রক্রিয়াকৃত |
+| ফিয়াট স্তর | USD / CNY / EUR / JPY / KRW / GBP / BRL / INR | ব্যবহারকারীর টপ-আপ/উত্তোলনের প্রকৃত পেমেন্ট কারেন্সি, Stripe / PayPal দ্বারা প্রক্রিয়াকৃত |
 | প্ল্যাটফর্ম কয়েন স্তর | প্ল্যাটফর্ম কয়েন (পুরো প্ল্যাটফর্মে একীভূত) | অভ্যন্তরীণ একীভূত সেটেলমেন্ট কারেন্সি (decimal(18,4)), ওয়ালেট অপটিমিস্টিক লক কনকারেন্ট ডেবিট/ডুপ্লিকেট ক্রেডিট রোধ করে |
 | গেম কয়েন স্তর | প্রতিটি গেমের আলাদা কারেন্সি | প্রতিটি গেমের আলাদা `exchange_rate` ও `spread_pct`, আলাদা গেম কয়েন ওয়ালেট |
 
@@ -320,7 +401,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 ```mermaid
 flowchart LR
     subgraph FIAT["法币层 Fiat"]
-        A["用户充值<br/>USD / CNY / EUR<br/>Stripe / PayPal"]
+        A["用户充值<br/>USD / CNY / EUR / JPY / KRW / GBP / BRL / INR<br/>Stripe / PayPal"]
         H["提现到账<br/>PayPal Payout"]
     end
 
@@ -346,27 +427,27 @@ flowchart LR
 
 ## আর্কিটেকচার ডায়াগ্রাম
 
-![系统架构图](../diagrams/architecture-bn.svg)
+![আর্কিটেকচার ডায়াগ্রাম](../diagrams/architecture-bn.svg)
 
 ## মূল ব্যবসায়িক ফ্লো
 
-![业务流程图](../diagrams/flow-bn.svg)
+![মূল ব্যবসায়িক ফ্লো](../diagrams/flow-bn.svg)
 
 ## ফিচার প্যানোরামা
 
-![功能全景图](../diagrams/features-bn.svg)
+![ফিচার প্যানোরামা](../diagrams/features-bn.svg)
 
 ## লাইফসাইকেল
 
-![生命周期图](../diagrams/lifecycle-bn.svg)
+![লাইফসাইকেল](../diagrams/lifecycle-bn.svg)
 
 ## নিরাপত্তা আর্কিটেকচার
 
-![安全架构图](../diagrams/security-bn.svg)
+![নিরাপত্তা আর্কিটেক্চার](../diagrams/security-bn.svg)
 
 ## ইকোসিস্টেম এক্সটেনশন (v2.0)
 
-![生态扩展架构图](../diagrams/ecosystem-expansion-bn.svg)
+![ইকোসিস্টেম এক্সটেনশন](../diagrams/ecosystem-expansion-bn.svg)
 
 ## ডকুমেন্টেশন ইনডেক্স
 
@@ -377,9 +458,9 @@ flowchart LR
 | [আর্কিটেকচার ডকুমেন্ট](../ARCHITECTURE.bn.md) | সিস্টেম টপোলজি, মডিউল আর্কিটেকচার, ডেটা ফ্লো |
 | [ফিচার ডিজাইন ডকুমেন্ট](../FEATURE-DESIGN.bn.md) | ব্যবসায়িক মডেল, ফিচার স্পেক, ফ্লো ডিজাইন |
 | [ফিচার ডকুমেন্ট](../FEATURES.bn.md) | ফিচার তালিকা, মডিউল বিবরণ, ইউজার জার্নি |
-| [API ডকুমেন্ট](../API.bn.md) | সম্পূর্ণ API রেফারেন্স (১০২টি এন্ডপয়েন্ট) |
-| [অনলাইন ডকুমেন্ট](http://localhost:8792/apidoc/) | hg/apidoc ইন্টারঅ্যাকটিভ ডকুমেন্ট (C-এন্ড) |
-| [অনলাইন ডকুমেন্ট](http://localhost:8789/apidoc/) | hg/apidoc ইন্টারঅ্যাকটিভ ডকুমেন্ট (প্রশাসনিক প্যানেল) |
+| [API ডকুমেন্ট](../API.bn.md) | সম্পূর্ণ API রেফারেন্স (১৪৬টি এন্ডপয়েন্ট) |
+| [অনলাইন ডকুমেন্ট](http://localhost:8792/apidoc/) | erikwang2013/apidoc-php ইন্টারঅ্যাকটিভ ডকুমেন্ট (C-এন্ড) |
+| [অনলাইন ডকুমেন্ট](http://localhost:8789/apidoc/) | erikwang2013/apidoc-php ইন্টারঅ্যাকটিভ ডকুমেন্ট (প্রশাসনিক প্যানেল) |
 | [ClickHouse ইনস্টল](../CLICKHOUSE_INSTALL.bn.md) | ClickHouse ইনস্টল/কনফিগার/মাইগ্রেট/ভেরিফাই |
 | [Provider SDK সংযোগ ডকুমেন্ট](../PROVIDER-SDK.bn.md) | থার্ড-পার্টি গেম সংযোগ গাইড (সিগনেচার অ্যালগরিদম + PHP/Go/Python উদাহরণ) |
 | [ClickHouse ব্যবহার](../CLICKHOUSE_USAGE.bn.md) | ৪টি ClickHouse সার্ভিস API ও ব্যাকএন্ড ড্যাশবোর্ড |
@@ -397,11 +478,11 @@ flowchart LR
   <table align="center" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <td align="center" width="200">
-        <img src="docs/weixinpay-130.png" width="130" height="130" alt="微信支付"><br>
+        <img src="../weixinpay-130.png" width="130" height="130" alt="微信支付"><br>
         <b>উইচ্যাট পে</b>
       </td>
       <td align="center" width="200">
-        <img src="docs/alipay-130.png" width="130" height="130" alt="支付宝"><br>
+        <img src="../alipay-130.png" width="130" height="130" alt="支付宝"><br>
         <b>আলিপে</b>
       </td>
     </tr>

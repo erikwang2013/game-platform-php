@@ -14,6 +14,8 @@ flowchart TB
         A1["Flutter Web PC<br/>管理后台"]
         A2["Flutter Web PC<br/>C端用户平台"]
         A3["HarmonyOS ArkTS<br/>手机/平板客户端"]
+        A4["React · Angular<br/>管理后台"]
+        A5["React · Angular<br/>C端用户平台"]
     end
 
     subgraph "网关层 (Nginx)"
@@ -34,7 +36,7 @@ flowchart TB
     end
 
     subgraph "存储层"
-        E1[("MySQL 8.0<br/>主存储<br/>52 张表")]
+        E1[("MySQL 8.0<br/>主存储<br/>78 张表")]
         E2[("Redis<br/>Session/缓存/限流<br/>EventBus/心跳")]
         E3[("Elasticsearch<br/>全文检索")]
         E4[("ClickHouse<br/>OLAP 分析<br/>概率计算")]
@@ -46,7 +48,7 @@ flowchart TB
         F3["OAuth (7平台)<br/>Google/Facebook/Apple<br/>X(Twitter)/Microsoft<br/>LinkedIn/GitHub"]
     end
 
-    A1 & A2 & A3 -->|"HTTPS/JSON<br/>JWT Bearer"| B1
+    A1 & A2 & A3 & A4 & A5 -->|"HTTPS/JSON<br/>JWT Bearer"| B1
     B1 -->|"/admin/*"| C1
     B1 -->|"/api/*"| C2
     C1 & C2 --> D0 & D1 & D2 & D3 & D4
@@ -64,7 +66,7 @@ flowchart TB
   ↓
 मिडलवेयर श्रृंखला: Cors → SecurityFilter → RateLimit → AdminAuth → AdminPermission → OperationLog
   ↓
-कंट्रोलर परत (28):
+कंट्रोलर परत (45):
   ┌──────────────────────────────────────────────────────────┐
   │ Dashboard / User / Role / Permission / Config / Log      │ ← मौजूदा
   │ Profile / Export / Import / Upload / Health / Docs       │ ← मौजूदा
@@ -86,9 +88,9 @@ Provider परत: GameProvider → SelfProvider / ThirdPartyProvider
 ```
 रूट परत: config/route.php
   ↓
-मिडलवेयर श्रृंखला: Cors → SecurityFilter → RateLimit → Language → ApiVersion → [UserAuth | ProviderAuth]
+मिडलवेयर श्रृंखला: TraceId → Cors → SecurityFilter → RateLimit → Language → [UserAuth | ProviderAuth | SdkSessionAuth]
   ↓
-कंट्रोलर परत (25):
+कंट्रोलर परत (34):
   ┌──────────────────────────────────────────────────────────┐
   │ Auth / Wallet / Deposit / Exchange / Withdraw            │ ← मौजूदा
   │ Game / User / Announcement / Captcha                     │ ← मौजूदा
@@ -98,7 +100,7 @@ Provider परत: GameProvider → SelfProvider / ThirdPartyProvider
   │ Provider / Ticket / Verification                         │ ← नया
   └──────────────────────────────────────────────────────────┘
   ↓
-सेवा परत: VIP / Achievement / EventBus / FeatureFlag / Risk / GameSession
+सेवा परत: VIP / Achievement / EventBus / FeatureFlag / Risk
   ↓
 Provider परत: GameProvider → SelfProvider / ThirdPartyProvider
   ↓
@@ -181,7 +183,7 @@ packages/platform-common/src/
 
 ```
 सामान्य API:
-  अनुरोध → Cors → SecurityFilter → RateLimit → Language → ApiVersion
+  अनुरोध → TraceId → Cors → SecurityFilter → RateLimit → Language
        → [UserAuth] (JWT→401) → Controller → प्रतिक्रिया
 
 Provider API:
@@ -195,10 +197,10 @@ Provider API:
 ### 4.1 रिचार्ज प्रक्रिया
 
 ```
-उपयोगकर्ता → POST /api/deposit/create → ऑर्डर बनाएं (status=pending)
+उपयोगकर्ता → POST /api/v1/deposit/create → ऑर्डर बनाएं (status=pending)
      → GatewayFactory से भुगतान बनाएं (Stripe Checkout (incl. Alipay/WeChat Pay APM)/NowPayments invoice/Coinbase charge) → checkout_url + expires_at(+1h) भरें; विफलता पर CAS से ऑर्डर रद्द करें और पुनः प्रयास करें
      → तृतीय-पक्ष भुगतान पर जाएं (Stripe (incl. Alipay/WeChat Pay)/PayPal/NowPayments[USDT TRC20/ERC20]/Coinbase[USDC/BTC/ETH])
-     → भुगतान सफल → कॉलबैक /api/payment/callback
+     → भुगतान सफल → कॉलबैक /api/v1/payment/callback
      → provider श्वेतसूची (केवल stripe/paypal/nowpayments/coinbase/skrill/neteller/paysafecard/paytm/mercadopago/astropay/paypay/kakaopay/gcash) + क्रॉस-चैनल दुरुपयोग सत्यापन + हस्ताक्षर सत्यापन (fail-closed) + टाइमस्टैम्प±300s + bccomp राशि मिलान
      → ऑर्डर अपडेट करें (status=confirmed, लेनदेनित)
      → UserWallet::addBalance() → प्लेटफ़ॉर्म कॉइन जमा
@@ -211,10 +213,10 @@ Provider API:
 ### 4.2 विनिमय प्रक्रिया
 
 ```
-उपयोगकर्ता → POST /api/exchange/quote → मूल्य पूछताछ
+उपयोगकर्ता → POST /api/v1/exchange/quote → मूल्य पूछताछ
      → VipService::getExchangeDiscount() → VIP छूट लागू करें
      → VipService::getRateBonus() → VIP विनिमय दर बोनस लागू करें
-     → पुष्टि → POST /api/exchange/buy(या sell)
+     → पुष्टि → POST /api/v1/exchange/buy(या sell)
      → DB::beginTransaction()
      ├─ स्रोत मुद्रा कटौती (lockForUpdate)
      ├─ लक्ष्य मुद्रा वृद्धि
@@ -228,7 +230,7 @@ Provider API:
 ### 4.3 निकासी प्रक्रिया
 
 ```
-उपयोगकर्ता → POST /api/withdraw/apply
+उपयोगकर्ता → POST /api/v1/withdraw/apply
      → VipService::getWithdrawFeeDiscount() → VIP शुल्क छूट लागू करें
      → वैश्विक स्विच जाँचें (PlatformConfig)
      → सीमाएँ जाँचें (min_amount / daily_limit)
@@ -237,7 +239,7 @@ Provider API:
      → राशि≥सीमा → pending (मैन्युअल समीक्षा)
      → Transaction रिकॉर्ड करें
 
-प्रशासक → PUT /admin/withdraw/review
+प्रशासक → PUT /admin/v1/withdraw/review
        → approve: पूर्ण चिह्नित
        → reject: प्लेटफ़ॉर्म कॉइन वापस + रिफंड लेनदेन
 ```
@@ -371,15 +373,28 @@ flowchart TB
 ## 7. परीक्षण आर्किटेक्चर
 
 ```
-tests/
+tests/                             # 21 फ़ाइलें · 200 परीक्षण
 ├── bootstrap.php                  # PHPUnit बूटस्ट्रैप
-├── PlatformTest.php               # 56 व्यवसाय तर्क परीक्षण
-├── BackendEnhancementTest.php     # 23 एन्क्रिप्शन/ID सेवा परीक्षण
-├── CaptchaTest.php                # 7 कैप्चा परीक्षण
-├── EncryptionServiceTest.php      # 6 एन्क्रिप्शन/डिक्रिप्शन परीक्षण
-├── EnvConfigTest.php              # 4 पर्यावरण कॉन्फ़िग परीक्षण
-├── HashidsServiceTest.php         # 8 ID एन्कोड/डिकोड परीक्षण
-└── SnowflakeServiceTest.php       # 6 Snowflake ID परीक्षण
+├── AuthControllerRegisterTest.php # 15 पंजीकरण पासवर्ड शक्ति परीक्षण
+├── BackendEnhancementTest.php     # 27 एन्क्रिप्शन/ID सेवा परीक्षण
+├── CaptchaTest.php                # 5 कैप्चा परीक्षण
+├── CdnProbeServiceTest.php        # 5 CDN प्रोब परीक्षण
+├── CdnProviderModelTest.php       # 3 CDN प्रदाता मॉडल परीक्षण
+├── ClickHouseServiceTest.php      # 16 ClickHouse सेवा परीक्षण
+├── ConfigDefaultsTest.php         # 4 कॉन्फ़िग डिफ़ॉल्ट परीक्षण
+├── EncryptionServiceTest.php      # 8 एन्क्रिप्शन/डिक्रिप्शन परीक्षण
+├── EnvConfigTest.php              # 6 पर्यावरण कॉन्फ़िग परीक्षण
+├── GameControllerTest.php         # 5 गेम कंट्रोलर परीक्षण
+├── GameRouteTest.php              # 5 गेम रूट परीक्षण
+├── HashidsServiceTest.php         # 6 ID एन्कोड/डिकोड परीक्षण
+├── LeaderboardServiceTest.php     # 4 लीडरबोर्ड सेवा परीक्षण
+├── NotificationServiceTest.php    # 3 सूचना सेवा परीक्षण
+├── PayoutServiceTest.php          # 9 भुगतान सेवा परीक्षण
+├── PlatformCommonTest.php         # 6 साझा क्वेरी बिल्डर परीक्षण
+├── PlatformTest.php               # 55 व्यवसाय तर्क परीक्षण
+├── ReportControllerTest.php       # 5 रिपोर्ट तिथि सीमा परीक्षण
+├── SnowflakeServiceTest.php       # 5 Snowflake ID परीक्षण
+└── TranslationServiceTest.php     # 8 अनुवाद सेवा परीक्षण
 ```
 
 ## 8. पोर्ट आवंटन
@@ -397,42 +412,59 @@ tests/
 
 ## 9. API दस्तावेज़
 
-`hg/apidoc` के माध्यम से कंट्रोलर एनोटेशन से स्वचालित रूप से इंटरैक्टिव API दस्तावेज़ उत्पन्न होते हैं:
+`erikwang2013/apidoc-php` के माध्यम से कंट्रोलर एनोटेशन से स्वचालित रूप से इंटरैक्टिव API दस्तावेज़ उत्पन्न होते हैं:
 
 | दस्तावेज़ | पता | कंट्रोलर | एंडपॉइंट |
 |------|------|--------|------|
-| प्रशासन कंसोल | :8789/apidoc/ | 28 | ~85 |
-| C-छोर व्यवसाय | :8792/apidoc/ | 25 | ~65 |
+| प्रशासन कंसोल | :8789/apidoc/ | 45 | 154 |
+| C-छोर व्यवसाय | :8792/apidoc/ | 34 | 107 |
 
 ## 10. डेटाबेस तालिका सूची
 
-### मूल संस्करण (14) + admin (7)
-game_user, game_user_wallet, game_user_game_wallet, game_game, game_game_currency,
-game_deposit_order, game_withdraw_order, game_exchange_record, game_transaction,
-game_payment_method, game_announcement, game-platform_config, game_language, game_translation,
-game_admin_user, game_admin_role, game_admin_permission, game_admin_user_role,
-game_admin_role_permission, game_operation_log, game_system_config
+### मूल संस्करण (12) + admin (7)
+game_user, game_user_wallet, game_user_game_wallet,
+game_game, game_game_currency, game_deposit_order,
+game_withdraw_order, game_exchange_record, game_transaction,
+game_payment_method, game_announcement, game_platform_config,
+game_admin_user, game_admin_role, game_admin_permission,
+game_admin_user_role, game_admin_role_permission, game_operation_log,
+game_system_config
 
 ### मानक संस्करण (10)
-game_user_oauth, game_user_session, game_user_identity, game_user_payment_account,
-game_withdraw_limit, game_game_server, game_game_play_log, game_risk_rule,
-game_risk_log, game_stat_daily
+game_user_identity, game_user_oauth, game_user_payment_account,
+game_user_session, game_game_server, game_game_play_log,
+game_withdraw_limit, game_risk_rule, game_risk_log,
+game_stat_daily
 
-### पूर्ण संस्करण (8)
-game_game_category, game_game_category_rel, game_leaderboard, game_coupon,
-game_user_coupon, game_country_config, game-platform_revenue
+### पूर्ण संस्करण (13)
+game_game_category, game_game_category_rel, game_leaderboard,
+game_coupon, game_user_coupon, game_language,
+game_translation, game_country_config, game_platform_revenue,
+game_notification, game_referral, game_referral_reward,
+game_user_2fa
 
-### पारिस्थितिकी विस्तार (10) ← नया
+### पारिस्थितिकी विस्तार (14) ← नया
 game_ticket, game_ticket_reply, game_device_token,
 game_vip_level, game_user_vip, game_exp_log,
-game_achievement, game_user_achievement,
-game_friend, game_message
+game_achievement, game_user_achievement, game_friend,
+game_message, game_cdn_provider, game_referral_commission,
+game_tournament, game_tournament_entry
 
-**कुल: 52 तालिकाएँ**
+### v1.3.15-22 में नई (22 तालिकाएँ)
+game_event_outbox, game_reconciliation_batch, game_reconciliation_diff,
+game_reconciliation_statement, game_device_fingerprint, game_device_account_map,
+game_ip_reputation, game_account_account_link, game_activity,
+game_activity_participation, game_activity_reward_log, game_anticheat_event,
+game_anticheat_daily_stat, game_group, game_group_member,
+game_share_link, game_aml_rule, game_aml_hit,
+game_kyc_level, game_user_kyc, game_user_trust,
+game_risk_cluster
+
+**कुल: 78 तालिकाएँ**
 
 ## 11. विशेषता स्विच
 
-`game-platform_config` के `feature.*` नेमस्पेस पर आधारित, शून्य अतिरिक्त निर्भरता:
+`game_platform_config` के `feature.*` नेमस्पेस पर आधारित, शून्य अतिरिक्त निर्भरता:
 
 | स्विच | डिफ़ॉल्ट | कार्य |
 |------|------|------|

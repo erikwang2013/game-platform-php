@@ -49,18 +49,18 @@
   <text x="610" y="206" text-anchor="middle" fill="#991b1b" font-size="13" font-weight="bold">KYC — verificación de identidad</text>
   <text x="610" y="226" text-anchor="middle" fill="#ef4444" font-size="11">Envío de verificación de identidad + revisión en el panel</text>
   <text x="610" y="245" text-anchor="middle" fill="#ef4444" font-size="11">DNI / pasaporte / carné de conducir</text>
-  <text x="610" y="264" text-anchor="middle" fill="#ef4444" font-size="11">Sistema de tres niveles de verificación</text>
+  <text x="610" y="264" text-anchor="middle" fill="#ef4444" font-size="11">Niveles + límites escalonados</text>
 
   <rect x="735" y="182" width="230" height="95" rx="8" fill="#f5f3ff" stroke="#ddd6fe" stroke-width="1.5" filter="url(#sh)"/>
   <text x="850" y="206" text-anchor="middle" fill="#4c1d95" font-size="13" font-weight="bold">Clasificaciones</text>
   <text x="850" y="226" text-anchor="middle" fill="#7c3aed" font-size="11">Día / semana / mes / total</text>
   <text x="850" y="245" text-anchor="middle" fill="#7c3aed" font-size="11">Caché Redis + ordenación en tiempo real</text>
-  <text x="850" y="264" text-anchor="middle" fill="#7c3aed" font-size="11">Push en tiempo real por WebSocket (:8789)</text>
+  <text x="850" y="264" text-anchor="middle" fill="#7c3aed" font-size="11">Push en tiempo real por WebSocket (:8790)</text>
 
   <rect x="30" y="292" width="220" height="95" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#sh)"/>
   <text x="140" y="316" text-anchor="middle" fill="#064e3b" font-size="13" font-weight="bold">Cupones</text>
   <text x="140" y="336" text-anchor="middle" fill="#10b981" font-size="11">Importe fijo / descuento porcentual</text>
-  <text x="140" y="355" text-anchor="middle" fill="#10b981" font-size="11">Limitados por tiempo y cantidad / seguimiento de reclamo y uso</text>
+  <text x="140" y="355" text-anchor="middle" fill="#10b981" font-size="11">Límite tiempo/cant. / rastreo reclamo-uso</text>
 
   <rect x="265" y="292" width="220" height="95" rx="8" fill="#fff1f2" stroke="#fda4af" stroke-width="1.5" filter="url(#sh)"/>
   <text x="375" y="316" text-anchor="middle" fill="#881337" font-size="13" font-weight="bold">Sistema de recomendación</text>
@@ -84,7 +84,7 @@
 
   <rect x="265" y="402" width="220" height="95" rx="8" fill="#fefce8" stroke="#fef08a" stroke-width="1.5" filter="url(#sh)"/>
   <text x="375" y="426" text-anchor="middle" fill="#713f12" font-size="13" font-weight="bold">Diferenciación por país</text>
-  <text x="375" y="446" text-anchor="middle" fill="#eab308" font-size="11">Configuración de pagos/retiros en 8 países</text>
+  <text x="375" y="446" text-anchor="middle" fill="#eab308" font-size="11">Configuración de pagos/retiros en 18 países</text>
   <text x="375" y="465" text-anchor="middle" fill="#eab308" font-size="11">Importes mínimos de recarga diferenciados</text>
 
   <rect x="500" y="402" width="220" height="95" rx="8" fill="#f5f3ff" stroke="#e9d5ff" stroke-width="1.5" filter="url(#sh)"/>
@@ -100,11 +100,11 @@
 
   <rect x="30" y="518" width="940" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="500" y="546" text-anchor="middle" fill="#475569" font-size="14" font-weight="bold">Resumen de capacidades de la plataforma</text>
-  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">Autenticación · Billetera (bloqueo optimista) · Recarga (Stripe/PayPal/Alipay/WeChat Pay) · Conversión (tipo de cambio en tiempo real) · Retiro (revisión/automático) · KYC (verificación en tres niveles)</text>
-  <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">CRUD de juegos (10 categorías+servidores) · Clasificaciones (WebSocket en tiempo real) · Cupones · Recomendación (recompensa de registro+comisión) · Control de riesgos (4 tipos de reglas)</text>
-  <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">Notificaciones (internas+email) · Diferenciación por país (8 países) · i18n (4 idiomas) · Estadísticas (instantáneas diarias+ingresos) · Búsqueda de texto completo (ES)</text>
+  <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">Autenticación · Billetera (bloqueo optimista) · Recarga (Stripe/PayPal/Alipay/WeChat Pay) · Conversión (tipo cambio) · Retiro (revisión/auto) · KYC (identidad)</text>
+  <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">CRUD de juegos (10 categorías+servidores) · Clasificaciones (WebSocket tiempo real) · Cupones · Recomendación (bono registro+comisión) · Riesgos (4 reglas)</text>
+  <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">Notificaciones (internas+email) · Diferenciación por país (18 países) · i18n (4 idiomas) · Estadísticas (instantáneas diarias+ingresos) · Búsqueda de texto completo (ES)</text>
 
-  <text x="500" y="662" text-anchor="middle" fill="#94a3b8" font-size="11">Clientes en tres extremos: Flutter Admin (15 páginas) + Flutter Platform (10 páginas) + HarmonyOS (5 páginas)</text>
+  <text x="500" y="662" text-anchor="middle" fill="#94a3b8" font-size="11">Clientes: 8 variantes — administración 4 + lado C 4 (Flutter/React/Angular/HarmonyOS)</text>
   <text x="500" y="682" text-anchor="middle" fill="#94a3b8" font-size="11">Despliegue: orquestación Docker Compose con 7 servicios + proxy inverso Nginx + CI/CD (GitHub Actions)</text>
 
   <text x="500" y="740" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>

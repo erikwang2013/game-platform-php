@@ -44,7 +44,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | गेम लॉबी | 10 पूर्वनिर्धारित श्रेणियाँ, श्रेणी फ़िल्टर, गेम-श्रेणी संबंध | पूर्ण |
 | लीडरबोर्ड | दैनिक/साप्ताहिक/मासिक/कुल बोर्ड, Redis कैश, बहु-मीट्रिक | पूर्ण |
 | कूपन | निश्चित राशि+प्रतिशत छूट, समय/मात्रा सीमित, प्राप्ति/उपयोग ट्रैकिंग | पूर्ण |
-| देश कॉन्फ़िग | 8 देश पूर्वनिर्धारण, विभेदित भुगतान/निकासी विधियाँ, न्यूनतम रिचार्ज राशि | पूर्ण |
+| देश कॉन्फ़िग | 18 देश पूर्वनिर्धारण, विभेदित भुगतान/निकासी विधियाँ, न्यूनतम रिचार्ज राशि | पूर्ण |
 | सांख्यिकी | दैनिक सांख्यिकी स्नैपशॉट + प्लेटफ़ॉर्म आय ट्रैकिंग | पूर्ण |
 | खोज | Elasticsearch पूर्ण-पाठ खोज (मॉडल परत में एकीकृत) | पूर्ण |
 
@@ -67,7 +67,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | तैनाती | Docker Compose 7 सेवाएँ + Nginx रिवर्स प्रॉक्सी | पूर्ण |
 | डेटा | MySQL वास्तविक समय एकत्रीकरण विश्लेषण + संयुक्त/सशर्त प्रायिकता गणना | पूर्ण |
 | HarmonyOS | admin छोर 8 पेज; C-छोर `apps/harmonyos/` में लॉगिन/लॉबी/विवरण/वॉलेट/व्यक्तिगत कार्यान्वित (8792 को इंगित) | आंशिक पूर्ण (प्रोजेक्ट चलता है, वास्तविक डिवाइस पर IP बदलना आवश्यक) |
-| API दस्तावेज़ | hg/apidoc इंटरैक्टिव दस्तावेज़ | पूर्ण |
+| API दस्तावेज़ | erikwang2013/apidoc-php इंटरैक्टिव दस्तावेज़ | पूर्ण |
 | वन-क्लिक इंस्टॉल | ब्राउज़र इंस्टॉल विज़ार्ड: एडमिन बनाना, मौजूदा DB अपग्रेड, install.lock पुनः इंस्टॉल रोकता है | पूर्ण |
 | फॉल्ट सहनशीलता | CircuitBreaker + Retry + feature.provider_mock डिग्रेडेशन स्विच | पूर्ण |
 | भुगतान विधियाँ | एडमिन CRUD + देश दृश्यता + राशि सीमा + मुद्रा प्रतिबंध | पूर्ण |
@@ -79,7 +79,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 |----|------|------|
 | गेम एकीकरण | GameProvider अमूर्त परत (Self/ThirdParty) + HMAC-SHA256 हस्ताक्षर | पूर्ण |
 | गेम कॉलबैक | Provider API गेटवे (balance/bet/settle/refund) + ProviderAuth मिडलवेयर | पूर्ण |
-| गेम सत्र | Redis हार्टबीट + 15 मिनट टाइमआउट स्वचालित निपटान + GameSessionService | पूर्ण |
+| गेम सत्र | SDK सत्र टोकन: HMAC-SHA256 हस्ताक्षर + 5 मिनट TTL (`GET /api/v1/game/session` जारी करता है, `SdkSessionAuth` जाँचता है) | पूर्ण |
 | टिकट प्रणाली | C-छोर निर्माण/उत्तर + प्रबंधन छोर प्रसंस्करण/आवंटन/बंद, 5 टिकट प्रकार | पूर्ण |
 | ईमेल सत्यापन | 6-अंकीय सत्यापन कोड, Redis 10 मिनट समाप्ति, 60 सेकंड पुनः भेजने की सीमा | पूर्ण |
 | पुश अधिसूचना | PushService (FCM/APNs/हुआवेई पुश) + DeviceToken मॉडल | पूर्ण |
@@ -119,62 +119,64 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 
 | विधि | पथ | विवरण | प्रमाणीकरण |
 |------|------|------|------|
-| POST | /api/auth/register | उपयोगकर्ता पंजीकरण | नहीं |
-| POST | /api/auth/login | उपयोगकर्ता लॉगिन | नहीं |
-| POST | /api/auth/refresh | Token रिफ्रेश | नहीं |
-| GET | /api/game/list | गेम सूची | नहीं |
-| GET | /api/game/detail/{id} | गेम विवरण | नहीं |
-| GET | /api/announcement/list | घोषणा सूची | नहीं |
-| GET | /api/wallet/info | वॉलेट शेष | हाँ |
-| GET | /api/wallet/transactions | लेनदेन रिकॉर्ड | हाँ |
-| POST | /api/deposit/create | रिचार्ज ऑर्डर निर्माण | हाँ |
-| GET | /api/payment/methods | भुगतान विधि सूची (देश अनुसार रूटिंग) | हाँ |
-| POST | /api/exchange/quote | विनिमय मूल्य पूछताछ (VIP छूट) | हाँ |
-| POST | /api/exchange/buy | गेम कॉइन खरीदना | हाँ |
-| POST | /api/exchange/sell | गेम कॉइन बेचना | हाँ |
-| POST | /api/withdraw/apply | निकासी आवेदन (VIP कटौती) | हाँ |
-| POST | /api/game/launch | गेम लॉन्च | हाँ |
-| GET | /api/game/play-logs | गेम रिकॉर्ड | हाँ |
-| POST | /api/referral/apply | रेफरल कोड का उपयोग | हाँ |
-| POST | /api/verify/send-email | ईमेल सत्यापन कोड भेजना | हाँ |
-| POST | /api/verify/confirm-email | ईमेल की पुष्टि | हाँ |
-| GET | /api/ticket/list | टिकट सूची | हाँ |
-| POST | /api/ticket/create | टिकट निर्माण | हाँ |
-| POST | /api/ticket/{id}/reply | टिकट का उत्तर | हाँ |
+| POST | /api/v1/auth/register | उपयोगकर्ता पंजीकरण | नहीं |
+| POST | /api/v1/auth/login | उपयोगकर्ता लॉगिन | नहीं |
+| POST | /api/v1/auth/refresh | Token रिफ्रेश | नहीं |
+| GET | /api/v1/game/list | गेम सूची | नहीं |
+| GET | /api/v1/game/detail/{id} | गेम विवरण | नहीं |
+| GET | /api/v1/announcement/list | घोषणा सूची | नहीं |
+| GET | /api/v1/wallet/info | वॉलेट शेष | हाँ |
+| GET | /api/v1/wallet/transactions | लेनदेन रिकॉर्ड | हाँ |
+| POST | /api/v1/deposit/create | रिचार्ज ऑर्डर निर्माण | हाँ |
+| GET | /api/v1/payment/methods | भुगतान विधि सूची (देश अनुसार रूटिंग) | हाँ |
+| POST | /api/v1/exchange/quote | विनिमय मूल्य पूछताछ (VIP छूट) | हाँ |
+| POST | /api/v1/exchange/buy | गेम कॉइन खरीदना | हाँ |
+| POST | /api/v1/exchange/sell | गेम कॉइन बेचना | हाँ |
+| POST | /api/v1/withdraw/apply | निकासी आवेदन (VIP कटौती) | हाँ |
+| POST | /api/v1/game/launch | गेम लॉन्च | हाँ |
+| GET | /api/v1/game/play-logs | गेम रिकॉर्ड | हाँ |
+| POST | /api/v1/referral/apply | रेफरल कोड का उपयोग | हाँ |
+| POST | /api/v1/verify/send-email | ईमेल सत्यापन कोड भेजना | हाँ |
+| POST | /api/v1/verify/confirm-email | ईमेल की पुष्टि | हाँ |
+| GET | /api/v1/ticket/list | टिकट सूची | हाँ |
+| POST | /api/v1/ticket/create | टिकट निर्माण | हाँ |
+| POST | /api/v1/ticket/{id}/reply | टिकट का उत्तर | हाँ |
+| GET | /api/v1/platform/stats | प्लेटफ़ॉर्म सांख्यिकी | नहीं |
 
-| GET | /api/platform/stats | प्लेटफ़ॉर्म सांख्यिकी | नहीं |
 ## 3. प्रशासन कंसोल सुविधाएँ
 
 ### 3.1 API इंटरफ़ेस (नए)
 
 | विधि | पथ | विवरण |
 |------|------|------|
-| GET | /admin/dashboard/platform | प्लेटफ़ॉर्म डैशबोर्ड डेटा |
-| GET | /admin/analytics/overview | प्लेटफ़ॉर्म सारांश (MySQL वास्तविक समय एकत्रीकरण) |
-| GET | /admin/analytics/game-ranking | गेम रैंकिंग |
-| GET | /admin/analytics/dau-trend | DAU प्रवृत्ति |
-| GET | /admin/analytics/hourly-trend | घंटे-वार प्रवृत्ति |
-| GET | /admin/analytics/action-distribution | व्यवहार वितरण |
-| GET | /admin/analytics/revenue | राजस्व विश्लेषण |
-| GET | /admin/analytics/conversion | गेम रूपांतरण दर |
-| GET | /admin/analytics/probability | संयुक्त/सशर्त प्रायिकता |
-| GET | /admin/analytics/retention | प्रतिधारण विश्लेषण D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | रूपांतरण फ़नल |
-| GET | /admin/analytics/arpu | ARPU/ARPPU प्रवृत्ति |
-| GET | /admin/analytics/economy | गेम मुद्रा आर्थिक मीट्रिक्स |
-| GET | /admin/report/summary | रिपोर्ट सारांश (नए उपयोगकर्ता/जमा/निकासी/विनिमय/गेम प्ले) |
-| GET | /admin/report/daily | दैनिक रिपोर्ट (दिन-वार एग्रीगेशन, खाली तारीखों पर 0 भरा जाता है) |
-| GET | /admin/report/export | दैनिक रिपोर्ट CSV निर्यात (UTF-8 BOM) |
-| GET | /admin/game/list | गेम सूची |
-| POST | /admin/game/create | गेम निर्माण (provider_config सहित) |
-| PUT | /admin/game/{id} | गेम संपादन |
-| GET | /admin/withdraw/orders | निकासी ऑर्डर सूची |
-| PUT | /admin/withdraw/review | निकासी समीक्षा |
-| GET | /admin/ticket/list | टिकट सूची |
-| GET | /admin/ticket/{id} | टिकट विवरण |
-| POST | /admin/ticket/{id}/reply | टिकट का उत्तर |
-| POST | /admin/ticket/{id}/close | टिकट बंद करना |
-| POST | /admin/ticket/{id}/assign | प्रबंधक नियुक्ति |
+| GET | /admin/v1/dashboard/platform | प्लेटफ़ॉर्म डैशबोर्ड डेटा |
+| GET | /admin/v1/analytics/overview | प्लेटफ़ॉर्म सारांश (MySQL वास्तविक समय एकत्रीकरण) |
+| GET | /admin/v1/analytics/game-ranking | गेम रैंकिंग |
+| GET | /admin/v1/analytics/dau-trend | DAU प्रवृत्ति |
+| GET | /admin/v1/analytics/hourly-trend | घंटे-वार प्रवृत्ति |
+| GET | /admin/v1/analytics/action-distribution | व्यवहार वितरण |
+| GET | /admin/v1/analytics/revenue | राजस्व विश्लेषण |
+| GET | /admin/v1/analytics/conversion | गेम रूपांतरण दर |
+| GET | /admin/v1/analytics/probability | संयुक्त/सशर्त प्रायिकता |
+| GET | /admin/v1/analytics/retention | प्रतिधारण विश्लेषण D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | रूपांतरण फ़नल |
+| GET | /admin/v1/analytics/arpu | ARPU/ARPPU प्रवृत्ति |
+| GET | /admin/v1/analytics/economy | गेम मुद्रा आर्थिक मीट्रिक्स |
+| GET | /admin/v1/report/summary | रिपोर्ट सारांश (नए उपयोगकर्ता/जमा/निकासी/विनिमय/गेम प्ले) |
+| GET | /admin/v1/report/daily | दैनिक रिपोर्ट (दिन-वार एग्रीगेशन, खाली तारीखों पर 0 भरा जाता है) |
+| GET | /admin/v1/report/export | दैनिक रिपोर्ट CSV निर्यात (UTF-8 BOM) |
+| GET | /admin/v1/game/list | गेम सूची |
+| GET | /admin/v1/game/{id} | गेम विवरण |
+| POST | /admin/v1/game/launch | गेम पूर्वावलोकन (केवल पढ़ें) |
+| POST | /admin/v1/game/create | गेम निर्माण (provider_config सहित) |
+| PUT | /admin/v1/game/{id} | गेम संपादन |
+| GET | /admin/v1/withdraw/orders | निकासी ऑर्डर सूची |
+| PUT | /admin/v1/withdraw/review | निकासी समीक्षा |
+| GET | /admin/v1/ticket/list | टिकट सूची |
+| GET | /admin/v1/ticket/{id} | टिकट विवरण |
+| POST | /admin/v1/ticket/{id}/reply | टिकट का उत्तर |
+| POST | /admin/v1/ticket/{id}/close | टिकट बंद करना |
+| POST | /admin/v1/ticket/{id}/assign | प्रबंधक नियुक्ति |
 
 ## 4. Provider API (गेम पक्ष कॉलबैक)
 
@@ -250,21 +252,21 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | game_game | +provider_config (JSON) |
 | game_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**कुल: install.sql में 43 तालिकाएँ** (पारिस्थितिकी विस्तार की 10 तालिकाएँ `install/` में हैं, install.sql में शामिल नहीं)। मॉडल साझा नहीं: admin 46 / service 44 प्रत्येक की एक प्रति।
+**कुल: install.sql में 78 तालिकाएँ**। मॉडल: `packages/platform-common/src/model/` में 52 साझा; admin/app/model/ के 8 और service/app/model/ के 10 अपने-अपने होस्ट के लिए विशिष्ट (फ़ाइल नामों में कोई ओवरलैप नहीं)।
 
 ## 8. परीक्षण कवरेज
 
 | परीक्षण फ़ाइल | परीक्षण मामलों की संख्या | कवरेज दायरा |
 |---------|--------|---------|
-| PlatformTest | 56 | bcmath सटीकता/विनिमय गणना/निकासी शुल्क/सीमाएँ/जोखिम नियंत्रण/कूपन/KYC/i18n |
-| BackendEnhancementTest | 23 | एन्क्रिप्शन सेवा/Hashids/Snowflake |
-| CaptchaTest | 7 | कैप्चा उत्पादन/सत्यापन |
-| EncryptionServiceTest | 6 | AES एन्क्रिप्शन/डिक्रिप्शन/डिसेंसिटाइज़ेशन |
-| EnvConfigTest | 4 | पर्यावरण चर कॉन्फ़िग |
-| HashidsServiceTest | 8 | ID एन्कोड/डिकोड राउंड-ट्रिप |
-| SnowflakeServiceTest | 6 | ID उत्पादन अद्वितीयता |
+| PlatformTest | 55 | bcmath सटीकता/विनिमय गणना/निकासी शुल्क/सीमाएँ/जोखिम नियंत्रण/कूपन/KYC/i18n |
+| BackendEnhancementTest | 27 | एन्क्रिप्शन सेवा/Hashids/Snowflake |
+| CaptchaTest | 5 | कैप्चा उत्पादन/सत्यापन |
+| EncryptionServiceTest | 8 | AES एन्क्रिप्शन/डिक्रिप्शन/डिसेंसिटाइज़ेशन |
+| EnvConfigTest | 6 | पर्यावरण चर कॉन्फ़िग |
+| HashidsServiceTest | 6 | ID एन्कोड/डिकोड राउंड-ट्रिप |
+| SnowflakeServiceTest | 5 | ID उत्पादन अद्वितीयता |
 
-**कुल: admin ~132 परीक्षण मामले / 8 फ़ाइलें; service 3 परीक्षण मामले (WebhookUrlSafety + EventBusMessageFormat)। service CI विफलता अवरोधन में शामिल नहीं।**
+**कुल (phpunit --list-tests, वर्तमान मापन): admin 200 मामले / 21 फ़ाइलें, service 273 मामले / 42 फ़ाइलें (WebhookUrlSafety + EventBusMessageFormat सहित; रिपोर्ट: 09-22 पुनर्प्रयोग admin 190 + service 273, 08-27 स्नैपशॉट admin 153 + service 45)। service CI विफलता अवरोधन में शामिल नहीं (असत्यापित)।**
 
 ---
 

@@ -55,5 +55,6 @@ RUN composer install --no-dev --no-interaction --optimize-autoloader
 
 COPY . .
 
+# EXPOSE 仅为镜像元数据；实际监听端口由运行时环境变量 APP_PORT 决定（默认 8789）
 EXPOSE 8789
 CMD ["php", "start.php", "start"]

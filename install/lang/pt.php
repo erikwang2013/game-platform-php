@@ -143,7 +143,7 @@ return [
     'next_step_2' => 'Inicie o serviço de API: cd service && php start.php start -d (opcional)',
     'next_step_3' => 'Faça login no painel administrativo com a conta de administrador que você acabou de criar',
     'next_step_4' => 'Configure os canais de pagamento, a CDN e as credenciais de e-mail em "System Config" no painel administrativo',
-    'next_step_5' => 'Acesse o painel administrativo (endereço padrão):',
+    'next_step_5' => 'Acesse o painel administrativo (endereço obtido de APP_URL em admin/.env):',
     'next_step_6' => 'Antes de publicar, remova o diretório install ou bloqueie o acesso no Nginx (veja docs/nginx-security.conf)',
     'security_title' => 'Notas de Segurança',
     'security_1' => 'Remova o diretório install ou restrinja o acesso a ele (incluindo install.lock)',

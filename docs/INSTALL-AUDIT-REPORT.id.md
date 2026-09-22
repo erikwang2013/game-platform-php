@@ -41,7 +41,7 @@ Languages: [中文](INSTALL-AUDIT-REPORT.md) · [English](INSTALL-AUDIT-REPORT.e
 | `game_admin_role` | INSERT IGNORE (ID tetap) |
 | `game_admin_permission` | INSERT IGNORE (ID tetap) - 4 kali |
 | `game_admin_role_permission` | Subkueri WHERE NOT EXISTS |
-| `game-platform_config` | INSERT IGNORE (ID tetap) - 2 kali |
+| `game_platform_config` | INSERT IGNORE (ID tetap) - 2 kali |
 | `game_language` | INSERT IGNORE (ID tetap) |
 | `game_translation` | INSERT IGNORE (ID tetap) |
 | `game_risk_rule` | INSERT IGNORE (ID tetap) |

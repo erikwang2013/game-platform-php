@@ -51,7 +51,7 @@ rm -rf install/
 
 Opérations réalisées par l'assistant d'installation :
 - Vérification de l'environnement PHP (version, extensions, permissions des répertoires)
-- Exécution du SQL fusionné (`install/install.sql`), création des 52 tables et import des données de seed
+- Exécution du SQL fusionné (`install/install.sql`), création des 78 tables et import des données de seed
 - Création du compte super administrateur (chiffré bcrypt, lié au rôle super_admin)
 - Génération automatique des clés JWT/Encryption/Hashids
 - Écriture de `admin/.env` et `service/.env`
@@ -98,7 +98,7 @@ docker-compose logs -f
 > **Configuration des ports** : Les ports du tableau sont les valeurs par défaut et peuvent tous être modifiés dans le `.env` à la racine du projet (modèle `.env.example` ; à éditer après `cp .env.example .env`) :
 > `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `LEADERBOARD_WS_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
 > Les ports upstream de `nginx.conf.template` sont rendus automatiquement par l'envsubst de l'image officielle ; aucune modification manuelle de la configuration Nginx n'est nécessaire.
-> Remarque : modifier `ADMIN_PORT` / `SERVICE_PORT` ne met pas automatiquement à jour `APP_URL` dans `admin/.env` ni `SITE_URL` dans `service/.env` ; les adresses d'accès externes doivent être modifiées en conséquence.
+> En déploiement Docker, les adresses publiques (`APP_URL` / `SITE_URL`) suivent automatiquement `ADMIN_PORT` / `SERVICE_PORT` par défaut (format `http://localhost:port`) ; pour un domaine personnalisé ou HTTPS, définissez `APP_URL` / `SITE_URL` dans le `.env` racine (cela écrase les mêmes clés dans `admin/.env` et `service/.env`). En déploiement bare-metal (manuel), pensez à mettre à jour les adresses vous-même lors d'un changement de port.
 
 ### 3.3 Initialisation de la base
 
@@ -331,6 +331,11 @@ server {
     listen 80;
     server_name your-domain.com;
 
+    # nginx 自身发出的 301（如目录补斜杠 /admin-panel → /admin-panel/）改用相对
+    # Location，客户端按当前 host:port 解析；默认绝对跳转会退回 listen 端口，
+    # 非 80 端口部署（如 8080）时会跳错端口。
+    absolute_redirect off;
+
     # API d'administration
     location /admin/ {
         proxy_pass http://127.0.0.1:8789;
@@ -364,24 +369,96 @@ server {
         proxy_pass http://127.0.0.1:8789;
     }
 
-    # Métriques Prometheus
+    # Prometheus 指标
     location /metrics {
         proxy_pass http://127.0.0.1:8789;
     }
 
-    # Frontend d'administration
-    location /admin-panel {
-        alias /opt/game-platform/admin/apps/flutter/build/web;
-        try_files $uri $uri/ /admin-panel/index.html;
-    }
+    # ================================================================
+    # 静态前端。两套前端定位不同：
+    #   apps/*         = C 端玩家端（调 /api/ → service）
+    #   admin/apps/*   = 管理台（调 /admin/ → admin）
+    # 各产物需先构建；React/Angular 必须带子路径前缀构建，否则资源 404：
+    #   apps/react            npm run build                （已含 --base=/app-react/）
+    #   apps/angular          npm run build                （已含 --base-href=/app-angular/）
+    #   admin/apps/react      npm run build                （已含 --base=/admin-react/）
+    #   admin/apps/angular    npm run build                （已含 --base-href=/admin-angular/）
+    #   admin/apps/flutter    flutter build web --base-href=/admin-flutter/
+    #   apps/flutter/platform flutter build web            （挂在根路径）
+    # try_files 末项是【内部重定向】，目标 index.html 不存在时会重新匹配同一 location
+    # 形成重定向环，nginx 报 500 而非 404。规避方式按 location 类型二选一：
+    #   root  型 → 末项追加 =404，把它降级为文件存在性判断；
+    #   alias 型 → 追加 =404 会让兜底不再经 alias 解析，已构建的 SPA 深链接也会 404，
+    #              所以保留原样，另加 location = 精确匹配兜底 URI（精确匹配优先，
+    #              不会再回到前缀 location，环不成立）。
+    # alias 的结尾斜杠必须与 location 的结尾斜杠一致（location /x 配 alias .../x，
+    # location /x/ 配 alias .../x/）。错配时 /x../<路径> 会越级解析到上级目录，可读
+    # 取 docroot 之外的任意文件，且 nginx -t 完全查不出来。
+    # ================================================================
 
-    # Frontend de la plateforme C
+    # C 端主入口 — Flutter Web
     location / {
         root /opt/game-platform/apps/flutter/platform/build/web;
-        try_files $uri $uri/ /index.html;
+        try_files $uri $uri/ /index.html =404;
+    }
+
+    # C 端 React / Angular Web（URL 前缀与产物目录名不同，用 alias 直接指向产物）
+    location /app-react/ {
+        alias /opt/game-platform/apps/react/dist/;
+        try_files $uri $uri/ /app-react/index.html;
+    }
+    location = /app-react/index.html {
+        alias /opt/game-platform/apps/react/dist/index.html;
+    }
+
+    location /app-angular/ {
+        alias /opt/game-platform/apps/angular/dist/game-client-angular/browser/;
+        try_files $uri $uri/ /app-angular/index.html;
+    }
+    location = /app-angular/index.html {
+        alias /opt/game-platform/apps/angular/dist/game-client-angular/browser/index.html;
+    }
+
+    # 管理台 — 通用投放位：把任一控制台产物拷进 admin/public 即可
+    # 注意：location 不以 / 结尾时 alias 也【不能】以 / 结尾，否则 /admin-panel../.env
+    # 会解析到上级目录（admin/.env）造成任意文件读取；nginx -t 查不出这类错配。
+    location /admin-panel {
+        alias /opt/game-platform/admin/public;
+        try_files $uri $uri/ /admin-panel/index.html;
+    }
+    location = /admin-panel/index.html {
+        alias /opt/game-platform/admin/public/index.html;
+    }
+
+    # 管理台 React / Angular / Flutter
+    location /admin-react/ {
+        alias /opt/game-platform/admin/apps/react/dist/;
+        try_files $uri $uri/ /admin-react/index.html;
+    }
+    location = /admin-react/index.html {
+        alias /opt/game-platform/admin/apps/react/dist/index.html;
+    }
+
+    location /admin-angular/ {
+        alias /opt/game-platform/admin/apps/angular/dist/game-admin-angular/browser/;
+        try_files $uri $uri/ /admin-angular/index.html;
+    }
+    location = /admin-angular/index.html {
+        alias /opt/game-platform/admin/apps/angular/dist/game-admin-angular/browser/index.html;
+    }
+
+    location /admin-flutter/ {
+        alias /opt/game-platform/admin/apps/flutter/build/web/;
+        try_files $uri $uri/ /admin-flutter/index.html;
+    }
+    location = /admin-flutter/index.html {
+        alias /opt/game-platform/admin/apps/flutter/build/web/index.html;
     }
 }
 ```
+
+> En déploiement manuel, placez vous-même les artefacts compilés dans ces répertoires (quatre arborescences côté C : `apps/flutter/platform`, `apps/react`, `apps/angular`, `apps/harmonyos` ; les frontends de console sont tous montés sous `admin/apps/*` ainsi que l'emplacement générique `admin/public`).
+> Pour Docker, voir les montages de volumes nginx dans `docker-compose.yml` et `nginx.conf.template` (mêmes chemins, racine du conteneur `/var/www/...`). HarmonyOS est distribué en `.hap` et ne passe pas par nginx.
 
 Activer le site :
 ```bash
@@ -454,11 +531,11 @@ curl -f http://localhost:8792/health || echo "Service DOWN"
 ```
 admin/runtime/logs/
 ├── stdout.log          # Sortie standard
-└── workerman.log       # Journal Workerman
+└── webman-<date>.log   # Journal Webman
 
 service/runtime/logs/
 ├── stdout.log
-└── workerman.log
+└── webman-<date>.log
 ```
 
 ---
@@ -567,7 +644,7 @@ cd /opt/game-platform/admin && php start.php start
 ss -tlnp | grep -E '8789|8792'
 
 # Vérifier les journaux
-tail -f runtime/logs/workerman.log
+tail -f runtime/logs/webman-$(date +%F).log
 ```
 
 ### 10.2 Échec de connexion à la base

@@ -12,7 +12,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 ## 一、プロジェクト現状
 
 **グローバルゲームアグリゲーションプラットフォーム** — PHP 8.3 + webman v2、デュアルアプリケーション monorepo:
-`admin/`(8789 管理バックエンド) + `service/`(8792 C端) + `apps/`(Flutter + HarmonyOS) + `install/`(インストールウィザード 43 テーブル)。
+`admin/`(8789 管理バックエンド) + `service/`(8792 C側) + `apps/`(Flutter + HarmonyOS) + `install/`(インストールウィザード 43 テーブル)。
 
 | 観点 | 実測規模 |
 |------|---------|
@@ -43,7 +43,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 | H1 | 分析サービス AnalyticsController の 12 メソッドはすべて実装済みだが **ゼロルーティング**、すべて 404 のデッドコード、VERSIONS.md は納品済みと主張 | admin/config/route.php (0 箇所 analytics) |
 | H2 | イベントバス断線: emit は 4 箇所で呼び出し(game.played/withdraw.completed/exchange.completed/referral.applied)、`subscribe()` にはどのプロセスも登録されておらず、イベントは発行されると失われる；VIP/アチーブメント/通知エンジンはすべて宙に浮いた状態 | admin+service app/event/EventBus.php |
 | H3 | common/ と model/ が二重コピーされ既にドリフト（DepositLogService が 2 ファイルで内容が異なる、User.php も不一致）、単点修正が二重作業になる。**common/service は抽出済み** `packages/platform-common`（erik/platform-common、旧 common-php は統合済み）；model と app/common ラッパーは依然二重 | admin/common vs service/common → packages/platform-common |
-| H4 | ~~HarmonyOS C端 `apps/harmonyos/` は空ディレクトリ、0 ページ vs VERSIONS.md は 5 ページと主張~~ — 実装済み（2026-08-18：5 ページ実装が `apps/harmonyos/` にある） | apps/harmonyos/ |
+| H4 | ~~HarmonyOS C側 `apps/harmonyos/` は空ディレクトリ、0 ページ vs VERSIONS.md は 5 ページと主張~~ — 実装済み（2026-08-18：5 ページ実装が `apps/harmonyos/` にある） | apps/harmonyos/ |
 | H5 | Stripe コールバックが `t=` タイムスタンプ許容差を検証せず（リプレイ可能）、入金金額もゲートウェイの実支払額と照合されない | PaymentController.php:191-194 |
 | H6 | Apple id_token は payload を base64 デコードするのみ、署名検証・aud/iss/exp 検証なし、アプリ間の身元混同リスク | OAuthController.php:376-380 |
 
@@ -101,7 +101,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 
 ### P2 — 可観測性 / 拡張 / 体験
 
-16. **HarmonyOS C端** をゼロから 5 ページ実装（ログイン/ロビー/詳細/ウォレット/個人）（H4） — ✅ 完了済み（2026-08-18: `apps/harmonyos/entry/src/main/ets/pages/` 5 ページがリポジトリ内）
+16. **HarmonyOS C側** をゼロから 5 ページ実装（ログイン/ロビー/詳細/ウォレット/個人）（H4） — ✅ 完了済み（2026-08-18: `apps/harmonyos/entry/src/main/ets/pages/` 5 ページがリポジトリ内）
 17. **フロントエンド補完**: 2FA 検証ページ、クーポン/ランキング/通知エントリ、ES 検索 UI；main.dart/app_pages.dart のルートソース統合；OAuth 実コールバック；フロントエンド AES 転送レイヤー
 18. **確率計算を ClickHouse へ移行** または MySQL 物化統計テーブル + キャッシュ；リテンションを実コホートで再計算
 19. **Prometheus 業務指標**（イベント配信/消費率、キューの深さ）+ グレースケール AB 分流ミドルウェア（FeatureFlag 再利用） — 🔶 一部完了（2026-08-18: `GET /metrics` に審査待ち出金/本日確定チャージ/イベント emit·consume カウント；FeatureFlag `inRollout`/`abTest` crc32 バケット。キューの深さは未実施）

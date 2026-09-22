@@ -1,4 +1,4 @@
-# Diagrama ER do Banco de Dados (v2.0 — 52 tabelas)
+# Diagrama ER do Banco de Dados (v2.0 — 78 tabelas)
 <!-- lang-nav -->
 
 Languages: [中文](08-database-er.md) · [English](08-database-er.en.md) · [한국어](08-database-er.ko.md) · [Русский](08-database-er.ru.md) · [Deutsch](08-database-er.de.md) · [Français](08-database-er.fr.md) · [Español](08-database-er.es.md) · **Português** · [हिन्दी](08-database-er.hi.md) · [العربية](08-database-er.ar.md) · [বাংলা](08-database-er.bn.md) · [Bahasa Indonesia](08-database-er.id.md) · [日本語](08-database-er.ja.md)

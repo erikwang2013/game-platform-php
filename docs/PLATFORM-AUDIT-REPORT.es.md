@@ -79,7 +79,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 | `controller/TicketController.php` (service + admin) | 4 endpoints del lado C + 5 endpoints del lado admin |
 | `service/VerificationService.php` (admin+service) | Código de 6 dígitos, Redis 10 min, enfriamiento de 60 s |
 | `controller/VerificationController.php` (service) | 4 endpoints: sendEmail/confirmEmail/sendSms/confirmPhone |
-| `service/PushService.php` (admin+service) | Abstracción FCM/APNs/华为推送 |
+| `service/PushService.php` (admin+service) | Abstracción FCM/APNs/push de Huawei |
 | `model/DeviceToken.php` (admin+service) | Almacenamiento de tokens de dispositivo |
 
 ### Phase 3 — Retención de usuarios
@@ -182,7 +182,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 ---
 
-## 8. Correcciones del espacio de extensión (tercera ronda 2026-08-04)
+## 7. Correcciones del espacio de extensión (tercera ronda 2026-08-04)
 
 ### P2 implementado
 
@@ -213,7 +213,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 - Documentación de los 4 endpoints de API (balance/bet/settle/refund)
 - Guía de integración de juegos propios + gestión de sesiones + configuración de juegos
 
-## 9. Puntuación final (actualizada)
+## 8. Puntuación final (actualizada)
 
 | Categoría | Inicial (v1) | Extensión de ecosistema v2.0 | Correcciones de extensión v2.1 | Cambio |
 |------|-----------|---------------|---------------|------|
@@ -227,7 +227,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 ---
 
-## 10. Confirmación de correcciones de seguridad y disponibilidad 2026-08-18
+## 9. Confirmación de correcciones de seguridad y disponibilidad 2026-08-18
 
 Las correcciones de seguridad y disponibilidad completadas en esta ronda (2026-08-18) (sin commit en el workspace, se publican junto con la versión 1.1):
 

@@ -13,7 +13,7 @@ require __DIR__ . '/harness.php';
 
 // 清空测试环境限流计数(Redis 滑动窗口跨测试运行累积, 注册接口 5 次/分钟)
 $rl = new Redis();
-$rl->connect('127.0.0.1', 6379);
+$rl->connect(getenv('REDIS_HOST') ?: '127.0.0.1', (int)(getenv('REDIS_PORT') ?: 6379));
 foreach ($rl->keys('rate_limit:*') ?: [] as $k) {
     $rl->del($k);
 }
@@ -33,7 +33,7 @@ function captcha_seed(): array
     $r = captcha_create('click', ['difficulty' => 'easy']);
     $key = $r['key'];
     $redis = new Redis();
-    $redis->connect('127.0.0.1', 6379);
+    $redis->connect(getenv('REDIS_HOST') ?: '127.0.0.1', (int)(getenv('REDIS_PORT') ?: 6379));
     $payload = json_decode((string) $redis->get("poster:captcha:$key"), true);
     $targets = $payload['data']['targets'] ?? [];
     usort($targets, fn($a, $b) => $a['order'] <=> $b['order']);

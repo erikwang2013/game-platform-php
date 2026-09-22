@@ -17,8 +17,8 @@ flowchart TB
     end
 
     subgraph "طبقة التطبيق"
-        C1["admin/ :8789<br/>إدارة API الخلفية<br/>28 وحدة تحكم"]
-        C2["service/ :8792<br/>API أعمال الطرف C<br/>25 وحدة تحكم"]
+        C1["admin/ :8789<br/>إدارة API الخلفية<br/>45 وحدة تحكم"]
+        C2["service/ :8792<br/>API أعمال الطرف C<br/>34 وحدة تحكم"]
     end
 
     subgraph "طبقة الخدمات v2.0"
@@ -27,11 +27,11 @@ flowchart TB
         D3["محرك VIP<br/>خبرة/ترقية/امتيازات"]
         D4["محرك الإنجازات<br/>12 إنجازًا مدمجًا"]
         D5["FeatureFlag<br/>مفاتيح الميزات"]
-        D6["GameSession<br/>نبض+كشف انتهاء المهلة"]
+        D6["SdkSessionAuth<br/>رمز جلسة موقّع بـ HMAC"]
     end
 
     subgraph "طبقة التخزين"
-        E1[("MySQL 8.0<br/>52 جدولًا")]
+        E1[("MySQL 8.0<br/>78 جدولًا")]
         E2[("Redis 7.x<br/>تخزين مؤقت/تقييد/أحداث")]
         E3[("Elasticsearch<br/>بحث نصي كامل")]
         E4[("ClickHouse<br/>تحليل OLAP")]

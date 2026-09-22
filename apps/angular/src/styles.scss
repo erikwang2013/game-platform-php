@@ -401,3 +401,11 @@ button.chip:hover { color: var(--text); border-color: var(--stroke-2); }
 .stack { display: flex; flex-direction: column; gap: 16px; }
 .between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .wrap { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+/* 键值行（表单/详情页） */
+.kv { display: flex; align-items: baseline; gap: 12px; font-size: 13px; }
+.kv > span:last-child { flex: 1; min-width: 0; overflow-wrap: anywhere; text-align: right; }
+
+/* 原生 select 下拉在深色主题下的可读性 */
+select.input { color-scheme: dark; }
+select.input option { background: var(--bg-soft); color: var(--text); }

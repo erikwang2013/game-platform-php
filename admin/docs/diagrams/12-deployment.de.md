@@ -22,7 +22,7 @@ flowchart TB
     end
 
     subgraph "数据服务"
-        MYSQL["MySQL 8.0 :3306<br/>52 张表"]
+        MYSQL["MySQL 8.0 :3306<br/>78 张表"]
         REDIS["Redis 7 :6379<br/>缓存/限流/EventBus"]
         ES["Elasticsearch :9200<br/>全文检索"]
         CH["ClickHouse :8123<br/>OLAP 分析"]

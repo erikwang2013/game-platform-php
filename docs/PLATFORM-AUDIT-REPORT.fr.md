@@ -180,7 +180,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 ---
 
-## VIII. Corrections de l'espace d'extension (troisième vague du 2026-08-04)
+## VII. Corrections de l'espace d'extension (troisième vague du 2026-08-04)
 
 ### P2 implémenté
 
@@ -211,7 +211,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 - Documentation des 4 points d'API (balance/bet/settle/refund)
 - Guide d'intégration des jeux propriétaires + gestion des sessions + configuration des jeux
 
-## IX. Note finale (mise à jour)
+## VIII. Note finale (mise à jour)
 
 | Catégorie | Initiale (v1) | v2.0 extension d'écosystème | v2.1 corrections d'extension | Évolution |
 |------|-----------|---------------|---------------|------|
@@ -225,7 +225,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 ---
 
-## X. Confirmation des réparations sécurité et disponibilité du 2026-08-18
+## IX. Confirmation des réparations sécurité et disponibilité du 2026-08-18
 
 Les réparations sécurité et disponibilité de cette vague (2026-08-18) (espace de travail non commité, publié avec la version 1.1 ultérieure) :
 

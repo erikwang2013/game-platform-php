@@ -1,4 +1,4 @@
-# 田园消消乐 — Design funcional
+# Match-3 Rural — Design funcional
 <!-- lang-nav -->
 
 Languages: **中文** · [English](functional-design.en.md) · [한국어](functional-design.ko.md) · [Русский](functional-design.ru.md) · [Deutsch](functional-design.de.md) · [Français](functional-design.fr.md) · [Español](functional-design.es.md) · [Português](functional-design.pt.md) · [हिन्दी](functional-design.hi.md) · [العربية](functional-design.ar.md) · [বাংলা](functional-design.bn.md) · [Bahasa Indonesia](functional-design.id.md) · [日本語](functional-design.ja.md)
@@ -14,7 +14,7 @@ Languages: **中文** · [English](functional-design.en.md) · [한국어](funct
 
 | Item | Conteúdo |
 |----|------|
-| Nome | 田园消消乐 |
+| Nome | Match-3 Rural |
 | Tipo | match-3 8×8 + restrição ecológica |
 | Perspectiva | sandbox ortográfico 2.5D fixo, sem rotação |
 | Operação | clicar em duas peças adjacentes para trocar (apenas cima/baixo/esquerda/direita) |

@@ -87,6 +87,10 @@ class AppTranslations {
       'deposit.order_no': 'Order No.',
       'deposit.invalid_amount': 'Please enter a valid amount',
       'deposit.enter_amount': 'Please enter deposit amount',
+      'deposit.amount_below_min': 'Amount below minimum:',
+      'deposit.amount_above_max': 'Amount above maximum:',
+      'deposit.no_methods': 'No payment method available',
+      'deposit.pay_now': 'Pay Now',
 
       // Exchange
       'exchange.title': 'Currency Exchange',
@@ -118,12 +122,10 @@ class AppTranslations {
       'withdraw.crypto_address': 'Crypto Wallet Address',
       'withdraw.submit': 'Submit Withdraw Request',
       'withdraw.success': 'Withdraw request submitted',
-      'withdraw.limits': 'Min: {min}  |  Daily Limit: {daily}',
-      'withdraw.min_limit_error': 'Minimum withdrawal amount is ',
-      'withdraw.daily_limit_error': 'Exceeds daily withdrawal limit of ',
       'withdraw.enter_account': 'Please enter account info',
       'withdraw.enter_amount': 'Please enter withdrawal amount',
       'withdraw.invalid_amount': 'Please enter a valid amount',
+      'withdraw.invalid_paypal': 'Please enter a valid PayPal email',
 
       // Profile
       'profile.title': 'Profile',
@@ -333,6 +335,10 @@ class AppTranslations {
       'deposit.order_no': '订单号',
       'deposit.invalid_amount': '请输入有效的金额',
       'deposit.enter_amount': '请输入充值金额',
+      'deposit.amount_below_min': '金额低于最小限额:',
+      'deposit.amount_above_max': '金额超过最大限额:',
+      'deposit.no_methods': '暂无可用支付方式',
+      'deposit.pay_now': '立即支付',
 
       // Exchange
       'exchange.title': '游戏币兑换',
@@ -364,12 +370,10 @@ class AppTranslations {
       'withdraw.crypto_address': '加密货币地址',
       'withdraw.submit': '提交提现申请',
       'withdraw.success': '提现申请已提交',
-      'withdraw.limits': '最低提现: {min}  |  每日限额: {daily}',
-      'withdraw.min_limit_error': '最低提现金额为 ',
-      'withdraw.daily_limit_error': '超过每日提现限额 ',
       'withdraw.enter_account': '请输入收款账户信息',
       'withdraw.enter_amount': '请输入提现金额',
       'withdraw.invalid_amount': '请输入有效的金额',
+      'withdraw.invalid_paypal': '请输入有效的 PayPal 邮箱',
 
       // Profile
       'profile.title': '个人中心',

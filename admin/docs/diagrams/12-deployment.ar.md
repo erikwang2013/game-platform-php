@@ -22,7 +22,7 @@ flowchart TB
     end
 
     subgraph "خدمات البيانات"
-        MYSQL["MySQL 8.0 :3306<br/>52 جدولًا"]
+        MYSQL["MySQL 8.0 :3306<br/>78 جدولًا"]
         REDIS["Redis 7 :6379<br/>تخزين مؤقت/تقييد/EventBus"]
         ES["Elasticsearch :9200<br/>بحث نصي كامل"]
         CH["ClickHouse :8123<br/>تحليل OLAP"]

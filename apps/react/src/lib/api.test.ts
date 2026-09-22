@@ -63,6 +63,72 @@ test('信封 code≠0 抛 ApiError，带服务端 code/message', async () => {
   );
 });
 
+test('充值/提现/兑换写操作：方法、URL 与请求体形状（金额字符串原样透传）', async () => {
+  tokens.set('t1', 'r1');
+  language.set('en');
+  calls.length = 0;
+
+  reply = { ok: true, code: 0, data: { list: [] } };
+  await api.paymentMethods();
+
+  reply = { ok: true, code: 0, data: { order_no: 'DEP1' } };
+  await api.createDeposit({ amount: '10.50', currency: 'USD', payment_method_id: 'pm1' });
+
+  reply = { ok: true, code: 0, data: { order_no: 'WTH1' } };
+  await api.applyWithdraw({ platform_amount: '20.0000', method: 'paypal', account_info: 'a@b.c' });
+
+  reply = { ok: true, code: 0, data: { rate: '1.5' } };
+  await api.exchangeQuote({ game_id: 'g1', currency_id: 'c1', direction: 'out', platform_amount: '300' });
+
+  reply = { ok: true, code: 0, data: { exchange_id: 'e1' } };
+  await api.exchangeBuy({ game_id: 'g1', currency_id: 'c1', direction: 'in', platform_amount: '5.25' });
+  await api.exchangeSell({ game_id: 'g1', currency_id: 'c1', direction: 'out', platform_amount: '300' });
+
+  const shape = (i: number) => ({
+    url: calls[i]!.url,
+    method: calls[i]!.init?.method,
+    body: calls[i]!.init?.body ? JSON.parse(String(calls[i]!.init?.body)) : undefined,
+  });
+
+  assert.deepEqual(shape(0), { url: '/api/v1/payment/methods', method: undefined, body: undefined });
+  assert.deepEqual(shape(1), {
+    url: '/api/v1/deposit/create',
+    method: 'POST',
+    body: { amount: '10.50', currency: 'USD', payment_method_id: 'pm1' },
+  });
+  assert.deepEqual(shape(2), {
+    url: '/api/v1/withdraw/apply',
+    method: 'POST',
+    body: { platform_amount: '20.0000', method: 'paypal', account_info: 'a@b.c' },
+  });
+  assert.deepEqual(shape(3), {
+    url: '/api/v1/exchange/quote',
+    method: 'POST',
+    body: { game_id: 'g1', currency_id: 'c1', direction: 'out', platform_amount: '300' },
+  });
+  assert.deepEqual(shape(4), {
+    url: '/api/v1/exchange/buy',
+    method: 'POST',
+    body: { game_id: 'g1', currency_id: 'c1', direction: 'in', platform_amount: '5.25' },
+  });
+  assert.deepEqual(shape(5), {
+    url: '/api/v1/exchange/sell',
+    method: 'POST',
+    body: { game_id: 'g1', currency_id: 'c1', direction: 'out', platform_amount: '300' },
+  });
+  assert.equal(calls.length, 6);
+});
+
+test('写操作失败时透出服务端 code/message（如 502 网关不可用）', async () => {
+  tokens.set('t1', 'r1');
+  reply = { ok: false, code: 502, message: 'Payment gateway unavailable, please retry' };
+  await assert.rejects(
+    () => api.createDeposit({ amount: '1.00', currency: 'USD', payment_method_id: 'pm1' }),
+    (e: unknown) =>
+      e instanceof ApiError && e.code === 502 && e.message === 'Payment gateway unavailable, please retry',
+  );
+});
+
 test('code=401 且无 refresh_token：清 token、回调登出、抛 401', async () => {
   tokens.set('tok', '');
   let kicked = 0;

@@ -1,4 +1,4 @@
-# 全球游戏聚合平台 — 生态扩展审查报告 v2.0
+# グローバルゲームアグリゲーションプラットフォーム — エコシステム拡張監査レポート v2.0
 <!-- lang-nav -->
 
 Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](PLATFORM-AUDIT-REPORT.ko.md) · [Русский](PLATFORM-AUDIT-REPORT.ru.md) · [Deutsch](PLATFORM-AUDIT-REPORT.de.md) · [Français](PLATFORM-AUDIT-REPORT.fr.md) · [Español](PLATFORM-AUDIT-REPORT.es.md) · [Português](PLATFORM-AUDIT-REPORT.pt.md) · [हिन्दी](PLATFORM-AUDIT-REPORT.hi.md) · [العربية](PLATFORM-AUDIT-REPORT.ar.md) · [বাংলা](PLATFORM-AUDIT-REPORT.bn.md) · [Bahasa Indonesia](PLATFORM-AUDIT-REPORT.id.md) · [日本語](PLATFORM-AUDIT-REPORT.ja.md)
@@ -76,7 +76,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 | ファイル | 説明 |
 |------|------|
 | `model/Ticket.php` + `TicketReply.php` (admin+service) | チケット + 返信, 5 種のタイプ |
-| `controller/TicketController.php` (service + admin) | C端 4エンドポイント + 管理端 5エンドポイント |
+| `controller/TicketController.php` (service + admin) | C側 4エンドポイント + 管理画面 5エンドポイント |
 | `service/VerificationService.php` (admin+service) | 6桁認証コード, Redis 10min, 60s クールダウン |
 | `controller/VerificationController.php` (service) | 4 エンドポイント: sendEmail/confirmEmail/sendSms/confirmPhone |
 | `service/PushService.php` (admin+service) | FCM/APNs/華為プッシュ抽象 |
@@ -173,7 +173,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 | 多段階紹介コミッション | P3 | 現在は単段階紹介、二段階分与に拡張可能 |
 | クーポン条件制限 | P3 | 最低チャージ/指定ゲーム/初回ユーザー条件を追加 |
 | 自動送金 (PayPal Payouts) | P3 | 出金は現在手動審査、自動出金に連携可能 |
-| 管理端 VIP/成就 設定ページ | P3 | バックエンドのモデルはあり、Flutter ページは未作成 |
+| 管理画面 VIP/成就 設定ページ | P3 | バックエンドのモデルはあり、Flutter ページは未作成 |
 | モバイルプッシュの深い統合 | P3 | PushService の骨格はあり、FCM/APNs の資格情報連携が必要 |
 | Flutter 端チャット/フレンド UI | P3 | API + WebSocket は準備済み、フロントエンドページ未作成 |
 | ゲーム側接続 SDK ドキュメント | P3 | Provider API は準備済み、接続ドキュメントを整備中 |
@@ -182,7 +182,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 
 ---
 
-## 八、拡張スペースの修正 (2026-08-04 第3ラウンド)
+## 七、拡張スペースの修正 (2026-08-04 第3ラウンド)
 
 ### P2 実装済み
 
@@ -213,7 +213,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 - 4 つの API エンドポイントドキュメント (balance/bet/settle/refund)
 - 自研ゲーム接続ガイド + セッション管理 + ゲーム設定
 
-## 九、最終スコア（更新）
+## 八、最終スコア（更新）
 
 | カテゴリ | 初期 (v1) | v2.0 生態拡張 | v2.1 拡張修正 | 変化 |
 |------|-----------|---------------|---------------|------|
@@ -227,7 +227,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 
 ---
 
-## 十、2026-08-18 セキュリティと可用性修正の確認
+## 九、2026-08-18 セキュリティと可用性修正の確認
 
 今回（2026-08-18）完了したセキュリティと可用性の修正（作業領域未コミット、バージョン 1.1 として後続リリース）：
 
@@ -251,7 +251,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 | Prometheus 業務指標 | `/metrics`：審査待ち出金、本日確認済みチャージ（30s キャッシュ）、イベント emit/consume、memory_usage、version=1.1 | ✅ 実装済み |
 | FeatureFlag 灰度 | `inRollout` / `abTest` crc32 分桶で `feature.{name}_percent` を読む | ✅ 実装済み |
 
-**未完了のまま**：webman/queue の配線、ClickHouse の実接続。過去のスコアと結論はそのまま維持。実装済み：イベントバス消費プロセス（`service/app/process/EventConsumer.php` + `process.php` に `event-consumer` 登録）、共有層の重複解消（単一の `packages/platform-common` に統合）、HarmonyOS C 端ページ、成就エンジンの配線（EventConsumer 内で呼び出し）、service CI ゲート。
+**未完了のまま**：webman/queue の配線、ClickHouse の実接続。過去のスコアと結論はそのまま維持。実装済み：イベントバス消費プロセス（`service/app/process/EventConsumer.php` + `process.php` に `event-consumer` 登録）、共有層の重複解消（単一の `packages/platform-common` に統合）、HarmonyOS C側ページ、成就エンジンの配線（EventConsumer 内で呼び出し）、service CI ゲート。
 
 ---
 

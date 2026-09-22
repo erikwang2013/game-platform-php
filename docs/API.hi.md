@@ -186,7 +186,7 @@ type वैकल्पिक मान: deposit / withdraw / exchange_in / exch
 }
 ```
 
-currency वैकल्पिक मान: USD / CNY / EUR
+currency वैकल्पिक मान: USD / CNY / EUR / JPY / KRW / GBP / BRL / INR
 
 checkout_url: भुगतान गेटवे रीडायरेक्ट लिंक (ऑर्डर बनाते समय भरा जाता है); expires_at: भुगतान लिंक की समाप्ति (बनाने के 1 घंटे बाद)
 
@@ -401,9 +401,9 @@ status:
 }
 ```
 
-type वैकल्पिक मान: self / third_party
+type वैकल्पिक मान: self / embedded / third_party
 
-#### GET /api/v1/game/{hashid} — गेम विवरण
+#### GET /api/v1/game/detail/{hashid} — गेम विवरण
 
 ```
 प्रतिक्रिया: {
@@ -870,7 +870,7 @@ language वैकल्पिक मान: en-US / zh-CN / ja-JP / ko-KR
 
 ### 3.1 प्लेटफ़ॉर्म डैशबोर्ड
 
-#### GET /admin/dashboard/platform
+#### GET /admin/v1/dashboard/platform
 
 ```
 प्रमाणीकरण आवश्यक: हाँ (AdminAuth + AdminPermission)
@@ -888,11 +888,11 @@ language वैकल्पिक मान: en-US / zh-CN / ja-JP / ko-KR
 
 ### 3.2 गेम प्रबंधन
 
-#### GET /admin/game/list — गेम सूची
+#### GET /admin/v1/game/list — गेम सूची
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
-पैरामीटर: ?page=1&per_page=20&keyword=射击
+पैरामीटर: ?page=1&limit=20&keyword=射击
 
 प्रतिक्रिया: {
   "list": [
@@ -909,11 +909,67 @@ language वैकल्पिक मान: en-US / zh-CN / ja-JP / ko-KR
   ],
   "total": 12,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### POST /admin/game/create — गेम बनाएं
+#### GET /admin/v1/game/{hashid} — गेम विवरण
+
+```
+需认证: 是
+参数: hashid 为游戏的 hashid 编码（路径参数）
+
+响应: {
+  "id": "aB3xK...",
+  "name": "射击大师",
+  "slug": "shooter-master",
+  "type": "self",
+  "description": "游戏描述",
+  "cover_image": "https://...",
+  "api_endpoint": "https://...",
+  "sdk_version": "1.0.0",
+  "platform": "h5",
+  "region": "global",
+  "currencies": [
+    {
+      "id": "cD4yL...",
+      "name": "金币",
+      "symbol": "G",
+      "exchange_rate": "100.00000000",
+      "spread_pct": "5.00000000",
+      "min_exchange": "1.00000000",
+      "max_exchange": "10000.00000000"
+    }
+  ]
+}
+```
+
+गेम मौजूद न होने पर code 404 लौटाता है।
+
+#### POST /admin/v1/game/launch — गेम पूर्वावलोकन
+
+```
+需认证: 是
+
+请求: {
+  "game_id": "aB3xK..."      // 游戏 ID(hashid)
+}
+
+响应: {
+  "id": "aB3xK...",
+  "name": "射击大师",
+  "slug": "shooter-master",
+  "type": "self",
+  "api_endpoint": "https://...",
+  "preview": true
+}
+```
+
+`game_id` अनुपलब्ध होने पर code 422 लौटाता है; गेम मौजूद न होने पर 404 लौटाता है; गेम प्रकाशित न होने पर (`status` 1 नहीं) 403 लौटाता है।
+
+प्रशासन कंसोल का ट्रायल प्ले एक शुद्ध पूर्वावलोकन है: यह केवल गेम की उपलब्धता जाँचता है और लॉन्च जानकारी लौटाता है, **कोई गेम रिकॉर्ड नहीं लिखता और वॉलेट को नहीं छूता**। प्रशासन पहचान में केवल `adminId` (`AdminAuth` द्वारा इंजेक्ट) होता है और C-छोर का `userId` नहीं होता, इसलिए यह एंडपॉइंट जानबूझकर कोई उपयोगकर्ता-पक्ष लेखन नहीं करता — C-छोर के `POST /api/v1/game/launch` की नकल करने पर गलत स्वामित्व वाले `game_game_play_log` लिखे जाते।
+
+#### POST /admin/v1/game/create — गेम बनाएं
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -934,9 +990,9 @@ language वैकल्पिक मान: en-US / zh-CN / ja-JP / ko-KR
 प्रतिक्रिया: { "id": "aB3xK..." }
 ```
 
-type वैकल्पिक मान: self / third_party
+type वैकल्पिक मान: self / embedded / third_party
 
-#### PUT /admin/game/{hashid} — गेम संपादित करें
+#### PUT /admin/v1/game/{hashid} — गेम संपादित करें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -950,14 +1006,14 @@ type वैकल्पिक मान: self / third_party
 प्रतिक्रिया: { "message": "更新成功" }
 ```
 
-#### DELETE /admin/game/{hashid} — गेम हटाएं
+#### DELETE /admin/v1/game/{hashid} — गेम हटाएं
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
 प्रतिक्रिया: { "message": "删除成功" }
 ```
 
-#### POST /admin/game/currency/manage — मुद्रा प्रबंधित करें
+#### POST /admin/v1/game/currency/manage — मुद्रा प्रबंधित करें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -977,16 +1033,20 @@ type वैकल्पिक मान: self / third_party
   ]
 }
 
-प्रतिक्रिया: { "message": "币种更新成功" }
+प्रतिक्रिया: { "message": "操作成功" }
 ```
+
+`game_id` अनुपलब्ध हो या `currencies` सरणी न हो तो 422 लौटाता है; गेम मौजूद न होने पर 404 लौटाता है।
+
+`exchange_rate` और `spread_pct` का सत्यापन केवल तब होता है जब वे भेजे जाएँ: `exchange_rate` 0 से बड़ी संख्या होनी चाहिए और `spread_pct` [0, 100) सीमा में होना चाहिए; किसी भी नियम का उल्लंघन 422 लौटाता है और कोई भी मुद्रा नहीं लिखी जाती (लिखने से पहले पूरे सेट का सत्यापन होता है)। छोड़े गए फ़ील्ड सत्यापन नहीं कराते: बनाते समय डिफ़ॉल्ट मान लिए जाते हैं (`exchange_rate` = `1.00000000`, शेष `0.00000000`), और अपडेट करते समय मौजूदा मान बना रहता है।
 
 ### 3.3 निकासी प्रबंधन
 
-#### GET /admin/withdraw/orders — निकासी ऑर्डर सूची
+#### GET /admin/v1/withdraw/orders — निकासी ऑर्डर सूची
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
-पैरामीटर: ?page=1&per_page=20&status=pending
+पैरामीटर: ?page=1&limit=20&status=pending
 
 प्रतिक्रिया: {
   "list": [
@@ -1008,11 +1068,11 @@ type वैकल्पिक मान: self / third_party
   ],
   "total": 5,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### PUT /admin/withdraw/review — निकासी समीक्षा
+#### PUT /admin/v1/withdraw/review — निकासी समीक्षा
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1026,11 +1086,11 @@ type वैकल्पिक मान: self / third_party
 प्रतिक्रिया: { "message": "已通过" }
 ```
 
-action: approve=स्वीकृति / reject=अस्वीकृति (अस्वीकृति पर स्वचालित रूप से प्लेटफ़ॉर्म कॉइन वापस)
+action: approve=स्वीकृति / reject=अस्वीकृति / confirm=पुष्टि (अस्वीकृति पर स्वचालित रूप से प्लेटफ़ॉर्म कॉइन वापस)
 
 त्रुटि: 422 ऑर्डर स्थिति समीक्षा लंबित नहीं है
 
-#### PUT /admin/withdraw/switch — वैश्विक निकासी स्विच
+#### PUT /admin/v1/withdraw/switch — वैश्विक निकासी स्विच
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1043,7 +1103,7 @@ action: approve=स्वीकृति / reject=अस्वीकृति (�
 }
 ```
 
-#### POST /admin/withdraw/limits/set — निकासी सीमा सेट करें
+#### POST /admin/v1/withdraw/limits/set — निकासी सीमा सेट करें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1064,11 +1124,11 @@ action: approve=स्वीकृति / reject=अस्वीकृति (�
 
 ### 3.4 प्लेटफ़ॉर्म उपयोगकर्ता प्रबंधन
 
-#### GET /admin/platform/user/list — C-छोर उपयोगकर्ता सूची
+#### GET /admin/v1/platform/user/list — C-छोर उपयोगकर्ता सूची
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
-पैरामीटर: ?page=1&per_page=20&keyword=player&status=1
+पैरामीटर: ?page=1&limit=20&keyword=player&status=1
 
 प्रतिक्रिया: {
   "list": [
@@ -1084,11 +1144,11 @@ action: approve=स्वीकृति / reject=अस्वीकृति (�
   ],
   "total": 1500,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### GET /admin/platform/user/{hashid} — उपयोगकर्ता विवरण
+#### GET /admin/v1/platform/user/{hashid} — उपयोगकर्ता विवरण
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1111,7 +1171,7 @@ action: approve=स्वीकृति / reject=अस्वीकृति (�
 }
 ```
 
-#### PUT /admin/platform/user/{hashid} — उपयोगकर्ता संपादित/प्रतिबंधित करें
+#### PUT /admin/v1/platform/user/{hashid} — उपयोगकर्ता संपादित/प्रतिबंधित करें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1126,7 +1186,7 @@ action: approve=स्वीकृति / reject=अस्वीकृति (�
 
 ### 3.5 भुगतान प्रबंधन
 
-#### GET /admin/payment/method/list
+#### GET /admin/v1/payment/method/list
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1144,7 +1204,7 @@ action: approve=स्वीकृति / reject=अस्वीकृति (�
 }
 ```
 
-#### POST /admin/payment/method/toggle — भुगतान विधि सक्षम/अक्षम
+#### POST /admin/v1/payment/method/toggle — भुगतान विधि सक्षम/अक्षम
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1156,11 +1216,11 @@ action: approve=स्वीकृति / reject=अस्वीकृति (�
 
 ### 3.6 घोषणा प्रबंधन
 
-#### GET /admin/announcement/list
+#### GET /admin/v1/announcement/list
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
-पैरामीटर: ?page=1&per_page=20
+पैरामीटर: ?page=1&limit=20
 
 प्रतिक्रिया: {
   "list": [
@@ -1176,11 +1236,11 @@ action: approve=स्वीकृति / reject=अस्वीकृति (�
   ],
   "total": 5,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### POST /admin/announcement/create — घोषणा प्रकाशित करें
+#### POST /admin/v1/announcement/create — घोषणा प्रकाशित करें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1200,11 +1260,11 @@ action: approve=स्वीकृति / reject=अस्वीकृति (�
 
 ### 3.7 KYC समीक्षा
 
-#### GET /admin/identity/list — KYC सूची
+#### GET /admin/v1/identity/list — KYC सूची
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
-पैरामीटर: ?page=1&per_page=20&status=pending
+पैरामीटर: ?page=1&limit=20&status=pending
 
 प्रतिक्रिया: {
   "list": [
@@ -1217,11 +1277,11 @@ action: approve=स्वीकृति / reject=अस्वीकृति (�
       "created_at": "2026-05-22 10:00:00"
     }
   ],
-  "total": 5, "page": 1, "per_page": 20
+  "total": 5, "page": 1, "limit": 20
 }
 ```
 
-#### PUT /admin/identity/review — KYC समीक्षा
+#### PUT /admin/v1/identity/review — KYC समीक्षा
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1235,7 +1295,7 @@ action: approve / reject
 
 ### 3.8 गेम क्षेत्र/सर्वर प्रबंधन
 
-#### GET /admin/game/server/list — क्षेत्र/सर्वर सूची
+#### GET /admin/v1/game/server/list — क्षेत्र/सर्वर सूची
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1248,7 +1308,7 @@ action: approve / reject
 }
 ```
 
-#### POST /admin/game/server/create — क्षेत्र/सर्वर बनाएं
+#### POST /admin/v1/game/server/create — क्षेत्र/सर्वर बनाएं
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1256,14 +1316,14 @@ action: approve / reject
 प्रतिक्रिया: { "id": "hashid" }
 ```
 
-#### PUT /admin/game/server/{hashid} — क्षेत्र/सर्वर संपादित करें
+#### PUT /admin/v1/game/server/{hashid} — क्षेत्र/सर्वर संपादित करें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
 अनुरोध: { "name": "新名称", "status": 2 }
 ```
 
-#### DELETE /admin/game/server/{hashid} — क्षेत्र/सर्वर हटाएं
+#### DELETE /admin/v1/game/server/{hashid} — क्षेत्र/सर्वर हटाएं
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1271,7 +1331,7 @@ action: approve / reject
 
 ### 3.9 निकासी स्तरीय सीमा प्रबंधन
 
-#### GET /admin/withdraw/limits/list
+#### GET /admin/v1/withdraw/limits/list
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1293,7 +1353,7 @@ action: approve / reject
 }
 ```
 
-#### PUT /admin/withdraw/limits/{hashid} — सीमा अपडेट करें
+#### PUT /admin/v1/withdraw/limits/{hashid} — सीमा अपडेट करें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1304,14 +1364,14 @@ action: approve / reject
 
 ### 3.11 गेम श्रेणी प्रबंधन
 
-#### GET /admin/game/category/list
+#### GET /admin/v1/game/category/list
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
 प्रतिक्रिया: { "list": [{ "id": "...", "name": "动作", "slug": "action", "sort": 1 }] }
 ```
 
-#### POST /admin/game/category/create
+#### POST /admin/v1/game/category/create
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1319,11 +1379,11 @@ action: approve / reject
 प्रतिक्रिया: { "id": "hashid" }
 ```
 
-#### PUT /admin/game/category/{hashid} — श्रेणी संपादित करें
+#### PUT /admin/v1/game/category/{hashid} — श्रेणी संपादित करें
 
-#### DELETE /admin/game/category/{hashid} — श्रेणी हटाएं
+#### DELETE /admin/v1/game/category/{hashid} — श्रेणी हटाएं
 
-#### POST /admin/game/category/assign — गेम आवंटित करें
+#### POST /admin/v1/game/category/assign — गेम आवंटित करें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1332,42 +1392,42 @@ action: approve / reject
 
 ### 3.12 लीडरबोर्ड प्रबंधन
 
-#### GET /admin/leaderboard/list — लीडरबोर्ड सूची
+#### GET /admin/v1/leaderboard/list — लीडरबोर्ड सूची
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
 प्रतिक्रिया: { "list": [{ "id": "...", "name": "...", "type": "total", "metric": "earned" }] }
 ```
 
-#### POST /admin/leaderboard/create — लीडरबोर्ड बनाएं
+#### POST /admin/v1/leaderboard/create — लीडरबोर्ड बनाएं
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
 अनुरोध: { "name": "周收入榜", "type": "weekly", "metric": "earned", "game_id": "hashid(वैकल्पिक)" }
 ```
 
-#### PUT /admin/leaderboard/{hashid} — लीडरबोर्ड संपादित करें
+#### PUT /admin/v1/leaderboard/{hashid} — लीडरबोर्ड संपादित करें
 
-#### DELETE /admin/leaderboard/{hashid} — लीडरबोर्ड हटाएं
+#### DELETE /admin/v1/leaderboard/{hashid} — लीडरबोर्ड हटाएं
 
-#### POST /admin/leaderboard/{hashid}/refresh — कैश रिफ्रेश करें
+#### POST /admin/v1/leaderboard/{hashid}/refresh — कैश रिफ्रेश करें
 
 ### 3.13 कूपन प्रबंधन
 
-#### GET /admin/coupon/list — कूपन सूची
+#### GET /admin/v1/coupon/list — कूपन सूची
 
-#### POST /admin/coupon/create — कूपन बनाएं
+#### POST /admin/v1/coupon/create — कूपन बनाएं
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
 अनुरोध: { "name": "新人礼包", "type": "fixed", "value": "10.0000", "total_qty": 1000 }
 ```
 
-#### PUT /admin/coupon/{hashid} — संपादित करें (जब प्राप्त नहीं हुआ)
+#### PUT /admin/v1/coupon/{hashid} — संपादित करें (जब प्राप्त नहीं हुआ)
 
-#### DELETE /admin/coupon/{hashid} — हटाएं
+#### DELETE /admin/v1/coupon/{hashid} — हटाएं
 
-#### GET /admin/coupon/{hashid}/stats — प्राप्ति आँकड़े
+#### GET /admin/v1/coupon/{hashid}/stats — प्राप्ति आँकड़े
 
 ```
 प्रतिक्रिया: { "total_qty": 1000, "used_qty": 234, "remaining": 766, "usage_rate": "23.40%" }
@@ -1375,20 +1435,20 @@ action: approve / reject
 
 ### 3.14 देश कॉन्फ़िगरेशन प्रबंधन
 
-#### GET /admin/country/config/list — देश कॉन्फ़िग सूची
+#### GET /admin/v1/country/config/list — देश कॉन्फ़िग सूची
 
-#### POST /admin/country/config/create — देश कॉन्फ़िग बनाएं
+#### POST /admin/v1/country/config/create — देश कॉन्फ़िग बनाएं
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
 अनुरोध: { "country_code": "JP", "currency": "JPY", "payment_methods": "[\"stripe\",\"paypal\"]", "min_deposit": "100.0000" }
 ```
 
-#### PUT /admin/country/config/{hashid} — देश कॉन्फ़िग संपादित करें
+#### PUT /admin/v1/country/config/{hashid} — देश कॉन्फ़िग संपादित करें
 
 ### 3.15 डेटा निर्यात
 
-#### POST /admin/export/users — C-छोर उपयोगकर्ता निर्यात
+#### POST /admin/v1/export/users — C-छोर उपयोगकर्ता निर्यात
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1397,7 +1457,7 @@ action: approve / reject
 प्रतिक्रिया: Excel फ़ाइल डाउनलोड (xlsx)
 ```
 
-#### POST /admin/export/transactions — प्लेटफ़ॉर्म लेनदेन निर्यात
+#### POST /admin/v1/export/transactions — प्लेटफ़ॉर्म लेनदेन निर्यात
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1412,18 +1472,18 @@ action: approve / reject
 
 | विधि | पथ | विवरण |
 |------|------|------|
-| GET | /admin/analytics/overview | प्लेटफ़ॉर्म सारांश (आज/पिछले 7 दिन) |
-| GET | /admin/analytics/game-ranking | गेम रैंकिंग (?days=7) |
-| GET | /admin/analytics/dau-trend | DAU प्रवृत्ति (?days=30) |
-| GET | /admin/analytics/hourly-trend | घंटे-वार प्रवृत्ति |
-| GET | /admin/analytics/action-distribution | व्यवहार वितरण |
-| GET | /admin/analytics/revenue | राजस्व विश्लेषण |
-| GET | /admin/analytics/conversion | गेम रूपांतरण दर |
-| GET | /admin/analytics/probability | संयुक्त/सशर्त संभावना |
-| GET | /admin/analytics/retention | प्रतिधारण विश्लेषण D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | रूपांतरण फ़नल |
-| GET | /admin/analytics/arpu | ARPU/ARPPU प्रवृत्ति |
-| GET | /admin/analytics/economy | गेम मुद्रा आर्थिक मीट्रिक्स |
+| GET | /admin/v1/analytics/overview | प्लेटफ़ॉर्म सारांश (आज/पिछले 7 दिन) |
+| GET | /admin/v1/analytics/game-ranking | गेम रैंकिंग (?days=7) |
+| GET | /admin/v1/analytics/dau-trend | DAU प्रवृत्ति (?days=30) |
+| GET | /admin/v1/analytics/hourly-trend | घंटे-वार प्रवृत्ति |
+| GET | /admin/v1/analytics/action-distribution | व्यवहार वितरण |
+| GET | /admin/v1/analytics/revenue | राजस्व विश्लेषण |
+| GET | /admin/v1/analytics/conversion | गेम रूपांतरण दर |
+| GET | /admin/v1/analytics/probability | संयुक्त/सशर्त संभावना |
+| GET | /admin/v1/analytics/retention | प्रतिधारण विश्लेषण D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | रूपांतरण फ़नल |
+| GET | /admin/v1/analytics/arpu | ARPU/ARPPU प्रवृत्ति |
+| GET | /admin/v1/analytics/economy | गेम मुद्रा आर्थिक मीट्रिक्स |
 
 ### 3.17 टिकट प्रबंधन
 
@@ -1431,11 +1491,11 @@ action: approve / reject
 
 | विधि | पथ | विवरण |
 |------|------|------|
-| GET | /admin/ticket/list | टिकट सूची (?page=&limit=&status=&type=) |
-| GET | /admin/ticket/{hashid} | टिकट विवरण (उत्तर सहित) |
-| POST | /admin/ticket/{hashid}/reply | टिकट का उत्तर दें |
-| POST | /admin/ticket/{hashid}/close | टिकट बंद करें |
-| POST | /admin/ticket/{hashid}/assign | प्रबंधक नियुक्त करें (admin_id) |
+| GET | /admin/v1/ticket/list | टिकट सूची (?page=&limit=&status=&type=) |
+| GET | /admin/v1/ticket/{hashid} | टिकट विवरण (उत्तर सहित) |
+| POST | /admin/v1/ticket/{hashid}/reply | टिकट का उत्तर दें |
+| POST | /admin/v1/ticket/{hashid}/close | टिकट बंद करें |
+| POST | /admin/v1/ticket/{hashid}/assign | प्रबंधक नियुक्त करें (admin_id) |
 
 ### 3.18 CDN कॉन्फ़िगरेशन प्रबंधन
 
@@ -1443,12 +1503,12 @@ action: approve / reject
 
 | विधि | पथ | विवरण | प्रमाणीकरण |
 |------|------|------|------|
-| GET | /admin/cdn/provider/list | CDN प्रदाताओं की सूची (क्रेडेंशियल वापस नहीं भेजे जाते) | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/toggle | प्रदाता सक्षम/अक्षम करें {id, status} | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/create | बनाएँ {name, provider, config(JSON), status, sort}，provider अद्वितीयता जाँच | AdminAuth + RBAC: cdn |
-| PUT | /admin/cdn/provider/{hashid} | संपादित करें (खाली config = अपरिवर्तित) | AdminAuth + RBAC: cdn |
-| DELETE | /admin/cdn/provider/{hashid} | हटाएँ | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/test | कनेक्टिविटी परीक्षण HeadBucket {id} | AdminAuth + RBAC: cdn |
+| GET | /admin/v1/cdn/provider/list | CDN प्रदाताओं की सूची (क्रेडेंशियल वापस नहीं भेजे जाते) | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/toggle | प्रदाता सक्षम/अक्षम करें {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/create | बनाएँ {name, provider, config(JSON), status, sort}，provider अद्वितीयता जाँच | AdminAuth + RBAC: cdn |
+| PUT | /admin/v1/cdn/provider/{hashid} | संपादित करें (खाली config = अपरिवर्तित) | AdminAuth + RBAC: cdn |
+| DELETE | /admin/v1/cdn/provider/{hashid} | हटाएँ | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/test | कनेक्टिविटी परीक्षण HeadBucket {id} | AdminAuth + RBAC: cdn |
 
 ### 3.19 डेटा रिपोर्ट
 
@@ -1456,9 +1516,9 @@ action: approve / reject
 
 | विधि | पथ | विवरण | प्रमाणीकरण |
 |------|------|------|------|
-| GET | /admin/report/summary | रिपोर्ट सारांश (नए उपयोगकर्ता/जमा/निकासी/विनिमय/गेम प्ले) | AdminAuth + RBAC: report |
-| GET | /admin/report/daily | दैनिक रिपोर्ट (दिन-वार एग्रीगेशन, खाली तारीखों पर 0 भरा जाता है) | AdminAuth + RBAC: report |
-| GET | /admin/report/export | दैनिक रिपोर्ट CSV निर्यात (UTF-8 BOM) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/summary | रिपोर्ट सारांश (नए उपयोगकर्ता/जमा/निकासी/विनिमय/गेम प्ले) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/daily | दैनिक रिपोर्ट (दिन-वार एग्रीगेशन, खाली तारीखों पर 0 भरा जाता है) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/export | दैनिक रिपोर्ट CSV निर्यात (UTF-8 BOM) | AdminAuth + RBAC: report |
 
 ## 4. दर सीमा रणनीति
 
@@ -1681,6 +1741,8 @@ status: open / waiting / replied / closed
 
 #### GET /api/v1/user/vip-status — VIP स्थिति
 
+> **अभी लागू नहीं**: C-एंड रूट पंजीकृत नहीं है (`service/config/route.php` में कोई प्रविष्टि नहीं), अनुरोध अभी 404 लौटाते हैं। लागू होने पर यह पंक्ति हटा दें।
+
 ```
 प्रमाणीकरण आवश्यक: हाँ
 प्रतिक्रिया: {
@@ -1701,6 +1763,8 @@ status: open / waiting / replied / closed
 
 #### GET /api/v1/user/achievements — उपलब्धि सूची
 
+> **अभी लागू नहीं**: C-एंड रूट पंजीकृत नहीं है (`service/config/route.php` में कोई प्रविष्टि नहीं), अनुरोध अभी 404 लौटाते हैं। लागू होने पर यह पंक्ति हटा दें।
+
 ```
 प्रमाणीकरण आवश्यक: हाँ
 प्रतिक्रिया: {
@@ -1720,7 +1784,7 @@ status: open / waiting / replied / closed
 
 ### 7.6 प्रशासन कंसोल नए API
 
-#### GET /admin/ticket/list — टिकट सूची
+#### GET /admin/v1/ticket/list — टिकट सूची
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1739,7 +1803,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### POST /admin/ticket/{hashid}/reply — टिकट का उत्तर दें
+#### POST /admin/v1/ticket/{hashid}/reply — टिकट का उत्तर दें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1747,14 +1811,14 @@ status: open / waiting / replied / closed
 प्रतिक्रिया: { "code": 0, "message": "Reply sent" }
 ```
 
-#### POST /admin/ticket/{hashid}/close — टिकट बंद करें
+#### POST /admin/v1/ticket/{hashid}/close — टिकट बंद करें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
 प्रतिक्रिया: { "code": 0, "message": "Ticket closed" }
 ```
 
-#### POST /admin/ticket/{hashid}/assign — प्रबंधक नियुक्त करें
+#### POST /admin/v1/ticket/{hashid}/assign — प्रबंधक नियुक्त करें
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1762,7 +1826,7 @@ status: open / waiting / replied / closed
 प्रतिक्रिया: { "code": 0, "message": "Assigned" }
 ```
 
-#### GET /admin/analytics/retention — प्रतिधारण विश्लेषण
+#### GET /admin/v1/analytics/retention — प्रतिधारण विश्लेषण
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1773,7 +1837,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/funnel — रूपांतरण फ़नल
+#### GET /admin/v1/analytics/funnel — रूपांतरण फ़नल
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1787,7 +1851,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/arpu — ARPU/ARPPU प्रवृत्ति
+#### GET /admin/v1/analytics/arpu — ARPU/ARPPU प्रवृत्ति
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1795,7 +1859,7 @@ status: open / waiting / replied / closed
 प्रतिक्रिया: { "arpu": [...], "arppu": [...], "dates": [...] }
 ```
 
-#### GET /admin/analytics/economy — गेम मुद्रा आर्थिक मीट्रिक्स
+#### GET /admin/v1/analytics/economy — गेम मुद्रा आर्थिक मीट्रिक्स
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1814,14 +1878,14 @@ status: open / waiting / replied / closed
 ```
 
 
-#### GET /admin/cdn/provider/list — CDN प्रदाताओं की सूची (क्रेडेंशियल वापस नहीं भेजे जाते)
+#### GET /admin/v1/cdn/provider/list — CDN प्रदाताओं की सूची (क्रेडेंशियल वापस नहीं भेजे जाते)
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
 प्रतिक्रिया: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
 ```
 
-#### POST /admin/cdn/provider/toggle — प्रदाता सक्षम/अक्षम करें {id, status}
+#### POST /admin/v1/cdn/provider/toggle — प्रदाता सक्षम/अक्षम करें {id, status}
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1829,7 +1893,7 @@ status: open / waiting / replied / closed
 प्रतिक्रिया: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/cdn/provider/create — बनाएँ {name, provider, config(JSON), status, sort}，provider अद्वितीयता जाँच
+#### POST /admin/v1/cdn/provider/create — बनाएँ {name, provider, config(JSON), status, sort}，provider अद्वितीयता जाँच
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1837,7 +1901,7 @@ status: open / waiting / replied / closed
 प्रतिक्रिया: { "code": 0, "data": { "id": "..." } }
 ```
 
-#### PUT /admin/cdn/provider/{hashid} — संपादित करें (खाली config = अपरिवर्तित)
+#### PUT /admin/v1/cdn/provider/{hashid} — संपादित करें (खाली config = अपरिवर्तित)
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
@@ -1845,21 +1909,21 @@ status: open / waiting / replied / closed
 प्रतिक्रिया: { "code": 0, "message": "..." }
 ```
 
-#### DELETE /admin/cdn/provider/{hashid} — हटाएँ
+#### DELETE /admin/v1/cdn/provider/{hashid} — हटाएँ
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
 प्रतिक्रिया: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/cdn/provider/test — कनेक्टिविटी परीक्षण HeadBucket {id}
+#### POST /admin/v1/cdn/provider/test — कनेक्टिविटी परीक्षण HeadBucket {id}
 
 ```
 प्रमाणीकरण आवश्यक: हाँ
 अनुरोध: { "id": "..." }
 प्रतिक्रिया: { "code": 0, "data": { "ok": true } }
 ```
-#### GET /admin/report/summary — रिपोर्ट सारांश
+#### GET /admin/v1/report/summary — रिपोर्ट सारांश
 
 ```
 需认证: 是
@@ -1873,7 +1937,7 @@ status: open / waiting / replied / closed
 ```
 
 
-#### GET /admin/report/daily — दैनिक रिपोर्ट
+#### GET /admin/v1/report/daily — दैनिक रिपोर्ट
 
 ```
 需认证: 是
@@ -1885,7 +1949,7 @@ status: open / waiting / replied / closed
 ```
 
 
-#### GET /admin/report/export — दैनिक रिपोर्ट CSV निर्यात
+#### GET /admin/v1/report/export — दैनिक रिपोर्ट CSV निर्यात
 
 ```
 需认证: 是
@@ -2029,13 +2093,13 @@ status: open / waiting / replied / closed
 
 ### 7.10 उन्नत विश्लेषण API
 
-#### GET /admin/analytics/retention — प्रतिधारण विश्लेषण
+#### GET /admin/v1/analytics/retention — प्रतिधारण विश्लेषण
 ```
 प्रमाणीकरण आवश्यक: हाँ
 प्रतिक्रिया: { "D1": "45.2%", "D3": "28.7%", "D7": "18.3%", "D30": "8.1%" }
 ```
 
-#### GET /admin/analytics/funnel — रूपांतरण फ़नल
+#### GET /admin/v1/analytics/funnel — रूपांतरण फ़नल
 ```
 प्रमाणीकरण आवश्यक: हाँ
 प्रतिक्रिया: {
@@ -2048,14 +2112,14 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/arpu — ARPU/ARPPU प्रवृत्ति
+#### GET /admin/v1/analytics/arpu — ARPU/ARPPU प्रवृत्ति
 ```
 प्रमाणीकरण आवश्यक: हाँ
 पैरामीटर: ?days=30
 प्रतिक्रिया: { "dates": [...], "arpu": [...], "arppu": [...] }
 ```
 
-#### GET /admin/analytics/economy — गेम आर्थिक मीट्रिक्स
+#### GET /admin/v1/analytics/economy — गेम आर्थिक मीट्रिक्स
 ```
 प्रमाणीकरण आवश्यक: हाँ
 प्रतिक्रिया: {
@@ -2117,47 +2181,47 @@ status: open / waiting / replied / closed
 
 | एंडपॉइंट | विवरण |
 |------|------|
-| GET /admin/risk/dashboard | रिस्क डैशबोर्ड अवलोकन |
-| GET /admin/risk/overview | जोखिम अवलोकन मेट्रिक्स |
-| GET /admin/risk/hit-trend | हिट ट्रेंड |
-| GET /admin/risk/action-distribution | एक्शन वितरण |
-| GET /admin/risk/rule-performance | रूल प्रदर्शन |
-| GET /admin/risk/rule/list | रूल सूची |
-| POST /admin/risk/rule/create | रूल बनाएँ |
-| PUT /admin/risk/rule/{hashid} | रूल अपडेट करें |
-| POST /admin/risk/rule/{hashid}/toggle | रूल सक्षम/अक्षम करें |
-| POST /admin/risk/rule/test | रूल परीक्षण |
-| GET /admin/risk/event/list | जोखिम इवेंट सूची |
-| GET /admin/risk/event/{hashid} | इवेंट विवरण |
-| POST /admin/risk/event/{hashid}/handle | इवेंट संभालें |
-| GET /admin/risk/device/list | डिवाइस फिंगरप्रिंट सूची |
-| POST /admin/risk/device/block | डिवाइस ब्लॉक करें |
-| POST /admin/risk/device/unblock | डिवाइस अनब्लॉक करें |
-| GET /admin/risk/ip/list | IP सूची |
-| POST /admin/risk/ip/block | IP ब्लॉक करें |
-| POST /admin/risk/ip/whitelist | IP व्हाइटलिस्ट |
-| POST /admin/risk/ip/appeal | IP अपील |
-| POST /admin/risk/ip/recheck | IP पुनर्जांच |
-| GET /admin/risk/graph/clusters | क्लस्टर सूची |
-| GET /admin/risk/graph/{userId} | उपयोगकर्ता लिंक ग्राफ |
-| GET /admin/risk/clusters | जोखिम क्लस्टर सूची |
+| GET /admin/v1/risk/dashboard | रिस्क डैशबोर्ड अवलोकन |
+| GET /admin/v1/risk/overview | जोखिम अवलोकन मेट्रिक्स |
+| GET /admin/v1/risk/hit-trend | हिट ट्रेंड |
+| GET /admin/v1/risk/action-distribution | एक्शन वितरण |
+| GET /admin/v1/risk/rule-performance | रूल प्रदर्शन |
+| GET /admin/v1/risk/rule/list | रूल सूची |
+| POST /admin/v1/risk/rule/create | रूल बनाएँ |
+| PUT /admin/v1/risk/rule/{hashid} | रूल अपडेट करें |
+| POST /admin/v1/risk/rule/{hashid}/toggle | रूल सक्षम/अक्षम करें |
+| POST /admin/v1/risk/rule/test | रूल परीक्षण |
+| GET /admin/v1/risk/event/list | जोखिम इवेंट सूची |
+| GET /admin/v1/risk/event/{hashid} | इवेंट विवरण |
+| POST /admin/v1/risk/event/{hashid}/handle | इवेंट संभालें |
+| GET /admin/v1/risk/device/list | डिवाइस फिंगरप्रिंट सूची |
+| POST /admin/v1/risk/device/block | डिवाइस ब्लॉक करें |
+| POST /admin/v1/risk/device/unblock | डिवाइस अनब्लॉक करें |
+| GET /admin/v1/risk/ip/list | IP सूची |
+| POST /admin/v1/risk/ip/block | IP ब्लॉक करें |
+| POST /admin/v1/risk/ip/whitelist | IP व्हाइटलिस्ट |
+| POST /admin/v1/risk/ip/appeal | IP अपील |
+| POST /admin/v1/risk/ip/recheck | IP पुनर्जांच |
+| GET /admin/v1/risk/graph/clusters | क्लस्टर सूची |
+| GET /admin/v1/risk/graph/{userId} | उपयोगकर्ता लिंक ग्राफ |
+| GET /admin/v1/risk/clusters | जोखिम क्लस्टर सूची |
 
 ### 10.2 एंटी-चीट प्रबंधन (एडमिन :8789)
 
 | एंडपॉइंट | विवरण |
 |------|------|
-| GET /admin/anticheat/events | एंटी-चीट इवेंट सूची |
-| GET /admin/anticheat/events/{hashid} | इवेंट विवरण |
-| POST /admin/anticheat/events/{hashid}/review | इवेंट समीक्षा |
+| GET /admin/v1/anticheat/events | एंटी-चीट इवेंट सूची |
+| GET /admin/v1/anticheat/events/{hashid} | इवेंट विवरण |
+| POST /admin/v1/anticheat/events/{hashid}/review | इवेंट समीक्षा |
 
 ### 10.3 गतिविधियाँ (एडमिन :8789 + क्लाइंट :8792)
 
 | एंडपॉइंट | विवरण |
 |------|------|
-| GET /admin/activities/list | गतिविधि सूची (एडमिन) |
-| POST /admin/activities/create | गतिविधि बनाएँ (एडमिन) |
-| PUT /admin/activities/{hashid} | गतिविधि अपडेट करें (एडमिन) |
-| DELETE /admin/activities/{hashid} | गतिविधि हटाएँ (एडमिन) |
+| GET /admin/v1/activities/list | गतिविधि सूची (एडमिन) |
+| POST /admin/v1/activities/create | गतिविधि बनाएँ (एडमिन) |
+| PUT /admin/v1/activities/{hashid} | गतिविधि अपडेट करें (एडमिन) |
+| DELETE /admin/v1/activities/{hashid} | गतिविधि हटाएँ (एडमिन) |
 | GET /api/v1/activities/list | गतिविधि सूची (क्लाइंट) |
 | GET /api/v1/activities/progress | भागीदारी प्रगति (क्लाइंट) |
 | GET /api/v1/activities/{hashid} | गतिविधि विवरण (क्लाइंट) |
@@ -2175,9 +2239,9 @@ status: open / waiting / replied / closed
 | PUT /api/v1/groups/{hashid}/role | सदस्य भूमिका |
 | POST /api/v1/shares | शेयर लिंक बनाएँ |
 | POST /api/v1/shares/visit | शेयर विज़िट ट्रैकिंग |
-| GET /admin/groups | समूह सूची (एडमिन) |
-| GET /admin/groups/{hashid}/audit | समूह ऑडिट (एडमिन) |
-| GET /admin/share/stats | शेयर आँकड़े (एडमिन) |
+| GET /admin/v1/groups | समूह सूची (एडमिन) |
+| GET /admin/v1/groups/{hashid}/audit | समूह ऑडिट (एडमिन) |
+| GET /admin/v1/share/stats | शेयर आँकड़े (एडमिन) |
 
 ### 10.5 भुगतान गेटवे विस्तार (L1)
 

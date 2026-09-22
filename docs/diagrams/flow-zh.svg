@@ -70,7 +70,7 @@
   <text x="665" y="544" text-anchor="middle" fill="#166534" font-size="14" font-weight="bold">法币到账</text>
   <text x="665" y="564" text-anchor="middle" fill="#22c55e" font-size="11">Fiat Received</text>
 
-  <rect x="80" y="608" width="840" height="72" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="40" y="608" width="920" height="72" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="500" y="634" text-anchor="middle" fill="#475569" font-size="13" font-weight="bold">核心闭环: 注册 → 充值(法币→平台币) → 兑换(平台币⇄游戏币) → 游戏(赚/花) → 兑回 → 提现(平台币→法币)</text>
   <text x="500" y="656" text-anchor="middle" fill="#94a3b8" font-size="11">支持货币: USD / CNY / EUR / JPY / KRW / GBP / BRL / INR  |  支付渠道: Stripe / PayPal / 支付宝 / 微信支付 / 加密货币</text>
 

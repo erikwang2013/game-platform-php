@@ -1,4 +1,4 @@
-# 开放管理后台 — 设计文档
+# 오픈 관리자 — 디자인 문서
 <!-- lang-nav -->
 
 Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · **한국어** · [Русский](DESIGN.ru.md) · [Deutsch](DESIGN.de.md) · [Français](DESIGN.fr.md) · [Español](DESIGN.es.md) · [Português](DESIGN.pt.md) · [हिन्दी](DESIGN.hi.md) · [العربية](DESIGN.ar.md) · [বাংলা](DESIGN.bn.md) · [Bahasa Indonesia](DESIGN.id.md) · [日本語](DESIGN.ja.md)
@@ -65,10 +65,10 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · **한국어** · [�
 |---|------|------|
 | 라우트 | `config/route.php` | URL에서 컨트롤러로의 매핑, 미들웨어 바인딩, 버전별 라우트 |
 | 미들웨어 | `app/middleware/` | 공격 차단(SecurityFilter), 속도 제한(RateLimit), 인증(JWT), 인가(RBAC) |
-| 컨트롤러 | 30개: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (관리자) + Captcha/Auth (API v1) | 요청 파라미터 검증, 비즈니스 로직 호출, 응답 포맷팅 |
-| 비즈니스 서비스 | `common/service/` | 데이터 분석: GameDashboardService(개요/랭킹/추세), DepositLogService(매출/전환), ProbabilityService(결합/조건부 확률, SQL 빌더); DB 장애 시 오류 대신 빈 데이터 반환 |
+| 컨트롤러 | 45개: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (관리자) + Captcha/Auth (API v1) | 요청 파라미터 검증, 비즈니스 로직 호출, 응답 포맷팅 |
+| 비즈니스 서비스 | `packages/platform-common/src/service/` | 데이터 분석: GameDashboardService(개요/랭킹/추세), DepositLogService(매출/전환), ProbabilityService(결합/조건부 확률, SQL 빌더); DB 장애 시 오류 대신 빈 데이터 반환 |
 | 데이터 모델 | `app/model/` | ORM 매핑, 연관 관계, 필드 암복호화 |
-| 공용 유틸리티 | `app/common/` | Hashids, Snowflake, Encryption 서비스 |
+| 공용 유틸리티 | `packages/platform-common/src/` | Hashids, Snowflake, Encryption 서비스 |
 
 ### 2.2 요청 라이프사이클
 
@@ -256,7 +256,7 @@ Redis Sorted Set 슬라이딩 윈도우 알고리즘 기반, 원자화 Lua 스�
   │  ① POST /api/v1/captcha/generate     │ captcha_create('click')
   │◄── {key, image(base64), targets}  │
   │                                    │
-  │  ② 사용자가 그림의 텍스트 위치 클릭   │
+  │  ② 사용자가 그림의 텍스트 위치 클릭  │
   │                                    │
   │  ③ POST /api/v1/auth/login           │
   │     {username, password,          │
@@ -330,12 +330,12 @@ Redis Sorted Set 슬라이딩 윈도우 알고리즘 기반, 원자화 Lua 스�
 ```
 ┌────────────────────────────────────────────────┐
 │  Header (56px)                                 │
-│  ☰ 메뉴 버튼          🔔 메시지  👤 관리자  ▼   │
+│  ☰ 메뉴 버튼          🔔 메시지  👤 관리자  ▼  │
 ├──────────┬─────────────────────────────────────┤
 │ Sidebar  │  Content Area                       │
 │ (64/240) │                                     │
 │          │  ┌──────────────┐ ┌──────────┐     │
-│ 📊 대시보드│  │ 통계 카드×4   │ │ 추세 그래프│     │
+│ 📊 대시보드│  │ 통계 카드×4   │ │ 추세 그래프│ │
 │ 👥 사용자 │  └──────────────┘ └──────────┘     │
 │ 🔒 역할  │  ┌──────┐ ┌────────────────┐       │
 │ ⚙ 설정  │  │파이  │ │ 최근 작업 로그   │       │
@@ -466,7 +466,7 @@ GitHub Actions 지속적 통합은 `.github/workflows/ci.yml`에 정의:
 
 ### 8.5 모니터링
 
-`GET /metrics` 엔드포인트 (`MetricsController`)가 Prometheus text format으로 5개 gauge 지표를 노출: HTTP 요청 총수, 활성 사용자 수, 데이터베이스/Redis 연결 상태, 메모리 사용량.
+`GET /metrics` 엔드포인트 (`MetricsController`)가 Prometheus text format으로 18개 gauge 지표를 노출: 활성/전체 사용자 수, 데이터베이스/Redis/ES 연결 상태, 메모리/CPU/프로세스 지표, 대기 중 출금 및 대사 차이.
 
 ### 8.6 환경 요구사항
 

@@ -598,14 +598,14 @@ Das Projekt stellt `docs/nginx-security.conf` als Referenzkonfiguration zur Sich
 
 | Bedrohungstyp | Angriffsvektor | Verteidigungsebenen |
 |----------|---------|---------|
-| HTTP-Methodenmissbrauch | TRACE/TRACK-XST-Angriffe, CONNECT-Tunnel-Proxys, WebDAV-Methoden-Sondierung | SecurityFilter-405-Methoden-Whitelist (GET/POST/PUT/DELETE/OPTIONS/HEAD) |
+| HTTP-Methodenmissbrauch | TRACE/TRACK-XST-Angriffe, CONNECT-Tunnel-Proxys, WebDAV-Methoden-Sondierung | SecurityFilter-405-Methoden-Whitelist (GET/POST/PUT/DELETE/HEAD/OPTIONS/PATCH) |
 | Gezieltes Brute-Force | wiederholte Passwortversuche gegen bestimmte Benutzer | Kontosperre (5 Fehlschläge sperren 15 Minuten) + RateLimit (Login 10/min) + Captcha |
 | Brute-Force | verteilte IP-Versuche mit Benutzername/Passwort | RateLimit (Login 10/min) + Captcha |
-| XSS (Cross-Site Scripting) | `<script>`, onerror, javascript: | SecurityFilter (5 Muster) + X-XSS-Protection-Response-Header + CSP |
-| SQL-Injection | UNION SELECT, OR 1=1, Kommentar-Bypass | SecurityFilter (6 Muster) + Eloquent-ORM-Parameterabfragen |
+| XSS (Cross-Site Scripting) | `<script>`, onerror, javascript: | SecurityFilter (13 Muster) + X-XSS-Protection-Response-Header + CSP |
+| SQL-Injection | UNION SELECT, OR 1=1, Kommentar-Bypass | SecurityFilter (14 Muster) + Eloquent-ORM-Parameterabfragen |
 | CSRF (Cross-Site Request Forgery) | bösartige Websites senden Anfragen im Namen des Opfers | SecurityFilter-Origin/Referer-Prüfung |
 | Pfad-Traversal | `../../etc/passwd` | SecurityFilter-Pfad-Traversal-Muster + UploadController-Endungs-Whitelist |
-| Befehlsinjektion | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (4 Muster) |
+| Befehlsinjektion | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (13 Muster) |
 | Session-Hijacking | Diebstahl von JWT-Tokens | kurze JWT-Gültigkeit (2h) + Blacklist-Logout + sekundäre Passwortbestätigung bei sensiblen Aktionen |
 | ID-Enumeration | Durchlaufen numerischer IDs zur Datenmengen-Schätzung | Hashids-Verschleierung zu Zufallszeichenfolgen |
 | Datenleak | DB-Dumps / Man-in-the-Middle / Protokoll-Leaks | dreistufige Verschlüsselung/Maskierung + OperationLog-Filterung sensibler Felder |

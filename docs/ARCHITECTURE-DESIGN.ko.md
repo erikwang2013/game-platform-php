@@ -200,10 +200,10 @@ block  → 작업 거부
 
 ### 6.2 KYC 실명 인증
 
-3단계 인증 체계:
+출금 한도 등급 (game_withdraw_limit):
 - `default` — 미인증, 기본 한도
 - `verified` — KYC 심사 통과, 한도 상향 + 수수료 인하
-- `vip` — VIP 등급, 최고 한도 + 수수료 면제
+- `vip` — 예약 등급 (최고 한도 + 수수료 면제); 현재 코드는 default/verified만 읽으며, VIP 수수료 할인은 경험치에 따라 별도로 계산됩니다
 
 인증 플로우:
 ```
@@ -219,9 +219,9 @@ Google / Facebook / Apple 로그인 지원:
 
 ```
 프론트엔드에서 OAuth 버튼 클릭
-  → GET /api/auth/oauth/{provider} → 인증 URL 획득
+  → GET /api/v1/auth/oauth/{provider} → 인증 URL 획득
   → 서드파티 인증 페이지 이동 → 사용자 동의
-  → 콜백 POST /api/auth/oauth/{provider}/callback
+  → 콜백 POST /api/v1/auth/oauth/{provider}/callback
   → 기존 연동 확인 → 바로 로그인
   → 연동 없음 → 신규 사용자 자동 등록 + 연동 + 지갑 생성
 ```
@@ -229,7 +229,7 @@ Google / Facebook / Apple 로그인 지원:
 ### 6.4 결제 콜백
 
 ```
-서드파티 결제 완료 → POST /api/payment/callback
+서드파티 결제 완료 → POST /api/v1/payment/callback
   → provider 화이트리스트 검증 (stripe/paypal만)
   → 서명 검증 fail-closed (secret/webhook_id 미설정, 서명 검증 실패, 타임스탬프 ±300초 초과는 모두 거부)
   → 콜백 금액과 주문 금액 bccomp 대조 (채널 간 도용 방지)
@@ -251,7 +251,7 @@ Google / Facebook / Apple 로그인 지원:
 
 ## 7. 확장성 설계
 
-### 5.1 수평 확장
+### 7.1 수평 확장
 
 admin/과 service/ 모두 다중 worker 프로세스를 지원합니다. Nginx 역방향 프록시와 함께 여러 머신에 배포하여 수평 확장 구현:
 
@@ -263,7 +263,7 @@ Nginx (로드 밸런싱)
   └── service-2 (:8792)
 ```
 
-### 5.2 모듈 분리 경로
+### 7.2 모듈 분리 경로
 
 단일 service/가 병목이 될 때 다음 경로로 분리:
 

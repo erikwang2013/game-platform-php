@@ -13,7 +13,7 @@ C-साइड यूज़र प्लेटफ़ॉर्म API सेव�
 |------|------|
 | उपयोगकर्ता | पंजीकरण/लॉगिन (यूज़रनेम+पासवर्ड + 7 प्लेटफ़ॉर्म OAuth + 2FA TOTP), प्रोफ़ाइल |
 | वॉलेट | प्लेटफ़ॉर्म कॉइन वॉलेट (ऑप्टिमिस्टिक लॉक) + गेम कॉइन वॉलेट + लेन-देन इतिहास |
-| जमा | 13 पेमेंट गेटवे (Stripe/PayPal/NowPayments/Coinbase आदि) कॉलबैक हस्ताक्षर सत्यापन और स्वचालित क्रेडिट |
+| जमा | 18 पेमेंट गेटवे (Stripe/PayPal/NowPayments/Coinbase आदि) कॉलबैक हस्ताक्षर सत्यापन और स्वचालित क्रेडिट |
 | निकासी | आवेदन → समीक्षा → भुगतान, KYC स्तरीय सीमाएँ |
 | विनिमय | प्लेटफ़ॉर्म कॉइन ⇄ गेम कॉइन रीयल-टाइम कोटेशन, VIP छूट और दर बोनस |
 | गेम | गेम सूची/श्रेणियाँ/खोज, खेल रिकॉर्ड, Provider सेटलमेंट कॉलबैक |
@@ -39,8 +39,12 @@ C-साइड यूज़र प्लेटफ़ॉर्म API सेव�
 ```
 service/
 ├── app/
-│   ├── api/v1/controller/  # C-साइड API नियंत्रक (35)
-│   ├── middleware/         # मिडलवेयर (Cors/SecurityFilter/RateLimit/ApiVersion/UserAuth/ProviderAuth)
+│   ├── activity/           # गतिविधि हैंडलर
+│   ├── api/v1/controller/  # C-साइड API नियंत्रक (34)
+│   ├── bootstrap/          # अधिसूचना बूटस्ट्रैप
+│   ├── cdn/                # CDN बहु-विक्रेता (Aliyun/Tencent/Huawei/Cloudflare/CloudFront + CdnFactory)
+│   ├── common/             # सामान्य
+│   ├── middleware/         # मिडलवेयर (Cors/SecurityFilter/RateLimit/TraceId/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
 │   ├── model/              # डेटा मॉडल
 │   ├── service/            # व्यावसायिक सेवाएँ (VIP/लीडरबोर्ड/जोखिम/सूचनाएँ आदि)
 │   ├── event/              # इवेंट बस (EventBus Redis Pub/Sub)
@@ -49,9 +53,14 @@ service/
 ├── common/                 # साझा सेवा निर्देशिका (erik/platform-common पैकेज में कार्यान्वित)
 ├── config/                 # कॉन्फ़िगरेशन फ़ाइलें
 ├── public/                 # वेब प्रवेश
+├── runtime/                # रनटाइम फ़ाइलें
+├── support/                # सहायक क्लास
 ├── tests/                  # PHPUnit परीक्षण
 ├── start.php               # स्टार्टअप प्रवेश
-└── composer.json
+├── windows.php             # Windows स्टार्टअप प्रवेश
+├── composer.json
+├── phpunit.xml             # PHPUnit कॉन्फ़िग
+└── Dockerfile              # इमेज बिल्ड
 ```
 
 ## वन-क्लिक इंस्टॉलेशन
@@ -93,7 +102,7 @@ php start.php start -d     # बैकग्राउंड (डेमॉन)
 ## उपयोग
 
 - API दस्तावेज़: `docs/API.md` (पूर्ण API संदर्भ)
-- ऑनलाइन दस्तावेज़: http://localhost:8792/apidoc/ (hg/apidoc इंटरैक्टिव दस्तावेज़)
+- ऑनलाइन दस्तावेज़: http://localhost:8792/apidoc/ (erikwang2013/apidoc-php इंटरैक्टिव दस्तावेज़)
 - स्वास्थ्य जाँच: `GET http://localhost:8792/health`
 - C-साइड फ्रंटएंड: `apps/flutter/platform/` (Flutter Web यूज़र प्लेटफ़ॉर्म)
 - व्यवस्थापक बैकएंड: `admin/` (व्यवस्थापक बैकएंड और `admin/apps/flutter/` फ्रंटएंड)

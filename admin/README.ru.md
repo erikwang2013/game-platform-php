@@ -27,6 +27,7 @@ Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.
 | | Массовый импорт Excel | Построчная проверка + отчет об ошибках |
 | 🔒 Роли и права | CRUD ролей + дерево прав | RBAC-авторизация с гранулярностью method.path |
 | ⚙ Системные настройки | CRUD пар ключ-значение | Групповое управление |
+| 💳 Способы оплаты | CRUD нескольких шлюзов + вкл/выкл | 18 шлюзов (stripe/paypal/nowpayments/coinbase и др.) + видимость по странам |
 | 🖥 Управление CDN | CRUD конфигураций 5 провайдеров + вкл/выкл + тест подключения | Учётные данные шифруются AES, service читает только из БД |
 | 📋 Аудит операций | Запрос журнала + определение источника | Автоматическое распознавание 8 платформ |
 | 📁 Управление файлами | Загрузка/экспорт Excel/экспорт PDF | Автоматическая деидентификация чувствительных данных |
@@ -64,48 +65,53 @@ Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.
 ```
 open-admin/
 ├── app/
-│   ├── admin/controller/       # Контроллеры панели
-│   │   ├── DashboardController.php # Дашборд (кэш Redis)
-│   │   ├── UserController.php      # CRUD пользователей + массовые операции
-│   │   ├── RoleController.php      # CRUD ролей
-│   │   ├── PermissionController.php# CRUD прав
-│   │   ├── ConfigController.php    # CRUD системных настроек
-│   │   ├── LogController.php       # Запрос журнала операций
-│   │   ├── ProfileController.php   # Личный кабинет + выход
-│   │   ├── ExportController.php    # Экспорт Excel/PDF
-│   │   ├── ImportController.php    # Импорт пользователей из Excel
-│   │   ├── UploadController.php    # Загрузка файлов
-│   │   ├── HealthController.php    # Health check
-│   │   ├── DocsController.php      # Документация OpenAPI
-│   │   └── BaseController.php      # Базовый контроллер
+│   ├── admin/v1/controller/    # Контроллеры панели (45)
+│   │   ├── DashboardController.php  # Дашборд (кэш Redis)
+│   │   ├── UserController.php       # CRUD пользователей + массовые операции
+│   │   ├── RoleController.php       # CRUD ролей
+│   │   ├── PermissionController.php # CRUD прав
+│   │   ├── ConfigController.php     # CRUD системных настроек
+│   │   ├── LogController.php        # Запрос журнала операций
+│   │   ├── ProfileController.php    # Личный кабинет + выход
+│   │   ├── ExportController.php     # Экспорт Excel/PDF
+│   │   ├── ImportController.php     # Импорт пользователей из Excel
+│   │   ├── UploadController.php     # Загрузка файлов
+│   │   ├── HealthController.php     # Health check
+│   │   ├── DocsController.php       # Документация OpenAPI
+│   │   └── BaseController.php       # Базовый контроллер
 │   ├── api/
 │   │   └── v1/controller/          # Контроллеры API v1 (версия в пути URL: /api/v1, /admin/v1)
 │   │       ├── CaptchaController.php # Клик-капча
 │   │       └── AuthController.php    # Вход/регистрация/обновление токена
 │   ├── common/                 # Общие утилиты
-│   │   ├── HashidsService.php  # Кодирование/декодирование ID
-│   │   ├── SnowflakeService.php# Генерация ID Snowflake
-│   │   └── EncryptionService.php # Шифрование/дешифрование данных + деидентификация
+│   │   └── CdnProbeService.php # Проверка доступности CDN (Hashids/Snowflake/Encryption — из composer-пакетов)
 │   ├── middleware/             # Промежуточное ПО
 │   │   ├── Cors.php            # CORS
 │   │   ├── SecurityFilter.php  # Обнаружение и блокировка атак (ограничение HTTP-методов/XSS/SQL-инъекции/обход пути/инъекции команд/CSRF)
 │   │   ├── RateLimit.php       # Ограничение частоты Redis (скользящее окно + заголовки ответа)
+│   │   ├── StaticFile.php      # Раздача статических файлов (встроено в webman)
 │   │   ├── AdminAuth.php       # JWT-аутентификация + черный список
 │   │   ├── AdminPermission.php # RBAC-проверка прав
 │   │   └── OperationLog.php    # Автоматическая запись журнала операций (включая определение источника)
-│   └── model/                  # Модели данных
+│   ├── activity/               # Обработчики активностей (чек-ин/приглашения/ежедневные задания)
+│   ├── model/                  # Модели данных
+│   ├── process/                # Процессы (Http, Monitor, RiskIpCron)
+│   ├── provider/               # Слой игровых Provider (Self/ThirdParty/Factory)
+│   ├── service/                # Сервисы (кошелёк/песочница рисков)
+│   └── view/                   # Шаблоны представлений
 ├── apps/
+│   ├── angular/                # Веб-админка на Angular
+│   ├── react/                  # Веб-админка на React
 │   ├── flutter/                # Flutter Web админ-панель (PC-стиль)
 │   │   └── lib/app/
-│   │       ├── pages/          # 5 полных страниц (дашборд/пользователи/роли/настройки/журнал/личный кабинет)
+│   │       ├── pages/          # 20 каталогов страниц
 │   │       ├── services/       # ApiService (JWT-перехватчик) + AuthService (персистентность токена)
 │   │       └── layouts/        # Адаптивная раскладка панели (сайдбар+шапка+контент)
 │   └── harmonyos/              # Нативный клиент HarmonyOS (бесшовное обновление токена)
 ├── config/                     # Файлы конфигурации (с комментариями на китайском)
 │   ├── route.php               # Маршруты + стратегия версий API
 │   ├── middleware.php           # Регистрация глобального промежуточного ПО
-│   └── ...                     # Конфигурация компонентов
-├── install/        # SQL-миграции (включая стартовые данные прав)
+│   └── server.php              # Конфигурация портов/процессов
 ├── public/                     # Публичная точка входа
 ├── runtime/                    # Файлы времени выполнения
 └── vendor/                     # Зависимости Composer
@@ -182,7 +188,7 @@ flutter run -d chrome    # Web-версия (стиль PC-панели)
 
 ### 6. Развертывание Docker Compose в один клик (рекомендуется для продакшена)
 
-Проект включает полную Docker-оркестрацию из 5 сервисов: Nginx, PHP (webman app), MySQL, Redis, Elasticsearch.
+Проект включает полную Docker-оркестрацию из 7 сервисов: Nginx, admin (webman), service (webman), leaderboard-ws (WebSocket), MySQL, Redis, Elasticsearch.
 
 ```bash
 # 1. Настройте переменные окружения Docker
@@ -191,16 +197,16 @@ cp .env.docker .env
 # 2. Запустите все сервисы
 docker-compose up -d
 
-# 3. Инициализируйте базу данных (выполните внутри контейнера app)
-docker-compose exec app mysql -h mysql -u root -p < install/install.sql
+# 3. Инициализируйте базу данных (импорт через контейнер mysql)
+docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform < install/install.sql
 
 # 4. Доступ
 # http://localhost:8789  (webman)
-# http://localhost:8080  (обратный прокси Nginx)
+# http://localhost  (обратный прокси Nginx)
 ```
 
 - `Dockerfile`: PHP 8.3 + OPcache + Composer, на базе `php:8.3-cli`
-- `docker-compose.yml`: оркестрация 5 сервисов, изоляция сети, персистентность томов данных
+- `docker-compose.yml`: оркестрация 7 сервисов, изоляция сети, персистентность томов данных
 - `.env.docker`: переменные окружения для Docker
 
 ## Стандарты базы данных
@@ -274,7 +280,7 @@ Cors (предобработка CORS + заголовки ответа)
   → OperationLog (автоматическая запись POST/PUT/DELETE, включая определение источника, группа маршрутов /admin/v1)
 ```
 
-`/health` и `/api/docs` — публичные эндпоинты, проходят только через `Cors → SecurityFilter → RateLimit`.
+`/health` — публичный эндпоинт, проходит только через `Cors → SecurityFilter → RateLimit`; `/metrics` и `/api/docs` дополнительно требуют `AdminAuth → AdminPermission`.
 
 Усиление безопасности:
 - **Блокировка аккаунта**: 5 неудачных входов подряд — автоматическая блокировка на 15 минут, вход в этот период возвращает 429
@@ -365,6 +371,11 @@ Authorization: Bearer <token>
 | `POST` | `/admin/v1/config` | Создание настройки |
 | `PUT` | `/admin/v1/config/{id}` | Обновление настройки |
 | `DELETE` | `/admin/v1/config/{id}` | Удаление настройки (требуется подтверждение паролем) |
+| `GET` | `/admin/v1/payment/method/list` | Список способов оплаты |
+| `POST` | `/admin/v1/payment/method/toggle` | Включение/отключение способа оплаты |
+| `POST` | `/admin/v1/payment/method/create` | Создание способа оплаты |
+| `PUT` | `/admin/v1/payment/method/{id}` | Обновление способа оплаты |
+| `DELETE` | `/admin/v1/payment/method/{id}` | Удаление способа оплаты (отклоняется при наличии незавершённых заказов) |
 | `GET` | `/admin/v1/log` | Журнал операций (пагинация + фильтры) |
 | `PUT` | `/admin/v1/profile` | Обновление личной информации |
 | `PUT` | `/admin/v1/profile/password` | Смена пароля |
@@ -405,12 +416,14 @@ Authorization: Bearer <token>
 
 ### Docker Compose (рекомендуется)
 
-В корне проекта есть `docker-compose.yml` с оркестрацией 5 сервисов:
+В корне проекта есть `docker-compose.yml` с оркестрацией 7 сервисов:
 
 | Сервис | Образ | Порт |
 |------|------|------|
 | `nginx` | nginx:alpine | 80, 443 |
-| `app` | сборка из локального `Dockerfile` | 8789 |
+| `admin` | сборка из локального `Dockerfile` | 8789 |
+| `service` | сборка из локального `Dockerfile` | 8792 |
+| `leaderboard-ws` | сборка из локального `Dockerfile` | 8790, 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

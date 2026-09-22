@@ -65,10 +65,10 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.
 |---|------|------|
 | Routen | `config/route.php` | URL-zu-Controller-Zuordnung, Middleware-Bindung, versionierte Routen |
 | Middleware | `app/middleware/` | Angriffsabwehr (SecurityFilter), Rate-Limiting (RateLimit), Authentifizierung (JWT), Autorisierung (RBAC) |
-| Controller | 30 Stück: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (Admin) + Captcha/Auth (API v1) | Validierung der Anfrageparameter, Aufruf der Geschäftslogik, Antwortformatierung |
-| Geschäftsdienste | `common/service/` | Datenanalyse: GameDashboardService (Übersicht/Ranking/Trend), DepositLogService (Umsatz/Konversion), ProbabilityService (gemeinsame/bedingte Wahrscheinlichkeit, SQL-Builder); bei DB-Ausfall leere Daten statt Fehler |
+| Controller | 45 Stück: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (Admin) + Captcha/Auth (API v1) | Validierung der Anfrageparameter, Aufruf der Geschäftslogik, Antwortformatierung |
+| Geschäftsdienste | `packages/platform-common/src/service/` | Datenanalyse: GameDashboardService (Übersicht/Ranking/Trend), DepositLogService (Umsatz/Konversion), ProbabilityService (gemeinsame/bedingte Wahrscheinlichkeit, SQL-Builder); bei DB-Ausfall leere Daten statt Fehler |
 | Datenmodelle | `app/model/` | ORM-Zuordnung, Beziehungen, Feldver-/entschlüsselung |
-| Gemeinsame Werkzeuge | `app/common/` | Hashids-, Snowflake-, Encryption-Dienste |
+| Gemeinsame Werkzeuge | `packages/platform-common/src/` | Hashids-, Snowflake-, Encryption-Dienste |
 
 ### 2.2 Anfrage-Lebenszyklus
 
@@ -256,7 +256,7 @@ Client                               Server
   │  ① POST /api/v1/captcha/generate     │ captcha_create('click')
   │◄── {key, image(base64), targets}  │
   │                                    │
-  │  ② Benutzer klickt auf Textpositionen im Bild │
+  │  ② Klick auf Textpositionen im Bild  │
   │                                    │
   │  ③ POST /api/v1/auth/login           │
   │     {username, password,          │
@@ -276,7 +276,7 @@ Client                               Server
 ### 4.6 Berechtigungsmodell (RBAC)
 
 ```
-  Benutzer ──┬── Rolle ──┬── Berechtigung
+  User ──┬── Rolle──┬── Berechtigung
   User       Role         Permission
                  │
                  ├── type=1: Menü (steuert Sichtbarkeit der Sidebar)
@@ -466,7 +466,7 @@ Die GitHub-Actions-Integration ist in `.github/workflows/ci.yml` definiert:
 
 ### 8.5 Monitoring
 
-Der Endpunkt `GET /metrics` (`MetricsController`) legt im Prometheus-Textformat 5 Gauge-Metriken offen: HTTP-Anfrage-Gesamtzahl, aktive Benutzer, Datenbank-/Redis-Verbindungsstatus, Speichernutzung.
+Der Endpunkt `GET /metrics` (`MetricsController`) legt im Prometheus-Textformat 18 Gauge-Metriken offen: aktive/gesamte Benutzer, Datenbank-/Redis-/ES-Verbindungsstatus, Speicher-/CPU-/Prozessmetriken, ausstehende Auszahlungen und Abgleichsdifferenzen.
 
 ### 8.6 Umgebungsanforderungen
 

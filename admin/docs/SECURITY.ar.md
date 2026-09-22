@@ -598,14 +598,14 @@ Policy: https://erik.xyz/security-policy
 
 | نوع التهديد | ناقل الهجوم | طبقات الدفاع |
 |----------|---------|---------|
-| إساءة استخدام طرق HTTP | هجمات TRACE/TRACK XST، نفق CONNECT كوكيل، فحص طرق WebDAV | قائمة بيضاء 405 في SecurityFilter (GET/POST/PUT/DELETE/OPTIONS/HEAD) |
+| إساءة استخدام طرق HTTP | هجمات TRACE/TRACK XST، نفق CONNECT كوكيل، فحص طرق WebDAV | قائمة بيضاء 405 في SecurityFilter (GET/POST/PUT/DELETE/HEAD/OPTIONS/PATCH) |
 | تخمين عنيف موجه | تكرار محاولة كلمة المرور ضد مستخدم معين | قفل الحساب (قفل 15 دقيقة بعد 5 حالات فشل) + RateLimit (تسجيل الدخول 10/دقيقة) + Captcha |
 | تخمين عنيف | محاولة اسم مستخدم/كلمة مرور من IPs موزعة | RateLimit (تسجيل الدخول 10/دقيقة) + Captcha |
-| XSS | `<script>`, onerror, javascript: | SecurityFilter (5 أنماط) + ترويسة X-XSS-Protection + CSP |
-| حقن SQL | UNION SELECT, OR 1=1, تجاوز بالتعليقات | SecurityFilter (6 أنماط) + استعلامات Eloquent ORM ذات المعاملات |
+| XSS | `<script>`, onerror, javascript: | SecurityFilter (13 أنماط) + ترويسة X-XSS-Protection + CSP |
+| حقن SQL | UNION SELECT, OR 1=1, تجاوز بالتعليقات | SecurityFilter (14 أنماط) + استعلامات Eloquent ORM ذات المعاملات |
 | CSRF | مواقع خبيثة ترسل طلبات نيابة عن المستخدم | تحقق SecurityFilter من Origin/Referer |
 | اجتياز المسار | `../../etc/passwd` | أنماط اجتياز المسار في SecurityFilter + قائمة بيضاء لامتدادات UploadController |
-| حقن الأوامر | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (4 أنماط) |
+| حقن الأوامر | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (13 أنماط) |
 | اختطاف الجلسة | سرقة رمز JWT | صلاحية JWT القصيرة (2h) + تسجيل خروج بالقائمة السوداء + تأكيد كلمة المرور ثانويًا للعمليات الحساسة |
 | تعداد المعرفات | تجربة معرفات رقمية لتخمين حجم البيانات | إخفاء Hashids إلى سلاسل عشوائية |
 | تسريب البيانات | تفريغ DB / رجل في المنتصف / تسريب السجلات | تشفير/إخفاء ثلاثي الطبقات + تصفية الحقول الحساسة في OperationLog |

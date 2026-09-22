@@ -200,10 +200,10 @@ Les règles sont stockées dans la table `game_risk_rule`, configurées en JSON,
 
 ### 6.2 KYC de vérification d'identité
 
-Système de certification à trois niveaux :
+Paliers de plafond de retrait (game_withdraw_limit) :
 - `default` — non certifié, plafonds de base
 - `verified` — validation KYC passée, plafonds relevés + frais réduits
-- `vip` — niveau VIP, plafonds maximaux + zéro frais
+- `vip` — palier réservé (plafonds maximaux + zéro frais) ; le code actuel ne lit que default/verified, la remise sur frais VIP est calculée séparément selon l'expérience
 
 Processus de certification :
 ```
@@ -219,9 +219,9 @@ Prise en charge de la connexion Google / Facebook / Apple :
 
 ```
 Clic sur le bouton OAuth dans le frontend
-  → GET /api/auth/oauth/{provider} → obtention de l'URL d'autorisation
+  → GET /api/v1/auth/oauth/{provider} → obtention de l'URL d'autorisation
   → redirection vers la page d'autorisation tierce → consentement de l'utilisateur
-  → rappel POST /api/auth/oauth/{provider}/callback
+  → rappel POST /api/v1/auth/oauth/{provider}/callback
   → liaison existante trouvée → connexion directe
   → pas de liaison → inscription automatique d'un nouvel utilisateur + liaison + création du portefeuille
 ```
@@ -229,7 +229,7 @@ Clic sur le bouton OAuth dans le frontend
 ### 6.4 Rappels de paiement
 
 ```
-Paiement tiers terminé → POST /api/payment/callback
+Paiement tiers terminé → POST /api/v1/payment/callback
   → contrôle de la liste blanche des providers (stripe/paypal uniquement)
   → vérification de signature fail-closed (secret/webhook_id non configuré, échec de vérification, horodatage au-delà de ±300 s : refus systématique)
   → contrôle bccomp du montant du rappel avec le montant de la commande (anti-usurpation inter-canaux)

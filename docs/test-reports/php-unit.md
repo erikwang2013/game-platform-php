@@ -7,10 +7,10 @@
 ## 运行命令
 
 ```bash
-# admin（端口 8787）
+# admin
 cd admin && ADMIN_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
 
-# service（端口 8788）
+# service
 cd service && SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me \
   HASHIDS_SALT=test-hashids-salt-change-me \
   HASHIDS_ALT_SALT=test-hashids-alt-salt-change-me \
@@ -32,6 +32,19 @@ cd service && SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me \
 - admin 套件连续运行多次结果稳定（153 tests，6 errors + 1 failure 均为既有测试问题，见"发现的问题"）。
 - service 套件连续运行两次均 `OK (45 tests, 94 assertions)`。
 - 测试库 `game-platform_test` 拥有全部 43 张表（install.sql 全量导入）。
+
+## 复跑记录（2026-09-22）
+
+命令同「运行命令」一节（service 本次只导出 `SERVICE_JWT_SECRET_KEY` 即可；真库用例另需 `GP_DB_USER`/`GP_DB_PASS`，未导出时相关 26 例转为 skip）：
+
+| 项目 | 测试数 | 断言数 | 失败 | 错误 | 跳过 | 其他 |
+|------|-------|-------|------|------|------|------|
+| admin | 190 | 437 | 1 | 0 | 3 | — |
+| service | 273 | 701 | 0 | 0 | 3 | 2 warnings / 35 deprecations / 10 PHPUnit deprecations |
+
+- 上面 2026-08-27 快照里的 admin 6 errors + 1 failure（问题 #4 / #5）在本次复跑中已不再出现，两侧均无 error；admin 侧余 1 例预期失败（`EnvConfigTest`，见下条）。
+- service 上一轮 269/691 已含同日后续新增的 26 个用例（DB-free 22 + 真库集成 4，共 95 断言）。
+- 本阶段新增 4(admin) + 4(service) 条配置默认值回归用例，均已计入上表数字；admin 的唯一 1 例失败即 `EnvConfigTest`（校验真实 `admin/.env` 与 `config/*.php` 中 getenv 键的契约，属主尚未更新 `.env`），属已知预期状态，非回归。
 
 ## 新增测试文件
 

@@ -13,7 +13,7 @@ API-сервис пользовательской платформы (C-стор
 |------|------|
 | Пользователи | Регистрация/вход (логин+пароль + OAuth 7 платформ + 2FA TOTP), профиль |
 | Кошелёк | Кошелёк платформенных монет (оптимистичная блокировка) + кошелёк игровых монет + история операций |
-| Пополнение | 13 платёжных шлюзов (Stripe/PayPal/NowPayments/Coinbase и др.), проверка подписи колбэков, автозачисление |
+| Пополнение | 18 платёжных шлюзов (Stripe/PayPal/NowPayments/Coinbase и др.), проверка подписи колбэков, автозачисление |
 | Вывод | Заявка → проверка → выплата, ступенчатые лимиты KYC |
 | Обмен | Реальные котировки платформенных ⇄ игровых монет, VIP-скидки и бонусы к курсу |
 | Игры | Список/категории/поиск игр, история, колбэки расчёта Provider |
@@ -39,8 +39,12 @@ API-сервис пользовательской платформы (C-стор
 ```
 service/
 ├── app/
-│   ├── api/v1/controller/  # API-контроллеры C-стороны (35)
-│   ├── middleware/         # Middleware (Cors/SecurityFilter/RateLimit/ApiVersion/UserAuth/ProviderAuth)
+│   ├── activity/           # Обработчики активностей
+│   ├── api/v1/controller/  # API-контроллеры C-стороны (34)
+│   ├── bootstrap/          # Инициализация уведомлений
+│   ├── cdn/                # Мультиоблачный CDN (Aliyun/Tencent/Huawei/Cloudflare/CloudFront + CdnFactory)
+│   ├── common/             # Общие
+│   ├── middleware/         # Middleware (Cors/SecurityFilter/RateLimit/TraceId/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
 │   ├── model/              # Модели данных
 │   ├── service/            # Бизнес-сервисы (VIP/рейтинги/риски/уведомления и др.)
 │   ├── event/              # Шина событий (EventBus Redis Pub/Sub)
@@ -49,9 +53,14 @@ service/
 ├── common/                 # Общие сервисы (реализованы в пакете erik/platform-common)
 ├── config/                 # Конфигурация
 ├── public/                 # Web-вход
+├── runtime/                # Файлы времени выполнения
+├── support/                # Вспомогательные классы
 ├── tests/                  # Тесты PHPUnit
 ├── start.php               # Точка входа
-└── composer.json
+├── windows.php             # Точка запуска для Windows
+├── composer.json
+├── phpunit.xml             # Конфигурация PHPUnit
+└── Dockerfile              # Сборка образа
 ```
 
 ## Установка в один клик
@@ -93,7 +102,7 @@ php start.php start -d     # в фоне (демон)
 ## Использование
 
 - Справочник API: `docs/API.md` (полный справочник)
-- Онлайн-документация: http://localhost:8792/apidoc/ (интерактивная документация hg/apidoc)
+- Онлайн-документация: http://localhost:8792/apidoc/ (интерактивная документация erikwang2013/apidoc-php)
 - Проверка здоровья: `GET http://localhost:8792/health`
 - Фронтенд C-стороны: `apps/flutter/platform/` (пользовательская платформа Flutter Web)
 - Админка: `admin/` (бэкенд админки и фронтенд `admin/apps/flutter/`)

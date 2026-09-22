@@ -9,7 +9,7 @@ Languages: [中文](PROJECT-PLAN.md) · [English](PROJECT-PLAN.en.md) · **한�
 
 ---
 
-## 一、프로젝트 현황
+## 1. 프로젝트 현황
 
 **글로벌 게임 통합 플랫폼** — PHP 8.3 + webman v2, 이중 애플리케이션 monorepo:
 `admin/`(8789 관리 백오피스) + `service/`(8792 C단) + `apps/`(Flutter + HarmonyOS) + `install/`(설치 마법사 43 테이블).
@@ -22,11 +22,11 @@ Languages: [中文](PROJECT-PLAN.md) · [English](PROJECT-PLAN.en.md) · **한�
 | 테스트 | 132 케이스 / 8 파일 (admin 프로젝트), service 프로젝트 **테스트 0개** |
 | 버전 | v1.1 (2026-08-07): Redis 플러그인, 분석 서비스, Redis 디그레이드, 테스트 수정 |
 
-구현 완료 능력: JWT+RBAC, 지갑 낙관적 잠금, 충전(Stripe/PayPal/NowPayments/Coinbase 검증), 환전 차액, 출금 심사+PayPal 지급, 게임 CRUD/Provider 게이트웨이(HMAC), 쿠폰/VIP/업적/티켓/추천 커미션/2FA/소셜(친구/채팅 WS)/토너먼트/Webhook/푸시(FCM/APNs/华为)/i18n 이중 언어.
+구현 완료 능력: JWT+RBAC, 지갑 낙관적 잠금, 충전(Stripe/PayPal/NowPayments/Coinbase 검증), 환전 차액, 출금 심사+PayPal 지급, 게임 CRUD/Provider 게이트웨이(HMAC), 쿠폰/VIP/업적/티켓/추천 커미션/2FA/소셜(친구/채팅 WS)/토너먼트/Webhook/푸시(FCM/APNs/Huawei)/i18n 이중 언어.
 
 ---
 
-## 二、문제와 리스크（실측 검증 완료）
+## 2. 문제와 리스크（실측 검증 완료）
 
 ### CRITICAL — 자금 안전
 
@@ -71,7 +71,7 @@ Languages: [中文](PROJECT-PLAN.md) · [English](PROJECT-PLAN.en.md) · **한�
 
 ---
 
-## 三、로드맵
+## 3. 로드맵
 
 ### P0 — 자금 안전 + 정확성（우선, 출시 차단）
 
@@ -110,13 +110,13 @@ Languages: [中文](PROJECT-PLAN.md) · [English](PROJECT-PLAN.en.md) · **한�
 
 ---
 
-## 四、품질 게이트（팀 협업）
+## 4. 품질 게이트（팀 협업）
 
 - 코드 변경마다: admin 전체 테스트 `vendor/bin/phpunit` 반드시 통과（`|| echo warning` 제거）
 - 신규 민감 경로（결제/출금/인증）는 반드시 테스트 포함
 - common/model 변경 시 admin+service 양쪽 동기화（공유 레이어 구축 전）
 - 심사 보고서 추천 중점: ProviderAuth 서명, AES 암호화, ProbabilityService 수제 SQL
 
-## 五、팀
+## 5. 팀
 
 game-platform 팀（6명: researcher/architect/backend-dev/frontend-dev/tester/reviewer）준비 완료, P0 바로 실행 가능.

@@ -18,7 +18,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Admin フロントエンドページ | 11 | 13 | 15 |
 | Platform フロントエンドページ | 8 | 10 | 10 |
 | HarmonyOS (admin) | - | ログイン+ダッシュボード | **8 ページ** `admin/apps/harmonyos/` |
-| HarmonyOS (C端) | - | - | **5 ページ** `apps/harmonyos/`（ログイン/ゲームロビー/詳細/ウォレット/マイ） |
+| HarmonyOS (C側) | - | - | **5 ページ** `apps/harmonyos/`（ログイン/ゲームロビー/詳細/ウォレット/マイ） |
 | Docker サービス | - | - | **7** (nginx/admin/service/leaderboard-ws/mysql/redis/elasticsearch) |
 | テストケース | 60 | 60 | admin ~132；service 3 |
 
@@ -66,7 +66,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 |------|--------|--------|--------|
 | ゲーム CRUD | ✓ | ✓ | ✓ |
 | ゲーム通貨管理 | ✓ | ✓ | ✓ |
-| C端ゲーム一覧/詳細 | ✓ | ✓ | ✓ |
+| C側ゲーム一覧/詳細 | ✓ | ✓ | ✓ |
 | ゲーム起動 | ✓ | ✓ | ✓ |
 | ゲームカテゴリ (10種) | - | - | ✓ |
 | カテゴリ絞り込み | - | - | ✓ |
@@ -94,7 +94,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | 紹介報酬 | - | - | ✓ |
 | 日次統計スナップショット | - | ✓ | ✓ |
 | データレポート (集計/日報/CSV出力) | - | - | ✓ |
-| C端プラットフォーム統計 | - | - | ✓ |
+| C側プラットフォーム統計 | - | - | ✓ |
 | プラットフォーム収益トラッキング | - | - | ✓ |
 
 ---
@@ -121,7 +121,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | 多言語サポート | 中/英語 | 4言語 | 4言語 |
 | 翻訳テーブル+キャッシュ | ✓ | ✓ | ✓ |
 | 言語自動検出 | ✓ | ✓ | ✓ |
-| 国別差別化設定 | - | - | ✓ 8か国 |
+| 国別差別化設定 | - | - | ✓ 18か国 |
 
 ---
 
@@ -147,7 +147,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Flutter Web PC 管理バックエンド | ✓ 5ページ | ✓ 11ページ | ✓ 17ページ |
 | Flutter Web PC ユーザープラットフォーム | ✓ 5ページ | ✓ 8ページ | ✓ 10ページ |
 | HarmonyOS admin | - | ✓ ログイン+ダッシュボード | ✓ 8ページ `admin/apps/harmonyos/` |
-| HarmonyOS C端 | - | - | ✓ 5ページ `apps/harmonyos/` |
+| HarmonyOS C側 | - | - | ✓ 5ページ `apps/harmonyos/` |
 
 ---
 
@@ -162,7 +162,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 平台核心 (12): game_user, game_user_wallet, game_user_game_wallet,
                game_game, game_game_currency, game_deposit_order,
                game_withdraw_order, game_exchange_record, game_transaction,
-               game_payment_method, game_announcement, game-platform_config
+               game_payment_method, game_announcement, game_platform_config
 ```
 
 ### 標準版で追加 (10枚)
@@ -176,7 +176,7 @@ game_withdraw_limit, game_risk_rule, game_risk_log, game_stat_daily
 ```
 game_game_category, game_game_category_rel, game_leaderboard,
 game_coupon, game_user_coupon, game_language, game_translation,
-game_country_config, game-platform_revenue,
+game_country_config, game_platform_revenue,
 game_notification, game_referral, game_referral_reward, game_user_2fa
 ```
 
@@ -190,6 +190,16 @@ game_anticheat_event, game_anticheat_daily_stat,
 game_group, game_group_member, game_share_link,
 game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, game_risk_cluster
 ```
+
+### エコシステム v2.0 追加 (14テーブル)
+```
+game_ticket, game_ticket_reply, game_device_token, game_vip_level,
+game_user_vip, game_exp_log, game_achievement, game_user_achievement,
+game_friend, game_message, game_cdn_provider, game_referral_commission,
+game_tournament, game_tournament_entry
+```
+
+**合計: 78テーブル**
 
 ---
 
@@ -216,7 +226,7 @@ game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, gam
 |------|------|
 | GameProvider 抽象レイヤー | SelfProvider (DBトランザクション) + ThirdPartyProvider (HTTP+署名) |
 | Provider API ゲートウェイ | balance/bet/settle/refund コールバック + ProviderAuth 中間件 |
-| チケットシステム | C端作成/返信 + 管理端処理/割り当て/クローズ |
+| チケットシステム | C側作成/返信 + 管理画面処理/割り当て/クローズ |
 | メール検証 | 6桁認証コード、Redis 10分で失効、60秒再送制限 |
 | プッシュ通知 | PushService (FCM/APNs/华为推送) |
 | VIP 体系 | 5級、経験値累積、自動昇格、交換割引、出金減免、レートボーナス |
@@ -249,7 +259,7 @@ POST /api/provider/settle   — 通知结算
 POST /api/provider/refund   — 通知退款
 ```
 
-### 追加 C端 API エンドポイント (8個)
+### 追加 C側 API エンドポイント (8個)
 ```
 POST /api/verify/send-email    — 发送邮箱验证码
 POST /api/verify/confirm-email — 确认邮箱
@@ -280,7 +290,7 @@ GET  /admin/analytics/economy    — 经济指标
 
 ```
 apidoc 多级目录分类   注解按功能菜单还原为多级分组；凭据改由环境变量注入（缺失即拒绝启动）
-端口迁移              管理端 8787→8789、C端 8788→8792
+ポート移行              管理画面 8787→8789、C側 8788→8792
                       WebSocket 排行榜 8790 / 聊天 8791
 API 版本策略          版本号由请求头改为 URL 路径：/api/v1/*、/admin/v1/*
                       /api/provider/*（第三方 HMAC）与 /api/game/*（SDK）保持无版本

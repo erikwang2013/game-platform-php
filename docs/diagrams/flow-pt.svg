@@ -70,8 +70,8 @@
   <text x="665" y="544" text-anchor="middle" fill="#166534" font-size="14" font-weight="bold">Moeda fiduciária recebida</text>
   <text x="665" y="564" text-anchor="middle" fill="#22c55e" font-size="11">Fiat Received</text>
 
-  <rect x="80" y="608" width="840" height="72" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
-  <text x="500" y="634" text-anchor="middle" fill="#475569" font-size="13" font-weight="bold">Loop central: registro → recarga (fiduciária→plataforma) → câmbio (plataforma⇄jogo) → jogo (ganhar/gastar) → converter de volta → saque (plataforma→fiduciária)</text>
+  <rect x="40" y="608" width="920" height="72" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="500" y="634" text-anchor="middle" fill="#475569" font-size="13" font-weight="bold">Loop central: registro → recarga → câmbio (plataforma⇄jogo) → jogo (ganhar/gastar) → retorno → saque (plataforma→fiduciária)</text>
   <text x="500" y="656" text-anchor="middle" fill="#94a3b8" font-size="11">Moedas suportadas: USD / CNY / EUR / JPY / KRW / GBP / BRL / INR  |  Canais de pagamento: Stripe / PayPal / Alipay / WeChat Pay / criptomoedas</text>
 
   <text x="500" y="695" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>

@@ -27,6 +27,7 @@ webman v2 + Flutter ベースのフルスタック管理画面システム。
 | | Excel一括インポート | 行ごとの検証 + エラーレポート |
 | 🔒 ロール権限 | ロールCRUD + 権限ツリー | RBAC method.path 粒度の認可 |
 | ⚙ システム設定 | キー・バリューペアのCRUD | グループ管理 |
+| 💳 決済手段管理 | マルチゲートウェイの作成/更新/削除 + 有効/無効化 | 18ゲートウェイ（stripe/paypal/nowpayments/coinbase など）+ 国別表示 |
 | 🖥 CDN 管理 | 5プロバイダー設定 CRUD + 有効/無効化 + 接続テスト | 認証情報は AES 暗号化保存、service は DB からのみ読み取り |
 | 📋 操作監査 | ログ照会 + 送信元検出 | 8プラットフォームを自動識別 |
 | 📁 ファイル管理 | アップロード/Excelエクスポート/PDFエクスポート | 機密データの自動マスキング |
@@ -64,48 +65,53 @@ webman v2 + Flutter ベースのフルスタック管理画面システム。
 ```
 open-admin/
 ├── app/
-│   ├── admin/controller/       # 管理端コントローラー
-│   │   ├── DashboardController.php # ダッシュボード（Redisキャッシュ）
-│   │   ├── UserController.php      # ユーザー CRUD + 一括操作
-│   │   ├── RoleController.php      # ロール CRUD
-│   │   ├── PermissionController.php# 権限 CRUD
-│   │   ├── ConfigController.php    # システム設定 CRUD
-│   │   ├── LogController.php       # 操作ログ照会
-│   │   ├── ProfileController.php   # 個人センター + ログアウト
-│   │   ├── ExportController.php    # Excel/PDF エクスポート
-│   │   ├── ImportController.php    # Excel によるユーザーインポート
-│   │   ├── UploadController.php    # ファイルアップロード
-│   │   ├── HealthController.php    # ヘルスチェック
-│   │   ├── DocsController.php      # OpenAPI ドキュメント
-│   │   └── BaseController.php      # ベースコントローラー
+│   ├── admin/v1/controller/    # 管理画面コントローラー (45)
+│   │   ├── DashboardController.php  # ダッシュボード（Redisキャッシュ）
+│   │   ├── UserController.php       # ユーザー CRUD + 一括操作
+│   │   ├── RoleController.php       # ロール CRUD
+│   │   ├── PermissionController.php # 権限 CRUD
+│   │   ├── ConfigController.php     # システム設定 CRUD
+│   │   ├── LogController.php        # 操作ログ照会
+│   │   ├── ProfileController.php    # 個人センター + ログアウト
+│   │   ├── ExportController.php     # Excel/PDF エクスポート
+│   │   ├── ImportController.php     # Excel によるユーザーインポート
+│   │   ├── UploadController.php     # ファイルアップロード
+│   │   ├── HealthController.php     # ヘルスチェック
+│   │   ├── DocsController.php       # OpenAPI ドキュメント
+│   │   └── BaseController.php       # ベースコントローラー
 │   ├── api/
 │   │   └── v1/controller/          # API v1 コントローラー（バージョンは URL パス: /api/v1、/admin/v1）
 │   │       ├── CaptchaController.php # クリック型CAPTCHA
 │   │       └── AuthController.php    # ログイン/登録/トークン更新
 │   ├── common/                 # 共通ユーティリティクラス
-│   │   ├── HashidsService.php  # ID エンコード/デコード
-│   │   ├── SnowflakeService.php# Snowflake ID 生成
-│   │   └── EncryptionService.php # データ暗号化・復号 + マスキング
+│   │   └── CdnProbeService.php # CDN 接続テスト（Hashids/Snowflake/Encryption は composer パッケージ提供）
 │   ├── middleware/             # 中間ウェア
 │   │   ├── Cors.php            # クロスドメイン
 │   │   ├── SecurityFilter.php  # 攻撃検知・遮断（HTTPメソッド制限/XSS/SQLインジェクション/パストラバーサル/コマンドインジェクション/CSRF）
 │   │   ├── RateLimit.php       # Redis レート制限（スライディングウィンドウ + レスポンスヘッダー）
+│   │   ├── StaticFile.php      # 静的ファイル配信（webman 内蔵）
 │   │   ├── AdminAuth.php       # JWT 認証 + ブラックリスト
 │   │   ├── AdminPermission.php # RBAC 権限検証
 │   │   └── OperationLog.php    # 操作ログ自動記録（送信元検出を含む）
-│   └── model/                  # データモデル
+│   ├── activity/               # アクティビティハンドラー（サインイン/招待/デイリータスク）
+│   ├── model/                  # データモデル
+│   ├── process/                # プロセス (Http, Monitor, RiskIpCron)
+│   ├── provider/               # ゲーム Provider 層（Self/ThirdParty/Factory）
+│   ├── service/                # サービス（ウォレット/リスクサンドボックス）
+│   └── view/                   # ビューテンプレート
 ├── apps/
+│   ├── angular/                # Angular Web 管理画面
+│   ├── react/                  # React Web 管理画面
 │   ├── flutter/                # Flutter Web 管理画面（PC スタイル）
 │   │   └── lib/app/
-│   │       ├── pages/          # 5つの完全なページ（ダッシュボード/ユーザー/ロール/設定/ログ/個人センター）
+│   │       ├── pages/          # 20 個のページディレクトリ
 │   │       ├── services/       # ApiService（JWT インターセプター）+ AuthService（Token 永続化）
 │   │       └── layouts/        # レスポンシブ管理画面レイアウト（サイドバー+トップバー+コンテンツ領域）
 │   └── harmonyos/              # HarmonyOS ネイティブクライアント（Token シームレス更新）
 ├── config/                     # 設定ファイル（中国語コメント付き）
 │   ├── route.php               # ルート + API バージョン戦略
 │   ├── middleware.php           # グローバル中間ウェア登録
-│   └── ...                     # 各コンポーネント設定
-├── install/        # SQL 移行ファイル（権限シードデータ含む）
+│   └── server.php              # ポート/プロセス設定
 ├── public/                     # 公開エントリー
 ├── runtime/                    # ランタイムファイル
 └── vendor/                     # Composer 依存関係
@@ -182,7 +188,7 @@ DevEco Studio で `apps/harmonyos/` ディレクトリを開き、実機また�
 
 ### 6. Docker Compose によるワンクリックデプロイ（本番環境推奨）
 
-プロジェクトには5つのサービス（Nginx、PHP (webman app)、MySQL、Redis、Elasticsearch）を含む完全な Docker オーケストレーション構成が用意されています。
+プロジェクトには7つのサービス（Nginx、admin (webman)、service (webman)、leaderboard-ws (WebSocket)、MySQL、Redis、Elasticsearch）を含む完全な Docker オーケストレーション構成が用意されています。
 
 ```bash
 # 1. Docker 環境変数の設定
@@ -191,16 +197,16 @@ cp .env.docker .env
 # 2. 全サービスの起動
 docker-compose up -d
 
-# 3. データベースの初期化（app コンテナ内で実行）
-docker-compose exec app mysql -h mysql -u root -p < install/install.sql
+# 3. データベースの初期化（mysql コンテナ経由でインポート）
+docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform < install/install.sql
 
 # 4. アクセス
 # http://localhost:8789  (webman)
-# http://localhost:8080  (Nginx リバースプロキシ)
+# http://localhost  (Nginx リバースプロキシ)
 ```
 
 - `Dockerfile`: PHP 8.3 + OPcache + Composer、`php:8.3-cli` ベース
-- `docker-compose.yml`: 5サービスのオーケストレーション、ネットワーク分離、データボリューム永続化
+- `docker-compose.yml`: 7サービスのオーケストレーション、ネットワーク分離、データボリューム永続化
 - `.env.docker`: Docker環境専用の環境変数
 
 ## データベース規約
@@ -274,7 +280,7 @@ Cors（クロスドメイン前処理 + レスポンスヘッダー）
   → OperationLog（POST/PUT/DELETE 自動記録、送信元検出含む、/admin/v1 ルートグループ）
 ```
 
-`/health` と `/api/docs` は公開エンドポイントで、`Cors → SecurityFilter → RateLimit` のみを通過します。
+`/health` は公開エンドポイントで、`Cors → SecurityFilter → RateLimit` のみを通過します。`/metrics` と `/api/docs` はさらに `AdminAuth → AdminPermission` が必要です。
 
 セキュリティ強化：
 - **アカウントロック**：ログイン連続5回失敗でアカウントが自動的に15分間ロックされ、その間のログインは 429 を返す
@@ -365,6 +371,11 @@ Authorization: Bearer <token>
 | `POST` | `/admin/v1/config` | 設定項目の作成 |
 | `PUT` | `/admin/v1/config/{id}` | 設定項目の更新 |
 | `DELETE` | `/admin/v1/config/{id}` | 設定項目の削除（パスワード確認が必要） |
+| `GET` | `/admin/v1/payment/method/list` | 決済手段一覧 |
+| `POST` | `/admin/v1/payment/method/toggle` | 決済手段の有効化/無効化 |
+| `POST` | `/admin/v1/payment/method/create` | 決済手段の作成 |
+| `PUT` | `/admin/v1/payment/method/{id}` | 決済手段の更新 |
+| `DELETE` | `/admin/v1/payment/method/{id}` | 決済手段の削除（未払い注文がある場合は拒否） |
 | `GET` | `/admin/v1/log` | 操作ログ（ページング + フィルタリング） |
 | `PUT` | `/admin/v1/profile` | 個人情報の更新 |
 | `PUT` | `/admin/v1/profile/password` | パスワード変更 |
@@ -405,12 +416,14 @@ Authorization: Bearer <token>
 
 ### Docker Compose（推奨）
 
-プロジェクトルートに `docker-compose.yml` があり、5つのサービスを構成：
+プロジェクトルートに `docker-compose.yml` があり、7つのサービスを構成：
 
 | サービス | イメージ | ポート |
 |------|------|------|
 | `nginx` | nginx:alpine | 80, 443 |
-| `app` | ローカル `Dockerfile` でビルド | 8789 |
+| `admin` | ローカル `Dockerfile` でビルド | 8789 |
+| `service` | ローカル `Dockerfile` でビルド | 8792 |
+| `leaderboard-ws` | ローカル `Dockerfile` でビルド | 8790, 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

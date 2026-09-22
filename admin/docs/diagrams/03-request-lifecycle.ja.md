@@ -6,7 +6,7 @@ Languages: **中文** · [English](03-request-lifecycle.en.md) · [한국어](03
 
 ```mermaid
 sequenceDiagram
-    actor C as 客户端
+    actor C as クライアント
     participant N as Nginx
     participant MW1 as AdminAuth
     participant MW2 as AdminPermission

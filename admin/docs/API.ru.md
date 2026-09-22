@@ -442,7 +442,7 @@ GET /admin/v1/dashboard
 | value | string | Значение метрики (строковый тип) |
 | icon | string | Имя иконки Material |
 | color | string | Цвет карточки |
-| trend | float? | Дневной темп роста (проценты), есть только у «用户总数» |
+| trend | float? | Дневной темп роста (проценты), есть только у «общее число пользователей» |
 
 | Поле trends | Тип | Описание |
 |------|------|------|
@@ -1263,7 +1263,7 @@ GET /admin/v1/log
 | Поле | Тип | Описание |
 |------|------|------|
 | id | string | hashid |
-| user_name | string | Имя пользователя операции (через связь user; операции без входа отображаются как «系统») |
+| user_name | string | Имя пользователя операции (через связь user; операции без входа отображаются как «Система») |
 | action | string | Описание действия |
 | method | string | HTTP-метод (POST/PUT/DELETE) |
 | path | string | Путь запроса |
@@ -1573,26 +1573,7 @@ POST /admin/v1/upload
 - Используется атомарный алгоритм скользящего окна Redis (Lua ZSET), исключающий TOCTOU-гонки
 - При недоступности Redis — fail-closed: возвращается 503 (`Retry-After: 5`), запросы не пропускаются
 
-## 14. Аналитика данных (Analytics)
-
-Все эндпоинты требуют аутентификации (`AdminAuth` + `AdminPermission`), агрегация в реальном времени из MySQL, всего 12:
-
-| Метод | Путь | Описание |
-|------|------|------|
-| GET | /admin/v1/analytics/overview | Общий обзор платформы (сегодня/7 дней) |
-| GET | /admin/v1/analytics/game-ranking | Рейтинг игр (?days=7) |
-| GET | /admin/v1/analytics/dau-trend | Тренд DAU (?days=30) |
-| GET | /admin/v1/analytics/hourly-trend | Часовой тренд |
-| GET | /admin/v1/analytics/action-distribution | Распределение действий |
-| GET | /admin/v1/analytics/revenue | Анализ выручки |
-| GET | /admin/v1/analytics/conversion | Конверсия игр |
-| GET | /admin/v1/analytics/probability | Совместные/условные вероятности |
-| GET | /admin/v1/analytics/retention | Анализ удержания D1/D3/D7/D30 |
-| GET | /admin/v1/analytics/funnel | Воронка конверсии |
-| GET | /admin/v1/analytics/arpu | Тренд ARPU/ARPPU |
-| GET | /admin/v1/analytics/economy | Экономические показатели игровых валют |
-
-## 15. Управление тикетами (Ticket)
+## 14. Управление тикетами (Ticket)
 
 Все эндпоинты требуют аутентификации (`AdminAuth` + `AdminPermission`), всего 5:
 
@@ -1604,7 +1585,7 @@ POST /admin/v1/upload
 | POST | /admin/v1/ticket/{hashid}/close | Закрытие тикета |
 | POST | /admin/v1/ticket/{hashid}/assign | Назначение обработчика (admin_id) |
 
-## 16. Процесс аутентификации
+## 15. Процесс аутентификации
 
 Полная последовательность аутентификации:
 
@@ -1681,11 +1662,11 @@ POST /admin/v1/upload
 - Ограничение параллельных сессий: не более 3 действительных токенов на пользователя, при входе с 4-го устройства самый старый токен принудительно попадает в черный список
 - Блокировка аккаунта: 5 неудачных входов подряд — блокировка на 15 минут, в этот период возвращается 429
 
-## 15. Развертывание и эксплуатация
+## 16. Развертывание и эксплуатация
 
 ### Docker Compose
 
-В корне проекта есть `docker-compose.yml` с оркестрацией 5 сервисов (Nginx, webman app, MySQL, Redis, Elasticsearch). PHP собирается через `Dockerfile` (на базе `php:8.3-cli`, включен OPcache).
+В корне проекта есть `docker-compose.yml` с оркестрацией 7 сервисов (Nginx, admin, service, leaderboard-ws, MySQL, Redis, Elasticsearch). PHP собирается через `Dockerfile` (на базе `php:8.3-cli`, включен OPcache).
 
 ```bash
 cp .env.docker .env
@@ -1709,11 +1690,11 @@ docker-compose up -d
 
 Для продакшена см. `docs/nginx-security.conf` — усиление безопасности обратного прокси.
 
-## 16. Аналитика данных (Analytics)
+## 17. Аналитика данных (Analytics)
 
 Интерфейсы аналитики предоставляются `AnalyticsController`, все основаны на агрегации в реальном времени из MySQL (`game_game_play_log` журнал игровых действий / `game_deposit_order` заказы пополнений), при сбое БД возвращаются пустые данные вместо 500. Если не указано иное, требуется аутентификация JWT + RBAC, единый формат ответа `{ "code": 0, "message": "success", "data": ... }`.
 
-### 16.1 Общий обзор платформы
+### 17.1 Общий обзор платформы
 
 ```
 GET /admin/v1/analytics/overview
@@ -1721,7 +1702,7 @@ GET /admin/v1/analytics/overview
 
 **Ответ**: `today` / `week` содержат `dau` (число активных пользователей), `revenue` (общая сумма подтвержденных пополнений, строка), `new_users` (число новых пользователей).
 
-### 16.2 Рейтинг игр
+### 17.2 Рейтинг игр
 
 ```
 GET /admin/v1/analytics/game-ranking?days=7
@@ -1729,23 +1710,23 @@ GET /admin/v1/analytics/game-ranking?days=7
 
 **Ответ**: топ-10 по убыванию числа игровых действий, каждый элемент содержит `game_id` (hashid), `name`, `plays`, `players`.
 
-### 16.3 Тренд DAU
+### 17.3 Тренд DAU
 
 ```
 GET /admin/v1/analytics/dau-trend?days=30
 ```
 
-**Ответ**: `{ "日期": 活跃数, ... }`, для отсутствующих дат — 0.
+**Ответ**: `{ "дата": число активных, ... }`, для отсутствующих дат — 0.
 
-### 16.4 Часовой тренд
+### 17.4 Часовой тренд
 
 ```
 GET /admin/v1/analytics/hourly-trend?game_id=<hashid>
 ```
 
-**Ответ**: `{ "0": 次数, ... "23": 次数 }` — 24 часовых слота; при пустом `game_id` статистика по всем играм.
+**Ответ**: `{ "0": количество, ... "23": количество }` — 24 часовых слота; при пустом `game_id` статистика по всем играм.
 
-### 16.5 Распределение действий
+### 17.5 Распределение действий
 
 ```
 GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
@@ -1753,15 +1734,15 @@ GET /admin/v1/analytics/action-distribution?game_id=<hashid>&hours=24
 
 **Ответ**: `{ "start": n, "end": n, "earn": n, "spend": n }` — счетчики четырех типов действий; лимит `hours` — 168.
 
-### 16.6 Обзор выручки
+### 17.6 Обзор выручки
 
 ```
 GET /admin/v1/analytics/revenue?days=7
 ```
 
-**Ответ**: `{ "total": "总额", "trend": { "日期": "当日额", ... } }`, учитываются только заказы `status=confirmed`.
+**Ответ**: `{ "total": "общая сумма", "trend": { "дата": "сумма за день", ... } }`, учитываются только заказы `status=confirmed`.
 
-### 16.7 Конверсия игр
+### 17.7 Конверсия игр
 
 ```
 GET /admin/v1/analytics/conversion?days=30
@@ -1769,7 +1750,7 @@ GET /admin/v1/analytics/conversion?days=30
 
 **Ответ**: по каждой игре: `game_id` (hashid), `game_name`, `players` (число уникальных игроков), `depositors` (число уникальных пополнявших), `conversion_rate` (конверсия пополнений, 0~1).
 
-### 16.8 Совместная вероятность
+### 17.8 Совместная вероятность
 
 ```
 GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
@@ -1777,7 +1758,7 @@ GET /admin/v1/analytics/probability?game_a=<hashid>&game_b=<hashid>
 
 **Ответ**: `{ "joint": { "joint_probability": 0.12, "confidence": 0.3 } }` — коэффициент Жаккара (общие игроки двух игр / объединение игроков) и уверенность (общие игроки / игроки игры A).
 
-### 16.9 Анализ удержания
+### 17.9 Анализ удержания
 
 ```
 GET /admin/v1/analytics/retention?days=30
@@ -1785,7 +1766,7 @@ GET /admin/v1/analytics/retention?days=30
 
 **Ответ**: `{ "D1": "8.5%", "D3": "...", "D7": "...", "D30": "..." }` — удержание на 1-й/3-й/7-й/30-й день в когортах по дате регистрации.
 
-### 16.10 Воронка конверсии
+### 17.10 Воронка конверсии
 
 ```
 GET /admin/v1/analytics/funnel?days=30
@@ -1793,7 +1774,7 @@ GET /admin/v1/analytics/funnel?days=30
 
 **Ответ**: четыре шага «регистрация → первое пополнение → первый обмен → первая игра» с `step`, `count`, `rate` (процент относительно числа регистраций).
 
-### 16.11 Тренд ARPU/ARPPU
+### 17.11 Тренд ARPU/ARPPU
 
 ```
 GET /admin/v1/analytics/arpu?days=30
@@ -1801,7 +1782,7 @@ GET /admin/v1/analytics/arpu?days=30
 
 **Ответ**: `{ "dates": [...], "arpu": [...], "arppu": [...] }` — ежедневная выручка на пользователя (ARPU) и на платящего пользователя (ARPPU).
 
-### 16.12 Экономические показатели игр
+### 17.12 Экономические показатели игр
 
 ```
 GET /admin/v1/analytics/economy
@@ -1809,7 +1790,7 @@ GET /admin/v1/analytics/economy
 
 **Ответ**: массив `currencies`, каждый элемент содержит `game_name`, `currency`, `symbol`, `total_minted` (общий объем эмиссии), `total_burned` (общий объем сжигания), `circulation` (объем в обращении), `inflation_rate` (уровень инфляции); расчеты выполняются с высокой точностью через bcmath.
 
-## 17. Управление платежами (Payment)
+## 18. Управление платежами (Payment)
 
 Управление способами оплаты предоставляется `PaymentController`; все 5 эндпоинтов требуют аутентификации JWT + RBAC. Белый список `provider`: `stripe` / `paypal` / `nowpayments` / `coinbase` / `skrill` / `neteller` / `paysafecard` / `paytm` / `mercadopago` / `astropay` / `paypay` / `kakaopay` / `gcash`. `config` — строка JSON с конфигурацией оплаты (хранится в БД в зашифрованном виде).
 
@@ -1821,7 +1802,7 @@ GET /admin/v1/analytics/economy
 | PUT | /admin/v1/payment/method/{hashid} | Обновить способ оплаты |
 | DELETE | /admin/v1/payment/method/{hashid} | Удалить способ оплаты (отказ при наличии ожидающих заказов) |
 
-### 17.1 Список способов оплаты
+### 18.1 Список способов оплаты
 
 ```
 GET /admin/v1/payment/method/list
@@ -1869,7 +1850,7 @@ GET /admin/v1/payment/method/list
 | min_amount / max_amount | string | Диапазон сумм (строка сохраняет точность), 0 = без лимита |
 | config | string? | JSON конфигурации оплаты (зашифрован; null, если не задан) |
 
-### 17.2 Включение/отключение способа оплаты
+### 18.2 Включение/отключение способа оплаты
 
 ```
 POST /admin/v1/payment/method/toggle
@@ -1892,7 +1873,7 @@ POST /admin/v1/payment/method/toggle
 - 422: ошибка валидации (id/status отсутствует или status не 0/1)
 - 404: способ оплаты не найден
 
-### 17.3 Создание способа оплаты
+### 18.3 Создание способа оплаты
 
 ```
 POST /admin/v1/payment/method/create
@@ -1938,20 +1919,20 @@ POST /admin/v1/payment/method/create
 **Возможные ошибки**:
 - 422: ошибка валидации
 
-### 17.4 Обновление способа оплаты
+### 18.4 Обновление способа оплаты
 
 ```
 PUT /admin/v1/payment/method/{hashid}
 ```
 
 - **Параметр пути**: `{hashid}` — ID способа оплаты в кодировке hashid
-- **Тело запроса**: как при создании (17.3), все поля необязательны, обновляются только переданные поля
+- **Тело запроса**: как при создании (18.3), все поля необязательны, обновляются только переданные поля
 
 **Возможные ошибки**:
 - 404: способ оплаты не найден
 - 422: ошибка валидации
 
-### 17.5 Удаление способа оплаты
+### 18.5 Удаление способа оплаты
 
 ```
 DELETE /admin/v1/payment/method/{hashid}

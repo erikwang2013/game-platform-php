@@ -17,7 +17,7 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.
 │                        Couche client                          │
 │  ┌──────────────────────┐  ┌──────────────────────────────┐  │
 │  │  Flutter Web (PC)    │  │  HarmonyOS ArkTS (Mobile)    │  │
-│  │  Administration      │  │  Client (mobile/tablette/2en1)│  │
+│  │  Administration        │  │  Client (mobile/tablette/2en1)│  │
 │  └──────────┬───────────┘  └──────────────┬───────────────┘  │
 └─────────────┼──────────────────────────────┼─────────────────┘
               │        HTTPS / JSON          │
@@ -26,11 +26,11 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.
 │             ▼                              ▼                  │
 │  ┌──────────────────────────────────────────────────────┐    │
 │  │                    Couche passerelle API              │    │
-│  │  AdminAuth (authentification) → AdminPermission → Controller │
+│  │  AdminAuth (authentif.) → AdminPermission → Controller│    │
 │  └──────────────────────────┬───────────────────────────┘    │
 │                             │                                  │
 │  ┌──────────────────────────┼───────────────────────────┐    │
-│  │       Couche logique métier (Controller/Service)      │    │
+│  │       Couche logique métier (Controller/Service)       │    │
 │  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌─────────┐ │    │
 │  │  │Dashboard │ │  User    │ │  Role    │ │ Export  │ │    │
 │  │  │Controller│ │Controller│ │Controller│ │Controller│ │    │
@@ -39,20 +39,18 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.
 │          │            │             │            │            │
 │  ┌───────┼────────────┼─────────────┼────────────┼──────┐    │
 │  │       ▼            ▼             ▼            ▼       │    │
-│  │                    Couche Model                        │    │
+│  │                     Couche Model                      │    │
 │  │  ┌──────────────────────────────────────────────┐    │    │
 │  │  │  Snowflake ID ← encryptable → Encryption     │    │    │
-│  │  │  (génération    (chiffrement   (chiffrement  │    │    │
-│  │  │  des clés)      des champs DB)  du transport API)  │    │
+│  │  │  (gén. clés)     (chiffr. DB)  (chiffr. API)    │    │    │
 │  │  └──────────────────────────────────────────────┘    │    │
 │  └──────────────────────────┬───────────────────────────┘    │
 │                             │                                  │
 │  ┌──────────────────────────┼───────────────────────────┐    │
-│  │               Couche de stockage                      │    │
+│  │                   Couche de stockage                   │    │
 │  │  ┌──────────┐  ┌──────────────┐  ┌──────────┐        │    │
 │  │  │  MySQL   │  │ Elasticsearch│  │  Redis   │        │    │
-│  │  │ (stockage │  │ (recherche   │  │ (cache)  │        │    │
-│  │  │  principal)│  │  plein texte)│  │          │        │    │
+│  │  │ (stockage)│  │ (plein texte) │  │ (cache)  │        │    │
 │  │  └──────────┘  └──────────────┘  └──────────┘        │    │
 │  └──────────────────────────────────────────────────────┘    │
 │                       webman v2                               │
@@ -67,10 +65,10 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.
 |---|------|------|
 | Routes | `config/route.php` | Mappage URL → contrôleur, liaison des middleware, routes versionnées |
 | Middleware | `app/middleware/` | Interception des attaques (SecurityFilter), rate-limit (RateLimit), authentification (JWT), autorisation (RBAC) |
-| Contrôleurs | 30 : Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (administration) + Captcha/Auth (API v1) | Validation des paramètres de requête, appel de la logique métier, formatage des réponses |
-| Services métier | `common/service/` | Analyse de données : GameDashboardService (vue d'ensemble/classement/tendances), DepositLogService (revenus/conversion), ProbabilityService (probabilités jointes/conditionnelles, constructeur SQL) ; renvoie des données vides (et non une erreur) si la base est en panne |
+| Contrôleurs | 45 : Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (administration) + Captcha/Auth (API v1) | Validation des paramètres de requête, appel de la logique métier, formatage des réponses |
+| Services métier | `packages/platform-common/src/service/` | Analyse de données : GameDashboardService (vue d'ensemble/classement/tendances), DepositLogService (revenus/conversion), ProbabilityService (probabilités jointes/conditionnelles, constructeur SQL) ; renvoie des données vides (et non une erreur) si la base est en panne |
 | Modèles de données | `app/model/` | Mappage ORM, relations, chiffrement/déchiffrement des champs |
-| Utilitaires communs | `app/common/` | Services Hashids, Snowflake, Encryption |
+| Utilitaires communs | `packages/platform-common/src/` | Services Hashids, Snowflake, Encryption |
 
 ### 2.2 Cycle de vie d'une requête
 
@@ -258,7 +256,7 @@ Client                               Serveur
   │  ① POST /api/v1/captcha/generate     │ captcha_create('click')
   │◄── {key, image(base64), targets}  │
   │                                    │
-  │  ② l'utilisateur clique les positions des textes de l'image │
+  │  ② clic sur la position du texte     │
   │                                    │
   │  ③ POST /api/v1/auth/login           │
   │     {username, password,          │
@@ -337,7 +335,7 @@ Le module de gestion des méthodes de paiement (`PaymentController` + Flutter `p
 │ Sidebar  │  Zone de contenu                    │
 │ (64/240) │                                     │
 │          │  ┌──────────────┐ ┌──────────┐     │
-│ 📊 tableau│  │ cartes stat.×4│ │ graphique │     │
+│ 📊 tableau│  │ cartes stat.×4│ │ graphique │   │
 │ 👥 users │  └──────────────┘ └──────────┘     │
 │ 🔒 rôles │  ┌──────┐ ┌────────────────┐       │
 │ ⚙ config │  │camem-│ │ journaux récents│       │
@@ -468,7 +466,7 @@ L'intégration continue GitHub Actions est définie dans `.github/workflows/ci.y
 
 ### 8.5 Monitoring
 
-Le point `GET /metrics` (`MetricsController`) expose 5 métriques gauge au format texte Prometheus : nombre total de requêtes HTTP, nombre d'utilisateurs actifs, état des connexions base de données/Redis, utilisation mémoire.
+Le point `GET /metrics` (`MetricsController`) expose 18 métriques gauge au format texte Prometheus : utilisateurs actifs/totaux, état des connexions base de données/Redis/ES, métriques mémoire/CPU/processus, retraits en attente et écarts de rapprochement.
 
 ### 8.6 Prérequis d'environnement
 

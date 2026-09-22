@@ -22,7 +22,7 @@ class UserController extends BaseController
     #[Apidoc\Method("GET")]
     #[Apidoc\Author("erik")]
     #[Apidoc\Param(name: "page", type: "int", require: false, desc: "页码")]
-    #[Apidoc\Param(name: "per_page", type: "int", require: false, desc: "每页数量")]
+    #[Apidoc\Param(name: "limit", type: "int", require: false, desc: "每页数量")]
     #[Apidoc\Param(name: "keyword", type: "string", require: false, desc: "搜索关键词(用户名/真实姓名)")]
     #[Apidoc\Param(name: "status", type: "int", require: false, desc: "状态(0禁用,1启用)")]
     #[Apidoc\Returned(name: "id", type: "string", desc: "用户ID(hashid编码)")]

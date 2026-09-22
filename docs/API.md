@@ -186,7 +186,7 @@ type 可选值: deposit / withdraw / exchange_in / exchange_out / game_earn / ga
 }
 ```
 
-currency 可选值: USD / CNY / EUR
+currency 可选值: USD / CNY / EUR / JPY / KRW / GBP / BRL / INR
 
 checkout_url: 支付网关跳转链接（创建订单时已回填）；expires_at: 支付链接过期时间（创建后 1 小时）
 
@@ -401,9 +401,9 @@ status:
 }
 ```
 
-type 可选值: self / third_party
+type 可选值: self / embedded / third_party
 
-#### GET /api/v1/game/{hashid} — 游戏详情
+#### GET /api/v1/game/detail/{hashid} — 游戏详情
 
 ```
 响应: {
@@ -870,7 +870,7 @@ language 可选值: en-US / zh-CN / ja-JP / ko-KR
 
 ### 3.1 平台仪表盘
 
-#### GET /admin/dashboard/platform
+#### GET /admin/v1/dashboard/platform
 
 ```
 需认证: 是 (AdminAuth + AdminPermission)
@@ -888,11 +888,11 @@ language 可选值: en-US / zh-CN / ja-JP / ko-KR
 
 ### 3.2 游戏管理
 
-#### GET /admin/game/list — 游戏列表
+#### GET /admin/v1/game/list — 游戏列表
 
 ```
 需认证: 是
-参数: ?page=1&per_page=20&keyword=射击
+参数: ?page=1&limit=20&keyword=射击
 
 响应: {
   "list": [
@@ -909,11 +909,69 @@ language 可选值: en-US / zh-CN / ja-JP / ko-KR
   ],
   "total": 12,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### POST /admin/game/create — 创建游戏
+#### GET /admin/v1/game/{hashid} — 游戏详情
+
+```
+需认证: 是
+参数: hashid 为游戏的 hashid 编码（路径参数）
+
+响应: {
+  "id": "aB3xK...",
+  "name": "射击大师",
+  "slug": "shooter-master",
+  "type": "self",
+  "description": "游戏描述",
+  "cover_image": "https://...",
+  "api_endpoint": "https://...",
+  "sdk_version": "1.0.0",
+  "platform": "h5",
+  "region": "global",
+  "currencies": [
+    {
+      "id": "cD4yL...",
+      "name": "金币",
+      "symbol": "G",
+      "exchange_rate": "100.00000000",
+      "spread_pct": "5.00000000",
+      "min_exchange": "1.00000000",
+      "max_exchange": "10000.00000000"
+    }
+  ]
+}
+```
+
+游戏不存在时返回 code 404。
+
+#### POST /admin/v1/game/launch — 游戏试玩预览
+
+```
+需认证: 是
+
+请求: {
+  "game_id": "aB3xK..."      // 游戏 ID(hashid)
+}
+
+响应: {
+  "id": "aB3xK...",
+  "name": "射击大师",
+  "slug": "shooter-master",
+  "type": "self",
+  "api_endpoint": "https://...",
+  "preview": true
+}
+```
+
+缺少 `game_id` 返回 code 422；游戏不存在返回 404；游戏未上架（status 不为 1）返回 403。
+
+管理端试玩是纯预览：只校验游戏可用性并回传启动信息，**不写游戏记录、不涉及钱包**。
+管理端身份只有 `adminId`（由 `AdminAuth` 注入），没有 C 端 `userId`，故此端点刻意不做任何
+用户侧写入——照搬 C 端 `POST /api/v1/game/launch` 会写出归属错误的 `game_game_play_log`。
+
+#### POST /admin/v1/game/create — 创建游戏
 
 ```
 需认证: 是
@@ -934,9 +992,9 @@ language 可选值: en-US / zh-CN / ja-JP / ko-KR
 响应: { "id": "aB3xK..." }
 ```
 
-type 可选值: self / third_party
+type 可选值: self / embedded / third_party
 
-#### PUT /admin/game/{hashid} — 编辑游戏
+#### PUT /admin/v1/game/{hashid} — 编辑游戏
 
 ```
 需认证: 是
@@ -950,14 +1008,14 @@ type 可选值: self / third_party
 响应: { "message": "更新成功" }
 ```
 
-#### DELETE /admin/game/{hashid} — 删除游戏
+#### DELETE /admin/v1/game/{hashid} — 删除游戏
 
 ```
 需认证: 是
 响应: { "message": "删除成功" }
 ```
 
-#### POST /admin/game/currency/manage — 管理币种
+#### POST /admin/v1/game/currency/manage — 管理币种
 
 ```
 需认证: 是
@@ -977,16 +1035,20 @@ type 可选值: self / third_party
   ]
 }
 
-响应: { "message": "币种更新成功" }
+响应: { "message": "操作成功" }
 ```
+
+`game_id` 缺失或 `currencies` 非数组返回 422；游戏不存在返回 404。
+
+`exchange_rate` 与 `spread_pct` 仅在传入时校验：`exchange_rate` 必须大于 0、`spread_pct` 必须在 0（含）到 100（不含）之间；违反任一项返回 422，且整批币种整体不写入（先全量校验后落库）。未传入的字段不触发校验：新建时取默认值（`exchange_rate` 为 `1.00000000`，其余为 `0.00000000`），更新时保留原值。
 
 ### 3.3 提现管理
 
-#### GET /admin/withdraw/orders — 提现订单列表
+#### GET /admin/v1/withdraw/orders — 提现订单列表
 
 ```
 需认证: 是
-参数: ?page=1&per_page=20&status=pending
+参数: ?page=1&limit=20&status=pending
 
 响应: {
   "list": [
@@ -1008,11 +1070,11 @@ type 可选值: self / third_party
   ],
   "total": 5,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### PUT /admin/withdraw/review — 审核提现
+#### PUT /admin/v1/withdraw/review — 审核提现
 
 ```
 需认证: 是
@@ -1026,11 +1088,11 @@ type 可选值: self / third_party
 响应: { "message": "已通过" }
 ```
 
-action: approve=通过 / reject=拒绝（拒绝时自动退回平台币）
+action: approve=通过 / reject=拒绝 / confirm=确认打款（拒绝时自动退回平台币）
 
 错误: 422 订单状态不是待审核
 
-#### PUT /admin/withdraw/switch — 全局提现开关
+#### PUT /admin/v1/withdraw/switch — 全局提现开关
 
 ```
 需认证: 是
@@ -1043,7 +1105,7 @@ action: approve=通过 / reject=拒绝（拒绝时自动退回平台币）
 }
 ```
 
-#### POST /admin/withdraw/limits/set — 设置提现限额
+#### POST /admin/v1/withdraw/limits/set — 设置提现限额
 
 ```
 需认证: 是
@@ -1064,11 +1126,11 @@ action: approve=通过 / reject=拒绝（拒绝时自动退回平台币）
 
 ### 3.4 平台用户管理
 
-#### GET /admin/platform/user/list — C端用户列表
+#### GET /admin/v1/platform/user/list — C端用户列表
 
 ```
 需认证: 是
-参数: ?page=1&per_page=20&keyword=player&status=1
+参数: ?page=1&limit=20&keyword=player&status=1
 
 响应: {
   "list": [
@@ -1084,11 +1146,11 @@ action: approve=通过 / reject=拒绝（拒绝时自动退回平台币）
   ],
   "total": 1500,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### GET /admin/platform/user/{hashid} — 用户详情
+#### GET /admin/v1/platform/user/{hashid} — 用户详情
 
 ```
 需认证: 是
@@ -1111,7 +1173,7 @@ action: approve=通过 / reject=拒绝（拒绝时自动退回平台币）
 }
 ```
 
-#### PUT /admin/platform/user/{hashid} — 编辑/封禁用户
+#### PUT /admin/v1/platform/user/{hashid} — 编辑/封禁用户
 
 ```
 需认证: 是
@@ -1126,7 +1188,7 @@ action: approve=通过 / reject=拒绝（拒绝时自动退回平台币）
 
 ### 3.5 支付管理
 
-#### GET /admin/payment/method/list
+#### GET /admin/v1/payment/method/list
 
 ```
 需认证: 是
@@ -1144,7 +1206,7 @@ action: approve=通过 / reject=拒绝（拒绝时自动退回平台币）
 }
 ```
 
-#### POST /admin/payment/method/toggle — 启禁用支付方式
+#### POST /admin/v1/payment/method/toggle — 启禁用支付方式
 
 ```
 需认证: 是
@@ -1156,11 +1218,11 @@ action: approve=通过 / reject=拒绝（拒绝时自动退回平台币）
 
 ### 3.6 公告管理
 
-#### GET /admin/announcement/list
+#### GET /admin/v1/announcement/list
 
 ```
 需认证: 是
-参数: ?page=1&per_page=20
+参数: ?page=1&limit=20
 
 响应: {
   "list": [
@@ -1176,11 +1238,11 @@ action: approve=通过 / reject=拒绝（拒绝时自动退回平台币）
   ],
   "total": 5,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### POST /admin/announcement/create — 发布公告
+#### POST /admin/v1/announcement/create — 发布公告
 
 ```
 需认证: 是
@@ -1200,11 +1262,11 @@ action: approve=通过 / reject=拒绝（拒绝时自动退回平台币）
 
 ### 3.7 KYC 审核
 
-#### GET /admin/identity/list — KYC列表
+#### GET /admin/v1/identity/list — KYC列表
 
 ```
 需认证: 是
-参数: ?page=1&per_page=20&status=pending
+参数: ?page=1&limit=20&status=pending
 
 响应: {
   "list": [
@@ -1217,11 +1279,11 @@ action: approve=通过 / reject=拒绝（拒绝时自动退回平台币）
       "created_at": "2026-05-22 10:00:00"
     }
   ],
-  "total": 5, "page": 1, "per_page": 20
+  "total": 5, "page": 1, "limit": 20
 }
 ```
 
-#### PUT /admin/identity/review — 审核KYC
+#### PUT /admin/v1/identity/review — 审核KYC
 
 ```
 需认证: 是
@@ -1235,7 +1297,7 @@ action: approve / reject
 
 ### 3.8 游戏区服管理
 
-#### GET /admin/game/server/list — 区服列表
+#### GET /admin/v1/game/server/list — 区服列表
 
 ```
 需认证: 是
@@ -1248,7 +1310,7 @@ action: approve / reject
 }
 ```
 
-#### POST /admin/game/server/create — 创建区服
+#### POST /admin/v1/game/server/create — 创建区服
 
 ```
 需认证: 是
@@ -1256,14 +1318,14 @@ action: approve / reject
 响应: { "id": "hashid" }
 ```
 
-#### PUT /admin/game/server/{hashid} — 编辑区服
+#### PUT /admin/v1/game/server/{hashid} — 编辑区服
 
 ```
 需认证: 是
 请求: { "name": "新名称", "status": 2 }
 ```
 
-#### DELETE /admin/game/server/{hashid} — 删除区服
+#### DELETE /admin/v1/game/server/{hashid} — 删除区服
 
 ```
 需认证: 是
@@ -1271,7 +1333,7 @@ action: approve / reject
 
 ### 3.9 提现阶梯限额管理
 
-#### GET /admin/withdraw/limits/list
+#### GET /admin/v1/withdraw/limits/list
 
 ```
 需认证: 是
@@ -1293,7 +1355,7 @@ action: approve / reject
 }
 ```
 
-#### PUT /admin/withdraw/limits/{hashid} — 更新限额
+#### PUT /admin/v1/withdraw/limits/{hashid} — 更新限额
 
 ```
 需认证: 是
@@ -1304,14 +1366,14 @@ action: approve / reject
 
 ### 3.11 游戏分类管理
 
-#### GET /admin/game/category/list
+#### GET /admin/v1/game/category/list
 
 ```
 需认证: 是
 响应: { "list": [{ "id": "...", "name": "动作", "slug": "action", "sort": 1 }] }
 ```
 
-#### POST /admin/game/category/create
+#### POST /admin/v1/game/category/create
 
 ```
 需认证: 是
@@ -1319,11 +1381,11 @@ action: approve / reject
 响应: { "id": "hashid" }
 ```
 
-#### PUT /admin/game/category/{hashid} — 编辑分类
+#### PUT /admin/v1/game/category/{hashid} — 编辑分类
 
-#### DELETE /admin/game/category/{hashid} — 删除分类
+#### DELETE /admin/v1/game/category/{hashid} — 删除分类
 
-#### POST /admin/game/category/assign — 分配游戏
+#### POST /admin/v1/game/category/assign — 分配游戏
 
 ```
 需认证: 是
@@ -1332,42 +1394,42 @@ action: approve / reject
 
 ### 3.12 排行榜管理
 
-#### GET /admin/leaderboard/list — 排行榜列表
+#### GET /admin/v1/leaderboard/list — 排行榜列表
 
 ```
 需认证: 是
 响应: { "list": [{ "id": "...", "name": "...", "type": "total", "metric": "earned" }] }
 ```
 
-#### POST /admin/leaderboard/create — 创建排行榜
+#### POST /admin/v1/leaderboard/create — 创建排行榜
 
 ```
 需认证: 是
 请求: { "name": "周收入榜", "type": "weekly", "metric": "earned", "game_id": "hashid(可选)" }
 ```
 
-#### PUT /admin/leaderboard/{hashid} — 编辑排行榜
+#### PUT /admin/v1/leaderboard/{hashid} — 编辑排行榜
 
-#### DELETE /admin/leaderboard/{hashid} — 删除排行榜
+#### DELETE /admin/v1/leaderboard/{hashid} — 删除排行榜
 
-#### POST /admin/leaderboard/{hashid}/refresh — 刷新缓存
+#### POST /admin/v1/leaderboard/{hashid}/refresh — 刷新缓存
 
 ### 3.13 优惠券管理
 
-#### GET /admin/coupon/list — 优惠券列表
+#### GET /admin/v1/coupon/list — 优惠券列表
 
-#### POST /admin/coupon/create — 创建优惠券
+#### POST /admin/v1/coupon/create — 创建优惠券
 
 ```
 需认证: 是
 请求: { "name": "新人礼包", "type": "fixed", "value": "10.0000", "total_qty": 1000 }
 ```
 
-#### PUT /admin/coupon/{hashid} — 编辑（未领取时）
+#### PUT /admin/v1/coupon/{hashid} — 编辑（未领取时）
 
-#### DELETE /admin/coupon/{hashid} — 删除
+#### DELETE /admin/v1/coupon/{hashid} — 删除
 
-#### GET /admin/coupon/{hashid}/stats — 领取统计
+#### GET /admin/v1/coupon/{hashid}/stats — 领取统计
 
 ```
 响应: { "total_qty": 1000, "used_qty": 234, "remaining": 766, "usage_rate": "23.40%" }
@@ -1375,20 +1437,20 @@ action: approve / reject
 
 ### 3.14 国家配置管理
 
-#### GET /admin/country/config/list — 国家配置列表
+#### GET /admin/v1/country/config/list — 国家配置列表
 
-#### POST /admin/country/config/create — 创建国家配置
+#### POST /admin/v1/country/config/create — 创建国家配置
 
 ```
 需认证: 是
 请求: { "country_code": "JP", "currency": "JPY", "payment_methods": "[\"stripe\",\"paypal\"]", "min_deposit": "100.0000" }
 ```
 
-#### PUT /admin/country/config/{hashid} — 编辑国家配置
+#### PUT /admin/v1/country/config/{hashid} — 编辑国家配置
 
 ### 3.15 数据导出
 
-#### POST /admin/export/users — 导出C端用户
+#### POST /admin/v1/export/users — 导出C端用户
 
 ```
 需认证: 是
@@ -1397,7 +1459,7 @@ action: approve / reject
 响应: Excel 文件下载 (xlsx)
 ```
 
-#### POST /admin/export/transactions — 导出平台流水
+#### POST /admin/v1/export/transactions — 导出平台流水
 
 ```
 需认证: 是
@@ -1412,18 +1474,18 @@ action: approve / reject
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | /admin/analytics/overview | 平台总览（今日/近7天） |
-| GET | /admin/analytics/game-ranking | 游戏排行（?days=7） |
-| GET | /admin/analytics/dau-trend | DAU 趋势（?days=30） |
-| GET | /admin/analytics/hourly-trend | 小时趋势 |
-| GET | /admin/analytics/action-distribution | 行为分布 |
-| GET | /admin/analytics/revenue | 营收分析 |
-| GET | /admin/analytics/conversion | 游戏转化率 |
-| GET | /admin/analytics/probability | 联合/条件概率 |
-| GET | /admin/analytics/retention | 留存分析 D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | 转化漏斗 |
-| GET | /admin/analytics/arpu | ARPU/ARPPU 趋势 |
-| GET | /admin/analytics/economy | 游戏币种经济指标 |
+| GET | /admin/v1/analytics/overview | 平台总览（今日/近7天） |
+| GET | /admin/v1/analytics/game-ranking | 游戏排行（?days=7） |
+| GET | /admin/v1/analytics/dau-trend | DAU 趋势（?days=30） |
+| GET | /admin/v1/analytics/hourly-trend | 小时趋势 |
+| GET | /admin/v1/analytics/action-distribution | 行为分布 |
+| GET | /admin/v1/analytics/revenue | 营收分析 |
+| GET | /admin/v1/analytics/conversion | 游戏转化率 |
+| GET | /admin/v1/analytics/probability | 联合/条件概率 |
+| GET | /admin/v1/analytics/retention | 留存分析 D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | 转化漏斗 |
+| GET | /admin/v1/analytics/arpu | ARPU/ARPPU 趋势 |
+| GET | /admin/v1/analytics/economy | 游戏币种经济指标 |
 
 ### 3.17 工单管理
 
@@ -1431,11 +1493,11 @@ action: approve / reject
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | /admin/ticket/list | 工单列表（?page=&limit=&status=&type=） |
-| GET | /admin/ticket/{hashid} | 工单详情（含回复） |
-| POST | /admin/ticket/{hashid}/reply | 回复工单 |
-| POST | /admin/ticket/{hashid}/close | 关闭工单 |
-| POST | /admin/ticket/{hashid}/assign | 指定处理人（admin_id） |
+| GET | /admin/v1/ticket/list | 工单列表（?page=&limit=&status=&type=） |
+| GET | /admin/v1/ticket/{hashid} | 工单详情（含回复） |
+| POST | /admin/v1/ticket/{hashid}/reply | 回复工单 |
+| POST | /admin/v1/ticket/{hashid}/close | 关闭工单 |
+| POST | /admin/v1/ticket/{hashid}/assign | 指定处理人（admin_id） |
 
 ### 3.18 CDN 配置管理
 
@@ -1443,12 +1505,12 @@ action: approve / reject
 
 | 方法 | 路径 | 说明 | 认证 |
 |------|------|------|------|
-| GET | /admin/cdn/provider/list | CDN 厂商列表（config 凭据不回传） | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/toggle | 启停厂商 {id, status} | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/create | 新增 {name, provider, config(JSON), status, sort}，provider 查重 | AdminAuth + RBAC: cdn |
-| PUT | /admin/cdn/provider/{hashid} | 编辑（config 留空不修改） | AdminAuth + RBAC: cdn |
-| DELETE | /admin/cdn/provider/{hashid} | 删除 | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/test | 连通测试 HeadBucket {id} | AdminAuth + RBAC: cdn |
+| GET | /admin/v1/cdn/provider/list | CDN 厂商列表（config 凭据不回传） | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/toggle | 启停厂商 {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/create | 新增 {name, provider, config(JSON), status, sort}，provider 查重 | AdminAuth + RBAC: cdn |
+| PUT | /admin/v1/cdn/provider/{hashid} | 编辑（config 留空不修改） | AdminAuth + RBAC: cdn |
+| DELETE | /admin/v1/cdn/provider/{hashid} | 删除 | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/test | 连通测试 HeadBucket {id} | AdminAuth + RBAC: cdn |
 
 ### 3.19 数据报表
 
@@ -1456,9 +1518,9 @@ action: approve / reject
 
 | 方法 | 路径 | 说明 | 认证 |
 |------|------|------|------|
-| GET | /admin/report/summary | 报表汇总（新增用户/充值/提现/兑换/游戏局数） | AdminAuth + RBAC: report |
-| GET | /admin/report/daily | 日报表（按日聚合，无数据日期补 0） | AdminAuth + RBAC: report |
-| GET | /admin/report/export | 日报表导出 CSV（UTF-8 BOM） | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/summary | 报表汇总（新增用户/充值/提现/兑换/游戏局数） | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/daily | 日报表（按日聚合，无数据日期补 0） | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/export | 日报表导出 CSV（UTF-8 BOM） | AdminAuth + RBAC: report |
 
 ## 4. 限流策略
 
@@ -1681,6 +1743,8 @@ status: open / waiting / replied / closed
 
 #### GET /api/v1/user/vip-status — VIP状态
 
+> **尚未实现**：C 端路由未注册（`service/config/route.php` 无对应条目），当前请求返回 404。实现后请删除本行。
+
 ```
 需认证: 是
 响应: {
@@ -1701,6 +1765,8 @@ status: open / waiting / replied / closed
 
 #### GET /api/v1/user/achievements — 成就列表
 
+> **尚未实现**：C 端路由未注册（`service/config/route.php` 无对应条目），当前请求返回 404。实现后请删除本行。
+
 ```
 需认证: 是
 响应: {
@@ -1720,7 +1786,7 @@ status: open / waiting / replied / closed
 
 ### 7.6 管理后台新增 API
 
-#### GET /admin/ticket/list — 工单列表
+#### GET /admin/v1/ticket/list — 工单列表
 
 ```
 需认证: 是
@@ -1739,7 +1805,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### POST /admin/ticket/{hashid}/reply — 回复工单
+#### POST /admin/v1/ticket/{hashid}/reply — 回复工单
 
 ```
 需认证: 是
@@ -1747,14 +1813,14 @@ status: open / waiting / replied / closed
 响应: { "code": 0, "message": "Reply sent" }
 ```
 
-#### POST /admin/ticket/{hashid}/close — 关闭工单
+#### POST /admin/v1/ticket/{hashid}/close — 关闭工单
 
 ```
 需认证: 是
 响应: { "code": 0, "message": "Ticket closed" }
 ```
 
-#### POST /admin/ticket/{hashid}/assign — 指定处理人
+#### POST /admin/v1/ticket/{hashid}/assign — 指定处理人
 
 ```
 需认证: 是
@@ -1762,7 +1828,7 @@ status: open / waiting / replied / closed
 响应: { "code": 0, "message": "Assigned" }
 ```
 
-#### GET /admin/analytics/retention — 留存分析
+#### GET /admin/v1/analytics/retention — 留存分析
 
 ```
 需认证: 是
@@ -1773,7 +1839,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/funnel — 转化漏斗
+#### GET /admin/v1/analytics/funnel — 转化漏斗
 
 ```
 需认证: 是
@@ -1787,7 +1853,7 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/arpu — ARPU/ARPPU 趋势
+#### GET /admin/v1/analytics/arpu — ARPU/ARPPU 趋势
 
 ```
 需认证: 是
@@ -1795,7 +1861,7 @@ status: open / waiting / replied / closed
 响应: { "arpu": [...], "arppu": [...], "dates": [...] }
 ```
 
-#### GET /admin/analytics/economy — 游戏币种经济指标
+#### GET /admin/v1/analytics/economy — 游戏币种经济指标
 
 ```
 需认证: 是
@@ -1814,14 +1880,14 @@ status: open / waiting / replied / closed
 ```
 
 
-#### GET /admin/cdn/provider/list — CDN 厂商列表（config 凭据不回传）
+#### GET /admin/v1/cdn/provider/list — CDN 厂商列表（config 凭据不回传）
 
 ```
 需认证: 是
 响应: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
 ```
 
-#### POST /admin/cdn/provider/toggle — 启停厂商 {id, status}
+#### POST /admin/v1/cdn/provider/toggle — 启停厂商 {id, status}
 
 ```
 需认证: 是
@@ -1829,7 +1895,7 @@ status: open / waiting / replied / closed
 响应: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/cdn/provider/create — 新增 {name, provider, config(JSON), status, sort}，provider 查重
+#### POST /admin/v1/cdn/provider/create — 新增 {name, provider, config(JSON), status, sort}，provider 查重
 
 ```
 需认证: 是
@@ -1837,7 +1903,7 @@ status: open / waiting / replied / closed
 响应: { "code": 0, "data": { "id": "..." } }
 ```
 
-#### PUT /admin/cdn/provider/{hashid} — 编辑（config 留空不修改）
+#### PUT /admin/v1/cdn/provider/{hashid} — 编辑（config 留空不修改）
 
 ```
 需认证: 是
@@ -1845,21 +1911,21 @@ status: open / waiting / replied / closed
 响应: { "code": 0, "message": "..." }
 ```
 
-#### DELETE /admin/cdn/provider/{hashid} — 删除
+#### DELETE /admin/v1/cdn/provider/{hashid} — 删除
 
 ```
 需认证: 是
 响应: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/cdn/provider/test — 连通测试 HeadBucket {id}
+#### POST /admin/v1/cdn/provider/test — 连通测试 HeadBucket {id}
 
 ```
 需认证: 是
 请求: { "id": "..." }
 响应: { "code": 0, "data": { "ok": true } }
 ```
-#### GET /admin/report/summary — 报表汇总
+#### GET /admin/v1/report/summary — 报表汇总
 
 ```
 需认证: 是
@@ -1873,7 +1939,7 @@ status: open / waiting / replied / closed
 ```
 
 
-#### GET /admin/report/daily — 日报表
+#### GET /admin/v1/report/daily — 日报表
 
 ```
 需认证: 是
@@ -1885,7 +1951,7 @@ status: open / waiting / replied / closed
 ```
 
 
-#### GET /admin/report/export — 日报表导出 CSV
+#### GET /admin/v1/report/export — 日报表导出 CSV
 
 ```
 需认证: 是
@@ -2029,13 +2095,13 @@ status: open / waiting / replied / closed
 
 ### 7.10 高级分析 API
 
-#### GET /admin/analytics/retention — 留存分析
+#### GET /admin/v1/analytics/retention — 留存分析
 ```
 需认证: 是
 响应: { "D1": "45.2%", "D3": "28.7%", "D7": "18.3%", "D30": "8.1%" }
 ```
 
-#### GET /admin/analytics/funnel — 转化漏斗
+#### GET /admin/v1/analytics/funnel — 转化漏斗
 ```
 需认证: 是
 响应: {
@@ -2048,14 +2114,14 @@ status: open / waiting / replied / closed
 }
 ```
 
-#### GET /admin/analytics/arpu — ARPU/ARPPU 趋势
+#### GET /admin/v1/analytics/arpu — ARPU/ARPPU 趋势
 ```
 需认证: 是
 参数: ?days=30
 响应: { "dates": [...], "arpu": [...], "arppu": [...] }
 ```
 
-#### GET /admin/analytics/economy — 游戏经济指标
+#### GET /admin/v1/analytics/economy — 游戏经济指标
 ```
 需认证: 是
 响应: {
@@ -2117,47 +2183,47 @@ status: open / waiting / replied / closed
 
 | 接口 | 说明 |
 |------|------|
-| GET /admin/risk/dashboard | 风控看板总览 |
-| GET /admin/risk/overview | 风控总览指标 |
-| GET /admin/risk/hit-trend | 命中趋势 |
-| GET /admin/risk/action-distribution | 处置动作分布 |
-| GET /admin/risk/rule-performance | 规则性能 |
-| GET /admin/risk/rule/list | 规则列表 |
-| POST /admin/risk/rule/create | 创建规则 |
-| PUT /admin/risk/rule/{hashid} | 更新规则 |
-| POST /admin/risk/rule/{hashid}/toggle | 启停规则 |
-| POST /admin/risk/rule/test | 规则测试 |
-| GET /admin/risk/event/list | 风控事件列表 |
-| GET /admin/risk/event/{hashid} | 事件详情 |
-| POST /admin/risk/event/{hashid}/handle | 事件处置 |
-| GET /admin/risk/device/list | 设备指纹列表 |
-| POST /admin/risk/device/block | 设备封禁 |
-| POST /admin/risk/device/unblock | 设备解封 |
-| GET /admin/risk/ip/list | IP 列表 |
-| POST /admin/risk/ip/block | IP 封禁 |
-| POST /admin/risk/ip/whitelist | IP 白名单 |
-| POST /admin/risk/ip/appeal | IP 申诉 |
-| POST /admin/risk/ip/recheck | IP 复核 |
-| GET /admin/risk/graph/clusters | 关联簇列表 |
-| GET /admin/risk/graph/{userId} | 用户关联图谱 |
-| GET /admin/risk/clusters | 风险簇列表 |
+| GET /admin/v1/risk/dashboard | 风控看板总览 |
+| GET /admin/v1/risk/overview | 风控总览指标 |
+| GET /admin/v1/risk/hit-trend | 命中趋势 |
+| GET /admin/v1/risk/action-distribution | 处置动作分布 |
+| GET /admin/v1/risk/rule-performance | 规则性能 |
+| GET /admin/v1/risk/rule/list | 规则列表 |
+| POST /admin/v1/risk/rule/create | 创建规则 |
+| PUT /admin/v1/risk/rule/{hashid} | 更新规则 |
+| POST /admin/v1/risk/rule/{hashid}/toggle | 启停规则 |
+| POST /admin/v1/risk/rule/test | 规则测试 |
+| GET /admin/v1/risk/event/list | 风控事件列表 |
+| GET /admin/v1/risk/event/{hashid} | 事件详情 |
+| POST /admin/v1/risk/event/{hashid}/handle | 事件处置 |
+| GET /admin/v1/risk/device/list | 设备指纹列表 |
+| POST /admin/v1/risk/device/block | 设备封禁 |
+| POST /admin/v1/risk/device/unblock | 设备解封 |
+| GET /admin/v1/risk/ip/list | IP 列表 |
+| POST /admin/v1/risk/ip/block | IP 封禁 |
+| POST /admin/v1/risk/ip/whitelist | IP 白名单 |
+| POST /admin/v1/risk/ip/appeal | IP 申诉 |
+| POST /admin/v1/risk/ip/recheck | IP 复核 |
+| GET /admin/v1/risk/graph/clusters | 关联簇列表 |
+| GET /admin/v1/risk/graph/{userId} | 用户关联图谱 |
+| GET /admin/v1/risk/clusters | 风险簇列表 |
 
 ### 10.2 反作弊管理 (管理端 :8789)
 
 | 接口 | 说明 |
 |------|------|
-| GET /admin/anticheat/events | 反作弊事件列表 |
-| GET /admin/anticheat/events/{hashid} | 事件详情 |
-| POST /admin/anticheat/events/{hashid}/review | 事件复核 |
+| GET /admin/v1/anticheat/events | 反作弊事件列表 |
+| GET /admin/v1/anticheat/events/{hashid} | 事件详情 |
+| POST /admin/v1/anticheat/events/{hashid}/review | 事件复核 |
 
 ### 10.3 活动 (管理端 :8789 + C端 :8792)
 
 | 接口 | 说明 |
 |------|------|
-| GET /admin/activities/list | 活动列表 (管理端) |
-| POST /admin/activities/create | 创建活动 (管理端) |
-| PUT /admin/activities/{hashid} | 更新活动 (管理端) |
-| DELETE /admin/activities/{hashid} | 删除活动 (管理端) |
+| GET /admin/v1/activities/list | 活动列表 (管理端) |
+| POST /admin/v1/activities/create | 创建活动 (管理端) |
+| PUT /admin/v1/activities/{hashid} | 更新活动 (管理端) |
+| DELETE /admin/v1/activities/{hashid} | 删除活动 (管理端) |
 | GET /api/v1/activities/list | 活动列表 (C端) |
 | GET /api/v1/activities/progress | 参与进度 (C端) |
 | GET /api/v1/activities/{hashid} | 活动详情 (C端) |
@@ -2175,9 +2241,9 @@ status: open / waiting / replied / closed
 | PUT /api/v1/groups/{hashid}/role | 成员角色 |
 | POST /api/v1/shares | 创建分享链接 |
 | POST /api/v1/shares/visit | 分享访问追踪 |
-| GET /admin/groups | 群组列表 (管理端) |
-| GET /admin/groups/{hashid}/audit | 群组审核 (管理端) |
-| GET /admin/share/stats | 分享统计 (管理端) |
+| GET /admin/v1/groups | 群组列表 (管理端) |
+| GET /admin/v1/groups/{hashid}/audit | 群组审核 (管理端) |
+| GET /admin/v1/share/stats | 分享统计 (管理端) |
 
 ### 10.5 支付网关扩展 (L1)
 

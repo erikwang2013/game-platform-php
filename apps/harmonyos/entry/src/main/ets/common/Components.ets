@@ -5,6 +5,32 @@
 import router from '@ohos.router';
 
 /**
+ * 展示用：去掉金额字符串的小数尾零（"12.3400" → "12.34"，"0.0000" → "0"）
+ * 纯字符串处理，不参与任何数值运算；仅用于展示，提交值一律原样透传
+ */
+export function trimZeros(value: string): string {
+  if (!value || value.indexOf('.') < 0) {
+    return value;
+  }
+  let out = value;
+  while (out.endsWith('0')) {
+    out = out.substring(0, out.length - 1);
+  }
+  if (out.endsWith('.')) {
+    out = out.substring(0, out.length - 1);
+  }
+  return out;
+}
+
+/**
+ * 数值为 0 的金额字符串。服务端金额列是 DECIMAL(18,4)，下发 "0.0000" 这类形式，
+ * 判断"不限"不能写成 === '0'，否则零值判断永远为假
+ */
+export function isZeroAmount(value: string): boolean {
+  return /^0+(\.0+)?$/.test(value);
+}
+
+/**
  * 加载状态
  */
 @Component
@@ -74,6 +100,36 @@ export struct ErrorView {
     .justifyContent(FlexAlign.Center)
     .width('100%')
     .layoutWeight(1)
+  }
+}
+
+/**
+ * 二级页顶部导航栏：返回 + 居中标题
+ */
+@Component
+export struct NavBar {
+  @Prop title: string = '';
+
+  build() {
+    Row() {
+      Button('← 返回')
+        .fontSize(14)
+        .fontColor('#1677FF')
+        .backgroundColor(Color.Transparent)
+        .onClick(() => {
+          router.back();
+        })
+      Text(this.title)
+        .fontSize(18)
+        .fontWeight(FontWeight.Bold)
+        .layoutWeight(1)
+        .textAlign(TextAlign.Center)
+      Blank().width(64)
+    }
+    .width('100%')
+    .height(52)
+    .padding({ left: 8, right: 8 })
+    .backgroundColor('#FFFFFF')
   }
 }
 

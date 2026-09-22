@@ -15,14 +15,25 @@ class ChatService extends GetxService {
   final messagesByPeer = <int, RxList<Map<String, dynamic>>>{}.obs;
   int _reconnectDelay = 1;
 
+  /// 聊天 WS 地址：默认沿用 ApiService.baseUrl 的 host + 8791（与服务端 CHAT_WS_PORT 对应），
+  /// 可用 --dart-define=CHAT_WS_BASE_URL=ws://host:port 整串覆盖。
+  static const String _chatWsBaseUrl = String.fromEnvironment('CHAT_WS_BASE_URL');
+
+  static Uri resolveChatUri() {
+    if (_chatWsBaseUrl.isNotEmpty) {
+      return Uri.parse(_chatWsBaseUrl);
+    }
+    final baseUri = Uri.parse(ApiService.baseUrl);
+    final scheme = baseUri.scheme == 'https' ? 'wss' : 'ws';
+    return Uri.parse('$scheme://${baseUri.host}:8791');
+  }
+
   Future<void> connect() async {
     final token = await AuthService.getToken();
     if (token == null) return;
 
     try {
-      final baseUri = Uri.parse(ApiService.baseUrl);
-      final scheme = baseUri.scheme == 'https' ? 'wss' : 'ws';
-      _channel = WebSocketChannel.connect(Uri.parse('$scheme://${baseUri.host}:8791'));
+      _channel = WebSocketChannel.connect(ChatService.resolveChatUri());
 
       _channel!.stream.listen(
         _onMessage,

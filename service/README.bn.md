@@ -13,7 +13,7 @@ C-সাইড ইউজার প্ল্যাটফর্ম API সার�
 |------|------|
 | ব্যবহারকারী | রেজিস্ট্রেশন/লগইন (ইউজারনেম+পাসওয়ার্ড + ৭টি প্ল্যাটফর্মের OAuth + 2FA TOTP), প্রোফাইল |
 | ওয়ালেট | প্ল্যাটফর্ম কয়েন ওয়ালেট (অপটিমিস্টিক লক) + গেম কয়েন ওয়ালেট + লেনদেনের ইতিহাস |
-| ডিপোজিট | ১৩টি পেমেন্ট গেটওয়ে (Stripe/PayPal/NowPayments/Coinbase ইত্যাদি) কলব্যাক স্বাক্ষর যাচাই ও স্বয়ংক্রিয় ক্রেডিট |
+| ডিপোজিট | ১৮টি পেমেন্ট গেটওয়ে (Stripe/PayPal/NowPayments/Coinbase ইত্যাদি) কলব্যাক স্বাক্ষর যাচাই ও স্বয়ংক্রিয় ক্রেডিট |
 | উইথড্রয়াল | আবেদন → যাচাই → পরিশোধ, KYC ধাপভিত্তিক সীমা |
 | এক্সচেঞ্জ | প্ল্যাটফর্ম কয়েন ⇄ গেম কয়েন রিয়েল-টাইম কোটেশন, VIP ডিসকাউন্ট ও রেট বোনাস |
 | গেম | গেম তালিকা/ক্যাটাগরি/সার্চ, প্লে রেকর্ড, Provider সেটেলমেন্ট কলব্যাক |
@@ -39,8 +39,12 @@ C-সাইড ইউজার প্ল্যাটফর্ম API সার�
 ```
 service/
 ├── app/
-│   ├── api/v1/controller/  # C-সাইড API কন্ট্রোলার (৩৫টি)
-│   ├── middleware/         # মিডলওয়্যার (Cors/SecurityFilter/RateLimit/ApiVersion/UserAuth/ProviderAuth)
+│   ├── activity/           # অ্যাক্টিভিটি হ্যান্ডলার
+│   ├── api/v1/controller/  # C-সাইড API কন্ট্রোলার (৩৪টি)
+│   ├── bootstrap/          # নোটিফিকেশন বুটস্ট্র্যাপ
+│   ├── cdn/                # CDN মাল্টি-ভেন্ডর (Aliyun/Tencent/Huawei/Cloudflare/CloudFront + CdnFactory)
+│   ├── common/             # সাধারণ
+│   ├── middleware/         # মিডলওয়্যার (Cors/SecurityFilter/RateLimit/TraceId/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
 │   ├── model/              # ডেটা মডেল
 │   ├── service/            # বিজনেস সার্ভিস (VIP/লিডারবোর্ড/রিস্ক/নোটিফিকেশন ইত্যাদি)
 │   ├── event/              # ইভেন্ট বাস (EventBus Redis Pub/Sub)
@@ -49,9 +53,14 @@ service/
 ├── common/                 # শেয়ার্ড সার্ভিস ডিরেক্টরি (erik/platform-common প্যাকেজে বাস্তবায়িত)
 ├── config/                 # কনফিগারেশন ফাইল
 ├── public/                 # ওয়েব এন্ট্রি
+├── runtime/                # রানটাইম ফাইল
+├── support/                # সহায়ক ক্লাস
 ├── tests/                  # PHPUnit টেস্ট
 ├── start.php               # স্টার্টআপ এন্ট্রি
-└── composer.json
+├── windows.php             # Windows স্টার্টআপ এন্ট্রি
+├── composer.json
+├── phpunit.xml             # PHPUnit কনফিগ
+└── Dockerfile              # ইমেজ বিল্ড
 ```
 
 ## ওয়ান-ক্লিক ইনস্টলেশন
@@ -93,7 +102,7 @@ php start.php start -d     # ব্যাকগ্রাউন্ড (ডেম�
 ## ব্যবহার
 
 - API ডক: `docs/API.md` (সম্পূর্ণ API রেফারেন্স)
-- অনলাইন ডক: http://localhost:8792/apidoc/ (hg/apidoc ইন্টারঅ্যাকটিভ ডক)
+- অনলাইন ডক: http://localhost:8792/apidoc/ (erikwang2013/apidoc-php ইন্টারঅ্যাকটিভ ডক)
 - হেলথ চেক: `GET http://localhost:8792/health`
 - C-সাইড ফ্রন্টএন্ড: `apps/flutter/platform/` (Flutter Web ইউজার প্ল্যাটফর্ম)
 - অ্যাডমিন ব্যাকএন্ড: `admin/` (অ্যাডমিন ব্যাকএন্ড ও `admin/apps/flutter/` ফ্রন্টএন্ড)

@@ -1,11 +1,11 @@
-# service/ — C端用户平台 API サービス
+# service/ — C側ユーザープラットフォーム API サービス
 <!-- lang-nav -->
 
 Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · **日本語**
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
-C端ユーザープラットフォーム API サービス。webman v2（Workerman）ベースの高性能 PHP バックエンドで、ユーザー向けにゲーム集約プラットフォームの完全な機能（会員登録・ログイン、ウォレット、入金、出金、両替、ゲーム、ランキング、クーポン、サポートチケット、VIP、実績、ソーシャル、お知らせ）を提供します。
+C側ユーザープラットフォーム API サービス。webman v2（Workerman）ベースの高性能 PHP バックエンドで、ユーザー向けにゲーム集約プラットフォームの完全な機能（会員登録・ログイン、ウォレット、入金、出金、両替、ゲーム、ランキング、クーポン、サポートチケット、VIP、実績、ソーシャル、お知らせ）を提供します。
 
 ## 機能一覧
 
@@ -13,7 +13,7 @@ C端ユーザープラットフォーム API サービス。webman v2（Workerma
 |------|------|
 | ユーザー | 登録/ログイン（ユーザー名・パスワード + 7 プラットフォーム OAuth + 2FA TOTP）、プロフィール |
 | ウォレット | プラットフォームコインウォレット（楽観ロック）+ ゲームコインウォレット + 取引履歴 |
-| 入金 | 13 ゲートウェイ（Stripe/PayPal/NowPayments/Coinbase 等）のコールバック署名検証と自動入金 |
+| 入金 | 18 ゲートウェイ（Stripe/PayPal/NowPayments/Coinbase 等）のコールバック署名検証と自動入金 |
 | 出金 | 申請 → 審査 → 支払い、KYC 段階別限度額 |
 | 両替 | プラットフォームコイン ⇄ ゲームコインのリアルタイム見積、VIP 割引とレート上乗せ |
 | ゲーム | ゲーム一覧/カテゴリ/検索、プレイ履歴、Provider 決済コールバック |
@@ -39,8 +39,12 @@ C端ユーザープラットフォーム API サービス。webman v2（Workerma
 ```
 service/
 ├── app/
-│   ├── api/v1/controller/  # C端 API コントローラー（35 個）
-│   ├── middleware/         # ミドルウェア（Cors/SecurityFilter/RateLimit/ApiVersion/UserAuth/ProviderAuth）
+│   ├── activity/           # アクティビティハンドラー
+│   ├── api/v1/controller/  # C側 API コントローラー（34 個）
+│   ├── bootstrap/          # 通知ブートストラップ
+│   ├── cdn/                # CDN マルチベンダー（Alibaba Cloud/Tencent Cloud/Huawei Cloud/Cloudflare/CloudFront + CdnFactory）
+│   ├── common/             # 共通
+│   ├── middleware/         # ミドルウェア（Cors/SecurityFilter/RateLimit/TraceId/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth）
 │   ├── model/              # データモデル
 │   ├── service/            # ビジネスサービス（VIP/ランキング/リスク/通知等）
 │   ├── event/              # イベントバス（EventBus Redis Pub/Sub）
@@ -49,9 +53,14 @@ service/
 ├── common/                 # 共有サービスディレクトリ（実体は erik/platform-common パッケージ）
 ├── config/                 # 設定ファイル
 ├── public/                 # Web エントリ
+├── runtime/                # 実行時ファイル
+├── support/                # 補助クラス
 ├── tests/                  # PHPUnit テスト
 ├── start.php               # 起動エントリ
-└── composer.json
+├── windows.php             # Windows 起動エントリ
+├── composer.json
+├── phpunit.xml             # PHPUnit 設定
+└── Dockerfile              # イメージビルド
 ```
 
 ## ワンクリックインストール
@@ -93,9 +102,9 @@ php start.php start -d     # バックグラウンド
 ## 使い方
 
 - API ドキュメント：`docs/API.md`（完全な API リファレンス）
-- オンラインドキュメント：http://localhost:8792/apidoc/（hg/apidoc 対話型ドキュメント）
+- オンラインドキュメント：http://localhost:8792/apidoc/（erikwang2013/apidoc-php 対話型ドキュメント）
 - ヘルスチェック：`GET http://localhost:8792/health`
-- C端フロントエンド：`apps/flutter/platform/`（Flutter Web ユーザープラットフォーム）
+- C側フロントエンド：`apps/flutter/platform/`（Flutter Web ユーザープラットフォーム）
 - 管理バックエンド：`admin/`（管理バックエンドと `admin/apps/flutter/` フロントエンド）
 
 ## テスト

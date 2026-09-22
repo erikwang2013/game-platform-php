@@ -200,10 +200,10 @@ Aturan disimpan di tabel `game_risk_rule`, dikonfigurasi sebagai JSON, ambang da
 
 ### 6.2 Verifikasi Nama Asli KYC
 
-Sistem verifikasi tiga tingkat:
+Tingkat batas penarikan (game_withdraw_limit):
 - `default` — belum diverifikasi, batas dasar
 - `verified` — lolos review KYC, batas dinaikkan + biaya dikurangi
-- `vip` — level VIP, batas tertinggi + nol biaya
+- `vip` — tingkat cadangan (batas tertinggi + nol biaya); kode saat ini hanya membaca default/verified, diskon biaya VIP dihitung terpisah berdasarkan pengalaman
 
 Alur verifikasi:
 ```
@@ -219,9 +219,9 @@ Mendukung login Google / Facebook / Apple:
 
 ```
 Frontend mengklik tombol OAuth
-  → GET /api/auth/oauth/{provider} → dapatkan URL otorisasi
+  → GET /api/v1/auth/oauth/{provider} → dapatkan URL otorisasi
   → lompat ke halaman otorisasi pihak ketiga → pengguna menyetujui
-  → callback POST /api/auth/oauth/{provider}/callback
+  → callback POST /api/v1/auth/oauth/{provider}/callback
   → cari tautan yang ada → langsung login
   → tanpa tautan → otomatis daftarkan pengguna baru + tautkan + buat dompet
 ```
@@ -229,7 +229,7 @@ Frontend mengklik tombol OAuth
 ### 6.4 Callback Pembayaran
 
 ```
-Pembayaran pihak ketiga selesai → POST /api/payment/callback
+Pembayaran pihak ketiga selesai → POST /api/v1/payment/callback
   → validasi daftar putih provider (hanya stripe/paypal)
   → verifikasi tanda tangan fail-closed (tanpa secret/webhook_id, verifikasi tanda tangan gagal, timestamp melebihi ±300s semuanya ditolak)
   → bccomp bandingkan jumlah callback dengan jumlah pesanan (cegah penggunaan lintas saluran)
@@ -251,7 +251,7 @@ Terapkan batas dan biaya berbeda sesuai level KYC pengguna:
 
 ## 7. Desain Skalabilitas
 
-### 5.1 Skala Horizontal
+### 7.1 Skala Horizontal
 
 admin/ dan service/ keduanya mendukung banyak proses worker. Dengan proxy balik Nginx, dapat di-deploy di banyak mesin untuk skala horizontal:
 
@@ -263,7 +263,7 @@ Nginx (load balancing)
   └── service-2 (:8792)
 ```
 
-### 5.2 Jalur Pemisahan Modul
+### 7.2 Jalur Pemisahan Modul
 
 Ketika satu service/ menjadi bottleneck, pisahkan sesuai jalur berikut:
 

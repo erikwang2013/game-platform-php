@@ -51,7 +51,7 @@ rm -rf install/
 
 Yang dilakukan wizard instalasi:
 - Pemeriksaan lingkungan PHP (versi, ekstensi, izin direktori)
-- Mengeksekusi SQL gabungan (`install/install.sql`), membuat 52 tabel dan mengimpor data seed
+- Mengeksekusi SQL gabungan (`install/install.sql`), membuat 78 tabel dan mengimpor data seed
 - Membuat akun super admin (enkripsi bcrypt, ditautkan ke peran super_admin)
 - Otomatis menghasilkan kunci JWT/Encryption/Hashids
 - Menulis `admin/.env` dan `service/.env`
@@ -83,7 +83,7 @@ docker-compose ps
 docker-compose logs -f
 ```
 
-### 2.2 Daftar Layanan
+### 3.2 Daftar Layanan
 
 | Layanan | Nama container | Port | Keterangan |
 |------|--------|------|------|
@@ -98,9 +98,9 @@ docker-compose logs -f
 > **Konfigurasi port**: Port pada tabel di atas adalah nilai default dan semuanya dapat diubah di `.env` direktori root proyek (template `.env.example`; edit setelah `cp .env.example .env`):
 > `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `LEADERBOARD_WS_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
 > Port upstream di `nginx.conf.template` dirender otomatis oleh envsubst dari image resmi; konfigurasi Nginx tidak perlu diubah manual.
-> Catatan: mengubah `ADMIN_PORT` / `SERVICE_PORT` tidak otomatis memperbarui `APP_URL` di `admin/.env` dan `SITE_URL` di `service/.env`; alamat akses eksternal harus disesuaikan juga.
+> Pada penerapan Docker, alamat publik (`APP_URL` / `SITE_URL`) secara default otomatis mengikuti `ADMIN_PORT` / `SERVICE_PORT` (format `http://localhost:port`); untuk domain kustom atau HTTPS, setel `APP_URL` / `SITE_URL` di `.env` root (menimpa kunci yang sama di `admin/.env` dan `service/.env`). Pada penerapan bare-metal (manual), alamat tetap perlu diperbarui sendiri saat mengubah port.
 
-### 2.3 Inisialisasi Database
+### 3.3 Inisialisasi Database
 
 ```bash
 # File migrasi dieksekusi otomatis saat MySQL pertama kali dimulai
@@ -108,7 +108,7 @@ docker-compose logs -f
 docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform < install/install.sql
 ```
 
-### 2.4 Persistensi Data
+### 3.4 Persistensi Data
 
 Volume data dibuat otomatis, tidak perlu dikelola manual:
 
@@ -129,9 +129,9 @@ gunzip < backup_20260101.sql.gz | docker exec -i game-platform-mysql mysql -uroo
 
 ---
 
-## 3. Deployment Manual
+## 4. Deployment Manual
 
-### 3.1 Konfigurasi Lingkungan PHP
+### 4.1 Konfigurasi Lingkungan PHP
 
 ```bash
 # Ubuntu/Debian
@@ -145,7 +145,7 @@ echo "opcache.enable=1" >> /etc/php/8.3/cli/php.ini
 echo "opcache.enable_cli=1" >> /etc/php/8.3/cli/php.ini
 ```
 
-### 3.2 Install Dependensi
+### 4.2 Install Dependensi
 
 ```bash
 cd /opt/game-platform
@@ -163,7 +163,7 @@ cp .env.example .env
 composer install --no-dev --optimize-autoloader
 ```
 
-### 3.3 Konfigurasi .env
+### 4.3 Konfigurasi .env
 
 **Konfigurasi kunci admin/.env:**
 ```ini
@@ -270,7 +270,7 @@ TOSS_API_URL=https://api.tosspayments.com
 SITE_URL=https://your-domain.com  # URL situs untuk callback/redirect pembayaran
 ```
 
-### 3.4 Mulai Layanan
+### 4.4 Mulai Layanan
 
 ```bash
 # Backend administrasi (port default 8789, dapat diubah melalui APP_PORT di admin/.env)
@@ -286,7 +286,7 @@ curl http://localhost:8789/health
 curl http://localhost:8792/health
 ```
 
-### 3.5 Manajemen Proses (Systemd)
+### 4.5 Manajemen Proses (Systemd)
 
 Buat `/etc/systemd/system/game-platform-admin.service`:
 
@@ -319,9 +319,9 @@ systemctl enable --now game-platform-admin game-platform-service
 
 ---
 
-## 4. Reverse Proxy Nginx
+## 5. Reverse Proxy Nginx
 
-### 4.1 File Konfigurasi
+### 5.1 File Konfigurasi
 
 Buat `/etc/nginx/sites-available/game-platform`:
 
@@ -330,6 +330,11 @@ Buat `/etc/nginx/sites-available/game-platform`:
 server {
     listen 80;
     server_name your-domain.com;
+
+    # nginx 自身发出的 301（如目录补斜杠 /admin-panel → /admin-panel/）改用相对
+    # Location，客户端按当前 host:port 解析；默认绝对跳转会退回 listen 端口，
+    # 非 80 端口部署（如 8080）时会跳错端口。
+    absolute_redirect off;
 
     # API backend administrasi
     location /admin/ {
@@ -364,24 +369,96 @@ server {
         proxy_pass http://127.0.0.1:8789;
     }
 
-    # Metrik Prometheus
+    # Prometheus 指标
     location /metrics {
         proxy_pass http://127.0.0.1:8789;
     }
 
-    # Frontend backend administrasi
-    location /admin-panel {
-        alias /opt/game-platform/admin/apps/flutter/build/web;
-        try_files $uri $uri/ /admin-panel/index.html;
-    }
+    # ================================================================
+    # 静态前端。两套前端定位不同：
+    #   apps/*         = C 端玩家端（调 /api/ → service）
+    #   admin/apps/*   = 管理台（调 /admin/ → admin）
+    # 各产物需先构建；React/Angular 必须带子路径前缀构建，否则资源 404：
+    #   apps/react            npm run build                （已含 --base=/app-react/）
+    #   apps/angular          npm run build                （已含 --base-href=/app-angular/）
+    #   admin/apps/react      npm run build                （已含 --base=/admin-react/）
+    #   admin/apps/angular    npm run build                （已含 --base-href=/admin-angular/）
+    #   admin/apps/flutter    flutter build web --base-href=/admin-flutter/
+    #   apps/flutter/platform flutter build web            （挂在根路径）
+    # try_files 末项是【内部重定向】，目标 index.html 不存在时会重新匹配同一 location
+    # 形成重定向环，nginx 报 500 而非 404。规避方式按 location 类型二选一：
+    #   root  型 → 末项追加 =404，把它降级为文件存在性判断；
+    #   alias 型 → 追加 =404 会让兜底不再经 alias 解析，已构建的 SPA 深链接也会 404，
+    #              所以保留原样，另加 location = 精确匹配兜底 URI（精确匹配优先，
+    #              不会再回到前缀 location，环不成立）。
+    # alias 的结尾斜杠必须与 location 的结尾斜杠一致（location /x 配 alias .../x，
+    # location /x/ 配 alias .../x/）。错配时 /x../<路径> 会越级解析到上级目录，可读
+    # 取 docroot 之外的任意文件，且 nginx -t 完全查不出来。
+    # ================================================================
 
-    # Frontend platform sisi C
+    # C 端主入口 — Flutter Web
     location / {
         root /opt/game-platform/apps/flutter/platform/build/web;
-        try_files $uri $uri/ /index.html;
+        try_files $uri $uri/ /index.html =404;
+    }
+
+    # C 端 React / Angular Web（URL 前缀与产物目录名不同，用 alias 直接指向产物）
+    location /app-react/ {
+        alias /opt/game-platform/apps/react/dist/;
+        try_files $uri $uri/ /app-react/index.html;
+    }
+    location = /app-react/index.html {
+        alias /opt/game-platform/apps/react/dist/index.html;
+    }
+
+    location /app-angular/ {
+        alias /opt/game-platform/apps/angular/dist/game-client-angular/browser/;
+        try_files $uri $uri/ /app-angular/index.html;
+    }
+    location = /app-angular/index.html {
+        alias /opt/game-platform/apps/angular/dist/game-client-angular/browser/index.html;
+    }
+
+    # 管理台 — 通用投放位：把任一控制台产物拷进 admin/public 即可
+    # 注意：location 不以 / 结尾时 alias 也【不能】以 / 结尾，否则 /admin-panel../.env
+    # 会解析到上级目录（admin/.env）造成任意文件读取；nginx -t 查不出这类错配。
+    location /admin-panel {
+        alias /opt/game-platform/admin/public;
+        try_files $uri $uri/ /admin-panel/index.html;
+    }
+    location = /admin-panel/index.html {
+        alias /opt/game-platform/admin/public/index.html;
+    }
+
+    # 管理台 React / Angular / Flutter
+    location /admin-react/ {
+        alias /opt/game-platform/admin/apps/react/dist/;
+        try_files $uri $uri/ /admin-react/index.html;
+    }
+    location = /admin-react/index.html {
+        alias /opt/game-platform/admin/apps/react/dist/index.html;
+    }
+
+    location /admin-angular/ {
+        alias /opt/game-platform/admin/apps/angular/dist/game-admin-angular/browser/;
+        try_files $uri $uri/ /admin-angular/index.html;
+    }
+    location = /admin-angular/index.html {
+        alias /opt/game-platform/admin/apps/angular/dist/game-admin-angular/browser/index.html;
+    }
+
+    location /admin-flutter/ {
+        alias /opt/game-platform/admin/apps/flutter/build/web/;
+        try_files $uri $uri/ /admin-flutter/index.html;
+    }
+    location = /admin-flutter/index.html {
+        alias /opt/game-platform/admin/apps/flutter/build/web/index.html;
     }
 }
 ```
+
+> Pada deployment manual, Anda menaruh artefak hasil build di direktori tersebut (empat pohon sisi C: `apps/flutter/platform`, `apps/react`, `apps/angular`, `apps/harmonyos`; semua frontend konsol dipasang di `admin/apps/*` plus slot generik `admin/public`).
+> Untuk Docker, lihat mount volume nginx di `docker-compose.yml` dan `nginx.conf.template` (path yang sama, root di dalam kontainer `/var/www/...`). HarmonyOS didistribusikan sebagai `.hap` dan tidak melalui nginx.
 
 Aktifkan situs:
 ```bash
@@ -389,7 +466,7 @@ ln -s /etc/nginx/sites-available/game-platform /etc/nginx/sites-enabled/
 nginx -t && systemctl reload nginx
 ```
 
-### 4.2 Sertifikat SSL
+### 5.2 Sertifikat SSL
 
 ```bash
 # Gunakan Certbot untuk mendapatkan sertifikat Let's Encrypt otomatis
@@ -402,7 +479,7 @@ certbot --nginx -d your-domain.com
 
 ---
 
-## 5. Tugas Terjadwal (Crontab)
+## 6. Tugas Terjadwal (Crontab)
 
 ```bash
 # Edit crontab
@@ -423,9 +500,9 @@ crontab -e
 
 ---
 
-## 6. Monitoring
+## 7. Monitoring
 
-### 6.1 Metrik Prometheus
+### 7.1 Metrik Prometheus
 
 Backend administrasi mengekspos endpoint `/metrics`, berisi metrik berikut:
 
@@ -437,7 +514,7 @@ Backend administrasi mengekspos endpoint `/metrics`, berisi metrik berikut:
 | openadmin_redis_connection_status | Koneksi Redis (0/1) |
 | openadmin_memory_usage_bytes | Penggunaan memori |
 
-### 6.2 Pemeriksaan Kesehatan
+### 7.2 Pemeriksaan Kesehatan
 
 ```bash
 # Backend administrasi
@@ -449,23 +526,23 @@ curl -f http://localhost:8792/health || echo "Service DOWN"
 # Dapat dikonfigurasi di load balancer atau sistem monitoring
 ```
 
-### 6.3 Log
+### 7.3 Log
 
 ```
 admin/runtime/logs/
 ├── stdout.log          # Output standar
-└── workerman.log       # Log Workerman
+└── webman-<date>.log   # Log Webman
 
 service/runtime/logs/
 ├── stdout.log
-└── workerman.log
+└── webman-<date>.log
 ```
 
 ---
 
-## 7. Optimasi Performa
+## 8. Optimasi Performa
 
-### 7.1 PHP OPcache
+### 8.1 PHP OPcache
 
 ```ini
 ; /etc/php/8.3/cli/php.ini
@@ -476,7 +553,7 @@ opcache.max_accelerated_files=10000
 opcache.validate_timestamps=0  # matikan pemeriksaan file di produksi
 ```
 
-### 7.2 Optimasi MySQL
+### 8.2 Optimasi MySQL
 
 ```ini
 # /etc/mysql/conf.d/game-platform.cnf
@@ -488,14 +565,14 @@ max_connections = 200
 query_cache_type = 0               # sudah dihapus di MySQL 8.0
 ```
 
-### 7.3 Jumlah Proses Worker
+### 8.3 Jumlah Proses Worker
 
 ```php
 // config/process.php
 'count' => cpu_count() * 2,  // disarankan 2-4 kali jumlah inti CPU di produksi
 ```
 
-### 7.4 Strategi Cache Redis
+### 8.4 Strategi Cache Redis
 
 | Kunci cache | TTL | Keterangan |
 |--------|-----|------|
@@ -506,9 +583,9 @@ query_cache_type = 0               # sudah dihapus di MySQL 8.0
 
 ---
 
-## 8. Penguatan Keamanan
+## 9. Penguatan Keamanan
 
-### 8.1 Pembuatan Kunci
+### 9.1 Pembuatan Kunci
 
 ```bash
 # Buat kunci acak
@@ -525,7 +602,7 @@ echo "ENCRYPTION_KEY=$ENCRYPTION_KEY"
 echo "ENCRYPTABLE_KEY=$ENCRYPTABLE_KEY"
 ```
 
-### 8.2 Firewall
+### 9.2 Firewall
 
 ```bash
 # Hanya buka port yang diperlukan
@@ -542,7 +619,7 @@ ufw enable
 # Hanya diakses melalui 127.0.0.1
 ```
 
-### 8.3 Izin File
+### 9.3 Izin File
 
 ```bash
 chown -R www-data:www-data /opt/game-platform
@@ -555,9 +632,9 @@ chmod 600 /opt/game-platform/service/.env
 
 ---
 
-## 9. Pemecahan Masalah
+## 10. Pemecahan Masalah
 
-### 9.1 Layanan Tidak Dapat Dimulai
+### 10.1 Layanan Tidak Dapat Dimulai
 
 ```bash
 # Jalankan di depan untuk melihat error
@@ -567,10 +644,10 @@ cd /opt/game-platform/admin && php start.php start
 ss -tlnp | grep -E '8789|8792'
 
 # Periksa log
-tail -f runtime/logs/workerman.log
+tail -f runtime/logs/webman-$(date +%F).log
 ```
 
-### 9.2 Gagal Koneksi Database
+### 10.2 Gagal Koneksi Database
 
 ```bash
 # Uji koneksi
@@ -580,7 +657,7 @@ mysql -h 127.0.0.1 -u game-platform -p game-platform -e "SELECT 1"
 grep DB_ admin/.env
 ```
 
-### 9.3 Gagal Koneksi Redis
+### 10.3 Gagal Koneksi Redis
 
 ```bash
 # Uji koneksi
@@ -589,7 +666,7 @@ redis-cli -h 127.0.0.1 -p 6379 -a <password> ping
 # Diharapkan mengembalikan PONG
 ```
 
-### 9.4 Elasticsearch Tidak Tersedia
+### 10.4 Elasticsearch Tidak Tersedia
 
 ```bash
 # Uji koneksi
@@ -598,7 +675,7 @@ curl http://127.0.0.1:9200
 # Fungsi pencarian otomatis fallback ke kueri LIKE, layanan tidak terganggu
 ```
 
-### 9.5 Masalah Performa
+### 10.5 Masalah Performa
 
 ```bash
 # Periksa jumlah proses worker
@@ -613,7 +690,7 @@ mysql -e "SHOW VARIABLES LIKE 'slow_query_log';"
 
 ---
 
-## 10. Panduan Upgrade
+## 11. Panduan Upgrade
 
 ```bash
 # 1. Tarik kode terbaru

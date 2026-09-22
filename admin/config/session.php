@@ -30,16 +30,17 @@ return [
         'file' => [
             'save_path' => runtime_path() . '/sessions',
         ],
+        // 会话后端地址：type=redis / redis_cluster 时生效，可用 REDIS_HOST / REDIS_PORT / REDIS_CLUSTER_NODES 覆盖
         'redis' => [
-            'host' => '127.0.0.1',
-            'port' => 6379,
+            'host' => getenv('REDIS_HOST') ?: '127.0.0.1',
+            'port' => (int)(getenv('REDIS_PORT') ?: 6379),
             'auth' => '',
             'timeout' => 2,
             'database' => '',
             'prefix' => 'game-platform:session:',
         ],
         'redis_cluster' => [
-            'host' => ['127.0.0.1:7000', '127.0.0.1:7001', '127.0.0.1:7001'],
+            'host' => array_map('trim', explode(',', getenv('REDIS_CLUSTER_NODES') ?: '127.0.0.1:7000,127.0.0.1:7001')),
             'timeout' => 2,
             'auth' => '',
             'prefix' => 'game-platform:session:',

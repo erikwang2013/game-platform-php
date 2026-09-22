@@ -598,14 +598,14 @@ El proyecto ofrece `docs/nginx-security.conf` como configuración de referencia 
 
 | Tipo de amenaza | Vector de ataque | Capas de defensa |
 |----------|---------|---------|
-| Abuso de métodos HTTP | Ataques XST con TRACE/TRACK, túnel proxy CONNECT, sondas de métodos WebDAV | Lista blanca de métodos de SecurityFilter con 405 (GET/POST/PUT/DELETE/OPTIONS/HEAD) |
+| Abuso de métodos HTTP | Ataques XST con TRACE/TRACK, túnel proxy CONNECT, sondas de métodos WebDAV | Lista blanca de métodos de SecurityFilter con 405 (GET/POST/PUT/DELETE/HEAD/OPTIONS/PATCH) |
 | Fuerza bruta dirigida | Intentos repetidos de contraseña contra un usuario concreto | Bloqueo de cuenta (5 fallos bloquean 15 minutos) + RateLimit (login 10/min) + Captcha |
 | Fuerza bruta | Intentos distribuidos de usuario/contraseña desde IPs distintas | RateLimit (login 10/min) + Captcha |
-| XSS | `<script>`, onerror, javascript: | SecurityFilter (5 patrones) + cabecera X-XSS-Protection + CSP |
-| Inyección SQL | UNION SELECT, OR 1=1, bypass de comentarios | SecurityFilter (6 patrones) + consultas parametrizadas de Eloquent ORM |
+| XSS | `<script>`, onerror, javascript: | SecurityFilter (13 patrones) + cabecera X-XSS-Protection + CSP |
+| Inyección SQL | UNION SELECT, OR 1=1, bypass de comentarios | SecurityFilter (14 patrones) + consultas parametrizadas de Eloquent ORM |
 | CSRF | Sitios maliciosos que envían solicitudes en nombre del usuario | Validación Origin/Referer de SecurityFilter |
 | Path traversal | `../../etc/passwd` | Patrones de path traversal de SecurityFilter + lista blanca de extensiones de UploadController |
-| Inyección de comandos | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (4 patrones) |
+| Inyección de comandos | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (13 patrones) |
 | Secuestro de sesión | Robo del token JWT | JWT de validez corta (2h) + cierre de sesión con lista negra + segunda confirmación de contraseña en operaciones sensibles |
 | Enumeración de ID | Recorrer ID numéricos para adivinar volúmenes de datos | Ofuscación de ID con Hashids a cadenas aleatorias |
 | Fuga de datos | Extracción de BD / hombre en el medio / fuga de registros | Cifrado/enmascarado en tres capas + filtrado de campos sensibles de OperationLog |

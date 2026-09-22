@@ -44,7 +44,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | 游戏大厅 | 10个预设分类、分类筛选、游戏-分类关联 | 已完成 |
 | 排行榜 | 日榜/周榜/月榜/总榜、Redis缓存、多指标 | 已完成 |
 | 优惠券 | 固定金额+比例折扣、限时限量、领取/使用追踪 | 已完成 |
-| 国家配置 | 8国预设、差异化支付/提现方式、最低充值额 | 已完成 |
+| 国家配置 | 18国预设、差异化支付/提现方式、最低充值额 | 已完成 |
 | 统计 | 日统计快照 + 平台收益追踪 | 已完成 |
 | 搜索 | Elasticsearch 全文搜索（模型层已集成） | 已完成 |
 
@@ -67,7 +67,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | 部署 | Docker Compose 7服务 + Nginx反向代理 | 已完成 |
 | 数据 | MySQL 实时聚合分析 + 联合/条件概率计算 | 已完成 |
 | HarmonyOS | admin 端 8 页；C 端 `apps/harmonyos/` 已实现登录/大厅/详情/钱包/个人（指向 8792） | 部分完成（工程可跑，真机需改 IP） |
-| API 文档 | hg/apidoc 交互式文档 | 已完成 |
+| API 文档 | erikwang2013/apidoc-php 交互式文档 | 已完成 |
 | 一键安装 | 浏览器安装向导：建管理员、存量库升级、install.lock 防重装 | 已完成 |
 | 容错 | CircuitBreaker 熔断 + Retry 重试 + feature.provider_mock 降级开关 | 已完成 |
 | 支付方式 | 后台 CRUD + 国家可见性 + 金额区间 + 币种限定 | 已完成 |
@@ -79,7 +79,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 |----|------|------|
 | 游戏接入 | GameProvider 抽象层 (Self/ThirdParty) + HMAC-SHA256 签名 | 已完成 |
 | 游戏回调 | Provider API 网关 (balance/bet/settle/refund) + ProviderAuth 中间件 | 已完成 |
-| 游戏会话 | Redis 心跳 + 15分钟超时自动结算 + GameSessionService | 已完成 |
+| 游戏会话 | SDK 会话令牌：HMAC-SHA256 签名 + 5 分钟 TTL（`GET /api/v1/game/session` 签发，`SdkSessionAuth` 校验） | 已完成 |
 | 工单系统 | C端创建/回复 + 管理端处理/分配/关闭、5种工单类型 | 已完成 |
 | 邮箱验证 | 6位验证码、Redis 10分钟过期、60秒重发限制 | 已完成 |
 | 推送通知 | PushService (FCM/APNs/华为推送) + DeviceToken 模型 | 已完成 |
@@ -119,62 +119,64 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 
 | 方法 | 路径 | 说明 | 认证 |
 |------|------|------|------|
-| POST | /api/auth/register | 用户注册 | 否 |
-| POST | /api/auth/login | 用户登录 | 否 |
-| POST | /api/auth/refresh | 刷新Token | 否 |
-| GET | /api/game/list | 游戏列表 | 否 |
-| GET | /api/game/detail/{id} | 游戏详情 | 否 |
-| GET | /api/announcement/list | 公告列表 | 否 |
-| GET | /api/wallet/info | 钱包余额 | 是 |
-| GET | /api/wallet/transactions | 流水记录 | 是 |
-| POST | /api/deposit/create | 创建充值订单 | 是 |
-| GET | /api/payment/methods | 支付方式列表（按国家路由） | 是 |
-| POST | /api/exchange/quote | 兑换询价 (VIP折扣) | 是 |
-| POST | /api/exchange/buy | 买入游戏币 | 是 |
-| POST | /api/exchange/sell | 卖出游戏币 | 是 |
-| POST | /api/withdraw/apply | 提现申请 (VIP减免) | 是 |
-| POST | /api/game/launch | 启动游戏 | 是 |
-| GET | /api/game/play-logs | 游戏记录 | 是 |
-| POST | /api/referral/apply | 使用推荐码 | 是 |
-| POST | /api/verify/send-email | 发送邮箱验证码 | 是 |
-| POST | /api/verify/confirm-email | 确认邮箱 | 是 |
-| GET | /api/ticket/list | 工单列表 | 是 |
-| POST | /api/ticket/create | 创建工单 | 是 |
-| POST | /api/ticket/{id}/reply | 回复工单 | 是 |
+| POST | /api/v1/auth/register | 用户注册 | 否 |
+| POST | /api/v1/auth/login | 用户登录 | 否 |
+| POST | /api/v1/auth/refresh | 刷新Token | 否 |
+| GET | /api/v1/game/list | 游戏列表 | 否 |
+| GET | /api/v1/game/detail/{id} | 游戏详情 | 否 |
+| GET | /api/v1/announcement/list | 公告列表 | 否 |
+| GET | /api/v1/wallet/info | 钱包余额 | 是 |
+| GET | /api/v1/wallet/transactions | 流水记录 | 是 |
+| POST | /api/v1/deposit/create | 创建充值订单 | 是 |
+| GET | /api/v1/payment/methods | 支付方式列表（按国家路由） | 是 |
+| POST | /api/v1/exchange/quote | 兑换询价 (VIP折扣) | 是 |
+| POST | /api/v1/exchange/buy | 买入游戏币 | 是 |
+| POST | /api/v1/exchange/sell | 卖出游戏币 | 是 |
+| POST | /api/v1/withdraw/apply | 提现申请 (VIP减免) | 是 |
+| POST | /api/v1/game/launch | 启动游戏 | 是 |
+| GET | /api/v1/game/play-logs | 游戏记录 | 是 |
+| POST | /api/v1/referral/apply | 使用推荐码 | 是 |
+| POST | /api/v1/verify/send-email | 发送邮箱验证码 | 是 |
+| POST | /api/v1/verify/confirm-email | 确认邮箱 | 是 |
+| GET | /api/v1/ticket/list | 工单列表 | 是 |
+| POST | /api/v1/ticket/create | 创建工单 | 是 |
+| POST | /api/v1/ticket/{id}/reply | 回复工单 | 是 |
+| GET | /api/v1/platform/stats | 平台统计 | 否 |
 
-| GET | /api/platform/stats | 平台统计 | 否 |
 ## 3. 管理后台功能
 
 ### 3.1 API 接口（新增）
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| GET | /admin/dashboard/platform | 平台仪表盘数据 |
-| GET | /admin/analytics/overview | 平台总览 (MySQL 实时聚合) |
-| GET | /admin/analytics/game-ranking | 游戏排行 |
-| GET | /admin/analytics/dau-trend | DAU 趋势 |
-| GET | /admin/analytics/hourly-trend | 小时趋势 |
-| GET | /admin/analytics/action-distribution | 行为分布 |
-| GET | /admin/analytics/revenue | 营收分析 |
-| GET | /admin/analytics/conversion | 游戏转化率 |
-| GET | /admin/analytics/probability | 联合/条件概率 |
-| GET | /admin/analytics/retention | 留存分析 D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | 转化漏斗 |
-| GET | /admin/analytics/arpu | ARPU/ARPPU 趋势 |
-| GET | /admin/analytics/economy | 游戏币种经济指标 |
-| GET | /admin/report/summary | 报表汇总（新增用户/充值/提现/兑换/游戏局数） |
-| GET | /admin/report/daily | 日报表（按日聚合，无数据日期补 0） |
-| GET | /admin/report/export | 日报表导出 CSV（UTF-8 BOM） |
-| GET | /admin/game/list | 游戏列表 |
-| POST | /admin/game/create | 创建游戏 (含 provider_config) |
-| PUT | /admin/game/{id} | 编辑游戏 |
-| GET | /admin/withdraw/orders | 提现订单列表 |
-| PUT | /admin/withdraw/review | 审核提现 |
-| GET | /admin/ticket/list | 工单列表 |
-| GET | /admin/ticket/{id} | 工单详情 |
-| POST | /admin/ticket/{id}/reply | 回复工单 |
-| POST | /admin/ticket/{id}/close | 关闭工单 |
-| POST | /admin/ticket/{id}/assign | 指定处理人 |
+| GET | /admin/v1/dashboard/platform | 平台仪表盘数据 |
+| GET | /admin/v1/analytics/overview | 平台总览 (MySQL 实时聚合) |
+| GET | /admin/v1/analytics/game-ranking | 游戏排行 |
+| GET | /admin/v1/analytics/dau-trend | DAU 趋势 |
+| GET | /admin/v1/analytics/hourly-trend | 小时趋势 |
+| GET | /admin/v1/analytics/action-distribution | 行为分布 |
+| GET | /admin/v1/analytics/revenue | 营收分析 |
+| GET | /admin/v1/analytics/conversion | 游戏转化率 |
+| GET | /admin/v1/analytics/probability | 联合/条件概率 |
+| GET | /admin/v1/analytics/retention | 留存分析 D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | 转化漏斗 |
+| GET | /admin/v1/analytics/arpu | ARPU/ARPPU 趋势 |
+| GET | /admin/v1/analytics/economy | 游戏币种经济指标 |
+| GET | /admin/v1/report/summary | 报表汇总（新增用户/充值/提现/兑换/游戏局数） |
+| GET | /admin/v1/report/daily | 日报表（按日聚合，无数据日期补 0） |
+| GET | /admin/v1/report/export | 日报表导出 CSV（UTF-8 BOM） |
+| GET | /admin/v1/game/list | 游戏列表 |
+| GET | /admin/v1/game/{id} | 游戏详情 |
+| POST | /admin/v1/game/launch | 游戏试玩预览（只读） |
+| POST | /admin/v1/game/create | 创建游戏 (含 provider_config) |
+| PUT | /admin/v1/game/{id} | 编辑游戏 |
+| GET | /admin/v1/withdraw/orders | 提现订单列表 |
+| PUT | /admin/v1/withdraw/review | 审核提现 |
+| GET | /admin/v1/ticket/list | 工单列表 |
+| GET | /admin/v1/ticket/{id} | 工单详情 |
+| POST | /admin/v1/ticket/{id}/reply | 回复工单 |
+| POST | /admin/v1/ticket/{id}/close | 关闭工单 |
+| POST | /admin/v1/ticket/{id}/assign | 指定处理人 |
 
 ## 4. Provider API（游戏方回调）
 
@@ -250,21 +252,21 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | game_game | +provider_config (JSON) |
 | game_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**总计: install.sql 43 张表**（生态扩展 10 张在 `install/`，未并入 install.sql）。模型非共享：admin 46 / service 44 各一份。
+**总计: install.sql 78 张表**。模型：52 个共享于 `packages/platform-common/src/model/`；admin/app/model/ 的 8 个与 service/app/model/ 的 10 个为各自宿主独有（文件名零重叠）。
 
 ## 8. 测试覆盖
 
 | 测试文件 | 用例数 | 覆盖范围 |
 |---------|--------|---------|
-| PlatformTest | 56 | bcmath精度/兑换计算/提现费用/限额/风控/优惠券/KYC/i18n |
-| BackendEnhancementTest | 23 | 加密服务/Hashids/Snowflake |
-| CaptchaTest | 7 | 验证码生成/校验 |
-| EncryptionServiceTest | 6 | AES加解密/脱敏 |
-| EnvConfigTest | 4 | 环境变量配置 |
-| HashidsServiceTest | 8 | ID编解码往返 |
-| SnowflakeServiceTest | 6 | ID生成唯一性 |
+| PlatformTest | 55 | bcmath精度/兑换计算/提现费用/限额/风控/优惠券/KYC/i18n |
+| BackendEnhancementTest | 27 | 加密服务/Hashids/Snowflake |
+| CaptchaTest | 5 | 验证码生成/校验 |
+| EncryptionServiceTest | 8 | AES加解密/脱敏 |
+| EnvConfigTest | 6 | 环境变量配置 |
+| HashidsServiceTest | 6 | ID编解码往返 |
+| SnowflakeServiceTest | 5 | ID生成唯一性 |
 
-**总计: admin ~132 用例 / 8 文件；service 3 用例（WebhookUrlSafety + EventBusMessageFormat）。service 未纳入 CI 失败阻断。**
+**总计（phpunit --list-tests 现测）: admin 200 用例 / 21 文件、service 273 用例 / 42 文件（含 WebhookUrlSafety + EventBusMessageFormat；报告记 09-22 复跑 admin 190 + service 273、08-27 快照 admin 153 + service 45）。service 未纳入 CI 失败阻断（未核实）。**
 
 ---
 

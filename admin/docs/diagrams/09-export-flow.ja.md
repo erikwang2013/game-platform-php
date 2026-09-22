@@ -8,7 +8,7 @@ Languages: **中文** · [English](09-export-flow.en.md) · [한국어](09-expor
 
 ```mermaid
 sequenceDiagram
-    participant C as 客户端
+    participant C as クライアント
     participant CTL as ExportController
     participant DB as MySQL
     participant FS as 文件系统
@@ -29,7 +29,7 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant C as 客户端
+    participant C as クライアント
     participant CTL as ExportController
     participant FS as 文件系统
 

@@ -1,4 +1,4 @@
-# 安全架构设计文档
+# নিরাপত্তা আর্কিটেকচার ডিজাইন ডকুমেন্ট
 <!-- lang-nav -->
 
 Languages: [中文](SECURITY.md) · [English](SECURITY.en.md) · [한국어](SECURITY.ko.md) · [Русский](SECURITY.ru.md) · [Deutsch](SECURITY.de.md) · [Français](SECURITY.fr.md) · [Español](SECURITY.es.md) · [Português](SECURITY.pt.md) · [हिन्दी](SECURITY.hi.md) · [العربية](SECURITY.ar.md) · **বাংলা** · [Bahasa Indonesia](SECURITY.id.md) · [日本語](SECURITY.ja.md)
@@ -598,14 +598,14 @@ Policy: https://erik.xyz/security-policy
 
 | থ্রেট টাইপ | অ্যাটাক ভেক্টর | প্রতিরক্ষা স্তর |
 |----------|---------|---------|
-| HTTP মেথড অপব্যবহার | TRACE/TRACK XST অ্যাটাক, CONNECT টানেল প্রক্সি, WebDAV মেথড প্রোবিং | SecurityFilter 405 মেথড হোয়াইটলিস্ট (GET/POST/PUT/DELETE/OPTIONS/HEAD) |
+| HTTP মেথড অপব্যবহার | TRACE/TRACK XST অ্যাটাক, CONNECT টানেল প্রক্সি, WebDAV মেথড প্রোবিং | SecurityFilter 405 মেথড হোয়াইটলিস্ট (GET/POST/PUT/DELETE/HEAD/OPTIONS/PATCH) |
 | টার্গেটেড ব্রুট-ফোর্স | নির্দিষ্ট ইউজারের বিরুদ্ধে বারবার পাসওয়ার্ড চেষ্টা | অ্যাকাউন্ট লক (৫ বার ব্যর্থ ১৫ মিনিট লক) + RateLimit (লগইন ১০/মিনিট) + Captcha |
 | ব্রুট-ফোর্স | ডিস্ট্রিবিউটেড IP দিয়ে বারবার ইউজারনেম/পাসওয়ার্ড চেষ্টা | RateLimit (লগইন ১০/মিনিট) + Captcha |
-| XSS ক্রস-সাইট স্ক্রিপ্টিং | `<script>`, onerror, javascript: | SecurityFilter (৫ ধরনের প্যাটার্ন) + X-XSS-Protection রেসপন্স হেডার + CSP |
-| SQL ইনজেকশন | UNION SELECT, OR 1=1, কমেন্ট বাইপাস | SecurityFilter (৬ ধরনের প্যাটার্ন) + Eloquent ORM প্যারামিটারাইজড কোয়েরি |
+| XSS ক্রস-সাইট স্ক্রিপ্টিং | `<script>`, onerror, javascript: | SecurityFilter (13 ধরনের প্যাটার্ন) + X-XSS-Protection রেসপন্স হেডার + CSP |
+| SQL ইনজেকশন | UNION SELECT, OR 1=1, কমেন্ট বাইপাস | SecurityFilter (14 ধরনের প্যাটার্ন) + Eloquent ORM প্যারামিটারাইজড কোয়েরি |
 | CSRF ক্রস-সাইট রিকোয়েস্ট ফোরজারি | দূষিত ওয়েবসাইটের পক্ষ থেকে রিকোয়েস্ট | SecurityFilter Origin/Referer ভেরিফিকেশন |
 | পাথ ট্রাভার্সাল | `../../etc/passwd` | SecurityFilter পাথ ট্রাভার্সাল প্যাটার্ন + UploadController এক্সটেনশন হোয়াইটলিস্ট |
-| কমান্ড ইনজেকশন | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (৪ ধরনের প্যাটার্ন) |
+| কমান্ড ইনজেকশন | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (13 ধরনের প্যাটার্ন) |
 | সেশন হাইজ্যাক | JWT Token চুরি | JWT স্বল্প মেয়াদ (2h) + ব্ল্যাকলিস্ট লগআউট + সংবেদনশীল অপারেশনে দ্বিতীয় পাসওয়ার্ড নিশ্চিতকরণ |
 | ID এনুমারেশন | সংখ্যাসূচক ID ট্রাভার্স করে ডেটা ভলিউম অনুমান | Hashids দিয়ে এলোমেলো স্ট্রিংয়ে অবফাসকেশন |
 | ডেটা লিক | DB ডাম্প / ম্যান-ইন-দ্য-মিডল / লগ লিক | তিন-স্তর এনক্রিপশন/মাস্কিং + OperationLog সংবেদনশীল ফিল্ড ফিল্টার |

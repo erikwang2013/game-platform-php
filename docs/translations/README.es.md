@@ -33,8 +33,14 @@ Plataforma global de juegos universal e internacionalizada. Los usuarios se regi
 - Cifrado de datos: AES-256-CBC en la capa de transmisión API + AES-128-ECB en la capa de almacenamiento de base de datos
 
 ### Frontend
-- Flutter 3.x (estilo Web PC)
-- HarmonyOS ArkTS (móvil)
+
+Hay dos árboles de directorios de front-end separados, **cada uno llama solo al backend de su propio lado**, sin cruces:
+
+| Árbol de directorios | Rol | Prefijo de petición | Backend | Stack técnico |
+|--------|------|---------|---------|--------|
+| `apps/*` | **Plataforma de jugador C-end** | `/api/v1/...` | service (8792 por defecto) | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
+| `admin/apps/*` | **Consola de administración** | `/admin/v1/...` | admin (8789 por defecto) | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
+
 - Diseño responsive (teléfono / tableta / escritorio)
 - Internacionalización (i18n): inglés / chino simplificado
 
@@ -55,44 +61,79 @@ Plataforma global de juegos universal e internacionalizada. Los usuarios se regi
 ```
 game-platform-php/
 ├── admin/                     # Panel de administración (webman v2, puerto predeterminado 8789, configurable con APP_PORT)
-│   ├── app/admin/controller/  #   Controladores del panel de administración
-│   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
-│   ├── app/provider/          #   Capa de proveedores de juegos
-│   ├── app/event/             #   Bus de eventos (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission/ProviderAuth)
+│   ├── app/admin/v1/controller/  #   Controladores del lado admin
+│   ├── app/middleware/        #   Middleware (Cors/SecurityFilter/RateLimit/AdminAuth/AdminPermission/OperationLog)
+│   ├── app/model/             #   Modelos exclusivos de admin (8; los otros 52 modelos compartidos están en packages/)
+│   ├── app/service/           #   Servicios exclusivos de admin (WalletService/WalletScope/RiskSandboxService)
+│   ├── app/process/           #   Procesos residentes (Http/Monitor/RiskIpCron)
 │   ├── app/provider/          #   Capa de proveedores de juegos (Self/ThirdParty/Factory)
-│   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
-│   ├── app/provider/          #   Capa de proveedores de juegos
-│   ├── app/event/             #   Bus de eventos (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission)
+│   ├── app/activity/          #   Motor de actividades (check-in/invitación/tareas diarias)
+│   ├── app/event/             #   Bus de eventos (EventBus Redis Pub/Sub)
 │   ├── config/                #   Archivos de configuración
-│   ├── install/   #   Archivos de migración SQL
-│   └── apps/flutter/          #   Panel de administración Flutter Web PC
+│   └── apps/                  #   Front-ends de administración (4 variantes, llaman a /admin/v1 → admin:8789)
+│       ├── flutter/           #     Panel de administración Flutter Web PC
+│       ├── react/             #     Consola de administración React 19 (Vite)
+│       ├── angular/           #     Consola de administración Angular 21
+│       └── harmonyos/         #     Consola de administración HarmonyOS ArkTS (.hap, sin pasar por nginx)
 │
 ├── service/                   # Servicio del lado del usuario (webman v2, puerto predeterminado 8792, configurable con APP_PORT)
 │   ├── app/api/v1/controller/ #   Controladores de API del lado del usuario
-│   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
+│   ├── app/middleware/        #   Middleware (TraceId/Cors/SecurityFilter/RateLimit/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
+│   ├── app/model/             #   Modelos exclusivos de service (10; los otros 52 modelos compartidos están en packages/)
+│   ├── app/service/           #   Servicios exclusivos de service (cartera/riesgo/cumplimiento/conciliación/push/logros/antifraude, etc.)
+│   ├── app/payment/           #   18 adaptadores de pasarelas de pago (Stripe/PayPal/Adyen/NowPayments/Skrill…) + GatewayFactory
+│   ├── app/cdn/               #   Adaptadores CDN de cinco proveedores (Cloudflare/CloudFront/Alibaba/Tencent/Huawei) + CdnFactory
+│   ├── app/process/           #   Procesos residentes (Http/Monitor/LeaderboardWS:8790/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
 │   ├── app/provider/          #   Capa de proveedores de juegos
+│   ├── app/activity/          #   Motor de actividades
 │   ├── app/event/             #   Bus de eventos (EventBus Redis Pub/Sub)
 │   └── config/                #   Archivos de configuración
 │
-├── install/                   # Asistente de instalación con un clic
+├── packages/platform-common/  # Capa compartida: admin y service la importan mediante un repositorio composer path, evitando dos copias
+│   ├── src/model/             #   Modelos Eloquent compartidos (52, misma fuente para ambos lados)
+│   ├── src/service/           #   Servicios compartidos (DepositLogService / VipService etc., 11 en total, incluye cálculo de probabilidades ClickHouse)
+│   ├── src/BcMath.php         #   Aritmética de alta precisión de importes/tasas (envoltorio de bcmath), redondeo, porcentajes
+│   ├── src/EncryptionService.php  #   Cifrado/descifrado AES y enmascarado
+│   ├── src/CircuitBreaker.php #   Cortacircuitos (además de Retry.php para reintentos)
+│   ├── src/HashidsService.php #   Codificación/decodificación de ID de la capa API
+│   └── src/SnowflakeService.php   #   ID BIGINT únicos a nivel global
+│
+├── apps/                      # Front-ends de jugador C-end (4 variantes, llaman a /api/v1 → service:8792)
+│   ├── flutter/platform/      #   Plataforma de usuarios Flutter Web PC (lado del usuario)
+│   ├── react/                 #   React 19 (Vite) C-end
+│   ├── angular/               #   Angular 21 C-end
+│   └── harmonyos/             #   HarmonyOS ArkTS C-end (.hap, sin pasar por nginx)
+│
+├── game/xiaoxiaole/           # Mini-juego integrado «Match-3 Campestre»: TypeScript + Vite + Vitest, motor src/domain + diseño de cuatro niveles + tests/, documentos de diseño en 13 idiomas
+│
+├── install/                   # Asistente de instalación en un clic + SQL de inicialización de la base de datos
 │   ├── index.php              #   Punto de entrada de instalación
 │   ├── Installer.php          #   Lógica principal de instalación
-│   ├── install.sql            #   SQL combinado de instalación (43 tablas + datos semilla)
+│   ├── install.sql            #   SQL combinado de instalación (78 tablas + datos semilla)
+│   ├── clickhouse.sql         #   DDL de la base analítica ClickHouse (motor independiente, se importa por separado)
+│   ├── test-data.sql          #   Datos de demostración/prueba
+│   ├── migrations/            #   Scripts de actualización incremental para bases existentes (*.sql)
+│   ├── lang/ + lang.php       #   Traducciones de la interfaz del asistente de instalación (13 idiomas)
 │   └── assets/                #   Recursos estáticos
 │
-├── admin/common/ y service/common/   # Copia de servicios compartidos (DepositLogService etc., pendiente de extracción a capa compartida)
-│   └── service/               #   Servicios compartidos (incluye cálculo de probabilidades ClickHouse)
-│
-├── apps/
-│   └── flutter/platform/      # Plataforma de usuarios Flutter Web PC (lado del usuario)
-│
-├── docs/                      # Documentación del proyecto
+├── docs/                      # Documentación del proyecto (todos los textos en 13 idiomas: .md es la fuente en chino y junto a él están las traducciones .{lang}.md)
 │   ├── ARCHITECTURE.md        #   Documento de arquitectura
 │   ├── ARCHITECTURE-DESIGN.md #   Documento de diseño de arquitectura
 │   ├── FEATURES.md            #   Documento de funciones
 │   ├── FEATURE-DESIGN.md      #   Documento de diseño de funciones
 │   ├── API.md                 #   Documento de API
-│   └── DEPLOYMENT.md          #   Documento de despliegue (Docker/manual/configuración de puertos)
+│   ├── DEPLOYMENT.md          #   Documento de despliegue (Docker/manual/configuración de puertos)
+│   ├── PROVIDER-SDK.md        #   Guía de integración de juegos de terceros (algoritmo de firma + ejemplos en PHP/Go/Python)
+│   ├── CLICKHOUSE_INSTALL.md  #   Instalar/configurar/migrar/verificar ClickHouse
+│   ├── CLICKHOUSE_USAGE.md    #   Las 4 API de servicios de ClickHouse y el panel de administración
+│   ├── translations/          #   Las traducciones de este README a 12 idiomas
+│   ├── diagrams/              #   SVG de arquitectura/flujo/funciones/ciclo de vida/seguridad/expansión del ecosistema (13 idiomas cada uno)
+│   ├── test-reports/          #   Informes de pruebas (php-unit / api / resilience / ui / SUMMARY)
+│   └── superpowers/           #   Especificaciones de diseño y planes de implementación de este repositorio (registro histórico)
+│
+├── scripts/                   # Scripts de operación (comprobación de deriva de modelos / migración de anotaciones apidoc / migración de la semántica de pagos de exchange / verificación de firmas)
+├── tests/api/                 # Pruebas automatizadas de la API (run_all.sh)
+├── runtime/                   # Directorio de ejecución de webman (logs/pid, generado en tiempo de ejecución)
 │
 ├── docker-compose.yml         # Orquestación de Docker Compose (puertos por defecto desde el .env raíz)
 ├── nginx.conf.template        # Plantilla de configuración de Nginx (puertos upstream renderizados por envsubst)
@@ -137,7 +178,7 @@ rm -rf install/
 
 El asistente de instalación completa automáticamente:
 - Comprobación del entorno (versión de PHP, extensiones, permisos de directorio)
-- Creación de la base de datos y tablas (SQL combinado, 43 tablas + datos semilla)
+- Creación de la base de datos y tablas (SQL combinado, 78 tablas + datos semilla)
 - Creación de la cuenta de superadministrador (cifrada con bcrypt)
 - Generación automática de claves JWT/cifrado y escritura en el archivo .env
 - Generación de install.lock para evitar instalaciones repetidas
@@ -184,17 +225,40 @@ Es necesario insertar manualmente la cuenta de administrador en la base de datos
 
 ### Iniciar el frontend (opcional)
 
-```bash
-# Panel de administración (Flutter Web PC)
-cd admin/apps/flutter
-flutter pub get
-flutter run -d chrome
+En desarrollo cada front-end levanta su propio servidor de desarrollo; este redirige las peticiones al backend correspondiente (véase `proxy.conf.json` / `vite.config.ts` en cada directorio):
 
-# Plataforma de usuarios (Flutter Web PC)
-cd apps/flutter/platform
-flutter pub get
-flutter run -d chrome
+```bash
+# --- Plataforma de jugador C-end (/api/v1 → service:8792) ---
+cd apps/react            && npm install && npm run dev      # http://localhost:5173
+cd apps/angular          && npm install && npm start        # http://localhost:4200
+cd apps/flutter/platform && flutter pub get && flutter run -d chrome
+
+# --- Consola de administración (/admin/v1 → admin:8789) ---
+cd admin/apps/react      && npm install && npm run dev      # http://localhost:5273
+cd admin/apps/angular    && npm install && npm start        # http://localhost:4300
+cd admin/apps/flutter    && flutter pub get && flutter run -d chrome
 ```
+
+> Puertos de los servidores de desarrollo de Angular: la consola de administración fija 4300 explícitamente en `angular.json`, mientras que el lado C mantiene el 4200 por defecto de Angular; para ejecutar ambos a la vez, añade `--port` a uno de ellos.
+> Los destinos HarmonyOS (`apps/harmonyos`, `admin/apps/harmonyos`) se abren y compilan con DevEco Studio;
+> un emulador alcanza el backend anfitrión en `http://10.0.2.2:<port>` (véase la constante al inicio de cada `ApiService.ets`).
+
+### Despliegue del frontend (Docker/Nginx)
+
+El servicio nginx de `docker-compose.yml` monta los artefactos de compilación de cada frontend en el contenedor en modo solo lectura, y `nginx.conf.template` los sirve en las rutas indicadas abajo.
+Si un artefacto no se ha compilado, el directorio está vacío: las peticiones a una ruta devuelven 404 y las peticiones al directorio desnudo (p. ej. `/app-react/`) devuelven 403.
+
+| URL | Punto de montaje del artefacto | Comando de compilación |
+|-----|-----------|---------|
+| `/` | `apps/flutter/platform/build/web` | `flutter build web` |
+| `/app-react/` | `apps/react/dist` | `npm run build` (el script incluye `--base=/app-react/`) |
+| `/app-angular/` | `apps/angular/dist/game-client-angular/browser` | `npm run build` (el script incluye `--base-href=/app-angular/`) |
+| `/admin-panel/` | `admin/public` | Ranura de publicación genérica: copia cualquier artefacto de consola en `admin/public`; si no hay nada, también devuelve 404 (directorio desnudo 403). El artefacto debe compilarse con `--base=/admin-panel/` (en Flutter, `--base-href=/admin-panel/`); de lo contrario sus recursos seguirán apuntando al prefijo original y darán 404. La forma sin barra redirige con 301 a esta dirección; `nginx.conf.template` define `absolute_redirect off`, así que la redirección es un Location relativo y los despliegues en puertos distintos de 80 ya no pierden el puerto |
+| `/admin-react/` | `admin/apps/react/dist` | `npm run build` (el script incluye `--base=/admin-react/`) |
+| `/admin-angular/` | `admin/apps/angular/dist/game-admin-angular/browser` | `npm run build` (el script incluye `--base-href=/admin-angular/`) |
+| `/admin-flutter/` | `admin/apps/flutter/build/web` | `flutter build web --base-href=/admin-flutter/` |
+
+`/admin/` (API) → contenedor admin, `/api/` (API) → contenedor service; el cliente HarmonyOS se distribuye como paquete `.hap` y no pasa por nginx.
 
 ### Verificación
 
@@ -206,9 +270,9 @@ curl http://localhost:8789/health
 curl http://localhost:8792/health
 
 # Probar el registro de usuarios
-curl -X POST http://localhost:8792/api/auth/register \
+curl -X POST http://localhost:8792/api/v1/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"username":"testuser","password":"123456"}'
+  -d '{"username":"testuser","password":"Abcdef12"}'
 ```
 
 ## Características de seguridad
@@ -231,14 +295,31 @@ curl -X POST http://localhost:8792/api/auth/register \
 
 ## Pruebas
 
+Informes de pruebas (almacenados localmente): [docs/test-reports/](../test-reports/)
+
+| Tipo de prueba | Casos/cobertura | Resultado |
+|---------|----------|------|
+| Pruebas unitarias PHP | medición actual con `phpunit --list-tests`: admin 200 + service 273 casos (el informe `docs/test-reports/php-unit.md` registra la repetición del 09-22 admin 190 + service 273 y la instantánea del 08-27 admin 153 + service 45; el lado admin sigue ampliándose) | service todo pasa (701 aserciones, 3 skipped, 2 warnings + 35 deprecations); admin 437 aserciones, 3 skipped, 1 fallo (`EnvConfigTest` comprueba el `admin/.env` real y echa en falta `REDIS_CLUSTER_NODES`; añadirlo lo pone en verde) |
+| Pruebas de los mecanismos de estabilidad | cortacircuitos/reintentos/interruptor de degradación, 15 casos (CircuitBreakerTest/RetryTest/ResilienceMockTest) | todo pasa |
+| Pruebas automatizadas de API | 187 endpoints (fuente: `docs/test-reports/api.md`, 2026-08-27); route.php registra actualmente 261 endpoints | 171 pasan / 50 fallan / 4 omitidos (todos los fallos son defectos deterministas, véase el informe) |
+| Pruebas de UI de Flutter | 12 casos (inicio de sesión/panel/navegación/cambio de idioma) | todo pasa |
+| Go/Rust | no hay código Go/Rust en el repositorio | omitido, registrado |
+
 ```bash
-cd admin
-phpunit --bootstrap tests/bootstrap.php tests/
+# Pruebas unitarias PHP (exportar antes las variables de entorno del secreto JWT)
+cd admin && ADMIN_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
+cd service && SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
+# Pruebas automatizadas de API (los servicios deben estar en marcha, véase tests/api/run_all.sh)
+bash tests/api/run_all.sh
+# Pruebas de UI de Flutter
+cd admin/apps/flutter && flutter test --timeout 300s
 ```
 
-- PHPUnit 12.x, 116 casos de prueba
-- 56 pruebas de lógica de negocio (PlatformTest) + 60 pruebas de infraestructura
-- Cobertura: precisión bcmath, cálculo de conversión, tarifas de retiro, límites, gestión de riesgos, cupones, KYC, i18n
+Informes detallados:
+- [Informe de pruebas unitarias PHP](../test-reports/php-unit.md)
+- [Informe de pruebas de los mecanismos de estabilidad (cortacircuitos/reintentos/degradación)](../test-reports/resilience.md)
+- [Informe de pruebas automatizadas de API](../test-reports/api.md)
+- [Informe de pruebas de UI de Flutter](../test-reports/ui.md)
 
 ## Resumen de capacidades de la plataforma
 
@@ -249,7 +330,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Recarga | Creación de pedido + verificación de firma de callbacks de Stripe/PayPal + abono automático |
 | Conversión | Moneda de plataforma ⇄ moneda de juego, cotización en tiempo real, beneficio por diferencial |
 | Retiro | Solicitud → revisión → pago, interruptor global, límites escalonados KYC + tarifas |
-| KYC | Envío y revisión de verificación de identidad, sistema de autenticación de tres niveles |
+| KYC | Envío y revisión de verificación de identidad, eleva el límite de retiro tras la aprobación |
 | Juegos | CRUD + categorías (10) + servidores + seguimiento de registros de juego |
 | Búsqueda | Búsqueda de texto completo en Elasticsearch (con respaldo LIKE) |
 | Rankings | Clasificación diaria/semanal/mensual/total, caché Redis, push WebSocket en tiempo real (puerto predeterminado 8790, configurable con LEADERBOARD_WS_PORT) |
@@ -266,7 +347,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Crecimiento social | Grupos + seguimiento de enlaces compartidos |
 | Pasarelas de pago | Nuevas pasarelas Adyen / GrabPay (L1) |
 | Internacionalización | 4 idiomas (en-US/zh-CN/ja-JP/ko-KR), tabla de traducciones + caché |
-| Configuración por país | Métodos de pago/retiro diferenciados para 8 países, monto mínimo de recarga |
+| Configuración por país | Métodos de pago/retiro diferenciados para 18 países, monto mínimo de recarga |
 | Estadísticas | Instantáneas diarias (5 tipos de métricas) + seguimiento de ingresos de la plataforma |
 | Captcha | Verificación humana por clic (poster-php) |
 | Integración de juegos | SDK de proveedores (Self+ThirdParty) + firma HMAC-SHA256 + pasarela de callbacks |
@@ -279,7 +360,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Cupones | Restricciones de condiciones (min_deposit/first_user/game_id) |
 | Eventos | Bus de eventos Redis Pub/Sub + entrega de suscripciones Webhook (7 tipos de eventos) |
 | Despliegue | Orquestación de 7 servicios con Docker Compose (puertos configurados en el .env raíz) + proxy inverso Nginx |
-| Clientes | Flutter Admin (17 páginas) + Platform (10 páginas) + HarmonyOS (5 páginas) |
+| Clientes | Administración 4 variantes (Flutter/React/Angular/HarmonyOS) + lado C 4 variantes (Flutter/React/Angular/HarmonyOS) |
 
 ## Modelo de negocio
 
@@ -298,13 +379,13 @@ Moneda de plataforma ← Convertir de vuelta → Retiro (revisión/automático)
 
 ## Liquidación multimoneda
 
-La plataforma adopta un sistema de liquidación con tres capas de moneda aisladas, «fiduciaria → moneda de plataforma → moneda de juego»: admite recargas en múltiples monedas fiduciarias (USD/CNY/EUR), cada juego tiene su propia moneda de valoración; todos los cálculos de montos usan aritmética de alta precisión bcmath para eliminar errores de coma flotante.
+La plataforma adopta un sistema de liquidación con tres capas de moneda aisladas, «fiduciaria → moneda de plataforma → moneda de juego»: admite recargas en múltiples monedas fiduciarias (USD/CNY/EUR/JPY/KRW/GBP/BRL/INR), cada juego tiene su propia moneda de valoración; todos los cálculos de montos usan aritmética de alta precisión bcmath para eliminar errores de coma flotante.
 
 ### Modelo de tres capas de moneda
 
 | Capa | Moneda | Descripción |
 |------|------|------|
-| Capa fiduciaria | USD / CNY / EUR | Moneda de pago real para recargas/retiros de usuarios, gestionada por Stripe / PayPal |
+| Capa fiduciaria | USD / CNY / EUR / JPY / KRW / GBP / BRL / INR | Moneda de pago real para recargas/retiros de usuarios, gestionada por Stripe / PayPal |
 | Capa de moneda de plataforma | Moneda de plataforma (unificada en toda la plataforma) | Moneda de liquidación interna unificada (decimal(18,4)), bloqueo optimista del monedero contra débitos concurrentes/abonos duplicados |
 | Capa de moneda de juego | Moneda independiente por juego | Cada juego tiene su propio `exchange_rate` y margen `spread_pct`, monedero de moneda de juego independiente |
 
@@ -320,7 +401,7 @@ La plataforma adopta un sistema de liquidación con tres capas de moneda aislada
 ```mermaid
 flowchart LR
     subgraph FIAT["法币层 Fiat"]
-        A["用户充值<br/>USD / CNY / EUR<br/>Stripe / PayPal"]
+        A["用户充值<br/>USD / CNY / EUR / JPY / KRW / GBP / BRL / INR<br/>Stripe / PayPal"]
         H["提现到账<br/>PayPal Payout"]
     end
 
@@ -377,9 +458,9 @@ flowchart LR
 | [Documento de arquitectura](../ARCHITECTURE.es.md) | Topología del sistema, arquitectura de módulos, flujo de datos |
 | [Documento de diseño de funciones](../FEATURE-DESIGN.es.md) | Modelo de negocio, especificaciones de funciones, diseño de flujos |
 | [Documento de funciones](../FEATURES.es.md) | Lista de funciones, descripción de módulos, recorrido del usuario |
-| [Documento de API](../API.es.md) | Referencia completa de API (102 interfaces) |
-| [Documentación en línea](http://localhost:8792/apidoc/) | Documentación interactiva hg/apidoc (lado del usuario) |
-| [Documentación en línea](http://localhost:8789/apidoc/) | Documentación interactiva hg/apidoc (panel de administración) |
+| [Documento de API](../API.es.md) | Referencia completa de API (146 interfaces) |
+| [Documentación en línea](http://localhost:8792/apidoc/) | Documentación interactiva erikwang2013/apidoc-php (lado del usuario) |
+| [Documentación en línea](http://localhost:8789/apidoc/) | Documentación interactiva erikwang2013/apidoc-php (panel de administración) |
 | [Instalación de ClickHouse](../CLICKHOUSE_INSTALL.es.md) | Instalación/configuración/migración/verificación de ClickHouse |
 | [Documento de integración del SDK de proveedores](../PROVIDER-SDK.es.md) | Guía de integración de juegos de terceros (algoritmo de firma + ejemplos PHP/Go/Python) |
 | [Uso de ClickHouse](../CLICKHOUSE_USAGE.es.md) | 4 servicios de API de ClickHouse y panel del backend |
@@ -397,12 +478,12 @@ Si este proyecto te resulta útil, invita al autor a un café ☕
   <table align="center" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <td align="center" width="200">
-        <img src="docs/weixinpay-130.png" width="130" height="130" alt="微信支付"><br>
-        <b>微信支付</b>
+        <img src="../weixinpay-130.png" width="130" height="130" alt="微信支付"><br>
+        <b>WeChat Pay</b>
       </td>
       <td align="center" width="200">
-        <img src="docs/alipay-130.png" width="130" height="130" alt="支付宝"><br>
-        <b>支付宝</b>
+        <img src="../alipay-130.png" width="130" height="130" alt="支付宝"><br>
+        <b>Alipay</b>
       </td>
     </tr>
   </table>

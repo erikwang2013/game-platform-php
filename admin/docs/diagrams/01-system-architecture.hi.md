@@ -17,8 +17,8 @@ flowchart TB
     end
 
     subgraph "应用层"
-        C1["admin/ :8789<br/>管理后台 API<br/>28 控制器"]
-        C2["service/ :8792<br/>C端业务 API<br/>25 控制器"]
+        C1["admin/ :8789<br/>管理后台 API<br/>45 控制器"]
+        C2["service/ :8792<br/>C端业务 API<br/>34 控制器"]
     end
 
     subgraph "服务层 v2.0"
@@ -27,11 +27,11 @@ flowchart TB
         D3["VIP 引擎<br/>经验值/升级/权益"]
         D4["成就引擎<br/>12 内置成就"]
         D5["FeatureFlag<br/>特性开关"]
-        D6["GameSession<br/>心跳+超时检测"]
+        D6["SdkSessionAuth<br/>HMAC 签名会话令牌"]
     end
 
     subgraph "存储层"
-        E1[("MySQL 8.0<br/>52 张表")]
+        E1[("MySQL 8.0<br/>78 张表")]
         E2[("Redis 7.x<br/>缓存/限流/事件")]
         E3[("Elasticsearch<br/>全文检索")]
         E4[("ClickHouse<br/>OLAP 分析")]

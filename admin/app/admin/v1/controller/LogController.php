@@ -22,7 +22,7 @@ class LogController extends BaseController
     #[Apidoc\Method("GET")]
     #[Apidoc\Author("erik")]
     #[Apidoc\Param(name: "page", type: "int", require: false, desc: "页码")]
-    #[Apidoc\Param(name: "per_page", type: "int", require: false, desc: "每页数量")]
+    #[Apidoc\Param(name: "limit", type: "int", require: false, desc: "每页数量")]
     #[Apidoc\Param(name: "user_id", type: "int", require: false, desc: "操作用户ID")]
     #[Apidoc\Param(name: "action", type: "string", require: false, desc: "操作动作")]
     #[Apidoc\Param(name: "path", type: "string", require: false, desc: "请求路径")]

@@ -598,14 +598,14 @@ Policy: https://erik.xyz/security-policy
 
 | Тип угрозы | Вектор атаки | Уровень защиты |
 |----------|---------|---------|
-| Злоупотребление HTTP-методами | TRACE/TRACK XST, CONNECT-туннели, пробы WebDAV-методов | Белый список методов SecurityFilter 405 (GET/POST/PUT/DELETE/OPTIONS/HEAD) |
+| Злоупотребление HTTP-методами | TRACE/TRACK XST, CONNECT-туннели, пробы WebDAV-методов | Белый список методов SecurityFilter 405 (GET/POST/PUT/DELETE/HEAD/OPTIONS/PATCH) |
 | Направленный брутфорс | Многократные попытки пароля конкретного пользователя | Блокировка аккаунта (5 неудач — блокировка 15 минут) + RateLimit (вход 10/мин) + Captcha |
 | Брутфорс | Распределенные IP многократно пробуют имена/пароли | RateLimit (вход 10/мин) + Captcha |
-| XSS | `<script>`, onerror, javascript: | SecurityFilter (5 паттернов) + заголовок X-XSS-Protection + CSP |
-| SQL-инъекции | UNION SELECT, OR 1=1, обход через комментарии | SecurityFilter (6 паттернов) + параметризованные запросы Eloquent ORM |
+| XSS | `<script>`, onerror, javascript: | SecurityFilter (13 паттернов) + заголовок X-XSS-Protection + CSP |
+| SQL-инъекции | UNION SELECT, OR 1=1, обход через комментарии | SecurityFilter (14 паттернов) + параметризованные запросы Eloquent ORM |
 | CSRF | Подделка запросов со злонамеренных сайтов | Проверка Origin/Referer в SecurityFilter |
 | Обход пути | `../../etc/passwd` | Паттерн обхода пути в SecurityFilter + белый список расширений UploadController |
-| Инъекции команд | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (4 паттерна) |
+| Инъекции команд | `;ls`, `` `whoami` ``, `$(cat ...)` | SecurityFilter (13 паттернов) |
 | Перехват сессии | Кража JWT-токена | Короткий срок JWT (2ч) + выход через черный список + повторное подтверждение паролем чувствительных операций |
 | Перебор ID | Перебор числовых ID для угадывания объемов данных | Обефускация Hashids в случайные строки |
 | Утечка данных | Выгрузка БД / посредник / утечка журналов | Трехуровневое шифрование/деидентификация + фильтрация чувствительных полей OperationLog |

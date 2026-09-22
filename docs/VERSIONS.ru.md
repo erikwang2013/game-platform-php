@@ -121,7 +121,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Поддержка языков | китайский/английский | 4 языка | 4 языка |
 | Таблица переводов + кэш | ✓ | ✓ | ✓ |
 | Автодетекция языка | ✓ | ✓ | ✓ |
-| Дифференцированная конфигурация стран | - | - | ✓ 8 стран |
+| Дифференцированная конфигурация стран | - | - | ✓ 18 стран |
 
 ---
 
@@ -162,7 +162,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 平台核心 (12): game_user, game_user_wallet, game_user_game_wallet,
                game_game, game_game_currency, game_deposit_order,
                game_withdraw_order, game_exchange_record, game_transaction,
-               game_payment_method, game_announcement, game-platform_config
+               game_payment_method, game_announcement, game_platform_config
 ```
 
 ### Новые таблицы стандартной версии (10)
@@ -176,7 +176,7 @@ game_withdraw_limit, game_risk_rule, game_risk_log, game_stat_daily
 ```
 game_game_category, game_game_category_rel, game_leaderboard,
 game_coupon, game_user_coupon, game_language, game_translation,
-game_country_config, game-platform_revenue,
+game_country_config, game_platform_revenue,
 game_notification, game_referral, game_referral_reward, game_user_2fa
 ```
 
@@ -190,6 +190,16 @@ game_anticheat_event, game_anticheat_daily_stat,
 game_group, game_group_member, game_share_link,
 game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, game_risk_cluster
 ```
+
+### Новые в экосистеме v2.0 (14 таблиц)
+```
+game_ticket, game_ticket_reply, game_device_token, game_vip_level,
+game_user_vip, game_exp_log, game_achievement, game_user_achievement,
+game_friend, game_message, game_cdn_provider, game_referral_commission,
+game_tournament, game_tournament_entry
+```
+
+**Итого: 78 таблиц**
 
 ---
 
@@ -218,7 +228,7 @@ game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, gam
 | Шлюз Provider API | колбэки balance/bet/settle/refund + middleware ProviderAuth |
 | Система тикетов | создание/ответ в C-приложении + обработка/назначение/закрытие в админке |
 | Верификация email | 6-значный код, истечение Redis 10 минут, лимит повторной отправки 60 секунд |
-| Пуш-уведомления | PushService (FCM/APNs/华为推送) |
+| Пуш-уведомления | PushService (FCM/APNs/Huawei) |
 | Система VIP | 5 уровней, накопление опыта, автоповышение, скидка на обмен, снижение комиссии за вывод, бонус курса |
 | Система достижений | 12 встроенных достижений, событийно-управляемая детекция, отслеживание прогресса |
 | Система друзей | заявка/принятие/отклонение/удаление/поиск |

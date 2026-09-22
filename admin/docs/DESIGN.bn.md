@@ -1,4 +1,4 @@
-# 开放管理后台 — 设计文档
+# ওপেন অ্যাডমিন — ডিজাইন ডকুমেন্ট
 <!-- lang-nav -->
 
 Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.ko.md) · [Русский](DESIGN.ru.md) · [Deutsch](DESIGN.de.md) · [Français](DESIGN.fr.md) · [Español](DESIGN.es.md) · [Português](DESIGN.pt.md) · [हिन्दी](DESIGN.hi.md) · [العربية](DESIGN.ar.md) · **বাংলা** · [Bahasa Indonesia](DESIGN.id.md) · [日本語](DESIGN.ja.md)
@@ -65,10 +65,10 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.
 |---|------|------|
 | রাউটিং | `config/route.php` | URL থেকে কন্ট্রোলার ম্যাপিং, মিডলওয়্যার বাইন্ডিং, ভার্সনযুক্ত রাউটিং |
 | মিডলওয়্যার | `app/middleware/` | অ্যাটাক ব্লক (SecurityFilter), রেট লিমিট (RateLimit), অথেনটিকেশন (JWT), অথোরাইজেশন (RBAC) |
-| কন্ট্রোলার | ৩০টি: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (প্রশাসনিক) + Captcha/Auth (API v1) | রিকোয়েস্ট প্যারামিটার ভ্যালিডেশন, ব্যবসায়িক লজিক কল, রেসপন্স ফরম্যাটিং |
-| ব্যবসায়িক সার্ভিস | `common/service/` | ডেটা অ্যানালাইসিস: GameDashboardService (ওভারভিউ/র্যাঙ্কিং/ট্রেন্ড), DepositLogService (রেভিনিউ/কনভার্সন), ProbabilityService (জয়েন্ট/কন্ডিশনাল প্রোবাবিলিটি, SQL বিল্ডার); DB ব্যর্থ হলে এরর নয় বরং খালি ডেটা ফেরত |
+| কন্ট্রোলার | 45টি: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (প্রশাসনিক) + Captcha/Auth (API v1) | রিকোয়েস্ট প্যারামিটার ভ্যালিডেশন, ব্যবসায়িক লজিক কল, রেসপন্স ফরম্যাটিং |
+| ব্যবসায়িক সার্ভিস | `packages/platform-common/src/service/` | ডেটা অ্যানালাইসিস: GameDashboardService (ওভারভিউ/র্যাঙ্কিং/ট্রেন্ড), DepositLogService (রেভিনিউ/কনভার্সন), ProbabilityService (জয়েন্ট/কন্ডিশনাল প্রোবাবিলিটি, SQL বিল্ডার); DB ব্যর্থ হলে এরর নয় বরং খালি ডেটা ফেরত |
 | ডেটা মডেল | `app/model/` | ORM ম্যাপিং, রিলেশন, ফিল্ড এনক্রিপশন/ডিক্রিপশন |
-| কমন ইউটিলিটি | `app/common/` | Hashids, Snowflake, Encryption সার্ভিস |
+| কমন ইউটিলিটি | `packages/platform-common/src/` | Hashids, Snowflake, Encryption সার্ভিস |
 
 ### 2.2 রিকোয়েস্ট লাইফসাইকেল
 
@@ -209,10 +209,10 @@ game_system_config (系统配置) — 独立表
 3. `v()`-এ ভার্সন স্পষ্টভাবে দিন: `v('AuthController', 'login', 'v2')`
 
 ```bash
-# 使用 v1
+# v1 ব্যবহার করুন
 curl http://host/api/v1/auth/login
 
-# 使用 v2
+# v2 ব্যবহার করুন
 curl http://host/api/v2/auth/login
 ```
 
@@ -466,7 +466,7 @@ GitHub Actions কন্টিনিউয়াস ইন্টিগ্রে�
 
 ### 8.5 মনিটরিং
 
-`GET /metrics` এন্ডপয়েন্ট (`MetricsController`) Prometheus text format-এ ৫টি gauge মেট্রিক প্রকাশ করে: HTTP রিকোয়েস্ট মোট সংখ্যা, সক্রিয় ইউজার সংখ্যা, ডেটাবেস/Redis সংযোগ অবস্থা, মেমরি ব্যবহার।
+`GET /metrics` এন্ডপয়েন্ট (`MetricsController`) Prometheus text format-এ 18টি gauge মেট্রিক প্রকাশ করে: সক্রিয়/মোট ইউজার সংখ্যা, ডেটাবেস/Redis/ES সংযোগ অবস্থা, মেমরি/CPU/প্রসেস মেট্রিক, উইথড্র পেন্ডিং ও রিকনসিলিয়েশন পার্থক্য।
 
 ### 8.6 পরিবেশের প্রয়োজনীয়তা
 

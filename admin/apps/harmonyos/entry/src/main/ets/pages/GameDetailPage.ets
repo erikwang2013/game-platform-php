@@ -5,6 +5,7 @@ import { router } from '@kit.ArkUI';
 import { http } from '@kit.NetworkKit';
 import { promptAction } from '@kit.ArkUI';
 import { TokenManager } from '../utils/TokenManager';
+import { API_BASE_URL } from '../common/AppConfig';
 
 interface GameDetail {
   id: string;
@@ -35,7 +36,7 @@ struct GameDetailPage {
       const token = await TokenManager.getAccessToken();
       const request = http.createHttp();
       const response = await request.request(
-        `http://10.0.2.2:8792/api/v1/game/${this.gameId}`,
+        `${API_BASE_URL}/admin/v1/game/${this.gameId}`,
         {
           method: http.RequestMethod.GET,
           header: {
@@ -65,7 +66,7 @@ struct GameDetailPage {
       const token = await TokenManager.getAccessToken();
       const request = http.createHttp();
       const response = await request.request(
-        'http://10.0.2.2:8792/api/v1/game/launch',
+        `${API_BASE_URL}/admin/v1/game/launch`,
         {
           method: http.RequestMethod.POST,
           header: {

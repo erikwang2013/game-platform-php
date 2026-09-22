@@ -79,7 +79,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 | `controller/TicketController.php` (service + admin) | 4 эндпоинта C-стороны + 5 эндпоинтов админки |
 | `service/VerificationService.php` (admin+service) | 6-значный код, Redis 10 мин, кулдаун 60 с |
 | `controller/VerificationController.php` (service) | 4 эндпоинта: sendEmail/confirmEmail/sendSms/confirmPhone |
-| `service/PushService.php` (admin+service) | абстракция FCM/APNs/华为推送 |
+| `service/PushService.php` (admin+service) | абстракция FCM/APNs/Huawei |
 | `model/DeviceToken.php` (admin+service) | хранение токенов устройств |
 
 ### Phase 3 — Удержание пользователей
@@ -180,7 +180,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 
 ---
 
-## 8. Исправления пространства расширения (третий раунд, 2026-08-04)
+## 7. Исправления пространства расширения (третий раунд, 2026-08-04)
 
 ### P2 реализовано
 
@@ -211,7 +211,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 - документация 4 эндпоинтов API (balance/bet/settle/refund)
 - руководство по подключению саморазработанных игр + управление сессиями + конфигурация игр
 
-## 9. Итоговые оценки (обновлено)
+## 8. Итоговые оценки (обновлено)
 
 | Категория | Начальная (v1) | v2.0 экосистемное расширение | v2.1 исправления расширения | Изменение |
 |------|-----------|---------------|---------------|------|
@@ -225,7 +225,7 @@ Languages: **中文** · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](P
 
 ---
 
-## 10. Подтверждение исправлений безопасности и доступности от 2026-08-18
+## 9. Подтверждение исправлений безопасности и доступности от 2026-08-18
 
 Исправления безопасности и доступности, выполненные в этом раунде (2026-08-18) (не закоммичены в рабочей области, выйдут с версией 1.1):
 

@@ -44,7 +44,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | Игровой зал | 10 предустановленных категорий, фильтр по категориям, связь игра-категория | выполнено |
 | Рейтинги | дневной/недельный/месячный/общий, кэш Redis, несколько метрик | выполнено |
 | Купоны | фиксированная сумма + процентная скидка, лимит по времени и количеству, отслеживание получения/использования | выполнено |
-| Конфигурация стран | 8 предустановленных стран, дифференцированные способы платежей/выводов, минимальная сумма пополнения | выполнено |
+| Конфигурация стран | 18 предустановленных стран, дифференцированные способы платежей/выводов, минимальная сумма пополнения | выполнено |
 | Статистика | ежедневный статистический снимок + отслеживание дохода платформы | выполнено |
 | Поиск | полнотекстовый поиск Elasticsearch (интегрирован на уровне моделей) | выполнено |
 
@@ -67,7 +67,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | Развёртывание | Docker Compose 7 сервисов + обратный прокси Nginx | выполнено |
 | Данные | аналитика реального времени MySQL + расчёт совместных/условных вероятностей | выполнено |
 | HarmonyOS | admin 8 страниц; C-сторона `apps/harmonyos/`: реализованы вход/зал/детали/кошелёк/личный кабинет (указывают на 8792) | частично (проект запускается, на реальном устройстве нужно сменить IP) |
-| API-документация | интерактивная документация hg/apidoc | выполнено |
+| API-документация | интерактивная документация erikwang2013/apidoc-php | выполнено |
 | Установка в один клик | браузерный мастер установки: создание администратора, обновление существующей БД, install.lock защита от переустановки | выполнено |
 | Отказоустойчивость | CircuitBreaker + Retry + переключатель деградации feature.provider_mock | выполнено |
 | Платёжные методы | CRUD в админке + видимость по странам + диапазон сумм + ограничение валюты | выполнено |
@@ -79,10 +79,10 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 |----|------|------|
 | Подключение игр | абстракция GameProvider (Self/ThirdParty) + подпись HMAC-SHA256 | выполнено |
 | Игровые колбэки | шлюз Provider API (balance/bet/settle/refund) + middleware ProviderAuth | выполнено |
-| Игровые сессии | Redis heartbeat + автосеттлмент по таймауту 15 минут + GameSessionService | выполнено |
+| Игровые сессии | Токен сессии SDK: подпись HMAC-SHA256 + TTL 5 минут (выпускает `GET /api/v1/game/session`, проверяет `SdkSessionAuth`) | выполнено |
 | Тикеты | создание/ответ в C-приложении + обработка/назначение/закрытие в админке, 5 типов тикетов | выполнено |
 | Верификация email | 6-значный код, истечение Redis 10 минут, лимит повторной отправки 60 секунд | выполнено |
-| Пуш-уведомления | PushService (FCM/APNs/华为推送) + модель DeviceToken | выполнено |
+| Пуш-уведомления | PushService (FCM/APNs/Huawei) + модель DeviceToken | выполнено |
 | Система VIP | 5 уровней (обычный/серебро/золото/платина/бриллиант) + опыт + авто-повышение | выполнено |
 | Привилегии VIP | скидка на обмен 2-15%, снижение комиссии за вывод 10-100%, бонус курса 0.1-1.0% | выполнено |
 | Система достижений | 12 встроенных достижений; EventConsumer → событийно-управляемая проверка AchievementService и VIP-опыт | выполнено |
@@ -119,62 +119,64 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 
 | Метод | Путь | Описание | Аутентификация |
 |------|------|------|------|
-| POST | /api/auth/register | регистрация пользователя | нет |
-| POST | /api/auth/login | вход пользователя | нет |
-| POST | /api/auth/refresh | обновление токена | нет |
-| GET | /api/game/list | список игр | нет |
-| GET | /api/game/detail/{id} | детали игры | нет |
-| GET | /api/announcement/list | список объявлений | нет |
-| GET | /api/wallet/info | баланс кошелька | да |
-| GET | /api/wallet/transactions | записи операций | да |
-| POST | /api/deposit/create | создание ордера на пополнение | да |
-| GET | /api/payment/methods | список платёжных методов (маршрутизация по стране) | да |
-| POST | /api/exchange/quote | котировка обмена (VIP-скидка) | да |
-| POST | /api/exchange/buy | покупка игровой валюты | да |
-| POST | /api/exchange/sell | продажа игровой валюты | да |
-| POST | /api/withdraw/apply | заявка на вывод (VIP-снижение) | да |
-| POST | /api/game/launch | запуск игры | да |
-| GET | /api/game/play-logs | игровые записи | да |
-| POST | /api/referral/apply | применение реферального кода | да |
-| POST | /api/verify/send-email | отправка кода подтверждения email | да |
-| POST | /api/verify/confirm-email | подтверждение email | да |
-| GET | /api/ticket/list | список тикетов | да |
-| POST | /api/ticket/create | создание тикета | да |
-| POST | /api/ticket/{id}/reply | ответ на тикет | да |
+| POST | /api/v1/auth/register | регистрация пользователя | нет |
+| POST | /api/v1/auth/login | вход пользователя | нет |
+| POST | /api/v1/auth/refresh | обновление токена | нет |
+| GET | /api/v1/game/list | список игр | нет |
+| GET | /api/v1/game/detail/{id} | детали игры | нет |
+| GET | /api/v1/announcement/list | список объявлений | нет |
+| GET | /api/v1/wallet/info | баланс кошелька | да |
+| GET | /api/v1/wallet/transactions | записи операций | да |
+| POST | /api/v1/deposit/create | создание ордера на пополнение | да |
+| GET | /api/v1/payment/methods | список платёжных методов (маршрутизация по стране) | да |
+| POST | /api/v1/exchange/quote | котировка обмена (VIP-скидка) | да |
+| POST | /api/v1/exchange/buy | покупка игровой валюты | да |
+| POST | /api/v1/exchange/sell | продажа игровой валюты | да |
+| POST | /api/v1/withdraw/apply | заявка на вывод (VIP-снижение) | да |
+| POST | /api/v1/game/launch | запуск игры | да |
+| GET | /api/v1/game/play-logs | игровые записи | да |
+| POST | /api/v1/referral/apply | применение реферального кода | да |
+| POST | /api/v1/verify/send-email | отправка кода подтверждения email | да |
+| POST | /api/v1/verify/confirm-email | подтверждение email | да |
+| GET | /api/v1/ticket/list | список тикетов | да |
+| POST | /api/v1/ticket/create | создание тикета | да |
+| POST | /api/v1/ticket/{id}/reply | ответ на тикет | да |
+| GET | /api/v1/platform/stats | Статистика платформы | нет |
 
-| GET | /api/platform/stats | Статистика платформы | нет |
 ## 3. Функции админ-панели
 
 ### 3.1 API-интерфейсы (новые)
 
 | Метод | Путь | Описание |
 |------|------|------|
-| GET | /admin/dashboard/platform | данные дашборда платформы |
-| GET | /admin/analytics/overview | общий обзор платформы (реальная агрегация MySQL) |
-| GET | /admin/analytics/game-ranking | рейтинг игр |
-| GET | /admin/analytics/dau-trend | тренд DAU |
-| GET | /admin/analytics/hourly-trend | почасовая динамика |
-| GET | /admin/analytics/action-distribution | распределение действий |
-| GET | /admin/analytics/revenue | анализ выручки |
-| GET | /admin/analytics/conversion | конверсия игр |
-| GET | /admin/analytics/probability | совместная/условная вероятность |
-| GET | /admin/analytics/retention | анализ удержания D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | конверсионная воронка |
-| GET | /admin/analytics/arpu | тренд ARPU/ARPPU |
-| GET | /admin/analytics/economy | экономические метрики игровых валют |
-| GET | /admin/report/summary | Сводный отчёт (новые пользователи/депозиты/выводы/обмены/игры) |
-| GET | /admin/report/daily | Ежедневный отчёт (агрегация по дням, пустые даты заполняются 0) |
-| GET | /admin/report/export | Экспорт ежедневного отчёта в CSV (UTF-8 BOM) |
-| GET | /admin/game/list | список игр |
-| POST | /admin/game/create | создание игры (включая provider_config) |
-| PUT | /admin/game/{id} | редактирование игры |
-| GET | /admin/withdraw/orders | список ордеров на вывод |
-| PUT | /admin/withdraw/review | проверка вывода |
-| GET | /admin/ticket/list | список тикетов |
-| GET | /admin/ticket/{id} | детали тикета |
-| POST | /admin/ticket/{id}/reply | ответ на тикет |
-| POST | /admin/ticket/{id}/close | закрытие тикета |
-| POST | /admin/ticket/{id}/assign | назначение обработчика |
+| GET | /admin/v1/dashboard/platform | данные дашборда платформы |
+| GET | /admin/v1/analytics/overview | общий обзор платформы (реальная агрегация MySQL) |
+| GET | /admin/v1/analytics/game-ranking | рейтинг игр |
+| GET | /admin/v1/analytics/dau-trend | тренд DAU |
+| GET | /admin/v1/analytics/hourly-trend | почасовая динамика |
+| GET | /admin/v1/analytics/action-distribution | распределение действий |
+| GET | /admin/v1/analytics/revenue | анализ выручки |
+| GET | /admin/v1/analytics/conversion | конверсия игр |
+| GET | /admin/v1/analytics/probability | совместная/условная вероятность |
+| GET | /admin/v1/analytics/retention | анализ удержания D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | конверсионная воронка |
+| GET | /admin/v1/analytics/arpu | тренд ARPU/ARPPU |
+| GET | /admin/v1/analytics/economy | экономические метрики игровых валют |
+| GET | /admin/v1/report/summary | Сводный отчёт (новые пользователи/депозиты/выводы/обмены/игры) |
+| GET | /admin/v1/report/daily | Ежедневный отчёт (агрегация по дням, пустые даты заполняются 0) |
+| GET | /admin/v1/report/export | Экспорт ежедневного отчёта в CSV (UTF-8 BOM) |
+| GET | /admin/v1/game/list | список игр |
+| GET | /admin/v1/game/{id} | детали игры |
+| POST | /admin/v1/game/launch | предварительный просмотр игры (только чтение) |
+| POST | /admin/v1/game/create | создание игры (включая provider_config) |
+| PUT | /admin/v1/game/{id} | редактирование игры |
+| GET | /admin/v1/withdraw/orders | список ордеров на вывод |
+| PUT | /admin/v1/withdraw/review | проверка вывода |
+| GET | /admin/v1/ticket/list | список тикетов |
+| GET | /admin/v1/ticket/{id} | детали тикета |
+| POST | /admin/v1/ticket/{id}/reply | ответ на тикет |
+| POST | /admin/v1/ticket/{id}/close | закрытие тикета |
+| POST | /admin/v1/ticket/{id}/assign | назначение обработчика |
 
 ## 4. Provider API (колбэки игровой стороны)
 
@@ -250,21 +252,21 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | game_game | +provider_config (JSON) |
 | game_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**Всего: install.sql 43 таблицы** (10 таблиц экосистемного расширения в `install/`, не включены в install.sql). Модели не общие: admin 46 / service 44, по одной копии.
+**Всего: 78 таблиц в install.sql**. Модели: 52 общих в `packages/platform-common/src/model/`; 8 в admin/app/model/ и 10 в service/app/model/ — собственные для своего хоста (пересечений имён файлов нет).
 
 ## 8. Покрытие тестами
 
 | Тестовый файл | Число кейсов | Область покрытия |
 |---------|--------|---------|
-| PlatformTest | 56 | точность bcmath/расчёты обмена/комиссия за вывод/лимиты/риск-контроль/купоны/KYC/i18n |
-| BackendEnhancementTest | 23 | службы шифрования/Hashids/Snowflake |
-| CaptchaTest | 7 | генерация/проверка капчи |
-| EncryptionServiceTest | 6 | AES шифрование/дешифрование/маскирование |
-| EnvConfigTest | 4 | конфигурация переменных окружения |
-| HashidsServiceTest | 8 | кодирование/декодирование ID |
-| SnowflakeServiceTest | 6 | уникальность генерации ID |
+| PlatformTest | 55 | точность bcmath/расчёты обмена/комиссия за вывод/лимиты/риск-контроль/купоны/KYC/i18n |
+| BackendEnhancementTest | 27 | службы шифрования/Hashids/Snowflake |
+| CaptchaTest | 5 | генерация/проверка капчи |
+| EncryptionServiceTest | 8 | AES шифрование/дешифрование/маскирование |
+| EnvConfigTest | 6 | конфигурация переменных окружения |
+| HashidsServiceTest | 6 | кодирование/декодирование ID |
+| SnowflakeServiceTest | 5 | уникальность генерации ID |
 
-**Всего: admin ~132 кейса / 8 файлов; service 3 кейса (WebhookUrlSafety + EventBusMessageFormat). service не включён в блокировку при провале CI.**
+**Всего (phpunit --list-tests, текущий замер): admin 200 кейсов / 21 файл, service 273 кейса / 42 файла (вкл. WebhookUrlSafety + EventBusMessageFormat; отчёт: повторный прогон 09-22 admin 190 + service 273, снимок 08-27 admin 153 + service 45). service не включён в блокировку при провале CI (не проверено).**
 
 ---
 

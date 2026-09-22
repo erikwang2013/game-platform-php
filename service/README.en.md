@@ -13,7 +13,7 @@ The C-side user platform API service, a high-performance PHP backend built on we
 |------|------|
 | Users | Register/login (username/password + 7-platform OAuth + 2FA TOTP), profile |
 | Wallet | Platform token wallet (optimistic lock) + game currency wallet + transaction history |
-| Deposit | 13 payment gateways (Stripe/PayPal/NowPayments/Coinbase, etc.) with callback signature verification and automatic crediting |
+| Deposit | 18 payment gateways (Stripe/PayPal/NowPayments/Coinbase, etc.) with callback signature verification and automatic crediting |
 | Withdrawal | Application → review → payout, KYC tiered limits |
 | Exchange | Real-time platform token ⇄ game currency quotes, VIP discounts and rate bonuses |
 | Games | Game list/categories/search, game records, Provider settlement callbacks |
@@ -39,8 +39,12 @@ The C-side user platform API service, a high-performance PHP backend built on we
 ```
 service/
 ├── app/
-│   ├── api/v1/controller/  # C-side API controllers (35)
-│   ├── middleware/         # Middleware (Cors/SecurityFilter/RateLimit/ApiVersion/UserAuth/ProviderAuth)
+│   ├── activity/           # Activity handlers
+│   ├── api/v1/controller/  # C-side API controllers (34)
+│   ├── bootstrap/          # Notification bootstrap
+│   ├── cdn/                # Multi-vendor CDN (Aliyun/Tencent/Huawei/Cloudflare/CloudFront + CdnFactory)
+│   ├── common/             # Common
+│   ├── middleware/         # Middleware (Cors/SecurityFilter/RateLimit/TraceId/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
 │   ├── model/              # Data models
 │   ├── service/            # Business services (VIP/leaderboard/risk/notification, etc.)
 │   ├── event/              # Event bus (EventBus Redis Pub/Sub)
@@ -49,9 +53,14 @@ service/
 ├── common/                 # Shared services directory (implemented in erik/platform-common package)
 ├── config/                 # Configuration files
 ├── public/                 # Web entry
+├── runtime/                # Runtime files
+├── support/                # Support helpers
 ├── tests/                  # PHPUnit tests
 ├── start.php               # Startup entry
-└── composer.json
+├── windows.php             # Windows startup entry
+├── composer.json
+├── phpunit.xml             # PHPUnit config
+└── Dockerfile              # Image build
 ```
 
 ## One-Click Installation
@@ -93,7 +102,7 @@ php start.php start -d     # background (daemon)
 ## Usage
 
 - API reference: `docs/API.md` (complete API reference)
-- Online docs: http://localhost:8792/apidoc/ (hg/apidoc interactive docs)
+- Online docs: http://localhost:8792/apidoc/ (erikwang2013/apidoc-php interactive docs)
 - Health check: `GET http://localhost:8792/health`
 - C-side frontend: `apps/flutter/platform/` (Flutter Web user platform)
 - Admin backend: `admin/` (admin backend and `admin/apps/flutter/` frontend)

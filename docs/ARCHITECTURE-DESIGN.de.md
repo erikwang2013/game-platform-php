@@ -200,10 +200,10 @@ Die Regeln liegen in der Tabelle `game_risk_rule`, konfiguriert als JSON, Schwel
 
 ### 6.2 KYC-Identitätsprüfung
 
-Dreistufiges Prüfsystem:
+Auszahlungslimit-Stufen (game_withdraw_limit):
 - `default` — nicht geprüft, Basislimits
 - `verified` — KYC-Prüfung bestanden, höhere Limits + niedrigere Gebühren
-- `vip` — VIP-Stufe, höchste Limits + keine Gebühren
+- `vip` — reservierte Stufe (höchste Limits + keine Gebühren); der aktuelle Code liest nur default/verified, der VIP-Gebührenrabatt wird separat nach Erfahrung berechnet
 
 Prüfungsablauf:
 ```
@@ -219,9 +219,9 @@ Unterstützt Google / Facebook / Apple-Login:
 
 ```
 Frontend klickt OAuth-Button
-  → GET /api/auth/oauth/{provider} → Autorisierungs-URL abrufen
+  → GET /api/v1/auth/oauth/{provider} → Autorisierungs-URL abrufen
   → Weiterleitung zur Autorisierungsseite des Drittanbieters → Benutzer stimmt zu
-  → Callback POST /api/auth/oauth/{provider}/callback
+  → Callback POST /api/v1/auth/oauth/{provider}/callback
   → bestehende Verknüpfung gefunden → direkt einloggen
   → keine Verknüpfung → neuen Benutzer automatisch registrieren + verknüpfen + Wallet erstellen
 ```
@@ -229,7 +229,7 @@ Frontend klickt OAuth-Button
 ### 6.4 Zahlungs-Callback
 
 ```
-Drittanbieter-Zahlung abgeschlossen → POST /api/payment/callback
+Drittanbieter-Zahlung abgeschlossen → POST /api/v1/payment/callback
   → Provider-Whitelist-Prüfung (nur stripe/paypal)
   → Signaturprüfung fail-closed (fehlendes secret/webhook_id, Signaturfehler, Zeitstempel über ±300s: alles ablehnen)
   → Callback-Betrag per bccomp mit Auftragsbetrag abgleichen (gegen kanalübergreifende Missbrauchung)
@@ -251,7 +251,7 @@ Je nach KYC-Stufe des Benutzers gelten unterschiedliche Limits und Gebühren:
 
 ## 7. Skalierbarkeits-Design
 
-### 5.1 Horizontale Skalierung
+### 7.1 Horizontale Skalierung
 
 admin/ und service/ unterstützen beide mehrere Worker-Prozesse. In Kombination mit dem Nginx-Reverse-Proxy können mehrere Maschinen für horizontale Skalierung deployed werden:
 
@@ -263,7 +263,7 @@ Nginx (Load Balancer)
   └── service-2 (:8792)
 ```
 
-### 5.2 Modul-Splitting-Pfad
+### 7.2 Modul-Splitting-Pfad
 
 Wenn ein einzelnes service/ zum Engpass wird, wird nach folgendem Pfad aufgeteilt:
 

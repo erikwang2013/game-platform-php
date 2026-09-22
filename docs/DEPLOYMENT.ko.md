@@ -32,7 +32,7 @@ cd /opt/game-platform
 # 2. 설치 마법사 시작
 php -S 0.0.0.0:8888 -t install/
 
-# 3. 브라우저에서 http://<服务器IP>:8888 접속
+# 3. 브라우저에서 http://<server-IP>:8888 접속
 #    마법사 완료: 환경 검사 → 데이터베이스 설정 → 관리자 계정 → 자동 설치
 
 # 4. 의존성 설치
@@ -46,12 +46,12 @@ cd service && php start.php start -d && cd ..
 # 6. 보안 정리
 rm -rf install/
 
-# 7. 관리 백오피스 접속: http://<服务器IP>:8789 (기본 포트)
+# 7. 관리 백오피스 접속: http://<server-IP>:8789 (기본 포트)
 ```
 
 설치 마법사가 수행하는 작업:
 - PHP 환경 검사 (버전, 확장, 디렉터리 권한)
-- 병합 SQL(`install/install.sql`) 실행, 52장 테이블 생성 및 시드 데이터 가져오기
+- 병합 SQL(`install/install.sql`) 실행, 78장 테이블 생성 및 시드 데이터 가져오기
 - 슈퍼 관리자 계정 생성 (bcrypt 암호화, super_admin 역할 연결)
 - JWT/Encryption/Hashids 키 자동 생성
 - `admin/.env`와 `service/.env` 작성
@@ -83,7 +83,7 @@ docker-compose ps
 docker-compose logs -f
 ```
 
-### 2.2 서비스 목록
+### 3.2 서비스 목록
 
 | 서비스 | 컨테이너명 | 포트 | 설명 |
 |------|--------|------|------|
@@ -98,9 +98,9 @@ docker-compose logs -f
 > **포트 구성**: 위 표는 기본 포트이며, 모두 프로젝트 루트의 `.env`에서 변경할 수 있습니다 (템플릿 `.env.example`, `cp .env.example .env` 후 편집):
 > `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `LEADERBOARD_WS_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
 > `nginx.conf.template`의 upstream 포트는 공식 이미지의 envsubst로 자동 렌더링되므로 Nginx 설정을 수동으로 수정할 필요가 없습니다.
-> 주의: `ADMIN_PORT` / `SERVICE_PORT`를 변경해도 `admin/.env`의 `APP_URL`과 `service/.env`의 `SITE_URL`은 자동으로 갱신되지 않으므로 외부 접속 주소도 함께 수정해야 합니다.
+> Docker 배포에서는 외부 접속 주소(`APP_URL` / `SITE_URL`)가 기본적으로 `ADMIN_PORT` / `SERVICE_PORT`를 자동으로 따릅니다(`http://localhost:포트` 형식). 사용자 도메인이나 HTTPS를 사용하는 경우 루트 `.env`에서 `APP_URL` / `SITE_URL`을 설정하세요(`admin/.env`·`service/.env`의 동일 항목을 덮어씁니다). 베어메탈(수동) 배포에서 포트를 변경할 때는 주소도 직접 수정해야 합니다.
 
-### 2.3 데이터베이스 초기화
+### 3.3 데이터베이스 초기화
 
 ```bash
 # 마이그레이션 파일은 MySQL 최초 기동 시 자동 실행됩니다
@@ -108,7 +108,7 @@ docker-compose logs -f
 docker exec -i game-platform-mysql mysql -uroot -p${DB_PASSWORD} game-platform < install/install.sql
 ```
 
-### 2.4 데이터 영속화
+### 3.4 데이터 영속화
 
 데이터 볼륨은 자동 생성되며 수동 관리가 필요 없습니다:
 
@@ -129,9 +129,9 @@ gunzip < backup_20260101.sql.gz | docker exec -i game-platform-mysql mysql -uroo
 
 ---
 
-## 3. 수동 배포
+## 4. 수동 배포
 
-### 3.1 PHP 환경 설정
+### 4.1 PHP 환경 설정
 
 ```bash
 # Ubuntu/Debian
@@ -145,7 +145,7 @@ echo "opcache.enable=1" >> /etc/php/8.3/cli/php.ini
 echo "opcache.enable_cli=1" >> /etc/php/8.3/cli/php.ini
 ```
 
-### 3.2 의존성 설치
+### 4.2 의존성 설치
 
 ```bash
 cd /opt/game-platform
@@ -163,7 +163,7 @@ cp .env.example .env
 composer install --no-dev --optimize-autoloader
 ```
 
-### 3.3 .env 설정
+### 4.3 .env 설정
 
 **admin/.env 핵심 설정:**
 ```ini
@@ -270,7 +270,7 @@ TOSS_API_URL=https://api.tosspayments.com
 SITE_URL=https://your-domain.com  # 결제 콜백/리다이렉트 사이트 주소
 ```
 
-### 3.4 서비스 시작
+### 4.4 서비스 시작
 
 ```bash
 # 관리 백오피스 (기본 포트 8789, admin/.env의 APP_PORT로 변경 가능)
@@ -286,7 +286,7 @@ curl http://localhost:8789/health
 curl http://localhost:8792/health
 ```
 
-### 3.5 프로세스 관리 (Systemd)
+### 4.5 프로세스 관리 (Systemd)
 
 `/etc/systemd/system/game-platform-admin.service` 생성:
 
@@ -319,9 +319,9 @@ systemctl enable --now game-platform-admin game-platform-service
 
 ---
 
-## 4. Nginx 리버스 프록시
+## 5. Nginx 리버스 프록시
 
-### 4.1 설정 파일
+### 5.1 설정 파일
 
 `/etc/nginx/sites-available/game-platform` 생성:
 
@@ -330,6 +330,11 @@ systemctl enable --now game-platform-admin game-platform-service
 server {
     listen 80;
     server_name your-domain.com;
+
+    # nginx 自身发出的 301（如目录补斜杠 /admin-panel → /admin-panel/）改用相对
+    # Location，客户端按当前 host:port 解析；默认绝对跳转会退回 listen 端口，
+    # 非 80 端口部署（如 8080）时会跳错端口。
+    absolute_redirect off;
 
     # 관리 백오피스 API
     location /admin/ {
@@ -364,24 +369,96 @@ server {
         proxy_pass http://127.0.0.1:8789;
     }
 
-    # Prometheus 지표
+    # Prometheus 指标
     location /metrics {
         proxy_pass http://127.0.0.1:8789;
     }
 
-    # 관리 백오피스 프론트엔드
-    location /admin-panel {
-        alias /opt/game-platform/admin/apps/flutter/build/web;
-        try_files $uri $uri/ /admin-panel/index.html;
-    }
+    # ================================================================
+    # 静态前端。两套前端定位不同：
+    #   apps/*         = C 端玩家端（调 /api/ → service）
+    #   admin/apps/*   = 管理台（调 /admin/ → admin）
+    # 各产物需先构建；React/Angular 必须带子路径前缀构建，否则资源 404：
+    #   apps/react            npm run build                （已含 --base=/app-react/）
+    #   apps/angular          npm run build                （已含 --base-href=/app-angular/）
+    #   admin/apps/react      npm run build                （已含 --base=/admin-react/）
+    #   admin/apps/angular    npm run build                （已含 --base-href=/admin-angular/）
+    #   admin/apps/flutter    flutter build web --base-href=/admin-flutter/
+    #   apps/flutter/platform flutter build web            （挂在根路径）
+    # try_files 末项是【内部重定向】，目标 index.html 不存在时会重新匹配同一 location
+    # 形成重定向环，nginx 报 500 而非 404。规避方式按 location 类型二选一：
+    #   root  型 → 末项追加 =404，把它降级为文件存在性判断；
+    #   alias 型 → 追加 =404 会让兜底不再经 alias 解析，已构建的 SPA 深链接也会 404，
+    #              所以保留原样，另加 location = 精确匹配兜底 URI（精确匹配优先，
+    #              不会再回到前缀 location，环不成立）。
+    # alias 的结尾斜杠必须与 location 的结尾斜杠一致（location /x 配 alias .../x，
+    # location /x/ 配 alias .../x/）。错配时 /x../<路径> 会越级解析到上级目录，可读
+    # 取 docroot 之外的任意文件，且 nginx -t 完全查不出来。
+    # ================================================================
 
-    # C단 플랫폼 프론트엔드
+    # C 端主入口 — Flutter Web
     location / {
         root /opt/game-platform/apps/flutter/platform/build/web;
-        try_files $uri $uri/ /index.html;
+        try_files $uri $uri/ /index.html =404;
+    }
+
+    # C 端 React / Angular Web（URL 前缀与产物目录名不同，用 alias 直接指向产物）
+    location /app-react/ {
+        alias /opt/game-platform/apps/react/dist/;
+        try_files $uri $uri/ /app-react/index.html;
+    }
+    location = /app-react/index.html {
+        alias /opt/game-platform/apps/react/dist/index.html;
+    }
+
+    location /app-angular/ {
+        alias /opt/game-platform/apps/angular/dist/game-client-angular/browser/;
+        try_files $uri $uri/ /app-angular/index.html;
+    }
+    location = /app-angular/index.html {
+        alias /opt/game-platform/apps/angular/dist/game-client-angular/browser/index.html;
+    }
+
+    # 管理台 — 通用投放位：把任一控制台产物拷进 admin/public 即可
+    # 注意：location 不以 / 结尾时 alias 也【不能】以 / 结尾，否则 /admin-panel../.env
+    # 会解析到上级目录（admin/.env）造成任意文件读取；nginx -t 查不出这类错配。
+    location /admin-panel {
+        alias /opt/game-platform/admin/public;
+        try_files $uri $uri/ /admin-panel/index.html;
+    }
+    location = /admin-panel/index.html {
+        alias /opt/game-platform/admin/public/index.html;
+    }
+
+    # 管理台 React / Angular / Flutter
+    location /admin-react/ {
+        alias /opt/game-platform/admin/apps/react/dist/;
+        try_files $uri $uri/ /admin-react/index.html;
+    }
+    location = /admin-react/index.html {
+        alias /opt/game-platform/admin/apps/react/dist/index.html;
+    }
+
+    location /admin-angular/ {
+        alias /opt/game-platform/admin/apps/angular/dist/game-admin-angular/browser/;
+        try_files $uri $uri/ /admin-angular/index.html;
+    }
+    location = /admin-angular/index.html {
+        alias /opt/game-platform/admin/apps/angular/dist/game-admin-angular/browser/index.html;
+    }
+
+    location /admin-flutter/ {
+        alias /opt/game-platform/admin/apps/flutter/build/web/;
+        try_files $uri $uri/ /admin-flutter/index.html;
+    }
+    location = /admin-flutter/index.html {
+        alias /opt/game-platform/admin/apps/flutter/build/web/index.html;
     }
 }
 ```
+
+> 수동 배포 시에는 이 디렉터리에 빌드 산출물을 직접 넣습니다 (C단 4개 트리: `apps/flutter/platform`, `apps/react`, `apps/angular`, `apps/harmonyos`; 관리 콘솔 프런트엔드는 `admin/apps/*`와 범용 배치 위치 `admin/public`에 모두 마운트됩니다).
+> Docker 배포는 `docker-compose.yml`의 nginx 볼륨 마운트와 `nginx.conf.template`을 참고하세요 (동일한 경로 구성, 컨테이너 내부 루트는 `/var/www/...`). HarmonyOS는 `.hap`로 배포되며 nginx를 거치지 않습니다.
 
 사이트 활성화:
 ```bash
@@ -389,7 +466,7 @@ ln -s /etc/nginx/sites-available/game-platform /etc/nginx/sites-enabled/
 nginx -t && systemctl reload nginx
 ```
 
-### 4.2 SSL 인증서
+### 5.2 SSL 인증서
 
 ```bash
 # Certbot으로 Let's Encrypt 인증서 자동 발급
@@ -402,7 +479,7 @@ certbot --nginx -d your-domain.com
 
 ---
 
-## 5. 예약 작업 (Crontab)
+## 6. 예약 작업 (Crontab)
 
 ```bash
 # crontab 편집
@@ -423,9 +500,9 @@ crontab -e
 
 ---
 
-## 6. 모니터링
+## 7. 모니터링
 
-### 6.1 Prometheus 지표
+### 7.1 Prometheus 지표
 
 관리 백오피스가 `/metrics` 엔드포인트를 노출하며 다음 지표를 포함합니다:
 
@@ -437,7 +514,7 @@ crontab -e
 | openadmin_redis_connection_status | Redis 연결 (0/1) |
 | openadmin_memory_usage_bytes | 메모리 사용량 |
 
-### 6.2 헬스 체크
+### 7.2 헬스 체크
 
 ```bash
 # 관리 백오피스
@@ -449,23 +526,23 @@ curl -f http://localhost:8792/health || echo "Service DOWN"
 # 로드 밸런서나 모니터링 시스템에서 설정 가능
 ```
 
-### 6.3 로그
+### 7.3 로그
 
 ```
 admin/runtime/logs/
 ├── stdout.log          # 표준 출력
-└── workerman.log       # Workerman 로그
+└── webman-<date>.log   # Webman 로그
 
 service/runtime/logs/
 ├── stdout.log
-└── workerman.log
+└── webman-<date>.log
 ```
 
 ---
 
-## 7. 성능 최적화
+## 8. 성능 최적화
 
-### 7.1 PHP OPcache
+### 8.1 PHP OPcache
 
 ```ini
 ; /etc/php/8.3/cli/php.ini
@@ -476,7 +553,7 @@ opcache.max_accelerated_files=10000
 opcache.validate_timestamps=0  # 프로덕션에서는 파일 검사 끄기
 ```
 
-### 7.2 MySQL 최적화
+### 8.2 MySQL 최적화
 
 ```ini
 # /etc/mysql/conf.d/game-platform.cnf
@@ -488,14 +565,14 @@ max_connections = 200
 query_cache_type = 0               # MySQL 8.0에서 제거됨
 ```
 
-### 7.3 Worker 프로세스 수
+### 8.3 Worker 프로세스 수
 
 ```php
 // config/process.php
 'count' => cpu_count() * 2,  // 프로덕션에서는 CPU 코어 수의 2-4배 권장
 ```
 
-### 7.4 Redis 캐시 전략
+### 8.4 Redis 캐시 전략
 
 | 캐시 키 | TTL | 설명 |
 |--------|-----|------|
@@ -506,9 +583,9 @@ query_cache_type = 0               # MySQL 8.0에서 제거됨
 
 ---
 
-## 8. 보안 강화
+## 9. 보안 강화
 
-### 8.1 키 생성
+### 9.1 키 생성
 
 ```bash
 # 랜덤 키 생성
@@ -525,7 +602,7 @@ echo "ENCRYPTION_KEY=$ENCRYPTION_KEY"
 echo "ENCRYPTABLE_KEY=$ENCRYPTABLE_KEY"
 ```
 
-### 8.2 방화벽
+### 9.2 방화벽
 
 ```bash
 # 필요한 포트만 개방
@@ -542,7 +619,7 @@ ufw enable
 # 127.0.0.1로만 접근
 ```
 
-### 8.3 파일 권한
+### 9.3 파일 권한
 
 ```bash
 chown -R www-data:www-data /opt/game-platform
@@ -555,9 +632,9 @@ chmod 600 /opt/game-platform/service/.env
 
 ---
 
-## 9. 장애 진단
+## 10. 장애 진단
 
-### 9.1 서비스가 시작되지 않음
+### 10.1 서비스가 시작되지 않음
 
 ```bash
 # 포그라운드 실행으로 오류 확인
@@ -567,10 +644,10 @@ cd /opt/game-platform/admin && php start.php start
 ss -tlnp | grep -E '8789|8792'
 
 # 로그 확인
-tail -f runtime/logs/workerman.log
+tail -f runtime/logs/webman-$(date +%F).log
 ```
 
-### 9.2 데이터베이스 연결 실패
+### 10.2 데이터베이스 연결 실패
 
 ```bash
 # 연결 테스트
@@ -580,7 +657,7 @@ mysql -h 127.0.0.1 -u game-platform -p game-platform -e "SELECT 1"
 grep DB_ admin/.env
 ```
 
-### 9.3 Redis 연결 실패
+### 10.3 Redis 연결 실패
 
 ```bash
 # 연결 테스트
@@ -589,7 +666,7 @@ redis-cli -h 127.0.0.1 -p 6379 -a <password> ping
 # PONG이 반환되어야 함
 ```
 
-### 9.4 Elasticsearch 사용 불가
+### 10.4 Elasticsearch 사용 불가
 
 ```bash
 # 연결 테스트
@@ -598,7 +675,7 @@ curl http://127.0.0.1:9200
 # 검색 기능은 LIKE 쿼리로 자동 폴백되며 서비스는 중단되지 않음
 ```
 
-### 9.5 성능 문제
+### 10.5 성능 문제
 
 ```bash
 # worker 프로세스 수 확인
@@ -613,7 +690,7 @@ mysql -e "SHOW VARIABLES LIKE 'slow_query_log';"
 
 ---
 
-## 10. 업그레이드 가이드
+## 11. 업그레이드 가이드
 
 ```bash
 # 1. 최신 코드 가져오기

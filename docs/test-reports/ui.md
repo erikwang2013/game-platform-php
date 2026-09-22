@@ -52,7 +52,7 @@ flutter analyze
 
 ### 测试设计要点
 
-- **无 DI 缝**：`ApiService` 为单例、控制器内部直接构造 Dio（硬编码 `http://localhost:8787`），无法注入 mock。但 `flutter_test` 隔离全部 HTTP（一律返回 400），控制器 `catch` 分支回退到模拟数据（如 DashboardController）或空数据态（如 UserController），测试即针对该离线回退行为设计。
+- **无 DI 缝**：`ApiService` 为单例、控制器内部直接构造 Dio（自建 Dio，原硬编码 http://localhost:8787；2026-09-22 起读取 ApiService.baseUrl，默认 http://localhost:8789），无法注入 mock。但 `flutter_test` 隔离全部 HTTP（一律返回 400），控制器 `catch` 分支回退到模拟数据（如 DashboardController）或空数据态（如 UserController），测试即针对该离线回退行为设计。
 - **Ahem 字体问题**：flutter_test 默认 Ahem 字体每字形宽度 = fontSize（约为真实字体 2 倍），导致固定宽度布局（侧边栏 240px、统计卡 120px）在测试视口溢出。`loadRealFont()` 通过 `FontLoader` 加载系统真实字体（`/usr/share/fonts/truetype/lato/Lato-Medium.ttf`）替换 'Roboto' 解决。
 - **响应式断点**：`AdminLayout` 需要 `ResponsiveBreakpoints` 祖先，测试用与 `AdminApp` 一致的断点（PHONE 0-767 / TABLET 768-1199 / DESKTOP 1200-4500）包裹；视口设为 1400x900（PC 管理后台目标尺寸）。
 - **无限动画 spinner**：登录页验证码加载失败时渲染无限 `CircularProgressIndicator`，`pumpAndSettle` 会超时 → 自定义 `pumpUntil` 按帧轮询。

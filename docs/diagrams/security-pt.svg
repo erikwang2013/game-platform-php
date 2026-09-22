@@ -6,7 +6,7 @@
   <rect width="1000" height="800" fill="#fafbfc"/>
 
   <rect x="0" y="0" width="1000" height="52" fill="url(#hd)"/>
-  <text x="500" y="34" text-anchor="middle" fill="#fff" font-size="21" font-weight="bold">Plataforma Global de Agregação de Jogos — Diagrama de Arquitetura de Segurança (18 camadas de defesa em profundidade)</text>
+  <text x="500" y="34" text-anchor="middle" fill="#fff" font-size="21" font-weight="bold">Plataforma Global de Agregação de Jogos — Arquitetura de Segurança (18 camadas)</text>
 
   <!-- Layer 1-6 -->
   <rect x="15" y="68" width="310" height="60" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
@@ -16,12 +16,12 @@
 
   <rect x="340" y="68" width="310" height="60" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
   <text x="495" y="90" text-anchor="middle" fill="#991b1b" font-size="12" font-weight="bold">L2: Controle de CORS entre origens</text>
-  <text x="495" y="108" text-anchor="middle" fill="#ef4444" font-size="10">Whitelist Access-Control-Allow-Origin</text>
+  <text x="495" y="108" text-anchor="middle" fill="#ef4444" font-size="10">Access-Control-Allow-Origin (padrão *, configurável)</text>
   <text x="495" y="122" text-anchor="middle" fill="#ef4444" font-size="10">Tratamento de requisições de preflight OPTIONS</text>
 
   <rect x="665" y="68" width="320" height="60" rx="8" fill="#fee2e2" stroke="#fca5a5" stroke-width="1.5" filter="url(#sh)"/>
   <text x="825" y="90" text-anchor="middle" fill="#991b1b" font-size="12" font-weight="bold">L3: Whitelist de métodos HTTP</text>
-  <text x="825" y="108" text-anchor="middle" fill="#ef4444" font-size="10">Apenas GET/POST/PUT/DELETE/OPTIONS/HEAD</text>
+  <text x="825" y="108" text-anchor="middle" fill="#ef4444" font-size="10">Apenas GET/POST/PUT/DELETE/HEAD/OPTIONS/PATCH</text>
   <text x="825" y="122" text-anchor="middle" fill="#ef4444" font-size="10">Métodos não padrão retornam 405 Method Not Allowed</text>
 
   <!-- L4-L6 -->
@@ -96,9 +96,8 @@
 
   <rect x="340" y="428" width="310" height="60" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
   <text x="495" y="450" text-anchor="middle" fill="#1e40af" font-size="12" font-weight="bold">L17: Verificação de assinatura do callback de pagamento</text>
-  <text x="495" y="468" text-anchor="middle" fill="#3b82f6" font-size="10">Verificação da assinatura do Webhook do Stripe/Alipay/WeChat Pay</text>
-  <text x="495" y="482" text-anchor="middle" fill="#3b82f6" font-size="10">Verificação das mensagens PayPal IPN</text>
-  <text x="495" y="496" text-anchor="middle" fill="#3b82f6" font-size="10">Verificação de assinatura do callback NOWPayments/Coinbase</text>
+  <text x="495" y="468" text-anchor="middle" fill="#3b82f6" font-size="10">Assinatura do Webhook Stripe (Alipay/WeChat Pay via Stripe APM)</text>
+  <text x="495" y="482" text-anchor="middle" fill="#3b82f6" font-size="10">Verificação de callbacks PayPal / NOWPayments / Coinbase</text>
 
   <rect x="665" y="428" width="320" height="60" rx="8" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5" filter="url(#sh)"/>
   <text x="825" y="450" text-anchor="middle" fill="#1e40af" font-size="12" font-weight="bold">L18: Cálculo preciso de dados</text>
@@ -109,7 +108,7 @@
   <rect x="15" y="504" width="970" height="90" rx="8" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="500" y="526" text-anchor="middle" fill="#475569" font-size="13" font-weight="bold">Medidas de segurança complementares</text>
 
-  <rect x="30" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="120" y="553" text-anchor="middle" fill="#475569" font-size="11">Hash bcrypt de senha (cost=12)</text>
+  <rect x="30" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="120" y="553" text-anchor="middle" fill="#475569" font-size="11">Hash bcrypt de senha</text>
   <rect x="220" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="553" text-anchor="middle" fill="#475569" font-size="11">Confirmação de senha (operações sensíveis)</text>
   <rect x="410" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="500" y="553" text-anchor="middle" fill="#475569" font-size="11">security.txt RFC 9116</text>
   <rect x="600" y="536" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="690" y="553" text-anchor="middle" fill="#475569" font-size="11">Configuração de reforço do Nginx</text>
@@ -118,7 +117,7 @@
   <rect x="30" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="120" y="583" text-anchor="middle" fill="#475569" font-size="11">Isolamento por contêineres Docker</text>
   <rect x="220" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="310" y="583" text-anchor="middle" fill="#475569" font-size="11">Segurança de transporte HTTPS/TLS</text>
   <rect x="410" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="500" y="583" text-anchor="middle" fill="#475569" font-size="11">Senha do banco no .gitignore</text>
-  <rect x="600" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="690" y="583" text-anchor="middle" fill="#475569" font-size="11">Backup criptografado + retenção de 30 dias</text>
+  <rect x="600" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="690" y="583" text-anchor="middle" fill="#475569" font-size="11">Backup gzip + retenção 30 dias</text>
   <rect x="790" y="566" width="180" height="24" rx="4" fill="#f1f5f9"/><text x="880" y="583" text-anchor="middle" fill="#475569" font-size="11">Verificação automática de segurança no CI/CD</text>
 
   <!-- Architecture flow -->
@@ -148,9 +147,9 @@
   <text x="935" y="662" fill="#22c55e" font-size="11">→</text>
   <text x="950" y="662" text-anchor="middle" fill="#166534" font-size="11">OK</text>
 
-  <text x="500" y="690" text-anchor="middle" fill="#991b1b" font-size="11">Requisição → cabeçalho CSP → verificação CORS → whitelist de métodos → filtro de ataques → rate limit → validação de versão → autenticação JWT → verificação de sessão → verificação de bloqueio → RBAC → log de auditoria → Controller</text>
+  <text x="500" y="690" text-anchor="middle" fill="#991b1b" font-size="11">Requisição → CSP → CORS → Método → Filtro → Limite → Versão → JWT → Sessão → Bloqueio → RBAC → Auditoria → Controller</text>
 
   <text x="500" y="740" text-anchor="middle" fill="#94a3b8" font-size="11">Componentes de segurança: erikwang2013/jwt-webman · erikwang2013/encryption · erikwang2013/encryptable · erikwang2013/security-php · erikwang2013/poster-php · erikwang2013/hashids</text>
-  <text x="500" y="762" text-anchor="middle" fill="#94a3b8" font-size="11">Conformidade: security.txt (RFC 9116) · Prometheus Metrics · logs de auditoria de operações · criptografia de dados (AES-256-CBC) · conformidade de pagamento (PCI-DSS)</text>
+  <text x="500" y="762" text-anchor="middle" fill="#94a3b8" font-size="11">Conformidade: security.txt (RFC 9116) · Prometheus Metrics · logs de auditoria de operações · criptografia de dados (AES-256-CBC)</text>
   <text x="500" y="790" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>
 </svg>

@@ -200,10 +200,10 @@ As regras ficam na tabela `game_risk_rule`, configuradas como JSON, permitindo a
 
 ### 6.2 KYC de identidade real
 
-Sistema de verificação em três níveis:
+Níveis de limite de saque (game_withdraw_limit):
 - `default` — não verificado, limites básicos
 - `verified` — KYC aprovado, limites maiores + tarifas menores
-- `vip` — nível VIP, maiores limites + tarifa zero
+- `vip` — nível reservado (maiores limites + tarifa zero); o código atual só lê default/verified, o desconto de tarifa VIP é calculado separadamente por experiência
 
 Fluxo de verificação:
 ```
@@ -219,9 +219,9 @@ Suporta login Google / Facebook / Apple:
 
 ```
 Frontend clica no botão OAuth
-  → GET /api/auth/oauth/{provider} → obtém URL de autorização
+  → GET /api/v1/auth/oauth/{provider} → obtém URL de autorização
   → redireciona para a página de autorização de terceiros → usuário consente
-  → callback POST /api/auth/oauth/{provider}/callback
+  → callback POST /api/v1/auth/oauth/{provider}/callback
   → vinculo existente encontrado → login direto
   → sem vínculo → registra automaticamente novo usuário + vincula + cria carteira
 ```
@@ -229,7 +229,7 @@ Frontend clica no botão OAuth
 ### 6.4 Callback de pagamento
 
 ```
-Pagamento de terceiros concluído → POST /api/payment/callback
+Pagamento de terceiros concluído → POST /api/v1/payment/callback
   → verificação de whitelist do provider (apenas stripe/paypal)
   → verificação de assinatura fail-closed (sem secret/webhook_id configurado, falha de verificação ou timestamp além de ±300s → sempre recusar)
   → conferência do valor do callback com o valor da ordem via bccomp (evita uso indevido entre canais)
@@ -251,7 +251,7 @@ Limites e tarifas diferentes por nível KYC do usuário:
 
 ## 7. Design de escalabilidade
 
-### 5.1 Escala horizontal
+### 7.1 Escala horizontal
 
 admin/ e service/ suportam múltiplos processos worker. Com o proxy reverso Nginx, é possível implantar em várias máquinas para escala horizontal:
 
@@ -263,7 +263,7 @@ Nginx (balanceamento de carga)
   └── service-2 (:8792)
 ```
 
-### 5.2 Caminho de divisão de módulos
+### 7.2 Caminho de divisão de módulos
 
 Quando um único service/ vira gargalo, divide-se seguindo este caminho:
 

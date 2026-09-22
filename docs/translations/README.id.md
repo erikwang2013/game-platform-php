@@ -33,8 +33,14 @@ Platform agregasi game global, universal, dan berstandar internasional. Setelah 
 - Enkripsi data: AES-256-CBC di lapisan transport API + AES-128-ECB di lapisan penyimpanan database
 
 ### Frontend
-- Flutter 3.x (gaya Web PC)
-- HarmonyOS ArkTS (seluler)
+
+Ada dua pohon direktori front-end yang terpisah, **masing-masing hanya memanggil backend sisinya sendiri**, tanpa persilangan:
+
+| Pohon direktori | Peran | Prefiks permintaan | Backend terkait | Tumpukan teknologi |
+|--------|------|---------|---------|--------|
+| `apps/*` | **Platform pemain sisi C** | `/api/v1/...` | service (default 8792) | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
+| `admin/apps/*` | **Konsol admin** | `/admin/v1/...` | admin (default 8789) | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
+
 - Tata letak responsif (Phone / Tablet / Desktop)
 - Internasionalisasi (i18n): peralihan Inggris / China Sederhana
 
@@ -55,44 +61,79 @@ Platform agregasi game global, universal, dan berstandar internasional. Setelah 
 ```
 game-platform-php/
 ├── admin/                     # Backend administrasi (webman v2, port default 8789, dapat dikonfigurasi via APP_PORT)
-│   ├── app/admin/controller/  #   Kontroler sisi admin
-│   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
-│   ├── app/provider/          #   Lapisan Provider game
-│   ├── app/event/             #   Event bus (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission/ProviderAuth)
+│   ├── app/admin/v1/controller/  #   Kontroler sisi admin
+│   ├── app/middleware/        #   Middleware (Cors/SecurityFilter/RateLimit/AdminAuth/AdminPermission/OperationLog)
+│   ├── app/model/             #   Model khusus admin (8; 52 model bersama lainnya ada di packages/)
+│   ├── app/service/           #   Layanan khusus admin (WalletService/WalletScope/RiskSandboxService)
+│   ├── app/process/           #   Proses resident (Http/Monitor/RiskIpCron)
 │   ├── app/provider/          #   Lapisan Provider game (Self/ThirdParty/Factory)
-│   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
-│   ├── app/provider/          #   Lapisan Provider game
-│   ├── app/event/             #   Event bus (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission)
+│   ├── app/activity/          #   Mesin aktivitas (check-in/undangan/tugas harian)
+│   ├── app/event/             #   Bus peristiwa (EventBus Redis Pub/Sub)
 │   ├── config/                #   File konfigurasi
-│   ├── install/   #   File migrasi SQL
-│   └── apps/flutter/          #   Backend administrasi Flutter Web PC
+│   └── apps/                  #   Front-end admin (4 varian, memanggil /admin/v1 → admin:8789)
+│       ├── flutter/           #     Backend administrasi Flutter Web PC
+│       ├── react/             #     Konsol admin React 19 (Vite)
+│       ├── angular/           #     Konsol admin Angular 21
+│       └── harmonyos/         #     Konsol admin HarmonyOS ArkTS (.hap, tidak melalui nginx)
 │
 ├── service/                   # Sisi bisnis C (webman v2, port default 8792, dapat dikonfigurasi via APP_PORT)
 │   ├── app/api/v1/controller/ #   Kontroler API C
-│   ├── app/middleware/        #   Middleware (Cors/Security/RateLimit/Auth/ProviderAuth)
+│   ├── app/middleware/        #   Middleware (TraceId/Cors/SecurityFilter/RateLimit/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
+│   ├── app/model/             #   Model khusus service (10; 52 model bersama lainnya ada di packages/)
+│   ├── app/service/           #   Layanan khusus service (dompet/risiko/kepatuhan/rekonsiliasi/push/pencapaian/anti-kecurangan, dll.)
+│   ├── app/payment/           #   18 adaptor gateway pembayaran (Stripe/PayPal/Adyen/NowPayments/Skrill…) + GatewayFactory
+│   ├── app/cdn/               #   Adaptor CDN lima vendor (Cloudflare/CloudFront/Alibaba/Tencent/Huawei) + CdnFactory
+│   ├── app/process/           #   Proses resident (Http/Monitor/LeaderboardWS:8790/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
 │   ├── app/provider/          #   Lapisan Provider game
+│   ├── app/activity/          #   Mesin aktivitas
 │   ├── app/event/             #   Event bus (EventBus Redis Pub/Sub)
 │   └── config/                #   File konfigurasi
 │
-├── install/                   # Wizard instalasi satu-klik
+├── packages/platform-common/  # Lapisan bersama: admin dan service mengimpornya lewat repositori composer path, menghindari dua salinan
+│   ├── src/model/             #   Model Eloquent bersama (52, sumber sama untuk kedua sisi)
+│   ├── src/service/           #   Layanan bersama (DepositLogService / VipService dll., 11 buah, termasuk perhitungan probabilitas ClickHouse)
+│   ├── src/BcMath.php         #   Aritmetika presisi tinggi nilai/kurs (pembungkus bcmath), pembulatan, persentase
+│   ├── src/EncryptionService.php  #   Enkripsi/dekripsi AES dan penyamaran
+│   ├── src/CircuitBreaker.php #   Circuit breaker (plus Retry.php untuk percobaan ulang)
+│   ├── src/HashidsService.php #   Encode/decode ID lapisan API
+│   └── src/SnowflakeService.php   #   ID BIGINT unik secara global
+│
+├── apps/                      # Front-end pemain sisi C (4 varian, memanggil /api/v1 → service:8792)
+│   ├── flutter/platform/      #   Platform pengguna C Flutter Web PC
+│   ├── react/                 #   React 19 (Vite) sisi C
+│   ├── angular/               #   Angular 21 sisi C
+│   └── harmonyos/             #   HarmonyOS ArkTS sisi C (.hap, tidak melalui nginx)
+│
+├── game/xiaoxiaole/           # Mini-game bawaan “Xiaoxiaole Taman”: TypeScript + Vite + Vitest, mesin src/domain + desain empat level + tests/, dokumen desain 13 bahasa
+│
+├── install/                   # Wizard instalasi sekali klik + SQL inisialisasi basis data
 │   ├── index.php              #   Titik masuk instalasi
 │   ├── Installer.php          #   Logika inti instalasi
-│   ├── install.sql            #   SQL instalasi gabungan (43 tabel + data seed)
+│   ├── install.sql            #   SQL instalasi gabungan (78 tabel + data seed)
+│   ├── clickhouse.sql         #   DDL basis analitik ClickHouse (mesin terpisah, diimpor tersendiri)
+│   ├── test-data.sql          #   Data demo/uji
+│   ├── migrations/            #   Skrip peningkatan inkremental untuk basis data yang sudah ada (*.sql)
+│   ├── lang/ + lang.php       #   Terjemahan antarmuka wizard instalasi (13 bahasa)
 │   └── assets/                #   Aset statis
 │
-├── admin/common/ dan service/common/   # Salinan layanan bersama masing-masing (DepositLogService dll., menunggu diekstrak ke lapisan bersama)
-│   └── service/               #   Layanan bersama (termasuk perhitungan probabilitas ClickHouse)
-│
-├── apps/
-│   └── flutter/platform/      # Platform pengguna C Flutter Web PC
-│
-├── docs/                      # Dokumentasi proyek
+├── docs/                      # Dokumentasi proyek (semua teks dalam 13 bahasa: .md adalah sumber bahasa Tionghoa, di sampingnya ada terjemahan .{lang}.md)
 │   ├── ARCHITECTURE.md        #   Dokumen arsitektur
 │   ├── ARCHITECTURE-DESIGN.md #   Dokumen desain arsitektur
 │   ├── FEATURES.md            #   Dokumen fitur
 │   ├── FEATURE-DESIGN.md      #   Dokumen desain fitur
 │   ├── API.md                 #   Dokumen API
-│   └── DEPLOYMENT.md          #   Dokumen deployment (Docker/manual/konfigurasi port)
+│   ├── DEPLOYMENT.md          #   Dokumen deployment (Docker/manual/konfigurasi port)
+│   ├── PROVIDER-SDK.md        #   Panduan integrasi game pihak ketiga (algoritma tanda tangan + contoh PHP/Go/Python)
+│   ├── CLICKHOUSE_INSTALL.md  #   Instal/konfigurasi/migrasi/verifikasi ClickHouse
+│   ├── CLICKHOUSE_USAGE.md    #   4 API layanan ClickHouse dan dasbor admin
+│   ├── translations/          #   Terjemahan README ini dalam 12 bahasa
+│   ├── diagrams/              #   SVG arsitektur/alur/fitur/siklus hidup/keamanan/ekspansi ekosistem (masing-masing 13 bahasa)
+│   ├── test-reports/          #   Laporan pengujian (php-unit / api / resilience / ui / SUMMARY)
+│   └── superpowers/           #   Spesifikasi desain dan rencana implementasi repositori ini (catatan historis)
+│
+├── scripts/                   # Skrip operasi (pemeriksaan drift model / migrasi anotasi apidoc / migrasi semantik pencairan exchange / verifikasi tanda tangan)
+├── tests/api/                 # Uji API otomatis (run_all.sh)
+├── runtime/                   # Direktori runtime webman (log/pid, dibuat saat runtime)
 │
 ├── docker-compose.yml         # Orkestrasi Docker Compose (port default dari .env root)
 ├── nginx.conf.template        # Template konfigurasi Nginx (port upstream dirender oleh envsubst)
@@ -137,7 +178,7 @@ rm -rf install/
 
 Wizard instalasi otomatis menyelesaikan:
 - Pemeriksaan lingkungan (versi PHP, ekstensi, izin direktori)
-- Membuat database dan tabel data (SQL gabungan, 43 tabel + data seed)
+- Membuat database dan tabel data (SQL gabungan, 78 tabel + data seed)
 - Membuat akun super admin (terenkripsi bcrypt)
 - Secara otomatis menghasilkan kunci JWT/enkripsi dan menuliskannya ke file .env
 - Membuat install.lock untuk mencegah instalasi ganda
@@ -184,17 +225,40 @@ Perlu menyisipkan akun admin secara manual ke database (kata sandi dienkripsi de
 
 ### Menjalankan Frontend (Opsional)
 
-```bash
-# Backend administrasi (Flutter Web PC)
-cd admin/apps/flutter
-flutter pub get
-flutter run -d chrome
+Saat pengembangan setiap front-end menjalankan dev server-nya sendiri; permintaan diproksikan oleh dev server ke backend terkait (lihat `proxy.conf.json` / `vite.config.ts` di tiap direktori):
 
-# Platform pengguna C (Flutter Web PC)
-cd apps/flutter/platform
-flutter pub get
-flutter run -d chrome
+```bash
+# --- Platform pemain sisi C (/api/v1 → service:8792) ---
+cd apps/react            && npm install && npm run dev      # http://localhost:5173
+cd apps/angular          && npm install && npm start        # http://localhost:4200
+cd apps/flutter/platform && flutter pub get && flutter run -d chrome
+
+# --- Konsol admin (/admin/v1 → admin:8789) ---
+cd admin/apps/react      && npm install && npm run dev      # http://localhost:5273
+cd admin/apps/angular    && npm install && npm start        # http://localhost:4300
+cd admin/apps/flutter    && flutter pub get && flutter run -d chrome
 ```
+
+> Port dev server Angular: konsol admin menetapkan 4300 secara eksplisit di `angular.json`, sedangkan sisi C memakai default Angular 4200; untuk menjalankan keduanya sekaligus tambahkan `--port` pada salah satunya.
+> Target HarmonyOS (`apps/harmonyos`, `admin/apps/harmonyos`) dibuka dan dibangun dengan DevEco Studio;
+> emulator menjangkau backend host di `http://10.0.2.2:<port>` (lihat konstanta di bagian atas tiap `ApiService.ets`).
+
+### Deployment Frontend (Docker/Nginx)
+
+Layanan nginx di `docker-compose.yml` memasang artefak build tiap frontend ke dalam kontainer secara read-only, dan `nginx.conf.template` menyajikannya pada path berikut.
+Jika artefak belum dibangun, direktorinya kosong: permintaan path mengembalikan 404, permintaan direktori telanjang (mis. `/app-react/`) mengembalikan 403.
+
+| URL | Titik pasang artefak | Perintah build |
+|-----|-----------|---------|
+| `/` | `apps/flutter/platform/build/web` | `flutter build web` |
+| `/app-react/` | `apps/react/dist` | `npm run build` (skrip menyertakan `--base=/app-react/`) |
+| `/app-angular/` | `apps/angular/dist/game-client-angular/browser` | `npm run build` (skrip menyertakan `--base-href=/app-angular/`) |
+| `/admin-panel/` | `admin/public` | Slot penempatan umum: salin artefak konsol apa pun ke `admin/public`; bila kosong hasilnya juga 404 (direktori telanjang 403). Artefak harus dibangun dengan `--base=/admin-panel/` (untuk Flutter `--base-href=/admin-panel/`), jika tidak asetnya tetap mengarah ke prefiks semula dan menghasilkan 404. Bentuk tanpa garis miring dialihkan 301 ke alamat ini; `nginx.conf.template` menyetel `absolute_redirect off`, sehingga pengalihannya berupa Location relatif dan deployment di port selain 80 tidak lagi kehilangan port |
+| `/admin-react/` | `admin/apps/react/dist` | `npm run build` (skrip menyertakan `--base=/admin-react/`) |
+| `/admin-angular/` | `admin/apps/angular/dist/game-admin-angular/browser` | `npm run build` (skrip menyertakan `--base-href=/admin-angular/`) |
+| `/admin-flutter/` | `admin/apps/flutter/build/web` | `flutter build web --base-href=/admin-flutter/` |
+
+`/admin/` (API) → kontainer admin, `/api/` (API) → kontainer service; bagian HarmonyOS didistribusikan sebagai paket `.hap`, tidak lewat nginx.
 
 ### Verifikasi
 
@@ -206,9 +270,9 @@ curl http://localhost:8789/health
 curl http://localhost:8792/health
 
 # Uji registrasi pengguna
-curl -X POST http://localhost:8792/api/auth/register \
+curl -X POST http://localhost:8792/api/v1/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"username":"testuser","password":"123456"}'
+  -d '{"username":"testuser","password":"Abcdef12"}'
 ```
 
 ## Fitur Keamanan
@@ -231,14 +295,31 @@ curl -X POST http://localhost:8792/api/auth/register \
 
 ## Pengujian
 
+Laporan pengujian (disimpan lokal): [docs/test-reports/](../test-reports/)
+
+| Jenis pengujian | Kasus/cakupan | Hasil |
+|---------|----------|------|
+| Uji unit PHP | pengukuran saat ini `phpunit --list-tests`: admin 200 + service 273 kasus (laporan `docs/test-reports/php-unit.md` mencatat pengulangan 09-22 admin 190 + service 273 dan snapshot 08-27 admin 153 + service 45; sisi admin masih ditambah) | service semuanya lulus (701 asersi, 3 skipped, 2 warnings + 35 deprecations); admin 437 asersi, 3 skipped, 1 kegagalan (`EnvConfigTest` memeriksa `admin/.env` asli dan mendapati `REDIS_CLUSTER_NODES` tidak ada; menambahkannya membuatnya hijau) |
+| Uji mekanisme stabilitas | circuit breaker/percobaan ulang/tombol degradasi, 15 kasus (CircuitBreakerTest/RetryTest/ResilienceMockTest) | semuanya lulus |
+| Uji API otomatis | 187 endpoint (sumber: `docs/test-reports/api.md`, 2026-08-27); route.php saat ini mendaftarkan 261 endpoint | 171 lulus / 50 gagal / 4 dilewati (semua kegagalan adalah cacat deterministik, lihat laporan) |
+| Uji UI Flutter | 12 kasus (masuk/dasbor/navigasi/ganti bahasa) | semuanya lulus |
+| Go/Rust | tidak ada kode Go/Rust di repositori | dilewati, tercatat |
+
 ```bash
-cd admin
-phpunit --bootstrap tests/bootstrap.php tests/
+# Uji unit PHP (ekspor dulu variabel lingkungan rahasia JWT)
+cd admin && ADMIN_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
+cd service && SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
+# Uji API otomatis (layanan harus berjalan, lihat tests/api/run_all.sh)
+bash tests/api/run_all.sh
+# Uji UI Flutter
+cd admin/apps/flutter && flutter test --timeout 300s
 ```
 
-- PHPUnit 12.x, 116 kasus uji
-- 56 pengujian logika bisnis (PlatformTest) + 60 pengujian infrastruktur
-- Cakupan: presisi bcmath, perhitungan penukaran, biaya penarikan, batas, manajemen risiko, kupon, KYC, i18n
+Laporan terperinci:
+- [Laporan uji unit PHP](../test-reports/php-unit.md)
+- [Laporan uji mekanisme stabilitas (circuit breaker/percobaan ulang/degradasi)](../test-reports/resilience.md)
+- [Laporan uji API otomatis](../test-reports/api.md)
+- [Laporan uji UI Flutter](../test-reports/ui.md)
 
 ## Ringkasan Kemampuan Platform
 
@@ -249,7 +330,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Deposit | Membuat pesanan + verifikasi callback Stripe/PayPal + kredit otomatis |
 | Penukaran | Koin platform ⇄ koin game, penawaran harga real-time, selisih pendapatan |
 | Penarikan | Ajukan→audit→bayar, saklar global, batas berjenjang KYC + biaya |
-| KYC | Pengajuan verifikasi identitas + audit, sistem sertifikasi tiga tingkat |
+| KYC | Pengajuan verifikasi identitas + audit, menaikkan batas penarikan setelah disetujui |
 | Game | CRUD + kategori (10 kategori) + server wilayah + pelacakan catatan game |
 | Pencarian | Pencarian teks penuh Elasticsearch (dengan fallback LIKE) |
 | Peringkat | Harian/mingguan/bulanan/keseluruhan, cache Redis, push real-time WebSocket (port default 8790, dapat dikonfigurasi via LEADERBOARD_WS_PORT) |
@@ -266,7 +347,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Pertumbuhan sosial | Grup + pelacakan tautan berbagi |
 | Gerbang pembayaran | Gerbang baru Adyen / GrabPay (L1) |
 | Internasionalisasi | 4 bahasa (en-US/zh-CN/ja-JP/ko-KR), tabel terjemahan + cache |
-| Konfigurasi negara | Metode pembayaran/penarikan berbeda di 8 negara, jumlah deposit minimum |
+| Konfigurasi negara | Metode pembayaran/penarikan berbeda di 18 negara, jumlah deposit minimum |
 | Statistik | Snapshot statistik harian (5 metrik) + pelacakan pendapatan platform |
 | CAPTCHA | Verifikasi manusia tipe klik (poster-php) |
 | Integrasi game | Provider SDK (Self+ThirdParty) + tanda tangan HMAC-SHA256 + gateway callback |
@@ -279,7 +360,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | Kupon | Batasan kondisi (min_deposit/first_user/game_id) |
 | Event | Event bus Redis Pub/Sub + pengiriman langganan Webhook (7 jenis event) |
 | Deployment | Orkestrasi Docker Compose 7 layanan (port dikonfigurasi dari .env root) + proxy balik Nginx |
-| Klien | Flutter Admin (17 halaman) + Platform (10 halaman) + HarmonyOS (5 halaman) |
+| Klien | Admin 4 varian (Flutter/React/Angular/HarmonyOS) + sisi C 4 varian (Flutter/React/Angular/HarmonyOS) |
 
 ## Model Bisnis
 
@@ -298,13 +379,13 @@ Koin platform ← tukar kembali → Penarikan (audit/otomatis)
 
 ## Penyelesaian Multi-Mata Uang
 
-Platform mengadopsi sistem penyelesaian isolasi mata uang tiga lapis "mata uang fiat → koin platform → koin game": mendukung deposit multi-mata uang fiat USD/CNY/EUR, setiap game memiliki mata uang penetapan harga independen; semua perhitungan nominal menggunakan operasi presisi tinggi bcmath, menghilangkan kesalahan floating point.
+Platform mengadopsi sistem penyelesaian isolasi mata uang tiga lapis "mata uang fiat → koin platform → koin game": mendukung deposit multi-mata uang fiat USD/CNY/EUR/JPY/KRW/GBP/BRL/INR, setiap game memiliki mata uang penetapan harga independen; semua perhitungan nominal menggunakan operasi presisi tinggi bcmath, menghilangkan kesalahan floating point.
 
 ### Model Mata Uang Tiga Lapis
 
 | Lapisan | Mata Uang | Deskripsi |
 |------|------|------|
-| Lapisan fiat | USD / CNY / EUR | Mata uang pembayaran aktual deposit/penarikan pengguna, diproses oleh Stripe / PayPal |
+| Lapisan fiat | USD / CNY / EUR / JPY / KRW / GBP / BRL / INR | Mata uang pembayaran aktual deposit/penarikan pengguna, diproses oleh Stripe / PayPal |
 | Lapisan koin platform | Koin platform (terpadu di seluruh platform) | Mata uang penyelesaian internal terpadu (decimal(18,4)), kunci optimis dompet mencegah pemotongan bersamaan/transfer ganda |
 | Lapisan koin game | Mata uang independen per game | Setiap game memiliki `exchange_rate` kurs dan `spread_pct` selisih independen, dompet koin game independen |
 
@@ -320,7 +401,7 @@ Platform mengadopsi sistem penyelesaian isolasi mata uang tiga lapis "mata uang 
 ```mermaid
 flowchart LR
     subgraph FIAT["Lapisan Fiat"]
-        A["Deposit pengguna<br/>USD / CNY / EUR<br/>Stripe / PayPal"]
+        A["Deposit pengguna<br/>USD / CNY / EUR / JPY / KRW / GBP / BRL / INR<br/>Stripe / PayPal"]
         H["Penarikan masuk<br/>PayPal Payout"]
     end
 
@@ -377,9 +458,9 @@ flowchart LR
 | [Dokumen arsitektur](../ARCHITECTURE.id.md) | Topologi sistem, arsitektur modul, aliran data |
 | [Dokumen desain fitur](../FEATURE-DESIGN.id.md) | Model bisnis, spesifikasi fitur, desain alur |
 | [Dokumen fitur](../FEATURES.id.md) | Daftar fitur, deskripsi modul, perjalanan pengguna |
-| [Dokumen API](../API.id.md) | Referensi API lengkap (102 endpoint) |
-| [Dokumen online](http://localhost:8792/apidoc/) | Dokumentasi interaktif hg/apidoc (sisi C) |
-| [Dokumen online](http://localhost:8789/apidoc/) | Dokumentasi interaktif hg/apidoc (backend admin) |
+| [Dokumen API](../API.id.md) | Referensi API lengkap (146 endpoint) |
+| [Dokumen online](http://localhost:8792/apidoc/) | Dokumentasi interaktif erikwang2013/apidoc-php (sisi C) |
+| [Dokumen online](http://localhost:8789/apidoc/) | Dokumentasi interaktif erikwang2013/apidoc-php (backend admin) |
 | [Instalasi ClickHouse](../CLICKHOUSE_INSTALL.id.md) | Instalasi/konfigurasi/migrasi/verifikasi ClickHouse |
 | [Dokumen integrasi Provider SDK](../PROVIDER-SDK.id.md) | Panduan integrasi game pihak ketiga (algoritma tanda tangan + contoh PHP/Go/Python) |
 | [Penggunaan ClickHouse](../CLICKHOUSE_USAGE.id.md) | 4 layanan API ClickHouse dan dasbor backend |
@@ -397,12 +478,12 @@ Jika proyek ini bermanfaat bagi Anda, kami persilakan untuk mentraktir penulis s
   <table align="center" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <td align="center" width="200">
-        <img src="docs/weixinpay-130.png" width="130" height="130" alt="微信支付"><br>
-        <b>微信支付</b>
+        <img src="../weixinpay-130.png" width="130" height="130" alt="微信支付"><br>
+        <b>WeChat Pay</b>
       </td>
       <td align="center" width="200">
-        <img src="docs/alipay-130.png" width="130" height="130" alt="支付宝"><br>
-        <b>支付宝</b>
+        <img src="../alipay-130.png" width="130" height="130" alt="支付宝"><br>
+        <b>Alipay</b>
       </td>
     </tr>
   </table>

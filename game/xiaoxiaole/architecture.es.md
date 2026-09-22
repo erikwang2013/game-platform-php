@@ -1,4 +1,4 @@
-# 田园消消乐 — Arquitectura técnica
+# Match-3 Campestre — Arquitectura técnica
 <!-- lang-nav -->
 
 Languages: [中文](architecture.md) · [English](architecture.en.md) · [한국어](architecture.ko.md) · [Русский](architecture.ru.md) · [Deutsch](architecture.de.md) · [Français](architecture.fr.md) · **Español** · [Português](architecture.pt.md) · [हिन्दी](architecture.hi.md) · [العربية](architecture.ar.md) · [বাংলা](architecture.bn.md) · [Bahasa Indonesia](architecture.id.md) · [日本語](architecture.ja.md)

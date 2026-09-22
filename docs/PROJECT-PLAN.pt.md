@@ -22,7 +22,7 @@ Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PL
 | Testes | 132 casos / 8 arquivos (projeto admin), projeto service **zero testes** |
 | Versão | v1.1 (2026-08-07): plugin Redis, serviço de análise, degradação do Redis, correções de testes |
 
-Capacidades já implementadas: JWT+RBAC, lock otimista da carteira, recarga (verificação de assinatura Stripe/PayPal/NowPayments/Coinbase), spread de câmbio, revisão de saque + pagamento via PayPal, CRUD de jogos/gateway Provider (HMAC), cupons/VIP/conquistas/tickets/recomendação com comissão/2FA/social (amigos/chat WS)/torneios/Webhook/push (FCM/APNs/华为)/i18n bilíngue.
+Capacidades já implementadas: JWT+RBAC, lock otimista da carteira, recarga (verificação de assinatura Stripe/PayPal/NowPayments/Coinbase), spread de câmbio, revisão de saque + pagamento via PayPal, CRUD de jogos/gateway Provider (HMAC), cupons/VIP/conquistas/tickets/recomendação com comissão/2FA/social (amigos/chat WS)/torneios/Webhook/push (FCM/APNs/Huawei)/i18n bilíngue.
 
 ---
 

@@ -2,7 +2,7 @@
 
 Languages: [中文](design.md) · [English](design.en.md) · [한국어](design.ko.md) · [Русский](design.ru.md) · [Deutsch](design.de.md) · [Français](design.fr.md) · [Español](design.es.md) · **Português** · [हिन्दी](design.hi.md) · [العربية](design.ar.md) · [বাংলা](design.bn.md) · [Bahasa Indonesia](design.id.md) · [日本語](design.ja.md)
 
-Certamente, como seu planejador de jogos e responsável técnico de 3D, vou elaborar um planejamento completo para o 《Three.js 消消乐》. Este plano não envolve código, com foco em **expansão de elementos**, **matriz de regras**, **mecanismos de fusão de jogabilidade** e **ideias de montagem da cena Three.js**.
+Certamente, como seu planejador de jogos e responsável técnico de 3D, vou elaborar um planejamento completo para o match-3 Three.js. Este plano não envolve código, com foco em **expansão de elementos**, **matriz de regras**, **mecanismos de fusão de jogabilidade** e **ideias de montagem da cena Three.js**.
 
 ---
 

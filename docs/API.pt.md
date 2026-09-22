@@ -186,7 +186,7 @@ Resposta: {
 }
 ```
 
-Valores possíveis de currency: USD / CNY / EUR
+Valores possíveis de currency: USD / CNY / EUR / JPY / KRW / GBP / BRL / INR
 
 checkout_url: link de redirecionamento do gateway de pagamento (preenchido na criação do pedido); expires_at: expiração do link de pagamento (1 hora após a criação)
 
@@ -401,9 +401,9 @@ Resposta: {
 }
 ```
 
-Valores possíveis de type: self / third_party
+Valores possíveis de type: self / embedded / third_party
 
-#### GET /api/v1/game/{hashid} — Detalhes do jogo
+#### GET /api/v1/game/detail/{hashid} — Detalhes do jogo
 
 ```
 Resposta: {
@@ -870,7 +870,7 @@ Resposta: {
 
 ### 3.1 Dashboard da plataforma
 
-#### GET /admin/dashboard/platform
+#### GET /admin/v1/dashboard/platform
 
 ```
 Requer autenticação: sim (AdminAuth + AdminPermission)
@@ -888,11 +888,11 @@ Resposta: {
 
 ### 3.2 Gestão de jogos
 
-#### GET /admin/game/list — Lista de jogos
+#### GET /admin/v1/game/list — Lista de jogos
 
 ```
 Requer autenticação: sim
-Parâmetros: ?page=1&per_page=20&keyword=射击
+Parâmetros: ?page=1&limit=20&keyword=射击
 
 Resposta: {
   "list": [
@@ -909,11 +909,67 @@ Resposta: {
   ],
   "total": 12,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### POST /admin/game/create — Criar jogo
+#### GET /admin/v1/game/{hashid} — Detalhes do jogo
+
+```
+需认证: 是
+参数: hashid 为游戏的 hashid 编码（路径参数）
+
+响应: {
+  "id": "aB3xK...",
+  "name": "射击大师",
+  "slug": "shooter-master",
+  "type": "self",
+  "description": "游戏描述",
+  "cover_image": "https://...",
+  "api_endpoint": "https://...",
+  "sdk_version": "1.0.0",
+  "platform": "h5",
+  "region": "global",
+  "currencies": [
+    {
+      "id": "cD4yL...",
+      "name": "金币",
+      "symbol": "G",
+      "exchange_rate": "100.00000000",
+      "spread_pct": "5.00000000",
+      "min_exchange": "1.00000000",
+      "max_exchange": "10000.00000000"
+    }
+  ]
+}
+```
+
+Retorna code 404 quando o jogo não existe.
+
+#### POST /admin/v1/game/launch — Pré-visualização do jogo
+
+```
+需认证: 是
+
+请求: {
+  "game_id": "aB3xK..."      // 游戏 ID(hashid)
+}
+
+响应: {
+  "id": "aB3xK...",
+  "name": "射击大师",
+  "slug": "shooter-master",
+  "type": "self",
+  "api_endpoint": "https://...",
+  "preview": true
+}
+```
+
+Se faltar `game_id`, retorna code 422; se o jogo não existir, retorna 404; se o jogo não estiver publicado (`status` diferente de 1), retorna 403.
+
+A pré-visualização do painel administrativo é uma pré-visualização pura: apenas valida a disponibilidade do jogo e retorna as informações de inicialização, e **não grava registros de jogo nem toca na carteira**. As identidades de administração carregam apenas `adminId` (injetado pelo `AdminAuth`) e nenhum `userId` C-side, portanto este endpoint deliberadamente não realiza nenhuma gravação do lado do usuário — copiar o `POST /api/v1/game/launch` C-side gravaria linhas de `game_game_play_log` com proprietário incorreto.
+
+#### POST /admin/v1/game/create — Criar jogo
 
 ```
 Requer autenticação: sim
@@ -934,9 +990,9 @@ Requisição: {
 Resposta: { "id": "aB3xK..." }
 ```
 
-Valores possíveis de type: self / third_party
+Valores possíveis de type: self / embedded / third_party
 
-#### PUT /admin/game/{hashid} — Editar jogo
+#### PUT /admin/v1/game/{hashid} — Editar jogo
 
 ```
 Requer autenticação: sim
@@ -950,14 +1006,14 @@ Requisição: {
 Resposta: { "message": "更新成功" }
 ```
 
-#### DELETE /admin/game/{hashid} — Excluir jogo
+#### DELETE /admin/v1/game/{hashid} — Excluir jogo
 
 ```
 Requer autenticação: sim
 Resposta: { "message": "删除成功" }
 ```
 
-#### POST /admin/game/currency/manage — Gerenciar moedas
+#### POST /admin/v1/game/currency/manage — Gerenciar moedas
 
 ```
 Requer autenticação: sim
@@ -977,16 +1033,20 @@ Requisição: {
   ]
 }
 
-Resposta: { "message": "币种更新成功" }
+Resposta: { "message": "操作成功" }
 ```
+
+Se `game_id` faltar ou `currencies` não for um array, retorna 422; se o jogo não existir, retorna 404.
+
+`exchange_rate` e `spread_pct` só são validados quando enviados: `exchange_rate` deve ser um número maior que 0 e `spread_pct` deve estar no intervalo [0, 100); violar qualquer uma das regras retorna 422 e nenhuma moeda do lote é gravada (o lote é totalmente validado antes da gravação). Campos omitidos não acionam validação: na criação valem os padrões (`exchange_rate` = `1.00000000`, os demais `0.00000000`) e na atualização o valor existente é mantido.
 
 ### 3.3 Gestão de saques
 
-#### GET /admin/withdraw/orders — Lista de ordens de saque
+#### GET /admin/v1/withdraw/orders — Lista de ordens de saque
 
 ```
 Requer autenticação: sim
-Parâmetros: ?page=1&per_page=20&status=pending
+Parâmetros: ?page=1&limit=20&status=pending
 
 Resposta: {
   "list": [
@@ -1008,11 +1068,11 @@ Resposta: {
   ],
   "total": 5,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### PUT /admin/withdraw/review — Revisar saque
+#### PUT /admin/v1/withdraw/review — Revisar saque
 
 ```
 Requer autenticação: sim
@@ -1026,11 +1086,11 @@ Requisição: {
 Resposta: { "message": "已通过" }
 ```
 
-action: approve=aprovar / reject=recusar (na recusa, a moeda da plataforma é devolvida automaticamente)
+action: approve=aprovar / reject=recusar / confirm=confirmar (na recusa, a moeda da plataforma é devolvida automaticamente)
 
 Erro: 422 a ordem não está aguardando revisão
 
-#### PUT /admin/withdraw/switch — Interruptor global de saque
+#### PUT /admin/v1/withdraw/switch — Interruptor global de saque
 
 ```
 Requer autenticação: sim
@@ -1043,7 +1103,7 @@ Resposta: {
 }
 ```
 
-#### POST /admin/withdraw/limits/set — Definir limites de saque
+#### POST /admin/v1/withdraw/limits/set — Definir limites de saque
 
 ```
 Requer autenticação: sim
@@ -1064,11 +1124,11 @@ Resposta: {
 
 ### 3.4 Gestão de usuários da plataforma
 
-#### GET /admin/platform/user/list — Lista de usuários C-side
+#### GET /admin/v1/platform/user/list — Lista de usuários C-side
 
 ```
 Requer autenticação: sim
-Parâmetros: ?page=1&per_page=20&keyword=player&status=1
+Parâmetros: ?page=1&limit=20&keyword=player&status=1
 
 Resposta: {
   "list": [
@@ -1084,11 +1144,11 @@ Resposta: {
   ],
   "total": 1500,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### GET /admin/platform/user/{hashid} — Detalhes do usuário
+#### GET /admin/v1/platform/user/{hashid} — Detalhes do usuário
 
 ```
 Requer autenticação: sim
@@ -1111,7 +1171,7 @@ Resposta: {
 }
 ```
 
-#### PUT /admin/platform/user/{hashid} — Editar/banir usuário
+#### PUT /admin/v1/platform/user/{hashid} — Editar/banir usuário
 
 ```
 Requer autenticação: sim
@@ -1126,7 +1186,7 @@ Resposta: { "message": "更新成功" }
 
 ### 3.5 Gestão de pagamentos
 
-#### GET /admin/payment/method/list
+#### GET /admin/v1/payment/method/list
 
 ```
 Requer autenticação: sim
@@ -1144,7 +1204,7 @@ Resposta: {
 }
 ```
 
-#### POST /admin/payment/method/toggle — Habilitar/desabilitar método de pagamento
+#### POST /admin/v1/payment/method/toggle — Habilitar/desabilitar método de pagamento
 
 ```
 Requer autenticação: sim
@@ -1156,11 +1216,11 @@ Resposta: { "message": "已更新" }
 
 ### 3.6 Gestão de anúncios
 
-#### GET /admin/announcement/list
+#### GET /admin/v1/announcement/list
 
 ```
 Requer autenticação: sim
-Parâmetros: ?page=1&per_page=20
+Parâmetros: ?page=1&limit=20
 
 Resposta: {
   "list": [
@@ -1176,11 +1236,11 @@ Resposta: {
   ],
   "total": 5,
   "page": 1,
-  "per_page": 20
+  "limit": 20
 }
 ```
 
-#### POST /admin/announcement/create — Publicar anúncio
+#### POST /admin/v1/announcement/create — Publicar anúncio
 
 ```
 Requer autenticação: sim
@@ -1200,11 +1260,11 @@ Resposta: { "id": "aB3xK..." }
 
 ### 3.7 Revisão de KYC
 
-#### GET /admin/identity/list — Lista de KYC
+#### GET /admin/v1/identity/list — Lista de KYC
 
 ```
 Requer autenticação: sim
-Parâmetros: ?page=1&per_page=20&status=pending
+Parâmetros: ?page=1&limit=20&status=pending
 
 Resposta: {
   "list": [
@@ -1217,11 +1277,11 @@ Resposta: {
       "created_at": "2026-05-22 10:00:00"
     }
   ],
-  "total": 5, "page": 1, "per_page": 20
+  "total": 5, "page": 1, "limit": 20
 }
 ```
 
-#### PUT /admin/identity/review — Revisar KYC
+#### PUT /admin/v1/identity/review — Revisar KYC
 
 ```
 Requer autenticação: sim
@@ -1235,7 +1295,7 @@ action: approve / reject
 
 ### 3.8 Gestão de servidores de jogo
 
-#### GET /admin/game/server/list — Lista de servidores
+#### GET /admin/v1/game/server/list — Lista de servidores
 
 ```
 Requer autenticação: sim
@@ -1248,7 +1308,7 @@ Resposta: {
 }
 ```
 
-#### POST /admin/game/server/create — Criar servidor
+#### POST /admin/v1/game/server/create — Criar servidor
 
 ```
 Requer autenticação: sim
@@ -1256,14 +1316,14 @@ Requisição: { "game_id": "hashid", "name": "亚洲1服", "region": "asia", "st
 Resposta: { "id": "hashid" }
 ```
 
-#### PUT /admin/game/server/{hashid} — Editar servidor
+#### PUT /admin/v1/game/server/{hashid} — Editar servidor
 
 ```
 Requer autenticação: sim
 Requisição: { "name": "新名称", "status": 2 }
 ```
 
-#### DELETE /admin/game/server/{hashid} — Excluir servidor
+#### DELETE /admin/v1/game/server/{hashid} — Excluir servidor
 
 ```
 Requer autenticação: sim
@@ -1271,7 +1331,7 @@ Requer autenticação: sim
 
 ### 3.9 Gestão de limites escalonados de saque
 
-#### GET /admin/withdraw/limits/list
+#### GET /admin/v1/withdraw/limits/list
 
 ```
 Requer autenticação: sim
@@ -1293,7 +1353,7 @@ Resposta: {
 }
 ```
 
-#### PUT /admin/withdraw/limits/{hashid} — Atualizar limite
+#### PUT /admin/v1/withdraw/limits/{hashid} — Atualizar limite
 
 ```
 Requer autenticação: sim
@@ -1304,14 +1364,14 @@ Requisição: { "single_max": "10000.0000", "fee_pct": "0.25" }
 
 ### 3.11 Gestão de categorias de jogos
 
-#### GET /admin/game/category/list
+#### GET /admin/v1/game/category/list
 
 ```
 Requer autenticação: sim
 Resposta: { "list": [{ "id": "...", "name": "动作", "slug": "action", "sort": 1 }] }
 ```
 
-#### POST /admin/game/category/create
+#### POST /admin/v1/game/category/create
 
 ```
 Requer autenticação: sim
@@ -1319,11 +1379,11 @@ Requisição: { "name": "新分类", "slug": "new-cat", "icon": "star", "sort": 
 Resposta: { "id": "hashid" }
 ```
 
-#### PUT /admin/game/category/{hashid} — Editar categoria
+#### PUT /admin/v1/game/category/{hashid} — Editar categoria
 
-#### DELETE /admin/game/category/{hashid} — Excluir categoria
+#### DELETE /admin/v1/game/category/{hashid} — Excluir categoria
 
-#### POST /admin/game/category/assign — Atribuir jogos
+#### POST /admin/v1/game/category/assign — Atribuir jogos
 
 ```
 Requer autenticação: sim
@@ -1332,42 +1392,42 @@ Requisição: { "category_id": "hashid", "game_ids": ["hash1", "hash2"] }
 
 ### 3.12 Gestão de rankings
 
-#### GET /admin/leaderboard/list — Lista de rankings
+#### GET /admin/v1/leaderboard/list — Lista de rankings
 
 ```
 Requer autenticação: sim
 Resposta: { "list": [{ "id": "...", "name": "...", "type": "total", "metric": "earned" }] }
 ```
 
-#### POST /admin/leaderboard/create — Criar ranking
+#### POST /admin/v1/leaderboard/create — Criar ranking
 
 ```
 Requer autenticação: sim
 Requisição: { "name": "周收入榜", "type": "weekly", "metric": "earned", "game_id": "hashid(可选)" }
 ```
 
-#### PUT /admin/leaderboard/{hashid} — Editar ranking
+#### PUT /admin/v1/leaderboard/{hashid} — Editar ranking
 
-#### DELETE /admin/leaderboard/{hashid} — Excluir ranking
+#### DELETE /admin/v1/leaderboard/{hashid} — Excluir ranking
 
-#### POST /admin/leaderboard/{hashid}/refresh — Atualizar cache
+#### POST /admin/v1/leaderboard/{hashid}/refresh — Atualizar cache
 
 ### 3.13 Gestão de cupons
 
-#### GET /admin/coupon/list — Lista de cupons
+#### GET /admin/v1/coupon/list — Lista de cupons
 
-#### POST /admin/coupon/create — Criar cupom
+#### POST /admin/v1/coupon/create — Criar cupom
 
 ```
 Requer autenticação: sim
 Requisição: { "name": "新人礼包", "type": "fixed", "value": "10.0000", "total_qty": 1000 }
 ```
 
-#### PUT /admin/coupon/{hashid} — Editar (quando não resgatado)
+#### PUT /admin/v1/coupon/{hashid} — Editar (quando não resgatado)
 
-#### DELETE /admin/coupon/{hashid} — Excluir
+#### DELETE /admin/v1/coupon/{hashid} — Excluir
 
-#### GET /admin/coupon/{hashid}/stats — Estatísticas de resgate
+#### GET /admin/v1/coupon/{hashid}/stats — Estatísticas de resgate
 
 ```
 Resposta: { "total_qty": 1000, "used_qty": 234, "remaining": 766, "usage_rate": "23.40%" }
@@ -1375,20 +1435,20 @@ Resposta: { "total_qty": 1000, "used_qty": 234, "remaining": 766, "usage_rate": 
 
 ### 3.14 Gestão de configuração de países
 
-#### GET /admin/country/config/list — Lista de configurações de países
+#### GET /admin/v1/country/config/list — Lista de configurações de países
 
-#### POST /admin/country/config/create — Criar configuração de país
+#### POST /admin/v1/country/config/create — Criar configuração de país
 
 ```
 Requer autenticação: sim
 Requisição: { "country_code": "JP", "currency": "JPY", "payment_methods": "[\"stripe\",\"paypal\"]", "min_deposit": "100.0000" }
 ```
 
-#### PUT /admin/country/config/{hashid} — Editar configuração de país
+#### PUT /admin/v1/country/config/{hashid} — Editar configuração de país
 
 ### 3.15 Exportação de dados
 
-#### POST /admin/export/users — Exportar usuários C-side
+#### POST /admin/v1/export/users — Exportar usuários C-side
 
 ```
 Requer autenticação: sim
@@ -1397,7 +1457,7 @@ Parâmetros (JSON): { "status": 1 }   // filtro opcional
 Resposta: download do arquivo Excel (xlsx)
 ```
 
-#### POST /admin/export/transactions — Exportar fluxo da plataforma
+#### POST /admin/v1/export/transactions — Exportar fluxo da plataforma
 
 ```
 Requer autenticação: sim
@@ -1412,18 +1472,18 @@ Todos os endpoints exigem autenticação (AdminAuth + AdminPermission); os dados
 
 | Método | Caminho | Observação |
 |------|------|------|
-| GET | /admin/analytics/overview | Visão geral da plataforma (hoje/últimos 7 dias) |
-| GET | /admin/analytics/game-ranking | Ranking de jogos (?days=7) |
-| GET | /admin/analytics/dau-trend | Tendência de DAU (?days=30) |
-| GET | /admin/analytics/hourly-trend | Tendência por hora |
-| GET | /admin/analytics/action-distribution | Distribuição de ações |
-| GET | /admin/analytics/revenue | Análise de receita |
-| GET | /admin/analytics/conversion | Taxa de conversão de jogos |
-| GET | /admin/analytics/probability | Probabilidade conjunta/condicional |
-| GET | /admin/analytics/retention | Análise de retenção D1/D3/D7/D30 |
-| GET | /admin/analytics/funnel | Funil de conversão |
-| GET | /admin/analytics/arpu | Tendência ARPU/ARPPU |
-| GET | /admin/analytics/economy | Indicadores econômicos das moedas de jogo |
+| GET | /admin/v1/analytics/overview | Visão geral da plataforma (hoje/últimos 7 dias) |
+| GET | /admin/v1/analytics/game-ranking | Ranking de jogos (?days=7) |
+| GET | /admin/v1/analytics/dau-trend | Tendência de DAU (?days=30) |
+| GET | /admin/v1/analytics/hourly-trend | Tendência por hora |
+| GET | /admin/v1/analytics/action-distribution | Distribuição de ações |
+| GET | /admin/v1/analytics/revenue | Análise de receita |
+| GET | /admin/v1/analytics/conversion | Taxa de conversão de jogos |
+| GET | /admin/v1/analytics/probability | Probabilidade conjunta/condicional |
+| GET | /admin/v1/analytics/retention | Análise de retenção D1/D3/D7/D30 |
+| GET | /admin/v1/analytics/funnel | Funil de conversão |
+| GET | /admin/v1/analytics/arpu | Tendência ARPU/ARPPU |
+| GET | /admin/v1/analytics/economy | Indicadores econômicos das moedas de jogo |
 
 ### 3.17 Gestão de tickets
 
@@ -1431,11 +1491,11 @@ Todos os endpoints exigem autenticação (AdminAuth + AdminPermission).
 
 | Método | Caminho | Observação |
 |------|------|------|
-| GET | /admin/ticket/list | Lista de tickets (?page=&limit=&status=&type=) |
-| GET | /admin/ticket/{hashid} | Detalhes do ticket (inclui respostas) |
-| POST | /admin/ticket/{hashid}/reply | Responder ticket |
-| POST | /admin/ticket/{hashid}/close | Fechar ticket |
-| POST | /admin/ticket/{hashid}/assign | Designar responsável (admin_id) |
+| GET | /admin/v1/ticket/list | Lista de tickets (?page=&limit=&status=&type=) |
+| GET | /admin/v1/ticket/{hashid} | Detalhes do ticket (inclui respostas) |
+| POST | /admin/v1/ticket/{hashid}/reply | Responder ticket |
+| POST | /admin/v1/ticket/{hashid}/close | Fechar ticket |
+| POST | /admin/v1/ticket/{hashid}/assign | Designar responsável (admin_id) |
 
 ### 3.18 Gerenciamento de configuração de CDN
 
@@ -1443,12 +1503,12 @@ Todos os endpoints exigem autenticação (AdminAuth + AdminPermission).
 
 | Método | Caminho | Observação | Autenticação |
 |------|------|------|------|
-| GET | /admin/cdn/provider/list | Lista de provedores de CDN (credenciais não retornadas) | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/toggle | Ativar/desativar provedor {id, status} | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/create | Criar {name, provider, config(JSON), status, sort}, verificação de unicidade do provider | AdminAuth + RBAC: cdn |
-| PUT | /admin/cdn/provider/{hashid} | Editar (config vazio = inalterado) | AdminAuth + RBAC: cdn |
-| DELETE | /admin/cdn/provider/{hashid} | Excluir | AdminAuth + RBAC: cdn |
-| POST | /admin/cdn/provider/test | Teste de conectividade HeadBucket {id} | AdminAuth + RBAC: cdn |
+| GET | /admin/v1/cdn/provider/list | Lista de provedores de CDN (credenciais não retornadas) | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/toggle | Ativar/desativar provedor {id, status} | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/create | Criar {name, provider, config(JSON), status, sort}, verificação de unicidade do provider | AdminAuth + RBAC: cdn |
+| PUT | /admin/v1/cdn/provider/{hashid} | Editar (config vazio = inalterado) | AdminAuth + RBAC: cdn |
+| DELETE | /admin/v1/cdn/provider/{hashid} | Excluir | AdminAuth + RBAC: cdn |
+| POST | /admin/v1/cdn/provider/test | Teste de conectividade HeadBucket {id} | AdminAuth + RBAC: cdn |
 
 ### 3.19 Relatórios de dados
 
@@ -1456,9 +1516,9 @@ Todos os endpoints exigem autenticação (AdminAuth + AdminPermission).
 
 | Método | Caminho | Observação | Autenticação |
 |------|------|------|------|
-| GET | /admin/report/summary | Resumo de relatórios (novos usuários/depósitos/saques/câmbios/partidas) | AdminAuth + RBAC: report |
-| GET | /admin/report/daily | Relatório diário (agregação por dia, datas sem dados preenchidas com 0) | AdminAuth + RBAC: report |
-| GET | /admin/report/export | Exportação do relatório diário em CSV (UTF-8 BOM) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/summary | Resumo de relatórios (novos usuários/depósitos/saques/câmbios/partidas) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/daily | Relatório diário (agregação por dia, datas sem dados preenchidas com 0) | AdminAuth + RBAC: report |
+| GET | /admin/v1/report/export | Exportação do relatório diário em CSV (UTF-8 BOM) | AdminAuth + RBAC: report |
 
 ## 4. Política de rate limit
 
@@ -1681,6 +1741,8 @@ Erro: 422 código de verificação inválido ou expirado
 
 #### GET /api/v1/user/vip-status — Status do VIP
 
+> **Não implementado**: a rota do lado C não está registrada (sem entrada em `service/config/route.php`), as requisições retornam 404 no momento. Exclua esta linha após a implementação.
+
 ```
 Requer autenticação: sim
 Resposta: {
@@ -1701,6 +1763,8 @@ Resposta: {
 
 #### GET /api/v1/user/achievements — Lista de conquistas
 
+> **Não implementado**: a rota do lado C não está registrada (sem entrada em `service/config/route.php`), as requisições retornam 404 no momento. Exclua esta linha após a implementação.
+
 ```
 Requer autenticação: sim
 Resposta: {
@@ -1720,7 +1784,7 @@ Resposta: {
 
 ### 7.6 Novas APIs do painel administrativo
 
-#### GET /admin/ticket/list — Lista de tickets
+#### GET /admin/v1/ticket/list — Lista de tickets
 
 ```
 Requer autenticação: sim
@@ -1739,7 +1803,7 @@ Resposta: {
 }
 ```
 
-#### POST /admin/ticket/{hashid}/reply — Responder ticket
+#### POST /admin/v1/ticket/{hashid}/reply — Responder ticket
 
 ```
 Requer autenticação: sim
@@ -1747,14 +1811,14 @@ Requisição: { "content": "已处理" }
 Resposta: { "code": 0, "message": "Reply sent" }
 ```
 
-#### POST /admin/ticket/{hashid}/close — Fechar ticket
+#### POST /admin/v1/ticket/{hashid}/close — Fechar ticket
 
 ```
 Requer autenticação: sim
 Resposta: { "code": 0, "message": "Ticket closed" }
 ```
 
-#### POST /admin/ticket/{hashid}/assign — Designar responsável
+#### POST /admin/v1/ticket/{hashid}/assign — Designar responsável
 
 ```
 Requer autenticação: sim
@@ -1762,7 +1826,7 @@ Requisição: { "admin_id": 1234567890 }
 Resposta: { "code": 0, "message": "Assigned" }
 ```
 
-#### GET /admin/analytics/retention — Análise de retenção
+#### GET /admin/v1/analytics/retention — Análise de retenção
 
 ```
 Requer autenticação: sim
@@ -1773,7 +1837,7 @@ Resposta: {
 }
 ```
 
-#### GET /admin/analytics/funnel — Funil de conversão
+#### GET /admin/v1/analytics/funnel — Funil de conversão
 
 ```
 Requer autenticação: sim
@@ -1787,7 +1851,7 @@ Resposta: {
 }
 ```
 
-#### GET /admin/analytics/arpu — Tendência ARPU/ARPPU
+#### GET /admin/v1/analytics/arpu — Tendência ARPU/ARPPU
 
 ```
 Requer autenticação: sim
@@ -1795,7 +1859,7 @@ Parâmetros: ?days=30
 Resposta: { "arpu": [...], "arppu": [...], "dates": [...] }
 ```
 
-#### GET /admin/analytics/economy — Indicadores econômicos das moedas de jogo
+#### GET /admin/v1/analytics/economy — Indicadores econômicos das moedas de jogo
 
 ```
 Requer autenticação: sim
@@ -1814,14 +1878,14 @@ Resposta: {
 ```
 
 
-#### GET /admin/cdn/provider/list — Lista de provedores de CDN (credenciais não retornadas)
+#### GET /admin/v1/cdn/provider/list — Lista de provedores de CDN (credenciais não retornadas)
 
 ```
 Requer autenticação: sim
 Resposta: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
 ```
 
-#### POST /admin/cdn/provider/toggle — Ativar/desativar provedor {id, status}
+#### POST /admin/v1/cdn/provider/toggle — Ativar/desativar provedor {id, status}
 
 ```
 Requer autenticação: sim
@@ -1829,7 +1893,7 @@ Requisição: { "id": "...", "status": 1 }
 Resposta: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/cdn/provider/create — Criar {name, provider, config(JSON), status, sort}, verificação de unicidade do provider
+#### POST /admin/v1/cdn/provider/create — Criar {name, provider, config(JSON), status, sort}, verificação de unicidade do provider
 
 ```
 Requer autenticação: sim
@@ -1837,7 +1901,7 @@ Requisição: { "name": "...", "provider": "aliyun", "config": "{...}", "status"
 Resposta: { "code": 0, "data": { "id": "..." } }
 ```
 
-#### PUT /admin/cdn/provider/{hashid} — Editar (config vazio = inalterado)
+#### PUT /admin/v1/cdn/provider/{hashid} — Editar (config vazio = inalterado)
 
 ```
 Requer autenticação: sim
@@ -1845,21 +1909,21 @@ Requisição: { "name": "...", "config": "" }
 Resposta: { "code": 0, "message": "..." }
 ```
 
-#### DELETE /admin/cdn/provider/{hashid} — Excluir
+#### DELETE /admin/v1/cdn/provider/{hashid} — Excluir
 
 ```
 Requer autenticação: sim
 Resposta: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/cdn/provider/test — Teste de conectividade HeadBucket {id}
+#### POST /admin/v1/cdn/provider/test — Teste de conectividade HeadBucket {id}
 
 ```
 Requer autenticação: sim
 Requisição: { "id": "..." }
 Resposta: { "code": 0, "data": { "ok": true } }
 ```
-#### GET /admin/report/summary — Resumo de relatórios
+#### GET /admin/v1/report/summary — Resumo de relatórios
 
 ```
 需认证: 是
@@ -1873,7 +1937,7 @@ Resposta: { "code": 0, "data": { "ok": true } }
 ```
 
 
-#### GET /admin/report/daily — Relatório diário
+#### GET /admin/v1/report/daily — Relatório diário
 
 ```
 需认证: 是
@@ -1885,7 +1949,7 @@ Resposta: { "code": 0, "data": { "ok": true } }
 ```
 
 
-#### GET /admin/report/export — Exportação do relatório diário CSV
+#### GET /admin/v1/report/export — Exportação do relatório diário CSV
 
 ```
 需认证: 是
@@ -2029,13 +2093,13 @@ Requisição: { "id": "hook_id" }
 
 ### 7.10 APIs de análise avançada
 
-#### GET /admin/analytics/retention — Análise de retenção
+#### GET /admin/v1/analytics/retention — Análise de retenção
 ```
 Requer autenticação: sim
 Resposta: { "D1": "45.2%", "D3": "28.7%", "D7": "18.3%", "D30": "8.1%" }
 ```
 
-#### GET /admin/analytics/funnel — Funil de conversão
+#### GET /admin/v1/analytics/funnel — Funil de conversão
 ```
 Requer autenticação: sim
 Resposta: {
@@ -2048,14 +2112,14 @@ Resposta: {
 }
 ```
 
-#### GET /admin/analytics/arpu — Tendência ARPU/ARPPU
+#### GET /admin/v1/analytics/arpu — Tendência ARPU/ARPPU
 ```
 Requer autenticação: sim
 Parâmetros: ?days=30
 Resposta: { "dates": [...], "arpu": [...], "arppu": [...] }
 ```
 
-#### GET /admin/analytics/economy — Indicadores econômicos dos jogos
+#### GET /admin/v1/analytics/economy — Indicadores econômicos dos jogos
 ```
 Requer autenticação: sim
 Resposta: {
@@ -2117,47 +2181,47 @@ A comissão de indicação adiciona repartição de segundo nível:
 
 | Endpoint | Descrição |
 |------|------|
-| GET /admin/risk/dashboard | Visão geral do painel de risco |
-| GET /admin/risk/overview | Métricas gerais de risco |
-| GET /admin/risk/hit-trend | Tendência de acionamentos |
-| GET /admin/risk/action-distribution | Distribuição de ações |
-| GET /admin/risk/rule-performance | Desempenho das regras |
-| GET /admin/risk/rule/list | Lista de regras |
-| POST /admin/risk/rule/create | Criar regra |
-| PUT /admin/risk/rule/{hashid} | Atualizar regra |
-| POST /admin/risk/rule/{hashid}/toggle | Ativar/desativar regra |
-| POST /admin/risk/rule/test | Testar regra |
-| GET /admin/risk/event/list | Lista de eventos de risco |
-| GET /admin/risk/event/{hashid} | Detalhe do evento |
-| POST /admin/risk/event/{hashid}/handle | Tratar evento |
-| GET /admin/risk/device/list | Lista de impressões digitais de dispositivos |
-| POST /admin/risk/device/block | Bloquear dispositivo |
-| POST /admin/risk/device/unblock | Desbloquear dispositivo |
-| GET /admin/risk/ip/list | Lista de IPs |
-| POST /admin/risk/ip/block | Bloquear IP |
-| POST /admin/risk/ip/whitelist | Lista branca de IP |
-| POST /admin/risk/ip/appeal | Recurso de IP |
-| POST /admin/risk/ip/recheck | Revisão de IP |
-| GET /admin/risk/graph/clusters | Lista de clusters |
-| GET /admin/risk/graph/{userId} | Grafo de vínculos do usuário |
-| GET /admin/risk/clusters | Lista de clusters de risco |
+| GET /admin/v1/risk/dashboard | Visão geral do painel de risco |
+| GET /admin/v1/risk/overview | Métricas gerais de risco |
+| GET /admin/v1/risk/hit-trend | Tendência de acionamentos |
+| GET /admin/v1/risk/action-distribution | Distribuição de ações |
+| GET /admin/v1/risk/rule-performance | Desempenho das regras |
+| GET /admin/v1/risk/rule/list | Lista de regras |
+| POST /admin/v1/risk/rule/create | Criar regra |
+| PUT /admin/v1/risk/rule/{hashid} | Atualizar regra |
+| POST /admin/v1/risk/rule/{hashid}/toggle | Ativar/desativar regra |
+| POST /admin/v1/risk/rule/test | Testar regra |
+| GET /admin/v1/risk/event/list | Lista de eventos de risco |
+| GET /admin/v1/risk/event/{hashid} | Detalhe do evento |
+| POST /admin/v1/risk/event/{hashid}/handle | Tratar evento |
+| GET /admin/v1/risk/device/list | Lista de impressões digitais de dispositivos |
+| POST /admin/v1/risk/device/block | Bloquear dispositivo |
+| POST /admin/v1/risk/device/unblock | Desbloquear dispositivo |
+| GET /admin/v1/risk/ip/list | Lista de IPs |
+| POST /admin/v1/risk/ip/block | Bloquear IP |
+| POST /admin/v1/risk/ip/whitelist | Lista branca de IP |
+| POST /admin/v1/risk/ip/appeal | Recurso de IP |
+| POST /admin/v1/risk/ip/recheck | Revisão de IP |
+| GET /admin/v1/risk/graph/clusters | Lista de clusters |
+| GET /admin/v1/risk/graph/{userId} | Grafo de vínculos do usuário |
+| GET /admin/v1/risk/clusters | Lista de clusters de risco |
 
 ### 10.2 Gestão anti-cheat (admin :8789)
 
 | Endpoint | Descrição |
 |------|------|
-| GET /admin/anticheat/events | Lista de eventos anti-cheat |
-| GET /admin/anticheat/events/{hashid} | Detalhe do evento |
-| POST /admin/anticheat/events/{hashid}/review | Revisar evento |
+| GET /admin/v1/anticheat/events | Lista de eventos anti-cheat |
+| GET /admin/v1/anticheat/events/{hashid} | Detalhe do evento |
+| POST /admin/v1/anticheat/events/{hashid}/review | Revisar evento |
 
 ### 10.3 Atividades (admin :8789 + cliente :8792)
 
 | Endpoint | Descrição |
 |------|------|
-| GET /admin/activities/list | Lista de atividades (admin) |
-| POST /admin/activities/create | Criar atividade (admin) |
-| PUT /admin/activities/{hashid} | Atualizar atividade (admin) |
-| DELETE /admin/activities/{hashid} | Excluir atividade (admin) |
+| GET /admin/v1/activities/list | Lista de atividades (admin) |
+| POST /admin/v1/activities/create | Criar atividade (admin) |
+| PUT /admin/v1/activities/{hashid} | Atualizar atividade (admin) |
+| DELETE /admin/v1/activities/{hashid} | Excluir atividade (admin) |
 | GET /api/v1/activities/list | Lista de atividades (cliente) |
 | GET /api/v1/activities/progress | Progresso de participação (cliente) |
 | GET /api/v1/activities/{hashid} | Detalhe da atividade (cliente) |
@@ -2175,9 +2239,9 @@ A comissão de indicação adiciona repartição de segundo nível:
 | PUT /api/v1/groups/{hashid}/role | Papel do membro |
 | POST /api/v1/shares | Criar link de compartilhamento |
 | POST /api/v1/shares/visit | Rastreamento de visitas de compartilhamento |
-| GET /admin/groups | Lista de grupos (admin) |
-| GET /admin/groups/{hashid}/audit | Auditoria do grupo (admin) |
-| GET /admin/share/stats | Estatísticas de compartilhamento (admin) |
+| GET /admin/v1/groups | Lista de grupos (admin) |
+| GET /admin/v1/groups/{hashid}/audit | Auditoria do grupo (admin) |
+| GET /admin/v1/share/stats | Estatísticas de compartilhamento (admin) |
 
 ### 10.5 Extensões de gateway de pagamento (L1)
 

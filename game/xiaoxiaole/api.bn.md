@@ -1,10 +1,10 @@
-# 田园消消乐 — 平台接入 API
+# গ্রামীণ থ্রি-ম্যাচ — প্ল্যাটফর্ম ইন্টিগ্রেশন API
 <!-- lang-nav -->
 
 Languages: [中文](api.md) · [English](api.en.md) · [한국어](api.ko.md) · [Русский](api.ru.md) · [Deutsch](api.de.md) · [Français](api.fr.md) · [Español](api.es.md) · [Português](api.pt.md) · [हिन्दी](api.hi.md) · [العربية](api.ar.md) · **বাংলা** · [Bahasa Indonesia](api.id.md) · [日本語](api.ja.md)
 
 
-> এই নথিটি 《田园消消乐》 ও গেম প্ল্যাটফর্মের মধ্যে সম্পূর্ণ ইন্টারফেস চুক্তি। প্রযুক্তি স্তরবিন্যাসের জন্য `architecture.md`, সময়সূচির জন্য `plan.md`, খেলোয়াড় ফিচারের জন্য `functional-design.md` দেখুন।
+> এই নথিটি গ্রামীণ থ্রি-ম্যাচ ও গেম প্ল্যাটফর্মের মধ্যে সম্পূর্ণ ইন্টারফেস চুক্তি। প্রযুক্তি স্তরবিন্যাসের জন্য `architecture.md`, সময়সূচির জন্য `plan.md`, খেলোয়াড় ফিচারের জন্য `functional-design.md` দেখুন।
 
 ---
 

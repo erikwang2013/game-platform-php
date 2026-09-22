@@ -268,24 +268,23 @@ $result = $provider->refund($userId, $gameId, $sessionId, $amount, $roundId, 'ga
 
 ## 5. 세션 관리
 
-게임 시작 후 15분마다 하트비트를 보내야 합니다:
+self / embedded 게임의 SDK 호출은 세션 토큰으로 인증합니다: 로그인한 C측이 `GET /api/v1/game/session?game_id={game_id}`를 호출해 토큰을 발급합니다(TTL 5분, `self` / `embedded` 타입 게임만):
 
-```php
-use app\service\GameSessionService;
+```
+GET /api/v1/game/session?game_id=1234567890
+Authorization: Bearer <user_token>
 
-// 시작 시
-GameSessionService::heartbeat($userId, $gameId, $sessionId);
-
-// 주기적 하트비트（5분마다 권장）
-if (!GameSessionService::isActive($sessionId)) {
-    // 세션 타임아웃, 게임 종료 필요
+200
+{
+    "code": 0,
+    "data": { "token": "<payload>.<signature>", "expires_in": 300 }
 }
 
-// 종료 시
-GameSessionService::endSession($sessionId);
+POST /api/game/balance
+Authorization: Bearer <payload>.<signature>
 ```
 
-타임아웃된 세션은 자동 정산됩니다（`GameSessionService::expireStaleSessions()`）.
+`SdkSessionAuth` 미들웨어가 HMAC-SHA256 서명과 만료를 검증하며, `user_id`는 토큰에서만 가져옵니다(요청 본문으로 덮어쓸 수 없습니다). 만료 후 재발급하여 `/api/game/balance`, `/api/game/bet`, `/api/game/settle`, `/api/game/refund` 호출에 사용합니다.
 
 ## 6. 게임 설정
 

@@ -44,7 +44,8 @@ class MpesaGateway implements PaymentGatewayInterface
         }
 
         // 官方要求整数 KES：小数金额无法精确推送，直接拒绝而非静默截断
-        if ((float) $order->amount !== floor((float) $order->amount)) {
+        // bcadd(x, 0, 0) 按 scale 0 截断小数位，与原值相等即为整数（bcmath，避免 float 精度）
+        if (bccomp(bcadd((string) $order->amount, '0', 0), (string) $order->amount, 8) !== 0) {
             throw new \RuntimeException('M-Pesa amount must be a whole number in KES');
         }
 

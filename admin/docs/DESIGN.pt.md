@@ -65,10 +65,10 @@ Languages: [中文](DESIGN.md) · [English](DESIGN.en.md) · [한국어](DESIGN.
 |---|------|------|
 | Rotas | `config/route.php` | Mapeamento de URL para controladores, vínculo de middlewares, rotas versionadas |
 | Middlewares | `app/middleware/` | Interceptação de ataques (SecurityFilter), rate limit (RateLimit), autenticação (JWT), autorização (RBAC) |
-| Controladores | 30: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (painel) + Captcha/Auth (API v1) | Validação de parâmetros da requisição, chamada da lógica de negócio, formatação da resposta |
-| Serviços de negócio | `common/service/` | Análise de dados: GameDashboardService (visão geral/ranking/tendências), DepositLogService (receita/conversão), ProbabilityService (probabilidade conjunta/condicional, construtor SQL); em falha do banco, retorna dados vazios em vez de erro |
+| Controladores | 45: Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (painel) + Captcha/Auth (API v1) | Validação de parâmetros da requisição, chamada da lógica de negócio, formatação da resposta |
+| Serviços de negócio | `packages/platform-common/src/service/` | Análise de dados: GameDashboardService (visão geral/ranking/tendências), DepositLogService (receita/conversão), ProbabilityService (probabilidade conjunta/condicional, construtor SQL); em falha do banco, retorna dados vazios em vez de erro |
 | Modelos de dados | `app/model/` | Mapeamento ORM, relacionamentos, criptografia/descriptografia de campos |
-| Utilitários comuns | `app/common/` | Serviços Hashids, Snowflake, Encryption |
+| Utilitários comuns | `packages/platform-common/src/` | Serviços Hashids, Snowflake, Encryption |
 
 ### 2.2 Ciclo de vida da requisição
 
@@ -209,10 +209,10 @@ Exemplo de extensão — adicionar a API v2:
 3. Passar a versão explicitamente a `v()`: `v('AuthController', 'login', 'v2')`
 
 ```bash
-# 使用 v1
+# Usar v1
 curl http://host/api/v1/auth/login
 
-# 使用 v2
+# Usar v2
 curl http://host/api/v2/auth/login
 ```
 
@@ -466,7 +466,7 @@ A integração contínua do GitHub Actions está definida em `.github/workflows/
 
 ### 8.5 Monitoramento
 
-O endpoint `GET /metrics` (`MetricsController`) expõe 5 métricas gauge no formato de texto Prometheus: total de requisições HTTP, usuários ativos, status das conexões de banco/Redis, uso de memória.
+O endpoint `GET /metrics` (`MetricsController`) expõe 18 métricas gauge no formato de texto Prometheus: usuários ativos/totais, status das conexões de banco/Redis/ES, métricas de memória/CPU/processos, saques pendentes e diferenças de conciliação.
 
 ### 8.6 Requisitos de ambiente
 

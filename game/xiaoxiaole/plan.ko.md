@@ -1,4 +1,4 @@
-# 전원 소소락 (田园消消乐) — 개발 계획
+# 전원 소소락 — 개발 계획
 <!-- lang-nav -->
 
 Languages: [中文](plan.md) · [English](plan.en.md) · **한국어** · [Русский](plan.ru.md) · [Deutsch](plan.de.md) · [Français](plan.fr.md) · [Español](plan.es.md) · [Português](plan.pt.md) · [हिन्दी](plan.hi.md) · [العربية](plan.ar.md) · [বাংলা](plan.bn.md) · [Bahasa Indonesia](plan.id.md) · [日本語](plan.ja.md)

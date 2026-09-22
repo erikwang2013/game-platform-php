@@ -2,7 +2,7 @@
 
 - 测试日期: 2026-08-27
 - 测试工程师: API 测试工程师 (任务 #6)
-- 被测对象: `admin`(管理端 API, 端口 8789) + `service`(服务端 API, 端口 8795/8796/8797), webman v2 / PHP 8.3.7
+- 被测对象: `admin`(管理端 API, 端口 8789) + `service`(服务端 API, 端口 8792；WebSocket 8790/8791), webman v2 / PHP 8.3.7
 - 测试方式: 无框架 PHP CLI 脚本(存放于 `tests/api/`), 全部接口冒烟 + 认证链 + 业务链 + 负例
 - 测试数据库: `game-platform_test`(MySQL 127.0.0.1, root 无密码), Redis 127.0.0.1:6379
 
@@ -111,11 +111,11 @@ redis-cli DEL perm:1                                         # 清权限缓存
 # 管理端 (8789)
 cd /home/wwwroot/game-platform-php/admin && nohup php -d auto_prepend_file=/tmp/gp-env-preload.php start.php start > /tmp/gp-admin-fg.log 2>&1 & disown
 
-# 服务端 (8795/8796/8797, 配置中默认 8788/8790/8791 已被占用, 测试期间改端口)
+# 服务端 (8792；WS 8790/8791，均可由 .env 的 APP_PORT / LEADERBOARD_WS_PORT / CHAT_WS_PORT 覆盖)
 cd /home/wwwroot/game-platform-php/service && nohup php -d auto_prepend_file=/tmp/gp-env-preload.php start.php start > /tmp/gp-service.log 2>&1 & disown
 
 # 健康检查
-curl -s http://127.0.0.1:8789/health; curl -s http://127.0.0.1:8795/health
+curl -s http://127.0.0.1:8789/health; curl -s http://127.0.0.1:8792/health
 ```
 
 ### 4. 运行全量测试
@@ -192,7 +192,7 @@ cd /home/wwwroot/game-platform-php/service && php start.php stop 2>&1 | tail -1
 5. **JWT 密钥长度**: HS256 要求 ≥32 字符, 短密钥直接抛 "Secret key must be at least 32 characters"。
 6. **webman-scout 默认驱动 opensearch**: 未安装 `opensearch-project/opensearch-php` 时任何 Searchable 模型查询 500; 测试用 `collection` 驱动。
 7. **OpenSearch / ClickHouse 未初始化**: 本环境未启动, 相关搜索/分析降级路径未覆盖(已跳过并记录)。
-8. **端口与文档不一致**: admin 实际 8789(README 8787)、service 实际 8795/8796/8797(README 8788/8790/8791), 系端口冲突所致。
+8. **端口已配置化(2026-09-22 复核)**: admin 8789、service 8792(WS 8790/8791) 均由 `.env` 的 APP_PORT / LEADERBOARD_WS_PORT / CHAT_WS_PORT 控制, 三处(监听/映射/Nginx)一致; 本报告 2026-08-27 实测的 8795/8796/8797 与当时的 README 8788/8790/8791 均为迁移前旧值。
 9. **管理员角色权限种子不足**: 角色 `10000000000000001` 仅关联 39 条权限, 大量管理路由 403(如 `/admin/withdraw/review`、`/admin/coupon/*`)。测试期在 `game_admin_permission` 补 `*` 通配权限。
 10. **限流键跨进程累积**: `rate_limit:{ip}:{path}` 存于共享 Redis, 注册接口 5 次/分钟, 多轮测试会触发 429; 测试脚本启动时自动清理。
 

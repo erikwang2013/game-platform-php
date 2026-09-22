@@ -5,6 +5,7 @@ import router from '@ohos.router';
 import http from '@ohos.net.http';
 import promptAction from '@ohos.promptAction';
 import { TokenManager } from '../utils/TokenManager';
+import { API_BASE_URL } from '../common/AppConfig';
 
 @Entry
 @Component
@@ -22,7 +23,7 @@ struct GameHallPage {
     try {
       const token = TokenManager.getAccessToken();
       const request = http.createHttp();
-      const response = await request.request('http://10.0.2.2:8792/api/v1/game/list', {
+      const response = await request.request(`${API_BASE_URL}/admin/v1/game/list`, {
         method: http.RequestMethod.GET,
         header: {
           'Content-Type': 'application/json',

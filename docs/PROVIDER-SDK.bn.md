@@ -1,4 +1,4 @@
-# 游戏提供商接入 SDK 文档
+# গেম প্রোভাইডার ইন্টিগ্রেশন SDK ডকুমেন্ট
 <!-- lang-nav -->
 
 Languages: [中文](PROVIDER-SDK.md) · [English](PROVIDER-SDK.en.md) · [한국어](PROVIDER-SDK.ko.md) · [Русский](PROVIDER-SDK.ru.md) · [Deutsch](PROVIDER-SDK.de.md) · [Français](PROVIDER-SDK.fr.md) · [Español](PROVIDER-SDK.es.md) · [Português](PROVIDER-SDK.pt.md) · [हिन्दी](PROVIDER-SDK.hi.md) · [العربية](PROVIDER-SDK.ar.md) · **বাংলা** · [Bahasa Indonesia](PROVIDER-SDK.id.md) · [日本語](PROVIDER-SDK.ja.md)
@@ -268,24 +268,23 @@ $result = $provider->refund($userId, $gameId, $sessionId, $amount, $roundId, 'ga
 
 ## 5. সেশন ম্যানেজমেন্ট
 
-গেম লঞ্চের পর প্রতি ১৫ মিনিটের মধ্যে হার্টবিট পাঠাতে হবে:
+self/embedded গেমের SDK কল সেশন টোকেন দিয়ে প্রমাণীকৃত হয়: লগইন করা C-প্রান্ত `GET /api/v1/game/session?game_id={game_id}` কল করে টোকেন ইস্যু করে (TTL ৫ মিনিট, শুধু `self` / `embedded` গেম):
 
-```php
-use app\service\GameSessionService;
+```
+GET /api/v1/game/session?game_id=1234567890
+Authorization: Bearer <user_token>
 
-// 启动时
-GameSessionService::heartbeat($userId, $gameId, $sessionId);
-
-// 定期心跳（建议每 5 分钟）
-if (!GameSessionService::isActive($sessionId)) {
-    // 会话已超时，需结束游戏
+200
+{
+    "code": 0,
+    "data": { "token": "<payload>.<signature>", "expires_in": 300 }
 }
 
-// 结束时
-GameSessionService::endSession($sessionId);
+POST /api/game/balance
+Authorization: Bearer <payload>.<signature>
 ```
 
-টাইমআউট হওয়া সেশন অটো সেটেল হয় (`GameSessionService::expireStaleSessions()`)।
+`SdkSessionAuth` মিডলওয়্যার HMAC-SHA256 স্বাক্ষর ও মেয়াদ যাচাই করে; `user_id` শুধু টোকেন থেকেই নেওয়া হয় (রিকোয়েস্ট বডি তা ওভাররাইড করতে পারে না)। মেয়াদ শেষে আবার ইস্যু করে `/api/game/balance`, `/api/game/bet`, `/api/game/settle`, `/api/game/refund` কল করুন।
 
 ## 6. গেম কনফিগ
 

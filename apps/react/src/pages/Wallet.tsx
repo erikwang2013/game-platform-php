@@ -3,6 +3,7 @@
  */
 
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../lib/api.ts';
 import { useAsync } from '../lib/hooks.ts';
 import { ErrorBox, Loading } from '../components/States.tsx';
@@ -103,6 +104,18 @@ export function Wallet() {
             </div>
           </div>
         )}
+
+        <div className="row" style={{ gap: 10 }}>
+          <Link className="btn btn--primary" to="/wallet/deposit">
+            充值
+          </Link>
+          <Link className="btn" to="/wallet/withdraw">
+            提现
+          </Link>
+          <Link className="btn" to="/wallet/exchange">
+            兑换
+          </Link>
+        </div>
       </section>
 
       <section className="stack">

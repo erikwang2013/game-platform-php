@@ -30,6 +30,21 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/wallet').then((m) => m.WalletPage),
   },
   {
+    path: 'wallet/deposit',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/deposit').then((m) => m.DepositPage),
+  },
+  {
+    path: 'wallet/withdraw',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/withdraw').then((m) => m.WithdrawPage),
+  },
+  {
+    path: 'wallet/exchange',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/exchange').then((m) => m.ExchangePage),
+  },
+  {
     path: 'me',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/me').then((m) => m.MePage),

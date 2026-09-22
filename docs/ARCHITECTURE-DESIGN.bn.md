@@ -1,4 +1,4 @@
-# 架构设计文档
+# আর্কিটেকচার ডিজাইন ডকুমেন্ট
 <!-- lang-nav -->
 
 Languages: [中文](ARCHITECTURE-DESIGN.md) · [English](ARCHITECTURE-DESIGN.en.md) · [한국어](ARCHITECTURE-DESIGN.ko.md) · [Русский](ARCHITECTURE-DESIGN.ru.md) · [Deutsch](ARCHITECTURE-DESIGN.de.md) · [Français](ARCHITECTURE-DESIGN.fr.md) · [Español](ARCHITECTURE-DESIGN.es.md) · [Português](ARCHITECTURE-DESIGN.pt.md) · [हिन्दी](ARCHITECTURE-DESIGN.hi.md) · [العربية](ARCHITECTURE-DESIGN.ar.md) · **বাংলা** · [Bahasa Indonesia](ARCHITECTURE-DESIGN.id.md) · [日本語](ARCHITECTURE-DESIGN.ja.md)
@@ -200,10 +200,10 @@ block  → 拒绝操作
 
 ### 6.2 KYC রিয়েল-নেম ভেরিফিকেশন
 
-তিন-স্তরের ভেরিফিকেশন সিস্টেম:
+উইথড্রয়াল সীমা স্তর (game_withdraw_limit):
 - `default` — ভেরিফায়েড নয়, মৌলিক সীমা
 - `verified` — KYC রিভিউ পাস, সীমা বেড়ে ফি কমে
-- `vip` — VIP লেভেল, সর্বোচ্চ সীমা + শূন্য ফি
+- `vip` — সংরক্ষিত স্তর (সর্বোচ্চ সীমা + শূন্য ফি); বর্তমান কোড কেবল default/verified পড়ে, VIP ফি ছাড় অভিজ্ঞতার ভিত্তিতে আলাদাভাবে গণনা করা হয়
 
 ভেরিফিকেশন প্রক্রিয়া:
 ```
@@ -219,9 +219,9 @@ Google / Facebook / Apple লগইন সাপোর্ট:
 
 ```
 前端点击 OAuth 按钮
-  → GET /api/auth/oauth/{provider} → 获取授权URL
+  → GET /api/v1/auth/oauth/{provider} → 获取授权URL
   → 跳转第三方授权页 → 用户同意
-  → 回调 POST /api/auth/oauth/{provider}/callback
+  → 回调 POST /api/v1/auth/oauth/{provider}/callback
   → 查找已有绑定 → 直接登录
   → 无绑定 → 自动注册新用户 + 绑定 + 创建钱包
 ```
@@ -229,7 +229,7 @@ Google / Facebook / Apple লগইন সাপোর্ট:
 ### 6.4 পেমেন্ট কলব্যাক
 
 ```
-第三方支付完成 → POST /api/payment/callback
+第三方支付完成 → POST /api/v1/payment/callback
   → provider 白名单校验（仅 stripe/paypal）
   → 验签 fail-closed（未配 secret/webhook_id、验签失败、时间戳超 ±300s 一律拒绝）
   → 回调金额与订单金额 bccomp 核对（防跨渠道冒用）
@@ -251,7 +251,7 @@ Google / Facebook / Apple লগইন সাপোর্ট:
 
 ## 7. স্কেলেবিলিটি ডিজাইন
 
-### 5.1 হরাইজন্টাল স্কেলিং
+### 7.1 হরাইজন্টাল স্কেলিং
 
 admin/ ও service/ উভয়ই মাল্টি-ওয়ার্কার প্রসেস সাপোর্ট করে। Nginx রিভার্স প্রক্সির সাথে একাধিক মেশিনে ডিপ্লয় করে হরাইজন্টাল স্কেলিং:
 
@@ -263,7 +263,7 @@ Nginx (负载均衡)
   └── service-2 (:8792)
 ```
 
-### 5.2 মডিউল বিভাজনের পথ
+### 7.2 মডিউল বিভাজনের পথ
 
 একক service/ বাধা হয়ে গেলে নিচের পথে বিভক্ত:
 

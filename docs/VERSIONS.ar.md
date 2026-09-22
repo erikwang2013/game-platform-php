@@ -121,7 +121,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | دعم متعدد اللغات | الصينية/الإنجليزية | 4 لغات | 4 لغات |
 | جدول الترجمات + التخزين المؤقت | ✓ | ✓ | ✓ |
 | كشف اللغة تلقائيًا | ✓ | ✓ | ✓ |
-| إعدادات تفاضلية حسب الدولة | - | - | ✓ 8 دول |
+| إعدادات تفاضلية حسب الدولة | - | - | ✓ 18 دولة |
 
 ---
 
@@ -162,7 +162,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 نواة المنصة (12): game_user, game_user_wallet, game_user_game_wallet,
                game_game, game_game_currency, game_deposit_order,
                game_withdraw_order, game_exchange_record, game_transaction,
-               game_payment_method, game_announcement, game-platform_config
+               game_payment_method, game_announcement, game_platform_config
 ```
 
 ### إضافات القياسي (10 جداول)
@@ -176,7 +176,7 @@ game_withdraw_limit, game_risk_rule, game_risk_log, game_stat_daily
 ```
 game_game_category, game_game_category_rel, game_leaderboard,
 game_coupon, game_user_coupon, game_language, game_translation,
-game_country_config, game-platform_revenue,
+game_country_config, game_platform_revenue,
 game_notification, game_referral, game_referral_reward, game_user_2fa
 ```
 
@@ -190,6 +190,16 @@ game_anticheat_event, game_anticheat_daily_stat,
 game_group, game_group_member, game_share_link,
 game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, game_risk_cluster
 ```
+
+### إضافات النظام البيئي v2.0 (14 جدولًا)
+```
+game_ticket, game_ticket_reply, game_device_token, game_vip_level,
+game_user_vip, game_exp_log, game_achievement, game_user_achievement,
+game_friend, game_message, game_cdn_provider, game_referral_commission,
+game_tournament, game_tournament_entry
+```
+
+**الإجمالي: 78 جدولًا**
 
 ---
 

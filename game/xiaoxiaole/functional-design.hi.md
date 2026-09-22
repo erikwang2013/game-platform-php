@@ -1,4 +1,4 @@
-# 田园消消乐 — कार्यात्मक डिज़ाइन
+# ग्रामीण मैच-3 — कार्यात्मक डिज़ाइन
 <!-- lang-nav -->
 
 Languages: [中文](functional-design.md) · [English](functional-design.en.md) · [한국어](functional-design.ko.md) · [Русский](functional-design.ru.md) · [Deutsch](functional-design.de.md) · [Français](functional-design.fr.md) · [Español](functional-design.es.md) · [Português](functional-design.pt.md) · **हिन्दी** · [العربية](functional-design.ar.md) · [বাংলা](functional-design.bn.md) · [Bahasa Indonesia](functional-design.id.md) · [日本語](functional-design.ja.md)
@@ -14,7 +14,7 @@ Languages: [中文](functional-design.md) · [English](functional-design.en.md) 
 
 | आइटम | सामग्री |
 |----|------|
-| नाम | 田园消消乐 |
+| नाम | ग्रामीण मैच-3 |
 | प्रकार | 8×8 तीन-मैच + पारिस्थितिकी प्रतिक्रोध |
 | दृष्टिकोण | निश्चित 2.5D ऑर्थोग्राफ़िक सैंडबॉक्स, घुमाने योग्य नहीं |
 | संचालन | दो आसन्न टुकड़ों पर क्लिक करके बदलना (केवल ऊपर/नीचे/बाएँ/दाएँ) |

@@ -1,12 +1,12 @@
-# 全球游戏聚合平台 — 生态扩展审查报告 v2.0
+# গ্লোবাল গেম অ্যাগ্রিগেশন প্ল্যাটফর্ম — ইকোসিস্টেম সম্প্রসারণ অডিট রিপোর্ট v2.0
 <!-- lang-nav -->
 
 Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT.en.md) · [한국어](PLATFORM-AUDIT-REPORT.ko.md) · [Русский](PLATFORM-AUDIT-REPORT.ru.md) · [Deutsch](PLATFORM-AUDIT-REPORT.de.md) · [Français](PLATFORM-AUDIT-REPORT.fr.md) · [Español](PLATFORM-AUDIT-REPORT.es.md) · [Português](PLATFORM-AUDIT-REPORT.pt.md) · [हिन्दी](PLATFORM-AUDIT-REPORT.hi.md) · [العربية](PLATFORM-AUDIT-REPORT.ar.md) · **বাংলা** · [Bahasa Indonesia](PLATFORM-AUDIT-REPORT.id.md) · [日本語](PLATFORM-AUDIT-REPORT.ja.md)
 
 
-> **审查日期**: 2026-08-04
-> **审查范围**: 全部规划 16 项功能、代码质量、安全、模型一致性、测试
-> **分支**: main
+> **অডিট তারিখ**: 2026-08-04
+> **অডিট পরিধি**: সম্পূর্ণ ১৬টি পরিকল্পিত ফিচার, কোড কোয়ালিটি, নিরাপত্তা, মডেল সামঞ্জস্য, টেস্ট
+> **ব্রাঞ্চ**: main
 
 ---
 
@@ -180,7 +180,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 ---
 
-## আট. সম্প্রসারণ স্থান মেরামত (2026-08-04 তৃতীয় রাউন্ড)
+## সাত. সম্প্রসারণ স্থান মেরামত (2026-08-04 তৃতীয় রাউন্ড)
 
 ### P2 বাস্তবায়িত
 
@@ -211,7 +211,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 - ৪টি API এন্ডপয়েন্ট ডক (balance/bet/settle/refund)
 - নিজস্ব গেম ইন্টিগ্রেশন গাইড + সেশন ম্যানেজমেন্ট + গেম কনফিগ
 
-## নয়. চূড়ান্ত স্কোর (আপডেট)
+## আট. চূড়ান্ত স্কোর (আপডেট)
 
 | শ্রেণী | প্রাথমিক (v1) | v2.0 ইকোসিস্টেম এক্সটেনশন | v2.1 এক্সটেনশন মেরামত | পরিবর্তন |
 |------|-----------|---------------|---------------|------|
@@ -225,7 +225,7 @@ Languages: [中文](PLATFORM-AUDIT-REPORT.md) · [English](PLATFORM-AUDIT-REPORT
 
 ---
 
-## দশ. 2026-08-18 নিরাপত্তা ও প্রাপ্যতা মেরামত নিশ্চিতকরণ
+## নয়. 2026-08-18 নিরাপত্তা ও প্রাপ্যতা মেরামত নিশ্চিতকরণ
 
 এই রাউন্ডে (2026-08-18) সম্পন্ন নিরাপত্তা ও প্রাপ্যতা মেরামত (ওয়ার্কস্পেসে আনকমিটেড, সংস্করণ 1.1 পরবর্তী রিলিজে) :
 

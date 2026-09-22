@@ -65,10 +65,10 @@ Languages: **中文** · [English](DESIGN.en.md) · [한국어](DESIGN.ko.md) ·
 |---|------|------|
 | 路由 | `config/route.php` | URL 到控制器的映射，中间件绑定，版本化路由 |
 | 中间件 | `app/middleware/` | 攻击拦截(SecurityFilter)、限流(RateLimit)、认证(JWT)、授权(RBAC) |
-| 控制器 | 30 个：Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (管理端) + Captcha/Auth (API v1) | 请求参数校验、调用业务逻辑、响应格式化 |
-| 业务服务 | `common/service/` | 数据分析：GameDashboardService（总览/排行/趋势）、DepositLogService（营收/转化）、ProbabilityService（联合/条件概率，SQL 构建器）；DB 故障时返回空数据而非报错 |
+| 控制器 | 45 个：Dashboard/User/Role/Permission/Config/Log/Profile/Export/Import/Upload/Health/Docs/Metrics/Analytics/Game/Payment/Withdraw... (管理端) + Captcha/Auth (API v1) | 请求参数校验、调用业务逻辑、响应格式化 |
+| 业务服务 | `packages/platform-common/src/service/` | 数据分析：GameDashboardService（总览/排行/趋势）、DepositLogService（营收/转化）、ProbabilityService（联合/条件概率，SQL 构建器）；DB 故障时返回空数据而非报错 |
 | 数据模型 | `app/model/` | ORM 映射、关联关系、字段加解密 |
-| 公共工具 | `app/common/` | Hashids、Snowflake、Encryption 服务 |
+| 公共工具 | `packages/platform-common/src/` | Hashids、Snowflake、Encryption 服务 |
 
 ### 2.2 请求生命周期
 
@@ -466,7 +466,7 @@ GitHub Actions 持续集成定义在 `.github/workflows/ci.yml`：
 
 ### 8.5 监控
 
-`GET /metrics` 端点（`MetricsController`）以 Prometheus text format 暴露 5 个 gauge 指标：HTTP 请求总数、活跃用户数、数据库/Redis 连接状态、内存使用量。
+`GET /metrics` 端点（`MetricsController`）以 Prometheus text format 暴露 18 个 gauge 指标：活跃/总用户数、DB/Redis/ES 连接状态、内存/CPU/进程指标、提现待处理与对账差异。
 
 ### 8.6 环境要求
 

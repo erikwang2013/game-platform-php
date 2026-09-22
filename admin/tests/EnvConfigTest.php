@@ -60,6 +60,10 @@ class EnvConfigTest extends TestCase
         preg_match_all('/^([A-Z_][A-Z0-9_]*)=/m', $envContent, $matches);
         $envKeys = array_flip($matches[1]);
 
+        // compose 注入键：键名刻意不出现在 .env（避免 worker 启动时被 .env 重载覆盖），
+        // 由根目录 docker-compose.yml 的 environment 传入，此处豁免
+        $composeInjected = ['PUBLIC_APP_URL' => true];
+
         // 检查每个配置文件中的 getenv 键
         $configFiles = glob(__DIR__ . '/../config/*.php');
         $missingKeys = [];
@@ -68,7 +72,7 @@ class EnvConfigTest extends TestCase
             $content = file_get_contents($file);
             preg_match_all("/getenv\('([A-Z_][A-Z0-9_]*)'\)/", $content, $m);
             foreach ($m[1] as $key) {
-                if (!isset($envKeys[$key])) {
+                if (!isset($envKeys[$key]) && !isset($composeInjected[$key])) {
                     $missingKeys[] = basename($file) . ": $key";
                 }
             }

@@ -33,8 +33,14 @@ Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](R
 - データ暗号化：API転送層 AES-256-CBC + データベース保存層 AES-128-ECB
 
 ### フロントエンド
-- Flutter 3.x (Web PC スタイル)
-- HarmonyOS ArkTS (モバイル)
+
+フロントエンドは 2 つのディレクトリツリーに分かれ、**それぞれ自分側のバックエンドだけを呼び出し**、互いに交差しません:
+
+| ディレクトリツリー | 位置づけ | リクエスト接頭辞 | 対応バックエンド | 技術スタック |
+|--------|------|---------|---------|--------|
+| `apps/*` | **C側プレイヤー向け** | `/api/v1/...` | service (既定 8792) | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
+| `admin/apps/*` | **管理コンソール** | `/admin/v1/...` | admin (既定 8789) | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
+
 - レスポンシブレイアウト (Phone / Tablet / Desktop)
 - 国際化 (i18n)：英語 / 簡体字中国語の切り替え
 
@@ -55,44 +61,79 @@ Languages: [中文](../../README.md) · [English](README.en.md) · [한국어](R
 ```
 game-platform-php/
 ├── admin/                     # 管理画面 (webman v2, デフォルトポート 8789, APP_PORT で変更可)
-│   ├── app/admin/controller/  #   管理端コントローラー
-│   ├── app/middleware/        #   中間ウェア (Cors/Security/RateLimit/Auth/ProviderAuth)
-│   ├── app/provider/          #   ゲームProvider層
-│   ├── app/event/             #   イベントバス (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission/ProviderAuth)
-│   ├── app/provider/          #   ゲームProvider層 (Self/ThirdParty/Factory)
-│   ├── app/middleware/        #   中間ウェア (Cors/Security/RateLimit/Auth/ProviderAuth)
-│   ├── app/provider/          #   ゲームProvider層
-│   ├── app/event/             #   イベントバス (EventBus Redis Pub/Sub) (Cors/Security/RateLimit/Auth/Permission)
+│   ├── app/admin/v1/controller/  #   管理側コントローラ
+│   ├── app/middleware/        #   ミドルウェア (Cors/SecurityFilter/RateLimit/AdminAuth/AdminPermission/OperationLog)
+│   ├── app/model/             #   admin 専用モデル (8 個、残り 52 個の共有モデルは packages/ にあり)
+│   ├── app/service/           #   admin 専用サービス (WalletService/WalletScope/RiskSandboxService)
+│   ├── app/process/           #   常駐プロセス (Http/Monitor/RiskIpCron)
+│   ├── app/provider/          #   ゲーム Provider 層 (Self/ThirdParty/Factory)
+│   ├── app/activity/          #   アクティビティエンジン (チェックイン/招待/デイリータスク)
+│   ├── app/event/             #   イベントバス (EventBus Redis Pub/Sub)
 │   ├── config/                #   設定ファイル
-│   ├── install/   #   SQL 移行ファイル
-│   └── apps/flutter/          #   Flutter Web PC 管理画面
+│   └── apps/                  #   管理画面フロントエンド (4 種、/admin/v1 → admin:8789 を呼び出す)
+│       ├── flutter/           #     Flutter Web PC 管理画面
+│       ├── react/             #     React 19 (Vite) 管理コンソール
+│       ├── angular/           #     Angular 21 管理コンソール
+│       └── harmonyos/         #     HarmonyOS ArkTS 管理コンソール (.hap、nginx を経由しない)
 │
-├── service/                   # C端業務端 (webman v2, デフォルトポート 8792, APP_PORT で変更可)
-│   ├── app/api/v1/controller/ #   C端 API コントローラー
-│   ├── app/middleware/        #   中間ウェア (Cors/Security/RateLimit/Auth/ProviderAuth)
+├── service/                   # C側業務 (webman v2, デフォルトポート 8792, APP_PORT で変更可)
+│   ├── app/api/v1/controller/ #   C側 API コントローラー
+│   ├── app/middleware/        #   ミドルウェア (TraceId/Cors/SecurityFilter/RateLimit/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
+│   ├── app/model/             #   service 専用モデル (10 個、残り 52 個の共有モデルは packages/ にあり)
+│   ├── app/service/           #   service 専用サービス (ウォレット/リスク/コンプライアンス/照合/プッシュ/実績/不正対策など)
+│   ├── app/payment/           #   18 個の決済ゲートウェイアダプタ (Stripe/PayPal/Adyen/NowPayments/Skrill…) + GatewayFactory
+│   ├── app/cdn/               #   5 社の CDN アダプタ (Cloudflare/CloudFront/Alibaba/Tencent/Huawei) + CdnFactory
+│   ├── app/process/           #   常駐プロセス (Http/Monitor/LeaderboardWS:8790/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
 │   ├── app/provider/          #   ゲームProvider層
+│   ├── app/activity/          #   アクティビティエンジン
 │   ├── app/event/             #   イベントバス (EventBus Redis Pub/Sub)
 │   └── config/                #   設定ファイル
 │
-├── install/                   # ワンクリックインストールウィザード
+├── packages/platform-common/  # 共有層: admin と service が composer path リポジトリ経由で取り込み、二重のコピーを避ける
+│   ├── src/model/             #   共有 Eloquent モデル (52 個、両側で同一ソース)
+│   ├── src/service/           #   共有サービス (DepositLogService / VipService など 11 個、ClickHouse 確率計算を含む)
+│   ├── src/BcMath.php         #   金額/レートの高精度演算 (bcmath ラッパー)、四捨五入、パーセント
+│   ├── src/EncryptionService.php  #   AES 暗号化/復号とマスキング
+│   ├── src/CircuitBreaker.php #   サーキットブレーカー (加えて Retry.php による再試行)
+│   ├── src/HashidsService.php #   API 層の ID エンコード/デコード
+│   └── src/SnowflakeService.php   #   グローバルに一意な BIGINT ID
+│
+├── apps/                      # C側プレイヤー向けフロントエンド (4 種、/api/v1 → service:8792 を呼び出す)
+│   ├── flutter/platform/      #   Flutter Web PC C側ユーザープラットフォーム
+│   ├── react/                 #   React 19 (Vite) C側
+│   ├── angular/               #   Angular 21 C側
+│   └── harmonyos/             #   HarmonyOS ArkTS C側 (.hap、nginx を経由しない)
+│
+├── game/xiaoxiaole/           # 内蔵ミニゲーム「田园消消乐」: TypeScript + Vite + Vitest、src/domain エンジン + 4 レベル設計 + tests/、13 言語の設計ドキュメント
+│
+├── install/                   # ワンクリックインストールウィザード + データベース初期化 SQL
 │   ├── index.php              #   インストールエントリー
 │   ├── Installer.php          #   インストールのコアロジック
-│   ├── install.sql            #   統合インストール SQL（43テーブル+シードデータ）
+│   ├── install.sql            #   統合インストール SQL（78テーブル+シードデータ）
+│   ├── clickhouse.sql         #   ClickHouse 分析用 DDL (独立エンジン、個別にインポート)
+│   ├── test-data.sql          #   デモ/テストデータ
+│   ├── migrations/            #   既存データベース向け増分アップグレードスクリプト (*.sql)
+│   ├── lang/ + lang.php       #   インストールウィザード UI の翻訳 (13 言語)
 │   └── assets/                #   静的リソース
 │
-├── admin/common/ と service/common/   # 共有サービスを各1部 (DepositLogService 等、共有層への抽出予定)
-│   └── service/               #   共有サービス (ClickHouse 確率計算を含む)
-│
-├── apps/
-│   └── flutter/platform/      # Flutter Web PC C端ユーザープラットフォーム
-│
-├── docs/                      # プロジェクトドキュメント
+├── docs/                      # プロジェクトドキュメント (本文はすべて 13 言語: .md が中国語の原本で、同ディレクトリに .{lang}.md の翻訳)
 │   ├── ARCHITECTURE.md        #   アーキテクチャドキュメント
 │   ├── ARCHITECTURE-DESIGN.md #   アーキテクチャ設計ドキュメント
 │   ├── FEATURES.md            #   機能ドキュメント
 │   ├── FEATURE-DESIGN.md      #   機能設計ドキュメント
 │   ├── API.md                 #   API ドキュメント
-│   └── DEPLOYMENT.md          #   デプロイドキュメント（Docker/手動/ポート設定）
+│   ├── DEPLOYMENT.md          #   デプロイドキュメント（Docker/手動/ポート設定）
+│   ├── PROVIDER-SDK.md        #   サードパーティ製ゲーム接続ガイド (署名アルゴリズム + PHP/Go/Python の例)
+│   ├── CLICKHOUSE_INSTALL.md  #   ClickHouse のインストール/設定/移行/検証
+│   ├── CLICKHOUSE_USAGE.md    #   ClickHouse の 4 つのサービス API と管理ダッシュボード
+│   ├── translations/          #   本 README の 12 言語翻訳
+│   ├── diagrams/              #   アーキテクチャ/フロー/機能/ライフサイクル/セキュリティ/エコシステム拡張の SVG (各 13 言語)
+│   ├── test-reports/          #   テストレポート (php-unit / api / resilience / ui / SUMMARY)
+│   └── superpowers/           #   本リポジトリの設計仕様と実装計画 (履歴記録)
+│
+├── scripts/                   # 運用スクリプト (モデルドリフト検査 / apidoc アノテーション移行 / exchange 出金セマンティクス移行 / 署名検証)
+├── tests/api/                 # API 自動テスト (run_all.sh)
+├── runtime/                   # webman ランタイムディレクトリ (ログ/pid、実行時に生成)
 │
 ├── docker-compose.yml         # Docker Compose 構成（デフォルトポートはルート .env から）
 ├── nginx.conf.template        # Nginx 設定テンプレート（upstream ポートは envsubst でレンダリング）
@@ -137,7 +178,7 @@ rm -rf install/
 
 インストールウィザードが自動的に実行する内容：
 - 環境チェック（PHPバージョン、拡張機能、ディレクトリ権限）
-- データベースとテーブルの作成（統合SQL、43テーブル + シードデータ）
+- データベースとテーブルの作成（統合SQL、78テーブル + シードデータ）
 - スーパー管理者アカウントの作成（bcrypt 暗号化）
 - JWT/暗号化キーの自動生成と .env ファイルへの書き込み
 - install.lock を生成して再インストールを防止
@@ -163,7 +204,7 @@ cd admin
 cp .env.example .env
 # .env 内のデータベース接続情報とキーを編集
 
-# C端業務端
+# C側業務
 cd ../service
 cp .env.example .env
 # .env 内のデータベース接続情報とキーを編集
@@ -184,17 +225,40 @@ cd ../service && composer install && php start.php start -d
 
 ### フロントエンド起動（任意）
 
-```bash
-# 管理画面 (Flutter Web PC)
-cd admin/apps/flutter
-flutter pub get
-flutter run -d chrome
+開発時は各フロントエンドが自分の dev サーバーを起動し、リクエストは dev サーバーから対応するバックエンドへプロキシされます (各ディレクトリの `proxy.conf.json` / `vite.config.ts` を参照):
 
-# C端ユーザープラットフォーム (Flutter Web PC)
-cd apps/flutter/platform
-flutter pub get
-flutter run -d chrome
+```bash
+# --- C側プレイヤー向け (/api/v1 → service:8792) ---
+cd apps/react            && npm install && npm run dev      # http://localhost:5173
+cd apps/angular          && npm install && npm start        # http://localhost:4200
+cd apps/flutter/platform && flutter pub get && flutter run -d chrome
+
+# --- 管理コンソール (/admin/v1 → admin:8789) ---
+cd admin/apps/react      && npm install && npm run dev      # http://localhost:5273
+cd admin/apps/angular    && npm install && npm start        # http://localhost:4300
+cd admin/apps/flutter    && flutter pub get && flutter run -d chrome
 ```
+
+> Angular dev サーバーのポート: 管理コンソールは `angular.json` で明示的に 4300 を設定し、C側は Angular 既定の 4200 のままです。同時に起動する場合はどちらかに `--port` を付けてください。
+> HarmonyOS 端 (`apps/harmonyos`、`admin/apps/harmonyos`) は DevEco Studio で開いてビルドします;
+> エミュレーターからホストのバックエンドへは `http://10.0.2.2:<port>` で到達します (各 `ApiService.ets` 冒頭の定数を参照)。
+
+### フロントエンドデプロイ（Docker/Nginx）
+
+`docker-compose.yml` の nginx サービスが各フロントエンドのビルド成果物を読み取り専用でコンテナにマウントし、`nginx.conf.template` が以下のパスで配信します。
+成果物が未ビルドの場合ディレクトリは空になり、パスへのリクエストは 404、裸のディレクトリへのリクエスト（例 `/app-react/`）は 403 を返します。
+
+| URL | 成果物のマウント先 | ビルドコマンド |
+|-----|-----------|---------|
+| `/` | `apps/flutter/platform/build/web` | `flutter build web` |
+| `/app-react/` | `apps/react/dist` | `npm run build`（スクリプトに `--base=/app-react/` を含む） |
+| `/app-angular/` | `apps/angular/dist/game-client-angular/browser` | `npm run build`（スクリプトに `--base-href=/app-angular/` を含む） |
+| `/admin-panel/` | `admin/public` | 汎用配置スロット：任意のコンソール成果物を `admin/public` にコピーするだけで配置できます。未配置の場合も同様に 404（裸のディレクトリは 403）。注意：成果物は `--base=/admin-panel/`（Flutter は `--base-href=/admin-panel/`）でビルドする必要があり、そうでないとリソースが元のプレフィックスを指したまま 404 になります。スラッシュなしの形式は本アドレスへ 301 されます。`nginx.conf.template` は `absolute_redirect off` を設定済みのため、この転送は相対 Location となり、80 以外のポートでのデプロイでもポートが失われません |
+| `/admin-react/` | `admin/apps/react/dist` | `npm run build`（スクリプトに `--base=/admin-react/` を含む） |
+| `/admin-angular/` | `admin/apps/angular/dist/game-admin-angular/browser` | `npm run build`（スクリプトに `--base-href=/admin-angular/` を含む） |
+| `/admin-flutter/` | `admin/apps/flutter/build/web` | `flutter build web --base-href=/admin-flutter/` |
+
+`/admin/`（API）→ admin コンテナ、`/api/`（API）→ service コンテナ。HarmonyOS 端は `.hap` パッケージで配布し、nginx を経由しません。
 
 ### 動作確認
 
@@ -202,13 +266,13 @@ flutter run -d chrome
 # 管理画面のテスト（デフォルトポート 8789）
 curl http://localhost:8789/health
 
-# C端業務のテスト（デフォルトポート 8792）
+# C側業務のテスト（デフォルトポート 8792）
 curl http://localhost:8792/health
 
 # ユーザー登録のテスト
-curl -X POST http://localhost:8792/api/auth/register \
+curl -X POST http://localhost:8792/api/v1/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"username":"testuser","password":"123456"}'
+  -d '{"username":"testuser","password":"Abcdef12"}'
 ```
 
 ## セキュリティ機能
@@ -231,14 +295,31 @@ curl -X POST http://localhost:8792/api/auth/register \
 
 ## テスト
 
+テストレポート (ローカル保存): [docs/test-reports/](../test-reports/)
+
+| テスト種別 | ケース/カバレッジ | 結果 |
+|---------|----------|------|
+| PHP ユニットテスト | 現測 `phpunit --list-tests`: admin 200 + service 273 ケース (レポート `docs/test-reports/php-unit.md` には 09-22 再実行 admin 190 + service 273、08-27 スナップショット admin 153 + service 45 を記載。admin 側はなお拡充中) | service は全通過 (701 アサーション、3 skipped、2 warnings + 35 deprecations)。admin は 437 アサーション、3 skipped、1 件失敗 (`EnvConfigTest` が実 `admin/.env` を検証し `REDIS_CLUSTER_NODES` の欠落を検出。追加すれば緑になる) |
+| 安定性メカニズムのテスト | サーキットブレーカー/リトライ/デグレードスイッチ 15 ケース (CircuitBreakerTest/RetryTest/ResilienceMockTest) | すべて通過 |
+| API 自動テスト | 187 エンドポイント (出典: `docs/test-reports/api.md`、2026-08-27)。現在の route.php は 261 エンドポイントを登録 | 171 通過 / 50 失敗 / 4 スキップ (失敗はいずれも確定的な不具合。レポート参照) |
+| Flutter UI テスト | 12 ケース (ログイン/ダッシュボード/ナビゲーション/言語切替) | すべて通過 |
+| Go/Rust | リポジトリに Go/Rust のコードはない | スキップ、記録済み |
+
 ```bash
-cd admin
-phpunit --bootstrap tests/bootstrap.php tests/
+# PHP ユニットテスト (先に JWT シークレットの環境変数をエクスポート)
+cd admin && ADMIN_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
+cd service && SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
+# API 自動テスト (サービスが起動している必要があります。tests/api/run_all.sh 参照)
+bash tests/api/run_all.sh
+# Flutter UI テスト
+cd admin/apps/flutter && flutter test --timeout 300s
 ```
 
-- PHPUnit 12.x、116件のテストケース
-- 56件のビジネスロジックテスト (PlatformTest) + 60件のインフラテスト
-- 対象範囲：bcmath 精度、両替計算、出金手数料、限度額、リスク管理、クーポン、KYC、i18n
+詳細レポート:
+- [PHP ユニットテストレポート](../test-reports/php-unit.md)
+- [安定性メカニズムのテストレポート (サーキットブレーカー/リトライ/デグレード)](../test-reports/resilience.md)
+- [API 自動テストレポート](../test-reports/api.md)
+- [Flutter UI テストレポート](../test-reports/ui.md)
 
 ## プラットフォーム機能概要
 
@@ -249,7 +330,7 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | 入金 | 注文作成 + Stripe/PayPal コールバック署名検証 + 自動入金 |
 | 両替 | プラットフォームコイン⇄ゲームコイン、リアルタイム見積、スプレッド収益 |
 | 出金 | 申請→審査→支払い、グローバルスイッチ、KYC段階別限度額+手数料 |
-| KYC | 実名認証の提出+審査、3段階認証制度 |
+| KYC | 実名認証の提出+審査、承認後に出金限度額を引き上げ |
 | ゲーム | CRUD + カテゴリ(10種) + サーバー区分 + ゲーム記録トラッキング |
 | 検索 | Elasticsearch 全文検索(LIKE フォールバック含む) |
 | ランキング | 日/週/月/総合ランキング、Redisキャッシュ、WebSocketリアルタイム配信（デフォルトポート 8790、LEADERBOARD_WS_PORT で変更可） |
@@ -266,11 +347,11 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | ソーシャル成長 | グループ + シェアリンク追跡 |
 | 決済ゲートウェイ | 新規 Adyen / GrabPay ゲートウェイ (L1) |
 | 国際化 | 4言語(en-US/zh-CN/ja-JP/ko-KR)、翻訳テーブル+キャッシュ |
-| 国別設定 | 8カ国別の決済/出金方法、最低入金額 |
+| 国別設定 | 18カ国別の決済/出金方法、最低入金額 |
 | 統計 | 日次統計スナップショット(5種類の指標) + プラットフォーム収益トラッキング |
 | キャプチャ | クリック式人機検証(poster-php) |
 | ゲーム接続 | Provider SDK (Self+ThirdParty) + HMAC-SHA256 署名 + コールバックゲートウェイ |
-| チケット | C端で作成/返信 + 管理端で処理/割り当て/クローズ |
+| チケット | C側で作成/返信 + 管理画面で処理/割り当て/クローズ |
 | VIP | 5段階ロイヤルティ、経験値累積、両替割引/出金手数料減免/レート加算 |
 | 実績 | 12個の内蔵実績、イベント駆動検出、進捗トラッキング |
 | ソーシャル | 友達システム + WebSocket リアルタイムダイレクトメッセージ（デフォルトポート 8791、CHAT_WS_PORT で変更可）、友達のみ送信可 |
@@ -279,32 +360,32 @@ phpunit --bootstrap tests/bootstrap.php tests/
 | クーポン | 条件制限 (min_deposit/first_user/game_id) |
 | イベント | Redis Pub/Sub イベントバス + Webhookサブスクリプション配信 (7種類のイベント) |
 | デプロイ | Docker Compose 7サービス構成（ポートはルート .env で設定） + Nginxリバースプロキシ |
-| クライアント | Flutter Admin(17ページ) + Platform(10ページ) + HarmonyOS(5ページ) |
+| クライアント | 管理画面 4 種 (Flutter/React/Angular/HarmonyOS) + C側 4 種 (Flutter/React/Angular/HarmonyOS) |
 
 ## ビジネスモデル
 
 ```
-法币 (USD/CNY/EUR...)
-  │  充值(Stripe/PayPal/支付宝/微信)
+法定通貨 (USD/CNY/EUR...)
+  │  入金 (Stripe/PayPal/Alipay/WeChat Pay)
   ▼
-平台币 (统一，精度 decimal(18,4))
-  │  兑换（含汇率 + 平台抽成差价）
+プラットフォームコイン (統一、精度 decimal(18,4))
+  │  両替（為替レート + プラットフォームのスプレッド込み）
   ▼
-游戏币 (每种游戏独立，独立汇率)
-  │  玩游戏赚/花
+ゲームコイン (ゲームごとに独立、独自レート)
+  │  プレイで獲得/消費
   ▼
-平台币 ← 兑回 → 提现（审核/自动）
+プラットフォームコイン ← 換金 → 出金（審査/自動）
 ```
 
 ## 複数通貨決済
 
-プラットフォームは「法定通貨 → プラットフォームコイン → ゲームコイン」の3層通貨分離型決済体系を採用：USD/CNY/EUR の複数法定通貨での入金に対応し、各ゲームは独立した計価通貨を持ちます。金額計算は全工程で bcmath 高精度演算を使用し、浮動小数点誤差を排除します。
+プラットフォームは「法定通貨 → プラットフォームコイン → ゲームコイン」の3層通貨分離型決済体系を採用：USD/CNY/EUR/JPY/KRW/GBP/BRL/INR の複数法定通貨での入金に対応し、各ゲームは独立した計価通貨を持ちます。金額計算は全工程で bcmath 高精度演算を使用し、浮動小数点誤差を排除します。
 
 ### 3層通貨モデル
 
 | 層 | 通貨 | 説明 |
 |------|------|------|
-| 法定通貨層 | USD / CNY / EUR | ユーザーの入金/出金時の実支払通貨、Stripe / PayPal が処理 |
+| 法定通貨層 | USD / CNY / EUR / JPY / KRW / GBP / BRL / INR | ユーザーの入金/出金時の実支払通貨、Stripe / PayPal が処理 |
 | プラットフォームコイン層 | プラットフォームコイン（全プラットフォーム統一） | 内部統一決済通貨（decimal(18,4)）、ウォレット楽観的ロックで同時引き落とし/重複入金を防止 |
 | ゲームコイン層 | ゲームごとの独立通貨 | ゲームごとに独立した `exchange_rate` レートと `spread_pct` スプレッド、独立したゲームコインウォレット |
 
@@ -313,35 +394,35 @@ phpunit --bootstrap tests/bootstrap.php tests/
 - **入金決済**：ユーザーが法定通貨で支払い（Stripe / PayPal コールバック署名検証、冪等性による重複防止）→ `default_exchange_rate` に従ってプラットフォームコインに換算して入金、入金注文には `amount + currency + platform_amount` も記録
 - **両替決済**：プラットフォームコイン ⇄ ゲームコインをゲーム通貨レートでリアルタイム見積（quote）し、`spread_pct` スプレッドをプラットフォームの差益として控除、VIP は両替割引とレート加算を享受
 - **ゲーム決済**：ゲームProviderが `/api/provider/settle` コールバックでユーザーのゲームコインを増減（HMAC-SHA256 署名）、ゲームセッションタイムアウト時に自動決済
-- **出金決済**：プラットフォームコイン引き落とし → 出金注文の生成（`platform_amount / fiat_amount / currency` を記録）→ 管理端の承認 → PayPal Payout による支払い → バッチステータスを完了まで同期
+- **出金決済**：プラットフォームコイン引き落とし → 出金注文の生成（`platform_amount / fiat_amount / currency` を記録）→ 管理画面の承認 → PayPal Payout による支払い → バッチステータスを完了まで同期
 
 ### 決済フロー図
 
 ```mermaid
 flowchart LR
-    subgraph FIAT["法币层 Fiat"]
-        A["用户充值<br/>USD / CNY / EUR<br/>Stripe / PayPal"]
-        H["提现到账<br/>PayPal Payout"]
+    subgraph FIAT["法定通貨層 Fiat"]
+        A["ユーザー入金<br/>USD / CNY / EUR / JPY / KRW / GBP / BRL / INR<br/>Stripe / PayPal"]
+        H["出金の着金<br/>PayPal Payout"]
     end
 
-    subgraph PLAT["平台币层 Platform Token"]
-        B["平台币钱包<br/>decimal(18,4) 乐观锁"]
-        E["提现订单<br/>platform_amount<br/>fiat_amount / currency"]
+    subgraph PLAT["プラットフォームコイン層 Platform Token"]
+        B["プラットフォームコインウォレット<br/>decimal(18,4) 楽観的ロック"]
+        E["出金注文<br/>platform_amount<br/>fiat_amount / currency"]
     end
 
-    subgraph GAME["游戏币层 Game Currency"]
-        D["游戏币种<br/>exchange_rate<br/>spread_pct"]
-        C["游戏币钱包<br/>UserGameWallet"]
-        G["游戏 Provider<br/>settle 结算回调"]
+    subgraph GAME["ゲームコイン層 Game Currency"]
+        D["ゲームコイン種別<br/>exchange_rate<br/>spread_pct"]
+        C["ゲームコインウォレット<br/>UserGameWallet"]
+        G["ゲームProvider<br/>settle 決済コールバック"]
     end
 
-    A -->|"充值回调验签<br/>平台币 = 法币 × default_exchange_rate"| B
-    B -->|"兑换买入 in<br/>扣除点差"| C
-    C -->|"兑换卖出 out<br/>按汇率折算"| B
-    D -.->|"独立汇率 + VIP 加成"| C
-    G <-->|"玩游戏赚/花"| C
-    B -->|"提现申请（扣款）"| E
-    E -->|"管理端审批<br/>PayPal Payout 打款"| H
+    A -->|"入金コールバック署名検証<br/>プラットフォームコイン = 法定通貨 × default_exchange_rate"| B
+    B -->|"両替買い in<br/>スプレッド控除"| C
+    C -->|"両替売り out<br/>為替レートで換算"| B
+    D -.->|"独立レート + VIP 加算"| C
+    G <-->|"プレイで獲得/消費"| C
+    B -->|"出金申請（引き落とし）"| E
+    E -->|"管理画面の承認<br/>PayPal Payout 支払い"| H
 ```
 
 ## アーキテクチャ図
@@ -377,9 +458,9 @@ flowchart LR
 | [アーキテクチャドキュメント](../ARCHITECTURE.ja.md) | システムトポロジー、モジュールアーキテクチャ、データフロー |
 | [機能設計ドキュメント](../FEATURE-DESIGN.ja.md) | ビジネスモデル、機能仕様、フロー設計 |
 | [機能ドキュメント](../FEATURES.ja.md) | 機能一覧、モジュール説明、ユーザージャーニー |
-| [APIドキュメント](../API.ja.md) | 完全な API リファレンス (102 エンドポイント) |
-| [オンラインドキュメント](http://localhost:8792/apidoc/) | hg/apidoc インタラクティブドキュメント (C端) |
-| [オンラインドキュメント](http://localhost:8789/apidoc/) | hg/apidoc インタラクティブドキュメント (管理画面) |
+| [APIドキュメント](../API.ja.md) | 完全な API リファレンス (146 エンドポイント) |
+| [オンラインドキュメント](http://localhost:8792/apidoc/) | erikwang2013/apidoc-php インタラクティブドキュメント (C側) |
+| [オンラインドキュメント](http://localhost:8789/apidoc/) | erikwang2013/apidoc-php インタラクティブドキュメント (管理画面) |
 | [ClickHouse インストール](../CLICKHOUSE_INSTALL.ja.md) | ClickHouse のインストール/設定/移行/検証 |
 | [Provider SDK 接続ドキュメント](../PROVIDER-SDK.ja.md) | サードパーティゲーム接続ガイド (署名アルゴリズム+PHP/Go/Pythonサンプル) |
 | [ClickHouse 使用方法](../CLICKHOUSE_USAGE.ja.md) | 4つの ClickHouse サービスAPIと管理画面ダッシュボード |
@@ -397,11 +478,11 @@ flowchart LR
   <table align="center" border="0" cellspacing="0" cellpadding="0">
     <tr>
       <td align="center" width="200">
-        <img src="docs/weixinpay-130.png" width="130" height="130" alt="微信支付"><br>
+        <img src="../weixinpay-130.png" width="130" height="130" alt="微信支付"><br>
         <b>微信支付</b>
       </td>
       <td align="center" width="200">
-        <img src="docs/alipay-130.png" width="130" height="130" alt="支付宝"><br>
+        <img src="../alipay-130.png" width="130" height="130" alt="支付宝"><br>
         <b>支付宝</b>
       </td>
     </tr>

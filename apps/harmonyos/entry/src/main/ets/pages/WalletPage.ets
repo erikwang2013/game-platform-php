@@ -78,6 +78,26 @@ struct WalletPage {
     return type || '-';
   }
 
+  private go(url: string): void {
+    router.pushUrl({ url: url });
+  }
+
+  @Builder
+  actionItem(label: string, url: string) {
+    Column() {
+      Text(label)
+        .fontSize(14)
+        .fontWeight(FontWeight.Medium)
+        .fontColor('#1677FF')
+    }
+    .layoutWeight(1)
+    .height(48)
+    .justifyContent(FlexAlign.Center)
+    .onClick(() => {
+      this.go(url);
+    })
+  }
+
   private typeColor(type: string): string {
     if (type === 'deposit' || type === 'exchange_in' || type === 'game_earn') {
       return '#52C41A';
@@ -149,6 +169,17 @@ struct WalletPage {
             .borderRadius(16)
             .backgroundColor('#1677FF')
             .margin({ left: 16, right: 16, top: 8 })
+
+            Row() {
+              this.actionItem('充值', 'pages/DepositPage')
+              this.actionItem('提现', 'pages/WithdrawPage')
+              this.actionItem('兑换', 'pages/ExchangePage')
+            }
+            .width('100%')
+            .padding({ top: 6, bottom: 6 })
+            .margin({ left: 16, right: 16, top: 12 })
+            .borderRadius(12)
+            .backgroundColor('#FFFFFF')
 
             Text('流水记录')
               .fontSize(16)
