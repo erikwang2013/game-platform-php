@@ -43,6 +43,11 @@ skills-lock.json
 admin/public/apidoc/
 service/public/apidoc/
 
+# 设计素材/调试残留（非代码引用；img 含相机原片，只忽略不删除）
+admin/public/img/
+service/public/img/
+docs/diagrams/architecture-ja.svg.html
+
 # H5 游戏构建产物
 game/xiaoxiaole/dist/
 game/xiaoxiaole/node_modules/

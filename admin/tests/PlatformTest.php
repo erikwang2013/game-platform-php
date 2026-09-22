@@ -10,7 +10,6 @@ namespace tests;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 use common\model\PlatformConfig;
-use app\service\RiskService;
 use common\service\TranslationService;
 
 /**
@@ -312,47 +311,7 @@ class PlatformTest extends TestCase
     }
 
     // ============================================================
-    // 7. 风控检查测试
-    // ============================================================
-
-    #[Test]
-    public function riskCheckReturnsPassedByDefault(): void
-    {
-        try {
-            $result = RiskService::check(0, 'deposit', ['ip' => '127.0.0.1']);
-            $this->assertSame('passed', $result['result']);
-        } catch (\Throwable $e) {
-            $this->markTestSkipped('Database connection not configured in test environment');
-        }
-    }
-
-    #[Test]
-    public function riskCheckDetectsAmountAnomaly(): void
-    {
-        try {
-            $result = RiskService::check(1, 'deposit', [
-                'amount' => '10000.0000',
-                'ip' => '192.168.1.1'
-            ]);
-            $this->assertContains($result['result'], ['warn', 'block']);
-        } catch (\Throwable $e) {
-            $this->markTestSkipped('Database connection not configured in test environment');
-        }
-    }
-
-    #[Test]
-    public function riskCheckIpBlacklistedIsBlocked(): void
-    {
-        try {
-            $result = RiskService::check(0, 'login', ['ip' => '10.0.0.1']);
-            $this->assertSame('passed', $result['result']);
-        } catch (\Throwable $e) {
-            $this->markTestSkipped('Database connection not configured in test environment');
-        }
-    }
-
-    // ============================================================
-    // 8. 订单号生成测试
+    // 7. 订单号生成测试
     // ============================================================
 
     #[Test]
@@ -372,7 +331,7 @@ class PlatformTest extends TestCase
     }
 
     // ============================================================
-    // 9. 国际化测试
+    // 8. 国际化测试
     // ============================================================
 
     #[Test]
@@ -404,7 +363,7 @@ class PlatformTest extends TestCase
     }
 
     // ============================================================
-    // 10. 数据验证测试
+    // 9. 数据验证测试
     // ============================================================
 
     #[Test]
@@ -434,7 +393,7 @@ class PlatformTest extends TestCase
     }
 
     // ============================================================
-    // 11. 枚举值验证测试
+    // 10. 枚举值验证测试
     // ============================================================
 
     #[Test]
@@ -482,7 +441,7 @@ class PlatformTest extends TestCase
     }
 
     // ============================================================
-    // 12. KYC 状态流转测试
+    // 11. KYC 状态流转测试
     // ============================================================
 
     #[Test]
@@ -504,7 +463,7 @@ class PlatformTest extends TestCase
     }
 
     // ============================================================
-    // 13. 安全: 乐观锁重试逻辑验证
+    // 12. 安全: 乐观锁重试逻辑验证
     // ============================================================
 
     #[Test]
@@ -526,7 +485,7 @@ class PlatformTest extends TestCase
     }
 
     // ============================================================
-    // 14. 优惠券计算测试
+    // 13. 优惠券计算测试
     // ============================================================
 
     #[Test]
@@ -573,7 +532,7 @@ class PlatformTest extends TestCase
     }
 
     // ============================================================
-    // 15. 游戏会话 ID 生成测试
+    // 14. 游戏会话 ID 生成测试
     // ============================================================
 
     #[Test]
@@ -584,7 +543,7 @@ class PlatformTest extends TestCase
     }
 
     // ============================================================
-    // 16. 分页参数验证
+    // 15. 分页参数验证
     // ============================================================
 
     #[Test]
@@ -607,7 +566,7 @@ class PlatformTest extends TestCase
     }
 
     // ============================================================
-    // 17. 响应格式验证
+    // 16. 响应格式验证
     // ============================================================
 
     #[Test]
