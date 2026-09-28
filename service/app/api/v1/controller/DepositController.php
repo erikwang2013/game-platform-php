@@ -76,7 +76,7 @@ class DepositController extends BaseController
         $platformAmount = bcmul((string) $amount, $exchangeRate, 4);
 
         // Generate order number: DEP + YmdHis + unique suffix (uniqid 微秒+进程，避免同秒撞 uk_order_no)
-        $orderNo = 'DEP' . date('YmdHis') . strtoupper(substr(uniqid('', true), -6));
+        $orderNo = self::generateOrderNo('DEP', time(), self::orderNoSuffix());
 
         // 合规钩子（默认 no-op，config/compliance.php enabled=false 时与改造前行为完全一致）
         ComplianceCheckService::beforeDeposit($userId, (string) $amount, (string) $currency, $this->resolveCountry($request));

@@ -88,11 +88,8 @@ class WithdrawController extends BaseController
         ComplianceCheckService::beforeWithdraw($userId, $platformAmount, (string) $method, $this->resolveCountry($request));
 
         // Check KYC-based tiered limits
-        $level    = 'default';
         $identity = UserIdentity::where('user_id', $userId)->first();
-        if ($identity && $identity->status === 'approved') {
-            $level = 'verified';
-        }
+        $level    = self::withdrawLevel($identity?->status);
         // VIP fee discount applied below
 
         $limit = WithdrawLimit::getByLevel($level);
@@ -116,31 +113,21 @@ class WithdrawController extends BaseController
             $feeMax       = '0';
         }
 
-        // Check minimum withdrawal amount
-        if (bccomp($platformAmount, $minAmount, 4) < 0) {
-            return $this->fail('Amount below minimum withdrawal limit', 400);
+        // 金额校验 + 手续费 + 自动审核阈值资格：纯函数（见 withdrawQuote），此处把两处来源归一为显式入参
+        $quote = self::withdrawQuote($platformAmount, [
+            'single_min'             => (string) $minAmount,
+            'single_max'             => (string) $maxAmount,
+            'auto_approve_threshold' => (string) $autoThreshold,
+            'fee_pct'                => (string) $feePct,
+            'fee_max'                => (string) $feeMax,
+        ], VipService::getWithdrawFeeDiscount($userId));
+
+        if ($quote['error'] !== null) {
+            return $this->fail($quote['error'], $quote['http']);
         }
 
-        // Check maximum single withdrawal amount
-        if (bccomp($maxAmount, '0', 4) > 0 && bccomp($platformAmount, $maxAmount, 4) > 0) {
-            return $this->fail('Amount exceeds maximum withdrawal limit', 400);
-        }
-
-        // Calculate withdrawal fee with VIP discount: fee = min(platform_amount * fee_pct/100 * (1-vip_discount), fee_max)
-        $fee = '0';
-        $vipFeeDiscount = VipService::getWithdrawFeeDiscount($userId);
-        if (bccomp($feePct, '0', 4) > 0) {
-            $effectiveFeePct = $feePct;
-            if (bccomp($vipFeeDiscount, '0', 4) > 0) {
-                $effectiveFeePct = bcmul($feePct, bcsub('1', $vipFeeDiscount, 4), 4);
-                if (bccomp($effectiveFeePct, '0', 4) < 0) $effectiveFeePct = '0';
-            }
-            $fee = bcmul($platformAmount, bcdiv($effectiveFeePct, '100', 4), 4);
-            if (bccomp($feeMax, '0', 4) > 0 && bccomp($fee, $feeMax, 4) > 0) {
-                $fee = $feeMax;
-            }
-        }
-        $actualAmount = bcsub($platformAmount, $fee, 4);
+        $fee          = $quote['fee'];
+        $actualAmount = $quote['actual_amount'];
 
         // 风控检查（H4）：阻断 → 拒绝下单；警告 → 人工审核，不自动放行
         $riskReview = false;
@@ -182,7 +169,7 @@ class WithdrawController extends BaseController
                     ->whereIn('status', $counted)
                     ->whereDate('created_at', date('Y-m-d'))
                     ->sum('platform_amount');
-                if (bccomp(bcadd((string) $todaySum, $platformAmount, 4), $dailyLimit, 4) > 0) {
+                if (self::exceedsLimit((string) $todaySum, $platformAmount, $dailyLimit)) {
                     Db::rollBack();
                     return $this->fail('Daily withdrawal limit exceeded', 400);
                 }
@@ -195,7 +182,7 @@ class WithdrawController extends BaseController
                         date('Y-m-t 23:59:59'),
                     ])
                     ->sum('platform_amount');
-                if (bccomp(bcadd((string) $monthSum, $platformAmount, 4), $monthlyLimit, 4) > 0) {
+                if (self::exceedsLimit((string) $monthSum, $platformAmount, $monthlyLimit)) {
                     Db::rollBack();
                     return $this->fail('Monthly withdrawal limit exceeded', 400);
                 }
@@ -204,13 +191,13 @@ class WithdrawController extends BaseController
             // Determine auto-approve using tiered threshold（风控警告一律人工审核）
             $status = 'pending';
             $dualOn = in_array((string) PlatformConfig::get('withdraw', 'require_dual_review', 'off'), ['on', '1', 'true'], true);
-            if (!$riskReview && !$dualOn && bccomp($autoThreshold, '0', 4) > 0 && bccomp($platformAmount, $autoThreshold, 4) < 0) {
+            if (!$riskReview && !$dualOn && $quote['auto_approve_eligible']) {
                 $status = 'approved';
             }
 
-            // Generate order number: WTH + YmdHis + random 4 digits
+            // Generate order number: WTH + YmdHis + unique suffix
             // uniqid 微秒+进程后缀避免同秒撞 uk_order_no
-            $orderNo = 'WTH' . date('YmdHis') . strtoupper(substr(uniqid('', true), -6));
+            $orderNo = self::generateOrderNo('WTH', time(), self::orderNoSuffix());
 
             // Create withdraw order first（扣款需以订单 id 作为流水 ref_id）
             $order = new WithdrawOrder();
@@ -299,5 +286,85 @@ class WithdrawController extends BaseController
             'per_page'  => $paginator->perPage(),
             'last_page' => $paginator->lastPage(),
         ]);
+    }
+
+    /**
+     * 提现层级判定：KYC 已通过（approved）→ verified 档，其余（未提交/审核中/驳回/未知状态）→ default 档。
+     *
+     * 决定 WithdrawLimit::getByLevel() 取哪一行限额（单笔上下限/日/月上限/手续费/自动审核阈值）。
+     * 纯函数，原先内联在 applyLocked 中。
+     */
+    private static function withdrawLevel(?string $identityStatus): string
+    {
+        return $identityStatus === 'approved' ? 'verified' : 'default';
+    }
+
+    /**
+     * 提现报价：单笔最小/最大限额校验 + 手续费（VIP 折扣、封顶）+ 自动审核阈值资格。
+     *
+     * 纯函数（输入显式，不碰 $request/DB/Redis），原先内联在 applyLocked 中。
+     * 与调用方的分工：
+     *  - 日/月累计限额比较见 exceedsLimit()；
+     *  - 风控警告与「双重审核开关」仍在调用方参与 status 判定 —— 风险检查发生在金额校验
+     *    之后，顺序不可调换（金额非法时不得触发风控检查的写入）。
+     *
+     * @param array{single_min:string,single_max:string,auto_approve_threshold:string,fee_pct:string,fee_max:string} $terms
+     * @return array{error:?string,http:?int,fee:string,actual_amount:string,auto_approve_eligible:bool}
+     */
+    private static function withdrawQuote(string $platformAmount, array $terms, string $vipFeeDiscount): array
+    {
+        $minAmount     = $terms['single_min'];
+        $maxAmount     = $terms['single_max'];
+        $autoThreshold = $terms['auto_approve_threshold'];
+        $feePct        = $terms['fee_pct'];
+        $feeMax        = $terms['fee_max'];
+
+        $quote = ['error' => null, 'http' => null, 'fee' => '0', 'actual_amount' => $platformAmount, 'auto_approve_eligible' => false];
+
+        // Check minimum withdrawal amount
+        if (bccomp($platformAmount, $minAmount, 4) < 0) {
+            $quote['error'] = 'Amount below minimum withdrawal limit';
+            $quote['http']  = 400;
+            return $quote;
+        }
+
+        // Check maximum single withdrawal amount
+        if (bccomp($maxAmount, '0', 4) > 0 && bccomp($platformAmount, $maxAmount, 4) > 0) {
+            $quote['error'] = 'Amount exceeds maximum withdrawal limit';
+            $quote['http']  = 400;
+            return $quote;
+        }
+
+        // Calculate withdrawal fee with VIP discount: fee = min(platform_amount * fee_pct/100 * (1-vip_discount), fee_max)
+        $fee = '0';
+        if (bccomp($feePct, '0', 4) > 0) {
+            $effectiveFeePct = $feePct;
+            if (bccomp($vipFeeDiscount, '0', 4) > 0) {
+                $effectiveFeePct = bcmul($feePct, bcsub('1', $vipFeeDiscount, 4), 4);
+                if (bccomp($effectiveFeePct, '0', 4) < 0) $effectiveFeePct = '0';
+            }
+            $fee = bcmul($platformAmount, bcdiv($effectiveFeePct, '100', 4), 4);
+            if (bccomp($feeMax, '0', 4) > 0 && bccomp($fee, $feeMax, 4) > 0) {
+                $fee = $feeMax;
+            }
+        }
+        $quote['fee']           = $fee;
+        $quote['actual_amount'] = bcsub($platformAmount, $fee, 4);
+
+        // 自动审核阈值资格（riskReview / dualOn 由调用方合取）
+        $quote['auto_approve_eligible'] =
+            bccomp($autoThreshold, '0', 4) > 0 && bccomp($platformAmount, $autoThreshold, 4) < 0;
+
+        return $quote;
+    }
+
+    /**
+     * 日/月累计限额判定：已用量 + 本次金额 是否超过限额。
+     *
+     * 调用方负责 `bccomp($limit, '0', 4) > 0` 的短路（限额为 0 = 不限制时不应发起 sum 查询）。
+     */
+    private static function exceedsLimit(string $usedSum, string $amount, string $limit): bool
+    {
+        return bccomp(bcadd($usedSum, $amount, 4), $limit, 4) > 0;
     }
 }

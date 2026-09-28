@@ -77,4 +77,25 @@ class BaseController
         $lang = $request->header('X-Language', '') ?: $request->header('Accept-Language', '');
         return CountryConfig::fromLang($lang);
     }
+
+    /**
+     * 订单号熵源：uniqid 微秒+进程熵的后 6 位，避免同秒撞 uk_order_no。
+     *
+     * 由调用方与 generateOrderNo() 组合：订单号 = 前缀 + 时间 + 本函数。
+     */
+    protected static function orderNoSuffix(): string
+    {
+        return strtoupper(substr(uniqid('', true), -6));
+    }
+
+    /**
+     * 拼装订单号：前缀 + YmdHis + 熵后缀（如 WTH20260928201013460143）。
+     *
+     * 时间与后缀都从参数注入（而非在函数内取 now()/uniqid()），故可被单测钉住精确值；
+     * 调用方固定写法：self::generateOrderNo('WTH', time(), self::orderNoSuffix())。
+     */
+    protected static function generateOrderNo(string $prefix, int $timestamp, string $suffix): string
+    {
+        return $prefix . date('YmdHis', $timestamp) . strtoupper($suffix);
+    }
 }

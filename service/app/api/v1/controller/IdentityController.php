@@ -67,14 +67,15 @@ class IdentityController extends BaseController
 
         // Check if already submitted and still pending or approved
         $existing = UserIdentity::where('user_id', $request->userId)->first();
+        $action   = self::kycSubmitAction($existing?->status);
 
-        if ($existing && in_array($existing->status, ['pending', 'approved'], true)) {
+        if ($action === 'reject') {
             return $this->fail('You already have a pending or approved KYC submission', 422);
         }
 
         $now = date('Y-m-d H:i:s');
 
-        if ($existing && $existing->status === 'rejected') {
+        if ($action === 'resubmit') {
             // Re-submission: update the existing record
             $existing->real_name       = $request->input('real_name');
             $existing->id_type         = $request->input('id_type');
@@ -108,6 +109,25 @@ class IdentityController extends BaseController
         }
 
         return $this->success([], 'KYC submitted successfully');
+    }
+
+    /**
+     * KYC 提交状态机判定（纯函数，输入为已提交记录的状态，null = 从未提交）。
+     *
+     * 原先内联在 apply() 中。返回的三种动作即三条分支：
+     *  - reject   : 已有 pending/approved 记录，重复提交一律拒绝（422）
+     *  - resubmit : 上次被驳回，复用原记录回写并重置为 pending（清空 reviewer_id/review_note/reviewed_at）
+     *  - create   : 从未提交（含其它未知状态值）→ 新建记录
+     *
+     * @return string 'reject'|'resubmit'|'create'
+     */
+    private static function kycSubmitAction(?string $existingStatus): string
+    {
+        if ($existingStatus !== null && in_array($existingStatus, ['pending', 'approved'], true)) {
+            return 'reject';
+        }
+
+        return $existingStatus === 'rejected' ? 'resubmit' : 'create';
     }
 
     /**
