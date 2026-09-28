@@ -7,16 +7,71 @@ declare(strict_types=1);
 
 namespace tests;
 
-use PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\Attributes\Test;
+use app\admin\v1\controller\BaseController;
+use app\admin\v1\controller\GameController;
+use app\admin\v1\controller\UserController;
+use common\BcMath;
+use common\model\Game;
 use common\model\PlatformConfig;
 use common\service\TranslationService;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\TestCase;
+use support\Request;
 
 /**
  * 平台核心业务逻辑测试
+ *
+ * 只允许测试「本项目的生产代码」：凡断言字面量等于自己、在测试里重算一遍公式、
+ * 或直接测 PHP 内建函数（bcadd/preg_match/max/json_decode）的用例，已在本轮清理中
+ * 删除或改指真实生产类——它们给出的是假绿：把生产实现整段改坏也不会变红。
+ *
+ * 无法在本文件测试的领域（兑换两侧发生额、提现手续费、KYC 流转、订单号）其真实实现
+ * 位于 service 树，admin 测试无法加载；兑换侧已由 service/tests/ExchangeControllerLegsTest.php
+ * 用反射直接钉住生产方法，提现手续费与其余各项仍是覆盖缺口。
  */
 class PlatformTest extends TestCase
 {
+    /** 本文件写入 game_platform_config 的独立命名空间，避免踩到真实配置 */
+    private const CFG_GROUP = 'phpunit_platform_test';
+
+    protected function tearDown(): void
+    {
+        try {
+            PlatformConfig::where('group', self::CFG_GROUP)->delete();
+        } catch (\Throwable) {
+            // 数据库不可用时无需清理
+        }
+        parent::tearDown();
+    }
+
+    /**
+     * 仅在数据库确实不可达时跳过；探针之外的异常一律上抛，
+     * 避免把实现缺陷伪装成 skipped 蒙混过关。
+     */
+    private function requireDb(): void
+    {
+        try {
+            (new PlatformConfig())->getConnection()->select('SELECT 1');
+        } catch (\Throwable) {
+            $this->markTestSkipped('Database connection not configured in test environment');
+        }
+    }
+
+    /** 写一条测试配置行。PlatformConfig 主键非自增，id 必须显式给。 */
+    private function putConfig(string $key, string $value, string $type): void
+    {
+        PlatformConfig::where('group', self::CFG_GROUP)->where('key', $key)->delete();
+
+        $config = new PlatformConfig();
+        $config->id          = crc32(self::CFG_GROUP . ':' . $key);
+        $config->group       = self::CFG_GROUP;
+        $config->key         = $key;
+        $config->value       = $value;
+        $config->type        = $type;
+        $config->description = 'phpunit';
+        $config->save();
+    }
+
     // ============================================================
     // 1. 平台配置测试
     // ============================================================
@@ -24,311 +79,125 @@ class PlatformTest extends TestCase
     #[Test]
     public function platformConfigGetReturnsDefaultWhenNotFound(): void
     {
-        if (!\method_exists(PlatformConfig::class, 'get')) {
-            $this->markTestSkipped('DB not available');
-        }
-        try {
-            $result = PlatformConfig::get('test', 'nonexistent_key', 'default_value');
-            $this->assertEquals('default_value', $result);
-        } catch (\Throwable $e) {
-            $this->markTestSkipped('Database connection not configured in test environment');
-        }
+        $this->requireDb();
+
+        // 原先这里是 catch (\Throwable) → markTestSkipped：任何真实缺陷（表结构、SQL、
+        // 连接串）都会被伪装成 skipped 蒙混过关，等于这条用例永不失败。改为只对连接探针跳过。
+        $this->assertSame(
+            'default_value',
+            PlatformConfig::get(self::CFG_GROUP, 'definitely_absent_key', 'default_value')
+        );
     }
 
     #[Test]
     public function platformConfigGetCastsBoolType(): void
     {
-        // 验证 bool 类型转换逻辑
-        $this->assertTrue(true); // bool cast works
-        $this->assertFalse(false);
+        $this->requireDb();
+
+        $this->putConfig('cast_bool', '1', 'bool');
+        $bool = PlatformConfig::get(self::CFG_GROUP, 'cast_bool');
+        // assertIsBool 不是摆设：删掉 get() 的 'bool' 分支会落回 default 返回字符串 '1'，
+        // 而 assertTrue('1') 照样通过——只有钉住类型才拦得住。
+        $this->assertIsBool($bool);
+        $this->assertTrue($bool);
+
+        $this->putConfig('cast_bool', '0', 'bool');
+        $this->assertSame(false, PlatformConfig::get(self::CFG_GROUP, 'cast_bool'));
     }
 
     #[Test]
     public function platformConfigGetCastsIntType(): void
     {
-        $intVal = (int) '123';
-        $this->assertSame(123, $intVal);
+        $this->requireDb();
+
+        $this->putConfig('cast_int', '123', 'int');
+        $this->assertSame(123, PlatformConfig::get(self::CFG_GROUP, 'cast_int'));
     }
 
     #[Test]
     public function platformConfigGetCastsJsonType(): void
     {
-        $json = '{"key":"value"}';
-        $decoded = json_decode($json, true);
-        $this->assertSame(['key' => 'value'], $decoded);
+        $this->requireDb();
+
+        $this->putConfig('cast_json', '{"key":"value","n":2}', 'json');
+        $this->assertSame(
+            ['key' => 'value', 'n' => 2],
+            PlatformConfig::get(self::CFG_GROUP, 'cast_json')
+        );
     }
 
     #[Test]
     public function platformConfigGetCastsDecimalType(): void
     {
-        // decimal type returns raw string for bcmath
-        $decimal = '100.5000';
-        $this->assertSame('100.5000', $decimal);
+        $this->requireDb();
+
+        // decimal 必须原样返回字符串：一旦在读取点被 (float) 规范化，后续 bcmath 全是浮点残值
+        $this->putConfig('cast_decimal', '100.5000', 'decimal');
+        $this->assertSame('100.5000', PlatformConfig::get(self::CFG_GROUP, 'cast_decimal'));
     }
 
     // ============================================================
-    // 2. 钱包 bcmath 运算测试
+    // 2. 金额运算（common\BcMath）
+    //    原生 bcadd/bcmul/bcdiv 是截断不进位，项目统一经 BcMath::round 半进位、
+    //    百分比统一走 BcMath::percent（见 CLAUDE.md 金额运算规范）。
+    //    下面钉的是本项目的舍入/百分比契约，不是 PHP 扩展本身。
     // ============================================================
 
     #[Test]
-    public function bcmathAddIsPrecise(): void
+    public function bcMathRoundRoundsHalfUpAtScale(): void
     {
-        $result = bcadd('100.1234', '50.5678', 4);
-        $this->assertSame('150.6912', $result);
+        $this->assertSame('1.01', BcMath::round('1.005', 2));
+        $this->assertSame('2.34', BcMath::round('2.3449', 2));
     }
 
     #[Test]
-    public function bcmathSubIsPrecise(): void
+    public function bcMathRoundIsNotTruncation(): void
     {
-        $result = bcsub('100.5000', '0.0001', 4);
-        $this->assertSame('100.4999', $result);
+        // 同一输入：原生 bcadd 截断得 '1.00'，BcMath::round 半进位得 '1.01'。
+        // 这正是本类存在的理由——少了它，分档手续费的末位会系统性少收。
+        $this->assertSame('1.00', bcadd('1.005', '0', 2));
+        $this->assertSame('1.01', BcMath::round('1.005', 2));
     }
 
     #[Test]
-    public function bcmathMulIsPrecise(): void
+    public function bcMathRoundNegativeGoesAwayFromZero(): void
     {
-        $result = bcmul('10.0000', '100.00000000', 4);
-        $this->assertSame('1000.0000', $result);
+        $this->assertSame('-1.01', BcMath::round('-1.005', 2));
+        $this->assertSame('-3', BcMath::round('-2.5', 0));
     }
 
     #[Test]
-    public function bcmathDivIsPrecise(): void
+    public function bcMathRoundCarriesAtScaleZero(): void
     {
-        $result = bcdiv('1000.0000', '100.00000000', 4);
-        $this->assertSame('10.0000', $result);
+        $this->assertSame('3', BcMath::round('2.5', 0));
+        $this->assertSame('2', BcMath::round('1.999', 0));
     }
 
     #[Test]
-    public function bcmathCompReturnsCorrectly(): void
+    public function bcMathPercentIsRatioTimesHundred(): void
     {
-        // 等于
-        $this->assertSame(0, bccomp('100.0000', '100.0000', 4));
-        // 大于
-        $this->assertSame(1, bccomp('100.0001', '100.0000', 4));
-        // 小于
-        $this->assertSame(-1, bccomp('99.9999', '100.0000', 4));
+        $this->assertSame('50.00', BcMath::percent('1', '2'));
+        $this->assertSame('5.00', BcMath::percent('50', '1000'));
     }
 
     #[Test]
-    public function negativeAmountDeduction(): void
+    public function bcMathPercentRoundsHalfUp(): void
     {
-        $negated = bcmul('50.0000', '-1', 4);
-        $this->assertSame('-50.0000', $negated);
-
-        $balance = bcadd('100.0000', $negated, 4);
-        $this->assertSame('50.0000', $balance);
+        // 1/3 = 33.3333… → 33.33；2/3 = 66.6666… → 66.67
+        $this->assertSame('33.33', BcMath::percent('1', '3'));
+        $this->assertSame('66.67', BcMath::percent('2', '3'));
     }
 
     // ============================================================
-    // 3. 兑换汇率计算测试
+    // 3~7. 兑换/提现费用/限额/层级/订单号 —— 已整体删除
+    //
+    // 这些用例断言的是「测试里自己写的一遍公式 + 自造的字面量数组」，一行生产代码都不碰：
+    // 把 ExchangeController::exchangeLegs 或提现手续费上限整段改坏，它们照样全绿。
+    // 真实实现位于 service 树（exchangeLegs 为 private static，手续费为
+    // WithdrawController::withdraw 内联代码），admin 测试无法加载，故无法在此处改指生产类。
+    // 兑换侧无损失：service/tests/ExchangeControllerLegsTest.php 已用反射直接钉住该方法。
+    // 提现手续费/限额/层级限额/订单号仍是覆盖缺口（见本轮报告）。
     // ============================================================
-
-    #[Test]
-    public function exchangeBuyCalculatesCorrectGameAmount(): void
-    {
-        // 1平台币 = 100游戏币, 平台抽成5%
-        $platformAmount = '10.0000';
-        $rate = '100.00000000';
-        $spreadPct = '5.00';
-
-        $gameAmount = bcmul($platformAmount, $rate, 4);
-        $this->assertSame('1000.0000', $gameAmount);
-
-        $spreadFee = bcmul($gameAmount, bcdiv($spreadPct, '100', 8), 4);
-        $this->assertSame('50.0000', $spreadFee);
-
-        $actualGameAmount = bcsub($gameAmount, $spreadFee, 4);
-        $this->assertSame('950.0000', $actualGameAmount);
-    }
-
-    #[Test]
-    public function exchangeSellCalculatesCorrectPlatformAmount(): void
-    {
-        // 卖出 950 游戏币, 汇率100, 抽成5%
-        $gameAmount = '950.0000';
-        $rate = '100.00000000';
-        $spreadPct = '5.00';
-
-        $platformRaw = bcdiv($gameAmount, $rate, 4);
-        $this->assertSame('9.5000', $platformRaw);
-
-        $spreadFee = bcmul($platformRaw, bcdiv($spreadPct, '100', 8), 4);
-        $this->assertSame('0.4750', $spreadFee);
-
-        $actualPlatformAmount = bcsub($platformRaw, $spreadFee, 4);
-        $this->assertSame('9.0250', $actualPlatformAmount);
-    }
-
-    #[Test]
-    public function exchangeSpreadIsPlatformRevenue(): void
-    {
-        // 买入: 10平台币 → 950游戏币
-        // 卖出: 950游戏币 → 9.025平台币
-        // 平台收益: 10 - 9.025 = 0.975 (买卖差价)
-        $buyCost = '10.0000';
-        $sellReturn = '9.0250';
-        $spread = bcsub($buyCost, $sellReturn, 4);
-        $this->assertSame('0.9750', $spread);
-    }
-
-    #[Test]
-    public function exchangeFeeTooHighReturnsZero(): void
-    {
-        // 极小金额, 手续费后为0或负
-        $platformAmount = '0.0001';
-        $rate = '100.00000000';
-        $spreadPct = '99.00';
-
-        $gameAmount = bcmul($platformAmount, $rate, 4);
-        $spreadFee = bcmul($gameAmount, bcdiv($spreadPct, '100', 8), 4);
-        $actual = bcsub($gameAmount, $spreadFee, 4);
-
-        // 极小金额 + 高手续费 → 实际到账极少
-        $this->assertSame(1, bccomp($actual, '0', 4), '实际到账应 > 0（极小金额）');
-    }
-
-    // ============================================================
-    // 4. 提现费用计算测试
-    // ============================================================
-
-    #[Test]
-    public function withdrawFeeCalculation(): void
-    {
-        // 手续费 = min(amount * fee_pct/100, fee_max)
-        $amount = '100.0000';
-        $feePct = '1.00';
-        $feeMax = '50.0000';
-
-        $fee = bcmul($amount, bcdiv($feePct, '100', 8), 4);
-        $this->assertSame('1.0000', $fee);
-
-        // fee < fee_max, so fee = 1.0000
-        $this->assertSame(-1, bccomp($fee, $feeMax, 4));
-    }
-
-    #[Test]
-    public function withdrawFeeCappedAtMax(): void
-    {
-        $amount = '10000.0000';
-        $feePct = '1.00';
-        $feeMax = '50.0000';
-
-        $fee = bcmul($amount, bcdiv($feePct, '100', 8), 4);
-        $this->assertSame('100.0000', $fee);
-
-        // fee > fee_max, cap at max
-        $actualFee = (bccomp($fee, $feeMax, 4) > 0) ? $feeMax : $fee;
-        $this->assertSame('50.0000', $actualFee);
-    }
-
-    #[Test]
-    public function withdrawZeroFeeForVip(): void
-    {
-        // VIP 等级: fee_pct = 0.00
-        $feePct = '0.00';
-        $amount = '10000.0000';
-
-        $fee = bcmul($amount, bcdiv($feePct, '100', 8), 4);
-        $this->assertSame('0.0000', $fee);
-    }
-
-    // ============================================================
-    // 5. 限额检查测试
-    // ============================================================
-
-    #[Test]
-    public function withdrawBelowMinAmountRejected(): void
-    {
-        $minAmount = '1.0000';
-        $requestAmount = '0.5000';
-
-        $below = bccomp($requestAmount, $minAmount, 4) < 0;
-        $this->assertTrue($below, '低于最低限额应被拒绝');
-    }
-
-    #[Test]
-    public function withdrawExceedsDailyLimitRejected(): void
-    {
-        $dailyLimit = '10000.0000';
-        $todayUsed = '9500.0000';
-        $newRequest = '1000.0000';
-
-        $total = bcadd($todayUsed, $newRequest, 4);
-        $exceeded = bccomp($total, $dailyLimit, 4) > 0;
-        $this->assertTrue($exceeded, '超过日限额应被拒绝');
-    }
-
-    #[Test]
-    public function withdrawWithinDailyLimitAllowed(): void
-    {
-        $dailyLimit = '10000.0000';
-        $todayUsed = '8000.0000';
-        $newRequest = '1000.0000';
-
-        $total = bcadd($todayUsed, $newRequest, 4);
-        $exceeded = bccomp($total, $dailyLimit, 4) > 0;
-        $this->assertFalse($exceeded, '未超日限额应允许');
-    }
-
-    #[Test]
-    public function withdrawBelowAutoThresholdAutoApproved(): void
-    {
-        $threshold = '100.0000';
-        $amount = '50.0000';
-
-        $autoApproved = bccomp($amount, $threshold, 4) < 0;
-        $this->assertTrue($autoApproved, '低于阈值应自动通过');
-    }
-
-    #[Test]
-    public function withdrawAboveAutoThresholdNeedsReview(): void
-    {
-        $threshold = '100.0000';
-        $amount = '500.0000';
-
-        $needsReview = bccomp($amount, $threshold, 4) >= 0;
-        $this->assertTrue($needsReview, '达到阈值需要人工审核');
-    }
-
-    // ============================================================
-    // 6. 层级限额测试
-    // ============================================================
-
-    #[Test]
-    public function defaultLevelHasLowerLimits(): void
-    {
-        $limits = [
-            'default' => ['single_max' => '1000.0000', 'fee_pct' => '1.00'],
-            'verified' => ['single_max' => '5000.0000', 'fee_pct' => '0.50'],
-            'vip' => ['single_max' => '20000.0000', 'fee_pct' => '0.00'],
-        ];
-
-        // default < verified < vip
-        $this->assertSame(-1, bccomp($limits['default']['single_max'], $limits['verified']['single_max'], 4));
-        $this->assertSame(-1, bccomp($limits['verified']['single_max'], $limits['vip']['single_max'], 4));
-        $this->assertSame(1, bccomp($limits['default']['fee_pct'], $limits['verified']['fee_pct'], 2));
-        $this->assertSame(1, bccomp($limits['verified']['fee_pct'], $limits['vip']['fee_pct'], 2));
-    }
-
-    // ============================================================
-    // 7. 订单号生成测试
-    // ============================================================
-
-    #[Test]
-    public function depositOrderNoFormat(): void
-    {
-        $orderNo = 'DEP' . date('YmdHis') . '0001';
-        $this->assertStringStartsWith('DEP', $orderNo);
-        $this->assertSame(21, strlen($orderNo)); // DEP(3) + 14(时间) + 4(随机)
-    }
-
-    #[Test]
-    public function withdrawOrderNoFormat(): void
-    {
-        $orderNo = 'WTH' . date('YmdHis') . '0001';
-        $this->assertStringStartsWith('WTH', $orderNo);
-        $this->assertSame(21, strlen($orderNo)); // WTH(3) + 14(时间) + 4(随机)
-    }
 
     // ============================================================
     // 8. 国际化测试
@@ -363,247 +232,155 @@ class PlatformTest extends TestCase
     }
 
     // ============================================================
-    // 9. 数据验证测试
+    // 9. 管理端入参校验（走真实校验器）
+    //
+    // 旧用例在测试里自己写正则再 preg_match，测的是 PHP 的 preg_match；
+    // 这里改为把请求喂给真实控制器，由生产 validator 规则判定。
     // ============================================================
 
-    #[Test]
-    public function usernameRegexRejectsInvalid(): void
+    private static function post(string $uri, array $data): Request
     {
-        $pattern = '/^[a-zA-Z0-9_]+$/';
-        $this->assertSame(1, preg_match($pattern, 'valid_user123'));
-        $this->assertSame(0, preg_match($pattern, 'invalid user!'));
-        $this->assertSame(0, preg_match($pattern, 'user@name'));
-        $this->assertSame(0, preg_match($pattern, ''));
+        // 必须给完整原始报文：两参形式 new Request('POST', $uri) 不会构造出可解析的
+        // get()/post() 数据源，$request->all() 会在 Workerman 解析层抛 TypeError。
+        $request = new Request("POST {$uri} HTTP/1.1\r\nHost: localhost\r\n\r\n");
+        $request->setPost($data);
+
+        return $request;
+    }
+
+    private static function bodyOf(\support\Response $response): array
+    {
+        return json_decode($response->rawBody(), true) ?? [];
     }
 
     #[Test]
-    public function slugRegexRejectsInvalid(): void
+    public function userStoreRejectsTooShortUsername(): void
     {
-        $pattern = '/^[a-z0-9_-]+$/';
-        $this->assertSame(1, preg_match($pattern, 'my-game_v2'));
-        $this->assertSame(0, preg_match($pattern, 'My-Game'));
-        $this->assertSame(0, preg_match($pattern, 'game name'));
+        // 生产规则: username => required|string|min:3|max:50
+        $body = self::bodyOf((new UserController())->store(self::post('/admin/v1/user', [
+            'username'  => 'ab',
+            'password'  => 'Abcdefg1',
+            'real_name' => '测试',
+        ])));
+
+        $this->assertSame(422, $body['code']);
     }
 
     #[Test]
-    public function passwordMinLength(): void
+    public function userStoreRejectsWeakPassword(): void
     {
-        $this->assertTrue(strlen('123456') >= 6, '密码应 >= 6位');
-        $this->assertFalse(strlen('12345') >= 6, '5位密码不合格');
-    }
+        // 生产规则: password => min:8|max:32|regex 大小写字母+数字。
+        // 旧用例断言「strlen('123456') >= 6」即视为合格，把门槛写低两档且丢了复杂度要求。
+        // 'Abcdef1' 是关键样本：7 位且复杂度达标，只由 min:8 拦下——
+        // 少了它，把 min:8 改成 min:6 会被复杂度规则掩盖而不报错。
+        $base = ['username' => 'phpunit_user', 'real_name' => '测试'];
 
-    // ============================================================
-    // 10. 枚举值验证测试
-    // ============================================================
-
-    #[Test]
-    public function validGameTypes(): void
-    {
-        $validTypes = ['self', 'third_party'];
-        $this->assertContains('self', $validTypes);
-        $this->assertContains('third_party', $validTypes);
-        $this->assertNotContains('invalid', $validTypes);
-    }
-
-    #[Test]
-    public function validWithdrawStatuses(): void
-    {
-        $validStatuses = ['pending', 'approved', 'rejected', 'completed'];
-        $this->assertContains('pending', $validStatuses);
-        $this->assertContains('approved', $validStatuses);
-        $this->assertContains('rejected', $validStatuses);
-        $this->assertContains('completed', $validStatuses);
+        foreach ([
+            'Abcdef1'  => '7 位但复杂度达标（只由 min:8 拦下）',
+            '1234567'  => '仅 7 位',
+            'abcdefgh' => '无大写无数字',
+            'Abcdefgh' => '无数字',
+            'abcdefg1' => '无大写',
+        ] as $weak => $why) {
+            $body = self::bodyOf((new UserController())->store(
+                self::post('/admin/v1/user', $base + ['password' => $weak])
+            ));
+            $this->assertSame(422, $body['code'], "弱密码应被拒（{$why}）: {$weak}");
+        }
     }
 
     #[Test]
-    public function validDepositStatuses(): void
+    public function gameCreateRejectsUnknownType(): void
     {
-        $validStatuses = ['pending', 'paid', 'confirmed', 'cancelled'];
-        $this->assertContains('pending', $validStatuses);
-        $this->assertContains('confirmed', $validStatuses);
-        $this->assertContains('cancelled', $validStatuses);
+        // 生产规则: type => required|string|in:self,embedded,third_party
+        $body = self::bodyOf((new GameController())->create(self::post('/admin/v1/game/create', [
+            'name' => '测试游戏',
+            'slug' => 'phpunit-game-' . uniqid(),
+            'type' => 'invalid',
+        ])));
+
+        $this->assertSame(422, $body['code']);
     }
 
     #[Test]
-    public function validExchangeDirections(): void
+    public function gameCreateRejectsUppercaseSlug(): void
     {
-        $this->assertContains('in', ['in', 'out']);
-        $this->assertContains('out', ['in', 'out']);
+        // 生产规则: slug => required|string|max:50|regex:/^[a-z0-9_-]+$/
+        $body = self::bodyOf((new GameController())->create(self::post('/admin/v1/game/create', [
+            'name' => '测试游戏',
+            'slug' => 'My-Game',
+            'type' => 'self',
+        ])));
+
+        $this->assertSame(422, $body['code']);
     }
 
     #[Test]
-    public function validTransactionTypes(): void
+    public function gameCreateAcceptsEmbeddedType(): void
     {
-        $types = ['deposit', 'withdraw', 'exchange_in', 'exchange_out', 'game_earn', 'game_spend'];
-        $this->assertCount(6, $types);
-        $this->assertContains('deposit', $types);
-        $this->assertContains('exchange_in', $types);
-    }
+        $this->requireDb();
 
-    // ============================================================
-    // 11. KYC 状态流转测试
-    // ============================================================
+        $slug = 'phpunit-game-' . uniqid();
+        $body = self::bodyOf((new GameController())->create(self::post('/admin/v1/game/create', [
+            'name' => '测试内嵌游戏',
+            'slug' => $slug,
+            'type' => 'embedded',
+        ])));
 
-    #[Test]
-    public function kycStatusFlow(): void
-    {
-        // not_submitted → pending → approved/rejected
-        $validTransitions = [
-            'not_submitted' => ['pending'],
-            'pending' => ['approved', 'rejected'],
-            'rejected' => ['pending'], // 可重新提交
-            'approved' => [], // 终态
-        ];
-
-        $this->assertContains('pending', $validTransitions['not_submitted']);
-        $this->assertContains('approved', $validTransitions['pending']);
-        $this->assertContains('rejected', $validTransitions['pending']);
-        $this->assertContains('pending', $validTransitions['rejected']);
-        $this->assertEmpty($validTransitions['approved']);
-    }
-
-    // ============================================================
-    // 12. 安全: 乐观锁重试逻辑验证
-    // ============================================================
-
-    #[Test]
-    public function optimisticLockRetryCount(): void
-    {
-        // UserWallet::addBalance 最多重试5次
-        $maxRetries = 5;
-        $this->assertSame(5, $maxRetries, '乐观锁最多重试5次');
-    }
-
-    #[Test]
-    public function optimisticLockVersionIncrements(): void
-    {
-        $version = 0;
-        $version++;
-        $this->assertSame(1, $version);
-        $version++;
-        $this->assertSame(2, $version);
+        try {
+            // 旧用例的白名单写作 ['self','third_party']，漏掉 embedded，与生产 in: 规则不符；
+            // 这条钉住真值白名单，删掉 embedded 即变红。
+            $this->assertSame(0, $body['code'], 'embedded 必须是合法游戏类型');
+            $this->assertSame('embedded', Game::where('slug', $slug)->value('type'));
+        } finally {
+            Game::where('slug', $slug)->delete();
+        }
     }
 
     // ============================================================
-    // 13. 优惠券计算测试
+    // 10~15. 枚举/状态流转/乐观锁/优惠券/会话号/分页 —— 已整体删除
+    //
+    // 共同点是：断言对象是测试内自造的字面量数组或自增变量，没有一行生产代码参与，
+    // 因此无论生产实现怎么改都不会变红。例如:
+    //   optimisticLockRetryCount 断言局部变量 $maxRetries=5，注释称
+    //     「UserWallet::addBalance 最多重试5次」——而该方法实际委托 WalletService::mutate，
+    //     全仓并无任何重试循环，「重试 5 次」这个前提本身已不存在。
+    //   validGameTypes / validWithdrawStatuses 等自造白名单，与真值漂移也不会报错。
+    // 真实枚举与流转逻辑在 service 树（IdentityController 的 KYC 流转、CouponController），
+    // admin 测试无法加载；这是覆盖缺口，已记入本轮报告。
     // ============================================================
 
-    #[Test]
-    public function fixedCouponDeductsExactAmount(): void
-    {
-        // fixed: 直接减固定金额
-        $couponValue = '10.0000';
-        $orderAmount = '100.0000';
-        $afterCoupon = bcsub($orderAmount, $couponValue, 4);
-        $this->assertSame('90.0000', $afterCoupon);
-    }
-
-    #[Test]
-    public function rateCouponAppliesDiscount(): void
-    {
-        // rate: 0.10 = 9折
-        $discountRate = '0.10';
-        $orderAmount = '100.0000';
-        $discount = bcmul($orderAmount, $discountRate, 4);
-        $afterDiscount = bcsub($orderAmount, $discount, 4);
-        $this->assertSame('10.0000', $discount);
-        $this->assertSame('90.0000', $afterDiscount);
-    }
-
-    #[Test]
-    public function rateCouponCappedAtMaxDiscount(): void
-    {
-        $discountRate = '0.10';
-        $maxDiscount = '5.0000';
-        $orderAmount = '100.0000';
-        $discount = bcmul($orderAmount, $discountRate, 4);
-        // 10 > 5, cap at 5
-        $actualDiscount = (bccomp($discount, $maxDiscount, 4) > 0) ? $maxDiscount : $discount;
-        $this->assertSame('5.0000', $actualDiscount);
-    }
-
-    #[Test]
-    public function couponBelowMinAmountNotApplicable(): void
-    {
-        $minAmount = '50.0000';
-        $orderAmount = '30.0000';
-        $applicable = bccomp($orderAmount, $minAmount, 4) >= 0;
-        $this->assertFalse($applicable);
-    }
-
     // ============================================================
-    // 14. 游戏会话 ID 生成测试
+    // 16. 响应信封（BaseController::success / fail）
+    //
+    // 旧用例断言的是测试里自己 new 出来的 ['code'=>401,...] 数组，等于断言字面量等于自己。
+    // 这里改为调用真实 BaseController，钉住信封的键集合与取值语义。
+    // 401/403/404 是 fail() 的透传参数，其真实产生点在中间件与各端点，
+    // 已由 GameControllerTest（403 禁用游戏 / 404 未知游戏）等端点级用例覆盖。
     // ============================================================
 
-    #[Test]
-    public function gameSessionIdFormat(): void
+    /** @param array<int, mixed> $args */
+    private static function envelope(string $method, array $args): array
     {
-        $sessionId = 'GAME_SESSION_' . date('YmdHis') . '_' . random_int(1000, 9999);
-        $this->assertStringStartsWith('GAME_SESSION_', $sessionId);
-    }
+        $reflection = new \ReflectionMethod(BaseController::class, $method);
+        $reflection->setAccessible(true);
 
-    // ============================================================
-    // 15. 分页参数验证
-    // ============================================================
-
-    #[Test]
-    public function paginationDefaultValues(): void
-    {
-        $page = (int) ($_GET['page'] ?? 1);
-        $perPage = (int) ($_GET['per_page'] ?? 20);
-        $this->assertSame(1, $page);
-        $this->assertSame(20, $perPage);
+        return self::bodyOf($reflection->invoke(new UserController(), ...$args));
     }
 
     #[Test]
-    public function paginationClampsPage(): void
+    public function responseEnvelopeIsCodeMessageData(): void
     {
-        $page = max(1, (int) '0');
-        $this->assertSame(1, $page);
+        $ok = self::envelope('success', [[], 'success', 0]);
+        $this->assertSame(['code', 'message', 'data'], array_keys($ok));
+        $this->assertSame(0, $ok['code']);
+        $this->assertSame('success', $ok['message']);
+        $this->assertSame([], $ok['data']);
 
-        $page = max(1, (int) '-5');
-        $this->assertSame(1, $page);
-    }
-
-    // ============================================================
-    // 16. 响应格式验证
-    // ============================================================
-
-    #[Test]
-    public function successResponseHasCorrectFormat(): void
-    {
-        $response = ['code' => 0, 'message' => 'success', 'data' => []];
-        $this->assertSame(0, $response['code']);
-        $this->assertSame('success', $response['message']);
-        $this->assertIsArray($response['data']);
-    }
-
-    #[Test]
-    public function errorResponseHasCorrectFormat(): void
-    {
-        $response = ['code' => 422, 'message' => '验证失败', 'data' => []];
-        $this->assertSame(422, $response['code']);
-        $this->assertNotEmpty($response['message']);
-    }
-
-    #[Test]
-    public function unauthorizedResponse(): void
-    {
-        $response = ['code' => 401, 'message' => '未登录', 'data' => []];
-        $this->assertSame(401, $response['code']);
-    }
-
-    #[Test]
-    public function forbiddenResponse(): void
-    {
-        $response = ['code' => 403, 'message' => '无权限', 'data' => []];
-        $this->assertSame(403, $response['code']);
-    }
-
-    #[Test]
-    public function notFoundResponse(): void
-    {
-        $response = ['code' => 404, 'message' => '不存在', 'data' => []];
-        $this->assertSame(404, $response['code']);
+        $err = self::envelope('fail', ['验证失败', 422, []]);
+        $this->assertSame(['code', 'message', 'data'], array_keys($err));
+        $this->assertSame(422, $err['code']);
+        $this->assertSame('验证失败', $err['message']);
+        $this->assertSame([], $err['data']);
     }
 }
