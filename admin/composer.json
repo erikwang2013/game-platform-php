@@ -66,12 +66,6 @@
     }
   },
   "scripts": {
-    "post-package-install": [
-      "support\\Plugin::install"
-    ],
-    "post-package-update": [
-      "support\\Plugin::install"
-    ],
     "pre-package-uninstall": [
       "support\\Plugin::uninstall"
     ],
