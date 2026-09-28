@@ -4,7 +4,8 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ApiError, api } from '../lib/api.ts';
+import { api } from '../lib/api.ts';
+import { deleteErrorMessage, deleteUnknownMessage, deleteVerdict } from '../lib/accountDeletion.ts';
 import { useAuth } from '../lib/auth.tsx';
 import { useAsync } from '../lib/hooks.ts';
 import { ErrorBox, Loading } from '../components/States.tsx';
@@ -60,9 +61,8 @@ export function Me() {
     try {
       await api.deleteAccount(delPw, delYes);
     } catch (e) {
-      // 服务端拒绝原因原样透出（如「请先提现所有余额后再注销账号」），不吞成「操作失败」
       setDelBusy(false);
-      setDelError(e instanceof ApiError ? e.message : '网络异常，请稍后重试');
+      setDelError(deleteErrorMessage(e));
       return;
     }
     // 成功不以「请求发出去了」为准：回读确认账号真的取不到
@@ -71,12 +71,13 @@ export function Me() {
       gone = await api.accountGone();
     } catch (e) {
       setDelBusy(false);
-      setDelError(`注销结果无法确认：${e instanceof ApiError ? e.message : '网络异常'}`);
+      setDelError(deleteUnknownMessage(e));
       return;
     }
     setDelBusy(false);
-    if (!gone) {
-      setDelError('注销请求已提交，但账号资料仍可读取，请刷新后确认');
+    const verdict = deleteVerdict(gone);
+    if (!verdict.ok) {
+      setDelError(verdict.message);
       return;
     }
     setDelPw('');
