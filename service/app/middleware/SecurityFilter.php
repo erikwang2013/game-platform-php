@@ -28,6 +28,14 @@ class SecurityFilter implements MiddlewareInterface
             'ip'     => $request->getRealIp() ?: '0.0.0.0',
             'method' => $request->method(),
             'uri'    => $request->uri(),
+            // 身份维度检测（会话劫持）读的是 $meta，不是上面已展平的 $data：
+            // SessionFingerprint 取 $meta['cookies'] / $meta['headers'] 定位会话标识
+            // （SessionFingerprint.php:99、:108），取 $meta['user_agent'] 算指纹（:140）。
+            // 缺这三项则恒判「匿名请求」，检测永不触发 —— 注意 $data 里的
+            // headers.User-Agent 救不了它，两条路径不同源。
+            'headers'    => (array) $request->header(),
+            'cookies'    => (array) $request->cookie(),
+            'user_agent' => (string) $request->header('User-Agent', ''),
         ]);
 
         if (!empty($threats) && SecurityGuard::shouldBlock($threats)) {

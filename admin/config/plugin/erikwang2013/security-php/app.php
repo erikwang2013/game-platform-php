@@ -259,6 +259,46 @@ return [
             'mode'    => 'block',
             'allowed_origins' => [],
         ],
+
+        // 会话劫持检测（Cookie 与 Token 登录通用）
+        // 首次见到某会话时记录指纹基线（User-Agent + IP 网段），之后不一致即告警。
+        // 会话标识优先取 Cookie，其次取 Authorization: Bearer / X-Token 等头，
+        // 因此 API / 小程序 / App 的 token 登录同样覆盖。
+        // 注意：默认 log 模式，因为移动网络切基站、浏览器升级都会改变指纹，
+        // 需先观察误报率再切 block。命中时返回 401（登录态不可信，应重新认证）
+        'session_hijack' => [
+            'enabled' => true,
+            'mode'    => 'log',
+        ],
+
+        // 异地登录检测
+        // 需应用在登录 / token 签发成功后调用 SecurityGuard::recordLogin($userId)。
+        // 不调用则本项不产生任何结果（不会误报）。
+        // 注意：默认 log 模式；首个登录地即基线，局限详见 README
+        'unusual_login' => [
+            'enabled' => true,
+            'mode'    => 'log',
+        ],
+
+        // 数据篡改检测
+        // 校验受保护字段的 HMAC 签名（由 SecurityGuard::signFields() 签发）。
+        // 必须同时配置 signing_key 且 identity.tamper.protected_fields 非空才生效，
+        // 否则完全静默 —— 已有应用升级后不会因此失败
+        'data_tamper' => [
+            'enabled' => true,
+            'mode'    => 'log',
+        ],
+
+        // 登录暴力破解锁定
+        // 需应用在登录失败分支调用 SecurityGuard::recordFailedLogin($userId, $ip)，
+        // 在认证前用 SecurityGuard::isLockedOut($userId, $ip) 提前拦截。
+        // 不调用则本项不产生任何结果（不会误报）。
+        // 注意：默认 log 模式；以账号为锁定单位，攻击者可用它锁死受害者账号，
+        // 故 lock_seconds 默认较短，详见 README
+        'login_lockout' => [
+            'enabled' => true,
+            'mode'    => 'log',
+        ],
     ],
 
     /*
@@ -275,6 +315,104 @@ return [
     ],
 
     /*
+     * 身份维度检测（会话劫持 / 异地登录 / 数据篡改）
+     * 这三项需要跨请求状态，基线数据存入下面的 storage。
+     * 存储 key 一律是 sha256 摘要，不落原始 session id / token 明文。
+     */
+    'identity' => [
+        'enabled' => true,
+
+        // 会话劫持：会话标识 -> 指纹基线
+        'session' => [
+            // 会话 Cookie 名。按框架实际使用的名字修改，留空则只查 token 头
+            // 会话 Cookie 名：Laravel 默认 laravel_session，原生 PHP 是 PHPSESSID
+            // （用 session_name() 改过就填那个名字）。填错检测不会报错，只是不再生效。
+            // 本仓实测：session_name = PHPSID（admin/config/session.php:50），
+            // 此处保持 vendor 默认值，故 Cookie 维度不生效；本应用鉴权走
+            // Authorization: Bearer（admin/app/middleware/AdminAuth.php:32），
+            // 由下面的 headers 覆盖。
+            'cookie' => 'laravel_session',
+            // 无 Cookie 时按顺序查这些头（大小写不敏感，自动剥离 Bearer 前缀）
+            'headers' => ['authorization', 'x-token', 'x-auth-token'],
+            // 绑定因子：ua = User-Agent，ip = IP 网段
+            'bind' => ['ua', 'ip'],
+            // IP 比较的网段位数，避免移动网络换基站即告警（IPv6 固定 /64）
+            // ::ffff:1.2.3.4 这类 IPv4 映射地址按 IPv4 处理，否则所有映射客户端
+            // 会挤进同一个 ::/64 网段，IP 因子完全失去区分度
+            'ip_bits' => 24,
+            // 超过该时长未活动的会话视为新会话，重新建立基线（秒）
+            // 记录每 ttl/2 才刷新一次（避免每个请求都重写整个存储），
+            // 因此实际空闲窗口是 ttl ~ 1.5×ttl
+            'ttl' => 7200,
+            // 惰性回收：每 N 次请求触发一次过期清理，0 = 关闭
+            // StorageInterface 没有 TTL，改用 Redis 后端时可以把这两项关掉
+            'gc_probability' => 100,
+            'gc_batch' => 20,
+        ],
+
+        // 异地登录：user_id -> 常用地点
+        'login' => [
+            // 地点在此时间内未再出现即遗忘（秒），也用于限制存储增长
+            'ttl' => 86400,
+            // 每个账号最多记住几个地点，超出按最久未用淘汰
+            'max_points' => 10,
+            // 无 $location 时回落到 IP 网段，比较位数
+            'ip_bits' => 24,
+
+            // 暴力破解锁定：滑动窗口内的失败次数
+            'lockout' => [
+                // 窗口内累计达到该次数即锁定（秒）
+                'max_failures' => 5,
+                // 失败计数的有效期（秒）
+                'window_seconds' => 900,
+                // 锁定时长（秒）。偏短：以账号为单位锁定，攻击者可用它锁死受害者
+                'lock_seconds' => 900,
+                // true 时按 user_id + IP 分别计数，把锁定收敛到攻击者来源，
+                // 但同一账号换 IP 即可重置计数
+                'include_ip' => false,
+            ],
+        ],
+
+        // 数据篡改：受保护字段的 HMAC 签名
+        'tamper' => [
+            // 客户端回传签名的字段名
+            'token_field' => '_security_sig',
+            // 要签名的字段，扁平化点路径（如 'order.price'、'user.id'）
+            // 留空则本项完全不生效 —— 必须显式声明保护哪些字段
+            'protected_fields' => [],
+            // 签名有效期（秒）
+            'ttl' => 1800,
+        ],
+    ],
+
+    /*
+     * 编码/混淆归一化
+     * 对携带编码信号的请求值额外扫描其解码结果，避免纯正则检测被绕过：
+     *   URL 编码（%3Cscript%3E）、双重编码（%2527）、全角字符（Ｓｅｌｅｃｔ）、
+     *   HTML 实体（&#60;script&#62;）。
+     * 原值仍按原样扫描，两边都可能命中；解码命中在日志 detail 里标注 [decoded:xxx]。
+     * 每种变体都先做廉价的信号预检（值里没有 % 就绝不调用 urldecode），
+     * 所以无编码的请求不产生额外开销。
+     * 注意：含 % 的合法文本（带 URL 的表单、搜索词）解码后可能新增命中，
+     * 因此高误报检测器保持 log 模式即可，勿整组切 block。
+     */
+    'normalization' => [
+        'enabled'   => true,
+        'urldecode' => true, // 值包含 % 时解码（含双重编码）
+        'fullwidth' => true, // 全角 ASCII 转半角
+        'entities'  => true, // 值含 & 时解 HTML 实体（含 &lt; 这类具名实体）
+    ],
+
+    /*
+     * 字段签名密钥（数据篡改检测用）
+     * 留空则签名功能静默禁用，不影响任何既有行为。
+     * 务必用环境变量注入，不要写进版本库：
+     *   export SECURITY_SIGNING_KEY="$(php -r 'echo bin2hex(random_bytes(32));')"
+     * 多机部署必须一致，否则各节点会互判签名无效。
+     */
+    'signing_key' => getenv('SECURITY_SIGNING_KEY') ?: '',
+
+    /*
      * 存储配置
      * 控制系统持久化数据的存储后端
      *
@@ -287,8 +425,15 @@ return [
         'type' => 'file',
 
         // File 存储配置（type=file 时生效）
+        // 必须显式配置路径：留空会回落到 sys_get_temp_dir() . '/security_storage.json'，
+        // 而 service 与 admin 是同一主机上的两个应用，会共用同一个文件 —— 一旦共用，
+        // IP 封禁计数与失败计数会跨应用串台（在 service 上被封的 IP 会连带影响 admin），
+        // 且两树进程属主不同时会有一侧静默写失败（vendor 对该回落路径的警告即此意）。
+        // runtime_path() 按各树根目录解析（service/runtime、admin/runtime），天然隔离，
+        // 与 config/session.php:31、config/server.php:22 的既有用法一致。
+        // 目录无需预建：FileStorage::mutate() 会自动创建父目录（FileStorage.php:65-67）。
         'file' => [
-            'path' => '', // 留空使用 sys_get_temp_dir() . '/security_storage.json'
+            'path' => runtime_path() . '/security/storage.json',
         ],
 
         // Redis 存储配置（type=redis 时生效）
@@ -314,6 +459,41 @@ return [
 
     // 返回给客户端的内容，{type} 会被替换为攻击类型标识
     'block_message' => 'Request blocked by security policy',
+
+    /*
+     * HTML 拦截页（项目宠物「小盾」）
+     * enabled=true 时，浏览器请求（Accept 含 text/html）被拦截后返回一页 HTML：
+     * 小盾 + 状态码 + 命中的检测器名称。API / curl / fetch 等客户端始终收到上面的
+     * 纯文本 block_message，不受此开关影响。
+     * 页面只展示检测器名称，载荷与正则细节仍然只进日志。
+     */
+    'block_page' => [
+        'enabled' => true,
+    ],
+
+    /*
+     * 安全响应头
+     * 中间件在拦截响应与放行响应上都追加这些头。
+     * 值为空字符串表示不发送 —— CSP/HSTS 依赖站点实际情况，留空即保持关闭。
+     * 注意：Strict-Transport-Security 应只在 HTTPS 下发送，请自行判断后再填值。
+     */
+    'security_headers' => [
+        'enabled' => true,
+        'headers' => [
+            // 禁止浏览器 MIME 类型嗅探（防止上传的 HTML 被当网页执行）
+            'X-Content-Type-Options' => 'nosniff',
+            // 防点击劫持：SAMEORIGIN=仅同源可嵌；DENY=完全禁止
+            'X-Frame-Options'        => 'SAMEORIGIN',
+            // 控制跨站请求泄露多少来源信息
+            'Referrer-Policy'        => 'strict-origin-when-cross-origin',
+            // 例：geolocation=(), camera=(), microphone=()
+            'Permissions-Policy'     => '',
+            // 例：default-src 'self'; script-src 'self'
+            'Content-Security-Policy' => '',
+            // 例：max-age=31536000; includeSubDomains
+            'Strict-Transport-Security' => '',
+        ],
+    ],
 
     /*
      * 日志配置
@@ -344,6 +524,14 @@ return [
      *   '192.168.1.0/24',    — /24 子网
      */
     'whitelist_ips' => [],
+
+    /*
+     * 信任的反向代理
+     * 当客户端 IP（REMOTE_ADDR）命中此列表时，从 X-Forwarded-For 解析真实 IP，
+     * 用于白名单/黑名单判断，避免误封代理 IP。
+     * 示例：'127.0.0.1'、'10.0.0.0/8'。仅信任你自己的代理层，切勿放行公网 IP。
+     */
+    'trusted_proxies' => [],
 
     /*
      * 字段白名单
