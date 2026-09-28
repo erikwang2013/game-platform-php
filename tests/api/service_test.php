@@ -49,6 +49,147 @@ t_check('注册负例: 弱密码', api('POST', '/api/v1/auth/register', ['userna
 t_check('认证失败: 无 Token', api('GET', '/api/v1/wallet/info'), [401]);
 t_check('认证失败: 伪造 Token', api('GET', '/api/v1/wallet/info', null, 'garbage.token.here'), [401]);
 
+// ================= SDK 铸币路径 (M0 信任边界) =================
+echo "---- SDK 铸币路径 (M0) ----\n";
+
+/**
+ * M0 夹具 → [gameHash, gameId, currencyId, userId, B0, secret]；环境不具备时返回 null。
+ *
+ * M0 的闸只认「令牌角色」，要走到铸币路径就得先有一条能签令牌的游戏加一笔真本金：
+ * 引导 service 应用只为夹具直连 DB（与 admin_test.php 同款做法），断言一律仍走 HTTP。
+ * 本地/演示数据（install/test-data.sql）里三个游戏 api_secret 都是空串、game_currency 无行，
+ * 而空密钥下 session() 直接 403、铸币路径根本走不到 —— 夹具就地补齐，幂等（重复跑不新增行）。
+ */
+function m0_fixture(string $username): ?array
+{
+    chdir('/home/wwwroot/game-platform-php/service');
+    require_once '/home/wwwroot/game-platform-php/service/vendor/autoload.php';
+    require_once '/home/wwwroot/game-platform-php/service/support/bootstrap.php';
+
+    try {
+        $game = \common\model\Game::whereIn('type', ['self', 'embedded'])
+            ->where('status', 1)->orderBy('id')->first();
+        if (!$game) {
+            t_note('M0 夹具', '没有 type ∈ {self,embedded} 且 status=1 的游戏');
+
+            return null;
+        }
+        if ((string) $game->api_secret === '') {
+            $game->api_secret = 'm0-fixture-secret';
+            $game->save();
+        }
+        $game = \common\model\Game::find($game->id);
+
+        $currency = \common\model\GameCurrency::where('game_id', $game->id)->first();
+        if (!$currency) {
+            $currency = new \common\model\GameCurrency();
+            $currency->id = 60000000000000301; // 固定夹具 ID：不依赖 Redis 雪花，且重复跑不会新增行
+            $currency->game_id = $game->id;
+            $currency->name = 'M0 Fixture Coin';
+            $currency->symbol = 'M0C';
+            $currency->save();
+        }
+        $currencyId = (int) $currency->id;
+
+        $user = \common\model\User::where('username', $username)->first();
+        if (!$user) {
+            t_note('M0 夹具', "库里查不到刚注册的用户 {$username}");
+
+            return null;
+        }
+        $userId = (int) $user->id;
+
+        $scope = \app\service\WalletScope::game((int) $game->id, $currencyId);
+        if (!\app\service\WalletService::mutate($userId, $scope, '+1000', 'game_earn', 'game_round', 0, 'M0 fixture')) {
+            t_note('M0 夹具', '本金充值失败');
+
+            return null;
+        }
+
+        return [
+            \common\HashidsService::encode((int) $game->id),
+            (int) $game->id,
+            $currencyId,
+            $userId,
+            \app\service\WalletService::balance($userId, $scope),
+            (string) $game->api_secret,
+        ];
+    } catch (\Throwable $e) {
+        t_note('M0 夹具异常', substr($e->getMessage(), 0, 160));
+
+        return null;
+    }
+}
+
+$m0 = m0_fixture($uname);
+if ($m0 === null) {
+    t_skip('M0 SDK 铸币路径 (夹具不可用: 库不可达 / 缺自研内嵌游戏)');
+} else {
+    [$m0Game, $m0GameId, $m0Currency, $m0User, $m0B0, $m0Secret] = $m0;
+
+    // 1) 任意登录用户领「游戏服务端令牌」—— 攻击起点
+    $sess = api('GET', '/api/v1/game/session?game_id=' . $m0Game, null, $token);
+    $sdk = (string) ($sess[1]['data']['token'] ?? '');
+    $claims = json_decode((string) base64_decode(strtr(explode('.', $sdk)[0] ?? '', '-_', '+/')), true) ?: [];
+
+    // 2) 只读令牌仍应能读余额（否则下面的 403 可能只是「令牌不认」而不是「角色被拦」）
+    $bal = api('POST', '/api/game/balance', ['currency_id' => $m0Currency], $sdk);
+
+    // 3/4) 同一个 round：下注 100 → 自报派奖 10000（比率闸 100×100、绝对闸 10000 都恰好不算超）
+    $round = 'atk-' . bin2hex(random_bytes(4));
+    $bet = api('POST', '/api/game/bet', [
+        'currency_id' => $m0Currency, 'session_id' => 'S-' . $round, 'amount' => '100', 'round_id' => $round,
+    ], $sdk);
+    $settle = api('POST', '/api/game/settle', [
+        'currency_id' => $m0Currency, 'session_id' => 'S-' . $round, 'amount' => '10000', 'round_id' => $round,
+        'meta' => ['result' => 'win'],
+    ], $sdk);
+
+    // 5/6) 读数：余额必须原样、且该 round 不得落 settle 流水
+    $b1 = \app\service\WalletService::balance($m0User, \app\service\WalletScope::game($m0GameId, $m0Currency));
+    $betRows = \support\Db::table('game_play_log')->where('round_id', $round)->where('action', 'bet')->count();
+    $settleRows = \support\Db::table('game_play_log')->where('round_id', $round)->where('action', 'settle')->count();
+
+    // 7) 迁移影响：M0 之前签发的令牌形状（claims 无 role、TTL 300s）必须自动降级只读
+    $legacyPayload = rtrim(strtr(base64_encode((string) json_encode([
+        'game_id' => $m0GameId, 'user_id' => $m0User, 'exp' => time() + 300,
+    ], JSON_UNESCAPED_UNICODE)), '+/', '-_'), '=');
+    $legacy = api('POST', '/api/game/bet', [
+        'currency_id' => $m0Currency, 'session_id' => 'S-legacy', 'amount' => '1', 'round_id' => 'legacy-' . $round,
+    ], $legacyPayload . '.' . hash_hmac('sha256', $legacyPayload, $m0Secret));
+
+    // 8) 反证：闸必须认角色，而不是「一律拒绝」（否则 M1 接进来同样被挡死）——
+    //    按 M1 的形状自签一枚 role=server 令牌（密钥只在夹具手里），写端点应放行；
+    //    放在最后：这步会真正扣掉 1 个夹具币，别污染上面的 B1 == B0。
+    $srvPayload = rtrim(strtr(base64_encode((string) json_encode([
+        'game_id' => $m0GameId, 'user_id' => $m0User, 'role' => 'server', 'exp' => time() + 300,
+    ], JSON_UNESCAPED_UNICODE)), '+/', '-_'), '=');
+    $srvBet = api('POST', '/api/game/bet', [
+        'currency_id' => $m0Currency, 'session_id' => 'S-server', 'amount' => '1', 'round_id' => 'srv-' . $round,
+    ], $srvPayload . '.' . hash_hmac('sha256', $srvPayload, $m0Secret));
+    $srvCode = biz_code($srvBet);
+    $b2 = \app\service\WalletService::balance($m0User, \app\service\WalletScope::game($m0GameId, $m0Currency));
+
+    $betCode = biz_code($bet);
+    $settleCode = biz_code($settle);
+    $legacyCode = biz_code($legacy);
+    $balCode = biz_code($bal);
+    t_note('M0 读数', "session={$sess[0]}/" . biz_code($sess) . ' role=' . var_export($claims['role'] ?? null, true)
+        . " bet=$betCode settle=$settleCode legacy_bet=$legacyCode balance=$balCode"
+        . " B0={$m0B0} B1={$b1} delta=" . bcsub($b1, $m0B0, 8) . " bet_rows=$betRows settle_rows=$settleRows");
+
+    t_ok('M0: 会话令牌只带 role=read', ($claims['role'] ?? null) === 'read', 'claims=' . json_encode($claims));
+    t_ok('M0: 只读令牌仍可用（余额读端点）', $balCode === 0, "balance code=$balCode");
+    t_ok('M0: 写端点拒绝只读令牌 (bet)', in_array($betCode, [401, 403], true), "bet code=$betCode");
+    // 不写死 403：M1 换签发者后旧令牌可能先落到 401，别让那时假红
+    t_ok('M0: 写端点拒绝只读令牌 (settle)', in_array($settleCode, [401, 403], true), "settle code=$settleCode");
+    t_ok('M0: 铸币路径未入账 (B1 == B0)', bccomp($b1, $m0B0, 8) === 0, "B0={$m0B0} B1={$b1} delta=" . bcsub($b1, $m0B0, 8));
+    t_ok('M0: 未落 settle 流水', $settleRows === 0, "settle_rows=$settleRows bet_rows=$betRows");
+    t_ok('M0: 迁移窗口内旧令牌降级只读', in_array($legacyCode, [401, 403], true), "legacy bet code=$legacyCode");
+    t_note('M0 反证读数', "server_role_bet=$srvCode B2={$b2}（夹具钱包，放行则扣 1）");
+    t_ok('M0 反证: role=server 令牌仍可写（闸认角色不是一律拒）', $srvCode === 0, "server-role bet code=$srvCode");
+}
+
 // ================= 全量冒烟 =================
 echo "---- 全量冒烟 ----\n";
 $writePassCodes = [0, 400, 401, 403, 404, 409, 422, 429];
@@ -82,7 +223,8 @@ foreach ($ROUTES as [$method, $path]) {
 
     $body = $method === 'GET' || $method === 'DELETE' ? null : [];
     if ($path === '/api/v1/game/session') {
-        $allow = [0, 400, 404, 422]; // 必填 game_id(hashid) 查询参数, 冒烟不带参 → 422
+        // 必填 game_id(hashid) 查询参数, 冒烟不带参 → 422；M0 起令牌角色不足也可能是 401/403
+        $allow = [0, 400, 401, 403, 404, 422];
     } elseif ($path === '/api/v1/tournament/list') {
         $allow = [0, 503]; // 功能未初始化时业务返回 503 Tournaments not available
     } elseif ($hashidLike($path)) {

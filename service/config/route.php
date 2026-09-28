@@ -169,6 +169,12 @@ Route::group('/api/provider', function () {
 
 // ============================================================
 // 自研/内嵌游戏 SDK 接口（M5，SDK 会话令牌认证）
+//
+// M0 信任边界：令牌带 role，写权只给 role=server。
+//   - /api/v1/game/session（用户登录态）只签 role=read 的令牌 ⇒ 下面的写端点**当前恒 403**：
+//     全平台还没有任何服务端令牌签发者，谁签都签不出 server（旧令牌无 role，按 read 降级）。
+//   - M1 签发者落点：在本 group 内新增「服务端令牌签发」端点（走服务端身份认证，非 UserAuth），
+//     签发 role=server 的令牌；届时写端点才会重新可用，本注释与 GameSdkController 的角色闸同步更新。
 // ============================================================
 Route::group('/api/game', function () {
     Route::post('/balance', v('GameSdkController', 'balance'));

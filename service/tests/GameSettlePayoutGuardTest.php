@@ -23,7 +23,9 @@ use PHPUnit\Framework\TestCase;
  *   6. 锁序与 bet 相反      -> bet 是「先钱包行、后流水」，settle 若先流水后钱包即 AB-BA 成环，真并发下 1213 死锁（合法请求 500）
  *   7. 退款沿用派奖闸      -> bet 没有下注上限，退款却被 MAX_PAYOUT_PER_ROUND 管住时，大额下注的本金永远退不回来（实测）
  *   8. 控制器原文进 bcmath  -> 闸 1 只在 settle 内生效，bet/refund 入口对客户端原文直接 bccomp，'abc'/'1e5' 抛 ValueError ⇒ 500
- * 1-8 都长在方法体内，只能读源文件核对（与 WithdrawEventReconcileContractTest 同一套做法）。
+ *   9. 会话令牌带写权（M0） -> GET /api/v1/game/session 用 game.api_secret 替**请求者本人**签令牌，而写端点只认这枚令牌
+ *                              ⇒ 任意登录用户 bet 100 / settle 10000 即单轮净 +9900（两闸都恰好不算超），换 round 可无限重复
+ * 1-9 都长在方法体内，只能读源文件核对（与 WithdrawEventReconcileContractTest 同一套做法）。
  */
 final class GameSettlePayoutGuardTest extends TestCase
 {
@@ -49,6 +51,14 @@ final class GameSettlePayoutGuardTest extends TestCase
     {
         $src = self::source(self::SELF_PROVIDER);
         self::assertSame(1, preg_match('/public function settle\(.*?\n    \}/s', $src, $m), '未切出 settle 方法体 :: 切片判据失效');
+
+        return $m[0];
+    }
+
+    /** 任意 public 方法体切片（同 settleSource 的取法，供 M0 的鉴权判据复用） */
+    private static function methodBody(string $src, string $method, string $what): string
+    {
+        self::assertSame(1, preg_match('/public function ' . $method . '\(.*?\n    \}/s', $src, $m), "未切出 {$what} 方法体 :: 切片判据失效");
 
         return $m[0];
     }
@@ -427,18 +437,94 @@ final class GameSettlePayoutGuardTest extends TestCase
         }
     }
 
-    /** 会话签发端：密钥为空时给明确失败，而不是签一个永远验不过的令牌 */
+    /** 会话签发端：密钥为空时给明确失败，而不是签一个永远验不过的令牌；M0 起该端点也不再签写令牌 */
     public function testSessionEndpointRefusesToSignWithEmptySecret(): void
     {
-        $src = self::source(self::GAME_CONTROLLER);
-        self::assertSame(1, preg_match('/public function session\(.*?\n    \}/s', $src, $m), '未切出 session 方法体 :: 切片判据失效');
+        $session = self::methodBody(self::source(self::GAME_CONTROLLER), 'session', 'GameController::session');
 
-        $session = $m[0];
         self::assertStringContainsString("(string) \$game->api_secret === ''", $session, 'session() 未拒绝空密钥游戏 :: 客户端拿到永远验不过的 token，且掩盖了后端未配置');
+        // 顺序仍在：空密钥的拒绝必须排在签发之前（签发落点由下面的 M0 用例单独钉）
         self::assertLessThan(
-            strpos($session, "hash_hmac('sha256', \$payload"),
+            strpos($session, 'issueReadSessionToken('),
             strpos($session, "\$game->api_secret === ''"),
             'session() 的密钥校验排在签发之后 :: 空密钥仍会签出令牌'
         );
+        self::assertStringNotContainsString(
+            "hash_hmac('sha256', \$payload",
+            $session,
+            'session() 又内联签 payload :: 请求者路径上仍能签出游戏服务端令牌'
+        );
+    }
+
+    /**
+     * M0：会话签发端的信任边界 —— 请求者能拿到的令牌只能读，写令牌在签发端就签不出来。
+     *
+     * 旧写法（原 :227-236）由请求者自己的登录态触发、却用 game.api_secret 签出可写令牌，
+     * 而 /api/game/{bet,settle,refund} 只认这枚令牌 ⇒ 任意登录用户自铸写权限。
+     */
+    public function testSessionEndpointIssuesReadOnlyTokens(): void
+    {
+        $src = self::source(self::GAME_CONTROLLER);
+        $session = self::methodBody($src, 'session', 'GameController::session');
+
+        self::assertStringNotContainsString(
+            "hash_hmac('sha256', \$payload",
+            $session,
+            'session() 仍内联签 payload :: 签发与「请求者是谁」绑在一起，写令牌又可自助领取'
+        );
+        self::assertSame(1, preg_match('/issueReadSessionToken\(/', $session), 'session() 未走唯一签发落点 :: 签发出现第二处实现，判据锚不住');
+
+        self::assertSame(
+            1,
+            preg_match('/private function issueReadSessionToken\([^)]*\)\s*:\s*string\s*\{(.*?)\n    \}/s', $src, $h),
+            '未切出 issueReadSessionToken 方法体 :: 签发落点判据失效'
+        );
+        $signer = $h[1];
+        self::assertStringContainsString("hash_hmac('sha256', \$payload", $signer, '签发落点内未见签名 :: 判据锚到了别的方法');
+        self::assertSame(1, preg_match("/'role'\s*=>\s*'read'/", $signer), "签发落点的 role 不是写死的 'read' :: 请求者路径仍能铸出写令牌");
+        // 入参里出现 $role 就等于把角色交回调用方决定，闸只剩在控制器外层摆样子
+        self::assertStringNotContainsString('$role', $signer, '签发落点收 role 入参 :: 签发者可以自选角色，等于把信任边界挪出了签发端');
+    }
+
+    /** M0：令牌角色必须来自**验签通过后**的 claims，缺省/未知一律降级只读（旧令牌自动 fail-closed） */
+    public function testSdkSessionRoleComesFromVerifiedClaims(): void
+    {
+        $process = self::methodBody(self::source(self::SDK_SESSION_AUTH), 'process', 'SdkSessionAuth');
+
+        self::assertSame(1, preg_match('/\$request->sdkRole\s*=/', $process), 'SdkSessionAuth 未注入 sdkRole :: 写端点的角色闸会恒取到缺省值（或报未定义属性）');
+        self::assertSame(1, preg_match("/\\\$claims\['role'\]/", $process), 'sdkRole 未取自 claims.role :: 角色来源不是签名覆盖的那份 claims');
+        self::assertSame(1, preg_match("/\\\$claims\['role'\]\s*\?\?\s*'read'/", $process), "claims.role 缺省值不是 'read' :: 旧令牌（M0 前签发，claims 无 role）会落到别的角色");
+        // 顺序：claims 在验签前就已解出来，角色必须在验签之后才注入，否则未签名/伪造令牌也能决定角色
+        self::assertGreaterThan(
+            self::offset($process, '/hash_equals\(/', '签名比对'),
+            self::offset($process, '/\$request->sdkRole\s*=/', 'sdkRole 注入'),
+            'sdkRole 在验签之前注入 :: 伪造 claims 的角色也生效'
+        );
+    }
+
+    /** M0：三个写端点必须按 role=server 放行，且判据要排在建 provider 之前（否则闸只是摆设，钱已经动了） */
+    public function testSdkWriteEndpointsRequireServerRoleBeforeProvider(): void
+    {
+        $src = self::source(self::GAME_SDK_CONTROLLER);
+
+        foreach (['bet', 'settle', 'refund'] as $method) {
+            $body = self::methodBody($src, $method, "GameSdkController::{$method}");
+            $gate = self::offset($body, "/\\\$request->sdkRole\s*!==\s*'server'/", "{$method} 的角色判据");
+            $create = self::offset($body, '/ProviderFactory::create\(/', "{$method} 的 provider 构建");
+
+            self::assertLessThan(
+                $create,
+                $gate,
+                "{$method} 的角色判据排在 ProviderFactory::create 之后 :: 闸只挡在回包上，余额/流水已经动过"
+            );
+            self::assertSame(
+                1,
+                preg_match("/\\\$request->sdkRole\s*!==\s*'server'\)\s*\{\s*return \\\$this->fail\([^;]*?,\s*403\);/s", $body),
+                "{$method} 的角色判据没有落到 403 :: 非服务端令牌要么放行、要么被打成 5xx"
+            );
+        }
+
+        // 读端点（balance）不得被同一道写闸误伤：只读令牌连余额都读不到的话，客户端连自检都做不了
+        self::assertStringNotContainsString('sdkRole', self::methodBody($src, 'balance', 'GameSdkController::balance'), '读端点被写闸误伤 :: 只读令牌读不到余额');
     }
 }

@@ -64,6 +64,10 @@ class GameSdkController extends BaseController
         if ($r = $this->checkType($request)) {
             return $r;
         }
+        // M0: 写端点只认服务端令牌；缺省/旧令牌是 read（SdkSessionAuth 注入），当前无服务端签发者 ⇒ 恒 403
+        if ($request->sdkRole !== 'server') {
+            return $this->fail('SDK write requires server role', 403);
+        }
         $currencyId = (int) $request->input('currency_id', 0);
         $sessionId = (string) $request->input('session_id', '');
         $amount = $request->input('amount', '0');
@@ -113,6 +117,10 @@ class GameSdkController extends BaseController
     {
         if ($r = $this->checkType($request)) {
             return $r;
+        }
+        // M0: 同 bet —— 派奖是把钱加进余额的入口，非服务端令牌一律 403（判据必须排在 ProviderFactory 之前，否则钱已动完才拒绝）
+        if ($request->sdkRole !== 'server') {
+            return $this->fail('SDK write requires server role', 403);
         }
         $currencyId = (int) $request->input('currency_id', 0);
         $sessionId = (string) $request->input('session_id', '');
@@ -184,6 +192,10 @@ class GameSdkController extends BaseController
     {
         if ($r = $this->checkType($request)) {
             return $r;
+        }
+        // M0: 同 bet —— 退款同样是资金写入口
+        if ($request->sdkRole !== 'server') {
+            return $this->fail('SDK write requires server role', 403);
         }
         $currencyId = (int) $request->input('currency_id', 0);
         $sessionId = (string) $request->input('session_id', '');

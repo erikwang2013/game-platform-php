@@ -15,8 +15,9 @@ use Webman\MiddlewareInterface;
 /**
  * 自研/内嵌游戏 SDK 会话认证（M5）
  *
- * Authorization: Bearer {base64url(JSON{game_id,user_id,exp})}.{hex HMAC-SHA256(payload, api_secret)}
- * 令牌由 GET /api/game/session 签发，TTL 5 分钟；user_id 只取自令牌（防越权），请求体不可覆盖。
+ * Authorization: Bearer {base64url(JSON{game_id,user_id,role,exp})}.{hex HMAC-SHA256(payload, api_secret)}
+ * 令牌由 GET /api/game/session 签发（M0 起只签 role=read），TTL 5 分钟；user_id 只取自令牌（防越权），请求体不可覆盖。
+ * role 决定能否调写端点（M0）：缺省/未知一律 read，写端点要 server（当前全平台没有服务端签发者）。
  */
 class SdkSessionAuth implements MiddlewareInterface
 {
@@ -60,6 +61,10 @@ class SdkSessionAuth implements MiddlewareInterface
         $request->gameId = (int) $claims['game_id'];
         $request->game = $game;
         $request->userId = (int) $claims['user_id'];
+        // M0: 令牌角色。role 在签名的 payload 里（改一个字节签名即失效，调用方塞不进 role=server），
+        // 缺省按只读 —— M0 之前签发的令牌（TTL 5 分钟）没有该字段、未知取值也一律降级只读，天然 fail-closed
+        $role = $claims['role'] ?? 'read';
+        $request->sdkRole = $role === 'server' ? 'server' : 'read';
 
         return $next($request);
     }

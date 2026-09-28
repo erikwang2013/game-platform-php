@@ -203,7 +203,7 @@ class GameController extends BaseController
     #[Apidoc\Method("GET")]
     #[Apidoc\Auth(true)]
     #[Apidoc\Param(name: "game_id", type: "string", require: true, desc: "游戏ID(hashid)")]
-    #[Apidoc\Desc("M5: 自研/内嵌游戏启动前签发 5 分钟 HMAC 会话令牌（SdkSessionAuth 校验）")]
+    #[Apidoc\Desc("M5: 自研/内嵌游戏启动前签发 5 分钟 HMAC 会话令牌（SdkSessionAuth 校验）；M0 起只签只读令牌（role=read），写端点需服务端令牌")]
     public function session(Request $request): Response
     {
         $gameId = $request->input('game_id', '');
@@ -224,16 +224,28 @@ class GameController extends BaseController
             return $this->fail('game api_secret not configured', 403);
         }
 
+        return $this->success([
+            'token'      => $this->issueReadSessionToken($game, (int) $gameId, (int) $request->userId),
+            'expires_in' => 300,
+        ]);
+    }
+
+    /**
+     * M0: 会话令牌签发的唯一落点 —— role 由签发端写死为 read，本方法**不接受** role 入参，
+     * 故请求者路径上签不出写令牌（旧写法由任意登录用户触发、却用 game.api_secret 签出可写令牌）。
+     *
+     * M1 的服务端令牌签发者另起一路（新端点 + 服务端身份认证），不要把 role 变成这里的入参。
+     */
+    private function issueReadSessionToken(Game $game, int $gameId, int $userId): string
+    {
         $payload = rtrim(strtr(base64_encode(json_encode([
             'game_id' => $gameId,
-            'user_id' => $request->userId,
+            'user_id' => $userId,
+            'role'    => 'read',
             'exp'     => time() + 300,
         ], JSON_UNESCAPED_UNICODE)), '+/', '-_'), '=');
 
-        return $this->success([
-            'token'      => $payload . '.' . hash_hmac('sha256', $payload, $game->api_secret),
-            'expires_in' => 300,
-        ]);
+        return $payload . '.' . hash_hmac('sha256', $payload, (string) $game->api_secret);
     }
 
     #[Apidoc\Title("启动游戏")]
