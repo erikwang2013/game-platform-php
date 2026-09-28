@@ -25,11 +25,14 @@ INSERT IGNORE INTO `game_user_wallet` (`id`, `user_id`, `balance`, `frozen_balan
 
 -- ============================================================
 -- 演示游戏
+-- api_secret 为固定演示常量（明文非加密存储）：Encryptable 解密失败时按原样返回，
+-- 明文可直接读回；固定值（非随机）保证种子文件可幂等重放。演示游戏必须有非空密钥，
+-- 否则回调 HMAC 鉴权会因空密钥而形同虚设（中间件现已对空密钥 fail-closed）。
 -- ============================================================
-INSERT IGNORE INTO `game_game` (`id`, `name`, `slug`, `type`, `description`, `cover_image`, `platform`, `region`, `status`, `sort`, `sdk_version`) VALUES
-(60000000000000201, 'Lucky Spin', 'lucky-spin', 'self', '休闲转盘小游戏，适合演示投注与派奖流程。', '', 'h5', 'global', 1, 10, '1.0.0'),
-(60000000000000202, 'Battle Arena', 'battle-arena', 'self', '多人竞技对战游戏。', '', 'h5', 'global', 1, 20, '1.0.0'),
-(60000000000000203, 'Poker Classic', 'poker-classic', 'embedded', '经典扑克牌局（内嵌第三方 SDK）。', '', 'web', 'global', 1, 30, NULL);
+INSERT IGNORE INTO `game_game` (`id`, `name`, `slug`, `type`, `api_secret`, `description`, `cover_image`, `platform`, `region`, `status`, `sort`, `sdk_version`) VALUES
+(60000000000000201, 'Lucky Spin', 'lucky-spin', 'self', 'demo-secret-lucky-spin-0001', '休闲转盘小游戏，适合演示投注与派奖流程。', '', 'h5', 'global', 1, 10, '1.0.0'),
+(60000000000000202, 'Battle Arena', 'battle-arena', 'self', 'demo-secret-battle-arena-0001', '多人竞技对战游戏。', '', 'h5', 'global', 1, 20, '1.0.0'),
+(60000000000000203, 'Poker Classic', 'poker-classic', 'embedded', 'demo-secret-poker-classic-0001', '经典扑克牌局（内嵌第三方 SDK）。', '', 'web', 'global', 1, 30, NULL);
 
 INSERT IGNORE INTO `game_game_category_rel` (`game_id`, `category_id`) VALUES
 (60000000000000201, 50000000000000005),

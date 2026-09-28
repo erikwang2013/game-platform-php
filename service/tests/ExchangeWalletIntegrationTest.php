@@ -188,11 +188,12 @@ class ExchangeWalletIntegrationTest extends TestCase
         $conn = $conf['connections'][$name];
 
         $conn['database'] = getenv('DB_DATABASE_TEST') ?: 'game-platform-test';
-        // 凭据只从环境变量读，不进仓库、不落盘（本机 root 非免密，bootstrap 的 password='' 连不上）
+        // 凭据优先取环境变量（GP_DB_USER/GP_DB_PASS，本机可用其覆盖），缺省回落到 config('database')
+        // 即 .env 的口令 —— 不要硬编码空串：那会让本类及其之后的所有用例连不上库并静默 skip。
         $user = getenv('GP_DB_USER');
         $pass = getenv('GP_DB_PASS');
         $conn['username'] = $user !== false && $user !== '' ? $user : $conn['username'];
-        $conn['password'] = $pass !== false && $pass !== '' ? $pass : '';
+        $conn['password'] = $pass !== false && $pass !== '' ? $pass : (string) $conn['password'];
 
         $capsule = new Capsule();
         $capsule->addConnection($conn, $name);

@@ -186,7 +186,9 @@ class GameController extends BaseController
         $game->cover_image = $request->input('cover_image', '');
         $game->api_endpoint = $request->input('api_endpoint', '');
         $game->api_key     = $request->input('api_key', '');
-        $game->api_secret  = $request->input('api_secret', '');
+
+        $game->api_secret = $this->generateApiSecret((string) $game->type, (string) $request->input('api_secret', ''));
+
         $game->status      = (int) $request->input('status', 0);
         $game->sort        = (int) $request->input('sort', 0);
         $game->sdk_version = $request->input('sdk_version', '');
@@ -220,11 +222,34 @@ class GameController extends BaseController
             return $this->fail('游戏不存在', 404);
         }
 
-        $game->fill($request->only([
+        $data = $request->only([
             'name', 'type', 'description', 'cover_image',
             'api_endpoint', 'api_key', 'api_secret', 'status', 'sort',
             'sdk_version', 'platform', 'region',
-        ]));
+        ]);
+
+        // 空密钥不覆盖已有非空密钥：管理端编辑表单未填该字段时会提交空串（字段本身是 hidden，
+        // 回显不出来），直接落库会静默清空正在运行的密钥，打断第三方对接与自研游戏 SDK 鉴权。
+        // 注：Request::only() 用 array_key_exists，字段完全不传时本就不在 $data 中、不会清空。
+        if (array_key_exists('api_secret', $data)
+            && (string) $data['api_secret'] === ''
+            && (string) $game->api_secret !== '') {
+            unset($data['api_secret']);
+        }
+
+        $game->fill($data);
+
+        // 改类型时补生成：third_party 的游戏密钥本来就允许为空，一旦 PUT 成 self/embedded，
+        // 空密钥就成了一条「永远用不了」的自研游戏（service 侧对空密钥 fail-closed 401，
+        // 令牌与回调签名都发不出来）。判据必须取**落库后**的 type 与 secret，
+        // 否则就像上面那条 guard 一样只看当前库里的值而漏掉本次改动。
+        // 只在真生成了才回写：非空密钥不重新加密一遍，免得白白换一次随机 IV。
+        $secret    = (string) $game->api_secret;
+        $generated = $this->generateApiSecret((string) $game->type, $secret);
+        if ($generated !== $secret) {
+            $game->api_secret = $generated;
+        }
+
         $game->save();
 
         // 同步分类关系
@@ -326,6 +351,23 @@ class GameController extends BaseController
         }
 
         return $this->success([], '操作成功');
+    }
+
+    /**
+     * 自研/内嵌游戏的密钥由平台生成：空密钥会让回调与 SDK 令牌的 HMAC 校验收化成人人可算的
+     * hash_hmac('sha256', $str, '')，service 侧中间件已对空密钥 fail-closed，这类游戏会直接不可用。
+     * 第三方游戏的密钥由对方提供，不能代生成（代生成会让平台侧签名与对方对不上）。
+     *
+     * create 与 update 共用这一处判据：两条路径各写一份正是本类出过缺口的地方。
+     * 返回 $secret 原值表示不需要改动（调用方据此避免无谓的回写）。
+     */
+    private function generateApiSecret(string $type, string $secret): string
+    {
+        if ($secret === '' && in_array($type, ['self', 'embedded'], true)) {
+            return bin2hex(random_bytes(32));
+        }
+
+        return $secret;
     }
 
     /**

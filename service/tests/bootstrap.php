@@ -55,9 +55,9 @@ putenv('ENCRYPTION_CIPHER=aes-256-gcm');
 // Dotenv(mutable) 会覆盖进程环境变量，故在连接初始化时强制覆写，确保测试永不读写开发库。
 $dbConfig = config('database');
 $dbConfig['connections'][$dbConfig['default']]['database'] = getenv('DB_DATABASE_TEST') ?: 'game-platform-test';
-// 测试环境 root 免密（本机 MySQL root 无密码；.env 的 DB_PASSWORD=root 会让测试连不上库）。
-// 仅在此处（测试 bootstrap）强制空密码，不影响业务运行。
-$dbConfig['connections'][$dbConfig['default']]['password'] = '';
+// 口令沿用 config('database')（.env）的值，此处不再覆写：旧口径「本机 root 无密码、故强制空密码」
+// 自 2026-09-17 root 启用口令后失效，后果是全部连库用例静默 skip，并被长期误读成「本机 MySQL 失效」。
+// 上一行改写测试库名已足够保证测试不读写开发库，凭据无需另行干预。
 
 // 初始化 Eloquent 与 support\Db。
 // 注意：不能用 Webman\Database\Initializer::init()——support\Db 首次被 autoload 时

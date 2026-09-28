@@ -47,6 +47,11 @@ class SdkSessionAuth implements MiddlewareInterface
             return json(['code' => 401, 'message' => 'Unknown or disabled game', 'data' => []]);
         }
 
+        // 空密钥时签名人人可算，任意用户都能自铸令牌（api_secret 未配置的游戏必须 fail-closed）
+        if ((string) $game->api_secret === '') {
+            return json(['code' => 401, 'message' => 'Game api_secret not configured', 'data' => []]);
+        }
+
         $expected = hash_hmac('sha256', $payload, $game->api_secret);
         if (!hash_equals($expected, $signature)) {
             return json(['code' => 401, 'message' => 'Invalid signature', 'data' => []]);

@@ -219,6 +219,10 @@ class GameController extends BaseController
         if ($game->type !== 'self' && $game->type !== 'embedded') {
             return $this->fail('SDK session only for self/embedded games', 403);
         }
+        // 空密钥签发的令牌 SdkSessionAuth 必然拒收（fail-closed），这里提前给出明确原因，避免客户端拿到一个永远验不过的 token
+        if ((string) $game->api_secret === '') {
+            return $this->fail('game api_secret not configured', 403);
+        }
 
         $payload = rtrim(strtr(base64_encode(json_encode([
             'game_id' => $gameId,

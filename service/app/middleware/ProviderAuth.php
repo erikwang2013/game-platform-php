@@ -33,6 +33,11 @@ class ProviderAuth implements MiddlewareInterface
             return json(['code' => 401, 'message' => 'Request expired', 'data' => []]);
         }
 
+        // 空密钥时 hash_hmac(..., '') 人人可算，等于签名校验形同虚设（install.sql 里 api_secret 默认就是 ''）
+        if ((string) $game->api_secret === '') {
+            return json(['code' => 401, 'message' => 'Game api_secret not configured', 'data' => []]);
+        }
+
         $expected = $this->computeSignature($game, $timestamp, $request);
         if (!hash_equals($expected, $signature)) {
             return json(['code' => 401, 'message' => 'Invalid signature', 'data' => []]);
