@@ -16,6 +16,18 @@ namespace common;
  */
 final class BcMath
 {
+    /**
+     * 绝对值（去掉前导负号，scale 不变）。
+     *
+     * 专门给「|a - b|」场景用：PHP 扩展没有 bcabs()，裸写 bcabs(bcsub(...)) 会抛
+     * 「Call to undefined function」，且因 bcabs 命名太过自然而不易在评审中发现。
+     * 本方法不做任何运算，输入原样（除符号）返回，故不参与四舍五入。
+     */
+    public static function abs(string $value): string
+    {
+        return str_starts_with($value, '-') ? substr($value, 1) : $value;
+    }
+
     /** 十进制四舍五入到 $scale 位小数（负数按远离零进位） */
     public static function round(string $value, int $scale = 0): string
     {

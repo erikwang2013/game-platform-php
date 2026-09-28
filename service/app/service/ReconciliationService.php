@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\service;
 
+use common\BcMath;
 use common\SnowflakeService;
 use common\model\DepositOrder;
 use common\model\PaymentMethod;
@@ -672,7 +673,7 @@ class ReconciliationService
      */
     private static function amountGap(string $gatewayAmount, string $localAmount): string
     {
-        return bcabs(bcsub($gatewayAmount, $localAmount, 4));
+        return BcMath::abs(bcsub($gatewayAmount, $localAmount, 4));
     }
 
     private static function isDate(string $d): bool
