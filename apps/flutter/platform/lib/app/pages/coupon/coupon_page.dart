@@ -98,13 +98,29 @@ class _CouponPageState extends State<CouponPage> with SingleTickerProviderStateM
                     ],
                   ),
                 )
-              : TabBarView(
-                  controller: _tabs,
+              : Column(
                   children: [
-                    _list(_available, available: true),
-                    _list(_mine, available: false),
+                    _redeemNotice(),
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabs,
+                        children: [
+                          _list(_available, available: true),
+                          _list(_mine, available: false),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
+    );
+  }
+
+  Widget _redeemNotice() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(8),
+      color: Colors.orange.shade100,
+      child: Text('${AppTranslations.t('coupon.redeem_notice')}', textAlign: TextAlign.center),
     );
   }
 

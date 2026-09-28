@@ -191,6 +191,7 @@ class AppTranslations {
       'coupon.claimed': 'Coupon claimed',
       'coupon.empty': 'No coupons',
       'coupon.value': 'Value',
+      'coupon.redeem_notice': 'Claiming works. Redeeming coupons and applying them to orders are not available yet; claimed coupons will become usable once that feature launches.',
 
       // Leaderboard
       'leaderboard.title': 'Leaderboard',
@@ -439,6 +440,7 @@ class AppTranslations {
       'coupon.claimed': '领取成功',
       'coupon.empty': '暂无优惠券',
       'coupon.value': '面额',
+      'coupon.redeem_notice': '领取功能已可用；核销与抵扣尚未开放，已领取的优惠券将在功能上线后可用。',
 
       // Leaderboard
       'leaderboard.title': '排行榜',
