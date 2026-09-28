@@ -55,6 +55,12 @@ class AdminPermission
 
     private function getUserPermissions(int $adminId): array
     {
+        // 账号状态必须先查库、且必须在读缓存之前：缓存里可能还留着降权前的 '*'，
+        // 把停用/删除判断放到缓存之后，等于给被停用的管理员留最长 60 秒的全权窗口。
+        // 代价是每请求一次主键查询（走 PK 单行），换来的是封禁/删除即时生效（fail-closed）。
+        $user = AdminUser::find($adminId);
+        if (!$user || $user->status !== 1) return [];
+
         // Redis 缓存，避免每请求 N+1 查询
         $cacheKey = "perm:{$adminId}";
         try {
@@ -63,9 +69,6 @@ class AdminPermission
                 return json_decode($cached, true);
             }
         } catch (\Throwable) {}
-
-        $user = AdminUser::find($adminId);
-        if (!$user) return [];
 
         $permissions = [];
         foreach ($user->roles as $role) {

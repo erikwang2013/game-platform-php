@@ -31,6 +31,11 @@ class ChatWebSocket
                 if (empty($token)) { $connection->send(json_encode(['type' => 'error', 'message' => 'Token required'])); return; }
                 try {
                     $payload = jwt_wrapper()->verify($token);
+                    // 与 UserAuth 同一条判据：带 scope 的登录半成品（如 pending_2fa 票据）不得当访问令牌用。
+                    // 抛进下面的 catch，对客户端与「令牌无效」不可区分（不泄漏命中了哪道闸）
+                    if (($payload->scope ?? null) !== null) {
+                        throw new \RuntimeException('Token scope not allowed');
+                    }
                     $connection->userId = (int) $payload->sub;
                     $connection->send(json_encode(['type' => 'authenticated', 'user_id' => $connection->userId]));
                 } catch (\Throwable $e) {

@@ -113,7 +113,7 @@ class AuthController
         );
 
         // 并发会话限制
-        $this->trackSession($user->id, $token, $tokenExpire);
+        $this->trackSession($user->id, $token, $refreshToken, $tokenExpire);
 
         // 更新登录信息
         $user->last_login_at = date('Y-m-d H:i:s');
@@ -193,7 +193,7 @@ class AuthController
             (int)(config('plugin.erikwang2013.jwt.jwt.refresh_expire') ?: 1209600)
         );
 
-        $this->trackSession($user->id, $token, $tokenExpire);
+        $this->trackSession($user->id, $token, $refreshToken, $tokenExpire);
 
         return json([
             'code'    => 0,
@@ -233,6 +233,12 @@ class AuthController
             $jwt = self::getJWT();
             $payload = $jwt->decode($refreshToken, true);
 
+            // decode(allowRefresh: true) 只是"允许"refresh 令牌（v2.1.2 起默认拒绝），access 令牌同样能过闸；
+            // 不显式要求 token_type=refresh，等于拿 2 小时有效的 access 令牌换一枚 14 天有效的 refresh 令牌
+            if (($payload['token_type'] ?? '') !== 'refresh') {
+                return json(['code' => 401, 'message' => '刷新令牌无效或已过期', 'data' => []]);
+            }
+
             // 刷新时更新最后登录时间和IP
             $userId = $payload['sub'] ?? 0;
             if ($userId) {
@@ -246,13 +252,15 @@ class AuthController
 
             $tokenExpire = (int)(config('plugin.erikwang2013.jwt.jwt.default_expire') ?: 7200);
             $token = $jwt->encode(['sub' => $payload['sub'], 'username' => $payload['username'] ?? '']);
-            $newRefresh = $jwt->encode(['sub' => $payload['sub'], 'token_type' => 'refresh'],
-                (int)(config('plugin.erikwang2013.jwt.jwt.refresh_expire') ?: 1209600)
-            );
 
-            // 并发会话限制：注册新 token，移除旧 refresh token 的活跃状态
-            $this->trackSession($userId, $token, $tokenExpire);
-            try { Redis::zrem("user_tokens:{$userId}", md5($refreshToken)); } catch (\Throwable) {}
+            // 轮换：旧 refresh 的 jti 立即入黑名单，同一枚 refresh 令牌用过即废。
+            // 刻意排在签发 access 之后 —— 此前任何一步失败都不会把客户端手上的 refresh 打成死票。
+            // 用 refresh() 而非手写 encode：它同时强制 token_type=refresh，且黑名单写失败会抛错走 401
+            // （fail-closed），不会发出"吊销不掉"的新会话。
+            $newRefresh = $jwt->refresh($refreshToken);
+
+            // 并发会话限制
+            $this->trackSession($userId, $token, $newRefresh, $tokenExpire);
 
             return json([
                 'code'    => 0,
@@ -269,17 +277,28 @@ class AuthController
     }
 
     /**
-     * 并发会话限制 — 同一用户最多 3 个有效 token
+     * 并发会话限制 — 同一管理员最多 3 个有效会话（一个会话＝一枚 access + 其配对 refresh）
+     *
+     * zset 成员是 access 令牌的 md5（score 为到期时间），驱逐靠 jwt_blacklist:{md5} 生效。
+     * 驱逐时必须连同该会话配对的 refresh 一起吊销：只杀 access 的话，一次刷新就能把会话复活，
+     * 上限形同虚设。旧 access 令牌在其有效期内始终可用，故刷新时不去掉旧 access 的计数条目。
+     *
      * @param int $userId 用户 ID
-     * @param string $token JWT access_token
-     * @param int $expiresIn token 有效期（秒）
+     * @param string $token 新签发的 access_token
+     * @param string $refreshToken 与本条 access 配对的 refresh_token
+     * @param int $expiresIn access_token 有效期（秒）
      */
-    private function trackSession(int $userId, string $token, int $expiresIn): void
+    private function trackSession(int $userId, string $token, string $refreshToken, int $expiresIn): void
     {
         try {
             $key = "user_tokens:{$userId}";
             $exp = time() + $expiresIn;
             $member = md5($token);
+
+            // access → 配对 refresh：登出时手上只有 access，靠这张表才能顺带吊销 refresh。
+            // TTL 取 access 有效期 + 1 小时余量，与下面 zset 的余量口径一致，保证任何能通过
+            // decode（含 leeway 宽限）的 access 令牌都还在窗口内找得到自己的 refresh
+            Redis::setex("session_refresh:{$member}", $expiresIn + 3600, $refreshToken);
 
             // 清理已过期的 token
             Redis::zremrangebyscore($key, 0, time());
@@ -296,6 +315,13 @@ class AuthController
                     Redis::zrem($key, $oldMember);
                     if ($ttl > 0) {
                         Redis::setex("jwt_blacklist:{$oldMember}", $ttl, '1');
+                    }
+                    // 被驱逐会话的 refresh 一并吊销：refresh 只认 jti 黑名单，不走上面那把 md5 键
+                    $pairKey = "session_refresh:{$oldMember}";
+                    $oldRefresh = Redis::get($pairKey);
+                    if ($oldRefresh) {
+                        self::getJWT()->blacklist($oldRefresh);
+                        Redis::del($pairKey);
                     }
                 }
             }

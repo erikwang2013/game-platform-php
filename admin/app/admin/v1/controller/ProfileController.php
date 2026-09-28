@@ -116,9 +116,18 @@ class ProfileController extends BaseController
         }
 
         try {
-            $payload = self::getJWT()->decode($token);
+            $jwt     = self::getJWT();
+            $payload = $jwt->decode($token);
             $ttl     = max((int)($payload['exp'] ?? 0) - time(), 0);
             Redis::setex('jwt_blacklist:' . md5($token), $ttl, '1');
+
+            // 本会话的 refresh 令牌一并吊销。refresh 不走上面那把 md5 键（那是 AdminAuth 查 access 用的），
+            // 它只认 jti 黑名单，因此必须走 blacklist()。吊销成功才删映射，失败留待下次登出重试。
+            $sessionKey = 'session_refresh:' . md5($token);
+            $refreshToken = Redis::get($sessionKey);
+            if ($refreshToken && $jwt->blacklist($refreshToken)) {
+                Redis::del($sessionKey);
+            }
         } catch (\Throwable $e) {
             // token 无效也视为登出成功
         }
