@@ -4,6 +4,7 @@
 
 import { apiService } from './ApiService';
 import {
+  ApiResponse,
   LoginRequest,
   LoginResponse,
   UserProfile,
@@ -183,7 +184,7 @@ export class PaymentService {
 }
 
 /**
- * 用户服务 — C 端 /api/v1/user/profile
+ * 用户服务 — C 端 /api/v1/user/profile、/api/v1/user/delete-account
  */
 export class UserService {
   static async profile(): Promise<UserProfile> {
@@ -200,5 +201,45 @@ export class UserService {
       throw new Error(response.message);
     }
     return response.data;
+  }
+
+  /**
+   * 注销账号。请求体契约以服务端为准（service/app/api/v1/controller/UserController.php:163）：
+   * 除 password 外还要求 confirm 恰为字面量 'yes'。
+   * 用户输入原样透传，由服务端裁决；失败时服务端原因原样抛出，不吞成通用错误。
+   */
+  static async deleteAccount(password: string, confirm: string): Promise<void> {
+    const response = await apiService.post<object>('/api/v1/user/delete-account', {
+      password: password,
+      confirm: confirm
+    });
+    if (response.code !== 0) {
+      throw new Error(response.message);
+    }
+  }
+
+  /**
+   * 注销后回读：账号真注销了 ⇒ 资料接口必须已取不到。
+   * true = 确认已注销（401 会话已被服务端吊销 / 404 查无此人）；false = 仍读得到资料 ⇒ 注销没生效。
+   * 其余失败（网络/5xx）无法判定，原样抛给调用方按「无法确认」处理——绝不把不确定当成功。
+   */
+  static async accountGone(): Promise<boolean> {
+    let response: ApiResponse<UserProfile>;
+    try {
+      response = await apiService.get<UserProfile>('/api/v1/user/profile');
+    } catch (e) {
+      const msg: string = (e as Error).message;
+      if (msg === 'UNAUTHORIZED') {
+        return true;
+      }
+      throw e;
+    }
+    if (response.code === 0) {
+      return false;
+    }
+    if (response.code === 404) {
+      return true;
+    }
+    throw new Error(response.message);
   }
 }

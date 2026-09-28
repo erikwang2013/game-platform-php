@@ -66,8 +66,8 @@ final class PayoutService
         $batchId = $order->order_no . '-' . $attempt;
         $email = self::extractPaypalEmail($order);
         // 回退判据只认「未设置」：fiat_amount 是 DECIMAL(18,4) NOT NULL，全仓唯一写入方是 service 侧
-        // 下单时写进报价实收（service/app/api/v1/controller/WithdrawController.php:208，且该处现已
-        // 拒收实收非正）⇒ null/'' 只是防御性分支，正常流程走不到。
+        // 下单时写进报价实收（service/app/api/v1/controller/WithdrawController.php:216；报价非正的
+        // 下单闸在同文件 :136-138）⇒ null/'' 只是防御性分支，正常流程走不到。
         // '0' **不是**「未设置」，是「应付 0」。旧判据 `bccomp($fiat,'0',4) > 0` 把 '0' 与负数一并当
         // 未设置 ⇒ 遇 fee_pct=100 吃光本金时按 platform_amount **全额照付**：用户提 10000 币被收
         // 100% 手续费，反而 1:1 拿走 10000 法币。故非正一律 fail-closed：标 failed 让运营看得见，

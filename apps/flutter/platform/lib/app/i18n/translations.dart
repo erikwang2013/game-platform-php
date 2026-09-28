@@ -143,6 +143,15 @@ class AppTranslations {
       'profile.save_success': 'Saved successfully',
       'profile.confirm_logout': 'Confirm Logout',
       'profile.confirm_logout_msg': 'Are you sure you want to logout?',
+      'profile.delete_account': 'Delete Account',
+      'profile.delete_account_warn':
+          'Once deleted, this account can no longer sign in and the profile will be anonymized. '
+              'Withdraw any remaining balance first, otherwise the server will reject the request.',
+      'profile.delete_password': 'Current password',
+      'profile.delete_confirm_hint': 'Type yes to confirm',
+      'profile.delete_unconfirmed':
+          'The deletion request was submitted, but the account is still readable. Please refresh to confirm.',
+      'profile.delete_unknown': 'Cannot confirm the result. Please sign in again to verify.',
 
       // Login
       'login.title': 'Global Game Platform',
@@ -392,6 +401,12 @@ class AppTranslations {
       'profile.save_success': '保存成功',
       'profile.confirm_logout': '确认退出',
       'profile.confirm_logout_msg': '确定要退出登录吗？',
+      'profile.delete_account': '注销账号',
+      'profile.delete_account_warn': '注销后该账号无法再登录，个人资料会被匿名化。账号内余额需先自行提现清零，否则服务端会拒绝注销。',
+      'profile.delete_password': '当前密码',
+      'profile.delete_confirm_hint': '输入 yes 确认注销',
+      'profile.delete_unconfirmed': '注销请求已提交，但账号资料仍可读取，请刷新后确认。',
+      'profile.delete_unknown': '注销结果无法确认，请重新登录后再核实。',
 
       // Login
       'login.title': '全球游戏聚合平台',

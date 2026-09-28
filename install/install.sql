@@ -333,6 +333,28 @@ CREATE TABLE IF NOT EXISTS `game_transaction` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='平台流水表';
 
 -- ============================================================
+-- 钱包冻结子台账（per-hold，frozen_balance 的权威来源）
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `game_wallet_hold` (
+    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成（回填行沿用来源流水/钱包行的雪花ID）',
+    `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
+    `scope` VARCHAR(20) NOT NULL DEFAULT 'platform' COMMENT '钱包范围: platform=平台币/game=游戏币',
+    `game_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '游戏ID（scope=game 时有效）',
+    `currency_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '币种ID（scope=game 时有效）',
+    `amount` DECIMAL(20,8) UNSIGNED NOT NULL COMMENT '本次冻结的原始金额',
+    `remaining` DECIMAL(20,8) UNSIGNED NOT NULL COMMENT '尚未释放的份额（不变量：同钱包 Σremaining == 钱包 frozen_balance）',
+    `ref_type` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '冻结来源单据类型（回填且来源不明时=backfill_unmatched）',
+    `ref_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '冻结来源单据ID',
+    `status` TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '状态: 1=冻结中 2=已释放(remaining 归零)',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '冻结时间',
+    `released_at` DATETIME NULL DEFAULT NULL COMMENT '释放完成时间（部分释放、以及回填行保持 NULL：历史释放时刻无法归属到笔，不编造）',
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_wallet` (`user_id`, `scope`, `game_id`, `currency_id`, `id`),
+    KEY `idx_ref` (`ref_type`, `ref_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='钱包冻结子台账（per-hold，frozen_balance 的权威来源）';
+
+-- ============================================================
 -- 支付方式表
 -- ============================================================
 CREATE TABLE IF NOT EXISTS `game_payment_method` (
@@ -1353,6 +1375,9 @@ INSERT IGNORE INTO `game_admin_permission` (`id`, `parent_id`, `name`, `slug`, `
 (21000000000000231, '0', '更新提现打款开关', 'put.admin/withdraw/switch', 3, '', '', 229, NOW(), NOW()),
 (21000000000000232, '0', 'Prometheus指标', 'get.metrics', 3, '', '', 230, NOW(), NOW()),
 (21000000000000233, '0', 'API文档', 'get.api/docs', 3, '', '', 231, NOW(), NOW()),
+-- 追加段：新端点只追加、不改既有 id（既有 id 已被存量库占用，改 id 会在存量库 INSERT IGNORE 时凭空多出一行）。
+-- 本行 slug 由 /tmp/seed_dump.php 的运行时可授予 slug dump 生成，非手敲。
+(21000000000000234, '0', '注销平台用户', 'delete.admin/platform/user', 3, '', '', 232, NOW(), NOW()),
 -- 通配权限：slug='*' 直接命中 AdminPermission 中间件的短路分支，授予该角色访问全部端点
 (900000000000000001, '0', '全部权限', '*', 3, '', '', 99, NOW(), NOW());
 

@@ -17,6 +17,11 @@ struct ProfilePage {
   @State isLoading: boolean = true;
   @State saving: boolean = false;
   @State errorMsg: string = '';
+  @State deleteOpen: boolean = false;
+  @State deletePassword: string = '';
+  @State deleteConfirm: string = '';
+  @State deleting: boolean = false;
+  @State deleteError: string = '';
 
   aboutToAppear(): void {
     this.loadProfile();
@@ -83,6 +88,60 @@ struct ProfilePage {
         action: () => {}
       }
     });
+  }
+
+  /** 收起时清掉残留的密码/确认字，不在内存里留着 */
+  closeDelete(): void {
+    this.deletePassword = '';
+    this.deleteConfirm = '';
+    this.deleteError = '';
+    this.deleteOpen = false;
+  }
+
+  async deleteAccount(): Promise<void> {
+    this.deleting = true;
+    this.deleteError = '';
+    // 中间结论留在局部变量里，状态变量只写一次（@State 每写一次都会触发 UI 渲染）
+    let err: string = '';
+    try {
+      try {
+        await UserService.deleteAccount(this.deletePassword, this.deleteConfirm);
+      } catch (e) {
+        const msg: string = (e as Error).message;
+        if (msg.indexOf('UNAUTHORIZED') >= 0) {
+          router.replaceUrl({ url: 'pages/LoginPage' });
+          return;
+        }
+        // 服务端拒绝原因原样展示（如「请先提现所有余额后再注销账号」），不吞成「操作失败」
+        err = msg.length > 0 ? msg : '注销失败';
+      }
+
+      if (err.length === 0) {
+        // 成功不以「请求发出去了」为准：回读确认账号真的取不到
+        let gone: boolean = false;
+        try {
+          gone = await UserService.accountGone();
+        } catch (e) {
+          err = '注销结果无法确认，请重新登录后再核实';
+        }
+        if (err.length === 0 && !gone) {
+          err = '注销请求已提交，但账号资料仍可读取，请刷新后确认';
+        }
+      }
+    } finally {
+      this.deleting = false;
+    }
+
+    this.deleteError = err;
+    if (err.length > 0) {
+      return;
+    }
+
+    this.deletePassword = '';
+    this.deleteConfirm = '';
+    TokenManager.clearTokens();
+    promptAction.showToast({ message: '账号已注销' });
+    router.replaceUrl({ url: 'pages/LoginPage' });
   }
 
   @Builder
@@ -208,6 +267,102 @@ struct ProfilePage {
               .onClick(() => {
                 this.logout();
               })
+
+            Column() {
+              Text('注销账号')
+                .fontSize(15)
+                .fontWeight(FontWeight.Medium)
+                .fontColor('#FF4D4F')
+                .width('100%')
+
+              Text('注销后该账号无法再登录，个人资料会被匿名化。账号内余额需先自行提现清零，否则服务端会拒绝注销。')
+                .fontSize(12)
+                .fontColor('#999999')
+                .width('100%')
+                .margin({ top: 6 })
+
+              if (this.deleteOpen) {
+                TextInput({ placeholder: '请输入当前密码', text: this.deletePassword })
+                  .type(InputType.Password)
+                  .height(44)
+                  .fontSize(14)
+                  .backgroundColor('#F5F5F5')
+                  .borderRadius(8)
+                  .margin({ top: 12 })
+                  .enabled(!this.deleting)
+                  .onChange((v: string) => {
+                    this.deletePassword = v;
+                    this.deleteError = '';
+                  })
+
+                TextInput({ placeholder: '输入 yes 确认注销', text: this.deleteConfirm })
+                  .height(44)
+                  .fontSize(14)
+                  .backgroundColor('#F5F5F5')
+                  .borderRadius(8)
+                  .margin({ top: 8 })
+                  .enabled(!this.deleting)
+                  .onChange((v: string) => {
+                    this.deleteConfirm = v;
+                    this.deleteError = '';
+                  })
+
+                if (this.deleteError.length > 0) {
+                  Text(this.deleteError)
+                    .fontSize(13)
+                    .fontColor('#FF4D4F')
+                    .width('100%')
+                    .margin({ top: 8 })
+                }
+
+                Row() {
+                  Button(this.deleting ? '注销中...' : '确认注销')
+                    .layoutWeight(1)
+                    .height(40)
+                    .fontSize(14)
+                    .fontColor('#FFFFFF')
+                    .backgroundColor(this.deleting ? '#FFB3B3' : '#FF4D4F')
+                    .borderRadius(8)
+                    .enabled(!this.deleting)
+                    .onClick(() => {
+                      this.deleteAccount();
+                    })
+
+                  Button('取消')
+                    .layoutWeight(1)
+                    .height(40)
+                    .fontSize(14)
+                    .fontColor('#666666')
+                    .backgroundColor('#F5F5F5')
+                    .borderRadius(8)
+                    .margin({ left: 8 })
+                    .enabled(!this.deleting)
+                    .onClick(() => {
+                      this.closeDelete();
+                    })
+                }
+                .width('100%')
+                .margin({ top: 12 })
+              } else {
+                Button('注销账号')
+                  .width('100%')
+                  .height(40)
+                  .fontSize(14)
+                  .fontColor('#FF4D4F')
+                  .backgroundColor('#FFF1F0')
+                  .borderRadius(8)
+                  .margin({ top: 12 })
+                  .onClick(() => {
+                    this.deleteError = '';
+                    this.deleteOpen = true;
+                  })
+              }
+            }
+            .width('100%')
+            .padding(16)
+            .backgroundColor('#FFFFFF')
+            .borderRadius(8)
+            .margin({ left: 16, right: 16, top: 12 })
 
             CopyrightBar()
               .margin({ top: 16, bottom: 16 })

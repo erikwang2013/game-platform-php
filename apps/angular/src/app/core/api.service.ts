@@ -335,6 +335,34 @@ export class Api {
     return this.request<UserProfile>('GET', `${BASE}/user/profile`);
   }
 
+  /**
+   * 注销账号。请求体契约以服务端为准（service/app/api/v1/controller/UserController.php:163）：
+   * 除 password 外还要求 confirm 恰为字面量 'yes'。
+   * 成功即账号已注销、服务端会话已吊销，此后必须重新登录。
+   */
+  deleteAccount(password: string, confirm = 'yes'): Observable<unknown> {
+    return this.request<unknown>('POST', `${BASE}/user/delete-account`, undefined, {
+      password,
+      confirm,
+    });
+  }
+
+  /**
+   * 注销后回读：账号真注销了 ⇒ 资料接口必须已取不到。
+   * true = 确认已注销（401/404）；false = 仍读得到资料 ⇒ 注销没生效。
+   * 网络/5xx 这类无法判定的失败**不吞**，原样抛出交调用方提示。
+   * retry=false：此时 refresh token 也已被服务端吊销，不必再试刷新。
+   */
+  accountGone(): Observable<boolean> {
+    return this.request<UserProfile>('GET', `${BASE}/user/profile`, undefined, undefined, false).pipe(
+      map(() => false),
+      catchError((e: ApiError) => {
+        if (e.code === 401 || e.code === 404) return of(true);
+        return throwError(() => e);
+      }),
+    );
+  }
+
   notifications(page = 1, perPage = 20): Observable<Paged<Notify>> {
     return this.request<Paged<Notify>>('GET', `${BASE}/notification/list`, {
       page,

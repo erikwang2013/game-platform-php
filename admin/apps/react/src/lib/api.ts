@@ -49,7 +49,7 @@ export const session = {
 
 export type Query = Record<string, string | number | null | undefined>;
 
-type Options = { method?: 'GET' | 'POST'; query?: Query; body?: unknown; auth?: boolean };
+type Options = { method?: 'GET' | 'POST' | 'DELETE'; query?: Query; body?: unknown; auth?: boolean };
 
 let refreshing: Promise<boolean> | null = null;
 

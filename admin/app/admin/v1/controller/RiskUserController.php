@@ -168,15 +168,15 @@ class RiskUserController extends BaseController
      *
      * 纯搬移：frozen→available，释放量不得超过 frozen_balance、重复释放被拒，桶内总额不变。
      *
-     * ⚠ 追溯口径（运营须知）：释放流水的 (ref_type, ref_id) 复用的是**最近一笔**风险冻结
-     * （`orderByDesc('id')` 取 type=lock 且 ref_type=risk_hold 的那条），**不是**「这一笔」。
-     * 原因是 frozen_balance 是单池列，没有 per-hold 台账，无法把某次释放对应到某次冻结的子集。
-     * hold 是全额冻结，同一时刻正常只有一笔活的冻结；但「冻结→用户充值→再冻结」之后，
-     * 老那笔的冻结份额与新那笔无法区分，此时释放行指向的是最新那笔 —— 金额仍守恒，
-     * 只是归因可能落在另一笔上。要精确到笔需要给 frozen 加子台账（表结构变更，独立批）。
+     * 归因口径（2026-09-28 起，per-hold 子台账）：冻结不再是单池列，`frozen_balance` 只是聚合缓存，
+     * 权威台账是 game_wallet_hold。释放按笔消费 —— 下面取到的那笔冻结（最新一笔 risk_hold 的 ref）
+     * 被提到队首先吃，剩下的量再按 FIFO（最老优先）继续吃；实际消费了哪几笔记在同笔流水的 remark
+     * （`hold:<id>,...`），逐笔份额落在台账行的 remaining/status/released_at。不变量
+     * `frozen_balance == Σhold.remaining` 由 WalletService 在同一事务内断言，对不上即整笔回滚。
+     * （此前是「只能吃最近一笔、归因可能落错笔」，因为当时没有台账。）
      */
     #[Apidoc\Title("解除冻结")]
-    #[Apidoc\Desc("与 hold 配对：frozen→available 纯搬移，不铸币；释放行复用最近一笔风险冻结的 ref_type/ref_id（frozen 是单池列，无 per-hold 台账）")]
+    #[Apidoc\Desc("与 hold 配对：frozen→available 纯搬移，不铸币；按笔消费冻结子台账（先吃最新一笔风险冻结对应的 hold，不足部分按 FIFO 继续），实际消费的 hold 记在释放流水 remark")]
     public function release(Request $request, string $hashid): Response
     {
         $userId = $this->decodeId($hashid);
@@ -254,7 +254,8 @@ class RiskUserController extends BaseController
         } catch (\Throwable $e) {
             // 钱路的意外失败必须留痕：管理员屏幕上一句话不是痕迹（OperationLog 记的是请求，不记异常）。
             // 文案笼统、不带 $e->getMessage()：原始异常可能带 SQL 片段/表列名/驱动文本，
-            // 与同仓资金端点同款（app/admin/v1/controller/WithdrawController.php:237-243、:613-616）。
+            // 与同仓资金端点同款（app/admin/v1/WithdrawReviewTrait.php:190-196、
+            // app/admin/v1/controller/WithdrawController.php:343-346）。
             Log::error('Risk release failed: ' . $e->getMessage(), [
                 'user_id'   => $userId,
                 'requested' => $requested ?? '(full frozen)',

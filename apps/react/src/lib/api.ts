@@ -331,6 +331,29 @@ export const api = {
 
   // account
   profile: () => get<Profile>('/user/profile'),
+
+  /**
+   * 注销账号。请求体契约以服务端为准（service/app/api/v1/controller/UserController.php:163）：
+   * 除 password 外还要求 confirm 恰为字面量 'yes'。成功即账号已注销、会话已吊销，须重新登录。
+   */
+  deleteAccount: (password: string, confirm = 'yes') =>
+    post<unknown>('/user/delete-account', { password, confirm }),
+
+  /**
+   * 注销后回读：账号真注销了 ⇒ 资料接口必须已取不到。
+   * true = 确认已注销（401/404）；false = 仍读得到资料 ⇒ 注销没生效。
+   * 网络故障这类无法判定的失败**不吞**，原样抛出交调用方提示。
+   * retry=false：此时 refresh token 也已被服务端吊销，不必再试刷新。
+   */
+  accountGone: async (): Promise<boolean> => {
+    try {
+      await request<Profile>('/user/profile', {}, false);
+      return false;
+    } catch (e) {
+      if (e instanceof ApiError && (e.code === 401 || e.code === 404)) return true;
+      throw e;
+    }
+  },
   wallet: () => get<WalletInfo>('/wallet/info'),
   transactions: (p: PageQuery = {}) => get<Paged<Transaction>>(`/wallet/transactions${qs(p)}`),
   deposits: (p: PageQuery = {}) => get<Paged<DepositOrder>>(`/deposit/orders${qs(p)}`),

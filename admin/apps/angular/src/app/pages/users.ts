@@ -163,15 +163,31 @@ export class Users extends ListBase<Row> {
     }
   }
 
+  /**
+   * 平台用户注销 —— 走 DELETE /platform/user/{hashid}（PlatformUserController::destroy）。
+   *
+   * 原先走 POST /user/batch/destroy 是错的：那是【管理员】端点（UserController::batchDestroy
+   * 删的是 AdminUser 表），我们却把平台用户的 hashid 递进去 —— 与上面 status 同一类错，
+   * 而且后果更重：一旦两族 hashid 解出同一个数值，这个「注销平台用户」会去删一个管理员账号。
+   *
+   * 后端拒绝有非零余额的用户（安全要求），拒绝原因在信封 message 里 —— 原样透出，
+   * 不吞成「操作失败」，否则运营只会看到「失败」而不知道该先清余额。
+   */
   protected async destroy(row: Row): Promise<void> {
     const id = idOf(row);
     if (!id || !confirm('确认注销该账号？该操作不可撤销。')) return;
+    this.error.set('');
     try {
-      await this.api.post(U + 'user/batch/destroy', { ids: [id] });
-      this.detail.set(null);
-      await this.load();
+      await this.api.request('DELETE', U + 'platform/user/' + id);
     } catch (e) {
       this.error.set(errText(e));
+      return;
+    }
+    this.detail.set(null);
+    await this.load();
+    // 成功以回读到的真实列表为准，不以「请求发出去了」为准
+    if (this.rows().some((r) => idOf(r) === id)) {
+      this.error.set('注销请求已提交，但该用户仍在列表中，请刷新确认');
     }
   }
 }

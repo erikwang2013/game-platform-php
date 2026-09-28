@@ -61,8 +61,18 @@ class WalletServiceLockTest extends TestCase
             return;
         }
 
+        // 钱包写路径自 2026-09-28 起落 wallet.mutated 事件行（Outbox）：按本用户流水派生的 event_id
+        // 精确删除，不按全表计数/全表删（并发跑测试时别人也在写这张表）
+        $txIds = Db::table('transaction')->where('user_id', $this->userId)->pluck('id')->all();
+        if ($txIds !== []) {
+            Db::table('event_outbox')->whereIn('event_id', array_map(
+                static fn ($id) => 'wallet.mutated:' . $id,
+                $txIds
+            ))->delete();
+        }
+
         // 只删本用例造的行（snowflake ID 唯一），不 TRUNCATE、不碰他人数据
-        foreach (['transaction', 'user_wallet'] as $table) {
+        foreach (['transaction', 'wallet_hold', 'user_wallet'] as $table) {
             Db::table($table)->where('user_id', $this->userId)->delete();
         }
     }
@@ -105,7 +115,8 @@ class WalletServiceLockTest extends TestCase
             '冻结不是支出：total_spent 应仍为 0（修复前被记成 30）'
         );
 
-        // refType/refId 指回上面那笔冻结（'test_hold', 1）：unlock 只搬桶，可追溯性全靠这两个字段
+        // refType/refId 指回上面那笔冻结（'test_hold', 1）：台账里同 ref 的活跃 hold 会被优先消费，
+        // 实际消费了哪几笔见 unlock 流水的 remark 与 game_wallet_hold（不再靠「最近一笔冻结」推断）
         $this->assertTrue(WalletService::unlock($this->userId, $scope, '30', 'test_hold', 1), '解冻应成功');
 
         $this->assertSame(0, bccomp($this->wallet('balance'), '100', 8), '解冻后可用余额还原');

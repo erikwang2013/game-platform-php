@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace app\service;
 
 use common\SnowflakeService;
-use app\event\EventBus;
+use common\service\OutboxWriter;
 use common\model\Transaction;
 use support\Db;
 
@@ -17,6 +17,10 @@ use support\Db;
  *
  * 写操作恒为「锁账户行 → 改余额 → 写流水 → 发事件」同一事务，
  * 余额与 game_transaction 不可分叉。
+ *
+ * 冻结不是单池列：`frozen_balance` 只是聚合缓存，权威台账是 `game_wallet_hold`（per-hold 子台账，
+ * lock 落行 / unlock 按笔消费），不变量 `frozen_balance == Σ(hold.remaining)` 由
+ * assertFreezeLedger() 在事务内断言，分叉即回滚。
  *
  * 精度：代码统一 scale 8（bcadd/bcsub）。表结构需为 DECIMAL(20,8)，
  * 否则 8 位运算结果写回被截断 —— 见 install/migrations/2026_08_31_wallet_unify.sql。
@@ -30,9 +34,14 @@ class WalletService
     public const TYPE_UNLOCK = 'unlock';
     public const TYPE_RECONCILE = 'reconcile';
 
+    // game_wallet_hold.status 枚举
+    public const HOLD_ACTIVE = 1;
+    public const HOLD_RELEASED = 2;
+
     // 表名不带 game_ 前缀（config/database.php 已配 prefix）
     private const TABLE_PLATFORM = 'user_wallet';
     private const TABLE_GAME = 'user_game_wallet';
+    private const TABLE_HOLD = 'wallet_hold';
 
     /**
      * 可用余额（不含冻结）。账户不存在时返回 0，不隐式建户。
@@ -62,7 +71,8 @@ class WalletService
     }
 
     /**
-     * 冻结：available -= n, frozen += n，流水 type=lock。
+     * 冻结：available -= n, frozen += n，流水 type=lock，并落一行子台账 hold（同事务）——
+     * 释放时按笔消费，不再靠「最近一笔冻结」猜。
      */
     public static function lock(int $userId, WalletScope $s, string $amount, string $refType, int $refId): bool
     {
@@ -71,15 +81,25 @@ class WalletService
             return false;
         }
 
-        return self::doMutate($userId, $s, '-' . $amount, self::TYPE_LOCK, $refType, $refId, '冻结余额', true, false);
+        return Db::transaction(function () use ($userId, $s, $amount, $refType, $refId) {
+            if (!self::doMutate($userId, $s, '-' . $amount, self::TYPE_LOCK, $refType, $refId, '冻结余额', true, false)) {
+                return false;
+            }
+
+            self::openHold($userId, $s, $amount, $refType, $refId);
+            self::assertFreezeLedger($userId, $s);
+
+            return true;
+        });
     }
 
     /**
-     * 解冻：frozen -= n, available += n，流水 type=unlock。
+     * 解冻：frozen -= n, available += n，流水 type=unlock，并按笔消费子台账。
      *
-     * $refType/$refId 必填，且应指向【被释放的那笔冻结】——unlock 自己只搬桶、不看是哪一笔，
-     * 全部可追溯性都压在这两个字段上。旧写法传 ''/0 ⇒ 释放行与冻结行在流水上无法配对，
-     * 运营看到「冻结」却找不到对应的「解冻」，也无法判断哪笔被放过。
+     * $refType/$refId = **请求释放的目标冻结**：台账里存在同 ref 的活跃 hold ⇒ 先吃它；不存在
+     * （含 ''/0 这类不指向任何 hold 的取值）⇒ 退化为 FIFO（最老优先）。两者都继续按最老优先吃满 $amount。
+     * 归因不再压在流水两列上：**实际**消费了哪几笔记在同笔流水的 remark（`hold:<id>,...`），
+     * 逐笔份额落在 game_wallet_hold（remaining/status/released_at）。
      */
     public static function unlock(int $userId, WalletScope $s, string $amount, string $refType, int $refId): bool
     {
@@ -88,7 +108,27 @@ class WalletService
             return false;
         }
 
-        return self::doMutate($userId, $s, $amount, self::TYPE_UNLOCK, $refType, $refId, '解冻余额', true, false);
+        return Db::transaction(function () use ($userId, $s, $amount, $refType, $refId) {
+            // 先取钱包行锁，钉死「钱包行 → 台账行」的取锁顺序（与 lock 内 doMutate 一致）：反序可与
+            // 并发的 lock（持钱包行、插台账行）成 AB-BA 环。
+            $wallet = self::find($userId, $s);
+            $frozen = self::str((string) ($wallet['frozen_balance'] ?? 0));
+
+            // 先规划后落账：台账凑不满 ⇒ 尚未写任何行就返回 false（与「冻结不足」同一条零写入失败路径）
+            $plan = self::planRelease($userId, $s, $amount, $refType, $refId, $frozen);
+            if ($plan === null) {
+                return false;
+            }
+
+            if (!self::doMutate($userId, $s, $amount, self::TYPE_UNLOCK, $refType, $refId, self::releaseRemark($plan), true, false)) {
+                return false;
+            }
+
+            self::consumeHolds($plan);
+            self::assertFreezeLedger($userId, $s);
+
+            return true;
+        });
     }
 
     /**
@@ -266,7 +306,7 @@ class WalletService
     }
 
     /**
-     * 写流水行 + 发事件。record 失败即抛异常 → 外层事务回滚余额写入。
+     * 写流水行 + 可靠投递事件。record 失败即抛异常 → 外层事务回滚余额写入。
      */
     private static function record(
         int $userId,
@@ -278,8 +318,10 @@ class WalletService
         int $refId,
         string $remark
     ): void {
+        $transactionId = SnowflakeService::generate();
+
         Transaction::create([
-            'id'            => SnowflakeService::generate(),
+            'id'            => $transactionId,
             'user_id'       => $userId,
             'type'          => $type,
             'amount'        => $delta,
@@ -292,8 +334,16 @@ class WalletService
             'remark'        => $remark,
         ]);
 
-        // EventBus::emit 内部已吞异常，不会回滚资金事务
-        EventBus::emit('wallet.mutated', [
+        // wallet.mutated 在 EventBus::RELIABLE_EVENTS 名单里（资产变动 ⇒ 必须可靠投递），故写 Outbox
+        // 而非 Pub/Sub emit（emit 的失败只记日志，Redis 抖动/消费方异常即永久丢事件）。
+        // 直调共享实现 OutboxWriter（EventBus::push 本体只有一行、转调的就是它）而不调 EventBus::push：
+        // 本文件在 service/admin 两树逐字节相同（WalletServiceTwoTreeParityTest 钉着），而 admin 树的
+        // EventBus 没有 push() ⇒ 走树内门面必炸一边；OutboxWriter 的 docblock 自称两树共用的唯一实现。
+        // 事务性：调用方恒在事务内（doMutate 包着）⇒ 事件行并入当前事务、与余额行同生共死；写不进去会抛
+        // （不吞）⇒ 资金事务跟着回滚（钱动了而事件没发属静默故障，与 .env 同级）。
+        // eventId 取自本笔流水的雪花主键：同一次变动恒定、跨变动唯一（outbox 的 uk_event_id）；
+        // 不稳定 ⇒ 重放产生重复事件，正是可靠投递要治的病。
+        OutboxWriter::write('wallet.mutated', 'wallet.mutated:' . $transactionId, [
             'user_id'     => $userId,
             'scope'       => $s->scope,
             'game_id'     => $s->gameId,
@@ -304,6 +354,139 @@ class WalletService
             'ref_type'    => $refType,
             'ref_id'      => $refId,
         ]);
+    }
+
+    /** 落一行冻结子台账 hold（与余额变动同事务）；remaining 初始 = amount。 */
+    private static function openHold(int $userId, WalletScope $s, string $amount, string $refType, int $refId): void
+    {
+        Db::table(self::TABLE_HOLD)->insert([
+            'id'          => SnowflakeService::generate(),
+            'user_id'     => $userId,
+            'scope'       => $s->scope,
+            'game_id'     => $s->gameId,
+            'currency_id' => $s->currencyId,
+            'amount'      => $amount,
+            'remaining'   => $amount,
+            'ref_type'    => $refType,
+            'ref_id'      => $refId,
+            'status'      => self::HOLD_ACTIVE,
+            'created_at'  => date('Y-m-d H:i:s'),
+        ]);
+    }
+
+    /**
+     * 规划本次释放消费哪些 hold（只读 + 行锁，不改任何行）：目标 hold 提到队首，其余按 id 升序
+     * （最老优先）；凑不满 $amount 返回 null（调用方零写入地失败）。
+     *
+     * @return array<int,array{id:int,remaining:string,take:string}>|null
+     */
+    private static function planRelease(int $userId, WalletScope $s, string $amount, string $refType, int $refId, string $frozen): ?array
+    {
+        $holds = Db::table(self::TABLE_HOLD)
+            ->where('user_id', $userId)
+            ->where('scope', $s->scope)
+            ->where('game_id', $s->gameId)
+            ->where('currency_id', $s->currencyId)
+            ->where('status', self::HOLD_ACTIVE)
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get(['id', 'remaining', 'ref_type', 'ref_id']);
+
+        if ($holds->isEmpty() && bccomp($frozen, '0', self::SCALE) > 0) {
+            // 钱包有冻结、台账却一笔都没有 = 回填迁移没跑，不是「余额不足」——两者运维动作不同，
+            // 不能都笼统报「解冻失败」。抛 ⇒ 外层事务回滚、管理端留日志。
+            throw new \RuntimeException(
+                '冻结子台账为空但 frozen_balance=' . $frozen . '（user_id=' . $userId . ' scope=' . $s->scope
+                . '）：请先执行 install/migrations/2026_09_28_wallet_freeze_ledger.sql 回填'
+            );
+        }
+
+        $rows = $holds->all();
+        if ($refType !== '' || $refId > 0) {
+            foreach ($rows as $i => $hold) {
+                if ((string) $hold->ref_type === $refType && (int) $hold->ref_id === $refId) {
+                    unset($rows[$i]);
+                    array_unshift($rows, $hold);
+                    break;
+                }
+            }
+        }
+
+        $plan = [];
+        $left = $amount;
+        foreach ($rows as $hold) {
+            if (bccomp($left, '0', self::SCALE) <= 0) {
+                break;
+            }
+            $remaining = self::str((string) $hold->remaining);
+            if (bccomp($remaining, '0', self::SCALE) <= 0) {
+                continue;
+            }
+            // 吃到刚好凑满为止：不足则整笔吃完，够了则只吃差额
+            $take = bccomp($remaining, $left, self::SCALE) <= 0 ? $remaining : $left;
+            $plan[] = ['id' => (int) $hold->id, 'remaining' => $remaining, 'take' => $take];
+            $left = bcsub($left, $take, self::SCALE);
+        }
+
+        return bccomp($left, '0', self::SCALE) === 0 ? $plan : null;
+    }
+
+    /**
+     * 落账本次消费：remaining 递减，归零才 status=released + released_at（部分释放只动 remaining，
+     * released_at 保持 NULL = 尚未释放完）。
+     */
+    private static function consumeHolds(array $plan): void
+    {
+        $now = date('Y-m-d H:i:s');
+
+        foreach ($plan as $item) {
+            $after = bcsub($item['remaining'], $item['take'], self::SCALE);
+            $done = bccomp($after, '0', self::SCALE) === 0;
+            Db::table(self::TABLE_HOLD)->where('id', $item['id'])->update([
+                'remaining'   => $after,
+                'status'      => $done ? self::HOLD_RELEASED : self::HOLD_ACTIVE,
+                'released_at' => $done ? $now : null,
+            ]);
+        }
+    }
+
+    /**
+     * 释放流水的 remark：写明本次实际消费了哪些 hold，使流水本身即可回答「这笔释放吃的是哪几笔冻结」。
+     * 列宽 255：拼不下就退化为笔数，绝不因备注超长回滚整笔资金。
+     */
+    private static function releaseRemark(array $plan): string
+    {
+        $ids = implode(',', array_column($plan, 'id'));
+
+        return strlen($ids) <= 200 ? '解冻余额 hold:' . $ids : '解冻余额 hold:' . count($plan) . '笔';
+    }
+
+    /**
+     * 不变量断言：聚合列 frozen_balance == Σ(hold.remaining)。子台账是权威，聚合列只是缓存。
+     *
+     * 只在 lock/unlock 里断言 —— 它们是全仓仅有的两条冻结写路径；mutate 不碰冻结列，故热路径零额外
+     * 查询。不满足即抛 ⇒ 外层事务回滚：分叉时宁可不动钱（fail-closed），也不写出一笔事后对不上的冻结。
+     */
+    private static function assertFreezeLedger(int $userId, WalletScope $s): void
+    {
+        $wallet = self::find($userId, $s);   // 复用取行读法；行锁已在事务内，重复取锁无害
+        $frozen = self::str((string) ($wallet['frozen_balance'] ?? 0));
+
+        // 逐行 bcadd 而不是 SQL SUM：SUM 回来的是 DECIMAL，Cast 成 float 就丢金额精度（本仓铁律）
+        $sum = '0';
+        foreach (Db::table(self::TABLE_HOLD)->where('user_id', $userId)
+            ->where('scope', $s->scope)->where('game_id', $s->gameId)
+            ->where('currency_id', $s->currencyId)->pluck('remaining') as $value) {
+            $sum = bcadd($sum, self::str((string) $value), self::SCALE);
+        }
+
+        if (bccomp($frozen, $sum, self::SCALE) !== 0) {
+            throw new \RuntimeException(sprintf(
+                '冻结台账分叉：%s.frozen_balance=%s vs Σhold.remaining=%s（user_id=%d scope=%s）——'
+                . '先跑 install/migrations/2026_09_28_wallet_freeze_ledger.sql 回填，再查是谁绕过 WalletService 写了冻结列',
+                $s->isGame() ? 'user_game_wallet' : 'user_wallet', $frozen, $sum, $userId, $s->scope
+            ));
+        }
     }
 
     private static function str(string $value): string

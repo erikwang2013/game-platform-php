@@ -233,9 +233,12 @@ class ExchangeController extends BaseController
                 // buy 的平台扣款走 UserWallet::deductBalance → WalletService::find()，
                 // 先锁 user_wallet 行，再由 addGameBalance 锁 user_game_wallet 行；
                 // sell 若反过来先锁游戏币行，同一用户并发的 buy/sell 即 AB-BA 取锁环（1213）。
-                // 这里只取平台行锁、不改值：加款仍留在游戏币扣减成功之后 ——
-                // WalletService::record() 会在事务内 emit wallet.mutated（非事务、不可回滚），
-                // 提前加款会让「游戏币不足」这条常规失败路径发出一次并未发生的钱包变动事件。
+                // ⚠ 上面那条取锁顺序的结论与事件无关（只为避免 1213 死锁），照旧必须遵守：
+                // 别因为下面这条理由消失，就把取锁顺序改回去。
+                // 这里只取平台行锁、不改值：加款仍留在游戏币扣减成功之后。
+                // 原「提前加款会让这条常规失败路径发出一次并未发生的钱包变动事件」的顾虑
+                // 已不成立：2026-09-29 起 WalletService::record() 的 wallet.mutated 由
+                // OutboxWriter 写入，事件行与资金行同事务，回滚时连事件一起回滚。
                 UserWallet::where('user_id', $userId)->lockForUpdate()->first();
 
                 // Deduct game balance

@@ -145,3 +145,52 @@ test('code=401 且无 refresh_token：清 token、回调登出、抛 401', async
   assert.equal(tokens.access(), null);
   assert.equal(calls.length, 1); // 无 refresh_token ⇒ 不发刷新请求
 });
+
+test('注销账号：POST /user/delete-account，请求体是 password + 字面量 confirm', async () => {
+  tokens.set('t1', 'r1');
+  language.set('en');
+  calls.length = 0;
+  reply = { ok: true, code: 0, data: [] };
+
+  await api.deleteAccount('secret');
+  await api.deleteAccount('secret', 'no');
+
+  assert.equal(calls.length, 2);
+  assert.equal(calls[0]!.url, '/api/v1/user/delete-account');
+  assert.equal(calls[0]!.init?.method, 'POST');
+  const body = (i: number) => JSON.parse(String(calls[i]!.init?.body));
+  // 缺省 confirm 就是服务端要求的字面量 'yes'
+  assert.deepEqual(body(0), { password: 'secret', confirm: 'yes' });
+  // 页面把用户输入原样透传，由服务端裁决（'请输入 yes 确认注销'），客户端不替它决定
+  assert.deepEqual(body(1), { password: 'secret', confirm: 'no' });
+});
+
+test('注销被拒（余额未清零）时原样抛出服务端原因，不吞成通用错误', async () => {
+  tokens.set('t1', 'r1');
+  reply = { ok: true, code: 422, message: '请先提现所有余额后再注销账号' };
+  await assert.rejects(
+    () => api.deleteAccount('secret', 'yes'),
+    (e: unknown) =>
+      e instanceof ApiError && e.code === 422 && e.message === '请先提现所有余额后再注销账号',
+  );
+});
+
+test('注销后回读：资料接口 401 ⇒ 确认已注销；仍读得到 ⇒ 未注销；无法判定时不吞', async () => {
+  tokens.set('t1', 'r1');
+  calls.length = 0;
+
+  reply = { ok: true, code: 401, message: '未登录或登录已过期' };
+  assert.equal(await api.accountGone(), true);
+  assert.equal(calls.length, 1); // retry=false：不回读重试、也不发刷新请求
+
+  reply = { ok: true, code: 0, data: { id: 'U1', username: 'alice' } };
+  assert.equal(await api.accountGone(), false);
+  assert.equal(calls[1]!.url, '/api/v1/user/profile');
+  assert.equal(calls[1]!.init?.method, undefined);
+
+  reply = { ok: false, code: 500, message: '服务器内部错误' };
+  await assert.rejects(
+    () => api.accountGone(),
+    (e: unknown) => e instanceof ApiError && e.code === 500 && e.message === '服务器内部错误',
+  );
+});

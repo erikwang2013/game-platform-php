@@ -9,6 +9,10 @@ namespace app\admin\v1\controller;
 
 use erikwang2013\apidoc\annotation as Apidoc;
 use common\model\User;
+use common\model\UserOauth;
+use common\model\UserSession;
+use common\model\UserWallet;
+use support\Db;
 use support\Request;
 use support\Response;
 
@@ -145,5 +149,69 @@ class PlatformUserController extends BaseController
         $affected = User::where('id', $id)->update($dirty);
 
         return $this->success(['count' => $affected], '更新成功');
+    }
+
+    #[Apidoc\Title("注销平台用户")]
+    #[Apidoc\Desc("注销平台用户：资金未结清（余额或冻结额非 0）一律 422。注销语义与 C 端自助注销一致 = 匿名化资料 + 软删除 + 清会话/OAuth；软删除后 UserAuth 的 User::find 查不到人，该用户全部端点立即 401。")]
+    #[Apidoc\Url("/admin/v1/platform/user/{hashid}")]
+    #[Apidoc\Method("DELETE")]
+    #[Apidoc\Author("erik")]
+    #[Apidoc\Returned(name: "count", type: "int", desc: "1=本次注销成功；0=此前已注销（幂等重复调用）")]
+    #[Apidoc\Returned(name: "already_deleted", type: "bool", desc: "true 表示该用户此前已注销，本次未改动任何数据")]
+    public function destroy(Request $request, string $hashid): Response
+    {
+        $id = $this->decodeId($hashid);
+
+        return Db::transaction(function () use ($id): Response {
+            // withTrashed + lockForUpdate：
+            //  - withTrashed 让「重复注销」可分辨（不加就被 SoftDeletes 全局作用域挡成 404，
+            //    分不清「已注销」与「不存在」，幂等就无从谈起）；
+            //  - lockForUpdate 把「查余额 → 软删除」之间的窗口关掉，两次并发注销也只有一次真的落库。
+            $user = User::withTrashed()->lockForUpdate()->find($id);
+            if (!$user) {
+                return $this->fail('用户不存在', 404);
+            }
+            if ($user->trashed()) {
+                return $this->success(['count' => 0, 'already_deleted' => true], '用户已注销');
+            }
+
+            // 资金闸：与 C 端自助注销同口径（service/app/api/v1/controller/UserController.php:192-196），
+            // 外加 frozen_balance —— 冻结额是提现中的在途资金，只看 balance 会把在途提现变成无主订单。
+            // bccomp 而非浮点比较：两列都是 DECIMAL(20,8)。
+            $wallet = UserWallet::where('user_id', $id)->lockForUpdate()->first();
+            if ($wallet) {
+                foreach (['balance', 'frozen_balance'] as $column) {
+                    if (bccomp((string) $wallet->getAttribute($column), '0', 8) > 0) {
+                        return $this->fail('该用户仍有余额或冻结金额，请先结清后再注销', 422);
+                    }
+                }
+            }
+
+            // 匿名化必须在 delete() **之前**：软删除后 SoftDeletes 全局作用域会让这次 update
+            // 变成空操作，PII 原样留在库里（C 端 UserController.php:198-206 就是为躲这个坑写的）。
+            // 列宽：username VARCHAR(50) —— 'deleted_' + 最多 19 位雪花 = 27 字符。
+            $user->update([
+                'username' => 'deleted_' . $id,
+                'nickname' => '',
+                'avatar'   => '',
+                'email'    => '',
+                'phone'    => '',
+            ]);
+
+            // ⚠ 上面 email/phone 写进去的是 **admin 侧 cipher 的密文**：这两列走 Encryptable，
+            // 而 admin 树解析 AES-256-CBC、service 树回退 aes-256-gcm（两树 cipher 分歧是已知项，
+            // 见记忆 encryptable-cipher-divergence-admin-service）。这里之所以安全，**只是因为**
+            // 注销后本行对两树的模型层都不可见（SoftDeletes 一律过滤，全仓 `withTrashed` 零引用）；
+            // 若将来有人用 withTrashed 读这一行，service 侧会拿到密文而不是空串 ——
+            // 解它要走 cipher 统一，不是改本端点。反向亦然：别把这里的写法当"跨树写 PII 是安全的"先例。
+            $user->delete();
+
+            // 会话与 OAuth 绑定一并清掉（与 C 端同一处置）。真正的失效来自软删除本身：
+            // service 的 UserAuth.php:45 每请求 User::find($sub)，软删除后恒 null ⇒ 401。
+            UserOauth::where('user_id', $id)->delete();
+            UserSession::where('user_id', $id)->delete();
+
+            return $this->success(['count' => 1, 'already_deleted' => false], '注销成功');
+        });
     }
 }

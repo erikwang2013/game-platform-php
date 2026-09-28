@@ -2,15 +2,18 @@
 -- RBAC 权限种子补齐（存量库迁移）
 --
 -- 背景：install.sql 原来只有 27 条可授予（type=3）slug，而挂 AdminPermission 的路由有
---       162 条、归一后 160 个 distinct slug（list/detail 因丢占位符而归一到同一 slug，
+--       163 条、归一后 161 个 distinct slug（list/detail 因丢占位符而归一到同一 slug，
 --       两组共 4 条路由：get.admin/user、get.admin/anticheat/events）。
 --       缺口的后果不是「少几个菜单」：授不出 slug ⇒ 只有持 `*` 的角色能访问这些端点，
 --       权限体系在存量系统上长期是两态。只改 install.sql 对**全新安装**生效，
 --       存量库永远停在 27 条 ⇒ 本文件补这一块。
 --
--- 内容：133 条 type=3 slug（与 install.sql:1223-1355 逐字节同源，改一处须同改另一处），
---       并且只把**本次新增的这 133 条**授予超级管理员（role_id=10000000000000001）。
+-- 内容：134 条 type=3 slug（与 install.sql:1245-1380 逐字节同源，改一处须同改另一处），
+--       并且只把**本文件新增的这 134 条**授予超级管理员（role_id=10000000000000001）。
 --       不向任何其它角色授予 —— 迁移不替运营做授权（install.sql 同样只授 super_admin）。
+--
+-- 追加纪律：路由新增 ⇒ 本文件的 id 区间同步右扩（末尾追加一条，sort 顺延），
+--       **不改既有行的 id** —— 存量库里这些 id 已落库，改 id 会被 INSERT IGNORE 当成新行再插一遍。
 --
 -- 幂等：game_admin_permission 主键 id、game_admin_role_permission 主键 (role_id, permission_id)，
 --       两处都用 INSERT IGNORE ⇒ 可重复执行；重复执行后两个表的行数不变。
@@ -152,9 +155,10 @@ INSERT IGNORE INTO `game_admin_permission` (`id`, `parent_id`, `name`, `slug`, `
 (21000000000000230, '0', '审核提现', 'put.admin/withdraw/review', 3, '', '', 228, NOW(), NOW()),
 (21000000000000231, '0', '更新提现打款开关', 'put.admin/withdraw/switch', 3, '', '', 229, NOW(), NOW()),
 (21000000000000232, '0', 'Prometheus指标', 'get.metrics', 3, '', '', 230, NOW(), NOW()),
-(21000000000000233, '0', 'API文档', 'get.api/docs', 3, '', '', 231, NOW(), NOW());
+(21000000000000233, '0', 'API文档', 'get.api/docs', 3, '', '', 231, NOW(), NOW()),
+(21000000000000234, '0', '注销平台用户', 'delete.admin/platform/user', 3, '', '', 232, NOW(), NOW());
 
--- 只授给超级管理员，且只授本次新增的 133 条（按 id 区间取；该区间内不得再插别的权限行）
+-- 只授给超级管理员，且只授本文件新增的这些（按 id 区间取；该区间内不得再插别的权限行）
 INSERT IGNORE INTO `game_admin_role_permission` (`role_id`, `permission_id`)
 SELECT 10000000000000001, `id` FROM `game_admin_permission`
-WHERE `id` BETWEEN 21000000000000101 AND 21000000000000233;
+WHERE `id` BETWEEN 21000000000000101 AND 21000000000000234;

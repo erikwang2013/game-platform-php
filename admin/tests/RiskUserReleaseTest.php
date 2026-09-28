@@ -78,7 +78,17 @@ class RiskUserReleaseTest extends TestCase
             return;
         }
 
-        foreach (['transaction', 'user_wallet', 'risk_log'] as $table) {
+        // 钱包写路径自 2026-09-28 起落 wallet.mutated 事件行（Outbox）：按本用户流水派生的 event_id
+        // 精确删除，不按全表计数/全表删（并发跑测试时别人也在写这张表）
+        $txIds = Db::table('transaction')->where('user_id', $this->userId)->pluck('id')->all();
+        if ($txIds !== []) {
+            Db::table('event_outbox')->whereIn('event_id', array_map(
+                static fn ($id) => 'wallet.mutated:' . $id,
+                $txIds
+            ))->delete();
+        }
+
+        foreach (['transaction', 'wallet_hold', 'user_wallet', 'risk_log'] as $table) {
             Db::table($table)->where('user_id', $this->userId)->delete();
         }
         Db::table('user')->where('id', $this->userId)->delete();
@@ -134,6 +144,74 @@ class RiskUserReleaseTest extends TestCase
             (int) (json_decode((string) $logs[1]->context, true)['hold_ref_id'] ?? 0),
             '解冻日志要写明释放的是哪一笔冻结'
         );
+    }
+
+    /**
+     * 按笔消费（per-hold 子台账）：释放先把「被指定的那笔冻结」（= 最新一笔 risk_hold）吃光，
+     * 不足部分才按 FIFO 继续 —— 纯 FIFO 会先吃掉较老那笔，故两种口径在本用例里可区分。
+     * 同时钉住不变量 frozen_balance == Σhold.remaining 与「释放不铸币」。
+     */
+    #[Test]
+    public function releaseConsumesTheTargetedHoldBeforeFallingBackToFifo(): void
+    {
+        $scope = WalletScope::platform();
+
+        $first = $this->json($this->controller()->hold($this->request(), $this->hashid));
+        $this->assertSame(0, $first['code'], '第一笔冻结应成功：' . $first['message']);
+
+        // 再充 100 并再全额冻结 ⇒ 同一钱包两笔活的冻结
+        $this->assertTrue(WalletService::mutate($this->userId, $scope, '+100', 'deposit', 'test', 0), '再备款应成功');
+        $second = $this->json($this->controller()->hold($this->request(), $this->hashid));
+        $this->assertSame(0, $second['code'], '第二笔冻结应成功：' . $second['message']);
+
+        $holds = $this->holdRows();
+        $this->assertCount(2, $holds, '两笔冻结必须两行台账（修复前一行都没有）');
+        $this->assertSame('100.00000000', (string) $holds[0]->remaining, '第一行 = 第一笔冻结额');
+        $this->assertSame('100.00000000', (string) $holds[1]->remaining, '第二行 = 第二笔冻结额');
+        $this->assertSame('risk_hold', (string) $holds[1]->ref_type, '台账行必须记住来源单据类型');
+
+        // 释放 150：应吃光较新那笔 100 + 较老那笔的 50（纯 FIFO 会反过来先吃光较老那笔）
+        $released = $this->json($this->controller()->release($this->request(['amount' => '150']), $this->hashid));
+        $this->assertSame(0, $released['code'], '释放应成功：' . $released['message']);
+        $this->assertSame('150.00000000', (string) $released['data']['released_amount']);
+
+        $holds = $this->holdRows();
+        $this->assertSame('50.00000000', (string) $holds[0]->remaining, '较老那笔只被吃了 50（纯 FIFO 会先把它吃光）');
+        $this->assertSame('0.00000000', (string) $holds[1]->remaining, '被指定的较新那笔先被吃光');
+        $this->assertSame(WalletService::HOLD_ACTIVE, (int) $holds[0]->status, '还剩 50 ⇒ 仍冻结中');
+        $this->assertSame(WalletService::HOLD_RELEASED, (int) $holds[1]->status, '吃光 ⇒ 已释放');
+        $this->assertNotNull($holds[1]->released_at, '吃光 ⇒ 盖释放时间戳');
+        $this->assertNull($holds[0]->released_at, '没吃光 ⇒ released_at 保持 NULL');
+
+        // 逐笔归因写进流水 remark（顺序 = 实际消费顺序），台账之外还有流水可查
+        $remark = (string) Db::table('transaction')->where('user_id', $this->userId)
+            ->where('type', WalletService::TYPE_UNLOCK)->orderByDesc('id')->value('remark');
+        $this->assertSame(
+            '解冻余额 hold:' . (int) $holds[1]->id . ',' . (int) $holds[0]->id,
+            $remark,
+            'remark 必须按实际消费顺序点名 hold 行'
+        );
+
+        // 不变量 + 不铸币：两次备款共 200，释放只在桶间搬
+        $sum = '0';
+        foreach (Db::table('wallet_hold')->where('user_id', $this->userId)->pluck('remaining') as $remaining) {
+            $sum = bcadd($sum, (string) $remaining, WalletService::SCALE);
+        }
+        $wallet = UserWallet::where('user_id', $this->userId)->first();
+        $this->assertSame(0, bccomp((string) $wallet->frozen_balance, $sum, WalletService::SCALE),
+            '不变量破了：frozen=' . $wallet->frozen_balance . ' vs Σremaining=' . $sum);
+        $this->assertSame(0, bccomp(
+            bcadd((string) $wallet->balance, (string) $wallet->frozen_balance, WalletService::SCALE),
+            '200',
+            WalletService::SCALE
+        ), '净额应恒为 200（备款 2×100）：释放既不铸币也不吞钱');
+    }
+
+    /** @return array<int,object> 本用户的台账行，按 id 升序 = 冻结先后 */
+    private function holdRows(): array
+    {
+        return Db::table('wallet_hold')->where('user_id', $this->userId)->orderBy('id')
+            ->get(['id', 'remaining', 'status', 'released_at', 'ref_type', 'ref_id'])->all();
     }
 
     /** 重复释放被拒：全额释放后再来一次，冻结已是 0，不得再搬（也不得双记流水/日志） */

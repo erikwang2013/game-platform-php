@@ -4,7 +4,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../lib/api.ts';
+import { ApiError, api } from '../lib/api.ts';
 import { useAuth } from '../lib/auth.tsx';
 import { useAsync } from '../lib/hooks.ts';
 import { ErrorBox, Loading } from '../components/States.tsx';
@@ -36,6 +36,51 @@ export function Me() {
   };
 
   const onLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  const [delOpen, setDelOpen] = useState(false);
+  const [delPw, setDelPw] = useState('');
+  const [delYes, setDelYes] = useState('');
+  const [delBusy, setDelBusy] = useState(false);
+  const [delError, setDelError] = useState<string | null>(null);
+
+  const cancelDelete = () => {
+    setDelPw('');
+    setDelYes('');
+    setDelError(null);
+    setDelOpen(false);
+  };
+
+  const submitDelete = async () => {
+    if (delBusy) return;
+    setDelBusy(true);
+    setDelError(null);
+    try {
+      await api.deleteAccount(delPw, delYes);
+    } catch (e) {
+      // 服务端拒绝原因原样透出（如「请先提现所有余额后再注销账号」），不吞成「操作失败」
+      setDelBusy(false);
+      setDelError(e instanceof ApiError ? e.message : '网络异常，请稍后重试');
+      return;
+    }
+    // 成功不以「请求发出去了」为准：回读确认账号真的取不到
+    let gone: boolean;
+    try {
+      gone = await api.accountGone();
+    } catch (e) {
+      setDelBusy(false);
+      setDelError(`注销结果无法确认：${e instanceof ApiError ? e.message : '网络异常'}`);
+      return;
+    }
+    setDelBusy(false);
+    if (!gone) {
+      setDelError('注销请求已提交，但账号资料仍可读取，请刷新后确认');
+      return;
+    }
+    setDelPw('');
+    setDelYes('');
     logout();
     navigate('/');
   };
@@ -185,6 +230,89 @@ export function Me() {
           )}
         </section>
       </div>
+
+      <section className="stack" style={{ marginTop: 32 }} aria-label="注销账号">
+        <p className="label">注销账号</p>
+        <div className="card card--flat">
+          <div className="between">
+            <p className="h3" style={{ margin: 0 }}>
+              注销账号
+            </p>
+            <span className="pill pill--orange">不可撤销</span>
+          </div>
+          <p className="small muted" style={{ margin: '10px 0 0', maxWidth: '62ch' }}>
+            注销后该账号无法再登录，个人资料会被匿名化。账号内余额需先自行提现清零，否则服务端会拒绝注销。
+          </p>
+
+          {delError && (
+            <p className="err" role="alert" style={{ marginTop: 14 }}>
+              {delError}
+            </p>
+          )}
+
+          {delOpen ? (
+            <div className="stack" style={{ marginTop: 16, maxWidth: 380 }}>
+              <label className="field">
+                <span>当前密码</span>
+                <input
+                  className="input"
+                  type="password"
+                  autoComplete="current-password"
+                  placeholder="请输入当前密码"
+                  value={delPw}
+                  onChange={(e) => {
+                    setDelPw(e.target.value);
+                    setDelError(null);
+                  }}
+                />
+              </label>
+              <label className="field">
+                <span>确认注销（输入 yes）</span>
+                <input
+                  className="input mono"
+                  autoComplete="off"
+                  placeholder="yes"
+                  value={delYes}
+                  onChange={(e) => {
+                    setDelYes(e.target.value);
+                    setDelError(null);
+                  }}
+                />
+              </label>
+              <div className="row" style={{ gap: 10 }}>
+                <button
+                  type="button"
+                  className="btn btn--sm"
+                  disabled={delBusy}
+                  onClick={submitDelete}
+                >
+                  {delBusy ? '注销中…' : '确认注销'}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn--sm"
+                  disabled={delBusy}
+                  onClick={cancelDelete}
+                >
+                  取消
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="btn btn--sm"
+              style={{ marginTop: 16 }}
+              onClick={() => {
+                setDelError(null);
+                setDelOpen(true);
+              }}
+            >
+              注销账号
+            </button>
+          )}
+        </div>
+      </section>
     </>
   );
 }

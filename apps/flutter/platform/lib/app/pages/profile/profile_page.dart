@@ -5,6 +5,17 @@ import 'package:get/get.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 
+/// 注销请求体：字段名与 confirm 的值都是服务端契约
+/// （service/app/api/v1/controller/UserController.php:163），客户端原样透传用户输入，由服务端裁决。
+Map<String, dynamic> deleteAccountPayload(String password, String confirm) => {
+      'password': password,
+      'confirm': confirm,
+    };
+
+/// 注销后回读的判定：只有 401/404 才算「账号确已取不到」。
+/// 其余（网络故障/5xx）一律无法判定，由调用方按「无法确认」处理——绝不把不确定当成功。
+bool isAccountGoneStatus(int code) => code == 401 || code == 404;
+
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
@@ -94,6 +105,138 @@ class _ProfilePageState extends State<ProfilePage> {
         _error = "${AppTranslations.t('app.network_error')}";
         _saving = false;
       });
+    }
+  }
+
+  /// 注销后回读：账号真注销了 ⇒ 资料接口必须已取不到。
+  /// true = 确认已注销（401/404）；false = 仍读得到资料 ⇒ 注销没生效。
+  /// 网络故障这类无法判定的失败原样抛出，由调用方按「无法确认」处理。
+  Future<bool> _accountGone() async {
+    try {
+      await _api.get('/api/v1/user/profile');
+      return false;
+    } on ApiException catch (e) {
+      if (isAccountGoneStatus(e.code)) return true;
+      rethrow;
+    }
+  }
+
+  /// 注销账号：需当前密码 + 输入 yes（服务端 UserController::deleteAccount 的请求体契约），
+  /// 服务端拒绝原因原样展示；成功与否以回读为准，不以「请求发出去了」为准。
+  Future<void> _deleteAccount() async {
+    final pwCtrl = TextEditingController();
+    final yesCtrl = TextEditingController();
+    String? err;
+    bool busy = false;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          Future<void> submit() async {
+            setDialogState(() {
+              busy = true;
+              err = null;
+            });
+
+            String? msg;
+            bool gone = false;
+            try {
+              await _api.post('/api/v1/user/delete-account',
+                  data: deleteAccountPayload(pwCtrl.text, yesCtrl.text));
+            } on ApiException catch (e) {
+              // 服务端拒绝原因原样透出（如「请先提现所有余额后再注销账号」），不吞成「操作失败」
+              msg = e.message;
+            } catch (_) {
+              msg = "${AppTranslations.t('app.network_error')}";
+            }
+
+            if (msg == null) {
+              try {
+                gone = await _accountGone();
+              } catch (_) {
+                msg = "${AppTranslations.t('profile.delete_unknown')}";
+              }
+            }
+
+            if (!ctx.mounted) return;
+            if (msg != null || !gone) {
+              setDialogState(() {
+                err = msg ?? "${AppTranslations.t('profile.delete_unconfirmed')}";
+                busy = false;
+              });
+              return;
+            }
+            Navigator.pop(ctx, true);
+          }
+
+          return AlertDialog(
+            title: Text("${AppTranslations.t('profile.delete_account')}"),
+            content: SizedBox(
+              width: 360,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "${AppTranslations.t('profile.delete_account_warn')}",
+                    style: TextStyle(fontSize: 13, color: Theme.of(ctx).colorScheme.onSurfaceVariant),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: pwCtrl,
+                    obscureText: true,
+                    enabled: !busy,
+                    decoration: InputDecoration(
+                      labelText: "${AppTranslations.t('profile.delete_password')}",
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: yesCtrl,
+                    enabled: !busy,
+                    decoration: InputDecoration(
+                      labelText: "${AppTranslations.t('profile.delete_confirm_hint')}",
+                      hintText: 'yes',
+                      border: const OutlineInputBorder(),
+                    ),
+                  ),
+                  if (err != null) ...[
+                    const SizedBox(height: 12),
+                    Row(children: [
+                      const Icon(Icons.error_outline, color: Colors.red, size: 18),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(err!, style: const TextStyle(color: Colors.red, fontSize: 13)),
+                      ),
+                    ]),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: busy ? null : () => Navigator.pop(ctx, false),
+                child: Text("${AppTranslations.t('app.cancel')}"),
+              ),
+              TextButton(
+                onPressed: busy ? null : submit,
+                child: Text("${AppTranslations.t('app.confirm')}", style: const TextStyle(color: Colors.red)),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    pwCtrl.dispose();
+    yesCtrl.dispose();
+
+    if (confirmed == true) {
+      await AuthService.clearToken();
+      Get.offAllNamed('/login');
     }
   }
 
@@ -292,6 +435,37 @@ class _ProfilePageState extends State<ProfilePage> {
                                 onPressed: _logout,
                                 style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
                                 child: Text("${AppTranslations.t('profile.logout')}"),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // 注销账号（不可撤销）
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.delete_forever, color: Colors.red, size: 20),
+                                  const SizedBox(width: 12),
+                                  Text("${AppTranslations.t('profile.delete_account')}", style: const TextStyle(fontSize: 15, color: Colors.red)),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                "${AppTranslations.t('profile.delete_account_warn')}",
+                                style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
+                              ),
+                              const SizedBox(height: 12),
+                              OutlinedButton(
+                                onPressed: _deleteAccount,
+                                style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
+                                child: Text("${AppTranslations.t('profile.delete_account')}"),
                               ),
                             ],
                           ),

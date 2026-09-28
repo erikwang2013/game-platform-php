@@ -107,6 +107,56 @@ import { Api, ApiError, Notify, UserProfile, dt } from '../core/api.service';
         }
       }
     </div>
+
+    <div class="card danger" id="delete-account">
+      <div class="dh">
+        <h2>注销账号</h2>
+        <span class="badge bad">不可撤销</span>
+      </div>
+      <p class="hint">
+        注销后该账号无法再登录，个人资料将被匿名化。账号内余额需先自行提现清零，否则服务端会拒绝注销。
+      </p>
+
+      @if (delMsg()) {
+        <div class="alert">{{ delMsg() }}</div>
+      }
+
+      @if (delOpen()) {
+        <div class="fields">
+          <label class="field">
+            <span>当前密码</span>
+            <input
+              class="input"
+              type="password"
+              autocomplete="current-password"
+              placeholder="请输入当前密码"
+              [value]="delPw()"
+              (input)="onDelPw($event)"
+            />
+          </label>
+          <label class="field">
+            <span>确认注销（输入 yes）</span>
+            <input
+              class="input mono"
+              autocomplete="off"
+              placeholder="yes"
+              [value]="delYes()"
+              (input)="onDelYes($event)"
+            />
+          </label>
+        </div>
+        <div class="acts">
+          <button class="btn primary" type="button" [disabled]="delBusy()" (click)="submitDel()">
+            {{ delBusy() ? '注销中…' : '确认注销' }}
+          </button>
+          <button class="btn ghost" type="button" [disabled]="delBusy()" (click)="cancelDel()">
+            取消
+          </button>
+        </div>
+      } @else {
+        <button class="btn ghost red" type="button" (click)="openDel()">注销账号</button>
+      }
+    </div>
   `,
   styles: [
     `
@@ -191,6 +241,41 @@ import { Api, ApiError, Notify, UserProfile, dt } from '../core/api.service';
         display: flex;
         justify-content: center;
         padding-top: 14px;
+      }
+      .danger {
+        margin-top: 22px;
+        border-color: rgba(248, 113, 113, 0.28);
+      }
+      .dh {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .dh h2 {
+        margin: 0;
+        font-size: 17px;
+      }
+      .hint {
+        margin: 8px 0 16px;
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+      .fields {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        max-width: 380px;
+      }
+      .acts {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+      }
+      .red {
+        border-color: rgba(248, 113, 113, 0.45);
+        color: #fecaca;
       }
       @media (min-width: 768px) {
         .out {
@@ -288,5 +373,78 @@ export class MePage {
   protected signout(): void {
     this.api.logout();
     void this.router.navigate(['/login']);
+  }
+
+  /* ---- 注销账号 ---- */
+
+  protected readonly delOpen = signal(false);
+  protected readonly delPw = signal('');
+  protected readonly delYes = signal('');
+  protected readonly delBusy = signal(false);
+  protected readonly delMsg = signal('');
+
+  protected onDelPw(ev: Event): void {
+    this.delPw.set((ev.target as HTMLInputElement).value);
+    this.delMsg.set('');
+  }
+
+  protected onDelYes(ev: Event): void {
+    this.delYes.set((ev.target as HTMLInputElement).value);
+    this.delMsg.set('');
+  }
+
+  protected openDel(): void {
+    this.delMsg.set('');
+    this.delOpen.set(true);
+  }
+
+  protected cancelDel(): void {
+    this.delPw.set('');
+    this.delYes.set('');
+    this.delMsg.set('');
+    this.delOpen.set(false);
+  }
+
+  protected submitDel(): void {
+    if (this.delBusy()) return;
+    this.delBusy.set(true);
+    this.delMsg.set('');
+    this.api.deleteAccount(this.delPw(), this.delYes()).subscribe({
+      // 成功不以「请求发出去了」为准，必须回读确认真注销掉了
+      next: () => this.confirmGone(),
+      error: (e: ApiError) => {
+        // 服务端拒绝原因原样透出（如「请先提现所有余额后再注销账号」），不吞成「操作失败」
+        this.delBusy.set(false);
+        this.delMsg.set(this.delHint(e));
+      },
+    });
+  }
+
+  /** 回读：注销后资料接口必须已取不到；仍读得到 ⇒ 没注销掉，如实报告而不是宣布成功 */
+  private confirmGone(): void {
+    this.api.accountGone().subscribe({
+      next: (gone) => {
+        this.delBusy.set(false);
+        if (!gone) {
+          this.delMsg.set('注销请求已提交，但账号资料仍可读取，请刷新后确认');
+          return;
+        }
+        this.delPw.set('');
+        this.delYes.set('');
+        this.signout();
+      },
+      error: (e: ApiError) => {
+        this.delBusy.set(false);
+        this.delMsg.set(`注销结果无法确认：${e.message}`);
+      },
+    });
+  }
+
+  /** 服务端原文照实展示，仅在末尾补可操作的建议 */
+  private delHint(e: ApiError): string {
+    if (e.code === 401 || e.code === 403) {
+      return `${e.message}（登录状态可能已失效，请重新登录后再试）`;
+    }
+    return e.message;
   }
 }

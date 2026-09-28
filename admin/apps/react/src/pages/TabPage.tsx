@@ -1,13 +1,20 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { useState } from 'react';
+import { asRows, columnsFrom } from '../components/AutoView';
+import { DataTable, type Row } from '../components/DataTable';
 import { RowBrowser } from '../components/RowBrowser';
 import { Section } from '../components/Section';
-import { Card, Field, PageHead, Tabs } from '../components/ui';
+import { Card, ErrorNote, Field, PageHead, Tabs } from '../components/ui';
+import { ApiError, api } from '../lib/api';
 import { useAuth } from '../lib/auth';
-import { useSignOut } from '../lib/hooks';
+import { ID_KEYS, pick } from '../lib/format';
+import { useApi, useSignOut } from '../lib/hooks';
 
-/** 一个标签页 = 一个后端端点。list=true 走 RowBrowser（列表 + 首选列），其余交给 Section/AutoView。 */
-type Group = { label: string; path?: string; list?: boolean; preferred?: string[] };
+/**
+ * 一个标签页 = 一个后端端点。list=true 走 RowBrowser（列表 + 首选列），其余交给 Section/AutoView。
+ * platformUsers=true 的那一个换成 PlatformUsers —— 它要带行内动作，只读的 RowBrowser 撑不住。
+ */
+type Group = { label: string; path?: string; list?: boolean; preferred?: string[]; platformUsers?: boolean };
 type PageDef = { title: string; sub?: string; groups: Group[]; account?: boolean };
 
 /** 端点多于一个的页面：标签切换，省掉每个端点一个页面文件。 */
@@ -60,7 +67,7 @@ export const PAGES = {
     title: '用户',
     sub: '平台用户、身份与工单',
     groups: [
-      { label: '平台用户', path: '/admin/v1/platform/user/list', list: true, preferred: ['user_id', 'id', 'username', 'nickname', 'status', 'vip_level', 'created_at'] },
+      { label: '平台用户', path: '/admin/v1/platform/user/list', list: true, platformUsers: true, preferred: ['user_id', 'id', 'username', 'nickname', 'status', 'vip_level', 'created_at'] },
       { label: '身份', path: '/admin/v1/identity/list', list: true },
       { label: 'VIP 等级', path: '/admin/v1/vip/level/list', list: true },
       { label: '工单', path: '/admin/v1/ticket/list', list: true },
@@ -126,6 +133,81 @@ function AccountCard() {
   );
 }
 
+/** 平台用户列表 + 行内注销。 */
+function PlatformUsers({ path, preferred }: { path: string; preferred?: string[] }) {
+  const { data, loading, error, reload } = useApi<unknown>(path);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  const rows = asRows(data) ?? [];
+  const columns = columnsFrom(rows, preferred);
+  // 操作列排在末尾，不占 preferred 的列预算
+  columns.push({
+    key: '__actions',
+    label: '操作',
+    render: (row) => <PlatformUserDestroy row={row} path={path} onNotice={setNotice} onDone={reload} />,
+  });
+
+  return (
+    <>
+      {notice ? <ErrorNote message={notice} /> : null}
+      <DataTable columns={columns} rows={rows} loading={loading} error={error} onRetry={reload} />
+    </>
+  );
+}
+
+/**
+ * 平台用户注销 —— DELETE /admin/v1/platform/user/{hashid}。
+ *
+ * 后端拒绝有非零余额的用户（安全要求），拒绝原因在信封 message 里 —— 原样显示，
+ * 不吞成「操作失败」，否则运营只看到「失败」而不知道该先清余额。
+ * 成功以回读为准：重取列表，该用户不再出现才算成功，不以「请求发出去了」为准。
+ */
+function PlatformUserDestroy({
+  row,
+  path,
+  onNotice,
+  onDone,
+}: {
+  row: Row;
+  path: string;
+  onNotice: (message: string | null) => void;
+  onDone: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const picked = pick(row, ID_KEYS);
+  const key = picked === null || picked === undefined || picked === '' ? '' : String(picked);
+
+  const destroy = async () => {
+    if (!key || !window.confirm('确认注销该账号？该操作不可撤销。')) return;
+    onNotice(null);
+    setBusy(true);
+    try {
+      await api(`/admin/v1/platform/user/${key}`, { method: 'DELETE' });
+    } catch (cause) {
+      onNotice(cause instanceof ApiError ? cause.message : '网络异常，请稍后重试');
+      return;
+    } finally {
+      setBusy(false);
+    }
+    try {
+      const after = await api<unknown>(path);
+      if ((asRows(after) ?? []).some((r) => String(pick(r, ID_KEYS) ?? '') === key)) {
+        onNotice('注销请求已提交，但该用户仍在列表中，请刷新确认');
+      }
+    } catch {
+      onNotice('注销结果未能回读，请刷新确认');
+    }
+    onDone();
+  };
+
+  if (!key) return null;
+  return (
+    <button type="button" className="btn btn-sm" disabled={busy} onClick={() => void destroy()}>
+      注销
+    </button>
+  );
+}
+
 export function TabPage({ page }: { page: PageDef }) {
   // 账号标签无端点，path 缺省即本地渲染
   const groups: Group[] = page.account ? [{ label: '账号' }, ...page.groups] : page.groups;
@@ -146,7 +228,11 @@ export function TabPage({ page }: { page: PageDef }) {
         <AccountCard />
       ) : group.list ? (
         <Card title={group.label}>
-          <RowBrowser path={group.path} preferred={group.preferred} />
+          {group.platformUsers ? (
+            <PlatformUsers path={group.path} preferred={group.preferred} />
+          ) : (
+            <RowBrowser path={group.path} preferred={group.preferred} />
+          )}
         </Card>
       ) : (
         <Section title={group.label} path={group.path} />

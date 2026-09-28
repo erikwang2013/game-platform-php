@@ -177,6 +177,7 @@ Route::group('/admin/v1', function () {
     Route::get('/platform/user/list', [app\admin\v1\controller\PlatformUserController::class, 'list']);
     Route::get('/platform/user/{hashid}', [app\admin\v1\controller\PlatformUserController::class, 'detail']);
     Route::put('/platform/user/{hashid}', [app\admin\v1\controller\PlatformUserController::class, 'update']);
+    Route::delete('/platform/user/{hashid}', [app\admin\v1\controller\PlatformUserController::class, 'destroy']);
 
     // 公告管理
     Route::get('/announcement/list', [app\admin\v1\controller\AnnouncementController::class, 'list']);

@@ -42,6 +42,27 @@ class PlatformUserController extends GetxController {
     }
   }
 
+  /// 平台用户注销 —— DELETE /admin/v1/platform/user/{hashid}（PlatformUserController::destroy）。
+  ///
+  /// 后端拒绝有非零余额的用户（安全要求），拒绝原因在 ApiException.message 里 ——
+  /// 原样透出，不吞成「操作失败」，否则运营只看到「失败」而不知道该先清余额。
+  Future<bool> destroyUser(String hashid) async {
+    try {
+      await api.delete('/admin/v1/platform/user/$hashid');
+    } catch (e) {
+      Get.snackbar('错误', '注销失败：${e is ApiException ? e.message : e}');
+      return false;
+    }
+    await loadUsers();
+    // 成功以回读到的真实列表为准，不以「请求发出去了」为准
+    if (users.any((u) => u['id']?.toString() == hashid)) {
+      Get.snackbar('错误', '注销请求已提交，但该用户仍在列表中，请刷新确认');
+      return false;
+    }
+    Get.snackbar('成功', '用户已注销');
+    return true;
+  }
+
   Future<Map<String, dynamic>?> getUserDetail(String hashid) async {
     try {
       final resp = await api.get('/admin/v1/platform/user/$hashid');
@@ -149,7 +170,7 @@ class PlatformUserPage extends GetView<PlatformUserController> {
                         color: WidgetStatePropertyAll(status == 1 ? Colors.green.shade50 : Colors.red.shade50),
                       )),
                       DataCell(Text(createdAt)),
-                      DataCell(
+                      DataCell(Row(mainAxisSize: MainAxisSize.min, children: [
                         TextButton(
                           onPressed: () => ctrl.toggleStatus(id, status == 1 ? 0 : 1),
                           child: Text(
@@ -157,7 +178,11 @@ class PlatformUserPage extends GetView<PlatformUserController> {
                             style: TextStyle(color: status == 1 ? Colors.red : Colors.green),
                           ),
                         ),
-                      ),
+                        TextButton(
+                          onPressed: () => _confirmDestroy(context, ctrl, id, username),
+                          child: Text("${AppTranslations.t('app.delete')}", style: const TextStyle(color: Colors.red)),
+                        ),
+                      ])),
                     ],
                   );
                 }).toList(),
@@ -166,6 +191,28 @@ class PlatformUserPage extends GetView<PlatformUserController> {
           }),
         ),
       ],
+    );
+  }
+
+  /// 注销是破坏性且不可撤销的，先确认再发请求（照 user_list_page 的 _confirmDelete 写法）。
+  void _confirmDestroy(BuildContext context, PlatformUserController ctrl, String id, String username) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text("${AppTranslations.t('app.confirm')} ${AppTranslations.t('app.delete')}"),
+        content: Text('确认注销平台用户「$username」？该操作不可撤销。'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ctrl.destroyUser(id);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            child: Text("${AppTranslations.t('app.delete')}"),
+          ),
+        ],
+      ),
     );
   }
 
