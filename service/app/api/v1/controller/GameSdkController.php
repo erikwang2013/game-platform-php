@@ -64,7 +64,8 @@ class GameSdkController extends BaseController
         if ($r = $this->checkType($request)) {
             return $r;
         }
-        // M0: 写端点只认服务端令牌；缺省/旧令牌是 read（SdkSessionAuth 注入），当前无服务端签发者 ⇒ 恒 403
+        // M0: 写端点只认服务端令牌（缺省/旧令牌是 read，SdkSessionAuth 注入）。
+        // M1 起服务端令牌的唯一来源是 /api/provider/session-token（ProviderAuth，需 game.api_secret）
         if ($request->sdkRole !== 'server') {
             return $this->fail('SDK write requires server role', 403);
         }
@@ -118,7 +119,8 @@ class GameSdkController extends BaseController
         if ($r = $this->checkType($request)) {
             return $r;
         }
-        // M0: 同 bet —— 派奖是把钱加进余额的入口，非服务端令牌一律 403（判据必须排在 ProviderFactory 之前，否则钱已动完才拒绝）
+        // M0: 同 bet —— 派奖是把钱加进余额的入口，非服务端令牌一律 403
+        //（判据必须排在 ProviderFactory 之前，否则钱已动完才拒绝）
         if ($request->sdkRole !== 'server') {
             return $this->fail('SDK write requires server role', 403);
         }

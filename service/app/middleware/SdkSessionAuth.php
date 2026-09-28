@@ -16,8 +16,10 @@ use Webman\MiddlewareInterface;
  * 自研/内嵌游戏 SDK 会话认证（M5）
  *
  * Authorization: Bearer {base64url(JSON{game_id,user_id,role,exp})}.{hex HMAC-SHA256(payload, api_secret)}
- * 令牌由 GET /api/game/session 签发（M0 起只签 role=read），TTL 5 分钟；user_id 只取自令牌（防越权），请求体不可覆盖。
- * role 决定能否调写端点（M0）：缺省/未知一律 read，写端点要 server（当前全平台没有服务端签发者）。
+ * 令牌由 GET /api/game/session 签发（M0 起只签 role=read），读令牌 TTL 5 分钟；user_id 只取自令牌（防越权），请求体不可覆盖。
+ * role 决定能否调写端点（M0）：缺省/未知一律 read，写端点要 server。
+ * server 令牌的唯一签发者是 /api/provider/session-token（ProviderAuth，需 game.api_secret）。
+ * 本类不校验 role 的来源，只认签名 —— 签发端的信任边界在它自己挂的中间件上。
  */
 class SdkSessionAuth implements MiddlewareInterface
 {

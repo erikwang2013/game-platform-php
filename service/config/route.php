@@ -163,6 +163,9 @@ Route::group('/api/provider', function () {
     Route::post('/bet', v('ProviderController', 'bet'));
     Route::post('/settle', v('ProviderController', 'settle'));
     Route::post('/refund', v('ProviderController', 'refund'));
+    // M1: SDK 服务端会话令牌签发。与上面四条同一道 HMAC 闸（密钥同为 game.api_secret），
+    // 所以「换得到写令牌」等价于「持有密钥」，信任边界不在本端点里、在这一行挂的中间件上。
+    Route::post('/session-token', v('ProviderController', 'sessionToken'));
 })->middleware([
     app\middleware\ProviderAuth::class,
 ]);
@@ -171,10 +174,10 @@ Route::group('/api/provider', function () {
 // 自研/内嵌游戏 SDK 接口（M5，SDK 会话令牌认证）
 //
 // M0 信任边界：令牌带 role，写权只给 role=server。
-//   - /api/v1/game/session（用户登录态）只签 role=read 的令牌 ⇒ 下面的写端点**当前恒 403**：
-//     全平台还没有任何服务端令牌签发者，谁签都签不出 server（旧令牌无 role，按 read 降级）。
-//   - M1 签发者落点：在本 group 内新增「服务端令牌签发」端点（走服务端身份认证，非 UserAuth），
-//     签发 role=server 的令牌；届时写端点才会重新可用，本注释与 GameSdkController 的角色闸同步更新。
+//   - /api/v1/game/session（用户登录态）只签 role=read 的令牌 ⇒ 请求者路径上签不出写令牌。
+//   - M1 签发者（已落地）：/api/provider/session-token，挂 ProviderAuth（密钥 game.api_secret）——
+//     只有持有密钥的一方换得到 role=server 令牌，故下面的写端点重新可用而不削弱 M0。
+//     两条签发路径互不相通，别把 role 变成 /api/v1/game/session 的入参。
 // ============================================================
 Route::group('/api/game', function () {
     Route::post('/balance', v('GameSdkController', 'balance'));

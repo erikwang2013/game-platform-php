@@ -234,7 +234,8 @@ class GameController extends BaseController
      * M0: 会话令牌签发的唯一落点 —— role 由签发端写死为 read，本方法**不接受** role 入参，
      * 故请求者路径上签不出写令牌（旧写法由任意登录用户触发、却用 game.api_secret 签出可写令牌）。
      *
-     * M1 的服务端令牌签发者另起一路（新端点 + 服务端身份认证），不要把 role 变成这里的入参。
+     * M1 的服务端令牌签发者另起一路（ProviderController::sessionToken + ProviderAuth，已落地），
+     * 不要把 role 变成这里的入参。
      */
     private function issueReadSessionToken(Game $game, int $gameId, int $userId): string
     {

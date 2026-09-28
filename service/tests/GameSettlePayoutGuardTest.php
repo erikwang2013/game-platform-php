@@ -7,8 +7,14 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use app\api\v1\controller\ProviderController;
+use app\middleware\ProviderAuth;
+use app\middleware\SdkSessionAuth;
+use app\middleware\UserAuth;
 use app\provider\SelfProvider;
+use FastRoute\Dispatcher;
 use PHPUnit\Framework\TestCase;
+use Webman\Route;
 
 /**
  * 自研/内嵌游戏结算派奖闸的判据钉（不连库 / 不连 Redis：纯反射 + 源码字面量）。
@@ -25,10 +31,26 @@ use PHPUnit\Framework\TestCase;
  *   8. 控制器原文进 bcmath  -> 闸 1 只在 settle 内生效，bet/refund 入口对客户端原文直接 bccomp，'abc'/'1e5' 抛 ValueError ⇒ 500
  *   9. 会话令牌带写权（M0） -> GET /api/v1/game/session 用 game.api_secret 替**请求者本人**签令牌，而写端点只认这枚令牌
  *                              ⇒ 任意登录用户 bet 100 / settle 10000 即单轮净 +9900（两闸都恰好不算超），换 round 可无限重复
- * 1-9 都长在方法体内，只能读源文件核对（与 WithdrawEventReconcileContractTest 同一套做法）。
+ *  10. 服务端令牌签发端挂错中间件（M1） -> /api/provider/session-token 的信任边界**全在那行路由挂的中间件上**：
+ *                              挪出 ProviderAuth（改挂公开组 / UserAuth / SdkSessionAuth）即「匿名换写令牌」，
+ *                              闸 9 的修复当场作废，而端点照常返回一枚合法令牌、功能层面看不出来。
+ * 1-9 都长在方法体内，读源文件即可核对（与 WithdrawEventReconcileContractTest 同一套做法）；10 需要真实路由表。
  */
 final class GameSettlePayoutGuardTest extends TestCase
 {
+    /**
+     * route.php 的装载是「清空全部静态状态 + require_once 路由文件」⇒ 调第二次拿到的是 0 条路由的假象
+     * （表现为「所有路由都没命中」的假红）。故只能类级装载一次，全进程共用；
+     * 先跑到的类负责装，后面的类直接复用，别在 setUp() 里逐用例调。
+     */
+    public static function setUpBeforeClass(): void
+    {
+        parent::setUpBeforeClass();
+        if (!Route::getRoutes()) {
+            Route::load([dirname(__DIR__) . '/config']);
+        }
+    }
+
     private const SELF_PROVIDER = '/app/provider/SelfProvider.php';
     private const PROVIDER_AUTH = '/app/middleware/ProviderAuth.php';
     private const SDK_SESSION_AUTH = '/app/middleware/SdkSessionAuth.php';
@@ -526,5 +548,81 @@ final class GameSettlePayoutGuardTest extends TestCase
 
         // 读端点（balance）不得被同一道写闸误伤：只读令牌连余额都读不到的话，客户端连自检都做不了
         self::assertStringNotContainsString('sdkRole', self::methodBody($src, 'balance', 'GameSdkController::balance'), '读端点被写闸误伤 :: 只读令牌读不到余额');
+    }
+
+    /** 真实路由表上的中间件链（RouteObject 挂着注册时声明的那串）；未命中直接判红，免得假红混过去 */
+    private static function routeMiddleware(string $method, string $path): array
+    {
+        $info = Route::dispatch($method, $path);
+        self::assertSame(Dispatcher::FOUND, $info[0], "{$method} {$path} 未命中路由 :: 路由没接线");
+
+        return array_map(
+            static fn ($m) => is_string($m) ? $m : get_class($m),
+            $info[1]['route']->getMiddleware()
+        );
+    }
+
+    /**
+     * M1（闸 10）：服务端令牌签发端的信任边界钉在**路由中间件**上，不在控制器里、也不在注释里。
+     *
+     * M1 的全部安全性 = 「换得到 role=server 令牌」≡「持有 game.api_secret」，而这只由 ProviderAuth 保证。
+     * 端点一旦挪出这个 group（公开组 / UserAuth / SdkSessionAuth），匿名或任意登录用户就能换到写令牌。
+     */
+    public function testServerTokenIssuerIsWiredUnderProviderAuth(): void
+    {
+        $path = '/api/provider/session-token';
+        $middlewares = self::routeMiddleware('POST', $path);
+
+        self::assertContains(ProviderAuth::class, $middlewares, "POST {$path} 不在 ProviderAuth 下 :: 匿名即可换到 role=server 令牌，M0 的角色闸当场作废");
+        self::assertNotContains(UserAuth::class, $middlewares, "POST {$path} 挂了 UserAuth :: 请求者路径又能自助领写令牌，正是 M0 修掉的那条路");
+        self::assertNotContains(SdkSessionAuth::class, $middlewares, "POST {$path} 挂了 SdkSessionAuth :: 拿只读令牌换写令牌，写权的边界塌成闭环");
+
+        // 反向：不得同时出现在无鉴权的 /api/v1 公开组
+        self::assertSame(
+            Dispatcher::NOT_FOUND,
+            Route::dispatch('POST', '/api/v1' . $path)[0],
+            "POST /api/v1{$path} 也存在 :: 公开路径上同样换得到令牌"
+        );
+
+        // 写端点的链路没被顺手改动：三个写端点必须仍走 SdkSessionAuth（sdkRole 由它注入）
+        foreach (['/api/game/bet', '/api/game/settle', '/api/game/refund'] as $writePath) {
+            self::assertContains(
+                SdkSessionAuth::class,
+                self::routeMiddleware('POST', $writePath),
+                "POST {$writePath} 缺 SdkSessionAuth :: sdkRole 无从注入，写端点的角色闸退化成恒 read"
+            );
+        }
+    }
+
+    /**
+     * M1：签发端的 claims 形状。四个字段各有理由，写歪任一个都静默失效：
+     *   role=server -> 过写端点的角色闸（写死，不给入参）
+     *   user_id     -> SdkSessionAuth 把「claims 缺 user_id」判成 401 Invalid token claims，请求根本到不了控制器（实测）。
+     *                  且写端点的 user_id 只取自会话 ⇒ 令牌与「哪个用户」绑定，比 /api/provider/* 的请求体语义更紧
+     *   game_id     -> 必须取**验签通过的那个 game**，不能取请求体，否则可跨 game 铸令牌
+     *   exp         -> 统一走 TTL 常量（见下方 TTL 用例）
+     */
+    public function testServerTokenIssuerClaimsShape(): void
+    {
+        $body = self::methodBody(self::source(self::PROVIDER_CONTROLLER), 'sessionToken', 'ProviderController::sessionToken');
+
+        self::assertSame(1, preg_match("/\\\$request->input\('user_id'/", $body), '签发端未从请求取 user_id :: 令牌无从绑定到某个用户');
+        self::assertSame(1, preg_match("/'user_id'\s*=>\s*\\\$userId/", $body), 'claims 里没写 user_id :: SdkSessionAuth 一律判 401 Invalid token claims（实测，请求根本到不了控制器），三个写端点永远进不去');
+        self::assertSame(1, preg_match("/'role'\s*=>\s*'server'/", $body), "签发端的 role 没写死成 'server' :: 换出来的令牌过不了写端点的角色闸");
+        self::assertSame(1, preg_match("/'game_id'\s*=>\s*\(int\) \\\$game->id/", $body), '签发端的 game_id 不是取自验签通过的 $game :: 令牌的 game 归属可被请求体指定');
+        self::assertSame(1, preg_match("/'exp'\s*=>\s*time\(\)\s*\+\s*self::SERVER_TOKEN_TTL/", $body), '签发端未统一走 TTL 常量 :: 写令牌有效期失控且无从核对');
+        self::assertSame(1, preg_match("/hash_hmac\('sha256', \\\$payload, \(string\) \\\$game->api_secret\)/", $body), '签发端未用 game.api_secret 签名 :: 与 SdkSessionAuth 的校验口径不一致，令牌验不过');
+    }
+
+    /** M1：写令牌 TTL 必须短于读令牌（GameController::issueReadSessionToken 的 300s）—— 写令牌能移钱，暴露窗口不该更长 */
+    public function testServerTokenTtlIsShorterThanReadToken(): void
+    {
+        $class = new \ReflectionClass(ProviderController::class);
+        self::assertTrue($class->hasConstant('SERVER_TOKEN_TTL'), '写令牌 TTL 常量缺失 :: 有效期散落在签发行里，无从调参也无从核对');
+
+        $ttl = $class->getReflectionConstant('SERVER_TOKEN_TTL')->getValue();
+        self::assertIsInt($ttl, 'TTL 须为整数秒 :: 非整数进 time() 前还得再做一次类型转换');
+        self::assertGreaterThan(0, $ttl, 'TTL <= 0 :: 签出来的令牌立即过期，写端点全挂');
+        self::assertLessThan(300, $ttl, '写令牌 TTL >= 读令牌的 300s :: 写令牌能移钱，暴露窗口反而比只读令牌更长');
     }
 }
