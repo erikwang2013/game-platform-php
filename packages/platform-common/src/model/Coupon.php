@@ -9,6 +9,12 @@ namespace common\model;
 
 use support\Model;
 
+/**
+ * 优惠券定义。
+ *
+ * 领取已实现（CouponController::claim()）；**核销/抵扣未实现** —— used_qty 仅随领取递增，
+ * 全仓无写入方把券标记为已使用。
+ */
 class Coupon extends Model
 {
     protected $table = 'coupon';

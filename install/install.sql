@@ -850,7 +850,7 @@ CREATE TABLE IF NOT EXISTS `game_coupon` (
     PRIMARY KEY (`id`),
     KEY `idx_status_dates` (`status`, `start_at`, `end_at`),
     KEY `idx_game_id` (`game_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='优惠券表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='优惠券表：领取已实现；核销/抵扣未实现（used_qty 仅随领取递增，无核销写入方）';
 
 -- ============================================================
 -- 用户优惠券表
@@ -866,7 +866,7 @@ CREATE TABLE IF NOT EXISTS `game_user_coupon` (
     PRIMARY KEY (`id`),
     KEY `idx_user_status` (`user_id`, `status`),
     KEY `idx_coupon_id` (`coupon_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户优惠券表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户优惠券表：领取已实现；核销/抵扣未实现，status=used 与 used_in_order 全仓无写入方';
 
 -- ============================================================
 -- 国家差异化配置表
