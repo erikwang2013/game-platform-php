@@ -1621,7 +1621,7 @@ Retry-After: 60
 
 ## 7. API Baru (Perluasan Ekosistem v2.0)
 
-### 7.1 Provider API — Antarmuka Callback Pihak Game
+### 7.1 Provider API — Antarmuka Pihak Game
 
 **Metode autentikasi**: tanda tangan HMAC-SHA256 (X-Game-Id + X-Timestamp + X-Signature)
 **Jendela waktu**: 5 menit
@@ -1710,6 +1710,29 @@ Respons: {
   }
 }
 ```
+
+#### POST /api/provider/session-token — Terbitkan Token Sesi Server
+
+```
+Header permintaan:
+  X-Game-Id: 1234567890
+  X-Timestamp: 1716400830
+  X-Signature: abc123...
+
+Permintaan: {
+  "user_id": 1234567890
+}
+
+Respons: {
+  "code": 0,
+  "data": {
+    "token": "<payload>.<signature>",
+    "expires_in": 120
+  }
+}
+```
+
+> **Penggunaan**: kirim `token` yang dikembalikan sebagai `Authorization: Bearer <token>` saat memanggil endpoint tulis SDK `/api/game/bet`, `/api/game/settle`, dan `/api/game/refund` (juga berlaku untuk `/api/game/balance`); token berlaku 120 detik sejak diterbitkan.
 
 ### 7.2 API Tiket
 

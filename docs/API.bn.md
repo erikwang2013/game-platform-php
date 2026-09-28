@@ -1621,7 +1621,7 @@ Retry-After: 60
 
 ## 7. নতুন API (v2.0 ইকোসিস্টেম এক্সটেনশন)
 
-### 7.1 Provider API — গেম প্রোভাইডার কলব্যাক ইন্টারফেস
+### 7.1 Provider API — গেম প্রোভাইডার ইন্টারফেস
 
 **অথেনটিকেশন পদ্ধতি**: HMAC-SHA256 সিগনেচার (X-Game-Id + X-Timestamp + X-Signature)
 **টাইম উইন্ডো**: ৫ মিনিট
@@ -1710,6 +1710,29 @@ Retry-After: 60
   }
 }
 ```
+
+#### POST /api/provider/session-token — সার্ভার সেশন টোকেন ইস্যু
+
+```
+রিকোয়েস্ট হেডার:
+  X-Game-Id: 1234567890
+  X-Timestamp: 1716400830
+  X-Signature: abc123...
+
+রিকোয়েস্ট: {
+  "user_id": 1234567890
+}
+
+রেসপন্স: {
+  "code": 0,
+  "data": {
+    "token": "<payload>.<signature>",
+    "expires_in": 120
+  }
+}
+```
+
+> **ব্যবহার**: SDK লেখার এন্ডপয়েন্ট `/api/game/bet`, `/api/game/settle` ও `/api/game/refund` কল করার সময় ফেরত পাওয়া `token`-টি `Authorization: Bearer <token>` হিসেবে পাঠান (এটি `/api/game/balance`-এও কাজ করে); টোকেন ইস্যুর পর ১২০ সেকেন্ড পর্যন্ত বৈধ।
 
 ### 7.2 টিকিট API
 

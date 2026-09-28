@@ -242,6 +242,30 @@ POST /api/provider/refund
 }
 ```
 
+### 3.5 إصدار رمز جلسة الخادم
+
+```
+POST /api/provider/session-token
+Content-Type: application/json
+X-Game-Id: <游戏ID>
+X-Timestamp: <时间戳>
+X-Signature: <签名>
+
+请求体:
+{
+    "user_id": 9876543210
+}
+
+响应:
+{
+    "code": 0,
+    "data": {
+        "token": "<payload>.<signature>",
+        "expires_in": 120
+    }
+}
+```
+
 ## 4. ربط الألعاب المطوّرة ذاتيًا (SelfProvider)
 
 تتقاسم الألعاب المطوّرة ذاتيًا قاعدة البيانات مع المنصة، ويستخدم `SelfProvider` معاملة قاعدة البيانات + `SELECT FOR UPDATE` لضمان الاتساق:
@@ -267,7 +291,7 @@ $result = $provider->refund($userId, $gameId, $sessionId, $amount, $roundId, 'ga
 
 ## 5. إدارة الجلسات
 
-تستخدم استدعاءات SDK لألعاب self/embedded مصادقة برمز الجلسة: تستدعي واجهة C-end المسجَّلة الدخول `GET /api/v1/game/session?game_id={game_id}` لإصداره (TTL 5 دقائق، لألعاب `self` / `embedded` فقط):
+تستخدم استدعاءات SDK لألعاب self/embedded مصادقة برمز الجلسة: تستدعي واجهة C-end المسجَّلة الدخول `GET /api/v1/game/session?game_id={game_id}` لإصداره (TTL 5 دقائق، لألعاب `self` / `embedded` فقط). هذا الرمز للقراءة فقط:
 
 ```
 GET /api/v1/game/session?game_id=1234567890
@@ -283,7 +307,7 @@ POST /api/game/balance
 Authorization: Bearer <payload>.<signature>
 ```
 
-يتحقق وسيط `SdkSessionAuth` من توقيع HMAC-SHA256 ومن الصلاحية؛ ويُؤخذ `user_id` من الرمز فقط (لا يمكن لجسم الطلب تجاوزه). أعد الإصدار بعد انتهاء الصلاحية واستخدمه لاستدعاء `/api/game/balance` و`/api/game/bet` و`/api/game/settle` و`/api/game/refund`.
+يتحقق وسيط `SdkSessionAuth` من توقيع HMAC-SHA256 ومن الصلاحية؛ ويُؤخذ `user_id` من الرمز فقط (لا يمكن لجسم الطلب تجاوزه). يحمل الرمز أيضًا `role`: لا يوقّع `GET /api/v1/game/session` سوى `role=read`، لذا تعمل نقطة نهاية القراءة `/api/game/balance` كالمعتاد، بينما تتطلب نقاط نهاية الكتابة `/api/game/bet` و`/api/game/settle` و`/api/game/refund` القيمة `role=server`. ولا يحصل على هذا الرمز إلا من يملك `game.api_secret` عبر `POST /api/provider/session-token` (موقَّع بـ HMAC مثل بقية استدعاءات `/api/provider/*`، بمدة TTL 120 ثانية، ومرتبط بـ `user_id` واحد). أما الرموز الصادرة سابقًا بلا `role` فتُعامَل هي أيضًا كقراءة فقط.
 
 ## 6. إعداد اللعبة
 

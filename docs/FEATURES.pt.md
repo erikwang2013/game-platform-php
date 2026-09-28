@@ -78,8 +78,8 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Domínio | Funcionalidade | Status |
 |----|------|------|
 | Integração de jogos | camada de abstração GameProvider (Self/ThirdParty) + assinatura HMAC-SHA256 | Concluído |
-| Callbacks de jogos | gateway Provider API (balance/bet/settle/refund) + middleware ProviderAuth | Concluído |
-| Sessões de jogo | Token de sessão SDK: assinatura HMAC-SHA256 + TTL de 5 minutos (emitido por `GET /api/v1/game/session`, validado por `SdkSessionAuth`) | Concluído |
+| Chamadas do lado do jogo | gateway Provider API (balance/bet/settle/refund/session-token) + middleware ProviderAuth | Concluído |
+| Sessões de jogo | Token de sessão SDK: assinatura HMAC-SHA256 (validado por `SdkSessionAuth`); token de leitura: TTL de 5 minutos, emitido por `GET /api/v1/game/session` (apenas `role=read`); token de escrita: TTL de 120 segundos, emitido por `POST /api/provider/session-token` (requer `game.api_secret`) | Concluído |
 | Sistema de tickets | criação/resposta C-side + tratamento/atribuição/fechamento no admin, 5 tipos de ticket | Concluído |
 | Verificação de email | código de 6 dígitos, expiração Redis 10 min, limite de reenvio 60s | Concluído |
 | Push notifications | PushService (FCM/APNs/push Huawei) + modelo DeviceToken | Concluído |
@@ -178,7 +178,7 @@ Suporte via tickets
 | POST | /admin/v1/ticket/{id}/close | fechar ticket |
 | POST | /admin/v1/ticket/{id}/assign | designar responsável |
 
-## 4. Provider API (callbacks do provedor de jogos)
+## 4. Provider API (chamadas do lado do jogo)
 
 | Método | Caminho | Observação | Autenticação |
 |------|------|------|------|
@@ -186,6 +186,7 @@ Suporte via tickets
 | POST | /api/provider/bet | notificar aposta | HMAC-SHA256 |
 | POST | /api/provider/settle | notificar liquidação | HMAC-SHA256 |
 | POST | /api/provider/refund | notificar reembolso | HMAC-SHA256 |
+| POST | /api/provider/session-token | emitir token de sessão de servidor | HMAC-SHA256 |
 
 Algoritmo de assinatura: `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)`
 Cabeçalhos da requisição: `X-Game-Id` + `X-Timestamp` + `X-Signature`

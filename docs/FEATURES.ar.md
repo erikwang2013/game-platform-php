@@ -78,8 +78,8 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | المجال | الوظيفة | الحالة |
 |----|------|------|
 | ربط الألعاب | طبقة GameProvider التجريدية (Self/ThirdParty) + توقيع HMAC-SHA256 | مكتمل |
-| استدعاءات الألعاب | بوابة واجهات Provider (balance/bet/settle/refund) + وسيطة ProviderAuth | مكتمل |
-| جلسات الألعاب | رمز جلسة SDK: توقيع HMAC-SHA256 + مدة TTL 5 دقائق (يُصدر عبر `GET /api/v1/game/session`، ويتحقق منه `SdkSessionAuth`) | مكتمل |
+| استدعاءات الألعاب | بوابة واجهات Provider (balance/bet/settle/refund/session-token) + وسيطة ProviderAuth | مكتمل |
+| جلسات الألعاب | رمز جلسة SDK: توقيع HMAC-SHA256 (يتحقق منه `SdkSessionAuth`)؛ رمز القراءة: مدة TTL 5 دقائق، يُصدر عبر `GET /api/v1/game/session` (`role=read` فقط)؛ رمز الكتابة: مدة TTL 120 ثانية، يُصدر عبر `POST /api/provider/session-token` (يتطلب `game.api_secret`) | مكتمل |
 | نظام التذاكر | إنشاء/رد من الطرف C + معالجة/توزيع/إغلاق من الإدارة، 5 أنواع تذاكر | مكتمل |
 | التحقق من البريد | رمز 6 أرقام، انتهاء Redis 10 دقائق، حد إعادة إرسال 60 ثانية | مكتمل |
 | إشعارات الدفع | PushService (FCM/APNs/دفع هواوي) + نموذج DeviceToken | مكتمل |
@@ -186,6 +186,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | POST | /api/provider/bet | إشعار المراهنة | HMAC-SHA256 |
 | POST | /api/provider/settle | إشعار التسوية | HMAC-SHA256 |
 | POST | /api/provider/refund | إشعار الاسترداد | HMAC-SHA256 |
+| POST | /api/provider/session-token | إصدار رمز جلسة الخادم | HMAC-SHA256 |
 
 خوارزمية التوقيع: `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)`
 رؤوس الطلب: `X-Game-Id` + `X-Timestamp` + `X-Signature`

@@ -243,6 +243,30 @@ POST /api/provider/refund
 }
 ```
 
+### 3.5 서버 세션 토큰 발급
+
+```
+POST /api/provider/session-token
+Content-Type: application/json
+X-Game-Id: <游戏ID>
+X-Timestamp: <时间戳>
+X-Signature: <签名>
+
+请求体:
+{
+    "user_id": 9876543210
+}
+
+响应:
+{
+    "code": 0,
+    "data": {
+        "token": "<payload>.<signature>",
+        "expires_in": 120
+    }
+}
+```
+
 ## 4. 자체 개발 게임 연동 (SelfProvider)
 
 자체 개발 게임은 플랫폼과 데이터베이스를 공유하며, `SelfProvider`가 데이터베이스 트랜잭션 + `SELECT FOR UPDATE`로 일관성을 보장합니다:
@@ -268,7 +292,7 @@ $result = $provider->refund($userId, $gameId, $sessionId, $amount, $roundId, 'ga
 
 ## 5. 세션 관리
 
-self / embedded 게임의 SDK 호출은 세션 토큰으로 인증합니다: 로그인한 C측이 `GET /api/v1/game/session?game_id={game_id}`를 호출해 토큰을 발급합니다(TTL 5분, `self` / `embedded` 타입 게임만):
+self / embedded 게임의 SDK 호출은 세션 토큰으로 인증합니다: 로그인한 C측이 `GET /api/v1/game/session?game_id={game_id}`를 호출해 토큰을 발급합니다(TTL 5분, `self` / `embedded` 타입 게임만). 이 토큰은 읽기 전용입니다:
 
 ```
 GET /api/v1/game/session?game_id=1234567890
@@ -284,7 +308,7 @@ POST /api/game/balance
 Authorization: Bearer <payload>.<signature>
 ```
 
-`SdkSessionAuth` 미들웨어가 HMAC-SHA256 서명과 만료를 검증하며, `user_id`는 토큰에서만 가져옵니다(요청 본문으로 덮어쓸 수 없습니다). 만료 후 재발급하여 `/api/game/balance`, `/api/game/bet`, `/api/game/settle`, `/api/game/refund` 호출에 사용합니다.
+`SdkSessionAuth` 미들웨어가 HMAC-SHA256 서명과 유효 기간을 검증하며, `user_id`는 토큰에서만 가져옵니다(요청 본문으로 덮어쓸 수 없습니다). 토큰에는 `role`도 포함됩니다: `GET /api/v1/game/session`은 `role=read`만 서명하므로 읽기 엔드포인트 `/api/game/balance`는 평소대로 사용할 수 있지만, 쓰기 엔드포인트 `/api/game/bet`, `/api/game/settle`, `/api/game/refund`는 `role=server`가 필요합니다. 이 토큰은 `game.api_secret`을 보유한 쪽만 `POST /api/provider/session-token`으로 교환할 수 있습니다(다른 `/api/provider/*` 호출과 동일한 HMAC 서명, TTL 120초, 단일 `user_id`에 바인딩). 이전에 발급된 `role` 없는 토큰도 마찬가지로 읽기 전용으로 처리됩니다.
 
 ## 6. 게임 설정
 

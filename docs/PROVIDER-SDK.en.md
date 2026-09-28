@@ -243,6 +243,30 @@ POST /api/provider/refund
 }
 ```
 
+### 3.5 Issue Server Session Token
+
+```
+POST /api/provider/session-token
+Content-Type: application/json
+X-Game-Id: <游戏ID>
+X-Timestamp: <时间戳>
+X-Signature: <签名>
+
+请求体:
+{
+    "user_id": 9876543210
+}
+
+响应:
+{
+    "code": 0,
+    "data": {
+        "token": "<payload>.<signature>",
+        "expires_in": 120
+    }
+}
+```
+
 ## 4. Self-Developed Game Integration (SelfProvider)
 
 Self-developed games share the database with the platform; `SelfProvider` uses database transactions + `SELECT FOR UPDATE` for consistency:
@@ -268,7 +292,7 @@ $result = $provider->refund($userId, $gameId, $sessionId, $amount, $roundId, 'ga
 
 ## 5. Session Management
 
-SDK calls from self/embedded games are authenticated with a session token: the logged-in C-end calls `GET /api/v1/game/session?game_id={game_id}` to issue one (TTL 5 minutes, `self` / `embedded` games only):
+SDK calls from self/embedded games are authenticated with a session token: the logged-in C-end calls `GET /api/v1/game/session?game_id={game_id}` to issue one (TTL 5 minutes, `self` / `embedded` games only). The token is read-only:
 
 ```
 GET /api/v1/game/session?game_id=1234567890
@@ -284,7 +308,7 @@ POST /api/game/balance
 Authorization: Bearer <payload>.<signature>
 ```
 
-The `SdkSessionAuth` middleware verifies the HMAC-SHA256 signature and expiry; `user_id` comes only from the token (the request body cannot override it). Re-issue the token after it expires and use it to call `/api/game/balance`, `/api/game/bet`, `/api/game/settle`, `/api/game/refund`.
+The `SdkSessionAuth` middleware verifies the HMAC-SHA256 signature and expiry; `user_id` comes only from the token (the request body cannot override it). The token also carries a `role`: `GET /api/v1/game/session` signs `role=read` only, so the read endpoint `/api/game/balance` works as usual, while the write endpoints `/api/game/bet`, `/api/game/settle` and `/api/game/refund` require `role=server`. Only a caller holding `game.api_secret` can obtain such a token, via `POST /api/provider/session-token` (HMAC-signed like the other `/api/provider/*` calls, TTL 120 seconds, bound to one `user_id`). Tokens issued before this change carry no `role` and are likewise treated as read-only.
 
 ## 6. Game Configuration
 

@@ -78,8 +78,8 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Domain | Fitur | Status |
 |----|------|------|
 | Integrasi game | Lapisan abstraksi GameProvider (Self/ThirdParty) + tanda tangan HMAC-SHA256 | Selesai |
-| Callback game | Gateway API Provider (balance/bet/settle/refund) + middleware ProviderAuth | Selesai |
-| Sesi game | Token sesi SDK: tanda tangan HMAC-SHA256 + TTL 5 menit (diterbitkan `GET /api/v1/game/session`, diverifikasi `SdkSessionAuth`) | Selesai |
+| Panggilan pihak game | Gateway API Provider (balance/bet/settle/refund/session-token) + middleware ProviderAuth | Selesai |
+| Sesi game | Token sesi SDK: tanda tangan HMAC-SHA256 (diverifikasi `SdkSessionAuth`); token baca: TTL 5 menit, diterbitkan `GET /api/v1/game/session` (hanya `role=read`); token tulis: TTL 120 detik, diterbitkan `POST /api/provider/session-token` (perlu `game.api_secret`) | Selesai |
 | Sistem tiket | Buat/balas sisi C + penanganan/penugasan/penutupan sisi admin, 5 tipe tiket | Selesai |
 | Verifikasi email | Kode 6 digit, kedaluwarsa Redis 10 menit, batas kirim ulang 60 detik | Selesai |
 | Notifikasi push | PushService (FCM/APNs/push Huawei) + model DeviceToken | Selesai |
@@ -178,7 +178,7 @@ Dukungan tiket
 | POST | /admin/v1/ticket/{id}/close | Tutup tiket |
 | POST | /admin/v1/ticket/{id}/assign | Tetapkan penangan |
 
-## 4. Provider API (callback pihak game)
+## 4. Provider API (panggilan pihak game)
 
 | Metode | Jalur | Keterangan | Autentikasi |
 |------|------|------|------|
@@ -186,6 +186,7 @@ Dukungan tiket
 | POST | /api/provider/bet | Notifikasi taruhan | HMAC-SHA256 |
 | POST | /api/provider/settle | Notifikasi penyelesaian | HMAC-SHA256 |
 | POST | /api/provider/refund | Notifikasi pengembalian dana | HMAC-SHA256 |
+| POST | /api/provider/session-token | Terbitkan token sesi server | HMAC-SHA256 |
 
 Algoritma tanda tangan: `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)`
 Header permintaan: `X-Game-Id` + `X-Timestamp` + `X-Signature`

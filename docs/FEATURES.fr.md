@@ -78,8 +78,8 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Domaine | Fonctionnalité | Statut |
 |----|------|------|
 | Intégration de jeux | Couche d'abstraction GameProvider (Self/ThirdParty) + signature HMAC-SHA256 | Terminé |
-| Rappels de jeux | Passerelle API Provider (balance/bet/settle/refund) + middleware ProviderAuth | Terminé |
-| Sessions de jeux | Token de session SDK : signature HMAC-SHA256 + TTL de 5 minutes (émis par `GET /api/v1/game/session`, vérifié par `SdkSessionAuth`) | Terminé |
+| Appels côté jeu | Passerelle API Provider (balance/bet/settle/refund/session-token) + middleware ProviderAuth | Terminé |
+| Sessions de jeux | Token de session SDK : signature HMAC-SHA256 (vérifié par `SdkSessionAuth`) ; token de lecture : TTL de 5 minutes, émis par `GET /api/v1/game/session` (`role=read` uniquement) ; token d'écriture : TTL de 120 secondes, émis par `POST /api/provider/session-token` (nécessite `game.api_secret`) | Terminé |
 | Système de tickets | Création/réponse côté C + traitement/attribution/fermeture côté admin, 5 types de tickets | Terminé |
 | Vérification e-mail | Code à 6 chiffres, expiration Redis 10 minutes, limite de renvoi 60 secondes | Terminé |
 | Notifications push | PushService (FCM/APNs/push Huawei) + modèle DeviceToken | Terminé |
@@ -178,7 +178,7 @@ Support par tickets
 | POST | /admin/v1/ticket/{id}/close | Fermer le ticket |
 | POST | /admin/v1/ticket/{id}/assign | Désigner le traitement |
 
-## 4. API Provider (rappels du côté jeu)
+## 4. API Provider (appels du côté jeu)
 
 | Méthode | Chemin | Description | Authentification |
 |------|------|------|------|
@@ -186,6 +186,7 @@ Support par tickets
 | POST | /api/provider/bet | Notifier la mise | HMAC-SHA256 |
 | POST | /api/provider/settle | Notifier le règlement | HMAC-SHA256 |
 | POST | /api/provider/refund | Notifier le remboursement | HMAC-SHA256 |
+| POST | /api/provider/session-token | Émettre un token de session serveur | HMAC-SHA256 |
 
 Algorithme de signature : `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)`
 En-têtes : `X-Game-Id` + `X-Timestamp` + `X-Signature`

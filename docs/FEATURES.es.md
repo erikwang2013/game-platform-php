@@ -78,8 +78,8 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | Dominio | Función | Estado |
 |----|------|------|
 | Integración de juegos | Capa de abstracción GameProvider (Self/ThirdParty) + firma HMAC-SHA256 | Completada |
-| Callback de juegos | Puerta de enlace Provider API (balance/bet/settle/refund) + middleware ProviderAuth | Completada |
-| Sesiones de juego | Token de sesión SDK: firma HMAC-SHA256 + TTL de 5 minutos (emitido por `GET /api/v1/game/session`, verificado por `SdkSessionAuth`) | Completada |
+| Llamadas del lado del juego | Puerta de enlace Provider API (balance/bet/settle/refund/session-token) + middleware ProviderAuth | Completada |
+| Sesiones de juego | Token de sesión SDK: firma HMAC-SHA256 (verificado por `SdkSessionAuth`); token de lectura: TTL de 5 minutos, emitido por `GET /api/v1/game/session` (solo `role=read`); token de escritura: TTL de 120 segundos, emitido por `POST /api/provider/session-token` (requiere `game.api_secret`) | Completada |
 | Sistema de tickets | Creación/respuesta en el lado C + gestión/asignación/cierre en el lado admin, 5 tipos de ticket | Completada |
 | Verificación de email | Código de 6 dígitos, expiración Redis de 10 minutos, límite de reenvío de 60 segundos | Completada |
 | Notificaciones push | PushService (FCM/APNs/push de Huawei) + modelo DeviceToken | Completada |
@@ -178,7 +178,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | POST | /admin/v1/ticket/{id}/close | Cerrar ticket |
 | POST | /admin/v1/ticket/{id}/assign | Asignar responsable |
 
-## 4. Provider API (callback del proveedor de juegos)
+## 4. Provider API (llamadas del lado del juego)
 
 | Método | Ruta | Descripción | Autenticación |
 |------|------|------|------|
@@ -186,6 +186,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | POST | /api/provider/bet | Notificar apuesta | HMAC-SHA256 |
 | POST | /api/provider/settle | Notificar liquidación | HMAC-SHA256 |
 | POST | /api/provider/refund | Notificar reembolso | HMAC-SHA256 |
+| POST | /api/provider/session-token | Emitir token de sesión de servidor | HMAC-SHA256 |
 
 Algoritmo de firma: `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)`
 Cabeceras de solicitud: `X-Game-Id` + `X-Timestamp` + `X-Signature`

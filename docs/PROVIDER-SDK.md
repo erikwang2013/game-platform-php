@@ -243,6 +243,30 @@ POST /api/provider/refund
 }
 ```
 
+### 3.5 签发服务端会话令牌
+
+```
+POST /api/provider/session-token
+Content-Type: application/json
+X-Game-Id: <游戏ID>
+X-Timestamp: <时间戳>
+X-Signature: <签名>
+
+请求体:
+{
+    "user_id": 9876543210
+}
+
+响应:
+{
+    "code": 0,
+    "data": {
+        "token": "<payload>.<signature>",
+        "expires_in": 120
+    }
+}
+```
+
 ## 4. 自研游戏接入 (SelfProvider)
 
 自研游戏与平台共享数据库，`SelfProvider` 使用数据库事务 + `SELECT FOR UPDATE` 保证一致性：
@@ -268,7 +292,7 @@ $result = $provider->refund($userId, $gameId, $sessionId, $amount, $roundId, 'ga
 
 ## 5. 会话管理
 
-自研/内嵌游戏的 SDK 调用使用会话令牌认证：已登录的 C 端调 `GET /api/v1/game/session?game_id={game_id}` 签发令牌（TTL 5 分钟，仅 `self` / `embedded` 类型游戏）：
+自研/内嵌游戏的 SDK 调用使用会话令牌认证：已登录的 C 端调 `GET /api/v1/game/session?game_id={game_id}` 签发令牌（TTL 5 分钟，仅 `self` / `embedded` 类型游戏）。该令牌是只读的：
 
 ```
 GET /api/v1/game/session?game_id=1234567890
@@ -284,7 +308,7 @@ POST /api/game/balance
 Authorization: Bearer <payload>.<signature>
 ```
 
-`SdkSessionAuth` 中间件校验 HMAC-SHA256 签名与有效期，`user_id` 只取自令牌（请求体不可覆盖）；令牌过期后重新签发，用于调用 `/api/game/balance`、`/api/game/bet`、`/api/game/settle`、`/api/game/refund`。
+`SdkSessionAuth` 中间件校验 HMAC-SHA256 签名与有效期，`user_id` 只取自令牌（请求体不可覆盖）。令牌还带 `role`：`GET /api/v1/game/session` 只签发 `role=read`，因此读端点 `/api/game/balance` 照常可用；写端点 `/api/game/bet`、`/api/game/settle`、`/api/game/refund` 需要 `role=server`。该令牌只能由持有 `game.api_secret` 的一方经 `POST /api/provider/session-token` 换取（与其余 `/api/provider/*` 同一道 HMAC 签名，TTL 120 秒，且与单个 `user_id` 绑定）。此前签发的不含 `role` 的令牌同样按只读处理。
 
 ## 6. 游戏配置
 

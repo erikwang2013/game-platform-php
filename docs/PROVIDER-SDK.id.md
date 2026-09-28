@@ -243,6 +243,30 @@ Respons:
 }
 ```
 
+### 3.5 Terbitkan Token Sesi Server
+
+```
+POST /api/provider/session-token
+Content-Type: application/json
+X-Game-Id: <游戏ID>
+X-Timestamp: <时间戳>
+X-Signature: <签名>
+
+请求体:
+{
+    "user_id": 9876543210
+}
+
+响应:
+{
+    "code": 0,
+    "data": {
+        "token": "<payload>.<signature>",
+        "expires_in": 120
+    }
+}
+```
+
 ## 4. Integrasi Game Buatan Sendiri (SelfProvider)
 
 Game buatan sendiri berbagi database dengan platform, `SelfProvider` menggunakan transaksi DB + `SELECT FOR UPDATE` untuk menjamin konsistensi:
@@ -268,7 +292,7 @@ $result = $provider->refund($userId, $gameId, $sessionId, $amount, $roundId, 'ga
 
 ## 5. Manajemen Sesi
 
-Panggilan SDK untuk game self/embedded diautentikasi dengan token sesi: C-end yang sudah login memanggil `GET /api/v1/game/session?game_id={game_id}` untuk menerbitkannya (TTL 5 menit, hanya game `self` / `embedded`):
+Panggilan SDK untuk game self/embedded diautentikasi dengan token sesi: C-end yang sudah login memanggil `GET /api/v1/game/session?game_id={game_id}` untuk menerbitkannya (TTL 5 menit, hanya game `self` / `embedded`). Token ini hanya-baca:
 
 ```
 GET /api/v1/game/session?game_id=1234567890
@@ -284,7 +308,7 @@ POST /api/game/balance
 Authorization: Bearer <payload>.<signature>
 ```
 
-Middleware `SdkSessionAuth` memverifikasi tanda tangan HMAC-SHA256 dan masa berlaku; `user_id` hanya diambil dari token (body permintaan tidak dapat menimpanya). Terbitkan ulang setelah kedaluwarsa dan gunakan untuk memanggil `/api/game/balance`, `/api/game/bet`, `/api/game/settle`, `/api/game/refund`.
+Middleware `SdkSessionAuth` memverifikasi tanda tangan HMAC-SHA256 dan masa berlaku; `user_id` hanya diambil dari token (body permintaan tidak dapat menimpanya). Token juga membawa `role`: `GET /api/v1/game/session` hanya menandatangani `role=read`, sehingga endpoint baca `/api/game/balance` tetap berfungsi seperti biasa, sedangkan endpoint tulis `/api/game/bet`, `/api/game/settle`, dan `/api/game/refund` memerlukan `role=server`. Token tersebut hanya dapat diperoleh pihak yang memegang `game.api_secret`, melalui `POST /api/provider/session-token` (ditandatangani HMAC seperti panggilan `/api/provider/*` lainnya, TTL 120 detik, terikat pada satu `user_id`). Token yang diterbitkan sebelumnya tanpa `role` juga diperlakukan sebagai hanya-baca.
 
 ## 6. Konfigurasi Game
 

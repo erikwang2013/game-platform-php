@@ -78,8 +78,8 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | 域 | 功能 | 状态 |
 |----|------|------|
 | 游戏接入 | GameProvider 抽象层 (Self/ThirdParty) + HMAC-SHA256 签名 | 已完成 |
-| 游戏回调 | Provider API 网关 (balance/bet/settle/refund) + ProviderAuth 中间件 | 已完成 |
-| 游戏会话 | SDK 会话令牌：HMAC-SHA256 签名 + 5 分钟 TTL（`GET /api/v1/game/session` 签发，`SdkSessionAuth` 校验） | 已完成 |
+| 游戏方调用 | Provider API 网关 (balance/bet/settle/refund/session-token) + ProviderAuth 中间件 | 已完成 |
+| 游戏会话 | SDK 会话令牌：HMAC-SHA256 签名（`SdkSessionAuth` 校验）；读令牌：5 分钟 TTL，由 `GET /api/v1/game/session` 签发（仅 `role=read`）；写令牌：120 秒 TTL，由 `POST /api/provider/session-token` 签发（需 `game.api_secret`） | 已完成 |
 | 工单系统 | C端创建/回复 + 管理端处理/分配/关闭、5种工单类型 | 已完成 |
 | 邮箱验证 | 6位验证码、Redis 10分钟过期、60秒重发限制 | 已完成 |
 | 推送通知 | PushService (FCM/APNs/华为推送) + DeviceToken 模型 | 已完成 |
@@ -178,7 +178,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | POST | /admin/v1/ticket/{id}/close | 关闭工单 |
 | POST | /admin/v1/ticket/{id}/assign | 指定处理人 |
 
-## 4. Provider API（游戏方回调）
+## 4. Provider API（游戏方调用）
 
 | 方法 | 路径 | 说明 | 认证 |
 |------|------|------|------|
@@ -186,6 +186,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | POST | /api/provider/bet | 通知下注 | HMAC-SHA256 |
 | POST | /api/provider/settle | 通知结算 | HMAC-SHA256 |
 | POST | /api/provider/refund | 通知退款 | HMAC-SHA256 |
+| POST | /api/provider/session-token | 签发服务端会话令牌 | HMAC-SHA256 |
 
 签名算法: `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)`
 请求头: `X-Game-Id` + `X-Timestamp` + `X-Signature`

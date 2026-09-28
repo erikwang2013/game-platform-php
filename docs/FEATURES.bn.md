@@ -78,8 +78,8 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | ডোমেইন | ফিচার | অবস্থা |
 |----|------|------|
 | গেম ইন্টিগ্রেশন | GameProvider অ্যাবস্ট্রাকশন লেয়ার (Self/ThirdParty) + HMAC-SHA256 সিগনেচার | সম্পন্ন |
-| গেম কলব্যাক | Provider API গেটওয়ে (balance/bet/settle/refund) + ProviderAuth মিডলওয়্যার | সম্পন্ন |
-| গেম সেশন | SDK সেশন টোকেন: HMAC-SHA256 স্বাক্ষর + ৫ মিনিট TTL (`GET /api/v1/game/session` ইস্যু করে, `SdkSessionAuth` যাচাই করে) | সম্পন্ন |
+| গেম পক্ষের কল | Provider API গেটওয়ে (balance/bet/settle/refund/session-token) + ProviderAuth মিডলওয়্যার | সম্পন্ন |
+| গেম সেশন | SDK সেশন টোকেন: HMAC-SHA256 স্বাক্ষর (`SdkSessionAuth` যাচাই করে); পাঠের টোকেন: TTL ৫ মিনিট, `GET /api/v1/game/session` ইস্যু করে (শুধু `role=read`); লেখার টোকেন: TTL ১২০ সেকেন্ড, `POST /api/provider/session-token` ইস্যু করে (`game.api_secret` প্রয়োজন) | সম্পন্ন |
 | টিকিট সিস্টেম | C-এন্ড তৈরি/রিপ্লাই + অ্যাডমিন প্রসেস/অ্যাসাইন/ক্লোজ, ৫ ধরনের টিকিট | সম্পন্ন |
 | ইমেইল ভেরিফিকেশন | ৬ সংখ্যার কোড, Redis ১০ মিনিট মেয়াদ, ৬০ সেকেন্ড রিসেন্ড সীমা | সম্পন্ন |
 | পুশ নোটিফিকেশন | PushService (FCM/APNs/হুয়াওয়ে পুশ) + DeviceToken মডেল | সম্পন্ন |
@@ -178,7 +178,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | POST | /admin/v1/ticket/{id}/close | টিকিট ক্লোজ |
 | POST | /admin/v1/ticket/{id}/assign | হ্যান্ডলার নির্ধারণ |
 
-## 4. Provider API (গেম পক্ষের কলব্যাক)
+## 4. Provider API (গেম পক্ষের কল)
 
 | মেথড | পাথ | বিবরণ | অথেনটিকেশন |
 |------|------|------|------|
@@ -186,6 +186,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | POST | /api/provider/bet | বেট নোটিফিকেশন | HMAC-SHA256 |
 | POST | /api/provider/settle | সেটেলমেন্ট নোটিফিকেশন | HMAC-SHA256 |
 | POST | /api/provider/refund | রিফান্ড নোটিফিকেশন | HMAC-SHA256 |
+| POST | /api/provider/session-token | সার্ভার সেশন টোকেন ইস্যু | HMAC-SHA256 |
 
 সিগনেচার অ্যালগরিদম: `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)`
 রিকোয়েস্ট হেডার: `X-Game-Id` + `X-Timestamp` + `X-Signature`

@@ -78,8 +78,8 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | 도메인 | 기능 | 상태 |
 |----|------|------|
 | 게임 연동 | GameProvider 추상 레이어 (Self/ThirdParty) + HMAC-SHA256 서명 | 완료 |
-| 게임 콜백 | Provider API 게이트웨이 (balance/bet/settle/refund) + ProviderAuth 미들웨어 | 완료 |
-| 게임 세션 | SDK 세션 토큰: HMAC-SHA256 서명 + 5분 TTL(`GET /api/v1/game/session` 발급, `SdkSessionAuth` 검증) | 완료 |
+| 게임사 호출 | Provider API 게이트웨이 (balance/bet/settle/refund/session-token) + ProviderAuth 미들웨어 | 완료 |
+| 게임 세션 | SDK 세션 토큰: HMAC-SHA256 서명(`SdkSessionAuth` 검증); 읽기 토큰: TTL 5분, `GET /api/v1/game/session` 발급(`role=read` 전용); 쓰기 토큰: TTL 120초, `POST /api/provider/session-token` 발급(`game.api_secret` 필요) | 완료 |
 | 티켓 시스템 | C단 생성/답변 + 관리단 처리/할당/닫기, 5가지 티켓 유형 | 완료 |
 | 이메일 검증 | 6자리 인증 코드, Redis 10분 만료, 60초 재발송 제한 | 완료 |
 | 푸시 알림 | PushService (FCM/APNs/Huawei 푸시) + DeviceToken 모델 | 완료 |
@@ -178,7 +178,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | POST | /admin/v1/ticket/{id}/close | 티켓 닫기 |
 | POST | /admin/v1/ticket/{id}/assign | 처리 담당자 지정 |
 
-## 4. Provider API (게임사 콜백)
+## 4. Provider API (게임사 호출)
 
 | 메서드 | 경로 | 설명 | 인증 |
 |------|------|------|------|
@@ -186,6 +186,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | POST | /api/provider/bet | 베팅 알림 | HMAC-SHA256 |
 | POST | /api/provider/settle | 정산 알림 | HMAC-SHA256 |
 | POST | /api/provider/refund | 환불 알림 | HMAC-SHA256 |
+| POST | /api/provider/session-token | 서버 세션 토큰 발급 | HMAC-SHA256 |
 
 서명 알고리즘: `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)`
 요청 헤더: `X-Game-Id` + `X-Timestamp` + `X-Signature`

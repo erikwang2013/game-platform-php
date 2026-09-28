@@ -1621,7 +1621,7 @@ Retry-After: 60
 
 ## 7. Новые API (v2.0 расширение экосистемы)
 
-### 7.1 Provider API — колбэки игровой стороны
+### 7.1 Provider API — вызовы игровой стороны
 
 **Способ аутентификации**: подпись HMAC-SHA256 (X-Game-Id + X-Timestamp + X-Signature)
 **Временное окно**: 5 минут
@@ -1710,6 +1710,29 @@ Retry-After: 60
   }
 }
 ```
+
+#### POST /api/provider/session-token — выпуск серверного токена сессии
+
+```
+Заголовки запроса:
+  X-Game-Id: 1234567890
+  X-Timestamp: 1716400830
+  X-Signature: abc123...
+
+Запрос: {
+  "user_id": 1234567890
+}
+
+Ответ: {
+  "code": 0,
+  "data": {
+    "token": "<payload>.<signature>",
+    "expires_in": 120
+  }
+}
+```
+
+> **Использование**: передавайте возвращённый `token` как `Authorization: Bearer <token>` при вызове эндпоинтов записи SDK `/api/game/bet`, `/api/game/settle` и `/api/game/refund` (работает и для `/api/game/balance`); токен действует 120 секунд с момента выпуска.
 
 ### 7.2 API тикетов
 

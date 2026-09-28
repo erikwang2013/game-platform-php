@@ -1623,7 +1623,7 @@ Retry-After: 60
 
 ## 7. 新增 API (v2.0 生态扩展)
 
-### 7.1 Provider API — 游戏方回调接口
+### 7.1 Provider API — 游戏方调用接口
 
 **认证方式**: HMAC-SHA256 签名 (X-Game-Id + X-Timestamp + X-Signature)
 **时间窗口**: 5分钟
@@ -1712,6 +1712,29 @@ Retry-After: 60
   }
 }
 ```
+
+#### POST /api/provider/session-token — 签发服务端会话令牌
+
+```
+请求头:
+  X-Game-Id: 1234567890
+  X-Timestamp: 1716400830
+  X-Signature: abc123...
+
+请求: {
+  "user_id": 1234567890
+}
+
+响应: {
+  "code": 0,
+  "data": {
+    "token": "<payload>.<signature>",
+    "expires_in": 120
+  }
+}
+```
+
+> **用法**：调用 SDK 写端点 `/api/game/bet`、`/api/game/settle`、`/api/game/refund` 时，把返回的 `token` 作为 `Authorization: Bearer <token>` 传入（也可用于 `/api/game/balance`）；令牌自签发起 120 秒内有效。
 
 ### 7.2 工单 API
 

@@ -243,6 +243,30 @@ POST /api/provider/refund
 }
 ```
 
+### 3.5 サーバーセッショントークンの発行
+
+```
+POST /api/provider/session-token
+Content-Type: application/json
+X-Game-Id: <游戏ID>
+X-Timestamp: <时间戳>
+X-Signature: <签名>
+
+请求体:
+{
+    "user_id": 9876543210
+}
+
+响应:
+{
+    "code": 0,
+    "data": {
+        "token": "<payload>.<signature>",
+        "expires_in": 120
+    }
+}
+```
+
 ## 4. 自研游戏の接続 (SelfProvider)
 
 自研游戏はプラットフォームとデータベースを共有し、`SelfProvider` はデータベーストランザクション + `SELECT FOR UPDATE` で整合性を保証します：
@@ -268,7 +292,7 @@ $result = $provider->refund($userId, $gameId, $sessionId, $amount, $roundId, 'ga
 
 ## 5. セッション管理
 
-self / embedded ゲームの SDK 呼び出しはセッショントークンで認証します：ログイン済みの C側が `GET /api/v1/game/session?game_id={game_id}` を呼び出してトークンを発行します（TTL 5 分、`self` / `embedded` タイプのゲームのみ）：
+self / embedded ゲームの SDK 呼び出しはセッショントークンで認証します：ログイン済みの C側が `GET /api/v1/game/session?game_id={game_id}` を呼び出してトークンを発行します（TTL 5 分、`self` / `embedded` タイプのゲームのみ）。このトークンは読み取り専用です：
 
 ```
 GET /api/v1/game/session?game_id=1234567890
@@ -284,7 +308,7 @@ POST /api/game/balance
 Authorization: Bearer <payload>.<signature>
 ```
 
-`SdkSessionAuth` ミドルウェアが HMAC-SHA256 署名と有効期限を検証し、`user_id` はトークンからのみ取得します（リクエストボディでは上書きできません）。期限切れ後は再発行し、`/api/game/balance`、`/api/game/bet`、`/api/game/settle`、`/api/game/refund` の呼び出しに使用します。
+`SdkSessionAuth` ミドルウェアが HMAC-SHA256 署名と有効期限を検証し、`user_id` はトークンからのみ取得します（リクエストボディでは上書きできません）。トークンは `role` も保持します：`GET /api/v1/game/session` は `role=read` のみを発行するため、読み取りエンドポイント `/api/game/balance` は通常どおり利用できますが、書き込みエンドポイント `/api/game/bet`、`/api/game/settle`、`/api/game/refund` は `role=server` を必要とします。このトークンを取得できるのは `game.api_secret` を保持する者のみで、`POST /api/provider/session-token` で交換します（他の `/api/provider/*` と同じ HMAC 署名、TTL 120 秒、単一の `user_id` に紐付け）。以前に発行された `role` のないトークンも同様に読み取り専用として扱われます。
 
 ## 6. ゲーム設定
 

@@ -78,8 +78,8 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | क्षेत्र | कार्य | स्थिति |
 |----|------|------|
 | गेम एकीकरण | GameProvider अमूर्त परत (Self/ThirdParty) + HMAC-SHA256 हस्ताक्षर | पूर्ण |
-| गेम कॉलबैक | Provider API गेटवे (balance/bet/settle/refund) + ProviderAuth मिडलवेयर | पूर्ण |
-| गेम सत्र | SDK सत्र टोकन: HMAC-SHA256 हस्ताक्षर + 5 मिनट TTL (`GET /api/v1/game/session` जारी करता है, `SdkSessionAuth` जाँचता है) | पूर्ण |
+| गेम पक्ष कॉल | Provider API गेटवे (balance/bet/settle/refund/session-token) + ProviderAuth मिडलवेयर | पूर्ण |
+| गेम सत्र | SDK सत्र टोकन: HMAC-SHA256 हस्ताक्षर (`SdkSessionAuth` जाँचता है); पढ़ने का टोकन: TTL 5 मिनट, `GET /api/v1/game/session` जारी करता है (केवल `role=read`); लिखने का टोकन: TTL 120 सेकंड, `POST /api/provider/session-token` जारी करता है (`game.api_secret` आवश्यक) | पूर्ण |
 | टिकट प्रणाली | C-छोर निर्माण/उत्तर + प्रबंधन छोर प्रसंस्करण/आवंटन/बंद, 5 टिकट प्रकार | पूर्ण |
 | ईमेल सत्यापन | 6-अंकीय सत्यापन कोड, Redis 10 मिनट समाप्ति, 60 सेकंड पुनः भेजने की सीमा | पूर्ण |
 | पुश अधिसूचना | PushService (FCM/APNs/हुआवेई पुश) + DeviceToken मॉडल | पूर्ण |
@@ -178,7 +178,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | POST | /admin/v1/ticket/{id}/close | टिकट बंद करना |
 | POST | /admin/v1/ticket/{id}/assign | प्रबंधक नियुक्ति |
 
-## 4. Provider API (गेम पक्ष कॉलबैक)
+## 4. Provider API (गेम पक्ष कॉल)
 
 | विधि | पथ | विवरण | प्रमाणीकरण |
 |------|------|------|------|
@@ -186,6 +186,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | POST | /api/provider/bet | दांव अधिसूचना | HMAC-SHA256 |
 | POST | /api/provider/settle | निपटान अधिसूचना | HMAC-SHA256 |
 | POST | /api/provider/refund | रिफंड अधिसूचना | HMAC-SHA256 |
+| POST | /api/provider/session-token | सर्वर सत्र टोकन जारी करें | HMAC-SHA256 |
 
 हस्ताक्षर एल्गोरिदम: `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)`
 अनुरोध हेडर: `X-Game-Id` + `X-Timestamp` + `X-Signature`

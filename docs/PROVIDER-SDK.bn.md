@@ -243,6 +243,30 @@ POST /api/provider/refund
 }
 ```
 
+### 3.5 সার্ভার সেশন টোকেন ইস্যু করুন
+
+```
+POST /api/provider/session-token
+Content-Type: application/json
+X-Game-Id: <游戏ID>
+X-Timestamp: <时间戳>
+X-Signature: <签名>
+
+请求体:
+{
+    "user_id": 9876543210
+}
+
+响应:
+{
+    "code": 0,
+    "data": {
+        "token": "<payload>.<signature>",
+        "expires_in": 120
+    }
+}
+```
+
 ## 4. নিজস্ব গেম ইন্টিগ্রেশন (SelfProvider)
 
 নিজস্ব গেম প্ল্যাটফর্মের সাথে ডেটাবেস শেয়ার করে, `SelfProvider` ডেটাবেস ট্রানজেকশন + `SELECT FOR UPDATE` দিয়ে সামঞ্জস্য নিশ্চিত করে:
@@ -268,7 +292,7 @@ $result = $provider->refund($userId, $gameId, $sessionId, $amount, $roundId, 'ga
 
 ## 5. সেশন ম্যানেজমেন্ট
 
-self/embedded গেমের SDK কল সেশন টোকেন দিয়ে প্রমাণীকৃত হয়: লগইন করা C-প্রান্ত `GET /api/v1/game/session?game_id={game_id}` কল করে টোকেন ইস্যু করে (TTL ৫ মিনিট, শুধু `self` / `embedded` গেম):
+self/embedded গেমের SDK কল সেশন টোকেন দিয়ে প্রমাণীকৃত হয়: লগইন করা C-প্রান্ত `GET /api/v1/game/session?game_id={game_id}` কল করে টোকেন ইস্যু করে (TTL ৫ মিনিট, শুধু `self` / `embedded` গেম)। এই টোকেন শুধু-পাঠযোগ্য:
 
 ```
 GET /api/v1/game/session?game_id=1234567890
@@ -284,7 +308,7 @@ POST /api/game/balance
 Authorization: Bearer <payload>.<signature>
 ```
 
-`SdkSessionAuth` মিডলওয়্যার HMAC-SHA256 স্বাক্ষর ও মেয়াদ যাচাই করে; `user_id` শুধু টোকেন থেকেই নেওয়া হয় (রিকোয়েস্ট বডি তা ওভাররাইড করতে পারে না)। মেয়াদ শেষে আবার ইস্যু করে `/api/game/balance`, `/api/game/bet`, `/api/game/settle`, `/api/game/refund` কল করুন।
+`SdkSessionAuth` মিডলওয়্যার HMAC-SHA256 স্বাক্ষর ও মেয়াদ যাচাই করে; `user_id` শুধু টোকেন থেকেই নেওয়া হয় (রিকোয়েস্ট বডি তা ওভাররাইড করতে পারে না)। টোকেনে `role`-ও থাকে: `GET /api/v1/game/session` শুধু `role=read` ইস্যু করে, তাই পাঠের এন্ডপয়েন্ট `/api/game/balance` আগের মতোই কাজ করে; আর লেখার এন্ডপয়েন্ট `/api/game/bet`, `/api/game/settle` ও `/api/game/refund`-এর জন্য `role=server` দরকার। এই টোকেন কেবল `game.api_secret` ধারণকারী পক্ষই `POST /api/provider/session-token`-এর মাধ্যমে পেতে পারে (বাকি `/api/provider/*` কলের মতোই HMAC স্বাক্ষরিত, TTL ১২০ সেকেন্ড, একটি `user_id`-এর সঙ্গে আবদ্ধ)। আগে ইস্যু করা `role`-বিহীন টোকেনও একইভাবে শুধু-পাঠযোগ্য হিসেবে গণ্য হয়।
 
 ## 6. গেম কনফিগ
 

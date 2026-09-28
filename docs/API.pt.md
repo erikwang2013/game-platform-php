@@ -1621,7 +1621,7 @@ Retry-After: 60
 
 ## 7. Novas APIs (v2.0 expansão do ecossistema)
 
-### 7.1 Provider API — Interfaces de callback do provedor de jogos
+### 7.1 Provider API — Interfaces do provedor de jogos
 
 **Método de autenticação**: assinatura HMAC-SHA256 (X-Game-Id + X-Timestamp + X-Signature)
 **Janela de tempo**: 5 minutos
@@ -1710,6 +1710,29 @@ Resposta: {
   }
 }
 ```
+
+#### POST /api/provider/session-token — Emitir token de sessão de servidor
+
+```
+Cabeçalhos da requisição:
+  X-Game-Id: 1234567890
+  X-Timestamp: 1716400830
+  X-Signature: abc123...
+
+Requisição: {
+  "user_id": 1234567890
+}
+
+Resposta: {
+  "code": 0,
+  "data": {
+    "token": "<payload>.<signature>",
+    "expires_in": 120
+  }
+}
+```
+
+> **Uso**: envie o `token` retornado como `Authorization: Bearer <token>` ao chamar os endpoints de escrita do SDK `/api/game/bet`, `/api/game/settle` e `/api/game/refund` (também funciona em `/api/game/balance`); o token é válido por 120 segundos a partir da emissão.
 
 ### 7.2 Ticket API
 

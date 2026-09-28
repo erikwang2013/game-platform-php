@@ -243,6 +243,30 @@ POST /api/provider/refund
 }
 ```
 
+### 3.5 Server-Session-Token ausstellen
+
+```
+POST /api/provider/session-token
+Content-Type: application/json
+X-Game-Id: <游戏ID>
+X-Timestamp: <时间戳>
+X-Signature: <签名>
+
+请求体:
+{
+    "user_id": 9876543210
+}
+
+响应:
+{
+    "code": 0,
+    "data": {
+        "token": "<payload>.<signature>",
+        "expires_in": 120
+    }
+}
+```
+
 ## 4. Integration eigener Spiele (SelfProvider)
 
 Eigene Spiele teilen sich die Datenbank mit der Plattform; `SelfProvider` verwendet Datenbanktransaktionen + `SELECT FOR UPDATE`, um die Konsistenz zu gewährleisten:
@@ -268,7 +292,7 @@ $result = $provider->refund($userId, $gameId, $sessionId, $amount, $roundId, 'ga
 
 ## 5. Session-Verwaltung
 
-SDK-Aufrufe von Self-/Embedded-Spielen werden mit einem Session-Token authentifiziert: Das angemeldete C-End ruft `GET /api/v1/game/session?game_id={game_id}` auf, um eines auszustellen (TTL 5 Minuten, nur Spiele vom Typ `self` / `embedded`):
+SDK-Aufrufe von Self-/Embedded-Spielen werden mit einem Session-Token authentifiziert: Das angemeldete C-End ruft `GET /api/v1/game/session?game_id={game_id}` auf, um eines auszustellen (TTL 5 Minuten, nur Spiele vom Typ `self` / `embedded`). Das Token ist schreibgeschützt:
 
 ```
 GET /api/v1/game/session?game_id=1234567890
@@ -284,7 +308,7 @@ POST /api/game/balance
 Authorization: Bearer <payload>.<signature>
 ```
 
-Die `SdkSessionAuth`-Middleware prüft die HMAC-SHA256-Signatur und die Gültigkeit; `user_id` stammt ausschließlich aus dem Token (der Request-Body kann sie nicht überschreiben). Nach Ablauf neu ausstellen und damit `/api/game/balance`, `/api/game/bet`, `/api/game/settle`, `/api/game/refund` aufrufen.
+Die `SdkSessionAuth`-Middleware prüft die HMAC-SHA256-Signatur und die Gültigkeit; `user_id` stammt ausschließlich aus dem Token (der Request-Body kann sie nicht überschreiben). Das Token trägt zudem eine `role`: `GET /api/v1/game/session` stellt nur `role=read` aus, daher funktioniert der Lese-Endpunkt `/api/game/balance` wie gewohnt, während die Schreib-Endpunkte `/api/game/bet`, `/api/game/settle` und `/api/game/refund` `role=server` erfordern. Ein solches Token erhält nur, wer `game.api_secret` besitzt, über `POST /api/provider/session-token` (HMAC-signiert wie die übrigen `/api/provider/*`-Aufrufe, TTL 120 Sekunden, an eine einzelne `user_id` gebunden). Früher ausgestellte Token ohne `role` werden ebenfalls als schreibgeschützt behandelt.
 
 ## 6. Spielkonfiguration
 

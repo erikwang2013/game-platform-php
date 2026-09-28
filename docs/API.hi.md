@@ -1621,7 +1621,7 @@ Retry-After: 60
 
 ## 7. नए API (v2.0 पारिस्थितिकी विस्तार)
 
-### 7.1 Provider API — गेम पक्ष कॉलबैक इंटरफ़ेस
+### 7.1 Provider API — गेम पक्ष इंटरफ़ेस
 
 **प्रमाणीकरण विधि**: HMAC-SHA256 हस्ताक्षर (X-Game-Id + X-Timestamp + X-Signature)
 **समय विंडो**: 5 मिनट
@@ -1710,6 +1710,29 @@ Retry-After: 60
   }
 }
 ```
+
+#### POST /api/provider/session-token — सर्वर सत्र टोकन जारी करें
+
+```
+अनुरोध हेडर:
+  X-Game-Id: 1234567890
+  X-Timestamp: 1716400830
+  X-Signature: abc123...
+
+अनुरोध: {
+  "user_id": 1234567890
+}
+
+प्रतिक्रिया: {
+  "code": 0,
+  "data": {
+    "token": "<payload>.<signature>",
+    "expires_in": 120
+  }
+}
+```
+
+> **उपयोग**: SDK लेखन एंडपॉइंट `/api/game/bet`, `/api/game/settle` और `/api/game/refund` कॉल करते समय लौटाए गए `token` को `Authorization: Bearer <token>` के रूप में भेजें (यह `/api/game/balance` पर भी काम करता है); टोकन जारी होने से 120 सेकंड तक मान्य है।
 
 ### 7.2 टिकट API
 

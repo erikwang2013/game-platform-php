@@ -1621,7 +1621,7 @@ Retry-After: 60
 
 ## 7. 追加 API (v2.0 エコシステム拡張)
 
-### 7.1 Provider API — ゲーム側コールバックインターフェース
+### 7.1 Provider API — ゲーム側インターフェース
 
 **認証方式**: HMAC-SHA256 署名 (X-Game-Id + X-Timestamp + X-Signature)
 **時間ウィンドウ**: 5分
@@ -1710,6 +1710,29 @@ Retry-After: 60
   }
 }
 ```
+
+#### POST /api/provider/session-token — サーバーセッショントークンの発行
+
+```
+リクエストヘッダー:
+  X-Game-Id: 1234567890
+  X-Timestamp: 1716400830
+  X-Signature: abc123...
+
+リクエスト: {
+  "user_id": 1234567890
+}
+
+レスポンス: {
+  "code": 0,
+  "data": {
+    "token": "<payload>.<signature>",
+    "expires_in": 120
+  }
+}
+```
+
+> **使い方**：SDK の書き込みエンドポイント `/api/game/bet`、`/api/game/settle`、`/api/game/refund` を呼び出す際、返却された `token` を `Authorization: Bearer <token>` として渡します（`/api/game/balance` でも使用できます）。トークンは発行から 120 秒間有効です。
 
 ### 7.2 チケット API
 

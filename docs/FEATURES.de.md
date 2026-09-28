@@ -78,8 +78,8 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | Bereich | Funktion | Status |
 |----|------|------|
 | Spielanbindung | GameProvider-Abstraktionsschicht (Self/ThirdParty) + HMAC-SHA256-Signatur | Abgeschlossen |
-| Spiel-Callback | Provider-API-Gateway (balance/bet/settle/refund) + ProviderAuth-Middleware | Abgeschlossen |
-| Spielsession | SDK-Session-Token: HMAC-SHA256-Signatur + 5-Minuten-TTL (ausgestellt von `GET /api/v1/game/session`, geprüft von `SdkSessionAuth`) | Abgeschlossen |
+| Spielseitige Aufrufe | Provider-API-Gateway (balance/bet/settle/refund/session-token) + ProviderAuth-Middleware | Abgeschlossen |
+| Spielsession | SDK-Session-Token: HMAC-SHA256-Signatur (geprüft von `SdkSessionAuth`); Lese-Token: 5-Minuten-TTL, ausgestellt von `GET /api/v1/game/session` (nur `role=read`); Schreib-Token: 120-Sekunden-TTL, ausgestellt von `POST /api/provider/session-token` (erfordert `game.api_secret`) | Abgeschlossen |
 | Ticket-System | C-End-Erstellung/Antwort + Verwaltungsseite Bearbeitung/Zuweisung/Schließung, 5 Tickettypen | Abgeschlossen |
 | E-Mail-Verifizierung | 6-stelliger Code, Redis 10 Minuten Ablauf, 60 Sekunden Wiedersendelimit | Abgeschlossen |
 | Push-Benachrichtigung | PushService (FCM/APNs/Huawei-Push) + DeviceToken-Modell | Abgeschlossen |
@@ -178,7 +178,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | POST | /admin/v1/ticket/{id}/close | Ticket schließen |
 | POST | /admin/v1/ticket/{id}/assign | Bearbeiter zuweisen |
 
-## 4. Provider-API (Spiel-Callbacks)
+## 4. Provider-API (Spielseitige Aufrufe)
 
 | Methode | Pfad | Beschreibung | Authentifizierung |
 |------|------|------|------|
@@ -186,6 +186,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | POST | /api/provider/bet | Einsatz melden | HMAC-SHA256 |
 | POST | /api/provider/settle | Abrechnung melden | HMAC-SHA256 |
 | POST | /api/provider/refund | Rückerstattung melden | HMAC-SHA256 |
+| POST | /api/provider/session-token | Server-Session-Token ausstellen | HMAC-SHA256 |
 
 Signaturalgorithmus: `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)`
 Request-Header: `X-Game-Id` + `X-Timestamp` + `X-Signature`

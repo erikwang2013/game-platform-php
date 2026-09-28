@@ -78,8 +78,8 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 | Domain | Feature | Status |
 |----|------|------|
 | Game integration | GameProvider abstraction layer (Self/ThirdParty) + HMAC-SHA256 signature | Completed |
-| Game callbacks | Provider API gateway (balance/bet/settle/refund) + ProviderAuth middleware | Completed |
-| Game sessions | SDK session token: HMAC-SHA256 signature + 5-minute TTL (issued by `GET /api/v1/game/session`, verified by `SdkSessionAuth`) | Completed |
+| Game-side calls | Provider API gateway (balance/bet/settle/refund/session-token) + ProviderAuth middleware | Completed |
+| Game sessions | SDK session token: HMAC-SHA256 signature (verified by `SdkSessionAuth`); read token: 5-minute TTL, issued by `GET /api/v1/game/session` (`role=read` only); write token: 120-second TTL, issued by `POST /api/provider/session-token` (requires `game.api_secret`) | Completed |
 | Ticket system | C-end create/reply + admin handle/assign/close, 5 ticket types | Completed |
 | Email verification | 6-digit code, Redis 10-minute expiry, 60s resend limit | Completed |
 | Push notifications | PushService (FCM/APNs/Huawei push) + DeviceToken model | Completed |
@@ -178,7 +178,7 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 | POST | /admin/v1/ticket/{id}/close | Close ticket |
 | POST | /admin/v1/ticket/{id}/assign | Assign handler |
 
-## 4. Provider API (Game Provider Callbacks)
+## 4. Provider API (Game-Side Calls)
 
 | Method | Path | Description | Auth |
 |------|------|------|------|
@@ -186,6 +186,7 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 | POST | /api/provider/bet | Notify bet | HMAC-SHA256 |
 | POST | /api/provider/settle | Notify settlement | HMAC-SHA256 |
 | POST | /api/provider/refund | Notify refund | HMAC-SHA256 |
+| POST | /api/provider/session-token | Issue Server Session Token | HMAC-SHA256 |
 
 Signature algorithm: `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)`
 Request headers: `X-Game-Id` + `X-Timestamp` + `X-Signature`

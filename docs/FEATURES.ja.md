@@ -78,8 +78,8 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | ドメイン | 機能 | 状態 |
 |----|------|------|
 | ゲーム接続 | GameProvider 抽象層 (Self/ThirdParty) + HMAC-SHA256 署名 | 完了 |
-| ゲームコールバック | Provider API ゲートウェイ (balance/bet/settle/refund) + ProviderAuth ミドルウェア | 完了 |
-| ゲームセッション | SDK セッショントークン：HMAC-SHA256 署名 + 5 分 TTL（`GET /api/v1/game/session` が発行、`SdkSessionAuth` が検証） | 完了 |
+| ゲーム側からの呼び出し | Provider API ゲートウェイ (balance/bet/settle/refund/session-token) + ProviderAuth ミドルウェア | 完了 |
+| ゲームセッション | SDK セッショントークン：HMAC-SHA256 署名（`SdkSessionAuth` が検証）；読み取りトークン：TTL 5 分、`GET /api/v1/game/session` が発行（`role=read` のみ）；書き込みトークン：TTL 120 秒、`POST /api/provider/session-token` が発行（`game.api_secret` が必要） | 完了 |
 | チケットシステム | C側作成/返信 + 管理画面処理/割当/クローズ、5種のチケットタイプ | 完了 |
 | メール検証 | 6桁認証コード、Redis 10分期限切れ、60秒再送制限 | 完了 |
 | プッシュ通知 | PushService (FCM/APNs/華為プッシュ) + DeviceToken モデル | 完了 |
@@ -178,7 +178,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | POST | /admin/v1/ticket/{id}/close | チケットクローズ |
 | POST | /admin/v1/ticket/{id}/assign | 処理担当者の指定 |
 
-## 4. Provider API（ゲーム側コールバック）
+## 4. Provider API（ゲーム側からの呼び出し）
 
 | メソッド | パス | 説明 | 認証 |
 |------|------|------|------|
@@ -186,6 +186,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | POST | /api/provider/bet | 下注通知 | HMAC-SHA256 |
 | POST | /api/provider/settle | 決済通知 | HMAC-SHA256 |
 | POST | /api/provider/refund | 返金通知 | HMAC-SHA256 |
+| POST | /api/provider/session-token | サーバーセッショントークンの発行 | HMAC-SHA256 |
 
 署名アルゴリズム: `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)`
 リクエストヘッダー: `X-Game-Id` + `X-Timestamp` + `X-Signature`

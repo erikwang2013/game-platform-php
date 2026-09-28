@@ -243,6 +243,30 @@ POST /api/provider/refund
 }
 ```
 
+### 3.5 Выпуск серверного токена сессии
+
+```
+POST /api/provider/session-token
+Content-Type: application/json
+X-Game-Id: <游戏ID>
+X-Timestamp: <时间戳>
+X-Signature: <签名>
+
+请求体:
+{
+    "user_id": 9876543210
+}
+
+响应:
+{
+    "code": 0,
+    "data": {
+        "token": "<payload>.<signature>",
+        "expires_in": 120
+    }
+}
+```
+
 ## 4. Подключение саморазработанных игр (SelfProvider)
 
 Саморазработанные игры разделяют с платформой базу данных, `SelfProvider` использует транзакции БД + `SELECT FOR UPDATE` для гарантии согласованности:
@@ -268,7 +292,7 @@ $result = $provider->refund($userId, $gameId, $sessionId, $amount, $roundId, 'ga
 
 ## 5. Управление сессиями
 
-SDK-вызовы игр self/embedded аутентифицируются токеном сессии: авторизованный C-конец вызывает `GET /api/v1/game/session?game_id={game_id}`, чтобы его выпустить (TTL 5 минут, только игры `self` / `embedded`):
+SDK-вызовы игр self/embedded аутентифицируются токеном сессии: авторизованный C-конец вызывает `GET /api/v1/game/session?game_id={game_id}`, чтобы его выпустить (TTL 5 минут, только игры `self` / `embedded`). Этот токен доступен только для чтения:
 
 ```
 GET /api/v1/game/session?game_id=1234567890
@@ -284,7 +308,7 @@ POST /api/game/balance
 Authorization: Bearer <payload>.<signature>
 ```
 
-Middleware `SdkSessionAuth` проверяет подпись HMAC-SHA256 и срок действия; `user_id` берётся только из токена (тело запроса не может его переопределить). По истечении выпустите токен заново и используйте его для вызовов `/api/game/balance`, `/api/game/bet`, `/api/game/settle`, `/api/game/refund`.
+Промежуточное ПО `SdkSessionAuth` проверяет подпись HMAC-SHA256 и срок действия; `user_id` берётся только из токена (тело запроса не может его переопределить). Токен также содержит `role`: `GET /api/v1/game/session` подписывает только `role=read`, поэтому эндпоинт чтения `/api/game/balance` работает как обычно, а эндпоинты записи `/api/game/bet`, `/api/game/settle` и `/api/game/refund` требуют `role=server`. Такой токен может получить только владелец `game.api_secret` — через `POST /api/provider/session-token` (подпись HMAC, как у остальных вызовов `/api/provider/*`, TTL 120 секунд, привязка к одному `user_id`). Ранее выпущенные токены без `role` также считаются доступными только для чтения.
 
 ## 6. Конфигурация игры
 

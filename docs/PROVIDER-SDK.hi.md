@@ -243,6 +243,30 @@ POST /api/provider/refund
 }
 ```
 
+### 3.5 सर्वर सत्र टोकन जारी करें
+
+```
+POST /api/provider/session-token
+Content-Type: application/json
+X-Game-Id: <游戏ID>
+X-Timestamp: <时间戳>
+X-Signature: <签名>
+
+请求体:
+{
+    "user_id": 9876543210
+}
+
+响应:
+{
+    "code": 0,
+    "data": {
+        "token": "<payload>.<signature>",
+        "expires_in": 120
+    }
+}
+```
+
 ## 4. स्वयं-विकसित गेम एकीकरण (SelfProvider)
 
 स्वयं-विकसित गेम प्लेटफ़ॉर्म के साथ डेटाबेस साझा करते हैं, `SelfProvider` स्थिरता सुनिश्चित करने के लिए डेटाबेस ट्रांज़ैक्शन + `SELECT FOR UPDATE` का उपयोग करता है:
@@ -268,7 +292,7 @@ $result = $provider->refund($userId, $gameId, $sessionId, $amount, $roundId, 'ga
 
 ## 5. सत्र प्रबंधन
 
-self/embedded गेम के SDK कॉल सत्र टोकन से प्रमाणित होते हैं: लॉग-इन C-छोर `GET /api/v1/game/session?game_id={game_id}` कॉल करके टोकन जारी करता है (TTL 5 मिनट, केवल `self` / `embedded` गेम):
+self/embedded गेम के SDK कॉल सत्र टोकन से प्रमाणित होते हैं: लॉग-इन C-छोर `GET /api/v1/game/session?game_id={game_id}` कॉल करके टोकन जारी करता है (TTL 5 मिनट, केवल `self` / `embedded` गेम)। यह टोकन केवल-पढ़ने योग्य है:
 
 ```
 GET /api/v1/game/session?game_id=1234567890
@@ -284,7 +308,7 @@ POST /api/game/balance
 Authorization: Bearer <payload>.<signature>
 ```
 
-`SdkSessionAuth` मिडलवेयर HMAC-SHA256 हस्ताक्षर और वैधता जाँचता है; `user_id` केवल टोकन से लिया जाता है (रिक्वेस्ट बॉडी उसे बदल नहीं सकती)। समाप्ति पर दोबारा जारी करें और `/api/game/balance`, `/api/game/bet`, `/api/game/settle`, `/api/game/refund` कॉल करने में उपयोग करें।
+`SdkSessionAuth` मिडलवेयर HMAC-SHA256 हस्ताक्षर और वैधता जाँचता है; `user_id` केवल टोकन से लिया जाता है (रिक्वेस्ट बॉडी उसे बदल नहीं सकती)। टोकन में `role` भी होता है: `GET /api/v1/game/session` केवल `role=read` जारी करता है, इसलिए पढ़ने वाला एंडपॉइंट `/api/game/balance` सामान्य रूप से काम करता है, जबकि लिखने वाले एंडपॉइंट `/api/game/bet`, `/api/game/settle` और `/api/game/refund` को `role=server` चाहिए। यह टोकन केवल `game.api_secret` रखने वाला पक्ष ही `POST /api/provider/session-token` से प्राप्त कर सकता है (बाकी `/api/provider/*` कॉल की तरह HMAC हस्ताक्षरित, TTL 120 सेकंड, एक ही `user_id` से बंधा)। पहले जारी किए गए बिना `role` वाले टोकन भी केवल-पढ़ने योग्य माने जाते हैं।
 
 ## 6. गेम कॉन्फ़िगरेशन
 

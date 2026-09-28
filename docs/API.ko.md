@@ -1621,7 +1621,7 @@ Retry-After: 60
 
 ## 7. 신규 API (v2.0 생태계 확장)
 
-### 7.1 Provider API — 게임사 콜백 인터페이스
+### 7.1 Provider API — 게임사 인터페이스
 
 **인증 방식**: HMAC-SHA256 서명 (X-Game-Id + X-Timestamp + X-Signature)
 **시간 창**: 5분
@@ -1710,6 +1710,29 @@ Retry-After: 60
   }
 }
 ```
+
+#### POST /api/provider/session-token — 서버 세션 토큰 발급
+
+```
+요청 헤더:
+  X-Game-Id: 1234567890
+  X-Timestamp: 1716400830
+  X-Signature: abc123...
+
+요청: {
+  "user_id": 1234567890
+}
+
+응답: {
+  "code": 0,
+  "data": {
+    "token": "<payload>.<signature>",
+    "expires_in": 120
+  }
+}
+```
+
+> **사용법**: SDK 쓰기 엔드포인트 `/api/game/bet`, `/api/game/settle`, `/api/game/refund`를 호출할 때 반환된 `token`을 `Authorization: Bearer <token>`으로 전달합니다(`/api/game/balance`에도 사용 가능). 토큰은 발급 후 120초 동안 유효합니다.
 
 ### 7.2 티켓 API
 

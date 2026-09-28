@@ -1711,6 +1711,29 @@ Retry-After: 60
 }
 ```
 
+#### POST /api/provider/session-token — إصدار رمز جلسة الخادم
+
+```
+رؤوس الطلب:
+  X-Game-Id: 1234567890
+  X-Timestamp: 1716400830
+  X-Signature: abc123...
+
+الطلب: {
+  "user_id": 1234567890
+}
+
+الاستجابة: {
+  "code": 0,
+  "data": {
+    "token": "<payload>.<signature>",
+    "expires_in": 120
+  }
+}
+```
+
+> **الاستخدام**: مرِّر الرمز `token` المُعاد كـ `Authorization: Bearer <token>` عند استدعاء نقاط نهاية الكتابة في SDK وهي `/api/game/bet` و`/api/game/settle` و`/api/game/refund` (ويعمل أيضًا مع `/api/game/balance`)؛ الرمز صالح لمدة 120 ثانية من الإصدار.
+
 ### 7.2 واجهات التذاكر
 
 #### GET /api/v1/ticket/list — قائمة التذاكر

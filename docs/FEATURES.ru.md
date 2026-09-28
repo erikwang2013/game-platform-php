@@ -78,8 +78,8 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | Домен | Функция | Статус |
 |----|------|------|
 | Подключение игр | абстракция GameProvider (Self/ThirdParty) + подпись HMAC-SHA256 | выполнено |
-| Игровые колбэки | шлюз Provider API (balance/bet/settle/refund) + middleware ProviderAuth | выполнено |
-| Игровые сессии | Токен сессии SDK: подпись HMAC-SHA256 + TTL 5 минут (выпускает `GET /api/v1/game/session`, проверяет `SdkSessionAuth`) | выполнено |
+| Вызовы игровой стороны | шлюз Provider API (balance/bet/settle/refund/session-token) + middleware ProviderAuth | выполнено |
+| Игровые сессии | Токен сессии SDK: подпись HMAC-SHA256 (проверяет `SdkSessionAuth`); токен чтения: TTL 5 минут, выпускает `GET /api/v1/game/session` (только `role=read`); токен записи: TTL 120 секунд, выпускает `POST /api/provider/session-token` (требуется `game.api_secret`) | выполнено |
 | Тикеты | создание/ответ в C-приложении + обработка/назначение/закрытие в админке, 5 типов тикетов | выполнено |
 | Верификация email | 6-значный код, истечение Redis 10 минут, лимит повторной отправки 60 секунд | выполнено |
 | Пуш-уведомления | PushService (FCM/APNs/Huawei) + модель DeviceToken | выполнено |
@@ -178,7 +178,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | POST | /admin/v1/ticket/{id}/close | закрытие тикета |
 | POST | /admin/v1/ticket/{id}/assign | назначение обработчика |
 
-## 4. Provider API (колбэки игровой стороны)
+## 4. Provider API (вызовы игровой стороны)
 
 | Метод | Путь | Описание | Аутентификация |
 |------|------|------|------|
@@ -186,6 +186,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | POST | /api/provider/bet | уведомление о ставке | HMAC-SHA256 |
 | POST | /api/provider/settle | уведомление о расчёте | HMAC-SHA256 |
 | POST | /api/provider/refund | уведомление о возврате | HMAC-SHA256 |
+| POST | /api/provider/session-token | выпуск серверного токена сессии | HMAC-SHA256 |
 
 Алгоритм подписи: `HMAC-SHA256(game_id:timestamp:method:path:body, api_secret)`
 Заголовки запроса: `X-Game-Id` + `X-Timestamp` + `X-Signature`
