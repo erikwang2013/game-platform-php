@@ -113,3 +113,7 @@ php start.php start -d     # 后台运行
 cd service
 SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
 ```
+
+## 致谢
+
+感谢安全研究者 **kta1kri** 通过外部安全报告负责任地披露自研 / 内嵌游戏结算铸币漏洞；该问题已于 v1.3.38 修复。

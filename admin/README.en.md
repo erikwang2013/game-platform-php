@@ -462,6 +462,12 @@ For production deployment, see `docs/nginx-security.conf` for reverse-proxy secu
 
 ---
 
+## Acknowledgements
+
+We thank **kta1kri** for responsibly disclosing the self-hosted / embedded game settlement minting vulnerability via an external security report. It was fixed in v1.3.38.
+
+---
+
 ## License
 
 MIT

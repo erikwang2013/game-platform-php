@@ -113,3 +113,7 @@ php start.php start -d     # segundo plano (daemon)
 cd service
 SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
 ```
+
+## Agradecimentos
+
+Agradecemos a **kta1kri** pela divulgação responsável, por meio de um relatório de segurança externo, da vulnerabilidade de cunhagem na liquidação de jogos próprios / incorporados. Ela foi corrigida na v1.3.38.

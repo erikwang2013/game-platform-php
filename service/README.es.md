@@ -113,3 +113,7 @@ php start.php start -d     # segundo plano (demonio)
 cd service
 SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
 ```
+
+## Agradecimientos
+
+Agradecemos a **kta1kri** la divulgación responsable, mediante un informe de seguridad externo, de la vulnerabilidad de acuñación en la liquidación de juegos propios / integrados. Se corrigió en la v1.3.38.

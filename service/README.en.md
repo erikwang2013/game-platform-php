@@ -113,3 +113,7 @@ php start.php start -d     # background (daemon)
 cd service
 SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
 ```
+
+## Acknowledgements
+
+We thank **kta1kri** for responsibly disclosing the self-hosted / embedded game settlement minting vulnerability via an external security report. It was fixed in v1.3.38.

@@ -113,3 +113,7 @@ php start.php start -d     # Hintergrund (Daemon)
 cd service
 SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
 ```
+
+## Danksagung
+
+Wir danken **kta1kri** für die verantwortungsvolle Offenlegung der Schwachstelle zur Münzprägung bei der Abrechnung selbst entwickelter / eingebetteter Spiele über einen externen Sicherheitsbericht. Sie wurde in v1.3.38 behoben.

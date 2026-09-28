@@ -462,6 +462,12 @@ GitHub Actions 持续集成流水线：`.github/workflows/ci.yml`
 
 ---
 
+## 致谢
+
+感谢安全研究者 **kta1kri** 通过外部安全报告负责任地披露自研 / 内嵌游戏结算铸币漏洞；该问题已于 v1.3.38 修复。
+
+---
+
 ## License
 
 MIT

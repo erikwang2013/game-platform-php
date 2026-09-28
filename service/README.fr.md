@@ -113,3 +113,7 @@ php start.php start -d     # arrière-plan (démon)
 cd service
 SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
 ```
+
+## Remerciements
+
+Nous remercions **kta1kri** d'avoir divulgué de manière responsable, via un rapport de sécurité externe, la vulnérabilité de création de monnaie lors du règlement des jeux propriétaires / intégrés. Elle a été corrigée dans la v1.3.38.

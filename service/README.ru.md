@@ -113,3 +113,7 @@ php start.php start -d     # в фоне (демон)
 cd service
 SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
 ```
+
+## Благодарности
+
+Мы благодарим **kta1kri** за ответственное раскрытие через внешний отчёт о безопасности уязвимости чеканки при расчёте собственных / встроенных игр. Она исправлена в v1.3.38.

@@ -113,3 +113,7 @@ php start.php start -d     # في الخلفية (daemon)
 cd service
 SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
 ```
+
+## شكر وتقدير
+
+نتقدّم بالشكر إلى **kta1kri** على الإفصاح المسؤول، عبر تقرير أمني خارجي، عن ثغرة سكّ العملة في تسوية الألعاب المطوَّرة داخليًا / المضمَّنة. وقد تم إصلاحها في الإصدار v1.3.38.

@@ -462,6 +462,12 @@ Untuk deployment produksi, lihat `docs/nginx-security.conf` untuk konfigurasi pe
 
 ---
 
+## Ucapan Terima Kasih
+
+Kami berterima kasih kepada **kta1kri** atas pengungkapan secara bertanggung jawab, melalui laporan keamanan eksternal, kerentanan pencetakan koin pada penyelesaian game buatan sendiri / tertanam. Masalah ini telah diperbaiki pada v1.3.38.
+
+---
+
 ## License
 
 MIT

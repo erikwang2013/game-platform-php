@@ -462,6 +462,12 @@ Für die Produktionsbereitstellung `docs/nginx-security.conf` als Referenz zur H
 
 ---
 
+## Danksagung
+
+Wir danken **kta1kri** für die verantwortungsvolle Offenlegung der Schwachstelle zur Münzprägung bei der Abrechnung selbst entwickelter / eingebetteter Spiele über einen externen Sicherheitsbericht. Sie wurde in v1.3.38 behoben.
+
+---
+
 ## License
 
 MIT

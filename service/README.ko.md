@@ -113,3 +113,7 @@ php start.php start -d     # 백그라운드
 cd service
 SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
 ```
+
+## 감사의 글
+
+자체 / 내장 게임 정산의 화폐 발행(민팅) 취약점을 외부 보안 보고를 통해 책임 있게 공개해 주신 **kta1kri** 님께 감사드립니다. 해당 문제는 v1.3.38에서 수정되었습니다.

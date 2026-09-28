@@ -462,6 +462,12 @@ Para despliegues en producción consulta `docs/nginx-security.conf` para el refu
 
 ---
 
+## Agradecimientos
+
+Agradecemos a **kta1kri** la divulgación responsable, mediante un informe de seguridad externo, de la vulnerabilidad de acuñación en la liquidación de juegos propios / integrados. Se corrigió en la v1.3.38.
+
+---
+
 ## License
 
 MIT

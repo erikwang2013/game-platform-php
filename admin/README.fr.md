@@ -462,6 +462,12 @@ Pour la production, se référer à `docs/nginx-security.conf` pour le durcissem
 
 ---
 
+## Remerciements
+
+Nous remercions **kta1kri** d'avoir divulgué de manière responsable, via un rapport de sécurité externe, la vulnérabilité de création de monnaie lors du règlement des jeux propriétaires / intégrés. Elle a été corrigée dans la v1.3.38.
+
+---
+
 ## License
 
 MIT

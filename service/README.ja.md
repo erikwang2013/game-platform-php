@@ -113,3 +113,7 @@ php start.php start -d     # バックグラウンド
 cd service
 SERVICE_JWT_SECRET_KEY=test-jwt-secret-change-me php vendor/bin/phpunit
 ```
+
+## 謝辞
+
+自研 / 内蔵ゲームの精算における「通貨鋳造（ミント）」脆弱性を、外部セキュリティ報告を通じて責任ある形で開示してくださった **kta1kri** 氏に感謝いたします。本問題は v1.3.38 で修正済みです。

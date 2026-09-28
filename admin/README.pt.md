@@ -462,6 +462,12 @@ Para deploy em produção, consulte `docs/nginx-security.conf` para reforço de 
 
 ---
 
+## Agradecimentos
+
+Agradecemos a **kta1kri** pela divulgação responsável, por meio de um relatório de segurança externo, da vulnerabilidade de cunhagem na liquidação de jogos próprios / incorporados. Ela foi corrigida na v1.3.38.
+
+---
+
 ## License
 
 MIT
