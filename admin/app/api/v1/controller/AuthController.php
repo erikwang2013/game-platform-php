@@ -65,8 +65,8 @@ class AuthController
             return json(['code' => 422, 'message' => $validator->errors()->first(), 'data' => []]);
         }
 
-        // 验证点击验证码
-        if (!captcha_verify($request->input('captcha_key'), 'click', captcha_clicks($request->input('clicks')))) {
+        // 验证点击验证码（身份按客户端 IP 归属，见 support/helpers.php:captcha_verify_from_ip）
+        if (!captcha_verify_from_ip($request->getRealIp(), $request->input('captcha_key'), 'click', captcha_clicks($request->input('clicks')))) {
             return json(['code' => 422, 'message' => '验证码错误，请重试', 'data' => []]);
         }
 
@@ -167,7 +167,7 @@ class AuthController
             return json(['code' => 422, 'message' => $validator->errors()->first(), 'data' => []]);
         }
 
-        if (!captcha_verify($request->input('captcha_key'), 'click', captcha_clicks($request->input('clicks')))) {
+        if (!captcha_verify_from_ip($request->getRealIp(), $request->input('captcha_key'), 'click', captcha_clicks($request->input('clicks')))) {
             return json(['code' => 422, 'message' => '验证码错误，请重试', 'data' => []]);
         }
 
@@ -231,7 +231,7 @@ class AuthController
 
         try {
             $jwt = self::getJWT();
-            $payload = $jwt->decode($refreshToken);
+            $payload = $jwt->decode($refreshToken, true);
 
             // 刷新时更新最后登录时间和IP
             $userId = $payload['sub'] ?? 0;

@@ -75,7 +75,7 @@ class CaptchaController
             return json(['code' => 422, 'message' => '缺少验证参数', 'data' => []]);
         }
 
-        $valid = captcha_verify($key, 'click', captcha_clicks($clicks));
+        $valid = captcha_verify_from_ip($request->getRealIp(), $key, 'click', captcha_clicks($clicks));
 
         return json([
             'code' => $valid ? 0 : 422,

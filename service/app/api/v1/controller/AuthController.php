@@ -186,7 +186,7 @@ class AuthController extends BaseController
             // 缺省回退 Authorization 头（读 currentToken()，供 header 型客户端使用）
             $refreshToken = $request->input('refresh_token');
             $newRefresh = jwt_wrapper()->refresh(is_string($refreshToken) && $refreshToken !== '' ? $refreshToken : null);
-            $payload = jwt_wrapper()->decode($newRefresh);
+            $payload = jwt_wrapper()->decode($newRefresh, true);
             $sub = (int) ($payload['sub'] ?? 0);
             if ($sub <= 0) {
                 return $this->fail('Invalid refresh token', 401);
