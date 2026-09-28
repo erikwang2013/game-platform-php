@@ -11,7 +11,6 @@ use Webman\Http\Request;
 use Webman\Http\Response;
 use support\Redis;
 use Erikwang2013\Jwt\JWT;
-use Erikwang2013\Jwt\JWTFactory;
 use Erikwang2013\Jwt\JWTException;
 
 class AdminAuth
@@ -21,8 +20,7 @@ class AdminAuth
     private static function getJWT(): JWT
     {
         if (self::$jwt === null) {
-            $config = config('plugin.erikwang2013.jwt.jwt', []);
-            self::$jwt = JWTFactory::createFromConfig($config);
+            self::$jwt = jwt_instance();
         }
         return self::$jwt;
     }

@@ -9,6 +9,7 @@ use Erikwang2013\Poster\Captcha\CaptchaManager;
 use Erikwang2013\Poster\Drivers\DriverFactory;
 use Erikwang2013\Poster\PosterConfig;
 use Erikwang2013\Poster\Storage\StorageFactory;
+use common\JwtRedisClient;
 use Illuminate\Translation\ArrayLoader;
 use Illuminate\Translation\Translator;
 use Illuminate\Validation\Factory;
@@ -27,17 +28,37 @@ function validator(array $data, array $rules, array $messages = [], array $attri
 
 /**
  * JWT 便捷包装
+ *
+ * 注意：本函数在 admin 树里是**死代码** —— vendor 的 Laravel/helpers.php 已用同名
+ * `jwt()`（返回 app('erik.jwt')）占据该函数名，function_exists 守卫恒为真，本函数永不注册。
+ * admin 侧真正用的入口是 jwt_instance()。
  */
 if (!function_exists('jwt')) {
     function jwt(): \Erikwang2013\Jwt\JwtWrapper
     {
         static $wrapper = null;
         if ($wrapper === null) {
-            $jwt = JWTFactory::createFromConfig(config('plugin.erikwang2013.jwt.jwt'));
+            $jwt = jwt_instance();
             $wrapper = new \Erikwang2013\Jwt\JwtWrapper($jwt);
         }
         return $wrapper;
     }
+}
+
+/**
+ * 裸 JWT 实例（AdminAuth / AuthController / ProfileController 的 getJWT() 用）。
+ *
+ * 第三个参数 $connections 只在 storage.type=redis 时被读取（file 模式下 resolver 永不被调用），
+ * 故无条件传入不改变今日默认行为；不传则把 JWT_STORAGE_TYPE 设成 redis 会在构造期就抛
+ * "Redis resolver callable required" ⇒ 管理端整条鉴权链 500。resolver 的形状见 common\JwtRedisClient。
+ */
+function jwt_instance(): JWT
+{
+    return JWTFactory::createFromConfig(
+        config('plugin.erikwang2013.jwt.jwt', []),
+        null,
+        ['redis' => static fn () => new JwtRedisClient()]
+    );
 }
 
 /**

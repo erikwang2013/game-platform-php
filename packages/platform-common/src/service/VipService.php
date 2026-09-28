@@ -7,6 +7,7 @@ namespace common\service;
 use common\model\UserVip;
 use common\model\VipLevel;
 use common\model\ExpLog;
+use common\SnowflakeService;
 use support\Db;
 
 class VipService
@@ -22,7 +23,9 @@ class VipService
             $vip = UserVip::where('user_id', $userId)->lockForUpdate()->first();
             if (!$vip) {
                 $vip = new UserVip();
-                $vip->id = (int)(date('YmdHis') . random_int(10000, 99999));
+                // 主键走 snowflake（game_user_vip.id 注释即「由snowflake生成」）；旧写法同秒仅 90000 取值，
+                // 撞号会以唯一键冲突打断整个 VIP 经验发放事务。
+                $vip->id = SnowflakeService::generate();
                 $vip->user_id = $userId;
                 $vip->level = 0;
                 $vip->exp = 0;
@@ -41,7 +44,7 @@ class VipService
             $vip->save();
 
             $log = new ExpLog();
-            $log->id = (int)(date('YmdHis') . random_int(10000, 99999));
+            $log->id = SnowflakeService::generate();
             $log->user_id = $userId;
             $log->amount = $amount;
             $log->source = $source;

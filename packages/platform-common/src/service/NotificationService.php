@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace common\service;
 
 use common\model\Notification;
+use common\SnowflakeService;
 
 class NotificationService
 {
@@ -46,7 +47,10 @@ class NotificationService
     ): void {
         try {
             $notif = new Notification();
-            $notif->id = (int)(date('YmdHis') . random_int(10000, 99999));
+            // 主键走 snowflake（与全仓 27 处一致）；旧写法 (int)(date('YmdHis').random_int(10000,99999))
+            // 同秒只有 90000 个取值，n 笔/秒时单秒撞号概率约 n²/180000（n=300 时约 50%），
+            // 而这里整段被 catch (\Throwable) 静默吞掉 ⇒ 撞号即通知丢失。
+            $notif->id = SnowflakeService::generate();
             $notif->user_id = $userId;
             $notif->type = $type;
             $notif->title = $title;
