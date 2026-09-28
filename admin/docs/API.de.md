@@ -1971,6 +1971,7 @@ Risiko-Cluster-Erkennung, manuelle Bestätigung und Bearbeitung auffälliger Ben
 | GET | /admin/v1/risk/users | Warteschlange auffälliger Benutzer (score_min=Obergrenze des Vertrauenswerts, from/to=Zeitfenster der letzten Treffer) | JWT + RBAC |
 | GET | /admin/v1/risk/users/{hashid}/timeline | Risiko-Zeitachse des Benutzers (zusammengeführte Risiko-, Spiel- und Anti-Cheat-Ereignisse, absteigend nach Zeit) | JWT + RBAC |
 | POST | /admin/v1/risk/users/{hashid}/hold | Verfügbares Plattformguthaben des Benutzers sperren und in risk_log protokollieren | JWT + RBAC |
+| POST | /admin/v1/risk/users/{hashid}/release | Risiko-Sperre aufheben (amount optional, standardmäßig vollständig) und in risk_log protokollieren | JWT + RBAC |
 
 ### 19.3 VIP-Stufen
 

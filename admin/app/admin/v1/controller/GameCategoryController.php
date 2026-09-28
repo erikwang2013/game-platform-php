@@ -83,6 +83,18 @@ class GameCategoryController extends BaseController
             return $this->fail('分类不存在', 404);
         }
 
+        // 镜像 create 的规则（sometimes：局部更新），并补齐 create 漏掉、而 update 会写的 status：
+        // 列定义是 TINYINT UNSIGNED 0=禁用 1=启用，放任任意整数会让分类在前端静默消失。
+        $validator = validator($request->all(), [
+            'name'   => 'sometimes|required|string|max:50',
+            'icon'   => 'sometimes|nullable|string|max:255',
+            'sort'   => 'sometimes|nullable|integer|min:0',
+            'status' => 'sometimes|required|integer|in:0,1',
+        ]);
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
+        }
+
         $category->fill($request->only([
             'name', 'icon', 'sort', 'status',
         ]));

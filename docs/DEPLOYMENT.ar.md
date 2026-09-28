@@ -706,4 +706,5 @@ mysql -u game-platform -p game-platform < install/新迁移文件.sql
 # 4. إعادة التشغيل السلس (دون انقطاع الخدمة)
 cd /opt/game-platform/admin && php start.php reload
 cd /opt/game-platform/service && php start.php reload
+# ملاحظة: عملية event-subscriber في service محددة بـ reloadable=false، وreload لا يحدّث شيفرتها؛ بعد تعديلها أعد تشغيل العملية بالكامل (php start.php restart)؛ وفي شجرة admin فإن risk-ip-cron / monitor محددتان أيضًا بـ reloadable=false والسلوك نفسه
 ```

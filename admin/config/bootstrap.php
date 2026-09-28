@@ -19,6 +19,9 @@
 return [
     support\bootstrap\Session::class,
     support\bootstrap\Database::class,
+    // 事件出口接线：把 common\service\EventPublisher（默认 no-op）注册到共享的 OutboxWriter，
+    // 否则 admin 侧 PayoutService::markCompleted() 的 withdraw.completed 永远发不出去
+    app\bootstrap\EventPublisherBootstrap::class,
     // poster-php 项目配置合并（验证码驱动/存储），未注册则使用包内默认配置
     Erikwang2013\Poster\Adapters\Webman\CaptchaPlugin::class,
 ];

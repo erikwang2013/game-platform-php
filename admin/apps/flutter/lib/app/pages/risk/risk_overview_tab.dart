@@ -51,7 +51,18 @@ class RiskOverviewTab extends GetView<RiskOverviewController> {
     return Obx(() {
       if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
       final o = ctrl.overview.value;
-      if (o == null) return const Center(child: Text('无数据'));
+      if (o == null) {
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset('assets/mascot.png', width: 120),
+              const SizedBox(height: 12),
+              const Text('无数据'),
+            ],
+          ),
+        );
+      }
       final total = (o['total'] as Map<String, dynamic>?) ?? {};
 
       return SingleChildScrollView(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

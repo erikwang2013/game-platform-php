@@ -706,4 +706,5 @@ mysql -u game-platform -p game-platform < install/新迁移文件.sql
 # 4. सुचारू पुनः प्रारंभ (सेवा बाधित नहीं होती)
 cd /opt/game-platform/admin && php start.php reload
 cd /opt/game-platform/service && php start.php reload
+# ध्यान: service की event-subscriber प्रक्रिया reloadable=false है, reload उसका कोड रीफ़्रेश नहीं करता; बदलाव के बाद पूरी प्रक्रिया पुनः प्रारंभ करें (php start.php restart); admin ट्री की risk-ip-cron / monitor भी reloadable=false हैं और वही व्यवहार करती हैं
 ```

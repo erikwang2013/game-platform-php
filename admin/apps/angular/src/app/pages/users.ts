@@ -2,7 +2,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { Api, Page, Row } from '../core/api.service';
 import { idOf, kvOf } from '../core/render';
-import { errText } from '../core/util';
+import { errText, num } from '../core/util';
 import { ListBase } from '../core/list-base';
 import { Drawer, Pager, StateBlock, Tabs } from '../components/ui';
 import { Table } from '../components/table';
@@ -128,15 +128,38 @@ export class Users extends ListBase<Row> {
     }
   }
 
+  /**
+   * 平台用户封禁/解封 —— 走 PUT /platform/user/{hashid}（PlatformUserController::update，
+   * 写的是平台 user 表，status 收 int 0/1）。
+   *
+   * 原先走 POST /user/batch/status 是错的：那是【管理员】端点（认 AdminUser，Apidoc 标注
+   * "批量启用或禁用管理员用户"），我们却把平台用户的 hashid 递进去。且它当时把 status 前置转型
+   * —— `(int)'banned'` 与 `(int)'normal'` 都等于 0，封禁与解封一起落成 0 = 禁用；
+   * 真问题不是"落成相反的状态"，而是【不该静默解释非法输入】
+   * （admin/docs/API.md:754 明写非 0/1 的 status 应当 422），加上 count 报的是请求条数
+   * 而非受影响行数，于是界面显示成功、实际可能一行都没改。
+   * 后端两点已修：UserController::batchStatus 改先原样比白名单再转 int（口径见
+   * UserBatchAffectedRowsTest）。
+   */
   protected async status(row: Row, value: string): Promise<void> {
     const id = idOf(row);
     if (!id) return;
+    this.error.set('');
+    const want = value === 'banned' ? 0 : 1;
     try {
-      await this.api.post(U + 'user/batch/status', { ids: [id], status: value });
-      this.detail.set(null);
-      await this.load();
+      await this.api.request('PUT', U + 'platform/user/' + id, { status: want });
     } catch (e) {
       this.error.set(errText(e));
+      return;
+    }
+    this.detail.set(null);
+    await this.load();
+    // 成功以回读到的真实状态为准，不以"请求发出去了"为准
+    const after = this.rows().find((r) => idOf(r) === id);
+    if (!after) {
+      this.error.set('操作已提交，但该用户已不在当前页，请刷新确认');
+    } else if (num(after['status']) !== want) {
+      this.error.set(`状态未生效：服务端仍为 ${num(after['status'])}`);
     }
   }
 

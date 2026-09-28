@@ -136,7 +136,7 @@ struct UserDetailPage {
       // 顶栏
       Row() {
         Button({ type: ButtonType.Circle }) {
-          Image($rawfile('back.png')).width(24).height(24)
+          Image($r('app.media.ic_back')).width(24).height(24)
         }
         .width(36).height(36)
         .backgroundColor('#FFFFFF')

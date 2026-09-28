@@ -71,20 +71,24 @@ class WalletService
             return false;
         }
 
-        return self::doMutate($userId, $s, '-' . $amount, self::TYPE_LOCK, $refType, $refId, '冻结余额', false, false);
+        return self::doMutate($userId, $s, '-' . $amount, self::TYPE_LOCK, $refType, $refId, '冻结余额', true, false);
     }
 
     /**
      * 解冻：frozen -= n, available += n，流水 type=unlock。
+     *
+     * $refType/$refId 必填，且应指向【被释放的那笔冻结】——unlock 自己只搬桶、不看是哪一笔，
+     * 全部可追溯性都压在这两个字段上。旧写法传 ''/0 ⇒ 释放行与冻结行在流水上无法配对，
+     * 运营看到「冻结」却找不到对应的「解冻」，也无法判断哪笔被放过。
      */
-    public static function unlock(int $userId, WalletScope $s, string $amount): bool
+    public static function unlock(int $userId, WalletScope $s, string $amount, string $refType, int $refId): bool
     {
         $amount = self::str($amount);
         if (bccomp($amount, '0', self::SCALE) <= 0) {
             return false;
         }
 
-        return self::doMutate($userId, $s, $amount, self::TYPE_UNLOCK, '', 0, '解冻余额', true, false);
+        return self::doMutate($userId, $s, $amount, self::TYPE_UNLOCK, $refType, $refId, '解冻余额', true, false);
     }
 
     /**
@@ -118,8 +122,9 @@ class WalletService
 
     /**
      * 事务内落账。
-     * $fromFrozen=true 时改动冻结列（unlock 专用）；
-     * $trackStats=false 用于 lock/unlock/reconcile（桶间转移或修正，不计累计收支）。
+     * $fromFrozen=true = 桶间转移（lock/unlock）：frozen 走 -delta、available 走 +delta，两桶反向移动；
+     * **不是 unlock 专用** —— lock 也必须传 true，否则冻结会静默吞掉可用余额（本批修掉的资金缺陷）。
+     * $trackStats=false 用于 lock/unlock/reconcile（桶间转移或修正，不计累计收支列）。
      */
     private static function doMutate(
         int $userId,
@@ -149,10 +154,11 @@ class WalletService
     /**
      * 冻结感知地更新可用余额（调用方需保证事务 + 行锁）。
      * 先校验后建户，保证失败路径零写入。
+     * $trackStats=false 时不动累计收支列（lock/unlock/reconcile 只做桶间转移或余额修正）。
      *
      * @return array{ok:bool,balance_after:string}
      */
-    private static function apply(int $userId, WalletScope $s, string $delta, bool $fromFrozen): array
+    private static function apply(int $userId, WalletScope $s, string $delta, bool $fromFrozen, bool $trackStats): array
     {
         $delta = self::str($delta);
         $row = self::find($userId, $s);
@@ -183,10 +189,14 @@ class WalletService
         $row['frozen_balance'] = $frozenAfter;
         if (!$s->isGame()) {
             $row['version'] = (int) $row['version'] + 1;
-            if (bccomp($delta, '0', self::SCALE) > 0) {
-                $row['total_earned'] = bcadd(self::str((string) $row['total_earned']), $delta, self::SCALE);
-            } elseif (bccomp($delta, '0', self::SCALE) < 0) {
-                $row['total_spent'] = bcadd(self::str((string) $row['total_spent']), ltrim($delta, '-'), self::SCALE);
+            // 累计列只认真实收支：lock/unlock 的 $trackStats=false，否则一次「冻结→解冻」会把
+            // total_spent 与 total_earned 同时虚增同一笔金额（累计收支列会被下游直接展示；且管理端 hold 是全仓唯一冻结入口）
+            if ($trackStats) {
+                if (bccomp($delta, '0', self::SCALE) > 0) {
+                    $row['total_earned'] = bcadd(self::str((string) $row['total_earned']), $delta, self::SCALE);
+                } elseif (bccomp($delta, '0', self::SCALE) < 0) {
+                    $row['total_spent'] = bcadd(self::str((string) $row['total_spent']), ltrim($delta, '-'), self::SCALE);
+                }
             }
         }
         // ponytail: 游戏币表无 version 列，互斥靠 FOR UPDATE 行锁

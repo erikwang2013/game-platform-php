@@ -97,6 +97,19 @@ class CountryConfigController extends BaseController
             return $this->fail('配置不存在', 404);
         }
 
+        // 镜像 store 的规则，前缀 sometimes：update 是局部更新，缺省的字段不该被判 required。
+        // store 没管的 status 按列定义收口（TINYINT UNSIGNED，0=禁用 1=启用）；min_deposit 是金额 ⇒ 非负。
+        $validator = validator($request->all(), [
+            'currency'         => 'sometimes|required|string|size:3',
+            'payment_methods'  => 'sometimes|nullable|string',
+            'withdraw_methods' => 'sometimes|nullable|string',
+            'min_deposit'      => 'sometimes|nullable|numeric|min:0',
+            'status'           => 'sometimes|required|integer|in:0,1',
+        ]);
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
+        }
+
         $config->fill($request->only([
             'currency', 'payment_methods', 'withdraw_methods', 'min_deposit', 'status',
         ]));

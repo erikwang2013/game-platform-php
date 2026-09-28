@@ -72,7 +72,18 @@ class RiskUserTab extends GetView<RiskUserController> {
       const SizedBox(height: 8),
       Expanded(child: Obx(() {
         if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
-        if (ctrl.items.isEmpty) return const Center(child: Text('无异常用户'));
+        if (ctrl.items.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset('assets/mascot.png', width: 120),
+                const SizedBox(height: 12),
+                const Text('无异常用户'),
+              ],
+            ),
+          );
+        }
         return ListView.builder(
           itemCount: ctrl.items.length,
           itemBuilder: (_, i) {

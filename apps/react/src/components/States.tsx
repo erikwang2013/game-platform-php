@@ -35,6 +35,13 @@ export function ErrorBox({ message, onRetry }: { message: string; onRetry?: () =
 export function Empty({ title = '暂无数据', hint }: { title?: string; hint?: string }) {
   return (
     <div className="state">
+      {/* 吉祥物小骰（Dicey）：纯装饰，语义由下面的文案承载；随 BASE_URL 走子路径部署 */}
+      <img
+        className="state__art"
+        src={`${import.meta.env.BASE_URL}mascot.svg`}
+        alt=""
+        aria-hidden="true"
+      />
       <p className="state__k">{title}</p>
       {hint && <p className="muted small" style={{ margin: 0 }}>{hint}</p>}
     </div>

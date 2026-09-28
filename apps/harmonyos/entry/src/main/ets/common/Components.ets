@@ -64,9 +64,16 @@ export struct EmptyView {
 
   build() {
     Column() {
+      // 吉祥物小骰（Dicey）：240x200 的 6:5 比例，资源见 resources/base/media/mascot.svg
+      Image($r('app.media.mascot'))
+        .width(72)
+        .height(60)
+        .opacity(0.9)
+
       Text(this.message)
         .fontSize(14)
         .fontColor('#999999')
+        .margin({ top: 12 })
     }
     .justifyContent(FlexAlign.Center)
     .width('100%')

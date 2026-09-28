@@ -1971,6 +1971,7 @@ DELETE /admin/v1/payment/method/{hashid}
 | GET | /admin/v1/risk/users | असामान्य उपयोगकर्ता सूची (score_min=विश्वास स्कोर की ऊपरी सीमा, from/to=अंतिम हिट समय विंडो) | JWT + RBAC |
 | GET | /admin/v1/risk/users/{hashid}/timeline | उपयोगकर्ता रिस्क टाइमलाइन (रिस्क/गेम/एंटी-चीट इवेंट मर्ज, समय के अवरोही क्रम में) | JWT + RBAC |
 | POST | /admin/v1/risk/users/{hashid}/hold | उपयोगकर्ता का प्लेटफ़ॉर्म पर उपलब्ध बैलेंस फ्रीज़ करें और risk_log में दर्ज करें | JWT + RBAC |
+| POST | /admin/v1/risk/users/{hashid}/release | जोखिम फ़्रीज़ हटाएँ (amount वैकल्पिक, डिफ़ॉल्ट पूरा) और risk_log में दर्ज करें | JWT + RBAC |
 
 ### 19.3 VIP स्तर
 

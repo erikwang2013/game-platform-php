@@ -7,9 +7,7 @@ declare(strict_types=1);
 
 namespace app\event;
 
-use common\SnowflakeService;
-use app\model\EventOutbox;
-use support\Db;
+use common\service\OutboxWriter;
 use support\Log;
 use support\Redis;
 
@@ -25,7 +23,7 @@ class EventBus
      */
     const RELIABLE_EVENTS = [
         'deposit.completed', 'withdraw.applied', 'withdraw.completed',
-        'exchange.completed', 'risk.alert',
+        'exchange.completed', 'risk.alert', 'wallet.mutated',
     ];
 
     /**
@@ -56,26 +54,13 @@ class EventBus
      * - 调用方已在事务内 → 加入当前事务，业务行与事件行同提交
      * - 调用方不在事务内 → 自动包裹事务
      * 必须把 push() 放在 Db::commit() 之前调用。
+     *
+     * 插入本身是共享层的 common\service\OutboxWriter——admin 侧经 EventPublisher 注册缝
+     * 发布同一个事件时也走它，两棵树只有一份写入实现（列集合/JSON 编码不会漂移）。
      */
     public static function push(string $event, string $eventId, array $payload = []): void
     {
-        if (Db::transactionLevel() > 0) {
-            self::insertOutbox($event, $eventId, $payload);
-        } else {
-            Db::transaction(static fn () => self::insertOutbox($event, $eventId, $payload));
-        }
-    }
-
-    private static function insertOutbox(string $event, string $eventId, array $payload): void
-    {
-        $row = new EventOutbox();
-        $row->id = SnowflakeService::generate();
-        $row->event_id = $eventId; // 幂等键，UNIQUE
-        $row->event = $event;
-        $row->payload = $payload;  // JSON 列
-        $row->occurred_at = date('Y-m-d H:i:s');
-        $row->status = EventOutbox::STATUS_PENDING;
-        $row->save();
+        OutboxWriter::write($event, $eventId, $payload);
     }
 
     /**

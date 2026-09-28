@@ -15,13 +15,13 @@ class Referral extends Model
 
     public $incrementing = false;
     protected $keyType = 'int';
+    public $timestamps = false; // 该表只有 created_at（无 updated_at），Eloquent 写 updated_at 必 Unknown column；created_at 由 DDL 默认值兜
 
     protected $fillable = [
         'referrer_id',
         'referred_id',
         'code',
         'status',
-        'parent_id',
     ];
 
     protected $casts = [

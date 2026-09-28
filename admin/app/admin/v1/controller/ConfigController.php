@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace app\admin\v1\controller;
 
 use erikwang2013\apidoc\annotation as Apidoc;
-use app\model\SystemConfig;
+use common\model\PlatformConfig;
 use support\Request;
 use support\Response;
 
@@ -31,7 +31,7 @@ class ConfigController extends BaseController
         $limit = (int) $request->input('limit', 15);
         $group = $request->input('group', '');
 
-        $query = SystemConfig::query();
+        $query = PlatformConfig::query();
         if ($group !== '') {
             $query->where('group', $group);
         }
@@ -75,14 +75,14 @@ class ConfigController extends BaseController
             return $this->fail($validator->errors()->first(), 422);
         }
 
-        $exists = SystemConfig::where('group', $request->input('group'))
+        $exists = PlatformConfig::where('group', $request->input('group'))
                               ->where('key', $request->input('key'))
                               ->exists();
         if ($exists) {
             return $this->fail('配置项已存在', 422);
         }
 
-        $config = new SystemConfig();
+        $config = new PlatformConfig();
         $config->id          = $this->generateId();
         $config->group       = $request->input('group');
         $config->key         = $request->input('key');
@@ -105,9 +105,21 @@ class ConfigController extends BaseController
     public function update(Request $request, string $hashid): Response
     {
         $id     = $this->decodeId($hashid);
-        $config = SystemConfig::find($id);
+        $config = PlatformConfig::find($id);
         if (!$config) {
             return $this->fail('配置项不存在', 404);
+        }
+
+        // 镜像 store 的 value 规则（sometimes：局部更新），并为 store 漏掉、而 update 会写的
+        // type/description 补上列宽（game_platform_config: type VARCHAR(20)、description VARCHAR(255)）。
+        // type 不做枚举收口：PlatformConfig::get() 对未知 type 走 default 分支返回字符串，不会炸。
+        $validator = validator($request->all(), [
+            'value'       => 'sometimes|required|string',
+            'type'        => 'sometimes|required|string|max:20',
+            'description' => 'sometimes|nullable|string|max:255',
+        ]);
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
         }
 
         if ($request->has('value')) {
@@ -133,7 +145,7 @@ class ConfigController extends BaseController
     public function destroy(Request $request, string $hashid): Response
     {
         $id     = $this->decodeId($hashid);
-        $config = SystemConfig::find($id);
+        $config = PlatformConfig::find($id);
         if (!$config) {
             return $this->fail('配置项不存在', 404);
         }

@@ -1971,6 +1971,7 @@ DELETE /admin/v1/payment/method/{hashid}
 | GET | /admin/v1/risk/users | 异常用户队列（score_min=信任分上限，from/to=最近命中时间窗口） | JWT + RBAC |
 | GET | /admin/v1/risk/users/{hashid}/timeline | 用户风控时间线（合并风控/游戏/反作弊事件，按时间倒序） | JWT + RBAC |
 | POST | /admin/v1/risk/users/{hashid}/hold | 冻结用户平台可用余额并写入 risk_log | JWT + RBAC |
+| POST | /admin/v1/risk/users/{hashid}/release | 解除风险冻结并恢复用户可用余额（amount 可选，默认全额），写入 risk_log | JWT + RBAC |
 
 ### 19.3 VIP 等级
 

@@ -61,7 +61,7 @@ Se crea automáticamente al registrar al usuario; el saldo inicial es 0.
 | Campo | Descripción |
 |------|------|
 | balance | Saldo disponible (recargable, retirable y convertible) |
-| frozen_balance | Saldo congelado (reservado, por ejemplo, en retiros en curso) |
+| frozen_balance | Saldo congelado (ocupado por retenciones de riesgo: hold congela, release libera; los retiros no usan esta columna) |
 | total_earned | Ingresos acumulados |
 | total_spent | Gastos acumulados |
 | version | Número de versión de bloqueo optimista (se incrementa en cada actualización) |

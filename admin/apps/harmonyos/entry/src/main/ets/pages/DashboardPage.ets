@@ -95,7 +95,7 @@ struct DashboardPage {
             promptAction.showToast({ message: '导出功能已触发，查看系统通知' });
           })
 
-        Image($rawfile('avatar.png'))
+        Image($r('app.media.avatar'))
           .width(36)
           .height(36)
           .borderRadius(18)

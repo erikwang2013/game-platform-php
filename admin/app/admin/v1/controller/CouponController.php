@@ -136,6 +136,25 @@ class CouponController extends BaseController
             return $this->fail('该优惠券已有用户领取，无法修改', 400);
         }
 
+        // 镜像 create 的 3 条规则（sometimes：局部更新），并补齐 create 漏掉、而 update 会写的字段 ——
+        // 面额/门槛/折扣上限是金额、总量与限领是计数，落进 DECIMAL(18,4) UNSIGNED / INT UNSIGNED 列，
+        // 负数会被 MySQL 截成 0（严格模式下直接报错），得在边界上挡。
+        $validator = validator($request->all(), [
+            'name'         => 'sometimes|required|string|max:100',
+            'type'         => 'sometimes|required|string|in:fixed,rate',
+            'value'        => 'sometimes|required|numeric|min:0.0001',
+            'min_amount'   => 'sometimes|nullable|numeric|min:0',
+            'max_discount' => 'sometimes|nullable|numeric|min:0',
+            'total_qty'    => 'sometimes|nullable|integer|min:0',
+            'user_limit'   => 'sometimes|nullable|integer|min:1',
+            'start_at'     => 'sometimes|nullable|date',
+            'end_at'       => 'sometimes|nullable|date|after_or_equal:start_at',
+            'status'       => 'sometimes|required|integer|in:0,1',
+        ]);
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
+        }
+
         $data = $request->only([
             'name', 'type', 'value', 'min_amount', 'max_discount',
             'total_qty', 'user_limit', 'start_at', 'end_at', 'status',

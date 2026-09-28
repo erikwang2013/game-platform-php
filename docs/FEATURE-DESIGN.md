@@ -61,7 +61,7 @@ Languages: **中文** · [English](FEATURE-DESIGN.en.md) · [한국어](FEATURE-
 | 字段 | 说明 |
 |------|------|
 | balance | 可用余额（可充提可兑换） |
-| frozen_balance | 冻结余额（预留，如提现中） |
+| frozen_balance | 冻结余额（风控冻结占用：hold 冻结、release 解冻搬回；提现不占用此列） |
 | total_earned | 累计收入 |
 | total_spent | 累计支出 |
 | version | 乐观锁版本号（每次更新+1） |

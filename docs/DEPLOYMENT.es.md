@@ -706,4 +706,5 @@ mysql -u game-platform -p game-platform < install/新迁移文件.sql
 # 4. Reinicio suave (sin interrumpir el servicio)
 cd /opt/game-platform/admin && php start.php reload
 cd /opt/game-platform/service && php start.php reload
+# Nota: el proceso event-subscriber de service tiene reloadable=false, reload no actualiza su código; tras cambiarlo hay que reiniciar el proceso completo (php start.php restart); en el árbol admin, risk-ip-cron / monitor también tienen reloadable=false y se comportan igual
 ```

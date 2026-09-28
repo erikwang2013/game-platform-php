@@ -10,6 +10,7 @@ namespace app\admin\v1\controller;
 use common\model\AntiCheatEvent;
 use common\model\GamePlayLog;
 use common\model\RiskLog;
+use common\model\Transaction;
 use common\model\User;
 use common\model\UserTrust;
 use common\model\UserWallet;
@@ -17,6 +18,7 @@ use app\service\WalletScope;
 use app\service\WalletService;
 use erikwang2013\apidoc\annotation as Apidoc;
 use support\Db;
+use support\Log;
 use support\Request;
 use support\Response;
 
@@ -159,5 +161,115 @@ class RiskUserController extends BaseController
         }
 
         return $this->success(['user_id' => $this->encodeId($userId), 'frozen_amount' => $amount]);
+    }
+
+    /**
+     * 解除冻结（与 hold 配对）。
+     *
+     * 纯搬移：frozen→available，释放量不得超过 frozen_balance、重复释放被拒，桶内总额不变。
+     *
+     * ⚠ 追溯口径（运营须知）：释放流水的 (ref_type, ref_id) 复用的是**最近一笔**风险冻结
+     * （`orderByDesc('id')` 取 type=lock 且 ref_type=risk_hold 的那条），**不是**「这一笔」。
+     * 原因是 frozen_balance 是单池列，没有 per-hold 台账，无法把某次释放对应到某次冻结的子集。
+     * hold 是全额冻结，同一时刻正常只有一笔活的冻结；但「冻结→用户充值→再冻结」之后，
+     * 老那笔的冻结份额与新那笔无法区分，此时释放行指向的是最新那笔 —— 金额仍守恒，
+     * 只是归因可能落在另一笔上。要精确到笔需要给 frozen 加子台账（表结构变更，独立批）。
+     */
+    #[Apidoc\Title("解除冻结")]
+    #[Apidoc\Desc("与 hold 配对：frozen→available 纯搬移，不铸币；释放行复用最近一笔风险冻结的 ref_type/ref_id（frozen 是单池列，无 per-hold 台账）")]
+    public function release(Request $request, string $hashid): Response
+    {
+        $userId = $this->decodeId($hashid);
+        if (!User::find($userId)) {
+            return $this->fail('用户不存在');
+        }
+
+        // 释放量缺省全额（与 hold 全额冻结对称）。语法闸先行：bcmath 对 '1e5'/'abc' 抛 ValueError，
+        // 直接冒出去就是 500（同 SelfProvider::isAmountSyntaxValid 的理由）；只认标量，数组/null 一律判非法。
+        $raw = $request->input('amount');
+        $requested = null;
+        if ($raw !== null && $raw !== '') {
+            if (!is_string($raw) && !is_int($raw) && !is_float($raw)) {
+                return $this->fail('释放金额格式非法');
+            }
+            try {
+                $requested = bcadd((string) $raw, '0', 8);
+            } catch (\ValueError) {
+                return $this->fail('释放金额格式非法');
+            }
+        }
+
+        // 追溯「释放的是哪一笔」：hold 把写进 risk_log 的主键当 ref_id，冻结流水行带着它。
+        // 释放行复用同一个 ref_id ⇒ 释放与冻结在流水上 (ref_type, ref_id) 完全相同，
+        // 用 type=lock|unlock 分辨方向，天然配对可查。找不到原冻结行时退化为「释放 + 管理员 id」。
+        $holdRefId = (int) (Transaction::where('user_id', $userId)
+            ->where('scope', WalletScope::PLATFORM)
+            ->where('type', WalletService::TYPE_LOCK)
+            ->where('ref_type', 'risk_hold')
+            ->orderByDesc('id')
+            ->value('ref_id') ?? 0);
+        $refType = $holdRefId > 0 ? 'risk_hold' : 'risk_hold_release';
+        $refId = $holdRefId > 0 ? $holdRefId : (int) ($request->adminId ?? 0);
+
+        $logId = $this->generateId();
+        $released = '0.00000000';
+        $failMsg = '解冻失败';
+
+        try {
+            $ok = Db::transaction(function () use ($userId, $requested, $refType, $refId, $logId, &$released, &$failMsg) {
+                // 冻结余额必须在事务内锁行读：先读后动是 check-then-act，并发两次释放会各读到同一个
+                // frozen、各搬一笔走（双记）。锁行后第二个事务读到的是 0，被下面的闸挡下。
+                $wallet = UserWallet::where('user_id', $userId)->lockForUpdate()->first();
+                $frozen = (string) ($wallet->frozen_balance ?? '0');
+
+                $amount = $requested ?? $frozen;
+                if (bccomp($amount, '0', 8) <= 0) {
+                    $failMsg = '用户无冻结余额';
+                    return false;
+                }
+                if (bccomp($amount, $frozen, 8) > 0) {
+                    $failMsg = '释放金额超过冻结余额';
+                    return false;
+                }
+
+                if (!WalletService::unlock($userId, WalletScope::platform(), $amount, $refType, $refId)) {
+                    return false;
+                }
+                $released = $amount;
+
+                $log = new RiskLog();
+                $log->id = $logId;
+                $log->user_id = $userId;
+                $log->rule_id = 0;
+                $log->type = 'manual_release';
+                $log->action = 'unblock';
+                $log->context = json_encode(['amount' => $amount, 'hold_ref_id' => $refType === 'risk_hold' ? $refId : 0]);
+                $log->result = 'unblocked';
+                $log->detail = '管理端人工解冻（与 M6 hold 配对）';
+                $log->created_at = date('Y-m-d H:i:s');
+                $log->save();
+
+                return true;
+            });
+        } catch (\Throwable $e) {
+            // 钱路的意外失败必须留痕：管理员屏幕上一句话不是痕迹（OperationLog 记的是请求，不记异常）。
+            // 文案笼统、不带 $e->getMessage()：原始异常可能带 SQL 片段/表列名/驱动文本，
+            // 与同仓资金端点同款（app/admin/v1/controller/WithdrawController.php:237-243、:613-616）。
+            Log::error('Risk release failed: ' . $e->getMessage(), [
+                'user_id'   => $userId,
+                'requested' => $requested ?? '(full frozen)',
+                'ref_type'  => $refType,
+                'ref_id'    => $refId,
+                'released'  => $released,
+            ]);
+
+            return $this->fail('解冻失败，请稍后重试', 500);
+        }
+
+        if ($ok !== true) {
+            return $this->fail($failMsg);
+        }
+
+        return $this->success(['user_id' => $this->encodeId($userId), 'released_amount' => $released]);
     }
 }

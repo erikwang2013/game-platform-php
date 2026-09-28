@@ -30,6 +30,9 @@ export interface LoginResponse {
   access_token: string;
   refresh_token: string;
   user?: LoginUser;
+  /** 账号开了 2FA 时服务端只回这个 + pending_2fa_token，不下发令牌对（AuthController::login） */
+  require_2fa?: boolean;
+  pending_2fa_token?: string;
 }
 
 /**

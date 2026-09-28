@@ -104,14 +104,16 @@ class RiskIpController extends BaseController
                 $row->last_seen_at = $now;
                 $row->save();
             } else {
-                IpReputation::create([
-                    'ip_hash' => $ipHash,
-                    'reputation_score' => $score,
-                    'source' => $source,
-                    'hit_count' => 0,
-                    'first_seen_at' => $now,
-                    'last_seen_at' => $now,
-                ]);
+                // 主键表无 AUTO_INCREMENT（snowflake），且 'id' 不在 $fillable ⇒ create([...]) 会静默丢 id 再撞 1364，必须属性直赋
+                $row = new IpReputation();
+                $row->id = $this->generateId();
+                $row->ip_hash = $ipHash;
+                $row->reputation_score = $score;
+                $row->source = $source;
+                $row->hit_count = 0;
+                $row->first_seen_at = $now;
+                $row->last_seen_at = $now;
+                $row->save();
             }
             try {
                 Redis::del(self::CACHE_PREFIX . $ipHash);

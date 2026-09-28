@@ -132,8 +132,8 @@ class AnalyticsController extends BaseController
             $cohort = \common\model\User::whereDate('created_at', $cohortDate)->count();
             if ($cohort === 0) { $data["D{$d}"] = '0%'; continue; }
 
-            $active = \common\model\UserSession::whereDate('created_at', '>=', $cohortDate)
-                ->whereDate('created_at', '<=', $endDate)
+            $active = \common\model\UserSession::whereDate('logged_in_at', '>=', $cohortDate)
+                ->whereDate('logged_in_at', '<=', $endDate)
                 ->whereIn('user_id', function($q) use ($cohortDate) {
                     $q->select('id')->from('user')->whereDate('created_at', $cohortDate);
                 })->distinct('user_id')->count('user_id');

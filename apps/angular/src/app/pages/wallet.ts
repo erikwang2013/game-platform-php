@@ -151,6 +151,8 @@ const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
           </div>
         } @else if (!p.items().length) {
           <div class="state">
+            <!-- 吉祥物小骰（Dicey）：相对 public/，由 <base href> 解析到子路径 -->
+            <img class="state-art" src="mascot.svg" alt="" aria-hidden="true" />
             <strong>暂无记录</strong>
             <span>{{ emptyHint(kind) }}</span>
           </div>

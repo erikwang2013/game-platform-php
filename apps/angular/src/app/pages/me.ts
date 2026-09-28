@@ -75,6 +75,8 @@ import { Api, ApiError, Notify, UserProfile, dt } from '../core/api.service';
         </div>
       } @else if (!items().length) {
         <div class="state">
+          <!-- 吉祥物小骰（Dicey）：相对 public/，由 <base href> 解析到子路径 -->
+          <img class="state-art" src="mascot.svg" alt="" aria-hidden="true" />
           <strong>暂无消息</strong>
           <span>平台公告与账户通知会出现在这里</span>
         </div>

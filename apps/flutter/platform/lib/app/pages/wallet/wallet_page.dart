@@ -367,7 +367,16 @@ class _WalletPageState extends State<WalletPage> {
                     : _transactions.isEmpty
                         ? Padding(
                             padding: const EdgeInsets.all(32),
-                            child: Center(child: Text('${AppTranslations.t('wallet.no_transactions')}')),
+                            child: Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Image.asset('assets/mascot.png', width: 120),
+                                  const SizedBox(height: 12),
+                                  Text('${AppTranslations.t('wallet.no_transactions')}'),
+                                ],
+                              ),
+                            ),
                           )
                         : SingleChildScrollView(
                             scrollDirection: Axis.horizontal,

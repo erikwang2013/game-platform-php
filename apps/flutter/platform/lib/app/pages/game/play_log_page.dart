@@ -37,7 +37,18 @@ class PlayLogPage extends GetView<PlayLogController> {
       const SizedBox(height: 12),
       Expanded(child: Obx(() {
         if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
-        if (ctrl.list.isEmpty) return const Center(child: Text('No game history'));
+        if (ctrl.list.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset('assets/mascot.png', width: 120),
+                const SizedBox(height: 12),
+                const Text('No game history'),
+              ],
+            ),
+          );
+        }
         return ListView.builder(
           itemCount: ctrl.list.length,
           itemBuilder: (_, i) {

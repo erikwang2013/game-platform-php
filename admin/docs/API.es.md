@@ -1971,6 +1971,7 @@ Detección de clústeres de riesgo, confirmación manual y gestión de usuarios 
 | GET | /admin/v1/risk/users | Cola de usuarios anómalos (score_min=límite superior de confianza, from/to=ventana de última coincidencia) | JWT + RBAC |
 | GET | /admin/v1/risk/users/{hashid}/timeline | Cronología de riesgo del usuario (eventos de riesgo/juego/antifraude combinados, del más reciente al más antiguo) | JWT + RBAC |
 | POST | /admin/v1/risk/users/{hashid}/hold | Congelar el saldo disponible del usuario en la plataforma y registrar en risk_log | JWT + RBAC |
+| POST | /admin/v1/risk/users/{hashid}/release | Liberar la retención de riesgo (amount opcional, completo por defecto) y registrar en risk_log | JWT + RBAC |
 
 ### 19.3 Niveles VIP
 

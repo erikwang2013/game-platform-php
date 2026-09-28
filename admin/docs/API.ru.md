@@ -1971,6 +1971,7 @@ DELETE /admin/v1/payment/method/{hashid}
 | GET | /admin/v1/risk/users | Очередь аномальных пользователей (score_min=верхняя граница доверия, from/to=окно последнего срабатывания) | JWT + RBAC |
 | GET | /admin/v1/risk/users/{hashid}/timeline | Хронология рисков пользователя (объединённые события риска/игры/антифрода, от новых к старым) | JWT + RBAC |
 | POST | /admin/v1/risk/users/{hashid}/hold | Заморозить доступный баланс пользователя на платформе и записать в risk_log | JWT + RBAC |
+| POST | /admin/v1/risk/users/{hashid}/release | Снять заморозку риска (amount опционально, по умолчанию полностью) и записать в risk_log | JWT + RBAC |
 
 ### 19.3 VIP-уровни
 

@@ -65,9 +65,8 @@ export function Loading({ rows = 3, label = '加载中' }: { rows?: number; labe
 export function Empty({ text = '暂无数据' }: { text?: string }) {
   return (
     <div className="empty">
-      <span className="empty-mark" aria-hidden="true">
-        ◌
-      </span>
+      {/* 吉祥物小骰（Dicey）：纯装饰，语义由下面的文案承载；随 BASE_URL 走子路径部署 */}
+      <img className="empty-mark" src={`${import.meta.env.BASE_URL}mascot.svg`} alt="" aria-hidden="true" />
       <span>{text}</span>
     </div>
   );

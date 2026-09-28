@@ -126,7 +126,16 @@ class _CouponPageState extends State<CouponPage> with SingleTickerProviderStateM
 
   Widget _list(List<Map<String, dynamic>> items, {required bool available}) {
     if (items.isEmpty) {
-      return Center(child: Text('${AppTranslations.t('coupon.empty')}'));
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset('assets/mascot.png', width: 120),
+            const SizedBox(height: 12),
+            Text('${AppTranslations.t('coupon.empty')}'),
+          ],
+        ),
+      );
     }
     return RefreshIndicator(
       onRefresh: _load,

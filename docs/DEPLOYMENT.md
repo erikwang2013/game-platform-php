@@ -706,4 +706,5 @@ mysql -u game-platform -p game-platform < install/新迁移文件.sql
 # 4. 平滑重启（不中断服务）
 cd /opt/game-platform/admin && php start.php reload
 cd /opt/game-platform/service && php start.php reload
+# 注意：service 的 event-subscriber 进程标了 reloadable=false，reload 不刷新它的代码，改动该进程后须整进程重启（php start.php restart）；admin 树的 risk-ip-cron / monitor 亦标了 reloadable=false，同理
 ```

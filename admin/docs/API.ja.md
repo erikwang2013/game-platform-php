@@ -1971,6 +1971,7 @@ DELETE /admin/v1/payment/method/{hashid}
 | GET | /admin/v1/risk/users | 異常ユーザーキュー（score_min=信頼スコア上限、from/to=最終ヒット時間帯） | JWT + RBAC |
 | GET | /admin/v1/risk/users/{hashid}/timeline | ユーザーのリスクタイムライン（リスク/プレイ/不正対策イベントを統合し、新しい順） | JWT + RBAC |
 | POST | /admin/v1/risk/users/{hashid}/hold | ユーザーのプラットフォーム利用可能残高を凍結し risk_log に記録します | JWT + RBAC |
+| POST | /admin/v1/risk/users/{hashid}/release | ユーザーのリスク凍結を解除し（amount 任意、既定は全額）risk_log に記録します | JWT + RBAC |
 
 ### 19.3 VIP レベル
 

@@ -706,4 +706,5 @@ mysql -u game-platform -p game-platform < install/新迁移文件.sql
 # 4. Sanfter Neustart (ohne Dienstunterbrechung)
 cd /opt/game-platform/admin && php start.php reload
 cd /opt/game-platform/service && php start.php reload
+# Hinweis: Der event-subscriber-Prozess von service ist reloadable=false, reload aktualisiert seinen Code nicht – nach Änderungen den Prozess komplett neu starten (php start.php restart); im admin-Baum sind risk-ip-cron / monitor ebenfalls reloadable=false und verhalten sich gleich
 ```

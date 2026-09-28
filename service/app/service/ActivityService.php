@@ -32,6 +32,21 @@ use support\Log;
 class ActivityService
 {
     /**
+     * 单条奖励金额上界（活性奖励的铸币闸）。
+     *
+     * ⚠ 这是**默认值，不是实测推导出来的值**：install.sql 只有 game_activity 的建表语句、零种子活动；
+     * 实测 game-platform 与 game-platform-test 两库的 game_activity / game_activity_reward_log 均 0 行
+     * ⇒「观察到的最大合法单条奖励」判定不出，取默认 10000。
+     * 与 SelfProvider::MAX_PAYOUT_PER_ROUND = '10000'（service/app/provider/SelfProvider.php:30）
+     * 同口径（单次动作最多出多少钱）：本仓只有这两处资金上限，改一处务必看另一处。
+     * 将来 game_activity 有真实配置后，应按「观察到的最大合法单条奖励」重定此值。
+     *
+     * 闸长在出钱这一侧而非 admin 的 parseConfig —— 后者只挡 UI 写入路径，直接改库或将来新增的
+     * 写入口都能绕过去；出钱的地方自己认数才拦得住。
+     */
+    private const MAX_REWARD_PER_ENTRY = '10000';
+
+    /**
      * EventBus 事件入口（EventConsumer::dispatch() 尾部调用）。
      * 业务性跳过（活动结束/事件不匹配/未命中灰度）在 handler 内返回，不抛异常；
      * 系统异常按活动隔离记录，最后一个异常上抛——由 dispatch() 进 $failures 驱动可靠事件重试。
@@ -186,6 +201,17 @@ class ActivityService
      * 达标发奖：reward_log 落库 + WalletService::mutate 同事务。
      * reward_log uk(participation_id, reward_type, reward_ref) 防重——重复插入失败即代表已发，跳过。
      * 奖励条目无 day 键（每日任务）全发；有 day 键（签到）仅发 day <= current 的档位。
+     *
+     * 锁序不变式：**平台钱包先于游戏钱包**（与 ExchangeController 同一条规范序）。
+     * 旧实现按 config 原序交错取锁，与兑换方向互逆 ⇒ 并发下 1213。
+     * 规范序按 reward 类型静态可判（不依赖钱包行是否存在），stable partition 保证同组内相对顺序不变
+     * ⇒ reward_ref 仍等于 config 里的位置，与历史行、uk 幂等语义完全一致；grantRewards 只由
+     * progress()/checkin() 在同一事务内调用一次（末尾即置 REWARDED，无重入路径），故重排不会漏发或撞 uk。
+     * （这条论证由 ActivityRewardLockOrderTest 钉住，别只留在注释里。）
+     *
+     * 坏配置不再抛：抛 ⇒ 整个 progress/checkin 事务回滚 ⇒ participation 永停 COMPLETED，
+     * 且每次事件重试都抛 = 该活动对该用户永久卡死。改成「跳过这一条 + 落失败原因 + 进终态」，
+     * 钱由运维按 error 日志补发。
      */
     private static function grantRewards(
         int $userId,
@@ -202,7 +228,8 @@ class ActivityService
             $rewards = array_column(array_filter($config['tasks'], 'is_array'), 'reward');
         }
 
-        $granted = [];
+        // 第一遍只做「这一条该不该发」的判定并记下它在 config 里的位置（= reward_ref）；不碰钱包、不取锁。
+        $pending = [];
         $ref = 1;
         foreach ($rewards as $entry) {
             if (!is_array($entry)) {
@@ -222,10 +249,25 @@ class ActivityService
 
             $rewardType = (string) ($reward['type'] ?? '');
             $amount = (string) ($reward['amount'] ?? '0');
-            if ($rewardType === '' || bccomp($amount, '0', 8) <= 0) {
+            if ($rewardType === '' || bccomp($amount, '0', WalletService::SCALE) <= 0) {
                 $ref++;
                 continue;
             }
+
+            $pending[] = ['ref' => $ref, 'type' => $rewardType, 'amount' => $amount];
+            $ref++;
+        }
+
+        // 第二遍按类型稳定分组：platform_coin 组整体前移到最前，组内保持 config 原序（其余同理）。
+        $pending = array_merge(
+            array_values(array_filter($pending, static fn (array $r): bool => $r['type'] === ActivityRewardLog::REWARD_PLATFORM_COIN)),
+            array_values(array_filter($pending, static fn (array $r): bool => $r['type'] !== ActivityRewardLog::REWARD_PLATFORM_COIN))
+        );
+
+        $granted = [];
+        foreach ($pending as $item) {
+            $rewardType = $item['type'];
+            $amount = $item['amount'];
 
             $log = new ActivityRewardLog();
             $log->id = SnowflakeService::generate();
@@ -234,26 +276,37 @@ class ActivityService
             $log->participation_id = $row->id;
             $log->period_key = $row->period_key;
             $log->reward_type = $rewardType;
-            $log->reward_ref = $ref;
+            $log->reward_ref = $item['ref'];
             $log->amount = $amount;
             $log->status = 'succeeded';
             try {
                 $log->save(); // uk 冲突 = 已发过，跳过
             } catch (\Throwable $e) {
-                if (self::isDuplicateKey($e)) {
-                    $ref++;
+                if (self::isDuplicateOnKey($e, 'uk_idempotent')) {
                     continue;
                 }
                 throw $e;
             }
 
-            $ok = self::creditWallet($userId, $activity, $rewardType, $amount, $row->id);
-            if (!$ok) {
-                throw new \RuntimeException("Activity reward wallet mutate failed: {$rewardType} {$amount}");
+            $reason = self::creditWallet($userId, $activity, $rewardType, $amount, $row->id);
+            if ($reason !== null) {
+                // 这条发不出去（坏配置/超上限），但 participation 必须走到终态，否则就是「卡死」本身。
+                // 落 status=failed + fail_reason：运维据此定位并补发（表上有 idx_status）。
+                $log->status = 'failed';
+                $log->fail_reason = $reason;
+                $log->save();
+                Log::error('Activity reward skipped: ' . $reason, [
+                    'participation_id' => $row->id,
+                    'activity_id'      => $activity->id,
+                    'user_id'          => $userId,
+                    'reward_type'      => $rewardType,
+                    'reward_ref'       => $item['ref'],
+                    'amount'           => $amount,
+                ]);
+                continue;
             }
 
             $granted[] = ['type' => $rewardType, 'amount' => $amount];
-            $ref++;
         }
 
         $row->status = ActivityParticipation::STATUS_REWARDED;
@@ -265,30 +318,53 @@ class ActivityService
     /**
      * 走 M1 统一钱包入口（资金入口唯一，本服务不直接改余额）。
      * game_coin 奖励需 reward 配置携带 game_id/currency_id。
+     *
+     * @return string|null null = 已发放；非 null = **确定性**拒绝原因（坏配置/超上界），调用方跳过并落 fail_reason。
+     *                     这里是「出钱的地方自己认数」的落点：单条上界只在这道闸上判。
      */
-    private static function creditWallet(int $userId, Activity $activity, string $rewardType, string $amount, int $participationId): bool
+    private static function creditWallet(int $userId, Activity $activity, string $rewardType, string $amount, int $participationId): ?string
     {
+        if (bccomp($amount, self::MAX_REWARD_PER_ENTRY, WalletService::SCALE) > 0) {
+            return 'amount ' . $amount . ' exceeds MAX_REWARD_PER_ENTRY=' . self::MAX_REWARD_PER_ENTRY;
+        }
+
         $remark = 'activity_reward:' . $activity->id . ':' . $participationId;
 
         if ($rewardType === ActivityRewardLog::REWARD_PLATFORM_COIN) {
-            return WalletService::mutate($userId, WalletScope::platform(), '+' . $amount, 'activity_reward', 'activity', (int) $activity->id, $remark);
+            $ok = WalletService::mutate($userId, WalletScope::platform(), '+' . $amount, 'activity_reward', 'activity', (int) $activity->id, $remark);
+
+            return $ok ? null : 'wallet mutate rejected: platform';
         }
         if ($rewardType === ActivityRewardLog::REWARD_GAME_COIN) {
             $config = is_array($activity->config) ? $activity->config : [];
             $gameId = (int) ($config['game_id'] ?? $activity->game_id);
             $currencyId = (int) ($config['currency_id'] ?? 0);
             if ($gameId <= 0 || $currencyId <= 0) {
-                return false;
+                return 'game_coin reward needs game_id/currency_id';
             }
-            return WalletService::mutate($userId, WalletScope::game($gameId, $currencyId), '+' . $amount, 'activity_reward', 'activity', (int) $activity->id, $remark);
+            $ok = WalletService::mutate($userId, WalletScope::game($gameId, $currencyId), '+' . $amount, 'activity_reward', 'activity', (int) $activity->id, $remark);
+
+            return $ok ? null : 'wallet mutate rejected: game';
         }
 
-        return false; // vip_exp/coupon/achievement 奖励类型本最小区间不支持
+        return 'unsupported reward_type: ' . $rewardType; // vip_exp/coupon/achievement 本最小区间不支持
     }
 
-    private static function isDuplicateKey(\Throwable $e): bool
+    /**
+     * 只有撞在 uk_idempotent(participation_id, reward_type, reward_ref) 上才算「这条奖励已发过」。
+     *
+     * 原先按消息一刀切（`Duplicate entry`/`duplicate key`）：任何唯一键冲突都吞成「已发过」，包括
+     * 主键 id（snowflake）撞号 —— 那种情况这条奖励其实**一条都没发**，却被静默跳过：没出钱、
+     * 没 fail_reason、error 日志也没有，participation 照样进终态。用户看到的「已发」是假的。
+     * 键名不匹配一律上抛：撞号是要运维介入的系统性故障，不能伪装成正常的幂等跳过。
+     */
+    private static function isDuplicateOnKey(\Throwable $e, string $key): bool
     {
-        $msg = $e->getMessage();
-        return str_contains($msg, 'Duplicate entry') || str_contains($msg, 'duplicate key');
+        if (!$e instanceof \PDOException) {
+            return false; // 非 PDO 异常没有 errorInfo，不认
+        }
+
+        return in_array($e->errorInfo[1] ?? null, [1062, 23000], true)
+            && str_contains($e->getMessage(), $key);
     }
 }

@@ -18,6 +18,7 @@ class DeviceFingerprint extends Model
 
     public $incrementing = false;
     protected $keyType = 'int';
+    public $timestamps = false; // 该表无 created_at/updated_at（时间列是 first_seen_at/last_seen_at），Eloquent 写这两个必 Unknown column
 
     protected $fillable = [
         'fp_hash',

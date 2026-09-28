@@ -61,7 +61,7 @@ Wird bei der Benutzerregistrierung automatisch erstellt, Startguthaben 0.
 | Feld | Beschreibung |
 |------|------|
 | balance | Verfügbares Guthaben (ein-/auszahlbar und umtauschbar) |
-| frozen_balance | Eingefrorenes Guthaben (reserviert, z. B. bei laufender Auszahlung) |
+| frozen_balance | Eingefrorenes Guthaben (durch Risiko-Sperren belegt: hold friert ein, release hebt auf; Auszahlungen nutzen diese Spalte nicht) |
 | total_earned | Kumulierte Einnahmen |
 | total_spent | Kumulierte Ausgaben |
 | version | Optimistic-Lock-Versionsnummer (bei jedem Update +1) |

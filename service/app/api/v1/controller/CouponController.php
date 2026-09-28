@@ -114,17 +114,6 @@ class CouponController extends BaseController
             return $this->fail('优惠券已过期', 400);
         }
 
-        // Check user limit
-        $userLimit = (int) $coupon->user_limit;
-        if ($userLimit > 0) {
-            $claimed = UserCoupon::where('user_id', $userId)
-                ->where('coupon_id', $couponId)
-                ->count();
-            if ($claimed >= $userLimit) {
-                return $this->fail('您已达到该优惠券的领取上限', 400);
-            }
-        }
-
         // Check conditions（与 available() 同一判据，$ctx 传 null = 单券现查）
         $blocked = $this->conditionsBlockReason($coupon, $userId);
         if ($blocked !== null) {
@@ -133,7 +122,28 @@ class CouponController extends BaseController
 
         // 扣库存与落券行必须同事务：原先两步之间失败会把库存白扣（实测 insert 抛错时 used_qty 已 +1
         // 而 user_coupon 一行没落）。校验的早退都在上面，不进事务 —— 事务里只有写。
-        $userCoupon = Db::transaction(function () use ($couponId, $userId) {
+        //
+        // 限领校验原先在事务外（check-then-act）：同一用户并发两次领取都读到 count=0 ⇒ 都放行，
+        // 而券表没有 uk(user_id, coupon_id) 兜底（DDL 在 install/install.sql，本批只报不改）⇒ 超领。
+        // 改法＝把计数挪进事务、先锁券行：同一张券的所有领取在此串行，
+        // 「数我已领 → 落我的券行」中间不再有窗口，且不需要新唯一键。
+        $userLimit = (int) $coupon->user_limit;
+        $failReason = '优惠券已被领完';
+
+        $userCoupon = Db::transaction(function () use ($couponId, $userId, $userLimit, &$failReason) {
+            // 锁券行（increment 的行锁要到下面才拿，撑不住上面那次计数判读）
+            Coupon::where('id', $couponId)->lockForUpdate()->first();
+
+            if ($userLimit > 0) {
+                $claimed = UserCoupon::where('user_id', $userId)
+                    ->where('coupon_id', $couponId)
+                    ->count();
+                if ($claimed >= $userLimit) {
+                    $failReason = '您已达到该优惠券的领取上限';
+                    return null;
+                }
+            }
+
             // Atomic increment used_qty
             $affected = Coupon::where('id', $couponId)
                 ->where(function ($query) {
@@ -158,7 +168,7 @@ class CouponController extends BaseController
         });
 
         if ($userCoupon === null) {
-            return $this->fail('优惠券已被领完', 400);
+            return $this->fail($failReason, 400);
         }
 
         // Refresh coupon data

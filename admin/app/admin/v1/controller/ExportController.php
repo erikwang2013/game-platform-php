@@ -18,7 +18,7 @@ use common\EncryptionService;
 use app\model\AdminUser;
 use app\model\OperationLog;
 use app\model\AdminRole;
-use app\model\SystemConfig;
+use common\model\PlatformConfig;
 use common\model\User;
 use common\model\DepositOrder;
 use common\model\WithdrawOrder;
@@ -407,7 +407,9 @@ class ExportController extends BaseController
             'admin_user' => AdminUser::class,
             'operation_log' => OperationLog::class,
             'admin_role' => AdminRole::class,
-            'system_config' => SystemConfig::class,
+            // 请求参数里的 table 名保持 'system_config'（前端契约不动），读的是 platform_config：
+            // 与 ConfigController 同一张真值表，否则导出会是一张永远空/永远陈旧的表。
+            'system_config' => PlatformConfig::class,
         ];
 
         if (!isset($modelMap[$table])) {

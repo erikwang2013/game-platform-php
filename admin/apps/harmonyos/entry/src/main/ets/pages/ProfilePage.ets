@@ -45,7 +45,7 @@ struct ProfilePage {
       // 顶栏
       Row() {
         Button({ type: ButtonType.Circle }) {
-          Image($rawfile('back.png')).width(24).height(24)
+          Image($r('app.media.ic_back')).width(24).height(24)
         }
         .width(36).height(36)
         .backgroundColor('#FFFFFF')
@@ -150,7 +150,7 @@ struct ProfilePage {
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
 
-      Image($rawfile('arrow_right.png'))
+      Image($r('app.media.ic_arrow_right'))
         .width(16)
         .height(16)
         .fillColor('#CCCCCC')

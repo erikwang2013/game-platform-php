@@ -44,6 +44,8 @@ import { Api, ApiError, Game, PlatformStats } from '../core/api.service';
       </div>
     } @else if (!games().length) {
       <div class="card state">
+        <!-- 吉祥物小骰（Dicey）：相对 public/，由 <base href> 解析到子路径 -->
+        <img class="state-art" src="mascot.svg" alt="" aria-hidden="true" />
         <strong>暂无游戏</strong>
         <span>{{ keyword() ? '没有匹配的游戏，换个关键词试试' : '平台还没有上架游戏' }}</span>
       </div>

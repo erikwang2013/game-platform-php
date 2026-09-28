@@ -706,4 +706,5 @@ mysql -u game-platform -p game-platform < install/nouveau-fichier-de-migration.s
 # 4. Redémarrage à chaud (sans interruption de service)
 cd /opt/game-platform/admin && php start.php reload
 cd /opt/game-platform/service && php start.php reload
+# Remarque : le processus event-subscriber de service est en reloadable=false, reload ne rafraîchit pas son code ; après modification, redémarrez le processus entier (php start.php restart) ; dans l'arbre admin, risk-ip-cron / monitor sont aussi en reloadable=false et se comportent de même
 ```

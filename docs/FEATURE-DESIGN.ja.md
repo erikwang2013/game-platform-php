@@ -61,7 +61,7 @@ Languages: **中文** · [English](FEATURE-DESIGN.en.md) · [한국어](FEATURE-
 | フィールド | 説明 |
 |------|------|
 | balance | 利用可能残高（チャージ/出金/交換可能） |
-| frozen_balance | 凍結残高（予約、例: 出金中） |
+| frozen_balance | 凍結残高（リスク凍結の占用：hold で凍結、release で解除して戻す。出金はこの列を使わない） |
 | total_earned | 累計収入 |
 | total_spent | 累計支出 |
 | version | 楽観ロックバージョン番号（更新のたびに+1） |

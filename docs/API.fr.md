@@ -342,6 +342,7 @@ Erreurs :
 - 400 montant inférieur au minimum de retrait
 - 400 dépassement de la limite quotidienne de retrait
 - 400 solde insuffisant
+- 400 les frais absorbent le principal (montant net ≤ 0 ; le calcul ne rejette que les valeurs négatives, un 0 exact est bloqué par cet endpoint avant le contrôle des risques)
 
 #### GET /api/v1/withdraw/orders — Historique des retraits
 
@@ -503,6 +504,8 @@ Requête: {
 
 Réponse: { "message": "KYC submitted successfully" }
 ```
+
+Erreurs : 422 une soumission KYC est déjà en attente ou approuvée (une soumission en double concurrente renvoie la même erreur au lieu de 500)
 
 ### 2.9 Paiement
 
@@ -1092,6 +1095,19 @@ action : approve=approuver / reject=refuser / confirm=confirmer (en cas de refus
 
 Erreurs : 422 l'état de la commande n'est pas « en attente de validation »
 
+#### GET /admin/v1/withdraw/switch — Consultation de l'interrupteur global des retraits
+
+```
+Authentification requise: Oui
+
+Réponse: {
+  "global_switch": true,
+  "enabled": true,
+  "status": 1,
+  "message": "success"
+}
+```
+
 #### PUT /admin/v1/withdraw/switch — Interrupteur global des retraits
 
 ```
@@ -1101,7 +1117,9 @@ Requête: { "enabled": 1 }
 
 Réponse: {
   "global_switch": true,
-  "message": "提现功能已开启"
+  "enabled": true,
+  "status": 1,
+  "message": "操作成功"
 }
 ```
 
@@ -1123,6 +1141,9 @@ Réponse: {
   "global_switch": true
 }
 ```
+
+Cet endpoint est une réinitialisation de tous les paliers : il écrit dans toutes les lignes withdraw_limit (user_level default/verified/vip ; min_amount → single_min, daily_limit / auto_approve_threshold gardent leur nom ; les single_max / monthly_limit existants de chaque ligne restent inchangés). Pour ajuster un seul palier, utilisez PUT /admin/v1/withdraw/limits/{hashid}.
+Erreurs : 422 rien n'est appliqué si le nouveau single_min dépasse un single_max existant (single_max=0 signifie illimité et n'est pas comparé)
 
 #### POST /admin/v1/withdraw/batch-review — Révision groupée des retraits
 
@@ -1415,6 +1436,9 @@ Authentification requise: Oui
 Requête: { "single_max": "10000.0000", "fee_pct": "0.25" }
 // 可部分更新
 ```
+
+Validation : tous les champs de montant doivent être ≥ 0 ; fee_pct doit être < 100 (=100 laisse un montant net exactement à 0, les paiements de ce palier échoueront à coup sûr) ; single_min ne doit pas dépasser single_max (single_max=0 signifie illimité et n'est pas comparé).
+Erreurs : 422 échec de validation / 422 single_min supérieur à single_max / 404 enregistrement introuvable
 
 ### 3.11 Gestion des catégories de jeux
 
@@ -2252,7 +2276,7 @@ La commission de parrainage ajoute une répartition de deuxième niveau :
 
 ---
 
-## 10. Nouvelles API (v1.3.15-v1.3.22)
+## 10. API d'extension de plateforme
 
 ### 10.1 Gestion des risques (admin :8789)
 
@@ -2289,6 +2313,7 @@ La commission de parrainage ajoute une répartition de deuxième niveau :
 | GET /admin/v1/risk/users | File des utilisateurs anormaux (filtrée par score de confiance et dernière détection) |
 | GET /admin/v1/risk/users/{hashid}/timeline | Chronologie des risques de l'utilisateur (événements risque / parties / anti-triche fusionnés) |
 | POST /admin/v1/risk/users/{hashid}/hold | Geler le solde disponible de l'utilisateur et journaliser l'action |
+| POST /admin/v1/risk/users/{hashid}/release | Lever le gel de risque de l'utilisateur et restaurer le solde disponible |
 
 ### 10.2 Gestion anti-triche (admin :8789)
 

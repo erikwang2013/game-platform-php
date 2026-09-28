@@ -61,7 +61,7 @@ Créé automatiquement à l'inscription de l'utilisateur, solde initial à 0.
 | Champ | Description |
 |------|------|
 | balance | Solde disponible (rechargeable/retirable/échangeable) |
-| frozen_balance | Solde gelé (réservé, ex. retrait en cours) |
+| frozen_balance | Solde gelé (occupé par les retenues de risque : hold gèle, release libère ; les retraits n'utilisent pas cette colonne) |
 | total_earned | Revenus cumulés |
 | total_spent | Dépenses cumulées |
 | version | Numéro de version du verrou optimiste (+1 à chaque mise à jour) |

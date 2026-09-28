@@ -99,7 +99,18 @@ class RiskClusterTab extends GetView<RiskClusterController> {
       const SizedBox(height: 8),
       Expanded(child: Obx(() {
         if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
-        if (ctrl.items.isEmpty) return const Center(child: Text('暂无团伙，点击"聚类检测"扫描候选'));
+        if (ctrl.items.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset('assets/mascot.png', width: 120),
+                const SizedBox(height: 12),
+                const Text('暂无团伙，点击"聚类检测"扫描候选'),
+              ],
+            ),
+          );
+        }
         return ListView.builder(
           itemCount: ctrl.items.length,
           itemBuilder: (_, i) {

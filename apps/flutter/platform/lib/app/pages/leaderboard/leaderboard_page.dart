@@ -99,7 +99,16 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                   ),
                 )
               : _boards.isEmpty
-                  ? Center(child: Text('${AppTranslations.t('leaderboard.empty')}'))
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.asset('assets/mascot.png', width: 120),
+                          const SizedBox(height: 12),
+                          Text('${AppTranslations.t('leaderboard.empty')}'),
+                        ],
+                      ),
+                    )
                   : Column(
                       children: [
                         SizedBox(
@@ -133,7 +142,16 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                           child: _rankingLoading
                               ? const Center(child: CircularProgressIndicator())
                               : _ranking.isEmpty
-                                  ? Center(child: Text('${AppTranslations.t('leaderboard.empty')}'))
+                                  ? Center(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Image.asset('assets/mascot.png', width: 120),
+                                          const SizedBox(height: 12),
+                                          Text('${AppTranslations.t('leaderboard.empty')}'),
+                                        ],
+                                      ),
+                                    )
                                   : ListView.builder(
                                       itemCount: _ranking.length,
                                       itemBuilder: (_, i) {

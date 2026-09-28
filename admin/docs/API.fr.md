@@ -1971,6 +1971,7 @@ Détection des clusters de risque, confirmation manuelle et traitement des utili
 | GET | /admin/v1/risk/users | File des utilisateurs anormaux (score_min=limite supérieure de confiance, from/to=fenêtre de dernière détection) | JWT + RBAC |
 | GET | /admin/v1/risk/users/{hashid}/timeline | Chronologie des risques de l'utilisateur (événements risque/jeu/antitriche fusionnés, du plus récent au plus ancien) | JWT + RBAC |
 | POST | /admin/v1/risk/users/{hashid}/hold | Geler le solde disponible de l'utilisateur sur la plateforme et journaliser dans risk_log | JWT + RBAC |
+| POST | /admin/v1/risk/users/{hashid}/release | Lever le gel de risque (amount facultatif, total par défaut) et journaliser dans risk_log | JWT + RBAC |
 
 ### 19.3 Niveaux VIP
 

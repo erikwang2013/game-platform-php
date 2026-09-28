@@ -111,6 +111,21 @@ class LeaderboardController extends BaseController
             return $this->fail('排行榜不存在', 404);
         }
 
+        // 镜像 create 的规则（sometimes：局部更新），并补齐 create 漏掉的 status/rule/sort。
+        // type 的取值沿用 create 的枚举（daily/weekly/monthly/alltime）；列注释（install.sql:818）
+        // 已同步改成同一组取值，`total` 只作为建表默认值存在，走 LeaderboardService 的全时段分支。
+        $validator = validator($request->all(), [
+            'name'   => 'sometimes|required|string|max:100',
+            'type'   => 'sometimes|required|string|in:daily,weekly,monthly,alltime',
+            'metric' => 'sometimes|required|string|in:earned,spent,play_count',
+            'rule'   => 'sometimes|nullable|string',
+            'status' => 'sometimes|required|integer|in:0,1',
+            'sort'   => 'sometimes|nullable|integer|min:0',
+        ]);
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
+        }
+
         $board->fill($request->only([
             'name', 'type', 'metric', 'rule', 'status', 'sort',
         ]));

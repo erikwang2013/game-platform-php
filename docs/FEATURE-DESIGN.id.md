@@ -61,7 +61,7 @@ Dibuat otomatis saat pengguna mendaftar, saldo awal 0.
 | Kolom | Keterangan |
 |------|------|
 | balance | Saldo tersedia (dapat deposit/penarikan/penukaran) |
-| frozen_balance | Saldo beku (cadangan, seperti saat penarikan berlangsung) |
+| frozen_balance | Saldo beku (dipakai pembekuan risiko: hold membekukan, release melepaskan; penarikan tidak memakai kolom ini) |
 | total_earned | Pendapatan kumulatif |
 | total_spent | Pengeluaran kumulatif |
 | version | Nomor versi kunci optimis (setiap pembaruan +1) |

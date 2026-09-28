@@ -342,6 +342,7 @@ status:
 - 400 أقل من الحد الأدنى لمبلغ السحب
 - 400 تجاوز حد السحب اليومي
 - 400 الرصيد غير كافٍ
+- 400 الرسوم تستهلك أصل المبلغ (الصافي ≤ 0؛ الحساب يرفض القيم السالبة فقط، أما 0 بالضبط فيمنعه هذا الطرف قبل فحص المخاطر)
 
 #### GET /api/v1/withdraw/orders — سجلات السحب
 
@@ -503,6 +504,8 @@ is_new: true=مستخدم مسجل حديثًا / false=حساب موجود تم
 
 الاستجابة: { "message": "KYC submitted successfully" }
 ```
+
+الأخطاء: 422 لديك بالفعل طلب KYC قيد المراجعة أو مقبول (الإرسال المكرر المتزامن يعيد الخطأ نفسه بدل 500)
 
 ### 2.9 الدفع
 
@@ -1092,6 +1095,19 @@ action: approve=موافقة / reject=رفض / confirm=تأكيد (عند الر
 
 خطأ: 422 حالة الطلب ليست قيد المراجعة
 
+#### GET /admin/v1/withdraw/switch — الاستعلام عن المفتاح العام للسحب
+
+```
+يتطلب مصادقة: نعم
+
+الاستجابة: {
+  "global_switch": true,
+  "enabled": true,
+  "status": 1,
+  "message": "success"
+}
+```
+
 #### PUT /admin/v1/withdraw/switch — المفتاح العام للسحب
 
 ```
@@ -1101,7 +1117,9 @@ action: approve=موافقة / reject=رفض / confirm=تأكيد (عند الر
 
 الاستجابة: {
   "global_switch": true,
-  "message": "提现功能已开启"
+  "enabled": true,
+  "status": 1,
+  "message": "操作成功"
 }
 ```
 
@@ -1123,6 +1141,9 @@ action: approve=موافقة / reject=رفض / confirm=تأكيد (عند الر
   "global_switch": true
 }
 ```
+
+هذا الطرف إعادة تعيين لكل user_level: يكتب في جميع صفوف withdraw_limit (user_level: default/verified/vip؛ min_amount → single_min، وdaily_limit / auto_approve_threshold بالاسم نفسه؛ ولا تُغيَّر قيم single_max / monthly_limit القائمة في أي صف). لضبط user_level واحد استخدم PUT /admin/v1/withdraw/limits/{hashid}.
+الأخطاء: 422 لا يُطبَّق أي شيء إذا تجاوز single_min الجديد قيمة single_max قائمة (single_max=0 يعني بلا حد ولا يُقارَن)
 
 #### POST /admin/v1/withdraw/batch-review — مراجعة جماعية لطلبات السحب
 
@@ -1415,6 +1436,9 @@ action: approve / reject
 الطلب: { "single_max": "10000.0000", "fee_pct": "0.25" }
 // يمكن التحديث جزئيًا
 ```
+
+التحقق: يجب أن تكون جميع حقول المبالغ ≥ 0؛ ويجب أن يكون fee_pct < 100 (=100 يجعل الصافي 0 بالضبط فتفشل مدفوعات ذلك user_level حتمًا)؛ ولا يجوز أن يتجاوز single_min قيمة single_max (single_max=0 يعني بلا حد ولا يُقارَن).
+الأخطاء: 422 فشل التحقق / 422 single_min أكبر من single_max / 404 السجل غير موجود
 
 ### 3.11 إدارة تصنيفات الألعاب
 
@@ -2252,7 +2276,7 @@ status: open / waiting / replied / closed
 
 ---
 
-## 10. واجهات برمجة جديدة (v1.3.15-v1.3.22)
+## 10. واجهات برمجة توسعات المنصة
 
 ### 10.1 إدارة المخاطر (الإدارة :8789)
 
@@ -2289,6 +2313,7 @@ status: open / waiting / replied / closed
 | GET /admin/v1/risk/users | قائمة المستخدمين غير الطبيعيين (تصفية حسب درجة الثقة ووقت آخر رصد) |
 | GET /admin/v1/risk/users/{hashid}/timeline | الخط الزمني لمخاطر المستخدم (دمج أحداث المخاطر واللعب ومكافحة الغش) |
 | POST /admin/v1/risk/users/{hashid}/hold | تجميد الرصيد المتاح للمستخدم وتسجيل الإجراء |
+| POST /admin/v1/risk/users/{hashid}/release | رفع تجميد المخاطر للمستخدم واستعادة الرصيد المتاح |
 
 ### 10.2 إدارة مكافحة الغش (الإدارة :8789)
 

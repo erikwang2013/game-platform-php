@@ -100,6 +100,19 @@ class RoleController extends BaseController
             return $this->fail('角色不存在', 404);
         }
 
+        // 镜像 store 的 name 规则（sometimes：局部更新），并补齐 store 漏管的 description/status/
+        // permission_ids。status 若被写成 0 以外的值，AdminPermission.php:75 的 `$role->status === 0`
+        // 判停用会失配 —— 列定义是 TINYINT UNSIGNED 0=禁用 1=启用，收成 0/1 才和那处判断对齐。
+        $validator = validator($request->all(), [
+            'name'           => 'sometimes|required|string|max:50',
+            'description'    => 'sometimes|nullable|string|max:255',
+            'status'         => 'sometimes|required|integer|in:0,1',
+            'permission_ids' => 'sometimes|array',
+        ]);
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
+        }
+
         $role->name = $request->input('name', $role->name);
         $role->description = $request->input('description', $role->description);
         $role->status = (int) $request->input('status', $role->status);

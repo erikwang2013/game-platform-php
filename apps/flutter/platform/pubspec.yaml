@@ -26,3 +26,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  # 吉祥物「小骰」(Dicey)：docs/mascot.svg 经 rsvg-convert 转出的 PNG（1x/2x/3x）
+  assets:
+    - assets/

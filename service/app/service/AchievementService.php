@@ -65,8 +65,23 @@ class AchievementService
         return (int) ($payload['user_id'] ?? 0);
     }
 
+    /**
+     * 算进度 → 落库 → 达标发经验。
+     *
+     * 发经验的**唯一凭据**是下面那次条件 UPDATE 的 affected rows，不是本函数开头那次读。
+     * 旧写法是 check-then-act（读 completed=0 → 判 → 存 → addExp）：两个并发事件各自读到
+     * completed=0、各自 addExp ⇒ 经验双发。这不只是积分问题——`VipService::addExp` 会顺带
+     * 升 VIP 等级，而等级直接决定 `getExchangeDiscount()` 的兑换折扣（钱）。
+     * CAS 在行锁上串行，并发的两个只有一个拿到 affected >= 1。
+     *
+     * 这条修法**不依赖 uk(user_id, achievement_id)** —— 既有生产库不会因 install.sql 而变化：
+     * 无 uk 时并发插入会留下重复行，但两行 completed=0 ⇒ 第一次 UPDATE 命中 2 行（认领成功），
+     * 第二个进程再 UPDATE 命中 0 行（不发经验）。DDL 只负责消掉重复行这个数据质量问题。
+     */
     private static function evaluate(int $userId, Achievement $achievement, array $condition): void
     {
+        // 快路径：已完成直接返回，连 progress 都不回写 —— 否则连续签到断签会把
+        // 已完成成就的进度条改小（storedProgress 是按当前指标重算的）。
         $ua = UserAchievement::where('user_id', $userId)
             ->where('achievement_id', $achievement->id)
             ->first();
@@ -77,31 +92,56 @@ class AchievementService
 
         $threshold = max(1, (int) ($condition['threshold'] ?? 1));
         $progress = max(0, self::computeProgress($userId, $condition));
-        $completed = $progress >= $threshold ? 1 : 0;
         $storedProgress = min($progress, $threshold);
 
         if (!$ua) {
+            // 先落占位行（completed=0）。插入失败只在「撞唯一键且该行确实已存在」时吞掉；
+            // 主键 id 撞号（snowflake 撞号）同样报 1062，但那一行并不存在 —— 必须冒出去，
+            // 否则会被当成"别人插过了"，接着对一行不存在的记录做 CAS，静默不发经验。
             $ua = new UserAchievement();
             $ua->id = SnowflakeService::generate();
             $ua->user_id = $userId;
             $ua->achievement_id = $achievement->id;
             $ua->progress = 0;
             $ua->completed = 0;
+            try {
+                $ua->save();
+            } catch (\PDOException $e) {
+                $isDupKey = in_array($e->errorInfo[1] ?? null, [1062, 23000], true);
+                $rowExists = UserAchievement::where('user_id', $userId)
+                    ->where('achievement_id', $achievement->id)
+                    ->exists();
+                if (!$isDupKey || !$rowExists) {
+                    throw $e;
+                }
+            }
         }
 
-        $ua->progress = $storedProgress;
-        $ua->completed = $completed;
-        $ua->save();
+        if ($progress < $threshold) {
+            // 未达标：只写进度。completed 恒 0、无副作用 ⇒ 并发重复写无害，不必 CAS。
+            UserAchievement::where('user_id', $userId)
+                ->where('achievement_id', $achievement->id)
+                ->update(['progress' => $storedProgress]);
 
-        if ($completed === 1) {
-            VipService::addExp(
-                $userId,
-                (int) $achievement->points,
-                'achievement',
-                (int) $achievement->id,
-                'achievement'
-            );
+            return;
         }
+
+        $claimed = UserAchievement::where('user_id', $userId)
+            ->where('achievement_id', $achievement->id)
+            ->where('completed', 0)
+            ->update(['completed' => 1, 'progress' => $storedProgress]);
+
+        if ($claimed < 1) {
+            return; // 已有人认领过：一条经验都不发
+        }
+
+        VipService::addExp(
+            $userId,
+            (int) $achievement->points,
+            'achievement',
+            (int) $achievement->id,
+            'achievement'
+        );
     }
 
     private static function computeProgress(int $userId, array $condition): int

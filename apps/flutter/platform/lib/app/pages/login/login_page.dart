@@ -114,8 +114,8 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Logo area
-                Icon(Icons.sports_esports, size: 64, color: colorScheme.primary),
+                // Logo area —— 吉祥物「小骰」(Dicey)
+                Image.asset('assets/mascot.png', width: 96),
                 const SizedBox(height: 12),
                 Text(
                   "${AppTranslations.t('login.title')}",

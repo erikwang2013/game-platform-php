@@ -441,11 +441,18 @@ class _GameHallPageState extends State<GameHallPage> {
     final filtered = _filteredGames;
     if (filtered.isEmpty) {
       return Center(
-        child: Text(
-          _searchQuery.isNotEmpty
-              ? '${AppTranslations.t('game_hall.no_results')}'
-              : '${AppTranslations.t('game_hall.no_games')}',
-          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset('assets/mascot.png', width: 120),
+            const SizedBox(height: 12),
+            Text(
+              _searchQuery.isNotEmpty
+                  ? '${AppTranslations.t('game_hall.no_results')}'
+                  : '${AppTranslations.t('game_hall.no_games')}',
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
+          ],
         ),
       );
     }

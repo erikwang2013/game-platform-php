@@ -3,6 +3,26 @@
  */
 
 /**
+ * 统计卡片图标名 → 模块内 media 资源。
+ *
+ * 图标名来自 /admin/v1/dashboard 的 stat.icon，是运行时字符串；而 $r() 只接受编译期字面量，
+ * 所以动态资源名必须先收敛成有限集合。原先的 `$rawfile(`${icon}.png`)` 是典型的静默失败：
+ * $rawfile 不做存在性校验，图标名写错或资源缺失只会渲染成空白，构建照过。
+ */
+export function statIcon(name: string): Resource {
+  switch (name) {
+    case 'person_add':
+      return $r('app.media.ic_person_add');
+    case 'bolt':
+      return $r('app.media.ic_bolt');
+    case 'description':
+      return $r('app.media.ic_description');
+    default:
+      return $r('app.media.ic_people');
+  }
+}
+
+/**
  * 统计卡片组件
  */
 @Component
@@ -16,7 +36,7 @@ export struct StatCard {
   build() {
     Column() {
       Row() {
-        Image($rawfile(`${this.icon}.png`))
+        Image(statIcon(this.icon))
           .width(20)
           .height(20)
           .fillColor(this.color)
@@ -79,9 +99,11 @@ export struct EmptyView {
 
   build() {
     Column() {
-      Image($rawfile('empty.png'))
-        .width(120)
-        .height(120)
+      // 吉祥物小骰（Dicey）：原先指向并不存在的 rawfile/empty.png（空态一直无图），
+      // 改为随模块编译的 media 资源——restool 会在编译期校验该引用，写错即构建失败
+      Image($r('app.media.mascot'))
+        .width(72)
+        .height(60)
         .objectFit(ImageFit.Contain)
 
       Text(this.message)

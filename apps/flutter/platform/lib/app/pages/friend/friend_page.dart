@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../i18n/translations.dart';
+import '../../services/api_helpers.dart';
 import '../../services/api_service.dart';
 
 class FriendPage extends StatefulWidget {
@@ -30,7 +31,7 @@ class _FriendPageState extends State<FriendPage> {
     setState(() => _loading = true);
     try {
       final resp = await _api.get('/api/v1/friend/list');
-      _friends = List<Map<String, dynamic>>.from(resp['data'] ?? []);
+      _friends = ApiHelpers.extractList(resp['data']);
     } catch (_) {}
     setState(() => _loading = false);
   }
@@ -39,7 +40,7 @@ class _FriendPageState extends State<FriendPage> {
     setState(() => _loading = true);
     try {
       final resp = await _api.get('/api/v1/friend/requests');
-      _requests = List<Map<String, dynamic>>.from(resp['data'] ?? []);
+      _requests = ApiHelpers.extractList(resp['data']);
     } catch (_) {}
     setState(() => _loading = false);
   }
@@ -48,7 +49,7 @@ class _FriendPageState extends State<FriendPage> {
     if (q.length < 2) return;
     try {
       final resp = await _api.get('/api/v1/friend/search', params: {'q': q});
-      _searchResults = List<Map<String, dynamic>>.from(resp['data'] ?? []);
+      _searchResults = ApiHelpers.extractList(resp['data']);
     } catch (_) {}
     setState(() {});
   }
@@ -127,17 +128,30 @@ class _FriendPageState extends State<FriendPage> {
   }
 
   Widget _buildFriendList() {
-    if (_friends.isEmpty) return Center(child: Text("${AppTranslations.t('friend.no_friends')}"));
+    if (_friends.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset('assets/mascot.png', width: 120),
+            const SizedBox(height: 12),
+            Text("${AppTranslations.t('friend.no_friends')}"),
+          ],
+        ),
+      );
+    }
     return ListView.builder(
       itemCount: _friends.length,
       itemBuilder: (_, i) {
         final f = _friends[i];
+        // 服务端 /friend/list 的元素是 {id, username, nickname, avatar}，没有 friend_id/friend_name
+        final name = f['nickname'] as String? ?? f['username'] as String? ?? 'User';
         return ListTile(
           leading: const CircleAvatar(child: Icon(Icons.person)),
-          title: Text(f['friend_name'] ?? 'User'),
+          title: Text(name),
           trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-            IconButton(icon: const Icon(Icons.chat), onPressed: () => Get.toNamed('/chat', arguments: {'peer_id': f['friend_id'], 'peer_name': f['friend_name']})),
-            IconButton(icon: const Icon(Icons.person_remove, color: Colors.red), onPressed: () => _remove(f['friend_id'])),
+            IconButton(icon: const Icon(Icons.chat), onPressed: () => Get.toNamed('/chat', arguments: {'peer_id': f['id'], 'peer_name': name})),
+            IconButton(icon: const Icon(Icons.person_remove, color: Colors.red), onPressed: () => _remove(f['id'] as String)),
           ]),
         );
       },
@@ -145,14 +159,27 @@ class _FriendPageState extends State<FriendPage> {
   }
 
   Widget _buildRequestList() {
-    if (_requests.isEmpty) return Center(child: Text("${AppTranslations.t('friend.no_requests')}"));
+    if (_requests.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Image.asset('assets/mascot.png', width: 120),
+            const SizedBox(height: 12),
+            Text("${AppTranslations.t('friend.no_requests')}"),
+          ],
+        ),
+      );
+    }
     return ListView.builder(
       itemCount: _requests.length,
       itemBuilder: (_, i) {
         final r = _requests[i];
+        // 申请元素是 {id, user: {...}, created_at}，申请人信息嵌在 user 里，没有 user_name
+        final u = r['user'] as Map<String, dynamic>? ?? const <String, dynamic>{};
         return ListTile(
           leading: const CircleAvatar(child: Icon(Icons.person_add)),
-          title: Text(r['user_name'] ?? 'User'),
+          title: Text(u['nickname'] as String? ?? u['username'] as String? ?? 'User'),
           trailing: Row(mainAxisSize: MainAxisSize.min, children: [
             IconButton(icon: const Icon(Icons.check, color: Colors.green), onPressed: () => _accept(r['id'])),
             IconButton(icon: const Icon(Icons.close, color: Colors.red), onPressed: () => _reject(r['id'])),
@@ -170,7 +197,16 @@ class _FriendPageState extends State<FriendPage> {
         onChanged: (v) { if (v.length >= 2) _search(v); },
       )),
       Expanded(child: _searchResults.isEmpty
-          ? Center(child: Text("${AppTranslations.t('friend.no_results')}"))
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.asset('assets/mascot.png', width: 120),
+                  const SizedBox(height: 12),
+                  Text("${AppTranslations.t('friend.no_results')}"),
+                ],
+              ),
+            )
           : ListView.builder(
               itemCount: _searchResults.length,
               itemBuilder: (_, i) {

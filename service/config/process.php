@@ -62,6 +62,18 @@ return [
     'event-subscriber' => [
         'handler' => app\process\EventSubscriber::class,
         'count' => 1,
+        // 本进程在 onWorkerStart 里做阻塞式 subscribe（EventBus::subscribe 把 phpredis 的
+        // OPT_READ_TIMEOUT 设为 -1，且 phpredis 无异步订阅）⇒ onWorkerStart 永不返回，
+        // workerman 的事件循环起不来、信号永不派发。
+        // reloadable=false 的确切语义（workerman Worker.php:1987-1995 / 2026-2030）：
+        //   master 侧：不进 pidsToRestart ⇒ 不做「逐个优雅 reload」，也不挂 stopTimeout 后的
+        //     SIGKILL 定时器（那只对 pidsToRestart 里的 pid 生效），只在 reload 时立刻发一次信号；
+        //   子进程侧：reload 信号（SIGUSR1/SIGUSR2 都走 reload，:1385-1392）只 resetStd()，不 stopAll()。
+        //   ⇒ reload 既不刷新它、也不强杀它（不写这一行则相反：每次 reload 等 2 秒再 SIGKILL，
+        //     日志留一条 status 9）。
+        // 代价：改本进程代码后 reload 不生效，必须整进程重启。stop 能杀掉它——master stopAll
+        //   对全部 pid 发停止信号并在 ceil(stopTimeout) 后 SIGKILL（:2049-2061，不看 reloadable）。
+        'reloadable' => false,
     ],
 
     // 反作弊批处理：每小时增量扫描对局日志（单实例，游标文件）

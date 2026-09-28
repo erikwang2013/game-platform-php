@@ -61,7 +61,7 @@ Languages: [中文](FEATURE-DESIGN.md) · [English](FEATURE-DESIGN.en.md) · **�
 | 필드 | 설명 |
 |------|------|
 | balance | 사용 가능 잔액 (충전/출금/환전 가능) |
-| frozen_balance | 동결 잔액 (예약분, 예: 출금 진행 중) |
+| frozen_balance | 동결 잔액 (리스크 동결 점유: hold로 동결, release로 해제·반환. 출금은 이 컬럼을 사용하지 않음) |
 | total_earned | 누적 수입 |
 | total_spent | 누적 지출 |
 | version | 낙관적 잠금 버전 번호 (업데이트마다 +1) |

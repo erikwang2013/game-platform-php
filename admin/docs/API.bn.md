@@ -1971,6 +1971,7 @@ DELETE /admin/v1/payment/method/{hashid}
 | GET | /admin/v1/risk/users | অস্বাভাবিক ব্যবহারকারীর তালিকা (score_min=বিশ্বাস স্কোরের ঊর্ধ্বসীমা, from/to=শেষ হিটের সময় উইন্ডো) | JWT + RBAC |
 | GET | /admin/v1/risk/users/{hashid}/timeline | ব্যবহারকারীর রিস্ক টাইমলাইন (রিস্ক/গেম/অ্যান্টি-চিট ইভেন্ট একত্রিত, সময় অনুযায়ী অবরোহ) | JWT + RBAC |
 | POST | /admin/v1/risk/users/{hashid}/hold | ব্যবহারকারীর প্ল্যাটফর্মে উপলব্ধ ব্যালেন্স স্থগিত করে risk_log-এ লিপিবদ্ধ করুন | JWT + RBAC |
+| POST | /admin/v1/risk/users/{hashid}/release | ঝুঁকি জমাট মুক্ত করুন (amount ঐচ্ছিক, ডিফল্ট সম্পূর্ণ) এবং risk_log-এ লিপিবদ্ধ করুন | JWT + RBAC |
 
 ### 19.3 VIP স্তর
 

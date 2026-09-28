@@ -229,6 +229,15 @@ class ExchangeController extends BaseController
                 // Add game balance
                 $this->addGameBalance($userId, $gameId, $currencyId, $legs['game_amount']);
             } else {
+                // 取锁顺序必须与 buy 一致：平台钱包行 → 游戏币行。
+                // buy 的平台扣款走 UserWallet::deductBalance → WalletService::find()，
+                // 先锁 user_wallet 行，再由 addGameBalance 锁 user_game_wallet 行；
+                // sell 若反过来先锁游戏币行，同一用户并发的 buy/sell 即 AB-BA 取锁环（1213）。
+                // 这里只取平台行锁、不改值：加款仍留在游戏币扣减成功之后 ——
+                // WalletService::record() 会在事务内 emit wallet.mutated（非事务、不可回滚），
+                // 提前加款会让「游戏币不足」这条常规失败路径发出一次并未发生的钱包变动事件。
+                UserWallet::where('user_id', $userId)->lockForUpdate()->first();
+
                 // Deduct game balance
                 $deducted = $this->deductGameBalance($userId, $gameId, $currencyId, $legs['game_amount']);
                 if (!$deducted) {
@@ -261,9 +270,18 @@ class ExchangeController extends BaseController
             $wallet = UserWallet::where('user_id', $userId)->first();
             $balanceAfter = $wallet ? $wallet->balance : '0.0000';
 
-            Db::commit();
+            // exchange.completed 在 EventBus::RELIABLE_EVENTS 清单内 ⇒ 必须走 Outbox 与业务行同事务，
+            // 原来走 Pub/Sub emit() 是丢事件无重放的 fire-and-forget。push 必须在 commit 之前调用
+            // （见 EventBus::push 文档），event_id 与 deposit.completed 同形 {@业务}_{主键}，
+            // outbox 的 uk_event_id 唯一键保证崩溃重放幂等。
+            EventBus::push('exchange.completed', 'exchange_' . $record->id, [
+                'user_id'         => $userId,
+                'game_id'         => $gameId,
+                'direction'       => $direction,
+                'platform_amount' => $legs['platform_amount'],
+            ]);
 
-            EventBus::emit('exchange.completed', ['user_id' => $userId, 'game_id' => $gameId, 'direction' => $direction, 'platform_amount' => $legs['platform_amount']]);
+            Db::commit();
 
             NotificationService::send($userId, 'exchange', 'Exchange Completed', "Exchange {$direction}: {$legs['game_amount']} game tokens / {$legs['platform_amount']} platform tokens (game #{$gameId})", 'exchange_record', $record->id);
 

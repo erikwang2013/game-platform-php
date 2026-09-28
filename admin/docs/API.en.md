@@ -1971,6 +1971,7 @@ Risk cluster detection, manual confirmation and abnormal user handling.
 | GET | /admin/v1/risk/users | Abnormal user queue (score_min=trust score upper bound, from/to=last-hit time window) | JWT + RBAC |
 | GET | /admin/v1/risk/users/{hashid}/timeline | User risk timeline (merged risk/play/anti-cheat events, newest first) | JWT + RBAC |
 | POST | /admin/v1/risk/users/{hashid}/hold | Freeze the user's available platform balance and write to risk_log | JWT + RBAC |
+| POST | /admin/v1/risk/users/{hashid}/release | Release the user's risk hold (amount optional, full by default) and write to risk_log | JWT + RBAC |
 
 ### 19.3 VIP Levels
 

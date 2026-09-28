@@ -342,6 +342,7 @@ status:
 - 400 최소 출금 금액 미만
 - 400 일일 출금 한도 초과
 - 400 잔액 부족
+- 400 수수료가 원금을 잠식 (실수령 ≤ 0; 계산은 음수만 거부하고 정확히 0은 리스크 검사 전에 이 엔드포인트가 차단)
 
 #### GET /api/v1/withdraw/orders — 출금 기록
 
@@ -503,6 +504,8 @@ is_new: true=신규 등록 사용자 / false=기존 계정 연동
 
 응답: { "message": "KYC submitted successfully" }
 ```
+
+오류: 422 이미 심사 대기 또는 승인된 인증 제출이 있습니다(동시 중복 제출도 500이 아니라 같은 오류를 반환합니다)
 
 ### 2.9 결제
 
@@ -1092,6 +1095,19 @@ action: approve=승인 / reject=거부 / confirm=확인 (거부 시 플랫폼 �
 
 오류: 422 주문 상태가 심사 대기가 아님
 
+#### GET /admin/v1/withdraw/switch — 전역 출금 스위치 조회
+
+```
+인증 필요: 예
+
+응답: {
+  "global_switch": true,
+  "enabled": true,
+  "status": 1,
+  "message": "success"
+}
+```
+
 #### PUT /admin/v1/withdraw/switch — 전역 출금 스위치
 
 ```
@@ -1101,7 +1117,9 @@ action: approve=승인 / reject=거부 / confirm=확인 (거부 시 플랫폼 �
 
 응답: {
   "global_switch": true,
-  "message": "提现功能已开启"
+  "enabled": true,
+  "status": 1,
+  "message": "操作成功"
 }
 ```
 
@@ -1123,6 +1141,9 @@ action: approve=승인 / reject=거부 / confirm=확인 (거부 시 플랫폼 �
   "global_switch": true
 }
 ```
+
+이 엔드포인트는 전 user_level 일괄 재설정입니다: withdraw_limit의 모든 user_level 행에 기록합니다(default/verified/vip, min_amount → single_min, daily_limit / auto_approve_threshold는 이름 그대로. 각 행의 기존 single_max / monthly_limit은 변경하지 않음). 단일 user_level 조정은 PUT /admin/v1/withdraw/limits/{hashid}를 사용하세요.
+오류: 422 새 single_min이 기존 single_max를 초과하면 전혀 반영되지 않습니다(single_max=0은 무제한이며 비교하지 않음)
 
 #### POST /admin/v1/withdraw/batch-review — 출금 일괄 심사
 
@@ -1415,6 +1436,9 @@ action: approve / reject
 요청: { "single_max": "10000.0000", "fee_pct": "0.25" }
 // 부분 업데이트 가능
 ```
+
+검증: 모든 금액 필드는 ≥ 0, fee_pct는 < 100(=100이면 실수령이 정확히 0이 되어 해당 user_level의 지급은 반드시 실패), single_min은 single_max를 초과할 수 없음(single_max=0은 무제한이며 비교하지 않음).
+오류: 422 검증 실패 / 422 single_min이 single_max 초과 / 404 해당 레코드 없음
 
 ### 3.11 게임 분류 관리
 
@@ -2252,7 +2276,7 @@ status: open / waiting / replied / closed
 
 ---
 
-## 10. v1.3.15-22 신규 API
+## 10. 플랫폼 확장 API
 
 ### 10.1 리스크 관리 (관리자 :8789)
 
@@ -2289,6 +2313,7 @@ status: open / waiting / replied / closed
 | GET /admin/v1/risk/users | 이상 사용자 큐 (신뢰 점수와 최근 적발 시각으로 필터) |
 | GET /admin/v1/risk/users/{hashid}/timeline | 사용자 리스크 타임라인 (리스크 / 플레이 / 안티치트 이벤트 통합) |
 | POST /admin/v1/risk/users/{hashid}/hold | 사용자의 플랫폼 가용 잔액을 동결하고 기록을 남김 |
+| POST /admin/v1/risk/users/{hashid}/release | 사용자의 리스크 동결을 해제하고 가용 잔액을 복원 |
 
 ### 10.2 안티치트 관리 (관리자 :8789)
 

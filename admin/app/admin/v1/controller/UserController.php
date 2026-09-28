@@ -154,6 +154,20 @@ class UserController extends BaseController
             return $this->fail('用户不存在', 404);
         }
 
+        // 镜像 store 的 real_name/status 规则（sometimes：局部更新），并为 store 漏管的 phone/email
+        // 补上列宽上限（两列均 VARCHAR(500)，因为走 encryptable 加密存储，密文比明文长）。
+        // password 不在这里校验：下面那段行内检查更具体（8-32 位 + 大小写/数字），重复一遍只会
+        // 让同一件事出现两个真值源。
+        $validator = validator($request->all(), [
+            'real_name' => 'sometimes|required|string|max:50',
+            'status'    => 'sometimes|required|integer|in:0,1',
+            'phone'     => 'sometimes|nullable|string|max:500',
+            'email'     => 'sometimes|nullable|string|max:500',
+        ]);
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
+        }
+
         $user->real_name = $request->input('real_name', $user->real_name);
         $user->status = (int) $request->input('status', $user->status);
 
@@ -236,9 +250,11 @@ class UserController extends BaseController
             return $this->fail('无效的ID: ' . implode(', ', $invalidIds), 422);
         }
 
-        AdminUser::whereIn('id', $decodedIds)->delete();
+        // 报受影响行数，不是请求条数：admin/docs/API.md:711 的 batch/destroy 明写「data.count 为实际删除数量」。
+        // 传进来的 id 可能已被别的管理员删掉（软删除后 whereIn 命不中）⇒ 两个数会不一样。
+        $affected = AdminUser::whereIn('id', $decodedIds)->delete();
 
-        return $this->success(['count' => count($decodedIds)], '删除成功');
+        return $this->success(['count' => $affected], '删除成功');
     }
 
     #[Apidoc\Title("批量启禁用")]
@@ -251,15 +267,19 @@ class UserController extends BaseController
     public function batchStatus(Request $request): Response
     {
         $ids    = $request->input('ids', []);
-        $status = (int) $request->input('status', 0);
+        $status = $request->input('status');
 
         if (empty($ids) || !is_array($ids)) {
             return $this->fail('请选择用户', 422);
         }
 
-        if (!in_array($status, [0, 1], true)) {
+        // 先原样比、通过后再转 int。早先这里先 (int) 再 in_array(..., true)：
+        // 'banned' 被转成 0 = 禁用，静默落库，与 admin/docs/API.md:754 承诺的「422: 状态值无效（status 不是 0 或 1）」相反。
+        // 收 '0'/'1' 是给表单编码留的路（JSON 前端发 int，form 发字符串）。
+        if (!in_array($status, [0, 1, '0', '1'], true)) {
             return $this->fail('状态值无效', 422);
         }
+        $status = (int) $status;
 
         $decodedIds = [];
         $invalidIds = [];
@@ -274,9 +294,14 @@ class UserController extends BaseController
             return $this->fail('无效的ID: ' . implode(', ', $invalidIds), 422);
         }
 
-        AdminUser::whereIn('id', $decodedIds)->update(['status' => $status]);
+        // 同上：count = MySQL 报的 changed rows（不是请求条数）。**但它不等于「状态真变了的行数」**：
+        // Eloquent 的 Builder::update() 会自己补 `updated_at = now()`（实测生成的 SQL：
+        // `update game_admin_user set status = 0, game_admin_user.updated_at = '…' where …`），
+        // 所以本来就处于目标状态的行也会被算成改动（同一秒内重复提交才会报 0）。
+        // 要「同值提交 ⇒ 0」这个读数，得调用方自己先比一遍（见 PlatformUserController::update）。
+        $affected = AdminUser::whereIn('id', $decodedIds)->update(['status' => $status]);
 
         $label = $status === 1 ? '启用' : '禁用';
-        return $this->success(['count' => count($decodedIds)], "批量{$label}成功");
+        return $this->success(['count' => $affected], "批量{$label}成功");
     }
 }

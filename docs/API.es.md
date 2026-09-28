@@ -342,6 +342,7 @@ Errores:
 - 400 por debajo del importe mínimo de retiro
 - 400 supera el límite diario de retiro
 - 400 saldo insuficiente
+- 400 la comisión consume el principal (importe neto ≤ 0; el cálculo solo rechaza valores negativos, el 0 exacto lo bloquea este endpoint antes del control de riesgo)
 
 #### GET /api/v1/withdraw/orders — Registros de retiro
 
@@ -503,6 +504,8 @@ Solicitud: {
 
 Respuesta: { "message": "KYC submitted successfully" }
 ```
+
+Errores: 422 ya existe una solicitud KYC pendiente o aprobada (un envío duplicado concurrente devuelve el mismo error en lugar de 500)
 
 ### 2.9 Pagos
 
@@ -1092,6 +1095,19 @@ action: approve=aprobar / reject=rechazar / confirm=confirmar (al rechazar se de
 
 Error: 422 el estado de la orden no es pendiente de revisión
 
+#### GET /admin/v1/withdraw/switch — Consultar interruptor global de retiros
+
+```
+Requiere autenticación: Sí
+
+Respuesta: {
+  "global_switch": true,
+  "enabled": true,
+  "status": 1,
+  "message": "success"
+}
+```
+
 #### PUT /admin/v1/withdraw/switch — Interruptor global de retiros
 
 ```
@@ -1101,7 +1117,9 @@ Solicitud: { "enabled": 1 }
 
 Respuesta: {
   "global_switch": true,
-  "message": "提现功能已开启"
+  "enabled": true,
+  "status": 1,
+  "message": "操作成功"
 }
 ```
 
@@ -1123,6 +1141,9 @@ Respuesta: {
   "global_switch": true
 }
 ```
+
+Este endpoint es un restablecimiento de todos los niveles: escribe en todas las filas de withdraw_limit (user_level default/verified/vip; min_amount → single_min, daily_limit / auto_approve_threshold conservan su nombre; el single_max / monthly_limit existente de cada fila no se modifica). Para ajustar un solo nivel use PUT /admin/v1/withdraw/limits/{hashid}.
+Errores: 422 no se aplica nada si el nuevo single_min supera un single_max existente (single_max=0 significa sin límite y no se compara)
 
 #### POST /admin/v1/withdraw/batch-review — Revisión masiva de retiros
 
@@ -1415,6 +1436,9 @@ Requiere autenticación: Sí
 Solicitud: { "single_max": "10000.0000", "fee_pct": "0.25" }
 // 可部分更新
 ```
+
+Validación: todos los campos de importe deben ser ≥ 0; fee_pct debe ser < 100 (=100 deja el importe neto exactamente en 0, los pagos de ese nivel fallarán con seguridad); single_min no puede superar single_max (single_max=0 significa sin límite y no se compara).
+Errores: 422 validación fallida / 422 single_min mayor que single_max / 404 registro no encontrado
 
 ### 3.11 Gestión de categorías de juegos
 
@@ -2252,7 +2276,7 @@ La comisión por recomendación añade una segunda línea de reparto:
 
 ---
 
-## 10. Nuevas API (v1.3.15-v1.3.22)
+## 10. API de extensión de plataforma
 
 ### 10.1 Gestión de riesgos (admin :8789)
 
@@ -2289,6 +2313,7 @@ La comisión por recomendación añade una segunda línea de reparto:
 | GET /admin/v1/risk/users | Cola de usuarios anómalos (filtrada por puntuación de confianza y última detección) |
 | GET /admin/v1/risk/users/{hashid}/timeline | Cronología de riesgo del usuario (eventos de riesgo / partidas / anti-fraude combinados) |
 | POST /admin/v1/risk/users/{hashid}/hold | Congelar el saldo disponible del usuario y dejar registro |
+| POST /admin/v1/risk/users/{hashid}/release | Liberar la retención de riesgo del usuario y restaurar el saldo disponible |
 
 ### 10.2 Gestión anti-trampas (admin :8789)
 

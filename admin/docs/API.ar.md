@@ -1971,6 +1971,7 @@ DELETE /admin/v1/payment/method/{hashid}
 | GET | /admin/v1/risk/users | قائمة المستخدمين غير الطبيعيين (score_min=الحد الأعلى لدرجة الثقة، from/to=نافذة آخر إصابة) | JWT + RBAC |
 | GET | /admin/v1/risk/users/{hashid}/timeline | الخط الزمني لمخاطر المستخدم (أحداث المخاطر/اللعب/مكافحة الغش مدموجة، من الأحدث إلى الأقدم) | JWT + RBAC |
 | POST | /admin/v1/risk/users/{hashid}/hold | تجميد الرصيد المتاح للمستخدم على المنصة وتسجيله في risk_log | JWT + RBAC |
+| POST | /admin/v1/risk/users/{hashid}/release | رفع تجميد المخاطر (المبلغ اختياري، كامل افتراضيًا) وتسجيله في risk_log | JWT + RBAC |
 
 ### 19.3 مستويات VIP
 

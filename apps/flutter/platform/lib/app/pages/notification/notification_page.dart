@@ -90,7 +90,16 @@ class _NotificationPageState extends State<NotificationPage> {
                   ),
                 )
               : _items.isEmpty
-                  ? Center(child: Text('${AppTranslations.t('notification.empty')}'))
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.asset('assets/mascot.png', width: 120),
+                          const SizedBox(height: 12),
+                          Text('${AppTranslations.t('notification.empty')}'),
+                        ],
+                      ),
+                    )
                   : RefreshIndicator(
                       onRefresh: _load,
                       child: ListView.separated(

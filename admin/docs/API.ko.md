@@ -1971,6 +1971,7 @@ DELETE /admin/v1/payment/method/{hashid}
 | GET | /admin/v1/risk/users | 이상 사용자 큐(score_min=신뢰 점수 상한, from/to=최근 적중 시간 범위) | JWT + RBAC |
 | GET | /admin/v1/risk/users/{hashid}/timeline | 사용자 리스크 타임라인(리스크/플레이/부정행위 이벤트 병합, 최신순) | JWT + RBAC |
 | POST | /admin/v1/risk/users/{hashid}/hold | 사용자의 플랫폼 가용 잔액을 동결하고 risk_log에 기록합니다 | JWT + RBAC |
+| POST | /admin/v1/risk/users/{hashid}/release | 사용자의 리스크 동결을 해제하고(amount 선택, 기본 전액) risk_log에 기록합니다 | JWT + RBAC |
 
 ### 19.3 VIP 등급
 

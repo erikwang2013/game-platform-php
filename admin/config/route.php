@@ -149,6 +149,8 @@ Route::group('/admin/v1', function () {
     Route::get('/withdraw/orders', [app\admin\v1\controller\WithdrawController::class, 'orders']);
     Route::put('/withdraw/review', [app\admin\v1\controller\WithdrawController::class, 'review']);
     Route::put('/withdraw/switch', [app\admin\v1\controller\WithdrawController::class, 'toggleSwitch']);
+    // 与 PUT 同一处理器：界面 loadSwitch() 用 GET 读当前开关，此前只注册 PUT ⇒ 405 ⇒ 界面恒显"已开启"
+    Route::get('/withdraw/switch', [app\admin\v1\controller\WithdrawController::class, 'toggleSwitch']);
     Route::post('/withdraw/limits/set', [app\admin\v1\controller\WithdrawController::class, 'setLimits']);
     Route::get('/withdraw/limits/list', [app\admin\v1\controller\WithdrawController::class, 'listLimits']);
     Route::put('/withdraw/limits/{hashid}', [app\admin\v1\controller\WithdrawController::class, 'updateLimit']);
@@ -281,6 +283,8 @@ Route::group('/admin/v1', function () {
     Route::get('/risk/users', [app\admin\v1\controller\RiskUserController::class, 'users']);
     Route::get('/risk/users/{hashid}/timeline', [app\admin\v1\controller\RiskUserController::class, 'timeline']);
     Route::post('/risk/users/{hashid}/hold', [app\admin\v1\controller\RiskUserController::class, 'hold']);
+    // 与 hold 配对：只有冻结没有解冻时，运营能冻不能解、用户申诉无处落（不可逆的冻结本身就是缺陷）
+    Route::post('/risk/users/{hashid}/release', [app\admin\v1\controller\RiskUserController::class, 'release']);
 
     // ---- 反作弊管理 ----
     Route::get('/anticheat/events', [app\admin\v1\controller\AntiCheatController::class, 'events']);

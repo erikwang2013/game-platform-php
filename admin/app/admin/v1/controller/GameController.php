@@ -222,6 +222,27 @@ class GameController extends BaseController
             return $this->fail('游戏不存在', 404);
         }
 
+        // 镜像 create 的规则（sometimes：局部更新），并补齐 create 漏掉、而 update 会写的字段。
+        // status 收 0/1（列注释 0=下架 1=上架）；几个字符串字段按 game_game 的列宽封顶 ——
+        // 超长会被 MySQL 静默截断（非严格模式）或报 1406（严格模式），两种都不是好失败模式。
+        $validator = validator($request->all(), [
+            'name'         => 'sometimes|required|string|max:100',
+            'type'         => 'sometimes|required|string|in:self,embedded,third_party',
+            'description'  => 'sometimes|nullable|string',
+            'cover_image'  => 'sometimes|nullable|string|max:255',
+            'api_endpoint' => 'sometimes|nullable|string|max:255',
+            'api_key'      => 'sometimes|nullable|string|max:500',
+            'api_secret'   => 'sometimes|nullable|string|max:500',
+            'status'       => 'sometimes|required|integer|in:0,1',
+            'sort'         => 'sometimes|nullable|integer|min:0',
+            'sdk_version'  => 'sometimes|nullable|string|max:20',
+            'platform'     => 'sometimes|string|in:h5,unity,web,native',
+            'region'       => 'sometimes|string|max:10',
+        ]);
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
+        }
+
         $data = $request->only([
             'name', 'type', 'description', 'cover_image',
             'api_endpoint', 'api_key', 'api_secret', 'status', 'sort',

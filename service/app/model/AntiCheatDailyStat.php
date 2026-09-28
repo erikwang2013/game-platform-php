@@ -45,10 +45,11 @@ class AntiCheatDailyStat extends Model
         'bets' => 'string',
         'avg_bet' => 'string',
         'std_bet' => 'string',
-        'wins_total' => 'int',
+        'wins_total' => 'string',
         'plays_30d' => 'int',
         'wins_30d' => 'int',
         'active_seconds' => 'int',
+        // ponytail: 该列当前无写入方、恒 NULL；有写入方时再按 decimal 口径处理
         'moves_per_sec_p50' => 'float',
     ];
 }

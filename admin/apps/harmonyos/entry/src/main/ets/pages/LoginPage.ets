@@ -153,7 +153,7 @@ struct LoginPage {
         Column() {
           // 顶部品牌区
           Column() {
-            Image($rawfile('logo.png'))
+            Image($r('app.media.logo'))
               .width(64)
               .height(64)
               .margin({ bottom: 8 })

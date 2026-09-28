@@ -375,6 +375,8 @@ button.chip:hover { color: var(--text); border-color: var(--stroke-2); }
   font-size: 14px;
 }
 .state strong { color: var(--text); font-size: 15px; }
+/* 吉祥物小骰（Dicey）：240x200 的 6:5 比例；.state 是纵向 flex，间距交给 gap */
+.state-art { width: 72px; height: 60px; opacity: .9; }
 
 .skeleton {
   border-radius: var(--radius-sm);

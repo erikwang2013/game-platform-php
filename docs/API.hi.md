@@ -342,6 +342,7 @@ status:
 - 400 न्यूनतम निकासी राशि से कम
 - 400 दैनिक निकासी सीमा से अधिक
 - 400 शेष अपर्याप्त
+- 400 शुल्क मूलधन खा जाता है (शुद्ध राशि ≤ 0; गणना केवल ऋणात्मक मान अस्वीकार करती है, ठीक 0 को यह एंडपॉइंट जोखिम जाँच से पहले रोकता है)
 
 #### GET /api/v1/withdraw/orders — निकासी रिकॉर्ड
 
@@ -503,6 +504,8 @@ is_new: true=नया पंजीकृत उपयोगकर्ता / fa
 
 प्रतिक्रिया: { "message": "KYC submitted successfully" }
 ```
+
+त्रुटि: 422 आपके पास पहले से लंबित या स्वीकृत KYC सबमिशन है (समवर्ती दोहरा सबमिशन 500 के बजाय वही त्रुटि लौटाता है)
 
 ### 2.9 भुगतान
 
@@ -1092,6 +1095,19 @@ action: approve=स्वीकृति / reject=अस्वीकृति / 
 
 त्रुटि: 422 ऑर्डर स्थिति समीक्षा लंबित नहीं है
 
+#### GET /admin/v1/withdraw/switch — वैश्विक निकासी स्विच क्वेरी
+
+```
+प्रमाणीकरण आवश्यक: हाँ
+
+प्रतिक्रिया: {
+  "global_switch": true,
+  "enabled": true,
+  "status": 1,
+  "message": "success"
+}
+```
+
 #### PUT /admin/v1/withdraw/switch — वैश्विक निकासी स्विच
 
 ```
@@ -1101,7 +1117,9 @@ action: approve=स्वीकृति / reject=अस्वीकृति / 
 
 प्रतिक्रिया: {
   "global_switch": true,
-  "message": "提现功能已开启"
+  "enabled": true,
+  "status": 1,
+  "message": "操作成功"
 }
 ```
 
@@ -1123,6 +1141,9 @@ action: approve=स्वीकृति / reject=अस्वीकृति / 
   "global_switch": true
 }
 ```
+
+यह एंडपॉइंट सभी user_level का रीसेट है: यह withdraw_limit की सभी user_level पंक्तियों में लिखता है (default/verified/vip; min_amount → single_min, daily_limit / auto_approve_threshold नाम वही; प्रत्येक पंक्ति का मौजूदा single_max / monthly_limit अपरिवर्तित रहता है)। एक user_level बदलने के लिए PUT /admin/v1/withdraw/limits/{hashid} लें।
+त्रुटि: 422 यदि नया single_min किसी मौजूदा single_max से अधिक है तो कुछ भी लागू नहीं होता (single_max=0 का अर्थ असीमित, तुलना नहीं होती)
 
 #### POST /admin/v1/withdraw/batch-review — विथड्रॉल की बैच समीक्षा
 
@@ -1415,6 +1436,9 @@ action: approve / reject
 अनुरोध: { "single_max": "10000.0000", "fee_pct": "0.25" }
 // आंशिक अपडेट संभव
 ```
+
+सत्यापन: सभी राशि फ़ील्ड ≥ 0 हों; fee_pct < 100 होना चाहिए (=100 पर शुद्ध राशि ठीक 0 रह जाती है, उस user_level का भुगतान निश्चित रूप से विफल होगा); single_min, single_max से अधिक न हो (single_max=0 का अर्थ असीमित, तुलना नहीं होती)।
+त्रुटि: 422 सत्यापन विफल / 422 single_min, single_max से अधिक / 404 रिकॉर्ड नहीं मिला
 
 ### 3.11 गेम श्रेणी प्रबंधन
 
@@ -2252,7 +2276,7 @@ status: open / waiting / replied / closed
 
 ---
 
-## 10. नए API (v1.3.15-v1.3.22)
+## 10. प्लेटफ़ॉर्म विस्तार API
 
 ### 10.1 जोखिम प्रबंधन (एडमिन :8789)
 
@@ -2289,6 +2313,7 @@ status: open / waiting / replied / closed
 | GET /admin/v1/risk/users | असामान्य उपयोगकर्ता कतार (ट्रस्ट स्कोर और अंतिम पहचान के अनुसार फ़िल्टर) |
 | GET /admin/v1/risk/users/{hashid}/timeline | उपयोगकर्ता की जोखिम टाइमलाइन (जोखिम / गेमप्ले / एंटी-चीट घटनाएँ संयुक्त) |
 | POST /admin/v1/risk/users/{hashid}/hold | उपयोगकर्ता का प्लेटफ़ॉर्म उपलब्ध बैलेंस फ़्रीज़ करें और लॉग रखें |
+| POST /admin/v1/risk/users/{hashid}/release | उपयोगकर्ता की जोखिम फ़्रीज़ हटाएँ और उपलब्ध बैलेंस बहाल करें |
 
 ### 10.2 एंटी-चीट प्रबंधन (एडमिन :8789)
 

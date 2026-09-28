@@ -186,7 +186,7 @@ type 可选值: deposit / withdraw / exchange_in / exchange_out / game_earn / ga
 }
 ```
 
-currency 可选值: USD / CNY / EUR / JPY / KRW / GBP / BRL / INR
+currency Допустимые значения: USD / CNY / EUR / JPY / KRW / GBP / BRL / INR
 
 checkout_url: ссылка перехода на платёжный шлюз (заполняется при создании заказа); expires_at: срок действия платёжной ссылки (1 час после создания)
 
@@ -215,7 +215,7 @@ checkout_url: ссылка перехода на платёжный шлюз (з
 }
 ```
 
-status 可选值: pending / paid / confirmed / cancelled
+status Допустимые значения: pending / paid / confirmed / cancelled
 
 ### 2.4 Обмен
 
@@ -331,7 +331,7 @@ direction: in=покупка игровой валюты / out=продажа и
 }
 ```
 
-method 可选值: paypal / bank / crypto
+method Допустимые значения: paypal / bank / crypto
 
 status:
 - approved: автоматически одобрен (сумма < auto_approve_threshold)
@@ -342,6 +342,7 @@ status:
 - 400 ниже минимальной суммы вывода
 - 400 превышен суточный лимит вывода
 - 400 недостаточно средств
+- 400 комиссия съедает основную сумму (к получению ≤ 0; расчёт отклоняет только отрицательные значения, ровно 0 блокирует этот эндпоинт до проверки рисков)
 
 #### GET /api/v1/withdraw/orders — записи выводов
 
@@ -401,7 +402,7 @@ status:
 }
 ```
 
-type 可选值: self / embedded / third_party
+type Допустимые значения: self / embedded / third_party
 
 #### GET /api/v1/game/detail/{hashid} — детали игры
 
@@ -503,6 +504,8 @@ is_new: true=новый зарегистрированный пользоват�
 
 Ответ: { "message": "KYC submitted successfully" }
 ```
+
+Ошибки: 422 уже есть заявка KYC на проверке или одобренная (одновременная повторная отправка вернёт ту же ошибку, а не 500)
 
 ### 2.9 Платежи
 
@@ -775,7 +778,7 @@ status: success / failed
 Ответ: { "locale": "zh-CN" }
 ```
 
-locale 可选值: en-US / zh-CN / ja-JP / ko-KR
+locale Допустимые значения: en-US / zh-CN / ja-JP / ko-KR
 
 ### 2.8 Пользователь
 
@@ -818,7 +821,7 @@ locale 可选值: en-US / zh-CN / ja-JP / ko-KR
 }
 ```
 
-language 可选值: en-US / zh-CN / ja-JP / ko-KR
+language Допустимые значения: en-US / zh-CN / ja-JP / ko-KR
 
 ### 2.9 Объявления
 
@@ -992,7 +995,7 @@ language 可选值: en-US / zh-CN / ja-JP / ko-KR
 Ответ: { "id": "aB3xK..." }
 ```
 
-type 可选值: self / embedded / third_party
+type Допустимые значения: self / embedded / third_party
 
 #### PUT /admin/v1/game/{hashid} — редактирование игры
 
@@ -1092,6 +1095,19 @@ action: approve=одобрить / reject=отклонить / confirm=подт�
 
 Ошибка: 422 статус ордера не в ожидании проверки
 
+#### GET /admin/v1/withdraw/switch — чтение глобального переключателя вывода
+
+```
+Требуется аутентификация: Да
+
+Ответ: {
+  "global_switch": true,
+  "enabled": true,
+  "status": 1,
+  "message": "success"
+}
+```
+
 #### PUT /admin/v1/withdraw/switch — глобальный переключатель вывода
 
 ```
@@ -1101,7 +1117,9 @@ action: approve=одобрить / reject=отклонить / confirm=подт�
 
 Ответ: {
   "global_switch": true,
-  "message": "提现功能已开启"
+  "enabled": true,
+  "status": 1,
+  "message": "操作成功"
 }
 ```
 
@@ -1123,6 +1141,9 @@ action: approve=одобрить / reject=отклонить / confirm=подт�
   "global_switch": true
 }
 ```
+
+Этот эндпоинт — сброс по всем уровням: он пишет во все строки withdraw_limit (user_level default/verified/vip; min_amount → single_min, daily_limit / auto_approve_threshold сохраняют имя; существующие single_max / monthly_limit строк не затрагиваются). Для настройки одного уровня используйте PUT /admin/v1/withdraw/limits/{hashid}.
+Ошибки: 422 ничего не применяется, если новый single_min превышает существующий single_max (single_max=0 означает «без ограничения» и не сравнивается)
 
 #### POST /admin/v1/withdraw/batch-review — Пакетная проверка выводов
 
@@ -1415,6 +1436,9 @@ action: approve / reject
 Запрос: { "single_max": "10000.0000", "fee_pct": "0.25" }
 // 可部分更新
 ```
+
+Проверка: все поля сумм должны быть ≥ 0; fee_pct должен быть < 100 (=100 оставляет к получению ровно 0, выплаты по этому уровню гарантированно не пройдут); single_min не должен превышать single_max (single_max=0 означает «без ограничения» и не сравнивается).
+Ошибки: 422 проверка не пройдена / 422 single_min выше single_max / 404 запись не найдена
 
 ### 3.11 Управление категориями игр
 
@@ -2252,7 +2276,7 @@ JSON `conditions` купона поддерживает:
 
 ---
 
-## 10. Новые API (v1.3.15-v1.3.22)
+## 10. API расширения платформы
 
 ### 10.1 Управление рисками (админ :8789)
 
@@ -2289,6 +2313,7 @@ JSON `conditions` купона поддерживает:
 | GET /admin/v1/risk/users | Очередь подозрительных пользователей (фильтр по рейтингу доверия и времени последнего срабатывания) |
 | GET /admin/v1/risk/users/{hashid}/timeline | Хронология рисков пользователя (события риска / игры / античита объединены) |
 | POST /admin/v1/risk/users/{hashid}/hold | Заморозить доступный баланс пользователя и оставить запись в журнале |
+| POST /admin/v1/risk/users/{hashid}/release | Снять заморозку риска пользователя и восстановить доступный баланс |
 
 ### 10.2 Управление античитом (админ :8789)
 

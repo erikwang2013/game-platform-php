@@ -108,7 +108,7 @@ Response: {
 }
 ```
 
-Error: 401 用户名或密码错误 / 账号已被禁用
+Error: 401 incorrect username or password / account deactivated
 
 #### POST /api/v1/auth/refresh — Refresh Token
 ```
@@ -232,7 +232,7 @@ Response: {
 }
 ```
 
-direction: in=买入游戏币 / out=卖出游戏币
+direction: in=buy game currency / out=sell game currency
 
 #### POST /api/v1/exchange/buy — Buy Game Currency
 ```
@@ -253,7 +253,7 @@ Response: {
 }
 ```
 
-Error: 422 平台币余额不足 / 404 游戏不可用
+Error: 422 insufficient platform token balance / 404 game unavailable
 
 #### POST /api/v1/exchange/sell — Sell Game Currency
 ```
@@ -274,7 +274,7 @@ Response: {
 }
 ```
 
-Error: 422 游戏币余额不足
+Error: 422 insufficient game currency balance
 
 #### GET /api/v1/exchange/records — Exchange Records
 ```
@@ -322,14 +322,15 @@ Response: {
 method Allowed values: paypal / bank / crypto
 
 status:
-- approved: 自动通过（金额 < auto_approve_threshold）
-- pending: 待审核（金额 >= auto_approve_threshold）
+- approved: auto-approved (amount < auto_approve_threshold)
+- pending: pending review (amount >= auto_approve_threshold)
 
 Error:
-- 403 提现功能暂时关闭（全局开关关闭）
-- 400 低于最低提现金额
-- 400 超过每日提现限额
-- 400 余额不足
+- 403 withdrawals temporarily disabled (global switch off)
+- 400 below the minimum withdrawal amount
+- 400 exceeds the daily withdrawal limit
+- 400 insufficient balance
+- 400 fees consume the principal (net payout ≤ 0; the quote rejects only negative values, an exact 0 is blocked by this endpoint before the risk check)
 
 #### GET /api/v1/withdraw/orders — Withdrawal Records
 ```
@@ -451,7 +452,7 @@ Response: {
 }
 ```
 
-is_new: true=新注册用户 / false=已有账号绑定
+is_new: true=newly registered user / false=existing account linked
 
 ### 2.8 KYC Real-Name Verification
 
@@ -483,6 +484,8 @@ Request: {
 
 Response: { "message": "KYC submitted successfully" }
 ```
+
+Error: 422 you already have a pending or approved KYC submission (a concurrent duplicate returns the same error instead of 500)
 
 ### 2.9 Payments
 
@@ -1033,9 +1036,21 @@ Request: {
 Response: { "message": "已通过" }
 ```
 
-action: approve=通过 / reject=拒绝 / confirm=确认打款（拒绝时自动退回平台币）
+action: approve=approve / reject=reject / confirm=confirm the payout (on rejection the platform tokens are refunded automatically)
 
-Error: 422 订单状态不是待审核
+Error: 422 order status is not pending review
+
+#### GET /admin/v1/withdraw/switch — Read Global Withdrawal Switch
+```
+Authentication required: Yes
+
+Response: {
+  "global_switch": true,
+  "enabled": true,
+  "status": 1,
+  "message": "success"
+}
+```
 
 #### PUT /admin/v1/withdraw/switch — Global Withdrawal Switch
 ```
@@ -1045,7 +1060,9 @@ Request: { "enabled": 1 }
 
 Response: {
   "global_switch": true,
-  "message": "提现功能已开启"
+  "enabled": true,
+  "status": 1,
+  "message": "操作成功"
 }
 ```
 
@@ -1066,6 +1083,9 @@ Response: {
   "global_switch": true
 }
 ```
+
+This endpoint is a full reset: it writes through to every withdraw_limit user_level row (default/verified/vip; min_amount → single_min, daily_limit / auto_approve_threshold keep their names; each row's existing single_max / monthly_limit is left untouched). To tune a single user_level use PUT /admin/v1/withdraw/limits/{hashid}.
+Error: 422 nothing is applied when the new single_min exceeds an existing single_max (single_max=0 means unlimited and is not compared)
 
 #### POST /admin/v1/withdraw/batch-review — Batch Review Withdrawals
 
@@ -1346,6 +1366,9 @@ Authentication required: Yes
 Request: { "single_max": "10000.0000", "fee_pct": "0.25" }
 // 可部分更新
 ```
+
+Validation: every amount field must be ≥ 0; fee_pct must be < 100 (=100 leaves a net payout of exactly 0, so payouts from that user_level always fail); single_min must not exceed single_max (single_max=0 means unlimited and is not compared).
+Error: 422 validation failed / 422 single_min above single_max / 404 limit record not found
 
 ### 3.11 Game Category Management
 
@@ -2146,7 +2169,7 @@ Referral commission adds a second level:
 
 ---
 
-## 10. New APIs (v1.3.15-v1.3.22)
+## 10. Platform Extension APIs
 
 ### 10.1 Risk Control Management (Admin :8789)
 
@@ -2183,6 +2206,7 @@ Referral commission adds a second level:
 | GET /admin/v1/risk/users | Suspicious user queue (filtered by trust score and last hit time) |
 | GET /admin/v1/risk/users/{hashid}/timeline | User risk timeline (risk / gameplay / anti-cheat events merged) |
 | POST /admin/v1/risk/users/{hashid}/hold | Freeze the user's available platform balance and write a risk log |
+| POST /admin/v1/risk/users/{hashid}/release | Release the user's risk hold and restore the available balance |
 
 ### 10.2 Anti-Cheat Management (Admin :8789)
 

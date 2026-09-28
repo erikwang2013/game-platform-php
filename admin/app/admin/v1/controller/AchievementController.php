@@ -66,6 +66,19 @@ class AchievementController extends BaseController
             return $this->fail('成就不存在', 404);
         }
 
+        // 镜像 store 的规则，前缀 sometimes：update 是局部更新，缺省的字段不该被判 required。
+        // 键与值域同样按 game_achievement 的列定义收口（points INT UNSIGNED ⇒ min:0）。
+        $validator = validator($request->all(), [
+            'name' => 'sometimes|required|string|max:100',
+            'description' => 'sometimes|nullable|string|max:500',
+            'icon' => 'sometimes|nullable|string|max:255',
+            'condition_json' => 'sometimes|required|string',
+            'points' => 'sometimes|required|integer|min:0',
+        ]);
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
+        }
+
         if ($request->has('condition_json')) {
             $cond = json_decode($request->input('condition_json'), true);
             if (!is_array($cond)) {

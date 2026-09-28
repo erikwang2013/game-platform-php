@@ -342,6 +342,7 @@ Fehler:
 - 400 unter dem Mindestauszahlungsbetrag
 - 400 Tageslimit der Auszahlung überschritten
 - 400 unzureichendes Guthaben
+- 400 Gebühr zehrt den Kapitalbetrag auf (Netto ≤ 0; die Berechnung lehnt nur negative Werte ab, exakt 0 blockiert dieser Endpunkt vor der Risikoprüfung)
 
 #### GET /api/v1/withdraw/orders — Auszahlungsverlauf
 
@@ -503,6 +504,8 @@ Anfrage: {
 
 Antwort: { "message": "KYC submitted successfully" }
 ```
+
+Fehler: 422 es liegt bereits eine ausstehende oder genehmigte KYC-Einreichung vor (eine gleichzeitige Doppeleinreichung liefert denselben Fehler statt 500)
 
 ### 2.9 Zahlungen
 
@@ -1092,6 +1095,19 @@ action: approve=genehmigen / reject=ablehnen / confirm=bestätigen (bei Ablehnun
 
 Fehler: 422 Auftragsstatus ist nicht "Prüfung ausstehend"
 
+#### GET /admin/v1/withdraw/switch — Globalen Auszahlungsschalter abfragen
+
+```
+Authentifizierung erforderlich: Ja
+
+Antwort: {
+  "global_switch": true,
+  "enabled": true,
+  "status": 1,
+  "message": "success"
+}
+```
+
 #### PUT /admin/v1/withdraw/switch — Globaler Auszahlungsschalter
 
 ```
@@ -1101,7 +1117,9 @@ Anfrage: { "enabled": 1 }
 
 Antwort: {
   "global_switch": true,
-  "message": "提现功能已开启"
+  "enabled": true,
+  "status": 1,
+  "message": "操作成功"
 }
 ```
 
@@ -1123,6 +1141,9 @@ Antwort: {
   "global_switch": true
 }
 ```
+
+Dieser Endpunkt ist ein Reset über alle Stufen: Er schreibt in jede withdraw_limit-Zeile (user_level default/verified/vip; min_amount → single_min, daily_limit / auto_approve_threshold behalten ihren Namen; vorhandene single_max / monthly_limit der Zeilen bleiben unverändert). Für eine einzelne Stufe PUT /admin/v1/withdraw/limits/{hashid} verwenden.
+Fehler: 422 nichts wird übernommen, wenn das neue single_min ein vorhandenes single_max übersteigt (single_max=0 bedeutet unbegrenzt und wird nicht verglichen)
 
 #### POST /admin/v1/withdraw/batch-review — Sammelprüfung von Auszahlungen
 
@@ -1415,6 +1436,9 @@ Authentifizierung erforderlich: Ja
 Anfrage: { "single_max": "10000.0000", "fee_pct": "0.25" }
 // 可部分更新
 ```
+
+Validierung: alle Betragsfelder müssen ≥ 0 sein; fee_pct muss < 100 sein (=100 lässt genau 0 Netto übrig, Auszahlungen dieser Stufe scheitern zwangsläufig); single_min darf single_max nicht übersteigen (single_max=0 bedeutet unbegrenzt und wird nicht verglichen).
+Fehler: 422 Validierung fehlgeschlagen / 422 single_min über single_max / 404 Datensatz nicht gefunden
 
 ### 3.11 Spielkategorie-Verwaltung
 
@@ -2252,7 +2276,7 @@ Die Empfehlungsprovision erhält eine zweistufige Gewinnbeteiligung:
 
 ---
 
-## 10. Neue APIs (v1.3.15-v1.3.22)
+## 10. Plattform-Erweiterungs-APIs
 
 ### 10.1 Risikomanagement (Admin :8789)
 
@@ -2289,6 +2313,7 @@ Die Empfehlungsprovision erhält eine zweistufige Gewinnbeteiligung:
 | GET /admin/v1/risk/users | Warteschlange auffälliger Benutzer (Filter nach Vertrauenswert und letztem Treffer) |
 | GET /admin/v1/risk/users/{hashid}/timeline | Risiko-Zeitachse des Benutzers (Risiko-/Spiel-/Anti-Cheat-Ereignisse zusammengeführt) |
 | POST /admin/v1/risk/users/{hashid}/hold | Verfügbares Plattform-Guthaben des Benutzers einfrieren und protokollieren |
+| POST /admin/v1/risk/users/{hashid}/release | Risiko-Sperre des Benutzers aufheben und verfügbares Guthaben freigeben |
 
 ### 10.2 Anti-Cheat-Verwaltung (Admin :8789)
 

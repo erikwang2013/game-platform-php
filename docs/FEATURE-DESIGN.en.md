@@ -61,7 +61,7 @@ Auto-created on user registration, balance starts at 0.
 | Field | Description |
 |------|------|
 | balance | Available balance (deposit/withdraw/exchangeable) |
-| frozen_balance | Frozen balance (reserved, e.g. during withdrawal) |
+| frozen_balance | Frozen balance (occupied by risk holds: hold freezes, release moves back; withdrawals never use this column) |
 | total_earned | Cumulative income |
 | total_spent | Cumulative spending |
 | version | Optimistic lock version (increments on every update) |

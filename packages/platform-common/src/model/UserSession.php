@@ -15,6 +15,7 @@ class UserSession extends Model
 
     public $incrementing = false;
     protected $keyType = 'int';
+    public $timestamps = false; // 该表无 created_at/updated_at（登录时间列是 logged_in_at），Eloquent 写这两个必 Unknown column
 
     protected $fillable = [
         'user_id',

@@ -88,6 +88,18 @@ class PermissionController extends BaseController
             return $this->fail('权限不存在', 404);
         }
 
+        // 镜像 store 的 name 规则（sometimes：局部更新）。update 不写 slug/type，故不校验它们；
+        // icon/path/sort 是 store 漏管、update 会写的字段，按列宽收口（icon VARCHAR(50)、path VARCHAR(255)）。
+        $validator = validator($request->all(), [
+            'name' => 'sometimes|required|string|max:50',
+            'icon' => 'sometimes|nullable|string|max:50',
+            'path' => 'sometimes|nullable|string|max:255',
+            'sort' => 'sometimes|nullable|integer|min:0',
+        ]);
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
+        }
+
         $perm->name = $request->input('name', $perm->name);
         $perm->icon = $request->input('icon', $perm->icon);
         $perm->path = $request->input('path', $perm->path);

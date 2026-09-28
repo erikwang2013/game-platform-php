@@ -342,6 +342,7 @@ status:
 - 400 低于最低提现金额
 - 400 超过每日提现限额
 - 400 余额不足
+- 400 手续费吃穿本金（实收 ≤ 0；报价只拒负值，恰为 0 由本端点在风控检查之前拦下）
 
 #### GET /api/v1/withdraw/orders — 提现记录
 
@@ -503,6 +504,8 @@ is_new: true=新注册用户 / false=已有账号绑定
 
 响应: { "message": "KYC submitted successfully" }
 ```
+
+错误: 422 已有待审核或已通过的认证提交（并发重复提交返回同一错误而非 500）
 
 ### 2.9 支付
 
@@ -1094,6 +1097,19 @@ action: approve=通过 / reject=拒绝 / confirm=确认打款（拒绝时自动�
 
 错误: 422 订单状态不是待审核
 
+#### GET /admin/v1/withdraw/switch — 读取全局提现开关
+
+```
+需认证: 是
+
+响应: {
+  "global_switch": true,
+  "enabled": true,
+  "status": 1,
+  "message": "success"
+}
+```
+
 #### PUT /admin/v1/withdraw/switch — 全局提现开关
 
 ```
@@ -1103,7 +1119,9 @@ action: approve=通过 / reject=拒绝 / confirm=确认打款（拒绝时自动�
 
 响应: {
   "global_switch": true,
-  "message": "提现功能已开启"
+  "enabled": true,
+  "status": 1,
+  "message": "操作成功"
 }
 ```
 
@@ -1125,6 +1143,9 @@ action: approve=通过 / reject=拒绝 / confirm=确认打款（拒绝时自动�
   "global_switch": true
 }
 ```
+
+本端点为全档位重置：写穿 withdraw_limit 全部 user_level 行（default/verified/vip；min_amount → single_min，daily_limit / auto_approve_threshold 同名；不动各档既有 single_max / monthly_limit）；精调单一 user_level 走 PUT /admin/v1/withdraw/limits/{hashid}。
+错误: 422 新的 single_min 高于某档既有 single_max 时整笔未生效（single_max=0 表示不限，不比较）
 
 #### POST /admin/v1/withdraw/batch-review — 批量审核提现
 
@@ -1417,6 +1438,9 @@ action: approve / reject
 请求: { "single_max": "10000.0000", "fee_pct": "0.25" }
 // 可部分更新
 ```
+
+校验：各金额字段须 ≥ 0；fee_pct 须 < 100（=100 时实收恰为 0，该档位打款必然失败）；single_min 不得高于 single_max（single_max=0 表示不限，不比较）。
+错误: 422 参数校验失败 / 422 单笔最低高于单笔最高 / 404 限制记录不存在
 
 ### 3.11 游戏分类管理
 
@@ -2254,7 +2278,7 @@ status: open / waiting / replied / closed
 
 ---
 
-## 10. v1.3.15-22 新增接口
+## 10. 平台扩展接口
 
 ### 10.1 风控管理 (管理端 :8789)
 
@@ -2291,6 +2315,7 @@ status: open / waiting / replied / closed
 | GET /admin/v1/risk/users | 异常用户队列（按信任分与命中时间过滤） |
 | GET /admin/v1/risk/users/{hashid}/timeline | 用户风控时间线（风控/对局/反作弊事件合并） |
 | POST /admin/v1/risk/users/{hashid}/hold | 冻结该用户平台可用余额并留痕 |
+| POST /admin/v1/risk/users/{hashid}/release | 释放该用户的风控冻结并恢复平台余额可用 |
 
 ### 10.2 反作弊管理 (管理端 :8789)
 

@@ -28,7 +28,6 @@ class Game extends Model
         'api_secret',
         'status',
         'sort',
-        'provider_config',
         'sdk_version',
         'platform',
         'region',

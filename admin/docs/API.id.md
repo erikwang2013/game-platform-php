@@ -1971,6 +1971,7 @@ Deteksi cluster risiko, konfirmasi manual, dan penanganan pengguna abnormal.
 | GET | /admin/v1/risk/users | Antrean pengguna abnormal (score_min=batas atas skor kepercayaan, from/to=jendela hit terakhir) | JWT + RBAC |
 | GET | /admin/v1/risk/users/{hashid}/timeline | Timeline risiko pengguna (event risiko/permainan/anti-cheat digabung, terbaru lebih dulu) | JWT + RBAC |
 | POST | /admin/v1/risk/users/{hashid}/hold | Bekukan saldo tersedia pengguna di platform dan catat ke risk_log | JWT + RBAC |
+| POST | /admin/v1/risk/users/{hashid}/release | Lepaskan pembekuan risiko (amount opsional, default penuh) dan catat ke risk_log | JWT + RBAC |
 
 ### 19.3 Tingkat VIP
 

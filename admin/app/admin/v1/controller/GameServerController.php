@@ -104,6 +104,18 @@ class GameServerController extends BaseController
             return $this->fail('区服不存在', 404);
         }
 
+        // 镜像 create 的 name 规则（sometimes：局部更新），并为 create 漏掉、而 update 会写的字段补上。
+        // status 取 0..3 而不是 0/1：列注释是 0=维护 1=正常 2=火爆 3=新服（create 的默认值 1 只是其一）。
+        $validator = validator($request->all(), [
+            'name'   => 'sometimes|required|string|max:50',
+            'region' => 'sometimes|nullable|string|max:20',
+            'status' => 'sometimes|required|integer|in:0,1,2,3',
+            'sort'   => 'sometimes|nullable|integer|min:0',
+        ]);
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
+        }
+
         $server->fill($request->only(['name', 'region', 'status', 'sort']));
         $server->save();
 

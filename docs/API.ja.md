@@ -342,6 +342,7 @@ status:
 - 400 最低出金額を下回っている
 - 400 日次出金限度額を超過
 - 400 残高不足
+- 400 手数料が元本を食いつぶす（実収 ≤ 0。見積は負値のみ拒否し、ちょうど 0 はリスク検査の前に本エンドポイントが遮断）
 
 #### GET /api/v1/withdraw/orders — 出金記録
 
@@ -503,6 +504,8 @@ is_new: true=新規登録ユーザー / false=既存アカウント連携
 
 レスポンス: { "message": "KYC submitted successfully" }
 ```
+
+エラー: 422 審査待ちまたは承認済みの認証申請が既にあります（同時重複送信も 500 ではなく同じエラーを返します）
 
 ### 2.9 決済
 
@@ -1092,6 +1095,19 @@ action: approve=通過 / reject=拒否 / confirm=確認（拒否時は自動的�
 
 エラー: 422 注文ステータスが審査待ちではない
 
+#### GET /admin/v1/withdraw/switch — グローバル出金スイッチの照会
+
+```
+認証が必要: はい
+
+レスポンス: {
+  "global_switch": true,
+  "enabled": true,
+  "status": 1,
+  "message": "success"
+}
+```
+
 #### PUT /admin/v1/withdraw/switch — グローバル出金スイッチ
 
 ```
@@ -1101,7 +1117,9 @@ action: approve=通過 / reject=拒否 / confirm=確認（拒否時は自動的�
 
 レスポンス: {
   "global_switch": true,
-  "message": "提现功能已开启"
+  "enabled": true,
+  "status": 1,
+  "message": "操作成功"
 }
 ```
 
@@ -1123,6 +1141,9 @@ action: approve=通過 / reject=拒否 / confirm=確認（拒否時は自動的�
   "global_switch": true
 }
 ```
+
+本エンドポイントは全 user_level の一括リセットです：withdraw_limit の全 user_level 行に書き込みます（default/verified/vip、min_amount → single_min、daily_limit / auto_approve_threshold は同名。各行の既存 single_max / monthly_limit は変更しません）。単一の user_level の調整は PUT /admin/v1/withdraw/limits/{hashid} を使用してください。
+エラー: 422 新しい single_min が既存の single_max を超える場合、一切反映されません（single_max=0 は無制限を意味し比較対象外）
 
 #### POST /admin/v1/withdraw/batch-review — 出金の一括審査
 
@@ -1415,6 +1436,9 @@ action: approve / reject
 リクエスト: { "single_max": "10000.0000", "fee_pct": "0.25" }
 // 可部分更新
 ```
+
+検証：各金額フィールドは ≥ 0、fee_pct は < 100（=100 では実収がちょうど 0 になり、その user_level の出金は必ず失敗します）、single_min は single_max を超えないこと（single_max=0 は無制限を意味し比較対象外）。
+エラー: 422 検証失敗 / 422 single_min が single_max 超え / 404 該当レコードが存在しない
 
 ### 3.11 ゲームカテゴリ管理
 
@@ -2252,7 +2276,7 @@ status: open / waiting / replied / closed
 
 ---
 
-## 10. v1.3.15-22 新規API
+## 10. プラットフォーム拡張API
 
 ### 10.1 リスク管理 (管理側 :8789)
 
@@ -2289,6 +2313,7 @@ status: open / waiting / replied / closed
 | GET /admin/v1/risk/users | 異常ユーザーキュー（信頼スコアと最終検知で絞り込み） |
 | GET /admin/v1/risk/users/{hashid}/timeline | ユーザーのリスクタイムライン（リスク / プレイ / アンチチートのイベントを統合） |
 | POST /admin/v1/risk/users/{hashid}/hold | ユーザーのプラットフォーム残高を凍結し、記録を残す |
+| POST /admin/v1/risk/users/{hashid}/release | ユーザーのリスク凍結を解除し、利用可能残高を復元する |
 
 ### 10.2 アンチチート管理 (管理側 :8789)
 

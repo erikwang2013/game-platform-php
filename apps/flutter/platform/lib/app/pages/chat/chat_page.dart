@@ -67,26 +67,36 @@ class _ChatPageState extends State<ChatPage> {
           Expanded(
             child: _loading
                 ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
-                    controller: _scrollCtrl,
-                    itemCount: _messages.length,
-                    itemBuilder: (_, i) {
-                      final m = _messages[i];
-                      final isSelf = m['from_self'] == true || m['from_user_id'] == null;
-                      return Align(
-                        alignment: isSelf ? Alignment.centerRight : Alignment.centerLeft,
-                        child: Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                          decoration: BoxDecoration(
-                            color: isSelf ? Theme.of(context).colorScheme.primary : Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(12),
+                : Obx(() {
+                    // 读取时合并：REST 快照 + WS 推送里 REST 尚未带回的消息（按 id 去重）。
+                    // 放在 Obx 里，推送到达时本页无需重进即可刷新。
+                    final shown = _chat.mergeFor(_peerId, _messages);
+                    return ListView.builder(
+                      controller: _scrollCtrl,
+                      itemCount: shown.length,
+                      itemBuilder: (_, i) {
+                        final m = shown[i];
+                        // 本地乐观插入的消息只有 from_self；服务端回读的消息只有 from_user_id（hashid）。
+                        // 判自己是"与 peer 不同的那一方"，而不是"from_user_id 为空"——否则刷新后
+                        // 自己发的消息会从右侧翻到左侧。
+                        final isSelf = m['from_self'] == true ||
+                            (m['from_user_id'] != null && m['from_user_id'] != _peerId);
+                        return Align(
+                          alignment: isSelf ? Alignment.centerRight : Alignment.centerLeft,
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: isSelf ? Theme.of(context).colorScheme.primary : Colors.grey.shade200,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(m['content'] as String? ?? '',
+                                style: TextStyle(color: isSelf ? Colors.white : Colors.black87)),
                           ),
-                          child: Text(m['content'] as String? ?? '',
-                              style: TextStyle(color: isSelf ? Colors.white : Colors.black87)),
-                        ),
-                      );
-                    }),
+                        );
+                      },
+                    );
+                  }),
           ),
           Padding(
             padding: const EdgeInsets.all(8),

@@ -114,7 +114,18 @@ class CdnPage extends GetView<CdnController> {
         Expanded(
           child: Obx(() {
             if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
-            if (ctrl.providers.isEmpty) return Center(child: Text("${AppTranslations.t('app.no_data')}"));
+            if (ctrl.providers.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset('assets/mascot.png', width: 120),
+                    const SizedBox(height: 12),
+                    Text("${AppTranslations.t('app.no_data')}"),
+                  ],
+                ),
+              );
+            }
 
             return SingleChildScrollView(
               child: DataTable(

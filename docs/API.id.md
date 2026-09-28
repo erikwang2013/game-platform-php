@@ -342,6 +342,7 @@ Error:
 - 400 di bawah jumlah penarikan minimum
 - 400 melebihi batas penarikan harian
 - 400 saldo tidak cukup
+- 400 biaya menghabiskan pokok (nilai bersih ≤ 0; perhitungan hanya menolak nilai negatif, tepat 0 diblokir endpoint ini sebelum pemeriksaan risiko)
 
 #### GET /api/v1/withdraw/orders — Catatan Penarikan
 
@@ -503,6 +504,8 @@ Permintaan: {
 
 Respons: { "message": "KYC submitted successfully" }
 ```
+
+Error: 422 Anda sudah memiliki pengajuan KYC yang menunggu atau disetujui (pengajuan ganda bersamaan mengembalikan kesalahan yang sama, bukan 500)
 
 ### 2.9 Pembayaran
 
@@ -1092,6 +1095,19 @@ action: approve=lolos / reject=tolak / confirm=konfirmasi (saat ditolak, koin pl
 
 Error: 422 status pesanan bukan menunggu review
 
+#### GET /admin/v1/withdraw/switch — Kueri Saklar Penarikan Global
+
+```
+Perlu autentikasi: ya
+
+Respons: {
+  "global_switch": true,
+  "enabled": true,
+  "status": 1,
+  "message": "success"
+}
+```
+
 #### PUT /admin/v1/withdraw/switch — Saklar Penarikan Global
 
 ```
@@ -1101,7 +1117,9 @@ Permintaan: { "enabled": 1 }
 
 Respons: {
   "global_switch": true,
-  "message": "提现功能已开启"
+  "enabled": true,
+  "status": 1,
+  "message": "操作成功"
 }
 ```
 
@@ -1123,6 +1141,9 @@ Respons: {
   "global_switch": true
 }
 ```
+
+Endpoint ini adalah reset semua user_level: menulis ke seluruh baris withdraw_limit (default/verified/vip; min_amount → single_min, daily_limit / auto_approve_threshold tetap sama; single_max / monthly_limit yang ada di tiap baris tidak diubah). Untuk menyetel satu user_level gunakan PUT /admin/v1/withdraw/limits/{hashid}.
+Error: 422 tidak ada yang diterapkan bila single_min baru melebihi single_max yang ada (single_max=0 berarti tanpa batas, tidak dibandingkan)
 
 #### POST /admin/v1/withdraw/batch-review — Tinjau massal penarikan
 
@@ -1415,6 +1436,9 @@ Perlu autentikasi: ya
 Permintaan: { "single_max": "10000.0000", "fee_pct": "0.25" }
 // dapat diperbarui sebagian
 ```
+
+Validasi: semua kolom nilai harus ≥ 0; fee_pct harus < 100 (=100 membuat nilai bersih tepat 0, pencairan dari user_level itu pasti gagal); single_min tidak boleh melebihi single_max (single_max=0 berarti tanpa batas, tidak dibandingkan).
+Error: 422 validasi gagal / 422 single_min melebihi single_max / 404 catatan tidak ditemukan
 
 ### 3.11 Manajemen Kategori Game
 
@@ -2252,7 +2276,7 @@ Komisi referral menambahkan bagi hasil level dua:
 
 ---
 
-## 10. API Baru (v1.3.15-v1.3.22)
+## 10. API Ekstensi Platform
 
 ### 10.1 Manajemen Risiko (Admin :8789)
 
@@ -2289,6 +2313,7 @@ Komisi referral menambahkan bagi hasil level dua:
 | GET /admin/v1/risk/users | Antrean pengguna tidak normal (difilter berdasarkan skor kepercayaan dan waktu deteksi terakhir) |
 | GET /admin/v1/risk/users/{hashid}/timeline | Linimasa risiko pengguna (peristiwa risiko / permainan / anti-kecurangan digabung) |
 | POST /admin/v1/risk/users/{hashid}/hold | Bekukan saldo platform pengguna dan catat jejaknya |
+| POST /admin/v1/risk/users/{hashid}/release | Lepaskan pembekuan risiko pengguna dan pulihkan saldo tersedia |
 
 ### 10.2 Manajemen Anti-Cheat (Admin :8789)
 

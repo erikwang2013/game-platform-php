@@ -53,6 +53,12 @@ export class AuthService {
     if (response.code !== 0) {
       throw new Error(response.message);
     }
+    // 2FA：服务端只回 require_2fa + pending_2fa_token，没有令牌对。不拦的话
+    // saveTokens(undefined, undefined) 会"登录成功"跳进主页面，之后每个请求都 401。
+    // 语义与 Angular/React 端一致：不在本客户端完成 2FA，明确告知用户。
+    if (response.data.require_2fa) {
+      throw new Error('该账号已开启二次验证（2FA），本客户端暂不支持，请改用支持 2FA 的客户端登录。');
+    }
     return response.data;
   }
 

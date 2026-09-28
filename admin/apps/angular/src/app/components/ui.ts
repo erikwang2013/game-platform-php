@@ -10,7 +10,11 @@ import { Component, input, output } from '@angular/core';
     } @else if (error()) {
       <div class="state error">{{ error() }}</div>
     } @else if (empty()) {
-      <div class="state">{{ text() }}</div>
+      <div class="state">
+        <!-- 吉祥物小骰（Dicey）：相对 public/，由 <base href> 解析到子路径，无需硬编码前缀 -->
+        <img class="state-art" src="mascot.svg" alt="" aria-hidden="true" />
+        <div>{{ text() }}</div>
+      </div>
     } @else {
       <ng-content />
     }

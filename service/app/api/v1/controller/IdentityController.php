@@ -105,7 +105,19 @@ class IdentityController extends BaseController
             $identity->status          = 'pending';
             $identity->created_at      = $now;
             $identity->updated_at      = $now;
-            $identity->save();
+            // 并发双提交：两次都读到「从未提交」⇒ 都走 create，后者撞 uk_user_id。
+            // 对方刚插的必是 pending，与上面 reject 分支同义 —— 返回同一句话，而不是 500。
+            // 连键名一起判：只认 uk_user_id 这一种重复键，主键 snowflake 撞号等其它唯一键冲突
+            // 原样上抛成 500，不被伪装成「你已提交过 KYC」。
+            try {
+                $identity->save();
+            } catch (\PDOException $e) {
+                if (in_array($e->errorInfo[1] ?? null, [1062, 23000], true)
+                    && str_contains($e->getMessage(), 'uk_user_id')) {
+                    return $this->fail('You already have a pending or approved KYC submission', 422);
+                }
+                throw $e;
+            }
         }
 
         return $this->success([], 'KYC submitted successfully');

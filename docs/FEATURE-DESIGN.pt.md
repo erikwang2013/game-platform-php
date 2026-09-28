@@ -61,7 +61,7 @@ Criada automaticamente no registro do usuário, saldo inicial 0.
 | Campo | Observação |
 |------|------|
 | balance | saldo disponível (pode depositar/sacar/trocar) |
-| frozen_balance | saldo congelado (reservado, por exemplo, durante saque) |
+| frozen_balance | saldo congelado (ocupado por retenções de risco: hold congela, release libera; os saques não usam esta coluna) |
 | total_earned | rendimento acumulado |
 | total_spent | gasto acumulado |
 | version | número de versão do lock otimista (+1 a cada atualização) |

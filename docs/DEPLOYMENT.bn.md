@@ -706,4 +706,5 @@ mysql -u game-platform -p game-platform < install/新迁移文件.sql
 # 4. স্মুথ রিস্টার্ট (সার্ভিস বন্ধ না করে)
 cd /opt/game-platform/admin && php start.php reload
 cd /opt/game-platform/service && php start.php reload
+# লক্ষ্য: service-এর event-subscriber প্রসেসে reloadable=false দেওয়া, reload তার কোড রিফ্রেশ করে না; পরিবর্তনের পর পুরো প্রসেস রিস্টার্ট করুন (php start.php restart); admin ট্রির risk-ip-cron / monitor-ও reloadable=false এবং একই আচরণ করে
 ```

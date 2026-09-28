@@ -140,6 +140,8 @@ table.data tbody tr:hover { background: #f8fafc; }
 .tag { display: inline-block; margin-right: 4px; padding: 1px 5px; border-radius: 2px; font-size: 11px; background: #eff6ff; color: #1d4ed8; }
 .state { padding: 30px 12px; text-align: center; color: var(--muted); }
 .state.error { color: var(--danger); }
+/* 吉祥物小骰（Dicey）：240x200 的 6:5 比例，块级 + 自动外边距保证居中 */
+.state-art { display: block; width: 72px; height: 60px; margin: 0 auto 10px; opacity: .9; }
 .spinner {
   display: inline-block; width: 13px; height: 13px; margin-right: 6px; vertical-align: -2px;
   border: 2px solid var(--border); border-top-color: var(--primary);

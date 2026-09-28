@@ -76,6 +76,7 @@ class IdentityController extends BaseController
         $validator = validator($request->all(), [
             'id'     => 'required|string',
             'action' => 'required|string|in:approve,reject',
+            'note'   => 'sometimes|nullable|string|max:500',   // game_user_identity.review_note VARCHAR(500)
         ]);
 
         if ($validator->fails()) {
@@ -96,11 +97,21 @@ class IdentityController extends BaseController
         $action = $request->input('action');
         $note   = $request->input('note', '');
 
-        $identity->status      = ($action === 'approve') ? 'approved' : 'rejected';
-        $identity->reviewer_id = $request->adminId;
-        $identity->review_note = $note;
-        $identity->reviewed_at = date('Y-m-d H:i:s');
-        $identity->save();
+        // CAS：状态翻转与「还是 pending」是同一个原子条件。上面那次读只用来给出友好错误，
+        // 真正的判据是这一行的 affected rows —— 两个管理员并发审同一单时，只有一次能拿到 1 行，
+        // 另一次拿到 0 行 ⇒ 不覆盖先手结论、也不重复发通知（通知在 CAS 成功之后）。
+        $affected = UserIdentity::where('id', $identityId)
+            ->where('status', 'pending')
+            ->update([
+                'status'      => ($action === 'approve') ? 'approved' : 'rejected',
+                'reviewer_id' => $request->adminId,
+                'review_note' => $note,
+                'reviewed_at' => date('Y-m-d H:i:s'),
+            ]);
+
+        if ($affected === 0) {
+            return $this->fail('This identity record has already been reviewed', 422);
+        }
 
         if ($action === 'approve') {
             NotificationService::send(

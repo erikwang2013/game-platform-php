@@ -13,6 +13,9 @@ import { API_BASE_URL } from '../common/AppConfig';
 export class ApiService {
   private httpRequest: http.HttpRequest;
 
+  /** 进行中的刷新（单飞），见 tryRefreshToken */
+  private static refreshInFlight: Promise<boolean> | null = null;
+
   constructor() {
     this.httpRequest = http.createHttp();
   }
@@ -60,14 +63,42 @@ export class ApiService {
     }
 
     const result: ApiResponse<T> = JSON.parse(response.result as string);
+
+    // 服务端 json() 信封恒为 HTTP 200，鉴权失败体现在 body.code，上面的状态码分支看不到
+    if (result.code === 401) {
+      if (retryCount === 0) {
+        const refreshed = await this.tryRefreshToken();
+        if (refreshed) {
+          return this.request<T>(method, path, body, retryCount + 1);
+        }
+      }
+      TokenManager.clearTokens();
+      throw new Error('UNAUTHORIZED');
+    }
+
     return result;
   }
 
   /**
-   * 尝试用 refresh_token 刷新 access_token
+   * 尝试用 refresh_token 刷新 access_token。
+   * 单飞：并发请求同时撞 401 时只发一次刷新——refresh token 是一次性轮换的
+   * （旧 jti 立即入黑名单，见 admin AuthController::refresh），第二次刷新会因旧票已废
+   * 而失败，进而误清 token 把用户登出。
    * @returns 刷新成功返回 true
    */
-  private async tryRefreshToken(): Promise<boolean> {
+  private tryRefreshToken(): Promise<boolean> {
+    const inFlight = ApiService.refreshInFlight;
+    if (inFlight !== null) {
+      return inFlight;
+    }
+    const started = this.doRefreshToken().finally(() => {
+      ApiService.refreshInFlight = null;
+    });
+    ApiService.refreshInFlight = started;
+    return started;
+  }
+
+  private async doRefreshToken(): Promise<boolean> {
     const refreshToken = TokenManager.getRefreshToken();
     if (!refreshToken) {
       return false;

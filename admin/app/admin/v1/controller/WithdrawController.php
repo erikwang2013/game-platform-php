@@ -251,6 +251,11 @@ class WithdrawController extends BaseController
     #[Apidoc\Param(name: "enabled", type: "int", require: true, desc: "是否启用(0关闭,1启用)")]
     public function toggleSwitch(Request $request): Response
     {
+        // GET 只读：界面 loadSwitch() 读的是 data.enabled / data.status，此前无 GET 路由（405）⇒ 恒显"已开启"
+        if (strtoupper((string) $request->method()) === 'GET') {
+            return $this->success($this->switchState());
+        }
+
         $validator = validator($request->all(), [
             'enabled' => 'required|in:0,1',
         ]);
@@ -262,7 +267,15 @@ class WithdrawController extends BaseController
         $enabled = (int) $request->input('enabled');
         PlatformConfig::set('withdraw', 'global_switch', $enabled, 'bool');
 
-        return $this->success(['global_switch' => (bool) $enabled], '操作成功');
+        return $this->success($this->switchState(), '操作成功');
+    }
+
+    /** 全局开关读数：global_switch 沿用原 PUT 响应键名，enabled/status 对齐管理端界面的两种读法 */
+    private function switchState(): array
+    {
+        $enabled = (bool) PlatformConfig::get('withdraw', 'global_switch', false);
+
+        return ['global_switch' => $enabled, 'enabled' => $enabled, 'status' => $enabled ? 1 : 0];
     }
 
     #[Apidoc\Title("设置提现限额")]
@@ -287,11 +300,49 @@ class WithdrawController extends BaseController
 
         $keys = ['daily_limit', 'min_amount', 'auto_approve_threshold'];
 
-        foreach ($keys as $key) {
-            if ($request->has($key) && $request->input($key) !== null) {
-                PlatformConfig::set('withdraw', $key, $request->input($key), 'decimal');
+        // 界面上这三个值是「无档位」的全局限额，但报价优先读 withdraw_limit 档位行
+        // （service/app/api/v1/controller/WithdrawController.php:95-104），而 install/install.sql:1359-1362
+        // 把 default/verified/vip 三档全种下了 ⇒ 只写 platform_config 时回落分支不可达，运营改的数静默失效。
+        // 故写穿到所有档位行。语义分工：本端点 = **全档位重置**；精调单一档位走 updateLimit()。
+        // 列名映射：min_amount → single_min，daily_limit / auto_approve_threshold 同名；
+        // single_max / monthly_limit 不在本端点范围内（保持各档既有值）。
+        $tiers = WithdrawLimit::all();
+        $newMin = $request->has('min_amount') && $request->input('min_amount') !== null
+            ? (string) $request->input('min_amount')
+            : null;
+
+        // 逐档校验：新下限若高于某档既有上限，整笔拒绝——宁可让运营看见报错，也不写出一条自相矛盾的档位
+        if ($newMin !== null) {
+            foreach ($tiers as $tier) {
+                // single_max=0 是「不限」，不与下限比较（同 updateLimit）
+                if (bccomp((string) $tier->single_max, '0', 4) > 0
+                    && bccomp($newMin, (string) $tier->single_max, 4) > 0
+                ) {
+                    return $this->fail(
+                        "档位 {$tier->user_level} 的单笔最高（{$tier->single_max}）低于新的单笔最低（{$newMin}），整笔未生效",
+                        422
+                    );
+                }
             }
         }
+
+        // 档位行与回落配置同事务提交：分开写会出现「某档已生效、某档还是旧值 / 平台配置已变」的半写状态
+        Db::transaction(function () use ($request, $keys, $tiers) {
+            foreach ($tiers as $tier) {
+                foreach (['daily_limit' => 'daily_limit', 'min_amount' => 'single_min', 'auto_approve_threshold' => 'auto_approve_threshold'] as $key => $column) {
+                    if ($request->has($key) && $request->input($key) !== null) {
+                        $tier->{$column} = (string) $request->input($key);
+                    }
+                }
+                $tier->save();
+            }
+
+            foreach ($keys as $key) {
+                if ($request->has($key) && $request->input($key) !== null) {
+                    PlatformConfig::set('withdraw', $key, $request->input($key), 'decimal');
+                }
+            }
+        });
 
         $limits = [];
         foreach ($keys as $key) {
@@ -324,11 +375,38 @@ class WithdrawController extends BaseController
     #[Apidoc\Author("erik")]
     public function updateLimit(Request $request, string $hashid): Response
     {
+        // fee_pct 列是 unsigned decimal(5,2)（上限 999.99），挡不住 >100 的费率；配 fee_max=0（不封顶）
+        // 可把报价里的实收算成负数，而非正 fiat_amount 在 PayoutService 里已 fail-closed ⇒ 打款直接
+        // 失败（下界另在 service 侧 withdrawQuote 兜底）。此题列均为 unsigned，负值本就存不进去，
+        // 无校验时是撞 DB（1264 报 500）而非入库，这里把 500 收成 422。
+        // 上界取 <100 而非 ≤100：fee_pct=100 会把实收吃成恰好 0，0 同样是坏数据（PayoutService 拒付），
+        // 放行它只会给运营一个「设得进去、打款必失败」的档位。
+        $validator = validator($request->all(), [
+            'single_min'             => 'nullable|numeric|min:0',
+            'single_max'             => 'nullable|numeric|min:0',
+            'daily_limit'            => 'nullable|numeric|min:0',
+            'monthly_limit'          => 'nullable|numeric|min:0',
+            'fee_pct'                => 'nullable|numeric|min:0|lt:100',
+            'fee_max'                => 'nullable|numeric|min:0',
+            'auto_approve_threshold' => 'nullable|numeric|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
+        }
+
         $id    = $this->decodeId($hashid);
         $limit = WithdrawLimit::find($id);
 
         if (!$limit) {
             return $this->fail('限制记录不存在', 404);
+        }
+
+        // 单笔下限不得高于上限（single_max=0 是「不限」，此时不比较）
+        $singleMin = (string) $request->input('single_min', $limit->single_min);
+        $singleMax = (string) $request->input('single_max', $limit->single_max);
+        if (bccomp($singleMax, '0', 4) > 0 && bccomp($singleMin, $singleMax, 4) > 0) {
+            return $this->fail('单笔最低不得高于单笔最高', 422);
         }
 
         $limit->fill($request->only([
@@ -487,7 +565,14 @@ class WithdrawController extends BaseController
             return $this->success($result, $result['payout_status'] === 'success' ? '打款成功' : '打款已提交');
         } catch (\Throwable $e) {
             Log::error('Withdraw payout failed: ' . $e->getMessage());
-            // 失败回退为 approved 允许重试（PayPal sender_batch_id 幂等防重复打款）
+            // 失败回退为 approved 允许重试。**回退只改 status/payout_status，刻意保留 payout_batch_id**：
+            // 有批次号 = 这笔钱已经提交给 PayPal 了（可能正是响应丢失的那一次），重试时
+            // PayoutService::execute() 的守卫（packages/platform-common/src/service/PayoutService.php:57-63）
+            // 只查 syncStatus、绝不重新 POST；若重新 POST，attempt 后缀会派生出一个**新** sender_batch_id，
+            // PayPal 视为新批次 ⇒ 真·重复打款。
+            // 旧注释写的「sender_batch_id 幂等防重复打款」是错的：PayPal 对 30 天内重复的
+            // sender_batch_id 是**拒绝**（4xx）并在错误体里带原批次链接，不是回放原批次 ⇒ 靠它防重
+            // 会让丢响应后的重试永久卡死。别再照着旧模型改这段。
             WithdrawOrder::where('id', $orderId)
                 ->where('status', 'processing')
                 ->update(['status' => 'approved', 'payout_status' => 'failed']);

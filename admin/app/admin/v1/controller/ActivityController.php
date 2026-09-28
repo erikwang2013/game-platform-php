@@ -7,7 +7,9 @@ namespace app\admin\v1\controller;
 
 use erikwang2013\apidoc\annotation as Apidoc;
 use app\activity\ActivityHandlerFactory;
+use app\service\WalletService;
 use common\model\Activity;
+use common\model\ActivityRewardLog;
 use support\Request;
 use support\Response;
 
@@ -19,6 +21,23 @@ use support\Response;
 #[Apidoc\Group("activity")]
 class ActivityController extends BaseController
 {
+    /**
+     * 单条奖励金额的上界 —— 与 service/app/service/ActivityService.php:47 `MAX_REWARD_PER_ENTRY` 是
+     * **同一个数字**，两边都从 config 读同一个字段，改一处必须同时改另一处。
+     *
+     * ⚠ 这里只是 **UI 写入路径的卫生**（拦下手滑写错的配置），**不是钱的闸**：真正的闸在出钱那一侧
+     * `ActivityService::creditWallet()`（:327 同一个 bccomp）。那道闸判不过只跳过该条奖励、
+     * 落 `status=failed` + `fail_reason`，钱一分不出，participation 照常进终态。
+     */
+    private const MAX_REWARD_PER_ENTRY = '10000';
+
+    /**
+     * 发得出去的 reward type 只有这两个（ActivityRewardLog::REWARD_*）。其余类型在
+     * creditWallet 末尾返回 'unsupported reward_type' ⇒ 该条奖励永远发不出去，
+     * 配了也是白配：在这里就挡掉，比等到用户达标那天才发现早得多。
+     */
+    private const REWARD_TYPES = [ActivityRewardLog::REWARD_PLATFORM_COIN, ActivityRewardLog::REWARD_GAME_COIN];
+
     public function list(Request $request): Response
     {
         $query = Activity::query();
@@ -82,6 +101,20 @@ class ActivityController extends BaseController
         $a = Activity::find($this->decodeId($hashid));
         if (!$a) {
             return $this->fail('活动不存在', 404);
+        }
+
+        // 镜像 store 的规则，前缀 sometimes：update 是局部更新，缺省的字段不该被判 required。
+        $validator = validator($request->all(), [
+            'name'            => 'sometimes|required|string|max:100',
+            'game_id'         => 'sometimes|nullable|integer|min:0',
+            'config'          => 'sometimes|nullable|string',
+            'status'          => 'sometimes|required|integer|in:0,1,2',
+            'start_at'        => 'sometimes|nullable|date',
+            'end_at'          => 'sometimes|nullable|date|after_or_equal:start_at',
+            'rollout_percent' => 'sometimes|nullable|integer|between:0,100',
+        ]);
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
         }
 
         if ($request->has('config')) {
@@ -149,7 +182,7 @@ class ActivityController extends BaseController
                 return null;
             }
             foreach ($rewards as $entry) {
-                if (!is_array($entry) || !isset($entry['day']) || !is_array($entry['reward'] ?? null)) {
+                if (!is_array($entry) || !isset($entry['day']) || $this->invalidReward($entry['reward'] ?? null)) {
                     return null;
                 }
             }
@@ -159,7 +192,7 @@ class ActivityController extends BaseController
                 return null;
             }
             foreach ($tasks as $task) {
-                if (!is_array($task) || !is_string($task['event'] ?? null) || (int) ($task['target'] ?? 0) <= 0 || !is_array($task['reward'] ?? null)) {
+                if (!is_array($task) || !is_string($task['event'] ?? null) || (int) ($task['target'] ?? 0) <= 0 || $this->invalidReward($task['reward'] ?? null)) {
                     return null;
                 }
             }
@@ -172,12 +205,35 @@ class ActivityController extends BaseController
                 return null;
             }
             foreach ($rewards as $entry) {
-                if (!is_array($entry) || !is_array($entry['reward'] ?? null)) {
+                if (!is_array($entry) || $this->invalidReward($entry['reward'] ?? null)) {
                     return null;
                 }
             }
         }
 
         return $config;
+    }
+
+    /**
+     * reward 必须是 {type: 白名单内, amount: > 0 且 ≤ 上界}；返回 true = 拒。
+     * 三条分支（签到/日常任务/邀请）共用，避免只堵住其中两条。
+     */
+    private function invalidReward(mixed $reward): bool
+    {
+        if (!is_array($reward) || !in_array($reward['type'] ?? null, self::REWARD_TYPES, true)) {
+            return true;
+        }
+
+        $amount = $reward['amount'] ?? null;
+        // 只认 int 与十进制字符串，不认 float：JSON 里写 1.5 会解成 PHP float，而金额禁走 float（仓库铁律）。
+        if (is_int($amount)) {
+            $amount = (string) $amount;
+        }
+        if (!is_string($amount) || !preg_match('/^\d+(\.\d+)?$/', $amount)) {
+            return true;
+        }
+
+        return bccomp($amount, '0', WalletService::SCALE) <= 0
+            || bccomp($amount, self::MAX_REWARD_PER_ENTRY, WalletService::SCALE) > 0;
     }
 }

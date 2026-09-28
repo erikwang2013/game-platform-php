@@ -129,6 +129,14 @@ class WithdrawController extends BaseController
         $fee          = $quote['fee'];
         $actualAmount = $quote['actual_amount'];
 
+        // 业务闸（与报价计算器分开）：withdrawQuote 保持纯计算，fee_pct=100 时照旧返回 0.0000
+        // （WithdrawQuoteTest 用 Reflection 直接钉那个算术，不经过这里），但**永远不允许生成
+        // fiat_amount=0 的订单**——0 是坏数据（PayoutService 拒付）⇒ 等于给用户一个「提得出去、
+        // 打不出去」的单。放在风控检查之前：金额非法时不得触发风控侧的写入。
+        if (bccomp($actualAmount, '0', 4) <= 0) {
+            return $this->fail('Fee exceeds withdrawal amount', 400);
+        }
+
         // 风控检查（H4）：阻断 → 拒绝下单；警告 → 人工审核，不自动放行
         $riskReview = false;
         $risk = RiskService::check($userId, 'withdraw', [
@@ -228,10 +236,17 @@ class WithdrawController extends BaseController
                 $remark .= " (fee: {$fee})";
             }
 
-            Db::commit();
+            // 语义：这里是"申请"不是"完成"，completed 由 PayoutService::markCompleted 在打款成功时发出。
+            // 必须在 Db::commit() 之前 push：push 并入当前事务（transactionLevel()>0），订单/流水行与
+            // outbox 行同提交；原先的 emit() 在 commit 之后走 Pub/Sub，两者之间进程崩溃 ⇒ 已扣款而事件
+            // 永久丢失且无重放。eventId 拼法照 plans/2026-08-31-event-reliable-delivery-plan.md:135。
+            EventBus::push('withdraw.applied', "withdraw_{$order->id}_{$status}", [
+                'user_id'         => $userId,
+                'platform_amount' => $platformAmount,
+                'status'          => $status,
+            ]);
 
-            // 语义：这里是"申请"不是"完成"，completed 由 PayoutService::markCompleted 在打款成功时发出
-            EventBus::emit('withdraw.applied', ['user_id' => $userId, 'platform_amount' => $platformAmount, 'status' => $status]);
+            Db::commit();
 
             NotificationService::send($userId, 'withdraw', 'Withdrawal Request Submitted', "Withdrawal of {$platformAmount} platform tokens submitted ({$status})", 'withdraw_order', $order->id);
 
@@ -348,8 +363,18 @@ class WithdrawController extends BaseController
                 $fee = $feeMax;
             }
         }
+        // 下界：手续费不得吃穿本金。档位行可能被写坏或历史遗留（fee_pct 列上限 999.99，可造出
+        // fee ≈ 10×金额），而实收为负会被 PayoutService 当成「未设置」回退成全额照付 ⇒ 手续费
+        // 静默丢失。== 0 仍放行：fee_pct=100 时实收恰为 0，该边界由 WithdrawQuoteTest 钉死。
+        $actualAmount = bcsub($platformAmount, $fee, 4);
+        if (bccomp($actualAmount, '0', 4) < 0) {
+            $quote['error'] = 'Fee exceeds withdrawal amount';
+            $quote['http']  = 400;
+            return $quote; // 同其余驳回路径：fee 保持初值、actual_amount 原样回显
+        }
+
         $quote['fee']           = $fee;
-        $quote['actual_amount'] = bcsub($platformAmount, $fee, 4);
+        $quote['actual_amount'] = $actualAmount;
 
         // 自动审核阈值资格（riskReview / dualOn 由调用方合取）
         $quote['auto_approve_eligible'] =

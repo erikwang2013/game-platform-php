@@ -706,4 +706,5 @@ mysql -u game-platform -p game-platform < install/File-migrasi-baru.sql
 # 4. Restart halus (tidak menghentikan layanan)
 cd /opt/game-platform/admin && php start.php reload
 cd /opt/game-platform/service && php start.php reload
+# Catatan: proses event-subscriber di service ditandai reloadable=false, reload tidak menyegarkan kodenya; setelah mengubahnya, restart seluruh proses (php start.php restart); di pohon admin, risk-ip-cron / monitor juga ditandai reloadable=false dan berperilaku sama
 ```

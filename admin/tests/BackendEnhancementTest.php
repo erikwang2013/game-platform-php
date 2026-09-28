@@ -252,12 +252,35 @@ class BackendEnhancementTest extends TestCase
     // 7. 安全验证
     // ============================================================
 
-    public function test_operation_log_input_filters_passwords(): void
+    /**
+     * 脱敏是**行为**，不是源码里有几个字面量。
+     *
+     * 旧断言 `file_get_contents(OperationLog.php)` + 断言 'password'/'old_password'/'new_password'
+     * 三个字面量出现：把这三个词写进注释、同时删光脱敏逻辑，它照样绿（本仓已禁这种「读源码文本式」
+     * 测试）。改成走真正的脱敏入口，断言**结果**：历史词条必须被打码，普通业务字段必须原样保留。
+     * 断言不依赖任何注释文本 —— OperationLog 的 docblock 整段删掉，本用例仍然绿。
+     */
+    public function test_operation_log_redacts_sensitive_keys(): void
     {
-        $source = file_get_contents(__DIR__ . '/../app/middleware/OperationLog.php');
-        $this->assertStringContainsString('password', $source);
-        $this->assertStringContainsString('old_password', $source);
-        $this->assertStringContainsString('new_password', $source);
+        $middleware = new \app\middleware\OperationLog();
+        $filter = new \ReflectionMethod($middleware, 'filterSensitive');
+        $filter->setAccessible(true);
+
+        // 迁移前的历史词条（8 条），逐条仍须命中 —— 这是「迁移无损」的可执行版本
+        $legacy = ['password', 'old_password', 'new_password', 'new_password_confirmation',
+                   'token', 'secret', 'access_token', 'refresh_token'];
+        $input = array_fill_keys($legacy, 'plaintext');
+        // 负控：非敏感字段必须原样留下，否则「整表打码」也能满足上面的断言
+        $input['nickname'] = 'alice';
+        $input['amount'] = '12.34000000';
+
+        $out = $filter->invoke($middleware, $input);
+
+        foreach ($legacy as $key) {
+            $this->assertSame('***', $out[$key], "敏感键 {$key} 未脱敏：明文会落进操作日志");
+        }
+        $this->assertSame('alice', $out['nickname'], '非敏感键被误打码：审计信息被抹掉');
+        $this->assertSame('12.34000000', $out['amount']);
     }
 
     public function test_operation_log_has_try_catch(): void
