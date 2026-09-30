@@ -2,9 +2,15 @@
  * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
  */
 
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
-import 'package:get/get.dart' hide Response;
+// get 自带一套同名 multipart 类型（get_connect），这里只要 dio 的
+import 'package:get/get.dart' hide Response, FormData, MultipartFile;
 import 'auth_service.dart';
+
+/// 图片直传的组名：本树只开 `image` 一组（后端 groups.image 白名单 jpg/jpeg/png/gif/webp、≤5MB）。
+const String aetherImageGroup = 'image';
 
 class ApiService {
   static final ApiService _instance = ApiService._();
@@ -52,6 +58,64 @@ class ApiService {
   Future<Map<String, dynamic>> put(String path, {dynamic data}) => _request(() => dio.put(path, data: data));
 
   Future<Map<String, dynamic>> delete(String path, {dynamic data}) => _request(() => dio.delete(path, data: data));
+
+  /// 图片上传（aetherupload 插件的两步协议），返回**可落库的绝对 URL**。
+  ///
+  /// 刻意不走 `_request`：该插件的响应体是裸的 `{error, chunkSize, ...}`，没有本仓
+  /// `{code, message, data}` 信封，`_handleResponse` 会把恒缺的 code 读成「非 0」而误报错。
+  /// JWT 仍由 dio 拦截器统一带（两个端点都要后台登录）。展示路由公开，故返回值是完整 URL。
+  Future<String> uploadImage(Uint8List bytes, String fileName) async {
+    // 第一步：预检（普通表单，不是 JSON —— 服务端从 $_POST 取值）
+    final pre = await dio.post(
+      '/admin/v1/aetherupload/preprocess',
+      data: <String, dynamic>{
+        'resource_name': fileName,
+        'resource_size': bytes.length,
+        'resource_hash': '', // 本仓关了秒传与完整性校验（lax_mode）⇒ 契约要求空串
+        'locale': 'zh_CN',
+        'group': aetherImageGroup,
+      },
+      options: Options(contentType: Headers.formUrlEncodedContentType),
+    );
+    final meta = _aetherResult(pre);
+    final instant = _savedPath(meta);
+    if (instant.isNotEmpty) return _displayUrl(instant); // 秒传命中即完成（本仓 instant_completion=false，走不到）
+
+    // 第二步：整份作为**单块**送（chunk_total=1、index 从 1 起）。服务端按块数算进度，单块即 complete；
+    // 大小上限由 service 端 filterBySize 逐块兜（≤5MB）。
+    final up = await dio.post(
+      '/admin/v1/aetherupload/uploading',
+      data: FormData.fromMap(<String, dynamic>{
+        'resource_chunk': MultipartFile.fromBytes(bytes, filename: fileName),
+        'resource_ext': meta['resourceExt'] ?? '',
+        'chunk_total': '1',
+        'chunk_index': '1',
+        'resource_temp_basename': meta['resourceTempBaseName'] ?? '',
+        'group': aetherImageGroup,
+        'group_subdir': meta['groupSubDir'] ?? '',
+        'locale': 'zh_CN',
+        'resource_hash': '',
+      }),
+    );
+    final savedPath = _savedPath(_aetherResult(up));
+    if (savedPath.isEmpty) throw ApiException(-1, '上传失败：服务端未返回文件路径');
+    return _displayUrl(savedPath);
+  }
+
+  /// aetherupload 的响应判定：`error` 为 0（数字）才成功；非 0 是**已翻译好的成品文案**，
+  /// 原样抛出（界面上直接显示）。鉴权中间件拒绝时回的是本仓另一套信封（没有 error 字段），
+  /// 一并按失败处理并把 message 取出来。
+  Map<String, dynamic> _aetherResult(Response resp) {
+    final body = resp.data is Map ? Map<String, dynamic>.from(resp.data as Map) : <String, dynamic>{};
+    final error = body['error'];
+    if (error is num && error == 0) return body;
+    throw ApiException(-1, error?.toString() ?? body['message']?.toString() ?? '上传失败');
+  }
+
+  String _savedPath(Map<String, dynamic> body) => body['savedPath']?.toString() ?? '';
+
+  /// 落库值 = 对外基址 + 展示路由 + savedPath（savedPath 形如 `image_202609_<md5>.png`）
+  String _displayUrl(String savedPath) => '$baseUrl/admin/v1/aetherupload/display/$savedPath';
 
   /// 服务端 json() 信封恒为 HTTP 200，鉴权失败体现在 body.code，上面的状态码拦截器看不到；
   /// 此处在信封层识别 code 401：刷新后原样重发一次，仍失败则清 token 回登录页。

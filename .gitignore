@@ -136,3 +136,12 @@ admin/apps/flutter/# Android Studio will place build artifacts here
 admin/apps/flutter//android/app/debug
 admin/apps/flutter//android/app/profile
 admin/apps/flutter//android/app/releaseruntime/
+
+# aetherupload 上传目录：内容不入库（图片、临时分块、断点文件），只保留目录骨架
+# ⚠ 这里装的是用户/运营上传的文件（含 KYC 证件照），绝不能进版本库
+admin/storage/app/aetherupload/**/*
+!admin/storage/app/aetherupload/**/
+!admin/storage/app/aetherupload/**/.gitkeep
+service/storage/app/aetherupload/**/*
+!service/storage/app/aetherupload/**/
+!service/storage/app/aetherupload/**/.gitkeep

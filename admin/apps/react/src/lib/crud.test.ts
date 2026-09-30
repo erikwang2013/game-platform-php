@@ -200,6 +200,20 @@ test('rowId：缺省认 id/hashid，rowKey 指到别的列（风控用户列表�
   assert.equal(rowId({ id: 'Xk9' }, 'user_id'), '');
 });
 
+test('image 字段：值仍是字符串，照旧参与「编辑态只发改动」（上传结果与原值不同就会被发出去）', () => {
+  const field: Field = { name: 'cover_image', label: '封面图', type: 'image' };
+  const row = { cover_image: 'https://cdn.example.com/old.png' };
+  // 存量值（手输 URL / 图标名）原样带进控件
+  assert.equal(draftFrom([field], row).cover_image, 'https://cdn.example.com/old.png');
+  // 没动它 ⇒ 一个字段都不发（上传只在用户选了文件时才写值）
+  assert.deepEqual(buildPayload([field], draftFrom([field], row), row), {});
+  // 上传把它换成新的绝对展示 URL ⇒ 与原值不同，按字符串发出去
+  const uploaded = 'http://admin.games.test/admin/v1/aetherupload/display/image_202610_ab12.png';
+  assert.deepEqual(buildPayload([field], { cover_image: uploaded }, row), { cover_image: uploaded });
+  // 库值是 NULL（从没设过封面）时控件里是空串，不是 "null"
+  assert.equal(draftFrom([field], { cover_image: null }).cover_image, '');
+});
+
 test('optionsWithCurrent：行值不在值域内时置顶补一条「当前值」，在值域内或为空则原样', () => {
   const field: Field = { name: 'type', label: '类型', type: 'select', options: [{ value: 'system', label: '系统' }] };
   assert.deepEqual(optionsWithCurrent(field, 'system'), [{ value: 'system', label: '系统' }]);

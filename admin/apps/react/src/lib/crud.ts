@@ -8,9 +8,11 @@
 /**
  * `json` = 文本框里的 JSON **字符串**原样上送（服务端自己 json_decode，如活动 config）；
  * `jsonobj` = 文本框里的 JSON 解成**对象**再上送（服务端把该字段当数组读，收到字符串会静默丢弃，
- * 如风控试算的 context —— 传字符串不报错、只是当成 {} 评估，等于悄悄空转）。
+ * 如风控试算的 context —— 传字符串不报错、只是当成 {} 评估，等于悄悄空转）；
+ * `image` = 文本框 + 上传按钮（见 lib/upload.ts）：值仍是字符串，只是能由上传结果写回，
+ * 库里的存量值（手输 URL / 图标名）照旧可编辑，改动比较也照旧。
  */
-export type FieldType = 'text' | 'textarea' | 'number' | 'select' | 'switch' | 'json' | 'jsonobj' | 'lines' | 'multi';
+export type FieldType = 'text' | 'textarea' | 'number' | 'select' | 'switch' | 'json' | 'jsonobj' | 'lines' | 'multi' | 'image';
 
 export type FieldOption = { value: string; label: string };
 

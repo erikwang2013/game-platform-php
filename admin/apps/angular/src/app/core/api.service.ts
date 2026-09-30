@@ -53,6 +53,11 @@ type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
 const REFRESH = 'ga_refresh_token';
 
+/** 信封式 401：AdminAuth 拒绝是 HTTP 200 + {code:401}（app/middleware/AdminAuth.php:34） */
+function code401(body: unknown): boolean {
+  return typeof body === 'object' && body !== null && (body as Row)['code'] === 401;
+}
+
 function query(params: Params): string {
   const parts = Object.entries(params)
     .filter(([, v]) => v !== undefined && v !== '')
@@ -96,6 +101,27 @@ export class Api {
           const env = await this.once<T>(method, full, body);
           return { data: env.data, message: env.message };
         }
+        this.auth.clear();
+        throw new ApiError(401, '登录状态已失效，请重新登录');
+      }
+      throw e;
+    }
+  }
+
+  /**
+   * 原生响应：**不判 code、不拆 data**，body 原样回（aetherupload 那种自带 error/savedPath 的
+   * 非信封协议走这条）。401 两条来路都接，与 envelope() 同一口径：刷新后重放一次，刷不动就清会话。
+   * 401 非 2xx 由 sendRaw 抛 ApiError；信封 401 是 HTTP 200，得自己认（code401）。
+   */
+  async raw<T>(method: Method, url: string, body?: unknown): Promise<T> {
+    const retryable = !url.startsWith('/api/v1/auth/');
+    try {
+      const res = await this.sendRaw<T>(method, url, body);
+      if (retryable && code401(res)) throw new ApiError(401, '未登录');
+      return res;
+    } catch (e) {
+      if (retryable && e instanceof ApiError && e.code === 401) {
+        if (await this.refreshOnce()) return this.sendRaw<T>(method, url, body);
         this.auth.clear();
         throw new ApiError(401, '登录状态已失效，请重新登录');
       }
@@ -155,11 +181,15 @@ export class Api {
     return env;
   }
 
-  private async send<T>(method: Method, url: string, body?: unknown): Promise<Envelope<T>> {
+  private send<T>(method: Method, url: string, body?: unknown): Promise<Envelope<T>> {
+    return this.sendRaw<Envelope<T>>(method, url, body);
+  }
+
+  private async sendRaw<T>(method: Method, url: string, body?: unknown): Promise<T> {
     const token = this.auth.token;
     try {
       return await firstValueFrom(
-        this.http.request<Envelope<T>>(method, url, {
+        this.http.request<T>(method, url, {
           body,
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         }),

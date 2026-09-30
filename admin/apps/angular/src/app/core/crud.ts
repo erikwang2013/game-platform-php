@@ -6,7 +6,8 @@ import { idOf, json } from './render';
 import { errText, num } from './util';
 import type { Act } from '../components/table';
 
-export type FieldType = 'text' | 'textarea' | 'number' | 'select' | 'switch' | 'multi';
+/** image：文本框 + 上传按钮（值仍是字符串 URL；存量手输的 URL/图标名照旧可编辑） */
+export type FieldType = 'text' | 'textarea' | 'number' | 'select' | 'switch' | 'multi' | 'image';
 
 export interface Opt {
   value: string;

@@ -81,6 +81,30 @@ async function refreshAccessToken(): Promise<boolean> {
   }
 }
 
+/** 读 JSON；非 JSON（网关 5xx 的 HTML 页）按 HTTP 状态报。 */
+async function readJson(r: Response): Promise<Record<string, unknown>> {
+  try {
+    return (await r.json()) as Record<string, unknown>;
+  } catch {
+    throw new ApiError(r.status, `服务异常（HTTP ${r.status}）`);
+  }
+}
+
+/**
+ * 401 的统一处置：并发请求共用同一次刷新；刷新不成即清会话跳登录。返回是否已换到新令牌。
+ * 鉴权失败是 HTTP 200 + body.code 401（两个后端中间件都不设 HTTP 状态），按信封 code 判定。
+ */
+async function reauth(): Promise<boolean> {
+  if (!refreshing) refreshing = refreshAccessToken();
+  const ok = (await refreshing) ?? false;
+  refreshing = null;
+  if (!ok) {
+    session.clear();
+    if (window.location.pathname !== '/login') window.location.replace('/login');
+  }
+  return ok;
+}
+
 /**
  * 发请求并交出整个信封。资金动作（打款执行/同步、审核）要显示**服务端的原话**，
  * 而 `api()` 只回 data，那句话在解包时就丢了 —— 于是拆出这一层，两者共用同一条请求/刷新链路。
@@ -111,23 +135,37 @@ export async function apiEnvelope<T>(path: string, options: Options = {}): Promi
   let res = await send();
   let payload = await parse(res);
 
-  // 鉴权失败是 HTTP 200 + body.code 401（两个后端中间件都不设 HTTP 状态），按信封 code 判定
   if (payload.code === 401 && useAuth) {
-    // 并发 401 共用同一次刷新
-    if (!refreshing) refreshing = refreshAccessToken();
-    const ok = (await refreshing) ?? false;
-    refreshing = null;
-    if (ok) {
+    if (await reauth()) {
       res = await send();
       payload = await parse(res);
     } else {
-      session.clear();
-      if (window.location.pathname !== '/login') window.location.replace('/login');
       throw new ApiError(401, '登录已过期，请重新登录');
     }
   }
 
   if (payload.code !== 0) throw new ApiError(payload.code, payload.message || '请求失败');
+  return payload;
+}
+
+/**
+ * 不走信封的 POST：aetherupload 插件直接回 `{error, savedPath}`（没有 code/message/data），
+ * 走 apiEnvelope 会因「无 code」被当成失败。鉴权头与 401 刷新沿用同一条链路。
+ * Content-Type 交给 fetch 自己定：URLSearchParams = 普通表单、FormData = multipart（浏览器补 boundary）。
+ */
+export async function rawPost(path: string, body: URLSearchParams | FormData): Promise<Record<string, unknown>> {
+  const send = (): Promise<Response> => {
+    const headers: Record<string, string> = {};
+    const access = session.accessToken;
+    if (access) headers.Authorization = `Bearer ${access}`;
+    return fetch(path, { method: 'POST', headers, body });
+  };
+
+  let payload = await readJson(await send());
+  if (Number(payload.code) === 401) {
+    if (!(await reauth())) throw new ApiError(401, '登录已过期，请重新登录');
+    payload = await readJson(await send());
+  }
   return payload;
 }
 

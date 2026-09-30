@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { Row } from '../core/api.service';
 import { Field } from '../core/crud';
 import { json } from '../core/render';
+import { ImageUpload } from '../core/upload';
 import { FormModal } from './form-modal';
 
 const FIELDS: Field[] = [
@@ -46,8 +47,14 @@ class Host {
 }
 
 describe('FormModal（通用表单弹框）', () => {
-  const setup = async (): Promise<ComponentFixture<Host>> => {
-    TestBed.configureTestingModule({ imports: [Host] });
+  /** image 字段要注入上传服务；不传 = 一个必定失败的空壳（只关心渲染的用例不碰它） */
+  const setup = async (image?: (f: File) => Promise<string>): Promise<ComponentFixture<Host>> => {
+    TestBed.configureTestingModule({
+      imports: [Host],
+      providers: [
+        { provide: ImageUpload, useValue: { image: image ?? (() => Promise.reject(new Error('未配置'))) } },
+      ],
+    });
     const fixture = TestBed.createComponent(Host);
     await fixture.whenStable();
     return fixture;
@@ -236,6 +243,83 @@ describe('FormModal（通用表单弹框）', () => {
     f.detectChanges();
 
     expect(el<HTMLElement>(f, '.alert').textContent).toContain('游戏标识已存在');
+    expect(f.nativeElement.querySelector('.modal')).toBeTruthy();
+  });
+
+  /** 等 pick() 里那串裸 promise 走完（whenStable 只等 Angular 自己排的任务） */
+  const tick = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
+
+  /** 把文件塞进 input[type=file]（jsdom 没有 DataTransfer：直接定义 files，组件只读 files[0]） */
+  const choose = async (f: ComponentFixture<Host>, name = 'a.png'): Promise<void> => {
+    const input = el<HTMLInputElement>(f, 'input[type="file"]');
+    Object.defineProperty(input, 'files', {
+      configurable: true,
+      value: [new File(['x'], name, { type: 'image/png' })],
+    });
+    input.dispatchEvent(new Event('change'));
+    await tick();
+    f.detectChanges();
+  };
+
+  /**
+   * image 字段（游戏封面 / 分类图标 / 成就图标）：**文本框必须保住** ——
+   * 存量数据里分类 icon 是一列图标名而不是 URL，换成纯上传控件就编辑不了了。
+   */
+  it('image：仍是带 name 的文本框（存量手输值随提交原样回来）+ 上传按钮 + file 输入', async () => {
+    const f = await setup();
+    f.componentInstance.fields.set([{ name: 'icon', label: '图标', type: 'image' }]);
+    f.componentInstance.open.set(true);
+    f.componentInstance.value.set({ icon: 'icon_sword' });
+    f.detectChanges();
+
+    const box = el<HTMLInputElement>(f, 'input[name="icon"]');
+    expect(box.type).toBe('text');
+    expect(box.value).toBe('icon_sword');
+    // 图标名不是 URL ⇒ 不出缩略图（否则就是一条 404 请求）
+    expect(f.nativeElement.querySelector('img.thumb')).toBeNull();
+    expect(el<HTMLInputElement>(f, 'input[type="file"]').accept).toContain('image/png');
+    await submit(f);
+    expect(f.componentInstance.got).toEqual({ icon: 'icon_sword' });
+  });
+
+  it('image：值形如 URL 时才出缩略图', async () => {
+    const f = await setup();
+    f.componentInstance.fields.set([{ name: 'cover', label: '封面', type: 'image' }]);
+    f.componentInstance.open.set(true);
+    f.componentInstance.value.set({ cover: 'https://cdn.test/a.png' });
+    f.detectChanges();
+
+    expect(el<HTMLImageElement>(f, 'img.thumb').getAttribute('src')).toBe('https://cdn.test/a.png');
+  });
+
+  it('上传成功：绝对 URL 写回原生输入框（提交读到它）+ 立刻出缩略图', async () => {
+    const url = 'http://admin.test/admin/v1/aetherupload/display/image_202610_ab.png';
+    const f = await setup(() => Promise.resolve(url));
+    f.componentInstance.fields.set([{ name: 'cover', label: '封面', type: 'image' }]);
+    f.componentInstance.open.set(true);
+    f.detectChanges();
+
+    await choose(f);
+
+    const box = el<HTMLInputElement>(f, 'input[name="cover"]');
+    expect(box.value).toBe(url);
+    expect(el<HTMLImageElement>(f, 'img.thumb').getAttribute('src')).toBe(url);
+    // 落库走的是表单值 ⇒ 上传结果和手输 URL 在 payload() 眼里没有区别
+    await submit(f);
+    expect(f.componentInstance.got).toEqual({ cover: url });
+  });
+
+  it('上传失败：服务端文案挂在字段下方，框里旧值不动（可重选或手输兜底）', async () => {
+    const f = await setup(() => Promise.reject(new Error('invalid_resource_type')));
+    f.componentInstance.fields.set([{ name: 'cover', label: '封面', type: 'image' }]);
+    f.componentInstance.open.set(true);
+    f.componentInstance.value.set({ cover: 'https://cdn.test/old.png' });
+    f.detectChanges();
+
+    await choose(f);
+
+    expect(el<HTMLElement>(f, '.err').textContent).toContain('invalid_resource_type');
+    expect(el<HTMLInputElement>(f, 'input[name="cover"]').value).toBe('https://cdn.test/old.png');
     expect(f.nativeElement.querySelector('.modal')).toBeTruthy();
   });
 });

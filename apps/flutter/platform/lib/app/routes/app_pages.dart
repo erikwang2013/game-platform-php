@@ -10,6 +10,7 @@ import '../pages/wallet/exchange_page.dart';
 import '../pages/wallet/withdraw_page.dart';
 import '../pages/profile/profile_page.dart';
 import '../pages/profile/identity_page.dart';
+import '../services/user_file.dart';
 import '../pages/game/play_log_page.dart';
 import '../pages/chat/chat_list_page.dart';
 import '../pages/chat/chat_page.dart';
@@ -43,8 +44,9 @@ class AppPages {
     GetPage(name: '/deposit', page: () => const DepositPage()),
     GetPage(name: '/exchange', page: () => const ExchangePage()),
     GetPage(name: '/withdraw', page: () => const WithdrawPage()),
-    GetPage(name: '/profile', page: () => const ProfilePage()),
-    GetPage(name: '/identity', page: () => const IdentityPage()),
+    // 选图走 SDK 自带的 js_interop（无插件依赖）：web 弹系统选图框，非 web 恒返回 null（按取消处理）
+    GetPage(name: '/profile', page: () => const ProfilePage(pickImage: UserFile.pickFromDevice)),
+    GetPage(name: '/identity', page: () => const IdentityPage(pickImage: UserFile.pickFromDevice)),
     GetPage(name: '/play-logs', page: () => const PlayLogPage()),
     GetPage(name: '/chat-list', page: () => const ChatListPage()),
     GetPage(name: '/chat', page: () => const ChatPage()),

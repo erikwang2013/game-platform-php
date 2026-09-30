@@ -530,3 +530,23 @@ export interface TicketItem {
   reply_count: number;
   created_at: string;
 }
+
+/**
+ * aetherupload 两步协议的回执（preprocess 与 uploading 同一个形状）。
+ *
+ * **不走 {code,message,data} 信封**：插件端点 `Responser::returnResult()` 直接 json() 出这个对象，
+ * 故取值要经 `apiService.postRaw/postMultipart`（见 UploadService）。
+ *
+ * `error` 为 0 才是成功；**非 0 是给人看的字符串**（插件把异常 message 换成人话塞回该字段），
+ * 页面原样显示，不要翻译、不要当错误码比对。没传 hash 时 `savedPath` 恒为空 ⇒ 只能靠 uploading 拿。
+ */
+export interface UploadTicket {
+  error: string | number;
+  /** 服务端的建议分块大小（本仓 1000000，仅作参考） */
+  chunkSize: number;
+  groupSubDir: string;
+  resourceTempBaseName: string;
+  resourceExt: string;
+  /** 非空 = 秒传命中，可直接用；本仓 instant_completion 关着，恒为空 */
+  savedPath: string;
+}

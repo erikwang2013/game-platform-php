@@ -2,10 +2,16 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
+import '../../services/user_file.dart';
+import '../../widgets/user_file_image.dart';
 import '../../i18n/translations.dart';
 
 class IdentityPage extends StatefulWidget {
-  const IdentityPage({super.key});
+  const IdentityPage({super.key, this.pickImage});
+
+  /// 选图来源，语义同 [ProfilePage.pickImage]：生产＝`UserFile.pickFromDevice`，未注入时按钮不渲染。
+  final Future<PickedImage?> Function()? pickImage;
+
   @override
   State<IdentityPage> createState() => _IdentityPageState();
 }
@@ -21,6 +27,7 @@ class _IdentityPageState extends State<IdentityPage> {
   String _idType = 'id_card';
   String _country = '';
   bool _isLoading = false;
+  bool _uploading = false;
   Map<String, dynamic>? _existingData;
 
   @override
@@ -74,6 +81,74 @@ class _IdentityPageState extends State<IdentityPage> {
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  /// 选图 → 上传 → 写回该字段（存库值是相对 URL）。三照各自一个字段，成功后预览即时刷新。
+  Future<void> _pickAndUpload(TextEditingController controller) async {
+    final pick = widget.pickImage;
+    if (pick == null) return;
+    setState(() => _uploading = true);
+    try {
+      final picked = await pick();
+      if (picked == null) return; // 用户取消选图
+      final savedPath = await UserFile.uploadImage(fileName: picked.fileName, bytes: picked.bytes);
+      if (!mounted) return;
+      controller.text = UserFile.storedUrl(savedPath);
+    } on ApiException catch (e) {
+      if (mounted) Get.snackbar("${AppTranslations.t('app.error')}", e.message);
+    } catch (_) {
+      if (mounted) Get.snackbar("${AppTranslations.t('app.error')}", "${AppTranslations.t('app.upload_failed')}");
+    } finally {
+      if (mounted) setState(() => _uploading = false);
+    }
+  }
+
+  /// 证件照字段：输入框 + 上传按钮 + 鉴权预览（取不到时占位，别渲染成空白）
+  Widget _photoField({
+    required String label,
+    required TextEditingController controller,
+    bool required = false,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: TextFormField(
+                controller: controller,
+                decoration: InputDecoration(labelText: label),
+                validator: required
+                    ? (v) => (v == null || v.isEmpty) ? "${AppTranslations.t('identity.required')}" : null
+                    : null,
+              ),
+            ),
+            if (widget.pickImage != null) ...[
+              const SizedBox(width: 12),
+              SizedBox(
+                height: 56,
+                child: OutlinedButton.icon(
+                  onPressed: _uploading ? null : () => _pickAndUpload(controller),
+                  icon: _uploading
+                      ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.upload, size: 18),
+                  label: Text("${AppTranslations.t('app.upload')}"),
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 8),
+        ValueListenableBuilder<TextEditingValue>(
+          valueListenable: controller,
+          builder: (_, value, __) => ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: UserFileImage(stored: value.text, width: 120, height: 90),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -136,18 +211,21 @@ class _IdentityPageState extends State<IdentityPage> {
             validator: (v) => (v == null || v.isEmpty) ? "${AppTranslations.t('identity.required')}" : null,
           ),
           const SizedBox(height: 16),
-          TextFormField(
+          _photoField(
+            label: "${AppTranslations.t('identity.front_photo')}",
             controller: _frontPhotoCtrl,
-            decoration: InputDecoration(labelText: "${AppTranslations.t('identity.front_photo')}"),
-            validator: (v) => (v == null || v.isEmpty) ? "${AppTranslations.t('identity.required')}" : null,
+            required: true,
           ),
           const SizedBox(height: 16),
-          TextFormField(controller: _backPhotoCtrl, decoration: InputDecoration(labelText: "${AppTranslations.t('identity.back_photo')}")),
+          _photoField(
+            label: "${AppTranslations.t('identity.back_photo')}",
+            controller: _backPhotoCtrl,
+          ),
           const SizedBox(height: 16),
-          TextFormField(
+          _photoField(
+            label: "${AppTranslations.t('identity.selfie_photo')}",
             controller: _selfiePhotoCtrl,
-            decoration: InputDecoration(labelText: "${AppTranslations.t('identity.selfie_photo')}"),
-            validator: (v) => (v == null || v.isEmpty) ? "${AppTranslations.t('identity.required')}" : null,
+            required: true,
           ),
           const SizedBox(height: 16),
           TextFormField(

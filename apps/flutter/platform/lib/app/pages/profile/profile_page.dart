@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/user_file.dart';
+import '../../widgets/user_file_image.dart';
 
 /// 注销请求体：字段名与 confirm 的值都是服务端契约
 /// （service/app/api/v1/controller/UserController.php:163），客户端原样透传用户输入，由服务端裁决。
@@ -17,7 +19,12 @@ Map<String, dynamic> deleteAccountPayload(String password, String confirm) => {
 bool isAccountGoneStatus(int code) => code == 401 || code == 404;
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  const ProfilePage({super.key, this.pickImage});
+
+  /// 选图来源：生产走 [UserFile.pickFromDevice]（SDK 自带的 dart:js_interop，不引插件依赖；
+  /// 非 web 平台恒返回 null ⇒ 按「用户取消」处理）。未注入时按钮不渲染，测试注入假字节流
+  /// 即可离线跑通全链路。
+  final Future<PickedImage?> Function()? pickImage;
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -30,6 +37,7 @@ class _ProfilePageState extends State<ProfilePage> {
   final _languageCtrl = TextEditingController();
   bool _loading = true;
   bool _saving = false;
+  bool _uploading = false;
   String? _error;
   String? _successMsg;
   Map<String, dynamic>? _profile;
@@ -105,6 +113,27 @@ class _ProfilePageState extends State<ProfilePage> {
         _error = "${AppTranslations.t('app.network_error')}";
         _saving = false;
       });
+    }
+  }
+
+  /// 选图 → 上传 → 写回输入框（存库值是相对 URL，仍由用户按「保存」提交，不替他提交）。
+  Future<void> _pickAndUploadAvatar() async {
+    final pick = widget.pickImage;
+    if (pick == null) return;
+    setState(() => _uploading = true);
+    try {
+      final picked = await pick();
+      if (picked == null) return; // 用户取消选图
+      final savedPath = await UserFile.uploadImage(fileName: picked.fileName, bytes: picked.bytes);
+      if (!mounted) return;
+      _avatarCtrl.text = UserFile.storedUrl(savedPath); // 预览由 ValueListenableBuilder 跟随
+    } on ApiException catch (e) {
+      // 插件的业务错（类型/大小不允许）是给人看的措辞，原样透出
+      if (mounted) Get.snackbar("${AppTranslations.t('app.error')}", e.message);
+    } catch (_) {
+      if (mounted) Get.snackbar("${AppTranslations.t('app.error')}", "${AppTranslations.t('app.upload_failed')}");
+    } finally {
+      if (mounted) setState(() => _uploading = false);
     }
   }
 
@@ -343,12 +372,49 @@ class _ProfilePageState extends State<ProfilePage> {
                               ),
                               const SizedBox(height: 16),
 
-                              TextField(
-                                controller: _avatarCtrl,
-                                decoration: InputDecoration(
-                                  labelText: "${AppTranslations.t('profile.avatar')}",
-                                  hintText: "${AppTranslations.t('profile.avatar_hint')}",
-                                  border: OutlineInputBorder(),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      controller: _avatarCtrl,
+                                      decoration: InputDecoration(
+                                        labelText: "${AppTranslations.t('profile.avatar')}",
+                                        hintText: "${AppTranslations.t('profile.avatar_hint')}",
+                                        border: const OutlineInputBorder(),
+                                      ),
+                                    ),
+                                  ),
+                                  if (widget.pickImage != null) ...[
+                                    const SizedBox(width: 12),
+                                    SizedBox(
+                                      height: 56,
+                                      child: OutlinedButton.icon(
+                                        onPressed: _uploading ? null : _pickAndUploadAvatar,
+                                        icon: _uploading
+                                            ? const SizedBox(
+                                                width: 18,
+                                                height: 18,
+                                                child: CircularProgressIndicator(strokeWidth: 2),
+                                              )
+                                            : const Icon(Icons.upload, size: 18),
+                                        label: Text("${AppTranslations.t('app.upload')}"),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              // 存的是托管相对 URL ⇒ 必须带 token 取字节（历史绝对 URL 直接渲染）
+                              ValueListenableBuilder<TextEditingValue>(
+                                valueListenable: _avatarCtrl,
+                                builder: (_, value, __) => ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: UserFileImage(
+                                    stored: value.text,
+                                    width: 96,
+                                    height: 96,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 16),

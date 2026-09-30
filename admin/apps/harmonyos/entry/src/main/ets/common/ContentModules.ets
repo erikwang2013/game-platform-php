@@ -28,7 +28,10 @@ import { ResourceModule, buildRow, unpaged, paged, jsonText } from './ResourceSc
 const CATEGORY_FIELDS: FormField[] = [
   { name: 'name', label: '分类名称', type: 'text', required: true, placeholder: '最长 50 字' },
   { name: 'slug', label: '分类标识', type: 'text', required: true, placeholder: '小写字母/数字/_/-，最长 50' },
-  { name: 'icon', label: '分类图标', type: 'text', placeholder: '图标地址，最长 255' },
+  {
+    name: 'icon', label: '分类图标', type: 'image', placeholder: '图标地址，最长 255',
+    hint: '≤5MB，jpg/jpeg/png/gif/webp（不支持 svg）。上传后回填绝对地址，也可直接贴外链'
+  },
   { name: 'sort', label: '排序', type: 'number', placeholder: '越小越靠前，缺省 0' }
 ];
 
@@ -264,7 +267,10 @@ const ACHIEVEMENT_FIELDS: FormField[] = [
   { name: 'key', label: '成就标识', type: 'text', required: true, placeholder: '小写字母/数字/_，最长 50' },
   { name: 'name', label: '成就名称', type: 'text', required: true, placeholder: '最长 100 字' },
   { name: 'description', label: '成就描述', type: 'textarea', placeholder: '最长 500 字' },
-  { name: 'icon', label: '成就图标', type: 'text', placeholder: '图标地址，最长 200' },
+  {
+    name: 'icon', label: '成就图标', type: 'image', placeholder: '图标地址，最长 200',
+    hint: '≤5MB，jpg/jpeg/png/gif/webp（不支持 svg）。上传后回填绝对地址，也可直接贴外链'
+  },
   { name: 'condition_json', label: '达成条件', type: 'textarea', required: true, placeholder: 'JSON，如 {"event":"play","count":10}' },
   { name: 'points', label: '奖励积分', type: 'number', required: true, placeholder: '整数，≥ 0' }
 ];

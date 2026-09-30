@@ -5,8 +5,11 @@ import { buildPayload, draftFrom, type Field } from '../lib/crud.ts';
 // 路线表读取器与风控那组用例共用（文件按批次拆开，见 lib/route-fixtures.ts 的说明）
 import { hasRoute, rel, routes } from '../lib/route-fixtures.ts';
 import {
+  ACHIEVEMENT_CRUD,
+  CATEGORY_CRUD,
   CDN_CRUD,
   COUPON_CRUD,
+  GAME_CRUD,
   IDENTITY_CRUD,
   PAYMENT_CRUD,
   PERMISSION_CRUD,
@@ -206,6 +209,21 @@ test('阶梯限额：预置档位只有 PUT ⇒ 无「+ 新建」；没有删除
   assert.equal(WITHDRAW_LIMIT_CRUD.labelKey, undefined);
   const level = (WITHDRAW_LIMIT_CRUD.fields ?? []).find((field) => field.name === 'user_level');
   assert.ok(level?.readOnly, '档位标识是唯一键，只读展示');
+});
+
+test('图片字段：只有游戏封面 / 分类图标 / 成就图标三处，且新建与编辑表单都挂上', () => {
+  for (const [crud, name] of [
+    [GAME_CRUD, 'cover_image'],
+    [CATEGORY_CRUD, 'icon'],
+    [ACHIEVEMENT_CRUD, 'icon'],
+  ] as const) {
+    // 编辑态才是换图的主路径：两个表单都得是 image，光新建挂上等于没挂
+    for (const list of [crud.fields ?? [], crud.editFields ?? []]) {
+      assert.equal(list.find((field) => field.name === name)?.type, 'image', `${crud.noun}的 ${name}`);
+    }
+  }
+  // 权限的 icon 是菜单图标名（VARCHAR(50)），不是图片 URL —— 别顺手也挂上传
+  assert.ok(!(PERMISSION_CRUD.fields ?? []).some((field) => field.type === 'image'));
 });
 
 test('优惠券统计走只读视图（没有单条详情端点，detailBase 会 404）', () => {

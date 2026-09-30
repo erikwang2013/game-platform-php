@@ -37,7 +37,10 @@ const GAME_FIELDS: FormField[] = [
   },
   { name: 'region', label: '运营区域', type: 'text', placeholder: 'global / CN / US…，最长 10' },
   { name: 'sdk_version', label: 'SDK 版本', type: 'text', placeholder: '自研/内嵌游戏用，最长 20' },
-  { name: 'cover_image', label: '封面图', type: 'text', placeholder: '图片地址，最长 255' },
+  {
+    name: 'cover_image', label: '封面图', type: 'image', placeholder: '图片地址，最长 255',
+    hint: '≤5MB，jpg/jpeg/png/gif/webp（不支持 svg）。上传后回填绝对地址，也可直接贴外链'
+  },
   { name: 'api_endpoint', label: 'API 端点', type: 'text', placeholder: '第三方游戏地址，最长 255' },
   { name: 'description', label: '游戏简介', type: 'textarea', placeholder: '游戏描述' },
   { name: 'sort', label: '排序', type: 'number', placeholder: '越小越靠前，缺省 0' },

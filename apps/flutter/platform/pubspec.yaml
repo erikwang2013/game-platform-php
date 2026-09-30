@@ -4,7 +4,9 @@ publish_to: 'none'
 version: 1.0.0
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  # 选图用 dart:js_interop + extension type（SDK 自带，不引插件依赖），语言特性需要 ≥3.3；
+  # 取值与仓内唯一的另一棵 Flutter 树 admin/apps/flutter 对齐（pubspec.lock 已要求 ≥3.12.0）
+  sdk: ^3.11.5
 
 dependencies:
   flutter:

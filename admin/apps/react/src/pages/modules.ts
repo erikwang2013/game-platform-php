@@ -54,7 +54,7 @@ const GAME_FIELDS: Field[] = [
   },
   { name: 'region', label: '运营区域', type: 'text', default: 'global', placeholder: 'global / CN / US …最长 10' },
   { name: 'description', label: '游戏简介', type: 'textarea' },
-  { name: 'cover_image', label: '封面图', type: 'text', placeholder: '图片 URL，最长 255' },
+  { name: 'cover_image', label: '封面图', type: 'image', placeholder: '图片 URL，最长 255' },
   { name: 'api_endpoint', label: 'API 端点', type: 'text', placeholder: '第三方游戏回调地址，最长 255' },
   { name: 'api_key', label: 'API Key', type: 'text', placeholder: '第三方提供；自研/内嵌留空由平台生成' },
   { name: 'api_secret', label: 'API Secret', type: 'text', placeholder: '编辑时留空 = 不改动现有密钥' },
@@ -108,7 +108,7 @@ export const ANNOUNCEMENT_CRUD: CrudConfig = {
 const CATEGORY_FIELDS: Field[] = [
   { name: 'name', label: '分类名称', type: 'text', required: true, placeholder: '最长 50 字' },
   { name: 'slug', label: '分类标识', type: 'text', required: true, placeholder: '小写字母/数字/-/_' },
-  { name: 'icon', label: '分类图标', type: 'text', placeholder: '图标 URL，最长 255' },
+  { name: 'icon', label: '分类图标', type: 'image', placeholder: '图标 URL，最长 255' },
   { name: 'sort', label: '排序', type: 'number', placeholder: '越小越靠前；编辑时须 ≥ 0' },
 ];
 
@@ -244,7 +244,7 @@ const ACHIEVEMENT_FIELDS: Field[] = [
   { name: 'key', label: '成就标识', type: 'text', required: true, placeholder: '小写字母/数字/下划线，最长 50' },
   { name: 'name', label: '成就名称', type: 'text', required: true, placeholder: '最长 100 字' },
   { name: 'description', label: '成就描述', type: 'textarea', placeholder: '最长 500 字' },
-  { name: 'icon', label: '图标', type: 'text', placeholder: '图标 URL' },
+  { name: 'icon', label: '图标', type: 'image', placeholder: '图标 URL' },
   {
     name: 'condition_json',
     label: '达成条件（JSON）',

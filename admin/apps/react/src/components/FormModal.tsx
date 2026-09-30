@@ -1,5 +1,5 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ApiError } from '../lib/api';
 import {
   buildPayload,
@@ -10,6 +10,7 @@ import {
   type Field,
   type FieldOption,
 } from '../lib/crud';
+import { uploadImage } from '../lib/upload';
 import { Modal } from './ui';
 
 /**
@@ -39,6 +40,8 @@ export function FormModal({
   const [draft, setDraft] = useState<Draft>(() => draftFrom(fields, row));
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // 正在上传的字段名（上传期间禁用那个字段的按钮）
+  const [uploading, setUploading] = useState<string | null>(null);
   // 动态值域（权限树这类端点）：开框时拉一次，按字段名缓存。拉不到就只剩「当前值」一项，
   // 此时**必须说出来** —— 界面上看不见的选项，用户会当成「本来就没有」，从而把已有授权改没。
   const [loaded, setLoaded] = useState<Record<string, FieldOption[]>>({});
@@ -60,6 +63,24 @@ export function FormModal({
       alive = false;
     };
   }, [fields]);
+
+  /**
+   * 上传一张图，把**绝对**展示 URL 写回字段值 —— 与手输 URL 走同一条路径（同一个 draft 字段），
+   * 故「编辑态只发改动」的比较不用另立规则：上传结果与原值不同就会被发出去。
+   * 失败原样显示服务端的 error（见 lib/upload.ts），不吞成自编文案。
+   */
+  const upload = async (field: Field, file: File) => {
+    setUploading(field.name);
+    setError(null);
+    try {
+      const url = await uploadImage(file, window.location.origin);
+      setDraft((prev) => ({ ...prev, [field.name]: url }));
+    } catch (cause) {
+      setError(cause instanceof ApiError ? cause.message : '网络异常，请稍后重试');
+    } finally {
+      setUploading(null);
+    }
+  };
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -91,6 +112,8 @@ export function FormModal({
               field={withOptions(field, loaded)}
               value={draft[field.name] ?? ''}
               onChange={(value) => setDraft((prev) => ({ ...prev, [field.name]: value }))}
+              uploading={uploading === field.name}
+              onUpload={(file) => void upload(field, file)}
             />
             {field.hint ? <span className="muted hint">{field.hint}</span> : null}
           </label>
@@ -126,7 +149,60 @@ const withCurrent = (field: Field, values: string[]): FieldOption[] => {
 };
 
 /** 按字段类型选控件；值一律字符串（switch 用 '1'/'0'）。 */
-function Input({ field, value, onChange }: { field: Field; value: string; onChange: (value: string) => void }) {
+function Input({
+  field,
+  value,
+  onChange,
+  uploading,
+  onUpload,
+}: {
+  field: Field;
+  value: string;
+  onChange: (value: string) => void;
+  /** image 字段：正在上传（按钮转文案并禁用） */
+  uploading?: boolean;
+  /** image 字段：选好文件（由 FormModal 走上传流程） */
+  onUpload?: (file: File) => void;
+}) {
+  // 文件选择器藏起来由「上传」按钮代点：外层已经是 <label>，label 套 label 不合法，
+  // 而 label 会把整行都变成触发区（点一下字段名就弹文件框）
+  const file = useRef<HTMLInputElement>(null);
+
+  // 图片：保留文本框（存量值是手输 URL / 图标名）＋ 上传按钮 ＋ 缩略图。
+  // 展示路由公开，缩略图直接 <img src>，不带鉴权头
+  if (field.type === 'image') {
+    return (
+      <span className="imgfield">
+        <span className="imgrow">
+          <input
+            className="input"
+            type="text"
+            value={value}
+            disabled={field.readOnly}
+            placeholder={field.placeholder}
+            onChange={(event) => onChange(event.target.value)}
+          />
+          <button type="button" className="btn btn-sm" disabled={field.readOnly || uploading} onClick={() => file.current?.click()}>
+            {uploading ? '上传中…' : '上传'}
+          </button>
+        </span>
+        <input
+          ref={file}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={(event) => {
+            const picked = event.target.files?.[0];
+            // 清空选择：连选同一个文件也要再触发一次 change
+            event.target.value = '';
+            if (picked) onUpload?.(picked);
+          }}
+        />
+        {value ? <img className="thumb" src={value} alt="预览" /> : null}
+      </span>
+    );
+  }
+
   // json / jsonobj / lines 与 textarea 同形：json 原样上送（服务端 json_decode 校验）、
   // jsonobj 提交时解成对象、lines 每行一个值转数组
   if (field.type === 'textarea' || field.type === 'json' || field.type === 'jsonobj' || field.type === 'lines') {

@@ -68,7 +68,7 @@ class GameListPage extends GetView<GameListController> {
       CrudOption('third_party', 'game.third_party'),
     ]),
     CrudField('description', 'game.description', type: CrudFieldType.multiline),
-    CrudField('cover_image', 'game.cover_image'),
+    CrudField('cover_image', 'game.cover_image', type: CrudFieldType.image),
     CrudField('api_endpoint', 'game.api_endpoint'),
     CrudField('platform', 'game.platform', type: CrudFieldType.select, options: <CrudOption>[
       CrudOption('h5', 'game.platform_h5'),

@@ -27,6 +27,9 @@ class AppTranslations {
       'app.network_error': 'Network error, please retry',
       'app.error': 'Error',
       'app.success': 'Success',
+      'app.upload': 'Upload',
+      'app.upload_failed': 'Upload failed, please retry',
+      'app.file_read_failed': 'Failed to load the file',
 
       // Sidebar / Nav
       'nav.games': 'Game Hall',
@@ -293,6 +296,9 @@ class AppTranslations {
       'app.network_error': '网络错误，请重试',
       'app.error': '错误',
       'app.success': '成功',
+      'app.upload': '上传',
+      'app.upload_failed': '上传失败，请重试',
+      'app.file_read_failed': '文件读取失败',
 
       // Sidebar / Nav
       'nav.games': '游戏大厅',

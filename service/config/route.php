@@ -124,6 +124,8 @@ Route::group('/api/v1', function () {
     Route::put('/user/profile', v('UserController', 'updateProfile'));
     Route::get('/user/identity/status', v('IdentityController', 'status'));
     Route::post('/user/identity/apply', v('IdentityController', 'apply'));
+    // 个人件读取（aetherupload 上传物）：头像所有登录用户可读、KYC 三照仅归属人（见 UserFileController）
+    Route::get('/user/file/{savedPath}', v('UserFileController', 'show'));
 
     // 通知
     Route::get('/notification/list', v('NotificationController', 'list'));

@@ -40,6 +40,7 @@ class AppTranslations {
       'app.deleted': 'Deleted successfully',
       'app.delete_confirm_target': 'Delete "{name}"?',
       'app.field_required': '{name} is required',
+      'app.upload': 'Upload',
 
       // Sidebar
       'nav.dashboard': 'Dashboard',
@@ -827,6 +828,7 @@ class AppTranslations {
       'app.deleted': '删除成功',
       'app.delete_confirm_target': '确定要删除「{name}」吗？',
       'app.field_required': '「{name}」为必填项',
+      'app.upload': '上传',
 
       // Sidebar
       'nav.dashboard': '仪表盘',

@@ -549,6 +549,33 @@ textarea.input {
 .label .req {
   color: var(--danger);
 }
+/* 图片字段：文本框占满，按钮贴右（窄列也不换行）；缩略图在下一行，高度限制住别把表单撑高 */
+.imgfield {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.imgrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.imgrow .input {
+  flex: 1;
+  min-width: 0;
+}
+.imgrow .btn {
+  flex: none;
+  white-space: nowrap;
+}
+.thumb {
+  max-height: 80px;
+  max-width: 100%;
+  align-self: flex-start;
+  border: 1px solid var(--line);
+  border-radius: var(--r-ctl);
+  background: var(--paper);
+}
 /* 字段约束说明常驻在控件下方：placeholder 打完字就看不见了，值域/格式这类约束得有处可写 */
 .label .hint {
   font-size: 12px;

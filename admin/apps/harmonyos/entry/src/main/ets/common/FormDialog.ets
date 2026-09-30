@@ -4,12 +4,15 @@
 
 import promptAction from '@ohos.promptAction';
 import { FormValues, FormPayload } from '../model/DataModels';
+import { pickImage } from './ImagePicker';
+import { UploadService } from '../service/UploadService';
 
 /**
  * 字段类型 —— 与控件一一对应：text/number/password→TextInput（password 掩码显示），
- * textarea→TextArea，select→Select，switch→Toggle，multi→多选（Checkbox 列表，提交数组）
+ * textarea→TextArea，select→Select，switch→Toggle，multi→多选（Checkbox 列表，提交数组），
+ * image→文本框 + 上传按钮 + 预览（值仍是**绝对地址字符串**，故 changed()/payload() 与 text 同路）
  */
-export type FieldType = 'text' | 'number' | 'password' | 'textarea' | 'select' | 'switch' | 'multi';
+export type FieldType = 'text' | 'number' | 'password' | 'textarea' | 'select' | 'switch' | 'multi' | 'image';
 
 /** select / multi 选项：label 给人看，value 是提交值（后端枚举原文或 hashid，不接受显示名） */
 export interface FieldOption {
@@ -89,6 +92,10 @@ export function confirmDelete(what: string, onConfirm: () => void): void {
  * 提交时才 split 成 string[]（后端 permission_ids 收数组）。这样 changed()/setValue()/seed()
  * 这些按字符串写的公共逻辑一行都不用改；hashid 的字母表不含逗号，故分隔符不会歧义。
  *
+ * image 字段：值就是**绝对地址字符串**（与 text 同一种值），上传成功后 setValue 回填，
+ * 于是 changed()/payload()/partial 比较一行都不用改。上传失败原文显示在框内且不清空已填地址 ——
+ * 失败时最不该做的就是让用户重贴一遍链接。
+ *
  * select 字段的历史值兜底（与 flutter 兄弟树 widgets/crud.dart 同款）：
  * 行里已有的值可能不在候选值域内（值域收紧过/历史脏数据），此时**不提交该字段**——
  * 局部更新下不发即保持库中原值；发出去会被 update 的 `in:` 规则 422 掉整次更新，
@@ -114,9 +121,11 @@ export struct FormDialog {
   @State values: FormValues = {};
   /** 本地必填校验提示 */
   @State localError: string = '';
-  /** 服务端失败原文 */
+  /** 服务端失败原文（上传失败也走这里，同样是服务端原样给的话） */
   @State serverError: string = '';
   @State submitting: boolean = false;
+  /** 正在上传的字段名（空串 = 没有上传在跑）；按字段记而不是布尔，多图字段各管各的按钮 */
+  @State uploading: string = '';
 
   aboutToAppear(): void {
     this.seed();
@@ -244,6 +253,32 @@ export struct FormDialog {
     this.setValue(field.name, next.join(','));
   }
 
+  /**
+   * 选图 → 上传 → 回填地址。上传中该字段的输入与按钮一并禁用；
+   * 任一步失败都把原文显示在框内（服务端 error 是给人看的话），**不动用户已填的地址**。
+   * 用户取消选择不是错误，静默返回。
+   */
+  private async pickAndUpload(field: FormField): Promise<void> {
+    if (this.submitting || this.uploading.length > 0) {
+      return;
+    }
+    this.uploading = field.name;
+    this.localError = '';
+    this.serverError = '';
+    try {
+      const picked = await pickImage();
+      if (picked === null) {
+        return;
+      }
+      const url = await UploadService.uploadImage(picked.bytes, picked.fileName);
+      this.setValue(field.name, url);
+    } catch (e) {
+      this.serverError = e instanceof Error && e.message.length > 0 ? e.message : `${e}`;
+    } finally {
+      this.uploading = '';
+    }
+  }
+
   /** 必填校验就地拦下：空表单不该换一条服务端 message 回来（switch 不受约束） */
   private missingRequired(): string {
     for (let i = 0; i < this.fields.length; i++) {
@@ -256,7 +291,8 @@ export struct FormDialog {
   }
 
   private async submit(): Promise<void> {
-    if (this.submitting) {
+    // 上传中的地址还是旧的：这时候提交等于把旧地址当"用户改过的新值"发出去，直接拦住
+    if (this.submitting || this.uploading.length > 0) {
       return;
     }
     const missing = this.missingRequired();
@@ -434,6 +470,46 @@ export struct FormDialog {
                       .width('100%')
                       .margin({ bottom: 2 })
                     }, (option: FieldOption) => `${field.name}:${option.value}`)
+                  }
+                  .width('100%')
+                } else if (field.type === 'image') {
+                  // 上传不改控件形态：文本框仍是唯一的真值入口（可直接贴外链），上传只是往里填地址
+                  Column() {
+                    Row() {
+                      TextInput({ placeholder: field.placeholder ?? '', text: this.current(field) })
+                        .height(40)
+                        .fontSize(14)
+                        .layoutWeight(1)
+                        .enabled(!this.submitting && this.uploading.length === 0)
+                        .onChange((value: string) => {
+                          this.setValue(field.name, value);
+                        })
+
+                      Button(this.uploading === field.name ? '上传中…' : '上传')
+                        .fontSize(13)
+                        .fontColor('#FFFFFF')
+                        .backgroundColor(this.uploading === field.name ? '#99BBFF' : '#1677FF')
+                        .borderRadius(4)
+                        .height(40)
+                        .width(64)
+                        .margin({ left: 8 })
+                        .enabled(!this.submitting && this.uploading.length === 0)
+                        .onClick(() => {
+                          this.pickAndUpload(field);
+                        })
+                    }
+                    .width('100%')
+
+                    // 预览：display 路由公开，Image 直接吃这个绝对地址（`<img>` 那种场景带不了 Authorization 头）
+                    if (this.current(field).length > 0) {
+                      Image(this.current(field))
+                        .width('100%')
+                        .height(120)
+                        .objectFit(ImageFit.Contain)
+                        .backgroundColor('#FAFAFA')
+                        .borderRadius(4)
+                        .margin({ top: 6 })
+                    }
                   }
                   .width('100%')
                 } else if (field.type === 'textarea') {

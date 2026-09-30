@@ -11,10 +11,15 @@ import 'package:get/get.dart';
 
 import '../i18n/translations.dart';
 import '../services/api_service.dart';
+import '../services/image_upload.dart';
+
+// 上传动作的类型是 showCrudForm 的形参类型 ⇒ 从本库转出（调用方 import crud.dart 就够）
+export '../services/image_upload.dart' show CrudImageUpload;
 
 /// 字段控件类型。数量刻意压到够用为止：select 覆盖所有值域固定的枚举，
-/// multiselect 用于「值是 N 个 id 的集合」的关联字段（如角色的 permission_ids）。
-enum CrudFieldType { text, multiline, number, select, toggle, multiselect }
+/// multiselect 用于「值是 N 个 id 的集合」的关联字段（如角色的 permission_ids），
+/// image = 文本框（存量手输 URL 照旧可编辑）+「上传」按钮 + 缩略图。
+enum CrudFieldType { text, multiline, number, select, toggle, multiselect, image }
 
 /// select / multiselect 的一个可选项：value 是提交给后端的字符串，label 是 i18n key
 /// （查不到 key 时原样显示——树形字段用它传「缩进 + 名称」的成品文案）。
@@ -251,6 +256,8 @@ Future<bool> confirmCrudDelete(
 /// `fullEdit` = 编辑态也**整份提交**所有字段：后端 update 复用 create 的 fill()、每次都重读
 /// name/type/action 这类必填键（风控规则就是这种「整单替换」语义）时，「只发改动字段」会被 422。
 /// `onSubmit` 抛异常 = 失败：服务端 message 显示在框内、**不关框**，用户可改后重试。
+/// `imageUpload` = image 字段点「上传」时执行的动作（默认走真实的选图 + 直传）；
+/// 用例注入假实现即可离线跑通「上传中 → 写回 URL → 提交」的全流程。
 Future<bool> showCrudForm(
   BuildContext context, {
   required String title,
@@ -258,6 +265,7 @@ Future<bool> showCrudForm(
   Map<String, dynamic>? initial,
   required Future<void> Function(Map<String, dynamic> data) onSubmit,
   bool fullEdit = false,
+  CrudImageUpload? imageUpload,
 }) async {
   final result = await showDialog<bool>(
     context: context,
@@ -267,6 +275,7 @@ Future<bool> showCrudForm(
       initial: initial,
       onSubmit: onSubmit,
       fullEdit: fullEdit,
+      imageUpload: imageUpload ?? pickAndUploadImage,
     ),
   );
   return result ?? false;
@@ -277,6 +286,7 @@ class _CrudFormDialog extends StatefulWidget {
     required this.title,
     required this.fields,
     required this.onSubmit,
+    required this.imageUpload,
     this.initial,
     this.fullEdit = false,
   });
@@ -286,6 +296,7 @@ class _CrudFormDialog extends StatefulWidget {
   final Map<String, dynamic>? initial;
   final Future<void> Function(Map<String, dynamic> data) onSubmit;
   final bool fullEdit;
+  final CrudImageUpload imageUpload;
 
   @override
   State<_CrudFormDialog> createState() => _CrudFormDialogState();
@@ -298,6 +309,8 @@ class _CrudFormDialogState extends State<_CrudFormDialog> {
   final _multi = <String, Set<String>>{};
   /// 编辑态进入时的勾选集，用于「没动过就不发」（见 _payload 的 multiselect 分支）。
   final _initialMulti = <String, Set<String>>{};
+  /// 正在上传的 image 字段（字段名）——上传期间该字段的按钮置灰并转圈。
+  final _uploading = <String>{};
   String? _error;
   bool _submitting = false;
 
@@ -326,6 +339,7 @@ class _CrudFormDialogState extends State<_CrudFormDialog> {
         case CrudFieldType.text:
         case CrudFieldType.multiline:
         case CrudFieldType.number:
+        case CrudFieldType.image:
           _texts[field.name] = TextEditingController(text: raw?.toString() ?? '');
       }
     }
@@ -367,6 +381,9 @@ class _CrudFormDialogState extends State<_CrudFormDialog> {
           data[field.name] = checked.toList();
         case CrudFieldType.text:
         case CrudFieldType.multiline:
+        case CrudFieldType.image:
+          // image 与 text 同源（同一个 TextEditingController）：上传回来的绝对 URL 就是这样进
+          // payload 的，手输的 URL 也一样——编辑态「没上传就是原值原样发回」，与 text 字段同语义。
           data[field.name] = _texts[field.name]!.text;
       }
     }
@@ -567,6 +584,66 @@ class _CrudFormDialogState extends State<_CrudFormDialog> {
             decoration: InputDecoration(labelText: label, hintText: hint),
           ),
         );
+      case CrudFieldType.image:
+        final uploading = _uploading.contains(field.name);
+        final url = _texts[field.name]!.text.trim();
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            // 文本框原样保留：存量行里手输的 URL 照旧能改，上传只是把结果写进同一个框
+            // （上传期间一并禁用：否则用户正在改的字会被上传结果顶掉）
+            TextField(
+              controller: _texts[field.name],
+              enabled: enabled && !uploading,
+              decoration: InputDecoration(labelText: label, hintText: hint),
+            ),
+            const SizedBox(height: 8),
+            Row(children: [
+              ElevatedButton.icon(
+                onPressed: (enabled && !uploading) ? () => _uploadImage(field) : null,
+                icon: uploading
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                    : const Icon(Icons.upload_file, size: 18),
+                label: Text(crudText('app.upload')),
+              ),
+              if (url.isNotEmpty) ...[
+                const SizedBox(width: 12),
+                // 展示路由公开（不带鉴权）⇒ 直接 Image.network。
+                // 坏 URL 只退化成占位图标：缩略图是辅助，不该拦提交。
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: Image.network(
+                    url,
+                    width: 48,
+                    height: 48,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, _, _) => const Icon(Icons.broken_image_outlined, size: 32),
+                  ),
+                ),
+              ],
+            ]),
+          ]),
+        );
+    }
+  }
+
+  /// 点「上传」：选图 + 直传（动作由用例可注入），成功后把返回的绝对 URL 写回文本框。
+  /// 失败走框内错误位（与提交失败同一处），文案是服务端 `error` 的原文。
+  Future<void> _uploadImage(CrudField field) async {
+    setState(() {
+      _uploading.add(field.name);
+      _error = null;
+    });
+
+    try {
+      final url = await widget.imageUpload();
+      if (!mounted) return;
+      if (url == null) return; // 用户取消：现值不动
+      setState(() => _texts[field.name]!.text = url);
+    } catch (e) {
+      if (mounted) setState(() => _error = apiErrorMessage(e));
+    } finally {
+      if (mounted) setState(() => _uploading.remove(field.name));
     }
   }
 }

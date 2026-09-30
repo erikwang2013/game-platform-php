@@ -103,6 +103,26 @@ textarea.input {
 .form-grid textarea.input {
   padding: 6px 8px;
 }
+/* 图片字段（Field.type='image'）：文本框 + 上传按钮 + 缩略图/错误文案 */
+.form-grid .img-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.form-grid .img-row .btn {
+  flex: none;
+}
+.form-grid .thumb {
+  display: block;
+  margin-top: 6px;
+  max-width: 100%;
+  max-height: 96px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.form-grid .err {
+  color: var(--danger);
+}
 
 /* ---------- 图表 ---------- */
 .chart svg {

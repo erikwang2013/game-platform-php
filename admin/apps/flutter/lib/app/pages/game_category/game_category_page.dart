@@ -67,7 +67,7 @@ class GameCategoryPage extends GetView<GameCategoryAdminController> {
   static const List<CrudField> _fields = <CrudField>[
     CrudField('name', 'game.name', required: true),
     CrudField('slug', 'game.slug', required: true, editableOnEdit: false, hint: 'game_category.slug_hint'),
-    CrudField('icon', 'game_category.icon'),
+    CrudField('icon', 'game_category.icon', type: CrudFieldType.image),
     CrudField('sort', 'game.sort', type: CrudFieldType.number),
   ];
 

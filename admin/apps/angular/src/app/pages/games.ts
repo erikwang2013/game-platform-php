@@ -54,8 +54,7 @@ const GAME_FIELDS: Field[] = [
   {
     name: 'cover_image',
     label: '封面图',
-    type: 'text',
-    full: true,
+    type: 'image',
     placeholder: '图片 URL，最长 255',
   },
   {
@@ -101,8 +100,7 @@ const CATEGORY_FIELDS: Field[] = [
   {
     name: 'icon',
     label: '图标',
-    type: 'text',
-    full: true,
+    type: 'image',
     placeholder: '图片 URL 或图标名，最长 255',
   },
   { name: 'sort', label: '排序', type: 'number', placeholder: '数字越小越靠前' },

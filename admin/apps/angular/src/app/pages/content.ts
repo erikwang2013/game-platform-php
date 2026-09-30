@@ -59,7 +59,7 @@ const ACH_FIELDS: Field[] = [
   },
   { name: 'name', label: '成就名称', type: 'text', required: true, placeholder: '最长 100' },
   { name: 'description', label: '成就描述', type: 'textarea', placeholder: '最长 500' },
-  { name: 'icon', label: '图标', type: 'text', full: true, placeholder: '图片 URL，最长 200' },
+  { name: 'icon', label: '图标', type: 'image', placeholder: '图片 URL，最长 200' },
   {
     name: 'condition_json',
     label: '达成条件（JSON）',

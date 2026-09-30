@@ -1,9 +1,10 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
-import { Component, input, output } from '@angular/core';
+import { Component, inject, input, output, signal } from '@angular/core';
 import { Row } from '../core/api.service';
 import { Field } from '../core/crud';
 import { json } from '../core/render';
-import { num } from '../core/util';
+import { ImageUpload } from '../core/upload';
+import { errText, num } from '../core/util';
 
 /**
  * 通用表单弹框：字段描述驱动，新建/编辑共用一个（value 非空即预填）。
@@ -29,7 +30,7 @@ import { num } from '../core/util';
           }
           <div class="form-grid">
             @for (f of fields(); track f.name) {
-              <div [class.full]="f.full || f.type === 'textarea'">
+              <div [class.full]="f.full || f.type === 'textarea' || f.type === 'image'">
                 <label>
                   {{ f.label }}
                   @if (f.required) {
@@ -79,6 +80,43 @@ import { num } from '../core/util';
                       <input type="checkbox" [attr.name]="f.name" [checked]="on(f.name)" />
                       <span>{{ on(f.name) ? '启用' : '停用' }}</span>
                     </label>
+                  }
+                  @case ('image') {
+                    <!-- 文本框保留：存量手输的 URL / 图标名（分类图标那列就是图标名）要能继续编辑。
+                         上传只做「把绝对 URL 写回这个框」—— 提交仍读原生表单值，payload() 的
+                         「编辑态只发改动」比对口径不变（值就是字符串）。 -->
+                    <div class="img-row">
+                      <input
+                        #box
+                        class="input"
+                        type="text"
+                        [attr.name]="f.name"
+                        [placeholder]="f.placeholder || ''"
+                        [value]="text(f.name)"
+                        (input)="preview(f.name, $any($event.target).value)"
+                      />
+                      <button
+                        type="button"
+                        class="btn"
+                        [disabled]="!!uploading()"
+                        (click)="picker.click()"
+                      >
+                        {{ uploading() === f.name ? '上传中…' : '上传' }}
+                      </button>
+                      <input
+                        #picker
+                        type="file"
+                        hidden
+                        [accept]="accept"
+                        (change)="pick(f, $event, box)"
+                      />
+                    </div>
+                    @if (errOf(f.name); as msg) {
+                      <small class="hint err">{{ msg }}</small>
+                    }
+                    @if (src(f.name); as url) {
+                      <img class="thumb" [src]="url" alt="" />
+                    }
                   }
                   @case ('number') {
                     <input
@@ -130,6 +168,58 @@ export class FormModal {
    */
   readonly save = output<Row>();
   readonly close = output<void>();
+
+  private readonly uploads = inject(ImageUpload);
+
+  /** file 选择框的值域提示；真白名单在后端 groups.image.resource_extensions（jpg/jpeg/png/gif/webp） */
+  protected readonly accept = 'image/jpeg,image/png,image/gif,image/webp';
+
+  /** 正在上传的字段名（空 = 没有在传）。同一时刻只允许一个：其余上传按钮一并禁用 */
+  protected readonly uploading = signal('');
+  /** 上传失败的字段与文案（服务端 error 原文），就近挂在该字段下方 */
+  private readonly upErr = signal<{ field: string; text: string } | null>(null);
+  /** 上传结果/刚手输值的预览覆盖层 —— 文本框是非受控的，信号只为缩略图服务 */
+  private readonly urls = signal<Record<string, string>>({});
+
+  /** image 专用：缩略图取值（上传结果或手输值优先，否则预填值） */
+  protected src(name: string): string {
+    const v = this.urls()[name] ?? this.text(name);
+    // 只认 URL 形态：分类 icon 列存量是图标名，塞进 <img src> 只会打一串 404
+    return /^(https?:)?\/\/|^\//.test(v) ? v : '';
+  }
+
+  /** image 专用：手输也即时更新缩略图（非受控文本框没有别的可绑处） */
+  protected preview(name: string, value: string): void {
+    this.urls.update((u) => ({ ...u, [name]: value }));
+  }
+
+  /** image 专用：该字段行下的上传错误文案 */
+  protected errOf(name: string): string {
+    const e = this.upErr();
+    return e?.field === name ? e.text : '';
+  }
+
+  /**
+   * 选图 → 上传 → 把绝对 URL 写回**原生输入框**（非受控：提交读的就是它）+ 刷新缩略图。
+   * 失败原样显示服务端文案，框不关：用户可重选，也可手输 URL 兜底。
+   */
+  protected async pick(f: Field, ev: Event, box: HTMLInputElement): Promise<void> {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = ''; // 先清空，否则连选同一个文件不会再触发 change
+    if (!file) return;
+    this.uploading.set(f.name);
+    this.upErr.set(null);
+    try {
+      const url = await this.uploads.image(file);
+      box.value = url;
+      this.preview(f.name, url);
+    } catch (e) {
+      this.upErr.set({ field: f.name, text: errText(e) });
+    } finally {
+      this.uploading.set('');
+    }
+  }
 
   /** 预填文本：JSON 列（config/benefits）读回来是数组/对象，要与 payload() 用同一个
    *  序列化器（render.json）才判得等 —— 否则每编辑一次都会把 JSON 原样回写一遍。 */

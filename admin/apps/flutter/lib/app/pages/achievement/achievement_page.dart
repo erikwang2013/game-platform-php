@@ -65,7 +65,7 @@ class AchievementPage extends GetView<AchievementAdminController> {
     CrudField('key', 'achievement.key', required: true, editableOnEdit: false, hint: 'achievement.key_hint'),
     CrudField('name', 'achievement.name', required: true),
     CrudField('description', 'achievement.description', type: CrudFieldType.multiline),
-    CrudField('icon', 'achievement.icon'),
+    CrudField('icon', 'achievement.icon', type: CrudFieldType.image),
     CrudField('condition_json', 'achievement.condition',
         type: CrudFieldType.multiline, required: true, hint: 'achievement.condition_hint'),
     CrudField('points', 'achievement.points', type: CrudFieldType.number, required: true),

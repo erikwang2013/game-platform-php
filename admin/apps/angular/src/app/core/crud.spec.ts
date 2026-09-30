@@ -55,4 +55,17 @@ describe('payload（表单值 → 请求体）', () => {
     expect(payload(FJ, old, { config: json(old.config) })).toEqual({});
     expect(payload(FJ, old, { config: '{"rewards":[]}' })).toEqual({ config: '{"rewards":[]}' });
   });
+
+  /**
+   * image 字段（封面/图标）落库值就是字符串 URL —— 上传结果与手输 URL 走**同一条**判等路径，
+   * 上传完没别处改动就不该发请求（否则每编辑一次都把同一个 URL 回写一遍）。
+   */
+  it('image 字段：同值不提交，换 URL/清空才提交', () => {
+    const FI: Field[] = [{ name: 'cover_image', label: '封面图', type: 'image' }];
+    const old = { cover_image: 'https://cdn.test/a.png' };
+    expect(payload(FI, old, { cover_image: 'https://cdn.test/a.png' })).toEqual({});
+    const uploaded = 'http://admin.test/admin/v1/aetherupload/display/image_202610_x.png';
+    expect(payload(FI, old, { cover_image: uploaded })).toEqual({ cover_image: uploaded });
+    expect(payload(FI, old, { cover_image: null })).toEqual({ cover_image: '' });
+  });
 });
