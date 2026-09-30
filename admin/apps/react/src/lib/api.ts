@@ -49,7 +49,7 @@ export const session = {
 
 export type Query = Record<string, string | number | null | undefined>;
 
-type Options = { method?: 'GET' | 'POST' | 'DELETE'; query?: Query; body?: unknown; auth?: boolean };
+type Options = { method?: 'GET' | 'POST' | 'PUT' | 'DELETE'; query?: Query; body?: unknown; auth?: boolean };
 
 let refreshing: Promise<boolean> | null = null;
 
@@ -81,7 +81,11 @@ async function refreshAccessToken(): Promise<boolean> {
   }
 }
 
-export async function api<T>(path: string, options: Options = {}): Promise<T> {
+/**
+ * 发请求并交出整个信封。资金动作（打款执行/同步、审核）要显示**服务端的原话**，
+ * 而 `api()` 只回 data，那句话在解包时就丢了 —— 于是拆出这一层，两者共用同一条请求/刷新链路。
+ */
+export async function apiEnvelope<T>(path: string, options: Options = {}): Promise<Envelope<T>> {
   const useAuth = options.auth !== false;
 
   const send = (): Promise<Response> => {
@@ -124,5 +128,10 @@ export async function api<T>(path: string, options: Options = {}): Promise<T> {
   }
 
   if (payload.code !== 0) throw new ApiError(payload.code, payload.message || '请求失败');
-  return payload.data;
+  return payload;
+}
+
+/** 只要 data 的常规用法（列表/详情的绝大多数调用）。 */
+export async function api<T>(path: string, options: Options = {}): Promise<T> {
+  return (await apiEnvelope<T>(path, options)).data;
 }

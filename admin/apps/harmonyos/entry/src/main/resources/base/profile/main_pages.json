@@ -7,6 +7,18 @@
     "pages/ProfilePage",
     "pages/GameHallPage",
     "pages/WalletPage",
-    "pages/GameDetailPage"
+    "pages/GameDetailPage",
+    "pages/GameManagePage",
+    "pages/AnnouncementManagePage",
+    "pages/ModuleIndexPage",
+    "pages/ResourceManagePage",
+    "pages/IdentityReviewPage",
+    "pages/TicketManagePage",
+    "pages/WithdrawManagePage",
+    "pages/RiskIndexPage",
+    "pages/RiskUserPage",
+    "pages/RiskDevicePage",
+    "pages/RiskIpPage",
+    "pages/RiskClusterPage"
   ]
 }

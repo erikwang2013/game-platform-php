@@ -1,21 +1,47 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
-import { Component, computed, inject, signal } from '@angular/core';
-import { Api, Page, Row } from '../core/api.service';
+import { Component, computed, signal } from '@angular/core';
+import { Page, Row } from '../core/api.service';
+import { Crud, CrudPage } from '../core/crud';
 import { idOf, json, scalarsOf } from '../core/render';
-import { errText } from '../core/util';
-import { ListBase } from '../core/list-base';
-import { Pager, StateBlock, StatCard, Tabs } from '../components/ui';
+import { errText, num, rowsOf } from '../core/util';
+import { Drawer, Pager, StateBlock, StatCard, Tabs } from '../components/ui';
 import { Table } from '../components/table';
+import { FormModal } from '../components/form-modal';
+import {
+  ANTICHEAT_ACTS,
+  ANTICHEAT_STATUS,
+  CANDIDATE_ACTS,
+  CANDIDATE_HEADS,
+  CLUSTER_ACTS,
+  CLUSTER_STATUS,
+  DEVICE_ACTS,
+  EVENT_ACTS,
+  IP_VERBS,
+  PANEL_TITLES,
+  RISK_HEADS,
+  RISK_PATHS,
+  RISK_TABS,
+  RULE_ACTS,
+  RULE_FIELDS,
+  USER_ACTS,
+  deviceBody,
+  deviceConfirmText,
+  deviceNote,
+  parseContext,
+  whoAnti,
+  whoEvent,
+  whoUser,
+} from './risk-fields';
 
 const R = '/admin/v1/';
 
 @Component({
   selector: 'app-risk',
-  imports: [StateBlock, StatCard, Table, Pager, Tabs],
+  imports: [StateBlock, StatCard, Table, Pager, Tabs, Drawer, FormModal],
   template: `
     <div class="page-head">
       <h1>风险控制</h1>
-      <span class="sub">风控总览 / 事件 / 规则 / 设备 / 反作弊</span>
+      <span class="sub">风控总览 / 事件 / 规则 / 团伙 / IP / 设备 / 反作弊</span>
       <div class="spacer"></div>
       @if (tab() !== 'overview') {
         <input
@@ -27,16 +53,30 @@ const R = '/admin/v1/';
         />
         <button class="btn" (click)="search()">查询</button>
       }
+      @if (tab() === 'clusters') {
+        <!-- 全局动作、无行上下文（候选由服务端按窗口算出来）⇒ 摆页头，不做行内动作 -->
+        <button class="btn" (click)="detect()">聚类检测</button>
+      }
+      @if (tab() === 'ip') {
+        <!-- 四个动作按**运营输入的原文 IP** 操作（列表只回 ip_hash 掩码，不可逆）⇒ 摆页头 -->
+        <button class="btn danger" (click)="ipAct('block')">拉黑 IP</button>
+        <button class="btn" (click)="ipAct('whitelist')">加入白名单</button>
+        <button class="btn" (click)="ipAct('appeal')">误判申诉放行</button>
+        <button class="btn" (click)="ipAct('recheck')">重查</button>
+      }
+      @if (writable()) {
+        <button class="btn btn-primary" (click)="openCreate()">+ 新建</button>
+      }
       <button class="btn" (click)="load()">刷新</button>
     </div>
 
     <ui-tabs [tabs]="tabs" [active]="tab()" (pick)="pick($event)" />
 
-    <ui-state
-      [loading]="loading()"
-      [error]="error()"
-      [empty]="tab() !== 'overview' && !rows().length"
-    >
+    @if (note()) {
+      <div [class]="noteErr() ? 'alert' : 'notice'">{{ note() }}</div>
+    }
+
+    <ui-state [loading]="loading()" [error]="error()" [empty]="tab() !== 'overview' && !rows().length">
       @if (tab() === 'overview') {
         @if (scalars().length) {
           <div class="tiles">
@@ -56,7 +96,7 @@ const R = '/admin/v1/';
       } @else {
         <div class="card">
           <div class="card-body">
-            <ui-table [rows]="rows()" [actions]="actions()" (act)="run($event.row, $event.key)" />
+            <ui-table [rows]="rows()" [heads]="heads()" [actions]="actions()" (act)="run($event.row, $event.key)" />
           </div>
         </div>
       }
@@ -65,63 +105,110 @@ const R = '/admin/v1/';
     @if (tab() !== 'overview' && rows().length) {
       <ui-pager [page]="page()" [pages]="pages" [total]="total()" (jump)="go($event)" />
     }
+
+    <ui-form
+      [open]="formOpen()"
+      [title]="formTitle()"
+      [fields]="formFields()"
+      [value]="formValue()"
+      [error]="formError()"
+      [saving]="saving()"
+      (save)="submit($event)"
+      (close)="closeForm()"
+    />
+
+    <!-- 试算 / 聚类候选 / 团伙成员共用这一个抽屉：panel() 决定内容与标题（PANEL_TITLES），不会同时开 -->
+    <ui-drawer [open]="panel() !== ''" [title]="panelTitle()" (close)="closePanel()">
+      @if (panel() === 'candidates') {
+        <ui-table
+          [rows]="candidates()"
+          [heads]="candidateHeads"
+          [actions]="candidateActs"
+          (act)="confirmCluster($event.row)"
+        />
+      } @else if (result(); as d) {
+        <pre class="raw">{{ pretty(d) }}</pre>
+      }
+    </ui-drawer>
   `,
 })
-export class Risk extends ListBase<Row> {
-  private readonly api = inject(Api);
-
-  protected readonly tabs = [
-    { key: 'overview', label: '风控总览' },
-    { key: 'users', label: '风险用户' },
-    { key: 'events', label: '风险事件' },
-    { key: 'rules', label: '风控规则' },
-    { key: 'devices', label: '设备' },
-    { key: 'anticheat', label: '反作弊' },
-  ];
+export class Risk extends CrudPage {
+  protected readonly tabs = RISK_TABS;
   protected readonly tab = signal('overview');
   protected readonly raw = signal<unknown>(null);
+  /** 动作回执（服务端 message / 服务端算出的金额）：**就地**显示，不把列表打成错误态 */
+  protected readonly note = signal('');
+  protected readonly noteErr = signal(false);
+  /** 右侧抽屉的内容类型（试算 / 聚类候选 / 团伙成员），'' = 关着；标题查 PANEL_TITLES */
+  protected readonly panel = signal<'' | 'result' | 'candidates' | 'members'>('');
+  /** 抽屉数据（三种面板共用这一个槽：结构各异，只有候选要再摊平成行） */
+  protected readonly result = signal<unknown>(null);
+
+  protected readonly CLUSTER_STATUS = CLUSTER_STATUS;
+  protected readonly candidateHeads = CANDIDATE_HEADS;
+  protected readonly candidateActs = CANDIDATE_ACTS;
 
   protected readonly scalars = computed(() => scalarsOf(this.raw()));
-  protected readonly actions = computed(() => {
-    switch (this.tab()) {
-      case 'events':
-        return [
-          { key: 'confirm', label: '确认风险' },
-          { key: 'ignore', label: '忽略' },
-        ];
-      case 'rules':
-        return [{ key: 'toggle', label: '启用/停用' }];
-      case 'devices':
-        return [
-          { key: 'block', label: '拉黑', danger: true },
-          { key: 'unblock', label: '解除' },
-        ];
-      case 'anticheat':
-        return [
-          { key: 'approve', label: '通过' },
-          { key: 'reject', label: '驳回', danger: true },
-        ];
-      default:
-        return [];
-    }
-  });
+  protected readonly heads = computed((): Record<string, string> => RISK_HEADS[this.tab()] ?? {});
+  /** 抽屉标题与候选行都从 panel()/result() 派生（不另存一份，免得两处对不上） */
+  protected readonly panelTitle = computed(() => PANEL_TITLES[this.panel()] ?? '');
+  protected readonly candidates = computed(() => rowsOf(this.result(), 'candidates'));
 
-  private readonly paths: Record<string, string> = {
-    users: R + 'risk/users',
-    events: R + 'risk/event/list',
-    rules: R + 'risk/rule/list',
-    devices: R + 'risk/device/list',
-    anticheat: R + 'anticheat/events',
-  };
+  /**
+   * 当前标签页的写能力，缺省即没有该能力：
+   *  - 规则：唯一有表单的模块（ends.create/update + 专用 toggle 端点，statused）
+   *  - 事件/风险用户/团伙/反作弊/设备：只有行内动作（ends 一个都不给 ⇒ 不出编辑/删除/新建）
+   *  - 总览/IP：null ⇒ 不出「操作」列。IP 那四个端点要的是**运营输入的原文 IP**（列表只回 sha256
+   *    前 8 位掩码，不可逆，行里取不到能提交的值）⇒ 动作摆页头，不摆点了必 400 的死按钮。
+   */
+  protected crud(): Crud | null {
+    switch (this.tab()) {
+      case 'rules':
+        return {
+          noun: '风控规则',
+          fields: RULE_FIELDS,
+          ends: {
+            create: R + 'risk/rule/create',
+            update: (id) => R + 'risk/rule/' + id,
+            // 函数形态：hashid 在路径里、请求体为空 —— 服务端自己翻转，不认客户端给的 status
+            toggle: (id) => R + 'risk/rule/' + id + '/toggle',
+          },
+          statused: true,
+          // update 与 create 走同一个 fill()：只发改动字段会 422，缺 status 会被落成 1
+          fullEdit: true,
+          label: (row) => String(row['name'] ?? ''),
+          extra: RULE_ACTS,
+        };
+      case 'events':
+        return { noun: '风险事件', fields: [], ends: {}, extra: EVENT_ACTS };
+      case 'users':
+        return { noun: '风险用户', fields: [], ends: {}, extra: USER_ACTS };
+      case 'clusters':
+        return { noun: '团伙', fields: [], ends: {}, extra: CLUSTER_ACTS };
+      case 'anticheat':
+        return { noun: '反作弊事件', fields: [], ends: {}, extra: ANTICHEAT_ACTS };
+      case 'devices':
+        return { noun: '设备指纹', fields: [], ends: {}, extra: DEVICE_ACTS };
+      default:
+        return null;
+    }
+  }
+
+  /** 模板作用域只认类成员，模块 import 不可见 ⇒ 挂成字段供 `{{ pretty(x) }}` 用 */
+  protected readonly pretty = json;
 
   protected pick(key: string): void {
     this.tab.set(key);
     this.page.set(1);
+    this.closeForm();
+    this.closePanel();
+    this.note.set('');
     void this.load();
   }
 
-  protected pretty(v: unknown): string {
-    return json(v);
+  protected closePanel(): void {
+    this.panel.set('');
+    this.result.set(null);
   }
 
   protected override async fetch(): Promise<Page<Row>> {
@@ -134,34 +221,276 @@ export class Risk extends ListBase<Row> {
       return { list: [], total: 0, page: 1, limit: this.pageSize };
     }
     this.raw.set(null);
-    const url = this.paths[this.tab()] ?? this.paths['events']!;
-    return this.api.list<Row>(url, {
+    const url = R + (RISK_PATHS[this.tab()] ?? RISK_PATHS['events']!);
+    const res = await this.api.list<Row>(url, {
       page: this.page(),
       page_size: this.pageSize,
       keyword: this.keyword(),
     });
+    // 团伙状态是 0/1/2 三值（不是启用/停用）⇒ 摊平一列中文；原值原样留着，别改写后端结构
+    if (this.tab() !== 'clusters') return res;
+    return {
+      ...res,
+      list: res.list.map((r) => ({
+        ...r,
+        status_label: CLUSTER_STATUS[String(r['status'])] ?? String(r['status'] ?? ''),
+      })),
+    };
   }
 
-  /** 处置动作：入参字段名未确认，按接口语义直传 id */
-  protected async run(row: Row, key: string): Promise<void> {
-    const id = idOf(row);
-    if (!id) return;
-    this.error.set('');
+  /** 行内动作分流：各模块的语义/请求体/回执来源不同，都放本页；只有规则的编辑与启停借基类入口。 */
+  protected override async run(row: Row, key: string): Promise<void> {
+    if (key === 'test') return this.sandbox(row);
+    if (key === 'approve' || key === 'reject') return this.handleEvent(row, key);
+    if (key === 'hold' || key === 'release') return this.funds(row, key);
+    if (key.startsWith('cl_')) return this.setCluster(row, num(key.slice(3)));
+    if (key.startsWith('rv_')) return this.review(row, key.slice(3));
+    if (key === 'block' || key === 'unblock') return this.deviceAct(row, key);
+    // 只读：GET /risk/clusters/{hashid}/members（成员 id 出边界一律 hashid）⇒ 复用结果抽屉
+    if (key === 'members') {
+      return this.openPanel('members', () =>
+        this.api.get(R + 'risk/clusters/' + idOf(row) + '/members'),
+      );
+    }
+    return super.run(row, key);
+  }
+
+  // ---------- 内部：回执与对象标识 ----------
+
+  /**
+   * 动作回执：优先服务端 data.message（专门写的那句），其次信封 message，都是样板（success）时用 fallback；
+   * 失败原样透出服务端 message（不吞成「操作失败」）。成功后刷新列表 —— 金额/状态以服务端为准，不做乐观改行。
+   */
+  private async act(
+    fn: () => Promise<{ data: unknown; message: string }>,
+    fallback: (d: Row) => string,
+  ): Promise<void> {
+    this.note.set('');
+    this.noteErr.set(false);
     try {
-      if (this.tab() === 'events') {
-        await this.api.post(R + 'risk/event/' + id + '/handle', { action: key });
-      } else if (this.tab() === 'rules') {
-        await this.api.post(R + 'risk/rule/' + id + '/toggle', {});
-      } else if (this.tab() === 'devices') {
-        await this.api.post(R + 'risk/device/' + (key === 'block' ? 'block' : 'unblock'), {
-          device_id: id,
-        });
-      } else if (this.tab() === 'anticheat') {
-        await this.api.post(R + 'anticheat/events/' + id + '/review', { action: key });
-      }
+      const env = await fn();
+      const d = (env.data && typeof env.data === 'object' ? env.data : {}) as Row;
+      const msg = String(d['message'] ?? '') || (env.message !== 'success' ? env.message : '');
+      this.note.set(fallback(d) + (msg ? '｜' + msg : ''));
       await this.load();
     } catch (e) {
-      this.error.set(errText(e));
+      this.noteErr.set(true);
+      this.note.set(errText(e));
     }
+  }
+
+  /**
+   * 抽屉装载（试算 / 聚类候选 / 团伙成员共用）：清回执 → 取数 → 开面板；失败就地报错，
+   * 不动列表也不开一个空抽屉。三种面板的数据都进 result()，标题由 panel() 查表。
+   */
+  private async openPanel(
+    which: 'result' | 'candidates' | 'members',
+    load: () => Promise<unknown>,
+  ): Promise<void> {
+    this.note.set('');
+    this.noteErr.set(false);
+    try {
+      this.result.set(await load());
+      this.panel.set(which);
+    } catch (e) {
+      this.noteErr.set(true);
+      this.note.set(errText(e));
+    }
+  }
+
+  // ---------- 风控规则 ----------
+
+  /**
+   * 沙箱试算（POST /risk/rule/test，只读：不写库、不落日志、不触发处置）。rule_id/user_id 是 hashid，
+   * check_type 走 RiskSandboxService::test 的场景分支，context 是评估器读的原文（ip/user_agent/amount/fp_hash）。
+   * 返回的 data 是结构化的（matched/message/severity/action）⇒ **原样**进抽屉：只显示 message
+   * 会把「命中与否、什么处置」抹掉。
+   */
+  protected async sandbox(row: Row): Promise<void> {
+    const id = idOf(row);
+    if (!id) return;
+    const user = prompt('试算用户 ID（hashid，可留空 = 未登录）');
+    if (user === null) return;
+    const checkType = prompt('检测场景（deposit / withdraw / exchange / login）', 'login');
+    if (checkType === null) return;
+    const rawCtx = prompt('context JSON（可选，如 {"amount":"1000","ip":"1.2.3.4"}）', '{}');
+    if (rawCtx === null) return;
+    const context = parseContext(rawCtx);
+    if (context === null) {
+      this.noteErr.set(true);
+      this.note.set('context 必须是 JSON 对象（形如 {"amount":"1000"}）');
+      return;
+    }
+    await this.openPanel('result', () =>
+      this.api.post<unknown>(R + 'risk/rule/test', {
+        rule_id: id,
+        user_id: user.trim(),
+        check_type: checkType.trim() || 'login',
+        context,
+      }),
+    );
+  }
+
+  // ---------- 风险事件 ----------
+
+  /**
+   * 人工处置（POST /risk/event/{hashid}/handle `{decision, note≤500}`）。驳回 = 不认可该命中 ⇒ 先二次
+   * 确认（文案带规则名与用户）；note 取消输入即放弃。后端只把 decision+note 记进回执与操作审计
+   * （risk_log 没有审核状态列），行不变。
+   */
+  protected async handleEvent(row: Row, key: string): Promise<void> {
+    const id = idOf(row);
+    if (!id) return;
+    if (key === 'reject' && !confirm(`确认驳回「${whoEvent(row)}」这条风险事件？`)) return;
+    const input = prompt('处置说明（可留空，最长 500 字）');
+    if (input === null) return;
+    await this.act(
+      () =>
+        this.api.envelope('POST', R + 'risk/event/' + id + '/handle', {
+          decision: key,
+          note: input.trim(),
+        }),
+      () => '处置已记录',
+    );
+  }
+
+  // ---------- 风险用户（钱路） ----------
+
+  /**
+   * 冻结 / 解冻 —— 都是钱路，一律二次确认（文案能认出是谁）。hold **无请求体**，金额由服务端按可用
+   * 余额全额算（回执 data.frozen_amount）；release `{amount?}`，缺省全额。金额是 bcmath 十进制**字符串**，
+   * 前端原样上送、不做任何加减/浮点转换（过一趟 Number，DECIMAL 的小数位就没了）。
+   */
+  protected async funds(row: Row, key: string): Promise<void> {
+    const id = String(row['user_id'] ?? '') || idOf(row);
+    if (!id) return;
+    const who = whoUser(row);
+    if (key === 'hold') {
+      if (
+        !confirm(
+          `确认冻结「${who}」的全部可用余额？金额由服务端按当前可用余额全额计算，冻结期间不可提现/消费。`,
+        )
+      ) {
+        return;
+      }
+    } else if (!confirm(`确认解冻「${who}」的冻结资金？`)) {
+      return;
+    }
+    let body: Row | undefined;
+    if (key === 'release') {
+      const amount = prompt('解冻金额（留空 = 全额解冻）');
+      if (amount === null) return;
+      body = amount.trim() === '' ? undefined : { amount: amount.trim() };
+    }
+    await this.act(
+      () => this.api.envelope<Row>('POST', R + 'risk/users/' + id + '/' + key, body),
+      (d) =>
+        (key === 'hold' ? '已冻结 ' : '已解冻 ') +
+        String(d[key === 'hold' ? 'frozen_amount' : 'released_amount'] ?? ''),
+    );
+  }
+
+  // ---------- 关联团伙 ----------
+
+  /**
+   * 团伙状态（PUT /risk/clusters/{hashid}/status `{status}`，0=误判 1=观察中 2=已处置）。
+   * 三个按钮各自只在自己不是当前状态时出现（CLUSTER_ACTS 的 when）—— 多值状态不能按 0/1 翻转（会把 2 压成 0）。
+   */
+  protected async setCluster(row: Row, status: number): Promise<void> {
+    const id = idOf(row);
+    if (!id) return;
+    await this.act(
+      () => this.api.envelope('PUT', R + 'risk/clusters/' + id + '/status', { status }),
+      () => `团伙「${String(row['name'] ?? id)}」已标记为${CLUSTER_STATUS[String(status)] ?? status}`,
+    );
+  }
+
+  /** 聚类检测（POST /risk/clusters/detect）：只出候选、不落库。全局动作无行上下文 ⇒ 页头触发。 */
+  protected async detect(): Promise<void> {
+    await this.openPanel('candidates', () => this.api.post<unknown>(R + 'risk/clusters/detect'));
+  }
+
+  /**
+   * 人工确认团伙（POST /risk/clusters/confirm `{type, fingerprint, name, user_count?}`）。
+   * ⚠ **不发 member_ids**。后端已按 hashid 解码（decodeId，非法值 400），理由不是"发不上去"而是：
+   * ① detect 出的候选没落库、没有 hashid，`/clusters/{hashid}/members` 对它无从调用 ⇒ 这个弹框里
+   *    根本没有可勾选的成员清单；② 不发才走 resolveMemberIds() 的**读时**指纹回填（same_device→
+   *    device_account_map、same_ip→risk_log 去重），后来加入的账号会跟着出现，而 confirm 是唯一写入口
+   *    （status 只改状态）⇒ 发快照等于把成员冻在那一刻、冻错了只能另建团伙。成员看只读的「成员」动作。
+   */
+  protected async confirmCluster(row: Row): Promise<void> {
+    const type = String(row['type'] ?? '');
+    const fingerprint = String(row['fingerprint'] ?? '');
+    if (!type || !fingerprint) return;
+    const name = prompt('团伙名称（必填，最长 100 字）', `${type} ${String(row['fingerprint_masked'] ?? '')}`);
+    if (name === null || name.trim() === '') return;
+    await this.act(
+      () =>
+        this.api.envelope('POST', R + 'risk/clusters/confirm', {
+          type,
+          fingerprint,
+          name: name.trim(),
+          user_count: num(row['user_count']),
+        }),
+      (d) => `已建团伙「${String((d['cluster'] as Row)?.['name'] ?? name.trim())}」`,
+    );
+    this.panel.set('');
+  }
+
+  // ---------- 设备 ----------
+
+  /**
+   * 拉黑 / 解封设备（POST /risk/device/{block|unblock}，**路径不带 id**，请求体 `{fp_hash}`）。入参必须是
+   * **完整 64 位哈希**（服务端 fpHash() 只认 `/^[0-9a-f]{64}$/`，掩码提交必 400），列表已回传；掩码只进
+   * 确认文案。拉黑由 RiskService::check() 短路成真拦截（不看 device_fingerprint 规则是否启用）
+   * ⇒ 二次确认；解封是安全方向，不问。
+   */
+  protected async deviceAct(row: Row, key: string): Promise<void> {
+    if (!row['fp_hash']) return;
+    if (key === 'block' && !confirm(deviceConfirmText(row))) return;
+    await this.act(
+      () => this.api.envelope<Row>('POST', R + 'risk/device/' + key, deviceBody(row)),
+      (d) => deviceNote(row, key, d),
+    );
+  }
+
+  // ---------- 反作弊 ----------
+
+  /**
+   * 人工审核（POST /anticheat/events/{hashid}/review `{status, note≤255}`）。status 是**字符串枚举**
+   * open/confirmed/whitelisted/closed（不是 0/1 翻转）；confirmed 是「判定作弊」⇒ 二次确认；
+   * whitelisted 按 Apidoc 需附 note（取消输入 = 放弃）。
+   */
+  protected async review(row: Row, status: string): Promise<void> {
+    const id = idOf(row);
+    if (!id) return;
+    if (status === 'confirmed' && !confirm(`确认「${whoAnti(row)}」作弊并记入审核？`)) return;
+    let note = '';
+    if (status === 'whitelisted') {
+      const input = prompt('加白理由（记入审核备注，最长 255 字）');
+      if (input === null) return;
+      note = input.trim();
+    }
+    await this.act(
+      () => this.api.envelope('POST', R + 'anticheat/events/' + id + '/review', { status, note }),
+      () => `已标记为${ANTICHEAT_STATUS[status] ?? status}`,
+    );
+  }
+
+  // ---------- IP 信誉 ----------
+
+  /**
+   * IP 动作（POST /risk/ip/{block|whitelist|appeal|recheck}）：四个都收**原文 IP** 放进请求体，服务端
+   * hash('sha256') 之后落库 / 删信誉缓存；没有 unblock 端点（白名单即放行）。列表只回 ip_hash 前 8 位
+   * 掩码（不可逆）⇒ 没有行上下文，只能按运营输入的原文 IP 走。
+   */
+  protected async ipAct(key: string): Promise<void> {
+    const ip = prompt(key === 'recheck' ? '要重查的 IP' : 'IP 地址（如 1.2.3.4）');
+    if (ip === null || ip.trim() === '') return;
+    await this.act(
+      () => this.api.envelope<Row>('POST', R + 'risk/ip/' + key, { ip: ip.trim() }),
+      // 回执里的掩码 = 服务端 hash 过的那个 IP（不是我们以为的那个），有就用它
+      (d) => `${IP_VERBS[key] ?? '已提交'} ${String(d['ip_masked'] ?? ip.trim())}`,
+    );
   }
 }

@@ -85,6 +85,32 @@ struct ProfilePage {
 
           // 菜单列表
           Column() {
+            // 管理入口：本树此前没有模块菜单，从个人中心挂两个资源管理页
+            this.buildMenuItem('游戏管理', '新建 / 编辑 / 删除与上架下架', () => {
+              router.pushUrl({ url: 'pages/GameManagePage' });
+            });
+            this.buildMenuItem('公告管理', '发布 / 编辑 / 删除与上下架', () => {
+              router.pushUrl({ url: 'pages/AnnouncementManagePage' });
+            });
+            // 配置驱动的 18 个模块挂在索引页，不在这里铺平（否则这段菜单要两屏）
+            this.buildMenuItem('模块管理', '游戏分类/区服/活动/成就/VIP/排行榜/国家/系统配置/平台用户/角色/权限/支付方式/优惠券/CDN/提现限额/风控规则/风控事件/反作弊事件', () => {
+              router.pushUrl({ url: 'pages/ModuleIndexPage' });
+            });
+            // 风控的四块不是配置驱动的形状（行无 id / 行标识不是 id / 资金动作 / 三态 + 全局动作）
+            this.buildMenuItem('风控中心', '异常用户冻结解冻 / 设备指纹 / IP 信誉 / 关联团伙', () => {
+              router.pushUrl({ url: 'pages/RiskIndexPage' });
+            });
+            // 行动作型的三页不是 ResourceModule，进不了索引页，直接挂这里
+            this.buildMenuItem('身份审核', 'KYC 认证记录的通过 / 驳回', () => {
+              router.pushUrl({ url: 'pages/IdentityReviewPage' });
+            });
+            this.buildMenuItem('工单管理', '工单的回复 / 指派 / 关闭', () => {
+              router.pushUrl({ url: 'pages/TicketManagePage' });
+            });
+            // 资金动作（审核 / 打款 / 同步）也要二次确认，同样不是 CRUD
+            this.buildMenuItem('提现管理', '提现开关 / 订单审核 / 打款 / 同步', () => {
+              router.pushUrl({ url: 'pages/WithdrawManagePage' });
+            });
             this.buildMenuItem('修改密码', '修改登录密码', () => {
               promptAction.showToast({ message: '功能开发中' });
             });

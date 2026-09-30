@@ -25,6 +25,12 @@
 .login-h .sub {
   color: var(--ink-2);
 }
+/* 弹框在 .login-h 之外，后代选择器够不到，这里补一条（验证码提示语） */
+.modal .sub {
+  margin: 0 0 10px;
+  color: var(--ink-2);
+  font-size: 13px;
+}
 .form {
   display: flex;
   flex-direction: column;
@@ -128,9 +134,14 @@
   width: 32px;
   height: 32px;
   border-radius: 10px;
-  background: var(--primary);
   color: #fff;
   font-family: var(--serif);
+}
+/* 品牌位放吉祥物「小骰」：等比缩到 32px 框内，去掉原来的实底方块 */
+.brand-mark img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 .brand-t {
   font-family: var(--serif);

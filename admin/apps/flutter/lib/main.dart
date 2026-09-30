@@ -19,6 +19,7 @@ import 'app/pages/platform_user/platform_user_page.dart';
 import 'app/pages/identity/identity_page.dart';
 import 'app/pages/risk/risk_log_page.dart';
 import 'app/pages/risk/risk_dashboard_page.dart';
+import 'app/pages/risk/risk_manage_page.dart';
 import 'app/pages/payment/payment_page.dart';
 import 'app/pages/cdn/cdn_page.dart';
 import 'app/pages/announcement/announcement_page.dart';
@@ -26,6 +27,12 @@ import 'app/pages/vip/vip_page.dart';
 import 'app/pages/achievement/achievement_page.dart';
 import 'app/pages/activity/activity_page.dart';
 import 'app/pages/bigscreen/bigscreen_page.dart';
+import 'app/pages/game_category/game_category_page.dart';
+import 'app/pages/game_server/game_server_page.dart';
+import 'app/pages/leaderboard/leaderboard_page.dart';
+import 'app/pages/country_config/country_config_page.dart';
+import 'app/pages/ticket/ticket_page.dart';
+import 'app/pages/coupon/coupon_page.dart';
 
 void main() {
   Get.put(LocaleController());
@@ -73,6 +80,13 @@ class AdminApp extends StatelessWidget {
         GetPage(name: '/vip', page: () => const AdminLayout(initialIndex: 15, child: VipPage())),
         GetPage(name: '/achievement', page: () => const AdminLayout(initialIndex: 16, child: AchievementPage())),
         GetPage(name: '/activity', page: () => const AdminLayout(initialIndex: 17, child: ActivityPage())),
+        GetPage(name: '/game-categories', page: () => const AdminLayout(initialIndex: 18, child: GameCategoryPage())),
+        GetPage(name: '/game-servers', page: () => const AdminLayout(initialIndex: 19, child: GameServerPage())),
+        GetPage(name: '/leaderboards', page: () => const AdminLayout(initialIndex: 20, child: LeaderboardPage())),
+        GetPage(name: '/country-configs', page: () => const AdminLayout(initialIndex: 21, child: CountryConfigPage())),
+        GetPage(name: '/tickets', page: () => const AdminLayout(initialIndex: 22, child: TicketPage())),
+        GetPage(name: '/coupons', page: () => const AdminLayout(initialIndex: 23, child: CouponPage())),
+        GetPage(name: '/risk-manage', page: () => const AdminLayout(initialIndex: 24, child: RiskManagePage())),
         GetPage(name: '/bigscreen', page: () => const BigscreenPage()),
         GetPage(name: '/profile', page: () => const ProfilePage()),
       ],

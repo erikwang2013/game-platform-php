@@ -19,5 +19,6 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts"]
+  // 本 program 有 node 类型 ⇒ 顺带把「只有测试用、却要 node:* 」的路由表读取器收进来查类型
+  "include": ["vite.config.ts", "src/lib/route-fixtures.ts"]
 }

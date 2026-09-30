@@ -88,6 +88,21 @@ textarea.input {
   resize: vertical;
   font-family: inherit;
 }
+/* 表单弹框（通用底座）：必填星号 + 开关行 */
+.form-grid .req {
+  color: var(--danger);
+  font-style: normal;
+}
+.form-grid .switch {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  font-size: 13px;
+}
+.form-grid textarea.input {
+  padding: 6px 8px;
+}
 
 /* ---------- 图表 ---------- */
 .chart svg {
@@ -183,6 +198,36 @@ textarea.input {
 }
 .drawer .backdrop {
   z-index: 50;
+}
+
+/* ---------- 居中弹框（登录安全验证等） ---------- */
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 460px;
+  max-width: 92vw;
+  max-height: 88vh;
+  overflow: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.18);
+  z-index: 60;
+}
+.modal > header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-body {
+  padding: 14px;
+}
+.modal-body .btn-block {
+  margin-top: 12px;
 }
 
 /* ---------- 尾部块（代码/指标原文） ---------- */
@@ -314,4 +359,25 @@ details.raw-box > summary:hover {
   gap: 8px;
   flex-wrap: wrap;
   margin-top: 12px;
+}
+
+/* 动作的就地回执（服务端 message）：与 .alert 同尺寸，成功/中性走绿色，失败仍用 .alert 的红 */
+.notice {
+  margin-bottom: 11px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+/* 字段说明（Field.hint）：pre-line 让换行照排 —— 风控规则那种「每 type 一行 config 键表」靠它可读 */
+.hint {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-line;
 }

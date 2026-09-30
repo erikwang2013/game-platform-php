@@ -41,7 +41,8 @@ h1, h2, h3, p { margin: 0; }
   display: flex; align-items: center; color: #fff; font-size: 14px; font-weight: 600;
   border-bottom: 1px solid #334155;
 }
-.brand i { width: 9px; height: 9px; border-radius: 2px; background: var(--primary); }
+/* 品牌位放吉祥物「小骰」（原来是 9px 的纯色方块） */
+.brand-logo { width: 22px; height: auto; flex: none; }
 .nav { flex: 1; overflow-y: auto; padding: 8px 0; }
 .nav-title {
   padding: 10px 14px 4px; font-size: 11px; letter-spacing: .06em;

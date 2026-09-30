@@ -215,6 +215,10 @@ body {
   padding: 12px 14px;
   font-size: 13px;
 }
+.errnote.ok {
+  background: #f0fdf4;
+  color: var(--success);
+}
 .errnote-t {
   overflow-wrap: anywhere;
 }
@@ -508,4 +512,60 @@ body {
   min-width: 62px;
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 写操作（表单框 / 行内动作 / 工具条） ---------- */
+/* 新建按钮所在的行，压在列表上方 */
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+/* 弹框里字段多，双列摆放。.form.form-cols 是复合选择器：App.css 的 .form 在本文件之后加载，
+   同层单类靠源序会输给它 */
+.form.form-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+.form-cols > .label {
+  min-width: 0;
+}
+.form-cols .wide {
+  grid-column: 1 / -1;
+}
+@media (max-width: 640px) {
+  .form.form-cols {
+    grid-template-columns: 1fr;
+  }
+}
+/* .input 是单行控件的量法，textarea 按行数撑开并补上纵向内边距 */
+textarea.input {
+  min-height: 88px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+.label .req {
+  color: var(--danger);
+}
+/* 字段约束说明常驻在控件下方：placeholder 打完字就看不见了，值域/格式这类约束得有处可写 */
+.label .hint {
+  font-size: 12px;
+  line-height: 1.4;
+}
+.switch {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--primary);
+}
+.rowact {
+  display: inline-flex;
+  gap: 6px;
+  white-space: nowrap;
+}
+/* .btn-sm 的深色文字压不住危险色底，这里补回白字 */
+.rowact .btn-danger {
+  color: #fff;
 }

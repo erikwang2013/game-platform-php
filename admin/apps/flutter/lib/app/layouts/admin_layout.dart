@@ -25,6 +25,13 @@ import '../pages/vip/vip_page.dart';
 import '../pages/achievement/achievement_page.dart';
 import '../pages/activity/activity_page.dart';
 import '../pages/risk/risk_dashboard_page.dart';
+import '../pages/risk/risk_manage_page.dart';
+import '../pages/game_category/game_category_page.dart';
+import '../pages/game_server/game_server_page.dart';
+import '../pages/leaderboard/leaderboard_page.dart';
+import '../pages/country_config/country_config_page.dart';
+import '../pages/ticket/ticket_page.dart';
+import '../pages/coupon/coupon_page.dart';
 
 class AdminLayout extends StatefulWidget {
   final Widget child;
@@ -63,6 +70,13 @@ class _AdminLayoutState extends State<AdminLayout> {
     VipPage(),
     AchievementPage(),
     ActivityPage(),
+    GameCategoryPage(),
+    GameServerPage(),
+    LeaderboardPage(),
+    CountryConfigPage(),
+    TicketPage(),
+    CouponPage(),
+    RiskManagePage(), // 24（批次 5）
   ];
 
   ResponsiveBreakpointsData get _bp => ResponsiveBreakpoints.of(context);
@@ -121,6 +135,13 @@ class _AdminLayoutState extends State<AdminLayout> {
     ('nav.vip', Icons.workspace_premium, 15),
     ('nav.achievements', Icons.emoji_events, 16),
     ('!运营活动', Icons.local_activity, 17),
+    ('nav.game_categories', Icons.category, 18),
+    ('nav.game_servers', Icons.dns, 19),
+    ('nav.leaderboards', Icons.leaderboard, 20),
+    ('nav.country_configs', Icons.public, 21),
+    ('nav.tickets', Icons.confirmation_number, 22),
+    ('nav.coupons', Icons.local_offer, 23),
+    ('nav.risk_manage', Icons.gpp_maybe_outlined, 24),
   ];
 
   @override
@@ -363,6 +384,42 @@ class _AdminLayoutState extends State<AdminLayout> {
         icon: const Icon(Icons.local_activity, size: 20),
         label: const Text('运营活动'),
         selectedIcon: const Icon(Icons.local_activity, size: 20),
+      ),
+      NavigationDrawerDestination(
+        icon: const Icon(Icons.category, size: 20),
+        label: Text("${AppTranslations.t('nav.game_categories')}"),
+        selectedIcon: const Icon(Icons.category, size: 20),
+      ),
+      NavigationDrawerDestination(
+        icon: const Icon(Icons.dns, size: 20),
+        label: Text("${AppTranslations.t('nav.game_servers')}"),
+        selectedIcon: const Icon(Icons.dns, size: 20),
+      ),
+      NavigationDrawerDestination(
+        icon: const Icon(Icons.leaderboard, size: 20),
+        label: Text("${AppTranslations.t('nav.leaderboards')}"),
+        selectedIcon: const Icon(Icons.leaderboard, size: 20),
+      ),
+      NavigationDrawerDestination(
+        icon: const Icon(Icons.public, size: 20),
+        label: Text("${AppTranslations.t('nav.country_configs')}"),
+        selectedIcon: const Icon(Icons.public, size: 20),
+      ),
+      NavigationDrawerDestination(
+        icon: const Icon(Icons.confirmation_number, size: 20),
+        label: Text("${AppTranslations.t('nav.tickets')}"),
+        selectedIcon: const Icon(Icons.confirmation_number, size: 20),
+      ),
+      NavigationDrawerDestination(
+        icon: const Icon(Icons.local_offer, size: 20),
+        label: Text("${AppTranslations.t('nav.coupons')}"),
+        selectedIcon: const Icon(Icons.local_offer, size: 20),
+      ),
+      // 24：风控管理（写操作）—— 与 11 的「风控大盘」（只读看板）分开
+      NavigationDrawerDestination(
+        icon: const Icon(Icons.gpp_maybe_outlined, size: 20),
+        label: Text("${AppTranslations.t('nav.risk_manage')}"),
+        selectedIcon: const Icon(Icons.gpp_maybe_outlined, size: 20),
       ),
     ];
   }

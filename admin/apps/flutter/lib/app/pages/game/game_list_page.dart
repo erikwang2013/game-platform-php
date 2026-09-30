@@ -3,6 +3,7 @@ import '../../i18n/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
+import '../../widgets/crud.dart';
 
 class GameListController extends GetxController {
   final api = ApiService();
@@ -12,54 +13,74 @@ class GameListController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadGames();
+    load();
   }
 
-  Future<void> loadGames() async {
+  Future<void> load() async {
     isLoading.value = true;
     try {
       final resp = await api.get('/admin/v1/game/list');
       games.value = resp['data'] is List ? resp['data'] as List<dynamic> : (resp['data']['list'] as List<dynamic>? ?? []);
     } catch (e) {
-      Get.snackbar('错误', '加载游戏列表失败: $e');
+      Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.loading_failed')}: $e');
     } finally {
       isLoading.value = false;
     }
   }
 
+  // 以下写操作**不吞异常**：异常要冒到通用表单里显示服务端 message（widgets/crud.dart）。
+  // 提交成功后的列表刷新失败只会弹加载失败，不会污染表单（此处写入已经成功）。
+
   Future<void> create(Map<String, dynamic> data) async {
-    try {
-      await api.post('/admin/v1/game/create', data: data);
-      await loadGames();
-      Get.snackbar('成功', 'gameCreateSuccess');
-    } catch (e) {
-      Get.snackbar('错误', '创建失败: $e');
-    }
+    await api.post('/admin/v1/game/create', data: data);
+    await load();
+    Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('app.saved')}');
   }
 
   Future<void> updateGame(String hashid, Map<String, dynamic> data) async {
-    try {
-      await api.put('/admin/v1/game/$hashid', data: data);
-      await loadGames();
-      Get.snackbar('成功', 'gameUpdateSuccess');
-    } catch (e) {
-      Get.snackbar('错误', '更新失败: $e');
-    }
+    await api.put('/admin/v1/game/$hashid', data: data);
+    await load();
+    Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('app.saved')}');
   }
 
   Future<void> remove(String hashid) async {
-    try {
-      await api.delete('/admin/v1/game/$hashid');
-      await loadGames();
-      Get.snackbar('成功', 'gameDeleteSuccess');
-    } catch (e) {
-      Get.snackbar('错误', '删除失败: $e');
-    }
+    await api.delete('/admin/v1/game/$hashid');
+    await load();
+    Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('app.deleted')}');
   }
 }
 
 class GameListPage extends GetView<GameListController> {
   const GameListPage({super.key});
+
+  /// 字段真值取自 GameController::create/update 的 validator + game_game 列定义：
+  /// - slug：只有 create 校验它（`regex:/^[a-z0-9_-]+$/` + 查重），PUT 的规则里没有这条
+  ///   ⇒ 编辑态置灰且不提交（推了后端也只在 create 里用）
+  /// - api_key/api_secret：模型 $hidden，列表不回显、表单里也不该回显（update 另对空串有「不覆盖」保护）
+  /// - type：值域含 embedded，旧前端只列了 self/third_party，漏一档
+  /// - status/sort/platform/region/sdk_version：同 update validator（0/1、>=0、四平台枚举、max 10/20）
+  static const List<CrudField> _fields = <CrudField>[
+    CrudField('name', 'game.name', required: true),
+    CrudField('slug', 'game.slug', required: true, editableOnEdit: false, hint: 'game.slug_hint'),
+    CrudField('type', 'game.type', type: CrudFieldType.select, required: true, options: <CrudOption>[
+      CrudOption('self', 'game.self'),
+      CrudOption('embedded', 'game.embedded'),
+      CrudOption('third_party', 'game.third_party'),
+    ]),
+    CrudField('description', 'game.description', type: CrudFieldType.multiline),
+    CrudField('cover_image', 'game.cover_image'),
+    CrudField('api_endpoint', 'game.api_endpoint'),
+    CrudField('platform', 'game.platform', type: CrudFieldType.select, options: <CrudOption>[
+      CrudOption('h5', 'game.platform_h5'),
+      CrudOption('unity', 'game.platform_unity'),
+      CrudOption('web', 'game.platform_web'),
+      CrudOption('native', 'game.platform_native'),
+    ]),
+    CrudField('region', 'game.region'),
+    CrudField('sdk_version', 'game.sdk_version'),
+    CrudField('sort', 'game.sort', type: CrudFieldType.number),
+    CrudField('status', 'game.status', type: CrudFieldType.toggle),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -71,16 +92,9 @@ class GameListPage extends GetView<GameListController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text("${AppTranslations.t('game.title')}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const Spacer(),
-            FloatingActionButton.small(
-              heroTag: 'addGame',
-              onPressed: () => _showGameDialog(context, ctrl),
-              child: const Icon(Icons.add),
-            ),
-          ],
+        CrudHeader(
+          title: "${AppTranslations.t('game.title')}",
+          onCreate: () => _openForm(context, ctrl),
         ),
         const SizedBox(height: 12),
         Expanded(
@@ -115,9 +129,14 @@ class GameListPage extends GetView<GameListController> {
                   final name = g['name']?.toString() ?? '';
                   final slug = g['slug']?.toString() ?? '';
                   final type = g['type']?.toString() ?? '';
-                  final typeLabel = type == 'self' ? '${AppTranslations.t('game.self')}' : '${AppTranslations.t('game.third_party')}';
+                  final typeLabel = type == 'self'
+                      ? '${AppTranslations.t('game.self')}'
+                      : (type == 'embedded'
+                          ? '${AppTranslations.t('game.embedded')}'
+                          : '${AppTranslations.t('game.third_party')}');
                   final currencyCount = (g['currency_count'] ?? g['currencies'] is List ? (g['currencies'] as List).length : 0).toString();
-                  final status = g['status'] is int ? g['status'] : (g['status'] == 'active' || g['status'] == true ? 1 : 0);
+                  // 列表里的 id 是 hashid：回填 {hashid} 路径用它
+                  final status = g['status'] is int ? g['status'] as int : 0;
                   final statusLabel = status == 1 ? "${AppTranslations.t('app.enabled')}" : "${AppTranslations.t('app.disabled')}";
 
                   return DataRow(cells: [
@@ -130,18 +149,12 @@ class GameListPage extends GetView<GameListController> {
                       label: Text(statusLabel),
                       color: WidgetStatePropertyAll(status == 1 ? Colors.green.shade50 : Colors.red.shade50),
                     )),
-                    DataCell(Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit, size: 18),
-                          onPressed: () => _showGameDialog(context, ctrl, item: g),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, size: 18, color: Colors.red),
-                          onPressed: () => _confirmDelete(context, ctrl, g),
-                        ),
-                      ],
+                    DataCell(CrudRowActions(
+                      status: status,
+                      // 游戏没有独立 toggle 端点：按规格用 update 传 status
+                      onToggle: (next) => ctrl.updateGame(id, <String, dynamic>{'status': next}),
+                      onEdit: () => _openForm(context, ctrl, item: g),
+                      onDelete: () => confirmCrudDelete(context, what: name, onConfirm: () => ctrl.remove(id)),
                     )),
                   ]);
                 }).toList(),
@@ -153,107 +166,14 @@ class GameListPage extends GetView<GameListController> {
     );
   }
 
-  void _showGameDialog(BuildContext context, GameListController ctrl, {dynamic item}) {
-    final nameCtrl = TextEditingController(text: item?['name'] ?? '');
-    final slugCtrl = TextEditingController(text: item?['slug'] ?? '');
-    final descCtrl = TextEditingController(text: item?['description'] ?? '');
-    final coverCtrl = TextEditingController(text: item?['cover_image'] ?? '');
-    final endpointCtrl = TextEditingController(text: item?['api_endpoint'] ?? '');
-    final sortCtrl = TextEditingController(text: item?['sort']?.toString() ?? '0');
-    String type = item?['type']?.toString() ?? 'self';
-    bool isEnabled = item != null ? (item['status'] == 1 || item['status'] == true) : true;
-
-    showDialog(
-      context: context,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDialogState) => AlertDialog(
-          title: Text(item != null ? '${AppTranslations.t('game.edit')}' : '${AppTranslations.t('game.create')}'),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(controller: nameCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('game.name')}')),
-                const SizedBox(height: 12),
-                TextField(controller: slugCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('game.slug')}')),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  initialValue: type,
-                  decoration: InputDecoration(labelText: '${AppTranslations.t('game.type')}'),
-                  items: [
-                    DropdownMenuItem(value: 'self', child: Text('${AppTranslations.t('game.self')}')),
-                    DropdownMenuItem(value: 'third_party', child: Text('${AppTranslations.t('game.third_party')}')),
-                  ],
-                  onChanged: (v) {
-                    if (v != null) {
-                      setDialogState(() => type = v);
-                    }
-                  },
-                ),
-                const SizedBox(height: 12),
-                TextField(controller: descCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('game.description')}'), maxLines: 2),
-                const SizedBox(height: 12),
-                TextField(controller: coverCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('game.cover_image')}')),
-                const SizedBox(height: 12),
-                TextField(controller: endpointCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('game.api_endpoint')}')),
-                const SizedBox(height: 12),
-                TextField(controller: sortCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('game.sort')}'), keyboardType: TextInputType.number),
-                const SizedBox(height: 12),
-                SwitchListTile(
-                  title: Text("${AppTranslations.t('app.enabled')}"),
-                  value: isEnabled,
-                  onChanged: (v) => setDialogState(() => isEnabled = v),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx), child: Text("${AppTranslations.t('app.cancel')}")),
-            ElevatedButton(
-              onPressed: () {
-                final data = <String, dynamic>{
-                  'name': nameCtrl.text,
-                  'slug': slugCtrl.text,
-                  'type': type,
-                  'description': descCtrl.text,
-                  'cover_image': coverCtrl.text,
-                  'api_endpoint': endpointCtrl.text,
-                  'sort': int.tryParse(sortCtrl.text) ?? 0,
-                  'status': isEnabled ? 1 : 0,
-                };
-                if (item != null) {
-                  ctrl.updateGame(item['id'].toString(), data);
-                } else {
-                  ctrl.create(data);
-                }
-                Navigator.pop(ctx);
-              },
-              child: Text("${AppTranslations.t('app.save')}"),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _confirmDelete(BuildContext context, GameListController ctrl, dynamic game) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text("${AppTranslations.t('app.confirm')} ${AppTranslations.t('app.delete')}"),
-        content: Text('确定要删除游戏「${game['name']}」吗？'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),
-          ElevatedButton(
-            onPressed: () {
-              ctrl.remove(game['id'].toString());
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-            child: Text("${AppTranslations.t('app.delete')}"),
-          ),
-        ],
-      ),
+  Future<void> _openForm(BuildContext context, GameListController ctrl, {dynamic item}) {
+    final initial = item == null ? null : Map<String, dynamic>.from(item as Map);
+    return showCrudForm(
+      context,
+      title: item == null ? '${AppTranslations.t('game.create')}' : '${AppTranslations.t('game.edit')}',
+      fields: _fields,
+      initial: initial,
+      onSubmit: (data) => item == null ? ctrl.create(data) : ctrl.updateGame(item['id'].toString(), data),
     );
   }
 }

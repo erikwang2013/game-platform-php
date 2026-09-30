@@ -1,7 +1,7 @@
 <!-- Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz -->
 @if (chrome()) {
   <aside class="sidebar" [class.open]="menu()">
-    <div class="brand"><i></i> 游戏运营后台</div>
+    <div class="brand"><img class="brand-logo" src="mascot.svg" alt="" /> 游戏运营后台</div>
     <nav class="nav">
       @for (g of groups; track g.section) {
         <div class="nav-title">{{ g.section }}</div>

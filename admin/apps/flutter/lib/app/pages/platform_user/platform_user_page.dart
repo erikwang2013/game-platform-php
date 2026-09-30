@@ -3,6 +3,7 @@ import '../../i18n/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
+import '../../widgets/crud.dart';
 
 class PlatformUserController extends GetxController {
   final api = ApiService();
@@ -26,41 +27,34 @@ class PlatformUserController extends GetxController {
       final resp = await api.get('/admin/v1/platform/user/list', params: params);
       users.value = resp['data'] is List ? resp['data'] as List<dynamic> : (resp['data']['list'] as List<dynamic>? ?? []);
     } catch (e) {
-      Get.snackbar('错误', '加载平台用户失败: $e');
+      Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.loading_failed')}: $e');
     } finally {
       isLoading.value = false;
     }
   }
 
-  Future<void> toggleStatus(String hashid, int newStatus) async {
-    try {
-      await api.put('/admin/v1/platform/user/$hashid', data: {'status': newStatus});
-      await loadUsers();
-      Get.snackbar('成功', newStatus == 1 ? '用户已启用' : '用户已禁用');
-    } catch (e) {
-      Get.snackbar('错误', '操作失败: $e');
-    }
+  // 以下写操作**不吞异常**：异常要冒到通用表单/确认框里显示服务端 message（widgets/crud.dart）。
+
+  /// 启用/停用/改昵称都走同一个端点（PlatformUserController::update，只收 status 与 nickname）。
+  /// 传进来的 data 只含改动字段 —— 该端点是局部更新，多发一个没改的字段会把「值相同」也算成一次写入。
+  Future<void> updateUser(String hashid, Map<String, dynamic> data) async {
+    await api.put('/admin/v1/platform/user/$hashid', data: data);
+    await loadUsers();
+    Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('app.saved')}');
   }
 
   /// 平台用户注销 —— DELETE /admin/v1/platform/user/{hashid}（PlatformUserController::destroy）。
   ///
   /// 后端拒绝有非零余额的用户（安全要求），拒绝原因在 ApiException.message 里 ——
-  /// 原样透出，不吞成「操作失败」，否则运营只看到「失败」而不知道该先清余额。
-  Future<bool> destroyUser(String hashid) async {
-    try {
-      await api.delete('/admin/v1/platform/user/$hashid');
-    } catch (e) {
-      Get.snackbar('错误', '注销失败：${e is ApiException ? e.message : e}');
-      return false;
-    }
+  /// 原样透出（确认框统一显示），不吞成「操作失败」，否则运营只看到「失败」而不知道该先清余额。
+  Future<void> destroyUser(String hashid) async {
+    await api.delete('/admin/v1/platform/user/$hashid');
     await loadUsers();
     // 成功以回读到的真实列表为准，不以「请求发出去了」为准
     if (users.any((u) => u['id']?.toString() == hashid)) {
-      Get.snackbar('错误', '注销请求已提交，但该用户仍在列表中，请刷新确认');
-      return false;
+      throw ApiException(-1, '${AppTranslations.t('platform_user.still_in_list')}');
     }
-    Get.snackbar('成功', '用户已注销');
-    return true;
+    Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('platform_user.destroyed')}');
   }
 
   Future<Map<String, dynamic>?> getUserDetail(String hashid) async {
@@ -68,7 +62,7 @@ class PlatformUserController extends GetxController {
       final resp = await api.get('/admin/v1/platform/user/$hashid');
       return resp['data'] as Map<String, dynamic>?;
     } catch (e) {
-      Get.snackbar('错误', '获取用户详情失败: $e');
+      Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.loading_failed')}: $e');
       return null;
     }
   }
@@ -76,6 +70,15 @@ class PlatformUserController extends GetxController {
 
 class PlatformUserPage extends GetView<PlatformUserController> {
   const PlatformUserPage({super.key});
+
+  /// 字段真值取自 PlatformUserController::update 的入参收口（PlatformUserController.php:112-134）：
+  /// - status：严格只收 0/1（'0'/'1' 也收，其余一律 422）⇒ 0/1 开关是对的控件
+  /// - nickname：string，mb_strlen ≤ 50（列宽 game_user.nickname VARCHAR(50) NOT NULL）
+  /// 平台用户不能在管理端新建（没有 create 端点）⇒ 清单页无「+ 新建」。
+  static const List<CrudField> _fields = <CrudField>[
+    CrudField('nickname', 'platform_user.nickname', hint: 'platform_user.nickname_hint'),
+    CrudField('status', 'platform_user.status', type: CrudFieldType.toggle),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -157,6 +160,8 @@ class PlatformUserPage extends GetView<PlatformUserController> {
                   final country = u['country']?.toString() ?? '-';
                   final status = u['status'] is int ? u['status'] : (u['status'] == 'active' || u['status'] == true ? 1 : 0);
                   final createdAt = u['created_at']?.toString() ?? '';
+                  // 注销确认文案用它看清「删的是谁」：username 为主，空则退昵称、再退 ID
+                  final what = username.isNotEmpty ? username : (nickname.isNotEmpty ? nickname : id);
 
                   return DataRow(
                     onSelectChanged: (_) => _showUserDetail(context, ctrl, u),
@@ -170,19 +175,13 @@ class PlatformUserPage extends GetView<PlatformUserController> {
                         color: WidgetStatePropertyAll(status == 1 ? Colors.green.shade50 : Colors.red.shade50),
                       )),
                       DataCell(Text(createdAt)),
-                      DataCell(Row(mainAxisSize: MainAxisSize.min, children: [
-                        TextButton(
-                          onPressed: () => ctrl.toggleStatus(id, status == 1 ? 0 : 1),
-                          child: Text(
-                            status == 1 ? "${AppTranslations.t('app.disabled')}" : "${AppTranslations.t('app.enabled')}",
-                            style: TextStyle(color: status == 1 ? Colors.red : Colors.green),
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () => _confirmDestroy(context, ctrl, id, username),
-                          child: Text("${AppTranslations.t('app.delete')}", style: const TextStyle(color: Colors.red)),
-                        ),
-                      ])),
+                      DataCell(CrudRowActions(
+                        status: status,
+                        // 平台用户没有独立 toggle 端点：局部 PUT 只发 status
+                        onToggle: (next) => ctrl.updateUser(id, <String, dynamic>{'status': next}),
+                        onEdit: () => _openForm(context, ctrl, item: u),
+                        onDelete: () => confirmCrudDelete(context, what: what, onConfirm: () => ctrl.destroyUser(id)),
+                      )),
                     ],
                   );
                 }).toList(),
@@ -194,25 +193,15 @@ class PlatformUserPage extends GetView<PlatformUserController> {
     );
   }
 
-  /// 注销是破坏性且不可撤销的，先确认再发请求（照 user_list_page 的 _confirmDelete 写法）。
-  void _confirmDestroy(BuildContext context, PlatformUserController ctrl, String id, String username) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: Text("${AppTranslations.t('app.confirm')} ${AppTranslations.t('app.delete')}"),
-        content: Text('确认注销平台用户「$username」？该操作不可撤销。'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ctrl.destroyUser(id);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
-            child: Text("${AppTranslations.t('app.delete')}"),
-          ),
-        ],
-      ),
+  Future<void> _openForm(BuildContext context, PlatformUserController ctrl, {dynamic item}) {
+    final initial = item == null ? null : Map<String, dynamic>.from(item as Map);
+    return showCrudForm(
+      context,
+      title: '${AppTranslations.t('platform_user.edit')}',
+      fields: _fields,
+      initial: initial,
+      // 同值提交无害：后端先原样比对、$dirty 为空就返回 count 0，不写库（PlatformUserController.php:139-147）
+      onSubmit: (data) => ctrl.updateUser(item['id'].toString(), data),
     );
   }
 

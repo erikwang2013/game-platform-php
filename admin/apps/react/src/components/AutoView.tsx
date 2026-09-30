@@ -42,9 +42,10 @@ export function asRows(data: unknown): Row[] | null {
 /**
  * 按首行字段推导列。优先展示 preferred 里的业务字段，其余按响应顺序补足，
  * 最多 max 列。字段名不存在时不会凭空造列。
+ * hide 里的键一律不进列（如设备列表的 fp_hash：它是行内动作的**提交参数**，不是给人看的列）。
  */
-export function columnsFrom(rows: Row[], preferred: string[] = [], max = 8): Column[] {
-  const keys = Object.keys(rows[0] ?? {});
+export function columnsFrom(rows: Row[], preferred: string[] = [], max = 8, hide: string[] = []): Column[] {
+  const keys = Object.keys(rows[0] ?? {}).filter((key) => !hide.includes(key));
   const ordered = [
     ...preferred.filter((key) => keys.includes(key)),
     ...keys.filter((key) => !preferred.includes(key)),

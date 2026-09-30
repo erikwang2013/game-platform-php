@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
 import '../../i18n/translations.dart';
+import '../../widgets/crud.dart';
 
 class IdentityController extends GetxController {
   final api = ApiService();
@@ -19,25 +20,47 @@ class IdentityController extends GetxController {
       final resp = await api.get('/admin/v1/identity/list', params: {'status': statusFilter});
       list.value = (resp['data']['list'] as List<dynamic>?) ?? [];
     } catch (e) {
-      Get.snackbar('Error', 'Load failed: $e');
+      Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.loading_failed')}: $e');
     } finally {
       isLoading.value = false;
     }
   }
 
-  Future<void> review(String id, String action) async {
-    try {
-      await api.put('/admin/v1/identity/review', data: {'id': id, 'action': action});
-      Get.snackbar('Success', action == 'approve' ? 'Approved' : 'Rejected');
-      loadData();
-    } catch (e) {
-      Get.snackbar('Error', 'Review failed: $e');
-    }
+  /// 审核动作（IdentityController::review）：{id: 记录 hashid, action: approve|reject, note: 可选 ≤500}。
+  /// **不吞异常**：已审过的记录会 422（CAS 拿 0 行），message 要在表单里原样显示。
+  Future<void> review(String id, String action, String note) async {
+    await api.put('/admin/v1/identity/review', data: <String, dynamic>{
+      'id': id,
+      'action': action,
+      'note': note,
+    });
+    await loadData();
+    Get.snackbar(
+      '${AppTranslations.t('app.success')}',
+      '${action == 'approve' ? AppTranslations.t('identity.approved') : AppTranslations.t('identity.rejected')}',
+    );
   }
 }
 
 class IdentityPage extends GetView<IdentityController> {
   const IdentityPage({super.key});
+
+  /// 字段真值取自 IdentityController::review 的 validator（IdentityController.php:76-80）：
+  /// - action：`required|string|in:approve,reject` ⇒ 两值下拉，不用 0/1 翻转控件
+  /// - note：`sometimes|nullable|string|max:500`（列宽 game_user_identity.review_note VARCHAR(500)）
+  ///   ⇒ 可选；服务端把它拼进驳回通知的正文
+  ///
+  /// 这里**不新造确认组件**：审核是动作型接口，底座里能承接的是 showCrudForm ——
+  /// 标题带对象标识（申请人）+ Save 才提交，等于「看清是谁再动手」；
+  /// 驳回是破坏性动作（CAS 已审过就不能再审），Save 之后再走一次 confirmCrudAction，文案带申请人。
+  /// 取消那次确认＝什么都不做（表单会连同已填的备注一起关掉，代价可接受：没发生任何写入）。
+  static const List<CrudField> _fields = <CrudField>[
+    CrudField('action', 'identity.action', type: CrudFieldType.select, required: true, options: <CrudOption>[
+      CrudOption('approve', 'identity.approve'),
+      CrudOption('reject', 'identity.reject'),
+    ]),
+    CrudField('note', 'identity.note', type: CrudFieldType.multiline, hint: 'identity.note_hint'),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +91,7 @@ class IdentityPage extends GetView<IdentityController> {
               children: [
                 Image.asset('assets/mascot.png', width: 120),
                 const SizedBox(height: 12),
-                const Text('No data'),
+                Text("${AppTranslations.t('app.no_data')}"),
               ],
             ),
           );
@@ -82,20 +105,57 @@ class IdentityPage extends GetView<IdentityController> {
           DataColumn(label: Text('Actions')),
         ], rows: ctrl.list.map((item) {
           final user = item['user'] as Map<String, dynamic>? ?? {};
+          final realName = item['real_name']?.toString() ?? '';
+          final username = user['username']?.toString() ?? '';
           return DataRow(cells: [
-            DataCell(Text(user['username'] ?? '')),
-            DataCell(Text(item['real_name'] ?? '***')),
+            DataCell(Text(username)),
+            DataCell(Text(realName.isEmpty ? '***' : realName)),
             DataCell(Text(item['id_type'] ?? '')),
             DataCell(Chip(label: Text(item['status'] ?? ''), color: WidgetStatePropertyAll(
               item['status'] == 'approved' ? Colors.green.shade50 : item['status'] == 'rejected' ? Colors.red.shade50 : Colors.orange.shade50))),
             DataCell(Text(item['created_at']?.toString().substring(0, 10) ?? '')),
             DataCell(item['status'] == 'pending' ? Row(mainAxisSize: MainAxisSize.min, children: [
-              IconButton(icon: const Icon(Icons.check, color: Colors.green), onPressed: () => ctrl.review(item['id'], 'approve'), tooltip: 'Approve'),
-              IconButton(icon: const Icon(Icons.close, color: Colors.red), onPressed: () => ctrl.review(item['id'], 'reject'), tooltip: 'Reject'),
+              IconButton(
+                icon: const Icon(Icons.check, color: Colors.green),
+                tooltip: '${AppTranslations.t('identity.approve')}',
+                onPressed: () => _openReview(context, ctrl, item, 'approve'),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close, color: Colors.red),
+                tooltip: '${AppTranslations.t('identity.reject')}',
+                onPressed: () => _openReview(context, ctrl, item, 'reject'),
+              ),
             ]) : Text(item['review_note'] ?? '')),
           ]);
         }).toList()));
       })),
     ]);
+  }
+
+  /// `preset` 决定下拉的初值（approve/reject 两个按钮共用这一个框）。
+  Future<void> _openReview(BuildContext context, IdentityController ctrl, dynamic item, String preset) {
+    final realName = item['real_name']?.toString() ?? '';
+    final username = (item['user'] as Map<String, dynamic>?)?['username']?.toString() ?? '';
+    final name = realName.isNotEmpty ? realName : (username.isNotEmpty ? username : item['id'].toString());
+    return showCrudForm(
+      context,
+      title: crudText('identity.review_title', {'name': name}),
+      fields: _fields,
+      initial: <String, dynamic>{'action': preset},
+      onSubmit: (data) {
+        final action = data['action'].toString();
+        final note = data['note']?.toString() ?? '';
+        if (action != 'reject') {
+          return ctrl.review(item['id'].toString(), action, note);
+        }
+        return confirmCrudAction(
+          context,
+          title: '${crudText('app.confirm')} ${crudText('identity.reject')}',
+          message: crudText('identity.reject_confirm_target', {'name': name}),
+          confirmLabel: crudText('identity.reject'),
+          onConfirm: () => ctrl.review(item['id'].toString(), action, note),
+        );
+      },
+    );
   }
 }

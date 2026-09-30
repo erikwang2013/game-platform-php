@@ -71,13 +71,31 @@ export class Api {
 
   // ---------- 请求 ----------
   async request<T>(method: Method, url: string, body?: unknown, params?: Params): Promise<T> {
+    return (await this.envelope<T>(method, url, body, params)).data;
+  }
+
+  /**
+   * 同 request，但把信封里的 message 一并带出来 —— **资金动作的回执是服务端文案**：
+   * 同一个 /withdraw/execute-payout 会回「打款成功」或「打款已提交」（渠道受理 ≠ 已到账），
+   * 自己编一句「操作成功」就是把这两种结果糊成一种。
+   */
+  async envelope<T>(
+    method: Method,
+    url: string,
+    body?: unknown,
+    params?: Params,
+  ): Promise<{ data: T; message: string }> {
     const full = url + query(params ?? {});
     try {
-      return await this.once<T>(method, full, body);
+      const env = await this.once<T>(method, full, body);
+      return { data: env.data, message: env.message };
     } catch (e) {
       // 401 有两条来路：信封里 code=401（HTTP 200），或 HTTP 401 —— 都在这条 catch 上
       if (e instanceof ApiError && e.code === 401 && !url.startsWith('/api/v1/auth/')) {
-        if (await this.refreshOnce()) return await this.once<T>(method, full, body);
+        if (await this.refreshOnce()) {
+          const env = await this.once<T>(method, full, body);
+          return { data: env.data, message: env.message };
+        }
         this.auth.clear();
         throw new ApiError(401, '登录状态已失效，请重新登录');
       }
@@ -126,14 +144,15 @@ export class Api {
     };
   }
 
-  private async once<T>(method: Method, url: string, body?: unknown): Promise<T> {
+  /** 成功即回整个信封（message 也要），失败一律抛 ApiError */
+  private async once<T>(method: Method, url: string, body?: unknown): Promise<Envelope<T>> {
     let env = await this.send<T>(method, url, body);
     if (env.code === 401 && !url.startsWith('/api/v1/auth/')) {
       if (await this.refreshOnce()) env = await this.send<T>(method, url, body);
       if (env.code === 401) throw new ApiError(401, env.message || '登录状态已失效，请重新登录');
     }
     if (env.code !== 0) throw new ApiError(env.code, env.message || `请求失败（${env.code}）`);
-    return env.data;
+    return env;
   }
 
   private async send<T>(method: Method, url: string, body?: unknown): Promise<Envelope<T>> {

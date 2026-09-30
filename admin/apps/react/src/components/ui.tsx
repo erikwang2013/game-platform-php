@@ -72,9 +72,21 @@ export function Empty({ text = '暂无数据' }: { text?: string }) {
   );
 }
 
-export function ErrorNote({ message, onRetry }: { message: string; onRetry?: () => void }) {
+/**
+ * 操作结果提示条。tone 缺省 error（服务端拒绝的原话，红框）；
+ * 成功类动作（打款/审核通过）传 `ok` —— 把「打款成功」摆进红框会让人以为出了事。
+ */
+export function ErrorNote({
+  message,
+  tone = 'error',
+  onRetry,
+}: {
+  message: string;
+  tone?: 'error' | 'ok';
+  onRetry?: () => void;
+}) {
   return (
-    <div className="errnote" role="alert">
+    <div className={`errnote${tone === 'ok' ? ' ok' : ''}`} role="alert">
       <span className="errnote-t">{message}</span>
       {onRetry ? (
         <button type="button" className="btn btn-sm" onClick={onRetry}>

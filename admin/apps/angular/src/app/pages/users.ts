@@ -1,17 +1,36 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
-import { Component, computed, inject, signal } from '@angular/core';
-import { Api, Page, Row } from '../core/api.service';
+import { Component, computed, signal } from '@angular/core';
+import { Page, Row } from '../core/api.service';
+import { Crud, CrudPage, Field } from '../core/crud';
 import { idOf, kvOf } from '../core/render';
 import { errText, num } from '../core/util';
-import { ListBase } from '../core/list-base';
 import { Drawer, Pager, StateBlock, Tabs } from '../components/ui';
 import { Table } from '../components/table';
+import { FormModal } from '../components/form-modal';
 
 const U = '/admin/v1/';
 
+/**
+ * 字段真值 = PlatformUserController::update 的 validator —— **只收 nickname 与 status**
+ * （:112-113），其余键一律不看。
+ *  - status 不摆进表单：本模块的 0/1 语义是「封禁 / 解封」而非「启用 / 停用」，
+ *    抽屉里那两个按钮（status()）语义更准且带回读校验；表单再摆一个 switch 就是两套入口。
+ *  - ends.create 是空的：平台用户没有创建端点（只能 C 端注册），本页不渲染「+ 新建」，
+ *    openCreate() 不可达 ⇒ 该值不会被提交。
+ */
+const USER_FIELDS: Field[] = [
+  {
+    name: 'nickname',
+    label: '昵称',
+    type: 'text',
+    full: true,
+    placeholder: '最长 50 字符（列宽口径 game_user.nickname VARCHAR(50)）',
+  },
+];
+
 @Component({
   selector: 'app-users',
-  imports: [StateBlock, Table, Pager, Tabs, Drawer],
+  imports: [StateBlock, Table, Pager, Tabs, Drawer, FormModal],
   template: `
     <div class="page-head">
       <h1>用户管理</h1>
@@ -19,12 +38,13 @@ const U = '/admin/v1/';
       <div class="spacer"></div>
       <input
         class="input"
-        placeholder="用户 ID / 用户名 / 手机号"
+        placeholder="用户名 / 昵称"
         [value]="keyword()"
         (input)="keyword.set($any($event.target).value)"
         (keyup.enter)="search()"
       />
       <button class="btn" (click)="search()">查询</button>
+      <button class="btn" (click)="load()">刷新</button>
     </div>
 
     <ui-tabs [tabs]="tabs" [active]="tab()" (pick)="pick($event)" />
@@ -34,7 +54,7 @@ const U = '/admin/v1/';
         <div class="card-body">
           <ui-table
             [rows]="rows()"
-            [clickable]="tab() === 'list'"
+            [clickable]="true"
             [actions]="actions()"
             (pick)="open($event)"
             (act)="run($event.row, $event.key)"
@@ -47,7 +67,11 @@ const U = '/admin/v1/';
       <ui-pager [page]="page()" [pages]="pages" [total]="total()" (jump)="go($event)" />
     }
 
-    <ui-drawer [open]="detail() !== null" title="用户详情" (close)="detail.set(null)">
+    <ui-drawer
+      [open]="detail() !== null"
+      [title]="tab() === 'identity' ? '实名审核' : '用户详情'"
+      (close)="detail.set(null)"
+    >
       @if (detail(); as d) {
         <dl class="kv">
           @for (p of info(); track p.label) {
@@ -55,21 +79,36 @@ const U = '/admin/v1/';
             <dd>{{ p.value }}</dd>
           } @empty {
             <dt>提示</dt>
-            <dd>该用户暂无可展示字段</dd>
+            <dd>该记录暂无可展示字段</dd>
           }
         </dl>
         <div class="row-actions">
-          <button class="btn" (click)="status(d, 'normal')">解封</button>
-          <button class="btn danger" (click)="status(d, 'banned')">封禁</button>
-          <button class="btn danger" (click)="destroy(d)">注销账号</button>
+          @if (tab() === 'identity') {
+            <!-- 通过 / 驳回：PUT /admin/v1/identity/review（IdentityController::review，CAS 抢单） -->
+            <button class="btn" (click)="review(d, 'approve')">通过</button>
+            <button class="btn danger" (click)="review(d, 'reject')">驳回</button>
+          } @else {
+            <!-- 账号注销在行内「删除」（同走 destroy()）；这里只放状态，语义是封禁/解封 -->
+            <button class="btn" (click)="status(d, 'normal')">解封</button>
+            <button class="btn danger" (click)="status(d, 'banned')">封禁</button>
+          }
         </div>
       }
     </ui-drawer>
+
+    <ui-form
+      [open]="formOpen()"
+      [title]="formTitle()"
+      [fields]="formFields()"
+      [value]="formValue()"
+      [error]="formError()"
+      [saving]="saving()"
+      (save)="submit($event)"
+      (close)="closeForm()"
+    />
   `,
 })
-export class Users extends ListBase<Row> {
-  private readonly api = inject(Api);
-
+export class Users extends CrudPage {
   protected readonly tabs = [
     { key: 'list', label: '用户列表' },
     { key: 'identity', label: '实名审核' },
@@ -78,14 +117,50 @@ export class Users extends ListBase<Row> {
   protected readonly detail = signal<Row | null>(null);
 
   protected readonly info = computed(() => kvOf(this.detail()));
-  protected readonly actions = computed(() =>
-    this.tab() === 'identity'
-      ? [
-          { key: 'approve', label: '通过' },
-          { key: 'reject', label: '拒绝', danger: true },
-        ]
-      : [],
-  );
+
+  /** 只有平台用户标签页可写；实名审核是动作型（通过/驳回），动作在那条记录的抽屉里 */
+  protected override crud(): Crud | null {
+    if (this.tab() !== 'list') return null;
+    return {
+      noun: '平台用户',
+      fields: USER_FIELDS,
+      label: (row) => this.who(row),
+      ends: {
+        create: '',
+        update: (id) => U + 'platform/user/' + id,
+        remove: (id) => U + 'platform/user/' + id,
+      },
+    };
+  }
+
+  /**
+   * 确认文案里的对象标识：昵称 / 用户名，都没有才退回 hashid。
+   * 用户列表把 username 放在行顶层；实名记录的列表行嵌在 user.username 里
+   * （IdentityController::list 的 `$data['user'] = ['id','username']`）—— 两种形状都要认，
+   * 否则驳回确认文案只剩一个 hashid，等于没告诉人驳回的是谁。
+   */
+  protected who(row: Row): string {
+    const u = (row['user'] ?? {}) as Row;
+    return (
+      String(row['nickname'] ?? '') ||
+      String(row['username'] ?? '') ||
+      String(u['username'] ?? '') ||
+      idOf(row)
+    );
+  }
+
+  /**
+   * 行内动作分流：基类的「删除」落到本页 destroy()，编辑走基类。
+   *
+   * 为什么不直接用基类的 delete 实现：本页这两个动作带回读校验（请求成功 ≠ 生效），且被
+   * users.spec.ts 逐字钉住了端点串，而基类默认实现是「请求发出去了就算成功」。
+   * 基类只借入口、实现在本页 —— 不是并排两套。
+   * （状态不在基类入口里：crud() 没开 statused，基类的 0/1 翻转会把「封禁/解封」压成「启用/停用」。）
+   */
+  protected override async run(row: Row, key: string): Promise<void> {
+    if (key === 'delete') return this.destroy(row);
+    return super.run(row, key);
+  }
 
   protected pick(key: string): void {
     this.tab.set(key);
@@ -103,9 +178,15 @@ export class Users extends ListBase<Row> {
     });
   }
 
+  /**
+   * 详情：先展示列表行，再拉 platform/user/{hashid} 覆盖。
+   * 只有「用户列表」能拉：实名记录的 id 是另一个 ID 空间，拿它去请求 /platform/user/{hashid}
+   * 会解出**另一个用户**（或 404）—— 端点和 ID 必须成对，这里不猜。
+   */
   protected async open(row: Row): Promise<void> {
-    const id = idOf(row);
     this.detail.set(row);
+    if (this.tab() !== 'list') return;
+    const id = idOf(row);
     if (!id) return;
     try {
       const d = await this.api.get<unknown>(U + 'platform/user/' + id);
@@ -115,12 +196,27 @@ export class Users extends ListBase<Row> {
     }
   }
 
-  protected async run(row: Row, key: string): Promise<void> {
+  /**
+   * 实名审核（通过 / 驳回）—— PUT /admin/v1/identity/review，入参 {id, action, note}，
+   * action 只认 approve|reject（IdentityController::review 的 validator），
+   * note 是 game_user_identity.review_note VARCHAR(500)，**驳回通知正文会把 note 原样带给用户**。
+   *
+   * 驳回是不可逆的（后端 CAS：status 必须还是 pending，翻过就 422），所以先二次确认；
+   * prompt 取消（null）与空备注（''）必须分开 —— 混为一谈会让「手滑点了取消」变成一次真驳回。
+   */
+  protected async review(row: Row, action: 'approve' | 'reject'): Promise<void> {
     const id = idOf(row);
     if (!id) return;
+    let note = '';
+    if (action === 'reject') {
+      if (!confirm(`确认驳回「${this.who(row)}」的实名认证申请？驳回后不可再改。`)) return;
+      const input = prompt('驳回原因（会推送给用户，可留空）');
+      if (input === null) return;
+      note = input.trim();
+    }
     this.error.set('');
     try {
-      await this.api.request('PUT', U + 'identity/review', { id, action: key });
+      await this.api.request('PUT', U + 'identity/review', { id, action, note });
       this.detail.set(null);
       await this.load();
     } catch (e) {
@@ -175,7 +271,8 @@ export class Users extends ListBase<Row> {
    */
   protected async destroy(row: Row): Promise<void> {
     const id = idOf(row);
-    if (!id || !confirm('确认注销该账号？该操作不可撤销。')) return;
+    // 删前必须能看清是谁：确认文案带昵称/用户名，不能只有一个「该账号」
+    if (!id || !confirm(`确认注销「${this.who(row)}」的账号？该操作不可撤销。`)) return;
     this.error.set('');
     try {
       await this.api.request('DELETE', U + 'platform/user/' + id);

@@ -147,6 +147,78 @@ export struct ErrorView {
 }
 
 /**
+ * 只读结果弹框 —— 展示「有话说」的动作回执（沙箱试算结果 / 风控时间线 / 团伙成员 / 检测候选）。
+ *
+ * 为什么不复用 FormDialog：它是可编辑表单（字段 + 取消/确定 + 提交态），而这些结果没有入参、
+ * 只有一个「关闭」——硬塞进去要给 FormDialog 加一个「只读模式」分支，而这里一个组件就够。
+ * lines 是一行一条的纯文本（键值用「 · 」拼），页面负责拼内容，本组件不认识任何业务。
+ */
+@Component
+export struct ResultDialog {
+  @Prop title: string = '';
+  @Prop lines: string[] = [];
+  onClose?: () => void;
+
+  build() {
+    Stack({ alignContent: Alignment.Center }) {
+      // 遮罩与卡片是 Stack 兄弟节点：卡片上的点击不会冒泡到遮罩（无需 stopPropagation）
+      Column()
+        .width('100%')
+        .height('100%')
+        .backgroundColor('#00000066')
+        .onClick(() => {
+          if (this.onClose) {
+            this.onClose();
+          }
+        })
+
+      Column() {
+        Text(this.title)
+          .fontSize(16)
+          .fontWeight(FontWeight.Bold)
+          .width('100%')
+          .margin({ bottom: 12 })
+
+        Scroll() {
+          Column() {
+            ForEach(this.lines, (line: string) => {
+              Text(line)
+                .fontSize(12)
+                .fontColor('#333333')
+                .width('100%')
+                .margin({ bottom: 4 })
+            }, (line: string, index: number) => `${index}:${line}`)
+          }
+          .width('100%')
+          .alignItems(HorizontalAlign.Start)
+        }
+        .width('100%')
+        // 行数不定（时间线最多 200 行）：框内滚动，别把卡片撑出屏幕
+        .constraintSize({ maxHeight: 420 })
+
+        Button('关闭')
+          .fontSize(14)
+          .fontColor('#666666')
+          .backgroundColor('#F5F5F5')
+          .width('100%')
+          .margin({ top: 14 })
+          .onClick(() => {
+            if (this.onClose) {
+              this.onClose();
+            }
+          })
+      }
+      .width(340)
+      .padding(16)
+      .backgroundColor(Color.White)
+      .borderRadius(12)
+    }
+    .width('100%')
+    .height('100%')
+  }
+}
+
+/**
  * 底部版权栏
  */
 @Component

@@ -7,6 +7,12 @@ export interface Act {
   key: string;
   label: string;
   danger?: boolean;
+  /**
+   * 该行是否出这个按钮（缺省 = 恒出）。用于「按钮只对某些状态的行有意义」的行内动作：
+   * 反作弊审核每种状态各自的按钮、团伙三种状态各自一个 —— 状态已经等于目标的那一条上再摆
+   * 一个按钮，点下去是把同一状态再写一遍（后端照收，界面在骗人）。
+   */
+  when?: (row: Row) => boolean;
 }
 
 /**
@@ -36,7 +42,7 @@ export interface Act {
               }
               @if (actions().length) {
                 <td class="acts">
-                  @for (a of actions(); track a.key) {
+                  @for (a of acts(r); track a.key) {
                     <button class="btn" [class.danger]="a.danger" (click)="fire($event, r, a.key)">
                       {{ a.label }}
                     </button>
@@ -85,6 +91,11 @@ export class Table {
 
   protected isNum(v: unknown): boolean {
     return typeof v === 'number';
+  }
+
+  /** 该行实际出哪些动作（act.when 缺省即恒出） */
+  protected acts(row: Row): Act[] {
+    return this.actions().filter((a) => !a.when || a.when(row));
   }
 
   protected fire(ev: Event, row: Row, key: string): void {

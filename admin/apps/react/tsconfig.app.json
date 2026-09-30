@@ -25,5 +25,7 @@
   "include": ["src"],
   // 测试跑在 node --test 下，用 node:test/node:assert 说明符；本 program 的 types 只有 vite/client，
   // 解析不了 node:* ⇒ 排除出 tsc -b，否则 npm run build 直接失败（改 types 会把 Node 全局塞进浏览器工程）
-  "exclude": ["src/**/*.test.ts"]
+  // route-fixtures.ts 同理（只用 node:fs 读 route.php 给用例做断言），但它不叫 *.test.ts，故单独点名；
+  // 类型检查挪去 tsconfig.node.json，别让它变成没人看、也没人查的文件
+  "exclude": ["src/**/*.test.ts", "src/lib/route-fixtures.ts"]
 }

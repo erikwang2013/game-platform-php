@@ -31,6 +31,27 @@ const TIME_KEY = /(_at|_time|time|date|created|updated|expire)/i;
 
 export const isTimeKey = (key: string): boolean => TIME_KEY.test(key);
 
+/**
+ * 树形响应（权限树）→ 扁平行：children 递归展开。
+ * 不展开的话只有顶层节点能出现在表里，子节点在界面上不存在 ⇒ 也就改不到、删不到。
+ *
+ * 每行补一个 `parent_name`：节点的 `parent_id` 是**裸 BIGINT**（encodeIds 只编顶层 `id`），
+ * 而界面上所有可见的 `id` 都是 hashid，拿 parent_id 去对任何一行都对不上，只剩个看不懂的大数字。
+ * 父名在展开时天然就在手上（就是当前递归的上一行），据树补出来。
+ * 顶层也给空串（显示成「—」）：列是按**首行**字段推导的，只给子节点补会让「首行恰是顶层」时整列消失。
+ */
+export function flattenTree(rows: Record<string, unknown>[], childrenKey = 'children'): Record<string, unknown>[] {
+  return walk(rows, childrenKey, '');
+}
+
+function walk(rows: Record<string, unknown>[], childrenKey: string, parentName: string): Record<string, unknown>[] {
+  return rows.flatMap((row) => {
+    const { [childrenKey]: children, ...rest } = row;
+    const kids = Array.isArray(children) ? walk(children as Record<string, unknown>[], childrenKey, String(row.name ?? '')) : [];
+    return [{ ...rest, parent_name: parentName }, ...kids];
+  });
+}
+
 /** 时间戳/日期串统一展示；10 位按秒、13 位按毫秒。 */
 export function when(value: unknown): string {
   if (value === null || value === undefined || value === '') return '—';

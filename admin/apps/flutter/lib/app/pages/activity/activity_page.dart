@@ -4,8 +4,9 @@ import '../../i18n/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
+import '../../widgets/crud.dart';
 
-/// 活动管理（最小区间：单页 列表 + 编辑弹窗；不做 stats/resend）
+/// 活动管理（最小区间：不做 stats/resend）
 class ActivityAdminController extends GetxController {
   final api = ApiService();
   final items = <dynamic>[].obs;
@@ -19,33 +20,77 @@ class ActivityAdminController extends GetxController {
     try {
       final resp = await api.get('/admin/v1/activities/list');
       items.value = resp['data']['list'] as List<dynamic>;
-    } catch (e) { Get.snackbar('${AppTranslations.t('app.error')}', '$e'); }
-    finally { isLoading.value = false; }
+    } catch (e) {
+      Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.loading_failed')}: $e');
+    } finally { isLoading.value = false; }
   }
 
-  Future<void> save(Map<String, dynamic> item) async {
-    try {
-      if (item['id'] != null) {
-        await api.put('/admin/v1/activities/${item['id']}', data: item);
-      } else {
-        await api.post('/admin/v1/activities/create', data: item);
-      }
-      await load();
-      Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('app.saved')}');
-    } catch (e) { Get.snackbar('${AppTranslations.t('app.error')}', '$e'); }
+  // 以下写操作**不吞异常**：异常要冒到通用表单里显示服务端 message（widgets/crud.dart）。
+
+  Future<void> create(Map<String, dynamic> data) async {
+    await api.post('/admin/v1/activities/create', data: data);
+    await load();
+    Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('app.saved')}');
   }
 
-  Future<void> remove(String id) async {
-    try {
-      await api.delete('/admin/v1/activities/$id');
-      await load();
-      Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('app.deleted')}');
-    } catch (e) { Get.snackbar('${AppTranslations.t('app.error')}', '$e'); }
+  Future<void> updateActivity(String hashid, Map<String, dynamic> data) async {
+    await api.put('/admin/v1/activities/$hashid', data: data);
+    await load();
+    Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('app.saved')}');
+  }
+
+  Future<void> remove(String hashid) async {
+    await api.delete('/admin/v1/activities/$hashid');
+    await load();
+    Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('app.deleted')}');
   }
 }
 
 class ActivityPage extends GetView<ActivityAdminController> {
   const ActivityPage({super.key});
+
+  /// 字段真值取自 ActivityController::create/update 的 validator + game_activity 列定义：
+  /// - type：`required|in:signin,daily_task,invite`（**三档**，旧前端只列了 signin/daily_task，
+  ///   行里若是 invite，值域外的旧控件会断言崩溃）；update 的规则里没有 type ⇒ 编辑态置灰且不提交
+  /// - status：`required|integer|in:0,1,2`（0 禁用 / 1 启用 / 2 已结束）——三值枚举，Switch 表达不了，
+  ///   本模块也没有 toggle 端点 ⇒ 状态只在表单里改
+  /// - game_id：**整数**不是 hashid（create `nullable|integer`、update `sometimes|nullable|integer|min:0`），
+  ///   0 = 全平台；列与列表回的都是原始整数，界面直接照数字编辑
+  /// - config：JSON，服务端按 type 逐条校验（signin 要 rewards[]、daily_task 要 tasks[]、
+  ///   invite 要 target + rewards[]，reward.type 只认 platform_coin/game_coin、amount ∈ (0,10000]）；
+  ///   合法性交给服务端判，422 的 message 显示在框内，改完可重试
+  /// - start_at/end_at：`nullable|date`，留空即 null（create/update 都做 `?: null` 收口）
+  /// - rollout_percent：`nullable|integer|between:0,100`
+  static const List<CrudField> _fields = <CrudField>[
+    CrudField('name', 'game.name', required: true),
+    CrudField('type', 'game.type', type: CrudFieldType.select, required: true, editableOnEdit: false, options: <CrudOption>[
+      CrudOption('signin', 'activity.type_signin'),
+      CrudOption('daily_task', 'activity.type_daily_task'),
+      CrudOption('invite', 'activity.type_invite'),
+    ]),
+    CrudField('status', 'game.status', type: CrudFieldType.select, required: true, options: <CrudOption>[
+      CrudOption('0', 'activity.status_disabled'),
+      CrudOption('1', 'activity.status_enabled'),
+      CrudOption('2', 'activity.status_ended'),
+    ]),
+    CrudField('game_id', 'game.title', type: CrudFieldType.number, hint: 'activity.game_id_hint'),
+    CrudField('start_at', 'activity.start_at', hint: 'activity.time_hint'),
+    CrudField('end_at', 'activity.end_at', hint: 'activity.time_hint'),
+    CrudField('rollout_percent', 'activity.rollout_percent', type: CrudFieldType.number, hint: 'activity.rollout_hint'),
+    CrudField('config', 'activity.config', type: CrudFieldType.multiline, maxLines: 6, hint: 'activity.config_hint'),
+  ];
+
+  static const Map<String, String> _typeLabels = <String, String>{
+    'signin': 'activity.type_signin',
+    'daily_task': 'activity.type_daily_task',
+    'invite': 'activity.type_invite',
+  };
+
+  static const Map<int, String> _statusLabels = <int, String>{
+    0: 'activity.status_disabled',
+    1: 'activity.status_enabled',
+    2: 'activity.status_ended',
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -53,11 +98,10 @@ class ActivityPage extends GetView<ActivityAdminController> {
     final ctrl = controller;
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Row(children: [
-        const Text('运营活动', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        const Spacer(),
-        ElevatedButton.icon(onPressed: () => _showDialog(context, ctrl), icon: const Icon(Icons.add), label: const Text('新建活动')),
-      ]),
+      CrudHeader(
+        title: "${AppTranslations.t('activity.title')}",
+        onCreate: () => _openForm(context, ctrl),
+      ),
       const SizedBox(height: 12),
       Expanded(child: Obx(() {
         if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
@@ -77,13 +121,22 @@ class ActivityPage extends GetView<ActivityAdminController> {
           itemCount: ctrl.items.length,
           itemBuilder: (_, i) {
             final item = ctrl.items[i];
+            // 列表里的 id 是 hashid：{hashid} 路径用它
+            final id = item['id']?.toString() ?? '';
+            final name = item['name']?.toString() ?? '';
+            final type = item['type']?.toString() ?? '';
+            final status = item['status'] is int ? item['status'] as int : 0;
             return Card(child: ListTile(
-              title: Text('${item['name']}', style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text('Type: ${item['type']}  |  Status: ${item['status']}  |  Rollout: ${item['rollout_percent']}%'),
-              trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                IconButton(icon: const Icon(Icons.edit, size: 18), onPressed: () => _showDialog(context, ctrl, item: item)),
-                IconButton(icon: const Icon(Icons.delete, size: 18, color: Colors.red), onPressed: () => _confirmDelete(context, ctrl, item)),
-              ]),
+              title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
+              // 查不到的类型/状态（历史值）按原值展示，不硬塞成某一档
+              subtitle: Text('${AppTranslations.t('game.type')}: ${AppTranslations.t(_typeLabels[type] ?? type)}  |  '
+                  '${AppTranslations.t('game.status')}: ${AppTranslations.t(_statusLabels[status] ?? '$status')}  |  '
+                  '${AppTranslations.t('activity.rollout_percent')}: ${item['rollout_percent']}%'),
+              trailing: CrudRowActions(
+                // 无开关：status 是三值枚举（含「已结束」），也没有 toggle 端点
+                onEdit: () => _openForm(context, ctrl, item: item),
+                onDelete: () => confirmCrudDelete(context, what: name, onConfirm: () => ctrl.remove(id)),
+              ),
             ));
           },
         );
@@ -91,78 +144,23 @@ class ActivityPage extends GetView<ActivityAdminController> {
     ]);
   }
 
-  void _confirmDelete(BuildContext ctx, ActivityAdminController ctrl, dynamic item) {
-    showDialog(context: ctx, builder: (_) => AlertDialog(
-      title: Text("${AppTranslations.t('app.confirm')} ${AppTranslations.t('app.delete')}"),
-      content: Text("确定删除活动 ${item['name']}?"),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx), child: Text("${AppTranslations.t('app.cancel')}")),
-        ElevatedButton(onPressed: () { ctrl.remove(item['id']); Navigator.pop(ctx); }, style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white), child: Text("${AppTranslations.t('app.delete')}")),
-      ],
-    ));
+  Future<void> _openForm(BuildContext context, ActivityAdminController ctrl, {dynamic item}) {
+    final initial = item == null ? null : Map<String, dynamic>.from(item as Map);
+    if (item != null) {
+      // config 列在模型上是 array cast（列表里已是对象），表单要的是 JSON 文本
+      final config = item['config'];
+      initial!['config'] = config == null ? '' : _encodeJson(config);
+    }
+    return showCrudForm(
+      context,
+      title: item == null ? '${AppTranslations.t('activity.create')}' : '${AppTranslations.t('activity.edit')}',
+      fields: _fields,
+      initial: initial,
+      onSubmit: (data) => item == null ? ctrl.create(data) : ctrl.updateActivity(item['id'].toString(), data),
+    );
   }
 
-  void _showDialog(BuildContext ctx, ActivityAdminController ctrl, {dynamic item}) {
-    final nCtrl = TextEditingController(text: item?['name'] ?? '');
-    final typeCtrl = TextEditingController(text: item?['type'] ?? 'signin');
-    final gCtrl = TextEditingController(text: item?['game_id'] != null ? '${item?['game_id']}' : '');
-    final sCtrl = TextEditingController(text: item?['start_at'] ?? '');
-    final eCtrl = TextEditingController(text: item?['end_at'] ?? '');
-    final rCtrl = TextEditingController(text: item?['rollout_percent'] != null ? '${item?['rollout_percent']}' : '100');
-    final cfgCtrl = TextEditingController(text: item?['config'] != null ? jsonEncode(item['config']) : '');
-    var status = item?['status'] ?? 0;
-
-    showDialog(context: ctx, builder: (_) => AlertDialog(
-      title: Text(item != null ? '编辑活动' : '新建活动'),
-      content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [
-        TextField(controller: nCtrl, decoration: const InputDecoration(labelText: '名称')),
-        DropdownButtonFormField<String>(
-          initialValue: typeCtrl.text == 'daily_task' ? 'daily_task' : 'signin',
-          decoration: const InputDecoration(labelText: '类型'),
-          items: const [
-            DropdownMenuItem(value: 'signin', child: Text('signin 签到')),
-            DropdownMenuItem(value: 'daily_task', child: Text('daily_task 每日任务')),
-          ],
-          onChanged: (v) => typeCtrl.text = v ?? 'signin',
-        ),
-        DropdownButtonFormField<int>(
-          initialValue: status is int ? status : 0,
-          decoration: const InputDecoration(labelText: '状态'),
-          items: const [
-            DropdownMenuItem(value: 0, child: Text('0 禁用')),
-            DropdownMenuItem(value: 1, child: Text('1 启用')),
-            DropdownMenuItem(value: 2, child: Text('2 已结束')),
-          ],
-          onChanged: (v) => status = v ?? 0,
-        ),
-        TextField(controller: gCtrl, decoration: const InputDecoration(labelText: 'game_id (0=全平台)'), keyboardType: TextInputType.number),
-        TextField(controller: sCtrl, decoration: const InputDecoration(labelText: '开始时间 YYYY-MM-DD HH:MM:SS')),
-        TextField(controller: eCtrl, decoration: const InputDecoration(labelText: '结束时间 YYYY-MM-DD HH:MM:SS')),
-        TextField(controller: rCtrl, decoration: const InputDecoration(labelText: '灰度百分比 0-100'), keyboardType: TextInputType.number),
-        TextField(controller: cfgCtrl, decoration: const InputDecoration(labelText: 'config JSON'), maxLines: 5),
-      ])),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx), child: Text("${AppTranslations.t('app.cancel')}")),
-        ElevatedButton(onPressed: () {
-          try {
-            if (cfgCtrl.text.isNotEmpty) jsonDecode(cfgCtrl.text);
-            ctrl.save({
-              'id': item?['id'],
-              'name': nCtrl.text,
-              'type': typeCtrl.text,
-              'game_id': gCtrl.text.isEmpty ? 0 : int.parse(gCtrl.text),
-              'status': status,
-              'start_at': sCtrl.text,
-              'end_at': eCtrl.text,
-              'rollout_percent': rCtrl.text.isEmpty ? 100 : int.parse(rCtrl.text),
-              'config': cfgCtrl.text,
-            });
-            Navigator.pop(ctx);
-          } catch (_) {
-            Get.snackbar('${AppTranslations.t('app.error')}', 'config must be valid JSON');
-          }
-        }, child: Text("${AppTranslations.t('app.save')}")),
-      ],
-    ));
-  }
+  /// 列表回的对象（Map/List）转回 JSON 文本：Dart 的 toString() 出来是 `{rewards: [...]}`，
+  /// 不是合法 JSON。数值走 jsonEncode 的默认序列化，金额在配置里本就是字符串（服务端 invalidReward 只认字符串/整数）。
+  static String _encodeJson(dynamic value) => jsonEncode(value);
 }

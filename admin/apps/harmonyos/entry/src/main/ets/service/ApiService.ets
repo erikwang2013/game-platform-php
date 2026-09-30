@@ -148,8 +148,9 @@ export class ApiService {
     return this.request<T>(http.RequestMethod.PUT, path, body);
   }
 
-  async delete<T>(path: string): Promise<ApiResponse<T>> {
-    return this.request<T>(http.RequestMethod.DELETE, path);
+  /** 可带 body：系统配置删除要管理员密码（ConfigController::destroy → confirmPassword） */
+  async delete<T>(path: string, body?: object): Promise<ApiResponse<T>> {
+    return this.request<T>(http.RequestMethod.DELETE, path, body);
   }
 }
 

@@ -12,9 +12,13 @@ interface Mark extends Click {
   py: number;
 }
 
-/** 点击式验证码登录：去服务端取图，收集 N 个点击点，坐标换算回图片原始像素 */
+/**
+ * 点击式验证码登录：账号密码齐后弹框，框内取图、收集 N 个点击点，
+ * 坐标换算回图片原始像素；验证码一次性，每次开框重取。
+ */
 @Component({
   selector: 'app-login',
+  host: { '(document:keydown.escape)': 'onEsc()' },
   template: `
     <div class="login-wrap">
       <div class="login-card">
@@ -48,28 +52,6 @@ interface Mark extends Click {
           />
         </div>
 
-        <div class="field">
-          <label>安全验证（依次点击图中提示文字）</label>
-          @if (cap(); as c) {
-            <div class="captcha-hint">
-              {{ c.texts.length ? c.texts.join(' → ') : '请按图片提示依次点击' }}
-            </div>
-            <div class="cap-wrap">
-              <img class="cap-img" [src]="image()" (click)="hit($event)" alt="点击验证码" />
-              @for (m of marks(); track $index) {
-                <i class="cap-dot" [style.left.%]="m.px" [style.top.%]="m.py">{{ $index + 1 }}</i>
-              }
-            </div>
-            <div class="cap-foot">
-              <span>已点击 {{ marks().length }} 点（至少 2 点）</span>
-              <button class="btn" type="button" (click)="undo()">撤销</button>
-              <button class="btn" type="button" (click)="reload()">换一张</button>
-            </div>
-          } @else {
-            <div class="state"><span class="spinner"></span> 验证码加载中…</div>
-          }
-        </div>
-
         <button
           class="btn btn-primary btn-block"
           [disabled]="busy() || !canSubmit()"
@@ -78,6 +60,48 @@ interface Mark extends Click {
           {{ busy() ? '登录中…' : '登 录' }}
         </button>
       </div>
+
+      @if (capOpen()) {
+        <div class="backdrop" (click)="closeCap()"></div>
+        <div class="modal" role="dialog" aria-modal="true" aria-label="安全验证">
+          <header>
+            <b>安全验证</b>
+            <span class="spacer"></span>
+            <button class="btn" type="button" (click)="closeCap()">关闭</button>
+          </header>
+          <div class="modal-body">
+            @if (cap(); as c) {
+              <div class="captcha-hint">
+                {{ c.texts.length ? c.texts.join(' → ') : '请按图片提示依次点击' }}
+              </div>
+              <div class="cap-wrap">
+                <img class="cap-img" [src]="image()" (click)="hit($event)" alt="点击验证码" />
+                @for (m of marks(); track $index) {
+                  <i class="cap-dot" [style.left.%]="m.px" [style.top.%]="m.py">{{ $index + 1 }}</i>
+                }
+              </div>
+              <div class="cap-foot">
+                <span>已点击 {{ marks().length }} 点（需 {{ required() }} 点）</span>
+                <span class="spacer"></span>
+                <button class="btn" type="button" [disabled]="!marks().length" (click)="undo()">
+                  撤销
+                </button>
+                <button class="btn" type="button" (click)="reload()">换一张</button>
+              </div>
+              <button
+                class="btn btn-primary btn-block"
+                type="button"
+                [disabled]="busy() || !canConfirm()"
+                (click)="confirm()"
+              >
+                {{ busy() ? '登录中…' : '确认登录' }}
+              </button>
+            } @else {
+              <div class="state"><span class="spinner"></span> 验证码加载中…</div>
+            }
+          </div>
+        </div>
+      }
     </div>
   `,
 })
@@ -90,21 +114,36 @@ export class Login {
   protected readonly username = signal('');
   protected readonly password = signal('');
   protected readonly cap = signal<CaptchaChallenge | null>(null);
+  protected readonly capOpen = signal(false);
   protected readonly marks = signal<Mark[]>([]);
   protected readonly busy = signal(false);
   protected readonly error = signal('');
 
   protected readonly image = computed(() => imgSrc(this.cap()?.image));
+  protected readonly required = computed(() => this.cap()?.texts.length || 2);
   protected readonly canSubmit = computed(
-    () =>
-      this.username().trim().length > 0 &&
-      this.password().length > 0 &&
-      this.marks().length >= 2 &&
-      this.cap() !== null,
+    () => this.username().trim().length > 0 && this.password().length > 0 && !this.busy(),
+  );
+  protected readonly canConfirm = computed(
+    () => this.cap() !== null && this.marks().length >= this.required(),
   );
 
-  constructor() {
+  protected onEsc(): void {
+    if (this.capOpen()) this.closeCap();
+  }
+
+  protected submit(): void {
+    if (!this.canSubmit()) return;
+    this.error.set('');
+    this.capOpen.set(true);
     void this.reload();
+  }
+
+  /** 关框即作废本次挑战，下次开框由 submit() 重取 */
+  protected closeCap(): void {
+    this.capOpen.set(false);
+    this.cap.set(null);
+    this.marks.set([]);
   }
 
   protected async reload(): Promise<void> {
@@ -116,11 +155,13 @@ export class Login {
       this.cap.set(c);
     } catch (e) {
       this.error.set(errText(e));
+      this.closeCap();
     }
   }
 
   /** 显示坐标 → 图片原始像素 */
   protected hit(ev: MouseEvent): void {
+    if (this.marks().length >= this.required()) return;
     const img = ev.currentTarget as HTMLImageElement;
     const box = img.getBoundingClientRect();
     if (!box.width || !box.height) return;
@@ -138,9 +179,9 @@ export class Login {
     this.marks.update((list) => list.slice(0, -1));
   }
 
-  protected async submit(): Promise<void> {
+  protected async confirm(): Promise<void> {
     const c = this.cap();
-    if (!c || !this.canSubmit()) return;
+    if (!c || !this.canConfirm()) return;
     this.busy.set(true);
     this.error.set('');
     try {
@@ -155,7 +196,7 @@ export class Login {
       await this.router.navigateByUrl(to && to.startsWith('/') ? to : '/dashboard');
     } catch (e) {
       this.error.set(errText(e));
-      await this.reload();
+      this.closeCap();
     } finally {
       this.busy.set(false);
     }

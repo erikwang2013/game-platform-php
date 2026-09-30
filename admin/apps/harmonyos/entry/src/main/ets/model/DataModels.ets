@@ -126,6 +126,51 @@ export interface LoginResponse {
 }
 
 /**
+ * 表单值（框内）：一律 string —— HTTP 表单语义，number 用十进制串、switch 用 '1'/'0'。
+ * 值域是运行时的（字段描述驱动），故不用联合类型，换算集中在 FormDialog.payload()
+ */
+export type FormValues = Record<string, string>;
+
+/** 表单提交体（线上）：switch 已换算成 0/1、number 已换算成整型，可直接当请求体 */
+export type FormPayload = Record<string, string | number | string[]>;
+
+/** 状态切换请求体（body 里的 id 是 hashid） */
+export interface ToggleRequest {
+  id: string;
+  status: number;
+}
+
+/**
+ * 游戏（/admin/v1/game/list）—— 列表已按行返回全部可编辑列（api_key/api_secret 是 $hidden），
+ * 故编辑表单的回填快照直接取自列表行，不必再拉一次详情
+ */
+export interface GameItem {
+  id: string;
+  name: string;
+  slug: string;
+  type: string;
+  platform: string;
+  region: string;
+  status: number;
+  sort: number;
+  description?: string;
+  cover_image?: string;
+  api_endpoint?: string;
+  sdk_version?: string;
+}
+
+/** 公告（/admin/v1/announcement/list） */
+export interface AnnouncementItem {
+  id: string;
+  title: string;
+  content: string;
+  type: string;
+  target_lang: string;
+  status: number;
+  created_at: string;
+}
+
+/**
  * 报表汇总（/admin/v1/report/summary）
  */
 export interface ReportSummary {
@@ -138,4 +183,350 @@ export interface ReportSummary {
   withdraw_count: number;
   exchange_amount: string;
   play_count: number;
+}
+
+/* ---------------------------------------------------------------------------
+ * 「内容与配置」8 个模块（批次 2）—— 通用行 + 各模块列表项。
+ * 字段真值一律取自 admin/app/admin/v1/controller/<X>Controller.php 的 validator
+ * 与 packages/platform-common/src/model/<X>.php 的列定义，描述见 common/ResourceModules.ets。
+ * ------------------------------------------------------------------------- */
+
+/**
+ * 通用资源行 —— 18 个模块共用一套列表渲染（各模块的字段描述在 ResourceModules.ets）。
+ * values 是**编辑表单快照**（键与模块 editFields 对齐），列表加载时一次算好，点编辑直接用。
+ */
+export interface ResourceRow {
+  /** 行标识：列表返回的 id 原样（hashid） */
+  id: string;
+  /** 首行主标题 */
+  title: string;
+  /** 次行摘要 */
+  subtitle: string;
+  /** 状态徽标文案；空串 = 该实体没有 status 列，不渲染徽标 */
+  badge: string;
+  /** 徽标配色：true = 绿（启用/正常），false = 红 */
+  badgeOk: boolean;
+  /** 当前 status（无 status 的模块恒 0），行内切换用它算目标状态 */
+  status: number;
+  /** 编辑表单预填值 */
+  values: FormValues;
+}
+
+export interface ResourceListResult {
+  rows: ResourceRow[];
+  total: number;
+}
+
+/** 游戏分类（GET /admin/v1/game/category/list —— 整表返回，不分页） */
+export interface GameCategoryItem {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string;
+  sort: number;
+  status: number;
+}
+
+/** 游戏区服（GET /admin/v1/game/server/list?game_id=<hashid>）—— data 是裸数组，不是 {list} */
+export interface GameServerItem {
+  id: string;
+  /** encodeIds 默认只编 id ⇒ game_id 是裸 BIGINT，不进表单（前端拿不到它，见报告） */
+  game_id: number;
+  name: string;
+  region: string;
+  /** 0 维护 / 1 正常 / 2 火爆 / 3 新服（四态，见 GameServerController::update 注释） */
+  status: number;
+  sort: number;
+}
+
+/** 运营活动（GET /admin/v1/activities/list）—— config 在模型里 cast 成 array，故是对象不是字符串 */
+export interface ActivityItem {
+  id: string;
+  type: string;
+  name: string;
+  game_id: number;
+  config: Object | null;
+  /** 0 停用 / 1 启用 / 2 已结束 */
+  status: number;
+  start_at: string | null;
+  end_at: string | null;
+  rollout_percent: number;
+}
+
+/** 成就（GET /admin/v1/achievement/list）—— condition_json 是无 cast 的字符串列，原样存 JSON 文本 */
+export interface AchievementItem {
+  id: string;
+  key: string;
+  name: string;
+  description: string;
+  icon: string;
+  condition_json: string;
+  points: number;
+  status: number;
+}
+
+/** VIP 等级（GET /admin/v1/vip/level/list） */
+export interface VipLevelItem {
+  id: string;
+  level: number;
+  name: string;
+  required_exp: number;
+  /** 无 cast 的字符串列：JSON 对象文本，键白名单见 VipLevelController::validateBenefits */
+  benefits: string;
+}
+
+/** 排行榜（GET /admin/v1/leaderboard/list） */
+export interface LeaderboardItem {
+  id: string;
+  name: string;
+  /** daily / weekly / monthly / alltime */
+  type: string;
+  /** earned / spent / play_count */
+  metric: string;
+  game_id: number;
+  rule: string;
+  status: number;
+  sort: number;
+}
+
+/** 国家配置（GET /admin/v1/country/config/list）—— 金额列都是字符串（bcmath 口径），表单也不做 float 转换 */
+export interface CountryConfigItem {
+  id: string;
+  country_code: string;
+  currency: string;
+  payment_methods: string;
+  withdraw_methods: string;
+  min_deposit: string;
+  status: number;
+}
+
+/** 系统配置（GET /admin/v1/config —— 路由占位是 {id}，值仍是 hashid：控制器 decodeId 解它） */
+export interface PlatformConfigItem {
+  id: string;
+  group: string;
+  key: string;
+  value: string;
+  type: string;
+  description: string;
+}
+
+/* ---------------------------------------------------------------------------
+ * 「用户与权限」三个模块（批次 3）—— 通用行 + 各模块列表项。
+ * 字段真值同样取自 admin/app/admin/v1/controller/{PlatformUser,Role,Permission}Controller.php
+ * 的 validator 与列定义，描述见 common/UserModules.ets。
+ * ------------------------------------------------------------------------- */
+
+/**
+ * 平台(C端)用户（GET /admin/v1/platform/user/list）。
+ * 只声明本页真要用的列：email/phone 走 Encryptable 且两树 cipher 有已知分歧（见记忆
+ * encryptable-cipher-divergence-admin-service），列表页不拿它们做展示，免得把一个
+ * 加解密问题显示成空白或明文。
+ */
+export interface PlatformUserItem {
+  id: string;
+  username: string;
+  nickname: string | null;
+  /** 0 禁用 / 1 正常（UPDATE 严格只收 0/1） */
+  status: number;
+  created_at: string;
+}
+
+/** 角色（GET /admin/v1/role —— 注意没有 /list 段，Route::resource 直挂 /role） */
+export interface RoleItem {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  status: number;
+  /** withCount('users') 带出的关联用户数；删除角色会 detach 这些用户 */
+  users_count?: number;
+  /** 已授权限的 **hashid** 数组（RoleController::index 回传），编辑态用它回填多选 */
+  permission_ids?: string[];
+}
+
+/**
+ * 权限节点（GET /admin/v1/permission）—— 树形，非根节点的 children 才存在。
+ * `id` 与 `parent_id` 都是 hashid（PermissionController::buildTree 把 parent_id 也编了）；
+ * 根节点的 parent_id 是字面量 0（hashid 编不出 0）⇒ 类型是联合。
+ */
+export interface PermissionNode {
+  id: string;
+  parent_id: string | number;
+  name: string;
+  slug: string;
+  /** 1 菜单 / 2 按钮 / 3 接口（store 的 `in:1,2,3`） */
+  type: number;
+  icon: string | null;
+  path: string | null;
+  sort: number;
+  children?: PermissionNode[];
+}
+
+/** KYC 身份认证记录（GET /admin/v1/identity/list） */
+export interface IdentityItem {
+  id: string;
+  real_name: string | null;
+  id_type: string;
+  id_number: string | null;
+  country: string | null;
+  /** pending / approved / rejected（审核只推进 pending，见 IdentityController::review 的 CAS） */
+  status: string;
+  review_note: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+  /**
+   * 三态：`toArray()` **恒带这个键**，关联查不到时是 **null**（不是缺键、也不是 undefined）。
+   * 旧注释写「只在存在时带出这一项」是假的 —— 只判 `!== undefined` 会在这种行上抛
+   * （`null.username`）。与 WithdrawItem.user 同款，两种都要防。
+   */
+  user?: IdentityUserRef | null;
+}
+
+export interface IdentityUserRef {
+  id: string;
+  username: string;
+}
+
+/* ---------------------------------------------------------------------------
+ * 「资金」四个模块（批次 4）—— 通用行 + 各模块列表项。
+ * 字段真值同样取自 admin/app/admin/v1/controller/{Payment,Coupon,CdnProvider,Withdraw}Controller.php
+ * 的 validator 与 install/install.sql 的列定义，描述见 common/FundModules.ets。
+ * 金额列（DECIMAL）一律按字符串收 —— 结构体里就不给它们 number 类型，免得半路被转成 float。
+ * ------------------------------------------------------------------------- */
+
+/** 支付方式（GET /admin/v1/payment/method/list）—— 整表返回，无分页 */
+export interface PaymentMethodItem {
+  id: string;
+  name: string;
+  /** fiat / crypto */
+  type: string;
+  /** 18 个枚举之一（validator 的 in:） */
+  provider: string;
+  status: number;
+  sort: number;
+  /** JSON 列，cast 成 array；空数组或 ["*"] = 全球 */
+  countries?: string[];
+  /** 限定币种，空 = 任意 */
+  currency?: string;
+  /** DECIMAL 列，cast 成 string */
+  min_amount?: string;
+  max_amount?: string;
+  /** 列表回传的是**解密后的原文**（控制器注释里点了名，不能对 cast 出的 array 再 json_encode） */
+  config?: string | null;
+}
+
+/** 优惠券（GET /admin/v1/coupon/list）—— 分页，过滤参数本页不挂 */
+export interface CouponItem {
+  id: string;
+  name: string;
+  /** fixed 固定金额 / rate 折扣率 */
+  type: string;
+  /** DECIMAL 列：fixed=平台币面值，rate=折扣率（0.10 = 9 折） */
+  value: string;
+  min_amount: string;
+  max_discount: string;
+  /** 适用游戏：>0 时控制器编成 hashid，0（全平台通用）保持裸数字 0 ⇒ 联合类型 */
+  game_id: string | number;
+  total_qty: number;
+  used_qty: number;
+  user_limit: number;
+  start_at: string | null;
+  end_at: string | null;
+  status: number;
+}
+
+/** 优惠券统计（GET /admin/v1/coupon/{hashid}/stats）—— 只读，走行内额外动作 */
+export interface CouponStats {
+  total_qty: number;
+  used_qty: number;
+  /** total_qty=0（不限量）时控制器回 null */
+  remaining: number | null;
+  /** 使用率百分比数字（后端 BcMath::percent） */
+  usage_rate: number;
+}
+
+/** CDN 厂商（GET /admin/v1/cdn/provider/list）—— 整表返回；**config 不回传**（凭据） */
+export interface CdnProviderItem {
+  id: string;
+  name: string;
+  /** cloudflare / cloudfront / aliyun / tencent / huawei */
+  provider: string;
+  status: number;
+  sort: number;
+}
+
+/**
+ * 提现阶梯限额（GET /admin/v1/withdraw/limits/list）—— 整表返回。
+ * 8 个金额列在模型里全 cast 成 string（bcmath 口径），本页一律文本输入。
+ */
+export interface WithdrawLimitItem {
+  id: string;
+  /** default / verified / vip（DB 注释另有 svip；update 不写它） */
+  user_level: string;
+  single_min: string;
+  single_max: string;
+  daily_limit: string;
+  monthly_limit: string;
+  /** 手续费率，% 数（列是 DECIMAL(5,2)，即 0.50 = 0.5%） */
+  fee_pct: string;
+  fee_max: string;
+  auto_approve_threshold: string;
+}
+
+/**
+ * 提现订单（GET /admin/v1/withdraw/orders）—— 分页，控制器另支持 status 过滤。
+ * 金额列（platform_amount 平台币 / fiat_amount 法币）是 DECIMAL 的 string cast：
+ * **展示与二次确认文案都用原字符串**，前端不做任何加减（也不求和，求和要 float）。
+ */
+export interface WithdrawOrderItem {
+  id: string;
+  order_no?: string | null;
+  user_id: number;
+  platform_amount: string;
+  fiat_amount: string;
+  currency: string;
+  method: string;
+  /** pending / approved / rejected / processing / completed */
+  status: string;
+  /** none / processing / success / failed（PayoutService 口径） */
+  payout_status?: string | null;
+  /** 非空 = 这笔已提交给 PayPal，才允许「同步状态」 */
+  payout_batch_id?: string | null;
+  reviewer_id?: number;
+  confirmed_by?: number;
+  review_note?: string | null;
+  created_at: string;
+  /**
+   * 关联用户。控制器以 `$order->toArray()` 起手，`with('user')` 已预载且关联查不到时
+   * toArray 会带出 **null**（不是缺键）；查得到才覆盖成 hashid 对象 ⇒ 三态都可能，两种都要防。
+   */
+  user?: WithdrawUserRef | null;
+}
+
+export interface WithdrawUserRef {
+  id: string;
+  username: string;
+}
+
+/** 提现开关（GET /admin/v1/withdraw/switch）—— 三个键是同一个布尔值的三种读法 */
+export interface WithdrawSwitchState {
+  global_switch: boolean;
+  enabled: boolean;
+  status: number;
+}
+
+/** 工单（GET /admin/v1/ticket/list）—— 列表已 unset user/user_id，改为 user_name/reply_count */
+export interface TicketItem {
+  id: string;
+  user_name: string;
+  type: string;
+  subject: string;
+  content: string;
+  /** open / replied / closed（闭单后回复会被 422 掉） */
+  status: string;
+  priority: number;
+  /** 裸 BIGINT：assign 收的是 `(int) admin_id`，不是 hashid */
+  assigned_to: number;
+  reply_count: number;
+  created_at: string;
 }

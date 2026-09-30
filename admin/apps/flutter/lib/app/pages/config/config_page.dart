@@ -7,6 +7,7 @@ import '../../i18n/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
+import '../../widgets/crud.dart';
 
 class ConfigController extends GetxController {
   final api = ApiService();
@@ -25,33 +26,52 @@ class ConfigController extends GetxController {
       final resp = await api.get('/admin/v1/config', params: {'page': page.value, 'limit': limit.value});
       configs.value = resp['data']['list'] as List<dynamic>;
       total.value = resp['data']['total'] as int;
-    } catch (e) { Get.snackbar('错误', '加载失败: $e'); }
-    finally { isLoading.value = false; }
+    } catch (e) {
+      Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.loading_failed')}: $e');
+    } finally { isLoading.value = false; }
   }
 
-  Future<void> save(dynamic item) async {
-    try {
-      if (item['id'] != null) {
-        await api.put('/admin/v1/config/${item['id']}', data: item);
-      } else {
-        await api.post('/admin/v1/config', data: item);
-      }
-      await loadConfigs();
-      Get.snackbar('成功', '保存成功');
-    } catch (e) { Get.snackbar('错误', '保存失败: $e'); }
+  // 以下写操作**不吞异常**：异常要冒到通用表单里显示服务端 message（widgets/crud.dart）。
+
+  Future<void> create(Map<String, dynamic> data) async {
+    await api.post('/admin/v1/config', data: data);
+    await loadConfigs();
+    Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('app.saved')}');
   }
 
-  Future<void> remove(String id, String pwd) async {
-    try {
-      await api.delete('/admin/v1/config/$id', data: {'password': pwd});
-      await loadConfigs();
-      Get.snackbar('成功', '删除成功');
-    } catch (e) { Get.snackbar('错误', '删除失败: $e'); }
+  /// 路径参数名是 `{id}`（不是 {hashid}），但值仍是列表里那个 hashid：
+  /// 列表走 encodeIds 编的是 `id` 列，destroy 那头也是 decodeId 解的
+  Future<void> updateConfig(String hashid, Map<String, dynamic> data) async {
+    await api.put('/admin/v1/config/$hashid', data: data);
+    await loadConfigs();
+    Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('app.saved')}');
+  }
+
+  /// 删除需管理员密码二次确认（ConfigController::destroy 的 confirmPassword），
+  /// 密码由确认框里的输入框提供、随请求体发过去
+  Future<void> remove(String hashid, String password) async {
+    await api.delete('/admin/v1/config/$hashid', data: <String, dynamic>{'password': password});
+    await loadConfigs();
+    Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('app.deleted')}');
   }
 }
 
 class ConfigPage extends GetView<ConfigController> {
   const ConfigPage({super.key});
+
+  /// 字段真值取自 ConfigController::store/update 的 validator + game_platform_config 列定义：
+  /// - group/key：只有 store 收（`required|string|max:100`，另有同组同键查重），update 的规则里没有
+  ///   ⇒ 两列编辑态置灰且不提交
+  /// - value：`required|string`（create/update 同款），多行
+  /// - type：不做枚举收口（PlatformConfig::get() 对未知 type 走 default 分支返回字符串），
+  ///   列宽 VARCHAR(20) ⇒ 文本控件 + 提示
+  static const List<CrudField> _fields = <CrudField>[
+    CrudField('group', 'config.group', required: true, editableOnEdit: false),
+    CrudField('key', 'config.key', required: true, editableOnEdit: false),
+    CrudField('value', 'config.value', type: CrudFieldType.multiline, required: true),
+    CrudField('type', 'config.type', hint: 'config.type_hint'),
+    CrudField('description', 'config.description'),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -61,34 +81,53 @@ class ConfigPage extends GetView<ConfigController> {
     final ctrl = controller;
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Row(children: [
-        Text("${AppTranslations.t('config.title')}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        const Spacer(),
-        ElevatedButton.icon(onPressed: () => _showDialog(context, ctrl), icon: const Icon(Icons.add), label: Text("${AppTranslations.t('config.create')}")),
-      ]),
+      CrudHeader(
+        title: "${AppTranslations.t('config.title')}",
+        onCreate: () => _openForm(context, ctrl),
+      ),
       const SizedBox(height: 12),
       Expanded(child: Obx(() {
         if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
+        if (ctrl.configs.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset('assets/mascot.png', width: 120),
+                const SizedBox(height: 12),
+                Text("${AppTranslations.t('app.no_data')}"),
+              ],
+            ),
+          );
+        }
         return ListView.builder(
           itemCount: ctrl.configs.length,
           itemBuilder: (_, i) {
             final c = ctrl.configs[i];
+            // 列表里的 id 是 hashid：{id} 路径用的就是它
+            final id = c['id']?.toString() ?? '';
+            final label = '${c['group']}.${c['key']}';
             return Card(child: ListTile(
-              title: Text('${c['group']}.${c['key']}', style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text(c['description'] ?? ''),
-              trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                Chip(label: Text(c['type'] ?? 'string')),
-                const SizedBox(width: 8),
-                Text(c['value'] ?? '', style: const TextStyle(color: Colors.blue)),
-                IconButton(icon: const Icon(Icons.edit, size: 18), onPressed: () => _showDialog(context, ctrl, item: c)),
-                IconButton(icon: const Icon(Icons.delete, size: 18, color: Colors.red), onPressed: () {
-                  final p = TextEditingController();
-                  showDialog(context: context, builder: (_) => AlertDialog(title: Text("${AppTranslations.t('app.confirm')} ${AppTranslations.t('app.delete')}"), content: TextField(controller: p, obscureText: true, decoration: InputDecoration(labelText: '输入密码确认')), actions: [
-                    TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),
-                    ElevatedButton(onPressed: () { ctrl.remove(c['id'], p.text); Navigator.pop(context); }, style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white), child: Text("${AppTranslations.t('app.delete')}")),
-                  ]));
-                }),
-              ]),
+              title: Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text(
+                '${c['type'] ?? 'string'}  |  ${c['description'] ?? ''}\n${c['value'] ?? ''}',
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+              ),
+              isThreeLine: true,
+              trailing: CrudRowActions(
+                onEdit: () => _openForm(context, ctrl, item: c),
+                // 密码经确认框回传（服务端空密码直接 422），失败时服务端 message 弹在 snackbar 里
+                onDelete: () async {
+                  var password = '';
+                  await confirmCrudDelete(
+                    context,
+                    what: label,
+                    onPassword: (value) => password = value,
+                    onConfirm: () => ctrl.remove(id, password),
+                  );
+                },
+              ),
             ));
           },
         );
@@ -96,28 +135,14 @@ class ConfigPage extends GetView<ConfigController> {
     ]);
   }
 
-  void _showDialog(BuildContext context, ConfigController ctrl, {dynamic item}) {
-    final gCtrl = TextEditingController(text: item?['group'] ?? '');
-    final kCtrl = TextEditingController(text: item?['key'] ?? '');
-    final vCtrl = TextEditingController(text: item?['value'] ?? '');
-    final tCtrl = TextEditingController(text: item?['type'] ?? 'string');
-    final dCtrl = TextEditingController(text: item?['description'] ?? '');
-    showDialog(context: context, builder: (_) => AlertDialog(
-      title: Text(item != null ? '${AppTranslations.t('config.edit')}' : '${AppTranslations.t('config.create')}'),
-      content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [
-        TextField(controller: gCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('config.group')}'), enabled: item == null),
-        TextField(controller: kCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('config.key')}'), enabled: item == null),
-        TextField(controller: vCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('config.value')}'), maxLines: 3),
-        TextField(controller: tCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('config.type')}')),
-        TextField(controller: dCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('config.description')}')),
-      ])),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),
-        ElevatedButton(onPressed: () {
-          ctrl.save({'id': item?['id'], 'group': gCtrl.text, 'key': kCtrl.text, 'value': vCtrl.text, 'type': tCtrl.text, 'description': dCtrl.text});
-          Navigator.pop(context);
-        }, child: Text("${AppTranslations.t('app.save')}")),
-      ],
-    ));
+  Future<void> _openForm(BuildContext context, ConfigController ctrl, {dynamic item}) {
+    final initial = item == null ? null : Map<String, dynamic>.from(item as Map);
+    return showCrudForm(
+      context,
+      title: item == null ? '${AppTranslations.t('config.create')}' : '${AppTranslations.t('config.edit')}',
+      fields: _fields,
+      initial: initial,
+      onSubmit: (data) => item == null ? ctrl.create(data) : ctrl.updateConfig(item['id'].toString(), data),
+    );
   }
 }

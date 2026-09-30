@@ -6,10 +6,57 @@ import '../../i18n/translations.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../widgets/crud.dart';
+import 'permission_page.dart';
 import 'role_controller.dart';
 
-class RoleListPage extends GetView<RoleController> {
+/// 导航项「角色权限」的落地页：角色与权限两张表同属一个入口（侧边栏文案本就是 Roles & Permissions），
+/// 用 TabBar 分成两页，避免再占一个导航位（也避免导航/命令面板的下标整体挪位）。
+class RoleListPage extends StatelessWidget {
   const RoleListPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Column(children: [
+        TabBar(
+          isScrollable: true,
+          tabAlignment: TabAlignment.start,
+          tabs: [
+            Tab(text: '${AppTranslations.t('role.title')}'),
+            Tab(text: '${AppTranslations.t('permission.title')}'),
+          ],
+        ),
+        const SizedBox(height: 12),
+        const Expanded(child: TabBarView(children: [RoleTab(), PermissionPage()])),
+      ]),
+    );
+  }
+}
+
+class RoleTab extends GetView<RoleController> {
+  const RoleTab({super.key});
+
+  /// 字段真值取自 RoleController::store/update 的 validator（RoleController.php:60-63 / 118-123）：
+  /// - name：两处都是 `required|string|max:50`（update 是 sometimes）
+  /// - slug：只有 store 收（`required|string|max:50`），update 的规则里没有 ⇒ 编辑态置灰且不提交
+  /// - description：update `sometimes|nullable|string|max:255`（store 未校验，直接落库）
+  /// - status：update `sometimes|required|integer|in:0,1`（store 默认 1）⇒ 0/1 开关
+  /// - permission_ids：update `sometimes|array`，元素是**权限 hashid** —— 后端已改成 hashid 口径
+  ///   （RoleController::decodePermissionIds:145 逐个 decodeId，非法 hashid 直接 400），
+  ///   列表也回传 hashid 形式的 permission_ids（index:43-46）供编辑态回填。
+  ///   后端 `sync()` 是**整体替换**：表单提交的是完整勾选集，不是增量。
+  List<CrudField> _fields(List<CrudOption> permissionOptions) => <CrudField>[
+        CrudField('name', 'role.name', required: true),
+        CrudField('slug', 'role.slug', required: true, editableOnEdit: false),
+        CrudField('description', 'role.description', type: CrudFieldType.multiline),
+        CrudField('status', 'game.status', type: CrudFieldType.toggle),
+        // 权限树没取到时**不摆这个字段**：空勾选集一旦被提交就等于把角色的权限整体清空
+        if (permissionOptions.isNotEmpty)
+          CrudField('permission_ids', 'role.permission_ids',
+              type: CrudFieldType.multiselect, hint: 'role.permission_ids_hint', options: permissionOptions),
+      ];
 
   @override
   Widget build(BuildContext context) {
@@ -18,109 +65,89 @@ class RoleListPage extends GetView<RoleController> {
     }
     final ctrl = controller;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(children: [
-          Text("${AppTranslations.t('role.title')}", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-          const Spacer(),
-          ElevatedButton.icon(
-            onPressed: () => _showRoleDialog(context, ctrl),
-            icon: const Icon(Icons.add),
-            label: Text("${AppTranslations.t('role.create')}"),
-          ),
-        ]),
-        const SizedBox(height: 12),
-        Expanded(child: Obx(() {
-          if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
-          if (ctrl.roles.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image.asset('assets/mascot.png', width: 120),
-                  const SizedBox(height: 12),
-                  Text("${AppTranslations.t('role.no_roles')}"),
-                ],
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      CrudHeader(
+        title: "${AppTranslations.t('role.title')}",
+        onCreate: () => _openForm(context, ctrl),
+      ),
+      const SizedBox(height: 12),
+      Expanded(child: Obx(() {
+        if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
+        if (ctrl.roles.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset('assets/mascot.png', width: 120),
+                const SizedBox(height: 12),
+                Text("${AppTranslations.t('role.no_roles')}"),
+              ],
+            ),
+          );
+        }
+
+        return ListView.builder(
+          itemCount: ctrl.roles.length,
+          itemBuilder: (_, i) {
+            final r = ctrl.roles[i];
+            // 列表里的 id 是 hashid：{hashid} 路径用它
+            final id = r['id']?.toString() ?? '';
+            final name = r['name']?.toString() ?? '';
+            final status = r['status'] is int ? r['status'] as int : 0;
+            return Card(
+              child: ListTile(
+                leading: const Icon(Icons.shield, size: 36),
+                title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                subtitle: Text('${AppTranslations.t('role.identifier')}: ${r['slug']}  |  '
+                    '${AppTranslations.t('role.users_count')}: ${r['users_count'] ?? 0}  |  ${r['description'] ?? ''}'),
+                trailing: CrudRowActions(
+                  status: status,
+                  // 角色没有独立 toggle 端点：按规格局部 PUT 传 status
+                  onToggle: (next) => ctrl.updateRole(id, <String, dynamic>{'status': next}),
+                  onEdit: () => _openForm(context, ctrl, role: r),
+                  // 删除要管理员密码：密码经确认框回传（空密码服务端直接 422）
+                  onDelete: () async {
+                    var password = '';
+                    await confirmCrudDelete(
+                      context,
+                      what: name,
+                      onPassword: (value) => password = value,
+                      onConfirm: () => ctrl.destroyRole(id, password),
+                    );
+                  },
+                ),
               ),
             );
-          }
+          },
+        );
+      })),
+    ]);
+  }
 
-          return ListView.builder(
-            itemCount: ctrl.roles.length,
-            itemBuilder: (_, i) {
-              final r = ctrl.roles[i];
-              return Card(
-                child: ListTile(
-                  leading: const Icon(Icons.shield, size: 36),
-                  title: Text(r['name'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text('标识: ${r['slug']} | 用户数: ${r['users_count'] ?? 0} | ${r['description'] ?? ''}'),
-                  trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                    Chip(label: Text(r['status'] == 1 ? "${AppTranslations.t('app.enabled')}" : "${AppTranslations.t('app.disabled')}")),
-                    IconButton(icon: const Icon(Icons.edit, size: 18), onPressed: () => _showRoleDialog(context, ctrl, role: r)),
-                    IconButton(icon: const Icon(Icons.delete, size: 18, color: Colors.red), onPressed: () {
-                      final pwdCtrl = TextEditingController();
-                      showDialog(context: context, builder: (_) => AlertDialog(
-                        title: Text("${AppTranslations.t('app.confirm')} ${AppTranslations.t('app.delete')}"),
-                        content: Column(mainAxisSize: MainAxisSize.min, children: [
-                          Text('确定要删除角色「${r['name']}」吗？'),
-                          TextField(controller: pwdCtrl, obscureText: true, decoration: InputDecoration(labelText: '${AppTranslations.t('user.password_confirm_hint')}')),
-                        ]),
-                        actions: [
-                          TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),
-                          ElevatedButton(onPressed: () { ctrl.deleteRole(r['id'], pwdCtrl.text); Navigator.pop(context); }, style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white), child: Text("${AppTranslations.t('app.delete')}")),
-                        ],
-                      ));
-                    }),
-                  ]),
-                ),
-              );
-            },
-          );
-        })),
-      ],
+  Future<void> _openForm(BuildContext context, RoleController ctrl, {dynamic role}) async {
+    final permissionOptions = await _permissionOptions();
+    if (!context.mounted) return;
+    final initial = role == null ? null : Map<String, dynamic>.from(role as Map);
+    await showCrudForm(
+      context,
+      title: role == null ? '${AppTranslations.t('role.create')}' : '${AppTranslations.t('role.edit')}',
+      fields: _fields(permissionOptions),
+      initial: initial,
+      onSubmit: (data) => role == null ? ctrl.createRole(data) : ctrl.updateRole(role['id'].toString(), data),
     );
   }
 
-  void _showRoleDialog(BuildContext context, RoleController ctrl, {dynamic role}) {
-    final nameCtrl = TextEditingController(text: role?['name'] ?? '');
-    final slugCtrl = TextEditingController(text: role?['slug'] ?? '');
-    final descCtrl = TextEditingController(text: role?['description'] ?? '');
-    final selectedPerms = (role?['permissions'] as List<dynamic>?)?.map((p) => p['id'].toString()).toSet() ?? <String>{};
-
-    showDialog(
-      context: context,
-      builder: (_) => StatefulBuilder(
-        builder: (_, setDialogState) => AlertDialog(
-          title: Text(role != null ? '${AppTranslations.t('role.edit')}' : '${AppTranslations.t('role.create')}', style: const TextStyle(fontWeight: FontWeight.bold)),
-          content: SizedBox(width: 450, child: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [
-            TextField(controller: nameCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('role.name')}'), enabled: role == null),
-            TextField(controller: slugCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('role.slug')}'), enabled: role == null),
-            TextField(controller: descCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('role.description')}')),
-            const SizedBox(height: 12),
-            Text('${AppTranslations.t('role.permissions')}:', style: TextStyle(fontWeight: FontWeight.bold)),
-            ...ctrl.permissions.map((perm) => CheckboxListTile(
-              title: Text(perm['name'] ?? ''),
-              subtitle: Text(perm['slug'] ?? ''),
-              value: selectedPerms.contains(perm['id'].toString()),
-              onChanged: (v) {
-                setDialogState(() { if (v == true) { selectedPerms.add(perm['id'].toString()); } else { selectedPerms.remove(perm['id'].toString()); } });
-              },
-            )),
-          ]))),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: Text("${AppTranslations.t('app.cancel')}")),
-            ElevatedButton(onPressed: () {
-              if (role != null) {
-                ctrl.updateRole(role['id'], name: nameCtrl.text, desc: descCtrl.text, permIds: selectedPerms.toList());
-              } else {
-                ctrl.createRole(nameCtrl.text, slugCtrl.text, descCtrl.text, selectedPerms.toList());
-              }
-              Navigator.pop(context);
-            }, child: Text("${AppTranslations.t('app.save')}")),
-          ],
-        ),
-      ),
-    );
+  /// 权限多选的值域 = 权限树摊平后的「缩进 + 名称」。
+  /// 复用权限页的 PermissionController：先点过权限页就免一次请求，没点过就现拉一次。
+  /// label 传成品文案（crudText 查不到 key 会原样显示）—— 名称来自库，不是 i18n key。
+  Future<List<CrudOption>> _permissionOptions() async {
+    final permCtrl = Get.isRegistered<PermissionController>()
+        ? Get.find<PermissionController>()
+        : Get.put(PermissionController());
+    if (permCtrl.tree.isEmpty) await permCtrl.load();
+    return <CrudOption>[
+      for (final (depth, node) in PermissionPage.flatten(permCtrl.tree))
+        CrudOption(node['id'].toString(), '${'  ' * depth}${node['name']}'),
+    ];
   }
 }

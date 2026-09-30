@@ -1,9 +1,9 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
-import 'dart:convert';
 import '../../i18n/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
+import '../../widgets/crud.dart';
 
 class AchievementAdminController extends GetxController {
   final api = ApiService();
@@ -18,33 +18,59 @@ class AchievementAdminController extends GetxController {
     try {
       final resp = await api.get('/admin/v1/achievement/list');
       items.value = resp['data']['list'] as List<dynamic>;
-    } catch (e) { Get.snackbar('${AppTranslations.t('app.error')}', '$e'); }
-    finally { isLoading.value = false; }
+    } catch (e) {
+      Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.loading_failed')}: $e');
+    } finally { isLoading.value = false; }
   }
 
-  Future<void> save(Map<String, dynamic> item) async {
-    try {
-      if (item['id'] != null) {
-        await api.put('/admin/v1/achievement/${item['id']}', data: item);
-      } else {
-        await api.post('/admin/v1/achievement/create', data: item);
-      }
-      await load();
-      Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('app.saved')}');
-    } catch (e) { Get.snackbar('${AppTranslations.t('app.error')}', '$e'); }
+  // 以下写操作**不吞异常**：异常要冒到通用表单里显示服务端 message（widgets/crud.dart）。
+
+  Future<void> create(Map<String, dynamic> data) async {
+    await api.post('/admin/v1/achievement/create', data: data);
+    await load();
+    Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('app.saved')}');
   }
 
-  Future<void> remove(String id) async {
-    try {
-      await api.delete('/admin/v1/achievement/$id');
-      await load();
-      Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('app.deleted')}');
-    } catch (e) { Get.snackbar('${AppTranslations.t('app.error')}', '$e'); }
+  Future<void> updateAchievement(String hashid, Map<String, dynamic> data) async {
+    await api.put('/admin/v1/achievement/$hashid', data: data);
+    await load();
+    Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('app.saved')}');
+  }
+
+  Future<void> remove(String hashid) async {
+    await api.delete('/admin/v1/achievement/$hashid');
+    await load();
+    Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('app.deleted')}');
+  }
+
+  /// 状态切换走独立端点（body 里 id 是 hashid），与 update 传 status 的不是同一条路。
+  /// 停用只影响「后续事件触发是否再授予」，已授予记录与进度不受影响。
+  Future<void> toggle(String hashid, int status) async {
+    await api.post('/admin/v1/achievement/toggle', data: <String, dynamic>{'id': hashid, 'status': status});
+    await load();
   }
 }
 
 class AchievementPage extends GetView<AchievementAdminController> {
   const AchievementPage({super.key});
+
+  /// 字段真值取自 AchievementController::create/update 的 validator + game_achievement 列定义：
+  /// - key：只有 create 收（`required|regex:/^[a-z0-9_]+$/|max:50`，create 里另有查重），
+  ///   update 的规则里没有它 ⇒ 编辑态置灰且不提交
+  /// - condition_json：`required|string`（create/update 都是），服务端另判「能 json_decode 成数组」
+  ///   ——JSON 是否合法由服务端说了算，422 的 message 直接显示在框内，改完可重试
+  /// - points：INT UNSIGNED ⇒ min:0
+  /// - status：0/1，create 读入参（默认 1）、update `in:0,1`，本模块另有 toggle 端点
+  static const List<CrudField> _fields = <CrudField>[
+    CrudField('key', 'achievement.key', required: true, editableOnEdit: false, hint: 'achievement.key_hint'),
+    CrudField('name', 'achievement.name', required: true),
+    CrudField('description', 'achievement.description', type: CrudFieldType.multiline),
+    CrudField('icon', 'achievement.icon'),
+    CrudField('condition_json', 'achievement.condition',
+        type: CrudFieldType.multiline, required: true, hint: 'achievement.condition_hint'),
+    CrudField('points', 'achievement.points', type: CrudFieldType.number, required: true),
+    CrudField('status', 'game.status', type: CrudFieldType.toggle),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -52,11 +78,10 @@ class AchievementPage extends GetView<AchievementAdminController> {
     final ctrl = controller;
 
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Row(children: [
-        Text("${AppTranslations.t('achievement.title')}", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        const Spacer(),
-        ElevatedButton.icon(onPressed: () => _showDialog(context, ctrl), icon: const Icon(Icons.add), label: Text("${AppTranslations.t('achievement.create')}")),
-      ]),
+      CrudHeader(
+        title: "${AppTranslations.t('achievement.title')}",
+        onCreate: () => _openForm(context, ctrl),
+      ),
       const SizedBox(height: 12),
       Expanded(child: Obx(() {
         if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
@@ -76,13 +101,20 @@ class AchievementPage extends GetView<AchievementAdminController> {
           itemCount: ctrl.items.length,
           itemBuilder: (_, i) {
             final item = ctrl.items[i];
+            // 列表里的 id 是 hashid：{hashid} 路径与 toggle 的 id 都用它
+            final id = item['id']?.toString() ?? '';
+            final name = item['name']?.toString() ?? '';
+            final status = item['status'] is int ? item['status'] as int : 0;
             return Card(child: ListTile(
-              title: Text('${item['name']}', style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text('Key: ${item['key']}  |  Points: ${item['points']}'),
-              trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-                IconButton(icon: const Icon(Icons.edit, size: 18), onPressed: () => _showDialog(context, ctrl, item: item)),
-                IconButton(icon: const Icon(Icons.delete, size: 18, color: Colors.red), onPressed: () => _confirmDelete(context, ctrl, item)),
-              ]),
+              title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
+              subtitle: Text('${AppTranslations.t('achievement.key')}: ${item['key']}  |  '
+                  '${AppTranslations.t('achievement.points')}: ${item['points']}'),
+              trailing: CrudRowActions(
+                status: status,
+                onToggle: (next) => ctrl.toggle(id, next),
+                onEdit: () => _openForm(context, ctrl, item: item),
+                onDelete: () => confirmCrudDelete(context, what: name, onConfirm: () => ctrl.remove(id)),
+              ),
             ));
           },
         );
@@ -90,46 +122,14 @@ class AchievementPage extends GetView<AchievementAdminController> {
     ]);
   }
 
-  void _confirmDelete(BuildContext ctx, AchievementAdminController ctrl, dynamic item) {
-    showDialog(context: ctx, builder: (_) => AlertDialog(
-      title: Text("${AppTranslations.t('app.confirm')} ${AppTranslations.t('app.delete')}"),
-      content: Text("${AppTranslations.t('achievement.delete_confirm')} ${item['name']}?"),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx), child: Text("${AppTranslations.t('app.cancel')}")),
-        ElevatedButton(onPressed: () { ctrl.remove(item['id']); Navigator.pop(ctx); }, style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white), child: Text("${AppTranslations.t('app.delete')}")),
-      ],
-    ));
-  }
-
-  void _showDialog(BuildContext ctx, AchievementAdminController ctrl, {dynamic item}) {
-    final kCtrl = TextEditingController(text: item?['key'] ?? '');
-    final nCtrl = TextEditingController(text: item?['name'] ?? '');
-    final dCtrl = TextEditingController(text: item?['description'] ?? '');
-    final iCtrl = TextEditingController(text: item?['icon'] ?? '');
-    final cCtrl = TextEditingController(text: item?['condition_json'] ?? '');
-    final pCtrl = TextEditingController(text: item != null ? '${item['points']}' : '');
-    showDialog(context: ctx, builder: (_) => AlertDialog(
-      title: Text(item != null ? "${AppTranslations.t('achievement.edit')}" : "${AppTranslations.t('achievement.create')}"),
-      content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [
-        TextField(controller: kCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('achievement.key')}'), enabled: item == null),
-        TextField(controller: nCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('achievement.name')}')),
-        TextField(controller: dCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('achievement.description')}')),
-        TextField(controller: iCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('achievement.icon')}')),
-        TextField(controller: cCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('achievement.condition')}'), maxLines: 3),
-        TextField(controller: pCtrl, decoration: InputDecoration(labelText: '${AppTranslations.t('achievement.points')}'), keyboardType: TextInputType.number),
-      ])),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx), child: Text("${AppTranslations.t('app.cancel')}")),
-        ElevatedButton(onPressed: () {
-          try {
-            if (cCtrl.text.isNotEmpty) jsonDecode(cCtrl.text);
-            ctrl.save({'id': item?['id'], 'key': kCtrl.text, 'name': nCtrl.text, 'description': dCtrl.text, 'icon': iCtrl.text, 'condition_json': cCtrl.text, 'points': pCtrl.text});
-            Navigator.pop(ctx);
-          } catch (_) {
-            Get.snackbar('${AppTranslations.t('app.error')}', 'Condition must be valid JSON');
-          }
-        }, child: Text("${AppTranslations.t('app.save')}")),
-      ],
-    ));
+  Future<void> _openForm(BuildContext context, AchievementAdminController ctrl, {dynamic item}) {
+    final initial = item == null ? null : Map<String, dynamic>.from(item as Map);
+    return showCrudForm(
+      context,
+      title: item == null ? '${AppTranslations.t('achievement.create')}' : '${AppTranslations.t('achievement.edit')}',
+      fields: _fields,
+      initial: initial,
+      onSubmit: (data) => item == null ? ctrl.create(data) : ctrl.updateAchievement(item['id'].toString(), data),
+    );
   }
 }

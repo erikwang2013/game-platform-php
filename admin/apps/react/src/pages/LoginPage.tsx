@@ -4,7 +4,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { api, ApiError } from '../lib/api';
 import { useAuth, type Click } from '../lib/auth';
 import { describeCaptcha, type CaptchaData } from '../lib/captcha';
-import { Loading } from '../components/ui';
+import { Loading, Modal } from '../components/ui';
 
 /** 无图时的兜底尺寸，与 .cap-ph 的高度一致（验证码画布 300x200），保证坐标换算不跳变。 */
 const FALLBACK_W = 300;
@@ -17,7 +17,8 @@ export function LoginPage() {
   const from = (location.state as { from?: string } | null)?.from ?? '/';
 
   const [captcha, setCaptcha] = useState<CaptchaData | null>(null);
-  const [loadingCap, setLoadingCap] = useState(true);
+  const [capOpen, setCapOpen] = useState(false);
+  const [loadingCap, setLoadingCap] = useState(false);
   const [capError, setCapError] = useState<string | null>(null);
   const [size, setSize] = useState({ w: FALLBACK_W, h: FALLBACK_H });
   const [dots, setDots] = useState<Click[]>([]);
@@ -28,9 +29,11 @@ export function LoginPage() {
 
   const { imgSrc, required, hint } = describeCaptcha(captcha);
 
+  // 每次开框都重取：验证码是一次性的，复用上一次的必然验不过
   const loadCaptcha = useCallback(async () => {
     setLoadingCap(true);
     setCapError(null);
+    setCaptcha(null);
     setDots([]);
     setSize({ w: FALLBACK_W, h: FALLBACK_H });
     try {
@@ -48,9 +51,28 @@ export function LoginPage() {
     }
   }, []);
 
-  useEffect(() => {
+  // 登录失败后收框，残留的挑战已作废；下次开框由 openCaptcha 重新拉
+  const closeCaptcha = useCallback(() => {
+    setCapOpen(false);
+    setCaptcha(null);
+    setDots([]);
+    setCapError(null);
+  }, []);
+
+  const openCaptcha = useCallback(() => {
+    setError(null);
+    setCapOpen(true);
     void loadCaptcha();
   }, [loadCaptcha]);
+
+  useEffect(() => {
+    if (!capOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeCaptcha();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [capOpen, closeCaptcha]);
 
   const onPick = (event: MouseEvent<HTMLDivElement>) => {
     const box = event.currentTarget.getBoundingClientRect();
@@ -73,8 +95,13 @@ export function LoginPage() {
   // 放在所有 hook 之后，避免条件渲染跳过 hook
   if (user) return <Navigate to={from} replace />;
 
-  const submit = async (event: FormEvent) => {
+  const submit = (event: FormEvent) => {
     event.preventDefault();
+    if (busy || !username || !password) return;
+    openCaptcha();
+  };
+
+  const confirm = async () => {
     if (busy || dots.length !== required) return;
     setBusy(true);
     setError(null);
@@ -84,7 +111,7 @@ export function LoginPage() {
     } catch (cause) {
       setError(cause instanceof ApiError ? cause.message : '登录失败，请稍后重试');
       setPassword('');
-      await loadCaptcha();
+      closeCaptcha();
     } finally {
       setBusy(false);
     }
@@ -95,7 +122,7 @@ export function LoginPage() {
       <div className="login-card">
         <div className="login-h">
           <h1 className="h1">游戏运营台</h1>
-          <p className="sub">{hint}</p>
+          <p className="sub">登录前需完成点击验证</p>
         </div>
 
         <form className="form" onSubmit={submit}>
@@ -120,60 +147,74 @@ export function LoginPage() {
             />
           </label>
 
-          <div className="label">
-            验证码
-            <div className="cap" onClick={onPick} role="presentation">
-              {imgSrc ? (
-                <img
-                  className="cap-img"
-                  src={imgSrc}
-                  alt="点击验证码"
-                  draggable={false}
-                  onLoad={(event) => {
-                    const el = event.currentTarget;
-                    if (el.naturalWidth > 0) setSize({ w: el.naturalWidth, h: el.naturalHeight });
-                  }}
-                />
-              ) : (
-                <div className="cap-ph">验证码图片不可用，直接点击此区域标记坐标后提交</div>
-              )}
-              {dots.map((dot, index) => (
-                <span
-                  key={`${dot.x}-${dot.y}-${index}`}
-                  className="cap-dot"
-                  style={{ left: `${(dot.x / size.w) * 100}%`, top: `${(dot.y / size.h) * 100}%` }}
-                >
-                  {index + 1}
-                </span>
-              ))}
-            </div>
-            <div className="cap-bar">
-              <span>已标 {dots.length} 点（需 {required} 点）</span>
-              <span className="pagehead-a">
-                <button
-                  type="button"
-                  className="btn btn-sm"
-                  disabled={!dots.length}
-                  onClick={() => setDots((prev) => prev.slice(0, -1))}
-                >
-                  撤销
-                </button>
-                <button type="button" className="btn btn-sm" onClick={() => void loadCaptcha()}>
-                  换一张
-                </button>
-              </span>
-            </div>
-          </div>
-
-          {loadingCap ? <Loading rows={1} label="验证码加载中" /> : null}
-          {capError ? <p className="sub" style={{ color: 'var(--amber)' }}>{capError}</p> : null}
           {error ? <p className="errnote">{error}</p> : null}
 
-          <button className="btn" type="submit" disabled={busy || dots.length !== required || !username || !password}>
+          <button className="btn" type="submit" disabled={busy || !username || !password}>
             {busy ? '登录中…' : '登录'}
           </button>
         </form>
       </div>
+
+      {capOpen ? (
+        <Modal title="安全验证" onClose={closeCaptcha}>
+          <p className="sub">{hint}</p>
+
+          <div className="cap" onClick={onPick} role="presentation">
+            {imgSrc ? (
+              <img
+                className="cap-img"
+                src={imgSrc}
+                alt="点击验证码"
+                draggable={false}
+                onLoad={(event) => {
+                  const el = event.currentTarget;
+                  if (el.naturalWidth > 0) setSize({ w: el.naturalWidth, h: el.naturalHeight });
+                }}
+              />
+            ) : (
+              <div className="cap-ph">验证码图片不可用，直接点击此区域标记坐标后提交</div>
+            )}
+            {dots.map((dot, index) => (
+              <span
+                key={`${dot.x}-${dot.y}-${index}`}
+                className="cap-dot"
+                style={{ left: `${(dot.x / size.w) * 100}%`, top: `${(dot.y / size.h) * 100}%` }}
+              >
+                {index + 1}
+              </span>
+            ))}
+          </div>
+
+          <div className="cap-bar">
+            <span>已标 {dots.length} 点（需 {required} 点）</span>
+            <span className="pagehead-a">
+              <button
+                type="button"
+                className="btn btn-sm"
+                disabled={!dots.length}
+                onClick={() => setDots((prev) => prev.slice(0, -1))}
+              >
+                撤销
+              </button>
+              <button type="button" className="btn btn-sm" onClick={() => void loadCaptcha()}>
+                换一张
+              </button>
+            </span>
+          </div>
+
+          {loadingCap ? <Loading rows={1} label="验证码加载中" /> : null}
+          {capError ? <p className="sub" style={{ color: 'var(--amber)' }}>{capError}</p> : null}
+
+          <button
+            className="btn"
+            type="button"
+            disabled={busy || loadingCap || dots.length !== required}
+            onClick={() => void confirm()}
+          >
+            {busy ? '登录中…' : '确认登录'}
+          </button>
+        </Modal>
+      ) : null}
     </div>
   );
 }

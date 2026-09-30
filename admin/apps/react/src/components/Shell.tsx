@@ -47,7 +47,7 @@ export function Shell() {
       <aside className={`sidebar${drawer ? ' open' : ''}`}>
         <div className="brand">
           <span className="brand-mark" aria-hidden="true">
-            游
+            <img src={`${import.meta.env.BASE_URL}mascot.svg`} alt="" />
           </span>
           <span className="brand-t">游戏运营台</span>
         </div>

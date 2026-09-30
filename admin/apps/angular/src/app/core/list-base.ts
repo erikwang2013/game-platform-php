@@ -1,13 +1,22 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
-import { signal } from '@angular/core';
+import { Directive, OnInit, signal } from '@angular/core';
 import { Page } from './api.service';
 import { errText } from './util';
 
 /**
  * 列表页公共状态机：加载中 / 出错 / 空 / 分页。
  * 十几个列表页重复的只有这套东西，抽干它，页面只管 fetch()。
+ *
+ * ⚠ ngOnInit 里的首次 load() 不能省：原先只有 pick()（切标签）和「查询」按钮触发 load，
+ * 于是每个列表页首屏都停在 loading 的初值 true 上显示「加载中…」而**一个请求都不发**
+ * （实测 /users、/games 进页面 0 个 /admin/v1 请求，点「查询」才发出）。
+ * 放在 ngOnInit 而不是构造函数：子类的 fetch() 要读 this.paths 等字段初始化结果，
+ * 基类构造函数里调会读到 undefined。生命周期钩子在构造与输入绑定之后跑，正合适。
  */
-export abstract class ListBase<T> {
+// @Directive()（无 selector）：抽象组件基类要用生命周期钩子就必须带装饰器，
+// 否则 NG2007「Class is using Angular features but is not decorated」
+@Directive()
+export abstract class ListBase<T> implements OnInit {
   readonly rows = signal<T[]>([]);
   readonly loading = signal(true);
   readonly error = signal('');
@@ -15,6 +24,10 @@ export abstract class ListBase<T> {
   readonly total = signal(0);
   readonly pageSize = 20;
   readonly keyword = signal('');
+
+  ngOnInit(): void {
+    void this.load();
+  }
 
   protected abstract fetch(): Promise<Page<T>>;
 
