@@ -51,7 +51,8 @@
     "webman/redis": "^2.1",
     "erik/platform-common": "*@dev",
     "aws/aws-sdk-php": "^3.394",
-    "erikwang2013/apidoc-php": "^1.0"
+    "erikwang2013/apidoc-php": "^1.0",
+    "erikwang2013/aetherupload-webman": "^1.1"
   },
   "suggest": {
     "ext-event": "For better performance. "
