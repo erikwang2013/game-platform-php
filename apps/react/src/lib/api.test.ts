@@ -68,6 +68,9 @@ test('充值/提现/兑换写操作：方法、URL 与请求体形状（金额�
   language.set('en');
   calls.length = 0;
 
+  // 提现/卖出服务端强制点击验证码（买入不强制），proof 与业务字段同级进请求体
+  const PROOF = { captcha_key: 'ck1', clicks: [{ x: 10, y: 20 }] };
+
   reply = { ok: true, code: 0, data: { list: [] } };
   await api.paymentMethods();
 
@@ -75,14 +78,14 @@ test('充值/提现/兑换写操作：方法、URL 与请求体形状（金额�
   await api.createDeposit({ amount: '10.50', currency: 'USD', payment_method_id: 'pm1' });
 
   reply = { ok: true, code: 0, data: { order_no: 'WTH1' } };
-  await api.applyWithdraw({ platform_amount: '20.0000', method: 'paypal', account_info: 'a@b.c' });
+  await api.applyWithdraw({ platform_amount: '20.0000', method: 'paypal', account_info: 'a@b.c', ...PROOF });
 
   reply = { ok: true, code: 0, data: { rate: '1.5' } };
   await api.exchangeQuote({ game_id: 'g1', currency_id: 'c1', direction: 'out', platform_amount: '300' });
 
   reply = { ok: true, code: 0, data: { exchange_id: 'e1' } };
   await api.exchangeBuy({ game_id: 'g1', currency_id: 'c1', direction: 'in', platform_amount: '5.25' });
-  await api.exchangeSell({ game_id: 'g1', currency_id: 'c1', direction: 'out', platform_amount: '300' });
+  await api.exchangeSell({ game_id: 'g1', currency_id: 'c1', direction: 'out', platform_amount: '300', ...PROOF });
 
   const shape = (i: number) => ({
     url: calls[i]!.url,
@@ -99,7 +102,13 @@ test('充值/提现/兑换写操作：方法、URL 与请求体形状（金额�
   assert.deepEqual(shape(2), {
     url: '/api/v1/withdraw/apply',
     method: 'POST',
-    body: { platform_amount: '20.0000', method: 'paypal', account_info: 'a@b.c' },
+    body: {
+      platform_amount: '20.0000',
+      method: 'paypal',
+      account_info: 'a@b.c',
+      captcha_key: 'ck1',
+      clicks: [{ x: 10, y: 20 }],
+    },
   });
   assert.deepEqual(shape(3), {
     url: '/api/v1/exchange/quote',
@@ -114,7 +123,14 @@ test('充值/提现/兑换写操作：方法、URL 与请求体形状（金额�
   assert.deepEqual(shape(5), {
     url: '/api/v1/exchange/sell',
     method: 'POST',
-    body: { game_id: 'g1', currency_id: 'c1', direction: 'out', platform_amount: '300' },
+    body: {
+      game_id: 'g1',
+      currency_id: 'c1',
+      direction: 'out',
+      platform_amount: '300',
+      captcha_key: 'ck1',
+      clicks: [{ x: 10, y: 20 }],
+    },
   });
   assert.equal(calls.length, 6);
 });

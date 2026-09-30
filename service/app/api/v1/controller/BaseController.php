@@ -70,6 +70,23 @@ class BaseController
     }
 
     /**
+     * 点击验证码校验：登录/注册/敏感操作（提现申请、兑换卖出、领券）都要过这一关。
+     *
+     * 身份按客户端 IP 归属，必须传 $request->getRealIp()，实现见 common\Captcha::verifyFromIp
+     * （别自己读 $_SERVER['REMOTE_ADDR']：CLI SAPI 下它不存在，会把限流退化成全局桶）。
+     * 调用方负责回 422，消息统一用「验证码错误，请重试」（不区分缺失与填错，避免给探测者线索）。
+     */
+    protected function captchaOk(Request $request): bool
+    {
+        return captcha_verify_from_ip(
+            $request->getRealIp(),
+            (string) $request->input('captcha_key', ''),
+            'click',
+            captcha_clicks($request->input('clicks'))
+        );
+    }
+
+    /**
      * 解析请求所属国家：语言头优先（X-Language → Accept-Language），未知返回空串
      */
     protected function resolveCountry(Request $request): string

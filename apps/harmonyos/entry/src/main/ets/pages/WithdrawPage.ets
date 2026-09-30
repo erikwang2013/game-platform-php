@@ -3,9 +3,10 @@
  */
 
 import router from '@ohos.router';
-import { WithdrawApplyRequest, WithdrawApplyResult } from '../model/DataModels';
+import { WithdrawApplyRequest, WithdrawApplyResult, CaptchaClick } from '../model/DataModels';
 import { WalletService, PaymentService } from '../service/DataService';
 import { NavBar, trimZeros } from '../common/Components';
+import { CaptchaDialog } from '../common/CaptchaDialog';
 
 /** 提现方式白名单（WithdrawController 的 in: paypal,bank,crypto） */
 const METHOD_OPTIONS: string[] = ['paypal', 'bank', 'crypto'];
@@ -26,6 +27,8 @@ struct WithdrawPage {
   @State submitting: boolean = false;
   @State done: WithdrawApplyResult | null = null;
   @State walletBalance: string = '';
+  /** 验证码弹框开关：提现申请由服务端强制验证码 */
+  @State captchaOpen: boolean = false;
 
   aboutToAppear(): void {
     this.loadBalance();
@@ -103,7 +106,11 @@ struct WithdrawPage {
     return '#FA8C16';
   }
 
-  async submit(): Promise<void> {
+  /**
+   * 本地校验 → 开验证码框。
+   * 提现是敏感操作，服务端强制点击验证码；校验不过就不该消耗一次取图
+   */
+  submit(): void {
     if (this.submitting) {
       return;
     }
@@ -127,12 +134,26 @@ struct WithdrawPage {
       return;
     }
 
+    this.captchaOpen = true;
+  }
+
+  /** 验证码确认后真正提交：captcha_key + clicks 与原字段同级 */
+  async doSubmit(captchaKey: string, clicks: CaptchaClick[]): Promise<void> {
+    if (this.submitting) {
+      return;
+    }
+    const amount = this.amount.trim();
+    const accountInfo = this.accountInfo.trim();
+
     this.submitting = true;
+    this.errorMsg = '';
     try {
       const req: WithdrawApplyRequest = {
         platform_amount: amount,
         method: this.method,
-        account_info: accountInfo
+        account_info: accountInfo,
+        captcha_key: captchaKey,
+        clicks: clicks
       };
       this.done = await PaymentService.applyWithdraw(req);
     } catch (e) {
@@ -144,6 +165,8 @@ struct WithdrawPage {
       this.errorMsg = msg.length > 0 ? msg : '提现申请失败';
     } finally {
       this.submitting = false;
+      // 无论成败都关框：成功露出结果页；失败即作废本次挑战，服务端 message 显示在原错误位，下次开框重取新图
+      this.captchaOpen = false;
     }
   }
 
@@ -174,6 +197,30 @@ struct WithdrawPage {
   }
 
   build() {
+    Stack({ alignContent: Alignment.Center }) {
+      this.mainView()
+
+      // 验证码弹框：遮罩与卡片是 Stack 里的兄弟节点，
+      // 卡片上的点击不会冒泡到遮罩（无需 stopPropagation）
+      if (this.captchaOpen) {
+        CaptchaDialog({
+          submitting: this.submitting,
+          onCancel: () => {
+            this.captchaOpen = false;
+          },
+          onConfirm: (key: string, clicks: CaptchaClick[]) => {
+            this.doSubmit(key, clicks);
+          }
+        })
+      }
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor('#F5F5F5')
+  }
+
+  @Builder
+  mainView() {
     Column() {
       NavBar({ title: '提现' })
 

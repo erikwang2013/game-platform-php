@@ -36,6 +36,8 @@ class WithdrawController extends BaseController
     #[Apidoc\Param(name: "platform_amount", type: "float", require: true, desc: "提现金额")]
     #[Apidoc\Param(name: "method", type: "string", require: true, desc: "提现方式(paypal/bank/crypto)")]
     #[Apidoc\Param(name: "account_info", type: "string", require: true, desc: "提现账户信息")]
+    #[Apidoc\Param(name: "captcha_key", type: "string", require: true, desc: "点击验证码 key")]
+    #[Apidoc\Param(name: "clicks", type: "array", require: true, desc: "点击坐标集合，元素含 x/y")]
     public function apply(Request $request): Response
     {
         // Check global withdraw switch
@@ -48,10 +50,17 @@ class WithdrawController extends BaseController
             'platform_amount' => 'required|numeric|min:0.0001',
             'method'          => 'required|in:paypal,bank,crypto',
             'account_info'    => 'required',
+            'captcha_key'     => 'required|string',
+            'clicks'          => 'required|array|min:2',
         ]);
 
         if ($validator->fails()) {
             return $this->fail($validator->errors()->first(), 422);
+        }
+
+        // 提现是资金出口，必须过验证码（与登录/注册同一道闸）
+        if (!$this->captchaOk($request)) {
+            return $this->fail('验证码错误，请重试', 422);
         }
 
         $userId         = $request->userId;

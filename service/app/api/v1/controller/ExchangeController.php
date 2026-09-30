@@ -119,8 +119,16 @@ class ExchangeController extends BaseController
     #[Apidoc\Param(name: "game_id", type: "string", require: true, desc: "游戏ID")]
     #[Apidoc\Param(name: "currency_id", type: "string", require: true, desc: "币种ID")]
     #[Apidoc\Param(name: "platform_amount", type: "float", require: true, desc: "平台币数量")]
+    #[Apidoc\Param(name: "captcha_key", type: "string", require: true, desc: "点击验证码 key")]
+    #[Apidoc\Param(name: "clicks", type: "array", require: true, desc: "点击坐标集合，元素含 x/y")]
     public function sell(Request $request): Response
     {
+        // 卖出是平台币流出，要过验证码；买入(buy)不加——校验只能落在这里，
+        // 因为 doExchange 的 validator 与 buy 共用，往里加必填键会把 buy 一起打断
+        if (!$this->captchaOk($request)) {
+            return $this->fail('验证码错误，请重试', 422);
+        }
+
         return $this->doExchange($request, 'out');
     }
 

@@ -12,11 +12,51 @@ export interface ApiResponse<T> {
 }
 
 /**
+ * 点击验证码 — 登录/注册/提现申请/兑换卖出/领券 由服务端强制校验
+ *
+ * POST /api/v1/captcha/generate 的 data 段：
+ *   { key, image, extra: { texts: [{ order, text }] } }
+ * texts 按 order 升序即服务端要求的点击顺序；**不下发坐标**（坐标就是答案）。
+ * 画布恒为 300x200（easy/medium/hard 三档实测一致），点击坐标按此换算。
+ */
+export interface CaptchaTarget {
+  order: number;
+  text: string;
+}
+
+export interface CaptchaExtra {
+  texts: CaptchaTarget[];
+}
+
+/** 取图响应的 data 段（image 为裸 base64 PNG，无 data: 前缀） */
+export interface CaptchaGenerateResult {
+  key: string;
+  image: string;
+  extra?: CaptchaExtra;
+}
+
+/** 归一化后的挑战：texts 已按 order 升序，供弹框直接使用 */
+export interface CaptchaChallenge {
+  key: string;
+  image: string;
+  texts: CaptchaTarget[];
+}
+
+/** 一次点击的画布坐标（0-300 / 0-200），就是提交给服务端的 clicks 元素 */
+export interface CaptchaClick {
+  x: number;
+  y: number;
+}
+
+/**
  * 登录请求/响应
+ * 登录与注册同为一个接口体：服务端两个端点都要 captcha_key + clicks
  */
 export interface LoginRequest {
   username: string;
   password: string;
+  captcha_key: string;
+  clicks: CaptchaClick[];
 }
 
 export interface LoginUser {
@@ -184,11 +224,14 @@ export interface DepositCreateResult {
 /**
  * 提现 — POST /api/v1/withdraw/apply
  * account_info 为自由文本（服务端加密存储），三种方式共用同一字段
+ * 服务端强制验证码：captcha_key + clicks 与原字段同级
  */
 export interface WithdrawApplyRequest {
   platform_amount: string;
   method: string;
   account_info: string;
+  captcha_key: string;
+  clicks: CaptchaClick[];
 }
 
 export interface WithdrawApplyResult {
@@ -206,12 +249,17 @@ export interface WithdrawApplyResult {
  * 兑换 — POST /api/v1/exchange/quote | buy | sell
  * direction 'out'（卖出）时 platform_amount 承载的是【游戏币】数量，
  * 服务端复用了同一字段名，不要改成 game_amount
+ *
+ * 三处共用一个请求体：只有 sell 需要验证码（服务端刻意没给 buy/quote 加），
+ * 故 captcha 两字段可选 —— 不传时 JSON.stringify 会整键省略，quote/buy 报文与从前逐字节一致
  */
 export interface ExchangeRequest {
   game_id: string;
   currency_id: string;
   direction: string;
   platform_amount: string;
+  captcha_key?: string;
+  clicks?: CaptchaClick[];
 }
 
 /** 询价响应：in 返回 game_amount/actual_game_amount，out 返回 platform_equivalent/actual_platform_amount */

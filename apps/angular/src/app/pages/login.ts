@@ -3,15 +3,16 @@ import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AbstractControl } from '@angular/forms';
-import { Api, ApiError, AuthResult, tokens } from '../core/api.service';
+import { Api, ApiError, AuthResult, CaptchaProof, tokens } from '../core/api.service';
+import { CaptchaBox } from '../core/captcha';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, CaptchaBox],
   template: `
     <div class="auth">
       <div class="card auth-card">
-        <div class="brand big"><span class="dot"></span><span>Aurora</span></div>
+        <div class="brand big"><img class="dot" src="mascot.svg" alt="" /><span>Aurora</span></div>
         <p class="muted tagline">登录后即可开局、查看钱包与消息</p>
 
         <div class="chips">
@@ -109,6 +110,14 @@ import { Api, ApiError, AuthResult, tokens } from '../core/api.service';
         }
       </div>
     </div>
+
+    <!-- 登录/注册服务端强制验证码：本地校验通过后弹框，确认才发原请求 -->
+    <app-captcha
+      [(open)]="capOpen"
+      [busy]="busy()"
+      [action]="pending() === 'in' ? '确认登录' : '确认注册'"
+      (proof)="onProof($event)"
+    />
   `,
   styles: [
     `
@@ -146,6 +155,9 @@ export class LoginPage {
   protected readonly tab = signal<'in' | 'up'>('in');
   protected readonly busy = signal(false);
   protected readonly error = signal('');
+  /** 验证码弹框开框状态；pending 记住开框时是登录还是注册（框开后 tab 仍可被键盘改动） */
+  protected readonly capOpen = signal(false);
+  protected readonly pending = signal<'in' | 'up'>('in');
 
   protected readonly loginForm = this.fb.nonNullable.group({
     username: ['', [Validators.required, Validators.minLength(3)]],
@@ -182,13 +194,7 @@ export class LoginPage {
       f.markAllAsTouched();
       return;
     }
-    this.error.set('');
-    this.busy.set(true);
-    const { username, password } = f.getRawValue();
-    this.api.login(username.trim(), password).subscribe({
-      next: (r) => this.done(r),
-      error: (e: ApiError) => this.failed(e),
-    });
+    this.openCap('in');
   }
 
   protected register(): void {
@@ -197,20 +203,42 @@ export class LoginPage {
       f.markAllAsTouched();
       return;
     }
+    this.openCap('up');
+  }
+
+  /** 本地校验通过才弹框；开框由验证码组件现取新图 */
+  private openCap(which: 'in' | 'up'): void {
     this.error.set('');
+    this.pending.set(which);
+    this.capOpen.set(true);
+  }
+
+  /** 弹框确认 → 带 captcha_key/clicks 调原接口；失败关框，服务端 message 回到顶部错误位 */
+  protected onProof(p: CaptchaProof): void {
+    const log = this.loginForm.getRawValue();
+    const reg = this.regForm.getRawValue();
     this.busy.set(true);
-    const v = f.getRawValue();
-    this.api
-      .register({
-        username: v.username.trim(),
-        password: v.password,
-        email: v.email.trim(),
-        nickname: v.nickname.trim(),
-      })
-      .subscribe({
-        next: (r) => this.done(r),
-        error: (e: ApiError) => this.failed(e),
-      });
+    this.error.set('');
+    const call =
+      this.pending() === 'in'
+        ? this.api.login(log.username.trim(), log.password, p)
+        : this.api.register({
+            username: reg.username.trim(),
+            password: reg.password,
+            email: reg.email.trim(),
+            nickname: reg.nickname.trim(),
+            ...p,
+          });
+    call.subscribe({
+      next: (r) => {
+        this.capOpen.set(false);
+        this.done(r);
+      },
+      error: (e: ApiError) => {
+        this.capOpen.set(false);
+        this.failed(e);
+      },
+    });
   }
 
   private failed(e: ApiError): void {

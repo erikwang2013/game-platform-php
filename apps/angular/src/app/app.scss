@@ -1,11 +1,19 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 /* 仅 shell 私有样式；设计系统在 src/styles.scss */
 
+/* 品牌位放吉祥物「小骰」（与侧栏 .brand .dot 同一个位，移动端这处原来只有文字） */
 .brand-m {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-weight: 700;
   letter-spacing: -0.01em;
   padding-right: 4px;
+}
+.brand-m img {
+  width: 20px;
+  height: auto;
+  flex: none;
 }
 
 .search-wrap {

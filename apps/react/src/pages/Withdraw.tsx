@@ -6,6 +6,7 @@ import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { ApiError, api, type WithdrawApplied } from '../lib/api.ts';
 import { useAsync } from '../lib/hooks.ts';
+import { useCaptcha } from '../lib/useCaptcha.tsx';
 
 /** 与后端 WithdrawController 的 method 白名单一致 */
 const METHODS = [
@@ -22,16 +23,23 @@ export function Withdraw() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [done, setDone] = useState<WithdrawApplied | null>(null);
+  const cap = useCaptcha();
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    if (busy) return;
     setErr(null);
+    // 先过本地必填校验，再弹验证码框
+    if (!amount.trim() || !accountInfo.trim()) return;
+    const proof = await cap.ask();
+    if (!proof) return; // 用户取消
     setBusy(true);
     try {
       const r = await api.applyWithdraw({
         platform_amount: amount.trim(),
         method,
         account_info: accountInfo.trim(),
+        ...proof,
       });
       setDone(r);
       setAmount('');
@@ -151,6 +159,8 @@ export function Withdraw() {
           </div>
         </section>
       )}
+
+      {cap.modal}
     </>
   );
 }

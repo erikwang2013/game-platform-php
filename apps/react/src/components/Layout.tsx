@@ -50,6 +50,7 @@ export function Layout() {
               </span>
             </button>
             <Link to="/" className="logo">
+              <img className="logo-mascot" src={`${import.meta.env.BASE_URL}mascot.svg`} alt="" />
               Game<span>Platform</span>
             </Link>
           </div>

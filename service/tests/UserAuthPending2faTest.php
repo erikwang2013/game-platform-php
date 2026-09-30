@@ -30,6 +30,8 @@ use support\Request;
  */
 final class UserAuthPending2faTest extends TestCase
 {
+    use CaptchaTestHelper;
+
     private const PASSWORD = 'correct-horse-battery-staple';
 
     private static bool $booted = false;
@@ -117,7 +119,8 @@ final class UserAuthPending2faTest extends TestCase
     private function login(): array
     {
         $request = new Request("POST /api/v1/auth/login HTTP/1.1\r\nHost: localhost\r\n\r\n");
-        $request->setPost(['username' => $this->username, 'password' => self::PASSWORD]);
+        // 登录已加强制点击验证码：不带 captcha_key/clicks 会 422「验证码错误」
+        $request->setPost(['username' => $this->username, 'password' => self::PASSWORD] + $this->captchaParams());
 
         return json_decode((new AuthController())->login($request)->rawBody(), true);
     }

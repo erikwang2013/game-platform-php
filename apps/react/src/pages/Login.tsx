@@ -5,6 +5,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth.tsx';
+import { useCaptcha } from '../lib/useCaptcha.tsx';
 
 /** 与后端 AuthController::PASSWORD_RULE 对齐；HTML pattern 隐含整串匹配，故省去 ^$ */
 const REGISTER_PASSWORD_PATTERN = '(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+';
@@ -20,19 +21,26 @@ export function Login() {
   const [email, setEmail] = useState('');
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const cap = useCaptcha();
 
   if (user) return <Navigate to="/" replace />;
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
+    if (busy) return;
     setErr(null);
+    // 先过本地必填校验，再弹验证码框，免得空表单先弹一层
+    if (!username.trim() || !password || (mode === 'register' && !email.trim())) return;
+    const proof = await cap.ask();
+    if (!proof) return; // 用户取消
     setBusy(true);
     try {
-      if (mode === 'login') await login(username.trim(), password);
-      else await register(username.trim(), password, email.trim());
+      if (mode === 'login') await login(username.trim(), password, proof);
+      else await register(username.trim(), password, email.trim(), proof);
       const from = (location.state as { from?: string } | null)?.from;
       navigate(from ?? '/', { replace: true });
     } catch (e2) {
+      // 失败（含 422 验证码错误）：框已关，服务端 message 落在表单错误位，下次提交重取
       setErr(e2 instanceof Error ? e2.message : '操作失败，请稍后重试');
     } finally {
       setBusy(false);
@@ -48,6 +56,13 @@ export function Login() {
     <main className="shell">
       <div className="shell--split" style={{ paddingTop: 32, paddingBottom: 48 }}>
         <section className="stack">
+          {/* 吉祥物小骰（Dicey）：纯装饰，语义由下面的文案承载；随 BASE_URL 走子路径部署 */}
+          <img
+            className="login-mascot"
+            src={`${import.meta.env.BASE_URL}mascot.svg`}
+            alt=""
+            aria-hidden="true"
+          />
           <p className="label">C 端平台</p>
           <h1 className="h1">
             玩你喜欢的
@@ -145,6 +160,8 @@ export function Login() {
           </p>
         </section>
       </div>
+
+      {cap.modal}
     </main>
   );
 }

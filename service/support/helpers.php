@@ -41,3 +41,23 @@ function jwt_wrapper(): JwtWrapper
     }
     return $wrapper;
 }
+
+/**
+ * 规范化验证码点击坐标 —— 实现在 common\Captcha（admin/service 共用，
+ * 见 packages/platform-common/src/Captcha.php 里那段「webman 下身份恒为 cli」的说明）
+ */
+function captcha_clicks(mixed $clicks): array
+{
+    return \common\Captcha::clicks($clicks);
+}
+
+/**
+ * 按「真实客户端 IP」归属的验证码校验 —— 实现在 common\Captcha（两棵树共用）。
+ *
+ * @param string $ip 客户端 IP，传 $request->getRealIp()。别读 $_SERVER['REMOTE_ADDR']（CLI SAPI 下不存在），
+ *                   也别传常量——那会退回全局桶，细节见 common\Captcha::verifyFromIp 的注释。
+ */
+function captcha_verify_from_ip(string $ip, string $key, string $type, mixed $data): bool
+{
+    return \common\Captcha::verifyFromIp($ip, $key, $type, $data);
+}

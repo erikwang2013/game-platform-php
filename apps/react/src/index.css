@@ -184,11 +184,21 @@ textarea {
 }
 
 .logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   font-weight: 800;
   font-size: 20px;
   letter-spacing: -0.04em;
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+/* 品牌位放吉祥物「小骰」 */
+.logo-mascot {
+  width: 24px;
+  height: auto;
+  flex: none;
 }
 
 .logo span {
@@ -781,6 +791,113 @@ textarea {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ============================================================
+   Login hero
+   ============================================================ */
+/* 登录/注册页 hero 里的小骰（Dicey，240×200 的 6:5 比例，等比缩放避免变形） */
+.login-mascot {
+  width: 72px;
+  height: auto;
+}
+
+/* ============================================================
+   Modal（通用弹窗外壳 + 点击验证码）
+   ============================================================ */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(17, 17, 17, 0.45);
+}
+
+.modal {
+  display: flex;
+  flex-direction: column;
+  width: min(460px, 100%);
+  max-height: 86vh;
+  background: var(--paper);
+  border: var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: var(--line);
+  background: var(--yellow);
+}
+
+.modal-b {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  overflow: auto;
+}
+
+.cap {
+  position: relative;
+  border: var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--paper);
+  cursor: crosshair;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.cap-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.cap-ph {
+  /* 与验证码画布 300×200 等高：图片拉不到时坐标换算也不跳变 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  padding: 0 18px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.cap-dot {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--orange);
+  color: var(--paper);
+  font-size: 12px;
+  font-weight: 700;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 2px var(--paper);
+  pointer-events: none;
+}
+
+.cap-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--ink-soft);
 }
 
 /* ============================================================

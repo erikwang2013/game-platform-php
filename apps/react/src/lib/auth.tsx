@@ -12,12 +12,14 @@ import {
   type ReactNode,
 } from 'react';
 import { api, setUnauthorizedHandler, tokens, type Profile } from './api.ts';
+import type { CaptchaProof } from './captcha.ts';
 
 interface AuthValue {
   user: Profile | null;
   ready: boolean;
-  login: (username: string, password: string) => Promise<void>;
-  register: (username: string, password: string, email: string) => Promise<void>;
+  /** 验证码由调用页面先弹框取好，这里只负责随请求带上 */
+  login: (username: string, password: string, proof: CaptchaProof) => Promise<void>;
+  register: (username: string, password: string, email: string, proof: CaptchaProof) => Promise<void>;
   logout: () => void;
 }
 
@@ -54,8 +56,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const login = useCallback(async (username: string, password: string) => {
-    const data = await api.login(username, password);
+  const login = useCallback(async (username: string, password: string, proof: CaptchaProof) => {
+    const data = await api.login(username, password, proof);
     if (!('access_token' in data)) {
       // 该账号开启了 2FA，需走 /2fa/verify 换发正式 token
       throw new Error('该账号已开启两步验证，请先在客户端完成 2FA 校验');
@@ -65,8 +67,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const register = useCallback(
-    async (username: string, password: string, email: string) => {
-      const data = await api.register(username, password, email);
+    async (username: string, password: string, email: string, proof: CaptchaProof) => {
+      const data = await api.register(username, password, email, proof);
       tokens.set(data.access_token, data.refresh_token);
       setUser(await api.profile());
     },

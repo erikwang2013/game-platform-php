@@ -3,6 +3,7 @@ import '../../i18n/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
+import '../../services/captcha_service.dart';
 import 'wallet_amount.dart';
 
 class WithdrawPage extends StatefulWidget {
@@ -61,6 +62,10 @@ class _WithdrawPageState extends State<WithdrawPage> {
       return;
     }
 
+    // 提现服务端已强制验证码：本地校验（金额/收款信息）过后再弹框，取消即中止
+    final captcha = await showCaptchaDialog(context);
+    if (captcha == null || !mounted) return;
+
     setState(() {
       _loading = true;
       _error = null;
@@ -73,6 +78,7 @@ class _WithdrawPageState extends State<WithdrawPage> {
         'platform_amount': amountText,
         'method': _method,
         'account_info': accountInfo,
+        ...captcha.toRequestBody(),
       });
       setState(() {
         _result = resp['data'];

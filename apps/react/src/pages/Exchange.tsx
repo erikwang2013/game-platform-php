@@ -14,6 +14,7 @@ import {
 } from '../lib/api.ts';
 import { useAsync } from '../lib/hooks.ts';
 import { ErrorBox, Loading } from '../components/States.tsx';
+import { useCaptcha } from '../lib/useCaptcha.tsx';
 
 const DIRECTIONS: Array<{ id: ExchangeDirection; label: string; hint: string }> = [
   { id: 'in', label: '买入（平台币 → 游戏币）', hint: '花费平台币，得到游戏币' },
@@ -30,6 +31,7 @@ export function Exchange() {
   const [err, setErr] = useState<string | null>(null);
   const [quote, setQuote] = useState<{ req: ExchangeRequest; data: ExchangeQuote } | null>(null);
   const [done, setDone] = useState<ExchangeDone | null>(null);
+  const cap = useCaptcha();
 
   const items = games.data?.items ?? [];
   // 未手动选择时回落到第一个游戏/币种，省去 useEffect 同步
@@ -77,23 +79,30 @@ export function Exchange() {
     }
   };
 
-  const doExchange = async () => {
-    if (!quote) return;
+  /** 统一收口下单的 busy / 错误 / 报价失效处理 */
+  const commit = async (send: () => Promise<ExchangeDone>) => {
     setErr(null);
     setBusy(true);
     try {
       // 用询价时那份请求下单，保证「看到的价」与「成交的额」一致
-      setDone(
-        direction === 'in'
-          ? await api.exchangeBuy(quote.req)
-          : await api.exchangeSell(quote.req),
-      );
+      setDone(await send());
       setQuote(null);
     } catch (e) {
+      // 失败（含 422 验证码错误）：框已关，服务端 message 落在下方错误位，下次确认重取
       setErr(e instanceof ApiError ? `${e.message}（${e.code}）` : '兑换失败，请稍后重试');
     } finally {
       setBusy(false);
     }
+  };
+
+  const doExchange = async () => {
+    if (!quote) return;
+    const req = quote.req;
+    // 卖出需验证码（后端强制）；买入不加，故不弹框
+    if (direction === 'in') return commit(() => api.exchangeBuy(req));
+    const proof = await cap.ask();
+    if (!proof) return; // 用户取消
+    await commit(() => api.exchangeSell({ ...req, ...proof }));
   };
 
   return (
@@ -326,6 +335,8 @@ export function Exchange() {
           </div>
         </section>
       )}
+
+      {cap.modal}
     </>
   );
 }

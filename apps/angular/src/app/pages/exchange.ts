@@ -1,9 +1,11 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Observable } from 'rxjs';
 import {
   Api,
   ApiError,
+  CaptchaProof,
   ExchangeDirection,
   ExchangeDone,
   ExchangePayload,
@@ -11,6 +13,7 @@ import {
   Game,
   money,
 } from '../core/api.service';
+import { CaptchaBox } from '../core/captcha';
 
 /** 游戏列表单页条数；超过再加“加载更多”（复用 gameList 的 page 参数） */
 const GAMES_PER_PAGE = 100;
@@ -19,7 +22,7 @@ const GAMES_PER_PAGE = 100;
  *  game_id / currency_id 均为服务端下发的 hashid，不能自行拼造。 */
 @Component({
   selector: 'app-exchange',
-  imports: [RouterLink],
+  imports: [RouterLink, CaptchaBox],
   template: `
     <div class="stack">
       <a class="btn ghost back" routerLink="/wallet">← 返回钱包</a>
@@ -211,6 +214,9 @@ const GAMES_PER_PAGE = 100;
         }
       }
     </div>
+
+    <!-- 卖出（游戏币 → 平台币）服务端强制验证码；买入不加 -->
+    <app-captcha [(open)]="capOpen" [busy]="busy()" action="确认卖出" (proof)="onProof($event)" />
   `,
   styles: [
     `
@@ -251,6 +257,9 @@ export class ExchangePage {
   protected readonly quote = signal<ExchangeQuote | null>(null);
   protected readonly busy = signal(false);
   protected readonly done = signal<ExchangeDone | null>(null);
+  /** 弹框状态 + 开框时冻结的卖出请求体（必须与已展示的询价一致，框开期间不许被改） */
+  protected readonly capOpen = signal(false);
+  protected readonly pending = signal<ExchangePayload | null>(null);
 
   protected readonly currencies = computed(
     () => this.games().find((g) => g.id === this.gameId())?.currencies ?? [],
@@ -338,19 +347,37 @@ export class ExchangePage {
     const amount = this.amount().trim();
     if (!this.quote() || !amount) return;
 
+    const payload = this.payload(amount);
+    if (this.direction() === 'in') {
+      // 买入不需要验证码（后端刻意没加）
+      this.trade(this.api.exchangeBuy(payload));
+      return;
+    }
+    this.error.set('');
+    this.pending.set(payload);
+    this.capOpen.set(true);
+  }
+
+  /** 弹框确认 → 带 captcha_key/clicks 调卖出接口；失败关框，服务端 message 落在原错误位 */
+  protected onProof(p: CaptchaProof): void {
+    const payload = this.pending();
+    if (!payload) return;
+    this.trade(this.api.exchangeSell({ ...payload, ...p }));
+  }
+
+  private trade(call: Observable<ExchangeDone>): void {
     this.busy.set(true);
     this.error.set('');
-    const payload = this.payload(amount);
-    const call =
-      this.direction() === 'in' ? this.api.exchangeBuy(payload) : this.api.exchangeSell(payload);
     call.subscribe({
       next: (d) => {
+        this.capOpen.set(false);
         this.busy.set(false);
         this.done.set(d);
         this.quote.set(null);
         this.amount.set('');
       },
       error: (e: ApiError) => {
+        this.capOpen.set(false);
         this.busy.set(false);
         this.error.set(e.message);
       },

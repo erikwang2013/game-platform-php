@@ -1,7 +1,15 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Api, ApiError, WithdrawApplied, dt, money } from '../core/api.service';
+import { Api, ApiError, CaptchaProof, WithdrawApplied, dt, money } from '../core/api.service';
+import { CaptchaBox } from '../core/captcha';
+
+/** 提现请求体（验证码答案在弹框确认时并入） */
+interface WithdrawBody {
+  platform_amount: string;
+  method: string;
+  account_info: string;
+}
 
 const METHODS = [
   { v: 'paypal', t: 'PayPal' },
@@ -25,7 +33,7 @@ const ST_LABEL: Record<string, string> = {
 /** 提现：方式 + 金额 + 收款信息 → 申请 → 展示手续费/实际到账/新余额 */
 @Component({
   selector: 'app-withdraw',
-  imports: [RouterLink],
+  imports: [RouterLink, CaptchaBox],
   template: `
     <a class="btn ghost back" routerLink="/wallet">← 返回钱包</a>
 
@@ -118,6 +126,9 @@ const ST_LABEL: Record<string, string> = {
         <p class="muted hint">手续费按等级与 VIP 折扣计算，提交后展示实际到账金额。</p>
       </div>
     }
+
+    <!-- 提现服务端强制验证码：本地校验通过后弹框，确认才发原请求 -->
+    <app-captcha [(open)]="capOpen" [busy]="busy()" action="确认提现" (proof)="onProof($event)" />
   `,
   styles: [
     `
@@ -159,6 +170,9 @@ export class WithdrawPage {
   protected readonly error = signal('');
   protected readonly busy = signal(false);
   protected readonly done = signal<WithdrawApplied | null>(null);
+  /** 弹框状态 + 开框时冻结的请求体（框开期间页面控件仍可能被键盘改动） */
+  protected readonly capOpen = signal(false);
+  protected readonly pending = signal<WithdrawBody | null>(null);
 
   protected st(s: string): string {
     return ST_LABEL[s] ?? s ?? '—';
@@ -193,20 +207,29 @@ export class WithdrawPage {
       return;
     }
 
+    this.error.set('');
+    this.pending.set({ platform_amount: amount, method: this.method(), account_info: accountInfo });
+    this.capOpen.set(true);
+  }
+
+  /** 弹框确认 → 带 captcha_key/clicks 调原接口；失败关框，服务端 message 落在原错误位 */
+  protected onProof(p: CaptchaProof): void {
+    const body = this.pending();
+    if (!body) return;
     this.busy.set(true);
     this.error.set('');
-    this.api
-      .applyWithdraw({ platform_amount: amount, method: this.method(), account_info: accountInfo })
-      .subscribe({
-        next: (d) => {
-          this.busy.set(false);
-          this.done.set(d);
-        },
-        error: (e: ApiError) => {
-          this.busy.set(false);
-          this.error.set(this.hint(e));
-        },
-      });
+    this.api.applyWithdraw({ ...body, ...p }).subscribe({
+      next: (d) => {
+        this.capOpen.set(false);
+        this.busy.set(false);
+        this.done.set(d);
+      },
+      error: (e: ApiError) => {
+        this.capOpen.set(false);
+        this.busy.set(false);
+        this.error.set(this.hint(e));
+      },
+    });
   }
 
   /** 按后端错误码补充可操作的提示；服务端原文照实展示，不做归因猜测 */

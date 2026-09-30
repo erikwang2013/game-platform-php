@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
+import '../../services/captcha_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -38,6 +39,10 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
+    // 登录与注册服务端均已强制验证码：本地必填校验过后先弹框，取消即中止
+    final captcha = await showCaptchaDialog(context);
+    if (captcha == null || !mounted) return;
+
     setState(() {
       _loading = true;
       _error = null;
@@ -48,6 +53,7 @@ class _LoginPageState extends State<LoginPage> {
       final resp = await _dio.post(endpoint, data: {
         'username': username,
         'password': password,
+        ...captcha.toRequestBody(),
       });
 
       if (resp.data['code'] == 0) {

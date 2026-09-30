@@ -3,9 +3,10 @@
  */
 
 import router from '@ohos.router';
-import { GameItem, GameCurrency, ExchangeRequest, ExchangeQuoteResult, ExchangeDoneResult } from '../model/DataModels';
+import { GameItem, GameCurrency, ExchangeRequest, ExchangeQuoteResult, ExchangeDoneResult, CaptchaClick } from '../model/DataModels';
 import { GameService, PaymentService } from '../service/DataService';
 import { LoadingView, ErrorView, NavBar, trimZeros } from '../common/Components';
+import { CaptchaDialog } from '../common/CaptchaDialog';
 
 /**
  * 兑换：选游戏 + 币种 + 方向 → 询价（仅展示）→ 买入/卖出（服务端重新定价）
@@ -27,6 +28,8 @@ struct ExchangePage {
   @State quote: ExchangeQuoteResult | null = null;
   @State submitting: boolean = false;
   @State done: ExchangeDoneResult | null = null;
+  /** 验证码弹框开关：仅卖出需要（服务端刻意没给买入加） */
+  @State captchaOpen: boolean = false;
 
   aboutToAppear(): void {
     this.loadGames();
@@ -85,12 +88,19 @@ struct ExchangePage {
     this.amountError = '';
   }
 
-  private payload(amount: string): ExchangeRequest {
+  /**
+   * 兑换请求体（询价/买入/卖出共用）。
+   * 验证码两字段可选：只有卖出要（服务端只给 sell 加了强制校验），
+   * 不传时 JSON.stringify 会整键省略，询价与买入的报文与从前逐字节一致
+   */
+  private payload(amount: string, captchaKey?: string, clicks?: CaptchaClick[]): ExchangeRequest {
     return {
       game_id: this.gameId,
       currency_id: this.currencyId,
       direction: this.exchangeDirection,
-      platform_amount: amount
+      platform_amount: amount,
+      captcha_key: captchaKey,
+      clicks: clicks
     };
   }
 
@@ -133,7 +143,34 @@ struct ExchangePage {
     }
   }
 
-  async confirm(): Promise<void> {
+  /**
+   * 本地校验 → 卖出先弹验证码框，买入后端无验证码直接提交。
+   * 询价与成交必须是同一份 quote，弹框期间报价保持不动
+   */
+  confirm(): void {
+    if (this.submitting) {
+      return;
+    }
+    const amount = this.amount.trim();
+    if (!this.quote) {
+      this.errorMsg = '请先询价';
+      return;
+    }
+    if (!amount) {
+      this.amountError = '请输入兑换数量';
+      return;
+    }
+
+    this.errorMsg = '';
+    if (this.exchangeDirection !== 'out') {
+      this.doConfirm();
+      return;
+    }
+    this.captchaOpen = true;
+  }
+
+  /** 验证码确认后真正成交（买入无验证码参数，卖出带 captcha_key + clicks） */
+  async doConfirm(captchaKey?: string, clicks?: CaptchaClick[]): Promise<void> {
     if (this.submitting) {
       return;
     }
@@ -150,7 +187,7 @@ struct ExchangePage {
     this.submitting = true;
     this.errorMsg = '';
     try {
-      const req = this.payload(amount);
+      const req = this.payload(amount, captchaKey, clicks);
       this.done = this.exchangeDirection === 'in'
         ? await PaymentService.buyExchange(req)
         : await PaymentService.sellExchange(req);
@@ -165,6 +202,8 @@ struct ExchangePage {
       this.errorMsg = msg.length > 0 ? msg : '兑换失败';
     } finally {
       this.submitting = false;
+      // 无论成败都关框：成功露出结果页；失败即作废本次挑战，服务端 message 显示在原错误位，下次开框重取新图
+      this.captchaOpen = false;
     }
   }
 
@@ -212,6 +251,30 @@ struct ExchangePage {
   }
 
   build() {
+    Stack({ alignContent: Alignment.Center }) {
+      this.mainView()
+
+      // 验证码弹框：遮罩与卡片是 Stack 里的兄弟节点，
+      // 卡片上的点击不会冒泡到遮罩（无需 stopPropagation）
+      if (this.captchaOpen) {
+        CaptchaDialog({
+          submitting: this.submitting,
+          onCancel: () => {
+            this.captchaOpen = false;
+          },
+          onConfirm: (key: string, clicks: CaptchaClick[]) => {
+            this.doConfirm(key, clicks);
+          }
+        })
+      }
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor('#F5F5F5')
+  }
+
+  @Builder
+  mainView() {
     Column() {
       NavBar({ title: '兑换' })
 

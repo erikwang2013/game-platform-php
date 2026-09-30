@@ -11,6 +11,8 @@ import { Observable, catchError, from, lastValueFrom, map, of, switchMap, throwE
 /* 契约类型集中在 api.types.ts，此处 re-export 保持既有 import 路径可用 */
 import type {
   AuthResult,
+  CaptchaChallenge,
+  CaptchaProof,
   DepositCreated,
   DepositOrder,
   Envelope,
@@ -131,6 +133,13 @@ type Query = Record<string, string | number | boolean | undefined | null>;
 
 const BASE = '/api/v1';
 
+/** /captcha/generate 的原始响应：texts 在 extra 里，且刻意不含坐标 */
+interface CaptchaRaw {
+  key?: string;
+  image?: string;
+  extra?: { texts?: { order?: number; text?: string }[] };
+}
+
 @Injectable({ providedIn: 'root' })
 export class Api {
   private readonly http = inject(HttpClient);
@@ -247,21 +256,44 @@ export class Api {
     return this.request<{ list: PaymentMethodInfo[] }>('GET', `${BASE}/payment/methods`);
   }
 
-  /* ---- 认证 ---- */
+  /**
+   * 取点击式验证码，响应规范化成 {key, image, texts}：
+   * 服务端下发 data.{key,image,extra.texts}，image 是裸 base64（无 data: 前缀），
+   * texts 按 order 升序 = 要求的点击顺序（画布恒 300×200）。
+   */
+  captcha(): Observable<CaptchaChallenge> {
+    return this.request<CaptchaRaw>('POST', `${BASE}/captcha/generate`, undefined, {
+      difficulty: 'easy',
+    }).pipe(
+      map((raw) => ({
+        key: String(raw?.key ?? ''),
+        image: String(raw?.image ?? ''),
+        texts: (raw?.extra?.texts ?? [])
+          .slice()
+          .sort((a, b) => Number(a.order ?? 0) - Number(b.order ?? 0))
+          .map((t) => String(t.text ?? '')),
+      })),
+    );
+  }
 
-  login(username: string, password: string): Observable<AuthResult> {
+  /* ---- 认证（登录/注册服务端强制验证码） ---- */
+
+  login(username: string, password: string, proof: CaptchaProof): Observable<AuthResult> {
     return this.request<AuthResult>('POST', `${BASE}/auth/login`, undefined, {
       username,
       password,
+      ...proof,
     });
   }
 
-  register(payload: {
-    username: string;
-    password: string;
-    email?: string;
-    nickname?: string;
-  }): Observable<AuthResult> {
+  register(
+    payload: {
+      username: string;
+      password: string;
+      email?: string;
+      nickname?: string;
+    } & CaptchaProof,
+  ): Observable<AuthResult> {
     return this.request<AuthResult>('POST', `${BASE}/auth/register`, undefined, payload);
   }
 
@@ -307,12 +339,14 @@ export class Api {
     return this.request<DepositCreated>('POST', `${BASE}/deposit/create`, undefined, payload);
   }
 
-  /** 申请提现（服务端可能因全局开关/风控/限额/审核锁返回 403/400/429/503） */
-  applyWithdraw(payload: {
-    platform_amount: string;
-    method: string;
-    account_info: string;
-  }): Observable<WithdrawApplied> {
+  /** 申请提现（服务端强制验证码；可能因全局开关/风控/限额/审核锁返回 403/400/429/503） */
+  applyWithdraw(
+    payload: {
+      platform_amount: string;
+      method: string;
+      account_info: string;
+    } & CaptchaProof,
+  ): Observable<WithdrawApplied> {
     return this.request<WithdrawApplied>('POST', `${BASE}/withdraw/apply`, undefined, payload);
   }
 
@@ -326,8 +360,8 @@ export class Api {
     return this.request<ExchangeDone>('POST', `${BASE}/exchange/buy`, undefined, payload);
   }
 
-  /** 卖出：游戏币 → 平台币（服务端按路径固定 direction='out'） */
-  exchangeSell(payload: ExchangePayload): Observable<ExchangeDone> {
+  /** 卖出：游戏币 → 平台币（服务端按路径固定 direction='out'，并强制验证码；买入不需要） */
+  exchangeSell(payload: ExchangePayload & CaptchaProof): Observable<ExchangeDone> {
     return this.request<ExchangeDone>('POST', `${BASE}/exchange/sell`, undefined, payload);
   }
 
@@ -354,7 +388,13 @@ export class Api {
    * retry=false：此时 refresh token 也已被服务端吊销，不必再试刷新。
    */
   accountGone(): Observable<boolean> {
-    return this.request<UserProfile>('GET', `${BASE}/user/profile`, undefined, undefined, false).pipe(
+    return this.request<UserProfile>(
+      'GET',
+      `${BASE}/user/profile`,
+      undefined,
+      undefined,
+      false,
+    ).pipe(
       map(() => false),
       catchError((e: ApiError) => {
         if (e.code === 401 || e.code === 404) return of(true);

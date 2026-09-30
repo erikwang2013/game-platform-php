@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../i18n/translations.dart';
 import '../../services/api_helpers.dart';
 import '../../services/api_service.dart';
+import '../../services/captcha_service.dart';
 
 class CouponPage extends StatefulWidget {
   const CouponPage({super.key});
@@ -60,8 +61,14 @@ class _CouponPageState extends State<CouponPage> with SingleTickerProviderStateM
   }
 
   Future<void> _claim(String id) async {
+    // 领券服务端已强制验证码：取消即中止，不落任何请求
+    final captcha = await showCaptchaDialog(context);
+    if (captcha == null || !mounted) return;
     try {
-      await _api.post('/api/v1/coupon/claim', data: {'coupon_id': id});
+      await _api.post('/api/v1/coupon/claim', data: {
+        'coupon_id': id,
+        ...captcha.toRequestBody(),
+      });
       Get.snackbar('${AppTranslations.t('app.success')}', '${AppTranslations.t('coupon.claimed')}');
       await _load();
     } on ApiException catch (e) {

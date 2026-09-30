@@ -7,6 +7,10 @@ import {
   ApiResponse,
   LoginRequest,
   LoginResponse,
+  CaptchaChallenge,
+  CaptchaGenerateResult,
+  CaptchaTarget,
+  CaptchaClick,
   UserProfile,
   UserProfileUpdateRequest,
   GameItem,
@@ -45,11 +49,46 @@ function unwrapList<T>(data: PagedListResult<T> | T[] | undefined | null): T[] {
 }
 
 /**
+ * 验证码服务 — 公开端点 /api/v1/captcha/generate
+ *
+ * 登录/注册/提现申请/兑换卖出 四个动作都由服务端强制点击验证码，
+ * 取图与归一化收敛在这里，四处（登录页/提现页/兑换页）共用同一个弹框组件。
+ */
+export class CaptchaService {
+  /**
+   * 取一张新图。验证码一次性：每次开框都要现取，复用旧 key 必验不过。
+   * 服务端 data = { key, image(裸 base64 PNG), extra: { texts: [{order, text}] } }，
+   * 这里归一化成 CaptchaChallenge（texts 已按 order 升序），弹框拿到即可直接渲染。
+   */
+  static async generate(): Promise<CaptchaChallenge> {
+    const response = await apiService.post<CaptchaGenerateResult>(
+      '/api/v1/captcha/generate',
+      { difficulty: 'medium' }
+    );
+    if (response.code !== 0) {
+      throw new Error(response.message);
+    }
+    const texts = response.data?.extra?.texts ?? [];
+    // 库不可用时服务端回空 texts（stub），此时无题可点 ⇒ 按加载失败处理，别让用户点个空框
+    if (texts.length === 0) {
+      throw new Error('验证码加载失败');
+    }
+    texts.sort((a: CaptchaTarget, b: CaptchaTarget) => a.order - b.order);
+    return { key: response.data.key, image: response.data.image, texts };
+  }
+}
+
+/**
  * 认证服务 — C 端 /api/v1/auth/*
  */
 export class AuthService {
-  static async login(username: string, password: string): Promise<LoginResponse> {
-    const req: LoginRequest = { username, password };
+  static async login(
+    username: string,
+    password: string,
+    captchaKey: string,
+    clicks: CaptchaClick[]
+  ): Promise<LoginResponse> {
+    const req: LoginRequest = { username, password, captcha_key: captchaKey, clicks };
     const response = await apiService.post<LoginResponse>('/api/v1/auth/login', req);
     if (response.code !== 0) {
       throw new Error(response.message);
@@ -63,8 +102,13 @@ export class AuthService {
     return response.data;
   }
 
-  static async register(username: string, password: string): Promise<LoginResponse> {
-    const req: LoginRequest = { username, password };
+  static async register(
+    username: string,
+    password: string,
+    captchaKey: string,
+    clicks: CaptchaClick[]
+  ): Promise<LoginResponse> {
+    const req: LoginRequest = { username, password, captcha_key: captchaKey, clicks };
     const response = await apiService.post<LoginResponse>('/api/v1/auth/register', req);
     if (response.code !== 0) {
       throw new Error(response.message);

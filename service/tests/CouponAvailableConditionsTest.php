@@ -33,6 +33,8 @@ use support\Response;
  */
 final class CouponAvailableConditionsTest extends TestCase
 {
+    use CaptchaTestHelper;
+
     private static bool $booted = false;
 
     private int $userId = 0;
@@ -463,7 +465,8 @@ final class CouponAvailableConditionsTest extends TestCase
     private function claim(int $couponId, ?int $userId = null): array
     {
         $request = $this->request('POST', '/api/v1/coupon/claim', $userId);
-        $request->setPost(['coupon_id' => $this->encoded($couponId)]);
+        // 领券已加强制点击验证码：不带 captcha_key/clicks 会 422「验证码错误」
+        $request->setPost(['coupon_id' => $this->encoded($couponId)] + $this->captchaParams());
 
         return $this->json((new CouponController())->claim($request));
     }

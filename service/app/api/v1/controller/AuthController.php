@@ -34,17 +34,25 @@ class AuthController extends BaseController
     #[Apidoc\Param(name: "password", type: "string", require: true, desc: "密码（8-32位，需含大小写字母和数字）")]
     #[Apidoc\Param(name: "email", type: "string", require: false, desc: "邮箱")]
     #[Apidoc\Param(name: "share_code", type: "string", require: false, desc: "分享短码(裂变转化)")]
+    #[Apidoc\Param(name: "captcha_key", type: "string", require: true, desc: "点击验证码 key")]
+    #[Apidoc\Param(name: "clicks", type: "array", require: true, desc: "点击坐标集合，元素含 x/y")]
     public function register(Request $request): Response
     {
         $validator = validator($request->all(), [
-            'username'   => 'required|min:3|max:50|regex:/^[a-zA-Z0-9_]+$/',
-            'password'   => self::PASSWORD_RULE,
-            'email'      => 'nullable|email',
-            'share_code' => 'nullable|string|max:12',
+            'username'    => 'required|min:3|max:50|regex:/^[a-zA-Z0-9_]+$/',
+            'password'    => self::PASSWORD_RULE,
+            'email'       => 'nullable|email',
+            'share_code'  => 'nullable|string|max:12',
+            'captcha_key' => 'required|string',
+            'clicks'      => 'required|array|min:2',
         ]);
 
         if ($validator->fails()) {
             return $this->fail($validator->errors()->first(), 422);
+        }
+
+        if (!self::captchaOk($request)) {
+            return $this->fail('验证码错误，请重试', 422);
         }
 
         $username = $request->input('username');
@@ -117,15 +125,23 @@ class AuthController extends BaseController
     #[Apidoc\Method("POST")]
     #[Apidoc\Param(name: "username", type: "string", require: true, desc: "用户名")]
     #[Apidoc\Param(name: "password", type: "string", require: true, desc: "密码")]
+    #[Apidoc\Param(name: "captcha_key", type: "string", require: true, desc: "点击验证码 key")]
+    #[Apidoc\Param(name: "clicks", type: "array", require: true, desc: "点击坐标集合，元素含 x/y")]
     public function login(Request $request): Response
     {
         $validator = validator($request->all(), [
-            'username' => 'required',
-            'password' => 'required',
+            'username'    => 'required',
+            'password'    => 'required',
+            'captcha_key' => 'required|string',
+            'clicks'      => 'required|array|min:2',
         ]);
 
         if ($validator->fails()) {
             return $this->fail($validator->errors()->first(), 422);
+        }
+
+        if (!self::captchaOk($request)) {
+            return $this->fail('验证码错误，请重试', 422);
         }
 
         $username = $request->input('username');

@@ -33,6 +33,8 @@ use support\Response;
  */
 class ExchangeWalletIntegrationTest extends TestCase
 {
+    use CaptchaTestHelper;
+
     /** 平台币初始余额 */
     private const PLATFORM_START = '1000';
     /** 游戏币初始余额 */
@@ -206,11 +208,16 @@ class ExchangeWalletIntegrationTest extends TestCase
     private function exchange(string $action, string $amount): array
     {
         $request = new Request("POST /api/v1/exchange/{$action} HTTP/1.1\r\nHost: localhost\r\n\r\n");
-        $request->setPost([
+        $payload = [
             'game_id'         => HashidsService::encode($this->gameId),
             'currency_id'     => HashidsService::encode($this->currencyId),
             'platform_amount' => $amount,
-        ]);
+        ];
+        // 卖出已加强制点击验证码（买入没有）：/exchange/sell 不带 captcha_key/clicks 会 422
+        if ($action === 'sell') {
+            $payload += $this->captchaParams();
+        }
+        $request->setPost($payload);
         // 生产环境由 UserAuth 中间件注入，PHPUnit 下手工放上
         $request->userId = $this->userId;
 

@@ -175,6 +175,14 @@ class AppTranslations {
       'login.oauth_unavailable': 'OAuth is not configured',
       'login.welcome_new': 'Account created successfully',
 
+      // Captcha (弹框验证码, shared by login/register, withdraw, exchange sell, coupon claim)
+      'captcha.title': 'Security verification',
+      'captcha.hint': 'Click the characters in order',
+      'captcha.clicked': 'Clicked',
+      'captcha.undo': 'Undo',
+      'captcha.refresh': 'Refresh',
+      'captcha.load_failed': 'Failed to load captcha, please retry',
+
       // 2FA
       'two_factor.title': 'Two-Factor Auth',
       'two_factor.verify_title': 'Verify 2FA',
@@ -429,6 +437,14 @@ class AppTranslations {
       'login.oauth_failed': 'OAuth 登录失败',
       'login.oauth_unavailable': 'OAuth 未配置',
       'login.welcome_new': '账号创建成功',
+
+      // Captcha（弹框验证码，登录/注册、提现、兑换卖出、领券四处共用）
+      'captcha.title': '安全验证',
+      'captcha.hint': '请按顺序点击图中文字',
+      'captcha.clicked': '已点击',
+      'captcha.undo': '撤销',
+      'captcha.refresh': '换一张',
+      'captcha.load_failed': '验证码加载失败，请重试',
 
       // 2FA
       'two_factor.title': '双因素认证',

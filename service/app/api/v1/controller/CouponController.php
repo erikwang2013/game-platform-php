@@ -82,14 +82,23 @@ class CouponController extends BaseController
     #[Apidoc\Method("POST")]
     #[Apidoc\Auth(true)]
     #[Apidoc\Param(name: "coupon_id", type: "string", require: true, desc: "优惠券ID")]
+    #[Apidoc\Param(name: "captcha_key", type: "string", require: true, desc: "点击验证码 key")]
+    #[Apidoc\Param(name: "clicks", type: "array", require: true, desc: "点击坐标集合，元素含 x/y")]
     public function claim(Request $request): Response
     {
         $validator = validator($request->all(), [
-            'coupon_id' => 'required|string',
+            'coupon_id'   => 'required|string',
+            'captcha_key' => 'required|string',
+            'clicks'      => 'required|array|min:2',
         ]);
 
         if ($validator->fails()) {
             return $this->fail($validator->errors()->first(), 422);
+        }
+
+        // 领券是发放权益的入口，刷券与脚本领取都从这进
+        if (!$this->captchaOk($request)) {
+            return $this->fail('验证码错误，请重试', 422);
         }
 
         $couponId = $this->decodeId($request->input('coupon_id'));

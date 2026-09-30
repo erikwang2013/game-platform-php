@@ -6,6 +6,8 @@ import router from '@ohos.router';
 import { TokenManager } from '../utils/TokenManager';
 import { AuthService } from '../service/DataService';
 import { CopyrightBar } from '../common/Components';
+import { CaptchaDialog } from '../common/CaptchaDialog';
+import { CaptchaClick } from '../model/DataModels';
 
 @Entry
 @Component
@@ -16,8 +18,14 @@ struct LoginPage {
   @State isRegister: boolean = false;
   @State showPassword: boolean = false;
   @State loginError: string = '';
+  /** 验证码弹框开关：登录与注册共用 */
+  @State captchaOpen: boolean = false;
 
-  async submit(): Promise<void> {
+  /**
+   * 本地必填校验 → 开验证码框。
+   * 验证码由服务端强制（登录/注册同款），校验不过就不该消耗一次取图
+   */
+  submit(): void {
     const trimmedUsername = this.username.trim();
     if (!trimmedUsername) {
       this.loginError = '请输入用户名';
@@ -41,13 +49,21 @@ struct LoginPage {
       return;
     }
 
+    this.loginError = '';
+    this.captchaOpen = true;
+  }
+
+  /** 验证码确认后真正调接口：captcha_key + clicks 与原字段同级 */
+  async doSubmit(captchaKey: string, clicks: CaptchaClick[]): Promise<void> {
+    const trimmedUsername = this.username.trim();
+
     this.isLoading = true;
     this.loginError = '';
 
     try {
       const data = this.isRegister
-        ? await AuthService.register(trimmedUsername, this.password)
-        : await AuthService.login(trimmedUsername, this.password);
+        ? await AuthService.register(trimmedUsername, this.password, captchaKey, clicks)
+        : await AuthService.login(trimmedUsername, this.password, captchaKey, clicks);
       await TokenManager.saveTokens(data.access_token, data.refresh_token);
       TokenManager.saveUsername(data.user?.username ?? trimmedUsername);
       router.replaceUrl({ url: 'pages/GameHallPage' });
@@ -55,10 +71,37 @@ struct LoginPage {
       this.loginError = `${e}` || '网络错误，请检查连接';
     } finally {
       this.isLoading = false;
+      // 成败都关框：成功已 replaceUrl 离开本页；失败即作废本次挑战，
+      // 服务端 message 显示在原错误位，下次开框重取新图
+      this.captchaOpen = false;
     }
   }
 
   build() {
+    Stack({ alignContent: Alignment.Center }) {
+      this.mainView()
+
+      // 验证码弹框：遮罩与卡片是 Stack 里的兄弟节点，
+      // 卡片上的点击不会冒泡到遮罩（无需 stopPropagation）
+      if (this.captchaOpen) {
+        CaptchaDialog({
+          submitting: this.isLoading,
+          onCancel: () => {
+            this.captchaOpen = false;
+          },
+          onConfirm: (key: string, clicks: CaptchaClick[]) => {
+            this.doSubmit(key, clicks);
+          }
+        })
+      }
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor('#FFFFFF')
+  }
+
+  @Builder
+  mainView() {
     Column() {
       Scroll() {
         Column() {

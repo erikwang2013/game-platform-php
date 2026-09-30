@@ -7,6 +7,8 @@
  * 401 时尝试 refresh 一次，失败则清 token 并回调登出。
  */
 
+import type { CaptchaData, CaptchaProof } from './captcha.ts';
+
 const BASE = '/api/v1';
 const K_ACCESS = 'gp_access_token';
 const K_REFRESH = 'gp_refresh_token';
@@ -310,11 +312,16 @@ export type PageQuery = { page?: number; per_page?: number };
 /* ---------------- endpoints ---------------- */
 
 export const api = {
-  // auth
-  login: (username: string, password: string) =>
-    post<AuthTokens | { pending_2fa_token: string }>('/auth/login', { username, password }),
-  register: (username: string, password: string, email: string) =>
-    post<AuthTokens>('/auth/register', { username, password, email }),
+  // auth（登录/注册服务端强制点击验证码，proof 与业务字段同级进请求体）
+  captcha: () => post<CaptchaData>('/captcha/generate', { difficulty: 'easy' }),
+  login: (username: string, password: string, proof: CaptchaProof) =>
+    post<AuthTokens | { pending_2fa_token: string }>('/auth/login', {
+      username,
+      password,
+      ...proof,
+    }),
+  register: (username: string, password: string, email: string, proof: CaptchaProof) =>
+    post<AuthTokens>('/auth/register', { username, password, email, ...proof }),
 
   // public
   stats: () => get<PlatformStats>('/platform/stats'),
@@ -363,11 +370,12 @@ export const api = {
   paymentMethods: () => get<{ list: PaymentMethod[] }>('/payment/methods'),
   createDeposit: (p: { amount: string; currency: string; payment_method_id: string }) =>
     post<DepositCreated>('/deposit/create', p),
-  applyWithdraw: (p: { platform_amount: string; method: string; account_info: string }) =>
+  applyWithdraw: (p: { platform_amount: string; method: string; account_info: string } & CaptchaProof) =>
     post<WithdrawApplied>('/withdraw/apply', p),
   exchangeQuote: (p: ExchangeRequest) => post<ExchangeQuote>('/exchange/quote', p),
+  // 买入后端刻意不加验证码；卖出强制
   exchangeBuy: (p: ExchangeRequest) => post<ExchangeDone>('/exchange/buy', p),
-  exchangeSell: (p: ExchangeRequest) => post<ExchangeDone>('/exchange/sell', p),
+  exchangeSell: (p: ExchangeRequest & CaptchaProof) => post<ExchangeDone>('/exchange/sell', p),
 
   // notifications
   notices: (p: PageQuery = {}) => get<Paged<Notice>>(`/notification/list${qs(p)}`),

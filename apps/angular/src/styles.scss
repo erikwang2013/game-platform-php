@@ -130,12 +130,12 @@ button { font: inherit; color: inherit; }
   font-weight: 700;
   letter-spacing: -0.01em;
 }
+/* 品牌位放吉祥物「小骰」（原来是渐变实底圆点） */
 .brand .dot {
   width: 26px;
   height: 26px;
   border-radius: 9px;
-  background: var(--grad);
-  box-shadow: var(--glow);
+  object-fit: contain;
   flex: none;
 }
 
@@ -411,3 +411,58 @@ button.chip:hover { color: var(--text); border-color: var(--stroke-2); }
 /* 原生 select 下拉在深色主题下的可读性 */
 select.input { color-scheme: dark; }
 select.input option { background: var(--bg-soft); color: var(--text); }
+
+/* ---------------- 弹框（点击式验证码，跨页共用一个组件） ---------------- */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(6, 8, 18, 0.66);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 51;
+  width: 420px;
+  max-width: calc(100vw - 28px);
+  max-height: 88vh;
+  overflow: auto;
+  padding: 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--stroke-2);
+  background: rgba(18, 20, 42, 0.97);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), var(--glow);
+}
+.modal-body { display: flex; flex-direction: column; gap: 12px; }
+
+/* 点击验证码：图 + 序号标记（画布恒 300×200，坐标按 naturalWidth/Height 换算） */
+.captcha-hint { font-size: 13px; color: var(--muted); }
+.cap-wrap { position: relative; align-self: flex-start; max-width: 100%; }
+.cap-img {
+  display: block;
+  max-width: 100%;
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius-sm);
+  cursor: crosshair;
+}
+.cap-dot {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-style: normal;
+  line-height: 20px;
+  text-align: center;
+  pointer-events: none;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9);
+}
+.cap-foot { font-size: 12px; color: var(--muted); }

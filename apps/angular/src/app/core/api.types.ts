@@ -45,6 +45,25 @@ export interface AuthResult {
   pending_2fa_token?: string;
 }
 
+/** 点击式验证码上的一个落点（图片原始像素坐标，非显示坐标） */
+export interface Click {
+  x: number;
+  y: number;
+}
+
+/** 点击式验证码：key 一次性；texts 按服务端要求的点击顺序（服务端不下发坐标，坐标就是答案） */
+export interface CaptchaChallenge {
+  key: string;
+  image: string;
+  texts: string[];
+}
+
+/** 验证码答案：与业务字段同级并入原请求体（缺字段 422） */
+export interface CaptchaProof {
+  captcha_key: string;
+  clicks: Click[];
+}
+
 export interface PlatformStats {
   total_games: number;
   total_users: number;

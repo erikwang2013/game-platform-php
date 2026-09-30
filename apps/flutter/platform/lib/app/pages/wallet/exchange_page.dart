@@ -3,6 +3,7 @@ import '../../i18n/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
+import '../../services/captcha_service.dart';
 import 'wallet_amount.dart';
 
 class ExchangePage extends StatefulWidget {
@@ -135,6 +136,13 @@ class _ExchangePageState extends State<ExchangePage> {
     final amountText = _validatedAmount();
     if (amountText == null) return;
 
+    // 卖出服务端已强制验证码；买入刻意不需要（后端未加），此处保持不加
+    CaptchaResult? captcha;
+    if (!_isBuying) {
+      captcha = await showCaptchaDialog(context);
+      if (captcha == null || !mounted) return;
+    }
+
     setState(() {
       _loading = true;
       _error = null;
@@ -142,7 +150,10 @@ class _ExchangePageState extends State<ExchangePage> {
 
     try {
       final endpoint = _isBuying ? '/api/v1/exchange/buy' : '/api/v1/exchange/sell';
-      final resp = await _api.post(endpoint, data: _requestBody(amountText));
+      final resp = await _api.post(endpoint, data: {
+        ..._requestBody(amountText),
+        ...?captcha?.toRequestBody(),
+      });
       setState(() {
         _result = resp['data'];
         _success = true;
