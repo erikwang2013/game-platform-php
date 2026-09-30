@@ -31,8 +31,14 @@ class AchievementService
             return;
         }
 
-        // condition_json 为 MySQL JSON 列，SQL 过滤事件，避免每次事件全表加载
-        $achievements = Achievement::query()->where('condition_json->event', $event)->get();
+        // condition_json 为 MySQL JSON 列，SQL 过滤事件，避免每次事件全表加载。
+        // status=1 才算：管理端「停用」一条成就后事件不再触发授予（既有进度与已授予记录不受影响）。
+        // 依赖 install/migrations/2026_09_30_achievement_status.sql 已执行（列缺失时本查询会抛错，
+        // 而异常会被 EventConsumer 收进 $failures 驱动 Outbox 重试直至死信 ⇒ 顺序不能颠倒）。
+        $achievements = Achievement::query()
+            ->where('condition_json->event', $event)
+            ->where('status', 1)
+            ->get();
         foreach ($achievements as $achievement) {
             $condition = json_decode((string) $achievement->condition_json, true);
             if (!is_array($condition)) {

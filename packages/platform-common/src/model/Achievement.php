@@ -15,6 +15,6 @@ class Achievement extends Model
     public $incrementing = false;
     protected $keyType = 'int';
     public $timestamps = false;
-    protected $fillable = ['key', 'name', 'description', 'icon', 'condition_json', 'points'];
-    protected $casts = ['points' => 'int'];
+    protected $fillable = ['key', 'name', 'description', 'icon', 'condition_json', 'points', 'status'];
+    protected $casts = ['points' => 'int', 'status' => 'int'];
 }

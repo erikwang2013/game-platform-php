@@ -53,6 +53,7 @@ class AchievementController extends BaseController
         $a->icon = $request->input('icon', '');
         $a->condition_json = $request->input('condition_json');
         $a->points = (int) $request->input('points');
+        $a->status = (int) $request->input('status', 1);
         $a->save();
 
         return $this->success($this->encodeIds($a->toArray()), '创建成功');
@@ -74,6 +75,7 @@ class AchievementController extends BaseController
             'icon' => 'sometimes|nullable|string|max:255',
             'condition_json' => 'sometimes|required|string',
             'points' => 'sometimes|required|integer|min:0',
+            'status' => 'sometimes|required|integer|in:0,1',
         ]);
         if ($validator->fails()) {
             return $this->fail($validator->errors()->first(), 422);
@@ -86,10 +88,37 @@ class AchievementController extends BaseController
             }
         }
 
-        $a->fill($request->only(['name', 'description', 'icon', 'condition_json', 'points']));
+        $a->fill($request->only(['name', 'description', 'icon', 'condition_json', 'points', 'status']));
         $a->save();
 
         return $this->success($this->encodeIds($a->toArray()), '更新成功');
+    }
+
+    /**
+     * 上架/停用成就。
+     *
+     * 停用只影响「后续事件触发是否再授予」——消费方 AchievementService 已加 status 过滤；
+     * 已授予的记录与用户进度不受影响（删定义才会丢历史，见迁移注释）。
+     */
+    public function toggle(Request $request): Response
+    {
+        $validator = validator($request->all(), [
+            'id'     => 'required|string',
+            'status' => 'required|integer|in:0,1',
+        ]);
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
+        }
+
+        $a = Achievement::find($this->decodeId($request->input('id')));
+        if (!$a) {
+            return $this->fail('成就不存在', 404);
+        }
+
+        $a->status = (int) $request->input('status');
+        $a->save();
+
+        return $this->success([], '操作成功');
     }
 
     public function destroy(Request $request, string $hashid): Response

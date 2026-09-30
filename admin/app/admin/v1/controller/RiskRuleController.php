@@ -303,6 +303,11 @@ class RiskRuleController extends BaseController
         $rule->config = $config;
         $rule->action = $action;
         $rule->priority = max(0, min(1000, (int) ($data['priority'] ?? 100)));
-        $rule->status = in_array((int) ($data['status'] ?? 1), [0, 1], true) ? (int) $data['status'] : 1;
+        // 缺 status 时**缺省启用**。原写法 `in_array((int) ($data['status'] ?? 1), [0,1], true) ? (int) $data['status'] : 1`
+        // 自己推翻了自己：缺键时判据恒真（1 ∈ [0,1]），于是取右边的 `(int) $data['status']`
+        // ⇒ undefined key 警告 + `(int) null` = 0，**规则被静默停用**。填表编辑是全量提交，
+        // 少带一个 status 就会把规则关掉（潜在；四个前端表单目前都带 status 才没踩到）。
+        $status = (int) ($data['status'] ?? 1);
+        $rule->status = in_array($status, [0, 1], true) ? $status : 1;
     }
 }

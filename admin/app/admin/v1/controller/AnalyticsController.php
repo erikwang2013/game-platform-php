@@ -101,19 +101,45 @@ class AnalyticsController extends BaseController
     #[Apidoc\Url("/admin/v1/analytics/probability")]
     #[Apidoc\Method("GET")]
     #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer Token")]
-    #[Apidoc\Query(name: "game_a", type: "string", require: true, desc: "Game A hashid")]
-    #[Apidoc\Query(name: "game_b", type: "string", require: true, desc: "Game B hashid")]
+    #[Apidoc\Query(name: "game_a", type: "string", require: false, desc: "Game A hashid（空=近 7 天玩得最多的一款）")]
+    #[Apidoc\Query(name: "game_b", type: "string", require: false, desc: "Game B hashid（空=近 7 天玩得第二多的一款）")]
     public function probability(Request $request): Response
     {
-        $ha = $request->input('game_a', '');
-        $hb = $request->input('game_b', '');
-        $a = $ha ? $this->decodeId($ha) : 0;
-        $b = $hb ? $this->decodeId($hb) : 0;
-        if ($a <= 0 || $b <= 0) return $this->fail('game_a and game_b required', 422);
-        return $this->success(['joint' => ProbabilityService::joint(
+        $ha = (string) $request->input('game_a', '');
+        $hb = (string) $request->input('game_b', '');
+        $a = $ha !== '' ? $this->decodeId($ha) : 0;
+        $b = $hb !== '' ? $this->decodeId($hb) : 0;
+
+        // 缺参不再 422：与其余 analytics 端点（参数可选、有默认）保持一致。
+        // 两棵 Web 管理端的「概率」标签是无参通用渲染器，必填参数会让这个端点永远打不开。
+        if ($a <= 0 || $b <= 0) {
+            $top = GameDashboardService::gameRanking(7);
+            if ($a <= 0) $a = (int) ($top[0]['game_id'] ?? 0);
+            if ($b <= 0) $b = (int) ($top[1]['game_id'] ?? 0);
+        }
+
+        // 不足两款（或显式指定了同一个游戏）时联合概率无意义，返回零值而非报错
+        if ($a <= 0 || $b <= 0 || $a === $b) {
+            return $this->success([
+                'game_a_name' => '', 'game_b_name' => '',
+                'joint_probability' => 0.0, 'confidence' => 0.0,
+            ]);
+        }
+
+        $joint = ProbabilityService::joint(
             ['table' => 'game_game_play_log', 'alias' => 'user_id', 'where' => ['game_id' => $a]],
             ['table' => 'game_game_play_log', 'alias' => 'user_id', 'where' => ['game_id' => $b]],
-        )]);
+        );
+        $ga = \common\model\Game::find($a);
+        $gb = \common\model\Game::find($b);
+
+        // 拍平：通用渲染器只认顶层标量（Angular 的 scalarsOf / React 的 AutoView），嵌套对象会渲染成空
+        return $this->success([
+            'game_a_name'       => $ga->name ?? $ga->title ?? ('game#' . $a),
+            'game_b_name'       => $gb->name ?? $gb->title ?? ('game#' . $b),
+            'joint_probability' => $joint['joint_probability'],
+            'confidence'        => $joint['confidence'],
+        ]);
     }
 
     #[Apidoc\Title("Retention Analysis")]
@@ -201,8 +227,11 @@ class AnalyticsController extends BaseController
         $currencies = \common\model\GameCurrency::with('game')->get();
         $items = [];
         foreach ($currencies as $c) {
-            $minted = \common\model\ExchangeRecord::where('currency_id', $c->id)->where('direction', 'in')->sum('game_amount') ?? '0';
-            $burned = \common\model\ExchangeRecord::where('currency_id', $c->id)->where('direction', 'out')->sum('game_amount') ?? '0';
+            // sum() 在聚合值为假时返回 int 0（不是 null），`?? '0'` 兜不住 ⇒ bcsub 收 int 抛 TypeError。
+            // 实测同一库：无匹配行时 in=int 0 / out=int 0，有行时才回 string（'40.0000'）。
+            // 与 arpu()、CouponController 同款强制转型，别省。
+            $minted = (string) (\common\model\ExchangeRecord::where('currency_id', $c->id)->where('direction', 'in')->sum('game_amount') ?? '0');
+            $burned = (string) (\common\model\ExchangeRecord::where('currency_id', $c->id)->where('direction', 'out')->sum('game_amount') ?? '0');
             $circulation = bcsub($minted, $burned, 8);
             $inflation = bccomp($minted, '0', 4) > 0 ? bcmul(bcdiv(bcsub($minted, $burned, 8), $minted, 8), '100', 2) : '0';
 

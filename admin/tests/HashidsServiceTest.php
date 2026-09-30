@@ -77,4 +77,47 @@ class HashidsServiceTest extends TestCase
         $this->assertEquals(456, HashidsService::decode($result['user_id']));
         $this->assertEquals(789, HashidsService::decode($result['role_id']));
     }
+
+    /**
+     * 多行列表必须逐行编。
+     *
+     * 这就是 /admin/v1/risk/rule/list 报的那个缺陷：只处理顶层键时 isset($rows['id']) 恒假，
+     * 整张表传进来会静默一个都不编，而 update/toggle 走的是 {hashid} 路径，回填必然对不上。
+     */
+    #[Test]
+    public function encodeIds_encodes_every_row_of_a_list(): void
+    {
+        $rows = [
+            ['id' => 111, 'name' => 'a'],
+            ['id' => 222, 'name' => 'b'],
+        ];
+        $out = HashidsService::encodeIds($rows);
+
+        $this->assertIsString($out[0]['id'], '列表第 1 行的 id 必须被编码');
+        $this->assertIsString($out[1]['id'], '列表第 2 行的 id 必须被编码');
+        $this->assertSame(111, HashidsService::decode($out[0]['id']));
+        $this->assertSame(222, HashidsService::decode($out[1]['id']));
+        $this->assertSame('a', $out[0]['name'], '非 ID 字段不得改动');
+        $this->assertSame('b', $out[1]['name']);
+    }
+
+    /** 列表 + 自定义字段名（analytics 的 game-ranking / conversion 就是这种形状） */
+    #[Test]
+    public function encodeIds_list_with_custom_field(): void
+    {
+        $rows = [['game_id' => 333, 'plays' => 5], ['game_id' => 444, 'plays' => 9]];
+        $out = HashidsService::encodeIds($rows, ['game_id']);
+
+        $this->assertSame(333, HashidsService::decode($out[0]['game_id']));
+        $this->assertSame(444, HashidsService::decode($out[1]['game_id']));
+        $this->assertSame(5, $out[0]['plays'], '非 ID 字段不得改动');
+    }
+
+    /** 空列表与非数组元素不得炸 */
+    #[Test]
+    public function encodeIds_handles_empty_and_scalar_rows(): void
+    {
+        $this->assertSame([], HashidsService::encodeIds([]));
+        $this->assertSame([1, 2], HashidsService::encodeIds([1, 2]));
+    }
 }

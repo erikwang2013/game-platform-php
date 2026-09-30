@@ -29,13 +29,23 @@ class RoleController extends BaseController
         $page = (int) $request->input('page', 1);
         $limit = (int) $request->input('limit', 15);
 
-        $query = AdminRole::withCount('users');
+        $query = AdminRole::with('permissions')->withCount('users');
         $total = $query->count();
         $list = $query->offset(($page - 1) * $limit)
                       ->limit($limit)
                       ->orderBy('id', 'asc')
                       ->get()
-                      ->map(fn($role) => $this->encodeIds($role->toArray()));
+                      ->map(function ($role) {
+                          $data = $this->encodeIds($role->toArray());
+                          // 关联数组里是裸 BIGINT id，不对外；改下 hashid 形式的 permission_ids，
+                          // 前端才能把「当前已授的权限」回填进表单（否则勾选状态永远显示为空）
+                          unset($data['permissions']);
+                          $data['permission_ids'] = array_values(array_map(
+                              fn($pid) => $this->encodeId((int) $pid),
+                              $role->permissions->pluck('id')->all()
+                          ));
+                          return $data;
+                      });
 
         return $this->success([
             'list' => $list,
@@ -77,7 +87,7 @@ class RoleController extends BaseController
 
         // 同步权限
         if ($request->has('permission_ids')) {
-            $role->permissions()->sync($request->input('permission_ids', []));
+            $role->permissions()->sync($this->decodePermissionIds($request->input('permission_ids', [])));
         }
 
         return $this->success($this->encodeIds($role->toArray()), '创建成功');
@@ -119,10 +129,29 @@ class RoleController extends BaseController
         $role->save();
 
         if ($request->has('permission_ids')) {
-            $role->permissions()->sync($request->input('permission_ids', []));
+            $role->permissions()->sync($this->decodePermissionIds($request->input('permission_ids', [])));
         }
 
         return $this->success($this->encodeIds($role->toArray()), '更新成功');
+    }
+
+    /**
+     * permission_ids 与全站 API 约定一致，对外只认 hashid。
+     *
+     * 修之前 `sync($request->input('permission_ids'))` 直接吃裸数组：UI 手里只有 hashid，
+     * 塞进 BIGINT 关联表会被 MySQL 静默转成 0 ⇒ **角色的权限一个都挂不上，且不报错**。
+     * 非空数组里出现非法 hashid ⇒ decodeId 抛 400（fail-fast，不落半截关联）。
+     */
+    private function decodePermissionIds(mixed $raw): array
+    {
+        if (!is_array($raw)) {
+            return [];
+        }
+        $ids = [];
+        foreach ($raw as $hashid) {
+            $ids[] = $this->decodeId((string) $hashid);
+        }
+        return $ids;
     }
 
     #[Apidoc\Title("删除角色")]

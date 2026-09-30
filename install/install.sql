@@ -1378,6 +1378,13 @@ INSERT IGNORE INTO `game_admin_permission` (`id`, `parent_id`, `name`, `slug`, `
 -- 追加段：新端点只追加、不改既有 id（既有 id 已被存量库占用，改 id 会在存量库 INSERT IGNORE 时凭空多出一行）。
 -- 本行 slug 由 /tmp/seed_dump.php 的运行时可授予 slug dump 生成，非手敲。
 (21000000000000234, '0', '注销平台用户', 'delete.admin/platform/user', 3, '', '', 232, NOW(), NOW()),
+-- 2026-09-30 管理端补齐增删改与状态变更时新增的端点（PermissionSeedParityTest 双向差集钉子要求逐条入种子）
+(21000000000000235, '0', '上架/下架公告', 'post.admin/announcement/toggle', 3, '', '', 233, NOW(), NOW()),
+(21000000000000236, '0', '编辑公告', 'put.admin/announcement', 3, '', '', 234, NOW(), NOW()),
+(21000000000000237, '0', '删除公告', 'delete.admin/announcement', 3, '', '', 235, NOW(), NOW()),
+(21000000000000238, '0', '启用/禁用国家配置', 'post.admin/country/config/toggle', 3, '', '', 236, NOW(), NOW()),
+(21000000000000239, '0', '删除国家配置', 'delete.admin/country/config', 3, '', '', 237, NOW(), NOW()),
+(21000000000000240, '0', '上架/停用成就', 'post.admin/achievement/toggle', 3, '', '', 238, NOW(), NOW()),
 -- 通配权限：slug='*' 直接命中 AdminPermission 中间件的短路分支，授予该角色访问全部端点
 (900000000000000001, '0', '全部权限', '*', 3, '', '', 99, NOW(), NOW());
 
@@ -1743,6 +1750,7 @@ CREATE TABLE IF NOT EXISTS `game_achievement` (
     `icon` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '图标地址',
     `condition_json` JSON DEFAULT NULL COMMENT '达成条件JSON，需用 -> 语法做SQL过滤，故必须为JSON列',
     `points` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '成就积分',
+    `status` TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '状态: 0=停用 1=启用',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_key` (`key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='成就定义表';

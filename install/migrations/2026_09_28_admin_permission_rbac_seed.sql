@@ -156,9 +156,16 @@ INSERT IGNORE INTO `game_admin_permission` (`id`, `parent_id`, `name`, `slug`, `
 (21000000000000231, '0', '更新提现打款开关', 'put.admin/withdraw/switch', 3, '', '', 229, NOW(), NOW()),
 (21000000000000232, '0', 'Prometheus指标', 'get.metrics', 3, '', '', 230, NOW(), NOW()),
 (21000000000000233, '0', 'API文档', 'get.api/docs', 3, '', '', 231, NOW(), NOW()),
-(21000000000000234, '0', '注销平台用户', 'delete.admin/platform/user', 3, '', '', 232, NOW(), NOW());
+(21000000000000234, '0', '注销平台用户', 'delete.admin/platform/user', 3, '', '', 232, NOW(), NOW()),
+-- 2026-09-30 管理端补齐增删改与状态变更时新增的端点（与 install.sql 同步；PermissionSeedParityTest 双向差集钉子要求逐条入种子）
+(21000000000000235, '0', '上架/下架公告', 'post.admin/announcement/toggle', 3, '', '', 233, NOW(), NOW()),
+(21000000000000236, '0', '编辑公告', 'put.admin/announcement', 3, '', '', 234, NOW(), NOW()),
+(21000000000000237, '0', '删除公告', 'delete.admin/announcement', 3, '', '', 235, NOW(), NOW()),
+(21000000000000238, '0', '启用/禁用国家配置', 'post.admin/country/config/toggle', 3, '', '', 236, NOW(), NOW()),
+(21000000000000239, '0', '删除国家配置', 'delete.admin/country/config', 3, '', '', 237, NOW(), NOW()),
+(21000000000000240, '0', '上架/停用成就', 'post.admin/achievement/toggle', 3, '', '', 238, NOW(), NOW());
 
 -- 只授给超级管理员，且只授本文件新增的这些（按 id 区间取；该区间内不得再插别的权限行）
 INSERT IGNORE INTO `game_admin_role_permission` (`role_id`, `permission_id`)
 SELECT 10000000000000001, `id` FROM `game_admin_permission`
-WHERE `id` BETWEEN 21000000000000101 AND 21000000000000234;
+WHERE `id` BETWEEN 21000000000000101 AND 21000000000000240;

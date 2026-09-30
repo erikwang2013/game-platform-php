@@ -107,7 +107,7 @@ class RiskClusterController extends BaseController
     }
 
     #[Apidoc\Title("人工确认团伙")]
-    #[Apidoc\Desc("POST {type, fingerprint, name, member_ids?} 写入 game_risk_cluster")]
+    #[Apidoc\Desc("POST {type, fingerprint, name, member_ids?} 写入 game_risk_cluster；member_ids 是 **hashid** 数组")]
     public function confirm(Request $request): Response
     {
         $type = (string) $request->post('type', '');
@@ -124,9 +124,13 @@ class RiskClusterController extends BaseController
             return $this->fail('fingerprint 必填', 422);
         }
 
+        // member_ids 对外是 **hashid**（全站契约：只有 hashid 离开 API 边界）。原实现是 `(int) $raw`：
+        // 调用方手里全是 hashid ⇒ 逐个被静默丢成 0，成员列表空着落库且不报错，前端还只能选择不发
+        // （与 B3 修的 role.permission_ids 同一族）。decodeId 对非法值抛 400 fail-fast，
+        // 不再留「静默落空」这条分支。
         $members = [];
         foreach ((array) $request->post('member_ids', []) as $raw) {
-            $id = (int) $raw;
+            $id = $this->decodeId((string) $raw);
             if ($id > 0 && !in_array($id, $members, true)) {
                 $members[] = $id;
             }

@@ -117,4 +117,47 @@ class CountryConfigController extends BaseController
 
         return $this->success([], '更新成功');
     }
+
+    #[Apidoc\Title("启用/禁用国家配置")]
+    #[Apidoc\Desc("状态变更：0 禁用 / 1 启用")]
+    #[Apidoc\Url("/admin/v1/country/config/toggle")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Author("erik")]
+    #[Apidoc\Param(name: "id", type: "string", require: true, desc: "配置ID(hashid)")]
+    #[Apidoc\Param(name: "status", type: "integer", require: true, desc: "目标状态(0/1)")]
+    public function toggle(Request $request): Response
+    {
+        $validator = validator($request->all(), [
+            'id'     => 'required|string',
+            'status' => 'required|integer|in:0,1',
+        ]);
+        if ($validator->fails()) {
+            return $this->fail($validator->errors()->first(), 422);
+        }
+
+        $config = CountryConfig::find($this->decodeId($request->input('id')));
+        if (!$config) {
+            return $this->fail('配置不存在', 404);
+        }
+
+        $config->status = (int) $request->input('status');
+        $config->save();
+
+        return $this->success([], '操作成功');
+    }
+
+    #[Apidoc\Title("删除国家配置")]
+    #[Apidoc\Url("/admin/v1/country/config/{hashid}")]
+    #[Apidoc\Method("DELETE")]
+    #[Apidoc\Author("erik")]
+    public function destroy(Request $request, string $hashid): Response
+    {
+        $config = CountryConfig::find($this->decodeId($hashid));
+        if (!$config) {
+            return $this->fail('配置不存在', 404);
+        }
+        $config->delete();
+
+        return $this->success([], '删除成功');
+    }
 }

@@ -144,6 +144,8 @@ Route::group('/admin/v1', function () {
     Route::get('/country/config/list', [app\admin\v1\controller\CountryConfigController::class, 'list']);
     Route::post('/country/config/create', [app\admin\v1\controller\CountryConfigController::class, 'create']);
     Route::put('/country/config/{hashid}', [app\admin\v1\controller\CountryConfigController::class, 'update']);
+    Route::post('/country/config/toggle', [app\admin\v1\controller\CountryConfigController::class, 'toggle']);
+    Route::delete('/country/config/{hashid}', [app\admin\v1\controller\CountryConfigController::class, 'destroy']);
 
     // 提现管理
     Route::get('/withdraw/orders', [app\admin\v1\controller\WithdrawController::class, 'orders']);
@@ -182,6 +184,9 @@ Route::group('/admin/v1', function () {
     // 公告管理
     Route::get('/announcement/list', [app\admin\v1\controller\AnnouncementController::class, 'list']);
     Route::post('/announcement/create', [app\admin\v1\controller\AnnouncementController::class, 'create']);
+    Route::post('/announcement/toggle', [app\admin\v1\controller\AnnouncementController::class, 'toggle']);
+    Route::put('/announcement/{hashid}', [app\admin\v1\controller\AnnouncementController::class, 'update']);
+    Route::delete('/announcement/{hashid}', [app\admin\v1\controller\AnnouncementController::class, 'destroy']);
 
     // 排行榜管理
     Route::get('/leaderboard/list', [app\admin\v1\controller\LeaderboardController::class, 'list']);
@@ -208,6 +213,7 @@ Route::group('/admin/v1', function () {
     Route::post('/achievement/create', [app\admin\v1\controller\AchievementController::class, 'create']);
     Route::put('/achievement/{hashid}', [app\admin\v1\controller\AchievementController::class, 'update']);
     Route::delete('/achievement/{hashid}', [app\admin\v1\controller\AchievementController::class, 'destroy']);
+    Route::post('/achievement/toggle', [app\admin\v1\controller\AchievementController::class, 'toggle']);
 
     // 活动管理
     Route::get('/activities/list', [app\admin\v1\controller\ActivityController::class, 'list']);

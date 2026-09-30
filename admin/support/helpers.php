@@ -5,10 +5,6 @@
 
 use Erikwang2013\Jwt\JWT;
 use Erikwang2013\Jwt\JWTFactory;
-use Erikwang2013\Poster\Captcha\CaptchaManager;
-use Erikwang2013\Poster\Drivers\DriverFactory;
-use Erikwang2013\Poster\PosterConfig;
-use Erikwang2013\Poster\Storage\StorageFactory;
 use common\JwtRedisClient;
 use Illuminate\Translation\ArrayLoader;
 use Illuminate\Translation\Translator;
@@ -16,12 +12,52 @@ use Illuminate\Validation\Factory;
 
 /**
  * 创建验证器实例
+ *
+ * ⚠ 语言行必须显式加载：`new Translator(new ArrayLoader(), 'en')` 里 ArrayLoader 是空的，
+ * 校验失败时 `$errors->first()` 会返回**裸规则 key**（`validation.required`），而管理端各控制器
+ * 都是原样把它塞进 `fail($validator->errors()->first(), 422)` ⇒ 用户在表单里看到的是机器话。
+ * 覆盖范围＝本仓控制器实际用到的规则（见各 validator 的取值统计），漏掉的规则会退回裸 key。
  */
 function validator(array $data, array $rules, array $messages = [], array $attributes = []): \Illuminate\Validation\Validator
 {
     static $factory = null;
     if ($factory === null) {
-        $factory = new Factory(new Translator(new ArrayLoader(), 'en'));
+        $loader = new ArrayLoader();
+        $loader->addMessages('zh', 'validation', [
+            'required'       => ':attribute 不能为空',
+            'string'         => ':attribute 必须是字符串',
+            'integer'        => ':attribute 必须是整数',
+            'numeric'        => ':attribute 必须是数字',
+            'array'          => ':attribute 必须是数组',
+            'boolean'        => ':attribute 必须是布尔值',
+            'email'          => ':attribute 必须是合法邮箱',
+            'url'            => ':attribute 必须是合法链接',
+            'date'           => ':attribute 不是合法日期',
+            'regex'          => ':attribute 格式不正确',
+            'in'             => ':attribute 取值不在允许范围内',
+            'after_or_equal' => ':attribute 必须不早于 :date',
+            'lt'             => ':attribute 必须小于 :value',
+            'max'            => [
+                'numeric' => ':attribute 不能大于 :max',
+                'string'  => ':attribute 不能超过 :max 个字符',
+                'array'   => ':attribute 不能超过 :max 项',
+            ],
+            'min'            => [
+                'numeric' => ':attribute 不能小于 :min',
+                'string'  => ':attribute 不能少于 :min 个字符',
+                'array'   => ':attribute 不能少于 :min 项',
+            ],
+            'between'        => [
+                'numeric' => ':attribute 必须在 :min 到 :max 之间',
+                'string'  => ':attribute 长度必须在 :min 到 :max 之间',
+            ],
+            'size'           => [
+                'numeric' => ':attribute 必须是 :size',
+                'string'  => ':attribute 长度必须是 :size',
+                'array'   => ':attribute 必须包含 :size 项',
+            ],
+        ]);
+        $factory = new Factory(new Translator($loader, 'zh'));
     }
     return $factory->make($data, $rules, $messages, $attributes);
 }
@@ -62,48 +98,21 @@ function jwt_instance(): JWT
 }
 
 /**
- * 规范化验证码点击坐标为 [x, y] 元组格式（poster-php 包期望的格式）
+ * 规范化验证码点击坐标 —— 实现在 common\Captcha（admin/service 共用，
+ * 见 packages/platform-common/src/Captcha.php 里那段「webman 下身份恒为 cli」的说明）
  */
 function captcha_clicks(mixed $clicks): array
 {
-    if (!is_array($clicks)) {
-        return [];
-    }
-    return array_map(
-        fn($c) => [$c['x'] ?? $c[0] ?? 0, $c['y'] ?? $c[1] ?? 0],
-        $clicks
-    );
+    return \common\Captcha::clicks($clicks);
 }
 
 /**
- * 按「真实客户端 IP」归属的验证码校验（vendor 的 captcha_verify() 在本项目下不可用）。
+ * 按「真实客户端 IP」归属的验证码校验 —— 实现在 common\Captcha（两棵树共用）。
  *
- * poster-php 的 CaptchaManager::resolveIdentity() 依次取
- * session_id() → $_SERVER['REMOTE_ADDR'] → 'cli'，而 webman 跑在 CLI SAPI 下：
- * session_id() 恒为 ''（webman 用自家的 Workerman\Protocols\Http\Session，全 vendor 无 session_start）、
- * $_SERVER['REMOTE_ADDR'] 不存在 —— 身份因此恒为常量 'cli'，captcha.rate_limit 的跨 key
- * 窗口限流退化成「全局桶」：任何匿名者每分钟刷满 30 次校验，所有管理员的
- * 登录/注册/验证码校验会一起被判失败（RateLimiter 刻意不区分「被限流」与「填错」）。
- *
- * vendor 的 helpers.php 由 composer autoload.files 在 require vendor/autoload.php 时载入，
- * 早于应用侧任何文件（本文件由 config/autoload.php 在 App::run 里后加载），
- * 同名函数无法从应用侧覆盖，故走包内文档化的注入点：显式给 CaptchaManager 传 identityResolver。
- *
- * @param string $ip 客户端 IP，传 $request->getRealIp()。
- *                   不要读 $_SERVER['REMOTE_ADDR']：CLI SAPI 下它不存在，正是本缺陷的成因；
- *                   也不要图省事传常量/固定值，那会原样退回全局桶。
+ * @param string $ip 客户端 IP，传 $request->getRealIp()。别读 $_SERVER['REMOTE_ADDR']（CLI SAPI 下不存在），
+ *                   也别传常量——那会退回全局桶，细节见 common\Captcha::verifyFromIp 的注释。
  */
 function captcha_verify_from_ip(string $ip, string $key, string $type, mixed $data): bool
 {
-    // 取不到 IP 时（CLI 直调、测试）给一次性身份：跨 key 限流对该次调用不生效。
-    // 宁可少一层限流，也不能退回共享常量——同一 key 的 max_attempts 仍在兜着。
-    $identity = $ip !== '' ? $ip : 'anon:' . uniqid('', true);
-
-    $manager = new CaptchaManager(
-        DriverFactory::create(PosterConfig::get('image.driver')),
-        StorageFactory::create(PosterConfig::get('captcha.storage')),
-        static fn(): string => $identity
-    );
-
-    return $manager->verify($key, ['type' => $type, 'data' => $data]);
+    return \common\Captcha::verifyFromIp($ip, $key, $type, $data);
 }

@@ -9,6 +9,7 @@ namespace Tests;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use common\RiskDeviceBlock;
 use common\model\RiskRule;
 use common\model\RiskLog;
 use app\service\RiskService;
@@ -139,6 +140,61 @@ class RiskServiceTest extends TestCase
             $result = RiskService::check(self::TEST_USER_ID, 'withdraw', ['ip' => '1.1.1.1']);
             $this->assertSame('block', $result['result']);
             $this->assertSame('test-ip_blacklist-high', $result['rule_name']);
+        });
+    }
+
+    /**
+     * 管理端人工拉黑：**一条规则都没有**（cleanup 之后库里没有测试规则）也必须阻断。
+     * 这条正是「拉黑按钮是否真的拉黑」的判据 —— 若实现成「等 device_fingerprint 规则命中」，
+     * 种子规则 status=0（默认停用）时这里会 passed。
+     */
+    #[Test]
+    public function checkBlocksOnManualDeviceBlockWithNoRuleEnabled(): void
+    {
+        Db::connection()->transaction(function () {
+            $this->cleanup();
+            $fp = hash('sha256', 'lead-manual-block-probe');
+            RiskDeviceBlock::block($fp);
+            try {
+                $result = RiskService::check(self::TEST_USER_ID, 'withdraw', ['fp_hash' => $fp, 'amount' => '1']);
+                $this->assertSame('block', $result['result']);
+                $this->assertSame('管理端设备拉黑', $result['rule_name']);
+                $this->assertStringContainsString('拉黑', $result['message']);
+            } finally {
+                RiskDeviceBlock::unblock($fp);
+            }
+        });
+    }
+
+    /** 解封后同一条 check 必须放行（否则「解封」按钮也是假的） */
+    #[Test]
+    public function checkPassesAfterManualDeviceUnblock(): void
+    {
+        Db::connection()->transaction(function () {
+            $this->cleanup();
+            $fp = hash('sha256', 'lead-manual-block-probe');
+            RiskDeviceBlock::unblock($fp);
+
+            $result = RiskService::check(self::TEST_USER_ID, 'withdraw', ['fp_hash' => $fp, 'amount' => '1']);
+            $this->assertSame('passed', $result['result']);
+        });
+    }
+
+    /** 别的设备不受影响（负控：标记不能是靠「有没有 fp_hash」生效的） */
+    #[Test]
+    public function checkDoesNotBlockOtherDevice(): void
+    {
+        Db::connection()->transaction(function () {
+            $this->cleanup();
+            $blocked = hash('sha256', 'lead-manual-block-probe');
+            RiskDeviceBlock::block($blocked);
+            try {
+                $other = hash('sha256', 'lead-other-device');
+                $result = RiskService::check(self::TEST_USER_ID, 'withdraw', ['fp_hash' => $other, 'amount' => '1']);
+                $this->assertSame('passed', $result['result']);
+            } finally {
+                RiskDeviceBlock::unblock($blocked);
+            }
         });
     }
 

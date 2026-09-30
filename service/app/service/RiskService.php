@@ -6,6 +6,7 @@ declare(strict_types=1);
 
 namespace app\service;
 
+use common\RiskDeviceBlock;
 use common\SnowflakeService;
 use app\event\EventBus;
 use common\model\RiskLog;
@@ -35,6 +36,9 @@ use app\service\risk\evaluators\WithdrawPatternEvaluator;
  */
 class RiskService
 {
+    /** 人工拉黑的伪规则名：进日志/事件/返回值的 rule_name，让「不是规则命中」这件事在审计里一眼可辨 */
+    private const MANUAL_BLOCK_NAME = '管理端设备拉黑';
+
     /** @var array<string,RiskEvaluator>|null type → 评估器实例 */
     private static ?array $evaluators = null;
 
@@ -53,6 +57,28 @@ class RiskService
         $fp = FingerprintContext::build($userId, $context);
         if ($fp !== []) {
             $context = array_merge($context, $fp);
+        }
+
+        // 管理端人工拉黑（admin 的 RiskDeviceController 落标记，键定义在 common\RiskDeviceBlock）。
+        // 为什么短路在规则循环之前：人工拉黑是**人的决定**，不该取决于某条规则开没开 ——
+        // install.sql 种子里那条 device_fingerprint 规则 status=0（默认停用），若按「等规则命中」
+        // 实现，运营拉黑后阻断与否看的是规则开关，界面上却是「已拉黑」，等于给人假安心。
+        // Redis 不可用时按未拉黑处理（fail-open，见 RiskDeviceBlock::isBlocked）：一次缓存故障
+        // 不该把全站登录/充值/提现一起挡掉。
+        $fpHash = (string) ($context['fp_hash'] ?? '');
+        if ($fpHash !== '' && RiskDeviceBlock::isBlocked($fpHash)) {
+            $message = '设备已被管理端拉黑';
+            self::log($userId, null, $checkType, 'block', $context, $message);
+            EventBus::push('risk.alert', 'risk_' . SnowflakeService::generate(), [
+                'user_id'    => $userId,
+                'check_type' => $checkType,
+                'rule_id'    => 0,
+                'rule_name'  => self::MANUAL_BLOCK_NAME,
+                'action'     => 'block',
+                'message'    => $message,
+            ]);
+
+            return ['result' => 'block', 'message' => $message, 'rule_name' => self::MANUAL_BLOCK_NAME];
         }
 
         $map = self::evaluatorMap();
@@ -172,14 +198,16 @@ class RiskService
     /**
      * 记录风控日志。result 存规范化处置，完整命中消息写 detail（H4 §4.2 不再截断）。
      */
-    private static function log(int $userId, RiskRule $rule, string $type, string $action, array $context, string $message): void
+    private static function log(int $userId, ?RiskRule $rule, string $type, string $action, array $context, string $message): void
     {
         try {
             $riskLog = new RiskLog();
             // Use SnowflakeService for collision-free unique IDs (same module, same app)
             $riskLog->id = SnowflakeService::generate();
             $riskLog->user_id = $userId;
-            $riskLog->rule_id = $rule->id;
+            // 人工拉黑没有规则行：rule_id 记 0（与 admin 的 RiskUserController::hold 同一口径），
+            // 名字落在 detail 里，审计上区分得开「规则命中」与「人工决定」
+            $riskLog->rule_id = $rule?->id ?? 0;
             $riskLog->type = $type;
             $riskLog->action = $action;
             $riskLog->context = json_encode($context, JSON_UNESCAPED_UNICODE);
@@ -192,7 +220,7 @@ class RiskService
             $riskLog->save();
         } catch (\Throwable $e) {
             // 风控日志失败不影响主流程
-            \support\Log::error('RiskLog save failed', ['error' => $e->getMessage(), 'user_id' => $userId, 'rule_id' => $rule->id]);
+            \support\Log::error('RiskLog save failed', ['error' => $e->getMessage(), 'user_id' => $userId, 'rule_id' => $rule?->id ?? 0]);
         }
     }
 }

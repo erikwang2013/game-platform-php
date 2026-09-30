@@ -59,7 +59,7 @@ class PermissionController extends BaseController
 
         $perm = new AdminPermission();
         $perm->id = $this->generateId();
-        $perm->parent_id = (int) $request->input('parent_id', 0);
+        $perm->parent_id = $this->decodeParentId($request->input('parent_id'));
         $perm->name = $request->input('name');
         $perm->slug = $request->input('slug');
         $perm->type = (int) $request->input('type');
@@ -137,6 +137,23 @@ class PermissionController extends BaseController
     }
 
     /**
+     * parent_id 与全站 API 约定一致，对外只认 hashid。
+     *
+     * 空 / 0 / '0' = 根节点（hashid 编不出 0，故 0 只能来自「不填」）。
+     * 传裸数字 id 会被 decodeId 拒（400），**不会静默落成 0**——这正是修之前的行为：
+     * `(int) $request->input('parent_id')` 把 UI 手里的 hashid 剁成 0，新建的权限一律挂到根，
+     * 而且没有任何报错。
+     */
+    private function decodeParentId(mixed $raw): int
+    {
+        $s = is_string($raw) ? trim($raw) : (string) $raw;
+        if ($s === '' || $s === '0') {
+            return 0;
+        }
+        return $this->decodeId($s);
+    }
+
+    /**
      * 构建权限树
      */
     private function buildTree(array $permissions, int $parentId = 0): array
@@ -146,6 +163,11 @@ class PermissionController extends BaseController
             if ($perm['parent_id'] == $parentId) {
                 $originalId = $perm['id'];
                 $perm = $this->encodeIds($perm);
+                // parent_id 也编成 hashid：前端拿到的每个 id 都应是 hashid，才能原样回填
+                // （分组比较用的是上面的原始值，故这步必须在 encodeIds 之后、且只动输出）
+                $perm['parent_id'] = ((int) $perm['parent_id']) > 0
+                    ? $this->encodeId((int) $perm['parent_id'])
+                    : 0;
                 $children = $this->buildTree($permissions, $originalId);
                 if ($children) {
                     $perm['children'] = $children;
