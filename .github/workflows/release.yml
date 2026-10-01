@@ -1,10 +1,16 @@
 name: Release
 
+# ⚠ 只允许**手动**触发（Actions → Release → Run workflow），**不要**加回 push 触发。
+# 用户明令：「CI 不要在 GitHub 上自动发布」—— 每次 push main 就自动递增版本号、
+# 自动打 tag、自动建 Release，意味着**推代码即发版**，没有二次确认的机会。
+# 要发版时到 Actions 页面点一下；下面的递增/跳过逻辑原样保留。
+#
+# ⚠ 随带的一条纪律：**别手工 `git push origin v…` 打 tag** —— 那会绕过本工作流的
+# 递增与跳空逻辑（自上次 tag 无新提交时它会跳过），版本号序列会因此错乱。
 on:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
-# 串行化：并发 push 排队，避免两个 run 抢同一个版本号
+# 串行化：并发触发的 run 排队，避免两个 run 抢同一个版本号
 concurrency:
   group: release
   cancel-in-progress: false
