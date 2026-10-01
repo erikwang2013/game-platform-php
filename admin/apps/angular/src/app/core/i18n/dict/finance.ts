@@ -56,8 +56,8 @@ export const FINANCE: Record<string, [string, string]> = {
   'withdraw.batch_approve': ['Batch approve ({n})', '批量通过（{n}）'],
   'withdraw.batch_reject': ['Batch reject ({n})', '批量驳回（{n}）'],
   'withdraw.batch_confirm': [
-    '{action} {n} pending withdrawals on this page?\n{lines}{more}',
-    '确认批量{action}本页 {n} 笔待审核提现？\n{lines}{more}',
+    '{action} {n} pending withdrawals on this page?\n{lines}',
+    '确认批量{action}本页 {n} 笔待审核提现？\n{lines}',
   ],
   /** 批量确认里「驳回」那个动词的完整说法（通过那边复用 withdraw.approve 的「通过」） */
   'withdraw.batch_reject_verb': [
@@ -65,7 +65,6 @@ export const FINANCE: Record<string, [string, string]> = {
     '驳回（每笔都会把平台币退回用户余额）',
   ],
   'withdraw.batch_line': ['　{id}: {money}', '　{id}：{money}'],
-  'withdraw.batch_more': ['\n…and {n} in total', '\n　…等共 {n} 笔'],
   'withdraw.batch_done': ['Batch finished', '批量处理完成'],
 
   // ---- 回执与动作二次确认 ----

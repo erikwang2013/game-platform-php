@@ -24,15 +24,65 @@ export type Dashboard = {
 export const DASHBOARD_KEYS = ['stats', 'trends', 'distribution', 'recent_logs'] as const;
 
 /**
+ * 空块（`null` / 缺省）算「有」：页面各处都写成 `data.x ?? []`，空块按空渲染。
+ * 这是**契约的一部分**（`dashboard.test.ts` 逐个键钉着 `{ [key]: null }` 必须判定为真）。
+ */
+const absent = (value: unknown): boolean => value === null || value === undefined;
+
+/** 行数组：渲染期逐行取字段，非数组（`.map` 直接抛）与含 `null` 行（取 `.name` 抛）都不算。 */
+const rowList = (value: unknown): boolean =>
+  absent(value) || (Array.isArray(value) && value.every((row) => typeof row === 'object' && row !== null));
+
+/** 非数组对象（`trends.{dates,series}`、`distribution.{维度: 行[]}`）。 */
+const bag = (value: unknown): boolean => absent(value) || (typeof value === 'object' && !Array.isArray(value));
+
+/**
+ * 标签数组（`trends.dates`）：**只判「是不是数组」**，元素类型不逐个卡。
+ *
+ * 后端的 dates 是 `date('Y-m-d', …)` 的**字符串**数组（`DashboardController::getTrends`），
+ * 渲染方是 `(data?.dates ?? []).map((date) => String(date))` —— `String()` 对任何元素都不抛，
+ * 唯一的崩法是它不是数组（`{}` 上 `.map` 直接抛）。
+ *
+ * 这条**踩过**：一开始跟着 `rowList` 要求「元素得是非 null 对象」，于是**真实响应被判成
+ * 「不认识」**，整页退到通用兜底 —— 不崩、不报错、控制台干净，只是真渲染器再也不出现
+ * （右上角 .subblock/.delta 一个都没有）。形状判定收得比真实契约紧，坏法比崩更安静。
+ */
+const labelList = (value: unknown): boolean => absent(value) || Array.isArray(value);
+
+/** 对象上的取字段：**空块与裸标量都回 undefined**。（`bag` 把空块算作「可以」，这里不能跟着它走，
+ *  否则 `field(null, 'dates')` 就是一次空指针 —— 本文件存在的理由正是这类崩溃。） */
+const field = (value: unknown, name: string): unknown =>
+  absent(value) || typeof value !== 'object' ? undefined : (value as Record<string, unknown>)[name];
+
+/**
+ * 每个容器键**自己的**形状判据。
+ *
+ * 为什么不能只判「键在不在」：`{stats:{}}` 这种「键在、类型错」的退化体会判定为真，
+ * 于是 `Stats` 拿着一个对象去 `.map` ⇒ **整站白屏**（导航、顶栏全没，控制台一条
+ * `items.map is not a function`）。真机实测复现过一次，形状其余部分当时一个字节都不校验。
+ * 反过来也不能一律收紧：`{stats:null}` 必须是真（上面那条契约），故空块先放行。
+ */
+const BLOCK_OK: Record<(typeof DASHBOARD_KEYS)[number], (value: unknown) => boolean> = {
+  stats: rowList,
+  trends: (value) => bag(value) && labelList(field(value, 'dates')) && rowList(field(value, 'series')),
+  distribution: (value) => bag(value) && (absent(value) || Object.values(value as object).every(rowList)),
+  // 单独放宽：页面用 `asRows` 收它（数组、`{list:[…]}` 都认），非数组时回 `[]`，这里怎么都不炸
+  recent_logs: (value) => absent(value) || typeof value === 'object',
+};
+
+/**
  * 认不认识这个响应 —— 判定为假时页面**退回通用兜底**（宁可摊平，不白屏）。
  *
- * 用 `some` 不用 `every`：四个块里任何一个在，就说明后端确实在回这个对象，缺的块按空渲染；
- * 反过来，`{ok:true}`（e2e 那条罐头）或任何退化体一个键都不带 ⇒ 交给 `AutoView`。
+ * 四个块里任何一个在、且**形状对**，就说明后端确实在回这个对象，缺的块按空渲染；
+ * 反过来 `{ok:true}`（e2e 那条罐头）或任何退化体都交给 `AutoView`。
  * `typeof` 那半句不是防御性冗余：`in` 运算符对字符串/数字**直接抛 TypeError**，
  * 端点哪天回个裸标量就是整页白屏——而「不白屏」正是这条兜底存在的全部理由。
  */
 export function hasDashboardShape(data: unknown): data is Dashboard {
-  return typeof data === 'object' && data !== null && DASHBOARD_KEYS.some((key) => key in data);
+  if (typeof data !== 'object' || data === null) return false;
+  const record = data as Record<string, unknown>;
+  const present = DASHBOARD_KEYS.filter((key) => key in record);
+  return present.length > 0 && present.every((key) => BLOCK_OK[key](record[key]));
 }
 
 /**

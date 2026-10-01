@@ -54,6 +54,25 @@ test('形状回落：四个容器键任一在就认；一个都不在 ⇒ 判假
   assert.match(code, /if \(!known\)[\s\S]{0,40}<AutoView/, 'AutoView 不在 !known 分支里（判假时渲染别的东西）');
 });
 
+test('形状回落：**真实响应**必须认得 —— trends.dates 是日期字符串数组，不是行数组', () => {
+  // 上面那条只拿 `{ [key]: null }` 钉「键在不在」，钉不出「形状判得比真实契约紧」这种坏法。
+  // 实测踩过：dates 跟着行数组的判据走（要求元素是非 null 对象），而后端给的是
+  // `date('Y-m-d', …)` 的字符串（DashboardController::getTrends），于是**真实响应被判成不认识**，
+  // 整页退通用兜底 —— 不崩、不报错、控制台干净，只是真渲染器再也不出现。故这里喂一个**真形状**。
+  const real = {
+    stats: [{ label: 'Total Users', value: 1234, icon: 'people', color: '#5cf', trend: 5.2 }],
+    trends: { dates: ['2026-09-28', '2026-09-29'], series: [{ name: 'Logins', data: [1, 2], color: '#f00' }] },
+    distribution: { user_status: [{ name: 'Enabled', value: 3 }] },
+    recent_logs: [{ id: 'L1', user_name: 'ops' }],
+  };
+  assert.equal(hasDashboardShape(real), true, '真实响应被判成不认识 ⇒ 整页退通用兜底，真渲染器再不出现');
+  // 但「是数组」这条不能跟着松掉：非数组才是真崩（`{}` 上 `.map` 直接抛），series 夹 null 也是（取 `.name` 抛）
+  assert.equal(hasDashboardShape({ trends: { dates: {} } }), false, 'dates 非数组被放过（渲染期 .map 直接抛）');
+  assert.equal(hasDashboardShape({ trends: { series: [null] } }), false, 'series 夹 null 被放过（渲染期取 .name 抛）');
+  // 空块仍算有：渲染方是 `data?.dates ?? []`，缺一整块 dates 只是没有标签，不是「不认识这个形状」
+  assert.equal(hasDashboardShape({ trends: { dates: null } }), true, 'dates 空块被误判成坏形状');
+});
+
 test('累计判定：非递减才算累计（判据取自数据，不看 series 名字）；平盘也是累计', () => {
   // 累计用户中间某天没涨（平盘）仍然是累计量 —— 写成 `>` 会让它掉进零基轴，同一屏两条线两种口径
   assert.equal(isCumulative([47000, 47000, 48200]), true, '平盘的累计线被判成计数');

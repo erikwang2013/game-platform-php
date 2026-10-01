@@ -54,6 +54,7 @@ describe('Admins 管理端账号', () => {
     batch(enable: boolean): Promise<void>;
     note(): string;
     noteErr(): boolean;
+    openCreate(): void;
   };
 
   beforeEach(() => {
@@ -262,6 +263,27 @@ describe('Admins 管理端账号', () => {
     expect(p.error()).toBe('');
   });
 
+  /**
+   * 密码框点「取消」（原生 prompt 回 null）⇒ **中止**，一个请求都不发、一条错误都不弹。
+   *
+   * 改前这里写的是 `prompt(...) ?? ''`：null 被吞成空串，DELETE 照发、body 是 `{"password":""}`。
+   * 真机实测载荷就是这个（/tmp/ux_probe9.mjs 的 U1，两棵树对同一动作语义相反：react 正确中止）。
+   * 后果不是「多一个失败请求」：界面刚告诉操作者「已取消」，紧接着又弹一条 422
+   * （confirmPassword 守卫），**无从判断到底删没删**。
+   */
+  it('密码框点「取消」⇒ 中止，DELETE 一个字节都不发（不是拿空密码照发）', async () => {
+    const p = build();
+    await loadList(p, [OTHER]);
+
+    promptSpy.mockReturnValue(null);
+    await p.run(p.rows()[0]!, 'delete');
+    await tick();
+
+    http.expectNone(() => true);
+    // 取消是**用户的意图**，不是失败 ⇒ 列表级 error 也要保持干净
+    expect(p.error()).toBe('');
+  });
+
   // ---------- 详情抽屉（GET /admin/v1/user/{hashid}） ----------
 
   it('详情：GET /user/{hashid}，取到就覆盖抽屉；字符串字段原样，不是「ops 0」', async () => {
@@ -423,6 +445,74 @@ describe('Admins 管理端账号', () => {
     f.detectChanges();
     return f;
   };
+
+  /**
+   * ④ 审计实测（真 Chrome）：空表单 `requestSubmit()` 真把 POST /admin/v1/user 发出去了 ——
+   * 6 个字段一个 `required` 都没有，界面上只有一枚装饰性 `.req` 星号；而 username 的规则
+   * 文案（27 字）塞在 placeholder 里，单列净宽 ~207px ⇒ 被截成
+   * 「3-50 characters; cannot be changed aft」，输入框上既没有 title 也没有 aria-label。
+   * 两处一起修：required 落控件、规则搬 hint（同文件的 phone/email 早就在用 hint）。
+   */
+  it('④ 新建表单：required 落在原生 input 上，规则文案在 hint 里而不是被截断的 placeholder 里', async () => {
+    const f = await render([]);
+    (f.componentInstance as unknown as A).openCreate();
+    f.detectChanges();
+
+    const box = (n: string): HTMLInputElement =>
+      el(f).querySelector<HTMLInputElement>(`.modal input[name="${n}"]`)!;
+    // 三个必填字段都带原生 required ⇒ 空着点提交浏览器当场拦下，不再白跑一个来回
+    expect([box('username').required, box('password').required, box('real_name').required]).toEqual([
+      true,
+      true,
+      true,
+    ]);
+    // 规则文案整句挪到框下的 hint（能换行、能读完），placeholder 留空
+    expect([
+      box('username').placeholder,
+      box('password').placeholder,
+      box('real_name').placeholder,
+    ]).toEqual(['', '', '']);
+    const hints = texts(f, '.modal .hint');
+    expect(hints.some((h) => h.startsWith('3-50 characters'))).toBe(true);
+    expect(hints.some((h) => h.startsWith('8-32 characters'))).toBe(true);
+  });
+
+  /**
+   * ① 审计实测：新建弹框的 role_ids 是个 **0 选项的空多选框** —— 候选只在 grantFields()
+   * （「分配角色」）里注入过，ADMIN_FIELDS 里那条 role_ids 压根没接。运营能点「+ 新建」，
+   * 也能当「角色先不选」提交，可实际上根本无从选择。
+   *
+   * 钉子按**与服务端一致**钉：回包几个就几个，不写死数字（这条用例的回包 3 个，
+   * 与文件顶部 ROLES 的 1 个刻意不同，写死任何一个都会当场露馅）。选项值与文案也逐条对回包 ——
+   * 只数个数的话，hashid 串错位、顺序错也能绿。
+   */
+  it('① 新建弹框：role_ids 的选项来自 /admin/v1/role，条数与服务端回包一致（改前一个都没有）', async () => {
+    const roles = [
+      { id: 'ROLE_A', name: '超管', slug: 'super' },
+      { id: 'ROLE_B', name: '运营', slug: 'ops' },
+      { id: 'ROLE_C', name: '财务', slug: 'finance' },
+    ];
+    const f = TestBed.createComponent(Admins);
+    f.detectChanges();
+    http
+      .expectOne((r) => r.method === 'GET' && url(r) === '/admin/v1/user')
+      .flush({ code: 0, message: 'ok', data: { list: [], total: 0 } });
+    http
+      .expectOne((r) => r.method === 'GET' && url(r) === '/admin/v1/role')
+      .flush({ code: 0, message: 'ok', data: { list: roles, total: roles.length } });
+    await tick();
+    f.detectChanges();
+
+    // 开弹框是纯前端动作（不该发请求）；角色候选是首屏那批 Promise.all 里就取回来的
+    (f.componentInstance as unknown as A).openCreate();
+    f.detectChanges();
+
+    const sel = el(f).querySelector<HTMLSelectElement>('.modal select[name="role_ids"]')!;
+    const opts = [...sel.options];
+    expect(opts.map((o) => o.value)).toEqual(roles.map((r) => r.id));
+    expect(opts.map((o) => o.textContent!.trim())).toEqual(roles.map((r) => r.name));
+    expect(opts.length).toBe(roles.length);
+  });
 
   it('勾选列：表头是译文不是裸键；自己那行的框禁用（点不动，也不会被勾上）', async () => {
     const f = await render([{ ...ME, status: 1 }, OTHER]);

@@ -6,6 +6,7 @@ import { T, t } from '../core/i18n/i18n';
 import { errText, num } from '../core/util';
 import { FormModal } from './form-modal';
 import { Table } from './table';
+import { ModalFocus } from './ui';
 
 /** 端点回来的读数：`ImportController::users` 的 data（`errors` 是逐行的「第几行、为什么没进」） */
 type Report = { total: number; success: number; failed: number; errors: Row[] };
@@ -41,7 +42,7 @@ const FIELDS: Field[] = [
  */
 @Component({
   selector: 'ui-import',
-  imports: [FormModal, Table, T],
+  imports: [FormModal, Table, T, ModalFocus],
   template: `
     <button class="btn" type="button" (click)="open.set(true)">{{ title() | t }}</button>
 
@@ -57,7 +58,14 @@ const FIELDS: Field[] = [
 
     @if (report(); as r) {
       <div class="backdrop" (click)="report.set(null)"></div>
-      <div class="modal" role="dialog" aria-modal="true" [attr.aria-label]="'import.result' | t">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        [attr.aria-label]="'import.result' | t"
+        uiModal
+        (dismiss)="report.set(null)"
+      >
         <header>
           <b>{{ 'import.result' | t }}</b>
           <span class="spacer"></span>

@@ -23,6 +23,7 @@ export const bnUi: Record<UiKey, string> = {
   'app.no': 'না',
   'app.no_data': 'কোনো ডেটা নেই',
   'app.close': 'বন্ধ করুন',
+  'app.render_failed': 'এই স্ক্রিনটি রেন্ডার করা যায়নি। অনুগ্রহ করে পৃষ্ঠাটি রিফ্রেশ করুন',
   // 语言切换器
   'lang.label': 'ভাষা',
 

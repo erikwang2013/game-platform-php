@@ -28,6 +28,7 @@ export const idUi: Record<UiKey, string> = {
   'app.no': 'Tidak',
   'app.no_data': 'Tidak ada data',
   'app.close': 'Tutup',
+  'app.render_failed': 'Layar ini gagal ditampilkan. Silakan muat ulang halaman',
   // Pengalih bahasa
   'lang.label': 'Bahasa',
 

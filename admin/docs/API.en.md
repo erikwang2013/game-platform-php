@@ -231,6 +231,8 @@ POST /api/v1/auth/login
 
 ### 3.6 Register
 
+> **Note (removed 2026-10-01)**: this endpoint is no longer mounted from `config/route.php`; `POST /api/v1/auth/register` now returns 404. An anonymous caller with a single click-captcha could create an enabled administrator account and receive tokens immediately, and that route group has no OperationLog (account creation left no audit trail). The controller method is kept; the precondition to restore it is stated in the note in `config/route.php`. The contract below is kept as a pre-removal record.
+
 ```
 POST /api/v1/auth/register
 ```

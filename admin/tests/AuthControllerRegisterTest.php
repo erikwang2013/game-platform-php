@@ -93,6 +93,43 @@ class AuthControllerRegisterTest extends TestCase
         );
     }
 
+    /**
+     * `phone[]=x`（数组）必须在**校验层**被 422 拒掉，不能放行到 encryptable 转型。
+     *
+     * phone/email 是可选字段，原先完全没过校验：数组值一路走到
+     * `$user->phone = [...]`，被 encryptable 转型抛 SerializationException，
+     * 而 register() 没有 try/catch ⇒ 公开端点 500（debug 形态下还带完整堆栈）。
+     *
+     * 判据必须比对 message，不能只看 code === 422：**修复前后都会回 422**
+     * （修复前是 captcha 闸门那句"验证码错误"兜的），只看 code 是恒真式假绿。
+     * 这条同时说明了修复点的位置 —— 拒绝必须发生在 captcha 闸门**之前**。
+     */
+    #[Test]
+    public function registerRejectsArrayPhoneAtValidationNotAtTheEncryptableCast(): void
+    {
+        $request = new Request("POST /api/v1/auth/register HTTP/1.1\r\nHost: localhost\r\n\r\n");
+        $request->setPost([
+            'username'    => self::PROBE_USERNAME,
+            'password'    => 'Abcdef12',
+            'real_name'   => 'policy_probe',
+            'captcha_key' => 'bogus-captcha-key',
+            'clicks'      => [['x' => 1, 'y' => 1], ['x' => 2, 'y' => 2]],
+            'phone'       => ['x'],   // 即 `phone[]=x`
+        ]);
+
+        // 前提探针：phone 值确实是数组，否则本用例没走到目标分支
+        $this->assertIsArray($request->input('phone'), 'phone 应为数组，否则本用例未在测目标分支');
+
+        $payload = json_decode((new AuthController())->register($request)->rawBody(), true);
+
+        $this->assertSame(422, $payload['code'] ?? null, '数组 phone 应被 422 拒绝');
+        $this->assertNotSame(
+            self::CAPTCHA_MESSAGE,
+            $payload['message'] ?? '',
+            '拒绝必须来自 phone 的形状规则、发生在 captcha 闸门之前；拿到验证码文案说明规则没加上'
+        );
+    }
+
     /** 口令校验失败必须先于任何入库/验证码副作用，因此本用例不依赖 MySQL */
     private function register(string $password): Response
     {

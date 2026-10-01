@@ -44,7 +44,7 @@ const CONFIG_FIELDS: Field[] = [
     // store/update 都是 required|string ⇒ 空串会被判 422（Laravel 的 required 拒空串），
     // 所以留空 = 不提交，而不是「清空该值」
     keepIfEmpty: true,
-    placeholder: 'config.value_hint',
+    hint: 'config.value_hint',
   },
   {
     name: 'type',

@@ -45,6 +45,11 @@ return [
         'handler' => app\process\RiskIpCron::class,
         'reloadable' => false,
     ],
+    // 导出临时文件清理：每 30 分钟扫一次 runtime/tmp，删掉超过 1 小时的导出产物（兜底）
+    'export-tmp-cleanup' => [
+        'handler' => app\process\ExportTmpCleanup::class,
+        'reloadable' => false,
+    ],
     // File update detection and automatic reload
     'monitor' => [
         'handler' => app\process\Monitor::class,

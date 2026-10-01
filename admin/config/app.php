@@ -19,7 +19,14 @@
 use support\Request;
 
 return [
-    'debug' => true,
+    // 调试开关：**从环境变量读，默认关**。
+    // 原先是字面量 `true` 且没有任何读 env 的分支 ⇒ admin/.env.example 的 APP_DEBUG=false
+    // 是条死配置，线上跑的一直是 debug 形态：App.php:362 对未捕获异常渲染 `(string) $e`
+    // （完整堆栈 + 绝对路径 + vendor 行号）而不是 `$e->getMessage()`，匿名者触发一条
+    // 未捕获异常就能拿到目录结构。
+    // 必须走 filter_var 而不是 (bool)：Dotenv 传进来的是**字符串**，`(bool) 'false' === true`。
+    // 这个写法与 config/plugin/erikwang2013/jwt/jwt.php:32 的 auto_cleanup 同源。
+    'debug' => filter_var(getenv('APP_DEBUG') ?: '0', FILTER_VALIDATE_BOOLEAN),
     'error_reporting' => E_ALL,
     'default_timezone' => 'Asia/Shanghai',
     // 应用对外地址（API 文档 baseUrl 等）

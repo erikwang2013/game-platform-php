@@ -52,19 +52,36 @@ putenv('ENCRYPTION_KEY=' . $testKey);
 putenv('ENCRYPTION_CIPHER=aes-256-gcm');
 
 // 测试专用数据库：默认指向 game-platform-test（可用 DB_DATABASE_TEST 覆盖）。
-// Dotenv(mutable) 会覆盖进程环境变量，故在连接初始化时强制覆写，确保测试永不读写开发库。
+// ⚠ 这里改写的只是 $dbConfig 这个**局部副本**：Webman\Config 没有 set()，config('database')
+//   全程仍是开发库的值，动不了它。真正让测试落到测试库的是下面「先烧守卫、再由测试库
+//   Capsule 最后 setAsGlobal()」那段**顺序** —— 不是这行赋值（2026-10-02 实测：只改这行时
+//   套件实际仍连 game-platform）。
 $dbConfig = config('database');
 $dbConfig['connections'][$dbConfig['default']]['database'] = getenv('DB_DATABASE_TEST') ?: 'game-platform-test';
 // 口令沿用 config('database')（.env）的值，此处不再覆写：旧口径「本机 root 无密码、故强制空密码」
 // 自 2026-09-17 root 启用口令后失效，后果是全部连库用例静默 skip，并被长期误读成「本机 MySQL 失效」。
-// 上一行改写测试库名已足够保证测试不读写开发库，凭据无需另行干预。
 
-// 初始化 Eloquent 与 support\Db。
-// 注意：不能用 Webman\Database\Initializer::init()——support\Db 首次被 autoload 时
-// 会 require Initializer.php，其文件尾部立即调用 init() 消耗一次性 $initialized 守卫；
-// 随后 support\bootstrap\Database::start 又用未设置默认连接的裸 Capsule 覆盖全局实例，
-// 使后续 init() 全部空转，默认连接 'default' 缺失。这里在 bootstrap 之后统一用裸 Capsule
-// 重建（与 support\Db 共享同一 static 实例）；MySQL 不可用时由各测试用例自行跳过。
+// 初始化 Eloquent 与 support\Db，全程钉在测试库上。两处会抢全局解析器，都要处理：
+//
+// 一、support\bootstrap\Database::start 按 config('database')（= 开发库，上面动不了）装了一个
+//   Capsule 并 setAsGlobal()。所以下面手工重建一个指向测试库的 Capsule 覆盖掉
+//   （与 support\Db 共享同一 static 实例）；MySQL 不可用时由各测试用例自行跳过。
+//
+// 二、更隐蔽的是 vendor/webman/database/src/Initializer.php：文件尾部是一句裸露的
+//   `Initializer::init(config('database', []))`，在 include 那一刻就执行，而 support/Db.php:21
+//   正是 require_once 这个文件。而 support\Db 是**懒加载**的 —— 第一个碰它的用例发生在
+//   bootstrap **之后**，那次 init 读到的是**未改写**的开发库配置，它消耗掉一次性 $initialized
+//   守卫并用 setAsGlobal() 把全局解析器改指开发库 ⇒ 上面那个测试库 Capsule 白建，整套连库
+//   用例（含清理逻辑）全落到开发库。2026-10-02 实测：套件内 config('database')、
+//   Db::connection()->getDatabaseName()、模型连接三处都是 game-platform。
+//   ⚠ 不能改成"直接调 Initializer::init($dbConfig)"：一提类名就会 autoload 该文件，文件尾那次
+//   init(开发库) 先跑并吃掉守卫，显式调用只会静默空转，真正落笔的仍是开发库。
+//   解法＝抢在下面那个测试库 Capsule **之前**把该文件整个 include 掉，让开发库那次 init 先发生、
+//   先烧掉守卫，再由测试库 Capsule 最后 setAsGlobal() 落笔。此后任何 support\Db autoload 都空转。
+//   ⚠ **顺序是关键**：把下面这行 require_once 挪到 Capsule 之后，开发库会重新赢
+//   （钉子：tests/DatabaseIsolationTest.php，变异就是把这一行挪到 Capsule 之后）。
+require_once __DIR__ . '/../vendor/webman/database/src/Initializer.php';
+
 $capsule = new \Illuminate\Database\Capsule\Manager();
 foreach ($dbConfig['connections'] as $name => $connection) {
     $capsule->addConnection($connection, $name);

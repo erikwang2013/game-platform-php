@@ -231,6 +231,8 @@ POST /api/v1/auth/login
 
 ### 3.6 Registro
 
+> **Nota (retirado el 2026-10-01)**: este endpoint ya no se monta desde `config/route.php`; `POST /api/v1/auth/register` ahora devuelve 404. Un llamante anónimo con un solo captcha de clics podía crear una cuenta de administrador activada y recibir tokens de inmediato, y ese grupo de rutas no tiene OperationLog (la creación de la cuenta no dejaba auditoría). El método del controlador se conserva; la precondición para restaurarlo está en la nota de `config/route.php`. El contrato siguiente se conserva como registro previo a la retirada.
+
 ```
 POST /api/v1/auth/register
 ```

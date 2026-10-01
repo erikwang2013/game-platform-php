@@ -339,10 +339,16 @@ function GameServers({ path }: { path: string }) {
   );
 }
 
-export function TabPage({ page }: { page: PageDef }) {
+/** 路由传的页面键（`<TabPage id="dashboard" />`）。传键不传对象：`PAGES` 是本文件的模块级常量，
+ *  在 `App.tsx` 里静态引用它会把整个 TabPage 模块图（含 1535 行的 `modules.ts`）拉回首屏，
+ *  页面级切分就白做了。 */
+export type PageKey = keyof typeof PAGES;
+
+export function TabPage({ id }: { id: PageKey }) {
   // 页面**自己**订阅语言。不能指望布局层的重绘带过来：实测切到中文后，顶栏/侧栏变中文而
   // 页面里的按钮与表格仍是英文（Shell 重绘 ≠ <Outlet/> 子树重绘）。这一行让整棵页面子树重渲。
   useI18n();
+  const page: PageDef = PAGES[id];
   // 账号标签无端点，path 缺省即本地渲染
   const groups: Group[] = page.account ? [{ label: 'account.title' }, ...page.groups] : page.groups;
   const [active, setActive] = useState(0);

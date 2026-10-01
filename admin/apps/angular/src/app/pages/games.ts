@@ -25,7 +25,7 @@ const GAME_FIELDS: Field[] = [
     type: 'text',
     required: true,
     createOnly: true,
-    placeholder: 'game.slug_hint',
+    hint: 'game.slug_hint',
   },
   {
     name: 'type',
@@ -78,14 +78,14 @@ const GAME_FIELDS: Field[] = [
     label: 'game.api_key',
     type: 'text',
     keepIfEmpty: true,
-    placeholder: 'game.api_key_hint',
+    hint: 'game.api_key_hint',
   },
   {
     name: 'api_secret',
     label: 'game.api_secret',
     type: 'text',
     keepIfEmpty: true,
-    placeholder: 'game.api_secret_hint',
+    hint: 'game.api_secret_hint',
   },
   { name: 'description', label: 'game.description', type: 'textarea' },
 ];
@@ -110,7 +110,7 @@ const CATEGORY_FIELDS: Field[] = [
     type: 'text',
     required: true,
     createOnly: true,
-    placeholder: 'game_category.slug_hint',
+    hint: 'game_category.slug_hint',
   },
   {
     name: 'icon',
@@ -154,7 +154,7 @@ const SERVER_FIELDS: Field[] = [
     name: 'region',
     label: 'game_server.region',
     type: 'text',
-    placeholder: 'game_server.region_hint',
+    hint: 'game_server.region_hint',
   },
   {
     name: 'status',

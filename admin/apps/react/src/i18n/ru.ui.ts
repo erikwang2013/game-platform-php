@@ -27,6 +27,7 @@ export const ruUi: Record<UiKey, string> = {
   'app.no': 'Нет',
   'app.no_data': 'Нет данных',
   'app.close': 'Закрыть',
+  'app.render_failed': 'Не удалось отобразить этот экран. Обновите страницу',
   // Переключатель языка
   'lang.label': 'Язык',
 

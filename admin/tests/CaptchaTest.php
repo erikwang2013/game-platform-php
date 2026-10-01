@@ -7,12 +7,14 @@ declare(strict_types=1);
 
 namespace tests;
 
+use app\api\v1\controller\CaptchaController;
 use Erikwang2013\Poster\Captcha\RateLimiter;
 use Erikwang2013\Poster\PosterConfig;
 use Erikwang2013\Poster\Storage\StorageFactory;
 use Erikwang2013\Poster\Storage\StorageInterface;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use support\Request;
 
 class CaptchaTest extends TestCase
 {
@@ -195,5 +197,30 @@ class CaptchaTest extends TestCase
                 "$rel 不应再直接调用 vendor 的 captcha_verify()（身份恒为 'cli'）"
             );
         }
+    }
+
+    /**
+     * 公开端点 `/api/v1/captcha/verify` 收到 `key[]=xxx`（数组）时必须回 422 信封，
+     * 不能把 TypeError 漏给框架 —— 漏出去在 debug 形态下是 HTTP 500 + 完整堆栈（含绝对路径）。
+     *
+     * `empty()` 挡不住非空数组（`empty(['xxx']) === false`），而 `captcha_verify_from_ip`
+     * 的 `string $key` 形参在 strict_types 下会抛 TypeError；verify() 又没有 try/catch。
+     */
+    #[Test]
+    public function captcha_verify_rejects_array_key_without_leaking_type_error(): void
+    {
+        $body = 'key[]=xxx&clicks[]=1';
+        $raw  = "POST /api/v1/captcha/verify HTTP/1.1\r\nHost: localhost\r\n"
+              . "Content-Type: application/x-www-form-urlencoded\r\n"
+              . 'Content-Length: ' . strlen($body) . "\r\n\r\n" . $body;
+        $request = new Request($raw);
+
+        // 前提探针：若 `key[]=xxx` 没被解析成数组，本用例就压根没走到目标分支 —— 恒真式假绿
+        $this->assertIsArray($request->input('key'), 'key[]=xxx 应被解析成数组，否则本用例没在测目标分支');
+
+        $payload = json_decode((new CaptchaController())->verify($request)->rawBody(), true);
+
+        $this->assertSame(422, $payload['code'] ?? null,
+            '数组 key 应回 422 信封；这里拿到非 422（或直接抛 TypeError）说明形状校验缺了');
     }
 }

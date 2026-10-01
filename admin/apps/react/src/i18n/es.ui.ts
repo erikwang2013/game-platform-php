@@ -28,6 +28,7 @@ export const esUi: Record<UiKey, string> = {
   'app.no': 'No',
   'app.no_data': 'Sin datos',
   'app.close': 'Cerrar',
+  'app.render_failed': 'No se pudo mostrar esta pantalla. Actualice la página',
   // Selector de idioma
   'lang.label': 'Idioma',
 

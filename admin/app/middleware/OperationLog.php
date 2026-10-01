@@ -62,7 +62,27 @@ class OperationLog implements MiddlewareInterface
     private const SENSITIVE_WORDS = [
         'password', 'passwd', 'pwd', 'secret', 'token', 'credential',
         'signature', 'salt', 'private', 'key', 'config',
+        // PII 单字：写入侧 AdminUser 的这两个字段走 encryptable 存密文、出参是 138****5678 /
+        // a***@x.com，而日志里曾是明文。phone/email 是本仓实际的提交键名（UserController::store/update、
+        // ProfileController::update、ImportController 均以此收件），contact_phone 这类前缀变体同样命中。
+        'phone', 'email',
     ];
+
+    /**
+     * 复合词敏感键：按「相邻词拼接」整段比。
+     *
+     * real_name 切词得 [real, name]、id_card 得 [id, card]、id_number 得 [id, number] ——
+     * 单比 name / card / number 会连带打码 role_name、game_name、card_type 这些**审计要留的正文**
+     * （角色的名字、改了哪张卡），故只能整段比：real_name / realName / admin_real_name 都拼得出 realname。
+     *
+     * 三个词都是照写入侧实际键名定的：AdminUser.real_name（VARCHAR(50)）、AdminUser.id_card
+     * （encryptable 密文 + 模型 $hidden）、game_user_identity.id_number（密文）。
+     * 自由文本 note **刻意不在列，别顺手补上**：RiskEventController::review 的处置备注只落操作日志
+     * （它的成功文案自己写着 auditable in operation logs，函数里没有 save、库里没有第二份），
+     * 打码等于删审计。同键名在 IdentityController / AntiCheatController 确有 review_note 列冗余，
+     * 但中间件分不开同名的两种语义 —— 前者不足以推翻后者。
+     */
+    private const SENSITIVE_PHRASES = ['realname', 'idcard', 'idnumber'];
 
     /**
      * 递归过滤敏感字段，防止密码/密钥等泄露到日志
@@ -119,6 +139,17 @@ class OperationLog implements MiddlewareInterface
                 continue;
             }
             return true;
+        }
+
+        // 复合词（见 SENSITIVE_PHRASES）：相邻 2~3 个词拼接后整段比。名单最长 3 词，
+        // 故上界取 3；逐段比而不是 str_contains，否则 valid_card 也会拼出 idcard 被误伤。
+        $count = count($words);
+        for ($i = 0; $i < $count; $i++) {
+            for ($n = 2; $n <= 3 && $i + $n <= $count; $n++) {
+                if (in_array(implode('', array_slice($words, $i, $n)), self::SENSITIVE_PHRASES, true)) {
+                    return true;
+                }
+            }
         }
 
         return false;

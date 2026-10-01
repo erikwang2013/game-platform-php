@@ -28,6 +28,7 @@ export const ptUi: Record<UiKey, string> = {
   'app.no': 'Não',
   'app.no_data': 'Sem dados',
   'app.close': 'Fechar',
+  'app.render_failed': 'Não foi possível exibir esta tela. Recarregue a página',
   // Seletor de idioma
   'lang.label': 'Idioma',
 

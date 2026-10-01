@@ -231,6 +231,8 @@ POST /api/v1/auth/login
 
 ### 3.6 Registrierung
 
+> **Hinweis (entfernt am 2026-10-01)**: Dieser Endpunkt ist nicht mehr in `config/route.php` registriert; `POST /api/v1/auth/register` liefert jetzt 404. Ein anonymer Aufrufer konnte mit einem einzigen Klick-Captcha ein aktiviertes Administratorkonto anlegen und sofort Token erhalten, und diese Routengruppe hat kein OperationLog (kein Audit über die Kontoanlage). Die Controller-Methode bleibt erhalten; die Voraussetzung für eine Wiederherstellung steht im Hinweis in `config/route.php`. Der folgende Vertrag ist als Vorher-Dokumentation erhalten.
+
 ```
 POST /api/v1/auth/register
 ```

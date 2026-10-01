@@ -27,6 +27,7 @@ export const koUi: Record<UiKey, string> = {
   'app.no': '아니요',
   'app.no_data': '데이터 없음',
   'app.close': '닫기',
+  'app.render_failed': '이 화면을 표시하지 못했습니다. 페이지를 새로 고쳐 주세요',
   // 언어 전환기
   'lang.label': '언어',
 

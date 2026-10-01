@@ -1,6 +1,8 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
-import { useEffect, useState, type ReactNode } from 'react';
+import { Suspense, useEffect, useState, type ReactNode } from 'react';
 import { NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { ErrorBoundary } from './ErrorBoundary';
+import { Loading } from './ui';
 import { useAuth } from '../lib/auth';
 import { useSignOut } from '../lib/hooks';
 import { LANGUAGES, useI18n, type MessageKey } from '../i18n/index.ts';
@@ -175,7 +177,15 @@ export function Shell() {
           </div>
         </header>
         <main className="content">
-          <Outlet />
+          {/* 页面级两道护栏，都在布局层之内 ⇒ 页面炸了顶栏/侧栏/底部标签还在，用户点得走。
+              ① ErrorBoundary：渲染异常降级成「这一屏挂了 + 重试」，不白屏；`resetKey` 传路径，
+                 换页面自动复位（边界不会自己复位，不复位就等于把用户锁死在降级 UI 上）。
+              ② Suspense：路由是 `React.lazy` 切的，chunk 到货前拿骨架撑住这一块（布局不抖）。 */}
+          <ErrorBoundary resetKey={location.pathname}>
+            <Suspense fallback={<Loading />}>
+              <Outlet />
+            </Suspense>
+          </ErrorBoundary>
         </main>
       </div>
 

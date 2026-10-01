@@ -350,20 +350,22 @@ export class Finance extends CrudPage {
    * 本树 ui-table 没有行选择原语，与其让运营手输一列 hashid（错一个就是另一笔钱），
    * 不如把「本页待审核」这件事说清楚 —— 确认框逐条列出订单号与金额，自己可以核；
    * 服务端对每笔仍是原子的（WHERE status='pending'，已处理的跳过），客户端这层只是预览不是判据。
+   *
+   * ⚠ 原先这里 `slice(0, 8)`，第 9 笔起只剩一句「…等共 N 笔」——「逐条核对金额」当场作废，
+   * 而这一屏点下去是**放款**（分页 20 行 ⇒ 最坏 12 笔看不见就放出去了）。上限已撤：
+   * 确认框里的列表滚动着看，本页有几笔就列几笔。
    */
   protected async batch(action: 'approve' | 'reject'): Promise<void> {
     const rows = this.pending();
     if (!rows.length) return;
-    const lines = rows
-      .slice(0, 8)
-      .map((r) => t('withdraw.batch_line', { id: this.orderId(r), money: this.money(r) }));
-    const more = rows.length > 8 ? t('withdraw.batch_more', { n: rows.length }) : '';
+    const lines = rows.map((r) =>
+      t('withdraw.batch_line', { id: this.orderId(r), money: this.money(r) }),
+    );
     const verb = t(action === 'approve' ? 'withdraw.approve' : 'withdraw.batch_reject_verb');
     const ask = t('withdraw.batch_confirm', {
       action: verb,
       n: rows.length,
       lines: lines.join('\n'),
-      more,
     });
     if (!confirm(ask)) {
       return;

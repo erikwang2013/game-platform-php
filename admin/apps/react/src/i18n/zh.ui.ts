@@ -27,6 +27,7 @@ export const zhUi: Record<UiKey, string> = {
   'app.no': '否',
   'app.no_data': '暂无数据',
   'app.close': '关闭',
+  'app.render_failed': '这一屏渲染失败了，请刷新页面',
   // 语言切换器
   'lang.label': '语言',
 

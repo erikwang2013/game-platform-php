@@ -61,7 +61,10 @@ class _BigscreenPageState extends State<BigscreenPage> {
       final d = await _api.get('/admin/v1/report/daily',
           params: {'start': _fmt(DateTime.now().subtract(const Duration(days: 29))), 'end': _fmt(DateTime.now())});
       _daily = List<Map<String, dynamic>>.from(d['data'] ?? []);
-      final st = await _api.get('/admin/v1/dashboard/stats');
+      // 平台面板的取数走 `GET /admin/v1/dashboard`（DashboardController::index），stats 在它的
+      // `data.stats` 里 —— 路由表里**没有** `/dashboard/stats`（只有 `/dashboard` 与
+      // `/dashboard/platform`），打它就是 404，被下面的 catch 吞成「面板永远空白且不报错」。
+      final st = await _api.get('/admin/v1/dashboard');
       _stats = List<Map<String, dynamic>>.from(st['data']?['stats'] ?? []);
     } catch (_) {
       // 大屏静默降级：数据缺失时显示占位

@@ -36,8 +36,11 @@ class MetricsController
     {
         $metrics = [];
 
-        $activeUsers = $this->safeCount(function () {
-            return AdminUser::whereDate('last_login_at', date('Y-m-d'))->count();
+        // 走 cachedGauge：本端点的调用方不止 Prometheus —— admin/apps/angular 的
+        // dashboard.ts:100 与 settings.ts:432 也在打 /metrics，裸 safeCount 等于每次前端
+        // 页面加载都跑一条全表扫（见 todayRange() 的注释）。
+        $activeUsers = $this->cachedGauge('metrics:admin:active_users_today', function () {
+            return AdminUser::whereBetween('last_login_at', $this->todayRange())->count();
         });
         $metrics[] = '# HELP open_admin_active_users Active users today';
         $metrics[] = '# TYPE open_admin_active_users gauge';
@@ -84,7 +87,7 @@ class MetricsController
 
         $depositsToday = $this->cachedGauge('metrics:biz:deposit_today', function () {
             return DepositOrder::where('status', 'confirmed')
-                ->whereDate('paid_at', date('Y-m-d'))
+                ->whereBetween('paid_at', $this->todayRange())
                 ->count();
         });
         $metrics[] = '# HELP open_admin_deposit_confirmed_today Confirmed deposit orders paid today';
@@ -102,20 +105,29 @@ class MetricsController
 
         // ---- L4 可观测性扩充：业务组 ----
         $depositsToday = $this->cachedGauge('metrics:biz:deposit_total_today', function () {
-            return DepositOrder::whereDate('created_at', date('Y-m-d'))->count();
+            return DepositOrder::whereBetween('created_at', $this->todayRange())->count();
         });
         $metrics[] = '# HELP open_admin_deposit_total_today Total deposit orders created today';
         $metrics[] = '# TYPE open_admin_deposit_total_today gauge';
         $metrics[] = "open_admin_deposit_total_today {$depositsToday}";
         $metrics[] = '# HELP open_admin_deposit_success_rate_percent Confirmed/total deposit ratio today (percent)';
         $metrics[] = '# TYPE open_admin_deposit_success_rate_percent gauge';
-        $metrics[] = 'open_admin_deposit_success_rate_percent ' . ($depositsToday > 0 ? (float) BcMath::percent((string) $this->safeCount(function () {
-            return DepositOrder::where('status', 'confirmed')->whereDate('created_at', date('Y-m-d'))->count();
-        }), (string) $depositsToday, 2) : 0);
+        // 分子也走 cachedGauge：原先它藏在 BcMath::percent 的参数里裸跑 safeCount，
+        // 于是每请求多一次全表扫，且与分母（已缓存）口径不一致。
+        $depositsConfirmedToday = $this->cachedGauge('metrics:biz:deposit_confirmed_created_today', function () {
+            return DepositOrder::where('status', 'confirmed')->whereBetween('created_at', $this->todayRange())->count();
+        });
+        $metrics[] = 'open_admin_deposit_success_rate_percent ' . ($depositsToday > 0 ? (float) BcMath::percent((string) $depositsConfirmedToday, (string) $depositsToday, 2) : 0);
 
         $diffPending = $this->cachedGauge('metrics:biz:reconciliation_diff_pending', function () {
-            // 对账差异表可能尚未建表：safeCount 兜底返回 0
-            return (int) Db::table('game_reconciliation_diff')->where('status', 'pending')->count();
+            // 两个坑叠在这里，任一未修则本指标**恒为 0**，而下面 safeCount 会把 SQLSTATE 42S22 静默吞掉：
+            //  ① 表名：Db::table 自己加前缀 `game_`（config/database.php:36）⇒ 写全名会查
+            //     `game_game_reconciliation_diff`（不存在）。**只写裸表名**。
+            //  ② 列名是 `resolution`（值 pending/resolved/ignored），**没有 `status` 列**
+            //     （DDL: install.sql:1152；同口径见 ReconciliationService::listDiffs 的 where('resolution', …)）。
+            // 后果：open_admin_reconciliation_diff_pending 是资金对账（H3）的唯一告警源，
+            // 恒 0 等于待处理差异永远不会告警。
+            return (int) Db::table('reconciliation_diff')->where('resolution', 'pending')->count();
         });
         $metrics[] = '# HELP open_admin_reconciliation_diff_pending Pending reconciliation diffs (H3 money risk)';
         $metrics[] = '# TYPE open_admin_reconciliation_diff_pending gauge';
@@ -183,6 +195,24 @@ class MetricsController
         return response(implode("\n", $metrics) . "\n", 200, [
             'Content-Type' => 'text/plain; charset=utf-8',
         ]);
+    }
+
+    /**
+     * 今天整天的 [00:00:00, 23:59:59] 闭区间，配合 whereBetween 用。
+     *
+     * 为什么不用 `whereDate('created_at', date('Y-m-d'))`：它被编译成
+     * `date(created_at) = ?`（vendor/illuminate/database/Query/Grammars/Grammar.php:526-531
+     * 是 `'date('.$this->wrap($col).').'.$op.' ?'`）—— **列被函数包住，B+ 树索引直接失效**，
+     * 每次都是全表扫。换成本方法后是裸列的范围比较，走 `idx_created_at` 一类索引。
+     * 口径同 ReportController::dailyRows 的 whereBetween，不另立一套。
+     *
+     * @return array{0:string,1:string}
+     */
+    private function todayRange(): array
+    {
+        $today = date('Y-m-d');
+
+        return [$today . ' 00:00:00', $today . ' 23:59:59'];
     }
 
     /**

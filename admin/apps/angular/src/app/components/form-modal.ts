@@ -7,6 +7,7 @@ import { json } from '../core/render';
 import { ImageUpload } from '../core/upload';
 import { errText, num } from '../core/util';
 import { TreeSelect } from './tree-select';
+import { ModalFocus } from './ui';
 
 /**
  * 通用表单弹框：字段描述驱动，新建/编辑共用一个（value 非空即预填）。
@@ -17,11 +18,18 @@ import { TreeSelect } from './tree-select';
  */
 @Component({
   selector: 'ui-form',
-  imports: [TreeSelect, T],
+  imports: [TreeSelect, T, ModalFocus],
   template: `
     @if (open()) {
       <div class="backdrop" (click)="close.emit()"></div>
-      <div class="modal" role="dialog" aria-modal="true" [attr.aria-label]="title() | t">
+      <div
+        class="modal"
+        role="dialog"
+        aria-modal="true"
+        [attr.aria-label]="title() | t"
+        uiModal
+        (dismiss)="close.emit()"
+      >
         <header>
           <b>{{ title() | t }}</b>
           <span class="spacer"></span>
@@ -49,6 +57,9 @@ import { TreeSelect } from './tree-select';
                     <textarea
                       class="input"
                       [attr.name]="f.name"
+                      [attr.required]="req(f)"
+                      [attr.maxlength]="f.maxlength ?? null"
+                      (input)="meter(f.name, $event)"
                       [placeholder]="(f.placeholder || '') | t"
                       [value]="text(f.name)"
                     ></textarea>
@@ -56,7 +67,7 @@ import { TreeSelect } from './tree-select';
                   @case ('select') {
                     <!-- 不能用 select[value]：它的绑定早于 @for 生成的 option，预选会被吞掉、
                          静默落成第一个选项（编辑一次就把 type 改掉）。逐项 [selected] 才可靠。 -->
-                    <select class="input" [attr.name]="f.name">
+                    <select class="input" [attr.name]="f.name" [attr.required]="req(f)">
                       <!-- 存量行里可能有选项表里没有的枚举值（如公告 type=payment）：
                            置顶补一条并保持原样，免得显示成「请选择」被手滑改掉 -->
                       @if (offList(f); as v) {
@@ -78,7 +89,7 @@ import { TreeSelect } from './tree-select';
                     <!-- 多选：原生 select[multiple]，逐项 [selected]（同单选 —— [value] 绑定会被
                          @for 生成的 option 吞掉）。未勾选的项不进 FormData ⇒ fire() 用 getAll 收数组，
                          所以这不是「一格文本里塞 JSON」而是真正的数组字段。 -->
-                    <select class="input" [attr.name]="f.name" multiple size="8">
+                    <select class="input" [attr.name]="f.name" multiple size="8" [attr.required]="req(f)">
                       @for (o of multi(f); track o.value) {
                         <option [value]="o.value" [selected]="o.on">{{ o.label | t }}</option>
                       }
@@ -92,7 +103,12 @@ import { TreeSelect } from './tree-select';
                   }
                   @case ('switch') {
                     <label class="switch">
-                      <input type="checkbox" [attr.name]="f.name" [checked]="on(f.name)" />
+                      <input
+                        type="checkbox"
+                        [attr.name]="f.name"
+                        [attr.required]="req(f)"
+                        [checked]="on(f.name)"
+                      />
                       <span>{{ (on(f.name) ? 'app.enabled' : 'app.disabled') | t }}</span>
                     </label>
                   }
@@ -106,6 +122,7 @@ import { TreeSelect } from './tree-select';
                         class="input"
                         type="text"
                         [attr.name]="f.name"
+                        [attr.required]="req(f)"
                         [placeholder]="(f.placeholder || '') | t"
                         [value]="text(f.name)"
                         (input)="preview(f.name, $any($event.target).value)"
@@ -154,6 +171,7 @@ import { TreeSelect } from './tree-select';
                         type="file"
                         hidden
                         [attr.name]="f.name"
+                        [attr.required]="req(f)"
                         [accept]="f.accept"
                         (change)="choose($event, box)"
                       />
@@ -164,6 +182,7 @@ import { TreeSelect } from './tree-select';
                       class="input"
                       type="number"
                       [attr.name]="f.name"
+                      [attr.required]="req(f)"
                       [placeholder]="(f.placeholder || '') | t"
                       [value]="text(f.name)"
                     />
@@ -175,6 +194,7 @@ import { TreeSelect } from './tree-select';
                       type="password"
                       autocomplete="new-password"
                       [attr.name]="f.name"
+                      [attr.required]="req(f)"
                       [placeholder]="(f.placeholder || '') | t"
                     />
                   }
@@ -183,6 +203,9 @@ import { TreeSelect } from './tree-select';
                       class="input"
                       type="text"
                       [attr.name]="f.name"
+                      [attr.required]="req(f)"
+                      [attr.maxlength]="f.maxlength ?? null"
+                      (input)="meter(f.name, $event)"
                       [placeholder]="(f.placeholder || '') | t"
                       [value]="text(f.name)"
                     />
@@ -190,6 +213,11 @@ import { TreeSelect } from './tree-select';
                 }
                 @if (f.hint) {
                   <small class="hint">{{ f.hint | t }}</small>
+                }
+                <!-- 有上限的字段给个字数指示：超限时浏览器自己就不再收字（maxlength），
+                     用户看得见还差多少。非受控输入 ⇒ 长度只能靠 (input) 捞进信号 -->
+                @if (f.maxlength) {
+                  <small class="hint chars">{{ len(f.name) }}/{{ f.maxlength }}</small>
                 }
               </div>
             }
@@ -283,6 +311,33 @@ export class FormModal {
   protected choose(ev: Event, box: HTMLInputElement): void {
     const file = (ev.target as HTMLInputElement).files?.[0];
     if (file) box.value = file.name;
+  }
+
+  /**
+   * 原生 `required`：**空着点提交**由浏览器当场拦下，不再白跑一个来回（服务端仍是真值源，
+   * 这里不复制任何规则文案）。审计实测：空表单 `requestSubmit()` 真把
+   * `POST /admin/v1/user` 发出去了，6 个字段一个 `required` 都没有。
+   *
+   * ⚠ 两种类型刻意**不发**（绑定照写、由这里返回 null 挡掉 —— 挡在函数里，不是靠「那两处忘了写绑定」）：
+   *  - `file`：导入弹框「没选文件」必须照发请求、由服务端回 422「请上传 Excel 文件」说明原因
+   *    —— /tmp/angular_admins_e2e.mjs:577 钉着这条行为，加了 required 浏览器会当场拦下。
+   *  - `switch`：开关没有「必填」这个语义（不勾＝关掉，是合法值）。
+   * （tree 是组件不是表单控件，`required` 属性落在它身上不参与校验 —— 那一处本来就没绑定。）
+   */
+  protected req(f: Field): string | null {
+    return f.required && f.type !== 'file' && f.type !== 'switch' ? '' : null;
+  }
+
+  /** maxlength 字段的实时字数（非受控输入：长度只能从原生框读出来存进信号） */
+  private readonly lens = signal<Record<string, number>>({});
+
+  protected len(name: string): number {
+    return this.lens()[name] ?? this.text(name).length;
+  }
+
+  protected meter(name: string, ev: Event): void {
+    const n = (ev.target as HTMLInputElement | HTMLTextAreaElement).value.length;
+    this.lens.update((m) => ({ ...m, [name]: n }));
   }
 
   /** 预填文本：JSON 列（config/benefits）读回来是数组/对象，要与 payload() 用同一个

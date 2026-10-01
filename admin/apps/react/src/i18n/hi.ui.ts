@@ -23,6 +23,7 @@ export const hiUi: Record<UiKey, string> = {
   'app.no': 'नहीं',
   'app.no_data': 'कोई डेटा नहीं',
   'app.close': 'बंद करें',
+  'app.render_failed': 'यह स्क्रीन प्रदर्शित नहीं हो सकी। कृपया पृष्ठ को रीफ़्रेश करें',
   // 语言切换器
   'lang.label': 'भाषा',
 

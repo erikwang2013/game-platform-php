@@ -100,4 +100,33 @@ class ConfigDefaultsTest extends TestCase
         $scout = require __DIR__ . '/../config/plugin/erikwang2013/webman-scout/app.php';
         $this->assertSame('http://os.internal:9200', $scout['opensearch']['host']);
     }
+
+    /**
+     * `app.debug` 必须真的**读 env**，且**默认关**。
+     *
+     * 原先是字面量 `true`：`App.php:362` 对未捕获异常渲染 `(string) $e`（完整堆栈 + 绝对路径
+     * + vendor 行号）而不是 `$e->getMessage()`，匿名者触发一条未捕获异常就能拿到目录结构。
+     * 三条断言各堵一个方向，缺一条这个方法就退化成恒真式：
+     *   ① 未设该键 ⇒ false（打回「恒 true」；注意**别**把这条读成「示例文件也是关」，
+     *      `service/.env.example:2` 写的是 APP_DEBUG=true，那是另一个决策）
+     *   ② 字符串 'false' ⇒ false（打回 `(bool) 'false' === true` 这类转型）
+     *   ③ 字符串 'true' ⇒ true（打回写死 false —— 否则「修好了」的代价是运维再也开不起这个开关）
+     */
+    public function testAppDebugFollowsEnvAndDefaultsOff(): void
+    {
+        $this->setEnv('APP_DEBUG', null);
+        $app = require __DIR__ . '/../config/app.php';
+        $this->assertFalse($app['debug'],
+            '未设 APP_DEBUG 时 app.debug 必须为 false；恒 true 时未捕获异常会渲染完整堆栈');
+
+        $this->setEnv('APP_DEBUG', 'false');
+        $app = require __DIR__ . '/../config/app.php';
+        $this->assertFalse($app['debug'],
+            "APP_DEBUG='false' 必须解析成 false（(bool) 转型会把它读成 true，Dotenv 给的是字符串）");
+
+        $this->setEnv('APP_DEBUG', 'true');
+        $app = require __DIR__ . '/../config/app.php';
+        $this->assertTrue($app['debug'],
+            "APP_DEBUG='true' 必须解析成 true，否则这个开关名存实亡");
+    }
 }

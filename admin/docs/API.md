@@ -231,6 +231,8 @@ POST /api/v1/auth/login
 
 ### 3.6 注册
 
+> **注记（2026-10-01 摘除）**：本端点已从 `config/route.php` 摘除，`POST /api/v1/auth/register` 现返回 404。原因是匿名仅凭一次点击验证码即可建出启用状态的管理员账号并当场签发令牌，且该路由组不挂 OperationLog（建号不留审计）。控制器方法已保留，恢复前提见 `config/route.php` 的注记。以下为摘除前的契约留档。
+
 ```
 POST /api/v1/auth/register
 ```

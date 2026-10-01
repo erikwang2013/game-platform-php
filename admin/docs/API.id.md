@@ -231,6 +231,8 @@ POST /api/v1/auth/login
 
 ### 3.6 Registrasi
 
+> **Catatan (dihapus 2026-10-01)**: endpoint ini tidak lagi dipasang dari `config/route.php`; `POST /api/v1/auth/register` kini mengembalikan 404. Pemanggil anonim dengan satu captcha klik bisa membuat akun administrator aktif dan langsung menerima token, dan grup rute ini tidak punya OperationLog (pembuatan akun tidak meninggalkan jejak audit). Metode controller dipertahankan; prasyarat pemulihannya ada di catatan `config/route.php`. Kontrak di bawah ini disimpan sebagai catatan sebelum penghapusan.
+
 ```
 POST /api/v1/auth/register
 ```

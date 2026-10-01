@@ -6,6 +6,7 @@ import { Auth } from '../core/auth.service';
 import { T, t } from '../core/i18n/i18n';
 import { imgSrc } from '../core/render';
 import { errText } from '../core/util';
+import { ModalFocus } from '../components/ui';
 
 interface Mark extends Click {
   /** 百分比位置，仅用于叠加标记点 */
@@ -19,8 +20,7 @@ interface Mark extends Click {
  */
 @Component({
   selector: 'app-login',
-  host: { '(document:keydown.escape)': 'onEsc()' },
-  imports: [T],
+  imports: [T, ModalFocus],
   template: `
     <div class="login-wrap">
       <div class="login-card">
@@ -65,7 +65,14 @@ interface Mark extends Click {
 
       @if (capOpen()) {
         <div class="backdrop" (click)="closeCap()"></div>
-        <div class="modal modal-sm" role="dialog" aria-modal="true" [attr.aria-label]="'login.captcha' | t">
+        <div
+          class="modal modal-sm"
+          role="dialog"
+          aria-modal="true"
+          [attr.aria-label]="'login.captcha' | t"
+          uiModal
+          (dismiss)="closeCap()"
+        >
           <header>
             <b>{{ 'login.captcha' | t }}</b>
             <span class="spacer"></span>
@@ -136,10 +143,6 @@ export class Login {
   protected readonly canConfirm = computed(
     () => this.cap() !== null && this.marks().length >= this.required(),
   );
-
-  protected onEsc(): void {
-    if (this.capOpen()) this.closeCap();
-  }
 
   protected submit(): void {
     if (!this.canSubmit()) return;

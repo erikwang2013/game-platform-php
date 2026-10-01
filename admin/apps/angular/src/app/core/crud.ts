@@ -49,8 +49,16 @@ export interface Field {
   keepIfEmpty?: boolean;
   /** 仅新建可填（update 的落库白名单里没有它，摆出来只会误导） */
   createOnly?: boolean;
-  /** 字段下方的说明（值域/格式提示）。**只提示不校验**：真值一律在服务端 */
+  /**
+   * 字段下方的说明（值域/格式提示）。**只提示不校验**：真值一律在服务端。
+   * ⚠ 规则文案挂这里，别挂 `placeholder`：审计实测 `.form-grid` 单列净宽 ~207px，
+   * 「3-50 位；创建后不可改（update 不读该字段）」这类 27 字的规则在框里被截成
+   * 「3-50 位；创建后不可改（update ：」—— 输入框里既没有 `title` 也没有 `aria-label`，
+   * 用户看不全；而且一打字 placeholder 就消失。短到放得下的（「最长 50」）留着无妨。
+   */
   hint?: string;
+  /** 输入上限（落成原生 `maxlength` + 框下 `n/上限` 字数指示）。真值仍在服务端 */
+  maxlength?: number;
   /** tree 字段的节点树（运行期注入，与 options 一样随信号刷新） */
   tree?: PNode[];
   /**
@@ -262,13 +270,19 @@ export abstract class CrudPage extends ListBase<Row> {
         // 与 users.ts:178 同款原生 confirm（不再搭第二套弹框），文案带对象标识
         const name = c.label?.(row) ?? idOf(row);
         if (!confirm(this.i18n.t('crud.delete_confirm', { name }))) return;
-        // 后端 confirmPassword 守卫（ConfigController::destroy）要求密码随请求带上：
-        // 取消 prompt 得空串，服务端回「敏感操作需要输入密码确认」，原样透出。
+        // 后端 confirmPassword 守卫（ConfigController::destroy）要求密码随请求带上。
+        // ⚠ 密码框点「取消」返回 null ⇒ 必须**中止**，一个请求都不发：写成 `?? ''` 会把「取消」
+        // 变成一次空密码请求 —— 界面刚说了取消、紧接着又弹一条 422，操作者无从判断删没删
+        // （实测载荷 `DELETE /admin/v1/user/A2 {"password":""}`）。与 react 树的 deleteWithPassword
+        // （pages/modules.ts）同一语义。
         // 走 body 而不是 query —— OperationLog 的敏感字段过滤（admin/app/middleware/OperationLog.php:63）
         // 按字段名抹掉 password，塞在 URL 里反而会原样落进操作日志。
-        const body = c.deletePassword
-          ? { password: prompt(this.i18n.t('crud.delete_password_prompt')) ?? '' }
-          : undefined;
+        let body: Row | undefined;
+        if (c.deletePassword) {
+          const password = prompt(this.i18n.t('crud.delete_password_prompt'));
+          if (password === null) return;
+          body = { password };
+        }
         await this.api.request('DELETE', remove(id), body);
       } else if (key === 'toggle') {
         const status = num(row['status']) ? 0 : 1;

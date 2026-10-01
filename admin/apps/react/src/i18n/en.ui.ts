@@ -30,6 +30,7 @@ export const enUi = {
   'app.no': 'No',
   'app.no_data': 'No data',
   'app.close': 'Close',
+  'app.render_failed': 'This screen failed to render, please refresh the page',
   // 语言切换器
   'lang.label': 'Language',
 

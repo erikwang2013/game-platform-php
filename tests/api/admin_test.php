@@ -81,7 +81,15 @@ t_check('登录负例: 错误密码', api('POST', '/api/v1/auth/login', [
     'captcha_key' => $k2, 'clicks' => $c2,
 ]), [401, 422, 423]);
 
-t_check('注册负例: 缺参数', api('POST', '/api/v1/auth/register', []), [422]);
+// 2026-10-01 摘除：匿名自助注册管理员的路由已从 admin/config/route.php 摘掉（控制器方法保留）。
+// 期望由「422 缺参数」改成「404 路由不存在」—— 有人把路由加回来这条就红，故这是守卫不是负例。
+// 用 t_ok 而非 t_check([404])：t_check 的放行条件含 `|| $biz === 0`，而 0 正是「注册成功」的码，
+// 那会让「路由被加回来且真的建了号」从这条守卫底下溜过去。
+// 404 的两种形态都认（webman PageNotFoundException：Accept: application/json 时是 HTTP 200 + body.code=404，
+// 否则是真 HTTP 404），biz_code() 已把两者归一，故只比一个数。
+$regRes = api('POST', '/api/v1/auth/register', []);
+t_ok('注册负例: 路由已摘除(匿名注册入口不再存在)', biz_code($regRes) === 404,
+    '期望 404（路由已摘）实际 ' . biz_code($regRes) . ' :: ' . substr((string) $regRes[2], 0, 160));
 t_check('刷新负例: 缺 refresh_token', api('POST', '/api/v1/auth/refresh', []), [422]);
 
 // ================= /admin/* 全量冒烟 =================
@@ -112,7 +120,9 @@ foreach ($ROUTES as [$method, $path]) {
 echo "---- /api/* 冒烟 ----\n";
 t_check('冒烟 POST /api/v1/captcha/generate', api('POST', '/api/v1/captcha/generate'), [0]);
 t_check('冒烟 POST /api/v1/captcha/verify', api('POST', '/api/v1/captcha/verify', []), [0, 422]);
-t_check('冒烟 POST /api/v1/auth/register', api('POST', '/api/v1/auth/register', []), [422, 429]);
+$regSmoke = api('POST', '/api/v1/auth/register', []);
+t_ok('冒烟 POST /api/v1/auth/register(已摘除)', biz_code($regSmoke) === 404,
+    '期望 404（路由已摘）实际 ' . biz_code($regSmoke) . ' :: ' . substr((string) $regSmoke[2], 0, 160));
 t_check('冒烟 POST /api/v1/auth/login(空参)', api('POST', '/api/v1/auth/login', []), [422]);
 t_check('冒烟 POST /api/v1/auth/refresh(空参)', api('POST', '/api/v1/auth/refresh', []), [422]);
 

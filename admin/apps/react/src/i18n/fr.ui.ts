@@ -23,6 +23,7 @@ export const frUi: Record<UiKey, string> = {
   'app.no': 'Non',
   'app.no_data': 'Aucune donnée',
   'app.close': 'Fermer',
+  'app.render_failed': 'Cet écran n\'a pas pu s\'afficher. Veuillez recharger la page',
   // 语言切换器
   'lang.label': 'Langue',
 

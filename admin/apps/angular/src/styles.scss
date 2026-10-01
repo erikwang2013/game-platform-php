@@ -344,6 +344,11 @@ table.data tbody tr:hover td:first-child { background: var(--inset); }
   background: var(--surface); outline: none;
   transition: border-color var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
 }
+/* 多选（全树唯一一处 `select[multiple]` 是角色多选）：`.input` 的 `height:32px` 会把它压成**一行高**
+   —— 15 个角色一次只看得见 1 个，要选第 3 个得在一行高的窗口里滚。高度交回浏览器，只给下限。
+   选择器带 `[multiple]`，单选 select 一个都不受影响（`.field .input`/移动端那两条 `height` 也被它压过，
+   正是想要的）。 */
+select.input[multiple] { height: auto; min-height: 8em; padding: var(--sp-1) var(--sp-2); }
 .input::placeholder { color: var(--ink-3); }
 .input:hover { border-color: var(--ink-3); }
 /* 聚焦：边框变色 + 外环。旧版把边框改成 primary 再叠一层极淡蓝影，暗色下等于没有 */

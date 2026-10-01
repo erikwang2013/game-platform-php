@@ -28,6 +28,7 @@ export const arUi: Record<UiKey, string> = {
   'app.no': 'لا',
   'app.no_data': 'لا توجد بيانات',
   'app.close': 'إغلاق',
+  'app.render_failed': 'تعذّر عرض هذه الشاشة. يُرجى تحديث الصفحة',
   // مبدّل اللغة
   'lang.label': 'اللغة',
 

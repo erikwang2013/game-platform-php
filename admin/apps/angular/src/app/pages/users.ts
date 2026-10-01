@@ -36,6 +36,15 @@ const USER_FIELDS: Field[] = [
   },
 ];
 
+/**
+ * 驳回备注（实名审核）：一个 textarea，**不是**原生 prompt。
+ * `maxlength` 与后端 `game_user_identity.review_note VARCHAR(500)` 同源（真值仍在服务端，
+ * 这里只是让用户看得见上限、且打不超）；字数指示由 ui-form 按 `maxlength` 自动带上。
+ */
+const NOTE_FIELDS: Field[] = [
+  { name: 'note', label: 'identity.note_hint', type: 'textarea', maxlength: 500 },
+];
+
 @Component({
   selector: 'app-users',
   imports: [StateBlock, Table, Pager, Tabs, Drawer, FormModal, T],
@@ -161,6 +170,11 @@ const USER_FIELDS: Field[] = [
             <dd>{{ 'user.empty_note' | t }}</dd>
           }
         </dl>
+        <!-- 动作报错就地显示（紧挨产生它的那两个按钮）：页面级 .state.error 在抽屉的
+             backdrop 底下，看不见（见 actError 的注释） -->
+        @if (actError()) {
+          <div class="alert">{{ actError() }}</div>
+        }
         <div class="row-actions">
           @if (tab() === 'identity') {
             <!-- 通过 / 驳回：PUT /admin/v1/identity/review（IdentityController::review，CAS 抢单） -->
@@ -187,6 +201,18 @@ const USER_FIELDS: Field[] = [
       (save)="submit($event)"
       (close)="closeForm()"
     />
+
+    <!-- 驳回备注：标题即二次确认（带对象标识），框里带 maxlength=500 + 字数指示；
+         服务端 422 时框不关、刚打的理由还在 -->
+    <ui-form
+      [open]="noteOpen()"
+      [title]="noteTitle()"
+      [fields]="noteFields"
+      [error]="noteError()"
+      [saving]="noteSaving()"
+      (save)="submitNote($event)"
+      (close)="closeNote()"
+    />
   `,
 })
 export class Users extends CrudPage {
@@ -196,6 +222,28 @@ export class Users extends CrudPage {
   ];
   protected readonly tab = signal('list');
   protected readonly detail = signal<Row | null>(null);
+
+  /**
+   * 动作型错误（驳回 / 封禁 / 解封）：**就地显示在抽屉里**。
+   *
+   * ⚠ 别往页面级 `error` 灌 —— 那是列表上方的 `.state.error`，而抽屉的 `.backdrop`
+   * （position:fixed; z-index:50，铺满整屏）盖在它上面，`elementFromPoint(错误中心)` 命中的是
+   * backdrop：审计实测运营点完「驳回」屏幕上什么都没有，只剩遮罩下被压暗的一行红字，
+   * 于是重复点（而驳回不可逆）。判据就是 elementFromPoint 必须命中错误元素本身。
+   */
+  protected readonly actError = signal('');
+
+  // ---------- 驳回备注框（取代原生 prompt，见 review 的注释） ----------
+
+  protected readonly noteOpen = signal(false);
+  protected readonly noteRow = signal<Row | null>(null);
+  protected readonly noteError = signal('');
+  protected readonly noteSaving = signal(false);
+  /** 标题即二次确认：驳回不可逆，对象标识必须在标题里看得见（who() 的口径） */
+  protected readonly noteTitle = computed(() =>
+    t('identity.reject_confirm_target', { name: this.who(this.noteRow() ?? {}) }),
+  );
+  protected readonly noteFields = NOTE_FIELDS;
   /** 导出中（按钮禁用 + 文案切换）。导出走 Api.download，不经过 rows/loading，不打断列表 */
   protected readonly exporting = signal(false);
 
@@ -316,18 +364,23 @@ export class Users extends CrudPage {
 
   /**
    * 确认文案里的对象标识：昵称 / 用户名，都没有才退回 hashid。
-   * 用户列表把 username 放在行顶层；实名记录的列表行嵌在 user.username 里
-   * （IdentityController::list 的 `$data['user'] = ['id','username']`）—— 两种形状都要认，
-   * 否则驳回确认文案只剩一个 hashid，等于没告诉人驳回的是谁。
+   * 取用户名的那条链见 usernameOf()（两种行形状都认），否则驳回确认文案只剩一个 hashid，
+   * 等于没告诉人驳回的是谁。
    */
   protected who(row: Row): string {
-    const u = (row['user'] ?? {}) as Row;
-    return (
-      String(row['nickname'] ?? '') ||
-      String(row['username'] ?? '') ||
-      String(u['username'] ?? '') ||
-      idOf(row)
-    );
+    return String(row['nickname'] ?? '') || this.usernameOf(row) || idOf(row);
+  }
+
+  /**
+   * 用户名：用户列表放在行顶层；实名记录嵌在 `user.username` 里
+   * （IdentityController::list 的 `$data['user'] = ['id','username']`）。
+   * 列表渲染会把实名行的 `user` **摊平成这个串**（见 fetch）⇒ 三种形状（对象 / 串 / 没有）都要认，
+   * 否则摊平之后 who()（驳回确认文案的对象标识）就再也取不到用户名了。
+   */
+  protected usernameOf(row: Row): string {
+    const u = row['user'];
+    const nested = typeof u === 'string' ? u : String((u as Row | undefined)?.['username'] ?? '');
+    return String(row['username'] ?? '') || nested;
   }
 
   /**
@@ -350,13 +403,20 @@ export class Users extends CrudPage {
     void this.load();
   }
 
-  protected override fetch(): Promise<Page<Row>> {
-    const url = this.tab() === 'identity' ? U + 'identity/list' : U + 'platform/user/list';
-    return this.api.list<Row>(url, {
+  protected override async fetch(): Promise<Page<Row>> {
+    const identity = this.tab() === 'identity';
+    const res = await this.api.list<Row>(identity ? U + 'identity/list' : U + 'platform/user/list', {
       page: this.page(),
       page_size: this.pageSize,
       keyword: this.keyword(),
     });
+    if (!identity) return res;
+    // 实名行的 `user` 是嵌套对象，而 dash() 对对象一律渲染成 `{…}` ⇒ 列表上那一列等于什么都没说，
+    // 详情抽屉里的 `user` 键同理。摊平成用户名字符串（列键/列头都不动）。
+    // 取不到就留空 ⇒ dash() 摆 `—`；**不**用 who() 的 hashid 兜底 —— 那是**实名记录自己的** id，
+    // 摆在「user」这一列上是假信息（用户列表与实名记录是两个 ID 空间）。
+    // 参照树 react 的口径见 modules.ts:502 identityLabel（把 user.username 取出来用）。
+    return { ...res, list: (res.list ?? []).map((r) => ({ ...r, user: this.usernameOf(r) })) };
   }
 
   /**
@@ -366,6 +426,8 @@ export class Users extends CrudPage {
    */
   protected async open(row: Row): Promise<void> {
     this.detail.set(row);
+    // 开新记录 = 上一条记录的动作报错作废（留着会让这条记录背上别人的错误）
+    this.actError.set('');
     if (this.tab() !== 'list') return;
     const id = idOf(row);
     if (!id) return;
@@ -389,27 +451,61 @@ export class Users extends CrudPage {
    * action 只认 approve|reject（IdentityController::review 的 validator），
    * note 是 game_user_identity.review_note VARCHAR(500)，**驳回通知正文会把 note 原样带给用户**。
    *
-   * 驳回是不可逆的（后端 CAS：status 必须还是 pending，翻过就 422），所以先二次确认；
-   * prompt 取消（null）与空备注（''）必须分开 —— 混为一谈会让「手滑点了取消」变成一次真驳回。
+   * 驳回是不可逆的（后端 CAS：status 必须还是 pending，翻过就 422）⇒ 二次确认收进备注框的
+   * **标题**（`identity.reject_confirm_target`，带对象标识），不再另摆一个原生 confirm。
+   *
+   * ⚠ 备注框取代了原生 `prompt`：审计实测 501 字理由按确定 ⇒ 服务端 422「note 不能超过 500 个
+   * 字符」，而 **prompt 已关、刚打的整段理由随框一起消失**，只能重打（还是不可逆操作）。
+   * 现在是带 `maxlength=500` + 字数指示的弹框，服务端 422 时**框不关、内容还在**。
    */
   protected async review(row: Row, action: 'approve' | 'reject'): Promise<void> {
     const id = idOf(row);
     if (!id) return;
-    let note = '';
     if (action === 'reject') {
-      if (!confirm(t('identity.reject_confirm_target', { name: this.who(row) }))) return;
-      const input = prompt(t('identity.note_hint'));
-      if (input === null) return;
-      note = input.trim();
+      this.noteRow.set(row);
+      this.noteError.set('');
+      this.noteOpen.set(true);
+      return;
     }
     this.error.set('');
+    this.actError.set('');
     try {
-      await this.api.request('PUT', U + 'identity/review', { id, action, note });
+      await this.api.request('PUT', U + 'identity/review', { id, action, note: '' });
       this.closeDetail();
       await this.load();
     } catch (e) {
-      this.error.set(errText(e));
+      // 就在抽屉里报（页面级 `.state.error` 被抽屉的 backdrop 盖着，见 actError 的注释）
+      this.actError.set(errText(e));
     }
+  }
+
+  /** 备注框提交：真正发出驳回请求的那一步（review('reject') 只负责开框） */
+  protected async submitNote(v: Row): Promise<void> {
+    const id = idOf(this.noteRow() ?? {});
+    if (!id) return;
+    this.noteSaving.set(true);
+    this.noteError.set('');
+    try {
+      await this.api.request('PUT', U + 'identity/review', {
+        id,
+        action: 'reject',
+        note: String(v['note'] ?? '').trim(),
+      });
+      this.closeNote();
+      this.closeDetail();
+      await this.load();
+    } catch (e) {
+      // 框不关：服务端 message（如「note 不能超过 500 个字符」）留在框里，且**内容还在**
+      this.noteError.set(errText(e));
+    } finally {
+      this.noteSaving.set(false);
+    }
+  }
+
+  protected closeNote(): void {
+    this.noteOpen.set(false);
+    this.noteRow.set(null);
+    this.noteError.set('');
   }
 
   /**
@@ -429,11 +525,14 @@ export class Users extends CrudPage {
     const id = idOf(row);
     if (!id) return;
     this.error.set('');
+    this.actError.set('');
     const want = value === 'banned' ? 0 : 1;
     try {
       await this.api.request('PUT', U + 'platform/user/' + id, { status: want });
     } catch (e) {
-      this.error.set(errText(e));
+      // 请求失败发生在抽屉开着的时候 ⇒ 就地报（下面那两处回读校验是关抽屉之后的事，
+      // 仍然走路级 error —— 那时抽屉已经不在了，报进去没人看得见）
+      this.actError.set(errText(e));
       return;
     }
     this.closeDetail();

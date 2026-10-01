@@ -3,47 +3,47 @@
  * i18n 运行时：当前语言（模块级，供请求层读）+ 查表 + 占位符 + 订阅。
  * 与两棵 flutter 的 `LocaleController`/`AppTranslations` 同构，差别只在 React 侧的绑定方式。
  *
- * 13 种语言**各一张全量表**（`TABLES`，与 `languages.ts` 的 `LANGUAGES` 逐项对应），
+ * 13 种语言**各一张全量表**（与 `languages.ts` 的 `LANGUAGES` 逐项对应），
  * `t` 在 `TABLES[code]` 里查不到某个键才走 `en`，再查不到回键名本身
  * （与 flutter 的 `_data[locale]?[key] ?? _data['en']?[key] ?? key` 逐级同款）。
+ *
+ * ⚠ **首屏只带 en，其余 12 张按需拉**（`ensure`）。全量内联会让首屏多背约 739 kB
+ * （gzip 约 223 kB，实测 12 个懒 chunk 之和），而**每个人只会用到一种语言** ——
+ * 让所有人下载 13 种是没有理由的。angular 树同款（那边 en/zh 静态、11 种在懒 chunk 里）。
  */
 import { useSyncExternalStore } from 'react';
 import { en, type MessageKey } from './en.ts';
-import { zh } from './zh.ts';
-import { ja } from './ja.ts';
-import { ko } from './ko.ts';
-import { ru } from './ru.ts';
-import { de } from './de.ts';
-import { fr } from './fr.ts';
-import { es } from './es.ts';
-import { pt } from './pt.ts';
-import { hi } from './hi.ts';
-import { ar } from './ar.ts';
-import { bn } from './bn.ts';
-import { id } from './id.ts';
 import { DEFAULT_CODE, resolve } from './languages.ts';
 
 export { LANGUAGES, DEFAULT_CODE, resolve } from './languages.ts';
 export type { Language } from './languages.ts';
 export type { MessageKey } from './en.ts';
 
-/** 语言表：**13 种短码各一张全量表**（顺序照 `LANGUAGES`），单个键查不到才回落 `en`。
- * 导出是给 `i18n.test.ts` 用的：「切换器列了 13 种、却有一种没注册表」是**静默**故障 ——
- * 那一项永远显示英文，只有「每种都真有表 + 键集与 en 逐项相同」这条断言抓得住。 */
-export const TABLES: Record<string, Record<string, string>> = {
-  en,
-  zh,
-  ja,
-  ko,
-  ru,
-  de,
-  fr,
-  es,
-  pt,
-  hi,
-  ar,
-  bn,
-  id,
+/**
+ * 语言表集 —— **它同时就是运行期查表用的注册表**：首屏只有 `en`（`t` 的逐键兜底也是它），
+ * 其余 12 张在 `ensure()` 到货时逐个补进来。
+ *
+ * ⚠ **应用代码不许引用本导出**：运行期查表一律走 `t()`。导出它只为 `node --test` 的两类断言 ——
+ * 结构断言（「切换器列了 13 种、却有一种没注册表」是**静默**故障，只有「每种都真有表 + 键集与
+ * en 逐项相同」抓得住），以及那条「删掉一个键看是否逐键回落 en」的用例（它得改到 `t()` 正读着的
+ * 那个对象才作数，所以这里存的是**引用**不是拷贝）。
+ */
+export const TABLES: Record<string, Record<string, string>> = { en };
+
+/** 语言码 → 该语言的表。**一种语言一个 chunk**：切到日语只下日语那张，不牵动另外 11 张。 */
+const LOADERS: Record<string, () => Promise<Record<string, string>>> = {
+  zh: () => import('./zh.ts').then((module) => module.zh),
+  ja: () => import('./ja.ts').then((module) => module.ja),
+  ko: () => import('./ko.ts').then((module) => module.ko),
+  ru: () => import('./ru.ts').then((module) => module.ru),
+  de: () => import('./de.ts').then((module) => module.de),
+  fr: () => import('./fr.ts').then((module) => module.fr),
+  es: () => import('./es.ts').then((module) => module.es),
+  pt: () => import('./pt.ts').then((module) => module.pt),
+  hi: () => import('./hi.ts').then((module) => module.hi),
+  ar: () => import('./ar.ts').then((module) => module.ar),
+  bn: () => import('./bn.ts').then((module) => module.bn),
+  id: () => import('./id.ts').then((module) => module.id),
 };
 
 /** localStorage 键。前缀与 lib/api.ts 的三个会话键同款（`react_admin_`），便于整体清理。 */
@@ -88,6 +88,73 @@ applyDocumentLocale(current); // 首屏就落：偏好里存的是 ar 时，不�
 
 const listeners = new Set<() => void>();
 
+/** 只增不减的修订号 —— 订阅侧拿它当快照（见 `notify`）。 */
+let revision = 0;
+
+/**
+ * 通知订阅者重绘。切语言与**表到货**都走这一个口子 ⇒ 订阅者不可能只收到其中一种。
+ *
+ * 为什么订阅的不是「当前语言」本身：表是异步到的。切到日语时 `current` 已经是 `ja`，
+ * 等译文拉回来再通知一次是**同值**，`useSyncExternalStore` 比对快照认为没变、不重绘，
+ * 界面就永远停在英文上（angular 树为此单开了 VERSION 信号，同一个理由、同一处失败模式）。
+ */
+function notify(): void {
+  revision += 1;
+  for (const listener of listeners) listener();
+}
+
+/** 已在飞的加载（按语言去重，同一语言不重复发请求）。失败时删掉，下次切回来再试。 */
+const loading = new Map<string, Promise<void>>();
+
+/**
+ * 把某种语言的表拉进运行期。**不抛**：拉不到就当英文用（`en` 永远是逐键兜底），
+ * 界面照常可用，下次切语言再试 —— 与 angular 的 `ensure()` 同款。
+ *
+ * 调用方**不必等**：到货后 `notify()` 标脏重绘（先显示英文，再换成该语言）。
+ */
+export function ensure(code: string): Promise<void> {
+  const target = resolve(code).code;
+  const load = LOADERS[target];
+  if (!load || TABLES[target]) return Promise.resolve();
+  const pending = loading.get(target);
+  if (pending) return pending;
+  const task = load().then(
+    (table) => {
+      // 存**引用**不是拷贝：用例改表对象后 `t()` 要看得见（i18n.test.ts 的单键缺失回落）
+      TABLES[target] = table;
+      notify();
+    },
+    () => {
+      loading.delete(target);
+    },
+  );
+  loading.set(target, task);
+  return task;
+}
+
+// 首屏就拉偏好里那一种：存着 ja 时不能等用户再切一次才显示日语（不阻塞渲染，到货即重绘）
+void ensure(current);
+
+/**
+ * **没有 DOM 时**（`node --test`）把 12 张表在模块求值期就地拉齐。
+ *
+ * 为什么非这样不可：那三个用例文件全是**同步**断言 —— `TABLES` 必须在本模块求值完就齐
+ * （键集断言、「t() 查的是本语言的表」、以及「删一个键看是否逐键回落 en」）。异步到货满足不了。
+ *
+ * 为什么不能改回「13 个静态 import」：静态 import 是**求值前**就建好的边，只要它在，那 12 张表
+ * 就必然被留在首屏 chunk 里。给注册语句加 PURE 注解确实能把 `TABLES` 与注册调用整块摇掉（实测摇掉了），
+ * 但**模块本身仍被那条边拖着** —— `ja.ts` 的 `{...jaUi, ...jaFields}` 是跨模块展开，打包器证不了它
+ * 无副作用，于是 `LOADERS` 的懒加载被就地内联。实测首屏：带那 12 条静态边时 `1,069.66 kB /
+ * 323.47 kB gzip`，去掉之后是 `222.11 kB / 69.44 kB gzip`。
+ *
+ * 判别式用 `typeof document`：它在两边都成立、打包器也不会折叠它。浏览器里这段整块跳过（await
+ * 根本不执行），12 张表只经 `ensure()` 的懒 chunk 到货。代价是本模块成为 async 模块，引用方多等
+ * 一个微任务 —— 这是为了让「测试要同步、首屏要按需」两个约束同时成立所付的**全部**代价。
+ */
+if (typeof document === 'undefined') {
+  await Promise.all(Object.keys(LOADERS).map((code) => ensure(code)));
+}
+
 /**
  * 当前语言短码 —— **给 `lib/api.ts` 的发请求读**（`X-Language` 头）。
  *
@@ -108,7 +175,10 @@ export function setCode(code: string): void {
   } catch {
     // 隐私模式 / 无 DOM：切这一次仍生效，只是下次进来回到默认值
   }
-  for (const notify of listeners) notify();
+  notify();
+  // 该语言的表可能还没到货（11 种非 en）：这里只管踢一脚，界面先按 en 兜底渲染，
+  // 到货后 `ensure` 自己再 `notify()` 一次 —— 不必也不该在这里 await
+  void ensure(current);
 }
 
 /** 占位符替换：`{name}` → params.name。缺参时**原样留着**（看得见漏了哪个，而不是静默空掉）。 */
@@ -127,9 +197,12 @@ export function t(key: MessageKey, params?: Record<string, string | number>): st
   return fill(TABLES[current]?.[key] ?? en[key] ?? key, params);
 }
 
-function subscribe(notify: () => void): () => void {
-  listeners.add(notify);
-  return () => listeners.delete(notify);
+/** 快照取值器：必须是稳定引用、且不随渲染变（返回数字，`useSyncExternalStore` 不会误判成每次都在变）。 */
+const revisionOf = (): number => revision;
+
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
 }
 
 /**
@@ -145,8 +218,10 @@ function subscribe(notify: () => void): () => void {
  * 那样会冻在首次求值的语言上；页面组件本身要订阅，然后放渲染期现算。
  */
 export function useI18n(): { code: string; setCode: (code: string) => void; t: typeof t } {
-  const code = useSyncExternalStore(subscribe, currentCode);
-  return { code, setCode, t };
+  // 订阅修订号（不是一个语言码字符串）：表异步到货时语言码没变，靠它才能把页面重绘一遍
+  useSyncExternalStore(subscribe, revisionOf);
+  // 修订号变了就重渲染，这里现读当前语言 —— 与 `t()` 读的是同一份模块级真值，不可能各说各话
+  return { code: current, setCode, t };
 }
 
 /**

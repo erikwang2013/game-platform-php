@@ -43,19 +43,19 @@ const ANN_FIELDS: Field[] = [
     name: 'target_lang',
     label: 'announcement.target_lang',
     type: 'text',
-    placeholder: 'announcement.target_lang_hint',
+    hint: 'announcement.target_lang_hint',
   },
   {
     name: 'start_at',
     label: 'announcement.start_at',
     type: 'text',
-    placeholder: 'announcement.start_hint',
+    hint: 'announcement.start_hint',
   },
   {
     name: 'end_at',
     label: 'announcement.end_at',
     type: 'text',
-    placeholder: 'announcement.end_hint',
+    hint: 'announcement.end_hint',
   },
   { name: 'content', label: 'announcement.content', type: 'textarea', required: true },
 ];
@@ -73,7 +73,7 @@ const ACH_FIELDS: Field[] = [
     type: 'text',
     required: true,
     createOnly: true,
-    placeholder: 'achievement.key_hint',
+    hint: 'achievement.key_hint',
   },
   {
     name: 'name',
@@ -166,13 +166,13 @@ const ACT_FIELDS: Field[] = [
     name: 'start_at',
     label: 'activity.start_at',
     type: 'text',
-    placeholder: 'activity.time_hint',
+    hint: 'activity.time_hint',
   },
   {
     name: 'end_at',
     label: 'activity.end_at',
     type: 'text',
-    placeholder: 'activity.end_hint',
+    hint: 'activity.end_hint',
   },
   {
     name: 'rollout_percent',
@@ -225,7 +225,7 @@ const LB_FIELDS: Field[] = [
     label: 'leaderboard.game_id',
     type: 'text',
     createOnly: true,
-    placeholder: 'leaderboard.game_id_hint',
+    hint: 'leaderboard.game_id_hint',
   },
   {
     name: 'rule',

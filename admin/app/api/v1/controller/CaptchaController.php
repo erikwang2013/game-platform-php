@@ -71,7 +71,12 @@ class CaptchaController
         $key = $request->input('key', '');
         $clicks = $request->input('clicks', []);
 
-        if (empty($key) || empty($clicks)) {
+        // key 必须是字符串：`empty()` 挡不住非空数组（`key[]=xxx` ⇒ `['xxx']`，empty 为 false），
+        // 数组会喂给下面那句校验的 `string $key` 形参抛 TypeError；本文件是 strict_types，
+        // 而 verify() 又没有 try/catch ⇒ 异常漏到框架层被渲染成 HTTP 500 + 完整堆栈（含绝对路径）。
+        // 这里用 is_string 而不是追加 catch：这是入参形状，属于信任边界，该在最外层挡掉。
+        // 同族先例见 config/plugin/erikwang2013/apidoc/route.php:29-45（`password[]=x`）。
+        if (!is_string($key) || $key === '' || empty($clicks)) {
             return json(['code' => 422, 'message' => trans('Missing verification parameters'), 'data' => []]);
         }
 

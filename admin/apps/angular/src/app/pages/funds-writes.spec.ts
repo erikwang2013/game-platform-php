@@ -223,6 +223,35 @@ describe('资金模块写操作接线', () => {
       expect(f.note()).toContain('批量处理完成: 1 笔');
     });
 
+    it('批量审核：本页 12 笔待处理全列进确认框（改前第 9 笔起只剩一句「等共 N 笔」）', async () => {
+      const f = build(() => new Finance()) as unknown as F;
+      const done = f.load();
+      const many: Row[] = Array.from({ length: 12 }, (_, i) => ({
+        id: 'OHASH' + String(i + 1),
+        order_no: 'WD202601' + String(i + 1).padStart(2, '0'),
+        platform_amount: '10.0000',
+        currency: 'USD',
+        status: 'pending',
+      }));
+      await flushOrders(many);
+      await done;
+      expect(f.rows().length).toBe(12);
+
+      // 只读确认文案，不真发批审请求
+      confirmSpy.mockReturnValue(false);
+      await f.batch('approve');
+      const ask = String(confirmSpy.mock.calls[0]![0]);
+      // 「确认框逐条列出订单号与金额」是这段代码自己写下的承诺，而这一屏点下去是**放款**：
+      // 分页 20 行 ⇒ 最坏 12 笔。第 9/12 笔正是被 slice(0, 8) 吞掉的那两笔
+      expect(ask).toContain('WD20260109');
+      expect(ask).toContain('WD20260112');
+      expect(ask.match(/WD2026/g)!.length).toBe(12);
+      // 上限撤掉后「等共 N 笔」那句连同词条 withdraw.batch_more 一起删了（留着就是死键）
+      expect(ask).not.toContain('等共');
+      await tick();
+      http.expectNone(() => true);
+    });
+
     it('提现开关：GET 读数，PUT 后**读响应里的新状态**（不做乐观更新）', async () => {
       const f = build(() => new Finance()) as unknown as F & {
         switchOn(): boolean;

@@ -90,7 +90,7 @@ export const RULE_FIELDS: Field[] = [
     name: 'priority',
     label: 'risk.rule.priority',
     type: 'number',
-    placeholder: 'risk.rule.priority_hint',
+    hint: 'risk.rule.priority_hint',
   },
   { name: 'status', label: 'risk.rule.status', type: 'switch' },
   {

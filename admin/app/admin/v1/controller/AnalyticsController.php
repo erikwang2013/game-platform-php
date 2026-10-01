@@ -19,6 +19,9 @@ use support\Response;
 #[Apidoc\Group("analytics")]
 class AnalyticsController extends BaseController
 {
+    /** 回溯天数上界：与 ReportController::MAX_DAYS 同口径（报表端点的日期跨度限制也是 90 天） */
+    private const MAX_DAYS = 90;
+
     #[Apidoc\Title("Platform Overview")]
     #[Apidoc\Url("/admin/v1/analytics/overview")]
     #[Apidoc\Method("GET")]
@@ -145,23 +148,29 @@ class AnalyticsController extends BaseController
     #[Apidoc\Title("Retention Analysis")]
     #[Apidoc\Url("/admin/v1/analytics/retention")]
     #[Apidoc\Method("GET")]
-    #[Apidoc\Query(name: "days", type: "integer", require: false, desc: "Days back (default 30)")]
+    #[Apidoc\Query(name: "days", type: "integer", require: false, desc: "Days back (default 30, max 90)")]
     public function retention(Request $request): Response
     {
-        $days = (int) $request->input('days', 30);
+        // 与 arpu 同口径夹上界：这里不放大查询条数（循环固定 ≤4 轮），但 days=100000 会让窗口变成
+        // 274 年 —— 每条查询退化成全量扫描、cohort 结果集可能整表进 PHP，是同一类资源耗尽面。
+        $days = min(self::MAX_DAYS, max(1, (int) $request->input('days', 30)));
         $data = [];
         foreach ([1, 3, 7, 30] as $d) {
             if ($d > $days) break;
             $cohortDate = date('Y-m-d', strtotime("-{$days} days"));
             $endDate = date('Y-m-d', strtotime("-" . ($days - $d) . " days"));
 
-            $cohort = \common\model\User::whereDate('created_at', $cohortDate)->count();
+            // 整天区间一律写成裸列的 [00:00:00, 23:59:59] 闭区间：whereDate 会被编译成
+            // date(created_at) = ?，列被函数包住 ⇒ 索引失效（本文件原有 7 处，逐条改掉）。
+            $cohortBetween = [$cohortDate . ' 00:00:00', $cohortDate . ' 23:59:59'];
+
+            $cohort = \common\model\User::whereBetween('created_at', $cohortBetween)->count();
             if ($cohort === 0) { $data["D{$d}"] = '0%'; continue; }
 
-            $active = \common\model\UserSession::whereDate('logged_in_at', '>=', $cohortDate)
-                ->whereDate('logged_in_at', '<=', $endDate)
-                ->whereIn('user_id', function($q) use ($cohortDate) {
-                    $q->select('id')->from('user')->whereDate('created_at', $cohortDate);
+            $active = \common\model\UserSession::where('logged_in_at', '>=', $cohortDate . ' 00:00:00')
+                ->where('logged_in_at', '<=', $endDate . ' 23:59:59')
+                ->whereIn('user_id', function($q) use ($cohortBetween) {
+                    $q->select('id')->from('user')->whereBetween('created_at', $cohortBetween);
                 })->distinct('user_id')->count('user_id');
 
             $data["D{$d}"] = self::pctDisplay((string) $active, (string) $cohort, 1);
@@ -172,10 +181,11 @@ class AnalyticsController extends BaseController
     #[Apidoc\Title("Conversion Funnel")]
     #[Apidoc\Url("/admin/v1/analytics/funnel")]
     #[Apidoc\Method("GET")]
-    #[Apidoc\Query(name: "days", type: "integer", require: false, desc: "Days back (default 30)")]
+    #[Apidoc\Query(name: "days", type: "integer", require: false, desc: "Days back (default 30, max 90)")]
     public function funnel(Request $request): Response
     {
-        $days = (int) $request->input('days', 30);
+        // 同 retention：查询条数固定 4 条，但超宽窗口会把「扫描宽度」放大到全表
+        $days = min(self::MAX_DAYS, max(1, (int) $request->input('days', 30)));
         $since = date('Y-m-d H:i:s', strtotime("-{$days} days"));
 
         $registered = \common\model\User::where('created_at', '>=', $since)->count();
@@ -195,10 +205,31 @@ class AnalyticsController extends BaseController
     #[Apidoc\Title("ARPU/ARPPU Trend")]
     #[Apidoc\Url("/admin/v1/analytics/arpu")]
     #[Apidoc\Method("GET")]
-    #[Apidoc\Query(name: "days", type: "integer", require: false, desc: "Days back (default 30)")]
+    #[Apidoc\Query(name: "days", type: "integer", require: false, desc: "Days back (default 30, max 90)")]
     public function arpu(Request $request): Response
     {
-        $days = (int) $request->input('days', 30);
+        // days 必须夹上界：原实现每天 3 条查询，?days=100000 就是 30 万条查询 + 30 万元素数组，
+        // 而 RateLimit 只按请求条数限流，挡不住单请求内的放大。
+        $days = min(self::MAX_DAYS, max(1, (int) $request->input('days', 30)));
+        $start = date('Y-m-d', strtotime('-' . ($days - 1) . ' days'));
+        $end = date('Y-m-d');
+        $between = [$start . ' 00:00:00', $end . ' 23:59:59'];
+
+        // 一条 GROUP BY 取代原先的逐日查询（默认 30 天 = 90 条 whereDate 全表扫描）。
+        // 日期来自 created_at 裸列，whereBetween 走得了索引；DATE() 只出现在投影里，不影响 sargable。
+        $daily = \common\model\DepositOrder::whereBetween('created_at', $between)->where('status', 'confirmed')
+            ->selectRaw('DATE(created_at) as date, SUM(platform_amount) as revenue, COUNT(DISTINCT user_id) as payers')
+            ->groupBy('date')
+            ->get()->keyBy('date');
+
+        // 累计注册数 = 区间前的存量 + 区间内逐日新增。原实现是逐日 whereDate 的 `<=` 累积计数，
+        // 与窗口起点无关；拆成这两段后逐日累加，结果相同。
+        $cumulative = (int) \common\model\User::where('created_at', '<', $between[0])->count();
+        $newUsers = \common\model\User::whereBetween('created_at', $between)
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as cnt')
+            ->groupBy('date')
+            ->pluck('cnt', 'date');
+
         $dates = [];
         $arpuSeries = [];
         $arppuSeries = [];
@@ -207,12 +238,14 @@ class AnalyticsController extends BaseController
             $date = date('Y-m-d', strtotime("-{$i} days"));
             $dates[] = $date;
 
-            $revenue = (string) (\common\model\DepositOrder::whereDate('created_at', $date)->where('status', 'confirmed')->sum('platform_amount') ?? '0');
-            $totalUsers = \common\model\User::whereDate('created_at', '<=', $date)->count();
-            $payingUsers = \common\model\DepositOrder::whereDate('created_at', $date)->where('status', 'confirmed')->distinct('user_id')->count('user_id');
+            // 无数据的日期不会出现在 GROUP BY 结果里，必须补 0（原逐日查询缺日天然为 0，不能变成缺行）
+            $cumulative += (int) ($newUsers[$date] ?? 0);
+            $day = $daily[$date] ?? null;
+            $revenue = (string) ($day->revenue ?? '0');
+            $payingUsers = (int) ($day->payers ?? 0);
 
             // 金额运算 bcmath 完成，末尾 (float) 仅为保持 JSON 数值型输出
-            $arpuSeries[] = $totalUsers > 0 ? (float) BcMath::round(bcdiv($revenue, (string) $totalUsers, 5), 4) : 0;
+            $arpuSeries[] = $cumulative > 0 ? (float) BcMath::round(bcdiv($revenue, (string) $cumulative, 5), 4) : 0;
             $arppuSeries[] = $payingUsers > 0 ? (float) BcMath::round(bcdiv($revenue, (string) $payingUsers, 5), 2) : 0;
         }
 

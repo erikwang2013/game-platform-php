@@ -321,7 +321,13 @@ Route::group('/api/v1', function () {
 
     // 认证
     Route::post('/auth/login', v('AuthController', 'login'));
-    Route::post('/auth/register', v('AuthController', 'register'));
+    // 摘除：POST /api/v1/auth/register（2026-10-01 摘）。原为 `v('AuthController', 'register')`。
+    // 理由：匿名（一次点击验证码即可）就能建出 status=1 的 admin_user 并当场签发 access+refresh，
+    // 而 /api/v1 组不挂 AdminAuth/AdminPermission、也不挂 OperationLog ⇒ 凭空多出的管理员账号不留审计；
+    // 该 JWT 又能打通只管 AdminAuth 不管 AdminPermission 的端点（如 /admin/v1/aetherupload/*）。
+    // 四棵管理端树（apps/react、apps/angular、apps/flutter、apps/harmonyos）均无调用点。
+    // 控制器方法 AuthController::register 保留未删，便于日后恢复 —— 恢复前提：先解决「匿名建管理员」，
+    // 即改成 C 端用户体系、或加管理员邀请/审批（注意 service 侧的 /api/v1/auth/register 是 C 端注册，不受影响）。
     Route::post('/auth/refresh', v('AuthController', 'refresh'));
 });
 

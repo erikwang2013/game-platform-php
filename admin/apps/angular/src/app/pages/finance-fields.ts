@@ -84,11 +84,11 @@ export const ORDER_ACTS: Act[] = [
  * fee_pct 有 lt:100 的上界：100 会把实收吃成 0，后端直接拒（那是个「设得进去、打款必失败」的档位）。
  */
 export const LIMIT_FIELDS: Field[] = [
-  { name: 'single_min', label: 'withdraw.single_min', type: 'text', keepIfEmpty: true, placeholder: 'withdraw.single_min_hint' },
-  { name: 'single_max', label: 'withdraw.single_max', type: 'text', keepIfEmpty: true, placeholder: 'withdraw.single_max_hint' },
+  { name: 'single_min', label: 'withdraw.single_min', type: 'text', keepIfEmpty: true, hint: 'withdraw.single_min_hint' },
+  { name: 'single_max', label: 'withdraw.single_max', type: 'text', keepIfEmpty: true, hint: 'withdraw.single_max_hint' },
   { name: 'daily_limit', label: 'withdraw.daily_limit', type: 'text', keepIfEmpty: true, placeholder: 'withdraw.keep_hint' },
   { name: 'monthly_limit', label: 'withdraw.monthly_limit', type: 'text', keepIfEmpty: true, placeholder: 'withdraw.keep_hint' },
-  { name: 'fee_pct', label: 'withdraw.fee_rate', type: 'text', keepIfEmpty: true, placeholder: 'withdraw.fee_pct_hint' },
+  { name: 'fee_pct', label: 'withdraw.fee_rate', type: 'text', keepIfEmpty: true, hint: 'withdraw.fee_pct_hint' },
   { name: 'fee_max', label: 'withdraw.fee_max', type: 'text', keepIfEmpty: true, placeholder: 'withdraw.fee_max_hint' },
   { name: 'auto_approve_threshold', label: 'withdraw.auto_threshold', type: 'text', keepIfEmpty: true, placeholder: 'withdraw.keep_hint' },
 ];
@@ -100,9 +100,9 @@ export const LIMIT_FIELDS: Field[] = [
  * 所以它只在页头出（「全局限额重置」），不挂在某一行上。仍是全 text。
  */
 export const SET_FIELDS: Field[] = [
-  { name: 'daily_limit', label: 'withdraw.set_daily', type: 'text', keepIfEmpty: true, placeholder: 'withdraw.set_keep' },
-  { name: 'min_amount', label: 'withdraw.set_min', type: 'text', keepIfEmpty: true, placeholder: 'withdraw.set_min_hint' },
-  { name: 'auto_approve_threshold', label: 'withdraw.set_auto', type: 'text', keepIfEmpty: true, placeholder: 'withdraw.set_keep' },
+  { name: 'daily_limit', label: 'withdraw.set_daily', type: 'text', keepIfEmpty: true, hint: 'withdraw.set_keep' },
+  { name: 'min_amount', label: 'withdraw.set_min', type: 'text', keepIfEmpty: true, hint: 'withdraw.set_min_hint' },
+  { name: 'auto_approve_threshold', label: 'withdraw.set_auto', type: 'text', keepIfEmpty: true, hint: 'withdraw.set_keep' },
 ];
 
 /** 提供商白名单 = PaymentController::create/update 的 `in:` 规则（少一个都 422，多一个也不行） */

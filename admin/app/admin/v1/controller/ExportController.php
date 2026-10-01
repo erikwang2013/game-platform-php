@@ -90,11 +90,18 @@ class ExportController extends BaseController
             foreach ($columns as $col) {
                 $value = $item[$col] ?? '';
                 if (in_array($col, $sensitiveFields) && !empty($value)) {
-                    $decrypted = EncryptionService::decrypt((string) $value);
+                    // ⚠ 这里**不能**再 decrypt：$item 来自 AdminUser::get()->toArray()，而
+                    // phone/email/id_card 是 Encryptable cast（app/model/AdminUser.php:37-39）——
+                    // Eloquent 取值那一刻已解过密，toArray() 拿到的**就是明文**。
+                    // 对明文再解一次 ⇒ EncryptionException: Invalid ciphertext prefix for AES-256-CBC。
+                    // 空值走 EncryptionService::decrypt 的 early-return，所以**只在有值时才炸** ——
+                    // 表里只要有任意一个管理员填过手机号/邮箱，本端点（table 默认 admin_user、
+                    // columns 默认取全部、phone/email 在 sensitiveFields 里）就必 500。
+                    // 脱敏才是这里唯一该做的事。
                     if ($col === 'phone') {
-                        $value = EncryptionService::maskPhone($decrypted);
+                        $value = EncryptionService::maskPhone((string) $value);
                     } elseif ($col === 'email') {
-                        $value = EncryptionService::maskEmail($decrypted);
+                        $value = EncryptionService::maskEmail((string) $value);
                     } else {
                         $value = str_repeat('*', 8); // id_card等彻底隐藏
                     }
@@ -121,6 +128,38 @@ class ExportController extends BaseController
 
         $writer = new Xlsx($spreadsheet);
         $writer->save($tmpFile);
+
+        return $this->downloadTemp($tmpFile, $filename, $request);
+    }
+
+    /**
+     * 下发临时导出产物，并在**本次连接关闭时**把它删掉；另有一层按时间的兜底进程
+     * （app/process/ExportTmpCleanup，删超过 1 小时的 `export_*` / `receipt_*`）。
+     *
+     * 为什么不能在 `response()->download()` 之后直接 unlink：workerman 是**先把响应对象交回去、
+     * 之后**才在 `Http::encode()` 里读这个文件（vendor/workerman/workerman/src/Protocols/Http.php:407-437：
+     * <2MB 走 `file_get_contents` 一次性发，否则 `sendStream` 分片发）——提前删会把下载变成 0 字节。
+     * 「连接关闭」是文件已经发完之后唯一稳定的信号（TcpConnection::destroy() 里 `($this->onClose)($this)`）。
+     *
+     * ⚠ 两个已知边界，都不影响正确性，只是文件在盘上多待一会儿：
+     *  ① keep-alive 下连接可能很久才关（浏览器不关就一直不关）⇒ 靠兜底进程；
+     *  ② CLI/单测里 `$request->connection` 是 null（请求构造自裸报文，见
+     *     vendor/workerman/workerman/src/Protocols/Http/Request.php:60）⇒ 这时不注册钩子，
+     *     文件只由兜底进程清。
+     * 挂 onClose 用**链式**而不是覆盖：运维可能在 config 里给 worker 配过 onClose，覆盖会把它弄丢。
+     */
+    private function downloadTemp(string $tmpFile, string $filename, Request $request): Response
+    {
+        $connection = $request->connection;
+        if ($connection !== null) {
+            $previous = $connection->onClose;
+            $connection->onClose = static function ($conn) use ($previous, $tmpFile): void {
+                @unlink($tmpFile);
+                if (is_callable($previous)) {
+                    $previous($conn);
+                }
+            };
+        }
 
         return response()->download($tmpFile, $filename);
     }
@@ -156,7 +195,7 @@ class ExportController extends BaseController
 
         file_put_contents($tmpFile, $dompdf->output());
 
-        return response()->download($tmpFile, $filename);
+        return $this->downloadTemp($tmpFile, $filename, $request);
     }
 
     /**
@@ -272,7 +311,7 @@ class ExportController extends BaseController
         $writer = new Xlsx($spreadsheet);
         $writer->save($tmpFile);
 
-        return response()->download($tmpFile, $filename);
+        return $this->downloadTemp($tmpFile, $filename, $request);
     }
 
     #[Apidoc\Title("导出流水Excel")]
@@ -330,7 +369,7 @@ class ExportController extends BaseController
         $writer = new Xlsx($spreadsheet);
         $writer->save($tmpFile);
 
-        return response()->download($tmpFile, $filename);
+        return $this->downloadTemp($tmpFile, $filename, $request);
     }
 
     #[Apidoc\Title("导出收据PDF")]
@@ -398,7 +437,7 @@ class ExportController extends BaseController
         if (!is_dir($dir)) mkdir($dir, 0755, true);
         file_put_contents($tmpFile, $dompdf->output());
 
-        return response()->download($tmpFile, $filename);
+        return $this->downloadTemp($tmpFile, $filename, $request);
     }
 
     private function fetchExportData(string $table, array $columns, array $conditions): array

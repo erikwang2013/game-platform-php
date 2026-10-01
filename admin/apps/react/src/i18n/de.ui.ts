@@ -23,6 +23,7 @@ export const deUi: Record<UiKey, string> = {
   'app.no': 'Nein',
   'app.no_data': 'Keine Daten',
   'app.close': 'Schließen',
+  'app.render_failed': 'Dieser Bildschirm konnte nicht gerendert werden. Bitte laden Sie die Seite neu',
   // 语言切换器
   'lang.label': 'Sprache',
 

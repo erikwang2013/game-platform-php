@@ -112,12 +112,16 @@ class DocsController
                 ],
             ],
             'paths' => [
-                '/health' => $this->path(trans('Health check'), 'GET', null, 'HealthData'),
+                // 第 3 参是 array $notes（非 nullable），传 null 会让 buildSpec() 在第一条就抛 TypeError ⇒ 整个
+                // /api/docs 恒 500（冒烟只打未登录的 401，控制器从没被执行过，所以一直没被发现）。
+                '/health' => $this->path(trans('Health check'), 'GET', [], 'HealthData'),
 
                 '/api/v1/captcha/generate' => $this->path(trans('Generate click captcha'), 'POST', [trans('Public')], 'object', ['difficulty' => 'string: easy|medium|hard']),
                 '/api/v1/captcha/verify'   => $this->path(trans('Verify click captcha'), 'POST', [trans('Public')]),
                 '/api/v1/auth/login'       => $this->path(trans('Login'), 'POST', [trans('Public')], 'object', ['username' => 'string', 'password' => 'string', 'captcha_key' => 'string', 'clicks' => 'array']),
-                '/api/v1/auth/register'    => $this->path(trans('Register'), 'POST', [trans('Public')], 'object', ['username' => 'string', 'password' => 'string', 'real_name' => 'string', 'captcha_key' => 'string', 'clicks' => 'array']),
+                // '/api/v1/auth/register' 于 2026-10-01 摘除（匿名可建启用态管理员 + 该路由组无 OperationLog），
+                // 这里同步摘掉条目 —— OpenAPI 是机器读的契约，留一条「Public」的幽灵端点会直接把调用方引到 404。
+                // 留档在 config/route.php 的注记与 admin/docs/API*.md 的 §3.6 注记里，不在这里重复。
                 '/api/v1/auth/refresh'     => $this->path(trans('Refresh token'), 'POST', [trans('Public')], 'object', ['refresh_token' => 'string']),
 
                 '/admin/v1/dashboard' => $this->path(trans('Dashboard data'), 'GET', [trans('JWT authentication')]),

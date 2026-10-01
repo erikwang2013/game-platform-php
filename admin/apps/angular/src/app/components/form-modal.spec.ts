@@ -29,12 +29,14 @@ const FIELDS: Field[] = [
   selector: 'app-form-host',
   imports: [FormModal],
   template: `
+    <button id="opener" type="button" (click)="open.set(true)">打开</button>
     <ui-form
       [open]="open()"
       [value]="value()"
       [fields]="fields()"
       [error]="error()"
       (save)="got = $event"
+      (close)="open.set(false)"
     />
   `,
 })
@@ -357,6 +359,71 @@ describe('FormModal（通用表单弹框）', () => {
     expect(f.nativeElement.querySelector('.modal')).toBeTruthy();
   });
 
+  /**
+   * 弹框的键盘可及性（`uiModal` 指令，components/ui.ts）。真机读数见 /tmp/ux_probe3.mjs 的
+   * M2/M3/M4 —— 改前三条全 FAIL：activeElement 停在 BODY、连按 16 次 Tab 全落在**遮罩下的背景**
+   * 上（回车操作的是背景页）、Esc 关不掉。
+   *
+   * jsdom 不会自己执行 Tab 的默认行为（不移动焦点）⇒ 断言必须落在**陷阱的两端**：
+   * 焦点已经在首/末元素上时是**我们**在 preventDefault 并搬焦点，那一步能分辨真假；
+   * 中间那些「浏览器自己会走」的情况在这里测不出名堂。
+   */
+  const press = (from: Element, key: string, shiftKey = false): KeyboardEvent => {
+    const ev = new KeyboardEvent('keydown', { key, shiftKey, bubbles: true, cancelable: true });
+    from.dispatchEvent(ev);
+    return ev;
+  };
+
+  /** 框内可聚焦元素（[hidden] 的那两个选文件输入要排掉，同 ModalFocus.items） */
+  const focusables = (f: ComponentFixture<Host>): HTMLElement[] =>
+    [...el<HTMLElement>(f, '.modal').querySelectorAll<HTMLElement>('button, input')].filter(
+      (e) => !e.closest('[hidden]'),
+    );
+
+  it('开框：焦点移进框内（不留在 BODY，键盘用户不必先 Tab 过一串背景链接）', async () => {
+    const f = await setup();
+    f.componentInstance.open.set(true);
+    f.detectChanges();
+
+    const modal = el<HTMLElement>(f, '.modal');
+    expect(modal.contains(document.activeElement)).toBe(true);
+    expect(document.activeElement).toBe(focusables(f)[0]);
+  });
+
+  it('焦点陷阱：末个元素上 Tab 回首元素、首个元素上 Shift+Tab 回末元素（默认行为被吃掉）', async () => {
+    const f = await setup();
+    f.componentInstance.open.set(true);
+    f.detectChanges();
+
+    const items = focusables(f);
+    const first = items[0];
+    const last = items[items.length - 1];
+    expect(first).not.toBe(last);
+
+    last.focus();
+    expect(press(last, 'Tab').defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(first);
+
+    first.focus();
+    expect(press(first, 'Tab', true).defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(last);
+  });
+
+  it('Esc 关框，并把焦点还回打开它的那个元素', async () => {
+    const f = await setup();
+    const opener = el<HTMLButtonElement>(f, '#opener');
+    opener.focus();
+    f.componentInstance.open.set(true);
+    f.detectChanges();
+
+    const ev = press(el<HTMLElement>(f, '.modal'), 'Escape');
+    expect(ev.defaultPrevented).toBe(true);
+    f.detectChanges();
+
+    expect(f.nativeElement.querySelector('.modal')).toBeNull();
+    expect(document.activeElement).toBe(opener);
+  });
+
   /** 等 pick() 里那串裸 promise 走完（whenStable 只等 Angular 自己排的任务） */
   const tick = (): Promise<void> => new Promise((r) => setTimeout(r, 0));
 
@@ -461,5 +528,81 @@ describe('FormModal（通用表单弹框）', () => {
     expect(el<HTMLInputElement>(f, 'input[name="sort"]').placeholder).toBe('数字越小越靠前');
     // 词条表里没有的键原样返回（迁移期那些还没抽取的 placeholder 照旧显示）
     expect(el<HTMLInputElement>(f, 'input[name="raw"]').placeholder).toBe('还没抽取的字面量');
+  });
+
+  /**
+   * ④ 必填要落在**原生控件**上。审计实测（真 Chrome，/admins 的「+ 新建」）：空表单
+   * `requestSubmit()` **真把 POST /admin/v1/user 发出去了**，6 个字段里没有一个带
+   * `required` / `aria-required` / `aria-invalid`（`{"n":"username","required":false,
+   * "ariaRequired":null}`）；界面上只有一枚装饰性的 `.req` 星号。
+   *
+   * ⚠ file / switch 两种**故意不发**（`req()` 里挡掉）：导入弹框「没选文件」要照发请求、
+   * 由服务端回 422「请上传 Excel 文件」说明原因（/tmp/angular_admins_e2e.mjs:577 钉着这条）。
+   * 绑定照写在这两处，所以这条断言测的是 `req()` 的挡板，不是「那两处忘了绑」。
+   */
+  it('required 落到原生控件上：text/textarea/select/multi/number 都带，file/switch 故意不带', async () => {
+    const f = await setup();
+    f.componentInstance.fields.set([
+      { name: 'name', label: '名称', type: 'text', required: true },
+      { name: 'note', label: '说明', type: 'textarea', required: true },
+      {
+        name: 'lang',
+        label: '语言',
+        type: 'select',
+        required: true,
+        options: [{ value: 'zh', label: '中文' }],
+      },
+      {
+        name: 'roles',
+        label: '角色',
+        type: 'multi',
+        required: true,
+        options: [{ value: 'r1', label: '甲' }],
+      },
+      { name: 'num', label: '排序', type: 'number', required: true },
+      { name: 'opt', label: '选填', type: 'text' },
+      { name: 'upfile', label: '文件', type: 'file', required: true },
+      { name: 'on', label: '状态', type: 'switch', required: true },
+    ]);
+    f.componentInstance.open.set(true);
+    f.detectChanges();
+
+    expect(el<HTMLInputElement>(f, 'input[name="name"]').required).toBe(true);
+    expect(el<HTMLTextAreaElement>(f, 'textarea[name="note"]').required).toBe(true);
+    expect(el<HTMLSelectElement>(f, 'select[name="lang"]').required).toBe(true);
+    expect(el<HTMLSelectElement>(f, 'select[name="roles"]').required).toBe(true);
+    expect(el<HTMLInputElement>(f, 'input[name="num"]').required).toBe(true);
+    // 选填的：一个都不许有（required 全发就是换了一种骗人）
+    expect(el<HTMLInputElement>(f, 'input[name="opt"]').required).toBe(false);
+    // 两种故意不发的：file 归服务端判（导入弹框那条真机读数），switch 没有「必填」语义
+    expect(el<HTMLInputElement>(f, 'input[name="upfile"]').required).toBe(false);
+    expect(el<HTMLInputElement>(f, 'input[name="on"]').required).toBe(false);
+  });
+
+  /**
+   * ⑥ 有上限的字段：原生 `maxlength` + `n/上限` 字数指示。
+   * 起因是实名驳回：`prompt` 没有 maxlength 也没有计数器，501 字按确定 ⇒ 服务端 422
+   * 「note 不能超过 500 个字符」，而 **prompt 一关、整段理由就没了**（驳回还是不可逆操作）。
+   */
+  it('maxlength：上限落在框上、字数指示随输入走；没有上限的字段一个指示都不出', async () => {
+    const f = await setup();
+    f.componentInstance.fields.set([
+      { name: 'note', label: '驳回原因', type: 'textarea', maxlength: 500 },
+      { name: 'free', label: '无上限', type: 'text' },
+    ]);
+    f.componentInstance.open.set(true);
+    f.detectChanges();
+
+    const ta = el<HTMLTextAreaElement>(f, 'textarea[name="note"]');
+    expect(ta.getAttribute('maxlength')).toBe('500');
+    expect(el<HTMLElement>(f, '.chars').textContent).toBe('0/500');
+    // 指示只跟着 maxlength 字段走：全渲染出来的数量正是 1
+    expect(f.nativeElement.querySelectorAll('.chars').length).toBe(1);
+    expect(el<HTMLInputElement>(f, 'input[name="free"]').getAttribute('maxlength')).toBeNull();
+
+    ta.value = '证件模糊';
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    f.detectChanges();
+    expect(el<HTMLElement>(f, '.chars').textContent).toBe('4/500');
   });
 });

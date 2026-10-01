@@ -30,7 +30,8 @@ class GameController extends BaseController
     public function list(Request $request): Response
     {
         $page  = (int) $request->input('page', 1);
-        $limit = (int) $request->input('limit', 15);
+        // clamp [1,200]：200 是本仓客户端的最大合法取数（游戏/角色下拉一次拉全）；无上界时 ?limit=10000000 直接拉全表
+        $limit = min(200, max(1, (int) $request->input('limit', 15)));
         $keyword = $request->input('keyword', '');
 
         $query = Game::query();

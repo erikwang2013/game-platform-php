@@ -51,7 +51,7 @@ const COUPON_FIELDS: Field[] = [
     label: 'coupon.value',
     type: 'text',
     required: true,
-    placeholder: 'coupon.value_hint',
+    hint: 'coupon.value_hint',
   },
   {
     name: 'min_amount',
@@ -75,14 +75,14 @@ const COUPON_FIELDS: Field[] = [
     label: 'coupon.start_at',
     type: 'text',
     keepIfEmpty: true,
-    placeholder: 'coupon.time_hint',
+    hint: 'coupon.time_hint',
   },
   {
     name: 'end_at',
     label: 'coupon.end_at',
     type: 'text',
     keepIfEmpty: true,
-    placeholder: 'coupon.end_hint',
+    hint: 'coupon.end_hint',
   },
 ];
 

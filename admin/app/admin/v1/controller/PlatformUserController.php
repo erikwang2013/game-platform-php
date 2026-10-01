@@ -34,7 +34,8 @@ class PlatformUserController extends BaseController
     public function list(Request $request): Response
     {
         $page    = (int) $request->input('page', 1);
-        $limit   = (int) $request->input('limit', 15);
+        // clamp [1,200]：200 是本仓客户端的最大合法取数（游戏/角色下拉一次拉全）；无上界时 ?limit=10000000 直接拉全表
+        $limit   = min(200, max(1, (int) $request->input('limit', 15)));
         $keyword = $request->input('keyword', '');
         $status  = $request->input('status');
 
@@ -57,7 +58,7 @@ class PlatformUserController extends BaseController
                       ->map(function ($user) {
                           $data = $user->toArray();
                           unset($data['password']);
-                          return $this->encodeIds($data);
+                          return $this->encodeIds($this->maskUserContact($data));
                       });
 
         return $this->success([
@@ -84,7 +85,9 @@ class PlatformUserController extends BaseController
 
         $data = $user->toArray();
         unset($data['password']);
-        $data = $this->encodeIds($data);
+        // 详情同样脱敏：本树**没有任何写 phone/email 的路径**（update() 只收 status/nickname，
+        // 见 :170-192），所以不存在「编辑表单拿脱敏串回写」的风险，也就没有理由下发全号。
+        $data = $this->encodeIds($this->maskUserContact($data));
 
         if ($user->wallet) {
             $walletData = $user->wallet->toArray();
@@ -109,7 +112,8 @@ class PlatformUserController extends BaseController
     {
         $id      = $this->decodeId($hashid);
         $page    = (int) $request->input('page', 1);
-        $perPage = (int) $request->input('per_page', 20);
+        // clamp [1,200]：同 limit 口径（本仓客户端最大合法取数 200）
+        $perPage = min(200, max(1, (int) $request->input('per_page', 20)));
         $type    = $request->input('type');
 
         // 加 id 次序：created_at 是 DATETIME（秒精度，见 game_transaction DDL），同秒多笔是常态

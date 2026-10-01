@@ -38,7 +38,7 @@ const CDN_FIELDS: Field[] = [
     type: 'textarea',
     full: true,
     keepIfEmpty: true,
-    placeholder: 'cdn.config_hint',
+    hint: 'cdn.config_hint',
   },
 ];
 
@@ -85,7 +85,7 @@ const COUNTRY_FIELDS: Field[] = [
     label: 'country_config.min_deposit',
     type: 'text',
     keepIfEmpty: true,
-    placeholder: 'country_config.min_deposit_hint',
+    hint: 'country_config.min_deposit_hint',
   },
 ];
 

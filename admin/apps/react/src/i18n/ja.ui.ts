@@ -28,6 +28,7 @@ export const jaUi: Record<UiKey, string> = {
   'app.no': 'いいえ',
   'app.no_data': 'データがありません',
   'app.close': '閉じる',
+  'app.render_failed': 'この画面の表示に失敗しました。ページを再読み込みしてください',
   // 语言切换器
   'lang.label': '言語',
 

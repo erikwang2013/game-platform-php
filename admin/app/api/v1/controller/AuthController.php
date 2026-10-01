@@ -159,6 +159,13 @@ class AuthController
             'real_name'   => 'required|string|max:50',
             'captcha_key' => 'required|string',
             'clicks'      => 'required|array|min:2',
+            // phone/email 的**形状**必须在这里挡住：它们是可选字段、原先完全没过校验，
+            // 数组值（`phone[]=x`）会喂给 encryptable 转型抛 SerializationException，
+            // 而 register() 无 try/catch ⇒ 公开端点 500（debug 开时还带完整堆栈）。
+            // 用 nullable|string 而不是 string：`string` 规则会把 JSON null 判失败，
+            // 而 `$request->input('phone','')` 遇到显式 null 现在是原样透传的 —— 不能收紧既有可接受输入。
+            'phone'       => 'nullable|string',
+            'email'       => 'nullable|string',
         ]);
 
         if ($validator->fails()) {

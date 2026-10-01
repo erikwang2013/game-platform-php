@@ -45,11 +45,16 @@ return [
     'route_display'    => '/admin/v1/aetherupload/display',
     'route_download'   => '/admin/v1/aetherupload/download',
 
-    // 上传/下载要后台登录；display 公开（见文件头说明）
-    'middleware_preprocess' => [\app\middleware\AdminAuth::class],
-    'middleware_uploading'  => [\app\middleware\AdminAuth::class],
+    // 上传/下载要后台登录 **且过 RBAC**：只挂 AdminAuth 的话，任何已登录而零权限的后台账号都能
+    // 往 storage/app/aetherupload/ 写文件 —— 该能力在 install.sql 里既授不出也吊销不掉，
+    // 且读写都不进 OperationLog（OperationLog 只挂在 /admin/v1 组上，插件路由不在组内）。
+    // 补种子的三条 slug 见 install/install.sql「aetherupload 展示件」段。
+    // display 仍然公开（见文件头说明：`<img src>` 带不了 Authorization，savedPath 是内容 md5）——
+    // 它是**有意**不挂任何中间件的，别"补齐"它。
+    'middleware_preprocess' => [\app\middleware\AdminAuth::class, \app\middleware\AdminPermission::class],
+    'middleware_uploading'  => [\app\middleware\AdminAuth::class, \app\middleware\AdminPermission::class],
     'middleware_display'    => [],
-    'middleware_download'   => [\app\middleware\AdminAuth::class],
+    'middleware_download'   => [\app\middleware\AdminAuth::class, \app\middleware\AdminPermission::class],
 
     'groups' => [
         'image' => [

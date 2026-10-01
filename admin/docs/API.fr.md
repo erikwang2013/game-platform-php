@@ -231,6 +231,8 @@ POST /api/v1/auth/login
 
 ### 3.6 Inscription
 
+> **Note (retiré le 2026-10-01)** : cet endpoint n'est plus monté depuis `config/route.php` ; `POST /api/v1/auth/register` renvoie désormais 404. Un appelant anonyme, avec un seul captcha à clics, pouvait créer un compte administrateur activé et recevoir immédiatement des jetons, et ce groupe de routes n'a pas d'OperationLog (aucune trace d'audit de la création de compte). La méthode du contrôleur est conservée ; la condition de restauration est indiquée dans la note de `config/route.php`. Le contrat ci-dessous est conservé comme archive d'avant retrait.
+
 ```
 POST /api/v1/auth/register
 ```

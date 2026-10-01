@@ -5,6 +5,7 @@
 import router from '@ohos.router';
 import promptAction from '@ohos.promptAction';
 import { TokenManager } from '../utils/TokenManager';
+import { apiService } from '../service/ApiService';
 import { t, t1 } from '../i18n/Translations';
 import { LocaleController, SUPPORTED_LOCALES, AppLocale } from '../i18n/LocaleController';
 
@@ -40,9 +41,7 @@ struct ProfilePage {
         value: t('app.logout_confirm_ok'),
         fontColor: '#FF4D4F',
         action: () => {
-          TokenManager.clearTokens();
-          promptAction.showToast({ message: t('app.logged_out') });
-          router.replaceUrl({ url: 'pages/LoginPage' });
+          this.doLogout();
         }
       },
       secondaryButton: {
@@ -50,6 +49,29 @@ struct ProfilePage {
         action: () => {}
       }
     });
+  }
+
+  /**
+   * 登出：**先打服务端，再清本地**。
+   *
+   * `POST /admin/v1/profile/logout` 才把 access 令牌写进 Redis 黑名单、并吊销本会话的 refresh
+   * （ProfileController::logout）—— 只清本地等于令牌在自然过期前一直有效、还能换新 access，
+   * 点「退出」没退。react / angular / flutter 三棵树都是这个语义。
+   *
+   * 服务端失败也要清本地：否则网络不通时用户被卡在登录态里退不出去（代价是那个令牌要等
+   * 自己过期，比「退不出去」轻）。
+   */
+  private async doLogout(): Promise<void> {
+    try {
+      // 显式类型实参不能省：ArkTS 的 `arkts-no-inferred-generic-params` 不接受
+      // 「泛型函数调用靠推断」（`post<T>` 少了 <T> 就报编译错），全树调用点都带。
+      await apiService.post<void>('/admin/v1/profile/logout');
+    } catch (_) {
+      // 令牌已过期/服务端不可达：本地照清
+    }
+    TokenManager.clearTokens();
+    promptAction.showToast({ message: t('app.logged_out') });
+    router.replaceUrl({ url: 'pages/LoginPage' });
   }
 
   build() {

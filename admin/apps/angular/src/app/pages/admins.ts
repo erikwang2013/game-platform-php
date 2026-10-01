@@ -33,7 +33,7 @@ const ADMIN_FIELDS: Field[] = [
     type: 'text',
     required: true,
     createOnly: true,
-    placeholder: 'admin.username_hint',
+    hint: 'admin.username_hint',
   },
   {
     name: 'password',
@@ -41,14 +41,14 @@ const ADMIN_FIELDS: Field[] = [
     type: 'text',
     required: true,
     createOnly: true,
-    placeholder: 'admin.password_hint',
+    hint: 'admin.password_hint',
   },
   {
     name: 'real_name',
     label: 'admin.real_name',
     type: 'text',
     required: true,
-    placeholder: 'admin.real_name_hint',
+    hint: 'admin.real_name_hint',
   },
   {
     name: 'phone',
@@ -77,7 +77,7 @@ const RESET_FIELDS: Field[] = [
     label: 'admin.new_password',
     type: 'text',
     required: true,
-    placeholder: 'admin.password_hint',
+    hint: 'admin.password_hint',
   },
   {
     name: 'admin_password',
@@ -300,7 +300,7 @@ export class Admins extends CrudPage {
   protected override crud(): Crud | null {
     return {
       noun: 'admin.noun',
-      fields: ADMIN_FIELDS,
+      fields: this.adminFields(),
       statused: true,
       deletePassword: true,
       label: (row) => this.who(row),
@@ -411,15 +411,28 @@ export class Admins extends CrudPage {
    * 运营会以为「这个管理员本来就没有角色」，而 ui-form 的 multi() 会把行里已有的 hashid
    * 平铺成「（当前值）」勾选项，**不会**当成「取消勾选」静默发出去。
    */
-  private grantFields(): Field[] {
+  private roleField(base: Field): Field {
     const err = this.roleErr();
-    const base = GRANT_FIELDS[0]!;
     // base.label 是**词条键**（渲染时才查表）⇒ 拼后缀前先把它译出来
-    return [
-      err
-        ? { ...base, label: this.i18n.t('admin.roles_failed', { name: this.i18n.t(base.label), error: err }) }
-        : { ...base, options: this.roleOpts() },
-    ];
+    return err
+      ? { ...base, label: this.i18n.t('admin.roles_failed', { name: this.i18n.t(base.label), error: err }) }
+      : { ...base, options: this.roleOpts() };
+  }
+
+  /**
+   * 新建表单的字段表：只有 role_ids 一处由运行期改写（把候选接上），其余原样。
+   *
+   * 改前 `fields: ADMIN_FIELDS` —— 候选只在 grantFields() 里注入过，于是新建弹框的
+   * role_ids 是个 **0 选项的空多选框**（审计真机实测）。两条路现在共用 roleField()：
+   * 取数仍是首屏那一次 loadRoles()，没有第二个真值源。
+   * 是 computed ⇒ 角色回包晚于开框时，选项会自己补上（form-modal 的 @for track f.name，DOM 复用，已输入的字不丢）。
+   */
+  private readonly adminFields = computed<Field[]>(() =>
+    ADMIN_FIELDS.map((f) => (f.name === 'role_ids' ? this.roleField(f) : f)),
+  );
+
+  private grantFields(): Field[] {
+    return [this.roleField(GRANT_FIELDS[0]!)];
   }
 
   /**

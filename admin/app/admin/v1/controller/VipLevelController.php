@@ -164,7 +164,9 @@ class VipLevelController extends BaseController
             return $this->fail(trans('VIP level not found'), 404);
         }
 
-        $userCount = UserVip::where('vip_level', $vl->level)->count();
+        // 列名是 `level` 不是 `vip_level`（game_user_vip DDL: install.sql:1736）—— 写错列名时
+        // MySQL 抛 SQLSTATE 42S22 ⇒ 整个删除端点**永远 500**，下面那条守卫成了死代码。
+        $userCount = UserVip::where('level', $vl->level)->count();
         if ($userCount > 0) {
             return $this->fail(trans('%count% users are on this VIP level; it cannot be deleted', ['%count%' => (string) $userCount]), 422);
         }

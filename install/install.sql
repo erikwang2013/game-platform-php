@@ -1386,6 +1386,16 @@ INSERT IGNORE INTO `game_admin_permission` (`id`, `parent_id`, `name`, `slug`, `
 (21000000000000239, '0', '删除国家配置', 'delete.admin/country/config', 3, '', '', 237, NOW(), NOW()),
 (21000000000000240, '0', '上架/停用成就', 'post.admin/achievement/toggle', 3, '', '', 238, NOW(), NOW()),
 (21000000000000241, '0', '平台用户流水', 'get.admin/platform/user/transactions', 3, '', '', 239, NOW(), NOW()),
+-- aetherupload 展示件（游戏封面 / 分类图标 / 成就图标）的上传与下载端点。
+-- slug 抄自 PermissionSeedParityTest 的双向差集报错原文（运行时可授予 slug dump），非手敲。
+-- ⚠ 第四条路由 display **刻意没有种子行**，别给它补：`<img src>` 带不了 Authorization 头，
+--   该路由是**公开**的（空中间件数组，见 config/plugin/erikwang2013/aetherupload-webman/app.php 头注）。
+--   它不挂 AdminPermission ⇒ 也就不在 PermissionSeedParityTest 的运行时取集里，补了反而成「死行」。
+-- 授予：超级管理员角色（10000000000000001）由本文件末尾那条 INSERT…SELECT 关联，该句幂等，
+-- 存量库重跑 install.sql（Installer.php 对已有库同样 exec 整份 SQL）时会自动补上新行。
+(21000000000000242, '0', '上传预处理', 'post.admin/aetherupload/preprocess', 3, '', '', 240, NOW(), NOW()),
+(21000000000000243, '0', '上传分块',   'post.admin/aetherupload/uploading',  3, '', '', 241, NOW(), NOW()),
+(21000000000000244, '0', '下载文件',   'get.admin/aetherupload/download',    3, '', '', 242, NOW(), NOW()),
 -- 通配权限：slug='*' 直接命中 AdminPermission 中间件的短路分支，授予该角色访问全部端点
 (900000000000000001, '0', '全部权限', '*', 3, '', '', 99, NOW(), NOW());
 

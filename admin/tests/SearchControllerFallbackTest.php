@@ -47,6 +47,16 @@ final class SearchControllerFallbackTest extends TestCase
     /** 本用例专用探针串，避开库里其它数据的命中 */
     private const TOKEN = 'zzadmsfl5e21';
 
+    /**
+     * 串行锁名：本文件的探针值里带**固定** TOKEN（断言整篇引用它，动不得），
+     * 所以两个并发进程会互相看见对方的行、还会撞 `uk_username`。
+     * 拿 MySQL 的命名锁把本文件串行化：后到的那个等前面跑完再进。
+     */
+    private const LOCK_NAME = 'admin_test_search_fallback';
+
+    /** 等锁上限（秒）：单次跑约 2-5s，60s 足够，等不到就是有进程卡死了 */
+    private const LOCK_TIMEOUT = 60;
+
     protected function setUp(): void
     {
         try {
@@ -59,6 +69,17 @@ final class SearchControllerFallbackTest extends TestCase
         if (stripos($database, 'test') === false) {
             $this->fail("拒绝在非测试库 `{$database}` 上执行写操作（库名必须含 test）");
         }
+
+        // 进临界区：拿不到就 fail（**不是** markTestSkipped —— 静默跳过会把真红吞掉）
+        $got = (int) (Db::selectOne('SELECT GET_LOCK(?, ?) AS l', [self::LOCK_NAME, self::LOCK_TIMEOUT])->l ?? 0);
+        if ($got !== 1) {
+            $this->fail(self::LOCK_TIMEOUT . 's 内没拿到串行锁 ' . self::LOCK_NAME . '：有别的进程卡在这个文件里？');
+        }
+
+        // 上台前先按 TOKEN 前缀清一次场：上一次跑被 SIGKILL / 超时打断时，探针行会永久留在库里
+        // （固定 TOKEN ⇒ 之后每次跑都会被它污染）。这一步才是「残留」那半个缺陷的解药，
+        // 并发那半个靠上面那把锁。
+        self::purgeProbes();
 
         $this->gameId       = SnowflakeService::generate();
         $this->userId       = SnowflakeService::generate();
@@ -102,16 +123,30 @@ final class SearchControllerFallbackTest extends TestCase
 
     protected function tearDown(): void
     {
-        $games = array_values(array_filter([$this->gameId]));
-        $users = array_values(array_filter([$this->userId, $this->nicknameUser, $this->trashedUser]));
         $this->gameId = $this->userId = $this->nicknameUser = $this->trashedUser = 0;
 
-        if ($games !== []) {
-            Db::table('game')->whereIn('id', $games)->delete();
-        }
-        if ($users !== []) {
-            Db::table('user')->whereIn('id', $users)->delete();
-        }
+        // 按 TOKEN 前缀清，而不是按本次生成的雪花 id：一行残留就足以毒掉后续每一次跑
+        // （读到的 total 会比期望多），而按 id 清只认得住"本次这一跑自己插的行"。
+        // 探针也是被 SIGKILL 打断过的那次留下的 —— 那次的 id 谁都记不得了。
+        self::purgeProbes();
+
+        Db::select('SELECT RELEASE_LOCK(?)', [self::LOCK_NAME]);
+    }
+
+    /**
+     * 删掉所有带 TOKEN 的探针行（game 看 name，user 看 username/nickname）。
+     *
+     * 覆盖度：game `'Admin Search ' . TOKEN`、user A `TOKEN . '_user'`、
+     * B `nickname 'Nick ' . TOKEN`、C `nickname 'Ghost ' . TOKEN` —— 四条全在。
+     */
+    public static function purgeProbes(): void
+    {
+        $like = '%' . self::TOKEN . '%';
+
+        Db::table('game')->where('name', 'like', $like)->delete();
+        Db::table('user')->where(function ($w) use ($like) {
+            $w->where('username', 'like', $like)->orWhere('nickname', 'like', $like);
+        })->delete();
     }
 
     /** @return array<string,mixed> 响应信封的 data 段 */
@@ -126,6 +161,43 @@ final class SearchControllerFallbackTest extends TestCase
         $this->assertSame(0, $body['code'] ?? -1, '端点未成功：' . json_encode($body, JSON_UNESCAPED_UNICODE));
 
         return $body['data'];
+    }
+
+    // ============================================================
+    // 〇、探针残留清理（本文件自身的基础设施，不是端点行为）
+    // ============================================================
+
+    /**
+     * 上一次跑被 SIGKILL / 超时打断留下的探针行，必须能被按 TOKEN 前缀清掉。
+     *
+     * 为什么单独立一条：按**本次生成的雪花 id** 清是清不掉这种残留的 —— 那一跑的 id
+     * 谁都记不得了，而 TOKEN 是固定的 ⇒ 那一行会永久污染之后每一次跑（读到的 total 恒多一条）。
+     * 去掉 purgeProbes() 的实现（改成按 id 删）⇒ 本用例红。
+     */
+    #[Test]
+    public function purgeRemovesLeftoverProbeRows(): void
+    {
+        $leftoverUser = SnowflakeService::generate();
+        Db::table('user')->insert([
+            'id'       => $leftoverUser,
+            'username' => 'leftover_' . $leftoverUser,
+            'password' => password_hash('Aa123456', PASSWORD_BCRYPT),
+            'nickname' => 'Leftover ' . self::TOKEN,
+            'status'   => 1,
+        ]);
+        $leftoverGame = SnowflakeService::generate();
+        Db::table('game')->insert([
+            'id'          => $leftoverGame,
+            'name'        => 'Leftover ' . self::TOKEN,
+            'slug'        => 'leftover-' . $leftoverGame,
+            'description' => '',
+            'status'      => 1,
+        ]);
+
+        self::purgeProbes();
+
+        $this->assertSame(0, Db::table('user')->where('id', $leftoverUser)->count(), '探针残留没被清掉');
+        $this->assertSame(0, Db::table('game')->where('id', $leftoverGame)->count(), '探针残留没被清掉');
     }
 
     // ============================================================

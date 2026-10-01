@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace tests;
 
+use app\middleware\AdminAuth;
+use app\middleware\AdminPermission;
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\Test;
@@ -71,6 +73,56 @@ class PermissionSeedParityTest extends TestCase
     public function wildcardPermissionRowStillExists(): void
     {
         $this->assertContains('*', $this->seedGrantableSlugs());
+    }
+
+    /**
+     * aetherupload 四路由的**挂载**钉子 —— 与上面的双向差集互补，两条都要在。
+     *
+     * 差集证明的是「slug 可授予 ⇄ 运行时归一 slug 集」，它按**归一后的 slug** 比对：同一 slug
+     * 可以由别的路由贡献。而决定「零权限的后台账号能不能往 storage/app/aetherupload/ 写文件」的
+     * 是**这条路由自己挂没挂** AdminPermission，所以这里按路由逐条钉。
+     *
+     * display 一并钉住**必须无中间件**：它是公开展示件（`<img src>` 带不了 Authorization 头，
+     * savedPath 是文件内容的 md5、不可猜），有人"顺手补齐鉴权"会把这批游戏封面/分类图标打成碎图。
+     */
+    #[Test]
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
+    public function aetheruploadRoutesCarryRbacAndDisplayStaysPublic(): void
+    {
+        Route::load([__DIR__ . '/../config']);
+
+        $byPath = [];
+        foreach (Route::getRoutes() as $route) {
+            if (str_contains($route->getPath(), 'aetherupload')) {
+                $byPath[$route->getPath()] = $route->getMiddleware();
+            }
+        }
+
+        // 先钉住「四条都在、路径没改名」：否则下面的逐条断言会因为键不存在而整段跳过 —— 假绿。
+        $expected = [
+            '/admin/v1/aetherupload/preprocess',
+            '/admin/v1/aetherupload/uploading',
+            '/admin/v1/aetherupload/display/{uri}',
+            '/admin/v1/aetherupload/download/{uri}/{newName}',
+        ];
+        $actual = array_keys($byPath);
+        sort($expected);
+        sort($actual);
+        $this->assertSame($expected, $actual, 'aetherupload 路由集变了：本用例的逐条断言已失去对象');
+
+        foreach ([
+            '/admin/v1/aetherupload/preprocess',
+            '/admin/v1/aetherupload/uploading',
+            '/admin/v1/aetherupload/download/{uri}/{newName}',
+        ] as $path) {
+            $this->assertContains(AdminAuth::class, $byPath[$path], "$path 必须要求后台登录");
+            $this->assertContains(AdminPermission::class, $byPath[$path],
+                "$path 必须过 RBAC —— 只挂 AdminAuth 时任何已登录而零权限的后台账号都能写/取文件");
+        }
+
+        $this->assertSame([], $byPath['/admin/v1/aetherupload/display/{uri}'],
+            'display 是**有意**公开的展示件路由：挂上鉴权会把游戏封面/分类图标/成就图标全打成碎图');
     }
 
     /**

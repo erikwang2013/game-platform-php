@@ -28,7 +28,8 @@ class SearchController extends BaseController
         $q = $request->input('q', '');
         $type = $request->input('type', 'game');
         $page = (int)$request->input('page', 1);
-        $perPage = (int)$request->input('per_page', 20);
+        // clamp [1,200]：同 limit 口径（本仓客户端最大合法取数 200）
+        $perPage = min(200, max(1, (int)$request->input('per_page', 20)));
 
         if (empty(trim($q))) {
             return $this->success(['list' => [], 'total' => 0]);
@@ -61,11 +62,14 @@ class SearchController extends BaseController
             });
         }
         $total = $query->count();
-        $items = $query->forPage($page, $perPage)->get()->map(function ($item) {
+        $items = $query->forPage($page, $perPage)->get()->map(function ($item) use ($type) {
             $data = $item->toArray();
             $data['id'] = $this->encodeId($data['id']);
             unset($data['password']);
-            return $data;
+            // user 分支返回的是**整行** game_user：phone/email 是 Encryptable（读回即明文）、
+            // last_login_ip 是普通列，三者都不在 User::$hidden 里（只有 password 在）⇒
+            // 不脱敏就是把用户的联系方式明文外发。game 分支没有这些列，保持原样。
+            return $type === 'user' ? $this->maskUserContact($data) : $data;
         });
         return $this->success([
             'list' => $items,

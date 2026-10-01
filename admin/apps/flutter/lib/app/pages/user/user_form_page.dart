@@ -42,7 +42,6 @@ class _UserFormPageState extends State<UserFormPage> {
 
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) return;
-    setState(() => _isLoading = true);
 
     final data = {
       'real_name': _realNameCtrl.text.trim(),
@@ -54,9 +53,17 @@ class _UserFormPageState extends State<UserFormPage> {
       data['username'] = _usernameCtrl.text.trim();
       data['password'] = _passwordCtrl.text;
     } else if (_passwordCtrl.text.isNotEmpty) {
+      // 改他人密码是敏感操作，要**两个不同名**的字段：`password` 是新密码，
+      // `admin_password` 是**当前操作者自己的**登录密码（UserController::update →
+      // BaseController::confirmPassword 二次确认）。只发前者必被 422 挡下，且服务端只说
+      // 「This sensitive operation requires password confirmation」，不告诉你是缺了哪个。
+      final adminPassword = await _promptAdminPassword();
+      if (adminPassword == null) return; // 取消：不发请求，也不进 loading 态
       data['password'] = _passwordCtrl.text;
+      data['admin_password'] = adminPassword;
     }
 
+    setState(() => _isLoading = true);
     try {
       final api = ApiService();
       if (isEdit) {
@@ -71,6 +78,33 @@ class _UserFormPageState extends State<UserFormPage> {
     } finally {
       setState(() => _isLoading = false);
     }
+  }
+
+  /// 二次确认框，收的必须是**操作者自己的**密码（与被改的那个账号无关）。
+  /// 返回 null = 用户取消。
+  ///
+  /// 不建 controller：TextField 无 controller 时自管输入态，值经 onChanged 回传 —— 与
+  /// `widgets/crud.dart` 的 confirmCrudAction 同法（弹框关闭动画期间 TextField 仍会重建，
+  /// 在那里持有 controller 会在 dispose 后被用到）。
+  Future<String?> _promptAdminPassword() async {
+    var password = '';
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('${AppTranslations.t('app.confirm')}'),
+        content: TextField(
+          obscureText: true,
+          autofocus: true,
+          onChanged: (v) => password = v,
+          decoration: InputDecoration(labelText: '${AppTranslations.t('user.password_confirm_hint')}'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text('${AppTranslations.t('app.cancel')}')),
+          ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: Text('${AppTranslations.t('app.confirm')}')),
+        ],
+      ),
+    );
+    return ok == true ? password : null;
   }
 
   @override

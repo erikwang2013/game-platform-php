@@ -29,7 +29,8 @@ class IdentityController extends BaseController
     public function list(Request $request): Response
     {
         $page   = (int) $request->input('page', 1);
-        $limit  = (int) $request->input('limit', 15);
+        // clamp [1,200]：200 是本仓客户端的最大合法取数（游戏/角色下拉一次拉全）；无上界时 ?limit=10000000 直接拉全表
+        $limit  = min(200, max(1, (int) $request->input('limit', 15)));
         $status = $request->input('status');
 
         $query = UserIdentity::with('user');
@@ -38,10 +39,15 @@ class IdentityController extends BaseController
             $query->where('status', $status);
         }
 
+        // 加 id 次序：game_user_identity.created_at 是 DATETIME（秒精度，install.sql:505），
+        // 同秒提交的多笔是常态；只按 created_at 排的话翻页会重复/漏行 —— 而 total/last_page
+        // 仍然正确，账面自洽、行对不上（KYC 审核队列漏看一条就是漏审一个人）。
+        // 照 PlatformUserController::transactions 的写法。
         $total = $query->count();
         $list  = $query->offset(($page - 1) * $limit)
                        ->limit($limit)
                        ->orderBy('created_at', 'desc')
+                       ->orderBy('id', 'desc')
                        ->get()
                        ->map(function ($identity) {
                            $data = $identity->toArray();

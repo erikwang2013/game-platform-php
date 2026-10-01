@@ -247,19 +247,32 @@ describe('管理端写操作接线', () => {
     type U = {
       tab: { set(v: string): void };
       review(row: Row, action: 'approve' | 'reject'): Promise<void>;
+      submitNote(v: Row): Promise<void>;
+      closeNote(): void;
+      noteOpen(): boolean;
+      noteTitle(): string;
+      noteError(): string;
       error(): string;
     };
     const row = { id: 'IDHASH1', user: { id: 'UHASH1', username: 'bob' } };
 
-    it('驳回：先二次确认（文案带用户名）再收备注，PUT /admin/v1/identity/review {id,action,note}', async () => {
+    /**
+     * 备注从原生 `prompt` 换成 `ui-form` 弹框后，驱动变了、**断言没变**（PUT 的
+     * body/端点/回读一字未动），另外多两条：开框不发请求、提交后才发。
+     * 改前 prompt 那条的实测缺陷：501 字 ⇒ 服务端 422，而 prompt 已关、整段理由丢了。
+     */
+    it('驳回：确认收在备注框标题里（带用户名），开框不发请求，提交才 PUT {id,action,note}', async () => {
       const u = build(() => new Users()) as unknown as U;
       u.tab.set('identity');
-      promptSpy.mockReturnValue('证件模糊');
-      const done = u.review(row, 'reject');
+      await u.review(row, 'reject');
 
-      expect(confirmSpy).toHaveBeenCalled();
-      expect(String(confirmSpy.mock.calls[0]![0])).toContain('bob');
+      // 不可逆操作：先开框让人把理由打完，这一步一个请求都不该发出去
+      expect(u.noteOpen()).toBe(true);
+      expect(String(u.noteTitle())).toContain('bob');
+      expect(promptSpy).not.toHaveBeenCalled();
+      http.expectNone(() => true);
 
+      const done = u.submitNote({ note: '证件模糊' });
       const req = http.expectOne((r) => r.method === 'PUT');
       expect(url(req)).toBe('/admin/v1/identity/review');
       // action 只认 approve|reject（IdentityController::review 的 validator），id 是记录的 hashid
@@ -271,7 +284,24 @@ describe('管理端写操作接线', () => {
         .expectOne((r) => r.method === 'GET')
         .flush({ code: 0, message: 'ok', data: { list: [], total: 0 } });
       await done;
+      expect(u.noteOpen()).toBe(false);
       expect(u.error()).toBe('');
+    });
+
+    it('驳回被服务端拒（422）：框不关、理由还在、message 就地显示（改前 prompt 已经关掉了）', async () => {
+      const u = build(() => new Users()) as unknown as U;
+      u.tab.set('identity');
+      await u.review(row, 'reject');
+      const done = u.submitNote({ note: 'x'.repeat(501) });
+
+      const req = http.expectOne((r) => r.method === 'PUT');
+      req.flush(
+        { code: 422, message: 'note 不能超过 500 个字符', data: null },
+        { status: 422, statusText: 'Unprocessable Entity' },
+      );
+      await done;
+      expect(u.noteOpen()).toBe(true);
+      expect(u.noteError()).toContain('500');
     });
 
     it('通过：不弹确认也不问备注（备注是驳回才有的东西）', async () => {
@@ -293,13 +323,15 @@ describe('管理端写操作接线', () => {
       await done;
     });
 
-    it('取消备注输入（prompt 返回 null）＝ 放弃驳回，一个请求都不发', async () => {
+    it('关掉备注框（不提交）＝ 放弃驳回，一个请求都不发（原生 prompt 那条路整个没了）', async () => {
       const u = build(() => new Users()) as unknown as U;
       u.tab.set('identity');
-      promptSpy.mockReturnValue(null);
       await u.review(row, 'reject');
+      u.closeNote();
       await tick();
       http.expectNone(() => true);
+      expect(promptSpy).not.toHaveBeenCalled();
+      expect(u.noteOpen()).toBe(false);
     });
   });
 

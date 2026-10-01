@@ -182,9 +182,15 @@ class WithdrawController extends BaseController
 
             $counted = ['pending', 'approved', 'processing', 'completed', 'manual_review'];
             if (bccomp($dailyLimit, '0', 4) > 0) {
+                // 半开区间：本仓有两种日边界写法（此处半开 `< 次日 00:00:00`；ReportController::dailyRows 用
+                // 闭区间 `23:59:59`）。今天在 DATETIME(0) 列上等价；表若改成 DATETIME(3)，闭区间那版会
+                // 静默漏掉末秒的小数部分，故新代码一律半开。
+                $dayStart     = date('Y-m-d') . ' 00:00:00';
+                $nextDayStart = date('Y-m-d', strtotime('+1 day')) . ' 00:00:00';
                 $todaySum = WithdrawOrder::where('user_id', $userId)
                     ->whereIn('status', $counted)
-                    ->whereDate('created_at', date('Y-m-d'))
+                    ->where('created_at', '>=', $dayStart)
+                    ->where('created_at', '<', $nextDayStart)
                     ->sum('platform_amount');
                 if (self::exceedsLimit((string) $todaySum, $platformAmount, $dailyLimit)) {
                     Db::rollBack();
@@ -192,12 +198,15 @@ class WithdrawController extends BaseController
                 }
             }
             if (bccomp($monthlyLimit, '0', 4) > 0) {
+                // 与上面日窗口同一条约定（半开 + 两端都写全 00:00:00）：左端原先只有 date('Y-m-01')，
+                // 之所以成立是**靠 MySQL 把 DATE 隐式补零**；右端 23:59:59 同理是漏掉末秒小数部分的写法。
+                // 同一个方法里两种边界写法比跨文件更坏，故与上面日窗口统一。
+                $monthStart     = date('Y-m-01') . ' 00:00:00';
+                $nextMonthStart = date('Y-m-01 00:00:00', strtotime('first day of next month'));
                 $monthSum = WithdrawOrder::where('user_id', $userId)
                     ->whereIn('status', $counted)
-                    ->whereBetween('created_at', [
-                        date('Y-m-01'),
-                        date('Y-m-t 23:59:59'),
-                    ])
+                    ->where('created_at', '>=', $monthStart)
+                    ->where('created_at', '<', $nextMonthStart)
                     ->sum('platform_amount');
                 if (self::exceedsLimit((string) $monthSum, $platformAmount, $monthlyLimit)) {
                     Db::rollBack();
