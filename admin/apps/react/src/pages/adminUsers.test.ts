@@ -1,10 +1,10 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { api } from '../lib/api.ts';
+import { api, apiEnvelope } from '../lib/api.ts';
 import { buildPayload, draftFrom, firstMissing } from '../lib/crud.ts';
 // 路由表读取器与模块组/风控组共用（见 lib/route-fixtures.ts 的说明）
-import { routes } from '../lib/route-fixtures.ts';
+import { hasRoute, routes } from '../lib/route-fixtures.ts';
 import { t, setCode } from '../i18n/index.ts';
 import { ADMIN_USER_CRUD, SELF_BLOCK, blockSelf, selfBlock } from './adminUsers.ts';
 
@@ -42,12 +42,18 @@ globalThis.window = {
   },
 } as unknown as Window & typeof globalThis;
 
-/** 发出去的请求长什么样（角色清空必须真的到服务端，别在路上被编码吃掉）。 */
-const sent: { url: string; method: string; contentType: string | undefined; body: string | undefined }[] = [];
+/** 发出去的请求长什么样（角色清空必须真的到服务端，别在路上被编码吃掉）。body 收 `unknown`：
+ *  导入那条路是 multipart，过的是 FormData 不是字符串。 */
+const sent: { url: string; method: string; contentType: string | undefined; body: unknown }[] = [];
 let answer: unknown = {};
-globalThis.fetch = (async (url: unknown, init: { method?: string; headers?: Record<string, string>; body?: string } = {}) => {
+globalThis.fetch = (async (url: unknown, init: { method?: string; headers?: Record<string, string>; body?: unknown } = {}) => {
   sent.push({ url: String(url), method: init.method ?? 'GET', contentType: init.headers?.['Content-Type'], body: init.body });
-  return { json: async () => ({ code: 0, message: 'ok', data: answer }) };
+  // 桩要**像真的 Response**：`lib/api.ts` 的信封解析改走 `text()` + `JSON.parse(…, reviver)`
+  // 做时间归一（只有它能在 parse 阶段挂 reviver），只实现 `json()` 的假对象会让每个用例
+  // 都报 "Service error (HTTP undefined)"。断言一条没动，这里只是把假对象补全
+  // （text/json/status 三件套）—— 真实 Response 本来就有这三个。
+  const body = JSON.stringify({ code: 0, message: 'ok', data: answer });
+  return { status: 200, text: async () => body, json: async () => JSON.parse(body) };
 }) as unknown as typeof fetch;
 
 /** 管理员端点的路由形态：`Route::resource('/user')` 自动注册，route.php 里没有逐条 get/put/del。 */
@@ -208,4 +214,44 @@ test('role_ids 走 JSON 请求体（空数组也照发）：urlencoded 里 [] �
   assert.equal(last.contentType, 'application/json');
   assert.equal(last.body, '{"role_ids":[]}');
   assert.ok(!String(last.body).includes('role_ids%5B%5D'), '不能是 urlencoded 形态');
+});
+
+/* ------------------------------ Excel 批量导入 ------------------------------ */
+
+test('导入按钮：指向真实存在的路由，不是点了必然 404 的死按钮', () => {
+  setCode('en');
+  const spec = ADMIN_USER_CRUD.importExcel;
+  assert.ok(spec, '管理员页少了导入入口');
+  assert.equal(spec.path, '/admin/v1/import/users');
+  // 路由表是真源：`Route::post('/import/users')` 在 config/route.php 的 /admin/v1 组内
+  assert.ok(hasRoute('post', spec.path), `route.php 里没有 POST ${spec.path}`);
+  // 按钮文案是**键**（渲染期才取译文）⇒ 断言英文成品，键写错在这里红
+  assert.equal(t(spec.title), 'Import users');
+  // 它写的是本页这个资源（ImportController 用的是 app\model\AdminUser），不是 C 端玩家
+  assert.ok(routes.includes("Route::post('/import/users'"), '导入端点的路由形态变了');
+});
+
+test('导入是 multipart：不手写 Content-Type（boundary 只能由 fetch 补），body 是含 file 段的 FormData', async () => {
+  const bytes = new Uint8Array([0x50, 0x4b, 0x03, 0x04]); // xlsx 的 PK 头，只为有个非空文件
+  const file = new File([bytes], 'admins.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const form = new FormData();
+  form.append('file', file);
+  answer = { total: 2, success: 1, failed: 1, errors: [{ row: 3, reason: 'x' }] };
+  const envelope = await apiEnvelope('/admin/v1/import/users', { method: 'POST', form });
+  const last = sent.at(-1);
+  assert.ok(last, '没有发出请求');
+  assert.equal(last.method, 'POST');
+  // 手写 multipart 的 Content-Type 会把 boundary 写丢（服务端就 `$request->file('file')` 为 null）。
+  // **这条不是恒真**：同文件的 role_ids 用例断言 contentType === 'application/json'，说明这套读数
+  // 在「有 Content-Type」时确实看得见（阳性对照）。
+  assert.equal(last.contentType, undefined);
+  assert.ok(last.body instanceof FormData, 'body 必须是 FormData，交给 fetch 自己拼 multipart');
+  const segment = (last.body as FormData).get('file');
+  assert.ok(segment instanceof File, 'file 段必须是文件，不是字符串');
+  assert.equal((segment as File).name, 'admins.xlsx');
+  // 上到线上的字节形态（PHP 的 multipart 解析器认的就是这两样）：段名 file + 带 filename
+  const wire = await new Request('http://x/', { method: 'POST', body: last.body as FormData }).text();
+  assert.ok(wire.includes('name="file"'), `多部分体里没有 name="file" 段：\n${wire.slice(0, 200)}`);
+  assert.ok(wire.includes('filename="admins.xlsx"'), '文件段必须带 filename，否则服务端拿不到原始文件名/扩展名');
+  assert.equal(envelope.data.total, 2);
 });

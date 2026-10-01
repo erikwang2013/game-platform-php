@@ -217,6 +217,15 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* ---------- 顶栏全局搜索（窄屏收起：入口仍在侧栏 NAV，见 Shell.tsx） ---------- */
+.topsearch {
+  display: flex;
+  max-width: 34%;
+  min-width: 0;
+}
+.topsearch .input {
+  min-width: 0;
+}
 /* ---------- 顶栏语言切换器（13 种平铺，母语名 + 当前项打点） ---------- */
 .lang {
   position: relative;
@@ -312,6 +321,9 @@
   }
   .topbar {
     padding: 8px 14px;
+  }
+  .topsearch {
+    display: none;
   }
   .content {
     padding: 16px 14px 88px;

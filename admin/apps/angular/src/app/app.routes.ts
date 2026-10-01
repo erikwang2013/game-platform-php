@@ -26,6 +26,11 @@ export const routes: Routes = [
         path: 'marketing',
         loadComponent: () => import('./pages/marketing').then((m) => m.Marketing),
       },
+      // 社群：组队/公会 + 分享裂变统计（GET /groups、/groups/{hashid}/audit、/share/stats）
+      {
+        path: 'community',
+        loadComponent: () => import('./pages/community').then((m) => m.Community),
+      },
       { path: 'support', loadComponent: () => import('./pages/support').then((m) => m.Support) },
       { path: 'infra', loadComponent: () => import('./pages/infra').then((m) => m.Infra) },
       // 后台账号（/admin/v1/user）；与 pages/users.ts 的 C 端平台用户是两回事

@@ -3,11 +3,13 @@ import { Component, computed, signal } from '@angular/core';
 import { Page, Row } from '../core/api.service';
 import { Crud, CrudPage } from '../core/crud';
 import { T, t } from '../core/i18n/i18n';
-import { idOf, json, scalarsOf } from '../core/render';
+import { idOf, json } from '../core/render';
 import { errText, num, rowsOf } from '../core/util';
-import { Drawer, Pager, StateBlock, StatCard, Tabs } from '../components/ui';
+import { Drawer, Pager, StateBlock, Tabs } from '../components/ui';
 import { Table } from '../components/table';
 import { FormModal } from '../components/form-modal';
+import { RiskCharts } from './risk-charts';
+import { RiskGraph } from './risk-graph';
 import {
   ANTICHEAT_ACTS,
   ANTICHEAT_STATUS,
@@ -20,12 +22,15 @@ import {
   DEVICE_ACTS,
   EVENT_ACTS,
   IP_VERBS,
+  PanelKind,
   PANEL_TITLES,
   RISK_HEADS,
   RISK_PATHS,
   RISK_TABS,
+  READ_PANELS,
   RULE_ACTS,
   RULE_FIELDS,
+  TIMELINE_HEADS,
   USER_ACTS,
   deviceBody,
   deviceConfirmText,
@@ -41,7 +46,7 @@ const R = '/admin/v1/';
 
 @Component({
   selector: 'app-risk',
-  imports: [StateBlock, StatCard, Table, Pager, Tabs, Drawer, FormModal, T],
+  imports: [StateBlock, RiskCharts, RiskGraph, Table, Pager, Tabs, Drawer, FormModal, T],
   template: `
     <div class="page-head">
       <h1>{{ 'risk.title' | t }}</h1>
@@ -58,8 +63,9 @@ const R = '/admin/v1/';
         <button class="btn" (click)="search()">{{ 'app.search' | t }}</button>
       }
       @if (tab() === 'clusters') {
-        <!-- 全局动作、无行上下文（候选由服务端按窗口算出来）⇒ 摆页头，不做行内动作 -->
+        <!-- 两个全局动作、都无行上下文（候选按窗口算、设备簇按账号数 TOP10）⇒ 摆页头，不做行内动作 -->
         <button class="btn" (click)="detect()">{{ 'risk.cluster.detect' | t }}</button>
+        <button class="btn" (click)="graphClusters()">{{ 'risk.graph.clusters' | t }}</button>
       }
       @if (tab() === 'ip') {
         <!-- 四个动作按**运营输入的原文 IP** 操作（列表只回 ip_hash 掩码，不可逆）⇒ 摆页头 -->
@@ -82,21 +88,9 @@ const R = '/admin/v1/';
 
     <ui-state [loading]="loading()" [error]="error()" [empty]="tab() !== 'overview' && !rows().length">
       @if (tab() === 'overview') {
-        @if (scalars().length) {
-          <div class="tiles">
-            @for (s of scalars(); track s.k) {
-              <ui-stat [label]="s.k" [value]="s.v" />
-            }
-          </div>
-        } @else {
-          <div class="state">{{ 'risk.overview_empty' | t }}</div>
-        }
-        @if (raw(); as d) {
-          <details class="raw-box">
-            <summary>{{ 'app.raw_response' | t }}</summary>
-            <pre class="raw">{{ pretty(d) }}</pre>
-          </details>
-        }
+        <!-- 总览整块（指标卡 + 趋势 + 动作分布 + 规则效果 + 原始响应）在 risk-charts.ts：
+             本文件已贴着 500 行，且那部分只需要 raw() 一个入口 -->
+        <app-risk-charts [raw]="raw()" />
       } @else {
         <div class="card">
           <div class="card-body">
@@ -130,6 +124,11 @@ const R = '/admin/v1/';
           [actions]="candidateActs"
           (act)="confirmCluster($event.row)"
         />
+      } @else if (panel() === 'timeline') {
+        <ui-table [rows]="timelineRows()" [heads]="timelineHeads" />
+      } @else if (panel() === 'graph' || panel() === 'graphclusters') {
+        <!-- 两份响应形状不同 ⇒ 明着传 mode，让组件别去猜（见 risk-graph.ts） -->
+        <app-risk-graph [raw]="result()" [mode]="panel() === 'graph' ? 'graph' : 'clusters'" />
       } @else if (result(); as d) {
         <pre class="raw">{{ pretty(d) }}</pre>
       }
@@ -143,16 +142,18 @@ export class Risk extends CrudPage {
   /** 动作回执（服务端 message / 服务端算出的金额）：**就地**显示，不把列表打成错误态 */
   protected readonly note = signal('');
   protected readonly noteErr = signal(false);
-  /** 右侧抽屉的内容类型（试算 / 聚类候选 / 团伙成员），'' = 关着；标题查 PANEL_TITLES */
-  protected readonly panel = signal<'' | 'result' | 'candidates' | 'members'>('');
-  /** 抽屉数据（三种面板共用这一个槽：结构各异，只有候选要再摊平成行） */
+  /** 右侧抽屉的内容类型（见 risk-fields 的 PanelKind），'' = 关着；标题查 PANEL_TITLES */
+  protected readonly panel = signal<'' | PanelKind>('');
+  /** 抽屉数据（四种面板共用这一个槽：结构各异，只有候选与时间轴要再摊平成行） */
   protected readonly result = signal<unknown>(null);
 
   protected readonly CLUSTER_STATUS = CLUSTER_STATUS;
   protected readonly candidateHeads = CANDIDATE_HEADS;
   protected readonly candidateActs = CANDIDATE_ACTS;
+  protected readonly timelineHeads = TIMELINE_HEADS;
+  /** 时间轴：三源合并后的 `events`（服务端已按时间倒序并截到 200 条） */
+  protected readonly timelineRows = computed(() => rowsOf(this.result(), 'events'));
 
-  protected readonly scalars = computed(() => scalarsOf(this.raw()));
   protected readonly heads = computed((): Record<string, string> => RISK_HEADS[this.tab()] ?? {});
   /** 抽屉标题与候选行都从 panel()/result() 派生（不另存一份，免得两处对不上） */
   protected readonly panelTitle = computed(() => PANEL_TITLES[this.panel()] ?? '');
@@ -250,12 +251,9 @@ export class Risk extends CrudPage {
     if (key.startsWith('cl_')) return this.setCluster(row, num(key.slice(3)));
     if (key.startsWith('rv_')) return this.review(row, key.slice(3));
     if (key === 'block' || key === 'unblock') return this.deviceAct(row, key);
-    // 只读：GET /risk/clusters/{hashid}/members（成员 id 出边界一律 hashid）⇒ 复用结果抽屉
-    if (key === 'members') {
-      return this.openPanel('members', () =>
-        this.api.get(R + 'risk/clusters/' + idOf(row) + '/members'),
-      );
-    }
+    // 三个只读抽屉（团伙成员 / 风险时间轴 / 反作弊详情）：面板类型与路径见 risk-fields.READ_PANELS
+    const read = READ_PANELS[key];
+    if (read) return this.openPanel(read.panel, () => this.api.get(R + read.path(idOf(row))));
     return super.run(row, key);
   }
 
@@ -287,10 +285,7 @@ export class Risk extends CrudPage {
    * 抽屉装载（试算 / 聚类候选 / 团伙成员共用）：清回执 → 取数 → 开面板；失败就地报错，
    * 不动列表也不开一个空抽屉。三种面板的数据都进 result()，标题由 panel() 查表。
    */
-  private async openPanel(
-    which: 'result' | 'candidates' | 'members',
-    load: () => Promise<unknown>,
-  ): Promise<void> {
+  private async openPanel(which: PanelKind, load: () => Promise<unknown>): Promise<void> {
     this.note.set('');
     this.noteErr.set(false);
     try {
@@ -406,6 +401,12 @@ export class Risk extends CrudPage {
   /** 聚类检测（POST /risk/clusters/detect）：只出候选、不落库。全局动作无行上下文 ⇒ 页头触发。 */
   protected async detect(): Promise<void> {
     await this.openPanel('candidates', () => this.api.post<unknown>(R + 'risk/clusters/detect'));
+  }
+
+  /** 设备关联簇（GET /risk/graph/clusters）：全站账号数 ≥2 的设备 TOP10 + 关联类型分布。
+   *  与上面的「聚类检测」不是一回事：检测按窗口算**候选**（可能查出新团伙），这个是**当前设备现状**。 */
+  protected async graphClusters(): Promise<void> {
+    await this.openPanel('graphclusters', () => this.api.get<unknown>(R + 'risk/graph/clusters'));
   }
 
   /**

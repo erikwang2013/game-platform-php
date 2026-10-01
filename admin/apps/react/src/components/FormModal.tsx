@@ -53,6 +53,8 @@ export function FormModal({
   const [loaded, setLoaded] = useState<Record<string, FieldOption[]>>({});
   // 树形字段（type: 'tree'）的树本身，与 options 同理按字段名缓存
   const [trees, setTrees] = useState<Record<string, TreeNode[]>>({});
+  // `file` 字段选中的文件（草稿里只放得下文件名，见 lib/crud.ts 的 FieldType 说明）
+  const [picked, setPicked] = useState<Record<string, File>>({});
 
   useEffect(() => {
     let alive = true;
@@ -101,6 +103,16 @@ export function FormModal({
     }
   };
 
+  /**
+   * 选中一个本地文件（`file` 字段）：**两份状态各存一半** —— 文件名进草稿（必填预检与
+   * 「编辑时是否改动过」都按字符串比，见 lib/crud.ts 的 FieldType），文件本体进 picked（上送用）。
+   * 两个 setState 在同一个事件里，React 会合成一次渲染。
+   */
+  const pick = (field: Field, file: File) => {
+    setPicked((prev) => ({ ...prev, [field.name]: file }));
+    setDraft((prev) => ({ ...prev, [field.name]: file.name }));
+  };
+
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     if (busy) return;
@@ -112,7 +124,14 @@ export function FormModal({
     setBusy(true);
     setError(null);
     try {
-      await onSubmit(buildPayload(fields, draft, row, fullEdit));
+      const body = buildPayload(fields, draft, row, fullEdit);
+      // `file` 字段：草稿里只有文件名，真正的 File 在这里才进请求体（同名覆盖掉那个字符串）。
+      // 没选文件时 buildPayload 已按空值跳过了该字段 —— 不塞 `undefined`，交给服务端报「请选择文件」。
+      for (const field of fields) {
+        const file = picked[field.name];
+        if (field.type === 'file' && file) body[field.name] = file;
+      }
+      await onSubmit(body);
     } catch (cause) {
       setError(cause instanceof ApiError ? cause.message : t('app.network_error'));
     } finally {
@@ -134,6 +153,7 @@ export function FormModal({
               onChange={(value) => setDraft((prev) => ({ ...prev, [field.name]: value }))}
               uploading={uploading === field.name}
               onUpload={(file) => void upload(field, file)}
+              onPick={(file) => pick(field, file)}
             />
             {field.hint ? <span className="muted hint">{fieldText(field.hint)}</span> : null}
           </label>
@@ -157,7 +177,13 @@ const withOptions = (field: Field, loaded: Record<string, FieldOption[]>): Field
 
 /** 多行控件占满整行（表单是两列布局）。 */
 const isWide = (type: Field['type']): boolean =>
-  type === 'textarea' || type === 'json' || type === 'jsonobj' || type === 'lines' || type === 'multi' || type === 'tree';
+  type === 'textarea' ||
+  type === 'json' ||
+  type === 'jsonobj' ||
+  type === 'jsonarr' ||
+  type === 'lines' ||
+  type === 'multi' ||
+  type === 'tree';
 
 /**
  * 多选的已选值：可能是库里的旧值（不在当前值域里）—— 逐个补成选项，否则控件会把它当没选上。
@@ -180,6 +206,7 @@ function Input({
   onChange,
   uploading,
   onUpload,
+  onPick,
 }: {
   field: Field;
   /** tree 字段：已拉到的权限树（没拉到 = undefined，退回只读文本框） */
@@ -190,8 +217,10 @@ function Input({
   uploading?: boolean;
   /** image 字段：选好文件（由 FormModal 走上传流程） */
   onUpload?: (file: File) => void;
+  /** file 字段：选好文件（FormModal 只记下来，提交时才进请求体） */
+  onPick?: (file: File) => void;
 }) {
-  // 文件选择器藏起来由「上传」按钮代点：外层已经是 <label>，label 套 label 不合法，
+  // 文件选择器藏起来由「上传/选择」按钮代点：外层已经是 <label>，label 套 label 不合法，
   // 而 label 会把整行都变成触发区（点一下字段名就弹文件框）
   const file = useRef<HTMLInputElement>(null);
 
@@ -230,9 +259,54 @@ function Input({
     );
   }
 
-  // json / jsonobj / lines 与 textarea 同形：json 原样上送（服务端 json_decode 校验）、
-  // jsonobj 提交时解成对象、lines 每行一个值转数组
-  if (field.type === 'textarea' || field.type === 'json' || field.type === 'jsonobj' || field.type === 'lines') {
+  // 本地文件（导入用）：文件名摆在一个**只读**文本框里 —— 它不能被手输，否则草稿里会出现一个
+  // 没有对应文件的名字，提交时服务端只会看到一段文本、拿不到文件。选择器隐藏、由按钮代点（同 image 字段）。
+  if (field.type === 'file') {
+    return (
+      <span className="imgfield">
+        <span className="imgrow">
+          <input
+            className="input"
+            type="text"
+            value={value}
+            readOnly
+            placeholder={t('form.no_file_chosen')}
+            aria-label={fieldText(field.label)}
+          />
+          <button
+            type="button"
+            className="btn btn-sm"
+            disabled={field.readOnly}
+            onClick={() => file.current?.click()}
+          >
+            {t('form.choose_file')}
+          </button>
+        </span>
+        <input
+          ref={file}
+          type="file"
+          accept={field.accept}
+          hidden
+          onChange={(event) => {
+            const selected = event.target.files?.[0];
+            // 清空选择：连选同一个文件也要再触发一次 change
+            event.target.value = '';
+            if (selected) onPick?.(selected);
+          }}
+        />
+      </span>
+    );
+  }
+
+  // json / jsonobj / jsonarr / lines 与 textarea 同形：json 原样上送（服务端 json_decode 校验）、
+  // jsonobj 提交时解成对象、jsonarr 解成数组、lines 每行一个值转数组
+  if (
+    field.type === 'textarea' ||
+    field.type === 'json' ||
+    field.type === 'jsonobj' ||
+    field.type === 'jsonarr' ||
+    field.type === 'lines'
+  ) {
     return (
       <textarea
         className="input"

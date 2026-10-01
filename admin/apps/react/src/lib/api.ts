@@ -4,6 +4,7 @@
  * 401 单次刷新重试、错误上抛。令牌存于 localStorage。
  */
 import { currentCode, t } from '../i18n/index.ts';
+import { toWallClock } from './format.ts';
 
 const ACCESS_KEY = 'react_admin_access_token';
 const REFRESH_KEY = 'react_admin_refresh_token';
@@ -41,6 +42,19 @@ export const session = {
     localStorage.setItem(REFRESH_KEY, refreshToken);
     if (user) localStorage.setItem(USER_KEY, JSON.stringify(user));
   },
+  /**
+   * 局部更新会话里的用户信息（改资料成功后刷新侧栏名字用）。
+   * **合并**而不是整条覆盖：登录响应里可能还有本类型没列出的字段，整条写回会把它们丢掉。
+   */
+  updateUser(patch: Partial<AdminUser>): void {
+    const raw = localStorage.getItem(USER_KEY);
+    if (!raw) return;
+    try {
+      localStorage.setItem(USER_KEY, JSON.stringify({ ...(JSON.parse(raw) as AdminUser), ...patch }));
+    } catch {
+      // 存的不是合法 JSON（外部改过）：不修，免得把会话搞成半截状态
+    }
+  },
   clear(): void {
     localStorage.removeItem(ACCESS_KEY);
     localStorage.removeItem(REFRESH_KEY);
@@ -50,7 +64,17 @@ export const session = {
 
 export type Query = Record<string, string | number | null | undefined>;
 
-type Options = { method?: 'GET' | 'POST' | 'PUT' | 'DELETE'; query?: Query; body?: unknown; auth?: boolean };
+/**
+ * `form` 与 `body` 二选一：`form` 走 multipart（文件导入），`body` 走 JSON。
+ * 与 `rawPost` 的分工：那条链路的服务端**不回信封**（aetherupload），这条仍回信封（`ImportController`）。
+ */
+export type Options = {
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  query?: Query;
+  body?: unknown;
+  form?: FormData;
+  auth?: boolean;
+};
 
 let refreshing: Promise<boolean> | null = null;
 
@@ -106,42 +130,55 @@ async function reauth(): Promise<boolean> {
   return ok;
 }
 
+/** 发一次请求（不含重试）：语言头、Bearer、JSON body 都在这里，两个调用方共用同一条链路。 */
+function send(path: string, options: Options, useAuth: boolean): Promise<Response> {
+  // 语言必须随每个业务请求发出去：后端 `LanguageMiddleware` 按 X-Language → Accept-Language
+  // → 默认 zh 选翻译表，不发这个头界面切了语言、服务端 message 也永远是中文。
+  const headers: Record<string, string> = { 'X-Language': currentCode() };
+  // multipart 的 Content-Type **不能手写**：`fetch` 要自己往里面补 boundary，手写丢了 boundary
+  // 服务端就解析不出任何文件段（`$request->file('file')` 为 null ⇒ 直接「请选择文件」）。
+  if (!options.form && options.body !== undefined) headers['Content-Type'] = 'application/json';
+  const access = session.accessToken;
+  if (useAuth && access) headers.Authorization = `Bearer ${access}`;
+  return fetch(buildUrl(path, options.query), {
+    method: options.method ?? 'GET',
+    headers,
+    body: options.form ?? (options.body === undefined ? undefined : JSON.stringify(options.body)),
+  });
+}
+
+/**
+ * 响应归一化：把 ISO-UTC 时间串换成服务端墙钟串（口径见 `format.ts` 的 `toWallClock`）。
+ *
+ * **放在这一层是因为它是唯一的 chokepoint** —— 表格 / 详情面板 / PDF 导出 / 编辑表单预填 /
+ * 筛选都从这个信封取值；再在显示层补一层等于同一个变换有两个真值源（本仓在案的反模式）。
+ * `JSON.parse` 的 reviver 自带走完整棵树，不必手写深遍历。
+ */
+const normalizeTimes = (_key: string, value: unknown): unknown =>
+  typeof value === 'string' ? toWallClock(value) : value;
+
+async function parseEnvelope<T>(r: Response): Promise<Envelope<T>> {
+  try {
+    // 用 text()+JSON.parse 而不是 r.json()：只有前者能挂 reviver
+    return JSON.parse(await r.text(), normalizeTimes) as Envelope<T>;
+  } catch {
+    throw new ApiError(r.status, t('app.service_error', { status: r.status }));
+  }
+}
+
 /**
  * 发请求并交出整个信封。资金动作（打款执行/同步、审核）要显示**服务端的原话**，
  * 而 `api()` 只回 data，那句话在解包时就丢了 —— 于是拆出这一层，两者共用同一条请求/刷新链路。
  */
 export async function apiEnvelope<T>(path: string, options: Options = {}): Promise<Envelope<T>> {
   const useAuth = options.auth !== false;
-
-  const send = (): Promise<Response> => {
-    // 语言必须随每个业务请求发出去：后端 `LanguageMiddleware` 按 X-Language → Accept-Language
-    // → 默认 zh 选翻译表，不发这个头界面切了语言、服务端 message 也永远是中文。
-    const headers: Record<string, string> = { 'X-Language': currentCode() };
-    if (options.body !== undefined) headers['Content-Type'] = 'application/json';
-    const access = session.accessToken;
-    if (useAuth && access) headers.Authorization = `Bearer ${access}`;
-    return fetch(buildUrl(path, options.query), {
-      method: options.method ?? 'GET',
-      headers,
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
-    });
-  };
-
-  const parse = async (r: Response): Promise<Envelope<T>> => {
-    try {
-      return (await r.json()) as Envelope<T>;
-    } catch {
-      throw new ApiError(r.status, t('app.service_error', { status: r.status }));
-    }
-  };
-
-  let res = await send();
-  let payload = await parse(res);
+  let res = await send(path, options, useAuth);
+  let payload = await parseEnvelope<T>(res);
 
   if (payload.code === 401 && useAuth) {
     if (await reauth()) {
-      res = await send();
-      payload = await parse(res);
+      res = await send(path, options, useAuth);
+      payload = await parseEnvelope<T>(res);
     } else {
       throw new ApiError(401, t('app.session_expired'));
     }
@@ -150,6 +187,26 @@ export async function apiEnvelope<T>(path: string, options: Options = {}): Promi
   // 服务端 message 已是翻译后的原话（后端按 X-Language 选表）；只有缺 message 时才用本地兜底
   if (payload.code !== 0) throw new ApiError(payload.code, payload.message || t('app.request_failed'));
   return payload;
+}
+
+/**
+ * 原始 Response（含 401 单次刷新）—— 只给**成功时不回 JSON**的端点用：导出下载走
+ * `response()->download()` 直接回二进制，**失败路径才回信封**，用 apiEnvelope 解析会把文件当 JSON 吞掉。
+ * 调用方按 `content-type` 分流（见 lib/download.ts）。
+ * 探测 401 用 `clone()`：读掉原响应体的话，调用方拿到的就是一个空 Response。
+ */
+export async function apiRaw(path: string, options: Options = {}): Promise<Response> {
+  const useAuth = options.auth !== false;
+  let res = await send(path, options, useAuth);
+  const type = res.headers.get('content-type') ?? '';
+  if (useAuth && type.includes('json')) {
+    const probe = (await res.clone().json()) as Envelope<unknown>;
+    if (probe.code === 401) {
+      if (!(await reauth())) throw new ApiError(401, t('app.session_expired'));
+      res = await send(path, options, useAuth);
+    }
+  }
+  return res;
 }
 
 /**

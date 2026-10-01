@@ -151,7 +151,10 @@ table.data tbody tr:hover { background: #f8fafc; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ---------- 图表 ---------- */
-.chart { display: block; width: 100%; height: 150px; }
+/* 高度交给里面的 svg 撑（桌面 180px / 窄屏 140px，见 styles.extra.scss）。
+   原先写死 150px 而 svg 是 180px ⇒ 轴标签被挤出容器，和后一个兄弟元素叠在一起，
+   图例（.chart-legend 紧跟在 .chart 后面）会正好压在轴上。 */
+.chart { display: block; width: 100%; }
 .chart-legend { display: flex; flex-wrap: wrap; gap: 14px; color: var(--muted); font-size: 12px; }
 .chart-legend i { display: inline-block; width: 8px; height: 8px; margin-right: 4px; border-radius: 2px; }
 

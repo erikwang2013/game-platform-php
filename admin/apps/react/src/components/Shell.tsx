@@ -1,6 +1,6 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { useEffect, useState, type ReactNode } from 'react';
-import { NavLink, Navigate, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { useSignOut } from '../lib/hooks';
 import { LANGUAGES, useI18n, type MessageKey } from '../i18n/index.ts';
@@ -15,6 +15,11 @@ const NAV: { to: string; label: MessageKey; icon: string; tab: boolean }[] = [
   { to: '/admins', label: 'nav.admins', icon: '⚙', tab: false },
   { to: '/withdrawals', label: 'nav.withdrawals', icon: '◎', tab: false },
   { to: '/risk', label: 'nav.risk', icon: '⬡', tab: false },
+  // 社群：组队/公会与分享统计（后端 M4 那组端点，本树此前没有入口）
+  { to: '/community', label: 'nav.community', icon: '⬢', tab: false },
+  { to: '/logs', label: 'nav.logs', icon: '▤', tab: false },
+  // 全局搜索：顶栏那个框是快捷键，窄屏顶栏把框收起来了，故侧栏也要有一项（否则手机上没法进）
+  { to: '/search', label: 'nav.search', icon: '⌕', tab: false },
   { to: '/profile', label: 'nav.profile', icon: '☰', tab: true },
 ];
 
@@ -28,6 +33,9 @@ export function RequireAuth({ children }: { children: ReactNode }) {
 export function Shell() {
   const [drawer, setDrawer] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
+  // 顶栏搜索框：只存输入，不存结果 —— 结果页自己从 URL 的 q 读（见 pages/search.tsx）
+  const [keyword, setKeyword] = useState('');
+  const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
   const signOut = useSignOut();
@@ -103,6 +111,24 @@ export function Shell() {
             ☰
           </button>
           <span className="topbar-t">{current ? t(current.label) : t('app.console')}</span>
+          {/* 全局搜索（GET /admin/v1/search 一直没有入口）：回车跳结果页，关键词落在 URL 上。
+              不做「边打边搜」——那会把每个字母都变成一次请求，且结果页的分页/回退就没了锚点 */}
+          <form
+            className="topsearch"
+            onSubmit={(event) => {
+              event.preventDefault();
+              navigate(`/search?type=game&q=${encodeURIComponent(keyword.trim())}`);
+            }}
+          >
+            <input
+              className="input"
+              type="search"
+              value={keyword}
+              onChange={(event) => setKeyword(event.target.value)}
+              placeholder={t('search.placeholder')}
+              aria-label={t('nav.search')}
+            />
+          </form>
           <span className="topbar-u muted">{user?.username ?? ''}</span>
 
           {/* 13 种语言平铺 + 当前项打点。母语名（不是译名）：用户看不懂当前界面语言时也要能选对。

@@ -53,6 +53,16 @@ export const GAMES: Record<string, [string, string]> = {
     '编辑时留空 = 不修改；自研/内嵌留空自动生成',
   ],
   'game.description': ['Description', '游戏描述'],
+  /**
+   * 行内动作「游戏币种」（POST /game/currency/manage）。三条语义原文照抄 react 的
+   * `f.game_currencies_hint`：不写进来的不删、带 id 才是改、单条不过整批拒绝 ——
+   * 少写一条提示，运营就会把它当成整表替换，一次提交把币种表的 id 全抹掉变成重复行。
+   */
+  'game.currency_act': ['Game currencies', '游戏币种'],
+  'game.currency_hint': [
+    'A JSON array; keep id to update a row, drop it to create a new one. Currencies you leave out are kept as they are - this is not a full replace. name/symbol text, exchange_rate > 0, spread_pct between 0 and 100.',
+    'JSON 数组；带 id = 改这一条，去掉 id = 新建一条。没写进来的币种原样保留 —— 这不是整表替换。name/symbol 为文本，exchange_rate 需大于 0，spread_pct 在 0 到 100 之间。',
+  ],
 
   // ---- 游戏分类 ----
   'game_category.noun': ['category', '分类'],
@@ -65,6 +75,19 @@ export const GAMES: Record<string, [string, string]> = {
   'game_category.icon_hint': ['Image URL or icon name, max 255 characters', '图片 URL 或图标名，最长 255'],
   'game_category.sort': ['Sort', '排序'],
   'game_category.sort_hint': ['Smaller comes first', '数字越小越靠前'],
+  /**
+   * 行内动作「分配游戏」（POST /game/category/assign，`{category_id, game_ids[]}`）。
+   * **整体替换**：后端先删光该分类的关联再插入 —— 分类侧没有任何读端点能拿回当前关联
+   * （GameCategoryController 只有 list/create/update/destroy/assign），所以表单只能空白开局，
+   * 提示里必须把「没列的会被解绑、留空即清空」说死（原文照抄 react 的 `f.from_the_games_list_id`）。
+   */
+  'game_category.assign_games': ['Assign Games', '分配游戏'],
+  'game_category.assign_title': ['Assign games to this category', '分配游戏到分类'],
+  'game_category.assign_placeholder': ['One per line', '每行一个'],
+  'game_category.assign_hint': [
+    'From the games list id column; this submission replaces the whole association set of the category (it does not append)',
+    '取自游戏列表的 id 列；本次提交整体替换该分类的关联（不是追加）',
+  ],
 
   // ---- 区服 ----
   'game_server.noun': ['server', '区服'],

@@ -130,5 +130,29 @@ export class LocaleController {
     const locale = LocaleController.resolve(code);
     LocaleController.currentCode = locale.code;
     AppStorage.setOrCreate(LOCALE_STORAGE_KEY, locale.code);
+    LocaleController.applySystemLanguage(locale.code);
+  }
+
+  /**
+   * 把语言交给**系统**：`ApplicationContext.setLanguage()` 之后，ArkUI 会按该语言的书写方向排版。
+   *
+   * 为什么必须有：**文案翻了但没告诉系统，阿拉伯语界面仍是 LTR** —— 文本方向、标点位置、
+   * flex/Row 的起点全反。翻译解决"字对不对"，这一句解决"排得对不对"。
+   * react 树同款问题已真机验过（选 العربية → `dir=rtl`），本树只能在编译级验收。
+   *
+   * `ctx === null`（`init` 还没跑到）时跳过，且**不让系统调用失败把切换动作打死** ——
+   * 与 `change()` 里"拿不到 context 就只落内存"同一个取舍。
+   *
+   * ⚠ 这里只保证「调了、且编译得过」：**方向是否真的镜像需要设备/模拟器看**，本仓没有。
+   */
+  private static applySystemLanguage(code: string): void {
+    if (LocaleController.ctx === null) {
+      return;
+    }
+    try {
+      LocaleController.ctx.getApplicationContext().setLanguage(code);
+    } catch (_) {
+      // 系统调用失败：本次界面文案仍是新语言，只是书写方向没跟着变
+    }
   }
 }

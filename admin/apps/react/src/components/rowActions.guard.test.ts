@@ -5,7 +5,11 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 /**
- * `RowBrowser` 里**状态切换守卫**的调用点。
+ * **状态切换守卫**的调用点。
+ *
+ * 本文件原叫 `rowBrowser.guard.test.ts`：本批把整条行尾动作链（含 `toggle()`）从 `RowBrowser.tsx`
+ * 搬到了 `RowActions.tsx`（那个文件越过 500 行线，还要给批量动作腾地方）。断言一条没改，
+ * 只是读的源码换了文件 —— 它一红就说明**守卫没了或挪位了**，正是它该报的时候。
  *
  * 为什么用读源码这种土办法：本树没有 DOM 测试底座（无 jsdom / 无 testing-library，
  * `npm test` 跑的是 `node --test`，全部用例都是纯逻辑层）。而 `toggleBlock` 的**唯一**
@@ -17,12 +21,12 @@ import test from 'node:test';
  * 断言关键串存在 **且顺序正确**（`assertLessThan`）。顺序在这里是关键：
  * 守卫一旦挪到发请求之后，就没有任何意义了。
  */
-const SOURCE = readFileSync(fileURLToPath(new URL('./RowBrowser.tsx', import.meta.url)), 'utf8');
+const SOURCE = readFileSync(fileURLToPath(new URL('./RowActions.tsx', import.meta.url)), 'utf8');
 
 /** 切出 `const toggle = () => { … };` 的函数体（到下一个个顶格 `  };` 为止） */
 const toggleBody = (): string => {
   const start = SOURCE.indexOf('const toggle = () => {');
-  assert.notEqual(start, -1, 'RowBrowser 里找不到 toggle()：改名了就同步改本文件');
+  assert.notEqual(start, -1, 'RowActions 里找不到 toggle()：改名了就同步改本文件');
   const end = SOURCE.indexOf('\n  };', start);
   assert.notEqual(end, -1, 'toggle() 的函数体切不出来（缩进变了？）');
   return SOURCE.slice(start, end);

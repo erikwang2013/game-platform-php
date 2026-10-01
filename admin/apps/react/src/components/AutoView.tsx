@@ -1,8 +1,18 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { dash, isTimeKey, when } from '../lib/format';
 import { DataTable, cell, type Row } from './DataTable';
-import { t } from '../i18n/index.ts';
+import { fieldLabelKey, t, type MessageKey } from '../i18n/index.ts';
 import { Card, Empty, Stat } from './ui';
+
+/**
+ * 键 → 显示名。与表头（`columnsFrom` + `DataTable`）同一条兜底链：`f.<键>` 在表里就用译文，
+ * 没有就**原样回键名**（绝不露出查不到的 `f.xxx`）。
+ *
+ * 为什么要这一步：兜底渲染器原本把 `total_users` / `dau` 这种键直接当标签摆在统计块上，
+ * 任何语言下都是裸字段名。加了这一步之后，往 `en.fields.ts` 补一条 `f.<键>` 就自动生效，
+ * 不必再给每个端点各写一套渲染。
+ */
+const labelOf = (key: string): string => t(fieldLabelKey(key) ?? (key as MessageKey));
 
 /** 常见的列表容器键，用于从未确认的响应里找出真正的数组。 */
 const LIST_KEYS = [
@@ -44,7 +54,7 @@ export function asRows(data: unknown): Row[] | null {
  * `columnsFrom` 本体在 `lib/columns.ts`：纯逻辑搬出 `.tsx` 才能被 `node --test` 加载
  * （本树的 `--experimental-strip-types` **不认 .tsx**）。这里导入后再导出，既有导入点不用改。
  */
-import { columnsFrom } from '../lib/columns.ts';
+import { columnsFrom, labelsFor } from '../lib/columns.ts';
 
 export { columnsFrom };
 
@@ -59,7 +69,8 @@ export function AutoView({ data, depth = 0 }: { data: unknown; depth?: number })
     if (data.length === 0) return <Empty />;
     const rows = asRows(data);
     if (rows) {
-      const columns = columnsFrom(rows);
+      // 表头也走 labelOf 那条链（统计块早就走了）：否则同一张卡上标签是译文、列头是 fp_masked
+      const columns = columnsFrom(rows, [], 8, [], labelsFor(rows));
       return <DataTable columns={columns} rows={rows} />;
     }
     return (
@@ -92,7 +103,7 @@ export function AutoView({ data, depth = 0 }: { data: unknown; depth?: number })
       {scalars.length > 0 ? (
         <div className="grid grid-4">
           {scalars.map(([key, value]) => (
-            <Stat key={key} label={key} value={isTimeKey(key) ? when(value) : dash(value)} />
+            <Stat key={key} label={labelOf(key)} value={isTimeKey(key) ? when(value) : dash(value)} />
           ))}
         </div>
       ) : null}
@@ -102,7 +113,7 @@ export function AutoView({ data, depth = 0 }: { data: unknown; depth?: number })
       ) : null}
       {depth === 0
         ? nested.map(([key, value]) => (
-            <Card key={key} title={key}>
+            <Card key={key} title={labelOf(key)}>
               <AutoView data={value} depth={depth + 1} />
             </Card>
           ))

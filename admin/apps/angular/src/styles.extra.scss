@@ -164,6 +164,17 @@ textarea.input {
   stroke: var(--success);
   fill: var(--success);
 }
+/* 图例色块：`.chart .sX` 只圈得到 .chart 里面，图例在容器外面 ⇒ 得单独给底色，
+   否则图例只剩四个没有颜色的空方块 */
+.chart-legend i.s1 {
+  background: var(--primary);
+}
+.chart-legend i.s2 {
+  background: #7c3aed;
+}
+.chart-legend i.s3 {
+  background: var(--success);
+}
 
 /* ---------- 横向条形 ---------- */
 .bar-row {
@@ -185,6 +196,32 @@ textarea.input {
   height: 100%;
 }
 .bar-row .val {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+/* ---------- 迷你折线（风控总览：按规则类型的命中趋势，一行一条）---------- */
+/* 复用 .chart 的配色/线型（.chart .s1 等），只把这个 .chart 里的 svg 压矮到 28px。
+   纵轴范围在 risk-charts.ts 里**跨行共用**，所以行高一致时高度可比。 */
+.spark-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 64px;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  padding: 3px 0;
+}
+.spark-row .chart svg {
+  height: 28px;
+}
+.spark-row .name {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.spark-row .val {
   text-align: right;
   font-variant-numeric: tabular-nums;
   color: var(--muted);

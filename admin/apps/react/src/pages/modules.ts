@@ -11,11 +11,11 @@
  *   不寄望用户看不出来（见各 editFields）。
  * 挂法见 pages/TabPage.tsx 的 Group.crud。
  */
-import type { CrudConfig } from '../components/RowBrowser';
+import type { CrudAction, CrudConfig } from '../components/RowBrowser';
 import type { Row } from '../components/DataTable';
 // 带 .ts 后缀：modules.test.ts 要在 node --test 下直接 import 本文件（拿后端的路由表对账路径与方法）
 import { t, type MessageKey } from '../i18n/index.ts';
-import { labelOf, raw, type Field, type FieldOption } from '../lib/crud.ts';
+import { labelOf, raw, rowId, type Field, type FieldOption } from '../lib/crud.ts';
 import { api, type Envelope } from '../lib/api.ts';
 import { treeNodes, treeOptions, type TreeNode } from '../lib/tree.ts';
 
@@ -68,6 +68,40 @@ const GAME_FIELDS: Field[] = [
   { name: 'status', label: 'f.listed', type: 'switch' },
 ];
 
+/**
+ * 游戏币种（POST /game/currency/manage，`{game_id, currencies: […]}`）。
+ *
+ * 端点的语义是**按有无 id 增/改**，三条都得写在提示里，否则一次提交就能把币种表改坏：
+ * - **不删**：数组里没提到的币种原样保留 —— 这不是「整表替换」，少写几行不等于删掉它们
+ * - **带 id 才是改**：抹掉 `id` 就是**新建一条**，于是同一个币种在表里出现两行
+ * - 逐条校验（`exchange_rate` > 0、`spread_pct` ∈ [0,100)）**在落库之前**跑完全部，
+ *   故不存在「改了一半」；单条失败即整批拒绝
+ * 所以文本框**预取现值**（GET /game/{hashid} 的 `currencies`）：手打整张表必然丢掉 id。
+ * 那条校验只在 `if (isset($item[...]))` 时跑 —— 缺字段的币种走模型现值，不会因为留空把汇率清零。
+ */
+const GAME_CURRENCIES: CrudAction = {
+  label: 'f.game_currencies',
+  title: 'f.game_currencies',
+  path: () => '/admin/v1/game/currency/manage',
+  body: (id) => ({ game_id: id }),
+  report: true,
+  confirm: (row) => t('page.games.currencies_confirm', { name: labelOf(row, 'name') }),
+  fields: async (row) => {
+    const data = await api<{ currencies?: unknown }>(`/admin/v1/game/${rowId(row)}`);
+    return [
+      {
+        name: 'currencies',
+        label: 'f.game_currencies',
+        type: 'jsonarr',
+        required: true,
+        hint: 'f.game_currencies_hint',
+        // 预取现值（同 lib/crud.ts 的 displayValue 口径：数组 → 缩进后的 JSON 文本）
+        default: JSON.stringify(data?.currencies ?? [], null, 2),
+      },
+    ];
+  },
+};
+
 export const GAME_CRUD: CrudConfig = {
   base: '/admin/v1/game',
   noun: 'f.games',
@@ -77,6 +111,7 @@ export const GAME_CRUD: CrudConfig = {
   labelKey: 'name',
   // 游戏没有独立 toggle 端点，状态变更走 update（PUT {status}）
   toggle: 'update',
+  actions: [GAME_CURRENCIES],
 };
 
 /* ---------------------------------- 公告 ---------------------------------- */
@@ -756,7 +791,21 @@ export const WITHDRAW_ORDER_CRUD: CrudConfig = {
         return t('funds.sync_report', { payout: String(data.payout_status ?? '—'), order: String(data.order_status ?? '—'), batch: String(data.synced_status ?? '—') });
       },
     },
+    {
+      // 订单凭证 PDF（POST /admin/v1/export/receipt，回的是文件不是信封）→ receipt_<order_no>.pdf。
+      // 运营给用户出凭证是日常动作，此前只能去数据库里找订单号；不对状态设限 —— 跑完流程的订单要凭证，
+      // 被驳回的订单用户来问同样要得出凭证。
+      label: 'f.receipt',
+      path: () => '/admin/v1/export/receipt',
+      body: (id) => ({ type: 'withdraw', order_id: id }),
+      download: 'receipt.pdf',
+    },
   ],
+  /**
+   * 导出本页 PDF：提现订单是**出钱台账**，财务/运营要留档。
+   * 导的就是当前已加载的这一页（端点不取数，`data` 由前端给）——按钮上写着行数。
+   */
+  exportPdf: { title: 'f.withdraw_orders' },
 };
 
 /* -------------------------------- 提现开关 -------------------------------- */
@@ -1207,8 +1256,13 @@ export const RISK_USER_CRUD: CrudConfig = {
       },
     },
   ],
-  // 只读视图：合并 risk_log / play_log / anticheat_event 的时间线（没有单条详情端点，不用 detailBase）
-  views: [{ label: 'f.timeline', title: 'f.risk_timeline', path: (id) => `/admin/v1/risk/users/${id}/timeline` }],
+  // 只读视图（两个）：时间线合并 risk_log / play_log / anticheat_event（没有单条详情端点，不用 detailBase）；
+  // 关联图谱是这个用户的节点 + 边（GET /risk/graph/{userId}，**不是** /risk/clusters 那条）。
+  // 入参是 hashid：端点自己 decodeId，行里 user_id 列就是它。
+  views: [
+    { label: 'f.timeline', title: 'f.risk_timeline', path: (id) => `/admin/v1/risk/users/${id}/timeline` },
+    { label: 'f.risk_graph', title: 'f.risk_graph', path: (id) => `/admin/v1/risk/graph/${id}` },
+  ],
 };
 
 /* --------------------------------- 关联团伙 -------------------------------- */

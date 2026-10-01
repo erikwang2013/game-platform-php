@@ -1,5 +1,5 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { Auth, SessionUser } from './auth.service';
@@ -64,6 +64,50 @@ function query(params: Params): string {
     .filter(([, v]) => v !== undefined && v !== '')
     .map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`);
   return parts.length ? `?${parts.join('&')}` : '';
+}
+
+/** blob → 文本；读不出来回空串（走下坡路时才用，不该因为解析再抛一层） */
+async function blobText(b: unknown): Promise<string> {
+  try {
+    return b instanceof Blob ? await b.text() : '';
+  } catch {
+    return '';
+  }
+}
+
+/** 文本 → 信封；`code` 不是数字就返回 null（那它不是本应用的错误响应） */
+function asEnvelope(text: string): { code: number; message: string } | null {
+  try {
+    const o = JSON.parse(text) as Row;
+    if (typeof o['code'] !== 'number') return null;
+    return { code: o['code'], message: String(o['message'] ?? '') };
+  } catch {
+    return null;
+  }
+}
+
+/** Content-Disposition → 文件名。RFC 5987 的 `filename*` 优先，服务端实际发的是 `filename="…"` */
+function fileName(cd: string | null): string | null {
+  if (!cd) return null;
+  const star = /filename\*=UTF-8''([^;]+)/i.exec(cd);
+  if (star?.[1]) {
+    try {
+      return decodeURIComponent(star[1]);
+    } catch {
+      return star[1];
+    }
+  }
+  return /filename="?([^";]+)"?/i.exec(cd)?.[1] ?? null;
+}
+
+/** Blob → 触发一次 <a download> 点击；URL 延后释放（立即 revoke 在部分浏览器会取消下载） */
+function saveBlob(blob: Blob, name: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 }
 
 @Injectable({ providedIn: 'root' })
@@ -268,9 +312,105 @@ export class Api {
     return this.post('/api/v1/auth/login', payload);
   }
 
-  logout(): Promise<void> {
+  /**
+   * 登出。**必须打到服务端** —— `POST /admin/v1/profile/logout` 才把 access 令牌写进 Redis
+   * 黑名单并吊销本会话的 refresh（ProfileController::logout）。原先这里只 `auth.clear()`
+   * 清 localStorage ⇒ 令牌在自然过期前一直有效、还能换新 access，点「退出」等于没退。
+   *
+   * 服务端失败也要清本地会话：否则网络不通时用户被卡在登录态里退不出去（代价是那个令牌
+   * 要等自己过期，比"退不出去"轻）。
+   */
+  async logout(): Promise<void> {
+    try {
+      await this.post('/admin/v1/profile/logout');
+    } catch {
+      /* 令牌已过期/服务端不可达：本地照清 */
+    }
     this.auth.clear();
-    return Promise.resolve();
+  }
+
+  // ---------- 文件下载 ----------
+
+  /**
+   * 下载导出文件，返回落盘用的文件名。
+   *
+   * 这类端点回的是**二进制附件**而不是信封，但**校验失败时回的又是信封**
+   * （`ExportController::receipt` 的 422「订单不存在」、`ReportController::export` 的 400
+   * 「日期范围超 90 天」）⇒ 按 content-type 分流。不分流的话，「导出失败」会静默变成
+   * 下载一个内容是错误 JSON 的 .xlsx，用户打开才发现。
+   *
+   * 401 与别处同一条路：刷新一次重放，刷不动就抛。
+   */
+  async download(method: Method, url: string, body?: unknown, fallback = 'export'): Promise<string> {
+    try {
+      return await this.saveFile(method, url, body, fallback);
+    } catch (e) {
+      if (e instanceof ApiError && e.code === 401 && (await this.refreshOnce())) {
+        return this.saveFile(method, url, body, fallback);
+      }
+      throw e;
+    }
+  }
+
+  private async saveFile(
+    method: Method,
+    url: string,
+    body: unknown,
+    fallback: string,
+  ): Promise<string> {
+    let res: HttpResponse<Blob>;
+    try {
+      res = await this.sendFile(method, url, body);
+    } catch (e) {
+      if (e instanceof ApiError) throw e;
+      if (e instanceof HttpErrorResponse) {
+        // 非 2xx（422/404）错误体也是 blob，读出来再按信封解析
+        const env = asEnvelope(await blobText(e.error));
+        throw new ApiError(
+          env?.code ?? e.status,
+          env?.message || this.i18n.t('app.request_failed', { code: e.status }),
+        );
+      }
+      throw new ApiError(0, this.i18n.t('app.network_error'));
+    }
+    const blob = res.body ?? new Blob();
+    // HTTP 200 + JSON = 信封式失败（本应用业务失败一律 200，见文件头）
+    if ((res.headers.get('content-type') ?? '').includes('json')) {
+      const env = asEnvelope(await blob.text());
+      throw new ApiError(
+        env?.code ?? 0,
+        env?.message || this.i18n.t('app.request_failed', { code: env?.code ?? 0 }),
+      );
+    }
+    // 文件名优先取 Content-Disposition：服务端带的是一串时间戳/订单号
+    // （export_users_20261001.xlsx、receipt_NO123.pdf），自己拼一个只会与内容对不上
+    const name = fileName(res.headers.get('content-disposition')) ?? fallback;
+    saveBlob(blob, name);
+    return name;
+  }
+
+  /**
+   * 与 sendRaw 同头（语言 + 认证），差别只在要拿到响应头与二进制体。
+   *
+   * GET 的 body 一律转成查询串：XHR 会**丢掉** GET 的 body、fetch 后端更直接抛
+   * 「Request with GET/HEAD method cannot have body」，而 /report/export 恰好是 GET
+   * ⇒ 直接透传会出现「参数没发出去、服务端按缺省值导了一份别的日期范围」这种静默错。
+   * POST 那几个（/export/*）本来就是 JSON body，原样发。
+   */
+  private sendFile(method: Method, url: string, body?: unknown): Promise<HttpResponse<Blob>> {
+    const headers: Record<string, string> = { 'X-Language': this.i18n.lang() };
+    const token = this.auth.token;
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const get = method === 'GET';
+    const full = get ? url + query((body ?? {}) as Params) : url;
+    return firstValueFrom(
+      this.http.request(method, full, {
+        body: get ? undefined : body,
+        headers,
+        observe: 'response',
+        responseType: 'blob',
+      }),
+    );
   }
 
   // ---------- 常用管理端接口（其余走 get/post/list 泛型） ----------

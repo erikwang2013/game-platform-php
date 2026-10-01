@@ -4,6 +4,7 @@ import { Api, Page, Row } from '../core/api.service';
 import { Field } from '../core/crud';
 import { idOf, json, kvOf, scalarsOf } from '../core/render';
 import { errText } from '../core/util';
+import { downloadTransactions } from '../core/export';
 import { ListBase } from '../core/list-base';
 import { T } from '../core/i18n/i18n';
 import { Drawer, Pager, StateBlock, StatCard, Tabs } from '../components/ui';
@@ -54,6 +55,15 @@ const ASSIGN_FIELDS: Field[] = [
           (keyup.enter)="search()"
         />
         <button class="btn" (click)="search()">{{ 'app.search' | t }}</button>
+      }
+      <!-- 只挂在报表页：两个导出（按天聚合的日报 / 全平台流水）都与工单是两回事 -->
+      @if (tab() === 'report') {
+        <button class="btn" [disabled]="exporting()" (click)="exportReport()">
+          {{ (exporting() ? 'app.exporting' : 'report.export') | t }}
+        </button>
+        <button class="btn" [disabled]="exporting()" (click)="exportTransactions()">
+          {{ (exporting() ? 'app.exporting' : 'export.transactions') | t }}
+        </button>
       }
       <button class="btn" (click)="load()">{{ 'app.refresh' | t }}</button>
     </div>
@@ -136,6 +146,8 @@ export class Support extends ListBase<Row> {
 
   protected readonly detail = signal<Row | null>(null);
   protected readonly raw = signal<unknown>(null);
+  /** 报表导出中（按钮禁用 + 文案切换）。走 Api.download，不经过 rows/loading，不打断表格 */
+  protected readonly exporting = signal(false);
 
   /**
    * 回复 / 指派共用这个弹框。工单是**动作型**（reply/close/assign 三个 POST），没有实体可增删改：
@@ -184,6 +196,45 @@ export class Support extends ListBase<Row> {
       page_size: this.pageSize,
       keyword: this.keyword(),
     });
+  }
+
+  /**
+   * 导出日报 —— GET /report/export?format=xlsx（ReportController::export，回 .xlsx 附件）。
+   *
+   * **必须显式传 format=xlsx**：该参数的缺省值是 `'excel'`，而分支只认 `'xlsx'`，
+   * 走缺省就掉进 CSV 分支 —— 文件名是 .csv 但按钮写着 .xlsx，运营拿到手才发现。
+   *
+   * 不传 start/end：服务端缺省最近 30 天，与上面 /report/daily 那张表用的是**同一个**
+   * normalizeDateRange 缺省（同一控制器），所以导出的就是屏幕上这份，不会多也不会少。
+   */
+  protected async exportReport(): Promise<void> {
+    this.exporting.set(true);
+    this.error.set('');
+    try {
+      await this.api.download('GET', S + 'report/export', { format: 'xlsx' });
+    } catch (e) {
+      this.error.set(errText(e));
+    } finally {
+      this.exporting.set(false);
+    }
+  }
+
+  /**
+   * 导出全平台流水 —— POST /export/transactions（ExportController::exportTransactions）。
+   * 与旁边的日报是**两张表**：这个是 `game_user_transaction` 流水明细（服务端 orderBy created_at
+   * desc limit 10000），日报是按天聚合。没有参数可传：那个端点只认一个可选的 type，
+   * 而它的值域全仓没有能列出来的端点 ⇒ 摆个下拉就是「看着能筛、筛出来是空」的假控件。
+   */
+  protected async exportTransactions(): Promise<void> {
+    this.exporting.set(true);
+    this.error.set('');
+    try {
+      await downloadTransactions(this.api);
+    } catch (e) {
+      this.error.set(errText(e));
+    } finally {
+      this.exporting.set(false);
+    }
   }
 
   /** 详情：先展示列表行，再拉 ticket/{hashid} 覆盖 */

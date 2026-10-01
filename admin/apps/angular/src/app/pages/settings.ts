@@ -186,6 +186,11 @@ function patch(fields: Field[], name: string, extra: Partial<Field>): Field[] {
         <button class="btn" (click)="search()">{{ 'app.search' | t }}</button>
       }
       <button class="btn" (click)="load()">{{ 'app.refresh' | t }}</button>
+      @if (tab() === 'config' || tab() === 'role') {
+        <button class="btn" [disabled]="busyExport()" (click)="exportTable()">
+          {{ (busyExport() ? 'app.exporting' : 'export.excel') | t }}
+        </button>
+      }
       @if (writable()) {
         <button class="btn btn-primary" (click)="openCreate()">+ {{ 'app.create' | t }}</button>
       }
@@ -323,6 +328,14 @@ export class Settings extends CrudPage {
 
   protected isList(): boolean {
     return this.tab() in this.paths;
+  }
+
+  /**
+   * 导出当前页签对应的**服务端表**。表名真值 = ExportController::getExportColumns 的白名单，
+   * 只有这两页对得上（权限树没有可导的表，接口按钮一概不出）。
+   */
+  protected exportTable(): void {
+    void this.exportXlsx(this.tab() === 'config' ? 'system_config' : 'admin_role');
   }
 
   /**

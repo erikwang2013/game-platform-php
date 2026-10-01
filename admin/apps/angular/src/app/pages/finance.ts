@@ -41,6 +41,14 @@ const W = F + 'withdraw/';
         <button class="btn danger" [disabled]="!pending().length" (click)="batch('reject')">
           {{ 'withdraw.batch_reject' | t: { n: pending().length } }}
         </button>
+        <!-- 行数写进按钮名：/export/pdf 不取数、也不是全量，导的就是眼前这一页 -->
+        <button
+          class="btn"
+          [disabled]="!rows().length || busyExport()"
+          (click)="exportPdf('withdraw.orders', heads(), rows())"
+        >
+          {{ 'export.pdf_page' | t: { count: rows().length } }}
+        </button>
       }
       <button class="btn" (click)="load()">{{ 'app.refresh' | t }}</button>
       @if (tab() === 'limits') {
@@ -354,8 +362,11 @@ export class Finance extends CrudPage {
     }
   }
 
-  /** crud().extra 的落点：提现订单的四个动作（值域见 ORDER_ACTS 的注释） */
+  /** crud().extra 的落点：提现订单的动作（值域见 ORDER_ACTS 的注释） */
   protected override async extra(row: Row, key: string): Promise<void> {
+    // 收据是**只读导出**：POST /export/receipt 回的是 PDF 附件、不是信封，也不翻订单状态
+    // ⇒ 不走下面那条「动钱先二次确认、再读服务端 message」的路（它没有 message 可读）
+    if (key === 'receipt') return this.receipt(row);
     const call = this.orderCall(row, key);
     if (!call) return;
     if (!confirm(this.orderConfirm(row, key))) return;
@@ -367,6 +378,27 @@ export class Finance extends CrudPage {
     } catch (e) {
       // 动作失败是**动作结果**（后端拒绝 / 渠道报错），不是列表加载失败：
       // 进横幅，别把整张表打成错误态（运营还得靠这张表接着处理下一笔）
+      this.noteErr.set(true);
+      this.note.set(this.noteLine(row, errText(e)));
+    }
+  }
+
+  /**
+   * 导出提现订单的电子收据 —— POST /export/receipt，入参 {type:'withdraw', order_id:hashid}。
+   *
+   * 该端点成功回 `response()->download()` 的 PDF，**校验失败却回信封**（ExportController::receipt
+   * 的 422 分支）—— Api.download 已按 content-type 分流：JSON 就当错误抛，不会把一坨错误 JSON
+   * 存成 .pdf 让人打不开。所以这里只接两种结果：文件下来了（静默，浏览器自己有下载提示），
+   * 或者抛错（进横幅，带订单号，运营知道是哪一笔）。
+   */
+  private async receipt(row: Row): Promise<void> {
+    const id = idOf(row);
+    if (!id) return;
+    this.note.set('');
+    this.noteErr.set(false);
+    try {
+      await this.api.download('POST', F + 'export/receipt', { type: 'withdraw', order_id: id });
+    } catch (e) {
       this.noteErr.set(true);
       this.note.set(this.noteLine(row, errText(e)));
     }

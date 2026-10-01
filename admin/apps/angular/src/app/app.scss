@@ -26,8 +26,14 @@
   white-space: nowrap;
 }
 
-/* ---------- 语言菜单（13 种平铺）---------- */
-.lang {
+/* 顶栏下方的成功横幅（个人中心改资料/改密码）：与 .content 同边距，别贴着窗口边缘 */
+.shell-note {
+  margin: 12px 14px 0;
+}
+
+/* ---------- 语言菜单（13 种平铺）与账号菜单 ---------- */
+.lang,
+.umenu {
   position: relative;
 }
 /* 点击遮罩：铺满视口收点击，但压在菜单之下（两者同在 .topbar 的层叠上下文里）。
@@ -36,7 +42,8 @@
   position: fixed;
   inset: 0;
 }
-.lang-menu {
+.lang-menu,
+.umenu-panel {
   position: absolute;
   z-index: 1;
   top: calc(100% + 6px);
@@ -50,7 +57,8 @@
   border-radius: var(--radius);
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.16);
 }
-.lang-menu button {
+.lang-menu button,
+.umenu-panel button {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -66,10 +74,12 @@
   text-align: left;
   cursor: pointer;
 }
-.lang-menu button:hover {
+.lang-menu button:hover,
+.umenu-panel button:hover {
   background: #f1f5f9;
 }
-.lang-menu button.on {
+.lang-menu button.on,
+.umenu-panel button.on {
   color: var(--primary);
   font-weight: 500;
 }

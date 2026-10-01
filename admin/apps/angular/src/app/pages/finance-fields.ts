@@ -35,6 +35,8 @@ export const ORDER_ACTS: Act[] = [
   { key: 'confirm', label: 'withdraw.second_confirm' },
   { key: 'payout', label: 'withdraw.execute' },
   { key: 'sync', label: 'withdraw.sync' },
+  // 只读导出（回 PDF），不翻订单状态 —— 上面四个都要二次确认，这一个不要（见 finance.ts 的 extra()）
+  { key: 'receipt', label: 'withdraw.receipt' },
 ];
 
 /**

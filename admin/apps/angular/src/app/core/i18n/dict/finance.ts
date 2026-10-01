@@ -176,4 +176,7 @@ export const FINANCE: Record<string, [string, string]> = {
     'Empty = keep unchanged (the list shows the decrypted text)',
     '留空 = 不修改（列表里回显的是解密后的原文）',
   ],
+
+  // ---- 提现订单的电子收据（POST /export/receipt，回 PDF 附件）----
+  'withdraw.receipt': ['Receipt (PDF)', '收据 (PDF)'],
 };

@@ -1,7 +1,7 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { DEFAULT_CODE, LANGUAGES, LOCALE_KEY, currentCode, resolve, setCode, t } from './index.ts';
+import { DEFAULT_CODE, LANGUAGES, LOCALE_KEY, TABLES, currentCode, isRtl, resolve, setCode, t } from './index.ts';
 import { en } from './en.ts';
 import { zh } from './zh.ts';
 
@@ -62,15 +62,21 @@ test('resolve：认不出的码一律回落 en，不抛错', () => {
   }
 });
 
-test('查表：当前语言命中自己的表，其余 11 种（无表）回落英文', () => {
+test('查表：13 种语言各查自己的表，没有一种靠回落英文', () => {
   setCode('en');
   assert.equal(t('nav.users'), 'Users');
   setCode('zh');
   assert.equal(t('nav.users'), '用户');
-  // ja/ko/… 不建表：查不到走 en（与两棵 flutter 的现状一致，是已拍板路径的已知代价）
-  setCode('ja');
-  assert.equal(t('nav.users'), 'Users');
-  assert.equal(currentCode(), 'ja');
+  // 每种语言都必须在自己的表里命中：没注册表的语言会**静默**回落英文 ——
+  // 切换器照常列出它、点下去也确实存了偏好，只有文案永远是英文，不看这一条发现不了。
+  let translated = 0;
+  for (const { code } of LANGUAGES) {
+    setCode(code);
+    assert.equal(t('nav.users'), TABLES[code]['nav.users'], `${code} 查的不是自己的表`);
+    if (TABLES[code]['nav.users'] !== en['nav.users']) translated++;
+  }
+  assert.equal(translated, 12, '有语言的 nav.users 与英文相同（要么漏翻，要么在回落英文）');
+  assert.equal(currentCode(), 'id');
   // 落值前先 resolve ⇒ currentCode 永远在 13 个短码之内。全码 `zh-CN` 也**不**特判：
   // 只有后端 `Locale::normalize()` 认它（Accept-Language 的写法），本树偏好里只写短码
   //（切换器的候选项来自 LANGUAGES），多认一种写法就是多一处会漂的对齐规则。
@@ -79,13 +85,43 @@ test('查表：当前语言命中自己的表，其余 11 种（无表）回落�
   setCode('en');
 });
 
-test('查表：en 与 zh 的键集逐项相同（另一重是同名类型在 tsc 上的强制）', () => {
-  assert.deepEqual(Object.keys(zh).sort(), Object.keys(en).sort());
-  // 两张表的键都不带空串值：空译文会让界面整块消失，比没翻译更难查。
+test('查表：13 种语言的键集都与 en 逐项相同，且每种都真注册了表', () => {
+  const enKeys = Object.keys(en).sort();
+  assert.deepEqual(Object.keys(zh).sort(), enKeys);
+  // 注册表与语言清单必须同源：少注册一种 = 那个语言永远显示英文（静默），多注册一种 = 死行
+  assert.deepEqual(
+    Object.keys(TABLES).sort(),
+    LANGUAGES.map((item) => item.code).sort(),
+    'TABLES 与 LANGUAGES 不是同一批语言',
+  );
+  for (const { code } of LANGUAGES) {
+    const table = TABLES[code];
+    assert.ok(table, `${code} 没有注册语言表（选中它 = 永远显示英文）`);
+    assert.deepEqual(Object.keys(table).sort(), enKeys, `${code} 的键集与 en 不同`);
+    // 译文条数下限：全表 666 键，实测最少的一种（fr）也有 633 条与英文不同。
+    // 取 600 当「一眼看得出这还是一张真表」的门槛，不写精确相等 —— 具体数字会随措辞改，那不是契约。
+    // en 是基准表本身，跳过（拿它比自己恒为 0）。
+    if (code === DEFAULT_CODE) continue;
+    const translated = enKeys.filter((key) => table[key] !== (en as Record<string, string>)[key]).length;
+    assert.ok(translated > 600, `${code} 只有 ${translated} 条与英文不同，疑似整表照抄英文`);
+  }
+  // 没有空串值：空译文会让界面整块消失，比没翻译更难查。
   // 例外只有 tab.none：它是「这一组没有标签」的**哨兵**，空串就是它的正确取值（TabPage 的回落）。
   const EMPTY_OK = new Set(['tab.none']);
-  for (const [key, value] of Object.entries(zh)) assert.ok(value !== '' || EMPTY_OK.has(key), `zh.${key} 是空串`);
-  for (const [key, value] of Object.entries(en)) assert.ok(value !== '' || EMPTY_OK.has(key), `en.${key} 是空串`);
+  for (const { code } of LANGUAGES) {
+    for (const [key, value] of Object.entries(TABLES[code])) {
+      assert.ok(value !== '' || EMPTY_OK.has(key), `${code}.${key} 是空串`);
+    }
+  }
+});
+
+test('占位符：13 种语言逐键的 {…} 集合与 en 相同（丢一个变量，界面上就出现硬编码的 {name}）', () => {
+  const ph = (text: string) => (text.match(/\{\w+\}/g) ?? []).sort().join(',');
+  for (const { code } of LANGUAGES) {
+    for (const [key, value] of Object.entries(TABLES[code])) {
+      assert.equal(ph(value), ph((en as Record<string, string>)[key]), `${code}.${key} 的占位符与 en 不同`);
+    }
+  }
 });
 
 test('占位符：{name} 按参数替换；缺参时原样留着（看得见漏了哪个，而不是静默空掉）', () => {
@@ -105,6 +141,23 @@ test('查表：表外的键回落键名本身（类型上不可达，靠断言�
   assert.equal(t('nope.missing' as unknown as 'nav.users'), 'nope.missing');
   setCode('zh');
   assert.equal(t('nope.missing' as unknown as 'nav.users'), 'nope.missing');
+  setCode('en');
+});
+
+test('查表：某个键当前语言没译文时逐键回落英文（en 是逐键兜底，不是整张表缺失才生效）', () => {
+  // 这条用例**会改动共享的 TABLES**（删一个键再放回），所以刻意排在上面所有结构断言之后；
+  // finally 里按「原样放回」还原：本来就没有的话不能补一个 `undefined` 进去 ——
+  // 那会让后面「键集与 en 相同」的断言看不见这次缺失，等于给变异留了条逃逸通道。
+  setCode('ja');
+  const saved = TABLES.ja['nav.users'];
+  delete TABLES.ja['nav.users'];
+  try {
+    assert.equal(t('nav.users'), 'Users', '单键缺失没有回落英文');
+  } finally {
+    if (saved === undefined) delete TABLES.ja['nav.users'];
+    else TABLES.ja['nav.users'] = saved;
+  }
+  assert.equal(t('nav.users'), saved, '删掉的键没还原（后面的用例会跟着读到脏表）');
   setCode('en');
 });
 
@@ -130,4 +183,39 @@ test('持久化：重新加载模块时读偏好里的码（认不出的码回�
     assert.equal(await reload('bn'), 'bn');
     assert.equal(await reload('zz'), 'en', '认不出的码回落 en');
   })();
+});
+
+/**
+ * 语言要落到 DOM 上（`lang` + `dir`）——**只翻文案不设 `dir`，阿拉伯语界面仍是 LTR 排版**。
+ *
+ * 本树无 DOM 底座（`node --test`），所以这里注一个 `document` 桩把这条做成**行为级**：
+ * 驱动真的 `setCode()`，读 `documentElement` 上的实际写入。比读源码断言强。
+ */
+test('切到阿拉伯语会把 documentElement 置为 rtl，其余语言是 ltr', () => {
+  const stub = { documentElement: { lang: '', dir: '' } };
+  (globalThis as unknown as { document: unknown }).document = stub;
+  try {
+    setCode('ar');
+    assert.equal(stub.documentElement.dir, 'rtl', 'ar 必须镜像书写方向');
+    assert.equal(stub.documentElement.lang, 'ar');
+
+    setCode('ja');
+    assert.equal(stub.documentElement.dir, 'ltr', '日语是 LTR，别把"非拉丁"都当 RTL');
+    assert.equal(stub.documentElement.lang, 'ja');
+
+    setCode('zh');
+    assert.equal(stub.documentElement.dir, 'ltr');
+  } finally {
+    delete (globalThis as unknown as { document?: unknown }).document;
+  }
+});
+
+test('13 种里恰好只有阿拉伯语是 RTL', () => {
+  assert.equal(isRtl('ar'), true);
+  const rtl = LANGUAGES.filter((l) => isRtl(l.code)).map((l) => l.code);
+  assert.deepEqual(rtl, ['ar'], `RTL 语言集合变了：${JSON.stringify(rtl)}`);
+});
+
+test('认不出来的码按 ltr 处理（不误镜像）', () => {
+  assert.equal(isRtl('klingon'), false);
 });

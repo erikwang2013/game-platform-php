@@ -175,11 +175,28 @@ export const ADMIN_USER_CRUD: CrudConfig = {
   labelKey: 'username',
   // Route::resource ⇒ 新建是 POST 到资源名本身，没有 /user/create 段（同 /role、/permission）
   createPath: '/admin/v1/user',
-  // 无独立启停端点（只有批量 /user/batch/status，且批量不在此模块的交付范围）：单行启停走 PUT {status}，
-  // validator 收 in:0,1
+  // 单行启停没有独立端点，走 PUT {status}（validator 收 in:0,1）
   toggle: 'update',
   // 不许停用/删除当前登录的自己（见 blockSelf）
   toggleBlock: blockSelf,
+  /**
+   * 批量启停：POST /user/batch/status 收 `{ids: [hashid…], status: 0|1}`（**不是**逐行 PUT 循环 N 次）。
+   * `pickable` 是必须的：单行那条路的 `toggleBlock` 挡的是「点自己那一行的启停」，
+   * 批量是**第二条路** —— 勾上自己一起提交，守卫整条绕过，而后果同样是把自己锁在门外。
+   */
+  batch: {
+    path: '/admin/v1/user/batch/status',
+    pickable: (row) => blockSelf(row) === null,
+    confirm: (count, enable) =>
+      t('admins.batch_confirm', { count, action: t(enable ? 'common.enable' : 'common.disable') }),
+  },
+  /**
+   * Excel 批量导入：POST /admin/v1/import/users（multipart 单文件段 `file`）。
+   * 表也对得上 —— `ImportController::users` 用的是 `app\model\AdminUser`，与本页同一个资源；
+   * 必填列 username/password/real_name 就是本页前三个字段。
+   * 它**不建角色关联**（导入结果框里已把这件事写给运营看，见 components/ImportPanel.tsx）。
+   */
+  importExcel: { path: '/admin/v1/import/users', title: 'import.users' },
   // 删除要当前登录密码（UserController::destroy 走 confirmPassword），且是软删除
   deleteBody: (row) => {
     const blocked = blockSelf(row);

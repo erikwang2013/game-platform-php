@@ -97,13 +97,15 @@ describe('资金模块写操作接线', () => {
       expect(c.ends.create).toBeUndefined();
       expect(c.ends.update).toBeUndefined();
       expect(c.ends.remove).toBeUndefined();
-      // 动作 = extra 声明的四个（review 的三个 action 共用一个端点：通过/驳回/二次确认/打款/同步）
+      // 动作 = extra 声明的这几个（review 的三个 action 共用一个端点：通过/驳回/二次确认/打款/同步；
+      // receipt 是只读的 PDF 导出，端点与形状都不同，单列一条）
       expect(f.actions().map((a) => a.key)).toEqual([
         'approve',
         'reject',
         'confirm',
         'payout',
         'sync',
+        'receipt',
       ]);
       // 用户名在嵌套的 user 里 ⇒ 表格列里必须有一列是摊平后的（表头存的是词条键，显示时过 `| t`）
       expect(t(f.heads()['user_name']!)).toBe('用户');

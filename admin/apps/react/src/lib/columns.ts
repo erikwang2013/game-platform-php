@@ -2,6 +2,22 @@
 // 纯逻辑，放 lib/ 才能被 `node --test`（--experimental-strip-types，**不认 .tsx**）直接加载。
 // 这里只 `import type`，类型擦除后运行时不解析 DataTable.tsx。
 import type { Column, Row } from '../components/DataTable.tsx';
+import { fieldLabelKey } from '../i18n/index.ts';
+
+/**
+ * 行首字段 → **词条键**：同名 `f.<字段名>` 在表里就用它，没有就退回字段名本身
+ * （与 `AutoView` 的 `labelOf` / `fieldLabelKey` 同一条兜底链）。
+ *
+ * 给「形状未确认」的兜底渲染器用：`AutoView` 的统计块一直在查 `f.<键>`，表头却没有 ——
+ * 同一张卡上「Members」是译文、隔壁表头还是 `fp_masked`。这一条补上后，往 `en.fields.ts`
+ * 加一个 `f.*` 键，兜底表也跟着生效。
+ *
+ * 与 `columnsFrom` 的**缺省**口径刻意不同：那里的 `labels` 缺省是空表 ⇒ 没映射就露字段名
+ * （见 `table-headers.test.ts` 的钉子）；这里是把这张表**显式**传进去，不动那个契约。
+ */
+export function labelsFor(rows: Row[]): Record<string, string> {
+  return Object.fromEntries(Object.keys(rows[0] ?? {}).map((key) => [key, fieldLabelKey(key) ?? key]));
+}
 
 /**
  * 按首行字段推导列。优先展示 preferred 里的业务字段，其余按响应顺序补足，

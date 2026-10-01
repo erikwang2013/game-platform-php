@@ -190,6 +190,36 @@ test('jsonobj 字段：文本框里的 JSON 解成对象上送（字符串会被
   assert.equal(firstMissing([field], { context: '' }), null);
 });
 
+test('jsonarr 字段：文本框里的 JSON 解成数组上送（jsonobj 拒收数组，lines 只给得出字符串）', () => {
+  setCode('en');
+  const field: Field = { name: 'currencies', label: 'f.game_currencies', type: 'jsonarr' };
+  // 关键的一条：数组**逐元素原样**上送，id 与数值字符串一个都不能被改写
+  assert.deepEqual(
+    buildPayload([field], { currencies: '[{"id": "Xk9", "exchange_rate": "7.20000000"}]' }),
+    { currencies: [{ id: 'Xk9', exchange_rate: '7.20000000' }] },
+  );
+  // 留空 ⇒ 不发（必填由 firstMissing 管，这里只管类型转换）
+  assert.deepEqual(buildPayload([field], { currencies: '' }), {});
+  // 非数组与服务端 `required|array` 口径一致：拦在提交前。
+  // 断言是**英文成品**：字段名取自 label（键 → 译文），写成 t(...) 比对是自证。
+  const bad = 'Game currencies must be a JSON array';
+  assert.equal(firstMissing([field], { currencies: '{"name": "gold"}' }), bad);
+  assert.equal(firstMissing([field], { currencies: '"abc"' }), bad);
+  assert.equal(firstMissing([field], { currencies: '[{oops}]' }), bad);
+  assert.equal(firstMissing([field], { currencies: '[]' }), null);
+  assert.equal(firstMissing([field], { currencies: '' }), null);
+});
+
+test('jsonarr 字段：库值（数组）在控件里是可编辑的 JSON 文本，未改动则编辑态不发', () => {
+  setCode('en');
+  const field: Field = { name: 'currencies', label: 'f.game_currencies', type: 'jsonarr' };
+  const row = { currencies: [{ id: 'Xk9', name: 'Gold' }] };
+  const text = draftFrom([field], row).currencies;
+  assert.equal(text, JSON.stringify([{ id: 'Xk9', name: 'Gold' }], null, 2));
+  // 编辑态：与行值逐字相同时不发（JSON 列读回会被规范化，故比较的是文本而不是重新 stringify 的结果）
+  assert.deepEqual(buildPayload([field], { currencies: text }, row), {});
+});
+
 test('rowId：缺省认 id/hashid，rowKey 指到别的列（风控用户列表的 hashid 在 user_id 上）', () => {
   assert.equal(rowId({ id: 'Xk9' }), 'Xk9');
   assert.equal(rowId({ hashid: 'Xk9' }), 'Xk9');
@@ -231,4 +261,19 @@ test('optionsWithCurrent：行值不在值域内时置顶补一条「当前值�
   ]);
   // 补的这条是**原值**（只加标签不改值），否则「编辑时不碰该字段」的判等会误判成有改动
   assert.equal(optionsWithCurrent(field, 'legacy')[0].value, 'legacy');
+});
+
+test('file 字段：草稿里放的是**文件名**（必填预检与「编辑态只发改动」都按字符串走）', () => {
+  setCode('en');
+  const field: Field = { name: 'file', label: 'f.file', type: 'file', required: true, accept: '.xlsx,.xls' };
+  // 新建：没选文件 ⇒ 草稿空串 ⇒ 必填预检拦下（后端拿不到 file 段会回「请选择文件」，这里先省一个来回）
+  assert.equal(draftFrom([field]).file, '');
+  assert.equal(firstMissing([field], { file: '' }), 'Please fill in File');
+  // 选了文件：草稿里只有名字（`Draft` 是字符串表，File 进不来 —— 它由 FormModal 在提交时塞进请求体）
+  assert.deepEqual(buildPayload([field], { file: 'admins.xlsx' }), { file: 'admins.xlsx' });
+  assert.equal(firstMissing([field], { file: 'admins.xlsx' }), null);
+  // 编辑态没换文件 ⇒ 一个字段都不发（不会被那个文件名串当成改动空写回去）
+  assert.deepEqual(buildPayload([field], { file: 'old.xlsx' }, { file: 'old.xlsx' }), {});
+  // 换了一个 ⇒ 发（值先是个串，FormModal 随后用同名 File 覆盖掉它）
+  assert.deepEqual(buildPayload([field], { file: 'new.xlsx' }, { file: 'old.xlsx' }), { file: 'new.xlsx' });
 });

@@ -1,9 +1,11 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { useState } from 'react';
 import { fieldLabelKey, t, type MessageKey } from '../i18n/index.ts';
-import { ApiError, api, apiEnvelope, type Envelope, type Query } from '../lib/api';
-import { labelOf, rowId, statusOf, type Field } from '../lib/crud';
+import { ApiError, api, apiEnvelope, type Query } from '../lib/api';
+import { rowId, type Field } from '../lib/crud';
+import { downloadFile } from '../lib/download';
 import { ID_KEYS, pick } from '../lib/format';
+import { buildPdfTable } from '../lib/pdf-table.ts';
 import { usePagedApi } from '../lib/hooks';
 import { totalOf } from '../lib/paging';
 import { treeRows, visibleTreeRows } from '../lib/tree';
@@ -11,47 +13,13 @@ import { asRows, columnsFrom } from './AutoView';
 import { DataTable, cell, type Row } from './DataTable';
 import { DetailModal } from './DetailModal';
 import { FormModal } from './FormModal';
+import { ImportPanel } from './ImportPanel';
+// 行尾动作链（含 CrudAction/CrudView 两个类型）搬去了 RowActions.tsx —— 本文件只 re-export 类型，
+// 让 `from '../components/RowBrowser'` 的既有导入点（modules.ts / adminUsers.ts）一字不改。
+import { RowActions, type CrudAction, type CrudView, type Notice } from './RowActions';
 import { ErrorNote, Pager } from './ui';
 
-/**
- * 模块独有的行内动作（刷新缓存 / 批量分配…）。给了 fields 就弹表单（复用 FormModal），
- * 否则直接执行，confirm 有则先二次确认。
- */
-export type CrudAction = {
-  /** 按钮名是**文案键**不是译文：模块级常量，只能在渲染期取（同 lib/crud.ts 的 Field.label） */
-  label: MessageKey;
-  /** 目标地址，按行 id 拼；方法与请求体缺省 POST / 无体 */
-  path: (id: string) => string;
-  method?: 'POST' | 'PUT';
-  /** 表单字段：动作本身也要填参数时给（如分配游戏要一串游戏 hashid） */
-  fields?: Field[];
-  title?: MessageKey;
-  /**
-   * 二次确认文案。危险动作（删除/驳回/关闭）必须给，且文案要能认出对象是谁 ——
-   * 对象标识是每行不同的，故要给函数时拿得到整行（`row`）。
-   */
-  confirm?: string | ((row: Row) => string);
-  /** 表单之外的固定请求字段（如 assign 的 category_id），与表单值合并后提交 */
-  body?: (id: string) => Record<string, unknown>;
-  /**
-   * 成功后把**服务端 message** 就地显示（绿色提示），而不是只回读列表。
-   * 资金动作必给：打款只回「打款成功/已提交」、审核回「初审通过，等待另一管理员确认」——
-   * 这些话决定运营下一步做什么，前端自己编一句「操作成功」等于把信息抹了。
-   * 给函数时自己拼文案：服务端 message 是占位符（sync-payout 只回 "success"）而有用信息在 data 里。
-   */
-  report?: boolean | ((envelope: Envelope<unknown>) => string);
-  /**
-   * 只在满足条件的行上显示该按钮（如只有 payout_batch_id 非空的订单才谈得上「同步打款」）。
-   * 缺省全部显示：不筛的话界面上会摆满点了必然 422 的按钮。
-   */
-  when?: (row: Row) => boolean;
-};
-
-/**
- * 只读视图（优惠券 stats）：行尾按钮 + DetailModal 拉该路径，不写任何东西。
- * 与动作分开是因为它没有请求体与方法 —— 塞进 CrudAction 会把 path 逼成可选，污染整个动作链路。
- */
-export type CrudView = { label: MessageKey; title?: MessageKey; path: (id: string) => string };
+export type { CrudAction, CrudView } from './RowActions';
 
 /**
  * 一个模块的写操作配置（挂在 TabPage 的 Group.crud 上）。
@@ -107,13 +75,40 @@ export type CrudConfig = {
   actions?: CrudAction[];
   /** 模块独有的行内只读视图（按钮 + 详情弹框） */
   views?: CrudView[];
+  /** 勾选 + 批量状态变更（后台账号的批量启停） */
+  batch?: CrudBatch;
+  /**
+   * 「导出本页 PDF」工具条按钮（POST /admin/v1/export/pdf，载荷见 lib/pdf-table.ts）。
+   * 该端点**不取数**：`data` 由调用方给，所以导出的就是**当前这一页已加载的行** ——
+   * 不认筛选、不是全量，按钮上写着行数。`title` 是 PDF 抬头（文案键）。
+   */
+  exportPdf?: { title: MessageKey };
+  /**
+   * Excel 批量导入（multipart POST，见 components/ImportPanel.tsx）：`path` 收单个文件段 `file`，
+   * 回 `{total, success, failed, errors[]}`。导入会**批量写库**，故成功即回读列表（onDone = reload）。
+   */
+  importExcel?: { path: string; title: MessageKey };
 };
 
 /**
- * 动作结果提示。tone 区分「服务端拒绝的原话」（红）与「服务端确认成功的原话」（绿）——
- * 两者都是 message，但一个是「为什么没成」，一个是「成了之后下一步是什么」。
+ * 表格级的批量动作：勾选若干行后**一次性**提交，端点收 `{ids: [...], status}`。
+ *
+ * 为什么不是把行内 toggle 循环调用 N 次：批量端点是一次事务、一条服务端 message、
+ * 一个「改了 N 个」的读数；N 次单发则是 N 个请求、N 条提示、中途失败只改了一半
+ * （而界面只显示最后一次的结果）。
  */
-type Notice = { text: string; tone: 'error' | 'ok' };
+export type CrudBatch = {
+  /** 目标端点（如 /admin/v1/user/batch/status），收 {ids, status} */
+  path: string;
+  /**
+   * 这一行能不能被勾选。缺省全部可勾。
+   * 管理员模块拿它挡「批量停用自己」—— 那是单行 toggle 的自我守卫（`toggleBlock`）挡不住的
+   * 第二条路：勾上自己一起提交，守卫整条绕过。
+   */
+  pickable?: (row: Row) => boolean;
+  /** 二次确认；按当前勾选数给（0 也要能拿到，提示里要能说出「几个」）。返回 null = 不确认 */
+  confirm: (count: number, enable: boolean) => string | null;
+};
 
 /**
  * 列表页通用件：列表 + 行点击弹详情；给了 crud 再挂上「新建 / 编辑 / 删除 / 启用·停用」。
@@ -156,6 +151,10 @@ export function RowBrowser({
   const [notice, setNotice] = useState<Notice | null>(null);
   // 树的折叠态存**被折叠**的 id（缺省空集 = 全展开）；存「展开的 id」则重取列表后整棵树会塌成顶层。
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => new Set());
+  // 批量勾选态存 **id**（不是行对象）：回读列表后行对象会整批换新，存对象会让「已选」凭空丢
+  const [picked, setPicked] = useState<ReadonlySet<string>>(() => new Set());
+  const [batching, setBatching] = useState(false);
+  const [pdfBusy, setPdfBusy] = useState(false);
 
   const fetched = asRows(data) ?? [];
   const flat = tree ? treeRows(fetched, tree) : null;
@@ -211,6 +210,88 @@ export function RowBrowser({
     };
   }
 
+  // 勾选列插在**最前**（放在树那段之后：树的箭头认的是 columns[0]，抢在它前面会把箭头挂到复选框上）
+  const batch = config?.batch;
+  const pdf = config?.exportPdf;
+  const imports = config?.importExcel;
+  const pickable = (row: Row): boolean => {
+    if (!batch) return false;
+    return rowId(row, config?.rowKey) !== '' && (batch.pickable?.(row) ?? true);
+  };
+  if (batch) {
+    columns.unshift({
+      key: '__pick',
+      // 与 __actions 同理：存**键**，DataTable 渲染期才过 t()
+      label: 'browser.pick',
+      render: (row) => {
+        const id = rowId(row, config?.rowKey);
+        const ok = pickable(row);
+        return (
+          <input
+            type="checkbox"
+            checked={ok && picked.has(id)}
+            disabled={!ok}
+            aria-label={t('browser.pick')}
+            // 行点击是「弹详情」：勾一下顺手弹个框很烦人（同 TreeMark 的箭头）
+            onClick={(event) => event.stopPropagation()}
+            onChange={() =>
+              setPicked((prev) => {
+                const next = new Set(prev);
+                if (next.has(id)) next.delete(id);
+                else next.add(id);
+                return next;
+              })
+            }
+          />
+        );
+      },
+    });
+  }
+
+  /**
+   * 导出本页 PDF。列与单元格**照屏幕上那几列**取（含模块自定义的列顺序与 hide），
+   * 于是「界面上看不见的字段」（设备页的 fp_hash 之类）不会从 PDF 这条路上漏出去。
+   */
+  const exportPdf = async (spec: NonNullable<CrudConfig['exportPdf']>) => {
+    setNotice(null);
+    setPdfBusy(true);
+    try {
+      const body = buildPdfTable(t(spec.title), columns, rows);
+      const name = await downloadFile('/admin/v1/export/pdf', { method: 'POST', body }, 'export.pdf');
+      setNotice({ text: t('export.done', { name }), tone: 'ok' });
+    } catch (cause) {
+      setNotice({ text: cause instanceof ApiError ? cause.message : t('app.network_error'), tone: 'error' });
+    } finally {
+      setPdfBusy(false);
+    }
+  };
+
+  /**
+   * 批量状态变更。**只显示服务端 message**，不把 `data.count` 拼成「改了 N 个」：
+   * 那个 count 是 MySQL 报的 changed rows（本来就处于目标状态的行也算改动，见 UserController::batchStatus），
+   * 拿它当数量读数是错的。成功即清空勾选并回读列表。
+   */
+  const applyBatch = async (enable: boolean) => {
+    if (!batch) return;
+    const text = batch.confirm(picked.size, enable);
+    if (text !== null && !window.confirm(text)) return;
+    setNotice(null);
+    setBatching(true);
+    try {
+      const envelope = await apiEnvelope<unknown>(batch.path, {
+        method: 'POST',
+        body: { ids: [...picked], status: enable ? 1 : 0 },
+      });
+      setNotice({ text: envelope.message, tone: 'ok' });
+      setPicked(new Set());
+      reload();
+    } catch (cause) {
+      setNotice({ text: cause instanceof ApiError ? cause.message : t('app.network_error'), tone: 'error' });
+    } finally {
+      setBatching(false);
+    }
+  };
+
   if (config) {
     columns.push({
       key: '__actions',
@@ -248,18 +329,50 @@ export function RowBrowser({
 
   return (
     <>
-      {canCreate ? (
+      {canCreate || batch || pdf || imports ? (
         <div className="toolbar">
-          <button
-            type="button"
-            className="btn"
-            onClick={() => {
-              setNotice(null);
-              setEditing({});
-            }}
-          >
-            {t('browser.new_row', { noun: t(config.noun) })}
-          </button>
+          {canCreate ? (
+            <button
+              type="button"
+              className="btn"
+              onClick={() => {
+                setNotice(null);
+                setEditing({});
+              }}
+            >
+              {t('browser.new_row', { noun: t(config.noun) })}
+            </button>
+          ) : null}
+          {batch ? (
+            <>
+              <span className="muted">{t('browser.picked', { count: picked.size })}</span>
+              {/* 按钮名用现成的 common.enable/disable：计数就在旁边，不必再造「批量启用」两个键 */}
+              {[true, false].map((enable) => (
+                <button
+                  type="button"
+                  className="btn"
+                  key={String(enable)}
+                  disabled={picked.size === 0 || batching}
+                  onClick={() => void applyBatch(enable)}
+                >
+                  {t(enable ? 'common.enable' : 'common.disable')}
+                </button>
+              ))}
+            </>
+          ) : null}
+          {pdf ? (
+            /* 行数写进按钮名：这个端点不认筛选、也不是全量，导的就是眼前这一页 */
+            <button
+              type="button"
+              className="btn"
+              disabled={rows.length === 0 || pdfBusy}
+              onClick={() => void exportPdf(pdf)}
+            >
+              {t('export.pdf_page', { count: rows.length })}
+            </button>
+          ) : null}
+          {/* 导入会写库：成功即回读（onDone = reload），当前页/筛选不变 */}
+          {imports ? <ImportPanel spec={imports} onDone={reload} /> : null}
         </div>
       ) : null}
       {notice ? <ErrorNote message={notice.text} tone={notice.tone} /> : null}
@@ -330,185 +443,5 @@ function TreeMark({
         <span className="tgl" aria-hidden="true" />
       )}
     </span>
-  );
-}
-
-/**
- * 行尾动作：编辑 / 模块动作（actions）/ 启用·停用（配置了 toggle 时）/ 删除（二次确认）。
- * 成功后统一 onDone() 回读列表 —— 以列表为准，不以「请求发出去了」为准；
- * 失败（含后端 403/422 的业务拒绝）走 onNotice 原样显示 message，不吞成「操作失败」。
- */
-function RowActions({
-  row,
-  config,
-  onEdit,
-  onNotice,
-  onDone,
-}: {
-  row: Row;
-  config: CrudConfig;
-  onEdit: (row: Row) => void;
-  onNotice: (notice: Notice | null) => void;
-  onDone: () => void;
-}) {
-  const [busy, setBusy] = useState(false);
-  const [form, setForm] = useState<CrudAction | null>(null);
-  const [viewing, setViewing] = useState<{ path: string; title: string } | null>(null);
-  const id = rowId(row, config.rowKey);
-  if (!id) return null;
-  const on = statusOf(row) === 1;
-  // 缺省即没有该能力：没有字段就没有编辑，没有 labelKey 就没有删除（动作型模块两者都缺）
-  const canEdit = (config.fields?.length ?? 0) > 0;
-  const labelKey = config.labelKey;
-  // 只显示这一行上说得通的动作（没有批次号就没有「同步打款」）
-  const actions = (config.actions ?? []).filter((spec) => spec.when?.(row) ?? true);
-
-  /** 二次确认文案；对象标识按行给时是个函数，没配就是 null（不确认）。 */
-  const confirmText = (spec: CrudAction): string | null =>
-    typeof spec.confirm === 'function' ? spec.confirm(row) : (spec.confirm ?? null);
-
-  /**
-   * 跑一个动作：work 返回**服务端 message** 时就地显示成绿色提示（返回 null 表示没什么可说的）。
-   * 失败（含后端 403/422 的业务拒绝）原样显示 message，不吞成「操作失败」。
-   * 不乐观更新：成功即 onDone() 回读列表，界面以服务端为准。
-   */
-  const run = async (work: () => Promise<string | null>, fallback: string) => {
-    onNotice(null);
-    setBusy(true);
-    let message: string | null = null;
-    try {
-      message = await work();
-    } catch (cause) {
-      onNotice({ text: cause instanceof ApiError ? cause.message : fallback, tone: 'error' });
-      return;
-    } finally {
-      setBusy(false);
-    }
-    if (message !== null) onNotice({ text: message, tone: 'ok' });
-    onDone();
-  };
-
-  /**
-   * 动作请求。report 的动作走信封版拿服务端原话（打款只回「已提交」、审核回「等待另一管理员确认」），
-   * 其余动作只关心成不成，返回 null 不显示提示。
-   */
-  const ask = async (spec: CrudAction, body?: Record<string, unknown>): Promise<string | null> => {
-    const options = { method: spec.method ?? 'POST', body } as const;
-    if (!spec.report) {
-      await api(spec.path(id), options);
-      return null;
-    }
-    const envelope = await apiEnvelope<unknown>(spec.path(id), options);
-    return typeof spec.report === 'function' ? spec.report(envelope) : envelope.message;
-  };
-
-  const remove = () => {
-    // 要带请求体的删除（系统配置要密码二次确认）：返回 null = 用户取消，连确认框都不用弹
-    const body = config.deleteBody?.(row) ?? null;
-    if (config.deleteBody) {
-      if (body === null) return;
-    } else if (!window.confirm(t('browser.delete_confirm', { noun: t(config.noun), name: labelOf(row, labelKey ?? '') }))) {
-      return;
-    }
-    void run(async () => {
-      await api(`${config.base}/${id}`, { method: 'DELETE', body: body ?? undefined });
-      return null;
-    }, t('common.delete_failed'));
-  };
-
-  const toggle = () => {
-    // 前端守卫先行：被挡住时连请求都不发（发了就真把账号停了/删了，撤销不回来）
-    const blocked = config.toggleBlock?.(row) ?? null;
-    if (blocked !== null) {
-      onNotice({ text: blocked, tone: 'error' });
-      return;
-    }
-    // 三种口径：update = 走 PUT {status}；函数 = 行 id 在路径里（无请求体）；字符串 = 固定端点收 {id,status}
-    const spec = config.toggle;
-    const custom = typeof spec === 'function' ? spec(id) : null;
-    void run(async () => {
-      if (spec === 'update') {
-        await api(`${config.base}/${id}`, { method: 'PUT', body: { status: on ? 0 : 1 } });
-      } else if (custom) {
-        await api(custom.path, { method: custom.method ?? 'POST', body: custom.body });
-      } else {
-        await api(String(spec), { method: 'POST', body: { id, status: on ? 0 : 1 } });
-      }
-      return null;
-    }, t('common.status_toggle_failed'));
-  };
-
-  // 只读视图（优惠券 stats）：拉端点交给 DetailModal，与动作共用行尾按钮位
-  const view = (spec: CrudView) => {
-    onNotice(null);
-    setViewing({ path: spec.path(id), title: `${t(spec.title ?? spec.label)} ${id}` });
-  };
-
-  // 有字段的动作弹表单（错误在框内显示，不关框）；没字段的直接跑，confirm 有则先确认
-  const fire = (spec: CrudAction) => {
-    if (spec.fields) {
-      onNotice(null);
-      setForm(spec);
-      return;
-    }
-    const text = confirmText(spec);
-    if (text !== null && !window.confirm(text)) return;
-    void run(() => ask(spec, spec.body?.(id)), t('common.action_failed', { action: t(spec.label) }));
-  };
-
-  const submitAction = async (spec: CrudAction, body: Record<string, unknown>) => {
-    // 填完表单才问二次确认（驳回这类：先写理由、再确认，取消则不关框可改）
-    const text = confirmText(spec);
-    if (text !== null && !window.confirm(text)) return;
-    // 抛错仍交给 FormModal 在框内显示（不关框，可改后重试）；成功则关框 + 显示服务端 message
-    const message = await ask(spec, { ...(spec.body?.(id) ?? {}), ...body });
-    setForm(null);
-    if (message !== null) onNotice({ text: message, tone: 'ok' });
-    onDone();
-  };
-
-  return (
-    <>
-      <span className="rowact">
-        {canEdit ? (
-          <button type="button" className="btn btn-sm" disabled={busy} onClick={() => onEdit(row)}>
-            {t('common.edit')}
-          </button>
-        ) : null}
-        {actions.map((spec) => (
-          <button type="button" className="btn btn-sm" key={spec.label} disabled={busy} onClick={() => fire(spec)}>
-            {t(spec.label)}
-          </button>
-        ))}
-        {(config.views ?? []).map((spec) => (
-          <button type="button" className="btn btn-sm" key={spec.label} disabled={busy} onClick={() => view(spec)}>
-            {t(spec.label)}
-          </button>
-        ))}
-        {config.toggle ? (
-          <button type="button" className="btn btn-sm" disabled={busy} onClick={toggle}>
-            {t(on ? 'common.disable' : 'common.enable')}
-          </button>
-        ) : null}
-        {labelKey !== undefined ? (
-          <button type="button" className="btn btn-sm btn-danger" disabled={busy} onClick={remove}>
-            {t('common.delete')}
-          </button>
-        ) : null}
-      </span>
-      {/* 弹框挂到行动作之外：.rowact 是 inline-flex + nowrap，套在里面会把弹框当弹性项挤着排 */}
-      {form ? (
-        <FormModal
-          key={form.label}
-          title={t(form.title ?? form.label)}
-          fields={form.fields ?? []}
-          submitLabel={t('common.submit')}
-          onSubmit={(body) => submitAction(form, body)}
-          onClose={() => setForm(null)}
-        />
-      ) : null}
-      {/* viewing.title 是 view() 里现取的成品（键 → 译文 + 行 id），这里原样用，别再取一次 */}
-      {viewing ? <DetailModal path={viewing.path} title={viewing.title} onClose={() => setViewing(null)} /> : null}
-    </>
   );
 }

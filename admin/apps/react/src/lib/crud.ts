@@ -11,13 +11,20 @@ import type { TreeNode } from './tree';
  * `json` = 文本框里的 JSON **字符串**原样上送（服务端自己 json_decode，如活动 config）；
  * `jsonobj` = 文本框里的 JSON 解成**对象**再上送（服务端把该字段当数组读，收到字符串会静默丢弃，
  * 如风控试算的 context —— 传字符串不报错、只是当成 {} 评估，等于悄悄空转）；
+ * `jsonarr` = 文本框里的 JSON 解成**数组**再上送（值域是「一组对象」的端点，如游戏币种的
+ * `currencies: [{id?, name, symbol, exchange_rate…}]`）。单独立一条而不是复用 jsonobj：
+ * 它明确拒收数组（`!Array.isArray(parsed)`），而 `lines` 只给得出字符串数组 ——
+ * 「一行里有好几个字段」这件事两者都表达不了；
  * `image` = 文本框 + 上传按钮（见 lib/upload.ts）：值仍是字符串，只是能由上传结果写回，
  * 库里的存量值（手输 URL / 图标名）照旧可编辑，改动比较也照旧；
  * `tree` = 树形多选（见 components/PermissionTree.tsx），值的形态与 `multi` 完全相同
  * （换行分隔的 id 串 ↔ 数组），只是候选项是棵树、勾选有父子联动。
  * `password` = 与 `text` 完全同形（值仍是字符串），只是控件遮挡输入：口令字段不该在屏幕上明文摆着。
+ * `file` = 选本地文件（见 `Field.accept`）。**草稿里放的是文件名（字符串）**，真正上送的 `File`
+ * 由 FormModal 在 `buildPayload` 之后塞进请求体（见 FormModal 的 `picked`）——
+ * 草稿保持字符串有两处非它不可：必填预检与「编辑时该字段是否改动过」都按字符串比。
  */
-export type FieldType = 'text' | 'textarea' | 'number' | 'select' | 'switch' | 'json' | 'jsonobj' | 'lines' | 'multi' | 'image' | 'tree' | 'password';
+export type FieldType = 'text' | 'textarea' | 'number' | 'select' | 'switch' | 'json' | 'jsonobj' | 'jsonarr' | 'lines' | 'multi' | 'image' | 'tree' | 'password' | 'file';
 
 /**
  * `label` 是**文案键**不是译文：取译文只在渲染期（见下面 `Field.label` 的说明）。
@@ -79,6 +86,12 @@ export type Field = {
   default?: string;
   /** 控件下方的常驻说明（值域/格式/留空语义）；placeholder 打完字就看不见了，约束放这里。 */
   hint?: FieldText;
+  /**
+   * `file` 字段的 `<input accept>`（如 `.xlsx,.xls`）。**只是给系统选文件对话框的过滤提示**，
+   * 不是校验：用户仍能强行选中别的类型。真值域由服务端判（`ImportController` 认扩展名白名单），
+   * 这里再实现一遍就是第二个真值源，迟早和后端漂开。
+   */
+  accept?: string;
 };
 
 /** 表单草稿：值一律字符串（switch 用 '1'/'0'），与 DOM 控件取值同形，便于比较与断言。 */
@@ -93,7 +106,9 @@ export type Draft = Record<string, string>;
  */
 function displayValue(field: Field, raw: unknown): string {
   if (raw === null || raw === undefined) return '';
-  if ((field.type === 'json' || field.type === 'jsonobj') && typeof raw === 'object') return JSON.stringify(raw, null, 2);
+  if ((field.type === 'json' || field.type === 'jsonobj' || field.type === 'jsonarr') && typeof raw === 'object') {
+    return JSON.stringify(raw, null, 2);
+  }
   // multi / tree 与 lines 同形：控件里是「一行一个值」的字符串（multi 是 <select multiple> 的拼装结果，
   // tree 是树控件勾选结果的拼装）
   if ((field.type === 'lines' || field.type === 'multi' || field.type === 'tree') && Array.isArray(raw)) {
@@ -128,6 +143,8 @@ function cast(field: Field, value: string): unknown {
   if (field.type === 'lines' || field.type === 'multi' || field.type === 'tree') return lines(value);
   // jsonobj 解成对象上送（非空且合法的前提由 firstMissing 保证，走到这里空值已被跳过）
   if (field.type === 'jsonobj') return jsonObject(value) ?? {};
+  // jsonarr 解成数组上送（同上：合法性已预检过）
+  if (field.type === 'jsonarr') return jsonArray(value) ?? [];
   // json 与普通文本一样原样上送：字符串由服务端 json_decode 校验，前端不另立一套规则。
   return value;
 }
@@ -143,6 +160,20 @@ function jsonObject(value: string): Record<string, unknown> | null {
     return parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)
       ? (parsed as Record<string, unknown>)
       : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * JSON 文本 → **数组**（jsonObject 的数组版，口径同理）：空、语法错、解出来不是数组都算「没有」。
+ * 与 jsonObject 一样不抛错：调用方要么已经预检过（firstMissing），要么在「没有」时该走降级分支。
+ */
+function jsonArray(value: string): unknown[] | null {
+  if (value.trim() === '') return null;
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : null;
   } catch {
     return null;
   }
@@ -204,6 +235,9 @@ export function firstMissing(fields: Field[], draft: Draft): string | null {
     }
     if (field.type === 'jsonobj' && value !== '' && jsonObject(value) === null) {
       return t('app.field_must_be_json_object', { name });
+    }
+    if (field.type === 'jsonarr' && value !== '' && jsonArray(value) === null) {
+      return t('app.field_must_be_json_array', { name });
     }
   }
   return null;

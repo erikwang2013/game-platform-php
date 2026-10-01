@@ -1,15 +1,18 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { computed, inject, signal } from '@angular/core';
 import { Api, Row } from './api.service';
+import { buildPdfTable, downloadExcel, downloadPdf } from './export';
 import { ListBase } from './list-base';
 import { idOf, json } from './render';
 import type { PNode } from './tree';
-import { errText, num } from './util';
+import { colsOf, errText, num } from './util';
 import type { Act } from '../components/table';
 
 /** image：文本框 + 上传按钮（值仍是字符串 URL；存量手输的 URL/图标名照旧可编辑） */
 export type FieldType =
   | 'text'
+  /** password：与 text 同一个提交形状，只是输入框不可回显（改密码那类字段） */
+  | 'password'
   | 'textarea'
   | 'number'
   | 'select'
@@ -17,7 +20,13 @@ export type FieldType =
   | 'multi'
   | 'image'
   /** tree：树多选（权限树），值同样是一维 hashid 数组，提交形状与 multi 完全一致 */
-  | 'tree';
+  | 'tree'
+  /**
+   * file：选本地文件（Excel 导入）。**草稿里是文件名（字符串）**，`File` 本体由 ui-form 在提交
+   * 那一刻从原生 file 输入读出来、放进同一个键 —— 于是这个键的值是 `File` 而不是字符串，
+   * **只能走 multipart**：`payload()` 直接跳过它（见 `norm`），塞进 JSON 会变成 `[object File]`。
+   */
+  | 'file';
 
 export interface Opt {
   value: string;
@@ -44,6 +53,12 @@ export interface Field {
   hint?: string;
   /** tree 字段的节点树（运行期注入，与 options 一样随信号刷新） */
   tree?: PNode[];
+  /**
+   * file 字段的 `<input accept>`（如 `.xlsx,.xls`）。**只是给系统选文件对话框的过滤提示**，
+   * 不是校验：用户仍能强行选中别的类型，真值域由服务端判（`ImportController` 认扩展名白名单）。
+   * 这里再实现一遍就是第二个真值源，迟早和后端漂开。
+   */
+  accept?: string;
 }
 
 /**
@@ -95,6 +110,9 @@ export interface Crud {
  * tree 与 multi 同一口径：树只是选择方式，提交的仍是一维 hashid 数组。
  */
 function norm(f: Field, v: unknown): string | number | string[] | undefined {
+  // file 字段不属于 JSON 请求体：`File` 只能靠 multipart 上送（见 components/import-panel.ts）。
+  // 这里**跳过**而不是 `String()` —— 后者会发出 `[object File]`，后端会把它当成一个文件名。
+  if (f.type === 'file') return undefined;
   if (f.type === 'multi' || f.type === 'tree') {
     return Array.isArray(v) ? v.map(String).sort() : [];
   }
@@ -273,4 +291,50 @@ export abstract class CrudPage extends ListBase<Row> {
 
   /** crud().extra 声明的动作落点；页面按需重写（默认无动作，等价于旧行为） */
   protected async extra(_row: Row, _key: string): Promise<void> {}
+
+  // ---------- 导出下载（两个端点都**不经过 rows/loading**，导出中不打断表格） ----------
+
+  /** 导出中（_pdf / _xlsx 共用：一个页面上两个按钮同时按不动，比各发一个信号诚实） */
+  readonly busyExport = signal(false);
+
+  /**
+   * 导出**本页** PDF：列与行都由调用方给 —— 传屏幕上那张表的 heads/rows，
+   * 别传 this.rows()：有的页面表格渲染的是派生行（管理员页要把 role_ids 翻成角色名）。
+   * 失败进列表级 error（与 users.ts 的 /export/users 同一条路），成功不弹提示（浏览器自己的下载条就是回执）。
+   */
+  protected async exportPdf(
+    titleKey: string,
+    heads: Record<string, string>,
+    rows: Row[],
+  ): Promise<void> {
+    this.busyExport.set(true);
+    this.error.set('');
+    try {
+      const body = buildPdfTable(this.i18n.t(titleKey), colsOf(heads, rows), rows);
+      await downloadPdf(this.api, body);
+    } catch (e) {
+      this.error.set(errText(e));
+    } finally {
+      this.busyExport.set(false);
+    }
+  }
+
+  /**
+   * 导出**整张服务端表**为 Excel（表名要在 ExportController 的白名单里，见 core/export.ts）。
+   * 它不认屏幕上的筛选、也不是当前这一页 ⇒ 先二次确认并把范围说清（与 react 树 logs.tsx 同款）。
+   * 名字取当前标签页的 crud().noun —— 与「新建<名词>」用的是同一个词，不再多造一套名词。
+   */
+  protected async exportXlsx(table: string): Promise<void> {
+    const name = this.i18n.t(this.crud()?.noun ?? table);
+    if (!confirm(this.i18n.t('export.table_confirm', { name }))) return;
+    this.busyExport.set(true);
+    this.error.set('');
+    try {
+      await downloadExcel(this.api, table);
+    } catch (e) {
+      this.error.set(errText(e));
+    } finally {
+      this.busyExport.set(false);
+    }
+  }
 }

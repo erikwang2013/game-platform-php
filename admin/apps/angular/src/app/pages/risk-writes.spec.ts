@@ -70,6 +70,7 @@ describe('风控模块写操作接线', () => {
     submit(values: Row): Promise<void>;
     panel(): string;
     result(): unknown;
+    timelineRows(): Row[];
     note(): string;
     noteErr(): boolean;
     formError(): string;
@@ -352,6 +353,56 @@ describe('风控模块写操作接线', () => {
         .flush({ code: 0, message: 'ok', data: { list: [USER], total: 1 } });
       await done;
     };
+
+    /**
+     * 时间轴是**只读**的，路径里的 id 取自行上的 `user_id`（这一页的行**没有** id 字段），
+     * 结果摊平成行进抽屉；顺带钉住「一个写请求都不发」。
+     */
+    it('时间轴：GET /risk/users/{user_id}/timeline → 事件摊平成行进抽屉（不发写请求）', async () => {
+      const p = build(() => new Risk()) as unknown as P;
+      await loadUsers(p);
+      const done = p.run(p.rows()[0]!, 'timeline');
+      const req = http.expectOne(
+        (r) => r.method === 'GET' && url(r) === '/admin/v1/risk/users/UHASH7/timeline',
+      );
+      req.flush({
+        code: 0,
+        message: 'ok',
+        data: {
+          user_id: 'UHASH7',
+          total: 2,
+          events: [
+            { time: '2026-10-01 10:00:00', source: 'risk', type: 'frequency', action: 'block', result: 'blocked', detail: '' },
+            { time: '2026-09-30 22:00:00', source: 'play', type: 'bet', action: 'win', result: '', detail: 'bet=10 win=0' },
+          ],
+        },
+      });
+      await done;
+      expect(p.panel()).toBe('timeline');
+      expect(p.timelineRows().map((r) => r['source'])).toEqual(['risk', 'play']);
+    });
+
+    /**
+     * 关联图谱与时间轴同源：都认行上的 `user_id`（这一页的行**没有** id 字段），都只读。
+     * 结果**不摊平**（nodes/edges 与 device_clusters 形状差得远）⇒ 原样进 result()，由 risk-graph 按 mode 呈现。
+     */
+    it('关联图谱：GET /risk/graph/{user_id} → 原样进抽屉、面板是 graph（不发写请求）', async () => {
+      const p = build(() => new Risk()) as unknown as P;
+      await loadUsers(p);
+      const done = p.run(p.rows()[0]!, 'graph');
+      const req = http.expectOne(
+        (r) => r.method === 'GET' && url(r) === '/admin/v1/risk/graph/UHASH7',
+      );
+      req.flush({
+        code: 0,
+        message: 'ok',
+        data: { root: 'UHASH7', nodes: [], edges: [], cluster_size: 1, hops: 0, risk_verdict: 'normal' },
+      });
+      await done;
+      expect(p.panel()).toBe('graph');
+      expect((p.result() as Row)['cluster_size']).toBe(1);
+      expect(http.match((r) => r.method !== 'GET').length).toBe(0);
+    });
 
     it('冻结：二次确认能认出是谁 → POST hold **无请求体** → 回执带服务端算出的 frozen_amount', async () => {
       const p = build(() => new Risk()) as unknown as P;

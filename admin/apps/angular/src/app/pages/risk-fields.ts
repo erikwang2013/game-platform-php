@@ -12,6 +12,12 @@ import type { Act } from '../components/table';
  * 改字段前先读对应控制器（admin/app/admin/v1/controller/Risk*Controller.php），别照 DB 列名硬凑。
  */
 
+/**
+ * 抽屉内容类型：risk.ts 的 panel 信号、openPanel 的入参、READ_PANELS/PANEL_TITLES 的键集共用这一个
+ * 联合（三处各写一遍的话，加一种抽屉就要改三处，漏一处是编译期报错、再漏一处是空白抽屉）。
+ */
+export type PanelKind = 'result' | 'candidates' | 'members' | 'timeline' | 'graph' | 'graphclusters';
+
 /** 真值 = RiskSandboxService::TYPES（与 service 端评估器注册表一致）；少一个后端直接 422 */
 export const RULE_TYPES = [
   'ip_blacklist',
@@ -111,11 +117,31 @@ export const EVENT_ACTS: Act[] = [
   { key: 'reject', label: 'risk.event.reject', danger: true },
 ];
 
-/** 风险用户的行内动作：冻结无请求体（服务端按可用余额全额锁），解冻可选金额 */
+/**
+ * 风险用户的行内动作：冻结无请求体（服务端按可用余额全额锁），解冻可选金额。
+ * 「时间轴」（GET /risk/users/{hashid}/timeline）与「关联图谱」（GET /risk/graph/{hashid}）都是
+ * 只读动作，无状态可言 ⇒ 不做 when 过滤。
+ */
 export const USER_ACTS: Act[] = [
   { key: 'hold', label: 'risk.user.hold', danger: true },
   { key: 'release', label: 'risk.user.release' },
+  { key: 'timeline', label: 'risk.user.timeline' },
+  { key: 'graph', label: 'risk.graph.title' },
 ];
+
+/**
+ * 风险时间轴的表头。⚠ `source` 是**事件的来源系统**（risk=风控命中 / play=对局记录 /
+ * anticheat=反作弊），与 `type`（规则类型）是两列不同的东西 —— 三源合并后只看 type 会分不清
+ * 「这条是风控拦的」还是「这条是对局里发现的」。
+ */
+export const TIMELINE_HEADS: Record<string, string> = {
+  time: 'risk.head.time',
+  source: 'risk.head.source',
+  type: 'risk.head.type',
+  action: 'risk.head.action',
+  result: 'risk.head.result',
+  detail: 'risk.head.detail',
+};
 
 /** 反作弊事件状态值域（AntiCheatController::review 的 `in:` 规则）+ 各自的词条键（值 = risk.ac.status.*） */
 export const ANTICHEAT_STATUS: Record<string, string> = {
@@ -130,14 +156,19 @@ export const ANTICHEAT_STATUS: Record<string, string> = {
  * 状态已经等于目标的行上再摆一个按钮，点下去是把同一状态再写一遍 —— 界面在骗人。
  * 顺序 = 按钮顺序（推进态在前，「重开」这种回退态在后）。
  */
-export const ANTICHEAT_ACTS: Act[] = (['confirmed', 'whitelisted', 'closed', 'open'] as const).map(
-  (s): Act => ({
-    key: 'rv_' + s,
-    label: ANTICHEAT_STATUS[s]!,
-    danger: s === 'confirmed',
-    when: (row) => String(row['status'] ?? '') !== s,
-  }),
-);
+export const ANTICHEAT_ACTS: Act[] = [
+  ...(['confirmed', 'whitelisted', 'closed', 'open'] as const).map(
+    (s): Act => ({
+      key: 'rv_' + s,
+      label: ANTICHEAT_STATUS[s]!,
+      danger: s === 'confirmed',
+      when: (row) => String(row['status'] ?? '') !== s,
+    }),
+  ),
+  // 只读详情（GET /anticheat/events/{hashid}）摆在四个状态按钮之后：列表的 format() 已把
+  // evidence 摊成对象，但不带 user_trust（信任分/档位/命中数只在详情里）
+  { key: 'detail', label: 'risk.ac.detail' },
+];
 
 /**
  * 团伙行内动作。三个状态按钮：0/1/2（Apidoc：0=误判 1=观察中 2=已处置）是**多值状态**，
@@ -304,6 +335,23 @@ export const IP_VERBS: Record<string, string> = {
 };
 
 /**
+ * 四个**只读**抽屉：动作键 → 面板类型 + 取数路径（路径里的 id 一律是**出边界的 hashid**）。
+ * 四条都是 GET、都在选中行的上下文里、都复用那一个抽屉槽：
+ *  - members  GET /risk/clusters/{hashid}/members —— 团伙成员（列表只有账号数，成员要点开看）
+ *  - timeline GET /risk/users/{hashid}/timeline —— 风控/对局/反作弊三源合并，服务端按时间倒序截 200 条
+ *  - graph    GET /risk/graph/{hashid}          —— 两跳闭包（同设备账号 → 其设备上的账号）
+ *  - detail   GET /anticheat/events/{hashid}    —— 比列表多一个 user_trust（信任分/档位/命中数）
+ * 前两条各摊平成一列行，detail 是结构化对象 ⇒ 走结果面板的原始响应（与沙箱试算同一个呈现），
+ * graph 的两份响应形状不同 ⇒ 由 risk-graph 组件按 mode 自己呈现。
+ */
+export const READ_PANELS: Record<string, { panel: PanelKind; path: (id: string) => string }> = {
+  members: { panel: 'members', path: (id) => 'risk/clusters/' + id + '/members' },
+  timeline: { panel: 'timeline', path: (id) => 'risk/users/' + id + '/timeline' },
+  graph: { panel: 'graph', path: (id) => 'risk/graph/' + id },
+  detail: { panel: 'result', path: (id) => 'anticheat/events/' + id },
+};
+
+/**
  * 试算 context 的解析：只认 **JSON 对象**（服务端 `!is_array($context)` 会把它静默换成 []，
  * 于是评估器拿到空上下文、试算结果永远是「未命中」）。非法 JSON / 数组 / 标量一律返回 null，
  * 由调用方报错。**不校验业务键**：键的值域是各评估器的事。
@@ -318,11 +366,17 @@ export function parseContext(raw: string): unknown | null {
   }
 }
 
-/** 抽屉标题：与 risk.ts 的 panel() 一一对应（试算 / 候选 / 只读的团伙成员） */
+/**
+ * 抽屉标题：与 risk.ts 的 panel() 一一对应（试算 / 候选 / 团伙成员 / 风险时间轴 / 图谱 / 设备关联簇）。
+ * 后两个是同一份端点族（/risk/graph/*）的两个抽屉：一个以用户为根、一个没有根（全站高账号数设备）。
+ */
 export const PANEL_TITLES: Record<string, string> = {
   result: 'risk.panel.result',
   candidates: 'risk.panel.candidates',
   members: 'risk.panel.members',
+  timeline: 'risk.user.timeline',
+  graph: 'risk.graph.title',
+  graphclusters: 'risk.graph.clusters',
 };
 
 /** 聚类候选抽屉：候选字段 = detect 的 candidates[]（fingerprint 是完整哈希，掩码列只用于显示） */

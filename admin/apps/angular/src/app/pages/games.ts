@@ -2,10 +2,12 @@
 import { Component, computed, signal } from '@angular/core';
 import { Page, Row } from '../core/api.service';
 import { Crud, CrudPage, Field } from '../core/crud';
-import { idOf } from '../core/render';
+import { idOf, json, rowsAny } from '../core/render';
+import { errText } from '../core/util';
 import { T } from '../core/i18n/i18n';
 import { Pager, StateBlock, Tabs } from '../components/ui';
 import { Table } from '../components/table';
+import type { Act } from '../components/table';
 import { FormModal } from '../components/form-modal';
 
 const G = '/admin/v1/game/';
@@ -174,6 +176,47 @@ const SERVER_FIELDS: Field[] = [
   },
 ];
 
+/**
+ * 游戏币种（POST /game/currency/manage，`{game_id, currencies:[…]}`）。
+ *
+ * 提交的是**一整份 JSON 数组文本**（本树的表单没有 jsonarr 这种字段类型，转换成数组放在
+ * games.ts 里做 —— 端点收的是数组，字符串会被 validator 打回）。三条语义写在 hint 里，
+ * 少一条运营就会当成整表替换：不写的不删、**带 id 才是改**、单条不过整批拒绝。
+ */
+const CURRENCY_FIELDS: Field[] = [
+  {
+    name: 'currencies',
+    label: 'game.currency_act',
+    type: 'textarea',
+    required: true,
+    hint: 'game.currency_hint',
+  },
+];
+
+/**
+ * 分配游戏（POST /game/category/assign，`{category_id, game_ids:[…]}`）。
+ *
+ * **整体替换**：后端先删光该分类的关联再插入，而分类侧没有任何读端点能拿回当前关联
+ * （GameCategoryController 只有 list/create/update/destroy/assign）⇒ 表单只能空白开局，
+ * 提示必须把「没列出来的会被解绑」说死（hint 原文照抄 react 的 `f.from_the_games_list_id`）。
+ */
+const ASSIGN_FIELDS: Field[] = [
+  {
+    name: 'game_ids',
+    label: 'game_category.assign_games',
+    type: 'textarea',
+    required: true,
+    placeholder: 'game_category.assign_placeholder',
+    hint: 'game_category.assign_hint',
+  },
+];
+
+/** 各标签页的行内动作（crud().extra）。区服页签没有动作 ⇒ 查不到就是空数组 */
+const EXTRAS: Record<string, Act[]> = {
+  game: [{ key: 'currency', label: 'game.currency_act' }],
+  category: [{ key: 'assign', label: 'game_category.assign_games' }],
+};
+
 @Component({
   selector: 'app-games',
   imports: [StateBlock, Table, Pager, Tabs, FormModal, T],
@@ -233,6 +276,19 @@ const SERVER_FIELDS: Field[] = [
       (save)="submit($event)"
       (close)="closeForm()"
     />
+
+    <!-- 行内动作的表单（游戏币种 / 分配游戏）：另起一个框，字段集与端点都和新建/编辑不同，
+         混用会把 CRUD 的 ends 带歪（提交落到错的端点） -->
+    <ui-form
+      [open]="actOpen()"
+      [title]="actTitle()"
+      [fields]="actFields()"
+      [value]="actValue()"
+      [error]="actError()"
+      [saving]="actSaving()"
+      (save)="submitAct($event)"
+      (close)="actOpen.set(false)"
+    />
   `,
 })
 export class Games extends CrudPage {
@@ -260,7 +316,6 @@ export class Games extends CrudPage {
     return this.tab() === 'server' && !this.gameId().trim();
   }
 
-  // ponytail: 货币只读列表后端未提供（仅 POST /game/currency/manage 写接口），故不设该标签页
   protected override crud(): Crud | null {
     const tab = this.tab();
     const specs: Record<string, { noun: string; fields: Field[]; path: string }> = {
@@ -282,7 +337,91 @@ export class Games extends CrudPage {
         remove: (id) => G + spec.path + id,
         // 三个模块都没有 toggle 端点：状态切换走局部 update（PUT {hashid} + {status}）
       },
+      // 货币 / 分配游戏两个动作都挂在列表页的行上（端点收的是 id + 数组，不是字段级 CRUD）
+      extra: EXTRAS[tab],
     };
+  }
+
+  // ---- 行内动作：游戏币种（game 页签）/ 分配游戏（category 页签）----
+
+  protected readonly actOpen = signal(false);
+  protected readonly actTitle = signal('');
+  /** 当前动作的字段集（模板要读 ⇒ 必须是类成员，模块级 const 在模板作用域里看不见） */
+  protected readonly actFields = signal<Field[]>(CURRENCY_FIELDS);
+  protected readonly actValue = signal<Row | null>(null);
+  protected readonly actError = signal('');
+  protected readonly actSaving = signal(false);
+  /** 动作归属的行 + 是哪个动作：提交时才知道打哪个端点、发哪个键 */
+  private actRow: Row | null = null;
+  private actKey = '';
+
+  /**
+   * 取现值再开框（币种）/ 直接开空框（分配游戏）。
+   *
+   * 币种的现值**必须**先取：GET /game/{hashid} 的 `currencies` 带 id，抹掉 id 就是「新建一条」
+   * —— 拿一份空表去提交，会把整张币种表复制成重复行。故取不到就照抛（由基类落进列表级 error），
+   * 宁可不给框，也不给一个「id 全丢」的空框。
+   */
+  protected override async extra(row: Row, key: string): Promise<void> {
+    const id = idOf(row);
+    if (!id) return;
+    if (key !== 'currency' && key !== 'assign') return;
+    this.actRow = row;
+    this.actKey = key;
+    this.actError.set('');
+    this.actValue.set(null);
+    if (key === 'currency') {
+      this.actTitle.set('game.currency_act');
+      this.actFields.set(CURRENCY_FIELDS);
+      const d = await this.api.get<Row>(G + id);
+      this.actValue.set({ currencies: json(rowsAny(d, 'currencies')) });
+    } else {
+      this.actTitle.set('game_category.assign_title');
+      this.actFields.set(ASSIGN_FIELDS);
+    }
+    this.actOpen.set(true);
+  }
+
+  /** 动作弹框提交：文本 → 端点要的数组形状，再 POST */
+  protected async submitAct(v: Row): Promise<void> {
+    const id = idOf(this.actRow ?? {});
+    if (!id) return;
+    const cur = this.actKey === 'currency';
+    const text = String((cur ? v['currencies'] : v['game_ids']) ?? '').trim();
+    let parsed: unknown = null;
+    if (cur) {
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        parsed = null;
+      }
+      // 空文本/语法错/解出来不是数组一律拦下：`required|array` 只认数组，发字符串过去
+      // 会回一句英文 validator 原文（本树 13 语言的界面里突兀），这里给本地提示
+      if (!Array.isArray(parsed)) {
+        this.actError.set(
+          this.i18n.t('app.field_must_be_json_array', { name: this.i18n.t('game.currency_act') }),
+        );
+        return;
+      }
+    }
+    const ids = text
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    this.actSaving.set(true);
+    this.actError.set('');
+    try {
+      await this.api.post(
+        cur ? G + 'currency/manage' : G + 'category/assign',
+        cur ? { game_id: id, currencies: parsed } : { category_id: id, game_ids: ids },
+      );
+      this.actOpen.set(false);
+      await this.load();
+    } catch (e) {
+      this.actError.set(errText(e));
+    } finally {
+      this.actSaving.set(false);
+    }
   }
 
   protected pick(key: string): void {

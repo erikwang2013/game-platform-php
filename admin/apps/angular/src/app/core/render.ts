@@ -1,7 +1,7 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { Row } from './api.service';
 import { t } from './i18n/i18n';
-import { pairs } from './util';
+import { dt, pairs } from './util';
 
 export interface Scalar {
   k: string;
@@ -82,9 +82,25 @@ export function idOf(v: Row): string {
   return '';
 }
 
-/** 详情键值对：pairs 的容错包装，结构未知时不炸页面 */
+/**
+ * 详情键值对（详情抽屉的取数口）：结构未知时不炸页面。
+ *
+ * ⚠ 不能直接把单条记录丢给 `pairs()`：那个函数是给**图表序列**用的，标量一律过 `num()`
+ * （`Number(v)` 非有限数即 0）⇒ 一条记录里的 `username: 'ops'` 会显示成 `ops 0`。
+ * 数字字段恰好是对的，所以这个错看着不像错（实测见 core/render.spec.ts）。
+ * 记录一律**原样**取值（字符串就是字符串）；数组/序列仍走 pairs 的归一。
+ *
+ * 唯一的例外是 `dt()`：datetime cast 的列出网是 ISO8601-UTC，抽屉里得一并换算成服务端时区
+ * （与表格单元格同一套口径 —— 同一行记录在两处显示成两个时刻就白改了）。它整串不匹配时原样返回，
+ * 所以对普通字符串没有影响。
+ */
 export function kvOf(v: unknown): { label: string; value: string | number }[] {
   try {
+    if (v && typeof v === 'object' && !Array.isArray(v)) {
+      return Object.entries(v as Record<string, unknown>)
+        .filter(([, x]) => typeof x === 'number' || typeof x === 'string')
+        .map(([label, x]) => ({ label, value: typeof x === 'string' ? dt(x) : (x as number) }));
+    }
     return pairs(v ?? {});
   } catch {
     return [];

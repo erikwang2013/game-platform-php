@@ -242,4 +242,58 @@ export const RISK: Record<string, [string, string]> = {
   'risk.head.game': ['Game', '游戏'],
   'risk.head.severity': ['Severity', '严重度'],
   'risk.head.review_note': ['Review note', '审核备注'],
+
+  // ---- 总览页的可视化补块（risk/overview 的 series + action-distribution + rule-performance）----
+  'risk.trend': ['Hit trend', '命中趋势'],
+  'risk.chart.hits': ['Hits', '命中数'],
+  'risk.chart.blocked': ['Blocked', '已阻断'],
+  /**
+   * 动作分布条的名字（真值 = risk_log.action 三值）。与 `risk.action.*` 那组**不合并**：
+   * 那组是规则表单里的下拉项，带「（只记日志）」这类括注，摆进 120px 的条标签会换行。
+   */
+  'risk.chart.act.log': ['Logged', '仅记录'],
+  'risk.chart.act.warn': ['Warned', '告警'],
+  'risk.chart.act.block': ['Blocked', '拦截'],
+  'risk.actions': ['Action distribution', '动作分布'],
+  'risk.rule_perf': ['Rule performance', '规则效果'],
+  'risk.head.block_rate': ['Block rate', '阻断率'],
+  'risk.head.manual_review': ['Referred to manual review', '转人工复核'],
+  'risk.head.manual_review_rate': ['Referral rate', '复核率'],
+
+  // ---- 近 24h 快照（/risk/dashboard）+ 按规则类型的趋势（/risk/hit-trend）----
+  // 前五个指标卡**复用**上面已有的词（命中/阻断/告警/仅记录/阻断率），这里只补四个没出现过的规模量
+  'risk.dash.24h': ['Last 24 hours', '近 24 小时'],
+  'risk.dash.enabled_rules': ['Enabled rules', '启用规则'],
+  'risk.dash.total_rules': ['Total rules', '规则总数'],
+  'risk.dash.blacklist_ips': ['Blacklisted IPs', 'IP 黑名单'],
+  'risk.dash.device_clusters': ['Device clusters', '设备簇'],
+  'risk.dash.recent': ['Recent events (24h)', '最近事件（24h）'],
+  'risk.trend_by_type': ['Hits by rule type', '按规则类型的命中'],
+
+  // ---- 风险时间轴与反作弊详情（两个只读抽屉）----
+  'risk.head.detail': ['Detail', '详情'],
+  'risk.user.timeline': ['Risk timeline', '风险时间轴'],
+  'risk.ac.detail': ['Event detail', '事件详情'],
+
+  // ---- 关联图谱（GET /risk/graph/{hashid} 与 GET /risk/graph/clusters）----
+  // 节点状态复用 app.enabled/app.disabled（平台用户状态 0 禁用 / 1 启用），这里只补没有的词
+  'risk.graph.title': ['Account graph', '关联图谱'],
+  'risk.graph.clusters': ['Suspicious device clusters', '可疑设备关联簇'],
+  'risk.graph.nodes': ['Graph nodes', '图谱节点'],
+  'risk.graph.edges': ['Graph edges', '关联边'],
+  'risk.graph.size': ['Cluster size', '簇大小'],
+  'risk.graph.hops': ['Hops', '跳数'],
+  'risk.graph.verdict': ['Verdict', '判定'],
+  'risk.graph.suspicious': ['Suspicious', '可疑'],
+  'risk.graph.normal': ['Normal', '正常'],
+  'risk.graph.is_root': ['Seed account', '起始账号'],
+  'risk.graph.gone': ['Account not found', '账号已不存在'],
+  'risk.graph.members_capped': [
+    'Showing first {shown} of {total} accounts',
+    '仅列出前 {shown} 个，共 {total} 个账号',
+  ],
+  'risk.graph.link_stats': ['Link type counts', '关联类型统计'],
+  'risk.graph.empty': ['No graph data', '暂无图谱数据'],
+  'risk.head.from': ['From', '起点'],
+  'risk.head.to': ['To', '终点'],
 };

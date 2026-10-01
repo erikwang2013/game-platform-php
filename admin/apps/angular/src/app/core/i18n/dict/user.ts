@@ -64,4 +64,9 @@ export const USER: Record<string, [string, string]> = {
     'The deletion was submitted, but the user is still in the list - refresh to confirm',
     '注销请求已提交，但该用户仍在列表中，请刷新确认',
   ],
+  /**
+   * 导出用户 Excel（POST /export/users）。服务端一次导 10000 条、只认 status 过滤，
+   * **不认列表页的搜索词** —— 按钮文案与提示都要说清「导的是全量」，别让人以为是"导出当前页"。
+   */
+  'user.export_excel': ['Export users (.xlsx)', '导出用户 (.xlsx)'],
 };

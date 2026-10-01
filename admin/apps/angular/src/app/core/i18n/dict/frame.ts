@@ -38,6 +38,12 @@ export const FRAME: Record<string, [string, string]> = {
   'app.pager': ['Page {page} / {pages} ({total} total)', '共 {total} 条 · 第 {page}/{pages} 页'],
   'app.prev_page': ['Previous', '上一页'],
   'app.next_page': ['Next', '下一页'],
+  /**
+   * JSON 文本框（游戏币种那一格）解不出**数组**时的提示：格式转换失败，不是「前端另立一套校验」
+   * —— 端点收的是数组，`JSON.parse` 的结果不是数组就只能拦在本地（后端 validator 会回英文原文）。
+   * 键名与措辞照抄 react 的 `app.field_must_be_json_array`（`{name}` 吃字段名）。
+   */
+  'app.field_must_be_json_array': ['{name} must be a JSON array', '{name} 需要是一个 JSON 数组'],
 
   // ---- 侧栏分组与页面 ----
   'nav.section.overview': ['Overview', '概览'],
@@ -57,10 +63,15 @@ export const FRAME: Record<string, [string, string]> = {
   'nav.infra': ['Infrastructure', '基础设施'],
   'nav.admins': ['Admin Accounts', '管理员'],
   'nav.settings': ['Settings', '系统设置'],
+  // 社群页的页头标题也用这一条（同 games.ts：页面名与侧栏同名就不另开键）
+  'nav.community': ['Community', '社群'],
 
   // ---- 状态三态块 / 表格 ----
   'ui.loading': ['Loading…', '加载中…'],
   'table.actions': ['Actions', '操作'],
+  /** 勾选列的表头（与 react 的 `browser.pick` 同词）。共享表格的列头 ⇒ 留在 table 域，与 table.actions 并列 */
+  'table.pick': ['Select', '选择'],
+  'table.picked': ['{count} selected', '已选 {count} 项'],
 
   // ---- 通用表单弹框 ----
   'form.submit': ['Submit', '提交'],
@@ -111,4 +122,41 @@ export const FRAME: Record<string, [string, string]> = {
 
   /** 各页 `<details>` 里那坨 JSON 的折叠标题（风控总览 / 数据分析都有） */
   'app.raw_response': ['Raw response', '原始响应'],
+
+  // ---- 导出下载（POST /export/*、/report/export 走 Api.download）----
+  'app.exporting': ['Exporting…', '导出中…'],
+  /** 按钮名与 react 树逐字一致（export.excel / export.pdf_page），省得两棵树的运营看到两个词 */
+  'export.excel': ['Export Excel', '导出 Excel'],
+  'export.pdf_page': ['Export this page to PDF ({count} rows)', '导出本页 PDF（{count} 行）'],
+  'export.transactions': ['Export all transactions', '导出全部流水'],
+  /** 整表导出（/export/excel）不认屏幕上的筛选 ⇒ 先把范围说清 */
+  'export.table_confirm': [
+    'Export the whole "{name}" table? The filters on screen do not apply (up to 10000 rows).',
+    '确认导出「{name}」整张表？不受屏幕上筛选条件影响（最多 10000 行）。',
+  ],
+
+  // ---- file 字段（选本地文件，见 form-modal 的 @case ('file')）----
+  // 文案与 react 树逐字一致（那边是 `f.file` / `form.choose_file` / `form.no_file_chosen`），
+  // 省得两棵树的运营看到两个词
+  'form.file': ['File', '文件'],
+  'form.choose_file': ['Choose file', '选择文件'],
+  'form.no_file_chosen': ['No file chosen', '尚未选择文件'],
+
+  // ---- Excel 批量导入（components/import-panel.ts）----
+  /** 按钮与弹框标题同一条（动作名与页面名一致时不另开键） */
+  'import.users': ['Import users', '导入用户'],
+  'import.hint': [
+    'Excel (.xlsx or .xls). Required columns: username, password, real_name; optional: phone, email, status.',
+    'Excel 文件（.xlsx 或 .xls）。必需列：username、password、real_name；可选列：phone、email、status。',
+  ],
+  'import.result': ['Import result', '导入结果'],
+  'import.summary': [
+    'Rows in file {total} · imported {success} · failed {failed}',
+    '文件内 {total} 行 · 成功 {success} 行 · 失败 {failed} 行',
+  ],
+  /** 导入的账号没有角色 ⇒ 能登录、处处 403。`{roles}` 是编辑表单里那个字段的标签 */
+  'import.no_roles': [
+    'Imported accounts get no roles: they can log in, but every page is denied. Open the account and set {roles} in the edit form.',
+    '导入的账号不会自动获得角色：能登录，但每个页面都会被拒绝。请打开该账号，在编辑表单里设置「{roles}」后保存。',
+  ],
 };

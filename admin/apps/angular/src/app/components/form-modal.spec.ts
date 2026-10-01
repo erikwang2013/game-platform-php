@@ -268,6 +268,70 @@ describe('FormModal（通用表单弹框）', () => {
     expect(f.componentInstance.got).toEqual({ role_ids: [] });
   });
 
+  /**
+   * 把 `file` 塞进 `input[type=file]`。jsdom 没有 `DataTransfer`，`input.files = 任意对象` 也走不通
+   * （IDL setter 要真 `FileList`）⇒ 必须落到 **impl** 上：`new FormData(form)` 是在 impl 层组条目的
+   * （xhr/FormData-impl.js 读 `field.files.length` 与 `.item(i)`），且条目按 `File.isImpl` 认形状 ——
+   * 喂包装对象会被 `USVString()` 成字面量 `"[object File]"`，正好是这条用例要防的那个 bug。
+   * 索引 `0` 与 `item(i)` **两条路都得给**：组件自己读 `files[0]`，jsdom 组 FormData 用 `.item(i)`。
+   */
+  const pickInto = (input: HTMLInputElement, file: File): void => {
+    const implOf = (o: object): Record<string, unknown> =>
+      (o as unknown as Record<symbol, Record<string, unknown>>)[
+        Object.getOwnPropertySymbols(o).find((s) => s.description === 'impl')!
+      ]!;
+    const f = implOf(file);
+    implOf(input)['files'] = { length: 1, item: (i: number) => (i === 0 ? f : null), 0: f };
+    input.dispatchEvent(new Event('change'));
+  };
+
+  /**
+   * file 字段（Excel 导入）：**交出去的是 `File` 本体**，不是文件名、更不是 `[object File]`。
+   *
+   * 这条钉的是「别把 File 当字符串塞」：一旦这里落回 `String(fd.get(name))`，服务端收到的
+   * 就是一段文本，`$request->file('file')` 恒为 null ⇒ 导入永远 422，而界面上看不出异常
+   * （只读框里明明显示着文件名）。
+   */
+  it('file：提交的是 File 本体（不是文件名，也不是 [object File]）', async () => {
+    const f = await setup();
+    f.componentInstance.fields.set([
+      { name: 'file', label: '文件', type: 'file', required: true, accept: '.xlsx,.xls' },
+    ]);
+    f.componentInstance.open.set(true);
+    f.detectChanges();
+
+    const input = el<HTMLInputElement>(f, 'input[type="file"]');
+    expect(input.accept).toBe('.xlsx,.xls');
+    // 文件名那个框是**只读**的：手输一个名字拿不到文件，提交时服务端只会收到一段文本
+    expect(el<HTMLInputElement>(f, 'input[type="text"]').readOnly).toBe(true);
+
+    pickInto(input, new File(['a,b'], 'users.xlsx'));
+    f.detectChanges();
+    expect(el<HTMLInputElement>(f, 'input[type="text"]').value).toBe('users.xlsx');
+
+    await submit(f);
+    const got = f.componentInstance.got?.['file'];
+    expect(got).toBeInstanceOf(File);
+    expect((got as File).name).toBe('users.xlsx');
+  });
+
+  /**
+   * 没选文件：值是一个**空文件**（浏览器与 jsdom 都这么填 `FormData`），不是 `null`、也不是
+   * 空串 —— 认错形状的那一方（`import-panel` 按 name 判空、`payload()` 按 file 跳过）就漏了。
+   * 它不能是字符串：字符串会让 multipart 里出现一个名叫 `file` 的**文本字段**。
+   */
+  it('file：没选文件时是一个空 File（不是字符串、不是 null）', async () => {
+    const f = await setup();
+    f.componentInstance.fields.set([{ name: 'file', label: '文件', type: 'file' }]);
+    f.componentInstance.open.set(true);
+    f.detectChanges();
+
+    await submit(f);
+    const got = f.componentInstance.got?.['file'];
+    expect(got).toBeInstanceOf(File);
+    expect((got as File).name).toBe('');
+  });
+
   it('开→关→再开：输入被重建，不带上一轮残留', async () => {
     const f = await setup();
     f.componentInstance.open.set(true);

@@ -3,11 +3,12 @@ import { Component, computed, signal } from '@angular/core';
 import { Page, Row } from '../core/api.service';
 import { Crud, CrudPage, Field, Opt } from '../core/crud';
 import { T, t } from '../core/i18n/i18n';
-import { idOf } from '../core/render';
+import { idOf, kvOf } from '../core/render';
 import { errText } from '../core/util';
-import { Pager, StateBlock } from '../components/ui';
+import { Drawer, Pager, StateBlock } from '../components/ui';
 import { Table } from '../components/table';
 import { FormModal } from '../components/form-modal';
+import { ImportPanel } from '../components/import-panel';
 
 const U = '/admin/v1/';
 
@@ -94,7 +95,7 @@ const GRANT_FIELDS: Field[] = [
 
 @Component({
   selector: 'app-admins',
-  imports: [StateBlock, Table, Pager, FormModal, T],
+  imports: [StateBlock, Table, Pager, FormModal, ImportPanel, Drawer, T],
   template: `
     <div class="page-head">
       <h1>{{ 'admin.title' | t }}</h1>
@@ -109,8 +110,30 @@ const GRANT_FIELDS: Field[] = [
       />
       <button class="btn" (click)="search()">{{ 'app.search' | t }}</button>
       <button class="btn" (click)="load()">{{ 'app.refresh' | t }}</button>
+      <!-- 导的是服务端整张 admin_user 表（不认这里的搜索词），故与「刷新」并列、不禁用空列表 -->
+      <button class="btn" [disabled]="busyExport()" (click)="exportXlsx('admin_user')">
+        {{ (busyExport() ? 'app.exporting' : 'export.excel') | t }}
+      </button>
       <button class="btn btn-primary" (click)="openCreate()">+ {{ 'app.create' | t }}</button>
+      <!-- 导入的正是本页的 AdminUser（POST /admin/v1/import/users）：按钮/弹框/报表都在 ui-import -->
+      <ui-import path="/admin/v1/import/users" title="import.users" (done)="load()" />
     </div>
+    <!-- 批量启停的就地回执（服务端 message / 失败原因），与 finance 同款：动作结果不进表格错误态 -->
+    @if (note()) {
+      <div [class]="noteErr() ? 'alert' : 'notice'">{{ note() }}</div>
+    }
+    <!-- 批量启停：勾选列由 ui-table 提供，勾选态受控在本组件（提交成功要清空） -->
+    @if (rows().length) {
+      <div class="row-actions">
+        <span class="sub">{{ 'table.picked' | t: { count: picked().length } }}</span>
+        <button class="btn" [disabled]="!picked().length || batching()" (click)="batch(true)">
+          {{ 'admin.batch_enable' | t }}
+        </button>
+        <button class="btn danger" [disabled]="!picked().length || batching()" (click)="batch(false)">
+          {{ 'admin.batch_disable' | t }}
+        </button>
+      </div>
+    }
 
     <ui-state [loading]="loading()" [error]="error()" [empty]="!rows().length">
       <div class="card">
@@ -119,6 +142,12 @@ const GRANT_FIELDS: Field[] = [
             [rows]="view()"
             [heads]="heads"
             [actions]="actions()"
+            [clickable]="true"
+            [selectable]="true"
+            [checked]="picked()"
+            [pickable]="pickable"
+            (pick)="open($event)"
+            (picked)="picked.set($event)"
             (act)="run($event.row, $event.key)"
           />
         </div>
@@ -128,6 +157,27 @@ const GRANT_FIELDS: Field[] = [
     @if (rows().length) {
       <ui-pager [page]="page()" [pages]="pages" [total]="total()" (jump)="go($event)" />
     }
+
+    <!-- 详情：GET /admin/v1/user/{hashid}（UserController::show 补 roles、去掉 password/id_card） -->
+    <ui-drawer
+      [open]="detail() !== null"
+      [title]="'admin.detail' | t"
+      (close)="detail.set(null)"
+    >
+      @if (detail(); as d) {
+        <dl class="kv">
+          @for (p of info(); track p.label) {
+            <dt>{{ p.label }}</dt>
+            <dd>{{ p.value }}</dd>
+          } @empty {
+            <!-- 复用 user.* 的两条空态文案：这里只是「记录里没有一个可显示字段」的兜底，
+                 为它再造两条 ×13 语言不值当（文案本身与用户无关） -->
+            <dt>{{ 'user.empty_tip' | t }}</dt>
+            <dd>{{ 'user.empty_note' | t }}</dd>
+          }
+        </dl>
+      }
+    </ui-drawer>
 
     <!-- 新建 / 编辑：用底座 CrudPage 那一个弹框 -->
     <ui-form
@@ -195,6 +245,33 @@ export class Admins extends CrudPage {
       return { ...r, role_names: ids.map((id) => names[id] ?? id).join(t('admin.role_join')) };
     }),
   );
+
+  // ---------- 详情抽屉（GET /admin/v1/user/{hashid}） ----------
+  protected readonly detail = signal<Row | null>(null);
+  protected readonly info = computed(() => kvOf(this.detail()));
+
+  // ---------- 批量启停（POST /admin/v1/user/batch/status） ----------
+  /** 已勾选的 hashid。ui-table 的勾选态**受控**在这里：提交成功要清空，藏在表里清不掉 */
+  protected readonly picked = signal<string[]>([]);
+  protected readonly batching = signal(false);
+  /** 动作回执（服务端 message / 失败原因）：与 finance 同款，不进表格错误态 */
+  protected readonly note = signal('');
+  protected readonly noteErr = signal(false);
+
+  /** 翻页/查询/写完都回读列表 ⇒ 勾选清空。勾选是**页内**语义：跨页留下的 id 与屏幕上的
+   *  复选框对不上，运营会提交他以为早就取消掉的上一页那些行。跨页批量真要做，得在批量条上
+   *  显式写「已选 N 项（含其他页 M 项）」，不能靠沉默。 */
+  override async load(): Promise<void> {
+    this.picked.set([]);
+    await super.load();
+  }
+
+  /**
+   * 自己那一行不给勾。后端 batchStatus **没有**自我保护（UserController::batchStatus 只校验
+   * ids 是非空数组、status ∈ {0,1,'0','1'}）⇒ 客户端这道 pickable 是唯一防线：
+   * 勾上自己点「停用」＝当场自锁，勾上自己点「启用」至少是条无意义的状态回写。
+   */
+  protected readonly pickable = (row: Row): boolean => !this.isSelf(row);
 
   // ---------- 重置密码 / 分配角色（动作型弹框） ----------
   protected readonly actOpen = signal(false);
@@ -365,6 +442,58 @@ export class Admins extends CrudPage {
       this.actError.set(errText(e));
     } finally {
       this.actSaving.set(false);
+    }
+  }
+
+  /**
+   * 行点击看详情：先把列表行摆进抽屉（立刻有内容），再拉 `/user/{hashid}` 覆盖。
+   * 两者**不是同一份**：show 会 loadMissing('roles') 并 unset(password / id_card)，
+   * 列表行里没有这些。取不到就留着列表行，不把抽屉变成错误页（users.ts 同款）。
+   */
+  protected async open(row: Row): Promise<void> {
+    this.detail.set(row);
+    const id = idOf(row);
+    if (!id) return;
+    try {
+      const d = await this.api.get<unknown>(this.path + '/' + id);
+      if (d && typeof d === 'object' && !Array.isArray(d)) this.detail.set(d as Row);
+    } catch {
+      // 详情取不到就展示列表行本身，不阻塞抽屉
+    }
+  }
+
+  /**
+   * 批量启用 / 停用 —— POST /admin/v1/user/batch/status，入参严格是
+   * `{ids: [hashid…], status: 0|1}`（不是布尔：validator 用 in_array 比的是 0/1 与 '0'/'1'）。
+   *
+   * 回执**只显示服务端 message**，不把 `data.count` 拼成「改了 N 个」：那是 MySQL 报的
+   * changed rows，本来就处于目标状态的行也算进去，当数量读是错的（react 同样只显示 message）。
+   * 成功即清空勾选并回读 —— 界面上不会留一排已勾但已经生效的框。
+   */
+  protected async batch(enable: boolean): Promise<void> {
+    const ids = this.picked();
+    if (!ids.length) return;
+    const ask = this.i18n.t('admin.batch_confirm', {
+      count: ids.length,
+      action: this.i18n.t(enable ? 'admin.batch_enable' : 'admin.batch_disable'),
+    });
+    if (!confirm(ask)) return;
+    this.note.set('');
+    this.noteErr.set(false);
+    this.batching.set(true);
+    try {
+      const { message } = await this.api.envelope('POST', this.path + '/batch/status', {
+        ids,
+        status: enable ? 1 : 0,
+      });
+      this.note.set(message);
+      this.picked.set([]);
+      await this.load();
+    } catch (e) {
+      this.noteErr.set(true);
+      this.note.set(errText(e));
+    } finally {
+      this.batching.set(false);
     }
   }
 }

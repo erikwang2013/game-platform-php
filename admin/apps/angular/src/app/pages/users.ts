@@ -45,6 +45,12 @@ const USER_FIELDS: Field[] = [
         (keyup.enter)="search()"
       />
       <button class="btn" (click)="search()">{{ 'app.search' | t }}</button>
+      <!-- 只为「用户列表」导出：实名审核那一页是另一个 ID 空间的数据集，在这里导出会导错东西 -->
+      @if (tab() === 'list') {
+        <button class="btn" [disabled]="exporting()" (click)="exportUsers()">
+          {{ (exporting() ? 'app.exporting' : 'user.export_excel') | t }}
+        </button>
+      }
       <button class="btn" (click)="load()">{{ 'app.refresh' | t }}</button>
     </div>
 
@@ -118,8 +124,29 @@ export class Users extends CrudPage {
   ];
   protected readonly tab = signal('list');
   protected readonly detail = signal<Row | null>(null);
+  /** 导出中（按钮禁用 + 文案切换）。导出走 Api.download，不经过 rows/loading，不打断列表 */
+  protected readonly exporting = signal(false);
 
   protected readonly info = computed(() => kvOf(this.detail()));
+
+  /**
+   * 导出用户 Excel —— POST /export/users（ExportController::exportUsers，回 .xlsx 附件）。
+   *
+   * 不带条件：该端点只认 `status`，**不认列表页的搜索词**，一次最多 10000 条。
+   * 本页没有状态筛选，硬塞一个屏幕上不存在的 status 只会导出看不见的数据 —— 所以按钮
+   * 写「导出用户」而不是「导出当前筛选」，导的就是全量。
+   */
+  protected async exportUsers(): Promise<void> {
+    this.exporting.set(true);
+    this.error.set('');
+    try {
+      await this.api.download('POST', U + 'export/users');
+    } catch (e) {
+      this.error.set(errText(e));
+    } finally {
+      this.exporting.set(false);
+    }
+  }
 
   /** 只有平台用户标签页可写；实名审核是动作型（通过/驳回），动作在那条记录的抽屉里 */
   protected override crud(): Crud | null {

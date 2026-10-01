@@ -60,6 +60,7 @@ describe('风控页：行内动作与掩码端点', () => {
     actions(): Act[];
     run(row: Row, key: string): Promise<void>;
     detect(): Promise<void>;
+    graphClusters(): Promise<void>;
     confirmCluster(row: Row): Promise<void>;
     ipAct(key: string): Promise<void>;
     heads(): Record<string, string>;
@@ -151,6 +152,31 @@ describe('风控页：行内动作与掩码端点', () => {
       http.expectNone(() => true);
     });
 
+    /**
+     * 页头的「可疑设备关联簇」是**全局动作**（同 detect：没有行上下文），打的是图谱族另一个端点。
+     * 面板类型必须是 graphclusters 而不是 graph —— 两份响应形状不同，传错了 risk-graph 会按节点表去读
+     * device_clusters，画出一片空白。
+     */
+    it('设备关联簇：GET /risk/graph/clusters → 面板是 graphclusters（不是 graph）', async () => {
+      const p = build(() => new Risk()) as unknown as P;
+      await loadClusters(p, []);
+      const done = p.graphClusters();
+      const req = http.expectOne((r) => r.method === 'GET');
+      expect(url(req)).toBe('/admin/v1/risk/graph/clusters');
+      req.flush({
+        code: 0,
+        message: 'ok',
+        data: {
+          device_clusters: [{ fp_masked: 'abcd1234****', account_count: 3, members: [], last_seen_at: '' }],
+          link_type_stats: { same_device: 3 },
+        },
+      });
+      await done;
+      expect(p.panel()).toBe('graphclusters');
+      expect(t(p.panelTitle())).toContain('可疑设备关联簇');
+      http.expectNone(() => true); // 只读：不重取列表、不做任何写
+    });
+
     it('检测：候选进抽屉；确认只发 {type,fingerprint,name,user_count}（不发 member_ids）', async () => {
       const p = build(() => new Risk()) as unknown as P;
       await loadClusters(p, []);
@@ -221,12 +247,32 @@ describe('风控页：行内动作与掩码端点', () => {
         'rv_whitelisted',
         'rv_closed',
         'rv_open',
+        // 只读详情常驻（没有状态可言 ⇒ 不做 when 过滤），排在四个状态按钮之后
+        'detail',
       ]);
       const shown = p
         .actions()
         .filter((a) => !a.when || a.when(p.rows()[0]!))
         .map((a) => t(a.label));
-      expect(shown).toEqual(['确认作弊', '白名单', '关闭']);
+      expect(shown).toEqual(['确认作弊', '白名单', '关闭', '事件详情']);
+    });
+
+    /**
+     * 详情是**只读**的：GET /anticheat/events/{hashid}，且不该顺带发审核 POST。
+     * 它比列表多一个 `user_trust`（信任分/档位/命中数只在详情里）⇒ 走结果抽屉的原始响应。
+     */
+    it('事件详情：GET /anticheat/events/{hashid} → 结果进抽屉，不发写请求', async () => {
+      const p = build(() => new Risk()) as unknown as P;
+      await loadAc(p);
+      const done = p.run(p.rows()[0]!, 'detail');
+      const req = http.expectOne(
+        (r) => r.method === 'GET' && url(r) === '/admin/v1/anticheat/events/AC1',
+      );
+      const data = { id: 'AC1', evidence: { win_rate: 0.97 }, user_trust: { score: 30 } };
+      req.flush({ code: 0, message: 'ok', data });
+      await done;
+      expect(p.panel()).toBe('result');
+      expect(p.result()).toEqual(data);
     });
 
     it('加白：先收 note（Apidoc 要求）→ POST review {status,note}', async () => {

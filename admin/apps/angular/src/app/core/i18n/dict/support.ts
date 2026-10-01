@@ -50,4 +50,6 @@ export const SUPPORT: Record<string, [string, string]> = {
   // ---- 报表标签页 ----
   'report.tab': ['Reports', '报表'],
   'report.raw_title': ['Raw report summary response', '报表汇总原始响应'],
+  /** 导出报表（GET /report/export?format=xlsx）—— format 缺省那支回的是 CSV，这里显式要 xlsx */
+  'report.export': ['Export report (.xlsx)', '导出报表 (.xlsx)'],
 };

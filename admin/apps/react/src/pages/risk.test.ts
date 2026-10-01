@@ -178,7 +178,8 @@ test('风控用户：hashid 在 user_id 列、冻结无请求体、解冻金额�
 
   const endpoints: [string, string][] = [
     ...(crud.actions ?? []).map((action) => [action.method ?? 'POST', action.path('{hashid}')] as [string, string]),
-    ...(crud.views ?? []).map((view) => ['GET', view.path('{hashid}')] as [string, string]),
+    // 时间线视图：段名是 {hashid}（route.php 里就这么写的）——见下面图谱那条的说明
+    ['GET', crud.views![0].path('{hashid}')],
   ];
   assert.deepEqual(endpoints, [
     ['POST', '/admin/v1/risk/users/{hashid}/hold'],
@@ -188,6 +189,15 @@ test('风控用户：hashid 在 user_id 列、冻结无请求体、解冻金额�
   for (const [method, path] of endpoints) {
     assert.ok(hasRoute(method, path), `路由表里没有 ${method} ${path}`);
   }
+
+  // 关联图谱视图（本批新增）：**必须**是 /risk/graph/{userId} 这条，别写成同名的 /risk/clusters
+  // （后者是已确认团伙的 CRUD，收的是团伙 id，拿用户 hashid 去查是另一个资源）。
+  // ⚠ 段名照 route.php 逐字写：`hasRoute` 比的是**字面串**（`Route::get('/risk/graph/{userId}'`），
+  // 拿 {hashid} 去比会假报「路由表里没有」—— 占位符名不参与服务端匹配，但参与这条断言。
+  const graph = (crud.views ?? []).find((view) => view.label === 'f.risk_graph');
+  assert.ok(graph, '风控用户少了「关联图谱」视图');
+  assert.equal(graph.path('{userId}'), '/admin/v1/risk/graph/{userId}');
+  assert.ok(hasRoute('GET', '/admin/v1/risk/graph/{userId}'), '路由表里没有 GET /risk/graph/{userId}');
 
   const row = { user_id: 'Uk9hashid', username: 'alice', score: 40, band: 'watch' };
   const hold = actionOf(crud, 'f.freeze', 'Freeze');

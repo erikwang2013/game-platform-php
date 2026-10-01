@@ -62,14 +62,57 @@
             </div>
           }
         </div>
-        <span class="who">{{
-          user()?.real_name || user()?.username || ('app.not_logged_in' | t)
-        }}</span>
-        <button class="btn" (click)="logout()">{{ 'app.logout' | t }}</button>
+        <!-- 账号菜单：个人资料 / 修改密码 / 退出。同语言菜单的「遮罩压在面板下」结构 -->
+        <div class="umenu">
+          @if (userOpen()) {
+            <div class="lang-catch" (click)="userOpen.set(false)"></div>
+          }
+          <button
+            class="btn who"
+            type="button"
+            [attr.aria-expanded]="userOpen()"
+            (click)="userOpen.set(!userOpen())"
+          >
+            {{ user()?.real_name || user()?.username || ('app.not_logged_in' | t) }} ▾
+          </button>
+          @if (userOpen()) {
+            <div class="umenu-panel" role="menu">
+              <button type="button" role="menuitem" (click)="openProfile('profile')">
+                {{ 'profile.tab_profile' | t }}
+              </button>
+              <button type="button" role="menuitem" (click)="openProfile('password')">
+                {{ 'profile.tab_password' | t }}
+              </button>
+              <button type="button" role="menuitem" (click)="logout()">
+                {{ 'app.logout' | t }}
+              </button>
+            </div>
+          }
+        </div>
       </div>
     </header>
+    @if (note()) {
+      <div class="notice shell-note">{{ note() }}</div>
+    }
     <main class="content"><router-outlet /></main>
   </div>
 } @else {
   <router-outlet />
+}
+
+<!-- 个人中心弹框：改资料与改密码共用（字段集与端点由 profileMode 决定）。.modal 是 fixed 定位，
+     挂在外壳 @if 之外也能正常盖住内容区。
+     @defer：ui-form 是一整套字段渲染器，外壳是**首屏**代码 —— 为了一个「点了才开」的弹框把它
+     塞进 initial bundle 不划算。首次点开时按需下载（本地/内网都是一次请求，之后走缓存）。 -->
+@defer (when profileOpen()) {
+  <ui-form
+    [open]="profileOpen()"
+    [title]="profileTitle()"
+    [fields]="profileFields()"
+    [value]="profileValue()"
+    [error]="profileError()"
+    [saving]="profileSaving()"
+    (save)="submitProfile($event)"
+    (close)="closeProfile()"
+  />
 }

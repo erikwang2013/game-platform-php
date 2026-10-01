@@ -1,9 +1,9 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { Component, computed, input, output, signal } from '@angular/core';
 import { Row } from '../core/api.service';
-import { T, colKey, t } from '../core/i18n/i18n';
+import { T } from '../core/i18n/i18n';
 import { idOf } from '../core/render';
-import { dash, num } from '../core/util';
+import { colsOf, dash, num } from '../core/util';
 
 export interface Act {
   key: string;
@@ -30,8 +30,11 @@ export interface Act {
       <table class="data">
         <thead>
           <tr>
-            @for (c of cols(); track c) {
-              <th>{{ head(c) }}</th>
+            @if (selectable()) {
+              <th class="pick">{{ 'table.pick' | t }}</th>
+            }
+            @for (c of cols(); track c.key) {
+              <th>{{ c.label }}</th>
             }
             @if (actions().length) {
               <th>{{ 'table.actions' | t }}</th>
@@ -41,9 +44,21 @@ export interface Act {
         <tbody>
           @for (r of view(); track $index) {
             <tr [class.clickable]="clickable()" (click)="pick.emit(r.row)">
-              @for (c of cols(); track c) {
-                <td [class.num]="isNum(r.row[c])">
-                  @if (c === treeKey()) {
+              @if (selectable()) {
+                <td class="pick">
+                  <input
+                    type="checkbox"
+                    [attr.aria-label]="'table.pick' | t"
+                    [checked]="checked().includes(idOf(r.row))"
+                    [disabled]="!can(r.row)"
+                    (click)="$event.stopPropagation()"
+                    (change)="hit(r.row)"
+                  />
+                </td>
+              }
+              @for (c of cols(); track c.key) {
+                <td [class.num]="isNum(r.row[c.key])">
+                  @if (c.key === treeKey()) {
                     <span class="tree-cell" [style.paddingLeft.px]="r.depth * 18">
                       <!-- 箭头对整行可见（有子节点就画），但折叠只藏子树、不藏自己 —— 还能再展开 -->
                       @if (r.kids) {
@@ -51,10 +66,10 @@ export interface Act {
                           {{ folded().has(idOf(r.row)) ? '▶' : '▼' }}
                         </button>
                       }
-                      {{ dash(r.row[c]) }}
+                      {{ dash(r.row[c.key]) }}
                     </span>
                   } @else {
-                    {{ dash(r.row[c]) }}
+                    {{ dash(r.row[c.key]) }}
                   }
                 </td>
               }
@@ -70,7 +85,10 @@ export interface Act {
             </tr>
           } @empty {
             <tr>
-              <td class="state" [attr.colspan]="cols().length + (actions().length ? 1 : 0)">
+              <td
+                class="state"
+                [attr.colspan]="cols().length + (actions().length ? 1 : 0) + (selectable() ? 1 : 0)"
+              >
                 {{ 'app.no_data' | t }}
               </td>
             </tr>
@@ -96,6 +114,19 @@ export class Table {
   readonly pick = output<Row>();
   readonly act = output<{ row: Row; key: string }>();
 
+  /**
+   * 勾选列（表格级批量动作的入参）。缺省 false：绝大多数页没有批量端点，不摆复选框。
+   * 勾选态由**父组件受控**（`checked` 进、`picked` 出）—— 批量提交成功后要清空勾选，
+   * 状态藏在表里的话父组件清不掉，界面上会留着一排已勾但已生效的框。
+   */
+  readonly selectable = input(false);
+  /** 已勾选的 id（`idOf(row)`）。父组件持有，清空即全部取消勾选 */
+  readonly checked = input<readonly string[]>([]);
+  /** 这一行能不能被勾选（缺省全部可勾）。管理员页拿它挡「批量停用自己」 */
+  readonly pickable = input<(row: Row) => boolean>(() => true);
+
+  readonly picked = output<string[]>();
+
   /** 模板作用域只认类成员，模块级 import 不可见 */
   protected readonly dash = dash;
   protected readonly idOf = idOf;
@@ -103,15 +134,7 @@ export class Table {
   /** 折叠的节点 id（缺省全展开） */
   protected readonly folded = signal<ReadonlySet<string>>(new Set());
 
-  protected readonly cols = computed(() => {
-    const keys = Object.keys(this.heads());
-    if (keys.length) return keys;
-    const out: string[] = [];
-    for (const r of this.rows().slice(0, 20)) {
-      for (const k of Object.keys(r)) if (!out.includes(k)) out.push(k);
-    }
-    return out.slice(0, 10); // ponytail: 自动列最多 10 列，超出靠 heads 显式指定
-  });
+  protected readonly cols = computed(() => colsOf(this.heads(), this.rows()));
 
   /**
    * 实际渲染的行。非树形表就是原样一行不多、一行不少（depth 缺省 0 ⇒ kids 恒 false）。
@@ -146,14 +169,24 @@ export class Table {
     });
   }
 
-  protected head(c: string): string {
-    // 顺序：页面声明的 heads → 共享的 col.<字段名> → 字段名本身。
-    // 最后那级是刻意的：宁可露 `real_name`，也不许凭空拼一个查不到的键（会显示 col.xxx）
-    return t(this.heads()[c] ?? colKey(c) ?? c);
-  }
-
   protected isNum(v: unknown): boolean {
     return typeof v === 'number';
+  }
+
+  /** 该行是否可勾选（无 id 的行勾不了：提交的是 id 数组，勾了也发不出去） */
+  protected can(row: Row): boolean {
+    return !!idOf(row) && this.pickable()(row);
+  }
+
+  /** 勾/取消勾：值在集合里就删，否则加（顺序即勾选顺序） */
+  protected hit(row: Row): void {
+    const id = idOf(row);
+    if (!id || !this.can(row)) return;
+    const next = this.checked().slice();
+    const at = next.indexOf(id);
+    if (at >= 0) next.splice(at, 1);
+    else next.push(id);
+    this.picked.emit(next);
   }
 
   /** 该行实际出哪些动作（act.when 缺省即恒出） */

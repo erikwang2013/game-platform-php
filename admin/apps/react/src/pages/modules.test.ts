@@ -210,6 +210,20 @@ test('提现订单：动作按行状态过滤，不摆点了必然 422 的按钮
   assert.equal(shows('f.reject', { status: 'pending', reviewer_id: 7 }), true);
 });
 
+test('提现凭证 PDF：入参形状对后端的 validator，且必须标 download', () => {
+  const action = (WITHDRAW_ORDER_CRUD.actions ?? []).find((item) => item.label === 'f.receipt');
+  assert.ok(action, '提现订单少了「凭证」动作');
+  assert.equal(action.method ?? 'POST', 'POST');
+  assert.ok(hasRoute('POST', '/admin/v1/export/receipt'), '路由表里没有 POST /export/receipt');
+  // 后端 validator：type 必须 in:deposit,withdraw；order_id 是行 hashid（服务端再 decodeId）
+  assert.deepEqual(action.body?.('Xk9'), { type: 'withdraw', order_id: 'Xk9' });
+  // 关键的一条：不标 download 就会走 apiEnvelope 去 JSON 解析一个 PDF —— 存下来的文件是坏的，
+  // 而且不报错（失败路径才回信封）。这条断言就是那个静默缺陷的护栏。
+  assert.equal(typeof action.download, 'string', '凭证是文件响应，必须标 download');
+  // 平台用户导出：页面级按钮（端点不收行 id），路径同样先对路由表
+  assert.ok(hasRoute('POST', '/admin/v1/export/users'), '路由表里没有 POST /export/users');
+});
+
 test('阶梯限额：预置档位只有 PUT ⇒ 无「+ 新建」；没有删除端点 ⇒ 无 labelKey', () => {
   assert.equal(WITHDRAW_LIMIT_CRUD.createPath, null);
   assert.equal(WITHDRAW_LIMIT_CRUD.labelKey, undefined);

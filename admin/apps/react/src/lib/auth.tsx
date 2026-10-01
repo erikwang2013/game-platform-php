@@ -16,6 +16,11 @@ type AuthValue = {
   user: AdminUser | null;
   login: (username: string, password: string, captchaKey: string, clicks: Click[]) => Promise<void>;
   logout: () => void;
+  /**
+   * 改完资料后把会话里的用户信息刷新一遍（给「我的账号」用）。给了 patch 就先落盘再重读 ——
+   * 侧栏与顶栏读的是同一处上下文，故不用重登录就能看到新名字。
+   */
+  refreshUser: (patch?: Partial<AdminUser>) => void;
 };
 
 const AuthContext = createContext<AuthValue | null>(null);
@@ -41,7 +46,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
-  const value = useMemo<AuthValue>(() => ({ user, login, logout }), [user, login, logout]);
+  const refreshUser = useCallback((patch?: Partial<AdminUser>) => {
+    if (patch) session.updateUser(patch);
+    setUser(session.user);
+  }, []);
+
+  const value = useMemo<AuthValue>(() => ({ user, login, logout, refreshUser }), [user, login, logout, refreshUser]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

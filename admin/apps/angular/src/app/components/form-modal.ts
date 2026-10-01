@@ -33,7 +33,11 @@ import { TreeSelect } from './tree-select';
           }
           <div class="form-grid">
             @for (f of fields(); track f.name) {
-              <div [class.full]="f.full || f.type === 'textarea' || f.type === 'image'">
+              <div
+                [class.full]="
+                  f.full || f.type === 'textarea' || f.type === 'image' || f.type === 'file'
+                "
+              >
                 <label>
                   {{ f.label | t }}
                   @if (f.required) {
@@ -129,6 +133,32 @@ import { TreeSelect } from './tree-select';
                       <img class="thumb" [src]="url" alt="" />
                     }
                   }
+                  @case ('file') {
+                    <!-- 本地文件（Excel 导入）：文件名摆在**只读**文本框里 —— 手输一个名字是拿不到
+                         文件的，提交时服务端只会收到一段文本。选择器隐藏、由按钮代点（同 image 字段）。
+                         ⚠ 这个 file 输入**带 name**（值是 File 本体，fire() 从原生表单读它）；
+                         image 那个不带（它上传完只把 URL 回写进文本框），别照抄成一样的。 -->
+                    <div class="img-row">
+                      <input
+                        #box
+                        class="input"
+                        type="text"
+                        readonly
+                        [placeholder]="'form.no_file_chosen' | t"
+                      />
+                      <button type="button" class="btn" (click)="picker.click()">
+                        {{ 'form.choose_file' | t }}
+                      </button>
+                      <input
+                        #picker
+                        type="file"
+                        hidden
+                        [attr.name]="f.name"
+                        [accept]="f.accept"
+                        (change)="choose($event, box)"
+                      />
+                    </div>
+                  }
                   @case ('number') {
                     <input
                       class="input"
@@ -136,6 +166,16 @@ import { TreeSelect } from './tree-select';
                       [attr.name]="f.name"
                       [placeholder]="(f.placeholder || '') | t"
                       [value]="text(f.name)"
+                    />
+                  }
+                  @case ('password') {
+                    <!-- 密码框不给 [value] 预填：预填一个密码进 DOM 等于把它写在了页面上 -->
+                    <input
+                      class="input"
+                      type="password"
+                      autocomplete="new-password"
+                      [attr.name]="f.name"
+                      [placeholder]="(f.placeholder || '') | t"
                     />
                   }
                   @default {
@@ -233,6 +273,18 @@ export class FormModal {
     }
   }
 
+  /**
+   * file 字段专用：只把**文件名**写回只读框；`File` 本体**留在 input 里**（`fire()` 从原生表单读它）。
+   *
+   * ⚠ 刻意**不**清 `input.value`（上面 `pick()` 必须清）：清空会把 `files` 一起清掉，
+   * 提交时就没有文件可发了。代价是「再选一次同一个文件」不触发 change —— 无害：
+   * 框里显示的与待提交的仍然是那一个文件。
+   */
+  protected choose(ev: Event, box: HTMLInputElement): void {
+    const file = (ev.target as HTMLInputElement).files?.[0];
+    if (file) box.value = file.name;
+  }
+
   /** 预填文本：JSON 列（config/benefits）读回来是数组/对象，要与 payload() 用同一个
    *  序列化器（render.json）才判得等 —— 否则每编辑一次都会把 JSON 原样回写一遍。 */
   protected text(name: string): string {
@@ -287,7 +339,10 @@ export class FormModal {
             : 0
           : f.type === 'multi' || f.type === 'tree'
             ? fd.getAll(f.name).map(String)
-            : String(fd.get(f.name) ?? '');
+            : f.type === 'file'
+              // file：**原样交出 `File` 本体**，绝不能 String() —— `[object File]` 会被当成文件名
+              ? (fd.get(f.name) ?? '')
+              : String(fd.get(f.name) ?? '');
     }
     this.save.emit(out);
   }

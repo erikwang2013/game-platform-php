@@ -64,4 +64,35 @@ export const ADMIN: Record<string, [string, string]> = {
   ],
   /** 列表里多个角色名的连接符：中文顿号，英文用逗号空格 */
   'admin.role_join': [', ', '、'],
+
+  // ---- 行选择 + 批量启停（POST /user/batch/status）+ 行点击详情（GET /user/{hashid}）----
+  /** 详情抽屉标题（与 react 的 `common.detail` 同词） */
+  'admin.detail': ['Details', '详情'],
+  /** 批量启停的两个按钮：计数就在旁边（admin.picked），故按钮名只说动作 */
+  'admin.batch_enable': ['Enable', '启用'],
+  'admin.batch_disable': ['Disable', '停用'],
+  /** 二次确认：`{action}` 是上面两个按钮名之一，`{count}` 是勾选数 */
+  'admin.batch_confirm': ['Apply "{action}" to the {count} selected admin accounts?', '对选中的 {count} 个后台账号执行「{action}」？'],
+
+  // ---- 个人中心（顶栏账号菜单；端点 PUT /profile、PUT /profile/password）----
+  // 与「管理员」页的区别：这里改的是**当前登录者自己**的账号，不需任何额外权限
+  'profile.tab_profile': ['Profile', '个人资料'],
+  'profile.tab_password': ['Change password', '修改密码'],
+  'profile.real_name': ['Real name', '真实姓名'],
+  'profile.phone': ['Phone', '手机号'],
+  'profile.email': ['Email', '邮箱'],
+  /** 没有 GET /profile ⇒ 手机号/邮箱读不回当前值，留空必须等于「不改」而不是「清空」 */
+  'profile.blank_keeps': [
+    'Leave blank to keep the current value',
+    '留空表示不修改（当前值不会回显）',
+  ],
+  'profile.old_password': ['Current password', '当前密码'],
+  'profile.new_password': ['New password', '新密码'],
+  /** 强度规则的真值在 ProfileController::updatePassword，这里只提示不拦 */
+  'profile.password_hint': [
+    '8-32 characters, with uppercase, lowercase letters and digits',
+    '8-32 位，需含大写字母、小写字母和数字',
+  ],
+  'profile.saved': ['Profile updated', '资料已更新'],
+  'profile.password_changed': ['Password changed', '密码已修改'],
 };

@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import type { ReactNode } from 'react';
 import { t, type MessageKey } from '../i18n/index.ts';
+import { cellText } from '../lib/pdf-table.ts';
 import { Empty, ErrorNote, Loading } from './ui';
 
 export type Row = Record<string, unknown>;
@@ -13,20 +14,16 @@ export type Column = {
 
 /** 任意值 → 可展示节点。未知结构降级为 "{…}" / "n 项" 而不是白屏。 */
 export function cell(value: unknown): ReactNode {
-  if (value === null || value === undefined || value === '') return '—';
-  if (typeof value === 'boolean') return value ? t('app.yes') : t('app.no');
-  if (typeof value === 'number' || typeof value === 'string') {
-    const text = String(value);
-    return text.length > 48 ? (
+  const text = cellText(value);
+  // 只有「标量且过长」才套省略号 span（其余分支本来就是纯文本，套了反而多一层节点）
+  if ((typeof value === 'string' || typeof value === 'number') && text.length > 48) {
+    return (
       <span className="ellip" title={text}>
         {text}
       </span>
-    ) : (
-      text
     );
   }
-  if (Array.isArray(value)) return value.length === 0 ? '—' : t('table.items', { count: value.length });
-  return '{…}';
+  return text;
 }
 
 export function DataTable({

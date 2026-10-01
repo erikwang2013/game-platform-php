@@ -2,6 +2,7 @@
 import { ADMIN } from './dict/admin';
 import { ANALYTICS } from './dict/analytics';
 import { COLUMNS } from './dict/columns';
+import { COMMUNITY } from './dict/community';
 import { CONTENT } from './dict/content';
 import { DASHBOARD } from './dict/dashboard';
 import { FINANCE } from './dict/finance';
@@ -38,6 +39,7 @@ const PARTS: Record<string, [string, string]>[] = [
   GAMES,
   MARKETING,
   COLUMNS,
+  COMMUNITY,
 ];
 
 const merged: Record<string, [string, string]> = {};
