@@ -31,14 +31,14 @@ class AdminAuth
         $token = str_replace('Bearer ', '', $token);
 
         if (empty($token)) {
-            return json(['code' => 401, 'message' => '未登录', 'data' => []]);
+            return json(['code' => 401, 'message' => trans('Not logged in'), 'data' => []]);
         }
 
         // 检查 JWT 黑名单
         $blacklistKey = 'jwt_blacklist:' . md5($token);
         try {
             if (Redis::get($blacklistKey)) {
-                return json(['code' => 401, 'message' => 'Token已失效，请重新登录', 'data' => []]);
+                return json(['code' => 401, 'message' => trans('Token is no longer valid, please log in again'), 'data' => []]);
             }
         } catch (\Throwable $e) {
             // Redis down, skip blacklist check
@@ -49,7 +49,7 @@ class AdminAuth
             $request->adminId = $payload['sub'] ?? 0;
             $request->adminUsername = $payload['username'] ?? '';
         } catch (JWTException | \Exception $e) {
-            return json(['code' => 401, 'message' => 'Token已过期或无效', 'data' => []]);
+            return json(['code' => 401, 'message' => trans('Token is expired or invalid'), 'data' => []]);
         }
 
         return $next($request);

@@ -98,7 +98,7 @@ class CouponController extends BaseController
 
         // 领券是发放权益的入口，刷券与脚本领取都从这进
         if (!$this->captchaOk($request)) {
-            return $this->fail('验证码错误，请重试', 422);
+            return $this->fail(trans('Incorrect captcha, please try again'), 422);
         }
 
         $couponId = $this->decodeId($request->input('coupon_id'));
@@ -107,20 +107,20 @@ class CouponController extends BaseController
 
         $coupon = Coupon::find($couponId);
         if (!$coupon) {
-            return $this->fail('优惠券不存在', 404);
+            return $this->fail(trans('Coupon not found'), 404);
         }
 
         // Check status
         if ((int) $coupon->status !== 1) {
-            return $this->fail('优惠券已禁用', 400);
+            return $this->fail(trans('Coupon is disabled'), 400);
         }
 
         // Check time range
         if ($coupon->start_at && $coupon->start_at > $now) {
-            return $this->fail('优惠券尚未开始', 400);
+            return $this->fail(trans('Coupon has not started yet'), 400);
         }
         if ($coupon->end_at && $coupon->end_at < $now) {
-            return $this->fail('优惠券已过期', 400);
+            return $this->fail(trans('Coupon has expired'), 400);
         }
 
         // Check conditions（与 available() 同一判据，$ctx 传 null = 单券现查）
@@ -137,7 +137,7 @@ class CouponController extends BaseController
         // 改法＝把计数挪进事务、先锁券行：同一张券的所有领取在此串行，
         // 「数我已领 → 落我的券行」中间不再有窗口，且不需要新唯一键。
         $userLimit = (int) $coupon->user_limit;
-        $failReason = '优惠券已被领完';
+        $failReason = trans('Coupon is fully claimed');
 
         $userCoupon = Db::transaction(function () use ($couponId, $userId, $userLimit, &$failReason) {
             // 锁券行（increment 的行锁要到下面才拿，撑不住上面那次计数判读）
@@ -148,7 +148,7 @@ class CouponController extends BaseController
                     ->where('coupon_id', $couponId)
                     ->count();
                 if ($claimed >= $userLimit) {
-                    $failReason = '您已达到该优惠券的领取上限';
+                    $failReason = trans('You have reached the claim limit for this coupon');
                     return null;
                 }
             }
@@ -190,7 +190,7 @@ class CouponController extends BaseController
         }
         $data['user_coupon_id'] = $this->encodeId($userCoupon->id);
 
-        return $this->success(['coupon' => $data], '领取成功');
+        return $this->success(['coupon' => $data], trans('Claimed successfully'));
     }
 
     #[Apidoc\Title("我的优惠券")]
@@ -252,7 +252,7 @@ class CouponController extends BaseController
                 ? $ctx['deposit_total']
                 : (DepositOrder::where('user_id', $userId)->where('status', 'confirmed')->sum('platform_amount') ?? '0'));
             if (bccomp($totalDeposit, $conditions['min_deposit'], 4) < 0) {
-                return 'Minimum deposit of ' . $conditions['min_deposit'] . ' not met';
+                return trans('Minimum deposit of %amount% not met', ['%amount%' => (string) $conditions['min_deposit']]);
             }
         }
         if (!empty($conditions['first_user_only']) && $conditions['first_user_only']) {

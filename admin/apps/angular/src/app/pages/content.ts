@@ -1,8 +1,9 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { Page, Row } from '../core/api.service';
 import { Crud, CrudPage, Field } from '../core/crud';
 import { idOf } from '../core/render';
+import { T } from '../core/i18n/i18n';
 import { Pager, StateBlock, Tabs } from '../components/ui';
 import { Table, type Act } from '../components/table';
 import { FormModal } from '../components/form-modal';
@@ -18,28 +19,45 @@ const R = '/admin/v1/';
  * 要改就按「2026-09-30 12:00:00」重填。
  */
 const ANN_FIELDS: Field[] = [
-  { name: 'title', label: '公告标题', type: 'text', required: true, placeholder: '最长 255' },
+  {
+    name: 'title',
+    label: 'announcement.field_title',
+    type: 'text',
+    required: true,
+    placeholder: 'announcement.title_hint',
+  },
   {
     name: 'type',
-    label: '公告类型',
+    label: 'announcement.type',
     type: 'select',
     keepIfEmpty: true,
+    // 值仍是库里的枚举原文（system/game/payment），只有文案可译
     options: [
-      { value: 'system', label: '系统' },
-      { value: 'game', label: '游戏' },
-      { value: 'payment', label: '支付' },
+      { value: 'system', label: 'announcement.type_system' },
+      { value: 'game', label: 'announcement.type_game' },
+      { value: 'payment', label: 'announcement.type_payment' },
     ],
   },
-  { name: 'status', label: '上架状态', type: 'switch' },
-  { name: 'target_lang', label: '目标语言', type: 'text', placeholder: '留空 = 全语言，最长 10' },
+  { name: 'status', label: 'announcement.status', type: 'switch' },
+  {
+    name: 'target_lang',
+    label: 'announcement.target_lang',
+    type: 'text',
+    placeholder: 'announcement.target_lang_hint',
+  },
   {
     name: 'start_at',
-    label: '生效时间',
+    label: 'announcement.start_at',
     type: 'text',
-    placeholder: '2026-09-30 12:00:00，留空 = 不限',
+    placeholder: 'announcement.start_hint',
   },
-  { name: 'end_at', label: '失效时间', type: 'text', placeholder: '不得早于生效时间' },
-  { name: 'content', label: '公告内容', type: 'textarea', required: true },
+  {
+    name: 'end_at',
+    label: 'announcement.end_at',
+    type: 'text',
+    placeholder: 'announcement.end_hint',
+  },
+  { name: 'content', label: 'announcement.content', type: 'textarea', required: true },
 ];
 
 /**
@@ -51,23 +69,40 @@ const ANN_FIELDS: Field[] = [
 const ACH_FIELDS: Field[] = [
   {
     name: 'key',
-    label: '成就标识',
+    label: 'achievement.key',
     type: 'text',
     required: true,
     createOnly: true,
-    placeholder: '小写字母/数字/_，最长 50',
+    placeholder: 'achievement.key_hint',
   },
-  { name: 'name', label: '成就名称', type: 'text', required: true, placeholder: '最长 100' },
-  { name: 'description', label: '成就描述', type: 'textarea', placeholder: '最长 500' },
-  { name: 'icon', label: '图标', type: 'image', placeholder: '图片 URL，最长 200' },
+  {
+    name: 'name',
+    label: 'achievement.name',
+    type: 'text',
+    required: true,
+    placeholder: 'achievement.name_hint',
+  },
+  {
+    name: 'description',
+    label: 'achievement.description',
+    type: 'textarea',
+    placeholder: 'achievement.description_hint',
+  },
+  { name: 'icon', label: 'achievement.icon', type: 'image', placeholder: 'achievement.icon_hint' },
   {
     name: 'condition_json',
-    label: '达成条件（JSON）',
+    label: 'achievement.condition',
     type: 'textarea',
     required: true,
-    placeholder: '{"event":"game.played","metric":"count","threshold":10}',
+    placeholder: 'achievement.condition_hint',
   },
-  { name: 'points', label: '奖励积分', type: 'number', required: true, placeholder: '≥ 0 的整数' },
+  {
+    name: 'points',
+    label: 'achievement.points',
+    type: 'number',
+    required: true,
+    placeholder: 'achievement.points_hint',
+  },
 ];
 
 /**
@@ -85,44 +120,66 @@ const ACH_FIELDS: Field[] = [
 const ACT_FIELDS: Field[] = [
   {
     name: 'type',
-    label: '活动类型',
+    label: 'activity.type',
     type: 'select',
     required: true,
     createOnly: true,
     options: [
-      { value: 'signin', label: '签到' },
-      { value: 'daily_task', label: '每日任务' },
-      { value: 'invite', label: '邀请' },
+      { value: 'signin', label: 'activity.type_signin' },
+      { value: 'daily_task', label: 'activity.type_daily_task' },
+      { value: 'invite', label: 'activity.type_invite' },
     ],
   },
-  { name: 'name', label: '活动名称', type: 'text', required: true, placeholder: '最长 100' },
+  {
+    name: 'name',
+    label: 'activity.name',
+    type: 'text',
+    required: true,
+    placeholder: 'activity.name_hint',
+  },
   {
     name: 'game_id',
-    label: '关联游戏 ID（数字，0 = 全平台）',
+    label: 'activity.game_id',
     type: 'text',
-    placeholder: '数据库原始 ID（不是 hashid）',
+    placeholder: 'activity.game_id_hint',
   },
   {
     name: 'config',
-    label: '活动配置（JSON，按类型校验）',
+    label: 'activity.config',
     type: 'textarea',
     keepIfEmpty: true,
-    placeholder: '留空 = 用该类型的默认配置',
+    placeholder: 'activity.config_hint',
   },
   {
     name: 'status',
-    label: '活动状态',
+    label: 'activity.status',
     type: 'select',
     required: true,
+    // 三值（0 禁用 / 1 启用 / 2 已结束）：0/1 翻转控件表达不了「已结束」⇒ 用 select
     options: [
-      { value: '0', label: '禁用' },
-      { value: '1', label: '启用' },
-      { value: '2', label: '已结束' },
+      { value: '0', label: 'activity.status_disabled' },
+      { value: '1', label: 'activity.status_enabled' },
+      { value: '2', label: 'activity.status_ended' },
     ],
   },
-  { name: 'start_at', label: '生效时间', type: 'text', placeholder: '2026-09-30 12:00:00，留空 = 不限' },
-  { name: 'end_at', label: '失效时间', type: 'text', placeholder: '不得早于生效时间' },
-  { name: 'rollout_percent', label: '灰度比例（%）', type: 'number', placeholder: '0-100，留空 = 100' },
+  {
+    name: 'start_at',
+    label: 'activity.start_at',
+    type: 'text',
+    placeholder: 'activity.time_hint',
+  },
+  {
+    name: 'end_at',
+    label: 'activity.end_at',
+    type: 'text',
+    placeholder: 'activity.end_hint',
+  },
+  {
+    name: 'rollout_percent',
+    label: 'activity.rollout_percent',
+    type: 'number',
+    placeholder: 'activity.rollout_hint',
+  },
 ];
 
 /**
@@ -133,61 +190,78 @@ const ACT_FIELDS: Field[] = [
  * 「刷新缓存」是本模块独有的动作，走 crud().extra + extra()（基类的编辑/删除/启停之外）。
  */
 const LB_FIELDS: Field[] = [
-  { name: 'name', label: '排行榜名称', type: 'text', required: true, placeholder: '最长 100' },
+  {
+    name: 'name',
+    label: 'leaderboard.name',
+    type: 'text',
+    required: true,
+    placeholder: 'leaderboard.name_hint',
+  },
   {
     name: 'type',
-    label: '榜单周期',
+    label: 'leaderboard.type',
     type: 'select',
     required: true,
     options: [
-      { value: 'daily', label: '日榜' },
-      { value: 'weekly', label: '周榜' },
-      { value: 'monthly', label: '月榜' },
-      { value: 'alltime', label: '总榜' },
+      { value: 'daily', label: 'leaderboard.type_daily' },
+      { value: 'weekly', label: 'leaderboard.type_weekly' },
+      { value: 'monthly', label: 'leaderboard.type_monthly' },
+      { value: 'alltime', label: 'leaderboard.type_alltime' },
     ],
   },
   {
     name: 'metric',
-    label: '排行指标',
+    label: 'leaderboard.metric',
     type: 'select',
     required: true,
     options: [
-      { value: 'earned', label: '累计获得' },
-      { value: 'spent', label: '累计消耗' },
-      { value: 'play_count', label: '游戏次数' },
+      { value: 'earned', label: 'leaderboard.metric_earned' },
+      { value: 'spent', label: 'leaderboard.metric_spent' },
+      { value: 'play_count', label: 'leaderboard.metric_play_count' },
     ],
   },
   {
     name: 'game_id',
-    label: '关联游戏',
+    label: 'leaderboard.game_id',
     type: 'text',
     createOnly: true,
-    placeholder: '游戏 hashid，留空 = 全平台',
+    placeholder: 'leaderboard.game_id_hint',
   },
-  { name: 'rule', label: '排行规则（JSON）', type: 'textarea', keepIfEmpty: true, placeholder: '可选' },
-  { name: 'status', label: '启用状态', type: 'switch' },
-  { name: 'sort', label: '排序', type: 'number', placeholder: '数字越小越靠前' },
+  {
+    name: 'rule',
+    label: 'leaderboard.rule',
+    type: 'textarea',
+    keepIfEmpty: true,
+    placeholder: 'leaderboard.rule_hint',
+  },
+  { name: 'status', label: 'leaderboard.status', type: 'switch' },
+  {
+    name: 'sort',
+    label: 'leaderboard.sort',
+    type: 'number',
+    placeholder: 'leaderboard.sort_hint',
+  },
 ];
 
 @Component({
   selector: 'app-content',
-  imports: [StateBlock, Table, Pager, Tabs, FormModal],
+  imports: [StateBlock, Table, Pager, Tabs, FormModal, T],
   template: `
     <div class="page-head">
-      <h1>内容运营</h1>
-      <span class="sub">成就 / 活动 / 公告 / 排行榜</span>
+      <h1>{{ 'content.title' | t }}</h1>
+      <span class="sub">{{ 'content.subtitle' | t }}</span>
       <div class="spacer"></div>
       <input
         class="input"
-        placeholder="名称 / ID"
+        [placeholder]="'content.search_hint' | t"
         [value]="keyword()"
         (input)="keyword.set($any($event.target).value)"
         (keyup.enter)="search()"
       />
-      <button class="btn" (click)="search()">查询</button>
-      <button class="btn" (click)="load()">刷新</button>
+      <button class="btn" (click)="search()">{{ 'app.search' | t }}</button>
+      <button class="btn" (click)="load()">{{ 'app.refresh' | t }}</button>
       @if (writable()) {
-        <button class="btn btn-primary" (click)="openCreate()">+ 新建</button>
+        <button class="btn btn-primary" (click)="openCreate()">+ {{ 'app.create' | t }}</button>
       }
     </div>
 
@@ -201,7 +275,7 @@ const LB_FIELDS: Field[] = [
       </div>
     </ui-state>
 
-    @if (rows().length) {
+    @if (paged() && rows().length) {
       <ui-pager [page]="page()" [pages]="pages" [total]="total()" (jump)="go($event)" />
     }
 
@@ -219,12 +293,19 @@ const LB_FIELDS: Field[] = [
 })
 export class Content extends CrudPage {
   protected readonly tabs = [
-    { key: 'achievement', label: '成就' },
-    { key: 'activities', label: '活动' },
-    { key: 'announcement', label: '公告' },
-    { key: 'leaderboard', label: '排行榜' },
+    { key: 'achievement', label: 'achievement.title' },
+    { key: 'activities', label: 'activity.title' },
+    { key: 'announcement', label: 'announcement.title' },
+    { key: 'leaderboard', label: 'leaderboard.title' },
   ];
   protected readonly tab = signal('achievement');
+
+  /**
+   * 分页器只在真分页的端点下出现。成就走 /achievement/list —— `Achievement::orderBy('id')->get()`
+   * 一次返回**整表**且响应里没有 total（api.list 只能拿 list.length 顶数）⇒ 挂上分页器就是撒谎：
+   * 第 2 页点进去还是同一批数据。活动 / 公告 / 排行榜三个端点都是 page+limit 真分页。
+   */
+  protected readonly paged = computed(() => this.tab() !== 'achievement');
 
   private readonly paths: Record<string, string> = {
     achievement: R + 'achievement/list',
@@ -239,15 +320,25 @@ export class Content extends CrudPage {
       string,
       { noun: string; fields: Field[]; statused?: boolean; toggle?: string; extra?: Act[] }
     > = {
-      achievement: { noun: '成就', fields: ACH_FIELDS, statused: true, toggle: R + 'achievement/toggle' },
+      achievement: {
+        noun: 'achievement.noun',
+        fields: ACH_FIELDS,
+        statused: true,
+        toggle: R + 'achievement/toggle',
+      },
       // 活动的 status 有 0/1/2 三值，基类的 0/1 翻转表达不了「已结束」⇒ 只在表单里改
-      activities: { noun: '活动', fields: ACT_FIELDS },
-      announcement: { noun: '公告', fields: ANN_FIELDS, statused: true, toggle: R + 'announcement/toggle' },
+      activities: { noun: 'activity.noun', fields: ACT_FIELDS },
+      announcement: {
+        noun: 'announcement.noun',
+        fields: ANN_FIELDS,
+        statused: true,
+        toggle: R + 'announcement/toggle',
+      },
       leaderboard: {
-        noun: '排行榜',
+        noun: 'leaderboard.noun',
         fields: LB_FIELDS,
         statused: true,
-        extra: [{ key: 'refresh', label: '刷新缓存' }],
+        extra: [{ key: 'refresh', label: 'leaderboard.refresh' }],
       },
     };
     const spec = specs[tab];

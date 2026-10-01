@@ -44,7 +44,7 @@ trait WithdrawReviewTrait
 
         $orderId = $this->decodeId($request->input('order_id'));
         if (!WithdrawOrder::find($orderId)) {
-            return $this->fail('订单不存在', 404);
+            return $this->fail(trans('Order not found'), 404);
         }
 
         $action = $request->input('action');
@@ -55,7 +55,7 @@ trait WithdrawReviewTrait
 
         if ($action === 'confirm') {
             if (!$dualOn) {
-                return $this->fail('双重审核未启用', 422);
+                return $this->fail(trans('Dual review is not enabled'), 422);
             }
             $payload = [
                 'status'       => 'approved',
@@ -91,7 +91,7 @@ trait WithdrawReviewTrait
                 })
                 ->update($payload);
             if (!$flipped) {
-                return $this->fail('无法确认：需另一管理员复核，或订单状态不符', 422);
+                return $this->fail(trans('Cannot confirm: another administrator must review, or the order status does not match'), 422);
             }
 
             $order = WithdrawOrder::find($orderId);
@@ -103,7 +103,7 @@ trait WithdrawReviewTrait
                 'withdraw',
                 $order->id
             );
-            return $this->success([], '二次确认通过');
+            return $this->success([], trans('Dual confirmation passed'));
         }
 
         if ($action === 'approve') {
@@ -120,9 +120,9 @@ trait WithdrawReviewTrait
                         'reviewed_at' => date('Y-m-d H:i:s'),
                     ]);
                 if (!$flipped) {
-                    return $this->fail('该订单已处理或已有第一审核人', 422);
+                    return $this->fail(trans('This order is already processed or already has a first reviewer'), 422);
                 }
-                return $this->success([], '初审通过，等待另一管理员确认');
+                return $this->success([], trans('First review passed, awaiting confirmation from another administrator'));
             }
 
             // 原子状态翻转：仅 pending 可处理，防止并发双击重复审核
@@ -135,7 +135,7 @@ trait WithdrawReviewTrait
                     'reviewed_at' => date('Y-m-d H:i:s'),
                 ]);
             if (!$flipped) {
-                return $this->fail('该订单已处理', 422);
+                return $this->fail(trans('This order is already processed'), 422);
             }
 
             $order = WithdrawOrder::find($orderId);
@@ -148,7 +148,7 @@ trait WithdrawReviewTrait
                 $order->id
             );
 
-            return $this->success([], '审核通过');
+            return $this->success([], trans('Approved'));
         }
 
         // reject: 状态翻转 + 退款 + 流水同一事务，失败整体回滚，订单保持 pending 可重试
@@ -185,14 +185,14 @@ trait WithdrawReviewTrait
                 $transaction->remark        = '提现驳回退款';
                 $transaction->save();
 
-                return $this->success([], '已驳回并退款');
+                return $this->success([], trans('Rejected and refunded'));
             });
         } catch (\Throwable $e) {
             if (WithdrawOrder::where('id', $orderId)->value('status') !== 'pending') {
-                return $this->fail('该订单已处理', 422);
+                return $this->fail(trans('This order is already processed'), 422);
             }
             Log::error('Withdraw review refund failed: ' . $e->getMessage());
-            return $this->fail('退款失败，请重试', 500);
+            return $this->fail(trans('Refund failed, please try again'), 500);
         }
     }
 
@@ -292,6 +292,9 @@ trait WithdrawReviewTrait
             }
         }
 
-        return $this->success(['processed' => $successCount, 'failed' => $failedIds], "批量处理完成: {$successCount} 笔" . ($failedIds ? ", 失败 " . count($failedIds) . " 笔" : ''));
+        $message = $failedIds
+            ? trans('Batch review completed: %ok% processed, %failed% failed', ['%ok%' => (string) $successCount, '%failed%' => (string) count($failedIds)])
+            : trans('Batch review completed: %ok% processed', ['%ok%' => (string) $successCount]);
+        return $this->success(['processed' => $successCount, 'failed' => $failedIds], $message);
     }
 }

@@ -6,6 +6,7 @@ import http from '@ohos.net.http';
 import { ApiResponse } from '../model/DataModels';
 import { TokenManager } from '../utils/TokenManager';
 import { API_BASE_URL } from '../common/AppConfig';
+import { LocaleController } from '../i18n/LocaleController';
 
 /**
  * 只用来探 `body.code`：信封端点（标准控制器）与裸 result 端点（aetherupload 插件）共用一条 401 判定
@@ -45,6 +46,11 @@ export class ApiService {
       header['Content-Type'] = 'application/json';
     }
     header['X-Client-Platform'] = 'harmonyos';
+    // 语言必须先于业务请求发出去：后端 `LanguageMiddleware` 按 `X-Language` → `Accept-Language`
+    // → 默认(zh) 决定 `trans()` 用哪张表。**不发这个头，界面切到日语也只是客户端文案变，
+    // 服务端 message 永远是中文** —— 「支持 13 种语言」只落一半。
+    // 值用短码（后端 `common\Locale::normalize()` 认短码与 `zh-CN` 全码）。
+    header['X-Language'] = LocaleController.currentCode;
     header['Authorization'] = (token && token.length > 0) ? `Bearer ${token}` : '';
 
     const options: http.HttpRequestOptions = {
@@ -139,7 +145,8 @@ export class ApiService {
           method: http.RequestMethod.POST,
           header: {
             'Content-Type': 'application/json',
-
+            // 刷新绕过了 send()，语言头得单独补：/auth/refresh 的失败 message 也走 trans()
+            'X-Language': LocaleController.currentCode,
           },
           extraData: JSON.stringify({ refresh_token: refreshToken }),
           connectTimeout: 10000,

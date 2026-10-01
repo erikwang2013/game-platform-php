@@ -45,12 +45,12 @@ class WebhookController extends BaseController
     {
         $url = $request->input('url', '');
         $events = $request->input('events', []);
-        if (!self::isSafeWebhookUrl($url)) return $this->fail('Invalid URL: 仅支持 https 公网地址', 422);
-        if (empty($events) || !is_array($events)) return $this->fail('Events required', 422);
+        if (!self::isSafeWebhookUrl($url)) return $this->fail(trans('Invalid URL: only public https addresses are supported'), 422);
+        if (empty($events) || !is_array($events)) return $this->fail(trans('Events required'), 422);
 
         $allowedEvents = ['deposit.completed', 'withdraw.completed', 'exchange.completed', 'game.played', 'user.registered', 'risk.alert', 'user.vip_upgraded'];
         $filtered = array_intersect($events, $allowedEvents);
-        if (empty($filtered)) return $this->fail('No valid events', 422);
+        if (empty($filtered)) return $this->fail(trans('No valid events'), 422);
 
         $hookId = bin2hex(random_bytes(16));
         $config = ['id' => $hookId, 'url' => $url, 'events' => $filtered, 'created_at' => date('Y-m-d H:i:s')];
@@ -68,14 +68,14 @@ class WebhookController extends BaseController
     public function delete(Request $request): Response
     {
         $hookId = $request->input('id', '');
-        if (empty($hookId)) return $this->fail('id required', 422);
+        if (empty($hookId)) return $this->fail(trans('id required'), 422);
 
         $key = $request->userId . '_' . $hookId;
         $config = PlatformConfig::where('group', $this->configGroup)->where('key', $key)->first();
-        if (!$config) return $this->fail('Webhook not found', 404);
+        if (!$config) return $this->fail(trans('Webhook not found'), 404);
         $config->delete();
 
-        return $this->success([], 'Webhook deleted');
+        return $this->success([], trans('Webhook deleted'));
     }
 
     #[Apidoc\Title("测试 Webhook 投递")]
@@ -86,10 +86,10 @@ class WebhookController extends BaseController
     public function test(Request $request): Response
     {
         $hookId = $request->input('id', '');
-        if (empty($hookId)) return $this->fail('id required', 422);
+        if (empty($hookId)) return $this->fail(trans('id required'), 422);
         $key = $request->userId . '_' . $hookId;
         $config = PlatformConfig::where('group', $this->configGroup)->where('key', $key)->first();
-        if (!$config) return $this->fail('Webhook not found', 404);
+        if (!$config) return $this->fail(trans('Webhook not found'), 404);
 
         $data = json_decode($config->value, true);
         $result = $this->deliver($data['url'], ['event' => 'test', 'timestamp' => time()]);

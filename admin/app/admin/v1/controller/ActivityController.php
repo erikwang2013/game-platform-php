@@ -78,7 +78,7 @@ class ActivityController extends BaseController
         $type = $request->input('type');
         $config = $this->parseConfig($request->input('config'), $type);
         if ($config === null) {
-            return $this->fail('config must be valid JSON and match type schema', 422);
+            return $this->fail(trans('config must be valid JSON and match type schema'), 422);
         }
 
         $a = new Activity();
@@ -93,14 +93,14 @@ class ActivityController extends BaseController
         $a->rollout_percent = (int) $request->input('rollout_percent', 100);
         $a->save();
 
-        return $this->success($this->encodeIds($a->toArray()), '创建成功');
+        return $this->success($this->encodeIds($a->toArray()), trans('Created successfully'));
     }
 
     public function update(Request $request, string $hashid): Response
     {
         $a = Activity::find($this->decodeId($hashid));
         if (!$a) {
-            return $this->fail('活动不存在', 404);
+            return $this->fail(trans('Activity not found'), 404);
         }
 
         // 镜像 store 的规则，前缀 sometimes：update 是局部更新，缺省的字段不该被判 required。
@@ -120,7 +120,7 @@ class ActivityController extends BaseController
         if ($request->has('config')) {
             $config = $this->parseConfig($request->input('config'), $a->type);
             if ($config === null) {
-                return $this->fail('config must be valid JSON and match type schema', 422);
+                return $this->fail(trans('config must be valid JSON and match type schema'), 422);
             }
             $a->config = $config;
         }
@@ -145,18 +145,18 @@ class ActivityController extends BaseController
         }
         $a->save();
 
-        return $this->success($this->encodeIds($a->toArray()), '更新成功');
+        return $this->success($this->encodeIds($a->toArray()), trans('Updated successfully'));
     }
 
     public function destroy(Request $request, string $hashid): Response
     {
         $a = Activity::find($this->decodeId($hashid));
         if (!$a) {
-            return $this->fail('活动不存在', 404);
+            return $this->fail(trans('Activity not found'), 404);
         }
         $a->delete();
 
-        return $this->success([], '删除成功');
+        return $this->success([], trans('Deleted successfully'));
     }
 
     /**

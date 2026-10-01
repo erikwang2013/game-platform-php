@@ -221,14 +221,13 @@ class PlatformTest extends TestCase
     }
 
     #[Test]
-    public function availableLanguagesHasFourEntries(): void
+    public function availableLanguagesHaveFullCodesForEverySupportedLocale(): void
     {
         $langs = TranslationService::getAvailableLanguages();
-        $this->assertCount(4, $langs);
-        $this->assertArrayHasKey('en-US', $langs);
-        $this->assertArrayHasKey('zh-CN', $langs);
-        $this->assertArrayHasKey('ja-JP', $langs);
-        $this->assertArrayHasKey('ko-KR', $langs);
+        $this->assertCount(13, $langs, '当前支持 13 种语言（与 install/lang/ 的语族对齐）');
+        foreach (['en-US', 'zh-CN', 'ja-JP', 'ko-KR', 'ru-RU', 'de-DE', 'fr-FR', 'es-ES', 'pt-PT', 'hi-IN', 'ar-SA', 'bn-BD', 'id-ID'] as $code) {
+            $this->assertArrayHasKey($code, $langs);
+        }
     }
 
     // ============================================================

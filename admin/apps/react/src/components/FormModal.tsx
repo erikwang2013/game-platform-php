@@ -4,13 +4,19 @@ import { ApiError } from '../lib/api';
 import {
   buildPayload,
   draftFrom,
+  fieldText,
   firstMissing,
+  optionLabel,
   optionsWithCurrent,
   type Draft,
   type Field,
   type FieldOption,
+  type OptionView,
 } from '../lib/crud';
+import { t } from '../i18n/index.ts';
+import type { TreeNode } from '../lib/tree';
 import { uploadImage } from '../lib/upload';
+import { PermissionTree } from './PermissionTree';
 import { Modal } from './ui';
 
 /**
@@ -45,19 +51,32 @@ export function FormModal({
   // 动态值域（权限树这类端点）：开框时拉一次，按字段名缓存。拉不到就只剩「当前值」一项，
   // 此时**必须说出来** —— 界面上看不见的选项，用户会当成「本来就没有」，从而把已有授权改没。
   const [loaded, setLoaded] = useState<Record<string, FieldOption[]>>({});
+  // 树形字段（type: 'tree'）的树本身，与 options 同理按字段名缓存
+  const [trees, setTrees] = useState<Record<string, TreeNode[]>>({});
 
   useEffect(() => {
     let alive = true;
     for (const field of fields) {
       const load = field.options;
-      if (typeof load !== 'function') continue;
-      void load()
-        .then((options) => {
-          if (alive) setLoaded((prev) => ({ ...prev, [field.name]: options }));
-        })
-        .catch(() => {
-          if (alive) setError(`${field.label}的选项加载失败，已选值仍可见，但不改它就别提交`);
-        });
+      if (typeof load === 'function') {
+        void load()
+          .then((options) => {
+            if (alive) setLoaded((prev) => ({ ...prev, [field.name]: options }));
+          })
+          .catch(() => {
+            if (alive) setError(t('form.options_load_failed', { name: fieldText(field.label) ?? '' }));
+          });
+      }
+      const loadTree = field.tree;
+      if (typeof loadTree === 'function') {
+        void loadTree()
+          .then((nodes) => {
+            if (alive) setTrees((prev) => ({ ...prev, [field.name]: nodes }));
+          })
+          .catch(() => {
+            if (alive) setError(t('form.tree_load_failed', { name: fieldText(field.label) ?? '' }));
+          });
+      }
     }
     return () => {
       alive = false;
@@ -76,7 +95,7 @@ export function FormModal({
       const url = await uploadImage(file, window.location.origin);
       setDraft((prev) => ({ ...prev, [field.name]: url }));
     } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : '网络异常，请稍后重试');
+      setError(cause instanceof ApiError ? cause.message : t('app.network_error'));
     } finally {
       setUploading(null);
     }
@@ -95,7 +114,7 @@ export function FormModal({
     try {
       await onSubmit(buildPayload(fields, draft, row, fullEdit));
     } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : '网络异常，请稍后重试');
+      setError(cause instanceof ApiError ? cause.message : t('app.network_error'));
     } finally {
       setBusy(false);
     }
@@ -106,16 +125,17 @@ export function FormModal({
       <form className="form form-cols" onSubmit={(event) => void submit(event)}>
         {fields.map((field) => (
           <label className={`label${isWide(field.type) ? ' wide' : ''}`} key={field.name}>
-            {field.label}
+            {fieldText(field.label)}
             {field.required ? <span className="req"> *</span> : null}
             <Input
               field={withOptions(field, loaded)}
+              nodes={trees[field.name]}
               value={draft[field.name] ?? ''}
               onChange={(value) => setDraft((prev) => ({ ...prev, [field.name]: value }))}
               uploading={uploading === field.name}
               onUpload={(file) => void upload(field, file)}
             />
-            {field.hint ? <span className="muted hint">{field.hint}</span> : null}
+            {field.hint ? <span className="muted hint">{fieldText(field.hint)}</span> : null}
           </label>
         ))}
         {error ? (
@@ -124,7 +144,7 @@ export function FormModal({
           </p>
         ) : null}
         <button className="btn wide" type="submit" disabled={busy}>
-          {busy ? '提交中…' : submitLabel}
+          {busy ? t('common.submitting') : submitLabel}
         </button>
       </form>
     </Modal>
@@ -137,26 +157,33 @@ const withOptions = (field: Field, loaded: Record<string, FieldOption[]>): Field
 
 /** 多行控件占满整行（表单是两列布局）。 */
 const isWide = (type: Field['type']): boolean =>
-  type === 'textarea' || type === 'json' || type === 'jsonobj' || type === 'lines' || type === 'multi';
+  type === 'textarea' || type === 'json' || type === 'jsonobj' || type === 'lines' || type === 'multi' || type === 'tree';
 
-/** 多选的已选值：可能是库里的旧值（不在当前值域里）—— 逐个补成选项，否则控件会把它当没选上。 */
-const withCurrent = (field: Field, values: string[]): FieldOption[] => {
+/**
+ * 多选的已选值：可能是库里的旧值（不在当前值域里）—— 逐个补成选项，否则控件会把它当没选上。
+ * 返回**成品**（`OptionView`）而不是 `FieldOption`：`<option>` 直接渲染 label，
+ * 拿键去渲染就会把 `f.max_50_characters` 这种键名摆到用户面前（同 lib/crud.ts 的 optionLabel）。
+ */
+const withCurrent = (field: Field, values: string[]): OptionView[] => {
   const options = Array.isArray(field.options) ? field.options : [];
   const extra = values
     .filter((value) => !options.some((option) => option.value === value))
-    .map((value) => ({ value, label: `${value}（当前值）` }));
-  return [...extra, ...options];
+    .map((value) => ({ value, label: t('app.current_value', { value }) }));
+  return [...extra, ...options.map((option) => ({ value: option.value, label: optionLabel(option) }))];
 };
 
 /** 按字段类型选控件；值一律字符串（switch 用 '1'/'0'）。 */
 function Input({
   field,
+  nodes,
   value,
   onChange,
   uploading,
   onUpload,
 }: {
   field: Field;
+  /** tree 字段：已拉到的权限树（没拉到 = undefined，退回只读文本框） */
+  nodes?: TreeNode[];
   value: string;
   onChange: (value: string) => void;
   /** image 字段：正在上传（按钮转文案并禁用） */
@@ -179,11 +206,11 @@ function Input({
             type="text"
             value={value}
             disabled={field.readOnly}
-            placeholder={field.placeholder}
+            placeholder={fieldText(field.placeholder)}
             onChange={(event) => onChange(event.target.value)}
           />
           <button type="button" className="btn btn-sm" disabled={field.readOnly || uploading} onClick={() => file.current?.click()}>
-            {uploading ? '上传中…' : '上传'}
+            {uploading ? t('upload.uploading') : t('upload.upload')}
           </button>
         </span>
         <input
@@ -198,7 +225,7 @@ function Input({
             if (picked) onUpload?.(picked);
           }}
         />
-        {value ? <img className="thumb" src={value} alt="预览" /> : null}
+        {value ? <img className="thumb" src={value} alt={t('upload.preview')} /> : null}
       </span>
     );
   }
@@ -212,7 +239,7 @@ function Input({
         rows={field.type === 'textarea' ? 4 : 6}
         value={value}
         disabled={field.readOnly}
-        placeholder={field.placeholder}
+        placeholder={fieldText(field.placeholder)}
         onChange={(event) => onChange(event.target.value)}
       />
     );
@@ -239,6 +266,15 @@ function Input({
     );
   }
 
+  // 树形多选（权限）：树还没拉回来时退回**只读**文本框 —— 空树看着像「本来就没授权」，
+  // 随手一点一存就把该角色的权限抹了（FormModal 已把加载失败显示成提示）
+  if (field.type === 'tree') {
+    if (!nodes || nodes.length === 0) {
+      return <textarea className="input" rows={4} value={value} readOnly placeholder={t('form.tree_loading')} />;
+    }
+    return <PermissionTree nodes={nodes} value={value} onChange={onChange} disabled={field.readOnly} />;
+  }
+
   if (field.type === 'select') {
     return (
       <select
@@ -247,7 +283,7 @@ function Input({
         disabled={field.readOnly}
         onChange={(event) => onChange(event.target.value)}
       >
-        <option value="">请选择</option>
+        <option value="">{t('form.select_placeholder')}</option>
         {optionsWithCurrent(field, value).map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
@@ -272,10 +308,11 @@ function Input({
   return (
     <input
       className="input"
-      type={field.type === 'number' ? 'number' : 'text'}
+      // password 与 text 同形，只是遮挡输入（口令字段：如新建管理员、重置密码）
+      type={field.type === 'number' ? 'number' : field.type === 'password' ? 'password' : 'text'}
       value={value}
       disabled={field.readOnly}
-      placeholder={field.placeholder}
+      placeholder={fieldText(field.placeholder)}
       onChange={(event) => onChange(event.target.value)}
     />
   );

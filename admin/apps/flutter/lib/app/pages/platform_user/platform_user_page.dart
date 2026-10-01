@@ -11,6 +11,11 @@ class PlatformUserController extends GetxController {
   final isLoading = false.obs;
   final keyword = ''.obs;
   final statusFilter = ''.obs;
+  final total = 0.obs;
+  final page = 1.obs;
+
+  /// 与后端缺省一致（PlatformUserController::index 的 `input('limit', 15)`）。
+  static const int pageSize = 15;
 
   @override
   void onInit() {
@@ -18,14 +23,19 @@ class PlatformUserController extends GetxController {
     loadUsers();
   }
 
-  Future<void> loadUsers() async {
+  /// 筛选（onSubmitted/下拉）后必须回第 1 页：停在第 3 页换关键词很可能整页为空，
+  /// 看起来像「没搜到」而不是「页码超了」。
+  Future<void> loadUsers({int? toPage}) async {
+    if (toPage != null) page.value = toPage;
     isLoading.value = true;
     try {
       final params = <String, dynamic>{};
       if (keyword.value.isNotEmpty) params['keyword'] = keyword.value;
       if (statusFilter.value.isNotEmpty) params['status'] = statusFilter.value;
-      final resp = await api.get('/admin/v1/platform/user/list', params: params);
-      users.value = resp['data'] is List ? resp['data'] as List<dynamic> : (resp['data']['list'] as List<dynamic>? ?? []);
+      final result = await api.list('/admin/v1/platform/user/list',
+          page: page.value, pageSize: pageSize, params: params);
+      users.value = result.rows;
+      total.value = result.total;
     } catch (e) {
       Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.loading_failed')}: $e');
     } finally {
@@ -104,6 +114,7 @@ class PlatformUserPage extends GetView<PlatformUserController> {
                 ),
                 onSubmitted: (v) {
                   ctrl.keyword.value = v;
+                  ctrl.page.value = 1; // 换关键词回第 1 页
                   ctrl.loadUsers();
                 },
               ),
@@ -120,6 +131,7 @@ class PlatformUserPage extends GetView<PlatformUserController> {
               ],
               onChanged: (v) {
                 ctrl.statusFilter.value = v ?? '';
+                ctrl.page.value = 1; // 换筛选回第 1 页
                 ctrl.loadUsers();
               },
             )),
@@ -189,6 +201,13 @@ class PlatformUserPage extends GetView<PlatformUserController> {
             );
           }),
         ),
+        const SizedBox(height: 8),
+        Obx(() => CrudPager(
+              page: ctrl.page.value,
+              total: ctrl.total.value,
+              size: PlatformUserController.pageSize,
+              onPage: (p) => ctrl.loadUsers(toPage: p),
+            )),
       ],
     );
   }

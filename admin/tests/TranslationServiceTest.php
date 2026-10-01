@@ -9,6 +9,7 @@ namespace tests;
 
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\Test;
+use common\Locale;
 use common\service\TranslationService;
 
 /**
@@ -31,15 +32,28 @@ class TranslationServiceTest extends TestCase
     }
 
     #[Test]
-    public function availableLanguagesHasFourEntries(): void
+    public function availableLanguagesCoverEverySupportedLocale(): void
     {
         $languages = TranslationService::getAvailableLanguages();
-        $this->assertCount(4, $languages);
-        foreach (['en-US', 'zh-CN', 'ja-JP', 'ko-KR'] as $lang) {
-            $this->assertArrayHasKey($lang, $languages);
-            $this->assertArrayHasKey('name', $languages[$lang]);
-            $this->assertArrayHasKey('nativeName', $languages[$lang]);
-            $this->assertArrayHasKey('icon', $languages[$lang]);
+
+        // 与 `common\Locale::SUPPORTED` 必须**逐项对齐**：两处枚举各写一份，漂移了就会
+        // 「语言选择器里选得到、翻译目录里没有」或反之 —— 前者更糟：选了却查不到译文，
+        // 界面静默回落到英文键名。
+        $normalized = array_values(array_filter(array_map(
+            static fn ($code) => Locale::normalize($code),
+            array_keys($languages)
+        )));
+        sort($normalized);
+        $supported = Locale::supported();
+        sort($supported);
+
+        $this->assertSame($supported, $normalized, '语言全码表归一后必须等于 Locale::supported()');
+        $this->assertCount(13, $languages, '当前支持 13 种语言（与 install/lang/ 的语族对齐）');
+
+        foreach ($languages as $code => $meta) {
+            $this->assertArrayHasKey('name', $meta, $code);
+            $this->assertArrayHasKey('nativeName', $meta, $code);
+            $this->assertArrayHasKey('icon', $meta, $code);
         }
     }
 

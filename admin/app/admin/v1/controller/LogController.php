@@ -65,7 +65,7 @@ class LogController extends BaseController
                        ->map(function ($log) {
                            $data = $log->toArray();
                            $data['id']        = $this->encodeId($data['id']);
-                           $data['user_name'] = $log->user->username ?? '系统';
+                           $data['user_name'] = $log->user->username ?? trans('System');
                            unset($data['user'], $data['user_id']);
                            return $data;
                        });

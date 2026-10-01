@@ -73,7 +73,7 @@ class TicketController extends BaseController
     {
         $ticket = Ticket::with('replies')->find($this->decodeId($hashid));
         if (!$ticket || $ticket->user_id !== $request->userId) {
-            return $this->fail('Ticket not found', 404);
+            return $this->fail(trans('Ticket not found'), 404);
         }
 
         $replies = [];
@@ -127,7 +127,7 @@ class TicketController extends BaseController
         $ticket->priority = 0;
         $ticket->save();
 
-        return $this->success(['id' => $this->encodeId($ticket->id)], 'Ticket created');
+        return $this->success(['id' => $this->encodeId($ticket->id)], trans('Ticket created'));
     }
 
     #[Apidoc\Title("回复工单")]
@@ -140,10 +140,10 @@ class TicketController extends BaseController
     {
         $ticket = Ticket::find($this->decodeId($hashid));
         if (!$ticket || $ticket->user_id !== $request->userId) {
-            return $this->fail('Ticket not found', 404);
+            return $this->fail(trans('Ticket not found'), 404);
         }
         if ($ticket->status === 'closed') {
-            return $this->fail('Ticket is closed', 422);
+            return $this->fail(trans('Ticket is closed'), 422);
         }
 
         $validator = validator($request->all(), [
@@ -165,6 +165,6 @@ class TicketController extends BaseController
         $ticket->status = 'waiting';
         $ticket->save();
 
-        return $this->success(['id' => $this->encodeId($reply->id)], 'Reply sent');
+        return $this->success(['id' => $this->encodeId($reply->id)], trans('Reply sent'));
     }
 }

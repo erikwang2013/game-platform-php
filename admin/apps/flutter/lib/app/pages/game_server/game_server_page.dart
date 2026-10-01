@@ -24,9 +24,10 @@ class GameServerAdminController extends GetxController {
   Future<void> loadGames() async {
     isLoadingGames.value = true;
     try {
-      // 游戏列表默认 15 条/页，选择器要的是全集 ⇒ 显式放大 limit（服务端无上限，200 只是 UI 侧的理智界）
-      final resp = await api.get('/admin/v1/game/list', params: <String, dynamic>{'limit': 200});
-      games.value = resp['data'] is List ? resp['data'] as List<dynamic> : (resp['data']['list'] as List<dynamic>? ?? []);
+      // 游戏列表默认 15 条/页，选择器要的是全集 ⇒ 显式放大 limit（服务端无上限，200 只是 UI 侧的理智界）。
+      // 走 api.list 而非裸 get：三种分页参数名一次发全（api_service.dart），选择器只用行不用 total。
+      final result = await api.list('/admin/v1/game/list', pageSize: 200);
+      games.value = result.rows;
       if (games.isNotEmpty) {
         // 默认落在第一个游戏上：否则页面打开是空的，用户得先点一下才有东西看
         await selectGame(games.first['id']?.toString());
@@ -44,6 +45,9 @@ class GameServerAdminController extends GetxController {
     if (hashid != null) await load();
   }
 
+  /// **不加分页**：/game/server/list 返回裸数组（无 total），且服务端按 game_id 全量返回
+  /// （一个游戏的分区表页；被别处当选择器数据源复用）。加 pager 需要先有 total，
+  /// 没有 total 的 pager 只能靠「本页取满了就显示下一页」猜，会把最后一页判成还有下一页。
   Future<void> load() async {
     final gid = gameId.value;
     if (gid == null) return;

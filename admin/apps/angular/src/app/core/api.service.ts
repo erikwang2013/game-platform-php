@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { Auth, SessionUser } from './auth.service';
+import { I18n } from './i18n/i18n';
 import { num } from './util';
 
 export type { SessionUser };
@@ -69,6 +70,7 @@ function query(params: Params): string {
 export class Api {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(Auth);
+  private readonly i18n = inject(I18n);
   private refreshing: Promise<boolean> | null = null;
 
   /** 会话用户（转发 Auth 的信号，页面直接绑定） */
@@ -102,7 +104,7 @@ export class Api {
           return { data: env.data, message: env.message };
         }
         this.auth.clear();
-        throw new ApiError(401, '登录状态已失效，请重新登录');
+        throw new ApiError(401, this.i18n.t('app.session_expired'));
       }
       throw e;
     }
@@ -117,13 +119,13 @@ export class Api {
     const retryable = !url.startsWith('/api/v1/auth/');
     try {
       const res = await this.sendRaw<T>(method, url, body);
-      if (retryable && code401(res)) throw new ApiError(401, '未登录');
+      if (retryable && code401(res)) throw new ApiError(401, this.i18n.t('app.not_logged_in'));
       return res;
     } catch (e) {
       if (retryable && e instanceof ApiError && e.code === 401) {
         if (await this.refreshOnce()) return this.sendRaw<T>(method, url, body);
         this.auth.clear();
-        throw new ApiError(401, '登录状态已失效，请重新登录');
+        throw new ApiError(401, this.i18n.t('app.session_expired'));
       }
       throw e;
     }
@@ -175,9 +177,14 @@ export class Api {
     let env = await this.send<T>(method, url, body);
     if (env.code === 401 && !url.startsWith('/api/v1/auth/')) {
       if (await this.refreshOnce()) env = await this.send<T>(method, url, body);
-      if (env.code === 401) throw new ApiError(401, env.message || '登录状态已失效，请重新登录');
+      if (env.code === 401)
+        throw new ApiError(401, env.message || this.i18n.t('app.session_expired'));
     }
-    if (env.code !== 0) throw new ApiError(env.code, env.message || `请求失败（${env.code}）`);
+    if (env.code !== 0)
+      throw new ApiError(
+        env.code,
+        env.message || this.i18n.t('app.request_failed', { code: env.code }),
+      );
     return env;
   }
 
@@ -187,23 +194,29 @@ export class Api {
 
   private async sendRaw<T>(method: Method, url: string, body?: unknown): Promise<T> {
     const token = this.auth.token;
+    // 语言头每次都得挂：后端 `LanguageMiddleware` 按 `X-Language` → `Accept-Language` → 默认 zh
+    // 选翻译表。漏了它，界面切成英文/日文时服务端的 message（校验错误、资金回执）仍是中文
+    // —— 「支持 13 种语言」就只落了一半。值是小写短码（后端 normalize() 认短码与 zh-CN 全码）。
+    const headers: Record<string, string> = { 'X-Language': this.i18n.lang() };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
     try {
-      return await firstValueFrom(
-        this.http.request<T>(method, url, {
-          body,
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        }),
-      );
+      return await firstValueFrom(this.http.request<T>(method, url, { body, headers }));
     } catch (e) {
       if (e instanceof HttpErrorResponse) {
         // 422 校验失败 / 404 路由不存在：body 仍是信封时优先用它的 message
         const env = e.error as Envelope<unknown> | null;
         if (env && typeof env.code === 'number') {
-          throw new ApiError(env.code, env.message || `请求失败（${env.code}）`);
+          throw new ApiError(
+            env.code,
+            env.message || this.i18n.t('app.request_failed', { code: env.code }),
+          );
         }
-        throw new ApiError(e.status, e.status === 0 ? '无法连接服务器' : `HTTP ${e.status}`);
+        throw new ApiError(
+          e.status,
+          e.status === 0 ? this.i18n.t('app.server_unreachable') : `HTTP ${e.status}`,
+        );
       }
-      throw new ApiError(0, '网络异常');
+      throw new ApiError(0, this.i18n.t('app.network_error'));
     }
   }
 

@@ -596,3 +596,75 @@ textarea.input {
 .rowact .btn-danger {
   color: #fff;
 }
+
+/* ---------- 分页条 / 权限树 ---------- */
+/* 列表下方的分页条：说明文字在左，翻页按钮贴右 */
+.pager {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  color: var(--ink-2);
+  font-size: 13px;
+}
+.pager .btn:first-of-type {
+  margin-left: auto;
+}
+/* 树行首列的缩进与展开箭头：.tgl 是纯箭头的方按钮，叶子的占位靠 aria-hidden 的空 span 撑宽 */
+.treemark {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.tgl {
+  flex: none;
+  width: 18px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink-2);
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+  cursor: pointer;
+}
+.tgl:hover {
+  color: var(--primary);
+}
+/* 权限树（角色表单的多选）：每层缩进一级，勾选框与文字基线对齐 */
+.perm-tree {
+  width: 100%;
+  max-height: 260px;
+  overflow: auto;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-ctl);
+  background: var(--surface);
+}
+.perm {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* 子层缩进：与 .tgl 同宽，勾选框对齐到父级文字下方 */
+.perm .perm {
+  padding-left: 22px;
+}
+.perm-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.perm-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  cursor: pointer;
+}
+.perm-label input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--primary);
+}

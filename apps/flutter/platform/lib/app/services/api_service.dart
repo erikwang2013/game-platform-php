@@ -3,13 +3,14 @@
 import 'package:dio/dio.dart';
 import 'package:get/get.dart' hide Response;
 import 'auth_service.dart';
+import '../i18n/locale_controller.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._();
   factory ApiService() => _instance;
 
   late final Dio dio;
-  static const String baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:8792');
+  static const String baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'http://games.test');
 
   ApiService._() {
     dio = Dio(BaseOptions(
@@ -23,6 +24,12 @@ class ApiService {
 
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
+        // 语言必须先于业务请求发出去：后端 `LanguageMiddleware` 按 `X-Language` → `Accept-Language`
+        // → 默认(zh) 决定 `trans()` 用哪张表。**不发这个头，界面切到日语也只是客户端文案变，
+        // 服务端 message 永远是中文** —— 「支持 13 种语言」只落一半。
+        // 值用短码（后端 `common\Locale::normalize()` 认短码与 `zh-CN` 全码）。
+        options.headers['X-Language'] = LocaleController.currentCode;
+
         final token = await AuthService.getToken();
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';

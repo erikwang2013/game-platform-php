@@ -5,6 +5,7 @@ import { Field } from '../core/crud';
 import { idOf, json, kvOf, scalarsOf } from '../core/render';
 import { errText } from '../core/util';
 import { ListBase } from '../core/list-base';
+import { T } from '../core/i18n/i18n';
 import { Drawer, Pager, StateBlock, StatCard, Tabs } from '../components/ui';
 import { Table } from '../components/table';
 import { FormModal } from '../components/form-modal';
@@ -15,10 +16,10 @@ const S = '/admin/v1/';
 const REPLY_FIELDS: Field[] = [
   {
     name: 'content',
-    label: '回复内容',
+    label: 'ticket.reply_content',
     type: 'textarea',
     required: true,
-    placeholder: '不能为空；工单已 closed 时后端拒收',
+    placeholder: 'ticket.reply_hint',
   },
 ];
 
@@ -30,31 +31,31 @@ const REPLY_FIELDS: Field[] = [
 const ASSIGN_FIELDS: Field[] = [
   {
     name: 'admin_id',
-    label: '受理人（管理员数字 ID）',
+    label: 'ticket.admin_id',
     type: 'text',
-    placeholder: '只能填数字；留空 = 取消指派',
+    placeholder: 'ticket.admin_id_hint',
   },
 ];
 
 @Component({
   selector: 'app-support',
-  imports: [StateBlock, StatCard, Table, Pager, Tabs, Drawer, FormModal],
+  imports: [StateBlock, StatCard, Table, Pager, Tabs, Drawer, FormModal, T],
   template: `
     <div class="page-head">
-      <h1>客服工单</h1>
-      <span class="sub">工单 / 报表</span>
+      <h1>{{ 'ticket.title' | t }}</h1>
+      <span class="sub">{{ 'ticket.subtitle' | t }}</span>
       <div class="spacer"></div>
       @if (tab() === 'ticket') {
         <input
           class="input"
-          placeholder="工单号 / 用户 / 标题"
+          [placeholder]="'ticket.search_hint' | t"
           [value]="keyword()"
           (input)="keyword.set($any($event.target).value)"
           (keyup.enter)="search()"
         />
-        <button class="btn" (click)="search()">查询</button>
+        <button class="btn" (click)="search()">{{ 'app.search' | t }}</button>
       }
-      <button class="btn" (click)="load()">刷新</button>
+      <button class="btn" (click)="load()">{{ 'app.refresh' | t }}</button>
     </div>
 
     <ui-tabs [tabs]="tabs" [active]="tab()" (pick)="pick($event)" />
@@ -70,7 +71,7 @@ const ASSIGN_FIELDS: Field[] = [
         }
         @if (raw(); as d) {
           <details class="raw-box">
-            <summary>报表汇总原始响应</summary>
+            <summary>{{ 'report.raw_title' | t }}</summary>
             <pre class="raw">{{ pretty(d) }}</pre>
           </details>
         }
@@ -82,25 +83,26 @@ const ASSIGN_FIELDS: Field[] = [
       </div>
     </ui-state>
 
-    @if (rows().length) {
+    @if (paged() && rows().length) {
       <ui-pager [page]="page()" [pages]="pages" [total]="total()" (jump)="go($event)" />
     }
 
-    <ui-drawer [open]="detail() !== null" title="工单详情" (close)="detail.set(null)">
+    <!-- title 是**值**不是词条键（ui-drawer 的 title() 不过 t 管道，与 ui-form 的 title 不同）⇒ 这里先查表 -->
+    <ui-drawer [open]="detail() !== null" [title]="'ticket.detail' | t" (close)="detail.set(null)">
       @if (detail(); as d) {
         <dl class="kv">
           @for (p of info(); track p.label) {
             <dt>{{ p.label }}</dt>
             <dd>{{ p.value }}</dd>
           } @empty {
-            <dt>提示</dt>
-            <dd>该工单暂无可展示字段</dd>
+            <dt>{{ 'ticket.empty_hint' | t }}</dt>
+            <dd>{{ 'ticket.no_data' | t }}</dd>
           }
         </dl>
         <div class="row-actions">
-          <button class="btn btn-primary" (click)="openAct(d, 'reply')">回复</button>
-          <button class="btn" (click)="openAct(d, 'assign')">指派</button>
-          <button class="btn danger" (click)="closeTicket(d)">关闭</button>
+          <button class="btn btn-primary" (click)="openAct(d, 'reply')">{{ 'ticket.reply' | t }}</button>
+          <button class="btn" (click)="openAct(d, 'assign')">{{ 'ticket.assign' | t }}</button>
+          <button class="btn danger" (click)="closeTicket(d)">{{ 'ticket.close' | t }}</button>
         </div>
       }
     </ui-drawer>
@@ -121,10 +123,17 @@ export class Support extends ListBase<Row> {
   private readonly api = inject(Api);
 
   protected readonly tabs = [
-    { key: 'ticket', label: '工单' },
-    { key: 'report', label: '报表' },
+    { key: 'ticket', label: 'ticket.tab' },
+    { key: 'report', label: 'report.tab' },
   ];
   protected readonly tab = signal('ticket');
+
+  /**
+   * 只有工单列表是分页的（/ticket/list：page+limit，默认 20）。报表端点是 /report/daily ——
+   * 回 `{start,end,rows}` 是按天聚合的结果，没有分页参数、也不该有「第 2 页」。
+   */
+  protected readonly paged = computed(() => this.tab() !== 'report');
+
   protected readonly detail = signal<Row | null>(null);
   protected readonly raw = signal<unknown>(null);
 
@@ -200,7 +209,12 @@ export class Support extends ListBase<Row> {
     this.formAct = act;
     const reply = act === 'reply';
     this.formFields.set(reply ? REPLY_FIELDS : ASSIGN_FIELDS);
-    this.formTitle.set(`${reply ? '回复' : '指派'}工单：${this.who(row)}`);
+    this.formTitle.set(
+      this.i18n.t('ticket.form_title', {
+        action: this.i18n.t(reply ? 'ticket.reply' : 'ticket.assign'),
+        name: this.who(row),
+      }),
+    );
     this.formError.set('');
     this.formOpen.set(true);
   }
@@ -219,14 +233,14 @@ export class Support extends ListBase<Row> {
     if (this.formAct === 'reply') {
       const content = String(values['content'] ?? '').trim();
       if (!content) {
-        this.formError.set('回复内容不能为空');
+        this.formError.set(this.i18n.t('ticket.reply_required'));
         return;
       }
       body['content'] = content;
     } else {
       const raw = String(values['admin_id'] ?? '').trim();
       if (raw && !/^\d+$/.test(raw)) {
-        this.formError.set('受理人只能填数字 ID（后端只认 int，hashid 会被压成 0 = 取消指派）');
+        this.formError.set(this.i18n.t('ticket.admin_id_invalid'));
         return;
       }
       // 数字串原样发：snowflake 是 19 位，超出 JS 安全整数，Number() 会四舍五入到隔壁的 ID，
@@ -251,7 +265,7 @@ export class Support extends ListBase<Row> {
   /** 关闭：不可逆（关闭后 reply 会被后端拒收），二次确认带标题 */
   protected async closeTicket(row: Row): Promise<void> {
     const id = idOf(row);
-    if (!id || !confirm(`确认关闭工单「${this.who(row)}」？关闭后不能再回复。`)) return;
+    if (!id || !confirm(this.i18n.t('ticket.close_confirm_target', { name: this.who(row) }))) return;
     this.error.set('');
     try {
       await this.api.post(S + 'ticket/' + id + '/close');

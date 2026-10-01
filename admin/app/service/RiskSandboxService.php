@@ -55,7 +55,7 @@ class RiskSandboxService
             'ip_reputation' => self::ipReputation($context, $config),
             'device_account_graph' => self::deviceAccountGraph($userId, $context, $config),
             'withdraw_pattern' => self::withdrawPattern($userId, $config),
-            default => ['matched' => false, 'message' => '未知规则类型', 'severity' => 'low'],
+            default => ['matched' => false, 'message' => trans('Unknown rule type'), 'severity' => 'low'],
         };
 
         $hit['action'] = self::disposition((string) $rule['action'], (string) $hit['severity']);
@@ -67,7 +67,7 @@ class RiskSandboxService
     {
         $ip = (string) ($context['ip'] ?? '');
         if ($ip !== '' && in_array($ip, $config['blacklist'] ?? [], true)) {
-            return ['matched' => true, 'message' => 'IP 命中黑名单', 'severity' => 'high'];
+            return ['matched' => true, 'message' => trans('IP is on the blacklist'), 'severity' => 'high'];
         }
 
         return self::miss();
@@ -131,7 +131,7 @@ class RiskSandboxService
         if ($checkType === 'withdraw' && ($config['new_device_withdraw_block'] ?? true)) {
             $lookback = ((int) ($config['new_device_lookback_hours'] ?? 24)) * 3600;
             if (strtotime((string) $fp->first_seen_at) >= time() - $lookback) {
-                return ['matched' => true, 'message' => '新设备首次提现', 'severity' => 'high'];
+                return ['matched' => true, 'message' => trans('First withdrawal from a new device'), 'severity' => 'high'];
             }
         }
 
@@ -143,7 +143,7 @@ class RiskSandboxService
         $row = IpReputation::where('ip_hash', (string) $context['ip_hash'])->first();
         if (!$row) {
             if ($config['block_unknown'] ?? false) {
-                return ['matched' => true, 'message' => '未知 IP（block_unknown）', 'severity' => 'high'];
+                return ['matched' => true, 'message' => trans('Unknown IP (block_unknown)'), 'severity' => 'high'];
             }
 
             return self::miss();
@@ -176,7 +176,7 @@ class RiskSandboxService
             $frozen = User::whereIn('id', $hop1)->where('status', '!=', 1)->pluck('id')->all();
         }
         if ($frozen !== []) {
-            return ['matched' => true, 'message' => '同设备账号 ' . implode(',', $frozen) . ' 处于禁用状态', 'severity' => 'high'];
+            return ['matched' => true, 'message' => trans('Account(s) %accounts% on the same device are disabled', ['%accounts%' => implode(',', $frozen)]), 'severity' => 'high'];
         }
 
         $hop2 = [];
@@ -189,10 +189,10 @@ class RiskSandboxService
         $cluster = array_values(array_diff(array_unique(array_merge(array_map('intval', $hop1), array_map('intval', $hop2))), [$userId]));
 
         if (count($cluster) >= $threshold) {
-            return ['matched' => true, 'message' => '两跳关联账号数 ' . count($cluster) . " ≥ 团伙阈值 {$threshold}", 'severity' => 'high'];
+            return ['matched' => true, 'message' => trans('Two-hop related accounts: %count% ≥ cluster threshold %threshold%', ['%count%' => (string) count($cluster), '%threshold%' => (string) $threshold]), 'severity' => 'high'];
         }
         if (count($hop1) >= 2) {
-            return ['matched' => true, 'message' => '同设备账号数 ' . count($hop1) . '（未达团伙阈值）', 'severity' => 'low'];
+            return ['matched' => true, 'message' => trans('Accounts on the same device: %count% (below cluster threshold)', ['%count%' => (string) count($hop1)]), 'severity' => 'low'];
         }
 
         return self::miss();
@@ -205,13 +205,13 @@ class RiskSandboxService
 
         $maxApplies = (int) ($config['max_applies'] ?? 3);
         if (count($orders) >= $maxApplies) {
-            return ['matched' => true, 'message' => '窗口内提现申请 ' . count($orders) . " ≥ {$maxApplies}", 'severity' => 'high'];
+            return ['matched' => true, 'message' => trans('Withdrawal requests within the window: %count% ≥ threshold %threshold%', ['%count%' => (string) count($orders), '%threshold%' => (string) $maxApplies]), 'severity' => 'high'];
         }
 
         $cap = (string) ($config['single_hard_cap'] ?? '0');
         foreach ($orders as $order) {
             if (bccomp((string) $order->amount, $cap, 4) >= 0) {
-                return ['matched' => true, 'message' => "单笔提现超硬上限 {$cap}", 'severity' => 'high'];
+                return ['matched' => true, 'message' => trans('Single withdrawal exceeds the hard cap %cap%', ['%cap%' => (string) $cap]), 'severity' => 'high'];
             }
         }
 

@@ -129,7 +129,8 @@ final class CouponAvailableConditionsTest extends TestCase
     public function claimRejectionMessagesAreUnchanged(): void
     {
         $cases = [
-            'min_deposit 不足' => ['Minimum deposit of 100.0000 not met', $this->minDepositCoupon],
+            // 文案经 trans()：默认 locale 是 zh，故断言的是 zh 译文（键见 resource/translations/zh/messages.php）
+            'min_deposit 不足' => ['最低充值额 100.0000 未达到', $this->minDepositCoupon],
             'first_user_only'  => ['This coupon is for new users only', $this->firstOnlyCoupon],
             'game_id 未玩过'    => ['Must play the required game first', $this->unplayedGameCoupon],
         ];
@@ -162,7 +163,7 @@ final class CouponAvailableConditionsTest extends TestCase
 
         $body = $this->claim($this->minDepositCoupon, $freshUser);
         $this->assertSame(400, $body['code'], '零充值用户应被 400 拒，不是 500 TypeError：' . json_encode($body));
-        $this->assertSame('Minimum deposit of 100.0000 not met', $body['message']);
+        $this->assertSame('最低充值额 100.0000 未达到', $body['message']);
 
         // 列表侧同样不得 500，且这张券不出现
         $this->assertNotContains(

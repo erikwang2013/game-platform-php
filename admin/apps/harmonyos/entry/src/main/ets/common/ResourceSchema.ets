@@ -36,8 +36,9 @@ import { FormValues, FormPayload, ResourceRow, ResourceListResult } from '../mod
 export interface ResourceModule {
   /** 路由参数值，也是 ModuleIndexPage 的行标识 */
   key: string;
+  /** **i18n 键**（不是显示文案）：渲染处一律 `t(module.title)`，切语言才能重渲染 */
   title: string;
-  /** 索引页副标题 */
+  /** 索引页副标题，同样存 i18n 键 */
   desc: string;
   /** 端点前缀：create 缺省 = base + '/create'，update/delete = base + '/' + id */
   base: string;
@@ -63,6 +64,7 @@ export interface ResourceModule {
    * 「新建」的按钮与表单标题文案；缺省「+ 新增 / 新建<标题>」。
    * 提现阶梯限额没有逐档新建端点（POST /withdraw/limits/set 是**全档位重置**）⇒ 借 create
    * 这条路走，但按钮不能写「新增」（点下去是覆盖所有档位），故给模块自己起名。
+   * 与 title/desc 一样存 **i18n 键**（渲染处 `t(createLabel)`）。
    */
   createLabel?: string;
   /**

@@ -78,7 +78,7 @@ class PlatformUserController extends BaseController
         $id   = $this->decodeId($hashid);
         $user = User::with('wallet')->find($id);
         if (!$user) {
-            return $this->fail('用户不存在', 404);
+            return $this->fail(trans('User not found'), 404);
         }
 
         $data = $user->toArray();
@@ -106,13 +106,13 @@ class PlatformUserController extends BaseController
         $id   = $this->decodeId($hashid);
         $user = User::find($id);
         if (!$user) {
-            return $this->fail('用户不存在', 404);
+            return $this->fail(trans('User not found'), 404);
         }
 
         $status   = $request->input('status');
         $nickname = $request->input('nickname');
         if ($status === null && $nickname === null) {
-            return $this->fail('没有可更新的字段', 422);
+            return $this->fail(trans('No fields to update'), 422);
         }
 
         $data = [];
@@ -121,14 +121,14 @@ class PlatformUserController extends BaseController
             // 反过来的话 (int)'banned' 与 (int)'normal' 都是 0 = 禁用 —— 用户点「解封」
             // 反而被封禁，是真实可达的静默改错（旧实现正是这个形状：fill 进 $casts 的 int 强转）。
             if (!in_array($status, [0, 1, '0', '1'], true)) {
-                return $this->fail('状态值无效', 422);
+                return $this->fail(trans('Invalid status value'), 422);
             }
             $data['status'] = (int) $status;
         }
         if ($nickname !== null) {
             // 列宽口径：game_user.nickname = VARCHAR(50) NOT NULL（install.sql:game_user DDL）
             if (!is_string($nickname) || mb_strlen($nickname) > 50) {
-                return $this->fail('昵称无效', 422);
+                return $this->fail(trans('Invalid nickname'), 422);
             }
             $data['nickname'] = $nickname;
         }
@@ -143,12 +143,12 @@ class PlatformUserController extends BaseController
             }
         }
         if ($dirty === []) {
-            return $this->success(['count' => 0], '更新成功');
+            return $this->success(['count' => 0], trans('Updated successfully'));
         }
 
         $affected = User::where('id', $id)->update($dirty);
 
-        return $this->success(['count' => $affected], '更新成功');
+        return $this->success(['count' => $affected], trans('Updated successfully'));
     }
 
     #[Apidoc\Title("注销平台用户")]
@@ -169,10 +169,10 @@ class PlatformUserController extends BaseController
             //  - lockForUpdate 把「查余额 → 软删除」之间的窗口关掉，两次并发注销也只有一次真的落库。
             $user = User::withTrashed()->lockForUpdate()->find($id);
             if (!$user) {
-                return $this->fail('用户不存在', 404);
+                return $this->fail(trans('User not found'), 404);
             }
             if ($user->trashed()) {
-                return $this->success(['count' => 0, 'already_deleted' => true], '用户已注销');
+                return $this->success(['count' => 0, 'already_deleted' => true], trans('User account is already closed'));
             }
 
             // 资金闸：与 C 端自助注销同口径（service/app/api/v1/controller/UserController.php:192-196），
@@ -182,7 +182,7 @@ class PlatformUserController extends BaseController
             if ($wallet) {
                 foreach (['balance', 'frozen_balance'] as $column) {
                     if (bccomp((string) $wallet->getAttribute($column), '0', 8) > 0) {
-                        return $this->fail('该用户仍有余额或冻结金额，请先结清后再注销', 422);
+                        return $this->fail(trans('This user still has balance or frozen funds; please settle before closing the account'), 422);
                     }
                 }
             }
@@ -211,7 +211,7 @@ class PlatformUserController extends BaseController
             UserOauth::where('user_id', $id)->delete();
             UserSession::where('user_id', $id)->delete();
 
-            return $this->success(['count' => 1, 'already_deleted' => false], '注销成功');
+            return $this->success(['count' => 1, 'already_deleted' => false], trans('Account closed'));
         });
     }
 }

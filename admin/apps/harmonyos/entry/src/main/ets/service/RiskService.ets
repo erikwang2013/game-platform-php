@@ -20,6 +20,9 @@ import {
   RiskClusterConfirmRequest,
   RiskClusterMembersResult
 } from '../model/RiskModels';
+import { pageQuery } from '../model/DataModels';
+// 本文件全是**请求期**求值的函数（不是模块顶层常量）⇒ 直接调 t() 安全，语言切换后下一次请求即用新语言
+import { t, t1 } from '../i18n/Translations';
 
 /**
  * 风控域的服务端接口（批次 5）。
@@ -30,6 +33,8 @@ import {
  *
  * 三条贯穿本域的口径：
  *  1. **分页参数是 `size`**（不是 limit），响应形状是 `{total, items}`（不是 `{list}`）。
+ *     查询串统一走 `pageQuery`（DataModels），它一次扇出 limit/size/per_page 三个别名 ——
+ *     本域读 `size`，配置驱动那三个模块走 ResourceSchema 的 `/risk/rule|event` 也是这一套。
  *  2. **金额（冻结/解冻）原样收发**：DECIMAL 的 string，经 bcmath 字符串比较；
  *     这里只做 `String()` 与拼接，不做任何 Number()/算术 —— 前端算金额必丢精度。
  *  3. 信封 `message` 为空话术（框架缺省 'success'）时，**回执在 `data` 里**
@@ -40,11 +45,6 @@ import {
 /** `data.message` 型回执（风控事件处置 / 反作弊审核 / IP 重查都是这个形状） */
 interface DataMessageResult {
   message?: string;
-}
-
-/** 有行内动作的分页列表：六族共用一套 query 拼法（page + size + 各模块自己的过滤键） */
-function pageQuery(base: string, page: number, size: number): string {
-  return `${base}?page=${page}&size=${size}`;
 }
 
 /**
@@ -61,7 +61,7 @@ function parseContext(text: string): Record<string, Object> {
   try {
     return JSON.parse(trimmed) as Record<string, Object>;
   } catch (_) {
-    throw new Error('上下文不是合法 JSON（可留空）');
+    throw new Error(t('risk.svc.context_bad_json'));
   }
 }
 
@@ -105,8 +105,8 @@ export class RiskService {
     }
     const said = response.data.message ?? '';
     const lines: string[] = [];
-    lines.push(said.length > 0 ? said : '处置已记录');
-    lines.push('该端点只在操作审计留痕，不改变事件本身（risk_log 无审核状态列）。');
+    lines.push(said.length > 0 ? said : t('risk.svc.event_handled'));
+    lines.push(t('risk.svc.event_audit_only'));
     return lines;
   }
 
@@ -123,8 +123,10 @@ export class RiskService {
     }
     const said = response.data.message ?? '';
     const lines: string[] = [];
-    lines.push(said.length > 0 ? said : '审核已记录');
-    lines.push(`结论：${status}${note.length > 0 ? ` · 备注：${note}` : ''}`);
+    lines.push(said.length > 0 ? said : t('risk.svc.cheat_reviewed'));
+    lines.push(note.length > 0
+      ? t('risk.svc.cheat_verdict_note').replace('{status}', status).replace('{note}', note)
+      : t1('risk.svc.cheat_verdict', 'status', status));
     return lines;
   }
 
@@ -135,7 +137,7 @@ export class RiskService {
 
   static async listDevices(page: number, size: number): Promise<ItemsPage<RiskDeviceItem>> {
     const response = await apiService.get<ItemsPage<RiskDeviceItem>>(
-      pageQuery('/admin/v1/risk/device/list', page, size)
+      `/admin/v1/risk/device/list?${pageQuery(page, size)}`
     );
     if (response.code !== 0) {
       throw new Error(response.message);
@@ -157,9 +159,9 @@ export class RiskService {
       throw new Error(response.message);
     }
     const lines: string[] = [];
-    lines.push(`已拉黑设备指纹 ${response.data.fp_masked}`);
-    lines.push('风控已对该设备直接阻断（登录/充值/提现都会被拒），不依赖任何规则是否启用。');
-    lines.push('标记存在服务端 Redis，**30 天后自动解封**；需要提前恢复点该行「解封」。');
+    lines.push(t1('risk.svc.device_blocked', 'fp', response.data.fp_masked));
+    lines.push(t('risk.svc.device_block_effect'));
+    lines.push(t('risk.svc.device_block_ttl'));
     return lines;
   }
 
@@ -172,7 +174,7 @@ export class RiskService {
       throw new Error(response.message);
     }
     const lines: string[] = [];
-    lines.push('已解封该设备指纹（管理端标记已删除）');
+    lines.push(t('risk.svc.device_unblocked'));
     return lines;
   }
 
@@ -183,7 +185,9 @@ export class RiskService {
    * ------------------------------------------------------------------------ */
 
   static async listIps(page: number, size: number): Promise<ItemsPage<RiskIpItem>> {
-    const response = await apiService.get<ItemsPage<RiskIpItem>>(pageQuery('/admin/v1/risk/ip/list', page, size));
+    const response = await apiService.get<ItemsPage<RiskIpItem>>(
+      `/admin/v1/risk/ip/list?${pageQuery(page, size)}`
+    );
     if (response.code !== 0) {
       throw new Error(response.message);
     }
@@ -204,11 +208,12 @@ export class RiskService {
     }
     const lines: string[] = [];
     const source = response.data.source ?? '';
-    const score = source === 'internal_whitelist' ? '100（白名单）' : '0（黑名单）';
-    lines.push(`${response.data.ip_masked} → ${source}，信誉分 ${score}`);
-    lines.push('已同步删除该 IP 的信誉缓存，下一条请求即按新值判定。');
+    const score = source === 'internal_whitelist' ? t('risk.svc.score_whitelist') : t('risk.svc.score_blacklist');
+    lines.push(t('risk.svc.ip_written')
+      .replace('{ip}', response.data.ip_masked).replace('{source}', source).replace('{score}', score));
+    lines.push(t('risk.svc.ip_cache_cleared'));
     if (kind === 'appeal') {
-      lines.push('申诉放行与「加入白名单」在服务端是同一写法（同 source 同 score）。');
+      lines.push(t('risk.svc.appeal_same_as_whitelist'));
     }
     return lines;
   }
@@ -223,7 +228,7 @@ export class RiskService {
     }
     const lines: string[] = [];
     const said = response.data.message ?? '';
-    lines.push(said.length > 0 ? said : '已刷新信誉缓存');
+    lines.push(said.length > 0 ? said : t('risk.svc.ip_rechecked'));
     return lines;
   }
 
@@ -233,7 +238,9 @@ export class RiskService {
    * ---------------------------------------------------------------------- */
 
   static async listRiskUsers(page: number, size: number): Promise<ItemsPage<RiskUserItem>> {
-    const response = await apiService.get<ItemsPage<RiskUserItem>>(pageQuery('/admin/v1/risk/users', page, size));
+    const response = await apiService.get<ItemsPage<RiskUserItem>>(
+      `/admin/v1/risk/users?${pageQuery(page, size)}`
+    );
     if (response.code !== 0) {
       throw new Error(response.message);
     }
@@ -247,7 +254,7 @@ export class RiskService {
       throw new Error(response.message);
     }
     const lines: string[] = [];
-    lines.push(`已冻结 ${response.data.frozen_amount} 平台币（服务端按可用余额全额冻结）`);
+    lines.push(t1('risk.svc.hold_done', 'amount', response.data.frozen_amount));
     return lines;
   }
 
@@ -263,7 +270,7 @@ export class RiskService {
       throw new Error(response.message);
     }
     const lines: string[] = [];
-    lines.push(`已释放 ${response.data.released_amount} 平台币（冻结 → 可用，不铸币）`);
+    lines.push(t1('risk.svc.release_done', 'amount', response.data.released_amount));
     return lines;
   }
 
@@ -282,7 +289,9 @@ export class RiskService {
    * ---------------------------------------------------------------------- */
 
   static async listClusters(page: number, size: number): Promise<ItemsPage<RiskClusterItem>> {
-    const response = await apiService.get<ItemsPage<RiskClusterItem>>(pageQuery('/admin/v1/risk/clusters', page, size));
+    const response = await apiService.get<ItemsPage<RiskClusterItem>>(
+      `/admin/v1/risk/clusters?${pageQuery(page, size)}`
+    );
     if (response.code !== 0) {
       throw new Error(response.message);
     }

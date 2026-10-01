@@ -64,6 +64,11 @@ class WithdrawController extends GetxController {
   final selected = <String>{}.obs;
   final isLoading = false.obs;
   final statusFilter = 'all'.obs;
+  final total = 0.obs;
+  final page = 1.obs;
+
+  /// 与后端缺省一致（WithdrawController::orders 的 `input('limit', 15)`）。
+  static const int pageSize = 15;
 
   /// 全局开关的读数：以服务端为准（GET 与 PUT 共用 /withdraw/switch）。
   final withdrawEnabled = false.obs;
@@ -75,15 +80,18 @@ class WithdrawController extends GetxController {
     loadSwitch();
   }
 
-  Future<void> loadOrders() async {
+  Future<void> loadOrders({int? toPage}) async {
+    if (toPage != null) page.value = toPage;
     isLoading.value = true;
     try {
       final params = <String, dynamic>{};
       if (statusFilter.value != 'all') {
         params['status'] = statusFilter.value;
       }
-      final resp = await api.get('/admin/v1/withdraw/orders', params: params);
-      orders.value = resp['data']['list'] as List<dynamic>? ?? [];
+      final result = await api.list('/admin/v1/withdraw/orders',
+          page: page.value, pageSize: pageSize, params: params);
+      orders.value = result.rows;
+      total.value = result.total;
       // 换了筛选/刷新后旧的勾选可能已经不在列表里：留着它，批量按钮会拿一批看不见的订单去审核
       selected.clear();
     } catch (e) {
@@ -225,6 +233,7 @@ class WithdrawPage extends GetView<WithdrawController> {
             selected: {ctrl.statusFilter.value},
             onSelectionChanged: (v) {
               ctrl.statusFilter.value = v.first;
+              ctrl.page.value = 1; // 换筛选回第 1 页（勾选集在 loadOrders 里已被清空）
               ctrl.loadOrders();
             },
           )),
@@ -336,6 +345,13 @@ class WithdrawPage extends GetView<WithdrawController> {
           );
         }),
       ),
+      const SizedBox(height: 8),
+      Obx(() => CrudPager(
+            page: ctrl.page.value,
+            total: ctrl.total.value,
+            size: WithdrawController.pageSize,
+            onPage: (p) => ctrl.loadOrders(toPage: p),
+          )),
     ]);
   }
 

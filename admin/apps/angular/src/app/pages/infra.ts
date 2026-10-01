@@ -2,6 +2,7 @@
 import { Component, computed, signal } from '@angular/core';
 import { Page, Row } from '../core/api.service';
 import { Crud, CrudPage, Field } from '../core/crud';
+import { T } from '../core/i18n/i18n';
 import { idOf } from '../core/render';
 import { errText } from '../core/util';
 import { Pager, StateBlock, Tabs } from '../components/ui';
@@ -20,23 +21,24 @@ const I = '/admin/v1/';
 const CDN_PROVIDERS = ['cloudflare', 'cloudfront', 'aliyun', 'tencent', 'huawei'];
 
 const CDN_FIELDS: Field[] = [
-  { name: 'name', label: '显示名称', type: 'text', required: true, placeholder: '最长 50' },
+  { name: 'name', label: 'cdn.name', type: 'text', required: true, placeholder: 'cdn.name_hint' },
   {
     name: 'provider',
-    label: '厂商',
+    label: 'cdn.provider',
     type: 'select',
     required: true,
+    // 选项名就用后端枚举原文（cloudflare…）：译了反而与库里的值对不上
     options: CDN_PROVIDERS.map((v) => ({ value: v, label: v })),
   },
-  { name: 'status', label: '状态（新建必填）', type: 'switch', required: true },
-  { name: 'sort', label: '排序', type: 'number', placeholder: '越小越靠前' },
+  { name: 'status', label: 'cdn.status_required', type: 'switch', required: true },
+  { name: 'sort', label: 'cdn.sort', type: 'number', placeholder: 'cdn.sort_hint' },
   {
     name: 'config',
-    label: '凭据配置（JSON）',
+    label: 'cdn.config',
     type: 'textarea',
     full: true,
     keepIfEmpty: true,
-    placeholder: '{"bucket":"...","access_key":"..."}；列表不回传原值，留空 = 不修改',
+    placeholder: 'cdn.config_hint',
   },
 ];
 
@@ -51,47 +53,53 @@ const CDN_FIELDS: Field[] = [
 const COUNTRY_FIELDS: Field[] = [
   {
     name: 'country_code',
-    label: '国家代码',
+    label: 'country_config.country_code',
     type: 'text',
     required: true,
     createOnly: true,
-    placeholder: 'ISO 3166-1 alpha-2，如 CN',
+    placeholder: 'country_config.country_code_hint',
   },
-  { name: 'currency', label: '货币代码', type: 'text', required: true, placeholder: 'ISO 4217，如 CNY' },
+  {
+    name: 'currency',
+    label: 'country_config.currency',
+    type: 'text',
+    required: true,
+    placeholder: 'country_config.currency_hint',
+  },
   {
     name: 'payment_methods',
-    label: '支付方式（JSON）',
+    label: 'country_config.payment_methods',
     type: 'textarea',
     keepIfEmpty: true,
-    placeholder: '["stripe","paypal"] 或 {"stripe":{"enabled":true}}',
+    placeholder: 'country_config.payment_methods_hint',
   },
   {
     name: 'withdraw_methods',
-    label: '提现方式（JSON）',
+    label: 'country_config.withdraw_methods',
     type: 'textarea',
     keepIfEmpty: true,
-    placeholder: '["paypal","bank","crypto"]',
+    placeholder: 'country_config.withdraw_methods_hint',
   },
   {
     name: 'min_deposit',
-    label: '最低充值额',
+    label: 'country_config.min_deposit',
     type: 'text',
     keepIfEmpty: true,
-    placeholder: '十进制金额，如 10.0000；留空 = 不改（新建默认 1.0000）',
+    placeholder: 'country_config.min_deposit_hint',
   },
 ];
 
 @Component({
   selector: 'app-infra',
-  imports: [StateBlock, Table, Pager, Tabs, FormModal],
+  imports: [StateBlock, Table, Pager, Tabs, FormModal, T],
   template: `
     <div class="page-head">
-      <h1>基础设施</h1>
-      <span class="sub">CDN 厂商 / 国家配置</span>
+      <h1>{{ 'infra.title' | t }}</h1>
+      <span class="sub">{{ 'infra.subtitle' | t }}</span>
       <div class="spacer"></div>
-      <button class="btn" (click)="load()">刷新</button>
+      <button class="btn" (click)="load()">{{ 'app.refresh' | t }}</button>
       @if (writable()) {
-        <button class="btn btn-primary" (click)="openCreate()">+ 新建</button>
+        <button class="btn btn-primary" (click)="openCreate()">+ {{ 'app.create' | t }}</button>
       }
     </div>
 
@@ -114,7 +122,7 @@ const COUNTRY_FIELDS: Field[] = [
       </div>
     </ui-state>
 
-    @if (rows().length) {
+    @if (paged() && rows().length) {
       <ui-pager [page]="page()" [pages]="pages" [total]="total()" (jump)="go($event)" />
     }
 
@@ -132,10 +140,17 @@ const COUNTRY_FIELDS: Field[] = [
 })
 export class Infra extends CrudPage {
   protected readonly tabs = [
-    { key: 'cdn', label: 'CDN 厂商' },
-    { key: 'country', label: '国家配置' },
+    { key: 'cdn', label: 'cdn.title' },
+    { key: 'country', label: 'country_config.title' },
   ];
   protected readonly tab = signal('cdn');
+
+  /**
+   * 只有国家配置是 page+limit 分页的：/cdn/provider/list 是 `CdnProvider::orderBy('sort')->get()`
+   * （整表、无 total，且被券/支付等表单当厂商下拉复用）⇒ 给它挂分页器就是给出一个假第 2 页。
+   */
+  protected readonly paged = computed(() => this.tab() !== 'cdn');
+
   /** 动作回执（服务端 message / 失败原因）：就地显示，不把列表打成错误态 */
   protected readonly note = signal('');
   protected readonly noteErr = signal(false);
@@ -149,19 +164,19 @@ export class Infra extends CrudPage {
   protected readonly heads = computed((): Record<string, string> => {
     if (this.tab() !== 'cdn') return {};
     return {
-      name: '显示名称',
-      provider: '厂商',
-      status: '状态(0禁用/1启用)',
-      sort: '排序',
-      created_at: '创建时间',
-      updated_at: '更新时间',
+      name: 'cdn.name',
+      provider: 'cdn.provider',
+      status: 'cdn.head.status',
+      sort: 'cdn.sort',
+      created_at: 'cdn.head.created',
+      updated_at: 'cdn.head.updated',
     };
   });
 
   protected override crud(): Crud | null {
     if (this.tab() === 'cdn') {
       return {
-        noun: 'CDN 厂商',
+        noun: 'cdn.noun',
         fields: CDN_FIELDS,
         statused: true,
         label: (row) => String(row['name'] ?? idOf(row)),
@@ -173,12 +188,12 @@ export class Infra extends CrudPage {
         },
         // 连通测试是外部副作用（HeadBucket 真连厂商），但**只读**、可重试、无参数可配
         // ⇒ 走底座的行内动作 + 就地回执即可，不额外做二次确认
-        extra: [{ key: 'test', label: '连通测试' }],
+        extra: [{ key: 'test', label: 'cdn.test' }],
       };
     }
     if (this.tab() !== 'country') return null;
     return {
-      noun: '国家配置',
+      noun: 'country_config.noun',
       fields: COUNTRY_FIELDS,
       statused: true,
       label: (row) => String(row['country_code'] ?? idOf(row)),
@@ -215,14 +230,16 @@ export class Infra extends CrudPage {
     const id = idOf(row);
     if (!id) return;
     const who = String(row['name'] ?? id);
-    this.note.set(`正在测试「${who}」…`);
+    this.note.set(this.i18n.t('cdn.testing', { who }));
     this.noteErr.set(false);
     try {
       const { message } = await this.api.envelope('POST', I + 'cdn/provider/test', { id });
-      this.note.set(`「${who}」：${message || '连通正常'}`);
+      this.note.set(
+        this.i18n.t('cdn.test_ok', { who, message: message || this.i18n.t('cdn.test_success') }),
+      );
     } catch (e) {
       this.noteErr.set(true);
-      this.note.set(`「${who}」连通测试失败：${errText(e)}`);
+      this.note.set(this.i18n.t('cdn.test_fail', { who, error: errText(e) }));
     }
   }
 }

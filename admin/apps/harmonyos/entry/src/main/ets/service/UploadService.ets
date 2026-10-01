@@ -6,6 +6,8 @@ import http from '@ohos.net.http';
 import { apiService } from './ApiService';
 import { API_BASE_URL } from '../common/AppConfig';
 import { FormPayload, UploadTicket } from '../model/DataModels';
+// 本文件全是**请求期**求值的静态方法 ⇒ 直接调 t() 安全（服务端 error 原文不译，只译本地兜底话术）
+import { t } from '../i18n/Translations';
 
 /**
  * 上传分组 —— 与 admin/config/plugin/erikwang2013/aetherupload-webman/app.php 的 groups.image 同一取值：
@@ -48,7 +50,7 @@ export class UploadService {
     }
     const savedPath = UploadService.savedPathOf(done);
     if (savedPath.length === 0) {
-      throw new Error('上传失败：服务端未返回资源地址');
+      throw new Error(t('upload.no_saved_path'));
     }
     return UploadService.displayUrl(savedPath);
   }
@@ -125,6 +127,6 @@ export class UploadService {
       return '';
     }
     const text = `${raw}`;
-    return text.length > 0 && text !== 'undefined' ? text : '上传失败';
+    return text.length > 0 && text !== 'undefined' ? text : t('upload.failed');
   }
 }

@@ -15,9 +15,11 @@ import {
   VipLevelItem,
   LeaderboardItem,
   CountryConfigItem,
-  PlatformConfigItem
+  PlatformConfigItem,
+  pageQuery
 } from '../model/DataModels';
 import { ResourceModule, buildRow, unpaged, paged } from './ResourceSchema';
+import { t } from '../i18n/Translations';
 
 /* =============================== 5 VIP 等级 ===============================
  * create: level*(≥0) name*(≤50) required_exp*(≥0) benefits*(JSON 对象)
@@ -27,12 +29,12 @@ import { ResourceModule, buildRow, unpaged, paged } from './ResourceSchema';
  * ========================================================================== */
 
 const VIP_FIELDS: FormField[] = [
-  { name: 'level', label: '等级', type: 'number', required: true, placeholder: '整数，≥ 0，唯一' },
-  { name: 'name', label: '等级名称', type: 'text', required: true, placeholder: '最长 50 字' },
-  { name: 'required_exp', label: '所需经验', type: 'number', required: true, placeholder: '整数，≥ 0' },
+  { name: 'level', label: 'vip.level', type: 'number', required: true, placeholder: 'vip.level_placeholder' },
+  { name: 'name', label: 'vip.name', type: 'text', required: true, placeholder: 'vip.name_placeholder' },
+  { name: 'required_exp', label: 'vip.required_exp', type: 'number', required: true, placeholder: 'vip.required_exp_placeholder' },
   {
-    name: 'benefits', label: '权益', type: 'textarea', required: true,
-    placeholder: 'JSON 对象，键限 exchange_discount / withdraw_fee_discount / rate_bonus，值 0-1'
+    name: 'benefits', label: 'vip.benefits', type: 'textarea', required: true,
+    placeholder: 'vip.benefits_placeholder'
   }
 ];
 
@@ -41,7 +43,7 @@ function vipFields(isEdit: boolean): FormField[] {
   for (let i = 0; i < VIP_FIELDS.length; i++) {
     const field = VIP_FIELDS[i];
     if (isEdit && field.name === 'level') {
-      fields.push({ name: 'level', label: '等级', type: 'text', placeholder: '创建后不可修改', disabled: true });
+      fields.push({ name: 'level', label: 'vip.level', type: 'text', placeholder: 'common.immutable', disabled: true });
     } else {
       fields.push(field);
     }
@@ -65,14 +67,14 @@ function vipRow(item: VipLevelItem): ResourceRow {
   values.name = item.name;
   values.required_exp = `${item.required_exp}`;
   values.benefits = item.benefits ?? '';
-  return buildRow(item.id, `VIP ${item.level} · ${item.name}`, `所需经验 ${item.required_exp}`,
+  return buildRow(item.id, `VIP ${item.level} · ${item.name}`, `${t('vip.required_exp_short')} ${item.required_exp}`,
     '', true, 0, values);
 }
 
 const VIP: ResourceModule = {
   key: 'vip',
-  title: 'VIP 等级',
-  desc: '等级门槛与折扣权益',
+  title: 'mod.vip.title',
+  desc: 'mod.vip.desc',
   base: '/admin/v1/vip/level',
   paginated: false,
   listPath: (_page: number, _limit: number, _gameId: string): string => '/admin/v1/vip/level/list',
@@ -94,24 +96,24 @@ const VIP: ResourceModule = {
  * ========================================================================== */
 
 const LEADERBOARD_FIELDS: FormField[] = [
-  { name: 'name', label: '榜单名称', type: 'text', required: true, placeholder: '最长 100 字' },
+  { name: 'name', label: 'leaderboard.name', type: 'text', required: true, placeholder: 'leaderboard.name_placeholder' },
   {
-    name: 'type', label: '榜单周期', type: 'select', required: true, options: [
-      { label: '日榜', value: 'daily' },
-      { label: '周榜', value: 'weekly' },
-      { label: '月榜', value: 'monthly' },
-      { label: '总榜', value: 'alltime' }
+    name: 'type', label: 'leaderboard.type', type: 'select', required: true, options: [
+      { label: 'leaderboard.type.daily', value: 'daily' },
+      { label: 'leaderboard.type.weekly', value: 'weekly' },
+      { label: 'leaderboard.type.monthly', value: 'monthly' },
+      { label: 'leaderboard.type.alltime', value: 'alltime' }
     ]
   },
   {
-    name: 'metric', label: '排序指标', type: 'select', required: true, options: [
-      { label: '赢取', value: 'earned' },
-      { label: '消耗', value: 'spent' },
-      { label: '场次', value: 'play_count' }
+    name: 'metric', label: 'leaderboard.metric', type: 'select', required: true, options: [
+      { label: 'leaderboard.metric.earned', value: 'earned' },
+      { label: 'leaderboard.metric.spent', value: 'spent' },
+      { label: 'leaderboard.metric.play_count', value: 'play_count' }
     ]
   },
-  { name: 'rule', label: '榜单规则', type: 'textarea', placeholder: '规则说明（可选）' },
-  { name: 'sort', label: '排序', type: 'number', placeholder: '越小越靠前，缺省 0' }
+  { name: 'rule', label: 'leaderboard.rule', type: 'textarea', placeholder: 'leaderboard.rule_placeholder' },
+  { name: 'sort', label: 'common.sort', type: 'number', placeholder: 'leaderboard.sort_placeholder' }
 ];
 
 function leaderboardInitial(): FormValues {
@@ -131,18 +133,18 @@ function leaderboardRow(item: LeaderboardItem): ResourceRow {
   values.metric = item.metric;
   values.rule = item.rule ?? '';
   values.sort = `${item.sort}`;
-  return buildRow(item.id, item.name, `${item.type} · ${item.metric} · 排序 ${item.sort}`,
-    item.status === 1 ? '启用' : '停用', item.status === 1, item.status, values);
+  return buildRow(item.id, item.name, `${item.type} · ${item.metric} · ${t('common.sort')} ${item.sort}`,
+    item.status === 1 ? t('common.enabled') : t('common.disabled'), item.status === 1, item.status, values);
 }
 
 const LEADERBOARD: ResourceModule = {
   key: 'leaderboard',
-  title: '排行榜',
-  desc: '榜单定义、上下线与刷新缓存',
+  title: 'mod.leaderboard.title',
+  desc: 'mod.leaderboard.desc',
   base: '/admin/v1/leaderboard',
   paginated: true,
   listPath: (page: number, limit: number, _gameId: string): string =>
-    `/admin/v1/leaderboard/list?page=${page}&limit=${limit}`,
+    `/admin/v1/leaderboard/list?${pageQuery(page, limit)}`,
   parseList: (data: Object): ResourceListResult => paged<LeaderboardItem>(data, leaderboardRow),
   fields: LEADERBOARD_FIELDS,
   editFields: LEADERBOARD_FIELDS,
@@ -151,7 +153,7 @@ const LEADERBOARD: ResourceModule = {
   togglePath: '',
   needsGame: false,
   deletePassword: false,
-  extraText: '刷新',
+  extraText: 'mod.leaderboard.action',
   extraPath: (id: string): string => `/admin/v1/leaderboard/${id}/refresh`
 };
 
@@ -163,11 +165,11 @@ const LEADERBOARD: ResourceModule = {
  * ========================================================================== */
 
 const COUNTRY_FIELDS: FormField[] = [
-  { name: 'country_code', label: '国家代码', type: 'text', required: true, placeholder: 'ISO 3166-1 alpha-2，2 位' },
-  { name: 'currency', label: '货币代码', type: 'text', required: true, placeholder: 'ISO 4217，3 位' },
-  { name: 'payment_methods', label: '支付方式', type: 'textarea', placeholder: 'JSON，如 ["stripe"]' },
-  { name: 'withdraw_methods', label: '提现方式', type: 'textarea', placeholder: 'JSON，如 ["bank"]' },
-  { name: 'min_deposit', label: '最低充值', type: 'text', placeholder: '十进制金额，如 1.0000' }
+  { name: 'country_code', label: 'country_config.code', type: 'text', required: true, placeholder: 'country_config.code_placeholder' },
+  { name: 'currency', label: 'country_config.currency', type: 'text', required: true, placeholder: 'country_config.currency_placeholder' },
+  { name: 'payment_methods', label: 'country_config.payment_methods', type: 'textarea', placeholder: 'country_config.payment_methods_placeholder' },
+  { name: 'withdraw_methods', label: 'country_config.withdraw_methods', type: 'textarea', placeholder: 'country_config.withdraw_methods_placeholder' },
+  { name: 'min_deposit', label: 'country_config.min_deposit', type: 'text', placeholder: 'country_config.min_deposit_placeholder' }
 ];
 
 function countryFields(isEdit: boolean): FormField[] {
@@ -175,7 +177,7 @@ function countryFields(isEdit: boolean): FormField[] {
   for (let i = 0; i < COUNTRY_FIELDS.length; i++) {
     const field = COUNTRY_FIELDS[i];
     if (isEdit && field.name === 'country_code') {
-      fields.push({ name: 'country_code', label: '国家代码', type: 'text', placeholder: '创建后不可修改', disabled: true });
+      fields.push({ name: 'country_code', label: 'country_config.code', type: 'text', placeholder: 'common.immutable', disabled: true });
     } else {
       fields.push(field);
     }
@@ -200,18 +202,18 @@ function countryRow(item: CountryConfigItem): ResourceRow {
   values.payment_methods = item.payment_methods ?? '';
   values.withdraw_methods = item.withdraw_methods ?? '';
   values.min_deposit = item.min_deposit ?? '';
-  return buildRow(item.id, `${item.country_code} · ${item.currency}`, `最低充值 ${item.min_deposit}`,
-    item.status === 1 ? '启用' : '停用', item.status === 1, item.status, values);
+  return buildRow(item.id, `${item.country_code} · ${item.currency}`, `${t('country_config.min_deposit_short')} ${item.min_deposit}`,
+    item.status === 1 ? t('common.enabled') : t('common.disabled'), item.status === 1, item.status, values);
 }
 
 const COUNTRY: ResourceModule = {
   key: 'country',
-  title: '国家配置',
-  desc: '国家/地区的货币、支付方式与限额',
+  title: 'mod.country.title',
+  desc: 'mod.country.desc',
   base: '/admin/v1/country/config',
   paginated: true,
   listPath: (page: number, limit: number, _gameId: string): string =>
-    `/admin/v1/country/config/list?page=${page}&limit=${limit}`,
+    `/admin/v1/country/config/list?${pageQuery(page, limit)}`,
   parseList: (data: Object): ResourceListResult => paged<CountryConfigItem>(data, countryRow),
   fields: countryFields(false),
   editFields: countryFields(true),
@@ -232,19 +234,19 @@ const COUNTRY: ResourceModule = {
  * ========================================================================== */
 
 const CONFIG_FIELDS: FormField[] = [
-  { name: 'group', label: '配置分组', type: 'text', required: true, placeholder: '最长 100 字' },
-  { name: 'key', label: '配置键', type: 'text', required: true, placeholder: '最长 100 字' },
-  { name: 'value', label: '配置值', type: 'textarea', required: true, placeholder: '字符串；type=json 时填 JSON 文本' },
+  { name: 'group', label: 'sysconfig.group', type: 'text', required: true, placeholder: 'sysconfig.group_placeholder' },
+  { name: 'key', label: 'sysconfig.key', type: 'text', required: true, placeholder: 'sysconfig.key_placeholder' },
+  { name: 'value', label: 'sysconfig.value', type: 'textarea', required: true, placeholder: 'sysconfig.value_placeholder' },
   {
-    name: 'type', label: '值类型', type: 'select', options: [
-      { label: '字符串', value: 'string' },
-      { label: '整数', value: 'int' },
-      { label: '布尔', value: 'bool' },
-      { label: 'JSON', value: 'json' },
-      { label: '小数', value: 'decimal' }
+    name: 'type', label: 'sysconfig.type', type: 'select', options: [
+      { label: 'sysconfig.type.string', value: 'string' },
+      { label: 'sysconfig.type.int', value: 'int' },
+      { label: 'sysconfig.type.bool', value: 'bool' },
+      { label: 'sysconfig.type.json', value: 'json' },
+      { label: 'sysconfig.type.decimal', value: 'decimal' }
     ]
   },
-  { name: 'description', label: '配置说明', type: 'text', placeholder: '最长 255 字' }
+  { name: 'description', label: 'sysconfig.description', type: 'text', placeholder: 'sysconfig.description_placeholder' }
 ];
 
 function configFields(isEdit: boolean): FormField[] {
@@ -252,7 +254,7 @@ function configFields(isEdit: boolean): FormField[] {
   for (let i = 0; i < CONFIG_FIELDS.length; i++) {
     const field = CONFIG_FIELDS[i];
     if (isEdit && (field.name === 'group' || field.name === 'key')) {
-      fields.push({ name: field.name, label: field.label, type: 'text', placeholder: '创建后不可修改', disabled: true });
+      fields.push({ name: field.name, label: field.label, type: 'text', placeholder: 'common.immutable', disabled: true });
     } else {
       fields.push(field);
     }
@@ -283,14 +285,14 @@ function configRow(item: PlatformConfigItem): ResourceRow {
 
 const CONFIG: ResourceModule = {
   key: 'config',
-  title: '系统配置',
-  desc: '键值对维护（删除需管理员密码）',
+  title: 'mod.config.title',
+  desc: 'mod.config.desc',
   base: '/admin/v1/config',
   // 仅此模块的建在 POST base 本身（route.php:90 Route::post('/config')），其余模块都是 base + '/create'
   createPath: '/admin/v1/config',
   paginated: true,
   listPath: (page: number, limit: number, _gameId: string): string =>
-    `/admin/v1/config?page=${page}&limit=${limit}`,
+    `/admin/v1/config?${pageQuery(page, limit)}`,
   parseList: (data: Object): ResourceListResult => paged<PlatformConfigItem>(data, configRow),
   fields: configFields(false),
   editFields: configFields(true),

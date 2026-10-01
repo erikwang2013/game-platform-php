@@ -8,6 +8,7 @@ import 'package:dio/dio.dart';
 // get 自带一套同名 multipart 类型（get_connect），这里只要 dio 的
 import 'package:get/get.dart' hide Response, FormData, MultipartFile;
 import 'auth_service.dart';
+import '../i18n/locale_controller.dart';
 
 /// 图片直传的组名：本树只开 `image` 一组（后端 groups.image 白名单 jpg/jpeg/png/gif/webp、≤5MB）。
 const String aetherImageGroup = 'image';
@@ -17,7 +18,7 @@ class ApiService {
   factory ApiService() => _instance;
 
   late final Dio dio;
-  static const String baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'http://localhost:8789');
+  static const String baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'http://admin.games.test');
 
   ApiService._() {
     dio = Dio(BaseOptions(
@@ -31,6 +32,12 @@ class ApiService {
 
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
+        // 语言必须先于业务请求发出去：后端 `LanguageMiddleware` 按 `X-Language` → `Accept-Language`
+        // → 默认(zh) 决定 `trans()` 用哪张表。**不发这个头，界面切到日语也只是客户端文案变，
+        // 服务端 message 永远是中文** —— 「支持 13 种语言」只落一半。
+        // 值用短码（后端 `common\Locale::normalize()` 认短码与 `zh-CN` 全码）。
+        options.headers['X-Language'] = LocaleController.currentCode;
+
         final token = await AuthService.getToken();
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
@@ -52,6 +59,40 @@ class ApiService {
 
   Future<Map<String, dynamic>> get(String path, {Map<String, dynamic>? params}) =>
       _request(() => dio.get(path, queryParameters: params));
+
+  /// 列表分页取数：返回 (行数组, 总数)，并**把三种分页参数名一次发全**。
+  ///
+  /// 后端读分页参数的口径不统一：`limit`（15 个控制器，缺省 15）、`size`（7 个风控类，
+  /// 缺省 20）、`per_page`（SearchController）。只发 `page_size` 谁都不认识，服务端就退回
+  /// 自己的缺省值，而前端按自己的 pageSize 算页数 ⇒ 尾页永远取不到
+  /// （total=100、每页 20 时第 76~100 条不可达）。别名全发，各控制器读它认识的那个
+  /// （与 angular 树 core/api.service.ts 的 `list()` 同法、同理）。
+  ///
+  /// 行数组的键也不统一：多数是 `data.list`、风控七个是 `data.items`；裸数组（本就不分页）
+  /// 也容错。`total` 缺失时按本页行数兜底 —— 宁可少算页数，也不要让 pager 崩在类型转换上。
+  Future<({List<dynamic> rows, int total})> list(
+    String path, {
+    int page = 1,
+    int pageSize = 20,
+    Map<String, dynamic>? params,
+  }) async {
+    final query = <String, dynamic>{
+      ...?params,
+      'page': page,
+      'page_size': pageSize,
+      'limit': pageSize,
+      'size': pageSize,
+      'per_page': pageSize,
+    };
+    final resp = await get(path, params: query);
+    final data = resp['data'];
+    if (data is List) return (rows: data, total: data.length);
+    final body = data is Map ? data : const <String, dynamic>{};
+    final rows = body['list'] ?? body['items'];
+    final list = rows is List ? rows : const <dynamic>[];
+    final total = body['total'];
+    return (rows: list, total: total is num ? total.toInt() : list.length);
+  }
 
   Future<Map<String, dynamic>> post(String path, {dynamic data}) => _request(() => dio.post(path, data: data));
 

@@ -8,6 +8,8 @@ import { AnnouncementService } from '../service/DataService';
 import { AnnouncementItem, FormValues, FormPayload } from '../model/DataModels';
 import { LoadingView, ErrorView, EmptyView } from '../common/Components';
 import { FormDialog, RowActionBar, FormField, confirmDelete } from '../common/FormDialog';
+import { PagerBar } from '../common/ResourceViews';
+import { t } from '../i18n/Translations';
 
 /**
  * 公告字段描述 —— 值域取自 AnnouncementController 的 validator 与 game_announcement 列注释：
@@ -20,18 +22,19 @@ import { FormDialog, RowActionBar, FormField, confirmDelete } from '../common/Fo
  *   值域一律以后端 validator 为准，改这里之前先去读控制器。
  *   start_at/end_at 未纳入表单（要日期控件；不传即不动这两列，改期请走 Web 端）。
  */
+/** 各文案字段存**键名**（FormDialog 对 label/hint/placeholder 各调一次 t()）—— 顶层调 t() 会固化启动语言 */
 const ANNOUNCEMENT_FIELDS: FormField[] = [
-  { name: 'title', label: '标题', type: 'text', required: true, placeholder: '最长 255 字' },
-  { name: 'content', label: '内容', type: 'textarea', required: true, placeholder: '公告正文' },
+  { name: 'title', label: 'ann.f.title', type: 'text', required: true, placeholder: 'risk.cheat.note_hint' },
+  { name: 'content', label: 'ann.f.content', type: 'textarea', required: true, placeholder: 'ann.f.content_placeholder' },
   {
-    name: 'type', label: '类型', type: 'select', required: true, options: [
-      { label: '系统公告', value: 'system' },
-      { label: '游戏公告', value: 'game' },
-      { label: '支付公告', value: 'payment' }
+    name: 'type', label: 'ann.f.type', type: 'select', required: true, options: [
+      { label: 'ann.type_system', value: 'system' },
+      { label: 'ann.type_game', value: 'game' },
+      { label: 'ann.type_payment', value: 'payment' }
     ]
   },
-  { name: 'target_lang', label: '目标语言', type: 'text', placeholder: '空 = 全语言，如 zh-CN' },
-  { name: 'status', label: '已发布', type: 'switch' }
+  { name: 'target_lang', label: 'ann.f.target_lang', type: 'text', placeholder: 'ann.f.target_lang_placeholder' },
+  { name: 'status', label: 'ann.listed', type: 'switch' }
 ];
 
 /**
@@ -55,6 +58,7 @@ function announcementCreateInitial(): FormValues {
 @Entry
 @Component
 struct AnnouncementManagePage {
+  @StorageLink('app_locale') localeCode: string = 'en';
   @State announcements: AnnouncementItem[] = [];
   @State page: number = 1;
   @State total: number = 0;
@@ -90,7 +94,7 @@ struct AnnouncementManagePage {
         return;
       }
       this.hasError = true;
-      promptAction.showToast({ message: '加载失败' });
+      promptAction.showToast({ message: t('common.load_failed') });
     } finally {
       this.isLoading = false;
     }
@@ -134,10 +138,10 @@ struct AnnouncementManagePage {
     try {
       if (this.formEdit) {
         await AnnouncementService.update(this.editingId, body);
-        promptAction.showToast({ message: '更新成功' });
+        promptAction.showToast({ message: t('res.updated') });
       } else {
         await AnnouncementService.create(body);
-        promptAction.showToast({ message: '创建成功' });
+        promptAction.showToast({ message: t('res.created') });
       }
     } catch (e) {
       if (e instanceof Error && e.message === 'UNAUTHORIZED') {
@@ -154,7 +158,7 @@ struct AnnouncementManagePage {
     this.busyId = item.id;
     try {
       await AnnouncementService.toggle(item.id, next);
-      promptAction.showToast({ message: next === 1 ? '已发布' : '已下架' });
+      promptAction.showToast({ message: next === 1 ? t('ann.published_toast') : t('ann.unpublished_toast') });
       this.loadData(true);
     } catch (e) {
       this.reportRowError(e);
@@ -173,7 +177,7 @@ struct AnnouncementManagePage {
     this.busyId = item.id;
     try {
       await AnnouncementService.remove(item.id);
-      promptAction.showToast({ message: '删除成功' });
+      promptAction.showToast({ message: t('res.deleted') });
       this.loadData(true);
     } catch (e) {
       this.reportRowError(e);
@@ -188,7 +192,7 @@ struct AnnouncementManagePage {
       router.replaceUrl({ url: 'pages/LoginPage' });
       return;
     }
-    promptAction.showToast({ message: e instanceof Error && e.message.length > 0 ? e.message : '操作失败' });
+    promptAction.showToast({ message: e instanceof Error && e.message.length > 0 ? e.message : t('res.op_failed') });
   }
 
   build() {
@@ -199,7 +203,7 @@ struct AnnouncementManagePage {
       // 卡片上的点击不会冒泡到遮罩（无需 stopPropagation）
       if (this.formOpen) {
         FormDialog({
-          title: this.formEdit ? '编辑公告' : '新建公告',
+          title: this.formEdit ? t('ann.edit_title') : t('ann.create_title'),
           fields: ANNOUNCEMENT_FIELDS,
           initial: this.formInitial,
           onSubmit: (body: FormPayload) => this.submitForm(body),
@@ -230,14 +234,14 @@ struct AnnouncementManagePage {
         .backgroundColor('#FFFFFF')
         .onClick(() => router.back())
 
-        Text('公告管理')
+        Text(t('ann.manage_title'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 8 })
 
         Blank()
 
-        Button('+ 新增')
+        Button(t('res.create'))
           .fontSize(13)
           .fontColor('#FFFFFF')
           .backgroundColor('#1677FF')
@@ -258,7 +262,7 @@ struct AnnouncementManagePage {
       } else if (this.hasError) {
         ErrorView({ onRetry: () => this.loadData() });
       } else if (this.announcements.length === 0) {
-        EmptyView({ message: '暂无公告数据' });
+        EmptyView({ message: t('ann.empty') });
       } else {
         List() {
           ForEach(this.announcements, (item: AnnouncementItem) => {
@@ -270,7 +274,7 @@ struct AnnouncementManagePage {
                     .fontWeight(FontWeight.Medium)
                     .layoutWeight(1)
 
-                  Text(item.status === 1 ? '已发布' : '草稿')
+                  Text(item.status === 1 ? t('ann.listed') : t('ann.draft'))
                     .fontSize(10)
                     .fontColor(item.status === 1 ? '#52C41A' : '#999999')
                     .backgroundColor(item.status === 1 ? '#E6FFF0' : '#F0F0F0')
@@ -286,7 +290,7 @@ struct AnnouncementManagePage {
                     .layoutWeight(1)
 
                   RowActionBar({
-                    statusText: item.status === 1 ? '下架' : '发布',
+                    statusText: item.status === 1 ? t('ann.action_unpublish') : t('ann.action_publish'),
                     busy: this.busyId === item.id,
                     onEdit: () => {
                       this.openEdit(item);
@@ -315,36 +319,18 @@ struct AnnouncementManagePage {
         .edgeEffect(EdgeEffect.Spring)
       }
 
-      // 分页
+      // 分页（共用 PagerBar，与资源管理页同一套；整表返回的模块不挂）
       if (!this.isLoading && !this.hasError && this.total > this.limit) {
-        Row() {
-          Button('上一页')
-            .fontSize(13)
-            .fontColor(this.page > 1 ? '#1677FF' : '#CCCCCC')
-            .backgroundColor(Color.Transparent)
-            .enabled(this.page > 1)
-            .onClick(() => {
-              this.goPage(-1);
-            })
-
-          Text(`${this.page} / ${this.pageCount()}`)
-            .fontSize(13)
-            .fontColor('#666666')
-
-          Button('下一页')
-            .fontSize(13)
-            .fontColor(this.page < this.pageCount() ? '#1677FF' : '#CCCCCC')
-            .backgroundColor(Color.Transparent)
-            .enabled(this.page < this.pageCount())
-            .onClick(() => {
-              this.goPage(1);
-            })
-        }
-        .width('100%')
-        .height(48)
-        .justifyContent(FlexAlign.Center)
-        .backgroundColor('#FFFFFF')
-        .border({ width: { top: 0.5 }, color: '#EEEEEE' })
+        PagerBar({
+          page: this.page,
+          pageCount: this.pageCount(),
+          onPrev: () => {
+            this.goPage(-1);
+          },
+          onNext: () => {
+            this.goPage(1);
+          }
+        })
       }
     }
     .width('100%')

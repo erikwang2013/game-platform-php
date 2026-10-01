@@ -44,7 +44,7 @@ class ExportController extends BaseController
         $table = $request->input('table', 'admin_user');
         $columns = $request->input('columns', []);
         $conditions = $request->input('conditions', []);
-        $title = $request->input('title', '数据导出');
+        $title = $request->input('title', trans('Data export'));
 
         // 获取导出字段映射
         $exportColumns = $this->getExportColumns($table);
@@ -136,7 +136,7 @@ class ExportController extends BaseController
     public function pdf(Request $request): Response
     {
         $type = $request->input('type', 'table');
-        $title = $request->input('title', '数据导出');
+        $title = $request->input('title', trans('Data export'));
         $data = $request->input('data', []);
 
         $html = $this->buildPdfHtml($type, $title, $data);
@@ -186,7 +186,7 @@ class ExportController extends BaseController
         $html .= '<div class="header">';
         $html .= '<h1>' . htmlspecialchars($title) . '</h1>';
         $html .= '<div class="meta">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt; — https://erik.xyz</div>';
-        $html .= '<div class="meta">导出时间: ' . $timestamp . '</div>';
+        $html .= '<div class="meta">' . trans('Exported at: %time%', ['%time%' => $timestamp]) . '</div>';
         $html .= '</div>';
 
         if ($type === 'dashboard') {
@@ -212,7 +212,7 @@ class ExportController extends BaseController
             $html .= '</tbody></table>';
         }
 
-        $html .= '<div class="footer">Copyright (c) 2026 erik — https://erik.xyz | 本文件包含不可移除的版权信息</div>';
+        $html .= '<div class="footer">Copyright (c) 2026 erik — https://erik.xyz | ' . trans('This file contains a non-removable copyright notice') . '</div>';
         $html .= '</body></html>';
 
         return $html;
@@ -235,9 +235,9 @@ class ExportController extends BaseController
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('用户列表');
+        $sheet->setTitle(trans('User list'));
 
-        $headers = ['ID', '用户名', '昵称', '国家', '状态', '最后登录', '注册时间'];
+        $headers = ['ID', trans('Username'), trans('Nickname'), trans('Country'), trans('Status'), trans('Last login'), trans('Registered at')];
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1677FF']],
@@ -256,7 +256,7 @@ class ExportController extends BaseController
             $sheet->getCell('B' . $row)->setValue($u->username);
             $sheet->getCell('C' . $row)->setValue($u->nickname);
             $sheet->getCell('D' . $row)->setValue($u->country);
-            $sheet->getCell('E' . $row)->setValue($u->status == 1 ? '启用' : '禁用');
+            $sheet->getCell('E' . $row)->setValue($u->status == 1 ? trans('Enabled') : trans('Disabled'));
             $sheet->getCell('F' . $row)->setValue($u->last_login_at);
             $sheet->getCell('G' . $row)->setValue($u->created_at);
             $row++;
@@ -292,9 +292,9 @@ class ExportController extends BaseController
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('平台流水');
+        $sheet->setTitle(trans('Platform transactions'));
 
-        $headers = ['ID', '用户ID', '类型', '金额', '余额', '关联类型', '备注', '时间'];
+        $headers = ['ID', trans('User ID'), trans('Type'), trans('Amount'), trans('Balance'), trans('Related type'), trans('Remark'), trans('Time')];
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '1677FF']],
@@ -361,7 +361,7 @@ class ExportController extends BaseController
         }
 
         if (!$order) {
-            return $this->fail('订单不存在', 404);
+            return $this->fail(trans('Order not found'), 404);
         }
 
         $html = '<!DOCTYPE html><html><head><meta charset="utf-8"><style>
@@ -374,17 +374,17 @@ class ExportController extends BaseController
             .footer { text-align: center; font-size: 10px; color: #999; margin-top: 40px; border-top: 1px solid #eee; padding-top: 12px; }
         </style></head><body>
         <div class="header">
-            <h1>' . ($type === 'deposit' ? '充值凭证' : '提现凭证') . '</h1>
+            <h1>' . ($type === 'deposit' ? trans('Deposit receipt') : trans('Withdrawal receipt')) . '</h1>
             <p>Global Game Platform</p>
         </div>
         <table class="info">
-            <tr><td>订单号</td><td>' . htmlspecialchars($order->order_no) . '</td></tr>
-            <tr><td>用户</td><td>' . htmlspecialchars($order->user->username ?? '') . '</td></tr>
-            <tr><td>金额</td><td>' . htmlspecialchars($type === 'deposit' ? $order->platform_amount : $order->platform_amount) . ' 平台币</td></tr>
-            <tr><td>状态</td><td>' . htmlspecialchars($order->status) . '</td></tr>
-            <tr><td>时间</td><td>' . ($order->created_at instanceof \DateTime ? $order->created_at->format('Y-m-d H:i:s') : $order->created_at) . '</td></tr>
+            <tr><td>' . trans('Order No.') . '</td><td>' . htmlspecialchars($order->order_no) . '</td></tr>
+            <tr><td>' . trans('User') . '</td><td>' . htmlspecialchars($order->user->username ?? '') . '</td></tr>
+            <tr><td>' . trans('Amount') . '</td><td>' . htmlspecialchars($type === 'deposit' ? $order->platform_amount : $order->platform_amount) . ' ' . trans('platform tokens') . '</td></tr>
+            <tr><td>' . trans('Status') . '</td><td>' . htmlspecialchars($order->status) . '</td></tr>
+            <tr><td>' . trans('Time') . '</td><td>' . ($order->created_at instanceof \DateTime ? $order->created_at->format('Y-m-d H:i:s') : $order->created_at) . '</td></tr>
         </table>
-        <div class="footer">Copyright (c) 2026 erik — https://erik.xyz | 电子凭证，与纸质凭证具有同等效力</div>
+        <div class="footer">Copyright (c) 2026 erik — https://erik.xyz | ' . trans('Electronic receipt, equivalent to a paper receipt') . '</div>
         </body></html>';
 
         $dompdf = new Dompdf();
@@ -432,24 +432,24 @@ class ExportController extends BaseController
     {
         $maps = [
             'admin_user' => [
-                'id' => '用户ID', 'username' => '用户名', 'real_name' => '真实姓名',
-                'phone' => '手机号', 'email' => '邮箱', 'status' => '状态',
-                'last_login_at' => '最后登录时间', 'last_login_ip' => '最后登录IP',
-                'created_at' => '创建时间',
+                'id' => trans('User ID'), 'username' => trans('Username'), 'real_name' => trans('Real name'),
+                'phone' => trans('Phone'), 'email' => trans('Email'), 'status' => trans('Status'),
+                'last_login_at' => trans('Last login time'), 'last_login_ip' => trans('Last login IP'),
+                'created_at' => trans('Created at'),
             ],
             'operation_log' => [
-                'id' => 'ID', 'user_id' => '用户ID', 'action' => '操作动作',
-                'method' => '请求方法', 'path' => '请求路径', 'ip' => 'IP地址',
-                'created_at' => '操作时间',
+                'id' => 'ID', 'user_id' => trans('User ID'), 'action' => trans('Action'),
+                'method' => trans('Request method'), 'path' => trans('Request path'), 'ip' => trans('IP address'),
+                'created_at' => trans('Operated at'),
             ],
             'admin_role' => [
-                'id' => 'ID', 'name' => '角色名称', 'slug' => '角色标识',
-                'description' => '描述', 'status' => '状态', 'created_at' => '创建时间',
+                'id' => 'ID', 'name' => trans('Role name'), 'slug' => trans('Role slug'),
+                'description' => trans('Description'), 'status' => trans('Status'), 'created_at' => trans('Created at'),
             ],
             'system_config' => [
-                'id' => 'ID', 'group' => '分组', 'key' => '配置键',
-                'value' => '配置值', 'type' => '类型', 'description' => '说明',
-                'created_at' => '创建时间',
+                'id' => 'ID', 'group' => trans('Group'), 'key' => trans('Config key'),
+                'value' => trans('Config value'), 'type' => trans('Type'), 'description' => trans('Notes'),
+                'created_at' => trans('Created at'),
             ],
         ];
 

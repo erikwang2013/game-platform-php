@@ -57,14 +57,14 @@ class RiskClusterController extends BaseController
     {
         $cluster = RiskCluster::find($this->decodeId($hashid));
         if (!$cluster) {
-            return $this->fail('团伙不存在');
+            return $this->fail(trans('Cluster not found'));
         }
 
         $memberIds = $this->resolveMemberIds($cluster);
         $users = User::whereIn('id', $memberIds)->get()->keyBy('id');
         $members = array_map(fn ($id) => [
             'id' => $this->encodeId($id),
-            'username' => (string) ($users[$id]->username ?? '未知'),
+            'username' => (string) ($users[$id]->username ?? trans('Unknown')),
         ], $memberIds);
 
         return $this->success(['cluster' => $this->format($cluster), 'members' => $members]);
@@ -115,13 +115,13 @@ class RiskClusterController extends BaseController
         $name = mb_substr((string) $request->post('name', ''), 0, 100);
 
         if (!in_array($type, ['same_ip', 'same_device', 'same_pay_account', 'manual'], true)) {
-            return $this->fail('type 非法', 422);
+            return $this->fail(trans('Invalid type'), 422);
         }
         if ($name === '') {
-            return $this->fail('name 必填', 422);
+            return $this->fail(trans('name is required'), 422);
         }
         if (in_array($type, ['same_ip', 'same_device'], true) && $fingerprint === '') {
-            return $this->fail('fingerprint 必填', 422);
+            return $this->fail(trans('fingerprint is required'), 422);
         }
 
         // member_ids 对外是 **hashid**（全站契约：只有 hashid 离开 API 边界）。原实现是 `(int) $raw`：
@@ -156,11 +156,11 @@ class RiskClusterController extends BaseController
     {
         $cluster = RiskCluster::find($this->decodeId($hashid));
         if (!$cluster) {
-            return $this->fail('团伙不存在');
+            return $this->fail(trans('Cluster not found'));
         }
         $status = (int) $request->post('status', -1);
         if (!in_array($status, [0, 1, 2], true)) {
-            return $this->fail('status 非法（0/1/2）');
+            return $this->fail(trans('Invalid status (0/1/2)'));
         }
         $cluster->status = $status;
         $cluster->save();

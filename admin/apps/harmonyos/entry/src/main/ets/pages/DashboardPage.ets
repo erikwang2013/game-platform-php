@@ -7,10 +7,12 @@ import promptAction from '@ohos.promptAction';
 import { DashboardService, ReportService } from '../service/DataService';
 import { DashboardData, StatCard as StatCardType, OperationLogItem, ReportSummary } from '../model/DataModels';
 import { StatCard, LoadingView, ErrorView, EmptyView, CopyrightBar } from '../common/Components';
+import { t, t1 } from '../i18n/Translations';
 
 @Entry
 @Component
 struct DashboardPage {
+  @StorageLink('app_locale') localeCode: string = 'en';
   @State dashboardData: DashboardData | null = null;
   @State isLoading: boolean = true;
   @State hasError: boolean = false;
@@ -58,7 +60,7 @@ struct DashboardPage {
         return;
       }
       this.report = null;
-      promptAction.showToast({ message: '报表加载失败' });
+      promptAction.showToast({ message: t('dashboard.report_load_failed_toast') });
     } finally {
       this.reportLoading = false;
     }
@@ -79,20 +81,20 @@ struct DashboardPage {
     Column() {
       // 顶栏
       Row() {
-        Text('仪表盘')
+        Text(t('dashboard.title'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
 
         Blank()
 
         // 导出菜单
-        Button('导出')
+        Button(t('dashboard.export'))
           .fontSize(13)
           .fontColor('#1677FF')
           .backgroundColor('#E6F0FF')
           .borderRadius(4)
           .onClick(() => {
-            promptAction.showToast({ message: '导出功能已触发，查看系统通知' });
+            promptAction.showToast({ message: t('dashboard.export_triggered') });
           })
 
         Image($r('app.media.avatar'))
@@ -143,13 +145,13 @@ struct DashboardPage {
             // 报表汇总卡片
             Column() {
               Row() {
-                Text('报表汇总')
+                Text(t('dashboard.report_summary'))
                   .fontSize(16)
                   .fontWeight(FontWeight.Medium)
 
                 Blank()
 
-                Button('近7天')
+                Button(t('dashboard.last_7_days'))
                   .fontSize(12)
                   .height(28)
                   .fontColor(this.reportDays === 7 ? '#FFFFFF' : '#1677FF')
@@ -157,7 +159,7 @@ struct DashboardPage {
                   .borderRadius(4)
                   .onClick(() => this.switchReportDays(7))
 
-                Button('近30天')
+                Button(t('dashboard.last_30_days'))
                   .fontSize(12)
                   .height(28)
                   .fontColor(this.reportDays === 30 ? '#FFFFFF' : '#1677FF')
@@ -170,7 +172,7 @@ struct DashboardPage {
               .margin({ bottom: 12 })
 
               if (this.reportLoading) {
-                Text('加载中...')
+                Text(t('common.loading'))
                   .fontSize(13)
                   .fontColor('#999999')
                   .width('100%')
@@ -180,7 +182,7 @@ struct DashboardPage {
                 Grid() {
                   GridItem() {
                     Column() {
-                      Text('充值金额')
+                      Text(t('dashboard.deposit_amount'))
                         .fontSize(12)
                         .fontColor('#999999')
 
@@ -195,7 +197,7 @@ struct DashboardPage {
 
                   GridItem() {
                     Column() {
-                      Text('提现金额')
+                      Text(t('dashboard.withdraw_amount'))
                         .fontSize(12)
                         .fontColor('#999999')
 
@@ -210,7 +212,7 @@ struct DashboardPage {
 
                   GridItem() {
                     Column() {
-                      Text('新增用户')
+                      Text(t('dashboard.new_users'))
                         .fontSize(12)
                         .fontColor('#999999')
 
@@ -225,7 +227,7 @@ struct DashboardPage {
 
                   GridItem() {
                     Column() {
-                      Text('游戏局数')
+                      Text(t('dashboard.play_count'))
                         .fontSize(12)
                         .fontColor('#999999')
 
@@ -243,7 +245,7 @@ struct DashboardPage {
                 .columnsGap(12)
                 .width('100%')
               } else {
-                Text('报表加载失败，点击重试')
+                Text(t('dashboard.report_load_failed'))
                   .fontSize(13)
                   .fontColor('#999999')
                   .width('100%')
@@ -261,13 +263,13 @@ struct DashboardPage {
             // 最近操作日志
             Column() {
               Row() {
-                Text('最近操作')
+                Text(t('dashboard.recent_ops'))
                   .fontSize(16)
                   .fontWeight(FontWeight.Medium)
 
                 Blank()
 
-                Text('查看全部 >')
+                Text(t('dashboard.view_all'))
                   .fontSize(12)
                   .fontColor('#1677FF')
               }
@@ -275,7 +277,7 @@ struct DashboardPage {
               .margin({ bottom: 12 })
 
               if (this.dashboardData!.recent_logs.length === 0) {
-                Text('暂无操作记录')
+                Text(t('dashboard.no_ops'))
                   .fontSize(13)
                   .fontColor('#999999')
                   .width('100%')

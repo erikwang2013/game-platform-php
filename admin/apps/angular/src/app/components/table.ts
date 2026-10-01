@@ -1,10 +1,13 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
-import { Component, computed, input, output } from '@angular/core';
+import { Component, computed, input, output, signal } from '@angular/core';
 import { Row } from '../core/api.service';
-import { dash } from '../core/util';
+import { T, colKey, t } from '../core/i18n/i18n';
+import { idOf } from '../core/render';
+import { dash, num } from '../core/util';
 
 export interface Act {
   key: string;
+  /** i18n 键或字面量（查不到原样显示）；渲染时过 `| t` */
   label: string;
   danger?: boolean;
   /**
@@ -21,6 +24,7 @@ export interface Act {
  */
 @Component({
   selector: 'ui-table',
+  imports: [T],
   template: `
     <div class="table-wrap">
       <table class="data">
@@ -30,21 +34,35 @@ export interface Act {
               <th>{{ head(c) }}</th>
             }
             @if (actions().length) {
-              <th>操作</th>
+              <th>{{ 'table.actions' | t }}</th>
             }
           </tr>
         </thead>
         <tbody>
-          @for (r of rows(); track $index) {
-            <tr [class.clickable]="clickable()" (click)="pick.emit(r)">
+          @for (r of view(); track $index) {
+            <tr [class.clickable]="clickable()" (click)="pick.emit(r.row)">
               @for (c of cols(); track c) {
-                <td [class.num]="isNum(r[c])">{{ dash(r[c]) }}</td>
+                <td [class.num]="isNum(r.row[c])">
+                  @if (c === treeKey()) {
+                    <span class="tree-cell" [style.paddingLeft.px]="r.depth * 18">
+                      <!-- 箭头对整行可见（有子节点就画），但折叠只藏子树、不藏自己 —— 还能再展开 -->
+                      @if (r.kids) {
+                        <button type="button" class="tree-arrow" (click)="fold($event, r.row)">
+                          {{ folded().has(idOf(r.row)) ? '▶' : '▼' }}
+                        </button>
+                      }
+                      {{ dash(r.row[c]) }}
+                    </span>
+                  } @else {
+                    {{ dash(r.row[c]) }}
+                  }
+                </td>
               }
               @if (actions().length) {
                 <td class="acts">
-                  @for (a of acts(r); track a.key) {
-                    <button class="btn" [class.danger]="a.danger" (click)="fire($event, r, a.key)">
-                      {{ a.label }}
+                  @for (a of acts(r.row); track a.key) {
+                    <button class="btn" [class.danger]="a.danger" (click)="fire($event, r.row, a.key)">
+                      {{ a.label | t }}
                     </button>
                   }
                 </td>
@@ -53,7 +71,7 @@ export interface Act {
           } @empty {
             <tr>
               <td class="state" [attr.colspan]="cols().length + (actions().length ? 1 : 0)">
-                暂无数据
+                {{ 'app.no_data' | t }}
               </td>
             </tr>
           }
@@ -64,16 +82,26 @@ export interface Act {
 })
 export class Table {
   readonly rows = input<Row[]>([]);
-  /** 列顺序 + 中文表头；留空则自动推导 */
+  /** 列顺序 + 表头（值是 i18n 键或字面量 —— 查不到原样显示）；留空则自动推导 */
   readonly heads = input<Record<string, string>>({});
   readonly actions = input<Act[]>([]);
   readonly clickable = input(false);
+  /**
+   * 树形列（列键）：该列渲染成「缩进 + 展开箭头」。行的 `depth` 字段是层级（从 0 起），
+   * 且必须按 DFS 序排（权限页签由 core/tree 的 flatten 产出）；折叠状态组件自持，
+   * 折叠只影响显示，`rows` 始终是整棵树 —— 重新取数不会重置展开状态。
+   */
+  readonly treeKey = input('');
 
   readonly pick = output<Row>();
   readonly act = output<{ row: Row; key: string }>();
 
   /** 模板作用域只认类成员，模块级 import 不可见 */
   protected readonly dash = dash;
+  protected readonly idOf = idOf;
+
+  /** 折叠的节点 id（缺省全展开） */
+  protected readonly folded = signal<ReadonlySet<string>>(new Set());
 
   protected readonly cols = computed(() => {
     const keys = Object.keys(this.heads());
@@ -85,8 +113,43 @@ export class Table {
     return out.slice(0, 10); // ponytail: 自动列最多 10 列，超出靠 heads 显式指定
   });
 
+  /**
+   * 实际渲染的行。非树形表就是原样一行不多、一行不少（depth 缺省 0 ⇒ kids 恒 false）。
+   * 树形表：被折叠节点盖住的整段（depth 大于它）跳过；某行有没有子节点看**下一行的 depth**，
+   * 不比当前行深就是叶子 —— DFS 序保证后代紧跟其后，省掉在行上再挂一个 has_children 字段。
+   */
+  protected readonly view = computed(() => {
+    const all = this.rows();
+    const folded = this.folded();
+    const out: { row: Row; depth: number; kids: boolean }[] = [];
+    let hideBelow = -1;
+    for (let i = 0; i < all.length; i++) {
+      const row = all[i]!;
+      const depth = num(row['depth']);
+      if (hideBelow >= 0 && depth > hideBelow) continue;
+      hideBelow = -1;
+      const next = all[i + 1];
+      out.push({ row, depth, kids: !!next && num(next['depth']) > depth });
+      if (folded.has(idOf(row))) hideBelow = depth;
+    }
+    return out;
+  });
+
+  protected fold(ev: Event, row: Row): void {
+    ev.stopPropagation(); // 别把点箭头当成点行（行点击开详情）
+    const id = idOf(row);
+    if (!id) return;
+    this.folded.update((s) => {
+      const next = new Set(s);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
+  }
+
   protected head(c: string): string {
-    return this.heads()[c] ?? c;
+    // 顺序：页面声明的 heads → 共享的 col.<字段名> → 字段名本身。
+    // 最后那级是刻意的：宁可露 `real_name`，也不许凭空拼一个查不到的键（会显示 col.xxx）
+    return t(this.heads()[c] ?? colKey(c) ?? c);
   }
 
   protected isNum(v: unknown): boolean {

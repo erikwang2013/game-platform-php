@@ -401,3 +401,59 @@ details.raw-box > summary:hover {
   line-height: 1.5;
   white-space: pre-line;
 }
+
+/* ---------- 树（权限树：表格树列 + 表单里的树多选） ---------- */
+/* 展开/折叠箭头。占位的那枚（叶子）保持同宽，同一层的文字才对得齐 */
+.tree-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 2px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  vertical-align: middle;
+}
+button.tree-arrow:hover {
+  color: var(--text);
+}
+.table-wrap .tree-cell {
+  display: inline-block;
+}
+/* 表单里的树多选：一行一个节点，勾选框与名字同一行 */
+.tree-select {
+  max-height: 260px;
+  overflow: auto;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.tree-row {
+  display: flex;
+  align-items: center;
+  height: 26px;
+  white-space: nowrap;
+}
+.tree-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+.tree-extra {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border);
+}
+.tree-extra .tree-label {
+  margin-right: 12px;
+}

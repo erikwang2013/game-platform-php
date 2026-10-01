@@ -12,6 +12,7 @@
 import { ResourceRow, FormValues, FormPayload } from '../model/DataModels';
 import { RowActionBar, FormDialog, FormField } from './FormDialog';
 import { ResultDialog } from './Components';
+import { t, t1 } from '../i18n/Translations';
 
 /** 空预填值（FormDialog 会拷一份再改，共享一个常量安全） */
 const NO_INITIAL: FormValues = {};
@@ -28,6 +29,8 @@ const NO_INITIAL: FormValues = {};
  */
 @Component
 export struct ExtraActionDialog {
+  /** 语言变更要重渲染本组件：build 里的 t() 读静态 currentCode，ArkUI 不观测它。 */
+  @StorageLink('app_locale') localeCode: string = 'en';
   /** 参数框标题，同时是结果框标题的前缀（如「试算」→「试算结果」） */
   title: string = '';
   fields: FormField[] = [];
@@ -62,7 +65,7 @@ export struct ExtraActionDialog {
     Stack({ alignContent: Alignment.Center }) {
       if (this.resultOpen) {
         ResultDialog({
-          title: `${this.title}结果`,
+          title: t1('common.result_suffix', 'name', this.title),
           lines: this.resultLines,
           onClose: () => {
             this.close();
@@ -90,6 +93,9 @@ export struct ExtraActionDialog {
 /**
  * 一行资源：主标题 + 状态徽标 + 摘要 + 行内动作（编辑/启用停用/额外动作/删除）。
  * 一切文案都由父页面算好传进来 —— 本组件不认识任何模块。
+ *
+ * 树形模块（权限树）只多三样：层级缩进、展开箭头、折叠状态 —— 其余 18 个平铺模块
+ * depth/hasChildren 取缺省值，渲染结果与加这三样之前逐像素一致（缩进 0、无箭头）。
  */
 @Component
 export struct ResourceRowItem {
@@ -109,14 +115,38 @@ export struct ResourceRowItem {
   @Prop canEdit: boolean = true;
   /** 有没有删除端点（缺省 true），透传给 RowActionBar */
   @Prop canDelete: boolean = true;
+  /** 树形模块的行层级（0 = 顶层）；平铺模块缺省 */
+  @Prop depth: number = 0;
+  /** 树形模块：有子节点 ⇒ 画展开箭头 */
+  @Prop hasChildren: boolean = false;
+  /** 当前是否展开（hasChildren 为假时无意义） */
+  @Prop expanded: boolean = false;
   onEdit?: () => void;
   onToggle?: () => void;
   onExtra?: () => void;
   onDelete?: () => void;
+  onExpand?: () => void;
 
   build() {
     Column() {
       Row() {
+        // 展开箭头独占一列（`▸` 折叠 / `▾` 展开）；叶子留同宽占位，同级标题左对齐
+        if (this.hasChildren) {
+          Text(this.expanded ? '▾' : '▸')
+            .fontSize(12)
+            .fontColor('#999999')
+            .width(20)
+            .textAlign(TextAlign.Center)
+            .onClick(() => {
+              if (this.onExpand) {
+                this.onExpand();
+              }
+            })
+        } else {
+          Text('')
+            .width(20)
+        }
+
         Text(this.title)
           .fontSize(15)
           .fontWeight(FontWeight.Medium)
@@ -173,7 +203,8 @@ export struct ResourceRowItem {
       .margin({ top: 8 })
     }
     .width('100%')
-    .padding({ left: 16, right: 16, top: 10, bottom: 10 })
+    // 树形模块按层级缩进（每层 14）；平铺模块 depth=0，与加树之前逐像素一致
+    .padding({ left: 16 + this.depth * 14, right: 16, top: 10, bottom: 10 })
     .alignItems(HorizontalAlign.Start)
     .backgroundColor('#FFFFFF')
     .border({ width: { bottom: 0.5 }, color: '#EEEEEE' })
@@ -186,6 +217,7 @@ export struct ResourceRowItem {
  */
 @Component
 export struct GamePickerBar {
+  @StorageLink('app_locale') localeCode: string = 'en';
   @Prop options: SelectOption[] = [];
   /** 当前选中下标，-1 = 未选 */
   @Prop selected: number = -1;
@@ -193,12 +225,12 @@ export struct GamePickerBar {
 
   build() {
     Row() {
-      Text('所属游戏')
+      Text(t('resource.related_game'))
         .fontSize(14)
         .fontColor('#666666')
 
       Select(this.options)
-        .value(this.selected >= 0 && this.selected < this.options.length ? this.options[this.selected].value : '请选择')
+        .value(this.selected >= 0 && this.selected < this.options.length ? this.options[this.selected].value : t('common.please_select'))
         .selected(this.selected)
         .layoutWeight(1)
         .margin({ left: 12 })
@@ -217,6 +249,7 @@ export struct GamePickerBar {
 /** 分页条：上一页 / 当前页 / 下一页；只有一页时父页面不挂它 */
 @Component
 export struct PagerBar {
+  @StorageLink('app_locale') localeCode: string = 'en';
   @Prop page: number = 1;
   @Prop pageCount: number = 1;
   onPrev?: () => void;
@@ -224,7 +257,7 @@ export struct PagerBar {
 
   build() {
     Row() {
-      Button('上一页')
+      Button(t('common.previous_page'))
         .fontSize(13)
         .fontColor(this.page > 1 ? '#1677FF' : '#CCCCCC')
         .backgroundColor(Color.Transparent)
@@ -239,7 +272,7 @@ export struct PagerBar {
         .fontSize(13)
         .fontColor('#666666')
 
-      Button('下一页')
+      Button(t('common.next_page'))
         .fontSize(13)
         .fontColor(this.page < this.pageCount ? '#1677FF' : '#CCCCCC')
         .backgroundColor(Color.Transparent)

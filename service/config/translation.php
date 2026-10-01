@@ -20,10 +20,13 @@
  * Multilingual configuration
  */
 return [
-    // Default language
-    'locale' => 'zh-CN',
-    // Fallback language
-    'fallback_locale' => ['en-US', 'zh-CN', 'ja-JP', 'ko-KR'],
+    // 默认语言：**保持中文** —— 本树现有响应文案与既有测试断言的都是中文。
+    // 用短码（zh/en/ja/ko）是因为翻译文件按**父目录名**认 locale：
+    // `resource/translations/<locale>/<domain>.php`（webman support\Translation 的目录扫描）
+    'locale' => 'zh',
+    // 回落链只挂 en：**键名本身就是英文**，缺译时回落到英文原句（而不是中文）——
+    // 这是「英文当键」项目的正确语义；本语言的完整译文由 messages.php 提供。
+    'fallback_locale' => ['en'],
     // Folder where language files are stored
     'path' => base_path() . '/resource/translations',
 ];

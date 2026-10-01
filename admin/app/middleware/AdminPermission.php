@@ -21,7 +21,7 @@ class AdminPermission
     {
         $adminId = $request->adminId ?? 0;
         if (!$adminId) {
-            return json(['code' => 401, 'message' => '未登录', 'data' => []]);
+            return json(['code' => 401, 'message' => trans('Not logged in'), 'data' => []]);
         }
 
         $path = $this->stripVersionSegment($this->permissionPath($request));
@@ -36,7 +36,7 @@ class AdminPermission
         $requiredPermission = strtolower($method) . '.' . trim($path, '/');
 
         if (!in_array($requiredPermission, $permissions)) {
-            return json(['code' => 403, 'message' => '无权限访问', 'data' => []]);
+            return json(['code' => 403, 'message' => trans('Access denied'), 'data' => []]);
         }
 
         return $next($request);

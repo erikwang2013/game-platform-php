@@ -79,7 +79,7 @@ class ConfigController extends BaseController
                               ->where('key', $request->input('key'))
                               ->exists();
         if ($exists) {
-            return $this->fail('配置项已存在', 422);
+            return $this->fail(trans('Config item already exists'), 422);
         }
 
         $config = new PlatformConfig();
@@ -91,7 +91,7 @@ class ConfigController extends BaseController
         $config->description = $request->input('description', '');
         $config->save();
 
-        return $this->success($this->encodeIds($config->toArray()), '创建成功');
+        return $this->success($this->encodeIds($config->toArray()), trans('Created successfully'));
     }
 
     #[Apidoc\Title("更新配置")]
@@ -107,7 +107,7 @@ class ConfigController extends BaseController
         $id     = $this->decodeId($hashid);
         $config = PlatformConfig::find($id);
         if (!$config) {
-            return $this->fail('配置项不存在', 404);
+            return $this->fail(trans('Config item not found'), 404);
         }
 
         // 镜像 store 的 value 规则（sometimes：局部更新），并为 store 漏掉、而 update 会写的
@@ -134,7 +134,7 @@ class ConfigController extends BaseController
 
         $config->save();
 
-        return $this->success($this->encodeIds($config->toArray()), '更新成功');
+        return $this->success($this->encodeIds($config->toArray()), trans('Updated successfully'));
     }
 
     #[Apidoc\Title("删除配置")]
@@ -147,7 +147,7 @@ class ConfigController extends BaseController
         $id     = $this->decodeId($hashid);
         $config = PlatformConfig::find($id);
         if (!$config) {
-            return $this->fail('配置项不存在', 404);
+            return $this->fail(trans('Config item not found'), 404);
         }
 
         $adminId = $request->adminId ?? 0;
@@ -157,6 +157,6 @@ class ConfigController extends BaseController
         }
 
         $config->delete();
-        return $this->success([], '删除成功');
+        return $this->success([], trans('Deleted successfully'));
     }
 }

@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { Row } from '../core/api.service';
 import { Field } from '../core/crud';
+import { t } from '../core/i18n/i18n';
 import { idOf } from '../core/render';
 import { num } from '../core/util';
 import type { Act } from '../components/table';
@@ -24,23 +25,12 @@ export const RULE_TYPES = [
 ];
 
 /**
- * config 的键表。**服务端是唯一真值**（RiskRuleController::CONFIG_KEYS / INT_BOUNDS /
+ * config 的键表提示。**服务端是唯一真值**（RiskRuleController::CONFIG_KEYS / INT_BOUNDS /
  * BOOL_KEYS / MONEY_KEYS / RATIO_KEYS），这里只做提示、不做前端校验：
  * 白名单之外的键、超范围的值、字符串 "false" 都由后端逐条 422 回来，前端再写一套只会两处漂移。
+ * 文案本身是词条 `risk.rule.keys_note`（见 dict/risk.ts），这里只留键名。
  */
-const CONFIG_HINT = [
-  'config 必须是 JSON 对象，键随 type 变（服务端白名单，多一个键就 422）：',
-  'ip_blacklist: blacklist（字符串数组，如 ["1.2.3.4"]）',
-  'amount_anomaly: min_amount（>0）、currency（≤10 字符）',
-  'frequency: window_minutes（1-10080）、max_count（1-100000）',
-  'velocity: window_minutes、max_accounts、same_ip（true/false）',
-  'device_fingerprint: max_accounts_per_device、new_device_lookback_hours（1-8760）、new_device_withdraw_block（true/false）',
-  'ip_reputation: block_score_below（0-100）、warn_score_below（0-100）、block_unknown（true/false）',
-  'device_account_graph: cluster_threshold、max_accounts_per_device、frozen_sibling_block（true/false）',
-  'withdraw_pattern: window_minutes、max_applies、single_hard_cap（>0）、drain_ratio（(0,1]）、sigma_window_days（2-3650）、sigma_multiplier（1-100）、fast_interval_seconds（1-86400）、fast_interval_min_count',
-  '未标范围的整数键一律 1-100000；布尔键要真 JSON true/false（字符串 "false" 会被当成 true）。',
-  '阈值取 0 会让判定恒真并熔断全站（含充值），服务端因此把整数下界卡在 1。',
-].join('\n');
+const CONFIG_HINT = 'risk.rule.keys_note';
 
 /**
  * 字段真值 = RiskRuleController::fill()（create 与 update **同一套**）：
@@ -52,53 +42,54 @@ const CONFIG_HINT = [
 export const RULE_FIELDS: Field[] = [
   {
     name: 'name',
-    label: '规则名',
+    label: 'risk.rule.name',
     type: 'text',
     required: true,
     full: true,
-    placeholder: '评估器日志与命中记录里回显的就是它',
+    placeholder: 'risk.rule.name_hint',
   },
   {
     name: 'type',
-    label: '类型',
+    label: 'risk.rule.type',
     type: 'select',
     required: true,
+    // 选项名就用后端枚举原文（ip_blacklist…）：译了反而与 config 的键、与日志里的值对不上
     options: RULE_TYPES.map((v) => ({ value: v, label: v })),
   },
   {
     name: 'action',
-    label: '命中处置',
+    label: 'risk.rule.action',
     type: 'select',
     required: true,
     // log 只留痕，warn 提示，block 是真拦（deposit 上也拦 ⇒ 连充值一起停）
     options: [
-      { value: 'log', label: 'log（只记日志）' },
-      { value: 'warn', label: 'warn（告警）' },
-      { value: 'block', label: 'block（拦截）' },
+      { value: 'log', label: 'risk.action.log' },
+      { value: 'warn', label: 'risk.action.warn' },
+      { value: 'block', label: 'risk.action.block' },
     ],
   },
   {
     name: 'scope',
-    label: '作用域',
+    label: 'risk.rule.scope',
     type: 'select',
     options: [
-      { value: 'all', label: 'all（全部场景）' },
-      { value: 'deposit', label: 'deposit（充值）' },
-      { value: 'withdraw', label: 'withdraw（提现）' },
-      { value: 'exchange', label: 'exchange（兑换）' },
-      { value: 'login', label: 'login（登录）' },
+      { value: 'all', label: 'risk.scope.all' },
+      { value: 'deposit', label: 'risk.scope.deposit' },
+      { value: 'withdraw', label: 'risk.scope.withdraw' },
+      { value: 'exchange', label: 'risk.scope.exchange' },
+      { value: 'login', label: 'risk.scope.login' },
     ],
   },
   {
     name: 'priority',
-    label: '优先级',
+    label: 'risk.rule.priority',
     type: 'number',
-    placeholder: '0-1000，越大越先判（缺省 100）',
+    placeholder: 'risk.rule.priority_hint',
   },
-  { name: 'status', label: '状态', type: 'switch' },
+  { name: 'status', label: 'risk.rule.status', type: 'switch' },
   {
     name: 'config',
-    label: '阈值配置（JSON）',
+    label: 'risk.rule.config',
     type: 'textarea',
     full: true,
     placeholder: '{"max_count":10,"window_minutes":720}',
@@ -107,7 +98,7 @@ export const RULE_FIELDS: Field[] = [
 ];
 
 /** 规则行内动作：试算只读（RiskRuleController::test，不写库不落日志），没有删除端点 ⇒ 不摆删除 */
-export const RULE_ACTS: Act[] = [{ key: 'test', label: '试算' }];
+export const RULE_ACTS: Act[] = [{ key: 'test', label: 'risk.rule.test' }];
 
 /**
  * 风险事件的行内处置（POST /risk/event/{hashid}/handle，入参 decision=approve|reject + note≤500）。
@@ -116,22 +107,22 @@ export const RULE_ACTS: Act[] = [{ key: 'test', label: '试算' }];
  * 两个词的语义差别完全由这里的文案承载，要反改就改这一处。
  */
 export const EVENT_ACTS: Act[] = [
-  { key: 'approve', label: '确认风险' },
-  { key: 'reject', label: '驳回', danger: true },
+  { key: 'approve', label: 'risk.event.approve' },
+  { key: 'reject', label: 'risk.event.reject', danger: true },
 ];
 
 /** 风险用户的行内动作：冻结无请求体（服务端按可用余额全额锁），解冻可选金额 */
 export const USER_ACTS: Act[] = [
-  { key: 'hold', label: '冻结', danger: true },
-  { key: 'release', label: '解冻' },
+  { key: 'hold', label: 'risk.user.hold', danger: true },
+  { key: 'release', label: 'risk.user.release' },
 ];
 
-/** 反作弊事件状态值域（AntiCheatController::review 的 `in:` 规则）+ 各自的中文说法 */
+/** 反作弊事件状态值域（AntiCheatController::review 的 `in:` 规则）+ 各自的词条键（值 = risk.ac.status.*） */
 export const ANTICHEAT_STATUS: Record<string, string> = {
-  open: '待审核',
-  confirmed: '确认作弊',
-  whitelisted: '白名单',
-  closed: '关闭',
+  open: 'risk.ac.status.open',
+  confirmed: 'risk.ac.status.confirmed',
+  whitelisted: 'risk.ac.status.whitelisted',
+  closed: 'risk.ac.status.closed',
 };
 
 /**
@@ -154,10 +145,10 @@ export const ANTICHEAT_ACTS: Act[] = (['confirmed', 'whitelisted', 'closed', 'op
  * 末尾「成员」是只读动作（GET /risk/clusters/{hashid}/members），没有状态可言 ⇒ 不做 when 过滤。
  */
 export const CLUSTER_ACTS: Act[] = [
-  { key: 'cl_1', label: '观察中', when: (row) => num(row['status']) !== 1 },
-  { key: 'cl_2', label: '已处置', when: (row) => num(row['status']) !== 2 },
-  { key: 'cl_0', label: '标记误判', when: (row) => num(row['status']) !== 0 },
-  { key: 'members', label: '成员' },
+  { key: 'cl_1', label: 'risk.cluster.act.1', when: (row) => num(row['status']) !== 1 },
+  { key: 'cl_2', label: 'risk.cluster.act.2', when: (row) => num(row['status']) !== 2 },
+  { key: 'cl_0', label: 'risk.cluster.act.0', when: (row) => num(row['status']) !== 0 },
+  { key: 'members', label: 'risk.cluster.members' },
 ];
 
 /**
@@ -169,36 +160,57 @@ export const CLUSTER_ACTS: Act[] = [
  * （`blocked` 是 PHP bool ⇒ JSON true/false；写成真假值判断，0/1 或 undefined 也照旧成立。）
  */
 export const DEVICE_ACTS: Act[] = [
-  { key: 'block', label: '拉黑', danger: true, when: (row) => !row['blocked'] },
-  { key: 'unblock', label: '解封', when: (row) => !!row['blocked'] },
+  { key: 'block', label: 'risk.device.block', danger: true, when: (row) => !row['blocked'] },
+  { key: 'unblock', label: 'risk.device.unblock', when: (row) => !!row['blocked'] },
 ];
 
 /** 拉黑是**真拦截**（RiskService::check() 对人工标记短路，不看 device_fingerprint 规则是否启用）⇒ 文案要说清代价 */
 export const deviceConfirmText = (row: Row): string =>
-  `确认拉黑设备「${String(row['fp_masked'] ?? '')}」？该指纹上的账号充值/提现将直接被拒（30 天后自动解封）。`;
+  t('risk.device.block_confirm', { fp: String(row['fp_masked'] ?? '') });
+
+/**
+ * 回执与确认文案里的**拼装逻辑**（纯函数，和 deviceConfirmText 同一类）：组件那边只管「什么时候弹、
+ * 弹完干什么」，拼句子与查词条都放这里 —— 句子一变，改的是这一处。
+ */
+export const fundsNote = (key: string, data: Row): string =>
+  t(key === 'hold' ? 'risk.user.hold_done' : 'risk.user.release_done', {
+    amount: String(data[key === 'hold' ? 'frozen_amount' : 'released_amount'] ?? ''),
+  });
+
+export const clusterMarked = (row: Row, id: string, status: number): string =>
+  t('risk.cluster.marked', {
+    name: String(row['name'] ?? id),
+    // status 是数值枚举（0/1/2）⇒ 先过 CLUSTER_STATUS 翻成词条键，再查表
+    status: t(CLUSTER_STATUS[String(status)] ?? String(status)),
+  });
+
+export const clusterCreated = (data: Row, fallback: string): string =>
+  t('risk.cluster.created', { name: String((data['cluster'] as Row)?.['name'] ?? fallback) });
 
 /** 请求体：只发完整哈希；掩码字段只用于显示，绝不进请求体 */
 export const deviceBody = (row: Row): Row => ({ fp_hash: String(row['fp_hash'] ?? '') });
 
 /** 回执：block 回 data.fp_masked（服务端重新掩码的那个），unblock 只回空 data ⇒ 缺省用行上的 */
 export const deviceNote = (row: Row, key: string, data: Row): string =>
-  `${key === 'block' ? '已拉黑设备 ' : '已解封设备 '}${String(data['fp_masked'] ?? row['fp_masked'] ?? '')}`;
+  t(key === 'block' ? 'risk.device.blocked_note' : 'risk.device.unblocked_note', {
+    fp: String(data['fp_masked'] ?? row['fp_masked'] ?? ''),
+  });
 
 export const CLUSTER_STATUS: Record<string, string> = {
-  '0': '误判',
-  '1': '观察中',
-  '2': '已处置',
+  '0': 'risk.cluster.status.0',
+  '1': 'risk.cluster.status.1',
+  '2': 'risk.cluster.status.2',
 };
 
 export const RISK_TABS = [
-  { key: 'overview', label: '风控总览' },
-  { key: 'users', label: '风险用户' },
-  { key: 'events', label: '风险事件' },
-  { key: 'rules', label: '风控规则' },
-  { key: 'clusters', label: '关联团伙' },
-  { key: 'ip', label: 'IP 信誉' },
-  { key: 'devices', label: '设备' },
-  { key: 'anticheat', label: '反作弊' },
+  { key: 'overview', label: 'risk.tab_overview' },
+  { key: 'users', label: 'risk.tab_users' },
+  { key: 'events', label: 'risk.tab_events' },
+  { key: 'rules', label: 'risk.tab_rules' },
+  { key: 'clusters', label: 'risk.tab_clusters' },
+  { key: 'ip', label: 'risk.tab_ip' },
+  { key: 'devices', label: 'risk.tab_devices' },
+  { key: 'anticheat', label: 'risk.tab_anticheat' },
 ];
 
 /** 取数路径（每个标签页一个端点；overview 单独走 risk/overview） */
@@ -219,76 +231,76 @@ export const RISK_PATHS: Record<string, string> = {
  */
 export const RISK_HEADS: Record<string, Record<string, string>> = {
   users: {
-    user_id: '用户',
-    username: '用户名',
-    score: '信任分',
-    band: '档位',
-    hit_count: '命中次数',
-    last_hit_at: '最近命中',
-    whitelisted: '白名单',
+    user_id: 'risk.head.user',
+    username: 'risk.head.username',
+    score: 'risk.head.score',
+    band: 'risk.head.band',
+    hit_count: 'risk.head.hits',
+    last_hit_at: 'risk.head.last_hit',
+    whitelisted: 'risk.head.whitelisted',
   },
   events: {
-    id: '事件',
-    user_id: '用户',
-    rule_name: '规则',
-    type: '类型',
-    action: '处置',
-    result: '结果',
-    ip_masked: 'IP',
-    fp_masked: '设备',
-    created_at: '时间',
+    id: 'risk.head.event',
+    user_id: 'risk.head.user',
+    rule_name: 'risk.head.rule',
+    type: 'risk.head.type',
+    action: 'risk.head.action',
+    result: 'risk.head.result',
+    ip_masked: 'risk.head.ip',
+    fp_masked: 'risk.head.device',
+    created_at: 'risk.head.time',
   },
   rules: {
     id: 'ID',
-    name: '规则名',
-    type: '类型',
-    scope: '作用域',
-    action: '处置',
-    priority: '优先级',
-    status: '状态',
+    name: 'risk.head.rule_name',
+    type: 'risk.head.type',
+    scope: 'risk.head.scope',
+    action: 'risk.head.action',
+    priority: 'risk.head.priority',
+    status: 'risk.head.status',
   },
   clusters: {
     id: 'ID',
-    name: '团伙',
-    type: '类型',
-    fingerprint_masked: '指纹',
-    user_count: '账号数',
-    status_label: '状态',
-    updated_at: '更新时间',
+    name: 'risk.head.cluster',
+    type: 'risk.head.type',
+    fingerprint_masked: 'risk.head.fingerprint',
+    user_count: 'risk.head.accounts_count',
+    status_label: 'risk.head.status',
+    updated_at: 'risk.head.updated',
   },
   ip: {
-    ip_masked: 'IP 哈希',
-    reputation_score: '信誉分',
-    source: '来源',
-    hit_count: '命中次数',
-    last_seen_at: '最近出现',
+    ip_masked: 'risk.head.ip_hash',
+    reputation_score: 'risk.head.reputation',
+    source: 'risk.head.source',
+    hit_count: 'risk.head.hits',
+    last_seen_at: 'risk.head.last_seen',
   },
   devices: {
-    fp_masked: '设备指纹',
-    ip_c_segment: 'C 段',
-    account_count: '关联账号',
-    blocked: '已拉黑',
-    last_seen_at: '最近出现',
+    fp_masked: 'risk.head.fp',
+    ip_c_segment: 'risk.head.ip_c',
+    account_count: 'risk.head.accounts',
+    blocked: 'risk.head.blocked',
+    last_seen_at: 'risk.head.last_seen',
   },
   anticheat: {
-    id: '事件',
-    user_id: '用户',
-    game_id: '游戏',
-    rule_type: '规则',
-    severity: '严重度',
-    action: '处置',
-    status: '状态',
-    review_note: '审核备注',
-    created_at: '时间',
+    id: 'risk.head.event',
+    user_id: 'risk.head.user',
+    game_id: 'risk.head.game',
+    rule_type: 'risk.head.rule',
+    severity: 'risk.head.severity',
+    action: 'risk.head.action',
+    status: 'risk.head.status',
+    review_note: 'risk.head.review_note',
+    created_at: 'risk.head.time',
   },
 };
 
 /** IP 四个动作的回执动词（端点同一个形状：POST /risk/ip/{key} `{ip}`） */
 export const IP_VERBS: Record<string, string> = {
-  block: '已拉黑',
-  whitelist: '已加入白名单',
-  appeal: '已申诉放行',
-  recheck: '已刷新信誉缓存',
+  block: 'risk.ip.verb.block',
+  whitelist: 'risk.ip.verb.whitelist',
+  appeal: 'risk.ip.verb.appeal',
+  recheck: 'risk.ip.verb.recheck',
 };
 
 /**
@@ -308,19 +320,19 @@ export function parseContext(raw: string): unknown | null {
 
 /** 抽屉标题：与 risk.ts 的 panel() 一一对应（试算 / 候选 / 只读的团伙成员） */
 export const PANEL_TITLES: Record<string, string> = {
-  result: '规则试算（只读，未写库）',
-  candidates: '聚类候选（未落库）',
-  members: '团伙成员（只读）',
+  result: 'risk.panel.result',
+  candidates: 'risk.panel.candidates',
+  members: 'risk.panel.members',
 };
 
 /** 聚类候选抽屉：候选字段 = detect 的 candidates[]（fingerprint 是完整哈希，掩码列只用于显示） */
 export const CANDIDATE_HEADS: Record<string, string> = {
-  type: '类型',
-  fingerprint_masked: '指纹',
-  user_count: '账号数',
+  type: 'risk.head.type',
+  fingerprint_masked: 'risk.head.fingerprint',
+  user_count: 'risk.head.accounts_count',
 };
 
-export const CANDIDATE_ACTS: Act[] = [{ key: 'confirm', label: '确认为团伙' }];
+export const CANDIDATE_ACTS: Act[] = [{ key: 'confirm', label: 'risk.cluster.confirm_candidate' }];
 
 /**
  * 二次确认文案里的对象标识：**必须能认出是谁**（只有一个 hashid 等于没告诉人）。
@@ -330,20 +342,24 @@ export function whoEvent(row: Row): string {
   const rule = String(row['rule_name'] ?? '');
   const user = String(row['user_id'] ?? '');
   return (
-    [rule && `规则「${rule}」`, user && `用户 ${user}`].filter(Boolean).join(' / ') || idOf(row)
+    [rule && t('risk.who.rule', { name: rule }), user && t('risk.who.user', { id: user })]
+      .filter(Boolean)
+      .join(' / ') || idOf(row)
   );
 }
 
 export function whoUser(row: Row): string {
   const name = String(row['username'] ?? '');
   const id = String(row['user_id'] ?? '');
-  return name ? `${name}（${id}）` : id || idOf(row);
+  return name ? t('risk.who.user_id', { name, id }) : id || idOf(row);
 }
 
 export function whoAnti(row: Row): string {
   const rule = String(row['rule_name'] ?? '') || String(row['rule_type'] ?? '');
   const user = String(row['user_id'] ?? '');
   return (
-    [rule && `规则「${rule}」`, user && `用户 ${user}`].filter(Boolean).join(' / ') || idOf(row)
+    [rule && t('risk.who.rule', { name: rule }), user && t('risk.who.user', { id: user })]
+      .filter(Boolean)
+      .join(' / ') || idOf(row)
   );
 }

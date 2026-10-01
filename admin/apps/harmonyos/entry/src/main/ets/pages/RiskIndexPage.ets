@@ -3,6 +3,7 @@
  */
 
 import router from '@ohos.router';
+import { t } from '../i18n/Translations';
 
 /**
  * 风控中心的入口页 —— 四个「行为不齐整」的风控模块各自独立成页，这里只做导航。
@@ -22,6 +23,8 @@ import router from '@ohos.router';
 @Entry
 @Component
 struct RiskIndexPage {
+  @StorageLink('app_locale') localeCode: string = 'en';
+
   build() {
     Column() {
       // 顶栏
@@ -33,7 +36,7 @@ struct RiskIndexPage {
         .backgroundColor('#FFFFFF')
         .onClick(() => router.back())
 
-        Text('风控中心')
+        Text(t('risk.index.title'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 8 })
@@ -44,19 +47,19 @@ struct RiskIndexPage {
       .backgroundColor('#FFFFFF')
 
       Column() {
-        this.buildMenuItem('异常用户', '冻结 / 解冻 / 风控时间线（资金动作需二次确认）', () => {
+        this.buildMenuItem(t('risk.index.user'), t('risk.index.user_desc'), () => {
           router.pushUrl({ url: 'pages/RiskUserPage' });
         });
-        this.buildMenuItem('设备指纹', '设备列表与行内拉黑 / 解封（真阻断，30 天自动解封）', () => {
+        this.buildMenuItem(t('risk.index.device'), t('risk.index.device_desc'), () => {
           router.pushUrl({ url: 'pages/RiskDevicePage' });
         });
-        this.buildMenuItem('IP 信誉', '拉黑 / 加白 / 申诉放行 / 重查（要原文 IP）', () => {
+        this.buildMenuItem(t('risk.index.ip'), t('risk.index.ip_desc'), () => {
           router.pushUrl({ url: 'pages/RiskIpPage' });
         });
-        this.buildMenuItem('关联团伙', '聚类检测候选、人工确认、三态状态与成员名单', () => {
+        this.buildMenuItem(t('risk.index.cluster'), t('risk.index.cluster_desc'), () => {
           router.pushUrl({ url: 'pages/RiskClusterPage' });
         });
-        this.buildMenuItem('模块管理', '风控规则 / 风控事件 / 反作弊事件三个模块在这里', () => {
+        this.buildMenuItem(t('module.title'), t('risk.index.modules_desc'), () => {
           router.pushUrl({ url: 'pages/ModuleIndexPage' });
         });
       }

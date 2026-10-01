@@ -77,7 +77,7 @@ class AnnouncementController extends BaseController
         $announcement->end_at      = $request->input('end_at', null);
         $announcement->save();
 
-        return $this->success(['id' => $this->encodeId($announcement->id)], '创建成功');
+        return $this->success(['id' => $this->encodeId($announcement->id)], trans('Created successfully'));
     }
 
     #[Apidoc\Title("更新公告")]
@@ -95,7 +95,7 @@ class AnnouncementController extends BaseController
     {
         $announcement = Announcement::find($this->decodeId($hashid));
         if (!$announcement) {
-            return $this->fail('公告不存在', 404);
+            return $this->fail(trans('Announcement not found'), 404);
         }
 
         // 镜像 create 的规则，前缀 sometimes：update 是局部更新，缺省字段不该被判 required
@@ -129,7 +129,7 @@ class AnnouncementController extends BaseController
         }
         $announcement->save();
 
-        return $this->success($this->encodeIds($announcement->toArray()), '更新成功');
+        return $this->success($this->encodeIds($announcement->toArray()), trans('Updated successfully'));
     }
 
     #[Apidoc\Title("上架/下架公告")]
@@ -151,13 +151,13 @@ class AnnouncementController extends BaseController
 
         $announcement = Announcement::find($this->decodeId($request->input('id')));
         if (!$announcement) {
-            return $this->fail('公告不存在', 404);
+            return $this->fail(trans('Announcement not found'), 404);
         }
 
         $announcement->status = (int) $request->input('status');
         $announcement->save();
 
-        return $this->success([], '操作成功');
+        return $this->success([], trans('Operation successful'));
     }
 
     #[Apidoc\Title("删除公告")]
@@ -168,10 +168,10 @@ class AnnouncementController extends BaseController
     {
         $announcement = Announcement::find($this->decodeId($hashid));
         if (!$announcement) {
-            return $this->fail('公告不存在', 404);
+            return $this->fail(trans('Announcement not found'), 404);
         }
         $announcement->delete();
 
-        return $this->success([], '删除成功');
+        return $this->success([], trans('Deleted successfully'));
     }
 }

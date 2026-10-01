@@ -46,7 +46,7 @@ class DeviceFingerprintEvaluator implements RiskEvaluator
         $accountCount = (int) ($fingerprint?->account_count ?? 0);
 
         if ($accountCount > $maxAccounts) {
-            return ['matched' => true, 'message' => "同设备关联 {$accountCount} 个账号（阈值 {$maxAccounts}）", 'severity' => 'high'];
+            return ['matched' => true, 'message' => trans('%count% accounts share this device (threshold %threshold%)', ['%count%' => (string) $accountCount, '%threshold%' => (string) $maxAccounts]), 'severity' => 'high'];
         }
 
         $newDevice = $fingerprint !== null
@@ -58,13 +58,13 @@ class DeviceFingerprintEvaluator implements RiskEvaluator
         if ($checkType === 'withdraw') {
             return [
                 'matched' => true,
-                'message' => "新设备（{$lookbackHours}h 内首次出现）发起提现",
+                'message' => trans('Withdrawal from a new device (first seen within %hours%h)', ['%hours%' => (string) $lookbackHours]),
                 'severity' => $blockNewDev ? 'high' : 'medium',
             ];
         }
 
         if ($checkType === 'login' || $checkType === 'deposit') {
-            return ['matched' => true, 'message' => "新设备{$checkType}（{$lookbackHours}h 内首次出现）", 'severity' => 'low'];
+            return ['matched' => true, 'message' => trans('New device %check_type% (first seen within %hours%h)', ['%check_type%' => (string) $checkType, '%hours%' => (string) $lookbackHours]), 'severity' => 'low'];
         }
 
         return $this->miss("新设备但当前环节（{$checkType}）不评估");

@@ -3,11 +3,21 @@ import { computed, inject, signal } from '@angular/core';
 import { Api, Row } from './api.service';
 import { ListBase } from './list-base';
 import { idOf, json } from './render';
+import type { PNode } from './tree';
 import { errText, num } from './util';
 import type { Act } from '../components/table';
 
 /** image：文本框 + 上传按钮（值仍是字符串 URL；存量手输的 URL/图标名照旧可编辑） */
-export type FieldType = 'text' | 'textarea' | 'number' | 'select' | 'switch' | 'multi' | 'image';
+export type FieldType =
+  | 'text'
+  | 'textarea'
+  | 'number'
+  | 'select'
+  | 'switch'
+  | 'multi'
+  | 'image'
+  /** tree：树多选（权限树），值同样是一维 hashid 数组，提交形状与 multi 完全一致 */
+  | 'tree';
 
 export interface Opt {
   value: string;
@@ -32,6 +42,8 @@ export interface Field {
   createOnly?: boolean;
   /** 字段下方的说明（值域/格式提示）。**只提示不校验**：真值一律在服务端 */
   hint?: string;
+  /** tree 字段的节点树（运行期注入，与 options 一样随信号刷新） */
+  tree?: PNode[];
 }
 
 /**
@@ -52,7 +64,7 @@ export interface Ends {
 }
 
 export interface Crud {
-  /** 「新建<名词>」/ 提示语里的模块名 */
+  /** 「新建<名词>」里的模块名：i18n 键（查不到原样显示），由 crud.create/edit 的 {name} 占位符吃进去 */
   noun: string;
   fields: Field[];
   ends: Ends;
@@ -80,9 +92,12 @@ export interface Crud {
  *
  * multi 是**数组字段**（不是「一格文本里塞 JSON」）：后端收的是数组（permission_ids → sync()），
  * 走 json() 会变成字符串 '["a"]'，服务端拿到的就不是数组了。两侧都排序 ⇒ 判等与勾选顺序无关。
+ * tree 与 multi 同一口径：树只是选择方式，提交的仍是一维 hashid 数组。
  */
 function norm(f: Field, v: unknown): string | number | string[] | undefined {
-  if (f.type === 'multi') return Array.isArray(v) ? v.map(String).sort() : [];
+  if (f.type === 'multi' || f.type === 'tree') {
+    return Array.isArray(v) ? v.map(String).sort() : [];
+  }
   if (f.type === 'switch') return num(v) ? 1 : 0;
   if (f.type === 'number') return String(v ?? '').trim() === '' ? undefined : Number(v);
   if (v === null || v === undefined) return '';
@@ -145,10 +160,11 @@ export abstract class CrudPage extends ListBase<Row> {
     const c = this.crud();
     if (!c) return [];
     const acts: Act[] = [];
-    if (c.ends.update) acts.push({ key: 'edit', label: '编辑' });
-    if (c.ends.remove) acts.push({ key: 'delete', label: '删除', danger: true });
+    if (c.ends.update) acts.push({ key: 'edit', label: 'app.edit' });
+    if (c.ends.remove) acts.push({ key: 'delete', label: 'app.delete', danger: true });
     // 启用/停用两条路：专用 POST toggle 端点，或走 update 的局部 PUT {status}；两条都没有就不出按钮
-    if (c.statused && (c.ends.toggle || c.ends.update)) acts.push({ key: 'toggle', label: '启用/停用' });
+    if (c.statused && (c.ends.toggle || c.ends.update))
+      acts.push({ key: 'toggle', label: 'crud.toggle' });
     acts.push(...(c.extra ?? []));
     return acts;
   });
@@ -163,7 +179,7 @@ export abstract class CrudPage extends ListBase<Row> {
     const c = this.crud();
     if (!c) return;
     this.formValue.set(null);
-    this.formTitle.set('新建' + c.noun);
+    this.formTitle.set(this.i18n.t('crud.create', { name: this.i18n.t(c.noun) }));
     this.formError.set('');
     this.formOpen.set(true);
   }
@@ -215,7 +231,7 @@ export abstract class CrudPage extends ListBase<Row> {
     if (key === 'edit') {
       if (!c.ends.update) return;
       this.formValue.set(row);
-      this.formTitle.set('编辑' + c.noun);
+      this.formTitle.set(this.i18n.t('crud.edit', { name: this.i18n.t(c.noun) }));
       this.formError.set('');
       this.formOpen.set(true);
       return;
@@ -226,13 +242,14 @@ export abstract class CrudPage extends ListBase<Row> {
         const remove = c.ends.remove;
         if (!remove) return;
         // 与 users.ts:178 同款原生 confirm（不再搭第二套弹框），文案带对象标识
-        if (!confirm(`确认删除「${c.label?.(row) ?? idOf(row)}」？该操作不可撤销。`)) return;
+        const name = c.label?.(row) ?? idOf(row);
+        if (!confirm(this.i18n.t('crud.delete_confirm', { name }))) return;
         // 后端 confirmPassword 守卫（ConfigController::destroy）要求密码随请求带上：
         // 取消 prompt 得空串，服务端回「敏感操作需要输入密码确认」，原样透出。
         // 走 body 而不是 query —— OperationLog 的敏感字段过滤（admin/app/middleware/OperationLog.php:63）
         // 按字段名抹掉 password，塞在 URL 里反而会原样落进操作日志。
         const body = c.deletePassword
-          ? { password: prompt('该操作需要输入登录密码确认') ?? '' }
+          ? { password: prompt(this.i18n.t('crud.delete_password_prompt')) ?? '' }
           : undefined;
         await this.api.request('DELETE', remove(id), body);
       } else if (key === 'toggle') {

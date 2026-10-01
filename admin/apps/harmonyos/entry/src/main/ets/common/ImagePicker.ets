@@ -3,6 +3,7 @@
  */
 
 import fs from '@ohos.file.fs';
+import { t } from '../i18n/Translations';
 import photoAccessHelper from '@ohos.file.photoAccessHelper';
 
 /** 选中的图片：原始字节 + 文件名（服务端按文件名后缀查白名单，故必须带后缀） */
@@ -37,7 +38,9 @@ export async function pickImage(): Promise<PickedImage | null> {
     const read = fs.readSync(file.fd, bytes);
     // 截断读（信号打断等）不能静默放过：传上去半张图，MIME 检查照样通过，坏在用户眼里
     if (read !== size) {
-      throw new Error(`读取图片失败（${read}/${size} 字节）`);
+      // 两个占位符串起来换：t1 只吃一个，为这一个调用点再加个 t2 不值当
+      throw new Error(t('upload.read_failed')
+        .replace('{read}', `${read}`).replace('{size}', `${size}`));
     }
     const picked: PickedImage = { bytes: bytes, fileName: fileNameOf(uri) };
     return picked;

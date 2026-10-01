@@ -94,7 +94,7 @@ class LeaderboardController extends BaseController
         $board->sort    = (int) $request->input('sort', 0);
         $board->save();
 
-        return $this->success(['id' => $this->encodeId($board->id)], '创建成功');
+        return $this->success(['id' => $this->encodeId($board->id)], trans('Created successfully'));
     }
 
     #[Apidoc\Title("编辑排行榜")]
@@ -108,7 +108,7 @@ class LeaderboardController extends BaseController
         $board = Leaderboard::find($id);
 
         if (!$board) {
-            return $this->fail('排行榜不存在', 404);
+            return $this->fail(trans('Leaderboard not found'), 404);
         }
 
         // 镜像 create 的规则（sometimes：局部更新），并补齐 create 漏掉的 status/rule/sort。
@@ -131,7 +131,7 @@ class LeaderboardController extends BaseController
         ]));
         $board->save();
 
-        return $this->success([], '更新成功');
+        return $this->success([], trans('Updated successfully'));
     }
 
     #[Apidoc\Title("删除排行榜")]
@@ -145,13 +145,13 @@ class LeaderboardController extends BaseController
         $board = Leaderboard::find($id);
 
         if (!$board) {
-            return $this->fail('排行榜不存在', 404);
+            return $this->fail(trans('Leaderboard not found'), 404);
         }
 
         $board->delete();
         LeaderboardService::clearCache($id);
 
-        return $this->success([], '删除成功');
+        return $this->success([], trans('Deleted successfully'));
     }
 
     #[Apidoc\Title("刷新排行榜缓存")]
@@ -165,12 +165,12 @@ class LeaderboardController extends BaseController
         $board = Leaderboard::find($id);
 
         if (!$board) {
-            return $this->fail('排行榜不存在', 404);
+            return $this->fail(trans('Leaderboard not found'), 404);
         }
 
         LeaderboardService::clearCache($id);
         LeaderboardService::computeRanking($id);
 
-        return $this->success([], '刷新成功');
+        return $this->success([], trans('Refreshed successfully'));
     }
 }

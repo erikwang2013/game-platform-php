@@ -27,12 +27,12 @@ class ImportController extends BaseController
     {
         $file = $request->file('file');
         if (!$file || !$file->isValid()) {
-            return $this->fail('请上传 Excel 文件', 422);
+            return $this->fail(trans('Please upload an Excel file'), 422);
         }
 
         $ext = strtolower($file->getUploadExtension() ?: '');
         if (!in_array($ext, ['xlsx', 'xls'], true)) {
-            return $this->fail('仅支持 .xlsx 或 .xls 文件', 422);
+            return $this->fail(trans('Only .xlsx or .xls files are supported'), 422);
         }
 
         $tmpPath = $file->getRealPath();
@@ -41,7 +41,7 @@ class ImportController extends BaseController
         $rows        = $sheet->toArray();
 
         if (count($rows) < 2) {
-            return $this->fail('Excel 文件无数据', 422);
+            return $this->fail(trans('The Excel file contains no data'), 422);
         }
 
         $headers = array_map('strtolower', array_map('trim', $rows[0]));
@@ -50,7 +50,7 @@ class ImportController extends BaseController
         $required = ['username', 'password', 'real_name'];
         foreach ($required as $col) {
             if (!isset($colMap[$col])) {
-                return $this->fail("缺少必填列: {$col}", 422);
+                return $this->fail(trans('Missing required column: %column%', ['%column%' => $col]), 422);
             }
         }
 
@@ -72,19 +72,19 @@ class ImportController extends BaseController
 
             if (empty($username)) {
                 $failed++;
-                $errors[] = ['row' => $idx + 1, 'reason' => '用户名为空'];
+                $errors[] = ['row' => $idx + 1, 'reason' => trans('Username is empty')];
                 continue;
             }
 
             if (strlen($password) < 8 || strlen($password) > 32 || !preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/', $password)) {
                 $failed++;
-                $errors[] = ['row' => $idx + 1, 'reason' => '密码需 8-32 位，且包含大小写字母和数字'];
+                $errors[] = ['row' => $idx + 1, 'reason' => trans('Password must be 8-32 characters and contain uppercase, lowercase letters and digits')];
                 continue;
             }
 
             if (AdminUser::where('username', $username)->exists()) {
                 $failed++;
-                $errors[] = ['row' => $idx + 1, 'reason' => "用户名 {$username} 已存在"];
+                $errors[] = ['row' => $idx + 1, 'reason' => trans('Username %username% already exists', ['%username%' => $username])];
                 continue;
             }
 
@@ -110,6 +110,6 @@ class ImportController extends BaseController
             'success' => $success,
             'failed'  => $failed,
             'errors'  => $errors,
-        ], '导入完成');
+        ], trans('Import completed'));
     }
 }

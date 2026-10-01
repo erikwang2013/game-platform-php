@@ -15,9 +15,11 @@ import {
   GameCategoryItem,
   GameServerItem,
   ActivityItem,
-  AchievementItem
+  AchievementItem,
+  pageQuery
 } from '../model/DataModels';
 import { ResourceModule, buildRow, unpaged, paged, jsonText } from './ResourceSchema';
+import { t } from '../i18n/Translations';
 
 /* ================================ 1 游戏分类 ================================
  * create: name*(≤50) slug*(≤50, ^[a-z0-9_-]+$) icon sort（status 由后端强制 1）
@@ -26,13 +28,13 @@ import { ResourceModule, buildRow, unpaged, paged, jsonText } from './ResourceSc
  * ========================================================================== */
 
 const CATEGORY_FIELDS: FormField[] = [
-  { name: 'name', label: '分类名称', type: 'text', required: true, placeholder: '最长 50 字' },
-  { name: 'slug', label: '分类标识', type: 'text', required: true, placeholder: '小写字母/数字/_/-，最长 50' },
+  { name: 'name', label: 'category.name', type: 'text', required: true, placeholder: 'category.name_placeholder' },
+  { name: 'slug', label: 'category.slug', type: 'text', required: true, placeholder: 'category.slug_placeholder' },
   {
-    name: 'icon', label: '分类图标', type: 'image', placeholder: '图标地址，最长 255',
-    hint: '≤5MB，jpg/jpeg/png/gif/webp（不支持 svg）。上传后回填绝对地址，也可直接贴外链'
+    name: 'icon', label: 'category.icon', type: 'image', placeholder: 'category.icon_placeholder',
+    hint: 'category.icon_hint'
   },
-  { name: 'sort', label: '排序', type: 'number', placeholder: '越小越靠前，缺省 0' }
+  { name: 'sort', label: 'common.sort', type: 'number', placeholder: 'category.sort_placeholder' }
 ];
 
 function categoryFields(isEdit: boolean): FormField[] {
@@ -40,7 +42,7 @@ function categoryFields(isEdit: boolean): FormField[] {
   for (let i = 0; i < CATEGORY_FIELDS.length; i++) {
     const field = CATEGORY_FIELDS[i];
     if (isEdit && field.name === 'slug') {
-      fields.push({ name: 'slug', label: '分类标识', type: 'text', placeholder: '创建后不可修改', disabled: true });
+      fields.push({ name: 'slug', label: 'category.slug', type: 'text', placeholder: 'common.immutable', disabled: true });
     } else {
       fields.push(field);
     }
@@ -63,14 +65,14 @@ function categoryRow(item: GameCategoryItem): ResourceRow {
   values.slug = item.slug;
   values.icon = item.icon ?? '';
   values.sort = `${item.sort}`;
-  return buildRow(item.id, item.name, `${item.slug} · 排序 ${item.sort}`,
-    item.status === 1 ? '启用' : '停用', item.status === 1, item.status, values);
+  return buildRow(item.id, item.name, `${item.slug} · ${t('common.sort')} ${item.sort}`,
+    item.status === 1 ? t('common.enabled') : t('common.disabled'), item.status === 1, item.status, values);
 }
 
 const CATEGORY: ResourceModule = {
   key: 'category',
-  title: '游戏分类',
-  desc: '新建 / 编辑 / 删除与启用停用',
+  title: 'mod.category.title',
+  desc: 'mod.category.desc',
   base: '/admin/v1/game/category',
   paginated: false,
   listPath: (_page: number, _limit: number, _gameId: string): string => '/admin/v1/game/category/list',
@@ -93,17 +95,17 @@ const CATEGORY: ResourceModule = {
  * ========================================================================== */
 
 const SERVER_STATUS_OPTIONS: FieldOption[] = [
-  { label: '维护', value: '0' },
-  { label: '正常', value: '1' },
-  { label: '火爆', value: '2' },
-  { label: '新服', value: '3' }
+  { label: 'server.status.maintenance', value: '0' },
+  { label: 'server.status.normal', value: '1' },
+  { label: 'server.status.hot', value: '2' },
+  { label: 'server.status.new', value: '3' }
 ];
 
 const SERVER_FIELDS: FormField[] = [
-  { name: 'name', label: '区服名称', type: 'text', required: true, placeholder: '最长 50 字' },
-  { name: 'region', label: '所属区域', type: 'text', placeholder: '如 CN / global，最长 20' },
-  { name: 'status', label: '状态', type: 'select', required: true, options: SERVER_STATUS_OPTIONS },
-  { name: 'sort', label: '排序', type: 'number', placeholder: '越小越靠前，缺省 0' }
+  { name: 'name', label: 'server.name', type: 'text', required: true, placeholder: 'server.name_placeholder' },
+  { name: 'region', label: 'server.region', type: 'text', placeholder: 'server.region_placeholder' },
+  { name: 'status', label: 'server.status', type: 'select', required: true, options: SERVER_STATUS_OPTIONS },
+  { name: 'sort', label: 'common.sort', type: 'number', placeholder: 'server.sort_placeholder' }
 ];
 
 function serverInitial(): FormValues {
@@ -118,10 +120,10 @@ function serverInitial(): FormValues {
 function serverStatusText(status: number): string {
   for (let i = 0; i < SERVER_STATUS_OPTIONS.length; i++) {
     if (SERVER_STATUS_OPTIONS[i].value === `${status}`) {
-      return SERVER_STATUS_OPTIONS[i].label;
+      return t(SERVER_STATUS_OPTIONS[i].label);
     }
   }
-  return '未知';
+  return t('server.unknown');
 }
 
 function serverRow(item: GameServerItem): ResourceRow {
@@ -130,14 +132,14 @@ function serverRow(item: GameServerItem): ResourceRow {
   values.region = item.region ?? '';
   values.status = `${item.status}`;
   values.sort = `${item.sort}`;
-  return buildRow(item.id, item.name, `${item.region ?? ''} · 排序 ${item.sort}`,
+  return buildRow(item.id, item.name, `${item.region ?? ''} · ${t('common.sort')} ${item.sort}`,
     serverStatusText(item.status), item.status === 1, item.status, values);
 }
 
 const SERVER: ResourceModule = {
   key: 'server',
-  title: '游戏区服',
-  desc: '按游戏维护区服与开服状态',
+  title: 'mod.server.title',
+  desc: 'mod.server.desc',
   base: '/admin/v1/game/server',
   paginated: false,
   listPath: (_page: number, _limit: number, gameId: string): string =>
@@ -175,24 +177,24 @@ const SERVER: ResourceModule = {
 
 const ACTIVITY_FIELDS: FormField[] = [
   {
-    name: 'type', label: '活动类型', type: 'select', required: true, options: [
-      { label: '签到', value: 'signin' },
-      { label: '日常任务', value: 'daily_task' },
-      { label: '邀请', value: 'invite' }
+    name: 'type', label: 'activity.type', type: 'select', required: true, options: [
+      { label: 'activity.type.signin', value: 'signin' },
+      { label: 'activity.type.daily_task', value: 'daily_task' },
+      { label: 'activity.type.invite', value: 'invite' }
     ]
   },
-  { name: 'name', label: '活动名称', type: 'text', required: true, placeholder: '最长 100 字' },
+  { name: 'name', label: 'activity.name', type: 'text', required: true, placeholder: 'activity.name_placeholder' },
   {
-    name: 'status', label: '状态', type: 'select', required: true, options: [
-      { label: '停用', value: '0' },
-      { label: '启用', value: '1' },
-      { label: '已结束', value: '2' }
+    name: 'status', label: 'activity.status', type: 'select', required: true, options: [
+      { label: 'common.disabled', value: '0' },
+      { label: 'common.enabled', value: '1' },
+      { label: 'activity.status.ended', value: '2' }
     ]
   },
-  { name: 'rollout_percent', label: '灰度比例', type: 'number', placeholder: '0-100，缺省 100' },
+  { name: 'rollout_percent', label: 'activity.rollout_percent', type: 'number', placeholder: 'activity.rollout_percent_placeholder' },
   {
-    name: 'config', label: '活动配置', type: 'textarea',
-    placeholder: 'JSON；签到 {"rewards":[{"day":1,"reward":{"type":"platform_coin","amount":"10"}}]}，留空用默认配置'
+    name: 'config', label: 'activity.config', type: 'textarea',
+    placeholder: 'activity.config_placeholder'
   }
 ];
 
@@ -201,7 +203,7 @@ function activityFields(isEdit: boolean): FormField[] {
   for (let i = 0; i < ACTIVITY_FIELDS.length; i++) {
     const field = ACTIVITY_FIELDS[i];
     if (isEdit && field.name === 'type') {
-      fields.push({ name: 'type', label: '活动类型', type: 'text', placeholder: '创建后不可修改', disabled: true });
+      fields.push({ name: 'type', label: 'activity.type', type: 'text', placeholder: 'common.immutable', disabled: true });
     } else {
       fields.push(field);
     }
@@ -222,9 +224,9 @@ function activityInitial(): FormValues {
 
 function activityStatusText(status: number): string {
   if (status === 1) {
-    return '启用';
+    return t('common.enabled');
   }
-  return status === 2 ? '已结束' : '停用';
+  return status === 2 ? t('activity.status.ended') : t('common.disabled');
 }
 
 function activityRow(item: ActivityItem): ResourceRow {
@@ -234,18 +236,18 @@ function activityRow(item: ActivityItem): ResourceRow {
   values.status = `${item.status}`;
   values.rollout_percent = `${item.rollout_percent}`;
   values.config = jsonText(item.config);
-  return buildRow(item.id, item.name, `${item.type} · 灰度 ${item.rollout_percent}%`,
+  return buildRow(item.id, item.name, `${item.type} · ${t('activity.rollout_short')} ${item.rollout_percent}%`,
     activityStatusText(item.status), item.status === 1, item.status, values);
 }
 
 const ACTIVITY: ResourceModule = {
   key: 'activity',
-  title: '运营活动',
-  desc: '签到 / 日常任务 / 邀请的配置与上下线',
+  title: 'mod.activity.title',
+  desc: 'mod.activity.desc',
   base: '/admin/v1/activities',
   paginated: true,
   listPath: (page: number, limit: number, _gameId: string): string =>
-    `/admin/v1/activities/list?page=${page}&limit=${limit}`,
+    `/admin/v1/activities/list?${pageQuery(page, limit)}`,
   parseList: (data: Object): ResourceListResult => paged<ActivityItem>(data, activityRow),
   fields: activityFields(false),
   editFields: activityFields(true),
@@ -264,15 +266,15 @@ const ACTIVITY: ResourceModule = {
  * ========================================================================== */
 
 const ACHIEVEMENT_FIELDS: FormField[] = [
-  { name: 'key', label: '成就标识', type: 'text', required: true, placeholder: '小写字母/数字/_，最长 50' },
-  { name: 'name', label: '成就名称', type: 'text', required: true, placeholder: '最长 100 字' },
-  { name: 'description', label: '成就描述', type: 'textarea', placeholder: '最长 500 字' },
+  { name: 'key', label: 'achievement.key', type: 'text', required: true, placeholder: 'achievement.key_placeholder' },
+  { name: 'name', label: 'achievement.name', type: 'text', required: true, placeholder: 'achievement.name_placeholder' },
+  { name: 'description', label: 'achievement.description', type: 'textarea', placeholder: 'achievement.description_placeholder' },
   {
-    name: 'icon', label: '成就图标', type: 'image', placeholder: '图标地址，最长 200',
-    hint: '≤5MB，jpg/jpeg/png/gif/webp（不支持 svg）。上传后回填绝对地址，也可直接贴外链'
+    name: 'icon', label: 'achievement.icon', type: 'image', placeholder: 'achievement.icon_placeholder',
+    hint: 'achievement.icon_hint'
   },
-  { name: 'condition_json', label: '达成条件', type: 'textarea', required: true, placeholder: 'JSON，如 {"event":"play","count":10}' },
-  { name: 'points', label: '奖励积分', type: 'number', required: true, placeholder: '整数，≥ 0' }
+  { name: 'condition_json', label: 'achievement.condition', type: 'textarea', required: true, placeholder: 'achievement.condition_placeholder' },
+  { name: 'points', label: 'achievement.points', type: 'number', required: true, placeholder: 'achievement.points_placeholder' }
 ];
 
 function achievementFields(isEdit: boolean): FormField[] {
@@ -280,7 +282,7 @@ function achievementFields(isEdit: boolean): FormField[] {
   for (let i = 0; i < ACHIEVEMENT_FIELDS.length; i++) {
     const field = ACHIEVEMENT_FIELDS[i];
     if (isEdit && field.name === 'key') {
-      fields.push({ name: 'key', label: '成就标识', type: 'text', placeholder: '创建后不可修改', disabled: true });
+      fields.push({ name: 'key', label: 'achievement.key', type: 'text', placeholder: 'common.immutable', disabled: true });
     } else {
       fields.push(field);
     }
@@ -307,14 +309,14 @@ function achievementRow(item: AchievementItem): ResourceRow {
   values.icon = item.icon ?? '';
   values.condition_json = item.condition_json ?? '';
   values.points = `${item.points}`;
-  return buildRow(item.id, item.name, `${item.key} · ${item.points} 积分`,
-    item.status === 1 ? '启用' : '停用', item.status === 1, item.status, values);
+  return buildRow(item.id, item.name, `${item.key} · ${item.points} ${t('achievement.points_unit')}`,
+    item.status === 1 ? t('common.enabled') : t('common.disabled'), item.status === 1, item.status, values);
 }
 
 const ACHIEVEMENT: ResourceModule = {
   key: 'achievement',
-  title: '成就',
-  desc: '成就定义、达成条件与启停',
+  title: 'mod.achievement.title',
+  desc: 'mod.achievement.desc',
   base: '/admin/v1/achievement',
   paginated: false,
   listPath: (_page: number, _limit: number, _gameId: string): string => '/admin/v1/achievement/list',

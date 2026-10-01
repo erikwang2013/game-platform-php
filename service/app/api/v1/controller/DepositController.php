@@ -49,26 +49,26 @@ class DepositController extends BaseController
 
         // 精度对齐支付商最小单位转换：零小数币种不接受小数，其余最多 2 位小数，否则 Stripe 分转换回环不一致
         if (!CurrencyUtils::precisionOk((string) $amount, (string) $currency)) {
-            return $this->fail('Amount precision not supported', 422);
+            return $this->fail(trans('Amount precision not supported'), 422);
         }
         $paymentMethodId = $this->decodeId($request->input('payment_method_id'));
 
         // 支付方式校验：存在、启用、国家可见（按语言头映射）、金额区间
         $method = PaymentMethod::find($paymentMethodId);
         if (!$method || (int) $method->status !== 1) {
-            return $this->fail('Payment method not available', 422);
+            return $this->fail(trans('Payment method not available'), 422);
         }
         if (!$method->isAvailableIn($this->resolveCountry($request))) {
-            return $this->fail('Payment method not available in your country', 422);
+            return $this->fail(trans('Payment method not available in your country'), 422);
         }
         if ($method->currency !== '' && strtoupper($method->currency) !== strtoupper($currency)) {
-            return $this->fail('Currency not supported by this method', 422);
+            return $this->fail(trans('Currency not supported by this method'), 422);
         }
         if (bccomp((string) $amount, (string) $method->min_amount, 4) < 0) {
-            return $this->fail('Amount below minimum', 422);
+            return $this->fail(trans('Amount below minimum'), 422);
         }
         if (bccomp((string) $method->max_amount, '0', 4) > 0 && bccomp((string) $amount, (string) $method->max_amount, 4) > 0) {
-            return $this->fail('Amount above maximum', 422);
+            return $this->fail(trans('Amount above maximum'), 422);
         }
 
         // Calculate platform amount using exchange rate
@@ -104,7 +104,7 @@ class DepositController extends BaseController
         } catch (\Throwable $e) {
             Log::error('Gateway create payment failed', ['order_no' => $orderNo, 'error' => $e->getMessage()]);
             DepositOrder::where('id', $order->id)->where('status', 'pending')->update(['status' => 'cancelled']);
-            return $this->fail('Payment gateway unavailable, please retry', 502);
+            return $this->fail(trans('Payment gateway unavailable, please retry'), 502);
         }
 
         NotificationService::send(

@@ -3,7 +3,9 @@ import { Component, computed, signal } from '@angular/core';
 import { Page, Params, Row } from '../core/api.service';
 import { Crud, CrudPage, Field, Opt } from '../core/crud';
 import { idOf, json, scalarsOf } from '../core/render';
-import { errText, num } from '../core/util';
+import { PNode, flatten, toTree } from '../core/tree';
+import { errText } from '../core/util';
+import { T, t } from '../core/i18n/i18n';
 import { Pager, StateBlock, StatCard, Tabs } from '../components/ui';
 import { Table } from '../components/table';
 import { FormModal } from '../components/form-modal';
@@ -18,23 +20,38 @@ const S = '/admin/v1/';
  * 删除是敏感操作：ConfigController::destroy 走 confirmPassword 守卫 ⇒ deletePassword。
  */
 const CONFIG_FIELDS: Field[] = [
-  { name: 'group', label: '分组', type: 'text', required: true, createOnly: true, placeholder: '最长 100' },
-  { name: 'key', label: '配置键', type: 'text', required: true, createOnly: true, placeholder: '最长 100' },
+  {
+    name: 'group',
+    label: 'config.group',
+    type: 'text',
+    required: true,
+    createOnly: true,
+    placeholder: 'config.group_hint',
+  },
+  {
+    name: 'key',
+    label: 'config.key',
+    type: 'text',
+    required: true,
+    createOnly: true,
+    placeholder: 'config.key_hint',
+  },
   {
     name: 'value',
-    label: '配置值',
+    label: 'config.value',
     type: 'textarea',
     required: true,
     // store/update 都是 required|string ⇒ 空串会被判 422（Laravel 的 required 拒空串），
     // 所以留空 = 不提交，而不是「清空该值」
     keepIfEmpty: true,
-    placeholder: '不能为空；留空不改（后端 required 拒空串）',
+    placeholder: 'config.value_hint',
   },
   {
     name: 'type',
-    label: '值类型',
+    label: 'config.type',
     type: 'select',
     keepIfEmpty: true,
+    // 选项是 PlatformConfig::get 的取值口径（string/int/bool/json）原文，不译
     options: [
       { value: 'string', label: 'string' },
       { value: 'int', label: 'int' },
@@ -42,7 +59,7 @@ const CONFIG_FIELDS: Field[] = [
       { value: 'json', label: 'json' },
     ],
   },
-  { name: 'description', label: '配置说明', type: 'text', full: true, placeholder: '最长 255' },
+  { name: 'description', label: 'config.description', type: 'text', full: true, placeholder: 'config.description_hint' },
 ];
 
 /**
@@ -50,26 +67,33 @@ const CONFIG_FIELDS: Field[] = [
  * slug 只在 store（update 的落库白名单里没有它）⇒ createOnly。
  * status 不摆进表单：create 默认 1、update 认 in:0,1 —— 状态改走行内「启用/停用」（局部 PUT {status}），
  * 与其它模块同一个入口，不在表单里再摆一个开关。
- * permission_ids 是**数组**字段（type multi）：后端 `decodePermissionIds()` 只认 hashid
- * （非 hashid 直接 400，不会静默落 0），选项在运行期由权限树注入，回填直接用行里的
- * `permission_ids`（RoleController::index 现在也回传 hashid 数组）。
+ * permission_ids 是**数组**字段（type tree）：后端 `decodePermissionIds()` 只认 hashid
+ * （非 hashid 直接 400，不会静默落 0），节点树在运行期由权限端点注入，回填直接用行里的
+ * `permission_ids`（RoleController::index 现在也回传 hashid 数组）。勾中的是**一维** hashid 数组
+ * —— 树只是选择方式，提交形状与 multi 完全一致（见 crud.norm / form-modal.fire 的同一分支）。
  * 删除有 confirmPassword 守卫（destroy 还会 detach 权限与用户）⇒ deletePassword + 文案点名关联。
  */
 const ROLE_FIELDS: Field[] = [
-  { name: 'name', label: '角色名称', type: 'text', required: true, placeholder: '最长 50' },
+  { name: 'name', label: 'role.name', type: 'text', required: true, placeholder: 'role.name_hint' },
   {
     name: 'slug',
-    label: '角色标识',
+    label: 'role.slug',
     type: 'text',
     required: true,
     createOnly: true,
-    placeholder: '最长 50',
+    placeholder: 'role.slug_hint',
   },
-  { name: 'description', label: '角色描述', type: 'text', full: true, placeholder: '最长 255' },
+  {
+    name: 'description',
+    label: 'role.description',
+    type: 'text',
+    full: true,
+    placeholder: 'role.description_hint',
+  },
   {
     name: 'permission_ids',
-    label: '权限（按住 Ctrl/⌘ 多选；清空 = 收回全部权限）',
-    type: 'multi',
+    label: 'role.permission_ids_hint',
+    type: 'tree',
     full: true,
   },
 ];
@@ -84,86 +108,86 @@ const ROLE_FIELDS: Field[] = [
  * 删除有 confirmPassword 守卫，且会级联删子权限 ⇒ deletePassword + 文案点名级联。
  */
 const PERMISSION_FIELDS: Field[] = [
-  { name: 'name', label: '权限名称', type: 'text', required: true, placeholder: '最长 50' },
+  { name: 'name', label: 'permission.name', type: 'text', required: true, placeholder: 'permission.name_hint' },
   {
     name: 'slug',
-    label: '权限标识',
+    label: 'permission.slug',
     type: 'text',
     required: true,
     createOnly: true,
-    placeholder: '最长 100',
+    placeholder: 'permission.slug_hint',
   },
   {
     name: 'type',
-    label: '权限类型',
+    label: 'permission.type',
     type: 'select',
     required: true,
     createOnly: true,
+    // 值仍是后端枚举 '1'/'2'/'3'，只有文案可译
     options: [
-      { value: '1', label: '菜单' },
-      { value: '2', label: '按钮' },
-      { value: '3', label: '接口' },
+      { value: '1', label: 'permission.type_menu' },
+      { value: '2', label: 'permission.type_button' },
+      { value: '3', label: 'permission.type_api' },
     ],
   },
   {
     name: 'parent_id',
-    label: '父级（不选 = 建在根上）',
+    label: 'permission.parent_id',
     type: 'select',
     createOnly: true,
   },
-  { name: 'icon', label: '图标', type: 'text', placeholder: '最长 50' },
-  { name: 'path', label: '前端路由路径', type: 'text', full: true, placeholder: '最长 255' },
-  { name: 'sort', label: '排序', type: 'number', placeholder: '数字越小越靠前' },
+  { name: 'icon', label: 'permission.icon', type: 'text', placeholder: 'permission.icon_hint' },
+  {
+    name: 'path',
+    label: 'permission.path',
+    type: 'text',
+    full: true,
+    placeholder: 'permission.path_hint',
+  },
+  { name: 'sort', label: 'permission.sort', type: 'number', placeholder: 'permission.sort_hint' },
 ];
 
 /**
- * 权限树是嵌套结构（node.children），表格只认平铺行 ⇒ 摊平：层级画在 tree 列里、
- * 缩进深度留在 depth 上（表单选项也用这一份，两处的层次长得一样），
- * 父节点名解析进 parent_name 列（parent_id 是 hashid，而 update 恰好不收 parent_id ——
- * 「父级」就只在列表里做只读回显）。
+ * 权限树 → 表格行：DFS 平铺，depth 交给 ui-table 的 treeKey（缩进 + 展开箭头都由它画，页面不再
+ * 自己拼「└」文本），父节点名解析进 parent_name 列（parent_id 是 hashid，而 update 恰好不收
+ * parent_id ——「父级」就只在列表里做只读回显）。
  * 只加不删改：node 的 name/slug/type 原样保留（表单预填直接读它们，动了就是「编辑一次改一次名」）。
  */
-function flattenTree(nodes: Row[], depth = 0, parent = ''): Row[] {
-  const out: Row[] = [];
-  for (const n of nodes) {
-    const children = Array.isArray(n['children']) ? (n['children'] as Row[]) : [];
-    out.push({
-      ...n,
-      tree: depth ? '　'.repeat(depth - 1) + '└ ' : '根',
-      depth,
-      parent_name: depth ? parent : '（根）',
-    });
-    if (children.length) out.push(...flattenTree(children, depth + 1, String(n['name'] ?? '')));
-  }
-  return out;
+function treeRows(tree: PNode[]): Row[] {
+  // 占位符也过词条：列表列头与它的取值同源（t() 在调用时读语言，切语言后重取列表即刷新）
+  return flatten(tree).map((f) => ({
+    ...f.node.row,
+    depth: f.depth,
+    parent_name: f.parent || t('permission.root'),
+  }));
 }
 
-/** 运行期把选项注进常量字段（crud() 是 computed ⇒ 读得到信号，选项随树刷新） */
-function withOptions(fields: Field[], name: string, options: Opt[]): Field[] {
-  return fields.map((f) => (f.name === name ? { ...f, options } : f));
+/** 运行期把选项/节点树注进常量字段（crud() 是 computed ⇒ 读得到信号，选项随树刷新） */
+function patch(fields: Field[], name: string, extra: Partial<Field>): Field[] {
+  return fields.map((f) => (f.name === name ? { ...f, ...extra } : f));
 }
 
 @Component({
   selector: 'app-settings',
-  imports: [StateBlock, StatCard, Table, Pager, Tabs, FormModal],
+  imports: [StateBlock, StatCard, Table, Pager, Tabs, FormModal, T],
   template: `
     <div class="page-head">
-      <h1>系统设置</h1>
-      <span class="sub">配置 / 角色 / 权限 / 指标 / 健康</span>
+      <h1>{{ 'settings.title' | t }}</h1>
+      <span class="sub">{{ 'settings.subtitle' | t }}</span>
       <div class="spacer"></div>
       @if (isList()) {
         <input
           class="input"
-          placeholder="键名 / 名称 / ID"
+          [placeholder]="'settings.search_hint' | t"
           [value]="keyword()"
           (input)="keyword.set($any($event.target).value)"
           (keyup.enter)="search()"
         />
-        <button class="btn" (click)="search()">查询</button>
+        <button class="btn" (click)="search()">{{ 'app.search' | t }}</button>
       }
-      <button class="btn" (click)="load()">刷新</button>
+      <button class="btn" (click)="load()">{{ 'app.refresh' | t }}</button>
       @if (writable()) {
-        <button class="btn btn-primary" (click)="openCreate()">+ 新建</button>
+        <button class="btn btn-primary" (click)="openCreate()">+ {{ 'app.create' | t }}</button>
       }
     </div>
 
@@ -177,7 +201,7 @@ function withOptions(fields: Field[], name: string, options: Opt[]): Field[] {
       @if (tab() === 'metrics') {
         <div class="card">
           <div class="card-body">
-            <pre class="raw">{{ text() || '暂无指标' }}</pre>
+            <pre class="raw">{{ text() || ('settings.metrics_empty' | t) }}</pre>
           </div>
         </div>
       } @else if (tab() === 'health') {
@@ -190,17 +214,19 @@ function withOptions(fields: Field[], name: string, options: Opt[]): Field[] {
         }
         @if (raw(); as d) {
           <details class="raw-box">
-            <summary>健康检查原始响应</summary>
+            <summary>{{ 'settings.health_raw' | t }}</summary>
             <pre class="raw">{{ pretty(d) }}</pre>
           </details>
         }
       } @else {
         <div class="card">
           <div class="card-body">
+            <!-- 权限页签：树形展示（缩进 + 展开箭头），行内动作照旧；其它页签是平表（treeKey 空） -->
             <ui-table
               [rows]="rows()"
               [heads]="heads()"
               [actions]="actions()"
+              [treeKey]="tab() === 'permission' ? 'name' : ''"
               (act)="run($event.row, $event.key)"
             />
           </div>
@@ -228,11 +254,11 @@ function withOptions(fields: Field[], name: string, options: Opt[]): Field[] {
 })
 export class Settings extends CrudPage {
   protected readonly tabs = [
-    { key: 'config', label: '系统配置' },
-    { key: 'role', label: '角色' },
-    { key: 'permission', label: '权限' },
-    { key: 'metrics', label: '监控指标' },
-    { key: 'health', label: '健康检查' },
+    { key: 'config', label: 'config.title' },
+    { key: 'role', label: 'role.title' },
+    { key: 'permission', label: 'permission.title' },
+    { key: 'metrics', label: 'settings.tab.metrics' },
+    { key: 'health', label: 'settings.tab.health' },
   ];
   protected readonly tab = signal('config');
   protected readonly raw = signal<unknown>(null);
@@ -248,21 +274,21 @@ export class Settings extends CrudPage {
   };
 
   /**
-   * 权限树（摊平后的节点）：既是权限标签页的列表，也是两个表单的选项来源
-   * （角色的 permission_ids 多选、权限的 parent_id 单选）。
+   * 权限树（**嵌套原样**，不摊平）：角色的树多选要它，权限页签的树形展示与两个表单的选项都从它派生
+   * （摊平只发生在展示/选项这两个消费端，树的层次信息不再在解析层被拍掉）。
    */
-  private readonly nodes = signal<Row[]>([]);
+  private readonly tree = signal<PNode[]>([]);
   /** 权限树取失败的原因：塞进字段 label —— 不能因为树挂了就把整个角色页打成错误态 */
   private readonly treeErr = signal('');
 
   /**
-   * 选项 = 权限树节点（值 = 节点 hashid，一律 String：hashid 是字符串）。
-   * 缩进用 depth 而不是解析 label 里的空格 —— 两个表单与列表共用同一份层次。
+   * 选项 = 权限树节点（值 = 节点 hashid，一律 String：hashid 是字符串）：权限表单的 parent_id 单选用。
+   * 缩进用 depth 而不是解析 label 里的空格 —— 表单与列表共用同一份层次。
    */
   private readonly permOptions = computed<Opt[]>(() =>
-    this.nodes().map((n) => ({
-      value: String(n['id'] ?? ''),
-      label: '　'.repeat(num(n['depth'])) + String(n['name'] ?? ''),
+    flatten(this.tree()).map((f) => ({
+      value: f.node.id,
+      label: '　'.repeat(f.depth) + f.node.name,
     })),
   );
 
@@ -273,23 +299,23 @@ export class Settings extends CrudPage {
   protected readonly heads = computed((): Record<string, string> => {
     if (this.tab() === 'role') {
       return {
-        name: '角色名称',
-        slug: '角色标识',
-        description: '角色描述',
-        status: '状态(0停用/1启用)',
-        users_count: '关联用户数',
+        name: 'role.name',
+        slug: 'role.slug',
+        description: 'role.description',
+        status: 'role.head.status',
+        users_count: 'role.users_count',
       };
     }
     if (this.tab() === 'permission') {
       return {
-        tree: '层级',
-        name: '名称',
-        parent_name: '父级',
-        slug: '权限标识',
-        type: '类型(1菜单/2按钮/3接口)',
-        icon: '图标',
-        path: '路径',
-        sort: '排序',
+        // 头一列就是树列（ui-table 的 treeKey='name'）：层级画在缩进和箭头上，不再占一列文本
+        name: 'permission.name',
+        parent_name: 'permission.parent_id',
+        slug: 'permission.slug',
+        type: 'permission.head.type',
+        icon: 'permission.icon',
+        path: 'permission.path',
+        sort: 'permission.sort',
       };
     }
     return {};
@@ -311,7 +337,7 @@ export class Settings extends CrudPage {
     const tab = this.tab();
     if (tab === 'config') {
       return {
-        noun: '配置项',
+        noun: 'config.noun',
         fields: CONFIG_FIELDS,
         deletePassword: true,
         label: (row) => `${row['group'] ?? ''}.${row['key'] ?? idOf(row)}`,
@@ -324,12 +350,13 @@ export class Settings extends CrudPage {
     }
     if (tab === 'role') {
       return {
-        noun: '角色',
+        noun: 'role.noun',
         fields: this.roleFields(),
         statused: true,
         deletePassword: true,
         // destroy 会 detach 掉权限与用户关联 —— 删之前把这件事说清楚，别让人以为只是删一行
-        label: (row) => `${row['name'] ?? idOf(row)}（并解除其权限与用户关联）`,
+        label: (row) =>
+          t('role.delete_label', { name: row['name'] ?? idOf(row) }),
         ends: {
           create: S + 'role',
           update: (id) => S + 'role/' + id,
@@ -339,11 +366,11 @@ export class Settings extends CrudPage {
     }
     if (tab === 'permission') {
       return {
-        noun: '权限',
-        fields: withOptions(PERMISSION_FIELDS, 'parent_id', this.permOptions()),
+        noun: 'permission.noun',
+        fields: patch(PERMISSION_FIELDS, 'parent_id', { options: this.permOptions() }),
         deletePassword: true,
         // destroy 级联删子权限（PermissionController::destroy）
-        label: (row) => `${row['name'] ?? idOf(row)}（连同其全部子权限）`,
+        label: (row) => t('permission.delete_label', { name: row['name'] ?? idOf(row) }),
         ends: {
           create: S + 'permission',
           update: (id) => S + 'permission/' + id,
@@ -355,16 +382,20 @@ export class Settings extends CrudPage {
   }
 
   /**
-   * 角色的字段：permission_ids 的选项来自权限树。树取失败时在 label 上直说 ——
-   * 否则多选里只剩「（当前值）」补项，运营会以为「这个角色本来就没权限」。
-   * （选项为空也丢不了授权：ui-form 的 multi() 把当前值补成勾选项，见那条注释。）
+   * 角色的字段：permission_ids 的**节点树**来自权限端点。树取失败时在 label 上直说 ——
+   * 否则框里空空如也，运营会以为「这个角色本来就没权限」。
+   * （树为空也丢不了授权：ui-tree-select 把值里不在树中的 hashid 平铺成「树外」勾选项。
+   * 它和 ui-form 的 multi() 是同一条规矩：当前值不许被当成「取消勾选」静默发出去。）
    */
   private roleFields(): Field[] {
     const err = this.treeErr();
-    const fields = withOptions(ROLE_FIELDS, 'permission_ids', this.permOptions());
+    const fields = patch(ROLE_FIELDS, 'permission_ids', { tree: this.tree() });
     if (!err) return fields;
+    // f.label 是**词条键**（渲染时才查表）⇒ 拼后缀前先把它译出来，否则界面上会露出键名
     return fields.map((f) =>
-      f.name === 'permission_ids' ? { ...f, label: `${f.label} —— 权限树加载失败：${err}` } : f,
+      f.name === 'permission_ids'
+        ? { ...f, label: t('role.tree_failed', { name: t(f.label), error: err }) }
+        : f,
     );
   }
 
@@ -405,31 +436,33 @@ export class Settings extends CrudPage {
       page_size: this.pageSize,
       keyword: this.keyword(),
     };
-    // 角色的权限多选要整棵权限树 —— 列表和树一起取：弹框是**非受控**的（靠 @if 重建 DOM，
-    // 打开后不重渲染 option），选项必须在打开之前就绪，补不了。loadTree 自己吞异常，树挂了列表照常。
+    // 角色的权限多选要整棵权限树 —— 列表和树一起取：弹框是**非受控**的（靠 @if 重建 DOM），
+    // 节点树必须在打开之前就绪。loadTree 自己吞异常，树挂了列表照常（角色改名不该被树连坐）。
     if (tab === 'role') {
       const [res] = await Promise.all([this.api.list<Row>(url, params), this.loadTree()]);
       return res;
     }
     const res = await this.api.list<Row>(url, params);
-    // 权限接口返回的是整棵嵌套树 —— 不摊平的话表格只显示根节点，子权限既看不见也改不了
     if (tab !== 'permission') return res;
-    const list = flattenTree(res.list ?? []);
-    this.nodes.set(list);
-    return { ...res, list, total: list.length, page: 1, limit: this.pageSize };
+    // 权限端点回的 data 就是整棵嵌套树（无 list/total、不分页）⇒ 原树存下来，
+    // 平铺只服务表格展示：层次留在 depth 上，展开/折叠由 ui-table 按它现算。
+    // total 恒 0 是实话（这端点没有总数），分页器本来也不在这个页签渲染。
+    const tree = toTree(res.list ?? []);
+    this.tree.set(tree);
+    return { list: treeRows(tree), total: 0, page: 1, limit: this.pageSize };
   }
 
   /**
-   * 取权限树 → 摊平 → 存成选项域。失败**不抛**：权限树挂了不该连角色改名都做不了，
+   * 取权限树 → 存原树。失败**不抛**：权限树挂了不该连角色改名都做不了，
    * 所以留一句 treeErr（roleFields() 会把它写进字段 label），列表该出还出。
    */
   private async loadTree(): Promise<void> {
     try {
       const res = await this.api.list<Row>(this.paths['permission']!);
-      this.nodes.set(flattenTree(res.list ?? []));
+      this.tree.set(toTree(res.list ?? []));
       this.treeErr.set('');
     } catch (e) {
-      this.nodes.set([]);
+      this.tree.set([]);
       this.treeErr.set(errText(e));
     }
   }

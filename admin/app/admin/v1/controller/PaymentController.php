@@ -64,13 +64,13 @@ class PaymentController extends BaseController
         $id     = $this->decodeId($request->input('id'));
         $method = PaymentMethod::find($id);
         if (!$method) {
-            return $this->fail('支付方式不存在', 404);
+            return $this->fail(trans('Payment method not found'), 404);
         }
 
         $method->status = (int) $request->input('status');
         $method->save();
 
-        return $this->success([], '操作成功');
+        return $this->success([], trans('Operation successful'));
     }
 
     #[Apidoc\Title("创建支付方式")]
@@ -118,7 +118,7 @@ class PaymentController extends BaseController
         $method->config     = $request->input('config', '') !== '' ? (string) $request->input('config') : null;
         $method->save();
 
-        return $this->success(['id' => $this->encodeId($method->id)], '创建成功');
+        return $this->success(['id' => $this->encodeId($method->id)], trans('Created successfully'));
     }
 
     #[Apidoc\Title("更新支付方式")]
@@ -131,7 +131,7 @@ class PaymentController extends BaseController
         $id = $this->decodeId($hashid);
         $method = PaymentMethod::find($id);
         if (!$method) {
-            return $this->fail('支付方式不存在', 404);
+            return $this->fail(trans('Payment method not found'), 404);
         }
 
         $validator = validator($request->all(), [
@@ -163,7 +163,7 @@ class PaymentController extends BaseController
         }
         $method->save();
 
-        return $this->success([], '更新成功');
+        return $this->success([], trans('Updated successfully'));
     }
 
     #[Apidoc\Title("删除支付方式")]
@@ -176,15 +176,15 @@ class PaymentController extends BaseController
         $id = $this->decodeId($hashid);
         $method = PaymentMethod::find($id);
         if (!$method) {
-            return $this->fail('支付方式不存在', 404);
+            return $this->fail(trans('Payment method not found'), 404);
         }
 
         if (DepositOrder::where('payment_method_id', $id)->where('status', 'pending')->exists()) {
-            return $this->fail('存在待支付订单，无法删除', 422);
+            return $this->fail(trans('Cannot delete: pending payment orders exist'), 422);
         }
 
         $method->delete();
 
-        return $this->success([], '删除成功');
+        return $this->success([], trans('Deleted successfully'));
     }
 }

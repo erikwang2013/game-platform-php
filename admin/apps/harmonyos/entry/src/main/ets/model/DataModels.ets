@@ -30,6 +30,18 @@ export interface PageResult<T> {
 }
 
 /**
+ * 分页查询串（`page` + 页大小）—— **一次扇出三个别名**，谁读得懂谁拿。
+ *
+ * 后端读页大小的键不统一：`limit`（列表类控制器，默认 15）、`size`（风控七个端点，默认 20）、
+ * `per_page`（SearchController）。只发其中一种时，读不懂的端点会**静默退回自己的默认值**：
+ * 本树页大小恒 15，与默认值 20 的风控端点就对不上，第 15 条之后的数据翻页翻不到。
+ * 多出来的键服务端不读，无副作用（控制器一律 `$request->input('key', 默认)` 按需取）。
+ */
+export function pageQuery(page: number, size: number): string {
+  return `page=${page}&page_size=${size}&limit=${size}&size=${size}&per_page=${size}`;
+}
+
+/**
  * 仪表盘统计数据
  */
 export interface StatCard {
@@ -83,6 +95,8 @@ export interface User {
   last_login_at: string;
   last_login_ip: string;
   created_at: string;
+  /** 已分配角色的 **hashid** 数组（`UserController::withRoleIds` 回传，列表与详情都带；裸 `roles` 已被后端 unset） */
+  role_ids?: string[];
 }
 
 export interface UserListResult extends PageResult<User> {}
@@ -210,6 +224,12 @@ export interface ResourceRow {
   status: number;
   /** 编辑表单预填值 */
   values: FormValues;
+  /** 树形模块（权限树）的层级，0 = 顶层；平铺模块缺省 —— 行组件按它缩进 */
+  depth?: number;
+  /** 树形模块：有子节点 ⇒ 行首画展开/折叠箭头 */
+  hasChildren?: boolean;
+  /** 树形模块：祖先 id 链（根行为空数组）；折叠某节点时靠它整枝隐藏 */
+  ancestors?: string[];
 }
 
 export interface ResourceListResult {

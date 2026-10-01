@@ -5,6 +5,7 @@ import { api, ApiError } from '../lib/api';
 import { useAuth, type Click } from '../lib/auth';
 import { describeCaptcha, type CaptchaData } from '../lib/captcha';
 import { Loading, Modal } from '../components/ui';
+import { t } from '../i18n/index.ts';
 
 /** 无图时的兜底尺寸，与 .cap-ph 的高度一致（验证码画布 300x200），保证坐标换算不跳变。 */
 const FALLBACK_W = 300;
@@ -45,7 +46,7 @@ export function LoginPage() {
       setCaptcha(data ?? null);
     } catch (cause) {
       setCaptcha(null);
-      setCapError(cause instanceof ApiError ? cause.message : '验证码加载失败，可直接标点重试');
+      setCapError(cause instanceof ApiError ? cause.message : t('auth.captcha_load_failed'));
     } finally {
       setLoadingCap(false);
     }
@@ -109,7 +110,7 @@ export function LoginPage() {
       await login(username, password, captcha?.key ?? '', dots);
       navigate(from, { replace: true });
     } catch (cause) {
-      setError(cause instanceof ApiError ? cause.message : '登录失败，请稍后重试');
+      setError(cause instanceof ApiError ? cause.message : t('auth.failed'));
       setPassword('');
       closeCaptcha();
     } finally {
@@ -121,13 +122,13 @@ export function LoginPage() {
     <div className="login">
       <div className="login-card">
         <div className="login-h">
-          <h1 className="h1">游戏运营台</h1>
-          <p className="sub">登录前需完成点击验证</p>
+          <h1 className="h1">{t('app.title')}</h1>
+          <p className="sub">{t('auth.need_captcha')}</p>
         </div>
 
         <form className="form" onSubmit={submit}>
           <label className="label">
-            账号
+            {t('auth.username')}
             <input
               className="input"
               value={username}
@@ -137,7 +138,7 @@ export function LoginPage() {
           </label>
 
           <label className="label">
-            密码
+            {t('auth.password')}
             <input
               className="input"
               type="password"
@@ -150,13 +151,13 @@ export function LoginPage() {
           {error ? <p className="errnote">{error}</p> : null}
 
           <button className="btn" type="submit" disabled={busy || !username || !password}>
-            {busy ? '登录中…' : '登录'}
+            {busy ? t('auth.logging_in') : t('auth.login')}
           </button>
         </form>
       </div>
 
       {capOpen ? (
-        <Modal title="安全验证" onClose={closeCaptcha}>
+        <Modal title={t('auth.security_check')} onClose={closeCaptcha}>
           <p className="sub">{hint}</p>
 
           <div className="cap" onClick={onPick} role="presentation">
@@ -164,7 +165,7 @@ export function LoginPage() {
               <img
                 className="cap-img"
                 src={imgSrc}
-                alt="点击验证码"
+                alt={t('auth.click_captcha')}
                 draggable={false}
                 onLoad={(event) => {
                   const el = event.currentTarget;
@@ -172,7 +173,7 @@ export function LoginPage() {
                 }}
               />
             ) : (
-              <div className="cap-ph">验证码图片不可用，直接点击此区域标记坐标后提交</div>
+              <div className="cap-ph">{t('auth.captcha_unavailable')}</div>
             )}
             {dots.map((dot, index) => (
               <span
@@ -186,7 +187,7 @@ export function LoginPage() {
           </div>
 
           <div className="cap-bar">
-            <span>已标 {dots.length} 点（需 {required} 点）</span>
+            <span>{t('auth.dots_progress', { marked: dots.length, required })}</span>
             <span className="pagehead-a">
               <button
                 type="button"
@@ -194,15 +195,15 @@ export function LoginPage() {
                 disabled={!dots.length}
                 onClick={() => setDots((prev) => prev.slice(0, -1))}
               >
-                撤销
+                {t('auth.undo')}
               </button>
               <button type="button" className="btn btn-sm" onClick={() => void loadCaptcha()}>
-                换一张
+                {t('auth.refresh_captcha')}
               </button>
             </span>
           </div>
 
-          {loadingCap ? <Loading rows={1} label="验证码加载中" /> : null}
+          {loadingCap ? <Loading rows={1} label={t('auth.captcha_loading')} /> : null}
           {capError ? <p className="sub" style={{ color: 'var(--amber)' }}>{capError}</p> : null}
 
           <button
@@ -211,7 +212,7 @@ export function LoginPage() {
             disabled={busy || loadingCap || dots.length !== required}
             onClick={() => void confirm()}
           >
-            {busy ? '登录中…' : '确认登录'}
+            {busy ? t('auth.logging_in') : t('auth.confirm_login')}
           </button>
         </Modal>
       ) : null}

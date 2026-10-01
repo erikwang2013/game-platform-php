@@ -3,16 +3,19 @@
  */
 
 import promptAction from '@ohos.promptAction';
-import { FormValues, FormPayload } from '../model/DataModels';
+import { FormValues, FormPayload, PermissionNode } from '../model/DataModels';
 import { pickImage } from './ImagePicker';
 import { UploadService } from '../service/UploadService';
+import { PermissionTreeView } from './PermissionTree';
+import { t, t1 } from '../i18n/Translations';
 
 /**
  * 字段类型 —— 与控件一一对应：text/number/password→TextInput（password 掩码显示），
  * textarea→TextArea，select→Select，switch→Toggle，multi→多选（Checkbox 列表，提交数组），
- * image→文本框 + 上传按钮 + 预览（值仍是**绝对地址字符串**，故 changed()/payload() 与 text 同路）
+ * image→文本框 + 上传按钮 + 预览（值仍是**绝对地址字符串**，故 changed()/payload() 与 text 同路），
+ * tree→权限树多选（父子联动 + 三态勾选，值与 multi 同法：逗号串进、hashid 数组出）
  */
-export type FieldType = 'text' | 'number' | 'password' | 'textarea' | 'select' | 'switch' | 'multi' | 'image';
+export type FieldType = 'text' | 'number' | 'password' | 'textarea' | 'select' | 'switch' | 'multi' | 'image' | 'tree';
 
 /** select / multi 选项：label 给人看，value 是提交值（后端枚举原文或 hashid，不接受显示名） */
 export interface FieldOption {
@@ -34,6 +37,11 @@ export interface FormField {
   /** type=select / multi 时的候选项 */
   options?: FieldOption[];
   /**
+   * type=tree 时的**整棵树**（候选不摊平：父子联动要层级，摊平就没了）。
+   * 与 options 同一手法：字段对象先建壳，prepareForm 拿到树之后原地改这个数组。
+   */
+  tree?: PermissionNode[];
+  /**
    * 字段下方的小字说明（可多行，用 \n）。给「值域会变长」的字段用：
    * 风控规则的 config 键白名单随 type 变、还有闭区间与布尔/金额/比率三类值域，
    * 塞进 placeholder 会随输入消失且在 TextArea 里被裁掉 —— 说明要一直在场。
@@ -53,7 +61,7 @@ export function confirmAction(title: string, message: string, okText: string, ok
     title: title,
     message: message,
     buttons: [
-      { text: '取消', color: '#999999' },
+      { text: t('common.cancel'), color: '#999999' },
       { text: okText, color: okColor }
     ]
   }).then((result: promptAction.ShowDialogSuccessResponse): boolean => result.index === 1)
@@ -62,7 +70,8 @@ export function confirmAction(title: string, message: string, okText: string, ok
 
 /** 删除前二次确认；what 是对象标识（名称/标题），文案必须带上它（不要笼统「确认删除？」） */
 export function confirmDelete(what: string, onConfirm: () => void): void {
-  confirmAction('确认删除', `确定要删除「${what}」吗？`, '删除', '#FF4D4F').then((ok: boolean) => {
+  confirmAction(t('common.confirm_delete_title'), t1('common.confirm_delete_message', 'what', what),
+    t('common.delete'), '#FF4D4F').then((ok: boolean) => {
     if (ok) {
       onConfirm();
     }
@@ -88,9 +97,10 @@ export function confirmDelete(what: string, onConfirm: () => void): void {
  * onSubmit 抛错 = 服务端拒绝（422/404…）：错误原文显示在框内且**不关框**，用户改完可重试；
  * 成功由父页面在 onDone 里关框 + 刷新列表（ArkUI 的弹框不能像 Flutter 的 Navigator.pop 那样自关）。
  *
- * multi 字段的取值编码：表单里始终存**逗号连接的字符串**（FormValues 只认 string），
+ * multi / tree 字段的取值编码：表单里始终存**逗号连接的字符串**（FormValues 只认 string），
  * 提交时才 split 成 string[]（后端 permission_ids 收数组）。这样 changed()/setValue()/seed()
  * 这些按字符串写的公共逻辑一行都不用改；hashid 的字母表不含逗号，故分隔符不会歧义。
+ * tree 与 multi 的差别只在控件（树形勾选 vs 平铺勾选），编解码完全同路。
  *
  * image 字段：值就是**绝对地址字符串**（与 text 同一种值），上传成功后 setValue 回填，
  * 于是 changed()/payload()/partial 比较一行都不用改。上传失败原文显示在框内且不清空已填地址 ——
@@ -103,6 +113,8 @@ export function confirmDelete(what: string, onConfirm: () => void): void {
  */
 @Component
 export struct FormDialog {
+  /** 语言变更要重渲染本组件：build 里的 t() 读静态 currentCode，ArkUI 不观测它。 */
+  @StorageLink('app_locale') localeCode: string = 'en';
   /** 弹框标题（如「新建游戏」/「编辑游戏」） */
   title: string = '';
   /** 字段描述 */
@@ -185,7 +197,7 @@ export struct FormDialog {
       const raw = this.current(field);
       if (field.type === 'switch') {
         body[field.name] = raw === '1' ? 1 : 0;
-      } else if (field.type === 'multi') {
+      } else if (field.type === 'multi' || field.type === 'tree') {
         // 全不选 = 空数组（「取消全部授权」是合法意图，必须发出去而不是跳过）
         body[field.name] = this.picked(field);
       } else if (field.type === 'number') {
@@ -228,7 +240,7 @@ export struct FormDialog {
     return field.options ?? [];
   }
 
-  /** multi 当前勾选值（逗号分隔字符串 → 数组） */
+  /** multi / tree 当前勾选值（逗号分隔字符串 → 数组） */
   private picked(field: FormField): string[] {
     const raw = this.current(field);
     return raw === '' ? [] : raw.split(',');
@@ -284,7 +296,8 @@ export struct FormDialog {
     for (let i = 0; i < this.fields.length; i++) {
       const field = this.fields[i];
       if (field.required && field.type !== 'switch' && this.current(field).trim() === '') {
-        return `「${field.label}」为必填项`;
+        // 字段名先经 t()：模块表存的是键时它查表，存的仍是中文时原样返回（键名即自身）
+        return t1('common.required_field', 'name', t(field.label));
       }
     }
     return '';
@@ -329,7 +342,7 @@ export struct FormDialog {
     const options: SelectOption[] = [];
     const source = field.options ?? [];
     for (let i = 0; i < source.length; i++) {
-      options.push({ value: source[i].label });
+      options.push({ value: t(source[i].label) });
     }
     return options;
   }
@@ -340,7 +353,7 @@ export struct FormDialog {
     const current = this.current(field);
     for (let i = 0; i < source.length; i++) {
       if (source[i].value === current) {
-        return source[i].label;
+        return t(source[i].label);
       }
     }
     return current;
@@ -397,7 +410,7 @@ export struct FormDialog {
               // 每轮一个根组件（Column）—— ForEach 每轮只能生成一个
               Column() {
                 Row() {
-                  Text(field.label)
+                  Text(t(field.label))
                     .fontSize(14)
                     .fontColor('#333333')
 
@@ -409,8 +422,8 @@ export struct FormDialog {
                   }
 
                   // 多选没勾选态能一眼看全时，给个计数（列表可能几十项，滚下去看不出来选了几个）
-                  if (field.type === 'multi') {
-                    Text(`已选 ${this.picked(field).length} 项`)
+                  if (field.type === 'multi' || field.type === 'tree') {
+                    Text(t1('common.selected_count', 'count', `${this.picked(field).length}`))
                       .fontSize(12)
                       .fontColor('#999999')
                       .margin({ left: 6 })
@@ -421,7 +434,7 @@ export struct FormDialog {
 
                 // 说明放在标签与控件之间：控件一旦有内容，placeholder 就没了，而值域说明要一直在场
                 if (field.hint !== undefined && field.hint.length > 0) {
-                  Text(field.hint)
+                  Text(t(field.hint))
                     .fontSize(11)
                     .fontColor('#999999')
                     .width('100%')
@@ -458,7 +471,7 @@ export struct FormDialog {
                             this.togglePicked(field, option.value, checked);
                           })
 
-                        Text(option.label)
+                        Text(t(option.label))
                           .fontSize(13)
                           .fontColor('#333333')
                           .layoutWeight(1)
@@ -472,11 +485,22 @@ export struct FormDialog {
                     }, (option: FieldOption) => `${field.name}:${option.value}`)
                   }
                   .width('100%')
+                } else if (field.type === 'tree') {
+                  // 勾选态单向流入（@Prop = 表单值），变化经 onChange 回写成逗号串。
+                  // 展开态在树组件内（纯展示），表单重渲染不影响提交值。
+                  PermissionTreeView({
+                    nodes: field.tree ?? [],
+                    checked: this.picked(field),
+                    disabled: this.submitting,
+                    onChange: (ids: string[]) => {
+                      this.setValue(field.name, ids.join(','));
+                    }
+                  })
                 } else if (field.type === 'image') {
                   // 上传不改控件形态：文本框仍是唯一的真值入口（可直接贴外链），上传只是往里填地址
                   Column() {
                     Row() {
-                      TextInput({ placeholder: field.placeholder ?? '', text: this.current(field) })
+                      TextInput({ placeholder: field.placeholder !== undefined ? t(field.placeholder) : '', text: this.current(field) })
                         .height(40)
                         .fontSize(14)
                         .layoutWeight(1)
@@ -485,7 +509,7 @@ export struct FormDialog {
                           this.setValue(field.name, value);
                         })
 
-                      Button(this.uploading === field.name ? '上传中…' : '上传')
+                      Button(this.uploading === field.name ? t('common.uploading') : t('common.upload'))
                         .fontSize(13)
                         .fontColor('#FFFFFF')
                         .backgroundColor(this.uploading === field.name ? '#99BBFF' : '#1677FF')
@@ -513,7 +537,7 @@ export struct FormDialog {
                   }
                   .width('100%')
                 } else if (field.type === 'textarea') {
-                  TextArea({ placeholder: field.placeholder ?? '', text: this.current(field) })
+                  TextArea({ placeholder: field.placeholder !== undefined ? t(field.placeholder) : '', text: this.current(field) })
                     .width('100%')
                     .height(80)
                     .fontSize(14)
@@ -522,7 +546,7 @@ export struct FormDialog {
                       this.setValue(field.name, value);
                     })
                 } else {
-                  TextInput({ placeholder: field.placeholder ?? '', text: this.current(field) })
+                  TextInput({ placeholder: field.placeholder !== undefined ? t(field.placeholder) : '', text: this.current(field) })
                     .width('100%')
                     .height(40)
                     .fontSize(14)
@@ -547,7 +571,7 @@ export struct FormDialog {
         .constraintSize({ maxHeight: 420 })
 
         Row() {
-          Button('取消')
+          Button(t('common.cancel'))
             .fontSize(14)
             .fontColor('#666666')
             .backgroundColor('#F5F5F5')
@@ -557,7 +581,7 @@ export struct FormDialog {
               this.cancel();
             })
 
-          Button(this.submitting ? '提交中…' : '确定')
+          Button(this.submitting ? t('common.submitting') : t('common.confirm'))
             .fontSize(14)
             .fontColor('#FFFFFF')
             .backgroundColor(this.submitting ? '#99BBFF' : '#1677FF')
@@ -587,6 +611,8 @@ export struct FormDialog {
  */
 @Component
 export struct RowActionBar {
+  /** 语言变更要重渲染本组件（按钮文案由 t() 出） */
+  @StorageLink('app_locale') localeCode: string = 'en';
   /** 「启用」/「停用」按钮文案（按当前状态给目标动作） */
   @Prop statusText: string = '';
   /** 额外动作文案（空串 = 不渲染），如排行榜「刷新缓存」 */
@@ -605,7 +631,7 @@ export struct RowActionBar {
   build() {
     Row() {
       if (this.canEdit) {
-        Button('编辑')
+        Button(t('common.edit'))
           .fontSize(12)
           .fontColor('#1677FF')
           .backgroundColor('#E6F0FF')
@@ -655,7 +681,7 @@ export struct RowActionBar {
       }
 
       if (this.canDelete) {
-        Button('删除')
+        Button(t('common.delete'))
           .fontSize(12)
           .fontColor('#FF4D4F')
           .backgroundColor('#FFE6E6')

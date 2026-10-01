@@ -352,7 +352,7 @@ void main() {
 // 列表一律不打网络（离线用例）：只覆盖 load 这一处副作用入口。
 class _FakeGameListController extends GameListController {
   @override
-  Future<void> load() async {}
+  Future<void> load({int? toPage}) async {}
 }
 
 class _FakeCategoryController extends GameCategoryAdminController {

@@ -217,9 +217,8 @@ class _WalletPageState extends State<WalletPage> {
         ],
       ),
       onSelected: (value) async {
-        if (value == 'lang') {
-          final current = localeCtrl.currentLocale.value;
-          localeCtrl.changeLocale(current == 'zh' ? 'en' : 'zh');
+        if (value.startsWith('lang:')) {
+          localeCtrl.changeLocale(value.substring('lang:'.length));
         } else if (value == 'profile') {
           Get.to(() => const ProfilePage());
         } else if (value == 'logout') {
@@ -247,20 +246,28 @@ class _WalletPageState extends State<WalletPage> {
           }
         }
       },
+      // 语言平铺进同一个菜单（不再是一个「中/英互切」的开关）：13 种由
+      // LocaleController.supported 驱动，增删语言只改那一处；当前语言打点标记。
+      // 用母语名而不是译名 —— 语言菜单要在「用户还看不懂当前界面语言」时也能选对。
       itemBuilder: (_) => [
-        PopupMenuItem(
-          value: 'lang',
-          child: Obx(() {
-            final isZh = localeCtrl.currentLocale.value == 'zh';
-            return Row(
+        ...LocaleController.supported.map(
+          (item) => PopupMenuItem(
+            value: 'lang:${item.code}',
+            child: Row(
               children: [
-                const Icon(Icons.language, size: 18),
+                Icon(
+                  item.code == localeCtrl.currentLocale.value
+                      ? Icons.radio_button_checked
+                      : Icons.language,
+                  size: 18,
+                ),
                 const SizedBox(width: 8),
-                Text(isZh ? 'Switch to English' : '切换到中文'),
+                Text(item.nativeName),
               ],
-            );
-          }),
+            ),
+          ),
         ),
+        const PopupMenuDivider(),
         PopupMenuItem(
           value: 'profile',
           child: Text('${AppTranslations.t('profile.title')}'),

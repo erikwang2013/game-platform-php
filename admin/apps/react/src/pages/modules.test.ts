@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { t, setCode, type MessageKey } from '../i18n/index.ts';
 import { buildPayload, draftFrom, type Field } from '../lib/crud.ts';
 // 路线表读取器与风控那组用例共用（文件按批次拆开，见 lib/route-fixtures.ts 的说明）
 import { hasRoute, rel, routes } from '../lib/route-fixtures.ts';
@@ -64,14 +65,16 @@ test('身份审核 / 工单：是动作型（无增改删端点 ⇒ 不该长出
   }
 });
 
-test('角色的「权限」多选、权限的「父权限」：值域异步拉，且父权限只在新建时给', () => {
+test('角色的「权限」树、权限的「父权限」：树异步拉且不摊平，父权限只在新建时给', () => {
   const names = (fields: Field[] | undefined): string[] => (fields ?? []).map((field) => field.name);
 
-  const multi = (ROLE_CRUD.fields ?? []).find((field) => field.name === 'permission_ids');
-  assert.ok(multi, '角色表单缺 permission_ids');
-  assert.equal(multi.type, 'multi');
-  // 值域来自权限树端点，只可能异步给（模块级常量里拿不到数据）
-  assert.equal(typeof multi.options, 'function');
+  const tree = (ROLE_CRUD.fields ?? []).find((field) => field.name === 'permission_ids');
+  assert.ok(tree, '角色表单缺 permission_ids');
+  // 树控件（父子联动），不是摊平的多选：摊平了「勾父级连带子级」就无从谈起
+  assert.equal(tree.type, 'tree');
+  assert.equal(tree.options, undefined, '权限字段不该摊平成 options（那就没有父子联动了）');
+  // 树来自权限树端点，只可能异步给（模块级常量里拿不到数据）
+  assert.equal(typeof tree.tree, 'function');
   assert.ok(names(ROLE_CRUD.editFields).includes('permission_ids'), '编辑态要能改权限（行里的 permission_ids 回填）');
 
   assert.ok(names(PERMISSION_CRUD.fields).includes('parent_id'), '权限表单缺 parent_id');
@@ -81,7 +84,7 @@ test('角色的「权限」多选、权限的「父权限」：值域异步拉�
   );
 });
 
-test('多选字段往返：行数组 → 草稿一行一值；未改动不发、清空发空数组、新建留空不发', () => {
+test('权限树字段往返：行数组 → 草稿一行一值；未改动不发、清空发空数组、新建留空不发', () => {
   const field = (ROLE_CRUD.fields ?? []).find((item) => item.name === 'permission_ids');
   assert.ok(field);
   const row = { permission_ids: ['p1', 'p2'] };
@@ -165,18 +168,20 @@ test('提现资金动作：确认文案带订单标识 + 金额，且 report 走
   assert.equal(WITHDRAW_ORDER_CRUD.labelKey, undefined);
   assert.equal(WITHDRAW_ORDER_CRUD.toggle, undefined);
 
-  for (const label of ['通过', '驳回', '二次确认', '执行打款']) {
-    const action = actions.find((item) => item.label === label);
-    assert.ok(action, `提现订单缺动作「${label}」`);
-    assert.ok(action.report, `「${label}」必须读服务端 message（不做乐观更新）`);
+  // 动作 label 是**键**（渲染时 t()）⇒ 按键取，同时把英文成品钉住（见 lib/crud.ts 的 Field.label）
+  setCode('en');
+  for (const key of ['f.approve', 'f.reject', 'f.second_confirmation', 'f.execute_payout'] as const) {
+    const action = actions.find((item) => item.label === key);
+    assert.ok(action, `提现订单缺动作「${key}」（现在的按钮文案是「${t(key)}」）`);
+    assert.ok(action.report, `「${key}」必须读服务端 message（不做乐观更新）`);
     const text = typeof action.confirm === 'function' ? action.confirm(row) : action.confirm;
-    assert.ok(text, `「${label}」没有二次确认文案`);
-    assert.ok(text.includes(row.order_no), `「${label}」的确认文案缺订单标识`);
-    assert.ok(text.includes(row.platform_amount), `「${label}」的确认文案缺金额`);
+    assert.ok(text, `「${key}」没有二次确认文案`);
+    assert.ok(text.includes(row.order_no), `「${key}」的确认文案缺订单标识`);
+    assert.ok(text.includes(row.platform_amount), `「${key}」的确认文案缺金额`);
   }
 
   // sync-payout 的 message 是占位符 success，文案改由 data 拼 —— 但仍是服务端返回的状态
-  const sync = actions.find((item) => item.label === '同步打款');
+  const sync = actions.find((item) => item.label === 'f.sync_payout');
   assert.ok(sync && typeof sync.report === 'function');
   const text = sync.report({ code: 0, message: 'success', data: { payout_status: 'success', order_status: 'completed', synced_status: 'SUCCESS' } });
   assert.ok(text.includes('completed') && text.includes('SUCCESS'), '同步结果必须显示服务端回来的三个状态');
@@ -184,24 +189,25 @@ test('提现资金动作：确认文案带订单标识 + 金额，且 report 走
 
 test('提现订单：动作按行状态过滤，不摆点了必然 422 的按钮', () => {
   const actions = WITHDRAW_ORDER_CRUD.actions ?? [];
-  const shows = (label: string, row: Record<string, unknown>): boolean => {
-    const action = actions.find((item) => item.label === label);
-    assert.ok(action?.when, `「${label}」没有 when 过滤`);
+  // 按键取动作：label 是键，写成成品字符串会「找不到」而红（失败信息里带上当前译文，便于对号）
+  const shows = (key: MessageKey, row: Record<string, unknown>): boolean => {
+    const action = actions.find((item) => item.label === key);
+    assert.ok(action?.when, `「${t(key)}」(${key}) 没有 when 过滤`);
     return action.when(row) === true;
   };
 
-  assert.equal(shows('执行打款', { status: 'pending' }), false);
-  assert.equal(shows('执行打款', { status: 'approved' }), true);
+  assert.equal(shows('f.execute_payout', { status: 'pending' }), false);
+  assert.equal(shows('f.execute_payout', { status: 'approved' }), true);
   // 没有批次号 = 还没提交给 PayPal，同步必然 422
-  assert.equal(shows('同步打款', { status: 'processing', payout_batch_id: '' }), false);
-  assert.equal(shows('同步打款', { status: 'processing', payout_batch_id: 'B1' }), true);
+  assert.equal(shows('f.sync_payout', { status: 'processing', payout_batch_id: '' }), false);
+  assert.equal(shows('f.sync_payout', { status: 'processing', payout_batch_id: 'B1' }), true);
   // 双审：已有第一审核人 ⇒「通过」再点必 422，改点「二次确认」
-  assert.equal(shows('通过', { status: 'pending', reviewer_id: 7 }), false);
-  assert.equal(shows('通过', { status: 'pending', reviewer_id: 0 }), true);
-  assert.equal(shows('二次确认', { status: 'pending', reviewer_id: 7 }), true);
-  assert.equal(shows('二次确认', { status: 'pending', reviewer_id: 0 }), false);
+  assert.equal(shows('f.approve', { status: 'pending', reviewer_id: 7 }), false);
+  assert.equal(shows('f.approve', { status: 'pending', reviewer_id: 0 }), true);
+  assert.equal(shows('f.second_confirmation', { status: 'pending', reviewer_id: 7 }), true);
+  assert.equal(shows('f.second_confirmation', { status: 'pending', reviewer_id: 0 }), false);
   // 驳回对任何 pending 都成立（后端 CAS 只看 status）
-  assert.equal(shows('驳回', { status: 'pending', reviewer_id: 7 }), true);
+  assert.equal(shows('f.reject', { status: 'pending', reviewer_id: 7 }), true);
 });
 
 test('阶梯限额：预置档位只有 PUT ⇒ 无「+ 新建」；没有删除端点 ⇒ 无 labelKey', () => {

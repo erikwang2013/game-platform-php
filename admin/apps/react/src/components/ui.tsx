@@ -1,5 +1,6 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { useEffect, type ReactNode } from 'react';
+import { t } from '../i18n/index.ts';
 
 export type Tone = 'primary' | 'amber' | 'success' | 'danger' | 'muted';
 
@@ -52,7 +53,8 @@ export function Stat({ label, value, hint, tone }: { label: string; value: React
   );
 }
 
-export function Loading({ rows = 3, label = '加载中' }: { rows?: number; label?: string }) {
+// 缺省值在**每次调用**时求值（不是模块求值期），故这里现取译文是活的；调用方传的是成品文案
+export function Loading({ rows = 3, label = t('app.loading') }: { rows?: number; label?: string }) {
   return (
     <div className="skel" role="status" aria-label={label}>
       {Array.from({ length: rows }, (_unused, index) => (
@@ -62,7 +64,7 @@ export function Loading({ rows = 3, label = '加载中' }: { rows?: number; labe
   );
 }
 
-export function Empty({ text = '暂无数据' }: { text?: string }) {
+export function Empty({ text = t('app.no_data') }: { text?: string }) {
   return (
     <div className="empty">
       {/* 吉祥物小骰（Dicey）：纯装饰，语义由下面的文案承载；随 BASE_URL 走子路径部署 */}
@@ -90,7 +92,7 @@ export function ErrorNote({
       <span className="errnote-t">{message}</span>
       {onRetry ? (
         <button type="button" className="btn btn-sm" onClick={onRetry}>
-          重试
+          {t('common.retry')}
         </button>
       ) : null}
     </div>
@@ -128,6 +130,34 @@ export function Tabs({
   );
 }
 
+/**
+ * 分页条（形态照 angular 那棵的 ui-pager）：共 N 条 · 第 X/Y 页 + 上一页/下一页。
+ * 只有「真翻得动」的列表才画（见 RowBrowser）：整表端点与树/裸数组没有 total，画上去是骗人。
+ */
+export function Pager({
+  page,
+  pages,
+  total,
+  onJump,
+}: {
+  page: number;
+  pages: number;
+  total: number;
+  onJump: (page: number) => void;
+}) {
+  return (
+    <div className="pager">
+      <span>{t('table.pager', { total, page, pages })}</span>
+      <button type="button" className="btn btn-sm" disabled={page <= 1} onClick={() => onJump(page - 1)}>
+        {t('table.prev')}
+      </button>
+      <button type="button" className="btn btn-sm" disabled={page >= pages} onClick={() => onJump(page + 1)}>
+        {t('table.next')}
+      </button>
+    </div>
+  );
+}
+
 export function Field({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="field">
@@ -157,8 +187,8 @@ export function Modal({ title, onClose, children }: { title: string; onClose: ()
       >
         <div className="modal-h">
           <h2 className="h2">{title}</h2>
-          <button type="button" className="btn btn-sm" onClick={onClose} aria-label="关闭">
-            关闭
+          <button type="button" className="btn btn-sm" onClick={onClose} aria-label={t('app.close')}>
+            {t('app.close')}
           </button>
         </div>
         <div className="modal-b">{children}</div>

@@ -112,8 +112,8 @@ class ChatController extends BaseController
         $peerId = $this->decodeId($request->input('to_user_id', '0'));
         $content = trim($request->input('content', ''));
 
-        if ($peerId <= 0 || $userId === $peerId) return $this->fail('Invalid recipient', 422);
-        if (empty($content) || mb_strlen($content) > 5000) return $this->fail('Message must be 1-5000 characters', 422);
+        if ($peerId <= 0 || $userId === $peerId) return $this->fail(trans('Invalid recipient'), 422);
+        if (empty($content) || mb_strlen($content) > 5000) return $this->fail(trans('Message must be 1-5000 characters'), 422);
 
         // Check friendship
         $friends = Friend::where(function($q) use ($userId, $peerId) {
@@ -121,7 +121,7 @@ class ChatController extends BaseController
         })->orWhere(function($q) use ($userId, $peerId) {
             $q->where('user_id', $peerId)->where('friend_id', $userId);
         })->where('status', 'accepted')->exists();
-        if (!$friends) return $this->fail('Only friends can send messages', 403);
+        if (!$friends) return $this->fail(trans('Only friends can send messages'), 403);
 
         $msg = new Message();
         $msg->id = $this->generateId();
@@ -160,10 +160,10 @@ class ChatController extends BaseController
     public function markRead(Request $request): Response
     {
         $peerId = $this->decodeId($request->input('from_user_id', '0'));
-        if ($peerId <= 0) return $this->fail('Invalid user', 422);
+        if ($peerId <= 0) return $this->fail(trans('Invalid user'), 422);
         Message::where('to_user_id', $request->userId)->where('from_user_id', $peerId)
             ->where('is_read', 0)->update(['is_read' => 1]);
-        return $this->success([], 'Marked read');
+        return $this->success([], trans('Marked read'));
     }
 
     #[Apidoc\Title("未读总数")]

@@ -43,7 +43,7 @@ class WithdrawController extends BaseController
         // Check global withdraw switch
         $globalSwitch = PlatformConfig::get('withdraw', 'global_switch');
         if (!$globalSwitch) {
-            return $this->fail('Withdrawal is currently disabled', 403);
+            return $this->fail(trans('Withdrawal is currently disabled'), 403);
         }
 
         $validator = validator($request->all(), [
@@ -60,7 +60,7 @@ class WithdrawController extends BaseController
 
         // 提现是资金出口，必须过验证码（与登录/注册同一道闸）
         if (!$this->captchaOk($request)) {
-            return $this->fail('验证码错误，请重试', 422);
+            return $this->fail(trans('Incorrect captcha, please try again'), 422);
         }
 
         $userId         = $request->userId;
@@ -73,11 +73,11 @@ class WithdrawController extends BaseController
         try {
             $locked = Redis::set($lockKey, '1', 'EX', 15, 'NX');
             if (!$locked) {
-                return $this->fail('Withdrawal request in progress, please retry', 429);
+                return $this->fail(trans('Withdrawal request in progress, please retry'), 429);
             }
         } catch (\Throwable $e) {
             Log::error('Withdraw apply lock Redis failed (fail-closed): ' . $e->getMessage());
-            return $this->fail('Withdrawal temporarily unavailable', 503);
+            return $this->fail(trans('Withdrawal temporarily unavailable'), 503);
         }
 
         try {
@@ -143,7 +143,7 @@ class WithdrawController extends BaseController
         // fiat_amount=0 的订单**——0 是坏数据（PayoutService 拒付）⇒ 等于给用户一个「提得出去、
         // 打不出去」的单。放在风控检查之前：金额非法时不得触发风控侧的写入。
         if (bccomp($actualAmount, '0', 4) <= 0) {
-            return $this->fail('Fee exceeds withdrawal amount', 400);
+            return $this->fail(trans('Fee exceeds withdrawal amount'), 400);
         }
 
         // 风控检查（H4）：阻断 → 拒绝下单；警告 → 人工审核，不自动放行
@@ -165,7 +165,7 @@ class WithdrawController extends BaseController
         // 反作弊信任带位联动（在 H4 风控检查之后）：freeze → 直接拒绝；restrict → 转人工审核
         $band = AntiCheatService::trustBand($userId);
         if ($band === 'freeze') {
-            return $this->fail('Withdrawal blocked by risk control: account restricted', 403);
+            return $this->fail(trans('Withdrawal blocked by risk control: account restricted'), 403);
         }
         if ($band === 'restrict') {
             $riskReview = true;
@@ -177,7 +177,7 @@ class WithdrawController extends BaseController
             $wallet = UserWallet::where('user_id', $userId)->lockForUpdate()->first();
             if (!$wallet || bccomp((string) $wallet->balance, $platformAmount, 4) < 0) {
                 Db::rollBack();
-                return $this->fail('Insufficient balance', 400);
+                return $this->fail(trans('Insufficient balance'), 400);
             }
 
             $counted = ['pending', 'approved', 'processing', 'completed', 'manual_review'];
@@ -188,7 +188,7 @@ class WithdrawController extends BaseController
                     ->sum('platform_amount');
                 if (self::exceedsLimit((string) $todaySum, $platformAmount, $dailyLimit)) {
                     Db::rollBack();
-                    return $this->fail('Daily withdrawal limit exceeded', 400);
+                    return $this->fail(trans('Daily withdrawal limit exceeded'), 400);
                 }
             }
             if (bccomp($monthlyLimit, '0', 4) > 0) {
@@ -201,7 +201,7 @@ class WithdrawController extends BaseController
                     ->sum('platform_amount');
                 if (self::exceedsLimit((string) $monthSum, $platformAmount, $monthlyLimit)) {
                     Db::rollBack();
-                    return $this->fail('Monthly withdrawal limit exceeded', 400);
+                    return $this->fail(trans('Monthly withdrawal limit exceeded'), 400);
                 }
             }
 
@@ -232,7 +232,7 @@ class WithdrawController extends BaseController
             $deducted = UserWallet::deductBalance($userId, $platformAmount, 'withdraw', 'withdraw_order', (int) $order->id);
             if (!$deducted) {
                 Db::rollBack();
-                return $this->fail('Failed to deduct balance', 500);
+                return $this->fail(trans('Failed to deduct balance'), 500);
             }
 
             // Refresh wallet to get balance after deduction
@@ -272,7 +272,7 @@ class WithdrawController extends BaseController
         } catch (\Throwable $e) {
             Db::rollBack();
             Log::error('Withdraw apply failed: ' . $e->getMessage());
-            return $this->fail('Withdrawal failed', 500);
+            return $this->fail(trans('Withdrawal failed'), 500);
         }
     }
 

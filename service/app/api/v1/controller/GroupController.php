@@ -48,11 +48,11 @@ class GroupController extends BaseController
         if ($request->input('game_id')) {
             $gameId = $this->decodeId($request->input('game_id'));
             if (!Game::where('id', $gameId)->where('status', 1)->exists()) {
-                return $this->fail('Game not found', 422);
+                return $this->fail(trans('Game not found'), 422);
             }
         }
         if ($type === 'team' && $gameId <= 0) {
-            return $this->fail('game_id required for team', 422);
+            return $this->fail(trans('game_id required for team'), 422);
         }
 
         $userId = $request->userId;
@@ -82,7 +82,7 @@ class GroupController extends BaseController
             $member->save();
         });
 
-        return $this->success(['id' => $this->encodeId($groupId)], 'Created');
+        return $this->success(['id' => $this->encodeId($groupId)], trans('Created'));
     }
 
     #[Apidoc\Title("组/公会详情")]
@@ -94,7 +94,7 @@ class GroupController extends BaseController
     {
         $group = Group::find($this->decodeId($hashid));
         if (!$group) {
-            return $this->fail('Group not found', 404);
+            return $this->fail(trans('Group not found'), 404);
         }
 
         $data = $this->toData($group);
@@ -115,7 +115,7 @@ class GroupController extends BaseController
         $groupId = $this->decodeId($hashid);
         $group = Group::find($groupId);
         if (!$group) {
-            return $this->fail('Group not found', 404);
+            return $this->fail(trans('Group not found'), 404);
         }
 
         $page = (int) $request->input('page', 1);
@@ -191,7 +191,7 @@ class GroupController extends BaseController
             return $this->fail($result['msg'], $result['code']);
         }
 
-        return $this->success([], 'Joined');
+        return $this->success([], trans('Joined'));
     }
 
     #[Apidoc\Title("退出/解散")]
@@ -304,7 +304,7 @@ class GroupController extends BaseController
             return $this->fail($result['msg'], $result['code']);
         }
 
-        return $this->success([], 'Role updated');
+        return $this->success([], trans('Role updated'));
     }
 
     private function toData(Group $group): array

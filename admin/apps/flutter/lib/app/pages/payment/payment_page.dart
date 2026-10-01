@@ -43,6 +43,8 @@ class PaymentController extends GetxController {
     load();
   }
 
+  /// **不加分页**：/payment/method/list 是整表端点（无 total，开启哪些支付方式就返回哪些），
+  /// C 端下单页按它列可用方式 ⇒ 分页会让收银台缺支付渠道。
   Future<void> load() async {
     isLoading.value = true;
     try {

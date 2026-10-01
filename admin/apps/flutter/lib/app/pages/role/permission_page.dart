@@ -8,11 +8,18 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
 import '../../widgets/crud.dart';
+import '../../widgets/permission_tree.dart';
 
 class PermissionController extends GetxController {
   final api = ApiService();
-  final tree = <dynamic>[].obs;
+
+  /// 权限**树**（不是平表）：GET /admin/v1/permission 的 data 就是节点数组。
+  final tree = <PermissionNode>[].obs;
   final isLoading = false.obs;
+
+  /// 收起的分支（默认全展开，见 permission_tree.dart 的 visibleRows）。
+  /// 放在控制器里：切到角色 Tab 再切回来不掉展开状态。
+  final collapsed = <String>{}.obs;
 
   @override
   void onInit() {
@@ -20,17 +27,22 @@ class PermissionController extends GetxController {
     load();
   }
 
-  /// GET /admin/v1/permission 返回的是**树**（PermissionController::buildTree），不是平表。
+  /// **不加分页**：data 是嵌套树（无 total），且节点必须整棵到齐才能判父子联动的半选态
+  /// —— 只加载一层的话，父节点会被误判成「全未勾选」。
   Future<void> load() async {
     isLoading.value = true;
     try {
       final resp = await api.get('/admin/v1/permission');
-      tree.value = resp['data'] as List<dynamic>? ?? [];
+      tree.value = PermissionNode.parse(resp['data']);
     } catch (e) {
       Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.loading_failed')}: $e');
     } finally {
       isLoading.value = false;
     }
+  }
+
+  void toggleExpanded(String id) {
+    collapsed.contains(id) ? collapsed.remove(id) : collapsed.add(id);
   }
 
   // 以下写操作**不吞异常**：异常要冒到通用表单/确认框里显示服务端 message（widgets/crud.dart）。
@@ -106,7 +118,7 @@ class PermissionPage extends GetView<PermissionController> {
       const SizedBox(height: 12),
       Expanded(child: Obx(() {
         if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
-        final rows = flatten(ctrl.tree);
+        final rows = visibleRows(ctrl.tree, ctrl.collapsed);
         if (rows.isEmpty) {
           return Center(
             child: Column(
@@ -123,16 +135,22 @@ class PermissionPage extends GetView<PermissionController> {
         return ListView.builder(
           itemCount: rows.length,
           itemBuilder: (_, i) {
-            final (depth, p) = rows[i];
-            final id = p['id']?.toString() ?? '';
-            final name = p['name']?.toString() ?? '';
+            final row = rows[i];
+            final p = row.node.raw ?? const <String, dynamic>{};
+            final id = row.node.id;
+            final name = row.node.label;
             return Padding(
-              padding: EdgeInsets.only(left: depth * 24.0),
+              padding: EdgeInsets.only(left: row.depth * 24.0),
               child: Card(
                 child: ListTile(
                   dense: true,
-                  leading: Icon(_typeIcon(p['type']), size: 24),
-                  title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
+                  // 展开箭头占 leading：树靠它展开，类型图标挪进标题行，免得 leading 挤成两层
+                  leading: treeExpandIcon(row, () => ctrl.toggleExpanded(id)),
+                  title: Row(children: [
+                    Icon(_typeIcon(p['type']), size: 18),
+                    const SizedBox(width: 6),
+                    Flexible(child: Text(name, style: const TextStyle(fontWeight: FontWeight.bold))),
+                  ]),
                   subtitle: Text('${AppTranslations.t('permission.slug')}: ${p['slug']}  |  '
                       '${AppTranslations.t('permission.type')}: ${_typeLabel(p['type'])}  |  '
                       '${AppTranslations.t('permission.path')}: ${p['path'] ?? ''}  |  '
@@ -159,20 +177,6 @@ class PermissionPage extends GetView<PermissionController> {
         );
       })),
     ]);
-  }
-
-  /// 把权限树摊成「缩进层级 + 节点」的行列表（父在前、子紧随其后）。
-  /// 公开：角色表单的权限多选也按同一顺序铺选项。
-  static List<(int, dynamic)> flatten(List<dynamic> nodes, [int depth = 0]) {
-    final rows = <(int, dynamic)>[];
-    for (final node in nodes) {
-      rows.add((depth, node));
-      final children = node is Map ? node['children'] : null;
-      if (children is List && children.isNotEmpty) {
-        rows.addAll(flatten(children, depth + 1));
-      }
-    }
-    return rows;
   }
 
   /// type 的值域只有 1/2/3（PermissionController::store `required|in:1,2,3`）。
@@ -207,8 +211,8 @@ class PermissionPage extends GetView<PermissionController> {
 
     final parentOptions = <CrudOption>[
       const CrudOption('', 'permission.root'),
-      for (final (depth, node) in flatten(ctrl.tree))
-        CrudOption(node['id'].toString(), '${'  ' * depth}${node['name']}'),
+      for (final (depth, node) in ctrl.tree.expand((root) => root.flatten()))
+        CrudOption(node.id, '${'  ' * depth}${node.label}'),
     ];
     final initial = item == null
         ? null

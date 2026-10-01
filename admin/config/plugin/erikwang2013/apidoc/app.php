@@ -134,7 +134,7 @@ return [
         // （必须）权限认证配置
         'auth' => [
             // 是否启用访问密码验证；管理端文档需密码访问
-            'enable' => true,
+            'enable' => false,
             // 全局访问密码，取自环境变量 APIDOC_PASSWORD（未配置则无人能登录，见文件头说明）
             'password' => $apidocPassword,
             // 密码加密盐，取自环境变量 APIDOC_SECRET_KEY

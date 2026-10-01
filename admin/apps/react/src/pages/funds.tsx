@@ -9,6 +9,7 @@ import { FormModal } from '../components/FormModal';
 import { RowBrowser } from '../components/RowBrowser';
 import { ErrorNote, Loading } from '../components/ui';
 import { ApiError, apiEnvelope } from '../lib/api';
+import { t, type MessageKey } from '../i18n/index.ts';
 import type { Field } from '../lib/crud';
 import { useApi } from '../lib/hooks';
 import { WITHDRAW_LIMIT_CRUD, WITHDRAW_ORDER_CRUD } from './modules';
@@ -31,10 +32,7 @@ export function WithdrawSwitch() {
   const on = Number(data?.status ?? 0) === 1;
 
   const flip = async (next: 0 | 1) => {
-    const question =
-      next === 1
-        ? '确认开启全平台提现？开启后所有用户可立即提交提现申请。'
-        : '确认关闭全平台提现？关闭后所有用户立刻无法提交新的提现申请（已在处理中的订单不受影响）。';
+    const question = t(next === 1 ? 'funds.switch_on_confirm' : 'funds.switch_off_confirm');
     if (!window.confirm(question)) return;
     setNotice(null);
     setBusy(true);
@@ -42,7 +40,7 @@ export function WithdrawSwitch() {
       const envelope = await apiEnvelope<unknown>('/admin/v1/withdraw/switch', { method: 'PUT', body: { enabled: next } });
       setNotice({ text: envelope.message, tone: 'ok' });
     } catch (cause) {
-      setNotice({ text: cause instanceof ApiError ? cause.message : '网络异常，请稍后重试', tone: 'error' });
+      setNotice({ text: cause instanceof ApiError ? cause.message : t('app.network_error'), tone: 'error' });
       return;
     } finally {
       setBusy(false);
@@ -57,11 +55,9 @@ export function WithdrawSwitch() {
     <>
       {notice ? <ErrorNote message={notice.text} tone={notice.tone} /> : null}
       <div className="stack">
-        <p className="muted">
-          当前状态：{on ? '已开启' : '已关闭'}。关闭后全平台用户无法提交新的提现申请。
-        </p>
+        <p className="muted">{t('funds.switch_hint', { status: t(on ? 'funds.on' : 'funds.off') })}</p>
         <button type="button" className={on ? 'btn btn-danger' : 'btn'} disabled={busy} onClick={() => void flip(on ? 0 : 1)}>
-          {busy ? '提交中…' : on ? '关闭提现' : '开启提现'}
+          {busy ? t('common.submitting') : on ? t('funds.disable') : t('funds.enable')}
         </button>
       </div>
     </>
@@ -80,13 +76,11 @@ export function WithdrawLimits({ path }: { path: string }) {
   const [nonce, setNonce] = useState(0);
 
   const submit = async (body: Record<string, unknown>) => {
-    if (Object.keys(body).length === 0) throw new ApiError(422, '三项都留空：没有要写入的值');
+    if (Object.keys(body).length === 0) throw new ApiError(422, t('funds.nothing_to_write'));
     const values = Object.entries(body)
-      .map(([key, value]) => `${SET_LABELS[key] ?? key} = ${String(value)}`)
-      .join('，');
-    if (!window.confirm(`确认把 ${values} 写入**全部**限额档位？各档现有的同名值会被覆盖（单笔最高/月限额不动）。`)) {
-      return;
-    }
+      .map(([key, value]) => `${setLabel(key)} = ${String(value)}`)
+      .join(t('funds.value_separator'));
+    if (!window.confirm(t('funds.limits_confirm', { values }))) return;
     const envelope = await apiEnvelope<unknown>('/admin/v1/withdraw/limits/set', { method: 'POST', body });
     setOpen(false);
     setNotice({ text: envelope.message, tone: 'ok' });
@@ -100,7 +94,7 @@ export function WithdrawLimits({ path }: { path: string }) {
           setNotice(null);
           setOpen(true);
         }}>
-          全档位重置
+          {t('funds.tier_reset')}
         </button>
       </div>
       {notice ? <ErrorNote message={notice.text} tone={notice.tone} /> : null}
@@ -108,13 +102,15 @@ export function WithdrawLimits({ path }: { path: string }) {
         key={nonce}
         path={path}
         preferred={['id', 'user_level', 'single_min', 'single_max', 'daily_limit', 'fee_pct', 'fee_max']}
+        // 阶梯限额：端点整表返回（没有 total），且是全平台的下拉选项源，故不分页
+        paged={false}
         crud={WITHDRAW_LIMIT_CRUD}
       />
       {open ? (
         <FormModal
-          title="全档位重置（写入所有档位）"
+          title={t('funds.tier_reset_title')}
           fields={SET_FIELDS}
-          submitLabel="写入全部档位"
+          submitLabel={t('funds.write_all_tiers')}
           onSubmit={submit}
           onClose={() => setOpen(false)}
         />
@@ -123,17 +119,24 @@ export function WithdrawLimits({ path }: { path: string }) {
   );
 }
 
-const SET_LABELS: Record<string, string> = {
-  daily_limit: '每日限额',
-  min_amount: '单笔最低',
-  auto_approve_threshold: '自动审核阈值',
+/** 列名 → 文案键：确认框里显示的是中文名而不是列名（取译文只能在调用处现取，同字段描述的理由）。 */
+const SET_LABELS: Record<string, MessageKey> = {
+  daily_limit: 'funds.daily_limit',
+  min_amount: 'funds.per_tx_min',
+  auto_approve_threshold: 'funds.auto_threshold',
+};
+
+/** 表里没登记的列名原样显示（这三项之上还有别的键时会走到这里，不至于把列名吞掉）。 */
+const setLabel = (key: string): string => {
+  const found = SET_LABELS[key];
+  return found === undefined ? key : t(found);
 };
 
 /** 端点只收这三项（列名映射：min_amount → 各档 single_min）；留空即不写该列。 */
 const SET_FIELDS: Field[] = [
-  { name: 'min_amount', label: '单笔最低', type: 'text', hint: '写入所有档位的 single_min；留空 = 不动这一项' },
-  { name: 'daily_limit', label: '每日限额', type: 'text', hint: '写入所有档位；留空 = 不动' },
-  { name: 'auto_approve_threshold', label: '自动审核阈值', type: 'text', hint: '写入所有档位；留空 = 不动' },
+  { name: 'min_amount', label: 'funds.per_tx_min', type: 'text', hint: 'funds.per_tx_min_hint' },
+  { name: 'daily_limit', label: 'funds.daily_limit', type: 'text', hint: 'funds.tier_value_hint' },
+  { name: 'auto_approve_threshold', label: 'funds.auto_threshold', type: 'text', hint: 'funds.tier_value_hint' },
 ];
 
 /**
@@ -150,9 +153,10 @@ export function WithdrawOrders({ path }: { path: string }) {
   const submit = async (body: Record<string, unknown>) => {
     const ids = (Array.isArray(body.ids) ? body.ids : []) as string[];
     const action = String(body.action ?? '');
-    const verb = action === 'reject' ? '驳回' : '通过';
-    const tail = action === 'reject' ? '：驳回会逐笔把金额退回用户余额并记退款流水，不可撤销。' : '。';
-    if (!window.confirm(`确认对以下 ${ids.length} 笔订单执行「${verb}」？\n${ids.join('\n')}\n${tail}`)) return;
+    const reject = action === 'reject';
+    const verb = t(reject ? 'funds.reject' : 'funds.approve');
+    const tail = t(reject ? 'funds.reject_tail' : 'funds.approve_tail');
+    if (!window.confirm(t('funds.batch_confirm', { count: ids.length, ids: ids.join('\n'), verb, tail }))) return;
 
     const envelope = await apiEnvelope<{ failed?: unknown[] }>('/admin/v1/withdraw/batch-review', {
       method: 'POST',
@@ -172,16 +176,16 @@ export function WithdrawOrders({ path }: { path: string }) {
           setNotice(null);
           setOpen(true);
         }}>
-          批量审核
+          {t('funds.batch')}
         </button>
       </div>
       {notice ? <ErrorNote message={notice.text} tone={notice.tone} /> : null}
       <RowBrowser key={nonce} path={path} preferred={ORDER_COLUMNS} crud={WITHDRAW_ORDER_CRUD} />
       {open ? (
         <FormModal
-          title="批量审核提现订单"
+          title={t('funds.batch_title')}
           fields={BATCH_FIELDS}
-          submitLabel="提交"
+          submitLabel={t('common.submit')}
           onSubmit={submit}
           onClose={() => setOpen(false)}
         />
@@ -207,22 +211,22 @@ const ORDER_COLUMNS = [
 const BATCH_FIELDS: Field[] = [
   {
     name: 'ids',
-    label: '订单 ID',
+    label: 'funds.order_id',
     type: 'lines',
     required: true,
-    placeholder: '每行一个',
-    hint: '取自提现订单列表的 id 列（hashid），每行一个；已处理的订单会被后端跳过，不做任何事',
+    placeholder: 'funds.one_per_line',
+    hint: 'funds.order_ids_hint',
   },
   {
     name: 'action',
-    label: '动作',
+    label: 'funds.action',
     type: 'select',
     required: true,
     options: [
-      { value: 'approve', label: 'approve 通过' },
-      { value: 'reject', label: 'reject 驳回（逐笔退款）' },
+      { value: 'approve', label: 'funds.action_approve' },
+      { value: 'reject', label: 'funds.action_reject' },
     ],
-    hint: '只有这两个值（批量端点不收二次确认 confirm）',
+    hint: 'funds.action_hint',
   },
-  { name: 'note', label: '审核备注', type: 'textarea', hint: '写进每笔订单的 review_note' },
+  { name: 'note', label: 'funds.review_note', type: 'textarea', hint: 'funds.review_note_hint' },
 ];

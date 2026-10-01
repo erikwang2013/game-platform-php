@@ -1,8 +1,9 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { Page, Row } from '../core/api.service';
 import { Crud, CrudPage, Field } from '../core/crud';
 import { idOf } from '../core/render';
+import { T } from '../core/i18n/i18n';
 import { Pager, StateBlock, Tabs } from '../components/ui';
 import { Table } from '../components/table';
 import { FormModal } from '../components/form-modal';
@@ -15,70 +16,76 @@ const G = '/admin/v1/game/';
  * slug 不在 update 的落库白名单（$request->only）里，只有新建能填。
  */
 const GAME_FIELDS: Field[] = [
-  { name: 'name', label: '游戏名称', type: 'text', required: true, placeholder: '最长 100' },
+  { name: 'name', label: 'game.name', type: 'text', required: true, placeholder: 'game.name_hint' },
   {
     name: 'slug',
-    label: '游戏标识',
+    label: 'game.slug',
     type: 'text',
     required: true,
     createOnly: true,
-    placeholder: '小写字母/数字/_/-，最长 50',
+    placeholder: 'game.slug_hint',
   },
   {
     name: 'type',
-    label: '游戏类型',
+    label: 'game.type',
     type: 'select',
     required: true,
     options: [
-      { value: 'self', label: '自研' },
-      { value: 'embedded', label: '内嵌' },
-      { value: 'third_party', label: '第三方' },
+      { value: 'self', label: 'game.self' },
+      { value: 'embedded', label: 'game.embedded' },
+      { value: 'third_party', label: 'game.third_party' },
     ],
   },
   {
     name: 'platform',
-    label: '平台',
+    label: 'game.platform',
     type: 'select',
     keepIfEmpty: true,
+    // H5 / Unity / Web 是后端枚举原文（不译）；只有 native 这侧写的是中文，故只有它挂词条
     options: [
       { value: 'h5', label: 'H5' },
       { value: 'unity', label: 'Unity' },
       { value: 'web', label: 'Web' },
-      { value: 'native', label: '原生' },
+      { value: 'native', label: 'game.platform_native' },
     ],
   },
-  { name: 'region', label: '地区', type: 'text', placeholder: '如 global，最长 10' },
-  { name: 'status', label: '上架状态', type: 'switch' },
-  { name: 'sort', label: '排序', type: 'number', placeholder: '数字越小越靠前' },
-  { name: 'sdk_version', label: 'SDK 版本', type: 'text', placeholder: '最长 20' },
+  { name: 'region', label: 'game.region', type: 'text', placeholder: 'game.region_hint' },
+  { name: 'status', label: 'game.status', type: 'switch' },
+  { name: 'sort', label: 'game.sort', type: 'number', placeholder: 'game.sort_hint' },
+  {
+    name: 'sdk_version',
+    label: 'game.sdk_version',
+    type: 'text',
+    placeholder: 'game.sdk_version_hint',
+  },
   {
     name: 'cover_image',
-    label: '封面图',
+    label: 'game.cover_image',
     type: 'image',
-    placeholder: '图片 URL，最长 255',
+    placeholder: 'game.cover_image_hint',
   },
   {
     name: 'api_endpoint',
-    label: 'API 端点',
+    label: 'game.api_endpoint',
     type: 'text',
     full: true,
-    placeholder: '最长 255',
+    placeholder: 'game.api_endpoint_hint',
   },
   {
     name: 'api_key',
-    label: 'API Key',
+    label: 'game.api_key',
     type: 'text',
     keepIfEmpty: true,
-    placeholder: '编辑时留空 = 不修改',
+    placeholder: 'game.api_key_hint',
   },
   {
     name: 'api_secret',
-    label: 'API Secret',
+    label: 'game.api_secret',
     type: 'text',
     keepIfEmpty: true,
-    placeholder: '编辑时留空 = 不修改；自研/内嵌留空自动生成',
+    placeholder: 'game.api_secret_hint',
   },
-  { name: 'description', label: '游戏描述', type: 'textarea' },
+  { name: 'description', label: 'game.description', type: 'textarea' },
 ];
 
 /**
@@ -88,22 +95,33 @@ const GAME_FIELDS: Field[] = [
  * 摆个开关就是骗人。update 认 status（in:0,1），状态改走行内的「启用/停用」（局部 PUT {status}）。
  */
 const CATEGORY_FIELDS: Field[] = [
-  { name: 'name', label: '分类名称', type: 'text', required: true, placeholder: '最长 50' },
+  {
+    name: 'name',
+    label: 'game_category.name',
+    type: 'text',
+    required: true,
+    placeholder: 'game_category.name_hint',
+  },
   {
     name: 'slug',
-    label: '分类标识',
+    label: 'game_category.slug',
     type: 'text',
     required: true,
     createOnly: true,
-    placeholder: '小写字母/数字/_/-，最长 50',
+    placeholder: 'game_category.slug_hint',
   },
   {
     name: 'icon',
-    label: '图标',
+    label: 'game_category.icon',
     type: 'image',
-    placeholder: '图片 URL 或图标名，最长 255',
+    placeholder: 'game_category.icon_hint',
   },
-  { name: 'sort', label: '排序', type: 'number', placeholder: '数字越小越靠前' },
+  {
+    name: 'sort',
+    label: 'game_category.sort',
+    type: 'number',
+    placeholder: 'game_category.sort_hint',
+  },
 ];
 
 /**
@@ -116,42 +134,58 @@ const CATEGORY_FIELDS: Field[] = [
 const SERVER_FIELDS: Field[] = [
   {
     name: 'game_id',
-    label: '所属游戏',
+    label: 'game_server.game_id',
     type: 'text',
     required: true,
     createOnly: true,
     full: true,
-    placeholder: '游戏 hashid（从「游戏列表」标签页复制）',
+    placeholder: 'game_server.game_id_hint',
   },
-  { name: 'name', label: '区服名称', type: 'text', required: true, placeholder: '最长 50' },
-  { name: 'region', label: '所属区域', type: 'text', placeholder: '如 global/asia/eu/na，最长 20' },
+  {
+    name: 'name',
+    label: 'game_server.name',
+    type: 'text',
+    required: true,
+    placeholder: 'game_server.name_hint',
+  },
+  {
+    name: 'region',
+    label: 'game_server.region',
+    type: 'text',
+    placeholder: 'game_server.region_hint',
+  },
   {
     name: 'status',
-    label: '区服状态（留空 = 不改）',
+    label: 'game_server.status',
     type: 'select',
     keepIfEmpty: true,
     options: [
-      { value: '0', label: '维护' },
-      { value: '1', label: '正常' },
-      { value: '2', label: '火爆' },
-      { value: '3', label: '新服' },
+      { value: '0', label: 'game_server.status_maintenance' },
+      { value: '1', label: 'game_server.status_normal' },
+      { value: '2', label: 'game_server.status_hot' },
+      { value: '3', label: 'game_server.status_new' },
     ],
   },
-  { name: 'sort', label: '排序', type: 'number', placeholder: '数字越小越靠前' },
+  {
+    name: 'sort',
+    label: 'game_server.sort',
+    type: 'number',
+    placeholder: 'game_server.sort_hint',
+  },
 ];
 
 @Component({
   selector: 'app-games',
-  imports: [StateBlock, Table, Pager, Tabs, FormModal],
+  imports: [StateBlock, Table, Pager, Tabs, FormModal, T],
   template: `
     <div class="page-head">
-      <h1>游戏管理</h1>
-      <span class="sub">游戏 / 分类 / 区服</span>
+      <h1>{{ 'nav.games' | t }}</h1>
+      <span class="sub">{{ 'game.subtitle' | t }}</span>
       <div class="spacer"></div>
       @if (tab() === 'server') {
         <input
           class="input"
-          placeholder="游戏 hashid（区服列表按游戏查）"
+          [placeholder]="'game_server.game_id_filter' | t"
           [value]="gameId()"
           (input)="gameId.set($any($event.target).value)"
           (keyup.enter)="search()"
@@ -159,14 +193,14 @@ const SERVER_FIELDS: Field[] = [
       }
       <input
         class="input"
-        placeholder="游戏名 / 标识"
+        [placeholder]="'game.search_hint' | t"
         [value]="keyword()"
         (input)="keyword.set($any($event.target).value)"
         (keyup.enter)="search()"
       />
-      <button class="btn" (click)="search()">查询</button>
+      <button class="btn" (click)="search()">{{ 'app.search' | t }}</button>
       @if (writable()) {
-        <button class="btn btn-primary" (click)="openCreate()">+ 新建</button>
+        <button class="btn btn-primary" (click)="openCreate()">+ {{ 'app.create' | t }}</button>
       }
     </div>
 
@@ -176,7 +210,7 @@ const SERVER_FIELDS: Field[] = [
       [loading]="loading()"
       [error]="error()"
       [empty]="!rows().length"
-      [text]="needGameId() ? '先在上面填游戏 hashid 再查询' : '暂无数据'"
+      [text]="(needGameId() ? 'game_server.need_game_id' : 'app.no_data') | t"
     >
       <div class="card">
         <div class="card-body">
@@ -185,7 +219,7 @@ const SERVER_FIELDS: Field[] = [
       </div>
     </ui-state>
 
-    @if (rows().length) {
+    @if (paged() && rows().length) {
       <ui-pager [page]="page()" [pages]="pages" [total]="total()" (jump)="go($event)" />
     }
 
@@ -203,13 +237,19 @@ const SERVER_FIELDS: Field[] = [
 })
 export class Games extends CrudPage {
   protected readonly tabs = [
-    { key: 'game', label: '游戏列表' },
-    { key: 'category', label: '游戏分类' },
-    { key: 'server', label: '区服' },
+    { key: 'game', label: 'game.title' },
+    { key: 'category', label: 'game_category.title' },
+    { key: 'server', label: 'game_server.title' },
   ];
   protected readonly tab = signal('game');
   /** 区服标签页的游戏过滤（= create/update 那个 game_id 的同一个值） */
   protected readonly gameId = signal('');
+
+  /**
+   * 只有游戏列表是 page+limit 分页的：分类端点是 `orderBy('sort')->get()`（整表、无 total），
+   * 区服端点连分页参数都不看、直接回裸数组 ⇒ 这两页签挂分页器就是给出一个假第 2 页。
+   */
+  protected readonly paged = computed(() => this.tab() === 'game');
 
   private readonly paths: Record<string, string> = {
     game: G + 'list',
@@ -224,9 +264,9 @@ export class Games extends CrudPage {
   protected override crud(): Crud | null {
     const tab = this.tab();
     const specs: Record<string, { noun: string; fields: Field[]; path: string }> = {
-      game: { noun: '游戏', fields: GAME_FIELDS, path: '' },
-      category: { noun: '分类', fields: CATEGORY_FIELDS, path: 'category/' },
-      server: { noun: '区服', fields: SERVER_FIELDS, path: 'server/' },
+      game: { noun: 'game.noun', fields: GAME_FIELDS, path: '' },
+      category: { noun: 'game_category.noun', fields: CATEGORY_FIELDS, path: 'category/' },
+      server: { noun: 'game_server.noun', fields: SERVER_FIELDS, path: 'server/' },
     };
     const spec = specs[tab];
     if (!spec) return null;

@@ -5,6 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Row } from '../core/api.service';
 import { Crud, Field } from '../core/crud';
+import { t, use } from '../core/i18n/i18n';
 import { Act } from '../components/table';
 import { Finance } from './finance';
 import { Infra } from './infra';
@@ -25,6 +26,9 @@ describe('资金模块写操作接线', () => {
   const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
   beforeEach(() => {
+    // 界面文案已经是词条（键 → 译文）：语言真值在模块级、模块加载时读一次偏好 ⇒
+    // 用例要显式定中文，否则断言的是英文那一列（服务端 message 不受影响）
+    use('zh');
     TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
     http = TestBed.inject(HttpTestingController);
     confirmSpy = vi.spyOn(globalThis, 'confirm').mockReturnValue(true);
@@ -101,9 +105,9 @@ describe('资金模块写操作接线', () => {
         'payout',
         'sync',
       ]);
-      // 用户名在嵌套的 user 里 ⇒ 表格列里必须有一列是摊平后的
-      expect(f.heads()['user_name']).toBe('用户');
-      expect(f.heads()['platform_amount']).toBe('平台币');
+      // 用户名在嵌套的 user 里 ⇒ 表格列里必须有一列是摊平后的（表头存的是词条键，显示时过 `| t`）
+      expect(t(f.heads()['user_name']!)).toBe('用户');
+      expect(t(f.heads()['platform_amount']!)).toBe('平台币');
     });
 
     it('用户列从嵌套 user 摊平出来（表格只认平铺标量）', async () => {

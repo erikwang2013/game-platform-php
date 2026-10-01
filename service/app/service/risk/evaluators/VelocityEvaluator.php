@@ -50,7 +50,7 @@ class VelocityEvaluator implements RiskEvaluator
         $uniqueUsers = $query->distinct('user_id')->count('user_id');
 
         if ($uniqueUsers >= $maxAccounts) {
-            return ['matched' => true, 'message' => "{$windowMinutes}min 内同 IP {$uniqueUsers} 个账号 ≥ 阈值 {$maxAccounts}", 'severity' => 'high'];
+            return ['matched' => true, 'message' => trans('%count% accounts share this IP within %minutes%min ≥ threshold %threshold%', ['%count%' => (string) $uniqueUsers, '%minutes%' => (string) $windowMinutes, '%threshold%' => (string) $maxAccounts]), 'severity' => 'high'];
         }
 
         return ['matched' => false, 'message' => "{$windowMinutes}min 内同 IP {$uniqueUsers} 个账号，未达阈值 {$maxAccounts}", 'severity' => 'low'];

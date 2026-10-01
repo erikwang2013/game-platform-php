@@ -28,6 +28,8 @@ export const routes: Routes = [
       },
       { path: 'support', loadComponent: () => import('./pages/support').then((m) => m.Support) },
       { path: 'infra', loadComponent: () => import('./pages/infra').then((m) => m.Infra) },
+      // 后台账号（/admin/v1/user）；与 pages/users.ts 的 C 端平台用户是两回事
+      { path: 'admins', loadComponent: () => import('./pages/admins').then((m) => m.Admins) },
       { path: 'settings', loadComponent: () => import('./pages/settings').then((m) => m.Settings) },
       { path: '**', redirectTo: 'dashboard' },
     ],

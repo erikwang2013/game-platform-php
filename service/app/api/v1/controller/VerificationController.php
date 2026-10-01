@@ -25,7 +25,7 @@ class VerificationController extends BaseController
     {
         $email = $request->input('email', '');
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return $this->fail('Invalid email', 422);
+            return $this->fail(trans('Invalid email'), 422);
         }
 
         $result = VerificationService::sendEmail($email, $request->userId);
@@ -44,16 +44,16 @@ class VerificationController extends BaseController
     {
         $code = $request->input('code', '');
         if (strlen($code) !== 6) {
-            return $this->fail('Invalid code', 422);
+            return $this->fail(trans('Invalid code'), 422);
         }
 
         if (!VerificationService::verifyEmail($request->userId, $code)) {
-            return $this->fail('Invalid or expired code', 422);
+            return $this->fail(trans('Invalid or expired code'), 422);
         }
 
         User::where('id', $request->userId)->update(['email_verified_at' => date('Y-m-d H:i:s')]);
 
-        return $this->success([], 'Email verified');
+        return $this->success([], trans('Email verified'));
     }
 
     #[Apidoc\Title("发送短信验证码")]
@@ -64,7 +64,7 @@ class VerificationController extends BaseController
     {
         $phone = $request->input('phone', '');
         if (empty($phone)) {
-            return $this->fail('Phone required', 422);
+            return $this->fail(trans('Phone required'), 422);
         }
 
         $result = VerificationService::sendSms($phone, $request->userId);
@@ -83,15 +83,15 @@ class VerificationController extends BaseController
     {
         $code = $request->input('code', '');
         if (strlen($code) !== 6) {
-            return $this->fail('Invalid code', 422);
+            return $this->fail(trans('Invalid code'), 422);
         }
 
         if (!VerificationService::verifySms($request->userId, $code)) {
-            return $this->fail('Invalid or expired code', 422);
+            return $this->fail(trans('Invalid or expired code'), 422);
         }
 
         User::where('id', $request->userId)->update(['phone_verified_at' => date('Y-m-d H:i:s')]);
 
-        return $this->success([], 'Phone verified');
+        return $this->success([], trans('Phone verified'));
     }
 }

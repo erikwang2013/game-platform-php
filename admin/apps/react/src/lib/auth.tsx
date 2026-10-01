@@ -1,5 +1,6 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
+import { t } from '../i18n/index.ts';
 import { api, session, type AdminUser } from './api';
 
 type LoginResult = {
@@ -47,6 +48,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth(): AuthValue {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth 必须在 AuthProvider 内使用');
+  if (!ctx) throw new Error(t('auth.outside_provider'));
   return ctx;
 }

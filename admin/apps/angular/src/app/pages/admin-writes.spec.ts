@@ -5,6 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Row } from '../core/api.service';
 import { Crud } from '../core/crud';
+import { use } from '../core/i18n/i18n';
 import { Settings } from './settings';
 import { Support } from './support';
 import { Users } from './users';
@@ -23,6 +24,9 @@ describe('管理端写操作接线', () => {
   const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
   beforeEach(() => {
+    // 语言钉在 en：本文件断的是**英文成品**（界面文案已抽成词条，见 core/i18n），
+    // 不钉住的话「上一条用例留下的语言」会让断言随执行顺序变红（同 i18n.spec.ts:107 的口径）
+    use('en');
     TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
     http = TestBed.inject(HttpTestingController);
     confirmSpy = vi.spyOn(globalThis, 'confirm').mockReturnValue(true);
@@ -107,7 +111,7 @@ describe('管理端写操作接线', () => {
       expect(c.statused).toBe(true);
     });
 
-    it('角色权限：多选值域 = 权限树 hashid（裸 id 后端会 400），编辑态按行回填且只发改动的字段', async () => {
+    it('角色权限：树多选的节点值 = 权限树 hashid（裸 id 后端会 400），编辑态按行回填且只发改动的字段', async () => {
       const s = build(() => new Settings()) as unknown as S;
       s.tab.set('role');
       const done = s.load();
@@ -123,12 +127,14 @@ describe('管理端写操作接线', () => {
       await done;
 
       const f = s.crud()!.fields.find((x) => x.name === 'permission_ids')!;
-      expect(f.type).toBe('multi');
+      expect(f.type).toBe('tree');
       // 值必须是节点 hashid —— decodePermissionIds() 非 hashid 直接 400，摆裸数字落不了库
-      expect(f.options!.map((o) => o.value)).toEqual(['PERM1', 'PERM2']);
-      // 标签带层级缩进（U+3000，trim 能去掉），子节点看得出来是谁的下级
-      expect(f.options![1]!.label.trim()).toBe('用户');
-      expect(f.options![1]!.label.length).toBeGreaterThan(f.options![0]!.label.length);
+      const nodes = f.tree!;
+      expect(nodes.map((n) => n.id)).toEqual(['PERM1']);
+      expect(nodes[0]!.children.map((n) => n.id)).toEqual(['PERM2']);
+      // 层次**没在解析层被拍平**：PERM2 仍是 PERM1 的子节点（树控件的父子联动全靠它）
+      expect(nodes[0]!.name).toBe('系统');
+      expect(nodes[0]!.children[0]!.name).toBe('用户');
 
       // 编辑态：只改权限 ⇒ 请求体里只有 permission_ids，且必须是**数组**（不是 JSON 字符串，
       // 后端 sync() 收到字符串就不是数组了）；slug 是 createOnly，改名不该带上；
@@ -153,7 +159,7 @@ describe('管理端写操作接线', () => {
       expect(s.formError()).toBe('');
     });
 
-    it('权限：列表走 /admin/v1/permission，且嵌套树被摊平（子节点可见、name 不被改写）', async () => {
+    it('权限：列表走 /admin/v1/permission，树形展示（子节点带 depth、name 不被改写）', async () => {
       const s = build(() => new Settings()) as unknown as S;
       s.tab.set('permission');
       const done = s.load();
@@ -177,13 +183,17 @@ describe('管理端写操作接线', () => {
       const rows = s.rows();
       expect(rows.length).toBe(2);
       expect(rows[1]!['id']).toBe('P2');
-      // 摊平只加 tree 列：name/slug 被改写过的话，编辑一次就会把缩进写回库里
+      // 平铺只加 depth/parent_name：name/slug 被改写过的话，编辑一次就会把改动写回库里
       expect(rows[1]!['name']).toBe('用户');
       expect(rows[1]!['slug']).toBe('user');
-      expect(String(rows[1]!['tree'])).not.toBe('');
+      // 树形展示靠 depth（ui-table 的 treeKey 按它画缩进 + 展开箭头），不是拼出来的「└」文本列
+      expect(rows[0]!['depth']).toBe(0);
+      expect(rows[1]!['depth']).toBe(1);
+      expect(rows[1]!['tree']).toBeUndefined();
       // 父级回显：buildTree 的 parent_id 是 hashid，编辑态读不懂它 ⇒ 列表按名字回显
       expect(rows[1]!['parent_name']).toBe('系统');
-      expect(rows[0]!['parent_name']).toBe('（根）');
+      // 根节点的父级占位符已抽成词条 permission.root，本文件语言钉在 en ⇒ 断言英文成品
+      expect(rows[0]!['parent_name']).toBe('(root)');
 
       const c = s.crud()!;
       expect(c.ends.update?.('P2')).toBe('/admin/v1/permission/P2');
@@ -306,7 +316,8 @@ describe('管理端写操作接线', () => {
       const s = build(() => new Support()) as unknown as S;
       s.openAct(row, 'reply');
       await s.submitAct({ content: '   ' });
-      expect(s.formError()).toContain('不能为空');
+      // 断言**英文成品**（本文件把语言钉在 en）：文案已抽成词条 ticket.reply_required
+      expect(s.formError()).toBe('Reply content is required');
       await tick();
       http.expectNone(() => true);
 
@@ -341,7 +352,8 @@ describe('管理端写操作接线', () => {
 
       s.openAct(row, 'assign');
       await s.submitAct({ admin_id: 'XyZ123' });
-      expect(s.formError()).toContain('只能填数字');
+      // 同上：断言英文成品（词条 ticket.admin_id_invalid）
+      expect(s.formError()).toContain('must be a numeric ID');
       await tick();
       http.expectNone(() => true);
     });

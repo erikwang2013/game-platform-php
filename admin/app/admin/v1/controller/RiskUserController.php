@@ -58,7 +58,7 @@ class RiskUserController extends BaseController
             $userId = (int) $row->user_id;
             $items[] = [
                 'user_id' => $this->encodeId($userId),
-                'username' => (string) ($users[$userId]->username ?? '未知'),
+                'username' => (string) ($users[$userId]->username ?? trans('Unknown')),
                 'score' => (int) $row->score,
                 'band' => (string) $row->band,
                 'hit_count' => (int) $row->hit_count,
@@ -123,13 +123,13 @@ class RiskUserController extends BaseController
     {
         $userId = $this->decodeId($hashid);
         if (!User::find($userId)) {
-            return $this->fail('用户不存在');
+            return $this->fail(trans('User not found'));
         }
 
         $wallet = UserWallet::where('user_id', $userId)->first();
         $amount = (string) ($wallet->balance ?? '0');
         if (bccomp($amount, '0', 8) <= 0) {
-            return $this->fail('用户无可冻结余额');
+            return $this->fail(trans('User has no freezable balance'));
         }
 
         $logId = $this->generateId();
@@ -147,17 +147,17 @@ class RiskUserController extends BaseController
                 $log->action = 'block';
                 $log->context = json_encode(['amount' => $amount]);
                 $log->result = 'blocked';
-                $log->detail = '管理端人工冻结（M6 hold）';
+                $log->detail = trans('Manual freeze by admin (M6 hold)');
                 $log->created_at = date('Y-m-d H:i:s');
                 $log->save();
                 return true;
             });
         } catch (\Throwable $e) {
-            return $this->fail('冻结失败：' . $e->getMessage());
+            return $this->fail(trans('Freeze failed: ') . $e->getMessage());
         }
 
         if ($ok !== true) {
-            return $this->fail('冻结失败：余额不足');
+            return $this->fail(trans('Freeze failed: insufficient balance'));
         }
 
         return $this->success(['user_id' => $this->encodeId($userId), 'frozen_amount' => $amount]);
@@ -181,7 +181,7 @@ class RiskUserController extends BaseController
     {
         $userId = $this->decodeId($hashid);
         if (!User::find($userId)) {
-            return $this->fail('用户不存在');
+            return $this->fail(trans('User not found'));
         }
 
         // 释放量缺省全额（与 hold 全额冻结对称）。语法闸先行：bcmath 对 '1e5'/'abc' 抛 ValueError，
@@ -190,12 +190,12 @@ class RiskUserController extends BaseController
         $requested = null;
         if ($raw !== null && $raw !== '') {
             if (!is_string($raw) && !is_int($raw) && !is_float($raw)) {
-                return $this->fail('释放金额格式非法');
+                return $this->fail(trans('Invalid release amount format'));
             }
             try {
                 $requested = bcadd((string) $raw, '0', 8);
             } catch (\ValueError) {
-                return $this->fail('释放金额格式非法');
+                return $this->fail(trans('Invalid release amount format'));
             }
         }
 
@@ -213,7 +213,7 @@ class RiskUserController extends BaseController
 
         $logId = $this->generateId();
         $released = '0.00000000';
-        $failMsg = '解冻失败';
+        $failMsg = trans('Unfreeze failed');
 
         try {
             $ok = Db::transaction(function () use ($userId, $requested, $refType, $refId, $logId, &$released, &$failMsg) {
@@ -224,11 +224,11 @@ class RiskUserController extends BaseController
 
                 $amount = $requested ?? $frozen;
                 if (bccomp($amount, '0', 8) <= 0) {
-                    $failMsg = '用户无冻结余额';
+                    $failMsg = trans('User has no frozen balance');
                     return false;
                 }
                 if (bccomp($amount, $frozen, 8) > 0) {
-                    $failMsg = '释放金额超过冻结余额';
+                    $failMsg = trans('Release amount exceeds frozen balance');
                     return false;
                 }
 
@@ -245,7 +245,7 @@ class RiskUserController extends BaseController
                 $log->action = 'unblock';
                 $log->context = json_encode(['amount' => $amount, 'hold_ref_id' => $refType === 'risk_hold' ? $refId : 0]);
                 $log->result = 'unblocked';
-                $log->detail = '管理端人工解冻（与 M6 hold 配对）';
+                $log->detail = trans('Manual unfreeze by admin (paired with M6 hold)');
                 $log->created_at = date('Y-m-d H:i:s');
                 $log->save();
 
@@ -264,7 +264,7 @@ class RiskUserController extends BaseController
                 'released'  => $released,
             ]);
 
-            return $this->fail('解冻失败，请稍后重试', 500);
+            return $this->fail(trans('Unfreeze failed, please try again later'), 500);
         }
 
         if ($ok !== true) {

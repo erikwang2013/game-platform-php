@@ -116,7 +116,7 @@ class CouponController extends BaseController
         $coupon->status     = 1;
         $coupon->save();
 
-        return $this->success(['id' => $this->encodeId($coupon->id)], '创建成功');
+        return $this->success(['id' => $this->encodeId($coupon->id)], trans('Created successfully'));
     }
 
     #[Apidoc\Title("编辑优惠券")]
@@ -129,11 +129,11 @@ class CouponController extends BaseController
         $id     = $this->decodeId($hashid);
         $coupon = Coupon::find($id);
         if (!$coupon) {
-            return $this->fail('优惠券不存在', 404);
+            return $this->fail(trans('Coupon not found'), 404);
         }
 
         if ((int) $coupon->used_qty > 0) {
-            return $this->fail('该优惠券已有用户领取，无法修改', 400);
+            return $this->fail(trans('This coupon has been claimed by users and cannot be modified'), 400);
         }
 
         // 镜像 create 的 3 条规则（sometimes：局部更新），并补齐 create 漏掉、而 update 会写的字段 ——
@@ -178,7 +178,7 @@ class CouponController extends BaseController
         $coupon->fill($data);
         $coupon->save();
 
-        return $this->success([], '更新成功');
+        return $this->success([], trans('Updated successfully'));
     }
 
     #[Apidoc\Title("删除优惠券")]
@@ -191,7 +191,7 @@ class CouponController extends BaseController
         $id     = $this->decodeId($hashid);
         $coupon = Coupon::find($id);
         if (!$coupon) {
-            return $this->fail('优惠券不存在', 404);
+            return $this->fail(trans('Coupon not found'), 404);
         }
 
         // 删除所有该优惠券的用户领取记录
@@ -199,7 +199,7 @@ class CouponController extends BaseController
 
         $coupon->delete();
 
-        return $this->success([], '删除成功');
+        return $this->success([], trans('Deleted successfully'));
     }
 
     #[Apidoc\Title("优惠券统计")]
@@ -212,7 +212,7 @@ class CouponController extends BaseController
         $id     = $this->decodeId($hashid);
         $coupon = Coupon::find($id);
         if (!$coupon) {
-            return $this->fail('优惠券不存在', 404);
+            return $this->fail(trans('Coupon not found'), 404);
         }
 
         $totalQty  = (int) $coupon->total_qty;

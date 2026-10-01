@@ -87,11 +87,11 @@ class IdentityController extends BaseController
         $identity   = UserIdentity::find($identityId);
 
         if (!$identity) {
-            return $this->fail('Identity record not found', 404);
+            return $this->fail(trans('Identity record not found'), 404);
         }
 
         if ($identity->status !== 'pending') {
-            return $this->fail('This identity record has already been reviewed', 422);
+            return $this->fail(trans('This identity record has already been reviewed'), 422);
         }
 
         $action = $request->input('action');
@@ -110,7 +110,7 @@ class IdentityController extends BaseController
             ]);
 
         if ($affected === 0) {
-            return $this->fail('This identity record has already been reviewed', 422);
+            return $this->fail(trans('This identity record has already been reviewed'), 422);
         }
 
         if ($action === 'approve') {

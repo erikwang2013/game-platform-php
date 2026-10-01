@@ -4,17 +4,18 @@ import { Page, Params, Row } from '../core/api.service';
 import { Crud, CrudPage, Field, Opt } from '../core/crud';
 import { idOf, kvOf } from '../core/render';
 import { errText } from '../core/util';
+import { t, T } from '../core/i18n/i18n';
 import { Drawer, Pager, StateBlock, Tabs } from '../components/ui';
 import { Table } from '../components/table';
 import { FormModal } from '../components/form-modal';
 
 const M = '/admin/v1/';
 
-/** 券状态筛选（CouponController::list 的 status 参数，落 game_coupon.status 的 0/1） */
+/** 券状态筛选（CouponController::list 的 status 参数，落 game_coupon.status 的 0/1）；label 是**词条键** */
 const COUPON_STATUS = [
-  { value: '', label: '全部状态' },
-  { value: '1', label: '启用' },
-  { value: '0', label: '停用' },
+  { value: '', label: 'coupon.all_status' },
+  { value: '1', label: 'app.enabled' },
+  { value: '0', label: 'app.disabled' },
 ];
 
 /** 运行期把选项注进常量字段（crud() 是 computed ⇒ 读得到信号，选项随游戏表刷新） */
@@ -34,48 +35,54 @@ function withOptions(fields: Field[], name: string, options: Opt[]): Field[] {
  * ⇒ 表单里没有这个字段，别照 DB 列名硬凑一个。
  */
 const COUPON_FIELDS: Field[] = [
-  { name: 'name', label: '券名', type: 'text', required: true, placeholder: '最长 100' },
+  { name: 'name', label: 'coupon.name', type: 'text', required: true, placeholder: 'coupon.name_hint' },
   {
     name: 'type',
-    label: '类型',
+    label: 'coupon.type',
     type: 'select',
     required: true,
     options: [
-      { value: 'fixed', label: 'fixed 固定金额' },
-      { value: 'rate', label: 'rate 折扣率' },
+      { value: 'fixed', label: 'coupon.type_fixed' },
+      { value: 'rate', label: 'coupon.type_rate' },
     ],
   },
   {
     name: 'value',
-    label: '面值 / 折扣率',
+    label: 'coupon.value',
     type: 'text',
     required: true,
-    placeholder: 'fixed=平台币金额；rate=折扣率（0.10 = 9 折），> 0',
+    placeholder: 'coupon.value_hint',
   },
-  { name: 'min_amount', label: '最低使用金额', type: 'text', keepIfEmpty: true, placeholder: '0 = 不限' },
+  {
+    name: 'min_amount',
+    label: 'coupon.min_amount',
+    type: 'text',
+    keepIfEmpty: true,
+    placeholder: 'coupon.min_amount_hint',
+  },
   {
     name: 'max_discount',
-    label: '最大优惠金额',
+    label: 'coupon.max_discount',
     type: 'text',
     keepIfEmpty: true,
-    placeholder: 'rate 类型有效；0 = 不封顶',
+    placeholder: 'coupon.max_discount_hint',
   },
-  { name: 'game_id', label: '适用游戏', type: 'select', keepIfEmpty: true },
-  { name: 'total_qty', label: '发放总量', type: 'number', placeholder: '0 = 不限量' },
-  { name: 'user_limit', label: '每人限领', type: 'number', placeholder: '≥ 1，默认 1' },
+  { name: 'game_id', label: 'coupon.game_id', type: 'select', keepIfEmpty: true },
+  { name: 'total_qty', label: 'coupon.total_qty', type: 'number', placeholder: 'coupon.total_qty_hint' },
+  { name: 'user_limit', label: 'coupon.user_limit', type: 'number', placeholder: 'coupon.user_limit_hint' },
   {
     name: 'start_at',
-    label: '开始时间',
+    label: 'coupon.start_at',
     type: 'text',
     keepIfEmpty: true,
-    placeholder: 'YYYY-MM-DD HH:MM:SS；留空 = 不限 / 不修改',
+    placeholder: 'coupon.time_hint',
   },
   {
     name: 'end_at',
-    label: '结束时间',
+    label: 'coupon.end_at',
     type: 'text',
     keepIfEmpty: true,
-    placeholder: '不得早于开始时间',
+    placeholder: 'coupon.end_hint',
   },
 ];
 
@@ -88,38 +95,51 @@ const COUPON_FIELDS: Field[] = [
  * VIP 等级没有 status 列，故不开 statused。
  */
 const VIP_FIELDS: Field[] = [
-  { name: 'level', label: '等级', type: 'number', required: true, createOnly: true, placeholder: '≥ 0 的整数' },
-  { name: 'name', label: '等级名称', type: 'text', required: true, placeholder: '最长 50' },
-  { name: 'required_exp', label: '所需经验', type: 'number', required: true, placeholder: '≥ 0 的整数' },
+  {
+    name: 'level',
+    label: 'vip.level',
+    type: 'number',
+    required: true,
+    createOnly: true,
+    placeholder: 'vip.level_hint',
+  },
+  { name: 'name', label: 'vip.name', type: 'text', required: true, placeholder: 'vip.name_hint' },
+  {
+    name: 'required_exp',
+    label: 'vip.required_exp',
+    type: 'number',
+    required: true,
+    placeholder: 'vip.required_exp_hint',
+  },
   {
     name: 'benefits',
-    label: '权益（JSON 对象）',
+    label: 'vip.benefits',
     type: 'textarea',
     required: true,
-    placeholder: '{"exchange_discount":0.05,"withdraw_fee_discount":0.1,"rate_bonus":0.02}',
+    placeholder: 'vip.benefits_hint',
   },
 ];
 
 @Component({
   selector: 'app-marketing',
-  imports: [StateBlock, Table, Pager, Tabs, Drawer, FormModal],
+  imports: [StateBlock, Table, Pager, Tabs, Drawer, FormModal, T],
   template: `
     <div class="page-head">
-      <h1>营销中心</h1>
-      <span class="sub">优惠券 / VIP 等级</span>
+      <h1>{{ 'nav.marketing' | t }}</h1>
+      <span class="sub">{{ 'marketing.subtitle' | t }}</span>
       <div class="spacer"></div>
       @if (tab() === 'coupon') {
         <!-- 券列表只认 status/type/game_id（keyword 它不看）；原先的「券码」框筛什么都不变。
              select 不能绑 [value]（早于 @for 的 option）⇒ 逐项 [selected] -->
         <select class="input" (change)="setStatus($any($event.target).value)">
           @for (s of COUPON_STATUS; track s.value) {
-            <option [value]="s.value" [selected]="status() === s.value">{{ s.label }}</option>
+            <option [value]="s.value" [selected]="status() === s.value">{{ s.label | t }}</option>
           }
         </select>
       }
-      <button class="btn" (click)="load()">刷新</button>
+      <button class="btn" (click)="load()">{{ 'app.refresh' | t }}</button>
       @if (writable()) {
-        <button class="btn btn-primary" (click)="openCreate()">+ 新建</button>
+        <button class="btn btn-primary" (click)="openCreate()">+ {{ 'app.create' | t }}</button>
       }
     </div>
 
@@ -140,19 +160,20 @@ const VIP_FIELDS: Field[] = [
       </div>
     </ui-state>
 
-    @if (rows().length) {
+    @if (paged() && rows().length) {
       <ui-pager [page]="page()" [pages]="pages" [total]="total()" (jump)="go($event)" />
     }
 
-    <ui-drawer [open]="detail() !== null" title="优惠券统计" (close)="close()">
+    <!-- ui-drawer 的 title() 不过 t 管道（是**值**不是词条键）⇒ 这里先查表再传 -->
+    <ui-drawer [open]="detail() !== null" [title]="'coupon.stats_title' | t" (close)="close()">
       @if (detail(); as d) {
         <dl class="kv">
           @for (p of info(); track p.label) {
             <dt>{{ p.label }}</dt>
             <dd>{{ p.value }}</dd>
           } @empty {
-            <dt>提示</dt>
-            <dd>{{ statsLoading() ? '统计加载中…' : '该券暂无可展示统计' }}</dd>
+            <dt>{{ 'coupon.empty_hint' | t }}</dt>
+            <dd>{{ (statsLoading() ? 'coupon.stats_loading' : 'coupon.stats_empty') | t }}</dd>
           }
         </dl>
       }
@@ -172,10 +193,17 @@ const VIP_FIELDS: Field[] = [
 })
 export class Marketing extends CrudPage {
   protected readonly tabs = [
-    { key: 'coupon', label: '优惠券' },
-    { key: 'vip', label: 'VIP 等级' },
+    { key: 'coupon', label: 'coupon.title' },
+    { key: 'vip', label: 'vip.title' },
   ];
   protected readonly tab = signal('coupon');
+
+  /**
+   * 只有券列表是 page+limit 分页的：/vip/level/list 是 `VipLevel::orderBy('level')->get()`（整表、
+   * 无 total），且它同时被别处当「全部等级」下拉的数据源 ⇒ 给它挂分页器会给出一个假的第 2 页。
+   */
+  protected readonly paged = computed(() => this.tab() === 'coupon');
+
   protected readonly detail = signal<Row | null>(null);
   protected readonly stats = signal<unknown>(null);
   protected readonly statsLoading = signal(false);
@@ -197,18 +225,18 @@ export class Marketing extends CrudPage {
   protected readonly heads = computed((): Record<string, string> => {
     if (this.tab() !== 'coupon') return {};
     return {
-      name: '券名',
-      type: '类型',
-      value: '面值/折扣率',
-      min_amount: '最低使用金额',
-      max_discount: '最大优惠金额',
-      game_name: '适用游戏',
-      total_qty: '发放总量',
-      used_qty: '已领取',
-      user_limit: '每人限领',
-      start_at: '开始时间',
-      end_at: '结束时间',
-      status: '状态(0停用/1启用)',
+      name: 'coupon.name',
+      type: 'coupon.type',
+      value: 'coupon.head.value',
+      min_amount: 'coupon.min_amount',
+      max_discount: 'coupon.max_discount',
+      game_name: 'coupon.game_id',
+      total_qty: 'coupon.total_qty',
+      used_qty: 'coupon.used_qty',
+      user_limit: 'coupon.user_limit',
+      start_at: 'coupon.start_at',
+      end_at: 'coupon.end_at',
+      status: 'coupon.head.status',
     };
   });
 
@@ -221,12 +249,13 @@ export class Marketing extends CrudPage {
   protected override crud(): Crud | null {
     if (this.tab() === 'coupon') {
       return {
-        noun: '优惠券',
+        noun: 'coupon.noun',
         fields: this.couponFields(),
         statused: true,
         // destroy 是**级联删除**：CouponController::destroy 先删掉全部 game_user_coupon 领取记录
         // （label 只用在删除确认里，是底座现成的那个缝）
-        label: (row) => `${row['name'] ?? idOf(row)}｜连同全部用户领取记录`,
+        label: (row) =>
+          this.i18n.t('coupon.delete_label', { name: row['name'] ?? idOf(row) }),
         ends: {
           create: M + 'coupon/create',
           update: (id) => M + 'coupon/' + id,
@@ -236,7 +265,7 @@ export class Marketing extends CrudPage {
     }
     if (this.tab() !== 'vip') return null;
     return {
-      noun: 'VIP 等级',
+      noun: 'vip.noun',
       fields: VIP_FIELDS,
       label: (row) => `VIP ${row['level']} ${row['name'] ?? ''}`.trim(),
       ends: {
@@ -257,8 +286,11 @@ export class Marketing extends CrudPage {
     const err = this.gamesErr();
     const fields = withOptions(COUPON_FIELDS, 'game_id', this.games());
     if (!err) return fields;
+    // f.label 是**词条键**（渲染时才查表）⇒ 拼后缀前先把它译出来，否则界面上会露出键名
     return fields.map((f) =>
-      f.name === 'game_id' ? { ...f, label: `${f.label} —— 游戏列表加载失败：${err}` } : f,
+      f.name === 'game_id'
+        ? { ...f, label: t('coupon.games_failed', { name: t(f.label), error: err }) }
+        : f,
     );
   }
 
@@ -298,7 +330,7 @@ export class Marketing extends CrudPage {
       ...res,
       list: res.list.map((r) => {
         const gid = this.gameId(r);
-        return { ...r, game_id: gid, game_name: gid ? (names.get(gid) ?? gid) : '全平台' };
+        return { ...r, game_id: gid, game_name: gid ? (names.get(gid) ?? gid) : t('coupon.all_platforms') };
       }),
     };
   }

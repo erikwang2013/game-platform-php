@@ -19,6 +19,7 @@ import { FormModal } from '../components/FormModal';
 import { RowBrowser } from '../components/RowBrowser';
 import { ErrorNote } from '../components/ui';
 import { ApiError, api, apiEnvelope } from '../lib/api';
+import { t } from '../i18n/index.ts';
 import {
   RISK_CLUSTER_CRUD,
   RISK_CLUSTER_PANEL,
@@ -43,7 +44,7 @@ function FlagBar({ flags, onDone }: { flags: FlagAction[]; onDone: () => void })
   const submit = async (flag: FlagAction, body: Record<string, unknown>) => {
     const value = String(body[flag.field.name] ?? '');
     // 取消：抛错让 FormModal 原地显示（框不关，可改后重试）
-    if (!window.confirm(flag.confirm(value))) throw new ApiError(0, '已取消（未提交任何变更）');
+    if (!window.confirm(flag.confirm(value))) throw new ApiError(0, t('risk.cancelled_no_change'));
     const envelope = await apiEnvelope<unknown>(flag.path, { method: 'POST', body });
     setActive(null);
     setNotice({ text: flag.report ? flag.report(envelope, value) : envelope.message, tone: 'ok' });
@@ -63,16 +64,16 @@ function FlagBar({ flags, onDone }: { flags: FlagAction[]; onDone: () => void })
               setActive(flag);
             }}
           >
-            {flag.label}
+            {t(flag.label)}
           </button>
         ))}
       </div>
       {notice ? <ErrorNote message={notice.text} tone={notice.tone} /> : null}
       {active ? (
         <FormModal
-          title={active.title}
+          title={t(active.title)}
           fields={[active.field]}
-          submitLabel="提交"
+          submitLabel={t('common.submit')}
           onSubmit={(body) => submit(active, body)}
           onClose={() => setActive(null)}
         />
@@ -118,16 +119,16 @@ export function RiskIps({ path }: { path: string }) {
 
 /** 检测结果的列（列名与 detect 返回的键一致）。 */
 const candidateColumns = (onConfirm: (row: Row) => void): Column[] => [
-  { key: 'type', label: '类型' },
-  { key: 'fingerprint_masked', label: '指纹（前 8 位）' },
-  { key: 'user_count', label: '账户数', align: 'right' },
+  { key: 'type', label: t('risk.type') },
+  { key: 'fingerprint_masked', label: t('risk.fingerprint8') },
+  { key: 'user_count', label: t('risk.account_count'), align: 'right' },
   {
     key: '__actions',
-    label: '操作',
+    label: t('common.actions'),
     render: (row) => (
       <span className="rowact">
         <button type="button" className="btn btn-sm" onClick={() => onConfirm(row)}>
-          确认团伙
+          {t('risk.confirm_row')}
         </button>
       </span>
     ),
@@ -136,9 +137,10 @@ const candidateColumns = (onConfirm: (row: Row) => void): Column[] => [
 
 /** 候选 → 预填表单的值（含一个可直接用的默认名，省得每条都手打）。 */
 const candidateName = (row: Row): string => {
-  const who = row.type === 'same_device' ? '同设备' : row.type === 'same_ip' ? '同 IP' : String(row.type ?? '');
+  const who =
+    row.type === 'same_device' ? t('risk.same_device') : row.type === 'same_ip' ? t('risk.same_ip') : String(row.type ?? '');
   const masked = String(row.fingerprint_masked ?? '').replace(/\*+$/, '');
-  return `${who}团伙 ${masked}`;
+  return t('risk.cluster_label', { who, masked });
 };
 
 /**
@@ -164,21 +166,21 @@ export function RiskClusters({ path }: { path: string }) {
       setDays(Number(data.window_days ?? 0));
       setCandidates(Array.isArray(data.candidates) ? data.candidates : []);
     } catch (cause) {
-      setNotice({ text: reason(cause, '检测失败，请稍后重试'), tone: 'error' });
+      setNotice({ text: reason(cause, t('risk.detect_failed')), tone: 'error' });
       return;
     } finally {
       setBusy(false);
     }
-    setNotice({ text: '检测完成：候选仅供确认，未写入任何数据。', tone: 'ok' });
+    setNotice({ text: t('risk.detect_done'), tone: 'ok' });
   };
 
   const submit = async (body: Record<string, unknown>) => {
     const name = String(body.name ?? '');
     const fingerprint = String(body.fingerprint ?? '');
     const members = Array.isArray(body.member_ids) ? body.member_ids.length : 0;
-    const who = fingerprint === '' ? `成员 ${members} 人（按成员 hashid 列表）` : `指纹 ${fingerprint}`;
-    if (!window.confirm(`确认把「${name}」写成已确认团伙？${who}。写入后可在下方列表改状态或看成员。`)) {
-      throw new ApiError(0, '已取消（未写入）');
+    const who = fingerprint === '' ? t('risk.members_count', { count: members }) : t('risk.fingerprint', { value: fingerprint });
+    if (!window.confirm(t('risk.confirm_cluster', { name, who }))) {
+      throw new ApiError(0, t('risk.cancelled_not_written'));
     }
     const envelope = await apiEnvelope<{ cluster?: Row }>(RISK_CLUSTER_PANEL.confirm, {
       method: 'POST',
@@ -188,7 +190,11 @@ export function RiskClusters({ path }: { path: string }) {
     const cluster = envelope.data?.cluster;
     setNotice({
       text: cluster
-        ? `已写入团伙「${String(cluster.name)}」（${String(cluster.type)}，成员 ${String(cluster.user_count)} 人）`
+        ? t('risk.written_cluster', {
+            name: String(cluster.name),
+            type: String(cluster.type),
+            count: String(cluster.user_count),
+          })
         : envelope.message,
       tone: 'ok',
     });
@@ -206,25 +212,23 @@ export function RiskClusters({ path }: { path: string }) {
           disabled={busy}
           onClick={() => {
             setNotice(null);
-            setForm({ title: '手动确认团伙' });
+            setForm({ title: t('risk.manual_confirm') });
           }}
         >
-          手动确认团伙
+          {t('risk.manual_confirm')}
         </button>
         <button type="button" className="btn" disabled={busy} onClick={() => void detect()}>
-          {busy ? '检测中…' : '聚类检测'}
+          {busy ? t('risk.detecting') : t('risk.cluster_detect')}
         </button>
       </div>
       {notice ? <ErrorNote message={notice.text} tone={notice.tone} /> : null}
       {candidates ? (
         <>
-          <p className="muted">
-            近 {days} 天候选（同 IP ≥ 5 账户 / 同设备 ≥ 3 账户）：确认才会落库，检测本身不写数据。
-          </p>
+          <p className="muted">{t('risk.candidates_hint', { days })}</p>
           <DataTable
             columns={candidateColumns((row) =>
               setForm({
-                title: '确认团伙（预填自检测结果）',
+                title: t('risk.confirm_prefill'),
                 row: {
                   type: row.type,
                   fingerprint: row.fingerprint,
@@ -252,7 +256,7 @@ export function RiskClusters({ path }: { path: string }) {
           row={form.row}
           // 预填自候选 ⇒ 必须全量提交，否则「一个字段都没改」会发出空请求体（见 RISK_CLUSTER_PANEL 注释）
           fullEdit={RISK_CLUSTER_PANEL.fullEdit}
-          submitLabel="写入"
+          submitLabel={t('risk.write')}
           onSubmit={submit}
           onClose={() => setForm(null)}
         />

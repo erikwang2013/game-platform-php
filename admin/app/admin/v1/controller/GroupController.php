@@ -82,7 +82,7 @@ class GroupController extends BaseController
         $groupId = $this->decodeId($hashid);
         $group = Group::find($groupId);
         if (!$group) {
-            return $this->fail('组不存在', 404);
+            return $this->fail(trans('Group not found'), 404);
         }
 
         $members = GroupMember::where('group_id', $groupId)

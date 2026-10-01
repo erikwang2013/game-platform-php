@@ -9,6 +9,7 @@ import { WithdrawOrderItem } from '../model/DataModels';
 import { LoadingView, ErrorView, EmptyView } from '../common/Components';
 import { confirmAction } from '../common/FormDialog';
 import { PagerBar } from '../common/ResourceViews';
+import { t, t1 } from '../i18n/Translations';
 
 /**
  * 提现管理页 —— 全局开关 + 订单列表 + 四种**资金动作**（审核 / 复核确认 / 打款 / 同步）+ 批量审核。
@@ -36,24 +37,29 @@ import { PagerBar } from '../common/ResourceViews';
  *     只有已提交过 PayPal（payout_batch_id 非空）才谈得上同步（否则后端 422「尚未执行打款」）。
  */
 
-/** 状态过滤：'' = 全部（控制器 status 为空时不加 where）。processing 是打款 CAS 写入的在途态 */
-const STATUS_FILTERS: string[] = ['全部', '待审核', '已通过', '打款中', '已驳回', '已完成'];
+/** 状态过滤：'' = 全部（控制器 status 为空时不加 where）。processing 是打款 CAS 写入的在途态。
+ *  存**键名**不是译文 —— 渲染处（Select.value 与 buildFilterOptions）各查一次表。 */
+const STATUS_FILTERS: string[] = [
+  'wd.status_all', 'wd.status_pending', 'wd.status_approved', 'wd.status_processing',
+  'wd.status_rejected', 'wd.status_completed'
+];
 const STATUS_VALUES: string[] = ['', 'pending', 'approved', 'processing', 'rejected', 'completed'];
 
+/** 每次渲染重新查表 ⇒ 语言切换即时生效（顶层调 t() 会把启动语言固化进常量） */
 function statusText(status: string): string {
   if (status === 'pending') {
-    return '待审核';
+    return t('wd.status_pending');
   }
   if (status === 'approved') {
-    return '已通过';
+    return t('wd.status_approved');
   }
   if (status === 'processing') {
-    return '打款中';
+    return t('wd.status_processing');
   }
   if (status === 'rejected') {
-    return '已驳回';
+    return t('wd.status_rejected');
   }
-  return status === 'completed' ? '已完成' : status;
+  return status === 'completed' ? t('wd.status_completed') : status;
 }
 
 /** 五态各有各的颜色：待审核要醒目、已驳回是退回、已完成是终态 */
@@ -70,6 +76,7 @@ function statusColor(status: string): string {
 @Entry
 @Component
 struct WithdrawManagePage {
+  @StorageLink('app_locale') localeCode: string = 'en';
   @State orders: WithdrawOrderItem[] = [];
   @State page: number = 1;
   @State total: number = 0;
@@ -109,7 +116,7 @@ struct WithdrawManagePage {
         return;
       }
       this.hasError = true;
-      promptAction.showToast({ message: '加载失败' });
+      promptAction.showToast({ message: t('common.load_failed') });
     } finally {
       this.isLoading = false;
     }
@@ -128,9 +135,7 @@ struct WithdrawManagePage {
     }
   }
 
-  private pageCount(): number {
-    return Math.max(1, Math.ceil(this.total / this.limit));
-  }
+  private pageCount(): number { return Math.max(1, Math.ceil(this.total / this.limit)); }
 
   private goPage(delta: number): void {
     const next = this.page + delta;
@@ -155,34 +160,32 @@ struct WithdrawManagePage {
     if (this.redirectIfUnauthorized(e)) {
       return;
     }
-    promptAction.showToast({ message: e instanceof Error && e.message.length > 0 ? e.message : '操作失败' });
+    promptAction.showToast({ message: e instanceof Error && e.message.length > 0 ? e.message : t('res.op_failed') });
   }
 
   /** 订单标识：有订单号用订单号，没有退回 hashid（二次确认文案里必须带它） */
-  private orderLabel(item: WithdrawOrderItem): string {
-    const no = item.order_no ?? '';
-    return no.length > 0 ? no : item.id;
-  }
+  private orderLabel(item: WithdrawOrderItem): string { const no = item.order_no ?? ''; return no.length > 0 ? no : item.id; }
 
   /** 金额文案：平台币 + 法币（都是服务端给的字符串，原样拼，不做换算） */
   private amountText(item: WithdrawOrderItem): string {
     const fiat = item.fiat_amount.length > 0
-      ? `（法币 ${item.fiat_amount} ${item.currency}）`
+      ? t('wd.amount_fiat').replace('{amount}', item.fiat_amount).replace('{currency}', item.currency)
       : '';
-    return `${item.platform_amount} 平台币${fiat}`;
+    return t('wd.amount_platform').replace('{amount}', item.platform_amount).replace('{extra}', fiat);
   }
 
   private subtitle(item: WithdrawOrderItem): string {
     const parts: string[] = [];
     // user 可能是 null（关联查不到时 toArray 带出 null）——只判 undefined 会在这种行上抛
     const user = item.user;
-    parts.push(user !== undefined && user !== null ? user.username : `用户 ${item.user_id}`);
+    parts.push(user !== undefined && user !== null
+      ? user.username : t('wd.user_fallback').replace('{id}', `${item.user_id}`));
     if (item.method.length > 0) {
       parts.push(item.method);
     }
     const payout = item.payout_status ?? '';
     if (payout.length > 0) {
-      parts.push(`打款 ${payout}`);
+      parts.push(t('wd.subtitle_payout').replace('{status}', payout));
     }
     parts.push(this.orderLabel(item));
     parts.push(item.created_at);
@@ -192,9 +195,7 @@ struct WithdrawManagePage {
   /* ------------------------------ 行内动作门禁 ------------------------------ */
 
   /** 只有待审核能审（approved/rejected/completed 都已经过了审核这一步） */
-  private canReview(item: WithdrawOrderItem): boolean {
-    return item.status === 'pending';
-  }
+  private canReview(item: WithdrawOrderItem): boolean { return item.status === 'pending'; }
 
   /**
    * 复核确认（双审第二票）：后端只在「已有第一审核人（reviewer_id>0）且不是本人」时才放行。
@@ -206,24 +207,21 @@ struct WithdrawManagePage {
   }
 
   /** 只有已通过能打款 */
-  private canPayout(item: WithdrawOrderItem): boolean {
-    return item.status === 'approved';
-  }
+  private canPayout(item: WithdrawOrderItem): boolean { return item.status === 'approved'; }
 
   /** 已提交过 PayPal（有批次号）才谈得上同步，否则后端 422「尚未执行打款」 */
-  private canSync(item: WithdrawOrderItem): boolean {
-    return (item.payout_batch_id ?? '').length > 0;
-  }
+  private canSync(item: WithdrawOrderItem): boolean { return (item.payout_batch_id ?? '').length > 0; }
 
   /* ------------------------------ 单笔资金动作 ------------------------------ */
 
   /** 审核（通过/驳回）—— 不可逆或带退款 ⇒ 二次确认，文案带订单标识 + 金额 */
   private reviewRow(item: WithdrawOrderItem, action: string): void {
-    const title = action === 'reject' ? '确认驳回' : '确认通过';
+    const title = action === 'reject' ? t('kyc.reject_title') : t('wd.review_approve_title');
     const body = action === 'reject'
-      ? `确定驳回提现订单「${this.orderLabel(item)}」（${this.amountText(item)}）吗？\n将向该用户退还 ${item.platform_amount} 平台币，不可撤销。`
-      : `确定通过提现订单「${this.orderLabel(item)}」（${this.amountText(item)}）吗？\n通过后该笔进入可打款状态。`;
-    confirmAction(title, body, action === 'reject' ? '驳回' : '通过',
+      ? t('wd.review_reject_body').replace('{order}', this.orderLabel(item))
+        .replace('{amount}', this.amountText(item)).replace('{refund}', item.platform_amount)
+      : t('wd.review_approve_body').replace('{order}', this.orderLabel(item)).replace('{amount}', this.amountText(item));
+    confirmAction(title, body, action === 'reject' ? t('wd.action_reject') : t('wd.action_approve'),
       action === 'reject' ? '#FF4D4F' : '#52C41A').then((ok: boolean) => {
       if (ok) {
         this.doReview(item.id, action);
@@ -246,9 +244,9 @@ struct WithdrawManagePage {
 
   /** 复核确认（双审第二票）：同样二次确认 */
   private confirmRow(item: WithdrawOrderItem): void {
-    confirmAction('确认复核',
-      `确定复核确认提现订单「${this.orderLabel(item)}」（${this.amountText(item)}）吗？\n确认后该笔由另一位管理员放行。`,
-      '确认', '#1677FF').then((ok: boolean) => {
+    confirmAction(t('wd.recheck_title'),
+      t('wd.recheck_body').replace('{order}', this.orderLabel(item)).replace('{amount}', this.amountText(item)),
+      t('wd.action_confirm'), '#1677FF').then((ok: boolean) => {
       if (ok) {
         this.doReview(item.id, 'confirm');
       }
@@ -257,9 +255,9 @@ struct WithdrawManagePage {
 
   /** 执行打款：外部副作用且不可撤销 ⇒ 二次确认 */
   private payoutRow(item: WithdrawOrderItem): void {
-    confirmAction('确认打款',
-      `确定对提现订单「${this.orderLabel(item)}」（${this.amountText(item)}）执行打款吗？\n款项将提交给 PayPal，提交后不可撤销。`,
-      '打款', '#FF4D4F').then((ok: boolean) => {
+    confirmAction(t('wd.payout_title'),
+      t('wd.payout_body').replace('{order}', this.orderLabel(item)).replace('{amount}', this.amountText(item)),
+      t('wd.action_payout'), '#FF4D4F').then((ok: boolean) => {
       if (ok) {
         this.doPayout(item.id);
       }
@@ -281,9 +279,9 @@ struct WithdrawManagePage {
 
   /** 同步打款状态：会打 PayPal 并回写本地状态 ⇒ 同样二次确认 */
   private syncRow(item: WithdrawOrderItem): void {
-    confirmAction('确认同步',
-      `确定从 PayPal 同步提现订单「${this.orderLabel(item)}」（${this.amountText(item)}）的打款状态吗？`,
-      '同步', '#1677FF').then((ok: boolean) => {
+    confirmAction(t('wd.sync_title'),
+      t('wd.sync_body').replace('{order}', this.orderLabel(item)).replace('{amount}', this.amountText(item)),
+      t('wd.action_sync'), '#1677FF').then((ok: boolean) => {
       if (ok) {
         this.doSync(item.id);
       }
@@ -307,9 +305,7 @@ struct WithdrawManagePage {
 
   /* ------------------------------- 批量审核 ------------------------------- */
 
-  private isSelected(id: string): boolean {
-    return this.selected.indexOf(id) >= 0;
-  }
+  private isSelected(id: string): boolean { return this.selected.indexOf(id) >= 0; }
 
   private toggleSelected(id: string): void {
     const next: string[] = [];
@@ -339,20 +335,22 @@ struct WithdrawManagePage {
     for (let i = 0; i < this.selected.length; i++) {
       const item = this.orderById(this.selected[i]);
       if (item !== null) {
-        lines.push(`「${this.orderLabel(item)}」${this.amountText(item)}`);
+        lines.push(t('wd.batch_line').replace('{order}', this.orderLabel(item))
+          .replace('{amount}', this.amountText(item)));
       }
     }
-    const verb = action === 'reject' ? '驳回' : '通过';
-    const tail = action === 'reject' ? '（将逐单向用户退款，不可撤销）' : '（通过后进入可打款状态）';
-    return `确定批量${verb}选中的 ${lines.length} 笔提现申请吗？\n${lines.join('\n')}\n${tail}`;
+    const verb = action === 'reject' ? t('wd.action_reject') : t('wd.action_approve');
+    const tail = action === 'reject' ? t('wd.batch_tail_reject') : t('wd.batch_tail_approve');
+    return t('wd.batch_confirm').replace('{verb}', verb).replace('{count}', `${lines.length}`)
+      .replace('{lines}', lines.join('\n')).replace('{tail}', tail);
   }
 
   private batchRow(action: string): void {
     if (this.selected.length === 0) {
       return;
     }
-    confirmAction(action === 'reject' ? '批量驳回' : '批量通过', this.batchMessage(action),
-      action === 'reject' ? '驳回' : '通过',
+    confirmAction(action === 'reject' ? t('wd.action_batch_reject') : t('wd.action_batch_approve'),
+      this.batchMessage(action), action === 'reject' ? t('wd.action_reject') : t('wd.action_approve'),
       action === 'reject' ? '#FF4D4F' : '#52C41A').then((ok: boolean) => {
       if (ok) {
         this.doBatch(action);
@@ -389,7 +387,7 @@ struct WithdrawManagePage {
     this.switchBusy = true;
     try {
       this.switchOn = await WithdrawService.setSwitch(isOn);
-      promptAction.showToast({ message: this.switchOn ? '提现已开启' : '提现已关闭' });
+      promptAction.showToast({ message: this.switchOn ? t('wd.switch_on_toast') : t('wd.switch_off_toast') });
     } catch (e) {
       if (this.redirectIfUnauthorized(e)) {
         return;
@@ -412,7 +410,7 @@ struct WithdrawManagePage {
         .backgroundColor('#FFFFFF')
         .onClick(() => router.back())
 
-        Text('提现管理')
+        Text(t('wd.manage_title'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 8 })
@@ -430,7 +428,7 @@ struct WithdrawManagePage {
       } else if (this.hasError) {
         ErrorView({ onRetry: () => this.loadData() });
       } else if (this.orders.length === 0) {
-        EmptyView({ message: '暂无提现订单' });
+        EmptyView({ message: t('wd.empty') });
       } else {
         List() {
           ForEach(this.orders, (item: WithdrawOrderItem) => {
@@ -469,11 +467,13 @@ struct WithdrawManagePage {
   switchBar() {
     Row() {
       Column() {
-        Text('全局提现开关')
+        Text(t('wd.switch_label'))
           .fontSize(15)
           .fontColor('#333333')
 
-        Text(this.switchLoaded ? (this.switchOn ? '提现开放中' : '提现已关闭，用户无法申请') : '读取中…')
+        Text(this.switchLoaded
+          ? (this.switchOn ? t('wd.switch_open') : t('wd.switch_closed'))
+          : t('wd.switch_loading'))
           .fontSize(12)
           .fontColor('#999999')
           .margin({ top: 2 })
@@ -496,12 +496,12 @@ struct WithdrawManagePage {
   @Builder
   filterBar() {
     Row() {
-      Text('状态')
+      Text(t('wd.filter_label'))
         .fontSize(14)
         .fontColor('#666666')
 
       Select(this.buildFilterOptions())
-        .value(STATUS_FILTERS[this.filterIndex])
+        .value(t(STATUS_FILTERS[this.filterIndex]))
         .selected(this.filterIndex)
         .layoutWeight(1)
         .margin({ left: 12 })
@@ -518,7 +518,7 @@ struct WithdrawManagePage {
   private buildFilterOptions(): SelectOption[] {
     const options: SelectOption[] = [];
     for (let i = 0; i < STATUS_FILTERS.length; i++) {
-      options.push({ value: STATUS_FILTERS[i] });
+      options.push({ value: t(STATUS_FILTERS[i]) });
     }
     return options;
   }
@@ -542,18 +542,18 @@ struct WithdrawManagePage {
   @Builder
   batchBar() {
     Row() {
-      Text(`已选 ${this.selected.length} 笔`)
+      Text(t1('wd.selected_count', 'count', `${this.selected.length}`))
         .fontSize(13)
         .fontColor('#666666')
         .layoutWeight(1)
 
-      this.smallButton('清空', '#666666', '#F5F5F5', this.busyId !== 'batch', () => {
+      this.smallButton(t('wd.action_clear'), '#666666', '#F5F5F5', this.busyId !== 'batch', () => {
         this.selected = [];
       });
-      this.smallButton('批量通过', '#52C41A', '#E6FFF0', this.busyId !== 'batch', () => {
+      this.smallButton(t('wd.action_batch_approve'), '#52C41A', '#E6FFF0', this.busyId !== 'batch', () => {
         this.batchRow('approve');
       });
-      this.smallButton('批量驳回', '#FF4D4F', '#FFE6E6', this.busyId !== 'batch', () => {
+      this.smallButton(t('wd.action_batch_reject'), '#FF4D4F', '#FFE6E6', this.busyId !== 'batch', () => {
         this.batchRow('reject');
       });
     }
@@ -605,29 +605,29 @@ struct WithdrawManagePage {
           .layoutWeight(1)
 
         if (this.canReview(item)) {
-          this.smallButton('通过', '#52C41A', '#E6FFF0', this.busyId !== item.id, () => {
+          this.smallButton(t('wd.action_approve'), '#52C41A', '#E6FFF0', this.busyId !== item.id, () => {
             this.reviewRow(item, 'approve');
           });
-          this.smallButton('驳回', '#FF4D4F', '#FFE6E6', this.busyId !== item.id, () => {
+          this.smallButton(t('wd.action_reject'), '#FF4D4F', '#FFE6E6', this.busyId !== item.id, () => {
             this.reviewRow(item, 'reject');
           });
         }
 
         // 双审第二票：初审已记（reviewer_id>0）的待审核单才渲染
         if (this.canConfirm(item)) {
-          this.smallButton('复核确认', '#1677FF', '#E6F0FF', this.busyId !== item.id, () => {
+          this.smallButton(t('wd.action_recheck'), '#1677FF', '#E6F0FF', this.busyId !== item.id, () => {
             this.confirmRow(item);
           });
         }
 
         if (this.canPayout(item)) {
-          this.smallButton('打款', '#FA8C16', '#FFF2E6', this.busyId !== item.id, () => {
+          this.smallButton(t('wd.action_payout'), '#FA8C16', '#FFF2E6', this.busyId !== item.id, () => {
             this.payoutRow(item);
           });
         }
 
         if (this.canSync(item)) {
-          this.smallButton('同步', '#1677FF', '#E6F0FF', this.busyId !== item.id, () => {
+          this.smallButton(t('wd.action_sync'), '#1677FF', '#E6F0FF', this.busyId !== item.id, () => {
             this.syncRow(item);
           });
         }

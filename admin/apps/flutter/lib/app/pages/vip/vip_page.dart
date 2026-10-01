@@ -13,6 +13,8 @@ class VipController extends GetxController {
   @override
   void onInit() { super.onInit(); load(); }
 
+  /// **不加分页**：/vip/level/list 是整表端点（无 total，一次返回全部 VIP 等级），
+  /// C 端等级展示也读它 ⇒ 分页会让下游拿到残缺的等级表。
   Future<void> load() async {
     isLoading.value = true;
     try {

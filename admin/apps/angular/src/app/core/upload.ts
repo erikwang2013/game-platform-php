@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { Injectable, inject } from '@angular/core';
 import { Api, Row } from './api.service';
+import { t } from './i18n/i18n';
 
 /**
  * aetherupload 两步协议（插件 erikwang2013/aetherupload-webman；本仓配置见
@@ -17,6 +18,11 @@ const UPLOADING = '/admin/v1/aetherupload/uploading';
 const DISPLAY = '/admin/v1/aetherupload/display/';
 /** 与后端 groups 的键、插件语言目录同名 */
 const GROUP = 'image';
+/**
+ * 插件自己的语言字段（不是本树的 i18n）：插件按它选 `resource/languages/<locale>/` 下的表来译
+ * `error` 原文（键是字面句子，见 aetherupload-webman 的 fail()）。**刻意不跟着界面语言走** ——
+ * 插件的语言目录名与 13 语言短码不是一套（是 zh_CN 这种），填错会静默回落。
+ */
 const LOCALE = 'zh_CN';
 
 /** preprocess 表单（字段名照 UploadController::preprocess 的 validator，一个都别改） */
@@ -76,9 +82,11 @@ export function failText(res: Row): string {
   const e = res['error'];
   if (e === 0 || e === '0') return '';
   if (typeof e === 'string' && e) return e;
-  if (res['code'] === 401) return '登录状态已失效，请重新登录';
+  if (res['code'] === 401) return t('app.session_expired');
   // 既没有 error 也不是 401 信封 ⇒ 这响应根本不是上传接口的格式，别当成成功放过去
-  return e === undefined || e === null ? '上传失败：服务端未返回 error 字段' : `上传失败（${String(e)}）`;
+  return e === undefined || e === null
+    ? t('upload.failed_no_error')
+    : t('upload.failed_reason', { reason: String(e) });
 }
 
 /** 落库值 = 绝对 URL：这个字段 C 端也要看，相对路径出了管理端就废 */
@@ -106,7 +114,7 @@ export class ImageUpload {
       for (const [k, v] of chunkBody(pre, i + 1, parts.length)) fd.append(k, v);
       saved = (await this.step<{ savedPath: string }>(UPLOADING, fd)).savedPath;
     }
-    if (!saved) throw new Error('上传失败：服务端未返回文件路径');
+    if (!saved) throw new Error(t('upload.failed_no_path'));
     return displayUrl(location.origin, saved);
   }
 

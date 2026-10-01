@@ -11,6 +11,7 @@ import 'package:admin_app/app/pages/role/permission_page.dart';
 import 'package:admin_app/app/pages/role/role_controller.dart';
 import 'package:admin_app/app/pages/role/role_list_page.dart';
 import 'package:admin_app/app/pages/ticket/ticket_page.dart';
+import 'package:admin_app/app/widgets/permission_tree.dart';
 import 'test_helpers.dart';
 
 /// 不打网络、只记账的审核控制器：列表数据自己塞，review 只录调用参数。
@@ -18,7 +19,7 @@ class _FakeIdentityController extends IdentityController {
   final calls = <List<String>>[];
 
   @override
-  Future<void> loadData() async {} // 走的是父类 onInit，但这里不打网络：列表数据由用例自己塞
+  Future<void> loadData({int? toPage}) async {} // 走的是父类 onInit，但这里不打网络：列表数据由用例自己塞
 
   @override
   Future<void> review(String id, String action, String note) async => calls.add([id, action, note]);
@@ -30,7 +31,7 @@ class _FakeRoleController extends RoleController {
   final updated = <(String, Map<String, dynamic>)>[];
 
   @override
-  Future<void> loadRoles() async {}
+  Future<void> loadRoles({int? toPage}) async {}
 
   @override
   Future<void> createRole(Map<String, dynamic> data) async => created.add(data);
@@ -49,17 +50,32 @@ class _FakePermissionController extends PermissionController {
   Future<void> create(Map<String, dynamic> data) async => created.add(data);
 }
 
-/// 两层的权限树：Game（根）→ Game List（子）。
-List<dynamic> fakePermissionTree() => <dynamic>[
+/// 两层的权限树：Game（根）→ Game List（子）。解析走产品代码的 PermissionNode.parse，
+/// 形状与后端 buildTree 同款（根 parent_id 是**数字 0**、叶子**没有** children 键）。
+List<PermissionNode> fakePermissionTree() => PermissionNode.parse(<dynamic>[
       <String, dynamic>{
         'id': 'perm-1',
+        'parent_id': 0,
         'name': 'Game',
         'type': 1,
         'children': <dynamic>[
-          <String, dynamic>{'id': 'perm-2', 'name': 'Game List', 'type': 1},
+          <String, dynamic>{'id': 'perm-2', 'parent_id': 'perm-1', 'name': 'Game List', 'type': 1},
         ],
       },
-    ];
+    ]);
+
+/// 带兄弟节点的树：Game（根）→ [Game List, Game Detail]（用来验「父级半选」这一态）。
+List<PermissionNode> fakeBranchyPermissionTree() => PermissionNode.parse(<dynamic>[
+      <String, dynamic>{
+        'id': 'perm-1',
+        'parent_id': 0,
+        'name': 'Game',
+        'children': <dynamic>[
+          <String, dynamic>{'id': 'perm-2', 'name': 'Game List'},
+          <String, dynamic>{'id': 'perm-3', 'name': 'Game Detail'},
+        ],
+      },
+    ]);
 
 void main() {
   setUp(setUpTest);
@@ -111,9 +127,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Create Role'), findsOneWidget);
 
-    // 树摊平后带缩进：Game 是根，Game List 缩进两格
+    // 树按层级铺开（不再是摊平后靠空格缩进的一维列表）
     expect(find.text('Game'), findsOneWidget);
-    expect(find.text('  Game List'), findsOneWidget);
+    expect(find.text('Game List'), findsOneWidget);
 
     await tester.enterText(find.widgetWithText(TextField, 'Name'), 'ops');
     await tester.enterText(find.widgetWithText(TextField, 'Slug'), 'ops');
@@ -122,9 +138,35 @@ void main() {
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
-    // 提交的是权限 hashid 数组（后端 decodePermissionIds 逐个 decodeId）
-    expect(roleCtrl.created.single['permission_ids'], <String>['perm-2']);
+    // 提交的是权限 hashid 数组（后端 decodePermissionIds 逐个 decodeId）；
+    // 子节点的父级被自动勾中 ⇒ 父子的 id 一起提交
+    expect(roleCtrl.created.single['permission_ids'], unorderedEquals(<String>['perm-1', 'perm-2']));
     expect(find.text('Create Role'), findsNothing); // 成功即关框
+  });
+
+  testWidgets('角色表单: 只勾一个子节点时父级半选，授权里仍要带上父级', (tester) async {
+    final roleCtrl = _FakeRoleController();
+    Get.put<RoleController>(roleCtrl);
+    Get.put<PermissionController>(_FakePermissionController()..tree.value = fakeBranchyPermissionTree());
+    await pumpPage(tester, const RoleListPage());
+
+    await tester.tap(find.text('Create'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.widgetWithText(TextField, 'Name'), 'ops');
+    await tester.enterText(find.widgetWithText(TextField, 'Slug'), 'ops');
+
+    final boxes = find.byType(CheckboxListTile);
+    await tester.tap(boxes.at(1)); // 只勾 Game List
+    await tester.pump();
+    expect(tester.widget<CheckboxListTile>(boxes.at(0)).value, isNull); // 父级：半选（横杠）
+    expect(tester.widget<CheckboxListTile>(boxes.at(1)).value, isTrue);
+    expect(tester.widget<CheckboxListTile>(boxes.at(2)).value, isFalse); // 兄弟节点不受影响
+
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    // 半选的父级也要提交：菜单类权限不参与鉴权但前端要靠它显示入口，
+    // 只授子权限不授父菜单 ⇒ 拿到该角色的运营「有权限但看不到菜单」
+    expect(roleCtrl.created.single['permission_ids'], unorderedEquals(<String>['perm-1', 'perm-2']));
   });
 
   testWidgets('角色编辑: 行里的权限回填成勾选，没动过就不发 permission_ids', (tester) async {

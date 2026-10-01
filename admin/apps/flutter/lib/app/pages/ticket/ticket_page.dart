@@ -14,6 +14,11 @@ class TicketController extends GetxController {
   final tickets = <dynamic>[].obs;
   final isLoading = false.obs;
   final statusFilter = 'all'.obs;
+  final total = 0.obs;
+  final page = 1.obs;
+
+  /// 与后端缺省一致（TicketController::index 的 `input('limit', 20)`）。
+  static const int pageSize = 20;
 
   @override
   void onInit() {
@@ -21,14 +26,16 @@ class TicketController extends GetxController {
     load();
   }
 
-  // ponytail: 工单是长尾数据，先取 50 条看当前待办；真需要翻页（total > 50）再加分页控件。
-  Future<void> load() async {
+  Future<void> load({int? toPage}) async {
+    if (toPage != null) page.value = toPage;
     isLoading.value = true;
     try {
-      final params = <String, dynamic>{'limit': 50};
+      final params = <String, dynamic>{};
       if (statusFilter.value != 'all') params['status'] = statusFilter.value;
-      final resp = await api.get('/admin/v1/ticket/list', params: params);
-      tickets.value = resp['data']['list'] as List<dynamic>? ?? [];
+      final result = await api.list('/admin/v1/ticket/list',
+          page: page.value, pageSize: pageSize, params: params);
+      tickets.value = result.rows;
+      total.value = result.total;
     } catch (e) {
       Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.loading_failed')}: $e');
     } finally {
@@ -106,6 +113,7 @@ class TicketPage extends GetView<TicketController> {
         selected: {ctrl.statusFilter.value},
         onSelectionChanged: (v) {
           ctrl.statusFilter.value = v.first;
+          ctrl.page.value = 1; // 换状态筛选回第 1 页，否则停在第 3 页看「已关闭」多半是空的
           ctrl.load();
         },
       )),
@@ -184,6 +192,13 @@ class TicketPage extends GetView<TicketController> {
           ),
         );
       })),
+      const SizedBox(height: 8),
+      Obx(() => CrudPager(
+            page: ctrl.page.value,
+            total: ctrl.total.value,
+            size: TicketController.pageSize,
+            onPage: (p) => ctrl.load(toPage: p),
+          )),
     ]);
   }
 

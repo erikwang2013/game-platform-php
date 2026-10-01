@@ -101,26 +101,26 @@ class DashboardController extends BaseController
 
         return [
             [
-                'label' => '用户总数',
+                'label' => trans('Total users'),
                 'value' => (string) $totalUsers,
                 'icon' => 'people',
                 'color' => '#1677FF',
                 'trend' => $this->calcTrend(AdminUser::class),
             ],
             [
-                'label' => '今日新增',
+                'label' => trans('New today'),
                 'value' => (string) $todayNew,
                 'icon' => 'person_add',
                 'color' => '#52C41A',
             ],
             [
-                'label' => '活跃用户',
+                'label' => trans('Active users'),
                 'value' => (string) $todayActive,
                 'icon' => 'bolt',
                 'color' => '#FA8C16',
             ],
             [
-                'label' => '操作日志',
+                'label' => trans('Operation logs'),
                 'value' => (string) $todayLogs,
                 'icon' => 'description',
                 'color' => '#722ED1',
@@ -166,8 +166,8 @@ class DashboardController extends BaseController
         return [
             'dates' => $dates,
             'series' => [
-                ['name' => '累计用户', 'data' => $userGrowth, 'color' => '#1677FF'],
-                ['name' => '操作日志', 'data' => $logCounts, 'color' => '#52C41A'],
+                ['name' => trans('Cumulative users'), 'data' => $userGrowth, 'color' => '#1677FF'],
+                ['name' => trans('Operation logs'), 'data' => $logCounts, 'color' => '#52C41A'],
             ],
         ];
     }
@@ -176,8 +176,8 @@ class DashboardController extends BaseController
     {
         return [
             'user_status' => [
-                ['name' => '启用', 'value' => AdminUser::where('status', 1)->count()],
-                ['name' => '禁用', 'value' => AdminUser::where('status', 0)->count()],
+                ['name' => trans('Enabled'), 'value' => AdminUser::where('status', 1)->count()],
+                ['name' => trans('Disabled'), 'value' => AdminUser::where('status', 0)->count()],
             ],
         ];
     }
@@ -191,7 +191,7 @@ class DashboardController extends BaseController
             ->map(function ($log) {
                 $data = $log->toArray();
                 $data['id'] = $this->encodeId($data['id']);
-                $data['user_name'] = $log->user->username ?? '系统';
+                $data['user_name'] = $log->user->username ?? trans('System');
                 unset($data['user'], $data['user_id']);
                 return $data;
             })

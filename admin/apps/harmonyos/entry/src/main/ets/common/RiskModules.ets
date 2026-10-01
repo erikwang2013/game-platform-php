@@ -29,10 +29,11 @@
  */
 
 import { FormField, FieldOption } from './FormDialog';
-import { FormValues, FormPayload, ResourceRow, ResourceListResult } from '../model/DataModels';
+import { FormValues, FormPayload, ResourceRow, ResourceListResult, pageQuery } from '../model/DataModels';
 import { RiskRuleItem, RiskEventItem, AntiCheatEventItem, RiskSandboxResult } from '../model/RiskModels';
 import { ResourceModule, buildRow, pagedItems } from './ResourceSchema';
 import { RiskService } from '../service/RiskService';
+import { t, t1 } from '../i18n/Translations';
 
 /* ============================== 1 风控规则 ==============================
  * list:   GET  /admin/v1/risk/rule/list?page=&size=（另有 status/type/scope 过滤，本页不挂）
@@ -46,36 +47,36 @@ import { RiskService } from '../service/RiskService';
  * ====================================================================== */
 
 const RULE_TYPE_OPTIONS: FieldOption[] = [
-  { label: 'IP 黑名单', value: 'ip_blacklist' },
-  { label: '金额异常', value: 'amount_anomaly' },
-  { label: '频率限制', value: 'frequency' },
-  { label: '速度（同 IP 多账号）', value: 'velocity' },
-  { label: '设备指纹', value: 'device_fingerprint' },
-  { label: 'IP 信誉', value: 'ip_reputation' },
-  { label: '设备账号图谱', value: 'device_account_graph' },
-  { label: '提现模式', value: 'withdraw_pattern' }
+  { label: 'risk.type.ip_blacklist', value: 'ip_blacklist' },
+  { label: 'risk.type.amount_anomaly', value: 'amount_anomaly' },
+  { label: 'risk.type.frequency', value: 'frequency' },
+  { label: 'risk.type.velocity', value: 'velocity' },
+  { label: 'risk.type.device_fingerprint', value: 'device_fingerprint' },
+  { label: 'risk.type.ip_reputation', value: 'ip_reputation' },
+  { label: 'risk.type.device_account_graph', value: 'device_account_graph' },
+  { label: 'risk.type.withdraw_pattern', value: 'withdraw_pattern' }
 ];
 
 const RULE_SCOPE_OPTIONS: FieldOption[] = [
-  { label: '全部场景', value: 'all' },
-  { label: '充值', value: 'deposit' },
-  { label: '提现', value: 'withdraw' },
-  { label: '兑换', value: 'exchange' },
-  { label: '登录', value: 'login' }
+  { label: 'risk.scope.all', value: 'all' },
+  { label: 'risk.scope.deposit', value: 'deposit' },
+  { label: 'risk.scope.withdraw', value: 'withdraw' },
+  { label: 'risk.scope.exchange', value: 'exchange' },
+  { label: 'risk.scope.login', value: 'login' }
 ];
 
 /** 沙箱试算的 check_type：与 scope 同域，但**没有 all**（试算必须落在某个具体场景上） */
 const CHECK_TYPE_OPTIONS: FieldOption[] = RULE_SCOPE_OPTIONS.slice(1);
 
 const RULE_ACTION_OPTIONS: FieldOption[] = [
-  { label: '仅记录', value: 'log' },
-  { label: '告警', value: 'warn' },
-  { label: '拦截', value: 'block' }
+  { label: 'risk.action.log', value: 'log' },
+  { label: 'risk.action.warn', value: 'warn' },
+  { label: 'risk.action.block', value: 'block' }
 ];
 
 const RULE_STATUS_OPTIONS: FieldOption[] = [
-  { label: '启用', value: '1' },
-  { label: '停用', value: '0' }
+  { label: 'common.enabled', value: '1' },
+  { label: 'common.disabled', value: '0' }
 ];
 
 /**
@@ -84,33 +85,19 @@ const RULE_STATUS_OPTIONS: FieldOption[] = [
  * 之所以要摆出来：评估器读的是 `$config['自己的键'] ?? 默认值`，写错键名不报错、只是**静默不生效**，
  * 运营会以为阈值设上了。这段提示让「有哪些键、什么值域」在填的时候就看得见。
  */
-const CONFIG_HINT: string =
-  'config 是一个 JSON 对象，键必须落在本 type 的白名单里（写错键名服务端 422）。\n'
-    + 'ip_blacklist → blacklist（IP 字符串数组）\n'
-    + 'amount_anomaly → min_amount（金额 >0）、currency（≤10 字符）\n'
-    + 'frequency → window_minutes(1~10080)、max_count(1~100000)\n'
-    + 'velocity → window_minutes(1~10080)、max_accounts(1~100000)、same_ip(布尔)\n'
-    + 'device_fingerprint → max_accounts_per_device(1~100000)、new_device_lookback_hours(1~8760)、new_device_withdraw_block(布尔)\n'
-    + 'ip_reputation → block_score_below(0~100)、warn_score_below(0~100)、block_unknown(布尔)\n'
-    + 'device_account_graph → cluster_threshold(1~100000)、max_accounts_per_device(1~100000)、frozen_sibling_block(布尔)\n'
-    + 'withdraw_pattern → window_minutes(1~10080)、max_applies(1~100000)、single_hard_cap(金额 >0)、'
-    + 'drain_ratio(比率 0<x≤1)、sigma_window_days(2~3650)、sigma_multiplier(1~100)、'
-    + 'fast_interval_seconds(1~86400)、fast_interval_min_count(1~100000)\n'
-    + '布尔必须写 JSON 的 true/false —— 写成 "false" 字符串会被当成 true（评估器是 (bool) 取值）；\n'
-    + '数值只收十进制字面量（1e3 会被 bccomp 拒掉）。';
-
+const CONFIG_HINT: string = t('risk.rule.config_hint');
 const RULE_FIELDS: FormField[] = [
-  { name: 'name', label: '规则名称', type: 'text', required: true, placeholder: '如「提现频率过高」' },
-  { name: 'type', label: '规则类型', type: 'select', required: true, options: RULE_TYPE_OPTIONS },
-  { name: 'scope', label: '生效场景', type: 'select', options: RULE_SCOPE_OPTIONS },
-  { name: 'action', label: '命中处置', type: 'select', required: true, options: RULE_ACTION_OPTIONS },
+  { name: 'name', label: 'risk.rule.name', type: 'text', required: true, placeholder: 'risk.rule.name_placeholder' },
+  { name: 'type', label: 'risk.rule.type', type: 'select', required: true, options: RULE_TYPE_OPTIONS },
+  { name: 'scope', label: 'risk.rule.scope', type: 'select', options: RULE_SCOPE_OPTIONS },
+  { name: 'action', label: 'risk.rule.action', type: 'select', required: true, options: RULE_ACTION_OPTIONS },
   {
-    name: 'config', label: '阈值配置（JSON）', type: 'textarea', hint: CONFIG_HINT,
-    placeholder: '如 {"window_minutes":5,"max_count":10}；留空 = {} 用各键缺省值'
+    name: 'config', label: 'risk.rule.config', type: 'textarea', hint: CONFIG_HINT,
+    placeholder: 'risk.rule.config_placeholder'
   },
-  { name: 'priority', label: '优先级', type: 'number', placeholder: '0~1000，越大越先判，缺省 100' },
+  { name: 'priority', label: 'risk.rule.priority', type: 'number', placeholder: 'risk.rule.priority_hint' },
   // status 进表单：它是真实列、create 要有初值、编辑要看得见改得动（服务端已对缺键回落到启用，见册头第 3 条）
-  { name: 'status', label: '状态', type: 'select', required: true, options: RULE_STATUS_OPTIONS }
+  { name: 'status', label: 'risk.rule.status', type: 'select', required: true, options: RULE_STATUS_OPTIONS }
 ];
 
 function ruleInitial(): FormValues {
@@ -128,7 +115,7 @@ function ruleInitial(): FormValues {
 function ruleTypeLabel(type: string): string {
   for (let i = 0; i < RULE_TYPE_OPTIONS.length; i++) {
     if (RULE_TYPE_OPTIONS[i].value === type) {
-      return RULE_TYPE_OPTIONS[i].label;
+      return t(RULE_TYPE_OPTIONS[i].label);
     }
   }
   return type;
@@ -137,7 +124,7 @@ function ruleTypeLabel(type: string): string {
 function optionLabelOf(options: FieldOption[], value: string): string {
   for (let i = 0; i < options.length; i++) {
     if (options[i].value === value) {
-      return options[i].label;
+      return t(options[i].label);
     }
   }
   return value;
@@ -155,20 +142,23 @@ function ruleRow(item: RiskRuleItem): ResourceRow {
   values.status = `${item.status}`;
   const config = item.config ?? '';
   const head = `${ruleTypeLabel(item.type)} · ${optionLabelOf(RULE_SCOPE_OPTIONS, item.scope)}`
-    + ` · ${optionLabelOf(RULE_ACTION_OPTIONS, item.action)} · 优先级 ${item.priority}`;
-  const sub = config.length > 0 ? `${head} · ${config}` : `${head} · 未配阈值`;
+    + ` · ${optionLabelOf(RULE_ACTION_OPTIONS, item.action)} · ${t('risk.rule.priority')} ${item.priority}`;
+  const sub = config.length > 0 ? `${head} · ${config}` : `${head} · ${t('risk.rule.no_threshold')}`;
   return buildRow(item.id, item.name, sub,
-    item.status === 1 ? '启用' : '停用', item.status === 1, item.status, values);
+    item.status === 1 ? t('common.enabled') : t('common.disabled'), item.status === 1, item.status, values);
 }
 
 /** 试算结果 → 给运营看的几行（沙箱是只读评估，页面上说清「没写库、没触发处置」） */
 function sandboxLines(result: RiskSandboxResult): string[] {
   const lines: string[] = [];
-  lines.push(`命中：${result.matched ? '是' : '否'}`);
-  lines.push(`严重度：${result.severity} · 折算后处置：${optionLabelOf(RULE_ACTION_OPTIONS, result.action)}（${result.action}）`);
+  lines.push(t1('risk.trial.hit', 'value', result.matched ? t('common.yes') : t('common.no')));
+  lines.push(t('risk.trial.severity_line')
+    .replace('{severity}', `${result.severity}`)
+    .replace('{action}', optionLabelOf(RULE_ACTION_OPTIONS, result.action))
+    .replace('{raw}', `${result.action}`));
   const said = result.message ?? '';
-  lines.push(said.length > 0 ? `说明：${said}` : '说明：（服务端未给出命中说明）');
-  lines.push('本试算只读：不写库、不落风控日志、不触发任何处置。');
+  lines.push(said.length > 0 ? t1('risk.trial.said', 'text', said) : t('risk.trial.said_none'));
+  lines.push(t('risk.trial.readonly'));
   return lines;
 }
 
@@ -184,14 +174,14 @@ async function submitRuleTest(id: string, body: FormPayload): Promise<string[]> 
 
 const RISK_RULE: ResourceModule = {
   key: 'risk_rule',
-  title: '风控规则',
-  desc: '规则阈值与启停，可沙箱试算（无删除）',
+  title: 'mod.risk_rule.title',
+  desc: 'mod.risk_rule.desc',
   base: '/admin/v1/risk/rule',
   // 没有 DELETE 端点 ⇒ 不画删除按钮
   canDelete: false,
   paginated: true,
   listPath: (page: number, limit: number, _gameId: string): string =>
-    `/admin/v1/risk/rule/list?page=${page}&size=${limit}`,
+    `/admin/v1/risk/rule/list?${pageQuery(page, limit)}`,
   parseList: (data: Object): ResourceListResult => pagedItems<RiskRuleItem>(data, ruleRow),
   fields: RULE_FIELDS,
   // 编辑态字段与新建态一致：update 与 create 是同一个 fill()（全量语义）
@@ -202,17 +192,17 @@ const RISK_RULE: ResourceModule = {
   togglePath: '/admin/v1/risk/rule/{id}/toggle',
   needsGame: false,
   deletePassword: false,
-  extraText: '试算',
+  extraText: 'mod.risk_rule.action',
   extraForm: [
     {
-      name: 'user_id', label: '用户 hashid', type: 'text', required: true,
-      placeholder: '取用户列表里的 user_id', hint: '试算按这个用户的历史算；服务端不校验它是否存在（编的 id 会当成一个没有历史的新用户）。'
+      name: 'user_id', label: 'risk.trial.user_id', type: 'text', required: true,
+      placeholder: 'risk.trial.user_id_placeholder', hint: 'risk.trial.user_id_hint'
     },
-    { name: 'check_type', label: '校验场景', type: 'select', required: true, options: CHECK_TYPE_OPTIONS },
+    { name: 'check_type', label: 'risk.trial.check_type', type: 'select', required: true, options: CHECK_TYPE_OPTIONS },
     {
-      name: 'context', label: '上下文（JSON）', type: 'textarea',
-      placeholder: '如 {"amount":"100.0000","ip":"1.2.3.4"}；可留空',
-      hint: '必须是 JSON 对象：评估器只从对象里取 ip / user_agent / amount / fp_hash 四个键，发字符串会被静默当成空上下文。'
+      name: 'context', label: 'risk.trial.context', type: 'textarea',
+      placeholder: 'risk.trial.context_placeholder',
+      hint: 'risk.trial.context_hint'
     }
   ],
   extraSubmit: submitRuleTest
@@ -227,14 +217,14 @@ const RISK_RULE: ResourceModule = {
  * ============================================================== */
 
 const EVENT_ACTION_OPTIONS: FieldOption[] = [
-  { label: '仅记录', value: 'log' },
-  { label: '告警', value: 'warn' },
-  { label: '拦截', value: 'block' }
+  { label: 'risk.action.log', value: 'log' },
+  { label: 'risk.action.warn', value: 'warn' },
+  { label: 'risk.action.block', value: 'block' }
 ];
 
 const EVENT_DECISION_OPTIONS: FieldOption[] = [
-  { label: '确认风险（approve）', value: 'approve' },
-  { label: '判定误报（reject）', value: 'reject' }
+  { label: 'risk.event.approve', value: 'approve' },
+  { label: 'risk.event.reject', value: 'reject' }
 ];
 
 function eventRow(item: RiskEventItem): ResourceRow {
@@ -255,15 +245,15 @@ async function submitEventHandle(id: string, body: FormPayload): Promise<string[
 
 const RISK_EVENT: ResourceModule = {
   key: 'risk_event',
-  title: '风控事件',
-  desc: '命中流水，可人工处置（只留痕，不写事件）',
+  title: 'mod.risk_event.title',
+  desc: 'mod.risk_event.desc',
   base: '/admin/v1/risk/event',
   canCreate: false,
   canEdit: false,
   canDelete: false,
   paginated: true,
   listPath: (page: number, limit: number, _gameId: string): string =>
-    `/admin/v1/risk/event/list?page=${page}&size=${limit}`,
+    `/admin/v1/risk/event/list?${pageQuery(page, limit)}`,
   parseList: (data: Object): ResourceListResult => pagedItems<RiskEventItem>(data, eventRow),
   fields: [],
   editFields: [],
@@ -275,10 +265,10 @@ const RISK_EVENT: ResourceModule = {
   togglePath: '',
   needsGame: false,
   deletePassword: false,
-  extraText: '处置',
+  extraText: 'mod.risk_event.action',
   extraForm: [
-    { name: 'decision', label: '处置结论', type: 'select', required: true, options: EVENT_DECISION_OPTIONS },
-    { name: 'note', label: '处置备注', type: 'textarea', placeholder: '最长 500 字，进操作审计' }
+    { name: 'decision', label: 'risk.event.decision', type: 'select', required: true, options: EVENT_DECISION_OPTIONS },
+    { name: 'note', label: 'risk.event.note', type: 'textarea', placeholder: 'risk.event.note_hint' }
   ],
   extraSubmit: submitEventHandle
 };
@@ -292,16 +282,16 @@ const RISK_EVENT: ResourceModule = {
  * ==================================================================== */
 
 const CHEAT_STATUS_OPTIONS: FieldOption[] = [
-  { label: '待处理（open）', value: 'open' },
-  { label: '确认作弊（confirmed）', value: 'confirmed' },
-  { label: '加白放行（whitelisted）', value: 'whitelisted' },
-  { label: '关闭（closed）', value: 'closed' }
+  { label: 'risk.cheat.open', value: 'open' },
+  { label: 'risk.cheat.confirmed', value: 'confirmed' },
+  { label: 'risk.cheat.whitelisted', value: 'whitelisted' },
+  { label: 'risk.cheat.closed', value: 'closed' }
 ];
 
 function cheatStatusLabel(status: string): string {
   for (let i = 0; i < CHEAT_STATUS_OPTIONS.length; i++) {
     if (CHEAT_STATUS_OPTIONS[i].value === status) {
-      return CHEAT_STATUS_OPTIONS[i].label;
+      return t(CHEAT_STATUS_OPTIONS[i].label);
     }
   }
   return status;
@@ -312,9 +302,9 @@ function cheatRow(item: AntiCheatEventItem): ResourceRow {
   const ruleName = item.rule_name ?? '';
   const title = ruleName.length > 0 ? ruleName : (item.rule_type ?? '');
   const note = item.review_note ?? '';
-  const head = `${item.user_id} · ${item.action} · 严重度 ${item.severity} · 扣分 ${item.score_delta}`
+  const head = `${item.user_id} · ${item.action} · ${t('risk.event.severity')} ${item.severity} · ${t('risk.event.score_delta')} ${item.score_delta}`
     + ` · ${item.stat_date} · ${item.created_at}`;
-  const sub = note.length > 0 ? `${head} · 备注：${note}` : head;
+  const sub = note.length > 0 ? `${head} · ${t1('risk.event.note_line', 'note', note)}` : head;
   return buildRow(item.id, title.length > 0 ? title : item.id, sub,
     cheatStatusLabel(item.status), item.status === 'whitelisted', 0, values);
 }
@@ -325,15 +315,15 @@ async function submitCheatReview(id: string, body: FormPayload): Promise<string[
 
 const ANTI_CHEAT_EVENT: ResourceModule = {
   key: 'anticheat_event',
-  title: '反作弊事件',
-  desc: '作弊事件人工审核（四值结论，无增删改）',
+  title: 'mod.anticheat_event.title',
+  desc: 'mod.anticheat_event.desc',
   base: '/admin/v1/anticheat/events',
   canCreate: false,
   canEdit: false,
   canDelete: false,
   paginated: true,
   listPath: (page: number, limit: number, _gameId: string): string =>
-    `/admin/v1/anticheat/events?page=${page}&size=${limit}`,
+    `/admin/v1/anticheat/events?${pageQuery(page, limit)}`,
   parseList: (data: Object): ResourceListResult => pagedItems<AntiCheatEventItem>(data, cheatRow),
   fields: [],
   editFields: [],
@@ -345,13 +335,13 @@ const ANTI_CHEAT_EVENT: ResourceModule = {
   togglePath: '',
   needsGame: false,
   deletePassword: false,
-  extraText: '审核',
+  extraText: 'mod.anticheat_event.action',
   extraForm: [
     {
-      name: 'status', label: '审核结论', type: 'select', required: true, options: CHEAT_STATUS_OPTIONS,
-      hint: 'whitelisted 需附备注；结论只是记事件，不联动信任分（控制器原话）。'
+      name: 'status', label: 'risk.cheat.status', type: 'select', required: true, options: CHEAT_STATUS_OPTIONS,
+      hint: 'risk.cheat.status_hint'
     },
-    { name: 'note', label: '审核备注', type: 'textarea', placeholder: '最长 255 字' }
+    { name: 'note', label: 'risk.cheat.note', type: 'textarea', placeholder: 'risk.cheat.note_hint' }
   ],
   extraSubmit: submitCheatReview
 };

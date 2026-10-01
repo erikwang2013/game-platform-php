@@ -62,7 +62,7 @@ class OAuthController extends BaseController
     {
         $provider = strtolower($provider);
         if (!in_array($provider, self::PROVIDERS, true)) {
-            return $this->fail('Invalid OAuth provider', 422);
+            return $this->fail(trans('Invalid OAuth provider'), 422);
         }
 
         $state = bin2hex(random_bytes(16));
@@ -70,7 +70,7 @@ class OAuthController extends BaseController
             \support\Redis::setex("oauth_state:{$state}", 600, $provider);
         } catch (\Throwable $e) {
             Log::warning('OAuth state Redis setex failed (fail-closed): ' . $e->getMessage());
-            return $this->fail('OAuth temporarily unavailable', 503);
+            return $this->fail(trans('OAuth temporarily unavailable'), 503);
         }
 
         $redirectUri = config("oauth.{$provider}.redirect_uri", '');
@@ -91,7 +91,7 @@ class OAuthController extends BaseController
                 \support\Redis::setex("oauth_pkce:{$state}", 600, $codeVerifier);
             } catch (\Throwable $e) {
                 Log::warning('OAuth PKCE Redis setex failed (fail-closed): ' . $e->getMessage());
-                return $this->fail('OAuth temporarily unavailable', 503);
+                return $this->fail(trans('OAuth temporarily unavailable'), 503);
             }
             $params['code_challenge'] = $this->computeCodeChallenge($codeVerifier);
             $params['code_challenge_method'] = 'S256';
@@ -121,7 +121,7 @@ class OAuthController extends BaseController
         }
 
         if (!in_array($provider, self::PROVIDERS, true)) {
-            return $this->fail('Invalid OAuth provider', 422);
+            return $this->fail(trans('Invalid OAuth provider'), 422);
         }
 
         $code  = $request->input('code');
@@ -131,12 +131,12 @@ class OAuthController extends BaseController
         try {
             $storedProvider = \support\Redis::get($stateKey);
             if (!$storedProvider || $storedProvider !== $provider) {
-                return $this->fail('Invalid or expired state parameter', 403);
+                return $this->fail(trans('Invalid or expired state parameter'), 403);
             }
             \support\Redis::del($stateKey);
         } catch (\Throwable $e) {
             Log::warning('OAuth state Redis get failed (fail-closed): ' . $e->getMessage());
-            return $this->fail('OAuth temporarily unavailable', 503);
+            return $this->fail(trans('OAuth temporarily unavailable'), 503);
         }
 
         $codeVerifier = null;
@@ -146,7 +146,7 @@ class OAuthController extends BaseController
                 \support\Redis::del("oauth_pkce:{$state}");
             } catch (\Throwable $e) {
                 Log::warning('OAuth PKCE Redis get failed (fail-closed): ' . $e->getMessage());
-                return $this->fail('OAuth temporarily unavailable', 503);
+                return $this->fail(trans('OAuth temporarily unavailable'), 503);
             }
         }
 
@@ -161,10 +161,10 @@ class OAuthController extends BaseController
         if ($existingOauth) {
             $user = User::find($existingOauth->user_id);
             if (!$user) {
-                return $this->fail('User not found', 404);
+                return $this->fail(trans('User not found'), 404);
             }
             if ((int) $user->status !== 1) {
-                return $this->fail('Account is disabled', 403);
+                return $this->fail(trans('Account is disabled'), 403);
             }
 
             $user->last_login_at = date('Y-m-d H:i:s');

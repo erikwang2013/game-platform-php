@@ -53,7 +53,7 @@ class AnnouncementController extends BaseController
         $a = Announcement::find($id);
 
         if (!$a || $a->status !== 1) {
-            return $this->fail('公告不存在', 404);
+            return $this->fail(trans('Announcement not found'), 404);
         }
 
         return $this->success([

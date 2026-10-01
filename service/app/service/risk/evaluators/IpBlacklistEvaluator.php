@@ -27,7 +27,7 @@ class IpBlacklistEvaluator implements RiskEvaluator
         $blacklist = $config['blacklist'] ?? [];
 
         if ($ip !== '' && in_array($ip, $blacklist, true)) {
-            return ['matched' => true, 'message' => "IP {$ip} 命中黑名单", 'severity' => 'high'];
+            return ['matched' => true, 'message' => trans('IP %ip% is on the blacklist', ['%ip%' => (string) $ip]), 'severity' => 'high'];
         }
 
         return ['matched' => false, 'message' => 'IP 未命中黑名单', 'severity' => 'low'];

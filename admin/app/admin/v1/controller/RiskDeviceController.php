@@ -71,7 +71,7 @@ class RiskDeviceController extends BaseController
         } catch (\InvalidArgumentException $e) {
             return $this->fail($e->getMessage(), 400);
         } catch (\Throwable) {
-            return $this->fail('Redis 不可用');
+            return $this->fail(trans('Redis is unavailable'));
         }
 
         return $this->success(['fp_masked' => substr($fpHash, 0, 8) . '****']);
@@ -86,7 +86,7 @@ class RiskDeviceController extends BaseController
         } catch (\InvalidArgumentException $e) {
             return $this->fail($e->getMessage(), 400);
         } catch (\Throwable) {
-            return $this->fail('Redis 不可用');
+            return $this->fail(trans('Redis is unavailable'));
         }
 
         return $this->success();
@@ -96,7 +96,7 @@ class RiskDeviceController extends BaseController
     {
         $raw = strtolower(trim($raw));
         if (!preg_match('/^[0-9a-f]{64}$/', $raw)) {
-            throw new \InvalidArgumentException('fp_hash 必须是 64 位十六进制');
+            throw new \InvalidArgumentException(trans('fp_hash must be 64 hex characters'));
         }
 
         return $raw;

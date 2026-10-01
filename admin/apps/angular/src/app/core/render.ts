@@ -1,5 +1,6 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { Row } from './api.service';
+import { t } from './i18n/i18n';
 import { pairs } from './util';
 
 export interface Scalar {
@@ -24,8 +25,8 @@ export function scalarsOf(v: unknown): Scalar[] {
           ? '—'
           : typeof x === 'boolean'
             ? x
-              ? '是'
-              : '否'
+              ? t('app.yes')
+              : t('app.no')
             : String(x),
     }));
 }

@@ -55,13 +55,13 @@ class CdnProviderController extends BaseController
 
         $provider = CdnProvider::find($this->decodeId($request->input('id')));
         if (!$provider) {
-            return $this->fail('CDN厂商不存在', 404);
+            return $this->fail(trans('CDN provider not found'), 404);
         }
 
         $provider->status = (int) $request->input('status');
         $provider->save();
 
-        return $this->success([], '操作成功');
+        return $this->success([], trans('Operation successful'));
     }
 
     #[Apidoc\Title("创建 CDN 厂商")]
@@ -88,11 +88,11 @@ class CdnProviderController extends BaseController
 
         $providerName = $request->input('provider');
         if (CdnProvider::where('provider', $providerName)->exists()) {
-            return $this->fail("厂商 {$providerName} 已存在", 422);
+            return $this->fail(trans('Provider %name% already exists', ['%name%' => $providerName]), 422);
         }
         $config = $request->input('config', '');
         if ($config !== '' && json_decode((string) $config, true) === null) {
-            return $this->fail('config 必须是合法 JSON', 422);
+            return $this->fail(trans('config must be valid JSON'), 422);
         }
 
         $provider = new CdnProvider();
@@ -104,7 +104,7 @@ class CdnProviderController extends BaseController
         $provider->sort     = (int) $request->input('sort', 0);
         $provider->save();
 
-        return $this->success(['id' => $this->encodeId($provider->id)], '创建成功');
+        return $this->success(['id' => $this->encodeId($provider->id)], trans('Created successfully'));
     }
 
     #[Apidoc\Title("更新 CDN 厂商")]
@@ -116,7 +116,7 @@ class CdnProviderController extends BaseController
     {
         $provider = CdnProvider::find($this->decodeId($hashid));
         if (!$provider) {
-            return $this->fail('CDN厂商不存在', 404);
+            return $this->fail(trans('CDN provider not found'), 404);
         }
 
         $validator = validator($request->all(), [
@@ -133,7 +133,7 @@ class CdnProviderController extends BaseController
         if ($request->has('provider')) {
             $newProvider = (string) $request->input('provider');
             if (CdnProvider::where('provider', $newProvider)->where('id', '!=', $provider->id)->exists()) {
-                return $this->fail("厂商 {$newProvider} 已存在", 422);
+                return $this->fail(trans('Provider %name% already exists', ['%name%' => $newProvider]), 422);
             }
         }
 
@@ -147,14 +147,14 @@ class CdnProviderController extends BaseController
         if ($request->has('config') && $request->input('config') !== '') {
             $config = (string) $request->input('config');
             if (json_decode($config, true) === null) {
-                return $this->fail('config 必须是合法 JSON', 422);
+                return $this->fail(trans('config must be valid JSON'), 422);
             }
             $provider->config = $config;
         }
 
         $provider->save();
 
-        return $this->success([], '更新成功');
+        return $this->success([], trans('Updated successfully'));
     }
 
     #[Apidoc\Title("删除 CDN 厂商")]
@@ -166,11 +166,11 @@ class CdnProviderController extends BaseController
     {
         $provider = CdnProvider::find($this->decodeId($hashid));
         if (!$provider) {
-            return $this->fail('CDN厂商不存在', 404);
+            return $this->fail(trans('CDN provider not found'), 404);
         }
         $provider->delete();
 
-        return $this->success([], '删除成功');
+        return $this->success([], trans('Deleted successfully'));
     }
 
     #[Apidoc\Title("CDN 连通测试")]
@@ -190,7 +190,7 @@ class CdnProviderController extends BaseController
 
         $provider = CdnProvider::find($this->decodeId($request->input('id')));
         if (!$provider) {
-            return $this->fail('CDN厂商不存在', 404);
+            return $this->fail(trans('CDN provider not found'), 404);
         }
 
         try {
@@ -202,6 +202,6 @@ class CdnProviderController extends BaseController
             return $this->fail($e->getMessage(), 422);
         }
 
-        return $this->success([], '连通正常');
+        return $this->success([], trans('Connection OK'));
     }
 }

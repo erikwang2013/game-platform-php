@@ -1,5 +1,6 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import type { ReactNode } from 'react';
+import { t, type MessageKey } from '../i18n/index.ts';
 import { Empty, ErrorNote, Loading } from './ui';
 
 export type Row = Record<string, unknown>;
@@ -13,7 +14,7 @@ export type Column = {
 /** 任意值 → 可展示节点。未知结构降级为 "{…}" / "n 项" 而不是白屏。 */
 export function cell(value: unknown): ReactNode {
   if (value === null || value === undefined || value === '') return '—';
-  if (typeof value === 'boolean') return value ? '是' : '否';
+  if (typeof value === 'boolean') return value ? t('app.yes') : t('app.no');
   if (typeof value === 'number' || typeof value === 'string') {
     const text = String(value);
     return text.length > 48 ? (
@@ -24,7 +25,7 @@ export function cell(value: unknown): ReactNode {
       text
     );
   }
-  if (Array.isArray(value)) return value.length === 0 ? '—' : `${value.length} 项`;
+  if (Array.isArray(value)) return value.length === 0 ? '—' : t('table.items', { count: value.length });
   return '{…}';
 }
 
@@ -46,7 +47,7 @@ export function DataTable({
   if (loading) return <Loading rows={4} />;
   if (error) return <ErrorNote message={error} onRetry={onRetry} />;
   if (rows.length === 0) return <Empty />;
-  if (columns.length === 0) return <Empty text="响应中没有可展示的字段" />;
+  if (columns.length === 0) return <Empty text={t('table.no_fields')} />;
 
   return (
     <div className="tablewrap">
@@ -55,7 +56,10 @@ export function DataTable({
           <tr>
             {columns.map((column) => (
               <th key={column.key} className={column.align === 'right' ? 'right' : undefined}>
-                {column.label}
+                {/* 列标题过 t()：模块为字段声明的 `f.*` 键在这里才生效。
+                    没映射到键的列（模块没声明的只读字段）label 就是字段名本身，
+                    而 `t()` 查不到时原样返回入参 ⇒ 退化成今天的显示，不会冒出 `f.xxx` 这种裸露键名 */}
+                {t(column.label as MessageKey)}
               </th>
             ))}
           </tr>

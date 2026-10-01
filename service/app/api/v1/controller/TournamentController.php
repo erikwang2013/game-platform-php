@@ -20,7 +20,7 @@ class TournamentController extends BaseController
     #[Apidoc\Method("GET")]
     public function list(Request $request): Response
     {
-        if (!FeatureFlag::isEnabled('tournament')) return $this->fail('Tournaments not available', 503);
+        if (!FeatureFlag::isEnabled('tournament')) return $this->fail(trans('Tournaments not available'), 503);
 
         $page = (int) $request->input('page', 1);
         $perPage = (int) $request->input('per_page', 20);
@@ -59,7 +59,7 @@ class TournamentController extends BaseController
         $t = Tournament::with(['game', 'entries' => function($q) { $q->orderBy('score', 'desc')->limit(100); }])
             ->withCount('entries')
             ->find($this->decodeId($hashid));
-        if (!$t) return $this->fail('Tournament not found', 404);
+        if (!$t) return $this->fail(trans('Tournament not found'), 404);
 
         $myEntry = TournamentEntry::where('tournament_id', $t->id)->where('user_id', $request->userId)->first();
 
@@ -87,14 +87,14 @@ class TournamentController extends BaseController
     public function join(Request $request, string $hashid): Response
     {
         $t = Tournament::find($this->decodeId($hashid));
-        if (!$t || (int) $t->status !== 1) return $this->fail('Tournament not available', 404);
-        if ($t->start_at <= date('Y-m-d H:i:s')) return $this->fail('Tournament has already started', 400);
+        if (!$t || (int) $t->status !== 1) return $this->fail(trans('Tournament not available'), 404);
+        if ($t->start_at <= date('Y-m-d H:i:s')) return $this->fail(trans('Tournament has already started'), 400);
 
         $existing = TournamentEntry::where('tournament_id', $t->id)->where('user_id', $request->userId)->first();
-        if ($existing) return $this->fail('Already entered', 422);
+        if ($existing) return $this->fail(trans('Already entered'), 422);
 
         if ($t->max_players > 0 && $t->entries()->count() >= $t->max_players) {
-            return $this->fail('Tournament is full', 400);
+            return $this->fail(trans('Tournament is full'), 400);
         }
 
         $entry = new TournamentEntry();
@@ -106,6 +106,6 @@ class TournamentController extends BaseController
         $entry->created_at = date('Y-m-d H:i:s');
         $entry->save();
 
-        return $this->success(['id' => $this->encodeId($entry->id)], 'Entry confirmed');
+        return $this->success(['id' => $this->encodeId($entry->id)], trans('Entry confirmed'));
     }
 }

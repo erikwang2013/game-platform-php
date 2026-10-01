@@ -19,8 +19,10 @@ import {
   IdentityItem,
   TicketItem,
   PermissionNode,
+  RoleItem,
   WithdrawOrderItem,
-  WithdrawSwitchState
+  WithdrawSwitchState,
+  pageQuery
 } from '../model/DataModels';
 
 /**
@@ -37,9 +39,10 @@ export class AuthService {
   }
 
   static async refreshToken(refreshToken: string): Promise<LoginResponse> {
-    const response = await apiService.post<LoginResponse>('/api/v1/auth/refresh', {
-      refresh_token: refreshToken
-    });
+    // 字面量实参在 ArkTS 非法（apiService 的第二参类型是 object，不是声明的接口）⇒ 先落成变量再传
+    const body: FormPayload = {};
+    body.refresh_token = refreshToken;
+    const response = await apiService.post<LoginResponse>('/api/v1/auth/refresh', body);
     if (response.code !== 0) {
       throw new Error(response.message);
     }
@@ -63,13 +66,30 @@ export class DashboardService {
 /**
  * 用户管理服务
  */
+/**
+ * 新建管理员的请求体。原写法 `Partial<User> & { password: string }` 两条都犯：交叉类型、
+ * 内联对象字面量当类型 —— 连带把调用点的字面量实参也拖成 untyped-obj-literals。
+ * 字段与校验规则见 `UserController::store`（username/password/real_name 必填，status 缺省 1）。
+ * 只有 `UserService.create` 一个消费者，故就近放这里而不塞进已超 500 行的 model/DataModels.ets。
+ */
+export interface CreateUserRequest {
+  username: string;
+  password: string;
+  real_name: string;
+  phone: string;
+  email: string;
+  status: number;
+}
+
 export class UserService {
-  static async getList(params: PageParams & { keyword?: string; status?: number }): Promise<UserListResult> {
-    const query = Object.entries(params)
-      .filter(([_, v]) => v !== undefined && v !== '')
-      .map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`)
-      .join('&');
-    const response = await apiService.get<UserListResult>(`/admin/v1/user?${query}`);
+  // 位置参数而非参数对象（同 GameService.getList）：交叉类型、解构参数、
+  // `Object.entries(...).filter(([_, v]) => …)` 里的解构形参，ArkTS 一样都不收
+  static async getList(page: number, limit: number, keyword: string): Promise<UserListResult> {
+    let path = `/admin/v1/user?${pageQuery(page, limit)}`;
+    if (keyword.length > 0) {
+      path += `&keyword=${encodeURIComponent(keyword)}`;
+    }
+    const response = await apiService.get<UserListResult>(path);
     if (response.code !== 0) {
       throw new Error(response.message);
     }
@@ -84,7 +104,7 @@ export class UserService {
     return response.data;
   }
 
-  static async create(data: Partial<User> & { password: string }): Promise<void> {
+  static async create(data: CreateUserRequest): Promise<void> {
     const response = await apiService.post<User>('/admin/v1/user', data);
     if (response.code !== 0) {
       throw new Error(response.message);
@@ -98,15 +118,63 @@ export class UserService {
     }
   }
 
-  static async delete(id: string): Promise<void> {
-    const response = await apiService.delete<void>(`/admin/v1/user/${id}`);
+  /**
+   * 删除。**body 必须带当前操作者自己的密码**（`UserController::destroy` → `confirmPassword`，
+   * 空密码直接 422「This sensitive operation requires password confirmation」）——
+   * 不带密码的删除从来就没成功过。
+   */
+  static async delete(id: string, password: string): Promise<void> {
+    const body: FormPayload = {};
+    body.password = password;
+    const response = await apiService.delete<void>(`/admin/v1/user/${id}`, body);
     if (response.code !== 0) {
       throw new Error(response.message);
     }
   }
 
+  /**
+   * 重置密码：走 update 端点，但**两个字段名不同、不能对调**——
+   * `password` 是被改用户的**新密码**，`admin_password` 是**操作者自己的密码**（`update:194` 的
+   * confirmPassword 读的是后者）。新密码规则：8-32 位且同时含大小写字母与数字。
+   */
+  static async resetPassword(id: string, newPassword: string, adminPassword: string): Promise<void> {
+    const body: FormPayload = {};
+    body.password = newPassword;
+    body.admin_password = adminPassword;
+    const response = await apiService.put<void>(`/admin/v1/user/${id}`, body);
+    if (response.code !== 0) {
+      throw new Error(response.message);
+    }
+  }
+
+  /**
+   * 分配角色：**全量替换**（后端 `roles()->sync()`）。传空数组 = 取消全部角色，
+   * 且空数组**必须照发**：后端以 `$request->has('role_ids')` 判是否处理，urlencoded 下
+   * `role_ids=[]` 整个键会消失、静默不生效；本树 ApiService 走 JSON body，空数组能原样送到。
+   */
+  static async assignRoles(id: string, roleIds: string[]): Promise<void> {
+    const body: FormPayload = {};
+    body.role_ids = roleIds;
+    const response = await apiService.put<void>(`/admin/v1/user/${id}`, body);
+    if (response.code !== 0) {
+      throw new Error(response.message);
+    }
+  }
+
+  /** 角色候选（`GET /admin/v1/role` 回 {list,total}，行里的 id 是 hashid，直接当提交值用） */
+  static async getRoles(): Promise<RoleItem[]> {
+    const response = await apiService.get<PageResult<RoleItem>>(`/admin/v1/role?${pageQuery(1, 100)}`);
+    if (response.code !== 0) {
+      throw new Error(response.message);
+    }
+    return response.data.list;
+  }
+
   static async batchStatus(ids: string[], status: number): Promise<void> {
-    const response = await apiService.post<void>('/admin/v1/user/batch/status', { ids, status });
+    const body: FormPayload = {};
+    body.ids = ids;
+    body.status = status;
+    const response = await apiService.post<void>('/admin/v1/user/batch/status', body);
     if (response.code !== 0) {
       throw new Error(response.message);
     }
@@ -120,7 +188,7 @@ export class UserService {
 export class GameService {
   // 位置参数而非参数对象：ArkTS 不接受交叉类型/解构参数/对象字面量实参，逐项拼 query 最少踩坑
   static async getList(page: number, limit: number, keyword: string): Promise<PageResult<GameItem>> {
-    let path = `/admin/v1/game/list?page=${page}&limit=${limit}`;
+    let path = `/admin/v1/game/list?${pageQuery(page, limit)}`;
     if (keyword.length > 0) {
       path += `&keyword=${encodeURIComponent(keyword)}`;
     }
@@ -160,7 +228,7 @@ export class GameService {
 export class AnnouncementService {
   static async getList(params: PageParams): Promise<PageResult<AnnouncementItem>> {
     const response = await apiService.get<PageResult<AnnouncementItem>>(
-      `/admin/v1/announcement/list?page=${params.page}&limit=${params.limit}`
+      `/admin/v1/announcement/list?${pageQuery(params.page, params.limit)}`
     );
     if (response.code !== 0) {
       throw new Error(response.message);
@@ -220,7 +288,7 @@ export class PermissionService {
 export class IdentityService {
   static async getList(page: number, limit: number): Promise<PageResult<IdentityItem>> {
     const response = await apiService.get<PageResult<IdentityItem>>(
-      `/admin/v1/identity/list?page=${page}&limit=${limit}`
+      `/admin/v1/identity/list?${pageQuery(page, limit)}`
     );
     if (response.code !== 0) {
       throw new Error(response.message);
@@ -247,7 +315,7 @@ export class IdentityService {
 export class TicketService {
   static async getList(page: number, limit: number): Promise<PageResult<TicketItem>> {
     const response = await apiService.get<PageResult<TicketItem>>(
-      `/admin/v1/ticket/list?page=${page}&limit=${limit}`
+      `/admin/v1/ticket/list?${pageQuery(page, limit)}`
     );
     if (response.code !== 0) {
       throw new Error(response.message);
@@ -299,7 +367,7 @@ export class TicketService {
 export class WithdrawService {
   /** 列表：status 传空串 = 不过滤（控制器 status 为空时不加 where） */
   static async getOrders(page: number, limit: number, status: string): Promise<PageResult<WithdrawOrderItem>> {
-    let path = `/admin/v1/withdraw/orders?page=${page}&limit=${limit}`;
+    let path = `/admin/v1/withdraw/orders?${pageQuery(page, limit)}`;
     if (status.length > 0) {
       path += `&status=${encodeURIComponent(status)}`;
     }

@@ -2,6 +2,7 @@
 import { Component, computed, signal } from '@angular/core';
 import { Page, Row } from '../core/api.service';
 import { Crud, CrudPage, Field } from '../core/crud';
+import { T, t } from '../core/i18n/i18n';
 import { idOf, kvOf } from '../core/render';
 import { errText, num } from '../core/util';
 import { Drawer, Pager, StateBlock, Tabs } from '../components/ui';
@@ -21,30 +22,30 @@ const U = '/admin/v1/';
 const USER_FIELDS: Field[] = [
   {
     name: 'nickname',
-    label: '昵称',
+    label: 'user.nickname',
     type: 'text',
     full: true,
-    placeholder: '最长 50 字符（列宽口径 game_user.nickname VARCHAR(50)）',
+    placeholder: 'user.nickname_hint',
   },
 ];
 
 @Component({
   selector: 'app-users',
-  imports: [StateBlock, Table, Pager, Tabs, Drawer, FormModal],
+  imports: [StateBlock, Table, Pager, Tabs, Drawer, FormModal, T],
   template: `
     <div class="page-head">
-      <h1>用户管理</h1>
-      <span class="sub">用户列表 / 实名审核</span>
+      <h1>{{ 'user.title' | t }}</h1>
+      <span class="sub">{{ 'user.subtitle' | t }}</span>
       <div class="spacer"></div>
       <input
         class="input"
-        placeholder="用户名 / 昵称"
+        [placeholder]="'user.search_hint' | t"
         [value]="keyword()"
         (input)="keyword.set($any($event.target).value)"
         (keyup.enter)="search()"
       />
-      <button class="btn" (click)="search()">查询</button>
-      <button class="btn" (click)="load()">刷新</button>
+      <button class="btn" (click)="search()">{{ 'app.search' | t }}</button>
+      <button class="btn" (click)="load()">{{ 'app.refresh' | t }}</button>
     </div>
 
     <ui-tabs [tabs]="tabs" [active]="tab()" (pick)="pick($event)" />
@@ -69,7 +70,7 @@ const USER_FIELDS: Field[] = [
 
     <ui-drawer
       [open]="detail() !== null"
-      [title]="tab() === 'identity' ? '实名审核' : '用户详情'"
+      [title]="(tab() === 'identity' ? 'identity.title' : 'user.detail') | t"
       (close)="detail.set(null)"
     >
       @if (detail(); as d) {
@@ -78,19 +79,21 @@ const USER_FIELDS: Field[] = [
             <dt>{{ p.label }}</dt>
             <dd>{{ p.value }}</dd>
           } @empty {
-            <dt>提示</dt>
-            <dd>该记录暂无可展示字段</dd>
+            <dt>{{ 'user.empty_tip' | t }}</dt>
+            <dd>{{ 'user.empty_note' | t }}</dd>
           }
         </dl>
         <div class="row-actions">
           @if (tab() === 'identity') {
             <!-- 通过 / 驳回：PUT /admin/v1/identity/review（IdentityController::review，CAS 抢单） -->
-            <button class="btn" (click)="review(d, 'approve')">通过</button>
-            <button class="btn danger" (click)="review(d, 'reject')">驳回</button>
+            <button class="btn" (click)="review(d, 'approve')">{{ 'identity.approve' | t }}</button>
+            <button class="btn danger" (click)="review(d, 'reject')">
+              {{ 'identity.reject' | t }}
+            </button>
           } @else {
             <!-- 账号注销在行内「删除」（同走 destroy()）；这里只放状态，语义是封禁/解封 -->
-            <button class="btn" (click)="status(d, 'normal')">解封</button>
-            <button class="btn danger" (click)="status(d, 'banned')">封禁</button>
+            <button class="btn" (click)="status(d, 'normal')">{{ 'user.unban' | t }}</button>
+            <button class="btn danger" (click)="status(d, 'banned')">{{ 'user.ban' | t }}</button>
           }
         </div>
       }
@@ -110,8 +113,8 @@ const USER_FIELDS: Field[] = [
 })
 export class Users extends CrudPage {
   protected readonly tabs = [
-    { key: 'list', label: '用户列表' },
-    { key: 'identity', label: '实名审核' },
+    { key: 'list', label: 'user.tab_list' },
+    { key: 'identity', label: 'identity.title' },
   ];
   protected readonly tab = signal('list');
   protected readonly detail = signal<Row | null>(null);
@@ -122,7 +125,7 @@ export class Users extends CrudPage {
   protected override crud(): Crud | null {
     if (this.tab() !== 'list') return null;
     return {
-      noun: '平台用户',
+      noun: 'user.noun',
       fields: USER_FIELDS,
       label: (row) => this.who(row),
       ends: {
@@ -209,8 +212,8 @@ export class Users extends CrudPage {
     if (!id) return;
     let note = '';
     if (action === 'reject') {
-      if (!confirm(`确认驳回「${this.who(row)}」的实名认证申请？驳回后不可再改。`)) return;
-      const input = prompt('驳回原因（会推送给用户，可留空）');
+      if (!confirm(t('identity.reject_confirm_target', { name: this.who(row) }))) return;
+      const input = prompt(t('identity.note_hint'));
       if (input === null) return;
       note = input.trim();
     }
@@ -253,9 +256,9 @@ export class Users extends CrudPage {
     // 成功以回读到的真实状态为准，不以"请求发出去了"为准
     const after = this.rows().find((r) => idOf(r) === id);
     if (!after) {
-      this.error.set('操作已提交，但该用户已不在当前页，请刷新确认');
+      this.error.set(t('user.status_gone'));
     } else if (num(after['status']) !== want) {
-      this.error.set(`状态未生效：服务端仍为 ${num(after['status'])}`);
+      this.error.set(t('user.status_stale', { status: num(after['status']) }));
     }
   }
 
@@ -272,7 +275,7 @@ export class Users extends CrudPage {
   protected async destroy(row: Row): Promise<void> {
     const id = idOf(row);
     // 删前必须能看清是谁：确认文案带昵称/用户名，不能只有一个「该账号」
-    if (!id || !confirm(`确认注销「${this.who(row)}」的账号？该操作不可撤销。`)) return;
+    if (!id || !confirm(t('user.destroy_confirm', { name: this.who(row) }))) return;
     this.error.set('');
     try {
       await this.api.request('DELETE', U + 'platform/user/' + id);
@@ -284,7 +287,7 @@ export class Users extends CrudPage {
     await this.load();
     // 成功以回读到的真实列表为准，不以「请求发出去了」为准
     if (this.rows().some((r) => idOf(r) === id)) {
-      this.error.set('注销请求已提交，但该用户仍在列表中，请刷新确认');
+      this.error.set(t('user.destroy_stale'));
     }
   }
 }

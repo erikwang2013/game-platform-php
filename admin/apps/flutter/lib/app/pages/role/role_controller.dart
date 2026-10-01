@@ -10,6 +10,11 @@ class RoleController extends GetxController {
   final api = ApiService();
   final roles = <dynamic>[].obs;
   final isLoading = false.obs;
+  final total = 0.obs;
+  final page = 1.obs;
+
+  /// 与后端缺省一致（RoleController::index 的 `input('limit', 15)`）。
+  static const int pageSize = 15;
 
   @override
   void onInit() {
@@ -18,12 +23,13 @@ class RoleController extends GetxController {
   }
 
   /// 列表端点是 `/admin/v1/role`（Route::resource，**不是** `/role/list`）。
-  // ponytail: 角色是运维手工维护的个位数实体，取大 limit 代替分页控件；真的超过 100 条再补分页。
-  Future<void> loadRoles() async {
+  Future<void> loadRoles({int? toPage}) async {
+    if (toPage != null) page.value = toPage;
     isLoading.value = true;
     try {
-      final resp = await api.get('/admin/v1/role', params: {'limit': 100});
-      roles.value = resp['data']['list'] as List<dynamic>;
+      final result = await api.list('/admin/v1/role', page: page.value, pageSize: pageSize);
+      roles.value = result.rows;
+      total.value = result.total;
     } catch (e) {
       Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.loading_failed')}: $e');
     } finally {

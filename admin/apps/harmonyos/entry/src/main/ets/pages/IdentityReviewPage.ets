@@ -9,6 +9,7 @@ import { IdentityItem, FormPayload, FormValues } from '../model/DataModels';
 import { LoadingView, ErrorView, EmptyView } from '../common/Components';
 import { FormDialog, FormField, confirmAction } from '../common/FormDialog';
 import { PagerBar } from '../common/ResourceViews';
+import { t } from '../i18n/Translations';
 
 /**
  * KYC 身份审核页 —— 列表 + 「审核」行动作。
@@ -25,28 +26,30 @@ import { PagerBar } from '../common/ResourceViews';
  * 审核只推进 pending（控制器用 CAS：并发两人审同一单只有一个拿到 affected=1）。
  */
 
+/** 各文案字段存**键名**（FormDialog 对 label/hint/placeholder 各调一次 t()）—— 顶层调 t() 会固化启动语言 */
 const REVIEW_FIELDS: FormField[] = [
   {
-    name: 'action', label: '审核结论', type: 'select', required: true,
+    name: 'action', label: 'risk.cheat.status', type: 'select', required: true,
     options: [
-      { label: '通过', value: 'approve' },
-      { label: '驳回', value: 'reject' }
+      { label: 'kyc.verdict_approve', value: 'approve' },
+      { label: 'kyc.verdict_reject', value: 'reject' }
     ]
   },
   {
-    name: 'note', label: '审核备注', type: 'textarea',
-    placeholder: '最长 500 字；驳回时这段文字会原样发给用户'
+    name: 'note', label: 'risk.cheat.note', type: 'textarea',
+    placeholder: 'kyc.note_placeholder'
   }
 ];
 
 /** 空预填值：结论**故意不预选** —— 审核是判断，不该有个默认答案（必填校验会拦下没选的提交） */
 const REVIEW_INITIAL: FormValues = {};
 
+/** 每次渲染重新查表 ⇒ 语言切换即时生效（顶层调 t() 会把启动语言固化进常量） */
 function identityStatusText(status: string): string {
   if (status === 'approved') {
-    return '已通过';
+    return t('kyc.status_approved');
   }
-  return status === 'rejected' ? '已驳回' : '待审核';
+  return status === 'rejected' ? t('kyc.status_rejected') : t('kyc.status_pending');
 }
 
 /** 三态徽标配色：ResourceRowItem 那个绿/红二元 chip 表达不了「还没审」 */
@@ -60,6 +63,7 @@ function identityStatusColor(status: string): string {
 @Entry
 @Component
 struct IdentityReviewPage {
+  @StorageLink('app_locale') localeCode: string = 'en';
   @State rows: IdentityItem[] = [];
   @State page: number = 1;
   @State total: number = 0;
@@ -92,7 +96,7 @@ struct IdentityReviewPage {
         return;
       }
       this.hasError = true;
-      promptAction.showToast({ message: '加载失败' });
+      promptAction.showToast({ message: t('common.load_failed') });
     } finally {
       this.isLoading = false;
     }
@@ -127,7 +131,7 @@ struct IdentityReviewPage {
     if (user !== undefined && user !== null && user.username.length > 0) {
       return user.username;
     }
-    return '该用户';
+    return t('kyc.unknown_user');
   }
 
   private subtitle(item: IdentityItem): string {
@@ -148,7 +152,7 @@ struct IdentityReviewPage {
     // 已审过的把结论备注带上：驳回原因是对上下文最有用的那条信息
     const note = item.review_note ?? '';
     if (item.status !== 'pending' && note.length > 0) {
-      parts.push(`备注：${note}`);
+      parts.push(t('kyc.subtitle_note').replace('{note}', note));
     }
     return parts.join(' · ');
   }
@@ -166,11 +170,11 @@ struct IdentityReviewPage {
   private async submitReview(body: FormPayload): Promise<void> {
     const action = `${body['action'] ?? ''}`;
     if (action === 'reject') {
-      const ok = await confirmAction('确认驳回',
-        `确定驳回「${this.formWho}」的身份认证吗？结论会通知用户，且审核后不能再改。`,
-        '驳回', '#FF4D4F');
+      const ok = await confirmAction(t('kyc.reject_title'),
+        t('kyc.reject_confirm').replace('{who}', this.formWho),
+        t('kyc.verdict_reject'), '#FF4D4F');
       if (!ok) {
-        throw new Error('已取消驳回，未提交任何修改');
+        throw new Error(t('kyc.reject_cancelled'));
       }
     }
     try {
@@ -182,7 +186,7 @@ struct IdentityReviewPage {
       // ArkTS 只许 throw Error 及其子类，故原样转出给弹框显示服务端 message
       throw e as Error;
     }
-    promptAction.showToast({ message: action === 'approve' ? '已通过' : '已驳回' });
+    promptAction.showToast({ message: action === 'approve' ? t('kyc.status_approved') : t('kyc.status_rejected') });
   }
 
   build() {
@@ -192,7 +196,7 @@ struct IdentityReviewPage {
       // 审核表单：结论 + 备注。挂载时才读 initial，故每次开框都是新快照
       if (this.formOpen) {
         FormDialog({
-          title: `审核「${this.formWho}」的身份认证`,
+          title: t('kyc.review_titled').replace('{who}', this.formWho),
           fields: REVIEW_FIELDS,
           initial: REVIEW_INITIAL,
           onSubmit: (body: FormPayload) => this.submitReview(body),
@@ -223,7 +227,7 @@ struct IdentityReviewPage {
         .backgroundColor('#FFFFFF')
         .onClick(() => router.back())
 
-        Text('身份审核')
+        Text(t('kyc.manage_title'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 8 })
@@ -238,7 +242,7 @@ struct IdentityReviewPage {
       } else if (this.hasError) {
         ErrorView({ onRetry: () => this.loadData() });
       } else if (this.rows.length === 0) {
-        EmptyView({ message: '暂无 KYC 申请' });
+        EmptyView({ message: t('kyc.empty') });
       } else {
         List() {
           ForEach(this.rows, (item: IdentityItem) => {
@@ -299,7 +303,7 @@ struct IdentityReviewPage {
 
         // 已审过的记录没有可做的动作（后端对非 pending 一律 422），故不画按钮
         if (item.status === 'pending') {
-          Button('审核')
+          Button(t('kyc.action_review'))
             .fontSize(12)
             .fontColor('#1677FF')
             .backgroundColor('#E6F0FF')

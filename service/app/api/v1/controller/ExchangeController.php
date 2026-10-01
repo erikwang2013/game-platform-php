@@ -57,7 +57,7 @@ class ExchangeController extends BaseController
             ->first();
 
         if (!$gameCurrency) {
-            return $this->fail('Game currency not found', 404);
+            return $this->fail(trans('Game currency not found'), 404);
         }
 
         $rate      = $gameCurrency->exchange_rate;
@@ -126,7 +126,7 @@ class ExchangeController extends BaseController
         // 卖出是平台币流出，要过验证码；买入(buy)不加——校验只能落在这里，
         // 因为 doExchange 的 validator 与 buy 共用，往里加必填键会把 buy 一起打断
         if (!$this->captchaOk($request)) {
-            return $this->fail('验证码错误，请重试', 422);
+            return $this->fail(trans('Incorrect captcha, please try again'), 422);
         }
 
         return $this->doExchange($request, 'out');
@@ -196,12 +196,12 @@ class ExchangeController extends BaseController
             ->first();
 
         if (!$gameCurrency) {
-            return $this->fail('Game currency not found', 404);
+            return $this->fail(trans('Game currency not found'), 404);
         }
 
         $game = Game::find($gameId);
         if (!$game || (int) $game->status !== 1) {
-            return $this->fail('Game is not available', 403);
+            return $this->fail(trans('Game is not available'), 403);
         }
 
         $rate      = $gameCurrency->exchange_rate;
@@ -231,7 +231,7 @@ class ExchangeController extends BaseController
                 $deducted = UserWallet::deductBalance($userId, $legs['platform_amount'], 'exchange_out');
                 if (!$deducted) {
                     Db::rollBack();
-                    return $this->fail('Insufficient platform balance', 400);
+                    return $this->fail(trans('Insufficient platform balance'), 400);
                 }
 
                 // Add game balance
@@ -253,14 +253,14 @@ class ExchangeController extends BaseController
                 $deducted = $this->deductGameBalance($userId, $gameId, $currencyId, $legs['game_amount']);
                 if (!$deducted) {
                     Db::rollBack();
-                    return $this->fail('Insufficient game balance', 400);
+                    return $this->fail(trans('Insufficient game balance'), 400);
                 }
 
                 // Add platform balance (扣费后净值)
                 $added = UserWallet::addBalance($userId, $legs['platform_amount'], 'exchange_in');
                 if (!$added) {
                     Db::rollBack();
-                    return $this->fail('Failed to add platform balance', 500);
+                    return $this->fail(trans('Failed to add platform balance'), 500);
                 }
             }
 
@@ -308,7 +308,7 @@ class ExchangeController extends BaseController
         } catch (\Throwable $e) {
             Db::rollBack();
             Log::error('Exchange failed', ['user_id' => $userId, 'direction' => $direction, 'error' => $e->getMessage()]);
-            return $this->fail('Exchange failed, please try again later', 500);
+            return $this->fail(trans('Exchange failed, please try again later'), 500);
         }
     }
 

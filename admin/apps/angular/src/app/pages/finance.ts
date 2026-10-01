@@ -2,6 +2,7 @@
 import { Component, computed, signal } from '@angular/core';
 import { Page, Row } from '../core/api.service';
 import { Crud, CrudPage, Field } from '../core/crud';
+import { T, t } from '../core/i18n/i18n';
 import { idOf } from '../core/render';
 import { dash, errText, num } from '../core/util';
 import { Pager, StateBlock, StatCard, Tabs } from '../components/ui';
@@ -21,31 +22,33 @@ const W = F + 'withdraw/';
 
 @Component({
   selector: 'app-finance',
-  imports: [StateBlock, StatCard, Table, Pager, Tabs, FormModal],
+  imports: [StateBlock, StatCard, Table, Pager, Tabs, FormModal, T],
   template: `
     <div class="page-head">
-      <h1>财务中心</h1>
-      <span class="sub">提现订单 / 提现开关 / 阶梯限额 / 支付方式</span>
+      <h1>{{ 'fin.title' | t }}</h1>
+      <span class="sub">{{ 'fin.subtitle' | t }}</span>
       <div class="spacer"></div>
       @if (tab() === 'orders') {
         <!-- select 不能绑 [value]（绑定早于 @for 的 option，预选会被吞）⇒ 逐项 [selected] -->
         <select class="input" (change)="setStatus($any($event.target).value)">
           @for (s of ORDER_STATUS; track s.value) {
-            <option [value]="s.value" [selected]="status() === s.value">{{ s.label }}</option>
+            <option [value]="s.value" [selected]="status() === s.value">{{ s.label | t }}</option>
           }
         </select>
         <button class="btn" [disabled]="!pending().length" (click)="batch('approve')">
-          批量通过（{{ pending().length }}）
+          {{ 'withdraw.batch_approve' | t: { n: pending().length } }}
         </button>
         <button class="btn danger" [disabled]="!pending().length" (click)="batch('reject')">
-          批量驳回（{{ pending().length }}）
+          {{ 'withdraw.batch_reject' | t: { n: pending().length } }}
         </button>
       }
-      <button class="btn" (click)="load()">刷新</button>
+      <button class="btn" (click)="load()">{{ 'app.refresh' | t }}</button>
       @if (tab() === 'limits') {
-        <button class="btn btn-primary" (click)="openSetForm()">全局限额重置</button>
+        <button class="btn btn-primary" (click)="openSetForm()">
+          {{ 'withdraw.reset_all' | t }}
+        </button>
       } @else if (writable()) {
-        <button class="btn btn-primary" (click)="openCreate()">+ 新建</button>
+        <button class="btn btn-primary" (click)="openCreate()">+ {{ 'app.create' | t }}</button>
       }
     </div>
 
@@ -60,14 +63,25 @@ const W = F + 'withdraw/';
         <div class="card">
           <div class="card-body">
             <div class="tiles">
-              <ui-stat label="全局提现开关" [value]="switchOn() ? '已开启' : '已关闭'" />
+              <ui-stat
+                [label]="'withdraw.global_switch' | t"
+                [value]="(switchOn() ? 'withdraw.switch_on' : 'withdraw.switch_off') | t"
+              />
             </div>
             <div class="row-actions">
-              <button class="btn btn-primary" [disabled]="switchOn() || switchBusy()" (click)="setSwitch(true)">
-                开启提现
+              <button
+                class="btn btn-primary"
+                [disabled]="switchOn() || switchBusy()"
+                (click)="setSwitch(true)"
+              >
+                {{ 'withdraw.switch_enable' | t }}
               </button>
-              <button class="btn danger" [disabled]="!switchOn() || switchBusy()" (click)="setSwitch(false)">
-                关闭提现
+              <button
+                class="btn danger"
+                [disabled]="!switchOn() || switchBusy()"
+                (click)="setSwitch(false)"
+              >
+                {{ 'withdraw.switch_disable' | t }}
               </button>
             </div>
           </div>
@@ -105,10 +119,10 @@ const W = F + 'withdraw/';
 })
 export class Finance extends CrudPage {
   protected readonly tabs = [
-    { key: 'orders', label: '提现订单' },
-    { key: 'switch', label: '提现开关' },
-    { key: 'limits', label: '阶梯限额' },
-    { key: 'methods', label: '支付方式' },
+    { key: 'orders', label: 'withdraw.orders' },
+    { key: 'switch', label: 'withdraw.switch' },
+    { key: 'limits', label: 'withdraw.limits' },
+    { key: 'methods', label: 'payment.methods' },
   ];
   protected readonly tab = signal('orders');
   protected readonly ORDER_STATUS = ORDER_STATUS;
@@ -130,39 +144,39 @@ export class Finance extends CrudPage {
     switch (this.tab()) {
       case 'orders':
         return {
-          order_no: '订单号',
-          user_name: '用户',
-          platform_amount: '平台币',
-          fiat_amount: '法币',
-          currency: '币种',
-          method: '方式',
-          status: '状态',
-          payout_status: '打款状态',
-          review_note: '审核备注',
-          created_at: '申请时间',
+          order_no: 'withdraw.order_no',
+          user_name: 'withdraw.user',
+          platform_amount: 'withdraw.platform_token',
+          fiat_amount: 'withdraw.fiat_amount',
+          currency: 'withdraw.currency',
+          method: 'withdraw.method',
+          status: 'withdraw.status',
+          payout_status: 'withdraw.payout_status',
+          review_note: 'withdraw.note',
+          created_at: 'withdraw.submit_time',
         };
       case 'limits':
         return {
-          user_level: '档位',
-          single_min: '单笔最低',
-          single_max: '单笔最高',
-          daily_limit: '日限额',
-          monthly_limit: '月限额',
-          fee_pct: '手续费率%',
-          fee_max: '手续费上限',
-          auto_approve_threshold: '自动审批阈值',
+          user_level: 'withdraw.limit_level',
+          single_min: 'withdraw.single_min',
+          single_max: 'withdraw.single_max',
+          daily_limit: 'withdraw.daily_limit',
+          monthly_limit: 'withdraw.monthly_limit',
+          fee_pct: 'withdraw.fee_pct',
+          fee_max: 'withdraw.fee_max',
+          auto_approve_threshold: 'withdraw.auto_threshold',
         };
       case 'methods':
         return {
-          name: '名称',
-          type: '类型',
-          provider: '提供商',
-          status: '状态(0停用/1启用)',
-          sort: '排序',
-          currency: '限定币种',
-          min_amount: '最小充值额',
-          max_amount: '最大充值额',
-          countries: '可见国家',
+          name: 'payment.name',
+          type: 'payment.type',
+          provider: 'payment.provider',
+          status: 'payment.status',
+          sort: 'payment.sort',
+          currency: 'payment.currency',
+          min_amount: 'payment.min_amount',
+          max_amount: 'payment.max_amount',
+          countries: 'payment.countries',
         };
       default:
         return {};
@@ -216,11 +230,11 @@ export class Finance extends CrudPage {
   protected override crud(): Crud | null {
     const tab = this.tab();
     if (tab === 'orders') {
-      return { noun: '提现订单', fields: [], ends: {}, extra: ORDER_ACTS };
+      return { noun: 'withdraw.noun.order', fields: [], ends: {}, extra: ORDER_ACTS };
     }
     if (tab === 'limits') {
       return {
-        noun: '阶梯限额',
+        noun: 'withdraw.noun.limit',
         fields: this.setForm() ? SET_FIELDS : LIMIT_FIELDS,
         ends: { create: W + 'limits/set', update: (id) => W + 'limits/' + id },
         label: (row) => String(row['user_level'] ?? idOf(row)),
@@ -228,7 +242,7 @@ export class Finance extends CrudPage {
     }
     if (tab === 'methods') {
       return {
-        noun: '支付方式',
+        noun: 'payment.noun',
         fields: this.methodFields(),
         statused: true,
         label: (row) => String(row['name'] ?? idOf(row)),
@@ -266,7 +280,7 @@ export class Finance extends CrudPage {
   protected openSetForm(): void {
     this.setForm.set(true);
     this.formValue.set(null);
-    this.formTitle.set('全局限额重置（写穿全部档位）');
+    this.formTitle.set(t('withdraw.reset_title'));
     this.formError.set('');
     this.formOpen.set(true);
   }
@@ -277,12 +291,7 @@ export class Finance extends CrudPage {
   }
 
   protected override async submit(values: Row): Promise<void> {
-    if (
-      this.setForm() &&
-      !confirm(
-        '确认用填写值覆盖全部档位（default/verified/vip）的限额？留空项保持不变；最低提现金额写的是各档 single_min。',
-      )
-    ) {
+    if (this.setForm() && !confirm(t('withdraw.reset_confirm'))) {
       return;
     }
     await super.submit(values);
@@ -298,7 +307,7 @@ export class Finance extends CrudPage {
         enabled: on ? 1 : 0,
       });
       this.switchOn.set(this.isOn(data));
-      this.note.set(message || (on ? '提现已开启' : '提现已关闭'));
+      this.note.set(message || t(on ? 'withdraw.switch_opened' : 'withdraw.switch_closed'));
     } catch (e) {
       this.noteErr.set(true);
       this.note.set(errText(e));
@@ -316,10 +325,18 @@ export class Finance extends CrudPage {
   protected async batch(action: 'approve' | 'reject'): Promise<void> {
     const rows = this.pending();
     if (!rows.length) return;
-    const lines = rows.slice(0, 8).map((r) => `　${this.orderId(r)}：${this.money(r)}`);
-    const more = rows.length > 8 ? `\n　…等共 ${rows.length} 笔` : '';
-    const verb = action === 'approve' ? '通过' : '驳回（每笔都会把平台币退回用户余额）';
-    if (!confirm(`确认批量${verb}本页 ${rows.length} 笔待审核提现？\n${lines.join('\n')}${more}`)) {
+    const lines = rows
+      .slice(0, 8)
+      .map((r) => t('withdraw.batch_line', { id: this.orderId(r), money: this.money(r) }));
+    const more = rows.length > 8 ? t('withdraw.batch_more', { n: rows.length }) : '';
+    const verb = t(action === 'approve' ? 'withdraw.approve' : 'withdraw.batch_reject_verb');
+    const ask = t('withdraw.batch_confirm', {
+      action: verb,
+      n: rows.length,
+      lines: lines.join('\n'),
+      more,
+    });
+    if (!confirm(ask)) {
       return;
     }
     this.note.set('');
@@ -327,7 +344,7 @@ export class Finance extends CrudPage {
     try {
       const ids = rows.map((r) => idOf(r)).filter(Boolean);
       const { message } = await this.api.envelope('POST', W + 'batch-review', { ids, action });
-      this.note.set(message || '批量处理完成');
+      this.note.set(message || t('withdraw.batch_done'));
     } catch (e) {
       this.noteErr.set(true);
       this.note.set(errText(e));
@@ -346,12 +363,12 @@ export class Finance extends CrudPage {
     this.noteErr.set(false);
     try {
       const { message } = await call();
-      this.note.set(`${this.orderId(row)}：${message || '操作完成'}`);
+      this.note.set(this.noteLine(row, message || t('withdraw.act_done')));
     } catch (e) {
       // 动作失败是**动作结果**（后端拒绝 / 渠道报错），不是列表加载失败：
       // 进横幅，别把整张表打成错误态（运营还得靠这张表接着处理下一笔）
       this.noteErr.set(true);
-      this.note.set(`${this.orderId(row)}：${errText(e)}`);
+      this.note.set(this.noteLine(row, errText(e)));
     }
   }
 
@@ -375,19 +392,24 @@ export class Finance extends CrudPage {
 
   /** 二次确认文案：资金动作必须能认出是哪一笔、多少钱（金额原样字符串，不经 Number） */
   private orderConfirm(row: Row, key: string): string {
-    const who = `「${this.orderId(row)}」（${this.money(row)}）`;
+    const who = t('withdraw.who', { no: this.orderId(row), money: this.money(row) });
     switch (key) {
       case 'approve':
-        return `确认通过提现订单${who}？通过后进入打款环节（要退款只能驳回）。`;
+        return t('withdraw.approve_confirm', { who });
       case 'reject':
-        return `确认驳回提现订单${who}？会把平台币退回用户余额并记一条退款流水，不可撤销。`;
+        return t('withdraw.reject_confirm', { who });
       case 'confirm':
-        return `确认对提现订单${who}做二次复核？仅「双重审核」开启、且初审人不是自己时可用。`;
+        return t('withdraw.confirm_confirm', { who });
       case 'payout':
-        return `确认对提现订单${who}执行打款？会真实调用支付渠道，可能产生不可撤销的外部转账。`;
+        return t('withdraw.execute_confirm', { who });
       default:
-        return `确认向渠道查询并同步提现订单${who}的打款状态？`;
+        return t('withdraw.sync_confirm', { who });
     }
+  }
+
+  /** 动作回执行：`订单号：服务端 message`（模板与语言都在词条里，别在调用处拼中文冒号） */
+  private noteLine(row: Row, text: string): string {
+    return t('withdraw.note_line', { id: this.orderId(row), text });
   }
 
   /** 订单标识：订单号（列表里人认的是它）带上 hashid（端点要的是它） */
@@ -399,7 +421,11 @@ export class Finance extends CrudPage {
 
   /** 金额一律 dash(原样字符串)：DECIMAL 读回来就是精确的十进制文本，不经 Number */
   private money(row: Row): string {
-    return `${dash(row['platform_amount'])} 平台币 → ${dash(row['fiat_amount'])} ${dash(row['currency'])}`;
+    return t('withdraw.money', {
+      platform: dash(row['platform_amount']),
+      fiat: dash(row['fiat_amount']),
+      currency: dash(row['currency']),
+    });
   }
 
   private userName(row: Row): string {

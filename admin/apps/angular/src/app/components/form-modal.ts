@@ -2,9 +2,11 @@
 import { Component, inject, input, output, signal } from '@angular/core';
 import { Row } from '../core/api.service';
 import { Field } from '../core/crud';
+import { T, t } from '../core/i18n/i18n';
 import { json } from '../core/render';
 import { ImageUpload } from '../core/upload';
 import { errText, num } from '../core/util';
+import { TreeSelect } from './tree-select';
 
 /**
  * 通用表单弹框：字段描述驱动，新建/编辑共用一个（value 非空即预填）。
@@ -15,14 +17,15 @@ import { errText, num } from '../core/util';
  */
 @Component({
   selector: 'ui-form',
+  imports: [TreeSelect, T],
   template: `
     @if (open()) {
       <div class="backdrop" (click)="close.emit()"></div>
-      <div class="modal" role="dialog" aria-modal="true" [attr.aria-label]="title()">
+      <div class="modal" role="dialog" aria-modal="true" [attr.aria-label]="title() | t">
         <header>
-          <b>{{ title() }}</b>
+          <b>{{ title() | t }}</b>
           <span class="spacer"></span>
-          <button class="btn" type="button" (click)="close.emit()">关闭</button>
+          <button class="btn" type="button" (click)="close.emit()">{{ 'app.close' | t }}</button>
         </header>
         <form class="modal-body" (submit)="fire($event)">
           @if (error()) {
@@ -32,7 +35,7 @@ import { errText, num } from '../core/util';
             @for (f of fields(); track f.name) {
               <div [class.full]="f.full || f.type === 'textarea' || f.type === 'image'">
                 <label>
-                  {{ f.label }}
+                  {{ f.label | t }}
                   @if (f.required) {
                     <i class="req">*</i>
                   }
@@ -42,7 +45,7 @@ import { errText, num } from '../core/util';
                     <textarea
                       class="input"
                       [attr.name]="f.name"
-                      [placeholder]="f.placeholder || ''"
+                      [placeholder]="(f.placeholder || '') | t"
                       [value]="text(f.name)"
                     ></textarea>
                   }
@@ -53,14 +56,16 @@ import { errText, num } from '../core/util';
                       <!-- 存量行里可能有选项表里没有的枚举值（如公告 type=payment）：
                            置顶补一条并保持原样，免得显示成「请选择」被手滑改掉 -->
                       @if (offList(f); as v) {
-                        <option [value]="v" [selected]="true">{{ v }}（当前值）</option>
+                        <option [value]="v" [selected]="true">
+                          {{ 'form.current_value' | t: { value: v } }}
+                        </option>
                       }
                       <option value="" [selected]="text(f.name) === ''">
-                        {{ f.keepIfEmpty ? '不修改' : '请选择' }}
+                        {{ (f.keepIfEmpty ? 'form.keep_if_empty' : 'form.select_placeholder') | t }}
                       </option>
                       @for (o of f.options || []; track o.value) {
                         <option [value]="o.value" [selected]="o.value === text(f.name)">
-                          {{ o.label }}
+                          {{ o.label | t }}
                         </option>
                       }
                     </select>
@@ -71,14 +76,20 @@ import { errText, num } from '../core/util';
                          所以这不是「一格文本里塞 JSON」而是真正的数组字段。 -->
                     <select class="input" [attr.name]="f.name" multiple size="8">
                       @for (o of multi(f); track o.value) {
-                        <option [value]="o.value" [selected]="o.on">{{ o.label }}</option>
+                        <option [value]="o.value" [selected]="o.on">{{ o.label | t }}</option>
                       }
                     </select>
+                  }
+                  @case ('tree') {
+                    <!-- 树多选（权限树）：值与 multi 同为**一维 hashid 数组**，只是选择方式带层级。
+                         提交照样读原生表单 —— 组件里的 checkbox 带 name/value，fire() 与 multi 同一分支。
+                         选项由页面在打开前注入（f.tree），这里不做取数。 -->
+                    <ui-tree-select [name]="f.name" [nodes]="f.tree ?? []" [value]="picked(f.name)" />
                   }
                   @case ('switch') {
                     <label class="switch">
                       <input type="checkbox" [attr.name]="f.name" [checked]="on(f.name)" />
-                      <span>{{ on(f.name) ? '启用' : '停用' }}</span>
+                      <span>{{ (on(f.name) ? 'app.enabled' : 'app.disabled') | t }}</span>
                     </label>
                   }
                   @case ('image') {
@@ -91,7 +102,7 @@ import { errText, num } from '../core/util';
                         class="input"
                         type="text"
                         [attr.name]="f.name"
-                        [placeholder]="f.placeholder || ''"
+                        [placeholder]="(f.placeholder || '') | t"
                         [value]="text(f.name)"
                         (input)="preview(f.name, $any($event.target).value)"
                       />
@@ -101,7 +112,7 @@ import { errText, num } from '../core/util';
                         [disabled]="!!uploading()"
                         (click)="picker.click()"
                       >
-                        {{ uploading() === f.name ? '上传中…' : '上传' }}
+                        {{ (uploading() === f.name ? 'form.uploading' : 'app.upload') | t }}
                       </button>
                       <input
                         #picker
@@ -123,7 +134,7 @@ import { errText, num } from '../core/util';
                       class="input"
                       type="number"
                       [attr.name]="f.name"
-                      [placeholder]="f.placeholder || ''"
+                      [placeholder]="(f.placeholder || '') | t"
                       [value]="text(f.name)"
                     />
                   }
@@ -132,19 +143,19 @@ import { errText, num } from '../core/util';
                       class="input"
                       type="text"
                       [attr.name]="f.name"
-                      [placeholder]="f.placeholder || ''"
+                      [placeholder]="(f.placeholder || '') | t"
                       [value]="text(f.name)"
                     />
                   }
                 }
                 @if (f.hint) {
-                  <small class="hint">{{ f.hint }}</small>
+                  <small class="hint">{{ f.hint | t }}</small>
                 }
               </div>
             }
           </div>
           <button class="btn btn-primary btn-block" type="submit" [disabled]="saving()">
-            {{ saving() ? '提交中…' : '提交' }}
+            {{ (saving() ? 'form.submitting' : 'form.submit') | t }}
           </button>
         </form>
       </div>
@@ -153,7 +164,8 @@ import { errText, num } from '../core/util';
 })
 export class FormModal {
   readonly open = input(false);
-  readonly title = input('新建');
+  /** 标题：i18n 键或字面量（页面按当前模块拼好；查不到原样显示） */
+  readonly title = input('app.create');
   readonly fields = input.required<Field[]>();
   /** 编辑预填行；null/undefined = 新建 */
   readonly value = input<Row | null>(null);
@@ -257,12 +269,12 @@ export class FormModal {
     return [
       ...cur
         .filter((v) => !opts.some((o) => o.value === v))
-        .map((v) => ({ value: v, label: `${v}（当前值）`, on: true })),
+        .map((v) => ({ value: v, label: t('form.current_value', { value: v }), on: true })),
       ...opts.map((o) => ({ value: o.value, label: o.label, on: cur.includes(o.value) })),
     ];
   }
 
-  /** 提交：读原生表单值，switch 缺省即 0（复选框未勾选不进 FormData）、multi 收全部勾选项 */
+  /** 提交：读原生表单值，switch 缺省即 0（复选框未勾选不进 FormData）、multi/tree 收全部勾选项 */
   protected fire(ev: Event): void {
     ev.preventDefault();
     const fd = new FormData(ev.target as HTMLFormElement);
@@ -273,7 +285,7 @@ export class FormModal {
           ? fd.has(f.name)
             ? 1
             : 0
-          : f.type === 'multi'
+          : f.type === 'multi' || f.type === 'tree'
             ? fd.getAll(f.name).map(String)
             : String(fd.get(f.name) ?? '');
     }

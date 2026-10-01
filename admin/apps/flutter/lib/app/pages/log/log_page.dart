@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/api_service.dart';
+import '../../widgets/crud.dart';
 
 class LogController extends GetxController {
   final api = ApiService();
@@ -15,7 +16,9 @@ class LogController extends GetxController {
   final isLoading = false.obs;
   final total = 0.obs;
   final page = 1.obs;
-  final limit = 15.obs;
+
+  /// 与后端缺省一致（LogController::index 的 `input('limit', 15)`）。
+  static const int pageSize = 15;
   final actionFilter = ''.obs;
   final pathFilter = ''.obs;
   final actionCtrl = TextEditingController();
@@ -62,18 +65,20 @@ class LogController extends GetxController {
     if (reset) page.value = 1;
     isLoading.value = true;
     try {
-      final params = <String, dynamic>{'page': page.value, 'limit': limit.value};
+      final params = <String, dynamic>{};
       if (actionFilter.value.isNotEmpty) params['action'] = actionFilter.value;
       if (pathFilter.value.isNotEmpty) params['path'] = pathFilter.value;
-      final resp = await api.get('/admin/v1/log', params: params);
-      logs.value = resp['data']['list'] as List<dynamic>;
-      total.value = resp['data']['total'] as int;
+      final result = await api.list('/admin/v1/log', page: page.value, pageSize: pageSize, params: params);
+      logs.value = result.rows;
+      total.value = result.total;
     } catch (e) { Get.snackbar('错误', '加载失败: $e'); }
     finally { isLoading.value = false; }
   }
 
-  Future<void> nextPage() async { if (page.value * limit.value < total.value) { page.value++; await loadLogs(); } }
-  Future<void> prevPage() async { if (page.value > 1) { page.value--; await loadLogs(); } }
+  Future<void> goPage(int toPage) async {
+    page.value = toPage;
+    await loadLogs();
+  }
 }
 
 class LogPage extends GetView<LogController> {
@@ -111,11 +116,13 @@ class LogPage extends GetView<LogController> {
           DataCell(Text(l['created_at'] ?? '')),
         ])).toList()));
       })),
-      Obx(() => Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-        IconButton(onPressed: ctrl.prevPage, icon: const Icon(Icons.chevron_left)),
-        Text('${ctrl.page.value} / ${(ctrl.total.value / ctrl.limit.value).ceil()} (${ctrl.total.value}条)'),
-        IconButton(onPressed: ctrl.nextPage, icon: const Icon(Icons.chevron_right)),
-      ])),
+      const SizedBox(height: 8),
+      Obx(() => CrudPager(
+            page: ctrl.page.value,
+            total: ctrl.total.value,
+            size: LogController.pageSize,
+            onPage: ctrl.goPage,
+          )),
     ]);
   }
 }

@@ -49,7 +49,7 @@ class CaptchaController
         } catch (Throwable $e) {
             return json([
                 'code' => 500,
-                'message' => '验证码生成失败',
+                'message' => trans('Failed to generate captcha'),
                 'data' => [],
             ]);
         }
@@ -72,14 +72,14 @@ class CaptchaController
         $clicks = $request->input('clicks', []);
 
         if (empty($key) || empty($clicks)) {
-            return json(['code' => 422, 'message' => '缺少验证参数', 'data' => []]);
+            return json(['code' => 422, 'message' => trans('Missing verification parameters'), 'data' => []]);
         }
 
         $valid = captcha_verify_from_ip($request->getRealIp(), $key, 'click', captcha_clicks($clicks));
 
         return json([
             'code' => $valid ? 0 : 422,
-            'message' => $valid ? '验证通过' : '验证失败，请重试',
+            'message' => $valid ? trans('Verification passed') : trans('Verification failed, please try again'),
             'data' => ['valid' => $valid],
         ]);
     }

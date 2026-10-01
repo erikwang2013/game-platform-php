@@ -52,7 +52,7 @@ class FrequencyEvaluator implements RiskEvaluator
         };
 
         if ($count >= $maxCount) {
-            return ['matched' => true, 'message' => "{$windowMinutes}min 内 {$count} 次 ≥ 阈值 {$maxCount}", 'severity' => 'medium'];
+            return ['matched' => true, 'message' => trans('%count% times within %minutes%min ≥ threshold %threshold%', ['%count%' => (string) $count, '%minutes%' => (string) $windowMinutes, '%threshold%' => (string) $maxCount]), 'severity' => 'medium'];
         }
 
         return ['matched' => false, 'message' => "{$windowMinutes}min 内 {$count} 次，未达阈值 {$maxCount}", 'severity' => 'low'];

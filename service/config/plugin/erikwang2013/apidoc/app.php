@@ -119,7 +119,7 @@ return [
             'header' => [
                 // name=字段名，type=字段类型，require=是否必须，default=默认值，desc=字段描述
                 ['name' => 'Authorization', 'type' => 'string', 'require' => false, 'desc' => 'Bearer Token (JWT) 认证接口必传'],
-                ['name' => 'X-Language', 'type' => 'string', 'require' => false, 'default' => 'en-US', 'desc' => '语言: en-US/zh-CN/ja-JP/ko-KR'],
+                ['name' => 'X-Language', 'type' => 'string', 'require' => false, 'default' => 'zh', 'desc' => '响应语言，取值见 /api/v1/language/list（en/zh/ja/ko/ru/de/fr/es/pt/hi/ar/bn/id，亦接受 zh-CN 全码）；缺省按 Accept-Language 回落，再缺省 zh'],
             ],
             // （选配）全局的请求 Query
             'query' => [

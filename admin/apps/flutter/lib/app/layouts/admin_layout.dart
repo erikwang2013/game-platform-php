@@ -128,13 +128,13 @@ class _AdminLayoutState extends State<AdminLayout> {
     ('nav.platform_users', Icons.group, 8),
     ('nav.identity', Icons.verified_user, 9),
     ('nav.risk_logs', Icons.warning, 10),
-    ('!风控大盘', Icons.monitor_heart, 11),
+    ('nav.risk_dashboard', Icons.monitor_heart, 11),
     ('nav.payments', Icons.payment, 12),
     ('nav.cdn', Icons.cloud, 13),
     ('nav.announcements', Icons.campaign, 14),
     ('nav.vip', Icons.workspace_premium, 15),
     ('nav.achievements', Icons.emoji_events, 16),
-    ('!运营活动', Icons.local_activity, 17),
+    ('nav.activities', Icons.local_activity, 17),
     ('nav.game_categories', Icons.category, 18),
     ('nav.game_servers', Icons.dns, 19),
     ('nav.leaderboards', Icons.leaderboard, 20),
@@ -352,7 +352,7 @@ class _AdminLayoutState extends State<AdminLayout> {
       ),
       NavigationDrawerDestination(
         icon: const Icon(Icons.monitor_heart, size: 20),
-        label: const Text('风控大盘'),
+        label: Text("${AppTranslations.t('nav.risk_dashboard')}"),
         selectedIcon: const Icon(Icons.monitor_heart, size: 20),
       ),
       NavigationDrawerDestination(
@@ -382,7 +382,7 @@ class _AdminLayoutState extends State<AdminLayout> {
       ),
       NavigationDrawerDestination(
         icon: const Icon(Icons.local_activity, size: 20),
-        label: const Text('运营活动'),
+        label: Text("${AppTranslations.t('nav.activities')}"),
         selectedIcon: const Icon(Icons.local_activity, size: 20),
       ),
       NavigationDrawerDestination(
@@ -472,9 +472,8 @@ class _AdminLayoutState extends State<AdminLayout> {
         );
       }),
       onSelected: (value) {
-        if (value == 'lang') {
-          final current = localeCtrl.currentLocale.value;
-          localeCtrl.changeLocale(current == 'zh' ? 'en' : 'zh');
+        if (value.startsWith('lang:')) {
+          localeCtrl.changeLocale(value.substring('lang:'.length));
         } else if (value == 'profile') {
           Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ProfilePage()));
         } else if (value == 'logout') {
@@ -503,20 +502,28 @@ class _AdminLayoutState extends State<AdminLayout> {
           );
         }
       },
+      // 语言平铺进同一个菜单（不再是一个「中/英互切」的开关）：13 种由
+      // LocaleController.supported 驱动，增删语言只改那一处；当前语言打点标记。
+      // 用母语名而不是译名 —— 语言菜单要在「用户还看不懂当前界面语言」时也能选对。
       itemBuilder: (_) => [
-        PopupMenuItem(
-          value: 'lang',
-          child: Obx(() {
-            final isZh = localeCtrl.currentLocale.value == 'zh';
-            return Row(
+        ...LocaleController.supported.map(
+          (item) => PopupMenuItem(
+            value: 'lang:${item.code}',
+            child: Row(
               children: [
-                const Icon(Icons.language, size: 18),
+                Icon(
+                  item.code == localeCtrl.currentLocale.value
+                      ? Icons.radio_button_checked
+                      : Icons.language,
+                  size: 18,
+                ),
                 const SizedBox(width: 8),
-                Text(isZh ? 'Switch to English' : '切换到中文'),
+                Text(item.nativeName),
               ],
-            );
-          }),
+            ),
+          ),
         ),
+        const PopupMenuDivider(),
         PopupMenuItem(
           value: 'profile',
           child: Text("${AppTranslations.t('profile.title')}"),

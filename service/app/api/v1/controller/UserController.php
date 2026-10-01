@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
+use common\Locale;
 use common\model\DepositOrder;
 use common\model\ExchangeRecord;
 use common\model\Transaction;
@@ -34,7 +35,7 @@ class UserController extends BaseController
 
         $user = User::find($userId);
         if (!$user) {
-            return $this->fail('User not found', 404);
+            return $this->fail(trans('User not found'), 404);
         }
 
         return $this->success([
@@ -63,7 +64,8 @@ class UserController extends BaseController
         $validator = validator($request->all(), [
             'nickname' => 'nullable|max:50',
             'avatar'   => 'nullable|max:255',
-            'language' => 'nullable|in:en-US,zh-CN,ja-JP,ko-KR',
+            // 同上：白名单派生自 Locale，别在这里手写语言列表
+            'language' => 'nullable|in:' . implode(',', Locale::accepted()),
         ]);
 
         if ($validator->fails()) {
@@ -74,7 +76,7 @@ class UserController extends BaseController
 
         $user = User::find($userId);
         if (!$user) {
-            return $this->fail('User not found', 404);
+            return $this->fail(trans('User not found'), 404);
         }
 
         // Update only allowed fields
@@ -110,7 +112,7 @@ class UserController extends BaseController
         $userId = $request->userId;
         $user = User::with(['wallet', 'oauthAccounts'])->find($userId);
         if (!$user) {
-            return $this->fail('User not found', 404);
+            return $this->fail(trans('User not found'), 404);
         }
 
         // Collect all user data
@@ -156,7 +158,7 @@ class UserController extends BaseController
             'exported_at' => date('Y-m-d H:i:s'),
         ];
 
-        return $this->success($data, 'Data export ready');
+        return $this->success($data, trans('Data export ready'));
     }
 
     #[Apidoc\Title("注销账号(GDPR)")]
@@ -171,7 +173,7 @@ class UserController extends BaseController
             'password' => 'required|string',
             'confirm' => 'required|in:yes',
         ], [
-            'confirm.in' => '请输入 yes 确认注销',
+            'confirm.in' => trans('Please type yes to confirm account closure'),
         ]);
 
         if ($validator->fails()) {
@@ -181,18 +183,18 @@ class UserController extends BaseController
         $userId = $request->userId;
         $user = User::find($userId);
         if (!$user) {
-            return $this->fail('User not found', 404);
+            return $this->fail(trans('User not found'), 404);
         }
 
         // Verify password
         if (!password_verify($request->input('password'), $user->password)) {
-            return $this->fail('密码验证失败', 422);
+            return $this->fail(trans('Password verification failed'), 422);
         }
 
         // Check wallet balance (don't allow deletion if balance > 0)
         $wallet = UserWallet::where('user_id', $userId)->first();
         if ($wallet && bccomp($wallet->balance, '0.0000', 4) > 0) {
-            return $this->fail('请先提现所有余额后再注销账号', 422);
+            return $this->fail(trans('Withdraw all balances before closing the account'), 422);
         }
 
         // Anonymize personal data BEFORE soft delete: update on a soft-deleted
@@ -217,7 +219,7 @@ class UserController extends BaseController
         // Delete 2FA
         User2FA::where('user_id', $userId)->delete();
 
-        return $this->success([], '账号已注销。感谢您的使用。');
+        return $this->success([], trans('Account closed. Thank you for using our service.'));
     }
 
     #[Apidoc\Title("隐私设置")]
@@ -238,6 +240,6 @@ class UserController extends BaseController
         // Store privacy settings in PlatformConfig per user (simplified)
         // Could be extended with a proper user_settings table
 
-        return $this->success([], '隐私设置已更新');
+        return $this->success([], trans('Privacy settings updated'));
     }
 }

@@ -42,12 +42,12 @@ class UserFileController extends BaseController
 
         if (!$this->readable($userId, $savedPath)) {
             // 403 而非 404：文件可能确实存在，只是不属于你 —— 两者分开才好排查
-            return $this->fail('无权访问该文件', 403);
+            return $this->fail(trans('Access to this file is denied'), 403);
         }
 
         $resource = Util::getResource($savedPath);
         if ($resource === false || $resource->exists() === false) {
-            return $this->fail('文件不存在', 404);
+            return $this->fail(trans('File not found'), 404);
         }
 
         // nosniff：上传物只按白名单扩展名放行（svg 已排除），别让浏览器自己猜类型

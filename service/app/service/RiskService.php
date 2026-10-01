@@ -37,7 +37,7 @@ use app\service\risk\evaluators\WithdrawPatternEvaluator;
 class RiskService
 {
     /** 人工拉黑的伪规则名：进日志/事件/返回值的 rule_name，让「不是规则命中」这件事在审计里一眼可辨 */
-    private const MANUAL_BLOCK_NAME = '管理端设备拉黑';
+    private const MANUAL_BLOCK_NAME = 'Device blocked by admin';
 
     /** @var array<string,RiskEvaluator>|null type → 评估器实例 */
     private static ?array $evaluators = null;
@@ -67,18 +67,18 @@ class RiskService
         // 不该把全站登录/充值/提现一起挡掉。
         $fpHash = (string) ($context['fp_hash'] ?? '');
         if ($fpHash !== '' && RiskDeviceBlock::isBlocked($fpHash)) {
-            $message = '设备已被管理端拉黑';
+            $message = trans(self::MANUAL_BLOCK_NAME);
             self::log($userId, null, $checkType, 'block', $context, $message);
             EventBus::push('risk.alert', 'risk_' . SnowflakeService::generate(), [
                 'user_id'    => $userId,
                 'check_type' => $checkType,
                 'rule_id'    => 0,
-                'rule_name'  => self::MANUAL_BLOCK_NAME,
+                'rule_name'  => trans(self::MANUAL_BLOCK_NAME),
                 'action'     => 'block',
                 'message'    => $message,
             ]);
 
-            return ['result' => 'block', 'message' => $message, 'rule_name' => self::MANUAL_BLOCK_NAME];
+            return ['result' => 'block', 'message' => $message, 'rule_name' => trans(self::MANUAL_BLOCK_NAME)];
         }
 
         $map = self::evaluatorMap();

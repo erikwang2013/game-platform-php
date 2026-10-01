@@ -89,7 +89,7 @@ class NotificationController extends BaseController
                 ->first();
 
             if (!$notif) {
-                return $this->fail('Notification not found', 404);
+                return $this->fail(trans('Notification not found'), 404);
             }
 
             $notif->is_read = 1;
@@ -100,6 +100,6 @@ class NotificationController extends BaseController
                 ->update(['is_read' => 1]);
         }
 
-        return $this->success([], 'Marked as read');
+        return $this->success([], trans('Marked as read'));
     }
 }

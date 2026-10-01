@@ -10,6 +10,7 @@ import { LoadingView, ErrorView, EmptyView, ResultDialog } from '../common/Compo
 import { FormField, confirmAction } from '../common/FormDialog';
 import { FormPayload } from '../model/DataModels';
 import { PagerBar, ExtraActionDialog } from '../common/ResourceViews';
+import { t, t1 } from '../i18n/Translations';
 
 /**
  * 异常用户页 —— 列表 + 三个行内动作：冻结 / 解冻 / 时间线。
@@ -29,20 +30,25 @@ import { PagerBar, ExtraActionDialog } from '../common/ResourceViews';
  *       GET  /admin/v1/risk/users/{hashid}/timeline
  */
 
-/** 解冻表单：amount 用 text 而不是 number —— number 控件会过 Number()（float），金额只能原样传字符串 */
+/**
+ * 解冻表单：amount 用 text 而不是 number —— number 控件会过 Number()（float），金额只能原样传字符串。
+ *
+ * 三个文案字段存的是**键名**不是译文（`FormDialog` 渲染时对 label/hint/placeholder 各调一次 `t()`）。
+ * 这里**不能**在模块顶层调 `t()` 取成字符串：模块求值发生在 `LocaleController.init()` 之前，
+ * 会把启动时的默认语言固化进常量，切换语言后这两条文案再也不变（同 `RULE_ACTION_OPTIONS` 的取舍）。
+ */
 const RELEASE_FIELDS: FormField[] = [
   {
-    name: 'amount', label: '释放金额', type: 'text',
-    hint: '十进制字符串，原样发给服务端（不做任何换算）。留空 = 全额释放。\n'
-      + '实际释放量以回执为准：释放按冻结子台账逐笔消费，不足部分不会凭空生成。',
-    placeholder: '留空 = 全额（如 12.50000000）'
+    name: 'amount', label: 'risk.user.field_amount', type: 'text',
+    hint: 'risk.user.amount_hint',
+    placeholder: 'risk.user.amount_placeholder'
   }
 ];
 
 function timelineLines(result: RiskTimelineResult): string[] {
   const lines: string[] = [];
   const events = result.events ?? [];
-  lines.push(`共 ${result.total} 条（服务端最多返回 200 条）`);
+  lines.push(t1('risk.user.timeline_total', 'total', `${result.total}`));
   for (let i = 0; i < events.length; i++) {
     const e: RiskTimelineItem = events[i];
     const resultText = e.result.length > 0 ? ` · ${e.result}` : '';
@@ -50,7 +56,7 @@ function timelineLines(result: RiskTimelineResult): string[] {
     lines.push(`${e.time} · ${e.source} · ${e.type} · ${e.action}${resultText}${detail}`);
   }
   if (events.length === 0) {
-    lines.push('暂无事件');
+    lines.push(t('risk.user.timeline_empty'));
   }
   return lines;
 }
@@ -58,6 +64,7 @@ function timelineLines(result: RiskTimelineResult): string[] {
 @Entry
 @Component
 struct RiskUserPage {
+  @StorageLink('app_locale') localeCode: string = 'en';
   @State rows: RiskUserItem[] = [];
   @State page: number = 1;
   @State total: number = 0;
@@ -95,7 +102,7 @@ struct RiskUserPage {
         return;
       }
       this.hasError = true;
-      promptAction.showToast({ message: '加载失败' });
+      promptAction.showToast({ message: t('common.load_failed') });
     } finally {
       this.isLoading = false;
     }
@@ -135,17 +142,16 @@ struct RiskUserPage {
 
   /** 冻结：无请求体，金额服务端算 —— 先问一句再发（动钱的动作） */
   private async holdRow(item: RiskUserItem): Promise<void> {
-    const ok = await confirmAction('确认冻结',
-      `确定冻结「${this.who(item)}」（${item.user_id}）的账户吗？`
-        + '服务端会按其钱包可用余额**全额**冻结（冻结不影响已有余额的归属，只是不可用）。',
-      '冻结', '#FF4D4F');
+    const ok = await confirmAction(t('risk.user.hold_title'),
+      t('risk.user.hold_confirm').replace('{who}', this.who(item)).replace('{id}', item.user_id),
+      t('risk.user.action_hold'), '#FF4D4F');
     if (!ok) {
       return;
     }
     this.busyId = item.user_id;
     try {
       const lines = await RiskService.holdUser(item.user_id);
-      this.openResult(`冻结「${this.who(item)}」`, lines);
+      this.openResult(t1('risk.user.hold_result_titled', 'who', this.who(item)), lines);
       this.loadData(true);
     } catch (e) {
       this.reportError(e);
@@ -163,13 +169,13 @@ struct RiskUserPage {
   /** 解冻：金额原样上送（空串 = 全额）；发出前再确认一次，文案指名是谁、放多少 */
   private async submitRelease(id: string, body: FormPayload): Promise<string[]> {
     const amount = `${body['amount'] ?? ''}`.trim();
-    const what = amount.length > 0 ? `${amount} 平台币` : '全部冻结金额';
-    const ok = await confirmAction('确认解冻',
-      `确定解冻「${this.releaseWho}」（${id}）的${what}吗？`
-        + '这是冻结 → 可用的纯搬移（不铸币），但解冻后该笔资金即恢复可用。',
-      '解冻', '#FA8C16');
+    const what = amount.length > 0 ? t1('risk.user.release_amount_unit', 'amount', amount)
+      : t('risk.user.release_all');
+    const ok = await confirmAction(t('risk.user.release_title'),
+      t('risk.user.release_confirm').replace('{who}', this.releaseWho).replace('{id}', id).replace('{what}', what),
+      t('risk.user.action_release'), '#FA8C16');
     if (!ok) {
-      throw new Error('已取消，未提交任何修改');
+      throw new Error(t('risk.user.release_cancelled'));
     }
     return RiskService.releaseUser(id, amount);
   }
@@ -179,7 +185,7 @@ struct RiskUserPage {
     this.busyId = item.user_id;
     try {
       const result = await RiskService.timeline(item.user_id);
-      this.openResult(`「${this.who(item)}」的风控时间线`, timelineLines(result));
+      this.openResult(t1('risk.user.timeline_titled', 'who', this.who(item)), timelineLines(result));
     } catch (e) {
       this.reportError(e);
     } finally {
@@ -191,7 +197,7 @@ struct RiskUserPage {
     if (this.redirectIfUnauthorized(e)) {
       return;
     }
-    promptAction.showToast({ message: e instanceof Error && e.message.length > 0 ? e.message : '操作失败' });
+    promptAction.showToast({ message: e instanceof Error && e.message.length > 0 ? e.message : t('res.op_failed') });
   }
 
   build() {
@@ -200,7 +206,7 @@ struct RiskUserPage {
 
       if (this.releaseOpen) {
         ExtraActionDialog({
-          title: `解冻「${this.releaseWho}」`,
+          title: t1('risk.user.release_titled', 'who', this.releaseWho),
           fields: RELEASE_FIELDS,
           actionId: this.releaseId,
           submit: (id: string, body: FormPayload): Promise<string[]> => this.submitRelease(id, body),
@@ -252,7 +258,7 @@ struct RiskUserPage {
         .backgroundColor('#FFFFFF')
         .onClick(() => router.back())
 
-        Text('异常用户')
+        Text(t('risk.index.user'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 8 })
@@ -267,7 +273,7 @@ struct RiskUserPage {
       } else if (this.hasError) {
         ErrorView({ onRetry: () => this.loadData() });
       } else if (this.rows.length === 0) {
-        EmptyView({ message: '暂无低信任分用户' });
+        EmptyView({ message: t('risk.user.empty') });
       } else {
         List() {
           ForEach(this.rows, (item: RiskUserItem) => {
@@ -309,7 +315,7 @@ struct RiskUserPage {
           .fontWeight(FontWeight.Medium)
           .layoutWeight(1)
 
-        Text(item.whitelisted === 1 ? '白名单' : item.band)
+        Text(item.whitelisted === 1 ? t('risk.user.whitelisted') : item.band)
           .fontSize(10)
           .fontColor(item.whitelisted === 1 ? '#52C41A' : '#FA8C16')
           .backgroundColor(item.whitelisted === 1 ? '#E6FFF0' : '#FFF2E6')
@@ -319,20 +325,22 @@ struct RiskUserPage {
       .width('100%')
 
       Row() {
-        Text(`信任分 ${item.score} · 命中 ${item.hit_count} 次 · 最近 ${item.last_hit_at} · ${item.user_id}`)
+        Text(t('risk.user.summary').replace('{score}', `${item.score}`)
+          .replace('{hits}', `${item.hit_count}`)
+          .replace('{last}', item.last_hit_at).replace('{id}', item.user_id))
           .fontSize(12)
           .fontColor('#999999')
           .maxLines(2)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .layoutWeight(1)
 
-        this.smallButton('冻结', '#FF4D4F', '#FFE6E6', this.busyId !== item.user_id, () => {
+        this.smallButton(t('risk.user.action_hold'), '#FF4D4F', '#FFE6E6', this.busyId !== item.user_id, () => {
           this.holdRow(item);
         });
-        this.smallButton('解冻', '#FA8C16', '#FFF2E6', this.busyId !== item.user_id, () => {
+        this.smallButton(t('risk.user.action_release'), '#FA8C16', '#FFF2E6', this.busyId !== item.user_id, () => {
           this.openRelease(item);
         });
-        this.smallButton('时间线', '#1677FF', '#E6F0FF', this.busyId !== item.user_id, () => {
+        this.smallButton(t('risk.user.action_timeline'), '#1677FF', '#E6F0FF', this.busyId !== item.user_id, () => {
           this.timelineRow(item);
         });
       }

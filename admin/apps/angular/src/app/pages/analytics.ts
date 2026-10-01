@@ -4,6 +4,7 @@ import { Api, Params, Row } from '../core/api.service';
 import { json, rowsAny, scalarsOf } from '../core/render';
 import { dash, errText, num, pairs } from '../core/util';
 import { areaPoints, linePoints } from '../core/chart';
+import { T } from '../core/i18n/i18n';
 import { StateBlock, StatCard, Tabs } from '../components/ui';
 import { Table } from '../components/table';
 
@@ -20,18 +21,18 @@ const A = '/admin/v1/analytics/';
 
 @Component({
   selector: 'app-analytics',
-  imports: [StateBlock, StatCard, Table, Tabs],
+  imports: [StateBlock, StatCard, Table, Tabs, T],
   template: `
     <div class="page-head">
-      <h1>数据分析</h1>
-      <span class="sub">流量 / 收入 / 留存 / 经济</span>
+      <h1>{{ 'analytics.title' | t }}</h1>
+      <span class="sub">{{ 'analytics.subtitle' | t }}</span>
       <div class="spacer"></div>
       <select class="input" [value]="days()" (change)="setDays($any($event.target).value)">
-        <option value="7">近 7 天</option>
-        <option value="14">近 14 天</option>
-        <option value="30">近 30 天</option>
+        <option value="7">{{ 'analytics.last_days' | t: { n: 7 } }}</option>
+        <option value="14">{{ 'analytics.last_days' | t: { n: 14 } }}</option>
+        <option value="30">{{ 'analytics.last_days' | t: { n: 30 } }}</option>
       </select>
-      <button class="btn" (click)="load()">刷新</button>
+      <button class="btn" (click)="load()">{{ 'app.refresh' | t }}</button>
     </div>
 
     <ui-tabs [tabs]="tabs" [active]="tab()" (pick)="pick($event)" />
@@ -46,7 +47,7 @@ const A = '/admin/v1/analytics/';
               }
             </div>
           } @else {
-            <div class="state">该接口暂无标量指标</div>
+            <div class="state">{{ 'analytics.no_scalars' | t }}</div>
           }
         }
         @case ('line') {
@@ -63,7 +64,7 @@ const A = '/admin/v1/analytics/';
               </div>
             </div>
           } @else {
-            <div class="state">暂无时间序列数据</div>
+            <div class="state">{{ 'analytics.no_series' | t }}</div>
           }
         }
         @case ('bars') {
@@ -76,7 +77,7 @@ const A = '/admin/v1/analytics/';
               </div>
             }
           } @else {
-            <div class="state">暂无排行数据</div>
+            <div class="state">{{ 'analytics.no_rank' | t }}</div>
           }
         }
         @case ('funnel') {
@@ -89,7 +90,7 @@ const A = '/admin/v1/analytics/';
               </div>
             }
           } @else {
-            <div class="state">暂无漏斗数据</div>
+            <div class="state">{{ 'analytics.no_funnel' | t }}</div>
           }
         }
         @default {
@@ -104,14 +105,14 @@ const A = '/admin/v1/analytics/';
               }
             </div>
           } @else {
-            <div class="state">该接口暂无数据</div>
+            <div class="state">{{ 'analytics.no_data' | t }}</div>
           }
         }
       }
 
       @if (raw(); as d) {
         <details class="raw-box">
-          <summary>原始响应</summary>
+          <summary>{{ 'app.raw_response' | t }}</summary>
           <pre class="raw">{{ pretty(d) }}</pre>
         </details>
       }
@@ -125,18 +126,23 @@ export class Analytics {
   protected readonly dash = dash;
 
   protected readonly tabs: Tab[] = [
-    { key: 'overview', label: '总览', path: A + 'overview', kind: 'kpi' },
-    { key: 'dau', label: 'DAU 趋势', path: A + 'dau-trend', kind: 'line' },
-    { key: 'rank', label: '游戏排行', path: A + 'game-ranking', kind: 'bars' },
-    { key: 'funnel', label: '转化漏斗', path: A + 'funnel', kind: 'funnel' },
-    { key: 'retention', label: '留存', path: A + 'retention', kind: 'kpi' },
-    { key: 'arpu', label: 'ARPU', path: A + 'arpu', kind: 'line' },
-    { key: 'revenue', label: '营收', path: A + 'revenue', kind: 'line' },
-    { key: 'conversion', label: '转化', path: A + 'conversion', kind: 'bars' },
-    { key: 'hourly', label: '分时', path: A + 'hourly-trend', kind: 'line' },
-    { key: 'action', label: '行为分布', path: A + 'action-distribution', kind: 'bars' },
-    { key: 'probability', label: '概率', path: A + 'probability', kind: 'table' },
-    { key: 'economy', label: '经济', path: A + 'economy', kind: 'table' },
+    { key: 'overview', label: 'analytics.tab.overview', path: A + 'overview', kind: 'kpi' },
+    { key: 'dau', label: 'analytics.tab.dau', path: A + 'dau-trend', kind: 'line' },
+    { key: 'rank', label: 'analytics.tab.rank', path: A + 'game-ranking', kind: 'bars' },
+    { key: 'funnel', label: 'analytics.tab.funnel', path: A + 'funnel', kind: 'funnel' },
+    { key: 'retention', label: 'analytics.tab.retention', path: A + 'retention', kind: 'kpi' },
+    { key: 'arpu', label: 'analytics.tab.arpu', path: A + 'arpu', kind: 'line' },
+    { key: 'revenue', label: 'analytics.tab.revenue', path: A + 'revenue', kind: 'line' },
+    { key: 'conversion', label: 'analytics.tab.conversion', path: A + 'conversion', kind: 'bars' },
+    { key: 'hourly', label: 'analytics.tab.hourly', path: A + 'hourly-trend', kind: 'line' },
+    { key: 'action', label: 'analytics.tab.action', path: A + 'action-distribution', kind: 'bars' },
+    {
+      key: 'probability',
+      label: 'analytics.tab.probability',
+      path: A + 'probability',
+      kind: 'table',
+    },
+    { key: 'economy', label: 'analytics.tab.economy', path: A + 'economy', kind: 'table' },
   ];
 
   protected readonly tab = signal('overview');

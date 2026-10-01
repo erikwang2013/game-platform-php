@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace common\service;
 
+use common\Locale;
 use common\model\Translation;
 use support\Redis;
 
@@ -40,16 +41,39 @@ class TranslationService
     }
 
     /**
-     * 获取可用语言列表
+     * 获取可用语言列表（前端语言选择器的数据源；`icon` 是国家码，供 season 旗帜用）
+     *
+     * **键由 `common\Locale::SUPPORTED` 派生**（与 `install/lang/*.php` 的 13 语集合对齐）：
+     * 这里露出带地区的全码（`zh-CN`）是既有 C 端契约（`User::language` 存的就是全码），
+     * 而翻译目录用短码 —— 两者由 `common\Locale::normalize()` 打通。
+     * 新增语言只落两处：`common\Locale`（短码 + 全码映射）、`resource/translations/<短码>/`。
      */
     public static function getAvailableLanguages(): array
     {
-        return [
-            'en-US' => ['name' => 'English', 'nativeName' => 'English', 'icon' => 'us'],
-            'zh-CN' => ['name' => 'Chinese (Simplified)', 'nativeName' => '简体中文', 'icon' => 'cn'],
-            'ja-JP' => ['name' => 'Japanese', 'nativeName' => '日本語', 'icon' => 'jp'],
-            'ko-KR' => ['name' => 'Korean', 'nativeName' => '한국어', 'icon' => 'kr'],
+        // 键是**短码**（与 `Locale::SUPPORTED` 同源），输出用 `Locale::fullCode()` 补全码 ——
+        // 全码映射只此一处，不再手抄第二份（抄漏的症状是语言选择器里选得到、校验器 422）。
+        $meta = [
+            'en' => ['name' => 'English', 'nativeName' => 'English', 'icon' => 'us'],
+            'zh' => ['name' => 'Chinese (Simplified)', 'nativeName' => '简体中文', 'icon' => 'cn'],
+            'ja' => ['name' => 'Japanese', 'nativeName' => '日本語', 'icon' => 'jp'],
+            'ko' => ['name' => 'Korean', 'nativeName' => '한국어', 'icon' => 'kr'],
+            'ru' => ['name' => 'Russian', 'nativeName' => 'Русский', 'icon' => 'ru'],
+            'de' => ['name' => 'German', 'nativeName' => 'Deutsch', 'icon' => 'de'],
+            'fr' => ['name' => 'French', 'nativeName' => 'Français', 'icon' => 'fr'],
+            'es' => ['name' => 'Spanish', 'nativeName' => 'Español', 'icon' => 'es'],
+            'pt' => ['name' => 'Portuguese', 'nativeName' => 'Português', 'icon' => 'pt'],
+            'hi' => ['name' => 'Hindi', 'nativeName' => 'हिन्दी', 'icon' => 'in'],
+            'ar' => ['name' => 'Arabic', 'nativeName' => 'العربية', 'icon' => 'sa'],
+            'bn' => ['name' => 'Bengali', 'nativeName' => 'বাংলা', 'icon' => 'bd'],
+            'id' => ['name' => 'Indonesian', 'nativeName' => 'Bahasa Indonesia', 'icon' => 'id'],
         ];
+
+        $languages = [];
+        foreach (Locale::supported() as $short) {
+            $languages[Locale::fullCode($short)] = $meta[$short];
+        }
+
+        return $languages;
     }
 
     /**

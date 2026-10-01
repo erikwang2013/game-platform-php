@@ -9,6 +9,11 @@ class CountryConfigAdminController extends GetxController {
   final api = ApiService();
   final items = <dynamic>[].obs;
   final isLoading = false.obs;
+  final total = 0.obs;
+  final page = 1.obs;
+
+  /// 与后端缺省一致（CountryConfigController::index 的 `input('limit', 15)`）。
+  static const int pageSize = 15;
 
   @override
   void onInit() {
@@ -16,11 +21,13 @@ class CountryConfigAdminController extends GetxController {
     load();
   }
 
-  Future<void> load() async {
+  Future<void> load({int? toPage}) async {
+    if (toPage != null) page.value = toPage;
     isLoading.value = true;
     try {
-      final resp = await api.get('/admin/v1/country/config/list');
-      items.value = resp['data'] is List ? resp['data'] as List<dynamic> : (resp['data']['list'] as List<dynamic>? ?? []);
+      final result = await api.list('/admin/v1/country/config/list', page: page.value, pageSize: pageSize);
+      items.value = result.rows;
+      total.value = result.total;
     } catch (e) {
       Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.loading_failed')}: $e');
     } finally {
@@ -149,6 +156,13 @@ class CountryConfigPage extends GetView<CountryConfigAdminController> {
             );
           }),
         ),
+        const SizedBox(height: 8),
+        Obx(() => CrudPager(
+              page: ctrl.page.value,
+              total: ctrl.total.value,
+              size: CountryConfigAdminController.pageSize,
+              onPage: (p) => ctrl.load(toPage: p),
+            )),
       ],
     );
   }

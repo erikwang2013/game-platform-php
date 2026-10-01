@@ -43,19 +43,19 @@ class PaymentController extends BaseController
     {
         $provider = strtolower((string) $request->input('provider', ''));
         if (!in_array($provider, self::ALLOWED_PROVIDERS, true)) {
-            return $this->fail('Invalid provider', 403);
+            return $this->fail(trans('Invalid provider'), 403);
         }
         if ($provider === 'stripe' && !$this->verifyStripeSignature($request)) {
-            return $this->fail('Invalid signature', 403);
+            return $this->fail(trans('Invalid signature'), 403);
         }
         if ($provider === 'paypal' && !$this->verifyPayPalSignature($request)) {
-            return $this->fail('Invalid signature', 403);
+            return $this->fail(trans('Invalid signature'), 403);
         }
         if ($provider === 'nowpayments' && !$this->verifyNowPaymentsSignature($request)) {
-            return $this->fail('Invalid signature', 403);
+            return $this->fail(trans('Invalid signature'), 403);
         }
         if ($provider === 'coinbase' && !$this->verifyCoinbaseSignature($request)) {
-            return $this->fail('Invalid signature', 403);
+            return $this->fail(trans('Invalid signature'), 403);
         }
 
         // 配置了可信回调来源 IP 列表时校验来源，未配置则不强制（仅限服务端到服务端的 Webhook）
@@ -63,14 +63,14 @@ class PaymentController extends BaseController
         if ($trustedIps !== '') {
             $ips = array_map('trim', explode(',', $trustedIps));
             if (!in_array((string) $request->getRealIp(), $ips, true)) {
-                return $this->fail('Source IP not allowed', 403);
+                return $this->fail(trans('Source IP not allowed'), 403);
             }
         }
 
         // M-Pesa 回调无签名，CheckoutRequestID 客户端可知（即订单 transaction_id），
         // 伪造回调即可免费入账 —— 必须配置可信来源 IP 才允许该渠道，否则一律拒绝（fail-closed）
         if ($provider === 'mpesa' && $trustedIps === '') {
-            return $this->fail('M-Pesa requires CALLBACK_TRUSTED_IPS', 403);
+            return $this->fail(trans('M-Pesa requires CALLBACK_TRUSTED_IPS'), 403);
         }
 
         // 解析回调数据：order_no/金额一律取自已验签的报文（或权威回查 API），
@@ -78,11 +78,11 @@ class PaymentController extends BaseController
         $verified = GatewayFactory::resolve($provider)->verifyCallback($request);
 
         if (empty($verified['valid'])) {
-            return $this->fail('Invalid callback payload', 403);
+            return $this->fail(trans('Invalid callback payload'), 403);
         }
         if (($verified['status'] ?? '') === 'ignored') {
             // 网关事件无需处理（如 charge:created），成功应答防止网关重试
-            return $this->success([], 'Ignored');
+            return $this->success([], trans('Ignored'));
         }
 
         $orderNo        = (string) $verified['order_no'];
@@ -93,13 +93,13 @@ class PaymentController extends BaseController
         $order = DepositOrder::where('order_no', $orderNo)->first();
 
         if (!$order) {
-            return $this->fail('Order not found', 404);
+            return $this->fail(trans('Order not found'), 404);
         }
 
         // 回调 provider 必须与订单支付方式一致，防止跨渠道冒用；支付方式不存在同样拒绝
         $method = PaymentMethod::find($order->payment_method_id);
         if (!$method || strtolower((string) $method->provider) !== $provider) {
-            return $this->fail('Provider mismatch', 403);
+            return $this->fail(trans('Provider mismatch'), 403);
         }
 
         // 惰性过期：支付链接已过期且订单仍 pending 则取消，成功应答防止网关重试。
@@ -111,7 +111,7 @@ class PaymentController extends BaseController
 
         // 入账金额与订单核对：回调携带金额时不一致（或非数字）直接拒绝
         if ($callbackAmount !== '' && (!is_numeric($callbackAmount) || bccomp($callbackAmount, $order->amount, 4) !== 0)) {
-            return $this->fail('Amount mismatch', 422);
+            return $this->fail(trans('Amount mismatch'), 422);
         }
 
         // Idempotency: skip if this transaction_id was already processed
@@ -148,7 +148,7 @@ class PaymentController extends BaseController
 
             if (!$updated) {
                 Db::rollBack();
-                return $this->success([], 'Already processed');
+                return $this->success([], trans('Already processed'));
             }
 
             if ($callbackStatus === 'success') {
@@ -176,7 +176,7 @@ class PaymentController extends BaseController
         } catch (\Throwable $e) {
             Db::rollBack();
             Log::error('Payment callback failed', ['order_no' => $orderNo, 'trace_id' => ($request->traceId ?? ''), 'error' => $e->getMessage()]);
-            return $this->fail('Callback processing failed', 500);
+            return $this->fail(trans('Callback processing failed'), 500);
         }
 
         if ($callbackStatus === 'success') {

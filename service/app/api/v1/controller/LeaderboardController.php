@@ -50,7 +50,7 @@ class LeaderboardController extends BaseController
 
         $board = Leaderboard::find($boardId);
         if (!$board || $board->status !== 1) {
-            return $this->fail('Leaderboard not found', 404);
+            return $this->fail(trans('Leaderboard not found'), 404);
         }
 
         $ranking = LeaderboardService::getRanking($boardId);

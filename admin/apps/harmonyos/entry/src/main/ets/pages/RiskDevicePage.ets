@@ -9,6 +9,7 @@ import { RiskDeviceItem } from '../model/RiskModels';
 import { LoadingView, ErrorView, EmptyView, ResultDialog } from '../common/Components';
 import { confirmAction } from '../common/FormDialog';
 import { PagerBar } from '../common/ResourceViews';
+import { t } from '../i18n/Translations';
 
 /**
  * 设备指纹页 —— 列表 + **行内**拉黑 / 解封。
@@ -30,6 +31,7 @@ import { PagerBar } from '../common/ResourceViews';
 @Entry
 @Component
 struct RiskDevicePage {
+  @StorageLink('app_locale') localeCode: string = 'en';
   @State rows: RiskDeviceItem[] = [];
   @State page: number = 1;
   @State total: number = 0;
@@ -61,7 +63,7 @@ struct RiskDevicePage {
         return;
       }
       this.hasError = true;
-      promptAction.showToast({ message: '加载失败' });
+      promptAction.showToast({ message: t('common.load_failed') });
     } finally {
       this.isLoading = false;
     }
@@ -92,7 +94,7 @@ struct RiskDevicePage {
     if (this.redirectIfUnauthorized(e)) {
       return;
     }
-    promptAction.showToast({ message: e instanceof Error && e.message.length > 0 ? e.message : '操作失败' });
+    promptAction.showToast({ message: e instanceof Error && e.message.length > 0 ? e.message : t('res.op_failed') });
   }
 
   /** 有完整指纹、且没有行在提交时才可点 */
@@ -104,12 +106,12 @@ struct RiskDevicePage {
   private async blockRow(item: RiskDeviceItem): Promise<void> {
     const fp = item.fp_hash ?? '';
     if (fp.length === 0) {
-      promptAction.showToast({ message: '该行没有完整指纹，无法拉黑' });
+      promptAction.showToast({ message: t('risk.device.no_hash') });
       return;
     }
-    const ok = await confirmAction('确认拉黑',
-      `确定拉黑设备「${item.fp_masked}」吗？\n该设备上的账号登录/充值/提现都会被拦截，30 天后自动解封。`,
-      '拉黑', '#FF4D4F');
+    const ok = await confirmAction(t('risk.device.confirm_block_title'),
+      t('risk.device.confirm_block').replace('{masked}', item.fp_masked),
+      t('risk.device.action_block'), '#FF4D4F');
     if (!ok) {
       return;
     }
@@ -120,7 +122,7 @@ struct RiskDevicePage {
   private async unblockRow(item: RiskDeviceItem): Promise<void> {
     const fp = item.fp_hash ?? '';
     if (fp.length === 0) {
-      promptAction.showToast({ message: '该行没有完整指纹，无法解封' });
+      promptAction.showToast({ message: t('risk.device.no_hash_unblock') });
       return;
     }
     await this.runDevice(fp, 'unblock', item.fp_masked);
@@ -131,7 +133,8 @@ struct RiskDevicePage {
     this.busyKey = fp;
     try {
       const lines = mode === 'block' ? await RiskService.blockDevice(fp) : await RiskService.unblockDevice(fp);
-      this.resultTitle = `${mode === 'block' ? '拉黑' : '解封'}结果 · ${masked}`;
+      const action = mode === 'block' ? t('risk.device.action_block') : t('risk.device.action_unblock');
+      this.resultTitle = t('risk.device.result_titled').replace('{action}', action).replace('{masked}', masked);
       this.resultLines = lines;
       this.resultOpen = true;
       this.loadData(true);
@@ -187,7 +190,7 @@ struct RiskDevicePage {
         .backgroundColor('#FFFFFF')
         .onClick(() => router.back())
 
-        Text('设备指纹')
+        Text(t('risk.index.device'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 8 })
@@ -203,7 +206,7 @@ struct RiskDevicePage {
       } else if (this.hasError) {
         ErrorView({ onRetry: () => this.loadData() });
       } else if (this.rows.length === 0) {
-        EmptyView({ message: '暂无设备指纹' });
+        EmptyView({ message: t('risk.device.empty') });
       } else {
         List() {
           ForEach(this.rows, (item: RiskDeviceItem) => {
@@ -246,7 +249,7 @@ struct RiskDevicePage {
           .fontWeight(FontWeight.Medium)
           .layoutWeight(1)
 
-        Text(item.blocked ? '已拉黑' : '未拉黑')
+        Text(item.blocked ? t('risk.device.blocked') : t('risk.device.not_blocked'))
           .fontSize(10)
           .fontColor(item.blocked ? '#FF4D4F' : '#999999')
           .backgroundColor(item.blocked ? '#FFE6E6' : '#F5F5F5')
@@ -256,7 +259,9 @@ struct RiskDevicePage {
       .width('100%')
 
       Row() {
-        Text(`C 段 ${item.ip_c_segment} · 关联账号 ${item.account_count} · 首次 ${item.first_seen_at} · 最近 ${item.last_seen_at}`)
+        Text(t('risk.device.summary').replace('{cseg}', item.ip_c_segment)
+          .replace('{accounts}', `${item.account_count}`)
+          .replace('{first}', item.first_seen_at).replace('{last}', item.last_seen_at))
           .fontSize(12)
           .fontColor('#999999')
           .maxLines(2)
@@ -264,11 +269,11 @@ struct RiskDevicePage {
           .layoutWeight(1)
 
         if (item.blocked) {
-          this.smallButton('解封', '#52C41A', '#E6FFF0', this.canAct(item), () => {
+          this.smallButton(t('risk.device.action_unblock'), '#52C41A', '#E6FFF0', this.canAct(item), () => {
             this.unblockRow(item);
           });
         } else {
-          this.smallButton('拉黑', '#FF4D4F', '#FFE6E6', this.canAct(item), () => {
+          this.smallButton(t('risk.device.action_block'), '#FF4D4F', '#FFE6E6', this.canAct(item), () => {
             this.blockRow(item);
           });
         }

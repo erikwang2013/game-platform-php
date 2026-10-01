@@ -7,10 +7,13 @@ import promptAction from '@ohos.promptAction';
 import { UserService } from '../service/DataService';
 import { User } from '../model/DataModels';
 import { LoadingView, ErrorView, EmptyView } from '../common/Components';
+import { TokenManager } from '../utils/TokenManager';
+import { t, t1 } from '../i18n/Translations';
 
 @Entry
 @Component
 struct UserListPage {
+  @StorageLink('app_locale') localeCode: string = 'en';
   @State users: User[] = [];
   @State page: number = 1;
   @State total: number = 0;
@@ -37,14 +40,37 @@ struct UserListPage {
     }
   }
 
+  /**
+   * 选中的行里有没有**当前登录的管理员自己**。
+   * 用用户名认人：`game_admin_user.username` 是唯一键（uk_username），且当前用户名在登录时
+   * 就落进了 AppStorage（见 TokenManager::getAdminUsername）。
+   */
+  private selectedSelf(): boolean {
+    const me = TokenManager.getAdminUsername();
+    if (me.length === 0) {
+      return false;
+    }
+    for (let i = 0; i < this.users.length; i++) {
+      if (this.users[i].username === me && this.selectedIds.includes(this.users[i].id)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   batchOperate(status: number): void {
-    const label = status === 1 ? '启用' : '禁用';
+    // 自我保护：批量停用把自己关了，就再没人能开回来了（后端不禁止自伤，只验操作者密码）
+    if (status === 0 && this.selectedSelf()) {
+      promptAction.showToast({ message: t('user.batch_self_block') });
+      return;
+    }
+    const label = status === 1 ? t('user.status_enabled') : t('user.status_disabled');
     promptAction.showDialog({
-      title: `批量${label}`,
-      message: `确认${label}选中的 ${this.selectedIds.length} 个用户？`,
+      title: t1('user.batch_title', 'action', label),
+      message: t('user.batch_confirm').replace('{action}', label).replace('{count}', `${this.selectedIds.length}`),
       buttons: [
-        { text: '取消', color: '#999999' },
-        { text: '确认', color: '#1677FF' }
+        { text: t('common.cancel'), color: '#999999' },
+        { text: t('common.confirm'), color: '#1677FF' }
       ]
     }).then((result: promptAction.ShowDialogSuccessResponse) => {
       if (result.index === 1) {
@@ -57,7 +83,7 @@ struct UserListPage {
   async doBatch(status: number): Promise<void> {
     try {
       await UserService.batchStatus(this.selectedIds, status);
-      promptAction.showToast({ message: status === 1 ? '批量启用成功' : '批量禁用成功' });
+      promptAction.showToast({ message: status === 1 ? t('user.batch_enabled') : t('user.batch_disabled') });
       this.toggleSelectionMode();
       this.loadData(true);
     } catch (e) {
@@ -65,7 +91,7 @@ struct UserListPage {
         router.replaceUrl({ url: 'pages/LoginPage' });
         return;
       }
-      promptAction.showToast({ message: '操作失败' });
+      promptAction.showToast({ message: t('res.op_failed') });
     }
   }
 
@@ -83,11 +109,8 @@ struct UserListPage {
     this.hasError = false;
 
     try {
-      const result = await UserService.getList({
-        page: this.page,
-        limit: this.limit,
-        keyword: this.keyword || undefined
-      });
+      // 位置参数（原参数对象写法既是字面量实参、签名侧还是交叉类型，两处都编不过）
+      const result = await UserService.getList(this.page, this.limit, this.keyword);
       if (isRefresh || this.page === 1) {
         this.users = result.list;
       } else {
@@ -100,13 +123,18 @@ struct UserListPage {
         return;
       }
       this.hasError = true;
-      promptAction.showToast({ message: '加载失败' });
+      promptAction.showToast({ message: t('common.load_failed') });
     } finally {
       this.isLoading = false;
       this.isRefreshing = false;
     }
   }
 
+  /**
+   * 翻页 = **累加**下一页（列表尾部「加载更多」按钮 / 下拉刷新回到第 1 页），
+   * 不挂 PagerBar：那套是「整页替换 + 页码跳转」，与本页「搜索 + 批量勾选」的用法不是一回事
+   * —— 累加式翻页换到第 N 页会把用户勾了一半的选区连行一起换掉。分页参数 page/limit 照发。
+   */
   loadMore(): void {
     if (this.users.length >= this.total) return;
     this.page++;
@@ -129,14 +157,14 @@ struct UserListPage {
         .backgroundColor('#FFFFFF')
         .onClick(() => router.back())
 
-        Text('用户管理')
+        Text(t('user.manage_title'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 8 })
 
         Blank()
 
-        Button(this.selectionMode ? '取消' : '批量')
+        Button(this.selectionMode ? t('common.cancel') : t('user.batch_mode'))
           .fontSize(13)
           .fontColor('#1677FF')
           .backgroundColor('#E6F0FF')
@@ -147,7 +175,7 @@ struct UserListPage {
             this.toggleSelectionMode();
           })
 
-        Button('+ 新增')
+        Button(t('res.create'))
           .fontSize(13)
           .fontColor('#FFFFFF')
           .backgroundColor('#1677FF')
@@ -164,7 +192,7 @@ struct UserListPage {
 
       // 搜索栏
       Row() {
-        TextInput({ placeholder: '搜索用户名或姓名', text: this.keyword })
+        TextInput({ placeholder: t('user.search_placeholder'), text: this.keyword })
           .height(40)
           .fontSize(14)
           .backgroundColor('#F5F5F5')
@@ -178,7 +206,7 @@ struct UserListPage {
             this.onSearch();
           })
 
-        Button('搜索')
+        Button(t('common.search'))
           .fontSize(13)
           .fontColor('#FFFFFF')
           .backgroundColor('#1677FF')
@@ -200,7 +228,7 @@ struct UserListPage {
       } else if (this.hasError) {
         ErrorView({ onRetry: () => this.loadData(true) });
       } else if (this.users.length === 0) {
-        EmptyView({ message: '暂无用户数据' });
+        EmptyView({ message: t('user.empty') });
       } else {
         // 刷新组件
         Refresh({ refreshing: $$this.isRefreshing }) {
@@ -230,7 +258,7 @@ struct UserListPage {
                         .fontSize(15)
                         .fontWeight(FontWeight.Medium)
 
-                      Text(user.status === 1 ? '启用' : '禁用')
+                      Text(user.status === 1 ? t('user.status_enabled') : t('user.status_disabled'))
                         .fontSize(10)
                         .fontColor(user.status === 1 ? '#52C41A' : '#FF4D4F')
                         .backgroundColor(user.status === 1 ? '#E6FFF0' : '#FFE6E6')
@@ -276,11 +304,11 @@ struct UserListPage {
             ListItem() {
               Row() {
                 if (this.users.length >= this.total) {
-                  Text('— 没有更多了 —')
+                  Text(t('common.no_more'))
                     .fontSize(12)
                     .fontColor('#CCCCCC')
                 } else {
-                  Button('加载更多')
+                  Button(t('common.load_more'))
                     .fontSize(13)
                     .fontColor('#1677FF')
                     .backgroundColor(Color.Transparent)
@@ -307,13 +335,13 @@ struct UserListPage {
       // 批量操作栏
       if (this.selectionMode) {
         Row() {
-          Text(`已选 ${this.selectedIds.length} 项`)
+          Text(t1('common.selected_count', 'count', `${this.selectedIds.length}`))
             .fontSize(13)
             .fontColor('#666666')
 
           Blank()
 
-          Button('批量禁用')
+          Button(t('user.batch_disable'))
             .fontSize(13)
             .fontColor('#FFFFFF')
             .backgroundColor('#FF4D4F')
@@ -324,7 +352,7 @@ struct UserListPage {
               this.batchOperate(0);
             })
 
-          Button('批量启用')
+          Button(t('user.batch_enable'))
             .fontSize(13)
             .fontColor('#FFFFFF')
             .backgroundColor('#1677FF')

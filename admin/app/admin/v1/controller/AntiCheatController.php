@@ -56,7 +56,7 @@ class AntiCheatController extends BaseController
     {
         $row = AntiCheatEvent::find($this->decodeId($hashid));
         if (!$row) {
-            return $this->fail('事件不存在');
+            return $this->fail(trans('Event not found'));
         }
         $data = $this->format($row);
         $data['user_trust'] = $this->trustInfo((int) $row->user_id);
@@ -70,11 +70,11 @@ class AntiCheatController extends BaseController
     {
         $row = AntiCheatEvent::find($this->decodeId($hashid));
         if (!$row) {
-            return $this->fail('事件不存在');
+            return $this->fail(trans('Event not found'));
         }
         $status = (string) $request->post('status', '');
         if (!in_array($status, ['open', 'confirmed', 'whitelisted', 'closed'], true)) {
-            return $this->fail('status 仅支持 open/confirmed/whitelisted/closed');
+            return $this->fail(trans('status only supports open/confirmed/whitelisted/closed'));
         }
 
         $row->status = $status;
@@ -85,7 +85,7 @@ class AntiCheatController extends BaseController
         return $this->success([
             'id' => $this->encodeId((int) $row->id),
             'status' => $row->status,
-            'message' => '审核已记录',
+            'message' => trans('Review recorded'),
         ]);
     }
 

@@ -6,6 +6,7 @@ import { http } from '@kit.NetworkKit';
 import { promptAction } from '@kit.ArkUI';
 import { TokenManager } from '../utils/TokenManager';
 import { API_BASE_URL } from '../common/AppConfig';
+import { t } from '../i18n/Translations';
 
 interface GameDetail {
   id: string;
@@ -19,6 +20,7 @@ interface GameDetail {
 @Entry
 @Component
 struct GameDetailPage {
+  @StorageLink('app_locale') localeCode: string = 'en';
   @State gameId: string = '';
   @State game: GameDetail | null = null;
   @State isLoading: boolean = true;
@@ -55,7 +57,7 @@ struct GameDetailPage {
         }
       }
     } catch (e) {
-      this.errorMsg = '加载失败';
+      this.errorMsg = t('common.load_failed');
     } finally {
       this.isLoading = false;
     }
@@ -82,11 +84,11 @@ struct GameDetailPage {
       if (response.responseCode === 200) {
         const body = JSON.parse(response.result as string);
         if (body.code === 0) {
-          promptAction.showToast({ message: '游戏启动成功' });
+          promptAction.showToast({ message: t('game.launch_success') });
         }
       }
     } catch (e) {
-      promptAction.showToast({ message: '启动失败' });
+      promptAction.showToast({ message: t('game.launch_failed') });
     }
   }
 
@@ -94,10 +96,10 @@ struct GameDetailPage {
     Column() {
       // Header
       Row() {
-        Button('← 返回')
+        Button(t('common.back'))
           .onClick(() => router.back())
           .backgroundColor('#00000000')
-        Text(this.game?.name || '游戏详情')
+        Text(this.game?.name || t('game.detail_title'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .layoutWeight(1)
@@ -121,7 +123,7 @@ struct GameDetailPage {
               .margin({ top: 8, left: 16, right: 16 })
 
             // Description
-            Text(this.game!.description || '暂无简介')
+            Text(this.game!.description || t('game.no_description'))
               .fontSize(14)
               .fontColor('#666')
               .margin({ top: 16, left: 16, right: 16 })
@@ -129,7 +131,7 @@ struct GameDetailPage {
 
             // Currencies
             if (this.game!.currencies && this.game!.currencies.length > 0) {
-              Text('游戏币种')
+              Text(t('game.currencies_title'))
                 .fontSize(16)
                 .fontWeight(FontWeight.Bold)
                 .margin({ top: 24, left: 16 })
@@ -142,7 +144,8 @@ struct GameDetailPage {
                         Text(currency.name)
                           .fontSize(16)
                           .fontWeight(FontWeight.Medium)
-                        Text(`1 平台币 = ${currency.exchange_rate} ${currency.symbol}`)
+                        Text(t('game.exchange_rate_line')
+                          .replace('{rate}', currency.exchange_rate).replace('{symbol}', currency.symbol))
                           .fontSize(12)
                           .fontColor('#999')
                       }
@@ -168,7 +171,7 @@ struct GameDetailPage {
         .layoutWeight(1)
 
         // Launch button
-        Button('开始游戏')
+        Button(t('game.start'))
           .width('90%')
           .height(48)
           .fontSize(16)
@@ -177,7 +180,7 @@ struct GameDetailPage {
           .margin({ bottom: 24 })
           .onClick(() => { this.launchGame() })
       } else {
-        Text(this.errorMsg || '游戏不存在')
+        Text(this.errorMsg || t('game.not_found'))
           .fontSize(14)
           .fontColor('#999')
           .margin({ top: 100 })

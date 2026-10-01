@@ -28,6 +28,7 @@ export default function App() {
             <Route path="analytics" element={<TabPage page={PAGES.analytics} />} />
             <Route path="games" element={<TabPage page={PAGES.games} />} />
             <Route path="users" element={<TabPage page={PAGES.users} />} />
+            <Route path="admins" element={<TabPage page={PAGES.admins} />} />
             <Route path="withdrawals" element={<TabPage page={PAGES.withdrawals} />} />
             <Route path="risk" element={<TabPage page={PAGES.risk} />} />
             <Route path="profile" element={<TabPage page={PAGES.profile} />} />

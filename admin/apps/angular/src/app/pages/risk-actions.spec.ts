@@ -5,6 +5,7 @@ import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Row } from '../core/api.service';
 import { Crud } from '../core/crud';
+import { t, use } from '../core/i18n/i18n';
 import { Act, Table } from '../components/table';
 import { CLUSTER_ACTS, DEVICE_ACTS } from './risk-fields';
 import { Risk } from './risk';
@@ -27,6 +28,8 @@ describe('风控页：行内动作与掩码端点', () => {
   const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
   beforeEach(() => {
+    // 语言真值在模块级（模块加载时读一次偏好）⇒ 用例要显式定中文，不然界面文案是英文那一列
+    use('zh');
     TestBed.configureTestingModule({
       imports: [Risk],
       providers: [provideHttpClient(), provideHttpClientTesting()],
@@ -114,10 +117,11 @@ describe('风控页：行内动作与掩码端点', () => {
     it('列表摊平 status_label（0/1/2 的中文），原值不动', async () => {
       const p = build(() => new Risk()) as unknown as P;
       await loadClusters(p, [CLUSTER, { ...CLUSTER, id: 'C2', status: 0 }]);
-      expect(p.rows()[0]!['status_label']).toBe('观察中');
-      expect(p.rows()[1]!['status_label']).toBe('误判');
+      // 摊平出来的是词条键，渲染时才成中文（断言走 t()，钉的仍是「这一列显示什么」）
+      expect(t(String(p.rows()[0]!['status_label']))).toBe('观察中');
+      expect(t(String(p.rows()[1]!['status_label']))).toBe('误判');
       expect(p.rows()[1]!['status']).toBe(0);
-      expect(p.heads()['status_label']).toBe('状态');
+      expect(t(p.heads()['status_label']!)).toBe('状态');
     });
 
     /** 只读动作：路径里的 {hashid} 就是行上的 id，成员 id 出 API 边界也是 hashid；取完不刷新列表 */
@@ -140,7 +144,7 @@ describe('风控页：行内动作与掩码端点', () => {
       });
       await done;
       expect(p.panel()).toBe('members');
-      expect(p.panelTitle()).toContain('团伙成员');
+      expect(t(p.panelTitle())).toContain('团伙成员');
       const data = p.result() as Row;
       expect((data['members'] as Row[]).map((m) => m['id'])).toEqual(['UHASH1', 'UHASH2']);
       // 只读：不重取列表、不做任何写
@@ -221,7 +225,7 @@ describe('风控页：行内动作与掩码端点', () => {
       const shown = p
         .actions()
         .filter((a) => !a.when || a.when(p.rows()[0]!))
-        .map((a) => a.label);
+        .map((a) => t(a.label));
       expect(shown).toEqual(['确认作弊', '白名单', '关闭']);
     });
 
@@ -427,8 +431,8 @@ describe('风控页：行内动作与掩码端点', () => {
       p.tab.set('events');
       const heads = p.heads();
       expect(Object.keys(heads).length).toBe(9);
-      expect(heads['created_at']).toBe('时间');
-      expect(heads['rule_name']).toBe('规则');
+      expect(t(heads['created_at']!)).toBe('时间');
+      expect(t(heads['rule_name']!)).toBe('规则');
     });
   });
 });

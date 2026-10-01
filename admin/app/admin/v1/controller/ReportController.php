@@ -37,7 +37,7 @@ class ReportController extends BaseController
     {
         $range = $this->normalizeDateRange($request->input('start'), $request->input('end'));
         if ($range === null) {
-            return $this->fail('日期格式必须为 Y-m-d 且跨度不超过 90 天', 400);
+            return $this->fail(trans('Date must be in Y-m-d format and the range must not exceed 90 days'), 400);
         }
         [$start, $end] = $range;
         $withCompare = (int) $request->input('compare', 0) === 1;
@@ -104,7 +104,7 @@ class ReportController extends BaseController
     {
         $range = $this->normalizeDateRange($request->input('start'), $request->input('end'));
         if ($range === null) {
-            return $this->fail('日期格式必须为 Y-m-d 且跨度不超过 90 天', 400);
+            return $this->fail(trans('Date must be in Y-m-d format and the range must not exceed 90 days'), 400);
         }
         [$start, $end] = $range;
 
@@ -139,14 +139,14 @@ class ReportController extends BaseController
     {
         $range = $this->normalizeDateRange($request->input('start'), $request->input('end'));
         if ($range === null) {
-            return $this->fail('日期格式必须为 Y-m-d 且跨度不超过 90 天', 400);
+            return $this->fail(trans('Date must be in Y-m-d format and the range must not exceed 90 days'), 400);
         }
         [$start, $end] = $range;
         $format = (string) $request->input('format', 'excel');
 
         $rows = $this->dailyRows($start, $end);
 
-        $lines = [['日期', '新增用户', '充值金额', '充值笔数', '提现金额', '提现笔数', '兑换金额', '游戏局数']];
+        $lines = [[trans('Date'), trans('New users'), trans('Deposit amount'), trans('Deposit count'), trans('Withdraw amount'), trans('Withdraw count'), trans('Exchange amount'), trans('Game rounds')]];
         foreach ($rows as $row) {
             $lines[] = [
                 $row['date'], $row['new_users'], $row['deposit_amount'], $row['deposit_count'],

@@ -31,12 +31,10 @@ class RiskIpManageController extends GetxController {
     if (toPage != null) page.value = toPage;
     isLoading.value = true;
     try {
-      final resp = await api.get('/admin/v1/risk/ip/list', params: <String, dynamic>{
-        'page': page.value,
-        'size': pageSize,
-      });
-      items.value = resp['data']['items'] as List<dynamic>? ?? [];
-      total.value = (resp['data']['total'] as num?)?.toInt() ?? 0;
+      // 走 api.list：三种分页参数名一次发全（风控族读 `size`，但同族搜索/别处读 limit/per_page）
+      final result = await api.list('/admin/v1/risk/ip/list', page: page.value, pageSize: pageSize);
+      items.value = result.rows;
+      total.value = result.total;
     } catch (e) {
       Get.snackbar(crudText('app.error'), '${crudText('app.loading_failed')}: ${apiErrorMessage(e)}');
     } finally {

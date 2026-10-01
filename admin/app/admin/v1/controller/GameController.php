@@ -75,7 +75,7 @@ class GameController extends BaseController
     {
         $game = Game::with('currencies')->find($this->decodeId($hashid));
         if (!$game) {
-            return $this->fail('游戏不存在', 404);
+            return $this->fail(trans('Game not found'), 404);
         }
 
         $currencies = [];
@@ -124,11 +124,11 @@ class GameController extends BaseController
 
         $game = Game::find($this->decodeId($request->input('game_id')));
         if (!$game) {
-            return $this->fail('游戏不存在', 404);
+            return $this->fail(trans('Game not found'), 404);
         }
 
         if ((int) $game->status !== 1) {
-            return $this->fail('游戏未上架', 403);
+            return $this->fail(trans('Game is not published'), 403);
         }
 
         // 纯预览：管理端身份只注入 adminId（AdminAuth.php），没有 C 端 userId。
@@ -174,7 +174,7 @@ class GameController extends BaseController
 
         $slug = $request->input('slug');
         if (Game::where('slug', $slug)->exists()) {
-            return $this->fail('游戏标识已存在', 422);
+            return $this->fail(trans('Game code already exists'), 422);
         }
 
         $game = new Game();
@@ -199,7 +199,7 @@ class GameController extends BaseController
         // 同步分类关系
         $this->syncGameCategories($game->id, $request->input('category_ids', []));
 
-        return $this->success(['id' => $this->encodeId($game->id)], '创建成功');
+        return $this->success(['id' => $this->encodeId($game->id)], trans('Created successfully'));
     }
 
     #[Apidoc\Title("编辑游戏")]
@@ -219,7 +219,7 @@ class GameController extends BaseController
         $id   = $this->decodeId($hashid);
         $game = Game::find($id);
         if (!$game) {
-            return $this->fail('游戏不存在', 404);
+            return $this->fail(trans('Game not found'), 404);
         }
 
         // 镜像 create 的规则（sometimes：局部更新），并补齐 create 漏掉、而 update 会写的字段。
@@ -276,7 +276,7 @@ class GameController extends BaseController
         // 同步分类关系
         $this->syncGameCategories($game->id, $request->input('category_ids', []));
 
-        return $this->success([], '更新成功');
+        return $this->success([], trans('Updated successfully'));
     }
 
     #[Apidoc\Title("删除游戏")]
@@ -289,12 +289,12 @@ class GameController extends BaseController
         $id   = $this->decodeId($hashid);
         $game = Game::find($id);
         if (!$game) {
-            return $this->fail('游戏不存在', 404);
+            return $this->fail(trans('Game not found'), 404);
         }
 
         $game->delete();
 
-        return $this->success([], '删除成功');
+        return $this->success([], trans('Deleted successfully'));
     }
 
     #[Apidoc\Title("管理游戏币种")]
@@ -318,7 +318,7 @@ class GameController extends BaseController
         $gameId = $this->decodeId($request->input('game_id'));
         $game   = Game::find($gameId);
         if (!$game) {
-            return $this->fail('游戏不存在', 404);
+            return $this->fail(trans('Game not found'), 404);
         }
 
         $currencies = $request->input('currencies', []);
@@ -330,14 +330,14 @@ class GameController extends BaseController
                 $rate = (string) $item['exchange_rate'];
                 // bcmath 遇到非规范数字串会抛 ValueError，先用正则卡住形式再用 bccomp 比较
                 if (!preg_match('/^\d+(\.\d+)?$/', $rate) || bccomp($rate, '0', 8) <= 0) {
-                    return $this->fail('汇率必须为大于 0 的数字', 422);
+                    return $this->fail(trans('Exchange rate must be a number greater than 0'), 422);
                 }
             }
             // 点差百分比区间 [0, 100)
             if (isset($item['spread_pct'])) {
                 $spread = (string) $item['spread_pct'];
                 if (!preg_match('/^\d+(\.\d+)?$/', $spread) || bccomp($spread, '100', 8) >= 0) {
-                    return $this->fail('点差百分比必须在 0（含）到 100（不含）之间', 422);
+                    return $this->fail(trans('Spread percentage must be between 0 (inclusive) and 100 (exclusive)'), 422);
                 }
             }
         }
@@ -371,7 +371,7 @@ class GameController extends BaseController
             }
         }
 
-        return $this->success([], '操作成功');
+        return $this->success([], trans('Operation successful'));
     }
 
     /**

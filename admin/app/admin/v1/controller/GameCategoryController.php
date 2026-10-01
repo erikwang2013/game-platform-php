@@ -67,7 +67,7 @@ class GameCategoryController extends BaseController
         $category->status = 1;
         $category->save();
 
-        return $this->success(['id' => $this->encodeId($category->id)], '创建成功');
+        return $this->success(['id' => $this->encodeId($category->id)], trans('Created successfully'));
     }
 
     #[Apidoc\Title("编辑分类")]
@@ -80,7 +80,7 @@ class GameCategoryController extends BaseController
         $id       = $this->decodeId($hashid);
         $category = GameCategory::find($id);
         if (!$category) {
-            return $this->fail('分类不存在', 404);
+            return $this->fail(trans('Category not found'), 404);
         }
 
         // 镜像 create 的规则（sometimes：局部更新），并补齐 create 漏掉、而 update 会写的 status：
@@ -100,7 +100,7 @@ class GameCategoryController extends BaseController
         ]));
         $category->save();
 
-        return $this->success([], '更新成功');
+        return $this->success([], trans('Updated successfully'));
     }
 
     #[Apidoc\Title("删除分类")]
@@ -113,14 +113,14 @@ class GameCategoryController extends BaseController
         $id       = $this->decodeId($hashid);
         $category = GameCategory::find($id);
         if (!$category) {
-            return $this->fail('分类不存在', 404);
+            return $this->fail(trans('Category not found'), 404);
         }
 
         // 移除关联关系
         Db::table('game_category_rel')->where('category_id', $id)->delete();
         $category->delete();
 
-        return $this->success([], '删除成功');
+        return $this->success([], trans('Deleted successfully'));
     }
 
     #[Apidoc\Title("分配游戏到分类")]
@@ -161,6 +161,6 @@ class GameCategoryController extends BaseController
             Db::table('game_category_rel')->insert($rows);
         }
 
-        return $this->success([], '分配成功');
+        return $this->success([], trans('Assigned successfully'));
     }
 }

@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
-import { Directive, OnInit, signal } from '@angular/core';
+import { Directive, OnInit, inject, signal } from '@angular/core';
 import { Page } from './api.service';
+import { I18n } from './i18n/i18n';
 import { errText } from './util';
 
 /**
@@ -17,6 +18,9 @@ import { errText } from './util';
 // 否则 NG2007「Class is using Angular features but is not decorated」
 @Directive()
 export abstract class ListBase<T> implements OnInit {
+  /** 页面侧的查表入口（壳/组件的文案在模板里过 `| t`，类里的按钮名、confirm 文案走这里） */
+  protected readonly i18n = inject(I18n);
+
   readonly rows = signal<T[]>([]);
   readonly loading = signal(true);
   readonly error = signal('');

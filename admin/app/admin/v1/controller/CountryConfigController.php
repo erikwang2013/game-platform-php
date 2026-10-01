@@ -81,7 +81,7 @@ class CountryConfigController extends BaseController
         $config->status           = 1;
         $config->save();
 
-        return $this->success(['id' => $this->encodeId($config->id)], '创建成功');
+        return $this->success(['id' => $this->encodeId($config->id)], trans('Created successfully'));
     }
 
     #[Apidoc\Title("编辑国家配置")]
@@ -94,7 +94,7 @@ class CountryConfigController extends BaseController
         $id     = $this->decodeId($hashid);
         $config = CountryConfig::find($id);
         if (!$config) {
-            return $this->fail('配置不存在', 404);
+            return $this->fail(trans('Config not found'), 404);
         }
 
         // 镜像 store 的规则，前缀 sometimes：update 是局部更新，缺省的字段不该被判 required。
@@ -115,7 +115,7 @@ class CountryConfigController extends BaseController
         ]));
         $config->save();
 
-        return $this->success([], '更新成功');
+        return $this->success([], trans('Updated successfully'));
     }
 
     #[Apidoc\Title("启用/禁用国家配置")]
@@ -137,13 +137,13 @@ class CountryConfigController extends BaseController
 
         $config = CountryConfig::find($this->decodeId($request->input('id')));
         if (!$config) {
-            return $this->fail('配置不存在', 404);
+            return $this->fail(trans('Config not found'), 404);
         }
 
         $config->status = (int) $request->input('status');
         $config->save();
 
-        return $this->success([], '操作成功');
+        return $this->success([], trans('Operation successful'));
     }
 
     #[Apidoc\Title("删除国家配置")]
@@ -154,10 +154,10 @@ class CountryConfigController extends BaseController
     {
         $config = CountryConfig::find($this->decodeId($hashid));
         if (!$config) {
-            return $this->fail('配置不存在', 404);
+            return $this->fail(trans('Config not found'), 404);
         }
         $config->delete();
 
-        return $this->success([], '删除成功');
+        return $this->success([], trans('Deleted successfully'));
     }
 }

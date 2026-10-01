@@ -15,5 +15,7 @@ return [
         app\middleware\Cors::class,
         app\middleware\SecurityFilter::class,
         app\middleware\RateLimit::class,
+        // 语言：从 X-Language / Accept-Language 定 locale，供 trans() 取译文（与 C 端同名中间件同构）
+        app\middleware\LanguageMiddleware::class,
     ],
 ];

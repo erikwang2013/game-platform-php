@@ -1,27 +1,31 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { useState } from 'react';
+import { fieldLabelKey, t, type MessageKey } from '../i18n/index.ts';
 import { ApiError, api, apiEnvelope, type Envelope, type Query } from '../lib/api';
 import { labelOf, rowId, statusOf, type Field } from '../lib/crud';
-import { ID_KEYS, flattenTree, pick } from '../lib/format';
-import { useApi } from '../lib/hooks';
+import { ID_KEYS, pick } from '../lib/format';
+import { usePagedApi } from '../lib/hooks';
+import { totalOf } from '../lib/paging';
+import { treeRows, visibleTreeRows } from '../lib/tree';
 import { asRows, columnsFrom } from './AutoView';
-import { DataTable, type Row } from './DataTable';
+import { DataTable, cell, type Row } from './DataTable';
 import { DetailModal } from './DetailModal';
 import { FormModal } from './FormModal';
-import { ErrorNote } from './ui';
+import { ErrorNote, Pager } from './ui';
 
 /**
  * 模块独有的行内动作（刷新缓存 / 批量分配…）。给了 fields 就弹表单（复用 FormModal），
  * 否则直接执行，confirm 有则先二次确认。
  */
 export type CrudAction = {
-  label: string;
+  /** 按钮名是**文案键**不是译文：模块级常量，只能在渲染期取（同 lib/crud.ts 的 Field.label） */
+  label: MessageKey;
   /** 目标地址，按行 id 拼；方法与请求体缺省 POST / 无体 */
   path: (id: string) => string;
   method?: 'POST' | 'PUT';
   /** 表单字段：动作本身也要填参数时给（如分配游戏要一串游戏 hashid） */
   fields?: Field[];
-  title?: string;
+  title?: MessageKey;
   /**
    * 二次确认文案。危险动作（删除/驳回/关闭）必须给，且文案要能认出对象是谁 ——
    * 对象标识是每行不同的，故要给函数时拿得到整行（`row`）。
@@ -47,7 +51,7 @@ export type CrudAction = {
  * 只读视图（优惠券 stats）：行尾按钮 + DetailModal 拉该路径，不写任何东西。
  * 与动作分开是因为它没有请求体与方法 —— 塞进 CrudAction 会把 path 逼成可选，污染整个动作链路。
  */
-export type CrudView = { label: string; title?: string; path: (id: string) => string };
+export type CrudView = { label: MessageKey; title?: MessageKey; path: (id: string) => string };
 
 /**
  * 一个模块的写操作配置（挂在 TabPage 的 Group.crud 上）。
@@ -60,8 +64,8 @@ export type CrudView = { label: string; title?: string; path: (id: string) => st
 export type CrudConfig = {
   /** 模块端点前缀，如 /admin/v1/game：新建 POST {createPath}、更新 PUT/DELETE {base}/{hashid} */
   base: string;
-  /** 模块中文名，用在弹框标题与删除确认里 */
-  noun: string;
+  /** 模块名（文案键），用在弹框标题与删除确认里 */
+  noun: MessageKey;
   /** 新建字段 */
   fields?: Field[];
   /** 编辑字段（缺省同 fields）：与新建不同的只有「创建后不可改」的字段，标 readOnly 即可 */
@@ -85,6 +89,12 @@ export type CrudConfig = {
    * 缺省不显示启停。
    */
   toggle?: 'update' | string | ((id: string) => { path: string; method?: 'POST' | 'PUT'; body?: unknown });
+  /**
+   * 状态切换的守卫：返回提示语 = **拒绝这次切换**（原样提示，且一个请求都不发）；null = 放行。
+   * 只放前端才知道的规则（当前唯一的用处：不许停用当前登录的管理员自己 —— 后端只认「操作者是谁」，
+   * 不禁止自伤，真发出去就是把自己账号停了，得再找个人来救）。服务端侧的业务拒绝仍走原样的 message。
+   */
+  toggleBlock?: (row: Row) => string | null;
   /**
    * 新建地址，缺省 `${base}/create`；ConfigController 是 POST 到 {base} 本身，没有 /create 段。
    * `null` = 该资源**没有新建端点**（如阶梯限额的档位是预置的），此时不摆「+ 新建」——
@@ -115,8 +125,9 @@ export function RowBrowser({
   preferred,
   hide,
   detailBase,
-  detailTitle = '详情',
+  detailTitle = 'common.detail',
   tree,
+  paged = true,
   crud,
 }: {
   path: string;
@@ -125,37 +136,86 @@ export function RowBrowser({
   /** 不进列的字段（设备列表的 fp_hash：行内动作的入参，不是给人看的） */
   hide?: string[];
   detailBase?: string;
-  detailTitle?: string;
-  /** 树形列表的 children 键（权限树）：展开成行，否则子节点在界面上够不到 */
+  detailTitle?: MessageKey;
+  /**
+   * 树形列表的 children 键（权限树）：children 摊平成**表行**（缩进 + 展开箭头）—— 不摊平子节点
+   * 在界面上够不到也就改不到；行还是那些行，行内动作照旧可用。
+   */
   tree?: string;
+  /** 是否分页，缺省 true。**整表端点**（一次回全量、没有 total，且同时是别处的下拉选项源）
+   * 与**裸数组/树**（区服、权限）必须传 false：发 page/page_size 要么没人读、要么真把全量截成 20 条。 */
+  paged?: boolean;
   crud?: CrudConfig;
 }) {
   // const 别名：闭包里也保住非空收窄
   const config = crud;
-  const { data, loading, error, reload } = useApi<unknown>(path, query);
+  const { data, loading, error, reload, page, setPage, pageSize } = usePagedApi<unknown>(path, query, paged);
   const [selected, setSelected] = useState<string | null>(null);
   // null = 关框；{} = 新建；带 row = 编辑
   const [editing, setEditing] = useState<{ row?: Row } | null>(null);
   const [notice, setNotice] = useState<Notice | null>(null);
+  // 树的折叠态存**被折叠**的 id（缺省空集 = 全展开）；存「展开的 id」则重取列表后整棵树会塌成顶层。
+  const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => new Set());
 
   const fetched = asRows(data) ?? [];
-  const rows = tree ? flattenTree(fetched, tree) : fetched;
-  const columns = columnsFrom(rows, preferred, undefined, hide);
+  const flat = tree ? treeRows(fetched, tree) : null;
+  const rows: Row[] = flat ? visibleTreeRows(flat, collapsed) : fetched;
+  const total = paged ? totalOf(data, fetched.length) : 0;
+  // 列标题复用模块**已经声明过**的字段标签键（`CrudConfig.fields` 里每条都带 `f.*` label）。
+  // 之前表头是直接把字段名当标题渲染的 ⇒ 任何语言下都显示 `real_name` 这种裸字段名。
+  const columnLabels: Record<string, string> = {};
+  // ① 模块自己声明的字段标签是权威（`f.*`）
+  for (const field of [...(config?.fields ?? []), ...(config?.editFields ?? [])]) {
+    columnLabels[field.name] = field.label;
+  }
+  // ② 模块没声明的**只读列**（id / created_at / 关联表带出来的 user_name…）退回同名 f.<字段名>；
+  //    表里也没有就保持字段名本身（`columnsFrom` 的 ?? key 兜底），不会冒出裸露的 f.xxx
+  for (const key of [...(preferred ?? []), ...Object.keys(rows[0] ?? {})]) {
+    if (columnLabels[key] !== undefined) continue;
+    const fallback = fieldLabelKey(key);
+    if (fallback !== null) columnLabels[key] = fallback;
+  }
+  const columns = columnsFrom(rows, preferred, undefined, hide, columnLabels);
   // 「没有新建/编辑字段」= 该模块没有增改端点（动作型），不摆按钮
   const fields = config?.fields ?? [];
   const canEdit = fields.length > 0;
-  // 有编辑字段但没有新建端点（阶梯限额）：编辑照给，「+ 新建」不给
-  const canCreate = canEdit && config?.createPath !== null;
+  // 有编辑字段但没有新建端点（阶梯限额）：编辑照给，「+ 新建」不给。
+  // `config !== undefined` 只是给 tsc 的收窄（下面要用 t(config.noun)）：运行时不改变行为
+  const canCreate = canEdit && config !== undefined && config.createPath !== null;
 
   const open = (row: Row) => {
     const id = pick(row, ID_KEYS);
     if (id !== null && id !== undefined && id !== '') setSelected(String(id));
   };
 
+  const toggleRow = (id: string) => {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  // 树的缩进与展开箭头挂在**首列**（权限那组的 preferred 把 name 排在第一，箭头正好挨着名字）
+  if (flat && columns.length > 0) {
+    const head = columns[0];
+    columns[0] = {
+      ...head,
+      render: (row) => (
+        <>
+          <TreeMark row={row} collapsed={collapsed} onToggle={toggleRow} />
+          {head.render ? head.render(row) : cell(row[head.key])}
+        </>
+      ),
+    };
+  }
+
   if (config) {
     columns.push({
       key: '__actions',
-      label: '操作',
+      // 存**键**不存译文：DataTable 统一在渲染期过 t()，这里先算一次会把文案冻在当前语言上
+      label: 'common.actions',
       render: (row) => (
         <RowActions
           row={row}
@@ -198,7 +258,7 @@ export function RowBrowser({
               setEditing({});
             }}
           >
-            + 新建
+            {t('browser.new_row', { noun: t(config.noun) })}
           </button>
         </div>
       ) : null}
@@ -211,23 +271,65 @@ export function RowBrowser({
         onRetry={reload}
         onRowClick={detailBase ? open : undefined}
       />
+      {/* 只有一页（或没有数据）就不画分页条；`page > 1` 也画，是为了「在第 2 页删掉最后一条后
+          还能翻回去」——那时 total 已经只剩一页，不画就等于把人钉在空页上 */}
+      {paged && (total > pageSize || page > 1) ? (
+        <Pager page={page} pages={Math.max(1, Math.ceil(total / pageSize))} total={total} onJump={setPage} />
+      ) : null}
       {selected && detailBase ? (
-        <DetailModal path={`${detailBase}/${selected}`} title={`${detailTitle} ${selected}`} onClose={() => setSelected(null)} />
+        <DetailModal path={`${detailBase}/${selected}`} title={`${t(detailTitle)} ${selected}`} onClose={() => setSelected(null)} />
       ) : null}
       {/* key 钉住身份：换一条记录编辑就重挂，草稿不会把上一条的值带到这一条上 */}
       {config && editing ? (
         <FormModal
           key={editing.row ? rowId(editing.row, config.rowKey) : '__create'}
-          title={`${editing.row ? '编辑' : '新建'}${config.noun}`}
+          title={editing.row ? t('browser.edit_row', { noun: t(config.noun) }) : t('browser.new_row', { noun: t(config.noun) })}
           fields={editing.row ? (config.editFields ?? fields) : fields}
           row={editing.row}
           fullEdit={config.fullEdit}
-          submitLabel={editing.row ? '保存' : '创建'}
+          submitLabel={t(editing.row ? 'common.save' : 'common.create')}
           onSubmit={submit}
           onClose={() => setEditing(null)}
         />
       ) : null}
     </>
+  );
+}
+
+/**
+ * 树行的缩进与展开箭头（挂在首列里，名字跟着缩进）。叶子没有箭头，但留同宽占位，同级才对得齐。
+ * 箭头点击不能让事件冒到行上：行点击是「弹详情」，点个箭头顺手弹框很烦人。
+ */
+function TreeMark({
+  row,
+  collapsed,
+  onToggle,
+}: {
+  row: Row;
+  collapsed: ReadonlySet<string>;
+  onToggle: (id: string) => void;
+}) {
+  const id = rowId(row);
+  const fold = collapsed.has(id);
+  return (
+    <span className="treemark" style={{ paddingLeft: `${Number(row.__depth ?? 0) * 1.2}em` }}>
+      {Number(row.__kids ?? 0) > 0 ? (
+        <button
+          type="button"
+          className="tgl"
+          aria-expanded={!fold}
+          aria-label={t(fold ? 'common.expand' : 'common.collapse')}
+          onClick={(event) => {
+            event.stopPropagation();
+            onToggle(id);
+          }}
+        >
+          {fold ? '▸' : '▾'}
+        </button>
+      ) : (
+        <span className="tgl" aria-hidden="true" />
+      )}
+    </span>
   );
 }
 
@@ -305,16 +407,22 @@ function RowActions({
     const body = config.deleteBody?.(row) ?? null;
     if (config.deleteBody) {
       if (body === null) return;
-    } else if (!window.confirm(`确认删除${config.noun}「${labelOf(row, labelKey ?? '')}」？该操作不可撤销。`)) {
+    } else if (!window.confirm(t('browser.delete_confirm', { noun: t(config.noun), name: labelOf(row, labelKey ?? '') }))) {
       return;
     }
     void run(async () => {
       await api(`${config.base}/${id}`, { method: 'DELETE', body: body ?? undefined });
       return null;
-    }, '删除失败，请稍后重试');
+    }, t('common.delete_failed'));
   };
 
   const toggle = () => {
+    // 前端守卫先行：被挡住时连请求都不发（发了就真把账号停了/删了，撤销不回来）
+    const blocked = config.toggleBlock?.(row) ?? null;
+    if (blocked !== null) {
+      onNotice({ text: blocked, tone: 'error' });
+      return;
+    }
     // 三种口径：update = 走 PUT {status}；函数 = 行 id 在路径里（无请求体）；字符串 = 固定端点收 {id,status}
     const spec = config.toggle;
     const custom = typeof spec === 'function' ? spec(id) : null;
@@ -327,13 +435,13 @@ function RowActions({
         await api(String(spec), { method: 'POST', body: { id, status: on ? 0 : 1 } });
       }
       return null;
-    }, '状态切换失败，请稍后重试');
+    }, t('common.status_toggle_failed'));
   };
 
   // 只读视图（优惠券 stats）：拉端点交给 DetailModal，与动作共用行尾按钮位
   const view = (spec: CrudView) => {
     onNotice(null);
-    setViewing({ path: spec.path(id), title: `${spec.title ?? spec.label} ${id}` });
+    setViewing({ path: spec.path(id), title: `${t(spec.title ?? spec.label)} ${id}` });
   };
 
   // 有字段的动作弹表单（错误在框内显示，不关框）；没字段的直接跑，confirm 有则先确认
@@ -345,7 +453,7 @@ function RowActions({
     }
     const text = confirmText(spec);
     if (text !== null && !window.confirm(text)) return;
-    void run(() => ask(spec, spec.body?.(id)), `${spec.label}失败，请稍后重试`);
+    void run(() => ask(spec, spec.body?.(id)), t('common.action_failed', { action: t(spec.label) }));
   };
 
   const submitAction = async (spec: CrudAction, body: Record<string, unknown>) => {
@@ -364,27 +472,27 @@ function RowActions({
       <span className="rowact">
         {canEdit ? (
           <button type="button" className="btn btn-sm" disabled={busy} onClick={() => onEdit(row)}>
-            编辑
+            {t('common.edit')}
           </button>
         ) : null}
         {actions.map((spec) => (
           <button type="button" className="btn btn-sm" key={spec.label} disabled={busy} onClick={() => fire(spec)}>
-            {spec.label}
+            {t(spec.label)}
           </button>
         ))}
         {(config.views ?? []).map((spec) => (
           <button type="button" className="btn btn-sm" key={spec.label} disabled={busy} onClick={() => view(spec)}>
-            {spec.label}
+            {t(spec.label)}
           </button>
         ))}
         {config.toggle ? (
           <button type="button" className="btn btn-sm" disabled={busy} onClick={toggle}>
-            {on ? '停用' : '启用'}
+            {t(on ? 'common.disable' : 'common.enable')}
           </button>
         ) : null}
         {labelKey !== undefined ? (
           <button type="button" className="btn btn-sm btn-danger" disabled={busy} onClick={remove}>
-            删除
+            {t('common.delete')}
           </button>
         ) : null}
       </span>
@@ -392,13 +500,14 @@ function RowActions({
       {form ? (
         <FormModal
           key={form.label}
-          title={form.title ?? form.label}
+          title={t(form.title ?? form.label)}
           fields={form.fields ?? []}
-          submitLabel="提交"
+          submitLabel={t('common.submit')}
           onSubmit={(body) => submitAction(form, body)}
           onClose={() => setForm(null)}
         />
       ) : null}
+      {/* viewing.title 是 view() 里现取的成品（键 → 译文 + 行 id），这里原样用，别再取一次 */}
       {viewing ? <DetailModal path={viewing.path} title={viewing.title} onClose={() => setViewing(null)} /> : null}
     </>
   );

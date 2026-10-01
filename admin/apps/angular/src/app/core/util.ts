@@ -1,4 +1,5 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
+import { t } from './i18n/i18n';
 
 /** 缺失值占位符 —— 后端字段名未知时页面必须显示它而不是留空 */
 export const DASH = '—';
@@ -6,7 +7,7 @@ export const DASH = '—';
 /** 任意值 → 展示字符串；null/undefined/空串 → — */
 export function dash(v: unknown): string {
   if (v === null || v === undefined || v === '') return DASH;
-  if (typeof v === 'boolean') return v ? '是' : '否';
+  if (typeof v === 'boolean') return v ? t('app.yes') : t('app.no');
   return String(v);
 }
 
@@ -69,7 +70,7 @@ export function rowsOf(input: unknown, ...keys: string[]): Record<string, unknow
 /** 错误 → 人话 */
 export function errText(e: unknown): string {
   if (e instanceof Error && e.message) return e.message;
-  return '加载失败，请稍后重试';
+  return t('app.loading_failed');
 }
 
 /** 简化枚举映射：字典查不到就原样回显 */

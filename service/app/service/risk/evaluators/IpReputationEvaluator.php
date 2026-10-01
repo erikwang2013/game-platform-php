@@ -46,7 +46,7 @@ class IpReputationEvaluator implements RiskEvaluator
         if ($row === null) {
             // 外部检测异步化 + unknown 放行：默认不阻断，可用 block_unknown 显式收紧
             if ($config['block_unknown'] ?? false) {
-                return ['matched' => true, 'message' => "IP {$ip} 信誉未知（fail-closed 配置）", 'severity' => 'high'];
+                return ['matched' => true, 'message' => trans('IP %ip% reputation unknown (fail-closed config)', ['%ip%' => (string) $ip]), 'severity' => 'high'];
             }
             return $this->miss("IP {$ip} 信誉未知（unknown 放行）");
         }
@@ -61,12 +61,12 @@ class IpReputationEvaluator implements RiskEvaluator
 
         if ($score < $blockBelow) {
             $this->bumpHit($ip);
-            return ['matched' => true, 'message' => "IP {$ip} 信誉分 {$score} < 阻断阈值 {$blockBelow}（{$source}）", 'severity' => 'high'];
+            return ['matched' => true, 'message' => trans('IP %ip% reputation %score% < block threshold %threshold% (%source%)', ['%ip%' => (string) $ip, '%score%' => (string) $score, '%threshold%' => (string) $blockBelow, '%source%' => (string) $source]), 'severity' => 'high'];
         }
 
         if ($score < $warnBelow) {
             $this->bumpHit($ip);
-            return ['matched' => true, 'message' => "IP {$ip} 信誉分 {$score} < 预警阈值 {$warnBelow}（{$source}）", 'severity' => 'medium'];
+            return ['matched' => true, 'message' => trans('IP %ip% reputation %score% < warn threshold %threshold% (%source%)', ['%ip%' => (string) $ip, '%score%' => (string) $score, '%threshold%' => (string) $warnBelow, '%source%' => (string) $source]), 'severity' => 'medium'];
         }
 
         return $this->miss("IP {$ip} 信誉正常（score {$score}）");

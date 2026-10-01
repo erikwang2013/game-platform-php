@@ -11,12 +11,15 @@
  *  1. 平台用户没有新建端点（C 端用户自助注册）⇒ canCreate=false；update 只收 status(严格 0/1)
  *     与 nickname(≤50)，status 由行内切换发（与角色同款：状态不进表单）。
  *  2. 角色/权限的删除都要管理员密码（控制器 confirmPassword）⇒ deletePassword=true。
- *  3. 权限列表是**树**（buildTree），行是深度优先铺平的，缩进用全角空格（行组件只有
- *     title/subtitle 两个位置，铺平比再造一棵树控件划算）。
+ *  3. 权限列表是**树**（buildTree）：行按深度优先铺平，但**带层级与祖先链**交给行组件
+ *     （depth/hasChildren/ancestors），由页面画缩进 + 展开箭头、按折叠状态整枝隐藏；
+ *     父级下拉仍是铺平的一维候选（Select 表达不了层级，缩进用全角空格）。
  *  4. 父子与授权都走 hashid（后端已改口径）：`PermissionController::store` 收 hashid 形式的
  *     parent_id（空/0 = 根，裸数字 400），树里 parent_id 也是 hashid；`RoleController` 的
  *     permission_ids 收 **hashid 数组**、列表**回传**同形式的 permission_ids 供表单回填。
  *     故两处候选/回填值一律用响应回传的 hashid，前端不自己拼 id。
+ *  5. 角色的权限字段是 **tree 型**（父子联动 + 三态勾选，见 common/PermissionTree.ets）：
+ *     候选取**整棵树**不摊平；提交值仍是勾中节点的 hashid 数组，与 multi 同编码（逗号串进、数组出）。
  *
  * 本册**不做**的一处（报告里说明）：平台用户的 keyword 搜索（ResourceModule 契约没有搜索框）。
  */
@@ -28,10 +31,14 @@ import {
   ResourceListResult,
   PlatformUserItem,
   RoleItem,
-  PermissionNode
+  PermissionNode,
+  pageQuery
 } from '../model/DataModels';
 import { ResourceModule, buildRow, paged } from './ResourceSchema';
 import { PermissionService } from '../service/DataService';
+// 本文件全是**请求期/渲染期**求值的函数与只存**键名**的常量表（FormDialog 对 label/hint/placeholder/
+// option.label 各调一次 t()}）⇒ 直接调 t() 安全；顶层调 t() 取成字符串会固化启动语言。
+import { t } from '../i18n/Translations';
 
 /* ============================== 1 平台用户 ==============================
  * list: GET /admin/v1/platform/user/list（page/limit；控制器另支持 keyword/status 过滤）
@@ -43,7 +50,7 @@ import { PermissionService } from '../service/DataService';
  * ========================================================================= */
 
 const PLATFORM_USER_EDIT_FIELDS: FormField[] = [
-  { name: 'nickname', label: '昵称', type: 'text', placeholder: '最长 50 字' }
+  { name: 'nickname', label: 'um.platform_user.nickname', type: 'text', placeholder: 'common.max_chars_50' }
 ];
 
 function platformUserRow(item: PlatformUserItem): ResourceRow {
@@ -53,21 +60,22 @@ function platformUserRow(item: PlatformUserItem): ResourceRow {
   // 删前要能看清是谁：标题取登录名，空则退昵称；副标题补昵称（有则带）
   const title = item.username.length > 0 ? item.username : nickname;
   const sub = nickname.length > 0
-    ? `昵称 ${nickname} · 注册 ${item.created_at}`
-    : `未设昵称 · 注册 ${item.created_at}`;
+    ? t('um.platform_user.sub_nickname').replace('{name}', nickname).replace('{at}', item.created_at)
+    : t('um.platform_user.sub_no_nickname').replace('{at}', item.created_at);
   return buildRow(item.id, title.length > 0 ? title : item.id, sub,
-    item.status === 1 ? '正常' : '禁用', item.status === 1, item.status, values);
+    item.status === 1 ? t('um.platform_user.status_active') : t('user.status_disabled'),
+    item.status === 1, item.status, values);
 }
 
 const PLATFORM_USER: ResourceModule = {
   key: 'platform_user',
-  title: '平台用户',
-  desc: '封禁 / 解封与改昵称，注销不可恢复',
+  title: 'mod.platform_user.title',
+  desc: 'mod.platform_user.desc',
   base: '/admin/v1/platform/user',
   canCreate: false,
   paginated: true,
   listPath: (page: number, limit: number, _gameId: string): string =>
-    `/admin/v1/platform/user/list?page=${page}&limit=${limit}`,
+    `/admin/v1/platform/user/list?${pageQuery(page, limit)}`,
   parseList: (data: Object): ResourceListResult => paged<PlatformUserItem>(data, platformUserRow),
   fields: [],
   editFields: PLATFORM_USER_EDIT_FIELDS,
@@ -88,35 +96,35 @@ const PLATFORM_USER: ResourceModule = {
  * update: name description status(in:0,1) permission_ids；**slug 不在 update 里** ⇒ 创建后不可改
  * delete: 要管理员密码；会把 permissions 与 users 一并 detach（故行里带关联用户数）
  * 状态两态 ⇒ 行内切换走局部 PUT {status}（role 没有 toggle 端点）
- * permission_ids 是 **hashid 数组**：候选取自权限树（另一个端点，走 prepareForm 钩子拉），
- * 编辑态用列表回传的 permission_ids 回填；全不选 = 空数组（后端 sync([]) 即取消全部授权）。
+ * permission_ids 是 **hashid 数组**：候选是**整棵权限树**（另一个端点，走 prepareForm 钩子拉，
+ * 表单里渲染成树多选），编辑态用列表回传的 permission_ids 回填；
+ * 全不选 = 空数组（后端 sync([]) 即取消全部授权）。
  * ========================================================================= */
 
 /**
- * 权限多选。options 由 prepareForm 在开框前回填（树是另一个端点的数据），
- * 与 PARENT_FIELD 同一手法：字段对象先建壳，拿到候选后原地改它的 options。
+ * 权限树多选。tree 由 prepareForm 在开框前回填（树是另一个端点的数据），
+ * 与 PARENT_FIELD 同一手法：字段对象先建壳，拿到树后原地改它的 tree。
+ * 值仍是逗号串（FormValues 只认 string）：编辑态用列表回传的 permission_ids 回填，
+ * 提交时 FormDialog 按 multi/tree 同一条路 split 成 hashid 数组。
  */
 const ROLE_PERMISSION_FIELD: FormField = {
   name: 'permission_ids',
-  label: '权限',
-  type: 'multi',
-  options: []
+  label: 'um.role.permission_label',
+  type: 'tree',
+  hint: 'um.role.permission_hint',
+  tree: []
 };
 
 const ROLE_FIELDS: FormField[] = [
-  { name: 'name', label: '角色名称', type: 'text', required: true, placeholder: '最长 50 字' },
-  { name: 'slug', label: '角色标识', type: 'text', required: true, placeholder: '英文标识，最长 50' },
-  { name: 'description', label: '角色描述', type: 'textarea', placeholder: '最长 255 字' },
+  { name: 'name', label: 'um.role.f.name', type: 'text', required: true, placeholder: 'common.max_chars_50' },
+  { name: 'slug', label: 'um.role.f.slug', type: 'text', required: true, placeholder: 'um.role.f.slug_placeholder' },
+  { name: 'description', label: 'um.role.f.description', type: 'textarea', placeholder: 'risk.cheat.note_hint' },
   ROLE_PERMISSION_FIELD
 ];
 
 /** 开框前拉权限树填候选。每次开框都拉一次（权限随时会新增/删除，缓存只会让用户勾到过期项） */
-async function loadRolePermissionOptions(): Promise<void> {
-  const roots = await PermissionService.tree();
-  const options: FieldOption[] = [];
-  // 行收集器给个临时数组：这一趟只要候选（同一套铺平逻辑，不为角色再写一份）
-  flattenPermissions(roots, 0, [], options);
-  ROLE_PERMISSION_FIELD.options = options;
+async function loadRolePermissionTree(): Promise<void> {
+  ROLE_PERMISSION_FIELD.tree = await PermissionService.tree();
 }
 
 function roleFields(isEdit: boolean): FormField[] {
@@ -124,7 +132,7 @@ function roleFields(isEdit: boolean): FormField[] {
   for (let i = 0; i < ROLE_FIELDS.length; i++) {
     const field = ROLE_FIELDS[i];
     if (isEdit && field.name === 'slug') {
-      fields.push({ name: 'slug', label: '角色标识', type: 'text', placeholder: '创建后不可修改', disabled: true });
+      fields.push({ name: 'slug', label: 'um.role.f.slug', type: 'text', placeholder: 'um.role.f.slug_readonly', disabled: true });
     } else {
       fields.push(field);
     }
@@ -152,26 +160,28 @@ function roleRow(item: RoleItem): ResourceRow {
   values.permission_ids = granted.join(',');
   const desc = item.description ?? '';
   const users = item.users_count ?? 0;
-  const head = `${item.slug} · ${users} 名用户 · ${granted.length} 项权限`;
+  const head = t('um.role.head').replace('{slug}', item.slug)
+    .replace('{users}', `${users}`).replace('{perms}', `${granted.length}`);
   const sub = desc.length > 0 ? `${head} · ${desc}` : head;
   return buildRow(item.id, item.name, sub,
-    item.status === 1 ? '启用' : '停用', item.status === 1, item.status, values);
+    item.status === 1 ? t('user.status_enabled') : t('common.disabled'),
+    item.status === 1, item.status, values);
 }
 
 const ROLE: ResourceModule = {
   key: 'role',
-  title: '角色',
-  desc: '新建 / 编辑 / 删除与启停（含关联用户数与已授权限）',
+  title: 'mod.role.title',
+  desc: 'mod.role.desc',
   base: '/admin/v1/role',
   createPath: '/admin/v1/role',
   paginated: true,
   listPath: (page: number, limit: number, _gameId: string): string =>
-    `/admin/v1/role?page=${page}&limit=${limit}`,
+    `/admin/v1/role?${pageQuery(page, limit)}`,
   parseList: (data: Object): ResourceListResult => paged<RoleItem>(data, roleRow),
   fields: roleFields(false),
   editFields: roleFields(true),
   createInitial: roleInitial,
-  prepareForm: loadRolePermissionOptions,
+  prepareForm: loadRolePermissionTree,
   statusMode: 'update',
   togglePath: '',
   needsGame: false,
@@ -189,13 +199,13 @@ const ROLE: ResourceModule = {
  * ========================================================================= */
 
 const PERMISSION_TYPE_OPTIONS: FieldOption[] = [
-  { label: '菜单', value: '1' },
-  { label: '按钮', value: '2' },
-  { label: '接口', value: '3' }
+  { label: 'um.perm.type_menu', value: '1' },
+  { label: 'um.perm.type_button', value: '2' },
+  { label: 'um.perm.type_api', value: '3' }
 ];
 
 /** 新建到树根：parent_id 0 就是 buildTree 的起点 */
-const PERMISSION_ROOT_OPTION: FieldOption = { label: '顶级（无父级）', value: '0' };
+const PERMISSION_ROOT_OPTION: FieldOption = { label: 'um.perm.root_option', value: '0' };
 
 /**
  * 父级下拉（**只在新建态出现**：update 不收 parent_id，编辑态在 permissionEditFields 里被跳过）。
@@ -204,19 +214,19 @@ const PERMISSION_ROOT_OPTION: FieldOption = { label: '顶级（无父级）', va
  */
 const PARENT_FIELD: FormField = {
   name: 'parent_id',
-  label: '父级权限',
+  label: 'um.perm.f.parent',
   type: 'select',
   options: [PERMISSION_ROOT_OPTION]
 };
 
 const PERMISSION_FIELDS: FormField[] = [
-  { name: 'name', label: '权限名称', type: 'text', required: true, placeholder: '最长 50 字' },
-  { name: 'slug', label: '权限标识', type: 'text', required: true, placeholder: '如 role.list，最长 100' },
-  { name: 'type', label: '权限类型', type: 'select', required: true, options: PERMISSION_TYPE_OPTIONS },
+  { name: 'name', label: 'um.perm.f.name', type: 'text', required: true, placeholder: 'common.max_chars_50' },
+  { name: 'slug', label: 'um.perm.f.slug', type: 'text', required: true, placeholder: 'um.perm.f.slug_placeholder' },
+  { name: 'type', label: 'um.perm.f.type', type: 'select', required: true, options: PERMISSION_TYPE_OPTIONS },
   PARENT_FIELD,
-  { name: 'icon', label: '图标', type: 'text', placeholder: '最长 50' },
-  { name: 'path', label: '路由 / 接口路径', type: 'text', placeholder: '最长 255' },
-  { name: 'sort', label: '排序', type: 'number', placeholder: '越小越靠前，缺省 0' }
+  { name: 'icon', label: 'um.perm.f.icon', type: 'text', placeholder: 'um.perm.f.icon_placeholder' },
+  { name: 'path', label: 'um.perm.f.path', type: 'text', placeholder: 'um.perm.f.path_placeholder' },
+  { name: 'sort', label: 'um.perm.f.sort', type: 'number', placeholder: 'um.perm.f.sort_placeholder' }
 ];
 
 /** 编辑态：只保留 update 真会写的字段；slug/type 留着做只读回显（update 不接受它们） */
@@ -225,10 +235,10 @@ function permissionEditFields(): FormField[] {
   for (let i = 0; i < PERMISSION_FIELDS.length; i++) {
     const field = PERMISSION_FIELDS[i];
     if (field.name === 'slug') {
-      fields.push({ name: 'slug', label: '权限标识', type: 'text', placeholder: '创建后不可修改', disabled: true });
+      fields.push({ name: 'slug', label: 'um.perm.f.slug', type: 'text', placeholder: 'um.role.f.slug_readonly', disabled: true });
     } else if (field.name === 'type') {
       fields.push({
-        name: 'type', label: '权限类型', type: 'select',
+        name: 'type', label: 'um.perm.f.type', type: 'select',
         options: PERMISSION_TYPE_OPTIONS, disabled: true
       });
     } else if (field.name === 'parent_id') {
@@ -253,17 +263,18 @@ function permissionInitial(): FormValues {
   return values;
 }
 
+/** 选项表存的是**键名** ⇒ 这里必须查表（每次渲染重新查，语言切换即时生效） */
 function permissionTypeText(type: number): string {
   for (let i = 0; i < PERMISSION_TYPE_OPTIONS.length; i++) {
     if (PERMISSION_TYPE_OPTIONS[i].value === `${type}`) {
-      return PERMISSION_TYPE_OPTIONS[i].label;
+      return t(PERMISSION_TYPE_OPTIONS[i].label);
     }
   }
-  return '未知';
+  return t('um.perm.type_unknown');
 }
 
-/** 树深度 → 缩进（每层两个全角空格；行组件只有 title 一个位置，铺平后靠缩进表层级） */
-function permissionIndent(depth: number): string {
+/** 树深度 → 全角空格缩进：**只给父级下拉**用（Select 摊平后只能靠缩进表层级） */
+function optionIndent(depth: number): string {
   let pad = '';
   for (let i = 0; i < depth; i++) {
     pad += '　　';
@@ -271,7 +282,11 @@ function permissionIndent(depth: number): string {
   return pad;
 }
 
-function permissionRow(node: PermissionNode, depth: number): ResourceRow {
+/**
+ * 一行权限。缩进不进 title —— 层级交给行组件的 depth（真缩进 + 展开箭头），
+ * title 只放名字，否则树形缩进与全角空格会叠成双份。
+ */
+function permissionRow(node: PermissionNode, depth: number, ancestors: string[]): ResourceRow {
   const values: FormValues = {};
   values.name = node.name;
   values.slug = node.slug;
@@ -280,36 +295,53 @@ function permissionRow(node: PermissionNode, depth: number): ResourceRow {
   values.path = node.path ?? '';
   values.sort = `${node.sort}`;
   const path = node.path ?? '';
-  const head = `${permissionTypeText(node.type)} · ${node.slug}`;
+  const head = t('um.perm.head').replace('{type}', permissionTypeText(node.type)).replace('{slug}', node.slug);
   // 无 status 列 ⇒ 不画徽标（status 恒 0、badge 空串，行组件据此不渲染）
-  return buildRow(node.id, permissionIndent(depth) + node.name,
-    path.length > 0 ? `${head} · ${path}` : head, '', true, 0, values);
+  const row = buildRow(node.id, node.name, path.length > 0 ? `${head} · ${path}` : head, '', true, 0, values);
+  row.depth = depth;
+  row.hasChildren = (node.children ?? []).length > 0;
+  row.ancestors = ancestors;
+  return row;
 }
 
 /**
- * 深度优先铺平：一趟同时产出列表行（rows）与候选（options）。
- * 候选的**值**一律取节点自己的 hashid（树的 id 已编、parent_id 也已编成同域 hashid，
- * 见 PermissionController::buildTree）—— 叶节点同样能当父级，父子关系不再受可见性限制。
- * 角色表单只要候选，行收集器传临时数组即可复用这一趟。
+ * 深度优先铺平成行（**带祖先链**）：ancestors 是父到根一路的 id，
+ * 页面折叠某节点时按它把整枝一次过滤掉（不必再回树里找后代）。
+ * children 只在非空时出现（叶子没有该键）⇒ 一律 `?? []` 兜底。
  */
-function flattenPermissions(nodes: PermissionNode[], depth: number,
-  rows: ResourceRow[], options: FieldOption[]): void {
+function flattenPermissionRows(nodes: PermissionNode[], depth: number,
+  ancestors: string[], rows: ResourceRow[]): void {
+  for (let i = 0; i < nodes.length; i++) {
+    const node = nodes[i];
+    rows.push(permissionRow(node, depth, ancestors));
+    const children = node.children ?? [];
+    if (children.length > 0) {
+      flattenPermissionRows(children, depth + 1, ancestors.concat(node.id), rows);
+    }
+  }
+}
+
+/**
+ * 父级下拉的候选（铺平的一维）：值与树同源，一律取节点自己的 hashid
+ * （树的 id 已编、parent_id 也已编成同域 hashid，见 PermissionController::buildTree）——
+ * 叶节点同样能当父级，父子关系不受可见性限制。
+ */
+function collectParentOptions(nodes: PermissionNode[], depth: number, options: FieldOption[]): void {
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
     const option: FieldOption = {
-      label: permissionIndent(depth) + node.name,
+      label: optionIndent(depth) + node.name,
       value: node.id
     };
     options.push(option);
-    rows.push(permissionRow(node, depth));
-    flattenPermissions(node.children ?? [], depth + 1, rows, options);
+    collectParentOptions(node.children ?? [], depth + 1, options);
   }
 }
 
 const PERMISSION: ResourceModule = {
   key: 'permission',
-  title: '权限',
-  desc: '权限树：新建节点 / 改名 / 删除（级联子节点）',
+  title: 'mod.permission.title',
+  desc: 'mod.permission.desc',
   base: '/admin/v1/permission',
   createPath: '/admin/v1/permission',
   paginated: false,
@@ -318,7 +350,8 @@ const PERMISSION: ResourceModule = {
     const roots = data as PermissionNode[];
     const rows: ResourceRow[] = [];
     const parents: FieldOption[] = [];
-    flattenPermissions(roots, 0, rows, parents);
+    flattenPermissionRows(roots, 0, [], rows);
+    collectParentOptions(roots, 0, parents);
     PARENT_FIELD.options = [PERMISSION_ROOT_OPTION].concat(parents);
     const result: ResourceListResult = { rows: rows, total: rows.length };
     return result;

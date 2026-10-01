@@ -1,5 +1,6 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { dash } from '../lib/format';
+import { t } from '../i18n/index.ts';
 import { Empty } from './ui';
 
 const COLORS = ['#0f766e', '#d97706', '#15803d', '#b91c1c'];
@@ -9,7 +10,7 @@ export type Series = { name: string; values: number[]; color?: string };
 /** 手搓 SVG 折线图：无依赖，够用。数值只做几何映射，不参与业务计算。 */
 export function LineChart({ labels, series, height = 200 }: { labels: string[]; series: Series[]; height?: number }) {
   const points = series.flatMap((item) => item.values).filter((value) => Number.isFinite(value));
-  if (labels.length === 0 || points.length === 0) return <Empty text="无可绘制的数据" />;
+  if (labels.length === 0 || points.length === 0) return <Empty text={t('chart.no_data')} />;
 
   const W = 640;
   const H = height;

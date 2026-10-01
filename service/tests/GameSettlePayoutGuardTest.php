@@ -298,7 +298,7 @@ final class GameSettlePayoutGuardTest extends TestCase
                 "{$label} 未在三个入口（bet/settle/refund）都加语法闸 :: 漏掉的那个入口仍会把客户端原文喂给 bccomp，抛 ValueError 变 500"
             );
             self::assertStringContainsString(
-                "return \$this->fail('Invalid amount', 422);",
+                "return \$this->fail(trans('Invalid amount'), 422);",
                 $src,
                 "{$label} 的非法金额不是 fail-loud 422 :: 闸形同虚设或仍走 500"
             );

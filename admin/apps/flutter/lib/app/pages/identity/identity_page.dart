@@ -9,21 +9,37 @@ class IdentityController extends GetxController {
   final api = ApiService();
   final list = <dynamic>[].obs;
   final isLoading = false.obs;
+  final total = 0.obs;
+  final page = 1.obs;
+
+  /// 与后端缺省一致（IdentityController::index 的 `input('limit', 15)`）。
+  static const int pageSize = 15;
   String statusFilter = 'pending';
 
   @override
   void onInit() { super.onInit(); loadData(); }
 
-  Future<void> loadData() async {
+  Future<void> loadData({int? toPage}) async {
+    if (toPage != null) page.value = toPage;
     isLoading.value = true;
     try {
-      final resp = await api.get('/admin/v1/identity/list', params: {'status': statusFilter});
-      list.value = (resp['data']['list'] as List<dynamic>?) ?? [];
+      final result = await api.list('/admin/v1/identity/list',
+          page: page.value, pageSize: pageSize, params: <String, dynamic>{'status': statusFilter});
+      list.value = result.rows;
+      total.value = result.total;
     } catch (e) {
       Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.loading_failed')}: $e');
     } finally {
       isLoading.value = false;
     }
+  }
+
+  /// 换筛选条件必须回到第 1 页：停在第 3 页换上「已通过」很可能整页为空，
+  /// 看起来像「没有数据」而不是「页码超了」。
+  Future<void> filterByStatus(String status) async {
+    statusFilter = status;
+    page.value = 1;
+    await loadData();
   }
 
   /// 审核动作（IdentityController::review）：{id: 记录 hashid, action: approve|reject, note: 可选 ≤500}。
@@ -78,7 +94,7 @@ class IdentityPage extends GetView<IdentityController> {
             ButtonSegment(value: 'rejected', label: Text('Rejected')),
           ],
           selected: {ctrl.statusFilter},
-          onSelectionChanged: (v) { ctrl.statusFilter = v.first; ctrl.loadData(); },
+          onSelectionChanged: (v) => ctrl.filterByStatus(v.first),
         ),
       ]),
       const SizedBox(height: 12),
@@ -129,6 +145,13 @@ class IdentityPage extends GetView<IdentityController> {
           ]);
         }).toList()));
       })),
+      const SizedBox(height: 8),
+      Obx(() => CrudPager(
+            page: ctrl.page.value,
+            total: ctrl.total.value,
+            size: IdentityController.pageSize,
+            onPage: (p) => ctrl.loadData(toPage: p),
+          )),
     ]);
   }
 

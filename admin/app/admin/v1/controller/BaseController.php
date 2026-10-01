@@ -86,12 +86,12 @@ class BaseController
     protected function confirmPassword(int $adminId, string $password, Request $request): ?string
     {
         if (empty($password)) {
-            return '敏感操作需要输入密码确认';
+            return trans('This sensitive operation requires password confirmation');
         }
 
         $admin = AdminUser::find($adminId);
         if (!$admin || !password_verify($password, $admin->password)) {
-            return '密码验证失败';
+            return trans('Password verification failed');
         }
 
         return null; // 验证通过

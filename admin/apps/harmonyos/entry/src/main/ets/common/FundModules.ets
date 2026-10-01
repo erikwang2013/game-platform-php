@@ -32,15 +32,17 @@ import {
   CouponItem,
   CouponStats,
   CdnProviderItem,
-  WithdrawLimitItem
+  WithdrawLimitItem,
+  pageQuery
 } from '../model/DataModels';
 import { ResourceModule, buildRow, unpaged, paged } from './ResourceSchema';
 import { GameService } from '../service/DataService';
+import { t, t1 } from '../i18n/Translations';
 
 /** 启用/停用两态（payment/cdn 都有 status 列，且都有独立的 toggle 端点） */
 const STATUS_OPTIONS: FieldOption[] = [
-  { label: '启用', value: '1' },
-  { label: '停用', value: '0' }
+  { label: 'common.enabled', value: '1' },
+  { label: 'common.disabled', value: '0' }
 ];
 
 /* =============================== 1 支付方式 ===============================
@@ -83,32 +85,32 @@ const PAYMENT_PROVIDERS: FieldOption[] = [
  * ponytail: 短名单到这就是上限，真要按市场精细投放再改成从国家配置列表拉候选。
  */
 const PAYMENT_COUNTRIES: FieldOption[] = [
-  { label: '中国 CN', value: 'CN' },
-  { label: '美国 US', value: 'US' },
-  { label: '日本 JP', value: 'JP' },
-  { label: '韩国 KR', value: 'KR' },
-  { label: '巴西 BR', value: 'BR' },
-  { label: '印度 IN', value: 'IN' },
-  { label: '德国 DE', value: 'DE' },
-  { label: '英国 GB', value: 'GB' }
+  { label: 'country.cn', value: 'CN' },
+  { label: 'country.us', value: 'US' },
+  { label: 'country.jp', value: 'JP' },
+  { label: 'country.kr', value: 'KR' },
+  { label: 'country.br', value: 'BR' },
+  { label: 'country.in', value: 'IN' },
+  { label: 'country.de', value: 'DE' },
+  { label: 'country.gb', value: 'GB' }
 ];
 
 const PAYMENT_FIELDS: FormField[] = [
-  { name: 'name', label: '支付方式名称', type: 'text', required: true, placeholder: '最长 50 字' },
+  { name: 'name', label: 'payment.name', type: 'text', required: true, placeholder: 'payment.name_hint' },
   {
-    name: 'type', label: '类型', type: 'select', required: true, options: [
-      { label: '法币', value: 'fiat' },
-      { label: '加密货币', value: 'crypto' }
+    name: 'type', label: 'payment.type', type: 'select', required: true, options: [
+      { label: 'payment.fiat', value: 'fiat' },
+      { label: 'payment.crypto', value: 'crypto' }
     ]
   },
-  { name: 'provider', label: '提供商', type: 'select', required: true, options: PAYMENT_PROVIDERS },
-  { name: 'status', label: '状态', type: 'select', required: true, options: STATUS_OPTIONS },
-  { name: 'countries', label: '可见国家', type: 'multi', options: PAYMENT_COUNTRIES },
-  { name: 'currency', label: '限定币种', type: 'text', placeholder: '如 USDT 方法限 USD；空 = 任意，≤10 位' },
-  { name: 'min_amount', label: '最小充值', type: 'text', required: true, placeholder: '十进制金额，0 = 不限' },
-  { name: 'max_amount', label: '最大充值', type: 'text', required: true, placeholder: '十进制金额，0 = 不限' },
-  { name: 'config', label: '支付配置', type: 'textarea', placeholder: 'JSON 文本（加密存储），如 {"network":"TRC20"}；留空用默认' },
-  { name: 'sort', label: '排序', type: 'number', placeholder: '越小越靠前，缺省 0' }
+  { name: 'provider', label: 'payment.provider', type: 'select', required: true, options: PAYMENT_PROVIDERS },
+  { name: 'status', label: 'payment.status', type: 'select', required: true, options: STATUS_OPTIONS },
+  { name: 'countries', label: 'payment.countries', type: 'multi', options: PAYMENT_COUNTRIES },
+  { name: 'currency', label: 'payment.currency', type: 'text', placeholder: 'payment.currency_hint' },
+  { name: 'min_amount', label: 'payment.min_amount', type: 'text', required: true, placeholder: 'payment.amount_hint' },
+  { name: 'max_amount', label: 'payment.max_amount', type: 'text', required: true, placeholder: 'payment.amount_hint' },
+  { name: 'config', label: 'payment.config', type: 'textarea', placeholder: 'payment.config_hint' },
+  { name: 'sort', label: 'payment.sort', type: 'number', placeholder: 'payment.sort_hint' }
 ];
 
 function paymentInitial(): FormValues {
@@ -141,16 +143,16 @@ function paymentRow(item: PaymentMethodItem): ResourceRow {
   values.max_amount = item.max_amount ?? '';
   values.config = item.config ?? '';
   values.sort = `${item.sort}`;
-  const scope = codes.length > 0 ? codes.join('/') : '全球';
+  const scope = codes.length > 0 ? codes.join('/') : t('payment.global');
   const range = `${item.min_amount ?? '0'} ~ ${item.max_amount ?? '0'}`;
   return buildRow(item.id, item.name, `${item.type} · ${item.provider} · ${range} · ${scope}`,
-    item.status === 1 ? '启用' : '停用', item.status === 1, item.status, values);
+    item.status === 1 ? t('common.enabled') : t('common.disabled'), item.status === 1, item.status, values);
 }
 
 const PAYMENT: ResourceModule = {
   key: 'payment_method',
-  title: '支付方式',
-  desc: '法币/加密货币通道的额度、可见国家与启停',
+  title: 'mod.payment_method.title',
+  desc: 'mod.payment_method.desc',
   base: '/admin/v1/payment/method',
   paginated: false,
   listPath: (_page: number, _limit: number, _gameId: string): string => '/admin/v1/payment/method/list',
@@ -189,25 +191,25 @@ const PAYMENT: ResourceModule = {
  */
 const COUPON_GAME_FIELD: FormField = {
   name: 'game_id',
-  label: '适用游戏',
+  label: 'coupon.game_id',
   type: 'select',
   options: []
 };
 
 const COUPON_FIELDS: FormField[] = [
-  { name: 'name', label: '优惠券名称', type: 'text', required: true, placeholder: '最长 100 字' },
+  { name: 'name', label: 'coupon.name', type: 'text', required: true, placeholder: 'coupon.name_hint' },
   {
-    name: 'type', label: '类型', type: 'select', required: true, options: [
-      { label: '固定金额（平台币面值）', value: 'fixed' },
-      { label: '折扣率（如 0.10 = 9 折）', value: 'rate' }
+    name: 'type', label: 'coupon.type', type: 'select', required: true, options: [
+      { label: 'coupon.type_fixed', value: 'fixed' },
+      { label: 'coupon.type_rate', value: 'rate' }
     ]
   },
-  { name: 'value', label: '面值 / 折扣率', type: 'text', required: true, placeholder: '十进制，fixed 为平台币额、rate 为 0.0001~1' },
-  { name: 'min_amount', label: '最低使用金额', type: 'text', required: true, placeholder: '十进制金额，0 = 无门槛' },
-  { name: 'max_discount', label: '最大优惠金额', type: 'text', required: true, placeholder: '十进制金额，0 = 不封顶（rate 类型有效）' },
+  { name: 'value', label: 'coupon.value', type: 'text', required: true, placeholder: 'coupon.value_hint' },
+  { name: 'min_amount', label: 'coupon.min_amount', type: 'text', required: true, placeholder: 'coupon.min_amount_hint' },
+  { name: 'max_discount', label: 'coupon.max_discount', type: 'text', required: true, placeholder: 'coupon.max_discount_hint' },
   COUPON_GAME_FIELD,
-  { name: 'total_qty', label: '发行总量', type: 'number', placeholder: '整数，0 = 不限' },
-  { name: 'user_limit', label: '每人限领', type: 'number', placeholder: '整数，≥ 1，缺省 1' }
+  { name: 'total_qty', label: 'coupon.total_qty', type: 'number', placeholder: 'coupon.total_qty_hint' },
+  { name: 'user_limit', label: 'coupon.user_limit', type: 'number', placeholder: 'coupon.user_limit_hint' }
 ];
 
 /** 编辑态多一个 status（新建那条路后端硬编码 status=1，摆了也是个假开关）；其余字段同表 */
@@ -216,7 +218,7 @@ function couponEditFields(): FormField[] {
   for (let i = 0; i < COUPON_FIELDS.length; i++) {
     fields.push(COUPON_FIELDS[i]);
   }
-  fields.push({ name: 'status', label: '状态', type: 'select', options: STATUS_OPTIONS });
+  fields.push({ name: 'status', label: 'coupon.status', type: 'select', options: STATUS_OPTIONS });
   return fields;
 }
 
@@ -256,30 +258,37 @@ function couponRow(item: CouponItem): ResourceRow {
   values.total_qty = `${item.total_qty}`;
   values.user_limit = `${item.user_limit}`;
   values.status = `${item.status}`;
-  const unit = item.type === 'rate' ? `折扣率 ${item.value}` : `面值 ${item.value}`;
-  const quota = item.total_qty > 0 ? `已领 ${item.used_qty}/${item.total_qty}` : `已领 ${item.used_qty} · 不限量`;
-  const threshold = item.min_amount === '0.0000' ? '无门槛' : `门槛 ${item.min_amount}`;
+  // 行摘要按**数据装载时**的语言拼：`t()` 读静态 currentCode，不是可观测状态 ⇒ 切语言不会
+  // 自动重排这一行，要等下次拉列表才跟着变。已知取舍，未挂 @Watch 重载（该页与并行写者共用）。
+  const unit = item.type === 'rate' ? t1('coupon.rate_value', 'value', item.value)
+    : t1('coupon.fixed_value', 'value', item.value);
+  const quota = item.total_qty > 0
+    ? t('coupon.quota_limited').replace('{used}', `${item.used_qty}`).replace('{total}', `${item.total_qty}`)
+    : t1('coupon.quota_unlimited', 'used', `${item.used_qty}`);
+  const threshold = item.min_amount === '0.0000' ? t('coupon.no_threshold')
+    : t1('coupon.threshold', 'amount', item.min_amount);
   return buildRow(item.id, item.name, `${unit} · ${threshold} · ${quota}`,
-    item.status === 1 ? '启用' : '停用', item.status === 1, item.status, values);
+    item.status === 1 ? t('common.enabled') : t('common.disabled'), item.status === 1, item.status, values);
 }
 
 /** 统计：端点只回 data（message 是框架缺省 'success'）⇒ 由这里拼成一句给运营看的话 */
 function couponStatsText(data: Object, _message: string): string {
   const stats = data as CouponStats;
   const remaining = stats.remaining === null || stats.remaining === undefined
-    ? '不限量'
-    : `${stats.remaining}`;
-  return `总量 ${stats.total_qty} · 已领 ${stats.used_qty} · 剩余 ${remaining} · 使用率 ${stats.usage_rate}%`;
+    ? t('coupon.unlimited') : `${stats.remaining}`;
+  return t('coupon.stats_text').replace('{total}', `${stats.total_qty}`)
+    .replace('{used}', `${stats.used_qty}`).replace('{remaining}', remaining)
+    .replace('{rate}', `${stats.usage_rate}`);
 }
 
 const COUPON: ResourceModule = {
   key: 'coupon',
-  title: '优惠券',
-  desc: '券定义、门槛与发行量（已领取的不可改）',
+  title: 'mod.coupon.title',
+  desc: 'mod.coupon.desc',
   base: '/admin/v1/coupon',
   paginated: true,
   listPath: (page: number, limit: number, _gameId: string): string =>
-    `/admin/v1/coupon/list?page=${page}&limit=${limit}`,
+    `/admin/v1/coupon/list?${pageQuery(page, limit)}`,
   parseList: (data: Object): ResourceListResult => paged<CouponItem>(data, couponRow),
   fields: COUPON_FIELDS,
   editFields: couponEditFields(),
@@ -289,7 +298,7 @@ const COUPON: ResourceModule = {
   togglePath: '',
   needsGame: false,
   deletePassword: false,
-  extraText: '统计',
+  extraText: 'mod.coupon.action',
   extraPath: (id: string): string => `/admin/v1/coupon/${id}/stats`,
   extraMethod: 'GET',
   extraMessage: couponStatsText
@@ -309,19 +318,19 @@ const COUPON: ResourceModule = {
  * ========================================================================== */
 
 const CDN_FIELDS: FormField[] = [
-  { name: 'name', label: '显示名称', type: 'text', required: true, placeholder: '最长 50 字' },
+  { name: 'name', label: 'cdn.name', type: 'text', required: true, placeholder: 'cdn.name_hint' },
   {
-    name: 'provider', label: '厂商', type: 'select', required: true, options: [
+    name: 'provider', label: 'cdn.provider', type: 'select', required: true, options: [
       { label: 'Cloudflare', value: 'cloudflare' },
       { label: 'CloudFront', value: 'cloudfront' },
-      { label: '阿里云', value: 'aliyun' },
-      { label: '腾讯云', value: 'tencent' },
-      { label: '华为云', value: 'huawei' }
+      { label: 'cdn.aliyun', value: 'aliyun' },
+      { label: 'cdn.tencent', value: 'tencent' },
+      { label: 'cdn.huawei', value: 'huawei' }
     ]
   },
-  { name: 'status', label: '状态', type: 'select', required: true, options: STATUS_OPTIONS },
-  { name: 'config', label: '连接配置', type: 'textarea', placeholder: 'JSON 文本（加密存储），如 {"bucket":"...","access_key":"..."}' },
-  { name: 'sort', label: '排序', type: 'number', placeholder: '越小越靠前，缺省 0' }
+  { name: 'status', label: 'cdn.status', type: 'select', required: true, options: STATUS_OPTIONS },
+  { name: 'config', label: 'cdn.config', type: 'textarea', placeholder: 'cdn.config_hint' },
+  { name: 'sort', label: 'cdn.sort', type: 'number', placeholder: 'cdn.sort_hint' }
 ];
 
 /** 编辑态：config 表意不同（留空 = 不动），文案与新建分开写 */
@@ -331,7 +340,7 @@ function cdnEditFields(): FormField[] {
     const field = CDN_FIELDS[i];
     if (field.name === 'config') {
       // 凭据不回传 ⇒ 无法回显；留空 = 不提交这个字段 = 库中原值不动
-      fields.push({ name: 'config', label: '连接配置', type: 'textarea', placeholder: '留空 = 不修改（凭据不回传，无法回显）' });
+      fields.push({ name: 'config', label: 'cdn.config', type: 'textarea', placeholder: 'cdn.config_keep_hint' });
     } else {
       fields.push(field);
     }
@@ -356,14 +365,14 @@ function cdnRow(item: CdnProviderItem): ResourceRow {
   values.status = `${item.status}`;
   values.sort = `${item.sort}`;
   // config 不在表单值里：它不回传、也不参与局部更新的「改没改」判断
-  return buildRow(item.id, item.name, `${item.provider} · 排序 ${item.sort}`,
-    item.status === 1 ? '启用' : '停用', item.status === 1, item.status, values);
+  return buildRow(item.id, item.name, `${item.provider} · ${t('cdn.sort')} ${item.sort}`,
+    item.status === 1 ? t('common.enabled') : t('common.disabled'), item.status === 1, item.status, values);
 }
 
 const CDN: ResourceModule = {
   key: 'cdn_provider',
-  title: 'CDN 厂商',
-  desc: '五厂商配置、启停与连通测试',
+  title: 'mod.cdn_provider.title',
+  desc: 'mod.cdn_provider.desc',
   base: '/admin/v1/cdn/provider',
   paginated: false,
   listPath: (_page: number, _limit: number, _gameId: string): string => '/admin/v1/cdn/provider/list',
@@ -375,7 +384,7 @@ const CDN: ResourceModule = {
   togglePath: '/admin/v1/cdn/provider/toggle',
   needsGame: false,
   deletePassword: false,
-  extraText: '连通测试',
+  extraText: 'mod.cdn_provider.action',
   extraPath: (_id: string): string => '/admin/v1/cdn/provider/test',
   extraBody: (id: string): FormPayload => {
     const body: FormPayload = {};
@@ -412,20 +421,20 @@ function seedLimitReset(item: WithdrawLimitItem): void {
 }
 
 const LIMIT_RESET_FIELDS: FormField[] = [
-  { name: 'daily_limit', label: '每日限额', type: 'text', required: true, placeholder: '十进制金额，写进所有档位' },
-  { name: 'min_amount', label: '单笔最低', type: 'text', required: true, placeholder: '写进所有档位的 single_min（低于某档上限才放行）' },
-  { name: 'auto_approve_threshold', label: '自动审批阈值', type: 'text', required: true, placeholder: '写进所有档位' }
+  { name: 'daily_limit', label: 'withdraw_limit.daily_limit', type: 'text', required: true, placeholder: 'withdraw_limit.daily_limit_hint' },
+  { name: 'min_amount', label: 'withdraw_limit.single_min', type: 'text', required: true, placeholder: 'withdraw_limit.single_min_hint' },
+  { name: 'auto_approve_threshold', label: 'withdraw_limit.auto_approve_threshold', type: 'text', required: true, placeholder: 'withdraw_limit.auto_hint' }
 ];
 
 const LIMIT_EDIT_FIELDS: FormField[] = [
-  { name: 'user_level', label: '档位', type: 'text', placeholder: '创建后不可修改', disabled: true },
-  { name: 'single_min', label: '单笔最低', type: 'text', placeholder: '十进制金额' },
-  { name: 'single_max', label: '单笔最高', type: 'text', placeholder: '十进制金额，0 = 不限' },
-  { name: 'daily_limit', label: '每日限额', type: 'text', placeholder: '十进制金额' },
-  { name: 'monthly_limit', label: '每月限额', type: 'text', placeholder: '十进制金额' },
-  { name: 'fee_pct', label: '手续费率', type: 'text', placeholder: '百分数，如 0.50（须 < 100）' },
-  { name: 'fee_max', label: '手续费上限', type: 'text', placeholder: '十进制金额，0 = 不封顶' },
-  { name: 'auto_approve_threshold', label: '自动审批阈值', type: 'text', placeholder: '十进制金额' }
+  { name: 'user_level', label: 'withdraw_limit.user_level', type: 'text', placeholder: 'common.immutable', disabled: true },
+  { name: 'single_min', label: 'withdraw_limit.single_min', type: 'text', placeholder: 'withdraw_limit.amount_hint' },
+  { name: 'single_max', label: 'withdraw_limit.single_max', type: 'text', placeholder: 'withdraw_limit.amount_unlimited_hint' },
+  { name: 'daily_limit', label: 'withdraw_limit.daily_limit', type: 'text', placeholder: 'withdraw_limit.amount_hint' },
+  { name: 'monthly_limit', label: 'withdraw_limit.monthly_limit', type: 'text', placeholder: 'withdraw_limit.amount_hint' },
+  { name: 'fee_pct', label: 'withdraw_limit.fee_pct', type: 'text', placeholder: 'withdraw_limit.fee_pct_hint' },
+  { name: 'fee_max', label: 'withdraw_limit.fee_max', type: 'text', placeholder: 'withdraw_limit.fee_max_hint' },
+  { name: 'auto_approve_threshold', label: 'withdraw_limit.auto_approve_threshold', type: 'text', placeholder: 'withdraw_limit.amount_hint' }
 ];
 
 function limitInitial(): FormValues {
@@ -454,20 +463,23 @@ function limitRow(item: WithdrawLimitItem): ResourceRow {
   } else if (!limitSeedFromDefault && limitResetSeed['daily_limit'] === undefined) {
     seedLimitReset(item);
   }
-  const singleMax = item.single_max === '0.0000' ? '不限' : item.single_max;
-  return buildRow(item.id, `档位 ${item.user_level}`,
-    `单笔 ${item.single_min}~${singleMax} · 日 ${item.daily_limit} · 月 ${item.monthly_limit} · 费率 ${item.fee_pct}%（上限 ${item.fee_max}）`,
-    '', true, 0, values);
+  const singleMax = item.single_max === '0.0000' ? t('common.unlimited') : item.single_max;
+  const subtitle = t('withdraw_limit.row_subtitle').replace('{min}', item.single_min)
+    .replace('{max}', singleMax).replace('{daily}', item.daily_limit)
+    .replace('{monthly}', item.monthly_limit).replace('{fee}', item.fee_pct)
+    .replace('{feeMax}', item.fee_max);
+  return buildRow(item.id, t1('withdraw_limit.row_title', 'level', item.user_level),
+    subtitle, '', true, 0, values);
 }
 
 const WITHDRAW_LIMIT: ResourceModule = {
   key: 'withdraw_limit',
-  title: '提现阶梯限额',
-  desc: '各档位额度与费率，含全档位重置',
+  title: 'mod.withdraw_limit.title',
+  desc: 'mod.withdraw_limit.desc',
   base: '/admin/v1/withdraw/limits',
   // 没有逐档新建：这条路是「全档位重置」（POST /withdraw/limits/set），按钮与标题另起名
   createPath: '/admin/v1/withdraw/limits/set',
-  createLabel: '全档位重置',
+  createLabel: 'mod.withdraw_limit.create',
   canDelete: false,
   paginated: false,
   listPath: (_page: number, _limit: number, _gameId: string): string => '/admin/v1/withdraw/limits/list',

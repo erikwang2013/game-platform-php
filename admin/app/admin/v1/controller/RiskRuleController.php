@@ -127,7 +127,7 @@ class RiskRuleController extends BaseController
     {
         $rule = RiskRule::find($this->decodeId($hashid));
         if (!$rule) {
-            return $this->fail('规则不存在');
+            return $this->fail(trans('Rule not found'));
         }
         try {
             $this->fill($rule, $request->post());
@@ -144,7 +144,7 @@ class RiskRuleController extends BaseController
     {
         $rule = RiskRule::find($this->decodeId($hashid));
         if (!$rule) {
-            return $this->fail('规则不存在');
+            return $this->fail(trans('Rule not found'));
         }
         $rule->status = $rule->status ? 0 : 1;
         $rule->save();
@@ -158,7 +158,7 @@ class RiskRuleController extends BaseController
     {
         $rule = RiskRule::find($this->decodeId((string) $request->post('rule_id', '')));
         if (!$rule) {
-            return $this->fail('规则不存在');
+            return $this->fail(trans('Rule not found'));
         }
 
         $context = $request->post('context');
@@ -191,15 +191,15 @@ class RiskRuleController extends BaseController
 
         // 空对象 {} 与空数组 [] 在 assoc 模式下都是 []，无法区分；两者在这里都无害，放行。
         if (!is_array($config) || ($config !== [] && array_is_list($config))) {
-            throw new \InvalidArgumentException('config 必须是 JSON 对象（形如 {"key":value}）');
+            throw new \InvalidArgumentException(trans('config must be a JSON object (e.g. {"key":value})'));
         }
 
         $allowed = self::CONFIG_KEYS[$type] ?? [];
         foreach ($config as $key => $value) {
             if (!in_array((string) $key, $allowed, true)) {
-                throw new \InvalidArgumentException(
-                    "config.{$key} 不是 {$type} 支持的键（可用: " . implode('/', $allowed) . '）'
-                );
+                throw new \InvalidArgumentException(trans('config.%key% is not a supported key for %type% (available: %available%)', [
+                    '%key%' => $key, '%type%' => $type, '%available%' => implode('/', $allowed),
+                ]));
             }
             $this->assertConfigValue((string) $key, $value);
         }
@@ -214,18 +214,18 @@ class RiskRuleController extends BaseController
     {
         if (in_array($key, self::BOOL_KEYS, true)) {
             if (!is_bool($value)) {
-                throw new \InvalidArgumentException("config.{$key} 必须是布尔值 true/false");
+                throw new \InvalidArgumentException(trans('config.%key% must be a boolean true/false', ['%key%' => $key]));
             }
             return;
         }
 
         if ($key === 'blacklist') {
             if (!is_array($value)) {
-                throw new \InvalidArgumentException('config.blacklist 必须是字符串数组');
+                throw new \InvalidArgumentException(trans('config.blacklist must be an array of strings'));
             }
             foreach ($value as $ip) {
                 if (!is_string($ip) || trim($ip) === '') {
-                    throw new \InvalidArgumentException('config.blacklist 只能是非空字符串');
+                    throw new \InvalidArgumentException(trans('config.blacklist entries must be non-empty strings'));
                 }
             }
             return;
@@ -233,7 +233,7 @@ class RiskRuleController extends BaseController
 
         if ($key === 'currency') {
             if (!is_string($value) || strlen($value) > 10) {
-                throw new \InvalidArgumentException('config.currency 必须是 10 字符以内的字符串');
+                throw new \InvalidArgumentException(trans('config.currency must be a string of at most 10 characters'));
             }
             return;
         }
@@ -248,29 +248,31 @@ class RiskRuleController extends BaseController
             default                          => '',
         };
         if ($str === '' || !preg_match(self::DECIMAL_RE, $str)) {
-            throw new \InvalidArgumentException("config.{$key} 必须是十进制数字");
+            throw new \InvalidArgumentException(trans('config.%key% must be a decimal number', ['%key%' => $key]));
         }
 
         if (in_array($key, self::MONEY_KEYS, true)) {
             if (bccomp($str, '0', 8) <= 0) {
-                throw new \InvalidArgumentException("config.{$key} 必须大于 0（当前 {$str}）");
+                throw new \InvalidArgumentException(trans('config.%key% must be greater than 0 (current %current%)', ['%key%' => $key, '%current%' => $str]));
             }
             return;
         }
 
         if (in_array($key, self::RATIO_KEYS, true)) {
             if (bccomp($str, '0', 8) <= 0 || bccomp($str, '1', 8) > 0) {
-                throw new \InvalidArgumentException("config.{$key} 必须落在 (0, 1] 区间（当前 {$str}）");
+                throw new \InvalidArgumentException(trans('config.%key% must be within (0, 1] (current %current%)', ['%key%' => $key, '%current%' => $str]));
             }
             return;
         }
 
         [$min, $max] = self::INT_BOUNDS[$key] ?? [null, null];
         if ($min === null) {
-            throw new \InvalidArgumentException("config.{$key} 没有登记值域");
+            throw new \InvalidArgumentException(trans('config.%key% has no registered value range', ['%key%' => $key]));
         }
         if (bccomp($str, (string) $min, 8) < 0 || bccomp($str, (string) $max, 8) > 0) {
-            throw new \InvalidArgumentException("config.{$key} 必须在 {$min}..{$max} 之间（当前 {$str}）");
+            throw new \InvalidArgumentException(trans('config.%key% must be between %min%..%max% (current %current%)', [
+                '%key%' => $key, '%min%' => $min, '%max%' => $max, '%current%' => $str,
+            ]));
         }
     }
 
@@ -283,17 +285,17 @@ class RiskRuleController extends BaseController
         $type = (string) ($data['type'] ?? '');
         $action = (string) ($data['action'] ?? '');
         if ($name === '' || $type === '' || $action === '') {
-            throw new \InvalidArgumentException('name/type/action 必填');
+            throw new \InvalidArgumentException(trans('name/type/action are required'));
         }
         if (!in_array($type, RiskSandboxService::TYPES, true)) {
-            throw new \InvalidArgumentException('type 不支持: ' . $type);
+            throw new \InvalidArgumentException(trans('Unsupported type: ') . $type);
         }
         if (!in_array($action, ['log', 'warn', 'block'], true)) {
-            throw new \InvalidArgumentException('action 仅支持 log/warn/block');
+            throw new \InvalidArgumentException(trans('action only supports log/warn/block'));
         }
         $scope = (string) ($data['scope'] ?? 'all');
         if (!in_array($scope, ['all', 'deposit', 'withdraw', 'exchange', 'login'], true)) {
-            throw new \InvalidArgumentException('scope 仅支持 all/deposit/withdraw/exchange/login');
+            throw new \InvalidArgumentException(trans('scope only supports all/deposit/withdraw/exchange/login'));
         }
         $config = $this->validateConfig($type, (string) ($data['config'] ?? '{}'));
 

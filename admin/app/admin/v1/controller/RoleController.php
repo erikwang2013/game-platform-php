@@ -90,7 +90,7 @@ class RoleController extends BaseController
             $role->permissions()->sync($this->decodePermissionIds($request->input('permission_ids', [])));
         }
 
-        return $this->success($this->encodeIds($role->toArray()), '创建成功');
+        return $this->success($this->encodeIds($role->toArray()), trans('Created successfully'));
     }
 
     #[Apidoc\Title("更新角色")]
@@ -107,7 +107,7 @@ class RoleController extends BaseController
         $id = $this->decodeId($hashid);
         $role = AdminRole::find($id);
         if (!$role) {
-            return $this->fail('角色不存在', 404);
+            return $this->fail(trans('Role not found'), 404);
         }
 
         // 镜像 store 的 name 规则（sometimes：局部更新），并补齐 store 漏管的 description/status/
@@ -132,7 +132,7 @@ class RoleController extends BaseController
             $role->permissions()->sync($this->decodePermissionIds($request->input('permission_ids', [])));
         }
 
-        return $this->success($this->encodeIds($role->toArray()), '更新成功');
+        return $this->success($this->encodeIds($role->toArray()), trans('Updated successfully'));
     }
 
     /**
@@ -164,7 +164,7 @@ class RoleController extends BaseController
         $id = $this->decodeId($hashid);
         $role = AdminRole::find($id);
         if (!$role) {
-            return $this->fail('角色不存在', 404);
+            return $this->fail(trans('Role not found'), 404);
         }
 
         $adminId = $request->adminId ?? 0;
@@ -177,6 +177,6 @@ class RoleController extends BaseController
         $role->users()->detach();
         $role->delete();
 
-        return $this->success([], '删除成功');
+        return $this->success([], trans('Deleted successfully'));
     }
 }

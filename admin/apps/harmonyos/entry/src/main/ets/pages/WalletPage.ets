@@ -2,10 +2,12 @@
  * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
  */
 import router from '@ohos.router';
+import { t, t1 } from '../i18n/Translations';
 
 @Entry
 @Component
 struct WalletPage {
+  @StorageLink('app_locale') localeCode: string = 'en';
   @State balance: string = '0.0000';
   @State frozenBalance: string = '0.0000';
 
@@ -21,14 +23,14 @@ struct WalletPage {
   build() {
     Column() {
       Row() {
-        Button('← 返回').onClick(() => router.back())
+        Button(t('common.back')).onClick(() => router.back())
         Blank()
       }.padding(16)
 
       Column() {
-        Text('平台币余额').fontSize(14).fontColor('#666')
+        Text(t('wallet.balance')).fontSize(14).fontColor('#666')
         Text(this.balance).fontSize(36).fontWeight(FontWeight.Bold).margin({ top: 8 })
-        Text(`冻结: ${this.frozenBalance}`).fontSize(12).fontColor('#999')
+        Text(t1('wallet.frozen', 'amount', this.frozenBalance)).fontSize(12).fontColor('#999')
       }
       .width('90%')
       .padding(24)
@@ -40,25 +42,25 @@ struct WalletPage {
         GridItem() {
           Column() {
             Text('💰').fontSize(28)
-            Text('充值').fontSize(14)
+            Text(t('wallet.recharge')).fontSize(14)
           }.onClick(() => {})
         }
         GridItem() {
           Column() {
             Text('🔄').fontSize(28)
-            Text('兑换').fontSize(14)
+            Text(t('wallet.exchange')).fontSize(14)
           }.onClick(() => {})
         }
         GridItem() {
           Column() {
             Text('💸').fontSize(28)
-            Text('提现').fontSize(14)
+            Text(t('wallet.withdraw')).fontSize(14)
           }.onClick(() => {})
         }
         GridItem() {
           Column() {
             Text('📋').fontSize(28)
-            Text('流水').fontSize(14)
+            Text(t('wallet.transactions')).fontSize(14)
           }.onClick(() => {})
         }
       }

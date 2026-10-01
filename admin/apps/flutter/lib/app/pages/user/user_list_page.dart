@@ -6,6 +6,7 @@ import '../../i18n/translations.dart';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../widgets/crud.dart';
 import 'user_controller.dart';
 import 'user_form_page.dart';
 
@@ -130,14 +131,12 @@ class UserListPage extends GetView<UserController> {
         ),
         // Pagination
         const SizedBox(height: 8),
-        Obx(() => Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            IconButton(onPressed: ctrl.prevPage, icon: const Icon(Icons.chevron_left)),
-            Text('第 ${ctrl.page.value} 页 / 共 ${(ctrl.total.value / ctrl.limit.value).ceil()} 页 (${ctrl.total.value} 条)'),
-            IconButton(onPressed: ctrl.nextPage, icon: const Icon(Icons.chevron_right)),
-          ],
-        )),
+        Obx(() => CrudPager(
+              page: ctrl.page.value,
+              total: ctrl.total.value,
+              size: UserController.pageSize,
+              onPage: ctrl.goPage,
+            )),
       ],
     );
   }

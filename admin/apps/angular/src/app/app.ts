@@ -4,9 +4,11 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { Auth } from './core/auth.service';
+import { I18n, T } from './core/i18n/i18n';
 
 interface NavItem {
   path: string;
+  /** i18n 键（不是译文）：文案在模板里过 `| t`，切语言即重绘 */
   label: string;
 }
 interface NavGroup {
@@ -16,48 +18,65 @@ interface NavGroup {
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink],
+  imports: [RouterOutlet, RouterLink, T],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
 export class App {
   private readonly router = inject(Router);
   private readonly auth = inject(Auth);
+  private readonly i18n = inject(I18n);
 
   protected readonly user = this.auth.user;
   /** 移动端抽屉开关 */
   protected readonly menu = signal(false);
 
+  /** 语言菜单开关 + 13 种语言（母语名，与两棵 flutter 同一份清单） */
+  protected readonly langOpen = signal(false);
+  protected readonly langs = this.i18n.langs;
+  protected readonly lang = this.i18n.lang;
+  /** 按钮上显示当前语言的**母语名**（英文界面下也要认得「简体中文」） */
+  protected readonly native = computed(
+    () => this.langs.find((l) => l.code === this.lang())?.native ?? '',
+  );
+
+  protected pickLang(code: string): void {
+    this.i18n.use(code);
+    this.langOpen.set(false);
+  }
+
   protected readonly groups: NavGroup[] = [
     {
-      section: '概览',
+      section: 'nav.section.overview',
       items: [
-        { path: '/dashboard', label: '仪表盘' },
-        { path: '/analytics', label: '数据分析' },
+        { path: '/dashboard', label: 'nav.dashboard' },
+        { path: '/analytics', label: 'nav.analytics' },
       ],
     },
     {
-      section: '运营',
+      section: 'nav.section.ops',
       items: [
-        { path: '/users', label: '用户管理' },
-        { path: '/games', label: '游戏管理' },
-        { path: '/content', label: '内容运营' },
-        { path: '/marketing', label: '营销中心' },
+        { path: '/users', label: 'nav.users' },
+        { path: '/games', label: 'nav.games' },
+        { path: '/content', label: 'nav.content' },
+        { path: '/marketing', label: 'nav.marketing' },
       ],
     },
     {
-      section: '资金与风控',
+      section: 'nav.section.money',
       items: [
-        { path: '/finance', label: '财务中心' },
-        { path: '/risk', label: '风险控制' },
+        { path: '/finance', label: 'nav.finance' },
+        { path: '/risk', label: 'nav.risk' },
       ],
     },
     {
-      section: '支撑',
+      section: 'nav.section.support',
       items: [
-        { path: '/support', label: '工单报表' },
-        { path: '/infra', label: '基础设施' },
-        { path: '/settings', label: '系统设置' },
+        { path: '/support', label: 'nav.support' },
+        { path: '/infra', label: 'nav.infra' },
+        // 「管理员」= 后台账号（/admin/v1/user）；「用户管理」是 C 端平台用户，两者不是一个模块
+        { path: '/admins', label: 'nav.admins' },
+        { path: '/settings', label: 'nav.settings' },
       ],
     },
   ];
@@ -81,15 +100,16 @@ export class App {
     const hit = [...this.items]
       .filter((i) => url.startsWith(i.path))
       .sort((a, b) => b.path.length - a.path.length)[0];
-    if (!hit) return { section: '概览', label: '仪表盘' };
+    if (!hit) return { section: 'nav.section.overview', label: 'nav.dashboard' };
     const group = this.groups.find((g) => g.items.includes(hit));
-    return { section: group?.section ?? '概览', label: hit.label };
+    return { section: group?.section ?? 'nav.section.overview', label: hit.label };
   });
 
   constructor() {
     effect(() => {
       this.url();
       this.menu.set(false); // 换页时收起移动端抽屉
+      this.langOpen.set(false); // 语言菜单同理（点菜单里的链接跳转后不该留在屏幕上）
     });
   }
 

@@ -5,6 +5,7 @@
 import router from '@ohos.router';
 import { ResourceModule } from '../common/ResourceSchema';
 import { allModules } from '../common/ResourceModules';
+import { t, t1 } from '../i18n/Translations';
 
 /**
  * 「模块管理」索引页 —— 配置驱动那 18 个模块的入口
@@ -20,6 +21,7 @@ import { allModules } from '../common/ResourceModules';
 @Entry
 @Component
 struct ModuleIndexPage {
+  @StorageLink('app_locale') localeCode: string = 'en';
   @State modules: ResourceModule[] = [];
 
   aboutToAppear(): void {
@@ -37,7 +39,7 @@ struct ModuleIndexPage {
         .backgroundColor('#FFFFFF')
         .onClick(() => router.back())
 
-        Text('模块管理')
+        Text(t('module.title'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 8 })
@@ -52,11 +54,11 @@ struct ModuleIndexPage {
           ListItem() {
             Row() {
               Column() {
-                Text(module.title)
+                Text(t(module.title))
                   .fontSize(15)
                   .fontColor('#333333')
 
-                Text(module.desc)
+                Text(t(module.desc))
                   .fontSize(12)
                   .fontColor('#999999')
                   .margin({ top: 2 })

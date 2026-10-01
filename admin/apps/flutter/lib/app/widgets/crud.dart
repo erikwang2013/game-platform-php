@@ -12,14 +12,16 @@ import 'package:get/get.dart';
 import '../i18n/translations.dart';
 import '../services/api_service.dart';
 import '../services/image_upload.dart';
+import 'permission_tree.dart';
 
 // 上传动作的类型是 showCrudForm 的形参类型 ⇒ 从本库转出（调用方 import crud.dart 就够）
 export '../services/image_upload.dart' show CrudImageUpload;
 
 /// 字段控件类型。数量刻意压到够用为止：select 覆盖所有值域固定的枚举，
 /// multiselect 用于「值是 N 个 id 的集合」的关联字段（如角色的 permission_ids），
+/// tree = 同一类关联字段但候选本身是**树**（勾选带父子联动/半选，见 permission_tree.dart），
 /// image = 文本框（存量手输 URL 照旧可编辑）+「上传」按钮 + 缩略图。
-enum CrudFieldType { text, multiline, number, select, toggle, multiselect, image }
+enum CrudFieldType { text, multiline, number, select, toggle, multiselect, tree, image }
 
 /// select / multiselect 的一个可选项：value 是提交给后端的字符串，label 是 i18n key
 /// （查不到 key 时原样显示——树形字段用它传「缩进 + 名称」的成品文案）。
@@ -49,6 +51,9 @@ class CrudField {
   final bool editableOnEdit;
   final int maxLines;
 
+  /// type == tree 时的候选树（值域不是一维列表，故不能走 options）。
+  final List<PermissionNode> tree;
+
   const CrudField(
     this.name,
     this.label, {
@@ -58,6 +63,7 @@ class CrudField {
     this.hint,
     this.editableOnEdit = true,
     this.maxLines = 4,
+    this.tree = const <PermissionNode>[],
   });
 }
 
@@ -145,8 +151,9 @@ class CrudRowActions extends StatelessWidget {
   }
 }
 
-/// 分页条：`{total, items}` 形状的列表用（风控七个列表的 `size` 都是 20、上限 100）。
-/// 只做翻页动作，不持有页码——页码是各控制器自己的状态，改完由调用方重新拉列表。
+/// 分页条：本树所有分页列表（`data.list` 与 `data.items` 两种形状）共用的那一根。
+/// 只做翻页动作，不持有页码——页码是各控制器自己的状态，改完由调用方重新拉列表
+/// （取数一律走 ApiService.list()，它把 page_size 扇成 limit/size/per_page 三个别名）。
 class CrudPager extends StatelessWidget {
   const CrudPager({super.key, required this.page, required this.total, required this.size, required this.onPage});
 
@@ -336,6 +343,14 @@ class _CrudFormDialogState extends State<_CrudFormDialog> {
           _multi[field.name] = checked;
           // 编辑态留一份原值：整表替换的字段「没动过就不发」
           if (_isEdit) _initialMulti[field.name] = Set<String>.of(checked);
+        case CrudFieldType.tree:
+          final granted = <String>{
+            for (final value in raw is List ? raw : const <dynamic>[]) value.toString(),
+          };
+          // 行里回填的是**授权集**（含半选的祖先），反推成勾选集，否则父级会错误地显示成全勾
+          final checked = checkedFromGranted(granted, field.tree);
+          _multi[field.name] = checked;
+          if (_isEdit) _initialMulti[field.name] = Set<String>.of(checked);
         case CrudFieldType.text:
         case CrudFieldType.multiline:
         case CrudFieldType.number:
@@ -379,6 +394,14 @@ class _CrudFormDialogState extends State<_CrudFormDialog> {
           if (before != null && before.length == checked.length && before.containsAll(checked)) break;
           // 值域外的历史值也照发：原样发回去等于不动，比静默丢掉一条关联安全。
           data[field.name] = checked.toList();
+        case CrudFieldType.tree:
+          // 与 multiselect 同语义（整表替换、没动过就不发），只是提交的是**授权集**：
+          // 勾中 ∪ 半选祖先 —— 只授子权限不授父菜单，角色会「有权限但看不到菜单」。
+          final checked = _multi[field.name]!;
+          final before = _initialMulti[field.name];
+          if (before != null && before.length == checked.length && before.containsAll(checked)) break;
+          if (field.tree.isEmpty) break; // 候选树没取到就不该有这个字段（调用方的责任），兜一层防空写
+          data[field.name] = grantedIds(checked, field.tree).toList();
         case CrudFieldType.text:
         case CrudFieldType.multiline:
         case CrudFieldType.image:
@@ -395,8 +418,8 @@ class _CrudFormDialogState extends State<_CrudFormDialog> {
       if (!field.required || field.type == CrudFieldType.toggle) continue;
       // 与 _payload 同一条件：提交什么就校验什么（fullEdit 下整份都发，不该漏掉必填）
       if (_isEdit && !field.editableOnEdit && !widget.fullEdit) continue;
-      // 多选的值不在 _texts/_selects 里：按勾选集合判空，否则必填的多选会永远报「必填」
-      if (field.type == CrudFieldType.multiselect) {
+      // 多选/树的值不在 _texts/_selects 里：按勾选集合判空，否则必填的多选会永远报「必填」
+      if (field.type == CrudFieldType.multiselect || field.type == CrudFieldType.tree) {
         if (_multi[field.name]!.isEmpty) {
           return crudText('app.field_required', {'name': crudText(field.label)});
         }
@@ -544,6 +567,27 @@ class _CrudFormDialogState extends State<_CrudFormDialog> {
                       title: Text(crudText(option.label)),
                     ),
                 ]),
+              ),
+            ),
+          ]),
+        );
+      case CrudFieldType.tree:
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(label, style: Theme.of(context).textTheme.bodyMedium),
+            if (hint != null)
+              Text(hint, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.start),
+            // 与 multiselect 同款：限高 + 自己滚动，别把弹框撑爆
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 200),
+              child: SingleChildScrollView(
+                child: PermissionTreePicker(
+                  nodes: field.tree,
+                  checked: _multi[field.name]!,
+                  enabled: enabled,
+                  onChanged: (next) => setState(() => _multi[field.name] = next),
+                ),
               ),
             ),
           ]),

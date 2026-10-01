@@ -21,6 +21,8 @@ class WithdrawLimitController extends GetxController {
     load();
   }
 
+  /// **不加分页**：/withdraw/limits/list 是整表端点（无 total，按 KYC 档位编号的固定几行），
+  /// 提现校验路径要按档位取限额 ⇒ 分页会让校验取不到档位。
   Future<void> load() async {
     isLoading.value = true;
     try {

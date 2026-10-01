@@ -51,11 +51,11 @@ class WithdrawPatternEvaluator implements RiskEvaluator
             ->count();
 
         if ($count >= $maxApplies) {
-            return ['matched' => true, 'message' => "窗口内 {$count} 笔提现 ≥ 阈值 {$maxApplies}（{$windowMinutes}min）", 'severity' => 'high'];
+            return ['matched' => true, 'message' => trans('%count% withdrawals within the window ≥ threshold %threshold% (%minutes%min)', ['%count%' => (string) $count, '%threshold%' => (string) $maxApplies, '%minutes%' => (string) $windowMinutes]), 'severity' => 'high'];
         }
 
         if (bccomp($amount, $hardCap, 4) > 0) {
-            return ['matched' => true, 'message' => "单笔提现 {$amount} 超过硬上限 {$hardCap}", 'severity' => 'high'];
+            return ['matched' => true, 'message' => trans('Single withdrawal %amount% exceeds the hard cap %cap%', ['%amount%' => (string) $amount, '%cap%' => (string) $hardCap]), 'severity' => 'high'];
         }
 
         // 清仓式提现：接近抽干余额
@@ -65,7 +65,7 @@ class WithdrawPatternEvaluator implements RiskEvaluator
             if (bccomp($balance, '0', 4) > 0) {
                 $ratio = bcdiv($amount, $balance, 6);
                 if (bccomp($ratio, $drainRatio, 6) >= 0) {
-                    return ['matched' => true, 'message' => "提现占余额 " . bcmul($ratio, '100', 2) . "% ≥ 阈值 " . bcmul($drainRatio, '100', 2) . '%', 'severity' => 'medium'];
+                    return ['matched' => true, 'message' => trans('Withdrawal is %ratio%% of balance ≥ threshold %threshold%%', ['%ratio%' => bcmul($ratio, '100', 2), '%threshold%' => bcmul($drainRatio, '100', 2)]), 'severity' => 'medium'];
                 }
             }
         }
@@ -94,7 +94,7 @@ class WithdrawPatternEvaluator implements RiskEvaluator
             $upper = bcadd($mean, (string) ($stddev * $sigmaK), 4);
 
             if (bccomp($amount, $upper, 4) > 0) {
-                return ['matched' => true, 'message' => "单笔提现 {$amount} > 近 {$sigmaDays} 天均值 {$mean} + {$sigmaK}σ（{$upper}）", 'severity' => 'medium'];
+                return ['matched' => true, 'message' => trans('Single withdrawal %amount% > %days%-day mean %mean% + %k%σ (%upper%)', ['%amount%' => (string) $amount, '%days%' => (string) $sigmaDays, '%mean%' => (string) $mean, '%k%' => (string) $sigmaK, '%upper%' => (string) $upper]), 'severity' => 'medium'];
             }
         }
 
@@ -113,7 +113,7 @@ class WithdrawPatternEvaluator implements RiskEvaluator
             }
             $fast = count(array_filter($gaps, static fn (int $gap): bool => $gap < $fastSeconds));
             if ($fast >= $fastMinCount - 1) {
-                return ['matched' => true, 'message' => "相邻提现间隔均 < {$fastSeconds}s（{$fastMinCount} 笔），疑似脚本", 'severity' => 'medium'];
+                return ['matched' => true, 'message' => trans('Consecutive withdrawals all under %seconds%s (%count% of them), suspected script', ['%seconds%' => (string) $fastSeconds, '%count%' => (string) $fastMinCount]), 'severity' => 'medium'];
             }
         }
 

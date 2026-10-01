@@ -38,11 +38,11 @@ class AchievementController extends BaseController
 
         $cond = json_decode($request->input('condition_json'), true);
         if (!is_array($cond)) {
-            return $this->fail('condition_json must be valid JSON', 422);
+            return $this->fail(trans('condition_json must be valid JSON'), 422);
         }
 
         if (Achievement::where('key', $request->input('key'))->exists()) {
-            return $this->fail('该成就key已存在', 422);
+            return $this->fail(trans('Achievement key already exists'), 422);
         }
 
         $a = new Achievement();
@@ -56,7 +56,7 @@ class AchievementController extends BaseController
         $a->status = (int) $request->input('status', 1);
         $a->save();
 
-        return $this->success($this->encodeIds($a->toArray()), '创建成功');
+        return $this->success($this->encodeIds($a->toArray()), trans('Created successfully'));
     }
 
     public function update(Request $request, string $hashid): Response
@@ -64,7 +64,7 @@ class AchievementController extends BaseController
         $id = $this->decodeId($hashid);
         $a = Achievement::find($id);
         if (!$a) {
-            return $this->fail('成就不存在', 404);
+            return $this->fail(trans('Achievement not found'), 404);
         }
 
         // 镜像 store 的规则，前缀 sometimes：update 是局部更新，缺省的字段不该被判 required。
@@ -84,14 +84,14 @@ class AchievementController extends BaseController
         if ($request->has('condition_json')) {
             $cond = json_decode($request->input('condition_json'), true);
             if (!is_array($cond)) {
-                return $this->fail('condition_json must be valid JSON', 422);
+                return $this->fail(trans('condition_json must be valid JSON'), 422);
             }
         }
 
         $a->fill($request->only(['name', 'description', 'icon', 'condition_json', 'points', 'status']));
         $a->save();
 
-        return $this->success($this->encodeIds($a->toArray()), '更新成功');
+        return $this->success($this->encodeIds($a->toArray()), trans('Updated successfully'));
     }
 
     /**
@@ -112,13 +112,13 @@ class AchievementController extends BaseController
 
         $a = Achievement::find($this->decodeId($request->input('id')));
         if (!$a) {
-            return $this->fail('成就不存在', 404);
+            return $this->fail(trans('Achievement not found'), 404);
         }
 
         $a->status = (int) $request->input('status');
         $a->save();
 
-        return $this->success([], '操作成功');
+        return $this->success([], trans('Operation successful'));
     }
 
     public function destroy(Request $request, string $hashid): Response
@@ -126,10 +126,10 @@ class AchievementController extends BaseController
         $id = $this->decodeId($hashid);
         $a = Achievement::find($id);
         if (!$a) {
-            return $this->fail('成就不存在', 404);
+            return $this->fail(trans('Achievement not found'), 404);
         }
 
         $a->delete();
-        return $this->success([], '删除成功');
+        return $this->success([], trans('Deleted successfully'));
     }
 }

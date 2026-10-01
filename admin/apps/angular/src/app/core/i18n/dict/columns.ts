@@ -1,0 +1,71 @@
+/* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
+
+/**
+ * **表格列标题**的共享词条（`col.<接口字段名>`）。
+ *
+ * 为什么单独一族：本树各模块页面**不传 `heads`**（只有 admins.ts 传），而 `ui-table::head()`
+ * 在没有 heads 时退回 `t(字段名)` —— 字段名不是词条键，于是任何语言下列头都是
+ * `real_name` / `created_at` 这种裸字段名。这一族就是那条兜底：字段名 → 列标题。
+ *
+ * 与其它 dict 的**唯一不同**：中文一侧**不是**「抽取前的界面原文」（抽取前这里根本没有中文，
+ * 界面上显示的是英文接口字段名）。英文一侧沿用 react 树 `f.*` 同名字段的措辞，两棵树口径一致。
+ */
+export const COLUMNS: Record<string, [string, string]> = {
+  'col.action': ["Action", "动作"],
+  'col.assigned_to': ["Assignee", "受理人"],
+  'col.band': ["Risk Band", "风险带"],
+  'col.benefits': ["Benefits", "权益"],
+  'col.country_code': ["Country Code", "国家代码"],
+  'col.created_at': ["Created At", "创建时间"],
+  'col.currency': ["Currency", "币种"],
+  'col.description': ["Description", "说明"],
+  'col.email': ["Email", "邮箱"],
+  'col.end_at': ["Ends At", "结束时间"],
+  'col.game_id': ["Game ID", "游戏ID"],
+  'col.game_name': ["Game Name", "游戏名称"],
+  'col.group': ["Group", "分组"],
+  'col.hit_count': ["Hits", "命中次数"],
+  'col.id': ["ID", "ID"],
+  'col.id_type': ["ID Type", "证件类型"],
+  'col.key': ["Key", "键"],
+  'col.last_hit_at': ["Last Hit At", "最近命中"],
+  'col.last_login_at': ["Last Login", "最后登录"],
+  'col.level': ["Level", "等级"],
+  'col.max_amount': ["Max Amount", "最大金额"],
+  'col.metric': ["Metric", "指标"],
+  'col.min_amount': ["Min Amount", "最小金额"],
+  'col.min_deposit': ["Min Deposit", "最低充值"],
+  'col.name': ["Name", "名称"],
+  'col.nickname': ["Nickname", "昵称"],
+  'col.parent_name': ["Parent", "上级"],
+  'col.path': ["Path", "路径"],
+  'col.phone': ["Phone", "手机号"],
+  'col.points': ["Points", "积分"],
+  'col.priority': ["Priority", "优先级"],
+  'col.provider': ["Provider", "提供商"],
+  'col.real_name': ["Real Name", "真实姓名"],
+  'col.region': ["Region", "区域"],
+  'col.required_exp': ["Required EXP", "所需经验"],
+  'col.result': ["Result", "结果"],
+  'col.reviewed_at': ["Reviewed At", "审核时间"],
+  'col.rule_name': ["Rule Name", "规则名称"],
+  'col.scope': ["Scope", "生效范围"],
+  'col.score': ["Score", "分值"],
+  'col.severity': ["Severity", "严重级别"],
+  'col.slug': ["Slug", "标识"],
+  'col.sort': ["Sort", "排序"],
+  'col.start_at': ["Starts At", "开始时间"],
+  'col.status': ["Status", "状态"],
+  'col.subject': ["Subject", "主题"],
+  'col.title': ["Title", "标题"],
+  'col.total_qty': ["Total Qty", "总数量"],
+  'col.type': ["Type", "类型"],
+  'col.used_qty': ["Used Qty", "已用数量"],
+  'col.user_id': ["User ID", "用户ID"],
+  'col.user_name': ["User", "用户"],
+  'col.username': ["Username", "用户名"],
+  'col.users_count': ["Users", "用户数"],
+  'col.value': ["Value", "值"],
+  'col.vip_level': ["VIP Level", "VIP等级"],
+  'col.whitelisted': ["whitelisted", "whitelisted 白名单"],
+};

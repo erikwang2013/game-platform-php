@@ -81,7 +81,7 @@ class GamePlayLogController extends BaseController
             ->first();
 
         if (!$log) {
-            return $this->fail('Play log not found', 404);
+            return $this->fail(trans('Play log not found'), 404);
         }
 
         return $this->success([

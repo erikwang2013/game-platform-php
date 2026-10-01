@@ -62,7 +62,7 @@ LUA;
             Log::error('RateLimit redis unavailable: ' . $e->getMessage());
             return json([
                 'code'    => 503,
-                'message' => '服务暂不可用，请稍后再试',
+                'message' => trans('Service temporarily unavailable, please try again later'),
                 'data'    => [],
             ])->withStatus(503)->withHeaders(['Retry-After' => '5']);
         }
@@ -73,7 +73,7 @@ LUA;
         if (empty($result[0])) {
             return json([
                 'code'    => 429,
-                'message' => '请求过于频繁，请稍后再试',
+                'message' => trans('Too many requests, please try again later'),
                 'data'    => [],
             ])->withStatus(429)->withHeaders([
                 'X-RateLimit-Limit'     => (string) $limit,

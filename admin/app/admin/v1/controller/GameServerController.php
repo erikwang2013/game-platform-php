@@ -37,7 +37,7 @@ class GameServerController extends BaseController
         $gameId = $this->decodeId($request->input('game_id'));
         $game = Game::find($gameId);
         if (!$game) {
-            return $this->fail('游戏不存在', 404);
+            return $this->fail(trans('Game not found'), 404);
         }
 
         $servers = GameServer::where('game_id', $gameId)
@@ -76,7 +76,7 @@ class GameServerController extends BaseController
         $gameId = $this->decodeId($request->input('game_id'));
         $game = Game::find($gameId);
         if (!$game) {
-            return $this->fail('游戏不存在', 404);
+            return $this->fail(trans('Game not found'), 404);
         }
 
         $server = new GameServer();
@@ -88,7 +88,7 @@ class GameServerController extends BaseController
         $server->sort    = (int) $request->input('sort', 0);
         $server->save();
 
-        return $this->success(['id' => $this->encodeId($server->id)], '创建成功');
+        return $this->success(['id' => $this->encodeId($server->id)], trans('Created successfully'));
     }
 
     #[Apidoc\Title("编辑区服")]
@@ -101,7 +101,7 @@ class GameServerController extends BaseController
         $id = $this->decodeId($hashid);
         $server = GameServer::find($id);
         if (!$server) {
-            return $this->fail('区服不存在', 404);
+            return $this->fail(trans('Game server not found'), 404);
         }
 
         // 镜像 create 的 name 规则（sometimes：局部更新），并为 create 漏掉、而 update 会写的字段补上。
@@ -119,7 +119,7 @@ class GameServerController extends BaseController
         $server->fill($request->only(['name', 'region', 'status', 'sort']));
         $server->save();
 
-        return $this->success([], '更新成功');
+        return $this->success([], trans('Updated successfully'));
     }
 
     #[Apidoc\Title("删除区服")]
@@ -132,11 +132,11 @@ class GameServerController extends BaseController
         $id = $this->decodeId($hashid);
         $server = GameServer::find($id);
         if (!$server) {
-            return $this->fail('区服不存在', 404);
+            return $this->fail(trans('Game server not found'), 404);
         }
 
         $server->delete();
 
-        return $this->success([], '删除成功');
+        return $this->success([], trans('Deleted successfully'));
     }
 }

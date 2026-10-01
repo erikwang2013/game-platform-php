@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Row } from '../core/api.service';
 import { Crud } from '../core/crud';
 import { Act, Table } from '../components/table';
+import { use } from '../core/i18n/i18n';
 import { Risk } from './risk';
 
 /**
@@ -31,6 +32,8 @@ describe('风控模块写操作接线', () => {
   const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
   beforeEach(() => {
+    // 本文件按中文断界面文案（如按 textContent==='编辑' 找行内按钮）⇒ 语言显式定
+    use('zh');
     // 两个组件（Risk / Table）在这里一次性声明：build() 走 runInInjectionContext 会**实例化**
     // 测试模块，之后再 configureTestingModule 就是 "already been instantiated"
     TestBed.configureTestingModule({

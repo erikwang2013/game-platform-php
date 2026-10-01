@@ -17,6 +17,8 @@ export type CaptchaView = {
   hint: string;
 };
 
+import { t } from '../i18n/index.ts';
+
 export function describeCaptcha(captcha: CaptchaData | null): CaptchaView {
   const texts = (captcha?.extra?.texts ?? []).slice().sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   const required = texts.length || 2;
@@ -26,7 +28,7 @@ export function describeCaptcha(captcha: CaptchaData | null): CaptchaView {
     texts,
     required,
     hint: texts.length
-      ? `按顺序点击：${texts.map((item) => item.text).join(' → ')}`
-      : `点击图中 ${required} 个位置完成验证`,
+      ? t('captcha.click_order', { targets: texts.map((item) => item.text).join(' → ') })
+      : t('captcha.click_count', { count: required }),
   };
 }

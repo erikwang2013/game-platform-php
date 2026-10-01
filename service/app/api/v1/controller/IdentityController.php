@@ -70,7 +70,7 @@ class IdentityController extends BaseController
         $action   = self::kycSubmitAction($existing?->status);
 
         if ($action === 'reject') {
-            return $this->fail('You already have a pending or approved KYC submission', 422);
+            return $this->fail(trans('You already have a pending or approved KYC submission'), 422);
         }
 
         $now = date('Y-m-d H:i:s');
@@ -114,13 +114,13 @@ class IdentityController extends BaseController
             } catch (\PDOException $e) {
                 if (in_array($e->errorInfo[1] ?? null, [1062, 23000], true)
                     && str_contains($e->getMessage(), 'uk_user_id')) {
-                    return $this->fail('You already have a pending or approved KYC submission', 422);
+                    return $this->fail(trans('You already have a pending or approved KYC submission'), 422);
                 }
                 throw $e;
             }
         }
 
-        return $this->success([], 'KYC submitted successfully');
+        return $this->success([], trans('KYC submitted successfully'));
     }
 
     /**

@@ -52,7 +52,7 @@ class ProviderController extends BaseController
         $currencyId = (int) $request->input('currency_id', 0);
 
         if ($userId <= 0) {
-            return $this->fail('user_id required', 422);
+            return $this->fail(trans('user_id required'), 422);
         }
 
         $provider = ProviderFactory::create($request->game);
@@ -85,15 +85,15 @@ class ProviderController extends BaseController
         $meta = $request->input('meta', []);
 
         if ($userId <= 0 || empty($sessionId)) {
-            return $this->fail('Invalid params', 422);
+            return $this->fail(trans('Invalid params'), 422);
         }
         // 金额语法闸（复用 SelfProvider 的那份实现）：'abc'/'1e5'/'+-100' 直接进 bccomp 抛 ValueError ⇒ 500。
         // 只拦语法非法的原文；合法但 ≤ 0 仍走下面原来的 Invalid params 语义，行为不变。
         if (!SelfProvider::isAmountSyntaxValid($amount)) {
-            return $this->fail('Invalid amount', 422);
+            return $this->fail(trans('Invalid amount'), 422);
         }
         if (bccomp($amount, '0', 8) <= 0) {
-            return $this->fail('Invalid params', 422);
+            return $this->fail(trans('Invalid params'), 422);
         }
 
         $provider = ProviderFactory::create($request->game);
@@ -134,11 +134,11 @@ class ProviderController extends BaseController
         $meta = $request->input('meta', []);
 
         if ($userId <= 0 || empty($sessionId)) {
-            return $this->fail('Invalid params', 422);
+            return $this->fail(trans('Invalid params'), 422);
         }
         // 同 bet：语法非法的金额在入口就 fail-loud，别让它进 provider 后再抛 ValueError
         if (!SelfProvider::isAmountSyntaxValid($amount)) {
-            return $this->fail('Invalid amount', 422);
+            return $this->fail(trans('Invalid amount'), 422);
         }
 
         $provider = ProviderFactory::create($request->game);
@@ -194,13 +194,13 @@ class ProviderController extends BaseController
         $reason = $request->input('reason', 'unknown');
 
         if ($userId <= 0 || empty($sessionId)) {
-            return $this->fail('Invalid params', 422);
+            return $this->fail(trans('Invalid params'), 422);
         }
         if (!SelfProvider::isAmountSyntaxValid($amount)) {
-            return $this->fail('Invalid amount', 422);
+            return $this->fail(trans('Invalid amount'), 422);
         }
         if (bccomp($amount, '0', 8) <= 0) {
-            return $this->fail('Invalid params', 422);
+            return $this->fail(trans('Invalid params'), 422);
         }
 
         $provider = ProviderFactory::create($request->game);
@@ -229,13 +229,13 @@ class ProviderController extends BaseController
     {
         $userId = (int) $request->input('user_id', 0);
         if ($userId <= 0) {
-            return $this->fail('user_id required', 422);
+            return $this->fail(trans('user_id required'), 422);
         }
 
         $game = $request->game;
         // 与 GameController::session() 同一口径：不为 SDK 端点必然按类型拒收的游戏签令牌
         if ($game->type !== 'self' && $game->type !== 'embedded') {
-            return $this->fail('SDK session only for self/embedded games', 403);
+            return $this->fail(trans('SDK session only for self/embedded games'), 403);
         }
 
         // claims 必须带 user_id：SdkSessionAuth 把缺 user_id 的 claims 判为无效令牌（401），

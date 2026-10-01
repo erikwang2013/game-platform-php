@@ -52,7 +52,7 @@ class AuthController extends BaseController
         }
 
         if (!self::captchaOk($request)) {
-            return $this->fail('验证码错误，请重试', 422);
+            return $this->fail(trans('Incorrect captcha, please try again'), 422);
         }
 
         $username = $request->input('username');
@@ -62,7 +62,7 @@ class AuthController extends BaseController
         // Check username unique
         $exists = User::where('username', $username)->exists();
         if ($exists) {
-            return $this->fail('Username already exists', 422);
+            return $this->fail(trans('Username already exists'), 422);
         }
 
         // Create user + wallet in one transaction: wallet failure must roll back
@@ -141,7 +141,7 @@ class AuthController extends BaseController
         }
 
         if (!self::captchaOk($request)) {
-            return $this->fail('验证码错误，请重试', 422);
+            return $this->fail(trans('Incorrect captcha, please try again'), 422);
         }
 
         $username = $request->input('username');
@@ -150,12 +150,12 @@ class AuthController extends BaseController
         // Find user by username
         $user = User::where('username', $username)->first();
         if (!$user || !password_verify($password, $user->password)) {
-            return $this->fail('Invalid username or password', 401);
+            return $this->fail(trans('Invalid username or password'), 401);
         }
 
         // Check status
         if ((int) $user->status !== 1) {
-            return $this->fail('Account is disabled', 403);
+            return $this->fail(trans('Account is disabled'), 403);
         }
 
         // 2FA 已开启：不签发正式 token，返回短期票据供 verify 换发
@@ -205,11 +205,11 @@ class AuthController extends BaseController
             $payload = jwt_wrapper()->decode($newRefresh, true);
             $sub = (int) ($payload['sub'] ?? 0);
             if ($sub <= 0) {
-                return $this->fail('Invalid refresh token', 401);
+                return $this->fail(trans('Invalid refresh token'), 401);
             }
             $accessToken = jwt_wrapper()->create(['sub' => $sub]);
         } catch (\Throwable $e) {
-            return $this->fail('Invalid or expired refresh token', 401);
+            return $this->fail(trans('Invalid or expired refresh token'), 401);
         }
 
         return $this->success([

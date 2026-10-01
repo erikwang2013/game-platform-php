@@ -1,12 +1,14 @@
 <!-- Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz -->
 @if (chrome()) {
   <aside class="sidebar" [class.open]="menu()">
-    <div class="brand"><img class="brand-logo" src="mascot.svg" alt="" /> 游戏运营后台</div>
+    <div class="brand">
+      <img class="brand-logo" src="mascot.svg" alt="" /> {{ 'app.brand' | t }}
+    </div>
     <nav class="nav">
       @for (g of groups; track g.section) {
-        <div class="nav-title">{{ g.section }}</div>
+        <div class="nav-title">{{ g.section | t }}</div>
         @for (i of g.items; track i.path) {
-          <a [routerLink]="i.path" routerLinkActive="active">{{ i.label }}</a>
+          <a [routerLink]="i.path" routerLinkActive="active">{{ i.label | t }}</a>
         }
       }
     </nav>
@@ -19,15 +21,51 @@
 
   <div class="main">
     <header class="topbar">
-      <button class="hamburger" (click)="menu.set(true)" aria-label="打开菜单">☰</button>
+      <button class="hamburger" (click)="menu.set(true)" [attr.aria-label]="'app.menu' | t">
+        ☰
+      </button>
       <div class="crumb">
-        <span>{{ crumb().section }}</span>
+        <span>{{ crumb().section | t }}</span>
         <span>/</span>
-        <b>{{ crumb().label }}</b>
+        <b>{{ crumb().label | t }}</b>
       </div>
       <div class="user">
-        <span class="who">{{ user()?.real_name || user()?.username || '未登录' }}</span>
-        <button class="btn" (click)="logout()">退出</button>
+        <!-- 语言：13 种平铺（母语名 + 当前项打点），与 admin/apps/flutter 的 _buildUserMenu 同款。
+             点遮罩关闭；遮罩在本组件自己的层叠上下文里，所以菜单的 z-index 只要压过它就够。 -->
+        <div class="lang">
+          @if (langOpen()) {
+            <div class="lang-catch" (click)="langOpen.set(false)"></div>
+          }
+          <button
+            class="btn"
+            type="button"
+            [attr.aria-label]="'app.lang' | t"
+            [attr.aria-expanded]="langOpen()"
+            (click)="langOpen.set(!langOpen())"
+          >
+            <span aria-hidden="true">🌐</span> {{ native() }} ▾
+          </button>
+          @if (langOpen()) {
+            <div class="lang-menu" role="menu">
+              @for (l of langs; track l.code) {
+                <button
+                  type="button"
+                  role="menuitemradio"
+                  [attr.aria-checked]="l.code === lang()"
+                  [class.on]="l.code === lang()"
+                  (click)="pickLang(l.code)"
+                >
+                  <span class="dot" aria-hidden="true">{{ l.code === lang() ? '●' : '' }}</span>
+                  {{ l.native }}
+                </button>
+              }
+            </div>
+          }
+        </div>
+        <span class="who">{{
+          user()?.real_name || user()?.username || ('app.not_logged_in' | t)
+        }}</span>
+        <button class="btn" (click)="logout()">{{ 'app.logout' | t }}</button>
       </div>
     </header>
     <main class="content"><router-outlet /></main>

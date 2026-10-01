@@ -13,6 +13,8 @@ class AchievementAdminController extends GetxController {
   @override
   void onInit() { super.onInit(); load(); }
 
+  /// **不加分页**：/achievement/list 是整表端点（无 total），成就定义是有限的几张表，
+  /// 且被 C 端成就展示复用 ⇒ 分页会让下游拿到残缺的定义表。
   Future<void> load() async {
     isLoading.value = true;
     try {

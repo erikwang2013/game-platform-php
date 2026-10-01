@@ -1,38 +1,40 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { Component, computed, inject, signal } from '@angular/core';
 import { Api, Params } from '../core/api.service';
-import { json, rowsAny, scalarsOf } from '../core/render';
-import { errText } from '../core/util';
-import { StateBlock, StatCard } from '../components/ui';
+import { json, nested, rowsAny, scalarsOf } from '../core/render';
+import { errText, num } from '../core/util';
+import { T } from '../core/i18n/i18n';
+import { Pager, StateBlock, StatCard } from '../components/ui';
 import { Table } from '../components/table';
 
 interface Tab {
   key: string;
+  /** 词条键（渲染时过 `| t`；查不到原样显示） */
   label: string;
   path: string;
 }
 
 @Component({
   selector: 'app-dashboard',
-  imports: [StateBlock, StatCard, Table],
+  imports: [StateBlock, StatCard, Table, Pager, T],
   template: `
     <div class="page-head">
-      <h1>仪表盘</h1>
-      <span class="sub">实时统计 / 平台概览 / 健康与日志</span>
+      <h1>{{ 'dashboard.title' | t }}</h1>
+      <span class="sub">{{ 'dashboard.subtitle' | t }}</span>
       <div class="spacer"></div>
-      <button class="btn" (click)="load()">刷新</button>
+      <button class="btn" (click)="load()">{{ 'app.refresh' | t }}</button>
     </div>
 
     <div class="tabs">
-      @for (t of tabs; track t.key) {
-        <button [class.active]="t.key === tab()" (click)="pick(t.key)">{{ t.label }}</button>
+      @for (tb of tabs; track tb.key) {
+        <button [class.active]="tb.key === tab()" (click)="pick(tb.key)">{{ tb.label | t }}</button>
       }
     </div>
 
     <ui-state [loading]="loading()" [error]="error()">
       @if (text(); as raw) {
         <div class="card">
-          <div class="card-head">指标原文（Prometheus text format）</div>
+          <div class="card-head">{{ 'dashboard.metrics_raw' | t }}</div>
           <div class="card-body">
             <pre class="raw">{{ raw }}</pre>
           </div>
@@ -50,17 +52,17 @@ interface Tab {
       @if (rows().length) {
         <div class="card">
           <div class="card-head">
-            {{ current().label }}
+            {{ current().label | t }}
             <div class="spacer"></div>
             @if (searchable()) {
               <input
                 class="input"
-                placeholder="关键词"
+                [placeholder]="'dashboard.search_hint' | t"
                 [value]="keyword()"
                 (input)="keyword.set($any($event.target).value)"
-                (keyup.enter)="load()"
+                (keyup.enter)="search()"
               />
-              <button class="btn" (click)="load()">查询</button>
+              <button class="btn" (click)="search()">{{ 'app.search' | t }}</button>
             }
           </div>
           <div class="card-body">
@@ -70,12 +72,18 @@ interface Tab {
       }
 
       @if (!loading() && !error() && !scalars().length && !rows().length && !text()) {
-        <div class="state">该接口暂无数据</div>
+        <div class="state">{{ 'dashboard.empty_tip' | t }}</div>
+      }
+
+      <!-- 操作日志 / 全局检索都是服务端分页的（page+limit / page+per_page），原先写死 page=1：
+           第 50 条以后的数据根本取不到 ⇒ 给它俩补上分页器 -->
+      @if (searchable() && rows().length) {
+        <ui-pager [page]="page()" [pages]="pages()" [total]="total()" (jump)="jump($event)" />
       }
 
       @if (data(); as d) {
         <details class="raw-box">
-          <summary>原始响应</summary>
+          <summary>{{ 'app.raw_response' | t }}</summary>
           <pre class="raw">{{ pretty(d) }}</pre>
         </details>
       }
@@ -86,12 +94,12 @@ export class Dashboard {
   private readonly api = inject(Api);
 
   protected readonly tabs: Tab[] = [
-    { key: 'overview', label: '总览', path: '/admin/v1/dashboard' },
-    { key: 'platform', label: '平台', path: '/admin/v1/dashboard/platform' },
-    { key: 'health', label: '健康', path: '/health' },
-    { key: 'metrics', label: '指标', path: '/metrics' },
-    { key: 'log', label: '操作日志', path: '/admin/v1/log' },
-    { key: 'search', label: '全局检索', path: '/admin/v1/search' },
+    { key: 'overview', label: 'dashboard.tab.overview', path: '/admin/v1/dashboard' },
+    { key: 'platform', label: 'dashboard.tab.platform', path: '/admin/v1/dashboard/platform' },
+    { key: 'health', label: 'dashboard.tab.health', path: '/health' },
+    { key: 'metrics', label: 'dashboard.tab.metrics', path: '/metrics' },
+    { key: 'log', label: 'dashboard.tab.log', path: '/admin/v1/log' },
+    { key: 'search', label: 'dashboard.tab.search', path: '/admin/v1/search' },
   ];
 
   protected readonly tab = signal('overview');
@@ -100,10 +108,17 @@ export class Dashboard {
   protected readonly text = signal('');
   protected readonly loading = signal(true);
   protected readonly error = signal('');
+  protected readonly page = signal(1);
+
+  /** 两个可检索页签的每页条数（log 读 limit、search 读 per_page，见 load()） */
+  private readonly perPage = 50;
 
   protected readonly scalars = computed(() => scalarsOf(this.data()));
   protected readonly rows = computed(() => rowsAny(this.data(), 'logs', 'results', 'users'));
   protected readonly searchable = computed(() => ['log', 'search'].includes(this.tab()));
+  /** 服务端回的总数（两个端点都是 {list, total} ⇒ 分页器能算真页数，不是 list.length 假充） */
+  protected readonly total = computed(() => num(nested(this.data(), 'total')));
+  protected readonly pages = computed(() => Math.max(1, Math.ceil(this.total() / this.perPage)));
 
   constructor() {
     void this.load();
@@ -115,6 +130,20 @@ export class Dashboard {
 
   protected pick(key: string): void {
     this.tab.set(key);
+    this.page.set(1);
+    void this.load();
+  }
+
+  /** 查询：关键词变了 ⇒ 回到第 1 页（沿用 ListBase 的口径） */
+  protected search(): void {
+    this.page.set(1);
+    void this.load();
+  }
+
+  protected jump(p: number): void {
+    const next = Math.min(Math.max(1, p), this.pages());
+    if (next === this.page()) return;
+    this.page.set(next);
     void this.load();
   }
 
@@ -140,8 +169,8 @@ export class Dashboard {
       const params: Params = !this.searchable()
         ? {}
         : this.tab() === 'search'
-          ? { q: this.keyword(), page: 1, per_page: 50 }
-          : { path: this.keyword(), page: 1, limit: 50 };
+          ? { q: this.keyword(), page: this.page(), per_page: this.perPage }
+          : { path: this.keyword(), page: this.page(), limit: this.perPage };
       this.data.set(await this.api.get<unknown>(c.path, params));
     } catch (e) {
       this.error.set(errText(e));

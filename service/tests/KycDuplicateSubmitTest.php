@@ -92,7 +92,7 @@ class KycDuplicateSubmitTest extends TestCase
 
         $this->assertSame(422, $body['code'] ?? null,
             '撞 uk_user_id 必须转成业务 422，实际：' . json_encode($body));
-        $this->assertSame('You already have a pending or approved KYC submission', (string) ($body['message'] ?? ''));
+        $this->assertSame('您已有待审核或已通过的实名认证', (string) ($body['message'] ?? ''));
 
         // 撞键后不得留下半写状态：既有行原样、没有第二行
         $rows = Db::table('user_identity')->where('user_id', $this->userId)->get(['status', 'id_number'])->all();

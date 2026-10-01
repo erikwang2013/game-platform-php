@@ -1,8 +1,9 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 /**
- * 统一 API 客户端：信封解包（code === 0 为成功）、Bearer 注入、
+ * 统一 API 客户端：信封解包（code === 0 为成功）、Bearer 注入、`X-Language` 注入、
  * 401 单次刷新重试、错误上抛。令牌存于 localStorage。
  */
+import { currentCode, t } from '../i18n/index.ts';
 
 const ACCESS_KEY = 'react_admin_access_token';
 const REFRESH_KEY = 'react_admin_refresh_token';
@@ -69,7 +70,7 @@ async function refreshAccessToken(): Promise<boolean> {
   try {
     const res = await fetch('/api/v1/auth/refresh', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-Language': currentCode() },
       body: JSON.stringify({ refresh_token: token }),
     });
     const json = (await res.json()) as Envelope<{ access_token: string; refresh_token: string }>;
@@ -86,7 +87,7 @@ async function readJson(r: Response): Promise<Record<string, unknown>> {
   try {
     return (await r.json()) as Record<string, unknown>;
   } catch {
-    throw new ApiError(r.status, `服务异常（HTTP ${r.status}）`);
+    throw new ApiError(r.status, t('app.service_error', { status: r.status }));
   }
 }
 
@@ -113,7 +114,9 @@ export async function apiEnvelope<T>(path: string, options: Options = {}): Promi
   const useAuth = options.auth !== false;
 
   const send = (): Promise<Response> => {
-    const headers: Record<string, string> = {};
+    // 语言必须随每个业务请求发出去：后端 `LanguageMiddleware` 按 X-Language → Accept-Language
+    // → 默认 zh 选翻译表，不发这个头界面切了语言、服务端 message 也永远是中文。
+    const headers: Record<string, string> = { 'X-Language': currentCode() };
     if (options.body !== undefined) headers['Content-Type'] = 'application/json';
     const access = session.accessToken;
     if (useAuth && access) headers.Authorization = `Bearer ${access}`;
@@ -128,7 +131,7 @@ export async function apiEnvelope<T>(path: string, options: Options = {}): Promi
     try {
       return (await r.json()) as Envelope<T>;
     } catch {
-      throw new ApiError(r.status, `服务异常（HTTP ${r.status}）`);
+      throw new ApiError(r.status, t('app.service_error', { status: r.status }));
     }
   };
 
@@ -140,11 +143,12 @@ export async function apiEnvelope<T>(path: string, options: Options = {}): Promi
       res = await send();
       payload = await parse(res);
     } else {
-      throw new ApiError(401, '登录已过期，请重新登录');
+      throw new ApiError(401, t('app.session_expired'));
     }
   }
 
-  if (payload.code !== 0) throw new ApiError(payload.code, payload.message || '请求失败');
+  // 服务端 message 已是翻译后的原话（后端按 X-Language 选表）；只有缺 message 时才用本地兜底
+  if (payload.code !== 0) throw new ApiError(payload.code, payload.message || t('app.request_failed'));
   return payload;
 }
 
@@ -155,7 +159,7 @@ export async function apiEnvelope<T>(path: string, options: Options = {}): Promi
  */
 export async function rawPost(path: string, body: URLSearchParams | FormData): Promise<Record<string, unknown>> {
   const send = (): Promise<Response> => {
-    const headers: Record<string, string> = {};
+    const headers: Record<string, string> = { 'X-Language': currentCode() };
     const access = session.accessToken;
     if (access) headers.Authorization = `Bearer ${access}`;
     return fetch(path, { method: 'POST', headers, body });
@@ -163,7 +167,7 @@ export async function rawPost(path: string, body: URLSearchParams | FormData): P
 
   let payload = await readJson(await send());
   if (Number(payload.code) === 401) {
-    if (!(await reauth())) throw new ApiError(401, '登录已过期，请重新登录');
+    if (!(await reauth())) throw new ApiError(401, t('app.session_expired'));
     payload = await readJson(await send());
   }
   return payload;

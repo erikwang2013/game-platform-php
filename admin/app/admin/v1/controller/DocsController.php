@@ -32,12 +32,12 @@ class DocsController
         return [
             'openapi' => '3.0.3',
             'info' => [
-                'title'       => '开放管理后台 API',
-                'description' => '基于 webman v2 的全栈管理后台系统。API 版本号置于 URL 路径（如 /api/v1/*、/admin/v1/*），不使用请求头。',
+                'title'       => trans('Open Admin API'),
+                'description' => trans('A full-stack admin system built on webman v2. The API version is placed in the URL path (e.g. /api/v1/*, /admin/v1/*) rather than in a request header.'),
                 'version'     => '1.0.0',
                 'contact'     => ['name' => 'erik', 'email' => 'erik@erik.xyz', 'url' => 'https://erik.xyz'],
             ],
-            'servers' => [['url' => $baseUrl, 'description' => '本地开发']],
+            'servers' => [['url' => $baseUrl, 'description' => trans('Local development')]],
             'security' => [['bearerAuth' => []]],
             'components' => [
                 'securitySchemes' => [
@@ -47,7 +47,7 @@ class DocsController
                     'ApiResponse' => [
                         'type' => 'object',
                         'properties' => [
-                            'code'    => ['type' => 'integer', 'description' => '0=成功, 400=参数错误, 401=未认证, 403=无权限, 404=不存在, 422=验证失败, 429=限流, 500=服务器错误'],
+                            'code'    => ['type' => 'integer', 'description' => trans('0=success, 400=bad request, 401=unauthenticated, 403=forbidden, 404=not found, 422=validation failed, 429=rate limited, 500=server error')],
                             'message' => ['type' => 'string'],
                             'data'    => ['type' => 'object'],
                         ],
@@ -55,12 +55,12 @@ class DocsController
                     'User' => [
                         'type' => 'object',
                         'properties' => [
-                            'id'         => ['type' => 'string', 'description' => 'hashid 加密的用户ID'],
+                            'id'         => ['type' => 'string', 'description' => trans('User ID encoded as hashid')],
                             'username'   => ['type' => 'string'],
                             'real_name'  => ['type' => 'string'],
-                            'phone'      => ['type' => 'string', 'description' => '脱敏手机号'],
-                            'email'      => ['type' => 'string', 'description' => '脱敏邮箱'],
-                            'status'     => ['type' => 'integer', 'description' => '1=启用, 0=禁用'],
+                            'phone'      => ['type' => 'string', 'description' => trans('Masked phone number')],
+                            'email'      => ['type' => 'string', 'description' => trans('Masked email')],
+                            'status'     => ['type' => 'integer', 'description' => trans('1=enabled, 0=disabled')],
                             'last_login_at' => ['type' => 'string', 'format' => 'date-time'],
                             'created_at' => ['type' => 'string', 'format' => 'date-time'],
                         ],
@@ -112,42 +112,42 @@ class DocsController
                 ],
             ],
             'paths' => [
-                '/health' => $this->path('健康检查', 'GET', null, 'HealthData'),
+                '/health' => $this->path(trans('Health check'), 'GET', null, 'HealthData'),
 
-                '/api/v1/captcha/generate' => $this->path('生成点击验证码', 'POST', ['公开'], 'object', ['difficulty' => 'string: easy|medium|hard']),
-                '/api/v1/captcha/verify'   => $this->path('校验点击验证码', 'POST', ['公开']),
-                '/api/v1/auth/login'       => $this->path('登录', 'POST', ['公开'], 'object', ['username' => 'string', 'password' => 'string', 'captcha_key' => 'string', 'clicks' => 'array']),
-                '/api/v1/auth/register'    => $this->path('注册', 'POST', ['公开'], 'object', ['username' => 'string', 'password' => 'string', 'real_name' => 'string', 'captcha_key' => 'string', 'clicks' => 'array']),
-                '/api/v1/auth/refresh'     => $this->path('刷新令牌', 'POST', ['公开'], 'object', ['refresh_token' => 'string']),
+                '/api/v1/captcha/generate' => $this->path(trans('Generate click captcha'), 'POST', [trans('Public')], 'object', ['difficulty' => 'string: easy|medium|hard']),
+                '/api/v1/captcha/verify'   => $this->path(trans('Verify click captcha'), 'POST', [trans('Public')]),
+                '/api/v1/auth/login'       => $this->path(trans('Login'), 'POST', [trans('Public')], 'object', ['username' => 'string', 'password' => 'string', 'captcha_key' => 'string', 'clicks' => 'array']),
+                '/api/v1/auth/register'    => $this->path(trans('Register'), 'POST', [trans('Public')], 'object', ['username' => 'string', 'password' => 'string', 'real_name' => 'string', 'captcha_key' => 'string', 'clicks' => 'array']),
+                '/api/v1/auth/refresh'     => $this->path(trans('Refresh token'), 'POST', [trans('Public')], 'object', ['refresh_token' => 'string']),
 
-                '/admin/v1/dashboard' => $this->path('仪表盘数据', 'GET', ['JWT 认证']),
+                '/admin/v1/dashboard' => $this->path(trans('Dashboard data'), 'GET', [trans('JWT authentication')]),
 
-                '/admin/v1/user'               => $this->path('用户列表', 'GET', ['JWT', 'RBAC'], 'object', ['page' => 'int', 'limit' => 'int', 'keyword' => 'string?', 'status' => 'int?']),
-                '/admin/v1/user/{id}'          => $this->path('用户详情/更新/删除', 'GET|PUT|DELETE', ['JWT', 'RBAC']),
-                '/admin/v1/user/batch/destroy' => $this->path('批量删除用户', 'POST', ['JWT', 'RBAC', '需要密码确认'], null, ['ids' => 'string[]', 'password' => 'string']),
-                '/admin/v1/user/batch/status'  => $this->path('批量启用/禁用用户', 'POST', ['JWT', 'RBAC'], null, ['ids' => 'string[]', 'status' => '0|1']),
+                '/admin/v1/user'               => $this->path(trans('User list'), 'GET', ['JWT', 'RBAC'], 'object', ['page' => 'int', 'limit' => 'int', 'keyword' => 'string?', 'status' => 'int?']),
+                '/admin/v1/user/{id}'          => $this->path(trans('User detail/update/delete'), 'GET|PUT|DELETE', ['JWT', 'RBAC']),
+                '/admin/v1/user/batch/destroy' => $this->path(trans('Bulk delete users'), 'POST', ['JWT', 'RBAC', trans('Password confirmation required')], null, ['ids' => 'string[]', 'password' => 'string']),
+                '/admin/v1/user/batch/status'  => $this->path(trans('Bulk enable/disable users'), 'POST', ['JWT', 'RBAC'], null, ['ids' => 'string[]', 'status' => '0|1']),
 
-                '/admin/v1/role'     => $this->path('角色列表/创建', 'GET|POST', ['JWT', 'RBAC']),
-                '/admin/v1/role/{id}' => $this->path('角色更新/删除', 'PUT|DELETE', ['JWT', 'RBAC', '删除需密码确认']),
+                '/admin/v1/role'     => $this->path(trans('Role list/create'), 'GET|POST', ['JWT', 'RBAC']),
+                '/admin/v1/role/{id}' => $this->path(trans('Role update/delete'), 'PUT|DELETE', ['JWT', 'RBAC', trans('Deletion requires password confirmation')]),
 
-                '/admin/v1/permission'     => $this->path('权限树/创建', 'GET|POST', ['JWT', 'RBAC']),
-                '/admin/v1/permission/{id}' => $this->path('权限更新/删除', 'PUT|DELETE', ['JWT', 'RBAC', '删除需密码确认']),
+                '/admin/v1/permission'     => $this->path(trans('Permission tree/create'), 'GET|POST', ['JWT', 'RBAC']),
+                '/admin/v1/permission/{id}' => $this->path(trans('Permission update/delete'), 'PUT|DELETE', ['JWT', 'RBAC', trans('Deletion requires password confirmation')]),
 
-                '/admin/v1/config'     => $this->path('配置列表/创建', 'GET|POST', ['JWT', 'RBAC']),
-                '/admin/v1/config/{id}' => $this->path('配置更新/删除', 'PUT|DELETE', ['JWT', 'RBAC', '删除需密码确认']),
+                '/admin/v1/config'     => $this->path(trans('Config list/create'), 'GET|POST', ['JWT', 'RBAC']),
+                '/admin/v1/config/{id}' => $this->path(trans('Config update/delete'), 'PUT|DELETE', ['JWT', 'RBAC', trans('Deletion requires password confirmation')]),
 
-                '/admin/v1/log' => $this->path('操作日志查询', 'GET', ['JWT', 'RBAC'], 'array', ['user_id' => 'int?', 'action' => 'string?', 'path' => 'string?', 'start_date' => 'date?', 'end_date' => 'date?']),
+                '/admin/v1/log' => $this->path(trans('Operation log query'), 'GET', ['JWT', 'RBAC'], 'array', ['user_id' => 'int?', 'action' => 'string?', 'path' => 'string?', 'start_date' => 'date?', 'end_date' => 'date?']),
 
-                '/admin/v1/profile'          => $this->path('更新个人信息', 'PUT', ['JWT'], null, ['real_name' => 'string?', 'phone' => 'string?', 'email' => 'string?']),
-                '/admin/v1/profile/password' => $this->path('修改密码', 'PUT', ['JWT'], null, ['old_password' => 'string', 'new_password' => 'string']),
-                '/admin/v1/profile/logout'   => $this->path('登出', 'POST', ['JWT']),
+                '/admin/v1/profile'          => $this->path(trans('Update profile'), 'PUT', ['JWT'], null, ['real_name' => 'string?', 'phone' => 'string?', 'email' => 'string?']),
+                '/admin/v1/profile/password' => $this->path(trans('Change password'), 'PUT', ['JWT'], null, ['old_password' => 'string', 'new_password' => 'string']),
+                '/admin/v1/profile/logout'   => $this->path(trans('Logout'), 'POST', ['JWT']),
 
-                '/admin/v1/export/excel' => $this->path('导出Excel', 'POST', ['JWT', 'RBAC'], 'binary', ['table' => 'string', 'columns' => 'string[]', 'conditions' => 'object?', 'title' => 'string?']),
-                '/admin/v1/export/pdf'   => $this->path('导出PDF', 'POST', ['JWT', 'RBAC'], 'binary', ['type' => 'string', 'title' => 'string?', 'data' => 'object?']),
+                '/admin/v1/export/excel' => $this->path(trans('Export Excel'), 'POST', ['JWT', 'RBAC'], 'binary', ['table' => 'string', 'columns' => 'string[]', 'conditions' => 'object?', 'title' => 'string?']),
+                '/admin/v1/export/pdf'   => $this->path(trans('Export PDF'), 'POST', ['JWT', 'RBAC'], 'binary', ['type' => 'string', 'title' => 'string?', 'data' => 'object?']),
 
-                '/admin/v1/import/users' => $this->path('导入用户(Excel)', 'POST', ['JWT', 'RBAC'], 'object', ['file' => 'file(.xlsx)']),
+                '/admin/v1/import/users' => $this->path(trans('Import users (Excel)'), 'POST', ['JWT', 'RBAC'], 'object', ['file' => 'file(.xlsx)']),
 
-                '/admin/v1/upload' => $this->path('文件上传', 'POST', ['JWT', 'RBAC'], 'object', ['file' => 'file(jpg/png/pdf/xlsx/docx, max 10MB)']),
+                '/admin/v1/upload' => $this->path(trans('File upload'), 'POST', ['JWT', 'RBAC'], 'object', ['file' => 'file(jpg/png/pdf/xlsx/docx, max 10MB)']),
             ],
         ];
     }
@@ -161,7 +161,7 @@ class DocsController
             $op = [
                 'summary' => $summary,
                 'description' => implode(' | ', $notes),
-                'responses' => ['200' => ['description' => '成功']],
+                'responses' => ['200' => ['description' => trans('Success')]],
             ];
 
             if ($responseRef && $responseRef !== 'object') {

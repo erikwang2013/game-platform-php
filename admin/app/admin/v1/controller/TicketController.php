@@ -51,7 +51,7 @@ class TicketController extends BaseController
     public function detail(Request $request, string $hashid): Response
     {
         $ticket = Ticket::with(['replies', 'user'])->find($this->decodeId($hashid));
-        if (!$ticket) return $this->fail('Ticket not found', 404);
+        if (!$ticket) return $this->fail(trans('Ticket not found'), 404);
 
         $replies = [];
         foreach ($ticket->replies as $reply) {
@@ -79,11 +79,11 @@ class TicketController extends BaseController
     public function reply(Request $request, string $hashid): Response
     {
         $ticket = Ticket::find($this->decodeId($hashid));
-        if (!$ticket) return $this->fail('Ticket not found', 404);
-        if ($ticket->status === 'closed') return $this->fail('Ticket is closed', 422);
+        if (!$ticket) return $this->fail(trans('Ticket not found'), 404);
+        if ($ticket->status === 'closed') return $this->fail(trans('Ticket is closed'), 422);
 
         $content = $request->input('content', '');
-        if (empty($content)) return $this->fail('Content required', 422);
+        if (empty($content)) return $this->fail(trans('Content required'), 422);
 
         $reply = new TicketReply();
         $reply->id = $this->generateId();
@@ -97,7 +97,7 @@ class TicketController extends BaseController
         $ticket->status = 'replied';
         $ticket->save();
 
-        return $this->success(['id' => $this->encodeId($reply->id)], 'Reply sent');
+        return $this->success(['id' => $this->encodeId($reply->id)], trans('Reply sent'));
     }
 
     #[Apidoc\Title("关闭工单")]
@@ -106,13 +106,13 @@ class TicketController extends BaseController
     public function close(Request $request, string $hashid): Response
     {
         $ticket = Ticket::find($this->decodeId($hashid));
-        if (!$ticket) return $this->fail('Ticket not found', 404);
+        if (!$ticket) return $this->fail(trans('Ticket not found'), 404);
 
         $ticket->status = 'closed';
         $ticket->resolved_at = date('Y-m-d H:i:s');
         $ticket->save();
 
-        return $this->success([], 'Ticket closed');
+        return $this->success([], trans('Ticket closed'));
     }
 
     #[Apidoc\Title("指定处理人")]
@@ -121,11 +121,11 @@ class TicketController extends BaseController
     public function assign(Request $request, string $hashid): Response
     {
         $ticket = Ticket::find($this->decodeId($hashid));
-        if (!$ticket) return $this->fail('Ticket not found', 404);
+        if (!$ticket) return $this->fail(trans('Ticket not found'), 404);
 
         $ticket->assigned_to = (int) $request->input('admin_id', 0);
         $ticket->save();
 
-        return $this->success([], 'Assigned');
+        return $this->success([], trans('Assigned'));
     }
 }

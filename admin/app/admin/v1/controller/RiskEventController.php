@@ -58,7 +58,7 @@ class RiskEventController extends BaseController
     {
         $row = RiskLog::find($this->decodeId($hashid));
         if (!$row) {
-            return $this->fail('事件不存在');
+            return $this->fail(trans('Event not found'));
         }
 
         return $this->success($this->format($row, $this->ruleMap([$row])));
@@ -70,11 +70,11 @@ class RiskEventController extends BaseController
     {
         $row = RiskLog::find($this->decodeId($hashid));
         if (!$row) {
-            return $this->fail('事件不存在');
+            return $this->fail(trans('Event not found'));
         }
         $decision = (string) $request->post('decision', '');
         if (!in_array($decision, ['approve', 'reject'], true)) {
-            return $this->fail('decision 仅支持 approve/reject');
+            return $this->fail(trans('decision only supports approve/reject'));
         }
         $note = mb_substr(trim((string) $request->post('note', '')), 0, 500);
 
@@ -82,7 +82,7 @@ class RiskEventController extends BaseController
             'id' => $this->encodeId((int) $row->id),
             'decision' => $decision,
             'note' => $note,
-            'message' => '已记录人工处置（操作审计可查）',
+            'message' => trans('Manual disposition recorded (auditable in operation logs)'),
         ]);
     }
 

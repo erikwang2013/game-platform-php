@@ -2,7 +2,8 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
-import { buildPayload, type Field } from '../lib/crud.ts';
+import { t, setCode, type MessageKey } from '../i18n/index.ts';
+import { buildPayload, fieldText, type Field } from '../lib/crud.ts';
 import { hasRoute } from '../lib/route-fixtures.ts';
 import {
   ANTICHEAT_CRUD,
@@ -61,12 +62,20 @@ const optionValues = (field: Field | undefined): string[] => {
   return field.options.map((option) => option.value);
 };
 
+/**
+ * 按**键**取动作，同时把「键 → 英文成品」钉住。
+ * 只按键找，源码里把 label 写成成品字符串（本树的 label 一律是键）也会「找不到」而红；
+ * 只按成品找则看不出写的是哪条键；两样都比才既认得出键、又咬得住译文。
+ */
 const actionOf = (
   crud: typeof RISK_RULE_CRUD | typeof RISK_USER_CRUD | typeof RISK_EVENT_CRUD | typeof RISK_DEVICE_CRUD,
-  label: string,
+  key: MessageKey,
+  en: string,
 ) => {
-  const found = (crud.actions ?? []).find((item) => item.label === label);
-  assert.ok(found, `${crud.noun} 缺动作「${label}」`);
+  setCode('en');
+  assert.equal(t(key), en, `动作键 ${key} 的英文成品变了`);
+  const found = (crud.actions ?? []).find((item) => item.label === key);
+  assert.ok(found, `${t(crud.noun)} 缺动作「${key}」`);
   return found;
 };
 
@@ -107,7 +116,7 @@ test('风控规则：写端点对路由表；启停无请求体、编辑是全�
   assert.deepEqual(toggle('Xk9'), { path: '/admin/v1/risk/rule/Xk9/toggle' });
 
   // 试算的 rule_id 取自被点的那一行；上下文是 JSON 对象（服务端 is_array 才收）
-  const test = actionOf(crud, '试算');
+  const test = actionOf(crud, 'f.dry_run', 'Dry Run');
   assert.deepEqual(test.body?.('Xk9'), { rule_id: 'Xk9' });
   const context = fieldOf(test.fields, 'context');
   assert.equal(context.type, 'jsonobj');
@@ -130,23 +139,32 @@ test('风控规则：type/action/scope 值与控制器同源（类型来自沙�
 
 test('风控规则：config 提示把每个 type 的白名单键与 INT_BOUNDS 的区间说全（阈值就是熔断闸）', () => {
   const src = controller('RiskRuleController.php');
-  const hint = fieldOf(RISK_RULE_CRUD.fields, 'config').hint ?? '';
   // 键名：CONFIG_KEYS 的映射键（= type）与每个 type 的白名单键，一个都不能漏
   const configKeys = literals(arrayConst(src, 'CONFIG_KEYS'));
   assert.ok(configKeys.length > 20, 'CONFIG_KEYS 没读全');
-  for (const key of configKeys) {
-    assert.ok(hint.includes(key), `config 提示漏了 ${key}（写错键名的值会被服务端拒绝）`);
-  }
   // 区间：INT_BOUNDS 的每个 [下界, 上界] 都要在提示里出现（取 0 会让规则恒命中、连充值一起停）
   const bounds = [...arrayConst(src, 'INT_BOUNDS').matchAll(/'([a-z_0-9]+)'\s*=>\s*\[(\d+),\s*(\d+)\]/g)];
   assert.ok(bounds.length >= 10, 'INT_BOUNDS 没读全');
-  for (const [, key, min, max] of bounds) {
-    assert.ok(hint.includes(`${min}..${max}`), `${key} 的区间 ${min}..${max} 没写进提示`);
+  // 每种**有表**的语言各查一遍：en 是其余 11 种语言的回落表，只查一种会让另一种悄悄缺键/缺区间。
+  // 键名与区间是语言无关的（照抄控制器），末三条是各语言里「特殊读法」那句话的措辞。
+  const proseByCode: Record<string, string[]> = {
+    en: ['true/false', 'must be greater than 0', '(0, 1]'],
+    zh: ['true/false', '必须大于 0', '(0, 1]'],
+  };
+  for (const [code, prose] of Object.entries(proseByCode)) {
+    setCode(code);
+    // hint 是**键**（渲染期才取译文）⇒ 走生产同一条解析路径拿到成品再比对控制器真值
+    const hint = fieldText(fieldOf(RISK_RULE_CRUD.fields, 'config').hint) ?? '';
+    for (const key of configKeys) {
+      assert.ok(hint.includes(key), `${code}: config 提示漏了 ${key}（写错键名的值会被服务端拒绝）`);
+    }
+    for (const [, key, min, max] of bounds) {
+      assert.ok(hint.includes(`${min}..${max}`), `${code}: ${key} 的区间 ${min}..${max} 没写进提示`);
+    }
+    // 布尔键与金额/比率键的特殊读法：服务端 (bool) 读法会让字符串 "false" 恒真
+    for (const phrase of prose) assert.ok(hint.includes(phrase), `${code}: config 提示里缺「${phrase}」`);
   }
-  // 布尔键与金额/比率键的特殊读法：服务端 (bool) 读法会让字符串 "false" 恒真
-  assert.ok(hint.includes('true/false'));
-  assert.ok(hint.includes('必须大于 0'));
-  assert.ok(hint.includes('(0, 1]'));
+  setCode('en');
 });
 
 test('风控用户：hashid 在 user_id 列、冻结无请求体、解冻金额原样上送（前端不碰 Number）', () => {
@@ -172,14 +190,14 @@ test('风控用户：hashid 在 user_id 列、冻结无请求体、解冻金额�
   }
 
   const row = { user_id: 'Uk9hashid', username: 'alice', score: 40, band: 'watch' };
-  const hold = actionOf(crud, '冻结');
+  const hold = actionOf(crud, 'f.freeze', 'Freeze');
   // 全额冻结由服务端算：客户端**不发金额**（发了反而会被忽略/对不上）
   assert.equal(hold.body, undefined);
   // 资金动作的确认文案必须认得出「是谁」（列表里摆的是 username）
   assert.ok(confirmText(hold, row).includes('alice'), '冻结的二次确认认不出用户');
   assert.ok(reportText(hold, { user_id: 'Uk9hashid', frozen_amount: '12.34000000' }).includes('12.34000000'));
 
-  const release = actionOf(crud, '解冻');
+  const release = actionOf(crud, 'f.unfreeze', 'Unfreeze');
   const amount = fieldOf(release.fields, 'amount');
   // 金额一律 text：number 控件与 Number() 会吃掉小数位（bcmath 串原样进出）
   assert.equal(amount.type, 'text');
@@ -208,7 +226,7 @@ test('风控事件 / 反作弊：动作型（无增改删、不做 0/1 启停）
   assert.deepEqual(decisions, ['approve', 'reject']);
   assert.deepEqual(decisions, inList(eventSrc, 'decision'));
   // 判误报是危险语义：确认文案要认出对象，且把「不改面板口径」说出来
-  const reject = actionOf(RISK_EVENT_CRUD, '判为误报');
+  const reject = actionOf(RISK_EVENT_CRUD, 'f.mark_as_false_positive', 'Mark as False Positive');
   const text = confirmText(reject, { id: 'E1', rule_name: '频率限制', type: 'frequency' });
   assert.ok(text.includes('频率限制') && text.includes('frequency'), '判误报的确认认不出事件');
 
@@ -305,7 +323,11 @@ test('设备名单：拉黑/解封是行内动作（rowKey 指 fp_hash 列、whe
   assert.deepEqual(RISK_DEVICE_HIDE, ['fp_hash']);
 
   const actions = crud.actions ?? [];
-  assert.deepEqual(actions.map((action) => action.label), ['拉黑', '解封']);
+  // label 是**键**（两行的按钮文案各一条）⇒ 键与英文成品一起钉：键串在源码里写死，
+  // 成品来自 en 表 ⇒ 谁写错都红。
+  assert.deepEqual(actions.map((action) => action.label), ['f.blocklist', 'f.unblock']);
+  setCode('en');
+  assert.deepEqual(actions.map((action) => t(action.label)), ['Blocklist', 'Unblock']);
   for (const action of actions) {
     const path = action.path('Xk9');
     assert.ok(hasRoute(action.method ?? 'POST', path), `路由表里没有 ${action.method ?? 'POST'} ${path}`);
@@ -316,8 +338,8 @@ test('设备名单：拉黑/解封是行内动作（rowKey 指 fp_hash 列、whe
   ]);
 
   // 两个动作互斥：同排摆两个按钮必有一个点了白点（服务端不校验当前状态，重复拉黑只会延 TTL）
-  const block = actionOf(crud, '拉黑');
-  const unblock = actionOf(crud, '解封');
+  const block = actionOf(crud, 'f.blocklist', 'Blocklist');
+  const unblock = actionOf(crud, 'f.unblock', 'Unblock');
   assert.equal(block.when?.({ blocked: false }), true);
   assert.equal(block.when?.({ blocked: true }), false);
   assert.equal(unblock.when?.({ blocked: true }), true);
@@ -334,9 +356,19 @@ test('设备名单：拉黑/解封是行内动作（rowKey 指 fp_hash 列、whe
   // 二次确认必须认出「改的是哪台设备」：列表里看得见的是掩码，文案就得带掩码
   assert.ok(confirmText(block, row).includes('a1b2c3d4****'), '拉黑的确认文案没带掩码');
   assert.ok(confirmText(unblock, row).includes('a1b2c3d4****'), '解封的确认文案没带掩码');
-  // 拉黑是真阻断（RiskService::check() 在规则循环前对所有规则短路）⇒ 旧的「不阻断任何请求」口径必须消失
-  assert.ok(confirmText(block, row).includes('阻断'), '拉黑文案必须说清会阻断');
-  assert.ok(!confirmText(block, row).includes('不会真正阻断'), '「不阻断任何请求」是过期口径');
+  // 拉黑是真阻断（RiskService::check() 在规则循环前对所有规则短路）⇒ 旧的「不阻断任何请求」口径必须消失。
+  // 两种有表的语言各查一遍：en 是其余 11 种语言的回落表，只查 zh 会让 en 那半漏掉这句。
+  setCode('zh');
+  assert.ok(confirmText(block, row).includes('阻断'), 'zh 拉黑文案必须说清会阻断');
+  setCode('en');
+  assert.ok(confirmText(block, row).includes('**blocked outright**'), 'en 拉黑文案必须说清会阻断');
+  for (const stale of ['不会真正阻断', 'does not actually block']) {
+    for (const code of ['zh', 'en']) {
+      setCode(code);
+      assert.ok(!confirmText(block, row).includes(stale), `${code}: 「不阻断任何请求」是过期口径`);
+    }
+  }
+  setCode('en');
   assert.ok(reportText(block, { fp_masked: 'a1b2c3d4****' }).includes('a1b2c3d4****'));
 });
 
@@ -345,9 +377,9 @@ test('IP 名单：粘贴式动作逐个对路由表，且确认文案带粘贴�
   for (const flag of RISK_IP_FLAGS) {
     paths.push(flag.path);
     assert.ok(hasRoute('POST', flag.path), `路由表里没有 POST ${flag.path}`);
-    assert.equal(flag.field.required, true, `${flag.label} 的标识必须必填（服务端 decode 不了就 400）`);
+    assert.equal(flag.field.required, true, `${t(flag.label)} 的标识必须必填（服务端 decode 不了就 400）`);
     // 确认文案必须认出这次要改的是哪个标识 —— 名单类动作看不见落点，全靠这句话
-    assert.ok(flag.confirm('1.2.3.4').includes('1.2.3.4'), `${flag.label} 的确认文案没带上标识`);
+    assert.ok(flag.confirm('1.2.3.4').includes('1.2.3.4'), `${t(flag.label)} 的确认文案没带上标识`);
   }
   assert.deepEqual(paths, [
     '/admin/v1/risk/ip/block',

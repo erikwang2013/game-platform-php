@@ -2,6 +2,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
+import { use } from '../core/i18n/i18n';
 import { Users } from './users';
 
 /**
@@ -20,6 +21,8 @@ describe('Users 平台用户注销', () => {
   const errorText = (): string => (page as unknown as { error(): string }).error();
 
   beforeEach(() => {
+    // 界面文案是词条（「仍在列表中」那类断言断的是中文译文）⇒ 语言必须显式定
+    use('zh');
     TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
     http = TestBed.inject(HttpTestingController);
     // inject(Api) 写在字段初始化器里 ⇒ 必须在注入上下文里构造

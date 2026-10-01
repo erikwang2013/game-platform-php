@@ -1,16 +1,17 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { setCode } from '../i18n/index.ts';
 import { buildPayload, draftFrom, firstMissing, labelOf, optionsWithCurrent, rowId, statusOf, type Field } from './crud.ts';
 
 /** 与 pages/TabPage.tsx 的游戏字段同形的缩样：必填 text / 带值域的 select / 可空 number / switch / 只读。 */
 const FIELDS: Field[] = [
-  { name: 'name', label: '游戏名称', type: 'text', required: true },
-  { name: 'slug', label: '游戏标识', type: 'text', required: true },
-  { name: 'type', label: '游戏类型', type: 'select', required: true, options: [{ value: 'self', label: '自研' }] },
-  { name: 'platform', label: '客户端平台', type: 'select', options: [{ value: 'h5', label: 'h5' }], default: 'h5' },
-  { name: 'sort', label: '排序', type: 'number' },
-  { name: 'status', label: '上架', type: 'switch' },
+  { name: 'name', label: 'f.game_name', type: 'text', required: true },
+  { name: 'slug', label: 'f.game_slug', type: 'text', required: true },
+  { name: 'type', label: 'f.game_type', type: 'select', required: true, options: [{ value: 'self' }] },
+  { name: 'platform', label: 'f.client_platform', type: 'select', options: [{ value: 'h5' }], default: 'h5' },
+  { name: 'sort', label: 'f.sort_order', type: 'number' },
+  { name: 'status', label: 'f.listed', type: 'switch' },
 ];
 
 const ROW = {
@@ -73,27 +74,28 @@ test('buildPayload：编辑只发改动过的字段，未改动/只读字段一�
 });
 
 test('buildPayload：编辑时清空——文本发空串，number 发 null（integer 规则不收空串）', () => {
-  const fields: Field[] = [{ name: 'description', label: '简介', type: 'textarea' }, { name: 'sort', label: '排序', type: 'number' }];
+  const fields: Field[] = [{ name: 'description', label: 'f.description', type: 'textarea' }, { name: 'sort', label: 'f.sort_order', type: 'number' }];
   const row = { description: '旧简介', sort: 5 };
   assert.deepEqual(buildPayload(fields, { description: '', sort: '5' }, row), { description: '' });
   assert.deepEqual(buildPayload(fields, { description: '旧简介', sort: '' }, row), { sort: null });
 });
 
 test('firstMissing：必填缺失/数字非法各报一条，只读字段不参与', () => {
-  assert.equal(firstMissing(FIELDS, draftFrom(FIELDS)), '请填写游戏名称');
+  // 断言写成**英文成品**而不是 t(...)：比对同一个调用是自证；键换错、参数换错都要红
+  assert.equal(firstMissing(FIELDS, draftFrom(FIELDS)), 'Please fill in Game Name');
   assert.equal(
     firstMissing(FIELDS, { name: 'x', slug: 'x', type: '', platform: 'h5', sort: '', status: '0' }),
-    '请选择游戏类型',
+    'Please select Game Type',
   );
-  assert.equal(firstMissing(FIELDS, { name: 'x', slug: 'x', type: 'self', sort: 'abc', status: '0' }), '排序必须是数字');
-  const fields: Field[] = [{ name: 'slug', label: '游戏标识', type: 'text', required: true, readOnly: true }];
+  assert.equal(firstMissing(FIELDS, { name: 'x', slug: 'x', type: 'self', sort: 'abc', status: '0' }), 'Sort Order must be a number');
+  const fields: Field[] = [{ name: 'slug', label: 'f.game_slug', type: 'text', required: true, readOnly: true }];
   assert.equal(firstMissing(fields, { slug: '' }), null);
 });
 
-test('labelOf：取对象标识，缺失/空白退回「该记录」；statusOf 只认 1', () => {
+test('labelOf：取对象标识，缺失/空白退回 app.this_record 的译文；statusOf 只认 1', () => {
   assert.equal(labelOf({ name: '贪吃蛇' }, 'name'), '贪吃蛇');
-  assert.equal(labelOf({ name: '  ' }, 'name'), '该记录');
-  assert.equal(labelOf({}, 'name'), '该记录');
+  assert.equal(labelOf({ name: '  ' }, 'name'), 'this record');
+  assert.equal(labelOf({}, 'name'), 'this record');
   assert.equal(labelOf({ title: 0 }, 'title'), '0');
 
   assert.equal(statusOf({ status: 1 }), 1);
@@ -103,7 +105,7 @@ test('labelOf：取对象标识，缺失/空白退回「该记录」；statusOf 
 });
 
 test('json 字段：库值是对象时转成可编辑 JSON 文本，字符串原样（JSON 列读回被规范化过）', () => {
-  const field: Field = { name: 'config', label: '配置', type: 'json' };
+  const field: Field = { name: 'config', label: 'f.rule_config_json', type: 'json' };
   // 活动 config 被模型 cast 成 array ⇒ 回编码成对象
   assert.equal(draftFrom([field], { config: { rewards: [{ day: 1 }] } }).config, '{\n  "rewards": [\n    {\n      "day": 1\n    }\n  ]\n}');
   // 已是字符串的（成就是 JSON 列、无 cast）原样带出，绝不重新序列化：规范化后的空白差异
@@ -113,14 +115,14 @@ test('json 字段：库值是对象时转成可编辑 JSON 文本，字符串原
 });
 
 test('json 字段：编辑时未改动不发、改动按字符串发（服务端 json_decode 校验）', () => {
-  const field: Field = { name: 'config', label: '配置', type: 'json' };
+  const field: Field = { name: 'config', label: 'f.rule_config_json', type: 'json' };
   const row = { config: { target: 3 } };
   assert.deepEqual(buildPayload([field], draftFrom([field], row), row), {});
   assert.deepEqual(buildPayload([field], { config: '{"target": 5}' }, row), { config: '{"target": 5}' });
 });
 
 test('lines 字段：多行转数组（去空白、丢空行）；行值是数组时按行回显，未改动不发', () => {
-  const field: Field = { name: 'game_ids', label: '游戏 hashid', type: 'lines' };
+  const field: Field = { name: 'game_ids', label: 'f.game_hashid', type: 'lines' };
   assert.deepEqual(buildPayload([field], { game_ids: 'a\n  b  \n\nc\n' }), { game_ids: ['a', 'b', 'c'] });
   assert.deepEqual(buildPayload([field], { game_ids: '   ' }), {});
 
@@ -171,16 +173,19 @@ test('buildPayload：fullEdit 下编辑也发全量（未改动字段照样发�
 });
 
 test('jsonobj 字段：文本框里的 JSON 解成对象上送（字符串会被服务端当没传）', () => {
-  const field: Field = { name: 'context', label: '试算上下文', type: 'jsonobj' };
+  setCode('en');
+  const field: Field = { name: 'context', label: 'f.rule_config_json', type: 'jsonobj' };
   assert.deepEqual(buildPayload([field], { context: '{"ip": "1.2.3.4", "amount": "100"}' }), {
     context: { ip: '1.2.3.4', amount: '100' },
   });
   // 留空 ⇒ 不发（服务端自己回落到空上下文）
   assert.deepEqual(buildPayload([field], { context: '' }), {});
-  // 非对象（数组/标量）与服务端 is_array 口径一致：拦在提交前，而不是让它静默空转
-  assert.equal(firstMissing([field], { context: '[1,2]' }), '试算上下文必须是 JSON 对象（形如 {"ip": "1.2.3.4"}）');
-  assert.equal(firstMissing([field], { context: '"abc"' }), '试算上下文必须是 JSON 对象（形如 {"ip": "1.2.3.4"}）');
-  assert.equal(firstMissing([field], { context: '{oops}' }), '试算上下文必须是 JSON 对象（形如 {"ip": "1.2.3.4"}）');
+  // 非对象（数组/标量）与服务端 is_array 口径一致：拦在提交前，而不是让它静默空转。
+  // 断言是**英文成品**：报错文案里的字段名取自 label（键 → 译文），写成 t(...) 比对是自证。
+  const bad = 'Rule Config (JSON) must be a JSON object (e.g. {"ip": "1.2.3.4"})';
+  assert.equal(firstMissing([field], { context: '[1,2]' }), bad);
+  assert.equal(firstMissing([field], { context: '"abc"' }), bad);
+  assert.equal(firstMissing([field], { context: '{oops}' }), bad);
   assert.equal(firstMissing([field], { context: '{"ip": "1.2.3.4"}' }), null);
   assert.equal(firstMissing([field], { context: '' }), null);
 });
@@ -215,11 +220,15 @@ test('image 字段：值仍是字符串，照旧参与「编辑态只发改动�
 });
 
 test('optionsWithCurrent：行值不在值域内时置顶补一条「当前值」，在值域内或为空则原样', () => {
-  const field: Field = { name: 'type', label: '类型', type: 'select', options: [{ value: 'system', label: '系统' }] };
-  assert.deepEqual(optionsWithCurrent(field, 'system'), [{ value: 'system', label: '系统' }]);
-  assert.deepEqual(optionsWithCurrent(field, ''), [{ value: 'system', label: '系统' }]);
+  setCode('en');
+  // 选项 label 是**键**（渲染期才取译文）⇒ 这里断言渲染后的英文成品，键换错/漏取译文都会红
+  const field: Field = { name: 'type', label: 'f.type', type: 'select', options: [{ value: 'approve', label: 'funds.approve' }] };
+  assert.deepEqual(optionsWithCurrent(field, 'approve'), [{ value: 'approve', label: 'Approve' }]);
+  assert.deepEqual(optionsWithCurrent(field, ''), [{ value: 'approve', label: 'Approve' }]);
   assert.deepEqual(optionsWithCurrent(field, 'legacy'), [
-    { value: 'legacy', label: 'legacy（当前值）' },
-    { value: 'system', label: '系统' },
+    { value: 'legacy', label: 'legacy (current value)' },
+    { value: 'approve', label: 'Approve' },
   ]);
+  // 补的这条是**原值**（只加标签不改值），否则「编辑时不碰该字段」的判等会误判成有改动
+  assert.equal(optionsWithCurrent(field, 'legacy')[0].value, 'legacy');
 });

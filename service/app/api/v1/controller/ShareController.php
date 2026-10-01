@@ -63,7 +63,7 @@ class ShareController extends BaseController
         $code = trim($request->input('short_code'));
         $link = ShareLink::where('short_code', $code)->first();
         if (!$link || ($link->expires_at && strtotime($link->expires_at) < time())) {
-            return $this->fail('Invalid short code', 404);
+            return $this->fail(trans('Invalid short code'), 404);
         }
 
         // 原子自增，不返回分享者信息（匿名落地页）

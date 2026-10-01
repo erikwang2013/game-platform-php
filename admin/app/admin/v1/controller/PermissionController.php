@@ -68,7 +68,7 @@ class PermissionController extends BaseController
         $perm->sort = (int) $request->input('sort', 0);
         $perm->save();
 
-        return $this->success($this->encodeIds($perm->toArray()), '创建成功');
+        return $this->success($this->encodeIds($perm->toArray()), trans('Created successfully'));
     }
 
     #[Apidoc\Title("更新权限")]
@@ -85,7 +85,7 @@ class PermissionController extends BaseController
         $id = $this->decodeId($hashid);
         $perm = AdminPermission::find($id);
         if (!$perm) {
-            return $this->fail('权限不存在', 404);
+            return $this->fail(trans('Permission not found'), 404);
         }
 
         // 镜像 store 的 name 规则（sometimes：局部更新）。update 不写 slug/type，故不校验它们；
@@ -106,7 +106,7 @@ class PermissionController extends BaseController
         $perm->sort = (int) $request->input('sort', $perm->sort);
         $perm->save();
 
-        return $this->success($this->encodeIds($perm->toArray()), '更新成功');
+        return $this->success($this->encodeIds($perm->toArray()), trans('Updated successfully'));
     }
 
     #[Apidoc\Title("删除权限")]
@@ -119,7 +119,7 @@ class PermissionController extends BaseController
         $id = $this->decodeId($hashid);
         $perm = AdminPermission::find($id);
         if (!$perm) {
-            return $this->fail('权限不存在', 404);
+            return $this->fail(trans('Permission not found'), 404);
         }
 
         $adminId = $request->adminId ?? 0;
@@ -133,7 +133,7 @@ class PermissionController extends BaseController
         $perm->roles()->detach();
         $perm->delete();
 
-        return $this->success([], '删除成功');
+        return $this->success([], trans('Deleted successfully'));
     }
 
     /**

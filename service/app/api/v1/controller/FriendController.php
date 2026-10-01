@@ -56,15 +56,15 @@ class FriendController extends BaseController
     public function request(Request $request): Response
     {
         $friendId = $this->decodeId($request->input('friend_id', '0'));
-        if ($friendId <= 0 || $friendId === $request->userId) return $this->fail('Invalid friend', 422);
-        if (!User::find($friendId)) return $this->fail('User not found', 404);
+        if ($friendId <= 0 || $friendId === $request->userId) return $this->fail(trans('Invalid friend'), 422);
+        if (!User::find($friendId)) return $this->fail(trans('User not found'), 404);
 
         $existing = Friend::where(static function($q) use ($request, $friendId) {
             $q->where('user_id', $request->userId)->where('friend_id', $friendId);
         })->orWhere(static function($q) use ($request, $friendId) {
             $q->where('user_id', $friendId)->where('friend_id', $request->userId);
         })->first();
-        if ($existing) return $this->fail('Already friends or request pending', 422);
+        if ($existing) return $this->fail(trans('Already friends or request pending'), 422);
 
         $f = new Friend();
         $f->id = $this->generateId();
@@ -75,7 +75,7 @@ class FriendController extends BaseController
         $f->updated_at = date('Y-m-d H:i:s');
         $f->save();
 
-        return $this->success(['id' => $this->encodeId($f->id)], 'Friend request sent');
+        return $this->success(['id' => $this->encodeId($f->id)], trans('Friend request sent'));
     }
 
     #[Apidoc\Title("接受好友申请")]
@@ -86,11 +86,11 @@ class FriendController extends BaseController
     {
         $reqId = $this->decodeId($request->input('request_id', '0'));
         $f = Friend::where('id', $reqId)->where('friend_id', $request->userId)->where('status', 'pending')->first();
-        if (!$f) return $this->fail('Request not found', 404);
+        if (!$f) return $this->fail(trans('Request not found'), 404);
         $f->status = 'accepted';
         $f->updated_at = date('Y-m-d H:i:s');
         $f->save();
-        return $this->success([], 'Friend request accepted');
+        return $this->success([], trans('Friend request accepted'));
     }
 
     #[Apidoc\Title("拒绝好友申请")]
@@ -101,9 +101,9 @@ class FriendController extends BaseController
     {
         $reqId = $this->decodeId($request->input('request_id', '0'));
         $f = Friend::where('id', $reqId)->where('friend_id', $request->userId)->where('status', 'pending')->first();
-        if (!$f) return $this->fail('Request not found', 404);
+        if (!$f) return $this->fail(trans('Request not found'), 404);
         $f->delete();
-        return $this->success([], 'Friend request rejected');
+        return $this->success([], trans('Friend request rejected'));
     }
 
     #[Apidoc\Title("删除好友")]
@@ -118,7 +118,7 @@ class FriendController extends BaseController
         })->orWhere(static function($q) use ($request, $friendId) {
             $q->where('user_id', $friendId)->where('friend_id', $request->userId);
         })->where('status', 'accepted')->delete();
-        return $this->success([], 'Friend removed');
+        return $this->success([], trans('Friend removed'));
     }
 
     #[Apidoc\Title("搜索用户")]

@@ -16,6 +16,8 @@ class GameCategoryAdminController extends GetxController {
     load();
   }
 
+  /// **不加分页**：/game/category/list 是整表端点（无 total，分类是个位数量级），
+  /// 且被游戏表单的分类下拉复用 ⇒ 分页会让下拉缺选项。
   Future<void> load() async {
     isLoading.value = true;
     try {

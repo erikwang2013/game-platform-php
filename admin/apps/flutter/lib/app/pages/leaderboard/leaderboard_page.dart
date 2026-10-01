@@ -10,6 +10,11 @@ class LeaderboardAdminController extends GetxController {
   final games = <dynamic>[].obs;
   final items = <dynamic>[].obs;
   final isLoading = false.obs;
+  final total = 0.obs;
+  final page = 1.obs;
+
+  /// 与后端缺省一致（LeaderboardController::index 的 `input('limit', 15)`）。
+  static const int pageSize = 15;
 
   @override
   void onInit() {
@@ -21,19 +26,23 @@ class LeaderboardAdminController extends GetxController {
 
   Future<void> loadGames() async {
     try {
-      // 游戏列表默认 15 条/页，选择器要全集 ⇒ 放大 limit（服务端无上限，200 只是 UI 侧的理智界）
-      final resp = await api.get('/admin/v1/game/list', params: <String, dynamic>{'limit': 200});
-      games.value = resp['data'] is List ? resp['data'] as List<dynamic> : (resp['data']['list'] as List<dynamic>? ?? []);
+      // 游戏列表默认 15 条/页，选择器要全集 ⇒ 放大 limit。走 api.list 而非裸 get：
+      // 三种分页参数名一次发全（见 api_service.dart），只发 limit 时别的方言服务端会回落缺省 15。
+      // 服务端无上限，200 只是 UI 侧的理智界；选择器只用行，不用 total。
+      final result = await api.list('/admin/v1/game/list', pageSize: 200);
+      games.value = result.rows;
     } catch (e) {
       Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.loading_failed')}: $e');
     }
   }
 
-  Future<void> load() async {
+  Future<void> load({int? toPage}) async {
+    if (toPage != null) page.value = toPage;
     isLoading.value = true;
     try {
-      final resp = await api.get('/admin/v1/leaderboard/list');
-      items.value = resp['data'] is List ? resp['data'] as List<dynamic> : (resp['data']['list'] as List<dynamic>? ?? []);
+      final result = await api.list('/admin/v1/leaderboard/list', page: page.value, pageSize: pageSize);
+      items.value = result.rows;
+      total.value = result.total;
     } catch (e) {
       Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.loading_failed')}: $e');
     } finally {
@@ -210,6 +219,13 @@ class LeaderboardPage extends GetView<LeaderboardAdminController> {
             );
           }),
         ),
+        const SizedBox(height: 8),
+        Obx(() => CrudPager(
+              page: ctrl.page.value,
+              total: ctrl.total.value,
+              size: LeaderboardAdminController.pageSize,
+              onPage: (p) => ctrl.load(toPage: p),
+            )),
       ],
     );
   }

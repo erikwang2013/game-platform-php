@@ -43,7 +43,7 @@ class CountryController extends BaseController
     {
         $config = CountryConfig::where('country_code', $code)->first();
         if (!$config) {
-            return $this->fail('Country not found', 404);
+            return $this->fail(trans('Country not found'), 404);
         }
 
         return $this->success([

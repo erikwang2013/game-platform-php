@@ -8,6 +8,8 @@ import { GameService } from '../service/DataService';
 import { GameItem, FormValues, FormPayload } from '../model/DataModels';
 import { LoadingView, ErrorView, EmptyView } from '../common/Components';
 import { FormDialog, RowActionBar, FormField, confirmDelete } from '../common/FormDialog';
+import { PagerBar } from '../common/ResourceViews';
+import { t } from '../i18n/Translations';
 
 /**
  * 游戏字段描述 —— 值域取自 GameController 的 validator 与 game_game 列注释：
@@ -17,34 +19,35 @@ import { FormDialog, RowActionBar, FormField, confirmDelete } from '../common/Fo
  *   api_key/api_secret 刻意不在表单里：列表被 $hidden 遮住回显不出来，空串提交会把正在用的密钥清走
  *   （自研/内嵌由服务端生成，第三方由对方提供），要换密钥得另开一条专用路径。
  */
+/** 各文案字段存**键名**（FormDialog 对 label/hint/placeholder 各调一次 t()）—— 顶层调 t() 会固化启动语言 */
 const GAME_FIELDS: FormField[] = [
-  { name: 'name', label: '游戏名称', type: 'text', required: true, placeholder: '最长 100 字' },
-  { name: 'slug', label: '游戏标识', type: 'text', required: true, placeholder: '小写字母/数字/_/-，最长 50' },
+  { name: 'name', label: 'game.f.name', type: 'text', required: true, placeholder: 'game.f.name_placeholder' },
+  { name: 'slug', label: 'game.f.slug', type: 'text', required: true, placeholder: 'game.f.slug_placeholder' },
   {
-    name: 'type', label: '游戏类型', type: 'select', required: true, options: [
-      { label: '自研', value: 'self' },
-      { label: '内嵌', value: 'embedded' },
-      { label: '第三方', value: 'third_party' }
+    name: 'type', label: 'game.f.type', type: 'select', required: true, options: [
+      { label: 'game.type_self', value: 'self' },
+      { label: 'game.type_embedded', value: 'embedded' },
+      { label: 'game.type_third_party', value: 'third_party' }
     ]
   },
   {
-    name: 'platform', label: '客户端平台', type: 'select', options: [
+    name: 'platform', label: 'game.f.platform', type: 'select', options: [
       { label: 'H5', value: 'h5' },
       { label: 'Unity', value: 'unity' },
       { label: 'Web', value: 'web' },
-      { label: '原生', value: 'native' }
+      { label: 'game.platform_native', value: 'native' }
     ]
   },
-  { name: 'region', label: '运营区域', type: 'text', placeholder: 'global / CN / US…，最长 10' },
-  { name: 'sdk_version', label: 'SDK 版本', type: 'text', placeholder: '自研/内嵌游戏用，最长 20' },
+  { name: 'region', label: 'game.f.region', type: 'text', placeholder: 'game.f.region_placeholder' },
+  { name: 'sdk_version', label: 'game.f.sdk_version', type: 'text', placeholder: 'game.f.sdk_version_placeholder' },
   {
-    name: 'cover_image', label: '封面图', type: 'image', placeholder: '图片地址，最长 255',
-    hint: '≤5MB，jpg/jpeg/png/gif/webp（不支持 svg）。上传后回填绝对地址，也可直接贴外链'
+    name: 'cover_image', label: 'game.f.cover_image', type: 'image', placeholder: 'game.f.cover_placeholder',
+    hint: 'game.f.cover_hint'
   },
-  { name: 'api_endpoint', label: 'API 端点', type: 'text', placeholder: '第三方游戏地址，最长 255' },
-  { name: 'description', label: '游戏简介', type: 'textarea', placeholder: '游戏描述' },
-  { name: 'sort', label: '排序', type: 'number', placeholder: '越小越靠前，缺省 0' },
-  { name: 'status', label: '上架', type: 'switch' }
+  { name: 'api_endpoint', label: 'game.f.api_endpoint', type: 'text', placeholder: 'game.f.api_placeholder' },
+  { name: 'description', label: 'game.f.description', type: 'textarea', placeholder: 'game.f.description_placeholder' },
+  { name: 'sort', label: 'game.f.sort', type: 'number', placeholder: 'game.f.sort_placeholder' },
+  { name: 'status', label: 'game.f.status', type: 'switch' }
 ];
 
 /** 编辑态把 slug 换成只读回显：后端 update 收不了它，仍标必填会拦下提交 */
@@ -53,7 +56,7 @@ function gameFormFields(isEdit: boolean): FormField[] {
   for (let i = 0; i < GAME_FIELDS.length; i++) {
     const field = GAME_FIELDS[i];
     if (isEdit && field.name === 'slug') {
-      fields.push({ name: 'slug', label: '游戏标识', type: 'text', placeholder: '创建后不可修改', disabled: true });
+      fields.push({ name: 'slug', label: 'game.f.slug', type: 'text', placeholder: 'game.f.slug_readonly', disabled: true });
     } else {
       fields.push(field);
     }
@@ -88,6 +91,7 @@ function gameCreateInitial(): FormValues {
 @Entry
 @Component
 struct GameManagePage {
+  @StorageLink('app_locale') localeCode: string = 'en';
   @State games: GameItem[] = [];
   @State page: number = 1;
   @State total: number = 0;
@@ -124,7 +128,7 @@ struct GameManagePage {
         return;
       }
       this.hasError = true;
-      promptAction.showToast({ message: '加载失败' });
+      promptAction.showToast({ message: t('common.load_failed') });
     } finally {
       this.isLoading = false;
     }
@@ -174,10 +178,10 @@ struct GameManagePage {
     try {
       if (this.formEdit) {
         await GameService.update(this.editingId, body);
-        promptAction.showToast({ message: '更新成功' });
+        promptAction.showToast({ message: t('res.updated') });
       } else {
         await GameService.create(body);
-        promptAction.showToast({ message: '创建成功' });
+        promptAction.showToast({ message: t('res.created') });
       }
     } catch (e) {
       if (e instanceof Error && e.message === 'UNAUTHORIZED') {
@@ -197,7 +201,7 @@ struct GameManagePage {
       const body: FormPayload = {};
       body.status = next;
       await GameService.update(game.id, body);
-      promptAction.showToast({ message: next === 1 ? '已上架' : '已下架' });
+      promptAction.showToast({ message: next === 1 ? t('game.published_toast') : t('game.unpublished_toast') });
       this.loadData(true);
     } catch (e) {
       this.reportRowError(e);
@@ -216,7 +220,7 @@ struct GameManagePage {
     this.busyId = game.id;
     try {
       await GameService.remove(game.id);
-      promptAction.showToast({ message: '删除成功' });
+      promptAction.showToast({ message: t('res.deleted') });
       this.loadData(true);
     } catch (e) {
       this.reportRowError(e);
@@ -231,7 +235,7 @@ struct GameManagePage {
       router.replaceUrl({ url: 'pages/LoginPage' });
       return;
     }
-    promptAction.showToast({ message: e instanceof Error && e.message.length > 0 ? e.message : '操作失败' });
+    promptAction.showToast({ message: e instanceof Error && e.message.length > 0 ? e.message : t('res.op_failed') });
   }
 
   build() {
@@ -242,7 +246,7 @@ struct GameManagePage {
       // 卡片上的点击不会冒泡到遮罩（无需 stopPropagation）
       if (this.formOpen) {
         FormDialog({
-          title: this.formEdit ? '编辑游戏' : '新建游戏',
+          title: this.formEdit ? t('game.edit_title') : t('game.create_title'),
           fields: gameFormFields(this.formEdit),
           initial: this.formInitial,
           onSubmit: (body: FormPayload) => this.submitForm(body),
@@ -273,14 +277,14 @@ struct GameManagePage {
         .backgroundColor('#FFFFFF')
         .onClick(() => router.back())
 
-        Text('游戏管理')
+        Text(t('game.manage_title'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 8 })
 
         Blank()
 
-        Button('+ 新增')
+        Button(t('res.create'))
           .fontSize(13)
           .fontColor('#FFFFFF')
           .backgroundColor('#1677FF')
@@ -297,7 +301,7 @@ struct GameManagePage {
 
       // 搜索栏
       Row() {
-        TextInput({ placeholder: '搜索游戏名称', text: this.keyword })
+        TextInput({ placeholder: t('game.search_name_placeholder'), text: this.keyword })
           .height(40)
           .fontSize(14)
           .backgroundColor('#F5F5F5')
@@ -311,7 +315,7 @@ struct GameManagePage {
             this.loadData(true);
           })
 
-        Button('搜索')
+        Button(t('common.search'))
           .fontSize(13)
           .fontColor('#FFFFFF')
           .backgroundColor('#1677FF')
@@ -333,7 +337,7 @@ struct GameManagePage {
       } else if (this.hasError) {
         ErrorView({ onRetry: () => this.loadData() });
       } else if (this.games.length === 0) {
-        EmptyView({ message: '暂无游戏数据' });
+        EmptyView({ message: t('game.empty') });
       } else {
         List() {
           ForEach(this.games, (game: GameItem) => {
@@ -345,7 +349,7 @@ struct GameManagePage {
                     .fontWeight(FontWeight.Medium)
                     .layoutWeight(1)
 
-                  Text(game.status === 1 ? '上架' : '下架')
+                  Text(game.status === 1 ? t('game.listed') : t('game.delisted'))
                     .fontSize(10)
                     .fontColor(game.status === 1 ? '#52C41A' : '#FF4D4F')
                     .backgroundColor(game.status === 1 ? '#E6FFF0' : '#FFE6E6')
@@ -361,7 +365,7 @@ struct GameManagePage {
                     .layoutWeight(1)
 
                   RowActionBar({
-                    statusText: game.status === 1 ? '下架' : '上架',
+                    statusText: game.status === 1 ? t('game.action_unpublish') : t('game.action_publish'),
                     busy: this.busyId === game.id,
                     onEdit: () => {
                       this.openEdit(game);
@@ -390,36 +394,18 @@ struct GameManagePage {
         .edgeEffect(EdgeEffect.Spring)
       }
 
-      // 分页
+      // 分页（共用 PagerBar，与资源管理页同一套；整表返回的模块不挂）
       if (!this.isLoading && !this.hasError && this.total > this.limit) {
-        Row() {
-          Button('上一页')
-            .fontSize(13)
-            .fontColor(this.page > 1 ? '#1677FF' : '#CCCCCC')
-            .backgroundColor(Color.Transparent)
-            .enabled(this.page > 1)
-            .onClick(() => {
-              this.goPage(-1);
-            })
-
-          Text(`${this.page} / ${this.pageCount()}`)
-            .fontSize(13)
-            .fontColor('#666666')
-
-          Button('下一页')
-            .fontSize(13)
-            .fontColor(this.page < this.pageCount() ? '#1677FF' : '#CCCCCC')
-            .backgroundColor(Color.Transparent)
-            .enabled(this.page < this.pageCount())
-            .onClick(() => {
-              this.goPage(1);
-            })
-        }
-        .width('100%')
-        .height(48)
-        .justifyContent(FlexAlign.Center)
-        .backgroundColor('#FFFFFF')
-        .border({ width: { top: 0.5 }, color: '#EEEEEE' })
+        PagerBar({
+          page: this.page,
+          pageCount: this.pageCount(),
+          onPrev: () => {
+            this.goPage(-1);
+          },
+          onNext: () => {
+            this.goPage(1);
+          }
+        })
       }
     }
     .width('100%')

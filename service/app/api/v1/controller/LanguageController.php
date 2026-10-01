@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
+use common\Locale;
 use common\service\TranslationService;
 use erikwang2013\apidoc\annotation as Apidoc;
 use support\Request;
@@ -32,11 +33,13 @@ class LanguageController extends BaseController
     #[Apidoc\Title("切换语言")]
     #[Apidoc\Url("/api/v1/language/switch")]
     #[Apidoc\Method("POST")]
-    #[Apidoc\Param(name: "locale", type: "string", require: true, desc: "语言代码(en-US/zh-CN/ja-JP/ko-KR)")]
+    #[Apidoc\Param(name: "locale", type: "string", require: true, desc: "语言代码，取值见 /api/v1/language/list 的 languages 键（如 zh-CN，短码 zh 亦可）")]
     public function switch(Request $request): Response
     {
         $validator = validator($request->all(), [
-            'locale' => 'required|in:en-US,zh-CN,ja-JP,ko-KR',
+            // 白名单由 Locale 派生（短码 + C 端全码），13 语言一并生效；
+            // 手写列表会随语言扩充静默过期，症状是"选了语言却 422"
+            'locale' => 'required|in:' . implode(',', Locale::accepted()),
         ]);
 
         if ($validator->fails()) {

@@ -5,14 +5,18 @@ import { DataTable, type Row } from '../components/DataTable';
 import { FormModal } from '../components/FormModal';
 import { RowBrowser, type CrudConfig } from '../components/RowBrowser';
 import { Section } from '../components/Section';
-import { Card, ErrorNote, Field, Loading, PageHead, Tabs } from '../components/ui';
+import { Card, ErrorNote, Field, Loading, PageHead, Pager, Tabs } from '../components/ui';
+import { t, useI18n, type MessageKey } from '../i18n/index.ts';
 import { ApiError, api } from '../lib/api';
 import { useAuth } from '../lib/auth';
 import { labelOf } from '../lib/crud';
 import { ID_KEYS, pick } from '../lib/format';
-import { useApi, useSignOut } from '../lib/hooks';
+import { useApi, usePagedApi, useSignOut } from '../lib/hooks';
+import { totalOf } from '../lib/paging';
 import { WithdrawLimits, WithdrawOrders, WithdrawSwitch } from './funds';
 import { RiskClusters, RiskDevices, RiskIps } from './risk';
+// 管理员（后台账号）单独一个文件：本文件只负责挂载，配置在 adminUsers.ts
+import { ADMIN_USER_CRUD } from './adminUsers';
 import {
   ACHIEVEMENT_CRUD,
   ACTIVITY_CRUD,
@@ -45,7 +49,7 @@ import {
  * 动作型模块（身份审核、工单）只给 actions —— 后端没有增改删端点，就一个按钮都不多长。
  */
 type Group = {
-  label: string;
+  label: MessageKey;
   path?: string;
   list?: boolean;
   preferred?: string[];
@@ -60,88 +64,115 @@ type Group = {
   riskDevices?: boolean;
   riskIps?: boolean;
   riskClusters?: boolean;
-  /** 树形列表的 children 键（权限树：子节点也要成为可操作的行） */
+  /** 树形列表的 children 键（权限树：子节点也要成为可操作的行，缩进 + 展开箭头） */
   tree?: string;
+  /**
+   * 是否分页，缺省 true。整表端点（无 total，且是别处的下拉选项源）与裸数组/树传 false：
+   * 见 RowBrowser 的 paged 说明，逐项列在下面各组的注释里。
+   */
+  paged?: boolean;
   crud?: CrudConfig;
 };
-type PageDef = { title: string; sub?: string; groups: Group[]; account?: boolean };
+type PageDef = { title: MessageKey; sub?: MessageKey; groups: Group[]; account?: boolean };
 
-/** 端点多于一个的页面：标签切换，省掉每个端点一个页面文件。 */
+/** 端点多于一个的页面：标签切换，省掉每个端点一个页面文件。标题与标签写的是**文案键**
+ * （`page.*` / `tab.*`）—— 本对象是模块级常量，这里求 `t()` 会把文案冻在首次求值的语言上。 */
 export const PAGES = {
   dashboard: {
-    title: '概览',
-    sub: '平台实时数据',
+    title: 'page.dashboard.title',
+    sub: 'page.dashboard.sub',
     groups: [
-      { label: '仪表盘', path: '/admin/v1/dashboard' },
-      { label: '平台统计', path: '/admin/v1/dashboard/platform' },
-      { label: '健康检查', path: '/health' },
+      { label: 'tab.dashboard', path: '/admin/v1/dashboard' },
+      { label: 'tab.dashboard.platform', path: '/admin/v1/dashboard/platform' },
+      { label: 'tab.health', path: '/health' },
       // /metrics 是 Prometheus text 格式，非信封 JSON，不在此渲染
     ],
   },
 
   analytics: {
-    title: '分析',
-    sub: '实时聚合指标（服务端 bcmath 计算，前端原样展示）',
+    title: 'page.analytics.title',
+    sub: 'page.analytics.sub',
     groups: [
-      { label: '总览', path: '/admin/v1/analytics/overview' },
-      { label: '游戏排行', path: '/admin/v1/analytics/game-ranking' },
-      { label: 'DAU 趋势', path: '/admin/v1/analytics/dau-trend' },
-      { label: '小时趋势', path: '/admin/v1/analytics/hourly-trend' },
-      { label: '行为分布', path: '/admin/v1/analytics/action-distribution' },
-      { label: '营收', path: '/admin/v1/analytics/revenue' },
-      { label: '转化', path: '/admin/v1/analytics/conversion' },
-      { label: '概率', path: '/admin/v1/analytics/probability' },
-      { label: '留存', path: '/admin/v1/analytics/retention' },
-      { label: '漏斗', path: '/admin/v1/analytics/funnel' },
-      { label: 'ARPU', path: '/admin/v1/analytics/arpu' },
-      { label: '经济指标', path: '/admin/v1/analytics/economy' },
-      { label: '日报', path: '/admin/v1/report/daily' },
+      { label: 'tab.analytics.overview', path: '/admin/v1/analytics/overview' },
+      { label: 'tab.analytics.game_ranking', path: '/admin/v1/analytics/game-ranking' },
+      { label: 'tab.analytics.dau_trend', path: '/admin/v1/analytics/dau-trend' },
+      { label: 'tab.analytics.hourly_trend', path: '/admin/v1/analytics/hourly-trend' },
+      { label: 'tab.analytics.action_distribution', path: '/admin/v1/analytics/action-distribution' },
+      { label: 'tab.analytics.revenue', path: '/admin/v1/analytics/revenue' },
+      { label: 'tab.analytics.conversion', path: '/admin/v1/analytics/conversion' },
+      { label: 'tab.analytics.probability', path: '/admin/v1/analytics/probability' },
+      { label: 'tab.analytics.retention', path: '/admin/v1/analytics/retention' },
+      { label: 'tab.analytics.funnel', path: '/admin/v1/analytics/funnel' },
+      { label: 'tab.analytics.arpu', path: '/admin/v1/analytics/arpu' },
+      { label: 'tab.analytics.economy', path: '/admin/v1/analytics/economy' },
+      { label: 'tab.analytics.report_daily', path: '/admin/v1/report/daily' },
     ],
   },
 
   games: {
-    title: '游戏',
-    sub: '游戏、分类与运营内容',
+    title: 'page.games.title',
+    sub: 'page.games.sub',
     groups: [
-      { label: '游戏列表', path: '/admin/v1/game/list', list: true, preferred: ['game_id', 'id', 'name', 'game_name', 'status', 'created_at'], crud: GAME_CRUD },
-      { label: '区服', path: '/admin/v1/game/server/list', list: true, gameServers: true, preferred: ['id', 'name', 'region', 'status', 'sort'] },
-      { label: '分类', path: '/admin/v1/game/category/list', list: true, preferred: ['id', 'name', 'slug', 'sort', 'status'], crud: CATEGORY_CRUD },
-      { label: '排行榜', path: '/admin/v1/leaderboard/list', list: true, preferred: ['id', 'name', 'type', 'metric', 'game_id', 'status'], crud: LEADERBOARD_CRUD },
-      { label: '成就', path: '/admin/v1/achievement/list', list: true, preferred: ['id', 'key', 'name', 'points', 'status'], crud: ACHIEVEMENT_CRUD },
-      { label: '活动', path: '/admin/v1/activities/list', list: true, preferred: ['id', 'name', 'type', 'status', 'start_at'], crud: ACTIVITY_CRUD },
-      { label: '公告', path: '/admin/v1/announcement/list', list: true, preferred: ['id', 'title', 'type', 'status', 'start_at', 'created_at'], crud: ANNOUNCEMENT_CRUD },
+      { label: 'tab.game.list', path: '/admin/v1/game/list', list: true, preferred: ['game_id', 'id', 'name', 'game_name', 'status', 'created_at'], crud: GAME_CRUD },
+      // 区服是**裸数组**（game_id 必填、一次回全量）：不加 pager
+      { label: 'tab.game.server', path: '/admin/v1/game/server/list', list: true, gameServers: true, preferred: ['id', 'name', 'region', 'status', 'sort'] },
+      // 分类：端点整表返回（没有 total），且是全平台的下拉选项源，故不分页
+      { label: 'tab.game.category', path: '/admin/v1/game/category/list', list: true, paged: false, preferred: ['id', 'name', 'slug', 'sort', 'status'], crud: CATEGORY_CRUD },
+      { label: 'tab.leaderboard', path: '/admin/v1/leaderboard/list', list: true, preferred: ['id', 'name', 'type', 'metric', 'game_id', 'status'], crud: LEADERBOARD_CRUD },
+      // 成就：端点整表返回（没有 total），且是全平台的下拉选项源，故不分页
+      { label: 'tab.achievement', path: '/admin/v1/achievement/list', list: true, paged: false, preferred: ['id', 'key', 'name', 'points', 'status'], crud: ACHIEVEMENT_CRUD },
+      { label: 'tab.activity', path: '/admin/v1/activities/list', list: true, preferred: ['id', 'name', 'type', 'status', 'start_at'], crud: ACTIVITY_CRUD },
+      { label: 'tab.announcement', path: '/admin/v1/announcement/list', list: true, preferred: ['id', 'title', 'type', 'status', 'start_at', 'created_at'], crud: ANNOUNCEMENT_CRUD },
     ],
   },
 
   users: {
-    title: '用户',
-    sub: '平台用户、身份与工单',
+    title: 'page.users.title',
+    sub: 'page.users.sub',
     groups: [
-      { label: '平台用户', path: '/admin/v1/platform/user/list', list: true, platformUsers: true, preferred: ['user_id', 'id', 'username', 'nickname', 'status', 'vip_level', 'created_at'] },
+      { label: 'tab.platform_user', path: '/admin/v1/platform/user/list', list: true, platformUsers: true, preferred: ['user_id', 'id', 'username', 'nickname', 'status', 'vip_level', 'created_at'] },
       // 状态列必须看得见（已审过的记录再点「通过」会被 422 挡下）：默认前 8 列会把 status 挤掉
-      { label: '身份', path: '/admin/v1/identity/list', list: true, preferred: ['id', 'real_name', 'id_type', 'status', 'reviewed_at'], crud: IDENTITY_CRUD },
-      { label: 'VIP 等级', path: '/admin/v1/vip/level/list', list: true, preferred: ['id', 'level', 'name', 'required_exp', 'benefits'], crud: VIP_CRUD },
-      { label: '工单', path: '/admin/v1/ticket/list', list: true, preferred: ['id', 'subject', 'type', 'status', 'priority', 'assigned_to', 'user_name', 'created_at'], crud: TICKET_CRUD },
+      { label: 'tab.identity', path: '/admin/v1/identity/list', list: true, preferred: ['id', 'real_name', 'id_type', 'status', 'reviewed_at'], crud: IDENTITY_CRUD },
+      // VIP 等级：端点整表返回（没有 total），且是全平台的下拉选项源，故不分页
+      { label: 'tab.vip', path: '/admin/v1/vip/level/list', list: true, paged: false, preferred: ['id', 'level', 'name', 'required_exp', 'benefits'], crud: VIP_CRUD },
+      { label: 'tab.ticket', path: '/admin/v1/ticket/list', list: true, preferred: ['id', 'subject', 'type', 'status', 'priority', 'assigned_to', 'user_name', 'created_at'], crud: TICKET_CRUD },
+    ],
+  },
+
+  admins: {
+    title: 'page.admins.title',
+    sub: 'page.admins.sub',
+    groups: [
+      // 端点 /admin/v1/user 是**后台账号**，与「用户」页的 /admin/v1/platform/user/list（C 端玩家）不是一回事
+      {
+        label: 'tab.admin_user',
+        path: '/admin/v1/user',
+        list: true,
+        preferred: ['id', 'username', 'real_name', 'phone', 'email', 'status', 'last_login_at'],
+        crud: ADMIN_USER_CRUD,
+      },
     ],
   },
 
   withdrawals: {
-    title: '资金',
-    sub: '提现、支付方式与优惠券',
+    title: 'page.withdrawals.title',
+    sub: 'page.withdrawals.sub',
     groups: [
       // 提现订单要走自定义页签：批量审核端点没有行上下文（见 funds.tsx）
-      { label: '提现订单', path: '/admin/v1/withdraw/orders', list: true, withdrawOrders: true },
-      { label: '提现开关', path: '/admin/v1/withdraw/switch', withdrawSwitch: true },
-      { label: '阶梯限额', path: '/admin/v1/withdraw/limits/list', withdrawLimits: true },
+      { label: 'tab.withdraw.order', path: '/admin/v1/withdraw/orders', list: true, withdrawOrders: true },
+      { label: 'tab.withdraw.switch', path: '/admin/v1/withdraw/switch', withdrawSwitch: true },
+      { label: 'tab.withdraw.limits', path: '/admin/v1/withdraw/limits/list', withdrawLimits: true },
       {
-        label: '支付方式',
+        label: 'tab.payment',
         path: '/admin/v1/payment/method/list',
         list: true,
+        // 端点整表返回（没有 total），且是全平台的下拉选项源，故不分页
+        paged: false,
         preferred: ['id', 'name', 'type', 'provider', 'currency', 'min_amount', 'max_amount', 'status', 'sort'],
         crud: PAYMENT_CRUD,
       },
       {
-        label: '优惠券',
+        label: 'tab.coupon',
         path: '/admin/v1/coupon/list',
         list: true,
         preferred: ['id', 'name', 'type', 'value', 'min_amount', 'total_qty', 'used_qty', 'status', 'end_at'],
@@ -151,14 +182,14 @@ export const PAGES = {
   },
 
   risk: {
-    title: '风控',
-    sub: '风险总览、名单与反作弊',
+    title: 'page.risk.title',
+    sub: 'page.risk.sub',
     groups: [
-      { label: '总览', path: '/admin/v1/risk/overview' },
-      { label: '面板', path: '/admin/v1/risk/dashboard' },
+      { label: 'tab.risk.overview', path: '/admin/v1/risk/overview' },
+      { label: 'tab.risk.dashboard', path: '/admin/v1/risk/dashboard' },
       // 冻结/解冻两个资金动作挂在行上；列表把 hashid 放在 user_id 列（crud.rowKey 认它）
       {
-        label: '风险用户',
+        label: 'tab.risk.users',
         path: '/admin/v1/risk/users',
         list: true,
         preferred: ['user_id', 'username', 'score', 'band', 'hit_count', 'last_hit_at', 'whitelisted'],
@@ -166,14 +197,14 @@ export const PAGES = {
       },
       // 状态列必须看得见：处置只记操作审计、列表无处置态，判断依据就是 type/action/result 这几列
       {
-        label: '事件',
+        label: 'tab.risk.event',
         path: '/admin/v1/risk/event/list',
         list: true,
         preferred: ['id', 'rule_name', 'type', 'action', 'result', 'user_id', 'created_at'],
         crud: RISK_EVENT_CRUD,
       },
       {
-        label: '规则',
+        label: 'tab.risk.rule',
         path: '/admin/v1/risk/rule/list',
         list: true,
         preferred: ['id', 'name', 'type', 'action', 'scope', 'priority', 'status'],
@@ -181,12 +212,12 @@ export const PAGES = {
       },
       // 设备/IP 各是一整页（不是纯列表）：设备页要藏 fp_hash 列 + 挂行内拉黑/解封，
       // IP 页的行只有 ip_masked（封禁端点要原文 IP）⇒ 整页交给 risk.tsx
-      { label: '设备', path: '/admin/v1/risk/device/list', list: true, riskDevices: true },
-      { label: 'IP', path: '/admin/v1/risk/ip/list', list: true, riskIps: true },
+      { label: 'tab.risk.device', path: '/admin/v1/risk/device/list', list: true, riskDevices: true },
+      { label: 'tab.risk.ip', path: '/admin/v1/risk/ip/list', list: true, riskIps: true },
       // 团伙在本批之前**没有页签**（端点 /risk/clusters 不带 /list 段）；检测与确认都没有行上下文
-      { label: '团伙', path: '/admin/v1/risk/clusters', list: true, riskClusters: true },
+      { label: 'tab.risk.clusters', path: '/admin/v1/risk/clusters', list: true, riskClusters: true },
       {
-        label: '反作弊事件',
+        label: 'tab.anticheat',
         path: '/admin/v1/anticheat/events',
         list: true,
         preferred: ['id', 'rule_name', 'severity', 'action', 'status', 'user_id', 'created_at'],
@@ -196,24 +227,28 @@ export const PAGES = {
   },
 
   profile: {
-    title: '我的',
-    sub: '账号与系统设置',
+    title: 'page.profile.title',
+    sub: 'page.profile.sub',
     account: true,
     groups: [
-      { label: '系统配置', path: '/admin/v1/config', list: true, preferred: ['id', 'group', 'key', 'value', 'type'], crud: CONFIG_CRUD },
+      { label: 'tab.config', path: '/admin/v1/config', list: true, preferred: ['id', 'group', 'key', 'value', 'type'], crud: CONFIG_CRUD },
       // 角色/权限的 index 挂在 /role、/permission 本身（Route::resource，**不是** /role/list）
-      { label: '角色', path: '/admin/v1/role', list: true, preferred: ['id', 'name', 'slug', 'description', 'status', 'users_count'], crud: ROLE_CRUD },
-      // 权限是树：tree 让 RowBrowser 把 children 展开成行，否则子节点只是顶层行里的一个「n 项」，改不到
-      { label: '权限', path: '/admin/v1/permission', list: true, tree: 'children', preferred: ['id', 'name', 'slug', 'type', 'path', 'sort', 'parent_name'], crud: PERMISSION_CRUD },
+      { label: 'tab.role', path: '/admin/v1/role', list: true, preferred: ['id', 'name', 'slug', 'description', 'status', 'users_count'], crud: ROLE_CRUD },
+      // 权限是树：tree 让 RowBrowser 把 children 摊成带缩进/箭头的表行（子节点也是可操作的行），
+      // 否则子节点只是顶层行里的一个「n 项」，改不到。端点是**树**（裸节点数组、没有 total）故不分页。
+      // preferred 把 name 排第一：树标记挂在首列，箭头要挨着名字
+      { label: 'tab.permission', path: '/admin/v1/permission', list: true, tree: 'children', paged: false, preferred: ['name', 'slug', 'id', 'type', 'path', 'sort', 'parent_name'], crud: PERMISSION_CRUD },
       // CDN 列表不回传 config（凭据），故编辑表单里它是空的：留空 = 不改（见 CDN_FIELDS 的 hint）
       {
-        label: 'CDN',
+        label: 'tab.cdn',
         path: '/admin/v1/cdn/provider/list',
         list: true,
+        // 端点整表返回（没有 total），且是全平台的下拉选项源，故不分页
+        paged: false,
         preferred: ['id', 'name', 'provider', 'status', 'sort'],
         crud: CDN_CRUD,
       },
-      { label: '国家配置', path: '/admin/v1/country/config/list', list: true, preferred: ['id', 'country_code', 'currency', 'min_deposit', 'status'], crud: COUNTRY_CRUD },
+      { label: 'tab.country', path: '/admin/v1/country/config/list', list: true, preferred: ['id', 'country_code', 'currency', 'min_deposit', 'status'], crud: COUNTRY_CRUD },
     ],
   },
 } satisfies Record<string, PageDef>;
@@ -222,15 +257,15 @@ function AccountCard() {
   const { user } = useAuth();
   const signOut = useSignOut();
   return (
-    <Card title="账号" sub="当前登录管理员">
-      <Field label="用户名" value={user?.username ?? '—'} />
-      <Field label="姓名" value={user?.real_name ?? '—'} />
-      <Field label="用户 ID" value={user?.id ?? '—'} />
+    <Card title={t('account.title')} sub={t('account.sub')}>
+      <Field label={t('account.username')} value={user?.username ?? '—'} />
+      <Field label={t('account.real_name')} value={user?.real_name ?? '—'} />
+      <Field label={t('account.user_id')} value={user?.id ?? '—'} />
       <Field
-        label="操作"
+        label={t('account.actions')}
         value={
           <button type="button" className="btn btn-sm" onClick={() => void signOut()}>
-            退出登录
+            {t('app.logout')}
           </button>
         }
       />
@@ -255,9 +290,9 @@ function GameServers({ path }: { path: string }) {
     <>
       <div className="toolbar">
         <label className="label">
-          游戏
+          {t('nav.games')}
           <select className="input" value={gameId} onChange={(event) => setGameId(event.target.value)}>
-            <option value="">请选择游戏</option>
+            <option value="">{t('browser.pick_game')}</option>
             {games.map((game) => {
               const id = String(pick(game, ['id', 'game_id']) ?? '');
               return (
@@ -271,9 +306,16 @@ function GameServers({ path }: { path: string }) {
       </div>
       {error ? <ErrorNote message={error} /> : null}
       {gameId === '' ? (
-        <p className="muted">选择游戏后显示其区服。</p>
+        <p className="muted">{t('tab.game_server_pick')}</p>
       ) : (
-        <RowBrowser path={path} query={{ game_id: gameId }} preferred={['id', 'name', 'region', 'status', 'sort']} crud={serverCrud(gameId)} />
+        // 区服端点是裸数组（game_id 必填、一次回全量）：不加分页
+        <RowBrowser
+          path={path}
+          query={{ game_id: gameId }}
+          preferred={['id', 'name', 'region', 'status', 'sort']}
+          paged={false}
+          crud={serverCrud(gameId)}
+        />
       )}
     </>
   );
@@ -285,16 +327,17 @@ function GameServers({ path }: { path: string }) {
  * 注销还要回读列表确认人真的不在了（见 PlatformUserDestroy），通用 delete 撑不住。
  */
 function PlatformUsers({ path, preferred }: { path: string; preferred?: string[] }) {
-  const { data, loading, error, reload } = useApi<unknown>(path);
+  const { data, loading, error, reload, page, setPage, pageSize } = usePagedApi<unknown>(path);
   const [notice, setNotice] = useState<string | null>(null);
   const [editing, setEditing] = useState<Row | null>(null);
 
   const rows = asRows(data) ?? [];
+  const total = totalOf(data, rows.length);
   const columns = columnsFrom(rows, preferred);
   // 操作列排在末尾，不占 preferred 的列预算
   columns.push({
     key: '__actions',
-    label: '操作',
+    label: t('common.actions'),
     render: (row) => (
       <span className="rowact">
         <button
@@ -305,7 +348,7 @@ function PlatformUsers({ path, preferred }: { path: string; preferred?: string[]
             setEditing(row);
           }}
         >
-          编辑
+          {t('common.edit')}
         </button>
         <PlatformUserDestroy row={row} path={path} onNotice={setNotice} onDone={reload} />
       </span>
@@ -319,13 +362,16 @@ function PlatformUsers({ path, preferred }: { path: string; preferred?: string[]
     <>
       {notice ? <ErrorNote message={notice} /> : null}
       <DataTable columns={columns} rows={rows} loading={loading} error={error} onRetry={reload} />
+      {total > pageSize || page > 1 ? (
+        <Pager page={page} pages={Math.max(1, Math.ceil(total / pageSize))} total={total} onJump={setPage} />
+      ) : null}
       {editing ? (
         <FormModal
           key={id}
-          title={`编辑用户 ${labelOf(editing, 'username')}`}
+          title={t('tab.user_edit', { name: labelOf(editing, 'username') })}
           fields={PLATFORM_USER_FIELDS}
           row={editing}
-          submitLabel="保存"
+          submitLabel={t('common.save')}
           onSubmit={async (body) => {
             // 一个字段都没改就不空发一次 PUT（后端 update 是局部更新，空体等于无操作）
             if (id !== '' && Object.keys(body).length > 0) {
@@ -367,13 +413,13 @@ function PlatformUserDestroy({
     // 注销前必须能看清是谁：用户名 + 昵称都摆进确认文案（列表里这两列可能被 preferred 挤掉）
     const nickname = String(row.nickname ?? '').trim();
     const who = `${labelOf(row, 'username')}${nickname === '' ? '' : `（${nickname}）`}`;
-    if (!key || !window.confirm(`确认注销用户「${who}」？注销会清空其资料、会话与第三方绑定，且不可撤销。`)) return;
+    if (!key || !window.confirm(t('tab.deactivate_confirm', { who }))) return;
     onNotice(null);
     setBusy(true);
     try {
       await api(`/admin/v1/platform/user/${key}`, { method: 'DELETE' });
     } catch (cause) {
-      onNotice(cause instanceof ApiError ? cause.message : '网络异常，请稍后重试');
+      onNotice(cause instanceof ApiError ? cause.message : t('app.network_error'));
       return;
     } finally {
       setBusy(false);
@@ -381,10 +427,10 @@ function PlatformUserDestroy({
     try {
       const after = await api<unknown>(path);
       if ((asRows(after) ?? []).some((r) => String(pick(r, ID_KEYS) ?? '') === key)) {
-        onNotice('注销请求已提交，但该用户仍在列表中，请刷新确认');
+        onNotice(t('tab.deactivate_pending'));
       }
     } catch {
-      onNotice('注销结果未能回读，请刷新确认');
+      onNotice(t('tab.deactivate_unreadable'));
     }
     onDone();
   };
@@ -392,23 +438,26 @@ function PlatformUserDestroy({
   if (!key) return null;
   return (
     <button type="button" className="btn btn-sm" disabled={busy} onClick={() => void destroy()}>
-      注销
+      {t('tab.deactivate')}
     </button>
   );
 }
 
 export function TabPage({ page }: { page: PageDef }) {
+  // 页面**自己**订阅语言。不能指望布局层的重绘带过来：实测切到中文后，顶栏/侧栏变中文而
+  // 页面里的按钮与表格仍是英文（Shell 重绘 ≠ <Outlet/> 子树重绘）。这一行让整棵页面子树重渲。
+  useI18n();
   // 账号标签无端点，path 缺省即本地渲染
-  const groups: Group[] = page.account ? [{ label: '账号' }, ...page.groups] : page.groups;
+  const groups: Group[] = page.account ? [{ label: 'account.title' }, ...page.groups] : page.groups;
   const [active, setActive] = useState(0);
-  const group: Group = groups[active] ?? groups[0] ?? { label: '' };
+  const group: Group = groups[active] ?? groups[0] ?? { label: 'tab.none' };
 
   return (
     <>
-      <PageHead title={page.title} sub={page.sub} />
+      <PageHead title={t(page.title)} sub={page.sub === undefined ? undefined : t(page.sub)} />
       {groups.length > 1 ? (
         <Tabs
-          tabs={groups.map((item, index) => ({ key: String(index), label: item.label }))}
+          tabs={groups.map((item, index) => ({ key: String(index), label: t(item.label) }))}
           value={String(active)}
           onChange={(key) => setActive(Number(key))}
         />
@@ -416,7 +465,7 @@ export function TabPage({ page }: { page: PageDef }) {
       {!group.path ? (
         <AccountCard />
       ) : group.list ? (
-        <Card title={group.label}>
+        <Card title={t(group.label)}>
           {group.platformUsers ? (
             <PlatformUsers path={group.path} preferred={group.preferred} />
           ) : group.gameServers ? (
@@ -432,15 +481,15 @@ export function TabPage({ page }: { page: PageDef }) {
           ) : group.riskClusters ? (
             <RiskClusters path={group.path} />
           ) : (
-            <RowBrowser path={group.path} preferred={group.preferred} tree={group.tree} crud={group.crud} />
+            <RowBrowser path={group.path} preferred={group.preferred} tree={group.tree} paged={group.paged} crud={group.crud} />
           )}
         </Card>
       ) : group.withdrawSwitch ? (
-        <Card title={group.label}>
+        <Card title={t(group.label)}>
           <WithdrawSwitch />
         </Card>
       ) : (
-        <Section title={group.label} path={group.path} />
+        <Section title={t(group.label)} path={group.path} />
       )}
     </>
   );

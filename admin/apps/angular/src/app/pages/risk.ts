@@ -2,6 +2,7 @@
 import { Component, computed, signal } from '@angular/core';
 import { Page, Row } from '../core/api.service';
 import { Crud, CrudPage } from '../core/crud';
+import { T, t } from '../core/i18n/i18n';
 import { idOf, json, scalarsOf } from '../core/render';
 import { errText, num, rowsOf } from '../core/util';
 import { Drawer, Pager, StateBlock, StatCard, Tabs } from '../components/ui';
@@ -14,6 +15,8 @@ import {
   CANDIDATE_HEADS,
   CLUSTER_ACTS,
   CLUSTER_STATUS,
+  clusterCreated,
+  clusterMarked,
   DEVICE_ACTS,
   EVENT_ACTS,
   IP_VERBS,
@@ -27,6 +30,7 @@ import {
   deviceBody,
   deviceConfirmText,
   deviceNote,
+  fundsNote,
   parseContext,
   whoAnti,
   whoEvent,
@@ -37,37 +41,37 @@ const R = '/admin/v1/';
 
 @Component({
   selector: 'app-risk',
-  imports: [StateBlock, StatCard, Table, Pager, Tabs, Drawer, FormModal],
+  imports: [StateBlock, StatCard, Table, Pager, Tabs, Drawer, FormModal, T],
   template: `
     <div class="page-head">
-      <h1>风险控制</h1>
-      <span class="sub">风控总览 / 事件 / 规则 / 团伙 / IP / 设备 / 反作弊</span>
+      <h1>{{ 'risk.title' | t }}</h1>
+      <span class="sub">{{ 'risk.subtitle' | t }}</span>
       <div class="spacer"></div>
       @if (tab() !== 'overview') {
         <input
           class="input"
-          placeholder="用户 ID / 规则名 / 设备"
+          [placeholder]="'risk.search_placeholder' | t"
           [value]="keyword()"
           (input)="keyword.set($any($event.target).value)"
           (keyup.enter)="search()"
         />
-        <button class="btn" (click)="search()">查询</button>
+        <button class="btn" (click)="search()">{{ 'app.search' | t }}</button>
       }
       @if (tab() === 'clusters') {
         <!-- 全局动作、无行上下文（候选由服务端按窗口算出来）⇒ 摆页头，不做行内动作 -->
-        <button class="btn" (click)="detect()">聚类检测</button>
+        <button class="btn" (click)="detect()">{{ 'risk.cluster.detect' | t }}</button>
       }
       @if (tab() === 'ip') {
         <!-- 四个动作按**运营输入的原文 IP** 操作（列表只回 ip_hash 掩码，不可逆）⇒ 摆页头 -->
-        <button class="btn danger" (click)="ipAct('block')">拉黑 IP</button>
-        <button class="btn" (click)="ipAct('whitelist')">加入白名单</button>
-        <button class="btn" (click)="ipAct('appeal')">误判申诉放行</button>
-        <button class="btn" (click)="ipAct('recheck')">重查</button>
+        <button class="btn danger" (click)="ipAct('block')">{{ 'risk.ip.block' | t }}</button>
+        <button class="btn" (click)="ipAct('whitelist')">{{ 'risk.ip.whitelist' | t }}</button>
+        <button class="btn" (click)="ipAct('appeal')">{{ 'risk.ip.appeal' | t }}</button>
+        <button class="btn" (click)="ipAct('recheck')">{{ 'risk.ip.recheck' | t }}</button>
       }
       @if (writable()) {
-        <button class="btn btn-primary" (click)="openCreate()">+ 新建</button>
+        <button class="btn btn-primary" (click)="openCreate()">+ {{ 'app.create' | t }}</button>
       }
-      <button class="btn" (click)="load()">刷新</button>
+      <button class="btn" (click)="load()">{{ 'app.refresh' | t }}</button>
     </div>
 
     <ui-tabs [tabs]="tabs" [active]="tab()" (pick)="pick($event)" />
@@ -85,11 +89,11 @@ const R = '/admin/v1/';
             }
           </div>
         } @else {
-          <div class="state">风控总览暂无数据</div>
+          <div class="state">{{ 'risk.overview_empty' | t }}</div>
         }
         @if (raw(); as d) {
           <details class="raw-box">
-            <summary>原始响应</summary>
+            <summary>{{ 'app.raw_response' | t }}</summary>
             <pre class="raw">{{ pretty(d) }}</pre>
           </details>
         }
@@ -165,7 +169,7 @@ export class Risk extends CrudPage {
     switch (this.tab()) {
       case 'rules':
         return {
-          noun: '风控规则',
+          noun: 'risk.noun.rule',
           fields: RULE_FIELDS,
           ends: {
             create: R + 'risk/rule/create',
@@ -180,15 +184,15 @@ export class Risk extends CrudPage {
           extra: RULE_ACTS,
         };
       case 'events':
-        return { noun: '风险事件', fields: [], ends: {}, extra: EVENT_ACTS };
+        return { noun: 'risk.noun.event', fields: [], ends: {}, extra: EVENT_ACTS };
       case 'users':
-        return { noun: '风险用户', fields: [], ends: {}, extra: USER_ACTS };
+        return { noun: 'risk.noun.user', fields: [], ends: {}, extra: USER_ACTS };
       case 'clusters':
-        return { noun: '团伙', fields: [], ends: {}, extra: CLUSTER_ACTS };
+        return { noun: 'risk.noun.cluster', fields: [], ends: {}, extra: CLUSTER_ACTS };
       case 'anticheat':
-        return { noun: '反作弊事件', fields: [], ends: {}, extra: ANTICHEAT_ACTS };
+        return { noun: 'risk.noun.anticheat', fields: [], ends: {}, extra: ANTICHEAT_ACTS };
       case 'devices':
-        return { noun: '设备指纹', fields: [], ends: {}, extra: DEVICE_ACTS };
+        return { noun: 'risk.noun.device', fields: [], ends: {}, extra: DEVICE_ACTS };
       default:
         return null;
     }
@@ -309,16 +313,16 @@ export class Risk extends CrudPage {
   protected async sandbox(row: Row): Promise<void> {
     const id = idOf(row);
     if (!id) return;
-    const user = prompt('试算用户 ID（hashid，可留空 = 未登录）');
+    const user = prompt(t('risk.sandbox.user_prompt'));
     if (user === null) return;
-    const checkType = prompt('检测场景（deposit / withdraw / exchange / login）', 'login');
+    const checkType = prompt(t('risk.sandbox.check_type_prompt'), 'login');
     if (checkType === null) return;
-    const rawCtx = prompt('context JSON（可选，如 {"amount":"1000","ip":"1.2.3.4"}）', '{}');
+    const rawCtx = prompt(t('risk.sandbox.context_prompt'), '{}');
     if (rawCtx === null) return;
     const context = parseContext(rawCtx);
     if (context === null) {
       this.noteErr.set(true);
-      this.note.set('context 必须是 JSON 对象（形如 {"amount":"1000"}）');
+      this.note.set(t('risk.sandbox.context_invalid'));
       return;
     }
     await this.openPanel('result', () =>
@@ -341,8 +345,10 @@ export class Risk extends CrudPage {
   protected async handleEvent(row: Row, key: string): Promise<void> {
     const id = idOf(row);
     if (!id) return;
-    if (key === 'reject' && !confirm(`确认驳回「${whoEvent(row)}」这条风险事件？`)) return;
-    const input = prompt('处置说明（可留空，最长 500 字）');
+    if (key === 'reject' && !confirm(t('risk.event.reject_confirm', { name: whoEvent(row) }))) {
+      return;
+    }
+    const input = prompt(t('risk.event.note_prompt'));
     if (input === null) return;
     await this.act(
       () =>
@@ -350,7 +356,7 @@ export class Risk extends CrudPage {
           decision: key,
           note: input.trim(),
         }),
-      () => '处置已记录',
+      () => t('risk.event.marked'),
     );
   }
 
@@ -366,27 +372,19 @@ export class Risk extends CrudPage {
     if (!id) return;
     const who = whoUser(row);
     if (key === 'hold') {
-      if (
-        !confirm(
-          `确认冻结「${who}」的全部可用余额？金额由服务端按当前可用余额全额计算，冻结期间不可提现/消费。`,
-        )
-      ) {
-        return;
-      }
-    } else if (!confirm(`确认解冻「${who}」的冻结资金？`)) {
+      if (!confirm(t('risk.user.hold_confirm', { name: who }))) return;
+    } else if (!confirm(t('risk.user.release_confirm', { name: who }))) {
       return;
     }
     let body: Row | undefined;
     if (key === 'release') {
-      const amount = prompt('解冻金额（留空 = 全额解冻）');
+      const amount = prompt(t('risk.user.amount_prompt'));
       if (amount === null) return;
       body = amount.trim() === '' ? undefined : { amount: amount.trim() };
     }
     await this.act(
       () => this.api.envelope<Row>('POST', R + 'risk/users/' + id + '/' + key, body),
-      (d) =>
-        (key === 'hold' ? '已冻结 ' : '已解冻 ') +
-        String(d[key === 'hold' ? 'frozen_amount' : 'released_amount'] ?? ''),
+      (d) => fundsNote(key, d),
     );
   }
 
@@ -401,7 +399,7 @@ export class Risk extends CrudPage {
     if (!id) return;
     await this.act(
       () => this.api.envelope('PUT', R + 'risk/clusters/' + id + '/status', { status }),
-      () => `团伙「${String(row['name'] ?? id)}」已标记为${CLUSTER_STATUS[String(status)] ?? status}`,
+      () => clusterMarked(row, id, status),
     );
   }
 
@@ -422,7 +420,10 @@ export class Risk extends CrudPage {
     const type = String(row['type'] ?? '');
     const fingerprint = String(row['fingerprint'] ?? '');
     if (!type || !fingerprint) return;
-    const name = prompt('团伙名称（必填，最长 100 字）', `${type} ${String(row['fingerprint_masked'] ?? '')}`);
+    const name = prompt(
+      t('risk.cluster.name_prompt'),
+      `${type} ${String(row['fingerprint_masked'] ?? '')}`,
+    );
     if (name === null || name.trim() === '') return;
     await this.act(
       () =>
@@ -432,7 +433,7 @@ export class Risk extends CrudPage {
           name: name.trim(),
           user_count: num(row['user_count']),
         }),
-      (d) => `已建团伙「${String((d['cluster'] as Row)?.['name'] ?? name.trim())}」`,
+      (d) => clusterCreated(d, name.trim()),
     );
     this.panel.set('');
   }
@@ -464,16 +465,16 @@ export class Risk extends CrudPage {
   protected async review(row: Row, status: string): Promise<void> {
     const id = idOf(row);
     if (!id) return;
-    if (status === 'confirmed' && !confirm(`确认「${whoAnti(row)}」作弊并记入审核？`)) return;
+    if (status === 'confirmed' && !confirm(t('risk.ac.confirm', { name: whoAnti(row) }))) return;
     let note = '';
     if (status === 'whitelisted') {
-      const input = prompt('加白理由（记入审核备注，最长 255 字）');
+      const input = prompt(t('risk.ac.note_prompt'));
       if (input === null) return;
       note = input.trim();
     }
     await this.act(
       () => this.api.envelope('POST', R + 'anticheat/events/' + id + '/review', { status, note }),
-      () => `已标记为${ANTICHEAT_STATUS[status] ?? status}`,
+      () => t('risk.ac.marked', { status: t(ANTICHEAT_STATUS[status] ?? status) }),
     );
   }
 
@@ -485,12 +486,12 @@ export class Risk extends CrudPage {
    * 掩码（不可逆）⇒ 没有行上下文，只能按运营输入的原文 IP 走。
    */
   protected async ipAct(key: string): Promise<void> {
-    const ip = prompt(key === 'recheck' ? '要重查的 IP' : 'IP 地址（如 1.2.3.4）');
+    const ip = prompt(t(key === 'recheck' ? 'risk.ip.recheck_prompt' : 'risk.ip.prompt'));
     if (ip === null || ip.trim() === '') return;
     await this.act(
       () => this.api.envelope<Row>('POST', R + 'risk/ip/' + key, { ip: ip.trim() }),
       // 回执里的掩码 = 服务端 hash 过的那个 IP（不是我们以为的那个），有就用它
-      (d) => `${IP_VERBS[key] ?? '已提交'} ${String(d['ip_masked'] ?? ip.trim())}`,
+      (d) => `${t(IP_VERBS[key] ?? 'risk.ip.verb.done')} ${String(d['ip_masked'] ?? ip.trim())}`,
     );
   }
 }

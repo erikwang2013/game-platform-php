@@ -2,6 +2,8 @@
  * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
  */
 
+import { t } from '../i18n/Translations';
+
 /**
  * 统计卡片图标名 → 模块内 media 资源。
  *
@@ -70,7 +72,11 @@ export struct StatCard {
  */
 @Component
 export struct LoadingView {
-  @Prop message: string = '加载中...';
+  /** 空 = 用默认文案。走 build 里的三元而不是把默认值写成 t(...)：
+   *  @Prop 的初值只在实例化时求值一次，切语言后不会重算，默认文案会卡在旧语言上。 */
+  @Prop message: string = '';
+  /** 语言变更要重渲染本组件：build 里的 t() 读静态 currentCode，ArkUI 不观测它。 */
+  @StorageLink('app_locale') localeCode: string = 'en';
 
   build() {
     Column() {
@@ -79,7 +85,7 @@ export struct LoadingView {
         .height(40)
         .color('#1677FF')
 
-      Text(this.message)
+      Text(this.message.length > 0 ? this.message : t('common.loading'))
         .fontSize(14)
         .fontColor('#999999')
         .margin({ top: 12 })
@@ -95,7 +101,9 @@ export struct LoadingView {
  */
 @Component
 export struct EmptyView {
-  @Prop message: string = '暂无数据';
+  /** 空 = 用默认文案（同 LoadingView 的说明） */
+  @Prop message: string = '';
+  @StorageLink('app_locale') localeCode: string = 'en';
 
   build() {
     Column() {
@@ -106,7 +114,7 @@ export struct EmptyView {
         .height(60)
         .objectFit(ImageFit.Contain)
 
-      Text(this.message)
+      Text(this.message.length > 0 ? this.message : t('common.no_data'))
         .fontSize(14)
         .fontColor('#999999')
         .margin({ top: 12 })
@@ -122,16 +130,18 @@ export struct EmptyView {
  */
 @Component
 export struct ErrorView {
-  @Prop message: string = '加载失败';
+  /** 空 = 用默认文案（同 LoadingView 的说明） */
+  @Prop message: string = '';
+  @StorageLink('app_locale') localeCode: string = 'en';
   onRetry?: () => void;
 
   build() {
     Column() {
-      Text(this.message)
+      Text(this.message.length > 0 ? this.message : t('common.load_failed'))
         .fontSize(14)
         .fontColor('#999999')
 
-      Button('重试')
+      Button(t('common.retry'))
         .margin({ top: 12 })
         .fontSize(14)
         .onClick(() => {
@@ -157,6 +167,7 @@ export struct ErrorView {
 export struct ResultDialog {
   @Prop title: string = '';
   @Prop lines: string[] = [];
+  @StorageLink('app_locale') localeCode: string = 'en';
   onClose?: () => void;
 
   build() {
@@ -196,7 +207,7 @@ export struct ResultDialog {
         // 行数不定（时间线最多 200 行）：框内滚动，别把卡片撑出屏幕
         .constraintSize({ maxHeight: 420 })
 
-        Button('关闭')
+        Button(t('common.close'))
           .fontSize(14)
           .fontColor('#666666')
           .backgroundColor('#F5F5F5')

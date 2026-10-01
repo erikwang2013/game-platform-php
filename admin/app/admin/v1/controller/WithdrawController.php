@@ -96,7 +96,7 @@ class WithdrawController extends BaseController
         $enabled = (int) $request->input('enabled');
         PlatformConfig::set('withdraw', 'global_switch', $enabled, 'bool');
 
-        return $this->success($this->switchState(), '操作成功');
+        return $this->success($this->switchState(), trans('Operation successful'));
     }
 
     /** 全局开关读数：global_switch 沿用原 PUT 响应键名，enabled/status 对齐管理端界面的两种读法 */
@@ -148,7 +148,10 @@ class WithdrawController extends BaseController
                     && bccomp($newMin, (string) $tier->single_max, 4) > 0
                 ) {
                     return $this->fail(
-                        "档位 {$tier->user_level} 的单笔最高（{$tier->single_max}）低于新的单笔最低（{$newMin}），整笔未生效",
+                        trans(
+                            'Tier %tier% single maximum (%max%) is below the new single minimum (%min%), nothing applied',
+                            ['%tier%' => (string) $tier->user_level, '%max%' => (string) $tier->single_max, '%min%' => (string) $newMin]
+                        ),
                         422
                     );
                 }
@@ -179,7 +182,7 @@ class WithdrawController extends BaseController
         }
         $limits['global_switch'] = PlatformConfig::get('withdraw', 'global_switch', false);
 
-        return $this->success($limits, '操作成功');
+        return $this->success($limits, trans('Operation successful'));
     }
 
     #[Apidoc\Title("阶梯限额列表")]
@@ -228,14 +231,14 @@ class WithdrawController extends BaseController
         $limit = WithdrawLimit::find($id);
 
         if (!$limit) {
-            return $this->fail('限制记录不存在', 404);
+            return $this->fail(trans('Limit record not found'), 404);
         }
 
         // 单笔下限不得高于上限（single_max=0 是「不限」，此时不比较）
         $singleMin = (string) $request->input('single_min', $limit->single_min);
         $singleMax = (string) $request->input('single_max', $limit->single_max);
         if (bccomp($singleMax, '0', 4) > 0 && bccomp($singleMin, $singleMax, 4) > 0) {
-            return $this->fail('单笔最低不得高于单笔最高', 422);
+            return $this->fail(trans('Single minimum must not exceed single maximum'), 422);
         }
 
         $limit->fill($request->only([
@@ -249,7 +252,7 @@ class WithdrawController extends BaseController
         ]));
         $limit->save();
 
-        return $this->success($this->encodeIds($limit->toArray()), '更新成功');
+        return $this->success($this->encodeIds($limit->toArray()), trans('Updated successfully'));
     }
 
     #[Apidoc\Title("执行打款")]
@@ -269,7 +272,7 @@ class WithdrawController extends BaseController
         $orderId = $this->decodeId($request->input('order_id'));
         $order = WithdrawOrder::find($orderId);
         if (!$order) {
-            return $this->fail('订单不存在', 404);
+            return $this->fail(trans('Order not found'), 404);
         }
 
         $requireDual = PlatformConfig::get('withdraw', 'require_dual_review', 'off');
@@ -278,7 +281,7 @@ class WithdrawController extends BaseController
             $confirmedBy = (int) ($order->confirmed_by ?? 0);
             $reviewerId  = (int) ($order->reviewer_id ?? 0);
             if ($confirmedBy <= 0 || $confirmedBy === $reviewerId) {
-                return $this->fail('该订单尚未完成双重审核确认', 422);
+                return $this->fail(trans('This order has not completed dual approval'), 422);
             }
         }
 
@@ -287,12 +290,12 @@ class WithdrawController extends BaseController
             ->where('status', 'approved')
             ->update(['status' => 'processing', 'payout_status' => 'processing']);
         if (!$flipped) {
-            return $this->fail('该订单已完成或正在打款中', 422);
+            return $this->fail(trans('This order is already completed or being paid out'), 422);
         }
 
         try {
             $result = PayoutService::execute($order);
-            return $this->success($result, $result['payout_status'] === 'success' ? '打款成功' : '打款已提交');
+            return $this->success($result, $result['payout_status'] === 'success' ? trans('Payout succeeded') : trans('Payout submitted'));
         } catch (\Throwable $e) {
             Log::error('Withdraw payout failed: ' . $e->getMessage());
             // 失败回退为 approved 允许重试。**回退只改 status/payout_status，刻意保留 payout_batch_id**：
@@ -306,7 +309,7 @@ class WithdrawController extends BaseController
             WithdrawOrder::where('id', $orderId)
                 ->where('status', 'processing')
                 ->update(['status' => 'approved', 'payout_status' => 'failed']);
-            return $this->fail('打款失败，请稍后重试', 500);
+            return $this->fail(trans('Payout failed, please try again later'), 500);
         }
     }
 
@@ -327,10 +330,10 @@ class WithdrawController extends BaseController
         $orderId = $this->decodeId($request->input('order_id'));
         $order = WithdrawOrder::find($orderId);
         if (!$order) {
-            return $this->fail('订单不存在', 404);
+            return $this->fail(trans('Order not found'), 404);
         }
         if (empty($order->payout_batch_id)) {
-            return $this->fail('该订单尚未执行打款', 422);
+            return $this->fail(trans('Payout has not been executed for this order'), 422);
         }
 
         try {
@@ -342,7 +345,7 @@ class WithdrawController extends BaseController
             ]);
         } catch (\Throwable $e) {
             Log::error('Withdraw payout sync failed: ' . $e->getMessage());
-            return $this->fail('同步失败，请稍后重试', 500);
+            return $this->fail(trans('Sync failed, please try again later'), 500);
         }
     }
 }

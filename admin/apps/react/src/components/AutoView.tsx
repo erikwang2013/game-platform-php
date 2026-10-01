@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { dash, isTimeKey, when } from '../lib/format';
-import { DataTable, cell, type Column, type Row } from './DataTable';
+import { DataTable, cell, type Row } from './DataTable';
+import { t } from '../i18n/index.ts';
 import { Card, Empty, Stat } from './ui';
 
 /** 常见的列表容器键，用于从未确认的响应里找出真正的数组。 */
@@ -40,18 +41,12 @@ export function asRows(data: unknown): Row[] | null {
 }
 
 /**
- * 按首行字段推导列。优先展示 preferred 里的业务字段，其余按响应顺序补足，
- * 最多 max 列。字段名不存在时不会凭空造列。
- * hide 里的键一律不进列（如设备列表的 fp_hash：它是行内动作的**提交参数**，不是给人看的列）。
+ * `columnsFrom` 本体在 `lib/columns.ts`：纯逻辑搬出 `.tsx` 才能被 `node --test` 加载
+ * （本树的 `--experimental-strip-types` **不认 .tsx**）。这里导入后再导出，既有导入点不用改。
  */
-export function columnsFrom(rows: Row[], preferred: string[] = [], max = 8, hide: string[] = []): Column[] {
-  const keys = Object.keys(rows[0] ?? {}).filter((key) => !hide.includes(key));
-  const ordered = [
-    ...preferred.filter((key) => keys.includes(key)),
-    ...keys.filter((key) => !preferred.includes(key)),
-  ].slice(0, max);
-  return ordered.map((key) => ({ key, label: key }));
-}
+import { columnsFrom } from '../lib/columns.ts';
+
+export { columnsFrom };
 
 /**
  * 兜底渲染器：把「形状未确认」的响应渲染成统计块 / 表格 / 嵌套卡片。
@@ -81,7 +76,7 @@ export function AutoView({ data, depth = 0 }: { data: unknown; depth?: number })
   if (typeof data !== 'object') {
     return (
       <div className="grid grid-4">
-        <Stat label="值" value={dash(data)} />
+        <Stat label={t('common.value')} value={dash(data)} />
       </div>
     );
   }
@@ -103,7 +98,7 @@ export function AutoView({ data, depth = 0 }: { data: unknown; depth?: number })
       ) : null}
       {nested.length > 0 && depth >= 1 ? (
         // ponytail: 只展开一层嵌套，再深的字段不递归；需要时把 depth 上限调大
-        <p className="muted">另有 {nested.length} 个嵌套字段未展开</p>
+        <p className="muted">{t('table.nested_more', { count: nested.length })}</p>
       ) : null}
       {depth === 0
         ? nested.map(([key, value]) => (

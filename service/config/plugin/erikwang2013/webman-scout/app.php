@@ -284,7 +284,7 @@ return [
         'username' => getenv('OPENSEARCH_USERNAME', 'admin'),
         'password' => getenv('OPENSEARCH_PASSWORD', 'admin'),
         'prefix' => getenv('OPENSEARCH_INDEX_PREFIX'),
-        'ssl_verification' => (boolean)getenv('OPENSEARCH_SSL_VERIFICATION', false),
+        'ssl_verification' => (bool)getenv('OPENSEARCH_SSL_VERIFICATION', false),
         'ssl_cert' => getenv('OPENSEARCH_SSL_CERT', ''),
         'ssl_key' => getenv('OPENSEARCH_SSL_KEY', ''),
         'retries' => getenv('OPENSEARCH_RETRIES', 2),

@@ -10,6 +10,7 @@ import { LoadingView, ErrorView, EmptyView } from '../common/Components';
 import { FormField } from '../common/FormDialog';
 import { FormPayload } from '../model/DataModels';
 import { PagerBar, ExtraActionDialog } from '../common/ResourceViews';
+import { t } from '../i18n/Translations';
 
 /**
  * IP 信誉页 —— 列表（只读）+ 四个页面级动作：加入黑名单 / 加入白名单 / 申诉放行 / 重查信誉。
@@ -27,26 +28,27 @@ import { PagerBar, ExtraActionDialog } from '../common/ResourceViews';
  *       POST /admin/v1/risk/ip/{block|whitelist|appeal|recheck} {ip}
  */
 
+/** 三个文案字段存**键名**（FormDialog 渲染时各调一次 t()）—— 顶层不能调 t()，会固化启动语言 */
 const IP_FIELDS: FormField[] = [
   {
-    name: 'ip', label: '完整 IP 地址', type: 'text', required: true,
-    hint: '要原文 IP（IPv4/IPv6 均可）。列表只显示掩码，掩码串过不了服务端的 filter_var 校验。',
-    placeholder: '如 203.0.113.7'
+    name: 'ip', label: 'risk.ip.field_ip', type: 'text', required: true,
+    hint: 'risk.ip.field_ip_hint',
+    placeholder: 'risk.ip.field_ip_placeholder'
   }
 ];
 
-/** 动作值 → 按钮与弹框文案（四个动作共用一张表单，只有 IP 一个入参） */
+/** 动作值 → 按钮与弹框文案（四个动作共用一张表单，只有 IP 一个入参）。在 build() 里调用 ⇒ 每次重渲染重新查表 */
 function ipActionTitle(mode: string): string {
   if (mode === 'block') {
-    return '加入黑名单';
+    return t('risk.ip.action_block_title');
   }
   if (mode === 'whitelist') {
-    return '加入白名单';
+    return t('risk.ip.action_whitelist_title');
   }
   if (mode === 'appeal') {
-    return '申诉放行';
+    return t('risk.ip.action_appeal_title');
   }
-  return '重查信誉';
+  return t('risk.ip.action_recheck_title');
 }
 
 async function submitIp(mode: string, body: FormPayload): Promise<string[]> {
@@ -60,6 +62,7 @@ async function submitIp(mode: string, body: FormPayload): Promise<string[]> {
 @Entry
 @Component
 struct RiskIpPage {
+  @StorageLink('app_locale') localeCode: string = 'en';
   @State rows: RiskIpItem[] = [];
   @State page: number = 1;
   @State total: number = 0;
@@ -88,7 +91,7 @@ struct RiskIpPage {
         return;
       }
       this.hasError = true;
-      promptAction.showToast({ message: '加载失败' });
+      promptAction.showToast({ message: t('common.load_failed') });
     } finally {
       this.isLoading = false;
     }
@@ -123,12 +126,12 @@ struct RiskIpPage {
   /** 来源 → 徽标；外部来源直接把 source 摆出来（那是判定依据，不该被抹成「其它」） */
   private sourceText(item: RiskIpItem): string {
     if (item.source === 'internal_blacklist') {
-      return '黑名单';
+      return t('risk.ip.source_blacklist');
     }
     if (item.source === 'internal_whitelist') {
-      return '白名单';
+      return t('risk.ip.source_whitelist');
     }
-    return item.source.length > 0 ? item.source : '未知来源';
+    return item.source.length > 0 ? item.source : t('risk.ip.source_unknown');
   }
 
   build() {
@@ -178,7 +181,7 @@ struct RiskIpPage {
         .backgroundColor('#FFFFFF')
         .onClick(() => router.back())
 
-        Text('IP 信誉')
+        Text(t('risk.index.ip'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 8 })
@@ -191,22 +194,22 @@ struct RiskIpPage {
 
       // 页面级动作条：四个动作都要人工粘完整 IP，行上放不下（行里也没有 IP 原文）
       Row() {
-        Text('信誉操作')
+        Text(t('risk.ip.actions_label'))
           .fontSize(13)
           .fontColor('#666666')
 
         Blank()
 
-        this.smallButton('拉黑', '#FF4D4F', '#FFE6E6', () => {
+        this.smallButton(t('risk.ip.btn_block'), '#FF4D4F', '#FFE6E6', () => {
           this.openAction('block');
         });
-        this.smallButton('加白', '#52C41A', '#E6FFF0', () => {
+        this.smallButton(t('risk.ip.btn_whitelist'), '#52C41A', '#E6FFF0', () => {
           this.openAction('whitelist');
         });
-        this.smallButton('申诉放行', '#1677FF', '#E6F0FF', () => {
+        this.smallButton(t('risk.ip.btn_appeal'), '#1677FF', '#E6F0FF', () => {
           this.openAction('appeal');
         });
-        this.smallButton('重查', '#FA8C16', '#FFF2E6', () => {
+        this.smallButton(t('risk.ip.btn_recheck'), '#FA8C16', '#FFF2E6', () => {
           this.openAction('recheck');
         });
       }
@@ -221,7 +224,7 @@ struct RiskIpPage {
       } else if (this.hasError) {
         ErrorView({ onRetry: () => this.loadData() });
       } else if (this.rows.length === 0) {
-        EmptyView({ message: '暂无 IP 信誉记录' });
+        EmptyView({ message: t('risk.ip.empty') });
       } else {
         List() {
           ForEach(this.rows, (item: RiskIpItem) => {
@@ -272,7 +275,9 @@ struct RiskIpPage {
       }
       .width('100%')
 
-      Text(`信誉分 ${item.reputation_score} · 命中 ${item.hit_count} 次 · 首次 ${item.first_seen_at} · 最近 ${item.last_seen_at}`)
+      Text(t('risk.ip.summary').replace('{score}', `${item.reputation_score}`)
+        .replace('{hits}', `${item.hit_count}`)
+        .replace('{first}', item.first_seen_at).replace('{last}', item.last_seen_at))
         .fontSize(12)
         .fontColor('#999999')
         .maxLines(2)

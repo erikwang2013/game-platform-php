@@ -27,7 +27,7 @@ class WalletController extends BaseController
 
         $wallet = UserWallet::where('user_id', $userId)->first();
         if (!$wallet) {
-            return $this->fail('Wallet not found', 404);
+            return $this->fail(trans('Wallet not found'), 404);
         }
 
         return $this->success([

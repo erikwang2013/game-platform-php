@@ -217,6 +217,51 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* ---------- 顶栏语言切换器（13 种平铺，母语名 + 当前项打点） ---------- */
+.lang {
+  position: relative;
+}
+.langmenu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 60;
+  max-height: 60vh;
+  overflow: auto;
+  margin: 0;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-ctl);
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgba(28, 25, 23, 0.16);
+  list-style: none;
+}
+.langitem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: var(--r-ctl);
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.langitem:hover {
+  background: var(--muted);
+}
+.langitem.on {
+  color: var(--primary);
+  font-weight: 600;
+}
+.langitem-n {
+  flex: 1;
+}
 .burger {
   display: none;
   width: 44px;

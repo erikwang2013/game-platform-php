@@ -11,15 +11,23 @@ class ActivityAdminController extends GetxController {
   final api = ApiService();
   final items = <dynamic>[].obs;
   final isLoading = false.obs;
+  final total = 0.obs;
+  final page = 1.obs;
+
+  /// 与后端缺省一致（ActivityController::index 的 `input('limit', 15)`）。
+  /// 注意：该端点只回 `{list, total}`（没有 page/limit 回显），总数仍够算页数。
+  static const int pageSize = 15;
 
   @override
   void onInit() { super.onInit(); load(); }
 
-  Future<void> load() async {
+  Future<void> load({int? toPage}) async {
+    if (toPage != null) page.value = toPage;
     isLoading.value = true;
     try {
-      final resp = await api.get('/admin/v1/activities/list');
-      items.value = resp['data']['list'] as List<dynamic>;
+      final result = await api.list('/admin/v1/activities/list', page: page.value, pageSize: pageSize);
+      items.value = result.rows;
+      total.value = result.total;
     } catch (e) {
       Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.loading_failed')}: $e');
     } finally { isLoading.value = false; }
@@ -141,6 +149,13 @@ class ActivityPage extends GetView<ActivityAdminController> {
           },
         );
       })),
+      const SizedBox(height: 8),
+      Obx(() => CrudPager(
+            page: ctrl.page.value,
+            total: ctrl.total.value,
+            size: ActivityAdminController.pageSize,
+            onPage: (p) => ctrl.load(toPage: p),
+          )),
     ]);
   }
 

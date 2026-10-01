@@ -7,6 +7,7 @@ import '../../i18n/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../widgets/crud.dart';
+import '../../widgets/permission_tree.dart';
 import 'permission_page.dart';
 import 'role_controller.dart';
 
@@ -47,15 +48,16 @@ class RoleTab extends GetView<RoleController> {
   ///   （RoleController::decodePermissionIds:145 逐个 decodeId，非法 hashid 直接 400），
   ///   列表也回传 hashid 形式的 permission_ids（index:43-46）供编辑态回填。
   ///   后端 `sync()` 是**整体替换**：表单提交的是完整勾选集，不是增量。
-  List<CrudField> _fields(List<CrudOption> permissionOptions) => <CrudField>[
+  ///   候选取权限**树**（不摊平）：勾选带父子联动与半选，提交的是勾中 ∪ 半选祖先（见 crud.dart）。
+  List<CrudField> _fields(List<PermissionNode> permissionTree) => <CrudField>[
         CrudField('name', 'role.name', required: true),
         CrudField('slug', 'role.slug', required: true, editableOnEdit: false),
         CrudField('description', 'role.description', type: CrudFieldType.multiline),
         CrudField('status', 'game.status', type: CrudFieldType.toggle),
         // 权限树没取到时**不摆这个字段**：空勾选集一旦被提交就等于把角色的权限整体清空
-        if (permissionOptions.isNotEmpty)
+        if (permissionTree.isNotEmpty)
           CrudField('permission_ids', 'role.permission_ids',
-              type: CrudFieldType.multiselect, hint: 'role.permission_ids_hint', options: permissionOptions),
+              type: CrudFieldType.tree, hint: 'role.permission_ids_hint', tree: permissionTree),
       ];
 
   @override
@@ -121,33 +123,37 @@ class RoleTab extends GetView<RoleController> {
           },
         );
       })),
+      const SizedBox(height: 8),
+      Obx(() => CrudPager(
+            page: ctrl.page.value,
+            total: ctrl.total.value,
+            size: RoleController.pageSize,
+            onPage: (p) => ctrl.loadRoles(toPage: p),
+          )),
     ]);
   }
 
   Future<void> _openForm(BuildContext context, RoleController ctrl, {dynamic role}) async {
-    final permissionOptions = await _permissionOptions();
+    final permissionTree = await _permissionTree();
     if (!context.mounted) return;
     final initial = role == null ? null : Map<String, dynamic>.from(role as Map);
     await showCrudForm(
       context,
       title: role == null ? '${AppTranslations.t('role.create')}' : '${AppTranslations.t('role.edit')}',
-      fields: _fields(permissionOptions),
+      fields: _fields(permissionTree),
       initial: initial,
       onSubmit: (data) => role == null ? ctrl.createRole(data) : ctrl.updateRole(role['id'].toString(), data),
     );
   }
 
-  /// 权限多选的值域 = 权限树摊平后的「缩进 + 名称」。
+  /// 权限多选的值域 = 权限**树**本身（不摊平：勾选要父子联动）。
   /// 复用权限页的 PermissionController：先点过权限页就免一次请求，没点过就现拉一次。
-  /// label 传成品文案（crudText 查不到 key 会原样显示）—— 名称来自库，不是 i18n key。
-  Future<List<CrudOption>> _permissionOptions() async {
+  /// 拉失败（load 内部吞成 snackbar）⇒ 树为空 ⇒ 表单不摆这个字段。
+  Future<List<PermissionNode>> _permissionTree() async {
     final permCtrl = Get.isRegistered<PermissionController>()
         ? Get.find<PermissionController>()
         : Get.put(PermissionController());
     if (permCtrl.tree.isEmpty) await permCtrl.load();
-    return <CrudOption>[
-      for (final (depth, node) in PermissionPage.flatten(permCtrl.tree))
-        CrudOption(node['id'].toString(), '${'  ' * depth}${node['name']}'),
-    ];
+    return permCtrl.tree;
   }
 }

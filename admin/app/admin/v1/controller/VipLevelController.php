@@ -49,7 +49,7 @@ class VipLevelController extends BaseController
 
         $exists = VipLevel::where('level', $request->input('level'))->first();
         if ($exists) {
-            return $this->fail('该VIP等级已存在', 422);
+            return $this->fail(trans('VIP level already exists'), 422);
         }
 
         $vl = new VipLevel();
@@ -60,7 +60,7 @@ class VipLevelController extends BaseController
         $vl->benefits = $request->input('benefits');
         $vl->save();
 
-        return $this->success($this->encodeIds($vl->toArray()), '创建成功');
+        return $this->success($this->encodeIds($vl->toArray()), trans('Created successfully'));
     }
 
     #[Apidoc\Title("更新VIP等级")]
@@ -71,7 +71,7 @@ class VipLevelController extends BaseController
         $id = $this->decodeId($hashid);
         $vl = VipLevel::find($id);
         if (!$vl) {
-            return $this->fail('VIP等级不存在', 404);
+            return $this->fail(trans('VIP level not found'), 404);
         }
 
         $validator = validator($request->all(), [
@@ -94,7 +94,7 @@ class VipLevelController extends BaseController
         $vl->fill($request->only(['name', 'required_exp', 'benefits']));
         $vl->save();
 
-        return $this->success($this->encodeIds($vl->toArray()), '更新成功');
+        return $this->success($this->encodeIds($vl->toArray()), trans('Updated successfully'));
     }
 
     /**
@@ -161,15 +161,15 @@ class VipLevelController extends BaseController
         $id = $this->decodeId($hashid);
         $vl = VipLevel::find($id);
         if (!$vl) {
-            return $this->fail('VIP等级不存在', 404);
+            return $this->fail(trans('VIP level not found'), 404);
         }
 
         $userCount = UserVip::where('vip_level', $vl->level)->count();
         if ($userCount > 0) {
-            return $this->fail("该VIP等级下有 {$userCount} 个用户，无法删除", 422);
+            return $this->fail(trans('%count% users are on this VIP level; it cannot be deleted', ['%count%' => (string) $userCount]), 422);
         }
 
         $vl->delete();
-        return $this->success([], '删除成功');
+        return $this->success([], trans('Deleted successfully'));
     }
 }

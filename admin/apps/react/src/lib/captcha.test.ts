@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { setCode } from '../i18n/index.ts';
 import { describeCaptcha } from './captcha.ts';
 
 const unordered = {
@@ -36,6 +37,13 @@ test('required：与 texts 数量一致（服务端要求精确相等），无�
 });
 
 test('hint：有 texts 时按顺序拼接，否则报点数', () => {
+  // 断言写成**英文成品**而不是 t(...)：比对同一个调用是自证；键换错、参数名换错都要红。
+  // 分隔符 ` → ` 是模板里的一部分（不是本地 join 出来的），故它出现在成品里才算数。
+  setCode('en');
+  assert.equal(describeCaptcha(unordered).hint, 'Click in order: a → b → c');
+  assert.equal(describeCaptcha({}).hint, 'Click 2 positions in the image to complete verification');
+  // 切到 zh 要跟着变：证明 hint 是**渲染期**取的，不是模块加载时冻住的常量
+  setCode('zh');
   assert.equal(describeCaptcha(unordered).hint, '按顺序点击：a → b → c');
-  assert.equal(describeCaptcha({}).hint, '点击图中 2 个位置完成验证');
+  setCode('en');
 });

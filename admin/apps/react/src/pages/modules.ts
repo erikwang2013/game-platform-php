@@ -14,12 +14,17 @@
 import type { CrudConfig } from '../components/RowBrowser';
 import type { Row } from '../components/DataTable';
 // 带 .ts 后缀：modules.test.ts 要在 node --test 下直接 import 本文件（拿后端的路由表对账路径与方法）
-import { labelOf, type Field, type FieldOption } from '../lib/crud.ts';
+import { t, type MessageKey } from '../i18n/index.ts';
+import { labelOf, raw, type Field, type FieldOption } from '../lib/crud.ts';
 import { api, type Envelope } from '../lib/api.ts';
-import { flattenTree } from '../lib/format.ts';
+import { treeNodes, treeOptions, type TreeNode } from '../lib/tree.ts';
 
-/** 把某些字段改成只读（编辑表单用）：不提交，只解释为什么改不了。 */
-const locked = (fields: Field[], names: string | string[], hint: string): Field[] => {
+/**
+ * 把某些字段改成只读（编辑表单用）：不提交，只解释为什么改不了。
+ * export 给 adminUsers.ts（管理员模块单独一个文件，见该文件头）；**不要**反过来让本文件 import 它 ——
+ * 它在求值期就要调 locked，双向依赖会撞上本条 const 的 TDZ。
+ */
+export const locked = (fields: Field[], names: string | string[], hint: MessageKey): Field[] => {
   const list = Array.isArray(names) ? names : [names];
   return fields.map((field) => (list.includes(field.name) ? { ...field, readOnly: true, hint } : field));
 };
@@ -27,48 +32,48 @@ const locked = (fields: Field[], names: string | string[], hint: string): Field[
 /* ---------------------------------- 游戏 ---------------------------------- */
 
 const GAME_FIELDS: Field[] = [
-  { name: 'name', label: '游戏名称', type: 'text', required: true, placeholder: '最长 100 字' },
-  { name: 'slug', label: '游戏标识', type: 'text', required: true, placeholder: '小写字母/数字/-/_，最长 50' },
+  { name: 'name', label: 'f.game_name', type: 'text', required: true, placeholder: 'f.max_100_characters' },
+  { name: 'slug', label: 'f.game_slug', type: 'text', required: true, placeholder: 'f.lowercase_letters_digits_max_50' },
   {
     name: 'type',
-    label: '游戏类型',
+    label: 'f.game_type',
     type: 'select',
     required: true,
     options: [
-      { value: 'self', label: '自研 self' },
-      { value: 'embedded', label: '内嵌 embedded' },
-      { value: 'third_party', label: '第三方 third_party' },
+      { value: 'self', label: 'f.self_developed_self' },
+      { value: 'embedded', label: 'f.embedded_embedded' },
+      { value: 'third_party', label: 'f.third_party_third_party' },
     ],
   },
   {
     name: 'platform',
-    label: '客户端平台',
+    label: 'f.client_platform',
     type: 'select',
     default: 'h5',
     options: [
-      { value: 'h5', label: 'h5' },
-      { value: 'unity', label: 'unity' },
-      { value: 'web', label: 'web' },
-      { value: 'native', label: 'native' },
+      { value: 'h5' },
+      { value: 'unity' },
+      { value: 'web' },
+      { value: 'native' },
     ],
   },
-  { name: 'region', label: '运营区域', type: 'text', default: 'global', placeholder: 'global / CN / US …最长 10' },
-  { name: 'description', label: '游戏简介', type: 'textarea' },
-  { name: 'cover_image', label: '封面图', type: 'image', placeholder: '图片 URL，最长 255' },
-  { name: 'api_endpoint', label: 'API 端点', type: 'text', placeholder: '第三方游戏回调地址，最长 255' },
-  { name: 'api_key', label: 'API Key', type: 'text', placeholder: '第三方提供；自研/内嵌留空由平台生成' },
-  { name: 'api_secret', label: 'API Secret', type: 'text', placeholder: '编辑时留空 = 不改动现有密钥' },
-  { name: 'sdk_version', label: 'SDK 版本', type: 'text', placeholder: '自研/内嵌，最长 20' },
-  { name: 'sort', label: '排序', type: 'number', placeholder: '越小越靠前' },
-  { name: 'status', label: '上架', type: 'switch' },
+  { name: 'region', label: 'f.operating_region', type: 'text', default: 'global', placeholder: 'f.global_cn_us_max_10' },
+  { name: 'description', label: 'f.game_description', type: 'textarea' },
+  { name: 'cover_image', label: 'f.cover_image', type: 'image', placeholder: 'f.image_url_max_255' },
+  { name: 'api_endpoint', label: 'f.api_endpoint', type: 'text', placeholder: 'f.third_party_game_callback_url' },
+  { name: 'api_key', label: 'f.api_key', type: 'text', placeholder: 'f.provided_by_the_third_party' },
+  { name: 'api_secret', label: 'f.api_secret', type: 'text', placeholder: 'f.leave_empty_when_editing_to' },
+  { name: 'sdk_version', label: 'f.sdk_version', type: 'text', placeholder: 'f.self_embedded_max_20' },
+  { name: 'sort', label: 'f.sort_order', type: 'number', placeholder: 'f.smaller_values_sort_first' },
+  { name: 'status', label: 'f.listed', type: 'switch' },
 ];
 
 export const GAME_CRUD: CrudConfig = {
   base: '/admin/v1/game',
-  noun: '游戏',
+  noun: 'f.games',
   fields: GAME_FIELDS,
   // slug 是游戏标识（唯一键），后端 update 既不校验也不写入 —— 只读展示，别假装能改
-  editFields: locked(GAME_FIELDS, 'slug', '游戏标识创建后不可改'),
+  editFields: locked(GAME_FIELDS, 'slug', 'f.the_game_slug_cannot_be'),
   labelKey: 'name',
   // 游戏没有独立 toggle 端点，状态变更走 update（PUT {status}）
   toggle: 'update',
@@ -77,27 +82,27 @@ export const GAME_CRUD: CrudConfig = {
 /* ---------------------------------- 公告 ---------------------------------- */
 
 const ANNOUNCEMENT_FIELDS: Field[] = [
-  { name: 'title', label: '标题', type: 'text', required: true, placeholder: '最长 255 字' },
-  { name: 'content', label: '内容', type: 'textarea', required: true },
+  { name: 'title', label: 'f.title', type: 'text', required: true, placeholder: 'f.max_255_characters' },
+  { name: 'content', label: 'f.content', type: 'textarea', required: true },
   {
     name: 'type',
-    label: '类型',
+    label: 'f.type',
     type: 'select',
     required: true,
     default: 'system',
     options: [
-      { value: 'system', label: '系统公告 system' },
-      { value: 'game', label: '游戏公告 game' },
-      { value: 'payment', label: '支付公告 payment' },
+      { value: 'system', label: 'f.system_announcement_system' },
+      { value: 'game', label: 'f.game_announcement_game' },
+      { value: 'payment', label: 'f.payment_announcement_payment' },
     ],
   },
   // 控制器 create 的缺省是 1（已发布），与库里「0=草稿 1=已发布」一致
-  { name: 'status', label: '上架', type: 'switch', default: '1' },
+  { name: 'status', label: 'f.listed', type: 'switch', default: '1' },
 ];
 
 export const ANNOUNCEMENT_CRUD: CrudConfig = {
   base: '/admin/v1/announcement',
-  noun: '公告',
+  noun: 'f.announcements',
   fields: ANNOUNCEMENT_FIELDS,
   labelKey: 'title',
   toggle: '/admin/v1/announcement/toggle',
@@ -106,35 +111,35 @@ export const ANNOUNCEMENT_CRUD: CrudConfig = {
 /* -------------------------------- 游戏分类 -------------------------------- */
 
 const CATEGORY_FIELDS: Field[] = [
-  { name: 'name', label: '分类名称', type: 'text', required: true, placeholder: '最长 50 字' },
-  { name: 'slug', label: '分类标识', type: 'text', required: true, placeholder: '小写字母/数字/-/_' },
-  { name: 'icon', label: '分类图标', type: 'image', placeholder: '图标 URL，最长 255' },
-  { name: 'sort', label: '排序', type: 'number', placeholder: '越小越靠前；编辑时须 ≥ 0' },
+  { name: 'name', label: 'f.category_name', type: 'text', required: true, placeholder: 'f.max_50_characters' },
+  { name: 'slug', label: 'f.category_slug', type: 'text', required: true, placeholder: 'f.lowercase_letters_digits' },
+  { name: 'icon', label: 'f.category_icon', type: 'image', placeholder: 'f.icon_url_max_255' },
+  { name: 'sort', label: 'f.sort_order', type: 'number', placeholder: 'f.smaller_values_sort_first_must' },
 ];
 
 export const CATEGORY_CRUD: CrudConfig = {
   base: '/admin/v1/game/category',
-  noun: '分类',
+  noun: 'f.categories',
   // create 不接受 status（代码里固定写 1）⇒ 只有编辑表单里有它
   fields: CATEGORY_FIELDS,
-  editFields: [...locked(CATEGORY_FIELDS, 'slug', '分类标识创建后不可改'), { name: 'status', label: '启用', type: 'switch', default: '1' }],
+  editFields: [...locked(CATEGORY_FIELDS, 'slug', 'f.the_category_slug_cannot_be'), { name: 'status', label: 'f.enabled', type: 'switch', default: '1' }],
   labelKey: 'name',
   // 无独立 toggle 端点，状态变更走 update（PUT {status}）
   toggle: 'update',
   actions: [
     {
-      label: '分配游戏',
-      title: '分配游戏到分类',
+      label: 'f.assign_games',
+      title: 'f.assign_games_to_this_category',
       path: () => '/admin/v1/game/category/assign',
       body: (id) => ({ category_id: id }),
       fields: [
         {
           name: 'game_ids',
-          label: '游戏 hashid',
+          label: 'f.game_hashid',
           type: 'lines',
           required: true,
-          placeholder: '每行一个',
-          hint: '取自游戏列表的 id 列；本次提交整体替换该分类的关联（不是追加）',
+          placeholder: 'f.one_per_line',
+          hint: 'f.from_the_games_list_id',
         },
       ],
     },
@@ -144,40 +149,40 @@ export const CATEGORY_CRUD: CrudConfig = {
 /* -------------------------------- 游戏区服 -------------------------------- */
 
 const SERVER_FIELDS: Field[] = [
-  { name: 'name', label: '区服名称', type: 'text', required: true, placeholder: '最长 50 字' },
-  { name: 'region', label: '区域', type: 'text', placeholder: '如 CN / US，最长 20' },
+  { name: 'name', label: 'f.server_name', type: 'text', required: true, placeholder: 'f.max_50_characters' },
+  { name: 'region', label: 'f.region', type: 'text', placeholder: 'f.e_g_cn_us_max' },
   {
     name: 'status',
-    label: '状态',
+    label: 'f.status',
     type: 'select',
     default: '1',
     options: [
-      { value: '0', label: '0 维护' },
-      { value: '1', label: '1 正常' },
-      { value: '2', label: '2 火爆' },
-      { value: '3', label: '3 新服' },
+      { value: '0', label: 'f.n_0_maintenance' },
+      { value: '1', label: 'f.n_1_normal' },
+      { value: '2', label: 'f.n_2_hot' },
+      { value: '3', label: 'f.n_3_new' },
     ],
     // 四态枚举，不是 0/1 开关 ⇒ 行内启停不适用（rowact 的启用/停用只按 0/1 判）
-    hint: '列注释：0=维护 1=正常 2=火爆 3=新服',
+    hint: 'f.column_comment_0_maintenance_1',
   },
-  { name: 'sort', label: '排序', type: 'number', placeholder: '越小越靠前；编辑时须 ≥ 0' },
+  { name: 'sort', label: 'f.sort_order', type: 'number', placeholder: 'f.smaller_values_sort_first_must' },
 ];
 
 /** 区服挂在游戏下（列表端点必填 game_id），故按当前选中的游戏生成一套描述。 */
 export function serverCrud(gameId: string): CrudConfig {
   const game: Field = {
     name: 'game_id',
-    label: '所属游戏',
+    label: 'f.game',
     type: 'text',
     required: true,
     default: gameId,
-    hint: '当前选中的游戏（游戏列表的 id 列，hashid）',
+    hint: 'f.the_currently_selected_game_id',
   };
   return {
     base: '/admin/v1/game/server',
-    noun: '区服',
+    noun: 'f.game_servers',
     fields: [game, ...SERVER_FIELDS],
-    editFields: [{ ...game, readOnly: true, hint: '区服创建后不可换游戏（update 不接受 game_id）' }, ...SERVER_FIELDS],
+    editFields: [{ ...game, readOnly: true, hint: 'f.a_server_cannot_be_moved' }, ...SERVER_FIELDS],
     labelKey: 'name',
   };
 }
@@ -187,87 +192,87 @@ export function serverCrud(gameId: string): CrudConfig {
 const ACTIVITY_FIELDS: Field[] = [
   {
     name: 'type',
-    label: '活动类型',
+    label: 'f.activity_type',
     type: 'select',
     required: true,
     options: [
-      { value: 'signin', label: '签到 signin' },
-      { value: 'daily_task', label: '每日任务 daily_task' },
-      { value: 'invite', label: '邀请 invite' },
+      { value: 'signin', label: 'f.daily_check_in_signin' },
+      { value: 'daily_task', label: 'f.daily_tasks_daily_task' },
+      { value: 'invite', label: 'f.invite_invite' },
     ],
-    hint: '创建后不可改：config 的 schema 按 type 校验，update 不收 type',
+    hint: 'f.immutable_after_creation_the_config',
   },
-  { name: 'name', label: '活动名称', type: 'text', required: true, placeholder: '最长 100 字' },
+  { name: 'name', label: 'f.activity_name', type: 'text', required: true, placeholder: 'f.max_100_characters' },
   {
     name: 'game_id',
-    label: '适用游戏',
+    label: 'f.applicable_game',
     type: 'number',
-    placeholder: '游戏数值 ID',
-    hint: '0 或留空 = 全平台；此端点收数值 ID，不是 hashid（列表里这个字段也没被编成 hashid）',
+    placeholder: 'f.numeric_game_id',
+    hint: 'f.n_0_or_empty_all_games',
   },
   {
     name: 'status',
-    label: '状态',
+    label: 'f.status',
     type: 'select',
     required: true,
     default: '0',
     options: [
-      { value: '0', label: '0 禁用' },
-      { value: '1', label: '1 启用' },
-      { value: '2', label: '2 已结束' },
+      { value: '0', label: 'f.n_0_disabled' },
+      { value: '1', label: 'f.n_1_enabled' },
+      { value: '2', label: 'f.n_2_ended' },
     ],
-    hint: '三态枚举，故不做行内启停；create 必填',
+    hint: 'f.a_three_state_enum_hence',
   },
-  { name: 'start_at', label: '开始时间', type: 'text', placeholder: '2026-01-01 00:00:00' },
-  { name: 'end_at', label: '结束时间', type: 'text', placeholder: '须 ≥ 开始时间' },
-  { name: 'rollout_percent', label: '灰度百分比', type: 'number', placeholder: '0-100，留空 = 100' },
+  { name: 'start_at', label: 'f.start_time', type: 'text', placeholder: raw('2026-01-01 00:00:00') },
+  { name: 'end_at', label: 'f.end_time', type: 'text', placeholder: 'f.must_be_on_or_after' },
+  { name: 'rollout_percent', label: 'f.rollout_percentage', type: 'number', placeholder: 'f.n_0_100_empty_100' },
   {
     name: 'config',
-    label: '活动配置（JSON）',
+    label: 'f.activity_config_json',
     type: 'json',
-    placeholder: '{"rewards": [{"day": 1, "reward": {"type": "platform_coin", "amount": "100"}}]}',
-    hint: '必须是合法 JSON，且符合该 type 的 schema：signin={rewards:[{day,reward}]}、daily_task={tasks:[{event,target,reward}]}、invite={target,rewards:[…]}；reward.type 只能是 platform_coin / game_coin，amount 是十进制字符串且单条 ≤ 10000。不符则服务端 422；留空 = 该 type 的默认配置',
+    placeholder: raw('{"rewards": [{"day": 1, "reward": {"type": "platform_coin", "amount": "100"}}]}'),
+    hint: 'f.must_be_valid_json_matching',
   },
 ];
 
 export const ACTIVITY_CRUD: CrudConfig = {
   base: '/admin/v1/activities',
-  noun: '活动',
+  noun: 'f.activities',
   fields: ACTIVITY_FIELDS,
-  editFields: locked(ACTIVITY_FIELDS, 'type', '活动类型创建后不可改'),
+  editFields: locked(ACTIVITY_FIELDS, 'type', 'f.the_activity_type_cannot_be'),
   labelKey: 'name',
 };
 
 /* --------------------------------- 成就 ---------------------------------- */
 
 const ACHIEVEMENT_FIELDS: Field[] = [
-  { name: 'key', label: '成就标识', type: 'text', required: true, placeholder: '小写字母/数字/下划线，最长 50' },
-  { name: 'name', label: '成就名称', type: 'text', required: true, placeholder: '最长 100 字' },
-  { name: 'description', label: '成就描述', type: 'textarea', placeholder: '最长 500 字' },
-  { name: 'icon', label: '图标', type: 'image', placeholder: '图标 URL' },
+  { name: 'key', label: 'f.achievement_key', type: 'text', required: true, placeholder: 'f.lowercase_letters_digits_underscore_max' },
+  { name: 'name', label: 'f.achievement_name', type: 'text', required: true, placeholder: 'f.max_100_characters' },
+  { name: 'description', label: 'f.achievement_description', type: 'textarea', placeholder: 'f.max_500_characters' },
+  { name: 'icon', label: 'f.icon', type: 'image', placeholder: 'f.icon_url' },
   {
     name: 'condition_json',
-    label: '达成条件（JSON）',
+    label: 'f.unlock_condition_json',
     type: 'json',
     required: true,
-    placeholder: '{"event": "login", "count": 7}',
-    hint: '必须能解成 JSON 对象/数组，否则服务端 422',
+    placeholder: raw('{"event": "login", "count": 7}'),
+    hint: 'f.must_parse_into_a_json',
   },
-  { name: 'points', label: '成就积分', type: 'number', required: true, placeholder: '≥ 0' },
+  { name: 'points', label: 'f.achievement_points', type: 'number', required: true, placeholder: raw('≥ 0') },
   {
     name: 'status',
-    label: '启用',
+    label: 'f.enabled',
     type: 'switch',
     default: '1',
-    hint: '停用只影响后续事件是否再授予；已授予的记录与用户进度不受影响',
+    hint: 'f.disabling_only_affects_whether_future',
   },
 ];
 
 export const ACHIEVEMENT_CRUD: CrudConfig = {
   base: '/admin/v1/achievement',
-  noun: '成就',
+  noun: 'f.achievements',
   fields: ACHIEVEMENT_FIELDS,
-  editFields: locked(ACHIEVEMENT_FIELDS, 'key', '成就标识是唯一键，创建后不可改'),
+  editFields: locked(ACHIEVEMENT_FIELDS, 'key', 'f.the_achievement_key_is_the'),
   labelKey: 'name',
   toggle: '/admin/v1/achievement/toggle',
 };
@@ -275,80 +280,80 @@ export const ACHIEVEMENT_CRUD: CrudConfig = {
 /* ------------------------------- VIP 等级 -------------------------------- */
 
 const VIP_FIELDS: Field[] = [
-  { name: 'level', label: '等级', type: 'number', required: true, placeholder: '≥ 0' },
-  { name: 'name', label: '等级名称', type: 'text', required: true, placeholder: '最长 50 字' },
-  { name: 'required_exp', label: '所需经验', type: 'number', required: true, placeholder: '≥ 0' },
+  { name: 'level', label: 'f.level', type: 'number', required: true, placeholder: raw('≥ 0') },
+  { name: 'name', label: 'f.level_name', type: 'text', required: true, placeholder: 'f.max_50_characters' },
+  { name: 'required_exp', label: 'f.required_exp', type: 'number', required: true, placeholder: raw('≥ 0') },
   {
     name: 'benefits',
-    label: '权益（JSON）',
+    label: 'f.benefits_json',
     type: 'json',
     required: true,
-    placeholder: '{"exchange_discount": "0.05"}',
-    hint: 'JSON 对象；键只能用 exchange_discount / withdraw_fee_discount / rate_bonus，值为 [0,1] 的十进制数（写别的键或越界值会被服务端 422 挡下）',
+    placeholder: raw('{"exchange_discount": "0.05"}'),
+    hint: 'f.a_json_object_keys_may',
   },
 ];
 
 export const VIP_CRUD: CrudConfig = {
   base: '/admin/v1/vip/level',
-  noun: 'VIP 等级',
+  noun: 'f.vip_levels',
   fields: VIP_FIELDS,
-  editFields: locked(VIP_FIELDS, 'level', '等级数字是唯一键，创建后不可改'),
+  editFields: locked(VIP_FIELDS, 'level', 'f.the_level_number_is_the'),
   labelKey: 'name',
 };
 
 /* -------------------------------- 排行榜 --------------------------------- */
 
 const LEADERBOARD_FIELDS: Field[] = [
-  { name: 'name', label: '排行榜名称', type: 'text', required: true, placeholder: '最长 100 字' },
+  { name: 'name', label: 'f.leaderboard_name', type: 'text', required: true, placeholder: 'f.max_100_characters' },
   {
     name: 'type',
-    label: '周期',
+    label: 'f.period',
     type: 'select',
     required: true,
     options: [
-      { value: 'daily', label: 'daily 日榜' },
-      { value: 'weekly', label: 'weekly 周榜' },
-      { value: 'monthly', label: 'monthly 月榜' },
-      { value: 'alltime', label: 'alltime 总榜' },
+      { value: 'daily', label: 'f.daily_daily' },
+      { value: 'weekly', label: 'f.weekly_weekly' },
+      { value: 'monthly', label: 'f.monthly_monthly' },
+      { value: 'alltime', label: 'f.alltime_all_time' },
     ],
   },
   {
     name: 'metric',
-    label: '排序指标',
+    label: 'f.ranking_metric',
     type: 'select',
     required: true,
     options: [
-      { value: 'earned', label: 'earned 获得' },
-      { value: 'spent', label: 'spent 消耗' },
-      { value: 'play_count', label: 'play_count 游玩次数' },
+      { value: 'earned', label: 'f.earned' },
+      { value: 'spent', label: 'f.spent' },
+      { value: 'play_count', label: 'f.play_count' },
     ],
   },
   {
     name: 'game_id',
-    label: '关联游戏',
+    label: 'f.linked_game',
     type: 'text',
-    placeholder: '游戏 hashid',
-    hint: '取自游戏列表的 id 列；留空 = 全平台。create 只在这里收 hashid，update 不收（创建后不可改）',
+    placeholder: 'f.game_hashid',
+    hint: 'f.taken_from_the_id_column',
   },
-  { name: 'rule', label: '排行规则', type: 'textarea', placeholder: '按 JSON 约定填写', hint: '服务端不做校验，原样存进 rule 列' },
+  { name: 'rule', label: 'f.ranking_rule', type: 'textarea', placeholder: 'f.fill_in_per_the_json', hint: 'f.the_server_does_not_validate' },
   // 控制器 create 的缺省是 0（未启用），与库里的默认值 1 不同 —— 以控制器为准
-  { name: 'status', label: '启用', type: 'switch', default: '0' },
-  { name: 'sort', label: '排序', type: 'number', placeholder: '越小越靠前；编辑时须 ≥ 0' },
+  { name: 'status', label: 'f.enabled', type: 'switch', default: '0' },
+  { name: 'sort', label: 'f.sort_order', type: 'number', placeholder: 'f.smaller_values_sort_first_must' },
 ];
 
 export const LEADERBOARD_CRUD: CrudConfig = {
   base: '/admin/v1/leaderboard',
-  noun: '排行榜',
+  noun: 'f.leaderboards',
   fields: LEADERBOARD_FIELDS,
-  editFields: locked(LEADERBOARD_FIELDS, 'game_id', '关联游戏创建后不可改'),
+  editFields: locked(LEADERBOARD_FIELDS, 'game_id', 'f.the_linked_game_cannot_be'),
   labelKey: 'name',
   // 无独立 toggle 端点，状态变更走 update（PUT {status}）
   toggle: 'update',
   actions: [
     {
-      label: '刷新缓存',
+      label: 'f.refresh_cache',
       path: (id) => `/admin/v1/leaderboard/${id}/refresh`,
-      confirm: '清除并重算该排行榜的缓存？',
+      confirm: () => t('f.clear_and_recompute_the_cache'),
     },
   ],
 };
@@ -356,38 +361,38 @@ export const LEADERBOARD_CRUD: CrudConfig = {
 /* ------------------------------- 国家配置 -------------------------------- */
 
 const COUNTRY_FIELDS: Field[] = [
-  { name: 'country_code', label: '国家代码', type: 'text', required: true, placeholder: '两位，如 CN', hint: 'ISO 3166-1 alpha-2，提交时统一转大写' },
-  { name: 'currency', label: '货币代码', type: 'text', required: true, placeholder: '三位，如 CNY', hint: 'ISO 4217，提交时统一转大写' },
+  { name: 'country_code', label: 'f.country_code', type: 'text', required: true, placeholder: 'f.two_letters_e_g_cn', hint: 'f.country_code_iso_3166_1' },
+  { name: 'currency', label: 'f.currency_code', type: 'text', required: true, placeholder: 'f.three_letters_e_g_cny', hint: 'f.iso_4217_upper_cased_on' },
   {
     name: 'payment_methods',
-    label: '支付方式（JSON）',
+    label: 'f.payment_methods_json',
     type: 'json',
-    placeholder: '{"paypal": {"min": "1.0000", "enabled": true}}',
-    hint: '键=网关 provider，值含 min/max/fee_percent/enabled；留空 = 空配置',
+    placeholder: raw('{"paypal": {"min": "1.0000", "enabled": true}}'),
+    hint: 'f.key_gateway_provider_value_holds',
   },
   {
     name: 'withdraw_methods',
-    label: '提现方式（JSON）',
+    label: 'f.withdraw_methods_json',
     type: 'json',
-    placeholder: '{"paypal": {"min": "10.0000", "enabled": true}}',
-    hint: '键=paypal/bank/crypto，值含 min/max/fee_percent/enabled；留空 = 空配置',
+    placeholder: raw('{"paypal": {"min": "10.0000", "enabled": true}}'),
+    hint: 'f.key_paypal_bank_crypto_value',
   },
   {
     // 金额写字符串：不转浮点（仓库铁律：金额不参与浮点运算），并保住小数位，显示与提交一致
     name: 'min_deposit',
-    label: '最低充值额',
+    label: 'f.minimum_deposit',
     type: 'text',
-    placeholder: '如 1.0000',
-    hint: '十进制数字字符串；留空 = 默认 1.0000',
+    placeholder: 'f.e_g_1_0000',
+    hint: 'f.a_decimal_digit_string_empty',
   },
 ];
 
 export const COUNTRY_CRUD: CrudConfig = {
   base: '/admin/v1/country/config',
-  noun: '国家配置',
+  noun: 'f.country_configs',
   // create 不接受 status（代码里固定写 1）⇒ 只有编辑表单里有它
   fields: COUNTRY_FIELDS,
-  editFields: [...locked(COUNTRY_FIELDS, 'country_code', '国家代码创建后不可改'), { name: 'status', label: '启用', type: 'switch', default: '1' }],
+  editFields: [...locked(COUNTRY_FIELDS, 'country_code', 'f.the_country_code_cannot_be'), { name: 'status', label: 'f.enabled', type: 'switch', default: '1' }],
   labelKey: 'country_code',
   toggle: '/admin/v1/country/config/toggle',
 };
@@ -395,43 +400,43 @@ export const COUNTRY_CRUD: CrudConfig = {
 /* ------------------------------- 系统配置 -------------------------------- */
 
 const CONFIG_FIELDS: Field[] = [
-  { name: 'group', label: '分组', type: 'text', required: true, placeholder: '最长 100 字' },
-  { name: 'key', label: '配置键', type: 'text', required: true, placeholder: '最长 100 字' },
+  { name: 'group', label: 'f.group', type: 'text', required: true, placeholder: 'f.max_100_characters' },
+  { name: 'key', label: 'f.config_key', type: 'text', required: true, placeholder: 'f.max_100_characters' },
   {
     name: 'value',
-    label: '配置值',
+    label: 'f.config_value',
     type: 'textarea',
     required: true,
-    hint: '按 type 解析（json 类型要写合法 JSON）；服务端两边都不允许清空',
+    hint: 'f.parsed_per_type_json_requires',
   },
   {
     name: 'type',
-    label: '值类型',
+    label: 'f.value_type',
     type: 'select',
     default: 'string',
     options: [
-      { value: 'string', label: 'string' },
-      { value: 'int', label: 'int' },
-      { value: 'bool', label: 'bool' },
-      { value: 'json', label: 'json' },
+      { value: 'string' },
+      { value: 'int' },
+      { value: 'bool' },
+      { value: 'json' },
     ],
-    hint: '只影响读取时的解析方式，服务端不收口枚举',
+    hint: 'f.only_affects_how_the_value',
   },
-  { name: 'description', label: '说明', type: 'text', placeholder: '最长 255 字' },
+  { name: 'description', label: 'f.description', type: 'text', placeholder: 'f.max_255_characters' },
 ];
 
 export const CONFIG_CRUD: CrudConfig = {
   base: '/admin/v1/config',
-  noun: '配置项',
+  noun: 'f.config_items',
   // 这个模块的路径参数段叫 {id}（不是 {hashid}），值仍是 hashid；差别在 create 直接 POST 到 base
   createPath: '/admin/v1/config',
   fields: CONFIG_FIELDS,
-  editFields: locked(CONFIG_FIELDS, ['group', 'key'], '分组 + 键构成唯一项，创建后不可改'),
+  editFields: locked(CONFIG_FIELDS, ['group', 'key'], 'f.group_key_forms_the_unique'),
   labelKey: 'key',
   // 删除要管理员密码二次确认（BaseController::confirmPassword），不带密码必被 422 挡下；
   // 密码走请求体（DELETE 也能带 body，webman 按 content-type 解析），不进 URL
   deleteBody: (row) => {
-    const password = window.prompt(`删除配置项「${labelOf(row, 'key')}」需要输入当前登录密码：`);
+    const password = window.prompt(t('config.delete_password_prompt', { name: labelOf(row, 'key') }));
     return password === null ? null : { password };
   },
 };
@@ -444,12 +449,12 @@ export const CONFIG_CRUD: CrudConfig = {
  * 注销要回读列表确认人真的不在了，通用 delete 撑不住，故这里不给整套 CrudConfig，只给字段。
  */
 export const PLATFORM_USER_FIELDS: Field[] = [
-  { name: 'nickname', label: '昵称', type: 'text', placeholder: '最长 50 字', hint: '超长会被服务端拒绝（422）' },
+  { name: 'nickname', label: 'f.nickname', type: 'text', placeholder: 'f.max_50_characters', hint: 'f.over_length_values_are_rejected' },
   {
     name: 'status',
-    label: '状态',
+    label: 'f.status',
     type: 'switch',
-    hint: '开 = 正常（1），关 = 封禁（0）；后端只收 0/1，别的值一律 422',
+    hint: 'f.on_active_1_off_banned',
   },
 ];
 
@@ -463,38 +468,38 @@ const identityLabel = (row: Row): string => {
   const realName = String(row.real_name ?? '').trim();
   const username = String(((row.user ?? {}) as Row).username ?? '').trim();
   const name = realName !== '' ? realName : username;
-  return name === '' ? '该记录' : name;
+  return name === '' ? t('f.this_record') : name;
 };
 
 export const IDENTITY_CRUD: CrudConfig = {
   base: '/admin/v1/identity',
-  noun: '实名认证',
+  noun: 'f.kyc_review',
   // 动作型：后端只有 list + review，没有增/改/删端点 ⇒ 不给 fields / labelKey，
   // 界面就只长「通过 / 驳回」两个按钮
   actions: [
     {
-      label: '通过',
+      label: 'f.approve',
       // review 是 PUT，且记录 id 走请求体（不经 URL）
       path: () => '/admin/v1/identity/review',
       method: 'PUT',
       body: (id) => ({ id, action: 'approve' }),
-      confirm: (row) => `确认通过「${identityLabel(row)}」的实名认证？通过后会立即给该用户发通知。`,
+      confirm: (row) => t('identity.approve_confirm', { who: identityLabel(row) }),
     },
     {
-      label: '驳回',
-      title: '驳回实名认证',
+      label: 'f.reject',
+      title: 'f.reject_kyc',
       path: () => '/admin/v1/identity/review',
       method: 'PUT',
       body: (id) => ({ id, action: 'reject' }),
       fields: [
         {
           name: 'note',
-          label: '驳回理由',
+          label: 'f.rejection_reason',
           type: 'textarea',
-          hint: '会原样拼进发给用户的通知（最长 500 字）；留空则通知里没有理由',
+          hint: 'f.appended_verbatim_to_the_notification',
         },
       ],
-      confirm: (row) => `确认驳回「${identityLabel(row)}」的实名认证？驳回后用户会收到通知。`,
+      confirm: (row) => t('identity.reject_confirm', { who: identityLabel(row) }),
     },
   ],
   // review 只认 pending：已审过的记录会被 422 挡下（后端 CAS），按钮不做预判，错误原样显示
@@ -503,61 +508,53 @@ export const IDENTITY_CRUD: CrudConfig = {
 /* ---------------------------------- 角色 ---------------------------------- */
 
 /**
- * 权限下拉的值域：GET /admin/v1/permission 的树拍平成 [{value: hashid, label: 路径（slug）}]。
- * 标签带父名与 slug —— 各模块都有叫「列表」的节点，只给 name 分不出是哪一个。
- * 角色表单的「权限」多选与权限表单的「父权限」共用这一份。
+ * 角色表单的权限树：不摊平（摊平了就没有父子联动），交给 components/PermissionTree.tsx。
+ * 与 permissionOptions 同一个端点，两种呈现。
  */
-const permissionOptions = async (): Promise<FieldOption[]> => {
-  const data = await api<unknown>('/admin/v1/permission');
-  const tree = Array.isArray(data) ? (data as Row[]) : [];
-  return flattenTree(tree)
-    .map((node) => {
-      const parent = String(node.parent_name ?? '');
-      const name = String(node.name ?? '');
-      const slug = String(node.slug ?? '');
-      return {
-        value: String(node.id ?? ''),
-        label: `${parent === '' ? '' : `${parent} / `}${name}${slug === '' ? '' : `（${slug}）`}`,
-      };
-    })
-    .filter((option) => option.value !== '');
-};
+const permissionTree = async (): Promise<TreeNode[]> => treeNodes(await api<unknown>('/admin/v1/permission'));
+
+/**
+ * 权限下拉的值域：同一次 GET /admin/v1/permission，摊平成 [{value: hashid, label: 路径 / 名（slug）}]。
+ * 标签带完整父路径与 slug —— 各模块都有叫「列表」的节点，只给 name 分不出是哪一个。
+ * 只给权限表单的「父权限」用（单选，树形下拉做不了）；角色的「权限」用树控件，不摊平。
+ */
+const permissionOptions = async (): Promise<FieldOption[]> => treeOptions(await permissionTree());
 
 const ROLE_FIELDS: Field[] = [
-  { name: 'name', label: '角色名称', type: 'text', required: true, placeholder: '最长 50 字' },
-  { name: 'slug', label: '角色标识', type: 'text', required: true, placeholder: '如 super_admin，最长 50 字' },
-  { name: 'description', label: '角色描述', type: 'textarea', placeholder: '最长 255 字' },
+  { name: 'name', label: 'f.role_name', type: 'text', required: true, placeholder: 'f.max_50_characters' },
+  { name: 'slug', label: 'f.role_slug', type: 'text', required: true, placeholder: 'f.e_g_super_admin_max' },
+  { name: 'description', label: 'f.role_description', type: 'textarea', placeholder: 'f.max_255_characters' },
   {
     name: 'status',
-    label: '启用',
+    label: 'f.enabled',
     type: 'switch',
     default: '1',
-    hint: '停用后该角色的管理员不再获得它授予的权限（中间件按 status === 0 判停用）',
+    hint: 'f.once_disabled_admins_holding_this',
   },
   {
     name: 'permission_ids',
-    label: '权限',
-    type: 'multi',
-    // 值域是权限树，开框时才拉（见 permissionOptions）
-    options: permissionOptions,
-    hint: '按 Ctrl/⌘ 多选，不选 = 该角色没有任何权限。后端 sync 是整表替换：只有改动过才会重发全量，没动过就不会碰已有授权。',
+    label: 'f.permissions',
+    type: 'tree',
+    // 树形多选：父级勾选连带子级，子级全勾父级自动勾；树开框时才拉（见 permissionTree）
+    tree: permissionTree,
+    hint: 'f.checking_a_parent_also_checks',
   },
 ];
 
 export const ROLE_CRUD: CrudConfig = {
   base: '/admin/v1/role',
-  noun: '角色',
+  noun: 'f.roles',
   // Route::resource：列表在 /role 本身（**不是** /role/list），新建也是 POST /role
   createPath: '/admin/v1/role',
   fields: ROLE_FIELDS,
   // update 的 validator/fill 里没有 slug（角色标识是唯一键）⇒ 只读展示
-  editFields: locked(ROLE_FIELDS, 'slug', '角色标识创建后不可改'),
+  editFields: locked(ROLE_FIELDS, 'slug', 'f.the_role_slug_cannot_be'),
   labelKey: 'name',
   // 无独立 toggle 端点，状态变更走 update（PUT {status}，validator 收 in:0,1）
   toggle: 'update',
   // 删除要管理员密码（RoleController::destroy 走 confirmPassword），且会解绑该角色的用户与权限
   deleteBody: (row) =>
-    deleteWithPassword(`确认删除角色「${labelOf(row, 'name')}」？该角色下的管理员会与它解绑，操作不可撤销。`),
+    deleteWithPassword(t('role.delete_confirm', { name: labelOf(row, 'name') })),
   // permission_ids 走 hashid：RoleController::decodePermissionIds 逐个 decodeId（非法即 400，
   // 不落半截关联），index 也回传 hashid 形式的 permission_ids 供编辑态回填。
   // 编辑时 buildPayload 只发改动过的字段 ⇒ 不碰权限的那次保存不会触发 sync（sync 是整表替换）。
@@ -566,38 +563,38 @@ export const ROLE_CRUD: CrudConfig = {
 /* ---------------------------------- 权限 ---------------------------------- */
 
 const PERMISSION_FIELDS: Field[] = [
-  { name: 'name', label: '权限名称', type: 'text', required: true, placeholder: '最长 50 字' },
-  { name: 'slug', label: '权限标识', type: 'text', required: true, placeholder: '如 get.admin/user，最长 100 字' },
+  { name: 'name', label: 'f.permission_name', type: 'text', required: true, placeholder: 'f.max_50_characters' },
+  { name: 'slug', label: 'f.permission_slug', type: 'text', required: true, placeholder: 'f.e_g_get_admin_user' },
   {
     name: 'type',
-    label: '类型',
+    label: 'f.type',
     type: 'select',
     required: true,
     options: [
-      { value: '1', label: '1 菜单' },
-      { value: '2', label: '2 按钮' },
-      { value: '3', label: '3 接口' },
+      { value: '1', label: 'f.n_1_menu' },
+      { value: '2', label: 'f.n_2_button' },
+      { value: '3', label: 'f.n_3_api' },
     ],
-    hint: '列注释：1=菜单 2=按钮 3=API 接口；icon/path 仅菜单用',
+    hint: 'f.column_comment_1_menu_2',
   },
   {
     name: 'parent_id',
-    label: '父权限',
+    label: 'f.parent_permission',
     type: 'select',
     default: '0',
     // 值域 = 权限树 + 根节点。PermissionController::store 的 decodeParentId 收 hashid（'0'/空 = 根），
     // buildTree 回传的 parent_id 也是 hashid，故这里与列表里的父名是同一套标识。
-    options: async () => [{ value: '0', label: '根节点（无父级）' }, ...(await permissionOptions())],
-    hint: '仅新建时可选：update 不收 parent_id（换父级要先防环，属另一件事），建好后在列表里用「父权限」列看归属',
+    options: async () => [{ value: '0', label: 'f.root_node_no_parent' }, ...(await permissionOptions())],
+    hint: 'f.only_selectable_on_create_update',
   },
-  { name: 'icon', label: '图标', type: 'text', placeholder: '最长 50 字' },
-  { name: 'path', label: '前端路由', type: 'text', placeholder: '如 /games，最长 255 字' },
-  { name: 'sort', label: '排序', type: 'number', placeholder: '≥ 0，越小越靠前' },
+  { name: 'icon', label: 'f.icon', type: 'text', placeholder: 'f.max_50_characters' },
+  { name: 'path', label: 'f.frontend_route', type: 'text', placeholder: 'f.e_g_games_max_255' },
+  { name: 'sort', label: 'f.sort_order', type: 'number', placeholder: 'f.n_0_smaller_values_sort_first' },
 ];
 
 export const PERMISSION_CRUD: CrudConfig = {
   base: '/admin/v1/permission',
-  noun: '权限',
+  noun: 'f.permissions',
   // Route::resource：列表/新建都在 /permission 本身
   createPath: '/admin/v1/permission',
   fields: PERMISSION_FIELDS,
@@ -606,13 +603,13 @@ export const PERMISSION_CRUD: CrudConfig = {
   editFields: locked(
     PERMISSION_FIELDS.filter((field) => field.name !== 'parent_id'),
     ['slug', 'type'],
-    '创建后不可改（update 不收这个字段）',
+    'f.cannot_be_changed_after_creation',
   ),
   labelKey: 'name',
   // 删除要管理员密码，且后端会级联删子权限、把该权限从所有角色上解绑 —— 确认文案必须说清
   deleteBody: (row) =>
     deleteWithPassword(
-      `确认删除权限「${labelOf(row, 'name')}」？其所有子权限会一并删除，该权限也会从所有角色上解绑。`,
+      t('permission.delete_confirm', { name: labelOf(row, 'name') }),
     ),
 };
 
@@ -620,39 +617,39 @@ export const PERMISSION_CRUD: CrudConfig = {
 
 export const TICKET_CRUD: CrudConfig = {
   base: '/admin/v1/ticket',
-  noun: '工单',
+  noun: 'f.tickets',
   // 动作型：后端只有 list/detail + reply/close/assign 三个状态变更，没有增/改/删
   actions: [
     {
-      label: '回复',
-      title: '回复工单',
+      label: 'f.reply',
+      title: 'f.reply_to_ticket',
       path: (id) => `/admin/v1/ticket/${id}/reply`,
       fields: [
         {
           name: 'content',
-          label: '回复内容',
+          label: 'f.reply_content',
           type: 'textarea',
           required: true,
-          hint: '以管理员身份追加一条回复，并把工单状态置为 replied；工单已 closed 时后端拒绝（422）',
+          hint: 'f.appends_a_reply_as_the',
         },
       ],
     },
     {
-      label: '关闭',
+      label: 'f.close',
       path: (id) => `/admin/v1/ticket/${id}/close`,
-      confirm: (row) => `确认关闭工单「${labelOf(row, 'subject')}」？关闭后不能再回复。`,
+      confirm: (row) => t('ticket.close_confirm', { name: labelOf(row, 'subject') }),
     },
     {
-      label: '指派',
-      title: '指派受理人',
+      label: 'f.assign',
+      title: 'f.assign_handler',
       path: (id) => `/admin/v1/ticket/${id}/assign`,
       fields: [
         {
           name: 'admin_id',
-          label: '受理管理员 ID',
+          label: 'f.handler_admin_id',
           type: 'number',
           required: true,
-          hint: '管理员在库里的数值 ID，不是列表里的 hashid：后端走 (int) 强转，填 hashid 会被截成 0 或某个不相干的小数字（指派给错人）；0 = 取消指派',
+          hint: 'f.the_admin_s_numeric_id',
         },
       ],
     },
@@ -674,8 +671,8 @@ const orderLabel = (row: Row): string => {
 const orderMoney = (row: Row): string => {
   const currency = String(row.currency ?? '').trim();
   const fiat = String(row.fiat_amount ?? '').trim();
-  const fiatText = fiat === '' || fiat === '0.0000' ? '' : `，到账 ${fiat}${currency === '' ? '' : ` ${currency}`}`;
-  return `${String(row.platform_amount ?? '—')} 平台币${fiatText}`;
+  const fiatText = fiat === '' || fiat === '0.0000' ? '' : t('funds.amount_arrival', { fiat, currency: currency === '' ? '' : ` ${currency}` });
+  return t('funds.platform_coin', { amount: String(row.platform_amount ?? '—'), fiat: fiatText });
 };
 
 const orderStatus = (row: Row): string => String(row.status ?? '');
@@ -683,9 +680,9 @@ const orderStatus = (row: Row): string => String(row.status ?? '');
 /** 审核备注（review / confirm / reject 共用同一个字段：后端都是 $request->input('note')）。 */
 const REVIEW_NOTE: Field = {
   name: 'note',
-  label: '审核备注',
+  label: 'f.order_review_note',
   type: 'textarea',
-  hint: '写进订单的 review_note（最长 500 字）；驳回时该备注会出现在给用户的退款流水说明里',
+  hint: 'f.written_into_the_order_s',
 };
 
 /**
@@ -700,34 +697,33 @@ const REVIEW_NOTE: Field = {
  */
 export const WITHDRAW_ORDER_CRUD: CrudConfig = {
   base: '/admin/v1/withdraw',
-  noun: '提现订单',
+  noun: 'f.withdraw_orders',
   actions: [
     {
-      label: '通过',
+      label: 'f.approve',
       path: () => '/admin/v1/withdraw/review',
       method: 'PUT',
       body: (id) => ({ order_id: id, action: 'approve' }),
       fields: [REVIEW_NOTE],
       // reviewer_id 已有值 = 已被第一审核人处理过（双审），再点通过必然 422
       when: (row) => orderStatus(row) === 'pending' && Number(row.reviewer_id ?? 0) <= 0,
-      confirm: (row) => `确认通过订单「${orderLabel(row)}」（${orderMoney(row)}）？通过后该笔即可执行打款。`,
+      confirm: (row) => t('funds.approve_confirm', { name: orderLabel(row), money: orderMoney(row) }),
       report: true,
     },
     {
-      label: '驳回',
-      title: '驳回提现',
+      label: 'f.reject',
+      title: 'f.reject_withdraw',
       path: () => '/admin/v1/withdraw/review',
       method: 'PUT',
       body: (id) => ({ order_id: id, action: 'reject' }),
       fields: [REVIEW_NOTE],
       when: (row) => orderStatus(row) === 'pending',
-      confirm: (row) =>
-        `确认驳回订单「${orderLabel(row)}」（${orderMoney(row)}）？驳回会立即把这笔平台币退回用户余额并记一条退款流水，不可撤销。`,
+      confirm: (row) => t('funds.reject_confirm', { name: orderLabel(row), money: orderMoney(row) }),
       report: true,
     },
     {
-      label: '二次确认',
-      title: '二次确认（双审平台）',
+      label: 'f.second_confirmation',
+      title: 'f.second_confirmation_dual_approval_platform',
       path: () => '/admin/v1/withdraw/review',
       method: 'PUT',
       body: (id) => ({ order_id: id, action: 'confirm' }),
@@ -735,30 +731,29 @@ export const WITHDRAW_ORDER_CRUD: CrudConfig = {
       // 只有「已被第一审核人处理过、还停在 pending」的订单才谈得上二次确认；
       // 单审平台不出现此按钮（点了必然 422「双重审核未启用」）
       when: (row) => orderStatus(row) === 'pending' && Number(row.reviewer_id ?? 0) > 0,
-      confirm: (row) => `确认对订单「${orderLabel(row)}」（${orderMoney(row)}）做二次确认？确认后该笔即可执行打款。`,
+      confirm: (row) => t('funds.second_confirm', { name: orderLabel(row), money: orderMoney(row) }),
       report: true,
     },
     {
-      label: '执行打款',
+      label: 'f.execute_payout',
       path: () => '/admin/v1/withdraw/execute-payout',
       body: (id) => ({ order_id: id }),
       when: (row) => orderStatus(row) === 'approved',
       // 真正出钱的一步：文案必须带订单标识与金额，且不可逆（失败会退回 approved 允许重试）
-      confirm: (row) =>
-        `确认对订单「${orderLabel(row)}」（${orderMoney(row)}）执行 PayPal 打款？这是真实出款，不可撤销。`,
+      confirm: (row) => t('funds.payout_confirm', { name: orderLabel(row), money: orderMoney(row) }),
       report: true,
     },
     {
-      label: '同步打款',
+      label: 'f.sync_payout',
       path: () => '/admin/v1/withdraw/sync-payout',
       body: (id) => ({ order_id: id }),
       // 没有批次号 = 还没提交给 PayPal，后端会 422「该订单尚未执行打款」
       when: (row) => String(row.payout_batch_id ?? '').trim() !== '',
-      confirm: (row) => `从 PayPal 同步订单「${orderLabel(row)}」的打款状态？只读不改钱。`,
+      confirm: (row) => t('funds.sync_confirm', { name: orderLabel(row) }),
       // 该端点 message 是占位符 "success"，有用的是 data 里的三个状态
       report: (envelope) => {
         const data = (envelope.data ?? {}) as Row;
-        return `打款状态 ${data.payout_status ?? '—'}，订单状态 ${data.order_status ?? '—'}（PayPal 批次状态 ${data.synced_status ?? '—'}）`;
+        return t('funds.sync_report', { payout: String(data.payout_status ?? '—'), order: String(data.order_status ?? '—'), batch: String(data.synced_status ?? '—') });
       },
     },
   ],
@@ -778,27 +773,27 @@ export const WITHDRAW_ORDER_CRUD: CrudConfig = {
 const LIMIT_FIELDS: Field[] = [
   {
     name: 'user_level',
-    label: '档位',
+    label: 'f.tier',
     type: 'text',
     readOnly: true,
-    hint: 'default / verified / vip —— 档位是库里的预置行，只能改，不能新建或删除',
+    hint: 'f.default_verified_vip_tiers_are',
   },
-  { name: 'single_min', label: '单笔最低', type: 'text', hint: '如 1.0000；不得高于本档单笔最高' },
-  { name: 'single_max', label: '单笔最高', type: 'text', hint: '如 1000.0000；0 = 不限（此时不与单笔最低比较）' },
-  { name: 'daily_limit', label: '每日限额', type: 'text' },
-  { name: 'monthly_limit', label: '每月限额', type: 'text' },
+  { name: 'single_min', label: 'f.minimum_per_transaction', type: 'text', hint: 'f.e_g_1_0000_must' },
+  { name: 'single_max', label: 'f.maximum_per_transaction', type: 'text', hint: 'f.e_g_1000_0000_0' },
+  { name: 'daily_limit', label: 'f.daily_limit', type: 'text' },
+  { name: 'monthly_limit', label: 'f.monthly_limit', type: 'text' },
   {
     name: 'fee_pct',
-    label: '手续费率（%）',
+    label: 'f.fee_rate',
     type: 'text',
-    hint: '必须小于 100：等于 100 会把实收吃成 0，服务端直接拒绝（≥100 也是）',
+    hint: 'f.must_be_less_than_100',
   },
-  { name: 'fee_max', label: '手续费上限', type: 'text', hint: '0 = 不封顶' },
+  { name: 'fee_max', label: 'f.fee_cap', type: 'text', hint: 'f.n_0_no_cap' },
   {
     name: 'auto_approve_threshold',
-    label: '自动审核阈值',
+    label: 'f.auto_review_threshold',
     type: 'text',
-    hint: '平台币金额：订单金额**小于**它、且风控与双审都放行时才免审通过（不是「一定自动过」）；0 = 不自动',
+    hint: 'f.a_platform_coin_amount_an',
   },
 ];
 
@@ -808,7 +803,7 @@ const LIMIT_FIELDS: Field[] = [
  */
 export const WITHDRAW_LIMIT_CRUD: CrudConfig = {
   base: '/admin/v1/withdraw/limits',
-  noun: '限额档位',
+  noun: 'f.withdraw_tiers',
   createPath: null,
   fields: LIMIT_FIELDS,
 };
@@ -835,47 +830,47 @@ const PAYMENT_PROVIDERS: FieldOption[] = [
   'toss',
   'adyen',
   'grabpay',
-].map((value) => ({ value, label: value }));
+].map((value): FieldOption => ({ value }));
 
 const PAYMENT_FIELDS: Field[] = [
-  { name: 'name', label: '名称', type: 'text', required: true, placeholder: '如 USDT (TRC20)，最长 50 字' },
+  { name: 'name', label: 'f.name', type: 'text', required: true, placeholder: 'f.e_g_usdt_trc20_max' },
   {
     name: 'type',
-    label: '类型',
+    label: 'f.type',
     type: 'select',
     required: true,
     options: [
-      { value: 'fiat', label: 'fiat 法币' },
-      { value: 'crypto', label: 'crypto 加密货币' },
+      { value: 'fiat', label: 'f.fiat' },
+      { value: 'crypto', label: 'f.crypto' },
     ],
   },
-  { name: 'provider', label: '提供商', type: 'select', required: true, options: PAYMENT_PROVIDERS, hint: '决定实际走哪个支付网关' },
+  { name: 'provider', label: 'f.provider', type: 'select', required: true, options: PAYMENT_PROVIDERS, hint: 'f.determines_which_payment_gateway_is' },
   // create 的 validator 里 status 是必填（没有 input() 缺省值），故开关一定会上送；
   // 初值取库列默认值 0（禁用）：配置没核过就不该对用户可见，配好再在列表里点启用
-  { name: 'status', label: '启用', type: 'switch', default: '0' },
-  { name: 'sort', label: '排序', type: 'number', placeholder: '≥ 0，越小越靠前' },
+  { name: 'status', label: 'f.enabled', type: 'switch', default: '0' },
+  { name: 'sort', label: 'f.sort_order', type: 'number', placeholder: 'f.n_0_smaller_values_sort_first' },
   {
     name: 'countries',
-    label: '可见国家',
+    label: 'f.visible_countries',
     type: 'lines',
-    placeholder: '每行一个，如\nCN\nUS',
-    hint: 'ISO 3166-1 alpha-2，每行一个（最长 2 位）；留空 = 全球可见',
+    placeholder: 'f.one_per_line_e_g',
+    hint: 'f.iso_3166_1_alpha_2',
   },
-  { name: 'currency', label: '限定币种', type: 'text', placeholder: '如 USD，最长 10；留空 = 任意币种' },
-  { name: 'min_amount', label: '最小金额', type: 'text', hint: '订单币种的十进制金额，如 1.0000；0 = 不限' },
-  { name: 'max_amount', label: '最大金额', type: 'text', hint: '0 = 不限；不得小于最小金额' },
+  { name: 'currency', label: 'f.restricted_currencies', type: 'text', placeholder: 'f.e_g_usd_max_10' },
+  { name: 'min_amount', label: 'f.minimum_amount', type: 'text', hint: 'f.a_decimal_amount_in_the' },
+  { name: 'max_amount', label: 'f.maximum_amount', type: 'text', hint: 'f.n_0_unlimited_must_not_be' },
   {
     name: 'config',
-    label: '支付配置',
+    label: 'f.payment_config',
     type: 'textarea',
-    placeholder: '{"network":"TRC20"}',
-    hint: '网关参数 JSON 文本，加密存储；列表回显的是解密后的原文，编辑时不动它就保持不变（留空 = 不修改）',
+    placeholder: raw('{"network":"TRC20"}'),
+    hint: 'f.gateway_parameter_json_text_stored',
   },
 ];
 
 export const PAYMENT_CRUD: CrudConfig = {
   base: '/admin/v1/payment/method',
-  noun: '支付方式',
+  noun: 'f.payment_methods',
   createPath: '/admin/v1/payment/method/create',
   fields: PAYMENT_FIELDS,
   labelKey: 'name',
@@ -886,48 +881,48 @@ export const PAYMENT_CRUD: CrudConfig = {
 /* --------------------------------- 优惠券 --------------------------------- */
 
 const COUPON_FIELDS: Field[] = [
-  { name: 'name', label: '名称', type: 'text', required: true, placeholder: '最长 100 字' },
+  { name: 'name', label: 'f.name', type: 'text', required: true, placeholder: 'f.max_100_characters' },
   {
     name: 'type',
-    label: '类型',
+    label: 'f.type',
     type: 'select',
     required: true,
     options: [
-      { value: 'fixed', label: 'fixed 固定金额' },
-      { value: 'rate', label: 'rate 比例折扣' },
+      { value: 'fixed', label: 'f.fixed_fixed_amount' },
+      { value: 'rate', label: 'f.rate_percentage_discount' },
     ],
   },
   {
     name: 'value',
-    label: '面值 / 折扣率',
+    label: 'f.face_value_discount_rate',
     type: 'text',
     required: true,
-    hint: 'fixed = 平台币金额（如 10）；rate = 折扣率（0.10 = 9 折）。须大于 0，十进制字符串',
+    hint: 'f.fixed_platform_coin_amount_e',
   },
-  { name: 'min_amount', label: '最低使用金额', type: 'text', hint: '平台币金额；留空 = 0（无门槛）' },
-  { name: 'max_discount', label: '最高优惠金额', type: 'text', hint: '仅 rate 类型用；留空 = 0' },
+  { name: 'min_amount', label: 'f.minimum_spend', type: 'text', hint: 'f.a_platform_coin_amount_empty' },
+  { name: 'max_discount', label: 'f.maximum_discount', type: 'text', hint: 'f.only_used_by_the_rate' },
   {
     name: 'game_id',
-    label: '适用游戏',
+    label: 'f.applicable_game',
     type: 'text',
-    placeholder: '游戏 hashid',
-    hint: '取自游戏列表的 id 列；留空 = 全平台通用（存 0）',
+    placeholder: 'f.game_hashid',
+    hint: 'f.picked_from_the_games_list',
   },
-  { name: 'total_qty', label: '发行总量', type: 'number', hint: '0 = 不限量' },
-  { name: 'user_limit', label: '每人限领', type: 'number', hint: '≥ 1；留空由后端取 1' },
+  { name: 'total_qty', label: 'f.total_issuance', type: 'number', hint: 'f.n_0_unlimited' },
+  { name: 'user_limit', label: 'f.per_user_limit', type: 'number', hint: 'f.n_1_empty_makes_the_backend' },
   {
     name: 'start_at',
-    label: '开始时间',
+    label: 'f.start_time',
     type: 'text',
-    placeholder: '2026-01-01 00:00:00',
-    hint: '日期时间串；留空 = 不限起始（create 不做日期校验，格式写错会撞库报错）',
+    placeholder: raw('2026-01-01 00:00:00'),
+    hint: 'f.a_date_time_string_empty',
   },
-  { name: 'end_at', label: '结束时间', type: 'text', placeholder: '2026-01-01 00:00:00', hint: '编辑时须 ≥ 开始时间' },
+  { name: 'end_at', label: 'f.end_time', type: 'text', placeholder: raw('2026-01-01 00:00:00'), hint: 'f.must_be_the_start_time' },
 ];
 
 export const COUPON_CRUD: CrudConfig = {
   base: '/admin/v1/coupon',
-  noun: '优惠券',
+  noun: 'f.coupons',
   createPath: '/admin/v1/coupon/create',
   fields: COUPON_FIELDS,
   // create 把 status 硬编码成 1（已启用）⇒ 开关只出现在编辑表单里。
@@ -935,63 +930,63 @@ export const COUPON_CRUD: CrudConfig = {
   // 表单里摆一个能输入的框等于骗人；它是 C 端 claim 的准入条件（conditions.game_id 等），只由直写库设置。
   editFields: [
     ...COUPON_FIELDS,
-    { name: 'status', label: '启用', type: 'switch', default: '1' },
+    { name: 'status', label: 'f.enabled', type: 'switch', default: '1' },
     {
       name: 'conditions',
-      label: '使用条件（只读）',
+      label: 'f.eligibility_read_only',
       type: 'json',
       readOnly: true,
-      hint: 'C 端领取时的准入条件（如 {"game_id": …}）；后端 create/update 都不收这个字段，只能在库里改',
+      hint: 'f.the_eligibility_rule_applied_when',
     },
   ],
   labelKey: 'name',
   // 没有单条详情端点（GET /coupon/{hashid} 不存在），只有 stats ⇒ 只读视图（不是 detailBase，那会 404）
-  views: [{ label: '统计', title: '优惠券统计', path: (id) => `/admin/v1/coupon/${id}/stats` }],
+  views: [{ label: 'f.statistics', title: 'f.coupon_statistics', path: (id) => `/admin/v1/coupon/${id}/stats` }],
   // 「已有用户领取」时后端拒绝编辑（400），message 原样显示；「删除会连带删掉所有领取记录」后端不拦
 };
 
 /* -------------------------------- CDN 厂商 -------------------------------- */
 
 const CDN_FIELDS: Field[] = [
-  { name: 'name', label: '显示名称', type: 'text', required: true, placeholder: '最长 50 字' },
+  { name: 'name', label: 'f.display_name', type: 'text', required: true, placeholder: 'f.max_50_characters' },
   {
     name: 'provider',
-    label: '厂商',
+    label: 'f.vendor',
     type: 'select',
     required: true,
     options: [
-      { value: 'cloudflare', label: 'cloudflare' },
-      { value: 'cloudfront', label: 'cloudfront' },
-      { value: 'aliyun', label: 'aliyun' },
-      { value: 'tencent', label: 'tencent' },
-      { value: 'huawei', label: 'huawei' },
+      { value: 'cloudflare' },
+      { value: 'cloudfront' },
+      { value: 'aliyun' },
+      { value: 'tencent' },
+      { value: 'huawei' },
     ],
-    hint: '厂商是唯一键：同一厂商只能有一条配置',
+    hint: 'f.the_vendor_is_the_unique',
   },
   {
     name: 'config',
-    label: '配置（JSON）',
+    label: 'f.config_json',
     type: 'json',
-    placeholder: '{"bucket":"static","domain":"cdn.example.com"}',
-    hint: '凭据/桶/域名，加密存储；列表**不回传** config ⇒ 编辑时留空 = 保持原凭据不变（服务端也只在校验通过且非空时才覆盖）',
+    placeholder: raw('{"bucket":"static","domain":"cdn.example.com"}'),
+    hint: 'f.credentials_bucket_domain_stored_encrypted',
   },
   // create 必填 status（无 input() 缺省值）；初值取库列默认值 1 但种子行都是停用 —— 给 0，
   // 新建即对外服务太危险，连通测试通过后再启用
-  { name: 'status', label: '启用', type: 'switch', default: '0' },
-  { name: 'sort', label: '排序', type: 'number', placeholder: '≥ 0，越小越靠前' },
+  { name: 'status', label: 'f.enabled', type: 'switch', default: '0' },
+  { name: 'sort', label: 'f.sort_order', type: 'number', placeholder: 'f.n_0_smaller_values_sort_first' },
 ];
 
 export const CDN_CRUD: CrudConfig = {
   base: '/admin/v1/cdn/provider',
-  noun: 'CDN 厂商',
+  noun: 'f.cdn_vendors',
   createPath: '/admin/v1/cdn/provider/create',
   fields: CDN_FIELDS,
   labelKey: 'name',
   toggle: '/admin/v1/cdn/provider/toggle',
   actions: [
     {
-      label: '连通测试',
-      title: '连通测试',
+      label: 'f.connectivity_test',
+      title: 'f.connectivity_test',
       path: () => '/admin/v1/cdn/provider/test',
       body: (id) => ({ id }),
       // 结果就地显示：成功是「连通正常」，失败是探测抛出的原话（如凭据无效），不吞
@@ -1012,58 +1007,47 @@ const RULE_TYPES: FieldOption[] = [
   'ip_reputation',
   'device_account_graph',
   'withdraw_pattern',
-].map((value) => ({ value, label: value }));
+].map((value): FieldOption => ({ value }));
 
 /**
  * config 的键随 type 变，白名单在服务端（RiskRuleController::CONFIG_KEYS 与 INT_BOUNDS）。
  * 静态把每个 type 的键与值域列全 —— 前端**不再实现一套校验**（服务端是唯一真值，多一套必然漂移），
  * 这里只负责让运营知道该写哪些键、边界在哪。写错键名服务端会明确拒绝（不会静默忽略）。
  */
-const RULE_CONFIG_HINT =
-  'JSON 对象，键必须属于所选 type 的白名单（服务端逐键校验）。' +
-  'ip_blacklist: blacklist（IP 原文的字符串数组）；' +
-  'amount_anomaly: min_amount（金额，必须大于 0）、currency（≤10 字符）；' +
-  'frequency: window_minutes（1..10080 分钟）、max_count（1..100000）；' +
-  'velocity: window_minutes（1..10080）、max_accounts（1..100000）、same_ip（true/false）；' +
-  'device_fingerprint: max_accounts_per_device（1..100000）、new_device_lookback_hours（1..8760）、new_device_withdraw_block（true/false）；' +
-  'ip_reputation: block_score_below（0..100）、warn_score_below（0..100）、block_unknown（true/false）；' +
-  'device_account_graph: cluster_threshold（1..100000）、max_accounts_per_device（1..100000）、frozen_sibling_block（true/false）；' +
-  'withdraw_pattern: window_minutes（1..10080）、max_applies（1..100000）、single_hard_cap（金额，必须大于 0）、drain_ratio（比率，落在 (0, 1]）、sigma_window_days（2..3650）、sigma_multiplier（1..100）、fast_interval_seconds（1..86400）、fast_interval_min_count（1..100000）。' +
-  '布尔键必须写真正的 true/false（写成字符串服务端直接拒绝：它按 (bool) 读，字符串 "false" 恒为真）。' +
-  '阈值不能填 0 的键一律有下界 —— 取 0 会让规则恒命中且 action=block 时连充值一起停。';
+const RULE_CONFIG_HINT: MessageKey = 'f.rule_config_keys_and_bounds';
 
 const RISK_RULE_FIELDS: Field[] = [
-  { name: 'name', label: '规则名称', type: 'text', required: true, placeholder: '最长 100 字' },
-  { name: 'type', label: '规则类型', type: 'select', required: true, options: RULE_TYPES, hint: '决定 config 收哪些键；评估器按类型注册，改类型等于换一套配置' },
+  { name: 'name', label: 'f.rule_name', type: 'text', required: true, placeholder: 'f.max_100_characters' },
+  { name: 'type', label: 'f.rule_type', type: 'select', required: true, options: RULE_TYPES, hint: 'f.determines_which_keys_config_accepts' },
   {
     name: 'action',
-    label: '命中动作',
+    label: 'f.hit_action',
     type: 'select',
     required: true,
     options: [
-      { value: 'log', label: 'log 仅记录' },
-      { value: 'warn', label: 'warn 警告' },
-      { value: 'block', label: 'block 阻断' },
+      { value: 'log', label: 'f.log_record_only' },
+      { value: 'warn', label: 'f.warn' },
+      { value: 'block', label: 'f.block' },
     ],
-    hint: 'block 是真的拦：命中后 severity=high 保留本规则动作，充值/提现/兑换/登录共用这条路径',
+    hint: 'f.block_really_blocks_on_a',
   },
   {
     name: 'scope',
-    label: '生效范围',
+    label: 'f.scope',
     type: 'select',
     default: 'all',
     options: [
-      { value: 'all', label: 'all 全环节' },
-      { value: 'deposit', label: 'deposit 充值' },
-      { value: 'withdraw', label: 'withdraw 提现' },
-      { value: 'exchange', label: 'exchange 兑换' },
-      { value: 'login', label: 'login 登录' },
+      { value: 'all', label: 'f.all' },
+      { value: 'deposit', label: 'f.deposit' },
+      { value: 'withdraw', label: 'f.withdraw' },
+      { value: 'exchange', label: 'f.exchange' },
+      { value: 'login', label: 'f.login' },
     ],
-    hint: '缺省 all = 四类检查都走这条规则',
+    hint: 'f.default_all_all_four_check',
   },
-  { name: 'config', label: '规则配置（JSON）', type: 'json', required: true, default: '{}', placeholder: '{"window_minutes": 60, "max_count": 5}', hint: RULE_CONFIG_HINT },
-  { name: 'priority', label: '优先级', type: 'number', default: '100', hint: '0..1000，越大越先评估（越界会被服务端夹到区间内）' },
-  { name: 'status', label: '启用', type: 'switch', default: '1', hint: '停用后不再参与评估（getEnabled 只取 status=1）' },
+  { name: 'config', label: 'f.rule_config_json', type: 'json', required: true, default: '{}', placeholder: raw('{"window_minutes": 60, "max_count": 5}'), hint: RULE_CONFIG_HINT },
+  { name: 'priority', label: 'f.priority', type: 'number', default: '100', hint: 'f.n_0_1000_larger_evaluates_first' },
+  { name: 'status', label: 'f.enabled', type: 'switch', default: '1', hint: 'f.once_disabled_it_no_longer' },
 ];
 
 /**
@@ -1074,51 +1058,56 @@ const RISK_RULE_FIELDS: Field[] = [
  */
 export const RISK_RULE_CRUD: CrudConfig = {
   base: '/admin/v1/risk/rule',
-  noun: '风控规则',
+  noun: 'f.risk_rules',
   fields: RISK_RULE_FIELDS,
   fullEdit: true,
   toggle: (id) => ({ path: `/admin/v1/risk/rule/${id}/toggle` }),
   actions: [
     {
-      label: '试算',
-      title: '沙箱试算（只读：不写库、不落日志、不触发处置）',
+      label: 'f.dry_run',
+      title: 'f.sandbox_dry_run_read_only',
       path: () => '/admin/v1/risk/rule/test',
       body: (id) => ({ rule_id: id }),
       fields: [
         {
           name: 'user_id',
-          label: '用户 hashid',
+          label: 'f.user_hashid',
           type: 'text',
           required: true,
-          hint: '取自用户列表的 user_id 列；必填 —— 服务端要 decode 它，留空/非法会被 400 挡下',
+          hint: 'f.taken_from_the_user_id',
         },
         {
           name: 'check_type',
-          label: '检查环节',
+          label: 'f.check_stage',
           type: 'select',
           required: true,
           default: 'login',
           options: [
-            { value: 'login', label: 'login 登录' },
-            { value: 'deposit', label: 'deposit 充值' },
-            { value: 'withdraw', label: 'withdraw 提现' },
-            { value: 'exchange', label: 'exchange 兑换' },
+            { value: 'login', label: 'f.login' },
+            { value: 'deposit', label: 'f.deposit' },
+            { value: 'withdraw', label: 'f.withdraw' },
+            { value: 'exchange', label: 'f.exchange' },
           ],
-          hint: 'frequency 类规则按环节查库（充值看已确认单、提现看非取消单、兑换看兑换记录，其余按 risk_log 计数）',
+          hint: 'f.frequency_type_rules_query_per',
         },
         {
           name: 'context',
-          label: '上下文（JSON 对象）',
+          label: 'f.context_json_object',
           type: 'jsonobj',
-          placeholder: '{"ip": "1.2.3.4", "user_agent": "Mozilla/5.0", "amount": "5000"}',
-          hint: '评估器读 ip / user_agent / amount / fp_hash 四个键；留空 = 空上下文。必须是 JSON **对象**（传字符串服务端会当成没传、静默按空上下文评估）',
+          placeholder: raw('{"ip": "1.2.3.4", "user_agent": "Mozilla/5.0", "amount": "5000"}'),
+          hint: 'f.the_evaluator_reads_the_four',
         },
       ],
       // 结果全在 data 里（信封 message 恒为 "success"）：只显示 message 等于把试算结果抹掉
       report: (envelope) => {
         const data = (envelope.data ?? {}) as Row;
-        const verdict = data.matched === true ? '命中' : '未命中';
-        return `试算${verdict}（severity ${String(data.severity ?? '—')}，本规则处置 ${String(data.action ?? '—')}）：${String(data.message ?? '')}`;
+        const verdict = t(data.matched === true ? 'f.hit' : 'f.no_hit');
+        return t('risk.dry_run_report', {
+          verdict,
+          severity: String(data.severity ?? '—'),
+          action: String(data.action ?? '—'),
+          message: String(data.message ?? ''),
+        });
       },
     },
   ],
@@ -1128,9 +1117,9 @@ export const RISK_RULE_CRUD: CrudConfig = {
 
 const EVENT_NOTE: Field = {
   name: 'note',
-  label: '处置备注',
+  label: 'f.action_note',
   type: 'textarea',
-  hint: '写进操作审计的请求参数（最长 500 字，超出会被截断）',
+  hint: 'f.a_request_parameter_written_into',
 };
 
 /** 事件标识：规则名 + 类型（列表里就摆着这两列）。 */
@@ -1145,25 +1134,25 @@ const eventLabel = (row: Row): string => `${labelOf(row, 'rule_name')}（${Strin
  */
 export const RISK_EVENT_CRUD: CrudConfig = {
   base: '/admin/v1/risk/event',
-  noun: '风控事件',
+  noun: 'f.risk_events',
   actions: [
     {
-      label: '确认命中',
+      label: 'f.confirm_hit',
       path: (id) => `/admin/v1/risk/event/${id}/handle`,
       body: () => ({ decision: 'approve' }),
       fields: [EVENT_NOTE],
-      confirm: (row) => `确认事件「${eventLabel(row)}」的命中判定正确？处置只记入操作审计，不改事件数据。`,
+      confirm: (row) => t('risk.confirm_hit_confirm', { name: eventLabel(row) }),
       report: (envelope) => String(((envelope.data ?? {}) as Row).message ?? envelope.message),
     },
     {
-      label: '判为误报',
-      title: '判为误报',
+      label: 'f.mark_as_false_positive',
+      title: 'f.mark_as_false_positive',
       path: (id) => `/admin/v1/risk/event/${id}/handle`,
       body: () => ({ decision: 'reject' }),
       fields: [EVENT_NOTE],
       // 误报率的口径是 result=manual_review（见 RiskDashboardController::rulePerformance），
       // 而 handle 不写 result ⇒ 判误报不会改变面板上的误判率，文案必须说清，别让人以为改了模型
-      confirm: (row) => `确认把事件「${eventLabel(row)}」判为误报？该动作只记入操作审计，不改事件数据、也不改风控面板的误判率。`,
+      confirm: (row) => t('risk.false_positive_confirm', { name: eventLabel(row) }),
       report: (envelope) => String(((envelope.data ?? {}) as Row).message ?? envelope.message),
     },
   ],
@@ -1181,54 +1170,54 @@ const riskUserLabel = (row: Row): string => labelOf(row, 'username');
  */
 export const RISK_USER_CRUD: CrudConfig = {
   base: '/admin/v1/risk/users',
-  noun: '风险用户',
+  noun: 'f.risk_users',
   rowKey: 'user_id',
   actions: [
     {
-      label: '冻结',
-      title: '冻结平台币余额（全额）',
+      label: 'f.freeze',
+      title: 'f.freeze_platform_coin_balance_full',
       path: (id) => `/admin/v1/risk/users/${id}/hold`,
       // 无 body：服务端自己读余额并全额冻结（M1 WalletService::lock，写 risk_log 留痕）
       confirm: (row) =>
-        `确认冻结用户「${riskUserLabel(row)}」的平台币余额？服务端按当前可用余额**全额**冻结（金额在结果里显示），冻结后需人工解冻才能动用。`,
+        t('risk.freeze_confirm', { name: riskUserLabel(row) }),
       report: (envelope) => {
         const data = (envelope.data ?? {}) as Row;
-        return `已全额冻结 ${String(data.frozen_amount ?? '—')} 平台币（用户 ${String(data.user_id ?? '—')}）`;
+        return t('risk.freeze_report', { amount: String(data.frozen_amount ?? '—'), user: String(data.user_id ?? '—') });
       },
     },
     {
-      label: '解冻',
-      title: '解除冻结',
+      label: 'f.unfreeze',
+      title: 'f.release_freeze',
       path: (id) => `/admin/v1/risk/users/${id}/release`,
       fields: [
         {
           name: 'amount',
-          label: '解冻金额',
+          label: 'f.unfreeze_amount',
           // 金额一律 text：DECIMAL 字符串原样进出，前端连 Number() 都不碰（仓库铁律）
           type: 'text',
-          placeholder: '留空 = 全额解冻',
-          hint: '十进制字符串（如 10.00000000），原样上送、前端不做任何换算；留空按当前冻结余额全额释放。释放量与冻结台账逐笔对账，超过冻结额会被服务端拒绝',
+          placeholder: 'f.empty_unfreeze_everything',
+          hint: 'f.a_decimal_string_e_g',
         },
       ],
       confirm: (row) =>
-        `确认解冻用户「${riskUserLabel(row)}」的冻结余额？留空即全额解冻。解冻是 frozen→available 的纯搬移，不铸币。`,
+        t('risk.release_confirm', { name: riskUserLabel(row) }),
       report: (envelope) => {
         const data = (envelope.data ?? {}) as Row;
-        return `已解冻 ${String(data.released_amount ?? '—')} 平台币（用户 ${String(data.user_id ?? '—')}）`;
+        return t('risk.release_report', { amount: String(data.released_amount ?? '—'), user: String(data.user_id ?? '—') });
       },
     },
   ],
   // 只读视图：合并 risk_log / play_log / anticheat_event 的时间线（没有单条详情端点，不用 detailBase）
-  views: [{ label: '时间线', title: '风控时间线', path: (id) => `/admin/v1/risk/users/${id}/timeline` }],
+  views: [{ label: 'f.timeline', title: 'f.risk_timeline', path: (id) => `/admin/v1/risk/users/${id}/timeline` }],
 };
 
 /* --------------------------------- 关联团伙 -------------------------------- */
 
 /** 三态枚举（列表注释：1=观察中 2=已处置 0=误判）—— 不是 0/1 开关，行内启停那个控件表达不了。 */
 const CLUSTER_STATUS_OPTIONS: FieldOption[] = [
-  { value: '1', label: '1 观察中' },
-  { value: '2', label: '2 已处置' },
-  { value: '0', label: '0 误判' },
+  { value: '1', label: 'f.n_1_watching' },
+  { value: '2', label: 'f.n_2_actioned' },
+  { value: '0', label: 'f.n_0_false_positive' },
 ];
 
 /**
@@ -1237,41 +1226,41 @@ const CLUSTER_STATUS_OPTIONS: FieldOption[] = [
  */
 export const RISK_CLUSTER_CRUD: CrudConfig = {
   base: '/admin/v1/risk/clusters',
-  noun: '团伙',
+  noun: 'f.clusters',
   actions: [
     {
-      label: '状态',
-      title: '变更团伙状态',
+      label: 'f.status',
+      title: 'f.change_cluster_status',
       path: (id) => `/admin/v1/risk/clusters/${id}/status`,
       method: 'PUT',
       fields: [
         {
           name: 'status',
-          label: '目标状态',
+          label: 'f.target_status',
           type: 'select',
           required: true,
           options: CLUSTER_STATUS_OPTIONS,
-          hint: '1=观察中 2=已处置 0=误判。三态，故不用 0/1 启停（按 0/1 翻转会把 2 静默压成 0）；当前值见列表 status 列',
+          hint: 'f.n_1_watching_2_actioned_0',
         },
       ],
-      confirm: (row) => `确认变更团伙「${labelOf(row, 'name')}」的状态？`,
+      confirm: (row) => t('risk.cluster_status_confirm', { name: labelOf(row, 'name') }),
       report: (envelope) => {
         const cluster = ((envelope.data ?? {}) as Row).cluster as Row | undefined;
-        return cluster ? `团伙「${String(cluster.name)}」状态已置为 ${String(cluster.status)}` : envelope.message;
+        return cluster ? t('risk.cluster_status_report', { name: String(cluster.name), status: String(cluster.status) }) : envelope.message;
       },
     },
   ],
-  views: [{ label: '成员', title: '团伙成员', path: (id) => `/admin/v1/risk/clusters/${id}/members` }],
+  views: [{ label: 'f.members', title: 'f.cluster_members', path: (id) => `/admin/v1/risk/clusters/${id}/members` }],
 };
 
 /* -------------------------------- 反作弊事件 ------------------------------- */
 
 /** 复核结论值域 = AntiCheatController::review 的 in_array 列表（字符串枚举，不是 0/1）。 */
 const ANTICHEAT_STATUS_OPTIONS: FieldOption[] = [
-  { value: 'open', label: 'open 待处理' },
-  { value: 'confirmed', label: 'confirmed 确认作弊' },
-  { value: 'whitelisted', label: 'whitelisted 白名单' },
-  { value: 'closed', label: 'closed 关闭' },
+  { value: 'open', label: 'f.open_pending' },
+  { value: 'confirmed', label: 'f.confirmed_cheating_confirmed' },
+  { value: 'whitelisted', label: 'f.whitelisted' },
+  { value: 'closed', label: 'f.closed' },
 ];
 
 /**
@@ -1280,28 +1269,32 @@ const ANTICHEAT_STATUS_OPTIONS: FieldOption[] = [
  */
 export const ANTICHEAT_CRUD: CrudConfig = {
   base: '/admin/v1/anticheat/events',
-  noun: '反作弊事件',
+  noun: 'f.anti_cheat_events',
   actions: [
     {
-      label: '复核',
-      title: '人工复核',
+      label: 'f.review',
+      title: 'f.manual_review',
       path: (id) => `/admin/v1/anticheat/events/${id}/review`,
       fields: [
         {
           name: 'status',
-          label: '复核结论',
+          label: 'f.review_verdict',
           type: 'select',
           required: true,
           options: ANTICHEAT_STATUS_OPTIONS,
-          hint: '字符串枚举（不是 0/1）；当前值见列表 status 列。whitelisted 建议附理由',
+          hint: 'f.a_string_enum_not_0',
         },
-        { name: 'note', label: '复核备注', type: 'textarea', hint: '写进 review_note（最长 255 字，超出会被截断）' },
+        { name: 'note', label: 'f.review_note', type: 'textarea', hint: 'f.written_into_review_note_max' },
       ],
       confirm: (row) =>
-        `确认提交对事件「${labelOf(row, 'rule_name')}」（用户 ${String(row.user_id ?? '—')}，当前状态 ${String(row.status ?? '—')}）的复核？`,
+        t('risk.review_confirm', {
+          name: labelOf(row, 'rule_name'),
+          user: String(row.user_id ?? '—'),
+          status: String(row.status ?? '—'),
+        }),
       report: (envelope) => {
         const data = (envelope.data ?? {}) as Row;
-        return `${String(data.message ?? envelope.message)}（新状态 ${String(data.status ?? '—')}）`;
+        return t('risk.review_report', { message: String(data.message ?? envelope.message), status: String(data.status ?? '—') });
       },
     },
   ],
@@ -1329,31 +1322,29 @@ export const RISK_DEVICE_HIDE = ['fp_hash'];
  */
 export const RISK_DEVICE_CRUD: CrudConfig = {
   base: '/admin/v1/risk/device',
-  noun: '设备指纹',
+  noun: 'f.device_fingerprint',
   // hashid 位在 fp_hash 列（不是 id）：不指这一下，整行动作会因取不到 id 而不渲染
   rowKey: 'fp_hash',
   actions: [
     {
-      label: '拉黑',
+      label: 'f.blocklist',
       path: () => '/admin/v1/risk/device/block',
       body: (id) => ({ fp_hash: id }),
       // 反向判：真值只可能是 blocked===true 才叫已拉黑，其余（含字段缺失）都当未拉黑 ——
       // 缺失时用 === false 会让两个按钮都不出现，整行变成死行。
       when: (row) => row.blocked !== true,
-      confirm: (row) =>
-        `确认拉黑设备 ${labelOf(row, 'fp_masked')}？拉黑后该设备的充值/提现会被风控**直接阻断**`
-        + `（Redis 标记，30 天后自动过期；不看规则是否启用）。`,
+      confirm: (row) => t('risk.block_confirm', { name: labelOf(row, 'fp_masked') }),
       report: (envelope) =>
-        `已拉黑 ${String(((envelope.data ?? {}) as Row).fp_masked ?? '')}（Redis 标记，30 天后自动过期）`,
+        t('risk.block_report', { name: String(((envelope.data ?? {}) as Row).fp_masked ?? '') }),
     },
     {
-      label: '解封',
+      label: 'f.unblock',
       path: () => '/admin/v1/risk/device/unblock',
       body: (id) => ({ fp_hash: id }),
       when: (row) => row.blocked === true,
-      confirm: (row) => `确认解封设备 ${labelOf(row, 'fp_masked')}？解封后这条标记不再阻断它的充值/提现。`,
+      confirm: (row) => t('risk.unblock_confirm', { name: labelOf(row, 'fp_masked') }),
       // unblock 只回空 data（success()），认不出对象；列表行自己会翻回「未拉黑」
-      report: () => '已解封（Redis 标记已删除）',
+      report: () => t('f.unblocked_the_redis_marker_has'),
     },
   ],
 };
@@ -1367,8 +1358,9 @@ export const RISK_DEVICE_CRUD: CrudConfig = {
  * 字段描述与路径放在这里而不是那个 tsx 里，是为了让 risk.test.ts 能对路由表逐条对账。
  */
 export type FlagAction = {
-  label: string;
-  title: string;
+  /** 按钮与表单标题都是**文案键**：取译文只在渲染期（risk.tsx 现取），同 lib/crud.ts 的 Field.label */
+  label: MessageKey;
+  title: MessageKey;
   path: string;
   field: Field;
   /** 二次确认：动作改的是服务端状态（IP 的信誉行 + 删其 Redis 缓存），文案要认出「改谁、改成什么」 */
@@ -1379,11 +1371,11 @@ export type FlagAction = {
 
 const IP_FIELD: Field = {
   name: 'ip',
-  label: 'IP 地址',
+  label: 'f.ip_address',
   type: 'text',
   required: true,
-  placeholder: '1.2.3.4',
-  hint: '**原文** IP（服务端 filter_var 校验后自己算 sha256 写库），不是哈希值；列表只回显 ip_masked，可用列表上的 keyword 过滤前缀定位',
+  placeholder: raw('1.2.3.4'),
+  hint: 'f.the_raw_ip_the_server',
 };
 
 /**
@@ -1395,37 +1387,37 @@ const IP_FIELD: Field = {
  */
 export const RISK_IP_FLAGS: FlagAction[] = [
   {
-    label: '拉黑 IP',
-    title: '拉黑 IP',
+    label: 'f.blocklist_ip',
+    title: 'f.blocklist_ip',
     path: '/admin/v1/risk/ip/block',
     field: IP_FIELD,
     confirm: (value) =>
-      `确认把 ${value} 写入黑名单（source=internal_blacklist，score 0）？评估器会据此处置，并删掉该 IP 的信誉缓存使其立刻生效。`,
+      t('risk.blacklist_confirm', { value }),
     report: (envelope) => {
       const data = (envelope.data ?? {}) as Row;
-      return `已写入黑名单 ${String(data.ip_masked ?? '')}（source=${String(data.source ?? '')}），信誉缓存已删`;
+      return t('risk.blacklist_report', { name: String(data.ip_masked ?? ''), source: String(data.source ?? '') });
     },
   },
   {
-    label: '白名单/申诉放行',
-    title: '加入白名单（申诉放行）',
+    label: 'f.whitelist_appeal_release',
+    title: 'f.add_to_whitelist_appeal_release',
     path: '/admin/v1/risk/ip/whitelist',
     field: IP_FIELD,
     confirm: (value) =>
-      `确认把 ${value} 加入白名单（source=internal_whitelist，score 100）？白名单在评估器里最先判、直接放行 —— 误加等于给这个 IP 开免检。`,
+      t('risk.whitelist_confirm', { value }),
     report: (envelope) => {
       const data = (envelope.data ?? {}) as Row;
-      return `已放行 ${String(data.ip_masked ?? '')}（source=${String(data.source ?? '')}），信誉缓存已删`;
+      return t('risk.whitelist_report', { name: String(data.ip_masked ?? ''), source: String(data.source ?? '') });
     },
   },
   {
-    label: '重查',
-    title: '重查（清本地信誉缓存）',
+    label: 'f.re_check',
+    title: 'f.re_check_clear_the_local',
     path: '/admin/v1/risk/ip/recheck',
     field: IP_FIELD,
     confirm: (value) =>
-      `确认重查 ${value}？只删除本地信誉缓存、下次请求重读 DB；外部代理/VPN 检测服务未接入，不会问到第三方。`,
-    report: (envelope) => String(((envelope.data ?? {}) as Row).message ?? '已刷新信誉缓存'),
+      t('risk.recheck_confirm', { value }),
+    report: (envelope) => String(((envelope.data ?? {}) as Row).message ?? t('f.reputation_cache_refreshed')),
   },
 ];
 
@@ -1446,44 +1438,44 @@ export const RISK_CLUSTER_PANEL = {
   fields: [
     {
       name: 'type',
-      label: '团伙类型',
+      label: 'f.cluster_type',
       type: 'select',
       required: true,
       options: [
-        { value: 'same_ip', label: 'same_ip 同 IP' },
-        { value: 'same_device', label: 'same_device 同设备' },
-        { value: 'same_pay_account', label: 'same_pay_account 同支付账户' },
-        { value: 'manual', label: 'manual 人工标注' },
+        { value: 'same_ip', label: 'f.same_ip' },
+        { value: 'same_device', label: 'f.same_device' },
+        { value: 'same_pay_account', label: 'f.same_pay_account' },
+        { value: 'manual', label: 'f.manual' },
       ],
-      hint: 'same_ip / same_device 必须给指纹（服务端据此反查成员）；另两类可只给成员列表',
+      hint: 'f.same_ip_same_device_require',
     },
     {
       name: 'fingerprint',
-      label: '指纹（哈希）',
+      label: 'f.fingerprint_hash',
       type: 'text',
-      placeholder: '同 IP 填 ip_hash、同设备填 fp_hash',
-      hint: '检测结果给的『指纹』列就是**完整值**（界面只显示前 8 位）；选 same_ip/same_device 时必填，服务端用它反查成员',
+      placeholder: 'f.fill_ip_hash_for_same',
+      hint: 'f.the_column_in_the_detection',
     },
-    { name: 'name', label: '团伙名称', type: 'text', required: true, placeholder: '最长 100 字' },
+    { name: 'name', label: 'f.cluster_name', type: 'text', required: true, placeholder: 'f.max_100_characters' },
     {
       name: 'member_ids',
-      label: '成员 hashid',
+      label: 'f.member_hashid',
       type: 'lines',
-      placeholder: '每行一个',
-      hint: '**hashid**（不是数字 id）：服务端逐个 decodeId，非法值直接 400 拒掉（不会静默丢）。候选见已建团伙的「成员」只读视图（回 id=hashid 与用户名）。留空即不写成员 —— same_ip / same_device 会按指纹反查成员',
+      placeholder: 'f.one_per_line',
+      hint: 'f.hashid_not_a_numeric_id',
     },
     {
       name: 'user_count',
-      label: '成员数',
+      label: 'f.member_count',
       type: 'number',
-      hint: '列表展示用；服务端取「成员列表条数」与这里的较大值，故留空也不会小于实际成员数',
+      hint: 'f.for_list_display_the_server',
     },
   ] as Field[],
 };
 
-/** 角色 / 权限的删除都要当前登录密码（BaseController::confirmPassword）。 */
-function deleteWithPassword(question: string): Record<string, unknown> | null {
+/** 角色 / 权限 / 管理员 的删除都要当前登录密码（BaseController::confirmPassword）。 */
+export function deleteWithPassword(question: string): Record<string, unknown> | null {
   if (!window.confirm(question)) return null;
-  const password = window.prompt('该操作需要输入当前登录密码：');
+  const password = window.prompt(t('f.this_action_requires_the_current'));
   return password === null ? null : { password };
 }

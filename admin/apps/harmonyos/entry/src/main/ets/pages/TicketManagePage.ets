@@ -9,6 +9,7 @@ import { TicketItem, FormPayload, FormValues } from '../model/DataModels';
 import { LoadingView, ErrorView, EmptyView } from '../common/Components';
 import { FormDialog, FormField, confirmAction } from '../common/FormDialog';
 import { PagerBar } from '../common/ResourceViews';
+import { t, t1 } from '../i18n/Translations';
 
 /**
  * 工单处理页 —— 列表 + 三种**行动作**（回复 / 指派 / 关闭）。
@@ -26,8 +27,9 @@ import { PagerBar } from '../common/ResourceViews';
  *   关闭 POST /admin/v1/ticket/{hashid}/close  （无 body）
  */
 
+/** 各文案字段存**键名**（FormDialog 对 label/hint/placeholder 各调一次 t()）—— 顶层调 t() 会固化启动语言 */
 const REPLY_FIELDS: FormField[] = [
-  { name: 'content', label: '回复内容', type: 'textarea', required: true, placeholder: '将作为管理员回复发送给用户' }
+  { name: 'content', label: 'ticket.f.content', type: 'textarea', required: true, placeholder: 'ticket.f.content_placeholder' }
 ];
 
 /**
@@ -36,16 +38,17 @@ const REPLY_FIELDS: FormField[] = [
  * 这里原样送字符串（PHP 侧的 (int) 精确），提交前再校验一次「纯数字」。
  */
 const ASSIGN_FIELDS: FormField[] = [
-  { name: 'admin_id', label: '受理人 ID', type: 'text', required: true, placeholder: '管理员数字 ID（不是列表里的 hashid）' }
+  { name: 'admin_id', label: 'ticket.f.admin_id', type: 'text', required: true, placeholder: 'ticket.f.admin_id_placeholder' }
 ];
 
 const ASSIGN_INITIAL: FormValues = {};
 
+/** 每次渲染重新查表 ⇒ 语言切换即时生效（顶层调 t() 会把启动语言固化进常量） */
 function ticketStatusText(status: string): string {
   if (status === 'closed') {
-    return '已关闭';
+    return t('ticket.status_closed');
   }
-  return status === 'replied' ? '已回复' : '待处理';
+  return status === 'replied' ? t('ticket.status_replied') : t('ticket.status_pending');
 }
 
 /** 三态各有各的颜色：待处理要醒目、已回复是过程态、已关闭是终态 */
@@ -73,6 +76,7 @@ function isDigits(value: string): boolean {
 @Entry
 @Component
 struct TicketManagePage {
+  @StorageLink('app_locale') localeCode: string = 'en';
   @State rows: TicketItem[] = [];
   @State page: number = 1;
   @State total: number = 0;
@@ -107,7 +111,7 @@ struct TicketManagePage {
         return;
       }
       this.hasError = true;
-      promptAction.showToast({ message: '加载失败' });
+      promptAction.showToast({ message: t('common.load_failed') });
     } finally {
       this.isLoading = false;
     }
@@ -141,10 +145,10 @@ struct TicketManagePage {
     if (item.type.length > 0) {
       parts.push(item.type);
     }
-    parts.push(`回复 ${item.reply_count}`);
+    parts.push(t1('ticket.subtitle_replies', 'count', `${item.reply_count}`));
     // assigned_to 是裸 BIGINT（0 = 未指派），值班时看得到「这单归谁」才好接
     if (item.assigned_to > 0) {
-      parts.push(`受理人 ${item.assigned_to}`);
+      parts.push(t1('ticket.subtitle_assignee', 'id', `${item.assigned_to}`));
     }
     parts.push(item.created_at);
     return parts.join(' · ');
@@ -153,7 +157,7 @@ struct TicketManagePage {
   private openReply(item: TicketItem): void {
     this.actionKind = 'reply';
     this.actionId = item.id;
-    this.formTitle = `回复「${item.subject}」`;
+    this.formTitle = t('ticket.reply_titled').replace('{subject}', item.subject);
     this.formFields = REPLY_FIELDS;
     this.formOpen = true;
   }
@@ -161,7 +165,7 @@ struct TicketManagePage {
   private openAssign(item: TicketItem): void {
     this.actionKind = 'assign';
     this.actionId = item.id;
-    this.formTitle = `指派「${item.subject}」`;
+    this.formTitle = t('ticket.assign_titled').replace('{subject}', item.subject);
     this.formFields = ASSIGN_FIELDS;
     this.formOpen = true;
   }
@@ -172,7 +176,7 @@ struct TicketManagePage {
       const adminId = `${body['admin_id'] ?? ''}`.trim();
       // 边界校验：hashid 落到 (int) 上要么变 0（静默未指派）要么变成另一个管理员的裸 id
       if (!isDigits(adminId)) {
-        throw new Error('受理人 ID 必须是纯数字的管理员 ID');
+        throw new Error(t('ticket.assign_invalid'));
       }
       try {
         await TicketService.assign(this.actionId, adminId);
@@ -182,7 +186,7 @@ struct TicketManagePage {
         }
         throw e as Error;
       }
-      promptAction.showToast({ message: '已指派' });
+      promptAction.showToast({ message: t('ticket.assigned_toast') });
       return;
     }
 
@@ -194,13 +198,13 @@ struct TicketManagePage {
       }
       throw e as Error;
     }
-    promptAction.showToast({ message: '已回复' });
+    promptAction.showToast({ message: t('ticket.status_replied') });
   }
 
   /** 关闭：危险动作（终态、不可再回复）⇒ 二次确认，文案带工单标题 */
   private closeRow(item: TicketItem): void {
-    confirmAction('确认关闭',
-      `确定关闭工单「${item.subject}」吗？关闭后不能再回复。`, '关闭', '#FF4D4F')
+    confirmAction(t('ticket.close_title'),
+      t('ticket.close_confirm').replace('{subject}', item.subject), t('ticket.action_close'), '#FF4D4F')
       .then((ok: boolean) => {
         if (ok) {
           this.doClose(item);
@@ -212,14 +216,14 @@ struct TicketManagePage {
     this.busyId = item.id;
     try {
       await TicketService.close(item.id);
-      promptAction.showToast({ message: '已关闭' });
+      promptAction.showToast({ message: t('ticket.status_closed') });
       this.loadData(true);
     } catch (e) {
       if (this.redirectIfUnauthorized(e)) {
         return;
       }
       promptAction.showToast({
-        message: e instanceof Error && e.message.length > 0 ? e.message : '操作失败'
+        message: e instanceof Error && e.message.length > 0 ? e.message : t('res.op_failed')
       });
     } finally {
       this.busyId = '';
@@ -264,7 +268,7 @@ struct TicketManagePage {
         .backgroundColor('#FFFFFF')
         .onClick(() => router.back())
 
-        Text('工单管理')
+        Text(t('ticket.manage_title'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 8 })
@@ -279,7 +283,7 @@ struct TicketManagePage {
       } else if (this.hasError) {
         ErrorView({ onRetry: () => this.loadData() });
       } else if (this.rows.length === 0) {
-        EmptyView({ message: '暂无工单' });
+        EmptyView({ message: t('ticket.empty') });
       } else {
         List() {
           ForEach(this.rows, (item: TicketItem) => {
@@ -340,7 +344,7 @@ struct TicketManagePage {
 
         // 闭单后回复与再次关闭都是无意义（回复还会被后端 422），只留指派
         if (item.status !== 'closed') {
-          Button('回复')
+          Button(t('ticket.action_reply'))
             .fontSize(12)
             .fontColor('#1677FF')
             .backgroundColor('#E6F0FF')
@@ -354,7 +358,7 @@ struct TicketManagePage {
             })
         }
 
-        Button('指派')
+        Button(t('ticket.action_assign'))
           .fontSize(12)
           .fontColor('#FA8C16')
           .backgroundColor('#FFF2E6')
@@ -368,7 +372,7 @@ struct TicketManagePage {
           })
 
         if (item.status !== 'closed') {
-          Button('关闭')
+          Button(t('ticket.action_close'))
             .fontSize(12)
             .fontColor('#FF4D4F')
             .backgroundColor('#FFE6E6')

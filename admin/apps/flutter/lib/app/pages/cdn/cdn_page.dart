@@ -23,6 +23,8 @@ class CdnController extends GetxController {
     load();
   }
 
+  /// **不加分页**：/cdn/provider/list 是整表端点（无 total，五厂商封顶），
+  /// 且媒体上传路径要按 id 查厂商 ⇒ 分页会让上传线程挑不到 provider。
   Future<void> load() async {
     isLoading.value = true;
     try {

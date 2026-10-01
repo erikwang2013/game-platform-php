@@ -52,7 +52,7 @@ class DeviceAccountGraphEvaluator implements RiskEvaluator
             if ($frozen !== []) {
                 return [
                     'matched'  => true,
-                    'message'  => '同设备账号 ' . implode(',', $frozen) . ' 处于禁用状态',
+                    'message'  => trans('Account(s) %accounts% on the same device are disabled', ['%accounts%' => implode(',', $frozen)]),
                     'severity' => 'high',
                 ];
             }
@@ -77,13 +77,13 @@ class DeviceAccountGraphEvaluator implements RiskEvaluator
         $cluster = array_values(array_diff(array_map('intval', $cluster), [$userId]));
 
         if (count($cluster) >= $threshold) {
-            return ['matched' => true, 'message' => "两跳关联账号数 " . count($cluster) . " ≥ 团伙阈值 {$threshold}", 'severity' => 'high'];
+            return ['matched' => true, 'message' => trans('Two-hop related accounts: %count% ≥ cluster threshold %threshold%', ['%count%' => (string) count($cluster), '%threshold%' => (string) $threshold]), 'severity' => 'high'];
         }
 
         // 同设备 ≥2 账号：记录账号-账号边（幂等），供管理端图谱展示
         if (count($hop1) >= 2) {
             $this->linkSameDevice($userId, $hop1, $sandbox);
-            return ['matched' => true, 'message' => "同设备账号数 " . count($hop1) . '（未达团伙阈值 ' . $threshold . '）', 'severity' => 'low'];
+            return ['matched' => true, 'message' => trans('Accounts on the same device: %count% (below cluster threshold %threshold%)', ['%count%' => (string) count($hop1), '%threshold%' => (string) $threshold]), 'severity' => 'low'];
         }
 
         return $this->miss('无同设备账号');

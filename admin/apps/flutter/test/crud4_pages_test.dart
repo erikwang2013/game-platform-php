@@ -30,7 +30,7 @@ class _FakeWithdrawController extends WithdrawController {
   Map<String, dynamic> syncData = <String, dynamic>{};
 
   @override
-  Future<void> loadOrders() async {}
+  Future<void> loadOrders({int? toPage}) async {}
 
   @override
   Future<void> loadSwitch() async {}
@@ -115,7 +115,7 @@ class _FakeCouponController extends CouponAdminController {
   Map<String, dynamic> statsData = <String, dynamic>{};
 
   @override
-  Future<void> load() async {}
+  Future<void> load({int? toPage}) async {}
 
   @override
   Future<void> create(Map<String, dynamic> data) async => created.add(data);

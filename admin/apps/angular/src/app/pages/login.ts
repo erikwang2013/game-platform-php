@@ -3,6 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Api, CaptchaChallenge, Click } from '../core/api.service';
 import { Auth } from '../core/auth.service';
+import { T, t } from '../core/i18n/i18n';
 import { imgSrc } from '../core/render';
 import { errText } from '../core/util';
 
@@ -19,34 +20,35 @@ interface Mark extends Click {
 @Component({
   selector: 'app-login',
   host: { '(document:keydown.escape)': 'onEsc()' },
+  imports: [T],
   template: `
     <div class="login-wrap">
       <div class="login-card">
-        <h1>游戏运营后台</h1>
-        <p class="sub">Slate Pro 控制台 · 管理端</p>
+        <h1>{{ 'app.brand' | t }}</h1>
+        <p class="sub">{{ 'login.subtitle' | t }}</p>
 
         @if (error()) {
           <div class="alert">{{ error() }}</div>
         }
 
         <div class="field">
-          <label>账号</label>
+          <label>{{ 'login.username' | t }}</label>
           <input
             class="input"
             autocomplete="username"
-            placeholder="管理员账号"
+            [placeholder]="'login.username_hint' | t"
             [value]="username()"
             (input)="username.set($any($event.target).value)"
           />
         </div>
 
         <div class="field">
-          <label>密码</label>
+          <label>{{ 'login.password' | t }}</label>
           <input
             class="input"
             type="password"
             autocomplete="current-password"
-            placeholder="登录密码"
+            [placeholder]="'login.password_hint' | t"
             [value]="password()"
             (input)="password.set($any($event.target).value)"
           />
@@ -57,36 +59,43 @@ interface Mark extends Click {
           [disabled]="busy() || !canSubmit()"
           (click)="submit()"
         >
-          {{ busy() ? '登录中…' : '登 录' }}
+          {{ (busy() ? 'login.submitting' : 'login.login') | t }}
         </button>
       </div>
 
       @if (capOpen()) {
         <div class="backdrop" (click)="closeCap()"></div>
-        <div class="modal" role="dialog" aria-modal="true" aria-label="安全验证">
+        <div class="modal" role="dialog" aria-modal="true" [attr.aria-label]="'login.captcha' | t">
           <header>
-            <b>安全验证</b>
+            <b>{{ 'login.captcha' | t }}</b>
             <span class="spacer"></span>
-            <button class="btn" type="button" (click)="closeCap()">关闭</button>
+            <button class="btn" type="button" (click)="closeCap()">{{ 'app.close' | t }}</button>
           </header>
           <div class="modal-body">
             @if (cap(); as c) {
               <div class="captcha-hint">
-                {{ c.texts.length ? c.texts.join(' → ') : '请按图片提示依次点击' }}
+                {{ c.texts.length ? c.texts.join(' → ') : ('login.captcha_prompt' | t) }}
               </div>
               <div class="cap-wrap">
-                <img class="cap-img" [src]="image()" (click)="hit($event)" alt="点击验证码" />
+                <img
+                  class="cap-img"
+                  [src]="image()"
+                  (click)="hit($event)"
+                  [alt]="'login.captcha_alert' | t"
+                />
                 @for (m of marks(); track $index) {
                   <i class="cap-dot" [style.left.%]="m.px" [style.top.%]="m.py">{{ $index + 1 }}</i>
                 }
               </div>
               <div class="cap-foot">
-                <span>已点击 {{ marks().length }} 点（需 {{ required() }} 点）</span>
+                <span>{{ 'login.captcha_clicked' | t: { n: marks().length, need: required() } }}</span>
                 <span class="spacer"></span>
                 <button class="btn" type="button" [disabled]="!marks().length" (click)="undo()">
-                  撤销
+                  {{ 'login.captcha_undo' | t }}
                 </button>
-                <button class="btn" type="button" (click)="reload()">换一张</button>
+                <button class="btn" type="button" (click)="reload()">
+                  {{ 'login.captcha_refresh' | t }}
+                </button>
               </div>
               <button
                 class="btn btn-primary btn-block"
@@ -94,10 +103,10 @@ interface Mark extends Click {
                 [disabled]="busy() || !canConfirm()"
                 (click)="confirm()"
               >
-                {{ busy() ? '登录中…' : '确认登录' }}
+                {{ (busy() ? 'login.submitting' : 'login.captcha_confirm') | t }}
               </button>
             } @else {
-              <div class="state"><span class="spinner"></span> 验证码加载中…</div>
+              <div class="state"><span class="spinner"></span> {{ 'login.captcha_loading' | t }}</div>
             }
           </div>
         </div>
@@ -151,7 +160,7 @@ export class Login {
     this.marks.set([]);
     try {
       const c = await this.api.captcha();
-      if (!c.key || !c.image) throw new Error('验证码服务返回为空，请稍后重试');
+      if (!c.key || !c.image) throw new Error(t('login.captcha_empty'));
       this.cap.set(c);
     } catch (e) {
       this.error.set(errText(e));

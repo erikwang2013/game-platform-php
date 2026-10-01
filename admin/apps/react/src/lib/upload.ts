@@ -7,6 +7,7 @@
  *
  * 拼装是纯函数（不碰网络，供 node --test 直接覆盖）；只有 uploadImage 一处编排。
  */
+import { t } from '../i18n/index.ts';
 import { ApiError, rawPost } from './api.ts';
 
 export const PREPROCESS_PATH = '/admin/v1/aetherupload/preprocess';
@@ -87,7 +88,7 @@ export async function uploadImage(file: File, origin: string): Promise<string> {
     const { savedPath } = await post<{ savedPath?: string }>(UPLOADING_PATH, form);
     if (savedPath) return displayUrl(savedPath, origin);
   }
-  throw new ApiError(-1, '上传未完成：服务端未返回保存路径');
+  throw new ApiError(-1, t('upload.incomplete'));
 }
 
 /**
@@ -97,7 +98,7 @@ export async function uploadImage(file: File, origin: string): Promise<string> {
 async function post<T>(path: string, body: URLSearchParams | FormData): Promise<T> {
   const payload = await rawPost(path, body);
   if (payload.error === undefined) {
-    throw new ApiError(-1, typeof payload.message === 'string' && payload.message !== '' ? payload.message : '上传接口返回异常');
+    throw new ApiError(-1, typeof payload.message === 'string' && payload.message !== '' ? payload.message : t('upload.bad_response'));
   }
   if (Number(payload.error) !== 0) throw new ApiError(-1, String(payload.error));
   return payload as T;

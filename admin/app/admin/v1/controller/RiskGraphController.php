@@ -32,7 +32,7 @@ class RiskGraphController extends BaseController
         $rootId = $this->decodeId($userId);
         $root = User::find($rootId);
         if (!$root) {
-            return $this->fail('用户不存在');
+            return $this->fail(trans('User not found'));
         }
 
         // 一跳：与根用户共用设备的账号
@@ -58,7 +58,7 @@ class RiskGraphController extends BaseController
             $user = $users[$id] ?? null;
             $nodes[] = [
                 'id' => $this->encodeId($id),
-                'username' => (string) ($user->username ?? '未知'),
+                'username' => (string) ($user->username ?? trans('Unknown')),
                 'status' => $user ? (int) $user->status : -1,
                 'is_root' => $id === $rootId,
             ];
@@ -130,7 +130,7 @@ class RiskGraphController extends BaseController
             $users = User::whereIn('id', $memberIds)->get()->keyBy('id');
             $members = [];
             foreach ($memberIds as $id) {
-                $members[] = ['id' => $this->encodeId((int) $id), 'username' => (string) ($users[(int) $id]->username ?? '未知')];
+                $members[] = ['id' => $this->encodeId((int) $id), 'username' => (string) ($users[(int) $id]->username ?? trans('Unknown'))];
             }
             $clusters[] = [
                 'fp_masked' => substr((string) $device->fp_hash, 0, 8) . '****',

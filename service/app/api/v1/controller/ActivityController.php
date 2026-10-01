@@ -62,7 +62,7 @@ class ActivityController extends BaseController
     {
         $activity = Activity::find($this->decodeId($hashid));
         if (!$activity || $activity->status !== Activity::STATUS_ENABLED) {
-            return $this->fail('Activity not found', 404);
+            return $this->fail(trans('Activity not found'), 404);
         }
 
         $periodKey = date('Y-m-d');

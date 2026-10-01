@@ -14,7 +14,9 @@ class UserController extends GetxController {
   final isLoading = false.obs;
   final total = 0.obs;
   final page = 1.obs;
-  final limit = 15.obs;
+
+  /// 与后端缺省一致（UserController::index 的 `input('limit', 15)`）。
+  static const int pageSize = 15;
   final keyword = ''.obs;
   final statusFilter = Rx<int?>(null);
   final keywordCtrl = TextEditingController();
@@ -45,16 +47,13 @@ class UserController extends GetxController {
     if (reset) page.value = 1;
     isLoading.value = true;
     try {
-      final params = <String, dynamic>{
-        'page': page.value,
-        'limit': limit.value,
-      };
+      final params = <String, dynamic>{};
       if (keyword.value.isNotEmpty) params['keyword'] = keyword.value;
       if (statusFilter.value != null) params['status'] = statusFilter.value;
 
-      final resp = await api.get('/admin/v1/user', params: params);
-      users.value = resp['data']['list'] as List<dynamic>;
-      total.value = resp['data']['total'] as int;
+      final result = await api.list('/admin/v1/user', page: page.value, pageSize: pageSize, params: params);
+      users.value = result.rows;
+      total.value = result.total;
     } catch (e) {
       Get.snackbar('错误', '加载用户列表失败: $e');
     } finally {
@@ -80,18 +79,9 @@ class UserController extends GetxController {
     await loadUsers(reset: true);
   }
 
-  Future<void> nextPage() async {
-    if (page.value * limit.value < total.value) {
-      page.value++;
-      await loadUsers();
-    }
-  }
-
-  Future<void> prevPage() async {
-    if (page.value > 1) {
-      page.value--;
-      await loadUsers();
-    }
+  Future<void> goPage(int toPage) async {
+    page.value = toPage;
+    await loadUsers();
   }
 
   Future<bool> deleteUser(String id, String password) async {

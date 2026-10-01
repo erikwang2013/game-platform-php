@@ -12,6 +12,7 @@ import { FormDialog, FormField, confirmDelete } from '../common/FormDialog';
 import { ResourceModule } from '../common/ResourceSchema';
 import { moduleByKey } from '../common/ResourceModules';
 import { ResourceRowItem, PagerBar, GamePickerBar, ExtraActionDialog } from '../common/ResourceViews';
+import { t, t1 } from '../i18n/Translations';
 
 /**
  * 删除二次确认（系统配置专用）：DELETE /admin/v1/config/{id} 要带管理员密码，
@@ -19,7 +20,7 @@ import { ResourceRowItem, PagerBar, GamePickerBar, ExtraActionDialog } from '../
  * 复用 FormDialog（单字段），不再造第二个弹框。
  */
 const PASSWORD_FIELDS: FormField[] = [
-  { name: 'password', label: '管理员密码', type: 'password', required: true, placeholder: '敏感操作需二次确认' }
+  { name: 'password', label: 'res.password_label', type: 'password', required: true, placeholder: 'res.password_placeholder' }
 ];
 
 /** 空预填值（FormDialog 会拷一份再改，共享一个常量安全）——密码框不能带上编辑表单的残留快照 */
@@ -31,6 +32,8 @@ const EMPTY_VALUES: FormValues = {};
  *
  * 模块差异（端点、字段、状态变更方式、列表形状）全部在 common/ResourceModules.ets 里描述，
  * 本页不出现任何模块名分支：路由参数 module=<key> 进来，未知 key 直接报错而不是渲染空列表。
+ * 唯一按行「形状」走的分支是树：行带 ancestors/depth 的模块（权限树）才画缩进与展开箭头，
+ * 折叠态是本页的本地状态（平铺模块的折叠集恒空，渲染与从前一模一样）。
  *
  * 列表行 id 一律当 hashid 用（各模块的路径段都是列表返回的 id）。
  * 提现订单不在本页：行上挂的是四个资金动作（审核/复核/打款/同步），不是 CRUD，见 WithdrawManagePage。
@@ -39,9 +42,11 @@ const EMPTY_VALUES: FormValues = {};
 @Entry
 @Component
 struct ResourceManagePage {
+  @StorageLink('app_locale') localeCode: string = 'en';
   /** 路由参数：模块 key */
   @State moduleKey: string = '';
-  @State title: string = '管理';
+  /** 模块标题的 **i18n 键**（渲染处 t(this.title)），模块取不到时为空串 */
+  @State title: string = '';
   /** 行内额外动作文案（空串 = 不渲染），取自模块描述 */
   @State extraText: string = '';
   /** 是否要分页：模块描述里 paginated=false 的整表返回，不画分页条 */
@@ -59,6 +64,8 @@ struct ResourceManagePage {
   /** 「新建」的按钮/表单标题文案；空串 = 缺省的「+ 新增 / 新建<标题>」 */
   @State createLabel: string = '';
   @State rows: ResourceRow[] = [];
+  /** 已折叠的树节点 id（只有权限树会填；平铺模块恒空） */
+  @State collapsed: string[] = [];
   @State page: number = 1;
   @State total: number = 0;
   @State isLoading: boolean = true;
@@ -113,6 +120,8 @@ struct ResourceManagePage {
     this.canEdit = found.canEdit !== false;
     this.fullEdit = found.fullEdit === true;
     this.createLabel = found.createLabel ?? '';
+    // 折叠态不跨模块继承（本页实例按 module 参数复用，换模块必须整棵展开）
+    this.collapsed = [];
     if (found.needsGame) {
       this.loadGames();
     } else {
@@ -140,7 +149,7 @@ struct ResourceManagePage {
       }
       this.isLoading = false;
       this.hasError = true;
-      promptAction.showToast({ message: '加载游戏列表失败' });
+      promptAction.showToast({ message: t('res.load_games_failed') });
     }
   }
 
@@ -171,7 +180,7 @@ struct ResourceManagePage {
         return;
       }
       this.hasError = true;
-      promptAction.showToast({ message: '加载失败' });
+      promptAction.showToast({ message: t('common.load_failed') });
     } finally {
       this.isLoading = false;
     }
@@ -188,6 +197,45 @@ struct ResourceManagePage {
     }
     this.page = next;
     this.loadData();
+  }
+
+  /**
+   * 要渲染的行：树形模块（权限树）折叠节点的整枝隐藏，平铺模块原样返回。
+   * 祖先链随行一起铺好（UserModules.flattenPermissionRows），故这里只做一次线性扫，
+   * 不回树里找后代；折叠集是「黑名单」（缺省全展开），新节点不会被历史折叠态误伤。
+   */
+  private visibleRows(): ResourceRow[] {
+    if (this.collapsed.length === 0) {
+      return this.rows;
+    }
+    const visible: ResourceRow[] = [];
+    for (let i = 0; i < this.rows.length; i++) {
+      if (this.isRowVisible(this.rows[i])) {
+        visible.push(this.rows[i]);
+      }
+    }
+    return visible;
+  }
+
+  private isRowVisible(row: ResourceRow): boolean {
+    const ancestors = row.ancestors ?? [];
+    for (let i = 0; i < ancestors.length; i++) {
+      if (this.collapsed.indexOf(ancestors[i]) >= 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  private toggleExpand(row: ResourceRow): void {
+    const at = this.collapsed.indexOf(row.id);
+    if (at >= 0) {
+      const next = this.collapsed.slice();
+      next.splice(at, 1);
+      this.collapsed = next;
+    } else {
+      this.collapsed = this.collapsed.concat(row.id);
+    }
   }
 
   /** 鉴权失效：回登录页并让调用方提前返回；返回值 = 是否已跳转 */
@@ -270,14 +318,14 @@ struct ResourceManagePage {
     try {
       if (this.formEdit) {
         await ResourceService.update(m, this.editingId, body);
-        promptAction.showToast({ message: '更新成功' });
+        promptAction.showToast({ message: t('res.updated') });
       } else {
         // 区服的新建要挂在选中的游戏下：game_id 是 hashid，由页面注入（表单里没有这个字段）
         if (m.needsGame) {
           body.game_id = this.gameId;
         }
         await ResourceService.create(m, body);
-        promptAction.showToast({ message: '创建成功' });
+        promptAction.showToast({ message: t('res.created') });
       }
     } catch (e) {
       if (this.redirectIfUnauthorized(e)) {
@@ -293,7 +341,7 @@ struct ResourceManagePage {
     if (m === null || m.statusMode === '') {
       return '';
     }
-    return row.status === 1 ? '停用' : '启用';
+    return row.status === 1 ? t('common.disabled') : t('common.enabled');
   }
 
   /** 状态变更：有 toggle 端点走端点，否则局部 PUT {status}（描述见 ResourceModules.ets） */
@@ -303,7 +351,7 @@ struct ResourceManagePage {
       return;
     }
     const next = row.status === 1 ? 0 : 1;
-    const flipped = next === 1 ? '已启用' : '已停用';
+    const flipped = next === 1 ? t('res.status_enabled') : t('res.status_disabled');
     this.busyId = row.id;
     try {
       let said = flipped;
@@ -312,7 +360,7 @@ struct ResourceManagePage {
       } else if (m.statusMode === 'toggle_bare') {
         // 无请求体的 toggle：服务端自己翻转，**目标态以回执为准**（本地翻转对不上并发改动）
         const status = await ResourceService.toggleBare(m.togglePath, row.id);
-        said = status === -1 ? '已切换状态' : flipped;
+        said = status === -1 ? t('res.status_toggled') : flipped;
       } else {
         const body: FormPayload = {};
         body.status = next;
@@ -340,7 +388,8 @@ struct ResourceManagePage {
     // 要填参数的动作（沙箱试算 / 人工处置 / 反作弊审核）改走两步弹框：参数框 → 结果框
     if (m.extraForm !== undefined) {
       this.extraId = row.id;
-      this.extraTitle = `${m.extraText}「${row.title}」`;
+      // extraTitle 是弹框标题：动作名（键）与行标题（服务端数据）各换各的
+      this.extraTitle = t('res.action_titled').replace('{action}', t(m.extraText)).replace('{name}', row.title);
       this.extraFields = m.extraForm;
       this.extraOpen = true;
       return;
@@ -351,7 +400,7 @@ struct ResourceManagePage {
       const text = m.extraMessage !== undefined
         ? m.extraMessage(result.data, result.message)
         : result.message;
-      promptAction.showToast({ message: text.length > 0 ? text : '操作成功' });
+      promptAction.showToast({ message: text.length > 0 ? text : t('res.op_ok') });
     } catch (e) {
       this.reportRowError(e);
     } finally {
@@ -384,7 +433,7 @@ struct ResourceManagePage {
     this.busyId = id;
     try {
       await ResourceService.remove(m, id, password);
-      promptAction.showToast({ message: '删除成功' });
+      promptAction.showToast({ message: t('res.deleted') });
       this.loadData(true);
     } catch (e) {
       if (this.pwdOpen) {
@@ -413,7 +462,7 @@ struct ResourceManagePage {
     const m = this.module;
     if (m === null || m.extraSubmit === undefined) {
       return async (_id: string, _body: FormPayload): Promise<string[]> => {
-        throw new Error('该动作没有配提交实现');
+        throw new Error(t('res.extra_not_configured'));
       };
     }
     return m.extraSubmit;
@@ -424,14 +473,14 @@ struct ResourceManagePage {
     if (this.redirectIfUnauthorized(e)) {
       return;
     }
-    promptAction.showToast({ message: e instanceof Error && e.message.length > 0 ? e.message : '操作失败' });
+    promptAction.showToast({ message: e instanceof Error && e.message.length > 0 ? e.message : t('res.op_failed') });
   }
 
   private emptyMessage(): string {
     if (this.needsGame) {
-      return this.games.length === 0 ? '暂无游戏，请先在游戏管理里新建' : '请先选择游戏';
+      return this.games.length === 0 ? t('res.no_games') : t('res.pick_game');
     }
-    return '暂无数据';
+    return t('common.no_data');
   }
 
   build() {
@@ -442,8 +491,8 @@ struct ResourceManagePage {
       // 卡片上的点击不会冒泡到遮罩（无需 stopPropagation）
       if (this.formOpen) {
         FormDialog({
-          title: this.formEdit ? `编辑${this.title}`
-            : (this.createLabel.length > 0 ? this.createLabel : `新建${this.title}`),
+          title: this.formEdit ? t1('res.edit_titled', 'name', t(this.title))
+            : (this.createLabel.length > 0 ? t(this.createLabel) : t1('res.create_titled', 'name', t(this.title))),
           fields: this.formFields,
           initial: this.formInitial,
           // 编辑态只发改动过的字段（局部更新）；新建态必须关闭，否则缺省值会被当成「没改」漏发。
@@ -477,7 +526,7 @@ struct ResourceManagePage {
       // 删除二次确认（密码）
       if (this.pwdOpen) {
         FormDialog({
-          title: `删除「${this.pwdTitle}」`,
+          title: t1('res.delete_titled', 'name', this.pwdTitle),
           fields: PASSWORD_FIELDS,
           initial: EMPTY_VALUES,
           onSubmit: (body: FormPayload) => this.submitPassword(body),
@@ -508,7 +557,7 @@ struct ResourceManagePage {
         .backgroundColor('#FFFFFF')
         .onClick(() => router.back())
 
-        Text(this.title)
+        Text(t(this.title))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 8 })
@@ -517,7 +566,7 @@ struct ResourceManagePage {
 
         // 没有新建端点的模块（平台用户）不画这个按钮，而不是画一个点下去必然 404 的
         if (this.canCreate) {
-          Button(this.createLabel.length > 0 ? this.createLabel : '+ 新增')
+          Button(this.createLabel.length > 0 ? t(this.createLabel) : t('res.create'))
             .fontSize(13)
             .fontColor('#FFFFFF')
             .backgroundColor('#1677FF')
@@ -556,7 +605,7 @@ struct ResourceManagePage {
         EmptyView({ message: this.emptyMessage() });
       } else {
         List() {
-          ForEach(this.rows, (row: ResourceRow) => {
+          ForEach(this.visibleRows(), (row: ResourceRow) => {
             ListItem() {
               // 行内动作的文案由页面按当前模块算好传进去，行组件不认识任何模块
               ResourceRowItem({
@@ -565,10 +614,17 @@ struct ResourceManagePage {
                 badge: row.badge,
                 badgeOk: row.badgeOk,
                 statusText: this.statusText(row),
-                extraText: this.extraText,
+                extraText: this.extraText.length > 0 ? t(this.extraText) : '',
                 busy: this.busyId === row.id,
                 canEdit: this.canEdit,
                 canDelete: this.canDelete,
+                // 树形模块的层级/箭头/折叠态（平铺模块取缺省：不缩进、无箭头）
+                depth: row.depth ?? 0,
+                hasChildren: row.hasChildren === true,
+                expanded: this.collapsed.indexOf(row.id) < 0,
+                onExpand: () => {
+                  this.toggleExpand(row);
+                },
                 onEdit: () => {
                   this.openEdit(row);
                 },

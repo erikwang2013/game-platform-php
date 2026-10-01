@@ -98,20 +98,20 @@ class ReferralController extends BaseController
         // Find the referrer by their code
         $referrerRecord = Referral::where('code', $code)->first();
         if (!$referrerRecord) {
-            return $this->fail('Invalid referral code', 404);
+            return $this->fail(trans('Invalid referral code'), 404);
         }
 
         $referrerId = $referrerRecord->referrer_id;
 
         // Cannot refer yourself
         if ($referrerId === $userId) {
-            return $this->fail('Cannot use your own referral code', 422);
+            return $this->fail(trans('Cannot use your own referral code'), 422);
         }
 
         // Check if this user has already been referred
         $alreadyReferred = Referral::where('referred_id', $userId)->exists();
         if ($alreadyReferred) {
-            return $this->fail('You have already applied a referral code', 422);
+            return $this->fail(trans('You have already applied a referral code'), 422);
         }
 
         // Read bonus amounts from platform config (defaults to 0)
@@ -214,7 +214,7 @@ class ReferralController extends BaseController
             });
         } catch (\PDOException $e) {
             if (self::isDuplicateOnKey($e, 'uk_referred_id')) {
-                return $this->fail('You have already applied a referral code', 422);
+                return $this->fail(trans('You have already applied a referral code'), 422);
             }
             throw $e;
         }

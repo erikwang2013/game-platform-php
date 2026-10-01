@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { Row } from '../core/api.service';
 import { Field } from '../core/crud';
 import { json } from '../core/render';
+import { use } from '../core/i18n/i18n';
 import { ImageUpload } from '../core/upload';
 import { FormModal } from './form-modal';
 
@@ -49,6 +50,9 @@ class Host {
 describe('FormModal（通用表单弹框）', () => {
   /** image 字段要注入上传服务；不传 = 一个必定失败的空壳（只关心渲染的用例不碰它） */
   const setup = async (image?: (f: File) => Promise<string>): Promise<ComponentFixture<Host>> => {
+    // 界面文案断言用中文：本文件多处断言译文（「当前值」「请选择」…），语言必须显式定，
+    // 否则跟着默认语言（en）走 —— 断言的是 UI 文案，就按某个具体语言断
+    use('zh');
     TestBed.configureTestingModule({
       imports: [Host],
       providers: [
@@ -221,6 +225,49 @@ describe('FormModal（通用表单弹框）', () => {
     expect(f.componentInstance.got?.['permission_ids']).toEqual(['GONE1']);
   });
 
+  /**
+   * **一个都不勾** ⇒ 键必须还在，值是 `[]`。
+   *
+   * 这条钉的是「撤销」这个方向，与上面两条（勾中的要带回来）是两回事：原生
+   * `select[multiple]` 一个都不选时**不进 FormData**，全靠 `fire()` 用 `fd.getAll(name)`
+   * 兜住。若哪天图省事改成 `Object.fromEntries(new FormData(form))`，键会**整个消失** ——
+   * 而服务端判的是 `$request->has('role_ids')`（`UserController::update:211`），
+   * 于是「收回全部角色」**静默失效**：提交看着成功、授权原封不动。
+   *
+   * 受影响的不止管理端的「分配角色」，角色表单的权限多选同吃这一条。
+   */
+  it('multi：一个都不勾 ⇒ 键仍在、值为空数组（清空授权不能被静默吃掉）', async () => {
+    const f = await setup();
+    f.componentInstance.fields.set([
+      {
+        name: 'role_ids',
+        label: '角色',
+        type: 'multi',
+        options: [
+          { value: 'R1', label: '运营' },
+          { value: 'R2', label: '客服' },
+        ],
+      },
+    ]);
+    f.componentInstance.open.set(true);
+    // 预填勾上 R1 —— 正是「本来有角色，现在要全收回」的现场
+    f.componentInstance.value.set({ role_ids: ['R1'] });
+    f.detectChanges();
+
+    const sel = el<HTMLSelectElement>(f, 'select[name="role_ids"]');
+    expect(Array.from(sel.options).filter((o) => o.selected).map((o) => o.value)).toEqual(['R1']);
+
+    // 界面上全部取消勾选
+    for (const option of Array.from(sel.options)) {
+      option.selected = false;
+    }
+    await submit(f);
+
+    // 键在不在是这条用例的全部意义：只断言 `toEqual({role_ids: []})` 不够直观，故显式再钉一次
+    expect(Object.hasOwn(f.componentInstance.got ?? {}, 'role_ids')).toBe(true);
+    expect(f.componentInstance.got).toEqual({ role_ids: [] });
+  });
+
   it('开→关→再开：输入被重建，不带上一轮残留', async () => {
     const f = await setup();
     f.componentInstance.open.set(true);
@@ -321,5 +368,34 @@ describe('FormModal（通用表单弹框）', () => {
     expect(el<HTMLElement>(f, '.err').textContent).toContain('invalid_resource_type');
     expect(el<HTMLInputElement>(f, 'input[name="cover"]').value).toBe('https://cdn.test/old.png');
     expect(f.nativeElement.querySelector('.modal')).toBeTruthy();
+  });
+
+  /**
+   * Field.placeholder 与 label 一样是**词条键**（页面侧只写键，见 pages/*-fields.ts）：
+   * 渲染时必须过 `| t`。漏了这一步既不报错也不影响提交 —— 输入框里明晃晃地摆着
+   * `risk.rule.name_hint` 给运营看，只有盯着界面才发现。
+   */
+  it('placeholder 是词条键时渲染译文（不是把键名摆给用户看）', async () => {
+    const f = await setup();
+    // 三个分支各一条：text 走 @default、textarea 走自己的分支 —— 两处各写了一遍绑定，
+    // 漏一处就只在一半字段上露出键名（实测：只钉 text 的话，把 textarea 那处改回裸值照样全绿）
+    f.componentInstance.fields.set([
+      { name: 'name', label: '规则名', type: 'text', placeholder: 'risk.rule.name_hint' },
+      { name: 'note', label: '说明', type: 'textarea', placeholder: 'withdraw.set_min_hint' },
+      { name: 'sort', label: '排序', type: 'number', placeholder: 'payment.sort_hint' },
+      { name: 'raw', label: '未抽取', type: 'text', placeholder: '还没抽取的字面量' },
+    ]);
+    f.componentInstance.open.set(true);
+    f.detectChanges();
+
+    expect(el<HTMLInputElement>(f, 'input[name="name"]').placeholder).toBe(
+      '评估器日志与命中记录里回显的就是它',
+    );
+    expect(el<HTMLTextAreaElement>(f, 'textarea[name="note"]').placeholder).toBe(
+      '高于某档单笔最高时整笔拒绝',
+    );
+    expect(el<HTMLInputElement>(f, 'input[name="sort"]').placeholder).toBe('数字越小越靠前');
+    // 词条表里没有的键原样返回（迁移期那些还没抽取的 placeholder 照旧显示）
+    expect(el<HTMLInputElement>(f, 'input[name="raw"]').placeholder).toBe('还没抽取的字面量');
   });
 });

@@ -88,7 +88,7 @@ class RiskIpController extends BaseController
             // Redis 不可用时缓存随 TTL 自然过期
         }
 
-        return $this->success(['message' => '已刷新信誉缓存（外部检测服务未接入）']);
+        return $this->success(['message' => trans('Reputation cache refreshed (external detection service not integrated)')]);
     }
 
     private function writeReputation(Request $request, string $source, int $score): Response
@@ -131,7 +131,7 @@ class RiskIpController extends BaseController
     {
         $ip = filter_var(trim($raw), FILTER_VALIDATE_IP);
         if ($ip === false) {
-            throw new \InvalidArgumentException('非法 IP 地址');
+            throw new \InvalidArgumentException(trans('Invalid IP address'));
         }
 
         return $ip;

@@ -25,7 +25,7 @@ class AmountAnomalyEvaluator implements RiskEvaluator
         $minAmount = (string) ($config['min_amount'] ?? '0');
 
         if (bccomp($amount, $minAmount, 4) >= 0) {
-            return ['matched' => true, 'message' => "单笔金额 {$amount} ≥ 阈值 {$minAmount}", 'severity' => 'medium'];
+            return ['matched' => true, 'message' => trans('Single amount %amount% ≥ threshold %threshold%', ['%amount%' => (string) $amount, '%threshold%' => (string) $minAmount]), 'severity' => 'medium'];
         }
 
         return ['matched' => false, 'message' => '金额正常', 'severity' => 'low'];

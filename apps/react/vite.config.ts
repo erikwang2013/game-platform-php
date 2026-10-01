@@ -3,7 +3,7 @@ import { defineConfig } from 'vite'
 
 // 开发服务器端口与后端地址集中在此；产物用相对路径 /api/v1，由 nginx 同源转发
 const DEV_PORT = 5173
-const API_TARGET = 'http://localhost:8792'
+const API_TARGET = 'http://games.test'
 
 // https://vite.dev/config/
 export default defineConfig({

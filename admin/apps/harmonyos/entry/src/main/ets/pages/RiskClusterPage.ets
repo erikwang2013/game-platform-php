@@ -18,6 +18,7 @@ import { LoadingView, ErrorView, EmptyView, ResultDialog } from '../common/Compo
 import { FormField, FieldOption } from '../common/FormDialog';
 import { FormValues, FormPayload } from '../model/DataModels';
 import { PagerBar, ExtraActionDialog } from '../common/ResourceViews';
+import { t, t1 } from '../i18n/Translations';
 
 /**
  * 关联团伙页 —— 列表 + 页面级「聚类检测 / 人工确认」+ 行内「成员 / 状态」。
@@ -42,50 +43,45 @@ import { PagerBar, ExtraActionDialog } from '../common/ResourceViews';
  *       PUT  /admin/v1/risk/clusters/{hashid}/status {status} + GET /clusters/{hashid}/members
  */
 
+/** label / hint / placeholder 一律存**键名**（FormDialog 渲染时各调一次 t()）—— 顶层调 t() 会固化启动语言 */
 const CLUSTER_TYPE_OPTIONS: FieldOption[] = [
-  { label: '同 IP', value: 'same_ip' },
-  { label: '同设备', value: 'same_device' },
-  { label: '同支付账号', value: 'same_pay_account' },
-  { label: '人工指定', value: 'manual' }
+  { label: 'risk.cluster.type_same_ip', value: 'same_ip' },
+  { label: 'risk.cluster.type_same_device', value: 'same_device' },
+  { label: 'risk.cluster.type_same_pay', value: 'same_pay_account' },
+  { label: 'risk.cluster.type_manual', value: 'manual' }
 ];
 
 const CLUSTER_STATUS_OPTIONS: FieldOption[] = [
-  { label: '观察中', value: '1' },
-  { label: '已处置', value: '2' },
-  { label: '误判', value: '0' }
+  { label: 'risk.cluster.status_watching', value: '1' },
+  { label: 'risk.cluster.status_handled', value: '2' },
+  { label: 'risk.cluster.status_false_positive', value: '0' }
 ];
 
 const CONFIRM_FIELDS: FormField[] = [
-  { name: 'name', label: '团伙名称', type: 'text', required: true, placeholder: '如「同设备批量小号 A」' },
-  { name: 'type', label: '关联类型', type: 'select', required: true, options: CLUSTER_TYPE_OPTIONS },
-  {
-    name: 'fingerprint', label: '关联指纹', type: 'text',
-    hint: '同 IP 填 ip_hash、同设备填 fp_hash（完整值，可从候选行带过来）；人工指定可留空。\n'
-      + '成员名单不随请求上送 —— 服务端按这个指纹现查成员（与「成员」按钮同一份名单），'
-      + '落库后点列表行的「成员」看结果。',
-    placeholder: 'same_ip / same_device 必填'
-  },
-  { name: 'user_count', label: '成员数（展示用）', type: 'number', placeholder: '服务端取「成员数」与它的较大者' }
+  { name: 'name', label: 'risk.cluster.field_name', type: 'text', required: true, placeholder: 'risk.cluster.name_placeholder' },
+  { name: 'type', label: 'risk.cluster.field_type', type: 'select', required: true, options: CLUSTER_TYPE_OPTIONS },
+  { name: 'fingerprint', label: 'risk.cluster.field_fingerprint', type: 'text', hint: 'risk.cluster.fingerprint_hint',
+    placeholder: 'risk.cluster.fingerprint_placeholder' },
+  { name: 'user_count', label: 'risk.cluster.field_user_count', type: 'number', placeholder: 'risk.cluster.user_count_placeholder' }
 ];
 
 const STATUS_FIELDS: FormField[] = [
-  {
-    name: 'status', label: '团伙状态', type: 'select', required: true, options: CLUSTER_STATUS_OPTIONS,
-    hint: '三种状态都要显式选：观察中 / 已处置 / 误判。'
-  }
+  { name: 'status', label: 'risk.cluster.field_status', type: 'select', required: true, options: CLUSTER_STATUS_OPTIONS,
+    hint: 'risk.cluster.status_hint' }
 ];
 
+/** 两个查表函数都在 build() 里调用 ⇒ 每次重渲染重新查表，语言切换即时生效 */
 function clusterStatusText(status: number): string {
   if (status === 1) {
-    return '观察中';
+    return t('risk.cluster.status_watching');
   }
-  return status === 2 ? '已处置' : '误判';
+  return status === 2 ? t('risk.cluster.status_handled') : t('risk.cluster.status_false_positive');
 }
 
 function clusterTypeText(type: string): string {
   for (let i = 0; i < CLUSTER_TYPE_OPTIONS.length; i++) {
     if (CLUSTER_TYPE_OPTIONS[i].value === type) {
-      return CLUSTER_TYPE_OPTIONS[i].label;
+      return t(CLUSTER_TYPE_OPTIONS[i].label);
     }
   }
   return type;
@@ -104,14 +100,15 @@ async function submitConfirm(_id: string, body: FormPayload): Promise<string[]> 
   };
   await RiskService.confirmCluster(req);
   const lines: string[] = [];
-  lines.push(`已确认团伙「${name}」（${clusterTypeText(type)}）`);
-  lines.push('成员名单未随请求上送 —— 服务端按 type + fingerprint 现查，落库后点该行的「成员」查看。');
+  lines.push(t('risk.cluster.confirm_ok').replace('{name}', name).replace('{type}', clusterTypeText(type)));
+  lines.push(t('risk.cluster.members_not_sent'));
   return lines;
 }
 
 @Entry
 @Component
 struct RiskClusterPage {
+  @StorageLink('app_locale') localeCode: string = 'en';
   @State rows: RiskClusterItem[] = [];
   /** 检测候选（不落库）：铺在列表上方，每条可一键带进确认表单 */
   @State candidates: RiskClusterCandidate[] = [];
@@ -151,7 +148,7 @@ struct RiskClusterPage {
         return;
       }
       this.hasError = true;
-      promptAction.showToast({ message: '加载失败' });
+      promptAction.showToast({ message: t('common.load_failed') });
     } finally {
       this.isLoading = false;
     }
@@ -182,7 +179,7 @@ struct RiskClusterPage {
     if (this.redirectIfUnauthorized(e)) {
       return;
     }
-    promptAction.showToast({ message: e instanceof Error && e.message.length > 0 ? e.message : '操作失败' });
+    promptAction.showToast({ message: e instanceof Error && e.message.length > 0 ? e.message : t('res.op_failed') });
   }
 
   /** 聚类检测：全局动作、无行上下文，只出候选不落库 */
@@ -196,8 +193,8 @@ struct RiskClusterPage {
       this.candidates = result.candidates ?? [];
       promptAction.showToast({
         message: this.candidates.length > 0
-          ? `发现 ${this.candidates.length} 个候选（近 ${result.window_days} 天）`
-          : `近 ${result.window_days} 天没有新的关联候选`
+          ? t('risk.cluster.detect_found').replace('{count}', `${this.candidates.length}`).replace('{days}', `${result.window_days}`)
+          : t1('risk.cluster.detect_none', 'days', `${result.window_days}`)
       });
     } catch (e) {
       this.reportError(e);
@@ -242,7 +239,7 @@ struct RiskClusterPage {
     const status = Number(`${body['status'] ?? ''}`);
     await RiskService.setClusterStatus(id, status);
     const lines: string[] = [];
-    lines.push(`「${this.statusWho}」的状态已改为 ${clusterStatusText(status)}`);
+    lines.push(t('risk.cluster.status_changed').replace('{name}', this.statusWho).replace('{status}', clusterStatusText(status)));
     return lines;
   }
 
@@ -251,7 +248,7 @@ struct RiskClusterPage {
     this.busyId = item.id;
     try {
       const result = await RiskService.clusterMembers(item.id);
-      this.resultTitle = `「${item.name}」的成员`;
+      this.resultTitle = t1('risk.cluster.members_titled', 'name', item.name);
       this.resultLines = this.memberLines(result);
       this.resultOpen = true;
     } catch (e) {
@@ -264,15 +261,17 @@ struct RiskClusterPage {
   private memberLines(result: RiskClusterMembersResult): string[] {
     const lines: string[] = [];
     const members = result.members ?? [];
-    lines.push(`关联类型 ${clusterTypeText(result.cluster.type)} · 指纹 ${result.cluster.fingerprint_masked}`
-      + ` · 登记成员数 ${result.cluster.user_count} · 状态 ${clusterStatusText(result.cluster.status)}`);
-    lines.push(`实际列出 ${members.length} 人（服务端上限 50）：`);
+    lines.push(t('risk.cluster.members_head')
+      .replace('{type}', clusterTypeText(result.cluster.type)).replace('{fp}', result.cluster.fingerprint_masked)
+      .replace('{count}', `${result.cluster.user_count}`).replace('{status}', clusterStatusText(result.cluster.status)));
+    lines.push(t1('risk.cluster.members_listed', 'n', `${members.length}`));
     for (let i = 0; i < members.length; i++) {
       const member: RiskClusterMember = members[i];
-      lines.push(`${i + 1}. ${member.username}（${member.id}）`);
+      lines.push(t('risk.cluster.member_line')
+        .replace('{n}', `${i + 1}`).replace('{name}', member.username).replace('{id}', member.id));
     }
     if (members.length === 0) {
-      lines.push('（服务端没有查到这个指纹下的成员）');
+      lines.push(t('risk.cluster.members_empty'));
     }
     return lines;
   }
@@ -283,7 +282,7 @@ struct RiskClusterPage {
 
       if (this.confirmOpen) {
         ExtraActionDialog({
-          title: '人工确认团伙',
+          title: t('risk.cluster.confirm_titled'),
           fields: CONFIRM_FIELDS,
           initial: this.confirmInitial,
           submit: submitConfirm,
@@ -296,7 +295,7 @@ struct RiskClusterPage {
 
       if (this.statusOpen) {
         ExtraActionDialog({
-          title: `变更「${this.statusWho}」的状态`,
+          title: t1('risk.cluster.status_titled', 'name', this.statusWho),
           fields: STATUS_FIELDS,
           initial: this.statusInitial,
           actionId: this.statusId,
@@ -349,7 +348,7 @@ struct RiskClusterPage {
         .backgroundColor('#FFFFFF')
         .onClick(() => router.back())
 
-        Text('关联团伙')
+        Text(t('risk.index.cluster'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .margin({ left: 8 })
@@ -362,15 +361,15 @@ struct RiskClusterPage {
 
       // 页面级动作：检测是全局的（没有行上下文），确认是人工入口
       Row() {
-        Text(this.candidates.length > 0 ? `候选 ${this.candidates.length} 个` : '近 7 天候选')
+        Text(this.candidates.length > 0 ? t1('risk.cluster.cand_count', 'count', `${this.candidates.length}`) : t('risk.cluster.cand_recent'))
           .fontSize(13)
           .fontColor('#666666')
           .layoutWeight(1)
 
-        this.smallButton('聚类检测', '#1677FF', '#E6F0FF', !this.detecting, () => {
+        this.smallButton(t('risk.cluster.btn_detect'), '#1677FF', '#E6F0FF', !this.detecting, () => {
           this.detect();
         });
-        this.smallButton('人工确认', '#52C41A', '#E6FFF0', true, () => {
+        this.smallButton(t('risk.cluster.btn_manual'), '#52C41A', '#E6FFF0', true, () => {
           this.openManualConfirm();
         });
       }
@@ -385,7 +384,7 @@ struct RiskClusterPage {
       } else if (this.hasError) {
         ErrorView({ onRetry: () => this.loadData() });
       } else if (this.rows.length === 0 && this.candidates.length === 0) {
-        EmptyView({ message: '暂无已确认团伙，可先跑一次聚类检测' });
+        EmptyView({ message: t('risk.cluster.empty') });
       } else {
         List() {
           // 候选段（不落库）：点「确认」把 type/fingerprint/user_count 带进确认表单
@@ -429,11 +428,11 @@ struct RiskClusterPage {
   candidateRow(candidate: RiskClusterCandidate) {
     Row() {
       Column() {
-        Text(`候选 · ${clusterTypeText(candidate.type)}`)
+        Text(t1('risk.cluster.cand_row', 'type', clusterTypeText(candidate.type)))
           .fontSize(14)
           .fontColor('#333333')
 
-        Text(`${candidate.fingerprint_masked} · ${candidate.user_count} 个账户`)
+        Text(t('risk.cluster.cand_row_sub').replace('{fp}', candidate.fingerprint_masked).replace('{count}', `${candidate.user_count}`))
           .fontSize(12)
           .fontColor('#999999')
           .margin({ top: 2 })
@@ -441,7 +440,7 @@ struct RiskClusterPage {
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
 
-      this.smallButton('确认', '#52C41A', '#E6FFF0', true, () => {
+      this.smallButton(t('risk.cluster.btn_confirm'), '#52C41A', '#E6FFF0', true, () => {
         this.openCandidateConfirm(candidate);
       });
     }
@@ -472,18 +471,19 @@ struct RiskClusterPage {
       .width('100%')
 
       Row() {
-        Text(`${clusterTypeText(item.type)} · ${item.fingerprint_masked} · 成员 ${item.user_count}`
-          + ` · 更新 ${item.updated_at}`)
+        Text(t('risk.cluster.row_summary')
+          .replace('{type}', clusterTypeText(item.type)).replace('{fp}', item.fingerprint_masked)
+          .replace('{n}', `${item.user_count}`).replace('{updated}', item.updated_at))
           .fontSize(12)
           .fontColor('#999999')
           .maxLines(2)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .layoutWeight(1)
 
-        this.smallButton('成员', '#1677FF', '#E6F0FF', this.busyId !== item.id, () => {
+        this.smallButton(t('risk.cluster.btn_members'), '#1677FF', '#E6F0FF', this.busyId !== item.id, () => {
           this.membersRow(item);
         });
-        this.smallButton('状态', '#FA8C16', '#FFF2E6', this.busyId !== item.id, () => {
+        this.smallButton(t('risk.cluster.btn_status'), '#FA8C16', '#FFF2E6', this.busyId !== item.id, () => {
           this.openStatus(item);
         });
       }

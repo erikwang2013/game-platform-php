@@ -88,11 +88,11 @@ class TwoFactorController extends BaseController
             ->first();
 
         if (!$user2FA) {
-            return $this->fail('No pending 2FA setup found. Call /setup first.', 404);
+            return $this->fail(trans('No pending 2FA setup found. Call /setup first.'), 404);
         }
 
         if (!$this->verifyTOTP($user2FA->secret, $code)) {
-            return $this->fail('Invalid TOTP code', 422);
+            return $this->fail(trans('Invalid TOTP code'), 422);
         }
 
         // Generate 8 backup codes (each 10 random alphanumeric characters)
@@ -131,18 +131,18 @@ class TwoFactorController extends BaseController
         try {
             $payload = jwt_wrapper()->verify($request->input('pending_2fa_token'));
         } catch (\Throwable) {
-            return $this->fail('Invalid or expired verification session', 401);
+            return $this->fail(trans('Invalid or expired verification session'), 401);
         }
 
         $userId = (int) ($payload->sub ?? 0);
         $scope  = $payload->scope ?? '';
         if ($userId <= 0 || $scope !== 'pending_2fa') {
-            return $this->fail('Invalid or expired verification session', 401);
+            return $this->fail(trans('Invalid or expired verification session'), 401);
         }
 
         $bound = $this->boundUserId($request);
         if ($bound > 0 && $bound !== $userId) {
-            return $this->fail('user_id does not match current session', 403);
+            return $this->fail(trans('user_id does not match current session'), 403);
         }
 
         $code = $request->input('code');
@@ -158,12 +158,12 @@ class TwoFactorController extends BaseController
             ->first();
 
         if (!$user2FA) {
-            return $this->fail('2FA is not enabled for this user', 404);
+            return $this->fail(trans('2FA is not enabled for this user'), 404);
         }
 
         $user = User::find($userId);
         if (!$user || (int) $user->status !== 1) {
-            return $this->fail('Account is disabled', 403);
+            return $this->fail(trans('Account is disabled'), 403);
         }
 
         // Check TOTP code
@@ -190,7 +190,7 @@ class TwoFactorController extends BaseController
         if ($recorded !== null) {
             return $recorded;
         }
-        return $this->fail('Invalid TOTP code', 422);
+        return $this->fail(trans('Invalid TOTP code'), 422);
     }
 
     #[Apidoc\Title("禁用2FA")]
@@ -217,7 +217,7 @@ class TwoFactorController extends BaseController
         // Verify password
         $user = User::find($userId);
         if (!$user || !password_verify($password, $user->password)) {
-            return $this->fail('Password is incorrect', 422);
+            return $this->fail(trans('Password is incorrect'), 422);
         }
 
         // Verify TOTP
@@ -226,16 +226,16 @@ class TwoFactorController extends BaseController
             ->first();
 
         if (!$user2FA) {
-            return $this->fail('2FA is not enabled', 404);
+            return $this->fail(trans('2FA is not enabled'), 404);
         }
 
         if (!$this->verifyTOTP($user2FA->secret, $code)) {
-            return $this->fail('Invalid TOTP code', 422);
+            return $this->fail(trans('Invalid TOTP code'), 422);
         }
 
         $user2FA->delete();
 
-        return $this->success([], '2FA disabled successfully');
+        return $this->success([], trans('2FA disabled successfully'));
     }
 
     // -----------------------------------------------------------------
@@ -385,11 +385,11 @@ class TwoFactorController extends BaseController
     {
         try {
             if (Redis::exists($this->totpLockKey($userId))) {
-                return $this->fail('Too many failed attempts. Try again later.', 429);
+                return $this->fail(trans('Too many failed attempts. Try again later.'), 429);
             }
         } catch (\Throwable $e) {
             Log::error('2FA lock check Redis failed (fail-closed): ' . $e->getMessage());
-            return $this->fail('Verification temporarily unavailable', 503);
+            return $this->fail(trans('Verification temporarily unavailable'), 503);
         }
         return null;
     }
@@ -405,11 +405,11 @@ class TwoFactorController extends BaseController
             if ($count >= self::TOTP_MAX_FAILURES) {
                 Redis::setex($this->totpLockKey($userId), self::TOTP_LOCK_SECONDS, '1');
                 Redis::del($key);
-                return $this->fail('Too many failed attempts. Try again later.', 429);
+                return $this->fail(trans('Too many failed attempts. Try again later.'), 429);
             }
         } catch (\Throwable $e) {
             Log::error('2FA failure counter Redis failed (fail-closed): ' . $e->getMessage());
-            return $this->fail('Verification temporarily unavailable', 503);
+            return $this->fail(trans('Verification temporarily unavailable'), 503);
         }
         return null;
     }

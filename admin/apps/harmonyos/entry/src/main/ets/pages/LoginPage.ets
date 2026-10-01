@@ -7,6 +7,7 @@ import promptAction from '@ohos.promptAction';
 import http from '@ohos.net.http';
 import { TokenManager } from '../utils/TokenManager';
 import { API_BASE_URL } from '../common/AppConfig';
+import { t, t1 } from '../i18n/Translations';
 
 // 库仅下发 text/order, 刻意不含 x/y: 坐标为服务端校验依据, 下发即泄题
 interface CaptchaTarget {
@@ -74,6 +75,7 @@ const CAPTCHA_H = 200;
 @Entry
 @Component
 struct LoginPage {
+  @StorageLink('app_locale') localeCode: string = 'en';
   @State username: string = '';
   @State password: string = '';
   @State isLoading: boolean = false;
@@ -112,10 +114,10 @@ struct LoginPage {
         this.captchaData = { key: d.key, image: d.image, texts: d.extra?.texts ?? [] };
         this.captchaData!.texts.sort((a, b) => a.order - b.order);
       } else {
-        this.captchaError = '验证码加载失败';
+        this.captchaError = t('login.captcha_load_failed');
       }
     } catch (e) {
-      this.captchaError = '网络错误，无法加载验证码';
+      this.captchaError = t('login.captcha_network_error');
     } finally {
       this.captchaLoading = false;
     }
@@ -125,11 +127,11 @@ struct LoginPage {
   openCaptcha(): void {
     const trimmed = this.username.trim();
     if (!trimmed) {
-      this.loginError = '请输入用户名';
+      this.loginError = t('login.username_placeholder');
       return;
     }
     if (!this.password) {
-      this.loginError = '请输入密码';
+      this.loginError = t('login.password_placeholder');
       return;
     }
     this.loginError = '';
@@ -162,11 +164,11 @@ struct LoginPage {
   async login(): Promise<void> {
     const trimmedUsername = this.username.trim();
     if (!trimmedUsername) {
-      this.loginError = '请输入用户名';
+      this.loginError = t('login.username_placeholder');
       return;
     }
     if (!this.password) {
-      this.loginError = '请输入密码';
+      this.loginError = t('login.password_placeholder');
       return;
     }
     if (!this.captchaData || this.clicks.length < this.captchaData.texts.length) return;
@@ -195,11 +197,11 @@ struct LoginPage {
         AppStorage.setOrCreate('adminUsername', trimmedUsername);
         router.replaceUrl({ url: 'pages/DashboardPage' });
       } else {
-        this.loginError = result.message ?? '登录失败';
+        this.loginError = result.message ?? t('login.error_failed');
         this.closeCaptcha();
       }
     } catch (e) {
-      this.loginError = '网络错误，请检查连接';
+      this.loginError = t('login.error_network');
       this.closeCaptcha();
     } finally {
       this.isLoading = false;
@@ -211,7 +213,7 @@ struct LoginPage {
   captchaBody() {
     Column() {
       Row() {
-        Text('请按顺序点击图中文字: ')
+        Text(t('login.captcha_prompt'))
           .fontSize(12)
           .fontColor('#666666')
         ForEach(this.captchaData!.texts, (t: CaptchaTarget, i: number) => {
@@ -253,13 +255,15 @@ struct LoginPage {
       .height(CAPTCHA_H)
 
       Row() {
-        Text(`已点击 ${this.clicks.length}/${this.captchaData!.texts.length}`)
+        // 两个占位符串起来换（t1 只吃一个）
+        Text(t('login.captcha_progress').replace('{done}', `${this.clicks.length}`)
+          .replace('{total}', `${this.captchaData!.texts.length}`))
           .fontSize(12)
           .fontColor('#999999')
 
         Blank()
 
-        Button('换一张')
+        Button(t('login.captcha_refresh'))
           .fontSize(12)
           .fontColor('#1677FF')
           .backgroundColor(Color.Transparent)
@@ -274,7 +278,7 @@ struct LoginPage {
   @Builder
   captchaDialog() {
     Column() {
-      Text('安全验证')
+      Text(t('login.captcha_section'))
         .fontSize(16)
         .fontWeight(FontWeight.Bold)
         .width('100%')
@@ -290,7 +294,7 @@ struct LoginPage {
           Text(this.captchaError)
             .fontSize(13)
             .fontColor('#FF4D4F')
-          Button('重试')
+          Button(t('common.retry'))
             .fontSize(13)
             .fontColor('#1677FF')
             .backgroundColor(Color.Transparent)
@@ -303,14 +307,14 @@ struct LoginPage {
       }
 
       Row() {
-        Button('取消')
+        Button(t('common.cancel'))
           .fontSize(14)
           .fontColor('#666666')
           .backgroundColor('#F5F5F5')
           .layoutWeight(1)
           .onClick(() => { this.closeCaptcha(); })
 
-        Button(this.isLoading ? '登录中…' : '确认登录')
+        Button(this.isLoading ? t('login.submitting') : t('login.confirm_login'))
           .fontSize(14)
           .fontColor('#FFFFFF')
           .backgroundColor(this.isLoading || !this.captchaDone() ? '#99BBFF' : '#1677FF')
@@ -346,12 +350,12 @@ struct LoginPage {
                 .objectFit(ImageFit.Contain)
                 .margin({ bottom: 8 })
 
-              Text('开放管理后台')
+              Text(t('login.title'))
                 .fontSize(22)
                 .fontWeight(FontWeight.Bold)
                 .fontColor('#1677FF')
 
-              Text('HarmonyOS 客户端')
+              Text(t('login.subtitle'))
                 .fontSize(12)
                 .fontColor('#999999')
                 .margin({ top: 2 })
@@ -363,7 +367,7 @@ struct LoginPage {
             // 表单区
             Column() {
               // 用户名
-              TextInput({ placeholder: '请输入用户名', text: this.username })
+              TextInput({ placeholder: t('login.username_placeholder'), text: this.username })
                 .height(48)
                 .fontSize(15)
                 .backgroundColor('#F5F5F5')
@@ -373,7 +377,7 @@ struct LoginPage {
 
               // 密码
               Row() {
-                TextInput({ placeholder: '请输入密码', text: this.password })
+                TextInput({ placeholder: t('login.password_placeholder'), text: this.password })
                   .height(48)
                   .fontSize(15)
                   .type(this.showPassword ? InputType.Normal : InputType.Password)
@@ -383,7 +387,7 @@ struct LoginPage {
                   .layoutWeight(1)
                   .onChange((v: string) => { this.password = v; })
 
-                Button(this.showPassword ? '隐藏' : '显示')
+                Button(this.showPassword ? t('login.hide_password') : t('login.show_password'))
                   .fontSize(12)
                   .fontColor('#1677FF')
                   .backgroundColor(Color.Transparent)
@@ -393,7 +397,7 @@ struct LoginPage {
               .width('100%')
               .margin({ top: 14 })
 
-              Text('登录前需完成点击验证')
+              Text(t('login.captcha_required_hint'))
                 .fontSize(12)
                 .fontColor('#999999')
                 .width('100%')
@@ -410,7 +414,7 @@ struct LoginPage {
               }
 
               // 登录按钮 —— 点击后弹出验证码框
-              Button('登 录')
+              Button(t('login.submit'))
                 .width('100%')
                 .height(48)
                 .fontSize(16)
@@ -426,15 +430,15 @@ struct LoginPage {
 
             // 底部操作
             Row() {
-              Text('还没有账号？')
+              Text(t('login.no_account'))
                 .fontSize(13)
                 .fontColor('#999999')
-              Button('立即注册')
+              Button(t('login.register'))
                 .fontSize(13)
                 .fontColor('#1677FF')
                 .backgroundColor(Color.Transparent)
                 .onClick(() => {
-                  promptAction.showToast({ message: '注册功能即将上线' });
+                  promptAction.showToast({ message: t('login.register_soon') });
                 })
             }
             .justifyContent(FlexAlign.Center)

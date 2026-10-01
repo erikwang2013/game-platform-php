@@ -9,6 +9,11 @@ class AnnouncementController extends GetxController {
   final api = ApiService();
   final announcements = <dynamic>[].obs;
   final isLoading = false.obs;
+  final total = 0.obs;
+  final page = 1.obs;
+
+  /// 与后端缺省一致（AnnouncementController::index 的 `input('limit', 15)`）。
+  static const int pageSize = 15;
 
   @override
   void onInit() {
@@ -16,11 +21,13 @@ class AnnouncementController extends GetxController {
     load();
   }
 
-  Future<void> load() async {
+  Future<void> load({int? toPage}) async {
+    if (toPage != null) page.value = toPage;
     isLoading.value = true;
     try {
-      final resp = await api.get('/admin/v1/announcement/list');
-      announcements.value = resp['data'] is List ? resp['data'] as List<dynamic> : (resp['data']['list'] as List<dynamic>? ?? []);
+      final result = await api.list('/admin/v1/announcement/list', page: page.value, pageSize: pageSize);
+      announcements.value = result.rows;
+      total.value = result.total;
     } catch (e) {
       Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.loading_failed')}: $e');
     } finally {
@@ -154,6 +161,13 @@ class AnnouncementPage extends GetView<AnnouncementController> {
             );
           }),
         ),
+        const SizedBox(height: 8),
+        Obx(() => CrudPager(
+              page: ctrl.page.value,
+              total: ctrl.total.value,
+              size: AnnouncementController.pageSize,
+              onPage: (p) => ctrl.load(toPage: p),
+            )),
       ],
     );
   }

@@ -2,7 +2,12 @@
 import { TestBed } from '@angular/core/testing';
 import { describe, expect, it } from 'vitest';
 import { Api, Row } from './api.service';
+import { use } from './i18n/i18n';
 import { ImageUpload, Pre, chunkBody, chunks, displayUrl, failText, preprocessBody } from './upload';
+
+// 兜底文案已是词条（见 dict/frame.ts 的 upload.*）：语言真值在模块级，模块加载时读一次偏好 ⇒
+// 用例里显式定中文，否则断的是英文那一列
+use('zh');
 
 const form = (p: URLSearchParams): Record<string, string> => Object.fromEntries(p);
 

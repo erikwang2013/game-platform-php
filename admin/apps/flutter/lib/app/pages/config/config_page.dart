@@ -15,17 +15,20 @@ class ConfigController extends GetxController {
   final isLoading = false.obs;
   final total = 0.obs;
   final page = 1.obs;
-  final limit = 15.obs;
+
+  /// 与后端缺省一致（ConfigController::index 的 `input('limit', 15)`）。
+  static const int pageSize = 15;
 
   @override
   void onInit() { super.onInit(); loadConfigs(); }
 
-  Future<void> loadConfigs() async {
+  Future<void> loadConfigs({int? toPage}) async {
+    if (toPage != null) page.value = toPage;
     isLoading.value = true;
     try {
-      final resp = await api.get('/admin/v1/config', params: {'page': page.value, 'limit': limit.value});
-      configs.value = resp['data']['list'] as List<dynamic>;
-      total.value = resp['data']['total'] as int;
+      final result = await api.list('/admin/v1/config', page: page.value, pageSize: pageSize);
+      configs.value = result.rows;
+      total.value = result.total;
     } catch (e) {
       Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.loading_failed')}: $e');
     } finally { isLoading.value = false; }
@@ -132,6 +135,13 @@ class ConfigPage extends GetView<ConfigController> {
           },
         );
       })),
+      const SizedBox(height: 8),
+      Obx(() => CrudPager(
+            page: ctrl.page.value,
+            total: ctrl.total.value,
+            size: ConfigController.pageSize,
+            onPage: (p) => ctrl.loadConfigs(toPage: p),
+          )),
     ]);
   }
 
