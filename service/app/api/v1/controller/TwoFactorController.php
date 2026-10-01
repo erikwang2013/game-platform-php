@@ -120,7 +120,12 @@ class TwoFactorController extends BaseController
     {
         $validator = validator($request->all(), [
             'pending_2fa_token' => 'required|string',
-            'code'              => 'required|string|size:6',
+            // 6 位 = TOTP；10 位 = 备份码。**原先是 size:6，把下面的备份码分支整段挡成了死代码** ——
+            // `generateBackupCode()` 发的是 10 位字母数字（见 enable()），而 176-188 行的
+            // `array_search($code, $backupCodes)` 永远到不了 ⇒ **系统发给用户 8 个用不了的备份码**，
+            // 丢了验证器的人按提示填备份码必然 422。放宽到 6-10 位，由下面的分支去判是哪种。
+            // 长度落在 7-9 的输入两种都不匹配 ⇒ 照旧 422（不会误放行）。
+            'code'              => 'required|string|between:6,10',
         ]);
 
         if ($validator->fails()) {

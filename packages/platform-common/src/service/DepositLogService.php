@@ -78,12 +78,25 @@ class DepositLogService
                 ->groupBy('game_id')
                 ->pluck('c', 'game_id');
 
-            $depositors = DepositOrder::select('game_id', Db::raw('COUNT(DISTINCT user_id) AS c'))
-                ->where('status', 'confirmed')
+            // ⚠ 充值订单**没有 game_id 列**（`game_deposit_order` 的列里没有它），所以「某游戏多少人充过值」
+            // 只能从对局记录反推：该游戏的玩家里，有多少人同期有过确认充值。
+            // 旧写法直接 select DepositOrder.game_id ⇒ SQL 1054，而下面的 catch 把它吞成空数组
+            // ⇒ **转化图永远是空的、且不报错**。判据：`SHOW COLUMNS FROM game_deposit_order` 里没有 game_id。
+            // ponytail: whereIn 把充值用户全列进 IN —— 管理端看板按天窗口够用；真到十万级充值用户时
+            //           应改成 join game_user_wallet / 物化表，别在这一层硬撑。
+            $depositorIds = DepositOrder::where('status', 'confirmed')
                 ->where('created_at', '>=', $since)
-                ->whereNotNull('game_id')
-                ->groupBy('game_id')
-                ->pluck('c', 'game_id');
+                ->distinct()
+                ->pluck('user_id')
+                ->all();
+
+            $depositors = $depositorIds === []
+                ? collect()
+                : GamePlayLog::select('game_id', Db::raw('COUNT(DISTINCT user_id) AS c'))
+                    ->where('created_at', '>=', $since)
+                    ->whereIn('user_id', $depositorIds)
+                    ->groupBy('game_id')
+                    ->pluck('c', 'game_id');
 
             $gameIds = $players->keys()->merge($depositors->keys())->unique();
             $result = [];
@@ -100,7 +113,11 @@ class DepositLogService
                 ];
             }
             return $result;
-        } catch (Throwable) {
+        } catch (Throwable $e) {
+            // 只 log 不抛：看板不该因为一个聚合查询失败整页 500（与本类其它方法的取舍一致）。
+            // **但不能静默** —— 上面那个「查了不存在的 game_id 列」就是被这里的空 catch 藏了不知多久。
+            Log::error('conversionByGame failed: ' . $e->getMessage());
+
             return [];
         }
     }

@@ -20,7 +20,19 @@ class DailyTaskHandler implements ActivityHandlerInterface
 {
     public function canJoin(int $userId, Activity $activity, array $ctx): bool
     {
-        return $activity->status === Activity::STATUS_ENABLED
+        // ⚠ 必须要求「有事件名」。本类的语义是**由事件驱动**累加（见下面 onProgress 对
+        // `task.event` 的匹配），而 `ActivityService::checkin()` 传的 ctx 是
+        // `['event' => '', 'game_id' => 0, …]` —— 两者本来不该相遇。
+        //
+        // 不挡这一道会怎样（实测过）：checkin 建出 `target=1` 的行 → 直接 `current += 1` 达标
+        // → 发奖，**完全绕过 onProgress 的事件匹配** ⇒ 加一个 `game_id=0` 的每日任务（admin
+        // 新建时的默认值）即可**点一下白拿奖**；更重的是该行随即被置 `REWARDED`，而
+        // `ActivityService::progress()` 对 REWARDED 直接 return ⇒ **当天真实事件再也累加不进去**。
+        //
+        // 为什么加这一条不会误伤：`progress()` 只由 EventBus 入口 `handle()` 调用，而那里
+        // `$ctx['event']` 是真实事件名（`handle()` 的入参 `$event`），恒非空。
+        return ($ctx['event'] ?? '') !== ''
+            && $activity->status === Activity::STATUS_ENABLED
             && ($activity->start_at === null || $activity->start_at <= $ctx['now'])
             && ($activity->end_at === null || $activity->end_at >= $ctx['now'])
             && ($activity->game_id === 0 || (int) ($ctx['game_id'] ?? 0) === $activity->game_id);
