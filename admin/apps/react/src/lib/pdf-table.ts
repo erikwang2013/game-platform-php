@@ -41,7 +41,7 @@ export type PdfTable = {
  */
 export function buildPdfTable(
   title: string,
-  columns: { key: string; label: string }[],
+  columns: { key: string; label: string; render?: (row: Record<string, unknown>) => unknown }[],
   rows: Record<string, unknown>[],
 ): PdfTable {
   const visible = columns.filter((column) => !UI_ONLY.includes(column.key));
@@ -50,7 +50,15 @@ export function buildPdfTable(
     title,
     data: {
       columns: visible.map((column) => t(column.label as MessageKey)),
-      rows: rows.map((row) => visible.map((column) => cellText(row[column.key]))),
+      // 值**不在行里、只在 render 里**的列（状态影子列：`status_label` 是渲染期现算的文案）要按
+      // render 的返回值取，否则导出里那一格恒为空。判据用 `typeof === 'string'`：其余列的 render
+      // 返回的是 JSX（行尾动作、树标记），进 PDF 会变成 `[object Object]`，那些照旧读原字段。
+      rows: rows.map((row) =>
+        visible.map((column) => {
+          const rendered = column.render?.(row);
+          return cellText(typeof rendered === 'string' ? rendered : row[column.key]);
+        }),
+      ),
     },
   };
 }

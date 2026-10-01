@@ -1,0 +1,184 @@
+/* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
+/* ============================================================
+   霓虹街机 · Neon Arcade —— C 端设计系统：色板与两套皮肤
+
+   1. **深色是默认皮肤**，亮色由 `prefers-color-scheme` 覆盖（同一套几何，
+      只换取值）。`color-scheme` 跟着切 —— 不切的话原生 `<select>` 下拉、
+      滚动条、自动填充底色会按浏览器默认的亮色画，在深色页面上白得刺眼。
+   2. **分层靠明度差 + 柔和投影，不靠描边、不靠毛玻璃**。上一版
+      "Aurora Glass" 每张卡都 `backdrop-filter: blur(16px)`：手机上没有
+      "玻璃后面" 可透，透过去的是另一张同样模糊的卡 ⇒ 读起来是糊的噪声，
+      而且每层都要合成一次图层。现在毛玻璃只留在三处**会动的 chrome**
+      （`.rail` / `.topbar` / `.tabbar`），那里下面是真滚动内容，玻璃才有意义。
+   3. 全树只有一种描边口径 `1px solid var(--line)`。
+   4. 金额/编号一律 `tabular-nums`（`.amount` / `.mono`），列表里数字必须竖对齐。
+   ============================================================ */
+:root {
+  color-scheme: dark;
+
+  /* ---- 画布与表面：四层深度，全部不透明 ---- */
+  --bg: #0c0d12;
+  --bg-2: #121419;
+  --surface: #171a21;
+  --surface-2: #1e222b;
+  --surface-3: #272c38;
+
+  /* ---- 文本 ---- */
+  --text: #f0f2f7;
+  --text-2: #9aa3b8;
+  --text-3: #6b7488;
+
+  /* ---- 线条：暗底上纯色描边会脏，用半透明白 ---- */
+  --line: rgba(255, 255, 255, 0.08);
+  --line-2: rgba(255, 255, 255, 0.16);
+
+  /* ---- 品牌：电紫。取值贴着吉祥物小骰自身的体色（#8f6cff → #4a2fd0），
+         品牌色和吉祥物不能互相打架 ---- */
+  --primary: #a855f7;
+  --primary-2: #c084fc;
+  --primary-deep: #7c22ce;
+  --primary-ink: #ffffff;
+
+  /* ---- 街机代币金：小骰手里那枚硬币的颜色。只给「奖励 / 名次 / 代币」
+         这类**战利品**场合用，绝不做主操作按钮 —— 主操作只有电紫一种 ---- */
+  --gold: #ffc857;
+  --gold-ink: #2a1c00;
+
+  /* ---- 语义色 ---- */
+  --pos: #2fe3a8;
+  --neg: #ff5f7a;
+  --warn: #ff9f45;
+  --info: #58a6ff;
+  --ring: rgba(168, 85, 247, 0.42);
+
+  /* ---- 玻璃/遮罩（只给三处 chrome） ---- */
+  --glass: rgba(12, 13, 18, 0.78);
+  --veil: rgba(6, 7, 10, 0.68);
+  --tint: rgba(255, 255, 255, 0.05);
+  /* 比轨道亮一档的「浮起」面。暗底要更亮、亮底要更白，所以不能复用
+     --surface-N 的序号（它在两套皮肤里明暗方向相反） */
+  --raise: #2b3140;
+
+  /* ---- 圆角：四档。上一版所有东西都是 20px / 999px，
+         满屏同一个圆角等于没有圆角层级；药丸只留给标签 ---- */
+  --r-xs: 6px;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 18px;
+  --r-xl: 24px;
+  --r-full: 999px;
+
+  /* ---- 投影：暗底靠扩散而不是位移 ---- */
+  --sh-1: 0 1px 2px rgba(0, 0, 0, 0.45);
+  --sh-2: 0 4px 16px -6px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 0.4);
+  --sh-3: 0 24px 56px -18px rgba(0, 0, 0, 0.82), 0 6px 18px rgba(0, 0, 0, 0.5);
+  /* 只给主操作按钮，全树唯一一处发光 */
+  --glow: 0 8px 26px -8px rgba(168, 85, 247, 0.62);
+
+  /* ---- 字号阶梯 ---- */
+  --fs-2xs: 10.5px;
+  --fs-xs: 11.5px;
+  --fs-sm: 12.5px;
+  --fs-md: 14px;
+  --fs-base: 15px;
+  --fs-lg: 17px;
+  --fs-xl: 21px;
+  --fs-2xl: 26px;
+  --fs-3xl: 34px;
+
+  /* ---- 间距刻度（4 的倍数） ---- */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-12: 48px;
+  --s-16: 64px;
+
+  /* ---- 动效 ---- */
+  --ease: cubic-bezier(0.22, 0.68, 0.28, 1);
+  --t-fast: 0.12s;
+  --t: 0.2s;
+
+  --chrome-h: 60px;
+  --tabbar-h: 64px;
+  --max: 1180px;
+  /* 侧栏宽度。旧令牌名，`--rail` 在 app.scss 之外无人引用，但保留以兼容 */
+  --rail: 208px;
+
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans CJK SC',
+    system-ui, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Noto Sans Mono CJK SC',
+    monospace;
+
+  /* ---------- 旧令牌名：一律留成别名 ----------
+     155 处 `var(--…)` 里绝大多数用下面这些名字。改的是**取值不是名字**，
+     页面一排都不用动。新写的样式请直接用上面那套（--surface-N / --line /
+     --text-N / --primary / --gold / --pos / --neg / --r-N / --sh-N）。
+     下面这些名字的引用数清零后即可整块删掉。 */
+  --bg-soft: var(--surface-2);   /* 旧：比画布亮一档的底 */
+  --panel: var(--surface);       /* 旧：卡片面（**现在是实色**，不是原来的白 4%） */
+  --panel-2: var(--surface-2);   /* 旧：浮起面 */
+  --stroke: var(--line);
+  --stroke-2: var(--line-2);
+  --accent: var(--primary);      /* 旧：强调色 = 品牌紫 */
+  --accent-2: var(--gold);       /* 旧：第二强调 = 代币金（原为青） */
+  --grad: linear-gradient(135deg, var(--primary-2) 0%, var(--primary-deep) 100%);
+  --radius: var(--r-lg);
+  --radius-sm: var(--r-sm);
+  /* 旧：毛玻璃半径。现在恒为 none —— 内容面不再用 backdrop-filter。
+     引用点（.dd 等）写的是 `backdrop-filter: var(--blur)`，取值 none 合法且等于关掉。 */
+  --blur: none;
+  --muted: var(--text-2);
+  --ok: var(--pos);
+  --bad: var(--neg);
+}
+
+/* 亮色皮肤：同一套几何，只换取值。
+   ⚠ 品牌紫在亮底上必须压深才够对比度（#a855f7 on #fff 只有 3.1:1），
+   代币金同理 —— 亮底上的金是**琥珀棕**，不是同一个黄。 */
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+
+    --bg: #f4f5f9;
+    --bg-2: #eceef4;
+    --surface: #ffffff;
+    --surface-2: #f5f6fa;
+    --surface-3: #e8eaf2;
+
+    --text: #101322;
+    --text-2: #5a6274;
+    --text-3: #878fa1;
+
+    --line: rgba(16, 19, 34, 0.11);
+    --line-2: rgba(16, 19, 34, 0.2);
+
+    --primary: #7c3aed;
+    --primary-2: #9b5cf6;
+    --primary-deep: #6023c9;
+    --primary-ink: #ffffff;
+
+    --gold: #a16207;
+    --gold-ink: #ffffff;
+
+    --pos: #0d8f68;
+    --neg: #d92f4e;
+    --warn: #b4610a;
+    --info: #2563eb;
+    --ring: rgba(124, 58, 237, 0.28);
+
+    --glass: rgba(255, 255, 255, 0.82);
+    --veil: rgba(20, 26, 45, 0.42);
+    --tint: rgba(16, 19, 34, 0.045);
+    --raise: #ffffff;
+
+    --sh-1: 0 1px 2px rgba(16, 19, 34, 0.07);
+    --sh-2: 0 4px 14px -6px rgba(16, 19, 34, 0.14), 0 1px 3px rgba(16, 19, 34, 0.06);
+    --sh-3: 0 24px 52px -20px rgba(16, 19, 34, 0.26), 0 6px 16px rgba(16, 19, 34, 0.09);
+    --glow: 0 8px 22px -8px rgba(124, 58, 237, 0.5);
+  }
+}

@@ -2,7 +2,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { Api, Page, Row } from '../core/api.service';
 import { Field } from '../core/crud';
-import { idOf, json, kvOf, scalarsOf } from '../core/render';
+import { idOf, json, kvLabel, kvOf, scalarsOf } from '../core/render';
 import { errText } from '../core/util';
 import { downloadTransactions } from '../core/export';
 import { ListBase } from '../core/list-base';
@@ -163,7 +163,8 @@ export class Support extends ListBase<Row> {
   private formRow: Row | null = null;
   private formAct = '';
 
-  protected readonly info = computed(() => kvOf(this.detail()));
+  /** 详情键值：字段名走 `kvLabel`（`col.<字段名>` 词条），抽屉里不摆 `last_login_ip` 这种裸列名 */
+  protected readonly info = computed(() => kvOf(this.detail(), kvLabel));
   protected readonly scalars = computed(() => scalarsOf(this.raw()));
 
   protected pick(key: string): void {

@@ -65,7 +65,7 @@ interface Mark extends Click {
 
       @if (capOpen()) {
         <div class="backdrop" (click)="closeCap()"></div>
-        <div class="modal" role="dialog" aria-modal="true" [attr.aria-label]="'login.captcha' | t">
+        <div class="modal modal-sm" role="dialog" aria-modal="true" [attr.aria-label]="'login.captcha' | t">
           <header>
             <b>{{ 'login.captcha' | t }}</b>
             <span class="spacer"></span>

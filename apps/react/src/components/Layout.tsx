@@ -79,7 +79,7 @@ export function Layout() {
           </div>
 
           <nav className="nav" aria-label="主导航">
-            {[...NAV, ...MORE].map((n) => (
+            {NAV.map((n) => (
               <NavLink
                 key={n.to}
                 to={n.to}
@@ -89,12 +89,29 @@ export function Layout() {
                 {n.label}
               </NavLink>
             ))}
+            {/* 次级入口收进「更多」折叠面板：13 项平铺在顶栏会把标签挤成竖排。
+                收起时链接**仍在 DOM 里**（display:none 不摘节点），端到端用例靠
+                `nav a` 的文本找「活动 / 赛事 / 邀请好友」，别改成条件渲染。 */}
+            <details className="nav__more">
+              <summary>更多</summary>
+              <div className="nav__menu">
+                {MORE.map((n) => (
+                  <NavLink
+                    key={n.to}
+                    to={n.to}
+                    className={({ isActive }) => `nav__a${isActive ? ' is-active' : ''}`}
+                  >
+                    {n.label}
+                  </NavLink>
+                ))}
+              </div>
+            </details>
           </nav>
 
           <div className="acct">
             {user ? (
               <>
-                <Link to="/me" className="small" style={{ fontWeight: 700 }}>
+                <Link to="/me" className="acct__name">
                   {user.nickname || user.username}
                 </Link>
                 <button type="button" className="btn btn--sm" onClick={onLogout}>

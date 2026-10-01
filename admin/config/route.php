@@ -44,10 +44,10 @@ function v(string $controller, string $action, string $version = 'v1'): \Closure
 // ============================================================
 Route::get('/health', [app\admin\v1\controller\HealthController::class, 'index']);
 
-// Prometheus 指标（需 JWT 认证 + 权限）
+// Prometheus 指标：管理员 JWT（原路径，仍走 AdminPermission）或静态抓取令牌，见 MetricsAuth
+// 拒绝形状是 401/403 + text/plain（抓取器读得懂），不是本仓其它端点的 200 + JSON 信封
 Route::get('/metrics', [app\admin\v1\controller\MetricsController::class, 'index'])->middleware([
-    app\middleware\AdminAuth::class,
-    app\middleware\AdminPermission::class,
+    app\middleware\MetricsAuth::class,
 ]);
 
 // security.txt — RFC 9116 安全漏洞报告联系人
@@ -178,6 +178,7 @@ Route::group('/admin/v1', function () {
     // C端用户管理
     Route::get('/platform/user/list', [app\admin\v1\controller\PlatformUserController::class, 'list']);
     Route::get('/platform/user/{hashid}', [app\admin\v1\controller\PlatformUserController::class, 'detail']);
+    Route::get('/platform/user/{hashid}/transactions', [app\admin\v1\controller\PlatformUserController::class, 'transactions']);
     Route::put('/platform/user/{hashid}', [app\admin\v1\controller\PlatformUserController::class, 'update']);
     Route::delete('/platform/user/{hashid}', [app\admin\v1\controller\PlatformUserController::class, 'destroy']);
 

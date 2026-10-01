@@ -39,50 +39,37 @@ class SearchController extends BaseController
             return $this->success(['list' => [], 'total' => 0]);
         }
 
-        try {
-            $results = Game::search($q)->where('status', 1)
-                ->paginate($perPage, 'page', $page);
+        // ⚠ 本仓**未接 scout/ES**，下面是**唯一在跑**的检索路径，不是"ES 挂了时的降级"。
+        // 原先这里是一个 `try { Game::search($q)… } catch (\Throwable) { … }`，注释写着
+        // "Fallback to LIKE search if ES is not available" —— 那句话是**假的**：全仓没有任何模型
+        // `use Searchable`（`Searchable` 只出现在一条注释、一条测试断言和 config/scout.php 的说明里），
+        // 所以 `Game::search()` 必然抛 `BadMethodCallException: Call to undefined method
+        // common\model\Game::search()`（实测，非"ES 连不上"），被宽 catch 吞掉后每请求都白跑一次异常。
+        // 该分支已删除。**要真接全文检索，那是独立一批**：挂 trait + scout 配置 + 索引同步 + 用例，
+        // 而不是把这里的 LIKE 重新包回 try 里。
+        $like = '%' . $q . '%';
+        // ⚠ 两个 LIKE 必须**包进同一层闭包**。平铺的 orWhere 生成的是
+        // `status=1 AND name LIKE ? OR description LIKE ?`，而 SQL 里 AND 优先于 OR
+        // ⇒ 实际等价于 `(status=1 AND name LIKE ?) OR (description LIKE ?)`，
+        // 描述命中的那一支**绕过 status=1** ⇒ 已下架的游戏（`game_game.status` 注释：0=下架）
+        // 只要简介命中关键词就会出现在 C 端搜索结果里。
+        $query = Game::where('status', 1)->where(function ($w) use ($like) {
+            $w->where('name', 'like', $like)->orWhere('description', 'like', $like);
+        });
 
-            $list = [];
-            foreach ($results->items() as $item) {
-                $data = $item->toArray();
-                $data['id'] = $this->encodeId($data['id']);
-                unset($data['password']);
-                $list[] = $data;
-            }
+        $total = $query->count();
+        $items = $query->forPage($page, $perPage)->get()->map(function ($item) {
+            $data = $item->toArray();
+            $data['id'] = $this->encodeId($data['id']);
+            unset($data['password']);
+            return $data;
+        });
 
-            return $this->success([
-                'list' => $list,
-                'total' => $results->total(),
-                'page' => $page,
-                'per_page' => $perPage,
-            ]);
-        } catch (\Throwable $e) {
-            // Fallback to LIKE search if ES is not available
-            $like = '%' . $q . '%';
-            // ⚠ 两个 LIKE 必须**包进同一层闭包**。平铺的 orWhere 生成的是
-            // `status=1 AND name LIKE ? OR description LIKE ?`，而 SQL 里 AND 优先于 OR
-            // ⇒ 实际等价于 `(status=1 AND name LIKE ?) OR (description LIKE ?)`，
-            // 描述命中的那一支**绕过 status=1** ⇒ 已下架的游戏（`game_game.status` 注释：0=下架）
-            // 只要简介命中关键词就会出现在 C 端搜索结果里。
-            $query = Game::where('status', 1)->where(function ($w) use ($like) {
-                $w->where('name', 'like', $like)->orWhere('description', 'like', $like);
-            });
-
-            $total = $query->count();
-            $items = $query->forPage($page, $perPage)->get()->map(function ($item) {
-                $data = $item->toArray();
-                $data['id'] = $this->encodeId($data['id']);
-                unset($data['password']);
-                return $data;
-            });
-
-            return $this->success([
-                'list' => $items,
-                'total' => $total,
-                'page' => $page,
-                'per_page' => $perPage,
-            ]);
-        }
+        return $this->success([
+            'list' => $items,
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $perPage,
+        ]);
     }
 }

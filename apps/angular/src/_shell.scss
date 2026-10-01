@@ -1,0 +1,228 @@
+/* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
+/* ============================================================
+   霓虹街机 · Neon Arcade —— 外壳：桌面侧栏 / 顶栏 / 移动端底部页签
+
+   这三条是**唯一还留着毛玻璃的三处**：它们跟着页面滚动或固定在视口上，
+   底下永远有内容在动，模糊才是"透出后面"而不是"糊一层"。
+   其余面板一律实色分层 —— 理由见 _tokens.scss 的头部注释。
+   ============================================================ */
+/* ---------------- 外壳：桌面侧栏 ---------------- */
+.app {
+  min-height: 100%;
+}
+
+.rail {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: var(--rail);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-1);
+  padding: var(--s-5) var(--s-3);
+  background: var(--bg-2);
+  border-right: 1px solid var(--line);
+  overflow-y: auto;
+  z-index: 30;
+}
+
+/* 字标底下的「机台灯条」：品牌紫渐到代币金。用 background 贴底画，
+   不用 ::after + 绝对定位 —— 后者要手算 margin，换个字号就错位。 */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-1) var(--s-2) var(--s-5);
+  font-weight: 800;
+  font-size: var(--fs-lg);
+  letter-spacing: -0.03em;
+  background: linear-gradient(90deg, var(--primary), var(--gold) 62%, transparent) 0 100% / 100%
+    2px no-repeat;
+}
+/* 品牌位放吉祥物「小骰」（原来是渐变实底圆点） */
+.brand .dot {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-sm);
+  object-fit: contain;
+  flex: none;
+}
+
+.nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  min-height: 44px;
+  padding: var(--s-2) var(--s-3);
+  border-radius: var(--r-sm);
+  color: var(--text-2);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  border: 1px solid transparent;
+  transition:
+    background var(--t-fast) var(--ease),
+    color var(--t-fast) var(--ease);
+  cursor: pointer;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+.nav-item:hover {
+  color: var(--text);
+  background: var(--tint);
+}
+.nav-item.active {
+  color: var(--text);
+  background: color-mix(in srgb, var(--primary) 16%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 32%, transparent);
+}
+/* 「你在这里」用一根色条说，比整块反色克制，也不跟主按钮抢 */
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: -13px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  border-radius: 0 3px 3px 0;
+  background: var(--primary);
+}
+.nav-item svg {
+  flex: none;
+}
+
+.rail-foot {
+  margin-top: auto;
+  padding-top: var(--s-4);
+}
+
+/* ---------------- 外壳：顶栏 ---------------- */
+.app-body {
+  min-height: 100%;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  height: var(--chrome-h);
+  padding: 0 var(--s-6);
+  background: var(--glass);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+}
+
+.search {
+  flex: 1;
+  max-width: 420px;
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  height: 40px;
+  padding: 0 var(--s-4);
+  border-radius: var(--r-sm);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--text-3);
+  transition:
+    border-color var(--t-fast) var(--ease),
+    box-shadow var(--t-fast) var(--ease);
+}
+.search:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--ring);
+}
+.search input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: 0;
+  outline: 0;
+  color: var(--text);
+  font: inherit;
+}
+.search input::placeholder {
+  color: var(--text-3);
+}
+
+.app-main {
+  display: block;
+  padding: var(--s-6);
+  max-width: var(--max);
+  margin: 0 auto;
+}
+
+/* ---------------- 外壳：移动端底部页签 ---------------- */
+.tabbar {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 30;
+  display: flex;
+  background: var(--glass);
+  border-top: 1px solid var(--line);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 56px;
+  padding: var(--s-2) 2px;
+  font-size: var(--fs-2xs);
+  letter-spacing: 0.02em;
+  color: var(--text-3);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: color var(--t-fast) var(--ease);
+}
+.tab.active {
+  color: var(--primary-2);
+}
+.tab.active .tab-pip {
+  position: absolute;
+  top: 0;
+  width: 24px;
+  height: 3px;
+  border-radius: 0 0 3px 3px;
+  background: var(--primary);
+}
+
+@media (min-width: 768px) {
+  .app-body {
+    margin-left: var(--rail);
+  }
+  .tabbar {
+    display: none;
+  }
+  .app-main {
+    padding: var(--s-8) var(--s-8) var(--s-12);
+  }
+}
+
+@media (max-width: 767px) {
+  .rail {
+    display: none;
+  }
+  .app-main {
+    padding: var(--s-4) var(--s-4) calc(var(--tabbar-h) + var(--s-8) + env(safe-area-inset-bottom));
+  }
+  .topbar {
+    padding: 0 var(--s-4);
+  }
+  h1 {
+    font-size: 21px;
+  }
+}
+

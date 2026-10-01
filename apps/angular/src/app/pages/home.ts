@@ -9,7 +9,7 @@ import { AnnouncementBrief, Api, ApiError, Game, PlatformStats, dt } from '../co
   imports: [RouterLink],
   template: `
     <section class="card hero">
-      <span class="label">AURORA PLATFORM</span>
+      <span class="label">NEON ARCADE</span>
       <h1>发现你的下一款游戏</h1>
       <p class="muted">多平台游戏大厅 · 实时开局 · 统一钱包</p>
     </section>
@@ -110,17 +110,48 @@ import { AnnouncementBrief, Api, ApiError, Game, PlatformStats, dt } from '../co
   `,
   styles: [
     `
+      /* 大厅门面。品牌紫从左下漫开、代币金在右上角补一点暖 —— 单一光源方向，
+         不是上一版那种"两团不同色的光各照一角"（那样两块光在中间打架）。 */
       .hero {
-        padding: 30px 28px;
+        padding: 34px 30px;
+        border-color: color-mix(in srgb, var(--primary) 26%, var(--line));
         background:
-          radial-gradient(120% 160% at 0% 0%, rgba(124, 58, 237, 0.22), transparent 55%),
-          radial-gradient(90% 140% at 100% 0%, rgba(34, 211, 238, 0.16), transparent 60%),
-          var(--panel);
+          radial-gradient(
+            120% 190% at 0% 0%,
+            color-mix(in srgb, var(--primary) 26%, transparent),
+            transparent 58%
+          ),
+          radial-gradient(
+            80% 150% at 100% 0%,
+            color-mix(in srgb, var(--gold) 14%, transparent),
+            transparent 62%
+          ),
+          var(--surface);
+      }
+      /* 右半边的"骰点阵"：主题是骰子，就用骰子的点数当底纹。
+         纯装饰、不接交互，靠 mask 淡出 —— 加 DOM 是不允许的，所以走 ::after。 */
+      .hero::after {
+        content: '';
+        position: absolute;
+        inset: -60px -60px auto auto;
+        width: 340px;
+        height: 340px;
+        pointer-events: none;
+        background-image: radial-gradient(
+          circle,
+          color-mix(in srgb, var(--gold) 42%, transparent) 3px,
+          transparent 3.5px
+        );
+        background-size: 32px 32px;
+        opacity: 0.55;
+        -webkit-mask-image: radial-gradient(closest-side, #000, transparent);
+        mask-image: radial-gradient(closest-side, #000, transparent);
       }
       .hero h1 {
-        margin: 8px 0 6px;
-        font-size: 26px;
-        letter-spacing: -0.02em;
+        margin: 10px 0 6px;
+        font-size: clamp(24px, 4.4vw, 34px);
+        letter-spacing: -0.03em;
+        line-height: 1.1;
       }
       .hero p {
         margin: 0;
@@ -139,7 +170,9 @@ import { AnnouncementBrief, Api, ApiError, Game, PlatformStats, dt } from '../co
         gap: 6px;
       }
       .stat strong {
-        font-size: 22px;
+        font-size: 25px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
         font-variant-numeric: tabular-nums;
       }
       .sect {
@@ -181,7 +214,7 @@ import { AnnouncementBrief, Api, ApiError, Game, PlatformStats, dt } from '../co
         color: var(--text);
       }
       .rows.tight .row {
-        padding: 7px 0;
+        padding: 10px 0;
       }
       .row.plain {
         border-bottom: 0;
@@ -208,10 +241,18 @@ import { AnnouncementBrief, Api, ApiError, Game, PlatformStats, dt } from '../co
         text-decoration: none;
         color: inherit;
       }
+      /* 无封面时的占位板：斜纹底 + 大号首字。斜纹是"图还没来"的通用暗号，
+         比一块纯色渐变诚实，也不会每张卡的颜色都不一样。 */
       .cover {
         position: relative;
         aspect-ratio: 16 / 10;
-        background: linear-gradient(135deg, rgba(124, 58, 237, 0.22), rgba(34, 211, 238, 0.14));
+        background:
+          repeating-linear-gradient(
+            135deg,
+            transparent 0 9px,
+            color-mix(in srgb, var(--primary) 7%, transparent) 9px 18px
+          ),
+          linear-gradient(150deg, var(--surface-3), var(--surface-2));
         display: flex;
         align-items: center;
         justify-content: center;
@@ -222,14 +263,21 @@ import { AnnouncementBrief, Api, ApiError, Game, PlatformStats, dt } from '../co
         object-fit: cover;
       }
       .cover .ph {
-        font-size: 34px;
-        font-weight: 700;
-        color: rgba(255, 255, 255, 0.55);
+        font-size: 46px;
+        font-weight: 800;
+        letter-spacing: -0.05em;
+        color: color-mix(in srgb, var(--primary) 45%, var(--text-3));
       }
+      /* 封面上的平台标：底下是什么图不知道，得自己带底才保证读得出来 */
       .cover .badge {
         position: absolute;
         top: 10px;
         left: 10px;
+        background: var(--glass);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        border-color: var(--line);
+        color: var(--text);
       }
       .meta {
         display: flex;
@@ -255,10 +303,7 @@ import { AnnouncementBrief, Api, ApiError, Game, PlatformStats, dt } from '../co
       }
       @media (min-width: 768px) {
         .hero {
-          padding: 40px 36px;
-        }
-        .hero h1 {
-          font-size: 32px;
+          padding: 44px 40px;
         }
         .stats {
           grid-template-columns: repeat(4, 1fr);

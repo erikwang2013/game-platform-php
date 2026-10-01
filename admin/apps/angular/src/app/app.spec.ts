@@ -24,7 +24,11 @@ describe('App', () => {
       // 模板用了 RouterLink / RouterOutlet，测试宿主须自带 Router 依赖，否则渲染即 NG0201（ActivatedRoute）；
       // 外壳现在自己注入了 Api（退出要打服务端吊销）⇒ 还得有 HttpClient
       providers: [
-        provideRouter([{ path: 'login', component: Blank }]),
+        provideRouter([
+          { path: 'login', component: Blank },
+          // 侧栏选中态那条用例要真导航一次，得有落点路由
+          { path: 'dashboard', component: Blank },
+        ]),
         provideHttpClient(),
         provideHttpClientTesting(),
       ],
@@ -168,6 +172,34 @@ describe('App', () => {
     // 成功即关框（ui-form 的宿主元素在 @defer 触发后就常驻了，要看它内部的 .modal 有没有收）
     expect(el.querySelector('ui-form .modal')).toBeNull();
     expect(el.querySelector('.shell-note')?.textContent).toContain('密码修改成功');
+  });
+
+  /**
+   * 侧栏选中态（`app.html:11` 的 `<a [routerLink] routerLinkActive="active">`）。
+   *
+   * 这颗钉子是**行为级**的，因为缺陷正是"行为不存在"：`app.ts` 原先只 import 了
+   * `RouterLink` 而**没有 `RouterLinkActive`**，那个 attribute 于是是个惰性 attribute ——
+   * 不报错、不警告，`.nav a.active` 永远命中 0 个。后果是侧栏没有"我在哪一页"，
+   * 而 `styles.scss` 里为它写的底色 + 左侧指示条两条规则**从来没跑到过**。
+   *
+   * 只断"源码里有 RouterLinkActive 这个词"是不够的（那是恒真式，而且 attribute 名里就有），
+   * 所以这里真导航一次、查渲染树。
+   */
+  it('侧栏选中态：当前路由那一条带 .active，且只有一条', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.autoDetectChanges();
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+
+    // 起点：url 是 `/`，没有任何一条该被选中 —— 少了这条，"全都选中"也会让下面绿
+    expect(el.querySelectorAll('.nav a.active').length).toBe(0);
+
+    await TestBed.inject(Router).navigate(['/dashboard']);
+    await fixture.whenStable();
+
+    const active = [...el.querySelectorAll<HTMLAnchorElement>('.nav a.active')];
+    expect(active.length).toBe(1);
+    expect(active[0]!.textContent).toContain('仪表盘');
   });
 
   it('点遮罩收起语言菜单，不切语言', async () => {

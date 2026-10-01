@@ -64,6 +64,88 @@ jobs:
             exit $code
           fi
 
+  frontend-react:
+    name: Frontend React (${{ matrix.tree }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        tree:
+          - admin/apps/react
+          - apps/react
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.17.0'
+          cache: npm
+          cache-dependency-path: ${{ matrix.tree }}/package-lock.json
+
+      # All four lockfiles pin `resolved` URLs to registry.npmmirror.com (a China
+      # mirror). npm honours the lock's host -- `registry.npmjs.org` alone is a
+      # no-op -- so force the host back to the official registry. Runners are
+      # offshore; local dev keeps npmmirror. Scoped to this step only.
+      - name: Install dependencies
+        working-directory: ${{ matrix.tree }}
+        env:
+          NPM_CONFIG_REGISTRY: https://registry.npmjs.org
+          NPM_CONFIG_REPLACE_REGISTRY_HOST: always
+        run: npm ci --no-audit --no-fund
+
+      - name: Typecheck
+        working-directory: ${{ matrix.tree }}
+        run: ./node_modules/.bin/tsc -b
+
+      - name: Run tests
+        working-directory: ${{ matrix.tree }}
+        run: npm test
+
+      # oxlint exits non-zero on errors only; warnings (8 at present) do not fail.
+      # Do NOT add --deny-warnings.
+      - name: Lint
+        if: matrix.tree == 'admin/apps/react'
+        working-directory: ${{ matrix.tree }}
+        run: ./node_modules/.bin/oxlint src/
+
+  frontend-angular:
+    name: Frontend Angular (${{ matrix.tree }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        tree:
+          - admin/apps/angular
+          - apps/angular
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.17.0'
+          cache: npm
+          cache-dependency-path: ${{ matrix.tree }}/package-lock.json
+
+      # Same mirror override as frontend-react -- see the comment there.
+      - name: Install dependencies
+        working-directory: ${{ matrix.tree }}
+        env:
+          NPM_CONFIG_REGISTRY: https://registry.npmjs.org
+          NPM_CONFIG_REPLACE_REGISTRY_HOST: always
+        run: npm ci --no-audit --no-fund
+
+      - name: Run tests
+        working-directory: ${{ matrix.tree }}
+        run: ./node_modules/.bin/ng test --watch=false
+
+      - name: Build
+        working-directory: ${{ matrix.tree }}
+        run: ./node_modules/.bin/ng build
+
   phpunit-admin:
     name: Admin PHPUnit
     runs-on: ubuntu-latest

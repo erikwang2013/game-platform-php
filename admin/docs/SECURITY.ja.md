@@ -13,7 +13,7 @@ Languages: [中文](SECURITY.md) · [English](SECURITY.en.md) · [한국어](SEC
 中間ウェアチェーン全体は以下の順序で実行されます（`config/middleware.php` 参照）：
 
 ```
-请求 → Cors → SecurityFilter → RateLimit → [路由组中间件: AdminAuth → AdminPermission → OperationLog] → Controller
+请求 → Cors → SecurityFilter → RateLimit → LanguageMiddleware → [路由组中间件: AdminAuth → AdminPermission → OperationLog] → Controller
 ```
 
 | 層 | 中間ウェア/メカニズム | 防御対象 |

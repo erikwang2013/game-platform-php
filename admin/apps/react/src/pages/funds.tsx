@@ -101,7 +101,10 @@ export function WithdrawLimits({ path }: { path: string }) {
       <RowBrowser
         key={nonce}
         path={path}
-        preferred={['id', 'user_level', 'single_min', 'single_max', 'daily_limit', 'fee_pct', 'fee_max']}
+        // 显式列 8 条：第 8 条 monthly_limit **必须点名** —— 不点名时它是 columnsFrom 按响应键序
+        // 补足的那个位子，键序一变就会静默换列（补的是谁全靠后端字段顺序，那是偶然不是决定）。
+        // 第 9 条 auto_approve_threshold **有意留白**：它只在编辑表单里改，摆上表会挤成 9 列。
+        preferred={['id', 'user_level', 'single_min', 'single_max', 'daily_limit', 'fee_pct', 'fee_max', 'monthly_limit']}
         // 阶梯限额：端点整表返回（没有 total），且是全平台的下拉选项源，故不分页
         paged={false}
         crud={WITHDRAW_LIMIT_CRUD}

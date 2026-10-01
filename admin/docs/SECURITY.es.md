@@ -13,7 +13,7 @@ El sistema adopta un modelo de defensa en profundidad de 7 capas que filtra las 
 Toda la cadena de middleware se ejecuta en el siguiente orden (ver `config/middleware.php`):
 
 ```
-请求 → Cors → SecurityFilter → RateLimit → [路由组中间件: AdminAuth → AdminPermission → OperationLog] → Controller
+请求 → Cors → SecurityFilter → RateLimit → LanguageMiddleware → [路由组中间件: AdminAuth → AdminPermission → OperationLog] → Controller
 ```
 
 | Capa | Middleware/mecanismo | Objetivo de protección |

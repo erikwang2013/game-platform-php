@@ -280,7 +280,7 @@ Cors（크로스 도메인 전처리 + 응답 헤더）
   → OperationLog（POST/PUT/DELETE 자동 기록, 출처 감지 포함, /admin/v1 라우트 그룹）
 ```
 
-`/health`는 공개 엔드포인트로 `Cors → SecurityFilter → RateLimit`만 통과합니다. `/metrics`와 `/api/docs`는 추가로 `AdminAuth → AdminPermission`이 필요합니다.
+`/health`는 공개 엔드포인트로 `Cors → SecurityFilter → RateLimit → LanguageMiddleware`만 통과합니다. `/api/docs`는 추가로 `AdminAuth → AdminPermission`이 필요합니다. `/metrics`는 추가로 `MetricsAuth`를 통과합니다(관리자 JWT는 기존대로 `AdminAuth → AdminPermission`을 거치며, 또는 `.env`의 `METRICS_SCRAPE_TOKEN` 정적 스크레이프 토큰을 사용합니다. 설정하지 않으면 이 경로는 비활성화됩니다). `/metrics`의 거부는 `401/403` + `text/plain`이며, 다른 엔드포인트의 200 + JSON 봉투가 아닙니다.
 
 보안 강화:
 - **계정 잠금**: 연속 5회 로그인 실패 시 계정 자동 15분 잠금, 잠금 중 로그인은 429 반환

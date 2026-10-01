@@ -1,7 +1,7 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
 import { FormModal } from './components/form-modal';
 import { Api, Row } from './core/api.service';
@@ -50,7 +50,7 @@ interface NavGroup {
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, T, FormModal],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, T, FormModal],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

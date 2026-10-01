@@ -13,7 +13,7 @@ Languages: [中文](SECURITY.md) · [English](SECURITY.en.md) · [한국어](SEC
 সম্পূর্ণ মিডলওয়্যার চেইন নিম্নলিখিত ক্রমে কার্যকর হয় (`config/middleware.php` দেখুন):
 
 ```
-请求 → Cors → SecurityFilter → RateLimit → [路由组中间件: AdminAuth → AdminPermission → OperationLog] → Controller
+请求 → Cors → SecurityFilter → RateLimit → LanguageMiddleware → [路由组中间件: AdminAuth → AdminPermission → OperationLog] → Controller
 ```
 
 | স্তর | মিডলওয়্যার/মেকানিজম | সুরক্ষা লক্ষ্য |

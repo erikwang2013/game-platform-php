@@ -280,7 +280,7 @@ Cors (ক্রস-অরিজিন প্রি-প্রসেসিং + �
   → OperationLog (POST/PUT/DELETE স্বয়ংক্রিয় রেকর্ড, সোর্স ডিটেকশন সহ, /admin/v1 রাউট গ্রুপ)
 ```
 
-`/health` পাবলিক এন্ডপয়েন্ট, শুধুমাত্র `Cors → SecurityFilter → RateLimit`-এর মধ্য দিয়ে যায়; `/metrics` ও `/api/docs`-এর জন্য অতিরিক্ত `AdminAuth → AdminPermission` প্রয়োজন।
+`/health` পাবলিক এন্ডপয়েন্ট, শুধুমাত্র `Cors → SecurityFilter → RateLimit → LanguageMiddleware`-এর মধ্য দিয়ে যায়; `/api/docs`-এর জন্য অতিরিক্ত `AdminAuth → AdminPermission` প্রয়োজন; `/metrics` অতিরিক্তভাবে `MetricsAuth`-এর মধ্য দিয়ে যায় (অ্যাডমিন JWT আগের মতোই `AdminAuth → AdminPermission` দিয়ে যায়, অথবা `.env` থেকে `METRICS_SCRAPE_TOKEN` স্ট্যাটিক স্ক্র্যাপ টোকেন ব্যবহার করুন; সেট না থাকলে এই পথটি নিষ্ক্রিয় থাকে)। `/metrics`-এর প্রত্যাখ্যান `401/403` + `text/plain`, অন্য এন্ডপয়েন্টের 200 + JSON এনভেলপ নয়।
 
 নিরাপত্তা বৃদ্ধি:
 - **অ্যাকাউন্ট লক**: টানা ৫ বার লগইন ব্যর্থ হলে অ্যাকাউন্ট স্বয়ংক্রিয়ভাবে ১৫ মিনিট লক হয়, এই সময়ে লগইনে 429 ফেরত আসে

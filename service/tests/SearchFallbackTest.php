@@ -7,7 +7,9 @@ declare(strict_types=1);
 
 namespace Tests;
 
+use app\api\v1\controller\GameController;
 use app\api\v1\controller\SearchController;
+use common\HashidsService;
 use common\SnowflakeService;
 use Erikwang2013\Hashids\Webman\Bootstrap as HashidsBootstrap;
 use Illuminate\Database\Capsule\Manager as Capsule;
@@ -32,9 +34,13 @@ use support\Request;
  *    **②与③是同一处代码的两种状态**：修好②就打开③（这正是我修完必须立刻补③的原因）。
  *    终态是公开端只认 game，user 检索只留在管理端自己的 SearchController。
  *
- * 为什么这条兜底就是**唯一在跑**的路径：try 分支调 `Game::search()` / `User::search()`，
- * 而这两个方法全仓不存在（`Builder::macro` 唯一一处在 vendor 的测试文件里）⇒ 必抛
- * BadMethodCallException 被 `catch (\Throwable)` 吞掉。别把它当"ES 不可用时的降级"。
+ * 为什么 LIKE 是**唯一在跑**的路径（2026-10-01 复核，同批把那个 `try` 分支删了）：
+ * 全仓**没有任何模型 `use Searchable`**（`Searchable` 只出现在 admin/tests 的一条反向断言、
+ * 一处注释和 config/scout.php 的说明里）⇒ `Game::search()` / `User::search()` 根本不存在，
+ * 实测必抛 `BadMethodCallException: Call to undefined method common\model\Game::search()`。
+ * 旧代码的 `try { … } catch (\Throwable)` 把它吞掉后固定走 LIKE —— 那不是"ES 不可用时的降级"，
+ * 而是**每请求白跑一次异常**。分支已删。**要真接全文检索是独立一批**（挂 trait + scout 配置 +
+ * 索引同步 + 用例），别把这里重新包回 try。同批删掉的还有 `/api/v1/game/suggest` 里那处。
  *
  * 只打测试库：连接库名必须含 test，否则硬失败，绝不静默写开发库。
  */
@@ -216,5 +222,76 @@ final class SearchFallbackTest extends TestCase
         // 正控：该 token 在 game 里也命中一条（探针游戏的名字植入了同一 token）
         // ⇒ 若这里是 0，说明端点整个坏了，上面那条"没有该用户"就是假绿。
         $this->assertSame(1, (int) ($body['data']['total'] ?? -1), '正控失败：端点没按 game 检索：' . $raw);
+    }
+
+    // ============================================================
+    // 三、/api/v1/game/suggest —— 同批删掉死 try 的另一个端点，行为须不变
+    // ============================================================
+
+    /** @return array<int,array<string,mixed>> suggestions 列表 */
+    private function suggest(string $q): array
+    {
+        $request = new Request(
+            'GET /api/v1/game/suggest?q=' . urlencode($q) . " HTTP/1.1\r\nHost: localhost\r\n\r\n"
+        );
+        $response = (new GameController())->suggest($request);
+        $body     = json_decode((string) $response->rawBody(), true) ?? [];
+
+        $this->assertSame(0, $body['code'] ?? -1, 'suggest 未成功：' . json_encode($body, JSON_UNESCAPED_UNICODE));
+
+        return $body['data']['suggestions'] ?? [];
+    }
+
+    /**
+     * suggest 只按名字 LIKE 且强制 status=1，吐 id/name/slug 三键。
+     *
+     * 下架游戏特意把探针**植进名字**（不只是简介）：若 status=1 的过滤丢了，它会直接漏出来 ——
+     * 断言就落在这一条上，不是靠"反正也没数据"。
+     */
+    #[Test]
+    public function suggestReturnsOnlyLiveGamesAndJustThreeKeys(): void
+    {
+        $hidden = SnowflakeService::generate();
+        Db::table('game')->insert([
+            'id'          => $hidden,
+            'name'        => 'Hidden ' . self::NAME_TOKEN,
+            'slug'        => 'hidden-' . $hidden,
+            'description' => '',
+            'status'      => 0,
+        ]);
+
+        $items = $this->suggest(self::NAME_TOKEN);
+        $dump  = json_encode($items, JSON_UNESCAPED_UNICODE);
+
+        $this->assertCount(1, $items, '应当只返回那条上架游戏（下架的同名游戏漏出来了）：' . $dump);
+        $this->assertSame('Listed ' . self::NAME_TOKEN, $items[0]['name']);
+        $this->assertSame(['id', 'name', 'slug'], array_keys($items[0]), 'suggest 只吐三键：' . $dump);
+        $this->assertIsString($items[0]['id'], 'id 不是字符串（裸 BIGINT 的典型形状）');
+        $this->assertSame($this->listedGameId, HashidsService::decode($items[0]['id']), 'id 解不回原值');
+
+        // 只匹配名字、不匹配简介：探针只在简介里的那条下架游戏不应被带出来
+        $this->assertSame([], $this->suggest(self::DESC_TOKEN), 'suggest 不该按简介匹配');
+
+        // 空关键词短路
+        $this->assertSame([], $this->suggest('   '), '空关键词应直接返回空列表');
+    }
+
+    /** 上限 5：播种 6 条命中，必须只回 5 条（旧 try 分支的 take(5) 与回退的 limit(5) 都要求如此）。 */
+    #[Test]
+    public function suggestCapsAtFive(): void
+    {
+        $token = self::NAME_TOKEN . 'cap';
+        for ($i = 0; $i < 6; $i++) {
+            $id = SnowflakeService::generate();
+            Db::table('game')->insert([
+                'id'          => $id,
+                'name'        => 'Cap ' . $token . ' ' . $i,
+                'slug'        => 'cap-' . $id,
+                'description' => '',
+                'status'      => 1,
+            ]);
+        }
+
+        $this->assertCount(5, $this->suggest($token), 'suggest 必须截到 5 条');
     }
 }

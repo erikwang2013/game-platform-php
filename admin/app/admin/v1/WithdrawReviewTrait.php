@@ -8,9 +8,9 @@ declare(strict_types=1);
 namespace app\admin\v1;
 
 use erikwang2013\apidoc\annotation as Apidoc;
+use app\service\WalletScope;
+use app\service\WalletService;
 use common\model\PlatformConfig;
-use common\model\Transaction;
-use common\model\UserWallet;
 use common\model\WithdrawOrder;
 use common\service\NotificationService;
 use support\Db;
@@ -168,22 +168,29 @@ trait WithdrawReviewTrait
 
                 $order = WithdrawOrder::find($orderId);
 
-                $refunded = UserWallet::addBalance($order->user_id, $order->platform_amount);
+                // ⚠ 退款**只走会写流水的那一条路**，别再手工建 Transaction（否则一次驳回两条正额流水）。
+                //
+                // 原先是 `UserWallet::addBalance($uid, $amount)` —— **不传第 3 参**，而它的签名是
+                // `addBalance(..., string $type = 'deposit', ...)` ⇒ 那条自动流水记成 **`deposit`**；
+                // 紧接着这段又手工写了一条 `type='refund'` ⇒ 库里同额同用户**两条**正额流水。
+                // 余额与累计收支都是对的（手工那条不碰余额，total_earned 只在 doMutate 里动），
+                // **错的只有流水账** —— 而钱包列表把 `deposit` 显示成「充值」，玩家看到
+                // 「充值 +N」紧挨「提现退回 +N」，两笔都像进账。
+                //
+                // 用 `mutate` 而不是 `addBalance(..., 'refund')`：**只有 `mutate` 收 `$remark`**
+                // （`addBalance` 的签名里没有这个参数），换成 addBalance 会把「提现驳回退款」丢掉。
+                $refunded = WalletService::mutate(
+                    (int) $order->user_id,
+                    WalletScope::platform(),
+                    bcadd((string) $order->platform_amount, '0', WalletService::SCALE),
+                    'refund',
+                    'withdraw',
+                    (int) $order->id,
+                    '提现驳回退款'
+                );
                 if (!$refunded) {
                     throw new \RuntimeException('refund failed');
                 }
-
-                $wallet = UserWallet::where('user_id', $order->user_id)->first();
-                $transaction = new Transaction();
-                $transaction->id            = $this->generateId();
-                $transaction->user_id       = $order->user_id;
-                $transaction->type          = 'refund';
-                $transaction->amount        = $order->platform_amount;
-                $transaction->balance_after = $wallet ? $wallet->balance : '0';
-                $transaction->ref_type      = 'withdraw';
-                $transaction->ref_id        = $order->id;
-                $transaction->remark        = '提现驳回退款';
-                $transaction->save();
 
                 return $this->success([], trans('Rejected and refunded'));
             });
@@ -269,20 +276,18 @@ trait WithdrawReviewTrait
                         return false;
                     }
                     $order = WithdrawOrder::find($orderId);
-                    if (!UserWallet::addBalance($order->user_id, $order->platform_amount)) {
+                    // 同上（单条驳回那处）：**只走会写流水的那一条路**，别再手工建 Transaction。
+                    if (!WalletService::mutate(
+                        (int) $order->user_id,
+                        WalletScope::platform(),
+                        bcadd((string) $order->platform_amount, '0', WalletService::SCALE),
+                        'refund',
+                        'withdraw',
+                        (int) $order->id,
+                        '批量审核退回: ' . $note
+                    )) {
                         throw new \RuntimeException('refund failed');
                     }
-                    $wallet = UserWallet::where('user_id', $order->user_id)->first();
-                    $transaction = new Transaction();
-                    $transaction->id            = $this->generateId();
-                    $transaction->user_id       = $order->user_id;
-                    $transaction->type          = 'refund';
-                    $transaction->amount        = $order->platform_amount;
-                    $transaction->balance_after = $wallet ? $wallet->balance : '0';
-                    $transaction->ref_type      = 'withdraw';
-                    $transaction->ref_id        = $order->id;
-                    $transaction->remark        = '批量审核退回: ' . $note;
-                    $transaction->save();
                     return true;
                 });
                 if ($flipped) $successCount++;

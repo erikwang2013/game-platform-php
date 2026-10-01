@@ -1,92 +1,186 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
-/* Slate Pro 扩展层 —— 在 styles.scss 之后加载，仅补充页面级组件类，不改动原设计令牌 */
+
+/* Inkwell Console 扩展层 —— 在 styles.scss 之后加载。
+
+   契约（承重，不是注释习惯）：**本文件只消费 styles.scss 的令牌，不新定义令牌。**
+   同一条样式规则也不要写两遍 —— 两处都写就多出一个"哪份赢"的问题，而答案取决于
+   加载顺序，读代码时看不出来。历史上 `.login-wrap` 就在两个文件里各写了一份
+   （flex 与 grid 两套居中写法），`.login-card` 的 width 也是（340 被 380 覆盖，
+   340 从来没生效过）；两份都已收成一份。
+
+   全局组件（骨架/卡片/表格/表单控件/状态）在 styles.scss；这里只放**页面级**的
+   组件类：页头、页签、键值表、图表、条形、抽屉、弹框、验证码、树。 */
 
 /* ---------- 页头与工具条 ---------- */
 .page-head {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
+  align-items: baseline;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
 }
+/* 页标题是这一屏唯一的"标题级"字号：与卡片头(13px)/正文(13px)拉开两档，
+   否则标题和卡片头一样大，扫视时找不到"我在哪一页" */
 .page-head h1 {
   margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
+  font-size: var(--fs-xl);
+  font-weight: 620;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
 }
 .page-head .sub {
-  color: var(--muted);
-  font-size: 12px;
+  color: var(--ink-3);
+  font-size: var(--fs-sm);
+}
+.page-head .btn {
+  align-self: center;
 }
 .toolbar select.input {
   min-width: 120px;
 }
 
 /* ---------- 标签页 ---------- */
+/* 下划线式（旧版是灰药丸轨道）：风控页有 12 个页签，药丸轨道会压出半屏灰条 */
 .tabs {
   display: flex;
-  gap: 2px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 12px;
+  gap: var(--sp-1);
+  border-bottom: 1px solid var(--line);
+  margin-bottom: var(--sp-4);
   overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar {
+  display: none;
 }
 .tabs button {
+  flex: 0 0 auto;
   border: 0;
   background: none;
-  padding: 8px 12px;
+  min-height: 36px;
+  padding: 0 var(--sp-3);
   font: inherit;
-  font-size: 13px;
-  color: var(--muted);
+  font-size: var(--fs-md);
+  color: var(--ink-2);
   cursor: pointer;
   border-bottom: 2px solid transparent;
   white-space: nowrap;
+  transition: color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease);
 }
 .tabs button:hover {
-  color: var(--text);
+  color: var(--ink);
 }
 .tabs button.active {
   color: var(--primary);
   border-bottom-color: var(--primary);
-  font-weight: 600;
+  font-weight: 580;
 }
 
 /* ---------- 键值表（详情面板） ---------- */
 .kv {
   display: grid;
-  grid-template-columns: 110px 1fr;
-  gap: 6px 10px;
-  font-size: 13px;
+  grid-template-columns: 116px 1fr;
+  gap: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-md);
 }
 .kv dt {
-  color: var(--muted);
+  color: var(--ink-3);
 }
 .kv dd {
   margin: 0;
-  word-break: break-all;
+  /* 长值（70 字符路径 / 76 字符 JWT）要折行，但不能在 token 中间硬断：
+     `word-break: break-all` 会挑任意字符断，`...example.inter|nal`、`/srv/.../angul|ar/...`
+     折完看不出断在哪；`overflow-wrap: anywhere` 优先在 `/` `@` `.` 这些合法的折行点断，
+     实在没有才在任何地方断 —— 溢出的保护还在，只是断点更好看。 */
+  overflow-wrap: anywhere;
+}
+
+/* ---------- 用户详情抽屉：钱包卡片 + 流水表（只读） ---------- */
+.wallet {
+  padding-bottom: var(--sp-3);
+  margin-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--line);
+}
+.wallet:last-of-type {
+  border-bottom: 0;
+  margin-bottom: var(--sp-2);
+}
+.wallet-head {
+  font-size: var(--fs-md);
+  font-weight: 620;
+  margin-bottom: var(--sp-3);
+}
+/* 抽屉内宽 460px：两列刚好；四列会把 27 位的金额（18 位整数 + 8 位小数）挤成竖排 */
+.wallet-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2);
+}
+.wcard {
+  min-width: 0;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--inset);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+}
+.wcard .wl {
+  display: block;
+  color: var(--ink-3);
+  font-size: var(--fs-xs);
+}
+.wcard .wv {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--fs-lg);
+  font-weight: 620;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.wallet-missing {
+  margin: 0;
+  color: var(--ink-3);
+  font-size: var(--fs-sm);
+}
+/* 流水 5 列在 460px 里放不下 ⇒ 横向滚动（复用 .table-wrap）；金额列右对齐走 .num */
+.tx-wrap {
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+}
+.tx-table th,
+.tx-table td {
+  padding: 0 var(--sp-2);
+}
+/* 正负分色：只看字符串首字符（amountTone），零值/空值不上色 */
+.tx-table td.pos {
+  color: var(--success);
+}
+.tx-table td.neg {
+  color: var(--danger);
 }
 
 /* ---------- 表单行 ---------- */
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px 12px;
+  gap: var(--sp-4);
 }
 .form-grid .full {
   grid-column: 1 / -1;
 }
 .form-grid label {
   display: block;
-  font-size: 12px;
-  color: var(--muted);
-  margin-bottom: 4px;
+  font-size: var(--fs-sm);
+  font-weight: 520;
+  color: var(--ink-2);
+  margin-bottom: var(--sp-1);
 }
 .form-grid .input {
   width: 100%;
 }
 textarea.input {
-  min-height: 72px;
+  min-height: 84px;
+  padding: var(--sp-2) 10px;
   resize: vertical;
   font-family: inherit;
+  line-height: 1.5;
 }
 /* 表单弹框（通用底座）：必填星号 + 开关行 */
 .form-grid .req {
@@ -96,29 +190,32 @@ textarea.input {
 .form-grid .switch {
   display: flex;
   align-items: center;
-  gap: 6px;
-  height: 30px;
-  font-size: 13px;
-}
-.form-grid textarea.input {
-  padding: 6px 8px;
+  gap: var(--sp-2);
+  height: 32px;
+  font-size: var(--fs-md);
 }
 /* 图片字段（Field.type='image'）：文本框 + 上传按钮 + 缩略图/错误文案 */
 .form-grid .img-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
+}
+.form-grid .img-row .input {
+  flex: 1;
+  min-width: 0;
 }
 .form-grid .img-row .btn {
   flex: none;
+  white-space: nowrap;
 }
 .form-grid .thumb {
   display: block;
-  margin-top: 6px;
+  margin-top: var(--sp-2);
   max-width: 100%;
   max-height: 96px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  background: var(--inset);
 }
 .form-grid .err {
   color: var(--danger);
@@ -129,16 +226,18 @@ textarea.input {
   display: block;
   width: 100%;
   height: 180px;
-  background: linear-gradient(var(--surface), var(--surface));
+  background: var(--surface);
 }
 .chart .grid {
-  stroke: var(--border);
+  stroke: var(--line);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
 }
 .chart .line {
   fill: none;
   stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
   vector-effect: non-scaling-stroke;
 }
 .chart .area {
@@ -148,57 +247,62 @@ textarea.input {
 .chart .axis {
   display: flex;
   justify-content: space-between;
-  color: var(--dim);
-  font-size: 11px;
-  margin-top: 4px;
+  color: var(--ink-3);
+  font-size: var(--fs-xs);
+  margin-top: var(--sp-1);
+  font-variant-numeric: tabular-nums;
 }
+/* 序列色取 --chart-*（不是 --primary/--success）：折线的颜色不该随"品牌色"
+   或"成功态"改动而漂移，否则同一张图上"这条线是不是在报警"要靠猜 */
 .chart .s1 {
-  stroke: var(--primary);
-  fill: var(--primary);
+  stroke: var(--chart-1);
+  fill: var(--chart-1);
 }
 .chart .s2 {
-  stroke: #7c3aed;
-  fill: #7c3aed;
+  stroke: var(--chart-2);
+  fill: var(--chart-2);
 }
 .chart .s3 {
-  stroke: var(--success);
-  fill: var(--success);
+  stroke: var(--chart-3);
+  fill: var(--chart-3);
 }
 /* 图例色块：`.chart .sX` 只圈得到 .chart 里面，图例在容器外面 ⇒ 得单独给底色，
-   否则图例只剩四个没有颜色的空方块 */
+   否则图例只剩几个没有颜色的空方块 */
 .chart-legend i.s1 {
-  background: var(--primary);
+  background: var(--chart-1);
 }
 .chart-legend i.s2 {
-  background: #7c3aed;
+  background: var(--chart-2);
 }
 .chart-legend i.s3 {
-  background: var(--success);
+  background: var(--chart-3);
 }
 
 /* ---------- 横向条形 ---------- */
 .bar-row {
   display: grid;
-  grid-template-columns: 120px 1fr 72px;
+  grid-template-columns: minmax(72px, 120px) 1fr auto;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
+  gap: var(--sp-3);
+  font-size: var(--fs-md);
   padding: 3px 0;
 }
 .bar-row .track {
-  background: var(--content);
-  height: 10px;
-  border-radius: var(--radius);
+  background: var(--inset);
+  height: 8px;
+  border-radius: var(--r-pill);
   overflow: hidden;
 }
 .bar-row .fill {
-  background: var(--primary);
+  background: var(--chart-1);
   height: 100%;
+  border-radius: var(--r-pill);
+  transition: width var(--dur-2) var(--ease);
 }
 .bar-row .val {
   text-align: right;
   font-variant-numeric: tabular-nums;
-  color: var(--muted);
+  color: var(--ink-2);
 }
 
 /* ---------- 迷你折线（风控总览：按规则类型的命中趋势，一行一条）---------- */
@@ -206,17 +310,17 @@ textarea.input {
    纵轴范围在 risk-charts.ts 里**跨行共用**，所以行高一致时高度可比。 */
 .spark-row {
   display: grid;
-  grid-template-columns: 140px 1fr 64px;
+  grid-template-columns: minmax(84px, 140px) 1fr auto;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
+  gap: var(--sp-3);
+  font-size: var(--fs-md);
   padding: 3px 0;
 }
 .spark-row .chart svg {
   height: 28px;
 }
 .spark-row .name {
-  color: var(--muted);
+  color: var(--ink-2);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -224,7 +328,7 @@ textarea.input {
 .spark-row .val {
   text-align: right;
   font-variant-numeric: tabular-nums;
-  color: var(--muted);
+  color: var(--ink-2);
 }
 
 /* ---------- 抽屉 ---------- */
@@ -236,7 +340,8 @@ textarea.input {
   width: 460px;
   max-width: 92vw;
   background: var(--surface);
-  border-left: 1px solid var(--border);
+  border-left: 1px solid var(--line);
+  box-shadow: var(--e3);
   z-index: 60;
   display: flex;
   flex-direction: column;
@@ -244,12 +349,12 @@ textarea.input {
 .drawer > header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
+  gap: var(--sp-2);
+  padding: var(--sp-4);
+  border-bottom: 1px solid var(--line);
 }
 .drawer-body {
-  padding: 14px;
+  padding: var(--sp-4);
   overflow: auto;
   flex: 1;
 }
@@ -258,6 +363,12 @@ textarea.input {
 }
 
 /* ---------- 居中弹框（登录安全验证等） ---------- */
+/* ⚠ 几何是承重的，改不得：.modal-sm 的 340 与下方 .modal > header / .modal-body 的
+   横向内边距是**一对**。340 − 2×1(border) = 338 内容盒；.modal-body 再吃掉 2×14
+   ⇒ 剩 310 给验证码画布，而画布原生 300×200 ⇒ 1:1 渲染、还留 10px 余量。
+   360px 视口下 .modal 收窄到 92vw=331，画布仍有 301 —— 刚好还是 1:1，别再加内边距。
+   描边保留实 border（不换 box-shadow 环）：换环会让内容盒多出 2px，虽然仍够放，
+   但这条等式一动就要重算一遍 /tmp/cap_modal_angular.mjs 的 12 条读数，不值。 */
 .modal {
   position: fixed;
   top: 50%;
@@ -268,32 +379,40 @@ textarea.input {
   max-height: 88vh;
   overflow: auto;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.18);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--e3);
   z-index: 60;
+}
+/* 小弹框：贴合内容。登录验证码画布是**原生 300×200**，而 `.modal` 是 460px ⇒
+   `.cap-img` 虽然只 `max-width:100%`（不拉伸），但右侧会留 132px 空白。
+   ⚠ 必须排在 `.modal` **之后**：两者同为单类选择器，靠源码顺序决定 width 的胜负。
+   `.modal` 的 `max-width: 92vw` 不冲突（不同属性）⇒ 窄屏照旧收窄。 */
+.modal-sm {
+  width: 340px;
 }
 .modal > header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
   padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--line);
 }
 .modal-body {
   padding: 14px;
 }
 .modal-body .btn-block {
-  margin-top: 12px;
+  margin-top: var(--sp-3);
 }
 
 /* ---------- 尾部块（代码/指标原文） ---------- */
 pre.raw {
-  background: #0f172a;
-  color: #e2e8f0;
-  padding: 12px;
-  border-radius: var(--radius);
-  font-size: 12px;
+  background: var(--code-bg);
+  color: var(--code-ink);
+  padding: var(--sp-3);
+  border-radius: var(--r-sm);
+  font-family: var(--mono);
+  font-size: var(--fs-sm);
   line-height: 1.5;
   overflow: auto;
   max-height: 420px;
@@ -309,8 +428,9 @@ pre.raw {
   .form-grid {
     grid-template-columns: 1fr;
   }
-  .bar-row {
-    grid-template-columns: 84px 1fr 56px;
+  .bar-row,
+  .spark-row {
+    grid-template-columns: 84px 1fr auto;
   }
   .kv {
     grid-template-columns: 84px 1fr;
@@ -324,35 +444,34 @@ pre.raw {
 }
 
 /* ---------- 登录 / 点击验证码 ---------- */
-.login-wrap {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-}
+/* 底与居中在 styles.scss（.login-wrap 只有一份）；这里只管卡片自身的尺度 */
 .login-card {
   width: 380px;
   max-width: 100%;
 }
 .login-card h1 {
   margin: 0;
-  font-size: 18px;
+  font-size: var(--fs-2xl);
+  font-weight: 620;
+  letter-spacing: -0.02em;
 }
 .login-card .sub {
-  margin: 2px 0 14px;
-  color: var(--muted);
-  font-size: 12px;
+  margin: var(--sp-1) 0 var(--sp-5);
+  color: var(--ink-2);
+  font-size: var(--fs-md);
 }
 .cap-wrap {
   position: relative;
   display: inline-block;
   max-width: 100%;
 }
+/* ⚠ .cap-img 是 max-width 不是 width：画布按原生 300×200 渲染，不放大。
+   给它的容器加横向 padding/border 会直接压缩内容盒 ⇒ 坐标回推失准。 */
 .cap-img {
   display: block;
   max-width: 100%;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
   cursor: crosshair;
 }
 .cap-dot {
@@ -362,29 +481,47 @@ pre.raw {
   margin: -10px 0 0 -10px;
   border-radius: 50%;
   background: var(--primary);
-  color: #fff;
-  font-size: 11px;
+  color: var(--primary-ink);
+  font-size: var(--fs-xs);
   font-style: normal;
+  font-weight: 600;
   line-height: 20px;
   text-align: center;
   pointer-events: none;
-  box-shadow: 0 0 0 2px #fff;
+  /* 环用浮层底色：暗色下白环会变成一圈刺眼的高光 */
+  box-shadow: 0 0 0 2px var(--raised);
 }
 .cap-foot {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 6px;
-  font-size: 12px;
-  color: var(--muted);
+  gap: var(--sp-2);
+  /* 弹框收到 340（内容 310）后这一行会很紧：ja 的「2 点のうち 2 点クリック済み」+
+     「元に戻す」+「別の画像」估算 306px，只剩 4px 余量 ⇒ 允许换行兜底。
+     不溢出时 flex-wrap 不改变任何布局（.spacer 照旧吃掉余量）。 */
+  flex-wrap: wrap;
+  margin-top: var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--ink-2);
+}
+/* 换行时按钮仍整块、不被压扁 */
+.cap-foot .btn {
+  flex-shrink: 0;
+  height: 28px;
 }
 
 /* ---------- 表格增强 ---------- */
 .table-wrap td.acts {
   white-space: nowrap;
 }
+/* 行内动作一律"安静"：一排实心按钮会把表压成按钮墙，主次也看不出来
+   （旧版一行能摆四个同权重按钮）。只有危险动作上色 —— 靠颜色区分，不靠体量。 */
 .table-wrap td.acts .btn {
-  margin-right: 4px;
+  height: 28px;
+  margin-right: var(--sp-1);
+  border-color: transparent;
+  background: transparent;
+  color: var(--ink-2);
+  font-weight: 520;
 }
 .table-wrap td.acts .btn:last-child {
   margin-right: 0;
@@ -392,49 +529,63 @@ pre.raw {
 tr.clickable {
   cursor: pointer;
 }
+.table-wrap td.acts .btn:hover:not(:disabled) {
+  background: var(--inset);
+  border-color: transparent;
+  color: var(--ink);
+}
+.table-wrap td.acts .btn.danger {
+  background: transparent;
+  color: var(--danger);
+}
+.table-wrap td.acts .btn.danger:hover:not(:disabled) {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
 .btn.danger {
   color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+  background: var(--surface);
+}
+.btn.danger:hover:not(:disabled) {
+  background: var(--danger-soft);
   border-color: var(--danger);
 }
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 details.raw-box {
-  margin-top: 10px;
+  margin-top: var(--sp-3);
 }
 details.raw-box > summary {
   cursor: pointer;
-  font-size: 12px;
-  color: var(--muted);
+  font-size: var(--fs-sm);
+  color: var(--ink-3);
 }
 details.raw-box > summary:hover {
-  color: var(--text);
+  color: var(--ink);
 }
 .row-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--sp-2);
   flex-wrap: wrap;
-  margin-top: 12px;
+  margin-top: var(--sp-3);
 }
 
 /* 动作的就地回执（服务端 message）：与 .alert 同尺寸，成功/中性走绿色，失败仍用 .alert 的红 */
 .notice {
-  margin-bottom: 11px;
-  padding: 8px 10px;
-  border-radius: var(--radius);
-  font-size: 12px;
-  background: #f0fdf4;
-  color: #15803d;
-  border: 1px solid #bbf7d0;
+  margin-bottom: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-sm);
+  background: var(--success-soft);
+  color: var(--success);
+  border: 1px solid color-mix(in srgb, var(--success) 26%, transparent);
 }
 
 /* 字段说明（Field.hint）：pre-line 让换行照排 —— 风控规则那种「每 type 一行 config 键表」靠它可读 */
 .hint {
   display: block;
-  margin-top: 4px;
-  color: var(--muted);
-  font-size: 12px;
+  margin-top: var(--sp-1);
+  color: var(--ink-3);
+  font-size: var(--fs-sm);
   line-height: 1.5;
   white-space: pre-line;
 }
@@ -451,14 +602,14 @@ details.raw-box > summary:hover {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--muted);
+  color: var(--ink-3);
   font-size: 10px;
   line-height: 1;
   cursor: pointer;
   vertical-align: middle;
 }
 button.tree-arrow:hover {
-  color: var(--text);
+  color: var(--primary);
 }
 .table-wrap .tree-cell {
   display: inline-block;
@@ -467,9 +618,9 @@ button.tree-arrow:hover {
 .tree-select {
   max-height: 260px;
   overflow: auto;
-  padding: 6px 8px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  padding: var(--sp-2) 10px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
   background: var(--surface);
 }
 .tree-row {
@@ -482,15 +633,15 @@ button.tree-arrow:hover {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
-  color: var(--text);
+  font-size: var(--fs-md);
+  color: var(--ink);
   cursor: pointer;
 }
 .tree-extra {
   margin-top: 6px;
   padding-top: 6px;
-  border-top: 1px dashed var(--border);
+  border-top: 1px dashed var(--line);
 }
 .tree-extra .tree-label {
-  margin-right: 12px;
+  margin-right: var(--sp-3);
 }

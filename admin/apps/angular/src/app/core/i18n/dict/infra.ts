@@ -29,7 +29,7 @@ export const INFRA: Record<string, [string, string]> = {
   ],
   'cdn.test': ['Connectivity test', '连通测试'],
   /** 列头（枚举含义写进表头，值原样显示） */
-  'cdn.head.status': ['Status (0 disabled / 1 enabled)', '状态(0禁用/1启用)'],
+  'cdn.head.status': ['Status', '状态'],
   'cdn.head.created': ['Created', '创建时间'],
   'cdn.head.updated': ['Updated', '更新时间'],
   /** 连通测试的就地回执（成功走测试结论、失败是 422 的 message） */

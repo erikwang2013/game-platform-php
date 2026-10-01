@@ -13,7 +13,7 @@ Languages: [中文](SECURITY.md) · [English](SECURITY.en.md) · [한국어](SEC
 Вся цепочка промежуточного ПО выполняется в следующем порядке (см. `config/middleware.php`):
 
 ```
-请求 → Cors → SecurityFilter → RateLimit → [路由组中间件: AdminAuth → AdminPermission → OperationLog] → Controller
+请求 → Cors → SecurityFilter → RateLimit → LanguageMiddleware → [路由组中间件: AdminAuth → AdminPermission → OperationLog] → Controller
 ```
 
 | Уровень | Промежуточное ПО/механизм | Цель защиты |

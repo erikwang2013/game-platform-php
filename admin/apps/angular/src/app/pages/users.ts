@@ -3,11 +3,18 @@ import { Component, computed, signal } from '@angular/core';
 import { Page, Row } from '../core/api.service';
 import { Crud, CrudPage, Field } from '../core/crud';
 import { T, t } from '../core/i18n/i18n';
-import { idOf, kvOf } from '../core/render';
-import { errText, num } from '../core/util';
+import { idOf, kvLabel, kvOf } from '../core/render';
+import { dash, errText, num } from '../core/util';
 import { Drawer, Pager, StateBlock, Tabs } from '../components/ui';
 import { Table } from '../components/table';
 import { FormModal } from '../components/form-modal';
+import {
+  amountText,
+  amountTone,
+  TX_COLS,
+  txLabel,
+  WALLET_STATS,
+} from './wallet-fields';
 
 const U = '/admin/v1/';
 
@@ -77,9 +84,74 @@ const USER_FIELDS: Field[] = [
     <ui-drawer
       [open]="detail() !== null"
       [title]="(tab() === 'identity' ? 'identity.title' : 'user.detail') | t"
-      (close)="detail.set(null)"
+      (close)="closeDetail()"
     >
       @if (detail(); as d) {
+        <!-- 钱包：只有平台用户有钱包（实名记录是另一个 ID 空间，没有 user_id 可查） -->
+        @if (tab() === 'list') {
+          <section class="wallet">
+            <div class="wallet-head">{{ 'wallet.title' | t }}</div>
+            @if (wallet(); as w) {
+              <div class="wallet-cards">
+                @for (s of WALLET_STATS; track s.key) {
+                  <div class="wcard">
+                    <span class="wl">{{ s.label | t }}</span>
+                    <strong class="wv mono">{{ dash(w[s.key]) }}</strong>
+                  </div>
+                }
+              </div>
+            } @else {
+              <!-- 后端在用户没有钱包行时整个 wallet 键都不回（PlatformUserController::detail 的
+                   if ($user->wallet)）⇒「没有钱包」与「钱包里都是 0」必须分得开，
+                   不能摆四个「—」让人以为是加载失败。⚠ 模板字面量里不能出现反引号 -->
+              <p class="wallet-missing">{{ 'wallet.missing' | t }}</p>
+            }
+          </section>
+
+          <section class="wallet">
+            <div class="wallet-head">{{ 'wallet.transactions' | t }}</div>
+            <ui-state [loading]="txLoading()" [error]="txError()" [empty]="!txs().length">
+              <div class="table-wrap tx-wrap">
+                <table class="data tx-table">
+                  <thead>
+                    <tr>
+                      @for (c of TX_COLS; track c.key) {
+                        <th>{{ c.label | t }}</th>
+                      }
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (r of txs(); track r['id']) {
+                      <tr>
+                        <td>{{ txLabel(r['type']) }}</td>
+                        <!-- 正负分色：只看字符串首字符（amountTone），金额全程不 parseFloat -->
+                        <td
+                          class="num"
+                          [class.pos]="amountTone(r['amount']) === 'pos'"
+                          [class.neg]="amountTone(r['amount']) === 'neg'"
+                        >
+                          {{ amountText(r['amount']) }}
+                        </td>
+                        <td class="num">{{ dash(r['balance_after']) }}</td>
+                        <td>{{ dash(r['remark']) }}</td>
+                        <td>{{ dash(r['created_at']) }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </ui-state>
+            @if (txTotal() > txPageSize || txPage() > 1) {
+              <ui-pager
+                [page]="txPage()"
+                [pages]="txPages"
+                [total]="txTotal()"
+                (jump)="goTx($event)"
+              />
+            }
+          </section>
+        }
+
         <dl class="kv">
           @for (p of info(); track p.label) {
             <dt>{{ p.label }}</dt>
@@ -127,7 +199,86 @@ export class Users extends CrudPage {
   /** 导出中（按钮禁用 + 文案切换）。导出走 Api.download，不经过 rows/loading，不打断列表 */
   protected readonly exporting = signal(false);
 
-  protected readonly info = computed(() => kvOf(this.detail()));
+  /** 详情键值：字段名走 `kvLabel`（`col.<字段名>` 词条）—— 抽屉里摆 `last_login_ip` 这种
+   *  裸列名，旁边标题却是「用户详情」，运营读不懂 */
+  protected readonly info = computed(() => kvOf(this.detail(), kvLabel));
+
+  // ---------- 钱包（只读；不许长出任何改余额的控件） ----------
+
+  /** 模板作用域只认类成员，模块级 import 不可见 */
+  protected readonly WALLET_STATS = WALLET_STATS;
+  protected readonly TX_COLS = TX_COLS;
+  protected readonly txLabel = txLabel;
+  protected readonly amountTone = amountTone;
+  protected readonly amountText = amountText;
+  protected readonly dash = dash;
+
+  /**
+   * 钱包行 = 详情回包里的 `data.wallet`；**没有钱包行时整个键都不回**
+   * （`if ($user->wallet)`）⇒ 回 null 而不是空对象，界面才能把「没有钱包」与
+   * 「钱包里都是 0」分开说。
+   */
+  protected readonly wallet = computed<Row | null>(() => {
+    const w = (this.detail() ?? {})['wallet'];
+    return w && typeof w === 'object' && !Array.isArray(w) ? (w as Row) : null;
+  });
+
+  protected readonly txs = signal<Row[]>([]);
+  protected readonly txLoading = signal(false);
+  protected readonly txError = signal('');
+  protected readonly txPage = signal(1);
+  protected readonly txTotal = signal(0);
+  /** 每页 20 与后端默认值同值（契约里的 per_page 默认），页数按它算才对得上 */
+  protected readonly txPageSize = 20;
+
+  protected get txPages(): number {
+    return Math.max(1, Math.ceil(this.txTotal() / this.txPageSize));
+  }
+
+  /**
+   * 流水：`GET /admin/v1/platform/user/{hashid}/transactions?page=&per_page=`。
+   *
+   * 走 `api.list`（本树列表的统一取数口）：它把 `items`/`total`/`page` 三种包装键都认下来，
+   * 并按契约把 `per_page` 别名一起发出去（后端读的就是它）。**取不到就显示错误**，
+   * 不静默留空 —— 流水空着与「加载失败」在界面上是同一种样子，那是最容易骗过自己的地方。
+   */
+  protected async loadTx(): Promise<void> {
+    const id = idOf(this.detail() ?? {});
+    if (!id) return;
+    this.txLoading.set(true);
+    this.txError.set('');
+    try {
+      const res = await this.api.list<Row>(U + 'platform/user/' + id + '/transactions', {
+        page: this.txPage(),
+        page_size: this.txPageSize,
+      });
+      this.txs.set(res.list ?? []);
+      this.txTotal.set(res.total ?? 0);
+    } catch (e) {
+      this.txs.set([]);
+      this.txTotal.set(0);
+      this.txError.set(errText(e));
+    } finally {
+      this.txLoading.set(false);
+    }
+  }
+
+  /** 翻页：页码夹在 [1, 末页]，同一页不重复取数（与基类的 go() 同口径） */
+  protected goTx(p: number): void {
+    const next = Math.min(Math.max(1, p), this.txPages);
+    if (next === this.txPage()) return;
+    this.txPage.set(next);
+    void this.loadTx();
+  }
+
+  /** 关抽屉：连同流水一起清掉。留着上一笔的流水、下次开别人时先闪一遍别人的记录，是实打实的错 */
+  protected closeDetail(): void {
+    this.detail.set(null);
+    this.txs.set([]);
+    this.txTotal.set(0);
+    this.txPage.set(1);
+    this.txError.set('');
+  }
 
   /**
    * 导出用户 Excel —— POST /export/users（ExportController::exportUsers，回 .xlsx 附件）。
@@ -195,7 +346,7 @@ export class Users extends CrudPage {
   protected pick(key: string): void {
     this.tab.set(key);
     this.page.set(1);
-    this.detail.set(null);
+    this.closeDetail();
     void this.load();
   }
 
@@ -218,12 +369,19 @@ export class Users extends CrudPage {
     if (this.tab() !== 'list') return;
     const id = idOf(row);
     if (!id) return;
+    // 开新记录 = 上一次的流水作废：页码归 1，先清空再取（不清的话新记录会先闪一遍上一个人的流水）
+    this.txs.set([]);
+    this.txTotal.set(0);
+    this.txPage.set(1);
+    this.txError.set('');
     try {
       const d = await this.api.get<unknown>(U + 'platform/user/' + id);
       if (d && typeof d === 'object' && !Array.isArray(d)) this.detail.set(d as Row);
     } catch {
       // 详情取不到就展示列表行本身，不阻塞抽屉
     }
+    // 钱包与流水都依赖同一个 hashid（列表行也有 id）⇒ 详情失败也照取，不跟着一起哑掉
+    void this.loadTx();
   }
 
   /**
@@ -247,7 +405,7 @@ export class Users extends CrudPage {
     this.error.set('');
     try {
       await this.api.request('PUT', U + 'identity/review', { id, action, note });
-      this.detail.set(null);
+      this.closeDetail();
       await this.load();
     } catch (e) {
       this.error.set(errText(e));
@@ -278,7 +436,7 @@ export class Users extends CrudPage {
       this.error.set(errText(e));
       return;
     }
-    this.detail.set(null);
+    this.closeDetail();
     await this.load();
     // 成功以回读到的真实状态为准，不以"请求发出去了"为准
     const after = this.rows().find((r) => idOf(r) === id);
@@ -310,7 +468,7 @@ export class Users extends CrudPage {
       this.error.set(errText(e));
       return;
     }
-    this.detail.set(null);
+    this.closeDetail();
     await this.load();
     // 成功以回读到的真实列表为准，不以「请求发出去了」为准
     if (this.rows().some((r) => idOf(r) === id)) {

@@ -280,7 +280,7 @@ Cors（pré-processamento de CORS + cabeçalhos de resposta）
   → OperationLog（registro automático de POST/PUT/DELETE, incluindo detecção de origem, grupo de rotas /admin/v1）
 ```
 
-`/health` é o endpoint público e passa apenas por `Cors → SecurityFilter → RateLimit`; `/metrics` e `/api/docs` exigem adicionalmente `AdminAuth → AdminPermission`.
+`/health` é o endpoint público e passa apenas por `Cors → SecurityFilter → RateLimit → LanguageMiddleware`; `/api/docs` exige adicionalmente `AdminAuth → AdminPermission`; `/metrics` passa adicionalmente por `MetricsAuth` (um JWT de administrador continua passando por `AdminAuth → AdminPermission`, ou use o token de scrape estático `METRICS_SCRAPE_TOKEN` do `.env`; se não estiver definido, esse caminho fica desabilitado). As rejeições de `/metrics` são `401/403` + `text/plain`, não o envelope 200 + JSON dos outros endpoints.
 
 Aprimoramentos de segurança:
 - **Bloqueio de conta**: após 5 falhas consecutivas de login, a conta fica bloqueada por 15 minutos, e o login retorna 429 nesse período

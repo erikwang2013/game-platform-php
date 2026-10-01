@@ -145,9 +145,9 @@ import { Avatars } from '../core/avatar';
         flex: 1;
         min-width: 0;
         padding: 9px 12px;
-        border-radius: 12px;
-        border: 1px solid var(--stroke);
-        background: var(--panel);
+        border-radius: var(--r-md);
+        border: 1px solid var(--line);
+        background: var(--surface-2);
         font-size: 14px;
         line-height: 1.55;
         /* 正文里可能有超长串（URL 等），别把行撑破 */
@@ -156,7 +156,7 @@ import { Avatars } from '../core/avatar';
       }
       .msg.mine .bubble {
         background: var(--grad);
-        color: #0b0d17;
+        color: var(--primary-ink);
         border-color: transparent;
       }
       .when {

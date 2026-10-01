@@ -97,7 +97,13 @@ class _LoginPageState extends State<LoginPage> {
       builder: (context, setLocal) => AlertDialog(
         title: const Text('安全验证'),
         content: SizedBox(
-          width: 400,
+          // 300 = 服务端画布原生宽（AbstractCaptcha::$width，三档难度实测恒为 300x200）。
+          // 下面 LayoutBuilder 拿到的 maxWidth 就是这个值 ⇒ 图按 1:1 原生尺寸渲染，
+          // 与另外三棵树（harmonyos 显式 300x200、angular 按固有宽、react 小弹框 340−40）一致。
+          // 原先是 400 ⇒ 图被均匀放大 1.33 倍（等比，不是变形），弹框也偏大。
+          // 窄屏不必特殊处理：AlertDialog 的 insetPadding 默认水平 40 ⇒ 实际可用宽
+          // = 屏宽 − 80，SizedBox 的请求值会被自动收紧，不会溢出。
+          width: 300,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,

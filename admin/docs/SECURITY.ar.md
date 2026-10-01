@@ -13,7 +13,7 @@ Languages: **中文** · [English](SECURITY.en.md) · [한국어](SECURITY.ko.md
 تُنفَّذ سلسلة الوسيطات كاملة بالترتيب التالي (راجع `config/middleware.php`):
 
 ```
-الطلب → Cors → SecurityFilter → RateLimit → [وسيطات مجموعة المسارات: AdminAuth → AdminPermission → OperationLog] → Controller
+الطلب → Cors → SecurityFilter → RateLimit → LanguageMiddleware → [وسيطات مجموعة المسارات: AdminAuth → AdminPermission → OperationLog] → Controller
 ```
 
 | الطبقة | الوسيطة/الآلية | هدف الحماية |

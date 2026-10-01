@@ -98,7 +98,7 @@ import { Avatars } from '../core/avatar';
         height: 40px;
         border-radius: 13px;
         background: var(--grad);
-        color: #0b0d17;
+        color: var(--primary-ink);
         font-size: 16px;
         font-weight: 700;
         display: flex;

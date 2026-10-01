@@ -215,14 +215,15 @@ const STATUS_LABEL: Record<string, string> = {
         width: 100%;
         background: transparent;
         border: 0;
-        border-bottom: 1px solid var(--stroke);
+        border-bottom: 1px solid var(--line);
         color: inherit;
         text-align: left;
         cursor: pointer;
         font: inherit;
+        transition: background var(--t-fast) var(--ease);
       }
       .asbtn:hover {
-        background: var(--panel);
+        background: var(--surface-2);
       }
       .more {
         display: flex;
@@ -236,13 +237,14 @@ const STATUS_LABEL: Record<string, string> = {
         line-height: 1.7;
       }
       .msg {
-        border: 1px solid var(--stroke);
-        border-radius: 12px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-md);
         padding: 10px 12px;
-        background: var(--panel);
+        background: var(--surface-2);
       }
+      /* 自己的发言靠左侧品牌色条区分（不是换底色 —— 换底色在亮色皮肤下会糊成一片） */
       .msg.me {
-        border-color: rgba(124, 58, 237, 0.35);
+        border-left: 3px solid var(--primary);
       }
       .who2 {
         font-size: 12px;

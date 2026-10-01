@@ -4,7 +4,7 @@ import { Page, Row } from '../core/api.service';
 import { Crud, CrudPage, Field } from '../core/crud';
 import { T, t } from '../core/i18n/i18n';
 import { idOf } from '../core/render';
-import { dash, errText, num } from '../core/util';
+import { dash, enabledLabel, errText, label, num } from '../core/util';
 import { Pager, StateBlock, StatCard, Tabs } from '../components/ui';
 import { Table } from '../components/table';
 import { FormModal } from '../components/form-modal';
@@ -14,6 +14,8 @@ import {
   METHOD_FIELDS,
   ORDER_ACTS,
   ORDER_STATUS,
+  ORDER_STATUS_LABEL,
+  PAYOUT_STATUS_LABEL,
   SET_FIELDS,
 } from './finance-fields';
 
@@ -158,8 +160,8 @@ export class Finance extends CrudPage {
           fiat_amount: 'withdraw.fiat_amount',
           currency: 'withdraw.currency',
           method: 'withdraw.method',
-          status: 'withdraw.status',
-          payout_status: 'withdraw.payout_status',
+          status_label: 'withdraw.status',
+          payout_status_label: 'withdraw.payout_status',
           review_note: 'withdraw.note',
           created_at: 'withdraw.submit_time',
         };
@@ -179,7 +181,7 @@ export class Finance extends CrudPage {
           name: 'payment.name',
           type: 'payment.type',
           provider: 'payment.provider',
-          status: 'payment.status',
+          status_label: 'payment.status',
           sort: 'payment.sort',
           currency: 'payment.currency',
           min_amount: 'payment.min_amount',
@@ -219,7 +221,15 @@ export class Finance extends CrudPage {
       return { list: [], total: 0, page: 1, limit: this.pageSize };
     }
     if (tab === 'limits') return this.api.list<Row>(W + 'limits/list');
-    if (tab === 'methods') return this.api.list<Row>(F + 'payment/method/list');
+    if (tab === 'methods') {
+      const res = await this.api.list<Row>(F + 'payment/method/list');
+      // status 是 TINYINT 0/1（`game_payment_method.status`）⇒ 表格那列看 status_label，
+      // 原值留着（表单预填/行内启停都读它）
+      return {
+        ...res,
+        list: res.list.map((r) => ({ ...r, status_label: enabledLabel(r['status']) })),
+      };
+    }
     const res = await this.api.list<Row>(W + 'orders', {
       page: this.page(),
       page_size: this.pageSize,
@@ -227,7 +237,18 @@ export class Finance extends CrudPage {
       status: this.status(),
     });
     // 用户名在嵌套的 user 对象里（{id, username}，encodeIds 过的）；表格只认平铺标量 ⇒ 摊成一列
-    return { ...res, list: res.list.map((r) => ({ ...r, user_name: this.userName(r) })) };
+    return {
+      ...res,
+      list: res.list.map((r) => ({
+        ...r,
+        user_name: this.userName(r),
+        // 订单状态与打款状态是后端英文枚举（pending/approved/…）⇒ 各自摊平一列译文。
+        // **原值原样留着**：行内动作按 `status === 'pending'` 出按钮、批量审核按它挑选中集、
+        // 导出与二次确认文案也读它 —— 改了原值就是改了行为，不只是改了显示。
+        status_label: t(label(ORDER_STATUS_LABEL, r['status'])),
+        payout_status_label: t(label(PAYOUT_STATUS_LABEL, r['payout_status'])),
+      })),
+    };
   }
 
   /**

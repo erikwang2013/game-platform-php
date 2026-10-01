@@ -280,7 +280,7 @@ Cors（クロスドメイン前処理 + レスポンスヘッダー）
   → OperationLog（POST/PUT/DELETE 自動記録、送信元検出含む、/admin/v1 ルートグループ）
 ```
 
-`/health` は公開エンドポイントで、`Cors → SecurityFilter → RateLimit` のみを通過します。`/metrics` と `/api/docs` はさらに `AdminAuth → AdminPermission` が必要です。
+`/health` は公開エンドポイントで、`Cors → SecurityFilter → RateLimit → LanguageMiddleware` のみを通過します。`/api/docs` はさらに `AdminAuth → AdminPermission` が必要です。`/metrics` はさらに `MetricsAuth` を通過します（管理者 JWT は従来どおり `AdminAuth → AdminPermission` を通り、または `.env` の `METRICS_SCRAPE_TOKEN` による静的スクレイプトークンを利用します。未設定の場合、この経路は無効です）。`/metrics` の拒否は `401/403` + `text/plain` で、他のエンドポイントの 200 + JSON エンベロープではありません。
 
 セキュリティ強化：
 - **アカウントロック**：ログイン連続5回失敗でアカウントが自動的に15分間ロックされ、その間のログインは 429 を返す

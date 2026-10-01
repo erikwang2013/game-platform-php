@@ -456,4 +456,48 @@ export const koFields: Record<FieldKey, string> = {
   'f.reason': '사유',
   'f.row': '행',
   'f.file': '파일',
+  'f.stats': '통계',
+  'f.trends': '추이',
+  'f.distribution': '분포',
+  'f.recent_logs': '최근 로그',
+  'f.user_status': '사용자 상태',
+  'f.active_users_7d': '활성 (7일)',
+  'f.app': '앱',
+  'f.version': '버전',
+  'f.php': 'PHP',
+  'f.database': '데이터베이스',
+  'f.redis': 'Redis',
+  'f.elasticsearch': 'Elasticsearch',
+  'f.timestamp': '타임스탬프',
+  // 手补（非 codemod 产出）：平台用户钱包与流水（wallet.transactions / tx.* / f.wallet 那族）
+  'f.wallet': '지갑',
+  'f.balance': '잔액',
+  'f.frozen_balance': '동결 금액',
+  'f.total_earned': '누적 수입',
+  'f.total_spent': '누적 지출',
+  'f.amount': '금액',
+  'f.balance_after': '거래 후 잔액',
+  'f.remark': '비고',
+  // 手补（非 codemod 产出）：提现订单列表的四个只读列（funds.tsx 的 ORDER_COLUMNS；
+  // CrudConfig 没声明 fields，标题走 RowBrowser 的 f.<字段名> 兜底）
+  'f.order_no': '주문 번호',
+  // 措辞**故意通用**：本表它是「提现平台币数量」，但同名字段在兑换域随 direction 变义
+  // （in=支出 / out=卖出的游戏币），故不写成「提现…」——把跨域复用的键焊死在一个域上更糟
+  'f.platform_amount': '플랫폼 코인 수량',
+  'f.fiat_amount': '법정화폐 금액',
+  'f.payout_status': '지급 상태',
+  // 手补（非 codemod 产出）：风控四页与搜索结果页的八个只读列（列清单见 pages/risk.tsx 与 pages/search.tsx；
+  // CrudConfig 没声明这些字段，标题走 RowBrowser 的 f.<字段名> 兜底）
+  'f.ip_c_segment': 'IP C 세그먼트',
+  'f.first_seen_at': '최초 관측 시간',
+  'f.ip_masked': 'IP(마스킹)',
+  'f.reputation_score': '평판 점수',
+  'f.fingerprint_masked': '지문(마스킹)',
+  'f.user_count': '구성원 수',
+  'f.updated_at': '수정 시간',
+  // 措辞**故意通用**：本表它是「客户端平台 h5/unity/web/native」，同一个字段在游戏表单里另有专键
+  // f.client_platform。而兜底键名是**按列名**取的（f.<列名>）⇒ 别处同名列 game_device_token.platform
+  // 完全是另一回事（推送通道 fcm/apns/harmonyos），将来真渲染那一列时不许直接吃这条
+  'f.platform': '플랫폼',
+
 };

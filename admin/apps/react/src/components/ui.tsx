@@ -43,9 +43,33 @@ export function Card({
   );
 }
 
-export function Stat({ label, value, hint, tone }: { label: string; value: ReactNode; hint?: string; tone?: Tone }) {
+/**
+ * 统计块。`icon` / `color` 是给仪表盘那种「后端带图标与强调色」的卡片用的：
+ * 图标是装饰（语义由 `label` 承载，故 `aria-hidden`），`color` 只落在图标上 ——
+ * 后端给的十六进制当大面积底色会跟令牌体系打架（暗色下尤其）。
+ */
+export function Stat({
+  label,
+  value,
+  hint,
+  tone,
+  icon,
+  color,
+}: {
+  label: string;
+  value: ReactNode;
+  hint?: ReactNode;
+  tone?: Tone;
+  icon?: ReactNode;
+  color?: string;
+}) {
   return (
     <div className={`stat${tone ? ` t-${tone}` : ''}`}>
+      {icon ? (
+        <span className="stat-i" style={color ? { color } : undefined} aria-hidden="true">
+          {icon}
+        </span>
+      ) : null}
       <span className="stat-l">{label}</span>
       <span className="stat-v">{value}</span>
       {hint ? <span className="stat-h">{hint}</span> : null}
@@ -167,7 +191,23 @@ export function Field({ label, value }: { label: string; value: ReactNode }) {
   );
 }
 
-export function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
+export function Modal({
+  title,
+  onClose,
+  children,
+  size,
+}: {
+  title: string;
+  onClose: () => void;
+  children: ReactNode;
+  /**
+   * `'sm'` = 贴合内容的小弹框。默认 `.modal` 是 `min(760px, 100%)`，表单/详情/导入报表需要它；
+   * 登录验证码只有一张 **原生 300×200** 的画布，而 `.cap-img` 是 `width:100%` ⇒ 跟着容器走，
+   * 760px 弹框会把它拉伸到 **2.4 倍**（既占满屏又糊）。给小尺寸后弹框 340px、内容 300px
+   * ⇒ 画布 1:1。**别把默认值改小**，那会连累另外三个调用点。
+   */
+  size?: 'sm';
+}) {
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
@@ -179,7 +219,7 @@ export function Modal({ title, onClose, children }: { title: string; onClose: ()
   return (
     <div className="backdrop" onClick={onClose} role="presentation">
       <div
-        className="modal"
+        className={size === 'sm' ? 'modal modal-sm' : 'modal'}
         role="dialog"
         aria-modal="true"
         aria-label={title}

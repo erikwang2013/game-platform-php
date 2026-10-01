@@ -4,7 +4,7 @@ import { Page, Params, Row } from '../core/api.service';
 import { Crud, CrudPage, Field, Opt } from '../core/crud';
 import { idOf, json, scalarsOf } from '../core/render';
 import { PNode, flatten, toTree } from '../core/tree';
-import { errText } from '../core/util';
+import { enabledLabel, errText } from '../core/util';
 import { T, t } from '../core/i18n/i18n';
 import { Pager, StateBlock, StatCard, Tabs } from '../components/ui';
 import { Table } from '../components/table';
@@ -307,7 +307,8 @@ export class Settings extends CrudPage {
         name: 'role.name',
         slug: 'role.slug',
         description: 'role.description',
-        status: 'role.head.status',
+        // 值列改指 status_label（原文案是「状态(0禁用/1启用)」= 把数据库编码当标签，已改平）
+        status_label: 'role.head.status',
         users_count: 'role.users_count',
       };
     }
@@ -453,7 +454,11 @@ export class Settings extends CrudPage {
     // 节点树必须在打开之前就绪。loadTree 自己吞异常，树挂了列表照常（角色改名不该被树连坐）。
     if (tab === 'role') {
       const [res] = await Promise.all([this.api.list<Row>(url, params), this.loadTree()]);
-      return res;
+      // 角色 status 是 TINYINT 0/1（`game_role.status`）⇒ 摊平一列文案；原值留着（行内启停读它）
+      return {
+        ...res,
+        list: (res.list ?? []).map((r) => ({ ...r, status_label: enabledLabel(r['status']) })),
+      };
     }
     const res = await this.api.list<Row>(url, params);
     if (tab !== 'permission') return res;

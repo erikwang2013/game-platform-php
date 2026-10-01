@@ -1,7 +1,33 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { dash, isTimeKey, num, pick, toWallClock, when } from './format.ts';
+import { amountClass, dash, isTimeKey, num, pick, toWallClock, when } from './format.ts';
+
+test('amountClass：只读字符串判方向，零与坏值都不着色', () => {
+  // 正负两态：首字符判，不经 float
+  assert.equal(amountClass('100.00000000'), 'delta up');
+  assert.equal(amountClass('0.00000001'), 'delta up'); // 极小正额也是正
+  assert.equal(amountClass('+5.00'), 'delta up');
+  assert.equal(amountClass('-0.50000000'), 'delta down');
+  assert.equal(amountClass('-100.00000000'), 'delta down');
+  // 零不着色（染绿 = 把 0 说成收入）
+  assert.equal(amountClass('0.00000000'), '');
+  assert.equal(amountClass('0'), '');
+  assert.equal(amountClass('-0.00000000'), '');
+  // 空/坏值不着色，且不抛
+  assert.equal(amountClass(''), '');
+  assert.equal(amountClass(null), '');
+  assert.equal(amountClass(undefined), '');
+  assert.equal(amountClass('abc'), '');
+  // 超长精度串不丢精度：它压根没被当数字读过（`Number('12345678901234567890.12')` 会变成 1.2345678901234568e+19）
+  assert.equal(amountClass('12345678901234567890.12'), 'delta up');
+  assert.equal(amountClass('-12345678901234567890.12'), 'delta down');
+  // 这一条是**分道向量**：上面那些向量 `Number()`/`parseFloat()` 的答案与按串数位完全一致
+  // （都能答对），换成 float 实现照样绿。深层小数会下溢成 0 ⇒ 只有「串里有非 0 数字」这条判据
+  // 答得对。bcmath 没有小数位上限，这不是编出来的形状。
+  assert.equal(amountClass(`0.${'0'.repeat(400)}1`), 'delta up', 'Number() 会把它下溢成 0 判成「零」');
+  assert.equal(amountClass(`-0.${'0'.repeat(400)}1`), 'delta down');
+});
 
 test('dash：null/undefined/空串显示 —，0/false 不算空', () => {
   assert.equal(dash(null), '—');

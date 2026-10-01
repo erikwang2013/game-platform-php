@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { describe, expect, it, vi } from 'vitest';
-import { dash, DASH, dt } from './util';
+import { use } from './i18n/i18n';
+import { dash, DASH, dt, enabledLabel, isNum } from './util';
 
 /**
  * 时间列的显示归一：后端 datetime cast 的列出网是 **ISO8601 UTC**（带 `Z` + 6 位小数秒），
@@ -115,5 +116,98 @@ describe('dash 走时间归一，其余分支不动', () => {
     expect(dash(0)).toBe('0');
     expect(dash('12345678901234567890.12')).toBe('12345678901234567890.12');
     expect(dash({ a: 1 })).toBe('{…}');
+  });
+});
+
+/**
+ * `isNum` 决定表格单元格出不出 `.num`（右对齐）。原来只认 `typeof v === 'number'`，
+ * 而本仓金额按 bcmath 契约出网就是**字符串** ⇒ 金额列一列都不命中，整列左对齐、
+ * 小数点对不齐（真机实测右边缘 spread 43px）。
+ *
+ * 这一组钉的是**两个方向**：数字串必须认（否则缺陷照旧），非数字串必须不认
+ * （否则日期/脱敏手机号/备注这些文本列会被右推，比左对齐更难看）。
+ */
+describe('isNum 表格列对齐判据', () => {
+  it('number 一律认（原行为不变）', () => {
+    expect(isNum(0)).toBe(true);
+    expect(isNum(1)).toBe(true);
+    expect(isNum(-12.5)).toBe(true);
+  });
+
+  it('十进制数字串认：整数、负数、小数、超长精度都算（金额/比率出网就是这个形状）', () => {
+    expect(isNum('0')).toBe(true);
+    expect(isNum('1')).toBe(true);
+    expect(isNum('-1')).toBe(true);
+    expect(isNum('12.5')).toBe(true);
+    expect(isNum('-0.00000001')).toBe(true);
+    // bcmath 的 scale 决定小数位数，20 位整数 + 8 位小数是真会出现的列宽
+    expect(isNum('12345678901234567890.12345678')).toBe(true);
+    expect(isNum('0007')).toBe(true); // 前导零仍是数字（'007' 当编号看也就是个数字串）
+  });
+
+  it('日期串不认（`2026-09-01` 的连字符不是小数点）', () => {
+    expect(isNum('2026-09-01')).toBe(false);
+    expect(isNum('2026-09-01 12:00:00')).toBe(false);
+    expect(isNum('2026-09-01T04:00:00.000000Z')).toBe(false);
+  });
+
+  it('脱敏手机号不认（`138****0000` 里的星号让它不是数字）', () => {
+    expect(isNum('138****0000')).toBe(false);
+  });
+
+  it('普通文本 / 空串 / 空值不认（空串必须假：td 里它就是 —）', () => {
+    expect(isNum('abc')).toBe(false);
+    expect(isNum('')).toBe(false);
+    expect(isNum(null)).toBe(false);
+    expect(isNum(undefined)).toBe(false);
+    expect(isNum({})).toBe(false);
+    expect(isNum([])).toBe(false);
+    expect(isNum(true)).toBe(false);
+  });
+
+  it('看着像数字但不是这个形状的一律不认：千分位、科学计数、正号、前后空白、十六进制', () => {
+    expect(isNum('1,234.00')).toBe(false);
+    expect(isNum('1e5')).toBe(false);
+    expect(isNum('+1.5')).toBe(false); // bcmath 不会补正号
+    expect(isNum(' 12 ')).toBe(false); // 带空白 ⇒ 是文本，别右推
+    expect(isNum('0x1F')).toBe(false);
+    expect(isNum('.5')).toBe(false); // 没有整数部分（bcmath 不会这么出）
+    expect(isNum('12.')).toBe(false); // 没有小数部分（同上）
+    expect(isNum('1.2.3')).toBe(false);
+    expect(isNum('--1')).toBe(false);
+  });
+});
+
+/**
+ * 0/1 状态列的文案。表格此前把这些列的值原样摆出来（`0` / `1`），表头却写着
+ * `状态(0禁用/1启用)` —— 运营得先背下 0 和 1。这里钉住三个边界：0/1 有文案、
+ * **认不出的值不许说成「停用」**（那是替后端编状态）、空值走占位符（空 ≠ 停用）。
+ */
+describe('enabledLabel 0/1 状态列', () => {
+  beforeEach(() => use('zh'));
+
+  it('1 启用 / 0 停用（数字与数字串都认，后端两种都可能出）', () => {
+    expect(enabledLabel(1)).toBe('启用');
+    expect(enabledLabel(0)).toBe('停用');
+    expect(enabledLabel('1')).toBe('启用');
+    expect(enabledLabel('0')).toBe('停用');
+  });
+
+  it('不是 0/1 的值原样透出：别把别的 ID 空间的状态说成「停用」', () => {
+    expect(enabledLabel('banned')).toBe('banned');
+    expect(enabledLabel(2)).toBe('2');
+    expect(enabledLabel(-1)).toBe('-1');
+  });
+
+  it('空值走占位符（「没有值」与「停用」是两回事）', () => {
+    expect(enabledLabel(null)).toBe(DASH);
+    expect(enabledLabel(undefined)).toBe(DASH);
+    expect(enabledLabel('')).toBe(DASH);
+  });
+
+  it('跟着当前语言走（切到英文查到的就是英文）', () => {
+    use('en');
+    expect(enabledLabel(1)).toBe('Enabled');
+    use('zh');
   });
 });

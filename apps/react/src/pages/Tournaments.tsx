@@ -7,6 +7,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { ApiError, api, type Tournament, type TournamentDetail } from '../lib/api.ts';
 import { dt } from '../lib/datetime.ts';
 import { useAsync } from '../lib/hooks.ts';
+import { tournamentTypeLabel } from '../lib/labels.ts';
 import { Modal } from '../components/CaptchaModal.tsx';
 import { Empty, ErrorBox, Loading } from '../components/States.tsx';
 
@@ -236,7 +237,7 @@ export function Tournaments() {
                 {detail.data.type && (
                   <div className="li">
                     <span className="small muted">类型</span>
-                    <span>{detail.data.type}</span>
+                    <span>{tournamentTypeLabel(detail.data.type)}</span>
                   </div>
                 )}
                 {detail.data.game && (

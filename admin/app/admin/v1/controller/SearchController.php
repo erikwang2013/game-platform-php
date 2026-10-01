@@ -17,7 +17,7 @@ use support\Request;
 class SearchController extends BaseController
 {
     #[Apidoc\Title("全局搜索")]
-    #[Apidoc\Desc("全局搜索游戏或用户，支持ES全文检索和数据库LIKE回退")]
+    #[Apidoc\Desc("全局搜索游戏或用户（数据库 LIKE 检索；本仓未接 scout/ES）")]
     #[Apidoc\Url("/admin/v1/search")]
     #[Apidoc\Method("GET")]
     #[Apidoc\Author("erik")]
@@ -34,44 +34,44 @@ class SearchController extends BaseController
             return $this->success(['list' => [], 'total' => 0]);
         }
 
-        try {
-            if ($type === 'game') {
-                $results = Game::search($q)->paginate($perPage, 'page', $page);
-            } else {
-                $results = User::search($q)->paginate($perPage, 'page', $page);
-            }
-            $list = [];
-            foreach ($results->items() as $item) {
-                $data = $item->toArray();
-                $data['id'] = $this->encodeId($data['id']);
-                unset($data['password']);
-                $list[] = $data;
-            }
-            return $this->success([
-                'list' => $list,
-                'total' => $results->total(),
-                'page' => $page,
-                'per_page' => $perPage,
-            ]);
-        } catch (\Throwable $e) {
-            $query = $type === 'game' ? Game::query() : User::query();
+        // ⚠ 本仓**未接 scout/ES**，下面是两条**唯一在跑**的检索路径，不是"ES 挂了时的降级"。
+        // 原先这里是 `try { Game::search($q) / User::search($q) } catch (\Throwable) { … }`，
+        // 但那两个方法全仓不存在（无任何模型 `use Searchable`）⇒ 每请求必抛
+        // `BadMethodCallException: Call to undefined method common\model\{Game,User}::search()`，
+        // 被宽 catch 吞掉后固定走下面这段。分支已删。**要真接全文检索是独立一批**
+        // （挂 trait + scout 配置 + 索引同步 + 用例），别把这里重新包回 try。
+        $query = $type === 'game' ? Game::query() : User::query();
+        if ($type === 'game') {
             $query->where('name', 'like', "%{$q}%");
-            if ($type !== 'game') {
-                $query->orWhere('username', 'like', "%{$q}%");
-            }
-            $total = $query->count();
-            $items = $query->forPage($page, $perPage)->get()->map(function ($item) {
-                $data = $item->toArray();
-                $data['id'] = $this->encodeId($data['id']);
-                unset($data['password']);
-                return $data;
+        } else {
+            // ⚠ `game_user` **没有 `name` 列**（只有 username/nickname，见 install.sql 的 DDL）。
+            // 原先这里不分分支地对两边都跑 `where('name', …)` ⇒ `?type=user` 必抛
+            // SQLSTATE 42S22 Unknown column ⇒ 500，react 管理端搜索页的 user 页签点了就报错。
+            // 修法：user 分支搜 nickname + username。
+            // ⚠ **别把 email/phone 加进来**：那两列是 Encryptable，库里存的是**密文**，
+            // LIKE 明文永远匹配不到，加了只会造出"搜得到却搜不着"的假象。
+            // 闭包是**防御性**的，不是这里当前必须的：User 有 SoftDeletes 全局作用域，Eloquent 的
+            // callScope/addNewWheresWithinGroup 会把已有 wheres 自动归组 —— 实测平铺与包闭包生成
+            // **完全相同**的 SQL：`where (nickname like ? or username like ?) and deleted_at is null`。
+            // 真正会栽的是**没有全局作用域**的模型：Game 平铺出来就是
+            // `status = ? and name like ? or description like ?`（SQL 里 AND 优先于 OR）——
+            // C 端 /search 正是栽在这上面。这里包着是为了形状统一，以及将来去掉 SoftDeletes 时不出事。
+            $query->where(function ($w) use ($q) {
+                $w->where('nickname', 'like', "%{$q}%")->orWhere('username', 'like', "%{$q}%");
             });
-            return $this->success([
-                'list' => $items,
-                'total' => $total,
-                'page' => $page,
-                'per_page' => $perPage,
-            ]);
         }
+        $total = $query->count();
+        $items = $query->forPage($page, $perPage)->get()->map(function ($item) {
+            $data = $item->toArray();
+            $data['id'] = $this->encodeId($data['id']);
+            unset($data['password']);
+            return $data;
+        });
+        return $this->success([
+            'list' => $items,
+            'total' => $total,
+            'page' => $page,
+            'per_page' => $perPage,
+        ]);
     }
 }

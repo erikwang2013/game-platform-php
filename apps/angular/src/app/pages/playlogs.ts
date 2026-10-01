@@ -1,6 +1,6 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { Component, inject, signal } from '@angular/core';
-import { Api, ApiError, PlayLog, PlayLogDetail, dt, money } from '../core/api.service';
+import { Api, ApiError, PlayLog, PlayLogDetail, dt, money, moneyRaw } from '../core/api.service';
 
 /**
  * 流水动作短码 → 中文。**取值真源是写入侧，不是列注释**（两者对不上，列注释是漂移）：
@@ -67,7 +67,12 @@ const ACTION_LABEL: Record<string, string> = {
                 <div class="t">{{ actionLabel(l.action) }}</div>
                 <div class="s">{{ dt(l.created_at) }}{{ l.session_id ? ' · ' + l.session_id : '' }}</div>
               </div>
-              <span class="amount" [class.in]="isIn(l)" [class.out]="!isIn(l)">
+              <span
+                class="amount"
+                [class.in]="isIn(l)"
+                [class.out]="!isIn(l)"
+                [title]="moneyRaw(l.game_amount_change)"
+              >
                 {{ sign(l.game_amount_change) }}{{ money(abs(l.game_amount_change)) }}
               </span>
             </button>
@@ -99,10 +104,30 @@ const ACTION_LABEL: Record<string, string> = {
             <div class="kv"><span>动作</span><span>{{ actionLabel(d.action) }}</span></div>
             <div class="kv"><span>时间</span><span>{{ dt(d.created_at) }}</span></div>
             <div class="kv"><span>会话</span><span class="mono">{{ d.session_id || '—' }}</span></div>
-            <div class="kv"><span>变动前</span><span class="amount">{{ money(d.game_amount_before) }}</span></div>
-            <div class="kv"><span>变动</span><span class="amount">{{ sign(d.game_amount_change) }}{{ money(abs(d.game_amount_change)) }}</span></div>
-            <div class="kv"><span>变动后</span><span class="amount">{{ money(d.game_amount_after) }}</span></div>
-            <div class="kv"><span>平台币变动</span><span class="amount">{{ money(d.platform_amount_change) }}</span></div>
+            <div class="kv">
+              <span>变动前</span
+              ><span class="amount" [title]="moneyRaw(d.game_amount_before)">{{
+                money(d.game_amount_before)
+              }}</span>
+            </div>
+            <div class="kv">
+              <span>变动</span
+              ><span class="amount" [title]="moneyRaw(d.game_amount_change)"
+                >{{ sign(d.game_amount_change) }}{{ money(abs(d.game_amount_change)) }}</span
+              >
+            </div>
+            <div class="kv">
+              <span>变动后</span
+              ><span class="amount" [title]="moneyRaw(d.game_amount_after)">{{
+                money(d.game_amount_after)
+              }}</span>
+            </div>
+            <div class="kv">
+              <span>平台币变动</span
+              ><span class="amount" [title]="moneyRaw(d.platform_amount_change)">{{
+                money(d.platform_amount_change)
+              }}</span>
+            </div>
             @if (d.started_at || d.ended_at) {
               <div class="kv"><span>开始 / 结束</span><span>{{ dt(d.started_at) }} / {{ dt(d.ended_at) }}</span></div>
             }
@@ -129,14 +154,15 @@ const ACTION_LABEL: Record<string, string> = {
         width: 100%;
         background: transparent;
         border: 0;
-        border-bottom: 1px solid var(--stroke);
+        border-bottom: 1px solid var(--line);
         color: inherit;
         text-align: left;
         cursor: pointer;
         font: inherit;
+        transition: background var(--t-fast) var(--ease);
       }
       .asbtn:hover {
-        background: var(--panel);
+        background: var(--surface-2);
       }
       .more {
         display: flex;
@@ -166,6 +192,7 @@ export class PlaylogsPage {
   }
 
   protected money = money;
+  protected moneyRaw = moneyRaw;
 
   protected actionLabel(a?: string): string {
     return a ? (ACTION_LABEL[a] ?? a) : '—';
@@ -177,8 +204,18 @@ export class PlaylogsPage {
     return s.startsWith('-') ? s.slice(1) : s;
   }
 
+  /**
+   * 负号用 **ASCII `-`(U+002D) 而不是排版减号 `−`(U+2212)**。三处理由：
+   * ① 后端 bcmath 串本身就是 ASCII `-`（`'-1234.5678'`），`money()` 只是透传；若反过来让
+   *    `money()` 去产 U+2212，要动 30+ 个调用点，而这里只动一行。
+   * ② 同一屏里 `{{ sign() }}{{ money(...) }}` 与钱包页的 `{{ money(r.amount) }}` 必须同字符，
+   *    否则「−12.34」和「-12.34」并排显示两个不同的负号。
+   * ③ 本元素 `title` 是 `moneyRaw()` 给的**后端原始串**，里面也是 ASCII `-`；正文与 title
+   *    用同一字符，悬停对拍不会看着像两个数。
+   * 字体栈也偏 ASCII：U+2212 不是所有字体都有字形（13 种语言下有过缺字风险）。
+   */
   protected sign(v: number | string): string {
-    return String(v ?? '').startsWith('-') ? '−' : '+';
+    return String(v ?? '').startsWith('-') ? '-' : '+';
   }
 
   protected isIn(l: PlayLog): boolean {

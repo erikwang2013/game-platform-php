@@ -280,7 +280,7 @@ Cors (क्रॉस-ओरिजिन पूर्व-प्रसंस्�
   → OperationLog (POST/PUT/DELETE स्वचालित रिकॉर्ड, स्रोत पहचान सहित, /admin/v1 रूट समूह)
 ```
 
-`/health` सार्वजनिक एंडपॉइंट है और केवल `Cors → SecurityFilter → RateLimit` से गुजरता है; `/metrics` और `/api/docs` को अतिरिक्त रूप से `AdminAuth → AdminPermission` चाहिए।
+`/health` सार्वजनिक एंडपॉइंट है और केवल `Cors → SecurityFilter → RateLimit → LanguageMiddleware` से गुजरता है; `/api/docs` को अतिरिक्त रूप से `AdminAuth → AdminPermission` चाहिए; `/metrics` अतिरिक्त रूप से `MetricsAuth` से गुजरता है (एडमिन JWT अब भी `AdminAuth → AdminPermission` से गुजरता है, या `.env` से `METRICS_SCRAPE_TOKEN` स्थिर स्क्रैप टोकन इस्तेमाल करें; सेट न होने पर यह पथ अक्षम रहता है)। `/metrics` की अस्वीकृति `401/403` + `text/plain` है, अन्य एंडपॉइंट के 200 + JSON एनवेलप की तरह नहीं।
 
 सुरक्षा संवर्द्धन:
 - **खाता लॉक**: लगातार 5 असफल लॉगिन पर खाता स्वचालित रूप से 15 मिनट लॉक, इस दौरान लॉगिन 429 लौटाता है

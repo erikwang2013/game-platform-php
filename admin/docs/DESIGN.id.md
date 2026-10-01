@@ -359,6 +359,41 @@ Rute halaman:
 
 Aliran data: Page ← DataService ← ApiService (JWT Bearer) ← HTTP ← webman
 
+### 5.3 Backend Admin React
+
+Token desain: **Graphite Console**, dijelaskan sendiri di awal `src/index.css`. Stack: React + Vite + TypeScript (`package.json`); hasil build disajikan di bawah `/admin-react/`.
+
+| Lapisan | Lokasi | Catatan |
+|------|------|------|
+| Token desain | `src/index.css` | Tangga permukaan empat tingkat dan garis rambut 1px; tema gelap hanya penimpaan token (`src/index.css:110`), tanpa state tema di JS |
+| Shell | `src/components/Shell.tsx` | Sidebar + topbar; item terpilih adalah `.navlink.on` (`src/components/Shell.tsx:85`) |
+| Perender umum | `src/components/RowBrowser.tsx`, `src/lib/columns.ts` | Modul halaman di `src/pages/` adalah spesifikasi kolom di atas satu perender |
+| i18n | `src/i18n/<lang>.ts`, `<lang>.fields.ts`, `<lang>.ui.ts` | 13 bahasa × 3 tabel; himpunan kunci dipatok oleh `src/i18n/coverage.test.ts` |
+| Tes | `node --test` (`package.json`) | Tanpa landasan DOM: render diverifikasi dengan membaca sumber |
+
+Tiga batasan yang tidak boleh melenceng:
+
+- Lapisan visual hanya tinggal di `src/index.css` dan `src/App.css`; struktur DOM dan nama kelas adalah kontraknya, dijaga oleh `src/components/rowActions.guard.test.ts` dan `src/components/table-headers.test.ts`.
+- `.modal-sm` 340px ↔ padding horizontal 20px ↔ kanvas captcha 300×200 adalah **satu** persamaan (`src/index.css:573`). `box-sizing: border-box` berlaku global, jadi `border` pada `.modal` memampatkan kanvas ke 298 — garis tepi hanya lewat `box-shadow: 0 0 0 1px`.
+- `--amber` adalah satu-satunya token yang dirujuk dari TSX (`src/pages/LoginPage.tsx`); mengganti namanya gagal secara senyap.
+
+### 5.4 Backend Admin Angular
+
+Token desain: **Inkwell Console**, dijelaskan sendiri di awal `src/styles.scss`. Stack: komponen standalone Angular + Router; tes unit berjalan di vitest lewat `@angular/build:unit-test` (`angular.json:78`); hasil build disajikan di bawah `/admin-angular/`.
+
+| Lapisan | Lokasi | Catatan |
+|------|------|------|
+| Token desain | `src/styles.scss` | Rel tinta bersaturasi rendah + satu warna aksen khusus untuk interaktif/terpilih; `tabular-nums` di semua tabel |
+| Gaya tingkat halaman | `src/styles.extra.scss` | Mengonsumsi token dan tidak mendefinisikan satu pun — kontrak yang tertulis di awal berkas |
+| Komponen | `src/app/components/`, `src/app/pages/` | **Nol `styleUrls`**: tidak ada lembar gaya per komponen, semua gaya bersifat global |
+| i18n | `src/app/core/i18n/dict/*.ts`, `locales/<lang>-{1,2}.ts` | `dict/` menyimpan pasangan `[en, zh]`; 11 bahasa lain adalah potongan yang dimuat sesuai kebutuhan dan ditumpuk di atas tabel Inggris |
+| Tes | `src/app/**/*.spec.ts` | Berjalan di vitest |
+
+Dua perilaku yang layak disebut:
+
+- Status terpilih di sidebar adalah perilaku, bukan atribut: `routerLinkActive="active"` (`src/app/app.html:11`) plus `.nav a.active` (`src/styles.scss:225`), dipatok oleh `src/app/app.spec.ts`.
+- Kolom pertama tabel bersifat `position: sticky; left: 0` di **semua** lebar (`src/styles.scss:319`), bukan hanya di layar sempit: tabelnya `nowrap` dengan 9–11 kolom, jadi gulir horizontal juga normal di 1440.
+
 ## 6. Desain Keamanan
 
 ### 6.1 Pertahanan Berlapis

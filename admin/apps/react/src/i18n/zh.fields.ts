@@ -456,4 +456,48 @@ export const zhFields: Record<FieldKey, string> = {
   'f.reason': '原因',
   'f.row': '行号',
   'f.file': '文件',
+  'f.stats': '统计',
+  'f.trends': '趋势',
+  'f.distribution': '分布',
+  'f.recent_logs': '最近日志',
+  'f.user_status': '用户状态',
+  'f.active_users_7d': '7日活跃',
+  'f.app': '应用',
+  'f.version': '版本',
+  'f.php': 'PHP',
+  'f.database': '数据库',
+  'f.redis': 'Redis',
+  'f.elasticsearch': 'Elasticsearch',
+  'f.timestamp': '时间戳',
+  // 手补（非 codemod 产出）：平台用户钱包与流水（wallet.transactions / tx.* / f.wallet 那族）
+  'f.wallet': '钱包',
+  'f.balance': '余额',
+  'f.frozen_balance': '冻结金额',
+  'f.total_earned': '累计收入',
+  'f.total_spent': '累计支出',
+  'f.amount': '金额',
+  'f.balance_after': '交易后余额',
+  'f.remark': '备注',
+  // 手补（非 codemod 产出）：提现订单列表的四个只读列（funds.tsx 的 ORDER_COLUMNS；
+  // CrudConfig 没声明 fields，标题走 RowBrowser 的 f.<字段名> 兜底）
+  'f.order_no': '订单号',
+  // 措辞**故意通用**：本表它是「提现平台币数量」，但同名字段在兑换域随 direction 变义
+  // （in=支出 / out=卖出的游戏币），故不写成「提现…」——把跨域复用的键焊死在一个域上更糟
+  'f.platform_amount': '平台币数量',
+  'f.fiat_amount': '到账法币金额',
+  'f.payout_status': '打款状态',
+  // 手补（非 codemod 产出）：风控四页与搜索结果页的八个只读列（列清单见 pages/risk.tsx 与 pages/search.tsx；
+  // CrudConfig 没声明这些字段，标题走 RowBrowser 的 f.<字段名> 兜底）
+  'f.ip_c_segment': 'IP C 段',
+  'f.first_seen_at': '首次观测时间',
+  'f.ip_masked': 'IP（脱敏）',
+  'f.reputation_score': '信誉分',
+  'f.fingerprint_masked': '设备指纹（脱敏）',
+  'f.user_count': '成员数',
+  'f.updated_at': '更新时间',
+  // 措辞**故意通用**：本表它是「客户端平台 h5/unity/web/native」，同一个字段在游戏表单里另有专键
+  // f.client_platform。而兜底键名是**按列名**取的（f.<列名>）⇒ 别处同名列 game_device_token.platform
+  // 完全是另一回事（推送通道 fcm/apns/harmonyos），将来真渲染那一列时不许直接吃这条
+  'f.platform': '平台',
+
 };

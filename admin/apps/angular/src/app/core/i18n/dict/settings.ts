@@ -59,7 +59,7 @@ export const SETTINGS: Record<string, [string, string]> = {
   ],
   'role.users_count': ['Users Count', '关联用户数'],
   /** 列头把枚举含义写进去（值原样显示，不改数据） */
-  'role.head.status': ['Status (0 disabled / 1 enabled)', '状态(0停用/1启用)'],
+  'role.head.status': ['Status', '状态'],
   /** 删除确认里的对象标识：destroy 会 detach 掉权限与用户关联，得说清楚 */
   'role.delete_label': [
     '{name} (also detaches its permissions and users)',

@@ -9,6 +9,8 @@ import {
   TournamentStatus,
   dt,
   money,
+  moneyIsZero,
+  moneyRaw,
 } from '../core/api.service';
 
 const TABS: { key: TournamentStatus; label: string }[] = [
@@ -76,7 +78,10 @@ const TABS: { key: TournamentStatus; label: string }[] = [
                 <div class="s">
                   {{ t.game?.name || '全平台' }} · {{ playerText(t) }} · {{ dt(t.start_at) }}
                 </div>
-                <div class="s">奖池 {{ money(t.prize_pool) }} · {{ feeText(t) }}</div>
+                <div class="s">
+                  奖池 <span [title]="moneyRaw(t.prize_pool)">{{ money(t.prize_pool) }}</span> ·
+                  {{ feeText(t) }}
+                </div>
               </div>
               <span class="badge">查看</span>
             </button>
@@ -108,8 +113,16 @@ const TABS: { key: TournamentStatus; label: string }[] = [
             @if (note()) {
               <div class="alert ok">{{ note() }}</div>
             }
-            <div class="kv"><span>奖池</span><span class="amount">{{ money(d.prize_pool) }}</span></div>
-            <div class="kv"><span>报名费</span><span class="amount">{{ feeText(d) }}</span></div>
+            <div class="kv">
+              <span>奖池</span
+              ><span class="amount" [title]="moneyRaw(d.prize_pool)">{{
+                money(d.prize_pool)
+              }}</span>
+            </div>
+            <div class="kv">
+              <span>报名费</span
+              ><span class="amount" [title]="moneyRaw(d.entry_fee)">{{ feeText(d) }}</span>
+            </div>
             <div class="kv"><span>人数</span><span>{{ playerText(d) }}</span></div>
             <div class="kv"><span>时间</span><span>{{ dt(d.start_at) }} ~ {{ dt(d.end_at) }}</span></div>
             @if (d.type) {
@@ -172,25 +185,41 @@ const TABS: { key: TournamentStatus; label: string }[] = [
         margin: 0;
         font-size: 17px;
       }
+      /* 分段控件：一条轨道 + 选中片浮起。上一版是三个各自描边发光的药丸，
+         看不出"三选一"这层意思。 */
       .tabs {
         display: flex;
-        gap: 8px;
+        gap: 3px;
         margin-bottom: 14px;
+        padding: 3px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-md);
+        background: var(--surface-2);
       }
       .tab-btn {
         flex: 1;
-        padding: 9px 12px;
-        border-radius: 10px;
-        border: 1px solid var(--stroke);
-        background: var(--panel);
-        color: var(--muted);
+        min-height: 40px;
+        padding: 8px 12px;
+        border-radius: var(--r-sm);
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--text-2);
         font: inherit;
+        font-size: var(--fs-md);
+        font-weight: 600;
         cursor: pointer;
+        white-space: nowrap;
+        transition:
+          background var(--t-fast) var(--ease),
+          color var(--t-fast) var(--ease);
+      }
+      .tab-btn:hover {
+        color: var(--text);
       }
       .tab-btn.on {
         color: var(--text);
-        border-color: var(--accent);
-        box-shadow: var(--glow);
+        background: var(--raise);
+        box-shadow: var(--sh-1);
       }
       .sk-row {
         height: 16px;
@@ -201,14 +230,15 @@ const TABS: { key: TournamentStatus; label: string }[] = [
         width: 100%;
         background: transparent;
         border: 0;
-        border-bottom: 1px solid var(--stroke);
+        border-bottom: 1px solid var(--line);
         color: inherit;
         text-align: left;
         cursor: pointer;
         font: inherit;
+        transition: background var(--t-fast) var(--ease);
       }
       .asbtn:hover {
-        background: var(--panel);
+        background: var(--surface-2);
       }
       .more {
         display: flex;
@@ -251,6 +281,7 @@ export class TournamentsPage {
   protected readonly tabs = TABS;
   protected readonly dt = dt;
   protected readonly money = money;
+  protected readonly moneyRaw = moneyRaw;
 
   protected readonly status = signal<TournamentStatus>('upcoming');
   protected readonly items = signal<Tournament[]>([]);
@@ -293,7 +324,9 @@ export class TournamentsPage {
 
   /** 报名费 0 = 免费。只做**展示**判定，不参与任何金额运算（金额一律字符串交给服务端） */
   protected feeText(t: Tournament): string {
-    return Number(t.entry_fee) > 0 ? money(t.entry_fee) : '免费';
+    // 原先这里写 `Number(t.entry_fee) > 0` —— 金额列过数值转型，本批明令禁止；改走
+    // moneyIsZero（同 money() 的字符串判据）。「免费」的取值分支原样保留。
+    return moneyIsZero(t.entry_fee) ? '免费' : money(t.entry_fee);
   }
 
   protected playerText(t: Tournament): string {

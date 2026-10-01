@@ -13,7 +13,7 @@ Languages: [中文](SECURITY.md) · [English](SECURITY.en.md) · **한국어** �
 전체 미들웨어 체인은 다음 순서로 실행됩니다 (`config/middleware.php` 참조):
 
 ```
-请求 → Cors → SecurityFilter → RateLimit → [路由组中间件: AdminAuth → AdminPermission → OperationLog] → Controller
+请求 → Cors → SecurityFilter → RateLimit → LanguageMiddleware → [路由组中间件: AdminAuth → AdminPermission → OperationLog] → Controller
 ```
 
 | 계층 | 미들웨어/메커니즘 | 방어 대상 |

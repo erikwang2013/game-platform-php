@@ -359,6 +359,41 @@ curl http://host/api/v2/auth/login
 
 تدفق البيانات: Page ← DataService ← ApiService (JWT Bearer) ← HTTP ← webman
 
+### 5.3 الواجهة الإدارية React
+
+رموز التصميم: **Graphite Console**، موصوفة ذاتيًا في مطلع `src/index.css`. التقنيات: React + Vite + TypeScript (`package.json`)؛ ويُقدَّم البناء تحت `/admin-react/`.
+
+| الطبقة | الموقع | ملاحظات |
+|------|------|------|
+| رموز التصميم | `src/index.css` | سلّم أسطح من أربع درجات وخطوط شعرية بسماكة 1px؛ الوضع الداكن مجرد تجاوز للرموز (`src/index.css:110`) دون حالة سمة في JS |
+| الهيكل | `src/components/Shell.tsx` | شريط جانبي + شريط علوي؛ العنصر المحدد هو `.navlink.on` (`src/components/Shell.tsx:85`) |
+| العارض العام | `src/components/RowBrowser.tsx`، `src/lib/columns.ts` | وحدات الصفحات تحت `src/pages/` هي مواصفات أعمدة فوق عارض واحد |
+| i18n | `src/i18n/<lang>.ts`، `<lang>.fields.ts`، `<lang>.ui.ts` | 13 لغة × 3 جداول؛ ومجموعات المفاتيح مثبَّتة بواسطة `src/i18n/coverage.test.ts` |
+| الاختبارات | `node --test` (`package.json`) | لا قاعدة DOM: يُتحقق من العرض بقراءة المصدر |
+
+ثلاثة قيود لا يجوز أن تنزاح:
+
+- الطبقة البصرية تقيم في `src/index.css` و`src/App.css` فقط؛ بنية DOM وأسماء الفئات هي العقد، ويحرسها `src/components/rowActions.guard.test.ts` و`src/components/table-headers.test.ts`.
+- `.modal-sm` 340px ↔ حشوة أفقية 20px ↔ لوحة الكابتشا 300×200 **معادلة واحدة** (`src/index.css:573`). ولأن `box-sizing: border-box` شامل، فإن إضافة `border` إلى `.modal` تضغط اللوحة إلى 298 — تُرسم الحدود عبر `box-shadow: 0 0 0 1px` فقط.
+- `--amber` هو الرمز الوحيد المشار إليه من TSX (`src/pages/LoginPage.tsx`)؛ وتغيير اسمه يفشل بصمت.
+
+### 5.4 الواجهة الإدارية Angular
+
+رموز التصميم: **Inkwell Console**، موصوفة ذاتيًا في مطلع `src/styles.scss`. التقنيات: مكوّنات Angular المستقلة + Router؛ وتعمل اختبارات الوحدة على vitest عبر `@angular/build:unit-test` (`angular.json:78`)؛ ويُقدَّم البناء تحت `/admin-angular/`.
+
+| الطبقة | الموقع | ملاحظات |
+|------|------|------|
+| رموز التصميم | `src/styles.scss` | سكة حبر منخفضة التشبّع + لون تمييز واحد للتفاعل/التحديد فقط؛ و`tabular-nums` في كل الجداول |
+| أنماط على مستوى الصفحة | `src/styles.extra.scss` | تستهلك الرموز ولا تعرّف أيًّا منها — عقد مكتوب في مطلع الملف |
+| المكوّنات | `src/app/components/`، `src/app/pages/` | **صفر `styleUrls`**: لا ورقة أنماط على مستوى المكوّن في أي مكان، والتنسيق كله عام |
+| i18n | `src/app/core/i18n/dict/*.ts`، `locales/<lang>-{1,2}.ts` | يحفظ `dict/` أزواج `[en, zh]`؛ أما اللغات الإحدى عشرة الأخرى فهي أجزاء تُحمَّل عند الطلب وتُركَّب فوق الجدول الإنجليزي |
+| الاختبارات | `src/app/**/*.spec.ts` | يعمل على vitest |
+
+سلوكان يستحقان التسمية:
+
+- حالة التحديد في الشريط الجانبي سلوك لا سمة: `routerLinkActive="active"` (`src/app/app.html:11`) مع `.nav a.active` (`src/styles.scss:225`)، مثبَّتة بواسطة `src/app/app.spec.ts`.
+- العمود الأول في الجدول `position: sticky; left: 0` **بكل** العروض (`src/styles.scss:319`)، وليس على الشاشات الضيقة فقط: الجداول `nowrap` وبها 9–11 عمودًا، لذا فالتمرير الأفقي طبيعي حتى عند 1440.
+
 ## 6. التصميم الأمني
 
 ### 6.1 الدفاع المتعمق

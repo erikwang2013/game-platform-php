@@ -318,13 +318,12 @@ class GameController extends BaseController
             return $this->success(['suggestions' => []]);
         }
 
-        try {
-            $games = Game::search($q)->where('status', 1)->take(5)->get();
-        } catch (\Throwable $e) {
-            $games = Game::where('status', 1)
-                ->where('name', 'like', "%{$q}%")
-                ->limit(5)->get();
-        }
+        // 本仓**未接 scout/ES**（全仓无模型 `use Searchable`）⇒ LIKE 是唯一路径。
+        // 原先的 `try { Game::search($q)… } catch (\Throwable)` 里那个方法根本不存在，
+        // 每请求必抛 `BadMethodCallException` 再被吞掉；分支已删。接 ES 是独立一批，别包回 try。
+        $games = Game::where('status', 1)
+            ->where('name', 'like', "%{$q}%")
+            ->limit(5)->get();
 
         $suggestions = $games->map(fn($g) => [
             'id' => $this->encodeId($g->id),

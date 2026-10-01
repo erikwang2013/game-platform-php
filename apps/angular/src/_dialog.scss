@@ -1,0 +1,73 @@
+/* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
+/* ============================================================
+   霓虹街机 · Neon Arcade —— 弹框（点击式验证码，跨页共用一个组件）
+   ============================================================ */
+/* ---------------- 弹框（点击式验证码，跨页共用一个组件） ---------------- */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: var(--veil);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 51;
+  width: 420px;
+  max-width: calc(100vw - 28px);
+  max-height: 88vh;
+  overflow: auto;
+  padding: var(--s-5);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  box-shadow: var(--sh-3);
+}
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+
+/* 点击验证码：图 + 序号标记（画布恒 300×200，坐标按 naturalWidth/Height 换算） */
+.captcha-hint {
+  font-size: var(--fs-md);
+  color: var(--text-2);
+}
+.cap-wrap {
+  position: relative;
+  align-self: flex-start;
+  max-width: 100%;
+}
+.cap-img {
+  display: block;
+  max-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  cursor: crosshair;
+}
+.cap-dot {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--primary-ink);
+  font-size: var(--fs-xs);
+  font-style: normal;
+  line-height: 22px;
+  text-align: center;
+  pointer-events: none;
+  box-shadow: 0 0 0 2px var(--surface);
+}
+.cap-foot {
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+

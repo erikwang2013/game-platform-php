@@ -13,7 +13,7 @@ Le système adopte un modèle de défense en profondeur à 7 couches, filtrant l
 Toute la chaîne de middleware s'exécute dans l'ordre suivant (voir `config/middleware.php`) :
 
 ```
-Requête → Cors → SecurityFilter → RateLimit → [Middleware du groupe de routes : AdminAuth → AdminPermission → OperationLog] → Controller
+Requête → Cors → SecurityFilter → RateLimit → LanguageMiddleware → [Middleware du groupe de routes : AdminAuth → AdminPermission → OperationLog] → Controller
 ```
 
 | Couche | Middleware/mécanisme | Cible de protection |

@@ -456,4 +456,48 @@ export const bnFields: Record<FieldKey, string> = {
   'f.reason': 'কারণ',
   'f.row': 'সারি',
   'f.file': 'ফাইল',
+  'f.stats': 'পরিসংখ্যান',
+  'f.trends': 'প্রবণতা',
+  'f.distribution': 'বিতরণ',
+  'f.recent_logs': 'সাম্প্রতিক লগ',
+  'f.user_status': 'ব্যবহারকারীর অবস্থা',
+  'f.active_users_7d': 'সক্রিয় (7 দিন)',
+  'f.app': 'অ্যাপ',
+  'f.version': 'সংস্করণ',
+  'f.php': 'PHP',
+  'f.database': 'ডেটাবেস',
+  'f.redis': 'Redis',
+  'f.elasticsearch': 'Elasticsearch',
+  'f.timestamp': 'টাইমস্ট্যাম্প',
+  // 手补（非 codemod 产出）：平台用户钱包与流水（wallet.transactions / tx.* / f.wallet 那族）
+  'f.wallet': 'ওয়ালেট',
+  'f.balance': 'ব্যালেন্স',
+  'f.frozen_balance': 'ফ্রিজ ব্যালেন্স',
+  'f.total_earned': 'মোট আয়',
+  'f.total_spent': 'মোট ব্যয়',
+  'f.amount': 'পরিমাণ',
+  'f.balance_after': 'লেনদেনের পর ব্যালেন্স',
+  'f.remark': 'মন্তব্য',
+  // 手补（非 codemod 产出）：提现订单列表的四个只读列（funds.tsx 的 ORDER_COLUMNS；
+  // CrudConfig 没声明 fields，标题走 RowBrowser 的 f.<字段名> 兜底）
+  'f.order_no': 'অর্ডার নম্বর',
+  // 措辞**故意通用**：本表它是「提现平台币数量」，但同名字段在兑换域随 direction 变义
+  // （in=支出 / out=卖出的游戏币），故不写成「提现…」——把跨域复用的键焊死在一个域上更糟
+  'f.platform_amount': 'প্ল্যাটফর্ম কয়েনের পরিমাণ',
+  'f.fiat_amount': 'ফিয়াট পরিমাণ',
+  'f.payout_status': 'পেমেন্টের অবস্থা',
+  // 手补（非 codemod 产出）：风控四页与搜索结果页的八个只读列（列清单见 pages/risk.tsx 与 pages/search.tsx；
+  // CrudConfig 没声明这些字段，标题走 RowBrowser 的 f.<字段名> 兜底）
+  'f.ip_c_segment': 'IP C-সেগমেন্ট',
+  'f.first_seen_at': 'প্রথম দেখা',
+  'f.ip_masked': 'IP (মাস্কড)',
+  'f.reputation_score': 'সুনাম স্কোর',
+  'f.fingerprint_masked': 'ফিঙ্গারপ্রিন্ট (মাস্কড)',
+  'f.user_count': 'সদস্য',
+  'f.updated_at': 'আপডেটের সময়',
+  // 措辞**故意通用**：本表它是「客户端平台 h5/unity/web/native」，同一个字段在游戏表单里另有专键
+  // f.client_platform。而兜底键名是**按列名**取的（f.<列名>）⇒ 别处同名列 game_device_token.platform
+  // 完全是另一回事（推送通道 fcm/apns/harmonyos），将来真渲染那一列时不许直接吃这条
+  'f.platform': 'প্ল্যাটফর্ম',
+
 };

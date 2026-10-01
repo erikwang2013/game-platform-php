@@ -359,6 +359,41 @@ Redis Sorted Set स्लाइडिंग विंडो एल्गोर�
 
 डेटा प्रवाह: Page ← DataService ← ApiService (JWT Bearer) ← HTTP ← webman
 
+### 5.3 React एडमिन बैकएंड
+
+डिज़ाइन टोकन: **Graphite Console**, स्व-विवरण `src/index.css` के शीर्ष पर। स्टैक: React + Vite + TypeScript (`package.json`); बिल्ड `/admin-react/` के अंतर्गत परोसा जाता है।
+
+| परत | स्थान | टिप्पणियाँ |
+|------|------|------|
+| डिज़ाइन टोकन | `src/index.css` | चार-स्तरीय सरफ़ेस सीढ़ी और 1px की बाल-रेखाएँ; डार्क केवल टोकन ओवरराइड है (`src/index.css:110`), कोई JS थीम स्थिति नहीं |
+| शेल | `src/components/Shell.tsx` | साइडबार + टॉपबार; चयनित आइटम `.navlink.on` (`src/components/Shell.tsx:85`) |
+| सामान्य रेंडरर | `src/components/RowBrowser.tsx`, `src/lib/columns.ts` | `src/pages/` के पेज मॉड्यूल एक ही रेंडरर पर कॉलम-विनिर्देश हैं |
+| i18n | `src/i18n/<lang>.ts`, `<lang>.fields.ts`, `<lang>.ui.ts` | 13 भाषाएँ × 3 तालिकाएँ; कुंजी-समुच्चय `src/i18n/coverage.test.ts` से तय |
+| परीक्षण | `node --test` (`package.json`) | कोई DOM आधार नहीं: रेंडरिंग स्रोत पढ़कर जाँची जाती है |
+
+तीन बाधाएँ जो खिसकनी नहीं चाहिए:
+
+- दृश्य परत केवल `src/index.css` और `src/App.css` में रहती है; DOM संरचना और क्लास नाम ही अनुबंध हैं, जिनकी रखवाली `src/components/rowActions.guard.test.ts` और `src/components/table-headers.test.ts` करते हैं।
+- `.modal-sm` 340px ↔ 20px क्षैतिज पैडिंग ↔ 300×200 कैप्चा कैनवास **एक ही** समीकरण हैं (`src/index.css:573`)। `box-sizing: border-box` वैश्विक है, इसलिए `.modal` पर `border` कैनवास को 298 तक दबा देता है — रूपरेखा केवल `box-shadow: 0 0 0 1px` से।
+- `--amber` एकमात्र टोकन है जिसे TSX से संदर्भित किया जाता है (`src/pages/LoginPage.tsx`); नाम बदलने पर चुपचाप रंग गायब हो जाएगा।
+
+### 5.4 Angular एडमिन बैकएंड
+
+डिज़ाइन टोकन: **Inkwell Console**, स्व-विवरण `src/styles.scss` के शीर्ष पर। स्टैक: Angular standalone कंपोनेंट + Router; यूनिट टेस्ट `@angular/build:unit-test` (`angular.json:78`) से vitest पर चलते हैं; बिल्ड `/admin-angular/` के अंतर्गत परोसा जाता है।
+
+| परत | स्थान | टिप्पणियाँ |
+|------|------|------|
+| डिज़ाइन टोकन | `src/styles.scss` | कम-संतृप्ति वाली स्याही-रेल + इंटरैक्टिव/चयनित के लिए एक ही एक्सेंट रंग; सभी तालिकाओं में `tabular-nums` |
+| पेज-स्तरीय शैलियाँ | `src/styles.extra.scss` | टोकन उपभोग करती है, कोई परिभाषित नहीं करती — फ़ाइल के शीर्ष पर लिखा अनुबंध |
+| कंपोनेंट | `src/app/components/`, `src/app/pages/` | **शून्य `styleUrls`**: कहीं भी कंपोनेंट-स्तरीय स्टाइलशीट नहीं, सारी स्टाइल वैश्विक |
+| i18n | `src/app/core/i18n/dict/*.ts`, `locales/<lang>-{1,2}.ts` | `dict/` में `[en, zh]` जोड़े; शेष 11 भाषाएँ माँग पर लदने वाले खंड हैं जो अंग्रेज़ी तालिका पर चढ़ाए जाते हैं |
+| परीक्षण | `src/app/**/*.spec.ts` | vitest पर चलता है |
+
+दो व्यवहार जिन्हें नाम देना चाहिए:
+
+- साइडबार की चयन-स्थिति विशेषता नहीं, **व्यवहार** है: `routerLinkActive="active"` (`src/app/app.html:11`) और `.nav a.active` (`src/styles.scss:225`) का जोड़ा, जिसे `src/app/app.spec.ts` पिन करता है।
+- तालिका का पहला स्तंभ **हर चौड़ाई पर** `position: sticky; left: 0` (`src/styles.scss:319`) है, केवल संकरी स्क्रीन पर नहीं: तालिकाएँ `nowrap` और 9–11 स्तंभों वाली हैं, इसलिए 1440 पर भी क्षैतिज स्क्रॉल सामान्य है।
+
 ## 6. सुरक्षा डिज़ाइन
 
 ### 6.1 गहराई-रक्षा

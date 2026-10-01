@@ -154,6 +154,21 @@ describe('TournamentsPage 赛事', () => {
     expect(probe().playerText(t({ max_players: 16 }))).toBe('3 / 16 人');
   });
 
+  it('报名费的「免费」判定走字符串（不再 Number()）：只认真正的零', () => {
+    // 原先 feeText 写的是 `Number(t.entry_fee) > 0` —— 金额列过数值转型，本批明令禁止，
+    // 已改为 moneyIsZero（与 money() 同一套字符串判据）。下面把「零的各种写法」与
+    // 「看着像零但不是零」两侧都钉住，免得换判据时静默改了取值分支。
+    init();
+    for (const zero of ['0', '0.00', '0.00000000', '-0.00000000']) {
+      expect(probe().feeText(t({ entry_fee: zero }))).toBe('免费');
+    }
+    // scale-8 最小非零量：过窄的判据会把它当零 ⇒ 免费赛事白送，这里必须仍是金额
+    expect(probe().feeText(t({ entry_fee: '0.00000001' }))).toBe('0.00000001');
+    expect(probe().feeText(t({ entry_fee: '12345678901234567890.12' }))).toBe(
+      '12,345,678,901,234,567,890.12',
+    );
+  });
+
   it('报名成功：POST → 重拉详情（my_entry 以服务端为准）→ 重拉列表，且提示**不被重拉擦掉**', () => {
     init();
     probe().open('T1');

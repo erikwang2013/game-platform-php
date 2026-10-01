@@ -278,11 +278,16 @@ describe('Admins 管理端账号', () => {
     await done;
 
     // 详情是「有什么显示什么」：kvOf 对单条记录原样取值。走 pairs() 的话（标量过 num()）
-    // 这里会是 { label: 'username', value: 'ops 0' } —— 数字恰好对，所以这个错不像错
+    // 这里会是 { label: 'Username', value: 'ops 0' } —— 数字恰好对，所以这个错不像错。
+    // **上面这段理由在本条改成译文之后照样成立**：pairs() 错在**值**那一半（标量被 num()
+    // 折成 0、多个标量被拼成一个串），与标签翻不翻没有关系 ⇒ 这条用例必须继续是「值逐字
+    // 相等」的写法，谁要把它简化成只看 label，就等于把这条唯一的牙齿拔了。
+    // 标签这一半走 kvLabel（`col.<字段名>` 词条）⇒ 是译文，不再是裸列名；
+    // `status` 的值仍是**数字 1**（不是 '1'）：字符串化就是这条用例要挡的那个错。
     expect(p.info()).toEqual([
-      { label: 'id', value: 'OTHERHASH' },
-      { label: 'username', value: 'ops' },
-      { label: 'status', value: 1 },
+      { label: 'ID', value: 'OTHERHASH' },
+      { label: 'Username', value: 'ops' },
+      { label: 'Status', value: 1 },
     ]);
   });
 
@@ -462,7 +467,9 @@ describe('Admins 管理端账号', () => {
     f.detectChanges();
 
     expect(texts(f, '.drawer header b')).toEqual(['Details']);
-    expect(texts(f, '.kv dt')).toEqual(['username', 'real_name']);
+    // 标签走 kvLabel。改前这里钉的是 ['username','real_name']（裸列名），那**编码的是缺陷本身**
+    // —— 抽屉把数据库字段名摆给运营看；值那一半（下一行 .kv dd）一个字没动。
+    expect(texts(f, '.kv dt')).toEqual(['Username', 'Real Name']);
     expect(texts(f, '.kv dd')).toEqual(['ops', '运营甲']);
   });
 

@@ -13,7 +13,7 @@ The system adopts a 7-layer defense-in-depth model, filtering malicious requests
 The entire middleware chain executes in the following order (see `config/middleware.php`):
 
 ```
-请求 → Cors → SecurityFilter → RateLimit → [路由组中间件: AdminAuth → AdminPermission → OperationLog] → Controller
+请求 → Cors → SecurityFilter → RateLimit → LanguageMiddleware → [路由组中间件: AdminAuth → AdminPermission → OperationLog] → Controller
 ```
 
 | Layer | Middleware/Mechanism | Defense target |

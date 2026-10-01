@@ -53,7 +53,7 @@ export const MARKETING: Record<string, [string, string]> = {
   /** 列头「面值/折扣率」与表单 label「面值 / 折扣率」的斜杠两侧空格不同 ⇒ 各留各的（逐字保真） */
   'coupon.head.value': ['Value / rate', '面值/折扣率'],
   /** 列头把枚举含义写进去（值原样显示） */
-  'coupon.head.status': ['Status (0 disabled / 1 enabled)', '状态(0停用/1启用)'],
+  'coupon.head.status': ['Status', '状态'],
   /** 券状态筛选的下拉首项（值是空串 = 不过滤） */
   'coupon.all_status': ['All statuses', '全部状态'],
   /** 列表里 game_id 为 0/空时显示的名字 */

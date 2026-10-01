@@ -461,4 +461,48 @@ export const arFields: Record<FieldKey, string> = {
   'f.reason': 'السبب',
   'f.row': 'الصف',
   'f.file': 'الملف',
+  'f.stats': 'الإحصائيات',
+  'f.trends': 'الاتجاهات',
+  'f.distribution': 'التوزيع',
+  'f.recent_logs': 'السجلات الأخيرة',
+  'f.user_status': 'حالة المستخدم',
+  'f.active_users_7d': 'النشطون (7 أيام)',
+  'f.app': 'التطبيق',
+  'f.version': 'الإصدار',
+  'f.php': 'PHP',
+  'f.database': 'قاعدة البيانات',
+  'f.redis': 'Redis',
+  'f.elasticsearch': 'Elasticsearch',
+  'f.timestamp': 'الطابع الزمني',
+  // 手补（非 codemod 产出）：平台用户钱包与流水（wallet.transactions / tx.* / f.wallet 那族）
+  'f.wallet': 'المحفظة',
+  'f.balance': 'الرصيد',
+  'f.frozen_balance': 'الرصيد المجمّد',
+  'f.total_earned': 'إجمالي المكتسب',
+  'f.total_spent': 'إجمالي المنفق',
+  'f.amount': 'المبلغ',
+  'f.balance_after': 'الرصيد بعد العملية',
+  'f.remark': 'ملاحظة',
+  // 手补（非 codemod 产出）：提现订单列表的四个只读列（funds.tsx 的 ORDER_COLUMNS；
+  // CrudConfig 没声明 fields，标题走 RowBrowser 的 f.<字段名> 兜底）
+  'f.order_no': 'رقم الطلب',
+  // 措辞**故意通用**：本表它是「提现平台币数量」，但同名字段在兑换域随 direction 变义
+  // （in=支出 / out=卖出的游戏币），故不写成「提现…」——把跨域复用的键焊死在一个域上更糟
+  'f.platform_amount': 'مبلغ عملة المنصة',
+  'f.fiat_amount': 'مبلغ العملة الورقية',
+  'f.payout_status': 'حالة الدفع',
+  // 手补（非 codemod 产出）：风控四页与搜索结果页的八个只读列（列清单见 pages/risk.tsx 与 pages/search.tsx；
+  // CrudConfig 没声明这些字段，标题走 RowBrowser 的 f.<字段名> 兜底）
+  'f.ip_c_segment': 'مقطع C لعنوان IP',
+  'f.first_seen_at': 'أول مشاهدة',
+  'f.ip_masked': 'IP (مقنّع)',
+  'f.reputation_score': 'درجة السمعة',
+  'f.fingerprint_masked': 'البصمة (مقنّعة)',
+  'f.user_count': 'الأعضاء',
+  'f.updated_at': 'وقت التحديث',
+  // 措辞**故意通用**：本表它是「客户端平台 h5/unity/web/native」，同一个字段在游戏表单里另有专键
+  // f.client_platform。而兜底键名是**按列名**取的（f.<列名>）⇒ 别处同名列 game_device_token.platform
+  // 完全是另一回事（推送通道 fcm/apns/harmonyos），将来真渲染那一列时不许直接吃这条
+  'f.platform': 'المنصة',
+
 };

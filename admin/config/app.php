@@ -26,6 +26,9 @@ return [
     // PUBLIC_APP_URL: compose 注入的键名（.env 中不存在，worker 启动按 .env 重载时不会被覆盖）；
     // 未注入时回退 admin/.env 的 APP_URL
     'url' => getenv('PUBLIC_APP_URL') ?: (getenv('APP_URL') ?: 'http://localhost:8789'),
+    // Prometheus /metrics 静态抓取令牌（METRICS_SCRAPE_TOKEN）
+    // 留空则静态令牌路径不生效（fail-closed）：只有管理员 JWT 能取指标，不会退化成"空令牌可进"
+    'metrics_scrape_token' => (string) getenv('METRICS_SCRAPE_TOKEN'),
     'request_class' => Request::class,
     'public_path' => base_path() . DIRECTORY_SEPARATOR . 'public',
     'runtime_path' => base_path(false) . DIRECTORY_SEPARATOR . 'runtime',

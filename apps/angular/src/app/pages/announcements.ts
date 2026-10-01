@@ -88,14 +88,15 @@ import { Api, AnnouncementBrief, AnnouncementDetail, ApiError, dt } from '../cor
         width: 100%;
         background: transparent;
         border: 0;
-        border-bottom: 1px solid var(--stroke);
+        border-bottom: 1px solid var(--line);
         color: inherit;
         text-align: left;
         cursor: pointer;
         font: inherit;
+        transition: background var(--t-fast) var(--ease);
       }
       .asbtn:hover {
-        background: var(--panel);
+        background: var(--surface-2);
       }
       .modal-body .body {
         white-space: pre-wrap;

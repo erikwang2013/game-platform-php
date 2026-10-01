@@ -359,6 +359,41 @@ Redis Sorted Set スライディングウィンドウアルゴリズム、原子
 
 データフロー: Page ← DataService ← ApiService (JWT Bearer) ← HTTP ← webman
 
+### 5.3 React 管理画面
+
+デザイントークン: **Graphite Console**、自述は `src/index.css` のファイル先頭。スタック: React + Vite + TypeScript（`package.json`）。成果物は `/admin-react/` 配下で配信。
+
+| 層 | 位置 | 説明 |
+|------|------|------|
+| デザイントークン | `src/index.css` | 4 段のサーフェス階層 + 1px のヘアライン罫線。ダークはトークンの上書きのみ（`src/index.css:110`）で JS のテーマ状態を持たない |
+| シェル | `src/components/Shell.tsx` | サイドバー + トップバー。選択中は `.navlink.on`（`src/components/Shell.tsx:85`） |
+| 汎用レンダラ | `src/components/RowBrowser.tsx`、`src/lib/columns.ts` | `src/pages/` の各ページは同一レンダラに渡すカラム定義 |
+| i18n | `src/i18n/<lang>.ts`、`<lang>.fields.ts`、`<lang>.ui.ts` | 13 言語 × 3 テーブル。キー集合は `src/i18n/coverage.test.ts` が固定 |
+| テスト | `node --test`（`package.json`） | DOM 基盤なし。レンダリングはソース読取で検証 |
+
+逸脱してはいけない 3 つの制約:
+
+- 視覚層は `src/index.css` と `src/App.css` のみ。DOM 構造とクラス名が契約で、`src/components/rowActions.guard.test.ts` と `src/components/table-headers.test.ts` が守っている。
+- `.modal-sm` の 340px ↔ 20px の左右パディング ↔ 300×200 の CAPTCHA キャンバスは**一組の等式**（`src/index.css:573`）。全体が `box-sizing: border-box` のため `.modal` に `border` を足すとキャンバスが 298 に潰れる — 罫線は `box-shadow: 0 0 0 1px` で描く。
+- `--amber` は TSX から参照される唯一のトークン（`src/pages/LoginPage.tsx`）。改名すると無色になる（エラーは出ない）。
+
+### 5.4 Angular 管理画面
+
+デザイントークン: **Inkwell Console**、自述は `src/styles.scss` のファイル先頭。スタック: Angular standalone コンポーネント + Router。単体テストは `@angular/build:unit-test`（`angular.json:78`）から vitest で実行。成果物は `/admin-angular/` 配下で配信。
+
+| 層 | 位置 | 説明 |
+|------|------|------|
+| デザイントークン | `src/styles.scss` | 低彩度のインク色レール + 単一のアクセント色（対話/選択のみ）。表は全体に `tabular-nums` |
+| ページ単位のスタイル | `src/styles.extra.scss` | トークンを消費するだけで定義しない — ファイル先頭に明記された契約 |
+| コンポーネント | `src/app/components/`、`src/app/pages/` | **`styleUrls` はゼロ**。コンポーネント単位のスタイルシートは全ツリーに存在せず、スタイルは常にグローバル |
+| i18n | `src/app/core/i18n/dict/*.ts`、`locales/<lang>-{1,2}.ts` | `dict/` は `[en, zh]` の対。残り 11 言語は遅延読込のチャンクで、英語表の上に重ねる |
+| テスト | `src/app/**/*.spec.ts` | vitest で実行 |
+
+名指しする価値のある挙動が 2 つ:
+
+- サイドバーの選択状態は属性ではなく**挙動**: `routerLinkActive="active"`（`src/app/app.html:11`）と `.nav a.active`（`src/styles.scss:225`）の組で、`src/app/app.spec.ts` が固定している。
+- 表の先頭列は**全幅で** `position: sticky; left: 0`（`src/styles.scss:319`）。狭い画面だけではない: 表は `nowrap` で 9〜11 列あるため、1440 でも横スクロールが常態。
+
 ## 6. セキュリティ設計
 
 ### 6.1 多層防御

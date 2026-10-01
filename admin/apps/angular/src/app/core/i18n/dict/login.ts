@@ -11,7 +11,7 @@
  * `login.captcha_clicked`（本树带计数参数，flutter 只有一个词）。页头那个标题复用 `app.brand`。
  */
 export const LOGIN: Record<string, [string, string]> = {
-  'login.subtitle': ['Slate Pro console · Admin', 'Slate Pro 控制台 · 管理端'],
+  'login.subtitle': ['Inkwell console · Admin', 'Inkwell 控制台 · 管理端'],
 
   // ---- 表单 ----
   'login.username': ['Username', '账号'],

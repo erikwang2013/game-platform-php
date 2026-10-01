@@ -176,11 +176,11 @@ import { MeExport } from './me-export';
       .av {
         width: 56px;
         height: 56px;
-        border-radius: 18px;
+        border-radius: var(--r-lg);
         background: var(--grad);
-        color: #0b0d17;
+        color: var(--primary-ink);
         font-size: 22px;
-        font-weight: 700;
+        font-weight: 800;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -226,8 +226,9 @@ import { MeExport } from './me-export';
         margin-top: 3px;
         overflow-wrap: anywhere;
       }
+      /* 未读用品牌紫点出，不整行反色。⚠ 别写死 #fff：亮色皮肤下白字白底看不见 */
       .row.unread .t {
-        color: #fff;
+        color: var(--primary-2);
       }
       .mark {
         padding: 7px 14px;
@@ -251,7 +252,7 @@ import { MeExport } from './me-export';
       }
       .danger {
         margin-top: 22px;
-        border-color: rgba(248, 113, 113, 0.28);
+        border-color: color-mix(in srgb, var(--neg) 32%, var(--line));
       }
       .dh {
         display: flex;
@@ -281,8 +282,8 @@ import { MeExport } from './me-export';
         margin-top: 16px;
       }
       .red {
-        border-color: rgba(248, 113, 113, 0.45);
-        color: #fecaca;
+        border-color: var(--neg);
+        color: var(--neg);
       }
       @media (min-width: 768px) {
         .out {

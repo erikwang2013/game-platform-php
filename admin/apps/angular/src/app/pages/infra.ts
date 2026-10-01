@@ -4,7 +4,7 @@ import { Page, Row } from '../core/api.service';
 import { Crud, CrudPage, Field } from '../core/crud';
 import { T } from '../core/i18n/i18n';
 import { idOf } from '../core/render';
-import { errText } from '../core/util';
+import { enabledLabel, errText } from '../core/util';
 import { Pager, StateBlock, Tabs } from '../components/ui';
 import { Table } from '../components/table';
 import { FormModal } from '../components/form-modal';
@@ -166,7 +166,8 @@ export class Infra extends CrudPage {
     return {
       name: 'cdn.name',
       provider: 'cdn.provider',
-      status: 'cdn.head.status',
+      // 值列改指 status_label（原文案是「状态(0禁用/1启用)」= 把数据库编码当标签，已改平）
+      status_label: 'cdn.head.status',
       sort: 'cdn.sort',
       created_at: 'cdn.head.created',
       updated_at: 'cdn.head.updated',
@@ -214,10 +215,19 @@ export class Infra extends CrudPage {
     void this.load();
   }
 
-  protected override fetch(): Promise<Page<Row>> {
-    const url = this.paths[this.tab()] ?? this.paths['cdn']!;
+  protected override async fetch(): Promise<Page<Row>> {
+    const tab = this.tab();
+    const url = this.paths[tab] ?? this.paths['cdn']!;
     // keyword 不再发：两个端点都只吃 page/limit，原先那个「查询」框筛什么都不影响结果
-    return this.api.list<Row>(url, { page: this.page(), page_size: this.pageSize });
+    const res = await this.api.list<Row>(url, { page: this.page(), page_size: this.pageSize });
+    // 只有 CDN 表有显式列，status 是 TINYINT 0/1（`game_cdn_provider.status`）⇒ 摊平一列文案。
+    // 国家配置**是自动推列的**（heads() 给它返回 {}）——多塞一个字段就会多出一列，
+    // 那页的 status 也是 0/1，但它的列名是后端字段名，这是另一个缺陷，不在本批范围。
+    if (tab !== 'cdn') return res;
+    return {
+      ...res,
+      list: (res.list ?? []).map((r) => ({ ...r, status_label: enabledLabel(r['status']) })),
+    };
   }
 
   /**

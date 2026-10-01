@@ -280,7 +280,7 @@ Cors (предобработка CORS + заголовки ответа)
   → OperationLog (автоматическая запись POST/PUT/DELETE, включая определение источника, группа маршрутов /admin/v1)
 ```
 
-`/health` — публичный эндпоинт, проходит только через `Cors → SecurityFilter → RateLimit`; `/metrics` и `/api/docs` дополнительно требуют `AdminAuth → AdminPermission`.
+`/health` — публичный эндпоинт, проходит только через `Cors → SecurityFilter → RateLimit → LanguageMiddleware`; `/api/docs` дополнительно требует `AdminAuth → AdminPermission`; `/metrics` дополнительно проходит через `MetricsAuth` (JWT администратора по-прежнему идёт через `AdminAuth → AdminPermission`, либо используйте статический токен скрейпинга `METRICS_SCRAPE_TOKEN` из `.env`; если он не задан, этот путь отключён). Отказы `/metrics` — это `401/403` + `text/plain`, а не конверт 200 + JSON остальных эндпоинтов.
 
 Усиление безопасности:
 - **Блокировка аккаунта**: 5 неудачных входов подряд — автоматическая блокировка на 15 минут, вход в этот период возвращает 429

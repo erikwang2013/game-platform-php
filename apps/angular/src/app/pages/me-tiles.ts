@@ -28,28 +28,45 @@ import { RouterLink } from '@angular/router';
   `,
   styles: [
     `
+      /* 窄屏 3 列（一个拇指够得着），桌面靠 auto-fill 长到 5–6 列 ——
+         写死 3 列的话，1100px 宽下每个磁贴会被拉到 360px 只剩四个字。 */
       .tiles {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 10px;
         margin-top: 16px;
       }
+      @media (min-width: 768px) {
+        .tiles {
+          grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        }
+      }
+      /* 磁贴是**导航**不是主操作：≥44px 高度保证点得到，但不发光、
+         不抢主按钮的品牌紫。悬停只抬一档 + 换描边。 */
       .tile {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 16px 8px;
-        border-radius: 14px;
-        border: 1px solid var(--stroke);
-        background: var(--panel);
+        min-height: 56px;
+        padding: 14px 10px;
+        border-radius: var(--r-md);
+        border: 1px solid var(--line);
+        background: var(--surface-2);
         color: var(--text);
         text-decoration: none;
         font-size: 13px;
-        font-weight: 600;
+        font-weight: 650;
+        text-align: center;
+        transition:
+          background var(--t-fast) var(--ease),
+          border-color var(--t-fast) var(--ease),
+          transform var(--t-fast) var(--ease);
       }
       .tile:hover {
-        border-color: var(--accent);
-        box-shadow: var(--glow);
+        color: var(--text);
+        background: var(--surface-3);
+        border-color: var(--line-2);
+        transform: translateY(-2px);
       }
     `,
   ],

@@ -1,6 +1,6 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { Component, inject, signal } from '@angular/core';
-import { Api, ApiError, Leaderboard, RankRow, money } from '../core/api.service';
+import { Api, ApiError, Leaderboard, RankRow, money, moneyRaw } from '../core/api.service';
 
 /** metric → 中文（真源 LeaderboardService::computeRanking 只认 earned/spent/play_count） */
 const METRIC_LABEL: Record<string, string> = {
@@ -99,7 +99,7 @@ const TYPE_LABEL: Record<string, string> = {
                   <div class="t">玩家 #{{ r.user_id }}</div>
                   <div class="s">{{ metricLabel(cur()?.metric) }}</div>
                 </div>
-                <span class="amount">{{ score(r) }}</span>
+                <span class="amount" [title]="moneyRaw(r.score)">{{ score(r) }}</span>
               </div>
             }
           </div>
@@ -123,12 +123,12 @@ const TYPE_LABEL: Record<string, string> = {
       }
       .sk {
         height: 42px;
-        border-radius: 10px;
+        border-radius: var(--r-sm);
       }
       .sk-row {
         height: 16px;
         width: 70%;
-        border-radius: 8px;
+        border-radius: var(--r-sm);
       }
       .chips {
         margin-bottom: 14px;
@@ -136,33 +136,37 @@ const TYPE_LABEL: Record<string, string> = {
       .head {
         padding-bottom: 12px;
         margin-bottom: 4px;
-        border-bottom: 1px solid var(--stroke);
+        border-bottom: 1px solid var(--line);
       }
       .rk {
         flex: none;
         width: 30px;
         height: 30px;
-        border-radius: 10px;
+        border-radius: var(--r-sm);
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 13px;
-        font-weight: 650;
+        font-weight: 700;
         font-variant-numeric: tabular-nums;
-        background: var(--panel);
-        border: 1px solid var(--stroke);
+        background: var(--surface-2);
+        border: 1px solid var(--line);
       }
+      /* 榜首=代币金。这棵树里金色只出现在「战利品」场合（奖励/名次/代币），
+         所以它是名次色，不是又一个品牌色。 */
       .rk.top {
-        background: var(--grad);
-        color: #0b0d17;
+        background: var(--gold);
+        color: var(--gold-ink);
         border-color: transparent;
-        box-shadow: var(--glow);
       }
     `,
   ],
 })
 export class LeaderboardPage {
   private readonly api = inject(Api);
+
+  /** 金额类榜单的 title 悬停要显后端原始串；play_count 榜的 score 是次数，原样挂也无妨 */
+  protected readonly moneyRaw = moneyRaw;
 
   protected readonly boards = signal<Leaderboard[]>([]);
   protected readonly loading = signal(true);

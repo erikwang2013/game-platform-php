@@ -3,8 +3,8 @@ import { Component, computed, signal } from '@angular/core';
 import { Page, Row } from '../core/api.service';
 import { Crud, CrudPage, Field, Opt } from '../core/crud';
 import { T, t } from '../core/i18n/i18n';
-import { idOf, kvOf } from '../core/render';
-import { errText } from '../core/util';
+import { idOf, kvLabel, kvOf } from '../core/render';
+import { enabledLabel, errText } from '../core/util';
 import { Drawer, Pager, StateBlock } from '../components/ui';
 import { Table } from '../components/table';
 import { FormModal } from '../components/form-modal';
@@ -214,7 +214,8 @@ export class Admins extends CrudPage {
     real_name: 'admin.real_name',
     phone: 'admin.phone_masked',
     email: 'admin.email_masked',
-    status: 'admin.head.status',
+    // 值列改指 status_label（原文案是「状态(0禁用/1启用)」= 把数据库编码当标签，已改平）
+    status_label: 'admin.head.status',
     role_names: 'admin.role_ids',
     last_login_at: 'admin.head.last_login',
   };
@@ -248,7 +249,15 @@ export class Admins extends CrudPage {
 
   // ---------- 详情抽屉（GET /admin/v1/user/{hashid}） ----------
   protected readonly detail = signal<Row | null>(null);
-  protected readonly info = computed(() => kvOf(this.detail()));
+  /**
+   * 详情键值：四个抽屉现在**统一**走 `kvLabel`（`col.<字段名>` 词条），谁都不再摆裸列名。
+   *
+   * 这一页此前是例外（`kvOf(this.detail())`，原样字段名）：admins.spec.ts 有两条既有断言
+   * 逐字钉着裸标签。那两条编码的是缺陷本身（`['username','real_name']`），已经 team-lead
+   * 授权连同这一行一起改；**值那一半没动** —— `kvOf` 仍是「单条记录原样取值、不走 pairs()」
+   * 的写法（标量进 pairs() 会被 `num()` 折成 0），admins.spec.ts 那条断言钉着这个意图。
+   */
+  protected readonly info = computed(() => kvOf(this.detail(), kvLabel));
 
   // ---------- 批量启停（POST /admin/v1/user/batch/status） ----------
   /** 已勾选的 hashid。ui-table 的勾选态**受控**在这里：提交成功要清空，藏在表里清不掉 */
@@ -320,7 +329,12 @@ export class Admins extends CrudPage {
       }),
       this.loadRoles(),
     ]);
-    return res;
+    // status 是 TINYINT 0/1（`game_admin_user.status`）⇒ 摊平一列文案，原值留着：
+    // 「自己那一行不可勾」的判据、批量启停的 0/1 入参、表单预填都读原值。
+    return {
+      ...res,
+      list: (res.list ?? []).map((r) => ({ ...r, status_label: enabledLabel(r['status']) })),
+    };
   }
 
   private async loadRoles(): Promise<void> {

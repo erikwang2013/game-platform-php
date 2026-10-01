@@ -359,6 +359,41 @@ Rotas de páginas:
 
 Fluxo de dados: Page ← DataService ← ApiService (JWT Bearer) ← HTTP ← webman
 
+### 5.3 Backend de administração React
+
+Tokens de design: **Graphite Console**, autodescrito no início de `src/index.css`. Stack: React + Vite + TypeScript (`package.json`); o build é servido em `/admin-react/`.
+
+| Camada | Local | Observações |
+|------|------|------|
+| Tokens de design | `src/index.css` | Escada de superfícies em quatro níveis e filetes de 1px; o tema escuro é apenas uma sobrescrita de tokens (`src/index.css:110`), sem estado de tema em JS |
+| Shell | `src/components/Shell.tsx` | Barra lateral + barra superior; o item selecionado é `.navlink.on` (`src/components/Shell.tsx:85`) |
+| Renderizador genérico | `src/components/RowBrowser.tsx`, `src/lib/columns.ts` | Os módulos de página em `src/pages/` são especificações de colunas sobre um único renderizador |
+| i18n | `src/i18n/<lang>.ts`, `<lang>.fields.ts`, `<lang>.ui.ts` | 13 idiomas × 3 tabelas; os conjuntos de chaves são fixados por `src/i18n/coverage.test.ts` |
+| Testes | `node --test` (`package.json`) | Sem base DOM: a renderização é verificada lendo o código-fonte |
+
+Três restrições que não podem divergir:
+
+- A camada visual vive apenas em `src/index.css` e `src/App.css`; a estrutura do DOM e os nomes de classe são o contrato, guardados por `src/components/rowActions.guard.test.ts` e `src/components/table-headers.test.ts`.
+- `.modal-sm` 340px ↔ 20px de padding horizontal ↔ a tela de captcha 300×200 são **uma única** equação (`src/index.css:573`). O `box-sizing: border-box` é global, então um `border` em `.modal` espreme a tela para 298 — os contornos vão por `box-shadow: 0 0 0 1px`.
+- `--amber` é o único token referenciado a partir do TSX (`src/pages/LoginPage.tsx`); renomeá-lo falha em silêncio.
+
+### 5.4 Backend de administração Angular
+
+Tokens de design: **Inkwell Console**, autodescrito no início de `src/styles.scss`. Stack: componentes standalone do Angular + Router; os testes unitários rodam em vitest via `@angular/build:unit-test` (`angular.json:78`); o build é servido em `/admin-angular/`.
+
+| Camada | Local | Observações |
+|------|------|------|
+| Tokens de design | `src/styles.scss` | Trilho de tinta de baixa saturação + um único acento reservado ao interativo/selecionado; `tabular-nums` em todas as tabelas |
+| Estilos de página | `src/styles.extra.scss` | Consome tokens e não define nenhum — contrato declarado no início do arquivo |
+| Componentes | `src/app/components/`, `src/app/pages/` | **Zero `styleUrls`**: nenhuma folha de estilos por componente, todo o estilo é global |
+| i18n | `src/app/core/i18n/dict/*.ts`, `locales/<lang>-{1,2}.ts` | `dict/` guarda pares `[en, zh]`; os outros 11 idiomas são blocos carregados sob demanda e sobrepostos à tabela inglesa |
+| Testes | `src/app/**/*.spec.ts` | Roda em vitest |
+
+Dois comportamentos que vale a pena nomear:
+
+- O estado selecionado da barra lateral é comportamento, não atributo: `routerLinkActive="active"` (`src/app/app.html:11`) mais `.nav a.active` (`src/styles.scss:225`), fixado por `src/app/app.spec.ts`.
+- A primeira coluna da tabela é `position: sticky; left: 0` em **todas** as larguras (`src/styles.scss:319`), não só em telas estreitas: as tabelas são `nowrap` com 9–11 colunas, então a rolagem horizontal é normal também em 1440.
+
 ## 6. Design de segurança
 
 ### 6.1 Defesa em profundidade

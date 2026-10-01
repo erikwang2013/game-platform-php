@@ -8,6 +8,7 @@ import { ID_KEYS, pick } from '../lib/format';
 import { buildPdfTable } from '../lib/pdf-table.ts';
 import { usePagedApi } from '../lib/hooks';
 import { totalOf } from '../lib/paging';
+import { statusEnumsFor, withStatusLabels } from '../lib/status.ts';
 import { treeRows, visibleTreeRows } from '../lib/tree';
 import { asRows, columnsFrom } from './AutoView';
 import { DataTable, cell, type Row } from './DataTable';
@@ -174,7 +175,8 @@ export function RowBrowser({
     const fallback = fieldLabelKey(key);
     if (fallback !== null) columnLabels[key] = fallback;
   }
-  const columns = columnsFrom(rows, preferred, undefined, hide, columnLabels);
+  // 状态列换成影子列（`status` → `status_label`，行里的原值不动）：枚举按**端点**选，见 lib/status.ts
+  const columns = withStatusLabels(columnsFrom(rows, preferred, undefined, hide, columnLabels), statusEnumsFor(path, query));
   // 「没有新建/编辑字段」= 该模块没有增改端点（动作型），不摆按钮
   const fields = config?.fields ?? [];
   const canEdit = fields.length > 0;

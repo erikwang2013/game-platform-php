@@ -14,14 +14,19 @@ import {
 } from '../lib/captcha.ts';
 import { Loading } from './States.tsx';
 
-/** 通用弹窗外壳（遮罩点击 / Esc 关闭），全树唯一的弹框出口，验证码框复用它 */
+/**
+ * 通用弹窗外壳（遮罩点击 / Esc 关闭），全树唯一的弹框出口，验证码框复用它。
+ * `sm` = 贴合内容的小弹框（验证码画布原生 300×200，宽弹框会把画布拉伸）。
+ */
 export function Modal({
   title,
   onClose,
+  sm,
   children,
 }: {
   title: string;
   onClose: () => void;
+  sm?: boolean;
   children: ReactNode;
 }) {
   useEffect(() => {
@@ -35,7 +40,7 @@ export function Modal({
   return (
     <div className="backdrop" onClick={onClose} role="presentation">
       <div
-        className="modal"
+        className={`modal${sm ? ' modal--sm' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-label={title}
@@ -114,7 +119,7 @@ export function CaptchaModal({
   };
 
   return (
-    <Modal title="安全验证" onClose={onCancel}>
+    <Modal title="安全验证" onClose={onCancel} sm>
       <p className="small muted" style={{ margin: 0 }}>
         {hint}
       </p>
@@ -167,7 +172,7 @@ export function CaptchaModal({
 
       {loading && <Loading label="验证码加载中" />}
       {err && (
-        <p className="small" style={{ color: 'var(--orange)', margin: 0 }}>
+        <p className="small" style={{ color: 'var(--neg)', margin: 0 }}>
           {err}
         </p>
       )}

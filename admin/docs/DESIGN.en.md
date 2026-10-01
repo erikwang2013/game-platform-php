@@ -359,6 +359,41 @@ Page routes:
 
 Data flow: Page ← DataService ← ApiService (JWT Bearer) ← HTTP ← webman
 
+### 5.3 React Admin Backend
+
+Design tokens: **Graphite Console**, self-described at the top of `src/index.css`. Stack: React + Vite + TypeScript (`package.json`); the build is served under `/admin-react/`.
+
+| Layer | Location | Notes |
+|------|------|------|
+| Design tokens | `src/index.css` | Four-step surface ladder and 1px hairline borders; dark theme is a pure token override (`src/index.css:110`), no JS theme state |
+| Shell | `src/components/Shell.tsx` | Sidebar + topbar; the selected item is `.navlink.on` (`src/components/Shell.tsx:85`) |
+| Generic renderer | `src/components/RowBrowser.tsx`, `src/lib/columns.ts` | The page modules under `src/pages/` are column specs over one renderer |
+| i18n | `src/i18n/<lang>.ts`, `<lang>.fields.ts`, `<lang>.ui.ts` | 13 languages × 3 tables; key sets pinned by `src/i18n/coverage.test.ts` |
+| Tests | `node --test` (`package.json`) | No DOM harness: rendering is asserted by reading the source |
+
+Three constraints that must not drift:
+
+- Visual work lives only in `src/index.css` and `src/App.css`; DOM structure and class names are the contract, guarded by `src/components/rowActions.guard.test.ts` and `src/components/table-headers.test.ts`.
+- `.modal-sm` 340px ↔ 20px horizontal padding ↔ the 300×200 captcha canvas are one triple (`src/index.css:573`). `box-sizing: border-box` is global, so a `border` on `.modal` squeezes the canvas to 298 — outlines must go through `box-shadow: 0 0 0 1px`.
+- `--amber` is the only token referenced from TSX (`src/pages/LoginPage.tsx`); renaming it fails silently.
+
+### 5.4 Angular Admin Backend
+
+Design tokens: **Inkwell Console**, self-described at the top of `src/styles.scss`. Stack: Angular standalone components + Router; unit tests run on vitest through `@angular/build:unit-test` (`angular.json:78`); the build is served under `/admin-angular/`.
+
+| Layer | Location | Notes |
+|------|------|------|
+| Design tokens | `src/styles.scss` | Low-saturation ink rail + a single accent reserved for interactive/selected states; `tabular-nums` across the tables |
+| Page-level styles | `src/styles.extra.scss` | Consumes tokens, defines none — a contract stated at the top of the file |
+| Components | `src/app/components/`, `src/app/pages/` | **Zero `styleUrls`**: no component-level stylesheet anywhere, all styling is global |
+| i18n | `src/app/core/i18n/dict/*.ts`, `locales/<lang>-{1,2}.ts` | `dict/` holds `[en, zh]` pairs; the other 11 languages are lazily loaded chunks merged over the English table |
+| Tests | `src/app/**/*.spec.ts` | Runs on vitest |
+
+Two behaviours worth naming:
+
+- The sidebar selected state is behaviour, not an attribute: `routerLinkActive="active"` (`src/app/app.html:11`) plus `.nav a.active` (`src/styles.scss:225`), pinned by `src/app/app.spec.ts`.
+- The first table column is `position: sticky; left: 0` at **every** width (`src/styles.scss:319`), not only on narrow screens: the tables are `nowrap` with 9–11 columns, so horizontal scrolling is normal at 1440 too.
+
 ## 6. Security Design
 
 ### 6.1 Defense in Depth

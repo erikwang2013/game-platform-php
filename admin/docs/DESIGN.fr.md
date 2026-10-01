@@ -359,6 +359,41 @@ Routage des pages :
 
 Flux de données : Page ← DataService ← ApiService (JWT Bearer) ← HTTP ← webman
 
+### 5.3 Backend d'administration React
+
+Jetons de design : **Graphite Console**, auto-décrit en tête de `src/index.css`. Pile : React + Vite + TypeScript (`package.json`) ; le build est servi sous `/admin-react/`.
+
+| Couche | Emplacement | Remarques |
+|------|------|------|
+| Jetons de design | `src/index.css` | Échelle de surfaces en quatre niveaux et filets de 1px ; le thème sombre n'est qu'une surcharge de jetons (`src/index.css:110`), sans état de thème en JS |
+| Coquille | `src/components/Shell.tsx` | Barre latérale + barre supérieure ; l'élément sélectionné est `.navlink.on` (`src/components/Shell.tsx:85`) |
+| Moteur de rendu générique | `src/components/RowBrowser.tsx`, `src/lib/columns.ts` | Les modules de page sous `src/pages/` sont des spécifications de colonnes sur un seul moteur de rendu |
+| i18n | `src/i18n/<lang>.ts`, `<lang>.fields.ts`, `<lang>.ui.ts` | 13 langues × 3 tables ; les jeux de clés sont figés par `src/i18n/coverage.test.ts` |
+| Tests | `node --test` (`package.json`) | Pas de banc DOM : le rendu est vérifié en lisant les sources |
+
+Trois contraintes à ne pas laisser dériver :
+
+- La couche visuelle ne vit que dans `src/index.css` et `src/App.css` ; la structure DOM et les noms de classes sont le contrat, gardés par `src/components/rowActions.guard.test.ts` et `src/components/table-headers.test.ts`.
+- `.modal-sm` 340px ↔ 20px de padding horizontal ↔ la zone de captcha 300×200 forment **une seule** équation (`src/index.css:573`). `box-sizing: border-box` est global : un `border` sur `.modal` comprime la zone à 298 — les contours passent par `box-shadow: 0 0 0 1px`.
+- `--amber` est le seul jeton référencé depuis le TSX (`src/pages/LoginPage.tsx`) ; le renommer échoue en silence.
+
+### 5.4 Backend d'administration Angular
+
+Jetons de design : **Inkwell Console**, auto-décrit en tête de `src/styles.scss`. Pile : composants standalone Angular + Router ; les tests unitaires tournent sur vitest via `@angular/build:unit-test` (`angular.json:78`) ; le build est servi sous `/admin-angular/`.
+
+| Couche | Emplacement | Remarques |
+|------|------|------|
+| Jetons de design | `src/styles.scss` | Rail d'encre peu saturé + une seule couleur d'accent réservée à l'interactif/sélectionné ; `tabular-nums` sur tous les tableaux |
+| Styles de page | `src/styles.extra.scss` | Consomme les jetons et n'en définit aucun — contrat énoncé en tête de fichier |
+| Composants | `src/app/components/`, `src/app/pages/` | **Zéro `styleUrls`** : aucune feuille de style de composant dans l'arbre, tout est global |
+| i18n | `src/app/core/i18n/dict/*.ts`, `locales/<lang>-{1,2}.ts` | `dict/` contient des paires `[en, zh]` ; les 11 autres langues sont des fragments chargés à la demande, superposés à la table anglaise |
+| Tests | `src/app/**/*.spec.ts` | Tourne sur vitest |
+
+Deux comportements à nommer :
+
+- L'état sélectionné de la barre latérale est un comportement, pas un attribut : `routerLinkActive="active"` (`src/app/app.html:11`) plus `.nav a.active` (`src/styles.scss:225`), figé par `src/app/app.spec.ts`.
+- La première colonne du tableau est `position: sticky; left: 0` à **toutes** les largeurs (`src/styles.scss:319`), pas seulement sur écran étroit : les tableaux sont `nowrap` avec 9–11 colonnes, le défilement horizontal est donc normal même en 1440.
+
 ## 6. Conception de la sécurité
 
 ### 6.1 Défense en profondeur

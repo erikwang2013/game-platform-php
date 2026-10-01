@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace app\admin\v1\controller;
 
 use erikwang2013\apidoc\annotation as Apidoc;
+use common\model\Transaction;
 use common\model\User;
 use common\model\UserOauth;
 use common\model\UserSession;
@@ -91,6 +92,61 @@ class PlatformUserController extends BaseController
         }
 
         return $this->success($data);
+    }
+
+    #[Apidoc\Title("用户流水")]
+    #[Apidoc\Desc("分页获取指定平台用户的钱包流水（只读）。响应形状与 C 端 /api/v1/wallet/transactions 逐字段一致（id/ref_id 走 hashid、amount/balance_after 为字符串、created_at 原样），两棵树前端才能对照渲染")]
+    #[Apidoc\Url("/admin/v1/platform/user/{hashid}/transactions")]
+    #[Apidoc\Method("GET")]
+    #[Apidoc\Author("erik")]
+    #[Apidoc\Param(name: "page", type: "int", require: false, desc: "页码")]
+    #[Apidoc\Param(name: "per_page", type: "int", require: false, desc: "每页条数")]
+    #[Apidoc\Param(name: "type", type: "string", require: false, desc: "交易类型过滤(deposit/withdraw/refund/...)")]
+    #[Apidoc\Returned(name: "items", type: "array", desc: "流水列表")]
+    #[Apidoc\Returned(name: "total", type: "int", desc: "总条数")]
+    #[Apidoc\Returned(name: "last_page", type: "int", desc: "总页数")]
+    public function transactions(Request $request, string $hashid): Response
+    {
+        $id      = $this->decodeId($hashid);
+        $page    = (int) $request->input('page', 1);
+        $perPage = (int) $request->input('per_page', 20);
+        $type    = $request->input('type');
+
+        // 加 id 次序：created_at 是 DATETIME（秒精度，见 game_transaction DDL），同秒多笔是常态
+        // （一局游戏成对写 earn/spend），只按 created_at 排的话翻页会重复/漏行 —— 总页数对、行对不上。
+        $query = Transaction::where('user_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc');
+
+        if ($type) {
+            $query->where('type', $type);
+        }
+
+        $paginator = $query->paginate($perPage, ['*'], 'page', $page);
+        $items     = [];
+
+        foreach ($paginator->items() as $transaction) {
+            // 逐行 encodeId，**不要**图省事写 encodeIds($items)：它的默认字段只有 id，
+            // ref_id 会原样吐出裸 BIGINT（列表里的关联单据 ID 前端拿去查必然对不上）。
+            $items[] = [
+                'id'            => $this->encodeId((int) $transaction->id),
+                'type'          => $transaction->type,
+                'amount'        => $transaction->amount,
+                'balance_after' => $transaction->balance_after,
+                'ref_type'      => $transaction->ref_type,
+                'ref_id'        => $transaction->ref_id ? $this->encodeId((int) $transaction->ref_id) : null,
+                'remark'        => $transaction->remark,
+                'created_at'    => $transaction->created_at,
+            ];
+        }
+
+        return $this->success([
+            'items'     => $items,
+            'total'     => $paginator->total(),
+            'page'      => $paginator->currentPage(),
+            'per_page'  => $paginator->perPage(),
+            'last_page' => $paginator->lastPage(),
+        ]);
     }
 
     #[Apidoc\Title("编辑/封禁用户")]

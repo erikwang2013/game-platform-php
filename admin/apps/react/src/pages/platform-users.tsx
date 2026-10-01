@@ -20,25 +20,45 @@ import { downloadFile } from '../lib/download';
 import { ID_KEYS, pick } from '../lib/format';
 import { usePagedApi } from '../lib/hooks';
 import { totalOf } from '../lib/paging';
+import { statusEnumsFor, withStatusLabels } from '../lib/status.ts';
 import { PLATFORM_USER_FIELDS } from './modules';
+// 详情（只读）：用户字段 + 钱包卡 + 流水表。id 走 hashid，与行内编辑/注销同一个取法
+import { PlatformUserDetail } from './wallet';
 
 export function PlatformUsers({ path, preferred }: { path: string; preferred?: string[] }) {
   useI18n();
   const { data, loading, error, reload, page, setPage, pageSize } = usePagedApi<unknown>(path);
   const [notice, setNotice] = useState<string | null>(null);
   const [editing, setEditing] = useState<Row | null>(null);
+  // 详情弹框（用户字段 + 钱包 + 流水）。存**行**：弹框标题要用户名，而列表里那列可能被 preferred 挤掉
+  const [detail, setDetail] = useState<Row | null>(null);
   const [exporting, setExporting] = useState(false);
 
   const rows = asRows(data) ?? [];
   const total = totalOf(data, rows.length);
   // labelsFor：这个模块没有 CrudConfig 声明字段，不给这张表就等于整排裸字段名（user_id / vip_level…）
-  const columns = columnsFrom(rows, preferred, undefined, undefined, labelsFor(rows));
+  // 状态列同样要摊平：这一屏的 `status` 是 1=正常 / 0=封禁，比「启用/停用」那套更容易被看反
+  const columns = withStatusLabels(
+    columnsFrom(rows, preferred, undefined, undefined, labelsFor(rows)),
+    statusEnumsFor(path),
+  );
   // 操作列排在末尾，不占 preferred 的列预算
   columns.push({
     key: '__actions',
     label: t('common.actions'),
     render: (row) => (
       <span className="rowact">
+        {/* 只读入口，排在最前：查看是这一屏最常见、也最安全的动作 */}
+        <button
+          type="button"
+          className="btn btn-sm"
+          onClick={() => {
+            setNotice(null);
+            setDetail(row);
+          }}
+        >
+          {t('common.detail')}
+        </button>
         <button
           type="button"
           className="btn btn-sm"
@@ -74,6 +94,8 @@ export function PlatformUsers({ path, preferred }: { path: string; preferred?: s
 
   const key = editing ? pick(editing, ID_KEYS) : undefined;
   const id = key === null || key === undefined || key === '' ? '' : String(key);
+  const detailKey = detail ? pick(detail, ID_KEYS) : undefined;
+  const detailId = detailKey === null || detailKey === undefined || detailKey === '' ? '' : String(detailKey);
 
   return (
     <>
@@ -105,6 +127,7 @@ export function PlatformUsers({ path, preferred }: { path: string; preferred?: s
           onClose={() => setEditing(null)}
         />
       ) : null}
+      {detail && detailId !== '' ? <PlatformUserDetail id={detailId} onClose={() => setDetail(null)} /> : null}
     </>
   );
 }

@@ -359,6 +359,41 @@ Seitenrouting:
 
 Datenfluss: Page ← DataService ← ApiService (JWT Bearer) ← HTTP ← webman
 
+### 5.3 React-Verwaltungs-Backend
+
+Design-Token: **Graphite Console**, Selbstbeschreibung am Kopf von `src/index.css`. Stack: React + Vite + TypeScript (`package.json`); das Build wird unter `/admin-react/` ausgeliefert.
+
+| Schicht | Ort | Hinweise |
+|------|------|------|
+| Design-Token | `src/index.css` | Vierstufige Flächenleiter und 1px-Haarlinien; Dark ist reine Token-Überschreibung (`src/index.css:110`), kein JS-Theme-State |
+| Shell | `src/components/Shell.tsx` | Sidebar + Topbar; das ausgewählte Element ist `.navlink.on` (`src/components/Shell.tsx:85`) |
+| Generischer Renderer | `src/components/RowBrowser.tsx`, `src/lib/columns.ts` | Die Seitenmodule unter `src/pages/` sind Spaltenspezifikationen über einem Renderer |
+| i18n | `src/i18n/<lang>.ts`, `<lang>.fields.ts`, `<lang>.ui.ts` | 13 Sprachen × 3 Tabellen; Schlüsselmengen durch `src/i18n/coverage.test.ts` fixiert |
+| Tests | `node --test` (`package.json`) | Kein DOM-Unterbau: Rendering wird durch Lesen des Quelltexts geprüft |
+
+Drei Randbedingungen, die nicht driften dürfen:
+
+- Die visuelle Schicht liegt ausschließlich in `src/index.css` und `src/App.css`; DOM-Struktur und Klassennamen sind der Vertrag, bewacht von `src/components/rowActions.guard.test.ts` und `src/components/table-headers.test.ts`.
+- `.modal-sm` 340px ↔ 20px horizontales Padding ↔ die 300×200-Captcha-Fläche sind **eine** Gleichung (`src/index.css:573`). Global gilt `box-sizing: border-box`, ein `border` an `.modal` quetscht die Fläche auf 298 — Konturen nur über `box-shadow: 0 0 0 1px`.
+- `--amber` ist das einzige aus TSX referenzierte Token (`src/pages/LoginPage.tsx`); eine Umbenennung schlägt still fehl.
+
+### 5.4 Angular-Verwaltungs-Backend
+
+Design-Token: **Inkwell Console**, Selbstbeschreibung am Kopf von `src/styles.scss`. Stack: Angular-Standalone-Komponenten + Router; Unit-Tests laufen über `@angular/build:unit-test` (`angular.json:78`) auf vitest; das Build wird unter `/admin-angular/` ausgeliefert.
+
+| Schicht | Ort | Hinweise |
+|------|------|------|
+| Design-Token | `src/styles.scss` | Tieffarbige Tinten-Schiene + eine einzige Akzentfarbe für interaktiv/ausgewählt; `tabular-nums` in allen Tabellen |
+| Seitenweite Styles | `src/styles.extra.scss` | Verbraucht Token, definiert keine — ein am Dateikopf festgehaltener Vertrag |
+| Komponenten | `src/app/components/`, `src/app/pages/` | **Null `styleUrls`**: nirgends ein komponenteneigenes Stylesheet, alles global |
+| i18n | `src/app/core/i18n/dict/*.ts`, `locales/<lang>-{1,2}.ts` | `dict/` hält `[en, zh]`-Paare; die übrigen 11 Sprachen sind nachgeladene Chunks über der englischen Tabelle |
+| Tests | `src/app/**/*.spec.ts` | Läuft auf vitest |
+
+Zwei Verhaltensweisen, die man benennen sollte:
+
+- Der Auswahlzustand der Sidebar ist Verhalten, kein Attribut: `routerLinkActive="active"` (`src/app/app.html:11`) plus `.nav a.active` (`src/styles.scss:225`), fixiert durch `src/app/app.spec.ts`.
+- Die erste Tabellenspalte ist bei **jeder** Breite `position: sticky; left: 0` (`src/styles.scss:319`), nicht nur auf schmalen Bildschirmen: die Tabellen sind `nowrap` mit 9–11 Spalten, horizontales Scrollen ist also auch bei 1440 normal.
+
 ## 6. Sicherheitsdesign
 
 ### 6.1 Verteidigung in der Tiefe

@@ -280,7 +280,7 @@ Cors（跨域预处理 + 响应头）
   → OperationLog（POST/PUT/DELETE 自动记录，含来源端检测，/admin/v1 路由组）
 ```
 
-`/health` 为公开端点，仅经过 `Cors → SecurityFilter → RateLimit`；`/metrics` 与 `/api/docs` 需额外经过 `AdminAuth → AdminPermission`。
+`/health` 为公开端点，仅经过 `Cors → SecurityFilter → RateLimit → LanguageMiddleware`；`/api/docs` 需额外经过 `AdminAuth → AdminPermission`；`/metrics` 额外经过 `MetricsAuth`（管理员 JWT 仍走 `AdminAuth → AdminPermission`，或凭 `.env` 的 `METRICS_SCRAPE_TOKEN` 静态抓取令牌；未配置则该路径不生效）。`/metrics` 的拒绝是 `401/403` + `text/plain`，不是其它端点的 200 + JSON 信封。
 
 安全增强：
 - **账号锁定**：连续 5 次登录失败，账号自动锁定 15 分钟，期间登录返回 429

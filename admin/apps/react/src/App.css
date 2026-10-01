@@ -1,68 +1,91 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 
+/* 布局层：登录 + 输入控件 + 验证码 + 外壳（侧栏/顶栏/底栏）+ 窄屏。
+   令牌与组件层在 index.css（先加载），这里只摆位置和外壳。 */
+
 /* ---------- 登录 ---------- */
+/* 底上打一层品牌色柔光：纯色满屏在 1440 宽下是一块死板的色块，径向渐变给它一点纵深，
+   不必引任何图片资源（CSP 下外链字体/图都得放行，这里零依赖）。 */
 .login {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100%;
-  padding: 24px;
+  padding: var(--sp-6);
+  background:
+    radial-gradient(1100px 520px at 50% -12%, var(--primary-soft), transparent 62%),
+    var(--sunken);
 }
 .login-card {
-  width: min(430px, 100%);
+  width: min(400px, 100%);
+  padding: var(--sp-7);
   background: var(--surface);
-  border-radius: var(--r-card);
-  box-shadow: 0 4px 24px rgba(28, 25, 23, 0.08);
-  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--e3);
 }
 .login-h {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: var(--sp-6);
 }
 .login-h .h1 {
-  font-size: 24px;
+  font-size: var(--fs-2xl);
 }
 .login-h .sub {
   color: var(--ink-2);
 }
 /* 弹框在 .login-h 之外，后代选择器够不到，这里补一条（验证码提示语） */
 .modal .sub {
-  margin: 0 0 10px;
+  margin: 0 0 var(--sp-3);
   color: var(--ink-2);
-  font-size: 13px;
+  font-size: var(--fs-md);
 }
 .form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--sp-4);
 }
 .label {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  font-size: 13px;
+  gap: var(--sp-2);
+  font-size: var(--fs-md);
+  font-weight: 520;
   color: var(--ink-2);
 }
 .input {
   width: 100%;
-  min-height: 42px;
-  padding: 0 12px;
-  border: 1px solid var(--line);
-  border-radius: var(--r-ctl);
-  background: var(--paper);
+  min-height: 40px;
+  padding: 0 var(--sp-3);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
+  background: var(--surface);
   color: var(--ink);
   font: inherit;
+  font-size: var(--fs-base);
+  transition: border-color var(--dur-1) var(--ease), box-shadow var(--dur-1) var(--ease);
 }
+.input::placeholder {
+  color: var(--ink-3);
+}
+.input:hover {
+  border-color: var(--ink-3);
+}
+/* 聚焦：边框变色 + 外环。旧版把边框改成 transparent 再画 outline，焦点态反而比静息态更没边界 */
 .input:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 1px;
-  border-color: transparent;
+  border-color: var(--primary);
 }
+
+/* ---------- 点击验证码 ----------
+   ⚠ .cap 不许加 padding / border：.cap-img 是 width:100%，加任何横向占位都会把画布从
+   原生 300×200 压小，坐标换算（LoginPage 按显示尺寸回推原图像素）随之失准。 */
 .cap {
   position: relative;
-  border-radius: var(--r-ctl);
+  border-radius: var(--r-sm);
   overflow: hidden;
-  background: var(--muted);
+  background: var(--inset);
   cursor: crosshair;
   user-select: none;
   touch-action: manipulation;
@@ -77,9 +100,9 @@
   align-items: center;
   justify-content: center;
   height: 200px;
-  padding: 0 18px;
+  padding: 0 var(--sp-4);
   text-align: center;
-  font-size: 13px;
+  font-size: var(--fs-md);
   color: var(--ink-2);
 }
 .cap-dot {
@@ -91,19 +114,29 @@
   height: 26px;
   border-radius: 50%;
   background: var(--primary);
-  color: #fff;
-  font-size: 12px;
+  color: var(--primary-ink);
+  font-size: var(--fs-sm);
+  font-weight: 600;
   transform: translate(-50%, -50%);
-  box-shadow: 0 0 0 2px #fff;
+  /* 环用浮层底色：暗色下白环会变成一圈刺眼的高光 */
+  box-shadow: 0 0 0 2px var(--raised);
   pointer-events: none;
 }
 .cap-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  font-size: 12px;
+  gap: var(--sp-2);
+  /* 弹框收到 340（内容 300）后这一行会挤：ja 的「2 点を指定済み（2 点必要）」+「元に戻す」+
+     「別の画像」实测约 408px ⇒ 允许换行，别把按钮压出容器。 */
+  flex-wrap: wrap;
+  font-size: var(--fs-sm);
   color: var(--ink-2);
+}
+/* 换行时进度文字独占一行、按钮组仍靠右且不缩 */
+.cap-bar > .pagehead-a {
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 /* ---------- 框架 ---------- */
@@ -113,69 +146,86 @@
 }
 .sidebar {
   display: flex;
-  flex: 0 0 240px;
+  flex: 0 0 232px;
   flex-direction: column;
-  gap: 18px;
-  width: 240px;
-  padding: 20px 14px;
+  gap: var(--sp-5);
+  width: 232px;
+  padding: var(--sp-4) var(--sp-3);
   background: var(--surface);
-  box-shadow: 1px 0 0 var(--line);
+  border-right: 1px solid var(--line);
 }
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 0 8px;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-2);
 }
 .brand-mark {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
+  width: 30px;
+  height: 30px;
+  flex: none;
   color: #fff;
-  font-family: var(--serif);
 }
-/* 品牌位放吉祥物「小骰」：等比缩到 32px 框内，去掉原来的实底方块 */
+/* 品牌位放吉祥物「小骰」：等比缩到 30px 框内，去掉原来的实底方块 */
 .brand-mark img {
   width: 100%;
   height: 100%;
   object-fit: contain;
 }
 .brand-t {
-  font-family: var(--serif);
-  font-size: 17px;
+  font-size: var(--fs-lg);
+  font-weight: 640;
+  letter-spacing: -0.02em;
 }
 .nav {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 .navlink {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-height: 40px;
-  padding: 0 12px;
-  border-radius: var(--r-ctl);
+  gap: var(--sp-3);
+  min-height: 34px;
+  padding: 0 var(--sp-3);
+  border-radius: var(--r-sm);
   color: var(--ink-2);
+  font-size: var(--fs-md);
+  transition: background var(--dur-1) var(--ease), color var(--dur-1) var(--ease);
 }
 .navlink i {
   width: 18px;
   font-style: normal;
   text-align: center;
-  opacity: 0.85;
+  opacity: 0.7;
 }
 .navlink:hover {
-  background: var(--muted);
+  background: var(--inset);
   color: var(--ink);
 }
+/* 选中态：底色 + 左侧指示条。旧版是一块薄荷色药丸 —— 在暖米底上偏黄绿，像警告色 */
 .navlink.on {
-  background: #e6f2f0;
+  background: var(--primary-soft);
   color: var(--primary);
-  font-weight: 600;
+  font-weight: 580;
+}
+.navlink.on i {
+  opacity: 1;
+}
+.navlink.on::before {
+  content: '';
+  position: absolute;
+  top: 7px;
+  bottom: 7px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 var(--r-xs) var(--r-xs) 0;
+  background: var(--primary);
 }
 .navlink:focus-visible {
   outline: 2px solid var(--primary);
@@ -184,9 +234,9 @@
 .sidebar-f {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 0 8px;
-  font-size: 13px;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-2);
+  font-size: var(--fs-md);
 }
 .main {
   display: flex;
@@ -197,23 +247,30 @@
 .topbar {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: var(--z-topbar);
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 28px;
+  gap: var(--sp-3);
+  min-height: 56px;
+  padding: var(--sp-2) var(--sp-6);
+  /* 先给不透明底（不支持 color-mix 的浏览器到此为止），再叠半透明 + 模糊：
+     滚动时内容从顶栏下面透出来，比一条实心白带子有纵深 */
   background: var(--surface);
-  box-shadow: 0 1px 0 var(--line);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
 }
 .topbar-t {
   flex: 1;
-  font-family: var(--serif);
-  font-size: 16px;
+  min-width: 0;
+  font-size: var(--fs-lg);
+  font-weight: 620;
+  letter-spacing: -0.015em;
 }
 .topbar-u {
-  max-width: 40%;
+  max-width: 32%;
   overflow: hidden;
-  font-size: 12px;
+  font-size: var(--fs-sm);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -225,6 +282,8 @@
 }
 .topsearch .input {
   min-width: 0;
+  min-height: 34px;
+  font-size: var(--fs-md);
 }
 /* ---------- 顶栏语言切换器（13 种平铺，母语名 + 当前项打点） ---------- */
 .lang {
@@ -234,64 +293,64 @@
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
-  z-index: 60;
+  z-index: var(--z-pop);
   max-height: 60vh;
   overflow: auto;
   margin: 0;
-  padding: 4px;
+  padding: var(--sp-1);
   border: 1px solid var(--line);
-  border-radius: var(--r-ctl);
-  background: var(--surface);
-  box-shadow: 0 8px 24px rgba(28, 25, 23, 0.16);
+  border-radius: var(--r-md);
+  background: var(--raised);
+  box-shadow: var(--e2);
   list-style: none;
 }
 .langitem {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--sp-3);
   width: 100%;
-  padding: 7px 10px;
+  padding: 7px var(--sp-2);
   border: 0;
-  border-radius: var(--r-ctl);
+  border-radius: var(--r-sm);
   background: none;
   color: var(--ink);
   font: inherit;
-  font-size: 13px;
+  font-size: var(--fs-md);
   text-align: left;
   white-space: nowrap;
   cursor: pointer;
 }
 .langitem:hover {
-  background: var(--muted);
+  background: var(--inset);
 }
 .langitem.on {
   color: var(--primary);
-  font-weight: 600;
+  font-weight: 580;
 }
 .langitem-n {
   flex: 1;
 }
 .burger {
   display: none;
-  width: 44px;
-  height: 44px;
-  border: 0;
-  border-radius: var(--r-ctl);
-  background: var(--muted);
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-sm);
+  background: var(--surface);
   color: var(--ink);
-  font-size: 18px;
+  font-size: var(--fs-lg);
   cursor: pointer;
 }
 .content {
   flex: 1;
   min-width: 0;
-  padding: 24px 28px 36px;
+  padding: var(--sp-6) var(--sp-6) var(--sp-8);
 }
 .scrim {
   position: fixed;
   inset: 0;
-  z-index: 40;
-  background: rgba(28, 25, 23, 0.4);
+  z-index: var(--z-scrim);
+  background: rgba(9, 14, 22, 0.5);
 }
 .bottomtabs {
   display: none;
@@ -307,11 +366,11 @@
     top: 0;
     bottom: 0;
     left: 0;
-    z-index: 50;
+    z-index: var(--z-drawer);
     width: min(280px, 84vw);
     transform: translateX(-102%);
-    transition: transform 0.2s ease;
-    box-shadow: 0 8px 40px rgba(28, 25, 23, 0.18);
+    transition: transform var(--dur-2) var(--ease);
+    box-shadow: var(--e3);
   }
   .sidebar.open {
     transform: none;
@@ -320,24 +379,24 @@
     display: block;
   }
   .topbar {
-    padding: 8px 14px;
+    padding: var(--sp-2) var(--sp-3);
   }
   .topsearch {
     display: none;
   }
   .content {
-    padding: 16px 14px 88px;
+    padding: var(--sp-4) var(--sp-3) 88px;
   }
   .bottomtabs {
     position: fixed;
     right: 0;
     bottom: 0;
     left: 0;
-    z-index: 30;
+    z-index: var(--z-bottom);
     display: flex;
-    padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
+    padding: var(--sp-1) var(--sp-1) calc(var(--sp-1) + env(safe-area-inset-bottom));
     background: var(--surface);
-    box-shadow: 0 -1px 0 var(--line);
+    border-top: 1px solid var(--line);
   }
   .btab {
     display: flex;
@@ -347,9 +406,9 @@
     justify-content: center;
     gap: 2px;
     min-height: 52px;
-    border-radius: 10px;
+    border-radius: var(--r-sm);
     color: var(--ink-2);
-    font-size: 11px;
+    font-size: var(--fs-xs);
   }
   .btab i {
     font-style: normal;
@@ -357,7 +416,7 @@
   }
   .btab.on {
     color: var(--primary);
-    font-weight: 600;
+    font-weight: 580;
   }
 
   /* 触控目标 ≥44px */
@@ -369,22 +428,27 @@
     min-height: 44px;
   }
   .navlink {
-    min-height: 48px;
+    min-height: 46px;
   }
   .input {
     min-height: 46px;
   }
+  /* 行尾文字按钮在窄屏回到实体按钮：手指点 26px 高的透明文字太容易点空 */
+  .rowact .btn {
+    min-height: 44px;
+    padding: 0 var(--sp-3);
+    background: var(--inset);
+  }
 
   /* 排版收敛 */
   .h1 {
-    font-size: 22px;
+    font-size: var(--fs-xl);
   }
   .pagehead {
-    margin-bottom: 14px;
+    margin-bottom: var(--sp-4);
   }
   .card {
-    padding: 16px;
-    border-radius: 14px;
+    padding: var(--sp-4);
   }
   .grid-3,
   .grid-4 {
@@ -406,17 +470,17 @@
     display: none;
   }
   .dt tr {
-    margin-bottom: 10px;
-    padding: 6px 12px;
-    background: var(--muted);
-    border-radius: 12px;
+    margin-bottom: var(--sp-3);
+    padding: var(--sp-2) var(--sp-3);
+    background: var(--inset);
+    border-radius: var(--r-sm);
   }
   .dt td {
     display: grid;
     grid-template-columns: 88px 1fr;
-    gap: 10px;
+    gap: var(--sp-3);
     max-width: none;
-    padding: 8px 0;
+    padding: var(--sp-2) 0;
     border-bottom: 1px solid var(--line);
     text-align: left;
   }
@@ -425,8 +489,8 @@
   }
   .dt td::before {
     content: attr(data-label);
-    color: var(--ink-2);
-    font-size: 12px;
+    color: var(--ink-3);
+    font-size: var(--fs-sm);
     overflow-wrap: anywhere;
   }
   .dt .right {

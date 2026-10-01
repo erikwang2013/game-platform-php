@@ -23,11 +23,13 @@ use Webman\Route;
  * 差集两边的口径：
  *  A) 种子 → 运行时：种子里不得有死行（删掉/改名的端点留下永远授不出去的 slug）。
  *     排除 `*` —— 它是「全部权限」通配符（AdminPermission.php:32 直接短路），不是某条路由。
- *  B) 运行时 → 种子：**每条挂 AdminPermission 的路由**都必须有一行可授予的 slug。
+ *  B) 运行时 → 种子：**每条挂了 AdminPermission（或委托它的 MetricsAuth）的路由**都必须有一行可授予的 slug。
  *     **中间件比的是 slug，不是路径前缀** —— 判据取「是否挂 AdminPermission」，不取 `/admin/v1/` 前缀：
- *     `/metrics` 与 `/api/docs` 挂在根上（route.php:48/:65），不在 /admin/v1 组里，但同样走这套
+ *     `/metrics` 与 `/api/docs` 挂在根上（route.php:49/:65），不在 /admin/v1 组里，但同样走这套
  *     slug 比对；按前缀取集合会把它们漏出钉子之外（本批加这两条种子时，正是这个钉子先把它们
  *     报成「死行」、从而暴露出取集合的口径错了 —— 钉子在工作，不是种子写错了）。
+ *     括注里的 MetricsAuth 是一处**具名豁免**（`/metrics` 不再直接挂 AdminPermission，改由 MetricsAuth
+ *     委托），理由、委托点与兜底的两条钉子都写在下面取集处的注释里 —— 改判据前先读那一段。
  *
  * ⚠ slug 的算法不在这里重写一遍字面量，而是**反射 AdminPermission 自己的两个私有方法**
  * （permissionPath / stripVersionSegment）：种子是按它生成的，钉子也必须按它算，
@@ -89,7 +91,25 @@ class PermissionSeedParityTest extends TestCase
 
         $slugs = [];
         foreach (Route::getRoutes() as $route) {
-            if (!in_array(\app\middleware\AdminPermission::class, $route->getMiddleware(), true)) {
+            $routeMiddleware = $route->getMiddleware();
+
+            // ⚠ 这里有一处**具名豁免**（不是光秃秃的 `|| MetricsAuth::class`，读之前先读这段为什么）：
+            //
+            //  `get.metrics` 这行种子**没有死**，它对应的 RBAC 检查仍然生效 —— 只是不再由路由**直接**挂载。
+            //  `/metrics` 现在是单挂 MetricsAuth，由它在内部**委托** AdminPermission：
+            //  委托点 = app/middleware/MetricsAuth.php:54，`process()` 里那句 `new AdminPermission()->process(...)`。
+            //  本仓没有「跳过单个中间件」的机制（`$next` 是剩余整条链的闭包），而往 AdminPermission 里加
+            //  放行分支等于给全仓 RBAC 闸口加 bypass 原语 —— 它挂在 config/route.php 的 /admin/v1 **组**上，
+            //  对所有 /admin/v1 路由生效，与「只作用于 /metrics」直接冲突。故只剩「委托」这一条干净的路。
+            //
+            //  ⇒ 代价：委托在 `getMiddleware()` 里**看不见**，本判据因此从「结构可见」退化为**假设**
+            //    「MetricsAuth 会执行 RBAC」。两条钉子把这个假设钉住，别再放宽给第三个中间件：
+            //     ① MetricsEndpointAuthTest::adminJwtWithoutMetricsPermissionIsStillRejectedByRbac
+            //        （真实管理员 + 有效 JWT + 无 get.metrics ⇒ 仍 403；它红了=委托没了）
+            //     ② MetricsEndpointAuthTest::onlyTheMetricsRouteCarriesMetricsAuth
+            //        （挂 MetricsAuth 的路由集恰好是 ['/metrics']；它红了=MetricsAuth 被挂到别处了）
+            if (!in_array(\app\middleware\AdminPermission::class, $routeMiddleware, true)
+                && !in_array(\app\middleware\MetricsAuth::class, $routeMiddleware, true)) {
                 continue;
             }
             $request->route = $route;                       // permissionPath 只读这一个属性

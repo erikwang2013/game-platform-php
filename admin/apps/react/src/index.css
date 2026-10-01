@@ -1,23 +1,144 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 
-/* ---------- 设计令牌：Paper Console ---------- */
+/* ============================================================================
+   设计令牌：Graphite Console（石墨控制台）
+
+   取代旧的 Paper Console（暖纸质 + Georgia 衬线 + 单一青绿）。三条取舍：
+
+   ① **层级靠明度，不靠装饰。** 冷调石墨灰 + 四级表面梯（sunken 页底 → surface 卡片 →
+      inset 卡内嵌块 → raised 浮层）+ 1px 发丝描边。旧版暖底(#faf9f6)配白卡只差 1.5% 明度，
+      卡片与页面分不开，而 16px 圆角与投影都在替明度干活。
+   ② **语义各占一条色道。** `--primary` 只给"可交互/选中"，绿/琥珀/红只给状态。
+      旧版青绿同时是主按钮、成功态和侧栏选中态，看颜色要猜它是什么意思。
+   ③ **数字是一等公民。** 表格与统计块全开 `tabular-nums`（列宽不再随数字抖动），
+      字号阶梯收紧到 11/12/13/14/16/19/23。仪表盘的衬线标题在这里是装饰，不是层级。
+
+   唯一的例外：`--amber` 这个名字被 `pages/LoginPage.tsx` 的内联 style 直接引用（验证码
+   错误文案），改名会静默变成无色 —— 保留原名。
+   ========================================================================== */
+
 :root {
-  --paper: #faf9f6;
+  color-scheme: light;
+
+  /* --- 表面梯：sunken（页底）→ surface（卡片）→ inset（卡内嵌块）→ raised（浮层） --- */
+  --sunken: #f3f5f8;
   --surface: #ffffff;
-  --muted: #f4f2ed;
-  --ink: #1c1917;
-  --ink-2: #78716c;
-  --line: #e7e5e4;
+  --inset: #f0f3f8;
+  --raised: #ffffff;
+
+  /* --- 描边 --- */
+  --line: #e2e7ef;
+  --line-2: #cbd3df;
+
+  /* --- 文字 --- */
+  --ink: #111721;
+  --ink-2: #59637a;
+  --ink-3: #8a93a5;
+
+  /* --- 品牌：只给交互/选中 --- */
   --primary: #0f766e;
-  --primary-hover: #115e59;
-  --amber: #d97706;
+  --primary-h: #115e59;
+  --primary-ink: #ffffff;
+  --primary-soft: #e0f0ee;
+
+  /* --- 状态：只给状态 --- */
+  --amber: #b45309;
+  --amber-soft: #fcf1e0;
   --success: #15803d;
-  --danger: #b91c1c;
-  --r-card: 16px;
-  --r-ctl: 10px;
-  --shadow: 0 1px 3px rgba(28, 25, 23, 0.08);
-  --serif: Georgia, 'Times New Roman', 'Songti SC', serif;
-  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --success-soft: #e5f4ea;
+  --danger: #b42318;
+  --danger-soft: #fdeceb;
+
+  /* --- 圆角：越靠内越小（外框大、内件小），全站不再一个 16px 走到底 --- */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-pill: 999px;
+
+  /* --- 高度层级：光源恒在正上方；投影只给"浮在页面之上"的东西 --- */
+  --e1: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --e2: 0 4px 14px rgba(16, 24, 40, 0.1), 0 1px 3px rgba(16, 24, 40, 0.05);
+  --e3: 0 18px 44px rgba(16, 24, 40, 0.18), 0 4px 12px rgba(16, 24, 40, 0.07);
+
+  /* --- 间距刻度（4 的倍数） --- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 32px;
+  --sp-8: 40px;
+
+  /* --- 字号阶梯 --- */
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-md: 13px;
+  --fs-base: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 19px;
+  --fs-2xl: 23px;
+
+  /* --- 动效 --- */
+  --dur-1: 120ms;
+  --dur-2: 180ms;
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+
+  /* --- 层叠：数值沿用旧值，只把散落的魔数收成一处，避免调序改行为 --- */
+  --z-topbar: 20;
+  --z-bottom: 30;
+  --z-scrim: 40;
+  --z-drawer: 50;
+  --z-pop: 60;
+
+  /* 字体栈保持系统字体：本仓要 13 种语言（含 zh/ja/ko/ar/hi/bn）离线可用，
+     引一款只有拉丁字形的展示字体只会让中日韩变成掉字。可读性靠字重/字距/字阶，不靠换脸。 */
+  --sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue',
+    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
+
+  /* --- 图表分类色：与状态色同源但独立命名，暗色下必须整体提亮（否则暗底上的
+     #0f766e 几乎不可见，折线等于消失）。引用点见 components/Chart.tsx --- */
+  --chart-1: #0f766e;
+  --chart-2: #b45309;
+  --chart-3: #15803d;
+  --chart-4: #b42318;
+}
+
+/* 暗色：只用 token 覆盖，不引 JS 主题状态机 —— 系统亮暗是浏览器已经知道的事实，
+   再存一份到 localStorage 就多了一个会和系统设置漂移的第二真值源。 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --sunken: #0d1117;
+    --surface: #161b22;
+    --inset: #1d242e;
+    --raised: #1d242e;
+    --line: #2a323d;
+    --line-2: #3d4756;
+    --ink: #e6edf3;
+    --ink-2: #9aa4b2;
+    --ink-3: #6e7681;
+    /* 亮底上的深青绿到了暗底要反过来：用亮青绿 + 深色字，才够对比 */
+    --primary: #2dd4bf;
+    --primary-h: #5eead4;
+    --primary-ink: #06231f;
+    --primary-soft: #123c39;
+    --amber: #e3a008;
+    --amber-soft: #3a2c08;
+    --success: #3fb950;
+    --success-soft: #10291a;
+    --danger: #f85149;
+    --danger-soft: #3a1614;
+    --chart-1: #2dd4bf;
+    --chart-2: #e3a008;
+    --chart-3: #3fb950;
+    --chart-4: #f85149;
+    /* 暗色下投影要更重才看得出来（暗底吃对比） */
+    --e1: 0 1px 2px rgba(0, 0, 0, 0.5);
+    --e2: 0 4px 14px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4);
+    --e3: 0 18px 44px rgba(0, 0, 0, 0.62), 0 4px 12px rgba(0, 0, 0, 0.45);
+  }
 }
 
 /* ---------- 基础 ---------- */
@@ -31,27 +152,31 @@ body,
 }
 body {
   margin: 0;
-  background: var(--paper);
+  background: var(--sunken);
   color: var(--ink);
-  font: 14px/1.6 var(--sans);
+  font: var(--fs-base) / 1.55 var(--sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
+/* 标题：无衬线 + 收敛字距。--serif 已随旧方向移除（全仓无 CSS 外引用） */
 .h1,
 .h2 {
-  font-family: var(--serif);
-  font-weight: 600;
   margin: 0;
-  line-height: 1.3;
+  line-height: 1.28;
+  letter-spacing: -0.015em;
+  font-weight: 640;
 }
 .h1 {
-  font-size: 26px;
+  font-size: var(--fs-2xl);
+  letter-spacing: -0.022em;
 }
 .h2 {
-  font-size: 17px;
+  font-size: var(--fs-lg);
 }
 .sub {
-  font-size: 13px;
-  margin: 4px 0 0;
+  font-size: var(--fs-md);
+  line-height: 1.5;
+  margin: var(--sp-1) 0 0;
 }
 .muted {
   color: var(--ink-2);
@@ -59,16 +184,16 @@ body {
 .stack {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--sp-4);
 }
 .chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: var(--sp-2);
 }
 .grid {
   display: grid;
-  gap: 12px;
+  gap: var(--sp-3);
 }
 .grid-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -79,72 +204,119 @@ body {
 .grid-4 {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
-
 /* ---------- 页头 ---------- */
 .pagehead {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--sp-4);
   flex-wrap: wrap;
-  margin-bottom: 20px;
+  margin-bottom: var(--sp-5);
+}
+.pagehead-t {
+  min-width: 0;
 }
 .pagehead-a {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
 }
 
-/* ---------- 卡片 ---------- */
+/* ---------- 卡片：描边定边界，投影只留给浮层 ---------- */
 .card {
   background: var(--surface);
-  border-radius: var(--r-card);
-  box-shadow: var(--shadow);
-  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: var(--sp-5);
 }
 .card-h {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
 }
 .card-a {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
 }
+/* 卡中卡：退一层底色，不再叠一个边框（两层描边会把内容挤成邮票） */
 .stack .card .card {
-  background: var(--muted);
-  box-shadow: none;
-  padding: 14px;
+  background: var(--inset);
+  border-color: transparent;
+  padding: var(--sp-4);
 }
 
 /* ---------- 统计块 ---------- */
 .stat {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--sp-1);
   min-width: 0;
-  background: var(--muted);
-  border-radius: 12px;
-  padding: 14px 16px;
+  padding: var(--sp-4);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
 }
+/* 微型标签靠字号/字重/灰度分层，不靠大写：本仓要 13 种语言，大写对 zh/ja/ko/ar/hi/bn
+   是空操作、对 de 又会把词拉长，同一个组件在 13 份译文里长得不一样就不叫设计系统了。 */
 .stat-l {
-  font-size: 12px;
-  color: var(--ink-2);
+  font-size: var(--fs-sm);
+  font-weight: 560;
+  letter-spacing: 0.01em;
+  color: var(--ink-3);
   overflow-wrap: anywhere;
 }
 .stat-v {
-  font-family: var(--serif);
-  font-size: 22px;
-  line-height: 1.25;
+  font-size: var(--fs-xl);
+  font-weight: 620;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
 .stat-h {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   color: var(--ink-2);
 }
+/* 后端带 icon+color 的统计卡（仪表盘）：图标吃 color 当强调色，底色是同色 12% —— 用
+   currentColor 派生，故后端换任何色值都自动跟得上，不必给每种颜色各写一条规则。
+   没有 color-mix 的浏览器退化成纯字形，不丢信息。 */
+.stat-i {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-bottom: var(--sp-1);
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  font-size: var(--fs-lg);
+  line-height: 1;
+}
+/* 环比方向：字形 + 语义色两重编码（只靠颜色的话，色觉障碍下方向就没了） */
+.delta {
+  font-variant-numeric: tabular-nums;
+}
+.delta.up {
+  color: var(--success);
+}
+.delta.down {
+  color: var(--danger);
+}
+/* 一张卡里的多组内容（分布的各维度、趋势的各条线）：组间留白。
+   横轴只在最后一组留一份 —— 同一个日期范围重复两遍是噪声，不是信息。 */
+.subblock + .subblock {
+  margin-top: var(--sp-4);
+}
+.subblock p {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-sm);
+}
+.subblock:not(:last-child) .chart-x {
+  display: none;
+}
+/* 数值染色：只用状态色把"这个数需要看一眼"标出来，主体仍是墨色 */
 .t-primary .stat-v {
   color: var(--primary);
 }
@@ -165,13 +337,13 @@ body {
 .skel {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--sp-3);
 }
 .skel-row {
   display: block;
-  height: 14px;
-  border-radius: 7px;
-  background: linear-gradient(90deg, var(--muted), #ece9e2, var(--muted));
+  height: 12px;
+  border-radius: var(--r-xs);
+  background: linear-gradient(90deg, var(--inset), var(--line), var(--inset));
   background-size: 200% 100%;
   animation: skel 1.4s ease-in-out infinite;
 }
@@ -192,31 +364,34 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 30px 16px;
+  gap: var(--sp-2);
+  padding: var(--sp-8) var(--sp-4);
   color: var(--ink-2);
-  font-size: 13px;
+  font-size: var(--fs-md);
 }
 .empty-mark {
   /* 吉祥物小骰（Dicey）：240x200 的 6:5 比例，等比缩放避免变形 */
   width: 72px;
   height: 60px;
-  opacity: 0.9;
+  opacity: 0.75;
+  filter: grayscale(0.25);
 }
 .errnote {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--sp-3);
   flex-wrap: wrap;
-  background: #fdf2f2;
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid color-mix(in srgb, var(--danger) 28%, transparent);
+  border-radius: var(--r-sm);
+  background: var(--danger-soft);
   color: var(--danger);
-  border-radius: 12px;
-  padding: 12px 14px;
-  font-size: 13px;
+  font-size: var(--fs-md);
 }
 .errnote.ok {
-  background: #f0fdf4;
+  border-color: color-mix(in srgb, var(--success) 28%, transparent);
+  background: var(--success-soft);
   color: var(--success);
 }
 .errnote-t {
@@ -228,78 +403,95 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  min-height: 38px;
-  padding: 0 16px;
-  border: 0;
-  border-radius: var(--r-ctl);
+  gap: var(--sp-2);
+  min-height: 34px;
+  padding: 0 var(--sp-4);
+  border: 1px solid var(--primary);
+  border-radius: var(--r-sm);
   background: var(--primary);
-  color: #fff;
+  color: var(--primary-ink);
+  font: inherit;
+  font-size: var(--fs-md);
+  font-weight: 560;
+  white-space: nowrap;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease),
+    transform var(--dur-1) var(--ease);
 }
-.btn:hover {
-  background: var(--primary-hover);
+.btn:hover:not(:disabled) {
+  background: var(--primary-h);
+  border-color: var(--primary-h);
+}
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
 }
 .btn:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
+/* 次级按钮：默认的"另一个动作"都长这样（描边 + 表面底），实心只留给一处主操作 */
 .btn-sm {
-  min-height: 32px;
-  padding: 0 12px;
-  font-size: 13px;
-  background: var(--muted);
+  min-height: 30px;
+  padding: 0 var(--sp-3);
+  border-color: var(--line-2);
+  background: var(--surface);
   color: var(--ink);
+  font-size: var(--fs-sm);
+  font-weight: 520;
 }
-.btn-sm:hover {
-  background: #e9e6df;
+.btn-sm:hover:not(:disabled) {
+  background: var(--inset);
+  border-color: var(--line-2);
 }
 .btn-danger {
+  border-color: transparent;
   background: var(--danger);
+  color: #fff;
 }
-.btn-danger:hover {
-  background: #991b1b;
+.btn-danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 84%, #000);
+  border-color: transparent;
 }
 
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 9px;
-  border-radius: 999px;
-  font-size: 12px;
-  background: var(--muted);
+  padding: 1px var(--sp-2);
+  border-radius: var(--r-xs);
+  font-size: var(--fs-xs);
+  font-weight: 560;
+  letter-spacing: 0.02em;
+  background: var(--inset);
   color: var(--ink-2);
   white-space: nowrap;
 }
 .b-primary {
-  background: #e6f2f0;
+  background: var(--primary-soft);
   color: var(--primary);
 }
 .b-amber {
-  background: #fdf1e0;
+  background: var(--amber-soft);
   color: var(--amber);
 }
 .b-success {
-  background: #e8f4ea;
+  background: var(--success-soft);
   color: var(--success);
 }
 .b-danger {
-  background: #fdecec;
+  background: var(--danger-soft);
   color: var(--danger);
 }
 
+/* 标签页：下划线式。旧版是一个灰药丸轨道，风控页 12 个页签时整条轨道压住内容半屏 */
 .tabs {
   display: flex;
-  gap: 4px;
-  padding: 4px;
-  background: var(--muted);
-  border-radius: 12px;
-  margin-bottom: 16px;
+  gap: var(--sp-1);
+  margin-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--line);
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -308,19 +500,25 @@ body {
 }
 .tab {
   flex: 0 0 auto;
-  min-height: 34px;
-  padding: 0 14px;
+  min-height: 36px;
+  padding: 0 var(--sp-3);
   border: 0;
-  border-radius: 9px;
+  border-bottom: 2px solid transparent;
   background: transparent;
   color: var(--ink-2);
-  cursor: pointer;
+  font: inherit;
+  font-size: var(--fs-md);
   white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--dur-1) var(--ease), border-color var(--dur-1) var(--ease);
+}
+.tab:hover {
+  color: var(--ink);
 }
 .tab.on {
-  background: var(--surface);
-  color: var(--ink);
-  box-shadow: var(--shadow);
+  border-bottom-color: var(--primary);
+  color: var(--primary);
+  font-weight: 580;
 }
 .tab:focus-visible {
   outline: 2px solid var(--primary);
@@ -331,8 +529,8 @@ body {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
-  padding: 10px 0;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 0;
   border-bottom: 1px solid var(--line);
 }
 .field:last-child {
@@ -340,7 +538,7 @@ body {
 }
 .field-l {
   color: var(--ink-2);
-  font-size: 13px;
+  font-size: var(--fs-md);
   flex: 0 0 auto;
 }
 .field-v {
@@ -348,36 +546,47 @@ body {
   overflow-wrap: anywhere;
 }
 
-/* ---------- 弹窗 ---------- */
+/* ---------- 弹窗：全站唯一该有重投影的东西（真的浮在页面之上） ---------- */
 .backdrop {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: var(--z-pop);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  background: rgba(28, 25, 23, 0.4);
+  padding: var(--sp-5);
+  background: rgba(9, 14, 22, 0.5);
+  backdrop-filter: blur(2px);
 }
 .modal {
   display: flex;
   flex-direction: column;
   width: min(760px, 100%);
   max-height: 86vh;
-  background: var(--surface);
-  border-radius: var(--r-card);
-  box-shadow: 0 12px 40px rgba(28, 25, 23, 0.18);
+  background: var(--raised);
+  border-radius: var(--r-lg);
+  /* 描边走 box-shadow 的一圈环，**不用 border**：全局是 border-box，`width: min(340px,…)`
+     会把那 1px 算进宽度里 ⇒ 内容从 300 掉到 298，验证码画布不再 1:1（实测踩过）。
+     环不占布局，340 = 2×20 内边距 + 300 画布 这个等式才成立。 */
+  box-shadow: 0 0 0 1px var(--line), var(--e3);
+}
+/* 小弹框：贴合内容（登录验证码画布原生 300×200 ⇒ 340 − 2×20 内边距 = 300，1:1）。
+   窄屏仍由 min(…, 100%) 收窄，与 .modal 同款，不是另一套断点。
+   ⚠ 340 与 .modal-b 的 20px 横向内边距是**一对**：改任一个，验证码画布就不再是 1:1，
+   /tmp/cap_modal_react.mjs 的"画布 300×200"会当场变红。 */
+.modal-sm {
+  width: min(340px, 100%);
 }
 .modal-h {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 16px 20px;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-5);
   border-bottom: 1px solid var(--line);
 }
 .modal-b {
-  padding: 20px;
+  padding: var(--sp-5);
   overflow: auto;
 }
 
@@ -388,21 +597,24 @@ body {
 .dt {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: var(--fs-md);
+  font-variant-numeric: tabular-nums;
 }
+/* 表头同样不用大写（理由见 .stat-l）：小一号 + 灰度 + 稍重字重已经足够分层 */
 .dt th {
   text-align: left;
-  font-weight: 600;
-  font-size: 12px;
-  color: var(--ink-2);
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--line);
+  font-weight: 560;
+  font-size: var(--fs-sm);
+  letter-spacing: 0.01em;
+  color: var(--ink-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--line-2);
   white-space: nowrap;
 }
 .dt td {
-  padding: 10px;
+  padding: var(--sp-3);
   border-bottom: 1px solid var(--line);
-  vertical-align: top;
+  vertical-align: middle;
   overflow-wrap: anywhere;
   max-width: 320px;
 }
@@ -414,9 +626,10 @@ body {
 }
 .dt.clickable tbody tr {
   cursor: pointer;
+  transition: background var(--dur-1) var(--ease);
 }
 .dt.clickable tbody tr:hover {
-  background: var(--muted);
+  background: var(--inset);
 }
 .dt.clickable tbody tr:focus-visible {
   outline: 2px solid var(--primary);
@@ -435,7 +648,7 @@ body {
 .chart {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--sp-2);
 }
 .chart-svg {
   display: block;
@@ -446,6 +659,9 @@ body {
   stroke: var(--line);
   stroke-width: 1;
 }
+/* 折线按**视觉像素**画：viewBox 是 640 宽而容器常常是 1100+，等比放大后 2px 会变成 3.4px
+   ⇒ 线又粗又糊、各页粗细还不一致。non-scaling-stroke 由 TSX 上的 vector-effect 打开
+   （components/Chart.tsx），这里定的是最终屏幕宽度。 */
 .line {
   fill: none;
   stroke-width: 2;
@@ -455,39 +671,39 @@ body {
 .chart-x {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: var(--fs-sm);
 }
 .legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
-  font-size: 12px;
+  gap: var(--sp-4);
+  font-size: var(--fs-sm);
   color: var(--ink-2);
 }
 .lg {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-2);
 }
 .lg i {
   display: inline-block;
   width: 10px;
   height: 10px;
-  border-radius: 3px;
+  border-radius: var(--r-xs);
 }
 
 /* ---------- 条形列表 ---------- */
 .bars {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--sp-3);
 }
 .bar {
   display: grid;
   grid-template-columns: minmax(72px, 140px) 1fr auto;
   align-items: center;
-  gap: 10px;
-  font-size: 13px;
+  gap: var(--sp-3);
+  font-size: var(--fs-md);
 }
 .bar-l {
   color: var(--ink-2);
@@ -497,16 +713,17 @@ body {
 }
 .bar-t {
   display: block;
-  height: 10px;
-  border-radius: 999px;
-  background: var(--muted);
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: var(--inset);
   overflow: hidden;
 }
 .bar-t i {
   display: block;
   height: 100%;
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   background: var(--primary);
+  transition: width var(--dur-2) var(--ease);
 }
 .bar-v {
   min-width: 62px;
@@ -515,18 +732,34 @@ body {
 }
 
 /* ---------- 写操作（表单框 / 行内动作 / 工具条） ---------- */
-/* 新建按钮所在的行，压在列表上方 */
+/* 新建按钮所在的行，压在列表上方。工具条里的动作一律次级：
+   旧版这里是四个实心青绿并排（新建/启用/停用/导入），谁主谁次看不出来。 */
 .toolbar {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
-  margin-bottom: 12px;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+}
+.toolbar .btn {
+  min-height: 30px;
+  padding: 0 var(--sp-3);
+  border-color: var(--line-2);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--fs-sm);
+  font-weight: 520;
+}
+.toolbar .btn:hover:not(:disabled) {
+  background: var(--inset);
+  border-color: var(--line-2);
 }
 /* 弹框里字段多，双列摆放。.form.form-cols 是复合选择器：App.css 的 .form 在本文件之后加载，
    同层单类靠源序会输给它 */
 .form.form-cols {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: var(--sp-4);
   align-items: start;
 }
 .form-cols > .label {
@@ -543,7 +776,7 @@ body {
 /* .input 是单行控件的量法，textarea 按行数撑开并补上纵向内边距 */
 textarea.input {
   min-height: 88px;
-  padding: 10px 12px;
+  padding: var(--sp-3);
   resize: vertical;
 }
 .label .req {
@@ -553,12 +786,12 @@ textarea.input {
 .imgfield {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--sp-2);
 }
 .imgrow {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--sp-2);
 }
 .imgrow .input {
   flex: 1;
@@ -573,28 +806,49 @@ textarea.input {
   max-width: 100%;
   align-self: flex-start;
   border: 1px solid var(--line);
-  border-radius: var(--r-ctl);
-  background: var(--paper);
+  border-radius: var(--r-sm);
+  background: var(--sunken);
 }
 /* 字段约束说明常驻在控件下方：placeholder 打完字就看不见了，值域/格式这类约束得有处可写 */
 .label .hint {
-  font-size: 12px;
+  font-size: var(--fs-sm);
   line-height: 1.4;
+  color: var(--ink-3);
 }
 .switch {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   margin: 0;
   accent-color: var(--primary);
 }
+/* 行尾动作：一排四个"药丸"会把表压成按钮墙（旧版三行 12 个同权重按钮）。
+   改成安静的文字按钮，只有"删除"保留红色，靠颜色而不是靠体量区分。 */
 .rowact {
   display: inline-flex;
-  gap: 6px;
+  gap: var(--sp-1);
   white-space: nowrap;
 }
-/* .btn-sm 的深色文字压不住危险色底，这里补回白字 */
+.rowact .btn {
+  min-height: 26px;
+  padding: 0 var(--sp-2);
+  border-color: transparent;
+  background: transparent;
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+  font-weight: 520;
+}
+.rowact .btn:hover:not(:disabled) {
+  background: var(--inset);
+  border-color: transparent;
+  color: var(--ink);
+}
 .rowact .btn-danger {
-  color: #fff;
+  background: transparent;
+  color: var(--danger);
+}
+.rowact .btn-danger:hover:not(:disabled) {
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 /* ---------- 分页条 / 权限树 ---------- */
@@ -602,10 +856,10 @@ textarea.input {
 .pager {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 12px;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
   color: var(--ink-2);
-  font-size: 13px;
+  font-size: var(--fs-md);
 }
 .pager .btn:first-of-type {
   margin-left: auto;
@@ -614,7 +868,7 @@ textarea.input {
 .treemark {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--sp-1);
 }
 .tgl {
   flex: none;
@@ -622,11 +876,12 @@ textarea.input {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--ink-2);
-  font-size: 12px;
+  color: var(--ink-3);
+  font-size: var(--fs-sm);
   line-height: 18px;
   text-align: center;
   cursor: pointer;
+  transition: color var(--dur-1) var(--ease);
 }
 .tgl:hover {
   color: var(--primary);
@@ -636,9 +891,9 @@ textarea.input {
   width: 100%;
   max-height: 260px;
   overflow: auto;
-  padding: 8px 10px;
+  padding: var(--sp-2) var(--sp-3);
   border: 1px solid var(--line);
-  border-radius: var(--r-ctl);
+  border-radius: var(--r-sm);
   background: var(--surface);
 }
 .perm {
@@ -653,18 +908,18 @@ textarea.input {
 .perm-row {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--sp-1);
 }
 .perm-label {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--sp-2);
   padding: 2px 0;
   cursor: pointer;
 }
 .perm-label input {
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
   margin: 0;
   accent-color: var(--primary);
 }

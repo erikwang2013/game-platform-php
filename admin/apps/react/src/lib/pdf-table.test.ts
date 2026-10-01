@@ -59,3 +59,22 @@ test('每行宽度恒等于表头宽度，且缺字段补「—」而不是错�
     ['—', '—'],
   ]);
 });
+
+/* 状态影子列（见 lib/status.ts）：列名是 `status_label`，值**不在行里**、只在 render 里现算。
+   照旧读 `row[column.key]` 的话，导出里那一格恒为「—」—— 屏幕上看得见、导出里消失，不报错。
+   反过来，行尾动作那些 render 返回的是 JSX 元素，进 PDF 会变成 `[object Object]`，那些必须仍读原字段。 */
+test('render 返回字符串的列（状态影子列）取 render 的值，不是取那个不存在的行字段', () => {
+  const payload = buildPdfTable(
+    'T',
+    [
+      { key: 'name', label: 'f.game_name' },
+      { key: 'status_label', label: 'f.status', render: (row) => `[${String(row.status)}]` },
+      // 返回对象的列：行里有值 ⇒ 照旧读行，绝不把元素塞进载荷
+      { key: 'actions', label: 'common.actions', render: () => ({ jsx: true }) },
+    ],
+    [{ name: 'Snake', status: 1, actions: 'ok' }],
+  );
+
+  assert.deepEqual(payload.data.rows, [['Snake', '[1]', 'ok']]);
+  assert.equal(JSON.stringify(payload).includes('[object Object]'), false);
+});

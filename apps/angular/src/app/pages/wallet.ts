@@ -13,6 +13,7 @@ import {
   WithdrawOrder,
   dt,
   money,
+  moneyRaw,
 } from '../core/api.service';
 
 /** 分页列表：三个列表共用同一套 加载/错误/空/更多 逻辑 */
@@ -53,26 +54,42 @@ class Pager<T> {
 }
 
 /**
- * 交易类型 → 中文。取值真源：service/app/service/WalletService.php 的 TYPE_ 常量
- * （lock / unlock / reconcile）+ 生产调用点传的字面量（ActivityService 传 activity_reward，
- * SelfProvider 传 game_spend / game_earn）。
+ * 交易类型 → 中文。**只列有写入侧的键**（逐键核过，写入点见下），未列出的键走 label() 原样透出
+ * （宁可露出原键，也不要编一个不存在的类型名）。
+ *
  * transactions 接口**不按 scope 过滤**，所以游戏币那本账的 game_spend / game_earn 也会出现在
- * 这个列表里 —— 漏了就会把英文原键直接摆给用户。
- * 未列出的键走 label() 原样透出（宁可露出原键，也不要编一个不存在的类型名）。
+ * 这个列表里。除迁移外，全仓只有 WalletService::record() → Transaction::create(:323) 一个口子
+ * 能建流水行（service / admin 两棵的 WalletService 目前逐字节相同）。写入点：
+ *   deposit          PaymentController.php:158
+ *   withdraw         WithdrawController.php:232
+ *   refund           **admin 树** app/admin/v1/WithdrawReviewTrait.php:186 / :284（提现驳回退回）
+ *   exchange_out     ExchangeController.php:231（买币扣平台币）· exchange_in :260（卖币到账）
+ *   game_spend       SelfProvider.php:54 · game_earn SelfProvider.php:166
+ *   activity_reward  ActivityService.php:334 / :345
+ *   referral_bonus   ReferralController.php:261
+ *   lock / unlock    **admin 树** app/admin/v1/controller/RiskUserController.php:139 / :235（风控冻结/解冻）
+ *   reconcile        install/migrations/2026_09_28_wallet_freeze_ledger.sql:112 / :142（仅回填迁移写）
+ *
+ * ⚠ 三个踩过的坑，别再踩：
+ *  1. refund / lock / unlock 的写入侧在 **admin 树**（提现审核、风控冻结）—— 只 grep `service/`
+ *     会把它们误判成死键。核键集时两棵树都要扫。
+ *  2. `bet` / `win` 不是流水类型，是 `game_play_record.action` / `.result`
+ *     （GamePlayRecorder.php:33、AntiCheatService.php:297），跟这张表是两张表，别抄进来。
+ *  3. `transfer_in` / `transfer_out` / `commission` / `adjust` 全仓零写入（连常量都没有），已删。
+ *     它们是从别处照抄进来的死键：用户永远看不到，只会在下次复核时把人带去查一轮。
+ *
+ * 键集与 apps/react 的 lib/labels.ts 对齐（两张表 12 键逐键相同）。
  */
 const TX_LABEL: Record<string, string> = {
   deposit: '充值',
   withdraw: '提现',
-  bet: '投注',
-  win: '派彩',
   refund: '退款',
-  transfer_in: '转入',
-  transfer_out: '转出',
-  commission: '佣金',
-  adjust: '调账',
+  exchange_in: '兑换转入',
+  exchange_out: '兑换转出',
   game_spend: '开局扣费',
   game_earn: '游戏派彩',
   activity_reward: '活动奖励',
+  referral_bonus: '邀请奖励',
   lock: '冻结',
   unlock: '解冻',
   reconcile: '对账调整',
@@ -107,12 +124,20 @@ const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
     <div class="card bal">
       <div class="main">
         <span class="label">可用余额</span>
-        <strong class="big mono">{{ info() ? money(info()!.balance) : '—' }}</strong>
+        <strong class="big mono" [title]="moneyRaw(info()?.balance)">{{
+          info() ? money(info()!.balance) : '—'
+        }}</strong>
         @if (info(); as w) {
           <div class="wrap sub">
-            <span class="chip">冻结 {{ money(w.frozen_balance) }}</span>
-            <span class="chip">累计收入 {{ money(w.total_earned) }}</span>
-            <span class="chip">累计支出 {{ money(w.total_spent) }}</span>
+            <span class="chip" [title]="moneyRaw(w.frozen_balance)"
+              >冻结 {{ money(w.frozen_balance) }}</span
+            >
+            <span class="chip" [title]="moneyRaw(w.total_earned)"
+              >累计收入 {{ money(w.total_earned) }}</span
+            >
+            <span class="chip" [title]="moneyRaw(w.total_spent)"
+              >累计支出 {{ money(w.total_spent) }}</span
+            >
           </div>
         }
       </div>
@@ -179,7 +204,10 @@ const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
                 @if (kind === 'tx') {
                   <div class="grow">
                     <div class="t">{{ label(TX_LABEL, r.type) }}</div>
-                    <div class="s">{{ dt(r.created_at) }} · 余额 {{ money(r.balance_after) }}</div>
+                    <div class="s">
+                      {{ dt(r.created_at) }} · 余额
+                      <span [title]="moneyRaw(r.balance_after)">{{ money(r.balance_after) }}</span>
+                    </div>
                     @if (r.remark) {
                       <div class="s">{{ r.remark }}</div>
                     }
@@ -188,6 +216,7 @@ const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
                     class="amount"
                     [class.in]="sign(r.amount) > 0"
                     [class.out]="sign(r.amount) < 0"
+                    [title]="moneyRaw(r.amount)"
                   >
                     {{ sign(r.amount) > 0 ? '+' : '' }}{{ money(r.amount) }}
                   </span>
@@ -195,8 +224,11 @@ const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
                   <div class="grow">
                     <div class="t">{{ r.order_no }}</div>
                     <div class="s">
-                      {{ dt(r.created_at) }} · {{ r.currency }} {{ money(r.amount) }} → 平台
-                      {{ money(r.platform_amount) }}
+                      {{ dt(r.created_at) }} · {{ r.currency }}
+                      <span [title]="moneyRaw(r.amount)">{{ money(r.amount) }}</span> → 平台
+                      <span [title]="moneyRaw(r.platform_amount)">{{
+                        money(r.platform_amount)
+                      }}</span>
                     </div>
                   </div>
                   <span class="badge {{ tone(r.status) }}">{{ label(DEP_LABEL, r.status) }}</span>
@@ -205,7 +237,9 @@ const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
                     <div class="t">{{ r.order_no }}</div>
                     <div class="s">
                       {{ dt(r.created_at) }} · {{ r.method || '—' }} · 平台
-                      {{ money(r.platform_amount) }}
+                      <span [title]="moneyRaw(r.platform_amount)">{{
+                        money(r.platform_amount)
+                      }}</span>
                     </div>
                     @if (r.review_note) {
                       <div class="s">{{ r.review_note }}</div>
@@ -229,19 +263,41 @@ const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
   `,
   styles: [
     `
+      /* 余额卡是全站头号数字：钱只在这里被放大一次。品牌紫从左侧漫开，
+         顶沿压一条代币金 —— 金色在这棵树里只代表"战利品/钱"。 */
       .bal {
-        padding: 22px 24px;
+        padding: 24px 24px 22px;
         background:
-          radial-gradient(120% 170% at 0% 0%, rgba(124, 58, 237, 0.24), transparent 60%),
-          var(--panel);
+          radial-gradient(
+            120% 180% at 0% 0%,
+            color-mix(in srgb, var(--primary) 24%, transparent),
+            transparent 62%
+          ),
+          var(--surface);
         display: flex;
         flex-direction: column;
         gap: 12px;
       }
+      /* 顶沿的机台灯条：金渐到紫、右端收干净。用 ::after 贴顶画而不是
+         inset 阴影 —— 阴影会跟着圆角包下来，看起来像整圈金边。 */
+      .bal::after {
+        content: '';
+        position: absolute;
+        inset: 0 0 auto;
+        height: 3px;
+        background: linear-gradient(90deg, var(--gold), var(--primary) 62%, transparent);
+        pointer-events: none;
+      }
       .bal .big {
-        font-size: 32px;
-        letter-spacing: -0.02em;
+        /* <strong> 默认是 inline：不改成 block 的话「可用余额」会和金额挤在同一行，
+           下面的 margin-top 也完全不生效（inline 不吃纵向 margin）。 */
+        display: block;
+        font-size: 40px;
+        font-weight: 800;
+        letter-spacing: -0.035em;
+        line-height: 1.05;
         margin-top: 6px;
+        overflow-wrap: anywhere;
       }
       .sub {
         margin-top: 10px;
@@ -249,10 +305,12 @@ const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
       .sub .chip {
         font-variant-numeric: tabular-nums;
       }
+      /* 四个动作按 2×2 排。原来是 flex-wrap，360 宽下第四个（游戏流水）
+         被挤到单独一行、前三个还大小不一 —— 花钱的入口不该排成这样。 */
       .acts {
-        display: flex;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 10px;
-        flex-wrap: wrap;
         margin-top: 14px;
       }
       .tabs {
@@ -268,8 +326,14 @@ const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
         padding-top: 14px;
       }
       @media (min-width: 768px) {
+        .bal {
+          padding: 28px 30px 26px;
+        }
         .bal .big {
-          font-size: 38px;
+          font-size: 52px;
+        }
+        .acts {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
         }
       }
     `,
@@ -286,6 +350,7 @@ export class WalletPage {
   protected readonly DEP_LABEL = DEP_LABEL;
   protected readonly WD_LABEL = WD_LABEL;
   protected readonly money = money;
+  protected readonly moneyRaw = moneyRaw;
   protected readonly dt = dt;
 
   protected readonly tx = new Pager<Transaction>((p) => this.api.walletTransactions(p, 20));

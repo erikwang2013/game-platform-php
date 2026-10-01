@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import { api } from '../lib/api.ts';
 import { dt } from '../lib/datetime.ts';
 import { useAsync } from '../lib/hooks.ts';
+import { txLabel } from '../lib/labels.ts';
 import { ErrorBox, Loading } from '../components/States.tsx';
 
 type Tab = 'tx' | 'dep' | 'wd' | 'ex';
@@ -36,7 +37,7 @@ export function Wallet() {
         ...d,
         items: d.items.map<Row>((t) => ({
           k: t.id,
-          title: t.type,
+          title: txLabel(t.type),
           sub: t.remark || dt(t.created_at),
           amount: t.amount,
           inflow: !isNegative(t.amount),

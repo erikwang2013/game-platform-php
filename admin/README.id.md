@@ -280,7 +280,7 @@ Cors（praproses CORS + header respons）
   → OperationLog（pencatatan otomatis POST/PUT/DELETE，termasuk deteksi sumber，grup rute /admin/v1）
 ```
 
-`/health` adalah endpoint publik dan hanya melewati `Cors → SecurityFilter → RateLimit`; `/metrics` dan `/api/docs` memerlukan tambahan `AdminAuth → AdminPermission`.
+`/health` adalah endpoint publik dan hanya melewati `Cors → SecurityFilter → RateLimit → LanguageMiddleware`; `/api/docs` memerlukan tambahan `AdminAuth → AdminPermission`; `/metrics` juga melewati `MetricsAuth` (JWT admin tetap melewati `AdminAuth → AdminPermission`, atau gunakan token scrape statis `METRICS_SCRAPE_TOKEN` dari `.env`; jika tidak disetel, jalur ini dinonaktifkan). Penolakan `/metrics` adalah `401/403` + `text/plain`, bukan envelope 200 + JSON seperti endpoint lainnya.
 
 Penguatan keamanan:
 - **Penguncian akun**: 5 kali gagal login berturut-turut, akun otomatis dikunci 15 menit, login selama masa kunci mengembalikan 429

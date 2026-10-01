@@ -12,6 +12,8 @@ import {
   ExchangeQuote,
   Game,
   money,
+  moneyRaw,
+  Num,
 } from '../core/api.service';
 import { CaptchaBox } from '../core/captcha';
 
@@ -35,27 +37,28 @@ const GAMES_PER_PAGE = 100;
           </div>
           <div class="kv">
             <span class="muted">{{ d.direction === 'in' ? '支付平台币' : '卖出游戏币' }}</span>
-            <span class="mono">{{
-              d.direction === 'in' ? d.platform_amount : d.game_amount
-            }}</span>
+            <span class="mono" [title]="moneyRaw(spendAmt(d))">{{ money(spendAmt(d)) }}</span>
           </div>
           <div class="kv">
             <span class="muted">
               {{ d.direction === 'in' ? '到账游戏币（已扣点差）' : '到账平台币（已扣点差）' }}
             </span>
-            <span class="mono amount in">{{
-              d.direction === 'in' ? d.game_amount : d.platform_amount
+            <span class="mono amount in" [title]="moneyRaw(gainAmt(d))">{{
+              money(gainAmt(d))
             }}</span>
           </div>
           <div class="kv">
-            <span class="muted">点差费用</span><span class="mono">{{ d.spread_fee }}</span>
+            <span class="muted">点差费用</span
+            ><span class="mono" [title]="moneyRaw(d.spread_fee)">{{ money(d.spread_fee) }}</span>
           </div>
           <div class="kv">
             <span class="muted">成交汇率</span><span class="mono">{{ d.rate }}</span>
           </div>
           <div class="kv">
             <span class="muted">账户余额</span
-            ><span class="mono">{{ money(d.balance_after) }}</span>
+            ><span class="mono" [title]="moneyRaw(d.balance_after)">{{
+              money(d.balance_after)
+            }}</span>
           </div>
           <div class="wrap">
             <a class="btn" routerLink="/wallet">返回钱包</a>
@@ -180,27 +183,34 @@ const GAMES_PER_PAGE = 100;
               <span class="muted">点差</span><span class="mono">{{ q.spread_pct }}%</span>
             </div>
             <div class="kv">
-              <span class="muted">点差费用</span><span class="mono">{{ q.spread_fee }}</span>
+              <span class="muted">点差费用</span
+              ><span class="mono" [title]="moneyRaw(q.spread_fee)">{{ money(q.spread_fee) }}</span>
             </div>
             @if (direction() === 'in') {
               <div class="kv">
                 <span class="muted">折合游戏币（扣点差前）</span
-                ><span class="mono">{{ q.game_amount }}</span>
+                ><span class="mono" [title]="moneyRaw(q.game_amount)">{{
+                  money(q.game_amount)
+                }}</span>
               </div>
               <div class="kv">
                 <span class="muted">预计获得</span>
-                <span class="mono amount in"
-                  >{{ q.actual_game_amount }} {{ cur()?.symbol || '' }}</span
+                <span class="mono amount in" [title]="moneyRaw(q.actual_game_amount)"
+                  >{{ money(q.actual_game_amount) }} {{ cur()?.symbol || '' }}</span
                 >
               </div>
             } @else {
               <div class="kv">
-                <span class="muted">折合平台币（扣点差前）</span>
-                <span class="mono">{{ q.platform_equivalent }}</span>
+                <span class="muted">折合平台币（扣点差前）</span
+                ><span class="mono" [title]="moneyRaw(q.platform_equivalent)">{{
+                  money(q.platform_equivalent)
+                }}</span>
               </div>
               <div class="kv">
                 <span class="muted">预计到账</span>
-                <span class="mono amount in">{{ q.actual_platform_amount }} 平台币</span>
+                <span class="mono amount in" [title]="moneyRaw(q.actual_platform_amount)"
+                  >{{ money(q.actual_platform_amount) }} 平台币</span
+                >
               </div>
             }
             @if (error()) {
@@ -220,6 +230,11 @@ const GAMES_PER_PAGE = 100;
   `,
   styles: [
     `
+      /* 同 withdraw.ts：表单页收成一栏，桌面右留白，窄屏不受影响 */
+      :host {
+        display: block;
+        max-width: 640px;
+      }
       .back {
         margin-bottom: 0;
         font-size: 13px;
@@ -243,6 +258,21 @@ export class ExchangePage {
   private readonly api = inject(Api);
 
   protected readonly money = money;
+  protected readonly moneyRaw = moneyRaw;
+
+  /**
+   * 成交结果的两个金额字段**随方向换位**（`in`=买入 / `out`=卖出），字符串里没法写 `d.a || d.b`
+   * 那种兜底 —— 两个字段都恒存在，只是语义不同。故把三元的选取收进这两个取值器，
+   * 模板只负责 `money(取值器(d))`：一处定义、不会出现标题与正文选中不同字段的情况。
+   */
+  protected spendAmt(d: ExchangeDone): Num {
+    return d.direction === 'in' ? d.platform_amount : d.game_amount;
+  }
+
+  /** 到账侧净额（in=游戏币 / out=平台币；两侧都已扣点差，见后端 exchangeLegs） */
+  protected gainAmt(d: ExchangeDone): Num {
+    return d.direction === 'in' ? d.game_amount : d.platform_amount;
+  }
 
   protected readonly games = signal<Game[]>([]);
   protected readonly gamesBusy = signal(true);

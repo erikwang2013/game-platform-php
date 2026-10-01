@@ -21,7 +21,7 @@ export function labelsFor(rows: Row[]): Record<string, string> {
 
 /**
  * 按首行字段推导列。优先展示 preferred 里的业务字段，其余按响应顺序补足，
- * 最多 max 列。字段名不存在时不会凭空造列。
+ * 补足的部分最多补到 max 列（见下）。字段名不存在时不会凭空造列。
  * hide 里的键一律不进列（如设备列表的 fp_hash：它是行内动作的**提交参数**，不是给人看的列）。
  */
 export function columnsFrom(
@@ -39,9 +39,13 @@ export function columnsFrom(
   // __ 前缀是内部标记（树行的 __depth/__kids/__lineage、操作列的 __actions），不是响应里的数据字段：
   // 摆成列就是「__depth 0 / __lineage […]」，还会把 preferred 没占满的列位挤掉
   const keys = Object.keys(rows[0] ?? {}).filter((key) => !hide.includes(key) && !key.startsWith('__'));
+  // preferred 是**作者手写的清单**，不参与 max 的截断：max 挡的是「把响应里剩下的字段都摊上来」，
+  // 截手写清单只会让显式点名的列**静默消失**（提现订单的 payout_status / created_at 排在第 9、10 位，
+  // 被缺省的 8 砍掉，而列数看着还正常）。其余键照旧只补到 max（含 preferred 在内一共 max 列）。
+  const picked = preferred.filter((key) => keys.includes(key));
   const ordered = [
-    ...preferred.filter((key) => keys.includes(key)),
+    ...picked,
     ...keys.filter((key) => !preferred.includes(key)),
-  ].slice(0, max);
+  ].slice(0, Math.max(max, picked.length));
   return ordered.map((key) => ({ key, label: labels[key] ?? key }));
 }

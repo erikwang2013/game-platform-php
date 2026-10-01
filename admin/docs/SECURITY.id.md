@@ -13,7 +13,7 @@ Sistem menggunakan model pertahanan berlapis 7 lapis, menyaring permintaan berba
 Seluruh rantai middleware dieksekusi dalam urutan berikut (lihat `config/middleware.php`):
 
 ```
-请求 → Cors → SecurityFilter → RateLimit → [路由组中间件: AdminAuth → AdminPermission → OperationLog] → Controller
+请求 → Cors → SecurityFilter → RateLimit → LanguageMiddleware → [路由组中间件: AdminAuth → AdminPermission → OperationLog] → Controller
 ```
 
 | Lapisan | Middleware/Mekanisme | Target perlindungan |

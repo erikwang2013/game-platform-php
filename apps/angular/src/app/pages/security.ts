@@ -210,12 +210,14 @@ import { Api, ApiError } from '../core/api.service';
         grid-template-columns: repeat(2, 1fr);
         gap: 8px;
       }
+      /* 备份码是**要一个一个抄下来**的东西：等宽 + 大字距 + 整块可选中 */
       .code {
         padding: 10px 12px;
-        border-radius: 10px;
-        border: 1px solid var(--stroke);
-        background: var(--panel);
-        font-size: 14px;
+        border-radius: var(--r-sm);
+        border: 1px solid var(--line);
+        background: var(--surface-2);
+        font-family: var(--mono);
+        font-size: var(--fs-md);
         letter-spacing: 0.08em;
         text-align: center;
         user-select: all;

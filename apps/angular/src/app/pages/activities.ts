@@ -150,18 +150,19 @@ const NONE: ActivityProgress = { activity_id: '', current: 0, target: 0, status:
       .sk-line {
         height: 16px;
       }
+      /* 活动进度：金→紫，跟"攒代币"这件事同色系 */
       .bar {
         height: 8px;
-        border-radius: 999px;
-        background: var(--panel);
-        border: 1px solid var(--stroke);
+        border-radius: var(--r-full);
+        background: var(--surface-3);
         overflow: hidden;
       }
       .bar i {
         display: block;
         height: 100%;
-        background: var(--grad);
-        transition: width 0.3s ease;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--gold), var(--primary));
+        transition: width var(--t) var(--ease);
       }
     `,
   ],

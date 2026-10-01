@@ -3,7 +3,7 @@ import { Component, computed, input, output, signal } from '@angular/core';
 import { Row } from '../core/api.service';
 import { T } from '../core/i18n/i18n';
 import { idOf } from '../core/render';
-import { colsOf, dash, num } from '../core/util';
+import { colsOf, dash, isNum, num } from '../core/util';
 
 export interface Act {
   key: string;
@@ -130,6 +130,8 @@ export class Table {
   /** 模板作用域只认类成员，模块级 import 不可见 */
   protected readonly dash = dash;
   protected readonly idOf = idOf;
+  /** 金额/比率出网是字符串（bcmath）⇒ 判列对齐必须认数字串，见 core/util.ts 的 isNum */
+  protected readonly isNum = isNum;
 
   /** 折叠的节点 id（缺省全展开） */
   protected readonly folded = signal<ReadonlySet<string>>(new Set());
@@ -167,10 +169,6 @@ export class Table {
       if (!next.delete(id)) next.add(id);
       return next;
     });
-  }
-
-  protected isNum(v: unknown): boolean {
-    return typeof v === 'number';
   }
 
   /** 该行是否可勾选（无 id 的行勾不了：提交的是 id 数组，勾了也发不出去） */

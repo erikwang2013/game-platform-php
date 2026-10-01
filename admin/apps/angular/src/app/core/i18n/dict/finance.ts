@@ -42,6 +42,8 @@ export const FINANCE: Record<string, [string, string]> = {
   'withdraw.approved': ['Approved', '已通过'],
   'withdraw.rejected': ['Rejected', '已拒绝'],
   'withdraw.completed': ['Completed', '已完成'],
+  /** 只出现在**单元格**里（执行打款期间的状态），不能当筛选值用 ⇒ 不在 ORDER_STATUS 下拉里 */
+  'withdraw.processing': ['Processing', '打款中'],
 
   // ---- 订单行内动作（ORDER_ACTS）----
   'withdraw.approve': ['Approve', '通过'],
@@ -128,7 +130,7 @@ export const FINANCE: Record<string, [string, string]> = {
   'payment.name': ['Name', '名称'],
   'payment.type': ['Type', '类型'],
   'payment.provider': ['Provider', '提供商'],
-  'payment.status': ['Status (0 off / 1 on)', '状态(0停用/1启用)'],
+  'payment.status': ['Status', '状态'],
   'payment.sort': ['Sort', '排序'],
   'payment.currency': ['Currency', '限定币种'],
   'payment.min_amount': ['Min top-up', '最小充值额'],
@@ -177,6 +179,35 @@ export const FINANCE: Record<string, [string, string]> = {
     '留空 = 不修改（列表里回显的是解密后的原文）',
   ],
 
+  // ---- 打款状态（`game_withdraw_order.payout_status`，见 finance-fields.ts 的 PAYOUT_STATUS_LABEL）----
+  'withdraw.payout.processing': ['Payout in progress', '打款处理中'],
+  'withdraw.payout.success': ['Paid out', '打款成功'],
+  'withdraw.payout.failed': ['Payout failed', '打款失败'],
+
   // ---- 提现订单的电子收据（POST /export/receipt，回 PDF 附件）----
   'withdraw.receipt': ['Receipt (PDF)', '收据 (PDF)'],
+
+  // ---- 平台用户钱包（只读，见 pages/wallet-fields.ts）----
+  'wallet.title': ['Wallet', '钱包'],
+  'wallet.transactions': ['Transactions', '交易流水'],
+  'wallet.missing': ['No wallet for this user', '该用户还没有钱包'],
+
+  /**
+   * 流水类型（`game_transaction.type`）—— **键集与中文措辞逐字取自 C 端**
+   * `apps/angular/src/app/pages/wallet.ts:82-95` 的 `TX_LABEL`（同一族的还有 C 端 react
+   * 与 admin react 的 labels.ts）。四份要改一起改：后端加一个 type 就要四处同步。
+   * 别加 transfer_in / transfer_out / commission / adjust：全仓零写入（见 wallet-fields.ts 的注释）。
+   */
+  'tx.deposit': ['Deposit', '充值'],
+  'tx.withdraw': ['Withdraw', '提现'],
+  'tx.refund': ['Refund', '退款'],
+  'tx.exchange_in': ['Exchange in', '兑换转入'],
+  'tx.exchange_out': ['Exchange out', '兑换转出'],
+  'tx.game_spend': ['Game bet', '开局扣费'],
+  'tx.game_earn': ['Game payout', '游戏派彩'],
+  'tx.activity_reward': ['Activity reward', '活动奖励'],
+  'tx.referral_bonus': ['Referral bonus', '邀请奖励'],
+  'tx.lock': ['Freeze', '冻结'],
+  'tx.unlock': ['Unfreeze', '解冻'],
+  'tx.reconcile': ['Reconcile', '对账调整'],
 };

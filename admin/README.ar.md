@@ -280,7 +280,7 @@ Cors (معالجة مسبقة للعمل عبر الأصول + ترويسات ا
   → OperationLog (تسجيل تلقائي لـ POST/PUT/DELETE، بما فيه كشف المصدر، مجموعة مسارات /admin/v1)
 ```
 
-`/health` نقطة النهاية العامة، تمر فقط عبر `Cors → SecurityFilter → RateLimit`؛ `/metrics` و`/api/docs` تتطلبان إضافة `AdminAuth → AdminPermission`.
+`/health` نقطة النهاية العامة، تمر فقط عبر `Cors → SecurityFilter → RateLimit → LanguageMiddleware`؛ `/api/docs` تتطلب إضافة `AdminAuth → AdminPermission`؛ `/metrics` يمر إضافة عبر `MetricsAuth` (تظل رموز JWT الخاصة بالمسؤول تمر عبر `AdminAuth → AdminPermission`، أو استخدم رمز السحب الثابت `METRICS_SCRAPE_TOKEN` من `.env`؛ وإذا لم يُضبط فسيُعطَّل هذا المسار). رفض `/metrics` هو `401/403` + `text/plain`، وليس غلاف 200 + JSON الخاص ببقية نقاط النهاية.
 
 تحسينات أمنية:
 - **قفل الحساب**: بعد 5 محاولات تسجيل دخول فاشلة متتالية، يُقفل الحساب تلقائيًا لمدة 15 دقيقة، وترجع محاولات الدخول خلالها 429

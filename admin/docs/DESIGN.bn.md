@@ -359,6 +359,41 @@ Redis Sorted Set স্লাইডিং উইন্ডো অ্যালগ�
 
 ডেটা ফ্লো: Page ← DataService ← ApiService (JWT Bearer) ← HTTP ← webman
 
+### 5.3 React অ্যাডমিন ব্যাকএন্ড
+
+ডিজাইন টোকেন: **Graphite Console**, স্ব-বর্ণনা `src/index.css`-এর শীর্ষে। স্ট্যাক: React + Vite + TypeScript (`package.json`); বিল্ড `/admin-react/`-এর অধীনে পরিবেশিত।
+
+| স্তর | অবস্থান | মন্তব্য |
+|------|------|------|
+| ডিজাইন টোকেন | `src/index.css` | চার-ধাপের সারফেস সিঁড়ি ও 1px চুলের রেখা; ডার্ক কেবল টোকেন ওভাররাইড (`src/index.css:110`), কোনো JS থিম অবস্থা নেই |
+| শেল | `src/components/Shell.tsx` | সাইডবার + টপবার; নির্বাচিত আইটেম `.navlink.on` (`src/components/Shell.tsx:85`) |
+| সাধারণ রেন্ডারার | `src/components/RowBrowser.tsx`, `src/lib/columns.ts` | `src/pages/`-এর পেজ মডিউলগুলি একটি রেন্ডারারের উপর কলাম-স্পেসিফিকেশন |
+| i18n | `src/i18n/<lang>.ts`, `<lang>.fields.ts`, `<lang>.ui.ts` | 13 ভাষা × 3 টেবিল; কী-সেট `src/i18n/coverage.test.ts` দ্বারা পিন করা |
+| পরীক্ষা | `node --test` (`package.json`) | DOM ভিত্তি নেই: রেন্ডারিং সোর্স পড়ে যাচাই করা হয় |
+
+তিনটি সীমাবদ্ধতা যা বিচ্যুত হতে পারবে না:
+
+- ভিজ্যুয়াল স্তর কেবল `src/index.css` ও `src/App.css`-এ থাকে; DOM গঠন ও ক্লাস-নামই চুক্তি, যার প্রহরী `src/components/rowActions.guard.test.ts` ও `src/components/table-headers.test.ts`।
+- `.modal-sm` 340px ↔ 20px অনুভূমিক প্যাডিং ↔ 300×200 ক্যাপচা ক্যানভাস **একটিই** সমীকরণ (`src/index.css:573`)। `box-sizing: border-box` বিশ্বব্যাপী, তাই `.modal`-এ `border` দিলে ক্যানভাস 298-এ চেপে যায় — রূপরেখা কেবল `box-shadow: 0 0 0 1px` দিয়ে।
+- `--amber` একমাত্র টোকেন যা TSX থেকে উল্লেখ করা হয় (`src/pages/LoginPage.tsx`); নাম বদলালে নীরবে রং হারায়।
+
+### 5.4 Angular অ্যাডমিন ব্যাকএন্ড
+
+ডিজাইন টোকেন: **Inkwell Console**, স্ব-বর্ণনা `src/styles.scss`-এর শীর্ষে। স্ট্যাক: Angular standalone কম্পোনেন্ট + Router; ইউনিট পরীক্ষা `@angular/build:unit-test` (`angular.json:78`) দিয়ে vitest-এ চলে; বিল্ড `/admin-angular/`-এর অধীনে পরিবেশিত।
+
+| স্তর | অবস্থান | মন্তব্য |
+|------|------|------|
+| ডিজাইন টোকেন | `src/styles.scss` | কম-সম্পৃক্ত কালির রেল + ইন্টার‌অ্যাক্টিভ/নির্বাচিতের জন্য একটিই অ্যাকসেন্ট রং; সব টেবিলে `tabular-nums` |
+| পেজ-স্তরের স্টাইল | `src/styles.extra.scss` | টোকেন ভোগ করে, কোনোটি সংজ্ঞায়িত করে না — ফাইলের শীর্ষে লেখা চুক্তি |
+| কম্পোনেন্ট | `src/app/components/`, `src/app/pages/` | **শূন্য `styleUrls`**: কোথাও কম্পোনেন্ট-স্তরের স্টাইলশিট নেই, সব স্টাইল বিশ্বব্যাপী |
+| i18n | `src/app/core/i18n/dict/*.ts`, `locales/<lang>-{1,2}.ts` | `dict/`-এ `[en, zh]` জোড়া; বাকি 11 ভাষা চাহিদা-অনুযায়ী লোড হওয়া খণ্ড, যা ইংরেজি টেবিলের উপরে চাপানো |
+| পরীক্ষা | `src/app/**/*.spec.ts` | vitest-এ চলে |
+
+দুটি আচরণ যাদের নাম দেওয়া দরকার:
+
+- সাইডবারের নির্বাচন-অবস্থা গুণ নয়, **আচরণ**: `routerLinkActive="active"` (`src/app/app.html:11`) ও `.nav a.active` (`src/styles.scss:225`) জুটি, যা `src/app/app.spec.ts` পিন করে।
+- টেবিলের প্রথম স্তম্ভ **সব প্রস্থে** `position: sticky; left: 0` (`src/styles.scss:319`), কেবল সরু পর্দায় নয়: টেবিলগুলি `nowrap` ও 9–11 স্তম্ভের, তাই 1440-এও অনুভূমিক স্ক্রল স্বাভাবিক।
+
 ## 6. নিরাপত্তা ডিজাইন
 
 ### 6.1 ডিফেন্স-ইন-ডেপথ

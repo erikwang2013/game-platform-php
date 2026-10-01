@@ -15,6 +15,23 @@ export const dash = (value: unknown): string =>
 export const num = (value: unknown): string =>
   typeof value === 'number' && Number.isFinite(value) ? value.toLocaleString('zh-CN') : dash(value);
 
+/**
+ * 金额方向 → 着色类（`.delta.up` 绿 / `.delta.down` 红，见 index.css）。
+ *
+ * **只看字符串，不 `parseFloat`**：流水里的金额是 bcmath 精度串，转成 number 再比较就是
+ * 让 float 参与金额判断（本仓铁律：金额运算禁止 float），而且 `"12345678901234567890.12"`
+ * 这种串转 number 直接丢精度。
+ *
+ * 三态而不是二态：**零不着色**。0 既不是收入也不是支出，染成绿色是个假信号。
+ * 判零用「串里有没有非 0 数字」而不是 `Number()` —— 后者又回到 float 那条路，
+ * 且 `"0.00000000"`/`"-0.00000000"`/`"abc"` 三种形状都能正确落进「不着色」。
+ */
+export function amountClass(value: unknown): string {
+  const text = String(value ?? '');
+  if (!/[1-9]/.test(text)) return '';
+  return text.startsWith('-') ? 'delta down' : 'delta up';
+}
+
 /** hashid / 主键候选键，一律按字符串透传，不做 parseInt。 */
 export const ID_KEYS = ['game_id', 'user_id', 'order_id', 'event_id', 'id', 'hashid'];
 

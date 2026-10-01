@@ -359,6 +359,41 @@ Rutas de páginas:
 
 Flujo de datos: Page ← DataService ← ApiService (JWT Bearer) ← HTTP ← webman
 
+### 5.3 Backend de administración React
+
+Tokens de diseño: **Graphite Console**, autodescrito al inicio de `src/index.css`. Stack: React + Vite + TypeScript (`package.json`); el build se sirve bajo `/admin-react/`.
+
+| Capa | Ubicación | Notas |
+|------|------|------|
+| Tokens de diseño | `src/index.css` | Escalera de superficies de cuatro niveles y filetes de 1px; el modo oscuro es solo una sobrescritura de tokens (`src/index.css:110`), sin estado de tema en JS |
+| Shell | `src/components/Shell.tsx` | Barra lateral + barra superior; el elemento seleccionado es `.navlink.on` (`src/components/Shell.tsx:85`) |
+| Renderizador genérico | `src/components/RowBrowser.tsx`, `src/lib/columns.ts` | Los módulos de página bajo `src/pages/` son especificaciones de columnas sobre un único renderizador |
+| i18n | `src/i18n/<lang>.ts`, `<lang>.fields.ts`, `<lang>.ui.ts` | 13 idiomas × 3 tablas; los conjuntos de claves están fijados por `src/i18n/coverage.test.ts` |
+| Pruebas | `node --test` (`package.json`) | Sin banco DOM: el render se verifica leyendo el código fuente |
+
+Tres restricciones que no deben desviarse:
+
+- La capa visual vive solo en `src/index.css` y `src/App.css`; la estructura del DOM y los nombres de clase son el contrato, custodiados por `src/components/rowActions.guard.test.ts` y `src/components/table-headers.test.ts`.
+- `.modal-sm` 340px ↔ 20px de padding horizontal ↔ el lienzo de captcha 300×200 son **una sola** ecuación (`src/index.css:573`). `box-sizing: border-box` es global, así que un `border` en `.modal` comprime el lienzo a 298 — los contornos van por `box-shadow: 0 0 0 1px`.
+- `--amber` es el único token referenciado desde TSX (`src/pages/LoginPage.tsx`); renombrarlo falla en silencio.
+
+### 5.4 Backend de administración Angular
+
+Tokens de diseño: **Inkwell Console**, autodescrito al inicio de `src/styles.scss`. Stack: componentes standalone de Angular + Router; las pruebas unitarias corren sobre vitest mediante `@angular/build:unit-test` (`angular.json:78`); el build se sirve bajo `/admin-angular/`.
+
+| Capa | Ubicación | Notas |
+|------|------|------|
+| Tokens de diseño | `src/styles.scss` | Raíl de tinta de baja saturación + un único acento reservado a lo interactivo/seleccionado; `tabular-nums` en todas las tablas |
+| Estilos de página | `src/styles.extra.scss` | Consume tokens y no define ninguno — contrato declarado al inicio del archivo |
+| Componentes | `src/app/components/`, `src/app/pages/` | **Cero `styleUrls`**: ninguna hoja de estilos por componente, todo el estilo es global |
+| i18n | `src/app/core/i18n/dict/*.ts`, `locales/<lang>-{1,2}.ts` | `dict/` guarda pares `[en, zh]`; los otros 11 idiomas son fragmentos cargados bajo demanda y superpuestos a la tabla inglesa |
+| Pruebas | `src/app/**/*.spec.ts` | Corre sobre vitest |
+
+Dos comportamientos que merece la pena nombrar:
+
+- El estado seleccionado de la barra lateral es comportamiento, no un atributo: `routerLinkActive="active"` (`src/app/app.html:11`) más `.nav a.active` (`src/styles.scss:225`), fijado por `src/app/app.spec.ts`.
+- La primera columna de la tabla es `position: sticky; left: 0` en **todas** las anchuras (`src/styles.scss:319`), no solo en pantallas estrechas: las tablas son `nowrap` con 9–11 columnas, así que el desplazamiento horizontal es normal también a 1440.
+
 ## 6. Diseño de seguridad
 
 ### 6.1 Defensa en profundidad

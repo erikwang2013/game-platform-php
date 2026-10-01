@@ -21,6 +21,42 @@ export const ORDER_STATUS = [
 ];
 
 /**
+ * 提现订单 `status` 的值 → 词条键（真值 = `game_withdraw_order.status`）。
+ *
+ * 值是**后端英文枚举**（`pending`/`approved`…），直接摆进中文界面就是中英混排。
+ * 与上面的筛选下拉是**同一份值域**，但那个下拉只有 5 项（processing 不能作为筛选条件用），
+ * 所以两张表分开：筛选给运营选，这张表给单元格用。
+ *
+ * 逐键核过写入侧（除历史回填外只有这几处能写 status）：
+ *   pending     service/app/api/v1/controller/WithdrawController.php:209（下单；DDL 默认值同）
+ *   approved    service 同上:212（自动审核通过）· admin WithdrawReviewTrait.php:61/132/255
+ *               · admin WithdrawController.php:311（打款失败回退成 approved 允许重试）
+ *   rejected    admin WithdrawReviewTrait.php:160/270（驳回）
+ *   processing  admin WithdrawController.php:291（执行打款期间）
+ *   completed   packages/platform-common/src/service/PayoutService.php:261/271（打款成功）
+ * 查不到的值**原样透出**（`label()` 的兜底）：宁可让界面露出 `frozen`，也不编一个不存在的名字。
+ */
+export const ORDER_STATUS_LABEL: Record<string, string> = {
+  pending: 'withdraw.pending',
+  approved: 'withdraw.approved',
+  rejected: 'withdraw.rejected',
+  processing: 'withdraw.processing',
+  completed: 'withdraw.completed',
+};
+
+/**
+ * 打款状态 `payout_status` → 词条键（真值 = DDL 注释 `(空)/processing/success/failed`）。
+ * 空串是**正常值**（还没进打款流程）⇒ 走占位符，别显示成「失败」。
+ * 写入侧：PayoutService.php:143/200/320 与 admin WithdrawController.php:291 置 processing、
+ * :52/262 置 success、:80/140/176/194 与 admin WithdrawController.php:311 置 failed。
+ */
+export const PAYOUT_STATUS_LABEL: Record<string, string> = {
+  processing: 'withdraw.payout.processing',
+  success: 'withdraw.payout.success',
+  failed: 'withdraw.payout.failed',
+};
+
+/**
  * 提现订单的行内动作（值域 = WithdrawReviewTrait::review 的 `action`：approve/reject/confirm，
  * 加 executePayout/syncPayout 两个 POST）。订单一没有 PUT/DELETE 端点（改不了也删不掉）、
  * 二没有「新建」⇒ crud().ends 一个都不给（缺省即没有该能力，不出编辑/删除/新建），动作全走 extra()。

@@ -359,6 +359,41 @@ Redis Sorted Set 슬라이딩 윈도우 알고리즘 기반, 원자화 Lua 스�
 
 데이터 흐름: Page ← DataService ← ApiService (JWT Bearer) ← HTTP ← webman
 
+### 5.3 React 관리자 백엔드
+
+디자인 토큰: **Graphite Console**, 자체 설명은 `src/index.css` 파일 첫머리에 있다. 스택: React + Vite + TypeScript(`package.json`). 빌드 산출물은 `/admin-react/` 아래에서 서빙된다.
+
+| 계층 | 위치 | 설명 |
+|------|------|------|
+| 디자인 토큰 | `src/index.css` | 4단 서피스 사다리 + 1px 헤어라인 테두리. 다크는 토큰 덮어쓰기일 뿐(`src/index.css:110`)이며 JS 테마 상태가 없다 |
+| 셸 | `src/components/Shell.tsx` | 사이드바 + 상단바. 선택 항목은 `.navlink.on`(`src/components/Shell.tsx:85`) |
+| 범용 렌더러 | `src/components/RowBrowser.tsx`, `src/lib/columns.ts` | `src/pages/` 의 페이지 모듈은 하나의 렌더러에 넘기는 컬럼 명세 |
+| i18n | `src/i18n/<lang>.ts`, `<lang>.fields.ts`, `<lang>.ui.ts` | 13개 언어 × 3개 표. 키 집합은 `src/i18n/coverage.test.ts` 가 고정 |
+| 테스트 | `node --test`(`package.json`) | DOM 기반이 없다. 렌더링은 소스 읽기로 검증 |
+
+어기면 안 되는 제약 세 가지:
+
+- 시각 계층은 `src/index.css` 와 `src/App.css` 에만 산다. DOM 구조와 클래스 이름이 계약이며 `src/components/rowActions.guard.test.ts`, `src/components/table-headers.test.ts` 가 지킨다.
+- `.modal-sm` 340px ↔ 20px 좌우 패딩 ↔ 300×200 캡차 캔버스는 **한 벌의 등식**(`src/index.css:573`). 전역이 `box-sizing: border-box` 라 `.modal` 에 `border` 를 더하면 캔버스가 298 로 눌린다 — 외곽선은 `box-shadow: 0 0 0 1px` 로만 그린다.
+- `--amber` 는 TSX 에서 참조하는 유일한 토큰(`src/pages/LoginPage.tsx`)이다. 이름을 바꾸면 조용히 무색이 된다.
+
+### 5.4 Angular 관리자 백엔드
+
+디자인 토큰: **Inkwell Console**, 자체 설명은 `src/styles.scss` 파일 첫머리에 있다. 스택: Angular standalone 컴포넌트 + Router. 단위 테스트는 `@angular/build:unit-test`(`angular.json:78`)를 통해 vitest 로 돈다. 빌드 산출물은 `/admin-angular/` 아래에서 서빙된다.
+
+| 계층 | 위치 | 설명 |
+|------|------|------|
+| 디자인 토큰 | `src/styles.scss` | 저채도 잉크색 레일 + 상호작용/선택에만 쓰는 단일 강조색. 표 전체에 `tabular-nums` |
+| 페이지 단위 스타일 | `src/styles.extra.scss` | 토큰을 소비할 뿐 정의하지 않는다 — 파일 첫머리에 적힌 계약 |
+| 컴포넌트 | `src/app/components/`, `src/app/pages/` | **`styleUrls` 0개**: 컴포넌트 단위 스타일시트가 트리 어디에도 없고 스타일은 전부 전역 |
+| i18n | `src/app/core/i18n/dict/*.ts`, `locales/<lang>-{1,2}.ts` | `dict/` 는 `[en, zh]` 쌍. 나머지 11개 언어는 지연 로딩 청크로 영어 표 위에 덮는다 |
+| 테스트 | `src/app/**/*.spec.ts` | vitest 로 실행 |
+
+이름 붙일 만한 동작 두 가지:
+
+- 사이드바 선택 상태는 속성이 아니라 **동작**이다: `routerLinkActive="active"`(`src/app/app.html:11`) + `.nav a.active`(`src/styles.scss:225`) 조합이며 `src/app/app.spec.ts` 가 고정한다.
+- 표의 첫 열은 **모든 폭에서** `position: sticky; left: 0`(`src/styles.scss:319`)이다. 좁은 화면만이 아니다: 표가 `nowrap` 에 9~11열이라 1440 에서도 가로 스크롤이 일상이다.
+
 ## 6. 보안 설계
 
 ### 6.1 심층 방어

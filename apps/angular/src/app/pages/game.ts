@@ -137,11 +137,18 @@ import { Api, ApiError, GameDetail, LaunchResult, isAuthed } from '../core/api.s
         flex-direction: column;
         gap: 18px;
       }
+      /* 与首页 .cover 同款占位板（斜纹 + 大号首字），详情页只是更大一档 */
       .cover {
         aspect-ratio: 16 / 10;
-        border-radius: var(--radius-sm);
+        border-radius: var(--r-md);
         overflow: hidden;
-        background: linear-gradient(135deg, rgba(124, 58, 237, 0.22), rgba(34, 211, 238, 0.14));
+        background:
+          repeating-linear-gradient(
+            135deg,
+            transparent 0 11px,
+            color-mix(in srgb, var(--primary) 7%, transparent) 11px 22px
+          ),
+          linear-gradient(150deg, var(--surface-3), var(--surface-2));
         display: flex;
         align-items: center;
         justify-content: center;
@@ -153,9 +160,10 @@ import { Api, ApiError, GameDetail, LaunchResult, isAuthed } from '../core/api.s
         object-fit: cover;
       }
       .cover .ph {
-        font-size: 44px;
-        font-weight: 700;
-        color: rgba(255, 255, 255, 0.5);
+        font-size: 64px;
+        font-weight: 800;
+        letter-spacing: -0.05em;
+        color: color-mix(in srgb, var(--primary) 45%, var(--text-3));
       }
       .info {
         display: flex;
@@ -201,10 +209,10 @@ import { Api, ApiError, GameDetail, LaunchResult, isAuthed } from '../core/api.s
       .sym {
         width: 36px;
         height: 36px;
-        border-radius: 12px;
+        border-radius: var(--r-sm);
         background: var(--grad);
-        color: #0b0d17;
-        font-weight: 700;
+        color: var(--primary-ink);
+        font-weight: 800;
         display: flex;
         align-items: center;
         justify-content: center;

@@ -268,7 +268,7 @@ CREATE TABLE IF NOT EXISTS `game_withdraw_order` (
     `currency` VARCHAR(10) NOT NULL DEFAULT 'USD' COMMENT '提现法币币种',
     `method` VARCHAR(20) NOT NULL DEFAULT '' COMMENT '提现方式: paypal/bank/crypto',
     `account_info` VARCHAR(500) NOT NULL DEFAULT '' COMMENT '收款账户信息（加密存储）',
-    `status` VARCHAR(20) NOT NULL DEFAULT 'pending' COMMENT '状态: pending=待审核 approved=已通过 rejected=已拒绝 completed=已完成',
+    `status` VARCHAR(20) NOT NULL DEFAULT 'pending' COMMENT '状态: pending=待审核 approved=已通过 processing=打款中 rejected=已拒绝 completed=已完成',
     `reviewer_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '审核人ID（关联game_admin_user）',
     `confirmed_by` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '二次确认管理员ID',
     `confirmed_at` DATETIME DEFAULT NULL COMMENT '二次确认时间',
@@ -1385,6 +1385,7 @@ INSERT IGNORE INTO `game_admin_permission` (`id`, `parent_id`, `name`, `slug`, `
 (21000000000000238, '0', '启用/禁用国家配置', 'post.admin/country/config/toggle', 3, '', '', 236, NOW(), NOW()),
 (21000000000000239, '0', '删除国家配置', 'delete.admin/country/config', 3, '', '', 237, NOW(), NOW()),
 (21000000000000240, '0', '上架/停用成就', 'post.admin/achievement/toggle', 3, '', '', 238, NOW(), NOW()),
+(21000000000000241, '0', '平台用户流水', 'get.admin/platform/user/transactions', 3, '', '', 239, NOW(), NOW()),
 -- 通配权限：slug='*' 直接命中 AdminPermission 中间件的短路分支，授予该角色访问全部端点
 (900000000000000001, '0', '全部权限', '*', 3, '', '', 99, NOW(), NOW());
 
@@ -1777,7 +1778,7 @@ CREATE TABLE IF NOT EXISTS `game_ticket` (
     `type` VARCHAR(20) NOT NULL DEFAULT 'other' COMMENT '类型：deposit/withdraw/game/account/other',
     `subject` VARCHAR(200) NOT NULL DEFAULT '' COMMENT '工单标题',
     `content` TEXT NOT NULL COMMENT '工单内容',
-    `status` VARCHAR(20) NOT NULL DEFAULT 'open' COMMENT '状态：open/closed',
+    `status` VARCHAR(20) NOT NULL DEFAULT 'open' COMMENT '状态：open=新建待受理 waiting=用户已回复 replied=管理员已回复 closed=已关闭',
     `priority` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '优先级，数值越大越优先',
     `assigned_to` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '受理管理员ID，0=未分配',
     `resolved_at` DATETIME DEFAULT NULL COMMENT '办结时间',

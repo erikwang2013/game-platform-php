@@ -5,7 +5,7 @@
  */
 export const enFields = {
   'f.api_key': 'API Key',
-'f.api_secret': 'API Secret',
+  'f.api_secret': 'API Secret',
   'f.rule_config_keys_and_bounds': 'A JSON object whose keys must belong to the whitelist of the selected type (the server validates key by key).ip_blacklist: blacklist (an array of raw IP strings);amount_anomaly: min_amount (an amount, must be greater than 0), currency (≤10 characters);frequency: window_minutes (1..10080 minutes), max_count (1..100000);velocity: window_minutes (1..10080), max_accounts (1..100000), same_ip (true/false);device_fingerprint: max_accounts_per_device (1..100000), new_device_lookback_hours (1..8760), new_device_withdraw_block (true/false);ip_reputation: block_score_below (0..100), warn_score_below (0..100), block_unknown (true/false);device_account_graph: cluster_threshold (1..100000), max_accounts_per_device (1..100000), frozen_sibling_block (true/false);withdraw_pattern: window_minutes (1..10080), max_applies (1..100000), single_hard_cap (an amount, must be greater than 0), drain_ratio (a ratio in (0, 1]), sigma_window_days (2..3650), sigma_multiplier (1..100), fast_interval_seconds (1..86400), fast_interval_min_count (1..100000).Boolean keys must be written as real true/false (strings are rejected outright: the server reads them via (bool), so the string "false" is always true).Every key whose threshold must not be 0 has a lower bound — a value of 0 makes the rule match everything and, with action=block, stops deposits as well.',
   // 手补（非 codemod 产出）：后台账号表单用的四个字段
   'f.username': 'Username',
@@ -458,6 +458,50 @@ export const enFields = {
   'f.file': 'File',
   'f.row': 'Row',
   'f.reason': 'Reason',
+  'f.stats': 'Statistics',
+  'f.trends': 'Trends',
+  'f.distribution': 'Distribution',
+  'f.recent_logs': 'Recent logs',
+  'f.user_status': 'User status',
+  'f.active_users_7d': 'Active (7d)',
+  'f.app': 'App',
+  'f.version': 'Version',
+  'f.php': 'PHP',
+  'f.database': 'Database',
+  'f.redis': 'Redis',
+  'f.elasticsearch': 'Elasticsearch',
+  'f.timestamp': 'Timestamp',
+  // 手补（非 codemod 产出）：平台用户钱包与流水（wallet.transactions / tx.* / f.wallet 那族）
+  'f.wallet': 'Wallet',
+  'f.balance': 'Balance',
+  'f.frozen_balance': 'Frozen Balance',
+  'f.total_earned': 'Total Earned',
+  'f.total_spent': 'Total Spent',
+  'f.amount': 'Amount',
+  'f.balance_after': 'Balance After',
+  'f.remark': 'Remark',
+  // 手补（非 codemod 产出）：提现订单列表的四个只读列（funds.tsx 的 ORDER_COLUMNS；
+  // CrudConfig 没声明 fields，标题走 RowBrowser 的 f.<字段名> 兜底）
+  'f.order_no': 'Order No.',
+  // 措辞**故意通用**：本表它是「提现平台币数量」，但同名字段在兑换域随 direction 变义
+  // （in=支出 / out=卖出的游戏币），故不写成「提现…」——把跨域复用的键焊死在一个域上更糟
+  'f.platform_amount': 'Platform Amount',
+  'f.fiat_amount': 'Fiat Amount',
+  'f.payout_status': 'Payout Status',
+  // 手补（非 codemod 产出）：风控四页与搜索结果页的八个只读列（列清单见 pages/risk.tsx 与 pages/search.tsx；
+  // CrudConfig 没声明这些字段，标题走 RowBrowser 的 f.<字段名> 兜底）
+  'f.ip_c_segment': 'IP C-Segment',
+  'f.first_seen_at': 'First Seen At',
+  'f.ip_masked': 'IP (masked)',
+  'f.reputation_score': 'Reputation Score',
+  'f.fingerprint_masked': 'Fingerprint (masked)',
+  'f.user_count': 'Members',
+  'f.updated_at': 'Updated At',
+  // 措辞**故意通用**：本表它是「客户端平台 h5/unity/web/native」，同一个字段在游戏表单里另有专键
+  // f.client_platform。而兜底键名是**按列名**取的（f.<列名>）⇒ 别处同名列 game_device_token.platform
+  // 完全是另一回事（推送通道 fcm/apns/harmonyos），将来真渲染那一列时不许直接吃这条
+  'f.platform': 'Platform',
+
 };
 
 /** 本表的键集 —— `zh.fields.ts` 按它做 `Record<FieldKey, string>`。 */

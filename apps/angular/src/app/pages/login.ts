@@ -18,7 +18,7 @@ const readInviteCode = (raw: string | null): string => {
   template: `
     <div class="auth">
       <div class="card auth-card">
-        <div class="brand big"><img class="dot" src="mascot.svg" alt="" /><span>Aurora</span></div>
+        <div class="brand big"><img class="dot" src="mascot.svg" alt="" /><span>NeonArcade</span></div>
         <p class="muted tagline">登录后即可开局、查看钱包与消息</p>
 
         @if (!tfa()) {
@@ -178,16 +178,19 @@ const readInviteCode = (raw: string | null): string => {
         justify-content: center;
         padding: 34px 0;
       }
+      /* 登录卡是全站第一屏，给它一档更高的浮起 + 一圈品牌紫描边 */
       .auth-card {
         width: 100%;
         max-width: 420px;
         padding: 28px;
+        border-color: color-mix(in srgb, var(--primary) 26%, var(--line));
+        box-shadow: var(--sh-3);
         display: flex;
         flex-direction: column;
         gap: 16px;
       }
       .brand.big {
-        font-size: 22px;
+        font-size: 23px;
         position: static;
         margin: 0;
       }

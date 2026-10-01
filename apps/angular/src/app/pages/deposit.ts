@@ -9,6 +9,8 @@ import {
   depositAmountOk,
   dt,
   money,
+  moneyIsZero,
+  moneyRaw,
 } from '../core/api.service';
 
 /** 后端支持的 8 种法币（DepositController 的 in: 白名单） */
@@ -32,11 +34,15 @@ const CURRENCIES = ['USD', 'CNY', 'EUR', 'JPY', 'KRW', 'GBP', 'BRL', 'INR'];
         </div>
         <div class="kv">
           <span class="muted">充值金额</span
-          ><span class="mono">{{ money(d.amount) }} {{ currency() }}</span>
+          ><span class="mono" [title]="moneyRaw(d.amount)"
+            >{{ money(d.amount) }} {{ currency() }}</span
+          >
         </div>
         <div class="kv">
           <span class="muted">到账平台币</span
-          ><span class="mono">{{ money(d.platform_amount) }}</span>
+          ><span class="mono" [title]="moneyRaw(d.platform_amount)">{{
+            money(d.platform_amount)
+          }}</span>
         </div>
         @if (d.expires_at) {
           <div class="kv">
@@ -137,6 +143,11 @@ const CURRENCIES = ['USD', 'CNY', 'EUR', 'JPY', 'KRW', 'GBP', 'BRL', 'INR'];
   `,
   styles: [
     `
+      /* 同 withdraw.ts：表单页收成一栏，桌面右留白，窄屏不受影响 */
+      :host {
+        display: block;
+        max-width: 640px;
+      }
       .back {
         margin-bottom: 14px;
         font-size: 13px;
@@ -161,6 +172,7 @@ export class DepositPage {
 
   protected readonly currencies = CURRENCIES;
   protected readonly money = money;
+  protected readonly moneyRaw = moneyRaw;
   protected readonly dt = dt;
 
   protected readonly methods = signal<PaymentMethodInfo[]>([]);
@@ -218,9 +230,11 @@ export class DepositPage {
     this.error.set('');
   }
 
-  /** 支付方式限额提示；max_amount 数值为 0 表示不限。仅展示，不做金额运算。 */
+  /** 支付方式限额提示；max_amount 为 0 表示不限。仅展示，不做金额运算。 */
   protected limit(m: PaymentMethodInfo): string {
-    const max = Number(m.max_amount) > 0 ? money(m.max_amount) : '不限';
+    // 原先这里写 `Number(m.max_amount) > 0` —— 金额列过数值转型，本批明令禁止；改走
+    // moneyIsZero（同 money() 的字符串判据）。原样保留「不限」的取值分支。
+    const max = moneyIsZero(m.max_amount) ? '不限' : money(m.max_amount);
     return `${money(m.min_amount)} ~ ${max}`;
   }
 

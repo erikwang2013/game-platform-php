@@ -359,6 +359,41 @@ curl http://host/api/v2/auth/login
 
 数据流: Page ← DataService ← ApiService (JWT Bearer) ← HTTP ← webman
 
+### 5.3 React 管理端
+
+设计令牌：**Graphite Console（石墨控制台）**，自述位于 `src/index.css` 文件头。栈：React + Vite + TypeScript（`package.json`）；产物挂在 `/admin-react/` 下。
+
+| 层 | 位置 | 说明 |
+|------|------|------|
+| 设计令牌 | `src/index.css` | 四级表面梯 + 1px 发丝描边；暗色只是一层令牌覆盖（`src/index.css:110`），无 JS 主题状态 |
+| 外壳 | `src/components/Shell.tsx` | 侧栏 + 顶栏；选中项是 `.navlink.on`（`src/components/Shell.tsx:85`） |
+| 通用渲染器 | `src/components/RowBrowser.tsx`、`src/lib/columns.ts` | `src/pages/` 下的页面模块都是同一渲染器上的列描述 |
+| i18n | `src/i18n/<lang>.ts`、`<lang>.fields.ts`、`<lang>.ui.ts` | 13 种语言 × 3 张表；键集由 `src/i18n/coverage.test.ts` 钉住 |
+| 测试 | `node --test`（`package.json`） | 无 DOM 底座：渲染靠读源码断言 |
+
+三条不可漂移的约束：
+
+- 视觉层只住在 `src/index.css` 与 `src/App.css`；DOM 结构与类名就是契约，由 `src/components/rowActions.guard.test.ts`、`src/components/table-headers.test.ts` 把守。
+- `.modal-sm` 340px ↔ 20px 横向内边距 ↔ 验证码画布 300×200 是**一组等式**（`src/index.css:573`）。全局是 `box-sizing: border-box`，给 `.modal` 加 `border` 会把画布压到 298 —— 描边只能走 `box-shadow: 0 0 0 1px`。
+- `--amber` 是唯一被 TSX 引用的令牌（`src/pages/LoginPage.tsx`），改名会静默失效。
+
+### 5.4 Angular 管理端
+
+设计令牌：**Inkwell Console（墨砚控制台）**，自述位于 `src/styles.scss` 文件头。栈：Angular standalone 组件 + Router；单测经 `@angular/build:unit-test`（`angular.json:78`）跑在 vitest 上；产物挂在 `/admin-angular/` 下。
+
+| 层 | 位置 | 说明 |
+|------|------|------|
+| 设计令牌 | `src/styles.scss` | 低彩度墨色侧栏 + 单一强调色（只给「可交互/已选中」）；表格整体 `tabular-nums` |
+| 页面级样式 | `src/styles.extra.scss` | 只消费令牌、不新定义令牌 —— 文件头写明的契约 |
+| 组件 | `src/app/components/`、`src/app/pages/` | **零 `styleUrls`**：全树没有组件级样式表，样式一律全局 |
+| i18n | `src/app/core/i18n/dict/*.ts`、`locales/<lang>-{1,2}.ts` | `dict/` 存 `[en, zh]` 二元组；其余 11 种是按需拉取的分块，叠在英文表之上 |
+| 测试 | `src/app/**/*.spec.ts` | 跑在 vitest 上 |
+
+两条值得点名的行为：
+
+- 侧栏选中态是**行为**不是属性：`routerLinkActive="active"`（`src/app/app.html:11`）配 `.nav a.active`（`src/styles.scss:225`），由 `src/app/app.spec.ts` 钉住。
+- 表格首列**全宽度**都是 `position: sticky; left: 0`（`src/styles.scss:319`），不只在窄屏：表是 `nowrap` 加 9~11 列，1440 下横向滚动同样是常态。
+
 ## 6. 安全设计
 
 ### 6.1 纵深防御

@@ -157,7 +157,7 @@ export function LoginPage() {
       </div>
 
       {capOpen ? (
-        <Modal title={t('auth.security_check')} onClose={closeCaptcha}>
+        <Modal title={t('auth.security_check')} onClose={closeCaptcha} size="sm">
           <p className="sub">{hint}</p>
 
           <div className="cap" onClick={onPick} role="presentation">

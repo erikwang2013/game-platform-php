@@ -2,8 +2,8 @@
 import { Component, computed, signal } from '@angular/core';
 import { Page, Params, Row } from '../core/api.service';
 import { Crud, CrudPage, Field, Opt } from '../core/crud';
-import { idOf, kvOf } from '../core/render';
-import { errText } from '../core/util';
+import { idOf, kvLabel, kvOf } from '../core/render';
+import { enabledLabel, errText } from '../core/util';
 import { t, T } from '../core/i18n/i18n';
 import { Drawer, Pager, StateBlock, Tabs } from '../components/ui';
 import { Table } from '../components/table';
@@ -215,7 +215,8 @@ export class Marketing extends CrudPage {
   /** 游戏表取失败的原因：塞进字段 label —— 不能因为游戏表挂了就把券页打成错误态（同 settings 的权限树） */
   private readonly gamesErr = signal('');
 
-  protected readonly info = computed(() => kvOf(this.stats()));
+  /** 券统计键值：字段名走 `kvLabel`（`col.<字段名>` 词条），抽屉里不摆 `usage_rate` 这种裸列名 */
+  protected readonly info = computed(() => kvOf(this.stats(), kvLabel));
 
   private readonly paths: Record<string, string> = {
     coupon: M + 'coupon/list',
@@ -236,7 +237,8 @@ export class Marketing extends CrudPage {
       user_limit: 'coupon.user_limit',
       start_at: 'coupon.start_at',
       end_at: 'coupon.end_at',
-      status: 'coupon.head.status',
+      // 值列改指 status_label（原文案是「状态(0停用/1启用)」= 把数据库编码当标签，已改平）
+      status_label: 'coupon.head.status',
     };
   });
 
@@ -330,7 +332,14 @@ export class Marketing extends CrudPage {
       ...res,
       list: res.list.map((r) => {
         const gid = this.gameId(r);
-        return { ...r, game_id: gid, game_name: gid ? (names.get(gid) ?? gid) : t('coupon.all_platforms') };
+        return {
+          ...r,
+          game_id: gid,
+          game_name: gid ? (names.get(gid) ?? gid) : t('coupon.all_platforms'),
+          // 券 status 是 TINYINT 0/1（create 硬编码 1，启停走局部 PUT）⇒ 摊平一列文案；
+          // 原值留着 —— 筛选下拉、行内动作的 when() 判据都读它
+          status_label: enabledLabel(r['status']),
+        };
       }),
     };
   }

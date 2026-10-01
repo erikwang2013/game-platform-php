@@ -93,23 +93,26 @@ import { Api, ApiError, ShareCreated } from '../core/api.service';
         gap: 10px;
         flex-wrap: wrap;
       }
+      /* 邀请码是要念给朋友听的：等宽 + 大字距 + 代币金 —— 全页最像"筹码"的一块 */
       .code {
+        font-family: var(--mono);
         font-size: 22px;
         font-weight: 700;
         letter-spacing: 0.14em;
-        padding: 8px 14px;
-        border-radius: 10px;
-        background: var(--panel);
-        border: 1px solid var(--stroke);
+        padding: 10px 16px;
+        border-radius: var(--r-sm);
+        background: color-mix(in srgb, var(--gold) 14%, var(--surface));
+        border: 1px solid color-mix(in srgb, var(--gold) 40%, transparent);
+        color: var(--gold);
       }
       .link {
         flex: 1 1 220px;
         min-width: 0;
         font-size: 12px;
-        padding: 8px 10px;
-        border-radius: 10px;
-        background: var(--panel);
-        border: 1px solid var(--stroke);
+        padding: 10px 12px;
+        border-radius: var(--r-sm);
+        background: var(--surface-2);
+        border: 1px solid var(--line);
         overflow-wrap: anywhere;
       }
       .wide {

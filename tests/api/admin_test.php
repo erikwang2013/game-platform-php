@@ -58,7 +58,9 @@ function admin_login(): string
     return $res[1]['data']['access_token'] ?? '';
 }
 
-// ================= 公开端点 (health/security.txt 公开; metrics/docs 带 AdminAuth) =================
+// ================= 公开端点 (health/security.txt 公开; metrics 带 MetricsAuth, docs 带 AdminAuth) =================
+// 注: /metrics 的未登录拒绝是 HTTP 401 + text/plain（抓取器读得懂），不是别的端点的 200 + JSON 信封；
+//     下面的 [401] 仍成立 —— biz_code() 在非 200 时回落成 HTTP 状态码。
 t_check('GET /health', api('GET', '/health'), [200]);
 t_check('GET /.well-known/security.txt', api('GET', '/.well-known/security.txt'), [200]);
 t_check('GET /metrics(未登录)', api('GET', '/metrics'), [401]);

@@ -83,6 +83,27 @@ export function num(v: unknown): number {
   return Number.isFinite(n) ? n : 0;
 }
 
+/**
+ * 十进制数字串：**只用来看形状**（`isNum` 判列对齐用），不参与任何运算。
+ *
+ * 为什么需要它：本仓的金额/比率按 bcmath 契约出网时就是**字符串**
+ * （`'1234.56000000'`、`'-12.5'`），原来只认 `typeof v === 'number'` ⇒ 金额列一列都不命中
+ * `.num`，表格里金额左对齐、小数点对不齐（右边缘 spread 实测 43px）。`tabular-nums`
+ * 只让数字等宽，**对齐要的是右对齐**，两回事。
+ *
+ * 刻意**不认**（形状不对就是文本，宁可左对齐也别把一串字右推）：
+ * `'abc'` / `'2026-09-01'`（日期）/ `'138****0000'`（脱敏手机号）/ `''`（空串）/
+ * `'1,234.00'`（千分位）/ `'1e5'`（科学计数）/ `'+1.5'`（bcmath 不会补正号）/
+ * 前后带空白的 `' 12 '`。判据见 util.spec.ts。
+ */
+const DECIMAL = /^-?\d+(?:\.\d+)?$/;
+
+/** 该值是否是「数字」（number，或十进制数字串）。表格据此把列右对齐 */
+export function isNum(v: unknown): boolean {
+  if (typeof v === 'number') return true;
+  return typeof v === 'string' && DECIMAL.test(v);
+}
+
 export interface Pair {
   label: string;
   value: number;
@@ -143,4 +164,27 @@ export function errText(e: unknown): string {
 export function label(map: Record<string, string>, key: unknown): string {
   const k = String(key ?? '');
   return map[k] ?? (k || DASH);
+}
+
+/**
+ * 0/1 状态列的文案（1 = `app.enabled` 启用 / 0 = `app.disabled` 停用）。
+ *
+ * 为什么要有它：这些列的值是**后端编码**（TINYINT 0/1），表头原来写着 `状态(0禁用/1启用)`
+ * —— 把数据库编码当成了运营标签，运营得先背下来 0 和 1 各是什么意思。
+ * 修法是**留住原值、另开一列**（`status_label`）显示文案：原值还要喂表单预填与行内动作
+ * （`statused: true` 的启停就是拿它比 0/1），改写它就等于改了提交给后端的东西。
+ *
+ * 口径与 `app.enabled`/`app.disabled` 一致（本树 0/1 只有这一套措辞：券筛选、CDN 启停、
+ * 角色启停、支付方式启停都用它）。
+ *
+ * 不是 0/1 的值**原样透出**（`'banned'` 这类别的 ID 空间的状态走自己的映射表）：
+ * 把认不出的值说成「停用」是替后端编状态。空值走占位符，同理。
+ */
+export function enabledLabel(v: unknown): string {
+  if (v === null || v === undefined || v === '') return DASH;
+  // ⚠ 这里**不能走 num()**：它把认不出的值折成 0（`num('banned') === 0`）⇒ `'banned'`
+  // 会被说成「停用」，正好踩上面那条「认不出的别编状态」。（util.spec.ts 钉着这条。）
+  if (v === 1 || v === '1') return t('app.enabled');
+  if (v === 0 || v === '0') return t('app.disabled');
+  return String(v);
 }

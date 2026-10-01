@@ -13,7 +13,7 @@ Languages: [中文](SECURITY.md) · [English](SECURITY.en.md) · [한국어](SEC
 पूरी मिडलवेयर श्रृंखला निम्न क्रम में चलती है (`config/middleware.php` देखें):
 
 ```
-请求 → Cors → SecurityFilter → RateLimit → [路由组中间件: AdminAuth → AdminPermission → OperationLog] → Controller
+请求 → Cors → SecurityFilter → RateLimit → LanguageMiddleware → [路由组中间件: AdminAuth → AdminPermission → OperationLog] → Controller
 ```
 
 | परत | मिडलवेयर/तंत्र | सुरक्षा लक्ष्य |

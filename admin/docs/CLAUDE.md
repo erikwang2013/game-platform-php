@@ -72,13 +72,15 @@ open-admin/
 │   │   └── AuthController.php
 │   ├── common/                 # 公共工具类
 │   │   └── CdnProbeService.php # CDN 连通性探测（Hashids/Snowflake/Encryption 由 composer 包提供）
-│   ├── middleware/             # 中间件（7 个）
+│   ├── middleware/             # 中间件（9 个）
 │   │   ├── Cors.php            # 跨域（全局）
 │   │   ├── SecurityFilter.php  # 攻击拦截（全局：XSS/SQL注入/路径遍历/命令注入/CSRF）
 │   │   ├── RateLimit.php       # Redis 限流（全局，Lua 原子化）
+│   │   ├── LanguageMiddleware.php # 语言/locale（全局，注册在 RateLimit 之后、路由中间件之前）
 │   │   ├── StaticFile.php      # 静态文件服务（webman 内置）
 │   │   ├── AdminAuth.php       # JWT 认证 + 黑名单
 │   │   ├── AdminPermission.php # RBAC 权限校验（Redis 60s 缓存）
+│   │   ├── MetricsAuth.php     # /metrics 专用：管理员 JWT 或静态抓取令牌（全仓唯一 401/403 + text/plain 处）
 │   │   └── OperationLog.php    # 操作日志自动记录（含来源端检测）
 │   ├── model/                  # 数据模型（8 个）
 │   └── process/                # 进程 (Http, Monitor, RiskIpCron)
@@ -137,11 +139,14 @@ open-admin/
 ## 中间件执行链
 
 ```
-全局:  Cors → SecurityFilter → RateLimit → {路由中间件}
-/admin: Cors → SecurityFilter → RateLimit → AdminAuth → AdminPermission → OperationLog → Controller
-/api:   Cors → SecurityFilter → RateLimit → Controller
-/health: Cors → SecurityFilter → RateLimit → Controller
-/metrics、/api/docs: 同上再加 AdminAuth → AdminPermission
+全局段（**所有**请求都先经过，定义在 `config/middleware.php`，按注册顺序）:
+  Cors → SecurityFilter → RateLimit → LanguageMiddleware
+之后接**该路由组自己的**中间件（定义在 `config/route.php` 各组末尾的 `->middleware([...])`）:
+/admin:    AdminAuth → AdminPermission → OperationLog → Controller
+/api:      Controller（该组无路由中间件）
+/health:   Controller（该组无路由中间件）
+/api/docs: AdminAuth → AdminPermission → Controller
+/metrics:  MetricsAuth → Controller（MetricsAuth 内部对管理员 JWT 再委托 AdminAuth → AdminPermission；静态抓取令牌命中则跳过 RBAC）
 ```
 
 ## 安全增强
@@ -229,7 +234,8 @@ docker-compose up -d
 
 ### 监控
 
-`GET /metrics` 端点（`MetricsController`）**需认证**：`config/route.php:48` 挂 `AdminAuth` + `AdminPermission`，未认证返回 401 信封。
+`GET /metrics` 端点（`MetricsController`）**需认证**：`config/route.php:49` 挂 `MetricsAuth` —— 管理员 JWT 照常经 `AdminAuth` → `AdminPermission`（RBAC 仍生效），或用 `.env` 的 `METRICS_SCRAPE_TOKEN` 静态抓取令牌（按 `Authorization: Bearer <token>` 送；**留空则该路径不生效**，fail-closed）。
+**拒绝形状是 `401/403` + `text/plain` 单行**（抓取器只认状态码/Content-Type），**不是**本仓其它端点那套「HTTP 200 + JSON 信封」；这是全仓唯一一处例外，见 `app/middleware/MetricsAuth.php`。
 输出 Prometheus text format（`text/plain`），指标前缀 `open_admin_`，共 20 个指标族（18 gauge + 2 counter）：
 - `open_admin_active_users` / `open_admin_total_users` — 活跃/累计用户数
 - `open_admin_db_up` / `open_admin_redis_up` / `open_admin_es_up` — 依赖可达性 (0/1)

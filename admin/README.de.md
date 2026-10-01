@@ -280,7 +280,7 @@ Cors (Cross-Origin-Vorverarbeitung + Response-Header)
   → OperationLog (automatische Aufzeichnung von POST/PUT/DELETE, inkl. Quellen-Erkennung, /admin/v1-Routengruppe)
 ```
 
-`/health` ist der öffentliche Endpunkt und durchläuft nur `Cors → SecurityFilter → RateLimit`; `/metrics` und `/api/docs` erfordern zusätzlich `AdminAuth → AdminPermission`.
+`/health` ist der öffentliche Endpunkt und durchläuft nur `Cors → SecurityFilter → RateLimit → LanguageMiddleware`; `/api/docs` erfordert zusätzlich `AdminAuth → AdminPermission`; `/metrics` durchläuft zusätzlich `MetricsAuth` (ein Admin-JWT durchläuft weiterhin `AdminAuth → AdminPermission`, oder das statische Scrape-Token `METRICS_SCRAPE_TOKEN` aus `.env` verwenden; ist es nicht gesetzt, ist dieser Pfad deaktiviert). Ablehnungen von `/metrics` sind `401/403` + `text/plain`, nicht der 200-+-JSON-Umschlag der anderen Endpunkte.
 
 Sicherheitserweiterungen:
 - **Kontosperre**: Nach 5 fehlgeschlagenen Logins in Folge wird das Konto automatisch für 15 Minuten gesperrt; während dieser Zeit gibt der Login 429 zurück

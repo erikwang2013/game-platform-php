@@ -163,9 +163,11 @@ INSERT IGNORE INTO `game_admin_permission` (`id`, `parent_id`, `name`, `slug`, `
 (21000000000000237, '0', '删除公告', 'delete.admin/announcement', 3, '', '', 235, NOW(), NOW()),
 (21000000000000238, '0', '启用/禁用国家配置', 'post.admin/country/config/toggle', 3, '', '', 236, NOW(), NOW()),
 (21000000000000239, '0', '删除国家配置', 'delete.admin/country/config', 3, '', '', 237, NOW(), NOW()),
-(21000000000000240, '0', '上架/停用成就', 'post.admin/achievement/toggle', 3, '', '', 238, NOW(), NOW());
+(21000000000000240, '0', '上架/停用成就', 'post.admin/achievement/toggle', 3, '', '', 238, NOW(), NOW()),
+-- 2026-10-01 管理端查平台用户流水（只读端点，与 install.sql 同步）
+(21000000000000241, '0', '平台用户流水', 'get.admin/platform/user/transactions', 3, '', '', 239, NOW(), NOW());
 
 -- 只授给超级管理员，且只授本文件新增的这些（按 id 区间取；该区间内不得再插别的权限行）
 INSERT IGNORE INTO `game_admin_role_permission` (`role_id`, `permission_id`)
 SELECT 10000000000000001, `id` FROM `game_admin_permission`
-WHERE `id` BETWEEN 21000000000000101 AND 21000000000000240;
+WHERE `id` BETWEEN 21000000000000101 AND 21000000000000241;

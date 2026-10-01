@@ -280,7 +280,7 @@ Cors (prétraitement cross-origin + en-têtes de réponse)
   → OperationLog (enregistrement automatique des POST/PUT/DELETE, avec détection du canal d'origine, groupe de routes /admin/v1)
 ```
 
-`/health` est le point d'accès public et ne passe que par `Cors → SecurityFilter → RateLimit` ; `/metrics` et `/api/docs` exigent en plus `AdminAuth → AdminPermission`.
+`/health` est le point d'accès public et ne passe que par `Cors → SecurityFilter → RateLimit → LanguageMiddleware` ; `/api/docs` exige en plus `AdminAuth → AdminPermission` ; `/metrics` passe en plus par `MetricsAuth` (un JWT administrateur passe toujours par `AdminAuth → AdminPermission`, ou utilisez le jeton de scrape statique `METRICS_SCRAPE_TOKEN` du `.env` ; s'il n'est pas défini, ce chemin est désactivé). Les rejets de `/metrics` sont `401/403` + `text/plain`, et non l'enveloppe 200 + JSON des autres points d'accès.
 
 Renforcements de sécurité :
 - **Verrouillage de compte** : 5 échecs de connexion consécutifs → verrouillage automatique 15 minutes, connexion refusée (429) pendant la période

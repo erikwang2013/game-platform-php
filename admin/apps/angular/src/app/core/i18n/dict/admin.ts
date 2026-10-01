@@ -44,7 +44,7 @@ export const ADMIN: Record<string, [string, string]> = {
   // ---- 列头 ----
   'admin.phone_masked': ['Phone (masked)', '手机号（脱敏）'],
   'admin.email_masked': ['Email (masked)', '邮箱（脱敏）'],
-  'admin.head.status': ['Status (0 disabled / 1 enabled)', '状态(0禁用/1启用)'],
+  'admin.head.status': ['Status', '状态'],
   'admin.head.last_login': ['Last login', '最后登录'],
 
   // ---- 两个动作型弹框（端点同址，字段集不同）----

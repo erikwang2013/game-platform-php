@@ -53,8 +53,11 @@ class WalletController extends BaseController
         $perPage = (int) $request->input('per_page', 20);
         $type    = $request->input('type');
 
+        // 加 id 次序：created_at 是 DATETIME（秒精度，见 game_transaction DDL），同秒多笔是常态
+        // （一局游戏成对写 earn/spend），只按 created_at 排的话翻页会重复/漏行 —— 总页数对、行对不上。
         $query = Transaction::where('user_id', $userId)
-            ->orderBy('created_at', 'desc');
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc');
 
         if ($type) {
             $query->where('type', $type);

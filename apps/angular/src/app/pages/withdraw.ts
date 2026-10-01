@@ -9,6 +9,7 @@ import {
   WithdrawApplied,
   dt,
   money,
+  moneyRaw,
 } from '../core/api.service';
 import { CaptchaBox } from '../core/captcha';
 
@@ -84,17 +85,26 @@ const ST_LABEL: Record<string, string> = {
           <span class="muted">订单号</span><span class="mono">{{ d.order_no }}</span>
         </div>
         <div class="kv">
-          <span class="muted">提现金额</span><span class="mono">{{ d.platform_amount }}</span>
+          <span class="muted">提现金额</span
+          ><span class="mono" [title]="moneyRaw(d.platform_amount)">{{
+            money(d.platform_amount)
+          }}</span>
         </div>
         <div class="kv">
-          <span class="muted">手续费</span><span class="mono">{{ d.fee }}</span>
+          <span class="muted">手续费</span
+          ><span class="mono" [title]="moneyRaw(d.fee)">{{ money(d.fee) }}</span>
         </div>
         <div class="kv">
           <span class="muted">实际到账</span
-          ><span class="mono amount in">{{ d.actual_amount }}</span>
+          ><span class="mono amount in" [title]="moneyRaw(d.actual_amount)">{{
+            money(d.actual_amount)
+          }}</span>
         </div>
         <div class="kv">
-          <span class="muted">账户余额</span><span class="mono">{{ money(d.balance_after) }}</span>
+          <span class="muted">账户余额</span
+          ><span class="mono" [title]="moneyRaw(d.balance_after)">{{
+            money(d.balance_after)
+          }}</span>
         </div>
         @if (d.created_at) {
           <div class="kv">
@@ -167,6 +177,13 @@ const ST_LABEL: Record<string, string> = {
   `,
   styles: [
     `
+      /* 表单类页面收成一栏：1440 宽下把 4 个输入框和提交键拉满 1100px，
+         字段行长会超出舒适阅读宽度，提交键也变得像一条横幅。
+         窄屏不受影响（640 > 360），桌面则是右侧留白。 */
+      :host {
+        display: block;
+        max-width: 640px;
+      }
       .back {
         margin-bottom: 14px;
         font-size: 13px;
@@ -177,10 +194,13 @@ const ST_LABEL: Record<string, string> = {
         gap: 12px;
         flex-wrap: wrap;
         margin-bottom: 14px;
-        border-color: rgba(251, 191, 36, 0.3);
+        padding: 14px 18px;
+        border-left: 3px solid var(--warn);
+        background: color-mix(in srgb, var(--warn) 10%, var(--surface));
       }
       .kycbar.warnbar {
-        border-color: rgba(248, 113, 113, 0.32);
+        border-left-color: var(--neg);
+        background: color-mix(in srgb, var(--neg) 10%, var(--surface));
       }
       .kycbar .grow {
         flex: 1;
@@ -220,6 +240,7 @@ export class WithdrawPage {
 
   protected readonly methods = METHODS;
   protected readonly money = money;
+  protected readonly moneyRaw = moneyRaw;
   protected readonly dt = dt;
 
   protected readonly method = signal('paypal');

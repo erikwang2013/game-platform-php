@@ -9,6 +9,7 @@ import { pick } from '../lib/format';
 import { useApi } from '../lib/hooks';
 // 「我的账号」单独一个文件：只读信息 + 改资料/改密码两组表单（见 account.tsx 的说明）
 import { AccountCard } from './account';
+import { DashboardView } from './dashboard';
 import { CommunityGroups, ShareStats } from './community';
 import { WithdrawLimits, WithdrawOrders, WithdrawSwitch } from './funds';
 // 平台用户（C 端玩家）单独一个文件：那一屏有页面级导出 + 行内注销回读，本文件只负责挂载
@@ -66,6 +67,8 @@ type Group = {
   riskClusters?: boolean;
   /** 风控统计页（三条图表端点一次取齐，见 pages/risk-stats.tsx）；path 只是页签身份 */
   riskStats?: boolean;
+  /** 仪表盘（`{stats, trends, distribution, recent_logs}` 四块，见 pages/dashboard.tsx） */
+  dashboard?: boolean;
   /** 树形列表的 children 键（权限树：子节点也要成为可操作的行，缩进 + 展开箭头） */
   tree?: string;
   /**
@@ -95,7 +98,9 @@ export const PAGES = {
     title: 'page.dashboard.title',
     sub: 'page.dashboard.sub',
     groups: [
-      { label: 'tab.dashboard', path: '/admin/v1/dashboard' },
+      // 三组的形状互不相同（见 pages/dashboard.tsx 顶部的形状清单）：只有第一组单开渲染器，
+      // 平台总览（七个裸标量）与健康检查（六个标量）本来就适合 AutoView 的统计块
+      { label: 'tab.dashboard', path: '/admin/v1/dashboard', dashboard: true },
       { label: 'tab.dashboard.platform', path: '/admin/v1/dashboard/platform' },
       { label: 'tab.health', path: '/health' },
       // /metrics 是 Prometheus text 格式，非信封 JSON，不在此渲染
@@ -188,7 +193,7 @@ export const PAGES = {
       // 提现订单要走自定义页签：批量审核端点没有行上下文（见 funds.tsx）
       { label: 'tab.withdraw.order', path: '/admin/v1/withdraw/orders', list: true, withdrawOrders: true },
       { label: 'tab.withdraw.switch', path: '/admin/v1/withdraw/switch', withdrawSwitch: true },
-      { label: 'tab.withdraw.limits', path: '/admin/v1/withdraw/limits/list', withdrawLimits: true },
+      { label: 'tab.withdraw.limits', path: '/admin/v1/withdraw/limits/list', list: true, withdrawLimits: true },
       {
         label: 'tab.payment',
         path: '/admin/v1/payment/method/list',
@@ -406,6 +411,9 @@ export function TabPage({ page }: { page: PageDef }) {
       ) : group.riskStats ? (
         // 不自带 Card（三块各自成卡）：套一层 Card 会变成卡中卡
         <RiskStats />
+      ) : group.dashboard ? (
+        // 同上：四块各自成卡，这里不再套一层
+        <DashboardView />
       ) : (
         <Section title={t(group.label)} path={group.path} />
       )}
