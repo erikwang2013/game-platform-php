@@ -3,18 +3,57 @@
  */
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { api } from '../lib/api.ts';
+import { Link, useNavigate } from 'react-router-dom';
+import { ApiError, api } from '../lib/api.ts';
 import { deleteErrorMessage, deleteUnknownMessage, deleteVerdict } from '../lib/accountDeletion.ts';
 import { useAuth } from '../lib/auth.tsx';
+import { dt } from '../lib/datetime.ts';
 import { useAsync } from '../lib/hooks.ts';
+import { useAvatar } from '../lib/avatar.ts';
+import { exportBlob, exportCounts, exportName, saveBlob } from '../lib/exportData.ts';
 import { ErrorBox, Loading } from '../components/States.tsx';
 
 export function Me() {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [busy, setBusy] = useState(false);
+
+  // 昵称是账号里唯一能在本页改的字段（换头像要选图上传统，本页没做；上传能力见 lib/upload.ts）
+  // 头像落库值可能是上传后的相对地址，<img src> 带不上 token ⇒ 走 useAvatar 取字节
+  const meAvatar = useAvatar(user?.avatar);
+  const [nickOpen, setNickOpen] = useState(false);
+  const [nick, setNick] = useState('');
+  const [nickBusy, setNickBusy] = useState(false);
+  const [nickMsg, setNickMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const openNick = () => {
+    setNick(user?.nickname ?? '');
+    setNickMsg(null);
+    setNickOpen(true);
+  };
+
+  const saveNick = async () => {
+    if (nickBusy) return;
+    const v = nick.trim();
+    if (v.length === 0) {
+      setNickMsg({ ok: false, text: '昵称不能为空' });
+      return;
+    }
+    setNickBusy(true);
+    setNickMsg(null);
+    try {
+      await api.updateProfile({ nickname: v });
+      // 以服务端返回的值为准：改完重新拉资料，别让本地输入当第二真值源
+      await refreshProfile();
+      setNickMsg({ ok: true, text: '已保存' });
+      setNickOpen(false);
+    } catch (e) {
+      setNickMsg({ ok: false, text: e instanceof ApiError ? e.message : '保存失败，请稍后重试' });
+    } finally {
+      setNickBusy(false);
+    }
+  };
 
   const notices = useAsync(() => api.notices({ page }), [page]);
   const unread = useAsync(() => api.unreadCount(), []);
@@ -39,6 +78,33 @@ export function Me() {
   const onLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const [expBusy, setExpBusy] = useState(false);
+  const [expMsg, setExpMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  /**
+   * 导出我的数据（GDPR）。`/user/export-data` 回的**是普通信封**（不是文件），
+   * 所以这里取到 JSON 后自己捏 Blob 落盘 —— 别照搬 admin 树那条「按 content-type 分流」的附件链路。
+   * 屏幕上的时刻与计数全部来自**服务端回包**（`exported_at` 与四类明细长度），本机时钟不进这句话。
+   */
+  const doExport = async () => {
+    if (expBusy) return;
+    setExpBusy(true);
+    setExpMsg(null);
+    try {
+      const data = await api.exportData();
+      const name = exportName(data.exported_at);
+      saveBlob(exportBlob(data), name);
+      setExpMsg({
+        ok: true,
+        text: `已导出 ${name}（服务端生成于 ${dt(data.exported_at)}）· ${exportCounts(data)}`,
+      });
+    } catch (e) {
+      setExpMsg({ ok: false, text: e instanceof ApiError ? e.message : '导出失败，请稍后重试' });
+    } finally {
+      setExpBusy(false);
+    }
   };
 
   const [delOpen, setDelOpen] = useState(false);
@@ -102,15 +168,15 @@ export function Me() {
                 className="cover"
                 style={{ width: 72, height: 72, aspectRatio: '1 / 1', margin: 0, flexShrink: 0 }}
               >
-                {user?.avatar ? (
-                  <img src={user.avatar} alt="" />
+                {meAvatar ? (
+                  <img src={meAvatar} alt="" />
                 ) : (
                   <span className="cover__ph" style={{ fontSize: 24 }}>
                     {(user?.nickname || user?.username || '?').slice(0, 1)}
                   </span>
                 )}
               </div>
-              <div>
+              <div style={{ flex: 1, minWidth: 0 }}>
                 <p className="h3" style={{ margin: 0 }}>
                   {user?.nickname || user?.username}
                 </p>
@@ -118,7 +184,61 @@ export function Me() {
                   @{user?.username}
                 </p>
               </div>
+              {!nickOpen && (
+                <button type="button" className="btn btn--sm" onClick={openNick}>
+                  改昵称
+                </button>
+              )}
             </div>
+
+            {nickMsg && (
+              <p
+                className={nickMsg.ok ? 'small' : 'err'}
+                role={nickMsg.ok ? 'status' : 'alert'}
+                style={{ margin: '12px 0 0' }}
+              >
+                {nickMsg.text}
+              </p>
+            )}
+
+            {nickOpen && (
+              <div className="stack" style={{ marginTop: 14, maxWidth: 380 }}>
+                <label className="field">
+                  <span>昵称（最长 50 字）</span>
+                  <input
+                    className="input"
+                    autoComplete="off"
+                    maxLength={50}
+                    value={nick}
+                    onChange={(e) => {
+                      setNick(e.target.value);
+                      setNickMsg(null);
+                    }}
+                  />
+                </label>
+                <div className="row" style={{ gap: 10 }}>
+                  <button
+                    type="button"
+                    className="btn btn--sm btn--primary"
+                    disabled={nickBusy}
+                    onClick={saveNick}
+                  >
+                    {nickBusy ? '保存中…' : '保存'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn--sm"
+                    disabled={nickBusy}
+                    onClick={() => {
+                      setNickOpen(false);
+                      setNickMsg(null);
+                    }}
+                  >
+                    取消
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="list" style={{ marginTop: 18 }}>
               <div className="li">
@@ -131,7 +251,20 @@ export function Me() {
               </div>
               <div className="li">
                 <span className="small muted">注册时间</span>
-                <span className="small">{user?.created_at || '—'}</span>
+                <span className="small">{dt(user?.created_at)}</span>
+              </div>
+              <div className="li">
+                <span className="small muted">实名认证</span>
+                {/* 不在这里显示状态：那要多拉一次 identityStatus，状态本身在认证页上更完整 */}
+                <Link className="small" to="/kyc">
+                  查看
+                </Link>
+              </div>
+              <div className="li">
+                <span className="small muted">两步验证</span>
+                <Link className="small" to="/security">
+                  管理
+                </Link>
               </div>
             </div>
 
@@ -187,7 +320,7 @@ export function Me() {
                         {n.content}
                       </p>
                       <p className="small muted" style={{ margin: 0 }}>
-                        <span className="pill pill--plain">{n.type}</span> {n.created_at}
+                        <span className="pill pill--plain">{n.type}</span> {dt(n.created_at)}
                       </p>
                     </div>
                     {!n.is_read && (
@@ -231,6 +364,40 @@ export function Me() {
           )}
         </section>
       </div>
+
+      <section className="stack" style={{ marginTop: 32 }} aria-label="导出我的数据">
+        <p className="label">导出我的数据</p>
+        <div className="card card--flat">
+          <p className="h3" style={{ margin: 0 }}>
+            下载我的数据
+          </p>
+          <p className="small muted" style={{ margin: '10px 0 0', maxWidth: '62ch' }}>
+            服务端把账号资料、平台币钱包（余额与累计收支）、最近 100 条流水 / 兑换 / 充值 / 提现，
+            以及已绑定的第三方账号打包成一份 JSON。<b>每类明细上限 100 条</b>，不是全部历史；
+            <b>游戏币余额不在这份文件里</b>（导出只读平台币钱包，不碰游戏钱包）。
+          </p>
+
+          {expMsg && (
+            <p
+              className={expMsg.ok ? 'small' : 'err'}
+              role={expMsg.ok ? 'status' : 'alert'}
+              style={{ marginTop: 12 }}
+            >
+              {expMsg.text}
+            </p>
+          )}
+
+          <button
+            type="button"
+            className="btn btn--sm"
+            style={{ marginTop: 16 }}
+            disabled={expBusy}
+            onClick={doExport}
+          >
+            {expBusy ? '导出中…' : '下载 JSON'}
+          </button>
+        </div>
+      </section>
 
       <section className="stack" style={{ marginTop: 32 }} aria-label="注销账号">
         <p className="label">注销账号</p>

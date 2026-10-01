@@ -5,6 +5,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { ApiError, api, type DepositCreated } from '../lib/api.ts';
+import { dt } from '../lib/datetime.ts';
 import { useAsync } from '../lib/hooks.ts';
 import { ErrorBox, Loading } from '../components/States.tsx';
 
@@ -195,7 +196,7 @@ export function Deposit() {
           )}
 
           <p className="small muted" style={{ marginBottom: 0 }}>
-            请于 {created.order.expires_at} 前完成支付
+            请于 {dt(created.order.expires_at)} 前完成支付
           </p>
         </section>
       )}

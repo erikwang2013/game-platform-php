@@ -1,19 +1,22 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
-import { Component, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Api, ApiError, Notify, UserProfile, dt } from '../core/api.service';
+import { fileBlob } from '../core/upload';
+import { MeTiles } from './me-tiles';
+import { MeExport } from './me-export';
 
 @Component({
   selector: 'app-me',
+  imports: [MeTiles, MeExport],
   template: `
     <div class="card prof">
       <span class="av">
-        @if (user(); as u) {
-          @if (u.avatar) {
-            <img [src]="u.avatar" [alt]="u.nickname || u.username" />
-          } @else {
-            {{ (u.nickname || u.username).charAt(0) }}
-          }
+        @if (avatarSrc()) {
+          <img [src]="avatarSrc()" alt="" />
+        } @else if (user(); as u) {
+          {{ (u.nickname || u.username).charAt(0) }}
         } @else {
           ·
         }
@@ -47,6 +50,8 @@ import { Api, ApiError, Notify, UserProfile, dt } from '../core/api.service';
       </div>
       <button class="btn ghost out" type="button" (click)="signout()">退出登录</button>
     </div>
+
+    <app-me-tiles />
 
     <div class="between sect" id="notifications">
       <h2>消息</h2>
@@ -107,6 +112,8 @@ import { Api, ApiError, Notify, UserProfile, dt } from '../core/api.service';
         }
       }
     </div>
+
+    <app-me-export />
 
     <div class="card danger" id="delete-account">
       <div class="dh">
@@ -288,11 +295,20 @@ import { Api, ApiError, Notify, UserProfile, dt } from '../core/api.service';
     `,
   ],
 })
-export class MePage {
+export class MePage implements OnDestroy {
   private readonly api = inject(Api);
   private readonly router = inject(Router);
+  private readonly http = inject(HttpClient);
 
   protected readonly user = signal<UserProfile | null>(null);
+  /**
+   * 头像的真实可显示地址。
+   *
+   * 上传物（aetherupload）在库里是 `/api/v1/user/file/{savedPath}` —— 这个端点要 Bearer 头，
+   * `<img src>` 带不上 ⇒ 直接绑 avatar 会是一张碎图。故先带 token 取 blob 再转 objectURL；
+   * 取不到就退回首字母兜底，不留碎图。第三方 OAuth 的绝对地址不需要走这一步。
+   */
+  protected readonly avatarSrc = signal('');
   protected readonly profError = signal('');
   protected readonly items = signal<Notify[]>([]);
   protected readonly unread = signal(0);
@@ -306,7 +322,10 @@ export class MePage {
 
   constructor() {
     this.api.profile().subscribe({
-      next: (u) => this.user.set(u),
+      next: (u) => {
+        this.user.set(u);
+        this.loadAvatar(u.avatar);
+      },
       error: (e: ApiError) => this.profError.set(e.message),
     });
     this.api.unreadCount().subscribe({
@@ -314,6 +333,28 @@ export class MePage {
       error: () => this.unread.set(0),
     });
     this.load(1);
+  }
+
+  ngOnDestroy(): void {
+    const u = this.avatarSrc();
+    if (u.startsWith('blob:')) URL.revokeObjectURL(u);
+  }
+
+  /** 见 avatarSrc 的注释：相对地址必须带 token 取字节，绝对地址直接用 */
+  private loadAvatar(stored: string): void {
+    if (!stored) return;
+    if (/^https?:/i.test(stored)) {
+      this.avatarSrc.set(stored);
+      return;
+    }
+    fileBlob(this.http, stored).subscribe({
+      next: (b) => {
+        const old = this.avatarSrc();
+        if (old.startsWith('blob:')) URL.revokeObjectURL(old);
+        this.avatarSrc.set(URL.createObjectURL(b));
+      },
+      error: () => this.avatarSrc.set(''),
+    });
   }
 
   private load(p: number): void {

@@ -52,6 +52,14 @@ class Pager<T> {
   }
 }
 
+/**
+ * 交易类型 → 中文。取值真源：service/app/service/WalletService.php 的 TYPE_ 常量
+ * （lock / unlock / reconcile）+ 生产调用点传的字面量（ActivityService 传 activity_reward，
+ * SelfProvider 传 game_spend / game_earn）。
+ * transactions 接口**不按 scope 过滤**，所以游戏币那本账的 game_spend / game_earn 也会出现在
+ * 这个列表里 —— 漏了就会把英文原键直接摆给用户。
+ * 未列出的键走 label() 原样透出（宁可露出原键，也不要编一个不存在的类型名）。
+ */
 const TX_LABEL: Record<string, string> = {
   deposit: '充值',
   withdraw: '提现',
@@ -62,6 +70,12 @@ const TX_LABEL: Record<string, string> = {
   transfer_out: '转出',
   commission: '佣金',
   adjust: '调账',
+  game_spend: '开局扣费',
+  game_earn: '游戏派彩',
+  activity_reward: '活动奖励',
+  lock: '冻结',
+  unlock: '解冻',
+  reconcile: '对账调整',
 };
 
 const DEP_LABEL: Record<string, string> = {
@@ -111,6 +125,8 @@ const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
       <a class="btn primary" routerLink="/wallet/deposit">充值</a>
       <a class="btn" routerLink="/wallet/withdraw">提现</a>
       <a class="btn" routerLink="/wallet/exchange">兑换</a>
+      <!-- 游戏流水是另一本账（游戏币），不在下面三个页签里 -->
+      <a class="btn ghost" routerLink="/wallet/records">游戏流水</a>
     </div>
 
     <div class="chips tabs">

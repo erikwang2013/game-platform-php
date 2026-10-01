@@ -639,6 +639,44 @@ textarea {
   align-items: flex-start;
 }
 
+/* 整行可点（赛事列表）：.li 原本只配过 <a>，<button> 要自己抹掉浏览器默认样式 */
+button.li {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-bottom: var(--line-soft);
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+button.li:hover {
+  background: rgba(17, 17, 17, 0.04);
+}
+
+/* 头像位：有图显示图，没图兜底一个首字母方块。尺寸锁死，避免有无头像时行高跳动 */
+.avatar {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border: var(--line);
+  border-radius: var(--radius);
+  background: var(--yellow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .li__t {
   font-weight: 700;
   font-size: 14px;
@@ -776,6 +814,21 @@ textarea {
     var(--yellow) 0 8px,
     var(--paper) 8px 16px
   );
+}
+
+/* 活动进度条：与上面的骨架条 .bar 分开——那个是条纹占位，不能当轨道用 */
+.prog {
+  height: 10px;
+  border: var(--line);
+  border-radius: 999px;
+  background: var(--paper);
+  overflow: hidden;
+}
+
+.prog i {
+  display: block;
+  height: 100%;
+  background: var(--yellow);
 }
 
 .spin {

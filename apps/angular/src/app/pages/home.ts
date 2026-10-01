@@ -2,7 +2,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Api, ApiError, Game, PlatformStats } from '../core/api.service';
+import { AnnouncementBrief, Api, ApiError, Game, PlatformStats, dt } from '../core/api.service';
 
 @Component({
   selector: 'app-home',
@@ -21,6 +21,35 @@ import { Api, ApiError, Game, PlatformStats } from '../core/api.service';
           <strong>{{ c.v }}</strong>
         </div>
       }
+    </div>
+
+    <div class="home-cols">
+      <div class="card mini">
+        <div class="between">
+          <span class="label">平台公告</span>
+          <a class="more-link" routerLink="/announcements">全部</a>
+        </div>
+        @if (news().length) {
+          <div class="rows tight">
+            @for (a of news(); track a.id) {
+              <a class="row plain" routerLink="/announcements">
+                <div class="grow">
+                  <div class="t">{{ a.title }}</div>
+                  <div class="s">{{ dt(a.created_at) }}</div>
+                </div>
+              </a>
+            }
+          </div>
+        } @else {
+          <p class="s muted pad">暂无公告</p>
+        }
+      </div>
+
+      <a class="card mini lift linkcard" routerLink="/leaderboard">
+        <span class="label">排行榜</span>
+        <strong>看看谁在榜上</strong>
+        <span class="s muted">日榜 / 周榜 / 月榜，按买入、卖出或开局次数排名</span>
+      </a>
     </div>
 
     <div class="between sect" id="games">
@@ -120,6 +149,49 @@ import { Api, ApiError, Game, PlatformStats } from '../core/api.service';
         margin: 0;
         font-size: 17px;
       }
+      .home-cols {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+        margin-top: 16px;
+      }
+      .mini {
+        padding: 16px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .linkcard {
+        text-decoration: none;
+        color: inherit;
+      }
+      .linkcard strong {
+        font-size: 16px;
+      }
+      .linkcard .s {
+        font-size: 12px;
+        line-height: 1.6;
+      }
+      .more-link {
+        font-size: 12px;
+        color: var(--muted);
+        text-decoration: none;
+      }
+      .more-link:hover {
+        color: var(--text);
+      }
+      .rows.tight .row {
+        padding: 7px 0;
+      }
+      .row.plain {
+        border-bottom: 0;
+        text-decoration: none;
+        color: inherit;
+      }
+      .pad {
+        margin: 4px 0 0;
+        font-size: 13px;
+      }
       .grid {
         display: grid;
         grid-template-columns: 1fr;
@@ -191,6 +263,9 @@ import { Api, ApiError, Game, PlatformStats } from '../core/api.service';
         .stats {
           grid-template-columns: repeat(4, 1fr);
         }
+        .home-cols {
+          grid-template-columns: 1.4fr 1fr;
+        }
         .grid {
           grid-template-columns: repeat(4, 1fr);
           gap: 18px;
@@ -203,6 +278,8 @@ export class HomePage {
   private readonly api = inject(Api);
   private readonly route = inject(ActivatedRoute);
 
+  protected readonly dt = dt;
+  protected readonly news = signal<AnnouncementBrief[]>([]);
   protected readonly stats = signal<PlatformStats | null>(null);
   protected readonly games = signal<Game[]>([]);
   protected readonly page = signal(1);
@@ -226,6 +303,11 @@ export class HomePage {
     this.api.platformStats().subscribe({
       next: (s) => this.stats.set(s),
       error: () => this.stats.set(null),
+    });
+    // 公告是公开接口，未登录也取；失败静默（首页不该因为一块次要内容报错）
+    this.api.announcements().subscribe({
+      next: (r) => this.news.set((r.list ?? []).slice(0, 3)),
+      error: () => this.news.set([]),
     });
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((p) => {
       this.keyword.set((p.get('keyword') ?? '').trim());

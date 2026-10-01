@@ -6,10 +6,33 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../lib/auth.tsx';
 
+// 底部 tabbar 是 3 列固定栅格（见 index.css 的 .tabbar），保持不变；
+// 次级入口（公告/排行榜/我的游戏）走顶栏与抽屉，避免挤爆小屏页签
 const NAV = [
   { to: '/', label: '首页' },
   { to: '/wallet', label: '钱包' },
   { to: '/me', label: '我的' },
+];
+
+/**
+ * ⚠ 这里**没有「优惠券」入口**，是有意的（2026-10-01 撤下）：
+ * `user_coupon` 的唯一行写入方就是 `CouponController::claim()` 本身
+ * （admin 侧 `CouponController.php:198` 只删不发），即用户拿券的唯一途径是在那个页面点领取；
+ * 而 `status='used'` 与 `used_in_order` 全仓无写入方、`used_qty` 只随领取递增
+ * ⇒ 领了**永远用不掉**。页面能提供的全部价值 = 「在这领一张券，然后它永远躺着」= 假价值。
+ * 后端做出核销/抵扣再恢复入口。
+ */
+const MORE = [
+  { to: '/search', label: '搜索' },
+  { to: '/games', label: '我的游戏' },
+  { to: '/activities', label: '活动' },
+  { to: '/tournaments', label: '赛事' },
+  { to: '/invite', label: '邀请好友' },
+  { to: '/chat', label: '消息' },
+  { to: '/friends', label: '好友' },
+  { to: '/tickets', label: '工单' },
+  { to: '/announcements', label: '公告' },
+  { to: '/leaderboard', label: '排行榜' },
 ];
 
 export function Layout() {
@@ -56,7 +79,7 @@ export function Layout() {
           </div>
 
           <nav className="nav" aria-label="主导航">
-            {NAV.map((n) => (
+            {[...NAV, ...MORE].map((n) => (
               <NavLink
                 key={n.to}
                 to={n.to}
@@ -110,6 +133,18 @@ export function Layout() {
                   key={n.to}
                   to={n.to}
                   end={n.to === '/'}
+                  className={({ isActive }) => `drawer__a${isActive ? ' is-active' : ''}`}
+                >
+                  {n.label}
+                </NavLink>
+              ))}
+              <p className="label" style={{ margin: '18px 0 6px' }}>
+                更多
+              </p>
+              {MORE.map((n) => (
+                <NavLink
+                  key={n.to}
+                  to={n.to}
                   className={({ isActive }) => `drawer__a${isActive ? ' is-active' : ''}`}
                 >
                   {n.label}

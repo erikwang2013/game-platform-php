@@ -5,16 +5,19 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api.ts';
+import { dt } from '../lib/datetime.ts';
 import { useAsync } from '../lib/hooks.ts';
 import { ErrorBox, Loading } from '../components/States.tsx';
 
-type Tab = 'tx' | 'dep' | 'wd';
+type Tab = 'tx' | 'dep' | 'wd' | 'ex';
 type Row = { k: string; title: string; sub: string; amount: string; inflow: boolean; pill?: string };
 
+// 标签保持 2 字：4 个页签在 320px 宽下每格约 70px，4 字标签会被挤断
 const TABS: Array<{ id: Tab; label: string }> = [
-  { id: 'tx', label: '资金流水' },
-  { id: 'dep', label: '充值订单' },
-  { id: 'wd', label: '提现订单' },
+  { id: 'tx', label: '流水' },
+  { id: 'dep', label: '充值' },
+  { id: 'wd', label: '提现' },
+  { id: 'ex', label: '兑换' },
 ];
 
 /** 金额方向只看符号位，不做浮点运算（金额一律字符串透传）。 */
@@ -34,7 +37,7 @@ export function Wallet() {
         items: d.items.map<Row>((t) => ({
           k: t.id,
           title: t.type,
-          sub: t.remark || t.created_at,
+          sub: t.remark || dt(t.created_at),
           amount: t.amount,
           inflow: !isNegative(t.amount),
         })),
@@ -47,23 +50,38 @@ export function Wallet() {
         items: d.items.map<Row>((o) => ({
           k: o.order_no,
           title: `充值 ${o.currency}`,
-          sub: o.paid_at || o.created_at,
+          sub: dt(o.paid_at || o.created_at),
           amount: o.amount,
           inflow: true,
           pill: o.status,
         })),
       };
     }
-    const d = await api.withdraws({ page });
+    if (tab === 'wd') {
+      const d = await api.withdraws({ page });
+      return {
+        ...d,
+        items: d.items.map<Row>((o) => ({
+          k: o.order_no,
+          title: '提现',
+          sub: dt(o.created_at),
+          amount: o.platform_amount,
+          inflow: false,
+          pill: o.status,
+        })),
+      };
+    }
+    // 兑换记录一律按**平台币那一侧**记收支，与 Exchange 页的头寸口径一致：
+    // in（买）下 platform_amount 是支出、out（卖）下它是扣过点差的到账净额。
+    const d = await api.exchangeRecords({ page });
     return {
       ...d,
-      items: d.items.map<Row>((o) => ({
-        k: o.order_no,
-        title: '提现',
-        sub: o.created_at,
-        amount: o.platform_amount,
-        inflow: false,
-        pill: o.status,
+      items: d.items.map<Row>((r) => ({
+        k: r.id,
+        title: r.direction === 'in' ? '买入游戏币' : '卖出游戏币',
+        sub: `游戏币 ${r.game_amount} · ${dt(r.created_at)}`,
+        amount: r.platform_amount,
+        inflow: r.direction === 'out',
       })),
     };
   }, [tab, page]);
@@ -119,7 +137,7 @@ export function Wallet() {
       </section>
 
       <section className="stack">
-        <div className="tabs" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }} role="tablist">
+        <div className="tabs" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }} role="tablist">
           {TABS.map((t) => (
             <button
               key={t.id}

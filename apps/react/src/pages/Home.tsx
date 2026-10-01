@@ -102,6 +102,21 @@ export function Home() {
       </section>
 
       <section className="stack">
+        <p className="label">发现</p>
+        <div className="chips">
+          <Link className="chip" to="/games">
+            我的游戏
+          </Link>
+          <Link className="chip" to="/announcements">
+            平台公告
+          </Link>
+          <Link className="chip" to="/leaderboard">
+            排行榜
+          </Link>
+        </div>
+      </section>
+
+      <section className="stack">
         <p className="label">找游戏</p>
         <div className="search">
           <form onSubmit={search} className="row" style={{ flexWrap: 'nowrap' }}>

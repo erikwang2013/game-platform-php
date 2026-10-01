@@ -3,135 +3,65 @@
  * C端 API 客户端 — 信封解包 (code===0) / Bearer 头 / 401 刷新一次 / 错误透出
  * 所有 ID 均为 Hashid 字符串。
  */
-import { HttpClient, HttpErrorResponse, HttpInterceptorFn, HttpParams } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
-import { Router } from '@angular/router';
-import { Observable, catchError, from, lastValueFrom, map, of, switchMap, throwError } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { Observable, catchError, map, of, throwError } from 'rxjs';
 
 /* 契约类型集中在 api.types.ts，此处 re-export 保持既有 import 路径可用 */
 import type {
+  Activity,
+  ActivityProgress,
+  AnnouncementBrief,
+  AnnouncementDetail,
   AuthResult,
   CaptchaChallenge,
   CaptchaProof,
+  CheckinResult,
   DepositCreated,
   DepositOrder,
-  Envelope,
   ExchangeDone,
   ExchangePayload,
   ExchangeQuote,
   Game,
   GameDetail,
+  IdentityStatus,
+  IdType,
   LaunchResult,
+  Leaderboard,
   Notify,
-  Num,
   Paged,
   PaymentMethodInfo,
   PlatformStats,
+  PlayLog,
+  PlayLogDetail,
+  RankRow,
   Suggestion,
+  TicketBrief,
+  TicketDetail,
+  TicketType,
   Transaction,
   UserProfile,
   WalletInfo,
   WithdrawApplied,
   WithdrawOrder,
 } from './api.types';
+import { ApiError, tokens } from './session';
+/* 传输层（信封解包/401 刷新/错误透出）已拆到 api.base.ts；Api 靠继承拿到 request()。
+   刻意**不** re-export api.base：BASE 与 ApiBase 都是内部细节，没有对外消费方。 */
+import { ApiDomains } from './api.domains';
+import { BASE } from './api.base';
 
 export * from './api.types';
 
-/* ---------------- token 存取 ---------------- */
+/* 扩展域方法（券/搜索/赛事/分享）与它们的响应类型在 api.domains.ts；
+   这里透出去，页面照旧从 '../core/api.service' 导入，不用记第二个路径。 */
+export * from './api.domains';
 
-const K_ACCESS = 'gp_access_token';
-const K_REFRESH = 'gp_refresh_token';
-
-const store = {
-  get: (k: string): string => {
-    try {
-      return localStorage.getItem(k) ?? '';
-    } catch {
-      return '';
-    }
-  },
-  set: (k: string, v: string): void => {
-    try {
-      localStorage.setItem(k, v);
-    } catch {
-      /* 隐私模式下写入失败，静默降级为未登录 */
-    }
-  },
-  del: (k: string): void => {
-    try {
-      localStorage.removeItem(k);
-    } catch {
-      /* ignore */
-    }
-  },
-};
-
-export const tokens = {
-  access: (): string => store.get(K_ACCESS),
-  refresh: (): string => store.get(K_REFRESH),
-  save(access: string, refresh: string): void {
-    store.set(K_ACCESS, access);
-    if (refresh) store.set(K_REFRESH, refresh);
-  },
-  clear(): void {
-    store.del(K_ACCESS);
-    store.del(K_REFRESH);
-  },
-};
-
-export const isAuthed = (): boolean => !!tokens.access();
-
-/** 展示用格式化；不做金额运算，故允许 Number() 转换。 */
-export function money(v: Num | null | undefined): string {
-  const n = Number(v ?? 0);
-  return Number.isFinite(n)
-    ? n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-    : String(v);
-}
-
-/** 兼容 MySQL "YYYY-MM-DD HH:MM:SS"（Safari 需替换空格为 T） */
-export function dt(s: string): string {
-  if (!s) return '—';
-  const d = new Date(s.replace(' ', 'T'));
-  return Number.isNaN(d.getTime()) ? s : d.toLocaleString();
-}
-
-/** 充值零小数币种（与后端 DepositController 的精度校验一致） */
-const ZERO_DECIMAL = ['JPY', 'KRW'];
-
-/**
- * 充值金额精度预检，与后端同规则：JPY/KRW 零小数，其余最多 2 位小数。
- * 纯字符串格式校验，不做任何金额换算或舍入；后端仍会二次校验。
- */
-export function depositAmountOk(amount: string, currency: string): boolean {
-  const max = ZERO_DECIMAL.includes(currency.toUpperCase()) ? 0 : 2;
-  return max === 0 ? /^\d+$/.test(amount) : new RegExp(`^\\d+(\\.\\d{1,${max}})?$`).test(amount);
-}
-
-/* ---------------- 错误 ---------------- */
-
-export class ApiError extends Error {
-  constructor(
-    message: string,
-    readonly code: number,
-  ) {
-    super(message);
-    this.name = 'ApiError';
-  }
-}
-
-/* ---------------- 拦截器：Bearer ---------------- */
-
-export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const token = tokens.access();
-  return next(token ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req);
-};
+/* 会话/格式化/错误类型/拦截器已拆到 session.ts；此处 re-export 保持既有 import 路径可用 */
+export * from './session';
 
 /* ---------------- 客户端 ---------------- */
 
 type Query = Record<string, string | number | boolean | undefined | null>;
-
-const BASE = '/api/v1';
 
 /** /captcha/generate 的原始响应：texts 在 extra 里，且刻意不含坐标 */
 interface CaptchaRaw {
@@ -141,98 +71,7 @@ interface CaptchaRaw {
 }
 
 @Injectable({ providedIn: 'root' })
-export class Api {
-  private readonly http = inject(HttpClient);
-  private readonly router = inject(Router);
-  private refreshing: Promise<boolean> | null = null;
-
-  /* ---- 基础设施 ---- */
-
-  private request<T>(
-    method: string,
-    path: string,
-    query?: Query,
-    body?: unknown,
-    retry = true,
-  ): Observable<T> {
-    return this.http.request<Envelope<T>>(method, path, { params: this.qs(query), body }).pipe(
-      map((res) => {
-        if (res && res.code === 0) return res.data;
-        throw new ApiError(res?.message || '请求失败', res?.code ?? -1);
-      }),
-      catchError((err: unknown) => {
-        const e = err instanceof ApiError ? err : this.wrap(err);
-        // 后端 401 走 HTTP 200 + body.code=401，必须按 code 判定
-        if (e.code === 401 && retry && tokens.refresh()) {
-          return from(this.refresh()).pipe(
-            switchMap((ok) =>
-              ok ? this.request<T>(method, path, query, body, false) : this.expire(e),
-            ),
-          );
-        }
-        return e.code === 401 ? this.expire(e) : throwError(() => e);
-      }),
-    );
-  }
-
-  private qs(query?: Query): HttpParams {
-    let p = new HttpParams();
-    for (const [k, v] of Object.entries(query ?? {})) {
-      if (v !== undefined && v !== null && v !== '') p = p.set(k, String(v));
-    }
-    return p;
-  }
-
-  private wrap(err: unknown): ApiError {
-    if (err instanceof HttpErrorResponse) {
-      const body: unknown = err.error;
-      const msg =
-        body && typeof body === 'object' && 'message' in body
-          ? String((body as { message: unknown }).message)
-          : '';
-      const code =
-        body && typeof body === 'object' && 'code' in body
-          ? Number((body as { code: unknown }).code)
-          : err.status;
-      if (msg) return new ApiError(msg, code || err.status);
-      if (err.status === 0) return new ApiError('无法连接服务器，请稍后重试', 0);
-      return new ApiError(`请求失败 (HTTP ${err.status})`, err.status);
-    }
-    return new ApiError('请求失败', -1);
-  }
-
-  /** 单飞刷新：并发 401 只发一次 refresh */
-  private refresh(): Promise<boolean> {
-    if (!this.refreshing) {
-      this.refreshing = lastValueFrom(
-        this.http
-          .post<Envelope<AuthResult>>(`${BASE}/auth/refresh`, {
-            refresh_token: tokens.refresh(),
-          })
-          .pipe(
-            map((r) => {
-              const d = r.data;
-              if (r.code !== 0 || !d || !d.access_token) return false;
-              tokens.save(d.access_token, d.refresh_token || '');
-              return true;
-            }),
-            catchError(() => of(false)),
-          ),
-      ).finally(() => {
-        this.refreshing = null;
-      });
-    }
-    return this.refreshing;
-  }
-
-  private expire(e: ApiError): Observable<never> {
-    tokens.clear();
-    void this.router.navigate(['/login'], {
-      queryParams: { redirect: this.router.url },
-    });
-    return throwError(() => e);
-  }
-
+export class Api extends ApiDomains {
   /* ---- 公开接口 ---- */
 
   platformStats(): Observable<PlatformStats> {
@@ -292,6 +131,8 @@ export class Api {
       password: string;
       email?: string;
       nickname?: string;
+      /** 邀请短码（裂变转化）。服务端 `nullable|string|max:12`，`AuthController::register` 收下后交给 `ShareLink::bindConversion` */
+      share_code?: string;
     } & CaptchaProof,
   ): Observable<AuthResult> {
     return this.request<AuthResult>('POST', `${BASE}/auth/register`, undefined, payload);
@@ -422,5 +263,194 @@ export class Api {
     return this.request<LaunchResult>('POST', `${BASE}/game/launch`, undefined, {
       game_id: gameId,
     });
+  }
+
+  /* ==================== 2FA 登录验证（公开接口） ==================== */
+
+  /**
+   * 用登录时下发的 pending_2fa_token 换正式令牌。响应形状与 login 完全相同
+   * （服务端 TwoFactorController::verify → issueLogin），所以 AuthResult 可直接复用。
+   * 用户身份取自票据本身，客户端无法自选用户；失败 401（票据失效）/422（码错）/403（锁定）。
+   */
+  twoFactorVerify(pendingToken: string, code: string): Observable<AuthResult> {
+    return this.request<AuthResult>('POST', `${BASE}/2fa/verify`, undefined, {
+      pending_2fa_token: pendingToken,
+      code,
+    });
+  }
+
+  /* ==================== 2FA 自助（开启 / 关闭） ==================== */
+
+  /** 是否已开启。后端只回 {enabled}，不回启用时间/剩余备份码数 */
+  twoFactorStatus(): Observable<{ enabled: boolean }> {
+    return this.request<{ enabled: boolean }>('GET', `${BASE}/user/2fa/status`);
+  }
+
+  /**
+   * 起一个未启用的 setup（服务端先删掉该用户上一条未启用的，可反复调）。
+   * 回 `secret`（Base32）与 `qr_url`（otpauth:// 协议串）—— **都不是图片**。
+   */
+  twoFactorSetup(): Observable<{ secret: string; qr_url: string }> {
+    return this.request<{ secret: string; qr_url: string }>('POST', `${BASE}/user/2fa/setup`);
+  }
+
+  /**
+   * 用 6 位 TOTP 启用。回 **8 个 10 位备份码，只此一次** —— 服务端 enable() 生成后落库，
+   * 之后没有任何端点能再读出来（status 只回 enabled），页面必须当场给用户抄走。
+   * 这里刻意是 size:6：备份码此刻还没发给用户，不可能拿备份码来启用。
+   */
+  twoFactorEnable(code: string): Observable<{ backup_codes: string[] }> {
+    return this.request<{ backup_codes: string[] }>('POST', `${BASE}/user/2fa/enable`, undefined, {
+      code,
+    });
+  }
+
+  /**
+   * 关闭 2FA：**密码 + 6 位 TOTP**。同样刻意是 size:6（与登录 verify 的 between:6,10 不同）：
+   * 服务端 disable() 只走 verifyTOTP()，不查备份码表 ⇒ 传 10 位备份码必然 422，
+   * 客户端别按「登录能填 10 位」的对称去放宽这里。两个输入框都是 6。
+   */
+  twoFactorDisable(password: string, code: string): Observable<unknown> {
+    return this.request<unknown>('POST', `${BASE}/user/2fa/disable`, undefined, {
+      password,
+      code,
+    });
+  }
+
+  /* ==================== 公告 / 排行榜（公开接口） ==================== */
+
+  /** 公告列表 —— 后端不分页，硬 limit 20；列表项不含正文 */
+  announcements(): Observable<{ list: AnnouncementBrief[] }> {
+    return this.request<{ list: AnnouncementBrief[] }>('GET', `${BASE}/announcement/list`);
+  }
+
+  announcementDetail(hashid: string): Observable<AnnouncementDetail> {
+    return this.request<AnnouncementDetail>(
+      'GET',
+      `${BASE}/announcement/detail/${encodeURIComponent(hashid)}`,
+    );
+  }
+
+  /** 排行榜列表 —— 后端不分页 */
+  leaderboards(): Observable<{ list: Leaderboard[] }> {
+    return this.request<{ list: Leaderboard[] }>('GET', `${BASE}/leaderboard/list`);
+  }
+
+  /** 榜单详情：ranking 里的 user_id 是**裸整数**，服务端未编码 */
+  leaderboardRanking(hashid: string): Observable<{
+    leaderboard: Leaderboard;
+    ranking: RankRow[];
+  }> {
+    return this.request<{ leaderboard: Leaderboard; ranking: RankRow[] }>(
+      'GET',
+      `${BASE}/leaderboard/${encodeURIComponent(hashid)}`,
+    );
+  }
+
+  /* ==================== 工单 ==================== */
+
+  tickets(page = 1, perPage = 20): Observable<Paged<TicketBrief>> {
+    return this.request<Paged<TicketBrief>>('GET', `${BASE}/ticket/list`, {
+      page,
+      per_page: perPage,
+    });
+  }
+
+  ticketDetail(hashid: string): Observable<TicketDetail> {
+    return this.request<TicketDetail>(
+      'GET',
+      `${BASE}/ticket/${encodeURIComponent(hashid)}`,
+    );
+  }
+
+  createTicket(payload: {
+    type: TicketType;
+    subject: string;
+    content: string;
+  }): Observable<{ id: string }> {
+    return this.request<{ id: string }>('POST', `${BASE}/ticket/create`, undefined, payload);
+  }
+
+  /** 回复工单；服务端会把工单状态从 closed 之外打成 waiting */
+  replyTicket(hashid: string, content: string): Observable<{ id: string }> {
+    return this.request<{ id: string }>(
+      'POST',
+      `${BASE}/ticket/${encodeURIComponent(hashid)}/reply`,
+      undefined,
+      { content },
+    );
+  }
+
+  /* ==================== 游戏流水 ==================== */
+
+  playLogs(page = 1, perPage = 20, gameId?: string): Observable<Paged<PlayLog>> {
+    return this.request<Paged<PlayLog>>('GET', `${BASE}/game/play-logs`, {
+      page,
+      per_page: perPage,
+      game_id: gameId,
+    });
+  }
+
+  playLogDetail(hashid: string): Observable<PlayLogDetail> {
+    return this.request<PlayLogDetail>(
+      'GET',
+      `${BASE}/game/play-log/${encodeURIComponent(hashid)}`,
+    );
+  }
+
+  /* 推荐码两个端点（/referral/my-code|apply）2026-10-01 撤下：整条链**无 bootstrap 写入路径**，
+     循环依赖 —— apply() 要求先查到一行才创建，而这行只能由 apply() 创建；my-code 读
+     referrer_id = 我 同样恒空。零种子 / 零迁移写入 / admin 侧零引用。详见 api.domains.ts
+     的同名墓碑注释（含连带不可达的 invite_1 / invite_10 两个成就）。 */
+
+  /* ==================== 身份认证（KYC） ==================== */
+
+  identityStatus(): Observable<IdentityStatus> {
+    return this.request<IdentityStatus>('GET', `${BASE}/user/identity/status`);
+  }
+
+  /**
+   * 提交实名认证。照片字段收的是**上传后落库的相对地址**（见 upload.ts）。
+   * 重复提交：pending/approved 一律 422；rejected 可直接重交覆盖原记录。
+   */
+  applyIdentity(payload: {
+    real_name: string;
+    id_type: IdType;
+    id_number: string;
+    id_front_photo: string;
+    id_back_photo?: string;
+    selfie_photo: string;
+    country?: string;
+  }): Observable<unknown> {
+    return this.request<unknown>('POST', `${BASE}/user/identity/apply`, undefined, payload);
+  }
+
+  /* ==================== 运营活动 ==================== */
+
+  /**
+   * 活动列表。服务端已做完三道过滤：status=启用 + 时间窗内 + 灰度
+   * （`rollout_percent`，按 userId 判定 `activity_{id}`），客户端不要再自己筛。
+   */
+  activities(): Observable<{ list: Activity[] }> {
+    return this.request<{ list: Activity[] }>('GET', `${BASE}/activities/list`);
+  }
+
+  /** 我的活动进度 —— 只回**当天**（period_key=YYYY-MM-DD），最多 50 条 */
+  activityProgress(): Observable<{ list: ActivityProgress[] }> {
+    return this.request<{ list: ActivityProgress[] }>('GET', `${BASE}/activities/progress`);
+  }
+
+  /**
+   * 签到 / 领奖。服务端在**同一个事务**里写 reward_log + 钱包
+   * （ActivityService::checkin → grantRewards → WalletService::mutate），
+   * 所以返回就是权威结果，**前端不许自己加钱**，连余额都该重新拉。
+   * 幂等靠 `uk_idempotent` 唯一键，重复点返回 `already` 而不是重复发奖。
+   * 业务失败（活动不可用/已结束）走 HTTP 200 + code=400。
+   */
+  activityCheckin(hashid: string): Observable<CheckinResult> {
+    return this.request<CheckinResult>(
+      'POST',
+      `${BASE}/activities/${encodeURIComponent(hashid)}/checkin`,
+    );
   }
 }

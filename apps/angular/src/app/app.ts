@@ -101,10 +101,17 @@ export class App {
     }, 250);
   }
 
+  /**
+   * 搜索框回车 → 搜索页。
+   *
+   * 落点是 `/search` 不是首页 `?keyword=`：首页那条走 `/game/list?keyword=`，服务端**只匹配
+   * name**；`/api/v1/search` 匹配 name **或 description** ⇒ 简介里的词只有搜索页搜得到。
+   * 首页的 keyword 过滤仍然可用（老链接/手输 URL），只是不再是搜索框的落点。
+   */
   protected submit(): void {
     const s = this.q().trim();
     this.sugg.set([]);
-    void this.router.navigate(['/'], { queryParams: s ? { keyword: s } : {} });
+    void this.router.navigate(['/search'], { queryParams: s ? { q: s } : {} });
   }
 
   protected open(id: string): void {

@@ -1,7 +1,15 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Api, ApiError, CaptchaProof, WithdrawApplied, dt, money } from '../core/api.service';
+import {
+  Api,
+  ApiError,
+  CaptchaProof,
+  IdentityStatus,
+  WithdrawApplied,
+  dt,
+  money,
+} from '../core/api.service';
 import { CaptchaBox } from '../core/captcha';
 
 /** 提现请求体（验证码答案在弹框确认时并入） */
@@ -36,6 +44,33 @@ const ST_LABEL: Record<string, string> = {
   imports: [RouterLink, CaptchaBox],
   template: `
     <a class="btn ghost back" routerLink="/wallet">← 返回钱包</a>
+
+    <!--
+      KYC 档位提示：服务端 WithdrawController::withdrawLevel 只在认证通过时给 verified 档
+      （更高的单笔/日/月额度、更低的费率），其余一律 default 档。未认证的用户常常不知道自己
+      为什么提得比预期少 —— 把差别和入口摆在表单上方。认证通过则整条不显示。
+    -->
+    @if (kyc(); as k) {
+      @if (k.status !== 'approved') {
+        <div class="card kycbar" [class.warnbar]="k.status !== 'pending'">
+          <div class="grow">
+            <div class="t">
+              {{ k.status === 'pending' ? '实名认证审核中' : '尚未完成实名认证' }}
+            </div>
+            <div class="s">
+              {{
+                k.status === 'pending'
+                  ? '审核通过前提现按默认档计算（额度更低）。'
+                  : '当前按默认档计算提现额度；认证通过后可提升单笔/日/月额度并降低费率。'
+              }}
+            </div>
+          </div>
+          @if (k.status !== 'pending') {
+            <a class="btn ghost" routerLink="/kyc">去认证</a>
+          }
+        </div>
+      }
+    }
 
     @if (done(); as d) {
       <div class="card stack">
@@ -136,6 +171,31 @@ const ST_LABEL: Record<string, string> = {
         margin-bottom: 14px;
         font-size: 13px;
       }
+      .kycbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+        border-color: rgba(251, 191, 36, 0.3);
+      }
+      .kycbar.warnbar {
+        border-color: rgba(248, 113, 113, 0.32);
+      }
+      .kycbar .grow {
+        flex: 1;
+        min-width: 0;
+      }
+      .kycbar .t {
+        font-weight: 650;
+        font-size: 14px;
+      }
+      .kycbar .s {
+        margin-top: 3px;
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
       .form {
         display: flex;
         flex-direction: column;
@@ -173,6 +233,15 @@ export class WithdrawPage {
   /** 弹框状态 + 开框时冻结的请求体（框开期间页面控件仍可能被键盘改动） */
   protected readonly capOpen = signal(false);
   protected readonly pending = signal<WithdrawBody | null>(null);
+  /** KYC 状态：只用于提示提现档位；取不到就整条不显示，不挡提现 */
+  protected readonly kyc = signal<IdentityStatus | null>(null);
+
+  constructor() {
+    this.api.identityStatus().subscribe({
+      next: (s) => this.kyc.set(s),
+      error: () => this.kyc.set(null),
+    });
+  }
 
   protected st(s: string): string {
     return ST_LABEL[s] ?? s ?? '—';
