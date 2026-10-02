@@ -1,20 +1,21 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { Component, inject, signal } from '@angular/core';
 import { Api, ApiError, Leaderboard, RankRow, money, moneyRaw } from '../core/api.service';
+import { T, t } from '../core/i18n/i18n';
 
-/** metric → 中文（真源 LeaderboardService::computeRanking 只认 earned/spent/play_count） */
+/** metric → **词条键**（真源 LeaderboardService::computeRanking 只认 earned/spent/play_count） */
 const METRIC_LABEL: Record<string, string> = {
-  earned: '累计买入',
-  spent: '累计卖出',
-  play_count: '开局次数',
+  earned: 'leaderboard.metric_earned',
+  spent: 'leaderboard.metric_spent',
+  play_count: 'leaderboard.metric_play_count',
 };
 
-/** 榜单周期 → 中文（服务端按 type 决定统计窗口） */
+/** 榜单周期 → **词条键**（服务端按 type 决定统计窗口） */
 const TYPE_LABEL: Record<string, string> = {
-  daily: '日榜',
-  weekly: '周榜',
-  monthly: '月榜',
-  all: '总榜',
+  daily: 'leaderboard.type_daily',
+  weekly: 'leaderboard.type_weekly',
+  monthly: 'leaderboard.type_monthly',
+  all: 'leaderboard.type_all',
 };
 
 /**
@@ -30,10 +31,13 @@ const TYPE_LABEL: Record<string, string> = {
  */
 @Component({
   selector: 'app-leaderboard',
+  imports: [T],
   template: `
     <div class="between sect">
-      <h2>排行榜</h2>
-      <button class="btn ghost" type="button" [disabled]="loading()" (click)="load()">刷新</button>
+      <h2>{{ 'leaderboard.title' | t }}</h2>
+      <button class="btn ghost" type="button" [disabled]="loading()" (click)="load()">
+        {{ 'common.refresh' | t }}
+      </button>
     </div>
 
     @if (loading()) {
@@ -44,15 +48,15 @@ const TYPE_LABEL: Record<string, string> = {
       </div>
     } @else if (error()) {
       <div class="card state">
-        <strong>加载失败</strong>
+        <strong>{{ 'common.load_failed' | t }}</strong>
         <span>{{ error() }}</span>
-        <button class="btn" type="button" (click)="load()">重试</button>
+        <button class="btn" type="button" (click)="load()">{{ 'common.retry' | t }}</button>
       </div>
     } @else if (!boards().length) {
       <div class="card state">
         <img class="state-art" src="mascot.svg" alt="" aria-hidden="true" />
-        <strong>暂无榜单</strong>
-        <span>平台还没有开启排行榜</span>
+        <strong>{{ 'leaderboard.empty_title' | t }}</strong>
+        <span>{{ 'leaderboard.empty_hint' | t }}</span>
       </div>
     } @else {
       <div class="chips">
@@ -81,15 +85,15 @@ const TYPE_LABEL: Record<string, string> = {
           </div>
         } @else if (rankErr()) {
           <div class="state">
-            <strong>加载失败</strong>
+            <strong>{{ 'common.load_failed' | t }}</strong>
             <span>{{ rankErr() }}</span>
-            <button class="btn" type="button" (click)="pick(cur()!)">重试</button>
+            <button class="btn" type="button" (click)="pick(cur()!)">{{ 'common.retry' | t }}</button>
           </div>
         } @else if (!rows().length) {
           <div class="state">
             <img class="state-art" src="mascot.svg" alt="" aria-hidden="true" />
-            <strong>榜单还是空的</strong>
-            <span>该周期内还没有产生可统计的数据</span>
+            <strong>{{ 'leaderboard.rank_empty_title' | t }}</strong>
+            <span>{{ 'leaderboard.rank_empty_hint' | t }}</span>
           </div>
         } @else {
           <div class="rows">
@@ -97,7 +101,9 @@ const TYPE_LABEL: Record<string, string> = {
               <div class="row">
                 <span class="rk" [class.top]="r.rank <= 3">{{ r.rank }}</span>
                 <div class="grow">
-                  <div class="t">玩家 {{ maskedId(r.user_id) }}</div>
+                  <div class="t">
+                    {{ 'common.player_id' | t: { id: maskedId(r.user_id) } }}
+                  </div>
                   <div class="s">{{ metricLabel(cur()?.metric) }}</div>
                 </div>
                 <span class="amount" [title]="moneyRaw(r.score)">{{ score(r) }}</span>
@@ -183,12 +189,12 @@ export class LeaderboardPage {
   }
 
   protected metricLabel(m?: string): string {
-    return m ? (METRIC_LABEL[m] ?? m) : '';
+    return m ? t(METRIC_LABEL[m] ?? m) : '';
   }
 
   /** 榜单名后缀（周期）—— 名字里通常已含周期，重复就不加 */
-  protected typeLabel(t?: string): string {
-    return t ? (TYPE_LABEL[t] ?? t) : '';
+  protected typeLabel(v?: string): string {
+    return v ? t(TYPE_LABEL[v] ?? v) : '';
   }
 
   /** 身份列只展示末 4 个字符（与 react 树 `maskedId` 同形）；接口没有昵称，只能显示编号 */
@@ -199,7 +205,9 @@ export class LeaderboardPage {
   /** play_count 榜的 score 是次数，不做货币格式化；金额类指标才走 money() */
   protected score(r: RankRow): string {
     const v = r.score;
-    if (this.cur()?.metric === 'play_count') return `${Number(v ?? 0).toLocaleString()} 次`;
+    if (this.cur()?.metric === 'play_count') {
+      return t('common.plays', { n: Number(v ?? 0).toLocaleString() });
+    }
     return money(v);
   }
 

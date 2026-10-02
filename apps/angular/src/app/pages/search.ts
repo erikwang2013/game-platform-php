@@ -3,6 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Api, ApiError, SearchGame } from '../core/api.service';
+import { T } from '../core/i18n/i18n';
 
 /** 一页条数。回包**没有 last_page**，末页只能按它自己算 */
 const PER_PAGE = 20;
@@ -22,12 +23,12 @@ const PER_PAGE = 20;
  */
 @Component({
   selector: 'app-search',
-  imports: [RouterLink],
+  imports: [RouterLink, T],
   template: `
     <div class="between sect">
-      <h2>搜索</h2>
+      <h2>{{ 'app.search' | t }}</h2>
       @if (q()) {
-        <span class="badge accent">{{ total() }} 个结果</span>
+        <span class="badge accent">{{ 'common.result_count' | t: { n: total() } }}</span>
       }
     </div>
 
@@ -53,13 +54,15 @@ const PER_PAGE = 20;
         <input
           #box
           type="search"
-          placeholder="搜索游戏名称或简介"
-          aria-label="搜索游戏"
+          placeholder="{{ 'search.placeholder' | t }}"
+          aria-label="{{ 'app.search_games' | t }}"
           autocomplete="off"
           [value]="q()"
         />
       </div>
-      <button class="btn primary" type="submit" [disabled]="loading()">搜索</button>
+      <button class="btn primary" type="submit" [disabled]="loading()">
+        {{ 'app.search' | t }}
+      </button>
     </form>
 
     <div class="card">
@@ -71,23 +74,29 @@ const PER_PAGE = 20;
         </div>
       } @else if (error()) {
         <div class="state">
-          <strong>加载失败</strong>
+          <strong>{{ 'common.load_failed' | t }}</strong>
           <span>{{ error() }}</span>
-          <button class="btn" type="button" (click)="retry()">重试</button>
+          <button class="btn" type="button" (click)="retry()">{{ 'common.retry' | t }}</button>
         </div>
       } @else if (!q()) {
         <div class="state">
           <img class="state-art" src="mascot.svg" alt="" aria-hidden="true" />
-          <strong>输入关键词开始搜索</strong>
-          <span>按游戏名称与简介匹配</span>
+          <strong>{{ 'search.idle_title' | t }}</strong>
+          <span>{{ 'search.idle_hint' | t }}</span>
         </div>
       } @else if (!items().length) {
         <div class="state">
           <img class="state-art" src="mascot.svg" alt="" aria-hidden="true" />
-          <strong>{{ page() > 1 ? '这一页没有结果' : '没有找到与「' + q() + '」相关的游戏' }}</strong>
-          <span>{{ page() > 1 ? '这个关键词的结果没有这么多页' : '换个关键词试试' }}</span>
+          <strong>{{
+            (page() > 1 ? 'search.page_empty_title' : 'search.no_hit_title') | t: { q: q() }
+          }}</strong>
+          <span>{{
+            (page() > 1 ? 'search.page_empty_hint' : 'search.no_hit_hint') | t
+          }}</span>
           @if (page() > 1) {
-            <button class="btn" type="button" (click)="to(1)">回到第 1 页</button>
+            <button class="btn" type="button" (click)="to(1)">
+              {{ 'search.back_to_first' | t }}
+            </button>
           }
         </div>
       } @else {
@@ -98,14 +107,14 @@ const PER_PAGE = 20;
                 <div class="t">{{ g.name }}</div>
                 <div class="s">{{ g.description || g.slug }}</div>
               </div>
-              <span class="badge">查看</span>
+              <span class="badge">{{ 'common.view' | t }}</span>
             </a>
           }
         </div>
         @if (lastPage() > 1) {
           <div class="pager">
             <button class="btn" type="button" [disabled]="page() <= 1" (click)="to(page() - 1)">
-              上一页
+              {{ 'common.prev_page' | t }}
             </button>
             <span class="s muted">{{ page() }} / {{ lastPage() }}</span>
             <button
@@ -114,7 +123,7 @@ const PER_PAGE = 20;
               [disabled]="page() >= lastPage()"
               (click)="to(page() + 1)"
             >
-              下一页
+              {{ 'common.next_page' | t }}
             </button>
           </div>
         }

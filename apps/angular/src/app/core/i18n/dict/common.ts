@@ -63,4 +63,19 @@ export const COMMON: Record<string, [string, string]> = {
   // —— C 批（tickets 页）：两个按钮词，别处也会用到 ——
   'common.send': ['Send', '发送'],
   'common.sending': ['Sending…', '发送中…'],
+  // —— C 批（首页/公告/搜索/会话/游戏/排行榜/活动/我的）：跨页共用的通用词 ——
+  'common.all': ['All', '全部'],
+  'common.save': ['Save', '保存'],
+  'common.processing': ['Working…', '处理中…'],
+  'common.prev_page': ['Previous', '上一页'],
+  'common.next_page': ['Next', '下一页'],
+  'common.mark_read': ['Mark read', '标记已读'],
+  'common.read_all': ['Mark all as read', '全部已读'],
+  'common.unread_count': ['{n} unread', '{n} 条未读'],
+  'common.result_count': ['{n} results', '{n} 个结果'],
+  'common.player_id': ['Player {id}', '玩家 {id}'],
+  // play_count 榜的 score 是**次数**不是金额（`LeaderboardService::computeRanking` 的三种 metric 之一）
+  'common.plays': ['{n} plays', '{n} 次'],
+  // 列举分隔符：中文用顿号、拉丁字母语言用逗号。单独成键是因为它出现在**拼接**出来的句子里
+  'common.list_sep': [', ', '、'],
 };

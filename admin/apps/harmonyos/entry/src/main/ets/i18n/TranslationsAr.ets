@@ -89,6 +89,8 @@ export function buildAr(): Record<string, string> {
   m['profile.language'] = 'اللغة';
   m['profile.game_manage'] = 'إدارة الألعاب';
   m['profile.game_manage_desc'] = 'إنشاء / تعديل / حذف، وإتاحة أو إزالة';
+  m['profile.game_hall'] = 'قاعة الألعاب';
+  m['profile.game_hall_desc'] = 'تصفح الألعاب وافتح المعاينة التجريبية للقراءة فقط';
   m['profile.announcement_manage'] = 'الإعلانات';
   m['profile.announcement_manage_desc'] = 'نشر / تعديل / حذف، وإتاحة أو إزالة';
   m['profile.admin_users'] = 'المسؤولون';
@@ -113,7 +115,6 @@ export function buildAr(): Record<string, string> {
   m['profile.up_to_date'] = 'محدَّث بالفعل';
   m['profile.about'] = 'حول';
   m['profile.about_desc'] = 'عميل HarmonyOS للوحة الإدارة';
-  m['profile.feature_in_development'] = 'الميزة قيد التطوير';
   // ── 模块索引 ──────────────────────────────────────────────
   m['module.title'] = 'إدارة الوحدات';
   // ── 游戏大厅 / 钱包 ──────────────────────────────────────────────
@@ -165,12 +166,6 @@ export function buildAr(): Record<string, string> {
   m['game.f.sort'] = 'ترتيب الفرز';
   m['game.f.sort_placeholder'] = 'الأصغر أولًا، الافتراضي 0';
   m['game.f.status'] = 'مُتاح';
-  m['wallet.balance'] = 'الرصيد';
-  m['wallet.frozen'] = 'المجمّد: {amount}';
-  m['wallet.recharge'] = 'إيداع';
-  m['wallet.exchange'] = 'استبدال';
-  m['wallet.withdraw'] = 'سحب';
-  m['wallet.transactions'] = 'المعاملات';
   // ── 资源页共用件 ──────────────────────────────────────────────
   m['resource.related_game'] = 'اللعبة';
   // ── 上传 ──────────────────────────────────────────────

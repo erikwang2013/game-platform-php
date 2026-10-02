@@ -89,6 +89,8 @@ export function buildZh(): Record<string, string> {
   m['profile.language'] = '语言 / Language';
   m['profile.game_manage'] = '游戏管理';
   m['profile.game_manage_desc'] = '新建 / 编辑 / 删除与上架下架';
+  m['profile.game_hall'] = '游戏大厅';
+  m['profile.game_hall_desc'] = '浏览游戏并进入只读试玩预览';
   m['profile.announcement_manage'] = '公告管理';
   m['profile.announcement_manage_desc'] = '发布 / 编辑 / 删除与上下架';
   m['profile.admin_users'] = '管理员';
@@ -113,7 +115,6 @@ export function buildZh(): Record<string, string> {
   m['profile.up_to_date'] = '已是最新版本';
   m['profile.about'] = '关于';
   m['profile.about_desc'] = '开放管理后台 HarmonyOS 客户端';
-  m['profile.feature_in_development'] = '功能开发中';
 
   // ── 模块索引 ──────────────────────────────────────────
   m['module.title'] = '模块管理';
@@ -167,13 +168,6 @@ export function buildZh(): Record<string, string> {
   m['game.f.sort'] = '排序';
   m['game.f.sort_placeholder'] = '越小越靠前，缺省 0';
   m['game.f.status'] = '上架';
-
-  m['wallet.balance'] = '平台币余额';
-  m['wallet.frozen'] = '冻结: {amount}';
-  m['wallet.recharge'] = '充值';
-  m['wallet.exchange'] = '兑换';
-  m['wallet.withdraw'] = '提现';
-  m['wallet.transactions'] = '流水';
 
   // ── 资源页共用件 ──────────────────────────────────────
   m['resource.related_game'] = '所属游戏';

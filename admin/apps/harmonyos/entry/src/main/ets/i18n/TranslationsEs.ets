@@ -89,6 +89,8 @@ export function buildEs(): Record<string, string> {
   m['profile.language'] = 'Idioma / Language';
   m['profile.game_manage'] = 'Gestión de juegos';
   m['profile.game_manage_desc'] = 'Crear / editar / eliminar y publicar o retirar';
+  m['profile.game_hall'] = 'Sala de juegos';
+  m['profile.game_hall_desc'] = 'Explorar juegos y abrir la vista previa de prueba de solo lectura';
   m['profile.announcement_manage'] = 'Anuncios';
   m['profile.announcement_manage_desc'] = 'Publicar / editar / eliminar y publicar o retirar';
   m['profile.admin_users'] = 'Administradores';
@@ -113,7 +115,6 @@ export function buildEs(): Record<string, string> {
   m['profile.up_to_date'] = 'Ya está actualizado';
   m['profile.about'] = 'Acerca de';
   m['profile.about_desc'] = 'Cliente HarmonyOS del panel de administración';
-  m['profile.feature_in_development'] = 'Función en desarrollo';
   // ── 模块索引 ──────────────────────────────────────────────
   m['module.title'] = 'Gestión de módulos';
   // ── 游戏大厅 / 钱包 ──────────────────────────────────────────────
@@ -165,12 +166,6 @@ export function buildEs(): Record<string, string> {
   m['game.f.sort'] = 'Orden';
   m['game.f.sort_placeholder'] = 'Los menores van primero, por defecto 0';
   m['game.f.status'] = 'Publicado';
-  m['wallet.balance'] = 'Saldo';
-  m['wallet.frozen'] = 'Congelado: {amount}';
-  m['wallet.recharge'] = 'Recargar';
-  m['wallet.exchange'] = 'Canjear';
-  m['wallet.withdraw'] = 'Retirar';
-  m['wallet.transactions'] = 'Movimientos';
   // ── 资源页共用件 ──────────────────────────────────────────────
   m['resource.related_game'] = 'Juego';
   // ── 上传 ──────────────────────────────────────────────

@@ -12,7 +12,7 @@ import {
   dt,
   money,
 } from '../core/api.service';
-import { Mt, Msg } from '../core/i18n/i18n';
+import { Mt, Msg, T, t } from '../core/i18n/i18n';
 
 interface Row {
   a: Activity;
@@ -53,15 +53,17 @@ const NONE: ActivityProgress = { activity_id: '', current: 0, target: 0, status:
  */
 @Component({
   selector: 'app-activities',
-  imports: [RouterLink, Mt],
+  imports: [RouterLink, Mt, T],
   template: `
     <div class="between sect">
-      <h2>运营活动</h2>
-      <button class="btn ghost" type="button" [disabled]="loading()" (click)="load()">刷新</button>
+      <h2>{{ 'activities.title' | t }}</h2>
+      <button class="btn ghost" type="button" [disabled]="loading()" (click)="load()">
+        {{ 'common.refresh' | t }}
+      </button>
     </div>
 
     @if (reward(); as list) {
-      <div class="alert ok">已发放：{{ rewardText(list) }}（可在钱包流水中查看）</div>
+      <div class="alert ok">{{ 'activities.granted' | t: { summary: rewardText(list) } }}</div>
     }
     @if (note()) {
       <div class="alert">{{ note() | mt }}</div>
@@ -75,15 +77,15 @@ const NONE: ActivityProgress = { activity_id: '', current: 0, target: 0, status:
       </div>
     } @else if (err()) {
       <div class="card state">
-        <strong>加载失败</strong>
+        <strong>{{ 'common.load_failed' | t }}</strong>
         <span>{{ err() }}</span>
-        <button class="btn" type="button" (click)="load()">重试</button>
+        <button class="btn" type="button" (click)="load()">{{ 'common.retry' | t }}</button>
       </div>
     } @else if (!rows().length) {
       <div class="card state">
         <img class="state-art" src="mascot.svg" alt="" aria-hidden="true" />
-        <strong>暂无可参与的活动</strong>
-        <span>平台还没投放活动，或当前账号不在灰度范围内</span>
+        <strong>{{ 'activities.empty_title' | t }}</strong>
+        <span>{{ 'activities.empty_hint' | t }}</span>
       </div>
     } @else {
       @for (r of rows(); track r.a.id) {
@@ -92,12 +94,12 @@ const NONE: ActivityProgress = { activity_id: '', current: 0, target: 0, status:
             <div class="grow">
               <div class="t">{{ r.a.name }}</div>
               <div class="s muted">
-                {{ typeLabel(r.a.type) }}
+                {{ typeLabel(r.a.type) | t }}
                 @if (r.a.end_at) {
-                  · 截止 {{ dt(r.a.end_at) }}
+                  · {{ 'activities.ends_at' | t: { time: dt(r.a.end_at) } }}
                 }
                 @if (gameLink(r.a); as gid) {
-                  · <a [routerLink]="['/game', gid]">去玩对应游戏</a>
+                  · <a [routerLink]="['/game', gid]">{{ 'activities.go_play' | t }}</a>
                 }
               </div>
             </div>
@@ -118,7 +120,7 @@ const NONE: ActivityProgress = { activity_id: '', current: 0, target: 0, status:
                 [disabled]="busyId() === r.a.id || r.p.status === 'rewarded'"
                 (click)="checkin(r.a)"
               >
-                {{ busyId() === r.a.id ? '处理中…' : actionLabel(r) }}
+                {{ busyId() === r.a.id ? ('common.processing' | t) : actionLabel(r) }}
               </button>
             }
           </div>
@@ -253,18 +255,20 @@ export class ActivitiesPage {
     });
   }
 
-  protected typeLabel(t: string): string {
-    return ACTIVITY_TYPE_LABEL[t] ?? t;
+  /** 表里存的是**键**（渲染期才求值），认不出就原样吐 type */
+  protected typeLabel(v: string): string {
+    return ACTIVITY_TYPE_LABEL[v] ?? v;
   }
 
   /** 奖励条目里的 type 是**币种**，不是流水类型 */
   protected rewardText(list: ActivityReward[]): string {
-    if (!list.length) return '已达标（本次没有可发放的奖励）';
-    return list.map((r) => `${this.coinLabel(r.type)} ${money(r.amount)}`).join('、');
+    if (!list.length) return t('activities.claimed_none');
+    return list.map((r) => `${this.coinLabel(r.type)} ${money(r.amount)}`).join(t('common.list_sep'));
   }
 
-  private coinLabel(t: string): string {
-    return t === 'platform_coin' ? '平台币' : t === 'game_coin' ? '游戏币' : t;
+  private coinLabel(k: string): string {
+    if (k === 'platform_coin') return t('common.platform_coin');
+    return k === 'game_coin' ? t('common.game_coin') : k;
   }
 
   /** game_id 为 0/空 = 全平台，没有可跳转的游戏页 */
@@ -280,9 +284,9 @@ export class ActivitiesPage {
    */
   protected blockReason(a: Activity): string {
     if (a.type !== 'signin') {
-      return a.type === 'invite' ? '按好友注册自动累计' : '按任务条件自动累计';
+      return t(a.type === 'invite' ? 'activities.auto_invite' : 'activities.auto_task');
     }
-    return this.gameLink(a) ? '请在对应游戏内完成' : '';
+    return this.gameLink(a) ? t('activities.in_game') : '';
   }
 
   protected pct(p: ActivityProgress): number {
@@ -291,15 +295,15 @@ export class ActivitiesPage {
   }
 
   protected progressText(p: ActivityProgress): string {
-    if (p.status === 'rewarded') return '今日已完成';
-    if (!p.target || p.target <= 0) return '今日还没开始';
-    return `今日进度 ${p.current} / ${p.target}`;
+    if (p.status === 'rewarded') return t('activities.done_today');
+    if (!p.target || p.target <= 0) return t('activities.not_started_today');
+    return t('activities.progress_today', { current: p.current, target: p.target });
   }
 
   protected statusLabel(p: ActivityProgress): string {
-    if (p.status === 'rewarded') return '已领取';
-    if (p.status === 'completed') return '已达标';
-    return !p.target || p.target <= 0 ? '未开始' : '进行中';
+    if (p.status === 'rewarded') return t('activities.claimed');
+    if (p.status === 'completed') return t('activities.reached');
+    return !p.target || p.target <= 0 ? t('activities.idle') : t('activities.running');
   }
 
   protected tone(p: ActivityProgress): string {
@@ -310,6 +314,6 @@ export class ActivitiesPage {
 
   /** 只有 `game_id=0` 的 signin 才走得到这里（其余由 blockReason 拦下）⇒ 不再分「签到/领取」 */
   protected actionLabel(r: Row): string {
-    return r.p.status === 'rewarded' ? '今日已领' : '签到';
+    return t(r.p.status === 'rewarded' ? 'activities.claimed_today' : 'activities.checkin');
   }
 }

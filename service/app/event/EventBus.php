@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace app\event;
 
 use common\service\OutboxWriter;
+use common\SnowflakeService;
 use support\Log;
 use support\Redis;
 
@@ -29,11 +30,19 @@ class EventBus
     /**
      * Emit an event to Redis Pub/Sub channel.
      * Subscribers: achievement engine, webhook dispatcher, audit logger.
+     *
+     * id 在**这里生成一次**再放进消息：N 个订阅者收到的是 Redis 扇出的同一条消息字节，
+     * 于是同一个事件对所有订阅者是同一个 id。若改到消费者侧生成，每个订阅者会各得一个
+     * 不同的 id，跨订阅者的关联（以及下一批要做的事件去重）就失去依据。
+     * 形状：与 push() 的 event_id 同为「不透明非空字符串」——可靠路径的 event_id 由调用方
+     * 给业务键（deposit_123 / withdraw_456_1 / wallet.mutated:789），emit() 手里没有业务键，
+     * 沿用全仓唯一的 id 生成器（RiskService 生成 risk_<snowflake> 亦用同一个）而不另造前缀格式。
      */
     public static function emit(string $event, array $payload = []): void
     {
         try {
             $message = json_encode([
+                'id' => (string) SnowflakeService::generate(),
                 'event' => $event,
                 'payload' => $payload,
                 'timestamp' => time(),

@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ModalFocus } from '../components/modal-focus';
 import { Api, AnnouncementBrief, AnnouncementDetail, ApiError, dt } from '../core/api.service';
+import { T } from '../core/i18n/i18n';
 
 /**
  * 平台公告 —— 公开接口，未登录也能看。
@@ -17,11 +18,13 @@ import { Api, AnnouncementBrief, AnnouncementDetail, ApiError, dt } from '../cor
  */
 @Component({
   selector: 'app-announcements',
-  imports: [ModalFocus],
+  imports: [ModalFocus, T],
   template: `
     <div class="between sect">
-      <h2>平台公告</h2>
-      <button class="btn ghost" type="button" [disabled]="loading()" (click)="load()">刷新</button>
+      <h2>{{ 'announcements.title' | t }}</h2>
+      <button class="btn ghost" type="button" [disabled]="loading()" (click)="load()">
+        {{ 'common.refresh' | t }}
+      </button>
     </div>
 
     <div class="card">
@@ -33,15 +36,15 @@ import { Api, AnnouncementBrief, AnnouncementDetail, ApiError, dt } from '../cor
         </div>
       } @else if (error()) {
         <div class="state">
-          <strong>加载失败</strong>
+          <strong>{{ 'common.load_failed' | t }}</strong>
           <span>{{ error() }}</span>
-          <button class="btn" type="button" (click)="load()">重试</button>
+          <button class="btn" type="button" (click)="load()">{{ 'common.retry' | t }}</button>
         </div>
       } @else if (!items().length) {
         <div class="state">
           <img class="state-art" src="mascot.svg" alt="" aria-hidden="true" />
-          <strong>暂无公告</strong>
-          <span>平台活动与维护通知会发布在这里</span>
+          <strong>{{ 'announcements.empty_title' | t }}</strong>
+          <span>{{ 'announcements.empty_hint' | t }}</span>
         </div>
       } @else {
         <div class="rows">
@@ -51,7 +54,7 @@ import { Api, AnnouncementBrief, AnnouncementDetail, ApiError, dt } from '../cor
                 <div class="t">{{ a.title }}</div>
                 <div class="s">{{ dt(a.created_at) }}{{ a.type ? ' · ' + a.type : '' }}</div>
               </div>
-              <span class="badge">查看</span>
+              <span class="badge">{{ 'common.view' | t }}</span>
             </button>
           }
         </div>
@@ -61,14 +64,21 @@ import { Api, AnnouncementBrief, AnnouncementDetail, ApiError, dt } from '../cor
     @if (cur() || detailErr() || detailLoading()) {
       <div class="backdrop" (click)="back()"></div>
       <!-- uiModal：开框聚焦首个可聚焦元素 / Tab 圈在框内 / Esc 关框 / 关框把焦点还给打开者 -->
-      <div class="modal" uiModal (dismiss)="back()" role="dialog" aria-modal="true" aria-label="公告详情">
+      <div
+        class="modal"
+        uiModal
+        (dismiss)="back()"
+        role="dialog"
+        aria-modal="true"
+        aria-label="{{ 'announcements.detail_title' | t }}"
+      >
         <header class="between">
-          <b>{{ cur()?.title || '公告' }}</b>
-          <button class="btn ghost" type="button" (click)="back()">关闭</button>
+          <b>{{ cur()?.title || ('announcements.fallback_title' | t) }}</b>
+          <button class="btn ghost" type="button" (click)="back()">{{ 'common.close' | t }}</button>
         </header>
         <div class="modal-body">
           @if (detailLoading()) {
-            <div class="state"><span class="spin"></span> 加载中…</div>
+            <div class="state"><span class="spin"></span> {{ 'common.loading' | t }}</div>
           } @else if (detailErr()) {
             <div class="alert">{{ detailErr() }}</div>
           } @else if (cur(); as d) {

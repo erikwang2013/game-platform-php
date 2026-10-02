@@ -89,6 +89,8 @@ export function buildRu(): Record<string, string> {
   m['profile.language'] = 'Язык';
   m['profile.game_manage'] = 'Управление играми';
   m['profile.game_manage_desc'] = 'Создание / изменение / удаление, публикация и снятие с публикации';
+  m['profile.game_hall'] = 'Игровой зал';
+  m['profile.game_hall_desc'] = 'Просмотр игр и предпросмотр в режиме только чтения';
   m['profile.announcement_manage'] = 'Объявления';
   m['profile.announcement_manage_desc'] = 'Публикация / изменение / удаление и снятие с публикации';
   m['profile.admin_users'] = 'Администраторы';
@@ -113,7 +115,6 @@ export function buildRu(): Record<string, string> {
   m['profile.up_to_date'] = 'Установлена последняя версия';
   m['profile.about'] = 'О программе';
   m['profile.about_desc'] = 'Клиент Open Admin Panel для HarmonyOS';
-  m['profile.feature_in_development'] = 'Функция в разработке';
   // ── 模块索引 ──────────────────────────────────────────────
   m['module.title'] = 'Управление модулями';
   // ── 游戏大厅 / 钱包 ──────────────────────────────────────────────
@@ -165,12 +166,6 @@ export function buildRu(): Record<string, string> {
   m['game.f.sort'] = 'Порядок сортировки';
   m['game.f.sort_placeholder'] = 'Меньше — выше, по умолчанию 0';
   m['game.f.status'] = 'Опубликована';
-  m['wallet.balance'] = 'Баланс';
-  m['wallet.frozen'] = 'Заморожено: {amount}';
-  m['wallet.recharge'] = 'Пополнить';
-  m['wallet.exchange'] = 'Обменять';
-  m['wallet.withdraw'] = 'Вывести';
-  m['wallet.transactions'] = 'Транзакции';
   // ── 资源页共用件 ──────────────────────────────────────────────
   m['resource.related_game'] = 'Игра';
   // ── 上传 ──────────────────────────────────────────────

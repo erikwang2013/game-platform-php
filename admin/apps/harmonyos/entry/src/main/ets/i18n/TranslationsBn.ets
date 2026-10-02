@@ -89,6 +89,8 @@ export function buildBn(): Record<string, string> {
   m['profile.language'] = 'ভাষা';
   m['profile.game_manage'] = 'গেম ব্যবস্থাপনা';
   m['profile.game_manage_desc'] = 'তৈরি / সম্পাদনা / মুছে ফেলা এবং প্রকাশ বা প্রত্যাহার';
+  m['profile.game_hall'] = 'গেম হল';
+  m['profile.game_hall_desc'] = 'গেম ব্রাউজ করুন এবং শুধু-পাঠযোগ্য ট্রায়াল প্রিভিউ খুলুন';
   m['profile.announcement_manage'] = 'ঘোষণা';
   m['profile.announcement_manage_desc'] = 'প্রকাশ / সম্পাদনা / মুছে ফেলা এবং আপ বা ডাউন';
   m['profile.admin_users'] = 'প্রশাসক';
@@ -113,7 +115,6 @@ export function buildBn(): Record<string, string> {
   m['profile.up_to_date'] = 'ইতিমধ্যে সর্বশেষ সংস্করণ';
   m['profile.about'] = 'সম্পর্কে';
   m['profile.about_desc'] = 'ওপেন অ্যাডমিন প্যানেল HarmonyOS ক্লায়েন্ট';
-  m['profile.feature_in_development'] = 'সুবিধাটি উন্নয়নাধীন';
   // ── 模块索引 ──────────────────────────────────────────────
   m['module.title'] = 'মডিউল ব্যবস্থাপনা';
   // ── 游戏大厅 / 钱包 ──────────────────────────────────────────────
@@ -165,12 +166,6 @@ export function buildBn(): Record<string, string> {
   m['game.f.sort'] = 'ক্রম';
   m['game.f.sort_placeholder'] = 'ছোট মান আগে, ডিফল্ট 0';
   m['game.f.status'] = 'প্রকাশিত';
-  m['wallet.balance'] = 'ব্যালেন্স';
-  m['wallet.frozen'] = 'ফ্রোজেন: {amount}';
-  m['wallet.recharge'] = 'ডিপোজিট';
-  m['wallet.exchange'] = 'রিডিম';
-  m['wallet.withdraw'] = 'উইথড্র';
-  m['wallet.transactions'] = 'লেনদেন';
   // ── 资源页共用件 ──────────────────────────────────────────────
   m['resource.related_game'] = 'গেম';
   // ── 上传 ──────────────────────────────────────────────

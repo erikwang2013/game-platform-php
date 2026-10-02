@@ -26,7 +26,7 @@
           <span class="chip">{{ u.language }}</span>
         }
         @if (u.created_at) {
-          <span class="chip">注册于 {{ dt(u.created_at) }}</span>
+          <span class="chip">{{ 'me.registered_at' | t: { date: dt(u.created_at) } }}</span>
         }
       </div>
     } @else if (profError()) {
@@ -37,19 +37,19 @@
   </div>
   <div class="wrap out">
     <app-me-nick [nickname]="user()?.nickname ?? ''" (saved)="loadProfile()" />
-    <button class="btn ghost" type="button" (click)="signout()">退出登录</button>
+    <button class="btn ghost" type="button" (click)="signout()">{{ 'app.logout' | t }}</button>
   </div>
 </div>
 
 <app-me-tiles />
 
 <div class="between sect" id="notifications">
-  <h2>消息</h2>
+  <h2>{{ 'nav.messages' | t }}</h2>
   <div class="wrap">
     @if (unread() > 0) {
-      <span class="badge accent">{{ unread() }} 条未读</span>
+      <span class="badge accent">{{ 'common.unread_count' | t: { n: unread() } }}</span>
       <button class="btn ghost" type="button" [disabled]="busy()" (click)="readAll()">
-        全部已读
+        {{ 'common.read_all' | t }}
       </button>
     }
   </div>
@@ -64,16 +64,16 @@
     </div>
   } @else if (error()) {
     <div class="state">
-      <strong>加载失败</strong>
+      <strong>{{ 'common.load_failed' | t }}</strong>
       <span>{{ error() }}</span>
-      <button class="btn" type="button" (click)="reload()">重试</button>
+      <button class="btn" type="button" (click)="reload()">{{ 'common.retry' | t }}</button>
     </div>
   } @else if (!items().length) {
     <div class="state">
       <!-- 吉祥物小骰（Dicey）：相对 public/，由 <base href> 解析到子路径 -->
       <img class="state-art" src="mascot.svg" alt="" aria-hidden="true" />
-      <strong>暂无消息</strong>
-      <span>平台公告与账户通知会出现在这里</span>
+      <strong>{{ 'me.no_notices_title' | t }}</strong>
+      <span>{{ 'me.no_notices_hint' | t }}</span>
     </div>
   } @else {
     <div class="rows">
@@ -88,7 +88,9 @@
             }
           </div>
           @if (!n.is_read) {
-            <button class="btn ghost mark" type="button" (click)="read(n)">标记已读</button>
+            <button class="btn ghost mark" type="button" (click)="read(n)">
+              {{ 'common.mark_read' | t }}
+            </button>
           }
         </div>
       }
@@ -96,7 +98,7 @@
     @if (page() < lastPage()) {
       <div class="more">
         <button class="btn" type="button" [disabled]="more()" (click)="loadMore()">
-          {{ more() ? '加载中…' : '加载更多' }}
+          {{ more() ? ('common.loading' | t) : ('wallet.load_more' | t) }}
         </button>
       </div>
     }
@@ -107,11 +109,11 @@
 
 <div class="card danger" id="delete-account">
   <div class="dh">
-    <h2>注销账号</h2>
-    <span class="badge bad">不可撤销</span>
+    <h2>{{ 'me.del_title' | t }}</h2>
+    <span class="badge bad">{{ 'me.del_irreversible' | t }}</span>
   </div>
   <p class="hint">
-    注销后该账号无法再登录，个人资料将被匿名化。账号内余额需先自行提现清零，否则服务端会拒绝注销。
+    {{ 'me.del_hint' | t }}
   </p>
 
   @if (delMsg()) {
@@ -121,18 +123,18 @@
   @if (delOpen()) {
     <div class="fields">
       <label class="field">
-        <span>当前密码</span>
+        <span>{{ 'me.del_password' | t }}</span>
         <input
           class="input"
           type="password"
           autocomplete="current-password"
-          placeholder="请输入当前密码"
+          placeholder="{{ 'security.password_ph' | t }}"
           [value]="delPw()"
           (input)="onDelPw($event)"
         />
       </label>
       <label class="field">
-        <span>确认注销（输入 yes）</span>
+        <span>{{ 'me.del_confirm' | t }}</span>
         <input
           class="input mono"
           autocomplete="off"
@@ -144,13 +146,15 @@
     </div>
     <div class="acts">
       <button class="btn primary" type="button" [disabled]="delBusy()" (click)="submitDel()">
-        {{ delBusy() ? '注销中…' : '确认注销' }}
+        {{ delBusy() ? ('me.del_busy' | t) : ('me.del_submit' | t) }}
       </button>
       <button class="btn ghost" type="button" [disabled]="delBusy()" (click)="cancelDel()">
-        取消
+        {{ 'common.cancel' | t }}
       </button>
     </div>
   } @else {
-    <button class="btn ghost red" type="button" (click)="openDel()">注销账号</button>
+    <button class="btn ghost red" type="button" (click)="openDel()">
+      {{ 'me.del_title' | t }}
+    </button>
   }
 </div>

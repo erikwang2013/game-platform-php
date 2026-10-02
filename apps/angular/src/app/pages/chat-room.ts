@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Api, ApiError, ChatMessage, FriendUser, dt } from '../core/api.service';
 import { Avatars } from '../core/avatar';
+import { T, t } from '../core/i18n/i18n';
 
 /**
  * 消息 —— 与某人的对话（`/chat/:hashid`，hashid 是**对方用户**的）。
@@ -30,21 +31,23 @@ import { Avatars } from '../core/avatar';
  */
 @Component({
   selector: 'app-chat-room',
-  imports: [RouterLink],
+  imports: [RouterLink, T],
   template: `
-    <a class="back muted" routerLink="/chat">← 返回消息</a>
+    <a class="back muted" routerLink="/chat">← {{ 'chat.back_to_list' | t }}</a>
 
     <div class="between sect">
       <h2>{{ peerName() }}</h2>
-      <button class="btn ghost" type="button" [disabled]="loading()" (click)="load()">刷新</button>
+      <button class="btn ghost" type="button" [disabled]="loading()" (click)="load()">
+        {{ 'common.refresh' | t }}
+      </button>
     </div>
     @if (peer(); as p) {
       <p class="muted s user">@{{ p.username }}</p>
     }
 
     <p class="muted note">
-      本页不会自动更新 —— <strong>新消息到达后刷新</strong>。打开本页的同时，对方发来的消息就已经
-      被标成已读了。
+      {{ 'chat.room_note_a' | t }}<strong>{{ 'chat.room_note_b' | t }}</strong
+      >{{ 'chat.room_note_c' | t }}
     </p>
 
     <!-- 无 [formGroup] 的表单一律 (submit) + preventDefault：ngSubmit 只由 FormsModule 提供，本树不引 -->
@@ -53,13 +56,13 @@ import { Avatars } from '../core/avatar';
         class="input"
         type="text"
         name="content"
-        placeholder="说点什么…"
+        placeholder="{{ 'chat.placeholder' | t }}"
         autocomplete="off"
         [value]="draft()"
         (input)="draft.set(val($event))"
       />
       <button class="btn primary" type="submit" [disabled]="sending() || !draft().trim()">
-        {{ sending() ? '发送中…' : '发送' }}
+        {{ sending() ? ('common.sending' | t) : ('common.send' | t) }}
       </button>
     </form>
 
@@ -79,20 +82,20 @@ import { Avatars } from '../core/avatar';
         </div>
       } @else if (err()) {
         <div class="state">
-          <strong>加载失败</strong>
+          <strong>{{ 'common.load_failed' | t }}</strong>
           <span>{{ err() }}</span>
-          <button class="btn" type="button" (click)="load()">重试</button>
+          <button class="btn" type="button" (click)="load()">{{ 'common.retry' | t }}</button>
         </div>
       } @else if (!msgs().length) {
         <div class="state">
           <img class="state-art" src="mascot.svg" alt="" aria-hidden="true" />
-          <strong>还没有聊过天</strong>
-          <span>在上面输入框里打个招呼吧</span>
+          <strong>{{ 'chat.room_empty_title' | t }}</strong>
+          <span>{{ 'chat.room_empty_hint' | t }}</span>
         </div>
       } @else {
         @if (page() < lastPage()) {
           <button class="btn ghost wide more" type="button" [disabled]="moreBusy()" (click)="more()">
-            {{ moreBusy() ? '加载中…' : '加载更早的消息' }}
+            {{ moreBusy() ? ('common.loading' | t) : ('chat.load_earlier' | t) }}
           </button>
         }
         <div class="rows">
@@ -209,7 +212,7 @@ export class ChatRoomPage {
 
   protected peerName(): string {
     const p = this.peer();
-    return p ? p.nickname || p.username : '对话';
+    return p ? p.nickname || p.username : t('chat.fallback_peer');
   }
 
   protected val(ev: Event): string {

@@ -8,9 +8,11 @@
  * 前三条正是 2026-10-02 删掉那个假页（WalletPage：余额恒恒 `--`、四个宫格 onClick 全空）
  * 时顺手能立起来的形状：文件/注册漂移、导航指向没注册的页、点了没反应的死控件。
  *
- * 第四条（可达性）是**告警**不是硬门：本树 GameHallPage / GameDetailPage 目前无人 push
- * （GameDetailPage 只被 GameHallPage push，GameHallPage 全树零入边），这是**已知未修**的
- * 真缺口 —— 报出来但不挡门，免得一条已知项把整颗钉子变成常年红。
+ * 第四条（可达性）是**告警**不是硬门 —— 报出来但不挡门，免得一条已知项把整颗钉子变成常年红。
+ * 它此前长期报 1：GameHallPage 全树零入边（GameDetailPage 只被 GameHallPage push）。
+ * 定性是**入边漏写**、不是死代码：后端 `/admin/v1/game/launch` 的 apidoc 写明是「管理端试玩入口」、
+ * `/admin/v1/game/{hashid}` 写明「供管理端客户端游戏详情页使用」，且 `git log -S pages/GameHallPage`
+ * 显示本树**从建树起**就没有过入口。2026-10-02 由 ProfilePage 补上入口后归零（导航边 34 → 35）。
  */
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { dirname, resolve, basename } from 'node:path';

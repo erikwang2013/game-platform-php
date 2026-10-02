@@ -7,25 +7,6 @@ class ExportService {
 
   ExportService(this._dio);
 
-  Future<void> exportExcel({
-    required String table,
-    required List<String> columns,
-    Map<String, dynamic>? conditions,
-  }) async {
-    final response = await _dio.post(
-      '/admin/v1/export/excel',
-      data: {
-        'table': table,
-        'columns': columns,
-        'conditions': conditions ?? {},
-      },
-      options: Options(responseType: ResponseType.bytes),
-    );
-
-    final filename = 'export_${table}_${DateTime.now().millisecondsSinceEpoch}.xlsx';
-    await FileSaver.instance.saveFile(name: filename, bytes: response.data, ext: 'xlsx');
-  }
-
   Future<void> exportReport({required String start, required String end, String format = 'excel'}) async {
     final response = await _dio.get(
       '/admin/v1/report/export',

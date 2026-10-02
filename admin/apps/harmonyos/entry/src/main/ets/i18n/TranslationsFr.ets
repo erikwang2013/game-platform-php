@@ -89,6 +89,8 @@ export function buildFr(): Record<string, string> {
   m['profile.language'] = 'Langue';
   m['profile.game_manage'] = 'Gestion des jeux';
   m['profile.game_manage_desc'] = 'Créer / modifier / supprimer et mettre en ligne ou retirer';
+  m['profile.game_hall'] = 'Hall des jeux';
+  m['profile.game_hall_desc'] = 'Parcourir les jeux et ouvrir un aperçu de test en lecture seule';
   m['profile.announcement_manage'] = 'Annonces';
   m['profile.announcement_manage_desc'] = 'Publier / modifier / supprimer et mettre en ligne ou hors ligne';
   m['profile.admin_users'] = 'Administrateurs';
@@ -113,7 +115,6 @@ export function buildFr(): Record<string, string> {
   m['profile.up_to_date'] = 'Déjà à jour';
   m['profile.about'] = 'À propos';
   m['profile.about_desc'] = 'Client HarmonyOS du panneau d\'administration';
-  m['profile.feature_in_development'] = 'Fonctionnalité en cours de développement';
   // ── 模块索引 ──────────────────────────────────────────────
   m['module.title'] = 'Gestion des modules';
   // ── 游戏大厅 / 钱包 ──────────────────────────────────────────────
@@ -165,12 +166,6 @@ export function buildFr(): Record<string, string> {
   m['game.f.sort'] = 'Ordre de tri';
   m['game.f.sort_placeholder'] = 'Les valeurs plus petites viennent en premier, 0 par défaut';
   m['game.f.status'] = 'En ligne';
-  m['wallet.balance'] = 'Solde';
-  m['wallet.frozen'] = 'Gelé : {amount}';
-  m['wallet.recharge'] = 'Dépôt';
-  m['wallet.exchange'] = 'Échanger';
-  m['wallet.withdraw'] = 'Retirer';
-  m['wallet.transactions'] = 'Transactions';
   // ── 资源页共用件 ──────────────────────────────────────────────
   m['resource.related_game'] = 'Jeu';
   // ── 上传 ──────────────────────────────────────────────

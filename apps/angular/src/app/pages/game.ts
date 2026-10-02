@@ -3,12 +3,13 @@ import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Api, ApiError, GameDetail, LaunchResult, isAuthed } from '../core/api.service';
+import { T } from '../core/i18n/i18n';
 
 @Component({
   selector: 'app-game',
-  imports: [RouterLink],
+  imports: [RouterLink, T],
   template: `
-    <a class="back muted" routerLink="/">← 返回大厅</a>
+    <a class="back muted" routerLink="/">← {{ 'game.back_hall' | t }}</a>
 
     @if (loading()) {
       <div class="card detail">
@@ -21,9 +22,9 @@ import { Api, ApiError, GameDetail, LaunchResult, isAuthed } from '../core/api.s
       </div>
     } @else if (error()) {
       <div class="card state">
-        <strong>加载失败</strong>
+        <strong>{{ 'common.load_failed' | t }}</strong>
         <span>{{ error() }}</span>
-        <button class="btn" type="button" (click)="load()">重试</button>
+        <button class="btn" type="button" (click)="load()">{{ 'common.retry' | t }}</button>
       </div>
     } @else if (game(); as g) {
       <div class="card detail">
@@ -57,10 +58,10 @@ import { Api, ApiError, GameDetail, LaunchResult, isAuthed } from '../core/api.s
             [disabled]="launching()"
             (click)="launch()"
           >
-            {{ launching() ? '正在启动…' : '开始游戏' }}
+            {{ launching() ? ('game.launching' | t) : ('game.launch' | t) }}
           </button>
           @if (!authed()) {
-            <span class="muted hint">未登录，点击将先跳转登录</span>
+            <span class="muted hint">{{ 'game.launch_hint' | t }}</span>
           }
           @if (launchError()) {
             <div class="alert">{{ launchError() }}</div>
@@ -71,25 +72,25 @@ import { Api, ApiError, GameDetail, LaunchResult, isAuthed } from '../core/api.s
       @if (launched(); as l) {
         <div class="card launch">
           <div class="between">
-            <span class="label">已启动</span>
+            <span class="label">{{ 'game.launched' | t }}</span>
             <span class="badge on">{{ l.type || 'session' }}</span>
           </div>
           <div class="kv">
-            <span class="muted">会话 ID</span>
+            <span class="muted">{{ 'game.session_id' | t }}</span>
             <span class="mono">{{ l.session_id }}</span>
           </div>
           <div class="kv">
-            <span class="muted">游戏入口</span>
+            <span class="muted">{{ 'game.entry' | t }}</span>
             <a class="mono link" [href]="l.api_endpoint" target="_blank" rel="noopener">
               {{ l.api_endpoint }}
             </a>
           </div>
-          <p class="muted hint">会话有效期 5 分钟，请在游戏端尽快完成接入。</p>
+          <p class="muted hint">{{ 'game.session_hint' | t }}</p>
         </div>
       }
 
       @if (g.currencies.length) {
-        <h2 class="h2">支持币种</h2>
+        <h2 class="h2">{{ 'game.currencies' | t }}</h2>
         <div class="card">
           <div class="rows">
             @for (c of g.currencies; track c.id) {
@@ -97,10 +98,10 @@ import { Api, ApiError, GameDetail, LaunchResult, isAuthed } from '../core/api.s
                 <span class="sym">{{ c.symbol || c.name.charAt(0) }}</span>
                 <div class="grow">
                   <div class="t">{{ c.name }}</div>
-                  <div class="s">汇率 {{ c.exchange_rate }}</div>
+                  <div class="s">{{ 'common.rate' | t }} {{ c.exchange_rate }}</div>
                 </div>
                 @if (c.spread_pct !== undefined && c.spread_pct !== null) {
-                  <span class="badge">点差 {{ c.spread_pct }}%</span>
+                  <span class="badge">{{ 'common.spread' | t }} {{ c.spread_pct }}%</span>
                 }
               </div>
             }
@@ -108,18 +109,18 @@ import { Api, ApiError, GameDetail, LaunchResult, isAuthed } from '../core/api.s
         </div>
       }
 
-      <h2 class="h2">接入信息</h2>
+      <h2 class="h2">{{ 'game.integration' | t }}</h2>
       <div class="card">
         <div class="kv">
-          <span class="muted">接口地址</span>
+          <span class="muted">{{ 'game.api_endpoint' | t }}</span>
           <span class="mono">{{ g.api_endpoint || '—' }}</span>
         </div>
         <div class="kv">
-          <span class="muted">游戏标识</span>
+          <span class="muted">{{ 'game.slug' | t }}</span>
           <span class="mono">{{ g.slug }}</span>
         </div>
         <div class="kv">
-          <span class="muted">游戏 ID</span>
+          <span class="muted">{{ 'game.id' | t }}</span>
           <span class="mono">{{ g.id }}</span>
         </div>
       </div>

@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Api, ApiError, Notify, UserProfile, dt } from '../core/api.service';
-import { Mt, Msg } from '../core/i18n/i18n';
+import { Mt, Msg, T } from '../core/i18n/i18n';
 import { fileBlob } from '../core/upload';
 import { MeTiles } from './me-tiles';
 import { MeExport } from './me-export';
@@ -11,7 +11,7 @@ import { MeNick } from './me-nick';
 
 @Component({
   selector: 'app-me',
-  imports: [MeTiles, MeExport, MeNick, Mt],
+  imports: [MeTiles, MeExport, MeNick, Mt, T],
   templateUrl: './me.html',
   styles: [
     `

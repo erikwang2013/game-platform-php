@@ -1,5 +1,6 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import type { ExportData } from './api.service';
+import { t } from './i18n/i18n';
 
 /**
  * 「导出我的数据」的落盘半截（`GET /user/export-data`）。语义与 react 树 `lib/exportData.ts`
@@ -36,12 +37,12 @@ export function exportBlob(data: ExportData): Blob {
  * （相加看不出缺哪一类，且四类上限都是 100，加起来只会误导成"共 400 条"）。
  */
 export function exportCounts(d: ExportData): string {
-  return [
-    `流水 ${d.transactions.length}`,
-    `兑换 ${d.exchange_records.length}`,
-    `充值 ${d.deposit_orders.length}`,
-    `提现 ${d.withdraw_orders.length}`,
-  ].join(' · ');
+  return t('me.export_counts', {
+    transactions: d.transactions.length,
+    exchanges: d.exchange_records.length,
+    deposits: d.deposit_orders.length,
+    withdrawals: d.withdraw_orders.length,
+  });
 }
 
 /**

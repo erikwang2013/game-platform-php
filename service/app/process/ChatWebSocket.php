@@ -77,14 +77,27 @@ class ChatWebSocket
 
     public function deliverToUser(int $userId, string $payload): void
     {
+        $matched = false;
         foreach ($this->connections as $conn) {
             if (($conn->userId ?? 0) === $userId) {
+                $matched = true;
                 try {
                     $conn->send($payload);
                 } catch (\Throwable $e) {
                     unset($this->connections[$conn->id]);
                 }
             }
+        }
+
+        // 无匹配 = 本实例连接表里没有该用户。N 实例下这是投递丢失的唯一痕迹：DB 里消息行是有的，
+        // 客户端要重连走 REST 才拿得到 ⇒ 这里不记就完全无痕。
+        // connections 一并带上以区分两种无匹配：非 0 = 用户连接在别的实例（消息该由那台投递），
+        // 0 = 本实例连接表为空（可能整体被路由到了空实例）。
+        if (!$matched) {
+            Log::warning('ChatWebSocket delivery dropped: no local connection for user', [
+                'to_user_id'  => $userId,
+                'connections' => count($this->connections),
+            ]);
         }
     }
 }

@@ -1,5 +1,6 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { COMMON } from './dict/common';
+import { CONTENT } from './dict/content';
 import { DEPOSIT } from './dict/deposit';
 import { EXCHANGE } from './dict/exchange';
 import { FRIENDS } from './dict/friends';
@@ -24,6 +25,7 @@ import { WITHDRAW } from './dict/withdraw';
 const PARTS: Record<string, [string, string]>[] = [
   SHELL,
   COMMON,
+  CONTENT,
   WALLET,
   DEPOSIT,
   WITHDRAW,

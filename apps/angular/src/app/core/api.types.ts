@@ -388,11 +388,11 @@ export type IdType = (typeof ID_TYPES)[number];
 
 /* ==================== 运营活动 ==================== */
 
-/** 活动类型 → 中文。真源：common\model\Activity 的 TYPE_ 常量（运营在管理端选） */
+/** 活动类型 → **词条键**（渲染期才求值）。真源：common\model\Activity 的 TYPE_ 常量（运营在管理端选） */
 export const ACTIVITY_TYPE_LABEL: Record<string, string> = {
-  signin: '每日签到',
-  daily_task: '每日任务',
-  invite: '邀请好友',
+  signin: 'activities.type_signin',
+  daily_task: 'activities.type_daily_task',
+  invite: 'invite.title',
 };
 
 /**

@@ -89,6 +89,8 @@ export function buildJa(): Record<string, string> {
   m['profile.language'] = '言語 / Language';
   m['profile.game_manage'] = 'ゲーム管理';
   m['profile.game_manage_desc'] = '新規作成 / 編集 / 削除と公開・非公開';
+  m['profile.game_hall'] = 'ゲームロビー';
+  m['profile.game_hall_desc'] = 'ゲームを一覧し、読み取り専用の試遊プレビューを開きます';
   m['profile.announcement_manage'] = 'お知らせ管理';
   m['profile.announcement_manage_desc'] = '公開 / 編集 / 削除と掲載・非掲載';
   m['profile.admin_users'] = '管理者';
@@ -113,7 +115,6 @@ export function buildJa(): Record<string, string> {
   m['profile.up_to_date'] = '最新バージョンです';
   m['profile.about'] = 'このアプリについて';
   m['profile.about_desc'] = 'オープン管理コンソール HarmonyOS クライアント';
-  m['profile.feature_in_development'] = '機能開発中';
   // ── 模块索引 ──────────────────────────────────────────────
   m['module.title'] = 'モジュール管理';
   // ── 游戏大厅 / 钱包 ──────────────────────────────────────────────
@@ -165,12 +166,6 @@ export function buildJa(): Record<string, string> {
   m['game.f.sort'] = '並び順';
   m['game.f.sort_placeholder'] = '値が小さいほど先頭、既定値 0';
   m['game.f.status'] = '公開';
-  m['wallet.balance'] = '残高';
-  m['wallet.frozen'] = '凍結: {amount}';
-  m['wallet.recharge'] = '入金';
-  m['wallet.exchange'] = '交換';
-  m['wallet.withdraw'] = '出金';
-  m['wallet.transactions'] = '取引履歴';
   // ── 资源页共用件 ──────────────────────────────────────────────
   m['resource.related_game'] = '対象ゲーム';
   // ── 上传 ──────────────────────────────────────────────

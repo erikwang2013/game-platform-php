@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Api, ApiError, Conversation, FriendUser, dt } from '../core/api.service';
 import { Avatars } from '../core/avatar';
+import { T } from '../core/i18n/i18n';
 
 /**
  * 消息 —— 会话列表。
@@ -19,16 +20,18 @@ import { Avatars } from '../core/avatar';
  */
 @Component({
   selector: 'app-chat',
-  imports: [RouterLink],
+  imports: [RouterLink, T],
   template: `
     <div class="between sect">
-      <h2>消息</h2>
-      <button class="btn ghost" type="button" [disabled]="loading()" (click)="load()">刷新</button>
+      <h2>{{ 'chat.title' | t }}</h2>
+      <button class="btn ghost" type="button" [disabled]="loading()" (click)="load()">
+        {{ 'common.refresh' | t }}
+      </button>
     </div>
 
     <p class="muted note">
-      本页不会自动更新 —— <strong>新消息到达后刷新</strong>。另外，打开某个对话本身就会把对方发来的
-      消息标成已读，所以看完再回到本页也要刷新一次。
+      {{ 'chat.note_a' | t }}<strong>{{ 'chat.note_b' | t }}</strong
+      >{{ 'chat.note_c' | t }}
     </p>
 
     <div class="card">
@@ -40,16 +43,16 @@ import { Avatars } from '../core/avatar';
         </div>
       } @else if (err()) {
         <div class="state">
-          <strong>加载失败</strong>
+          <strong>{{ 'common.load_failed' | t }}</strong>
           <span>{{ err() }}</span>
-          <button class="btn" type="button" (click)="load()">重试</button>
+          <button class="btn" type="button" (click)="load()">{{ 'common.retry' | t }}</button>
         </div>
       } @else if (!list().length) {
         <div class="state">
           <img class="state-art" src="mascot.svg" alt="" aria-hidden="true" />
-          <strong>还没有聊天记录</strong>
-          <span>去「好友」里点某人右边的「发消息」</span>
-          <a class="btn" routerLink="/friends">去好友列表</a>
+          <strong>{{ 'chat.empty_title' | t }}</strong>
+          <span>{{ 'chat.empty_hint' | t }}</span>
+          <a class="btn" routerLink="/friends">{{ 'chat.go_friends' | t }}</a>
         </div>
       } @else {
         <div class="rows">

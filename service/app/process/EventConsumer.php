@@ -47,8 +47,10 @@ class EventConsumer
     /**
      * 退避谓词（有界指数退避）：第 n 次尝试前等 min(BACKOFF_BASE << (n-1), BACKOFF_MAX) 秒。
      * 与 backoffSeconds() 同一公式，改一处必须同步另一处。
-     * 「上次尝试时间」用 updated_at —— Eloquent 每次 save()（含失败路径的 retry_count+1）自动刷新，
-     * 无需新增列（表上也没有 next_attempt_at）。退避判定放 SQL 而不是取回后在 PHP 里跳过：
+     * 「上次尝试时间」用 updated_at —— 认领行的条件更新（retry_count+1）与成功/失败路径的 save()
+     * 均由 Eloquent 自动刷新，无需新增列（表上也没有 next_attempt_at）。认领即刷新这一点同时
+     * 是「认领 = 免费 lease」的依据：认领过的行在窗口内对所有实例都取不出来，认领者中途死掉
+     * （SIGKILL 等）也会在窗口过期后自动被重新认领。退避判定放 SQL 而不是取回后在 PHP 里跳过：
      * 否则未到期的行会长期占住 order by occurred_at + limit 50 的批次头部，把后面已到期的行饿死。
      * 位运算而非 POW：整数运算，不引入浮点。
      * public 是为了让无库断言能钉住退避公式（与 Health::GAP_SQL 同例）。
@@ -86,7 +88,9 @@ class EventConsumer
 
     /**
      * 按 occurred_at 拉取一批待消费事件，逐条处理（断点续传 + 批内顺序）。
-     * 单进程消费（process.php count=1），lockForUpdate 为并发扩容预留。
+     * 多实例安全靠**乐观锁认领**（下方那条条件 update），不靠 SELECT ... FOR UPDATE：
+     * 无事务时 FOR UPDATE 的锁在语句结束即释放（autocommit），挡不住「取回 → 处理」之间的竞争者，
+     * 竞争者照样能取回同一行（实测 0.00s 拿到）。取回只是候选，认领成功才归本实例。
      */
     private static function drainBatch(): void
     {
@@ -95,12 +99,22 @@ class EventConsumer
             ->whereRaw(self::BACKOFF_PREDICATE)
             ->orderBy('occurred_at')
             ->limit(50)
-            ->lockForUpdate()
             ->get();
 
         foreach ($rows as $row) {
-            $row->retry_count = $row->retry_count + 1;
-            $row->save();
+            // 乐观锁认领：取回时读到的 retry_count 就是版本号，必须在自增前先取。
+            // affected=0 ⇒ 别处已把它推到下一版（或已消费），本行不归我，跳过。
+            // 本次尝试序号另存 $attempt 而**不写回 $row**：$row->retry_count 一旦变脏，
+            // 下面那两条 save() 就会在 WHERE 只有主键的情况下把旧版本号写回去，
+            // 覆盖掉窗口过期后别处的新认领（save 的 WHERE 不带版本谓词）。
+            $claim   = (int) $row->retry_count;
+            $attempt = $claim + 1;
+            $claimed = EventOutbox::where('id', $row->id)
+                ->where('retry_count', $claim)
+                ->update(['retry_count' => $attempt]);
+            if ($claimed === 0) {
+                continue;
+            }
 
             try {
                 self::dispatch((string) $row->event, $row->payload, (string) $row->event_id);
@@ -111,20 +125,20 @@ class EventConsumer
                 $row->save();
             } catch (\Throwable $e) {
                 $row->last_error = mb_substr($e->getMessage(), 0, 512);
-                $dead = $row->retry_count >= self::MAX_ATTEMPTS;
+                $dead = $attempt >= self::MAX_ATTEMPTS;
                 if ($dead) {
                     $row->status = EventOutbox::STATUS_DEAD;
                 }
                 $row->save();
 
                 if ($dead) {
-                    self::markDeadLetter($row);
+                    self::markDeadLetter($row, $attempt);
                 } else {
                     Log::error('EventOutbox consume failed, will retry', [
                         'event_id'      => $row->event_id,
                         'event'         => $row->event,
-                        'retry_count'   => $row->retry_count,
-                        'next_retry_in' => self::backoffSeconds((int) $row->retry_count),
+                        'retry_count'   => $attempt,
+                        'next_retry_in' => self::backoffSeconds($attempt),
                         'error'         => $e->getMessage(),
                     ]);
                 }
@@ -150,13 +164,16 @@ class EventConsumer
      * 死信可见性：一次留下两类痕迹 —— 结构化错误日志（人排查）+ 累计计数（告警消费）。
      * 死信表内就地留存（status=3 + last_error），不另建 DLQ 表；重放靠人工改回 pending。
      * Redis 不可用时静默（日志已留）。
+     *
+     * $attempt 由调用方传入而不读 $row->retry_count：认领后那个属性仍是认领前的版本号
+     * （故意不写回，见 drainBatch），读了会少报一次。
      */
-    private static function markDeadLetter(EventOutbox $row): void
+    private static function markDeadLetter(EventOutbox $row, int $attempt): void
     {
         Log::error('EventOutbox dead-lettered: 重试 ' . self::MAX_ATTEMPTS . ' 次仍失败，需人工介入重放', [
             'event_id'    => $row->event_id,
             'event'       => $row->event,
-            'retry_count' => $row->retry_count,
+            'retry_count' => $attempt,
             'last_error'  => $row->last_error,
         ]);
         try {

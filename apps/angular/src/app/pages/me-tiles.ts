@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { T } from '../core/i18n/i18n';
 
 /**
  * 常用功能入口格 —— 放在「我的」页顶部。
@@ -10,20 +11,20 @@ import { RouterLink } from '@angular/router';
  */
 @Component({
   selector: 'app-me-tiles',
-  imports: [RouterLink],
+  imports: [RouterLink, T],
   template: `
-    <nav class="tiles" aria-label="常用功能">
-      <a class="tile" routerLink="/kyc">实名认证</a>
-      <a class="tile" routerLink="/security">账号安全</a>
-      <a class="tile" routerLink="/wallet/records">游戏流水</a>
-      <a class="tile" routerLink="/activities">运营活动</a>
-      <a class="tile" routerLink="/tournaments">赛事</a>
-      <a class="tile" routerLink="/tickets">客服工单</a>
-      <a class="tile" routerLink="/chat">消息</a>
-      <a class="tile" routerLink="/friends">好友</a>
-      <a class="tile" routerLink="/invite">邀请好友</a>
-      <a class="tile" routerLink="/announcements">平台公告</a>
-      <a class="tile" routerLink="/leaderboard">排行榜</a>
+    <nav class="tiles" aria-label="{{ 'me.tiles_label' | t }}">
+      <a class="tile" routerLink="/kyc">{{ 'kyc.title' | t }}</a>
+      <a class="tile" routerLink="/security">{{ 'security.title' | t }}</a>
+      <a class="tile" routerLink="/wallet/records">{{ 'wallet.records' | t }}</a>
+      <a class="tile" routerLink="/activities">{{ 'activities.title' | t }}</a>
+      <a class="tile" routerLink="/tournaments">{{ 'tourney.title' | t }}</a>
+      <a class="tile" routerLink="/tickets">{{ 'tickets.title' | t }}</a>
+      <a class="tile" routerLink="/chat">{{ 'nav.messages' | t }}</a>
+      <a class="tile" routerLink="/friends">{{ 'nav.friends' | t }}</a>
+      <a class="tile" routerLink="/invite">{{ 'invite.title' | t }}</a>
+      <a class="tile" routerLink="/announcements">{{ 'announcements.title' | t }}</a>
+      <a class="tile" routerLink="/leaderboard">{{ 'leaderboard.title' | t }}</a>
     </nav>
   `,
   styles: [

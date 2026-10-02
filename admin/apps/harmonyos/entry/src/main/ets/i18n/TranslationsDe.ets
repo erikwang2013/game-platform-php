@@ -89,6 +89,8 @@ export function buildDe(): Record<string, string> {
   m['profile.language'] = 'Sprache';
   m['profile.game_manage'] = 'Spielverwaltung';
   m['profile.game_manage_desc'] = 'Erstellen / bearbeiten / löschen und veröffentlichen oder zurückziehen';
+  m['profile.game_hall'] = 'Spielhalle';
+  m['profile.game_hall_desc'] = 'Spiele durchsuchen und schreibgeschützte Testvorschau öffnen';
   m['profile.announcement_manage'] = 'Ankündigungen';
   m['profile.announcement_manage_desc'] = 'Veröffentlichen / bearbeiten / löschen und online oder offline nehmen';
   m['profile.admin_users'] = 'Administratoren';
@@ -113,7 +115,6 @@ export function buildDe(): Record<string, string> {
   m['profile.up_to_date'] = 'Bereits aktuell';
   m['profile.about'] = 'Über';
   m['profile.about_desc'] = 'Admin-Panel HarmonyOS-Client';
-  m['profile.feature_in_development'] = 'Funktion in Entwicklung';
   // ── 模块索引 ──────────────────────────────────────────────
   m['module.title'] = 'Modulverwaltung';
   // ── 游戏大厅 / 钱包 ──────────────────────────────────────────────
@@ -165,12 +166,6 @@ export function buildDe(): Record<string, string> {
   m['game.f.sort'] = 'Sortierung';
   m['game.f.sort_placeholder'] = 'Kleinere Werte zuerst, Standard 0';
   m['game.f.status'] = 'Veröffentlicht';
-  m['wallet.balance'] = 'Guthaben';
-  m['wallet.frozen'] = 'Eingefroren: {amount}';
-  m['wallet.recharge'] = 'Einzahlen';
-  m['wallet.exchange'] = 'Einlösen';
-  m['wallet.withdraw'] = 'Auszahlen';
-  m['wallet.transactions'] = 'Transaktionen';
   // ── 资源页共用件 ──────────────────────────────────────────────
   m['resource.related_game'] = 'Spiel';
   // ── 上传 ──────────────────────────────────────────────

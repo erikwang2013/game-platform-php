@@ -75,7 +75,6 @@
      暗色下必须整体提亮，否则暗底上的深色折线等于消失。引用点见 styles.extra.scss --- */
   --chart-1: #5b3bb0;
   --chart-2: #0e7490;
-  --chart-3: #b45309;
   --chart-4: #be123c;
 
   /* --- 圆角：越靠内越小（外框大、内件小），不是一个 4px 走到底 --- */
@@ -162,7 +161,6 @@
     --code-ink: #d5dae4;
     --chart-1: #b9a4f5;
     --chart-2: #4cc4dd;
-    --chart-3: #e0a33c;
     --chart-4: #f87168;
     /* 暗底吃对比，投影要更重才看得出来 */
     --e1: 0 1px 2px rgba(0, 0, 0, 0.5);
@@ -353,10 +351,6 @@ select.input[multiple] { height: auto; min-height: 8em; padding: var(--sp-1) var
 .input:hover { border-color: var(--ink-3); }
 /* 聚焦：边框变色 + 外环。旧版把边框改成 primary 再叠一层极淡蓝影，暗色下等于没有 */
 .input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--ring); }
-.toolbar {
-  display: flex; align-items: center; flex-wrap: wrap; gap: var(--sp-2);
-  padding: var(--sp-3) var(--sp-4); border-bottom: 1px solid var(--line);
-}
 .spacer { flex: 1; }
 .pager {
   display: flex; align-items: center; gap: var(--sp-2); padding: var(--sp-3) var(--sp-4);

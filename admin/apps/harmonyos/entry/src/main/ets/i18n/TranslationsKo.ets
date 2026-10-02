@@ -89,6 +89,8 @@ export function buildKo(): Record<string, string> {
   m['profile.language'] = '언어 / Language';
   m['profile.game_manage'] = '게임 관리';
   m['profile.game_manage_desc'] = '생성 / 편집 / 삭제 및 게시·게시 중지';
+  m['profile.game_hall'] = '게임 로비';
+  m['profile.game_hall_desc'] = '게임 목록을 보고 읽기 전용 시연 미리보기를 엽니다';
   m['profile.announcement_manage'] = '공지 관리';
   m['profile.announcement_manage_desc'] = '게시 / 편집 / 삭제 및 게시·게시 취소';
   m['profile.admin_users'] = '관리자';
@@ -113,7 +115,6 @@ export function buildKo(): Record<string, string> {
   m['profile.up_to_date'] = '최신 버전입니다';
   m['profile.about'] = '정보';
   m['profile.about_desc'] = '오픈 관리자 콘솔 HarmonyOS 클라이언트';
-  m['profile.feature_in_development'] = '기능 개발 중';
   // ── 模块索引 ──────────────────────────────────────────────
   m['module.title'] = '모듈 관리';
   // ── 游戏大厅 / 钱包 ──────────────────────────────────────────────
@@ -165,12 +166,6 @@ export function buildKo(): Record<string, string> {
   m['game.f.sort'] = '정렬';
   m['game.f.sort_placeholder'] = '값이 작을수록 먼저, 기본값 0';
   m['game.f.status'] = '게시 중';
-  m['wallet.balance'] = '플랫폼 코인 잔액';
-  m['wallet.frozen'] = '동결: {amount}';
-  m['wallet.recharge'] = '충전';
-  m['wallet.exchange'] = '교환';
-  m['wallet.withdraw'] = '출금';
-  m['wallet.transactions'] = '거래 내역';
   // ── 资源页共用件 ──────────────────────────────────────────────
   m['resource.related_game'] = '게임';
   // ── 上传 ──────────────────────────────────────────────

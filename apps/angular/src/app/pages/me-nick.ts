@@ -1,7 +1,7 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { Component, inject, input, output, signal } from '@angular/core';
 import { Api, ApiError } from '../core/api.service';
-import { Mt, Msg } from '../core/i18n/i18n';
+import { Mt, Msg, T } from '../core/i18n/i18n';
 
 /**
  * 改昵称 —— 账号里唯一能在「我的」页改的字段（换头像要选图上传统，见 core/upload）。
@@ -17,25 +17,29 @@ import { Mt, Msg } from '../core/i18n/i18n';
  */
 @Component({
   selector: 'app-me-nick',
-  imports: [Mt],
+  imports: [Mt, T],
   template: `
-    <button class="btn ghost" type="button" (click)="open()">改昵称</button>
+    <button class="btn ghost" type="button" (click)="open()">
+      {{ 'me.nick_open' | t }}
+    </button>
 
     @if (shown()) {
       <div class="backdrop" (click)="cancel()"></div>
-      <div class="modal" role="dialog" aria-modal="true" aria-label="修改昵称">
+      <div class="modal" role="dialog" aria-modal="true" aria-label="{{ 'me.nick_title' | t }}">
         <header class="between">
-          <b>修改昵称</b>
-          <button class="btn ghost" type="button" (click)="cancel()">关闭</button>
+          <b>{{ 'me.nick_title' | t }}</b>
+          <button class="btn ghost" type="button" (click)="cancel()">
+            {{ 'common.close' | t }}
+          </button>
         </header>
         <div class="modal-body">
           <label class="field">
-            <span>昵称（最长 50 字）</span>
+            <span>{{ 'me.nick_label' | t }}</span>
             <input
               class="input"
               autocomplete="off"
               maxlength="50"
-              placeholder="请输入昵称"
+              placeholder="{{ 'me.nick_ph' | t }}"
               [value]="name()"
               (input)="onInput($event)"
             />
@@ -44,7 +48,7 @@ import { Mt, Msg } from '../core/i18n/i18n';
             <div class="alert">{{ msg() | mt }}</div>
           }
           <button class="btn primary wide" type="button" [disabled]="busy()" (click)="save()">
-            {{ busy() ? '保存中…' : '保存' }}
+            {{ busy() ? ('me.nick_saving' | t) : ('common.save' | t) }}
           </button>
         </div>
       </div>

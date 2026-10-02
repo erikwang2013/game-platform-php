@@ -2,12 +2,14 @@
 import { Component, inject, signal } from '@angular/core';
 import { Api, ApiError, dt } from '../core/api.service';
 import { exportBlob, exportCounts, exportName, saveBlob } from '../core/export-data';
-import { Mt, Msg } from '../core/i18n/i18n';
+import { Mt, Msg, T } from '../core/i18n/i18n';
 
 /**
  * 「导出我的数据」（GDPR 数据可携带）卡片 —— 放在「我的」页、注销账号之前。
  *
- * 单独成一个组件而不是写进 MePage：MePage 已 488 行（贴着 500 上限），先例见 me-tiles.ts。
+ * 单独成一个组件而不是写进 MePage：当时 MePage 已是单文件 491 行（模板内联，me.html 尚未拆出），
+ * 再塞一块就破 500 上限。原注释写的「已 488 行」在 git 历史里读不到 —— me.ts 的提交态只有
+ * 290/292/450/491/492/349，故按 6cf4f77 的提交态更正：这是**当时的读数**，不是现状。先例见 me-tiles.ts。
  * 端点回的是**普通信封**不是文件 ⇒ 走 `api.exportData()` 取 JSON 再自己捏 Blob 落盘
  * （别照搬 admin 树那条按 content-type 分流的附件链路，理由见 core/export-data.ts）。
  *
@@ -15,14 +17,15 @@ import { Mt, Msg } from '../core/i18n/i18n';
  */
 @Component({
   selector: 'app-me-export',
-  imports: [Mt],
+  imports: [Mt, T],
   template: `
     <div class="card">
-      <h2>下载我的数据</h2>
+      <h2>{{ 'me.export_title' | t }}</h2>
       <p class="hint">
-        服务端把账号资料、平台币钱包（余额与累计收支）、最近 100 条流水 / 兑换 / 充值 /
-        提现，以及已绑定的第三方账号打包成一份 JSON。<b>每类明细上限 100 条</b>，不是全部历史；
-        <b>游戏币余额不在这份文件里</b>（导出只读平台币钱包，不碰游戏钱包）。
+        {{ 'me.export_hint_a' | t }}<b>{{ 'me.export_hint_b' | t }}</b
+        >{{ 'me.export_hint_c' | t }}
+        <b>{{ 'me.export_hint_d' | t }}</b
+        >{{ 'me.export_hint_e' | t }}
       </p>
 
       @if (msg()) {
@@ -31,7 +34,7 @@ import { Mt, Msg } from '../core/i18n/i18n';
 
       <div class="acts">
         <button class="btn" type="button" [disabled]="busy()" (click)="run()">
-          {{ busy() ? '导出中…' : '下载 JSON' }}
+          {{ busy() ? ('me.export_busy' | t) : ('me.export_download' | t) }}
         </button>
       </div>
     </div>

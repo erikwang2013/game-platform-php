@@ -95,6 +95,8 @@ export function buildEn(): Record<string, string> {
   m['profile.language'] = 'Language';
   m['profile.game_manage'] = 'Game Management';
   m['profile.game_manage_desc'] = 'Create / edit / delete and publish or unpublish';
+  m['profile.game_hall'] = 'Game Hall';
+  m['profile.game_hall_desc'] = 'Browse games and open the read-only playtest preview';
   m['profile.announcement_manage'] = 'Announcements';
   m['profile.announcement_manage_desc'] = 'Publish / edit / delete and take up or down';
   m['profile.admin_users'] = 'Administrators';
@@ -119,7 +121,6 @@ export function buildEn(): Record<string, string> {
   m['profile.up_to_date'] = 'Already up to date';
   m['profile.about'] = 'About';
   m['profile.about_desc'] = 'Open Admin Panel HarmonyOS client';
-  m['profile.feature_in_development'] = 'Feature under development';
 
   // ── 模块索引 ──────────────────────────────────────────
   m['module.title'] = 'Module Management';
@@ -173,13 +174,6 @@ export function buildEn(): Record<string, string> {
   m['game.f.sort'] = 'Sort order';
   m['game.f.sort_placeholder'] = 'Lower sorts first, default 0';
   m['game.f.status'] = 'Listed';
-
-  m['wallet.balance'] = 'Balance';
-  m['wallet.frozen'] = 'Frozen: {amount}';
-  m['wallet.recharge'] = 'Deposit';
-  m['wallet.exchange'] = 'Redeem';
-  m['wallet.withdraw'] = 'Withdraw';
-  m['wallet.transactions'] = 'Transactions';
 
   // ── 资源页共用件 ──────────────────────────────────────
   m['resource.related_game'] = 'Game';

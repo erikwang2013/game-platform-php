@@ -110,7 +110,14 @@ final class EventConsumerBackoffContractTest extends TestCase
         self::assertSame($max, EventConsumer::backoffSeconds(PHP_INT_MAX), '极大重试数必须稳定落到上界（位移溢出会让它变 0 或负数）');
     }
 
-    /** 同一常量的两处比较：查询下界与死信阈值必须互补，否则行会停在 pending 且永远取不出来 */
+    /**
+     * 同一常量的两处比较：查询下界与死信阈值必须互补，否则行会停在 pending 且永远取不出来。
+     * 死信侧比较的是本地 $attempt（= 认领时读到的 retry_count + 1，见 drainBatch），
+     * 不再直接读 $row->retry_count —— 认领后该属性故意停在认领前的版本号（写回会覆盖
+     * 窗口过期后别处的新认领），读它会少报一次尝试。
+     * 「$attempt 确实由认领版本号推出」由 EventConsumerRuntimeTest::testDeadLetterOnlyAfterMaxAttempts
+     * 行为级钉住（三个可达 retry_count 逐个断言「先 +1、再判死信」）。
+     */
     public function testRetryBoundAndDeadThresholdAreComplementary(): void
     {
         $source = dirname(__DIR__) . '/app/process/EventConsumer.php';
@@ -118,7 +125,7 @@ final class EventConsumerBackoffContractTest extends TestCase
         $code = (string) file_get_contents($source);
 
         self::assertStringContainsString("where('retry_count', '<', self::MAX_ATTEMPTS)", $code, '取行条件不再与 MAX_ATTEMPTS 绑定');
-        self::assertStringContainsString('$row->retry_count >= self::MAX_ATTEMPTS', $code, '死信阈值不再与 MAX_ATTEMPTS 绑定');
+        self::assertStringContainsString('$attempt >= self::MAX_ATTEMPTS;', $code, '死信阈值不再与 MAX_ATTEMPTS 绑定');
         self::assertStringContainsString('self::BACKOFF_PREDICATE', $code, '谓词没被查询用上：钉住的公式与实际执行的谓词脱钩');
     }
 }

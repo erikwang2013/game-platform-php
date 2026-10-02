@@ -172,6 +172,13 @@ struct ProfilePage {
             this.buildMenuItem(t('profile.game_manage'), t('profile.game_manage_desc'), () => {
               router.pushUrl({ url: 'pages/GameManagePage' });
             });
+            // 游戏厅（只读试玩预览）。后端两个端点是专为这两页造的：`/admin/v1/game/launch` 的
+            // apidoc 写明「管理端试玩入口」、`/admin/v1/game/{hashid}` 写明「供管理端客户端游戏详情页使用」，
+            // 但本树**从建树起**就没有任何地方 push 到 GameHallPage（`git log -S pages/GameHallPage` 只有建树
+            // 那一次），check_pages.mjs 的第四条告警一直挂着。游戏厅 → 游戏详情的边本来就是有的，缺的是入口。
+            this.buildMenuItem(t('profile.game_hall'), t('profile.game_hall_desc'), () => {
+              router.pushUrl({ url: 'pages/GameHallPage' });
+            });
             this.buildMenuItem(t('profile.announcement_manage'), t('profile.announcement_manage_desc'), () => {
               router.pushUrl({ url: 'pages/AnnouncementManagePage' });
             });

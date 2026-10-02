@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { Component, inject, signal } from '@angular/core';
 import { Api, ApiError, ShareCreated } from '../core/api.service';
+import { T } from '../core/i18n/i18n';
 
 /**
  * 邀请好友（分享短码）。两个端点在这棵树里**都有真实消费者**，不是摆设：
@@ -27,38 +28,39 @@ import { Api, ApiError, ShareCreated } from '../core/api.service';
  */
 @Component({
   selector: 'app-invite',
+  imports: [T],
   template: `
-    <div class="sect"><h2>邀请好友</h2></div>
+    <div class="sect"><h2>{{ 'invite.title' | t }}</h2></div>
 
     <div class="card stack">
       <p class="hint">
-        生成一个邀请码发给朋友。对方打开链接、用它注册之后，这次邀请才会计入转化。
+        {{ 'invite.hint_create' | t }}
       </p>
 
       @if (!code()) {
         <button class="btn primary wide" type="button" [disabled]="busy()" (click)="generate()">
-          {{ busy() ? '生成中…' : '生成邀请码' }}
+          {{ busy() ? ('invite.generating' | t) : ('invite.generate' | t) }}
         </button>
       } @else {
-        <span class="label">邀请码</span>
+        <span class="label">{{ 'invite.code_label' | t }}</span>
         <div class="code-row">
           <code class="code">{{ code() }}</code>
           <button class="btn ghost" type="button" (click)="copy(code()!, 'code')">
-            {{ copied() ? '已复制' : '复制码' }}
+            {{ copied() ? ('common.copied' | t) : ('invite.copy_code' | t) }}
           </button>
         </div>
-        <span class="label">邀请链接</span>
+        <span class="label">{{ 'invite.link_label' | t }}</span>
         <div class="code-row">
           <code class="link">{{ link() }}</code>
           <button class="btn ghost" type="button" (click)="copy(link(), 'link')">
-            {{ linkCopied() ? '已复制' : '复制链接' }}
+            {{ linkCopied() ? ('common.copied' | t) : ('invite.copy_link' | t) }}
           </button>
         </div>
         <p class="hint">
-          把链接发给朋友。对方打开后会自动跳到注册页并填好这个码，注册成功即完成一次转化。
+          {{ 'invite.hint_share' | t }}
         </p>
         <button class="btn wide" type="button" [disabled]="busy()" (click)="generate()">
-          {{ busy() ? '生成中…' : '再生成一个' }}
+          {{ busy() ? ('invite.generating' | t) : ('invite.again' | t) }}
         </button>
       }
 

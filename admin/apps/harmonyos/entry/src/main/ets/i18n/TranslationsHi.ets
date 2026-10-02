@@ -89,6 +89,8 @@ export function buildHi(): Record<string, string> {
   m['profile.language'] = 'भाषा';
   m['profile.game_manage'] = 'गेम प्रबंधन';
   m['profile.game_manage_desc'] = 'बनाएँ / संपादित करें / हटाएँ तथा लिस्ट या डीलिस्ट करें';
+  m['profile.game_hall'] = 'गेम हॉल';
+  m['profile.game_hall_desc'] = 'गेम ब्राउज़ करें और केवल-पढ़ने योग्य परीक्षण पूर्वावलोकन खोलें';
   m['profile.announcement_manage'] = 'घोषणाएँ';
   m['profile.announcement_manage_desc'] = 'प्रकाशित करें / संपादित करें / हटाएँ तथा प्रकाशित या अप्रकाशित करें';
   m['profile.admin_users'] = 'प्रशासक';
@@ -113,7 +115,6 @@ export function buildHi(): Record<string, string> {
   m['profile.up_to_date'] = 'पहले से अद्यतन है';
   m['profile.about'] = 'ऐप के बारे में';
   m['profile.about_desc'] = 'Open Admin Panel HarmonyOS क्लाइंट';
-  m['profile.feature_in_development'] = 'सुविधा विकासाधीन है';
   // ── 模块索引 ──────────────────────────────────────────────
   m['module.title'] = 'मॉड्यूल प्रबंधन';
   // ── 游戏大厅 / 钱包 ──────────────────────────────────────────────
@@ -165,12 +166,6 @@ export function buildHi(): Record<string, string> {
   m['game.f.sort'] = 'क्रम';
   m['game.f.sort_placeholder'] = 'छोटा मान पहले, डिफ़ॉल्ट 0';
   m['game.f.status'] = 'लिस्टेड';
-  m['wallet.balance'] = 'बैलेंस';
-  m['wallet.frozen'] = 'फ़्रीज़: {amount}';
-  m['wallet.recharge'] = 'जमा करें';
-  m['wallet.exchange'] = 'रिडीम करें';
-  m['wallet.withdraw'] = 'निकासी';
-  m['wallet.transactions'] = 'लेन-देन';
   // ── 资源页共用件 ──────────────────────────────────────────────
   m['resource.related_game'] = 'गेम';
   // ── 上传 ──────────────────────────────────────────────

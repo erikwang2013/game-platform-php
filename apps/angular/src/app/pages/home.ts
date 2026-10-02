@@ -3,15 +3,16 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AnnouncementBrief, Api, ApiError, Game, PlatformStats, dt } from '../core/api.service';
+import { T } from '../core/i18n/i18n';
 
 @Component({
   selector: 'app-home',
-  imports: [RouterLink],
+  imports: [RouterLink, T],
   template: `
     <section class="card hero">
       <span class="label">NEON ARCADE</span>
-      <h1>发现你的下一款游戏</h1>
-      <p class="muted">多平台游戏大厅 · 实时开局 · 统一钱包</p>
+      <h1>{{ 'home.hero_title' | t }}</h1>
+      <p class="muted">{{ 'home.hero_sub' | t }}</p>
     </section>
 
     <div class="stats">
@@ -26,8 +27,8 @@ import { AnnouncementBrief, Api, ApiError, Game, PlatformStats, dt } from '../co
     <div class="home-cols">
       <div class="card mini">
         <div class="between">
-          <span class="label">平台公告</span>
-          <a class="more-link" routerLink="/announcements">全部</a>
+          <span class="label">{{ 'announcements.title' | t }}</span>
+          <a class="more-link" routerLink="/announcements">{{ 'common.all' | t }}</a>
         </div>
         @if (news().length) {
           <div class="rows tight">
@@ -41,19 +42,19 @@ import { AnnouncementBrief, Api, ApiError, Game, PlatformStats, dt } from '../co
             }
           </div>
         } @else {
-          <p class="s muted pad">暂无公告</p>
+          <p class="s muted pad">{{ 'home.news_empty' | t }}</p>
         }
       </div>
 
       <a class="card mini lift linkcard" routerLink="/leaderboard">
-        <span class="label">排行榜</span>
-        <strong>看看谁在榜上</strong>
-        <span class="s muted">日榜 / 周榜 / 月榜，按买入、卖出或开局次数排名</span>
+        <span class="label">{{ 'leaderboard.title' | t }}</span>
+        <strong>{{ 'home.lb_title' | t }}</strong>
+        <span class="s muted">{{ 'home.lb_hint' | t }}</span>
       </a>
     </div>
 
     <div class="between sect" id="games">
-      <h2>游戏大厅</h2>
+      <h2>{{ 'home.hall_title' | t }}</h2>
       @if (keyword()) {
         <span class="badge accent">“{{ keyword() }}”</span>
       }
@@ -67,16 +68,16 @@ import { AnnouncementBrief, Api, ApiError, Game, PlatformStats, dt } from '../co
       </div>
     } @else if (error()) {
       <div class="card state">
-        <strong>加载失败</strong>
+        <strong>{{ 'common.load_failed' | t }}</strong>
         <span>{{ error() }}</span>
-        <button class="btn" type="button" (click)="reload()">重试</button>
+        <button class="btn" type="button" (click)="reload()">{{ 'common.retry' | t }}</button>
       </div>
     } @else if (!games().length) {
       <div class="card state">
         <!-- 吉祥物小骰（Dicey）：相对 public/，由 <base href> 解析到子路径 -->
         <img class="state-art" src="mascot.svg" alt="" aria-hidden="true" />
-        <strong>暂无游戏</strong>
-        <span>{{ keyword() ? '没有匹配的游戏，换个关键词试试' : '平台还没有上架游戏' }}</span>
+        <strong>{{ 'home.empty_title' | t }}</strong>
+        <span>{{ (keyword() ? 'home.empty_search' : 'home.empty_platform') | t }}</span>
       </div>
     } @else {
       <div class="grid">
@@ -102,7 +103,7 @@ import { AnnouncementBrief, Api, ApiError, Game, PlatformStats, dt } from '../co
       @if (page() < lastPage()) {
         <div class="more">
           <button class="btn" type="button" [disabled]="loadingMore()" (click)="loadMore()">
-            {{ loadingMore() ? '加载中…' : '加载更多' }}
+            {{ loadingMore() ? ('common.loading' | t) : ('wallet.load_more' | t) }}
           </button>
         </div>
       }

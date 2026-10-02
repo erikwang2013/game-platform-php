@@ -89,6 +89,8 @@ export function buildId(): Record<string, string> {
   m['profile.language'] = 'Bahasa';
   m['profile.game_manage'] = 'Manajemen Game';
   m['profile.game_manage_desc'] = 'Buat / ubah / hapus serta terbitkan atau tarik';
+  m['profile.game_hall'] = 'Lobi Game';
+  m['profile.game_hall_desc'] = 'Jelajahi game dan buka pratinjau uji coba hanya-baca';
   m['profile.announcement_manage'] = 'Pengumuman';
   m['profile.announcement_manage_desc'] = 'Terbitkan / ubah / hapus dan tayangkan atau turunkan';
   m['profile.admin_users'] = 'Administrator';
@@ -113,7 +115,6 @@ export function buildId(): Record<string, string> {
   m['profile.up_to_date'] = 'Sudah versi terbaru';
   m['profile.about'] = 'Tentang';
   m['profile.about_desc'] = 'Klien HarmonyOS Open Admin Panel';
-  m['profile.feature_in_development'] = 'Fitur sedang dikembangkan';
   // ── 模块索引 ──────────────────────────────────────────────
   m['module.title'] = 'Manajemen Modul';
   // ── 游戏大厅 / 钱包 ──────────────────────────────────────────────
@@ -165,12 +166,6 @@ export function buildId(): Record<string, string> {
   m['game.f.sort'] = 'Urutan sortir';
   m['game.f.sort_placeholder'] = 'Nilai lebih kecil tampil lebih dulu, bawaan 0';
   m['game.f.status'] = 'Ditayangkan';
-  m['wallet.balance'] = 'Saldo';
-  m['wallet.frozen'] = 'Dibekukan: {amount}';
-  m['wallet.recharge'] = 'Deposit';
-  m['wallet.exchange'] = 'Tukar';
-  m['wallet.withdraw'] = 'Tarik';
-  m['wallet.transactions'] = 'Transaksi';
   // ── 资源页共用件 ──────────────────────────────────────────────
   m['resource.related_game'] = 'Game';
   // ── 上传 ──────────────────────────────────────────────

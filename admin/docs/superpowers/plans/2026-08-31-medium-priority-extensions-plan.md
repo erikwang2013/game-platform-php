@@ -15,7 +15,7 @@
 |---|---|---|
 | 平台币钱包 | `game_user_wallet`：balance / frozen_balance / total_earned / total_spent / version，`uk_user_id` | install.sql:160 |
 | 游戏币钱包 | `game_user_game_wallet`：balance / frozen_balance，`uk_user_game_currency` | install.sql:178 |
-| 平台流水 | `game_transaction`：type ∈ deposit/withdraw/exchange_in/exchange_out/game_earn/game_spend，**无 game_id / currency_id 列** | install.sql:311 |
+| 平台流水 | `game_transaction`：type ∈ deposit/withdraw/exchange_in/exchange_out/game_earn/game_spend，**有 game_id / currency_id 列**（两列均由 `scope` 收窄语义：`scope=game` 时有效）。⚠ 本行是写作当日（2026-08-31）的快照：当时盘上**确无**这两列（表头就在 install.sql:311），下面「缺陷 3：游戏币无流水」正是以「无」为前提设计的 —— 前提在**同一天**被 M1 自己的落盘提交 `1a60a9e`（install.sql 同步 H2/H3/H4/M1 表结构）推翻：它给本表补上了 `scope` / `game_id` / `currency_id`，并把 `amount`/`balance_after` 从 DECIMAL(18,4) 提到 (20,8) | install.sql:320（表头；`game_id`/`currency_id` 在 325/326） |
 | 钱包写方法 | 仅 `UserWallet::addBalance/deductBalance`（5 次重试乐观锁 + `lockForUpdate`）；`UserGameWallet` **无任何方法** | service/app/model/UserWallet.php:43 |
 | 冻结列 | 两张钱包表都有 `frozen_balance`，**代码里没有任何锁/解锁调用** | 全仓 grep 无命中 |
 | Provider | `ProviderFactory::create(Game)` match `game.type` → `self` / `third_party`；接口 6 方法 | service/app/provider/ |

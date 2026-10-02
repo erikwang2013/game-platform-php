@@ -151,7 +151,7 @@ class DocsController
 
                 '/admin/v1/import/users' => $this->path(trans('Import users (Excel)'), 'POST', ['JWT', 'RBAC'], 'object', ['file' => 'file(.xlsx)']),
 
-                '/admin/v1/upload' => $this->path(trans('File upload'), 'POST', ['JWT', 'RBAC'], 'object', ['file' => 'file(jpg/png/pdf/xlsx/docx, max 10MB)']),
+                '/admin/v1/upload' => $this->path(trans('File upload'), 'POST', ['JWT', 'RBAC'], 'object', ['file' => 'file(jpg/jpeg/png/gif/pdf/xlsx/docx, max 10MB)']),
             ],
         ];
     }

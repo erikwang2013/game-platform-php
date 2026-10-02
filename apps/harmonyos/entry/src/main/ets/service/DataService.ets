@@ -50,6 +50,11 @@ function unwrapList<T>(data: PagedListResult<T> | T[] | undefined | null): T[] {
   return [];
 }
 
+/** captcha/generate 请求体：ArkTS 不收无显式类型的对象字面量，必须落到具名 interface */
+interface CaptchaGenerateRequest {
+  difficulty: string;
+}
+
 /**
  * 验证码服务 — 公开端点 /api/v1/captcha/generate
  *
@@ -63,9 +68,10 @@ export class CaptchaService {
    * 这里归一化成 CaptchaChallenge（texts 已按 order 升序），弹框拿到即可直接渲染。
    */
   static async generate(): Promise<CaptchaChallenge> {
+    const req: CaptchaGenerateRequest = { difficulty: 'medium' };
     const response = await apiService.post<CaptchaGenerateResult>(
       '/api/v1/captcha/generate',
-      { difficulty: 'medium' }
+      req
     );
     if (response.code !== 0) {
       throw new Error(response.message);
@@ -250,6 +256,12 @@ export class PaymentService {
   }
 }
 
+/** user/delete-account 请求体：同上，字面量必须有显式 interface 可对应 */
+interface DeleteAccountRequest {
+  password: string;
+  confirm: string;
+}
+
 /**
  * 用户服务 — C 端 /api/v1/user/profile、/api/v1/user/delete-account
  */
@@ -276,10 +288,8 @@ export class UserService {
    * 用户输入原样透传，由服务端裁决；失败时服务端原因原样抛出，不吞成通用错误。
    */
   static async deleteAccount(password: string, confirm: string): Promise<void> {
-    const response = await apiService.post<object>('/api/v1/user/delete-account', {
-      password: password,
-      confirm: confirm
-    });
+    const req: DeleteAccountRequest = { password: password, confirm: confirm };
+    const response = await apiService.post<object>('/api/v1/user/delete-account', req);
     if (response.code !== 0) {
       throw new Error(response.message);
     }
@@ -299,7 +309,8 @@ export class UserService {
       if (msg === 'UNAUTHORIZED') {
         return true;
       }
-      throw e;
+      // ArkTS 禁裸 rethrow（arkts-limited-throw）：包一层 Error，message 原样保留
+      throw new Error(msg);
     }
     if (response.code === 0) {
       return false;

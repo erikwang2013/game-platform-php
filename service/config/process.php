@@ -74,7 +74,7 @@ return [
         'reloadable' => false,
     ],
 
-    // 反作弊批处理：每小时增量扫描对局日志（单实例，游标文件）
+    // 反作弊批处理：每小时增量扫描对局日志（游标 + SET NX EX 互斥都在 Redis，N 台实例里每小时只有一台真跑）
     'anti-cheat' => [
         'handler' => app\process\AntiCheatWorker::class,
         'count' => 1,

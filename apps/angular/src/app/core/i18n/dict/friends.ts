@@ -32,4 +32,22 @@ export const FRIENDS: Record<string, [string, string]> = {
   'friends.rejected': ['Declined {name}', '已拒绝 {name}'],
   'friends.removed': ['Removed {name}', '已删除好友 {name}'],
   'friends.sent': ['Request sent to {name}', '已向 {name} 发送申请'],
+  // —— 邀请好友（`pages/invite.ts`）。`invite.title` 同时是**活动类型名**「邀请好友」的文案
+  //    （`ACTIVITY_TYPE_LABEL.invite` 指的就是这个功能）—— 同一个概念只留一个键 ——
+  'invite.title': ['Invite friends', '邀请好友'],
+  'invite.hint_create': [
+    'Generate an invite code and send it to a friend. The invite only counts as a conversion after they open the link and register with it.',
+    '生成一个邀请码发给朋友。对方打开链接、用它注册之后，这次邀请才会计入转化。',
+  ],
+  'invite.generating': ['Generating…', '生成中…'],
+  'invite.generate': ['Generate invite code', '生成邀请码'],
+  'invite.code_label': ['Invite code', '邀请码'],
+  'invite.copy_code': ['Copy code', '复制码'],
+  'invite.link_label': ['Invite link', '邀请链接'],
+  'invite.copy_link': ['Copy link', '复制链接'],
+  'invite.hint_share': [
+    'Send the link to a friend. It takes them straight to the sign-up page with this code filled in; a completed registration counts as one conversion.',
+    '把链接发给朋友。对方打开后会自动跳到注册页并填好这个码，注册成功即完成一次转化。',
+  ],
+  'invite.again': ['Generate another one', '再生成一个'],
 };
