@@ -1438,42 +1438,6 @@ INSERT IGNORE INTO `game_platform_config` (`id`, `group`, `key`, `value`, `type`
 (60000000000000001, 'referral', 'signup_reward', '5.0000', 'decimal', '注册奖励(平台币)，推荐人和被推荐人各得'),
 (60000000000000002, 'referral', 'deposit_commission_pct', '5.00', 'decimal', '充值返佣比例(%)');
 
--- 功能开关
--- ⚠ 这 4 条与下面两组种子，2026-10-02 之前**只存在于 install/clickhouse.sql 里**（一份从未被执行的
---   MySQL 脚本寄居在一个只喂 ClickHouse 的文件里）⇒ 全新安装出来是空的。与
---   install/migrations/2026_08_27_ecosystem_expansion.sql **用同一批 ID** ⇒ 存量库先跑迁移再跑本文件时，
---   INSERT IGNORE 按主键去重，两条路径收敛到同一结果。
-INSERT IGNORE INTO `game_platform_config` (`id`, `group`, `key`, `value`, `type`, `description`) VALUES
-(20260804000301, 'feature', 'tournament', 'off', 'string', 'Tournament system'),
-(20260804000302, 'feature', 'chat', 'off', 'string', 'Chat/WebSocket messaging'),
-(20260804000303, 'feature', 'vip', 'off', 'string', 'VIP loyalty system'),
-(20260804000304, 'feature', 'achievements', 'off', 'string', 'Achievement/badge system');
-
--- VIP 等级定义（消费方：VipService::getNextLevel()、管理端 VipLevelController）
--- ⚠ benefits 的三个键（exchange_discount / withdraw_fee_discount / rate_bonus）与 VipService
---   现有三个 public 方法逐字对应 —— 改这里前先核那三个方法。
-INSERT IGNORE INTO `game_vip_level` (`id`, `level`, `name`, `required_exp`, `benefits`) VALUES
-(20260804000100, 1, 'Silver', 500, '{"exchange_discount":"0.02","withdraw_fee_discount":"0.10","rate_bonus":"0.001"}'),
-(20260804000101, 2, 'Gold', 2500, '{"exchange_discount":"0.05","withdraw_fee_discount":"0.30","rate_bonus":"0.003"}'),
-(20260804000102, 3, 'Platinum', 12500, '{"exchange_discount":"0.10","withdraw_fee_discount":"0.50","rate_bonus":"0.005"}'),
-(20260804000103, 4, 'Diamond', 62500, '{"exchange_discount":"0.15","withdraw_fee_discount":"1.00","rate_bonus":"0.010"}');
-
--- 内置成就（消费方：service 的 AchievementService 按 condition_json->event 查定义并发成就）
--- 这 12 条正是 README「12 个内置成就」所指的那批。
-INSERT IGNORE INTO `game_achievement` (`id`, `key`, `name`, `description`, `condition_json`, `points`) VALUES
-(20260804000201, 'first_deposit', 'First Deposit', 'Make your first deposit', '{"event":"deposit.completed","metric":"count","table":"game_deposit_order","threshold":1}', 20),
-(20260804000202, 'deposit_100', 'Century Club', 'Accumulate 100 in deposits', '{"event":"deposit.completed","metric":"sum","table":"game_deposit_order","sum_column":"platform_amount","threshold":100}', 50),
-(20260804000203, 'deposit_1000', 'High Roller', 'Accumulate 1000 in deposits', '{"event":"deposit.completed","metric":"sum","table":"game_deposit_order","sum_column":"platform_amount","threshold":1000}', 100),
-(20260804000204, 'first_exchange', 'Trader', 'Complete your first exchange', '{"event":"exchange.completed","metric":"count","table":"game_exchange_record","threshold":1}', 20),
-(20260804000205, 'exchange_100', 'Day Trader', 'Complete 100 exchanges', '{"event":"exchange.completed","metric":"count","table":"game_exchange_record","threshold":100}', 100),
-(20260804000206, 'play_3_games', 'Explorer', 'Play 3 different games', '{"event":"game.played","metric":"distinct_count","table":"game_game_play_log","distinct_column":"game_id","threshold":3}', 30),
-(20260804000207, 'play_5_games', 'Adventurer', 'Play 5 different games', '{"event":"game.played","metric":"distinct_count","table":"game_game_play_log","distinct_column":"game_id","threshold":5}', 50),
-(20260804000208, 'play_10_games', 'Conqueror', 'Play 10 different games', '{"event":"game.played","metric":"distinct_count","table":"game_game_play_log","distinct_column":"game_id","threshold":10}', 100),
-(20260804000209, 'login_7_days', 'Weekly Warrior', 'Login 7 days in a row', '{"event":"user.login","metric":"consecutive_days","threshold":7}', 30),
-(20260804000210, 'login_30_days', 'Monthly Master', 'Login 30 days in a row', '{"event":"user.login","metric":"consecutive_days","threshold":30}', 100),
-(20260804000211, 'invite_1', 'Connector', 'Invite 1 friend', '{"event":"referral.applied","metric":"count","table":"game_referral","column":"referrer_id","threshold":1}', 30),
-(20260804000212, 'invite_10', 'Influencer', 'Invite 10 friends', '{"event":"referral.applied","metric":"count","table":"game_referral","column":"referrer_id","threshold":10}', 100);
-
 -- 语言
 INSERT IGNORE INTO `game_language` (`id`, `code`, `name`, `native_name`, `icon`, `country_code`, `status`, `sort`) VALUES
 (30000000000000001, 'en-US', 'English', 'English', 'us', 'US', 1, 1),
@@ -1970,5 +1934,55 @@ CREATE TABLE IF NOT EXISTS `game_referral_commission` (
     KEY `idx_referral` (`referral_id`),
     KEY `idx_source` (`source_type`, `source_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='多级返佣流水表';
+
+-- ============================================================
+-- 生态扩展种子：功能开关 4 · VIP 等级 4 · 内置成就 12
+--
+-- ⚠ **必须放在本文件所有 CREATE TABLE 之后**（故压在 COMMIT 之前）。
+--   这三组种子在 2026-10-02 之前**只存在于 install/clickhouse.sql 里** —— 那是一份从未被
+--   执行过的 MySQL 脚本，寄居在一个只喂 ClickHouse 的文件里 ⇒ 全新安装出来这三张表是空的。
+--
+--   ⚠ **顺序是这条路径唯一的约束，而且本机测不出来**：2026-10-02 实测，把它们插在文件中部
+--   （原 `:1447`）会让 CI 的 `mysql -u root game-platform < install/install.sql`（**空库**）
+--   在 `game_vip_level` 上报 `ERROR 1146 Table ... doesn't exist` —— 该表的 CREATE 在
+--   `:1783`、`game_achievement` 在 `:1809`，都在种子之后。
+--   本机为什么没报：**本地测试库早就建好了那几张表** ⇒ 「install.sql 跑在空库上」这条路径
+--   只有 CI 在观察。**改本文件后，判据是 CI 的 Prepare test databases，不是本地套件。**
+--
+--   与 install/migrations/2026_08_27_ecosystem_expansion.sql **用同一批 ID** ⇒ 存量库先跑
+--   迁移再跑本文件时，INSERT IGNORE 按主键去重，两条路径收敛到同一结果。
+-- ============================================================
+
+-- 功能开关
+INSERT IGNORE INTO `game_platform_config` (`id`, `group`, `key`, `value`, `type`, `description`) VALUES
+(20260804000301, 'feature', 'tournament', 'off', 'string', 'Tournament system'),
+(20260804000302, 'feature', 'chat', 'off', 'string', 'Chat/WebSocket messaging'),
+(20260804000303, 'feature', 'vip', 'off', 'string', 'VIP loyalty system'),
+(20260804000304, 'feature', 'achievements', 'off', 'string', 'Achievement/badge system');
+
+-- VIP 等级定义（消费方：VipService::getNextLevel()、管理端 VipLevelController）
+-- ⚠ benefits 的三个键（exchange_discount / withdraw_fee_discount / rate_bonus）与 VipService
+--   现有三个 public 方法逐字对应 —— 改这里前先核那三个方法。
+INSERT IGNORE INTO `game_vip_level` (`id`, `level`, `name`, `required_exp`, `benefits`) VALUES
+(20260804000100, 1, 'Silver', 500, '{"exchange_discount":"0.02","withdraw_fee_discount":"0.10","rate_bonus":"0.001"}'),
+(20260804000101, 2, 'Gold', 2500, '{"exchange_discount":"0.05","withdraw_fee_discount":"0.30","rate_bonus":"0.003"}'),
+(20260804000102, 3, 'Platinum', 12500, '{"exchange_discount":"0.10","withdraw_fee_discount":"0.50","rate_bonus":"0.005"}'),
+(20260804000103, 4, 'Diamond', 62500, '{"exchange_discount":"0.15","withdraw_fee_discount":"1.00","rate_bonus":"0.010"}');
+
+-- 内置成就（消费方：service 的 AchievementService 按 condition_json->event 查定义并发成就）
+-- 这 12 条正是 README「12 个内置成就」所指的那批。
+INSERT IGNORE INTO `game_achievement` (`id`, `key`, `name`, `description`, `condition_json`, `points`) VALUES
+(20260804000201, 'first_deposit', 'First Deposit', 'Make your first deposit', '{"event":"deposit.completed","metric":"count","table":"game_deposit_order","threshold":1}', 20),
+(20260804000202, 'deposit_100', 'Century Club', 'Accumulate 100 in deposits', '{"event":"deposit.completed","metric":"sum","table":"game_deposit_order","sum_column":"platform_amount","threshold":100}', 50),
+(20260804000203, 'deposit_1000', 'High Roller', 'Accumulate 1000 in deposits', '{"event":"deposit.completed","metric":"sum","table":"game_deposit_order","sum_column":"platform_amount","threshold":1000}', 100),
+(20260804000204, 'first_exchange', 'Trader', 'Complete your first exchange', '{"event":"exchange.completed","metric":"count","table":"game_exchange_record","threshold":1}', 20),
+(20260804000205, 'exchange_100', 'Day Trader', 'Complete 100 exchanges', '{"event":"exchange.completed","metric":"count","table":"game_exchange_record","threshold":100}', 100),
+(20260804000206, 'play_3_games', 'Explorer', 'Play 3 different games', '{"event":"game.played","metric":"distinct_count","table":"game_game_play_log","distinct_column":"game_id","threshold":3}', 30),
+(20260804000207, 'play_5_games', 'Adventurer', 'Play 5 different games', '{"event":"game.played","metric":"distinct_count","table":"game_game_play_log","distinct_column":"game_id","threshold":5}', 50),
+(20260804000208, 'play_10_games', 'Conqueror', 'Play 10 different games', '{"event":"game.played","metric":"distinct_count","table":"game_game_play_log","distinct_column":"game_id","threshold":10}', 100),
+(20260804000209, 'login_7_days', 'Weekly Warrior', 'Login 7 days in a row', '{"event":"user.login","metric":"consecutive_days","threshold":7}', 30),
+(20260804000210, 'login_30_days', 'Monthly Master', 'Login 30 days in a row', '{"event":"user.login","metric":"consecutive_days","threshold":30}', 100),
+(20260804000211, 'invite_1', 'Connector', 'Invite 1 friend', '{"event":"referral.applied","metric":"count","table":"game_referral","column":"referrer_id","threshold":1}', 30),
+(20260804000212, 'invite_10', 'Influencer', 'Invite 10 friends', '{"event":"referral.applied","metric":"count","table":"game_referral","column":"referrer_id","threshold":10}', 100);
 
 COMMIT;
