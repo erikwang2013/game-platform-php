@@ -4,7 +4,17 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { tokens } from '../core/api.service';
+import { Msg, t } from '../core/i18n/i18n';
 import { LoginPage } from './login';
+
+/**
+ * `Msg` 是**两态**（词条键 / 服务端原文）：只有键那一态的读点需要解析，原文那一态原样透出。
+ * **故意不统一**：把「服务端 message 原样透出」那几处也裹进来，那一支就再也证明不了。
+ * ⚠ 原先这里写着「三条本地中文字面量故意不过 `txt`，等裁决」——**已裁决（甲）**：那三条
+ * （位数闸 / 未下发票据 / 缺令牌）现在也是键，所以它们的两个读点（`:111` / `:180`）跟着过 `txt`。
+ * **期望值一字未改**（仍是断言里原来那几个子串），只是把 `Msg` 解析成串再比。
+ */
+const txt = (v: Msg): string => (typeof v === 'string' ? v : t(v.key, v.params));
 
 type Sig<T> = { (): T; set(v: T): void };
 type RegForm = {
@@ -22,7 +32,7 @@ type Probe = {
   tab: Sig<'in' | 'up'>;
   tfa: Sig<string>;
   code2fa: Sig<string>;
-  error: Sig<string>;
+  error: Sig<Msg>;
   busy: Sig<boolean>;
 };
 
@@ -99,7 +109,7 @@ describe('LoginPage 2FA 第二步', () => {
   it('服务端要求 2FA 却没发票据 ⇒ 报错而不是进第二步', () => {
     reach2fa(undefined);
     expect(probe().tfa()).toBe('');
-    expect(probe().error()).toContain('票据');
+    expect(txt(probe().error())).toContain('票据');
   });
 
   it('第二步请求体恰为 pending_2fa_token + code，成功后才落令牌', () => {
@@ -144,7 +154,7 @@ describe('LoginPage 2FA 第二步', () => {
       .flush({ code: 401, message: 'Invalid or expired verification session', data: [] });
 
     expect(probe().tfa()).toBe('');
-    expect(probe().error()).toContain('请重新登录');
+    expect(txt(probe().error())).toContain('请重新登录');
     expect(tokens.access()).toBe('');
   });
 
@@ -168,7 +178,7 @@ describe('LoginPage 2FA 第二步', () => {
     for (const bad of ['1234567', '12345678', '123456789']) {
       probe().code2fa.set(bad);
       probe().verify2fa();
-      expect(probe().error(), `${bad} 应该被本地拦下`).toContain('10 位备份码');
+      expect(txt(probe().error()), `${bad} 应该被本地拦下`).toContain('10 位备份码');
       http.expectNone('/api/v1/2fa/verify');
       expect(probe().busy()).toBe(false);
     }

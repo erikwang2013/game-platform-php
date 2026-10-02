@@ -28,6 +28,8 @@ use support\Response;
 class RiskDeviceController extends BaseController
 {
     #[Apidoc\Title("设备列表")]
+    #[Apidoc\Url("/admin/v1/risk/device/list")]
+    #[Apidoc\Method("GET")]
     public function list(Request $request): Response
     {
         $query = DeviceFingerprint::query();
@@ -63,6 +65,8 @@ class RiskDeviceController extends BaseController
 
     #[Apidoc\Title("拉黑设备")]
     #[Apidoc\Desc("管理端标记（Redis TTL 30 天）：RiskService::check() 直接短路成阻断，不依赖规则是否启用")]
+    #[Apidoc\Url("/admin/v1/risk/device/block")]
+    #[Apidoc\Method("POST")]
     public function block(Request $request): Response
     {
         try {
@@ -78,6 +82,8 @@ class RiskDeviceController extends BaseController
     }
 
     #[Apidoc\Title("解封设备")]
+    #[Apidoc\Url("/admin/v1/risk/device/unblock")]
+    #[Apidoc\Method("POST")]
     public function unblock(Request $request): Response
     {
         try {

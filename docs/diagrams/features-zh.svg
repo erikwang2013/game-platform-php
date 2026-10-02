@@ -55,7 +55,6 @@
   <text x="850" y="206" text-anchor="middle" fill="#4c1d95" font-size="13" font-weight="bold">排行榜</text>
   <text x="850" y="226" text-anchor="middle" fill="#7c3aed" font-size="11">日 / 周 / 月 / 总榜</text>
   <text x="850" y="245" text-anchor="middle" fill="#7c3aed" font-size="11">Redis 缓存 + 实时排序</text>
-  <text x="850" y="264" text-anchor="middle" fill="#7c3aed" font-size="11">WebSocket 实时推送 (:8790)</text>
 
   <rect x="30" y="292" width="220" height="95" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#sh)"/>
   <text x="140" y="316" text-anchor="middle" fill="#064e3b" font-size="13" font-weight="bold">优惠券</text>
@@ -101,7 +100,7 @@
   <rect x="30" y="518" width="940" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="500" y="546" text-anchor="middle" fill="#475569" font-size="14" font-weight="bold">平台能力总结</text>
   <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">用户认证 · 钱包(乐观锁) · 充值(Stripe/PayPal/Alipay/WeChat Pay) · 兑换(实时汇率) · 提现(审核/自动) · KYC(实名认证)</text>
-  <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">游戏CRUD(10品类+区服) · 排行榜(WebSocket实时) · 优惠券 · 推荐(注册奖励+返佣) · 风控(4类规则)</text>
+  <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">游戏CRUD(10品类+区服) · 排行榜 · 优惠券 · 推荐(注册奖励+返佣) · 风控(4类规则)</text>
   <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">通知(站内+邮件) · 国家差异化(18国) · 国际化(4语言) · 统计(日快照+收益) · 全文检索(ES)</text>
 
   <text x="500" y="662" text-anchor="middle" fill="#94a3b8" font-size="11">客户端 8 端: 管理台 4 端 + C 端 4 端 (Flutter/React/Angular/HarmonyOS)</text>

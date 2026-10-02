@@ -18,6 +18,8 @@ use support\Response;
 class RiskEventController extends BaseController
 {
     #[Apidoc\Title("事件列表")]
+    #[Apidoc\Url("/admin/v1/risk/event/list")]
+    #[Apidoc\Method("GET")]
     public function list(Request $request): Response
     {
         $query = RiskLog::query();
@@ -54,6 +56,8 @@ class RiskEventController extends BaseController
     }
 
     #[Apidoc\Title("事件详情")]
+    #[Apidoc\Url("/admin/v1/risk/event/{hashid}")]
+    #[Apidoc\Method("GET")]
     public function detail(Request $request, string $hashid): Response
     {
         $row = RiskLog::find($this->decodeId($hashid));
@@ -66,6 +70,8 @@ class RiskEventController extends BaseController
 
     #[Apidoc\Title("人工处置")]
     #[Apidoc\Desc("risk_log 无独立审核状态列，处置动作由 OperationLog 中间件自动写入操作审计")]
+    #[Apidoc\Url("/admin/v1/risk/event/{hashid}/handle")]
+    #[Apidoc\Method("POST")]
     public function handle(Request $request, string $hashid): Response
     {
         $row = RiskLog::find($this->decodeId($hashid));

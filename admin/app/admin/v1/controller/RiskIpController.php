@@ -25,6 +25,8 @@ class RiskIpController extends BaseController
     private const CACHE_PREFIX = 'risk:ip_rep:';
 
     #[Apidoc\Title("IP 列表")]
+    #[Apidoc\Url("/admin/v1/risk/ip/list")]
+    #[Apidoc\Method("GET")]
     public function list(Request $request): Response
     {
         $query = IpReputation::query();
@@ -57,12 +59,16 @@ class RiskIpController extends BaseController
     }
 
     #[Apidoc\Title("拉黑 IP")]
+    #[Apidoc\Url("/admin/v1/risk/ip/block")]
+    #[Apidoc\Method("POST")]
     public function block(Request $request): Response
     {
         return $this->writeReputation($request, 'internal_blacklist', 0);
     }
 
     #[Apidoc\Title("加入白名单")]
+    #[Apidoc\Url("/admin/v1/risk/ip/whitelist")]
+    #[Apidoc\Method("POST")]
     public function whitelist(Request $request): Response
     {
         return $this->writeReputation($request, 'internal_whitelist', 100);
@@ -70,6 +76,8 @@ class RiskIpController extends BaseController
 
     #[Apidoc\Title("IP 误判申诉放行")]
     #[Apidoc\Desc("与白名单同效：source=internal_whitelist score=100")]
+    #[Apidoc\Url("/admin/v1/risk/ip/appeal")]
+    #[Apidoc\Method("POST")]
     public function appeal(Request $request): Response
     {
         return $this->writeReputation($request, 'internal_whitelist', 100);
@@ -77,6 +85,8 @@ class RiskIpController extends BaseController
 
     #[Apidoc\Title("重查")]
     #[Apidoc\Desc("删除本地信誉缓存（外部代理/VPN 检测服务未接入，仅重新读取 DB）")]
+    #[Apidoc\Url("/admin/v1/risk/ip/recheck")]
+    #[Apidoc\Method("POST")]
     public function recheck(Request $request): Response
     {
         try {

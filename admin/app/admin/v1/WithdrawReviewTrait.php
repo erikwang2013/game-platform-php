@@ -79,14 +79,13 @@ trait WithdrawReviewTrait
                     $q->where('status', 'pending')
                       ->where('reviewer_id', '>', 0)
                       ->where('reviewer_id', '!=', $adminId);
-                    // 补单：已批准未确认的历史订单，仍需满足双审（reviewer_id 非本人或为空）
+                    // 补单：已批准未确认的历史订单，仍需满足双审。reviewer_id 非本人即可 ——
+                    // 未审的 0 也 ≠ adminId，故这一条同时覆盖「空」；列是 NOT NULL DEFAULT 0，
+                    // 这里原先挂的 whereNull 分支从未命中过（已删，别再「补」回来）
                     $q->orWhere(function ($q2) use ($adminId) {
                         $q2->where('status', 'approved')
                            ->where('confirmed_by', 0)
-                           ->where(function ($q3) use ($adminId) {
-                               $q3->whereNull('reviewer_id')
-                                  ->orWhere('reviewer_id', '!=', $adminId);
-                           });
+                           ->where('reviewer_id', '!=', $adminId);
                     });
                 })
                 ->update($payload);
@@ -111,9 +110,7 @@ trait WithdrawReviewTrait
                 // 第一审核：仅记录 reviewer_id，保持 pending，等待 confirm
                 $flipped = WithdrawOrder::where('id', $orderId)
                     ->where('status', 'pending')
-                    ->where(function ($q) {
-                        $q->where('reviewer_id', 0)->orWhereNull('reviewer_id');
-                    })
+                    ->where('reviewer_id', 0)
                     ->update([
                         'reviewer_id' => $adminId,
                         'review_note' => $note,
@@ -237,9 +234,7 @@ trait WithdrawReviewTrait
                 if ($dualOn) {
                     $flipped = WithdrawOrder::where('id', $orderId)
                         ->where('status', 'pending')
-                        ->where(function ($q) {
-                            $q->where('reviewer_id', 0)->orWhereNull('reviewer_id');
-                        })
+                        ->where('reviewer_id', 0)
                         ->update([
                             'reviewer_id' => $request->adminId,
                             'review_note' => $note,

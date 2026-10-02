@@ -12,7 +12,6 @@ use common\SnowflakeService;
 use common\EncryptionService;
 use app\model\AdminUser;
 use InvalidArgumentException;
-use support\Request;
 use support\Response;
 use Webman\Exception\BusinessException;
 
@@ -123,7 +122,7 @@ class BaseController
      * @param string $password 用户输入的密码
      * @return string|null 错误消息，null 表示验证通过
      */
-    protected function confirmPassword(int $adminId, string $password, Request $request): ?string
+    protected function confirmPassword(int $adminId, string $password): ?string
     {
         if (empty($password)) {
             return trans('This sensitive operation requires password confirmation');

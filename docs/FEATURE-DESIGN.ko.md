@@ -299,13 +299,6 @@ signature = HMAC-SHA256(
 - PayPal: POST로 PayPal 검증 엔드포인트 재조회
 - 키 미설정 시 검증 자동 건너뜀 (개발 모드)
 
-### 8.6 WebSocket 실시간 리더보드
-
-- 프로토콜: WebSocket (ws://host:8790)
-- 구독: {action: "subscribe", leaderboard_id: 123}
-- 푸시: {type: "ranking_update", rankings: [...]}
-- ping/pong 하트비트 유지 지원
-
 ## 9. 국제화 설계
 
 ### 9.1 지원 언어

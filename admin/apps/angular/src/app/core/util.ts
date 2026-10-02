@@ -142,18 +142,6 @@ export function pairs(input: unknown, valueKey?: string): Pair[] {
   return [];
 }
 
-/** 取对象里的数组字段，非数组则空数组 */
-export function rowsOf(input: unknown, ...keys: string[]): Record<string, unknown>[] {
-  if (Array.isArray(input)) return input as Record<string, unknown>[];
-  if (input && typeof input === 'object') {
-    const o = input as Record<string, unknown>;
-    for (const k of [...keys, 'list', 'items', 'rows', 'data']) {
-      if (Array.isArray(o[k])) return o[k] as Record<string, unknown>[];
-    }
-  }
-  return [];
-}
-
 /** 错误 → 人话 */
 export function errText(e: unknown): string {
   if (e instanceof Error && e.message) return e.message;

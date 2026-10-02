@@ -59,19 +59,19 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | 2FA | Google Authenticator TOTP + Backup-Wiederherstellungscodes | Abgeschlossen |
 | Empfehlung | Empfehlungscode, Registrierungsbelohnung, Einzahlungsprovision | Abgeschlossen |
 | Suche | ES-Such-API + Spielvorschläge + LIKE-Fallback | Abgeschlossen |
-| Rangliste | WebSocket-Echtzeit-Push (Port 8790) | Abgeschlossen |
+| Rangliste | REST + Redis | Abgeschlossen |
 | CDN | Integration von fünf Anbietern (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS Upload + Purge + Preload) | Abgeschlossen |
 | CDN-Verwaltung | Admin-Konfiguration der fünf Anbieter (verschlüsselte Zugangsdaten/Aktivierung/Verbindungstest per HeadBucket), Service liest nur aus DB | Abgeschlossen |
 | Berichte | Admin-Datenberichte (Zusammenfassung/Tagesbericht/CSV-Export, Redis-5-min-Cache, Zeitraum ≤90 Tage) | Abgeschlossen |
 | Plattform-Statistik | Homepage-Statistik C-Seite (Spiele/User gesamt, Spiele heute, 7-Tage-aktiv) | Abgeschlossen |
 | Bereitstellung | Docker Compose 7 Dienste + Nginx-Reverse-Proxy | Abgeschlossen |
 | Daten | MySQL-Echtzeit-Aggregationsanalyse + Verbund-/Bedingte-Wahrscheinlichkeitsberechnung | Abgeschlossen |
-| HarmonyOS | admin-Seite 8 Seiten; C-End `apps/harmonyos/` mit Login/Lobby/Details/Wallet/Profil (zeigt auf 8792) | Teilweise abgeschlossen (Projekt läuft, echte Geräte benötigen IP-Anpassung) |
+| HarmonyOS | admin-Seite 19 Seiten; C-End `apps/harmonyos/` mit Login/Lobby/Details/Wallet/Profil (zeigt auf 8792) | Teilweise abgeschlossen (Projekt läuft, echte Geräte benötigen IP-Anpassung) |
 | API-Dokumentation | erikwang2013/apidoc-php interaktive Dokumentation | Abgeschlossen |
 | Ein-Klick-Installation | Browser-Installationsassistent: Admin erstellen, bestehende DB aktualisieren, install.lock verhindert Neuinstallation | Abgeschlossen |
 | Fehlertoleranz | CircuitBreaker + Retry + Degradationsschalter feature.provider_mock | Abgeschlossen |
 | Zahlungsarten | Admin-CRUD + Sichtbarkeit nach Land + Betragsbereich + Währungsbeschränkung | Abgeschlossen |
-| CI | Automatischer Inkrement-Tag bei push + GitHub Release | Abgeschlossen |
+| CI | Automatischer Inkrement-Tag bei push + GitHub Release | Auf manuellen Auslöser umgestellt |
 
 ### Ökosystem-Erweiterung (v2.0) — Gerade abgeschlossen
 
@@ -231,7 +231,7 @@ Zeitfenster: 5 Minuten
 
 ## 7. Datenbanktabellen-Liste
 
-### Neu in der Ökosystem-Erweiterung (10 Tabellen)
+### Neu in der Ökosystem-Erweiterung (14 Tabellen)
 
 | Tabellenname | Beschreibung | Hauptmerkmale |
 |------|------|---------|
@@ -245,6 +245,10 @@ Zeitfenster: 5 Minuten
 | game_user_achievement | Benutzer-Erfolge | user_id+achievement_id eindeutiger Index |
 | game_friend | Freundschaftsbeziehung | user_id+friend_id eindeutiger Index |
 | game_message | Direktnachricht | from_user_id+to_user_id / to_user_id+is_read |
+| game_cdn_provider | CDN-Anbieterkonfiguration | provider eindeutiger Index, config verschlüsseltes JSON |
+| game_referral_commission | Mehrstufige Empfehlungsprovisions-Datensätze | user_id / referral_id / source_type+source_id Index |
+| game_tournament | Turniere | slug eindeutiger Index, status+start_at+end_at Index |
+| game_tournament_entry | Turnieranmeldungen/-ergebnisse | tournament_id+user_id eindeutiger Index, tournament_id+score Index |
 
 ### Tabellenstruktur-Änderungen
 
@@ -253,7 +257,7 @@ Zeitfenster: 5 Minuten
 | game_game | +provider_config (JSON) |
 | game_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**Gesamt: 78 Tabellen in install.sql**. Modelle: 52 gemeinsam in `packages/platform-common/src/model/`; die 8 in admin/app/model/ und 10 in service/app/model/ sind host-exklusiv (keine Dateinamen-Überschneidung).
+**Gesamt: 79 Tabellen in install.sql**. Modelle: 51 gemeinsam in `packages/platform-common/src/model/`; die 6 in admin/app/model/ und 10 in service/app/model/ sind host-exklusiv (keine Dateinamen-Überschneidung).
 
 ## 8. Testabdeckung
 
@@ -267,7 +271,7 @@ Zeitfenster: 5 Minuten
 | HashidsServiceTest | 6 | ID-Codierung/Decodierung-Roundtrip |
 | SnowflakeServiceTest | 5 | Eindeutigkeit der ID-Generierung |
 
-**Gesamt (phpunit --list-tests, aktuelle Messung): admin 200 Testfälle / 21 Dateien, service 273 Testfälle / 42 Dateien (inkl. WebhookUrlSafety + EventBusMessageFormat; Bericht: Wiederholung 09-22 admin 190 + service 273, Snapshot 08-27 admin 153 + service 45). service ist nicht in die CI-Fehlschlag-Sperre einbezogen (nicht verifiziert).**
+**Gesamt (phpunit --list-tests, aktuelle Messung): admin 593 Testfälle / 70 Dateien, service 549 Testfälle / 89 Dateien (inkl. WebhookUrlSafety + EventBusMessageFormat; Bericht: Wiederholung 09-22 admin 190 + service 273, Snapshot 08-27 admin 153 + service 45). service ist in die CI-Fehlschlag-Sperre einbezogen.**
 
 ---
 

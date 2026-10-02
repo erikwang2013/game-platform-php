@@ -15,48 +15,48 @@ use erikwang2013\apidoc\annotation as Apidoc;
 use support\Request;
 use support\Response;
 
-#[Apidoc\Title("Analytics")]
+#[Apidoc\Title("数据分析")]
 #[Apidoc\Group("analytics")]
 class AnalyticsController extends BaseController
 {
     /** 回溯天数上界：与 ReportController::MAX_DAYS 同口径（报表端点的日期跨度限制也是 90 天） */
     private const MAX_DAYS = 90;
 
-    #[Apidoc\Title("Platform Overview")]
+    #[Apidoc\Title("平台总览")]
     #[Apidoc\Url("/admin/v1/analytics/overview")]
     #[Apidoc\Method("GET")]
-    #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer Token")]
+    #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer 令牌")]
     public function overview(Request $request): Response
     {
         return $this->success(['today' => GameDashboardService::overview(1), 'week' => GameDashboardService::overview(7)]);
     }
 
-    #[Apidoc\Title("Game Ranking")]
+    #[Apidoc\Title("游戏排行")]
     #[Apidoc\Url("/admin/v1/analytics/game-ranking")]
     #[Apidoc\Method("GET")]
-    #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer Token")]
-    #[Apidoc\Query(name: "days", type: "integer", require: false, desc: "Days back (default 7)")]
+    #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer 令牌")]
+    #[Apidoc\Query(name: "days", type: "integer", require: false, desc: "回溯天数（默认 7）")]
     public function gameRanking(Request $request): Response
     {
         $data = GameDashboardService::gameRanking((int)$request->input('days', 7));
         return $this->success($this->encodeIds($data, ['game_id']));
     }
 
-    #[Apidoc\Title("DAU Trend")]
+    #[Apidoc\Title("DAU 趋势")]
     #[Apidoc\Url("/admin/v1/analytics/dau-trend")]
     #[Apidoc\Method("GET")]
-    #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer Token")]
-    #[Apidoc\Query(name: "days", type: "integer", require: false, desc: "Days back (default 30)")]
+    #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer 令牌")]
+    #[Apidoc\Query(name: "days", type: "integer", require: false, desc: "回溯天数（默认 30）")]
     public function dauTrend(Request $request): Response
     {
         return $this->success(GameDashboardService::dauTrend((int)$request->input('days', 30)));
     }
 
-    #[Apidoc\Title("Hourly Trend")]
+    #[Apidoc\Title("小时趋势")]
     #[Apidoc\Url("/admin/v1/analytics/hourly-trend")]
     #[Apidoc\Method("GET")]
-    #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer Token")]
-    #[Apidoc\Query(name: "game_id", type: "string", require: false, desc: "Game hashid (empty=all)")]
+    #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer 令牌")]
+    #[Apidoc\Query(name: "game_id", type: "string", require: false, desc: "游戏 hashid（空=全部）")]
     public function hourlyTrend(Request $request): Response
     {
         $hashid = $request->input('game_id', '');
@@ -64,12 +64,12 @@ class AnalyticsController extends BaseController
         return $this->success(GameDashboardService::hourlyTrend($gameId));
     }
 
-    #[Apidoc\Title("Action Distribution")]
+    #[Apidoc\Title("行为分布")]
     #[Apidoc\Url("/admin/v1/analytics/action-distribution")]
     #[Apidoc\Method("GET")]
-    #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer Token")]
-    #[Apidoc\Query(name: "game_id", type: "string", require: false, desc: "Game hashid (empty=all)")]
-    #[Apidoc\Query(name: "hours", type: "integer", require: false, desc: "Hours back (default 24)")]
+    #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer 令牌")]
+    #[Apidoc\Query(name: "game_id", type: "string", require: false, desc: "游戏 hashid（空=全部）")]
+    #[Apidoc\Query(name: "hours", type: "integer", require: false, desc: "回溯小时数（默认 24）")]
     public function actionDistribution(Request $request): Response
     {
         // 空值即"全部游戏"(gameId=0)，与 hourlyTrend 一致；直接 decode('0') 会抛 400 无效的加密ID
@@ -79,31 +79,31 @@ class AnalyticsController extends BaseController
         return $this->success(GameDashboardService::actionDistribution($gameId, $hours));
     }
 
-    #[Apidoc\Title("Revenue Overview")]
+    #[Apidoc\Title("营收总览")]
     #[Apidoc\Url("/admin/v1/analytics/revenue")]
     #[Apidoc\Method("GET")]
-    #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer Token")]
-    #[Apidoc\Query(name: "days", type: "integer", require: false, desc: "Days back (default 7)")]
+    #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer 令牌")]
+    #[Apidoc\Query(name: "days", type: "integer", require: false, desc: "回溯天数（默认 7）")]
     public function revenue(Request $request): Response
     {
         return $this->success(DepositLogService::revenueOverview((int)$request->input('days', 7)));
     }
 
-    #[Apidoc\Title("Conversion by Game")]
+    #[Apidoc\Title("分游戏转化")]
     #[Apidoc\Url("/admin/v1/analytics/conversion")]
     #[Apidoc\Method("GET")]
-    #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer Token")]
-    #[Apidoc\Query(name: "days", type: "integer", require: false, desc: "Days back (default 30)")]
+    #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer 令牌")]
+    #[Apidoc\Query(name: "days", type: "integer", require: false, desc: "回溯天数（默认 30）")]
     public function conversion(Request $request): Response
     {
         $data = DepositLogService::conversionByGame((int)$request->input('days', 30));
         return $this->success($this->encodeIds($data, ['game_id']));
     }
 
-    #[Apidoc\Title("Joint Probability")]
+    #[Apidoc\Title("联合概率")]
     #[Apidoc\Url("/admin/v1/analytics/probability")]
     #[Apidoc\Method("GET")]
-    #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer Token")]
+    #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer 令牌")]
     #[Apidoc\Query(name: "game_a", type: "string", require: false, desc: "Game A hashid（空=近 7 天玩得最多的一款）")]
     #[Apidoc\Query(name: "game_b", type: "string", require: false, desc: "Game B hashid（空=近 7 天玩得第二多的一款）")]
     public function probability(Request $request): Response
@@ -145,10 +145,10 @@ class AnalyticsController extends BaseController
         ]);
     }
 
-    #[Apidoc\Title("Retention Analysis")]
+    #[Apidoc\Title("留存分析")]
     #[Apidoc\Url("/admin/v1/analytics/retention")]
     #[Apidoc\Method("GET")]
-    #[Apidoc\Query(name: "days", type: "integer", require: false, desc: "Days back (default 30, max 90)")]
+    #[Apidoc\Query(name: "days", type: "integer", require: false, desc: "回溯天数（默认 30，上限 90）")]
     public function retention(Request $request): Response
     {
         // 与 arpu 同口径夹上界：这里不放大查询条数（循环固定 ≤4 轮），但 days=100000 会让窗口变成
@@ -178,10 +178,10 @@ class AnalyticsController extends BaseController
         return $this->success($data);
     }
 
-    #[Apidoc\Title("Conversion Funnel")]
+    #[Apidoc\Title("转化漏斗")]
     #[Apidoc\Url("/admin/v1/analytics/funnel")]
     #[Apidoc\Method("GET")]
-    #[Apidoc\Query(name: "days", type: "integer", require: false, desc: "Days back (default 30, max 90)")]
+    #[Apidoc\Query(name: "days", type: "integer", require: false, desc: "回溯天数（默认 30，上限 90）")]
     public function funnel(Request $request): Response
     {
         // 同 retention：查询条数固定 4 条，但超宽窗口会把「扫描宽度」放大到全表
@@ -202,10 +202,10 @@ class AnalyticsController extends BaseController
         ]);
     }
 
-    #[Apidoc\Title("ARPU/ARPPU Trend")]
+    #[Apidoc\Title("ARPU/ARPPU 趋势")]
     #[Apidoc\Url("/admin/v1/analytics/arpu")]
     #[Apidoc\Method("GET")]
-    #[Apidoc\Query(name: "days", type: "integer", require: false, desc: "Days back (default 30, max 90)")]
+    #[Apidoc\Query(name: "days", type: "integer", require: false, desc: "回溯天数（默认 30，上限 90）")]
     public function arpu(Request $request): Response
     {
         // days 必须夹上界：原实现每天 3 条查询，?days=100000 就是 30 万条查询 + 30 万元素数组，
@@ -252,19 +252,26 @@ class AnalyticsController extends BaseController
         return $this->success(['dates' => $dates, 'arpu' => $arpuSeries, 'arppu' => $arppuSeries]);
     }
 
-    #[Apidoc\Title("Game Economy Indicators")]
+    #[Apidoc\Title("游戏经济指标")]
     #[Apidoc\Url("/admin/v1/analytics/economy")]
     #[Apidoc\Method("GET")]
     public function economy(Request $request): Response
     {
         $currencies = \common\model\GameCurrency::with('game')->get();
+
+        // 一条 GROUP BY 取代「每币种 2 条 SUM」（原 1+2N 次查询）。无记录的币种不会出现在结果里，
+        // 取值处按缺省 '0' 兜底，与原先逐条 sum() 落到 int 0 再转型的结果一致。
+        $sums = \common\model\ExchangeRecord::selectRaw('currency_id, direction, SUM(game_amount) as total')
+            ->groupBy('currency_id', 'direction')
+            ->get()
+            ->keyBy(fn ($r) => $r->currency_id . ':' . $r->direction);
+
         $items = [];
         foreach ($currencies as $c) {
-            // sum() 在聚合值为假时返回 int 0（不是 null），`?? '0'` 兜不住 ⇒ bcsub 收 int 抛 TypeError。
-            // 实测同一库：无匹配行时 in=int 0 / out=int 0，有行时才回 string（'40.0000'）。
-            // 与 arpu()、CouponController 同款强制转型，别省。
-            $minted = (string) (\common\model\ExchangeRecord::where('currency_id', $c->id)->where('direction', 'in')->sum('game_amount') ?? '0');
-            $burned = (string) (\common\model\ExchangeRecord::where('currency_id', $c->id)->where('direction', 'out')->sum('game_amount') ?? '0');
+            // SUM 聚合在无匹配行时回 NULL（逐条 sum() 则是 int 0）——两种都要 `?? '0'` 兜住，
+            // 否则 bcsub 收 null/int 抛 TypeError。与 arpu()、CouponController 同款强制转型，别省。
+            $minted = (string) ($sums[$c->id . ':in']->total ?? '0');
+            $burned = (string) ($sums[$c->id . ':out']->total ?? '0');
             $circulation = bcsub($minted, $burned, 8);
             $inflation = bccomp($minted, '0', 4) > 0 ? bcmul(bcdiv(bcsub($minted, $burned, 8), $minted, 8), '100', 2) : '0';
 

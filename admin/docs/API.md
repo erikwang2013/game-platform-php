@@ -1668,7 +1668,7 @@ POST /admin/v1/upload
 
 ### Docker Compose
 
-项目根目录提供 `docker-compose.yml`，编排 7 个服务（Nginx、admin、service、leaderboard-ws、MySQL、Redis、Elasticsearch）。PHP 通过 `Dockerfile` 构建（基于 `php:8.3-cli`，启用 OPcache）。
+项目根目录提供 `docker-compose.yml`，编排 7 个服务（Nginx、admin、service、chat-ws、MySQL、Redis、Elasticsearch）。PHP 通过 `Dockerfile` 构建（基于 `php:8.3-cli`，启用 OPcache）。
 
 ```bash
 cp .env.example .env
@@ -1948,7 +1948,7 @@ DELETE /admin/v1/payment/method/{hashid}
 
 ## 19. 扩展管理端点 (Extended Admin APIs)
 
-以下 20 个端点分 6 组列出，均为 `/admin/v1` 管理端点，需 JWT 认证与 RBAC 权限校验。
+以下 21 个端点分 6 组列出，均为 `/admin/v1` 管理端点，需 JWT 认证与 RBAC 权限校验。
 
 ### 19.1 提现批量审核与打款
 

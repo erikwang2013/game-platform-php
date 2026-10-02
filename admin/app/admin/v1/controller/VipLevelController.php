@@ -109,7 +109,7 @@ class VipLevelController extends BaseController
      *    d>1 ⇒ 手续费恒为 0（提现免费，直接漏收入），d≤0 则 :342 的守卫整段跳过、等同没配。【0, 1】
      *  - rate_bonus：ExchangeController.php:297-298 `rate * (1 + b)`。b 越大，同样平台币换到的游戏币越多
      *    （等于发钱）；b ≤ -1 会被 rateError()（:306）挡成 422，但 (-1, 0) 这段是静默压低汇率。【0, 1】
-     * 键名白名单有 DDL 背书：install/install.sql:1556 的列注释就是这三个键。
+     * 键名白名单有 DDL 背书：install/install.sql:1788 的列注释就是这三个键。
      *
      * 键名白名单是必需的：VipService 一律 `$benefits['key'] ?? '0'`，键名打错**不报错、按 0 处理**，
      * 运营以为配了 5% 折扣其实一分没折。
@@ -164,7 +164,7 @@ class VipLevelController extends BaseController
             return $this->fail(trans('VIP level not found'), 404);
         }
 
-        // 列名是 `level` 不是 `vip_level`（game_user_vip DDL: install.sql:1736）—— 写错列名时
+        // 列名是 `level` 不是 `vip_level`（game_user_vip DDL: install.sql:1799）—— 写错列名时
         // MySQL 抛 SQLSTATE 42S22 ⇒ 整个删除端点**永远 500**，下面那条守卫成了死代码。
         $userCount = UserVip::where('level', $vl->level)->count();
         if ($userCount > 0) {

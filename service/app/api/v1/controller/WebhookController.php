@@ -38,7 +38,7 @@ class WebhookController extends BaseController
     #[Apidoc\Method("POST")]
     #[Apidoc\Param(name: "url", type: "string", require: true, desc: "回调地址（仅支持 https 公网地址）")]
     #[Apidoc\Param(name: "events", type: "array", require: true, desc: "订阅事件，可多选：deposit.completed/withdraw.completed/exchange.completed/game.played/user.registered/risk.alert/user.vip_upgraded")]
-    #[Apidoc\Returned(name: "id", type: "string", desc: "Webhook ID")]
+    #[Apidoc\Returned(name: "id", type: "string", desc: "Webhook 订阅ID")]
     #[Apidoc\Returned(name: "url", type: "string", desc: "回调地址")]
     #[Apidoc\Returned(name: "events", type: "array", desc: "实际生效的订阅事件（已过滤非法事件）")]
     public function register(Request $request): Response
@@ -64,7 +64,7 @@ class WebhookController extends BaseController
     #[Apidoc\Title("删除 Webhook 订阅")]
     #[Apidoc\Url("/api/v1/webhook/delete")]
     #[Apidoc\Method("POST")]
-    #[Apidoc\Param(name: "id", type: "string", require: true, desc: "Webhook ID")]
+    #[Apidoc\Param(name: "id", type: "string", require: true, desc: "Webhook 订阅ID")]
     public function delete(Request $request): Response
     {
         $hookId = $request->input('id', '');
@@ -81,7 +81,7 @@ class WebhookController extends BaseController
     #[Apidoc\Title("测试 Webhook 投递")]
     #[Apidoc\Url("/api/v1/webhook/test")]
     #[Apidoc\Method("POST")]
-    #[Apidoc\Param(name: "id", type: "string", require: true, desc: "Webhook ID")]
+    #[Apidoc\Param(name: "id", type: "string", require: true, desc: "Webhook 订阅ID")]
     #[Apidoc\Returned(name: "delivered", type: "boolean", desc: "测试事件是否投递成功")]
     public function test(Request $request): Response
     {
@@ -107,13 +107,21 @@ class WebhookController extends BaseController
             return;
         }
 
+        // 订阅者归属：订阅键为 "{userId}_{hookId}"（register 时按 $request->userId 落键），
+        // 事件载荷自带 user_id（RELIABLE_EVENTS 六种与 game.played 全带），只投给属主本人。
+        // 载荷缺 user_id 或订阅键无归属段 ⇒ 不投（fail-closed）：原先不按归属过滤，
+        // 任何人注册一个 https 回调即可持续收到**全站**充值/兑换/风控载荷（含订单号与金额）。
+        $ownerId = (string) ($payload['user_id'] ?? '');
+
         $failed = [];
         try {
             $configs = PlatformConfig::where('group', 'webhook')->get();
             foreach ($configs as $c) {
                 $data = json_decode($c->value, true);
                 if (!$data || !in_array($event, $data['events'] ?? [], true)) continue;
-                $ok = (new self())->deliver($data['url'], [
+                $subscriberId = strstr((string) $c->key, '_', true);
+                if ($ownerId === '' || $subscriberId === false || $subscriberId !== $ownerId) continue;
+                $ok = (new static())->deliver($data['url'], [
                     'event' => $event,
                     'event_id' => $eventId,
                     'payload' => $payload,
@@ -132,13 +140,21 @@ class WebhookController extends BaseController
             }
         }
 
-        // 关键事件投递失败向上抛，驱动 Outbox 重试直至死信
-        if ($failed !== [] && in_array($event, EventBus::RELIABLE_EVENTS, true)) {
-            throw new \RuntimeException('Webhook deliver failed: ' . implode(', ', $failed));
+        // 订阅者级失败不得升级为事件级失败：原先这里对可靠事件抛异常，EventConsumer 会把整行
+        // retry_count++ 后重投 ⇒ **已成功投递的其它订阅者会再次收到同一事件**，而一个恒返 5xx 的
+        // 订阅者即可让全站可靠事件持续重投直到死信（商户按 webhook 记账＝重复入账）。
+        // 失败订阅者的重投需要按订阅者记账的队列，当前没有 ⇒ 此处只留聚合日志（deliver 内已逐条记）。
+        // ponytail: webhook 投递现为尽力而为；要按订阅者重试时，把 (订阅键, event_id) 落一张带
+        // next_attempt_at 的表，由独立进程重投，别再走「抛异常让 Outbox 重投整个事件」那条路。
+        if ($failed !== []) {
+            Log::warning('Webhook deliver failed for subscribers', [
+                'event'  => $event,
+                'failed' => $failed,
+            ]);
         }
     }
 
-    private function deliver(string $url, array $data): bool
+    protected function deliver(string $url, array $data): bool
     {
         if (!self::isSafeWebhookUrl($url)) return false;
         try {

@@ -8,7 +8,9 @@ Languages: [中文](SECURITY.md) · [English](SECURITY.en.md) · [한국어](SEC
 
 ## 1. Panorama de defensa en profundidad
 
-El sistema adopta un modelo de defensa en profundidad de 7 capas que filtra las solicitudes maliciosas de fuera hacia dentro, garantizando que si falla cualquier capa individual siempre queden líneas de defensa posteriores.
+**La defensa en profundidad suma 18 elementos en total**: las **7 capas** de esta sección + los **7 detectores de ataques** del §2 + los **4 mecanismos de respuesta/limitación de tasa** de los §3–§5. La capa 1 del §1 (SecurityFilter) y los §2.1–§2.5 describen el mismo conjunto de interceptores desde dos perspectivas, por lo que 18 es un **número de elementos** y no 18 mecanismos mutuamente excluyentes; en los §3–§5 hay más de 4 mecanismos de respuesta/limitación de tasa, y el «4» es solo el criterio de conteo usado aquí, sin enumerarlos uno a uno.
+
+Esta sección describe esas 7 capas, que filtran las solicitudes maliciosas de fuera hacia dentro, garantizando que si falla cualquier capa individual siempre queden líneas de defensa posteriores.
 
 Toda la cadena de middleware se ejecuta en el siguiente orden (ver `config/middleware.php`):
 

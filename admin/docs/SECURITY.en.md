@@ -8,7 +8,9 @@ Languages: [中文](SECURITY.md) · **English** · [한국어](SECURITY.ko.md) �
 
 ## 1. Defense-in-Depth Overview
 
-The system adopts a 7-layer defense-in-depth model, filtering malicious requests layer by layer from the outside in, ensuring that even if any single layer fails, subsequent defense lines still provide a safety net.
+**Defense in depth totals 18 items**: the **7 layers** in this section + the **7 attack detectors** in §2 + the **4 response/rate-limiting mechanisms** in §3–§5. Layer 1 of §1 (SecurityFilter) and §2.1–§2.5 describe the same set of interceptors from two angles, so 18 is a count of **entries**, not 18 mutually exclusive mechanisms; §3–§5 contain more than 4 response/rate-limiting mechanisms, and "4" is merely the counting convention used here — they are not listed individually.
+
+This section describes those 7 layers, filtering malicious requests layer by layer from the outside in, ensuring that even if any single layer fails, subsequent defense lines still provide a safety net.
 
 The entire middleware chain executes in the following order (see `config/middleware.php`):
 

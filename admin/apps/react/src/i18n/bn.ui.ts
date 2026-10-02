@@ -152,6 +152,7 @@ export const bnUi: Record<UiKey, string> = {
   'form.options_load_failed': '{name}-এর অপশন লোড করা যায়নি; নির্বাচিত মানটি এখনও দেখা যাচ্ছে, তবে এটি না বদলে জমা দেবেন না',
   'form.tree_load_failed': '{name}-এর অনুমতি-ট্রি লোড করা যায়নি; নির্বাচিত অনুমতিগুলো এখনও দেখা যাচ্ছে, তবে সেগুলো না বদলে জমা দেবেন না',
   'form.tree_loading': 'অনুমতি-ট্রি লোড হচ্ছে…',
+  'form.discard_confirm': 'সংরক্ষণ না করা পরিবর্তন আছে। বাতিল করবেন?',
   'form.select_placeholder': 'অনুগ্রহ করে নির্বাচন করুন',
   // 父权限下拉的选项（lib/tree.ts 摊平权限树）：键分两种**形状**（带 slug / 不带），
   // 路径与 slug 走 params —— 选项是逐行现拼的，见 lib/crud.ts 的 FieldOption

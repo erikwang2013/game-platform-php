@@ -16,7 +16,8 @@
  * 而这个文件名不以 .test.ts 结尾 ⇒ 它在 tsc 的 program 里，而 program 的 types 仅 `vite/client`，
  * 解析不了 node: 说明符，`tsc -b` 会直接红（实测 err TS2591）。
  */
-export type Reply = { ok: boolean; code: number; message?: string; data?: unknown };
+/** `installFetch()` 收的假响应形状 —— **不导出**：调用方传字面量，零处按名引用本名。 */
+type Reply = { ok: boolean; code: number; message?: string; data?: unknown };
 
 export const calls: { url: string; init: RequestInit | undefined }[] = [];
 

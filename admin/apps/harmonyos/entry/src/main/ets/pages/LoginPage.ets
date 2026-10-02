@@ -4,9 +4,8 @@
 
 import router from '@ohos.router';
 import promptAction from '@ohos.promptAction';
-import http from '@ohos.net.http';
+import { apiService } from '../service/ApiService';
 import { TokenManager } from '../utils/TokenManager';
-import { API_BASE_URL } from '../common/AppConfig';
 import { t, t1 } from '../i18n/Translations';
 
 // 库仅下发 text/order, 刻意不含 x/y: 坐标为服务端校验依据, 下发即泄题
@@ -48,10 +47,8 @@ interface CaptchaRawData {
   extra?: CaptchaExtra;
 }
 
-interface CaptchaResp {
-  code: number;
-  message?: string;
-  data?: CaptchaRawData;
+interface CaptchaParams {
+  difficulty: string;
 }
 
 interface LoginData {
@@ -59,10 +56,14 @@ interface LoginData {
   refresh_token: string;
 }
 
-interface LoginResp {
-  code: number;
-  message?: string;
-  data?: LoginData;
+/** 登录请求体：captcha_key / clicks 是**必填**（AuthController::login 的 validator 第 58-59 行），
+ *  少一个就是 422。注意 `service/DataService.ets` 里那个没用过的 AuthService.login 只发
+ *  username/password，形状与端点对不上。 */
+interface LoginParams {
+  username: string;
+  password: string;
+  captcha_key: string;
+  clicks: ClickPoint[];
 }
 
 /**
@@ -90,8 +91,6 @@ struct LoginPage {
   @State captchaError: string = '';
   @State loginError: string = '';
 
-  private httpClient: http.HttpRequest = http.createHttp();
-
   async loadCaptcha(): Promise<void> {
     this.captchaLoading = true;
     this.clicks = [];
@@ -99,16 +98,10 @@ struct LoginPage {
     this.captchaError = '';
 
     try {
-      const resp = await this.httpClient.request(`${API_BASE_URL}/api/v1/captcha/generate`, {
-        method: http.RequestMethod.POST,
-        header: { 'Content-Type': 'application/json', 'X-Client-Platform': 'harmonyos' },
-        extraData: JSON.stringify({ difficulty: 'medium' }),
-        connectTimeout: 10000,
-        readTimeout: 10000
-      });
-
-      // 显式标注：JSON.parse 返回 any，ArkTS 禁裸 any（arkts-no-any-unknown）
-      const result: CaptchaResp = JSON.parse(resp.result as string) as CaptchaResp;
+      // 走 apiService 而不是自建 http 客户端：超时/语言头/来源端头只有一份实现，
+      // 自建的那份此前连 X-Language 都没有（服务端 message 永远中文）。
+      const params: CaptchaParams = { difficulty: 'medium' };
+      const result = await apiService.post<CaptchaRawData>('/api/v1/captcha/generate', params);
       const d: CaptchaRawData | undefined = result.data;
       if (result.code === 0 && d !== undefined) {
         this.captchaData = { key: d.key, image: d.image, texts: d.extra?.texts ?? [] };
@@ -177,27 +170,21 @@ struct LoginPage {
     this.loginError = '';
 
     try {
-      const resp = await this.httpClient.request(`${API_BASE_URL}/api/v1/auth/login`, {
-        method: http.RequestMethod.POST,
-        header: { 'Content-Type': 'application/json', 'X-Client-Platform': 'harmonyos' },
-        extraData: JSON.stringify({
-          username: trimmedUsername,
-          password: this.password,
-          captcha_key: this.captchaData!.key,
-          clicks: this.clicks
-        }),
-        connectTimeout: 15000,
-        readTimeout: 15000
-      });
-
-      const result: LoginResp = JSON.parse(resp.result as string) as LoginResp;
+      const params: LoginParams = {
+        username: trimmedUsername,
+        password: this.password,
+        captcha_key: this.captchaData!.key,
+        clicks: this.clicks
+      };
+      const result = await apiService.post<LoginData>('/api/v1/auth/login', params);
       const d: LoginData | undefined = result.data;
       if (result.code === 0 && d !== undefined) {
         await TokenManager.saveTokens(d.access_token, d.refresh_token);
         AppStorage.setOrCreate('adminUsername', trimmedUsername);
         router.replaceUrl({ url: 'pages/DashboardPage' });
       } else {
-        this.loginError = result.message ?? t('login.error_failed');
+        // 密码错/验证码错都是 code 422/401 的信封答复，message 由服务端给（已带 X-Language）
+        this.loginError = result.message.length > 0 ? result.message : t('login.error_failed');
         this.closeCaptcha();
       }
     } catch (e) {

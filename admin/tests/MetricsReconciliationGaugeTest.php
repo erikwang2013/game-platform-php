@@ -24,7 +24,7 @@ use support\Request;
  *  ① 表名多写了 `game_`：`Db::table` 自己会补前缀（config/database.php:36 `'prefix' => 'game_'`），
  *     于是实际查 `game_game_reconciliation_diff`（**不存在**，实测 information_schema 为 0 行）。
  *  ② 列名 `status` 不存在：真列是 `resolution`，值 pending/resolved/ignored
- *     （DDL: install.sql:1152；同口径见 ReconciliationService::listDiffs 的 where('resolution', …)）。
+ *     （DDL: install.sql 的 game_reconciliation_diff.resolution；同口径见 ReconciliationService::listDiffs 的 where('resolution', …)）。
  *
  * 后果不是"少一个监控项"：这是待处理资金对账差异**唯一**的告警源，恒 0 等于差异永不告警。
  *

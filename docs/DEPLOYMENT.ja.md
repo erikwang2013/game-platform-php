@@ -51,7 +51,7 @@ rm -rf install/
 
 インストールウィザードが実行する操作:
 - PHP 環境チェック（バージョン、拡張、ディレクトリ権限）
-- 結合 SQL（`install/install.sql`）を実行し、78 枚のテーブルを作成してシードデータをインポート
+- 結合 SQL（`install/install.sql`）を実行し、79 枚のテーブルを作成してシードデータをインポート
 - スーパー管理者アカウントを作成（bcrypt 暗号化、super_admin ロールに紐付け）
 - JWT/Encryption/Hashids 鍵を自動生成
 - `admin/.env` と `service/.env` に書き込み
@@ -90,13 +90,13 @@ docker-compose logs -f
 | nginx | game-platform-nginx | 80, 443 | リバースプロキシ + 静的ファイル |
 | admin | game-platform-admin | 8789 | 管理バックエンド API |
 | service | game-platform-service | 8792 | C側業務 API |
-| leaderboard-ws | game-platform-ws | 8790, 8791 | WebSocket ランキング/チャット |
+| chat-ws | game-platform-ws | 8791 | WebSocket |
 | mysql | game-platform-mysql | 3306 | メインデータベース |
 | redis | game-platform-redis | 6379 | キャッシュ/レートリミット |
 | elasticsearch | game-platform-es | 9200 | 全文検索 |
 
 > **ポート設定**: 上表はデフォルトポートであり、すべてプロジェクトルートの `.env` で変更できます（テンプレート `.env.example`、`cp .env.example .env` 後に編集）:
-> `NGINX_HTTP_PORT`、`NGINX_HTTPS_PORT`、`ADMIN_PORT`、`SERVICE_PORT`、`LEADERBOARD_WS_PORT`、`CHAT_WS_PORT`、`MYSQL_PORT`、`REDIS_PORT`、`ES_PORT`。
+> `NGINX_HTTP_PORT`、`NGINX_HTTPS_PORT`、`ADMIN_PORT`、`SERVICE_PORT`、`CHAT_WS_PORT`、`MYSQL_PORT`、`REDIS_PORT`、`ES_PORT`。
 > `nginx.conf.template` の upstream ポートは公式イメージの envsubst により自動レンダリングされるため、Nginx 設定を手動で変更する必要はありません。
 > Docker デプロイでは、外部公開アドレス（`APP_URL` / `SITE_URL`）はデフォルトで `ADMIN_PORT` / `SERVICE_PORT` に自動追従します（`http://localhost:ポート番号` の形式）。カスタムドメインや HTTPS の場合はルート `.env` で `APP_URL` / `SITE_URL` を設定してください（`admin/.env`・`service/.env` の同名項目を上書きします）。ベアメタル（手動）デプロイでポートを変更する場合は、引き続きアドレスを手動で更新してください。
 
@@ -201,7 +201,6 @@ SCOUT_HOSTS=127.0.0.1:9200
 ```ini
 # admin と同じデータベース・Redis・ES 設定
 APP_PORT=8792
-LEADERBOARD_WS_PORT=8790  # リーダーボード WebSocket
 CHAT_WS_PORT=8791  # チャット WebSocket
 SNOWFLAKE_WORKER_ID=2  # admin と異なる必要があります
 
@@ -326,7 +325,7 @@ systemctl enable --now game-platform-admin game-platform-service
 `/etc/nginx/sites-available/game-platform` を作成:
 
 ```nginx
-# 端口为默认值（admin 8789 / service 8792 / ws 8790）；如已修改 .env，请同步调整
+# 端口为默认值（admin 8789 / service 8792 / ws 8791）；如已修改 .env，请同步调整
 server {
     listen 80;
     server_name your-domain.com;
@@ -352,16 +351,6 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    # WebSocket 排行榜（默认端口 8790，与 service/.env 的 LEADERBOARD_WS_PORT 一致）
-    location /ws/ {
-        proxy_pass http://127.0.0.1:8790;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
     }
 
     # 健康检查
@@ -614,7 +603,7 @@ ufw allow 443/tcp     # HTTPS
 ufw enable
 
 # 内部端口不应暴露
-# 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# 8789 (admin), 8792 (service), 8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
 # 以上为默认端口；如修改过根 .env / 各自 .env，以实际配置为准
 # 仅通过 127.0.0.1 访问
 ```

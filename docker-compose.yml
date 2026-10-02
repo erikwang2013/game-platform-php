@@ -83,7 +83,6 @@ services:
       # 对外地址默认跟随 SERVICE_PORT；根 .env 设 SITE_URL 可改（含覆盖 service/.env 的值）
       # PUBLIC_ 键名原因见文件头；由 service/support/bootstrap.php 还原为 SITE_URL
       - PUBLIC_SITE_URL=${SITE_URL:-http://localhost:${SERVICE_PORT:-8792}}
-      - LEADERBOARD_WS_PORT=${LEADERBOARD_WS_PORT:-8790}
       - CHAT_WS_PORT=${CHAT_WS_PORT:-8791}
     ports:
       - "${SERVICE_PORT:-8792}:${SERVICE_PORT:-8792}"
@@ -98,8 +97,11 @@ services:
       - elasticsearch
     restart: unless-stopped
 
-  # WebSocket 排行榜/聊天 (默认端口 8790/8791，根 .env 可改)
-  leaderboard-ws:
+  # WebSocket 聊天 (默认端口 8791，根 .env 的 CHAT_WS_PORT 可改)
+  # 墓碑：排行榜 WS（8790 / LEADERBOARD_WS_PORT）于 2026-10-02 随进程一并移除 —— 它从落地起
+  #   就没有生产者（broadcastRanking() 全仓零调用点），REST 排行榜已满足需求。详见
+  #   service/config/process.php。别把端口和环境变量加回来。
+  chat-ws:
     build:
       context: ./service
       dockerfile: Dockerfile
@@ -109,10 +111,8 @@ services:
       - APP_PORT=${SERVICE_PORT:-8792}
       # 同 service：对外地址默认跟随 SERVICE_PORT（根 .env 的 SITE_URL 可覆盖）
       - PUBLIC_SITE_URL=${SITE_URL:-http://localhost:${SERVICE_PORT:-8792}}
-      - LEADERBOARD_WS_PORT=${LEADERBOARD_WS_PORT:-8790}
       - CHAT_WS_PORT=${CHAT_WS_PORT:-8791}
     ports:
-      - "${LEADERBOARD_WS_PORT:-8790}:${LEADERBOARD_WS_PORT:-8790}"
       - "${CHAT_WS_PORT:-8791}:${CHAT_WS_PORT:-8791}"
     volumes:
       - ./service:/app

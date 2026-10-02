@@ -59,19 +59,19 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 | 2FA | Google Authenticator TOTP + backup recovery codes | Completed |
 | Referrals | Referral codes, signup rewards, deposit commissions | Completed |
 | Search | ES search API + game suggestions + LIKE fallback | Completed |
-| Leaderboards | WebSocket real-time push (port 8790) | Completed |
+| Leaderboards | REST + Redis | Completed |
 | CDN | Five-provider integration (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + preload) | Completed |
 | CDN Admin | Admin-configurable five providers (encrypted credentials/toggle/connectivity test via HeadBucket), service reads from DB only | Completed |
 | Reports | Admin data reports (summary/daily/CSV export, Redis 5-min cache, span ≤90 days) | Completed |
 | Platform stats | C-side homepage stats (total games/users/today's plays/7-day active) | Completed |
 | Deployment | Docker Compose 7 services + Nginx reverse proxy | Completed |
 | Data | MySQL real-time aggregation analytics + joint/conditional probability | Completed |
-| HarmonyOS | admin 8 pages; C-end `apps/harmonyos/` implements login/lobby/detail/wallet/profile (pointing to 8792) | Partially complete (project runs, device needs IP change) |
+| HarmonyOS | admin 19 pages; C-end `apps/harmonyos/` implements login/lobby/detail/wallet/profile (pointing to 8792) | Partially complete (project runs, device needs IP change) |
 | API docs | erikwang2013/apidoc-php interactive documentation | Completed |
 | One-click install | Browser install wizard: create admin, upgrade existing DB, install.lock prevents reinstall | Completed |
 | Fault tolerance | CircuitBreaker + Retry + feature.provider_mock degradation switch | Completed |
 | Payment methods | Admin CRUD + country visibility + amount range + currency restriction | Completed |
-| CI | Auto-increment tag on push + GitHub Release | Completed |
+| CI | Auto-increment tag on push + GitHub Release | Changed to manual trigger |
 
 ### Ecosystem Expansion (v2.0) — Just Completed
 
@@ -231,7 +231,7 @@ Time window: 5 minutes
 
 ## 7. Database Table List
 
-### Ecosystem Expansion Additions (10 tables)
+### Ecosystem Expansion Additions (14 tables)
 
 | Table | Description | Key Features |
 |------|------|---------|
@@ -245,6 +245,10 @@ Time window: 5 minutes
 | game_user_achievement | User achievements | user_id+achievement_id unique index |
 | game_friend | Friend relations | user_id+friend_id unique index |
 | game_message | DMs | from_user_id+to_user_id / to_user_id+is_read |
+| game_cdn_provider | CDN provider configuration | provider unique index, config encrypted JSON |
+| game_referral_commission | Multi-level referral commission records | user_id / referral_id / source_type+source_id index |
+| game_tournament | Tournaments | slug unique index, status+start_at+end_at index |
+| game_tournament_entry | Tournament entries/scores | tournament_id+user_id unique index, tournament_id+score index |
 
 ### Table Structure Changes
 
@@ -253,7 +257,7 @@ Time window: 5 minutes
 | game_game | +provider_config (JSON) |
 | game_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**Total: 78 tables in install.sql**. Models: 52 shared in `packages/platform-common/src/model/`; the 8 in admin/app/model/ and 10 in service/app/model/ are host-only (zero filename overlap).
+**Total: 79 tables in install.sql**. Models: 51 shared in `packages/platform-common/src/model/`; the 6 in admin/app/model/ and 10 in service/app/model/ are host-only (zero filename overlap).
 
 ## 8. Test Coverage
 
@@ -267,7 +271,7 @@ Time window: 5 minutes
 | HashidsServiceTest | 6 | ID encode/decode round-trip |
 | SnowflakeServiceTest | 5 | ID generation uniqueness |
 
-**Total (phpunit --list-tests, measured now): admin 200 cases / 21 files, service 273 cases / 42 files (including WebhookUrlSafety + EventBusMessageFormat; report: 09-22 rerun admin 190 + service 273, 08-27 snapshot admin 153 + service 45). service is not included in CI failure blocking (unverified).**
+**Total (phpunit --list-tests, measured now): admin 593 cases / 70 files, service 549 cases / 89 files (including WebhookUrlSafety + EventBusMessageFormat; report: 09-22 rerun admin 190 + service 273, 08-27 snapshot admin 153 + service 45). service is included in CI failure blocking.**
 
 ---
 

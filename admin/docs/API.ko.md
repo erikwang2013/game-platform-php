@@ -1668,7 +1668,7 @@ POST /admin/v1/upload
 
 ### Docker Compose
 
-프로젝트 루트에 `docker-compose.yml` 제공, 7개 서비스 (Nginx, admin, service, leaderboard-ws, MySQL, Redis, Elasticsearch) 오케스트레이션. PHP는 `Dockerfile`로 빌드 (`php:8.3-cli` 기반, OPcache 활성화).
+프로젝트 루트에 `docker-compose.yml` 제공, 7개 서비스 (Nginx, admin, service, chat-ws, MySQL, Redis, Elasticsearch) 오케스트레이션. PHP는 `Dockerfile`로 빌드 (`php:8.3-cli` 기반, OPcache 활성화).
 
 ```bash
 cp .env.example .env
@@ -1948,7 +1948,7 @@ DELETE /admin/v1/payment/method/{hashid}
 
 ## 19. 확장 관리 엔드포인트 (Extended Admin APIs)
 
-아래 20개 엔드포인트는 6개 섹션으로 나뉘며, 모두 `/admin/v1` 관리 엔드포인트로서 JWT 인증과 RBAC 권한 검증이 필요합니다.
+아래 21개 엔드포인트는 6개 섹션으로 나뉘며, 모두 `/admin/v1` 관리 엔드포인트로서 JWT 인증과 RBAC 권한 검증이 필요합니다.
 
 ### 19.1 출금 일괄 심사 및 지급 실행
 

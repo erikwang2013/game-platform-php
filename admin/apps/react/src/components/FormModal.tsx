@@ -43,7 +43,10 @@ export function FormModal({
   onSubmit: (body: Record<string, unknown>) => Promise<void>;
   onClose: () => void;
 }) {
-  const [draft, setDraft] = useState<Draft>(() => draftFrom(fields, row));
+  // 初值另存一份**不再变**的快照（关框时的脏检查拿它比）。draftFrom 只在这里求值一次；
+  // 拿 row 现比不行 —— 那是第二套换算，与 buildPayload 的「改动比较」会漂。
+  const [initial] = useState<Draft>(() => draftFrom(fields, row));
+  const [draft, setDraft] = useState<Draft>(initial);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   // 正在上传的字段名（上传期间禁用那个字段的按钮）
@@ -139,8 +142,23 @@ export function FormModal({
     }
   };
 
+  /**
+   * 关框（点背景 / Esc / 「关闭」按钮都走这里）：草稿与初值有差就先问一句。
+   *
+   * 这是本树唯一**没有护栏的丢数据路径** —— 编辑框最长 20 个字段，点一下框外就全没了；
+   * 同树 RowActions / RowBrowser 的删除、funds 的批量操作早有 `window.confirm` 先例。
+   * 判脏按 `draft[名] !== initial[名]`：与 buildPayload 的「改动比较」是同一套字符串换算
+   * （draftFrom 只求值一次，见上）。
+   */
+  const close = () => {
+    if (fields.some((field) => draft[field.name] !== initial[field.name]) && !window.confirm(t('form.discard_confirm'))) {
+      return;
+    }
+    onClose();
+  };
+
   return (
-    <Modal title={title} onClose={onClose}>
+    <Modal title={title} onClose={close}>
       <form className="form form-cols" onSubmit={(event) => void submit(event)}>
         {fields.map((field) => (
           <label className={`label${isWide(field.type) ? ' wide' : ''}`} key={field.name}>

@@ -207,7 +207,19 @@ class AchievementService
             $query->where('status', 'confirmed');
         }
 
-        return (int) floor((float) $query->sum($sumColumn));
+        // 金额域禁 float：DECIMAL 列的 sum() 经 PDO 读回是**字符串**，`(float)` 从 2^53 起丢精度
+        // （`sum_column` 由 admin 的 conditions JSON 指定，normalizeTable 只剥前缀、不是白名单）。
+        // 本函数只要整数部分 ⇒ 在十进制串上取整：bcdiv(…, 0) 是**朝零**截断而原式是 floor，
+        // 负数带小数时两者差 1，故再补一次（DECIMAL(20,8) 精度 ≤8 位，bccomp 取 8 位即可判定）。
+        $sum = $query->sum($sumColumn) ?? '0';
+        if (!is_string($sum)) {
+            // 非 DECIMAL/INT 列（如 DOUBLE）驱动回的是 PHP float；科学计数法串 bcmath 读不了
+            return (int) $sum;
+        }
+
+        $int = bcdiv($sum, '1', 0);
+
+        return (int) (bccomp($sum, $int, 8) < 0 ? bcsub($int, '1', 0) : $int);
     }
 
     private static function metricDistinct(int $userId, array $condition): int

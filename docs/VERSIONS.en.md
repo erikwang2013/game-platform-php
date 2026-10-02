@@ -10,17 +10,17 @@ Languages: [中文](VERSIONS.md) · **English** · [한국어](VERSIONS.ko.md) �
 
 | | Lite | Standard | Full |
 |------|------|------|------|
-| Data tables (install.sql) | 19 | 29 | **66** (22 new in v1.3.15-v1.3.22) |
+| Data tables (install.sql) | 19 | 29 | **79** (22 new in v1.3.15-v1.3.22) |
 | API endpoints | 38 | 54 | ~260 (admin+service, incl. Webhook/Provider) |
 | Backend controllers | 14 | 22 | admin 46 + service 35 |
 | Data models | Not shared | Not shared | **shared 52 (platform-common) + admin 8 + service 10** |
 | Shared services | No shared layer | No shared layer | Single shared package `packages/platform-common` |
 | Admin frontend pages | 11 | 13 | 15 |
 | Platform frontend pages | 8 | 10 | 10 |
-| HarmonyOS (admin) | - | Login + dashboard | **8 pages** `admin/apps/harmonyos/` |
-| HarmonyOS (C-end) | - | - | **5 pages** `apps/harmonyos/` (login/game lobby/detail/wallet/profile) |
+| HarmonyOS (admin) | - | Login + dashboard | **19 pages** `admin/apps/harmonyos/` |
+| HarmonyOS (C-end) | - | - | **8 pages** `apps/harmonyos/` (login/game lobby/detail/wallet/profile) |
 | Docker services | - | - | **7** (nginx/admin/service/leaderboard-ws/mysql/redis/elasticsearch) |
-| Test cases | 60 | 60 | admin ~132; service 3 |
+| Test cases | 60 | 60 | admin 593 cases / 70 files; service 549 cases / 89 files |
 
 ---
 
@@ -89,7 +89,7 @@ Languages: [中文](VERSIONS.md) · **English** · [한국어](VERSIONS.ko.md) �
 | Real dashboard charts | - | - | ✓ fl_chart |
 | Coupon system | - | - | ✓ |
 | Leaderboards (daily/weekly/monthly/total) | - | - | ✓ Redis cache |
-| WebSocket real-time leaderboard | - | - | ✓ port 8790 |
+| WebSocket real-time leaderboard | - | - | - removed (2026-10-02) |
 | Notification system (in-app + email) | - | - | ✓ |
 | Referral commissions | - | - | ✓ |
 | Daily stats snapshot | - | ✓ | ✓ |
@@ -146,8 +146,8 @@ Languages: [中文](VERSIONS.md) · **English** · [한국어](VERSIONS.ko.md) �
 |------|--------|--------|--------|
 | Flutter Web PC admin backend | ✓ 5 pages | ✓ 11 pages | ✓ 17 pages |
 | Flutter Web PC user platform | ✓ 5 pages | ✓ 8 pages | ✓ 10 pages |
-| HarmonyOS admin | - | ✓ login + dashboard | ✓ 8 pages `admin/apps/harmonyos/` |
-| HarmonyOS C-end | - | - | ✓ 5 pages `apps/harmonyos/` |
+| HarmonyOS admin | - | ✓ login + dashboard | ✓ 19 pages `admin/apps/harmonyos/` |
+| HarmonyOS C-end | - | - | ✓ 8 pages `apps/harmonyos/` |
 
 ---
 
@@ -199,7 +199,12 @@ game_friend, game_message, game_cdn_provider, game_referral_commission,
 game_tournament, game_tournament_entry
 ```
 
-**Total: 78 tables**
+### v1.3.44 additions (1 table)
+```
+game_wallet_hold
+```
+
+**Total: 79 tables**
 
 ---
 
@@ -243,12 +248,14 @@ game_tournament, game_tournament_entry
 | SDK docs | - | - | ✓ PHP/Go/Python |
 | Advanced analytics | Retention/D1-D30, conversion funnel, ARPU/ARPPU |
 
-### New Data Tables (10 tables)
+### New Data Tables (14 tables)
 ```
 game_ticket, game_ticket_reply, game_device_token,
 game_vip_level, game_user_vip, game_exp_log,
 game_achievement, game_user_achievement,
 game_friend, game_message
+game_cdn_provider, game_referral_commission,
+game_tournament, game_tournament_entry
 ```
 
 ### New Provider API Endpoints (4)
@@ -260,28 +267,31 @@ POST /api/provider/refund   — 通知退款
 ```
 
 ### New C-end API Endpoints (8)
+
+> **尚未实现**：`GET /api/v1/user/vip-status` 与 `GET /api/v1/user/achievements` 两条 C 端路由未注册（`service/config/route.php` 无对应条目），当前请求返回 404。实现后请删除本行。
+
 ```
-POST /api/verify/send-email    — 发送邮箱验证码
-POST /api/verify/confirm-email — 确认邮箱
-GET  /api/ticket/list             — 工单列表
-POST /api/ticket/create           — 创建工单
-GET  /api/ticket/{id}             — 工单详情
-POST /api/ticket/{id}/reply       — 回复工单
-GET  /api/user/vip-status         — VIP状态
-GET  /api/user/achievements       — 成就列表
+POST /api/v1/verify/send-email    — 发送邮箱验证码
+POST /api/v1/verify/confirm-email — 确认邮箱
+GET  /api/v1/ticket/list             — 工单列表
+POST /api/v1/ticket/create           — 创建工单
+GET  /api/v1/ticket/{hashid}         — 工单详情
+POST /api/v1/ticket/{hashid}/reply   — 回复工单
+GET  /api/v1/user/vip-status         — VIP状态
+GET  /api/v1/user/achievements       — 成就列表
 ```
 
-### New Admin API Endpoints (6)
+### New Admin API Endpoints (9)
 ```
-GET  /admin/ticket/list          — 工单列表
-GET  /admin/ticket/{id}          — 工单详情
-POST /admin/ticket/{id}/reply    — 回复工单
-POST /admin/ticket/{id}/close    — 关闭工单
-POST /admin/ticket/{id}/assign   — 指定处理人
-GET  /admin/analytics/retention  — 留存分析
-GET  /admin/analytics/funnel     — 转化漏斗
-GET  /admin/analytics/arpu       — ARPU趋势
-GET  /admin/analytics/economy    — 经济指标
+GET  /admin/v1/ticket/list          — 工单列表
+GET  /admin/v1/ticket/{hashid}      — 工单详情
+POST /admin/v1/ticket/{hashid}/reply — 回复工单
+POST /admin/v1/ticket/{hashid}/close — 关闭工单
+POST /admin/v1/ticket/{hashid}/assign — 指定处理人
+GET  /admin/v1/analytics/retention  — 留存分析
+GET  /admin/v1/analytics/funnel     — 转化漏斗
+GET  /admin/v1/analytics/arpu       — ARPU趋势
+GET  /admin/v1/analytics/economy    — 经济指标
 ```
 
 ---

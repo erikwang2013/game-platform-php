@@ -101,16 +101,7 @@ class IdentityPage extends GetView<IdentityController> {
       Expanded(child: Obx(() {
         if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
         if (ctrl.list.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.asset('assets/mascot.png', width: 120),
-                const SizedBox(height: 12),
-                Text("${AppTranslations.t('app.no_data')}"),
-              ],
-            ),
-          );
+          return const CrudEmptyState();
         }
         return SingleChildScrollView(child: DataTable(columns: const [
           DataColumn(label: Text('User')),

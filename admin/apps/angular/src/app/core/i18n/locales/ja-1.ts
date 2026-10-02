@@ -114,6 +114,7 @@ export const JA_1: Record<string, string> = {
   'risk.rule.scope': '適用範囲',
   'risk.rule.priority': '優先度',
   'risk.rule.priority_hint': '0-1000、数値が大きいほど先に判定されます（既定 100）',
+  'risk.rule.scope_hint': 'exchange / login は未接続（評価器に分岐はあるが呼び出し点が無い —— RiskService::check() が呼ばれるのは deposit / withdraw のみ）のため、この scope のルールは永久に一致しません',
   'risk.rule.status': '状態',
   'risk.rule.config': 'しきい値設定（JSON）',
   'risk.rule.keys_note': '\n',

@@ -6,6 +6,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { FriendRequest, FriendUser } from '../core/api.service';
 import { Avatars } from '../core/avatar';
+import { Msg, t as tr } from '../core/i18n/i18n';
 import { FriendsPage } from './friends';
 
 type Sig<T> = { (): T; set(v: T): void };
@@ -20,17 +21,28 @@ type Probe = {
   tab: Sig<'list' | 'req' | 'add'>;
   fList: Sig<FriendUser[]>;
   rList: Sig<FriendRequest[]>;
-  fErr: Sig<string>;
-  rErr: Sig<string>;
+  fErr: Sig<Msg>;
+  rErr: Sig<Msg>;
   loading: Sig<boolean>;
   busy: Sig<string>;
-  ok: Sig<string>;
-  actErr: Sig<string>;
+  ok: Sig<Msg>;
+  actErr: Sig<Msg>;
   q: Sig<string>;
   hits: Sig<FriendUser[] | null>;
   friendIds(): Set<string>;
   name(u: { nickname: string | null; username: string }): string;
 };
+
+/**
+ * `Msg` 的渲染：T 端的 `| mt` 走 `t(key, params)`，这里给自由函数一个同形的替身。
+ *
+ * 为什么必须有它：`ok` / `actErr` / `fErr` / `rErr` 本批改成了**两态**（服务端原文 / 词条键）。
+ * 服务端原文那一态是 string（`ApiError.msg` 与 `.message` 同值），断言直接比字符串照样过；
+ * **键**那一态是对象，直接比会恒假 ⇒ 必须渲染。这一层恰好也是「`params` 有没有传丢」的仪器：
+ * `t()` 对 `params` 里没有的占位符**原样留着** `{name}`，所以「存了键但没带名字」会被下面
+ * 那两条 `toBe('已接受 bob')` 抓住。
+ */
+const txt = (v: Msg): string => (typeof v === 'string' ? v : tr(v.key, v.params));
 
 const U1: FriendUser = { id: 'U1', username: 'alice', nickname: '爱丽丝', avatar: null };
 const U2: FriendUser = { id: 'U2', username: 'bob', nickname: null, avatar: null };
@@ -146,7 +158,8 @@ describe('FriendsPage 好友（请求面）', () => {
     http.expectOne('/api/v1/friend/requests').flush(ok({ list: [] }));
     expect(probe().fList().length).toBe(1);
     expect(probe().rList().length).toBe(0);
-    expect(probe().ok()).toContain('已接受');
+    // 整句比：`{name}` 没传丢才算过（丢了这里拿到的是字面量 `已接受 {name}`）
+    expect(txt(probe().ok())).toBe('已接受 bob');
   });
 
   it('「互相加不自动接受」：对方已有待处理申请时，422 原样透出且不重拉列表', () => {
@@ -180,7 +193,7 @@ describe('FriendsPage 好友（请求面）', () => {
     http.expectOne('/api/v1/friend/remove').flush(ok([]));
     http.expectOne('/api/v1/friend/list').flush(ok({ list: [] }));
     http.expectOne('/api/v1/friend/requests').flush(ok({ list: [] }));
-    expect(probe().ok()).toContain('已删除好友');
+    expect(txt(probe().ok())).toBe('已删除好友 bob');
     expect(probe().actErr()).toBe('');
 
     // 再点一次（对方早就不在列表里了）：客户端不自己判"他是不是我好友"，照样发、照样成功
@@ -287,6 +300,9 @@ describe('FriendsPage（DOM 级）', () => {
     // 没有头像、也没有取到字节 ⇒ 首字母兜底，不留碎图
     expect(el.querySelector('.row img')).toBeNull();
     expect(el.querySelector('.row .av')!.textContent).toContain('爱');
+    // 整页过表（本批把字面量换成了键）：键名不外泄、`Msg` 不印成 `[object Object]`
+    expect(el.textContent).not.toMatch(/\b(?:friends|app|nav|common)\./);
+    expect(el.textContent).not.toContain('[object Object]');
   });
 
   it('申请列表：接受与拒绝两个按钮都在，且点「接受」发的是关系 id', () => {
@@ -304,6 +320,14 @@ describe('FriendsPage（DOM 级）', () => {
     req.flush(ok([]));
     http.expectOne('/api/v1/friend/list').flush(ok({ list: [U2] }));
     http.expectOne('/api/v1/friend/requests').flush(ok({ list: [] }));
+    fixture.detectChanges();
+
+    // 成功提示本批改成了**键 + `{name}` 参数**（在 `await` 之后才落值，存成串就把语言冻住）。
+    // 这条同时钉三件：模板过了 `| mt`（否则是 `[object Object]`）、`params.name` 没传丢、
+    // 名字取的是**被接受的那个人**（FR1.user = U2 = bob，不是关系 id REL1）。
+    expect(el.textContent).toContain('已接受 bob');
+    expect(el.textContent).not.toContain('[object Object]');
+    expect(el.textContent).not.toContain('{name}');
   });
 
   it('搜索结果里已是好友的只给标记、不给「加好友」按钮（点了必 422，提示不好看）', () => {
@@ -332,6 +356,11 @@ describe('FriendsPage（DOM 级）', () => {
     const el: HTMLElement = fixture.nativeElement;
     expect(el.textContent).toContain('搜人加好友');
     expect(el.textContent).not.toContain('没有找到');
+    // placeholder 不进 textContent，单独取属性 —— 漏 `| t` 时这里印的是键名
+    expect(el.querySelector('input[type=search]')?.getAttribute('placeholder')).toBe(
+      '按用户名或昵称搜索',
+    );
+    expect(el.textContent).not.toContain('[object Object]');
   });
 });
 

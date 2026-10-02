@@ -114,6 +114,7 @@ export const PT_1: Record<string, string> = {
   'risk.rule.scope': 'Escopo',
   'risk.rule.priority': 'Prioridade',
   'risk.rule.priority_hint': '0-1000, quanto maior, antes é avaliada (padrão 100)',
+  'risk.rule.scope_hint': 'exchange / login ainda não conectados (o avaliador tem ramos, mas nenhum ponto de chamada — RiskService::check() só é chamado por deposit / withdraw), então uma regra com este escopo nunca dispara',
   'risk.rule.status': 'Estado',
   'risk.rule.config': 'Configuração de limites (JSON)',
   'risk.rule.keys_note': '\n',

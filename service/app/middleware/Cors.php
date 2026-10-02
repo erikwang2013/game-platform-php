@@ -20,7 +20,10 @@ class Cors implements MiddlewareInterface
             return response('', 204, [
                 'Access-Control-Allow-Origin'      => $origin,
                 'Access-Control-Allow-Methods'     => 'GET,POST,PUT,DELETE,OPTIONS',
-                'Access-Control-Allow-Headers'     => 'Authorization,Content-Type',
+                // X-Language 必须在内：C 端前端每个请求都无条件带它（LanguageMiddleware::detectLocale
+                // 的第一顺位就读这个头，见 app/middleware/LanguageMiddleware.php:45）。漏了它则跨源部署下
+                // 预检拒该头 ⇒ 语言静默退回 Accept-Language/默认 zh，不报错（与 admin 侧同一形状）。
+                'Access-Control-Allow-Headers'     => 'Authorization,Content-Type,X-Language',
                 'Access-Control-Max-Age'           => '86400',
             ]);
         }

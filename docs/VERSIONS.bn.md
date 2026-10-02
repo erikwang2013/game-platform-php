@@ -10,17 +10,17 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 
 | | বেসিক (Lite) | স্ট্যান্ডার্ড (Standard) | ফুল (Full) |
 |------|------|------|------|
-| ডেটা টেবিল (install.sql) | 19 | 29 | **66**（v1.3.15-22-এ 22টি নতুন） |
+| ডেটা টেবিল (install.sql) | 19 | 29 | **79**（v1.3.15-22-এ 22টি নতুন） |
 | API এন্ডপয়েন্ট | 38 | 54 | ~260 (admin+service, Webhook/Provider সহ) |
 | ব্যাকএন্ড কন্ট্রোলার | 14 | 22 | admin 46 + service 35 |
 | ডেটা মডেল | শেয়ার্ড নয় | শেয়ার্ড নয় | **শেয়ার্ড 52 (platform-common) + admin 8 + service 10** |
 | শেয়ার্ড সার্ভিস | কোনো শেয়ার্ড লেয়ার নেই | কোনো শেয়ার্ড লেয়ার নেই | `packages/platform-common` একক শেয়ার্ড প্যাকেজ |
 | Admin ফ্রন্টএন্ড পেজ | 11 | 13 | 15 |
 | Platform ফ্রন্টএন্ড পেজ | 8 | 10 | 10 |
-| HarmonyOS (admin) | - | লগইন+ড্যাশবোর্ড | **৮ পেজ** `admin/apps/harmonyos/` |
-| HarmonyOS (C-এন্ড) | - | - | **৫ পেজ** `apps/harmonyos/` (লগইন/গেম লবি/ডিটেইল/ওয়ালেট/আমার) |
+| HarmonyOS (admin) | - | লগইন+ড্যাশবোর্ড | **১৯ পেজ** `admin/apps/harmonyos/` |
+| HarmonyOS (C-এন্ড) | - | - | **৮ পেজ** `apps/harmonyos/` (লগইন/গেম লবি/ডিটেইল/ওয়ালেট/আমার) |
 | Docker সার্ভিস | - | - | **৭টি** (nginx/admin/service/leaderboard-ws/mysql/redis/elasticsearch) |
-| টেস্ট কেস | 60 | 60 | admin ~132; service 3 |
+| টেস্ট কেস | 60 | 60 | admin ৫৯৩ কেস / ৭০ ফাইল; service ৫৪৯ কেস / ৮৯ ফাইল |
 
 ---
 
@@ -89,7 +89,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 | ড্যাশবোর্ড বাস্তব চার্ট | - | - | ✓ fl_chart |
 | কুপন সিস্টেম | - | - | ✓ |
 | লিডারবোর্ড (দৈনিক/সাপ্তাহিক/মাসিক/সর্বকালীন) | - | - | ✓ Redis ক্যাশ |
-| WebSocket রিয়েল-টাইম লিডারবোর্ড | - | - | ✓ পোর্ট 8790 |
+| WebSocket রিয়েল-টাইম লিডারবোর্ড | - | - | - সরানো হয়েছে (2026-10-02) |
 | নোটিফিকেশন সিস্টেম (ইন-অ্যাপ+ইমেইল) | - | - | ✓ |
 | রেফারেল কমিশন | - | - | ✓ |
 | দৈনিক পরিসংখ্যান স্ন্যাপশট | - | ✓ | ✓ |
@@ -146,8 +146,8 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 |------|--------|--------|--------|
 | Flutter Web PC অ্যাডমিন প্যানেল | ✓ ৫ পেজ | ✓ ১১ পেজ | ✓ ১৭ পেজ |
 | Flutter Web PC ইউজার প্ল্যাটফর্ম | ✓ ৫ পেজ | ✓ ৮ পেজ | ✓ ১০ পেজ |
-| HarmonyOS admin | - | ✓ লগইন+ড্যাশবোর্ড | ✓ ৮ পেজ `admin/apps/harmonyos/` |
-| HarmonyOS C-এন্ড | - | - | ✓ ৫ পেজ `apps/harmonyos/` |
+| HarmonyOS admin | - | ✓ লগইন+ড্যাশবোর্ড | ✓ ১৯ পেজ `admin/apps/harmonyos/` |
+| HarmonyOS C-এন্ড | - | - | ✓ ৮ পেজ `apps/harmonyos/` |
 
 ---
 
@@ -199,7 +199,12 @@ game_friend, game_message, game_cdn_provider, game_referral_commission,
 game_tournament, game_tournament_entry
 ```
 
-**মোট: ৭৮টি টেবিল**
+### v1.3.44-এ নতুন (১টি)
+```
+game_wallet_hold
+```
+
+**মোট: ৭৯টি টেবিল**
 
 ---
 
@@ -243,12 +248,14 @@ game_tournament, game_tournament_entry
 | SDK ডকুমেন্টেশন | - | - | ✓ PHP/Go/Python |
 | অ্যাডভান্সড অ্যানালিটিক্স | রিটেনশন/D1-D30, কনভার্সন ফানেল, ARPU/ARPPU |
 
-### নতুন ডেটা টেবিল (১০টি)
+### নতুন ডেটা টেবিল (১৪টি)
 ```
 game_ticket, game_ticket_reply, game_device_token,
 game_vip_level, game_user_vip, game_exp_log,
 game_achievement, game_user_achievement,
 game_friend, game_message
+game_cdn_provider, game_referral_commission,
+game_tournament, game_tournament_entry
 ```
 
 ### নতুন Provider API এন্ডপয়েন্ট (৪টি)
@@ -260,28 +267,31 @@ POST /api/provider/refund   — 通知退款
 ```
 
 ### নতুন C-এন্ড API এন্ডপয়েন্ট (৮টি)
+
+> **尚未实现**：`GET /api/v1/user/vip-status` 与 `GET /api/v1/user/achievements` 两条 C 端路由未注册（`service/config/route.php` 无对应条目），当前请求返回 404。实现后请删除本行。
+
 ```
-POST /api/verify/send-email    — 发送邮箱验证码
-POST /api/verify/confirm-email — 确认邮箱
-GET  /api/ticket/list             — 工单列表
-POST /api/ticket/create           — 创建工单
-GET  /api/ticket/{id}             — 工单详情
-POST /api/ticket/{id}/reply       — 回复工单
-GET  /api/user/vip-status         — VIP状态
-GET  /api/user/achievements       — 成就列表
+POST /api/v1/verify/send-email    — 发送邮箱验证码
+POST /api/v1/verify/confirm-email — 确认邮箱
+GET  /api/v1/ticket/list             — 工单列表
+POST /api/v1/ticket/create           — 创建工单
+GET  /api/v1/ticket/{hashid}         — 工单详情
+POST /api/v1/ticket/{hashid}/reply   — 回复工单
+GET  /api/v1/user/vip-status         — VIP状态
+GET  /api/v1/user/achievements       — 成就列表
 ```
 
-### নতুন অ্যাডমিন প্যানেল API এন্ডপয়েন্ট (৬টি)
+### নতুন অ্যাডমিন প্যানেল API এন্ডপয়েন্ট (৯টি)
 ```
-GET  /admin/ticket/list          — 工单列表
-GET  /admin/ticket/{id}          — 工单详情
-POST /admin/ticket/{id}/reply    — 回复工单
-POST /admin/ticket/{id}/close    — 关闭工单
-POST /admin/ticket/{id}/assign   — 指定处理人
-GET  /admin/analytics/retention  — 留存分析
-GET  /admin/analytics/funnel     — 转化漏斗
-GET  /admin/analytics/arpu       — ARPU趋势
-GET  /admin/analytics/economy    — 经济指标
+GET  /admin/v1/ticket/list          — 工单列表
+GET  /admin/v1/ticket/{hashid}      — 工单详情
+POST /admin/v1/ticket/{hashid}/reply — 回复工单
+POST /admin/v1/ticket/{hashid}/close — 关闭工单
+POST /admin/v1/ticket/{hashid}/assign — 指定处理人
+GET  /admin/v1/analytics/retention  — 留存分析
+GET  /admin/v1/analytics/funnel     — 转化漏斗
+GET  /admin/v1/analytics/arpu       — ARPU趋势
+GET  /admin/v1/analytics/economy    — 经济指标
 ```
 
 ---

@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useRef, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from 'react';
 import { t } from '../i18n/index.ts';
+import { focusables, trapTab } from '../lib/focus-trap.ts';
 
 export type Tone = 'primary' | 'amber' | 'success' | 'danger' | 'muted';
 
@@ -136,14 +137,17 @@ export function Tabs({
   value: string;
   onChange: (key: string) => void;
 }) {
+  // 无 role/aria：这组按钮**没有** tab 语义（全树没有 tabpanel，也没有 roving tabindex / 方向键），
+  // 挂 `role="tablist"` + `role="tab"` + `aria-selected` 是**假语义** —— 读屏会把它们播成「选项卡 2/5」
+  // 并期待 Tab 键/方向键按 tabpanel 规矩走，而实际只是普通按钮。退化成诚实的按钮组，标注选中态用
+  // 视觉类 `.on`（angular 那棵的 ui-tabs 同款）。
   return (
-    <div className="tabs" role="tablist">
+    <div className="tabs">
       {tabs.map((tab) => (
         <button
           key={tab.key}
           type="button"
-          role="tab"
-          aria-selected={tab.key === value}
+          aria-pressed={tab.key === value}
           className={`tab${tab.key === value ? ' on' : ''}`}
           onClick={() => onChange(tab.key)}
         >
@@ -191,6 +195,13 @@ export function Field({ label, value }: { label: string; value: ReactNode }) {
   );
 }
 
+/**
+ * body 滚动锁的**嵌套计数**。多框叠加（详情框里再开一个）时内层先关不能把外层的锁解掉，
+ * 故只在 0↔1 的跨界写 style，中间层进出都不动它。StrictMode 的双跑也自洽：
+ * 挂载(+1，写 hidden) → 清理(-1，写 '') → 再挂载(+1，写 hidden)。
+ */
+let locks = 0;
+
 export function Modal({
   title,
   onClose,
@@ -208,21 +219,65 @@ export function Modal({
    */
   size?: 'sm';
 }) {
+  const box = useRef<HTMLDivElement>(null);
+
+  /**
+   * 开框：记下**打开它的那个元素**、把焦点移进框内；关框/卸载再还回去。
+   * 读 opener 与聚焦必须在同一个 effect 里且**读在前** —— 顺序反了就永远还给自己。
+   * StrictMode 的双跑也靠这个顺序自愈：第二次挂载读到的仍是打开者（第一次已还回去）。
+   */
   useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    if (box.current) focusables(box.current)[0]?.focus();
+    // opener 已随视图移除时 focus() 是空操作（路由切走也走这条），不报错
+    return () => opener?.focus();
+  }, []);
+
+  /**
+   * 开框即锁背景滚动：`.backdrop` 是 position:fixed，弹框本身不滚动，滚轮事件会穿透到背后的
+   * 列表上（内容一动，弹框看着跟着晃）。**独立的一个 effect** —— 上面那条的清理函数被
+   * modal-focus.guard.test.ts 逐字钉着（焦点归还），别把锁混进去。
+   */
+  useEffect(() => {
+    locks += 1;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      locks -= 1;
+      if (locks === 0) document.body.style.overflow = '';
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  }, []);
+
+  /**
+   * Esc / Tab 都挂在**宿主元素**上而不是 window：套两层框时只有焦点所在那层会收到
+   * （angular 的 ModalFocus 同一口径）。前提是焦点在框内 —— 由上面的 effect 保证。
+   *
+   * 宿主那行 tabindex=-1 是这条前提的补丁：容器自身**可程序化聚焦**（不进 tab 序），
+   * 点框内非可聚焦区时浏览器把焦点交给它而不是 BODY ⇒ 键盘事件仍在框内，宿主级 Esc 不哑，
+   * 从它按 Tab 也只落回框内（不再是一次点击就把陷阱击穿）。
+   */
+  const onKey = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      onClose();
+      return;
+    }
+    if (event.key !== 'Tab' || !box.current) return;
+    const next = trapTab(box.current, document.activeElement, event.shiftKey);
+    if (!next) return; // 圈内中间元素之间：不抢，交给浏览器
+    event.preventDefault();
+    next.focus();
+  };
 
   return (
     <div className="backdrop" onClick={onClose} role="presentation">
       <div
+        ref={box}
         className={size === 'sm' ? 'modal modal-sm' : 'modal'}
         role="dialog"
         aria-modal="true"
         aria-label={title}
+        tabIndex={-1}
+        onKeyDown={onKey}
         onClick={(event) => event.stopPropagation()}
       >
         <div className="modal-h">

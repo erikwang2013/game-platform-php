@@ -21,8 +21,10 @@ import type {
   ExchangeDone,
   ExchangePayload,
   ExchangeQuote,
+  ExchangeRecordRow,
   Game,
   GameDetail,
+  GameWallet,
   IdentityStatus,
   IdType,
   LaunchResult,
@@ -169,6 +171,14 @@ export class Api extends ApiDomains {
     });
   }
 
+  /** 兑换记录（买入/卖出成交流水），与其它列表同形状 */
+  exchangeRecords(page = 1, perPage = 20): Observable<Paged<ExchangeRecordRow>> {
+    return this.request<Paged<ExchangeRecordRow>>('GET', `${BASE}/exchange/records`, {
+      page,
+      per_page: perPage,
+    });
+  }
+
   /* ---- 资金写操作（金额一律传字符串原文，不得经过 float） ---- */
 
   /** 创建充值订单；502 表示支付网关不可用，可提示重试 */
@@ -208,6 +218,25 @@ export class Api extends ApiDomains {
 
   profile(): Observable<UserProfile> {
     return this.request<UserProfile>('GET', `${BASE}/user/profile`);
+  }
+
+  /**
+   * 改资料。服务端白名单是 nickname / avatar / language 三项（UserController::updateProfile:64-90），
+   * 只送改动的字段即可；本树只改昵称（头像走上传，语言没有切换器）。校验：`nullable|max:50`。
+   *
+   * ⚠ 回包**不是** `UserProfile`：只有 id/username/nickname/avatar/language 五个字段
+   * （缺 email/phone/country/last_login_at/created_at，同文件 :97-103）⇒ 类型照实写这个子集，
+   * 别声明成 UserProfile 骗调用方。保存后要完整资料就再调 `profile()`。
+   */
+  updateProfile(payload: {
+    nickname: string;
+  }): Observable<{ id: string; username: string; nickname: string; avatar: string }> {
+    return this.request<{ id: string; username: string; nickname: string; avatar: string }>(
+      'PUT',
+      `${BASE}/user/profile`,
+      undefined,
+      payload,
+    );
   }
 
   /**
@@ -382,6 +411,14 @@ export class Api extends ApiDomains {
   }
 
   /* ==================== 游戏流水 ==================== */
+
+  /**
+   * 游戏币余额（按游戏聚合）。与 `/wallet/info` 是**两本账**：那边是平台币，这边是各游戏内的币。
+   * 只回有余额记录的游戏；没有资产时是空数组而不是 404。
+   */
+  gameBalances(): Observable<{ games: GameWallet[] }> {
+    return this.request<{ games: GameWallet[] }>('GET', `${BASE}/game/balance`);
+  }
 
   playLogs(page = 1, perPage = 20, gameId?: string): Observable<Paged<PlayLog>> {
     return this.request<Paged<PlayLog>>('GET', `${BASE}/game/play-logs`, {

@@ -12,6 +12,7 @@ import {
   dt,
   money,
 } from '../core/api.service';
+import { Mt, Msg } from '../core/i18n/i18n';
 
 interface Row {
   a: Activity;
@@ -52,7 +53,7 @@ const NONE: ActivityProgress = { activity_id: '', current: 0, target: 0, status:
  */
 @Component({
   selector: 'app-activities',
-  imports: [RouterLink],
+  imports: [RouterLink, Mt],
   template: `
     <div class="between sect">
       <h2>运营活动</h2>
@@ -63,7 +64,7 @@ const NONE: ActivityProgress = { activity_id: '', current: 0, target: 0, status:
       <div class="alert ok">已发放：{{ rewardText(list) }}（可在钱包流水中查看）</div>
     }
     @if (note()) {
-      <div class="alert">{{ note() }}</div>
+      <div class="alert">{{ note() | mt }}</div>
     }
 
     @if (loading()) {
@@ -178,7 +179,8 @@ export class ActivitiesPage {
   protected readonly busyId = signal<string | null>(null);
   protected readonly lastId = signal('');
   protected readonly rowErr = signal('');
-  protected readonly note = signal('');
+  /** 签到结果提示 —— 两态（键 / 服务端原文），见 `core/i18n/i18n.ts` 的 `Msg`。两句都是本地文案且在异步回调里落值 */
+  protected readonly note = signal<Msg>('');
   protected readonly reward = signal<ActivityReward[] | null>(null);
 
   protected readonly money = money;
@@ -240,8 +242,8 @@ export class ActivitiesPage {
       next: (r) => {
         this.busyId.set(null);
         if (r.status === 'rewarded') this.reward.set(r.reward ?? []);
-        else if (r.status === 'already') this.note.set('今天已经领过了，明天再来。');
-        else this.note.set('已记录，还没达到目标，继续加油。');
+        else if (r.status === 'already') this.note.set({ key: 'activities.already' });
+        else this.note.set({ key: 'activities.not_yet' });
         this.refreshProgress();
       },
       error: (e: ApiError) => {

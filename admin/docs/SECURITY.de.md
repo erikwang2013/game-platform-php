@@ -8,7 +8,9 @@ Languages: [中文](SECURITY.md) · [English](SECURITY.en.md) · [한국어](SEC
 
 ## 1. Übersicht Verteidigung in der Tiefe
 
-Das System verwendet ein 7-stufiges Verteidigungsmodell in der Tiefe, das bösartige Anfragen von außen nach innen auf jeder Ebene herausfiltert und sicherstellt, dass bei Ausfall einer beliebigen einzelnen Ebene weiterhin nachgelagerte Verteidigungslinien greifen.
+**Verteidigung in der Tiefe umfasst insgesamt 18 Einträge**: die **7 Ebenen** in diesem Abschnitt + die **7 Angriffsdetektoren** in §2 + die **4 Reaktions-/Rate-Limiting-Mechanismen** in §3–§5. Ebene 1 aus §1 (SecurityFilter) und §2.1–§2.5 beschreiben dieselbe Gruppe von Abfangmechanismen aus zwei Blickwinkeln; 18 ist daher eine **Anzahl von Einträgen** und nicht 18 überschneidungsfreie Mechanismen. In §3–§5 gibt es mehr als 4 Reaktions-/Rate-Limiting-Mechanismen; die „4“ ist lediglich die hier verwendete Zählweise, eine Einzelaufzählung erfolgt nicht.
+
+Dieser Abschnitt beschreibt diese 7 Ebenen: Sie filtern bösartige Anfragen von außen nach innen Ebene für Ebene heraus und stellen sicher, dass bei Ausfall einer beliebigen einzelnen Ebene weiterhin nachgelagerte Verteidigungslinien greifen.
 
 Die gesamte Middleware-Kette wird in folgender Reihenfolge ausgeführt (siehe `config/middleware.php`):
 

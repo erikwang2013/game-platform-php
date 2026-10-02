@@ -10,17 +10,17 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · **한국어** �
 
 | | 베이직 에디션 (Lite) | 스탠다드 에디션 (Standard) | 풀 에디션 (Full) |
 |------|------|------|------|
-| 데이터 테이블 (install.sql) | 19 | 29 | **66**（v1.3.15-22에서 22개 신규） |
+| 데이터 테이블 (install.sql) | 19 | 29 | **79**（v1.3.15-22에서 22개 신규） |
 | API 엔드포인트 | 38 | 54 | ~260 (admin+service, Webhook/Provider 포함) |
 | 백엔드 컨트롤러 | 14 | 22 | admin 46 + service 35 |
 | 데이터 모델 | 비공유 | 비공유 | **공유 52 (platform-common) + admin 8 + service 10** |
 | 공유 Service | 공유 레이어 없음 | 공유 레이어 없음 | `packages/platform-common` 단일 공유 패키지 |
 | Admin 프론트엔드 페이지 | 11 | 13 | 15 |
 | Platform 프론트엔드 페이지 | 8 | 10 | 10 |
-| HarmonyOS (admin) | - | 로그인+대시보드 | **8페이지** `admin/apps/harmonyos/` |
-| HarmonyOS (C단) | - | - | **5페이지** `apps/harmonyos/`（로그인/게임 로비/상세/지갑/마이） |
+| HarmonyOS (admin) | - | 로그인+대시보드 | **19페이지** `admin/apps/harmonyos/` |
+| HarmonyOS (C단) | - | - | **8페이지** `apps/harmonyos/`（로그인/게임 로비/상세/지갑/마이） |
 | Docker 서비스 | - | - | **7** (nginx/admin/service/leaderboard-ws/mysql/redis/elasticsearch) |
-| 테스트 케이스 | 60 | 60 | admin ~132; service 3 |
+| 테스트 케이스 | 60 | 60 | admin 593 케이스 / 70 파일; service 549 케이스 / 89 파일 |
 
 ---
 
@@ -89,7 +89,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · **한국어** �
 | 대시보드 실제 차트 | - | - | ✓ fl_chart |
 | 쿠폰 시스템 | - | - | ✓ |
 | 랭킹 (일/주/월/총) | - | - | ✓ Redis 캐시 |
-| WebSocket 실시간 랭킹 | - | - | ✓ 포트 8790 |
+| WebSocket 실시간 랭킹 | - | - | - 제거됨 (2026-10-02) |
 | 알림 시스템 (사이트 내+이메일) | - | - | ✓ |
 | 추천 리베이트 | - | - | ✓ |
 | 일별 통계 스냅샷 | - | ✓ | ✓ |
@@ -146,8 +146,8 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · **한국어** �
 |------|--------|--------|--------|
 | Flutter Web PC 관리 백오피스 | ✓ 5페이지 | ✓ 11페이지 | ✓ 17페이지 |
 | Flutter Web PC 사용자 플랫폼 | ✓ 5페이지 | ✓ 8페이지 | ✓ 10페이지 |
-| HarmonyOS admin | - | ✓ 로그인+대시보드 | ✓ 8페이지 `admin/apps/harmonyos/` |
-| HarmonyOS C단 | - | - | ✓ 5페이지 `apps/harmonyos/` |
+| HarmonyOS admin | - | ✓ 로그인+대시보드 | ✓ 19페이지 `admin/apps/harmonyos/` |
+| HarmonyOS C단 | - | - | ✓ 8페이지 `apps/harmonyos/` |
 
 ---
 
@@ -199,7 +199,12 @@ game_friend, game_message, game_cdn_provider, game_referral_commission,
 game_tournament, game_tournament_entry
 ```
 
-**총계: 78장**
+### v1.3.44 추가 (1개)
+```
+game_wallet_hold
+```
+
+**총계: 79장**
 
 ---
 
@@ -243,12 +248,14 @@ game_tournament, game_tournament_entry
 | SDK 문서 | - | - | ✓ PHP/Go/Python |
 | 고급 분석 | 리텐션/D1-D30, 전환 퍼널, ARPU/ARPPU |
 
-### 신규 데이터 테이블 (10장)
+### 신규 데이터 테이블 (14장)
 ```
 game_ticket, game_ticket_reply, game_device_token,
 game_vip_level, game_user_vip, game_exp_log,
 game_achievement, game_user_achievement,
 game_friend, game_message
+game_cdn_provider, game_referral_commission,
+game_tournament, game_tournament_entry
 ```
 
 ### 신규 Provider API 엔드포인트 (4개)
@@ -260,28 +267,31 @@ POST /api/provider/refund   — 환불 알림
 ```
 
 ### 신규 C단 API 엔드포인트 (8개)
+
+> **아직 구현되지 않음**: 두 C단 라우트 `GET /api/v1/user/vip-status`와 `GET /api/v1/user/achievements`가 등록되지 않았습니다 (`service/config/route.php`에 대응 항목 없음). 현재 요청은 404를 반환합니다. 구현 후 이 줄을 삭제하세요.
+
 ```
-POST /api/verify/send-email    — 이메일 인증 코드 발송
-POST /api/verify/confirm-email — 이메일 확인
-GET  /api/ticket/list             — 티켓 목록
-POST /api/ticket/create           — 티켓 생성
-GET  /api/ticket/{id}             — 티켓 상세
-POST /api/ticket/{id}/reply       — 티켓 답변
-GET  /api/user/vip-status         — VIP 상태
-GET  /api/user/achievements       — 업적 목록
+POST /api/v1/verify/send-email    — 이메일 인증 코드 발송
+POST /api/v1/verify/confirm-email — 이메일 확인
+GET  /api/v1/ticket/list             — 티켓 목록
+POST /api/v1/ticket/create           — 티켓 생성
+GET  /api/v1/ticket/{hashid}         — 티켓 상세
+POST /api/v1/ticket/{hashid}/reply   — 티켓 답변
+GET  /api/v1/user/vip-status         — VIP 상태
+GET  /api/v1/user/achievements       — 업적 목록
 ```
 
-### 신규 관리 백오피스 API 엔드포인트 (6개)
+### 신규 관리 백오피스 API 엔드포인트 (9개)
 ```
-GET  /admin/ticket/list          — 티켓 목록
-GET  /admin/ticket/{id}          — 티켓 상세
-POST /admin/ticket/{id}/reply    — 티켓 답변
-POST /admin/ticket/{id}/close    — 티켓 닫기
-POST /admin/ticket/{id}/assign   — 처리 담당자 지정
-GET  /admin/analytics/retention  — 리텐션 분석
-GET  /admin/analytics/funnel     — 전환 퍼널
-GET  /admin/analytics/arpu       — ARPU 추세
-GET  /admin/analytics/economy    — 경제 지표
+GET  /admin/v1/ticket/list          — 티켓 목록
+GET  /admin/v1/ticket/{hashid}      — 티켓 상세
+POST /admin/v1/ticket/{hashid}/reply — 티켓 답변
+POST /admin/v1/ticket/{hashid}/close — 티켓 닫기
+POST /admin/v1/ticket/{hashid}/assign — 처리 담당자 지정
+GET  /admin/v1/analytics/retention  — 리텐션 분석
+GET  /admin/v1/analytics/funnel     — 전환 퍼널
+GET  /admin/v1/analytics/arpu       — ARPU 추세
+GET  /admin/v1/analytics/economy    — 경제 지표
 ```
 
 ---

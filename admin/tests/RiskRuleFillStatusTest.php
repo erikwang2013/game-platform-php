@@ -27,7 +27,6 @@ class RiskRuleFillStatusTest extends TestCase
     private function filled(array $data): RiskRule
     {
         $method = new ReflectionMethod(RiskRuleController::class, 'fill');
-        $method->setAccessible(true);
 
         $rule = new RiskRule();
         $method->invoke(new RiskRuleController(), $rule, $data);

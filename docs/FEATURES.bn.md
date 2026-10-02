@@ -59,19 +59,19 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | 2FA | Google Authenticator TOTP + ব্যাকআপ রিকভারি কোড | সম্পন্ন |
 | রেফারেল | রেফারেল কোড, রেজিস্ট্রেশন বোনাস, টপ-আপ কমিশন | সম্পন্ন |
 | সার্চ | ES সার্চ API + গেম সাজেশন + LIKE ফলব্যাক | সম্পন্ন |
-| লিডারবোর্ড | WebSocket রিয়েল-টাইম পুশ (পোর্ট 8790) | সম্পন্ন |
+| লিডারবোর্ড | REST + Redis | সম্পন্ন |
 | CDN | পাঁচটি প্রদানকারীর ইন্টিগ্রেশন (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS আপলোড + পার্জ + প্রিলোড) | সম্পন্ন |
 | CDN ম্যানেজমেন্ট | অ্যাডমিন পাঁচ প্রদানকারী কনফিগার (এনক্রিপ্টেড ক্রেডেনশিয়াল/চালু-বন্ধ/HeadBucket কানেক্টিভিটি টেস্ট), service শুধু DB পড়ে | সম্পন্ন |
 | রিপোর্ট | অ্যাডমিন ডেটা রিপোর্ট (সারাংশ/দৈনিক/CSV এক্সপোর্ট, Redis ৫ মিনিট ক্যাশ, সময়সীমা ≤৯০ দিন) | সম্পন্ন |
 | প্ল্যাটফর্ম পরিসংখ্যান | C-সাইড হোম পরিসংখ্যান (মোট গেম/ব্যবহারকারী/আজকের প্লে/৭ দিন সক্রিয়) | সম্পন্ন |
 | ডিপ্লয় | Docker Compose ৭ সার্ভিস + Nginx রিভার্স প্রক্সি | সম্পন্ন |
 | ডেটা | MySQL রিয়েল-টাইম অ্যাগ্রিগেশন অ্যানালাইসিস + জয়েন্ট/কন্ডিশনাল প্রোবাবিলিটি | সম্পন্ন |
-| HarmonyOS | admin প্রান্ত ৮ পেজ; C-এন্ড `apps/harmonyos/`-এ লগইন/লবি/ডিটেইল/ওয়ালেট/প্রোফাইল বাস্তবায়িত (8792-এ নির্দেশিত) | আংশিক সম্পন্ন (প্রজেক্ট চলে, আসল ডিভাইসে IP পরিবর্তন প্রয়োজন) |
+| HarmonyOS | admin প্রান্ত ১৯ পেজ; C-এন্ড `apps/harmonyos/`-এ লগইন/লবি/ডিটেইল/ওয়ালেট/প্রোফাইল বাস্তবায়িত (8792-এ নির্দেশিত) | আংশিক সম্পন্ন (প্রজেক্ট চলে, আসল ডিভাইসে IP পরিবর্তন প্রয়োজন) |
 | API ডকুমেন্টেশন | erikwang2013/apidoc-php ইন্টারঅ্যাকটিভ ডকুমেন্টেশন | সম্পন্ন |
 | ওয়ান-ক্লিক ইনস্টল | ব্রাউজার ইনস্টল উইজার্ড: অ্যাডমিন তৈরি, বিদ্যমান DB আপগ্রেড, install.lock পুনঃইনস্টল প্রতিরোধ | সম্পন্ন |
 | ফল্ট টলারেন্স | CircuitBreaker + Retry + feature.provider_mock ডিগ্রেডেশন সুইচ | সম্পন্ন |
 | পেমেন্ট মাধ্যম | অ্যাডমিন CRUD + দেশ ভিজিবিলিটি + অঙ্কের রেঞ্জ + মুদ্রা সীমা | সম্পন্ন |
-| CI | push-এ অটো ইনক্রিমেন্ট tag + GitHub Release | সম্পন্ন |
+| CI | push-এ অটো ইনক্রিমেন্ট tag + GitHub Release | ম্যানুয়াল ট্রিগারে পরিবর্তিত |
 
 ### ইকোসিস্টেম এক্সটেনশন (v2.0) — এইমাত্র সম্পন্ন
 
@@ -231,7 +231,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 
 ## 7. ডেটাবেস টেবিল তালিকা
 
-### ইকোসিস্টেম এক্সটেনশনে নতুন (১০টি)
+### ইকোসিস্টেম এক্সটেনশনে নতুন (১৪টি)
 
 | টেবিলের নাম | বিবরণ | মূল বৈশিষ্ট্য |
 |------|------|---------|
@@ -245,6 +245,10 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | game_user_achievement | ইউজার অ্যাচিভমেন্ট | user_id+achievement_id ইউনিক ইনডেক্স |
 | game_friend | ফ্রেন্ড সম্পর্ক | user_id+friend_id ইউনিক ইনডেক্স |
 | game_message | প্রাইভেট মেসেজ | from_user_id+to_user_id / to_user_id+is_read |
+| game_cdn_provider | CDN প্রোভাইডার কনফিগ | provider ইউনিক ইনডেক্স, config এনক্রিপ্টেড JSON |
+| game_referral_commission | মাল্টি-লেভেল রেফারেল কমিশন রেকর্ড | user_id / referral_id / source_type+source_id ইনডেক্স |
+| game_tournament | টুর্নামেন্ট | slug ইউনিক ইনডেক্স, status+start_at+end_at ইনডেক্স |
+| game_tournament_entry | টুর্নামেন্ট এন্ট্রি/স্কোর | tournament_id+user_id ইউনিক ইনডেক্স, tournament_id+score ইনডেক্স |
 
 ### টেবিল স্ট্রাকচার পরিবর্তন
 
@@ -253,7 +257,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | game_game | +provider_config (JSON) |
 | game_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**মোট: install.sql ৭৮টি টেবিল**। মডেল: `packages/platform-common/src/model/`-এ ৫২টি শেয়ার্ড; admin/app/model/-এর ৮টি ও service/app/model/-এর ১০টি নিজ নিজ হোস্টের জন্য একচেটিয়া (ফাইলের নামের কোনো ওভারল্যাপ নেই)।
+**মোট: install.sql ৭৯টি টেবিল**। মডেল: `packages/platform-common/src/model/`-এ ৫১টি শেয়ার্ড; admin/app/model/-এর ৬টি ও service/app/model/-এর ১০টি নিজ নিজ হোস্টের জন্য একচেটিয়া (ফাইলের নামের কোনো ওভারল্যাপ নেই)।
 
 ## 8. টেস্ট কভারেজ
 
@@ -267,7 +271,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | HashidsServiceTest | 6 | ID এনকোড/ডিকোড রাউন্ড-ট্রিপ |
 | SnowflakeServiceTest | 5 | ID জেনারেশন ইউনিকনেস |
 
-**মোট (phpunit --list-tests, বর্তমান পরিমাপ): admin ২০০টি কেস / ২১টি ফাইল, service ২৭৩টি কেস / ৪২টি ফাইল (WebhookUrlSafety + EventBusMessageFormat সহ; রিপোর্ট: 09-22 পুনরায় চালানোর ফল admin 190 + service 273, 08-27 স্ন্যাপশট admin 153 + service 45)। service CI-তে ব্যর্থতা ব্লকিংয়ে অন্তর্ভুক্ত নয় (যাচাই করা হয়নি)।**
+**মোট (phpunit --list-tests, বর্তমান পরিমাপ): admin ৫৯৩টি কেস / ৭০টি ফাইল, service ৫৪৯টি কেস / ৮৯টি ফাইল (WebhookUrlSafety + EventBusMessageFormat সহ; রিপোর্ট: 09-22 পুনরায় চালানোর ফল admin 190 + service 273, 08-27 স্ন্যাপশট admin 153 + service 45)। service CI-তে ব্যর্থতা ব্লকিংয়ে অন্তর্ভুক্ত।**
 
 ---
 

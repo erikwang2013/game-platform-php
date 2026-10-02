@@ -36,7 +36,7 @@ flowchart TB
     end
 
     subgraph "भंडारण परत"
-        E1[("MySQL 8.0<br/>मुख्य भंडारण<br/>78 तालिकाएँ")]
+        E1[("MySQL 8.0<br/>मुख्य भंडारण<br/>79 तालिकाएँ")]
         E2[("Redis<br/>Session/कैश/दर सीमा<br/>EventBus/हार्टबीट")]
         E3[("Elasticsearch<br/>पूर्ण-पाठ खोज")]
         E4[("ClickHouse<br/>OLAP विश्लेषण<br/>प्रायिकता गणना")]
@@ -66,7 +66,7 @@ flowchart TB
   ↓
 मिडलवेयर श्रृंखला: Cors → SecurityFilter → RateLimit → AdminAuth → AdminPermission → OperationLog
   ↓
-कंट्रोलर परत (45):
+कंट्रोलर परत (45, admin/app/admin/v1/controller/ में BaseController को छोड़कर + admin/app/api/v1/controller/):
   ┌──────────────────────────────────────────────────────────┐
   │ Dashboard / User / Role / Permission / Config / Log      │ ← मौजूदा
   │ Profile / Export / Import / Upload / Health / Docs       │ ← मौजूदा
@@ -90,7 +90,7 @@ Provider परत: GameProvider → SelfProvider / ThirdPartyProvider
   ↓
 मिडलवेयर श्रृंखला: TraceId → Cors → SecurityFilter → RateLimit → Language → [UserAuth | ProviderAuth | SdkSessionAuth]
   ↓
-कंट्रोलर परत (34):
+कंट्रोलर परत (35, service/app/api/v1/controller/ में BaseController को छोड़कर):
   ┌──────────────────────────────────────────────────────────┐
   │ Auth / Wallet / Deposit / Exchange / Withdraw            │ ← मौजूदा
   │ Game / User / Announcement / Captcha                     │ ← मौजूदा
@@ -141,7 +141,7 @@ Redis Pub/Sub (channel: platform:events):
   NotificationService — अधिसूचना भेजना
   WebhookController   — बाहरी webhook वितरण
 
-> नोट: 2026-08-18 तक, `emit()` के कॉलर हैं लेकिन `subscribe()` के लिए कोई प्रक्रिया पंजीकृत नहीं है (P0-4 नहीं किया गया); इवेंट वर्तमान में केवल प्रकाशित होते हैं, उपभोग नहीं; सब्सक्राइबर डिज़ाइन लक्ष्य हैं।
+> नोट: 2026-08-18 तक, `emit()` के कॉलर हैं लेकिन `subscribe()` के लिए कोई प्रक्रिया पंजीकृत नहीं है (P0-4 नहीं किया गया); उसके बाद यह पूरा कर लिया गया: `service/config/process.php` में `event-consumer` और `event-subscriber` पंजीकृत हैं, इवेंट अब उपभोग किए जाते हैं।
 ```
 
 ### 2.5 स्थिरता सुरक्षा — सर्किट ब्रेकर / पुनः प्रयास / डिग्रेडेशन
@@ -316,7 +316,6 @@ game_achievement ── 1:N ── game_user_achievement
 एकल मशीन परिनियोजन:
   admin/         :8789 (webman, 32 workers)
   service/       :8792 (webman, 32 workers)
-  leaderboard-ws :8790 (WebSocket लीडरबोर्ड)
   chat-ws        :8791 (WebSocket चैट)
   MySQL          :3306
   Redis          :6379
@@ -326,7 +325,7 @@ game_achievement ── 1:N ── game_user_achievement
 
 ```yaml
 nginx (80/443) → admin (8789) + service (8792) + static files
-leaderboard-ws (8790/8791) — WebSocket लीडरबोर्ड वास्तविक समय पुश + निजी संदेश/चैट
+chat-ws (8791) — निजी संदेश/चैट
 mysql (3306) — मुख्य डेटाबेस, डेटा वॉल्यूम स्थायीकरण
 redis (6379) — कैश/दर सीमा/WebSocket/EventBus
 elasticsearch (9200) — पूर्ण-पाठ खोज
@@ -349,7 +348,6 @@ flowchart TB
         ADM2["admin :8789"]
         SVC1["service :8792"]
         SVC2["service :8792"]
-        WS1["leaderboard-ws :8790"]
         WS2["chat-ws :8791"]
     end
 
@@ -372,8 +370,10 @@ flowchart TB
 
 ## 7. परीक्षण आर्किटेक्चर
 
+> नोट: नीचे की सूची एक पुराना नमूना है (20 फ़ाइलें · 200 परीक्षण); वर्तमान कुल 70 फ़ाइलें · 593 परीक्षण है।
+
 ```
-tests/                             # 21 फ़ाइलें · 200 परीक्षण
+tests/                             # 70 फ़ाइलें · 593 परीक्षण
 ├── bootstrap.php                  # PHPUnit बूटस्ट्रैप
 ├── AuthControllerRegisterTest.php # 15 पंजीकरण पासवर्ड शक्ति परीक्षण
 ├── BackendEnhancementTest.php     # 27 एन्क्रिप्शन/ID सेवा परीक्षण
@@ -403,7 +403,6 @@ tests/                             # 21 फ़ाइलें · 200 परी�
 |------|------|------|
 | admin/ | 8789 | प्रशासन कंसोल API |
 | service/ | 8792 | C-छोर व्यवसाय API |
-| leaderboard-ws | 8790 | WebSocket वास्तविक समय लीडरबोर्ड |
 | chat-ws | 8791 | WebSocket निजी संदेश/चैट |
 | MySQL | 3306 | मुख्य डेटाबेस |
 | Redis | 6379 | कैश/दर सीमा/WebSocket/EventBus |
@@ -417,7 +416,7 @@ tests/                             # 21 फ़ाइलें · 200 परी�
 | दस्तावेज़ | पता | कंट्रोलर | एंडपॉइंट |
 |------|------|--------|------|
 | प्रशासन कंसोल | :8789/apidoc/ | 45 | 154 |
-| C-छोर व्यवसाय | :8792/apidoc/ | 34 | 107 |
+| C-छोर व्यवसाय | :8792/apidoc/ | 35 | 107 |
 
 ## 10. डेटाबेस तालिका सूची
 
@@ -460,7 +459,7 @@ game_share_link, game_aml_rule, game_aml_hit,
 game_kyc_level, game_user_kyc, game_user_trust,
 game_risk_cluster
 
-**कुल: 78 तालिकाएँ**
+**कुल: 79 तालिकाएँ**
 
 ## 11. विशेषता स्विच
 

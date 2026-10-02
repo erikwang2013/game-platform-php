@@ -1668,7 +1668,7 @@ POST /admin/v1/upload
 
 ### Docker Compose
 
-প্রজেক্ট রুটে `docker-compose.yml` রয়েছে, 7টি সার্ভিস অর্কেস্ট্রেট করে (Nginx, admin, service, leaderboard-ws, MySQL, Redis, Elasticsearch)। PHP `Dockerfile` দিয়ে বিল্ড হয় (`php:8.3-cli` ভিত্তিক, OPcache সক্ষম)।
+প্রজেক্ট রুটে `docker-compose.yml` রয়েছে, 7টি সার্ভিস অর্কেস্ট্রেট করে (Nginx, admin, service, chat-ws, MySQL, Redis, Elasticsearch)। PHP `Dockerfile` দিয়ে বিল্ড হয় (`php:8.3-cli` ভিত্তিক, OPcache সক্ষম)।
 
 ```bash
 cp .env.example .env
@@ -1948,7 +1948,7 @@ DELETE /admin/v1/payment/method/{hashid}
 
 ## 19. বর্ধিত অ্যাডমিন এন্ডপয়েন্ট (Extended Admin APIs)
 
-নিচের ২০টি এন্ডপয়েন্ট ৬টি বিভাগে সাজানো; সবই `/admin/v1` অ্যাডমিন এন্ডপয়েন্ট এবং এদের JWT প্রমাণীকরণ ও RBAC অনুমতি যাচাই প্রয়োজন।
+নিচের ২১টি এন্ডপয়েন্ট ৬টি বিভাগে সাজানো; সবই `/admin/v1` অ্যাডমিন এন্ডপয়েন্ট এবং এদের JWT প্রমাণীকরণ ও RBAC অনুমতি যাচাই প্রয়োজন।
 
 ### 19.1 উইথড্র ব্যাচ পর্যালোচনা ও পেআউট
 

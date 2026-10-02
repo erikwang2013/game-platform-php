@@ -51,7 +51,7 @@ rm -rf install/
 
 العمليات التي يكملها معالج التثبيت:
 - فحص بيئة PHP (الإصدار والإضافات وأذونات الدلائل)
-- تنفيذ SQL المدمج (`install/install.sql`)، إنشاء 78 جدولًا واستيراد بيانات البذور
+- تنفيذ SQL المدمج (`install/install.sql`)، إنشاء 79 جدولًا واستيراد بيانات البذور
 - إنشاء حساب المشرف الفائق (تشفير bcrypt، مرتبط بدور super_admin)
 - توليد مفاتيح JWT/Encryption/Hashids تلقائيًا
 - الكتابة إلى `admin/.env` و`service/.env`
@@ -90,13 +90,13 @@ docker-compose logs -f
 | nginx | game-platform-nginx | 80, 443 | وكيل عكسي + ملفات ثابتة |
 | admin | game-platform-admin | 8789 | واجهات لوحة الإدارة |
 | service | game-platform-service | 8792 | واجهات أعمال الطرف C |
-| leaderboard-ws | game-platform-ws | 8790, 8791 | WebSocket لوحة المتصدرين/الدردشة |
+| chat-ws | game-platform-ws | 8791 | WebSocket |
 | mysql | game-platform-mysql | 3306 | قاعدة البيانات الرئيسية |
 | redis | game-platform-redis | 6379 | تخزين مؤقت/تقييد |
 | elasticsearch | game-platform-es | 9200 | بحث نصي كامل |
 
 > **إعداد المنافذ**: الجدول أعلاه يعرض المنافذ الافتراضية، ويمكن تعديلها جميعًا في ملف `.env` بالدليل الجذر للمشروع (القالب `.env.example`، بعد `cp .env.example .env` قم بالتحرير):
-> `NGINX_HTTP_PORT`، `NGINX_HTTPS_PORT`، `ADMIN_PORT`، `SERVICE_PORT`، `LEADERBOARD_WS_PORT`، `CHAT_WS_PORT`، `MYSQL_PORT`، `REDIS_PORT`، `ES_PORT`.
+> `NGINX_HTTP_PORT`، `NGINX_HTTPS_PORT`، `ADMIN_PORT`، `SERVICE_PORT`، `CHAT_WS_PORT`، `MYSQL_PORT`، `REDIS_PORT`، `ES_PORT`.
 > منافذ upstream في `nginx.conf.template` يُرندرها envsubst في الصورة الرسمية تلقائيًا، دون حاجة لتعديل إعداد Nginx يدويًا.
 > في نشر Docker، تتبع العناوين العامة (`APP_URL` / `SITE_URL`) افتراضيًا `ADMIN_PORT` / `SERVICE_PORT` تلقائيًا (بصيغة `http://localhost:المنفذ`)؛ لاستخدام نطاق مخصص أو HTTPS، عيّن `APP_URL` / `SITE_URL` في ملف `.env` الجذري (يستبدل المفتاحين نفسهما في `admin/.env` و`service/.env`). في النشر اليدوي (bare-metal)، لا يزال يتعين تحديث العناوين بنفسك عند تغيير المنافذ.
 
@@ -201,7 +201,6 @@ SCOUT_HOSTS=127.0.0.1:9200
 ```ini
 # نفس إعدادات قاعدة البيانات وRedis وES الموجودة في admin
 APP_PORT=8792
-LEADERBOARD_WS_PORT=8790  # WebSocket لوحة المتصدرين
 CHAT_WS_PORT=8791  # WebSocket الدردشة
 SNOWFLAKE_WORKER_ID=2  # يجب أن يختلف عن admin
 
@@ -326,7 +325,7 @@ systemctl enable --now game-platform-admin game-platform-service
 أنشئ `/etc/nginx/sites-available/game-platform`:
 
 ```nginx
-# المنافذ هي القيم الافتراضية (admin 8789 / service 8792 / ws 8790). إذا عدّلت .env فاضبطها بما يتوافق
+# المنافذ هي القيم الافتراضية (admin 8789 / service 8792 / ws 8791). إذا عدّلت .env فاضبطها بما يتوافق
 server {
     listen 80;
     server_name your-domain.com;
@@ -352,16 +351,6 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    # WebSocket لوحة المتصدرين (المنفذ الافتراضي 8790، متوافق مع LEADERBOARD_WS_PORT في service/.env)
-    location /ws/ {
-        proxy_pass http://127.0.0.1:8790;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
     }
 
     # فحص الصحة
@@ -614,7 +603,7 @@ ufw allow 443/tcp     # HTTPS
 ufw enable
 
 # لا ينبغي كشف المنافذ الداخلية
-# 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# 8789 (admin), 8792 (service), 8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
 # ما سبق منافذ افتراضية. إذا عدّلت .env الجذر أو ملفات .env الخاصة، فاعتمد على الإعداد الفعلي
 # تُوصَل عبر 127.0.0.1 فقط
 ```

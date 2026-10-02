@@ -35,22 +35,22 @@ export type StatusEnum = Record<string, MessageKey>;
 /**
  * 全部状态枚举。**值域出处**（2026-10-01 逐条核过 DDL 与写入方）：
  *
- * - `enabled`   `install.sql:22/43/366/676/815/869/909/962` 等 `0=禁用 1=启用`（后台账号/角色/支付方式/风控规则/分类/券/国家）
- * - `listing`   `install.sql:205` `game_game.status`：`0=下架 1=上架`（**不是启停**，前端字段标签也是 `f.listed`）
- * - `publish`   `install.sql:388` `game_announcement.status`：`0=草稿 1=已发布`（**不是启停**）
- * - `user_state` `install.sql:139` `game_user.status`：`0=禁用 1=启用`，但平台用户的语义是 `1=正常 0=封禁`
+ * - `enabled`   `0=禁用 1=启用`（后台账号/角色/支付方式/风控规则/分类/券/国家）
+ * - `listing`   `game_game.status`：`0=下架 1=上架`（**不是启停**，前端字段标签也是 `f.listed`）
+ * - `publish`   `game_announcement.status`：`0=草稿 1=已发布`（**不是启停**）
+ * - `user_state` `game_user.status`：`0=禁用 1=启用`，但平台用户的语义是 `1=正常 0=封禁`
  *                （`platform-users.tsx` 的字段 hint `f.on_active_1_off_banned` 与 `PlatformUserController.php:179` 的 in_array 是准）
- * - `group_state` `install.sql:1666` `game_group.status`：`1=正常 0=解散`（**不是启停**，0 是「已解散」这个存续状态）
- * - `server`    `install.sql:557` `game_game_server.status`：`0=维护 1=正常 2=火爆 3=新服`；校验 `GameServerController.php:112` 的 `in:0,1,2,3`
- * - `activity`  `install.sql:1578` `game_activity.status`：`0=禁用 1=启用 2=已结束`
- * - `cluster`   `install.sql:718` `game_risk_cluster.status`：`1=观察中 2=已处置 0=误判`（⚠ 顺序是 1/2/0，0 不是「关闭」）
- * - `review`    `install.sql:501` `game_user_identity.status`：`pending/approved/rejected`
- * - `ticket`    `install.sql:1781` 注释只写了 `open/closed`，**两个字面值漏在注释外**：实际 4 值
+ * - `group_state` `game_group.status`：`1=正常 0=解散`（**不是启停**，0 是「已解散」这个存续状态）
+ * - `server`    `game_game_server.status`：`0=维护 1=正常 2=火爆 3=新服`；校验 `GameServerController.php:112` 的 `in:0,1,2,3`
+ * - `activity`  `game_activity.status`：`0=禁用 1=启用 2=已结束`
+ * - `cluster`   `game_risk_cluster.status`：`1=观察中 2=已处置 0=误判`（⚠ 顺序是 1/2/0，0 不是「关闭」）
+ * - `review`    `game_user_identity.status`：`pending/approved/rejected`
+ * - `ticket`    `game_ticket.status` 注释只写了 `open/closed`，**两个字面值漏在注释外**：实际 4 值
  *                （`service/app/api/v1/controller/TicketController.php:165` 写 `waiting`、`admin/.../TicketController.php:97` 写 `replied`）
- * - `withdraw`  `install.sql:271` 注释列了 4 值，**漏了 `processing`**：`WithdrawController.php:291` 提交打款时写它
- * - `payout`    `install.sql:279` `game_withdraw_order.payout_status`：`''(空)/processing/success/failed`
+ * - `withdraw`  `game_withdraw_order.status` 注释列了 4 值，**漏了 `processing`**：`WithdrawController.php:291` 提交打款时写它
+ * - `payout`    `game_withdraw_order.payout_status`：`''(空)/processing/success/failed`
  *                （空值走 `cellText` 的 `—`，与今天一致）
- * - `anticheat` `install.sql:639` `game_anticheat_event.status`：`open/confirmed/whitelisted/closed`
+ * - `anticheat` `game_anticheat_event.status`：`open/confirmed/whitelisted/closed`
  *                （校验 `AntiCheatController.php:76` 的 in_array）
  */
 export const STATUS_ENUMS: Record<string, StatusEnum> = {

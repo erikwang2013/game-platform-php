@@ -18,7 +18,6 @@ import '../pages/friend/friend_page.dart';
 import '../pages/auth/two_factor_setup_page.dart';
 import '../pages/auth/two_factor_verify_page.dart';
 import '../pages/auth/oauth_callback_page.dart';
-import '../pages/coupon/coupon_page.dart';
 import '../pages/leaderboard/leaderboard_page.dart';
 import '../pages/notification/notification_page.dart';
 
@@ -53,7 +52,12 @@ class AppPages {
     GetPage(name: '/friends', page: () => const FriendPage()),
     GetPage(name: '/2fa', page: () => const TwoFactorSetupPage()),
     GetPage(name: '/2fa-verify', page: () => const TwoFactorVerifyPage()),
-    GetPage(name: '/coupons', page: () => const CouponPage()),
+    // ⚠ 没有 `/coupons` 路由，是有意的（2026-10-02 撤下，与两棵 web 树对齐）：
+    // `user_coupon` 的唯一行写入方就是 `CouponController::claim()` 本身
+    // （admin 侧 `CouponController.php` 只删不发），即用户拿券的唯一途径是在那个页面点领取；
+    // 而 `status='used'` 与 `used_in_order` 全仓无写入方、`used_qty` 只随领取递增
+    // ⇒ 领了**永远用不掉**。页面能提供的全部价值 = 「在这领一张券，然后它永远躺着」= 假价值。
+    // 后端做出核销/抵扣再恢复（C 端 react 树 `App.tsx` / `Layout.tsx` 是同一条墓碑）。
     GetPage(name: '/leaderboard', page: () => const LeaderboardPage()),
     GetPage(name: '/notifications', page: () => const NotificationPage()),
     GetPage(name: '/oauth/callback', page: () => const OAuthCallbackPage()),

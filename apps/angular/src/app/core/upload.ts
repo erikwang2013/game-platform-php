@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, switchMap } from 'rxjs';
 import { ApiError, Envelope } from './api.service';
+import { t, type Msg } from './i18n/i18n';
 
 /**
  * aetherupload 两步协议（插件 erikwang2013/aetherupload-webman；本仓配置见
@@ -81,18 +82,21 @@ export function chunks(size: number, chunkSize: number): { start: number; end: n
 }
 
 /**
- * 服务端 error → 提示文本（空串 = 成功）。字符串原样透出，不翻译不改写。
+ * 服务端 error → 提示文案（空串 = 成功）。**返回 `Msg`**：服务端原文走 raw 那一态（原样透出，
+ * 不翻译不改写），本地判定出来的那两句才落键（渲染期查表 ⇒ 英文界面不会出中文）。
  * 判定成功要 `error` **恰为 0**：UserAuth 拒绝时回的是统一信封（HTTP 200 + code 401），
  * 那种响应根本没有 error 字段 —— 若按「falsy 即成功」处理，savedPath 会取到 undefined
  * 拼进落库 URL。
  */
-export function failText(res: Record<string, unknown>): string {
+export function failText(res: Record<string, unknown>): Msg {
   const e = res['error'];
   if (e === 0 || e === '0') return '';
   if (typeof e === 'string' && e) return e;
-  if (res['code'] === 401) return '登录状态已失效，请重新登录后再上传';
+  // 401 信封（HTTP 200 + code:401）：**本地判定**，落键。注意这里**刻意不看 `res.message`**
+  // ——那句是给接口调用方看的服务端原文，与上传对话框要说的不是一回事（迁移前就如此，未改）。
+  if (res['code'] === 401) return { key: 'upload.session_expired' };
   // 既没有 error 也不是 401 信封 ⇒ 这响应根本不是上传接口的格式，别当成成功放过去
-  return e === undefined || e === null ? '上传失败，请重试' : String(e);
+  return e === undefined || e === null ? { key: 'upload.failed_retry' } : String(e);
 }
 
 /** 落库值 = 相对地址（见文件头第 3 条） */
@@ -107,7 +111,7 @@ export function readUrl(stored: string): string {
 export class ImageUpload {
   private readonly http = inject(HttpClient);
 
-  /** 两步走完回**落库值**（相对地址）；失败抛 Error，message 即服务端 error 原文 */
+  /** 两步走完回**落库值**（相对地址）；失败抛 `ApiError`（`.msg` 是文案两态，`.message` 是抛点快照） */
   async image(file: File): Promise<string> {
     const pre = await this.step<Pre>(PREPROCESS, preprocessBody(file));
     if (pre.savedPath) return fileUrl(pre.savedPath); // 秒传命中（本仓关着）
@@ -123,7 +127,7 @@ export class ImageUpload {
       for (const [k, v] of chunkBody(pre, i + 1, parts.length)) fd.append(k, v);
       saved = (await this.step<{ savedPath: string }>(UPLOADING, fd)).savedPath;
     }
-    if (!saved) throw new Error('上传完成但服务端未返回路径，请重试');
+    if (!saved) throw new ApiError({ key: 'upload.no_path' }, -1);
     return fileUrl(saved);
   }
 
@@ -135,24 +139,29 @@ export class ImageUpload {
       this.http.post<T>(url, body).subscribe({
         next: (res) => {
           const err = failText(res as Record<string, unknown>);
-          if (err) reject(new Error(err));
+          // err 是 Msg：空串 = 成功；非空直接进 ApiError（键那一态留到渲染期才求值）
+          if (err) reject(new ApiError(err, -1));
           else resolve(res);
         },
-        error: (e: unknown) => reject(new Error(describeHttp(e))),
+        error: (e: unknown) => reject(new ApiError(describeHttp(e), -1)),
       });
     });
   }
 }
 
-function describeHttp(e: unknown): string {
-  if (e instanceof ApiError) return e.message;
+/**
+ * HTTP 层错误 → 文案两态。**读 `e.msg` 不读 `e.message`**：`msg` 是「服务端原文 / 键」那一态，
+ * 键这一态拖到渲染期才求值（切语言跟着变）；`message` 是抛点快照，读它就是把语言冻在出事那一刻。
+ */
+function describeHttp(e: unknown): Msg {
+  if (e instanceof ApiError) return e.msg;
   if (e instanceof HttpErrorResponse) {
     const body = e.error as Envelope<unknown> | null;
     if (body && typeof body === 'object' && 'message' in body) return String(body.message);
-    if (e.status === 0) return '无法连接服务器，请稍后重试';
-    return `上传失败 (HTTP ${e.status})`;
+    if (e.status === 0) return { key: 'error.network_connection' };
+    return { key: 'upload.failed_http', params: { status: e.status } };
   }
-  return '上传失败，请重试';
+  return { key: 'upload.failed_retry' };
 }
 
 /**
@@ -170,6 +179,9 @@ export function fileBlob(http: HttpClient, stored: string): Observable<Blob> {
     switchMap(async (b) => {
       if (b.type.includes('json')) {
         const env = JSON.parse(await b.text()) as Envelope<unknown>;
+        // ⚠ `'读取失败'` 刻意仍是裸中文、也不落键：两处调用方（`core/avatar.ts` / `pages/me.ts`）
+        // 的 error 回调都把文案**丢掉**（一个 `() => undefined`、一个只置空 src）⇒ 这句
+        // 谁也看不见，落键只会多一条没有渲染点的词条。真出现读它的调用方时再补键。
         throw new ApiError(env?.message || '读取失败', env?.code ?? -1);
       }
       return b;

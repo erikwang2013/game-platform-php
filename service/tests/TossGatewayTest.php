@@ -77,17 +77,27 @@ class TossGatewayTest extends TestCase
         $this->assertSame('failed', $aborted->verifyCallback($this->makeRequest('{"eventType":"PAYMENT_STATUS_CHANGED","data":{"paymentKey":"PK9"}}'))['status']);
     }
 
-    public function testNonPaymentWebhookIgnoredAndFailedPassthrough(): void
+    public function testNonPaymentWebhookIgnoredAndFailedReportingIsServerVerified(): void
     {
         $gateway = new TossGateway();
         // 非 PAYMENT_STATUS_CHANGED 事件：验签无（支付类 webhook 无签名），直接 ignored
         $this->assertTrue($gateway->verifyCallback($this->makeRequest('{"eventType":"DEPOSIT_CALLBACK","data":{}}'))['valid']);
         $this->assertSame('ignored', $gateway->verifyCallback($this->makeRequest('{"eventType":"DEPOSIT_CALLBACK","data":{}}'))['status']);
 
-        // 前端上报失败：直接透传
-        $failed = $gateway->verifyCallback($this->makeRequest('', [], 'POST', '/?provider=toss&order_no=DEP1&paymentKey=PK1&status=failed'));
+        // 前端上报失败不可信：必须回查 Toss 取权威状态（替身，零网络）
+        $aborted = new FakeTossGateway('DEP1', '100.0000', 'pending', 'ABORTED');
+        $failed  = $aborted->verifyCallback($this->makeRequest('', [], 'POST', '/?provider=toss&order_no=DEP1&paymentKey=PK1&status=failed'));
         $this->assertTrue($failed['valid']);
         $this->assertSame('failed', $failed['status']);
+        $this->assertSame(1, $aborted->fetchCalls(), '上报失败必须回查网关，不能照单全收');
+
+        // 回查结论是 DONE：按网关结论走（前端一句 failed 不得把已付款的单子取消掉）
+        $done = new FakeTossGateway('DEP1', '100.0000', 'pending', 'DONE');
+        $this->assertSame('success', $done->verifyCallback($this->makeRequest('', [], 'POST', '/?provider=toss&order_no=DEP1&paymentKey=PK1&status=failed'))['status']);
+
+        // 回查不到该 paymentKey（Toss 报错/404）：fail-closed
+        $missing = new FakeTossGateway('DEP1', '100.0000', 'pending', 'DONE', '', true);
+        $this->assertFalse($missing->verifyCallback($this->makeRequest('', [], 'POST', '/?provider=toss&order_no=DEP1&paymentKey=FAKE&status=failed'))['valid']);
     }
 
     public function testMissingSecretFailClosed(): void
@@ -116,6 +126,7 @@ class FakeTossGateway extends TossGateway
         private string $orderStatus,
         private string $paymentStatus = 'DONE',
         private string $paymentAmount = '',
+        private bool $fetchMissing = false,
     ) {
         parent::__construct();
     }
@@ -153,6 +164,10 @@ class FakeTossGateway extends TossGateway
     protected function fetchPayment(string $paymentKey): array
     {
         $this->fetchCount++;
+        // Toss 对不存在的 paymentKey 返回错误体（无 paymentKey/orderId 字段）
+        if ($this->fetchMissing) {
+            return ['code' => 'NOT_FOUND_PAYMENT', 'message' => '존재하지 않는 결제 정보입니다.'];
+        }
         return [
             'orderId'     => $this->orderNo,
             'paymentKey'  => $paymentKey,

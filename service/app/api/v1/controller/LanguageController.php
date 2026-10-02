@@ -49,7 +49,10 @@ class LanguageController extends BaseController
         $locale = $request->input('locale');
         TranslationService::setLocale($locale);
 
-        // 如果已登录，更新用户语言偏好
+        // 已登录则把偏好写回 user.language。
+        // ⚠ 该字段目前**服务端零消费**：PushService / VerificationService 都不读它（站外消息的语种
+        // 仍按请求头走），全仓读它的只有用户资料自身的回显（UserController::profile/updateProfile）。
+        // 所以这一枪只保证「资料里带着它」，**不会**让邮件/推送换语言 —— 接通它属于产品功能，另批。
         if ($request->userId ?? null) {
             $user = \common\model\User::find($request->userId);
             if ($user) {

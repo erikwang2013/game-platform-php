@@ -7,10 +7,12 @@ import promptAction from '@ohos.promptAction';
 import { GameItem, GameCurrency } from '../model/DataModels';
 import { GameService } from '../service/DataService';
 import { LoadingView, ErrorView } from '../common/Components';
+import { t, t1 } from '../i18n/Translations';
 
 @Entry
 @Component
 struct GameDetailPage {
+  @StorageLink('app_locale') localeCode: string = 'zh';
   @State gameId: string = '';
   @State game: GameItem | null = null;
   @State isLoading: boolean = true;
@@ -25,7 +27,7 @@ struct GameDetailPage {
 
   async loadGameDetail(): Promise<void> {
     if (!this.gameId) {
-      this.errorMsg = '缺少游戏 ID';
+      this.errorMsg = t('game.missing_id');
       this.isLoading = false;
       return;
     }
@@ -39,7 +41,7 @@ struct GameDetailPage {
         router.replaceUrl({ url: 'pages/LoginPage' });
         return;
       }
-      this.errorMsg = msg.length > 0 ? msg : '加载失败';
+      this.errorMsg = msg.length > 0 ? msg : t('common.load_failed');
     } finally {
       this.isLoading = false;
     }
@@ -52,14 +54,14 @@ struct GameDetailPage {
     this.launching = true;
     try {
       const result = await GameService.launch(this.gameId);
-      promptAction.showToast({ message: `已启动 ${result.name}` });
+      promptAction.showToast({ message: t1('game.launched', 'name', result.name) });
     } catch (e) {
       const msg = `${e}`;
       if (msg.indexOf('UNAUTHORIZED') >= 0) {
         router.replaceUrl({ url: 'pages/LoginPage' });
         return;
       }
-      promptAction.showToast({ message: msg.length > 0 ? msg : '启动失败' });
+      promptAction.showToast({ message: msg.length > 0 ? msg : t('game.launch_failed') });
     } finally {
       this.launching = false;
     }
@@ -68,14 +70,14 @@ struct GameDetailPage {
   build() {
     Column() {
       Row() {
-        Button('← 返回')
+        Button(t('common.back'))
           .fontSize(14)
           .fontColor('#1677FF')
           .backgroundColor(Color.Transparent)
           .onClick(() => {
             router.back();
           })
-        Text(this.game?.name || '游戏详情')
+        Text(this.game?.name || t('game.title'))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .layoutWeight(1)
@@ -88,7 +90,7 @@ struct GameDetailPage {
       .backgroundColor('#FFFFFF')
 
       if (this.isLoading) {
-        LoadingView({ message: '加载详情中...' })
+        LoadingView({ message: t('game.loading') })
       } else if (this.game) {
         Scroll() {
           Column() {
@@ -123,14 +125,14 @@ struct GameDetailPage {
             .width('100%')
             .margin({ top: 16 })
 
-            Text(this.game!.description || '暂无简介')
+            Text(this.game!.description || t('common.no_description'))
               .fontSize(14)
               .fontColor('#666666')
               .margin({ top: 8 })
               .width('100%')
 
             if (this.game!.currencies && this.game!.currencies.length > 0) {
-              Text('支持币种')
+              Text(t('game.supported_currencies'))
                 .fontSize(16)
                 .fontWeight(FontWeight.Bold)
                 .width('100%')
@@ -142,7 +144,7 @@ struct GameDetailPage {
                     Text(currency.name)
                       .fontSize(15)
                       .fontWeight(FontWeight.Medium)
-                    Text(`1 平台币 = ${currency.exchange_rate} ${currency.symbol}`)
+                    Text(t('common.rate_line').replace('{rate}', currency.exchange_rate).replace('{symbol}', currency.symbol))
                       .fontSize(12)
                       .fontColor('#999999')
                       .margin({ top: 2 })
@@ -168,7 +170,7 @@ struct GameDetailPage {
         }
         .layoutWeight(1)
 
-        Button(this.launching ? '启动中...' : '开始游戏')
+        Button(this.launching ? t('game.launching') : t('game.launch'))
           .width('90%')
           .height(48)
           .fontSize(16)
@@ -181,7 +183,7 @@ struct GameDetailPage {
             this.launchGame();
           })
       } else {
-        ErrorView({ message: this.errorMsg || '游戏不存在' })
+        ErrorView({ message: this.errorMsg || t('game.not_found'), onRetry: () => { this.loadGameDetail(); } })
       }
     }
     .width('100%')

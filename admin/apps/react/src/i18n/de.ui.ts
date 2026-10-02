@@ -152,6 +152,7 @@ export const deUi: Record<UiKey, string> = {
   'form.options_load_failed': 'Die Optionen für {name} konnten nicht geladen werden; der gewählte Wert bleibt sichtbar, aber nicht absenden, solange er unverändert bleibt',
   'form.tree_load_failed': 'Der Berechtigungsbaum für {name} konnte nicht geladen werden; die gewählten Berechtigungen bleiben sichtbar, aber nicht absenden, solange sie unverändert bleiben',
   'form.tree_loading': 'Berechtigungsbaum wird geladen…',
+  'form.discard_confirm': 'Es gibt ungespeicherte Änderungen. Verwerfen?',
   'form.select_placeholder': 'Bitte auswählen',
   // 父权限下拉的选项（lib/tree.ts 摊平权限树）：键分两种**形状**（带 slug / 不带），
   // 路径与 slug 走 params —— 选项是逐行现拼的，见 lib/crud.ts 的 FieldOption

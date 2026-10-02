@@ -55,7 +55,7 @@ test('工单：列表/详情/建单/回复的方法与请求体', async () => {
 test('工单：关闭后回复被拒，服务端原因原样透出', async () => {
   tokens.set('t1', 'r1');
   calls.length = 0;
-  // TicketController:145 对 status=closed 直接 422
+  // TicketController:146 对 status=closed 直接 422
   reply = { ok: true, code: 422, message: 'Ticket is closed' };
   await assert.rejects(
     () => api.replyTicket('T1', '再问一句'),
@@ -100,7 +100,7 @@ test('好友：request 送 friend_id、accept/reject 送 request_id（两个 id 
   assert.equal(calls[7]!.url, '/api/v1/friend/search');
 });
 
-test('聊天：会话/记录/发送/已读/未读数的 URL 与请求体', async () => {
+test('聊天：会话/记录/发送的 URL 与请求体', async () => {
   tokens.set('t1', 'r1');
   language.set('en');
   calls.length = 0;
@@ -120,16 +120,11 @@ test('聊天：会话/记录/发送/已读/未读数的 URL 与请求体', async
   await api.sendChat('U9', '在吗');
   assert.equal(calls[2]!.url, '/api/v1/chat/send');
   assert.deepEqual(JSON.parse(String(calls[2]!.init?.body)), { to_user_id: 'U9', content: '在吗' });
-
-  reply = { ok: true, code: 0, data: {} };
-  await api.markChatRead('U9');
-  // 字段名是 from_user_id（标记「对方发来的」为已读），不是 peer_id
-  assert.deepEqual(JSON.parse(String(calls[3]!.init?.body)), { from_user_id: 'U9' });
-
-  reply = { ok: true, code: 0, data: { count: 3 } };
-  assert.deepEqual(await api.chatUnreadTotal(), { count: 3 });
-  assert.equal(calls[4]!.url, '/api/v1/chat/unread-total');
 });
+
+/* 本条原先还钉了两处：markChatRead 的请求体 `{from_user_id}`（select 字段名不是 peer_id）、
+   chatUnreadTotal 的 URL `/chat/unread-total`。两个包装 2026-10-02 撤下（零消费者，理由见
+   api.ts 的同名墓碑注释）⇒ 没有包装就没有契约可测，两处断言随之撤下；上面三条逐字未动。 */
 
 test('聊天：非好友发送被拒（403）时原样透出服务端原因', async () => {
   tokens.set('t1', 'r1');

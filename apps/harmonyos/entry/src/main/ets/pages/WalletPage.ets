@@ -1,15 +1,22 @@
 /*
  * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+ *
+ * ⚠ **已知缺口，只留注记、本批不造功能**：本树**没有充值/提现订单列表**。
+ * 服务端两条端点都已就绪且被两棵 web 树用着（`service/config/route.php:85` 的
+ * `/deposit/orders`、`:95` 的 `/withdraw/orders`，C 端 web 的「钱包记录」页就是它们），
+ * 本树只调 `/wallet/info` 与流水列表。要补＝新页面 + 分页 + 13 表词条（属新功能，不在此批）。
  */
 
 import router from '@ohos.router';
 import { WalletInfo, TransactionItem } from '../model/DataModels';
 import { WalletService } from '../service/DataService';
 import { LoadingView, EmptyView, ErrorView, BottomNav } from '../common/Components';
+import { t, t1 } from '../i18n/Translations';
 
 @Entry
 @Component
 struct WalletPage {
+  @StorageLink('app_locale') localeCode: string = 'zh';
   @State wallet: WalletInfo | null = null;
   @State transactions: TransactionItem[] = [];
   @State isLoading: boolean = true;
@@ -35,7 +42,7 @@ struct WalletPage {
         router.replaceUrl({ url: 'pages/LoginPage' });
         return;
       }
-      this.errorMsg = msg.length > 0 ? msg : '加载失败';
+      this.errorMsg = msg.length > 0 ? msg : t('common.load_failed');
     } finally {
       this.isLoading = false;
     }
@@ -58,22 +65,22 @@ struct WalletPage {
 
   private typeLabel(type: string): string {
     if (type === 'deposit') {
-      return '充值';
+      return t('common.deposit');
     }
     if (type === 'withdraw') {
-      return '提现';
+      return t('common.withdraw');
     }
     if (type === 'exchange_in') {
-      return '兑入';
+      return t('wallet.tx_exchange_in');
     }
     if (type === 'exchange_out') {
-      return '兑出';
+      return t('wallet.tx_exchange_out');
     }
     if (type === 'game_earn') {
-      return '游戏赢得';
+      return t('wallet.tx_game_earn');
     }
     if (type === 'game_spend') {
-      return '游戏消费';
+      return t('wallet.tx_game_spend');
     }
     return type || '-';
   }
@@ -111,7 +118,7 @@ struct WalletPage {
   build() {
     Column() {
       Row() {
-        Text('我的钱包')
+        Text(t('wallet.title'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
       }
@@ -119,14 +126,14 @@ struct WalletPage {
       .padding({ left: 16, right: 16, top: 16, bottom: 8 })
 
       if (this.isLoading) {
-        LoadingView({ message: '加载钱包中...' })
+        LoadingView({ message: t('wallet.loading') })
       } else if (this.errorMsg) {
-        ErrorView({ message: this.errorMsg })
+        ErrorView({ message: this.errorMsg, onRetry: () => { this.loadAll(); } })
       } else {
         Scroll() {
           Column() {
             Column() {
-              Text('可用余额')
+              Text(t('wallet.available_balance'))
                 .fontSize(13)
                 .fontColor('#E6F0FF')
               Text(this.wallet?.balance ?? '0.0000')
@@ -134,14 +141,14 @@ struct WalletPage {
                 .fontWeight(FontWeight.Bold)
                 .fontColor('#FFFFFF')
                 .margin({ top: 6 })
-              Text(`冻结 ${this.wallet?.frozen_balance ?? '0.0000'}`)
+              Text(t1('wallet.frozen', 'amount', this.wallet?.frozen_balance ?? '0.0000'))
                 .fontSize(12)
                 .fontColor('#E6F0FF')
                 .margin({ top: 4 })
 
               Row() {
                 Column() {
-                  Text('累计获得')
+                  Text(t('wallet.total_earned'))
                     .fontSize(11)
                     .fontColor('#E6F0FF')
                   Text(this.wallet?.total_earned ?? '0.0000')
@@ -151,7 +158,7 @@ struct WalletPage {
                 }
                 .layoutWeight(1)
                 Column() {
-                  Text('累计支出')
+                  Text(t('wallet.total_spent'))
                     .fontSize(11)
                     .fontColor('#E6F0FF')
                   Text(this.wallet?.total_spent ?? '0.0000')
@@ -171,9 +178,9 @@ struct WalletPage {
             .margin({ left: 16, right: 16, top: 8 })
 
             Row() {
-              this.actionItem('充值', 'pages/DepositPage')
-              this.actionItem('提现', 'pages/WithdrawPage')
-              this.actionItem('兑换', 'pages/ExchangePage')
+              this.actionItem(t('common.deposit'), 'pages/DepositPage')
+              this.actionItem(t('common.withdraw'), 'pages/WithdrawPage')
+              this.actionItem(t('common.exchange'), 'pages/ExchangePage')
             }
             .width('100%')
             .padding({ top: 6, bottom: 6 })
@@ -181,7 +188,7 @@ struct WalletPage {
             .borderRadius(12)
             .backgroundColor('#FFFFFF')
 
-            Text('流水记录')
+            Text(t('wallet.transactions'))
               .fontSize(16)
               .fontWeight(FontWeight.Bold)
               .width('100%')
@@ -194,7 +201,7 @@ struct WalletPage {
                 .color('#1677FF')
                 .margin({ top: 16 })
             } else if (this.transactions.length === 0) {
-              EmptyView({ message: '暂无流水' })
+              EmptyView({ message: t('wallet.no_transactions') })
             } else {
               ForEach(this.transactions, (tx: TransactionItem) => {
                 Row() {
@@ -222,7 +229,7 @@ struct WalletPage {
                       .fontSize(16)
                       .fontWeight(FontWeight.Bold)
                       .fontColor(this.typeColor(tx.type))
-                    Text(`余额 ${tx.balance_after}`)
+                    Text(t1('wallet.balance_after', 'amount', tx.balance_after))
                       .fontSize(11)
                       .fontColor('#999999')
                       .margin({ top: 2 })

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8048e0989486f6a808b28b252e4474db",
+    "content-hash": "b49dd13d0f05d9b073451895d13f5da6",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -62,16 +62,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.398.3",
+            "version": "3.398.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "4a8bc490c38316ad7f6934bd89049da1971c462c"
+                "reference": "1dc5a7813aa23b65de0bfb6239b93387971f7143"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/4a8bc490c38316ad7f6934bd89049da1971c462c",
-                "reference": "4a8bc490c38316ad7f6934bd89049da1971c462c",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/1dc5a7813aa23b65de0bfb6239b93387971f7143",
+                "reference": "1dc5a7813aa23b65de0bfb6239b93387971f7143",
                 "shasum": ""
             },
             "require": {
@@ -153,9 +153,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.398.3"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.398.4"
             },
-            "time": "2026-09-29T18:22:38+00:00"
+            "time": "2026-09-30T18:20:49+00:00"
         },
         {
             "name": "barryvdh/laravel-dompdf",
@@ -867,16 +867,16 @@
         },
         {
             "name": "erikwang2013/aetherupload-webman",
-            "version": "v1.1.5",
+            "version": "v1.1.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/erikwang2013/aetherupload-webman.git",
-                "reference": "424e7e81b20908f2d1450488cfeb10771e1aee75"
+                "reference": "62cf81504f39f3ced1245c9ee171b67cd4f13fd1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/erikwang2013/aetherupload-webman/zipball/424e7e81b20908f2d1450488cfeb10771e1aee75",
-                "reference": "424e7e81b20908f2d1450488cfeb10771e1aee75",
+                "url": "https://api.github.com/repos/erikwang2013/aetherupload-webman/zipball/62cf81504f39f3ced1245c9ee171b67cd4f13fd1",
+                "reference": "62cf81504f39f3ced1245c9ee171b67cd4f13fd1",
                 "shasum": ""
             },
             "require": {
@@ -890,6 +890,7 @@
                 "webman/console": "^1.0 || ^2.1.7"
             },
             "suggest": {
+                "ext-curl": "S3 存储驱动（storage.driver=s3）所需；未安装时仅 S3 模式不可用，其余功能不受影响",
                 "predis/predis": "开启秒传（instant_completion）所需；未安装时秒传不可用，其余功能不受影响",
                 "webman/console": "webman 下运行 aetherupload:groups / :build / :clean 三个控制台命令所需（webman 应用的 CLI 本身即由它提供）",
                 "yiisoft/yii-runner-http": "Yii3 宿主所需（连同 yiisoft/router、yiisoft/router-fastroute、yiisoft/yii-console 等）。本包不 require 任何框架，这些由宿主应用自己带"
@@ -915,7 +916,7 @@
                     "role": "Developer"
                 }
             ],
-            "description": "AetherUpload for webman and eight more hosts: chunked large-file upload with resumable transfer, instant upload (秒传) and integrity check. Framework-agnostic kernel with adapters for webman, native PHP, Laravel, ThinkPHP, Symfony, Slim, Hyperf, Yii2 and Yii3.",
+            "description": "AetherUpload for webman and eight more hosts: chunked large-file upload with resumable transfer, instant upload (秒传) and integrity check. Framework-agnostic kernel with adapters for webman, native PHP, Laravel, ThinkPHP, Symfony, Slim, Hyperf, Yii2 and Yii3. Optional S3-compatible object storage driver (local by default).",
             "keywords": [
                 "aetherupload",
                 "chunked-upload",
@@ -924,9 +925,11 @@
                 "hyperf",
                 "laravel",
                 "large",
+                "object-storage",
                 "psr-15",
                 "psr-7",
                 "resumable-upload",
+                "s3",
                 "slim",
                 "symfony",
                 "thinkphp",
@@ -941,7 +944,7 @@
                 "issues": "https://github.com/erikwang2013/aetherupload-webman/issues",
                 "source": "https://github.com/erikwang2013/aetherupload-webman"
             },
-            "time": "2026-09-29T11:01:16+00:00"
+            "time": "2026-09-30T18:59:08+00:00"
         },
         {
             "name": "erikwang2013/apidoc-php",
@@ -9654,9 +9657,12 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=8.1",
+        "php": ">=8.3",
         "ext-bcmath": "*"
     },
     "platform-dev": {},
+    "platform-overrides": {
+        "php": "8.3.0"
+    },
     "plugin-api-version": "2.9.0"
 }

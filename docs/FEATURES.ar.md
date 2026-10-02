@@ -59,19 +59,19 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | 2FA | Google Authenticator TOTP + رموز استرداد احتياطية | مكتمل |
 | الإحالة | رمز إحالة، مكافأة تسجيل، عمولة شحن | مكتمل |
 | البحث | واجهات بحث ES + اقتراحات ألعاب + تراجع LIKE | مكتمل |
-| لوحات المتصدرين | دفع لحظي WebSocket (المنفذ 8790) | مكتمل |
+| لوحات المتصدرين | REST + Redis | مكتمل |
 | CDN | تكامل خمسة مزودين (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS رفع + مسح + تحميل مسبق) | مكتمل |
 | إدارة CDN | إعداد المزودين الخمسة من لوحة الإدارة (تخزين مشفر للاعتمادات/تفعيل-إيقاف/اختبار الاتصال HeadBucket)، والخدمة تقرأ من قاعدة البيانات فقط | مكتمل |
 | التقارير | تقارير بيانات لوحة الإدارة (ملخص/يومي/تصدير CSV، كاش Redis 5 دقائق، فترة ≤90 يومًا) | مكتمل |
 | إحصائيات المنصة | إحصائيات الصفحة الرئيسية للجانب C (إجمالي الألعاب/المستخدمين/جولات اليوم/نشطون 7 أيام) | مكتمل |
 | النشر | Docker Compose 7 خدمات + وكيل Nginx عكسي | مكتمل |
 | البيانات | تحليل تجميع MySQL لحظي + حساب الاحتمالات المشتركة/الشرطية | مكتمل |
-| HarmonyOS | إدارة 8 صفحات؛ الطرف C في `apps/harmonyos/` نفّذ تسجيل الدخول/اللوبي/التفاصيل/المحفظة/الملف الشخصي (يشير إلى 8792) | مكتمل جزئيًا (المشروع يعمل، الجهاز الحقيقي يحتاج تغيير IP) |
+| HarmonyOS | إدارة 19 صفحات؛ الطرف C في `apps/harmonyos/` نفّذ تسجيل الدخول/اللوبي/التفاصيل/المحفظة/الملف الشخصي (يشير إلى 8792) | مكتمل جزئيًا (المشروع يعمل، الجهاز الحقيقي يحتاج تغيير IP) |
 | توثيق API | توثيق تفاعلي erikwang2013/apidoc-php | مكتمل |
 | تثبيت بنقرة واحدة | معالج تثبيت بالمتصفح: إنشاء مدير، ترقية قاعدة بيانات موجودة، install.lock يمنع إعادة التثبيت | مكتمل |
 | تحمل الأعطال | CircuitBreaker + Retry + مفتاح التدهور feature.provider_mock | مكتمل |
 | طرق الدفع | CRUD في الإدارة + رؤية حسب الدولة + نطاق المبالغ + تقييد العملة | مكتمل |
-| CI | tag تلقائي متزايد عند push + GitHub Release | مكتمل |
+| CI | tag تلقائي متزايد عند push + GitHub Release | تم التغيير إلى تشغيل يدوي |
 
 ### التوسعة البيئية (v2.0) — أُنجزت للتو
 
@@ -231,7 +231,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 
 ## 7. قائمة جداول قاعدة البيانات
 
-### جداول التوسعة البيئية الجديدة (10 جداول)
+### جداول التوسعة البيئية الجديدة (14 جداول)
 
 | اسم الجدول | الوصف | الميزات الرئيسية |
 |------|------|---------|
@@ -245,6 +245,10 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | game_user_achievement | إنجازات المستخدمين | فهرس فريد user_id+achievement_id |
 | game_friend | علاقات الصداقة | فهرس فريد user_id+friend_id |
 | game_message | الرسائل الخاصة | from_user_id+to_user_id / to_user_id+is_read |
+| game_cdn_provider | إعداد مزوّد CDN | فهرس فريد provider، config JSON مشفّر |
+| game_referral_commission | سجلات عمولة الإحالة متعددة المستويات | فهرس user_id / referral_id / source_type+source_id |
+| game_tournament | البطولات | فهرس فريد slug، فهرس status+start_at+end_at |
+| game_tournament_entry | تسجيلات/نتائج البطولات | فهرس فريد tournament_id+user_id، فهرس tournament_id+score |
 
 ### تغييرات بنية الجداول
 
@@ -253,7 +257,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | game_game | +provider_config (JSON) |
 | game_game_play_log | +round_id، +bet_amount، +win_amount |
 
-**الإجمالي: 78 جدولًا في install.sql**. النماذج: 52 مشتركة في `packages/platform-common/src/model/`؛ أما 8 في admin/app/model/ و10 في service/app/model/ فهي خاصة بكل مضيف (لا تداخل في أسماء الملفات).
+**الإجمالي: 79 جدولًا في install.sql**. النماذج: 51 مشتركة في `packages/platform-common/src/model/`؛ أما 6 في admin/app/model/ و10 في service/app/model/ فهي خاصة بكل مضيف (لا تداخل في أسماء الملفات).
 
 ## 8. تغطية الاختبارات
 
@@ -267,7 +271,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | HashidsServiceTest | 6 | دورة ترميز وفك ترميز المعرّفات |
 | SnowflakeServiceTest | 5 | تفرد توليد المعرّفات |
 
-**الإجمالي (phpunit --list-tests، القياس الحالي): admin 200 حالة / 21 ملفًا، service 273 حالة / 42 ملفًا (بما فيها WebhookUrlSafety + EventBusMessageFormat؛ التقرير: إعادة تشغيل 09-22 admin 190 + service 273، ولقطة 08-27 admin 153 + service 45). service غير مدمج في كسر CI عند الفشل (غير مُتحقَّق منه).**
+**الإجمالي (phpunit --list-tests، القياس الحالي): admin 593 حالة / 70 ملفًا، service 549 حالة / 89 ملفًا (بما فيها WebhookUrlSafety + EventBusMessageFormat؛ التقرير: إعادة تشغيل 09-22 admin 190 + service 273، ولقطة 08-27 admin 153 + service 45). service مدمج في كسر CI عند الفشل.**
 
 ---
 

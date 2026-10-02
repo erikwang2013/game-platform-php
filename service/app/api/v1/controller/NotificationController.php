@@ -24,7 +24,8 @@ class NotificationController extends BaseController
     {
         $userId  = $request->userId;
         $page    = (int) $request->input('page', 1);
-        $perPage = (int) $request->input('per_page', 20);
+        // 上下界都要夹，理由见 SearchController:28-31（负值会让 limit 子句整个消失 ⇒ 1064）
+        $perPage = max(1, min(100, (int) $request->input('per_page', 20)));
         $isRead  = $request->input('is_read');
 
         $query = Notification::where('user_id', $userId)

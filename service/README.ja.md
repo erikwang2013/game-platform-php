@@ -17,7 +17,7 @@ C側ユーザープラットフォーム API サービス。webman v2（Workerma
 | 出金 | 申請 → 審査 → 支払い、KYC 段階別限度額 |
 | 両替 | プラットフォームコイン ⇄ ゲームコインのリアルタイム見積、VIP 割引とレート上乗せ |
 | ゲーム | ゲーム一覧/カテゴリ/検索、プレイ履歴、Provider 決済コールバック |
-| ランキング | 日/週/月/総合 + WebSocket リアルタイム配信 |
+| ランキング | 日/週/月/総合（REST） |
 | クーポン | 固定金額 + 比率割引、期間・数量限定 |
 | チケット | ユーザーによるサポートチケットの作成/返信 |
 | VIP | 5 段階ロイヤルティ、経験値累積、両替割引 |
@@ -40,7 +40,7 @@ C側ユーザープラットフォーム API サービス。webman v2（Workerma
 service/
 ├── app/
 │   ├── activity/           # アクティビティハンドラー
-│   ├── api/v1/controller/  # C側 API コントローラー（34 個）
+│   ├── api/v1/controller/  # C側 API コントローラー（35 個）
 │   ├── bootstrap/          # 通知ブートストラップ
 │   ├── cdn/                # CDN マルチベンダー（Alibaba Cloud/Tencent Cloud/Huawei Cloud/Cloudflare/CloudFront + CdnFactory）
 │   ├── common/             # 共通
@@ -96,7 +96,7 @@ cp .env.example .env
 # 3. サービスを起動（デフォルトポート 8792、.env の APP_PORT で変更可能）
 php start.php start        # フォアグラウンド
 php start.php start -d     # バックグラウンド
-# WebSocket ポート（ランキング 8790 / チャット 8791）は .env の LEADERBOARD_WS_PORT / CHAT_WS_PORT で変更可能
+# WebSocket ポート（チャット 8791）は .env の CHAT_WS_PORT で変更可能
 ```
 
 ## 使い方

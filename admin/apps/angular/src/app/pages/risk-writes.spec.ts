@@ -244,6 +244,47 @@ describe('风控模块写操作接线', () => {
       expect(p.formError()).toBe('');
     });
 
+    /**
+     * scope 下拉的注记（2026-10-02 追加）。前提是后端事实，不是文案偏好：
+     * `RiskService::check()` 全仓只有两个调用点 —— deposit（PaymentController:124）与
+     * withdraw（WithdrawController:173），评估器里 exchange / login 那两条分支没有调用方
+     * ⇒ 选这两项建的规则**永不命中**，而界面上它俩和 all/deposit/withdraw 长得一模一样。
+     * 两项**保留**（产品接上调用点后直接可用），所以钉子钉两头：
+     * ① 选项还在（删了两项产品就没得选）；② 注记真渲染出来，而不是「词条没跟上」露出的原键串。
+     * ⚠ 「hint 没渲染出来」时 `.hint` 查不到 ⇒ 必须显式判空，否则 not.toBe(key) 会恒真。
+     */
+    it('scope：exchange/login 两项保留，且下拉格子里有「暂未接入」的注记（不是原键串）', async () => {
+      const f: ComponentFixture<Risk> = TestBed.createComponent(Risk);
+      const p = f.componentInstance as unknown as P;
+
+      f.detectChanges(); // ngOnInit → 总览
+      http
+        .expectOne((r) => r.method === 'GET' && url(r) === '/admin/v1/risk/overview')
+        .flush({ code: 0, message: 'ok', data: {} });
+      await tick();
+      await loadRules(p);
+      f.detectChanges();
+
+      const edit = Array.from(f.nativeElement.querySelectorAll('.acts button') as NodeListOf<HTMLButtonElement>).find(
+        (b) => b.textContent?.trim() === '编辑',
+      )!;
+      edit.click();
+      f.detectChanges();
+
+      const scope = f.nativeElement.querySelector('select[name="scope"]') as HTMLSelectElement | null;
+      if (!scope) throw new Error('未找到 select[name="scope"]');
+
+      const values = Array.from(scope.options).map((o) => o.value);
+      expect(values).toContain('exchange'); // 别删：产品要做时直接用
+      expect(values).toContain('login');
+
+      const hint = scope.closest('div')?.querySelector('.hint') as HTMLElement | null;
+      if (!hint) throw new Error('scope 字段的格子里没有 .hint —— 注记没渲染出来');
+      expect(hint.textContent?.trim()).not.toBe('risk.rule.scope_hint'); // 原键串 = 词条没跟上
+      expect(hint.textContent).toContain('exchange');
+      expect(hint.textContent).toContain('login');
+    });
+
     it('试算：POST /risk/rule/test {rule_id,user_id,check_type,context}，结构化结果进抽屉', async () => {
       const p = build(() => new Risk()) as unknown as P;
       await loadRules(p);

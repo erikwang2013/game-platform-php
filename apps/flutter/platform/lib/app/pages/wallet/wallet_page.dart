@@ -1,4 +1,10 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+//
+// ⚠ **已知缺口，只留注记、本批不造功能**：本树**没有充值/提现订单列表**。
+// 服务端两条端点都已就绪且被两棵 web 树用着（`service/config/route.php:85` 的
+// `/deposit/orders`、`:95` 的 `/withdraw/orders`，C 端 web 的「钱包记录」页就是它们），
+// 本树只调 `/wallet/info` 与 `/wallet/transactions` 的流水。要补＝新页面 + 分页 +
+// 13 表词条（「订单页」属新功能，不在此批）。
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:responsive_framework/responsive_framework.dart';
@@ -241,7 +247,7 @@ class _WalletPageState extends State<WalletPage> {
             ),
           );
           if (confirm == true) {
-            await AuthService.clearToken();
+            await ApiService.signOut();
             Get.offAllNamed('/login');
           }
         }

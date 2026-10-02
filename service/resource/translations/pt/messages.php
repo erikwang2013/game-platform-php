@@ -119,7 +119,7 @@ return [
     'Phone verified' => 'Telefone verificado',
     'Play log not found' => 'Registo de jogadas não encontrado',
     'Please type yes to confirm account closure' => 'Escreva yes para confirmar o encerramento da conta',
-    'Privacy settings updated' => 'Configurações de privacidade atualizadas',
+    'Privacy settings were not saved' => 'Configurações de privacidade não salvas',
     'Provider mismatch' => 'O fornecedor não corresponde',
     'Reply sent' => 'Resposta enviada',
     'Request not found' => 'Pedido não encontrado',

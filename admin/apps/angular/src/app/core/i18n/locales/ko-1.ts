@@ -114,6 +114,7 @@ export const KO_1: Record<string, string> = {
   'risk.rule.scope': '적용 범위',
   'risk.rule.priority': '우선순위',
   'risk.rule.priority_hint': '0-1000, 값이 클수록 먼저 판정됩니다(기본 100)',
+  'risk.rule.scope_hint': 'exchange / login은 아직 연결되지 않았습니다(평가기에 분기는 있으나 호출 지점이 없음 — RiskService::check()는 deposit / withdraw에서만 호출됩니다). 따라서 이 scope 규칙은 절대 매칭되지 않습니다',
   'risk.rule.status': '상태',
   'risk.rule.config': '임계값 설정(JSON)',
   'risk.rule.keys_note': '\n',

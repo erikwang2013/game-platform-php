@@ -21,14 +21,16 @@
         >
           <path [attr.d]="n.d" />
         </svg>
-        <span>{{ n.label }}</span>
+        <span>{{ n.label | t }}</span>
       </a>
     }
     <div class="rail-foot">
       @if (authed()) {
-        <button class="btn ghost wide" type="button" (click)="signout()">退出登录</button>
+        <button class="btn ghost wide" type="button" (click)="signout()">
+          {{ 'app.logout' | t }}
+        </button>
       } @else {
-        <a class="btn primary wide" routerLink="/login">登录 / 注册</a>
+        <a class="btn primary wide" routerLink="/login">{{ 'app.login_or_register' | t }}</a>
       }
     </div>
   </aside>
@@ -53,8 +55,8 @@
           </svg>
           <input
             type="search"
-            placeholder="搜索游戏…"
-            aria-label="搜索游戏"
+            [placeholder]="'app.search_games_hint' | t"
+            [attr.aria-label]="'app.search_games' | t"
             [ngModel]="q()"
             (ngModelChange)="onQuery($event)"
             (keydown.enter)="submit()"
@@ -75,14 +77,45 @@
         }
       </div>
       @if (!authed()) {
-        <a class="btn ghost signin" routerLink="/login">登录</a>
+        <a class="btn ghost signin" routerLink="/login">{{ 'app.login' | t }}</a>
       }
+      <!-- 语言菜单：13 种平铺（母语名 + 当前项打点），与 C 端 flutter 的 _buildUserMenu、
+           管理端 angular 的 .lang 同款。关闭走 document 级点击（见 app.ts 的 closeLang），
+           不用固定遮罩 —— 理由写在那里。 -->
+      <div class="lang">
+        <button
+          class="btn ghost lang-btn"
+          type="button"
+          [attr.aria-label]="'app.lang' | t"
+          [attr.aria-expanded]="langOpen()"
+          (click)="toggleLang($event)"
+        >
+          <span aria-hidden="true">🌐</span>
+          <span class="lang-name">{{ native() }}</span>
+        </button>
+        @if (langOpen()) {
+          <div class="lang-menu" role="menu">
+            @for (l of langs; track l.code) {
+              <button
+                type="button"
+                role="menuitemradio"
+                [attr.aria-checked]="l.code === lang()"
+                [class.on]="l.code === lang()"
+                (click)="pickLang(l.code)"
+              >
+                <span class="dot" aria-hidden="true">{{ l.code === lang() ? '●' : '' }}</span>
+                {{ l.native }}
+              </button>
+            }
+          </div>
+        }
+      </div>
     </header>
 
     <main class="app-main"><router-outlet /></main>
   </div>
 
-  <nav class="tabbar" aria-label="主导航">
+  <nav class="tabbar" [attr.aria-label]="'app.main_nav' | t">
     @for (n of nav; track n.label) {
       <a
         class="tab"
@@ -104,7 +137,7 @@
         >
           <path [attr.d]="n.d" />
         </svg>
-        <span>{{ n.label }}</span>
+        <span>{{ n.label | t }}</span>
       </a>
     }
   </nav>

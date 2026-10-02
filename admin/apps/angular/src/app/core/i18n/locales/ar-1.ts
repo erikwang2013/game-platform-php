@@ -114,6 +114,7 @@ export const AR_1: Record<string, string> = {
   'risk.rule.scope': 'النطاق',
   'risk.rule.priority': 'الأولوية',
   'risk.rule.priority_hint': '0-1000، الأعلى يُقيَّم أولاً (الافتراضي 100)',
+  'risk.rule.scope_hint': 'exchange / login غير موصولين بعد (للمقيّم فروع لكن لا يوجد موضع استدعاء لهما — لا يُستدعى RiskService::check() إلا من deposit / withdraw)، لذا لن تُطابق أي قاعدة بهذا النطاق أبدًا',
   'risk.rule.status': 'الحالة',
   'risk.rule.config': 'إعدادات العتبة (JSON)',
   'risk.rule.keys_note': '\n',

@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace app\admin\v1\controller;
 
 use erikwang2013\apidoc\annotation as Apidoc;
+use app\middleware\AdminPermission as AdminPermGuard; // 中间件那个（提供 forget / forgetByRole / forgetByPermission，本文件用最后那个）；别名只因下行是**同名模型**
 use app\model\AdminPermission;
 use support\Request;
 use support\Response;
@@ -68,6 +69,8 @@ class PermissionController extends BaseController
         $perm->sort = (int) $request->input('sort', 0);
         $perm->save();
 
+        // 无需 forgetByPermission：新权限还没挂到任何角色上（挂载走 RoleController::update 的 permission_ids），
+        // perm:{adminId} 缓存里不可能出现这个 slug。调了就是一次空查。
         return $this->success($this->encodeIds($perm->toArray()), trans('Created successfully'));
     }
 
@@ -100,6 +103,8 @@ class PermissionController extends BaseController
             return $this->fail($validator->errors()->first(), 422);
         }
 
+        // 无需 forgetByPermission：本方法只写 name/icon/path/sort，**不写 slug/type/parent_id**，
+        // 而 perm:{adminId} 缓存的正是一串 slug ⇒ 这里改不动任何已缓存的值（加了是纯空转）。
         $perm->name = $request->input('name', $perm->name);
         $perm->icon = $request->input('icon', $perm->icon);
         $perm->path = $request->input('path', $perm->path);
@@ -123,10 +128,17 @@ class PermissionController extends BaseController
         }
 
         $adminId = $request->adminId ?? 0;
-        $error = $this->confirmPassword($adminId, $request->input('password', ''), $request);
+        $error = $this->confirmPassword($adminId, $request->input('password', ''));
         if ($error !== null) {
             return $this->fail($error, 422);
         }
+
+        // 缓存里存的是 slug 集合 ⇒ 删权限（含级联的子权限）后，持有者最长还会认这 60 秒，
+        // 而缓存里的 slug 已经没有对应权限行了。
+        // ⚠ 必须在下面 detach/delete **之前**：forgetByPermission 是按 admin_permission（子权限）
+        // 与 admin_role_permission 两张表反查的，行没了再查就是空转（同 RoleController::destroy）。
+        // 用别名调：本文件的短名 `AdminPermission` 是那个同名**模型**，写短名会打到模型上（致命错误）。
+        AdminPermGuard::forgetByPermission($id);
 
         // 级联删除子权限
         AdminPermission::where('parent_id', $id)->delete();

@@ -13,6 +13,9 @@ use support\Response;
 #[Apidoc\Group("achievement")]
 class AchievementController extends BaseController
 {
+    #[Apidoc\Title("成就列表")]
+    #[Apidoc\Url("/admin/v1/achievement/list")]
+    #[Apidoc\Method("GET")]
     public function list(Request $request): Response
     {
         $list = Achievement::orderBy('id')->get()->map(function ($item) {
@@ -22,6 +25,9 @@ class AchievementController extends BaseController
         return $this->success(['list' => $list]);
     }
 
+    #[Apidoc\Title("新增成就")]
+    #[Apidoc\Url("/admin/v1/achievement/create")]
+    #[Apidoc\Method("POST")]
     public function create(Request $request): Response
     {
         $validator = validator($request->all(), [
@@ -59,6 +65,9 @@ class AchievementController extends BaseController
         return $this->success($this->encodeIds($a->toArray()), trans('Created successfully'));
     }
 
+    #[Apidoc\Title("更新成就")]
+    #[Apidoc\Url("/admin/v1/achievement/{hashid}")]
+    #[Apidoc\Method("PUT")]
     public function update(Request $request, string $hashid): Response
     {
         $id = $this->decodeId($hashid);
@@ -100,6 +109,9 @@ class AchievementController extends BaseController
      * 停用只影响「后续事件触发是否再授予」——消费方 AchievementService 已加 status 过滤；
      * 已授予的记录与用户进度不受影响（删定义才会丢历史，见迁移注释）。
      */
+    #[Apidoc\Title("上架/停用成就")]
+    #[Apidoc\Url("/admin/v1/achievement/toggle")]
+    #[Apidoc\Method("POST")]
     public function toggle(Request $request): Response
     {
         $validator = validator($request->all(), [
@@ -121,6 +133,9 @@ class AchievementController extends BaseController
         return $this->success([], trans('Operation successful'));
     }
 
+    #[Apidoc\Title("删除成就")]
+    #[Apidoc\Url("/admin/v1/achievement/{hashid}")]
+    #[Apidoc\Method("DELETE")]
     public function destroy(Request $request, string $hashid): Response
     {
         $id = $this->decodeId($hashid);

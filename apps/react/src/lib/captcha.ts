@@ -6,6 +6,7 @@
  * 点击验证码的纯逻辑（取图数据描述 + 坐标换算）；
  * 弹框 UI 在 components/CaptchaModal.tsx，这里不引 React，便于 node --test 直接跑。
  */
+import { t } from '../i18n/index.ts';
 
 /** 验证码画布恒为 300×200（easy/medium/hard 三档一致）；图片未加载完时用它兜底 */
 export const CANVAS_W = 300;
@@ -24,7 +25,12 @@ export type CaptchaData = {
   extra?: { texts?: { text?: string; order?: number }[] };
 };
 
-export type CaptchaView = {
+/**
+ * `describeCaptcha()` 的返回形状 —— **不导出**：全树零处按名引用（含用例），
+ * 调用方一律解构使用（`const { imgSrc, required, hint } = describeCaptcha(data)`）。
+ * 导出＝对外承诺一个没人要的名字。
+ */
+type CaptchaView = {
   /** 可直接用于 <img src> 的图片地址 */
   imgSrc?: string;
   /** 待点击文字，按服务端要求的点击顺序排列 */
@@ -43,8 +49,8 @@ export function describeCaptcha(captcha: CaptchaData | null): CaptchaView {
     texts,
     required,
     hint: texts.length
-      ? `按顺序点击：${texts.map((item) => item.text).join(' → ')}`
-      : `点击图中 ${required} 个位置完成验证`,
+      ? t('captcha.click_order', { order: texts.map((item) => item.text).join(' → ') })
+      : t('captcha.click_count', { count: required }),
   };
 }
 

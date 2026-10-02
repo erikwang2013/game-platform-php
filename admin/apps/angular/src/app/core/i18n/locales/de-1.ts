@@ -114,6 +114,7 @@ export const DE_1: Record<string, string> = {
   'risk.rule.scope': 'Geltungsbereich',
   'risk.rule.priority': 'Priorität',
   'risk.rule.priority_hint': '0-1000, höhere Werte werden zuerst geprüft (Standard 100)',
+  'risk.rule.scope_hint': 'exchange / login noch nicht angebunden (der Evaluator hat Zweige, aber keine Aufrufstelle — RiskService::check() wird nur für deposit / withdraw aufgerufen), eine Regel mit diesem Scope greift also nie',
   'risk.rule.status': 'Status',
   'risk.rule.config': 'Schwellenwert-Konfiguration (JSON)',
   'risk.rule.keys_note': '\n',

@@ -59,6 +59,16 @@ export interface LoginRequest {
   clicks: CaptchaClick[];
 }
 
+/**
+ * 2FA 第二步 — POST /api/v1/2fa/verify（**公开端点**，不需要登录态）。
+ * 身份取自票据里的 `sub`（登录时已过密码校验），客户端无法自选用户。
+ */
+export interface TwoFactorVerifyRequest {
+  pending_2fa_token: string;
+  /** 6 位 TOTP（验证器 App）或 10 位备份码 —— 服务端 validator 是 `between:6,10` */
+  code: string;
+}
+
 export interface LoginUser {
   id: string;
   username: string;

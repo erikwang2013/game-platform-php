@@ -32,6 +32,8 @@ use app\service\risk\evaluators\WithdrawPatternEvaluator;
  * 保证硬规则（ip_blacklist / device_fingerprint 等 action=block）fail-closed，
  * 软规则（log/warn）不会被降级失效，也不因低危命中误伤。
  *
+ * ⚠ 接入环节范围有限：只有 deposit / withdraw 两个真调用点，详见 check() 的注释。
+ *
  * 返回: passed(通过) / warn(警告+记录) / block(阻断)
  */
 class RiskService
@@ -45,8 +47,17 @@ class RiskService
     /**
      * 执行风控检查
      *
+     * ⚠ 环节口径（2026-10-02 全仓核实，别再照抄「支持四个环节」）：本方法在生产代码里只有
+     * **2 个调用点** ——
+     *   deposit  ← PaymentController:124
+     *   withdraw ← WithdrawController:151
+     * 另两个环节**只有评估器分支、零调用点**：`exchange`（FrequencyEvaluator:45）、
+     * `login`（DeviceFingerprintEvaluator:66）。后果：运营在管理端建一条 scope=exchange/login
+     * 的规则会**永不命中**，而界面照旧显示「已启用」（那条误导提示在 admin/apps/**，未改）。
+     * 评估器分支刻意保留 —— 产品决定要接这两个环节时可直接用；接调用点属产品决定，不在本次范围。
+     *
      * @param int    $userId    用户ID (0=未登录)
-     * @param string $checkType 检查类型: deposit/withdraw/exchange/login
+     * @param string $checkType 检查类型: deposit/withdraw（**真生效**）；exchange/login 仅评估器有分支、无调用点
      * @param array  $context   上下文: ['amount' => '100', 'ip' => '1.2.3.4', 'user_agent' => '...']
      * @return array ['result' => 'passed'|'warn'|'block', 'message' => '', 'rule_name' => '']
      */

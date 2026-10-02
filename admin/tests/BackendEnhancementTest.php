@@ -7,9 +7,13 @@ declare(strict_types=1);
 
 namespace tests;
 
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
+use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use support\Request;
 use Webman\Http\Response;
+use Webman\Route;
 
 class BackendEnhancementTest extends TestCase
 {
@@ -99,6 +103,21 @@ class BackendEnhancementTest extends TestCase
         );
     }
 
+    /**
+     * 敏感限流配置的两层判据：一层钉取值，一层钉**形状**。
+     *
+     * ② 为什么是「对路由表」而不是「再钉一个端点」：本条原先逐条钉 /api/v1/auth/register
+     * （5 次/分钟），2026-10-01 该端点摘除后断言就地过期；换成钉登录只是把过期推迟到下一次摘除。
+     * 而这类配置烂掉的形状是固定的 —— **路由摘了、限流配置没跟着摘** ⇒ 模式永不命中、
+     * 也不报任何错 —— 所以判据就该钉这个形状：路由表里没有的模式，$sensitive 里不许有。
+     * 这样下一条死配置会自己浮出来，而不是等人去逐条核对。
+     *
+     * 必须隔进程：Route::load() 内部是 require_once，同进程第二次调用只会把静态路由表清成 0 条
+     * （同类说明见 AdminPiiAndRegisterHardeningTest / PermissionSeedParityTest）。
+     */
+    #[Test]
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
     public function test_rate_limit_has_sensitive_config(): void
     {
         $reflection = new \ReflectionClass(\app\middleware\RateLimit::class);
@@ -108,10 +127,28 @@ class BackendEnhancementTest extends TestCase
 
         $refSensitive = $reflection->getProperty('sensitive');
         $sensitive = $refSensitive->getDefaultValue();
+
+        // ① 取值层：至少一条敏感路径（防空表恒真），具体取值由登录那条锚住。
+        $this->assertNotEmpty($sensitive, 'RateLimit 应至少配置一条敏感路径');
         $this->assertArrayHasKey('/api/v1/auth/login', $sensitive);
         $this->assertEquals(10, $sensitive['/api/v1/auth/login']['limit']);
-        $this->assertArrayHasKey('/api/v1/auth/register', $sensitive);
-        $this->assertEquals(5, $sensitive['/api/v1/auth/register']['limit']);
+
+        // ② 形状层：每条敏感模式都必须对得上一条已注册路由。
+        Route::load([__DIR__ . '/../config']);
+        $registered = [];
+        foreach (Route::getRoutes() as $route) {
+            $registered[$route->getPath()] = true;
+        }
+        // 装载失败要响亮地红，不能让下面的 foreach 在空表上「零次迭代 = 通过」
+        $this->assertNotEmpty($registered, '路由未装载：Route::load 未生效');
+
+        foreach (array_keys($sensitive) as $pattern) {
+            $this->assertArrayHasKey(
+                $pattern,
+                $registered,
+                "限流敏感模式 {$pattern} 对不上任何已注册路由（路由已摘、限流配置没跟着摘）"
+            );
+        }
     }
 
     public function test_rate_limit_has_lua_script_for_atomicity(): void
@@ -264,7 +301,6 @@ class BackendEnhancementTest extends TestCase
     {
         $middleware = new \app\middleware\OperationLog();
         $filter = new \ReflectionMethod($middleware, 'filterSensitive');
-        $filter->setAccessible(true);
 
         // 迁移前的历史词条（8 条），逐条仍须命中 —— 这是「迁移无损」的可执行版本
         $legacy = ['password', 'old_password', 'new_password', 'new_password_confirmation',

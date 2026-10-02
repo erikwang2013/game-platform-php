@@ -1,20 +1,11 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 import 'dart:async';
-import 'dart:js_interop';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../services/api_service.dart';
+import '../../services/fullscreen.dart';
 import '../../i18n/translations.dart';
-
-@JS('document.documentElement.requestFullscreen')
-external JSPromise _requestFullscreen();
-
-@JS('document.exitFullscreen')
-external JSPromise _exitFullscreen();
-
-@JS('document.fullscreenElement')
-external JSObject? get _fullscreenElement;
 
 /// 大屏模式：4 屏 15 秒轮播，F 键或按钮切换全屏，Esc 退出全屏（浏览器原生）。
 class BigscreenPage extends StatefulWidget {
@@ -77,11 +68,7 @@ class _BigscreenPageState extends State<BigscreenPage> {
       '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
   Future<void> _toggleFullscreen() async {
-    if (_fullscreenElement == null) {
-      await _requestFullscreen().toDart;
-    } else {
-      await _exitFullscreen().toDart;
-    }
+    await toggleFullscreen();
     if (mounted) setState(() {});
   }
 
@@ -120,7 +107,7 @@ class _BigscreenPageState extends State<BigscreenPage> {
   }
 
   Widget _buildHeader(double scale) {
-    final inFullscreen = _fullscreenElement != null;
+    final inFullscreen = isFullscreen;
     return Row(
       children: [
         Text('Game Platform', style: TextStyle(fontSize: 28 * scale, fontWeight: FontWeight.bold, color: Colors.white)),

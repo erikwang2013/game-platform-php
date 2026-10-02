@@ -17,7 +17,7 @@ The C-side user platform API service, a high-performance PHP backend built on we
 | Withdrawal | Application → review → payout, KYC tiered limits |
 | Exchange | Real-time platform token ⇄ game currency quotes, VIP discounts and rate bonuses |
 | Games | Game list/categories/search, game records, Provider settlement callbacks |
-| Leaderboards | Daily/weekly/monthly/all-time + WebSocket real-time push |
+| Leaderboards | Daily/weekly/monthly/all-time (REST) |
 | Coupons | Fixed amount + percentage discounts, time and quantity limited |
 | Tickets | Users create/reply to support tickets |
 | VIP | 5-tier loyalty, experience accumulation, exchange discounts |
@@ -40,7 +40,7 @@ The C-side user platform API service, a high-performance PHP backend built on we
 service/
 ├── app/
 │   ├── activity/           # Activity handlers
-│   ├── api/v1/controller/  # C-side API controllers (34)
+│   ├── api/v1/controller/  # C-side API controllers (35)
 │   ├── bootstrap/          # Notification bootstrap
 │   ├── cdn/                # Multi-vendor CDN (Aliyun/Tencent/Huawei/Cloudflare/CloudFront + CdnFactory)
 │   ├── common/             # Common
@@ -96,7 +96,7 @@ cp .env.example .env
 # 3. Start the service (default port 8792, changeable via APP_PORT in .env)
 php start.php start        # foreground
 php start.php start -d     # background (daemon)
-# WebSocket ports (leaderboard 8790 / chat 8791) can be changed via LEADERBOARD_WS_PORT / CHAT_WS_PORT in .env
+# WebSocket ports (chat 8791) can be changed via CHAT_WS_PORT in .env
 ```
 
 ## Usage

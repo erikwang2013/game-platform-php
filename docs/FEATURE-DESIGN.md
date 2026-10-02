@@ -299,13 +299,6 @@ signature = HMAC-SHA256(
 - PayPal: POST 回 PayPal 验证端点
 - 未配置密钥时自动跳过验证（开发模式）
 
-### 8.6 WebSocket 实时排行榜
-
-- 协议：WebSocket (ws://host:8790)
-- 订阅：{action: "subscribe", leaderboard_id: 123}
-- 推送：{type: "ranking_update", rankings: [...]}
-- 支持 ping/pong 心跳保活
-
 ## 9. 国际化设计
 
 ### 9.1 支持语言

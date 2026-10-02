@@ -63,7 +63,7 @@ game-platform-php/
 ├── admin/                     # एडमिन बैकएंड (webman v2, डिफ़ॉल्ट पोर्ट 8789, APP_PORT से कॉन्फ़िगर करने योग्य)
 │   ├── app/admin/v1/controller/  #   एडमिन-पक्ष के कंट्रोलर
 │   ├── app/middleware/        #   मिडलवेयर (Cors/SecurityFilter/RateLimit/AdminAuth/AdminPermission/OperationLog)
-│   ├── app/model/             #   केवल admin में मौजूद मॉडल (8; बाकी 52 साझा मॉडल packages/ में)
+│   ├── app/model/             #   केवल admin में मौजूद मॉडल (6; बाकी 51 साझा मॉडल packages/ में)
 │   ├── app/service/           #   केवल admin में मौजूद सेवाएँ (WalletService/WalletScope/RiskSandboxService)
 │   ├── app/process/           #   स्थायी प्रोसेस (Http/Monitor/RiskIpCron)
 │   ├── app/provider/          #   गेम Provider परत (Self/ThirdParty/Factory)
@@ -79,19 +79,19 @@ game-platform-php/
 ├── service/                   # C-एंड व्यवसाय सेवा (webman v2, डिफ़ॉल्ट पोर्ट 8792, APP_PORT से कॉन्फ़िगर करने योग्य)
 │   ├── app/api/v1/controller/ #   C-छोर API कंट्रोलर
 │   ├── app/middleware/        #   मिडलवेयर (TraceId/Cors/SecurityFilter/RateLimit/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
-│   ├── app/model/             #   केवल service में मौजूद मॉडल (10; बाकी 52 साझा मॉडल packages/ में)
+│   ├── app/model/             #   केवल service में मौजूद मॉडल (10; बाकी 51 साझा मॉडल packages/ में)
 │   ├── app/service/           #   केवल service में मौजूद सेवाएँ (वॉलेट/जोखिम/अनुपालन/मिलान/पुश/उपलब्धियाँ/एंटी-चीट आदि)
 │   ├── app/payment/           #   18 पेमेंट गेटवे अडैप्टर (Stripe/PayPal/Adyen/NowPayments/Skrill…) + GatewayFactory
 │   ├── app/cdn/               #   पाँच विक्रेताओं के CDN अडैप्टर (Cloudflare/CloudFront/Alibaba/Tencent/Huawei) + CdnFactory
-│   ├── app/process/           #   स्थायी प्रोसेस (Http/Monitor/LeaderboardWS:8790/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
+│   ├── app/process/           #   स्थायी प्रोसेस (Http/Monitor/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
 │   ├── app/provider/          #   गेम Provider परत
 │   ├── app/activity/          #   एक्टिविटी इंजन
 │   ├── app/event/             #   इवेंट बस (EventBus Redis Pub/Sub)
 │   └── config/                #   कॉन्फ़िगरेशन फ़ाइलें
 │
 ├── packages/platform-common/  # साझा परत: admin और service इसे composer path रिपॉज़िटरी से जोड़ते हैं, दो प्रतियाँ न रखने के लिए
-│   ├── src/model/             #   साझा Eloquent मॉडल (52, दोनों ओर एक ही स्रोत)
-│   ├── src/service/           #   साझा सेवाएँ (DepositLogService / VipService आदि, कुल 11, ClickHouse प्रायिकता गणना सहित)
+│   ├── src/model/             #   साझा Eloquent मॉडल (51, दोनों ओर एक ही स्रोत)
+│   ├── src/service/           #   साझा सेवाएँ (DepositLogService / VipService आदि, कुल 12, ClickHouse प्रायिकता गणना सहित, 2 इन्फ्रास्ट्रक्चर क्लास EventPublisher/OutboxWriter सहित)
 │   ├── src/BcMath.php         #   राशि/दर की उच्च-परिशुद्धता गणना (bcmath रैपर), राउंडिंग, प्रतिशत
 │   ├── src/EncryptionService.php  #   AES एन्क्रिप्शन/डिक्रिप्शन और मास्किंग
 │   ├── src/CircuitBreaker.php #   सर्किट ब्रेकर (साथ में Retry.php पुनःप्रयास हेतु)
@@ -109,7 +109,7 @@ game-platform-php/
 ├── install/                   # एक-क्लिक इंस्टॉल विज़ार्ड + डेटाबेस आरंभीकरण SQL
 │   ├── index.php              #   इंस्टॉलेशन प्रवेश बिंदु
 │   ├── Installer.php          #   इंस्टॉलेशन कोर लॉजिक
-│   ├── install.sql            #   मर्ज किया गया इंस्टॉल SQL (MySQL पूर्ण: 78 तालिकाएँ + सीड डेटा)
+│   ├── install.sql            #   मर्ज किया गया इंस्टॉल SQL (MySQL पूर्ण: 79 तालिकाएँ + सीड डेटा)
 │   ├── clickhouse.sql         #   ClickHouse विश्लेषणात्मक DDL (अलग इंजन, अलग से आयात)
 │   ├── test-data.sql          #   डेमो/परीक्षण डेटा
 │   ├── migrations/            #   मौजूदा डेटाबेस के लिए इंक्रीमेंटल अपग्रेड स्क्रिप्ट (*.sql)
@@ -178,7 +178,7 @@ rm -rf install/
 
 इंस्टॉलेशन विज़ार्ड स्वचालित रूप से पूरा करता है:
 - पर्यावरण जांच (PHP संस्करण, एक्सटेंशन, निर्देशिका अनुमतियाँ)
-- डेटाबेस और तालिकाओं का निर्माण (मर्ज किया गया SQL, 78 तालिकाएँ + सीड डेटा)
+- डेटाबेस और तालिकाओं का निर्माण (मर्ज किया गया SQL, 79 तालिकाएँ + सीड डेटा)
 - सुपर एडमिन खाता बनाना (bcrypt एन्क्रिप्शन)
 - JWT/एन्क्रिप्शन कुंजियाँ स्वचालित रूप से उत्पन्न कर .env फ़ाइल में लिखना
 - बार-बार इंस्टॉलेशन रोकने के लिए install.lock बनाना
@@ -333,7 +333,7 @@ cd admin/apps/flutter && flutter test --timeout 300s
 | KYC | वास्तविक-नाम सत्यापन सबमिशन + ऑडिट, स्वीकृति के बाद निकासी सीमा बढ़ाता है |
 | गेम | CRUD + श्रेणियाँ (10 श्रेणियाँ) + सर्वर + गेम रिकॉर्ड ट्रैकिंग |
 | खोज | Elasticsearch पूर्ण-पाठ खोज (LIKE फ़ॉलबैक सहित) |
-| लीडरबोर्ड | दैनिक/साप्ताहिक/मासिक/कुल बोर्ड, Redis कैश, WebSocket रीयल-टाइम पुश (डिफ़ॉल्ट पोर्ट 8790, LEADERBOARD_WS_PORT से कॉन्फ़िगर करने योग्य) |
+| लीडरबोर्ड | दैनिक/साप्ताहिक/मासिक/कुल बोर्ड, Redis कैश |
 | CDN | पाँच प्रदाता एकीकरण (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS अपलोड + पर्ज + प्रीलोड) + एडमिन कॉन्फ़िग/टॉगल/कनेक्टिविटी टेस्ट |
 | कूपन | निश्चित राशि + प्रतिशत छूट, समय/मात्रा सीमित, क्लेम और उपयोग ट्रैकिंग |
 | सूचनाएँ | इन-साइट संदेश + ईमेल, टॉप-अप/निकासी/KYC/कूपन स्वचालित सूचनाएँ |

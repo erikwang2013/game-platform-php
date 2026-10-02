@@ -85,17 +85,19 @@ open-admin/
 │   │       └── AuthController.php    # 로그인/가입/토큰 갱신
 │   ├── common/                 # 공용 유틸리티 클래스
 │   │   └── CdnProbeService.php # CDN 연결 테스트 (Hashids/Snowflake/Encryption은 composer 패키지 제공)
-│   ├── middleware/             # 미들웨어
+│   ├── middleware/             # 미들웨어 (디렉터리 9개; 실행 체인 8개)
 │   │   ├── Cors.php            # 크로스 도메인
 │   │   ├── SecurityFilter.php  # 공격 감지 차단 (HTTP 메서드 제한/XSS/SQL 인젝션/경로 탐색/명령 인젝션/CSRF)
 │   │   ├── RateLimit.php       # Redis 속도 제한 (슬라이딩 윈도우 + 응답 헤더)
-│   │   ├── StaticFile.php      # 정적 파일 서비스 (webman 내장)
+│   │   ├── LanguageMiddleware.php # 언어/locale (전역, RateLimit 뒤·라우트 미들웨어 앞에 등록)
+│   │   ├── StaticFile.php      # 정적 파일 서비스 (webman 내장의 사본; 미등록 — config/static.php:25에서 주석 처리, 실행 체인 밖)
 │   │   ├── AdminAuth.php       # JWT 인증 + 블랙리스트
 │   │   ├── AdminPermission.php # RBAC 권한 검증
+│   │   ├── MetricsAuth.php     # /metrics 전용: 관리자 JWT 또는 정적 스크랩 토큰
 │   │   └── OperationLog.php    # 작업 로그 자동 기록 (출처 감지 포함)
 │   ├── activity/               # 활동 핸들러 (출석/초대/일일 미션)
 │   ├── model/                  # 데이터 모델
-│   ├── process/                # 프로세스 (Http, Monitor, RiskIpCron)
+│   ├── process/                # 프로세스 (Http, Monitor, RiskIpCron, ExportTmpCleanup)
 │   ├── provider/               # 게임 Provider 계층 (Self/ThirdParty/Factory)
 │   ├── service/                # 서비스 (지갑/리스크 샌드박스)
 │   └── view/                   # 뷰 템플릿
@@ -104,7 +106,7 @@ open-admin/
 │   ├── react/                  # React 웹 관리자 백엔드
 │   ├── flutter/                # Flutter 웹 관리 백엔드 (PC 스타일)
 │   │   └── lib/app/
-│   │       ├── pages/          # 20개 페이지 디렉터리
+│   │       ├── pages/          # 26개 페이지 디렉터리
 │   │       ├── services/       # ApiService (JWT 인터셉터) + AuthService (토큰 영속화)
 │   │       └── layouts/        # 반응형 관리 백엔드 레이아웃 (사이드바+상단바+콘텐츠 영역)
 │   └── harmonyos/              # HarmonyOS 네이티브 클라이언트 (토큰 무감각 갱신)
@@ -147,8 +149,8 @@ cp .env.example .env
 |---------|------|--------|
 | `APP_PORT` | webman HTTP 수신 포트 | `8789` |
 | `APP_URL` | 외부 접속 주소(설치 마법사 성공 페이지 링크, API 문서 baseUrl 등) | `http://localhost:8789` |
-| `JWT_SECRET` | JWT 서명 키 | `open-admin-jwt-secret-change-in-production` |
-| `HASHIDS_SALT` | Hashids 솔트 | `open-admin-hashids-salt-2026` |
+| `ADMIN_JWT_SECRET_KEY` | JWT 서명 키 | `game-platform-admin-jwt-secret-change-in-production` |
+| `HASHIDS_SALT` | Hashids 솔트 | `game-platform-hashids-salt-2026` |
 | `ENCRYPTION_KEY` | API 암호화 키 | 32바이트 기본값 |
 | `SNOWFLAKE_DATACENTER_ID` | 데이터센터 ID (0-31) | `1` |
 | `SNOWFLAKE_WORKER_ID` | 작업 노드 ID (0-31) | `1` |
@@ -188,7 +190,7 @@ DevEco Studio로 `apps/harmonyos/` 디렉터리를 열고, 실기기 또는 에�
 
 ### 6. Docker Compose 원클릭 배포 (프로덕션 권장)
 
-프로젝트는 7개 서비스로 구성된 완전한 Docker 오케스트레이션을 제공합니다: Nginx, admin (webman), service (webman), leaderboard-ws (WebSocket), MySQL, Redis, Elasticsearch.
+프로젝트는 7개 서비스로 구성된 완전한 Docker 오케스트레이션을 제공합니다: Nginx, admin (webman), service (webman), chat-ws (WebSocket), MySQL, Redis, Elasticsearch.
 
 ```bash
 # 1. Docker 환경 변수 설정
@@ -423,7 +425,7 @@ Authorization: Bearer <token>
 | `nginx` | nginx:alpine | 80, 443 |
 | `admin` | 로컬 `Dockerfile` 빌드 | 8789 |
 | `service` | 로컬 `Dockerfile` 빌드 | 8792 |
-| `leaderboard-ws` | 로컬 `Dockerfile` 빌드 | 8790, 8791 |
+| `chat-ws` | 로컬 `Dockerfile` 빌드 | 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

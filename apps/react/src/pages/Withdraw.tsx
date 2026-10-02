@@ -7,21 +7,32 @@ import { Link } from 'react-router-dom';
 import { ApiError, api, type WithdrawApplied } from '../lib/api.ts';
 import { useAsync } from '../lib/hooks.ts';
 import { useCaptcha } from '../lib/useCaptcha.tsx';
+import type { MessageKey } from '../i18n/index.ts';
+import { useI18n } from '../i18n/useI18n.ts';
 
-/** 与后端 WithdrawController 的 method 白名单一致 */
-const METHODS = [
-  { id: 'paypal', label: 'PayPal' },
-  { id: 'bank', label: '银行卡' },
-  { id: 'crypto', label: '加密货币' },
+/**
+ * 与后端 WithdrawController 的 method 白名单一致。
+ *
+ * ⚠ 表里存的是**键**不是文案（与 `Exchange.tsx` 的 `DIRECTIONS`、`Layout.tsx` 的 `NAV` 同款）：
+ * 模块顶层只求值一次，写成 `t(...)` 会把这三种方式名冻在首屏语言上，切语言后下拉框一个字都不变。
+ */
+const METHODS: Array<{ id: string; label: MessageKey }> = [
+  { id: 'paypal', label: 'withdraw.method_paypal' },
+  { id: 'bank', label: 'withdraw.method_bank' },
+  { id: 'crypto', label: 'withdraw.method_crypto' },
 ];
 
+/** 错误文案的**暂存形**：存「原始错误 + 兜底键」，**不存翻好的串**（理由见 `Exchange.tsx` 的 `Msg`）。 */
+type Msg = { err: unknown; fallback: MessageKey };
+
 export function Withdraw() {
+  const { t } = useI18n();
   const wallet = useAsync(() => api.wallet(), []);
   const [method, setMethod] = useState('paypal');
   const [amount, setAmount] = useState('');
   const [accountInfo, setAccountInfo] = useState('');
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useState<Msg | null>(null);
   const [done, setDone] = useState<WithdrawApplied | null>(null);
   const cap = useCaptcha();
 
@@ -45,7 +56,7 @@ export function Withdraw() {
       setAmount('');
       wallet.reload();
     } catch (e2) {
-      setErr(e2 instanceof ApiError ? `${e2.message}（${e2.code}）` : '提交失败，请稍后重试');
+      setErr({ err: e2, fallback: 'error.submit_failed' });
     } finally {
       setBusy(false);
     }
@@ -54,29 +65,31 @@ export function Withdraw() {
   return (
     <>
       <section className="stack">
-        <p className="label">提现</p>
+        <p className="label">{t('tx.withdraw')}</p>
         <h1 className="h1">
-          提现
+          {t('tx.withdraw')}
           <span style={{ color: 'var(--orange)' }}>.</span>
         </h1>
         <p className="small muted" style={{ margin: 0 }}>
-          可用余额{' '}
+          {t('wallet.available')}{' '}
           <span className="mono">{wallet.loading ? '…' : (wallet.data?.balance ?? '—')}</span>
           {' '}
-          <Link to="/wallet">返回钱包</Link>
+          <Link to="/wallet">{t('app.back_wallet')}</Link>
         </p>
       </section>
 
-      <section className="card" aria-label="提现申请">
+      <section className="card" aria-label={t('withdraw.form_aria')}>
         <form onSubmit={submit} className="stack">
           {err && (
             <p className="err" role="alert">
-              {err}
+              {err.err instanceof ApiError
+                ? t('error.with_code', { message: err.err.message, code: err.err.code })
+                : t(err.fallback)}
             </p>
           )}
 
           <label className="field">
-            <span>提现方式</span>
+            <span>{t('withdraw.method')}</span>
             <select
               className="input"
               name="method"
@@ -85,14 +98,14 @@ export function Withdraw() {
             >
               {METHODS.map((m) => (
                 <option key={m.id} value={m.id}>
-                  {m.label}
+                  {t(m.label)}
                 </option>
               ))}
             </select>
           </label>
 
           <label className="field">
-            <span>提现金额（平台币）</span>
+            <span>{t('withdraw.amount')}</span>
             <input
               className="input"
               name="platform_amount"
@@ -106,7 +119,7 @@ export function Withdraw() {
           </label>
 
           <label className="field">
-            <span>收款账户信息</span>
+            <span>{t('withdraw.account')}</span>
             <textarea
               className="input"
               name="account_info"
@@ -118,42 +131,42 @@ export function Withdraw() {
           </label>
 
           <p className="small muted" style={{ margin: 0 }}>
-            实际到账 = 提现金额 − 手续费，费率按账号等级与 VIP 计算，以提交结果为准。
+            {t('withdraw.hint')}
           </p>
 
           <button type="submit" className="btn btn--primary btn--block" disabled={busy}>
             {busy && <span className="spin" aria-hidden="true" />}
-            提交申请
+            {t('withdraw.submit')}
           </button>
         </form>
       </section>
 
       {done && (
-        <section className="card" aria-label="提现结果" role="status">
-          <p className="label">申请已提交</p>
+        <section className="card" aria-label={t('withdraw.done_aria')} role="status">
+          <p className="label">{t('withdraw.done')}</p>
           <div className="list" style={{ marginTop: 12 }}>
             <div className="li">
-              <span className="small muted">订单号</span>
+              <span className="small muted">{t('app.order_no')}</span>
               <span className="mono">{done.order_no}</span>
             </div>
             <div className="li">
-              <span className="small muted">状态</span>
+              <span className="small muted">{t('app.status')}</span>
               <span className="pill pill--plain">{done.status}</span>
             </div>
             <div className="li">
-              <span className="small muted">申请金额</span>
+              <span className="small muted">{t('withdraw.amount_applied')}</span>
               <span className="mono">{done.platform_amount}</span>
             </div>
             <div className="li">
-              <span className="small muted">手续费</span>
+              <span className="small muted">{t('withdraw.fee')}</span>
               <span className="mono">{done.fee}</span>
             </div>
             <div className="li">
-              <span className="small muted">实际到账</span>
+              <span className="small muted">{t('withdraw.actual')}</span>
               <span className="mono">{done.actual_amount}</span>
             </div>
             <div className="li">
-              <span className="small muted">提交后余额</span>
+              <span className="small muted">{t('withdraw.balance_after')}</span>
               <span className="mono">{done.balance_after}</span>
             </div>
           </div>

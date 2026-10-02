@@ -147,7 +147,7 @@ return [
             // （选配）全局的请求 Header
             'header' => [
                 // name=字段名，type=字段类型，require=是否必须，default=默认值，desc=字段描述
-                ['name' => 'Authorization', 'type' => 'string', 'require' => true, 'desc' => 'Bearer Token (JWT)'],
+                ['name' => 'Authorization', 'type' => 'string', 'require' => true, 'desc' => 'Bearer 令牌 (JWT)'],
             ],
             // （选配）全局的请求 Query
             'query' => [

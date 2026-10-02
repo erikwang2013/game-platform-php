@@ -51,7 +51,7 @@ rm -rf install/
 
 安装向导完成的操作：
 - PHP 环境检查（版本、扩展、目录权限）
-- 执行合并 SQL（`install/install.sql`），创建 78 张表并导入种子数据
+- 执行合并 SQL（`install/install.sql`），创建 79 张表并导入种子数据
 - 创建超级管理员账户（bcrypt 加密，关联 super_admin 角色）
 - 自动生成 JWT/Encryption/Hashids 密钥
 - 写入 `admin/.env` 和 `service/.env`
@@ -90,13 +90,13 @@ docker-compose logs -f
 | nginx | game-platform-nginx | 80, 443 | 反向代理 + 静态文件 |
 | admin | game-platform-admin | 8789 | 管理后台 API |
 | service | game-platform-service | 8792 | C端业务 API |
-| leaderboard-ws | game-platform-ws | 8790, 8791 | WebSocket 排行榜/聊天 |
+| chat-ws | game-platform-ws | 8791 | WebSocket |
 | mysql | game-platform-mysql | 3306 | 主数据库 |
 | redis | game-platform-redis | 6379 | 缓存/限流 |
 | elasticsearch | game-platform-es | 9200 | 全文检索 |
 
 > **端口配置**：上表为默认端口，全部可在项目根目录 `.env` 中修改（模板 `.env.example`，`cp .env.example .env` 后编辑）：
-> `NGINX_HTTP_PORT`、`NGINX_HTTPS_PORT`、`ADMIN_PORT`、`SERVICE_PORT`、`LEADERBOARD_WS_PORT`、`CHAT_WS_PORT`、`MYSQL_PORT`、`REDIS_PORT`、`ES_PORT`。
+> `NGINX_HTTP_PORT`、`NGINX_HTTPS_PORT`、`ADMIN_PORT`、`SERVICE_PORT`、`CHAT_WS_PORT`、`MYSQL_PORT`、`REDIS_PORT`、`ES_PORT`。
 > `nginx.conf.template` 的 upstream 端口由官方镜像 envsubst 自动渲染，无需手工改 Nginx 配置。
 > 对外展示地址（`APP_URL` / `SITE_URL`）在 Docker 部署下默认自动跟随 `ADMIN_PORT` / `SERVICE_PORT`（形如 `http://localhost:端口号`）；自定义域名或 HTTPS 时在根 `.env` 设置 `APP_URL` / `SITE_URL`（会覆盖 `admin/.env`、`service/.env` 中的同名项）。裸机（手动）部署改端口时仍需自行同步地址。
 
@@ -201,7 +201,6 @@ SCOUT_HOSTS=127.0.0.1:9200
 ```ini
 # 与 admin 相同的数据库、Redis、ES 配置
 APP_PORT=8792  # webman HTTP 监听端口
-LEADERBOARD_WS_PORT=8790  # 排行榜 WebSocket 端口（与前端连接地址一致）
 CHAT_WS_PORT=8791  # 聊天 WebSocket 端口
 SNOWFLAKE_WORKER_ID=2  # 必须与 admin 不同
 
@@ -326,7 +325,7 @@ systemctl enable --now game-platform-admin game-platform-service
 创建 `/etc/nginx/sites-available/game-platform`：
 
 ```nginx
-# 端口为默认值（admin 8789 / service 8792 / ws 8790）；如已修改 .env，请同步调整
+# 端口为默认值（admin 8789 / service 8792 / ws 8791）；如已修改 .env，请同步调整
 server {
     listen 80;
     server_name your-domain.com;
@@ -352,16 +351,6 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    # WebSocket 排行榜（默认端口 8790，与 service/.env 的 LEADERBOARD_WS_PORT 一致）
-    location /ws/ {
-        proxy_pass http://127.0.0.1:8790;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
     }
 
     # 健康检查
@@ -614,7 +603,7 @@ ufw allow 443/tcp     # HTTPS
 ufw enable
 
 # 内部端口不应暴露
-# 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# 8789 (admin), 8792 (service), 8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
 # 以上为默认端口；如修改过根 .env / 各自 .env，以实际配置为准
 # 仅通过 127.0.0.1 访问
 ```

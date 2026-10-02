@@ -70,9 +70,73 @@
   position: relative;
 }
 
+/* ---------------- 顶栏：语言菜单 ---------------- */
+
+/* `margin-left: auto` 是为了桌面端：那时搜索框已被 `max-width` 封顶，
+   剩下的自由空间没人吸收，不加这个按钮会贴在搜索框右边而不是靠右。 */
+.lang {
+  position: relative;
+  margin-left: auto;
+}
+.lang-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  white-space: nowrap;
+}
+.lang-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 40;
+  min-width: 180px;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: var(--s-1);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--sh-3);
+}
+.lang-menu button {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  width: 100%;
+  min-height: 40px;
+  padding: var(--s-2) var(--s-3);
+  border: 0;
+  border-radius: var(--r-sm);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: var(--fs-md);
+  text-align: left;
+  cursor: pointer;
+}
+.lang-menu button:hover {
+  background: var(--surface-2);
+}
+.lang-menu button.on {
+  color: var(--primary-2);
+  font-weight: 650;
+}
+.lang-menu .dot {
+  width: 10px;
+  flex: none;
+  font-size: 10px;
+}
+
 @media (min-width: 768px) {
   .brand-m,
   .signin {
+    display: none;
+  }
+}
+
+/* 窄屏只留地球图标：360px 下「品牌 + 搜索 + 登录 + 母语名」会把这行挤爆 */
+@media (max-width: 767px) {
+  .lang-name {
     display: none;
   }
 }

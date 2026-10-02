@@ -7,21 +7,23 @@ import { api } from '../lib/api.ts';
 import { dt } from '../lib/datetime.ts';
 import { useAsync } from '../lib/hooks.ts';
 import { Empty, ErrorBox, Loading } from '../components/States.tsx';
+import { useI18n } from '../i18n/useI18n.ts';
 
 /** 公告是公开接口（无鉴权），未登录也能看 */
 export function Announcements() {
+  const { t } = useI18n();
   const list = useAsync(() => api.announcements(), []);
 
   return (
     <>
       <section className="stack">
-        <p className="label">平台公告</p>
+        <p className="label">{t('announcements.label')}</p>
         <h1 className="h1">
-          公告
+          {t('nav.announcements')}
           <span style={{ color: 'var(--orange)' }}>.</span>
         </h1>
         <p className="small muted" style={{ margin: 0 }}>
-          活动、维护与规则变更都会在这里发布。服务端只返回最近 20 条。
+          {t('announcements.sub')}
         </p>
       </section>
 
@@ -29,7 +31,7 @@ export function Announcements() {
         {list.loading && <Loading />}
         {!list.loading && list.error && <ErrorBox message={list.error} onRetry={list.reload} />}
         {!list.loading && !list.error && list.data && list.data.list.length === 0 && (
-          <Empty title="暂无公告" hint="有新公告时会显示在这里" />
+          <Empty title={t('announcements.empty_title')} hint={t('announcements.empty_hint')} />
         )}
         {!list.loading && !list.error && list.data && list.data.list.length > 0 && (
           <div className="list">
@@ -56,6 +58,7 @@ export function Announcements() {
 }
 
 export function AnnouncementDetail() {
+  const { t } = useI18n();
   const { hashid = '' } = useParams();
   const detail = useAsync(() => api.announcement(hashid), [hashid]);
 
@@ -68,7 +71,7 @@ export function AnnouncementDetail() {
   return (
     <>
       <Link to="/announcements" className="small" style={{ fontWeight: 700 }}>
-        ← 返回公告列表
+        {t('announcements.back')}
       </Link>
 
       <section className="stack">

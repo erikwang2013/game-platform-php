@@ -30,6 +30,8 @@ class RiskClusterController extends BaseController
     private const DETECT_TOP = 10;
 
     #[Apidoc\Title("团伙列表")]
+    #[Apidoc\Url("/admin/v1/risk/clusters")]
+    #[Apidoc\Method("GET")]
     public function list(Request $request): Response
     {
         $query = RiskCluster::query();
@@ -53,6 +55,8 @@ class RiskClusterController extends BaseController
 
     #[Apidoc\Title("团伙成员")]
     #[Apidoc\Desc("same_device 查 device_account_map；same_ip 查 risk_log 去重；其余读 member_ids")]
+    #[Apidoc\Url("/admin/v1/risk/clusters/{hashid}/members")]
+    #[Apidoc\Method("GET")]
     public function members(Request $request, string $hashid): Response
     {
         $cluster = RiskCluster::find($this->decodeId($hashid));
@@ -72,6 +76,8 @@ class RiskClusterController extends BaseController
 
     #[Apidoc\Title("聚类检测")]
     #[Apidoc\Desc("只返回候选不落库：同 IP >= 5 账户、同设备指纹 >= 3 账户（近 7 天）")]
+    #[Apidoc\Url("/admin/v1/risk/clusters/detect")]
+    #[Apidoc\Method("POST")]
     public function detect(Request $request): Response
     {
         $since = date('Y-m-d H:i:s', time() - self::DETECT_WINDOW_DAYS * 86400);
@@ -108,6 +114,8 @@ class RiskClusterController extends BaseController
 
     #[Apidoc\Title("人工确认团伙")]
     #[Apidoc\Desc("POST {type, fingerprint, name, member_ids?} 写入 game_risk_cluster；member_ids 是 **hashid** 数组")]
+    #[Apidoc\Url("/admin/v1/risk/clusters/confirm")]
+    #[Apidoc\Method("POST")]
     public function confirm(Request $request): Response
     {
         $type = (string) $request->post('type', '');
@@ -152,6 +160,8 @@ class RiskClusterController extends BaseController
 
     #[Apidoc\Title("团伙状态更新")]
     #[Apidoc\Desc("status: 1=观察中 2=已处置 0=误判")]
+    #[Apidoc\Url("/admin/v1/risk/clusters/{hashid}/status")]
+    #[Apidoc\Method("PUT")]
     public function status(Request $request, string $hashid): Response
     {
         $cluster = RiskCluster::find($this->decodeId($hashid));

@@ -97,6 +97,48 @@ class PlatformUserController extends BaseController
         return $this->success($data);
     }
 
+    #[Apidoc\Title("查看用户完整联系方式")]
+    #[Apidoc\Desc("显式全号查看：全仓只此一处下发 phone/email/last_login_ip 原文（默认详情仍脱敏）。要求独立权限，且由 OperationLog 中间件自动留痕")]
+    #[Apidoc\Url("/admin/v1/platform/user/{hashid}/reveal")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Author("erik")]
+    #[Apidoc\Returned(name: "phone", type: "string", desc: "完整手机号(明文)")]
+    #[Apidoc\Returned(name: "email", type: "string", desc: "完整邮箱(明文)")]
+    #[Apidoc\Returned(name: "last_login_ip", type: "string", desc: "完整登录 IP")]
+    public function reveal(Request $request, string $hashid): Response
+    {
+        $id = $this->decodeId($hashid);
+
+        // 审计侧记目标的**裸 ID**（响应侧不记，也见下）：操作日志的 path 只有 hashid，而 hashid 反查
+        // 依赖 HASHIDS_SALT 稳定（本仓有 hashids 配置被 composer install 打掉的先例）—— salt 一轮换，
+        // 历史行的目标列就**静默不可解**。操作者那列（operation_log.user_id）本来就是裸 BIGINT，
+        // 补上目标两列才对称；审计日志要的是"可长期追溯"，与响应侧防枚举的诉求不是一回事。
+        // 机制：OperationLog 是**先跑 $handler($request)、之后才读 `$request->all()`**
+        // （middleware/OperationLog.php:25-29），所以控制器在返回前往请求上挂的字段会进同一行的 input，
+        // 不新增第二套日志、不动日志行数、不改脱敏口径。键名用 target_user_id 而非 user_id：
+        // 后者在 operation_log 表里是**操作者**列，同名会把审计读反。
+        // 放在 User::find 之前：目标不存在时（404）也留下"谁试图看了哪个 id"。
+        $request->setPost('target_user_id', $id);
+
+        $user = User::find($id);
+        if (!$user) {
+            return $this->fail(trans('User not found'), 404);
+        }
+
+        // 只回脱敏三件套（phone/email/last_login_ip）的原文，**不回整行**：这条通道的授权面
+        // 与审计面就只覆盖这三个字段，多发的字段等于拿「看手机号」的权限捎带出别的东西。
+        //
+        // 授权不在这里判 —— slug `post.admin/platform/user/reveal` 由 AdminPermission 中间件
+        // 按**路由模式**比对（本仓 RBAC 一律走中间件，见 config/route.php 的 /admin/v1 组）。
+        // ⇒ 这个端点必须留在该组内；挪出组就同时丢掉鉴权与审计。
+        return $this->success([
+            'id'            => $this->encodeId((int) $user->id),
+            'phone'         => (string) $user->phone,
+            'email'         => (string) $user->email,
+            'last_login_ip' => (string) $user->last_login_ip,
+        ]);
+    }
+
     #[Apidoc\Title("用户流水")]
     #[Apidoc\Desc("分页获取指定平台用户的钱包流水（只读）。响应形状与 C 端 /api/v1/wallet/transactions 逐字段一致（id/ref_id 走 hashid、amount/balance_after 为字符串、created_at 原样），两棵树前端才能对照渲染")]
     #[Apidoc\Url("/admin/v1/platform/user/{hashid}/transactions")]

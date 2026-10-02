@@ -16,7 +16,6 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use support\Db;
-use support\Request;
 use support\Response;
 
 /**
@@ -207,7 +206,7 @@ class ExchangeWalletIntegrationTest extends TestCase
     /** @return array<string, mixed> 解码后的响应体 */
     private function exchange(string $action, string $amount): array
     {
-        $request = new Request("POST /api/v1/exchange/{$action} HTTP/1.1\r\nHost: localhost\r\n\r\n");
+        $request = $this->captchaRequest("POST /api/v1/exchange/{$action} HTTP/1.1\r\nHost: localhost\r\n\r\n");
         $payload = [
             'game_id'         => HashidsService::encode($this->gameId),
             'currency_id'     => HashidsService::encode($this->currencyId),

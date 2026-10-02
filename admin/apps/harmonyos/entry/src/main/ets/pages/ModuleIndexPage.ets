@@ -17,6 +17,18 @@ import { t, t1 } from '../i18n/Translations';
  * （新增模块只改注册表，漏挂入口是不可能的）。
  * 行动作型的三个模块（身份审核 / 工单 / 提现）不在注册表里（它们不是 ResourceModule），
  * 由个人中心直接挂。
+ *
+ * 墓碑：「数据分析」(analytics) 在本树**不存在** —— 不是这里漏了一项，也不是注册表里少了一条。
+ * 后端 12 个聚合端点俱在（admin/config/route.php:245-256 的 /admin/v1/analytics/*：
+ * overview / game-ranking / dau-trend / hourly-trend / action-distribution / revenue /
+ * conversion / probability / retention / funnel / arpu / economy），另两棵树都已接：
+ * react 的 pages/TabPage.tsx:110（`analytics:` 那一项）、angular 的 pages/analytics.ts。
+ * 本树 grep `analytics` 全树 0 命中，也**没有任何 `analytics.*` 词条**（13 张表都没有）。
+ * 本轮刻意不建：代价是这 12 个端点在本端不可达，换来的是不出现一个指不到数据的空壳页。
+ * 要补的话按顺序：① 13 张语言表加词条；② 照 angular 那页的五个分类（kpi / line / bars /
+ * funnel / table）建页；③ 在 ProfilePage 的管理入口挂一条（或进 ResourceSchema 注册表，
+ * 若它最终长成配置驱动的形状）。**别只挂一个入口指到空页面** —— 本树刚删掉一个那样的页
+ * （WalletPage：余额恒 `--`、四个宫格按钮 onClick 全空）。
  */
 @Entry
 @Component

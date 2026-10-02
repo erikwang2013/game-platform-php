@@ -2,7 +2,8 @@
 import { Component, computed, input } from '@angular/core';
 import { Row } from '../core/api.service';
 import { T, t } from '../core/i18n/i18n';
-import { num, rowsOf } from '../core/util';
+import { rowsAny } from '../core/render';
+import { num } from '../core/util';
 import { StatCard } from '../components/ui';
 import { Table } from '../components/table';
 
@@ -139,7 +140,7 @@ export class RiskGraph {
 
   /** 节点行：status -1 是「用户行已被删」的哨兵（GONE），不是禁用 ⇒ 单独一句话 */
   protected readonly nodes = computed(() =>
-    rowsOf(this.raw(), 'nodes').map((n) => {
+    rowsAny(this.raw(), 'nodes').map((n) => {
       const s = num(n['status']);
       return {
         username: String(n['username'] ?? ''),
@@ -152,9 +153,9 @@ export class RiskGraph {
   /** 边表：两端是 hashid，直接显示等于给人两串不认得的码 ⇒ 用节点表里的用户名回填 */
   protected readonly edges = computed(() => {
     const name = new Map(
-      rowsOf(this.raw(), 'nodes').map((n) => [String(n['id'] ?? ''), String(n['username'] ?? '')]),
+      rowsAny(this.raw(), 'nodes').map((n) => [String(n['id'] ?? ''), String(n['username'] ?? '')]),
     );
-    return rowsOf(this.raw(), 'edges').map((e) => {
+    return rowsAny(this.raw(), 'edges').map((e) => {
       const from = String(e['from'] ?? '');
       const to = String(e['to'] ?? '');
       return {
@@ -170,7 +171,7 @@ export class RiskGraph {
    * `capped` 用列表长度与账号数比，**不写死 20**（服务端换个上限这里跟着变）。
    */
   protected readonly clusters = computed(() =>
-    rowsOf(this.raw(), 'device_clusters').map((c) => {
+    rowsAny(this.raw(), 'device_clusters').map((c) => {
       const members = Array.isArray(c['members']) ? (c['members'] as Row[]) : [];
       const total = num(c['account_count']);
       return {

@@ -4,11 +4,14 @@
 
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import { ApiError, api, type IdentityStatusValue } from '../lib/api.ts';
+import { api, type IdentityStatusValue } from '../lib/api.ts';
 import { useAsync } from '../lib/hooks.ts';
 import { dt } from '../lib/datetime.ts';
 import { ACCEPT, MAX_BYTES, uploadImage } from '../lib/upload.ts';
+import { countryOptions } from '../lib/countryOptions.ts';
 import { ErrorBox, Loading } from '../components/States.tsx';
+import { t, type MessageKey } from '../i18n/index.ts';
+import { useI18n } from '../i18n/useI18n.ts';
 
 /**
  * 实名认证（KYC）—— **提现档位的唯一开关**：`WithdrawController::withdrawLevel:321-323`
@@ -22,21 +25,21 @@ import { ErrorBox, Loading } from '../components/States.tsx';
  * 口径与 angular 那棵一致（同一个后端、同一套判据）：先本地挡一遍必填再发请求（省一次必 422 的往返），
  * 提交成功后**回读真状态**，不凭「请求成功」就宣布已认证。
  */
-const TYPE_LABEL: Record<string, string> = {
-  id_card: '身份证',
-  passport: '护照',
-  driver_license: '驾照',
+const TYPE_LABEL: Record<string, MessageKey> = {
+  id_card: 'kyc.type_id_card',
+  passport: 'kyc.type_passport',
+  driver_license: 'kyc.type_driver_license',
 };
 
 /** 真值见 `IdentityController::apply` 的 validator 白名单（in:id_card,passport,driver_license） */
 const ID_TYPES = ['id_card', 'passport', 'driver_license'] as const;
 
 /** 未提交时服务端只回 status 一个字段；这四种之外的值原样透出，不猜 */
-const STATUS_LABEL: Record<string, string> = {
-  not_submitted: '未提交',
-  pending: '审核中',
-  approved: '已认证',
-  rejected: '已驳回',
+const STATUS_LABEL: Record<string, MessageKey> = {
+  not_submitted: 'kyc.status_not_submitted',
+  pending: 'kyc.status_pending',
+  approved: 'kyc.status_approved',
+  rejected: 'kyc.status_rejected',
 };
 
 const STATUS_PILL: Record<string, string> = {
@@ -47,16 +50,53 @@ const STATUS_PILL: Record<string, string> = {
 };
 
 /** 服务端 validator 里只有 id_back_photo 是 nullable，另外两张必填 */
-const PHOTOS = [
-  { key: 'id_front_photo', label: '证件正面照' },
-  { key: 'id_back_photo', label: '证件背面照（可选）' },
-  { key: 'selfie_photo', label: '手持自拍照' },
-] as const;
+const PHOTOS: ReadonlyArray<{ key: string; label: MessageKey }> = [
+  { key: 'id_front_photo', label: 'kyc.photo_front' },
+  { key: 'id_back_photo', label: 'kyc.photo_back' },
+  { key: 'selfie_photo', label: 'kyc.photo_selfie' },
+];
 
-const typeLabel = (t?: string) => (t ? (TYPE_LABEL[t] ?? t) : '—');
+/**
+ * 表里查不到的值**原样透出**（服务端将来加状态/类型不吞字），查得到的**在渲染期才翻**。
+ *
+ * ⚠ 存**键**不存文案：模块顶层求值只发生一次，存文案会把它冻在首屏语言上
+ * （与 `Wallet.tsx` 的 `TABS`、`Layout.tsx` 的 `NAV` 同款约定）。
+ */
+const lookup = (map: Record<string, MessageKey>, v: string | undefined, empty = ''): string => {
+  if (!v) return empty;
+  const k = map[v];
+  return k ? t(k) : v;
+};
+
+const typeLabel = (v?: string) => lookup(TYPE_LABEL, v, '—');
+
+/**
+ * 反馈文案的**暂存形**：本地校验存「键」、服务端/上传失败存「原始错误 + 兜底键」，
+ * **一份都不存翻好的串** —— `pick` / `submit` 都在 `await` 之后才落值，存串就把语言
+ * 冻在那一刻（同 `Friends.tsx` 的 `Msg`）。
+ */
+type Msg = { key: MessageKey } | { err: unknown; fallback: MessageKey };
+
+/** 渲染期才翻（本文件用模块级 `t`，组件里那次 `useI18n()` 负责订阅重绘）。 */
+const msgText = (m: Msg): string =>
+  'err' in m ? (m.err instanceof Error ? m.err.message : t(m.fallback)) : t(m.key);
 
 export function Kyc() {
+  // 只为订阅语言变更引起的重渲染；文案求值走模块级的 t()（同 `Me.tsx`）
+  useI18n();
   const st = useAsync(() => api.identityStatus(), []);
+  /**
+   * 国家/地区选项：公开端点，只列在册国家代码。取不到不挡提交 —— country 在服务端是
+   * nullable，是纯可选项，这一项降级成「只有未选择」比拦住用户强。
+   */
+  const countries = useAsync(() => api.countries(), []);
+  const codes = (countries.data?.list ?? []).map((c) => c.country_code);
+  /** 下拉第一项：三态都要有话说，否则「还没拉到」和「拉失败」都长成「未选择」 */
+  const noneLabel = countries.loading
+    ? t('kyc.country_loading')
+    : countries.error
+      ? t('kyc.country_failed')
+      : t('kyc.country_none');
 
   const [realName, setRealName] = useState('');
   const [idNumber, setIdNumber] = useState('');
@@ -74,8 +114,8 @@ export function Kyc() {
   const [upBusy, setUpBusy] = useState<Record<string, boolean>>({});
 
   const [busy, setBusy] = useState(false);
-  const [formErr, setFormErr] = useState('');
-  const [okMsg, setOkMsg] = useState('');
+  const [formErr, setFormErr] = useState<Msg | null>(null);
+  const [okMsg, setOkMsg] = useState<MessageKey | null>(null);
 
   // objectURL 不撤销会一直占着内存；ref 镜像最新值供卸载时统一收尾
   // （镜像在 effect 里写、不在渲染期写：渲染期碰 ref 本身就是 React 反模式）
@@ -90,7 +130,7 @@ export function Kyc() {
     [],
   );
 
-  const clearErr = () => setFormErr('');
+  const clearErr = () => setFormErr(null);
 
   /** 选图 → 先本地预览，再直传；失败只清掉这一张，不影响已传成功的 */
   const pick = async (key: string, input: HTMLInputElement) => {
@@ -99,10 +139,10 @@ export function Kyc() {
     if (!file) return;
 
     if (file.size > MAX_BYTES) {
-      setFormErr('图片超过 5MB，请压缩后再试');
+      setFormErr({ key: 'kyc.err_too_large' });
       return;
     }
-    setFormErr('');
+    setFormErr(null);
     setPreview((m) => {
       if (m[key]) URL.revokeObjectURL(m[key]!);
       return { ...m, [key]: URL.createObjectURL(file) };
@@ -116,7 +156,7 @@ export function Kyc() {
         const { [key]: _drop, ...rest } = m;
         return rest;
       });
-      setFormErr(e instanceof Error ? e.message : '上传失败，请重试');
+      setFormErr({ err: e, fallback: 'upload.failed_retry' });
     } finally {
       setUpBusy((m) => ({ ...m, [key]: false }));
     }
@@ -131,15 +171,15 @@ export function Kyc() {
     const selfie = photo['selfie_photo'] ?? '';
 
     // 本地先挡一遍，避免明知 422 还发请求；服务端仍会二次校验
-    if (!name) return setFormErr('请填写真实姓名');
-    if (!num) return setFormErr('请填写证件号码');
-    if (Object.values(upBusy).some(Boolean)) return setFormErr('照片仍在上传中，请稍候');
-    if (!front) return setFormErr('请上传证件正面照');
-    if (!selfie) return setFormErr('请上传手持自拍照');
+    if (!name) return setFormErr({ key: 'kyc.err_real_name' });
+    if (!num) return setFormErr({ key: 'kyc.err_id_number' });
+    if (Object.values(upBusy).some(Boolean)) return setFormErr({ key: 'kyc.err_uploading' });
+    if (!front) return setFormErr({ key: 'kyc.err_front' });
+    if (!selfie) return setFormErr({ key: 'kyc.err_selfie' });
 
     setBusy(true);
-    setFormErr('');
-    setOkMsg('');
+    setFormErr(null);
+    setOkMsg(null);
     try {
       await api.applyIdentity({
         real_name: name,
@@ -150,11 +190,11 @@ export function Kyc() {
         selfie_photo: selfie,
         ...(country.trim() ? { country: country.trim() } : {}),
       });
-      setOkMsg('已提交，等待审核');
+      setOkMsg('kyc.ok_submitted');
       // 回读真状态，不凭「请求成功」宣布结果
       st.reload();
     } catch (err) {
-      setFormErr(err instanceof ApiError ? err.message : '提交失败，请稍后重试');
+      setFormErr({ err, fallback: 'error.submit_failed' });
     } finally {
       setBusy(false);
     }
@@ -165,9 +205,9 @@ export function Kyc() {
   return (
     <>
       <section className="stack">
-        <p className="label">账户</p>
+        <p className="label">{t('kyc.label_account')}</p>
         <h1 className="h1">
-          实名认证
+          {t('kyc.title')}
           <span style={{ color: 'var(--orange)' }}>.</span>
         </h1>
       </section>
@@ -179,40 +219,47 @@ export function Kyc() {
         <>
           <section className="card card--flat stack">
             <div className="between">
-              <span className="small muted">当前状态</span>
+              <span className="small muted">{t('kyc.current_status')}</span>
               <span className={`pill ${STATUS_PILL[status ?? ''] ?? 'pill--plain'}`}>
-                {STATUS_LABEL[status ?? ''] ?? status}
+                {lookup(STATUS_LABEL, status)}
               </span>
             </div>
             <p className="small muted" style={{ margin: 0 }}>
-              认证通过后提现额度按<b>已认证档</b>计（更高单笔/日/月额度、更低费率）；未认证或审核中按默认档计。
-              证件信息仅用于合规审核，不会对外展示。
+              {/*
+                切成 4 段只为**保住 HEAD 那处 <b> 加粗边界**：`t()` 只能回字符串、回不了 React 元素，
+                所以加粗由调用点包（同 `Me.tsx` 的 `me.export_desc_*`）。
+                ⚠ 段间那个空格**显式写出来**：HEAD 里这一处是**两行都有内容**的换行+缩进，
+                JSX 折成**一个空格**（`…按默认档计。\n证件信息…`）；行尾贴着标签的那两处则**不留空格**。
+              */}
+              {t('kyc.hint_1')}
+              <b>{t('kyc.hint_2')}</b>
+              {t('kyc.hint_3')} {t('kyc.hint_4')}
             </p>
             {status !== 'not_submitted' && (
               <div className="list">
                 <div className="li">
-                  <span className="small muted">姓名</span>
+                  <span className="small muted">{t('kyc.field_name')}</span>
                   <span className="small">{st.data.real_name || '—'}</span>
                 </div>
                 <div className="li">
-                  <span className="small muted">证件类型</span>
+                  <span className="small muted">{t('kyc.field_id_type')}</span>
                   <span className="small">{typeLabel(st.data.id_type)}</span>
                 </div>
                 {st.data.submitted_at && (
                   <div className="li">
-                    <span className="small muted">提交时间</span>
+                    <span className="small muted">{t('kyc.field_submitted_at')}</span>
                     <span className="small">{dt(st.data.submitted_at)}</span>
                   </div>
                 )}
                 {st.data.reviewed_at && (
                   <div className="li">
-                    <span className="small muted">审核时间</span>
+                    <span className="small muted">{t('kyc.field_reviewed_at')}</span>
                     <span className="small">{dt(st.data.reviewed_at)}</span>
                   </div>
                 )}
                 {st.data.review_note && (
                   <div className="li">
-                    <span className="small muted">审核备注</span>
+                    <span className="small muted">{t('kyc.field_review_note')}</span>
                     <span className="small">{st.data.review_note}</span>
                   </div>
                 )}
@@ -222,21 +269,21 @@ export function Kyc() {
 
           {status === 'pending' && (
             <section className="card card--flat stack">
-              <p className="label">审核中</p>
+              <p className="label">{t('kyc.status_pending')}</p>
               <p className="small muted" style={{ margin: 0 }}>
-                通常 1-2 个工作日出结果，通过后提现额度自动升级，无需再操作。
+                {t('kyc.pending_note')}
               </p>
             </section>
           )}
 
           {status === 'approved' && (
             <section className="card card--flat stack">
-              <p className="label">已完成认证</p>
+              <p className="label">{t('kyc.approved_label')}</p>
               <p className="small muted" style={{ margin: 0 }}>
-                你的提现按已认证档计。
+                {t('kyc.approved_note')}
               </p>
               <Link className="btn btn--primary btn--block" to="/wallet/withdraw">
-                去提现
+                {t('kyc.go_withdraw')}
               </Link>
             </section>
           )}
@@ -245,26 +292,26 @@ export function Kyc() {
             <section className="stack">
               {status === 'rejected' && (
                 <p className="err" style={{ margin: 0 }}>
-                  上次提交被驳回，可按上面的驳回原因修改后重新提交（会覆盖原记录）。
+                  {t('kyc.rejected_note')}
                 </p>
               )}
 
               <form className="card card--flat stack" onSubmit={submit}>
                 {formErr && (
                   <p className="err" role="alert">
-                    {formErr}
+                    {msgText(formErr)}
                   </p>
                 )}
-                {okMsg && <p className="small">{okMsg}</p>}
+                {okMsg && <p className="small">{t(okMsg)}</p>}
 
                 <label className="field">
-                  <span>真实姓名</span>
+                  <span>{t('kyc.field_real_name')}</span>
                   <input
                     className="input"
                     name="realName"
                     type="text"
                     autoComplete="name"
-                    placeholder="与证件一致"
+                    placeholder={t('kyc.real_name_ph')}
                     value={realName}
                     onChange={(e) => {
                       setRealName(e.target.value);
@@ -274,7 +321,7 @@ export function Kyc() {
                 </label>
 
                 <label className="field">
-                  <span>证件类型</span>
+                  <span>{t('kyc.field_id_type')}</span>
                   <select
                     className="input"
                     name="idType"
@@ -284,22 +331,22 @@ export function Kyc() {
                       clearErr();
                     }}
                   >
-                    {ID_TYPES.map((t) => (
-                      <option key={t} value={t}>
-                        {TYPE_LABEL[t]}
+                    {ID_TYPES.map((v) => (
+                      <option key={v} value={v}>
+                        {typeLabel(v)}
                       </option>
                     ))}
                   </select>
                 </label>
 
                 <label className="field">
-                  <span>证件号码</span>
+                  <span>{t('kyc.field_id_number')}</span>
                   <input
                     className="input mono"
                     name="idNumber"
                     type="text"
                     autoComplete="off"
-                    placeholder="证件上的号码"
+                    placeholder={t('kyc.id_number_ph')}
                     value={idNumber}
                     onChange={(e) => {
                       setIdNumber(e.target.value);
@@ -309,40 +356,45 @@ export function Kyc() {
                 </label>
 
                 <label className="field">
-                  <span>国家/地区（可选）</span>
-                  <input
+                  <span>{t('kyc.field_country')}</span>
+                  {/* 选项只有在册代码；不在列表里的旧值由 countryOptions 补一条，别让它被吞成空 */}
+                  <select
                     className="input"
                     name="country"
-                    type="text"
-                    autoComplete="country-name"
-                    placeholder="如 CN"
                     value={country}
                     onChange={(e) => {
                       setCountry(e.target.value);
                       clearErr();
                     }}
-                  />
+                  >
+                    <option value="">{noneLabel}</option>
+                    {countryOptions(codes, country).map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
                 </label>
 
                 {PHOTOS.map((p) => (
                   <label className="field" key={p.key}>
-                    <span>{p.label}</span>
+                    <span>{t(p.label)}</span>
                     <input
                       className="input"
                       type="file"
                       accept={ACCEPT}
-                      aria-label={p.label}
+                      aria-label={t(p.label)}
                       onChange={(e) => void pick(p.key, e.target)}
                     />
                     {upBusy[p.key] ? (
-                      <span className="small muted">上传中…</span>
+                      <span className="small muted">{t('kyc.uploading')}</span>
                     ) : photo[p.key] ? (
-                      <span className="small muted">已上传</span>
+                      <span className="small muted">{t('kyc.uploaded')}</span>
                     ) : null}
                     {preview[p.key] && (
                       <img
                         src={preview[p.key]}
-                        alt={`${p.label}预览`}
+                        alt={t('kyc.photo_preview_alt', { label: t(p.label) })}
                         style={{
                           marginTop: 8,
                           maxWidth: 220,
@@ -356,11 +408,11 @@ export function Kyc() {
                 ))}
 
                 <p className="small muted" style={{ margin: 0 }}>
-                  支持 jpg / png / gif / webp，单张不超过 5MB。
+                  {t('kyc.photo_hint')}
                 </p>
 
                 <button className="btn btn--primary btn--block" type="submit" disabled={busy}>
-                  {busy ? '提交中…' : '提交认证'}
+                  {busy ? t('app.submitting') : t('kyc.submit')}
                 </button>
               </form>
             </section>

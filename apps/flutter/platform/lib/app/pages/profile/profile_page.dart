@@ -3,9 +3,9 @@ import '../../i18n/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
-import '../../services/auth_service.dart';
 import '../../services/user_file.dart';
 import '../../widgets/user_file_image.dart';
+import 'profile_cards.dart';
 
 /// 注销请求体：字段名与 confirm 的值都是服务端契约
 /// （service/app/api/v1/controller/UserController.php:163），客户端原样透传用户输入，由服务端裁决。
@@ -264,7 +264,7 @@ class _ProfilePageState extends State<ProfilePage> {
     yesCtrl.dispose();
 
     if (confirmed == true) {
-      await AuthService.clearToken();
+      await ApiService.signOut();
       Get.offAllNamed('/login');
     }
   }
@@ -285,7 +285,7 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
     if (confirm == true) {
-      await AuthService.clearToken();
+      await ApiService.signOut();
       Get.offAllNamed('/login');
     }
   }
@@ -310,47 +310,8 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Profile info card
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 36,
-                                    backgroundColor: colorScheme.primaryContainer,
-                                    child: Icon(Icons.person, size: 36, color: colorScheme.onPrimaryContainer),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        _profile?['username'] ?? '-',
-                                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        "${AppTranslations.t('profile.account_info')}",
-                                        style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              const Divider(height: 32),
-                              _buildInfoRow("${AppTranslations.t('profile.username')}", _profile?['username'] ?? '-'),
-                              _buildInfoRow("${AppTranslations.t('profile.nickname')}", _profile?['nickname'] ?? '-'),
-                              _buildInfoRow("${AppTranslations.t('profile.country')}", _profile?['country'] ?? '-'),
-                              _buildInfoRow("${AppTranslations.t('profile.language')}", _profile?['language'] ?? '-'),
-                              _buildInfoRow("${AppTranslations.t('profile.registered')}", _profile?['created_at'] ?? '-'),
-                            ],
-                          ),
-                        ),
-                      ),
+                      // 资料卡与底部三张卡搬到了 profile_cards.dart（本页 561 行拆分，说明见该文件头）
+                      ProfileInfoCard(profile: _profile),
                       const SizedBox(height: 24),
 
                       // Edit form
@@ -477,66 +438,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       const SizedBox(height: 24),
 
-                      Card(
-                        child: ListTile(
-                          leading: const Icon(Icons.security),
-                          title: Text("${AppTranslations.t('two_factor.title')}"),
-                          trailing: const Icon(Icons.chevron_right),
-                          onTap: () => Get.toNamed('/2fa'),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Logout
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.logout, color: Colors.red, size: 20),
-                              const SizedBox(width: 12),
-                              Text("${AppTranslations.t('profile.logout')}", style: TextStyle(fontSize: 15, color: Colors.red)),
-                              const Spacer(),
-                              OutlinedButton(
-                                onPressed: _logout,
-                                style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
-                                child: Text("${AppTranslations.t('profile.logout')}"),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // 注销账号（不可撤销）
-                      Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(Icons.delete_forever, color: Colors.red, size: 20),
-                                  const SizedBox(width: 12),
-                                  Text("${AppTranslations.t('profile.delete_account')}", style: const TextStyle(fontSize: 15, color: Colors.red)),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                "${AppTranslations.t('profile.delete_account_warn')}",
-                                style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
-                              ),
-                              const SizedBox(height: 12),
-                              OutlinedButton(
-                                onPressed: _deleteAccount,
-                                style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
-                                child: Text("${AppTranslations.t('profile.delete_account')}"),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                      ProfileActionCards(onLogout: _logout, onDeleteAccount: _deleteAccount),
                     ],
                   ),
                 ),
@@ -545,18 +447,4 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 80,
-            child: Text(label, style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant)),
-          ),
-          Expanded(child: Text(value, style: const TextStyle(fontSize: 14))),
-        ],
-      ),
-    );
-  }
 }

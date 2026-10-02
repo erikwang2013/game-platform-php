@@ -7,6 +7,7 @@ import {
   Api,
   ApiError,
   DepositOrder,
+  ExchangeRecordRow,
   Paged,
   Transaction,
   WalletInfo,
@@ -15,6 +16,7 @@ import {
   money,
   moneyRaw,
 } from '../core/api.service';
+import { T, t } from '../core/i18n/i18n';
 
 /** 分页列表：三个列表共用同一套 加载/错误/空/更多 逻辑 */
 class Pager<T> {
@@ -79,64 +81,68 @@ class Pager<T> {
  *     它们是从别处照抄进来的死键：用户永远看不到，只会在下次复核时把人带去查一轮。
  *
  * 键集与 apps/react 的 lib/labels.ts 对齐（两张表 12 键逐键相同）。
+ *
+ * ⚠ **表里存的是词条键，不是中文**：模板里过 `| t` 渲染（`label(MAP, x) | t`）。
+ * 想改中文措辞就去改 `core/i18n/dict/wallet.ts`，**别在这里写回中文** ——
+ * 表里直接写死中文的话，13 种语言下这一列永远不变，而界面上看不出是"没抽"。
  */
 const TX_LABEL: Record<string, string> = {
-  deposit: '充值',
-  withdraw: '提现',
-  refund: '退款',
-  exchange_in: '兑换转入',
-  exchange_out: '兑换转出',
-  game_spend: '开局扣费',
-  game_earn: '游戏派彩',
-  activity_reward: '活动奖励',
-  referral_bonus: '邀请奖励',
-  lock: '冻结',
-  unlock: '解冻',
-  reconcile: '对账调整',
+  deposit: 'wallet.deposit',
+  withdraw: 'wallet.withdraw',
+  refund: 'tx.refund',
+  exchange_in: 'tx.exchange_in',
+  exchange_out: 'tx.exchange_out',
+  game_spend: 'tx.game_spend',
+  game_earn: 'tx.game_earn',
+  activity_reward: 'tx.activity_reward',
+  referral_bonus: 'tx.referral_bonus',
+  lock: 'common.frozen',
+  unlock: 'common.unfrozen',
+  reconcile: 'tx.reconcile',
 };
 
 const DEP_LABEL: Record<string, string> = {
-  pending: '待支付',
-  paid: '已支付',
-  confirmed: '已到账',
-  success: '已完成',
-  cancelled: '已取消',
-  expired: '已过期',
-  failed: '失败',
+  pending: 'status.dep.pending',
+  paid: 'status.dep.paid',
+  confirmed: 'status.dep.confirmed',
+  success: 'common.completed',
+  cancelled: 'common.cancelled',
+  expired: 'status.dep.expired',
+  failed: 'common.failed',
 };
 
 const WD_LABEL: Record<string, string> = {
-  pending: '待审核',
-  reviewing: '审核中',
-  approved: '已通过',
-  paid: '已打款',
-  rejected: '已驳回',
-  cancelled: '已取消',
-  failed: '失败',
+  pending: 'status.wd.pending',
+  reviewing: 'status.wd.reviewing',
+  approved: 'status.wd.approved',
+  paid: 'status.wd.paid',
+  rejected: 'status.wd.rejected',
+  cancelled: 'common.cancelled',
+  failed: 'common.failed',
 };
 
 const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
 
 @Component({
   selector: 'app-wallet',
-  imports: [NgTemplateOutlet, RouterLink],
+  imports: [NgTemplateOutlet, RouterLink, T],
   template: `
     <div class="card bal">
       <div class="main">
-        <span class="label">可用余额</span>
+        <span class="label">{{ 'wallet.available' | t }}</span>
         <strong class="big mono" [title]="moneyRaw(info()?.balance)">{{
           info() ? money(info()!.balance) : '—'
         }}</strong>
         @if (info(); as w) {
           <div class="wrap sub">
             <span class="chip" [title]="moneyRaw(w.frozen_balance)"
-              >冻结 {{ money(w.frozen_balance) }}</span
+              >{{ 'common.frozen' | t }} {{ money(w.frozen_balance) }}</span
             >
             <span class="chip" [title]="moneyRaw(w.total_earned)"
-              >累计收入 {{ money(w.total_earned) }}</span
+              >{{ 'wallet.total_earned' | t }} {{ money(w.total_earned) }}</span
             >
             <span class="chip" [title]="moneyRaw(w.total_spent)"
-              >累计支出 {{ money(w.total_spent) }}</span
+              >{{ 'wallet.total_spent' | t }} {{ money(w.total_spent) }}</span
             >
           </div>
         }
@@ -147,22 +153,27 @@ const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
     </div>
 
     <div class="acts">
-      <a class="btn primary" routerLink="/wallet/deposit">充值</a>
-      <a class="btn" routerLink="/wallet/withdraw">提现</a>
-      <a class="btn" routerLink="/wallet/exchange">兑换</a>
+      <a class="btn primary" routerLink="/wallet/deposit">{{ 'wallet.deposit' | t }}</a>
+      <a class="btn" routerLink="/wallet/withdraw">{{ 'wallet.withdraw' | t }}</a>
+      <a class="btn" routerLink="/wallet/exchange">{{ 'wallet.exchange' | t }}</a>
       <!-- 游戏流水是另一本账（游戏币），不在下面三个页签里 -->
-      <a class="btn ghost" routerLink="/wallet/records">游戏流水</a>
+      <a class="btn ghost" routerLink="/wallet/records">{{ 'wallet.records' | t }}</a>
     </div>
 
     <div class="chips tabs">
       <button type="button" class="chip" [class.on]="tab() === 'tx'" (click)="pick('tx')">
-        交易流水
+        {{ 'wallet.tab_tx' | t }}
       </button>
       <button type="button" class="chip" [class.on]="tab() === 'dep'" (click)="pick('dep')">
-        充值订单
+        {{ 'wallet.tab_dep' | t }}
       </button>
       <button type="button" class="chip" [class.on]="tab() === 'wd'" (click)="pick('wd')">
-        提现订单
+        {{ 'wallet.tab_wd' | t }}
+      </button>
+      <!-- 兑换记录：买入/卖出是平台币与游戏币之间的换手，两个方向都在这张表里
+           （游戏币那一侧的**每次变动**在 /wallet/records，与本页签口径不同） -->
+      <button type="button" class="chip" [class.on]="tab() === 'ex'" (click)="pick('ex')">
+        {{ 'wallet.tab_ex' | t }}
       </button>
     </div>
 
@@ -172,8 +183,10 @@ const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
       <ng-container
         *ngTemplateOutlet="list; context: { $implicit: dep, kind: 'dep' }"
       ></ng-container>
-    } @else {
+    } @else if (tab() === 'wd') {
       <ng-container *ngTemplateOutlet="list; context: { $implicit: wd, kind: 'wd' }"></ng-container>
+    } @else {
+      <ng-container *ngTemplateOutlet="list; context: { $implicit: ex, kind: 'ex' }"></ng-container>
     }
 
     <ng-template #list let-p let-kind="kind">
@@ -186,15 +199,15 @@ const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
           </div>
         } @else if (p.error()) {
           <div class="state">
-            <strong>加载失败</strong>
+            <strong>{{ 'common.load_failed' | t }}</strong>
             <span>{{ p.error() }}</span>
-            <button class="btn" type="button" (click)="p.reload()">重试</button>
+            <button class="btn" type="button" (click)="p.reload()">{{ 'common.retry' | t }}</button>
           </div>
         } @else if (!p.items().length) {
           <div class="state">
             <!-- 吉祥物小骰（Dicey）：相对 public/，由 <base href> 解析到子路径 -->
             <img class="state-art" src="mascot.svg" alt="" aria-hidden="true" />
-            <strong>暂无记录</strong>
+            <strong>{{ 'common.no_records' | t }}</strong>
             <span>{{ emptyHint(kind) }}</span>
           </div>
         } @else {
@@ -203,9 +216,9 @@ const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
               <div class="row">
                 @if (kind === 'tx') {
                   <div class="grow">
-                    <div class="t">{{ label(TX_LABEL, r.type) }}</div>
+                    <div class="t">{{ label(TX_LABEL, r.type) | t }}</div>
                     <div class="s">
-                      {{ dt(r.created_at) }} · 余额
+                      {{ dt(r.created_at) }} · {{ 'common.balance' | t }}
                       <span [title]="moneyRaw(r.balance_after)">{{ money(r.balance_after) }}</span>
                     </div>
                     @if (r.remark) {
@@ -225,18 +238,18 @@ const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
                     <div class="t">{{ r.order_no }}</div>
                     <div class="s">
                       {{ dt(r.created_at) }} · {{ r.currency }}
-                      <span [title]="moneyRaw(r.amount)">{{ money(r.amount) }}</span> → 平台
+                      <span [title]="moneyRaw(r.amount)">{{ money(r.amount) }}</span> → {{ 'common.platform' | t }}
                       <span [title]="moneyRaw(r.platform_amount)">{{
                         money(r.platform_amount)
                       }}</span>
                     </div>
                   </div>
-                  <span class="badge {{ tone(r.status) }}">{{ label(DEP_LABEL, r.status) }}</span>
-                } @else {
+                  <span class="badge {{ tone(r.status) }}">{{ label(DEP_LABEL, r.status) | t }}</span>
+                } @else if (kind === 'wd') {
                   <div class="grow">
                     <div class="t">{{ r.order_no }}</div>
                     <div class="s">
-                      {{ dt(r.created_at) }} · {{ r.method || '—' }} · 平台
+                      {{ dt(r.created_at) }} · {{ r.method || '—' }} · {{ 'common.platform' | t }}
                       <span [title]="moneyRaw(r.platform_amount)">{{
                         money(r.platform_amount)
                       }}</span>
@@ -245,7 +258,27 @@ const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
                       <div class="s">{{ r.review_note }}</div>
                     }
                   </div>
-                  <span class="badge {{ tone(r.status) }}">{{ label(WD_LABEL, r.status) }}</span>
+                  <span class="badge {{ tone(r.status) }}">{{ label(WD_LABEL, r.status) | t }}</span>
+                } @else {
+                  <!-- 收支一律记**平台币那一侧**，符号由 direction 决定（platform_amount 本身
+                       是无符号 decimal，正负不在串里）：in=买币支出、out=卖币到账净额 -->
+                  <div class="grow">
+                    <div class="t">{{ exLabel(r.direction) }}</div>
+                    <div class="s">
+                      {{ 'common.game_coin' | t }}
+                      <span [title]="moneyRaw(r.game_amount)">{{ money(r.game_amount) }}</span>
+                      · {{ dt(r.created_at) }}
+                    </div>
+                    <div class="s">{{ 'common.rate' | t }} {{ r.rate }} · {{ 'common.spread' | t }} {{ money(r.spread_fee) }}</div>
+                  </div>
+                  <span
+                    class="amount"
+                    [class.in]="exInflow(r.direction)"
+                    [class.out]="!exInflow(r.direction)"
+                    [title]="moneyRaw(r.platform_amount)"
+                  >
+                    {{ exInflow(r.direction) ? '+' : '-' }}{{ money(r.platform_amount) }}
+                  </span>
                 }
               </div>
             }
@@ -253,7 +286,7 @@ const BAD = ['cancelled', 'rejected', 'failed', 'expired'];
           @if (p.hasMore()) {
             <div class="more">
               <button class="btn" type="button" [disabled]="p.more()" (click)="p.load()">
-                {{ p.more() ? '加载中…' : '加载更多' }}
+                {{ (p.more() ? 'common.loading' : 'wallet.load_more') | t }}
               </button>
             </div>
           }
@@ -344,7 +377,7 @@ export class WalletPage {
 
   protected readonly info = signal<WalletInfo | null>(null);
   protected readonly balanceError = signal('');
-  protected readonly tab = signal<'tx' | 'dep' | 'wd'>('tx');
+  protected readonly tab = signal<'tx' | 'dep' | 'wd' | 'ex'>('tx');
 
   protected readonly TX_LABEL = TX_LABEL;
   protected readonly DEP_LABEL = DEP_LABEL;
@@ -356,6 +389,7 @@ export class WalletPage {
   protected readonly tx = new Pager<Transaction>((p) => this.api.walletTransactions(p, 20));
   protected readonly dep = new Pager<DepositOrder>((p) => this.api.depositOrders(p, 20));
   protected readonly wd = new Pager<WithdrawOrder>((p) => this.api.withdrawOrders(p, 20));
+  protected readonly ex = new Pager<ExchangeRecordRow>((p) => this.api.exchangeRecords(p, 20));
 
   private readonly loaded = new Set<string>();
 
@@ -368,13 +402,14 @@ export class WalletPage {
   }
 
   /** 首次进入某标签才发请求，避免一次打 4 个接口 */
-  protected pick(t: 'tx' | 'dep' | 'wd'): void {
+  protected pick(t: 'tx' | 'dep' | 'wd' | 'ex'): void {
     this.tab.set(t);
     if (this.loaded.has(t)) return;
     this.loaded.add(t);
     if (t === 'tx') this.tx.load();
     else if (t === 'dep') this.dep.load();
-    else this.wd.load();
+    else if (t === 'wd') this.wd.load();
+    else this.ex.load();
   }
 
   protected label(map: Record<string, string>, key: string): string {
@@ -392,7 +427,23 @@ export class WalletPage {
     return Number.isFinite(n) ? n : 0;
   }
 
+  /**
+   * 兑换行的文案与收支方向。**只看 direction，不看金额正负**：
+   * `platform_amount` 是无符号 decimal，且它的口径随方向换位（in=买币支出、out=卖币到账净额）
+   * —— 本仓在别的域踩过这个字段复用（见 `exchange-direction-semantics`）。
+   * 口径与 apps/react 的 Wallet.tsx 第 4 个页签一致（那边是 `inflow = direction === 'out'`）。
+   */
+  protected exLabel(d: string): string {
+    return t(d === 'in' ? 'wallet.ex_buy' : 'wallet.ex_sell');
+  }
+
+  protected exInflow(d: string): boolean {
+    return d === 'out';
+  }
+
   protected emptyHint(kind: string): string {
-    return kind === 'tx' ? '还没有资金变动' : '还没有相关订单';
+    if (kind === 'tx') return t('wallet.empty_tx');
+    if (kind === 'ex') return t('wallet.empty_ex');
+    return t('wallet.empty_orders');
   }
 }

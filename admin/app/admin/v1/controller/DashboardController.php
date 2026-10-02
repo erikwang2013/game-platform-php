@@ -87,7 +87,8 @@ class DashboardController extends BaseController
         //   `23:59:59`）。今天在 DATETIME(0) 列上等价；表若改成 DATETIME(3)，**闭区间那版会静默
         //   漏掉末秒的小数部分**，故新代码一律半开。两边写法有意不统一。
         // ⚠ 本方法 platform() **一条缓存都没有**（只有 index() 有 300s 缓存）⇒ 每次点开这个页签
-        //   都实打实跑这几条；下面 $activeUsers 那处 last_login_at 更是**无索引列**。
+        //   都实打实跑这几条；下面 $activeUsers 那处 last_login_at 走 idx_last_login_at
+        //   （2026_10_02 迁移补的，install/install.sql 已同步）。
         $dayStart     = date('Y-m-d') . ' 00:00:00';
         $nextDayStart = date('Y-m-d', strtotime('+1 day')) . ' 00:00:00';
 
@@ -122,9 +123,9 @@ class DashboardController extends BaseController
         $todayNew = AdminUser::where('created_at', '>=', $dayStart)
             ->where('created_at', '<', $nextDayStart)
             ->count();
-        // ⚠ last_login_at 是**无索引列**：`game_admin_user` 的 DDL 只有 PRIMARY / uk_username /
-        //    idx_status / idx_deleted_at / idx_created_at（install.sql 已核，全表 0 个 KEY 引用它）
-        //    ⇒ 这条换掉 whereDate 也仍然全表扫，**收益为 0**（只报了没加索引，migration 不在本批）。
+        // last_login_at 现走 idx_last_login_at（install/migrations/2026_10_02_last_login_at_index.sql
+        // 给 game_user / game_admin_user 各补一条）⇒ 本条必须保持**裸列范围**写法，
+        // 包成 whereDate 会让这条索引失效。（缺索引时这里曾注释为「换掉 whereDate 收益为 0」，已不成立。）
         $todayActive = AdminUser::where('last_login_at', '>=', $dayStart)
             ->where('last_login_at', '<', $nextDayStart)
             ->count();

@@ -7,6 +7,7 @@ import {
   ApiResponse,
   LoginRequest,
   LoginResponse,
+  TwoFactorVerifyRequest,
   CaptchaChallenge,
   CaptchaGenerateResult,
   CaptchaTarget,
@@ -31,6 +32,7 @@ import {
   ExchangeQuoteResult,
   ExchangeDoneResult
 } from '../model/DataModels';
+import { t } from '../i18n/Translations';
 
 function unwrapList<T>(data: PagedListResult<T> | T[] | undefined | null): T[] {
   if (!data) {
@@ -71,7 +73,7 @@ export class CaptchaService {
     const texts = response.data?.extra?.texts ?? [];
     // 库不可用时服务端回空 texts（stub），此时无题可点 ⇒ 按加载失败处理，别让用户点个空框
     if (texts.length === 0) {
-      throw new Error('验证码加载失败');
+      throw new Error(t('captcha.load_failed'));
     }
     texts.sort((a: CaptchaTarget, b: CaptchaTarget) => a.order - b.order);
     return { key: response.data.key, image: response.data.image, texts };
@@ -93,11 +95,32 @@ export class AuthService {
     if (response.code !== 0) {
       throw new Error(response.message);
     }
-    // 2FA：服务端只回 require_2fa + pending_2fa_token，没有令牌对。不拦的话
-    // saveTokens(undefined, undefined) 会"登录成功"跳进主页面，之后每个请求都 401。
-    // 语义与 Angular/React 端一致：不在本客户端完成 2FA，明确告知用户。
-    if (response.data.require_2fa) {
-      throw new Error('该账号已开启二次验证（2FA），本客户端暂不支持，请改用支持 2FA 的客户端登录。');
+    // 2FA：服务端只回 require_2fa + pending_2fa_token，**没有令牌对** —— 票据原样交回调用方，
+    // 由 LoginPage 切到第二步输码（`verify2fa()`）。
+    //
+    // ⚠ 这里曾经直接 `throw t('login.require_2fa')`，注释还写着「语义与 Angular/React 端一致：
+    // 不在本客户端完成 2FA」—— **那句话是假的**：两棵 web 树都在客户端完成 2FA
+    // （`apps/react` 的 `complete2fa` + `setPending2fa`、`apps/angular` 的 `submit2fa`），
+    // 于是开了 2FA 的账号在这棵树上**完全登不进去**，还被劝去「用支持 2FA 的客户端」。
+    //
+    // 调用方若忘了判 require_2fa 就把 data 当成功，会 saveTokens(undefined) 存进空令牌、
+    // 「登录成功」跳主页面、之后每个请求都 401 —— 所以 `finishLogin()` 里另有一道
+    // 「没有令牌一律当失败」的兜底，别只改一边。
+    return response.data;
+  }
+
+  /**
+   * 2FA 第二步 — 票据 + 动态码换令牌对。
+   *
+   * 端点是公开的（`service/config/route.php` 的 `/api/v1/2fa/verify`），所以不需要登录态；
+   * 码认两种：6 位 TOTP 或 10 位备份码（`enable()` 一次发 8 个，丢验证器的人靠它进来）。
+   * 失败（码错 / 票据 10 分钟过期）由服务端 message 带出，调用方留在本步让用户重输。
+   */
+  static async verify2fa(pendingToken: string, code: string): Promise<LoginResponse> {
+    const req: TwoFactorVerifyRequest = { pending_2fa_token: pendingToken, code };
+    const response = await apiService.post<LoginResponse>('/api/v1/2fa/verify', req);
+    if (response.code !== 0) {
+      throw new Error(response.message);
     }
     return response.data;
   }

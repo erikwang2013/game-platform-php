@@ -59,19 +59,19 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | 2FA | Google Authenticator TOTP + 备用恢复码 | 已完成 |
 | 推荐 | 推荐码、注册奖励、充值返佣 | 已完成 |
 | 搜索 | ES 搜索API + 游戏建议 + LIKE回退 | 已完成 |
-| 排行榜 | WebSocket 实时推送 (端口8790) | 已完成 |
+| 排行榜 | REST + Redis | 已完成 |
 | CDN | 五厂商接入（Cloudflare R2 / AWS S3 / 阿里OSS / 腾讯COS / 华为OBS 上传+刷新+预热） | 已完成 |
 | CDN 管理 | 管理端配置五厂商（凭据加密存储/启停/连通测试 HeadBucket），service 纯 DB 读取 | 已完成 |
 | 报表 | 管理端数据报表（汇总/日报/CSV 导出，Redis 5 分钟缓存，跨度 ≤90 天） | 已完成 |
 | 平台统计 | C端首页统计（游戏总数/用户总数/今日局数/7 日活跃） | 已完成 |
 | 部署 | Docker Compose 7服务 + Nginx反向代理 | 已完成 |
 | 数据 | MySQL 实时聚合分析 + 联合/条件概率计算 | 已完成 |
-| HarmonyOS | admin 端 8 页；C 端 `apps/harmonyos/` 已实现登录/大厅/详情/钱包/个人（指向 8792） | 部分完成（工程可跑，真机需改 IP） |
+| HarmonyOS | admin 端 19 页；C 端 `apps/harmonyos/` 已实现登录/大厅/详情/钱包/个人（指向 8792） | 部分完成（工程可跑，真机需改 IP） |
 | API 文档 | erikwang2013/apidoc-php 交互式文档 | 已完成 |
 | 一键安装 | 浏览器安装向导：建管理员、存量库升级、install.lock 防重装 | 已完成 |
 | 容错 | CircuitBreaker 熔断 + Retry 重试 + feature.provider_mock 降级开关 | 已完成 |
 | 支付方式 | 后台 CRUD + 国家可见性 + 金额区间 + 币种限定 | 已完成 |
-| CI | push 自动增量 tag + GitHub Release | 已完成 |
+| CI | push 自动增量 tag + GitHub Release | 已改为手动触发 |
 
 ### 生态扩展 (v2.0) — 刚完成
 
@@ -231,7 +231,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 
 ## 7. 数据库表清单
 
-### 生态扩展新增 (10张)
+### 生态扩展新增 (14张)
 
 | 表名 | 说明 | 关键特性 |
 |------|------|---------|
@@ -245,6 +245,10 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | game_user_achievement | 用户成就 | user_id+achievement_id 唯一索引 |
 | game_friend | 好友关系 | user_id+friend_id 唯一索引 |
 | game_message | 私信 | from_user_id+to_user_id / to_user_id+is_read |
+| game_cdn_provider | CDN厂商配置 | provider 唯一索引, config 加密JSON |
+| game_referral_commission | 多级返佣流水 | user_id / referral_id / source_type+source_id 索引 |
+| game_tournament | 锦标赛 | slug 唯一索引, status+start_at+end_at 索引 |
+| game_tournament_entry | 锦标赛报名/成绩 | tournament_id+user_id 唯一索引, tournament_id+score 索引 |
 
 ### 表结构变更
 
@@ -253,7 +257,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | game_game | +provider_config (JSON) |
 | game_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**总计: install.sql 78 张表**。模型：52 个共享于 `packages/platform-common/src/model/`；admin/app/model/ 的 8 个与 service/app/model/ 的 10 个为各自宿主独有（文件名零重叠）。
+**总计: install.sql 79 张表**。模型：51 个共享于 `packages/platform-common/src/model/`；admin/app/model/ 的 6 个与 service/app/model/ 的 10 个为各自宿主独有（文件名零重叠）。
 
 ## 8. 测试覆盖
 
@@ -267,7 +271,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | HashidsServiceTest | 6 | ID编解码往返 |
 | SnowflakeServiceTest | 5 | ID生成唯一性 |
 
-**总计（phpunit --list-tests 现测）: admin 200 用例 / 21 文件、service 273 用例 / 42 文件（含 WebhookUrlSafety + EventBusMessageFormat；报告记 09-22 复跑 admin 190 + service 273、08-27 快照 admin 153 + service 45）。service 未纳入 CI 失败阻断（未核实）。**
+**总计（phpunit --list-tests 现测）: admin 593 用例 / 70 文件、service 549 用例 / 89 文件（含 WebhookUrlSafety + EventBusMessageFormat；报告记 09-22 复跑 admin 190 + service 273、08-27 快照 admin 153 + service 45）。service 已纳入 CI 失败阻断。**
 
 ---
 

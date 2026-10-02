@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { amountClass, dash, isTimeKey, num, pick, toWallClock, when } from './format.ts';
+import { setCode } from '../i18n/index.ts';
 
 test('amountClass：只读字符串判方向，零与坏值都不着色', () => {
   // 正负两态：首字符判，不经 float
@@ -43,6 +44,20 @@ test('num：bcmath 金额串原样透传，不转 number 丢精度', () => {
   // Number.isFinite 只放过有限 number 走 toLocaleString，NaN/Infinity 落到 dash，即原样 String(值)
   assert.equal(num(Number.NaN), 'NaN');
   assert.equal(num(Infinity), 'Infinity');
+});
+
+test('num / when：区域设置随界面语言，不是写死 zh-CN', () => {
+  // 写死 'zh-CN' 时 13 种语言的界面里数字/日期永远是中文口径 —— 德语该是 1.234,5 却显示 1,234.5。
+  // 判据两边都走宿主 ICU，故与「ICU 是不是精简版」无关，只钉「有没有把当前语言传下去」。
+  setCode('de');
+  try {
+    assert.equal(num(1234.5), (1234.5).toLocaleString('de'), 'num 没跟着 currentCode() 走');
+    assert.equal(when(1_700_000_000_000), new Date(1_700_000_000_000).toLocaleString('de'), 'when 同上');
+  } finally {
+    setCode('en');
+  }
+  // 切回来也要跟着变（钉住「读的是当前值」而不是「初始化时读了一次」）
+  assert.equal(num(1234.5), (1234.5).toLocaleString('en'));
 });
 
 test('pick：取第一个非空候选键，全空返回 undefined', () => {

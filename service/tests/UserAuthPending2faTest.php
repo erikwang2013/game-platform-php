@@ -118,7 +118,7 @@ final class UserAuthPending2faTest extends TestCase
     /** @return array<string, mixed> 登录响应体（走真实 AuthController，非手工造票据） */
     private function login(): array
     {
-        $request = new Request("POST /api/v1/auth/login HTTP/1.1\r\nHost: localhost\r\n\r\n");
+        $request = $this->captchaRequest("POST /api/v1/auth/login HTTP/1.1\r\nHost: localhost\r\n\r\n");
         // 登录已加强制点击验证码：不带 captcha_key/clicks 会 422「验证码错误」
         $request->setPost(['username' => $this->username, 'password' => self::PASSWORD] + $this->captchaParams());
 

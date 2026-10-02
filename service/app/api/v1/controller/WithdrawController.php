@@ -69,9 +69,13 @@ class WithdrawController extends BaseController
         $accountInfo    = $request->input('account_info');
 
         // 按用户串行化申请，防止日/月限额 check-then-act 并发突破
-        $lockKey = "withdraw:apply:{$userId}";
+        // 锁值必须是**每请求唯一**的属主 token：原先固定 '1' + finally 无条件 del ⇒ 第一个请求
+        // 超过 15s（锁过期）后第二个请求拿到锁，第一个的 finally 会把**第二个的锁**删掉，
+        // 第三个请求随即进来 ⇒ 限额的 check-then-act 又出现窗口。
+        $lockKey   = "withdraw:apply:{$userId}";
+        $lockToken = bin2hex(random_bytes(16));
         try {
-            $locked = Redis::set($lockKey, '1', 'EX', 15, 'NX');
+            $locked = Redis::set($lockKey, $lockToken, 'EX', 15, 'NX');
             if (!$locked) {
                 return $this->fail(trans('Withdrawal request in progress, please retry'), 429);
             }
@@ -84,11 +88,29 @@ class WithdrawController extends BaseController
             return $this->applyLocked($request, $userId, $platformAmount, $method, $accountInfo);
         } finally {
             try {
-                Redis::del($lockKey);
+                self::releaseLockIfOwned($lockKey, $lockToken);
             } catch (\Throwable $e) {
                 Log::warning('Withdraw apply unlock Redis failed: ' . $e->getMessage());
             }
         }
+    }
+
+    /**
+     * 只删自己的锁：比对与删除必须在同一段 Lua 里原子完成（照 RateLimit.php:51-60 的 Redis::eval
+     * 用法），否则「比对」与「删除」之间仍有窗口。非属主时返回 0、不删（锁已过期、别人拿到了锁
+     * ⇒ 删它＝把别人的并发闸门拆掉，限额的 check-then-act 窗口又回来）。
+     *
+     * 独立成方法是为了让「属主语义」可被反射直接钉住（同 WithdrawQuoteTest 对 withdrawQuote 的做法）；
+     * 调用点本身由 WithdrawLockOwnershipTest 的端到端用例兜住。
+     */
+    private static function releaseLockIfOwned(string $key, string $token): void
+    {
+        Redis::eval(
+            "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end",
+            1,
+            $key,
+            $token
+        );
     }
 
     private function applyLocked(Request $request, int $userId, string $platformAmount, string $method, $accountInfo): Response
@@ -293,10 +315,11 @@ class WithdrawController extends BaseController
     {
         $userId  = $request->userId;
         $page    = (int) $request->input('page', 1);
-        $perPage = (int) $request->input('per_page', 20);
+        $perPage = max(1, min(100, (int) $request->input('per_page', 20)));
 
         $paginator = WithdrawOrder::where('user_id', $userId)
             ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
 
         $items = [];

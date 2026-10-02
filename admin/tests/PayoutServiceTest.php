@@ -251,7 +251,6 @@ class PayoutServiceTest extends TestCase
     private static function extractPaypalEmail(WithdrawOrder $order): string
     {
         $method = new \ReflectionMethod(PayoutService::class, 'extractPaypalEmail');
-        $method->setAccessible(true);
         return $method->invoke(null, $order);
     }
 }

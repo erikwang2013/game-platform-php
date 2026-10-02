@@ -70,21 +70,33 @@ class _FriendPageState extends State<FriendPage> {
       await _api.post('/api/v1/friend/accept', data: {'request_id': requestId});
       _loadFriends();
       _loadRequests();
-    } catch (_) {}
+    } on ApiException catch (e) {
+      Get.snackbar('${AppTranslations.t('app.error')}', e.message);
+    } catch (_) {
+      Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.network_error')}');
+    }
   }
 
   Future<void> _reject(String requestId) async {
     try {
       await _api.post('/api/v1/friend/reject', data: {'request_id': requestId});
       _loadRequests();
-    } catch (_) {}
+    } on ApiException catch (e) {
+      Get.snackbar('${AppTranslations.t('app.error')}', e.message);
+    } catch (_) {
+      Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.network_error')}');
+    }
   }
 
   Future<void> _remove(String friendId) async {
     try {
       await _api.post('/api/v1/friend/remove', data: {'friend_id': friendId});
       _loadFriends();
-    } catch (_) {}
+    } on ApiException catch (e) {
+      Get.snackbar('${AppTranslations.t('app.error')}', e.message);
+    } catch (_) {
+      Get.snackbar('${AppTranslations.t('app.error')}', '${AppTranslations.t('app.network_error')}');
+    }
   }
 
   @override
@@ -150,7 +162,8 @@ class _FriendPageState extends State<FriendPage> {
           leading: const CircleAvatar(child: Icon(Icons.person)),
           title: Text(name),
           trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-            IconButton(icon: const Icon(Icons.chat), onPressed: () => Get.toNamed('/chat', arguments: {'peer_id': f['id'], 'peer_name': name})),
+            // parameters 让 peer_id 进 URL：web 上 F5 后 Get.arguments 会丢，只能靠 URL 自救
+            IconButton(icon: const Icon(Icons.chat), onPressed: () => Get.toNamed('/chat', parameters: {'peer_id': '${f['id']}'}, arguments: {'peer_id': f['id'], 'peer_name': name})),
             IconButton(icon: const Icon(Icons.person_remove, color: Colors.red), onPressed: () => _remove(f['id'] as String)),
           ]),
         );

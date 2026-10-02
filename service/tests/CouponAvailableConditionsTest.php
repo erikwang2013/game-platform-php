@@ -474,7 +474,7 @@ final class CouponAvailableConditionsTest extends TestCase
 
     private function request(string $method, string $path, ?int $userId = null): Request
     {
-        $request = new Request("{$method} {$path} HTTP/1.1\r\nHost: localhost\r\n\r\n");
+        $request = $this->captchaRequest("{$method} {$path} HTTP/1.1\r\nHost: localhost\r\n\r\n");
         // 生产环境由 UserAuth 中间件注入，PHPUnit 下手工放上
         $request->userId = $userId ?? $this->userId;
 

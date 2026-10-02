@@ -36,7 +36,7 @@ flowchart TB
     end
 
     subgraph "Lapisan penyimpanan"
-        E1[("MySQL 8.0<br/>Penyimpanan utama<br/>78 tabel")]
+        E1[("MySQL 8.0<br/>Penyimpanan utama<br/>79 tabel")]
         E2[("Redis<br/>Session/cache/pembatasan<br/>EventBus/heartbeat")]
         E3[("Elasticsearch<br/>Pencarian full-text")]
         E4[("ClickHouse<br/>Analisis OLAP<br/>Perhitungan probabilitas")]
@@ -66,7 +66,7 @@ Lapisan rute: config/route.php
   ↓
 Rantai middleware: Cors → SecurityFilter → RateLimit → AdminAuth → AdminPermission → OperationLog
   ↓
-Lapisan controller (45):
+Lapisan controller (45, tanpa BaseController di admin/app/admin/v1/controller/ + admin/app/api/v1/controller/):
   ┌──────────────────────────────────────────────────────────┐
   │ Dashboard / User / Role / Permission / Config / Log      │ ← original
   │ Profile / Export / Import / Upload / Health / Docs       │ ← original
@@ -90,7 +90,7 @@ Lapisan rute: config/route.php
   ↓
 Rantai middleware: TraceId → Cors → SecurityFilter → RateLimit → Language → [UserAuth | ProviderAuth | SdkSessionAuth]
   ↓
-Lapisan controller (34):
+Lapisan controller (35, tanpa BaseController di service/app/api/v1/controller/):
   ┌──────────────────────────────────────────────────────────┐
   │ Auth / Wallet / Deposit / Exchange / Withdraw            │ ← original
   │ Game / User / Announcement / Captcha                     │ ← original
@@ -141,7 +141,7 @@ Pelanggan:
   NotificationService — mengirim notifikasi
   WebhookController   — mengirim webhook eksternal
 
-> Catatan: per 2026-08-18, `emit()` memiliki pemanggil tetapi `subscribe()` tidak terdaftar di proses mana pun (P0-4 belum dikerjakan), event saat ini hanya diterbitkan tanpa konsumsi, pelanggan adalah target desain.
+> Catatan: per 2026-08-18, `emit()` memiliki pemanggil tetapi `subscribe()` tidak terdaftar di proses mana pun (P0-4 belum dikerjakan), setelah itu hal ini telah dilengkapi: `service/config/process.php` mendaftarkan `event-consumer` dan `event-subscriber`, dan event kini dikonsumsi.
 ```
 
 ### 2.5 Jaminan stabilitas — pemutus sirkuit / percobaan ulang / degradasi
@@ -316,7 +316,6 @@ game_achievement ── 1:N ── game_user_achievement
 Deployment satu mesin:
   admin/         :8789 (webman, 32 workers)
   service/       :8792 (webman, 32 workers)
-  leaderboard-ws :8790 (WebSocket papan peringkat)
   chat-ws        :8791 (WebSocket chat)
   MySQL          :3306
   Redis          :6379
@@ -326,7 +325,7 @@ Deployment satu mesin:
 
 ```yaml
 nginx (80/443) → admin (8789) + service (8792) + static files
-leaderboard-ws (8790/8791) — push real-time papan peringkat WebSocket + pesan pribadi/chat
+chat-ws (8791) — pesan pribadi/chat
 mysql (3306) — database utama, persistensi volume data
 redis (6379) — cache/rate limit/WebSocket/EventBus
 elasticsearch (9200) — pencarian full-text
@@ -349,7 +348,6 @@ flowchart TB
         ADM2["admin :8789"]
         SVC1["service :8792"]
         SVC2["service :8792"]
-        WS1["leaderboard-ws :8790"]
         WS2["chat-ws :8791"]
     end
 
@@ -372,8 +370,10 @@ flowchart TB
 
 ## 7. Arsitektur Pengujian
 
+> Catatan: daftar di bawah ini adalah sampel awal (20 file · 200 kasus uji); total terkini adalah 70 file · 593 kasus uji.
+
 ```
-tests/                             # 21 file · 200 kasus uji
+tests/                             # 70 file · 593 kasus uji
 ├── bootstrap.php                  # Bootstrap PHPUnit
 ├── AuthControllerRegisterTest.php # 15 tes kekuatan kata sandi pendaftaran
 ├── BackendEnhancementTest.php     # 27 tes layanan enkripsi/ID
@@ -403,7 +403,6 @@ tests/                             # 21 file · 200 kasus uji
 |------|------|------|
 | admin/ | 8789 | API backend administrasi |
 | service/ | 8792 | API bisnis sisi C |
-| leaderboard-ws | 8790 | Papan peringkat real-time WebSocket |
 | chat-ws | 8791 | WebSocket pesan pribadi/chat |
 | MySQL | 3306 | Database utama |
 | Redis | 6379 | Cache/rate limit/WebSocket/EventBus |
@@ -417,7 +416,7 @@ Menggunakan `erikwang2013/apidoc-php` untuk membuat dokumentasi API interaktif o
 | Dokumentasi | Alamat | Controller | Endpoint |
 |------|------|--------|------|
 | Backend administrasi | :8789/apidoc/ | 45 | 154 |
-| Bisnis sisi C | :8792/apidoc/ | 34 | 107 |
+| Bisnis sisi C | :8792/apidoc/ | 35 | 107 |
 
 ## 10. Daftar Tabel Database
 
@@ -460,7 +459,7 @@ game_share_link, game_aml_rule, game_aml_hit,
 game_kyc_level, game_user_kyc, game_user_trust,
 game_risk_cluster
 
-**Total: 78 tabel**
+**Total: 79 tabel**
 
 ## 11. Fitur Saklar
 

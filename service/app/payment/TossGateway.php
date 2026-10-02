@@ -81,11 +81,24 @@ class TossGateway implements PaymentGatewayInterface
         $orderNo    = (string) $request->input('order_no', (string) $request->input('orderId', ''));
         $paymentKey = (string) $request->input('paymentKey', '');
         $status     = (string) $request->input('status', '');
-        if ($status === 'failed') {
-            return ['valid' => true, 'order_no' => $orderNo, 'transaction_id' => $paymentKey, 'amount' => '', 'status' => 'failed'];
-        }
         if ($orderNo === '' || $paymentKey === '') {
             return $failed;
+        }
+
+        // 上报失败不回信请求体：回查 Toss 取权威状态（与 verifyWebhook 同一安全边界）。
+        // 原实现把 status=failed 连同请求里的 order_no/paymentKey 直接透传 ⇒ 未鉴权者只要知道某笔
+        // pending 单号即可把它原子置为 cancelled；用户若已真实付款，钱进网关而永不入账。
+        // paymentKey 查不到（Toss 报错/404）⇒ 返回体里没有 paymentKey ⇒ fail-closed。
+        if ($status === 'failed') {
+            try {
+                $payment = $this->fetchPayment($paymentKey);
+            } catch (\Throwable $e) {
+                return $failed;
+            }
+            if (empty($payment['paymentKey']) || empty($payment['orderId'])) {
+                return $failed;
+            }
+            return $this->mapPayment($payment, $orderNo);
         }
 
         $order = $this->findOrder($orderNo);

@@ -1,0 +1,270 @@
+/* ============================================================
+   Suggest dropdown
+   ============================================================ */
+.search {
+  position: relative;
+}
+
+/* 输入框在 flex 行里必须能收缩：width:100% 会把同行的按钮挤成竖排文字 */
+.search .input {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+}
+
+.search .btn {
+  flex: 0 0 auto;
+}
+
+.suggest {
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-3);
+  overflow: hidden;
+  margin: 0;
+  padding: var(--s-1);
+  list-style: none;
+}
+
+.suggest li button {
+  width: 100%;
+  text-align: left;
+  padding: 11px 14px;
+  background: none;
+  border: 0;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: var(--fs-md);
+}
+
+.suggest li button:hover {
+  background: var(--surface-2);
+}
+
+/* ============================================================
+   States
+   ============================================================ */
+.state {
+  border: 1px dashed var(--line-2);
+  border-radius: var(--r-lg);
+  background: var(--surface-2);
+  padding: var(--s-8) var(--s-5);
+  text-align: center;
+}
+
+.state__art {
+  /* 吉祥物小骰（Dicey）：240x200 的 6:5 比例，等比缩放避免变形 */
+  width: 72px;
+  height: 60px;
+  margin: 0 auto var(--s-3);
+  opacity: 0.85;
+}
+
+.state__k {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  margin-bottom: var(--s-2);
+  color: var(--text-2);
+}
+
+.err {
+  border: 1px solid var(--neg);
+  border-left-width: 3px;
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--neg) 14%, transparent);
+  color: var(--text);
+  padding: 10px 14px;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  margin: 0;
+}
+
+/* 加载骨架：与 .prog（真进度）是不同的东西，别混用 */
+.bar {
+  height: 10px;
+  border-radius: var(--r-full);
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 0%,
+    var(--surface-3) 50%,
+    var(--surface-2) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* 活动进度条 */
+.prog {
+  height: 8px;
+  border-radius: var(--r-full);
+  background: var(--surface-3);
+  overflow: hidden;
+}
+
+.prog i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  transition: width 0.4s var(--ease);
+}
+
+.spin {
+  width: 15px;
+  height: 15px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================================
+   Login hero
+   ============================================================ */
+/* 登录/注册页 hero 里的小骰（Dicey，240×200 的 6:5 比例，等比缩放避免变形） */
+.login-mascot {
+  width: 76px;
+  height: auto;
+}
+
+/* ============================================================
+   Modal（通用弹窗外壳 + 点击验证码）
+   ============================================================ */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s-4);
+  background: var(--veil);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.modal {
+  display: flex;
+  flex-direction: column;
+  width: min(480px, 100%);
+  max-height: 86vh;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-3);
+  animation: pop 0.18s var(--ease);
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+}
+
+/* 贴合内容的小弹框：验证码画布原生 300×200，
+   342 − 2×20 内边距 − 2×1 边框 = 300 ⇒ 画布 1:1 渲染，不被拉伸。
+   窄屏仍由 min(…, 100%) 收窄，与 .modal 同款，不是另一套断点。 */
+.modal--sm {
+  width: min(342px, 100%);
+}
+
+.modal-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding: var(--s-4) var(--s-5);
+  border-bottom: 1px solid var(--line);
+}
+
+.modal-b {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-5);
+  overflow: auto;
+}
+
+/* 画布盒：宽度跟住后端画布原生的 300，不再 width:100% 随弹框拉伸。
+   插画线用 inset 阴影而不是 border —— border 会把内容盒吃掉 2px，
+   图片就变成 298×198，与 naturalWidth 差一个 0.7% 的比例差。
+   ⚠ 点击坐标是按 getBoundingClientRect() 与 naturalWidth 等比换算的，
+   与这里的显示尺寸解耦 —— 改宽度不影响换算，但也别在这里写死坐标。 */
+.cap {
+  position: relative;
+  width: min(300px, 100%);
+  margin: 0 auto;
+  aspect-ratio: 3 / 2;
+  border-radius: var(--r-md);
+  box-shadow: inset 0 0 0 1px var(--line);
+  overflow: hidden;
+  background: var(--surface-2);
+  cursor: crosshair;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.cap-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.cap-ph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0 var(--s-5);
+  text-align: center;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+
+.cap-dot {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-full);
+  background: var(--primary);
+  color: var(--primary-ink);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 2px var(--surface);
+  pointer-events: none;
+}
+
+.cap-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+}
+

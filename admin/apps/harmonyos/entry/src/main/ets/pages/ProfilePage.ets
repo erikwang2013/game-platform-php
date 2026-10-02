@@ -6,8 +6,26 @@ import router from '@ohos.router';
 import promptAction from '@ohos.promptAction';
 import { TokenManager } from '../utils/TokenManager';
 import { apiService } from '../service/ApiService';
+import { FormDialog, FormField } from '../common/FormDialog';
+import { FormPayload, FormValues } from '../model/DataModels';
 import { t, t1 } from '../i18n/Translations';
 import { LocaleController, SUPPORTED_LOCALES, AppLocale } from '../i18n/LocaleController';
+
+/**
+ * 改密码表单：字段名与 `ProfileController::updatePassword` 的 `input()` 逐字对齐
+ * （`old_password` / `new_password`；后端校验 8-32 位且含大小写字母和数字）。
+ *
+ * 文案全部复用已有的 `user.reset_*` 词条 —— 它们本来就是「自己当前密码 + 新密码」这一对，
+ * 13 张语言表都译过；另立 `profile.old_password` 之类的新键等于再翻 13 遍同一句话。
+ * label/hint 存**键名**（FormDialog 每次求值都调 t()），顶层写成品文案会把启动语言固化。
+ */
+const PWD_FIELDS: FormField[] = [
+  { name: 'old_password', label: 'user.reset_admin_label', type: 'password', required: true },
+  { name: 'new_password', label: 'user.reset_new_label', type: 'password', required: true, hint: 'user.reset_new_hint' }
+];
+
+/** 空预填值（FormDialog 会拷一份再改，共享一个常量安全）——密码框不能带上上次的残留快照 */
+const PWD_INITIAL: FormValues = {};
 
 @Entry
 @Component
@@ -25,6 +43,8 @@ struct ProfilePage {
    */
   @State username: string = '';
   @State appVersion: string = '1.0.0';
+  /** 改密码框的挂载开关（FormDialog 只在挂载那一次读 initial） */
+  @State pwdOpen: boolean = false;
 
   aboutToAppear(): void {
     // 可从 AppStorage 获取登录用户信息
@@ -74,7 +94,36 @@ struct ProfilePage {
     router.replaceUrl({ url: 'pages/LoginPage' });
   }
 
-  build() {
+  /**
+   * 提交改密码。回包 code≠0（旧密码错 / 新密码不合规都是 422 的业务答复）时抛错 ——
+   * FormDialog 把服务端原文显示在框内且**不关框**，用户改完可重试。
+   */
+  private async submitPassword(body: FormPayload): Promise<void> {
+    try {
+      const resp = await apiService.put<void>('/admin/v1/profile/password', body);
+      if (resp.code !== 0) {
+        throw new Error(resp.message);
+      }
+      // 成功文案取服务端 message（经 X-Language 本地化），不另立词条
+      promptAction.showToast({ message: resp.message });
+    } catch (e) {
+      if (e instanceof Error && e.message === 'UNAUTHORIZED') {
+        // 刷新也失败的会话过期：清票回登录页（不回登录页的话用户会卡在一个改不动密码的框里）
+        TokenManager.clearTokens();
+        router.replaceUrl({ url: 'pages/LoginPage' });
+        return;
+      }
+      // ArkTS 只许 throw Error 及其子类，故原样转出给弹框显示
+      throw e as Error;
+    }
+  }
+
+  /**
+   * 页面主体。改密码框是**同级**叠上来的兄弟节点 —— ArkUI 的弹框不是挂在调用点的，
+   * FormDialog 自己就是整屏遮罩 + 卡片，必须放进 Stack（与 IdentityReviewPage 同款）。
+   */
+  @Builder
+  mainView() {
     Column() {
       // 顶栏
       Row() {
@@ -150,7 +199,7 @@ struct ProfilePage {
               router.pushUrl({ url: 'pages/WithdrawManagePage' });
             });
             this.buildMenuItem(t('profile.change_password'), t('profile.change_password_desc'), () => {
-              promptAction.showToast({ message: t('profile.feature_in_development') });
+              this.pwdOpen = true;
             });
             this.buildMenuItem(t('profile.clear_cache'), t('profile.clear_cache_desc'), () => {
               promptAction.showToast({ message: t('profile.cache_cleared') });
@@ -233,6 +282,31 @@ struct ProfilePage {
       .width('100%')
       .layoutWeight(1)
       .backgroundColor('#F5F5F5')
+    }
+    .width('100%')
+    .height('100%')
+  }
+
+  build() {
+    Stack({ alignContent: Alignment.Center }) {
+      this.mainView()
+
+      // 改密码框：挂载时才读 initial，故每次开框都是新快照
+      if (this.pwdOpen) {
+        FormDialog({
+          title: t('profile.change_password'),
+          fields: PWD_FIELDS,
+          initial: PWD_INITIAL,
+          onSubmit: (body: FormPayload) => this.submitPassword(body),
+          onDone: () => {
+            // 改密码不动屏上任何数据，成功只需关框
+            this.pwdOpen = false;
+          },
+          onCancel: () => {
+            this.pwdOpen = false;
+          }
+        })
+      }
     }
     .width('100%')
     .height('100%')

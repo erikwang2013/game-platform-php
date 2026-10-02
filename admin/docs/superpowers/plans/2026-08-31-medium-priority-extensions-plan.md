@@ -13,8 +13,8 @@
 
 | 项 | 现状 | 位置 |
 |---|---|---|
-| 平台币钱包 | `game_user_wallet`：balance / frozen_balance / total_earned / total_spent / version，`uk_user_id` | install.sql:156 |
-| 游戏币钱包 | `game_user_game_wallet`：balance / frozen_balance，`uk_user_game_currency` | install.sql:174 |
+| 平台币钱包 | `game_user_wallet`：balance / frozen_balance / total_earned / total_spent / version，`uk_user_id` | install.sql:160 |
+| 游戏币钱包 | `game_user_game_wallet`：balance / frozen_balance，`uk_user_game_currency` | install.sql:178 |
 | 平台流水 | `game_transaction`：type ∈ deposit/withdraw/exchange_in/exchange_out/game_earn/game_spend，**无 game_id / currency_id 列** | install.sql:311 |
 | 钱包写方法 | 仅 `UserWallet::addBalance/deductBalance`（5 次重试乐观锁 + `lockForUpdate`）；`UserGameWallet` **无任何方法** | service/app/model/UserWallet.php:43 |
 | 冻结列 | 两张钱包表都有 `frozen_balance`，**代码里没有任何锁/解锁调用** | 全仓 grep 无命中 |
@@ -22,7 +22,7 @@
 | 支付网关 | `GatewayFactory::resolve(string)` match，**实际注册 16 个**（stripe…toss） | service/app/payment/GatewayFactory.php:14 |
 | 功能开关 | `FeatureFlag` 复用 `platform_config` group=`feature`，支持 crc32 稳定分桶灰度 | service/app/service/FeatureFlag.php |
 | 事件 | `EventBus` Redis Pub/Sub，**单一全局 channel** `platform:events`，emit 吞异常 | service/app/event/EventBus.php |
-| 风控 | `game_risk_rule`（type/config/action/priority）+ `game_risk_log`（rule_id/context/result） | install.sql:562 |
+| 风控 | `game_risk_rule`（type/config/action/priority）+ `game_risk_log`（rule_id/context/result） | install.sql:675 |
 | 分析库 | ClickHouse 已有 `game_game_play_log`（含 ip_address/user_agent）、`game_deposit_log` | install/clickhouse.sql |
 
 **三个必须在 M1 一并处理的既有缺陷**（不是新需求，是设计前提）：

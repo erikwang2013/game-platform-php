@@ -152,6 +152,7 @@ export const frUi: Record<UiKey, string> = {
   'form.options_load_failed': 'Échec du chargement des options de {name} ; la valeur sélectionnée reste visible, mais ne validez pas tant que vous ne la modifiez pas',
   'form.tree_load_failed': 'Échec du chargement de l\'arbre des permissions de {name} ; les permissions sélectionnées restent visibles, mais ne validez pas tant que vous ne les modifiez pas',
   'form.tree_loading': 'Chargement de l\'arbre des permissions…',
+  'form.discard_confirm': 'Des modifications non enregistrées. Les abandonner ?',
   'form.select_placeholder': 'Veuillez sélectionner',
   // 父权限下拉的选项（lib/tree.ts 摊平权限树）：键分两种**形状**（带 slug / 不带），
   // 路径与 slug 走 params —— 选项是逐行现拼的，见 lib/crud.ts 的 FieldOption

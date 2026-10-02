@@ -7,6 +7,7 @@ import { WithdrawApplyRequest, WithdrawApplyResult, CaptchaClick } from '../mode
 import { WalletService, PaymentService } from '../service/DataService';
 import { NavBar, trimZeros } from '../common/Components';
 import { CaptchaDialog } from '../common/CaptchaDialog';
+import { t, t1 } from '../i18n/Translations';
 
 /** 提现方式白名单（WithdrawController 的 in: paypal,bank,crypto） */
 const METHOD_OPTIONS: string[] = ['paypal', 'bank', 'crypto'];
@@ -18,6 +19,7 @@ const METHOD_OPTIONS: string[] = ['paypal', 'bank', 'crypto'];
 @Entry
 @Component
 struct WithdrawPage {
+  @StorageLink('app_locale') localeCode: string = 'zh';
   @State method: string = 'paypal';
   @State amount: string = '';
   @State accountInfo: string = '';
@@ -54,44 +56,44 @@ struct WithdrawPage {
       return 'PayPal';
     }
     if (m === 'bank') {
-      return '银行卡';
+      return t('withdraw.method_bank');
     }
     if (m === 'crypto') {
-      return '加密货币';
+      return t('withdraw.method_crypto');
     }
     return m;
   }
 
   private statusLabel(status: string): string {
     if (status === 'pending') {
-      return '待审核';
+      return t('withdraw.status_pending');
     }
     if (status === 'reviewing') {
-      return '审核中';
+      return t('withdraw.status_reviewing');
     }
     if (status === 'manual_review') {
-      return '人工审核';
+      return t('withdraw.status_manual_review');
     }
     if (status === 'approved') {
-      return '已通过';
+      return t('withdraw.status_approved');
     }
     if (status === 'processing') {
-      return '处理中';
+      return t('withdraw.status_processing');
     }
     if (status === 'completed') {
-      return '已完成';
+      return t('withdraw.status_completed');
     }
     if (status === 'paid') {
-      return '已打款';
+      return t('withdraw.status_paid');
     }
     if (status === 'rejected') {
-      return '已驳回';
+      return t('withdraw.status_rejected');
     }
     if (status === 'cancelled') {
-      return '已取消';
+      return t('withdraw.status_cancelled');
     }
     if (status === 'failed') {
-      return '失败';
+      return t('withdraw.status_failed');
     }
     return status || '-';
   }
@@ -121,16 +123,16 @@ struct WithdrawPage {
     this.errorMsg = '';
 
     if (!amount) {
-      this.amountError = '请输入提现金额';
+      this.amountError = t('withdraw.amount_required');
       return;
     }
     // 平台币 4 位小数（与钱包余额精度一致），纯正则校验
     if (!/^\d+(\.\d{1,4})?$/.test(amount)) {
-      this.amountError = '金额格式不正确，最多 4 位小数';
+      this.amountError = t('withdraw.amount_invalid');
       return;
     }
     if (!accountInfo) {
-      this.accountError = '请填写收款账号信息';
+      this.accountError = t('withdraw.account_required');
       return;
     }
 
@@ -162,7 +164,7 @@ struct WithdrawPage {
         router.replaceUrl({ url: 'pages/LoginPage' });
         return;
       }
-      this.errorMsg = msg.length > 0 ? msg : '提现申请失败';
+      this.errorMsg = msg.length > 0 ? msg : t('withdraw.failed');
     } finally {
       this.submitting = false;
       // 无论成败都关框：成功露出结果页；失败即作废本次挑战，服务端 message 显示在原错误位，下次开框重取新图
@@ -222,14 +224,14 @@ struct WithdrawPage {
   @Builder
   mainView() {
     Column() {
-      NavBar({ title: '提现' })
+      NavBar({ title: t('common.withdraw') })
 
       if (this.done) {
         Scroll() {
           Column() {
             Column() {
               Row() {
-                Text('提现申请已提交')
+                Text(t('withdraw.submitted'))
                   .fontSize(16)
                   .fontWeight(FontWeight.Bold)
                   .layoutWeight(1)
@@ -242,16 +244,16 @@ struct WithdrawPage {
               }
               .width('100%')
 
-              this.resultRow('订单号', this.done!.order_no)
-              this.resultRow('提现金额', `${trimZeros(this.done!.platform_amount)} 平台币`)
-              this.resultRow('手续费', trimZeros(this.done!.fee))
-              this.resultRow('实际到账', trimZeros(this.done!.actual_amount))
-              this.resultRow('账户余额', trimZeros(this.done!.balance_after))
+              this.resultRow(t('common.order_no'), this.done!.order_no)
+              this.resultRow(t('withdraw.amount_label'), t1('common.platform_coin_amount', 'amount', trimZeros(this.done!.platform_amount)))
+              this.resultRow(t('withdraw.fee'), trimZeros(this.done!.fee))
+              this.resultRow(t('withdraw.actual_amount'), trimZeros(this.done!.actual_amount))
+              this.resultRow(t('common.balance_after'), trimZeros(this.done!.balance_after))
               if (this.done!.created_at) {
-                this.resultRow('提交时间', this.done!.created_at)
+                this.resultRow(t('withdraw.created_at'), this.done!.created_at)
               }
 
-              Button('再提一笔')
+              Button(t('withdraw.again'))
                 .width('100%')
                 .height(44)
                 .fontSize(15)
@@ -277,7 +279,7 @@ struct WithdrawPage {
         Scroll() {
           Column() {
             Column() {
-              Text('提现方式')
+              Text(t('withdraw.method_label'))
                 .fontSize(15)
                 .fontWeight(FontWeight.Medium)
                 .width('100%')
@@ -310,12 +312,12 @@ struct WithdrawPage {
 
             Column() {
               Row() {
-                Text('提现金额（平台币）')
+                Text(t('withdraw.amount_platform_label'))
                   .fontSize(15)
                   .fontWeight(FontWeight.Medium)
                   .layoutWeight(1)
                 if (this.walletBalance) {
-                  Text(`可用 ${trimZeros(this.walletBalance)}`)
+                  Text(t1('withdraw.available', 'amount', trimZeros(this.walletBalance)))
                     .fontSize(12)
                     .fontColor('#999999')
                 }
@@ -323,7 +325,7 @@ struct WithdrawPage {
               .width('100%')
               .margin({ bottom: 8 })
 
-              TextInput({ placeholder: '最低 0.0001', text: this.amount })
+              TextInput({ placeholder: t('withdraw.min_amount_hint'), text: this.amount })
                 .height(44)
                 .fontSize(14)
                 .backgroundColor('#F5F5F5')
@@ -342,13 +344,13 @@ struct WithdrawPage {
                   .margin({ top: 6 })
               }
 
-              Text('收款账号信息')
+              Text(t('withdraw.account_info'))
                 .fontSize(15)
                 .fontWeight(FontWeight.Medium)
                 .width('100%')
                 .margin({ top: 16, bottom: 8 })
 
-              TextArea({ placeholder: 'PayPal 邮箱 / 银行卡号与开户行 / 钱包地址', text: this.accountInfo })
+              TextArea({ placeholder: t('withdraw.account_placeholder'), text: this.accountInfo })
                 .height(96)
                 .fontSize(14)
                 .backgroundColor('#F5F5F5')
@@ -376,7 +378,7 @@ struct WithdrawPage {
                   .margin({ top: 6 })
               }
 
-              Button(this.submitting ? '提交中...' : '提交提现申请')
+              Button(this.submitting ? t('common.submitting') : t('withdraw.submit'))
                 .width('100%')
                 .height(48)
                 .fontSize(16)
@@ -389,7 +391,7 @@ struct WithdrawPage {
                   this.submit();
                 })
 
-              Text('提现需人工/风控审核，限额与手续费以服务端返回为准。')
+              Text(t('withdraw.review_hint'))
                 .fontSize(12)
                 .fontColor('#999999')
                 .width('100%')

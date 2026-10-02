@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace app\api\v1\controller;
 
+use app\model\User2FA;
 use common\model\User;
 use common\model\UserOauth;
 use common\model\UserWallet;
@@ -167,6 +168,18 @@ class OAuthController extends BaseController
                 return $this->fail(trans('Account is disabled'), 403);
             }
 
+            // 2FA 已开启：走与密码登录完全相同的 pending 票据机制（AuthController::login），
+            // 不签发正式 token，改发 600 秒 scope=pending_2fa 票据由 /api/v1/2fa/verify 换发。
+            // UserAuth 按「无 scope 才放行」的白名单拒收该票据，不会成为第二把钥匙。
+            // 原缺口：本分支直接签发无 scope 的正式令牌 ⇒ 拿到已绑定的第三方身份即可绕过第二因子。
+            if (User2FA::where('user_id', $user->id)->where('is_enabled', 1)->exists()) {
+                $pendingToken = jwt_wrapper()->create(['sub' => $user->id, 'scope' => 'pending_2fa'], 600);
+                return $this->success([
+                    'require_2fa'       => true,
+                    'pending_2fa_token' => $pendingToken,
+                ], '2FA verification required');
+            }
+
             $user->last_login_at = date('Y-m-d H:i:s');
             $user->last_login_ip = $request->getRealIp() ?? '';
             $user->save();
@@ -259,7 +272,8 @@ class OAuthController extends BaseController
         return $scopes[$provider] ?? 'openid';
     }
 
-    private function exchangeCode(string $provider, string $code, ?string $codeVerifier = null): array
+    /** protected 而非 private：用例覆盖它即可在零网络前提下驱动整条 callback 流程 */
+    protected function exchangeCode(string $provider, string $code, ?string $codeVerifier = null): array
     {
         $config = $this->getOAuthConfig($provider);
         if (!$config) {

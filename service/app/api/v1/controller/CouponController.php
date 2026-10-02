@@ -43,6 +43,9 @@ class CouponController extends BaseController
                     ->orWhereRaw('used_qty < total_qty');
             })
             ->orderBy('id', 'desc')
+            // ponytail: 候选集硬上限 200（按 id desc 取最新一批）。券表是 admin 手工维护的小表，
+            // 超过 200 张时更老的券不再出现在「可领」列表 —— 真要全量得先把下面的过滤+预取改成分页游标。
+            ->limit(200)
             ->get();
 
         // conditions 的用户维度聚合按整批预取一次，避免逐张券各查一次（见 buildConditionContext）
@@ -51,14 +54,11 @@ class CouponController extends BaseController
         $coupons = $candidates
             ->filter(function ($coupon) use ($userId, $ctx) {
                 // Check user_limit: user hasn't already claimed max
+                // 计数来自 buildConditionContext() 的整批预取（原先这里是逐张券 count()＝N+1，
+                // 而 :48 的注释宣称已预取 —— 注释与实现相反，现已对齐）
                 $userLimit = (int) $coupon->user_limit;
-                if ($userLimit > 0) {
-                    $claimed = UserCoupon::where('user_id', $userId)
-                        ->where('coupon_id', $coupon->id)
-                        ->count();
-                    if ($claimed >= $userLimit) {
-                        return false;
-                    }
+                if ($userLimit > 0 && (int) ($ctx['user_claimed'][$coupon->id] ?? 0) >= $userLimit) {
+                    return false;
                 }
 
                 // Check conditions: 与 claim() 同一判据，列表里的券必然领得走
@@ -331,19 +331,21 @@ class CouponController extends BaseController
     }
 
     /**
-     * available() 的批量预取：把 conditions 的用户维度聚合压成每请求 ≤3 次查询。
+     * available() 的批量预取：把 conditions 的用户维度聚合与限领计数压成每请求 ≤5 次查询。
      *
      * 三条条件里 min_deposit / first_user_only 查的是同一用户的充值聚合、与券无关，
      * game_id 虽随券变化但可按券列表去重后一次 whereIn 取回 —— 逐张券各查一次会成 N+1。
-     * 只对列表里真实出现的条件取数：没有任何券带 conditions 时零查询。
+     * user_limit 的「我已领几张」同理：只有 user_limit>0 的券才进 whereIn，一次 groupBy 出全部计数。
+     * 只对列表里真实出现的条件取数：没有任何券带 conditions / user_limit 时零查询。
      *
      * @param  iterable<Coupon>  $coupons
-     * @return array{deposit_total: string, has_deposit: bool, played_game_ids: int[]}
+     * @return array{deposit_total: string, has_deposit: bool, played_game_ids: int[], user_claimed: array<int, int>}
      */
     private function buildConditionContext(int $userId, iterable $coupons): array
     {
-        $needsDeposit = false;
-        $gameIds      = [];
+        $needsDeposit   = false;
+        $gameIds        = [];
+        $limitCouponIds = [];
 
         foreach ($coupons as $coupon) {
             $conditions = json_decode($coupon->conditions ?? '{}', true) ?: [];
@@ -353,9 +355,12 @@ class CouponController extends BaseController
             if (!empty($conditions['game_id']) && self::isPositiveIntId($conditions['game_id'])) {
                 $gameIds[(int) $conditions['game_id']] = true;
             }
+            if ((int) $coupon->user_limit > 0) {
+                $limitCouponIds[(int) $coupon->id] = true;
+            }
         }
 
-        $ctx = ['deposit_total' => '0', 'has_deposit' => false, 'played_game_ids' => []];
+        $ctx = ['deposit_total' => '0', 'has_deposit' => false, 'played_game_ids' => [], 'user_claimed' => []];
 
         if ($needsDeposit) {
             $ctx['deposit_total'] = DepositOrder::where('user_id', $userId)
@@ -372,6 +377,17 @@ class CouponController extends BaseController
                 ->distinct()
                 ->pluck('game_id')
                 ->map(static fn ($id) => (int) $id)
+                ->all();
+        }
+
+        if ($limitCouponIds) {
+            // 口径与 claim() 事务里那次 count() 逐字一致（同一 user+coupon、**不看 status**），
+            // 否则列表与领取准入又会分叉。
+            $ctx['user_claimed'] = UserCoupon::where('user_id', $userId)
+                ->whereIn('coupon_id', array_keys($limitCouponIds))
+                ->selectRaw('coupon_id, COUNT(*) as c')
+                ->groupBy('coupon_id')
+                ->pluck('c', 'coupon_id')
                 ->all();
         }
 

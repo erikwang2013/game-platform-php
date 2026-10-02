@@ -1,0 +1,468 @@
+/* ============================================================
+   Buttons
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  padding: 10px 18px;
+  min-height: 40px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  box-shadow: var(--sh-1);
+  font-size: var(--fs-md);
+  font-weight: 650;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease),
+    transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--surface-3);
+  border-color: var(--line-2);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn--primary {
+  background: linear-gradient(180deg, var(--primary-2), var(--primary));
+  border-color: transparent;
+  color: var(--primary-ink);
+  box-shadow: var(--glow);
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #9d90ff, var(--primary));
+  border-color: transparent;
+}
+
+/* 顶栏搜索等「次级高强调」按钮：与主按钮同色系，靠中性底区分 */
+.btn--ink {
+  background: linear-gradient(180deg, var(--primary-2), var(--primary));
+  border-color: transparent;
+  color: var(--primary-ink);
+  box-shadow: var(--glow);
+}
+
+.btn--ink:hover:not(:disabled) {
+  border-color: transparent;
+}
+
+.btn--block {
+  width: 100%;
+}
+
+.btn--sm {
+  padding: 6px 12px;
+  min-height: 32px;
+  font-size: var(--fs-sm);
+  box-shadow: none;
+}
+
+/* ============================================================
+   Cards / panels
+   ============================================================ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-2);
+  padding: var(--s-5);
+  transition: border-color var(--t) var(--ease), transform var(--t) var(--ease),
+    box-shadow var(--t) var(--ease);
+}
+
+.card--flat {
+  box-shadow: none;
+  background: var(--surface-2);
+}
+
+.card--link:hover {
+  border-color: var(--line-2);
+  transform: translateY(-3px);
+  box-shadow: var(--sh-3);
+}
+
+.card__fill {
+  margin: calc(var(--s-5) * -1) calc(var(--s-5) * -1) var(--s-4);
+  padding: 10px var(--s-5);
+  border-bottom: 1px solid var(--line);
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-2);
+  color: var(--text-2);
+}
+
+.fill-yellow {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-bottom-color: transparent;
+}
+
+/* ============================================================
+   Grid
+   ============================================================ */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--s-4);
+}
+
+.grid--stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-3);
+}
+
+.stat {
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: var(--s-4);
+  background: var(--surface);
+  box-shadow: var(--sh-1);
+  min-width: 0;
+}
+
+.stat__n {
+  font-size: var(--fs-2xl);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  /* 余额位数多，缩一号挡不住换行；宁可缩字也不让数字折行 */
+  overflow-wrap: anywhere;
+}
+
+.stat__k {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--text-2);
+  margin-top: var(--s-2);
+}
+
+/* 可用余额这张是头号数字：给它上品牌色，别只用边框区分主次 */
+.stat--orange {
+  background: linear-gradient(150deg, var(--primary-2), var(--primary-deep));
+  border-color: transparent;
+  color: var(--primary-ink);
+  box-shadow: var(--glow);
+}
+
+.stat--orange .stat__k {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+/* 次高亮：靠琥珀色调底 + 同色数字，不描金边（描边会让它跟两张中性卡不是一套） */
+.stat--yellow {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+}
+
+.stat--yellow .stat__n {
+  color: var(--accent);
+}
+
+/* ============================================================
+   Chips
+   ============================================================ */
+.chips {
+  display: flex;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+}
+
+.chip {
+  padding: 6px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-full);
+  background: var(--surface-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+
+.chip:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.chip.is-on {
+  background: var(--accent);
+  border-color: transparent;
+  color: var(--accent-ink);
+}
+
+/* ============================================================
+   Cover art
+   ============================================================ */
+.cover {
+  aspect-ratio: 16 / 10;
+  border-radius: var(--r-md);
+  background: linear-gradient(150deg, var(--surface-3), var(--surface-2));
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  margin-bottom: var(--s-3);
+}
+
+.cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.35s var(--ease);
+}
+
+.card--link:hover .cover img {
+  transform: scale(1.05);
+}
+
+.cover__ph {
+  font-size: var(--fs-3xl);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--text-3);
+}
+
+/* ============================================================
+   Forms
+   ============================================================ */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+
+.field > span {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.input {
+  width: 100%;
+  padding: 10px 14px;
+  min-height: 42px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  outline: none;
+  transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+}
+
+.input::placeholder {
+  color: var(--text-3);
+}
+
+.input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--ring);
+}
+
+select.input {
+  appearance: none;
+  cursor: pointer;
+  padding-right: 36px;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+textarea.input {
+  min-height: 96px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.tabs {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.tabs__b {
+  padding: 9px 8px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-sm);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--text-2);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+
+.tabs__b:hover {
+  color: var(--text);
+}
+
+.tabs__b.is-on {
+  background: var(--raise);
+  color: var(--text);
+  box-shadow: var(--sh-1);
+}
+
+/* ============================================================
+   Lists / rows
+   ============================================================ */
+.list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: var(--sh-2);
+  overflow: hidden;
+}
+
+.li {
+  padding: var(--s-4);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+.li:last-child {
+  border-bottom: 0;
+}
+
+.li--start {
+  align-items: flex-start;
+}
+
+/* 整行可点（赛事列表）：.li 原本只配过 <a>，<button> 要自己抹掉浏览器默认样式 */
+button.li,
+a.li {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--t-fast) var(--ease);
+}
+
+button.li:last-child,
+a.li:last-child {
+  border-bottom: 0;
+}
+
+button.li:hover,
+a.li:hover {
+  background: var(--surface-2);
+  color: inherit;
+}
+
+/* 头像位：有图显示图，没图兜底一个首字母方块。尺寸锁死，避免有无头像时行高跳动 */
+.avatar {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--r-full);
+  background: linear-gradient(150deg, var(--primary-2), var(--primary));
+  color: var(--primary-ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: var(--fs-lg);
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.li__t {
+  font-weight: 650;
+  font-size: var(--fs-base);
+}
+
+.amt {
+  font-weight: 750;
+  font-size: var(--fs-lg);
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+}
+
+.amt--in {
+  color: var(--pos);
+}
+
+.amt--out {
+  color: var(--neg);
+}
+
+.pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: var(--r-full);
+  background: var(--surface-3);
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.pill--yellow {
+  background: rgba(255, 194, 75, 0.16);
+  color: var(--accent);
+}
+
+.pill--orange {
+  background: var(--primary);
+  color: var(--primary-ink);
+}
+
+.pill--plain {
+  background: transparent;
+  border: 1px solid var(--line-2);
+}
+
+/* 未读行：左侧色条 + 提亮标题，比整行反色克制 */
+.unread {
+  position: relative;
+  background: var(--surface-2);
+}
+
+.unread::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent);
+}
+

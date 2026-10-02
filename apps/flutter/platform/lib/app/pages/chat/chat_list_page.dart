@@ -75,7 +75,7 @@ class _ChatListPageState extends State<ChatListPage> {
                         trailing: (c['unread_count'] as int? ?? 0) > 0
                             ? Chip(label: Text('${c['unread_count']}'))
                             : null,
-                        onTap: () => Get.toNamed('/chat', arguments: {
+                        onTap: () => Get.toNamed('/chat', parameters: {'peer_id': peerId}, arguments: {
                           'peer_id': peerId,
                           'peer_name': peerName,
                         }),

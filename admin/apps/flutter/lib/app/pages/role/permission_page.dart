@@ -120,16 +120,7 @@ class PermissionPage extends GetView<PermissionController> {
         if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
         final rows = visibleRows(ctrl.tree, ctrl.collapsed);
         if (rows.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.asset('assets/mascot.png', width: 120),
-                const SizedBox(height: 12),
-                Text("${AppTranslations.t('permission.no_data')}"),
-              ],
-            ),
-          );
+          return const CrudEmptyState(text: 'permission.no_data');
         }
 
         return ListView.builder(

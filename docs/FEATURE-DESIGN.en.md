@@ -299,13 +299,6 @@ Configured via PlatformConfig or environment variables; requests automatically f
 - PayPal: POST back to PayPal's verification endpoint
 - Verification is skipped when keys are not configured (development mode)
 
-### 8.6 WebSocket Real-Time Leaderboard
-
-- Protocol: WebSocket (ws://host:8790)
-- Subscribe: {action: "subscribe", leaderboard_id: 123}
-- Push: {type: "ranking_update", rankings: [...]}
-- ping/pong heartbeat keepalive supported
-
 ## 9. Internationalization Design
 
 ### 9.1 Supported Languages

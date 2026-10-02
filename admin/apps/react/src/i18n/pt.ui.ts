@@ -157,6 +157,7 @@ export const ptUi: Record<UiKey, string> = {
   'form.options_load_failed': 'Falha ao carregar as opções de {name}; o valor selecionado continua visível, mas não envie o formulário a menos que você o deixe como está',
   'form.tree_load_failed': 'Falha ao carregar a árvore de permissões de {name}; as permissões selecionadas continuam visíveis, mas não envie o formulário a menos que você as deixe como estão',
   'form.tree_loading': 'Carregando a árvore de permissões…',
+  'form.discard_confirm': 'Descartar as alterações não salvas?',
   'form.select_placeholder': 'Selecione uma opção',
   // Opções do menu suspenso de permissão pai (lib/tree.ts achata a árvore de permissões):
   // a chave tem duas **formas** (com slug / sem slug); o caminho e o slug vão por params

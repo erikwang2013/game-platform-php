@@ -1,4 +1,5 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -6,6 +7,8 @@ import 'package:dio/dio.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:excel/excel.dart' as xls;
+import 'package:file_saver/file_saver.dart';
 import '../../i18n/translations.dart';
 import '../../services/api_service.dart';
 
@@ -131,7 +134,35 @@ class DashboardController extends GetxController {
     await Printing.sharePdf(bytes: await pdf.save(), filename: 'dashboard_export.pdf');
   }
 
+  /// 导出仪表盘**当前这份**数据（客户端生成，与 exportPdf 同一条路）。
+  ///
+  /// 不走 `/admin/v1/export/excel`：那个端点只认 4 张表（admin_user / operation_log /
+  /// admin_role / system_config），仪表盘的统计指标不在其中 —— 拿它导只会给出一张与
+  /// 屏幕上这些数字无关的表。这里导的就是卡片上的 label/value。
+  /// 导出用的行 → xlsx 字节。**纯函数、不碰 IO**：单测把字节解回来逐格断言，
+  /// 既不用起 HTTP 桩也不用碰平台通道（FileSaver 在 widget test 里必然抛）。
+  static List<int> workbookBytes(List<Map<String, dynamic>> rows) {
+    final book = xls.Excel.createExcel();
+    final sheet = book['Sheet1'];
+    for (final s in rows) {
+      sheet.appendRow([
+        xls.TextCellValue('${s['label']}'),
+        xls.TextCellValue('${s['value']}'),
+      ]);
+    }
+    return book.encode() ?? <int>[];
+  }
+
   Future<void> exportExcel() async {
-    Get.snackbar("${AppTranslations.t('dashboard.export')}", "${AppTranslations.t('dashboard.export_excel')}");
+    try {
+      // 卡片上的 label/value 就是导出的全部内容（日统计接在卡片之后）
+      final bytes = DashboardController.workbookBytes([...stats, ...dailyStats]);
+      if (bytes.isEmpty) return;
+      await FileSaver.instance
+          .saveFile(name: 'dashboard_export.xlsx', bytes: Uint8List.fromList(bytes), ext: 'xlsx');
+      Get.snackbar("${AppTranslations.t('app.success')}", "${AppTranslations.t('dashboard.export_excel')}");
+    } catch (_) {
+      Get.snackbar("${AppTranslations.t('app.error')}", "${AppTranslations.t('app.loading_failed')}");
+    }
   }
 }

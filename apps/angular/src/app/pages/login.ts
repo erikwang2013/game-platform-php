@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AbstractControl } from '@angular/forms';
 import { Api, ApiError, AuthResult, CaptchaProof, tokens } from '../core/api.service';
 import { CaptchaBox } from '../core/captcha';
+import { Mt, Msg, T } from '../core/i18n/i18n';
 
 /** 邀请链接 `?code=` 的取值：服务端 `share_code` 收 `nullable|string|max:12`，此处同口径（形同 react 树） */
 const readInviteCode = (raw: string | null): string => {
@@ -14,26 +15,26 @@ const readInviteCode = (raw: string | null): string => {
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, CaptchaBox],
+  imports: [ReactiveFormsModule, CaptchaBox, T, Mt],
   template: `
     <div class="auth">
       <div class="card auth-card">
         <div class="brand big"><img class="dot" src="mascot.svg" alt="" /><span>NeonArcade</span></div>
-        <p class="muted tagline">登录后即可开局、查看钱包与消息</p>
+        <p class="muted tagline">{{ 'login.tagline' | t }}</p>
 
         @if (!tfa()) {
           <div class="chips">
             <button type="button" class="chip" [class.on]="tab() === 'in'" (click)="switch('in')">
-              登录
+              {{ 'app.login' | t }}
             </button>
             <button type="button" class="chip" [class.on]="tab() === 'up'" (click)="switch('up')">
-              注册
+              {{ 'login.tab_register' | t }}
             </button>
           </div>
         }
 
         @if (error()) {
-          <div class="alert">{{ error() }}</div>
+          <div class="alert">{{ error() | mt }}</div>
         }
 
         @if (tfa()) {
@@ -45,75 +46,73 @@ const readInviteCode = (raw: string | null): string => {
             同理不能加 inputmode=numeric —— 备份码是大小写字母+数字（generateBackupCode()）。
           -->
           <form class="stack" (submit)="submit2fa($event)" novalidate>
-            <p class="muted hint2">
-              该账号已开启两步验证：请输入验证器 App 中的 6 位动态码；设备丢失时可改用 10 位备份码。
-            </p>
+            <p class="muted hint2">{{ 'login.tfa_hint' | t }}</p>
             <label class="field">
-              <span>动态码 / 备份码</span>
+              <span>{{ 'login.code2fa_label' | t }}</span>
               <input
                 class="input mono"
                 name="code2fa"
                 autocomplete="one-time-code"
                 maxlength="10"
-                placeholder="6 位动态码或 10 位备份码"
+                [placeholder]="'login.code2fa_ph' | t"
                 [value]="code2fa()"
                 (input)="on2fa($event)"
               />
             </label>
             <button class="btn primary wide" type="submit" [disabled]="busy() || !code2fa().trim()">
-              {{ busy() ? '验证中…' : '验证并登录' }}
+              {{ (busy() ? 'login.verifying' : 'login.verify_submit') | t }}
             </button>
             <button class="btn ghost wide" type="button" [disabled]="busy()" (click)="cancel2fa()">
-              返回重新登录
+              {{ 'login.back_to_login' | t }}
             </button>
           </form>
         } @else if (tab() === 'in') {
           <form class="stack" [formGroup]="loginForm" (ngSubmit)="login()" novalidate>
             <label class="field">
-              <span>用户名</span>
+              <span>{{ 'login.username' | t }}</span>
               <input
                 class="input"
                 formControlName="username"
                 autocomplete="username"
-                placeholder="请输入用户名"
+                [placeholder]="'login.username_ph' | t"
               />
               @if (show(loginForm.controls.username)) {
-                <span class="err">用户名至少 3 个字符</span>
+                <span class="err">{{ 'login.username_err' | t }}</span>
               }
             </label>
             <label class="field">
-              <span>密码</span>
+              <span>{{ 'login.password' | t }}</span>
               <input
                 class="input"
                 type="password"
                 formControlName="password"
                 autocomplete="current-password"
-                placeholder="请输入密码"
+                [placeholder]="'login.password_ph' | t"
               />
               @if (show(loginForm.controls.password)) {
-                <span class="err">密码至少 6 个字符</span>
+                <span class="err">{{ 'login.password_err' | t }}</span>
               }
             </label>
             <button class="btn primary wide" type="submit" [disabled]="busy()">
-              {{ busy() ? '登录中…' : '登录' }}
+              {{ (busy() ? 'login.busy' : 'app.login') | t }}
             </button>
           </form>
         } @else {
           <form class="stack" [formGroup]="regForm" (ngSubmit)="register()" novalidate>
             <label class="field">
-              <span>用户名</span>
+              <span>{{ 'login.username' | t }}</span>
               <input
                 class="input"
                 formControlName="username"
                 autocomplete="username"
-                placeholder="3-20 位字母或数字"
+                [placeholder]="'login.reg_username_ph' | t"
               />
               @if (show(regForm.controls.username)) {
-                <span class="err">用户名至少 3 个字符</span>
+                <span class="err">{{ 'login.username_err' | t }}</span>
               }
             </label>
             <label class="field">
-              <span>邮箱</span>
+              <span>{{ 'login.email' | t }}</span>
               <input
                 class="input"
                 type="email"
@@ -122,41 +121,45 @@ const readInviteCode = (raw: string | null): string => {
                 placeholder="you@example.com"
               />
               @if (show(regForm.controls.email)) {
-                <span class="err">请输入有效邮箱</span>
+                <span class="err">{{ 'login.email_err' | t }}</span>
               }
             </label>
             <label class="field">
-              <span>密码</span>
+              <span>{{ 'login.password' | t }}</span>
               <input
                 class="input"
                 type="password"
                 formControlName="password"
                 autocomplete="new-password"
-                placeholder="8-32 位，含大小写字母和数字"
+                [placeholder]="'login.reg_password_ph' | t"
               />
               @if (show(regForm.controls.password)) {
-                <span class="err">密码 8-32 个字符，需含大小写字母和数字</span>
+                <span class="err">{{ 'login.reg_password_err' | t }}</span>
               }
             </label>
             <label class="field">
-              <span>昵称（可选）</span>
-              <input class="input" formControlName="nickname" placeholder="展示用昵称" />
+              <span>{{ 'login.nickname' | t }}</span>
+              <input
+                class="input"
+                formControlName="nickname"
+                [placeholder]="'login.nickname_ph' | t"
+              />
             </label>
             <label class="field">
-              <span>邀请码（可选）</span>
+              <span>{{ 'login.invite' | t }}</span>
               <input
                 class="input mono"
                 formControlName="invite"
                 maxlength="12"
                 autocomplete="off"
-                placeholder="朋友分享的 8 位码"
+                [placeholder]="'login.invite_ph' | t"
               />
               @if (show(regForm.controls.invite)) {
-                <span class="err">邀请码最多 12 个字符</span>
+                <span class="err">{{ 'login.invite_err' | t }}</span>
               }
             </label>
             <button class="btn primary wide" type="submit" [disabled]="busy()">
-              {{ busy() ? '注册中…' : '创建账号' }}
+              {{ (busy() ? 'login.registering' : 'login.register_submit') | t }}
             </button>
           </form>
         }
@@ -167,7 +170,7 @@ const readInviteCode = (raw: string | null): string => {
     <app-captcha
       [(open)]="capOpen"
       [busy]="busy()"
-      [action]="pending() === 'in' ? '确认登录' : '确认注册'"
+      [action]="pending() === 'in' ? 'login.captcha_login' : 'login.captcha_register'"
       (proof)="onProof($event)"
     />
   `,
@@ -220,7 +223,18 @@ export class LoginPage {
 
   protected readonly tab = signal<'in' | 'up'>(this.inviteCode ? 'up' : 'in');
   protected readonly busy = signal(false);
-  protected readonly error = signal('');
+  /**
+   * 错误位 —— 两态（键 / 服务端原文），见 `core/i18n/i18n.ts` 的 `Msg`。
+   * ⚠ `verify2fa` 里那句「{msg}（请重新登录）」原先是在 set 时把中缀拼进字符串，
+   * 切语言后这半句不跟着变 ⇒ 现在存键 + `{msg}` 参数。
+   * ⚠ 四条写入点**现在全是键形状**（`:383` 位数闸 / `:400` 票据失效 / `:412` 未下发票据 /
+   * `:421` 缺令牌）—— 曾经只有 `:400` 有键、另三条是裸中文字面量，那就是「一个信号两副面孔」：
+   * 同一个 `error` 位，有的能跟着语言变、有的永远是中文。三条本地文案的键是 `login.code2fa_err` /
+   * `login.tfa_no_ticket` / `login.token_missing`，zh 值逐字即改前的字面量（文案一字未改）。
+   * `:403` 那处 `e.message` 仍是 raw —— 服务端原文本地不翻，两态并存是设计不是漏网。
+   */
+  protected readonly error = signal<Msg>('');
+
   /** 验证码弹框开框状态；pending 记住开框时是登录还是注册（框开后 tab 仍可被键盘改动） */
   protected readonly capOpen = signal(false);
   protected readonly pending = signal<'in' | 'up'>('in');
@@ -369,7 +383,7 @@ export class LoginPage {
     // 本地先拦，省一次注定失败的往返；**故意不禁用按钮**：按钮一灰用户就不知道错在哪，
     // 这里给一句说明比让他对着灰按钮发呆强（react 那棵同形，闸也是 len===6||len===10）。
     if (code.length !== 6 && code.length !== 10) {
-      this.error.set('请输入 6 位动态码，或 10 位备份码。');
+      this.error.set({ key: 'login.code2fa_err' });
       return;
     }
     this.busy.set(true);
@@ -386,7 +400,7 @@ export class LoginPage {
         if (e.code === 401 || e.code === 403) {
           this.tfa.set('');
           this.code2fa.set('');
-          this.error.set(`${e.message}（请重新登录）`);
+          this.error.set({ key: 'login.session_expired', params: { msg: e.message } });
           return;
         }
         this.error.set(e.message);
@@ -398,7 +412,7 @@ export class LoginPage {
     this.busy.set(false);
     if (r.require_2fa) {
       if (!r.pending_2fa_token) {
-        this.error.set('服务端要求二次验证但未下发票据，请稍后重试。');
+        this.error.set({ key: 'login.tfa_no_ticket' });
         return;
       }
       this.code2fa.set('');
@@ -407,7 +421,7 @@ export class LoginPage {
       return;
     }
     if (!r.access_token) {
-      this.error.set('登录响应缺少令牌，请稍后重试。');
+      this.error.set({ key: 'login.token_missing' });
       return;
     }
     tokens.save(r.access_token, r.refresh_token);

@@ -114,6 +114,7 @@ export const FR_1: Record<string, string> = {
   'risk.rule.scope': 'Portée',
   'risk.rule.priority': 'Priorité',
   'risk.rule.priority_hint': '0-1000, plus la valeur est élevée, plus la règle est évaluée en premier (100 par défaut)',
+  'risk.rule.scope_hint': 'exchange / login pas encore branchés (l\'évaluateur a des branches mais aucun point d\'appel — RiskService::check() n\'est appelé que par deposit / withdraw), une règle avec cette portée ne se déclenchera jamais',
   'risk.rule.status': 'Statut',
   'risk.rule.config': 'Configuration des seuils (JSON)',
   'risk.rule.keys_note': '\n',

@@ -26,12 +26,6 @@ use support\Response;
 #[Apidoc\Group("payment")]
 class PaymentController extends BaseController
 {
-    #[Apidoc\Title("支付回调")]
-    #[Apidoc\Url("/api/v1/payment/callback")]
-    #[Apidoc\Method("POST")]
-    #[Apidoc\Param(name: "order_no", type: "string", require: true, desc: "订单号")]
-    #[Apidoc\Param(name: "transaction_id", type: "string", require: true, desc: "交易ID")]
-    #[Apidoc\Param(name: "status", type: "string", require: true, desc: "支付状态(success/failed)")]
     private const ALLOWED_PROVIDERS = [
         'stripe', 'paypal', 'nowpayments', 'coinbase',
         'skrill', 'neteller', 'paysafecard', 'paytm',
@@ -39,6 +33,12 @@ class PaymentController extends BaseController
         'mpesa', 'paystack', 'toss', 'adyen', 'grabpay',
     ];
 
+    #[Apidoc\Title("支付回调")]
+    #[Apidoc\Url("/api/v1/payment/callback")]
+    #[Apidoc\Method("POST")]
+    #[Apidoc\Param(name: "order_no", type: "string", require: true, desc: "订单号")]
+    #[Apidoc\Param(name: "transaction_id", type: "string", require: true, desc: "交易ID")]
+    #[Apidoc\Param(name: "status", type: "string", require: true, desc: "支付状态(success/failed)")]
     public function callback(Request $request): Response
     {
         $provider = strtolower((string) $request->input('provider', ''));

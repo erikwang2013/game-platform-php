@@ -362,7 +362,6 @@ class PlatformTest extends TestCase
     private static function envelope(string $method, array $args): array
     {
         $reflection = new \ReflectionMethod(BaseController::class, $method);
-        $reflection->setAccessible(true);
 
         return self::bodyOf($reflection->invoke(new UserController(), ...$args));
     }

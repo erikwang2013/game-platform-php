@@ -8,9 +8,9 @@ declare(strict_types=1);
 namespace app\admin\v1\controller;
 
 use erikwang2013\apidoc\annotation as Apidoc;
+use app\middleware\AdminPermission as AdminPermGuard; // 中间件那个（提供 forget）；下行的 AdminUser 是模型，不同名但别写混
 use app\model\AdminUser;
 use support\Db;
-use support\Redis;
 use support\Request;
 use support\Response;
 
@@ -192,7 +192,7 @@ class UserController extends BaseController
             }
             // 改他人密码是敏感操作：要**当前操作者**二次确认（与 DELETE 同款）。
             // 确认字段名用 admin_password —— `password` 已被「新密码」占用，两者不能同名。
-            $error = $this->confirmPassword((int) ($request->adminId ?? 0), (string) $request->input('admin_password', ''), $request);
+            $error = $this->confirmPassword((int) ($request->adminId ?? 0), (string) $request->input('admin_password', ''));
             if ($error !== null) {
                 return $this->fail($error, 422);
             }
@@ -236,7 +236,7 @@ class UserController extends BaseController
         }
 
         $adminId = $request->adminId ?? 0;
-        $error = $this->confirmPassword($adminId, $request->input('password', ''), $request);
+        $error = $this->confirmPassword($adminId, $request->input('password', ''));
         if ($error !== null) {
             return $this->fail($error, 422);
         }
@@ -262,7 +262,7 @@ class UserController extends BaseController
         }
 
         $adminId = $request->adminId ?? 0;
-        $error   = $this->confirmPassword($adminId, $password, $request);
+        $error   = $this->confirmPassword($adminId, $password);
         if ($error !== null) {
             return $this->fail($error, 422);
         }
@@ -371,14 +371,13 @@ class UserController extends BaseController
     /**
      * 清掉该管理员的权限缓存（`AdminPermission` 用 `perm:{adminId}` 缓存 60 秒）。
      * 不清的话「分配完角色当场不生效」——运营会以为没保存成功，然后再点一次。
+     *
+     * 走中间件的 `forget()` 而不是手写 `Redis::del('perm:…')`：键的拼法只有那一个真值源
+     * （try/catch 也在它内部，Redis 挂了一样不阻断主流程）。
      */
     private function forgetPermissionCache(int $adminId): void
     {
-        try {
-            Redis::del("perm:{$adminId}");
-        } catch (\Throwable) {
-            // Redis 不可用时中间件本来就回落查库（getUserPermissions 内 try/catch），这里不阻断主流程
-        }
+        AdminPermGuard::forget($adminId);
     }
 
     /**

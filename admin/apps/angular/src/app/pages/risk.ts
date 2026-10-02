@@ -3,8 +3,8 @@ import { Component, computed, signal } from '@angular/core';
 import { Page, Row } from '../core/api.service';
 import { Crud, CrudPage } from '../core/crud';
 import { T, t } from '../core/i18n/i18n';
-import { idOf, json } from '../core/render';
-import { errText, num, rowsOf } from '../core/util';
+import { idOf, json, rowsAny } from '../core/render';
+import { errText, num } from '../core/util';
 import { Drawer, Pager, StateBlock, Tabs } from '../components/ui';
 import { Table } from '../components/table';
 import { FormModal } from '../components/form-modal';
@@ -152,12 +152,12 @@ export class Risk extends CrudPage {
   protected readonly candidateActs = CANDIDATE_ACTS;
   protected readonly timelineHeads = TIMELINE_HEADS;
   /** 时间轴：三源合并后的 `events`（服务端已按时间倒序并截到 200 条） */
-  protected readonly timelineRows = computed(() => rowsOf(this.result(), 'events'));
+  protected readonly timelineRows = computed(() => rowsAny(this.result(), 'events'));
 
   protected readonly heads = computed((): Record<string, string> => RISK_HEADS[this.tab()] ?? {});
   /** 抽屉标题与候选行都从 panel()/result() 派生（不另存一份，免得两处对不上） */
   protected readonly panelTitle = computed(() => PANEL_TITLES[this.panel()] ?? '');
-  protected readonly candidates = computed(() => rowsOf(this.result(), 'candidates'));
+  protected readonly candidates = computed(() => rowsAny(this.result(), 'candidates'));
 
   /**
    * 当前标签页的写能力，缺省即没有该能力：

@@ -6,19 +6,23 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ApiError, api, type Game } from '../lib/api.ts';
 import { useAsync } from '../lib/hooks.ts';
+import { useI18n } from '../i18n/useI18n.ts';
 import { Empty, ErrorBox, Loading } from '../components/States.tsx';
 
 type Suggest = { id: string; name: string; slug: string };
 
 export function Home() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const stats = useAsync(() => api.stats(), []);
 
   const [items, setItems] = useState<Game[]>([]);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [listLoading, setListLoading] = useState(true);
-  const [listErr, setListErr] = useState<string | null>(null);
+  // ⚠ 存的是**错误对象**不是翻好的文案：存文案会把语言冻在失败那一刻，
+  // 切完语言这一行还是旧语言（`t()` 必须在渲染期求值）
+  const [listErr, setListErr] = useState<unknown>(null);
   const [keyword, setKeyword] = useState('');
   const [tick, setTick] = useState(0);
 
@@ -38,7 +42,7 @@ export function Home() {
       })
       .catch((e: unknown) => {
         if (!alive) return;
-        setListErr(e instanceof ApiError ? e.message : '加载失败，请稍后重试');
+        setListErr(e);
       })
       .finally(() => alive && setListLoading(false));
     return () => {
@@ -48,14 +52,14 @@ export function Home() {
 
   // 联想词：输入 2 字以上，防抖 250ms
   useEffect(() => {
-    const t = q.trim();
-    if (t.length < 2) {
+    const term = q.trim();
+    if (term.length < 2) {
       setSug([]);
       return;
     }
     const timer = setTimeout(() => {
       api
-        .suggest(t)
+        .suggest(term)
         .then((r) => setSug(r.suggestions ?? []))
         .catch(() => setSug([]));
     }, 250);
@@ -72,9 +76,9 @@ export function Home() {
   return (
     <>
       <section className="stack">
-        <p className="label">平台总览</p>
+        <p className="label">{t('home.overview')}</p>
         <h1 className="h1">
-          游戏库
+          {t('home.hero_title')}
           <span style={{ color: 'var(--orange)' }}>.</span>
         </h1>
         {stats.loading && <Loading />}
@@ -83,53 +87,53 @@ export function Home() {
           <div className="grid--stats">
             <div className="stat stat--orange">
               <p className="stat__n">{stats.data.total_games}</p>
-              <p className="stat__k">游戏总数</p>
+              <p className="stat__k">{t('home.stat_games')}</p>
             </div>
             <div className="stat">
               <p className="stat__n">{stats.data.total_users}</p>
-              <p className="stat__k">注册玩家</p>
+              <p className="stat__k">{t('home.stat_players')}</p>
             </div>
             <div className="stat stat--yellow">
               <p className="stat__n">{stats.data.today_game_plays}</p>
-              <p className="stat__k">今日开局</p>
+              <p className="stat__k">{t('home.stat_plays_today')}</p>
             </div>
             <div className="stat">
               <p className="stat__n">{stats.data.active_users_7d}</p>
-              <p className="stat__k">7 日活跃</p>
+              <p className="stat__k">{t('home.stat_active_7d')}</p>
             </div>
           </div>
         )}
       </section>
 
       <section className="stack">
-        <p className="label">发现</p>
+        <p className="label">{t('home.discover')}</p>
         <div className="chips">
           <Link className="chip" to="/games">
-            我的游戏
+            {t('nav.my_games')}
           </Link>
           <Link className="chip" to="/announcements">
-            平台公告
+            {t('home.announcements')}
           </Link>
           <Link className="chip" to="/leaderboard">
-            排行榜
+            {t('nav.leaderboard')}
           </Link>
         </div>
       </section>
 
       <section className="stack">
-        <p className="label">找游戏</p>
+        <p className="label">{t('home.find_games')}</p>
         <div className="search">
           <form onSubmit={search} className="row" style={{ flexWrap: 'nowrap' }}>
             <input
               className="input"
-              placeholder="输入游戏名搜索"
-              aria-label="搜索游戏"
+              placeholder={t('home.search_placeholder')}
+              aria-label={t('home.search_label')}
               value={q}
               onChange={(e) => setQ(e.target.value)}
               onBlur={() => setTimeout(() => setSug([]), 150)}
             />
             <button type="submit" className="btn btn--ink">
-              搜索
+              {t('app.search')}
             </button>
           </form>
           {sug.length > 0 && (
@@ -152,14 +156,21 @@ export function Home() {
 
       <section className="stack">
         <p className="label">
-          全部游戏
-          {keyword && <span className="pill pill--plain">关键词：{keyword}</span>}
+          {t('home.all_games')}
+          {keyword && (
+            <span className="pill pill--plain">{t('home.keyword', { keyword })}</span>
+          )}
         </p>
 
-        {listErr && <ErrorBox message={listErr} onRetry={() => setTick((t) => t + 1)} />}
+        {listErr != null && (
+          <ErrorBox
+            message={listErr instanceof ApiError ? listErr.message : t('error.load_failed')}
+            onRetry={() => setTick((n) => n + 1)}
+          />
+        )}
         {!listErr && items.length === 0 && listLoading && <Loading />}
         {!listErr && items.length === 0 && !listLoading && (
-          <Empty title="没有找到游戏" hint="换个关键词试试" />
+          <Empty title={t('home.no_result')} hint={t('home.no_result_hint')} />
         )}
 
         {items.length > 0 && (
@@ -204,7 +215,7 @@ export function Home() {
             onClick={() => setPage((p) => p + 1)}
           >
             {listLoading && <span className="spin" aria-hidden="true" />}
-            加载更多
+            {t('app.load_more')}
           </button>
         )}
       </section>

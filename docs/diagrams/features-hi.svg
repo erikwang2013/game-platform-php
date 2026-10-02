@@ -55,7 +55,6 @@
   <text x="850" y="206" text-anchor="middle" fill="#4c1d95" font-size="13" font-weight="bold">लीडरबोर्ड</text>
   <text x="850" y="226" text-anchor="middle" fill="#7c3aed" font-size="11">दैनिक / साप्ताहिक / मासिक / कुल</text>
   <text x="850" y="245" text-anchor="middle" fill="#7c3aed" font-size="11">Redis कैश + रीयल-टाइम सॉर्टिंग</text>
-  <text x="850" y="264" text-anchor="middle" fill="#7c3aed" font-size="11">WebSocket रीयल-टाइम पुश (:8790)</text>
 
   <rect x="30" y="292" width="220" height="95" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#sh)"/>
   <text x="140" y="316" text-anchor="middle" fill="#064e3b" font-size="13" font-weight="bold">कूपन</text>
@@ -101,7 +100,7 @@
   <rect x="30" y="518" width="940" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="500" y="546" text-anchor="middle" fill="#475569" font-size="14" font-weight="bold">प्लेटफ़ॉर्म क्षमता सारांश</text>
   <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">उपयोगकर्ता प्रमाणीकरण · वॉलेट (ऑप्टिमिस्टिक लॉक) · रिचार्ज (Stripe/PayPal/Alipay/WeChat Pay) · विनिमय (रीयल-टाइम विनिमय दर) · निकासी (समीक्षा/स्वचालित) · KYC (पहचान सत्यापन)</text>
-  <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">गेम CRUD (10 श्रेणियाँ + सर्वर) · लीडरबोर्ड (WebSocket रीयल-टाइम) · कूपन · रेफरल (पंजीकरण पुरस्कार + कमीशन) · जोखिम नियंत्रण (4 प्रकार नियम)</text>
+  <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">गेम CRUD (10 श्रेणियाँ + सर्वर) · लीडरबोर्ड  · कूपन · रेफरल (पंजीकरण पुरस्कार + कमीशन) · जोखिम नियंत्रण (4 प्रकार नियम)</text>
   <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">सूचना (साइट + ईमेल) · देश विभेदीकरण (18 देश) · अंतर्राष्ट्रीयकरण (4 भाषाएँ) · सांख्यिकी (दैनिक स्नैपशॉट + आय) · पूर्ण-पाठ खोज (ES)</text>
 
   <text x="500" y="662" text-anchor="middle" fill="#94a3b8" font-size="11">क्लाइंट: 8 रूप — एडमिन 4 + C-छोर 4 (Flutter/React/Angular/HarmonyOS)</text>

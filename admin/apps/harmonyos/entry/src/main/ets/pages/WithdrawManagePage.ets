@@ -9,6 +9,10 @@ import { WithdrawOrderItem } from '../model/DataModels';
 import { LoadingView, ErrorView, EmptyView } from '../common/Components';
 import { confirmAction } from '../common/FormDialog';
 import { PagerBar } from '../common/ResourceViews';
+import {
+  SmallButton, WithdrawOrderRow, WithdrawSwitchBar, WithdrawFilterBar,
+  withdrawAmountText, withdrawOrderLabel
+} from '../common/WithdrawViews';
 import { t, t1 } from '../i18n/Translations';
 
 /**
@@ -37,41 +41,7 @@ import { t, t1 } from '../i18n/Translations';
  *     只有已提交过 PayPal（payout_batch_id 非空）才谈得上同步（否则后端 422「尚未执行打款」）。
  */
 
-/** 状态过滤：'' = 全部（控制器 status 为空时不加 where）。processing 是打款 CAS 写入的在途态。
- *  存**键名**不是译文 —— 渲染处（Select.value 与 buildFilterOptions）各查一次表。 */
-const STATUS_FILTERS: string[] = [
-  'wd.status_all', 'wd.status_pending', 'wd.status_approved', 'wd.status_processing',
-  'wd.status_rejected', 'wd.status_completed'
-];
 const STATUS_VALUES: string[] = ['', 'pending', 'approved', 'processing', 'rejected', 'completed'];
-
-/** 每次渲染重新查表 ⇒ 语言切换即时生效（顶层调 t() 会把启动语言固化进常量） */
-function statusText(status: string): string {
-  if (status === 'pending') {
-    return t('wd.status_pending');
-  }
-  if (status === 'approved') {
-    return t('wd.status_approved');
-  }
-  if (status === 'processing') {
-    return t('wd.status_processing');
-  }
-  if (status === 'rejected') {
-    return t('wd.status_rejected');
-  }
-  return status === 'completed' ? t('wd.status_completed') : status;
-}
-
-/** 五态各有各的颜色：待审核要醒目、已驳回是退回、已完成是终态 */
-function statusColor(status: string): string {
-  if (status === 'pending') {
-    return '#FA8C16';
-  }
-  if (status === 'rejected') {
-    return '#FF4D4F';
-  }
-  return status === 'completed' ? '#52C41A' : '#1677FF';
-}
 
 @Entry
 @Component
@@ -163,64 +133,15 @@ struct WithdrawManagePage {
     promptAction.showToast({ message: e instanceof Error && e.message.length > 0 ? e.message : t('res.op_failed') });
   }
 
-  /** 订单标识：有订单号用订单号，没有退回 hashid（二次确认文案里必须带它） */
-  private orderLabel(item: WithdrawOrderItem): string { const no = item.order_no ?? ''; return no.length > 0 ? no : item.id; }
-
-  /** 金额文案：平台币 + 法币（都是服务端给的字符串，原样拼，不做换算） */
-  private amountText(item: WithdrawOrderItem): string {
-    const fiat = item.fiat_amount.length > 0
-      ? t('wd.amount_fiat').replace('{amount}', item.fiat_amount).replace('{currency}', item.currency)
-      : '';
-    return t('wd.amount_platform').replace('{amount}', item.platform_amount).replace('{extra}', fiat);
-  }
-
-  private subtitle(item: WithdrawOrderItem): string {
-    const parts: string[] = [];
-    // user 可能是 null（关联查不到时 toArray 带出 null）——只判 undefined 会在这种行上抛
-    const user = item.user;
-    parts.push(user !== undefined && user !== null
-      ? user.username : t('wd.user_fallback').replace('{id}', `${item.user_id}`));
-    if (item.method.length > 0) {
-      parts.push(item.method);
-    }
-    const payout = item.payout_status ?? '';
-    if (payout.length > 0) {
-      parts.push(t('wd.subtitle_payout').replace('{status}', payout));
-    }
-    parts.push(this.orderLabel(item));
-    parts.push(item.created_at);
-    return parts.join(' · ');
-  }
-
-  /* ------------------------------ 行内动作门禁 ------------------------------ */
-
-  /** 只有待审核能审（approved/rejected/completed 都已经过了审核这一步） */
-  private canReview(item: WithdrawOrderItem): boolean { return item.status === 'pending'; }
-
-  /**
-   * 复核确认（双审第二票）：后端只在「已有第一审核人（reviewer_id>0）且不是本人」时才放行。
-   * 列表不回传开关状态，故这里只用 review_id>0 当作「初审已过、等第二票」的显式信号；
-   * 双审没开时点它会拿到 422「双重审核未启用」——把后端原话摆出来，不猜。
-   */
-  private canConfirm(item: WithdrawOrderItem): boolean {
-    return item.status === 'pending' && (item.reviewer_id ?? 0) > 0;
-  }
-
-  /** 只有已通过能打款 */
-  private canPayout(item: WithdrawOrderItem): boolean { return item.status === 'approved'; }
-
-  /** 已提交过 PayPal（有批次号）才谈得上同步，否则后端 422「尚未执行打款」 */
-  private canSync(item: WithdrawOrderItem): boolean { return (item.payout_batch_id ?? '').length > 0; }
-
   /* ------------------------------ 单笔资金动作 ------------------------------ */
 
   /** 审核（通过/驳回）—— 不可逆或带退款 ⇒ 二次确认，文案带订单标识 + 金额 */
   private reviewRow(item: WithdrawOrderItem, action: string): void {
     const title = action === 'reject' ? t('kyc.reject_title') : t('wd.review_approve_title');
     const body = action === 'reject'
-      ? t('wd.review_reject_body').replace('{order}', this.orderLabel(item))
-        .replace('{amount}', this.amountText(item)).replace('{refund}', item.platform_amount)
-      : t('wd.review_approve_body').replace('{order}', this.orderLabel(item)).replace('{amount}', this.amountText(item));
+      ? t('wd.review_reject_body').replace('{order}', withdrawOrderLabel(item))
+        .replace('{amount}', withdrawAmountText(item)).replace('{refund}', item.platform_amount)
+      : t('wd.review_approve_body').replace('{order}', withdrawOrderLabel(item)).replace('{amount}', withdrawAmountText(item));
     confirmAction(title, body, action === 'reject' ? t('wd.action_reject') : t('wd.action_approve'),
       action === 'reject' ? '#FF4D4F' : '#52C41A').then((ok: boolean) => {
       if (ok) {
@@ -245,7 +166,7 @@ struct WithdrawManagePage {
   /** 复核确认（双审第二票）：同样二次确认 */
   private confirmRow(item: WithdrawOrderItem): void {
     confirmAction(t('wd.recheck_title'),
-      t('wd.recheck_body').replace('{order}', this.orderLabel(item)).replace('{amount}', this.amountText(item)),
+      t('wd.recheck_body').replace('{order}', withdrawOrderLabel(item)).replace('{amount}', withdrawAmountText(item)),
       t('wd.action_confirm'), '#1677FF').then((ok: boolean) => {
       if (ok) {
         this.doReview(item.id, 'confirm');
@@ -256,7 +177,7 @@ struct WithdrawManagePage {
   /** 执行打款：外部副作用且不可撤销 ⇒ 二次确认 */
   private payoutRow(item: WithdrawOrderItem): void {
     confirmAction(t('wd.payout_title'),
-      t('wd.payout_body').replace('{order}', this.orderLabel(item)).replace('{amount}', this.amountText(item)),
+      t('wd.payout_body').replace('{order}', withdrawOrderLabel(item)).replace('{amount}', withdrawAmountText(item)),
       t('wd.action_payout'), '#FF4D4F').then((ok: boolean) => {
       if (ok) {
         this.doPayout(item.id);
@@ -280,7 +201,7 @@ struct WithdrawManagePage {
   /** 同步打款状态：会打 PayPal 并回写本地状态 ⇒ 同样二次确认 */
   private syncRow(item: WithdrawOrderItem): void {
     confirmAction(t('wd.sync_title'),
-      t('wd.sync_body').replace('{order}', this.orderLabel(item)).replace('{amount}', this.amountText(item)),
+      t('wd.sync_body').replace('{order}', withdrawOrderLabel(item)).replace('{amount}', withdrawAmountText(item)),
       t('wd.action_sync'), '#1677FF').then((ok: boolean) => {
       if (ok) {
         this.doSync(item.id);
@@ -335,8 +256,8 @@ struct WithdrawManagePage {
     for (let i = 0; i < this.selected.length; i++) {
       const item = this.orderById(this.selected[i]);
       if (item !== null) {
-        lines.push(t('wd.batch_line').replace('{order}', this.orderLabel(item))
-          .replace('{amount}', this.amountText(item)));
+        lines.push(t('wd.batch_line').replace('{order}', withdrawOrderLabel(item))
+          .replace('{amount}', withdrawAmountText(item)));
       }
     }
     const verb = action === 'reject' ? t('wd.action_reject') : t('wd.action_approve');
@@ -420,8 +341,21 @@ struct WithdrawManagePage {
       .padding({ left: 16, right: 16 })
       .backgroundColor('#FFFFFF')
 
-      this.switchBar()
-      this.filterBar()
+      WithdrawSwitchBar({
+        isOn: this.switchOn,
+        loaded: this.switchLoaded,
+        busy: this.switchBusy,
+        onToggle: (isOn: boolean) => {
+          this.applySwitch(isOn);
+        }
+      })
+      WithdrawFilterBar({
+        index: this.filterIndex,
+        onPick: (index: number) => {
+          this.filterIndex = index;
+          this.loadData(true);
+        }
+      })
 
       if (this.isLoading) {
         LoadingView();
@@ -433,7 +367,26 @@ struct WithdrawManagePage {
         List() {
           ForEach(this.orders, (item: WithdrawOrderItem) => {
             ListItem() {
-              this.orderRow(item)
+              WithdrawOrderRow({
+                item: item,
+                selected: this.isSelected(item.id),
+                busyId: this.busyId,
+                onToggleSelect: (id: string) => {
+                  this.toggleSelected(id);
+                },
+                onReview: (it: WithdrawOrderItem, action: string) => {
+                  this.reviewRow(it, action);
+                },
+                onConfirm: (it: WithdrawOrderItem) => {
+                  this.confirmRow(it);
+                },
+                onPayout: (it: WithdrawOrderItem) => {
+                  this.payoutRow(it);
+                },
+                onSync: (it: WithdrawOrderItem) => {
+                  this.syncRow(it);
+                }
+              })
             }
           }, (item: WithdrawOrderItem) => item.id)
         }
@@ -462,82 +415,6 @@ struct WithdrawManagePage {
     .backgroundColor('#F5F5F5')
   }
 
-  /** 全局开关条：关掉之后用户侧不能再提交提现申请（可逆操作，故不拦二次确认） */
-  @Builder
-  switchBar() {
-    Row() {
-      Column() {
-        Text(t('wd.switch_label'))
-          .fontSize(15)
-          .fontColor('#333333')
-
-        Text(this.switchLoaded
-          ? (this.switchOn ? t('wd.switch_open') : t('wd.switch_closed'))
-          : t('wd.switch_loading'))
-          .fontSize(12)
-          .fontColor('#999999')
-          .margin({ top: 2 })
-      }
-      .alignItems(HorizontalAlign.Start)
-      .layoutWeight(1)
-
-      Toggle({ type: ToggleType.Switch, isOn: this.switchOn })
-        .enabled(this.switchLoaded && !this.switchBusy)
-        .onChange((isOn: boolean) => {
-          this.applySwitch(isOn);
-        })
-    }
-    .width('100%')
-    .padding({ left: 16, right: 16, top: 10, bottom: 10 })
-    .backgroundColor('#FFFFFF')
-  }
-
-  /** 状态过滤：订单列表天然按状态看，切一下就少翻几页 */
-  @Builder
-  filterBar() {
-    Row() {
-      Text(t('wd.filter_label'))
-        .fontSize(14)
-        .fontColor('#666666')
-
-      Select(this.buildFilterOptions())
-        .value(t(STATUS_FILTERS[this.filterIndex]))
-        .selected(this.filterIndex)
-        .layoutWeight(1)
-        .margin({ left: 12 })
-        .onSelect((index: number) => {
-          this.filterIndex = index;
-          this.loadData(true);
-        })
-    }
-    .width('100%')
-    .padding({ left: 16, right: 16, top: 8, bottom: 8 })
-    .backgroundColor('#FFFFFF')
-  }
-
-  private buildFilterOptions(): SelectOption[] {
-    const options: SelectOption[] = [];
-    for (let i = 0; i < STATUS_FILTERS.length; i++) {
-      options.push({ value: t(STATUS_FILTERS[i]) });
-    }
-    return options;
-  }
-
-  /** 行内小按钮（行内动作与批量条共用）：文案 / 配色 / 可用性都由调用点给 */
-  @Builder
-  smallButton(text: string, color: string, bg: string, enabled: boolean, action: () => void) {
-    Button(text)
-      .fontSize(12)
-      .fontColor(color)
-      .backgroundColor(bg)
-      .borderRadius(4)
-      .height(28)
-      .padding({ left: 10, right: 10 })
-      .margin({ left: 6 })
-      .enabled(enabled)
-      .onClick(action)
-  }
-
   /** 批量操作条：勾了单才出现（占的正是分页条的位置，二者不会同时在屏幕上） */
   @Builder
   batchBar() {
@@ -547,98 +424,38 @@ struct WithdrawManagePage {
         .fontColor('#666666')
         .layoutWeight(1)
 
-      this.smallButton(t('wd.action_clear'), '#666666', '#F5F5F5', this.busyId !== 'batch', () => {
+      SmallButton({
+        text: t('wd.action_clear'),
+        color: '#666666',
+        bg: '#F5F5F5',
+        disabled: this.busyId === 'batch',
+        action: () => {
         this.selected = [];
-      });
-      this.smallButton(t('wd.action_batch_approve'), '#52C41A', '#E6FFF0', this.busyId !== 'batch', () => {
+        }
+    })
+      SmallButton({
+        text: t('wd.action_batch_approve'),
+        color: '#52C41A',
+        bg: '#E6FFF0',
+        disabled: this.busyId === 'batch',
+        action: () => {
         this.batchRow('approve');
-      });
-      this.smallButton(t('wd.action_batch_reject'), '#FF4D4F', '#FFE6E6', this.busyId !== 'batch', () => {
+        }
+    })
+      SmallButton({
+        text: t('wd.action_batch_reject'),
+        color: '#FF4D4F',
+        bg: '#FFE6E6',
+        disabled: this.busyId === 'batch',
+        action: () => {
         this.batchRow('reject');
-      });
+        }
+    })
     }
     .width('100%')
     .height(56)
     .padding({ left: 16, right: 16 })
     .backgroundColor('#FFFFFF')
     .border({ width: { top: 0.5 }, color: '#EEEEEE' })
-  }
-
-  /** 一行提现单：状态徽标 + 金额 + 用户/订单号 + 行尾动作（按状态与批次号收窄） */
-  @Builder
-  orderRow(item: WithdrawOrderItem) {
-    Column() {
-      Row() {
-        // 待审核行可勾（批量只处理待审核：后端 where status='pending' 逐单跳过其余）
-        if (this.canReview(item)) {
-          Checkbox()
-            .select(this.isSelected(item.id))
-            .width(18)
-            .height(18)
-            .margin({ right: 8 })
-            .enabled(this.busyId !== 'batch')
-            .onChange(() => {
-              this.toggleSelected(item.id);
-            })
-        }
-
-        Text(this.amountText(item))
-          .fontSize(15)
-          .fontWeight(FontWeight.Medium)
-          .layoutWeight(1)
-
-        Text(statusText(item.status))
-          .fontSize(10)
-          .fontColor(statusColor(item.status))
-          .backgroundColor('#F5F5F5')
-          .borderRadius(2)
-          .padding({ left: 6, right: 6, top: 2, bottom: 2 })
-      }
-      .width('100%')
-
-      Row() {
-        Text(this.subtitle(item))
-          .fontSize(12)
-          .fontColor('#999999')
-          .maxLines(1)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-          .layoutWeight(1)
-
-        if (this.canReview(item)) {
-          this.smallButton(t('wd.action_approve'), '#52C41A', '#E6FFF0', this.busyId !== item.id, () => {
-            this.reviewRow(item, 'approve');
-          });
-          this.smallButton(t('wd.action_reject'), '#FF4D4F', '#FFE6E6', this.busyId !== item.id, () => {
-            this.reviewRow(item, 'reject');
-          });
-        }
-
-        // 双审第二票：初审已记（reviewer_id>0）的待审核单才渲染
-        if (this.canConfirm(item)) {
-          this.smallButton(t('wd.action_recheck'), '#1677FF', '#E6F0FF', this.busyId !== item.id, () => {
-            this.confirmRow(item);
-          });
-        }
-
-        if (this.canPayout(item)) {
-          this.smallButton(t('wd.action_payout'), '#FA8C16', '#FFF2E6', this.busyId !== item.id, () => {
-            this.payoutRow(item);
-          });
-        }
-
-        if (this.canSync(item)) {
-          this.smallButton(t('wd.action_sync'), '#1677FF', '#E6F0FF', this.busyId !== item.id, () => {
-            this.syncRow(item);
-          });
-        }
-      }
-      .width('100%')
-      .margin({ top: 8 })
-    }
-    .width('100%')
-    .padding({ left: 16, right: 16, top: 10, bottom: 10 })
-    .alignItems(HorizontalAlign.Start)
-    .backgroundColor('#FFFFFF')
-    .border({ width: { bottom: 0.5 }, color: '#EEEEEE' })
   }
 }

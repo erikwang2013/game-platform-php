@@ -3,168 +3,16 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnDestroy, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Api, ApiError, Notify, UserProfile, dt } from '../core/api.service';
+import { Mt, Msg } from '../core/i18n/i18n';
 import { fileBlob } from '../core/upload';
 import { MeTiles } from './me-tiles';
 import { MeExport } from './me-export';
+import { MeNick } from './me-nick';
 
 @Component({
   selector: 'app-me',
-  imports: [MeTiles, MeExport],
-  template: `
-    <div class="card prof">
-      <span class="av">
-        @if (avatarSrc()) {
-          <img [src]="avatarSrc()" alt="" />
-        } @else if (user(); as u) {
-          {{ (u.nickname || u.username).charAt(0) }}
-        } @else {
-          ·
-        }
-      </span>
-      <div class="grow">
-        @if (user(); as u) {
-          <div class="who">{{ u.nickname || u.username }}</div>
-          <div class="s muted">@{{ u.username }}</div>
-          <div class="chips info">
-            @if (u.email) {
-              <span class="chip">{{ u.email }}</span>
-            }
-            @if (u.phone) {
-              <span class="chip">{{ u.phone }}</span>
-            }
-            @if (u.country) {
-              <span class="chip">{{ u.country }}</span>
-            }
-            @if (u.language) {
-              <span class="chip">{{ u.language }}</span>
-            }
-            @if (u.created_at) {
-              <span class="chip">注册于 {{ dt(u.created_at) }}</span>
-            }
-          </div>
-        } @else if (profError()) {
-          <div class="alert">{{ profError() }}</div>
-        } @else {
-          <div class="skeleton sk-line w60"></div>
-        }
-      </div>
-      <button class="btn ghost out" type="button" (click)="signout()">退出登录</button>
-    </div>
-
-    <app-me-tiles />
-
-    <div class="between sect" id="notifications">
-      <h2>消息</h2>
-      <div class="wrap">
-        @if (unread() > 0) {
-          <span class="badge accent">{{ unread() }} 条未读</span>
-          <button class="btn ghost" type="button" [disabled]="busy()" (click)="readAll()">
-            全部已读
-          </button>
-        }
-      </div>
-    </div>
-
-    <div class="card">
-      @if (loading()) {
-        <div class="rows">
-          @for (i of [1, 2, 3]; track i) {
-            <div class="row"><div class="skeleton sk-row"></div></div>
-          }
-        </div>
-      } @else if (error()) {
-        <div class="state">
-          <strong>加载失败</strong>
-          <span>{{ error() }}</span>
-          <button class="btn" type="button" (click)="reload()">重试</button>
-        </div>
-      } @else if (!items().length) {
-        <div class="state">
-          <!-- 吉祥物小骰（Dicey）：相对 public/，由 <base href> 解析到子路径 -->
-          <img class="state-art" src="mascot.svg" alt="" aria-hidden="true" />
-          <strong>暂无消息</strong>
-          <span>平台公告与账户通知会出现在这里</span>
-        </div>
-      } @else {
-        <div class="rows">
-          @for (n of items(); track n.id) {
-            <div class="row" [class.unread]="!n.is_read">
-              <span class="dotmark" [class.on]="!n.is_read"></span>
-              <div class="grow">
-                <div class="t">{{ n.title }}</div>
-                <div class="s">{{ dt(n.created_at) }}{{ n.type ? ' · ' + n.type : '' }}</div>
-                @if (n.content) {
-                  <div class="body">{{ n.content }}</div>
-                }
-              </div>
-              @if (!n.is_read) {
-                <button class="btn ghost mark" type="button" (click)="read(n)">标记已读</button>
-              }
-            </div>
-          }
-        </div>
-        @if (page() < lastPage()) {
-          <div class="more">
-            <button class="btn" type="button" [disabled]="more()" (click)="loadMore()">
-              {{ more() ? '加载中…' : '加载更多' }}
-            </button>
-          </div>
-        }
-      }
-    </div>
-
-    <app-me-export />
-
-    <div class="card danger" id="delete-account">
-      <div class="dh">
-        <h2>注销账号</h2>
-        <span class="badge bad">不可撤销</span>
-      </div>
-      <p class="hint">
-        注销后该账号无法再登录，个人资料将被匿名化。账号内余额需先自行提现清零，否则服务端会拒绝注销。
-      </p>
-
-      @if (delMsg()) {
-        <div class="alert">{{ delMsg() }}</div>
-      }
-
-      @if (delOpen()) {
-        <div class="fields">
-          <label class="field">
-            <span>当前密码</span>
-            <input
-              class="input"
-              type="password"
-              autocomplete="current-password"
-              placeholder="请输入当前密码"
-              [value]="delPw()"
-              (input)="onDelPw($event)"
-            />
-          </label>
-          <label class="field">
-            <span>确认注销（输入 yes）</span>
-            <input
-              class="input mono"
-              autocomplete="off"
-              placeholder="yes"
-              [value]="delYes()"
-              (input)="onDelYes($event)"
-            />
-          </label>
-        </div>
-        <div class="acts">
-          <button class="btn primary" type="button" [disabled]="delBusy()" (click)="submitDel()">
-            {{ delBusy() ? '注销中…' : '确认注销' }}
-          </button>
-          <button class="btn ghost" type="button" [disabled]="delBusy()" (click)="cancelDel()">
-            取消
-          </button>
-        </div>
-      } @else {
-        <button class="btn ghost red" type="button" (click)="openDel()">注销账号</button>
-      }
-    </div>
-  `,
+  imports: [MeTiles, MeExport, MeNick, Mt],
+  templateUrl: './me.html',
   styles: [
     `
       .prof {
@@ -303,11 +151,9 @@ export class MePage implements OnDestroy {
 
   protected readonly user = signal<UserProfile | null>(null);
   /**
-   * 头像的真实可显示地址。
-   *
-   * 上传物（aetherupload）在库里是 `/api/v1/user/file/{savedPath}` —— 这个端点要 Bearer 头，
-   * `<img src>` 带不上 ⇒ 直接绑 avatar 会是一张碎图。故先带 token 取 blob 再转 objectURL；
-   * 取不到就退回首字母兜底，不留碎图。第三方 OAuth 的绝对地址不需要走这一步。
+   * 头像的真实可显示地址：库里的值是 `/api/v1/user/file/{savedPath}`，该端点**只认 Bearer 头**
+   * 而 `<img src>` 带不上 ⇒ 直接绑 avatar 是碎图；故带 token 取 blob 转 objectURL，
+   * 取不到退回首字母兜底。第三方 OAuth 的绝对地址（http…）不用走这一步。
    */
   protected readonly avatarSrc = signal('');
   protected readonly profError = signal('');
@@ -322,13 +168,7 @@ export class MePage implements OnDestroy {
   protected readonly dt = dt;
 
   constructor() {
-    this.api.profile().subscribe({
-      next: (u) => {
-        this.user.set(u);
-        this.loadAvatar(u.avatar);
-      },
-      error: (e: ApiError) => this.profError.set(e.message),
-    });
+    this.loadProfile();
     this.api.unreadCount().subscribe({
       next: (r) => this.unread.set(r.count),
       error: () => this.unread.set(0),
@@ -339,6 +179,17 @@ export class MePage implements OnDestroy {
   ngOnDestroy(): void {
     const u = this.avatarSrc();
     if (u.startsWith('blob:')) URL.revokeObjectURL(u);
+  }
+
+  /** 资料读取：首屏与「改完昵称」（app-me-nick 的 saved）共用同一条回读路径 */
+  protected loadProfile(): void {
+    this.api.profile().subscribe({
+      next: (u) => {
+        this.user.set(u);
+        this.loadAvatar(u.avatar);
+      },
+      error: (e: ApiError) => this.profError.set(e.message),
+    });
   }
 
   /** 见 avatarSrc 的注释：相对地址必须带 token 取字节，绝对地址直接用 */
@@ -423,7 +274,8 @@ export class MePage implements OnDestroy {
   protected readonly delPw = signal('');
   protected readonly delYes = signal('');
   protected readonly delBusy = signal(false);
-  protected readonly delMsg = signal('');
+  /** 两态（服务端原文 / 词条键）—— 见 `core/i18n/i18n.ts` 的 `Msg`：异步拉回的文案不能在 set 时定稿 */
+  protected readonly delMsg = signal<Msg>('');
 
   protected onDelPw(ev: Event): void {
     this.delPw.set((ev.target as HTMLInputElement).value);
@@ -468,7 +320,7 @@ export class MePage implements OnDestroy {
       next: (gone) => {
         this.delBusy.set(false);
         if (!gone) {
-          this.delMsg.set('注销请求已提交，但账号资料仍可读取，请刷新后确认');
+          this.delMsg.set({ key: 'me.del_pending' });
           return;
         }
         this.delPw.set('');
@@ -477,15 +329,20 @@ export class MePage implements OnDestroy {
       },
       error: (e: ApiError) => {
         this.delBusy.set(false);
-        this.delMsg.set(`注销结果无法确认：${e.message}`);
+        this.delMsg.set({ key: 'me.del_unknown', params: { msg: e.message } });
       },
     });
   }
 
-  /** 服务端原文照实展示，仅在末尾补可操作的建议 */
-  private delHint(e: ApiError): string {
+  /**
+   * 服务端原文照实展示，仅在末尾补可操作的建议。
+   *
+   * ⚠ 返回**两态 `Msg` 而不是拼好的句子**：本方法在异步回调（`error:`）里被调用，
+   * 返回字符串就等于在那一刻把译文定稿 —— 切语言后这一行不跟着变。同 `withdraw.ts` 的 `hint()`。
+   */
+  private delHint(e: ApiError): Msg {
     if (e.code === 401 || e.code === 403) {
-      return `${e.message}（登录状态可能已失效，请重新登录后再试）`;
+      return { key: 'me.del_hint_relogin', params: { msg: e.message } };
     }
     return e.message;
   }

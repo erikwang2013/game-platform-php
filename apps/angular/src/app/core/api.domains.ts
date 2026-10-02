@@ -172,6 +172,20 @@ export interface ExportData {
   exported_at: string;
 }
 
+/* ---------------- 国家/地区（公开） ---------------- */
+
+/**
+ * `GET /country/list` 的一项。服务端只映射这三个字段、**没有国家名**
+ * （`CountryController::list:27-33`），所以 KYC 下拉的文案只能用 `country_code` 本身。
+ * `min_deposit` 是 `DECIMAL(18,4)` 且模型 cast string 的原样值；本页不展示它，
+ * 但回包就长这样，别按「只用到 country_code」把形状裁掉。
+ */
+export interface CountryOption {
+  country_code: string;
+  currency: string;
+  min_deposit: string;
+}
+
 export abstract class ApiDomains extends ApiBase {
   /* ==================== 优惠券 ==================== */
 
@@ -349,9 +363,10 @@ export abstract class ApiDomains extends ApiBase {
    * 会话列表。**没有独立的会话表**：服务端把「我发出的」与「我收到的」两组合并、各取每组最大 id
    * 再回表查最后一条，所以**只有真正有消息往来的人才会出现**（是好友但没聊过 = 不在列表里）。
    *
-   * 服务端**有** WS：`ChatController::send` 把同一条帧既 `publish` 到 `chat:channel`（这条旁路确实
-   * 无人订阅），又 `lpush` 进 `chat:delivery_queue`，由 `app/process/ChatWebSocket.php` 的定时器
-   * brpop 后投给该用户的在线连接。**没有 WS 客户端的是本树**（C 端 angular）⇒ 新消息不会自己出现，
+   * 服务端**有** WS：`ChatController::send` 把帧 `lpush` 进 `chat:delivery_queue`（`ChatController.php:170`），
+   * 由 `app/process/ChatWebSocket.php` 的定时器 brpop 后投给该用户的在线连接。
+   * （曾同时 `publish` 到 `chat:channel`，那条旁路全仓零订阅者、每条私信白付一次 Redis 往返，已删。）
+   * **没有 WS 客户端的是本树**（C 端 angular）⇒ 新消息不会自己出现，
    * 页面顶部如实写「新消息到达后刷新」。（接 WS 客户端是单独立项，本次不做。）
    */
   conversations(): Observable<{ list: Conversation[] }> {
@@ -405,6 +420,18 @@ export abstract class ApiDomains extends ApiBase {
    */
   exportData(): Observable<ExportData> {
     return this.request<ExportData>('GET', `${BASE}/user/export-data`);
+  }
+
+  /* ==================== 国家/地区（公开） ==================== */
+
+  /**
+   * 国家/地区选项。**公开端点**（`route.php` 的「公开接口」组，无鉴权中间件），只列 `status=1`
+   * 的国家。⚠ 回包**没有国家名**（见 `CountryOption`）⇒ 下拉文案只能用代码本身。
+   * KYC 的 `country` 在服务端是 `nullable|string|max:50`、**不校验在册**（`IdentityController:61`），
+   * 所以历史值可能不在本列表里 —— 补一条的逻辑在 `kyc.ts` 的 `countryChoices`。
+   */
+  countries(): Observable<{ list: CountryOption[] }> {
+    return this.request<{ list: CountryOption[] }>('GET', `${BASE}/country/list`);
   }
 
   /* 刻意**不接**两个聊天端点（各自零消费者，接上就是死码）：

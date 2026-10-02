@@ -156,6 +156,7 @@ export const zhUi: Record<UiKey, string> = {
   'form.options_load_failed': '{name}的选项加载失败，已选值仍可见，但不改它就别提交',
   'form.tree_load_failed': '{name}的权限树加载失败，已选权限仍可见，但不改它就别提交',
   'form.tree_loading': '权限树加载中…',
+  'form.discard_confirm': '有未保存的修改，确定放弃吗？',
   'form.select_placeholder': '请选择',
   // 父权限下拉的选项（lib/tree.ts 摊平权限树）：键分两种**形状**（带 slug / 不带），
   // 路径与 slug 走 params —— 选项是逐行现拼的，见 lib/crud.ts 的 FieldOption

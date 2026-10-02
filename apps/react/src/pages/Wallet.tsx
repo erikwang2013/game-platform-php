@@ -8,23 +8,44 @@ import { api } from '../lib/api.ts';
 import { dt } from '../lib/datetime.ts';
 import { useAsync } from '../lib/hooks.ts';
 import { txLabel } from '../lib/labels.ts';
+import { useI18n } from '../i18n/useI18n.ts';
+import type { MessageKey } from '../i18n/index.ts';
 import { ErrorBox, Loading } from '../components/States.tsx';
 
 type Tab = 'tx' | 'dep' | 'wd' | 'ex';
-type Row = { k: string; title: string; sub: string; amount: string; inflow: boolean; pill?: string };
+/**
+ * ⚠ `title` / `sub` 是**函数**不是字符串，别改回去。
+ *
+ * 行是**异步拉回来后存进 state 的**，而文案要在**渲染期**求值才跟得上语言：
+ * 存成字符串的那一刻就把语言冻住了，切完语言这一屏一个字都不会变
+ * （`useAsync` 的 deps 只有 tab/page，切语言不会重跑拉取）。
+ * 把 `t()` / `txLabel()` 留在闭包里、渲染时再调，改的是求值时机不是数据。
+ */
+type Row = {
+  k: string;
+  title: () => string;
+  sub: () => string;
+  amount: string;
+  inflow: boolean;
+  pill?: string;
+};
 
 // 标签保持 2 字：4 个页签在 320px 宽下每格约 70px，4 字标签会被挤断
-const TABS: Array<{ id: Tab; label: string }> = [
-  { id: 'tx', label: '流水' },
-  { id: 'dep', label: '充值' },
-  { id: 'wd', label: '提现' },
-  { id: 'ex', label: '兑换' },
+//
+// ⚠ 存**键**不存文案（与 `Layout.tsx` 的 NAV 同款）：模块顶层求值只发生一次，
+// 存文案会把它冻在首屏语言上。
+const TABS: Array<{ id: Tab; label: MessageKey }> = [
+  { id: 'tx', label: 'wallet.tab_tx' },
+  { id: 'dep', label: 'tx.deposit' },
+  { id: 'wd', label: 'tx.withdraw' },
+  { id: 'ex', label: 'tx.exchange' },
 ];
 
 /** 金额方向只看符号位，不做浮点运算（金额一律字符串透传）。 */
 const isNegative = (s: string) => s.trim().startsWith('-');
 
 export function Wallet() {
+  const { t } = useI18n();
   const [tab, setTab] = useState<Tab>('tx');
   const [page, setPage] = useState(1);
 
@@ -35,12 +56,12 @@ export function Wallet() {
       const d = await api.transactions({ page });
       return {
         ...d,
-        items: d.items.map<Row>((t) => ({
-          k: t.id,
-          title: txLabel(t.type),
-          sub: t.remark || dt(t.created_at),
-          amount: t.amount,
-          inflow: !isNegative(t.amount),
+        items: d.items.map<Row>((row) => ({
+          k: row.id,
+          title: () => txLabel(row.type),
+          sub: () => row.remark || dt(row.created_at),
+          amount: row.amount,
+          inflow: !isNegative(row.amount),
         })),
       };
     }
@@ -50,8 +71,8 @@ export function Wallet() {
         ...d,
         items: d.items.map<Row>((o) => ({
           k: o.order_no,
-          title: `充值 ${o.currency}`,
-          sub: dt(o.paid_at || o.created_at),
+          title: () => t('wallet.deposit_title', { currency: o.currency }),
+          sub: () => dt(o.paid_at || o.created_at),
           amount: o.amount,
           inflow: true,
           pill: o.status,
@@ -64,8 +85,8 @@ export function Wallet() {
         ...d,
         items: d.items.map<Row>((o) => ({
           k: o.order_no,
-          title: '提现',
-          sub: dt(o.created_at),
+          title: () => t('tx.withdraw'),
+          sub: () => dt(o.created_at),
           amount: o.platform_amount,
           inflow: false,
           pill: o.status,
@@ -79,25 +100,26 @@ export function Wallet() {
       ...d,
       items: d.items.map<Row>((r) => ({
         k: r.id,
-        title: r.direction === 'in' ? '买入游戏币' : '卖出游戏币',
-        sub: `游戏币 ${r.game_amount} · ${dt(r.created_at)}`,
+        title: () =>
+          t(r.direction === 'in' ? 'wallet.buy_game_currency' : 'wallet.sell_game_currency'),
+        sub: () => t('wallet.game_amount_at', { amount: r.game_amount, time: dt(r.created_at) }),
         amount: r.platform_amount,
         inflow: r.direction === 'out',
       })),
     };
   }, [tab, page]);
 
-  const switchTab = (t: Tab) => {
-    setTab(t);
+  const switchTab = (id: Tab) => {
+    setTab(id);
     setPage(1);
   };
 
   return (
     <>
       <section className="stack">
-        <p className="label">我的钱包</p>
+        <p className="label">{t('wallet.title')}</p>
         <h1 className="h1">
-          钱包
+          {t('nav.wallet')}
           <span style={{ color: 'var(--orange)' }}>.</span>
         </h1>
 
@@ -107,48 +129,48 @@ export function Wallet() {
           <div className="grid--stats">
             <div className="stat stat--orange">
               <p className="stat__n">{info.data.balance}</p>
-              <p className="stat__k">可用余额</p>
+              <p className="stat__k">{t('wallet.available')}</p>
             </div>
             <div className="stat">
               <p className="stat__n">{info.data.frozen_balance}</p>
-              <p className="stat__k">冻结金额</p>
+              <p className="stat__k">{t('wallet.frozen')}</p>
             </div>
             <div className="stat stat--yellow">
               <p className="stat__n">{info.data.total_earned}</p>
-              <p className="stat__k">累计收入</p>
+              <p className="stat__k">{t('wallet.total_earned')}</p>
             </div>
             <div className="stat">
               <p className="stat__n">{info.data.total_spent}</p>
-              <p className="stat__k">累计支出</p>
+              <p className="stat__k">{t('wallet.total_spent')}</p>
             </div>
           </div>
         )}
 
         <div className="row" style={{ gap: 10 }}>
           <Link className="btn btn--primary" to="/wallet/deposit">
-            充值
+            {t('tx.deposit')}
           </Link>
           <Link className="btn" to="/wallet/withdraw">
-            提现
+            {t('tx.withdraw')}
           </Link>
           <Link className="btn" to="/wallet/exchange">
-            兑换
+            {t('tx.exchange')}
           </Link>
         </div>
       </section>
 
       <section className="stack">
         <div className="tabs" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }} role="tablist">
-          {TABS.map((t) => (
+          {TABS.map((item) => (
             <button
-              key={t.id}
+              key={item.id}
               type="button"
               role="tab"
-              aria-selected={tab === t.id}
-              className={`tabs__b${tab === t.id ? ' is-on' : ''}`}
-              onClick={() => switchTab(t.id)}
+              aria-selected={tab === item.id}
+              className={`tabs__b${tab === item.id ? ' is-on' : ''}`}
+              onClick={() => switchTab(item.id)}
             >
-              {t.label}
+              {t(item.label)}
             </button>
           ))}
         </div>
@@ -157,7 +179,7 @@ export function Wallet() {
         {!list.loading && list.error && <ErrorBox message={list.error} onRetry={list.reload} />}
         {!list.loading && !list.error && list.data && list.data.items.length === 0 && (
           <div className="state">
-            <p className="state__k">暂无记录</p>
+            <p className="state__k">{t('app.no_records')}</p>
           </div>
         )}
         {!list.loading && !list.error && list.data && list.data.items.length > 0 && (
@@ -167,7 +189,7 @@ export function Wallet() {
                 <div key={r.k} className="li">
                   <div>
                     <p className="li__t" style={{ margin: 0 }}>
-                      {r.title}
+                      {r.title()}
                       {r.pill && (
                         <span className="pill pill--plain" style={{ marginLeft: 8 }}>
                           {r.pill}
@@ -175,7 +197,7 @@ export function Wallet() {
                       )}
                     </p>
                     <p className="small muted" style={{ margin: 0 }}>
-                      {r.sub}
+                      {r.sub()}
                     </p>
                   </div>
                   <span className={`amt ${r.inflow ? 'amt--in' : 'amt--out'}`}>
@@ -194,7 +216,7 @@ export function Wallet() {
                   disabled={page <= 1 || list.loading}
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                 >
-                  上一页
+                  {t('app.prev_page')}
                 </button>
                 <span className="small muted">
                   {list.data.page} / {list.data.last_page}
@@ -205,7 +227,7 @@ export function Wallet() {
                   disabled={page >= list.data.last_page || list.loading}
                   onClick={() => setPage((p) => p + 1)}
                 >
-                  下一页
+                  {t('app.next_page')}
                 </button>
               </div>
             )}

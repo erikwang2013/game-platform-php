@@ -6,8 +6,12 @@ import promptAction from '@ohos.promptAction';
 import { FormValues, FormPayload, PermissionNode } from '../model/DataModels';
 import { pickImage } from './ImagePicker';
 import { UploadService } from '../service/UploadService';
-import { PermissionTreeView } from './PermissionTree';
 import { t, t1 } from '../i18n/Translations';
+// 每个字段的控件（标签+说明+控件本体）在同目录 FormFieldControl.ets —— 那张 if/else 链子占百来行
+import { FormFieldControl } from './FormFieldControl';
+
+// RowActionBar 已搬去同目录 RowActionBar.ets（与表单零耦合）；从本文件转出，调用方无感
+export { RowActionBar } from './RowActionBar';
 
 /**
  * 字段类型 —— 与控件一一对应：text/number/password→TextInput（password 掩码显示），
@@ -235,19 +239,10 @@ export struct FormDialog {
     return Number.isNaN(parsed) ? 0 : parsed;
   }
 
-  /** multi 候选项（ArkTS 的 ForEach 参数里不写 ?? 兜底，统一走这个方法） */
-  private optionList(field: FormField): FieldOption[] {
-    return field.options ?? [];
-  }
-
   /** multi / tree 当前勾选值（逗号分隔字符串 → 数组） */
   private picked(field: FormField): string[] {
     const raw = this.current(field);
     return raw === '' ? [] : raw.split(',');
-  }
-
-  private isPicked(field: FormField, value: string): boolean {
-    return this.picked(field).indexOf(value) >= 0;
   }
 
   /** 勾选/取消一项：重建数组后回写逗号串（保持「值一定是我写进去的那份」） */
@@ -337,47 +332,6 @@ export struct FormDialog {
     }
   }
 
-  /** ArkUI 的 SelectOption 只吃显示文本，提交值另存在 FieldOption.value */
-  private selectOptions(field: FormField): SelectOption[] {
-    const options: SelectOption[] = [];
-    const source = field.options ?? [];
-    for (let i = 0; i < source.length; i++) {
-      options.push({ value: t(source[i].label) });
-    }
-    return options;
-  }
-
-  /** 当前值对应的显示文本；值不在候选里（历史脏数据）就原样回显，别显示空白 */
-  private optionLabel(field: FormField): string {
-    const source = field.options ?? [];
-    const current = this.current(field);
-    for (let i = 0; i < source.length; i++) {
-      if (source[i].value === current) {
-        return t(source[i].label);
-      }
-    }
-    return current;
-  }
-
-  private optionIndex(field: FormField): number {
-    const source = field.options ?? [];
-    const current = this.current(field);
-    for (let i = 0; i < source.length; i++) {
-      if (source[i].value === current) {
-        return i;
-      }
-    }
-    // -1 = 不选中（Select 的默认值），值不在值域里时不硬凑一个候选
-    return -1;
-  }
-
-  private pickOption(field: FormField, index: number): void {
-    const source = field.options ?? [];
-    if (index >= 0 && index < source.length) {
-      this.setValue(field.name, source[index].value);
-    }
-  }
-
   build() {
     Stack({ alignContent: Alignment.Center }) {
       // 遮罩与卡片是 Stack 兄弟节点：卡片上的点击不会冒泡到遮罩（无需 stopPropagation）
@@ -407,161 +361,23 @@ export struct FormDialog {
         Scroll() {
           Column() {
             ForEach(this.fields, (field: FormField) => {
-              // 每轮一个根组件（Column）—— ForEach 每轮只能生成一个
-              Column() {
-                Row() {
-                  Text(t(field.label))
-                    .fontSize(14)
-                    .fontColor('#333333')
-
-                  if (field.required) {
-                    Text('*')
-                      .fontSize(14)
-                      .fontColor('#FF4D4F')
-                      .margin({ left: 2 })
-                  }
-
-                  // 多选没勾选态能一眼看全时，给个计数（列表可能几十项，滚下去看不出来选了几个）
-                  if (field.type === 'multi' || field.type === 'tree') {
-                    Text(t1('common.selected_count', 'count', `${this.picked(field).length}`))
-                      .fontSize(12)
-                      .fontColor('#999999')
-                      .margin({ left: 6 })
-                  }
+              // 每轮一个根组件（子组件）—— ForEach 每轮只能生成一个
+              FormFieldControl({
+                field: field,
+                value: this.current(field),
+                pickedIds: this.picked(field),
+                submitting: this.submitting,
+                uploading: this.uploading,
+                onSetValue: (name: string, value: string) => {
+                  this.setValue(name, value);
+                },
+                onTogglePicked: (f: FormField, v: string, checked: boolean) => {
+                  this.togglePicked(f, v, checked);
+                },
+                onUpload: (f: FormField) => {
+                  this.pickAndUpload(f);
                 }
-                .width('100%')
-                .margin({ bottom: 6 })
-
-                // 说明放在标签与控件之间：控件一旦有内容，placeholder 就没了，而值域说明要一直在场
-                if (field.hint !== undefined && field.hint.length > 0) {
-                  Text(t(field.hint))
-                    .fontSize(11)
-                    .fontColor('#999999')
-                    .width('100%')
-                    .margin({ bottom: 6 })
-                }
-
-                if (field.type === 'switch') {
-                  Toggle({ type: ToggleType.Switch, isOn: this.current(field) === '1' })
-                    .enabled(!this.submitting)
-                    .onChange((isOn: boolean) => {
-                      this.setValue(field.name, isOn ? '1' : '0');
-                    })
-                } else if (field.type === 'select') {
-                  Select(this.selectOptions(field))
-                    .value(this.optionLabel(field))
-                    .selected(this.optionIndex(field))
-                    .width('100%')
-                    .enabled(!this.submitting)
-                    .onSelect((index: number) => {
-                      this.pickOption(field, index);
-                    })
-                } else if (field.type === 'multi') {
-                  // 勾选态靠 setValue 重建的 values 对象驱动（select 同款）。
-                  // 点击只挂在 Checkbox 与文案上，行本身不挂 onClick —— 挂了两处会各切一次、净效果为零。
-                  Column() {
-                    ForEach(this.optionList(field), (option: FieldOption) => {
-                      Row() {
-                        Checkbox()
-                          .select(this.isPicked(field, option.value))
-                          .width(18)
-                          .height(18)
-                          .enabled(!this.submitting)
-                          .onChange((checked: boolean) => {
-                            this.togglePicked(field, option.value, checked);
-                          })
-
-                        Text(t(option.label))
-                          .fontSize(13)
-                          .fontColor('#333333')
-                          .layoutWeight(1)
-                          .margin({ left: 6 })
-                          .onClick(() => {
-                            this.togglePicked(field, option.value, !this.isPicked(field, option.value));
-                          })
-                      }
-                      .width('100%')
-                      .margin({ bottom: 2 })
-                    }, (option: FieldOption) => `${field.name}:${option.value}`)
-                  }
-                  .width('100%')
-                } else if (field.type === 'tree') {
-                  // 勾选态单向流入（@Prop = 表单值），变化经 onChange 回写成逗号串。
-                  // 展开态在树组件内（纯展示），表单重渲染不影响提交值。
-                  PermissionTreeView({
-                    nodes: field.tree ?? [],
-                    checked: this.picked(field),
-                    disabled: this.submitting,
-                    onChange: (ids: string[]) => {
-                      this.setValue(field.name, ids.join(','));
-                    }
-                  })
-                } else if (field.type === 'image') {
-                  // 上传不改控件形态：文本框仍是唯一的真值入口（可直接贴外链），上传只是往里填地址
-                  Column() {
-                    Row() {
-                      TextInput({ placeholder: field.placeholder !== undefined ? t(field.placeholder) : '', text: this.current(field) })
-                        .height(40)
-                        .fontSize(14)
-                        .layoutWeight(1)
-                        .enabled(!this.submitting && this.uploading.length === 0)
-                        .onChange((value: string) => {
-                          this.setValue(field.name, value);
-                        })
-
-                      Button(this.uploading === field.name ? t('common.uploading') : t('common.upload'))
-                        .fontSize(13)
-                        .fontColor('#FFFFFF')
-                        .backgroundColor(this.uploading === field.name ? '#99BBFF' : '#1677FF')
-                        .borderRadius(4)
-                        .height(40)
-                        .width(64)
-                        .margin({ left: 8 })
-                        .enabled(!this.submitting && this.uploading.length === 0)
-                        .onClick(() => {
-                          this.pickAndUpload(field);
-                        })
-                    }
-                    .width('100%')
-
-                    // 预览：display 路由公开，Image 直接吃这个绝对地址（`<img>` 那种场景带不了 Authorization 头）
-                    if (this.current(field).length > 0) {
-                      Image(this.current(field))
-                        .width('100%')
-                        .height(120)
-                        .objectFit(ImageFit.Contain)
-                        .backgroundColor('#FAFAFA')
-                        .borderRadius(4)
-                        .margin({ top: 6 })
-                    }
-                  }
-                  .width('100%')
-                } else if (field.type === 'textarea') {
-                  TextArea({ placeholder: field.placeholder !== undefined ? t(field.placeholder) : '', text: this.current(field) })
-                    .width('100%')
-                    .height(80)
-                    .fontSize(14)
-                    .enabled(!this.submitting)
-                    .onChange((value: string) => {
-                      this.setValue(field.name, value);
-                    })
-                } else {
-                  TextInput({ placeholder: field.placeholder !== undefined ? t(field.placeholder) : '', text: this.current(field) })
-                    .width('100%')
-                    .height(40)
-                    .fontSize(14)
-                    // number 走数字键盘，password 走掩码，其余 Normal
-                    .type(field.type === 'number' ? InputType.Number
-                      : (field.type === 'password' ? InputType.Password : InputType.Normal))
-                    .enabled(!this.submitting)
-                    .onChange((value: string) => {
-                      this.setValue(field.name, value);
-                    })
-                }
-              }
-              .width('100%')
-              .alignItems(HorizontalAlign.Start)
-              .margin({ bottom: 12 })
+              })
             }, (field: FormField) => field.name)
           }
           .width('100%')
@@ -602,100 +418,5 @@ export struct FormDialog {
     }
     .width('100%')
     .height('100%')
-  }
-}
-
-/**
- * 列表行尾动作：编辑 / 启用·停用 / 额外动作 / 删除（二次确认）。
- * statusText 为空串 = 该实体没有 status 字段（或状态多于两种、切换按钮表达不了），不渲染切换按钮。
- */
-@Component
-export struct RowActionBar {
-  /** 语言变更要重渲染本组件（按钮文案由 t() 出） */
-  @StorageLink('app_locale') localeCode: string = 'en';
-  /** 「启用」/「停用」按钮文案（按当前状态给目标动作） */
-  @Prop statusText: string = '';
-  /** 额外动作文案（空串 = 不渲染），如排行榜「刷新缓存」 */
-  @Prop extraText: string = '';
-  /** 本行操作进行中：禁用全部按钮，防重复提交 */
-  @Prop busy: boolean = false;
-  /** 有没有更新端点（缺省 true）；false = 不渲染「编辑」（风控事件/反作弊事件是只读流水） */
-  @Prop canEdit: boolean = true;
-  /** 有没有删除端点（缺省 true）；false = 不渲染删除按钮 */
-  @Prop canDelete: boolean = true;
-  onEdit?: () => void;
-  onDelete?: () => void;
-  onToggle?: () => void;
-  onExtra?: () => void;
-
-  build() {
-    Row() {
-      if (this.canEdit) {
-        Button(t('common.edit'))
-          .fontSize(12)
-          .fontColor('#1677FF')
-          .backgroundColor('#E6F0FF')
-          .borderRadius(4)
-          .height(28)
-          .padding({ left: 10, right: 10 })
-          .enabled(!this.busy)
-          .onClick(() => {
-            if (this.onEdit) {
-              this.onEdit();
-            }
-          })
-      }
-
-      if (this.statusText.length > 0) {
-        Button(this.statusText)
-          .fontSize(12)
-          .fontColor('#52C41A')
-          .backgroundColor('#E6FFF0')
-          .borderRadius(4)
-          .height(28)
-          .padding({ left: 10, right: 10 })
-          .margin({ left: 6 })
-          .enabled(!this.busy)
-          .onClick(() => {
-            if (this.onToggle) {
-              this.onToggle();
-            }
-          })
-      }
-
-      if (this.extraText.length > 0) {
-        Button(this.extraText)
-          .fontSize(12)
-          .fontColor('#FA8C16')
-          .backgroundColor('#FFF2E6')
-          .borderRadius(4)
-          .height(28)
-          .padding({ left: 10, right: 10 })
-          .margin({ left: 6 })
-          .enabled(!this.busy)
-          .onClick(() => {
-            if (this.onExtra) {
-              this.onExtra();
-            }
-          })
-      }
-
-      if (this.canDelete) {
-        Button(t('common.delete'))
-          .fontSize(12)
-          .fontColor('#FF4D4F')
-          .backgroundColor('#FFE6E6')
-          .borderRadius(4)
-          .height(28)
-          .padding({ left: 10, right: 10 })
-          .margin({ left: 6 })
-          .enabled(!this.busy)
-          .onClick(() => {
-            if (this.onDelete) {
-              this.onDelete();
-            }
-          })
-      }
-    }
   }
 }

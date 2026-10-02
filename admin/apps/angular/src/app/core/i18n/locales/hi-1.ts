@@ -114,6 +114,7 @@ export const HI_1: Record<string, string> = {
   'risk.rule.scope': 'दायरा',
   'risk.rule.priority': 'प्राथमिकता',
   'risk.rule.priority_hint': '0-1000, जितना बड़ा उतना पहले जाँचा जाता है (डिफ़ॉल्ट 100)',
+  'risk.rule.scope_hint': 'exchange / login अभी जुड़े नहीं हैं (मूल्यांकनकर्ता में शाखाएँ हैं पर कोई कॉल साइट नहीं — RiskService::check() केवल deposit / withdraw से कॉल होता है), इसलिए इस स्कोप का नियम कभी मैच नहीं करेगा',
   'risk.rule.status': 'स्थिति',
   'risk.rule.config': 'थ्रेशोल्ड कॉन्फ़िग (JSON)',
   'risk.rule.keys_note': '\n',

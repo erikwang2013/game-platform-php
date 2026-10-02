@@ -119,7 +119,7 @@ return [
     'Phone verified' => 'Телефон подтверждён',
     'Play log not found' => 'Запись об игре не найдена',
     'Please type yes to confirm account closure' => 'Введите yes для подтверждения удаления аккаунта',
-    'Privacy settings updated' => 'Настройки приватности обновлены',
+    'Privacy settings were not saved' => 'Настройки приватности не сохранены',
     'Provider mismatch' => 'Провайдер не совпадает',
     'Reply sent' => 'Ответ отправлен',
     'Request not found' => 'Запрос не найден',

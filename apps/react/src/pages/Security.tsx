@@ -8,6 +8,17 @@ import { ApiError, api } from '../lib/api.ts';
 import { useAsync } from '../lib/hooks.ts';
 import { ErrorBox, Loading } from '../components/States.tsx';
 import { SecretBox } from '../components/SecretBox.tsx';
+import { t, type MessageKey } from '../i18n/index.ts';
+import { useI18n } from '../i18n/useI18n.ts';
+
+/**
+ * 反馈文案的**暂存形**：存「键」或「原始错误 + 兜底键」，**不存翻好的串**。
+ * ⚠ 存翻好的串会把语言冻在失败那一刻（理由同 Wallet.tsx 的 Row 注释）。
+ */
+type Msg = { ok: boolean; key: MessageKey } | { ok: false; err: unknown; fallback: MessageKey };
+
+const msgText = (m: Msg): string =>
+  'err' in m ? (m.err instanceof ApiError ? m.err.message : t(m.fallback)) : t(m.key);
 
 /**
  * ⚠ 本页**只有 2FA 自助**（status/setup/enable/disable 四个端点真能用）。
@@ -22,6 +33,7 @@ import { SecretBox } from '../components/SecretBox.tsx';
  */
 
 export function Security() {
+  const { t } = useI18n();
   const status = useAsync(() => api.twoFactorStatus(), []);
 
   // 阶段：idle=只看状态；setup=已出密钥待验证；codes=刚启用，正在展示一次性备用码
@@ -30,15 +42,14 @@ export function Security() {
   const [codes, setCodes] = useState<string[] | null>(null);
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [msg, setMsg] = useState<Msg | null>(null);
 
   // 关闭 2FA 要密码 + TOTP 双因子
   const [offOpen, setOffOpen] = useState(false);
   const [pw, setPw] = useState('');
   const [offCode, setOffCode] = useState('');
 
-  const err = (e: unknown, fallback: string) =>
-    setMsg({ ok: false, text: e instanceof ApiError ? e.message : fallback });
+  const err = (e: unknown, fallback: MessageKey) => setMsg({ ok: false, err: e, fallback });
 
   const startSetup = async () => {
     if (busy) return;
@@ -51,7 +62,7 @@ export function Security() {
       setCode('');
       setStage('setup');
     } catch (e) {
-      err(e, '生成密钥失败，请稍后重试');
+      err(e, 'security.setup_failed');
     } finally {
       setBusy(false);
     }
@@ -68,7 +79,7 @@ export function Security() {
       setStage('codes');
       status.reload();
     } catch (e) {
-      err(e, '启用失败，请稍后重试');
+      err(e, 'security.enable_failed');
     } finally {
       setBusy(false);
     }
@@ -83,10 +94,10 @@ export function Security() {
       setPw('');
       setOffCode('');
       setOffOpen(false);
-      setMsg({ ok: true, text: '两步验证已关闭' });
+      setMsg({ ok: true, key: 'security.2fa_disabled' });
       status.reload();
     } catch (e) {
-      err(e, '关闭失败，请稍后重试');
+      err(e, 'security.disable_failed');
     } finally {
       setBusy(false);
     }
@@ -101,9 +112,9 @@ export function Security() {
 
   return (
     <>
-      <p className="label">账号安全</p>
+      <p className="label">{t('security.title')}</p>
       <h1 className="h1">
-        两步验证
+        {t('me.two_factor')}
         <span style={{ color: 'var(--orange)' }}>.</span>
       </h1>
 
@@ -116,13 +127,12 @@ export function Security() {
           <div className="card card--flat">
             <div className="between">
               <p className="h3" style={{ margin: 0 }}>
-                备用码
+                {t('security.backup_codes')}
               </p>
-              <span className="pill pill--orange">仅显示这一次</span>
+              <span className="pill pill--orange">{t('security.shown_once')}</span>
             </div>
             <p className="small muted" style={{ margin: '10px 0 0', maxWidth: '62ch' }}>
-              验证器丢失时用其中任意一条登录；每条用掉即作废。请立刻抄到离线的地方保存——
-              离开本页后服务端不再展示明文，遗失只能重新生成。
+              {t('security.codes_hint_1')} {t('security.codes_hint_2')}
             </p>
 
             <div className="list" style={{ marginTop: 16 }}>
@@ -143,7 +153,7 @@ export function Security() {
                     .catch(() => undefined);
                 }}
               >
-                复制全部
+                {t('security.copy_all')}
               </button>
               <button
                 type="button"
@@ -151,10 +161,10 @@ export function Security() {
                 onClick={() => {
                   setCodes(null);
                   setStage('idle');
-                  setMsg({ ok: true, text: '两步验证已开启' });
+                  setMsg({ ok: true, key: 'security.2fa_enabled' });
                 }}
               >
-                我已保存，完成
+                {t('security.saved_done')}
               </button>
             </div>
           </div>
@@ -171,14 +181,14 @@ export function Security() {
               <>
                 <div className="between">
                   <p className="h3" style={{ margin: 0 }}>
-                    {status.data.enabled ? '已开启' : '未开启'}
+                    {status.data.enabled ? t('security.on') : t('security.off')}
                   </p>
                   <span className={`pill ${status.data.enabled ? 'pill--orange' : 'pill--plain'}`}>
-                    {status.data.enabled ? '受保护' : '仅密码'}
+                    {status.data.enabled ? t('security.protected') : t('security.password_only')}
                   </span>
                 </div>
                 <p className="small muted" style={{ margin: '10px 0 0', maxWidth: '62ch' }}>
-                  开启后，登录除密码外还需输入验证器上的 6 位动态码；验证器丢失时可用备用码登录。
+                  {t('security.enabled_hint')}
                 </p>
 
                 {msg && (
@@ -187,7 +197,7 @@ export function Security() {
                     role={msg.ok ? 'status' : 'alert'}
                     style={{ margin: '12px 0 0' }}
                   >
-                    {msg.text}
+                    {msgText(msg)}
                   </p>
                 )}
               </>
@@ -204,29 +214,27 @@ export function Security() {
                   disabled={busy}
                   onClick={startSetup}
                 >
-                  {busy ? '生成中…' : '开启两步验证'}
+                  {busy ? t('security.generating') : t('security.enable')}
                 </button>
               )}
 
               {stage === 'setup' && setup && (
                 <div className="stack">
                   <p className="label" style={{ margin: 0 }}>
-                    第 1 步 · 把密钥加进验证器
+                    {t('security.step1')}
                   </p>
                   <p className="small muted" style={{ margin: 0, maxWidth: '62ch' }}>
-                    在验证器 App（Google Authenticator / Microsoft Authenticator / 1Password 等）里
-                    选「手动输入密钥」，粘贴下面这串，账号名填你的用户名。
-                    本页不生成二维码图片：二维码要走第三方服务渲染，等于把你的密钥发给外部主机。
+                    {t('security.step1_hint_1')} {t('security.step1_hint_2')} {t('security.step1_hint_3')}
                   </p>
 
-                  <SecretBox label="密钥（Base32）" value={setup.secret} />
-                  <SecretBox label="otpauth 链接（部分验证器支持粘贴）" value={setup.qr_url} />
+                  <SecretBox label={t('security.secret_label')} value={setup.secret} />
+                  <SecretBox label={t('security.otpauth_label')} value={setup.qr_url} />
 
                   <p className="label" style={{ margin: '8px 0 0' }}>
-                    第 2 步 · 输入验证器当前显示的 6 位动态码
+                    {t('security.step2')}
                   </p>
                   <label className="field">
-                    <span>动态验证码</span>
+                    <span>{t('security.code_label')}</span>
                     <input
                       className="input mono"
                       name="code"
@@ -249,7 +257,7 @@ export function Security() {
                       disabled={busy || code.length !== 6}
                       onClick={confirmEnable}
                     >
-                      {busy ? '启用中…' : '确认启用'}
+                      {busy ? t('security.enabling') : t('security.confirm_enable')}
                     </button>
                     <button
                       type="button"
@@ -257,7 +265,7 @@ export function Security() {
                       disabled={busy}
                       onClick={cancelSetup}
                     >
-                      取消
+                      {t('app.cancel')}
                     </button>
                   </div>
                 </div>
@@ -277,15 +285,15 @@ export function Security() {
                     setOffOpen(true);
                   }}
                 >
-                  关闭两步验证
+                  {t('security.disable')}
                 </button>
               ) : (
                 <div className="stack" style={{ maxWidth: 380 }}>
                   <p className="label" style={{ margin: 0 }}>
-                    关闭需同时验证密码与动态码
+                    {t('security.disable_hint')}
                   </p>
                   <label className="field">
-                    <span>当前密码</span>
+                    <span>{t('me.current_password')}</span>
                     <input
                       className="input"
                       name="password"
@@ -299,7 +307,7 @@ export function Security() {
                     />
                   </label>
                   <label className="field">
-                    <span>动态验证码</span>
+                    <span>{t('security.code_label')}</span>
                     <input
                       className="input mono"
                       name="code"
@@ -321,7 +329,7 @@ export function Security() {
                       disabled={busy || !pw || offCode.length !== 6}
                       onClick={confirmDisable}
                     >
-                      {busy ? '关闭中…' : '确认关闭'}
+                      {busy ? t('security.disabling') : t('security.confirm_disable')}
                     </button>
                     <button
                       type="button"
@@ -334,7 +342,7 @@ export function Security() {
                         setMsg(null);
                       }}
                     >
-                      取消
+                      {t('app.cancel')}
                     </button>
                   </div>
                 </div>
@@ -344,7 +352,7 @@ export function Security() {
 
           {/* 邮箱/手机验证已撤下：后端不建立归属、结果也读不回（见本页顶部注释） */}
           <p className="small muted">
-            回到 <Link to="/me">我的</Link>
+            {t('security.back_prefix')} <Link to="/me">{t('nav.me')}</Link>
           </p>
         </section>
       )}

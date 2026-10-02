@@ -119,7 +119,7 @@ return [
     'Phone verified' => '전화번호 인증 완료',
     'Play log not found' => '플레이 기록을 찾을 수 없습니다',
     'Please type yes to confirm account closure' => '계정 삭제를 확인하려면 yes를 입력하세요',
-    'Privacy settings updated' => '개인정보 설정이 업데이트되었습니다',
+    'Privacy settings were not saved' => '개인정보 설정이 저장되지 않았습니다',
     'Provider mismatch' => '제공자가 일치하지 않습니다',
     'Reply sent' => '답변을 보냈습니다',
     'Request not found' => '요청을 찾을 수 없습니다',

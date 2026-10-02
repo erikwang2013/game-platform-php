@@ -55,7 +55,6 @@
   <text x="850" y="206" text-anchor="middle" fill="#4c1d95" font-size="13" font-weight="bold">리더보드</text>
   <text x="850" y="226" text-anchor="middle" fill="#7c3aed" font-size="11">일 / 주 / 월 / 누적 랭킹</text>
   <text x="850" y="245" text-anchor="middle" fill="#7c3aed" font-size="11">Redis 캐시 + 실시간 정렬</text>
-  <text x="850" y="264" text-anchor="middle" fill="#7c3aed" font-size="11">WebSocket 실시간 푸시 (:8790)</text>
 
   <rect x="30" y="292" width="220" height="95" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#sh)"/>
   <text x="140" y="316" text-anchor="middle" fill="#064e3b" font-size="13" font-weight="bold">쿠폰</text>
@@ -101,7 +100,7 @@
   <rect x="30" y="518" width="940" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="500" y="546" text-anchor="middle" fill="#475569" font-size="14" font-weight="bold">플랫폼 능력 요약</text>
   <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">사용자 인증 · 지갑(낙관적 잠금) · 충전(Stripe/PayPal/Alipay/WeChat Pay) · 환전(실시간 환율) · 출금(심사/자동) · KYC(본인 인증)</text>
-  <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">게임 CRUD(10카테고리+구역) · 리더보드(WebSocket 실시간) · 쿠폰 · 추천(등록 보상+커미션) · 리스크(4종 규칙)</text>
+  <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">게임 CRUD(10카테고리+구역) · 리더보드 · 쿠폰 · 추천(등록 보상+커미션) · 리스크(4종 규칙)</text>
   <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">알림(사이트 내+이메일) · 국가 차등화(18개국) · 국제화(4언어) · 통계(일 스냅샷+수익) · 전문 검색(ES)</text>
 
   <text x="500" y="662" text-anchor="middle" fill="#94a3b8" font-size="11">클라이언트: 8종 — 관리 4종 + C측 4종 (Flutter/React/Angular/HarmonyOS)</text>

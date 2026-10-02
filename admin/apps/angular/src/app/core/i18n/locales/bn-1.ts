@@ -114,6 +114,7 @@ export const BN_1: Record<string, string> = {
   'risk.rule.scope': 'প্রযোজ্য ক্ষেত্র',
   'risk.rule.priority': 'অগ্রাধিকার',
   'risk.rule.priority_hint': '0-1000, যত বড় তত আগে যাচাই হয় (ডিফল্ট 100)',
+  'risk.rule.scope_hint': 'exchange / login এখনও সংযুক্ত নয় (মূল্যায়কে শাখা আছে কিন্তু কোনো কল সাইট নেই — RiskService::check() কেবল deposit / withdraw থেকে ডাকা হয়), তাই এই স্কোপের নিয়ম কখনও মিলবে না',
   'risk.rule.status': 'স্ট্যাটাস',
   'risk.rule.config': 'থ্রেশহোল্ড কনফিগ (JSON)',
   'risk.rule.keys_note': '\n',

@@ -114,7 +114,7 @@ const ACH_FIELDS: Field[] = [
  * reward.type 只有 platform_coin / game_coin 发得出去，amount 是 0 < x ≤ 10000 的十进制串。
  * config 留空 = 用 type 的默认配置（后端 parseConfig 走 handler 默认值）⇒ keepIfEmpty，
  * 免得手滑清空一次就把手工调好的配置悄悄换回默认值。
- * status 三值（0=禁用 1=启用 2=已结束，install.sql:1577）：无 toggle 端点、switch 也表达不了
+ * status 三值（0=禁用 1=启用 2=已结束，install.sql:1641）：无 toggle 端点、switch 也表达不了
  * 2 ⇒ 用 select，改了走局部 PUT {status}。
  */
 const ACT_FIELDS: Field[] = [
@@ -185,7 +185,7 @@ const ACT_FIELDS: Field[] = [
 /**
  * 字段真值 = LeaderboardController::create/update 的 validator。
  * game_id（游戏 hashid，create 里 decodeId）不在 update 白名单 ⇒ createOnly；
- * rule 是 JSON 文本（install.sql:842「排行规则配置(JSON)」）。
+ * rule 是 JSON 文本（install.sql:851「排行规则配置(JSON)」）。
  * status 只有 0/1 且无 toggle 端点 ⇒ statused + 局部 PUT {status}；
  * 「刷新缓存」是本模块独有的动作，走 crud().extra + extra()（基类的编辑/删除/启停之外）。
  */

@@ -25,7 +25,10 @@ class SearchController extends BaseController
         $q = $request->input('q', '');
         $type = $request->input('type', 'game');
         $page = (int)$request->input('page', 1);
-        $perPage = (int)$request->input('per_page', 20);
+        // 上界口径同 WalletService::ledger:139。**下界与上界同等重要**：Builder::limit() 对负值是
+        // 「忽略」（`if ($value >= 0)`）⇒ `?per_page=-1` 生成的查询**没有 limit 子句**、一次拉走整表。
+        // 本端点在**公开组**（config/route.php，无 UserAuth），匿名可触发 ⇒ 只写 min() 挡不住这条路。
+        $perPage = max(1, min(100, (int)$request->input('per_page', 20)));
 
         // ⚠ 公开端点只认 game，**不看请求里的 type**。
         // 本端点在**公开组**（config/route.php:37-73，无 UserAuth），而 user 分支会把整行原样吐出去
@@ -55,7 +58,13 @@ class SearchController extends BaseController
         // 只要简介命中关键词就会出现在 C 端搜索结果里。
         $query = Game::where('status', 1)->where(function ($w) use ($like) {
             $w->where('name', 'like', $like)->orWhere('description', 'like', $like);
-        });
+        })
+            // 翻页次序必须是**全序**：没有 order by 时 LIMIT/OFFSET 的行序由访问路径决定
+            // （未定义行为），同一行会在两页里各出现一次、另一行任何一页都看不到。
+            // 键取 sort asc, id desc —— 同一模型的列表端点 GameController::list 就是这个口径，
+            // 搜索结果与游戏大厅的先后一致；id 是主键，保证任意两行都可比。
+            ->orderBy('sort', 'asc')
+            ->orderBy('id', 'desc');
 
         $total = $query->count();
         $items = $query->forPage($page, $perPage)->get()->map(function ($item) {

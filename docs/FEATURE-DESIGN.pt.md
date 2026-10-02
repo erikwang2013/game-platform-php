@@ -299,13 +299,6 @@ Configuração via PlatformConfig ou variáveis de ambiente; em caso de falha de
 - PayPal: POST de volta ao endpoint de verificação do PayPal
 - Sem chave configurada, a verificação é pulada automaticamente (modo de desenvolvimento)
 
-### 8.6 Rankings em tempo real via WebSocket
-
-- Protocolo: WebSocket (ws://host:8790)
-- Assinatura: {action: "subscribe", leaderboard_id: 123}
-- Push: {type: "ranking_update", rankings: [...]}
-- Suporta heartbeat ping/pong para manter a conexão
-
 ## 9. Design de internacionalização
 
 ### 9.1 Idiomas suportados

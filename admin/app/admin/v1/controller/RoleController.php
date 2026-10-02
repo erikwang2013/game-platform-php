@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace app\admin\v1\controller;
 
 use erikwang2013\apidoc\annotation as Apidoc;
+use app\middleware\AdminPermission; // 中间件那个（提供 forget / forgetByRole）；本文件不与同名模型撞车，可用短名
 use app\model\AdminRole;
 use support\Request;
 use support\Response;
@@ -91,6 +92,8 @@ class RoleController extends BaseController
             $role->permissions()->sync($this->decodePermissionIds($request->input('permission_ids', [])));
         }
 
+        // 无需 forgetByRole：角色 id 是刚生成的雪花号，admin_user_role 里不可能有指向它的行
+        //（「角色→管理员」的分配在 UserController::assignRole，那里已清缓存）。调了就是一次空查。
         return $this->success($this->encodeIds($role->toArray()), trans('Created successfully'));
     }
 
@@ -133,6 +136,10 @@ class RoleController extends BaseController
             $role->permissions()->sync($this->decodePermissionIds($request->input('permission_ids', [])));
         }
 
+        // status / 权限集已落库 ⇒ 该角色名下管理员的 perm:{adminId} 必须立刻失效，否则最长 60 秒内
+        // 「已减掉的权限」仍然打得通端点。本方法没有事务包裹，故不存在「提交之后」的更晚时机。
+        AdminPermission::forgetByRole($id);
+
         return $this->success($this->encodeIds($role->toArray()), trans('Updated successfully'));
     }
 
@@ -169,10 +176,15 @@ class RoleController extends BaseController
         }
 
         $adminId = $request->adminId ?? 0;
-        $error = $this->confirmPassword($adminId, $request->input('password', ''), $request);
+        $error = $this->confirmPassword($adminId, $request->input('password', ''));
         if ($error !== null) {
             return $this->fail($error, 422);
         }
+
+        // ⚠ 必须在 users()->detach() **之前**：forgetByRole 是按 admin_user_role 反查名单的，
+        // 先 detach 再调就是查空表、静默空转 —— 角色没了，但持有者缓存里的旧权限集最长还能用 60 秒。
+        // （本方法没有事务包裹，调早了也不会回滚，只有「谁先谁后能查到名单」这一条约束。）
+        AdminPermission::forgetByRole($id);
 
         $role->permissions()->detach();
         $role->users()->detach();

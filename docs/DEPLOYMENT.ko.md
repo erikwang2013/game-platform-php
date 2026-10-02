@@ -51,7 +51,7 @@ rm -rf install/
 
 설치 마법사가 수행하는 작업:
 - PHP 환경 검사 (버전, 확장, 디렉터리 권한)
-- 병합 SQL(`install/install.sql`) 실행, 78장 테이블 생성 및 시드 데이터 가져오기
+- 병합 SQL(`install/install.sql`) 실행, 79장 테이블 생성 및 시드 데이터 가져오기
 - 슈퍼 관리자 계정 생성 (bcrypt 암호화, super_admin 역할 연결)
 - JWT/Encryption/Hashids 키 자동 생성
 - `admin/.env`와 `service/.env` 작성
@@ -90,13 +90,13 @@ docker-compose logs -f
 | nginx | game-platform-nginx | 80, 443 | 리버스 프록시 + 정적 파일 |
 | admin | game-platform-admin | 8789 | 관리 백오피스 API |
 | service | game-platform-service | 8792 | C단 비즈니스 API |
-| leaderboard-ws | game-platform-ws | 8790, 8791 | WebSocket 리더보드/채팅 |
+| chat-ws | game-platform-ws | 8791 | WebSocket |
 | mysql | game-platform-mysql | 3306 | 메인 데이터베이스 |
 | redis | game-platform-redis | 6379 | 캐시/레이트 리밋 |
 | elasticsearch | game-platform-es | 9200 | 전문 검색 |
 
 > **포트 구성**: 위 표는 기본 포트이며, 모두 프로젝트 루트의 `.env`에서 변경할 수 있습니다 (템플릿 `.env.example`, `cp .env.example .env` 후 편집):
-> `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `LEADERBOARD_WS_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
+> `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
 > `nginx.conf.template`의 upstream 포트는 공식 이미지의 envsubst로 자동 렌더링되므로 Nginx 설정을 수동으로 수정할 필요가 없습니다.
 > Docker 배포에서는 외부 접속 주소(`APP_URL` / `SITE_URL`)가 기본적으로 `ADMIN_PORT` / `SERVICE_PORT`를 자동으로 따릅니다(`http://localhost:포트` 형식). 사용자 도메인이나 HTTPS를 사용하는 경우 루트 `.env`에서 `APP_URL` / `SITE_URL`을 설정하세요(`admin/.env`·`service/.env`의 동일 항목을 덮어씁니다). 베어메탈(수동) 배포에서 포트를 변경할 때는 주소도 직접 수정해야 합니다.
 
@@ -201,7 +201,6 @@ SCOUT_HOSTS=127.0.0.1:9200
 ```ini
 # admin과 동일한 데이터베이스, Redis, ES 설정
 APP_PORT=8792
-LEADERBOARD_WS_PORT=8790  # 리더보드 WebSocket
 CHAT_WS_PORT=8791  # 채팅 WebSocket
 SNOWFLAKE_WORKER_ID=2  # admin과 반드시 달라야 함
 
@@ -326,7 +325,7 @@ systemctl enable --now game-platform-admin game-platform-service
 `/etc/nginx/sites-available/game-platform` 생성:
 
 ```nginx
-# 포트는 기본값입니다 (admin 8789 / service 8792 / ws 8790). .env를 수정했다면 함께 조정하세요
+# 포트는 기본값입니다 (admin 8789 / service 8792 / ws 8791). .env를 수정했다면 함께 조정하세요
 server {
     listen 80;
     server_name your-domain.com;
@@ -352,16 +351,6 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    # WebSocket 리더보드 (기본 포트 8790, service/.env의 LEADERBOARD_WS_PORT와 일치)
-    location /ws/ {
-        proxy_pass http://127.0.0.1:8790;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
     }
 
     # 헬스 체크
@@ -614,7 +603,7 @@ ufw allow 443/tcp     # HTTPS
 ufw enable
 
 # 내부 포트는 노출하면 안 됨
-# 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# 8789 (admin), 8792 (service), 8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
 # 위는 기본 포트입니다. 루트 .env / 각 .env를 수정했다면 실제 설정을 기준으로 하세요
 # 127.0.0.1로만 접근
 ```

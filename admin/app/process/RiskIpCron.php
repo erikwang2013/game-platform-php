@@ -57,19 +57,26 @@ class RiskIpCron
     private static function runDaily(): void
     {
         // 1) 信誉衰减：黑名单 IP 长期未见 → 回到中性分
-        $stale = IpReputation::where('source', '!=', 'internal_whitelist')
+        // 分块 500 的理由同下方日志清理：ip_reputation 是全表最易被灌大的表，逐行 save 时
+        // 不能把整批行实例化进内存。
+        // 必须 chunkById 而非 chunk：回调会把行改成不再满足 where（reputation_score 提到 50），
+        // 基于 offset 的 chunk 会因结果集收缩而跳行（第 2 批的 offset 已经越过了被前一批改走的行）。
+        $decayed = 0;
+        IpReputation::where('source', '!=', 'internal_whitelist')
             ->where('reputation_score', '<', 50)
             ->where('last_seen_at', '<', date('Y-m-d H:i:s', time() - 90 * 86400))
-            ->get();
-        foreach ($stale as $row) {
-            $row->reputation_score = 50;
-            $row->save();
-            try {
-                Redis::del('risk:ip_rep:' . $row->ip_hash);
-            } catch (\Throwable) {
-                // 缓存删不掉则随 TTL 自然过期
-            }
-        }
+            ->chunkById(500, function ($rows) use (&$decayed) {
+                foreach ($rows as $row) {
+                    $row->reputation_score = 50;
+                    $row->save();
+                    $decayed++;
+                    try {
+                        Redis::del('risk:ip_rep:' . $row->ip_hash);
+                    } catch (\Throwable) {
+                        // 缓存删不掉则随 TTL 自然过期
+                    }
+                }
+            });
 
         // 2) 180 天日志清理（分批删，避免长事务/锁表）
         $cutoff = date('Y-m-d H:i:s', time() - 180 * 86400);
@@ -79,6 +86,6 @@ class RiskIpCron
             $cleaned += $deleted;
         } while ($deleted >= 1000);
 
-        Log::info(sprintf('RiskIpCron done: decayed=%d cleaned_risk_log=%d', count($stale), $cleaned));
+        Log::info(sprintf('RiskIpCron done: decayed=%d cleaned_risk_log=%d', $decayed, $cleaned));
     }
 }

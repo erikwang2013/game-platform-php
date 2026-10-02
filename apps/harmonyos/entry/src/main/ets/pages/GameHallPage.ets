@@ -6,10 +6,12 @@ import router from '@ohos.router';
 import { GameItem } from '../model/DataModels';
 import { GameService } from '../service/DataService';
 import { LoadingView, EmptyView, ErrorView, BottomNav } from '../common/Components';
+import { t } from '../i18n/Translations';
 
 @Entry
 @Component
 struct GameHallPage {
+  @StorageLink('app_locale') localeCode: string = 'zh';
   @State games: GameItem[] = [];
   @State isLoading: boolean = true;
   @State errorMsg: string = '';
@@ -30,7 +32,7 @@ struct GameHallPage {
         router.replaceUrl({ url: 'pages/LoginPage' });
         return;
       }
-      this.errorMsg = msg.length > 0 ? msg : '加载失败';
+      this.errorMsg = msg.length > 0 ? msg : t('common.load_failed');
     } finally {
       this.isLoading = false;
     }
@@ -43,7 +45,7 @@ struct GameHallPage {
   build() {
     Column() {
       Row() {
-        Text('游戏大厅')
+        Text(t('hall.title'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
           .fontColor('#333333')
@@ -51,7 +53,7 @@ struct GameHallPage {
       .width('100%')
       .padding({ left: 16, right: 16, top: 16, bottom: 8 })
 
-      TextInput({ placeholder: '搜索游戏...', text: this.searchKeyword })
+      TextInput({ placeholder: t('hall.search_placeholder'), text: this.searchKeyword })
         .height(40)
         .fontSize(14)
         .backgroundColor('#FFFFFF')
@@ -65,11 +67,11 @@ struct GameHallPage {
         })
 
       if (this.isLoading) {
-        LoadingView({ message: '加载游戏中...' })
+        LoadingView({ message: t('hall.loading') })
       } else if (this.errorMsg) {
-        ErrorView({ message: this.errorMsg })
+        ErrorView({ message: this.errorMsg, onRetry: () => { this.loadGames(); } })
       } else if (this.games.length === 0) {
-        EmptyView({ message: this.searchKeyword ? '没有匹配的游戏' : '暂无游戏' })
+        EmptyView({ message: this.searchKeyword ? t('hall.no_match') : t('hall.empty') })
       } else {
         List() {
           ForEach(this.games, (game: GameItem) => {
@@ -89,7 +91,7 @@ struct GameHallPage {
 
                 Column() {
                   Row() {
-                    Text(game.name || '未命名')
+                    Text(game.name || t('common.unnamed'))
                       .fontSize(16)
                       .fontWeight(FontWeight.Medium)
                       .fontColor('#333333')
@@ -108,7 +110,7 @@ struct GameHallPage {
                   }
                   .width('100%')
 
-                  Text(game.description || '暂无简介')
+                  Text(game.description || t('common.no_description'))
                     .fontSize(12)
                     .fontColor('#999999')
                     .maxLines(2)
@@ -119,7 +121,7 @@ struct GameHallPage {
                 .layoutWeight(1)
                 .margin({ left: 12 })
 
-                Button('进入')
+                Button(t('hall.enter'))
                   .fontSize(12)
                   .height(32)
                   .backgroundColor('#1677FF')

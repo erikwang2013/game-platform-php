@@ -26,7 +26,7 @@ class RiskRuleController extends BaseController
      * 运营以为设了阈值其实没设 —— 这种静默空转正是本批要收口的一类。
      *
      * 键名取自各评估器的 `$config['...'] ?? 默认值` 实际读取点（service/app/service/risk/evaluators/）。
-     * `currency` 是 amount_anomaly 的装饰键（种子 install.sql:1346 带它，评估器不读），保留以免存量规则改不动。
+     * `currency` 是 amount_anomaly 的装饰键（种子 install.sql:1581 带它，评估器不读），保留以免存量规则改不动。
      */
     private const CONFIG_KEYS = [
         'ip_blacklist'         => ['blacklist'],
@@ -83,6 +83,8 @@ class RiskRuleController extends BaseController
     private const RATIO_KEYS = ['drain_ratio'];
 
     #[Apidoc\Title("规则列表")]
+    #[Apidoc\Url("/admin/v1/risk/rule/list")]
+    #[Apidoc\Method("GET")]
     public function list(Request $request): Response
     {
         $query = RiskRule::query();
@@ -108,6 +110,8 @@ class RiskRuleController extends BaseController
     }
 
     #[Apidoc\Title("新建规则")]
+    #[Apidoc\Url("/admin/v1/risk/rule/create")]
+    #[Apidoc\Method("POST")]
     public function create(Request $request): Response
     {
         try {
@@ -123,6 +127,8 @@ class RiskRuleController extends BaseController
     }
 
     #[Apidoc\Title("更新规则")]
+    #[Apidoc\Url("/admin/v1/risk/rule/{hashid}")]
+    #[Apidoc\Method("PUT")]
     public function update(Request $request, string $hashid): Response
     {
         $rule = RiskRule::find($this->decodeId($hashid));
@@ -140,6 +146,8 @@ class RiskRuleController extends BaseController
     }
 
     #[Apidoc\Title("启停规则")]
+    #[Apidoc\Url("/admin/v1/risk/rule/{hashid}/toggle")]
+    #[Apidoc\Method("POST")]
     public function toggle(Request $request, string $hashid): Response
     {
         $rule = RiskRule::find($this->decodeId($hashid));
@@ -154,6 +162,8 @@ class RiskRuleController extends BaseController
 
     #[Apidoc\Title("沙箱试算")]
     #[Apidoc\Desc("按单条规则只读评估，不写库、不落日志、不触发处置")]
+    #[Apidoc\Url("/admin/v1/risk/rule/test")]
+    #[Apidoc\Method("POST")]
     public function test(Request $request): Response
     {
         $rule = RiskRule::find($this->decodeId((string) $request->post('rule_id', '')));

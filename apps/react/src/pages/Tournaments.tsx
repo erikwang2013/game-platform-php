@@ -8,24 +8,39 @@ import { ApiError, api, type Tournament, type TournamentDetail } from '../lib/ap
 import { dt } from '../lib/datetime.ts';
 import { useAsync } from '../lib/hooks.ts';
 import { tournamentTypeLabel } from '../lib/labels.ts';
+import { money, moneyIsZero } from '../lib/money.ts';
 import { Modal } from '../components/CaptchaModal.tsx';
 import { Empty, ErrorBox, Loading } from '../components/States.tsx';
+import type { MessageKey } from '../i18n/index.ts';
+import { useI18n } from '../i18n/useI18n.ts';
 
 const PER_PAGE = 20;
 
 type Status = 'upcoming' | 'active' | 'ended';
 
-const TABS: { key: Status; label: string }[] = [
-  { key: 'upcoming', label: '即将开始' },
-  { key: 'active', label: '进行中' },
-  { key: 'ended', label: '已结束' },
+/** 存**键**不存文案：模块级常量不在渲染期，存文案就等于把语言冻在模块加载那一刻。 */
+const TABS: { key: Status; label: MessageKey }[] = [
+  { key: 'upcoming', label: 'tourney.tab_upcoming' },
+  { key: 'active', label: 'tourney.tab_active' },
+  { key: 'ended', label: 'tourney.tab_ended' },
 ];
 
-const EMPTY_TITLE: Record<Status, string> = {
-  upcoming: '暂无即将开始的赛事',
-  active: '当前没有进行中的赛事',
-  ended: '还没有已结束的赛事',
+const EMPTY_TITLE: Record<Status, MessageKey> = {
+  upcoming: 'tourney.empty_upcoming',
+  active: 'tourney.empty_active',
+  ended: 'tourney.empty_ended',
 };
+
+/**
+ * 报名费：0 = 免费。只做**展示**判定，不参与任何金额运算（金额加减乘除一律在服务端 bcmath）。
+ *
+ * 原先两处写的是 `Number(t.entry_fee) > 0 ? t.entry_fee : '免费'` —— 金额列过数值转型，
+ * 违反铁律；且「非免费」那支直接吐后端原文（`10.0650`），与 angular 同页的 `money()`（`10.065`）
+ * 对同一个值印不同字符串。判零走 `moneyIsZero`（与 money() 同一套纯字符串判据），
+ * 与 angular `tournaments.ts` 的 `feeText()` 逐字对齐。
+ */
+const feeText = (v: string, t: (k: MessageKey) => string): string =>
+  moneyIsZero(v) ? t('tourney.free') : money(v);
 
 /**
  * 赛事：列表 + 详情弹框 + 报名（三个端点都在这页）。
@@ -47,6 +62,7 @@ const EMPTY_TITLE: Record<Status, string> = {
  * 直接贴到 DOM 上会差 8 小时。
  */
 export function Tournaments() {
+  const { t } = useI18n();
   const [params, setParams] = useSearchParams();
   const status: Status = TABS.find((t) => t.key === params.get('status'))?.key ?? 'upcoming';
   const page = Math.max(1, Number(params.get('page') ?? 1) || 1);
@@ -62,8 +78,10 @@ export function Tournaments() {
   }, [status, page, tick]);
 
   const [cur, setCur] = useState<string | null>(null);
-  const [note, setNote] = useState('');
-  const [joinErr, setJoinErr] = useState('');
+  // note 存**键**、joinErr 存**错误对象**：取数回调里就翻好再把串存进 state，
+  // 等于把文案冻在「那一刻的语言」上，之后切语言这一句不会跟着变。
+  const [note, setNote] = useState<MessageKey | null>(null);
+  const [joinErr, setJoinErr] = useState<unknown>(null);
   const [joining, setJoining] = useState(false);
 
   const detail = useAsync(() => (cur ? api.tournamentDetail(cur) : Promise.resolve(null)), [cur, tick]);
@@ -79,27 +97,27 @@ export function Tournaments() {
 
   const close = () => {
     setCur(null);
-    setNote('');
-    setJoinErr('');
+    setNote(null);
+    setJoinErr(null);
   };
 
   const openFresh = (id: string) => {
-    setNote('');
-    setJoinErr('');
+    setNote(null);
+    setJoinErr(null);
     setCur(id);
   };
 
   const join = async (d: TournamentDetail) => {
     if (joining) return;
     setJoining(true);
-    setNote('');
-    setJoinErr('');
+    setNote(null);
+    setJoinErr(null);
     try {
       await api.tournamentJoin(d.id);
-      setNote('报名成功，开赛后会出现在排行榜里。');
+      setNote('tourney.note_joined');
       setTick((n) => n + 1);
     } catch (e) {
-      setJoinErr(e instanceof ApiError ? e.message : '报名失败，请稍后重试');
+      setJoinErr(e);
     } finally {
       setJoining(false);
     }
@@ -115,32 +133,35 @@ export function Tournaments() {
     return now > 0 && Number.isFinite(ms) && ms > now;
   };
 
-  const playerText = (t: Tournament) =>
-    t.max_players > 0 ? `${t.player_count} / ${t.max_players} 人` : `${t.player_count} 人`;
+  const playerText = (row: Tournament) =>
+    row.max_players > 0
+      ? t('tourney.players_max', { current: row.player_count, max: row.max_players })
+      : t('tourney.players', { count: row.player_count });
 
   return (
     <>
       <section className="stack">
-        <p className="label">赛事</p>
+        <p className="label">{t('nav.tournaments')}</p>
         <h1 className="h1">
-          赛事
+          {t('nav.tournaments')}
           <span style={{ color: 'var(--orange)' }}>.</span>
         </h1>
         <p className="small muted" style={{ margin: 0 }}>
-          开赛后不能再报名。奖池与人数以服务端为准，报名成功请以页面提示为准。
+          {t('tourney.sub')}
         </p>
       </section>
 
       <div className="tabs" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-        {TABS.map((t) => (
+        {/* 形参从 t 改名 tab：进这个作用域后 `t` 是页签对象，会把 i18n 的 `t` 遮住 */}
+        {TABS.map((tab) => (
           <button
-            key={t.key}
+            key={tab.key}
             type="button"
-            className={`tabs__b${status === t.key ? ' is-on' : ''}`}
-            aria-pressed={status === t.key}
-            onClick={() => go(t.key)}
+            className={`tabs__b${status === tab.key ? ' is-on' : ''}`}
+            aria-pressed={status === tab.key}
+            onClick={() => go(tab.key)}
           >
-            {t.label}
+            {t(tab.label)}
           </button>
         ))}
       </div>
@@ -148,26 +169,41 @@ export function Tournaments() {
       {list.loading && <Loading />}
       {!list.loading && list.error && <ErrorBox message={list.error} onRetry={list.reload} />}
       {!list.loading && !list.error && items.length === 0 && (
-        <Empty title={EMPTY_TITLE[status]} hint="换个标签看看，或稍后再来" />
+        <Empty title={t(EMPTY_TITLE[status])} hint={t('tourney.empty_hint')} />
       )}
 
       {!list.loading && !list.error && items.length > 0 && (
         <section className="stack">
           <p className="small muted" style={{ margin: 0 }}>
-            共 {total} 场赛事
+            {t('tourney.count', { count: total })}
           </p>
           <div className="list">
-            {items.map((t) => (
-              <button type="button" className="li li--start" key={t.id} onClick={() => openFresh(t.id)}>
+            {/* 形参从 t 改名 row：同 TABS，别让行对象遮住 i18n 的 `t` */}
+            {items.map((row) => (
+              <button
+                type="button"
+                className="li li--start"
+                key={row.id}
+                onClick={() => openFresh(row.id)}
+              >
                 <div style={{ minWidth: 0 }}>
                   <p className="li__t" style={{ margin: 0 }}>
-                    {t.name}
+                    {row.name}
                   </p>
                   <p className="small muted" style={{ margin: '4px 0 0' }}>
-                    {t.game?.name || '全平台'} · {playerText(t)} · {dt(t.start_at)} 开赛
+                    {t('tourney.list_meta', {
+                      game: row.game?.name || t('app.all_platform'),
+                      players: playerText(row),
+                      time: dt(row.start_at),
+                    })}
                   </p>
                   <p className="small muted" style={{ margin: '4px 0 0' }}>
-                    奖池 {t.prize_pool} · 报名费 {Number(t.entry_fee) > 0 ? t.entry_fee : '免费'}
+                    {/* 奖池仍原样透传（本树 Wallet 同口径）；报名费必须过 money()：原先的
+                        `Number(row.entry_fee) > 0` 既违铁律、又与 angular 印不同串（见 lib/money.ts） */}
+                    {t('tourney.pool_fee', {
+                      pool: row.prize_pool,
+                      fee: feeText(row.entry_fee, t),
+                    })}
                   </p>
                 </div>
               </button>
@@ -182,7 +218,7 @@ export function Tournaments() {
                 disabled={page <= 1 || list.loading}
                 onClick={() => go(status, page - 1)}
               >
-                上一页
+                {t('app.prev_page')}
               </button>
               <span className="small muted">
                 {page} / {lastPage}
@@ -193,7 +229,7 @@ export function Tournaments() {
                 disabled={page >= lastPage || list.loading}
                 onClick={() => go(status, page + 1)}
               >
-                下一页
+                {t('app.next_page')}
               </button>
             </div>
           )}
@@ -201,48 +237,48 @@ export function Tournaments() {
       )}
 
       {cur && (
-        <Modal title={detail.data?.name || '赛事详情'} onClose={close}>
+        <Modal title={detail.data?.name || t('tourney.detail_title')} onClose={close}>
           {detail.loading && <Loading />}
           {!detail.loading && detail.error && <ErrorBox message={detail.error} onRetry={detail.reload} />}
           {!detail.loading && !detail.error && detail.data && (
             <>
               {note && (
                 <p className="card card--flat" role="status" style={{ margin: 0 }}>
-                  {note}
+                  {t(note)}
                 </p>
               )}
 
-              {/* 金额一律按服务端给的十进制字符串展示，不做前端格式化/运算（与钱包页同口径） */}
+              {/* 金额不做任何**数值**运算（加减乘除在服务端 bcmath）；展示格式化统一走
+                  lib/money.ts 的纯字符串实现 —— 旧注释写「不做前端格式化」，而它下面两行
+                  一行原样透传、一行过 Number()，自己跟自己打架，故改写为实际口径。 */}
               <div className="list">
                 <div className="li">
-                  <span className="small muted">奖池</span>
+                  <span className="small muted">{t('tourney.prize_pool')}</span>
                   <span className="mono">{detail.data.prize_pool}</span>
                 </div>
                 <div className="li">
-                  <span className="small muted">报名费</span>
-                  <span className="mono">
-                    {Number(detail.data.entry_fee) > 0 ? detail.data.entry_fee : '免费'}
-                  </span>
+                  <span className="small muted">{t('tourney.entry_fee')}</span>
+                  <span className="mono">{feeText(detail.data.entry_fee, t)}</span>
                 </div>
                 <div className="li">
-                  <span className="small muted">人数</span>
+                  <span className="small muted">{t('tourney.players_col')}</span>
                   <span>{playerText(detail.data)}</span>
                 </div>
                 <div className="li">
-                  <span className="small muted">时间</span>
+                  <span className="small muted">{t('tourney.time')}</span>
                   <span className="small">
                     {dt(detail.data.start_at)} ~ {dt(detail.data.end_at)}
                   </span>
                 </div>
                 {detail.data.type && (
                   <div className="li">
-                    <span className="small muted">类型</span>
+                    <span className="small muted">{t('tourney.type')}</span>
                     <span>{tournamentTypeLabel(detail.data.type)}</span>
                   </div>
                 )}
                 {detail.data.game && (
                   <div className="li">
-                    <span className="small muted">游戏</span>
+                    <span className="small muted">{t('tourney.game')}</span>
                     <Link to={`/game/${detail.data.game.id}`} onClick={close}>
                       {detail.data.game.name}
                     </Link>
@@ -257,8 +293,10 @@ export function Tournaments() {
 
               {detail.data.my_entry ? (
                 <p className="card card--flat" style={{ margin: 0 }}>
-                  已报名 · 积分 {detail.data.my_entry.score}
-                  {detail.data.my_entry.rank > 0 ? ` · 第 ${detail.data.my_entry.rank} 名` : ''}
+                  {t('tourney.entered', { score: detail.data.my_entry.score })}
+                  {detail.data.my_entry.rank > 0
+                    ? t('tourney.rank_suffix', { rank: detail.data.my_entry.rank })
+                    : ''}
                 </p>
               ) : canJoin(detail.data, nowMs) ? (
                 <button
@@ -268,25 +306,25 @@ export function Tournaments() {
                   onClick={() => void join(detail.data as TournamentDetail)}
                 >
                   {joining && <span className="spin" aria-hidden="true" />}
-                  {joining ? '报名中…' : '报名参赛'}
+                  {joining ? t('tourney.joining') : t('tourney.join')}
                 </button>
               ) : (
                 <p className="small muted" style={{ margin: 0 }}>
-                  报名已截止（服务端在开赛后拒收报名）
+                  {t('tourney.join_closed')}
                 </p>
               )}
-              {joinErr && (
+              {joinErr ? (
                 <p className="err" role="alert" style={{ margin: 0 }}>
-                  {joinErr}
+                  {joinErr instanceof ApiError ? joinErr.message : t('tourney.join_failed')}
                 </p>
-              )}
+              ) : null}
 
               <p className="label" style={{ margin: '6px 0 0' }}>
-                排行榜
+                {t('nav.leaderboard')}
               </p>
               {detail.data.leaderboard.length === 0 ? (
                 <p className="small muted" style={{ margin: 0 }}>
-                  还没有成绩
+                  {t('tourney.no_scores')}
                 </p>
               ) : (
                 <div className="list">

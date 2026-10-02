@@ -17,7 +17,7 @@ Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.
 | السحب | طلب ← مراجعة ← دفع، حدود KYC متدرجة |
 | التحويل | عروض أسعار فورية عملات المنصة ⇄ عملات اللعبة، خصومات VIP ومكافآت سعر صرف |
 | الألعاب | قائمة/تصنيفات/بحث الألعاب، سجل اللعب، استدعاءات تسوية Provider |
-| لوحات الترتيب | يومي/أسبوعي/شهري/إجمالي + دفع فوري عبر WebSocket |
+| لوحات الترتيب | يومي/أسبوعي/شهري/إجمالي (REST) |
 | القسائم | مبلغ ثابت + خصم نسبي، محدودة بالوقت والكمية |
 | التذاكر | إنشاء/الرد على تذاكر الدعم |
 | VIP | 5 مستويات ولاء، تراكم خبرة، خصومات تحويل |
@@ -40,7 +40,7 @@ Languages: [中文](README.md) · [English](README.en.md) · [한국어](README.
 service/
 ├── app/
 │   ├── activity/           # معالجات الأنشطة
-│   ├── api/v1/controller/  # وحدات تحكم API للجانب C (34)
+│   ├── api/v1/controller/  # وحدات تحكم API للجانب C (35)
 │   ├── bootstrap/          # تهيئة الإشعارات
 │   ├── cdn/                # CDN متعدد المزودين (Aliyun/Tencent/Huawei/Cloudflare/CloudFront + CdnFactory)
 │   ├── common/             # عام
@@ -96,7 +96,7 @@ cp .env.example .env
 # 3. شغّل الخدمة (المنفذ الافتراضي 8792، يمكن تغييره عبر APP_PORT في .env)
 php start.php start        # في المقدمة
 php start.php start -d     # في الخلفية (daemon)
-# منافذ WebSocket (لوحة الترتيب 8790 / الدردشة 8791) يمكن تغييرها عبر LEADERBOARD_WS_PORT / CHAT_WS_PORT في .env
+# منافذ WebSocket (الدردشة 8791) يمكن تغييرها عبر CHAT_WS_PORT في .env
 ```
 
 ## الاستخدام

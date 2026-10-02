@@ -34,9 +34,6 @@
 .page-head .btn {
   align-self: center;
 }
-.toolbar select.input {
-  min-width: 120px;
-}
 
 /* ---------- 标签页 ---------- */
 /* 下划线式（旧版是灰药丸轨道）：风控页有 12 个页签，药丸轨道会压出半屏灰条 */
@@ -262,10 +259,6 @@ textarea.input {
   stroke: var(--chart-2);
   fill: var(--chart-2);
 }
-.chart .s3 {
-  stroke: var(--chart-3);
-  fill: var(--chart-3);
-}
 /* 图例色块：`.chart .sX` 只圈得到 .chart 里面，图例在容器外面 ⇒ 得单独给底色，
    否则图例只剩几个没有颜色的空方块 */
 .chart-legend i.s1 {
@@ -273,9 +266,6 @@ textarea.input {
 }
 .chart-legend i.s2 {
   background: var(--chart-2);
-}
-.chart-legend i.s3 {
-  background: var(--chart-3);
 }
 
 /* ---------- 横向条形 ---------- */

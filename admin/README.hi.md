@@ -85,17 +85,19 @@ open-admin/
 │   │       └── AuthController.php    # लॉगिन/पंजीकरण/टोकन रीफ़्रेश
 │   ├── common/                 # सामान्य उपयोगिता क्लास
 │   │   └── CdnProbeService.php # CDN कनेक्टिविटी जाँच (Hashids/Snowflake/Encryption composer पैकेज से)
-│   ├── middleware/             # मिडलवेयर
+│   ├── middleware/             # मिडलवेयर (डिस्क पर 9; निष्पादन श्रृंखला में 8)
 │   │   ├── Cors.php            # क्रॉस-ओरिजिन
 │   │   ├── SecurityFilter.php  # आक्रमण डिटेक्शन और अवरोध (HTTP मेथड प्रतिबंध/XSS/SQL इंजेक्शन/पाथ ट्रैवर्सल/कमांड इंजेक्शन/CSRF)
 │   │   ├── RateLimit.php       # Redis दर सीमा (स्लाइडिंग विंडो + प्रतिक्रिया हेडर)
-│   │   ├── StaticFile.php      # स्थिर फ़ाइल सेवा (webman अंतर्निहित)
+│   │   ├── LanguageMiddleware.php # भाषा/locale (ग्लोबल; RateLimit के बाद और रूट मिडलवेयर से पहले पंजीकृत)
+│   │   ├── StaticFile.php      # स्थिर फ़ाइल सेवा (webman अंतर्निहित की प्रतिलिपि; पंजीकृत नहीं — config/static.php:25 पर कमेंट किया गया, निष्पादन श्रृंखला में नहीं)
 │   │   ├── AdminAuth.php       # JWT प्रमाणीकरण + ब्लैकलिस्ट
 │   │   ├── AdminPermission.php # RBAC अनुमति सत्यापन
+│   │   ├── MetricsAuth.php     # केवल /metrics: एडमिन JWT या स्टैटिक स्क्रैप टोकन
 │   │   └── OperationLog.php    # ऑपरेशन लॉग स्वचालित रिकॉर्ड (स्रोत पहचान सहित)
 │   ├── activity/               # गतिविधि हैंडलर (साइन-इन/आमंत्रण/दैनिक कार्य)
 │   ├── model/                  # डेटा मॉडल
-│   ├── process/                # प्रक्रियाएँ (Http, Monitor, RiskIpCron)
+│   ├── process/                # प्रक्रियाएँ (Http, Monitor, RiskIpCron, ExportTmpCleanup)
 │   ├── provider/               # गेम Provider परत (Self/ThirdParty/Factory)
 │   ├── service/                # सेवाएँ (वॉलेट/जोखिम सैंडबॉक्स)
 │   └── view/                   # व्यू टेम्पलेट
@@ -104,7 +106,7 @@ open-admin/
 │   ├── react/                  # React वेब एडमिन बैकएंड
 │   ├── flutter/                # Flutter Web एडमिन बैकएंड (PC शैली)
 │   │   └── lib/app/
-│   │       ├── pages/          # 20 पेज निर्देशिकाएँ
+│   │       ├── pages/          # 26 पेज निर्देशिकाएँ
 │   │       ├── services/       # ApiService (JWT इंटरसेप्टर) + AuthService (Token पर्सिस्टेंस)
 │   │       └── layouts/        # रिस्पॉन्सिव एडमिन लेआउट (साइडबार+टॉपबार+कंटेंट क्षेत्र)
 │   └── harmonyos/              # HarmonyOS नेटिव क्लाइंट (Token साइलेंट रीफ़्रेश)
@@ -147,8 +149,8 @@ cp .env.example .env
 |---------|------|--------|
 | `APP_PORT` | webman HTTP लिसनिंग पोर्ट | `8789` |
 | `APP_URL` | बाहरी एक्सेस पता (इंस्टॉलर सफलता पृष्ठ लिंक, API दस्तावेज़ baseUrl आदि) | `http://localhost:8789` |
-| `JWT_SECRET` | JWT सिग्नेचर कुंजी | `open-admin-jwt-secret-change-in-production` |
-| `HASHIDS_SALT` | Hashids सॉल्ट | `open-admin-hashids-salt-2026` |
+| `ADMIN_JWT_SECRET_KEY` | JWT सिग्नेचर कुंजी | `game-platform-admin-jwt-secret-change-in-production` |
+| `HASHIDS_SALT` | Hashids सॉल्ट | `game-platform-hashids-salt-2026` |
 | `ENCRYPTION_KEY` | API एन्क्रिप्शन कुंजी | 32 बाइट डिफ़ॉल्ट मान |
 | `SNOWFLAKE_DATACENTER_ID` | डेटासेंटर ID (0-31) | `1` |
 | `SNOWFLAKE_WORKER_ID` | वर्कर नोड ID (0-31) | `1` |
@@ -188,7 +190,7 @@ DevEco Studio से `apps/harmonyos/` निर्देशिका खोल�
 
 ### 6. Docker Compose वन-क्लिक डिप्लॉयमेंट (प्रोडक्शन के लिए अनुशंसित)
 
-प्रोजेक्ट पूर्ण Docker ऑर्केस्ट्रेशन प्रदान करता है, जिसमें 7 सेवाएँ: Nginx, admin (webman), service (webman), leaderboard-ws (WebSocket), MySQL, Redis, Elasticsearch।
+प्रोजेक्ट पूर्ण Docker ऑर्केस्ट्रेशन प्रदान करता है, जिसमें 7 सेवाएँ: Nginx, admin (webman), service (webman), chat-ws (WebSocket), MySQL, Redis, Elasticsearch।
 
 ```bash
 # 1. Docker पर्यावरण चर सेट करें
@@ -423,7 +425,7 @@ Authorization: Bearer <token>
 | `nginx` | nginx:alpine | 80, 443 |
 | `admin` | स्थानीय `Dockerfile` निर्माण | 8789 |
 | `service` | स्थानीय `Dockerfile` निर्माण | 8792 |
-| `leaderboard-ws` | स्थानीय `Dockerfile` निर्माण | 8790, 8791 |
+| `chat-ws` | स्थानीय `Dockerfile` निर्माण | 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

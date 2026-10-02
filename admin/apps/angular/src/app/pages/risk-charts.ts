@@ -2,8 +2,8 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { Api, Row } from '../core/api.service';
 import { bounds, linePoints } from '../core/chart';
-import { json, scalarsOf } from '../core/render';
-import { errText, num, rowsOf } from '../core/util';
+import { json, rowsAny, scalarsOf } from '../core/render';
+import { errText, num } from '../core/util';
 import { T, t } from '../core/i18n/i18n';
 import { StatCard } from '../components/ui';
 import { Table } from '../components/table';
@@ -250,7 +250,7 @@ export class RiskCharts {
    * 一个显示「拦截」一个显示 `block`，读的人会以为是两种东西（服务端回的就是枚举原文）。
    */
   protected readonly recent = computed(() =>
-    rowsOf(this.dash(), 'recent_events').map((r) => ({
+    rowsAny(this.dash(), 'recent_events').map((r) => ({
       ...r,
       action: this.actionText(r['action']),
     })),

@@ -51,7 +51,7 @@ rm -rf install/
 
 ইনস্টল উইজার্ড যা সম্পন্ন করে:
 - PHP এনভায়রনমেন্ট চেক (সংস্করণ, এক্সটেনশন, ডিরেক্টরি পারমিশন)
-- মিলিত SQL এক্সিকিউশন (`install/install.sql`), ৭৮টি টেবিল তৈরি ও সিড ডেটা ইমপোর্ট
+- মিলিত SQL এক্সিকিউশন (`install/install.sql`), ৭৯টি টেবিল তৈরি ও সিড ডেটা ইমপোর্ট
 - সুপার অ্যাডমিন অ্যাকাউন্ট তৈরি (bcrypt এনক্রিপ্ট, super_admin রোলের সাথে সম্পর্কিত)
 - অটো JWT/Encryption/Hashids সিক্রেট জেনারেশন
 - `admin/.env` ও `service/.env` লেখা
@@ -90,13 +90,13 @@ docker-compose logs -f
 | nginx | game-platform-nginx | 80, 443 | রিভার্স প্রক্সি + স্ট্যাটিক ফাইল |
 | admin | game-platform-admin | 8789 | অ্যাডমিন প্যানেল API |
 | service | game-platform-service | 8792 | C-এন্ড ব্যবসা API |
-| leaderboard-ws | game-platform-ws | 8790, 8791 | WebSocket লিডারবোর্ড/চ্যাট |
+| chat-ws | game-platform-ws | 8791 | WebSocket |
 | mysql | game-platform-mysql | 3306 | মূল ডেটাবেস |
 | redis | game-platform-redis | 6379 | ক্যাশ/রেট লিমিট |
 | elasticsearch | game-platform-es | 9200 | ফুল-টেক্সট সার্চ |
 
 > **পোর্ট কনফিগারেশন**: উপরের টেবিলটি ডিফল্ট পোর্ট দেখায়, সবগুলো প্রজেক্টের রুট ডিরেক্টরির `.env`-এ পরিবর্তন করা যায় (টেমপ্লেট `.env.example`, `cp .env.example .env` করে সম্পাদনা করুন):
-> `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `LEADERBOARD_WS_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
+> `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
 > `nginx.conf.template`-এর upstream পোর্ট অফিসিয়াল ইমেজের envsubst দিয়ে স্বয়ংক্রিয়ভাবে রেন্ডার হয়, ম্যানুয়ালি Nginx কনফিগ পরিবর্তনের প্রয়োজন নেই।
 > Docker ডিপ্লয়ে, পাবলিক ঠিকানা (`APP_URL` / `SITE_URL`) ডিফল্টভাবে `ADMIN_PORT` / `SERVICE_PORT` অনুসরণ করে (ফরম্যাট `http://localhost:পোর্ট`); কাস্টম ডোমেইন বা HTTPS-এর জন্য রুট `.env`-এ `APP_URL` / `SITE_URL` সেট করুন (এটি `admin/.env` ও `service/.env`-এর একই কী ওভাররাইড করে)। বেয়ার-মেটাল (ম্যানুয়াল) ডিপ্লয়ে পোর্ট পরিবর্তন করলে ঠিকানা নিজে থেকে আপডেট করতে হবে।
 
@@ -201,7 +201,6 @@ SCOUT_HOSTS=127.0.0.1:9200
 ```ini
 # admin-এর মতো একই ডেটাবেস, Redis, ES কনফিগারেশন
 APP_PORT=8792
-LEADERBOARD_WS_PORT=8790  # লিডারবোর্ড WebSocket পোর্ট (ফ্রন্টএন্ডের সংযোগ ঠিকানার সাথে সামঞ্জস্যপূর্ণ)
 CHAT_WS_PORT=8791  # চ্যাট WebSocket পোর্ট
 SNOWFLAKE_WORKER_ID=2  # admin থেকে আলাদা হতে হবে
 
@@ -326,7 +325,7 @@ systemctl enable --now game-platform-admin game-platform-service
 `/etc/nginx/sites-available/game-platform` তৈরি করুন:
 
 ```nginx
-# পোর্টগুলো ডিফল্ট মান (admin 8789 / service 8792 / ws 8790); .env পরিবর্তন করা থাকলে সেগুলোও সমন্বয় করুন
+# পোর্টগুলো ডিফল্ট মান (admin 8789 / service 8792 / ws 8791); .env পরিবর্তন করা থাকলে সেগুলোও সমন্বয় করুন
 server {
     listen 80;
     server_name your-domain.com;
@@ -352,16 +351,6 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    # WebSocket লিডারবোর্ড (ডিফল্ট পোর্ট 8790, service/.env-এর LEADERBOARD_WS_PORT-এর সাথে সামঞ্জস্যপূর্ণ)
-    location /ws/ {
-        proxy_pass http://127.0.0.1:8790;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
     }
 
     # 健康检查
@@ -614,7 +603,7 @@ ufw allow 443/tcp     # HTTPS
 ufw enable
 
 # অভ্যন্তরীণ পোর্ট এক্সপোজ করা উচিত নয়
-# 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# 8789 (admin), 8792 (service), 8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
 # উপরের পোর্টগুলো ডিফল্ট; রুট .env / সংশ্লিষ্ট .env পরিবর্তন করা থাকলে প্রকৃত কনফিগ মান্য হবে
 # শুধুমাত্র 127.0.0.1 দিয়ে অ্যাক্সেস
 ```

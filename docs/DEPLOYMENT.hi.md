@@ -51,7 +51,7 @@ rm -rf install/
 
 स्थापना विज़ार्ड द्वारा पूर्ण किए गए कार्य:
 - PHP पर्यावरण जाँच (संस्करण, एक्सटेंशन, निर्देशिका अनुमतियाँ)
-- संयुक्त SQL (`install/install.sql`) निष्पादित करें, 78 तालिकाएँ बनाएं और सीड डेटा आयात करें
+- संयुक्त SQL (`install/install.sql`) निष्पादित करें, 79 तालिकाएँ बनाएं और सीड डेटा आयात करें
 - सुपर एडमिन खाता बनाएं (bcrypt एन्क्रिप्टेड, super_admin भूमिका से संबद्ध)
 - JWT/Encryption/Hashids कुंजियाँ स्वचालित रूप से उत्पन्न करें
 - `admin/.env` और `service/.env` लिखें
@@ -90,13 +90,13 @@ docker-compose logs -f
 | nginx | game-platform-nginx | 80, 443 | रिवर्स प्रॉक्सी + स्थिर फ़ाइलें |
 | admin | game-platform-admin | 8789 | प्रशासन कंसोल API |
 | service | game-platform-service | 8792 | C-छोर व्यवसाय API |
-| leaderboard-ws | game-platform-ws | 8790, 8791 | WebSocket लीडरबोर्ड/चैट |
+| chat-ws | game-platform-ws | 8791 | WebSocket |
 | mysql | game-platform-mysql | 3306 | मुख्य डेटाबेस |
 | redis | game-platform-redis | 6379 | कैश/दर सीमा |
 | elasticsearch | game-platform-es | 9200 | पूर्ण-पाठ खोज |
 
 > **पोर्ट कॉन्फ़िगरेशन**: ऊपर की तालिका डिफ़ॉल्ट पोर्ट दिखाती है, सभी को प्रोजेक्ट की रूट डायरेक्टरी के `.env` में बदला जा सकता है (टेम्पलेट `.env.example`, `cp .env.example .env` के बाद संपादित करें):
-> `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `LEADERBOARD_WS_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
+> `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
 > `nginx.conf.template` के upstream पोर्ट आधिकारिक इमेज के envsubst द्वारा स्वचालित रूप से रेंडर होते हैं, Nginx कॉन्फ़िग मैन्युअल रूप से बदलने की आवश्यकता नहीं।
 > Docker परिनियोजन में, सार्वजनिक पते (`APP_URL` / `SITE_URL`) डिफ़ॉल्ट रूप से `ADMIN_PORT` / `SERVICE_PORT` का स्वतः अनुसरण करते हैं (प्रारूप `http://localhost:पोर्ट`); कस्टम डोमेन या HTTPS के लिए रूट `.env` में `APP_URL` / `SITE_URL` सेट करें (यह `admin/.env` और `service/.env` की समान कुंजियों को ओवरराइड करता है)। बेयर-मेटल (मैनुअल) परिनियोजन में पोर्ट बदलते समय पते स्वयं अपडेट करने होंगे।
 
@@ -201,7 +201,6 @@ SCOUT_HOSTS=127.0.0.1:9200
 ```ini
 # admin के समान डेटाबेस, Redis, ES कॉन्फ़िग
 APP_PORT=8792
-LEADERBOARD_WS_PORT=8790  # लीडरबोर्ड WebSocket
 CHAT_WS_PORT=8791  # चैट WebSocket
 SNOWFLAKE_WORKER_ID=2  # admin से भिन्न होना अनिवार्य
 
@@ -326,7 +325,7 @@ systemctl enable --now game-platform-admin game-platform-service
 `/etc/nginx/sites-available/game-platform` बनाएं:
 
 ```nginx
-# पोर्ट डिफ़ॉल्ट मान हैं (admin 8789 / service 8792 / ws 8790)। यदि .env बदला गया है तो तदनुसार समायोजित करें
+# पोर्ट डिफ़ॉल्ट मान हैं (admin 8789 / service 8792 / ws 8791)। यदि .env बदला गया है तो तदनुसार समायोजित करें
 server {
     listen 80;
     server_name your-domain.com;
@@ -352,16 +351,6 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    # WebSocket लीडरबोर्ड (डिफ़ॉल्ट पोर्ट 8790, service/.env के LEADERBOARD_WS_PORT के अनुरूप)
-    location /ws/ {
-        proxy_pass http://127.0.0.1:8790;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
     }
 
     # स्वास्थ्य जाँच
@@ -614,7 +603,7 @@ ufw allow 443/tcp     # HTTPS
 ufw enable
 
 # आंतरिक पोर्ट उजागर नहीं होने चाहिए
-# 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# 8789 (admin), 8792 (service), 8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
 # उपरोक्त डिफ़ॉल्ट पोर्ट हैं। यदि रूट .env / संबंधित .env बदला गया है, तो वास्तविक कॉन्फ़िग मान्य होगा
 # केवल 127.0.0.1 के माध्यम से पहुँच
 ```

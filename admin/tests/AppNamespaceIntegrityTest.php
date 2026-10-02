@@ -13,6 +13,9 @@ use PHPUnit\Framework\TestCase;
  * 两个真实缺陷各对应一条断言：
  * ① 4f83f2f 删掉 admin/app/event/EventBus.php，WalletService.php:283 的 EventBus::emit
  *    调用即抛 Class not found（风控冻结接口恒失败），而 CI 全树 php -l 与 admin 套件全绿；
+ *    注：该文件已于 2026-10-02 **再次**删除，本次是自觉的 —— 此时 admin 树已零代码调用点
+ *    （仅剩注释提及），且 WalletService 已改走共享层 OutboxWriter（见其 :337-341 注释）。
+ *    ① 的教训是「删类之前先清调用方」，**不是**「这个类不许删」；照抄那条结论会把它加回来。
  * ② decba5f 抽走了 admin/app/activity/ActivityHandlerFactory.php 首行 `<?php`，文件变成
  *    「纯文本」，include 时只把源码吐进输出流、类永不定义，php -l 同样报「无语法错误」。
  * 两条缺陷的共同点＝文件在、名字对、但类根本加载不了，只能靠「文件必须可解析 + import 必须落地」兜住。

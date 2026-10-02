@@ -422,13 +422,20 @@ class PaymentGatewayTest extends TestCase
     public function testKakaoPayFlatParamSecurity(): void
     {
         $gateway = new KakaoPayGateway();
-        // 前端上报 failed 直接透传（无需 pg_token/approve）
-        $failed = $gateway->verifyCallback($this->makeRequest('', [], 'POST', '/?provider=kakaopay&order_no=DEP1&transaction_id=t1&status=failed'));
-        $this->assertTrue($failed['valid']);
-        $this->assertSame('failed', $failed['status']);
-        // success 但缺 pg_token：无法 approve，拒绝
-        $noToken = $gateway->verifyCallback($this->makeRequest('', [], 'POST', '/?provider=kakaopay&order_no=DEP1&transaction_id=t1&status=success'));
-        $this->assertFalse($noToken['valid']);
+        putenv('KAKAOPAY_ADMIN_KEY=test-admin-key');
+        putenv('KAKAOPAY_CID=TC0ONETIME');
+        try {
+            // 上报 failed 不再透传：订单不存在（更别说 tid 匹配）⇒ fail-closed。
+            // 改前这里 valid=true ⇒ 未鉴权者用任意单号即可把他人 pending 充值单置 cancelled
+            $failed = $gateway->verifyCallback($this->makeRequest('', [], 'POST', '/?provider=kakaopay&order_no=DEP1&transaction_id=t1&status=failed'));
+            $this->assertFalse($failed['valid'], 'failed 上报必须有服务端留存的 (order_no, tid) 支撑');
+            // success 但缺 pg_token：无法 approve，拒绝
+            $noToken = $gateway->verifyCallback($this->makeRequest('', [], 'POST', '/?provider=kakaopay&order_no=DEP1&transaction_id=t1&status=success'));
+            $this->assertFalse($noToken['valid']);
+        } finally {
+            putenv('KAKAOPAY_ADMIN_KEY');
+            putenv('KAKAOPAY_CID');
+        }
     }
 
     private function verifyNowPaymentsSignature(string $body, string $signature): bool

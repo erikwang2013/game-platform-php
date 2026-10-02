@@ -179,6 +179,12 @@ Route::group('/admin/v1', function () {
     Route::get('/platform/user/list', [app\admin\v1\controller\PlatformUserController::class, 'list']);
     Route::get('/platform/user/{hashid}', [app\admin\v1\controller\PlatformUserController::class, 'detail']);
     Route::get('/platform/user/{hashid}/transactions', [app\admin\v1\controller\PlatformUserController::class, 'transactions']);
+    // 显式全号查看（独立动作 + 独立权限 post.admin/platform/user/reveal）：**全仓只此一处**
+    // 下发 phone/email/last_login_ip 原文，上面那条 GET 详情仍然脱敏。
+    // 为什么必须是 POST、不能做成 GET 详情的 `?reveal=1`：OperationLog 只记 POST/PUT/DELETE
+    // （app/middleware/OperationLog.php:19-23 对其余方法直接早返回）⇒ GET 形态**留不下**
+    // 「谁在何时看了谁的全号」。挂在本组上的 POST 才会自动落审计：user_id=操作者、path 含目标 hashid。
+    Route::post('/platform/user/{hashid}/reveal', [app\admin\v1\controller\PlatformUserController::class, 'reveal']);
     Route::put('/platform/user/{hashid}', [app\admin\v1\controller\PlatformUserController::class, 'update']);
     Route::delete('/platform/user/{hashid}', [app\admin\v1\controller\PlatformUserController::class, 'destroy']);
 

@@ -59,19 +59,19 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | 2FA | Google Authenticator TOTP + 予備リカバリーコード | 完了 |
 | 紹介 | 紹介コード、登録報酬、チャージコミッション | 完了 |
 | 検索 | ES検索API + ゲーム提案 + LIKEフォールバック | 完了 |
-| ランキング | WebSocket リアルタイムプッシュ (ポート8790) | 完了 |
+| ランキング | REST + Redis | 完了 |
 | CDN | 5社連携 (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS アップロード + キャッシュ削除 + プリロード) | 完了 |
 | CDN 管理 | 管理画面で5社設定 (暗号化保存した認証情報/有効·無効/HeadBucket 接続テスト)、service は DB のみ参照 | 完了 |
 | レポート | 管理側データレポート（集計/日報/CSV エクスポート、Redis 5分キャッシュ、期間 ≤90日） | 完了 |
 | プラットフォーム統計 | C側ホーム統計（ゲーム総数/ユーザー総数/今日の対局/7日間アクティブ） | 完了 |
 | デプロイ | Docker Compose 7サービス + Nginxリバースプロキシ | 完了 |
 | データ | MySQL リアルタイム集計分析 + 結合/条件確率計算 | 完了 |
-| HarmonyOS | admin 側 8 ページ；C側 `apps/harmonyos/` にログイン/ロビー/詳細/ウォレット/マイページ実装（8792 を指す） | 一部完了（工程は実行可能、実機では IP 変更が必要） |
+| HarmonyOS | admin 側 19 ページ；C側 `apps/harmonyos/` にログイン/ロビー/詳細/ウォレット/マイページ実装（8792 を指す） | 一部完了（工程は実行可能、実機では IP 変更が必要） |
 | API ドキュメント | erikwang2013/apidoc-php インタラクティブドキュメント | 完了 |
 | ワンクリックインストール | ブラウザインストールウィザード：管理者作成、既存DBアップグレード、install.lock で再インストール防止 | 完了 |
 | 耐障害性 | CircuitBreaker 遮断 + Retry 再試行 + feature.provider_mock 縮退スイッチ | 完了 |
 | 決済手段 | 管理CRUD + 国別表示 + 金額範囲 + 通貨制限 | 完了 |
-| CI | push 時に自動インクリメント tag + GitHub Release | 完了 |
+| CI | push 時に自動インクリメント tag + GitHub Release | 手動トリガーに変更 |
 
 ### エコシステム拡張 (v2.0) — 完了
 
@@ -231,7 +231,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 
 ## 7. データベーステーブル一覧
 
-### エコシステム拡張で追加 (10枚)
+### エコシステム拡張で追加 (14枚)
 
 | テーブル名 | 説明 | 主要特性 |
 |------|------|---------|
@@ -245,6 +245,10 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | game_user_achievement | ユーザー成就 | user_id+achievement_id 一意インデックス |
 | game_friend | フレンド関係 | user_id+friend_id 一意インデックス |
 | game_message | 私信 | from_user_id+to_user_id / to_user_id+is_read |
+| game_cdn_provider | CDNプロバイダー設定 | provider 一意インデックス, config 暗号化JSON |
+| game_referral_commission | 多階層紹介コミッション明細 | user_id / referral_id / source_type+source_id インデックス |
+| game_tournament | トーナメント | slug 一意インデックス, status+start_at+end_at インデックス |
+| game_tournament_entry | トーナメント参加/成績 | tournament_id+user_id 一意インデックス, tournament_id+score インデックス |
 
 ### テーブル構造の変更
 
@@ -253,7 +257,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | game_game | +provider_config (JSON) |
 | game_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**合計: install.sql 78 枚のテーブル**。モデル: 52 個は `packages/platform-common/src/model/` で共有、admin/app/model/ の 8 個と service/app/model/ の 10 個は各ホスト専用（ファイル名の重複なし）。
+**合計: install.sql 79 枚のテーブル**。モデル: 51 個は `packages/platform-common/src/model/` で共有、admin/app/model/ の 6 個と service/app/model/ の 10 個は各ホスト専用（ファイル名の重複なし）。
 
 ## 8. テストカバレッジ
 
@@ -267,7 +271,7 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | HashidsServiceTest | 6 | IDエンコード/デコード往復 |
 | SnowflakeServiceTest | 5 | ID生成の一意性 |
 
-**合計（phpunit --list-tests 現測）: admin 200 ケース / 21 ファイル、service 273 ケース / 42 ファイル（WebhookUrlSafety + EventBusMessageFormat を含む。レポート: 09-22 再実行 admin 190 + service 273、08-27 スナップショット admin 153 + service 45）。service は CI 失敗のブロッカーには含まれない（未検証）。**
+**合計（phpunit --list-tests 現測）: admin 593 ケース / 70 ファイル、service 549 ケース / 89 ファイル（WebhookUrlSafety + EventBusMessageFormat を含む。レポート: 09-22 再実行 admin 190 + service 273、08-27 スナップショット admin 153 + service 45）。service は CI 失敗のブロッカーに含まれる。**
 
 ---
 

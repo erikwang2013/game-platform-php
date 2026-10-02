@@ -1,0 +1,107 @@
+<!-- Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz -->
+<div class="page-head">
+  <h1>{{ 'admin.title' | t }}</h1>
+  <span class="sub">{{ 'admin.subtitle' | t }}</span>
+  <div class="spacer"></div>
+  <input
+    class="input"
+    [placeholder]="'admin.search_hint' | t"
+    [value]="keyword()"
+    (input)="keyword.set($any($event.target).value)"
+    (keyup.enter)="search()"
+  />
+  <button class="btn" (click)="search()">{{ 'app.search' | t }}</button>
+  <button class="btn" (click)="load()">{{ 'app.refresh' | t }}</button>
+  <!-- 导的是服务端整张 admin_user 表（不认这里的搜索词），故与「刷新」并列、不禁用空列表 -->
+  <button class="btn" [disabled]="busyExport()" (click)="exportXlsx('admin_user')">
+    {{ (busyExport() ? 'app.exporting' : 'export.excel') | t }}
+  </button>
+  <button class="btn btn-primary" (click)="openCreate()">+ {{ 'app.create' | t }}</button>
+  <!-- 导入的正是本页的 AdminUser（POST /admin/v1/import/users）：按钮/弹框/报表都在 ui-import -->
+  <ui-import path="/admin/v1/import/users" title="import.users" (done)="load()" />
+</div>
+<!-- 批量启停的就地回执（服务端 message / 失败原因），与 finance 同款：动作结果不进表格错误态 -->
+@if (note()) {
+  <div [class]="noteErr() ? 'alert' : 'notice'">{{ note() }}</div>
+}
+<!-- 批量启停：勾选列由 ui-table 提供，勾选态受控在本组件（提交成功要清空） -->
+@if (rows().length) {
+  <div class="row-actions">
+    <span class="sub">{{ 'table.picked' | t: { count: picked().length } }}</span>
+    <button class="btn" [disabled]="!picked().length || batching()" (click)="batch(true)">
+      {{ 'admin.batch_enable' | t }}
+    </button>
+    <button class="btn danger" [disabled]="!picked().length || batching()" (click)="batch(false)">
+      {{ 'admin.batch_disable' | t }}
+    </button>
+  </div>
+}
+
+<ui-state [loading]="loading()" [error]="error()" [empty]="!rows().length">
+  <div class="card">
+    <div class="card-body">
+      <ui-table
+        [rows]="view()"
+        [heads]="heads"
+        [actions]="actions()"
+        [clickable]="true"
+        [selectable]="true"
+        [checked]="picked()"
+        [pickable]="pickable"
+        (pick)="open($event)"
+        (picked)="picked.set($event)"
+        (act)="run($event.row, $event.key)"
+      />
+    </div>
+  </div>
+</ui-state>
+
+@if (rows().length) {
+  <ui-pager [page]="page()" [pages]="pages" [total]="total()" (jump)="go($event)" />
+}
+
+<!-- 详情：GET /admin/v1/user/{hashid}（UserController::show 补 roles、去掉 password/id_card） -->
+<ui-drawer
+  [open]="detail() !== null"
+  [title]="'admin.detail' | t"
+  (close)="detail.set(null)"
+>
+  @if (detail(); as d) {
+    <dl class="kv">
+      @for (p of info(); track p.label) {
+        <dt>{{ p.label }}</dt>
+        <dd>{{ p.value }}</dd>
+      } @empty {
+        <!-- 复用 user.* 的两条空态文案：这里只是「记录里没有一个可显示字段」的兜底，
+             为它再造两条 ×13 语言不值当（文案本身与用户无关） -->
+        <dt>{{ 'user.empty_tip' | t }}</dt>
+        <dd>{{ 'user.empty_note' | t }}</dd>
+      }
+    </dl>
+  }
+</ui-drawer>
+
+<!-- 新建 / 编辑：用底座 CrudPage 那一个弹框 -->
+<ui-form
+  [open]="formOpen()"
+  [title]="formTitle()"
+  [fields]="formFields()"
+  [value]="formValue()"
+  [error]="formError()"
+  [saving]="saving()"
+  (save)="submit($event)"
+  (close)="closeForm()"
+/>
+
+<!-- 重置密码 / 分配角色：端点同址（PUT /user/{hashid}）但字段集与二次确认方式都不同，
+     硬塞进编辑表单等于让「改个姓名」的框里常驻两个密码框 ⇒ 自己拿一套弹框状态（Support 同款） -->
+<ui-form
+  [open]="actOpen()"
+  [title]="actTitle()"
+  [fields]="actFields()"
+  [value]="actRow()"
+  [error]="actError()"
+  [saving]="actSaving()"
+  (save)="submitAct($event)"
+  (close)="closeAct()"
+/>

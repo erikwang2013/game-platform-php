@@ -7,9 +7,14 @@
  * 401 时尝试 refresh 一次，失败则清 token 并回调登出。
  *
  * 端点目录在 `api.ts`（那里 re-export 本文件的 ApiError / tokens / language / …，
- * 所以既有的 `from './api.ts'` 一行都不用改）。本文件**零 import**：只用全局的
- * fetch / Headers / localStorage。
+ * 所以既有的 `from './api.ts'` 一行都不用改）。
+ *
+ * 唯一的 import 是 `i18n/index.ts` —— 那一层**刻意不引 React**（见该文件 :5 注释），
+ * 所以传输层仍然与 React 无关。除它之外只用全局的 fetch / Headers / localStorage。
+ * **别从这里 import `i18n/useI18n.ts`**：那会把 React 拖进请求路径。
  */
+import { t } from '../i18n/index.ts';
+
 
 const BASE = '/api/v1';
 const K_ACCESS = 'gp_access_token';
@@ -105,7 +110,7 @@ export async function request<T>(path: string, init: RequestInit = {}, retry = t
   try {
     res = await fetch(`${BASE}${path}`, { ...init, headers });
   } catch {
-    throw new ApiError(-1, '网络连接失败，请检查网络后重试');
+    throw new ApiError(-1, t('error.network_connection'));
   }
 
   const body = await res.json().catch(() => null);
@@ -118,15 +123,15 @@ export async function request<T>(path: string, init: RequestInit = {}, retry = t
     if (await refreshOnce()) return request<T>(path, init, false);
     tokens.clear();
     onUnauthorized();
-    throw new ApiError(401, '登录状态已过期，请重新登录');
+    throw new ApiError(401, t('error.session_expired'));
   }
 
   if (body && typeof body.code === 'number') {
-    if (body.code !== 0) throw new ApiError(body.code, body.message || '请求失败');
+    if (body.code !== 0) throw new ApiError(body.code, body.message || t('error.request_failed'));
     return body.data as T;
   }
-  if (!res.ok) throw new ApiError(res.status, `请求失败（HTTP ${res.status}）`);
-  throw new ApiError(-1, '响应格式异常');
+  if (!res.ok) throw new ApiError(res.status, t('error.request_failed_http', { status: res.status }));
+  throw new ApiError(-1, t('error.bad_response'));
 }
 
 export const get = <T,>(path: string) => request<T>(path);

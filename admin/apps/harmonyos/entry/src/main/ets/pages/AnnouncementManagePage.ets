@@ -15,7 +15,7 @@ import { t } from '../i18n/Translations';
  * 公告字段描述 —— 值域取自 AnnouncementController 的 validator 与 game_announcement 列注释：
  *   title 必填 ≤255；content 必填（TEXT）；target_lang 空串 = 全语言，≤10；status: 0 草稿 / 1 已发布。
  *   type 真值 = system / game / payment，出处：game_announcement.type 列注释
- *   （install/install.sql:386「system=系统公告 game=游戏公告 payment=支付公告」）
+ *   （install/install.sql:391「system=系统公告 game=游戏公告 payment=支付公告」）
  *   + 存量数据 install/test-data.sql:90-92（system 与 payment 各一条）。
  *   控制器 create/update 现同口径 `sometimes|required|in:system,game,payment`；
  *   早期后端曾误写 `in:system,event`（与列注释、存量数据都不符），已修正 ——

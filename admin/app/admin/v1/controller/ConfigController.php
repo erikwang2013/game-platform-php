@@ -97,7 +97,7 @@ class ConfigController extends BaseController
 
     #[Apidoc\Title("更新配置")]
     #[Apidoc\Desc("更新指定配置项的值")]
-    #[Apidoc\Url("/admin/v1/config/{hashid}")]
+    #[Apidoc\Url("/admin/v1/config/{id}")]
     #[Apidoc\Method("PUT")]
     #[Apidoc\Author("erik")]
     #[Apidoc\Param(name: "value", type: "string", require: false, desc: "配置值")]
@@ -140,7 +140,7 @@ class ConfigController extends BaseController
 
     #[Apidoc\Title("删除配置")]
     #[Apidoc\Desc("删除指定配置项(需密码二次确认)")]
-    #[Apidoc\Url("/admin/v1/config/{hashid}")]
+    #[Apidoc\Url("/admin/v1/config/{id}")]
     #[Apidoc\Method("DELETE")]
     #[Apidoc\Author("erik")]
     public function destroy(Request $request, string $hashid): Response
@@ -152,7 +152,7 @@ class ConfigController extends BaseController
         }
 
         $adminId = $request->adminId ?? 0;
-        $error   = $this->confirmPassword($adminId, $request->input('password', ''), $request);
+        $error   = $this->confirmPassword($adminId, $request->input('password', ''));
         if ($error !== null) {
             return $this->fail($error, 422);
         }

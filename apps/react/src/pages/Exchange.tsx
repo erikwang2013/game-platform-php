@@ -15,20 +15,31 @@ import {
 import { useAsync } from '../lib/hooks.ts';
 import { ErrorBox, Loading } from '../components/States.tsx';
 import { useCaptcha } from '../lib/useCaptcha.tsx';
+import type { MessageKey } from '../i18n/index.ts';
+import { useI18n } from '../i18n/useI18n.ts';
 
-const DIRECTIONS: Array<{ id: ExchangeDirection; label: string; hint: string }> = [
-  { id: 'in', label: '买入（平台币 → 游戏币）', hint: '花费平台币，得到游戏币' },
-  { id: 'out', label: '卖出（游戏币 → 平台币）', hint: '花费游戏币，得到平台币' },
+/**
+ * ⚠ 表里存的是**键**不是文案（与 `Layout.tsx` 的 `NAV`、`Wallet.tsx` 的 `TABS` 同款）：
+ * 模块顶层只求值一次，写成 `t(...)` 会把这四个串冻在首屏语言上，切语言后
+ * 页头那句「先询价再确认，…」一个字都不会变。
+ */
+const DIRECTIONS: Array<{ id: ExchangeDirection; label: MessageKey; hint: MessageKey }> = [
+  { id: 'in', label: 'exchange.dir_in_label', hint: 'exchange.hint_in' },
+  { id: 'out', label: 'exchange.dir_out_label', hint: 'exchange.hint_out' },
 ];
 
+/** 错误文案的**暂存形**：存「原始错误 + 兜底键」，**不存翻好的串**（理由同上，见 `Wallet.tsx` 的 `Row`）。 */
+type Msg = { err: unknown; fallback: MessageKey };
+
 export function Exchange() {
+  const { t } = useI18n();
   const games = useAsync(() => api.games({ per_page: 100 }), []);
   const [pickedGame, setPickedGame] = useState('');
   const [pickedCurrency, setPickedCurrency] = useState('');
   const [direction, setDirection] = useState<ExchangeDirection>('in');
   const [amount, setAmount] = useState('');
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useState<Msg | null>(null);
   const [quote, setQuote] = useState<{ req: ExchangeRequest; data: ExchangeQuote } | null>(null);
   const [done, setDone] = useState<ExchangeDone | null>(null);
   const cap = useCaptcha();
@@ -73,7 +84,7 @@ export function Exchange() {
       const req = buildReq();
       setQuote({ req, data: await api.exchangeQuote(req) });
     } catch (e) {
-      setErr(e instanceof ApiError ? `${e.message}（${e.code}）` : '询价失败，请稍后重试');
+      setErr({ err: e, fallback: 'exchange.quote_failed' });
     } finally {
       setBusy(false);
     }
@@ -89,7 +100,7 @@ export function Exchange() {
       setQuote(null);
     } catch (e) {
       // 失败（含 422 验证码错误）：框已关，服务端 message 落在下方错误位，下次确认重取
-      setErr(e instanceof ApiError ? `${e.message}（${e.code}）` : '兑换失败，请稍后重试');
+      setErr({ err: e, fallback: 'exchange.failed' });
     } finally {
       setBusy(false);
     }
@@ -108,22 +119,30 @@ export function Exchange() {
   return (
     <>
       <section className="stack">
-        <p className="label">兑换</p>
+        <p className="label">{t('tx.exchange')}</p>
         <h1 className="h1">
-          兑换
+          {t('tx.exchange')}
           <span style={{ color: 'var(--orange)' }}>.</span>
         </h1>
+        {/*
+          整句进表（`exchange.sub` 带一个 `{hint}` 参数）而不是拆成「前半 + 提示 + 。」三截：
+          HEAD 里这三截**同在一行**，JSX 不会在它们之间插空格，而拆开后
+          `verify-zh.mjs` 的 A 面（HEAD 逐行取「标签之间的文本」）要的是
+          `先询价再确认，{}。` 这**一条**归一化后的串，拆开就凑不出它。
+          `{hint}` 传的是**键求值后的文案**（`dir.hint` 存键，见文件头的注释）。
+        */}
         <p className="small muted" style={{ margin: 0 }}>
-          先询价再确认，{dir.hint}。<Link to="/wallet">返回钱包</Link>
+          {t('exchange.sub', { hint: t(dir.hint) })}
+          <Link to="/wallet">{t('app.back_wallet')}</Link>
         </p>
       </section>
 
-      <section className="card" aria-label="兑换下单">
+      <section className="card" aria-label={t('exchange.form_aria')}>
         {games.loading && <Loading />}
         {!games.loading && games.error && <ErrorBox message={games.error} onRetry={games.reload} />}
         {!games.loading && !games.error && items.length === 0 && (
           <div className="state">
-            <p className="state__k">暂无可兑换的游戏</p>
+            <p className="state__k">{t('exchange.no_games')}</p>
           </div>
         )}
 
@@ -137,12 +156,14 @@ export function Exchange() {
           >
             {err && (
               <p className="err" role="alert">
-                {err}
+                {err.err instanceof ApiError
+                  ? t('error.with_code', { message: err.err.message, code: err.err.code })
+                  : t(err.fallback)}
               </p>
             )}
 
             <label className="field">
-              <span>游戏</span>
+              <span>{t('exchange.game')}</span>
               <select
                 className="input"
                 name="game_id"
@@ -162,7 +183,7 @@ export function Exchange() {
             </label>
 
             <label className="field">
-              <span>游戏币种</span>
+              <span>{t('exchange.currency')}</span>
               <select
                 className="input"
                 name="currency_id"
@@ -175,7 +196,12 @@ export function Exchange() {
               >
                 {currencies.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name}（{c.symbol}）汇率 {c.exchange_rate}
+                    {t('exchange.currency_option', {
+                      name: c.name,
+                      symbol: c.symbol,
+                      // `exchange_rate` 是可选的：HEAD 里直接插值，缺值时渲成空串，这里补 `''` 保持同款
+                      rate: c.exchange_rate ?? '',
+                    })}
                   </option>
                 ))}
               </select>
@@ -183,11 +209,11 @@ export function Exchange() {
 
             {currencies.length === 0 && (
               <p className="small muted" style={{ margin: 0 }}>
-                该游戏未配置币种，无法兑换。
+                {t('exchange.no_currency')}
               </p>
             )}
 
-            <div className="tabs" role="tablist" aria-label="兑换方向">
+            <div className="tabs" role="tablist" aria-label={t('exchange.direction_aria')}>
               {DIRECTIONS.map((d) => (
                 <button
                   key={d.id}
@@ -200,13 +226,13 @@ export function Exchange() {
                     setQuote(null);
                   }}
                 >
-                  {d.id === 'in' ? '买入' : '卖出'}
+                  {d.id === 'in' ? t('exchange.buy') : t('exchange.sell')}
                 </button>
               ))}
             </div>
 
             <label className="field">
-              <span>{direction === 'in' ? '平台币数量' : '游戏币数量'}</span>
+              <span>{direction === 'in' ? t('exchange.platform_amount') : t('exchange.game_amount')}</span>
               <input
                 className="input"
                 name="platform_amount"
@@ -228,55 +254,55 @@ export function Exchange() {
               disabled={busy || currencies.length === 0}
             >
               {busy && <span className="spin" aria-hidden="true" />}
-              询价
+              {t('exchange.quote')}
             </button>
           </form>
         )}
       </section>
 
       {quote && (
-        <section className="card" aria-label="询价结果" role="status">
-          <p className="label">询价结果</p>
+        <section className="card" aria-label={t('exchange.quote_result')} role="status">
+          <p className="label">{t('exchange.quote_result')}</p>
           <div className="list" style={{ marginTop: 12 }}>
             <div className="li">
-              <span className="small muted">汇率</span>
+              <span className="small muted">{t('exchange.rate')}</span>
               <span className="mono">{quote.data.rate}</span>
             </div>
             <div className="li">
-              <span className="small muted">价差</span>
+              <span className="small muted">{t('exchange.spread')}</span>
               <span className="mono">{quote.data.spread_pct}%</span>
             </div>
             <div className="li">
-              <span className="small muted">价差费用</span>
+              <span className="small muted">{t('exchange.spread_fee')}</span>
               <span className="mono">{quote.data.spread_fee}</span>
             </div>
             {'actual_game_amount' in quote.data ? (
               <>
                 <div className="li">
-                  <span className="small muted">卖出平台币</span>
+                  <span className="small muted">{t('exchange.sell_platform')}</span>
                   <span className="mono">{quote.data.platform_amount}</span>
                 </div>
                 <div className="li">
-                  <span className="small muted">买入游戏币</span>
+                  <span className="small muted">{t('exchange.buy_game')}</span>
                   <span className="mono">{quote.data.game_amount}</span>
                 </div>
                 <div className="li">
-                  <span className="small muted">实际到账游戏币</span>
+                  <span className="small muted">{t('exchange.actual_game')}</span>
                   <span className="mono">{quote.data.actual_game_amount}</span>
                 </div>
               </>
             ) : (
               <>
                 <div className="li">
-                  <span className="small muted">卖出游戏币</span>
+                  <span className="small muted">{t('exchange.sell_game')}</span>
                   <span className="mono">{quote.data.platform_amount}</span>
                 </div>
                 <div className="li">
-                  <span className="small muted">折算平台币</span>
+                  <span className="small muted">{t('exchange.platform_equivalent')}</span>
                   <span className="mono">{quote.data.platform_equivalent}</span>
                 </div>
                 <div className="li">
-                  <span className="small muted">实际到账平台币</span>
+                  <span className="small muted">{t('exchange.actual_platform')}</span>
                   <span className="mono">{quote.data.actual_platform_amount}</span>
                 </div>
               </>
@@ -292,44 +318,44 @@ export function Exchange() {
               onClick={() => void doExchange()}
             >
               {busy && <span className="spin" aria-hidden="true" />}
-              {direction === 'in' ? '确认买入' : '确认卖出'}
+              {direction === 'in' ? t('exchange.confirm_buy') : t('exchange.confirm_sell')}
             </button>
           ) : (
             <p className="small muted" style={{ marginBottom: 0, marginTop: 12 }}>
-              输入已变更，请重新询价后再确认。
+              {t('exchange.stale')}
             </p>
           )}
         </section>
       )}
 
       {done && (
-        <section className="card" aria-label="兑换结果" role="status">
-          <p className="label">兑换成功</p>
+        <section className="card" aria-label={t('exchange.done_aria')} role="status">
+          <p className="label">{t('exchange.done')}</p>
           <div className="list" style={{ marginTop: 12 }}>
             <div className="li">
-              <span className="small muted">兑换单号</span>
+              <span className="small muted">{t('exchange.order_no')}</span>
               <span className="mono">{done.exchange_id}</span>
             </div>
             <div className="li">
-              <span className="small muted">方向</span>
-              <span className="pill pill--plain">{done.direction === 'in' ? '买入' : '卖出'}</span>
+              <span className="small muted">{t('exchange.direction')}</span>
+              <span className="pill pill--plain">{done.direction === 'in' ? t('exchange.buy') : t('exchange.sell')}</span>
             </div>
             <div className="li">
-              <span className="small muted">{sells ? '卖出游戏币' : '支付平台币'}</span>
+              <span className="small muted">{sells ? t('exchange.sell_game') : t('exchange.pay_platform')}</span>
               <span className="mono">{spentAmount}</span>
             </div>
             <div className="li">
               <span className="small muted">
-                {sells ? '到账平台币（已扣点差）' : '到账游戏币（已扣点差）'}
+                {sells ? t('exchange.recv_platform') : t('exchange.recv_game')}
               </span>
               <span className="mono">{receivedAmount}</span>
             </div>
             <div className="li">
-              <span className="small muted">价差费用</span>
+              <span className="small muted">{t('exchange.spread_fee')}</span>
               <span className="mono">{done.spread_fee}</span>
             </div>
             <div className="li">
-              <span className="small muted">成交后平台币余额</span>
+              <span className="small muted">{t('exchange.balance_after')}</span>
               <span className="mono">{done.balance_after}</span>
             </div>
           </div>

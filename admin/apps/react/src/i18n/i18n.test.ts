@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { DEFAULT_CODE, LANGUAGES, LOCALE_KEY, TABLES, currentCode, isRtl, resolve, setCode, t } from './index.ts';
 import { en } from './en.ts';
+import { enFields } from './en.fields.ts';
+import { enUi } from './en.ui.ts';
 import { zh } from './zh.ts';
 
 /**
@@ -10,6 +12,21 @@ import { zh } from './zh.ts';
  * 语言清单、查表/回落、占位符、持久化。`useI18n` 的组件侧绑定与切换器的交互**没有覆盖**
  * （见同目录 wiring.test.ts 只做源码级断言）。
  */
+
+/**
+ * 合并点 `en.ts` 的两条不变量。第一条**该文件的注释一直声称存在**（「所以有一条用例专门
+ * 断言交集为空（见 i18n.test.ts）」），但盘上此前没有对应用例 —— 注释许诺了守卫、守卫不在。
+ * 2026-10-02 补上，并把同族的「并集完整性」一并钉住。
+ */
+test('合并点：两族键集互不相交（重名时 `...` 展开是后者静默覆盖前者，界面上看不出错）', () => {
+  const overlap = Object.keys(enUi).filter((key) => key in enFields);
+  assert.deepEqual(overlap, [], 'en.ui.ts 与 en.fields.ts 有重名键 ⇒ barrel 展开会把前者静默盖掉');
+});
+
+test('合并点：barrel 键集 == 两族并集（挡「漏合了某一族」与「有人往 barrel 里手加键」）', () => {
+  const union = [...new Set([...Object.keys(enUi), ...Object.keys(enFields)])].sort();
+  assert.deepEqual(Object.keys(en).sort(), union);
+});
 
 /** 假 localStorage —— 真浏览器里由 window 提供；node 下不存在，模块内读偏好走的是 catch 分支。 */
 type Store = Record<string, string>;

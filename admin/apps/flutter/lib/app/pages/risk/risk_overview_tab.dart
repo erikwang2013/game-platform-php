@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
+import '../../widgets/crud.dart';
 
 /// 总览：指标卡 + 命中趋势折线（按 rule_type 分色）+ 动作分布饼图
 class RiskOverviewController extends GetxController {
@@ -52,16 +53,7 @@ class RiskOverviewTab extends GetView<RiskOverviewController> {
       if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
       final o = ctrl.overview.value;
       if (o == null) {
-        return Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Image.asset('assets/mascot.png', width: 120),
-              const SizedBox(height: 12),
-              const Text('无数据'),
-            ],
-          ),
-        );
+        return const CrudEmptyState(text: '无数据');
       }
       final total = (o['total'] as Map<String, dynamic>?) ?? {};
 

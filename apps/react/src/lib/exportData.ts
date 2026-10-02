@@ -13,6 +13,7 @@
  *
  * 纯逻辑（文件名、序列化）与 DOM 分开：前者供 `node --test` 直接覆盖（本树无 DOM 底座）。
  */
+import { t } from '../i18n/index.ts';
 import type { ExportData } from './types.ts';
 
 /**
@@ -52,9 +53,9 @@ export function saveBlob(blob: Blob, name: string): void {
 /** 屏幕上那行「共 N 条」的读数：四类明细各自计数，别相加成一个数（相加看不出缺哪一类） */
 export function exportCounts(d: ExportData): string {
   return [
-    `流水 ${d.transactions.length}`,
-    `兑换 ${d.exchange_records.length}`,
-    `充值 ${d.deposit_orders.length}`,
-    `提现 ${d.withdraw_orders.length}`,
+    t('export.count_transactions', { count: d.transactions.length }),
+    t('export.count_exchange', { count: d.exchange_records.length }),
+    t('export.count_deposit', { count: d.deposit_orders.length }),
+    t('export.count_withdraw', { count: d.withdraw_orders.length }),
   ].join(' · ');
 }

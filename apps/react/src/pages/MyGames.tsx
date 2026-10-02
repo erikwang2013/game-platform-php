@@ -9,25 +9,31 @@ import { dt } from '../lib/datetime.ts';
 import { useAsync } from '../lib/hooks.ts';
 import { Modal } from '../components/CaptchaModal.tsx';
 import { Empty, ErrorBox, Loading } from '../components/States.tsx';
+import type { MessageKey } from '../i18n/index.ts';
+import { useI18n } from '../i18n/useI18n.ts';
 
 /**
  * `game_game_play_log.action` 的取值。**两个来源合起来才是全集**，只看哪一个都会漏：
  *  ① 代码实际写的 5 个：`start`（GameController:291，直接建行）、`launch`（同文件 :296，
  *     走 `GamePlayLogService::write`）、`bet`/`settle`/`refund`（ProviderController:105,151,212
  *     与 GameSdkController:96,148,224，经 GamePlayRecorder）。
- *  ② `install/install.sql:576` 的列注释只列了 `start/end/earn/spend` —— 其中 `end`/`earn`/`spend`
+ *  ② `install/install.sql:583` 的列注释只列了 `start/end/earn/spend` —— 其中 `end`/`earn`/`spend`
  *     **全仓没有写入点**（概率服务 ProbabilityService:19 也按 `earn` 举例），留着兜底旧数据。
  * 服务端按 `action` 筛选是等值匹配，未知值原样透出，不猜。
  */
-const ACTION_LABEL: Record<string, string> = {
-  start: '开始',
-  launch: '启动',
-  bet: '下注',
-  settle: '结算',
-  refund: '退还',
-  end: '结束',
-  earn: '赢取',
-  spend: '消耗',
+/**
+ * ⚠ 表里存的是**键**不是文案：本常量在模块顶层，写成 `t(...)` 只求值一次，
+ * 会把动作名冻在首屏语言上、切语言后一个字都不变（与 `Exchange.tsx` 的 `DIRECTIONS` 同款）。
+ */
+const ACTION_LABEL: Record<string, MessageKey> = {
+  start: 'mygames.action_start',
+  launch: 'mygames.action_launch',
+  bet: 'mygames.action_bet',
+  settle: 'mygames.action_settle',
+  refund: 'mygames.action_refund',
+  end: 'mygames.action_end',
+  earn: 'mygames.action_earn',
+  spend: 'mygames.action_spend',
 };
 
 /** 变动是带符号的十进制字符串（正=赚、负=花），只判符号位，不做数值运算 */
@@ -49,9 +55,16 @@ const prettyJson = (raw: string): string => {
 };
 
 export function MyGames() {
+  const { t } = useI18n();
   const [page, setPage] = useState(1);
   const assets = useAsync(() => api.gameBalances(), []);
   const logs = useAsync(() => api.playLogs({ page }), [page]);
+
+  /** 认识的 action 走表，不认识的（服务端等值匹配、未知值原样透出）原样显示 —— 不编译名。 */
+  const actionLabel = (a: string) => {
+    const k = ACTION_LABEL[a];
+    return k ? t(k) : a;
+  };
 
   // 详情：列表行里没有的字段（变动前后 / 平台币侧 / 会话窗口 / metadata）只在 detail 回。
   // 标题先用手上这行的动作顶着，详情回来再渲染正文，避免弹框空一瞬。
@@ -62,18 +75,19 @@ export function MyGames() {
   );
 
   const games = assets.data?.games ?? [];
-  const curLabel = cur ? (ACTION_LABEL[cur.action] ?? cur.action) : '';
+  const curLabel = cur ? actionLabel(cur.action) : '';
 
   return (
     <>
       <section className="stack">
-        <p className="label">我的游戏</p>
+        <p className="label">{t('mygames.label')}</p>
         <h1 className="h1">
-          游戏资产
+          {t('mygames.title')}
           <span style={{ color: 'var(--orange)' }}>.</span>
         </h1>
         <p className="small muted" style={{ margin: 0 }}>
-          游戏内货币余额，与平台币分开记账。<Link to="/wallet">返回钱包</Link>
+          {t('mygames.sub')}
+          <Link to="/wallet">{t('app.back_wallet')}</Link>
         </p>
       </section>
 
@@ -83,7 +97,7 @@ export function MyGames() {
           <ErrorBox message={assets.error} onRetry={assets.reload} />
         )}
         {!assets.loading && !assets.error && games.length === 0 && (
-          <Empty title="还没有游戏资产" hint="启动一款游戏并兑换游戏币后会显示在这里" />
+          <Empty title={t('mygames.empty_title')} hint={t('mygames.empty_hint')} />
         )}
         {!assets.loading && !assets.error && games.length > 0 && (
           <div className="grid">
@@ -104,7 +118,9 @@ export function MyGames() {
                         </p>
                         <p className="small muted" style={{ margin: 0 }}>
                           {c.symbol}
-                          {isZeroAmount(c.frozen_balance) ? '' : ` · 冻结 ${c.frozen_balance}`}
+                          {isZeroAmount(c.frozen_balance)
+                            ? ''
+                            : t('mygames.frozen', { amount: c.frozen_balance })}
                         </p>
                       </div>
                       <span className="mono">{c.balance}</span>
@@ -118,12 +134,12 @@ export function MyGames() {
       </section>
 
       <section className="stack">
-        <p className="label">最近战绩</p>
+        <p className="label">{t('mygames.recent')}</p>
 
         {logs.loading && <Loading />}
         {!logs.loading && logs.error && <ErrorBox message={logs.error} onRetry={logs.reload} />}
         {!logs.loading && !logs.error && logs.data && logs.data.items.length === 0 && (
-          <Empty title="暂无游戏记录" hint="开始一局游戏后会出现记录" />
+          <Empty title={t('mygames.no_logs_title')} hint={t('mygames.no_logs_hint')} />
         )}
         {!logs.loading && !logs.error && logs.data && logs.data.items.length > 0 && (
           <>
@@ -137,7 +153,7 @@ export function MyGames() {
                 >
                   <div>
                     <p className="li__t" style={{ margin: 0 }}>
-                      <span className="pill pill--plain">{ACTION_LABEL[l.action] ?? l.action}</span>
+                      <span className="pill pill--plain">{actionLabel(l.action)}</span>
                     </p>
                     <p className="small muted mono" style={{ margin: '4px 0 0' }}>
                       {l.session_id || '—'} · {dt(l.created_at)}
@@ -161,7 +177,7 @@ export function MyGames() {
                   disabled={page <= 1 || logs.loading}
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                 >
-                  上一页
+                  {t('app.prev_page')}
                 </button>
                 <span className="small muted">
                   {logs.data.page} / {logs.data.last_page}
@@ -172,7 +188,7 @@ export function MyGames() {
                   disabled={page >= logs.data.last_page || logs.loading}
                   onClick={() => setPage((p) => p + 1)}
                 >
-                  下一页
+                  {t('app.next_page')}
                 </button>
               </div>
             )}
@@ -181,7 +197,7 @@ export function MyGames() {
       </section>
 
       {cur && (
-        <Modal title={`记录详情 · ${curLabel}`} onClose={() => setCur(null)}>
+        <Modal title={t('mygames.detail_title', { label: curLabel })} onClose={() => setCur(null)}>
           {detail.loading && <Loading />}
           {!detail.loading && detail.error && (
             <ErrorBox message={detail.error} onRetry={detail.reload} />
@@ -195,19 +211,19 @@ export function MyGames() {
               */}
               <div className="list">
                 <div className="li">
-                  <span className="small muted">记录时间</span>
+                  <span className="small muted">{t('mygames.col_time')}</span>
                   <span className="small">{dt(detail.data.created_at)}</span>
                 </div>
                 <div className="li">
-                  <span className="small muted">会话</span>
+                  <span className="small muted">{t('mygames.col_session')}</span>
                   <span className="mono small">{detail.data.session_id || '—'}</span>
                 </div>
                 <div className="li">
-                  <span className="small muted">变动前</span>
+                  <span className="small muted">{t('mygames.col_before')}</span>
                   <span className="mono">{detail.data.game_amount_before}</span>
                 </div>
                 <div className="li">
-                  <span className="small muted">变动</span>
+                  <span className="small muted">{t('mygames.col_change')}</span>
                   <span
                     className={`mono ${isNegative(detail.data.game_amount_change) ? 'amt--out' : 'amt--in'}`}
                   >
@@ -216,32 +232,32 @@ export function MyGames() {
                   </span>
                 </div>
                 <div className="li">
-                  <span className="small muted">变动后</span>
+                  <span className="small muted">{t('mygames.col_after')}</span>
                   <span className="mono">{detail.data.game_amount_after}</span>
                 </div>
                 <div className="li">
-                  <span className="small muted">平台币变动</span>
+                  <span className="small muted">{t('mygames.col_platform_change')}</span>
                   <span className="mono">{detail.data.platform_amount_change}</span>
                 </div>
                 {(detail.data.started_at || detail.data.ended_at) && (
                   <div className="li">
-                    <span className="small muted">开始 / 结束</span>
+                    <span className="small muted">{t('mygames.col_window')}</span>
                     <span className="small">
                       {dt(detail.data.started_at)} / {dt(detail.data.ended_at)}
                     </span>
                   </div>
                 )}
                 <div className="li">
-                  <span className="small muted">游戏</span>
+                  <span className="small muted">{t('mygames.col_game')}</span>
                   <Link to={`/game/${detail.data.game_id}`} onClick={() => setCur(null)}>
-                    {games.find((g) => g.game_id === detail.data?.game_id)?.name || '查看游戏'}
+                    {games.find((g) => g.game_id === detail.data?.game_id)?.name || t('mygames.view_game')}
                   </Link>
                 </div>
               </div>
 
               {detail.data.metadata && detail.data.metadata.trim() !== '' && (
                 <>
-                  <p className="label">自定义数据</p>
+                  <p className="label">{t('mygames.custom_data')}</p>
                   <pre
                     className="mono small card card--flat"
                     style={{ margin: 0, maxHeight: 220, overflow: 'auto' }}

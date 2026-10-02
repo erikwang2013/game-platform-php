@@ -3,6 +3,7 @@
  */
 
 import { useState } from 'react';
+import { useI18n } from '../i18n/useI18n.ts';
 
 /**
  * 只读文本框：点一下就全选，配合下面的「复制」按钮与浏览器原生复制都能用。
@@ -11,6 +12,7 @@ import { useState } from 'react';
  * 原在 Security.tsx 内（2FA 密钥/备用码用），邀请页也要复制短码与链接 ⇒ 提到 components 共用。
  */
 export function SecretBox({ value, label }: { value: string; label: string }) {
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
@@ -35,7 +37,7 @@ export function SecretBox({ value, label }: { value: string; label: string }) {
           style={{ flex: 1, minWidth: 0 }}
         />
         <button type="button" className="btn btn--sm" onClick={copy}>
-          {copied ? '已复制' : '复制'}
+          {copied ? t('app.copied') : t('app.copy')}
         </button>
       </div>
     </label>

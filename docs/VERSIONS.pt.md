@@ -10,17 +10,17 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 
 | | Versão base (Lite) | Versão padrão (Standard) | Versão completa (Full) |
 |------|------|------|------|
-| Tabelas de dados (install.sql) | 19 | 29 | **66** (22 novas em v1.3.15-22) |
+| Tabelas de dados (install.sql) | 19 | 29 | **79** (22 novas em v1.3.15-22) |
 | Endpoints de API | 38 | 54 | ~260 (admin+service, incluindo Webhook/Provider) |
 | Controllers do backend | 14 | 22 | admin 46 + service 35 |
 | Modelos de dados | Não compartilhados | Não compartilhados | **compartilhados 52 (platform-common) + admin 8 + service 10** |
 | Service compartilhado | Sem camada compartilhada | Sem camada compartilhada | `packages/platform-common` pacote compartilhado único |
 | Páginas do frontend Admin | 11 | 13 | 15 |
 | Páginas do frontend Platform | 8 | 10 | 10 |
-| HarmonyOS (admin) | - | login + dashboard | **8 páginas** `admin/apps/harmonyos/` |
-| HarmonyOS (C-side) | - | - | **5 páginas** `apps/harmonyos/` (login/lobby de jogos/detalhes/carteira/meu) |
+| HarmonyOS (admin) | - | login + dashboard | **19 páginas** `admin/apps/harmonyos/` |
+| HarmonyOS (C-side) | - | - | **8 páginas** `apps/harmonyos/` (login/lobby de jogos/detalhes/carteira/meu) |
 | Serviços Docker | - | - | **7** (nginx/admin/service/leaderboard-ws/mysql/redis/elasticsearch) |
-| Casos de teste | 60 | 60 | admin ~132; service 3 |
+| Casos de teste | 60 | 60 | admin 593 casos / 70 arquivos; service 549 casos / 89 arquivos |
 
 ---
 
@@ -89,7 +89,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Gráficos reais do dashboard | - | - | ✓ fl_chart |
 | Sistema de cupons | - | - | ✓ |
 | Rankings (diário/semanal/mensal/total) | - | - | ✓ cache Redis |
-| Rankings em tempo real via WebSocket | - | - | ✓ porta 8790 |
+| Rankings em tempo real via WebSocket | - | - | - removido (2026-10-02) |
 | Sistema de notificações (no site + email) | - | - | ✓ |
 | Recompensa de indicação | - | - | ✓ |
 | Snapshot de estatísticas diárias | - | ✓ | ✓ |
@@ -146,8 +146,8 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 |------|--------|--------|--------|
 | Painel administrativo Flutter Web PC | ✓ 5 páginas | ✓ 11 páginas | ✓ 17 páginas |
 | Plataforma de usuário Flutter Web PC | ✓ 5 páginas | ✓ 8 páginas | ✓ 10 páginas |
-| HarmonyOS admin | - | ✓ login + dashboard | ✓ 8 páginas `admin/apps/harmonyos/` |
-| HarmonyOS C-side | - | - | ✓ 5 páginas `apps/harmonyos/` |
+| HarmonyOS admin | - | ✓ login + dashboard | ✓ 19 páginas `admin/apps/harmonyos/` |
+| HarmonyOS C-side | - | - | ✓ 8 páginas `apps/harmonyos/` |
 
 ---
 
@@ -199,7 +199,12 @@ game_friend, game_message, game_cdn_provider, game_referral_commission,
 game_tournament, game_tournament_entry
 ```
 
-**Total: 78 tabelas**
+### Adições v1.3.44 (1 tabela)
+```
+game_wallet_hold
+```
+
+**Total: 79 tabelas**
 
 ---
 
@@ -243,12 +248,14 @@ game_tournament, game_tournament_entry
 | Documentação do SDK | - | - | ✓ PHP/Go/Python |
 | Análise avançada | retenção/D1-D30, funil de conversão, ARPU/ARPPU |
 
-### Novas tabelas de dados (10)
+### Novas tabelas de dados (14)
 ```
 game_ticket, game_ticket_reply, game_device_token,
 game_vip_level, game_user_vip, game_exp_log,
 game_achievement, game_user_achievement,
 game_friend, game_message
+game_cdn_provider, game_referral_commission,
+game_tournament, game_tournament_entry
 ```
 
 ### Novos endpoints da Provider API (4)
@@ -260,28 +267,31 @@ POST /api/provider/refund   — notificar reembolso
 ```
 
 ### Novos endpoints C-side (8)
+
+> **Ainda não implementado**: As duas rotas C `GET /api/v1/user/vip-status` e `GET /api/v1/user/achievements` não estão registradas (sem entrada correspondente em `service/config/route.php`); a requisição atual retorna 404. Remova esta linha após a implementação.
+
 ```
-POST /api/verify/send-email    — enviar código de verificação de email
-POST /api/verify/confirm-email — confirmar email
-GET  /api/ticket/list             — lista de tickets
-POST /api/ticket/create           — criar ticket
-GET  /api/ticket/{id}             — detalhes do ticket
-POST /api/ticket/{id}/reply       — responder ticket
-GET  /api/user/vip-status         — status VIP
-GET  /api/user/achievements       — lista de conquistas
+POST /api/v1/verify/send-email    — enviar código de verificação de email
+POST /api/v1/verify/confirm-email — confirmar email
+GET  /api/v1/ticket/list             — lista de tickets
+POST /api/v1/ticket/create           — criar ticket
+GET  /api/v1/ticket/{hashid}         — detalhes do ticket
+POST /api/v1/ticket/{hashid}/reply   — responder ticket
+GET  /api/v1/user/vip-status         — status VIP
+GET  /api/v1/user/achievements       — lista de conquistas
 ```
 
-### Novos endpoints do painel administrativo (6)
+### Novos endpoints do painel administrativo (9)
 ```
-GET  /admin/ticket/list          — lista de tickets
-GET  /admin/ticket/{id}          — detalhes do ticket
-POST /admin/ticket/{id}/reply    — responder ticket
-POST /admin/ticket/{id}/close    — fechar ticket
-POST /admin/ticket/{id}/assign   — designar responsável
-GET  /admin/analytics/retention  — análise de retenção
-GET  /admin/analytics/funnel     — funil de conversão
-GET  /admin/analytics/arpu       — tendência ARPU
-GET  /admin/analytics/economy    — indicadores econômicos
+GET  /admin/v1/ticket/list          — lista de tickets
+GET  /admin/v1/ticket/{hashid}      — detalhes do ticket
+POST /admin/v1/ticket/{hashid}/reply — responder ticket
+POST /admin/v1/ticket/{hashid}/close — fechar ticket
+POST /admin/v1/ticket/{hashid}/assign — designar responsável
+GET  /admin/v1/analytics/retention  — análise de retenção
+GET  /admin/v1/analytics/funnel     — funil de conversão
+GET  /admin/v1/analytics/arpu       — tendência ARPU
+GET  /admin/v1/analytics/economy    — indicadores econômicos
 ```
 
 ---

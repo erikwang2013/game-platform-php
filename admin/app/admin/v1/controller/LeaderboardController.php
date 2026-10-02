@@ -113,7 +113,7 @@ class LeaderboardController extends BaseController
         }
 
         // 镜像 create 的规则（sometimes：局部更新），并补齐 create 漏掉的 status/rule/sort。
-        // type 的取值沿用 create 的枚举（daily/weekly/monthly/alltime）；列注释（install.sql:818）
+        // type 的取值沿用 create 的枚举（daily/weekly/monthly/alltime）；列注释（install.sql:849）
         // 已同步改成同一组取值，`total` 只作为建表默认值存在，走 LeaderboardService 的全时段分支。
         $validator = validator($request->all(), [
             'name'   => 'sometimes|required|string|max:100',

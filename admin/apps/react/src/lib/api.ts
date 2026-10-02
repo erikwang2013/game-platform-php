@@ -125,7 +125,13 @@ async function reauth(): Promise<boolean> {
   refreshing = null;
   if (!ok) {
     session.clear();
-    if (window.location.pathname !== '/login') window.location.replace('/login');
+    // 登录页的真身是 `${BASE_URL}login`：生产构建带 --base=/admin-react/（package.json 的 build
+    // 脚本），App.tsx 把它交给 BrowserRouter 当 basename，nginx 也只配了 /admin-react/。
+    // 写死 '/login' 有两重错 —— `pathname !== '/login'` 恒真（刷新必跳），且目标是不存在的站点根
+    // ⇒ 令牌失效时把管理员扔进 404。同树 hooks.ts 的 useSignOut 走 router 的 navigate() 是对的，
+    // 这条在组件树之外、拿不到 router，只能自己拼 base。
+    const login = `${import.meta.env.BASE_URL}login`;
+    if (window.location.pathname !== login) window.location.replace(login);
   }
   return ok;
 }

@@ -76,9 +76,7 @@ class AdminPermissionMatchingTest extends TestCase
     {
         $middleware = new AdminPermission();
         $permissionPath = new ReflectionMethod(AdminPermission::class, 'permissionPath');
-        $permissionPath->setAccessible(true);
         $stripVersion = new ReflectionMethod(AdminPermission::class, 'stripVersionSegment');
-        $stripVersion->setAccessible(true);
 
         $request = new Request("{$method} /irrelevant HTTP/1.1\r\nHost: localhost\r\n\r\n");
         $request->route = new RouteObject([$method], $pattern, static fn() => null);
@@ -202,7 +200,6 @@ class AdminPermissionMatchingTest extends TestCase
     {
         $middleware = new AdminPermission();
         $method = new ReflectionMethod(AdminPermission::class, 'permissionPath');
-        $method->setAccessible(true);
 
         $slugs = [];
         foreach (['AbC123', 'ZZZZZZZZZZZZZZZZZZ', '1', 'a-b_c'] as $id) {
@@ -262,7 +259,6 @@ class AdminPermissionMatchingTest extends TestCase
         // $request->route 为 null（未命中路由）时退回旧行为，不得因归一而放行或崩溃
         $middleware = new AdminPermission();
         $method = new ReflectionMethod(AdminPermission::class, 'permissionPath');
-        $method->setAccessible(true);
 
         $request = new Request("GET /admin/v1/whatever HTTP/1.1\r\nHost: localhost\r\n\r\n");
         $this->assertSame('/admin/v1/whatever', $method->invoke($middleware, $request));

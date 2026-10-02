@@ -36,7 +36,7 @@ flowchart TB
     end
 
     subgraph "Camada de Armazenamento"
-        E1[("MySQL 8.0<br/>Armazenamento principal<br/>78 tabelas")]
+        E1[("MySQL 8.0<br/>Armazenamento principal<br/>79 tabelas")]
         E2[("Redis<br/>Session/cache/limite<br/>EventBus/heartbeat")]
         E3[("Elasticsearch<br/>Busca fulltext")]
         E4[("ClickHouse<br/>Análise OLAP<br/>Cálculo de probabilidade")]
@@ -66,7 +66,7 @@ Camada de rotas: config/route.php
   ↓
 Cadeia de middlewares: Cors → SecurityFilter → RateLimit → AdminAuth → AdminPermission → OperationLog
   ↓
-Camada de controllers (45):
+Camada de controllers (45, exceto BaseController em admin/app/admin/v1/controller/ + admin/app/api/v1/controller/):
   ┌──────────────────────────────────────────────────────────┐
   │ Dashboard / User / Role / Permission / Config / Log      │ ← original
   │ Profile / Export / Import / Upload / Health / Docs       │ ← original
@@ -90,7 +90,7 @@ Camada de rotas: config/route.php
   ↓
 Cadeia de middlewares: TraceId → Cors → SecurityFilter → RateLimit → Language → [UserAuth | ProviderAuth | SdkSessionAuth]
   ↓
-Camada de controllers (34):
+Camada de controllers (35, exceto BaseController em service/app/api/v1/controller/):
   ┌──────────────────────────────────────────────────────────┐
   │ Auth / Wallet / Deposit / Exchange / Withdraw            │ ← original
   │ Game / User / Announcement / Captcha                     │ ← original
@@ -141,7 +141,7 @@ Assinantes:
   NotificationService — envia notificações
   WebhookController   — entrega webhooks externos
 
-> Nota: até 2026-08-18, `emit()` tem chamadores mas `subscribe()` não tem nenhum processo registrado (P0-4 não feito); os eventos hoje são apenas publicados, sem consumo; os assinantes são metas de design.
+> Nota: até 2026-08-18, `emit()` tem chamadores mas `subscribe()` não tem nenhum processo registrado (P0-4 não feito); desde então, essa lacuna foi suprida: `service/config/process.php` registra `event-consumer` e `event-subscriber`, e os eventos agora são consumidos.
 ```
 
 ### 2.5 Garantia de estabilidade — disjuntor / nova tentativa / degradação
@@ -316,7 +316,6 @@ game_achievement ── 1:N ── game_user_achievement
 Implantação em uma máquina:
   admin/         :8789 (webman, 32 workers)
   service/       :8792 (webman, 32 workers)
-  leaderboard-ws :8790 (WebSocket de rankings)
   chat-ws        :8791 (WebSocket de chat)
   MySQL          :3306
   Redis          :6379
@@ -326,7 +325,7 @@ Implantação em uma máquina:
 
 ```yaml
 nginx (80/443) → admin (8789) + service (8792) + arquivos estáticos
-leaderboard-ws (8790/8791) — push em tempo real de rankings via WebSocket + mensagens privadas/chat
+chat-ws (8791) — mensagens privadas/chat
 mysql (3306) — banco principal, persistência com volume de dados
 redis (6379) — cache/rate limit/WebSocket/EventBus
 elasticsearch (9200) — busca full-text
@@ -349,7 +348,6 @@ flowchart TB
         ADM2["admin :8789"]
         SVC1["service :8792"]
         SVC2["service :8792"]
-        WS1["leaderboard-ws :8790"]
         WS2["chat-ws :8791"]
     end
 
@@ -372,8 +370,10 @@ flowchart TB
 
 ## 7. Arquitetura de testes
 
+> Nota: a lista abaixo é uma amostra antiga (20 arquivos · 200 casos de teste); o total atual é de 70 arquivos · 593 casos de teste.
+
 ```
-tests/                             # 21 arquivos · 200 casos de teste
+tests/                             # 70 arquivos · 593 casos de teste
 ├── bootstrap.php                  # Bootstrap do PHPUnit
 ├── AuthControllerRegisterTest.php # 15 testes de força de senha no registro
 ├── BackendEnhancementTest.php     # 27 testes de criptografia/serviço de IDs
@@ -403,7 +403,6 @@ tests/                             # 21 arquivos · 200 casos de teste
 |------|------|------|
 | admin/ | 8789 | API do painel administrativo |
 | service/ | 8792 | API de negócio C-side |
-| leaderboard-ws | 8790 | Rankings em tempo real via WebSocket |
 | chat-ws | 8791 | Mensagens privadas/chat via WebSocket |
 | MySQL | 3306 | Banco principal |
 | Redis | 6379 | Cache/rate limit/WebSocket/EventBus |
@@ -417,7 +416,7 @@ Documentação interativa de API gerada automaticamente a partir das anotações
 | Documentação | Endereço | Controllers | Endpoints |
 |------|------|--------|------|
 | Painel administrativo | :8789/apidoc/ | 45 | 154 |
-| C-side | :8792/apidoc/ | 34 | 107 |
+| C-side | :8792/apidoc/ | 35 | 107 |
 
 ## 10. Lista de tabelas do banco de dados
 
@@ -460,7 +459,7 @@ game_share_link, game_aml_rule, game_aml_hit,
 game_kyc_level, game_user_kyc, game_user_trust,
 game_risk_cluster
 
-**Total: 78 tabelas**
+**Total: 79 tabelas**
 
 ## 11. Feature flags
 

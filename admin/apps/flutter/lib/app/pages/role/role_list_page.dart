@@ -76,16 +76,7 @@ class RoleTab extends GetView<RoleController> {
       Expanded(child: Obx(() {
         if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
         if (ctrl.roles.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.asset('assets/mascot.png', width: 120),
-                const SizedBox(height: 12),
-                Text("${AppTranslations.t('role.no_roles')}"),
-              ],
-            ),
-          );
+          return const CrudEmptyState(text: 'role.no_roles');
         }
 
         return ListView.builder(

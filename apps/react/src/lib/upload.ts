@@ -17,6 +17,7 @@
  * 协议拼装（表单字段 / 切块区间 / 落库 URL）都是纯函数，钉子在 upload.test.ts。
  */
 
+import { t } from '../i18n/index.ts';
 import { language, refreshOnce, tokens } from './api.ts';
 
 const PREPROCESS = '/api/v1/aetherupload/preprocess';
@@ -92,9 +93,9 @@ export function failText(res: Record<string, unknown>): string {
   const e = res['error'];
   if (e === 0 || e === '0') return '';
   if (typeof e === 'string' && e) return e;
-  if (res['code'] === 401) return '登录状态已失效，请重新登录后再上传';
+  if (res['code'] === 401) return t('upload.session_expired');
   // 既没有 error 也不是 401 信封 ⇒ 这响应根本不是上传接口的格式，别当成成功放过去
-  return e === undefined || e === null ? '上传失败，请重试' : String(e);
+  return e === undefined || e === null ? t('upload.failed_retry') : String(e);
 }
 
 /** 落库值 = 相对地址（见文件头第 3 条） */
@@ -130,14 +131,14 @@ async function step<T extends Record<string, unknown>>(
   try {
     res = await fetch(url, { method: 'POST', headers, body });
   } catch {
-    throw new UploadError('网络连接失败，请检查网络后重试');
+    throw new UploadError(t('error.network_connection'));
   }
 
   const json = (await res.json().catch(() => null)) as Record<string, unknown> | null;
   // 与 api.ts 同口径：401 只在本次确实带了 token 时刷新一次再重试，否则是响应格式不对
   if (json?.['code'] === 401 && retry && at && (await refreshOnce())) return step<T>(url, body, false);
 
-  if (json === null) throw new UploadError(`上传失败（HTTP ${res.status}）`);
+  if (json === null) throw new UploadError(t('upload.failed_http', { status: res.status }));
   const err = failText(json);
   if (err) throw new UploadError(err);
   return json as T;
@@ -159,7 +160,7 @@ export async function uploadImage(file: File): Promise<string> {
     for (const [k, v] of chunkBody(pre, i + 1, parts.length)) fd.append(k, v);
     saved = (await step<{ savedPath: string } & Record<string, unknown>>(UPLOADING, fd)).savedPath;
   }
-  if (!saved) throw new UploadError('上传完成但服务端未返回路径，请重试');
+  if (!saved) throw new UploadError(t('upload.no_path'));
   return fileUrl(saved);
 }
 
@@ -183,14 +184,14 @@ export async function fileBlob(stored: string): Promise<Blob> {
   try {
     res = await fetch(readUrl(stored), { headers });
   } catch {
-    throw new UploadError('网络连接失败，请检查网络后重试');
+    throw new UploadError(t('error.network_connection'));
   }
 
   const blob = await res.blob();
   if (blob.type.includes('json')) {
     const env = JSON.parse(await blob.text()) as { message?: string };
-    throw new UploadError(env?.message || '读取失败');
+    throw new UploadError(env?.message || t('upload.read_failed'));
   }
-  if (!res.ok) throw new UploadError(`读取失败（HTTP ${res.status}）`);
+  if (!res.ok) throw new UploadError(t('upload.read_failed_http', { status: res.status }));
   return blob;
 }

@@ -36,7 +36,7 @@ flowchart TB
     end
 
     subgraph "স্টোরেজ লেয়ার"
-        E1[("MySQL 8.0<br/>মূল স্টোরেজ<br/>৭৮টি টেবিল")]
+        E1[("MySQL 8.0<br/>মূল স্টোরেজ<br/>৭৯টি টেবিল")]
         E2[("Redis<br/>Session/ক্যাশ/রেট লিমিট<br/>EventBus/হার্টবিট")]
         E3[("Elasticsearch<br/>ফুলটেক্সট সার্চ")]
         E4[("ClickHouse<br/>OLAP বিশ্লেষণ<br/>প্রোবাবিলিটি গণনা")]
@@ -66,7 +66,7 @@ flowchart TB
   ↓
 中间件链: Cors → SecurityFilter → RateLimit → AdminAuth → AdminPermission → OperationLog
   ↓
-控制器层 (45 个):
+控制器层 (45 个，admin/app/admin/v1/controller/ 去 BaseController + admin/app/api/v1/controller/):
   ┌──────────────────────────────────────────────────────────┐
   │ Dashboard / User / Role / Permission / Config / Log      │ ← 原有
   │ Profile / Export / Import / Upload / Health / Docs       │ ← 原有
@@ -90,7 +90,7 @@ Provider 层: GameProvider → SelfProvider / ThirdPartyProvider
   ↓
 中间件链: TraceId → Cors → SecurityFilter → RateLimit → Language → [UserAuth | ProviderAuth | SdkSessionAuth]
   ↓
-控制器层 (34 个):
+控制器层 (35 个，service/app/api/v1/controller/ 去 BaseController):
   ┌──────────────────────────────────────────────────────────┐
   │ Auth / Wallet / Deposit / Exchange / Withdraw            │ ← 原有
   │ Game / User / Announcement / Captcha                     │ ← 原有
@@ -141,7 +141,7 @@ Redis Pub/Sub (channel: platform:events):
   NotificationService — 发送通知
   WebhookController   — 投递外部 webhook
 
-> 注：截至 2026-08-18，`emit()` 有调用方但 `subscribe()` 无任何进程注册（P0-4 未做），事件目前仅发布无消费，订阅者为设计目标。
+> 注：截至 2026-08-18，`emit()` 有调用方但 `subscribe()` 无任何进程注册（P0-4 未做）；此后已补上：`service/config/process.php` 已注册 `event-consumer` 与 `event-subscriber` 两个进程，事件已有消费。
 ```
 
 ### 2.5 স্থিতিশীলতা নিশ্চয়তা — সার্কিট ব্রেকার / পুনঃচেষ্টা / ডিগ্রেডেশন
@@ -316,7 +316,6 @@ game_achievement ── 1:N ── game_user_achievement
 单机部署:
   admin/         :8789 (webman, 32 workers)
   service/       :8792 (webman, 32 workers)
-  leaderboard-ws :8790 (WebSocket 排行榜)
   chat-ws        :8791 (WebSocket 聊天)
   MySQL          :3306
   Redis          :6379
@@ -326,7 +325,7 @@ game_achievement ── 1:N ── game_user_achievement
 
 ```yaml
 nginx (80/443) → admin (8789) + service (8792) + static files
-leaderboard-ws (8790/8791) — WebSocket 排行榜实时推送 + 私信/聊天
+chat-ws (8791) — 私信/聊天
 mysql (3306) — 主数据库，数据卷持久化
 redis (6379) — 缓存/限流/WebSocket/EventBus
 elasticsearch (9200) — 全文检索
@@ -349,7 +348,6 @@ flowchart TB
         ADM2["admin :8789"]
         SVC1["service :8792"]
         SVC2["service :8792"]
-        WS1["leaderboard-ws :8790"]
         WS2["chat-ws :8791"]
     end
 
@@ -372,8 +370,10 @@ flowchart TB
 
 ## 7. টেস্ট আর্কিটেকচার
 
+> 注：下列清单为早期抽样（20 个文件 · 200 个用例），当前全量为 70 个文件 · 593 个用例。
+
 ```
-tests/                             # 21 个文件 · 200 个用例
+tests/                             # 70 个文件 · 593 个用例
 ├── bootstrap.php                  # PHPUnit 引导
 ├── AuthControllerRegisterTest.php # 15 个注册口令强度测试
 ├── BackendEnhancementTest.php     # 27 个加密/ID服务测试
@@ -403,7 +403,6 @@ tests/                             # 21 个文件 · 200 个用例
 |------|------|------|
 | admin/ | 8789 | অ্যাডমিন প্যানেল API |
 | service/ | 8792 | C-এন্ড ব্যবসা API |
-| leaderboard-ws | 8790 | WebSocket রিয়েল-টাইম লিডারবোর্ড |
 | chat-ws | 8791 | WebSocket প্রাইভেট মেসেজ/চ্যাট |
 | MySQL | 3306 | মূল ডেটাবেস |
 | Redis | 6379 | ক্যাশ/রেট লিমিট/WebSocket/EventBus |
@@ -417,7 +416,7 @@ tests/                             # 21 个文件 · 200 个用例
 | ডকুমেন্টেশন | ঠিকানা | কন্ট্রোলার | এন্ডপয়েন্ট |
 |------|------|--------|------|
 | অ্যাডমিন প্যানেল | :8789/apidoc/ | 45 | 154 |
-| C-এন্ড ব্যবসা | :8792/apidoc/ | 34 | 107 |
+| C-এন্ড ব্যবসা | :8792/apidoc/ | 35 | 107 |
 
 ## 10. ডেটাবেস টেবিল তালিকা
 
@@ -460,7 +459,7 @@ game_share_link, game_aml_rule, game_aml_hit,
 game_kyc_level, game_user_kyc, game_user_trust,
 game_risk_cluster
 
-**মোট: ৭৮টি টেবিল**
+**মোট: ৭৯টি টেবিল**
 
 ## 11. ফিচার সুইচ
 

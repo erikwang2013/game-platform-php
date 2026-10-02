@@ -16,6 +16,7 @@ import {
   Num,
 } from '../core/api.service';
 import { CaptchaBox } from '../core/captcha';
+import { Mt, Msg, T } from '../core/i18n/i18n';
 
 /** 游戏列表单页条数；超过再加“加载更多”（复用 gameList 的 page 参数） */
 const GAMES_PER_PAGE = 100;
@@ -24,63 +25,66 @@ const GAMES_PER_PAGE = 100;
  *  game_id / currency_id 均为服务端下发的 hashid，不能自行拼造。 */
 @Component({
   selector: 'app-exchange',
-  imports: [RouterLink, CaptchaBox],
+  imports: [RouterLink, CaptchaBox, T, Mt],
   template: `
     <div class="stack">
-      <a class="btn ghost back" routerLink="/wallet">← 返回钱包</a>
+      <a class="btn ghost back" routerLink="/wallet">← {{ 'common.back_wallet' | t }}</a>
 
       @if (done(); as d) {
         <div class="card stack">
           <div class="between">
-            <span class="label">兑换完成</span>
-            <span class="badge on">{{ d.direction === 'in' ? '买入' : '卖出' }}</span>
+            <span class="label">{{ 'exchange.done' | t }}</span>
+            <span class="badge on">{{ (d.direction === 'in' ? 'exchange.buy' : 'exchange.sell') | t }}</span>
           </div>
           <div class="kv">
-            <span class="muted">{{ d.direction === 'in' ? '支付平台币' : '卖出游戏币' }}</span>
+            <span class="muted">{{ (d.direction === 'in' ? 'exchange.pay_platform' : 'exchange.sell_game') | t }}</span>
             <span class="mono" [title]="moneyRaw(spendAmt(d))">{{ money(spendAmt(d)) }}</span>
           </div>
           <div class="kv">
             <span class="muted">
-              {{ d.direction === 'in' ? '到账游戏币（已扣点差）' : '到账平台币（已扣点差）' }}
+              {{
+                (d.direction === 'in' ? 'exchange.recv_game_net' : 'exchange.recv_platform_net')
+                  | t
+              }}
             </span>
             <span class="mono amount in" [title]="moneyRaw(gainAmt(d))">{{
               money(gainAmt(d))
             }}</span>
           </div>
           <div class="kv">
-            <span class="muted">点差费用</span
+            <span class="muted">{{ 'common.spread_fee' | t }}</span
             ><span class="mono" [title]="moneyRaw(d.spread_fee)">{{ money(d.spread_fee) }}</span>
           </div>
           <div class="kv">
-            <span class="muted">成交汇率</span><span class="mono">{{ d.rate }}</span>
+            <span class="muted">{{ 'exchange.filled_rate' | t }}</span><span class="mono">{{ d.rate }}</span>
           </div>
           <div class="kv">
-            <span class="muted">账户余额</span
+            <span class="muted">{{ 'common.account_balance' | t }}</span
             ><span class="mono" [title]="moneyRaw(d.balance_after)">{{
               money(d.balance_after)
             }}</span>
           </div>
           <div class="wrap">
-            <a class="btn" routerLink="/wallet">返回钱包</a>
-            <button class="btn ghost" type="button" (click)="again()">再兑一笔</button>
+            <a class="btn" routerLink="/wallet">{{ 'common.back_wallet' | t }}</a>
+            <button class="btn ghost" type="button" (click)="again()">{{ 'exchange.again' | t }}</button>
           </div>
         </div>
       } @else {
         <div class="card form">
           <div>
-            <span class="label">兑换</span>
-            <h1>平台币 / 游戏币互兑</h1>
+            <span class="label">{{ 'wallet.exchange' | t }}</span>
+            <h1>{{ 'exchange.title' | t }}</h1>
           </div>
 
           <label class="field">
-            <span>游戏</span>
+            <span>{{ 'exchange.game' | t }}</span>
             <select
               class="input"
               [disabled]="gamesBusy() || !games().length"
               (change)="pickGame($any($event.target).value)"
             >
               @if (!games().length) {
-                <option value="">{{ gamesBusy() ? '加载中…' : '暂无可兑换的游戏' }}</option>
+                <option value="">{{ (gamesBusy() ? 'common.loading' : 'exchange.no_games') | t }}</option>
               }
               @for (g of games(); track g.id) {
                 <option [value]="g.id" [selected]="g.id === gameId()">{{ g.name }}</option>
@@ -89,25 +93,25 @@ const GAMES_PER_PAGE = 100;
           </label>
 
           <label class="field">
-            <span>游戏币种</span>
+            <span>{{ 'exchange.game_currency' | t }}</span>
             <select
               class="input"
               [disabled]="!currencies().length"
               (change)="pickCurrency($any($event.target).value)"
             >
               @if (!currencies().length) {
-                <option value="">该游戏暂无可用币种</option>
+                <option value="">{{ 'exchange.no_currencies' | t }}</option>
               }
               @for (c of currencies(); track c.id) {
                 <option [value]="c.id" [selected]="c.id === currencyId()">
-                  {{ c.name }}（{{ c.symbol }}）· 汇率 {{ c.exchange_rate }}
+                  {{ 'exchange.currency_option' | t: { name: c.name, symbol: c.symbol, rate: c.exchange_rate } }}
                 </option>
               }
             </select>
           </label>
 
           <div class="field">
-            <span>方向</span>
+            <span>{{ 'exchange.direction' | t }}</span>
             <div class="chips">
               <button
                 type="button"
@@ -115,7 +119,7 @@ const GAMES_PER_PAGE = 100;
                 [class.on]="direction() === 'in'"
                 (click)="pickDirection('in')"
               >
-                买入（平台币 → 游戏币）
+                {{ 'exchange.dir_in' | t }}
               </button>
               <button
                 type="button"
@@ -123,7 +127,7 @@ const GAMES_PER_PAGE = 100;
                 [class.on]="direction() === 'out'"
                 (click)="pickDirection('out')"
               >
-                卖出（游戏币 → 平台币）
+                {{ 'exchange.dir_out' | t }}
               </button>
             </div>
           </div>
@@ -131,9 +135,9 @@ const GAMES_PER_PAGE = 100;
           <label class="field">
             <span>
               @if (direction() === 'in') {
-                支付平台币数量
+                {{ 'exchange.amount_in' | t }}
               } @else {
-                卖出游戏币数量（{{ cur()?.name || '—' }}）
+                {{ 'exchange.amount_out' | t: { name: cur()?.name || '—' } }}
               }
             </span>
             <input
@@ -145,21 +149,21 @@ const GAMES_PER_PAGE = 100;
               (input)="onAmount($event)"
             />
             @if (amountError()) {
-              <span class="err">{{ amountError() }}</span>
+              <span class="err">{{ amountError() | mt }}</span>
             }
             @if (direction() === 'out') {
-              <span class="muted hint">此处填写的是游戏币数量，不是平台币数量。</span>
+              <span class="muted hint">{{ 'exchange.amount_hint' | t }}</span>
             }
           </label>
 
           @if (gamesError()) {
             <div class="alert">
               {{ gamesError() }}
-              <button class="btn ghost" type="button" (click)="loadGames()">重试</button>
+              <button class="btn ghost" type="button" (click)="loadGames()">{{ 'common.retry' | t }}</button>
             </div>
           }
           @if (!quote() && error()) {
-            <div class="alert">{{ error() }}</div>
+            <div class="alert">{{ error() | mt }}</div>
           }
 
           <button
@@ -168,65 +172,65 @@ const GAMES_PER_PAGE = 100;
             [disabled]="quoteBusy() || !currencyId()"
             (click)="quoteNow()"
           >
-            {{ quoteBusy() ? '询价中…' : '询价' }}
+            {{ (quoteBusy() ? 'exchange.quoting' : 'exchange.quote') | t }}
           </button>
         </div>
 
         @if (quote(); as q) {
           <div class="card stack">
-            <span class="label">询价结果</span>
+            <span class="label">{{ 'exchange.quote_result' | t }}</span>
             <div class="kv">
-              <span class="muted">汇率</span>
-              <span class="mono">1 平台币 ≈ {{ q.rate }} {{ cur()?.name || '' }}</span>
+              <span class="muted">{{ 'common.rate' | t }}</span>
+              <span class="mono">{{ 'exchange.rate_line' | t: { rate: q.rate, name: cur()?.name || '' } }}</span>
             </div>
             <div class="kv">
-              <span class="muted">点差</span><span class="mono">{{ q.spread_pct }}%</span>
+              <span class="muted">{{ 'common.spread' | t }}</span><span class="mono">{{ q.spread_pct }}%</span>
             </div>
             <div class="kv">
-              <span class="muted">点差费用</span
+              <span class="muted">{{ 'common.spread_fee' | t }}</span
               ><span class="mono" [title]="moneyRaw(q.spread_fee)">{{ money(q.spread_fee) }}</span>
             </div>
             @if (direction() === 'in') {
               <div class="kv">
-                <span class="muted">折合游戏币（扣点差前）</span
+                <span class="muted">{{ 'exchange.equiv_game' | t }}</span
                 ><span class="mono" [title]="moneyRaw(q.game_amount)">{{
                   money(q.game_amount)
                 }}</span>
               </div>
               <div class="kv">
-                <span class="muted">预计获得</span>
+                <span class="muted">{{ 'exchange.will_receive' | t }}</span>
                 <span class="mono amount in" [title]="moneyRaw(q.actual_game_amount)"
                   >{{ money(q.actual_game_amount) }} {{ cur()?.symbol || '' }}</span
                 >
               </div>
             } @else {
               <div class="kv">
-                <span class="muted">折合平台币（扣点差前）</span
+                <span class="muted">{{ 'exchange.equiv_platform' | t }}</span
                 ><span class="mono" [title]="moneyRaw(q.platform_equivalent)">{{
                   money(q.platform_equivalent)
                 }}</span>
               </div>
               <div class="kv">
-                <span class="muted">预计到账</span>
+                <span class="muted">{{ 'exchange.will_credit' | t }}</span>
                 <span class="mono amount in" [title]="moneyRaw(q.actual_platform_amount)"
-                  >{{ money(q.actual_platform_amount) }} 平台币</span
+                  >{{ money(q.actual_platform_amount) }} {{ 'common.platform_coin' | t }}</span
                 >
               </div>
             }
             @if (error()) {
-              <div class="alert">{{ error() }}</div>
+              <div class="alert">{{ error() | mt }}</div>
             }
             <button class="btn primary wide" type="button" [disabled]="busy()" (click)="confirm()">
-              {{ busy() ? '兑换中…' : '确认兑换' }}
+              {{ (busy() ? 'exchange.confirming' : 'exchange.confirm') | t }}
             </button>
-            <p class="muted hint">报价随行情变动，修改数量或币种后需重新询价。</p>
+            <p class="muted hint">{{ 'exchange.quote_hint' | t }}</p>
           </div>
         }
       }
     </div>
 
     <!-- 卖出（游戏币 → 平台币）服务端强制验证码；买入不加 -->
-    <app-captcha [(open)]="capOpen" [busy]="busy()" action="确认卖出" (proof)="onProof($event)" />
+    <app-captcha [(open)]="capOpen" [busy]="busy()" [action]="'exchange.captcha_action'" (proof)="onProof($event)" />
   `,
   styles: [
     `
@@ -281,8 +285,10 @@ export class ExchangePage {
   protected readonly currencyId = signal('');
   protected readonly direction = signal<ExchangeDirection>('in');
   protected readonly amount = signal('');
-  protected readonly amountError = signal('');
-  protected readonly error = signal('');
+  /** 两态（服务端原文 / 词条键）—— 见 `core/i18n/i18n.ts` 的 `Msg`；同信号的每个写入点都走这两态 */
+  protected readonly amountError = signal<Msg>('');
+  /** 两态（服务端原文 / 词条键）—— 见 `core/i18n/i18n.ts` 的 `Msg`；同信号的每个写入点都走这两态 */
+  protected readonly error = signal<Msg>('');
   protected readonly quoteBusy = signal(false);
   protected readonly quote = signal<ExchangeQuote | null>(null);
   protected readonly busy = signal(false);
@@ -347,15 +353,24 @@ export class ExchangePage {
   protected quoteNow(): void {
     const amount = this.amount().trim();
     if (!amount) {
-      this.amountError.set('请输入兑换数量');
+      this.amountError.set({ key: 'exchange.err_amount_required' });
       return;
     }
     if (!/^\d+(\.\d+)?$/.test(amount)) {
-      this.amountError.set('数量格式不正确，请输入数字');
+      this.amountError.set({ key: 'exchange.err_amount_format' });
       return;
     }
+    // ⚠ 这一支**界面上到不了**（键与渲染点都在，只是走不到；不是死键，别删）：
+    //   触发条件：`!gameId() || !currencyId()`
+    //   但那个按钮是 `[disabled]="quoteBusy() || !currencyId()"` —— 只否掉 currencyId；
+    //   而 `loadGames()` 结尾会自动 `pickGame(list[0]?.id)`，**一次把 gameId 与 currencyId 都设满**。
+    //   ⇒ 按钮可点（currencyId 非空）时，`!gameId()` 也必为假 ⇒ 这个分支取不到真。
+    //   ⇒ 后果：它的文案在真机上**无法观测**（G1 的 7 键真机读数不含它），只有仓内静态钉子兜。
+    //   ⚠ 顺带记一个**产品层**的不一致（不在本树修）：按钮的 disabled 谓词（只看 currencyId）与
+    //     这条分支的谓词（gameId 或 currencyId）**不是同一个**。要么按钮也该在 `!gameId()` 时禁用，
+    //     要么这支就是死代码 —— 两条路都得由产品定，别在这里顺手改。
     if (!this.gameId() || !this.currencyId()) {
-      this.error.set('请先选择游戏与币种');
+      this.error.set({ key: 'exchange.err_pick_required' });
       return;
     }
 

@@ -85,17 +85,19 @@ open-admin/
 │   │       └── AuthController.php    # Connexion/inscription/rafraîchissement de jeton
 │   ├── common/                 # Utilitaires communs
 │   │   └── CdnProbeService.php # Test de connectivité CDN (Hashids/Snowflake/Encryption fournis par des paquets Composer)
-│   ├── middleware/             # Middleware
+│   ├── middleware/             # Middleware (9 sur disque ; 8 dans la chaîne d'exécution)
 │   │   ├── Cors.php            # Cross-origin
 │   │   ├── SecurityFilter.php  # Interception des attaques (limitation des méthodes HTTP/XSS/injection SQL/traversée de chemin/injection de commandes/CSRF)
 │   │   ├── RateLimit.php       # Rate-limit Redis (fenêtre glissante + en-têtes de réponse)
-│   │   ├── StaticFile.php      # Service de fichiers statiques (intégré à webman)
+│   │   ├── LanguageMiddleware.php # Langue/locale (global ; enregistré après RateLimit, avant les middlewares de route)
+│   │   ├── StaticFile.php      # Service de fichiers statiques (copie de celui intégré à webman ; NON enregistré — commenté dans config/static.php:25, hors chaîne d'exécution)
 │   │   ├── AdminAuth.php       # Authentification JWT + liste noire
 │   │   ├── AdminPermission.php # Vérification des permissions RBAC
+│   │   ├── MetricsAuth.php     # réservé à /metrics : JWT admin ou jeton de scrape statique
 │   │   └── OperationLog.php    # Enregistrement automatique des journaux d'opérations (avec détection du canal d'origine)
 │   ├── activity/               # Gestionnaires d'activités (connexion/invitation/quêtes quotidiennes)
 │   ├── model/                  # Modèles de données
-│   ├── process/                # Processus (Http, Monitor, RiskIpCron)
+│   ├── process/                # Processus (Http, Monitor, RiskIpCron, ExportTmpCleanup)
 │   ├── provider/               # Couche Provider de jeux (Self/ThirdParty/Factory)
 │   ├── service/                # Services (portefeuille/bac à sable risque)
 │   └── view/                   # Modèles de vue
@@ -104,7 +106,7 @@ open-admin/
 │   ├── react/                  # Back-office web React
 │   ├── flutter/                # Administration Flutter Web (style PC)
 │   │   └── lib/app/
-│   │       ├── pages/          # 20 répertoires de pages
+│   │       ├── pages/          # 26 répertoires de pages
 │   │       ├── services/       # ApiService (intercepteur JWT) + AuthService (persistance du token)
 │   │       └── layouts/        # Mise en page d'administration réactive (barre latérale + barre supérieure + zone de contenu)
 │   └── harmonyos/              # Client natif HarmonyOS (rafraîchissement de token transparent)
@@ -147,8 +149,8 @@ Options de configuration clés :
 |---------|------|--------|
 | `APP_PORT` | Port d'écoute HTTP de webman | `8789` |
 | `APP_URL` | Adresse d'accès externe (liens de la page de succès de l'installateur, baseUrl de la documentation API, etc.) | `http://localhost:8789` |
-| `JWT_SECRET` | Clé de signature JWT | `open-admin-jwt-secret-change-in-production` |
-| `HASHIDS_SALT` | Sel Hashids | `open-admin-hashids-salt-2026` |
+| `ADMIN_JWT_SECRET_KEY` | Clé de signature JWT | `game-platform-admin-jwt-secret-change-in-production` |
+| `HASHIDS_SALT` | Sel Hashids | `game-platform-hashids-salt-2026` |
 | `ENCRYPTION_KEY` | Clé de chiffrement API | Valeur par défaut 32 octets |
 | `SNOWFLAKE_DATACENTER_ID` | ID du centre de données (0-31) | `1` |
 | `SNOWFLAKE_WORKER_ID` | ID du nœud de travail (0-31) | `1` |
@@ -188,7 +190,7 @@ Ouvrir le répertoire `apps/harmonyos/` avec DevEco Studio, exécuter sur un app
 
 ### 6. Déploiement Docker Compose en un clic (recommandé en production)
 
-Le projet fournit une orchestration Docker complète avec 7 services : Nginx, admin (webman), service (webman), leaderboard-ws (WebSocket), MySQL, Redis, Elasticsearch.
+Le projet fournit une orchestration Docker complète avec 7 services : Nginx, admin (webman), service (webman), chat-ws (WebSocket), MySQL, Redis, Elasticsearch.
 
 ```bash
 # 1. Configurer les variables d'environnement Docker
@@ -423,7 +425,7 @@ Le `docker-compose.yml` à la racine du projet orchestre 7 services :
 | `nginx` | nginx:alpine | 80, 443 |
 | `admin` | construit via le `Dockerfile` local | 8789 |
 | `service` | construit via le `Dockerfile` local | 8792 |
-| `leaderboard-ws` | construit via le `Dockerfile` local | 8790, 8791 |
+| `chat-ws` | construit via le `Dockerfile` local | 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

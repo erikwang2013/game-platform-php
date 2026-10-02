@@ -114,6 +114,7 @@ export const ES_1: Record<string, string> = {
   'risk.rule.scope': 'Ámbito',
   'risk.rule.priority': 'Prioridad',
   'risk.rule.priority_hint': '0-1000, cuanto mayor, antes se evalúa (por defecto 100)',
+  'risk.rule.scope_hint': 'exchange / login aún no conectados (el evaluador tiene ramas pero ningún punto de llamada — RiskService::check() solo se invoca desde deposit / withdraw), así que una regla con este ámbito nunca se cumple',
   'risk.rule.status': 'Estado',
   'risk.rule.config': 'Configuración de umbrales (JSON)',
   'risk.rule.keys_note': '\n',

@@ -63,7 +63,7 @@ game-platform-php/
 ├── admin/                     # প্রশাসনিক প্যানেল (webman v2, ডিফল্ট পোর্ট 8789, APP_PORT দিয়ে পরিবর্তনযোগ্য)
 │   ├── app/admin/v1/controller/  #   অ্যাডমিন-পাশের কন্ট্রোলার
 │   ├── app/middleware/        #   মিডলওয়্যার (Cors/SecurityFilter/RateLimit/AdminAuth/AdminPermission/OperationLog)
-│   ├── app/model/             #   শুধু admin-এ থাকা মডেল (৮টি; বাকি ৫২টি শেয়ার্ড মডেল packages/-এ)
+│   ├── app/model/             #   শুধু admin-এ থাকা মডেল (৬টি; বাকি ৫১টি শেয়ার্ড মডেল packages/-এ)
 │   ├── app/service/           #   শুধু admin-এ থাকা সার্ভিস (WalletService/WalletScope/RiskSandboxService)
 │   ├── app/process/           #   স্থায়ী প্রসেস (Http/Monitor/RiskIpCron)
 │   ├── app/provider/          #   গেম Provider স্তর (Self/ThirdParty/Factory)
@@ -79,19 +79,19 @@ game-platform-php/
 ├── service/                   # C-এন্ড ব্যবসায়িক সার্ভার (webman v2, ডিফল্ট পোর্ট 8792, APP_PORT দিয়ে পরিবর্তনযোগ্য)
 │   ├── app/api/v1/controller/ #   C-এন্ড API কন্ট্রোলার
 │   ├── app/middleware/        #   মিডলওয়্যার (TraceId/Cors/SecurityFilter/RateLimit/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
-│   ├── app/model/             #   শুধু service-এ থাকা মডেল (১০টি; বাকি ৫২টি শেয়ার্ড মডেল packages/-এ)
+│   ├── app/model/             #   শুধু service-এ থাকা মডেল (১০টি; বাকি ৫১টি শেয়ার্ড মডেল packages/-এ)
 │   ├── app/service/           #   শুধু service-এ থাকা সার্ভিস (ওয়ালেট/ঝুঁকি/কমপ্লায়েন্স/মিলকরণ/পুশ/অ্যাচিভমেন্ট/অ্যান্টি-চিট ইত্যাদি)
 │   ├── app/payment/           #   ১৮টি পেমেন্ট গেটওয়ে অ্যাডাপ্টার (Stripe/PayPal/Adyen/NowPayments/Skrill…) + GatewayFactory
 │   ├── app/cdn/               #   পাঁচটি সরবরাহকারীর CDN অ্যাডাপ্টার (Cloudflare/CloudFront/Alibaba/Tencent/Huawei) + CdnFactory
-│   ├── app/process/           #   স্থায়ী প্রসেস (Http/Monitor/LeaderboardWS:8790/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
+│   ├── app/process/           #   স্থায়ী প্রসেস (Http/Monitor/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
 │   ├── app/provider/          #   গেম Provider লেয়ার
 │   ├── app/activity/          #   অ্যাক্টিভিটি ইঞ্জিন
 │   ├── app/event/             #   ইভেন্ট বাস (EventBus Redis Pub/Sub)
 │   └── config/                #   কনফিগারেশন ফাইল
 │
 ├── packages/platform-common/  # শেয়ার্ড স্তর: admin ও service এটি composer path রিপোজিটরি দিয়ে আনে, যাতে দুটি কপি না থাকে
-│   ├── src/model/             #   শেয়ার্ড Eloquent মডেল (৫২টি, দুই পাশে একই উৎস)
-│   ├── src/service/           #   শেয়ার্ড সার্ভিস (DepositLogService / VipService ইত্যাদি, ১১টি, ClickHouse প্রোবাবিলিটি গণনা সহ)
+│   ├── src/model/             #   শেয়ার্ড Eloquent মডেল (৫১টি, দুই পাশে একই উৎস)
+│   ├── src/service/           #   শেয়ার্ড সার্ভিস (DepositLogService / VipService ইত্যাদি, ১২টি, ClickHouse প্রোবাবিলিটি গণনা সহ, ২টি ইনফ্রাস্ট্রাকচার ক্লাস EventPublisher/OutboxWriter সহ)
 │   ├── src/BcMath.php         #   পরিমাণ/হারের উচ্চ-নির্ভুল গণনা (bcmath মোড়ক), রাউন্ডিং, শতকরা
 │   ├── src/EncryptionService.php  #   AES এনক্রিপশন/ডিক্রিপশন ও মাস্কিং
 │   ├── src/CircuitBreaker.php #   সার্কিট ব্রেকার (সাথে Retry.php পুনঃপ্রচেষ্টার জন্য)
@@ -109,7 +109,7 @@ game-platform-php/
 ├── install/                   # এক-ক্লিকে ইনস্টলেশন উইজার্ড + ডেটাবেস আরম্ভের SQL
 │   ├── index.php              #   ইনস্টলেশন এন্ট্রি
 │   ├── Installer.php          #   ইনস্টলেশনের মূল লজিক
-│   ├── install.sql            #   মার্জড ইনস্টলেশন SQL (৭৮টি টেবিল + সিড ডেটা)
+│   ├── install.sql            #   মার্জড ইনস্টলেশন SQL (৭৯টি টেবিল + সিড ডেটা)
 │   ├── clickhouse.sql         #   ClickHouse বিশ্লেষণী DDL (আলাদা ইঞ্জিন, আলাদাভাবে আমদানি)
 │   ├── test-data.sql          #   ডেমো/পরীক্ষা ডেটা
 │   ├── migrations/            #   বিদ্যমান ডেটাবেসের জন্য ইনক্রিমেন্টাল আপগ্রেড স্ক্রিপ্ট (*.sql)
@@ -178,7 +178,7 @@ rm -rf install/
 
 ইনস্টলেশন উইজার্ড স্বয়ংক্রিয়ভাবে সম্পন্ন করবে:
 - এনভায়রনমেন্ট চেক (PHP ভার্সন, এক্সটেনশন, ডিরেক্টরি পারমিশন)
-- ডেটাবেস ও টেবিল তৈরি (মার্জড SQL, ৭৮টি টেবিল + সিড ডেটা)
+- ডেটাবেস ও টেবিল তৈরি (মার্জড SQL, ৭৯টি টেবিল + সিড ডেটা)
 - সুপার অ্যাডমিন অ্যাকাউন্ট তৈরি (bcrypt এনক্রিপশন)
 - স্বয়ংক্রিয়ভাবে JWT/এনক্রিপশন কী তৈরি করে .env ফাইলে লিখবে
 - পুনরায় ইনস্টল রোধে install.lock তৈরি করবে
@@ -333,7 +333,7 @@ cd admin/apps/flutter && flutter test --timeout 300s
 | KYC | রিয়েল-নেম ভেরিফিকেশন সাবমিট+অনুমোদন, অনুমোদনের পর উইথড্রয়াল সীমা বাড়ায় |
 | গেম | CRUD + ক্যাটাগরি (১০টি) + সার্ভার অঞ্চল + গেম রেকর্ড ট্র্যাকিং |
 | সার্চ | Elasticsearch ফুল-টেক্সট সার্চ (LIKE ফলব্যাক সহ) |
-| র্যাঙ্কিং | দৈনিক/সাপ্তাহিক/মাসিক/সর্বকাল, Redis ক্যাশ, WebSocket রিয়েল-টাইম পুশ (ডিফল্ট পোর্ট 8790, LEADERBOARD_WS_PORT দিয়ে পরিবর্তনযোগ্য) |
+| র্যাঙ্কিং | দৈনিক/সাপ্তাহিক/মাসিক/সর্বকাল, Redis ক্যাশ |
 | CDN | পাঁচ প্রোভাইডার ইন্টিগ্রেশন (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS আপলোড + পার্জ + প্রিলোড) + অ্যাডমিন কনফিগ/টগল/কানেক্টিভিটি টেস্ট |
 | কুপন | ফিক্সড অ্যামাউন্ট+রেশিও ডিসকাউন্ট, সময় ও পরিমাণ সীমিত, ক্লেইম ও ব্যবহার ট্র্যাকিং |
 | নোটিফিকেশন | ইন-সাইট মেসেজ+ইমেইল, টপ-আপ/উত্তোলন/KYC/কুপন অটো নোটিফিকেশন |

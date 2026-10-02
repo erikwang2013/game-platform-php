@@ -1668,7 +1668,7 @@ POST /admin/v1/upload
 
 ### Docker Compose
 
-プロジェクトルートに `docker-compose.yml` があり、7つのサービス（Nginx、admin、service、leaderboard-ws、MySQL、Redis、Elasticsearch）を構成。PHP は `Dockerfile` でビルド（`php:8.3-cli` ベース、OPcache 有効）。
+プロジェクトルートに `docker-compose.yml` があり、7つのサービス（Nginx、admin、service、chat-ws、MySQL、Redis、Elasticsearch）を構成。PHP は `Dockerfile` でビルド（`php:8.3-cli` ベース、OPcache 有効）。
 
 ```bash
 cp .env.example .env
@@ -1948,7 +1948,7 @@ DELETE /admin/v1/payment/method/{hashid}
 
 ## 19. 拡張管理エンドポイント (Extended Admin APIs)
 
-以下 20 個のエンドポイントを 6 つのセクションに分けて示します。いずれも `/admin/v1` の管理エンドポイントで、JWT 認証と RBAC 権限検証が必要です。
+以下 21 個のエンドポイントを 6 つのセクションに分けて示します。いずれも `/admin/v1` の管理エンドポイントで、JWT 認証と RBAC 権限検証が必要です。
 
 ### 19.1 出金の一括審査と支払実行
 

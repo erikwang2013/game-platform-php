@@ -63,7 +63,7 @@ game-platform-php/
 ├── admin/                     # Backend administrasi (webman v2, port default 8789, dapat dikonfigurasi via APP_PORT)
 │   ├── app/admin/v1/controller/  #   Kontroler sisi admin
 │   ├── app/middleware/        #   Middleware (Cors/SecurityFilter/RateLimit/AdminAuth/AdminPermission/OperationLog)
-│   ├── app/model/             #   Model khusus admin (8; 52 model bersama lainnya ada di packages/)
+│   ├── app/model/             #   Model khusus admin (6; 51 model bersama lainnya ada di packages/)
 │   ├── app/service/           #   Layanan khusus admin (WalletService/WalletScope/RiskSandboxService)
 │   ├── app/process/           #   Proses resident (Http/Monitor/RiskIpCron)
 │   ├── app/provider/          #   Lapisan Provider game (Self/ThirdParty/Factory)
@@ -79,19 +79,19 @@ game-platform-php/
 ├── service/                   # Sisi bisnis C (webman v2, port default 8792, dapat dikonfigurasi via APP_PORT)
 │   ├── app/api/v1/controller/ #   Kontroler API C
 │   ├── app/middleware/        #   Middleware (TraceId/Cors/SecurityFilter/RateLimit/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
-│   ├── app/model/             #   Model khusus service (10; 52 model bersama lainnya ada di packages/)
+│   ├── app/model/             #   Model khusus service (10; 51 model bersama lainnya ada di packages/)
 │   ├── app/service/           #   Layanan khusus service (dompet/risiko/kepatuhan/rekonsiliasi/push/pencapaian/anti-kecurangan, dll.)
 │   ├── app/payment/           #   18 adaptor gateway pembayaran (Stripe/PayPal/Adyen/NowPayments/Skrill…) + GatewayFactory
 │   ├── app/cdn/               #   Adaptor CDN lima vendor (Cloudflare/CloudFront/Alibaba/Tencent/Huawei) + CdnFactory
-│   ├── app/process/           #   Proses resident (Http/Monitor/LeaderboardWS:8790/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
+│   ├── app/process/           #   Proses resident (Http/Monitor/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
 │   ├── app/provider/          #   Lapisan Provider game
 │   ├── app/activity/          #   Mesin aktivitas
 │   ├── app/event/             #   Event bus (EventBus Redis Pub/Sub)
 │   └── config/                #   File konfigurasi
 │
 ├── packages/platform-common/  # Lapisan bersama: admin dan service mengimpornya lewat repositori composer path, menghindari dua salinan
-│   ├── src/model/             #   Model Eloquent bersama (52, sumber sama untuk kedua sisi)
-│   ├── src/service/           #   Layanan bersama (DepositLogService / VipService dll., 11 buah, termasuk perhitungan probabilitas ClickHouse)
+│   ├── src/model/             #   Model Eloquent bersama (51, sumber sama untuk kedua sisi)
+│   ├── src/service/           #   Layanan bersama (DepositLogService / VipService dll., 12 buah, termasuk perhitungan probabilitas ClickHouse dan 2 kelas infrastruktur EventPublisher/OutboxWriter)
 │   ├── src/BcMath.php         #   Aritmetika presisi tinggi nilai/kurs (pembungkus bcmath), pembulatan, persentase
 │   ├── src/EncryptionService.php  #   Enkripsi/dekripsi AES dan penyamaran
 │   ├── src/CircuitBreaker.php #   Circuit breaker (plus Retry.php untuk percobaan ulang)
@@ -109,7 +109,7 @@ game-platform-php/
 ├── install/                   # Wizard instalasi sekali klik + SQL inisialisasi basis data
 │   ├── index.php              #   Titik masuk instalasi
 │   ├── Installer.php          #   Logika inti instalasi
-│   ├── install.sql            #   SQL instalasi gabungan (78 tabel + data seed)
+│   ├── install.sql            #   SQL instalasi gabungan (79 tabel + data seed)
 │   ├── clickhouse.sql         #   DDL basis analitik ClickHouse (mesin terpisah, diimpor tersendiri)
 │   ├── test-data.sql          #   Data demo/uji
 │   ├── migrations/            #   Skrip peningkatan inkremental untuk basis data yang sudah ada (*.sql)
@@ -178,7 +178,7 @@ rm -rf install/
 
 Wizard instalasi otomatis menyelesaikan:
 - Pemeriksaan lingkungan (versi PHP, ekstensi, izin direktori)
-- Membuat database dan tabel data (SQL gabungan, 78 tabel + data seed)
+- Membuat database dan tabel data (SQL gabungan, 79 tabel + data seed)
 - Membuat akun super admin (terenkripsi bcrypt)
 - Secara otomatis menghasilkan kunci JWT/enkripsi dan menuliskannya ke file .env
 - Membuat install.lock untuk mencegah instalasi ganda
@@ -333,7 +333,7 @@ Laporan terperinci:
 | KYC | Pengajuan verifikasi identitas + audit, menaikkan batas penarikan setelah disetujui |
 | Game | CRUD + kategori (10 kategori) + server wilayah + pelacakan catatan game |
 | Pencarian | Pencarian teks penuh Elasticsearch (dengan fallback LIKE) |
-| Peringkat | Harian/mingguan/bulanan/keseluruhan, cache Redis, push real-time WebSocket (port default 8790, dapat dikonfigurasi via LEADERBOARD_WS_PORT) |
+| Peringkat | Harian/mingguan/bulanan/keseluruhan, cache Redis |
 | CDN | Integrasi lima penyedia (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + preload) + konfigurasi/aktif-nonaktif/uji konektivitas admin |
 | Kupon | Jumlah tetap + diskon persentase, terbatas waktu & kuota, pelacakan klaim dan penggunaan |
 | Notifikasi | Pesan internal + email, notifikasi otomatis deposit/penarikan/KYC/kupon |

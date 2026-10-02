@@ -29,10 +29,29 @@ test('回读本身失败：贴「无法确认」而不是宣布成功', () => {
   assert.match(deleteUnknownMessage(new ApiError(500, '服务端错误')), /服务端错误/);
 });
 
-test('Me.tsx 真的调用抽出来的判定（不是抽了不用）', () => {
-  // 本树没有 DOM 测试基建，页面接线只能在源码层钉：三个活调用点必须存在
-  const src = readFileSync(new URL('../pages/Me.tsx', import.meta.url), 'utf8');
-  assert.match(src, /const verdict = deleteVerdict\(gone\);/);
-  assert.match(src, /setDelError\(deleteErrorMessage\(e\)\);/);
-  assert.match(src, /setDelError\(deleteUnknownMessage\(e\)\);/);
+test('注销面板真的调用抽出来的判定（不是抽了不用）', () => {
+  // 本树没有 DOM 测试基建，页面接线只能在源码层钉。
+  // **钉的是调用点形态，不是「出现过这个名字」** —— 面板必然 import 这三个符号，
+  // 所以 `src.includes('deleteVerdict')` 那种写法永久为真，是假绿不是修复。
+  //
+  // 2026-10-02 更新：原先钉的 `setDelError(deleteErrorMessage(e))` 是**存翻好的串**，
+  // 那是「文案冻在失败那一刻的语言上」的缺陷类（切语言后这一行不跟着变）。
+  // 现形态是**存原始输入**（`{ kind, err }`）、判定留到渲染期 ⇒ 下面同时钉住
+  // 「三个判定都被调用」与「在哪调」（渲染期，不在事件回调里）。
+  //
+  // 2026-10-02 二次更新（Me.tsx 532 行拆分）：调用点整体搬到了 `pages/MePanels.tsx`，
+  // 于是**断言跟着调用点走**，并且补一条「页面真的渲染了那个面板」——
+  // 拆分引入了「代码搬出去了、但没人再引用」这个新退化形态，光钉面板自己抓不到，
+  // 那会变成「钉了一坨永远不执行的死代码」，比不钉更坏。
+  // ⚠ 这仍是**源码串断言**：能抓「写法回归」与「搬走后失联」，抓不到「包一层再绕过去用」。
+  const panel = readFileSync(new URL('../pages/MePanels.tsx', import.meta.url), 'utf8');
+  assert.match(panel, /const verdict = deleteVerdict\(gone\);/);
+  assert.match(panel, /setDelError\(\{ kind: 'submit', err: e \}\);/);
+  assert.match(panel, /setDelError\(\{ kind: 'check', err: e \}\);/);
+  assert.match(panel, /setDelError\(\{ kind: 'verdict', gone \}\);/);
+  assert.match(panel, /deleteErrorMessage\(delError\.err\)/);
+  assert.match(panel, /deleteUnknownMessage\(delError\.err\)/);
+
+  const page = readFileSync(new URL('../pages/Me.tsx', import.meta.url), 'utf8');
+  assert.match(page, /<DeletePanel \/>/);
 });

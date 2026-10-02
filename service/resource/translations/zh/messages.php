@@ -123,7 +123,7 @@ return [
     'Phone verified' => '手机号验证成功',
     'Play log not found' => '游戏记录不存在',
     'Please type yes to confirm account closure' => '请输入 yes 确认注销',
-    'Privacy settings updated' => '隐私设置已更新',
+    'Privacy settings were not saved' => '隐私设置未保存',
     'Provider mismatch' => '供应商不匹配',
     'Reply sent' => '回复成功',
     'Request not found' => '请求不存在',

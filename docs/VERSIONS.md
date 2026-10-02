@@ -10,17 +10,17 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 
 | | 基础版 (Lite) | 标准版 (Standard) | 完整版 (Full) |
 |------|------|------|------|
-| 数据表 (install.sql) | 19 | 29 | **66**（v1.3.15-22 新增 22 张） |
+| 数据表 (install.sql) | 19 | 29 | **79**（v1.3.15-22 新增 22 张） |
 | API 端点 | 38 | 54 | ~260 (admin+service，含 Webhook/Provider) |
 | 后端控制器 | 14 | 22 | admin 46 + service 35 |
 | 数据模型 | 非共享 | 非共享 | **共享 52（platform-common）+ admin 8 + service 10** |
 | 共享 Service | 无共享层 | 无共享层 | `packages/platform-common` 单一共享包 |
 | Admin 前端页面 | 11 | 13 | 15 |
 | Platform 前端页面 | 8 | 10 | 10 |
-| HarmonyOS (admin) | - | 登录+仪表盘 | **8 页** `admin/apps/harmonyos/` |
-| HarmonyOS (C端) | - | - | **5 页** `apps/harmonyos/`（登录/游戏大厅/详情/钱包/我的） |
+| HarmonyOS (admin) | - | 登录+仪表盘 | **19 页** `admin/apps/harmonyos/` |
+| HarmonyOS (C端) | - | - | **8 页** `apps/harmonyos/`（登录/游戏大厅/详情/钱包/我的） |
 | Docker 服务 | - | - | **7** (nginx/admin/service/leaderboard-ws/mysql/redis/elasticsearch) |
-| 测试用例 | 60 | 60 | admin ~132；service 3 |
+| 测试用例 | 60 | 60 | admin 593 用例 / 70 文件；service 549 用例 / 89 文件 |
 
 ---
 
@@ -89,7 +89,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | 仪表盘真实图表 | - | - | ✓ fl_chart |
 | 优惠券系统 | - | - | ✓ |
 | 排行榜 (日/周/月/总) | - | - | ✓ Redis缓存 |
-| WebSocket 实时排行榜 | - | - | ✓ 端口8790 |
+| WebSocket 实时排行榜 | - | - | - 已移除（2026-10-02） |
 | 通知系统 (站内+邮件) | - | - | ✓ |
 | 推荐返利 | - | - | ✓ |
 | 日统计快照 | - | ✓ | ✓ |
@@ -146,8 +146,8 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 |------|--------|--------|--------|
 | Flutter Web PC 管理后台 | ✓ 5页 | ✓ 11页 | ✓ 17页 |
 | Flutter Web PC 用户平台 | ✓ 5页 | ✓ 8页 | ✓ 10页 |
-| HarmonyOS admin | - | ✓ 登录+仪表盘 | ✓ 8页 `admin/apps/harmonyos/` |
-| HarmonyOS C端 | - | - | ✓ 5页 `apps/harmonyos/` |
+| HarmonyOS admin | - | ✓ 登录+仪表盘 | ✓ 19页 `admin/apps/harmonyos/` |
+| HarmonyOS C端 | - | - | ✓ 8页 `apps/harmonyos/` |
 
 ---
 
@@ -199,7 +199,12 @@ game_friend, game_message, game_cdn_provider, game_referral_commission,
 game_tournament, game_tournament_entry
 ```
 
-**总计: 78 张表**
+### v1.3.44 新增 (1张)
+```
+game_wallet_hold
+```
+
+**总计: 79 张表**
 
 ---
 
@@ -243,12 +248,14 @@ game_tournament, game_tournament_entry
 | SDK文档 | - | - | ✓ PHP/Go/Python |
 | 高级分析 | 留存/D1-D30、转化漏斗、ARPU/ARPPU |
 
-### 新增数据表 (10张)
+### 新增数据表 (14张)
 ```
 game_ticket, game_ticket_reply, game_device_token,
 game_vip_level, game_user_vip, game_exp_log,
 game_achievement, game_user_achievement,
 game_friend, game_message
+game_cdn_provider, game_referral_commission,
+game_tournament, game_tournament_entry
 ```
 
 ### 新增 Provider API 端点 (4个)
@@ -260,28 +267,31 @@ POST /api/provider/refund   — 通知退款
 ```
 
 ### 新增 C端 API 端点 (8个)
+
+> **尚未实现**：`GET /api/v1/user/vip-status` 与 `GET /api/v1/user/achievements` 两条 C 端路由未注册（`service/config/route.php` 无对应条目），当前请求返回 404。实现后请删除本行。
+
 ```
-POST /api/verify/send-email    — 发送邮箱验证码
-POST /api/verify/confirm-email — 确认邮箱
-GET  /api/ticket/list             — 工单列表
-POST /api/ticket/create           — 创建工单
-GET  /api/ticket/{id}             — 工单详情
-POST /api/ticket/{id}/reply       — 回复工单
-GET  /api/user/vip-status         — VIP状态
-GET  /api/user/achievements       — 成就列表
+POST /api/v1/verify/send-email    — 发送邮箱验证码
+POST /api/v1/verify/confirm-email — 确认邮箱
+GET  /api/v1/ticket/list             — 工单列表
+POST /api/v1/ticket/create           — 创建工单
+GET  /api/v1/ticket/{hashid}         — 工单详情
+POST /api/v1/ticket/{hashid}/reply   — 回复工单
+GET  /api/v1/user/vip-status         — VIP状态
+GET  /api/v1/user/achievements       — 成就列表
 ```
 
-### 新增管理后台 API 端点 (6个)
+### 新增管理后台 API 端点 (9个)
 ```
-GET  /admin/ticket/list          — 工单列表
-GET  /admin/ticket/{id}          — 工单详情
-POST /admin/ticket/{id}/reply    — 回复工单
-POST /admin/ticket/{id}/close    — 关闭工单
-POST /admin/ticket/{id}/assign   — 指定处理人
-GET  /admin/analytics/retention  — 留存分析
-GET  /admin/analytics/funnel     — 转化漏斗
-GET  /admin/analytics/arpu       — ARPU趋势
-GET  /admin/analytics/economy    — 经济指标
+GET  /admin/v1/ticket/list          — 工单列表
+GET  /admin/v1/ticket/{hashid}      — 工单详情
+POST /admin/v1/ticket/{hashid}/reply — 回复工单
+POST /admin/v1/ticket/{hashid}/close — 关闭工单
+POST /admin/v1/ticket/{hashid}/assign — 指定处理人
+GET  /admin/v1/analytics/retention  — 留存分析
+GET  /admin/v1/analytics/funnel     — 转化漏斗
+GET  /admin/v1/analytics/arpu       — ARPU趋势
+GET  /admin/v1/analytics/economy    — 经济指标
 ```
 
 ---

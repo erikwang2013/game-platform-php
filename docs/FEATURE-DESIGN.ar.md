@@ -299,13 +299,6 @@ signature = HMAC-SHA256(
 - PayPal: POST إعادة الاستدعاء إلى نقطة تحقق PayPal
 - تخطي التحقق تلقائيًا عند عدم إعداد المفتاح (وضع التطوير)
 
-### 8.6 WebSocket لوحات المتصدرين اللحظية
-
-- البروتوكول: WebSocket (ws://host:8790)
-- الاشتراك: {action: "subscribe", leaderboard_id: 123}
-- الدفع: {type: "ranking_update", rankings: [...]}
-- دعم ping/pong لإبقاء الاتصال حيًا
-
 ## 9. تصميم التدويل
 
 ### 9.1 اللغات المدعومة

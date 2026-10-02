@@ -85,17 +85,19 @@ open-admin/
 │   │       └── AuthController.php    # Login/register/refresh token
 │   ├── common/                 # Common utility classes
 │   │   └── CdnProbeService.php # CDN connectivity probe (Hashids/Snowflake/Encryption come from composer packages)
-│   ├── middleware/             # Middleware
+│   ├── middleware/             # Middleware (9 on disk; 8 in the execution chain)
 │   │   ├── Cors.php            # Cross-origin
 │   │   ├── SecurityFilter.php  # Attack detection and blocking (HTTP method restriction/XSS/SQL injection/path traversal/command injection/CSRF)
 │   │   ├── RateLimit.php       # Redis rate limiting (sliding window + response headers)
-│   │   ├── StaticFile.php      # Static file serving (built into webman)
+│   │   ├── LanguageMiddleware.php # Language/locale (global; registered after RateLimit, before route middleware)
+│   │   ├── StaticFile.php      # Static file serving (copy of the webman built-in; NOT registered — commented out at config/static.php:25, not in the execution chain)
 │   │   ├── AdminAuth.php       # JWT authentication + blacklist
 │   │   ├── AdminPermission.php # RBAC permission validation
+│   │   ├── MetricsAuth.php     # /metrics only: admin JWT or static scrape token
 │   │   └── OperationLog.php    # Automatic operation log recording (incl. source detection)
 │   ├── activity/               # Activity handlers (sign-in/invite/daily tasks)
 │   ├── model/                  # Data models
-│   ├── process/                # Processes (Http, Monitor, RiskIpCron)
+│   ├── process/                # Processes (Http, Monitor, RiskIpCron, ExportTmpCleanup)
 │   ├── provider/               # Game Provider layer (Self/ThirdParty/Factory)
 │   ├── service/                # Services (wallet/risk sandbox)
 │   └── view/                   # View templates
@@ -104,7 +106,7 @@ open-admin/
 │   ├── react/                  # React web admin backend
 │   ├── flutter/                # Flutter Web admin backend (PC style)
 │   │   └── lib/app/
-│   │       ├── pages/          # 20 page directories
+│   │       ├── pages/          # 26 page directories
 │   │       ├── services/       # ApiService (JWT interceptor) + AuthService (Token persistence)
 │   │       └── layouts/        # Responsive admin layout (sidebar + top bar + content area)
 │   └── harmonyos/              # Native HarmonyOS client (seamless Token refresh)
@@ -147,8 +149,8 @@ Key config items:
 |---------|------|--------|
 | `APP_PORT` | webman HTTP listening port | `8789` |
 | `APP_URL` | External access URL (installer success page links, API docs baseUrl, etc.) | `http://localhost:8789` |
-| `JWT_SECRET` | JWT signing secret | `open-admin-jwt-secret-change-in-production` |
-| `HASHIDS_SALT` | Hashids salt | `open-admin-hashids-salt-2026` |
+| `ADMIN_JWT_SECRET_KEY` | JWT signing secret | `game-platform-admin-jwt-secret-change-in-production` |
+| `HASHIDS_SALT` | Hashids salt | `game-platform-hashids-salt-2026` |
 | `ENCRYPTION_KEY` | API encryption key | 32-byte default value |
 | `SNOWFLAKE_DATACENTER_ID` | Datacenter ID (0-31) | `1` |
 | `SNOWFLAKE_WORKER_ID` | Worker node ID (0-31) | `1` |
@@ -188,7 +190,7 @@ Open the `apps/harmonyos/` directory with DevEco Studio and run on a real device
 
 ### 6. Docker Compose one-click deployment (recommended for production)
 
-The project ships a complete Docker orchestration with 7 services: Nginx, admin (webman), service (webman), leaderboard-ws (WebSocket), MySQL, Redis, Elasticsearch.
+The project ships a complete Docker orchestration with 7 services: Nginx, admin (webman), service (webman), chat-ws (WebSocket), MySQL, Redis, Elasticsearch.
 
 ```bash
 # 1. Configure Docker environment variables
@@ -423,7 +425,7 @@ A `docker-compose.yml` is provided at the project root, orchestrating 7 services
 | `nginx` | nginx:alpine | 80, 443 |
 | `admin` | built from local `Dockerfile` | 8789 |
 | `service` | built from local `Dockerfile` | 8792 |
-| `leaderboard-ws` | built from local `Dockerfile` | 8790, 8791 |
+| `chat-ws` | built from local `Dockerfile` | 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

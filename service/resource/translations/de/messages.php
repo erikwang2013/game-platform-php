@@ -119,7 +119,7 @@ return [
     'Phone verified' => 'Telefonnummer bestätigt',
     'Play log not found' => 'Spielprotokoll nicht gefunden',
     'Please type yes to confirm account closure' => 'Bitte geben Sie yes ein, um die Kontolöschung zu bestätigen',
-    'Privacy settings updated' => 'Datenschutzeinstellungen aktualisiert',
+    'Privacy settings were not saved' => 'Datenschutzeinstellungen nicht gespeichert',
     'Provider mismatch' => 'Anbieter stimmt nicht überein',
     'Reply sent' => 'Antwort gesendet',
     'Request not found' => 'Anfrage nicht gefunden',

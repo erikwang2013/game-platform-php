@@ -36,11 +36,18 @@
 .umenu {
   position: relative;
 }
-/* 点击遮罩：铺满视口收点击，但压在菜单之下（两者同在 .topbar 的层叠上下文里）。
-   不复用全局 .backdrop：它 z-index 25 而 .topbar 只有 20，子元素再高也翻不出去。 */
+/* 点击遮罩：铺满视口收点击，压在菜单之下。
+   **它挂在 .topbar 子树之外**（app.html 的外壳根）：顶栏带 backdrop-filter（src/styles.scss:243），
+   按 CSS Filter Effects L2 它同时建立层叠上下文**和** fixed 后代的**包含块** —— 两个是不同机制，
+   放进去时 `inset: 0` 对的是顶栏的 padding box 而不是视口（真机实测修前 rect 1200×53 @240,0），
+   于是遮罩只盖住顶栏那一条、点下面的内容关不掉菜单。
+   不复用全局 .backdrop：它 z-index 25 而 .topbar 只有 20，子元素再高也翻不出去。
+   z-index 15 必须落在这个窗口里：**高于**页面内容（sticky 表头 styles.scss:319 是 1），
+   **低于** .topbar 的 20 —— 两个菜单面板都在顶栏的层叠上下文里，靠后者才压在遮罩之上。 */
 .lang-catch {
   position: fixed;
   inset: 0;
+  z-index: 15;
 }
 .lang-menu,
 .umenu-panel {

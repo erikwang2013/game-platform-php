@@ -51,7 +51,7 @@ rm -rf install/
 
 Yang dilakukan wizard instalasi:
 - Pemeriksaan lingkungan PHP (versi, ekstensi, izin direktori)
-- Mengeksekusi SQL gabungan (`install/install.sql`), membuat 78 tabel dan mengimpor data seed
+- Mengeksekusi SQL gabungan (`install/install.sql`), membuat 79 tabel dan mengimpor data seed
 - Membuat akun super admin (enkripsi bcrypt, ditautkan ke peran super_admin)
 - Otomatis menghasilkan kunci JWT/Encryption/Hashids
 - Menulis `admin/.env` dan `service/.env`
@@ -90,13 +90,13 @@ docker-compose logs -f
 | nginx | game-platform-nginx | 80, 443 | Reverse proxy + file statis |
 | admin | game-platform-admin | 8789 | API backend administrasi |
 | service | game-platform-service | 8792 | API bisnis sisi C |
-| leaderboard-ws | game-platform-ws | 8790, 8791 | WebSocket papan peringkat/chat |
+| chat-ws | game-platform-ws | 8791 | WebSocket |
 | mysql | game-platform-mysql | 3306 | Database utama |
 | redis | game-platform-redis | 6379 | Cache/rate limit |
 | elasticsearch | game-platform-es | 9200 | Pencarian full-text |
 
 > **Konfigurasi port**: Port pada tabel di atas adalah nilai default dan semuanya dapat diubah di `.env` direktori root proyek (template `.env.example`; edit setelah `cp .env.example .env`):
-> `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `LEADERBOARD_WS_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
+> `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
 > Port upstream di `nginx.conf.template` dirender otomatis oleh envsubst dari image resmi; konfigurasi Nginx tidak perlu diubah manual.
 > Pada penerapan Docker, alamat publik (`APP_URL` / `SITE_URL`) secara default otomatis mengikuti `ADMIN_PORT` / `SERVICE_PORT` (format `http://localhost:port`); untuk domain kustom atau HTTPS, setel `APP_URL` / `SITE_URL` di `.env` root (menimpa kunci yang sama di `admin/.env` dan `service/.env`). Pada penerapan bare-metal (manual), alamat tetap perlu diperbarui sendiri saat mengubah port.
 
@@ -201,7 +201,6 @@ SCOUT_HOSTS=127.0.0.1:9200
 ```ini
 # Konfigurasi database, Redis, ES sama dengan admin
 APP_PORT=8792  # port HTTP listener webman
-LEADERBOARD_WS_PORT=8790  # WebSocket papan peringkat (harus sama dengan alamat koneksi frontend)
 CHAT_WS_PORT=8791  # WebSocket chat
 SNOWFLAKE_WORKER_ID=2  # harus berbeda dari admin
 
@@ -326,7 +325,7 @@ systemctl enable --now game-platform-admin game-platform-service
 Buat `/etc/nginx/sites-available/game-platform`:
 
 ```nginx
-# Port menggunakan nilai default (admin 8789 / service 8792 / ws 8790); jika .env telah diubah, sesuaikan juga
+# Port menggunakan nilai default (admin 8789 / service 8792 / ws 8791); jika .env telah diubah, sesuaikan juga
 server {
     listen 80;
     server_name your-domain.com;
@@ -352,16 +351,6 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    # WebSocket papan peringkat (port default 8790, sama dengan LEADERBOARD_WS_PORT di service/.env)
-    location /ws/ {
-        proxy_pass http://127.0.0.1:8790;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
     }
 
     # Pemeriksaan kesehatan
@@ -614,7 +603,7 @@ ufw allow 443/tcp     # HTTPS
 ufw enable
 
 # Port internal tidak boleh diekspos
-# 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# 8789 (admin), 8792 (service), 8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
 # Di atas adalah port default; jika .env root / .env masing-masing telah diubah, gunakan nilai sebenarnya
 # Hanya diakses melalui 127.0.0.1
 ```

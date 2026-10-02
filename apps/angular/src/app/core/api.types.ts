@@ -110,6 +110,24 @@ export interface Suggestion {
   slug: string;
 }
 
+/**
+ * `/game/balance`：按游戏聚合的**游戏币**余额（平台币余额在 `/wallet/info`，两本账）。
+ * 返回体是 `{ games: GameWallet[] }`；`balance`/`frozen_balance` 是 decimal 串，只做展示格式化。
+ */
+export interface GameWallet {
+  game_id: string;
+  name: string;
+  slug: string;
+  type: string;
+  currencies: Array<{
+    currency_id: string;
+    name: string;
+    symbol: string;
+    balance: Num;
+    frozen_balance: Num;
+  }>;
+}
+
 export interface WalletInfo {
   id: string;
   balance: Num;
@@ -221,6 +239,26 @@ export interface ExchangeDone {
   balance_after: Num;
 }
 
+/**
+ * `/exchange/records` 的一行（`ExchangeController::records:151-162`）。
+ * 与钱包其它列表同形状（items/total/page/last_page）。
+ *
+ * ⚠ `platform_amount` 的口径**随 direction 换位**，与 ExchangeDone 同一套约定：
+ * in（买入）下它是**支出**的平台币；out（卖出）下它是扣过点差的**到账净额**。
+ * 钱包页一律按平台币那一侧记收支（与 Exchange 页的头寸口径一致），故符号看 direction 而不是看正负。
+ */
+export interface ExchangeRecordRow {
+  id: string;
+  game_id: string;
+  currency_id: string;
+  direction: ExchangeDirection;
+  platform_amount: Num;
+  game_amount: Num;
+  rate: Num;
+  spread_fee: Num;
+  created_at: string;
+}
+
 export interface Notify {
   id: string;
   type: string;
@@ -266,12 +304,13 @@ export interface Leaderboard {
 }
 
 /**
- * /leaderboard/{hashid} 的 ranking 元素（真源：LeaderboardService::computeRanking）。
- * ⚠ 后端下发的是**裸 user_id 整数**，没有 hashid 编码 —— 别当 hashid 拼用户主页链接。
+ * /leaderboard/{hashid} 的 ranking 元素（真源：`LeaderboardService::computeRanking`，
+ * 但 `user_id` 的编码落在**控制器** —— `LeaderboardController::ranking` 出网前逐行 `encodeId`）。
+ * 2026-10-02 起 `user_id` 是 **hashid 字符串**（此前是裸数据库整数）。
  */
 export interface RankRow {
   rank: number;
-  user_id: number;
+  user_id: string;
   score: Num;
 }
 

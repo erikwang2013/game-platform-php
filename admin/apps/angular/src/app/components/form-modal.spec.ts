@@ -88,6 +88,49 @@ describe('FormModal（通用表单弹框）', () => {
     expect(f.nativeElement.querySelector('.modal')).toBeNull();
   });
 
+  it('字段名与控件程序化关联：label[for] 指向同名 id（点标签聚焦、读屏播字段名）', async () => {
+    const f = await setup();
+    f.componentInstance.open.set(true);
+    f.componentInstance.value.set({ name: 'a', type: 'embedded', status: 1, content: 'x' });
+    f.detectChanges();
+
+    // 除 tree 外每个字段名标签都要真的指到那个控件：少写 id、名字写错、指到别的元素都红
+    const pairs: [string, string][] = [
+      ['name', 'input[name="name"]'],
+      ['type', 'select[name="type"]'],
+      ['content', 'textarea[name="content"]'],
+      ['status', 'input[name="status"]'],
+    ];
+    for (const [field, sel] of pairs) {
+      const label = el<HTMLLabelElement>(f, `label[for="${field}"]`);
+      const control = el<HTMLElement>(f, sel);
+      expect(label.htmlFor).toBe(field);
+      expect(control.id).toBe(field);
+      expect(f.nativeElement.querySelector(`#${field}`)).toBe(control);
+    }
+
+    // multi 照旧关联；tree 是自定义组件（for/id 到不了它内部的 checkbox）⇒ **不写** for
+    f.componentInstance.fields.set([
+      {
+        name: 'permission_ids',
+        label: '权限',
+        type: 'multi',
+        options: [{ value: 'P1', label: '系统' }],
+      },
+      {
+        name: 'perms',
+        label: '权限树',
+        type: 'tree',
+        tree: [{ id: 'P1', name: '系统', row: {}, children: [] }],
+      },
+    ]);
+    f.detectChanges();
+    expect(el<HTMLLabelElement>(f, 'label[for="permission_ids"]').htmlFor).toBe('permission_ids');
+    expect(el<HTMLElement>(f, 'select[name="permission_ids"]').id).toBe('permission_ids');
+    // 悬空引用比不写更坏：读屏会播一个不存在的关联
+    expect(f.nativeElement.querySelector('label[for="perms"]')).toBeNull();
+  });
+
   it('编辑预填：text/select/textarea 取值、switch 认 1（select 的预选是 DOM 时序敏感的）', async () => {
     const f = await setup();
     f.componentInstance.open.set(true);

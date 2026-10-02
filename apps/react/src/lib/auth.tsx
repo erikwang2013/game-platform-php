@@ -18,7 +18,8 @@ import type { CaptchaProof } from './captcha.ts';
  * 登录结果分两支：直接登录成功，或账号开了 2FA —— 后者服务端**不签发正式 token**，
  * 只回一张 10 分钟短期票据，必须拿它 + TOTP 码走 /2fa/verify 换发。
  */
-export type LoginResult = { status: 'ok' } | { status: '2fa'; pendingToken: string };
+/** `login()` 的两态返回 —— **不导出**：调用方只解构 `r.status`，零处按名引用本名。 */
+type LoginResult = { status: 'ok' } | { status: '2fa'; pendingToken: string };
 
 interface AuthValue {
   user: Profile | null;

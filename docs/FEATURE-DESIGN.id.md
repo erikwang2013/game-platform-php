@@ -299,13 +299,6 @@ Konfigurasi melalui PlatformConfig atau variabel lingkungan, saat permintaan gag
 - PayPal: POST kembali ke endpoint verifikasi PayPal
 - Saat kunci belum dikonfigurasi, verifikasi dilewati otomatis (mode pengembangan)
 
-### 8.6 Papan Peringkat Real-time WebSocket
-
-- Protokol: WebSocket (ws://host:8790)
-- Langganan: {action: "subscribe", leaderboard_id: 123}
-- Push: {type: "ranking_update", rankings: [...]}
-- Mendukung ping/pong heartbeat untuk menjaga koneksi
-
 ## 9. Desain Internasionalisasi
 
 ### 9.1 Bahasa yang Didukung

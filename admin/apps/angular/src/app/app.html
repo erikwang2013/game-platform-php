@@ -19,6 +19,14 @@
     <div class="backdrop" (click)="menu.set(false)"></div>
   }
 
+  <!-- 点任意处收起顶栏那两个菜单（语言 / 账号）。遮罩挂在**外壳根**上、不在 .topbar 子树里：
+       顶栏带 backdrop-filter（styles.scss:243），按 CSS Filter Effects L2 它同时是 fixed 后代的**包含块**，
+       遮罩放进去时 `inset: 0` 对的是顶栏那条 54px、不是视口 ⇒ 点下面的内容关不掉菜单
+       （真机实测：修前 rect 1200×53 @240,0 —— 正是 .topbar 的 padding box）。 -->
+  @if (langOpen() || userOpen()) {
+    <div class="lang-catch" (click)="langOpen.set(false); userOpen.set(false)"></div>
+  }
+
   <div class="main">
     <header class="topbar">
       <button class="hamburger" (click)="menu.set(true)" [attr.aria-label]="'app.menu' | t">
@@ -31,11 +39,8 @@
       </div>
       <div class="user">
         <!-- 语言：13 种平铺（母语名 + 当前项打点），与 admin/apps/flutter 的 _buildUserMenu 同款。
-             点遮罩关闭；遮罩在本组件自己的层叠上下文里，所以菜单的 z-index 只要压过它就够。 -->
+             点遮罩关闭；遮罩挂在外壳根（见上），菜单靠 .topbar 的层叠上下文压在它之上。 -->
         <div class="lang">
-          @if (langOpen()) {
-            <div class="lang-catch" (click)="langOpen.set(false)"></div>
-          }
           <button
             class="btn"
             type="button"
@@ -64,9 +69,6 @@
         </div>
         <!-- 账号菜单：个人资料 / 修改密码 / 退出。同语言菜单的「遮罩压在面板下」结构 -->
         <div class="umenu">
-          @if (userOpen()) {
-            <div class="lang-catch" (click)="userOpen.set(false)"></div>
-          }
           <button
             class="btn who"
             type="button"

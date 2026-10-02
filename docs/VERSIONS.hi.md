@@ -10,17 +10,17 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 
 | | मूल संस्करण (Lite) | मानक संस्करण (Standard) | पूर्ण संस्करण (Full) |
 |------|------|------|------|
-| डेटा तालिकाएँ (install.sql) | 19 | 29 | **66**（v1.3.15-22 में 22 नई） |
+| डेटा तालिकाएँ (install.sql) | 19 | 29 | **79**（v1.3.15-22 में 22 नई） |
 | API एंडपॉइंट | 38 | 54 | ~260 (admin+service, Webhook/Provider सहित) |
 | बैकएंड कंट्रोलर | 14 | 22 | admin 46 + service 35 |
 | डेटा मॉडल | गैर-साझा | गैर-साझा | **साझा 52 (platform-common) + admin 8 + service 10** |
 | साझा Service | कोई साझा परत नहीं | कोई साझा परत नहीं | `packages/platform-common` एकल साझा पैकेज |
 | Admin फ्रंटएंड पेज | 11 | 13 | 15 |
 | Platform फ्रंटएंड पेज | 8 | 10 | 10 |
-| HarmonyOS (admin) | - | लॉगिन + डैशबोर्ड | **8 पेज** `admin/apps/harmonyos/` |
-| HarmonyOS (C-छोर) | - | - | **5 पेज** `apps/harmonyos/` (लॉगिन/गेम लॉबी/विवरण/वॉलेट/मेरा) |
+| HarmonyOS (admin) | - | लॉगिन + डैशबोर्ड | **19 पेज** `admin/apps/harmonyos/` |
+| HarmonyOS (C-छोर) | - | - | **8 पेज** `apps/harmonyos/` (लॉगिन/गेम लॉबी/विवरण/वॉलेट/मेरा) |
 | Docker सेवाएँ | - | - | **7** (nginx/admin/service/leaderboard-ws/mysql/redis/elasticsearch) |
-| परीक्षण मामले | 60 | 60 | admin ~132; service 3 |
+| परीक्षण मामले | 60 | 60 | admin 593 मामले / 70 फ़ाइलें; service 549 मामले / 89 फ़ाइलें |
 
 ---
 
@@ -89,7 +89,7 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 | डैशबोर्ड वास्तविक चार्ट | - | - | ✓ fl_chart |
 | कूपन प्रणाली | - | - | ✓ |
 | लीडरबोर्ड (दैनिक/साप्ताहिक/मासिक/कुल) | - | - | ✓ Redis कैश |
-| WebSocket रीयल-टाइम लीडरबोर्ड | - | - | ✓ पोर्ट 8790 |
+| WebSocket रीयल-टाइम लीडरबोर्ड | - | - | - हटाया गया (2026-10-02) |
 | सूचना प्रणाली (साइट + ईमेल) | - | - | ✓ |
 | रेफरल कमीशन | - | - | ✓ |
 | दैनिक सांख्यिकी स्नैपशॉट | - | ✓ | ✓ |
@@ -146,8 +146,8 @@ Languages: [中文](VERSIONS.md) · [English](VERSIONS.en.md) · [한국어](VER
 |------|--------|--------|--------|
 | Flutter Web PC प्रशासन कंसोल | ✓ 5 पेज | ✓ 11 पेज | ✓ 17 पेज |
 | Flutter Web PC उपयोगकर्ता प्लेटफ़ॉर्म | ✓ 5 पेज | ✓ 8 पेज | ✓ 10 पेज |
-| HarmonyOS admin | - | ✓ लॉगिन + डैशबोर्ड | ✓ 8 पेज `admin/apps/harmonyos/` |
-| HarmonyOS C-छोर | - | - | ✓ 5 पेज `apps/harmonyos/` |
+| HarmonyOS admin | - | ✓ लॉगिन + डैशबोर्ड | ✓ 19 पेज `admin/apps/harmonyos/` |
+| HarmonyOS C-छोर | - | - | ✓ 8 पेज `apps/harmonyos/` |
 
 ---
 
@@ -199,7 +199,12 @@ game_friend, game_message, game_cdn_provider, game_referral_commission,
 game_tournament, game_tournament_entry
 ```
 
-**कुल: 78 तालिकाएँ**
+### v1.3.44 में नई (1 तालिका)
+```
+game_wallet_hold
+```
+
+**कुल: 79 तालिकाएँ**
 
 ---
 
@@ -243,12 +248,14 @@ game_tournament, game_tournament_entry
 | SDK दस्तावेज़ | - | - | ✓ PHP/Go/Python |
 | उन्नत विश्लेषण | प्रतिधारण/D1-D30, रूपांतरण फ़नल, ARPU/ARPPU |
 
-### नई डेटा तालिकाएँ (10 तालिकाएँ)
+### नई डेटा तालिकाएँ (14 तालिकाएँ)
 ```
 game_ticket, game_ticket_reply, game_device_token,
 game_vip_level, game_user_vip, game_exp_log,
 game_achievement, game_user_achievement,
 game_friend, game_message
+game_cdn_provider, game_referral_commission,
+game_tournament, game_tournament_entry
 ```
 
 ### नए Provider API एंडपॉइंट (4)
@@ -260,28 +267,31 @@ POST /api/provider/refund   — रिफंड सूचना
 ```
 
 ### नए C-छोर API एंडपॉइंट (8)
+
+> **अभी लागू नहीं**: C-छोर के दोनों रूट `GET /api/v1/user/vip-status` और `GET /api/v1/user/achievements` पंजीकृत नहीं हैं (`service/config/route.php` में कोई संगत प्रविष्टि नहीं), वर्तमान अनुरोध 404 लौटाता है। लागू होने पर यह पंक्ति हटा दें।
+
 ```
-POST /api/verify/send-email    — ईमेल सत्यापन कोड भेजें
-POST /api/verify/confirm-email — ईमेल पुष्टि करें
-GET  /api/ticket/list             — टिकट सूची
-POST /api/ticket/create           — टिकट बनाएँ
-GET  /api/ticket/{id}             — टिकट विवरण
-POST /api/ticket/{id}/reply       — टिकट का उत्तर दें
-GET  /api/user/vip-status         — VIP स्थिति
-GET  /api/user/achievements       — उपलब्धियाँ सूची
+POST /api/v1/verify/send-email    — ईमेल सत्यापन कोड भेजें
+POST /api/v1/verify/confirm-email — ईमेल पुष्टि करें
+GET  /api/v1/ticket/list             — टिकट सूची
+POST /api/v1/ticket/create           — टिकट बनाएँ
+GET  /api/v1/ticket/{hashid}         — टिकट विवरण
+POST /api/v1/ticket/{hashid}/reply   — टिकट का उत्तर दें
+GET  /api/v1/user/vip-status         — VIP स्थिति
+GET  /api/v1/user/achievements       — उपलब्धियाँ सूची
 ```
 
-### नए प्रशासन कंसोल API एंडपॉइंट (6)
+### नए प्रशासन कंसोल API एंडपॉइंट (9)
 ```
-GET  /admin/ticket/list          — टिकट सूची
-GET  /admin/ticket/{id}          — टिकट विवरण
-POST /admin/ticket/{id}/reply    — टिकट का उत्तर दें
-POST /admin/ticket/{id}/close    — टिकट बंद करें
-POST /admin/ticket/{id}/assign   — प्रसंस्करणकर्ता नियुक्त करें
-GET  /admin/analytics/retention  — प्रतिधारण विश्लेषण
-GET  /admin/analytics/funnel     — रूपांतरण फ़नल
-GET  /admin/analytics/arpu       — ARPU प्रवृत्ति
-GET  /admin/analytics/economy    — आर्थिक मीट्रिक
+GET  /admin/v1/ticket/list          — टिकट सूची
+GET  /admin/v1/ticket/{hashid}      — टिकट विवरण
+POST /admin/v1/ticket/{hashid}/reply — टिकट का उत्तर दें
+POST /admin/v1/ticket/{hashid}/close — टिकट बंद करें
+POST /admin/v1/ticket/{hashid}/assign — प्रसंस्करणकर्ता नियुक्त करें
+GET  /admin/v1/analytics/retention  — प्रतिधारण विश्लेषण
+GET  /admin/v1/analytics/funnel     — रूपांतरण फ़नल
+GET  /admin/v1/analytics/arpu       — ARPU प्रवृत्ति
+GET  /admin/v1/analytics/economy    — आर्थिक मीट्रिक
 ```
 
 ---

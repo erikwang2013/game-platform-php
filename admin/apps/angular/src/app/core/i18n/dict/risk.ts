@@ -79,6 +79,12 @@ export const RISK: Record<string, [string, string]> = {
     '0-1000, higher is evaluated first (default 100)',
     '0-1000，越大越先判（缺省 100）',
   ],
+  /** scope 的注记：exchange / login 有评估分支但**无调用点**（RiskService::check() 只有
+   * deposit / withdraw 两个调用方）⇒ 选它们的规则永不命中，界面上必须说清。 */
+  'risk.rule.scope_hint': [
+    'exchange / login: not wired yet (the evaluator has branches, but RiskService::check() has no call site for them — only deposit / withdraw fire), so a rule with this scope never triggers',
+    'exchange / login 暂未接入：评估器有分支但无调用点 —— RiskService::check() 只被 deposit / withdraw 调用过，选这两项建的规则永不命中',
+  ],
   'risk.rule.status': ['Status', '状态'],
   'risk.rule.config': ['Threshold config (JSON)', '阈值配置（JSON）'],
   'risk.rule.keys_note': [KEYS_NOTE_EN.join('\n'), KEYS_NOTE_ZH.join('\n')],

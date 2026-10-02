@@ -123,7 +123,6 @@ class TranslationServiceTest extends TestCase
     private static function injectCache(array $cache): void
     {
         $prop = new \ReflectionProperty(TranslationService::class, 'cache');
-        $prop->setAccessible(true);
         $prop->setValue(null, $cache);
     }
 }

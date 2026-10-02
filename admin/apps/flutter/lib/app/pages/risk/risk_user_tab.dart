@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
+import '../../widgets/crud.dart';
 
 /// 异常用户：信任分队列 + 时间线抽屉 + 冻结（hold）
 class RiskUserController extends GetxController {
@@ -73,16 +74,7 @@ class RiskUserTab extends GetView<RiskUserController> {
       Expanded(child: Obx(() {
         if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
         if (ctrl.items.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.asset('assets/mascot.png', width: 120),
-                const SizedBox(height: 12),
-                const Text('无异常用户'),
-              ],
-            ),
-          );
+          return const CrudEmptyState(text: '无异常用户');
         }
         return ListView.builder(
           itemCount: ctrl.items.length,

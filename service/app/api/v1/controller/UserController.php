@@ -237,9 +237,18 @@ class UserController extends BaseController
             return $this->fail($validator->errors()->first(), 422);
         }
 
-        // Store privacy settings in PlatformConfig per user (simplified)
-        // Could be extended with a proper user_settings table
-
-        return $this->success([], trans('Privacy settings updated'));
+        // ⚠ 本端点**不写入任何地方**（原注释自认 "simplified / Could be extended"，但返回空 data +
+        // "Privacy settings updated" ＝ **假成功**：客户端会以为设置已生效）。事实是：
+        // show_in_leaderboard / allow_email_notifications 两个字段**全仓零读者**，也没有 user_settings
+        // 表或 PlatformConfig 的 per-user 写入口 ⇒ 本次提交的值不会在任何地方生效。
+        // 现在改成**仅回显** + 显式 persisted=false，让「没存」在报文里可判，且不静默吞掉输入。
+        // 文案同步改成 "Privacy settings were not saved"：en 表是空表（键名即英文原句，回落即输出），
+        // 只改 12 份译文的值、不动键名的话，英文用户仍会读到「已更新」那句假成功。
+        // 要真生效得先有存储（产品功能，另批）。
+        return $this->success([
+            'persisted'                  => false,
+            'show_in_leaderboard'        => $request->input('show_in_leaderboard'),
+            'allow_email_notifications'  => $request->input('allow_email_notifications'),
+        ], trans('Privacy settings were not saved'));
     }
 }

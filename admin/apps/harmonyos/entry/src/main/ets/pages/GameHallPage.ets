@@ -2,13 +2,11 @@
  * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
  */
 import router from '@ohos.router';
-import http from '@ohos.net.http';
 import promptAction from '@ohos.promptAction';
-import { TokenManager } from '../utils/TokenManager';
-import { API_BASE_URL } from '../common/AppConfig';
-import { pageQuery } from '../model/DataModels';
+import { apiService } from '../service/ApiService';
+import { GameItem, PageResult, pageQuery } from '../model/DataModels';
 import { PagerBar } from '../common/ResourceViews';
-import { t, t1 } from '../i18n/Translations';
+import { t } from '../i18n/Translations';
 
 @Entry
 @Component
@@ -28,27 +26,25 @@ struct GameHallPage {
   async loadGames(): Promise<void> {
     this.isLoading = true;
     try {
-      const token = TokenManager.getAccessToken();
-      const request = http.createHttp();
-      // 分页参数走 pageQuery 扇出（本端点读 limit，别名一起发不影响）
-      const response = await request.request(`${API_BASE_URL}/admin/v1/game/list?${pageQuery(this.page, this.limit)}`, {
-        method: http.RequestMethod.GET,
-        header: {
-          'Content-Type': 'application/json',
-
-          'X-Client-Platform': 'harmonyos',
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.responseCode === 200) {
-        const body = JSON.parse(response.result as string);
-        if (body.code === 0) {
-          this.games = body.data.list || [];
-          this.total = Number(body.data.total || 0);
-        }
+      // 分页参数走 pageQuery 扇出（本端点读 limit，别名一起发不影响）；keyword 走 GameManagePage
+      // 同一条路（GameController::list 的 where('name','like')）—— 此前搜索框只改状态、从不进请求，
+      // 是个按下去没反应的死控件。
+      let path = `/admin/v1/game/list?${pageQuery(this.page, this.limit)}`;
+      if (this.searchKeyword.length > 0) {
+        path += `&keyword=${encodeURIComponent(this.searchKeyword)}`;
+      }
+      const body = await apiService.get<PageResult<GameItem>>(path);
+      if (body.code === 0) {
+        this.games = body.data.list;
+        this.total = Number(body.data.total);
       }
     } catch (e) {
+      // apiService 在刷新也失败时会抛 UNAUTHORIZED（旧的自建 http 客户端没有这条路径，
+      // 换过来之后必须接住，否则会话过期时这页只会弹一句「加载失败」）
+      if (e instanceof Error && e.message === 'UNAUTHORIZED') {
+        router.replaceUrl({ url: 'pages/LoginPage' });
+        return;
+      }
       promptAction.showToast({ message: t('common.load_failed') });
     } finally {
       this.isLoading = false;
@@ -75,9 +71,13 @@ struct GameHallPage {
         Text(t('game.hall'))
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
-        Blank()
-        Button(t('game.my_wallet'))
-          .onClick(() => router.pushUrl({ url: 'pages/WalletPage' }))
+        // 墓碑：「我的钱包」入口已摘除，连页面（pages/WalletPage.ets）一起删了 —— 那是个**假页**：
+        // loadWallet() 不调任何端点（`this.balance = '--'` + "simplified for now" 注释），
+        // 四个宫格按钮的 onClick 全是空的，点进去只有一个永远显示不出数字的余额。
+        // 本树**没有**能接的钱包端点：admin/config/route.php 里 wallet / balance 零命中
+        // （钱包是 C 端的，端点在 service/config/route.php:80-81 的 /api/v1/wallet/info|transactions，
+        // 且 C 端那棵树 apps/harmonyos 里有一份真实现）。要重建得先有管理端钱包端点，
+        // 别对着一个不存在的接口再搭一次壳。
       }
       .width('100%')
       .padding(16)
@@ -87,7 +87,8 @@ struct GameHallPage {
         .width('100%')
         .margin({ left: 16, right: 16, bottom: 8 })
         .onChange((value: string) => { this.searchKeyword = value })
-        .onSubmit(() => { this.loadGames() })
+        // 换关键词必须回第 1 页：停在第 3 页上搜，命中的 2 条都在第 1 页 ⇒ 搜出个空列表
+        .onSubmit(() => { this.page = 1; this.loadGames() })
 
       // Game List
       if (this.isLoading) {
@@ -140,12 +141,4 @@ struct GameHallPage {
     .height('100%')
     .backgroundColor('#F5F5F5')
   }
-}
-
-interface GameItem {
-  id: string;
-  name: string;
-  slug?: string;
-  description?: string;
-  cover_image?: string;
 }

@@ -121,16 +121,7 @@ class TicketPage extends GetView<TicketController> {
       Expanded(child: Obx(() {
         if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
         if (ctrl.tickets.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.asset('assets/mascot.png', width: 120),
-                const SizedBox(height: 12),
-                Text("${AppTranslations.t('ticket.no_data')}"),
-              ],
-            ),
-          );
+          return const CrudEmptyState(text: 'ticket.no_data');
         }
 
         return SingleChildScrollView(

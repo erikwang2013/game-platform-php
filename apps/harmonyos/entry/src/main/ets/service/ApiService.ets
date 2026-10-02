@@ -6,6 +6,7 @@ import http from '@ohos.net.http';
 import { ApiResponse, LoginResponse } from '../model/DataModels';
 import { TokenManager } from '../utils/TokenManager';
 import { API_BASE_URL } from '../common/AppConfig';
+import { LocaleController } from '../i18n/LocaleController';
 
 /**
  * HTTP API 服务 — 支持 JWT 无感刷新
@@ -32,6 +33,11 @@ export class ApiService {
         'Content-Type': 'application/json',
 
         'X-Client-Platform': 'harmonyos',
+        // 语言必须先于业务请求发出去：后端 `LanguageMiddleware::detectLocale()` 的顺序是
+        // `X-Language` → `Accept-Language` → 配置默认(zh)。**不发这个头就落到第二步** ——
+        // 设备是法语时服务端吐法语而界面是中文（同屏两语言）；**恒发 `en` 更糟**，
+        // 那会把 zh 默认主动压掉。值用短码（后端 `common\Locale::normalize()` 认短码与全码）。
+        'X-Language': LocaleController.currentCode,
         'Authorization': (token && token.length > 0) ? `Bearer ${token}` : '',
       },
       connectTimeout: 15000,
@@ -108,6 +114,8 @@ export class ApiService {
             'Content-Type': 'application/json',
 
             'X-Client-Platform': 'harmonyos',
+            // 刷新绕过了 request()，语言头得单独补：/auth/refresh 的失败 message 也走 trans()
+            'X-Language': LocaleController.currentCode,
             'Authorization': `Bearer ${refreshToken}`,
           },
           extraData: JSON.stringify({ refresh_token: refreshToken }),

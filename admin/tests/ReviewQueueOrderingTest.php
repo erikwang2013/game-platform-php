@@ -23,7 +23,7 @@ use support\Request;
  *  - GET /admin/v1/identity/list（KYC 审核队列，IdentityController::list）
  *
  * 两处原先都只有 `->orderBy('created_at','desc')`，而两表的 `created_at` 都是**秒精度 DATETIME**
- * （game_withdraw_order: install.sql:282；game_user_identity: install.sql:505）——
+ * （game_withdraw_order.created_at / game_user_identity.created_at，两列均见 install.sql 对应建表段）——
  * 同秒多笔（批量提现、活动结束集中申请）时，同秒行之间的先后由 MySQL 自行决定，
  * 而 LIMIT/OFFSET 是逐页独立执行的 ⇒ **翻页会重复或漏行，且 `total`/`last_page` 依然正确**
  * （账面自洽、行对不上）。审核队列漏行 = 有人的提现/KYC 永远排不到，没人会收到报错。

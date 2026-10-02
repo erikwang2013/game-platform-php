@@ -16,6 +16,9 @@ class ChatService extends GetxService {
   /// 对端 hashid → 本地收到的实时推送（REST 快照里还没有的那部分），见 handlePush
   final messagesByPeer = <String, RxList<Map<String, dynamic>>>{}.obs;
   int _reconnectDelay = 1;
+  /// 连接代次：每次 connect/disconnect 自增。回调捕获建立时的代次，只有仍是最新代次才生效 ——
+  /// 登出时关掉的旧通道，它的 onDone 会晚到；不判代次就会把刚建立的新连接再连一条。
+  int _connSeq = 0;
 
   /// 聊天 WS 地址：默认沿用 ApiService.baseUrl 的 host + 8791（与服务端 CHAT_WS_PORT 对应），
   /// 可用 --dart-define=CHAT_WS_BASE_URL=ws://host:port 整串覆盖。
@@ -34,21 +37,28 @@ class ChatService extends GetxService {
     final token = await AuthService.getToken();
     if (token == null) return;
 
-    try {
-      _channel = WebSocketChannel.connect(ChatService.resolveChatUri());
+    // 旧通道先关：换账号/重进大厅会再 connect 一次，不关就会留下第二条通道，
+    // 且 _channel 被覆盖后旧的那条永远关不掉（旧身份的推送继续进桶 ⇒ 串消息）。
+    _closeChannel();
+    final seq = ++_connSeq;
 
-      _channel!.stream.listen(
-        _onMessage,
-        onDone: _onDisconnect,
-        onError: (e) => _onDisconnect(),
+    try {
+      final channel = WebSocketChannel.connect(ChatService.resolveChatUri());
+      _channel = channel;
+
+      channel.stream.listen(
+        (data) => _onMessage(data, seq),
+        onDone: () => _onDisconnect(seq),
+        onError: (e) => _onDisconnect(seq),
       );
 
-      _channel!.sink.add(jsonEncode({'action': 'auth', 'token': token}));
+      channel.sink.add(jsonEncode({'action': 'auth', 'token': token}));
       _startPing();
     } catch (_) {}
   }
 
-  void _onMessage(dynamic data) {
+  void _onMessage(dynamic data, int seq) {
+    if (seq != _connSeq) return; // 上一代通道的迟到帧：身份可能已经换了，不得入桶
     try {
       final msg = jsonDecode(data as String);
       if (msg['type'] == 'authenticated') {
@@ -101,7 +111,8 @@ class ChatService extends GetxService {
     });
   }
 
-  void _onDisconnect() {
+  void _onDisconnect(int seq) {
+    if (seq != _connSeq) return; // 登出/换代后旧通道的关闭事件：不得触发重连
     connected.value = false;
     _pingTimer?.cancel();
     _reconnectTimer?.cancel();
@@ -111,12 +122,25 @@ class ChatService extends GetxService {
     });
   }
 
-  void disconnect() {
+  /// 关掉当前通道与两个定时器（重连/换连接内部用），**不动**本地消息桶。
+  void _closeChannel() {
     _reconnectTimer?.cancel();
     _pingTimer?.cancel();
     try { _channel?.sink.close(); } catch (_) {}
     _channel = null;
     connected.value = false;
+  }
+
+  /// 用户主动断开（登出收敛点 `ApiService.signOut` 调用）：关通道 + 清空本地推送桶与未读数。
+  ///
+  /// 只清 token 不断开的话：旧账号的通道还活着，推送继续以对端 hashid 为键进
+  /// messagesByPeer；下一个账号再 connect() 会把 _channel 覆盖掉，旧通道永远关不掉 ——
+  /// 两个账号都加过同一个好友时，新账号打开该会话会读到旧账号的消息。
+  void disconnect() {
+    _connSeq++; // 旧通道的回调就此作废
+    _closeChannel();
+    messagesByPeer.clear();
+    unreadTotal.value = 0;
   }
 
   Future<List<Map<String, dynamic>>> loadConversations() async {

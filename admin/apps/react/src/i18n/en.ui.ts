@@ -159,6 +159,7 @@ export const enUi = {
   'form.options_load_failed': 'Failed to load the options for {name}; the selected value is still visible, but do not submit unless you leave it unchanged',
   'form.tree_load_failed': 'Failed to load the permission tree for {name}; the selected permissions are still visible, but do not submit unless you leave them unchanged',
   'form.tree_loading': 'Loading permission tree…',
+  'form.discard_confirm': 'Discard unsaved changes?',
   'form.select_placeholder': 'Please select',
   // 父权限下拉的选项（lib/tree.ts 摊平权限树）：键分两种**形状**（带 slug / 不带），
   // 路径与 slug 走 params —— 选项是逐行现拼的，见 lib/crud.ts 的 FieldOption

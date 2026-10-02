@@ -10,17 +10,17 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 
 | | Versi Dasar (Lite) | Versi Standar (Standard) | Versi Lengkap (Full) |
 |------|------|------|------|
-| Tabel data (install.sql) | 19 | 29 | **66** (22 baru di v1.3.15-22) |
+| Tabel data (install.sql) | 19 | 29 | **79** (22 baru di v1.3.15-22) |
 | Endpoint API | 38 | 54 | ~260 (admin+service, termasuk Webhook/Provider) |
 | Controller backend | 14 | 22 | admin 46 + service 35 |
 | Model data | Tidak dibagikan | Tidak dibagikan | **dibagikan 52 (platform-common) + admin 8 + service 10** |
 | Service dibagikan | Tanpa lapisan berbagi | Tanpa lapisan berbagi | `packages/platform-common` paket berbagi tunggal |
 | Halaman frontend Admin | 11 | 13 | 15 |
 | Halaman frontend Platform | 8 | 10 | 10 |
-| HarmonyOS (admin) | - | Login + dasbor | **8 halaman** `admin/apps/harmonyos/` |
-| HarmonyOS (C-end) | - | - | **5 halaman** `apps/harmonyos/` (login/lobi game/detail/dompet/profil) |
+| HarmonyOS (admin) | - | Login + dasbor | **19 halaman** `admin/apps/harmonyos/` |
+| HarmonyOS (C-end) | - | - | **8 halaman** `apps/harmonyos/` (login/lobi game/detail/dompet/profil) |
 | Layanan Docker | - | - | **7** (nginx/admin/service/leaderboard-ws/mysql/redis/elasticsearch) |
-| Kasus pengujian | 60 | 60 | admin ~132; service 3 |
+| Kasus pengujian | 60 | 60 | admin 593 kasus / 70 file; service 549 kasus / 89 file |
 
 ---
 
@@ -89,7 +89,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Grafik dasbor nyata | - | - | ✓ fl_chart |
 | Sistem kupon | - | - | ✓ |
 | Papan peringkat (harian/mingguan/bulanan/total) | - | - | ✓ cache Redis |
-| Papan peringkat real-time WebSocket | - | - | ✓ port 8790 |
+| Papan peringkat real-time WebSocket | - | - | - dihapus (2026-10-02) |
 | Sistem notifikasi (pesan dalam situs+email) | - | - | ✓ |
 | Komisi referral | - | - | ✓ |
 | Snapshot statistik harian | - | ✓ | ✓ |
@@ -146,8 +146,8 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 |------|--------|--------|--------|
 | Backend Administrasi Flutter Web PC | ✓ 5 halaman | ✓ 11 halaman | ✓ 17 halaman |
 | Platform pengguna Flutter Web PC | ✓ 5 halaman | ✓ 8 halaman | ✓ 10 halaman |
-| HarmonyOS admin | - | ✓ Login + dasbor | ✓ 8 halaman `admin/apps/harmonyos/` |
-| HarmonyOS C-end | - | - | ✓ 5 halaman `apps/harmonyos/` |
+| HarmonyOS admin | - | ✓ Login + dasbor | ✓ 19 halaman `admin/apps/harmonyos/` |
+| HarmonyOS C-end | - | - | ✓ 8 halaman `apps/harmonyos/` |
 
 ---
 
@@ -199,7 +199,12 @@ game_friend, game_message, game_cdn_provider, game_referral_commission,
 game_tournament, game_tournament_entry
 ```
 
-**Total: 78 tabel**
+### Penambahan v1.3.44 (1 tabel)
+```
+game_wallet_hold
+```
+
+**Total: 79 tabel**
 
 ---
 
@@ -243,12 +248,14 @@ game_tournament, game_tournament_entry
 | Dokumentasi SDK | - | - | ✓ PHP/Go/Python |
 | Analisis lanjutan | Retensi/D1-D30, funnel konversi, ARPU/ARPPU |
 
-### Tabel data baru (10 tabel)
+### Tabel data baru (14 tabel)
 ```
 game_ticket, game_ticket_reply, game_device_token,
 game_vip_level, game_user_vip, game_exp_log,
 game_achievement, game_user_achievement,
 game_friend, game_message
+game_cdn_provider, game_referral_commission,
+game_tournament, game_tournament_entry
 ```
 
 ### Endpoint Provider API baru (4)
@@ -260,28 +267,31 @@ POST /api/provider/refund   — Notifikasi refund
 ```
 
 ### Endpoint API C-end baru (8)
+
+> **Belum diimplementasikan**: Dua rute C `GET /api/v1/user/vip-status` dan `GET /api/v1/user/achievements` belum terdaftar (tidak ada entri terkait di `service/config/route.php`), permintaan saat ini mengembalikan 404. Hapus baris ini setelah diimplementasikan.
+
 ```
-POST /api/verify/send-email    — Kirim kode verifikasi email
-POST /api/verify/confirm-email — Konfirmasi email
-GET  /api/ticket/list             — Daftar tiket
-POST /api/ticket/create           — Buat tiket
-GET  /api/ticket/{id}             — Detail tiket
-POST /api/ticket/{id}/reply       — Balas tiket
-GET  /api/user/vip-status         — Status VIP
-GET  /api/user/achievements       — Daftar pencapaian
+POST /api/v1/verify/send-email    — Kirim kode verifikasi email
+POST /api/v1/verify/confirm-email — Konfirmasi email
+GET  /api/v1/ticket/list             — Daftar tiket
+POST /api/v1/ticket/create           — Buat tiket
+GET  /api/v1/ticket/{hashid}         — Detail tiket
+POST /api/v1/ticket/{hashid}/reply   — Balas tiket
+GET  /api/v1/user/vip-status         — Status VIP
+GET  /api/v1/user/achievements       — Daftar pencapaian
 ```
 
-### Endpoint API Backend Administrasi baru (6)
+### Endpoint API Backend Administrasi baru (9)
 ```
-GET  /admin/ticket/list          — Daftar tiket
-GET  /admin/ticket/{id}          — Detail tiket
-POST /admin/ticket/{id}/reply    — Balas tiket
-POST /admin/ticket/{id}/close    — Tutup tiket
-POST /admin/ticket/{id}/assign   — Tentukan penangan
-GET  /admin/analytics/retention  — Analisis retensi
-GET  /admin/analytics/funnel     — Funnel konversi
-GET  /admin/analytics/arpu       — Tren ARPU
-GET  /admin/analytics/economy    — Metrik ekonomi
+GET  /admin/v1/ticket/list          — Daftar tiket
+GET  /admin/v1/ticket/{hashid}      — Detail tiket
+POST /admin/v1/ticket/{hashid}/reply — Balas tiket
+POST /admin/v1/ticket/{hashid}/close — Tutup tiket
+POST /admin/v1/ticket/{hashid}/assign — Tentukan penangan
+GET  /admin/v1/analytics/retention  — Analisis retensi
+GET  /admin/v1/analytics/funnel     — Funnel konversi
+GET  /admin/v1/analytics/arpu       — Tren ARPU
+GET  /admin/v1/analytics/economy    — Metrik ekonomi
 ```
 
 ---

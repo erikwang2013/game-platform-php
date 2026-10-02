@@ -2,6 +2,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Api, ApiError } from '../core/api.service';
+import { Mt, Msg, T } from '../core/i18n/i18n';
 
 /**
  * 账号安全 —— 两步验证（2FA）的自助开关。
@@ -21,11 +22,11 @@ import { Api, ApiError } from '../core/api.service';
  */
 @Component({
   selector: 'app-security',
-  imports: [RouterLink],
+  imports: [RouterLink, T, Mt],
   template: `
     <div class="between sect">
-      <h2>账号安全</h2>
-      <a class="btn ghost" routerLink="/me">返回</a>
+      <h2>{{ 'security.title' | t }}</h2>
+      <a class="btn ghost" routerLink="/me">{{ 'common.back' | t }}</a>
     </div>
 
     @if (loading()) {
@@ -35,19 +36,16 @@ import { Api, ApiError } from '../core/api.service';
       </div>
     } @else if (loadErr()) {
       <div class="card state">
-        <strong>加载失败</strong>
+        <strong>{{ 'common.load_failed' | t }}</strong>
         <span>{{ loadErr() }}</span>
-        <button class="btn" type="button" (click)="load()">重试</button>
+        <button class="btn" type="button" (click)="load()">{{ 'common.retry' | t }}</button>
       </div>
     } @else {
       <!-- 备份码：只在 enable 成功那一次拿得到，服务端之后不再回显 -->
       @if (codes(); as list) {
         <div class="card stack">
-          <strong>请立即保存这 8 个备份码</strong>
-          <p class="muted hint">
-            验证器丢失时用它们登录（登录页第二步可填 10 位备份码）。
-            <b>此页关掉就再也看不到</b> —— 服务端不回显，只核销。每个码只能用一次。
-          </p>
+          <strong>{{ 'security.codes_title' | t }}</strong>
+          <p class="muted hint">{{ 'security.codes_hint' | t }}</p>
           <div class="codes mono">
             @for (c of list; track c) {
               <span class="code">{{ c }}</span>
@@ -55,9 +53,11 @@ import { Api, ApiError } from '../core/api.service';
           </div>
           <div class="acts">
             <button class="btn" type="button" (click)="copy(list.join('\n'))">
-              {{ copied() ? '已复制' : '复制全部' }}
+              {{ (copied() ? 'common.copied' : 'security.copy_all') | t }}
             </button>
-            <button class="btn primary" type="button" (click)="codes.set(null)">我已抄好，关闭</button>
+            <button class="btn primary" type="button" (click)="codes.set(null)">
+              {{ 'security.codes_close' | t }}
+            </button>
           </div>
         </div>
       }
@@ -65,37 +65,35 @@ import { Api, ApiError } from '../core/api.service';
       @if (enabled()) {
         <div class="card stack">
           <div class="between">
-            <strong>两步验证</strong>
-            <span class="badge on">已开启</span>
+            <strong>{{ 'security.on_title' | t }}</strong>
+            <span class="badge on">{{ 'security.badge_on' | t }}</span>
           </div>
-          <p class="muted hint">
-            登录时除密码外还要输入验证器 App 中的 6 位动态码。关闭需要密码 + 当前动态码。
-          </p>
+          <p class="muted hint">{{ 'security.on_hint' | t }}</p>
           @if (offErr()) {
             <div class="alert">{{ offErr() }}</div>
           }
           @if (offOk()) {
-            <div class="alert ok">{{ offOk() }}</div>
+            <div class="alert ok">{{ offOk() | mt }}</div>
           }
           <form class="stack" (submit)="disable($event)" novalidate>
             <label class="field">
-              <span>登录密码</span>
+              <span>{{ 'security.password' | t }}</span>
               <input
                 class="input"
                 type="password"
                 autocomplete="current-password"
-                placeholder="请输入当前密码"
+                [placeholder]="'security.password_ph' | t"
                 [value]="pwd()"
                 (input)="pwd.set(val($event))"
               />
             </label>
             <label class="field">
-              <span>动态验证码</span>
+              <span>{{ 'security.code' | t }}</span>
               <input
                 class="input mono"
                 autocomplete="one-time-code"
                 maxlength="6"
-                placeholder="6 位动态码"
+                [placeholder]="'security.code_ph' | t"
                 [value]="offCode()"
                 (input)="offCode.set(val($event))"
               />
@@ -105,40 +103,39 @@ import { Api, ApiError } from '../core/api.service';
               type="submit"
               [disabled]="offBusy() || !pwd().trim() || offCode().trim().length !== 6"
             >
-              {{ offBusy() ? '处理中…' : '关闭两步验证' }}
+              {{ (offBusy() ? 'security.off_busy' : 'security.disable') | t }}
             </button>
           </form>
         </div>
       } @else if (setup(); as s) {
         <div class="card stack">
-          <strong>第一步：把密钥加进验证器 App</strong>
-          <p class="muted hint">
-            Google Authenticator / Authy / 1Password 等都可「手动输入密钥」。没有二维码图，
-            密钥按 4 位一组显示，抄进去即可（大小写不敏感）。
-          </p>
-          <div class="kv"><span>密钥</span><span class="mono secret">{{ grouped() }}</span></div>
+          <strong>{{ 'security.step1' | t }}</strong>
+          <p class="muted hint">{{ 'security.step1_hint' | t }}</p>
+          <div class="kv">
+            <span>{{ 'security.secret' | t }}</span><span class="mono secret">{{ grouped() }}</span>
+          </div>
           <div class="acts">
             <button class="btn" type="button" (click)="copy(s.secret)">
-              {{ copied() ? '已复制' : '复制密钥' }}
+              {{ (copied() ? 'common.copied' : 'security.copy_secret') | t }}
             </button>
           </div>
           <details>
-            <summary class="muted">也可以直接粘贴给 App（otpauth 链接）</summary>
+            <summary class="muted">{{ 'security.otpauth' | t }}</summary>
             <div class="mono url">{{ s.qr_url }}</div>
           </details>
 
-          <strong>第二步：输入 App 显示的 6 位动态码</strong>
+          <strong>{{ 'security.step2' | t }}</strong>
           @if (err()) {
             <div class="alert">{{ err() }}</div>
           }
           <form class="stack" (submit)="enable($event)" novalidate>
             <label class="field">
-              <span>动态验证码</span>
+              <span>{{ 'security.code' | t }}</span>
               <input
                 class="input mono"
                 autocomplete="one-time-code"
                 maxlength="6"
-                placeholder="6 位动态码"
+                [placeholder]="'security.code_ph' | t"
                 [value]="code()"
                 (input)="code.set(val($event))"
               />
@@ -148,28 +145,25 @@ import { Api, ApiError } from '../core/api.service';
               type="submit"
               [disabled]="busy() || code().trim().length !== 6"
             >
-              {{ busy() ? '校验中…' : '启用两步验证' }}
+              {{ (busy() ? 'security.verifying' : 'security.enable') | t }}
             </button>
             <button class="btn ghost wide" type="button" [disabled]="busy()" (click)="cancelSetup()">
-              取消
+              {{ 'common.cancel' | t }}
             </button>
           </form>
         </div>
       } @else {
         <div class="card stack">
           <div class="between">
-            <strong>两步验证</strong>
-            <span class="badge">未开启</span>
+            <strong>{{ 'security.on_title' | t }}</strong>
+            <span class="badge">{{ 'security.badge_off' | t }}</span>
           </div>
-          <p class="muted hint">
-            开启后，登录需要「密码 + 验证器 App 的 6 位动态码」。即使密码泄漏，别人也进不来。
-            开启时会一次性给你 8 个备份码，请务必存好 —— 那是验证器丢失后唯一的登录方式。
-          </p>
+          <p class="muted hint">{{ 'security.off_hint' | t }}</p>
           @if (err()) {
             <div class="alert">{{ err() }}</div>
           }
           <button class="btn primary wide" type="button" [disabled]="busy()" (click)="beginSetup()">
-            {{ busy() ? '正在生成密钥…' : '开启两步验证' }}
+            {{ (busy() ? 'security.generating' : 'security.enable') | t }}
           </button>
         </div>
       }
@@ -249,7 +243,8 @@ export class SecurityPage {
   protected readonly offCode = signal('');
   protected readonly offBusy = signal(false);
   protected readonly offErr = signal('');
-  protected readonly offOk = signal('');
+  /** 两态（服务端原文 / 词条键）—— 见 `core/i18n/i18n.ts` 的 `Msg` */
+  protected readonly offOk = signal<Msg>('');
 
   protected readonly copied = signal(false);
 
@@ -339,7 +334,7 @@ export class SecurityPage {
         this.enabled.set(false);
         this.pwd.set('');
         this.offCode.set('');
-        this.offOk.set('两步验证已关闭。');
+        this.offOk.set({ key: 'security.2fa_off_done' });
       },
       error: (e: ApiError) => {
         this.offBusy.set(false);

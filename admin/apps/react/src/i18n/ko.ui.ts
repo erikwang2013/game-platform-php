@@ -156,6 +156,7 @@ export const koUi: Record<UiKey, string> = {
   'form.options_load_failed': '{name}의 옵션을 불러오지 못했습니다. 선택한 값은 계속 보이지만, 값을 바꾸지 않을 생각이 아니라면 제출하지 마세요',
   'form.tree_load_failed': '{name}의 권한 트리를 불러오지 못했습니다. 선택한 권한은 계속 보이지만, 바꾸지 않을 생각이 아니라면 제출하지 마세요',
   'form.tree_loading': '권한 트리를 불러오는 중…',
+  'form.discard_confirm': '저장하지 않은 변경 사항이 있습니다. 버리시겠습니까?',
   'form.select_placeholder': '선택하세요',
   // 상위 권한 드롭다운의 옵션 (lib/tree.ts가 권한 트리를 평탄화): 두 가지 **모양**
   // (slug 있음/없음), 경로와 slug는 params로 전달 —— 옵션은 행마다 즉석에서 만듭니다

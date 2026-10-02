@@ -39,7 +39,8 @@ export abstract class ApiBase {
     return this.http.request<Envelope<T>>(method, path, { params: this.qs(query), body }).pipe(
       map((res) => {
         if (res && res.code === 0) return res.data;
-        throw new ApiError(res?.message || '请求失败', res?.code ?? -1);
+        // 服务端给了 message 就走 raw 那一态（它按 X-Language 自己翻过）；没给才落键
+        throw new ApiError(res?.message || { key: 'error.request_failed' }, res?.code ?? -1);
       }),
       catchError((err: unknown) => {
         const e = err instanceof ApiError ? err : this.wrap(err);
@@ -76,10 +77,11 @@ export abstract class ApiBase {
           ? Number((body as { code: unknown }).code)
           : err.status;
       if (msg) return new ApiError(msg, code || err.status);
-      if (err.status === 0) return new ApiError('无法连接服务器，请稍后重试', 0);
-      return new ApiError(`请求失败 (HTTP ${err.status})`, err.status);
+      // 连不上（status 0）/ 其它 HTTP 码：**本地判定**，没有服务端原文可透 ⇒ 落键（见 ApiError 的注释）
+      if (err.status === 0) return new ApiError({ key: 'error.network_connection' }, 0);
+      return new ApiError({ key: 'error.request_failed_http', params: { status: err.status } }, err.status);
     }
-    return new ApiError('请求失败', -1);
+    return new ApiError({ key: 'error.request_failed' }, -1);
   }
 
   /** 单飞刷新：并发 401 只发一次 refresh */

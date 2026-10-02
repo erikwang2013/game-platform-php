@@ -1,9 +1,10 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { tokens } from '../core/api.service';
+import { Msg, t } from '../core/i18n/i18n';
 import { MePage } from './me';
 
 /**
@@ -19,11 +20,17 @@ describe('MePage 注销账号', () => {
   type Probe = {
     submitDel(): void;
     delOpen(): boolean;
-    delMsg(): string;
+    delMsg(): Msg;
     delBusy(): boolean;
     delPw: { set(v: string): void };
     delYes: { set(v: string): void };
   };
+  /**
+   * `Msg` 是**两态**（词条键 / 服务端原文）：只有键那一态的读点需要解析，
+   * 原文那一态原样透出。**故意不统一**：直接把原文那两处也裹进来，就再也证明不了
+   * 「服务端 message 被原样透出」这一支（裹了以后键和原文的差别被抹平）。
+   */
+  const txt = (v: Msg): string => (typeof v === 'string' ? v : t(v.key, v.params));
   const probe = (): Probe => page as unknown as Probe;
 
   beforeEach(() => {
@@ -91,7 +98,7 @@ describe('MePage 注销账号', () => {
     http.expectOne((r) => r.url === '/api/v1/user/delete-account').flush({ code: 0, message: 'ok', data: [] });
     http.expectOne((r) => r.url === '/api/v1/user/profile').flush({ code: 0, message: 'ok', data: { id: 'U1' } });
 
-    expect(probe().delMsg()).toContain('仍可读取');
+    expect(txt(probe().delMsg())).toContain('仍可读取');
     expect(tokens.access()).toBe('acc');
     expect(probe().delBusy()).toBe(false);
   });
@@ -126,7 +133,83 @@ describe('MePage 注销账号', () => {
       .expectOne((r) => r.url === '/api/v1/user/profile')
       .error(new ProgressEvent('error'), { status: 0, statusText: 'Unknown Error' });
 
-    expect(probe().delMsg()).toContain('无法确认');
+    expect(txt(probe().delMsg())).toContain('无法确认');
     expect(tokens.access()).toBe('acc');
+  });
+});
+
+/**
+ * 改昵称与父组件的**接线**（子组件自己的行为在 me-nick.spec.ts）。
+ *
+ * 这条必须整页渲染才有意义：单测子组件只能证明「它发出了 saved」，
+ * 证明不了父组件真的据此回读了资料 —— 而「以服务端落库值为准」正是这一条的全部价值。
+ */
+describe('MePage 改昵称接线', () => {
+  let http: HttpTestingController;
+  let fixture: ComponentFixture<MePage>;
+
+  const el = (): HTMLElement => fixture.nativeElement as HTMLElement;
+  const btn = (text: string): HTMLButtonElement => {
+    const hit = [...el().querySelectorAll('button')].find((b) => b.textContent?.trim() === text);
+    if (!hit) throw new Error(`没有文案为「${text}」的按钮`);
+    return hit as HTMLButtonElement;
+  };
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([{ path: 'login', children: [] }]),
+      ],
+    });
+    http = TestBed.inject(HttpTestingController);
+    fixture = TestBed.createComponent(MePage);
+    fixture.detectChanges();
+    // MeTiles / MeExport 首屏都不抓数据，渲染整页也只有这三个请求
+    http
+      .expectOne((r) => r.url === '/api/v1/user/profile')
+      .flush({ code: 0, message: 'ok', data: { id: 'U1', username: 'bob', nickname: '旧昵称', avatar: '' } });
+    http
+      .expectOne((r) => r.url.endsWith('/notification/unread-count'))
+      .flush({ code: 0, message: 'ok', data: { count: 0 } });
+    http
+      .expectOne((r) => r.url.endsWith('/notification/list'))
+      .flush({ code: 0, message: 'ok', data: { items: [], page: 1, last_page: 1, total: 0 } });
+    fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    tokens.clear();
+    try {
+      http.verify();
+    } finally {
+      TestBed.resetTestingModule();
+    }
+  });
+
+  it('保存成功后父组件回读资料，页头的昵称换成服务端落库值', () => {
+    expect(el().querySelector('.who')?.textContent?.trim()).toBe('旧昵称');
+
+    btn('改昵称').click();
+    fixture.detectChanges();
+    const input = el().querySelector('input') as HTMLInputElement;
+    input.value = '新昵称';
+    input.dispatchEvent(new Event('input'));
+    btn('保存').click();
+    fixture.detectChanges();
+
+    http
+      .expectOne((r) => r.url === '/api/v1/user/profile' && r.method === 'PUT')
+      .flush({ code: 0, message: 'ok', data: { id: 'U1', username: 'bob', nickname: '新昵称', avatar: '' } });
+
+    // 回读：不是拿本地输入当第二真值源
+    http
+      .expectOne((r) => r.url === '/api/v1/user/profile' && r.method === 'GET')
+      .flush({ code: 0, message: 'ok', data: { id: 'U1', username: 'bob', nickname: '新昵称', avatar: '' } });
+    fixture.detectChanges();
+
+    expect(el().querySelector('.who')?.textContent?.trim()).toBe('新昵称');
+    expect(el().querySelector('.modal')).toBeNull();
   });
 });

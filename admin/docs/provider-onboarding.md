@@ -8,12 +8,12 @@
 
 | 层 | 入口 | 策略 | 失败语义 |
 |---|---|---|---|
-| 支付 | `GatewayFactory::resolve(string $provider)` | `match` 硬编码 16 分支 + `PaymentGatewayInterface` | 未知 provider 抛 `InvalidArgumentException` |
+| 支付 | `GatewayFactory::resolve(string $provider)` | `match` 硬编码 18 分支 + `PaymentGatewayInterface` | 未知 provider 抛 `InvalidArgumentException` |
 | 游戏 | `ProviderFactory::create(Game)` / `createById(int)` | `match` `game.type`（`self` / `embedded` / `third_party`）+ `GameProvider` 抽象类 | 未知 type 抛 `InvalidArgumentException` |
 
 **已知短板与规避**（接入时注意，不需要现在修）：
 
-- `match` 新增分支必须改工厂代码，不是 SPI 自动发现。可接受——16 个网关不值得引入反射/扫描机制；新增时按第 4 节清单改即可。
+- `match` 新增分支必须改工厂代码，不是 SPI 自动发现。可接受——18 个网关不值得引入反射/扫描机制；新增时按第 4 节清单改即可。（注：[2026-08-31-reconciliation-settlement-plan.md](superpowers/plans/2026-08-31-reconciliation-settlement-plan.md) §2.3 曾裁定「后续文档以 16 个网关为准」——该裁定**当时成立**：那时 `service/app/payment/` 的 18 个文件 = 16 个网关 + `PaymentGatewayInterface` + `GatewayFactory`；现目录已长到 26 个文件 = 18 个网关 + 8 个非网关（接口/工厂/工具类），属**前提过期**，不是当时写错。）
 - 游戏 type 现有三种：`self`（自研）、`embedded`（内嵌 H5 / Unity SDK）与 `third_party`（第三方），由 `ProviderFactory::create()` 分派（`self` 与 `embedded` 同走平台持有余额的资金路径）；设计背景见 [2026-08-31-medium-priority-extensions-plan.md](superpowers/plans/2026-08-31-medium-priority-extensions-plan.md) M5 章节。
 - `self` 与 `embedded` 共用 Provider 时入口区分在 `ProviderController`（SDK 签名 vs 内部调用），不在 Provider 类内。
 
@@ -58,7 +58,7 @@ interface PaymentGatewayInterface
 2. 在 `PaymentController::callback()` 中加对应验签分支（见 2.3）。
 3. 配置缺失一律 **fail-closed**：密钥未配置即拒绝回调（参照 `verifyStripeSignature` / `verifyNowPaymentsSignature` 的「未配置密钥时拒绝一切回调」注释）。
 
-**配置来源**：环境变量（`getenv`），约定 `<VENDOR>_*` 命名，如 `STRIPE_SECRET_KEY`、`PAYTM_MID`、`PAYTM_KEY`、`NOWPAYMENTS_IPN_SECRET`、`COINBASE_COMMERCE_WEBHOOK_SECRET`、`CALLBACK_TRUSTED_IPS`。不新增 env 文件、不走 `PlatformConfig`（当前 16 个网关全部是 env 读取）。
+**配置来源**：环境变量（`getenv`），约定 `<VENDOR>_*` 命名，如 `STRIPE_SECRET_KEY`、`PAYTM_MID`、`PAYTM_KEY`、`NOWPAYMENTS_IPN_SECRET`、`COINBASE_COMMERCE_WEBHOOK_SECRET`、`CALLBACK_TRUSTED_IPS`。不新增 env 文件、不走 `PlatformConfig`（当前 18 个网关全部是 env 读取）。
 
 ### 2.2 游戏 Provider `GameProvider`（`service/app/provider/GameProvider.php`）
 

@@ -59,19 +59,19 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | 2FA | Google Authenticator TOTP + códigos de recuperación de respaldo | Completada |
 | Recomendación | Código de recomendación, recompensa de registro, comisión por recarga | Completada |
 | Búsqueda | API de búsqueda ES + sugerencias de juegos + fallback LIKE | Completada |
-| Clasificaciones | Push en tiempo real por WebSocket (puerto 8790) | Completada |
+| Clasificaciones | REST + Redis | Completada |
 | CDN | Integración de cinco proveedores (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS carga + purga + precarga) | Completada |
 | Administración CDN | Configuración de los cinco proveedores en el panel (credenciales cifradas/activación-desactivación/prueba de conexión HeadBucket), el servicio solo lee de la base de datos | Completada |
 | Informes | Informes de datos del panel (resumen/diario/exportación CSV, caché Redis 5 min, período ≤90 días) | Completada |
 | Estadísticas de la plataforma | Estadísticas de inicio C (total juegos/usuarios/partidas de hoy/activos 7 días) | Completada |
 | Despliegue | Docker Compose 7 servicios + proxy inverso Nginx | Completada |
 | Datos | Análisis de agregación en tiempo real MySQL + cálculo de probabilidad conjunta/condicional | Completada |
-| HarmonyOS | admin 8 páginas; el lado C `apps/harmonyos/` ya implementa login/lobby/detalle/billetera/perfil (apunta a 8792) | Parcialmente completada (el proyecto compila; en dispositivo real hay que cambiar la IP) |
+| HarmonyOS | admin 19 páginas; el lado C `apps/harmonyos/` ya implementa login/lobby/detalle/billetera/perfil (apunta a 8792) | Parcialmente completada (el proyecto compila; en dispositivo real hay que cambiar la IP) |
 | Documentación de API | Documentación interactiva erikwang2013/apidoc-php | Completada |
 | Instalación en un clic | Asistente de instalación en el navegador: crear admin, actualizar BD existente, install.lock evita reinstalación | Completada |
 | Tolerancia a fallos | CircuitBreaker + Retry + interruptor de degradación feature.provider_mock | Completada |
 | Métodos de pago | CRUD admin + visibilidad por país + rango de importes + restricción de moneda | Completada |
-| CI | tag autoincremental al push + GitHub Release | Completada |
+| CI | tag autoincremental al push + GitHub Release | Cambiado a disparo manual |
 
 ### Extensión de ecosistema (v2.0) — Recién completada
 
@@ -231,7 +231,7 @@ Ventana de tiempo: 5 minutos
 
 ## 7. Lista de tablas de la base de datos
 
-### Nuevas de la extensión de ecosistema (10 tablas)
+### Nuevas de la extensión de ecosistema (14 tablas)
 
 | Nombre de tabla | Descripción | Características clave |
 |------|------|---------|
@@ -245,6 +245,10 @@ Ventana de tiempo: 5 minutos
 | game_user_achievement | Logros de usuarios | Índice único user_id+achievement_id |
 | game_friend | Relaciones de amistad | Índice único user_id+friend_id |
 | game_message | Mensajes privados | from_user_id+to_user_id / to_user_id+is_read |
+| game_cdn_provider | Configuración de proveedor CDN | Índice único provider, config JSON cifrado |
+| game_referral_commission | Registros de comisión por referidos multinivel | Índice user_id / referral_id / source_type+source_id |
+| game_tournament | Torneos | Índice único slug, Índice status+start_at+end_at |
+| game_tournament_entry | Inscripciones/puntuaciones de torneos | Índice único tournament_id+user_id, Índice tournament_id+score |
 
 ### Cambios de estructura de tablas
 
@@ -253,7 +257,7 @@ Ventana de tiempo: 5 minutos
 | game_game | +provider_config (JSON) |
 | game_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**Total: 78 tablas en install.sql**. Modelos: 52 compartidos en `packages/platform-common/src/model/`; los 8 de admin/app/model/ y 10 de service/app/model/ son exclusivos de su host (sin solapamiento de nombres de archivo).
+**Total: 79 tablas en install.sql**. Modelos: 51 compartidos en `packages/platform-common/src/model/`; los 6 de admin/app/model/ y 10 de service/app/model/ son exclusivos de su host (sin solapamiento de nombres de archivo).
 
 ## 8. Cobertura de pruebas
 
@@ -267,7 +271,7 @@ Ventana de tiempo: 5 minutos
 | HashidsServiceTest | 6 | Viaje de ida y vuelta de codificación/decodificación de IDs |
 | SnowflakeServiceTest | 5 | Unicidad de la generación de IDs |
 
-**Total (phpunit --list-tests, medición actual): admin 200 casos / 21 archivos, service 273 casos / 42 archivos (incl. WebhookUrlSafety + EventBusMessageFormat; informe: repetición del 09-22 admin 190 + service 273, instantánea del 08-27 admin 153 + service 45). service no se incluye en el bloqueo por fallo del CI (sin verificar).**
+**Total (phpunit --list-tests, medición actual): admin 593 casos / 70 archivos, service 549 casos / 89 archivos (incl. WebhookUrlSafety + EventBusMessageFormat; informe: repetición del 09-22 admin 190 + service 273, instantánea del 08-27 admin 153 + service 45). service sí se incluye en el bloqueo por fallo del CI.**
 
 ---
 

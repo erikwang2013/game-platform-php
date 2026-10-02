@@ -1,0 +1,156 @@
+<div class="card prof">
+  <span class="av">
+    @if (avatarSrc()) {
+      <img [src]="avatarSrc()" alt="" />
+    } @else if (user(); as u) {
+      {{ (u.nickname || u.username).charAt(0) }}
+    } @else {
+      ·
+    }
+  </span>
+  <div class="grow">
+    @if (user(); as u) {
+      <div class="who">{{ u.nickname || u.username }}</div>
+      <div class="s muted">@{{ u.username }}</div>
+      <div class="chips info">
+        @if (u.email) {
+          <span class="chip">{{ u.email }}</span>
+        }
+        @if (u.phone) {
+          <span class="chip">{{ u.phone }}</span>
+        }
+        @if (u.country) {
+          <span class="chip">{{ u.country }}</span>
+        }
+        @if (u.language) {
+          <span class="chip">{{ u.language }}</span>
+        }
+        @if (u.created_at) {
+          <span class="chip">注册于 {{ dt(u.created_at) }}</span>
+        }
+      </div>
+    } @else if (profError()) {
+      <div class="alert">{{ profError() }}</div>
+    } @else {
+      <div class="skeleton sk-line w60"></div>
+    }
+  </div>
+  <div class="wrap out">
+    <app-me-nick [nickname]="user()?.nickname ?? ''" (saved)="loadProfile()" />
+    <button class="btn ghost" type="button" (click)="signout()">退出登录</button>
+  </div>
+</div>
+
+<app-me-tiles />
+
+<div class="between sect" id="notifications">
+  <h2>消息</h2>
+  <div class="wrap">
+    @if (unread() > 0) {
+      <span class="badge accent">{{ unread() }} 条未读</span>
+      <button class="btn ghost" type="button" [disabled]="busy()" (click)="readAll()">
+        全部已读
+      </button>
+    }
+  </div>
+</div>
+
+<div class="card">
+  @if (loading()) {
+    <div class="rows">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="row"><div class="skeleton sk-row"></div></div>
+      }
+    </div>
+  } @else if (error()) {
+    <div class="state">
+      <strong>加载失败</strong>
+      <span>{{ error() }}</span>
+      <button class="btn" type="button" (click)="reload()">重试</button>
+    </div>
+  } @else if (!items().length) {
+    <div class="state">
+      <!-- 吉祥物小骰（Dicey）：相对 public/，由 <base href> 解析到子路径 -->
+      <img class="state-art" src="mascot.svg" alt="" aria-hidden="true" />
+      <strong>暂无消息</strong>
+      <span>平台公告与账户通知会出现在这里</span>
+    </div>
+  } @else {
+    <div class="rows">
+      @for (n of items(); track n.id) {
+        <div class="row" [class.unread]="!n.is_read">
+          <span class="dotmark" [class.on]="!n.is_read"></span>
+          <div class="grow">
+            <div class="t">{{ n.title }}</div>
+            <div class="s">{{ dt(n.created_at) }}{{ n.type ? ' · ' + n.type : '' }}</div>
+            @if (n.content) {
+              <div class="body">{{ n.content }}</div>
+            }
+          </div>
+          @if (!n.is_read) {
+            <button class="btn ghost mark" type="button" (click)="read(n)">标记已读</button>
+          }
+        </div>
+      }
+    </div>
+    @if (page() < lastPage()) {
+      <div class="more">
+        <button class="btn" type="button" [disabled]="more()" (click)="loadMore()">
+          {{ more() ? '加载中…' : '加载更多' }}
+        </button>
+      </div>
+    }
+  }
+</div>
+
+<app-me-export />
+
+<div class="card danger" id="delete-account">
+  <div class="dh">
+    <h2>注销账号</h2>
+    <span class="badge bad">不可撤销</span>
+  </div>
+  <p class="hint">
+    注销后该账号无法再登录，个人资料将被匿名化。账号内余额需先自行提现清零，否则服务端会拒绝注销。
+  </p>
+
+  @if (delMsg()) {
+    <div class="alert">{{ delMsg() | mt }}</div>
+  }
+
+  @if (delOpen()) {
+    <div class="fields">
+      <label class="field">
+        <span>当前密码</span>
+        <input
+          class="input"
+          type="password"
+          autocomplete="current-password"
+          placeholder="请输入当前密码"
+          [value]="delPw()"
+          (input)="onDelPw($event)"
+        />
+      </label>
+      <label class="field">
+        <span>确认注销（输入 yes）</span>
+        <input
+          class="input mono"
+          autocomplete="off"
+          placeholder="yes"
+          [value]="delYes()"
+          (input)="onDelYes($event)"
+        />
+      </label>
+    </div>
+    <div class="acts">
+      <button class="btn primary" type="button" [disabled]="delBusy()" (click)="submitDel()">
+        {{ delBusy() ? '注销中…' : '确认注销' }}
+      </button>
+      <button class="btn ghost" type="button" [disabled]="delBusy()" (click)="cancelDel()">
+        取消
+      </button>
+    </div>
+  } @else {
+    <button class="btn ghost red" type="button" (click)="openDel()">注销账号</button>
+  }
+</div>

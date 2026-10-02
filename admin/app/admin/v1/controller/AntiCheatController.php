@@ -18,6 +18,8 @@ use support\Response;
 class AntiCheatController extends BaseController
 {
     #[Apidoc\Title("事件列表")]
+    #[Apidoc\Url("/admin/v1/anticheat/events")]
+    #[Apidoc\Method("GET")]
     public function events(Request $request): Response
     {
         $query = AntiCheatEvent::query();
@@ -52,6 +54,8 @@ class AntiCheatController extends BaseController
     }
 
     #[Apidoc\Title("事件详情")]
+    #[Apidoc\Url("/admin/v1/anticheat/events/{hashid}")]
+    #[Apidoc\Method("GET")]
     public function detail(Request $request, string $hashid): Response
     {
         $row = AntiCheatEvent::find($this->decodeId($hashid));
@@ -66,6 +70,8 @@ class AntiCheatController extends BaseController
 
     #[Apidoc\Title("人工审核")]
     #[Apidoc\Desc("status: open/confirmed/whitelisted/closed；whitelisted 需附 note（当前仅记事件，不联动信任分）")]
+    #[Apidoc\Url("/admin/v1/anticheat/events/{hashid}/review")]
+    #[Apidoc\Method("POST")]
     public function review(Request $request, string $hashid): Response
     {
         $row = AntiCheatEvent::find($this->decodeId($hashid));

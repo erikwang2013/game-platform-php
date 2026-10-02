@@ -17,7 +17,7 @@ C端用户平台 API 服务，基于 webman v2（Workerman）的高性能 PHP �
 | 提现 | 申请 → 审核 → 打款，KYC 阶梯限额 |
 | 兑换 | 平台币 ⇄ 游戏币实时询价，VIP 折扣与汇率加成 |
 | 游戏 | 游戏列表/分类/搜索、游戏记录、Provider 结算回调 |
-| 排行榜 | 日/周/月/总榜 + WebSocket 实时推送 |
+| 排行榜 | 日/周/月/总榜（REST） |
 | 优惠券 | 固定金额 + 比例折扣、限时限量 |
 | 工单 | 用户创建/回复客服工单 |
 | VIP | 5 级忠诚度、经验值累计、兑换折扣 |
@@ -40,7 +40,7 @@ C端用户平台 API 服务，基于 webman v2（Workerman）的高性能 PHP �
 service/
 ├── app/
 │   ├── activity/           # 活动处理器
-│   ├── api/v1/controller/  # C端 API 控制器（34 个）
+│   ├── api/v1/controller/  # C端 API 控制器（35 个）
 │   ├── bootstrap/          # 通知引导
 │   ├── cdn/                # CDN 多厂商（阿里云/腾讯云/华为云/Cloudflare/CloudFront + CdnFactory）
 │   ├── common/             # 公共
@@ -96,7 +96,7 @@ cp .env.example .env
 # 3. 启动服务（默认端口 8792，可在 .env 中经 APP_PORT 修改）
 php start.php start        # 前台运行
 php start.php start -d     # 后台运行
-# WebSocket 端口（排行榜 8790 / 聊天 8791）可在 .env 中经 LEADERBOARD_WS_PORT / CHAT_WS_PORT 修改
+# WebSocket 端口（聊天 8791）可在 .env 中经 CHAT_WS_PORT 修改
 ```
 
 ## 使用说明

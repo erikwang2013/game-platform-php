@@ -48,7 +48,7 @@ class WithdrawController extends BaseController
             $query->where('status', $status);
         }
 
-        // 加 id 次序：game_withdraw_order.created_at 是 DATETIME（秒精度，install.sql:282），
+        // 加 id 次序：game_withdraw_order.created_at 是 DATETIME（秒精度，DDL 见 install.sql 的 game_withdraw_order 建表段），
         // 同秒提交的多笔（活动结束/批量提现）是常态；只按 created_at 排的话翻页会重复/漏行 ——
         // 而 total/last_page 仍然正确，账面自洽、行对不上，运营会以为有人在插队。
         // 照 PlatformUserController::transactions 的写法。
@@ -81,7 +81,7 @@ class WithdrawController extends BaseController
     #[Apidoc\Title("全局提现开关")]
     #[Apidoc\Desc("启用或关闭全局提现功能")]
     #[Apidoc\Url("/admin/v1/withdraw/switch")]
-    #[Apidoc\Method("PUT")]
+    #[Apidoc\Method("PUT,GET")]
     #[Apidoc\Author("erik")]
     #[Apidoc\Param(name: "enabled", type: "int", require: true, desc: "是否启用(0关闭,1启用)")]
     public function toggleSwitch(Request $request): Response
@@ -136,7 +136,7 @@ class WithdrawController extends BaseController
         $keys = ['daily_limit', 'min_amount', 'auto_approve_threshold'];
 
         // 界面上这三个值是「无档位」的全局限额，但报价优先读 withdraw_limit 档位行
-        // （service/app/api/v1/controller/WithdrawController.php:95-104），而 install/install.sql:1359-1362
+        // （service/app/api/v1/controller/WithdrawController.php:95-104），而 install/install.sql:1592-1594
         // 把 default/verified/vip 三档全种下了 ⇒ 只写 platform_config 时回落分支不可达，运营改的数静默失效。
         // 故写穿到所有档位行。语义分工：本端点 = **全档位重置**；精调单一档位走 updateLimit()。
         // 列名映射：min_amount → single_min，daily_limit / auto_approve_threshold 同名；

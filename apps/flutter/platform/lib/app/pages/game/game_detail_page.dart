@@ -14,15 +14,63 @@ class GameDetailPage extends StatefulWidget {
 
 class _GameDetailPageState extends State<GameDetailPage> {
   final _api = ApiService();
-  late Map<String, dynamic> _game;
+  Map<String, dynamic> _game = const {};
+  /// 深链（F5/直接打开链接）时手里只有 hashid，没有列表页那份完整对象
+  String? _hashid;
   bool _loading = false;
+  bool _detailLoading = false;
+  String? _loadError;
   String? _resultMsg;
   bool _resultSuccess = false;
 
   @override
   void initState() {
     super.initState();
-    _game = Get.arguments as Map<String, dynamic>;
+    final args = Get.arguments;
+    if (args is Map) {
+      _game = Map<String, dynamic>.from(args);
+      _hashid = _game['id']?.toString();
+      return;
+    }
+    // 深链/刷新：Get.arguments 只在当次导航的内存里活着，此处为 null。
+    // 旧代码直接 `args as Map<String, dynamic>` 非空转换 ⇒ TypeError ⇒ 白屏且无出口。
+    // 自救路径：URL 上的 hashid + 现成的 GET /api/v1/game/detail/{hashid}；
+    // 连 hashid 都没有（例如用户手敲 /game-detail）才走有出口的错误态。
+    final id = deepLinkParam('id');
+    if (id == null) {
+      setState(() => _loadError = '${AppTranslations.t('app.loading_failed')}');
+      return;
+    }
+    _hashid = id;
+    _loadDetail(id);
+  }
+
+  Future<void> _loadDetail(String hashid) async {
+    setState(() {
+      _detailLoading = true;
+      _loadError = null;
+    });
+    try {
+      final resp = await _api.get('/api/v1/game/detail/$hashid');
+      final data = resp['data'];
+      if (!mounted) return;
+      setState(() {
+        _game = data is Map ? Map<String, dynamic>.from(data) : const {};
+        _detailLoading = false;
+      });
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loadError = e.message;
+        _detailLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _loadError = '${AppTranslations.t('app.network_error')}';
+        _detailLoading = false;
+      });
+    }
   }
 
   Future<void> _launchGame() async {
@@ -59,6 +107,29 @@ class _GameDetailPageState extends State<GameDetailPage> {
     }
   }
 
+  Widget _buildLoadError() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(_loadError!, style: const TextStyle(color: Colors.red)),
+          const SizedBox(height: 12),
+          if (_hashid != null)
+            FilledButton.tonal(
+              onPressed: () => _loadDetail(_hashid!),
+              child: Text("${AppTranslations.t('app.retry')}"),
+            ),
+          const SizedBox(height: 8),
+          // 深链进来时栈里没有上一页，这是页面唯一的出口
+          OutlinedButton(
+            onPressed: () => Get.offAllNamed('/games'),
+            child: Text("${AppTranslations.t('game_detail.back_to_hall')}"),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -67,12 +138,29 @@ class _GameDetailPageState extends State<GameDetailPage> {
     final type = _game['type'] ?? _game['game_type'] ?? '';
     final currencies = _game['currencies'];
 
+    if (_loadError != null || _detailLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(name),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.canPop(context) ? Get.back() : Get.offAllNamed('/games'),
+          ),
+        ),
+        body: Container(
+          color: colorScheme.surfaceContainerLowest,
+          child: _loadError != null ? _buildLoadError() : const Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(name),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Get.back(),
+          // 深链进来时栈里没有上一页，Get.back() 无处可退 ⇒ 退回大厅
+          onPressed: () => Navigator.canPop(context) ? Get.back() : Get.offAllNamed('/games'),
         ),
       ),
       body: Container(

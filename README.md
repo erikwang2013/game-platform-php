@@ -7,7 +7,7 @@ Languages: **中文** · [English](docs/translations/README.en.md) · [한국어
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
-全球通用、国际化的游戏聚合平台。用户注册后在平台充值兑换游戏币，用游戏币玩游戏、赚取游戏币，游戏币可转回钱包提现。后台提供完整的游戏管理、提现审核、用户管理和支付管理功能。支持多语言切换（英文/中文）。
+全球通用、国际化的游戏聚合平台。用户注册后在平台充值兑换游戏币，用游戏币玩游戏、赚取游戏币，游戏币可转回钱包提现。后台提供完整的游戏管理、提现审核、用户管理和支付管理功能。支持多语言切换（13 语言）。
 
 <p align="center"><img src="docs/mascot.svg" width="120" alt="项目吉祥物：小骰 Dicey"/></p>
 
@@ -42,7 +42,7 @@ Languages: **中文** · [English](docs/translations/README.en.md) · [한국어
 | `admin/apps/*` | **管理台** | `/admin/v1/...` | admin（默认 8789） | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
 
 - 响应式布局 (Phone / Tablet / Desktop)
-- 国际化 (i18n)：英文 / 简体中文切换
+- 国际化 (i18n)：13 语言切换
 
 ### 核心组件
 - `erikwang2013/snowflake-php` — 全局唯一 BIGINT ID 生成
@@ -63,12 +63,11 @@ game-platform-php/
 ├── admin/                     # 管理后台 (webman v2, 默认端口 8789，APP_PORT 可配)
 │   ├── app/admin/v1/controller/  #   管理端控制器
 │   ├── app/middleware/        #   中间件 (Cors/SecurityFilter/RateLimit/AdminAuth/AdminPermission/OperationLog)
-│   ├── app/model/             #   仅 admin 独有的模型 (8 个，其余 52 个共享模型在 packages/)
+│   ├── app/model/             #   仅 admin 独有的模型 (6 个，其余 51 个共享模型在 packages/)
 │   ├── app/service/           #   仅 admin 独有的服务 (WalletService/WalletScope/RiskSandboxService)
-│   ├── app/process/           #   常驻进程 (Http/Monitor/RiskIpCron)
+│   ├── app/process/           #   常驻进程 (Http/Monitor/RiskIpCron/ExportTmpCleanup)
 │   ├── app/provider/          #   游戏Provider层 (Self/ThirdParty/Factory)
 │   ├── app/activity/          #   活动引擎 (签到/邀请/每日任务)
-│   ├── app/event/             #   事件总线 (EventBus Redis Pub/Sub)
 │   ├── config/                #   配置文件
 │   └── apps/                  #   管理台前端（4 端，调 /admin/v1 → admin:8789）
 │       ├── flutter/           #     Flutter Web PC 管理后台
@@ -83,15 +82,15 @@ game-platform-php/
 │   ├── app/service/           #   仅 service 独有的服务 (钱包/风控/合规/对账/推送/成就/反作弊等)
 │   ├── app/payment/           #   18 个支付网关适配器 (Stripe/PayPal/Adyen/NowPayments/Skrill…) + GatewayFactory
 │   ├── app/cdn/               #   五厂商 CDN 适配器 (Cloudflare/CloudFront/阿里/腾讯/华为) + CdnFactory
-│   ├── app/process/           #   常驻进程 (Http/Monitor/LeaderboardWS:8790/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
+│   ├── app/process/           #   常驻进程 (Http/Monitor/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
 │   ├── app/provider/          #   游戏Provider层
 │   ├── app/activity/          #   活动引擎
 │   ├── app/event/             #   事件总线 (EventBus Redis Pub/Sub)
 │   └── config/                #   配置文件
 │
 ├── packages/platform-common/  # 共享层：admin 与 service 通过 composer path 仓库引入，避免两套副本
-│   ├── src/model/             #   共享 Eloquent 模型 (52 个，两侧同源)
-│   ├── src/service/           #   共享服务 (DepositLogService / VipService 等 11 个，含 ClickHouse 概率计算)
+│   ├── src/model/             #   共享 Eloquent 模型 (51 个，两侧同源)
+│   ├── src/service/           #   共享服务 (DepositLogService / VipService 等 12 个，含 ClickHouse 概率计算与 2 个基础设施类 EventPublisher/OutboxWriter)
 │   ├── src/BcMath.php         #   金额/比率高精度运算 (bcmath 封装)、四舍五入、百分比
 │   ├── src/EncryptionService.php  #   AES 加解密与脱敏
 │   ├── src/CircuitBreaker.php #   熔断 (另有 Retry.php 重试)
@@ -109,7 +108,7 @@ game-platform-php/
 ├── install/                   # 一键安装向导 + 数据库初始化 SQL
 │   ├── index.php              #   安装入口
 │   ├── Installer.php          #   安装核心逻辑
-│   ├── install.sql            #   合并安装 SQL（MySQL 全量：78张表+种子数据）
+│   ├── install.sql            #   合并安装 SQL（MySQL 全量：79张表+种子数据）
 │   ├── clickhouse.sql         #   ClickHouse 分析库 DDL（独立引擎，单独导入）
 │   ├── test-data.sql          #   演示/测试数据
 │   ├── migrations/            #   存量库增量升级脚本 (*.sql)
@@ -178,7 +177,7 @@ rm -rf install/
 
 安装向导会自动完成：
 - 环境检查（PHP版本、扩展、目录权限）
-- 创建数据库和数据表（合并 SQL，78 张表 + 种子数据）
+- 创建数据库和数据表（合并 SQL，79 张表 + 种子数据）
 - 创建超级管理员账户（bcrypt 加密）
 - 自动生成 JWT/加密密钥并写入 .env 文件
 - 生成 install.lock 防止重复安装
@@ -278,7 +277,7 @@ curl -X POST http://localhost:8792/api/v1/auth/register \
 ## 安全特性
 
 - **18 层纵深防御**：XSS/SQL注入/CSRF/路径遍历/命令注入检测拦截
-- **HTTP 方法白名单**：仅允许 GET/POST/PUT/DELETE/OPTIONS/HEAD
+- **HTTP 方法白名单**：仅允许 GET/POST/PUT/DELETE/OPTIONS/HEAD/PATCH
 - **JWT 认证**：access_token 2h + refresh_token 14d，并发会话限制
 - **JWT 密钥启动校验**：admin 端 `ADMIN_JWT_SECRET_KEY`、service 端 `SERVICE_JWT_SECRET_KEY` 独立密钥，缺失或仍为默认值直接拒绝启动
 - **支付回调 fail-closed**：provider 白名单（stripe/paypal/nowpayments/coinbase/skrill/neteller/paysafecard/paytm/mercadopago/astropay/paypay/kakaopay/gcash）+ 未配密钥/验签失败/时间戳超限一律拒绝 + bccomp 金额核对 + 回调入账事务化
@@ -299,10 +298,10 @@ curl -X POST http://localhost:8792/api/v1/auth/register \
 
 | 测试类型 | 用例/覆盖 | 结果 |
 |---------|----------|------|
-| PHP 单元测试 | 现测 `phpunit --list-tests`：admin 200 + service 273 用例（报告 `docs/test-reports/php-unit.md` 记 09-22 复跑 admin 190 + service 273、08-27 快照 admin 153 + service 45；admin 侧后续补测） | service 全通过（701 断言、3 skipped、2 warnings + 35 deprecations）；admin 437 断言、3 skipped、1 例失败（`EnvConfigTest` 校验真实 `admin/.env` 缺少 `REDIS_CLUSTER_NODES`，补上即绿） |
+| PHP 单元测试 | 现测 `phpunit --list-tests`：admin 593 + service 549 用例（报告 `docs/test-reports/php-unit.md` 记 09-22 复跑 admin 190 + service 273、08-27 快照 admin 153 + service 45；admin 侧后续补测） | service 全通过（701 断言、3 skipped、2 warnings + 35 deprecations）；admin 437 断言、3 skipped、1 例失败（`EnvConfigTest` 校验真实 `admin/.env` 缺少 `REDIS_CLUSTER_NODES`，补上即绿） |
 | 稳定性机制测试 | 熔断/重试/降级开关 15 用例（CircuitBreakerTest/RetryTest/ResilienceMockTest） | 全部通过 |
-| API 接口自动化 | 187 端点（来源：`docs/test-reports/api.md`，2026-08-27）；当前 route.php 注册 261 个端点 | 171 通过 / 50 失败 / 4 跳过（失败均为确定性缺陷，详见报告） |
-| Flutter UI 测试 | 12 用例（登录/仪表盘/导航/语言切换） | 全部通过 |
+| API 接口自动化 | 187 端点（来源：`docs/test-reports/api.md`，2026-08-27）；当前 route.php 注册 273 个端点（admin 164 + service 109） | 171 通过 / 50 失败 / 4 跳过（失败均为确定性缺陷，详见报告） |
+| Flutter UI 测试 | 130 用例（登录/仪表盘/导航/语言切换） | 全部通过 |
 | Go/Rust | 仓库无 Go/Rust 代码 | 跳过，已记录 |
 
 ```bash
@@ -333,7 +332,7 @@ cd admin/apps/flutter && flutter test --timeout 300s
 | KYC | 实名认证提交+审核、通过后提升提现限额 |
 | 游戏 | CRUD + 分类(10类) + 区服 + 游戏记录追踪 |
 | 搜索 | Elasticsearch 全文检索(含LIKE回退) |
-| 排行榜 | 日/周/月/总榜、Redis缓存、WebSocket实时推送(默认端口 8790，LEADERBOARD_WS_PORT 可配) |
+| 排行榜 | 日/周/月/总榜、Redis缓存（实时推送未实现，WS 子系统已于 2026-10-02 移除） |
 | CDN | 五厂商接入（Cloudflare R2 / AWS S3 / 阿里OSS / 腾讯COS / 华为OBS 上传+刷新+预热）+ 管理端配置/启停/连通测试 |
 | 优惠券 | 固定金额+比例折扣、限时限量、领取使用追踪 |
 | 通知 | 站内信+邮件、充值/提现/KYC/优惠券自动通知 |
@@ -346,7 +345,7 @@ cd admin/apps/flutter && flutter test --timeout 300s
 | 活动引擎 | 活动创建/参与/奖励 + 签到 |
 | 社交拉新 | 群组 + 分享链接追踪 |
 | 支付网关 | Adyen / GrabPay 新增网关 (L1) |
-| 国际化 | 4语言(en-US/zh-CN/ja-JP/ko-KR)、翻译表+缓存 |
+| 国际化 | 13语言、翻译表+缓存 |
 | 国家配置 | 18国差异化支付/提现方式、最低充值额 |
 | 统计 | 日统计快照(5类指标) + 平台收益追踪 |
 | 验证码 | 点击式人机验证(poster-php) |

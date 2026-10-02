@@ -1,9 +1,25 @@
 // Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get/get.dart' hide Response;
 import 'auth_service.dart';
+import 'chat_service.dart';
 import '../i18n/locale_controller.dart';
+
+/// 深链/刷新的自救取参：`Get.arguments` 只在当次导航的内存里活着，web 上按 F5 后为 null
+/// （`/game-detail`、`/chat` 曾因此非空转换抛 TypeError ⇒ 白屏，且无出口）。
+/// 取值顺序与 `oauth_callback_page` 同款：先 `Get.parameters`（GetX 解析过的本次导航 query），
+/// web 上再退回 `Uri.base.queryParameters` —— 刷新后 URL 是唯一剩下的真值源。
+String? deepLinkParam(String key) {
+  final fromGet = Get.parameters[key];
+  if (fromGet != null && fromGet.isNotEmpty) return fromGet;
+  if (kIsWeb) {
+    final fromUrl = Uri.base.queryParameters[key];
+    if (fromUrl != null && fromUrl.isNotEmpty) return fromUrl;
+  }
+  return null;
+}
 
 class ApiService {
   static final ApiService _instance = ApiService._();
@@ -43,7 +59,7 @@ class ApiService {
             handler.resolve(await dio.fetch(error.requestOptions));
             return;
           }
-          await AuthService.clearToken();
+          await signOut();
           _redirectToLoginOnce();
         }
         handler.next(error);
@@ -68,11 +84,19 @@ class ApiService {
       resp = await send();
     }
     if (_isUnauthorized(resp)) {
-      await AuthService.clearToken();
+      await signOut();
       _redirectToLoginOnce();
       throw ApiException(401, '登录已过期，请重新登录');
     }
     return _handleResponse(resp);
+  }
+
+  /// **登出收敛点**：所有登出路径（三个页面的登出按钮 + 上面两处 401 失效）都必须走这里。
+  /// 只调 `AuthService.clearToken()` 会留下还活着的聊天 WS：旧账号的推送继续进
+  /// `ChatService.messagesByPeer`，下一个账号读到就是串消息（详见 `ChatService.disconnect`）。
+  static Future<void> signOut() async {
+    if (Get.isRegistered<ChatService>()) Get.find<ChatService>().disconnect();
+    await AuthService.clearToken();
   }
 
   bool _isUnauthorized(Response resp) => resp.data is Map && resp.data['code'] == 401;

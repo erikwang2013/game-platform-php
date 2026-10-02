@@ -10,17 +10,17 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 
 | | Базовая версия (Lite) | Стандартная версия (Standard) | Полная версия (Full) |
 |------|------|------|------|
-| Таблицы данных (install.sql) | 19 | 29 | **66** (22 новых в v1.3.15-22) |
+| Таблицы данных (install.sql) | 19 | 29 | **79** (22 новых в v1.3.15-22) |
 | Эндпоинты API | 38 | 54 | ~260 (admin+service, включая Webhook/Provider) |
 | Бэкенд-контроллеры | 14 | 22 | admin 46 + service 35 |
 | Модели данных | не общие | не общие | **общие 52 (platform-common) + admin 8 + service 10** |
 | Общие Service | без общего слоя | без общего слоя | единый общий пакет `packages/platform-common` |
 | Страницы админ-фронтенда | 11 | 13 | 15 |
 | Страницы Platform-фронтенда | 8 | 10 | 10 |
-| HarmonyOS (admin) | - | вход + дашборд | **8 страниц** `admin/apps/harmonyos/` |
-| HarmonyOS (C-сторона) | - | - | **5 страниц** `apps/harmonyos/` (вход/игровой зал/детали/кошелёк/личный кабинет) |
+| HarmonyOS (admin) | - | вход + дашборд | **19 страниц** `admin/apps/harmonyos/` |
+| HarmonyOS (C-сторона) | - | - | **8 страниц** `apps/harmonyos/` (вход/игровой зал/детали/кошелёк/личный кабинет) |
 | Сервисы Docker | - | - | **7** (nginx/admin/service/leaderboard-ws/mysql/redis/elasticsearch) |
-| Тестовые кейсы | 60 | 60 | admin ~132; service 3 |
+| Тестовые кейсы | 60 | 60 | admin 593 кейса / 70 файлов; service 549 кейсов / 89 файлов |
 
 ---
 
@@ -89,7 +89,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Реальные графики дашборда | - | - | ✓ fl_chart |
 | Система купонов | - | - | ✓ |
 | Рейтинги (дневной/недельный/месячный/общий) | - | - | ✓ кэш Redis |
-| WebSocket-рейтинг в реальном времени | - | - | ✓ порт 8790 |
+| WebSocket-рейтинг в реальном времени | - | - | - удалено (2026-10-02) |
 | Система уведомлений (внутри + email) | - | - | ✓ |
 | Реферальные вознаграждения | - | - | ✓ |
 | Ежедневный статистический снимок | - | ✓ | ✓ |
@@ -146,8 +146,8 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 |------|--------|--------|--------|
 | Админ-панель Flutter Web PC | ✓ 5 страниц | ✓ 11 страниц | ✓ 17 страниц |
 | Пользовательская платформа Flutter Web PC | ✓ 5 страниц | ✓ 8 страниц | ✓ 10 страниц |
-| HarmonyOS admin | - | ✓ вход + дашборд | ✓ 8 страниц `admin/apps/harmonyos/` |
-| HarmonyOS C-сторона | - | - | ✓ 5 страниц `apps/harmonyos/` |
+| HarmonyOS admin | - | ✓ вход + дашборд | ✓ 19 страниц `admin/apps/harmonyos/` |
+| HarmonyOS C-сторона | - | - | ✓ 8 страниц `apps/harmonyos/` |
 
 ---
 
@@ -199,7 +199,12 @@ game_friend, game_message, game_cdn_provider, game_referral_commission,
 game_tournament, game_tournament_entry
 ```
 
-**Итого: 78 таблиц**
+### Новые в v1.3.44 (1 таблица)
+```
+game_wallet_hold
+```
+
+**Итого: 79 таблиц**
 
 ---
 
@@ -243,12 +248,14 @@ game_tournament, game_tournament_entry
 | SDK-документация | - | - | ✓ PHP/Go/Python |
 | Продвинутая аналитика | удержание D1-D30, конверсионная воронка, ARPU/ARPPU |
 
-### Новые таблицы данных (10)
+### Новые таблицы данных (14)
 ```
 game_ticket, game_ticket_reply, game_device_token,
 game_vip_level, game_user_vip, game_exp_log,
 game_achievement, game_user_achievement,
 game_friend, game_message
+game_cdn_provider, game_referral_commission,
+game_tournament, game_tournament_entry
 ```
 
 ### Новые эндпоинты Provider API (4)
@@ -260,28 +267,31 @@ POST /api/provider/refund   — 通知退款
 ```
 
 ### Новые эндпоинты C-стороннего API (8)
+
+> **尚未实现**：`GET /api/v1/user/vip-status` 与 `GET /api/v1/user/achievements` 两条 C 端路由未注册（`service/config/route.php` 无对应条目），当前请求返回 404。实现后请删除本行。
+
 ```
-POST /api/verify/send-email    — 发送邮箱验证码
-POST /api/verify/confirm-email — 确认邮箱
-GET  /api/ticket/list             — 工单列表
-POST /api/ticket/create           — 创建工单
-GET  /api/ticket/{id}             — 工单详情
-POST /api/ticket/{id}/reply       — 回复工单
-GET  /api/user/vip-status         — VIP状态
-GET  /api/user/achievements       — 成就列表
+POST /api/v1/verify/send-email    — 发送邮箱验证码
+POST /api/v1/verify/confirm-email — 确认邮箱
+GET  /api/v1/ticket/list             — 工单列表
+POST /api/v1/ticket/create           — 创建工单
+GET  /api/v1/ticket/{hashid}         — 工单详情
+POST /api/v1/ticket/{hashid}/reply   — 回复工单
+GET  /api/v1/user/vip-status         — VIP状态
+GET  /api/v1/user/achievements       — 成就列表
 ```
 
-### Новые эндпоинты админ-панели (6)
+### Новые эндпоинты админ-панели (9)
 ```
-GET  /admin/ticket/list          — 工单列表
-GET  /admin/ticket/{id}          — 工单详情
-POST /admin/ticket/{id}/reply    — 回复工单
-POST /admin/ticket/{id}/close    — 关闭工单
-POST /admin/ticket/{id}/assign   — 指定处理人
-GET  /admin/analytics/retention  — 留存分析
-GET  /admin/analytics/funnel     — 转化漏斗
-GET  /admin/analytics/arpu       — ARPU趋势
-GET  /admin/analytics/economy    — 经济指标
+GET  /admin/v1/ticket/list          — 工单列表
+GET  /admin/v1/ticket/{hashid}      — 工单详情
+POST /admin/v1/ticket/{hashid}/reply — 回复工单
+POST /admin/v1/ticket/{hashid}/close — 关闭工单
+POST /admin/v1/ticket/{hashid}/assign — 指定处理人
+GET  /admin/v1/analytics/retention  — 留存分析
+GET  /admin/v1/analytics/funnel     — 转化漏斗
+GET  /admin/v1/analytics/arpu       — ARPU趋势
+GET  /admin/v1/analytics/economy    — 经济指标
 ```
 
 ---

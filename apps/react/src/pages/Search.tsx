@@ -7,6 +7,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api.ts';
 import { useAsync } from '../lib/hooks.ts';
 import { Empty, ErrorBox, Loading } from '../components/States.tsx';
+import { useI18n } from '../i18n/useI18n.ts';
 
 const PER_PAGE = 20;
 
@@ -19,6 +20,7 @@ const PER_PAGE = 20;
  * 只搜游戏：服务端把 type=user 标为 admin 用途，C 端不该拿它检索其他用户。
  */
 export function Search() {
+  const { t } = useI18n();
   const [params, setParams] = useSearchParams();
   const q = params.get('q') ?? '';
   const page = Math.max(1, Number(params.get('page') ?? 1) || 1);
@@ -48,9 +50,9 @@ export function Search() {
   return (
     <>
       <section className="stack">
-        <p className="label">全局搜索</p>
+        <p className="label">{t('search.title')}</p>
         <h1 className="h1">
-          搜索
+          {t('app.search')}
           <span style={{ color: 'var(--orange)' }}>.</span>
         </h1>
 
@@ -59,30 +61,30 @@ export function Search() {
             className="input"
             name="q"
             type="search"
-            placeholder="搜索游戏名称或简介"
+            placeholder={t('search.placeholder')}
             autoComplete="off"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
           />
           <button type="submit" className="btn btn--primary">
-            搜索
+            {t('app.search')}
           </button>
         </form>
       </section>
 
       {q.trim() === '' ? (
-        <Empty title="输入关键词开始搜索" hint="支持按游戏名称与简介匹配" />
+        <Empty title={t('search.empty_title')} hint={t('search.empty_hint')} />
       ) : (
         <section className="stack">
           {res.loading && <Loading />}
           {!res.loading && res.error && <ErrorBox message={res.error} onRetry={res.reload} />}
           {!res.loading && !res.error && items.length === 0 && (
-            <Empty title={`没有找到与「${q}」相关的游戏`} hint="换个关键词试试" />
+            <Empty title={t('search.no_result', { q })} hint={t('search.no_result_hint')} />
           )}
           {!res.loading && !res.error && items.length > 0 && (
             <>
               <p className="small muted" style={{ margin: 0 }}>
-                共 {total} 个结果
+                {t('search.count', { total })}
               </p>
               <div className="list">
                 {items.map((g) => (
@@ -92,7 +94,7 @@ export function Search() {
                         {g.name}
                       </p>
                       <p className="small muted" style={{ margin: '4px 0 0' }}>
-                        {g.description || '暂无简介'}
+                        {g.description || t('search.no_desc')}
                       </p>
                     </div>
                   </Link>
@@ -107,7 +109,7 @@ export function Search() {
                     disabled={page <= 1 || res.loading}
                     onClick={() => goPage(page - 1)}
                   >
-                    上一页
+                    {t('app.prev_page')}
                   </button>
                   <span className="small muted">
                     {page} / {lastPage}
@@ -118,7 +120,7 @@ export function Search() {
                     disabled={page >= lastPage || res.loading}
                     onClick={() => goPage(page + 1)}
                   >
-                    下一页
+                    {t('app.next_page')}
                   </button>
                 </div>
               )}

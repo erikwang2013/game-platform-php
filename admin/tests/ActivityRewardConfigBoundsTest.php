@@ -32,7 +32,6 @@ class ActivityRewardConfigBoundsTest extends TestCase
     private function parse(?string $raw, string $type): ?array
     {
         $method = new ReflectionMethod(ActivityController::class, 'parseConfig');
-        $method->setAccessible(true);
 
         return $method->invoke(new ActivityController(), $raw, $type);
     }

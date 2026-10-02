@@ -24,12 +24,13 @@ class GamePlayLogController extends BaseController
     {
         $userId  = $request->userId;
         $page    = (int) $request->input('page', 1);
-        $perPage = (int) $request->input('per_page', 20);
+        $perPage = max(1, min(100, (int) $request->input('per_page', 20)));
         $gameIdHashid = $request->input('game_id');
         $action  = $request->input('action');
 
         $query = GamePlayLog::where('user_id', $userId)
-            ->orderBy('created_at', 'desc');
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc');
 
         if ($gameIdHashid) {
             $gameId = $this->decodeId($gameIdHashid);

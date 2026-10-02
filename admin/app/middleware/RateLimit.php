@@ -19,8 +19,9 @@ class RateLimit implements MiddlewareInterface
     private int $defaultWindow = 60;
 
     private array $sensitive = [
-        '/api/v1/auth/login'    => ['limit' => 10, 'window' => 60],
-        '/api/v1/auth/register' => ['limit' => 5,  'window' => 60],
+        // 注册（/api/v1/auth/register）已于 2026-10-01 摘除，见 config/route.php 该处墓碑注释；
+        // 它若留着就是永不命中的死配置，还会让读者以为注册端点仍在。恢复注册时记得补回。
+        '/api/v1/auth/login' => ['limit' => 10, 'window' => 60],
     ];
 
     public function process(Request $request, callable $handler): Response

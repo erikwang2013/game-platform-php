@@ -2,10 +2,8 @@
  * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
  */
 import { router } from '@kit.ArkUI';
-import { http } from '@kit.NetworkKit';
 import { promptAction } from '@kit.ArkUI';
-import { TokenManager } from '../utils/TokenManager';
-import { API_BASE_URL } from '../common/AppConfig';
+import { apiService } from '../service/ApiService';
 import { t } from '../i18n/Translations';
 
 interface GameDetail {
@@ -15,6 +13,11 @@ interface GameDetail {
   description: string;
   cover_image: string;
   currencies: Array<{ id: string; name: string; symbol: string; exchange_rate: string }>;
+}
+
+/** 启动参数：GameController::launch 收 game_id（hashid，不是裸 BIGINT） */
+interface LaunchParams {
+  game_id: string;
 }
 
 @Entry
@@ -35,28 +38,18 @@ struct GameDetailPage {
   async loadGameDetail(): Promise<void> {
     this.isLoading = true;
     try {
-      const token = await TokenManager.getAccessToken();
-      const request = http.createHttp();
-      const response = await request.request(
-        `${API_BASE_URL}/admin/v1/game/${this.gameId}`,
-        {
-          method: http.RequestMethod.GET,
-          header: {
-            'Content-Type': 'application/json',
-
-            'X-Client-Platform': 'harmonyos',
-            'Authorization': `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.responseCode === 200) {
-        const body = JSON.parse(response.result as string);
-        if (body.code === 0) {
-          this.game = body.data as GameDetail;
-        }
+      // 走 apiService：语言头 / 来源端头 / 401 刷新只有一份实现在 ApiService 里，
+      // 自建客户端的那些头此前是手抄的（且没有 X-Language，服务端 message 恒中文）
+      const body = await apiService.get<GameDetail>(`/admin/v1/game/${this.gameId}`);
+      if (body.code === 0) {
+        this.game = body.data;
       }
     } catch (e) {
+      // apiService 在刷新也失败时抛 UNAUTHORIZED（旧的自建客户端没有这条路径）
+      if (e instanceof Error && e.message === 'UNAUTHORIZED') {
+        router.replaceUrl({ url: 'pages/LoginPage' });
+        return;
+      }
       this.errorMsg = t('common.load_failed');
     } finally {
       this.isLoading = false;
@@ -65,29 +58,16 @@ struct GameDetailPage {
 
   async launchGame(): Promise<void> {
     try {
-      const token = await TokenManager.getAccessToken();
-      const request = http.createHttp();
-      const response = await request.request(
-        `${API_BASE_URL}/admin/v1/game/launch`,
-        {
-          method: http.RequestMethod.POST,
-          header: {
-            'Content-Type': 'application/json',
-
-            'X-Client-Platform': 'harmonyos',
-            'Authorization': `Bearer ${token}`,
-          },
-          extraData: JSON.stringify({ game_id: this.gameId }),
-        }
-      );
-
-      if (response.responseCode === 200) {
-        const body = JSON.parse(response.result as string);
-        if (body.code === 0) {
-          promptAction.showToast({ message: t('game.launch_success') });
-        }
+      const params: LaunchParams = { game_id: this.gameId };
+      const body = await apiService.post<void>('/admin/v1/game/launch', params);
+      if (body.code === 0) {
+        promptAction.showToast({ message: t('game.launch_success') });
       }
     } catch (e) {
+      if (e instanceof Error && e.message === 'UNAUTHORIZED') {
+        router.replaceUrl({ url: 'pages/LoginPage' });
+        return;
+      }
       promptAction.showToast({ message: t('game.launch_failed') });
     }
   }

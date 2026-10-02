@@ -9,37 +9,54 @@ import { dt } from '../lib/datetime.ts';
 import { useAsync } from '../lib/hooks.ts';
 import { Empty, ErrorBox, Loading } from '../components/States.tsx';
 import { Avatar } from '../components/Avatar.tsx';
+import type { MessageKey } from '../i18n/index.ts';
+import { useI18n } from '../i18n/useI18n.ts';
 
 const nameOf = (u: FriendUser) => u.nickname || u.username;
 
+/**
+ * 提示文案的**暂存形**：成功存「键 + 参数」、失败存「原始错误 + 兜底键」，
+ * **两边都不存翻好的串** —— `act()` 在 await 之后才落值，存串就把语言冻在点击那一刻
+ * （与 `Exchange.tsx` 的 `Msg` 同款；`friends.tab_list` 那类带插值的模板同理）。
+ */
+type Msg =
+  | { ok: true; key: MessageKey; params?: Record<string, string | number> }
+  | { ok: false; err: unknown; fallback: MessageKey };
+
 export function Friends() {
+  const { t } = useI18n();
   const [tab, setTab] = useState<'list' | 'requests' | 'add'>('list');
   const friends = useAsync(() => api.friends(), []);
   const requests = useAsync(() => api.friendRequests(), []);
 
   const [busy, setBusy] = useState('');
-  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [msg, setMsg] = useState<Msg | null>(null);
 
   // 搜索是显式触发的（不是输入即搜）：服务端没有防抖，逐字打请求会把 20 条限流撞满
   const [q, setQ] = useState('');
   const [hits, setHits] = useState<FriendUser[] | null>(null);
   const [searching, setSearching] = useState(false);
 
-  const err = (e: unknown, fallback: string) =>
-    setMsg({ ok: false, text: e instanceof ApiError ? e.message : fallback });
+  /** 只登记「原始错误 + 兜底键」，翻好是渲染时的事（见 `Msg`）。 */
+  const err = (e: unknown, fallback: MessageKey) => setMsg({ ok: false, err: e, fallback });
 
-  const act = async (key: string, fn: () => Promise<unknown>, okText: string) => {
+  const act = async (
+    key: string,
+    fn: () => Promise<unknown>,
+    okKey: MessageKey,
+    params?: Record<string, string | number>,
+  ) => {
     if (busy) return;
     setBusy(key);
     setMsg(null);
     try {
       await fn();
-      setMsg({ ok: true, text: okText });
+      setMsg({ ok: true, key: okKey, params });
       // 三个列表互相影响（接受申请会同时改好友和申请），统一全刷，省得漏一边
       friends.reload();
       requests.reload();
     } catch (e) {
-      err(e, '操作失败，请稍后重试');
+      err(e, 'error.action_failed');
     } finally {
       setBusy('');
     }
@@ -54,7 +71,7 @@ export function Friends() {
       setHits((await api.friendSearch(q.trim())).list);
     } catch (e2) {
       setHits(null);
-      err(e2, '搜索失败，请稍后重试');
+      err(e2, 'error.search_failed');
     } finally {
       setSearching(false);
     }
@@ -68,9 +85,9 @@ export function Friends() {
   return (
     <>
       <section className="stack">
-        <p className="label">社交</p>
+        <p className="label">{t('friends.label')}</p>
         <h1 className="h1">
-          好友
+          {t('nav.friends')}
           <span style={{ color: 'var(--orange)' }}>.</span>
         </h1>
       </section>
@@ -79,9 +96,15 @@ export function Friends() {
         <div className="tabs" role="tablist">
           {(
             [
-              ['list', `好友${friendList.length ? ` ${friendList.length}` : ''}`],
-              ['requests', `申请${reqList.length ? ` ${reqList.length}` : ''}`],
-              ['add', '添加'],
+              // ⚠ 计数走 `{n}` 参数而不是在源码里拼 `t(...) + ' 3'`：HEAD 那一行是**一条**
+              // 模板字面量，`verify-zh.mjs` 的 A 面按整条归一（`好友{}`）找表里的值，
+              // 拆开就凑不出它。空计数传空串，渲染与 HEAD 逐字相同（`好友` / `好友 3`）。
+              ['list', t('friends.tab_list', { n: friendList.length ? ` ${friendList.length}` : '' })],
+              [
+                'requests',
+                t('friends.tab_requests', { n: reqList.length ? ` ${reqList.length}` : '' }),
+              ],
+              ['add', t('friends.tab_add')],
             ] as const
           ).map(([k, label]) => (
             <button
@@ -102,7 +125,13 @@ export function Friends() {
 
         {msg && (
           <p className={msg.ok ? 'small' : 'err'} role={msg.ok ? 'status' : 'alert'}>
-            {msg.text}
+            {msg.ok
+              ? t(msg.key, msg.params)
+              : // 服务端的 message 语义比本地兜底键准（如「已经是好友了」这类 422 文案），
+                // 有就用它；它不带 code，所以这里不套 `error.with_code`（HEAD 也没有）。
+                msg.err instanceof ApiError
+                ? msg.err.message
+                : t(msg.fallback)}
           </p>
         )}
 
@@ -114,7 +143,7 @@ export function Friends() {
               <ErrorBox message={friends.error} onRetry={friends.reload} />
             )}
             {!friends.loading && !friends.error && friendList.length === 0 && (
-              <Empty title="还没有好友" hint="去「添加」按用户名搜人" />
+              <Empty title={t('friends.empty_title')} hint={t('friends.empty_hint')} />
             )}
             {!friends.loading && !friends.error && friendList.length > 0 && (
               <div className="list">
@@ -133,15 +162,19 @@ export function Friends() {
                     </div>
                     <div className="row" style={{ gap: 8 }}>
                       <Link className="btn btn--sm" to={`/chat/${f.id}`}>
-                        发消息
+                        {t('app.message')}
                       </Link>
                       <button
                         type="button"
                         className="btn btn--sm"
                         disabled={busy === f.id}
-                        onClick={() => act(f.id, () => api.friendRemove(f.id), `已删除好友 ${nameOf(f)}`)}
+                        onClick={() =>
+                          act(f.id, () => api.friendRemove(f.id), 'friends.removed', {
+                            name: nameOf(f),
+                          })
+                        }
                       >
-                        {busy === f.id ? '…' : '删除'}
+                        {busy === f.id ? '…' : t('app.delete')}
                       </button>
                     </div>
                   </div>
@@ -159,7 +192,7 @@ export function Friends() {
               <ErrorBox message={requests.error} onRetry={requests.reload} />
             )}
             {!requests.loading && !requests.error && reqList.length === 0 && (
-              <Empty title="没有待处理的申请" hint="别人加你时会出现在这里" />
+              <Empty title={t('friends.req_empty_title')} hint={t('friends.req_empty_hint')} />
             )}
             {!requests.loading && !requests.error && reqList.length > 0 && (
               <div className="list">
@@ -183,20 +216,24 @@ export function Friends() {
                         className="btn btn--sm btn--primary"
                         disabled={busy === `a${r.id}`}
                         onClick={() =>
-                          act(`a${r.id}`, () => api.friendAccept(r.id), `已接受 ${nameOf(r.user)}`)
+                          act(`a${r.id}`, () => api.friendAccept(r.id), 'friends.accepted', {
+                            name: nameOf(r.user),
+                          })
                         }
                       >
-                        {busy === `a${r.id}` ? '…' : '接受'}
+                        {busy === `a${r.id}` ? '…' : t('friends.accept')}
                       </button>
                       <button
                         type="button"
                         className="btn btn--sm"
                         disabled={busy === `r${r.id}`}
                         onClick={() =>
-                          act(`r${r.id}`, () => api.friendReject(r.id), `已拒绝 ${nameOf(r.user)}`)
+                          act(`r${r.id}`, () => api.friendReject(r.id), 'friends.rejected', {
+                            name: nameOf(r.user),
+                          })
                         }
                       >
-                        {busy === `r${r.id}` ? '…' : '拒绝'}
+                        {busy === `r${r.id}` ? '…' : t('friends.reject')}
                       </button>
                     </div>
                   </div>
@@ -214,18 +251,18 @@ export function Friends() {
                 className="input"
                 name="q"
                 type="search"
-                placeholder="按用户名或昵称搜索"
+                placeholder={t('friends.search_placeholder')}
                 autoComplete="off"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
               />
               <button type="submit" className="btn btn--primary" disabled={searching || !q.trim()}>
-                {searching ? '搜索中…' : '搜索'}
+                {searching ? t('friends.searching') : t('app.search')}
               </button>
             </form>
 
             {hits !== null && hits.length === 0 && (
-              <Empty title="没有找到匹配的用户" hint="换个用户名或昵称试试" />
+              <Empty title={t('friends.no_hit_title')} hint={t('friends.no_hit_hint')} />
             )}
             {hits !== null && hits.length > 0 && (
               <div className="list">
@@ -243,17 +280,19 @@ export function Friends() {
                       </div>
                     </div>
                     {friendIds.has(u.id) ? (
-                      <span className="pill pill--plain">已是好友</span>
+                      <span className="pill pill--plain">{t('friends.already')}</span>
                     ) : (
                       <button
                         type="button"
                         className="btn btn--sm btn--primary"
                         disabled={busy === u.id}
                         onClick={() =>
-                          act(u.id, () => api.friendRequest(u.id), `已向 ${nameOf(u)} 发送申请`)
+                          act(u.id, () => api.friendRequest(u.id), 'friends.sent', {
+                            name: nameOf(u),
+                          })
                         }
                       >
-                        {busy === u.id ? '…' : '加好友'}
+                        {busy === u.id ? '…' : t('friends.add')}
                       </button>
                     )}
                   </div>

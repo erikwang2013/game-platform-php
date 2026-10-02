@@ -135,9 +135,7 @@ class PermissionSeedParityTest extends TestCase
 
         $middleware = new \app\middleware\AdminPermission();
         $permissionPath = new \ReflectionMethod($middleware, 'permissionPath');
-        $permissionPath->setAccessible(true);
         $stripVersion = new \ReflectionMethod($middleware, 'stripVersionSegment');
-        $stripVersion->setAccessible(true);
 
         $request = new \support\Request("GET /admin/v1/x HTTP/1.1\r\nHost: localhost\r\n\r\n");
 

@@ -135,22 +135,19 @@ class AuthController
     }
 
     /**
-     * 注册（需先通过点击验证码）
-     * POST /api/auth/register
+     * 注册（需先通过点击验证码）—— **端点已摘除，不在 API 文档里发布**。
+     *
+     * 2026-10-01 摘除，与 admin/config/route.php:324-330 的墓碑同步（那里删掉的是路由注册）。
+     * 理由：匿名（一次点击验证码即可）就能建出 status=1 的 admin_user 并当场签发 access+refresh，
+     * 而 /api/v1 组不挂 AdminAuth/AdminPermission、也不挂 OperationLog ⇒ 凭空多出的管理员账号不留审计。
+     * 方法体保留未删，便于日后恢复；恢复前提：先解决「匿名建管理员」——改成 C 端用户体系，
+     * 或加管理员邀请/审批。（service 侧的 /api/v1/auth/register 是 C 端注册，不受影响。）
+     *
+     * ⚠ 本方法挂了 `NotParse` 注解（下面那一行）：解析器在 ParseApiDetail.php:83 优先判定它，
+     * 先于任何其它注解 —— 即便日后有人补回 Url/Title 等注解，本方法照样被跳过，端点不会复活。
+     * 这是**结构性拒绝**；只靠"零注解"不安全：删光只是当下没人写，补回一条就复活，且无任何报错。
      */
-    #[Apidoc\Url("/api/v1/auth/register")]
-    #[Apidoc\Method("POST")]
-    #[Apidoc\Param(name: "username", type: "string", require: true, desc: "用户名（3-50 字符）")]
-    #[Apidoc\Param(name: "password", type: "string", require: true, desc: "密码（8-32位，需含大小写字母和数字）")]
-    #[Apidoc\Param(name: "real_name", type: "string", require: true, desc: "真实姓名（最长 50）")]
-    #[Apidoc\Param(name: "captcha_key", type: "string", require: true, desc: "点击验证码 key")]
-    #[Apidoc\Param(name: "clicks", type: "array", require: true, desc: "点击坐标集合，元素含 x/y（至少 2 个）")]
-    #[Apidoc\Param(name: "phone", type: "string", desc: "手机号")]
-    #[Apidoc\Param(name: "email", type: "string", desc: "邮箱")]
-    #[Apidoc\Returned(name: "access_token", type: "string", desc: "访问令牌")]
-    #[Apidoc\Returned(name: "refresh_token", type: "string", desc: "刷新令牌")]
-    #[Apidoc\Returned(name: "expires_in", type: "int", desc: "访问令牌有效期（秒）")]
-    #[Apidoc\Returned(name: "user", type: "object", desc: "管理员信息，含 id(hashid)/username/real_name")]
+    #[Apidoc\NotParse()]
     public function register(Request $request): Response
     {
         $validator = validator($request->all(), [

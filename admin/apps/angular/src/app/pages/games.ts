@@ -130,7 +130,7 @@ const CATEGORY_FIELDS: Field[] = [
  * 字段真值 = GameServerController::create/update 的 validator。
  * game_id（游戏 hashid）是 create 的必填，且不在 update 白名单 ⇒ createOnly；
  * 列表接口同样按 game_id 过滤（见 fetch() 里那个输入框）。
- * status 是 4 值（0=维护 1=正常 2=火爆 3=新服，install.sql:557）⇒ 用 select 不用 switch，
+ * status 是 4 值（0=维护 1=正常 2=火爆 3=新服，install.sql:564）⇒ 用 select 不用 switch，
  * 也不开 statused —— 基类的行内「启用/停用」只会翻 0/1，把 2/3 静默压成 0。
  */
 const SERVER_FIELDS: Field[] = [

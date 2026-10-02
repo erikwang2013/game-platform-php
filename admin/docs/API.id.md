@@ -1668,7 +1668,7 @@ Urutan autentikasi lengkap:
 
 ### Docker Compose
 
-Direktori root proyek menyediakan `docker-compose.yml`, mengorkestrasi 7 layanan (Nginx, admin, service, leaderboard-ws, MySQL, Redis, Elasticsearch). PHP dibangun melalui `Dockerfile` (berbasis `php:8.3-cli`, OPcache diaktifkan).
+Direktori root proyek menyediakan `docker-compose.yml`, mengorkestrasi 7 layanan (Nginx, admin, service, chat-ws, MySQL, Redis, Elasticsearch). PHP dibangun melalui `Dockerfile` (berbasis `php:8.3-cli`, OPcache diaktifkan).
 
 ```bash
 cp .env.example .env
@@ -1948,7 +1948,7 @@ DELETE /admin/v1/payment/method/{hashid}
 
 ## 19. Endpoint Admin Tambahan (Extended Admin APIs)
 
-20 endpoint berikut dikelompokkan dalam 6 bagian; semuanya endpoint admin `/admin/v1` dan memerlukan autentikasi JWT serta validasi izin RBAC.
+21 endpoint berikut dikelompokkan dalam 6 bagian; semuanya endpoint admin `/admin/v1` dan memerlukan autentikasi JWT serta validasi izin RBAC.
 
 ### 19.1 Peninjauan Batch dan Pembayaran Penarikan
 

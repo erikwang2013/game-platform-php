@@ -144,7 +144,6 @@ class ClickHouseServiceTest extends TestCase
     {
         $ref = new ReflectionClass($class);
         $m = $ref->getMethod($method);
-        $m->setAccessible(true);
         return $m->invoke(null, ...$args);
     }
 }

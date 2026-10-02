@@ -85,17 +85,19 @@ open-admin/
 │   │       └── AuthController.php    # Вход/регистрация/обновление токена
 │   ├── common/                 # Общие утилиты
 │   │   └── CdnProbeService.php # Проверка доступности CDN (Hashids/Snowflake/Encryption — из composer-пакетов)
-│   ├── middleware/             # Промежуточное ПО
+│   ├── middleware/             # Промежуточное ПО (9 в каталоге; 8 в цепочке выполнения)
 │   │   ├── Cors.php            # CORS
 │   │   ├── SecurityFilter.php  # Обнаружение и блокировка атак (ограничение HTTP-методов/XSS/SQL-инъекции/обход пути/инъекции команд/CSRF)
 │   │   ├── RateLimit.php       # Ограничение частоты Redis (скользящее окно + заголовки ответа)
-│   │   ├── StaticFile.php      # Раздача статических файлов (встроено в webman)
+│   │   ├── LanguageMiddleware.php # Язык/locale (глобально; регистрируется после RateLimit, перед middleware маршрутов)
+│   │   ├── StaticFile.php      # Раздача статических файлов (копия встроенного в webman; НЕ зарегистрирован — закомментирован в config/static.php:25, вне цепочки выполнения)
 │   │   ├── AdminAuth.php       # JWT-аутентификация + черный список
 │   │   ├── AdminPermission.php # RBAC-проверка прав
+│   │   ├── MetricsAuth.php     # только для /metrics: JWT администратора или статический токен скрейпинга
 │   │   └── OperationLog.php    # Автоматическая запись журнала операций (включая определение источника)
 │   ├── activity/               # Обработчики активностей (чек-ин/приглашения/ежедневные задания)
 │   ├── model/                  # Модели данных
-│   ├── process/                # Процессы (Http, Monitor, RiskIpCron)
+│   ├── process/                # Процессы (Http, Monitor, RiskIpCron, ExportTmpCleanup)
 │   ├── provider/               # Слой игровых Provider (Self/ThirdParty/Factory)
 │   ├── service/                # Сервисы (кошелёк/песочница рисков)
 │   └── view/                   # Шаблоны представлений
@@ -104,7 +106,7 @@ open-admin/
 │   ├── react/                  # Веб-админка на React
 │   ├── flutter/                # Flutter Web админ-панель (PC-стиль)
 │   │   └── lib/app/
-│   │       ├── pages/          # 20 каталогов страниц
+│   │       ├── pages/          # 26 каталогов страниц
 │   │       ├── services/       # ApiService (JWT-перехватчик) + AuthService (персистентность токена)
 │   │       └── layouts/        # Адаптивная раскладка панели (сайдбар+шапка+контент)
 │   └── harmonyos/              # Нативный клиент HarmonyOS (бесшовное обновление токена)
@@ -147,8 +149,8 @@ cp .env.example .env
 |---------|------|--------|
 | `APP_PORT` | Порт прослушивания HTTP webman | `8789` |
 | `APP_URL` | Внешний адрес доступа (ссылки на странице успеха мастера установки, baseUrl документации API и т. д.) | `http://localhost:8789` |
-| `JWT_SECRET` | Секрет подписи JWT | `open-admin-jwt-secret-change-in-production` |
-| `HASHIDS_SALT` | Соль Hashids | `open-admin-hashids-salt-2026` |
+| `ADMIN_JWT_SECRET_KEY` | Секрет подписи JWT | `game-platform-admin-jwt-secret-change-in-production` |
+| `HASHIDS_SALT` | Соль Hashids | `game-platform-hashids-salt-2026` |
 | `ENCRYPTION_KEY` | Ключ шифрования API | 32-байтовое значение по умолчанию |
 | `SNOWFLAKE_DATACENTER_ID` | ID центра обработки данных (0-31) | `1` |
 | `SNOWFLAKE_WORKER_ID` | ID рабочего узла (0-31) | `1` |
@@ -188,7 +190,7 @@ flutter run -d chrome    # Web-версия (стиль PC-панели)
 
 ### 6. Развертывание Docker Compose в один клик (рекомендуется для продакшена)
 
-Проект включает полную Docker-оркестрацию из 7 сервисов: Nginx, admin (webman), service (webman), leaderboard-ws (WebSocket), MySQL, Redis, Elasticsearch.
+Проект включает полную Docker-оркестрацию из 7 сервисов: Nginx, admin (webman), service (webman), chat-ws (WebSocket), MySQL, Redis, Elasticsearch.
 
 ```bash
 # 1. Настройте переменные окружения Docker
@@ -423,7 +425,7 @@ Authorization: Bearer <token>
 | `nginx` | nginx:alpine | 80, 443 |
 | `admin` | сборка из локального `Dockerfile` | 8789 |
 | `service` | сборка из локального `Dockerfile` | 8792 |
-| `leaderboard-ws` | сборка из локального `Dockerfile` | 8790, 8791 |
+| `chat-ws` | сборка из локального `Dockerfile` | 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

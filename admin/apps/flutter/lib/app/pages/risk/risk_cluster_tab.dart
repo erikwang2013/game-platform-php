@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../services/api_service.dart';
+import '../../widgets/crud.dart';
 
 /// 图谱：已确认团伙列表 + 检测候选 + 人工确认 + 成员钻取 + 状态变更
 class RiskClusterController extends GetxController {
@@ -100,16 +101,7 @@ class RiskClusterTab extends GetView<RiskClusterController> {
       Expanded(child: Obx(() {
         if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
         if (ctrl.items.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.asset('assets/mascot.png', width: 120),
-                const SizedBox(height: 12),
-                const Text('暂无团伙，点击"聚类检测"扫描候选'),
-              ],
-            ),
-          );
+          return const CrudEmptyState(text: '暂无团伙，点击"聚类检测"扫描候选');
         }
         return ListView.builder(
           itemCount: ctrl.items.length,

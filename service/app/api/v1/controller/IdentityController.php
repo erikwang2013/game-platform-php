@@ -54,11 +54,15 @@ class IdentityController extends BaseController
         $validator = validator($request->all(), [
             'real_name'       => 'required|string|max:100',
             'id_type'         => 'required|string|in:id_card,passport,driver_license',
-            'id_number'       => 'required|string',
-            'id_front_photo'  => 'required|string',
-            'id_back_photo'   => 'nullable|string',
-            'selfie_photo'    => 'required|string',
-            'country'         => 'nullable|string|max:50',
+            // 下面四处的 max 与列一致：不一致会让超长值过校验、写库抛 1406 ⇒ 500（应 422）。
+            // id_number 列 varchar(500) 存的却是密文 —— 实测（走模型 cast 真写库量的，非推算）
+            // 密文长度 = 4*ceil((明文+17)/3) + 76：明文 301 ⇒ 500（列满）、302 ⇒ 1406 ⇒ 取 256（密文 440）。
+            'id_number'       => 'required|string|max:256',
+            'id_front_photo'  => 'required|string|max:255',
+            'id_back_photo'   => 'nullable|string|max:255',
+            'selfie_photo'    => 'required|string|max:255',
+            // 列是 varchar(10)：原写 max:50 会让 10 字符以上的值过校验、写库抛 1406 ⇒ 500（应 422）
+            'country'         => 'nullable|string|max:10',
         ]);
 
         if ($validator->fails()) {
@@ -81,11 +85,23 @@ class IdentityController extends BaseController
             $existing->id_type         = $request->input('id_type');
             $existing->id_number       = $request->input('id_number');
             $existing->id_front_photo  = $request->input('id_front_photo');
-            $existing->id_back_photo   = $request->input('id_back_photo', '');
+            // 两个可选字段（id_back_photo / country）按**存在性**取值：请求不带该键 ⇒ 保留原值。
+            // 两棵 web 树的提交体对空值不发这个键（`...(v ? {k: v} : {})`），原写法用 input() 的默认 ''
+            // 会把上次提交的值悄悄抹掉。判据用 support\Request::has()（本应用自己在
+            // service/support/Request.php 补的，框架没有它），口径同 UserController::updateProfile
+            // 的「只送改动的字段」；**显式送空串 = 有意清空**（flutter 树正是这么发空值的）。
+            if ($request->has('id_back_photo')) {
+                $existing->id_back_photo = $request->input('id_back_photo', '');
+            }
             $existing->selfie_photo    = $request->input('selfie_photo');
-            $existing->country         = $request->input('country', '');
+            // 同上：不带 country 键 ⇒ 保留原值
+            if ($request->has('country')) {
+                $existing->country = $request->input('country', '');
+            }
             $existing->status          = 'pending';
-            $existing->reviewer_id     = null;
+            // reviewer_id 列是 NOT NULL DEFAULT 0（活库/测试库/install.sql 三处一致）⇒「清空审核人」
+            // 只能写 0；写 null 会让整条 UPDATE 抛 1048、重交路径恒 500（该写法自 2026-05-22 起）。
+            $existing->reviewer_id     = 0;
             $existing->review_note     = '';
             $existing->reviewed_at     = null;
             $existing->updated_at      = $now;

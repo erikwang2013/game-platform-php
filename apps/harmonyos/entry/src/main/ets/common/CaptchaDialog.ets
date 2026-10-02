@@ -4,6 +4,7 @@
 
 import { CaptchaService } from '../service/DataService';
 import { CaptchaChallenge, CaptchaClick } from '../model/DataModels';
+import { t, t1 } from '../i18n/Translations';
 
 /**
  * 画布尺寸：服务端点击验证码恒为 300x200（easy/medium/hard 三档实测一致）。
@@ -38,6 +39,7 @@ interface ClickMarker {
  */
 @Component
 export struct CaptchaDialog {
+  @StorageLink('app_locale') localeCode: string = 'zh';
   /** 父页面正在提交原接口：提交中禁用框内按钮，避免重复提交 */
   @Prop submitting: boolean = false;
   /** 确认：把 captcha_key + clicks（画布坐标）交给父页面去调原接口 */
@@ -65,7 +67,7 @@ export struct CaptchaDialog {
       this.cap = await CaptchaService.generate();
     } catch (e) {
       const msg = `${e}`;
-      this.errorMsg = msg.length > 0 ? msg : '验证码加载失败';
+      this.errorMsg = msg.length > 0 ? msg : t('captcha.load_failed');
     } finally {
       this.loading = false;
     }
@@ -143,7 +145,7 @@ export struct CaptchaDialog {
   @Builder
   captchaBody() {
     Column() {
-      Text(`请按顺序点击图中文字: ${this.hint()}`)
+      Text(t1('captcha.hint', 'list', this.hint()))
         .fontSize(12)
         .fontColor('#666666')
         .width('100%')
@@ -179,13 +181,13 @@ export struct CaptchaDialog {
       .height(CAPTCHA_H)
 
       Row() {
-        Text(`已点击 ${this.clicks.length}/${this.cap!.texts.length}`)
+        Text(t('captcha.clicked').replace('{done}', `${this.clicks.length}`).replace('{total}', `${this.cap!.texts.length}`))
           .fontSize(12)
           .fontColor('#999999')
 
         Blank()
 
-        Button('撤销')
+        Button(t('captcha.undo'))
           .fontSize(12)
           .fontColor('#1677FF')
           .backgroundColor(Color.Transparent)
@@ -194,7 +196,7 @@ export struct CaptchaDialog {
             this.undoClick();
           })
 
-        Button('换一张')
+        Button(t('captcha.refresh'))
           .fontSize(12)
           .fontColor('#1677FF')
           .backgroundColor(Color.Transparent)
@@ -221,7 +223,7 @@ export struct CaptchaDialog {
         })
 
       Column() {
-        Text('安全验证')
+        Text(t('captcha.title'))
           .fontSize(16)
           .fontWeight(FontWeight.Bold)
           .width('100%')
@@ -234,10 +236,10 @@ export struct CaptchaDialog {
             .color('#1677FF')
         } else if (this.cap === null) {
           Column() {
-            Text(this.errorMsg || '验证码加载失败')
+            Text(this.errorMsg || t('captcha.load_failed'))
               .fontSize(13)
               .fontColor('#FF4D4F')
-            Button('重试')
+            Button(t('common.retry'))
               .fontSize(13)
               .fontColor('#1677FF')
               .backgroundColor(Color.Transparent)
@@ -252,7 +254,7 @@ export struct CaptchaDialog {
         }
 
         Row() {
-          Button('取消')
+          Button(t('common.cancel'))
             .fontSize(14)
             .fontColor('#666666')
             .backgroundColor('#F5F5F5')
@@ -261,7 +263,7 @@ export struct CaptchaDialog {
               this.cancel();
             })
 
-          Button(this.submitting ? '提交中…' : '确认')
+          Button(this.submitting ? t('captcha.submitting') : t('common.confirm'))
             .fontSize(14)
             .fontColor('#FFFFFF')
             .backgroundColor(this.submitting || !this.done() ? '#99BBFF' : '#1677FF')

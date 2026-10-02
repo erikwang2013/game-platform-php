@@ -51,7 +51,7 @@ rm -rf install/
 
 Что выполняет мастер установки:
 - Проверка окружения PHP (версия, расширения, права на каталоги)
-- Выполнение объединённого SQL (`install/install.sql`) — создание 78 таблиц и импорт стартовых данных
+- Выполнение объединённого SQL (`install/install.sql`) — создание 79 таблиц и импорт стартовых данных
 - Создание учётной записи супер-администратора (bcrypt-шифрование, привязка к роли super_admin)
 - Автоматическая генерация ключей JWT/Encryption/Hashids
 - Запись `admin/.env` и `service/.env`
@@ -90,13 +90,13 @@ docker-compose logs -f
 | nginx | game-platform-nginx | 80, 443 | обратный прокси + статические файлы |
 | admin | game-platform-admin | 8789 | API админ-панели |
 | service | game-platform-service | 8792 | API C-стороннего бизнеса |
-| leaderboard-ws | game-platform-ws | 8790, 8791 | WebSocket-рейтинг/чат |
+| chat-ws | game-platform-ws | 8791 | WebSocket |
 | mysql | game-platform-mysql | 3306 | основная база данных |
 | redis | game-platform-redis | 6379 | кэш/лимиты |
 | elasticsearch | game-platform-es | 9200 | полнотекстовый поиск |
 
 > **Настройка портов**: Порты в таблице — значения по умолчанию; все они изменяются в `.env` в корне проекта (шаблон `.env.example`; отредактируйте после `cp .env.example .env`):
-> `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `LEADERBOARD_WS_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
+> `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
 > Порты upstream в `nginx.conf.template` автоматически подставляются официальным образом через envsubst — вручную править конфигурацию Nginx не нужно.
 > При развёртывании через Docker публичные адреса (`APP_URL` / `SITE_URL`) по умолчанию автоматически следуют за `ADMIN_PORT` / `SERVICE_PORT` (в формате `http://localhost:порт`); для собственного домена или HTTPS задайте `APP_URL` / `SITE_URL` в корневом `.env` (переопределяет одноимённые ключи в `admin/.env` и `service/.env`). При ручном (bare-metal) развёртывании при смене портов адреса по-прежнему нужно обновлять самостоятельно.
 
@@ -201,7 +201,6 @@ SCOUT_HOSTS=127.0.0.1:9200
 ```ini
 # Те же настройки базы данных, Redis и ES, что и в admin
 APP_PORT=8792  # порт прослушивания HTTP webman
-LEADERBOARD_WS_PORT=8790  # WebSocket рейтинга (должен совпадать с адресом подключения фронтенда)
 CHAT_WS_PORT=8791  # WebSocket чата
 SNOWFLAKE_WORKER_ID=2  # должен отличаться от admin
 
@@ -326,7 +325,7 @@ systemctl enable --now game-platform-admin game-platform-service
 Создайте `/etc/nginx/sites-available/game-platform`:
 
 ```nginx
-# Порты — значения по умолчанию (admin 8789 / service 8792 / ws 8790); при изменении .env скорректируйте их здесь
+# Порты — значения по умолчанию (admin 8789 / service 8792 / ws 8791); при изменении .env скорректируйте их здесь
 server {
     listen 80;
     server_name your-domain.com;
@@ -352,16 +351,6 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    # WebSocket-рейтинг (порт по умолчанию 8790, совпадает с LEADERBOARD_WS_PORT в service/.env)
-    location /ws/ {
-        proxy_pass http://127.0.0.1:8790;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
     }
 
     # 健康检查
@@ -614,7 +603,7 @@ ufw allow 443/tcp     # HTTPS
 ufw enable
 
 # Внутренние порты не должны быть доступны извне
-# 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# 8789 (admin), 8792 (service), 8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
 # Выше указаны порты по умолчанию; если .env в корне или соответствующие .env изменены, ориентируйтесь на фактические значения
 # Доступ только через 127.0.0.1
 ```

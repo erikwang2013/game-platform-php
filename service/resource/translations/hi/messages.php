@@ -119,7 +119,7 @@ return [
     'Phone verified' => 'फ़ोन सत्यापित',
     'Play log not found' => 'गेम रिकॉर्ड नहीं मिला',
     'Please type yes to confirm account closure' => 'खाता हटाने की पुष्टि के लिए yes लिखें',
-    'Privacy settings updated' => 'गोपनीयता सेटिंग्स अपडेट हुईं',
+    'Privacy settings were not saved' => 'गोपनीयता सेटिंग्स सहेजी नहीं गईं',
     'Provider mismatch' => 'प्रदाता मेल नहीं खाता',
     'Reply sent' => 'उत्तर भेजा गया',
     'Request not found' => 'अनुरोध नहीं मिला',

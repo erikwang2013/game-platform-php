@@ -4,9 +4,26 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../i18n/locale_controller.dart';
 import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/captcha_service.dart';
+
+/// 登录/注册页自带的 Dio：**刻意不挂 `ApiService` 的拦截器** —— 那套在 401 时会去刷新
+/// token，而「密码错」本身就是 401，挂上去会形成刷新回环。
+/// 代价是语言头也一起丢了：后端按 `X-Language` 选 `trans()` 的表，
+/// 不补这一行，语言切到 en/ja 后登录/注册的报错仍永远是中文（界面文案却是译文）。
+Dio buildLoginDio() {
+  final dio = Dio(BaseOptions(baseUrl: ApiService.baseUrl, headers: {}));
+  dio.interceptors.add(InterceptorsWrapper(
+    onRequest: (options, handler) {
+      // 每次请求现读：登录页停留期间切语言也要生效
+      options.headers['X-Language'] = LocaleController.currentCode;
+      handler.next(options);
+    },
+  ));
+  return dio;
+}
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,7 +35,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _usernameCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
-  final _dio = Dio(BaseOptions(baseUrl: ApiService.baseUrl, headers: {}));
+  final _dio = buildLoginDio();
   bool _loading = false;
   bool _isRegister = false;
   String? _error;

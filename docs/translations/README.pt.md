@@ -63,7 +63,7 @@ game-platform-php/
 ├── admin/                     # Painel administrativo (webman v2, porta padrão 8789, configurável via APP_PORT)
 │   ├── app/admin/v1/controller/  #   Controladores do lado admin
 │   ├── app/middleware/        #   Middleware (Cors/SecurityFilter/RateLimit/AdminAuth/AdminPermission/OperationLog)
-│   ├── app/model/             #   Modelos exclusivos do admin (8; os outros 52 modelos compartilhados ficam em packages/)
+│   ├── app/model/             #   Modelos exclusivos do admin (6; os outros 51 modelos compartilhados ficam em packages/)
 │   ├── app/service/           #   Serviços exclusivos do admin (WalletService/WalletScope/RiskSandboxService)
 │   ├── app/process/           #   Processos residentes (Http/Monitor/RiskIpCron)
 │   ├── app/provider/          #   Camada de providers de jogos (Self/ThirdParty/Factory)
@@ -79,19 +79,19 @@ game-platform-php/
 ├── service/                   # Serviço de negócios do lado C (webman v2, porta padrão 8792, configurável via APP_PORT)
 │   ├── app/api/v1/controller/ #   Controladores da API do lado C
 │   ├── app/middleware/        #   Middleware (TraceId/Cors/SecurityFilter/RateLimit/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
-│   ├── app/model/             #   Modelos exclusivos do service (10; os outros 52 modelos compartilhados ficam em packages/)
+│   ├── app/model/             #   Modelos exclusivos do service (10; os outros 51 modelos compartilhados ficam em packages/)
 │   ├── app/service/           #   Serviços exclusivos do service (carteira/risco/conformidade/conciliação/push/conquistas/antifraude etc.)
 │   ├── app/payment/           #   18 adaptadores de gateways de pagamento (Stripe/PayPal/Adyen/NowPayments/Skrill…) + GatewayFactory
 │   ├── app/cdn/               #   Adaptadores de CDN de cinco fornecedores (Cloudflare/CloudFront/Alibaba/Tencent/Huawei) + CdnFactory
-│   ├── app/process/           #   Processos residentes (Http/Monitor/LeaderboardWS:8790/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
+│   ├── app/process/           #   Processos residentes (Http/Monitor/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
 │   ├── app/provider/          #   Camada de Providers de jogos
 │   ├── app/activity/          #   Motor de atividades
 │   ├── app/event/             #   Barramento de eventos (EventBus Redis Pub/Sub)
 │   └── config/                #   Arquivos de configuração
 │
 ├── packages/platform-common/  # Camada compartilhada: admin e service a importam via repositório composer path, evitando duas cópias
-│   ├── src/model/             #   Modelos Eloquent compartilhados (52, mesma origem para os dois lados)
-│   ├── src/service/           #   Serviços compartilhados (DepositLogService / VipService etc., 11 no total, inclui cálculo de probabilidades no ClickHouse)
+│   ├── src/model/             #   Modelos Eloquent compartilhados (51, mesma origem para os dois lados)
+│   ├── src/service/           #   Serviços compartilhados (DepositLogService / VipService etc., 12 no total, inclui cálculo de probabilidades no ClickHouse e 2 classes de infraestrutura EventPublisher/OutboxWriter)
 │   ├── src/BcMath.php         #   Aritmética de alta precisão de valores/taxas (wrapper de bcmath), arredondamento, percentuais
 │   ├── src/EncryptionService.php  #   Criptografia/descriptografia AES e mascaramento
 │   ├── src/CircuitBreaker.php #   Disjuntor (além de Retry.php para retentativas)
@@ -109,7 +109,7 @@ game-platform-php/
 ├── install/                   # Assistente de instalação em um clique + SQL de inicialização do banco
 │   ├── index.php              #   Ponto de entrada da instalação
 │   ├── Installer.php          #   Lógica principal de instalação
-│   ├── install.sql            #   SQL de instalação combinado (78 tabelas + dados iniciais)
+│   ├── install.sql            #   SQL de instalação combinado (79 tabelas + dados iniciais)
 │   ├── clickhouse.sql         #   DDL do banco analítico ClickHouse (motor separado, importado à parte)
 │   ├── test-data.sql          #   Dados de demonstração/teste
 │   ├── migrations/            #   Scripts de upgrade incremental para bancos existentes (*.sql)
@@ -178,7 +178,7 @@ rm -rf install/
 
 O assistente de instalação conclui automaticamente:
 - Verificação do ambiente (versão do PHP, extensões, permissões de diretório)
-- Criação do banco de dados e das tabelas (SQL combinado, 78 tabelas + dados iniciais)
+- Criação do banco de dados e das tabelas (SQL combinado, 79 tabelas + dados iniciais)
 - Criação da conta de superadministrador (criptografia bcrypt)
 - Geração automática das chaves JWT/criptografia e gravação no arquivo .env
 - Geração do install.lock para evitar instalação duplicada
@@ -333,7 +333,7 @@ Relatórios detalhados:
 | KYC | Envio e revisão de verificação de identidade, eleva o limite de saque após aprovação |
 | Jogos | CRUD + categorias (10 tipos) + servidores/regiões + rastreamento de registros de jogo |
 | Busca | Busca em texto completo no Elasticsearch (com fallback LIKE) |
-| Rankings | Diário/semanal/mensal/geral, cache Redis, push em tempo real via WebSocket (porta padrão 8790, configurável via LEADERBOARD_WS_PORT) |
+| Rankings | Diário/semanal/mensal/geral, cache Redis |
 | CDN | Integração com cinco provedores (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + preload) + configuração/ativação/teste de conectividade no admin |
 | Cupons | Valor fixo + desconto percentual, limite de tempo e quantidade, rastreamento de uso |
 | Notificações | Mensagens internas + e-mail, notificações automáticas de recarga/saque/KYC/cupons |

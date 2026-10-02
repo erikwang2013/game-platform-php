@@ -59,19 +59,19 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | 2FA | Google Authenticator TOTP + kode pemulihan cadangan | Selesai |
 | Referral | Kode referral, hadiah pendaftaran, komisi deposit | Selesai |
 | Pencarian | API pencarian ES + saran game + fallback LIKE | Selesai |
-| Papan peringkat | Push real-time WebSocket (port 8790) | Selesai |
+| Papan peringkat | REST + Redis | Selesai |
 | CDN | Integrasi lima penyedia (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + preload) | Selesai |
 | Manajemen CDN | Konfigurasi lima penyedia di admin (kredensial terenkripsi/aktif-nonaktif/tes konektivitas HeadBucket), service hanya membaca dari DB | Selesai |
 | Laporan | Laporan data admin (ringkasan/harian/ekspor CSV, cache Redis 5 menit, rentang ≤90 hari) | Selesai |
 | Statistik platform | Statistik beranda sisi C (total game/pengguna/permainan hari ini/aktif 7 hari) | Selesai |
 | Deployment | Docker Compose 7 layanan + reverse proxy Nginx | Selesai |
 | Data | Analisis agregasi real-time MySQL + perhitungan probabilitas gabungan/bersyarat | Selesai |
-| HarmonyOS | admin 8 halaman; sisi C `apps/harmonyos/` sudah mengimplementasikan login/lobi/detail/dompet/profil (menunjuk 8792) | Sebagian selesai (proyek dapat berjalan, perangkat nyata perlu ubah IP) |
+| HarmonyOS | admin 19 halaman; sisi C `apps/harmonyos/` sudah mengimplementasikan login/lobi/detail/dompet/profil (menunjuk 8792) | Sebagian selesai (proyek dapat berjalan, perangkat nyata perlu ubah IP) |
 | Dokumentasi API | Dokumentasi interaktif erikwang2013/apidoc-php | Selesai |
 | Instal satu klik | Wizard instalasi browser: buat admin, upgrade DB lama, install.lock mencegah instal ulang | Selesai |
 | Toleransi kegagalan | CircuitBreaker + Retry + saklar degradasi feature.provider_mock | Selesai |
 | Metode pembayaran | CRUD admin + visibilitas negara + rentang jumlah + batasan mata uang | Selesai |
-| CI | tag kenaikan otomatis saat push + GitHub Release | Selesai |
+| CI | tag kenaikan otomatis saat push + GitHub Release | Diubah ke pemicu manual |
 
 ### Perluasan Ekosistem (v2.0) — Baru Selesai
 
@@ -231,7 +231,7 @@ Jendela waktu: 5 menit
 
 ## 7. Daftar Tabel Database
 
-### Baru di Perluasan Ekosistem (10 tabel)
+### Baru di Perluasan Ekosistem (14 tabel)
 
 | Nama tabel | Keterangan | Fitur kunci |
 |------|------|---------|
@@ -245,6 +245,10 @@ Jendela waktu: 5 menit
 | game_user_achievement | Pencapaian pengguna | indeks unik user_id+achievement_id |
 | game_friend | Relasi teman | indeks unik user_id+friend_id |
 | game_message | Pesan pribadi | from_user_id+to_user_id / to_user_id+is_read |
+| game_cdn_provider | Konfigurasi penyedia CDN | indeks unik provider, config JSON terenkripsi |
+| game_referral_commission | Catatan komisi referral multi-level | indeks user_id / referral_id / source_type+source_id |
+| game_tournament | Turnamen | indeks unik slug, indeks status+start_at+end_at |
+| game_tournament_entry | Pendaftaran/skor turnamen | indeks unik tournament_id+user_id, indeks tournament_id+score |
 
 ### Perubahan Struktur Tabel
 
@@ -253,7 +257,7 @@ Jendela waktu: 5 menit
 | game_game | +provider_config (JSON) |
 | game_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**Total: 78 tabel di install.sql**. Model: 52 dibagikan di `packages/platform-common/src/model/`; 8 di admin/app/model/ dan 10 di service/app/model/ khusus untuk host masing-masing (tanpa tumpang tindih nama file).
+**Total: 79 tabel di install.sql**. Model: 51 dibagikan di `packages/platform-common/src/model/`; 6 di admin/app/model/ dan 10 di service/app/model/ khusus untuk host masing-masing (tanpa tumpang tindih nama file).
 
 ## 8. Cakupan Pengujian
 
@@ -267,7 +271,7 @@ Jendela waktu: 5 menit
 | HashidsServiceTest | 6 | roundtrip encode/decode ID |
 | SnowflakeServiceTest | 5 | keunikan pembuatan ID |
 
-**Total (phpunit --list-tests, pengukuran saat ini): admin 200 kasus / 21 file, service 273 kasus / 42 file (termasuk WebhookUrlSafety + EventBusMessageFormat; laporan: pengulangan 09-22 admin 190 + service 273, snapshot 08-27 admin 153 + service 45). service belum termasuk dalam blokir kegagalan CI (belum diverifikasi).**
+**Total (phpunit --list-tests, pengukuran saat ini): admin 593 kasus / 70 file, service 549 kasus / 89 file (termasuk WebhookUrlSafety + EventBusMessageFormat; laporan: pengulangan 09-22 admin 190 + service 273, snapshot 08-27 admin 153 + service 45). service sudah termasuk dalam blokir kegagalan CI.**
 
 ---
 

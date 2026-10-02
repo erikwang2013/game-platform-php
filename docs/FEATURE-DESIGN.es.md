@@ -299,13 +299,6 @@ La configuración se hace mediante PlatformConfig o variables de entorno; si la 
 - PayPal: POST de vuelta al endpoint de verificación de PayPal
 - Si la clave no está configurada, la verificación se omite automáticamente (modo desarrollo)
 
-### 8.6 Clasificación en tiempo real por WebSocket
-
-- Protocolo: WebSocket (ws://host:8790)
-- Suscripción: {action: "subscribe", leaderboard_id: 123}
-- Push: {type: "ranking_update", rankings: [...]}
-- Soporta heartbeat ping/pong para mantener la conexión
-
 ## 9. Diseño de internacionalización
 
 ### 9.1 Idiomas admitidos

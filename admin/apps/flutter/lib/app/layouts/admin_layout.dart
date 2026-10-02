@@ -51,33 +51,51 @@ class _AdminLayoutState extends State<AdminLayout> {
   static const double sidebarCollapsedWidth = 64;
   static const double headerHeight = 56;
 
-  static const _pages = <Widget>[
-    DashboardPage(),
-    ReportPage(),
-    UserListPage(),
-    RoleListPage(),
-    ConfigPage(),
-    LogPage(),
-    GameListPage(),
-    WithdrawPage(),
-    PlatformUserPage(),
-    IdentityPage(),
-    RiskLogPage(),
-    RiskDashboardPage(),
-    PaymentPage(),
-    CdnPage(),
-    AnnouncementPage(),
-    VipPage(),
-    AchievementPage(),
-    ActivityPage(),
-    GameCategoryPage(),
-    GameServerPage(),
-    LeaderboardPage(),
-    CountryConfigPage(),
-    TicketPage(),
-    CouponPage(),
-    RiskManagePage(), // 24（批次 5）
+  /// 侧栏 / 命令面板 / 页面栈的**唯一**清单：加一个页面只改这里一行。
+  ///
+  /// 早先这里是三份并列的清单（`_pages` 的 25 个 Widget、`_paletteItems` 的 25 个元组、
+  /// `_buildNavItems()` 的 25 个 `NavigationDrawerDestination` 约 130 行），三份的下标必须
+  /// **严格一致**且没有任何东西在核 —— 漏改一处就是「侧栏点第 8 项打开第 9 个页面」这种
+  /// 不报错、只能靠肉眼发现的坏法。现在下标就是位置，不存在对不齐。
+  ///
+  /// key 是翻译键；`!` 开头表示硬编码原文（见 `_navLabel`）。
+  static const _nav = <(String, IconData, Widget)>[
+    ('nav.dashboard', Icons.dashboard, DashboardPage()),
+    ('nav.reports', Icons.bar_chart, ReportPage()),
+    ('nav.users', Icons.people, UserListPage()),
+    ('nav.roles', Icons.security, RoleListPage()),
+    ('nav.config', Icons.settings, ConfigPage()),
+    ('nav.logs', Icons.description, LogPage()),
+    ('nav.games', Icons.games, GameListPage()),
+    ('nav.withdraws', Icons.account_balance_wallet, WithdrawPage()),
+    ('nav.platform_users', Icons.group, PlatformUserPage()),
+    ('nav.identity', Icons.verified_user, IdentityPage()),
+    ('nav.risk_logs', Icons.warning, RiskLogPage()),
+    ('nav.risk_dashboard', Icons.monitor_heart, RiskDashboardPage()),
+    ('nav.payments', Icons.payment, PaymentPage()),
+    ('nav.cdn', Icons.cloud, CdnPage()),
+    ('nav.announcements', Icons.campaign, AnnouncementPage()),
+    ('nav.vip', Icons.workspace_premium, VipPage()),
+    ('nav.achievements', Icons.emoji_events, AchievementPage()),
+    ('nav.activities', Icons.local_activity, ActivityPage()),
+    ('nav.game_categories', Icons.category, GameCategoryPage()),
+    ('nav.game_servers', Icons.dns, GameServerPage()),
+    ('nav.leaderboards', Icons.leaderboard, LeaderboardPage()),
+    ('nav.country_configs', Icons.public, CountryConfigPage()),
+    ('nav.tickets', Icons.confirmation_number, TicketPage()),
+    ('nav.coupons', Icons.local_offer, CouponPage()),
+    // 24：风控管理（写操作）—— 与 11 的「风控大盘」（只读看板）分开
+    ('nav.risk_manage', Icons.gpp_maybe_outlined, RiskManagePage()),
   ];
+
+  // 墓碑：「分析」(analytics) 缺一页 —— 本树**没有**这个模块，不是这里漏了一项。
+  // 后端 12 个聚合端点俱在（config/route.php:245-256 的 /admin/v1/analytics/*：
+  // overview / game-ranking / dau-trend / hourly-trend / action-distribution / revenue /
+  // conversion / probability / retention / funnel / arpu / economy），另两棵树都已接：
+  // react 的 pages/TabPage.tsx id="analytics"（nav.analytics）、angular 的 pages/analytics.ts。
+  // 本树既无页面也无 `analytics.*` 词条（grep 全树 0 命中）—— 本轮刻意不建（代价是这 12 个
+  // 端点在 flutter 端不可达），要补的话：先加词条、再在此处插一项、再照 angular 那页的
+  // 分类（kpi / line / bars / funnel / table）建页；别只加导航项指到一个空页面。
 
   ResponsiveBreakpointsData get _bp => ResponsiveBreakpoints.of(context);
   bool get _isPhone => _bp.smallerThan(TABLET);
@@ -86,7 +104,7 @@ class _AdminLayoutState extends State<AdminLayout> {
   @override
   void initState() {
     super.initState();
-    _currentChild = _pages[_selectedIndex];
+    _currentChild = _nav[_selectedIndex].$3;
     _checkAuth();
   }
 
@@ -110,39 +128,11 @@ class _AdminLayoutState extends State<AdminLayout> {
   void _onNavChanged(int index) {
     setState(() {
       _selectedIndex = index;
-      _currentChild = _pages[index.clamp(0, _pages.length - 1)];
+      _currentChild = _nav[index.clamp(0, _nav.length - 1)].$3;
     });
   }
 
   // ─── 命令面板 + 全局快捷键 ────────────────────────────────────────
-  // 列表与 _buildNavItems() 顺序一致：key 为翻译键，'!' 开头为硬编码中文
-  static const _paletteItems = <(String, IconData, int)>[
-    ('nav.dashboard', Icons.dashboard, 0),
-    ('nav.reports', Icons.bar_chart, 1),
-    ('nav.users', Icons.people, 2),
-    ('nav.roles', Icons.security, 3),
-    ('nav.config', Icons.settings, 4),
-    ('nav.logs', Icons.description, 5),
-    ('nav.games', Icons.games, 6),
-    ('nav.withdraws', Icons.account_balance_wallet, 7),
-    ('nav.platform_users', Icons.group, 8),
-    ('nav.identity', Icons.verified_user, 9),
-    ('nav.risk_logs', Icons.warning, 10),
-    ('nav.risk_dashboard', Icons.monitor_heart, 11),
-    ('nav.payments', Icons.payment, 12),
-    ('nav.cdn', Icons.cloud, 13),
-    ('nav.announcements', Icons.campaign, 14),
-    ('nav.vip', Icons.workspace_premium, 15),
-    ('nav.achievements', Icons.emoji_events, 16),
-    ('nav.activities', Icons.local_activity, 17),
-    ('nav.game_categories', Icons.category, 18),
-    ('nav.game_servers', Icons.dns, 19),
-    ('nav.leaderboards', Icons.leaderboard, 20),
-    ('nav.country_configs', Icons.public, 21),
-    ('nav.tickets', Icons.confirmation_number, 22),
-    ('nav.coupons', Icons.local_offer, 23),
-    ('nav.risk_manage', Icons.gpp_maybe_outlined, 24),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -184,7 +174,7 @@ class _AdminLayoutState extends State<AdminLayout> {
     showDialog<void>(
       context: context,
       builder: (_) => _CommandPalette(
-        items: _paletteItems,
+        items: _nav,
         onSelected: (index) {
           Navigator.of(context).pop();
           _onNavChanged(index);
@@ -293,136 +283,15 @@ class _AdminLayoutState extends State<AdminLayout> {
     );
   }
 
-  List<NavigationDrawerDestination> _buildNavItems() {
-    return [
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.dashboard, size: 20),
-        label: Text("${AppTranslations.t('nav.dashboard')}"),
-        selectedIcon: const Icon(Icons.dashboard, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.bar_chart, size: 20),
-        label: Text("${AppTranslations.t('nav.reports')}"),
-        selectedIcon: const Icon(Icons.bar_chart, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.people, size: 20),
-        label: Text("${AppTranslations.t('nav.users')}"),
-        selectedIcon: const Icon(Icons.people, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.security, size: 20),
-        label: Text("${AppTranslations.t('nav.roles')}"),
-        selectedIcon: const Icon(Icons.security, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.settings, size: 20),
-        label: Text("${AppTranslations.t('nav.config')}"),
-        selectedIcon: const Icon(Icons.settings, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.description, size: 20),
-        label: Text("${AppTranslations.t('nav.logs')}"),
-        selectedIcon: const Icon(Icons.description, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.games, size: 20),
-        label: Text("${AppTranslations.t('nav.games')}"),
-        selectedIcon: const Icon(Icons.games, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.account_balance_wallet, size: 20),
-        label: Text("${AppTranslations.t('nav.withdraws')}"),
-        selectedIcon: const Icon(Icons.account_balance_wallet, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.group, size: 20),
-        label: Text("${AppTranslations.t('nav.platform_users')}"),
-        selectedIcon: const Icon(Icons.group, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.verified_user, size: 20),
-        label: Text("${AppTranslations.t('nav.identity')}"),
-        selectedIcon: const Icon(Icons.verified_user, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.warning, size: 20),
-        label: Text("${AppTranslations.t('nav.risk_logs')}"),
-        selectedIcon: const Icon(Icons.warning, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.monitor_heart, size: 20),
-        label: Text("${AppTranslations.t('nav.risk_dashboard')}"),
-        selectedIcon: const Icon(Icons.monitor_heart, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.payment, size: 20),
-        label: Text("${AppTranslations.t('nav.payments')}"),
-        selectedIcon: const Icon(Icons.payment, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.cloud, size: 20),
-        label: Text("${AppTranslations.t('nav.cdn')}"),
-        selectedIcon: const Icon(Icons.cloud, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.campaign, size: 20),
-        label: Text("${AppTranslations.t('nav.announcements')}"),
-        selectedIcon: const Icon(Icons.campaign, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.workspace_premium, size: 20),
-        label: Text("${AppTranslations.t('nav.vip')}"),
-        selectedIcon: const Icon(Icons.workspace_premium, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.emoji_events, size: 20),
-        label: Text("${AppTranslations.t('nav.achievements')}"),
-        selectedIcon: const Icon(Icons.emoji_events, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.local_activity, size: 20),
-        label: Text("${AppTranslations.t('nav.activities')}"),
-        selectedIcon: const Icon(Icons.local_activity, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.category, size: 20),
-        label: Text("${AppTranslations.t('nav.game_categories')}"),
-        selectedIcon: const Icon(Icons.category, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.dns, size: 20),
-        label: Text("${AppTranslations.t('nav.game_servers')}"),
-        selectedIcon: const Icon(Icons.dns, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.leaderboard, size: 20),
-        label: Text("${AppTranslations.t('nav.leaderboards')}"),
-        selectedIcon: const Icon(Icons.leaderboard, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.public, size: 20),
-        label: Text("${AppTranslations.t('nav.country_configs')}"),
-        selectedIcon: const Icon(Icons.public, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.confirmation_number, size: 20),
-        label: Text("${AppTranslations.t('nav.tickets')}"),
-        selectedIcon: const Icon(Icons.confirmation_number, size: 20),
-      ),
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.local_offer, size: 20),
-        label: Text("${AppTranslations.t('nav.coupons')}"),
-        selectedIcon: const Icon(Icons.local_offer, size: 20),
-      ),
-      // 24：风控管理（写操作）—— 与 11 的「风控大盘」（只读看板）分开
-      NavigationDrawerDestination(
-        icon: const Icon(Icons.gpp_maybe_outlined, size: 20),
-        label: Text("${AppTranslations.t('nav.risk_manage')}"),
-        selectedIcon: const Icon(Icons.gpp_maybe_outlined, size: 20),
-      ),
-    ];
-  }
+  /// 侧栏项由 [_nav] 生成 —— 图标与标题两边同源，改一处两边一起变。
+  List<NavigationDrawerDestination> _buildNavItems() => [
+        for (final (key, icon, _) in _nav)
+          NavigationDrawerDestination(
+            icon: Icon(icon, size: 20),
+            label: Text(_navLabel(key)),
+            selectedIcon: Icon(icon, size: 20),
+          ),
+      ];
 
   Widget _buildHeader() {
     return Container(
@@ -537,9 +406,14 @@ class _AdminLayoutState extends State<AdminLayout> {
   }
 }
 
+/// 侧栏 / 命令面板共用的标题取值：key 是翻译键，`!` 开头表示硬编码原文
+/// （历史遗留的几项还没有翻译键，剥掉 `!` 原样显示，别当成拼写错误删掉）。
+String _navLabel(String key) =>
+    key.startsWith('!') ? key.substring(1) : '${AppTranslations.t(key)}';
+
 /// Ctrl+K 命令面板：输入即过滤，回车或点击跳转页面
 class _CommandPalette extends StatefulWidget {
-  final List<(String, IconData, int)> items;
+  final List<(String, IconData, Widget)> items;
   final ValueChanged<int> onSelected;
   const _CommandPalette({required this.items, required this.onSelected});
 
@@ -551,8 +425,6 @@ class _CommandPaletteState extends State<_CommandPalette> {
   final _query = TextEditingController();
   String _filter = '';
 
-  String _label(String key) => key.startsWith('!') ? key.substring(1) : '${AppTranslations.t(key)}';
-
   @override
   void dispose() {
     _query.dispose();
@@ -561,8 +433,10 @@ class _CommandPaletteState extends State<_CommandPalette> {
 
   @override
   Widget build(BuildContext context) {
-    final filtered = widget.items
-        .where((e) => _filter.isEmpty || _label(e.$1).toLowerCase().contains(_filter.toLowerCase()))
+    // 带上原始下标：过滤后列表下标 ≠ 侧栏下标，跳转要的是后者
+    final filtered = widget.items.indexed
+        .where((e) =>
+            _filter.isEmpty || _navLabel(e.$2.$1).toLowerCase().contains(_filter.toLowerCase()))
         .toList();
     return Dialog(
       child: Container(
@@ -582,7 +456,7 @@ class _CommandPaletteState extends State<_CommandPalette> {
               ),
               onChanged: (v) => setState(() => _filter = v),
               onSubmitted: (_) {
-                if (filtered.isNotEmpty) widget.onSelected(filtered.first.$3);
+                if (filtered.isNotEmpty) widget.onSelected(filtered.first.$1);
               },
             ),
             const SizedBox(height: 12),
@@ -593,12 +467,17 @@ class _CommandPaletteState extends State<_CommandPalette> {
                       itemCount: filtered.length,
                       separatorBuilder: (_, _) => const Divider(height: 1),
                       itemBuilder: (_, i) {
-                        final (key, icon, index) = filtered[i];
+                        final (index, (key, icon, _)) = filtered[i];
                         return ListTile(
                           dense: true,
                           leading: Icon(icon, size: 20),
-                          title: Text(_label(key)),
-                          trailing: Text('Alt+${index + 1}', style: Theme.of(context).textTheme.bodySmall),
+                          title: Text(_navLabel(key)),
+                          // 只在前 9 项标注快捷键：_handleKey 只实现 Alt+1..9，
+                          // 给其余 16 项渲染 Alt+10..25 是凭空造出按不出来的提示。
+                          trailing: index < 9
+                              ? Text('Alt+${index + 1}',
+                                  style: Theme.of(context).textTheme.bodySmall)
+                              : null,
                           onTap: () => widget.onSelected(index),
                         );
                       },

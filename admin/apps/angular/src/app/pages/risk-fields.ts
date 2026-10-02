@@ -82,9 +82,14 @@ export const RULE_FIELDS: Field[] = [
       { value: 'all', label: 'risk.scope.all' },
       { value: 'deposit', label: 'risk.scope.deposit' },
       { value: 'withdraw', label: 'risk.scope.withdraw' },
+      // exchange / login 两项**保留**（产品接上调用点后直接可用），但当前永不命中：
+      // RiskService::check() 全仓只有 deposit（PaymentController:124）与 withdraw
+      // （WithdrawController:173）两个调用点，评估器里那两条分支没有调用方。
+      // 注记走字段级 hint（form-modal.ts:233 通用渲染），不动选项本身。
       { value: 'exchange', label: 'risk.scope.exchange' },
       { value: 'login', label: 'risk.scope.login' },
     ],
+    hint: 'risk.rule.scope_hint',
   },
   {
     name: 'priority',

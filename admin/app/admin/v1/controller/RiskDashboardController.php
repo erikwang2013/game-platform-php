@@ -22,6 +22,8 @@ class RiskDashboardController extends BaseController
 {
     #[Apidoc\Title("总览数据")]
     #[Apidoc\Desc("24h 命中分布 + 规则/黑名单/设备簇规模")]
+    #[Apidoc\Url("/admin/v1/risk/dashboard")]
+    #[Apidoc\Method("GET")]
     public function index(Request $request): Response
     {
         $since24h = date('Y-m-d H:i:s', time() - 86400);
@@ -57,6 +59,8 @@ class RiskDashboardController extends BaseController
 
     #[Apidoc\Title("趋势大盘")]
     #[Apidoc\Desc("时间段内命中数按天/小时分组，含动作分布；只读 risk_log（idx_created_at）")]
+    #[Apidoc\Url("/admin/v1/risk/overview")]
+    #[Apidoc\Method("GET")]
     public function overview(Request $request): Response
     {
         $from = (string) $request->get('from', date('Y-m-d H:i:s', strtotime('-7 days')));
@@ -95,6 +99,8 @@ class RiskDashboardController extends BaseController
 
     #[Apidoc\Title("命中趋势（按规则类型分色）")]
     #[Apidoc\Desc("type => [{bucket, hits}]；rule_type 过滤可选")]
+    #[Apidoc\Url("/admin/v1/risk/hit-trend")]
+    #[Apidoc\Method("GET")]
     public function hitTrend(Request $request): Response
     {
         $from = (string) $request->get('from', date('Y-m-d H:i:s', strtotime('-7 days')));
@@ -118,6 +124,8 @@ class RiskDashboardController extends BaseController
 
     #[Apidoc\Title("动作分布")]
     #[Apidoc\Desc("action => 计数/占比（log/warn/block）")]
+    #[Apidoc\Url("/admin/v1/risk/action-distribution")]
+    #[Apidoc\Method("GET")]
     public function actionDistribution(Request $request): Response
     {
         $from = (string) $request->get('from', date('Y-m-d H:i:s', strtotime('-7 days')));
@@ -138,6 +146,8 @@ class RiskDashboardController extends BaseController
 
     #[Apidoc\Title("规则效果")]
     #[Apidoc\Desc("每规则命中/阻断/误判（manual_review）及比率；误判率口径：result=manual_review 占命中数")]
+    #[Apidoc\Url("/admin/v1/risk/rule-performance")]
+    #[Apidoc\Method("GET")]
     public function rulePerformance(Request $request): Response
     {
         $from = (string) $request->get('from', date('Y-m-d H:i:s', strtotime('-7 days')));

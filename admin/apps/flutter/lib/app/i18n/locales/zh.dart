@@ -471,7 +471,10 @@ const Map<String, String> zh = {
   'ticket.actions': '操作',
   'ticket.all': '全部',
   'ticket.status_open': '待处理',
-  'ticket.status_waiting': '等待用户',
+  // ⚠ waiting ＝ **用户**回复之后置上的状态（`service/app/api/v1/controller/TicketController.php` 的 reply：
+  // `is_admin = 0` 落回复行，紧随其后置 `waiting`）⇒ 球在**客服**这边。旧值「等待用户」把方向讲反了，
+  // 管理员看到会以为不用动。另三棵树此键均为「待回复」，本行与之对齐；**别改回去**。
+  'ticket.status_waiting': '待回复',
   'ticket.status_replied': '已回复',
   'ticket.status_closed': '已关闭',
   'ticket.reply': '回复',

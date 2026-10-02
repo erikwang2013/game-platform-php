@@ -157,6 +157,7 @@ export const arUi: Record<UiKey, string> = {
   'form.options_load_failed': 'فشل تحميل خيارات {name}؛ القيمة المختارة ما زالت ظاهرة، لكن لا تُرسل ما لم تُبقِها كما هي',
   'form.tree_load_failed': 'فشل تحميل شجرة الصلاحيات لـ {name}؛ الصلاحيات المختارة ما زالت ظاهرة، لكن لا تُرسل ما لم تُبقِها كما هي',
   'form.tree_loading': 'جارٍ تحميل شجرة الصلاحيات…',
+  'form.discard_confirm': 'هناك تغييرات غير محفوظة. هل تريد تجاهلها؟',
   'form.select_placeholder': 'يرجى الاختيار',
   // خيارات قائمة الصلاحية الأم (يسطّح lib/tree.ts شجرة الصلاحيات): للمفتاح شكلان
   // (مع slug / بدون)، والمسار و slug يمرّان كـ params — الخيارات تُبنى سطرًا سطرًا، انظر FieldOption في lib/crud.ts

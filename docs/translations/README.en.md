@@ -63,7 +63,7 @@ game-platform-php/
 ├── admin/                     # Admin backend (webman v2, default port 8789, configurable via APP_PORT)
 │   ├── app/admin/v1/controller/  #   Admin-side controllers
 │   ├── app/middleware/        #   Middleware (Cors/SecurityFilter/RateLimit/AdminAuth/AdminPermission/OperationLog)
-│   ├── app/model/             #   Admin-only models (8; the other 52 shared models live in packages/)
+│   ├── app/model/             #   Admin-only models (6; the other 51 shared models live in packages/)
 │   ├── app/service/           #   Admin-only services (WalletService/WalletScope/RiskSandboxService)
 │   ├── app/process/           #   Resident processes (Http/Monitor/RiskIpCron)
 │   ├── app/provider/          #   Game Provider layer (Self/ThirdParty/Factory)
@@ -79,19 +79,19 @@ game-platform-php/
 ├── service/                   # C-end business service (webman v2, default port 8792, configurable via APP_PORT)
 │   ├── app/api/v1/controller/ #   C-end API controllers
 │   ├── app/middleware/        #   Middleware (TraceId/Cors/SecurityFilter/RateLimit/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
-│   ├── app/model/             #   Service-only models (10; the other 52 shared models live in packages/)
+│   ├── app/model/             #   Service-only models (10; the other 51 shared models live in packages/)
 │   ├── app/service/           #   Service-only services (wallet/risk/compliance/reconciliation/push/achievements/anti-cheat etc.)
 │   ├── app/payment/           #   18 payment gateway adapters (Stripe/PayPal/Adyen/NowPayments/Skrill…) + GatewayFactory
 │   ├── app/cdn/               #   Five-vendor CDN adapters (Cloudflare/CloudFront/Alibaba/Tencent/Huawei) + CdnFactory
-│   ├── app/process/           #   Resident processes (Http/Monitor/LeaderboardWS:8790/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
+│   ├── app/process/           #   Resident processes (Http/Monitor/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
 │   ├── app/provider/          #   Game Provider layer
 │   ├── app/activity/          #   Activity engine
 │   ├── app/event/             #   Event bus (EventBus Redis Pub/Sub)
 │   └── config/                #   Config files
 │
 ├── packages/platform-common/  # Shared layer: admin and service pull it in via a composer path repository, avoiding two copies
-│   ├── src/model/             #   Shared Eloquent models (52, same source for both sides)
-│   ├── src/service/           #   Shared services (DepositLogService / VipService etc., 11 in total, incl. ClickHouse probability calculation)
+│   ├── src/model/             #   Shared Eloquent models (51, same source for both sides)
+│   ├── src/service/           #   Shared services (DepositLogService / VipService etc., 12 in total, incl. ClickHouse probability calculation and 2 infrastructure classes EventPublisher/OutboxWriter)
 │   ├── src/BcMath.php         #   High-precision money/ratio arithmetic (bcmath wrapper), rounding, percentages
 │   ├── src/EncryptionService.php  #   AES encryption/decryption and masking
 │   ├── src/CircuitBreaker.php #   Circuit breaker (plus Retry.php for retries)
@@ -109,7 +109,7 @@ game-platform-php/
 ├── install/                   # One-click install wizard + database initialization SQL
 │   ├── index.php              #   Installation entry
 │   ├── Installer.php          #   Installation core logic
-│   ├── install.sql            #   Merged install SQL (78 tables + seed data)
+│   ├── install.sql            #   Merged install SQL (79 tables + seed data)
 │   ├── clickhouse.sql         #   ClickHouse analytics DDL (separate engine, imported on its own)
 │   ├── test-data.sql          #   Demo/test data
 │   ├── migrations/            #   Incremental upgrade scripts for existing databases (*.sql)
@@ -178,7 +178,7 @@ rm -rf install/
 
 The install wizard automatically:
 - Checks the environment (PHP version, extensions, directory permissions)
-- Creates the database and tables (merged SQL, 78 tables + seed data)
+- Creates the database and tables (merged SQL, 79 tables + seed data)
 - Creates the super admin account (bcrypt encrypted)
 - Auto-generates JWT/encryption keys and writes them to the .env file
 - Generates install.lock to prevent re-installation
@@ -333,7 +333,7 @@ Detailed reports:
 | KYC | Real-name verification submission + review, raises withdrawal limits once approved |
 | Games | CRUD + categories (10) + servers/regions + game record tracking |
 | Search | Elasticsearch full-text search (with LIKE fallback) |
-| Leaderboards | Daily/weekly/monthly/all-time, Redis cache, WebSocket real-time push (default port 8790, configurable via LEADERBOARD_WS_PORT) |
+| Leaderboards | Daily/weekly/monthly/all-time, Redis cache |
 | CDN | Five-provider integration (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + preload) + admin config/toggle/connectivity test |
 | Coupons | Fixed amount + percentage discount, time/quantity limited, claim and usage tracking |
 | Notifications | In-app messages + email, automatic notifications for deposits/withdrawals/KYC/coupons |

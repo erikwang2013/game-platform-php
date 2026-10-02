@@ -36,6 +36,8 @@ class UserFileController extends BaseController
 
     #[Apidoc\Title("个人件读取")]
     #[Apidoc\Desc("头像对所有登录用户可读；KYC 三照仅归属人可读。非归属返回 403")]
+    #[Apidoc\Url("/api/v1/user/file/{savedPath}")]
+    #[Apidoc\Method("GET")]
     public function show(Request $request, string $savedPath): Response
     {
         $userId = (int) $request->userId;

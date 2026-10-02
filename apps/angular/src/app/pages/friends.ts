@@ -11,6 +11,7 @@ import {
   dt,
 } from '../core/api.service';
 import { Avatars } from '../core/avatar';
+import { Mt, Msg, T } from '../core/i18n/i18n';
 
 /**
  * 好友 —— 好友列表 / 收到的申请 / 添加（搜人）。
@@ -32,30 +33,32 @@ import { Avatars } from '../core/avatar';
  */
 @Component({
   selector: 'app-friends',
-  imports: [NgTemplateOutlet, RouterLink],
+  imports: [NgTemplateOutlet, RouterLink, T, Mt],
   template: `
     <div class="between sect">
-      <h2>好友</h2>
-      <button class="btn ghost" type="button" [disabled]="loading()" (click)="load()">刷新</button>
+      <h2>{{ 'nav.friends' | t }}</h2>
+      <button class="btn ghost" type="button" [disabled]="loading()" (click)="load()">
+        {{ 'common.refresh' | t }}
+      </button>
     </div>
 
     <div class="chips tabs">
       <button type="button" class="chip" [class.on]="tab() === 'list'" (click)="pick('list')">
-        好友{{ fList().length ? ' ' + fList().length : '' }}
+        {{ 'friends.tab_list' | t: { n: fList().length ? ' ' + fList().length : '' } }}
       </button>
       <button type="button" class="chip" [class.on]="tab() === 'req'" (click)="pick('req')">
-        申请{{ rList().length ? ' ' + rList().length : '' }}
+        {{ 'friends.tab_requests' | t: { n: rList().length ? ' ' + rList().length : '' } }}
       </button>
       <button type="button" class="chip" [class.on]="tab() === 'add'" (click)="pick('add')">
-        添加
+        {{ 'friends.tab_add' | t }}
       </button>
     </div>
 
     @if (ok(); as m) {
-      <div class="alert ok">{{ m }}</div>
+      <div class="alert ok">{{ m | mt }}</div>
     }
     @if (actErr(); as m) {
-      <div class="alert">{{ m }}</div>
+      <div class="alert">{{ m | mt }}</div>
     }
 
     <!-- 头像 + 名字 + @用户名，三个列表共用 -->
@@ -83,15 +86,15 @@ import { Avatars } from '../core/avatar';
           </div>
         } @else if (fErr()) {
           <div class="state">
-            <strong>加载失败</strong>
-            <span>{{ fErr() }}</span>
-            <button class="btn" type="button" (click)="load()">重试</button>
+            <strong>{{ 'common.load_failed' | t }}</strong>
+            <span>{{ fErr() | mt }}</span>
+            <button class="btn" type="button" (click)="load()">{{ 'common.retry' | t }}</button>
           </div>
         } @else if (!fList().length) {
           <div class="state">
             <img class="state-art" src="mascot.svg" alt="" aria-hidden="true" />
-            <strong>还没有好友</strong>
-            <span>去「添加」按用户名或昵称搜人</span>
+            <strong>{{ 'friends.empty_title' | t }}</strong>
+            <span>{{ 'friends.empty_hint' | t }}</span>
           </div>
         } @else {
           <div class="rows">
@@ -101,14 +104,14 @@ import { Avatars } from '../core/avatar';
                 <!-- 发消息走 /chat/{对方用户 hashid}。只摆在好友列表里：
                      服务端 send 只放行 accepted 好友（非好友 403），
                      搜索结果/申请人身上摆这个按钮就是摆一个必然失败的按钮 -->
-                <a class="btn ghost" [routerLink]="['/chat', f.id]">发消息</a>
+                <a class="btn ghost" [routerLink]="['/chat', f.id]">{{ 'app.message' | t }}</a>
                 <button
                   class="btn ghost"
                   type="button"
                   [disabled]="busy() === f.id"
                   (click)="remove(f)"
                 >
-                  {{ busy() === f.id ? '…' : '删除' }}
+                  {{ (busy() === f.id ? '…' : 'app.delete') | t }}
                 </button>
               </div>
             }
@@ -125,14 +128,14 @@ import { Avatars } from '../core/avatar';
           </div>
         } @else if (rErr()) {
           <div class="state">
-            <strong>加载失败</strong>
-            <span>{{ rErr() }}</span>
-            <button class="btn" type="button" (click)="load()">重试</button>
+            <strong>{{ 'common.load_failed' | t }}</strong>
+            <span>{{ rErr() | mt }}</span>
+            <button class="btn" type="button" (click)="load()">{{ 'common.retry' | t }}</button>
           </div>
         } @else if (!rList().length) {
           <div class="state">
-            <strong>没有待处理的申请</strong>
-            <span>别人加你时会出现在这里</span>
+            <strong>{{ 'friends.req_empty_title' | t }}</strong>
+            <span>{{ 'friends.req_empty_hint' | t }}</span>
           </div>
         } @else {
           <div class="rows">
@@ -146,7 +149,7 @@ import { Avatars } from '../core/avatar';
                   [disabled]="busy() === 'a' + r.id"
                   (click)="accept(r)"
                 >
-                  {{ busy() === 'a' + r.id ? '…' : '接受' }}
+                  {{ (busy() === 'a' + r.id ? '…' : 'friends.accept') | t }}
                 </button>
                 <button
                   class="btn ghost"
@@ -154,7 +157,7 @@ import { Avatars } from '../core/avatar';
                   [disabled]="busy() === 'r' + r.id"
                   (click)="reject(r)"
                 >
-                  {{ busy() === 'r' + r.id ? '…' : '拒绝' }}
+                  {{ (busy() === 'r' + r.id ? '…' : 'friends.reject') | t }}
                 </button>
               </div>
             }
@@ -169,13 +172,13 @@ import { Avatars } from '../core/avatar';
           class="input"
           type="search"
           name="q"
-          placeholder="按用户名或昵称搜索"
+          [placeholder]="'friends.search_placeholder' | t"
           autocomplete="off"
           [value]="q()"
           (input)="q.set(val($event))"
         />
         <button class="btn primary" type="submit" [disabled]="searching() || !q().trim()">
-          {{ searching() ? '搜索中…' : '搜索' }}
+          {{ (searching() ? 'friends.searching' : 'app.search') | t }}
         </button>
       </form>
 
@@ -189,8 +192,8 @@ import { Avatars } from '../core/avatar';
         } @else if (hits(); as list) {
           @if (!list.length) {
             <div class="state">
-              <strong>没有找到匹配的用户</strong>
-              <span>换个用户名或昵称试试</span>
+              <strong>{{ 'friends.no_hit_title' | t }}</strong>
+              <span>{{ 'friends.no_hit_hint' | t }}</span>
             </div>
           } @else {
             <div class="rows">
@@ -201,7 +204,7 @@ import { Avatars } from '../core/avatar';
                        比不中的（例如已发过申请仍 pending）点了会吃 422，原样透出即可 ——
                        别自己维护一张"我发过谁"的表，那是第二真值源 -->
                   @if (friendIds().has(u.id)) {
-                    <span class="chip">已是好友</span>
+                    <span class="chip">{{ 'friends.already' | t }}</span>
                   } @else {
                     <button
                       class="btn primary"
@@ -209,7 +212,7 @@ import { Avatars } from '../core/avatar';
                       [disabled]="busy() === u.id"
                       (click)="add(u)"
                     >
-                      {{ busy() === u.id ? '…' : '加好友' }}
+                      {{ (busy() === u.id ? '…' : 'friends.add') | t }}
                     </button>
                   }
                 </div>
@@ -218,8 +221,8 @@ import { Avatars } from '../core/avatar';
           }
         } @else {
           <div class="state">
-            <strong>搜人加好友</strong>
-            <span>输入用户名或昵称后点搜索</span>
+            <strong>{{ 'friends.add_idle_title' | t }}</strong>
+            <span>{{ 'friends.add_idle_hint' | t }}</span>
           </div>
         }
       </div>
@@ -284,13 +287,14 @@ export class FriendsPage {
 
   protected readonly fList = signal<FriendUser[]>([]);
   protected readonly rList = signal<FriendRequest[]>([]);
-  protected readonly fErr = signal('');
-  protected readonly rErr = signal('');
+  /** 两条错误、两条动作提示都是**两态**（服务端原文 / 词条键）—— 见 `Msg`；模板上过 `| mt` */
+  protected readonly fErr = signal<Msg>('');
+  protected readonly rErr = signal<Msg>('');
   protected readonly loading = signal(true);
 
   protected readonly busy = signal('');
-  protected readonly ok = signal('');
-  protected readonly actErr = signal('');
+  protected readonly ok = signal<Msg>('');
+  protected readonly actErr = signal<Msg>('');
 
   protected readonly q = signal('');
   /** null = 还没搜过（与"搜了但没结果"要分开显示） */
@@ -313,13 +317,13 @@ export class FriendsPage {
     forkJoin({
       f: this.api.friends().pipe(
         catchError((e: ApiError) => {
-          this.fErr.set(e.message);
+          this.fErr.set(e.msg);
           return of(null);
         }),
       ),
       r: this.api.friendRequests().pipe(
         catchError((e: ApiError) => {
-          this.rErr.set(e.message);
+          this.rErr.set(e.msg);
           return of(null);
         }),
       ),
@@ -347,8 +351,11 @@ export class FriendsPage {
   /**
    * 三个动作的公共壳：**成功后两个列表都重拉** —— 接受一条申请同时改变「好友」和「申请」，
    * 只刷一边必漏。失败把服务端文案原样透出（404/422/403 都是写给人看的）。
+   *
+   * ⚠ 成功提示收的是 **`Msg`**（键 + `{name}` 参数）而不是拼好的串：这行字在 `await` **之后**
+   * 才落值，存成串就把语言冻在点击那一刻了（切语言这行不变）。名字进 `params`，模板上过 `| mt`。
    */
-  private act(key: string, fn: () => Observable<unknown>, okText: string): void {
+  private act(key: string, fn: () => Observable<unknown>, okMsg: Msg): void {
     if (this.busy()) return;
     this.busy.set(key);
     this.ok.set('');
@@ -356,33 +363,45 @@ export class FriendsPage {
     fn().subscribe({
       next: () => {
         this.busy.set('');
-        this.ok.set(okText);
+        this.ok.set(okMsg);
         this.load();
       },
       error: (e: ApiError) => {
         this.busy.set('');
-        this.actErr.set(e.message);
+        this.actErr.set(e.msg);
       },
     });
   }
 
   /** ⚠ 传的是**关系** id（`r.id`），不是 `r.user.id` —— 混用服务端 404 */
   protected accept(r: FriendRequest): void {
-    this.act('a' + r.id, () => this.api.friendAccept(r.id), `已接受 ${this.name(r.user)}`);
+    this.act('a' + r.id, () => this.api.friendAccept(r.id), {
+      key: 'friends.accepted',
+      params: { name: this.name(r.user) },
+    });
   }
 
   /** 拒绝是**硬删**，对方可以立刻再发；文案里不承诺"不会再收到" */
   protected reject(r: FriendRequest): void {
-    this.act('r' + r.id, () => this.api.friendReject(r.id), `已拒绝 ${this.name(r.user)}`);
+    this.act('r' + r.id, () => this.api.friendReject(r.id), {
+      key: 'friends.rejected',
+      params: { name: this.name(r.user) },
+    });
   }
 
   /** 删好友：`f.id` 是**用户** hashid（不是关系 id）。服务端幂等，删不到也回成功 */
   protected remove(f: FriendUser): void {
-    this.act(f.id, () => this.api.friendRemove(f.id), `已删除好友 ${this.name(f)}`);
+    this.act(f.id, () => this.api.friendRemove(f.id), {
+      key: 'friends.removed',
+      params: { name: this.name(f) },
+    });
   }
 
   protected add(u: FriendUser): void {
-    this.act(u.id, () => this.api.friendRequest(u.id), `已向 ${this.name(u)} 发送申请`);
+    this.act(u.id, () => this.api.friendRequest(u.id), {
+      key: 'friends.sent',
+      params: { name: this.name(u) },
+    });
   }
 
   /** 搜索是**显式触发**的（服务端没有防抖/限流余量，逐字打请求会白撞一堆） */
@@ -400,7 +419,7 @@ export class FriendsPage {
       },
       error: (e: ApiError) => {
         this.hits.set(null);
-        this.actErr.set(e.message);
+        this.actErr.set(e.msg);
         this.searching.set(false);
       },
     });

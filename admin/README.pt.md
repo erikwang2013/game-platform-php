@@ -85,17 +85,19 @@ open-admin/
 │   │       └── AuthController.php    # Login/registro/refresh de token
 │   ├── common/                 # Classes utilitárias comuns
 │   │   └── CdnProbeService.php # Teste de conectividade CDN (Hashids/Snowflake/Encryption fornecidos por pacotes Composer)
-│   ├── middleware/             # Middlewares
+│   ├── middleware/             # Middlewares (9 no diretório; 8 na cadeia de execução)
 │   │   ├── Cors.php            # CORS
 │   │   ├── SecurityFilter.php  # Detecção e bloqueio de ataques (restrição de métodos HTTP/XSS/injeção SQL/traversal de caminho/injeção de comandos/CSRF)
 │   │   ├── RateLimit.php       # Rate limit em Redis (janela deslizante + cabeçalhos de resposta)
-│   │   ├── StaticFile.php      # Serviço de arquivos estáticos (integrado ao webman)
+│   │   ├── LanguageMiddleware.php # Idioma/locale (global; registrado após o RateLimit, antes do middleware de rota)
+│   │   ├── StaticFile.php      # Serviço de arquivos estáticos (cópia do integrado ao webman; NÃO registrado — comentado em config/static.php:25, fora da cadeia de execução)
 │   │   ├── AdminAuth.php       # Autenticação JWT + lista negra
 │   │   ├── AdminPermission.php # Validação de permissões RBAC
+│   │   ├── MetricsAuth.php     # exclusivo de /metrics: JWT de administrador ou token de scrape estático
 │   │   └── OperationLog.php    # Registro automático de logs de operação (inclui detecção de origem)
 │   ├── activity/               # Manipuladores de atividades (check-in/convite/tarefas diárias)
 │   ├── model/                  # Modelos de dados
-│   ├── process/                # Processos (Http, Monitor, RiskIpCron)
+│   ├── process/                # Processos (Http, Monitor, RiskIpCron, ExportTmpCleanup)
 │   ├── provider/               # Camada Provider de jogos (Self/ThirdParty/Factory)
 │   ├── service/                # Serviços (carteira/sandbox de risco)
 │   └── view/                   # Modelos de view
@@ -104,7 +106,7 @@ open-admin/
 │   ├── react/                  # Backend de administração web React
 │   ├── flutter/                # Painel administrativo Flutter Web (estilo PC)
 │   │   └── lib/app/
-│   │       ├── pages/          # 20 diretórios de páginas
+│   │       ├── pages/          # 26 diretórios de páginas
 │   │       ├── services/       # ApiService (interceptor JWT) + AuthService (persistência de Token)
 │   │       └── layouts/        # Layout responsivo do painel (sidebar + topbar + área de conteúdo)
 │   └── harmonyos/              # Cliente nativo HarmonyOS (refresh silencioso de Token)
@@ -147,8 +149,8 @@ Itens de configuração principais:
 |---------|------|--------|
 | `APP_PORT` | Porta de escuta HTTP do webman | `8789` |
 | `APP_URL` | Endereço de acesso externo (links da página de sucesso do instalador, baseUrl da documentação da API, etc.) | `http://localhost:8789` |
-| `JWT_SECRET` | Chave de assinatura JWT | `open-admin-jwt-secret-change-in-production` |
-| `HASHIDS_SALT` | Salt do Hashids | `open-admin-hashids-salt-2026` |
+| `ADMIN_JWT_SECRET_KEY` | Chave de assinatura JWT | `game-platform-admin-jwt-secret-change-in-production` |
+| `HASHIDS_SALT` | Salt do Hashids | `game-platform-hashids-salt-2026` |
 | `ENCRYPTION_KEY` | Chave de criptografia da API | valor padrão de 32 bytes |
 | `SNOWFLAKE_DATACENTER_ID` | ID do datacenter (0-31) | `1` |
 | `SNOWFLAKE_WORKER_ID` | ID do nó de trabalho (0-31) | `1` |
@@ -188,7 +190,7 @@ Use o DevEco Studio para abrir o diretório `apps/harmonyos/` e execute em um di
 
 ### 6. Deploy com Docker Compose em um clique (recomendado para produção)
 
-O projeto oferece uma solução completa de orquestração Docker com 7 serviços: Nginx, admin (webman), service (webman), leaderboard-ws (WebSocket), MySQL, Redis, Elasticsearch.
+O projeto oferece uma solução completa de orquestração Docker com 7 serviços: Nginx, admin (webman), service (webman), chat-ws (WebSocket), MySQL, Redis, Elasticsearch.
 
 ```bash
 # 1. Configurar variáveis de ambiente do Docker
@@ -423,7 +425,7 @@ A raiz do projeto fornece `docker-compose.yml`, orquestrando 7 serviços:
 | `nginx` | nginx:alpine | 80, 443 |
 | `admin` | construído com `Dockerfile` local | 8789 |
 | `service` | construído com `Dockerfile` local | 8792 |
-| `leaderboard-ws` | construído com `Dockerfile` local | 8790, 8791 |
+| `chat-ws` | construído com `Dockerfile` local | 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

@@ -44,7 +44,7 @@
 
 ## 2. 现状分析
 
-### 2.1 现有字段（MySQL `game_game_play_log`，`install/install.sql:538`）
+### 2.1 现有字段（MySQL `game_game_play_log`，`install/install.sql:576`）
 
 | 字段 | 反作弊可用性 |
 |---|---|

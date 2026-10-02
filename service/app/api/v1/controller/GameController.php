@@ -32,7 +32,10 @@ class GameController extends BaseController
     public function list(Request $request): Response
     {
         $page       = (int) $request->input('page', 1);
-        $perPage    = (int) $request->input('per_page', 20);
+        // 上下界都必须夹：本端点在**公开组**（config/route.php，无 UserAuth），匿名可触发。
+        // 只夹上界挡不住 `?per_page=-1`：`Builder::limit()` 对负值是「忽略」（`if ($value >= 0)`），
+        // 生成的查询没有 limit 子句、只剩 `offset 0` ⇒ MySQL 1064 ⇒ 稳定 500。口径同 SearchController:31。
+        $perPage    = max(1, min(100, (int) $request->input('per_page', 20)));
         $keyword    = $request->input('keyword');
         $type       = $request->input('type');
         $categoryId = $request->input('category_id');
@@ -117,7 +120,7 @@ class GameController extends BaseController
     }
 
     #[Apidoc\Title("游戏详情")]
-    #[Apidoc\Url("/api/v1/game/{hashid}")]
+    #[Apidoc\Url("/api/v1/game/detail/{hashid}")]
     #[Apidoc\Method("GET")]
     #[Apidoc\Param(name: "hashid", type: "string", require: true, desc: "游戏hashid", in: "path")]
     public function detail(Request $request, string $hashid): Response

@@ -23,7 +23,8 @@ class TournamentController extends BaseController
         if (!FeatureFlag::isEnabled('tournament')) return $this->fail(trans('Tournaments not available'), 503);
 
         $page = (int) $request->input('page', 1);
-        $perPage = (int) $request->input('per_page', 20);
+        // 上下界都要夹，理由见 SearchController:28-31（负值会让 limit 子句整个消失 ⇒ 1064）
+        $perPage = max(1, min(100, (int) $request->input('per_page', 20)));
         $status = $request->input('status', 'active');
 
         $query = Tournament::with('game')->withCount('entries')->orderBy('id', 'desc');

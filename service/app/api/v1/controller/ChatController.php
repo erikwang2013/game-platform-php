@@ -16,6 +16,9 @@ use erikwang2013\apidoc\annotation as Apidoc;
 #[Apidoc\Group("chat")]
 class ChatController extends BaseController
 {
+    /** 会话列表硬上限：按「最近一条消息」取最新的 N 个会话（会话数随使用单调增长，此前无上限） */
+    private const CONVERSATION_LIMIT = 200;
+
     #[Apidoc\Title("会话列表")]
     #[Apidoc\Url("/api/v1/chat/conversations")]
     #[Apidoc\Method("GET")]
@@ -23,23 +26,39 @@ class ChatController extends BaseController
     public function conversations(Request $request): Response
     {
         $userId = $request->userId;
+        // 每个方向先各取「最近 200 个 peer」（按该方向的最大消息 id）。两侧各限 200 是最终 200 条的
+        // **超集**：若某 peer 的双向最大值取自 sent 而它不在 sent 的 top200，则已有 ≥200 个 peer 的
+        // sent 最大值比它大 ⇒ 它本来也进不了全局 top200。合并后再切一次即得精确的全局 top200。
+        // ⚠ 排序语义（下面 usort 的 updated_at desc）不动，这里限的是候选集。
+        // ponytail: 上限 200，更早的会话不返回；要翻页再加 `last_msg_id` 游标入参
+        // （当前三棵客户端树都没有消费者，加了＝零功能只生产误导信号）。
         $sent = Message::where('from_user_id', $userId)
             ->selectRaw('to_user_id as peer_id, MAX(id) as last_msg_id')
-            ->groupBy('to_user_id')->pluck('last_msg_id', 'peer_id');
+            ->groupBy('to_user_id')->orderByRaw('MAX(id) DESC')->limit(self::CONVERSATION_LIMIT)
+            ->pluck('last_msg_id', 'peer_id');
         $received = Message::where('to_user_id', $userId)
             ->selectRaw('from_user_id as peer_id, MAX(id) as last_msg_id')
-            ->groupBy('from_user_id')->pluck('last_msg_id', 'peer_id');
+            ->groupBy('from_user_id')->orderByRaw('MAX(id) DESC')->limit(self::CONVERSATION_LIMIT)
+            ->pluck('last_msg_id', 'peer_id');
 
         $conversations = [];
-        $allPeers = $sent->union($received);
-        if ($allPeers->isEmpty()) {
+        // 合并双向、取双向最大值（＝最近一条消息 id，也是上面的游标键）。不用 union：union 只保留
+        // 首个集合的 last_msg_id，会把「对方发来的更新」丢掉。
+        $allPeers = [];
+        foreach ([$sent, $received] as $side) {
+            foreach ($side as $peerId => $lastMsgId) {
+                $allPeers[$peerId] = max($allPeers[$peerId] ?? 0, (int) $lastMsgId);
+            }
+        }
+        if (!$allPeers) {
             return $this->success(['list' => []]);
         }
+        arsort($allPeers);   // 最近有消息的会话在前（切上限用，最终次序仍由下面 usort 定）
+        $allPeers = array_slice($allPeers, 0, self::CONVERSATION_LIMIT, true);
 
         // 批量查询：消息/用户/未读数各 1 次，替代逐会话 3 次查询
-        $peerIds = $allPeers->keys()->all();
-        // union 只保留首个集合的 last_msg_id，而下方取双向最大值，故两个方向的消息 id 都要取
-        $lastMsgIds = $sent->values()->merge($received->values())->all();
+        $peerIds = array_keys($allPeers);
+        $lastMsgIds = array_values($allPeers);
         $msgs = Message::whereIn('id', $lastMsgIds)->get()->keyBy('id');
         $peers = User::whereIn('id', $peerIds)->get()->keyBy('id');
         $unread = Message::where('to_user_id', $userId)
@@ -48,7 +67,7 @@ class ChatController extends BaseController
             ->groupBy('from_user_id')->pluck('c', 'from_user_id');
 
         foreach ($allPeers as $peerId => $lastMsgId) {
-            $peerMsgId = max($sent[$peerId] ?? 0, $received[$peerId] ?? 0);
+            $peerMsgId = $lastMsgId;   // 合并时已取双向最大值
             $lastMsg = $msgs->get($peerMsgId);
             if (!$lastMsg) continue;
             $peer = $peers->get($peerId);
@@ -74,7 +93,8 @@ class ChatController extends BaseController
         $userId = $request->userId;
         $peerId = $this->decodeId($peerHashid);
         $page = (int) $request->input('page', 1);
-        $perPage = (int) $request->input('per_page', 50);
+        // 上下界都要夹，理由见 SearchController:28-31（负值会让 limit 子句整个消失 ⇒ 1064）
+        $perPage = max(1, min(100, (int) $request->input('per_page', 50)));
 
         $msgs = Message::where(function($q) use ($userId, $peerId) {
             $q->where('from_user_id', $userId)->where('to_user_id', $peerId);
@@ -116,10 +136,13 @@ class ChatController extends BaseController
         if (empty($content) || mb_strlen($content) > 5000) return $this->fail(trans('Message must be 1-5000 characters'), 422);
 
         // Check friendship
+        // 两个 OR 方向必须整体成组：AND 比 OR 结合更紧，若写成 where(A)->orWhere(B)->where(status)
+        // 会得到 `(A) OR (B AND status)`，A 分支不受 status 约束 ⇒ 一条 pending 申请即可发私信。
         $friends = Friend::where(function($q) use ($userId, $peerId) {
-            $q->where('user_id', $userId)->where('friend_id', $peerId);
-        })->orWhere(function($q) use ($userId, $peerId) {
-            $q->where('user_id', $peerId)->where('friend_id', $userId);
+            $q->where('user_id', $userId)->where('friend_id', $peerId)
+              ->orWhere(function($q) use ($peerId, $userId) {
+                  $q->where('user_id', $peerId)->where('friend_id', $userId);
+              });
         })->where('status', 'accepted')->exists();
         if (!$friends) return $this->fail(trans('Only friends can send messages'), 403);
 
@@ -144,7 +167,6 @@ class ChatController extends BaseController
                 ],
                 'to_user_id' => $peerId,
             ]);
-            Redis::publish('chat:channel', $payload);
             Redis::lpush('chat:delivery_queue', $payload);
         } catch (\Throwable $e) {
             \support\Log::error('Chat realtime push degraded: ' . $e->getMessage());

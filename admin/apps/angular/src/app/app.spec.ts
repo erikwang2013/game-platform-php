@@ -217,4 +217,46 @@ describe('App', () => {
     expect(el.querySelector('.lang-menu')).toBeNull();
     expect(TestBed.inject(I18n).lang()).toBe('zh'); // 遮罩只关菜单
   });
+
+  /**
+   * 遮罩的**包含块** —— 本文件里唯一一条 jsdom 验不了几何、只能钉结构的用例。
+   *
+   * `.topbar` 带 `backdrop-filter`（`src/styles.scss:243`），按 CSS Filter Effects L2 它会成为
+   * fixed 后代的**包含块** —— 这与「层叠上下文」是两个机制：原实现按层叠上下文推理（注释还在
+   * 旧版里），把 `.lang-catch` 挂在 `.lang`/`.umenu` 里，于是 `inset: 0` 对的是顶栏的 padding box
+   * 而不是视口，遮罩只盖住顶栏那一条、在下面点内容关不掉菜单（真机实测修前 rect 1200×53 @240,0）。
+   *
+   * jsdom 不算布局也不算包含块：上面那条 `.click()` 的用例对修前修后一样绿，对这条缺陷是**盲的**
+   * （实测 jsdom 连 `getComputedStyle(el).backdropFilter` 都读不到 —— 常量空串 ⇒「祖先链上有没有
+   * 包含块属性」这类断言在 jsdom 里恒真，写了就是假绿，不能写）。所以这里只钉结构那一半：
+   * 遮罩必须挂在外壳根、且不在 `.topbar` 子树里。把它移回顶栏，这条立刻红。
+   * 几何那一半只能真机验（起 dev server 后开菜单：`document.elementFromPoint(720, 600)` 应命中
+   * `.lang-catch`，遮罩 rect 应等于视口、且点下去菜单真的关）—— jsdom 里这两条都是零信息。
+   */
+  it('遮罩挂在外壳根、不在 .topbar 子树里（顶栏的 backdrop-filter 是 fixed 后代的包含块）', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.autoDetectChanges();
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+
+    expect(el.querySelector('.lang-catch')).toBeNull(); // 两个菜单都没开时不该有遮罩
+
+    el.querySelector<HTMLButtonElement>('.lang .btn')!.click();
+    el.querySelector<HTMLButtonElement>('.umenu .btn')!.click();
+    await fixture.whenStable();
+
+    const catchEls = [...el.querySelectorAll<HTMLElement>('.lang-catch')];
+    expect(catchEls.length).toBeGreaterThan(0);
+    for (const c of catchEls) {
+      // 先断这一条：变异的失败信息才会直指「遮罩又回到包含块里了」
+      expect(c.closest('.topbar')).toBeNull();
+      expect(c.parentElement).toBe(el); // 直接挂在外壳根上（与 .main 平级）
+    }
+
+    // 遮罩收的是「视口坐标系里的点击」，与哪个菜单开着无关
+    catchEls.forEach((c) => c.click());
+    await fixture.whenStable();
+    expect(el.querySelector('.lang-menu')).toBeNull();
+    expect(el.querySelector('.umenu-panel')).toBeNull();
+  });
 });

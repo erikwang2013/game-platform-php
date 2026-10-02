@@ -1668,7 +1668,7 @@ POST /admin/v1/upload
 
 ### Docker Compose
 
-يوفر دليل جذر المشروع `docker-compose.yml`، ينظم 7 خدمات (Nginx وadmin وservice وleaderboard-ws وMySQL وRedis وElasticsearch). يُبنى PHP عبر `Dockerfile` (مبني على `php:8.3-cli` مع تفعيل OPcache).
+يوفر دليل جذر المشروع `docker-compose.yml`، ينظم 7 خدمات (Nginx وadmin وservice وchat-ws وMySQL وRedis وElasticsearch). يُبنى PHP عبر `Dockerfile` (مبني على `php:8.3-cli` مع تفعيل OPcache).
 
 ```bash
 cp .env.example .env
@@ -1948,7 +1948,7 @@ DELETE /admin/v1/payment/method/{hashid}
 
 ## 19. نقاط نهاية الإدارة الموسّعة (Extended Admin APIs)
 
-نقاط النهاية العشرون التالية مجمّعة في 6 أقسام؛ جميعها نقاط نهاية إدارية تحت `/admin/v1` وتتطلب مصادقة JWT والتحقق من صلاحيات RBAC.
+نقاط النهاية الـ21 التالية مجمّعة في 6 أقسام؛ جميعها نقاط نهاية إدارية تحت `/admin/v1` وتتطلب مصادقة JWT والتحقق من صلاحيات RBAC.
 
 ### 19.1 المراجعة الجماعية للسحب وتنفيذ الدفع
 

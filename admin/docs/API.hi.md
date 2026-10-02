@@ -1668,7 +1668,7 @@ POST /admin/v1/upload
 
 ### Docker Compose
 
-प्रोजेक्ट रूट में `docker-compose.yml` उपलब्ध है, 7 सेवाओं का ऑर्केस्ट्रेशन (Nginx, admin, service, leaderboard-ws, MySQL, Redis, Elasticsearch)। PHP `Dockerfile` से निर्मित (`php:8.3-cli` पर आधारित, OPcache सक्षम)।
+प्रोजेक्ट रूट में `docker-compose.yml` उपलब्ध है, 7 सेवाओं का ऑर्केस्ट्रेशन (Nginx, admin, service, chat-ws, MySQL, Redis, Elasticsearch)। PHP `Dockerfile` से निर्मित (`php:8.3-cli` पर आधारित, OPcache सक्षम)।
 
 ```bash
 cp .env.example .env
@@ -1948,7 +1948,7 @@ DELETE /admin/v1/payment/method/{hashid}
 
 ## 19. विस्तारित एडमिन एंडपॉइंट्स (Extended Admin APIs)
 
-नीचे दिए गए 20 एंडपॉइंट्स 6 अनुभागों में समूहित हैं; ये सभी `/admin/v1` एडमिन एंडपॉइंट्स हैं और इनके लिए JWT प्रमाणीकरण तथा RBAC अनुमति सत्यापन आवश्यक है।
+नीचे दिए गए 21 एंडपॉइंट्स 6 अनुभागों में समूहित हैं; ये सभी `/admin/v1` एडमिन एंडपॉइंट्स हैं और इनके लिए JWT प्रमाणीकरण तथा RBAC अनुमति सत्यापन आवश्यक है।
 
 ### 19.1 निकासी बैच समीक्षा और भुगतान
 

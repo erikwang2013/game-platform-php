@@ -39,7 +39,7 @@ class IdentityController extends BaseController
             $query->where('status', $status);
         }
 
-        // 加 id 次序：game_user_identity.created_at 是 DATETIME（秒精度，install.sql:505），
+        // 加 id 次序：game_user_identity.created_at 是 DATETIME（秒精度，DDL 见 install.sql 的 game_user_identity 建表段），
         // 同秒提交的多笔是常态；只按 created_at 排的话翻页会重复/漏行 —— 而 total/last_page
         // 仍然正确，账面自洽、行对不上（KYC 审核队列漏看一条就是漏审一个人）。
         // 照 PlatformUserController::transactions 的写法。

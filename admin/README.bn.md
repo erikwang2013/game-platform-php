@@ -85,17 +85,19 @@ open-admin/
 │   │       └── AuthController.php    # লগইন/রেজিস্ট্রেশন/টোকেন রিফ্রেশ
 │   ├── common/                 # কমন ইউটিলিটি ক্লাস
 │   │   └── CdnProbeService.php # CDN কানেক্টিভিটি প্রোব (Hashids/Snowflake/Encryption composer প্যাকেজ থেকে)
-│   ├── middleware/             # মিডলওয়্যার
+│   ├── middleware/             # মিডলওয়্যার (ডিস্কে ৯টি; এক্সিকিউশন চেইনে ৮টি)
 │   │   ├── Cors.php            # ক্রস-অরিজিন
 │   │   ├── SecurityFilter.php  # অ্যাটাক ডিটেকশন ও ব্লক (HTTP মেথড সীমা/XSS/SQL ইনজেকশন/পাথ ট্রাভার্সাল/কমান্ড ইনজেকশন/CSRF)
 │   │   ├── RateLimit.php       # Redis রেট লিমিট (স্লাইডিং উইন্ডো + রেসপন্স হেডার)
-│   │   ├── StaticFile.php      # স্ট্যাটিক ফাইল সার্ভিং (webman অন্তর্নির্মিত)
+│   │   ├── LanguageMiddleware.php # ভাষা/locale (গ্লোবাল; RateLimit-এর পরে ও রুট মিডলওয়্যারের আগে নিবন্ধিত)
+│   │   ├── StaticFile.php      # স্ট্যাটিক ফাইল সার্ভিং (webman অন্তর্নির্মিতের অনুলিপি; নিবন্ধিত নয় — config/static.php:25-এ কমেন্ট করা, এক্সিকিউশন চেইনে নেই)
 │   │   ├── AdminAuth.php       # JWT অথেনটিকেশন + ব্ল্যাকলিস্ট
 │   │   ├── AdminPermission.php # RBAC পারমিশন ভেরিফিকেশন
+│   │   ├── MetricsAuth.php     # শুধুমাত্র /metrics: অ্যাডমিন JWT বা স্ট্যাটিক স্ক্র্যাপ টোকেন
 │   │   └── OperationLog.php    # অপারেশন লগ স্বয়ংক্রিয় রেকর্ড (সোর্স ডিটেকশন সহ)
 │   ├── activity/               # অ্যাক্টিভিটি হ্যান্ডলার (সাইন-ইন/আমন্ত্রণ/দৈনিক কাজ)
 │   ├── model/                  # ডেটা মডেল
-│   ├── process/                # প্রসেস (Http, Monitor, RiskIpCron)
+│   ├── process/                # প্রসেস (Http, Monitor, RiskIpCron, ExportTmpCleanup)
 │   ├── provider/               # গেম Provider লেয়ার (Self/ThirdParty/Factory)
 │   ├── service/                # সার্ভিস (ওয়ালেট/রিস্ক স্যান্ডবক্স)
 │   └── view/                   # ভিউ টেমপ্লেট
@@ -104,7 +106,7 @@ open-admin/
 │   ├── react/                  # React ওয়েব অ্যাডমিন ব্যাকএন্ড
 │   ├── flutter/                # Flutter Web প্রশাসনিক প্যানেল (PC স্টাইল)
 │   │   └── lib/app/
-│   │       ├── pages/          # ২০টি পেজ ডিরেক্টরি
+│   │       ├── pages/          # ২৬টি পেজ ডিরেক্টরি
 │   │       ├── services/       # ApiService (JWT ইন্টারসেপ্টর) + AuthService (Token পারসিস্টেন্স)
 │   │       └── layouts/        # রেসপন্সিভ প্রশাসনিক প্যানেল লেআউট (সাইডবার+টপবার+কনটেন্ট)
 │   └── harmonyos/              # HarmonyOS নেটিভ ক্লায়েন্ট (Token সিলেন্ট রিফ্রেশ)
@@ -147,8 +149,8 @@ cp .env.example .env
 |---------|------|--------|
 | `APP_PORT` | webman HTTP লিসেনিং পোর্ট | `8789` |
 | `APP_URL` | বাহ্যিক অ্যাক্সেস ঠিকানা (ইনস্টলার সফলতা পৃষ্ঠার লিঙ্ক, API ডকুমেন্টেশন baseUrl ইত্যাদি) | `http://localhost:8789` |
-| `JWT_SECRET` | JWT সিগনেচার কী | `open-admin-jwt-secret-change-in-production` |
-| `HASHIDS_SALT` | Hashids সল্ট | `open-admin-hashids-salt-2026` |
+| `ADMIN_JWT_SECRET_KEY` | JWT সিগনেচার কী | `game-platform-admin-jwt-secret-change-in-production` |
+| `HASHIDS_SALT` | Hashids সল্ট | `game-platform-hashids-salt-2026` |
 | `ENCRYPTION_KEY` | API এনক্রিপশন কী | ৩২ বাইট ডিফল্ট মান |
 | `SNOWFLAKE_DATACENTER_ID` | ডেটাসেন্টার ID (0-31) | `1` |
 | `SNOWFLAKE_WORKER_ID` | ওয়ার্কার নোড ID (0-31) | `1` |
@@ -188,7 +190,7 @@ DevEco Studio দিয়ে `apps/harmonyos/` ডিরেক্টরি খ�
 
 ### 6. Docker Compose ওয়ান-ক্লিক ডিপ্লয়মেন্ট (প্রোডাকশনে সুপারিশকৃত)
 
-প্রজেক্টে সম্পূর্ণ Docker অর্কেস্ট্রেশন সমাধান রয়েছে, ৭টি সার্ভিস সহ: Nginx, admin (webman), service (webman), leaderboard-ws (WebSocket), MySQL, Redis, Elasticsearch।
+প্রজেক্টে সম্পূর্ণ Docker অর্কেস্ট্রেশন সমাধান রয়েছে, ৭টি সার্ভিস সহ: Nginx, admin (webman), service (webman), chat-ws (WebSocket), MySQL, Redis, Elasticsearch।
 
 ```bash
 # 1. Docker এনভায়রনমেন্ট ভেরিয়েবল কনফিগার
@@ -423,7 +425,7 @@ Authorization: Bearer <token>
 | `nginx` | nginx:alpine | 80, 443 |
 | `admin` | লোকাল `Dockerfile` দিয়ে বিল্ড | 8789 |
 | `service` | লোকাল `Dockerfile` দিয়ে বিল্ড | 8792 |
-| `leaderboard-ws` | লোকাল `Dockerfile` দিয়ে বিল্ড | 8790, 8791 |
+| `chat-ws` | লোকাল `Dockerfile` দিয়ে বিল্ড | 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

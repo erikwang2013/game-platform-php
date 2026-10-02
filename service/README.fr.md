@@ -17,7 +17,7 @@ L'API du service plateforme utilisateur (côté C) est un backend PHP haute perf
 | Retrait | Demande → validation → versement, limites KYC par paliers |
 | Change | Cotations en temps réel jeton de plateforme ⇄ monnaie de jeu, remises VIP et bonus de taux |
 | Jeux | Liste/catégories/recherche de jeux, historique de jeu, callbacks de règlement Provider |
-| Classements | Jour/semaine/mois/tout temps + push WebSocket en temps réel |
+| Classements | Jour/semaine/mois/tout temps (REST) |
 | Coupons | Montant fixe + remise en pourcentage, limités dans le temps et la quantité |
 | Tickets | Création/réponse aux tickets d'assistance par l'utilisateur |
 | VIP | 5 niveaux de fidélité, accumulation d'expérience, remises sur le change |
@@ -40,7 +40,7 @@ L'API du service plateforme utilisateur (côté C) est un backend PHP haute perf
 service/
 ├── app/
 │   ├── activity/           # Gestionnaires d'activités
-│   ├── api/v1/controller/  # Contrôleurs API côté C (34)
+│   ├── api/v1/controller/  # Contrôleurs API côté C (35)
 │   ├── bootstrap/          # Amorçage des notifications
 │   ├── cdn/                # CDN multi-fournisseurs (Aliyun/Tencent/Huawei/Cloudflare/CloudFront + CdnFactory)
 │   ├── common/             # Commun
@@ -96,7 +96,7 @@ cp .env.example .env
 # 3. Démarrer le service (port par défaut 8792, modifiable via APP_PORT dans .env)
 php start.php start        # premier plan
 php start.php start -d     # arrière-plan (démon)
-# Les ports WebSocket (classement 8790 / chat 8791) sont modifiables via LEADERBOARD_WS_PORT / CHAT_WS_PORT dans .env
+# Les ports WebSocket (chat 8791) sont modifiables via CHAT_WS_PORT dans .env
 ```
 
 ## Utilisation

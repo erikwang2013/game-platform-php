@@ -63,7 +63,7 @@ game-platform-php/
 ├── admin/                     # 관리 백엔드 (webman v2, 기본 포트 8789, APP_PORT로 변경 가능)
 │   ├── app/admin/v1/controller/  #   관리 측 컨트롤러
 │   ├── app/middleware/        #   미들웨어 (Cors/SecurityFilter/RateLimit/AdminAuth/AdminPermission/OperationLog)
-│   ├── app/model/             #   admin 전용 모델 (8개, 나머지 52개 공유 모델은 packages/에 있음)
+│   ├── app/model/             #   admin 전용 모델 (6개, 나머지 51개 공유 모델은 packages/에 있음)
 │   ├── app/service/           #   admin 전용 서비스 (WalletService/WalletScope/RiskSandboxService)
 │   ├── app/process/           #   상주 프로세스 (Http/Monitor/RiskIpCron)
 │   ├── app/provider/          #   게임 Provider 계층 (Self/ThirdParty/Factory)
@@ -79,19 +79,19 @@ game-platform-php/
 ├── service/                   # C측 비즈니스 서버 (webman v2, 기본 포트 8792, APP_PORT로 변경 가능)
 │   ├── app/api/v1/controller/ #   C측 API 컨트롤러
 │   ├── app/middleware/        #   미들웨어 (TraceId/Cors/SecurityFilter/RateLimit/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
-│   ├── app/model/             #   service 전용 모델 (10개, 나머지 52개 공유 모델은 packages/에 있음)
+│   ├── app/model/             #   service 전용 모델 (10개, 나머지 51개 공유 모델은 packages/에 있음)
 │   ├── app/service/           #   service 전용 서비스 (지갑/리스크/컴플라이언스/대사/푸시/업적/부정행위 방지 등)
 │   ├── app/payment/           #   18개 결제 게이트웨이 어댑터 (Stripe/PayPal/Adyen/NowPayments/Skrill…) + GatewayFactory
 │   ├── app/cdn/               #   5개 사업자 CDN 어댑터 (Cloudflare/CloudFront/Alibaba/Tencent/Huawei) + CdnFactory
-│   ├── app/process/           #   상주 프로세스 (Http/Monitor/LeaderboardWS:8790/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
+│   ├── app/process/           #   상주 프로세스 (Http/Monitor/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
 │   ├── app/provider/          #   게임 Provider 계층
 │   ├── app/activity/          #   액티비티 엔진
 │   ├── app/event/             #   이벤트 버스 (EventBus Redis Pub/Sub)
 │   └── config/                #   설정 파일
 │
 ├── packages/platform-common/  # 공유 계층: admin과 service가 composer path 저장소로 가져와 두 벌의 사본을 피함
-│   ├── src/model/             #   공유 Eloquent 모델 (52개, 양쪽 동일 소스)
-│   ├── src/service/           #   공유 서비스 (DepositLogService / VipService 등 11개, ClickHouse 확률 계산 포함)
+│   ├── src/model/             #   공유 Eloquent 모델 (51개, 양쪽 동일 소스)
+│   ├── src/service/           #   공유 서비스 (DepositLogService / VipService 등 12개, ClickHouse 확률 계산 및 인프라 클래스 2개 EventPublisher/OutboxWriter 포함)
 │   ├── src/BcMath.php         #   금액/환율 고정밀 연산 (bcmath 래퍼), 반올림, 백분율
 │   ├── src/EncryptionService.php  #   AES 암호화/복호화 및 마스킹
 │   ├── src/CircuitBreaker.php #   서킷 브레이커 (재시도용 Retry.php 별도)
@@ -109,7 +109,7 @@ game-platform-php/
 ├── install/                   # 원클릭 설치 마법사 + 데이터베이스 초기화 SQL
 │   ├── index.php              #   설치 진입점
 │   ├── Installer.php          #   설치 핵심 로직
-│   ├── install.sql            #   통합 설치 SQL（78개 테이블 + 시드 데이터）
+│   ├── install.sql            #   통합 설치 SQL（79개 테이블 + 시드 데이터）
 │   ├── clickhouse.sql         #   ClickHouse 분석용 DDL (독립 엔진, 별도로 가져옴)
 │   ├── test-data.sql          #   데모/테스트 데이터
 │   ├── migrations/            #   기존 데이터베이스용 증분 업그레이드 스크립트 (*.sql)
@@ -178,7 +178,7 @@ rm -rf install/
 
 설치 마법사가 자동으로 수행하는 작업:
 - 환경 점검 (PHP 버전, 확장, 디렉터리 권한)
-- 데이터베이스 및 테이블 생성 (통합 SQL, 78개 테이블 + 시드 데이터)
+- 데이터베이스 및 테이블 생성 (통합 SQL, 79개 테이블 + 시드 데이터)
 - 슈퍼 관리자 계정 생성 (bcrypt 암호화)
 - JWT/암호화 키 자동 생성 및 .env 파일에 기록
 - install.lock 생성으로 중복 설치 방지
@@ -333,7 +333,7 @@ cd admin/apps/flutter && flutter test --timeout 300s
 | KYC | 실명 인증 제출+심사, 승인 후 출금 한도 상향 |
 | 게임 | CRUD + 분류(10종) + 서버 + 게임 기록 추적 |
 | 검색 | Elasticsearch 전문 검색(LIKE 폴백 포함) |
-| 랭킹 | 일/주/월/전체 랭킹, Redis 캐시, WebSocket 실시간 푸시 (기본 포트 8790, LEADERBOARD_WS_PORT로 변경 가능) |
+| 랭킹 | 일/주/월/전체 랭킹, Redis 캐시 |
 | CDN | 5개 업체 연동 (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS 업로드+퍼지+프리로드) + 관리자 설정/활성화/연결 테스트 |
 | 쿠폰 | 고정 금액+비율 할인, 기간/수량 한정, 사용 추적 |
 | 알림 | 사이트 내 메시지+이메일, 충전/출금/KYC/쿠폰 자동 알림 |

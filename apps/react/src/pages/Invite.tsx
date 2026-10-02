@@ -5,6 +5,8 @@
 import { useState } from 'react';
 import { ApiError, api } from '../lib/api.ts';
 import { SecretBox } from '../components/SecretBox.tsx';
+import type { MessageKey } from '../i18n/index.ts';
+import { useI18n } from '../i18n/useI18n.ts';
 
 /**
  * 邀请好友。两个端点都真能用，且短码在这棵树里**有真实消费者**（不是摆设）：
@@ -28,9 +30,13 @@ import { SecretBox } from '../components/SecretBox.tsx';
 /** 与 ShareController::create 的 8 位随机字母数字一致；服务端只校验 visit 的 max:12 */
 const CODE_LEN = 8;
 
+/** 错误文案的**暂存形**：存「原始错误 + 兜底键」，**不存翻好的串**（理由见 `Exchange.tsx` 的 `Msg`）。 */
+type Msg = { err: unknown; fallback: MessageKey };
+
 export function Invite() {
+  const { t } = useI18n();
   const [code, setCode] = useState<string | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useState<Msg | null>(null);
   const [busy, setBusy] = useState(false);
 
   // 生成的码永不退回服务端查询，链接里的 origin + BASE_URL 就是本树自己的挂载点
@@ -47,7 +53,7 @@ export function Invite() {
       const r = await api.createShare();
       setCode(r.short_code);
     } catch (e) {
-      setErr(e instanceof ApiError ? e.message : '生成失败，请稍后重试');
+      setErr({ err: e, fallback: 'error.generate_failed' });
     } finally {
       setBusy(false);
     }
@@ -56,13 +62,13 @@ export function Invite() {
   return (
     <>
       <section className="stack">
-        <p className="label">邀请好友</p>
+        <p className="label">{t('nav.invite')}</p>
         <h1 className="h1">
-          邀请
+          {t('invite.title')}
           <span style={{ color: 'var(--orange)' }}>.</span>
         </h1>
         <p className="small muted" style={{ margin: 0 }}>
-          生成一个邀请码发给朋友。对方打开链接、用它注册后，这次邀请才会计入转化。
+          {t('invite.sub')}
         </p>
       </section>
 
@@ -70,7 +76,7 @@ export function Invite() {
         {!code && (
           <>
             <p className="small muted" style={{ margin: 0 }}>
-              邀请码一次一个，点下面的按钮生成。
+              {t('invite.one_at_a_time')}
             </p>
             <button
               type="button"
@@ -79,22 +85,26 @@ export function Invite() {
               onClick={generate}
             >
               {busy && <span className="spin" aria-hidden="true" />}
-              生成邀请码
+              {t('invite.generate')}
             </button>
           </>
         )}
 
-        {err && <p className="err" role="alert">{err}</p>}
+        {err && (
+          <p className="err" role="alert">
+            {err.err instanceof ApiError ? err.err.message : t(err.fallback)}
+          </p>
+        )}
 
         {code && (
           <>
-            <SecretBox label={`邀请码（${CODE_LEN} 位）`} value={code} />
-            <SecretBox label="邀请链接" value={link} />
+            <SecretBox label={t('invite.code_label', { len: CODE_LEN })} value={code} />
+            <SecretBox label={t('invite.link_label')} value={link} />
             <p className="small muted" style={{ margin: 0 }}>
-              朋友打开这个链接注册即可。对方注册时填的码会在服务端绑定到你的账号。
+              {t('invite.link_hint')}
             </p>
             <button type="button" className="btn btn--sm" disabled={busy} onClick={generate}>
-              再生成一个
+              {t('invite.regenerate')}
             </button>
           </>
         )}
@@ -102,10 +112,10 @@ export function Invite() {
 
       <section className="card card--flat stack">
         <p className="label" style={{ margin: 0 }}>
-          流程
+          {t('invite.flow_label')}
         </p>
         <p className="small muted" style={{ margin: 0 }}>
-          1. 生成邀请码 · 2. 把链接发给朋友 · 3. 朋友用链接里的码注册。三步都在本树内完成。
+          {t('invite.flow')}
         </p>
       </section>
     </>

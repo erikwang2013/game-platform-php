@@ -1668,7 +1668,7 @@ Séquence d'authentification complète :
 
 ### Docker Compose
 
-Le répertoire racine du projet fournit `docker-compose.yml`, orchestrant 7 services (Nginx, admin, service, leaderboard-ws, MySQL, Redis, Elasticsearch). PHP est construit via `Dockerfile` (basé sur `php:8.3-cli`, OPcache activé).
+Le répertoire racine du projet fournit `docker-compose.yml`, orchestrant 7 services (Nginx, admin, service, chat-ws, MySQL, Redis, Elasticsearch). PHP est construit via `Dockerfile` (basé sur `php:8.3-cli`, OPcache activé).
 
 ```bash
 cp .env.example .env
@@ -1948,7 +1948,7 @@ DELETE /admin/v1/payment/method/{hashid}
 
 ## 19. Endpoints d'administration étendus (Extended Admin APIs)
 
-Les 20 endpoints suivants sont regroupés en 6 sections ; il s'agit d'endpoints d'administration `/admin/v1` exigeant une authentification JWT et une validation des permissions RBAC.
+Les 21 endpoints suivants sont regroupés en 6 sections ; il s'agit d'endpoints d'administration `/admin/v1` exigeant une authentification JWT et une validation des permissions RBAC.
 
 ### 19.1 Révision par lot et exécution des retraits
 

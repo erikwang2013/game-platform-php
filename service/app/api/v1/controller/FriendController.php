@@ -113,10 +113,12 @@ class FriendController extends BaseController
     public function remove(Request $request): Response
     {
         $friendId = $this->decodeId($request->input('friend_id', '0'));
+        // 同 ChatController::send：OR 的两条方向必须整体成组，否则 status 只约束第二条 ⇒ pending 行被误删
         Friend::where(static function($q) use ($request, $friendId) {
-            $q->where('user_id', $request->userId)->where('friend_id', $friendId);
-        })->orWhere(static function($q) use ($request, $friendId) {
-            $q->where('user_id', $friendId)->where('friend_id', $request->userId);
+            $q->where('user_id', $request->userId)->where('friend_id', $friendId)
+              ->orWhere(static function($q) use ($request, $friendId) {
+                  $q->where('user_id', $friendId)->where('friend_id', $request->userId);
+              });
         })->where('status', 'accepted')->delete();
         return $this->success([], trans('Friend removed'));
     }

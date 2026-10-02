@@ -12,7 +12,8 @@
  * 编一份列名清单只会与真表悄悄漂开（列变了没人会想起来改这里）。
  */
 
-export interface ExportProfile {
+/** 只作为下面 `ExportData` 的成员出现 —— **不导出**（零处按名引用；`types.ts` 的 `export type *` 也不再带它出去） */
+interface ExportProfile {
   username: string;
   nickname: string | null;
   email: string | null;
@@ -22,14 +23,16 @@ export interface ExportProfile {
   created_at: string | null;
 }
 
-export interface ExportWallet {
+/** 同上：只作为 `ExportData` 的成员 —— **不导出** */
+interface ExportWallet {
   /** 三个都是字符串金额（模型上是 decimal cast），**不要 parseFloat** */
   balance: string;
   total_earned: string;
   total_spent: string;
 }
 
-export interface ExportOAuthAccount {
+/** 同上：只作为 `ExportData` 的成员 —— **不导出** */
+interface ExportOAuthAccount {
   provider: string;
   created_at: string | null;
 }

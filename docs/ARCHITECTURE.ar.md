@@ -36,7 +36,7 @@ flowchart TB
     end
 
     subgraph "طبقة التخزين"
-        E1[("MySQL 8.0<br/>التخزين الرئيسي<br/>78 جدولًا")]
+        E1[("MySQL 8.0<br/>التخزين الرئيسي<br/>79 جدولًا")]
         E2[("Redis<br/>Session/تخزين مؤقت/تقييد<br/>EventBus/نبض")]
         E3[("Elasticsearch<br/>بحث نصي كامل")]
         E4[("ClickHouse<br/>تحليل OLAP<br/>حساب الاحتمالات")]
@@ -66,7 +66,7 @@ flowchart TB
   ↓
 سلسلة الوسائط: Cors → SecurityFilter → RateLimit → AdminAuth → AdminPermission → OperationLog
   ↓
-طبقة وحدات التحكم (45):
+طبقة وحدات التحكم (45، باستثناء BaseController في admin/app/admin/v1/controller/ + admin/app/api/v1/controller/):
   ┌──────────────────────────────────────────────────────────┐
   │ Dashboard / User / Role / Permission / Config / Log      │ ← أصلي
   │ Profile / Export / Import / Upload / Health / Docs       │ ← أصلي
@@ -90,7 +90,7 @@ flowchart TB
   ↓
 سلسلة الوسائط: TraceId → Cors → SecurityFilter → RateLimit → Language → [UserAuth | ProviderAuth | SdkSessionAuth]
   ↓
-طبقة وحدات التحكم (34):
+طبقة وحدات التحكم (35، باستثناء BaseController في service/app/api/v1/controller/):
   ┌──────────────────────────────────────────────────────────┐
   │ Auth / Wallet / Deposit / Exchange / Withdraw            │ ← أصلي
   │ Game / User / Announcement / Captcha                     │ ← أصلي
@@ -141,7 +141,7 @@ Redis Pub/Sub (القناة: platform:events):
   NotificationService — إرسال الإشعارات
   WebhookController   — تسليم webhook الخارجية
 
-> ملاحظة: حتى 2026-08-18، لـ `emit()` مستدعون لكن لا توجد أي عملية مسجّلة لـ `subscribe()` (P0-4 لم يُنفَّذ)، الأحداث حاليًا تُنشر دون استهلاك، والمشتركون أهداف تصميمية.
+> ملاحظة: حتى 2026-08-18، لـ `emit()` مستدعون لكن لا توجد أي عملية مسجّلة لـ `subscribe()` (P0-4 لم يُنفَّذ)، وبعد ذلك التاريخ تم استكمال ذلك: `service/config/process.php` يسجّل `event-consumer` و `event-subscriber`، والأحداث تُستهلك الآن.
 ```
 
 ### 2.5 ضمان الاستقرار — قاطع الدائرة / إعادة المحاولة / التدهور
@@ -316,7 +316,6 @@ game_achievement ── 1:N ── game_user_achievement
 نشر على جهاز واحد:
   admin/         :8789 (webman, 32 عمال)
   service/       :8792 (webman, 32 عمال)
-  leaderboard-ws :8790 (WebSocket لوحة المتصدرين)
   chat-ws        :8791 (WebSocket المحادثة)
   MySQL          :3306
   Redis          :6379
@@ -326,7 +325,7 @@ game_achievement ── 1:N ── game_user_achievement
 
 ```yaml
 nginx (80/443) → admin (8789) + service (8792) + الملفات الثابتة
-leaderboard-ws (8790/8791) — دفع لحظي للوحة المتصدرين عبر WebSocket + رسائل خاصة/محادثة عبر WebSocket
+chat-ws (8791) — رسائل خاصة/محادثة عبر WebSocket
 mysql (3306) — قاعدة البيانات الرئيسية، استمرارية البيانات عبر وحدة التخزين
 redis (6379) — تخزين مؤقت/تقييد/WebSocket/EventBus
 elasticsearch (9200) — بحث نصي كامل
@@ -349,7 +348,6 @@ flowchart TB
         ADM2["admin :8789"]
         SVC1["service :8792"]
         SVC2["service :8792"]
-        WS1["leaderboard-ws :8790"]
         WS2["chat-ws :8791"]
     end
 
@@ -372,8 +370,10 @@ flowchart TB
 
 ## 7. بنية الاختبارات
 
+> ملاحظة: القائمة أدناه عيّنة قديمة (20 ملفًا · 200 حالة اختبار)، والإجمالي الحالي 70 ملفًا · 593 حالة اختبار.
+
 ```
-tests/                             # 21 ملفًا · 200 حالة اختبار
+tests/                             # 70 ملفًا · 593 حالة اختبار
 ├── bootstrap.php                  # إقلاع PHPUnit
 ├── AuthControllerRegisterTest.php # 15 اختبارًا لصرامة كلمة المرور
 ├── BackendEnhancementTest.php     # 27 اختبارًا للتشفير/خدمات المعرّفات
@@ -403,7 +403,6 @@ tests/                             # 21 ملفًا · 200 حالة اختبار
 |------|------|------|
 | admin/ | 8789 | واجهات لوحة الإدارة |
 | service/ | 8792 | واجهات أعمال الطرف C |
-| leaderboard-ws | 8790 | WebSocket لوحة المتصدرين اللحظية |
 | chat-ws | 8791 | WebSocket الرسائل الخاصة/المحادثة |
 | MySQL | 3306 | قاعدة البيانات الرئيسية |
 | Redis | 6379 | تخزين مؤقت/تقييد/WebSocket/EventBus |
@@ -417,7 +416,7 @@ tests/                             # 21 ملفًا · 200 حالة اختبار
 | التوثيق | العنوان | وحدات التحكم | نقاط النهاية |
 |------|------|--------|------|
 | لوحة الإدارة | :8789/apidoc/ | 45 | 154 |
-| أعمال الطرف C | :8792/apidoc/ | 34 | 107 |
+| أعمال الطرف C | :8792/apidoc/ | 35 | 107 |
 
 ## 10. قائمة جداول قاعدة البيانات
 
@@ -460,7 +459,7 @@ game_share_link, game_aml_rule, game_aml_hit,
 game_kyc_level, game_user_kyc, game_user_trust,
 game_risk_cluster
 
-**الإجمالي: 78 جدولًا**
+**الإجمالي: 79 جدولًا**
 
 ## 11. مفاتيح الميزات
 

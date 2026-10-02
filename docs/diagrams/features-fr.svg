@@ -55,7 +55,6 @@
   <text x="850" y="206" text-anchor="middle" fill="#4c1d95" font-size="13" font-weight="bold">Classements</text>
   <text x="850" y="226" text-anchor="middle" fill="#7c3aed" font-size="11">Jour / Semaine / Mois / Tout temps</text>
   <text x="850" y="245" text-anchor="middle" fill="#7c3aed" font-size="11">Cache Redis + classement en temps réel</text>
-  <text x="850" y="264" text-anchor="middle" fill="#7c3aed" font-size="11">Push temps réel WebSocket (:8790)</text>
 
   <rect x="30" y="292" width="220" height="95" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#sh)"/>
   <text x="140" y="316" text-anchor="middle" fill="#064e3b" font-size="13" font-weight="bold">Coupons</text>
@@ -101,7 +100,7 @@
   <rect x="30" y="518" width="940" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="500" y="546" text-anchor="middle" fill="#475569" font-size="14" font-weight="bold">Résumé des capacités de la plateforme</text>
   <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">Authentification · Portefeuille (verrou optimiste) · Dépôt (Stripe/PayPal/Alipay/WeChat Pay) · Conversion (taux temps réel) · Retrait (vérif./auto) · KYC (identité)</text>
-  <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">CRUD jeux (10 catégories + serveurs) · Classements (WebSocket temps réel) · Coupons · Parrainage (bonus inscription + comm.) · Gestion des risques (4 types de règles)</text>
+  <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">CRUD jeux (10 catégories + serveurs) · Classements  · Coupons · Parrainage (bonus inscription + comm.) · Gestion des risques (4 types de règles)</text>
   <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">Notifications (interne + e-mail) · Différenciation par pays (18 pays) · i18n (4 langues) · Statistiques (instantanés quotidiens + revenus) · Recherche plein texte (ES)</text>
 
   <text x="500" y="662" text-anchor="middle" fill="#94a3b8" font-size="11">Clients : 8 cibles — administration 4 + côté C 4 (Flutter/React/Angular/HarmonyOS)</text>

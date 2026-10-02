@@ -119,7 +119,7 @@ return [
     'Phone verified' => 'Téléphone vérifié',
     'Play log not found' => 'Historique de jeu introuvable',
     'Please type yes to confirm account closure' => 'Saisissez yes pour confirmer la suppression du compte',
-    'Privacy settings updated' => 'Paramètres de confidentialité mis à jour',
+    'Privacy settings were not saved' => 'Paramètres de confidentialité non enregistrés',
     'Provider mismatch' => 'Fournisseur non concordant',
     'Reply sent' => 'Réponse envoyée',
     'Request not found' => 'Requête introuvable',

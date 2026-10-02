@@ -59,7 +59,10 @@ class ChatWebSocket
         \Workerman\Timer::add(1, function () {
             try {
                 while (true) {
-                    $msg = Redis::brpop(['chat:delivery_queue'], 1);
+                    // 超时必须短：phpredis 是**同步**调用，而本进程 count=1、与 WS 连接共用一个事件循环
+                    // ⇒ 阻塞多久，这段时间内的 auth 握手与 ping 就一起卡住（客户端 connect() 后要干等
+                    // 到超时结束才拿到 authenticated）。0.1 秒 = 队列空时单次停顿上限，语义不变。
+                    $msg = Redis::brpop(['chat:delivery_queue'], 0.1);
                     if (!$msg) break;
                     $data = json_decode(is_array($msg) ? ($msg[1] ?? '{}') : '{}', true);
                     if ($data && isset($data['to_user_id'])) {

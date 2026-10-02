@@ -24,6 +24,7 @@ import type {
   AuthTokens,
   ChatMessage,
   Conversation,
+  CountryOption,
   DepositCreated,
   DepositOrder,
   ExchangeDone,
@@ -37,7 +38,6 @@ import type {
   GameWallet,
   IdentityApply,
   IdentityStatus,
-  LanguageList,
   Leaderboard,
   Notice,
   Paged,
@@ -206,9 +206,23 @@ export const api = {
   /* 邮箱/手机验证四个端点（/verify/send-email|confirm-email|send-sms|confirm-phone）2026-10-01 撤下：
      后端不建立归属、结果也读不回（证据见 Security.tsx 顶部注释）。 */
 
-  // 语言：切换的是**服务端响应文案与通知的语言**（headers 里的 X-Language），本树界面文案固定中文
-  languages: () => get<LanguageList>('/language/list'),
+  /**
+   * 切换服务端语言。**恢复条件已于 2026-10-02 满足**（本树有了语言切换 UI），形状照
+   * `service/app/api/v1/controller/LanguageController::switch` 重核过，不是照抄旧类型。
+   *
+   * 为什么切界面语言还要打这一枪：`LanguageController:53-58` 在**已登录**时会把
+   * `user.language` 一起改掉 ⇒ 服务端后续发的邮件/推送/服务端渲染文案跟着走。
+   * 只写 localStorage 的症状是「界面切了，站外消息还是旧语言」。
+   *
+   * `locale` 收**短码即可**：白名单是 `Locale::accepted()`（短码 ∪ 全码），13 种都过。
+   * 消费者是 `i18n/useI18n.ts` 的 `setCode`（fire-and-forget，失败不影响界面已切）。
+   */
   switchLanguage: (locale: string) => post<{ locale: string }>('/language/switch', { locale }),
+
+  /* GET /language/list **仍未恢复**，与 `LanguageList` 类型一并留在 types.ts 的墓碑里：
+     本树「能选的语言」= 「有文案表的语言」（`i18n/` 那 13 张），而该端点回的是**后端**支持集。
+     两者一旦不一致（后端加了语言而本树没表），照它渲染等于给用户一个选得中、
+     界面却静默全英文的选项 —— 那不是能力，是误导。真形状已记在 types.ts 墓碑里。 */
 
   /**
    * 改资料。服务端白名单是 nickname / avatar / language 三项（UserController::updateProfile），
@@ -221,6 +235,15 @@ export const api = {
     ),
 
   /* ---------------- 身份认证（KYC） ---------------- */
+
+  /**
+   * 国家/地区下拉的选项来源。**公开端点**（`route.php` 的「公开接口」组，无鉴权中间件），
+   * 只列 `status=1` 的国家。⚠ 回包**没有国家名**，每项只有 `country_code`/`currency`/`min_deposit`
+   * 三个字段（`CountryController::list:27-33`）⇒ 下拉文案只能用代码本身（ISO 3166-1 alpha-2）。
+   * KYC 的 `country` 在服务端是 `nullable|string|max:50`、**不校验在册**（`IdentityController:61`），
+   * 所以历史值可能不在本列表里 —— 补一条的逻辑见 `lib/countryOptions.ts`。
+   */
+  countries: () => get<{ list: CountryOption[] }>('/country/list'),
 
   /**
    * 认证状态。**从未提交时只回 `{status:'not_submitted'}`**，其余字段全缺 ⇒ 按可选处理，
@@ -283,9 +306,10 @@ export const api = {
   /** 只能给好友发；非好友服务端回 403 */
   sendChat: (toUserId: string, content: string) =>
     post<{ id: string; created_at: string }>('/chat/send', { to_user_id: toUserId, content }),
-  /** 手动补标已读（打开会话时服务端已代劳，这里只在需要时用） */
-  markChatRead: (fromUserId: string) => post<unknown>('/chat/read', { from_user_id: fromUserId }),
-  chatUnreadTotal: () => get<{ count: number }>('/chat/unread-total'),
+  /* 两个聊天包装（POST /chat/read、GET /chat/unread-total）2026-10-02 撤下：零消费者。
+     与 angular 树同口径（api.domains.ts 的同名墓碑）：上面 chatMessages 的 GET 已经代劳
+     置已读（服务端在返回前把对方发来的未读全部置为已读），会话列表每行也已带 unread_count。
+     恢复条件：本树做了底部「消息」角标，再接 unread-total。 */
 
   /* 组队 / 公会的 6 个包装（/groups 建、/{hashid} 看、/{hashid}/members、join、leave、role）
      2026-10-01 随 Group.tsx 一并撤下：端点本身都能调通，但 C 端没有可达路径。

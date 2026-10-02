@@ -17,7 +17,7 @@ O serviço API da plataforma de usuários (lado C) é um backend PHP de alto des
 | Saque | Solicitação → revisão → pagamento, limites escalonados de KYC |
 | Câmbio | Cotações em tempo real moeda da plataforma ⇄ moeda de jogo, descontos VIP e bônus de taxa |
 | Jogos | Lista/categorias/busca de jogos, histórico de partidas, callbacks de liquidação do Provider |
-| Rankings | Diário/semanal/mensal/geral + push WebSocket em tempo real |
+| Rankings | Diário/semanal/mensal/geral (REST) |
 | Cupons | Valor fixo + desconto percentual, limitados por tempo e quantidade |
 | Tickets | Criação/respostas a tickets de suporte pelo usuário |
 | VIP | 5 níveis de fidelidade, acúmulo de experiência, descontos no câmbio |
@@ -40,7 +40,7 @@ O serviço API da plataforma de usuários (lado C) é um backend PHP de alto des
 service/
 ├── app/
 │   ├── activity/           # Manipuladores de atividades
-│   ├── api/v1/controller/  # Controladores de API lado C (34)
+│   ├── api/v1/controller/  # Controladores de API lado C (35)
 │   ├── bootstrap/          # Bootstrap de notificações
 │   ├── cdn/                # CDN multi-provedor (Aliyun/Tencent/Huawei/Cloudflare/CloudFront + CdnFactory)
 │   ├── common/             # Comum
@@ -96,7 +96,7 @@ cp .env.example .env
 # 3. Iniciar o serviço (porta padrão 8792, alterável via APP_PORT no .env)
 php start.php start        # primeiro plano
 php start.php start -d     # segundo plano (daemon)
-# Portas WebSocket (rankings 8790 / chat 8791) podem ser alteradas via LEADERBOARD_WS_PORT / CHAT_WS_PORT no .env
+# Portas WebSocket (chat 8791) podem ser alteradas via CHAT_WS_PORT no .env
 ```
 
 ## Uso

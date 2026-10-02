@@ -4,6 +4,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { Activity, ActivityProgress, ActivityReward } from '../core/api.service';
+import { Msg, t } from '../core/i18n/i18n';
 import { ActivitiesPage } from './activities';
 
 type Sig<T> = { (): T; set(v: T): void };
@@ -14,7 +15,7 @@ type Probe = {
   rows: () => Row[];
   loading: Sig<boolean>;
   err: Sig<string>;
-  note: Sig<string>;
+  note: Sig<Msg>;
   rowErr: Sig<string>;
   reward: Sig<ActivityReward[] | null>;
   busyId: Sig<string | null>;
@@ -52,6 +53,12 @@ describe('ActivitiesPage 运营活动', () => {
   let page: ActivitiesPage;
 
   const probe = (): Probe => page as unknown as Probe;
+
+  /**
+   * `Msg` 是**两态**（词条键 / 服务端原文）：只有键那一态的读点需要解析，原文那一态原样透出。
+   * **故意不统一**：把 `rowErr` 那两处也裹进来，就再也证明不了「服务端 message 被原样透出」这一支。
+   */
+  const txt = (v: Msg): string => (typeof v === 'string' ? v : t(v.key, v.params));
 
   /** 冲掉构造函数里 forkJoin 发的两个请求 */
   const flushInit = (list: Activity[], prog: ActivityProgress[]): void => {
@@ -140,7 +147,7 @@ describe('ActivitiesPage 运营活动', () => {
     http
       .expectOne('/api/v1/activities/A1/checkin')
       .flush({ code: 0, message: 'ok', data: { status: 'already' } });
-    expect(probe().note()).toContain('已经领过');
+    expect(txt(probe().note())).toContain('已经领过');
     expect(probe().reward()).toBeNull();
     http.expectOne('/api/v1/activities/progress').flush({ code: 0, message: 'ok', data: { list: [] } });
   });
@@ -152,7 +159,7 @@ describe('ActivitiesPage 运营活动', () => {
       .expectOne('/api/v1/activities/A1/checkin')
       .flush({ code: 0, message: 'ok', data: { status: 'progressing' } });
     expect(probe().reward()).toBeNull();
-    expect(probe().note()).toContain('还没达到目标');
+    expect(txt(probe().note())).toContain('还没达到目标');
     http.expectOne('/api/v1/activities/progress').flush({ code: 0, message: 'ok', data: { list: [] } });
   });
 

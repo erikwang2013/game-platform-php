@@ -10,17 +10,17 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 
 | | الأساسي (Lite) | القياسي (Standard) | الكامل (Full) |
 |------|------|------|------|
-| جداول البيانات (install.sql) | 19 | 29 | **66**（22 جدولًا جديدًا في v1.3.15-22） |
+| جداول البيانات (install.sql) | 19 | 29 | **79**（22 جدولًا جديدًا في v1.3.15-22） |
 | نقاط نهاية API | 38 | 54 | ~260 (admin+service، تشمل Webhook/Provider) |
 | وحدات التحكم الخلفية | 14 | 22 | admin 46 + service 35 |
 | نماذج البيانات | غير مشتركة | غير مشتركة | **مشتركة 52 (platform-common) + admin 8 + service 10** |
 | Service المشتركة | دون طبقة مشتركة | دون طبقة مشتركة | حزمة مشتركة واحدة `packages/platform-common` |
 | صفحات إدارة Admin | 11 | 13 | 15 |
 | صفحات منصة الطرف C | 8 | 10 | 10 |
-| HarmonyOS (admin) | - | دخول + لوحة تحكم | **8 صفحات** `admin/apps/harmonyos/` |
-| HarmonyOS (الطرف C) | - | - | **5 صفحات** `apps/harmonyos/` (الدخول/لوبي الألعاب/التفاصيل/المحفظة/حسابي) |
+| HarmonyOS (admin) | - | دخول + لوحة تحكم | **19 صفحات** `admin/apps/harmonyos/` |
+| HarmonyOS (الطرف C) | - | - | **8 صفحات** `apps/harmonyos/` (الدخول/لوبي الألعاب/التفاصيل/المحفظة/حسابي) |
 | خدمات Docker | - | - | **7** (nginx/admin/service/leaderboard-ws/mysql/redis/elasticsearch) |
-| حالات الاختبار | 60 | 60 | admin ~132؛ service 3 |
+| حالات الاختبار | 60 | 60 | admin 593 حالة / 70 ملفًا؛ service 549 حالة / 89 ملفًا |
 
 ---
 
@@ -89,7 +89,7 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | رسوم بيانية حقيقية في لوحة التحكم | - | - | ✓ fl_chart |
 | نظام القسائم | - | - | ✓ |
 | لوحات المتصدرين (يومي/أسبوعي/شهري/إجمالي) | - | - | ✓ تخزين مؤقت Redis |
-| لوحات متصدرين لحظية WebSocket | - | - | ✓ المنفذ 8790 |
+| لوحات متصدرين لحظية WebSocket | - | - | - تمت الإزالة (2026-10-02) |
 | نظام الإشعارات (داخل الموقع + البريد) | - | - | ✓ |
 | عمولة الإحالة | - | - | ✓ |
 | لقطة الإحصائيات اليومية | - | ✓ | ✓ |
@@ -146,8 +146,8 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 |------|--------|--------|--------|
 | لوحة إدارة Flutter Web PC | ✓ 5 صفحات | ✓ 11 صفحة | ✓ 17 صفحة |
 | منصة مستخدمي Flutter Web PC | ✓ 5 صفحات | ✓ 8 صفحات | ✓ 10 صفحات |
-| HarmonyOS admin | - | ✓ دخول + لوحة تحكم | ✓ 8 صفحات `admin/apps/harmonyos/` |
-| HarmonyOS الطرف C | - | - | ✓ 5 صفحات `apps/harmonyos/` |
+| HarmonyOS admin | - | ✓ دخول + لوحة تحكم | ✓ 19 صفحات `admin/apps/harmonyos/` |
+| HarmonyOS الطرف C | - | - | ✓ 8 صفحات `apps/harmonyos/` |
 
 ---
 
@@ -199,7 +199,12 @@ game_friend, game_message, game_cdn_provider, game_referral_commission,
 game_tournament, game_tournament_entry
 ```
 
-**الإجمالي: 78 جدولًا**
+### إضافات v1.3.44 (جدول واحد)
+```
+game_wallet_hold
+```
+
+**الإجمالي: 79 جدولًا**
 
 ---
 
@@ -243,12 +248,14 @@ game_tournament, game_tournament_entry
 | توثيق SDK | - | - | ✓ PHP/Go/Python |
 | التحليل المتقدم | الاحتفاظ/D1-D30، قمع التحويل، ARPU/ARPPU |
 
-### الجداول الجديدة (10 جداول)
+### الجداول الجديدة (14 جداول)
 ```
 game_ticket, game_ticket_reply, game_device_token,
 game_vip_level, game_user_vip, game_exp_log,
 game_achievement, game_user_achievement,
 game_friend, game_message
+game_cdn_provider, game_referral_commission,
+game_tournament, game_tournament_entry
 ```
 
 ### نقاط نهاية Provider الجديدة (4)
@@ -260,28 +267,31 @@ POST /api/provider/refund   — إشعار الاسترداد
 ```
 
 ### نقاط نهاية الطرف C الجديدة (8)
+
+> **غير مُنفَّذ**: المساران `GET /api/v1/user/vip-status` و`GET /api/v1/user/achievements` على طرف C غير مسجَّلين (لا يوجد إدخال مقابل في `service/config/route.php`)، والطلب الحالي يعيد 404. احذف هذا السطر بعد التنفيذ.
+
 ```
-POST /api/verify/send-email    — إرسال رمز تحقق البريد
-POST /api/verify/confirm-email — تأكيد البريد الإلكتروني
-GET  /api/ticket/list             — قائمة التذاكر
-POST /api/ticket/create           — إنشاء تذكرة
-GET  /api/ticket/{id}             — تفاصيل التذكرة
-POST /api/ticket/{id}/reply       — الرد على التذكرة
-GET  /api/user/vip-status         — حالة VIP
-GET  /api/user/achievements       — قائمة الإنجازات
+POST /api/v1/verify/send-email    — إرسال رمز تحقق البريد
+POST /api/v1/verify/confirm-email — تأكيد البريد الإلكتروني
+GET  /api/v1/ticket/list             — قائمة التذاكر
+POST /api/v1/ticket/create           — إنشاء تذكرة
+GET  /api/v1/ticket/{hashid}         — تفاصيل التذكرة
+POST /api/v1/ticket/{hashid}/reply   — الرد على التذكرة
+GET  /api/v1/user/vip-status         — حالة VIP
+GET  /api/v1/user/achievements       — قائمة الإنجازات
 ```
 
-### نقاط نهاية لوحة الإدارة الجديدة (6)
+### نقاط نهاية لوحة الإدارة الجديدة (9)
 ```
-GET  /admin/ticket/list          — قائمة التذاكر
-GET  /admin/ticket/{id}          — تفاصيل التذكرة
-POST /admin/ticket/{id}/reply    — الرد على التذكرة
-POST /admin/ticket/{id}/close    — إغلاق التذكرة
-POST /admin/ticket/{id}/assign   — تعيين المعالج
-GET  /admin/analytics/retention  — تحليل الاحتفاظ
-GET  /admin/analytics/funnel     — قمع التحويل
-GET  /admin/analytics/arpu       — اتجاه ARPU
-GET  /admin/analytics/economy    — المؤشرات الاقتصادية
+GET  /admin/v1/ticket/list          — قائمة التذاكر
+GET  /admin/v1/ticket/{hashid}      — تفاصيل التذكرة
+POST /admin/v1/ticket/{hashid}/reply — الرد على التذكرة
+POST /admin/v1/ticket/{hashid}/close — إغلاق التذكرة
+POST /admin/v1/ticket/{hashid}/assign — تعيين المعالج
+GET  /admin/v1/analytics/retention  — تحليل الاحتفاظ
+GET  /admin/v1/analytics/funnel     — قمع التحويل
+GET  /admin/v1/analytics/arpu       — اتجاه ARPU
+GET  /admin/v1/analytics/economy    — المؤشرات الاقتصادية
 ```
 
 ---

@@ -63,7 +63,7 @@ game-platform-php/
 ├── admin/                     # لوحة الإدارة (webman v2, المنفذ الافتراضي 8789، قابل للتكوين عبر APP_PORT)
 │   ├── app/admin/v1/controller/  #   متحكمات جهة الإدارة
 │   ├── app/middleware/        #   الوسيطات (Cors/SecurityFilter/RateLimit/AdminAuth/AdminPermission/OperationLog)
-│   ├── app/model/             #   نماذج خاصة بـ admin فقط (8؛ والنماذج الـ 52 المشتركة الأخرى في packages/)
+│   ├── app/model/             #   نماذج خاصة بـ admin فقط (6؛ والنماذج الـ 51 المشتركة الأخرى في packages/)
 │   ├── app/service/           #   خدمات خاصة بـ admin فقط (WalletService/WalletScope/RiskSandboxService)
 │   ├── app/process/           #   عمليات مقيمة (Http/Monitor/RiskIpCron)
 │   ├── app/provider/          #   طبقة مزوّدي الألعاب (Self/ThirdParty/Factory)
@@ -79,19 +79,19 @@ game-platform-php/
 ├── service/                   # طرف C للأعمال (webman v2, المنفذ الافتراضي 8792، قابل للتكوين عبر APP_PORT)
 │   ├── app/api/v1/controller/ #   وحدات تحكم API للطرف C
 │   ├── app/middleware/        #   الوسيطات (TraceId/Cors/SecurityFilter/RateLimit/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
-│   ├── app/model/             #   نماذج خاصة بـ service فقط (10؛ والنماذج الـ 52 المشتركة الأخرى في packages/)
+│   ├── app/model/             #   نماذج خاصة بـ service فقط (10؛ والنماذج الـ 51 المشتركة الأخرى في packages/)
 │   ├── app/service/           #   خدمات خاصة بـ service فقط (المحفظة/المخاطر/الامتثال/التسوية/الإشعارات/الإنجازات/مكافحة الغش وغيرها)
 │   ├── app/payment/           #   18 محوّلًا لبوابات الدفع (Stripe/PayPal/Adyen/NowPayments/Skrill…) + GatewayFactory
 │   ├── app/cdn/               #   محوّلات CDN لخمسة مزوّدين (Cloudflare/CloudFront/Alibaba/Tencent/Huawei) + CdnFactory
-│   ├── app/process/           #   عمليات مقيمة (Http/Monitor/LeaderboardWS:8790/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
+│   ├── app/process/           #   عمليات مقيمة (Http/Monitor/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
 │   ├── app/provider/          #   طبقة مزوّدي الألعاب
 │   ├── app/activity/          #   محرّك الأنشطة
 │   ├── app/event/             #   ناقل الأحداث (EventBus Redis Pub/Sub)
 │   └── config/                #   ملفات التكوين
 │
 ├── packages/platform-common/  # طبقة مشتركة: يستوردها admin و service عبر مستودع composer path لتجنّب نسختين
-│   ├── src/model/             #   نماذج Eloquent مشتركة (52، من مصدر واحد للطرفين)
-│   ├── src/service/           #   الخدمات المشتركة (DepositLogService / VipService وغيرها، 11 خدمة، بما فيها الحساب الاحتمالي ClickHouse)
+│   ├── src/model/             #   نماذج Eloquent مشتركة (51، من مصدر واحد للطرفين)
+│   ├── src/service/           #   الخدمات المشتركة (DepositLogService / VipService وغيرها، 12 خدمة، بما فيها الحساب الاحتمالي ClickHouse وفئتا البنية التحتية EventPublisher/OutboxWriter)
 │   ├── src/BcMath.php         #   حساب عالي الدقة للمبالغ/الأسعار (غلاف bcmath)، والتقريب، والنسب المئوية
 │   ├── src/EncryptionService.php  #   تشفير/فك تشفير AES والإخفاء
 │   ├── src/CircuitBreaker.php #   قاطع الدائرة (إضافة إلى Retry.php لإعادة المحاولة)
@@ -109,7 +109,7 @@ game-platform-php/
 ├── install/                   # معالج التثبيت بخطوة واحدة + SQL لتهيئة قاعدة البيانات
 │   ├── index.php              #   نقطة دخول التثبيت
 │   ├── Installer.php          #   المنطق الأساسي للتثبيت
-│   ├── install.sql            #   SQL التثبيت المدمج (78 جدولًا + بيانات أولية)
+│   ├── install.sql            #   SQL التثبيت المدمج (79 جدولًا + بيانات أولية)
 │   ├── clickhouse.sql         #   DDL لقاعدة ClickHouse التحليلية (محرّك مستقل، يُستورد منفردًا)
 │   ├── test-data.sql          #   بيانات تجريبية/اختبارية
 │   ├── migrations/            #   نصوص ترقية تدريجية لقواعد موجودة (*.sql)
@@ -178,7 +178,7 @@ rm -rf install/
 
 يقوم معالج التثبيت تلقائيًا بما يلي:
 - فحص البيئة (إصدار PHP، الامتدادات، أذونات الدلائل)
-- إنشاء قاعدة البيانات والجداول (SQL مدمج، 78 جدولًا + بيانات أولية)
+- إنشاء قاعدة البيانات والجداول (SQL مدمج، 79 جدولًا + بيانات أولية)
 - إنشاء حساب المدير الفائق (مشفّر بـ bcrypt)
 - توليد مفاتيح JWT/التشفير تلقائيًا وكتابتها في ملف .env
 - إنشاء install.lock لمنع إعادة التثبيت
@@ -333,7 +333,7 @@ cd admin/apps/flutter && flutter test --timeout 300s
 | KYC | تقديم التحقق من الهوية + المراجعة، يرفع حد السحب بعد الموافقة |
 | الألعاب | CRUD + التصنيفات (10 فئات) + الخوادم + تتبع سجلات اللعب |
 | البحث | بحث نصي كامل عبر Elasticsearch (مع التراجع إلى LIKE) |
-| لوحة الصدارة | يومية/أسبوعية/شهرية/إجمالية، تخزين مؤقت في Redis، دفع فوري عبر WebSocket (المنفذ الافتراضي 8790، قابل للتكوين عبر LEADERBOARD_WS_PORT) |
+| لوحة الصدارة | يومية/أسبوعية/شهرية/إجمالية، تخزين مؤقت في Redis |
 | CDN | تكامل خمسة موفّرين (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS رفع + مسح + تسخين) + إعداد/تفعيل/اختبار الاتصال من لوحة الإدارة |
 | القسائم | مبلغ ثابت + خصم نسبي، محدودة بالوقت والكمية، تتبع الاكتساب والاستخدام |
 | الإشعارات | رسائل داخلية + بريد إلكتروني، إشعارات تلقائية للتعبئة/السحب/KYC/القسائم |

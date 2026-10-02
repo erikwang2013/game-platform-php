@@ -119,7 +119,7 @@ return [
     'Phone verified' => 'تم تأكيد رقم الهاتف',
     'Play log not found' => 'سجل اللعب غير موجود',
     'Please type yes to confirm account closure' => 'اكتب yes لتأكيد حذف الحساب',
-    'Privacy settings updated' => 'تم تحديث إعدادات الخصوصية',
+    'Privacy settings were not saved' => 'لم يتم حفظ إعدادات الخصوصية',
     'Provider mismatch' => 'المزوّد غير مطابق',
     'Reply sent' => 'تم إرسال الرد',
     'Request not found' => 'الطلب غير موجود',

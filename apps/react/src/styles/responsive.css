@@ -1,0 +1,98 @@
+/* ============================================================
+   ≥640：两列起的平板
+   ============================================================ */
+@media (min-width: 640px) {
+  .shell,
+  .masthead__in {
+    padding: 0 var(--s-6);
+  }
+
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-5);
+  }
+
+  .grid--stats {
+    gap: var(--s-4);
+  }
+
+  .li {
+    padding: var(--s-4) var(--s-5);
+  }
+
+  .stack-lg {
+    gap: var(--s-10);
+    padding: var(--s-8) 0 var(--s-12);
+  }
+}
+
+/* ============================================================
+   ≥900：桌面骨架（导航浮出、底部页签退场）
+   ============================================================ */
+@media (min-width: 900px) {
+  body {
+    padding-bottom: 0;
+  }
+
+  .masthead__in {
+    height: 68px;
+    gap: var(--s-5);
+  }
+
+  .logo {
+    font-size: var(--fs-xl);
+  }
+
+  .nav {
+    display: flex;
+  }
+
+  .burger,
+  .tabbar {
+    display: none;
+  }
+
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--s-6);
+  }
+
+  .grid--stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--s-4);
+  }
+
+  .stat {
+    padding: var(--s-5);
+  }
+
+  .stat__n {
+    font-size: var(--fs-3xl);
+  }
+
+  .shell--split {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: var(--s-10);
+    align-items: start;
+  }
+}
+
+/* ============================================================
+   ≥1200：宽屏只放大留白，不再加列（1200 已是 --max）
+   ============================================================ */
+@media (min-width: 1200px) {
+  .stack-lg {
+    gap: var(--s-12);
+    padding: var(--s-10) 0 var(--s-16);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

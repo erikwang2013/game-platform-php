@@ -8,7 +8,9 @@ Languages: [中文](SECURITY.md) · [English](SECURITY.en.md) · [한국어](SEC
 
 ## 1. Panorama Pertahanan Berlapis
 
-Sistem menggunakan model pertahanan berlapis 7 lapis, menyaring permintaan berbahaya dari luar ke dalam lapis demi lapis, memastikan saat satu lapisan gagal masih ada garis pertahanan berikutnya sebagai cadangan.
+**Pertahanan berlapis berjumlah 18 item**: **7 lapisan** di bagian ini + **7 detektor serangan** di §2 + **4 mekanisme respons/pembatasan laju** di §3–§5. Lapisan 1 pada §1 (SecurityFilter) dan §2.1–§2.5 menjelaskan kumpulan pencegat yang sama dari dua sudut pandang, sehingga 18 adalah **jumlah entri**, bukan 18 mekanisme yang saling terpisah; di §3–§5 terdapat lebih dari 4 mekanisme respons/pembatasan laju, dan angka "4" hanyalah cara penghitungan yang dipakai di sini, tanpa perincian satu per satu.
+
+Bagian ini menjelaskan 7 lapisan tersebut, yang menyaring permintaan berbahaya dari luar ke dalam lapis demi lapis, memastikan saat satu lapisan gagal masih ada garis pertahanan berikutnya sebagai cadangan.
 
 Seluruh rantai middleware dieksekusi dalam urutan berikut (lihat `config/middleware.php`):
 

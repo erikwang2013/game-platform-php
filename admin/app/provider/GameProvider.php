@@ -9,6 +9,11 @@ namespace app\provider;
 
 use common\model\Game;
 
+/**
+ * ⚠ 死副本：本目录在 admin 树零调用点，实现以 service 树为准（理由、风险与护栏见
+ * ProviderFactory 的墓碑注释与 tests/ProviderTreeStaysDeadTest.php）。
+ * 本文件与 service 的差异**只是换行形态**（多行数组 vs 单行）—— 纯格式，不是语义分叉。
+ */
 abstract class GameProvider
 {
     protected Game $game;

@@ -92,16 +92,7 @@ class GameCategoryPage extends GetView<GameCategoryAdminController> {
           child: Obx(() {
             if (ctrl.isLoading.value) return const Center(child: CircularProgressIndicator());
             if (ctrl.items.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Image.asset('assets/mascot.png', width: 120),
-                    const SizedBox(height: 12),
-                    Text("${AppTranslations.t('app.no_data')}"),
-                  ],
-                ),
-              );
+              return const CrudEmptyState();
             }
 
             return SingleChildScrollView(

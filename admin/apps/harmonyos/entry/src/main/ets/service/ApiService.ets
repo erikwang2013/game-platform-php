@@ -67,6 +67,11 @@ export class ApiService {
       options.extraData = JSON.stringify(body);
     }
 
+    // 有没有会话令牌，决定 401 是**哪种** 401 —— 见下面两个分支。
+    // TokenManager 是同存同清的（saveTokens/clearTokens 都成对），所以 access 为空
+    // ⇔ 没有可刷新的票，不存在「access 过期但 refresh 还在」的中间态。
+    const hasSession = token.length > 0;
+
     const url = `${API_BASE_URL}${path}`;
     const response = await this.httpRequest.request(url, options);
 
@@ -92,6 +97,14 @@ export class ApiService {
 
     // 服务端 json() 信封恒为 HTTP 200，鉴权失败体现在 body.code，上面的状态码分支看不到
     if (probe.code === 401) {
+      // 没有会话令牌时，这个 401 不是「令牌过期」而是**业务答复**：AuthController::login
+      // 的「用户名或密码错误」正是 code 401（账号锁定 429、禁用 403 同族）。
+      // 此时没有票可刷，硬走下面的刷新分支只会 clearTokens() + 抛 UNAUTHORIZED，
+      // 调用方（登录页）就只能显示「网络错误」—— 服务端 message 被整条吞掉。
+      // 所以原样把信封交回调用方，由它读 message。
+      if (!hasSession) {
+        return result;
+      }
       if (retryCount === 0) {
         const refreshed = await this.tryRefreshToken();
         if (refreshed) {

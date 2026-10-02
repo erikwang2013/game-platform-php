@@ -2,6 +2,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { Api, ApiError, dt } from '../core/api.service';
 import { exportBlob, exportCounts, exportName, saveBlob } from '../core/export-data';
+import { Mt, Msg } from '../core/i18n/i18n';
 
 /**
  * 「导出我的数据」（GDPR 数据可携带）卡片 —— 放在「我的」页、注销账号之前。
@@ -14,6 +15,7 @@ import { exportBlob, exportCounts, exportName, saveBlob } from '../core/export-d
  */
 @Component({
   selector: 'app-me-export',
+  imports: [Mt],
   template: `
     <div class="card">
       <h2>下载我的数据</h2>
@@ -24,7 +26,7 @@ import { exportBlob, exportCounts, exportName, saveBlob } from '../core/export-d
       </p>
 
       @if (msg()) {
-        <div class="alert" [class.ok]="ok()" [attr.role]="ok() ? 'status' : 'alert'">{{ msg() }}</div>
+        <div class="alert" [class.ok]="ok()" [attr.role]="ok() ? 'status' : 'alert'">{{ msg() | mt }}</div>
       }
 
       <div class="acts">
@@ -67,7 +69,12 @@ export class MeExport {
 
   protected readonly busy = signal(false);
   protected readonly ok = signal(false);
-  protected readonly msg = signal('');
+  /**
+   * 导出结果 —— 两态（键 / 服务端原文），见 `core/i18n/i18n.ts` 的 `Msg`。
+   * ⚠ 成功那一句**只存键 + 三个参数**：文件名/服务端时刻/行数摘要都在异步回调里才算得出来，
+   * 存拼好的句子就是把「导出那一刻的语言」冻在屏幕上（同 `core/i18n/dict/profile.ts` 的注释）。
+   */
+  protected readonly msg = signal<Msg>('');
 
   protected run(): void {
     if (this.busy()) return;
@@ -79,7 +86,10 @@ export class MeExport {
         const name = exportName(d.exported_at);
         saveBlob(exportBlob(d), name);
         this.ok.set(true);
-        this.msg.set(`已导出 ${name}（服务端生成于 ${dt(d.exported_at)}）· ${exportCounts(d)}`);
+        this.msg.set({
+          key: 'me.export_done',
+          params: { name, at: dt(d.exported_at), counts: exportCounts(d) },
+        });
         this.busy.set(false);
       },
       error: (e: ApiError) => {

@@ -52,7 +52,6 @@ class JwtRedisStorageKnobTest extends TestCase
     {
         try {
             $m = new \ReflectionMethod(\app\middleware\AdminAuth::class, 'getJWT');
-            $m->setAccessible(true);
             return $m->invoke(null);
         } catch (JWTException $e) {
             $this->fail('JWT_STORAGE_TYPE=redis 下 AdminAuth::getJWT() 构造失败（就是本缺陷）：' . $e->getMessage());

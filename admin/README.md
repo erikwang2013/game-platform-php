@@ -85,17 +85,19 @@ open-admin/
 │   │       └── AuthController.php    # 登录/注册/刷新令牌
 │   ├── common/                 # 公共工具类
 │   │   └── CdnProbeService.php # CDN 连通性探测（Hashids/Snowflake/Encryption 由 composer 包提供）
-│   ├── middleware/             # 中间件
+│   ├── middleware/             # 中间件（目录 9 个；执行链 8 个）
 │   │   ├── Cors.php            # 跨域
 │   │   ├── SecurityFilter.php  # 攻击检测拦截（HTTP方法限制/XSS/SQL注入/路径遍历/命令注入/CSRF）
 │   │   ├── RateLimit.php       # Redis 限流（滑动窗口 + 响应头）
-│   │   ├── StaticFile.php      # 静态文件服务（webman 内置）
+│   │   ├── LanguageMiddleware.php # 语言/locale（全局，注册在 RateLimit 之后、路由中间件之前）
+│   │   ├── StaticFile.php      # 静态文件服务（webman 内置件的副本；未注册 —— config/static.php:25 处是注释掉的，不在执行链上）
 │   │   ├── AdminAuth.php       # JWT 认证 + 黑名单
 │   │   ├── AdminPermission.php # RBAC 权限校验
+│   │   ├── MetricsAuth.php     # /metrics 专用：管理员 JWT 或静态抓取令牌
 │   │   └── OperationLog.php    # 操作日志自动记录（含来源端检测）
 │   ├── activity/               # 活动处理器（签到/邀请/每日任务）
 │   ├── model/                  # 数据模型
-│   ├── process/                # 进程 (Http, Monitor, RiskIpCron)
+│   ├── process/                # 进程 (Http, Monitor, RiskIpCron, ExportTmpCleanup)
 │   ├── provider/               # 游戏 Provider 层（Self/ThirdParty/Factory）
 │   ├── service/                # 服务（钱包/风控沙箱）
 │   └── view/                   # 视图模板
@@ -104,7 +106,7 @@ open-admin/
 │   ├── react/                  # React Web 管理后台
 │   ├── flutter/                # Flutter Web 管理后台（PC 风格）
 │   │   └── lib/app/
-│   │       ├── pages/          # 20 个页面目录
+│   │       ├── pages/          # 26 个页面目录
 │   │       ├── services/       # ApiService（JWT 拦截器）+ AuthService（Token 持久化）
 │   │       └── layouts/        # 响应式管理后台布局（侧边栏+顶栏+内容区）
 │   └── harmonyos/              # HarmonyOS 原生客户端（Token 无感刷新）
@@ -147,8 +149,8 @@ cp .env.example .env
 |---------|------|--------|
 | `APP_PORT` | webman HTTP 监听端口 | `8789` |
 | `APP_URL` | 对外访问地址（安装向导成功页链接、API 文档 baseUrl 等） | `http://localhost:8789` |
-| `JWT_SECRET` | JWT 签名密钥 | `open-admin-jwt-secret-change-in-production` |
-| `HASHIDS_SALT` | Hashids 盐值 | `open-admin-hashids-salt-2026` |
+| `ADMIN_JWT_SECRET_KEY` | JWT 签名密钥 | `game-platform-admin-jwt-secret-change-in-production` |
+| `HASHIDS_SALT` | Hashids 盐值 | `game-platform-hashids-salt-2026` |
 | `ENCRYPTION_KEY` | API 加密密钥 | 32 字节默认值 |
 | `SNOWFLAKE_DATACENTER_ID` | 数据中心 ID (0-31) | `1` |
 | `SNOWFLAKE_WORKER_ID` | 工作节点 ID (0-31) | `1` |
@@ -188,7 +190,7 @@ flutter run -d chrome    # Web 端（PC 管理后台风格）
 
 ### 6. Docker Compose 一键部署（推荐生产环境）
 
-项目提供完整的 Docker 编排方案，包含 7 个服务：Nginx、admin (webman)、service (webman)、leaderboard-ws (WebSocket)、MySQL、Redis、Elasticsearch。
+项目提供完整的 Docker 编排方案，包含 7 个服务：Nginx、admin (webman)、service (webman)、chat-ws (WebSocket)、MySQL、Redis、Elasticsearch。
 
 ```bash
 # 1. 配置 Docker 环境变量
@@ -423,7 +425,7 @@ Authorization: Bearer <token>
 | `nginx` | nginx:alpine | 80, 443 |
 | `admin` | 本地 `Dockerfile` 构建 | 8789 |
 | `service` | 本地 `Dockerfile` 构建 | 8792 |
-| `leaderboard-ws` | 本地 `Dockerfile` 构建 | 8790, 8791 |
+| `chat-ws` | 本地 `Dockerfile` 构建 | 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

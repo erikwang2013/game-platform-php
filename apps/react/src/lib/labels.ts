@@ -2,8 +2,10 @@
  * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
  */
 
+import { t, type MessageKey } from '../i18n/index.ts';
+
 /**
- * 后端枚举键 → 中文标签。
+ * 后端枚举键 → 文案键（`i18n/` 的表里是 13 语言的译文）。
  *
  * ⚠ 每张表的键集**必须照服务端写入侧核**，不能照抄别的树/别的页面的表。
  * 照抄的表会同时错两头：把没人写的死键抄进来（用户永远看不到，只是噪音），
@@ -30,19 +32,19 @@
  * 别加这几条：transfer_in / transfer_out / commission / adjust 全仓零写入；
  * bet / win 是 game_play_record.action，不是流水类型（有棵树照抄进表里了）。
  */
-const TX_LABEL: Record<string, string> = {
-  deposit: '充值',
-  withdraw: '提现',
-  refund: '退款',
-  exchange_out: '兑换转出',
-  exchange_in: '兑换转入',
-  game_spend: '开局扣费',
-  game_earn: '游戏派彩',
-  activity_reward: '活动奖励',
-  referral_bonus: '邀请奖励',
-  lock: '冻结',
-  unlock: '解冻',
-  reconcile: '对账调整',
+const TX_LABEL: Record<string, MessageKey> = {
+  deposit: 'tx.deposit',
+  withdraw: 'tx.withdraw',
+  refund: 'tx.refund',
+  exchange_out: 'tx.exchange_out',
+  exchange_in: 'tx.exchange_in',
+  game_spend: 'tx.game_spend',
+  game_earn: 'tx.game_earn',
+  activity_reward: 'tx.activity_reward',
+  referral_bonus: 'tx.referral_bonus',
+  lock: 'tx.lock',
+  unlock: 'tx.unlock',
+  reconcile: 'tx.reconcile',
 };
 
 /**
@@ -52,14 +54,25 @@ const TX_LABEL: Record<string, string> = {
  * 所以下面是按平台既有的周期性词汇（与 LeaderboardService 的 daily/weekly/monthly 同词）**推定**的，
  * 不是从写入侧核出来的枚举 —— 别把它当契约。运营手填别的值一律由回落原样透出。
  */
-const TOURNAMENT_TYPE_LABEL: Record<string, string> = {
-  daily: '每日赛',
-  weekly: '每周赛',
-  monthly: '每月赛',
+const TOURNAMENT_TYPE_LABEL: Record<string, MessageKey> = {
+  daily: 'tourney.daily',
+  weekly: 'tourney.weekly',
+  monthly: 'tourney.monthly',
 };
 
-/** 流水类型 → 中文；未知类型回落原键（不返回空串）。 */
-export const txLabel = (type: string): string => TX_LABEL[type] ?? type;
+/**
+ * 表里存的是**键**不是文案，`t()` 必须到**调用时**才求值 ——
+ * 模块顶层求值只发生一次，存文案会把它冻在首次加载的语言上。
+ *
+ * 未知类型回落原键（不返回空串）：后端新增类型时宁可露出原键，也不要空白或编一个不存在的名字。
+ */
+export const txLabel = (type: string): string => {
+  const key = TX_LABEL[type];
+  return key === undefined ? type : t(key);
+};
 
-/** 赛制类型 → 中文；未知类型回落原键（不返回空串）。 */
-export const tournamentTypeLabel = (type: string): string => TOURNAMENT_TYPE_LABEL[type] ?? type;
+/** 赛制类型 → 文案；未知类型回落原键（不返回空串）。理由同上。 */
+export const tournamentTypeLabel = (type: string): string => {
+  const key = TOURNAMENT_TYPE_LABEL[type];
+  return key === undefined ? type : t(key);
+};

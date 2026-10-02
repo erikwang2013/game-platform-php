@@ -47,7 +47,7 @@ export interface CaptchaChallenge {
   texts: string[];
 }
 
-/** 未识别的后端结构一律走 Record，模板侧用 dash()/rowsOf() 防御性取值 */
+/** 未识别的后端结构一律走 Record，模板侧用 dash()/rowsAny() 防御性取值 */
 export type Row = Record<string, unknown>;
 export type Params = Record<string, string | number | undefined>;
 type Method = 'GET' | 'POST' | 'PUT' | 'DELETE';

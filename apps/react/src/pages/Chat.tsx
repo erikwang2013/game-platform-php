@@ -9,25 +9,31 @@ import { dt } from '../lib/datetime.ts';
 import { useAsync } from '../lib/hooks.ts';
 import { Empty, ErrorBox, Loading } from '../components/States.tsx';
 import { Avatar } from '../components/Avatar.tsx';
+import type { MessageKey } from '../i18n/index.ts';
+import { useI18n } from '../i18n/useI18n.ts';
 
 const nameOf = (u: { nickname: string | null; username: string }) => u.nickname || u.username;
+
+/** 错误文案的**暂存形**：存「原始错误 + 兜底键」，**不存翻好的串**（理由见 `Exchange.tsx` 的 `Msg`）。 */
+type Msg = { err: unknown; fallback: MessageKey };
 
 /* ---------------- 会话列表 ---------------- */
 
 export function ChatList() {
+  const { t } = useI18n();
   const convs = useAsync(() => api.conversations(), []);
   const list = convs.data?.list ?? [];
 
   return (
     <>
       <section className="stack">
-        <p className="label">私信</p>
+        <p className="label">{t('chat.label')}</p>
         <h1 className="h1">
-          消息
+          {t('nav.messages')}
           <span style={{ color: 'var(--orange)' }}>.</span>
         </h1>
         <p className="small muted" style={{ margin: 0 }}>
-          只能和好友聊天。新消息到达后刷新本页即可看到。
+          {t('chat.sub')}
         </p>
       </section>
 
@@ -35,7 +41,7 @@ export function ChatList() {
         {convs.loading && <Loading />}
         {!convs.loading && convs.error && <ErrorBox message={convs.error} onRetry={convs.reload} />}
         {!convs.loading && !convs.error && list.length === 0 && (
-          <Empty title="还没有会话" hint="去「好友」里点「发消息」开始" />
+          <Empty title={t('chat.empty_title')} hint={t('chat.empty_hint')} />
         )}
         {!convs.loading && !convs.error && list.length > 0 && (
           <div className="list">
@@ -53,7 +59,7 @@ export function ChatList() {
                       )}
                     </p>
                     <p className="small muted" style={{ margin: '2px 0 0' }}>
-                      {c.last_message || '（空消息）'}
+                      {c.last_message || t('chat.empty_message')}
                     </p>
                   </div>
                 </div>
@@ -70,6 +76,7 @@ export function ChatList() {
 /* ---------------- 会话详情 ---------------- */
 
 export function ChatRoom() {
+  const { t } = useI18n();
   const { hashid = '' } = useParams();
   /**
    * ⚠ 这个 GET 有副作用：服务端返回前会把对方发来的未读全部置为已读
@@ -81,7 +88,7 @@ export function ChatRoom() {
 
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useState<Msg | null>(null);
 
   const send = async (e: FormEvent) => {
     e.preventDefault();
@@ -95,7 +102,7 @@ export function ChatRoom() {
       msgs.reload();
       convs.reload();
     } catch (e2) {
-      setMsg(e2 instanceof ApiError ? e2.message : '发送失败，请稍后重试');
+      setMsg({ err: e2, fallback: 'error.send_failed' });
     } finally {
       setBusy(false);
     }
@@ -108,18 +115,22 @@ export function ChatRoom() {
     <>
       <section className="stack">
         <p className="label">
-          <Link to="/chat">消息</Link> / 对话
+          <Link to="/chat">{t('nav.messages')}</Link> {t('chat.thread')}
         </p>
-        <h1 className="h1">{peer ? nameOf(peer) : '对话'}</h1>
+        <h1 className="h1">{peer ? nameOf(peer) : t('chat.title')}</h1>
         {/* 没有「按 hashid 查用户」的端点：不在会话列表里的人只能显示编号，别编昵称 */}
-        {!peer && !convs.loading && <p className="small muted" style={{ margin: 0 }}>对方 #{hashid}</p>}
+        {!peer && !convs.loading && (
+          <p className="small muted" style={{ margin: 0 }}>
+            {t('chat.peer_id', { id: hashid })}
+          </p>
+        )}
       </section>
 
       <section className="stack">
         {msgs.loading && <Loading />}
         {!msgs.loading && msgs.error && <ErrorBox message={msgs.error} onRetry={msgs.reload} />}
         {!msgs.loading && !msgs.error && items.length === 0 && (
-          <Empty title="还没有聊天记录" hint="在下面输入第一条消息" />
+          <Empty title={t('chat.no_msgs_title')} hint={t('chat.no_msgs_hint')} />
         )}
         {!msgs.loading && !msgs.error && items.length > 0 && (
           <div className="stack">
@@ -134,7 +145,7 @@ export function ChatRoom() {
                   style={{ marginLeft: mine ? 'auto' : 0, maxWidth: '86%' }}
                 >
                   <p className="small muted" style={{ margin: 0 }}>
-                    {mine ? '我' : nameOf(peer ?? { nickname: null, username: hashid })} · {dt(m.created_at)}
+                    {mine ? t('chat.me') : nameOf(peer ?? { nickname: null, username: hashid })} · {dt(m.created_at)}
                   </p>
                   <p style={{ margin: '8px 0 0', whiteSpace: 'pre-wrap' }}>{m.content}</p>
                 </div>
@@ -145,13 +156,13 @@ export function ChatRoom() {
 
         <form className="card card--flat" onSubmit={send}>
           <label className="field">
-            <span>发送消息</span>
+            <span>{t('chat.send_label')}</span>
             <textarea
               className="input"
               name="content"
               rows={3}
               maxLength={5000}
-              placeholder="说点什么…"
+              placeholder={t('chat.placeholder')}
               value={text}
               onChange={(e) => {
                 setText(e.target.value);
@@ -161,11 +172,11 @@ export function ChatRoom() {
           </label>
           {msg && (
             <p className="err" role="alert">
-              {msg}
+              {msg.err instanceof ApiError ? msg.err.message : t(msg.fallback)}
             </p>
           )}
           <button type="submit" className="btn btn--sm btn--primary" disabled={busy || !text.trim()}>
-            {busy ? '发送中…' : '发送'}
+            {busy ? t('chat.sending') : t('chat.send')}
           </button>
         </form>
       </section>

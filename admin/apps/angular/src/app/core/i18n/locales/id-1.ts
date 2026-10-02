@@ -114,6 +114,7 @@ export const ID_1: Record<string, string> = {
   'risk.rule.scope': 'Cakupan',
   'risk.rule.priority': 'Prioritas',
   'risk.rule.priority_hint': '0-1000, nilai lebih besar dinilai lebih dulu (bawaan 100)',
+  'risk.rule.scope_hint': 'exchange / login belum tersambung (evaluator punya cabang tetapi tidak ada titik panggil — RiskService::check() hanya dipanggil dari deposit / withdraw), jadi aturan dengan scope ini tidak akan pernah cocok',
   'risk.rule.status': 'Status',
   'risk.rule.config': 'Konfigurasi ambang (JSON)',
   'risk.rule.keys_note': '\n',

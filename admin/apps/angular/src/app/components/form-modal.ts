@@ -46,7 +46,12 @@ import { ModalFocus } from './ui';
                   f.full || f.type === 'textarea' || f.type === 'image' || f.type === 'file'
                 "
               >
-                <label>
+                <!-- 字段名要**程序化关联**到控件：裸 label 与控件是兄弟节点，点标签不聚焦、
+                     读屏不播字段名（全树所有新建/编辑表单都由这一个组件渲染）。
+                     id 直接用 f.name —— 同一份 fields 里字段名唯一，且全树此前没有任何 id。
+                     tree 除外：它是自定义组件，for/id 关联不到它内部的 checkbox，指一个不存在的 id
+                     比不写更坏（悬空引用），故明确落 null。 -->
+                <label [attr.for]="f.type === 'tree' ? null : f.name">
                   {{ f.label | t }}
                   @if (f.required) {
                     <i class="req">*</i>
@@ -56,6 +61,7 @@ import { ModalFocus } from './ui';
                   @case ('textarea') {
                     <textarea
                       class="input"
+                      [attr.id]="f.name"
                       [attr.name]="f.name"
                       [attr.required]="req(f)"
                       [attr.maxlength]="f.maxlength ?? null"
@@ -67,7 +73,7 @@ import { ModalFocus } from './ui';
                   @case ('select') {
                     <!-- 不能用 select[value]：它的绑定早于 @for 生成的 option，预选会被吞掉、
                          静默落成第一个选项（编辑一次就把 type 改掉）。逐项 [selected] 才可靠。 -->
-                    <select class="input" [attr.name]="f.name" [attr.required]="req(f)">
+                    <select class="input" [attr.id]="f.name" [attr.name]="f.name" [attr.required]="req(f)">
                       <!-- 存量行里可能有选项表里没有的枚举值（如公告 type=payment）：
                            置顶补一条并保持原样，免得显示成「请选择」被手滑改掉 -->
                       @if (offList(f); as v) {
@@ -89,7 +95,14 @@ import { ModalFocus } from './ui';
                     <!-- 多选：原生 select[multiple]，逐项 [selected]（同单选 —— [value] 绑定会被
                          @for 生成的 option 吞掉）。未勾选的项不进 FormData ⇒ fire() 用 getAll 收数组，
                          所以这不是「一格文本里塞 JSON」而是真正的数组字段。 -->
-                    <select class="input" [attr.name]="f.name" multiple size="8" [attr.required]="req(f)">
+                    <select
+                      class="input"
+                      [attr.id]="f.name"
+                      [attr.name]="f.name"
+                      multiple
+                      size="8"
+                      [attr.required]="req(f)"
+                    >
                       @for (o of multi(f); track o.value) {
                         <option [value]="o.value" [selected]="o.on">{{ o.label | t }}</option>
                       }
@@ -105,6 +118,7 @@ import { ModalFocus } from './ui';
                     <label class="switch">
                       <input
                         type="checkbox"
+                        [attr.id]="f.name"
                         [attr.name]="f.name"
                         [attr.required]="req(f)"
                         [checked]="on(f.name)"
@@ -121,6 +135,7 @@ import { ModalFocus } from './ui';
                         #box
                         class="input"
                         type="text"
+                        [attr.id]="f.name"
                         [attr.name]="f.name"
                         [attr.required]="req(f)"
                         [placeholder]="(f.placeholder || '') | t"
@@ -160,6 +175,7 @@ import { ModalFocus } from './ui';
                         #box
                         class="input"
                         type="text"
+                        [attr.id]="f.name"
                         readonly
                         [placeholder]="'form.no_file_chosen' | t"
                       />
@@ -181,6 +197,7 @@ import { ModalFocus } from './ui';
                     <input
                       class="input"
                       type="number"
+                      [attr.id]="f.name"
                       [attr.name]="f.name"
                       [attr.required]="req(f)"
                       [placeholder]="(f.placeholder || '') | t"
@@ -192,6 +209,7 @@ import { ModalFocus } from './ui';
                     <input
                       class="input"
                       type="password"
+                      [attr.id]="f.name"
                       autocomplete="new-password"
                       [attr.name]="f.name"
                       [attr.required]="req(f)"
@@ -202,6 +220,7 @@ import { ModalFocus } from './ui';
                     <input
                       class="input"
                       type="text"
+                      [attr.id]="f.name"
                       [attr.name]="f.name"
                       [attr.required]="req(f)"
                       [attr.maxlength]="f.maxlength ?? null"

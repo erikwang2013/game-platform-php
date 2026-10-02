@@ -43,8 +43,8 @@
   <rect x="380" y="354" width="200" height="22" rx="4" fill="#fef9c3"/><text x="480" y="370" text-anchor="middle" fill="#713f12" font-size="11">RiskService / NotificationService</text>
 
   <rect x="620" y="262" width="300" height="138" rx="8" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="1.5"/>
-  <text x="770" y="286" text-anchor="middle" fill="#5b21b6" font-size="13" font-weight="bold">WebSocket Service :8790</text>
-  <rect x="640" y="298" width="260" height="22" rx="4" fill="#ede9fe"/><text x="770" y="314" text-anchor="middle" fill="#3b0764" font-size="11">LeaderboardWebSocket (real-time rankings)</text>
+  <text x="770" y="286" text-anchor="middle" fill="#5b21b6" font-size="13" font-weight="bold">WebSocket Service :8791</text>
+  <rect x="640" y="298" width="260" height="22" rx="4" fill="#ede9fe"/><text x="770" y="314" text-anchor="middle" fill="#3b0764" font-size="11">ChatWebSocket</text>
   <rect x="640" y="326" width="260" height="22" rx="4" fill="#ede9fe"/><text x="770" y="342" text-anchor="middle" fill="#3b0764" font-size="11">Connection pool management</text>
   <rect x="640" y="354" width="260" height="22" rx="4" fill="#ede9fe"/><text x="770" y="370" text-anchor="middle" fill="#3b0764" font-size="11">Redis Pub/Sub message relay</text>
 

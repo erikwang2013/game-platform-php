@@ -27,7 +27,7 @@ class GroupController extends BaseController
     #[Apidoc\Url("/api/v1/groups")]
     #[Apidoc\Method("POST")]
     #[Apidoc\Auth(true)]
-    #[Apidoc\Param(name: "type", type: "string", require: true, desc: "team/guild")]
+    #[Apidoc\Param(name: "type", type: "string", require: true, desc: "类型(team/guild)")]
     #[Apidoc\Param(name: "name", type: "string", require: true, desc: "名称")]
     #[Apidoc\Param(name: "game_id", type: "string", require: false, desc: "归属游戏(hashid，team 必填)")]
     #[Apidoc\Param(name: "expire_at", type: "string", require: false, desc: "到期时间(team 可传)")]
@@ -38,6 +38,9 @@ class GroupController extends BaseController
             'type' => 'required|string|in:team,guild',
             'name' => 'required|string|max:100',
             'game_id' => 'sometimes|string',
+            // 到期判定读的是 strtotime(expire_at)（见 join/leave 与定时解散），非日期串会让它得 false
+            // ⇒ 过期组被当成永不过期。date 规则恰好就是「strtotime 可解析」这一条不变量。
+            'expire_at' => 'sometimes|nullable|date',
         ]);
         if ($validator->fails()) {
             return $this->fail($validator->errors()->first(), 422);
@@ -119,7 +122,8 @@ class GroupController extends BaseController
         }
 
         $page = (int) $request->input('page', 1);
-        $perPage = (int) $request->input('per_page', 20);
+        // 上下界都要夹，理由见 SearchController:28-31（负值会让 limit 子句整个消失 ⇒ 1064）
+        $perPage = max(1, min(100, (int) $request->input('per_page', 20)));
         $sort = $request->input('sort', 'contrib');
 
         $query = GroupMember::where('group_id', $groupId)
@@ -175,10 +179,24 @@ class GroupController extends BaseController
             try {
                 $member->save();
             } catch (\PDOException $e) {
-                if (in_array($e->errorInfo[1] ?? null, [1062, 23000], true)) {
+                if (!in_array($e->errorInfo[1] ?? null, [1062, 23000], true)) {
+                    throw $e;
+                }
+                // uk_group_user(group_id,user_id) 是**硬唯一**，而退群只软删（left_at 置位，见 leave()）
+                // ⇒ 退群后再加入必然撞键。撞在**已退群**的旧行上就复活它（清 left_at、重置加入时间与角色），
+                // 只有确仍在组才是「Already a member」。别改成硬删除：那会丢掉贡献值等历史。
+                $existing = GroupMember::where('group_id', $groupId)
+                    ->where('user_id', $userId)
+                    ->lockForUpdate()
+                    ->first();
+                if (!$existing || $existing->left_at === null) {
                     return ['code' => 422, 'msg' => 'Already a member'];
                 }
-                throw $e;
+
+                $existing->role = 'member';
+                $existing->joined_at = date('Y-m-d H:i:s');
+                $existing->left_at = null;
+                $existing->save();
             }
 
             $group->member_count = (int) $group->member_count + 1;
@@ -256,7 +274,7 @@ class GroupController extends BaseController
     #[Apidoc\Auth(true)]
     #[Apidoc\Param(name: "hashid", type: "string", require: true, desc: "组ID", in: "path")]
     #[Apidoc\Param(name: "user_id", type: "string", require: true, desc: "目标用户(hashid)")]
-    #[Apidoc\Param(name: "role", type: "string", require: true, desc: "admin/member")]
+    #[Apidoc\Param(name: "role", type: "string", require: true, desc: "角色(admin/member)")]
     public function role(Request $request, string $hashid): Response
     {
         $validator = validator($request->all(), [

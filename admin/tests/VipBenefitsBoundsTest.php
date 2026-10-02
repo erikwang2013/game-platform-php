@@ -29,7 +29,6 @@ class VipBenefitsBoundsTest extends TestCase
     private function validate(string $benefits): void
     {
         $method = new ReflectionMethod(VipLevelController::class, 'validateBenefits');
-        $method->setAccessible(true);
 
         $method->invoke(new VipLevelController(), $benefits);
     }

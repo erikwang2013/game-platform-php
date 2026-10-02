@@ -2,13 +2,16 @@
  * Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
  */
 
-export function Loading({ label = '加载中' }: { label?: string }) {
+import { useI18n } from '../i18n/useI18n.ts';
+
+export function Loading({ label }: { label?: string }) {
+  const { t } = useI18n();
   return (
     <div className="state" role="status" aria-live="polite">
       <div className="row" style={{ justifyContent: 'center' }}>
         <span className="spin" aria-hidden="true" />
         <span className="state__k" style={{ margin: 0 }}>
-          {label}
+          {label ?? t('app.loading')}
         </span>
       </div>
       <div className="bar" style={{ marginTop: 16 }} />
@@ -17,22 +20,24 @@ export function Loading({ label = '加载中' }: { label?: string }) {
 }
 
 export function ErrorBox({ message, onRetry }: { message: string; onRetry?: () => void }) {
+  const { t } = useI18n();
   return (
     <div className="state" role="alert">
-      <p className="state__k">出错了</p>
+      <p className="state__k">{t('app.error')}</p>
       <p className="muted" style={{ marginTop: 0 }}>
         {message}
       </p>
       {onRetry && (
         <button type="button" className="btn btn--sm" onClick={onRetry}>
-          重试
+          {t('app.retry')}
         </button>
       )}
     </div>
   );
 }
 
-export function Empty({ title = '暂无数据', hint }: { title?: string; hint?: string }) {
+export function Empty({ title, hint }: { title?: string; hint?: string }) {
+  const { t } = useI18n();
   return (
     <div className="state">
       {/* 吉祥物小骰（Dicey）：纯装饰，语义由下面的文案承载；随 BASE_URL 走子路径部署 */}
@@ -42,7 +47,7 @@ export function Empty({ title = '暂无数据', hint }: { title?: string; hint?:
         alt=""
         aria-hidden="true"
       />
-      <p className="state__k">{title}</p>
+      <p className="state__k">{title ?? t('app.no_data')}</p>
       {hint && <p className="muted small" style={{ margin: 0 }}>{hint}</p>}
     </div>
   );

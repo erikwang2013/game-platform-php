@@ -7,6 +7,14 @@ declare(strict_types=1);
 
 namespace common\model;
 
+// ⚠ 反向依赖（包 → 宿主命名空间）：本包 composer.json 只声明 php + ext-bcmath，而这里用的是
+// 宿主 `app\service\ActivityService` —— composer 的 require 根本表达不了它（`support\`/`app\` 同理）。
+// 两棵树命运不同：service 有 app/service/ActivityService.php（调用点 AuthController.php:107 是活的），
+// admin **没有**该文件 ⇒ 一旦有人在 admin 侧调 bindConversion()，会在事务内抛 Class not found，
+// 被下面 catch (\Throwable) 吞成一条 log + return null；**事务随之整体回滚**（increment 也回滚，
+// 即 conversions 不会 +1，是彻底静默，不是少发一次奖）。
+// 当前 admin 侧潜伏不可达（唯一消费者 ShareController 只用 ShareLink::query()，从不调本方法）；
+// 收敛要动包边界（活动进度写入搬进包 / 改成注入回调），不在本批范围。
 use app\service\ActivityService;
 use support\Db;
 use support\Log;

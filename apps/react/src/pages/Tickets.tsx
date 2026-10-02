@@ -14,53 +14,88 @@ import {
 import { dt } from '../lib/datetime.ts';
 import { useAsync } from '../lib/hooks.ts';
 import { Empty, ErrorBox, Loading } from '../components/States.tsx';
+import { t, type MessageKey } from '../i18n/index.ts';
+import { useI18n } from '../i18n/useI18n.ts';
 
 /**
- * 工单类型。服务端校验器是 `in:deposit,withdraw,game,account,other`（TicketController:111），
+ * 工单类型。服务端校验器是 `in:deposit,withdraw,game,account,other`（TicketController:112），
  * 改这里必须同步改那边，否则提交会被 422 挡下。
  */
-const TYPES: Array<{ v: TicketType; label: string }> = [
-  { v: 'deposit', label: '充值问题' },
-  { v: 'withdraw', label: '提现问题' },
-  { v: 'game', label: '游戏问题' },
-  { v: 'account', label: '账号问题' },
-  { v: 'other', label: '其他' },
+const TYPES: Array<{ v: TicketType; label: MessageKey }> = [
+  { v: 'deposit', label: 'ticket.type_deposit' },
+  { v: 'withdraw', label: 'ticket.type_withdraw' },
+  { v: 'game', label: 'ticket.type_game' },
+  { v: 'account', label: 'ticket.type_account' },
+  { v: 'other', label: 'ticket.type_other' },
 ];
 
 /**
  * 工单状态。三个值都取自代码实际写入点：
- * open=创建时（TicketController:126）、waiting=用户回复后（:165）、closed=回复守卫里判的终态（:145）。
- * ⚠ install/install.sql:1780 的列注释只写了「open/closed」，**漏了 waiting** —— 是注释漂移不是约束
- * （列是 VARCHAR(20)，没有 enum）。未知值原样透出，别猜。
+ * open=创建时（TicketController:127）、waiting=用户回复后（:166）、closed=回复守卫里判的终态（:146）。
+ * 列注释（install/install.sql:1844）列的是四值：open=新建待受理 / waiting=用户已回复 /
+ * replied=管理员已回复 / closed=已关闭 —— 比上面多一个 replied（管理端回复后置上），不冲突。
+ * ⚠ 列是 VARCHAR(20)、没有 enum ⇒ 未知值原样透出，别猜。
  */
-const STATUS: Record<string, { label: string; cls: string }> = {
-  open: { label: '待受理', cls: 'pill--yellow' },
-  waiting: { label: '待回复', cls: 'pill--orange' },
-  closed: { label: '已关闭', cls: 'pill--plain' },
+const STATUS: Record<string, { label: MessageKey; cls: string }> = {
+  open: { label: 'ticket.status_open', cls: 'pill--yellow' },
+  waiting: { label: 'ticket.status_waiting', cls: 'pill--orange' },
+  closed: { label: 'ticket.status_closed', cls: 'pill--plain' },
 };
 
-const typeLabel = (t: string) => TYPES.find((x) => x.v === t)?.label ?? t;
+/**
+ * 两张表里查不到的值**原样透出**（服务端将来加类型/状态不吞字），查得到的**在渲染期才翻**。
+ *
+ * ⚠ 存**键**不存文案：模块顶层求值只发生一次，存文案会把它冻在首屏语言上
+ * （与 `Wallet.tsx` 的 `TABS`、`Kyc.tsx` 的 `TYPE_LABEL` 同款约定）。
+ */
+const typeLabel = (v: string) => {
+  const k = TYPES.find((x) => x.v === v)?.label;
+  return k ? t(k) : v;
+};
+
+/** 同上；`status` 列是 VARCHAR(20) 无 enum，未知值原样透出。 */
+const statusLabel = (v: string) => {
+  const k = STATUS[v]?.label;
+  return k ? t(k) : v;
+};
+
+/**
+ * 提示文案的**暂存形**：失败存「原始错误 + 兜底键」，**不存翻好的串** ——
+ * `catch` 在 `await` 之后才落值，存串就把语言冻在提交那一刻（同 `Friends.tsx` 的 `Msg`）。
+ */
+type Msg = { err: unknown; fallback: MessageKey };
+
+/** 渲染期才翻（本文件用模块级 `t`，组件里那次 `useI18n()` 负责订阅重绘）。 */
+const msgText = (m: Msg): string =>
+  m.err instanceof ApiError ? m.err.message : t(m.fallback);
 
 /* ---------------- 列表 ---------------- */
 
 export function Tickets() {
-  const list = useAsync(() => api.tickets(), []);
+  // 只为订阅语言变更引起的重渲染；文案求值走模块级的 t()（同 `Me.tsx`）
+  useI18n();
+  // 服务端默认 page=1/per_page=20：不带 page 时第 21 张之后的工单**永久不可达**，
+  // 且旧版连总数都没有 ⇒ 用户察觉不到自己被截断。分页块与 Wallet.tsx 同形。
+  const [page, setPage] = useState(1);
+  const list = useAsync(() => api.tickets({ page }), [page]);
   const items = list.data?.items ?? [];
+  // 回包是 PagedLite：`page` / `last_page` 都是**可选**（types.ts:300），缺值时按「只有一页」处理
+  const lastPage = Math.max(1, list.data?.last_page ?? 1);
 
   return (
     <>
       <section className="stack">
-        <p className="label">客服</p>
+        <p className="label">{t('ticket.cs')}</p>
         <h1 className="h1">
-          我的工单
+          {t('ticket.mine')}
           <span style={{ color: 'var(--orange)' }}>.</span>
         </h1>
         <p className="small muted" style={{ margin: 0 }}>
-          遇到充值、提现或账号问题，在这里提交，客服回复会出现在工单里。
+          {t('ticket.sub')}
         </p>
         <div>
           <Link className="btn btn--sm btn--primary" to="/tickets/new">
-            提交工单
+            {t('ticket.new_title')}
           </Link>
         </div>
       </section>
@@ -69,29 +104,62 @@ export function Tickets() {
         {list.loading && <Loading />}
         {!list.loading && list.error && <ErrorBox message={list.error} onRetry={list.reload} />}
         {!list.loading && !list.error && items.length === 0 && (
-          <Empty title="还没有工单" hint="有问题可以点上面的「提交工单」" />
+          <Empty title={t('ticket.empty_title')} hint={t('ticket.empty_hint')} />
         )}
         {!list.loading && !list.error && items.length > 0 && (
-          <div className="list">
-            {items.map((t: TicketRow) => {
-              const st = STATUS[t.status] ?? { label: t.status, cls: 'pill--plain' };
-              return (
-                <Link className="li li--start" key={t.id} to={`/tickets/${t.id}`}>
+          <>
+            <p className="small muted" style={{ margin: 0 }}>
+              {t('ticket.count', { count: list.data?.total ?? items.length })}
+            </p>
+            <div className="list">
+              {items.map((row: TicketRow) => (
+                <Link className="li li--start" key={row.id} to={`/tickets/${row.id}`}>
                   <div>
                     <p className="li__t" style={{ margin: 0 }}>
-                      {t.subject}
-                      <span className={`pill ${st.cls}`} style={{ marginLeft: 8 }}>
-                        {st.label}
+                      {row.subject}
+                      <span
+                        className={`pill ${STATUS[row.status]?.cls ?? 'pill--plain'}`}
+                        style={{ marginLeft: 8 }}
+                      >
+                        {statusLabel(row.status)}
                       </span>
                     </p>
                     <p className="small muted" style={{ margin: '4px 0 0' }}>
-                      {typeLabel(t.type)} · {t.reply_count} 条回复 · {dt(t.created_at)}
+                      {t('ticket.list_meta', {
+                        type: typeLabel(row.type),
+                        count: row.reply_count,
+                        time: dt(row.created_at),
+                      })}
                     </p>
                   </div>
                 </Link>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+
+            {lastPage > 1 && (
+              <div className="between">
+                <button
+                  type="button"
+                  className="btn btn--sm"
+                  disabled={page <= 1 || list.loading}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                >
+                  {t('app.prev_page')}
+                </button>
+                <span className="small muted">
+                  {list.data?.page ?? page} / {lastPage}
+                </span>
+                <button
+                  type="button"
+                  className="btn btn--sm"
+                  disabled={page >= lastPage || list.loading}
+                  onClick={() => setPage((p) => p + 1)}
+                >
+                  {t('app.next_page')}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </section>
     </>
@@ -101,12 +169,14 @@ export function Tickets() {
 /* ---------------- 新建 ---------------- */
 
 export function TicketNew() {
+  // 只为订阅语言变更引起的重渲染；文案求值走模块级的 t()（同 `Me.tsx`）
+  useI18n();
   const navigate = useNavigate();
   const [type, setType] = useState<TicketType>('other');
   const [subject, setSubject] = useState('');
   const [content, setContent] = useState('');
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useState<Msg | null>(null);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -118,7 +188,7 @@ export function TicketNew() {
       // 建完直接进详情：工单正文只在 detail 回，留在列表页看不到自己刚写的内容
       navigate(`/tickets/${d.id}`, { replace: true });
     } catch (err) {
-      setMsg(err instanceof ApiError ? err.message : '提交失败，请稍后重试');
+      setMsg({ err, fallback: 'error.submit_failed' });
     } finally {
       setBusy(false);
     }
@@ -127,9 +197,9 @@ export function TicketNew() {
   return (
     <>
       <section className="stack">
-        <p className="label">客服</p>
+        <p className="label">{t('ticket.cs')}</p>
         <h1 className="h1">
-          提交工单
+          {t('ticket.new_title')}
           <span style={{ color: 'var(--orange)' }}>.</span>
         </h1>
       </section>
@@ -137,29 +207,29 @@ export function TicketNew() {
       <section className="stack">
         <form className="card card--flat" onSubmit={submit}>
           <label className="field">
-            <span>问题类型</span>
+            <span>{t('ticket.field_type')}</span>
             <select
               className="input"
               name="type"
               value={type}
               onChange={(e) => setType(e.target.value as TicketType)}
             >
-              {TYPES.map((t) => (
-                <option key={t.v} value={t.v}>
-                  {t.label}
+              {TYPES.map((opt) => (
+                <option key={opt.v} value={opt.v}>
+                  {t(opt.label)}
                 </option>
               ))}
             </select>
           </label>
 
           <label className="field">
-            <span>标题</span>
+            <span>{t('ticket.field_subject')}</span>
             <input
               className="input"
               name="subject"
               type="text"
               maxLength={200}
-              placeholder="一句话说明问题"
+              placeholder={t('ticket.subject_ph')}
               value={subject}
               onChange={(e) => {
                 setSubject(e.target.value);
@@ -169,13 +239,13 @@ export function TicketNew() {
           </label>
 
           <label className="field">
-            <span>详细描述</span>
+            <span>{t('ticket.field_content')}</span>
             <textarea
               className="input"
               name="content"
               rows={6}
               maxLength={5000}
-              placeholder="订单号、时间、现象等，越具体处理越快"
+              placeholder={t('ticket.content_ph')}
               value={content}
               onChange={(e) => {
                 setContent(e.target.value);
@@ -186,7 +256,7 @@ export function TicketNew() {
 
           {msg && (
             <p className="err" role="alert">
-              {msg}
+              {msgText(msg)}
             </p>
           )}
 
@@ -196,10 +266,10 @@ export function TicketNew() {
               className="btn btn--primary"
               disabled={busy || !subject.trim() || !content.trim()}
             >
-              {busy ? '提交中…' : '提交'}
+              {busy ? t('app.submitting') : t('app.submit')}
             </button>
             <Link className="btn btn--sm" to="/tickets">
-              返回
+              {t('app.back')}
             </Link>
           </div>
         </form>
@@ -211,11 +281,14 @@ export function TicketNew() {
 /* ---------------- 详情 ---------------- */
 
 export function TicketDetail() {
+  // 只为订阅语言变更引起的重渲染；文案求值走模块级的 t()（同 `Me.tsx`）
+  useI18n();
   const { hashid = '' } = useParams();
-  const t = useAsync(() => api.ticket(hashid), [hashid]);
+  // 变量名不叫 `t`：那是 i18n 的查表函数，遮住它就查不了表
+  const detail = useAsync(() => api.ticket(hashid), [hashid]);
   const [reply, setReply] = useState('');
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useState<Msg | null>(null);
 
   const send = async (e: FormEvent) => {
     e.preventDefault();
@@ -227,48 +300,48 @@ export function TicketDetail() {
       setReply('');
       // 重新拉详情而不是往本地数组 push：回复是服务端生成的（id/时间/状态都变了），
       // 本地拼一条就是第二真值源，客服回复也会对不上
-      t.reload();
+      detail.reload();
     } catch (err) {
-      setMsg(err instanceof ApiError ? err.message : '发送失败，请稍后重试');
+      setMsg({ err, fallback: 'error.send_failed' });
     } finally {
       setBusy(false);
     }
   };
 
-  const d: Detail | null = t.data;
+  const d: Detail | null = detail.data;
 
   return (
     <>
       <section className="stack">
         <p className="label">
-          <Link to="/tickets">我的工单</Link> / 详情
+          <Link to="/tickets">{t('ticket.mine')}</Link> {t('ticket.crumb_detail')}
         </p>
-        <h1 className="h1">{d ? d.subject : '工单'}</h1>
+        <h1 className="h1">{d ? d.subject : t('nav.tickets')}</h1>
         {d && (
           <div className="row">
             <span className="pill pill--plain">{typeLabel(d.type)}</span>
-            <span className={`pill ${(STATUS[d.status] ?? { cls: 'pill--plain' }).cls}`}>
-              {(STATUS[d.status] ?? { label: d.status }).label}
+            <span className={`pill ${STATUS[d.status]?.cls ?? 'pill--plain'}`}>
+              {statusLabel(d.status)}
             </span>
           </div>
         )}
       </section>
 
       <section className="stack">
-        {t.loading && <Loading />}
-        {!t.loading && t.error && <ErrorBox message={t.error} onRetry={t.reload} />}
+        {detail.loading && <Loading />}
+        {!detail.loading && detail.error && <ErrorBox message={detail.error} onRetry={detail.reload} />}
 
-        {!t.loading && !t.error && d && (
+        {!detail.loading && !detail.error && d && (
           <>
             <div className="card card--flat">
               <p className="small muted" style={{ margin: 0 }}>
-                提交于 {dt(d.created_at)}
+                {t('ticket.submitted_at', { time: dt(d.created_at) })}
               </p>
               <p style={{ margin: '10px 0 0', whiteSpace: 'pre-wrap' }}>{d.content}</p>
             </div>
 
             {d.replies.length === 0 ? (
-              <Empty title="客服还没有回复" hint="回复后会显示在这里" />
+              <Empty title={t('ticket.no_reply_title')} hint={t('ticket.no_reply_hint')} />
             ) : (
               <div className="stack">
                 {d.replies.map((r) => (
@@ -279,7 +352,10 @@ export function TicketDetail() {
                     style={{ marginLeft: r.is_admin ? 0 : 'auto', maxWidth: '86%' }}
                   >
                     <p className="small muted" style={{ margin: 0 }}>
-                      {r.is_admin ? '客服' : '我'} · {dt(r.created_at)}
+                      {t('ticket.reply_meta', {
+                        who: r.is_admin ? t('ticket.cs') : t('ticket.author_me'),
+                        time: dt(r.created_at),
+                      })}
                     </p>
                     <p style={{ margin: '8px 0 0', whiteSpace: 'pre-wrap' }}>{r.content}</p>
                   </div>
@@ -289,18 +365,18 @@ export function TicketDetail() {
 
             {d.status === 'closed' ? (
               <p className="small muted" style={{ margin: 0 }}>
-                该工单已关闭，不能再回复。如需继续咨询请另开工单。
+                {t('ticket.closed_note')}
               </p>
             ) : (
               <form className="card card--flat" onSubmit={send}>
                 <label className="field">
-                  <span>追加回复</span>
+                  <span>{t('ticket.field_reply')}</span>
                   <textarea
                     className="input"
                     name="content"
                     rows={3}
                     maxLength={5000}
-                    placeholder="补充说明…"
+                    placeholder={t('ticket.reply_ph')}
                     value={reply}
                     onChange={(e) => {
                       setReply(e.target.value);
@@ -310,11 +386,11 @@ export function TicketDetail() {
                 </label>
                 {msg && (
                   <p className="err" role="alert">
-                    {msg}
+                    {msgText(msg)}
                   </p>
                 )}
                 <button type="submit" className="btn btn--sm btn--primary" disabled={busy || !reply.trim()}>
-                  {busy ? '发送中…' : '发送'}
+                  {busy ? t('app.sending') : t('app.send')}
                 </button>
               </form>
             )}

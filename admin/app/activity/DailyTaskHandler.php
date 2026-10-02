@@ -20,7 +20,12 @@ class DailyTaskHandler implements ActivityHandlerInterface
 {
     public function canJoin(int $userId, Activity $activity, array $ctx): bool
     {
-        return $activity->status === Activity::STATUS_ENABLED
+        // 与 service 树**逐字同形**（护栏见 tests/ActivityTwoTreeParityTest.php）：必须要求
+        // 「有事件名」。本类是事件驱动的（见下面 onProgress 对 task.event 的匹配），而 checkin
+        // 路径传的 ctx 是 `event => ''`；不挡这一道，加一个 game_id=0 的每日任务即可点一下白拿奖
+        // （完整复现与后果见 service 树同方法注释）。
+        return ($ctx['event'] ?? '') !== ''
+            && $activity->status === Activity::STATUS_ENABLED
             && ($activity->start_at === null || $activity->start_at <= $ctx['now'])
             && ($activity->end_at === null || $activity->end_at >= $ctx['now'])
             && ($activity->game_id === 0 || (int) ($ctx['game_id'] ?? 0) === $activity->game_id);

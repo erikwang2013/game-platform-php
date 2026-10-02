@@ -157,6 +157,7 @@ export const idUi: Record<UiKey, string> = {
   'form.options_load_failed': 'Gagal memuat pilihan untuk {name}; nilai yang dipilih masih terlihat, tetapi jangan kirim kecuali Anda membiarkannya apa adanya',
   'form.tree_load_failed': 'Gagal memuat pohon izin untuk {name}; izin yang dipilih masih terlihat, tetapi jangan kirim kecuali Anda membiarkannya apa adanya',
   'form.tree_loading': 'Memuat pohon izin…',
+  'form.discard_confirm': 'Ada perubahan yang belum disimpan. Buang?',
   'form.select_placeholder': 'Silakan pilih',
   // Pilihan dropdown izin induk (lib/tree.ts meratakan pohon izin): kuncinya ada dua **bentuk**
   // (dengan slug / tanpa slug), dan path serta slug dikirim sebagai params — pilihannya dirakit baris per baris, lihat FieldOption di lib/crud.ts

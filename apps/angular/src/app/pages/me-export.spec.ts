@@ -4,7 +4,14 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { Msg, t } from '../core/i18n/i18n';
 import { MeExport } from './me-export';
+
+/**
+ * `Msg` 是**两态**（词条键 / 服务端原文）：只有键那一态的读点需要解析，原文那一态原样透出。
+ * **故意不统一**：把「服务端拒绝」那一处也裹进来，就再也证明不了「原文透出、不吞成导出失败」这一支。
+ */
+const txt = (v: Msg): string => (typeof v === 'string' ? v : t(v.key, v.params));
 
 /**
  * 「导出我的数据」卡片的钉子。四件容易退化成摆设的事：
@@ -57,7 +64,7 @@ describe('MeExport 导出我的数据', () => {
   let http: HttpTestingController;
   let fixture: ComponentFixture<MeExport>;
 
-  type Probe = { run(): void; busy(): boolean; ok(): boolean; msg(): string };
+  type Probe = { run(): void; busy(): boolean; ok(): boolean; msg(): Msg };
   const probe = (): Probe => fixture.componentInstance as unknown as Probe;
   const btn = (): HTMLButtonElement => fixture.nativeElement.querySelector('button');
   const alert = (): HTMLElement | null => fixture.nativeElement.querySelector('.alert');
@@ -120,10 +127,10 @@ describe('MeExport 导出我的数据', () => {
     expect(created).toHaveLength(1);
     expect(downloads).toEqual([NAME]);
     // 屏幕上那句话：服务端时刻 + 四类各自计数，没有本机时钟
-    expect(probe().msg()).toContain(`已导出 ${NAME}`);
-    expect(probe().msg()).toContain('服务端生成于');
-    expect(probe().msg()).toContain('流水 2 · 兑换 1 · 充值 3 · 提现 4');
-    expect(probe().msg()).not.toContain(todayDigits());
+    expect(txt(probe().msg())).toContain(`已导出 ${NAME}`);
+    expect(txt(probe().msg())).toContain('服务端生成于');
+    expect(txt(probe().msg())).toContain('流水 2 · 兑换 1 · 充值 3 · 提现 4');
+    expect(txt(probe().msg())).not.toContain(todayDigits());
     expect(probe().busy()).toBe(false);
     expect(btn().textContent).toContain('下载 JSON');
     expect(alert()?.getAttribute('role')).toBe('status');

@@ -31,6 +31,8 @@ class RiskUserController extends BaseController
 {
     #[Apidoc\Title("异常用户队列")]
     #[Apidoc\Desc("score_min=信任分上限（<=N），from/to=最近命中时间窗口")]
+    #[Apidoc\Url("/admin/v1/risk/users")]
+    #[Apidoc\Method("GET")]
     public function users(Request $request): Response
     {
         $query = UserTrust::query();
@@ -72,6 +74,8 @@ class RiskUserController extends BaseController
 
     #[Apidoc\Title("用户风控时间线")]
     #[Apidoc\Desc("合并 risk_log / play_log / anticheat_event，按时间倒序")]
+    #[Apidoc\Url("/admin/v1/risk/users/{hashid}/timeline")]
+    #[Apidoc\Method("GET")]
     public function timeline(Request $request, string $hashid): Response
     {
         $userId = $this->decodeId($hashid);
@@ -119,6 +123,8 @@ class RiskUserController extends BaseController
 
     #[Apidoc\Title("冻结账户")]
     #[Apidoc\Desc("调 M1 WalletService::lock 冻结平台可用余额，并写 risk_log(action=block) 留痕")]
+    #[Apidoc\Url("/admin/v1/risk/users/{hashid}/hold")]
+    #[Apidoc\Method("POST")]
     public function hold(Request $request, string $hashid): Response
     {
         $userId = $this->decodeId($hashid);
@@ -177,6 +183,8 @@ class RiskUserController extends BaseController
      */
     #[Apidoc\Title("解除冻结")]
     #[Apidoc\Desc("与 hold 配对：frozen→available 纯搬移，不铸币；按笔消费冻结子台账（先吃最新一笔风险冻结对应的 hold，不足部分按 FIFO 继续），实际消费的 hold 记在释放流水 remark")]
+    #[Apidoc\Url("/admin/v1/risk/users/{hashid}/release")]
+    #[Apidoc\Method("POST")]
     public function release(Request $request, string $hashid): Response
     {
         $userId = $this->decodeId($hashid);
@@ -185,7 +193,9 @@ class RiskUserController extends BaseController
         }
 
         // 释放量缺省全额（与 hold 全额冻结对称）。语法闸先行：bcmath 对 '1e5'/'abc' 抛 ValueError，
-        // 直接冒出去就是 500（同 SelfProvider::isAmountSyntaxValid 的理由）；只认标量，数组/null 一律判非法。
+        // 直接冒出去就是 500（同 service 树 `service/app/provider/SelfProvider.php` 里
+        // isAmountSyntaxValid() 的理由 —— ⚠ admin 树的 SelfProvider 没有这个方法，别照短名去调）；
+        // 只认标量，数组/null 一律判非法。
         $raw = $request->input('amount');
         $requested = null;
         if ($raw !== null && $raw !== '') {

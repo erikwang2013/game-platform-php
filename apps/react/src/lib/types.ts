@@ -120,8 +120,8 @@ export interface ExchangeRequest {
   platform_amount: string;
 }
 
-/** direction='in'（买）的询价结果 */
-export interface ExchangeQuoteIn {
+/** direction='in'（买）的询价结果 —— **不导出**：消费者用下面那个联合 `ExchangeQuote`（零处按名引用本名） */
+interface ExchangeQuoteIn {
   platform_amount: string;
   game_amount: string;
   spread_fee: string;
@@ -130,8 +130,8 @@ export interface ExchangeQuoteIn {
   spread_pct: string;
 }
 
-/** direction='out'（卖）的询价结果 */
-export interface ExchangeQuoteOut {
+/** direction='out'（卖）的询价结果 —— **不导出**，同上 */
+interface ExchangeQuoteOut {
   platform_amount: string;
   platform_equivalent: string;
   spread_fee: string;
@@ -185,12 +185,13 @@ export interface Leaderboard {
 }
 
 /**
- * 榜单条目。user_id 是**未编码的原始 BIGINT**（服务端 LeaderboardService 直出），
- * 不是 hashid；榜单页对无自己账号体系的身份不做展示，见 Leaderboard.tsx。
+ * 榜单条目。`user_id` 是 **hashid 字符串** —— `LeaderboardController::ranking` 在**出网处**逐行
+ * 补编（Service 直出的仍是裸 BIGINT：同一份数组还喂 WS，Redis 缓存里存的也是裸 id，所以补编落点
+ * 在控制器不在 Service）。接口**没有昵称/头像** ⇒ 这一列先天只能显示编号，见 Leaderboard.tsx。
  */
 export interface RankingRow {
   rank: number;
-  user_id: number;
+  user_id: string;
   score: string;
 }
 
@@ -206,17 +207,30 @@ export interface ExchangeRecordRow {
   created_at: string;
 }
 
-export interface LanguageInfo {
-  name: string;
-  nativeName: string;
-  icon: string;
-}
+/* `LanguageInfo` / `LanguageList`（/language/list 的形状）2026-10-02 随 api.ts 的语言包装一并删，
+   同日重核形状后**仍不恢复**（`switchLanguage` 已恢复，消费者是 `i18n/useI18n.ts`）：
+   本树能选的语言 = 有文案表的语言（`i18n/` 那 13 张），而该端点回的是**后端**支持集；
+   照它渲染，后端加了语言而本树没表时会给出一个「选得中、界面却静默全英文」的选项。
 
-/** /language/list：键是带地区的全码（zh-CN），也是 /language/switch 与 X-Language 的取值 */
-export interface LanguageList {
-  current: string;
-  languages: Record<string, LanguageInfo>;
-}
+   真实响应形状（2026-10-02 从 `LanguageController::list` +
+   `TranslationService::getAvailableLanguages()` 逐行读出，**不是旧的 `LanguageList` 类型**）：
+
+     { code: 0, message: …, data: {
+         // ⚠ 短码：中间件走的是 TranslationService::setLocale(Locale::normalize(…))
+         current: 'zh',
+         // ⚠ 键是**全码**：`Locale::fullCode($short)`，如 'zh-CN'
+         languages: {
+           'en-US': { name: 'English',              nativeName: 'English',          icon: 'us' },
+           'zh-CN': { name: 'Chinese (Simplified)', nativeName: '简体中文',          icon: 'cn' },
+           'ja-JP': { name: 'Japanese',             nativeName: '日本語',            icon: 'jp' },
+           … 共 13 项，顺序即 Locale::SUPPORTED 的顺序
+         } } }
+
+   两个字段**码制不一致**（`current` 短码 / `languages` 键全码）—— 这正是当初撤下时留的警告，
+   恢复时必须按 `Locale::normalize()` 归一后再比。
+
+   形状只写在注释里、**不建类型**：建了就是「有类型没消费者」，与当初撤它时的理由同款。
+   本树能渲染的语言集合在 `i18n/languages.ts` 的 `LANGUAGES`（13 条，`i18n.test.ts` 钉着）。 */
 
 /** /user/2fa/status */
 export interface TwoFactorStatus {
@@ -276,6 +290,18 @@ export interface IdentityApply {
   id_back_photo?: string;
   selfie_photo: string;
   country?: string;
+}
+
+/**
+ * `/country/list` 的一项。服务端只映射三个字段、**没有国家名**（`CountryController::list:27-33`），
+ * 所以 KYC 下拉的文案只能用 `country_code` 本身。
+ * `min_deposit` 是 `DECIMAL(18,4)` 且模型 cast 成 string 的原样值；本树不展示它，
+ * 但回包就长这样，别按「只用到 country_code」把形状裁掉。
+ */
+export interface CountryOption {
+  country_code: string;
+  currency: string;
+  min_deposit: string;
 }
 
 /* 券类型（CouponType / Coupon / UserCouponStatus / UserCoupon）2026-10-01 随优惠券页一并撤下，
@@ -452,7 +478,8 @@ export interface TournamentDetail extends Tournament {
   leaderboard: TournamentRankRow[];
 }
 
-export interface TournamentRankRow {
+/** 只出现在上面 `leaderboard` 那一处 —— **不导出**（零处按名引用） */
+interface TournamentRankRow {
   /** 服务端存的是报名行上的 rank 列；未结算时可能为 0/null */
   rank: number | null;
   /** ⚠ 昵称；`TournamentEntry::user` 取不到时服务端给字面量 `'N/A'` */

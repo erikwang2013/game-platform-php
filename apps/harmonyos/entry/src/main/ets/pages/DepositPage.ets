@@ -6,6 +6,7 @@ import router from '@ohos.router';
 import { PaymentMethodItem, DepositCreateRequest, DepositCreateResult } from '../model/DataModels';
 import { PaymentService } from '../service/DataService';
 import { LoadingView, ErrorView, NavBar, trimZeros, isZeroAmount } from '../common/Components';
+import { t, t1 } from '../i18n/Translations';
 
 /**
  * 充值：选支付方式 + 币种 + 金额 → 创建订单 → 展示收银台链接
@@ -14,6 +15,7 @@ import { LoadingView, ErrorView, NavBar, trimZeros, isZeroAmount } from '../comm
 @Entry
 @Component
 struct DepositPage {
+  @StorageLink('app_locale') localeCode: string = 'zh';
   @State methods: PaymentMethodItem[] = [];
   @State methodId: string = '';
   @State currency: string = 'USD';
@@ -42,7 +44,7 @@ struct DepositPage {
         router.replaceUrl({ url: 'pages/LoginPage' });
         return;
       }
-      this.errorMsg = msg.length > 0 ? msg : '加载支付方式失败';
+      this.errorMsg = msg.length > 0 ? msg : t('deposit.load_methods_failed');
     } finally {
       this.isLoading = false;
     }
@@ -58,7 +60,7 @@ struct DepositPage {
 
   /** 支付方式限额提示；max_amount 数值为 0 表示不限。仅展示，不做金额运算。 */
   private limitText(m: PaymentMethodItem): string {
-    const max = isZeroAmount(m.max_amount) ? '不限' : trimZeros(m.max_amount);
+    const max = isZeroAmount(m.max_amount) ? t('common.unlimited') : trimZeros(m.max_amount);
     return `${trimZeros(m.min_amount)} ~ ${max}`;
   }
 
@@ -70,17 +72,17 @@ struct DepositPage {
     this.amountError = '';
     this.errorMsg = '';
     if (!amount) {
-      this.amountError = '请输入充值金额';
+      this.amountError = t('deposit.amount_required');
       return;
     }
     if (!this.amountOk(amount, this.currency)) {
       this.amountError = (this.currency === 'JPY' || this.currency === 'KRW')
-        ? `${this.currency} 金额只能为整数`
-        : '金额最多 2 位小数';
+        ? t1('deposit.integer_only', 'currency', this.currency)
+        : t('deposit.amount_decimals2');
       return;
     }
     if (!this.methodId) {
-      this.errorMsg = '请选择支付方式';
+      this.errorMsg = t('deposit.method_required');
       return;
     }
 
@@ -98,7 +100,7 @@ struct DepositPage {
         router.replaceUrl({ url: 'pages/LoginPage' });
         return;
       }
-      this.errorMsg = msg.length > 0 ? msg : '创建充值订单失败';
+      this.errorMsg = msg.length > 0 ? msg : t('deposit.create_failed');
     } finally {
       this.submitting = false;
     }
@@ -130,20 +132,20 @@ struct DepositPage {
 
   build() {
     Column() {
-      NavBar({ title: '充值' })
+      NavBar({ title: t('common.deposit') })
 
       if (this.isLoading) {
-        LoadingView({ message: '加载支付方式中...' })
+        LoadingView({ message: t('deposit.loading_methods') })
       } else if (this.done) {
         Scroll() {
           Column() {
             Column() {
               Row() {
-                Text('订单已创建')
+                Text(t('deposit.order_created'))
                   .fontSize(16)
                   .fontWeight(FontWeight.Bold)
                   .layoutWeight(1)
-                Text('待支付')
+                Text(t('deposit.status_pending'))
                   .fontSize(12)
                   .fontColor('#FA8C16')
                   .backgroundColor('#FFF7E6')
@@ -152,20 +154,20 @@ struct DepositPage {
               }
               .width('100%')
 
-              this.resultRow('订单号', this.done!.order_no)
-              this.resultRow('充值金额', `${trimZeros(this.done!.amount)} ${this.currency}`)
-              this.resultRow('到账平台币', trimZeros(this.done!.platform_amount))
+              this.resultRow(t('common.order_no'), this.done!.order_no)
+              this.resultRow(t('deposit.amount_label'), `${trimZeros(this.done!.amount)} ${this.currency}`)
+              this.resultRow(t('deposit.platform_amount'), trimZeros(this.done!.platform_amount))
               if (this.done!.expires_at) {
-                this.resultRow('支付截止', this.done!.expires_at)
+                this.resultRow(t('deposit.expires_at'), this.done!.expires_at)
               }
 
-              Text('支付链接')
+              Text(t('deposit.checkout_url'))
                 .fontSize(13)
                 .fontColor('#999999')
                 .width('100%')
                 .margin({ top: 16, bottom: 6 })
 
-              Text(this.done!.checkout_url || '（网关未返回支付链接）')
+              Text(this.done!.checkout_url || t('deposit.no_checkout_url'))
                 .fontSize(13)
                 .fontColor('#1677FF')
                 .width('100%')
@@ -174,13 +176,13 @@ struct DepositPage {
                 .backgroundColor('#F5F5F5')
                 .copyOption(CopyOptions.LocalDevice)
 
-              Text('本应用无法直接打开浏览器，请长按上方链接复制，再到浏览器中完成支付。')
+              Text(t('deposit.checkout_hint'))
                 .fontSize(12)
                 .fontColor('#999999')
                 .width('100%')
                 .margin({ top: 8 })
 
-              Button('再充一笔')
+              Button(t('deposit.again'))
                 .width('100%')
                 .height(44)
                 .fontSize(15)
@@ -203,12 +205,12 @@ struct DepositPage {
         }
         .layoutWeight(1)
       } else if (this.methods.length === 0) {
-        ErrorView({ message: this.errorMsg || '暂无可用支付方式' })
+        ErrorView({ message: this.errorMsg || t('deposit.no_methods'), onRetry: () => { this.loadMethods(); } })
       } else {
         Scroll() {
           Column() {
             Column() {
-              Text('支付方式')
+              Text(t('deposit.method_label'))
                 .fontSize(15)
                 .fontWeight(FontWeight.Medium)
                 .width('100%')
@@ -258,7 +260,7 @@ struct DepositPage {
             .margin({ left: 16, right: 16, top: 12 })
 
             Column() {
-              Text('币种')
+              Text(t('common.currency'))
                 .fontSize(15)
                 .fontWeight(FontWeight.Medium)
                 .width('100%')
@@ -281,7 +283,7 @@ struct DepositPage {
               .width('100%')
               .margin({ top: 6 })
 
-              Text('币种需与所选支付方式一致，否则服务端会拒绝下单')
+              Text(t('deposit.currency_hint'))
                 .fontSize(12)
                 .fontColor('#999999')
                 .width('100%')
@@ -294,13 +296,13 @@ struct DepositPage {
             .margin({ left: 16, right: 16, top: 12 })
 
             Column() {
-              Text(`金额（${this.currency}）`)
+              Text(t1('deposit.amount_label_currency', 'currency', this.currency))
                 .fontSize(15)
                 .fontWeight(FontWeight.Medium)
                 .width('100%')
                 .margin({ bottom: 8 })
 
-              TextInput({ placeholder: this.currency === 'JPY' || this.currency === 'KRW' ? '整数金额' : '0.00', text: this.amount })
+              TextInput({ placeholder: this.currency === 'JPY' || this.currency === 'KRW' ? t('deposit.integer_amount') : '0.00', text: this.amount })
                 .height(44)
                 .fontSize(14)
                 .backgroundColor('#F5F5F5')
@@ -327,7 +329,7 @@ struct DepositPage {
                   .margin({ top: 6 })
               }
 
-              Button(this.submitting ? '提交中...' : '创建充值订单')
+              Button(this.submitting ? t('common.submitting') : t('deposit.submit'))
                 .width('100%')
                 .height(48)
                 .fontSize(16)

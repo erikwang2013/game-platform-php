@@ -41,12 +41,10 @@ return [
         ]
     ],
     // File update detection and automatic reload
-    'leaderboard-ws' => [
-        'handler' => app\process\LeaderboardWebSocket::class,
-        // 端口由 service/.env 的 LEADERBOARD_WS_PORT 配置，默认 8790
-        'listen' => 'websocket://0.0.0.0:' . (getenv('LEADERBOARD_WS_PORT') ?: '8790'),
-        'count' => 1,
-    ],
+    // 墓碑：leaderboard-ws（端口 8790）于 2026-10-02 移除。它是个死子系统 —— broadcastRanking()
+    // 全仓零调用点（排行榜的实时推送从未实现），四棵客户端树也零处引用该端口；REST
+    // （LeaderboardController + LeaderboardService）已满足需求。要做实时请单独立项，
+    // 别再把这个进程放回来。遗留引用见 docker-compose.yml / service/README.*.md / docs/**。
     'chat-ws' => [
         'handler' => app\process\ChatWebSocket::class,
         // 端口由 service/.env 的 CHAT_WS_PORT 配置，默认 8791

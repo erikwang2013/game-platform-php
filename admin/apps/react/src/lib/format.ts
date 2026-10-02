@@ -3,6 +3,7 @@
  * 显示层格式化。只做呈现，绝不参与金额/比率运算 —— 所有金额与百分比均由
  * 服务端 bcmath 计算，前端原样透传字符串。
  */
+import { currentCode } from '../i18n/index.ts';
 
 /** 空值统一显示为 "—"。 */
 export const dash = (value: unknown): string =>
@@ -11,9 +12,12 @@ export const dash = (value: unknown): string =>
 /**
  * 千分位。仅对真正的 number 生效；字符串原样返回，
  * 因为 bcmath 金额串（如 "12345678901234567890.12"）转 number 会丢精度。
+ *
+ * 区域设置取 `currentCode()` 而**不是**写死 'zh-CN'：界面有 13 种语言，写死等于数字分组
+ * 永远是中文口径（de 的 `1.234,5`、hi 的印度分组法都拿不到）。服务端金额串走不到这里。
  */
 export const num = (value: unknown): string =>
-  typeof value === 'number' && Number.isFinite(value) ? value.toLocaleString('zh-CN') : dash(value);
+  typeof value === 'number' && Number.isFinite(value) ? value.toLocaleString(currentCode()) : dash(value);
 
 /**
  * 金额方向 → 着色类（`.delta.up` 绿 / `.delta.down` 红，见 index.css）。
@@ -48,13 +52,13 @@ const TIME_KEY = /(_at|_time|time|date|created|updated|expire)/i;
 
 export const isTimeKey = (key: string): boolean => TIME_KEY.test(key);
 
-/** 时间戳/日期串统一展示；10 位按秒、13 位按毫秒。 */
+/** 时间戳/日期串统一展示；10 位按秒、13 位按毫秒。区域设置随界面语言（同 `num`）。 */
 export function when(value: unknown): string {
   if (value === null || value === undefined || value === '') return '—';
   if (typeof value === 'number' && Number.isFinite(value)) {
     // ponytail: 秒/毫秒启发式判定，够用；若后端统一为 ISO 串可删掉此分支
     const ms = value > 1e12 ? value : value * 1000;
-    return new Date(ms).toLocaleString('zh-CN');
+    return new Date(ms).toLocaleString(currentCode());
   }
   return String(value);
 }
@@ -73,7 +77,7 @@ export function when(value: unknown): string {
  *    ⇒ 换个时区的管理员会「显示正确、保存位移 8 小时」。
  * ponytail: 固定偏移，不上 IANA 时区库 —— 服务端就一个固定偏移；真要跨时区部署再换。
  */
-export const SERVER_TZ_OFFSET = 8;
+const SERVER_TZ_OFFSET = 8;
 
 /** 只认**整串就是一个 UTC 时间戳**的形状；别的一律不碰（所以 `2026-01-02` 日期串不动）。 */
 const ISO_UTC = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;

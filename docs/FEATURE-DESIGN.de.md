@@ -299,13 +299,6 @@ Konfiguration über PlatformConfig oder Umgebungsvariablen; bei Anfragefehlern a
 - PayPal: POST zurück zum PayPal-Verifizierungsendpunkt
 - Bei nicht konfiguriertem Schlüssel wird die Prüfung automatisch übersprungen (Entwicklungsmodus)
 
-### 8.6 WebSocket-Echtzeit-Rangliste
-
-- Protokoll: WebSocket (ws://host:8790)
-- Abonnement: {action: "subscribe", leaderboard_id: 123}
-- Push: {type: "ranking_update", rankings: [...]}
-- Unterstützt ping/pong-Heartbeat zur Verbindungserhaltung
-
 ## 9. Internationalisierungsdesign
 
 ### 9.1 Unterstützte Sprachen

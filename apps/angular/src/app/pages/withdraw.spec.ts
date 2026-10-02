@@ -1,4 +1,17 @@
 /* Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz */
+
+/**
+ * ⚠ 本文件里 `cell('提现金额')` 这类**按中文标签定位**的选择器共 **13 条**，
+ * 它们能过是因为**隐含依赖 `FALLBACK === 'zh'`**，而不是因为它们与语言无关：
+ *   - `t()` 查不到键时回落到 `TABLE[FALLBACK]`（`core/i18n/i18n.ts`）；
+ *   - `src/test-setup.ts` 在每条用例前把语言复位成 `FALLBACK`。
+ * 这两处任一被改（`FALLBACK` 换语言、复位钩子被删/被排到用例钩子之后），
+ * 本文件会**成片变红**，而红的原因跟页面代码无关 —— 那时先看
+ * `src/app/core/i18n/i18n.spec.ts:113`（钉 `FALLBACK === 'zh'` 的那条），别来改这里的选择器。
+ *
+ * 本批**刻意不动**这些选择器：把断言改成走 `t()` 才能解耦，那是后续批次的事，
+ * 现在改会在没有对照读数的情况下同时动「判据」和「被判断的东西」。
+ */
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';

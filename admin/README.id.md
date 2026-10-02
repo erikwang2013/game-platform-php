@@ -85,17 +85,19 @@ open-admin/
 │   │       └── AuthController.php    # Login/Registrasi/Refresh token
 │   ├── common/                 # Kelas utilitas publik
 │   │   └── CdnProbeService.php # Probe konektivitas CDN (Hashids/Snowflake/Encryption dari paket composer)
-│   ├── middleware/             # Middleware
+│   ├── middleware/             # Middleware (9 di disk; 8 di rantai eksekusi)
 │   │   ├── Cors.php            # CORS
 │   │   ├── SecurityFilter.php  # Deteksi & pemblokiran serangan (batasan metode HTTP/XSS/Injeksi SQL/path traversal/injeksi perintah/CSRF)
 │   │   ├── RateLimit.php       # Rate limit Redis (jendela geser + header respons)
-│   │   ├── StaticFile.php      # Layanan file statis (bawaan webman)
+│   │   ├── LanguageMiddleware.php # Bahasa/locale (global; didaftarkan setelah RateLimit, sebelum middleware rute)
+│   │   ├── StaticFile.php      # Layanan file statis (salinan bawaan webman; TIDAK terdaftar — dikomentari di config/static.php:25, di luar rantai eksekusi)
 │   │   ├── AdminAuth.php       # Autentikasi JWT + daftar hitam
 │   │   ├── AdminPermission.php # Validasi izin RBAC
+│   │   ├── MetricsAuth.php     # khusus /metrics: JWT admin atau token scrape statis
 │   │   └── OperationLog.php    # Pencatatan log operasi otomatis (termasuk deteksi sumber)
 │   ├── activity/               # Handler aktivitas (check-in/undangan/tugas harian)
 │   ├── model/                  # Model data
-│   ├── process/                # Proses (Http, Monitor, RiskIpCron)
+│   ├── process/                # Proses (Http, Monitor, RiskIpCron, ExportTmpCleanup)
 │   ├── provider/               # Lapisan Provider game (Self/ThirdParty/Factory)
 │   ├── service/                # Layanan (dompet/sandbox risiko)
 │   └── view/                   # Template view
@@ -104,7 +106,7 @@ open-admin/
 │   ├── react/                  # Backend admin web React
 │   ├── flutter/                # Backend administrasi Flutter Web (gaya PC)
 │   │   └── lib/app/
-│   │       ├── pages/          # 20 direktori halaman
+│   │       ├── pages/          # 26 direktori halaman
 │   │       ├── services/       # ApiService (interceptor JWT) + AuthService (persistensi Token)
 │   │       └── layouts/        # Tata letak backend admin responsif (sidebar+topbar+area konten)
 │   └── harmonyos/              # Klien native HarmonyOS (refresh Token tanpa terasa)
@@ -147,8 +149,8 @@ Item konfigurasi utama:
 |---------|------|--------|
 | `APP_PORT` | Port listening HTTP webman | `8789` |
 | `APP_URL` | Alamat akses eksternal (tautan halaman sukses installer, baseUrl dokumentasi API, dll.) | `http://localhost:8789` |
-| `JWT_SECRET` | Kunci tanda tangan JWT | `open-admin-jwt-secret-change-in-production` |
-| `HASHIDS_SALT` | Nilai salt Hashids | `open-admin-hashids-salt-2026` |
+| `ADMIN_JWT_SECRET_KEY` | Kunci tanda tangan JWT | `game-platform-admin-jwt-secret-change-in-production` |
+| `HASHIDS_SALT` | Nilai salt Hashids | `game-platform-hashids-salt-2026` |
 | `ENCRYPTION_KEY` | Kunci enkripsi API | Nilai default 32 byte |
 | `SNOWFLAKE_DATACENTER_ID` | ID pusat data (0-31) | `1` |
 | `SNOWFLAKE_WORKER_ID` | ID node kerja (0-31) | `1` |
@@ -188,7 +190,7 @@ Gunakan DevEco Studio untuk membuka direktori `apps/harmonyos/`, lalu jalankan d
 
 ### 6. Deployment Docker Compose Satu-Klik (disarankan untuk produksi)
 
-Proyek menyediakan solusi orkestrasi Docker lengkap, mencakup 7 layanan: Nginx, admin (webman), service (webman), leaderboard-ws (WebSocket), MySQL, Redis, Elasticsearch.
+Proyek menyediakan solusi orkestrasi Docker lengkap, mencakup 7 layanan: Nginx, admin (webman), service (webman), chat-ws (WebSocket), MySQL, Redis, Elasticsearch.
 
 ```bash
 # 1. Konfigurasi variabel lingkungan Docker
@@ -423,7 +425,7 @@ Direktori root proyek menyediakan `docker-compose.yml`, mengorkestrasi 7 layanan
 | `nginx` | nginx:alpine | 80, 443 |
 | `admin` | dibangun `Dockerfile` lokal | 8789 |
 | `service` | dibangun `Dockerfile` lokal | 8792 |
-| `leaderboard-ws` | dibangun `Dockerfile` lokal | 8790, 8791 |
+| `chat-ws` | dibangun `Dockerfile` lokal | 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

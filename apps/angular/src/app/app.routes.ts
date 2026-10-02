@@ -85,6 +85,12 @@ export const routes: Routes = [
     canActivate: [authGuard],
     loadComponent: () => import('./pages/tickets').then((m) => m.TicketsPage),
   },
+  // 深链：把某条工单的地址直接发给别人（详情对非归属人回 404，见 tickets.ts 注释）
+  {
+    path: 'tickets/:hashid',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/tickets').then((m) => m.TicketsPage),
+  },
   // 好友：/friend/* 七个端点整组挂 UserAuth
   {
     path: 'friends',
@@ -111,6 +117,11 @@ export const routes: Routes = [
   // 公开页：公告与排行榜后端不带鉴权，未登录也能看
   {
     path: 'announcements',
+    loadComponent: () => import('./pages/announcements').then((m) => m.AnnouncementsPage),
+  },
+  // 深链：单条公告可直接分享（公开页，未登录也打得开）
+  {
+    path: 'announcements/:hashid',
     loadComponent: () => import('./pages/announcements').then((m) => m.AnnouncementsPage),
   },
   {

@@ -28,7 +28,6 @@ class OperationLogRedactionTest extends TestCase
     private function filter(array $data): array
     {
         $method = new ReflectionMethod(OperationLog::class, 'filterSensitive');
-        $method->setAccessible(true);
 
         return $method->invoke(new OperationLog(), $data);
     }

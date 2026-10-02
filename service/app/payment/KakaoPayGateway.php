@@ -67,8 +67,21 @@ class KakaoPayGateway implements PaymentGatewayInterface
         if ($orderNo === '' || $tid === '' || !in_array($status, ['success', 'failed'], true)) {
             return ['valid' => false, 'order_no' => '', 'transaction_id' => '', 'amount' => '', 'status' => 'failed'];
         }
-        // 前端明确上报失败时直接透传，无需调 approve
+        // 上报失败必须锚在**服务端留存的** (order_no, tid) 上：tid 由 ready 接口返回、只经
+        // DepositController 回填进 deposit_order.transaction_id，请求方可自选的值不构成凭据。
+        // 原实现对 status=failed 直接透传请求里的 order_no/tid（且该分支在配置校验之前、不依赖任何
+        // 密钥）⇒ 未鉴权者只要知道某笔 pending 单号即可把它原子置为 cancelled；用户若已真实付款，
+        // 钱进网关而永不入账。形状照 MpesaGateway 的 fail-closed 锚定（按服务端保存的网关流水号匹配）。
         if ($status === 'failed') {
+            $adminKey = getenv('KAKAOPAY_ADMIN_KEY') ?: '';
+            $cid      = getenv('KAKAOPAY_CID') ?: '';
+            if (!$adminKey || !$cid) {
+                return ['valid' => false, 'order_no' => '', 'transaction_id' => '', 'amount' => '', 'status' => 'failed'];
+            }
+            $order = $this->findOrder($orderNo);
+            if (!$order || $order->transaction_id === '' || !hash_equals((string) $order->transaction_id, $tid)) {
+                return ['valid' => false, 'order_no' => '', 'transaction_id' => '', 'amount' => '', 'status' => 'failed'];
+            }
             return ['valid' => true, 'order_no' => $orderNo, 'transaction_id' => $tid, 'amount' => '', 'status' => 'failed'];
         }
         if ($pgToken === '') {

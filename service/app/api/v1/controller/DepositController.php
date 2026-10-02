@@ -136,10 +136,11 @@ class DepositController extends BaseController
     {
         $userId  = $request->userId;
         $page    = (int) $request->input('page', 1);
-        $perPage = (int) $request->input('per_page', 20);
+        $perPage = max(1, min(100, (int) $request->input('per_page', 20)));
 
         $paginator = DepositOrder::where('user_id', $userId)
             ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
 
         $items = [];

@@ -17,7 +17,6 @@ flowchart TB
     subgraph "Anwendungsdienste"
         ADM["admin :8789<br/>Admin-Panel"]
         SVC["service :8792<br/>C-End-Geschäft"]
-        LB["leaderboard-ws :8790<br/>WebSocket-Rangliste"]
         CHAT["chat-ws :8791<br/>WebSocket-Direktnachrichten"]
     end
 
@@ -33,7 +32,7 @@ flowchart TB
     end
 
     DNS --> NGX
-    NGX --> ADM & SVC & LB & CHAT
+    NGX --> ADM & SVC & CHAT
     ADM & SVC --> MYSQL & REDIS & ES & CH
     ADM & SVC --> MON
 ```

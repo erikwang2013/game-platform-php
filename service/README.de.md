@@ -17,7 +17,7 @@ Der API-Dienst der Benutzerplattform (C-Seite) ist ein leistungsstarkes PHP-Back
 | Auszahlung | Antrag → Prüfung → Auszahlung, gestaffelte KYC-Limits |
 | Tausch | Echtzeitkurse Plattform-Token ⇄ Spielwährung, VIP-Rabatte und Kurszuschläge |
 | Spiele | Spielliste/Kategorien/Suche, Spielverlauf, Provider-Settlement-Callbacks |
-| Ranglisten | Tages-/Wochen-/Monats-/Gesamt + WebSocket-Echtzeit-Push |
+| Ranglisten | Tages-/Wochen-/Monats-/Gesamt (REST) |
 | Gutscheine | Festbetrag + prozentualer Rabatt, zeit- und mengenbegrenzt |
 | Tickets | Nutzer erstellen/beantworten Support-Tickets |
 | VIP | 5 Loyalitätsstufen, Erfahrungspunkte, Tauschrabatte |
@@ -40,7 +40,7 @@ Der API-Dienst der Benutzerplattform (C-Seite) ist ein leistungsstarkes PHP-Back
 service/
 ├── app/
 │   ├── activity/           # Event-Handler
-│   ├── api/v1/controller/  # C-Seiten-API-Controller (34)
+│   ├── api/v1/controller/  # C-Seiten-API-Controller (35)
 │   ├── bootstrap/          # Benachrichtigungs-Bootstrap
 │   ├── cdn/                # Multi-Provider-CDN (Aliyun/Tencent/Huawei/Cloudflare/CloudFront + CdnFactory)
 │   ├── common/             # Allgemein
@@ -96,7 +96,7 @@ cp .env.example .env
 # 3. Dienst starten (Standardport 8792, änderbar über APP_PORT in .env)
 php start.php start        # Vordergrund
 php start.php start -d     # Hintergrund (Daemon)
-# WebSocket-Ports (Rangliste 8790 / Chat 8791) sind über LEADERBOARD_WS_PORT / CHAT_WS_PORT in .env änderbar
+# WebSocket-Ports (Chat 8791) sind über CHAT_WS_PORT in .env änderbar
 ```
 
 ## Verwendung

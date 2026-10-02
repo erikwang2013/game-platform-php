@@ -20,12 +20,13 @@ const TYPE_LABEL: Record<string, string> = {
 /**
  * 排行榜 —— 公开接口，未登录也能看。
  *
- * ⚠ 榜单条目**只有 3 个字段**：rank / user_id / score
- * （LeaderboardService.php:87-91,108-112 组装，`user_id` 是**裸数据库整数**、没过 encodeId，
- * 与仓库「跨 API 边界的 ID 一律 hashid」的约定不符）。
- * **没有昵称、没有头像** ⇒ 榜单先天只能显示「玩家 #1234」，这是**后端字段缺口，不是本树实现问题**。
+ * ⚠ 榜单条目**只有 3 个字段**：rank / user_id / score。
+ * `user_id` 自 2026-10-02 起是 **hashid 字符串**（`LeaderboardController::ranking` 出网前逐行
+ * `encodeId`；Service 里那把仍吐裸 BIGINT，因为它还喂 WS 与 Redis 缓存）—— 与 react 树同步。
+ * **没有昵称、没有头像** ⇒ 榜单先天只能显示一个编号，这是**后端字段缺口，不是本树实现问题**。
  * 因此这里：① 不编造用户名/头像；② 不逐条拉 /user/profile 补字段（N+1，且多数拿不到）；
- * ③ 不拿 user_id 拼用户主页链接（裸 BIGINT 不经 hashid 路由）。
+ * ③ 只展示末 4 个字符（版面选择，与 react 树 `maskedId` 同形）——hashid 即便完整显示也不是秘密
+ * （它本来就在响应报文里），打码只是为了不把十几位塞进这一列，不承担"遮住主键"的职责。
  */
 @Component({
   selector: 'app-leaderboard',
@@ -96,7 +97,7 @@ const TYPE_LABEL: Record<string, string> = {
               <div class="row">
                 <span class="rk" [class.top]="r.rank <= 3">{{ r.rank }}</span>
                 <div class="grow">
-                  <div class="t">玩家 #{{ r.user_id }}</div>
+                  <div class="t">玩家 {{ maskedId(r.user_id) }}</div>
                   <div class="s">{{ metricLabel(cur()?.metric) }}</div>
                 </div>
                 <span class="amount" [title]="moneyRaw(r.score)">{{ score(r) }}</span>
@@ -188,6 +189,11 @@ export class LeaderboardPage {
   /** 榜单名后缀（周期）—— 名字里通常已含周期，重复就不加 */
   protected typeLabel(t?: string): string {
     return t ? (TYPE_LABEL[t] ?? t) : '';
+  }
+
+  /** 身份列只展示末 4 个字符（与 react 树 `maskedId` 同形）；接口没有昵称，只能显示编号 */
+  protected maskedId(id: string): string {
+    return `#···${String(id).slice(-4)}`;
   }
 
   /** play_count 榜的 score 是次数，不做货币格式化；金额类指标才走 money() */

@@ -29,7 +29,7 @@ class ReportController extends BaseController
     #[Apidoc\Desc("统计时间段内新增用户、充值、提现、兑换、游戏局数")]
     #[Apidoc\Url("/admin/v1/report/summary")]
     #[Apidoc\Method("GET")]
-    #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer Token")]
+    #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer 令牌")]
     #[Apidoc\Query(name: "start", type: "string", require: false, desc: "开始日期 Y-m-d，缺省最近30天")]
     #[Apidoc\Query(name: "end", type: "string", require: false, desc: "结束日期 Y-m-d，缺省今天")]
     #[Apidoc\Query(name: "compare", type: "int", require: false, desc: "传 1 时附加上一等长周期环比数据（compare 键）")]
@@ -54,17 +54,7 @@ class ReportController extends BaseController
 
         $between = [$start . ' 00:00:00', $end . ' 23:59:59'];
 
-        $data = [
-            'start' => $start,
-            'end' => $end,
-            'new_users' => User::whereBetween('created_at', $between)->count(),
-            'deposit_amount' => DepositOrder::whereBetween('created_at', $between)->where('status', 'confirmed')->sum('platform_amount') ?? '0',
-            'deposit_count' => DepositOrder::whereBetween('created_at', $between)->where('status', 'confirmed')->count(),
-            'withdraw_amount' => WithdrawOrder::whereBetween('created_at', $between)->whereIn('status', ['approved', 'completed'])->sum('platform_amount') ?? '0',
-            'withdraw_count' => WithdrawOrder::whereBetween('created_at', $between)->whereIn('status', ['approved', 'completed'])->count(),
-            'exchange_amount' => ExchangeRecord::whereBetween('created_at', $between)->sum('platform_amount') ?? '0',
-            'play_count' => GamePlayLog::whereBetween('created_at', $between)->count(),
-        ];
+        $data = array_merge(['start' => $start, 'end' => $end], $this->summaryTotals($between));
 
         if ($withCompare) {
             // 上一等长周期对比：start 向前平移 (end-start+1) 天
@@ -72,17 +62,7 @@ class ReportController extends BaseController
             $prevStart = date('Y-m-d', strtotime($start) - $span * 86400);
             $prevEnd = date('Y-m-d', strtotime($start) - 86400);
             $prevBetween = [$prevStart . ' 00:00:00', $prevEnd . ' 23:59:59'];
-            $data['compare'] = [
-                'start' => $prevStart,
-                'end' => $prevEnd,
-                'new_users' => User::whereBetween('created_at', $prevBetween)->count(),
-                'deposit_amount' => DepositOrder::whereBetween('created_at', $prevBetween)->where('status', 'confirmed')->sum('platform_amount') ?? '0',
-                'deposit_count' => DepositOrder::whereBetween('created_at', $prevBetween)->where('status', 'confirmed')->count(),
-                'withdraw_amount' => WithdrawOrder::whereBetween('created_at', $prevBetween)->whereIn('status', ['approved', 'completed'])->sum('platform_amount') ?? '0',
-                'withdraw_count' => WithdrawOrder::whereBetween('created_at', $prevBetween)->whereIn('status', ['approved', 'completed'])->count(),
-                'exchange_amount' => ExchangeRecord::whereBetween('created_at', $prevBetween)->sum('platform_amount') ?? '0',
-                'play_count' => GamePlayLog::whereBetween('created_at', $prevBetween)->count(),
-            ];
+            $data['compare'] = array_merge(['start' => $prevStart, 'end' => $prevEnd], $this->summaryTotals($prevBetween));
         }
 
         try {
@@ -97,7 +77,7 @@ class ReportController extends BaseController
     #[Apidoc\Desc("按日聚合返回统计明细，0 填充无数据日期")]
     #[Apidoc\Url("/admin/v1/report/daily")]
     #[Apidoc\Method("GET")]
-    #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer Token")]
+    #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer 令牌")]
     #[Apidoc\Query(name: "start", type: "string", require: false, desc: "开始日期 Y-m-d，缺省最近30天")]
     #[Apidoc\Query(name: "end", type: "string", require: false, desc: "结束日期 Y-m-d，缺省今天")]
     public function daily(Request $request): Response
@@ -131,7 +111,7 @@ class ReportController extends BaseController
     #[Apidoc\Desc("导出日报表 CSV，UTF-8 BOM 保证 Excel 打开不乱码")]
     #[Apidoc\Url("/admin/v1/report/export")]
     #[Apidoc\Method("GET")]
-    #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer Token")]
+    #[Apidoc\Header(name: "Authorization", require: true, desc: "Bearer 令牌")]
     #[Apidoc\Query(name: "start", type: "string", require: false, desc: "开始日期 Y-m-d，缺省最近30天")]
     #[Apidoc\Query(name: "end", type: "string", require: false, desc: "结束日期 Y-m-d，缺省今天")]
     #[Apidoc\Query(name: "format", type: "string", require: false, desc: "导出格式：excel(CSV，缺省) 或 xlsx")]
@@ -205,6 +185,33 @@ class ReportController extends BaseController
             return null;
         }
         return [$start, $end];
+    }
+
+    /**
+     * 区间汇总（summary 与 compare 共用）。
+     *
+     * 充值/提现的金额与笔数原先各打一条**完全相同 where、只差聚合函数**的查询（4 对），
+     * 这里合成一条 `selectRaw('SUM(x) as total, COUNT(*) as cnt')`，单区间 7 条降到 5 条。
+     * 取数写法与 dailyRows 同款：无匹配行时 SUM 回 NULL，`?? '0'` 兜成字符串（金额一律字符串出边界）。
+     */
+    private function summaryTotals(array $between): array
+    {
+        $deposits = DepositOrder::whereBetween('created_at', $between)->where('status', 'confirmed')
+            ->selectRaw('SUM(platform_amount) as total, COUNT(*) as cnt')
+            ->first();
+        $withdraws = WithdrawOrder::whereBetween('created_at', $between)->whereIn('status', ['approved', 'completed'])
+            ->selectRaw('SUM(platform_amount) as total, COUNT(*) as cnt')
+            ->first();
+
+        return [
+            'new_users' => User::whereBetween('created_at', $between)->count(),
+            'deposit_amount' => $deposits->total ?? '0',
+            'deposit_count' => (int) ($deposits->cnt ?? 0),
+            'withdraw_amount' => $withdraws->total ?? '0',
+            'withdraw_count' => (int) ($withdraws->cnt ?? 0),
+            'exchange_amount' => ExchangeRecord::whereBetween('created_at', $between)->sum('platform_amount') ?? '0',
+            'play_count' => GamePlayLog::whereBetween('created_at', $between)->count(),
+        ];
     }
 
     /**

@@ -85,17 +85,19 @@ open-admin/
 │   │       └── AuthController.php    # تسجيل الدخول/التسجيل/تحديث الرمز
 │   ├── common/                 # فئات الأدوات العامة
 │   │   └── CdnProbeService.php # فحص اتصال CDN (Hashids/Snowflake/Encryption من حزم composer)
-│   ├── middleware/             # الوسيطات
+│   ├── middleware/             # الوسيطات (9 على القرص؛ 8 في سلسلة التنفيذ)
 │   │   ├── Cors.php            # المشاركة عبر الأصول (CORS)
 │   │   ├── SecurityFilter.php  # كشف واعتراض الهجمات (تقييد طرق HTTP/XSS/حقن SQL/اجتياز المسار/حقن الأوامر/CSRF)
 │   │   ├── RateLimit.php       # الحد من المعدل في Redis (نافذة منزلقة + ترويسات استجابة)
-│   │   ├── StaticFile.php      # خدمة الملفات الثابتة (مدمجة في webman)
+│   │   ├── LanguageMiddleware.php # اللغة/locale (عام؛ يُسجَّل بعد RateLimit وقبل وسيطات المسار)
+│   │   ├── StaticFile.php      # خدمة الملفات الثابتة (نسخة من وحدة webman المدمجة؛ غير مسجّلة — معطّلة بتعليق في config/static.php:25، خارج سلسلة التنفيذ)
 │   │   ├── AdminAuth.php       # مصادقة JWT + قائمة سوداء
 │   │   ├── AdminPermission.php # التحقق من صلاحيات RBAC
+│   │   ├── MetricsAuth.php     # خاص بـ /metrics: JWT للمشرف أو رمز جلب ثابت
 │   │   └── OperationLog.php    # تسجيل العمليات تلقائيًا (بما فيه كشف المصدر)
 │   ├── activity/               # معالجات الأنشطة (تسجيل الدخول/الدعوة/المهام اليومية)
 │   ├── model/                  # نماذج البيانات
-│   ├── process/                # العمليات (Http, Monitor, RiskIpCron)
+│   ├── process/                # العمليات (Http, Monitor, RiskIpCron, ExportTmpCleanup)
 │   ├── provider/               # طبقة مزوّد الألعاب (Self/ThirdParty/Factory)
 │   ├── service/                # الخدمات (المحفظة/بيئة المخاطر المعزولة)
 │   └── view/                   # قوالب العرض
@@ -104,7 +106,7 @@ open-admin/
 │   ├── react/                  # لوحة إدارة ويب React
 │   ├── flutter/                # لوحة إدارة Flutter Web (نمط PC)
 │   │   └── lib/app/
-│   │       ├── pages/          # 20 دليل صفحات
+│   │       ├── pages/          # 26 دليل صفحات
 │   │       ├── services/       # ApiService (معترض JWT) + AuthService (استمرار الرمز)
 │   │       └── layouts/        # تخطيط لوحة إدارة متجاوب (شريط جانبي + شريط علوي + منطقة محتوى)
 │   └── harmonyos/              # عميل HarmonyOS الأصلي (تحديث الرمز دون إحساس)
@@ -147,8 +149,8 @@ cp .env.example .env
 |---------|------|--------|
 | `APP_PORT` | منفذ استماع HTTP الخاص بـ webman | `8789` |
 | `APP_URL` | عنوان الوصول الخارجي (روابط صفحة نجاح المثبّت، baseUrl لوثائق API، إلخ) | `http://localhost:8789` |
-| `JWT_SECRET` | مفتاح توقيع JWT | `open-admin-jwt-secret-change-in-production` |
-| `HASHIDS_SALT` | ملح Hashids | `open-admin-hashids-salt-2026` |
+| `ADMIN_JWT_SECRET_KEY` | مفتاح توقيع JWT | `game-platform-admin-jwt-secret-change-in-production` |
+| `HASHIDS_SALT` | ملح Hashids | `game-platform-hashids-salt-2026` |
 | `ENCRYPTION_KEY` | مفتاح تشفير API | قيمة افتراضية بـ 32 بايت |
 | `SNOWFLAKE_DATACENTER_ID` | معرّف مركز البيانات (0-31) | `1` |
 | `SNOWFLAKE_WORKER_ID` | معرّف العقدة العاملة (0-31) | `1` |
@@ -188,7 +190,7 @@ flutter run -d chrome    # الويب (نمط لوحة إدارة PC)
 
 ### 6. النشر بخطوة واحدة عبر Docker Compose (موصى به للإنتاج)
 
-يوفر المشروع حلاً كاملاً لتنظيم Docker، يتضمن 7 خدمات: Nginx وadmin (webman) وservice (webman) وleaderboard-ws (WebSocket) وMySQL وRedis وElasticsearch.
+يوفر المشروع حلاً كاملاً لتنظيم Docker، يتضمن 7 خدمات: Nginx وadmin (webman) وservice (webman) وchat-ws (WebSocket) وMySQL وRedis وElasticsearch.
 
 ```bash
 # 1. تكوين متغيرات بيئة Docker
@@ -423,7 +425,7 @@ Authorization: Bearer <token>
 | `nginx` | nginx:alpine | 80, 443 |
 | `admin` | بناء محلي عبر `Dockerfile` | 8789 |
 | `service` | بناء محلي عبر `Dockerfile` | 8792 |
-| `leaderboard-ws` | بناء محلي عبر `Dockerfile` | 8790, 8791 |
+| `chat-ws` | بناء محلي عبر `Dockerfile` | 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

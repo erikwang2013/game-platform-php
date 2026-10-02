@@ -157,6 +157,7 @@ export const jaUi: Record<UiKey, string> = {
   'form.options_load_failed': '{name}の選択肢の読み込みに失敗しました。選択済みの値は表示されたままですが、変更しない場合を除き送信しないでください',
   'form.tree_load_failed': '{name}の権限ツリーの読み込みに失敗しました。選択済みの権限は表示されたままですが、変更しない場合を除き送信しないでください',
   'form.tree_loading': '権限ツリーを読み込み中…',
+  'form.discard_confirm': '保存されていない変更があります。破棄してもよろしいですか？',
   'form.select_placeholder': '選択してください',
   // 父权限下拉的选项（lib/tree.ts 摊平权限树）：键分两种**形状**（带 slug / 不带），
   // 路径与 slug 走 params —— 选项是逐行现拼的，见 lib/crud.ts 的 FieldOption

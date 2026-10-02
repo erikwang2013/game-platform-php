@@ -17,7 +17,6 @@ flowchart TB
     subgraph "애플리케이션 서비스"
         ADM["admin :8789<br/>관리 백오피스"]
         SVC["service :8792<br/>C단 비즈니스"]
-        LB["leaderboard-ws :8790<br/>WebSocket 랭킹"]
         CHAT["chat-ws :8791<br/>WebSocket 쪽지"]
     end
 
@@ -33,7 +32,7 @@ flowchart TB
     end
 
     DNS --> NGX
-    NGX --> ADM & SVC & LB & CHAT
+    NGX --> ADM & SVC & CHAT
     ADM & SVC --> MYSQL & REDIS & ES & CH
     ADM & SVC --> MON
 ```

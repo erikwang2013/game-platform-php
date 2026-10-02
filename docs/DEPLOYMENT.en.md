@@ -51,7 +51,7 @@ rm -rf install/
 
 What the install wizard does:
 - PHP environment check (version, extensions, directory permissions)
-- Executes the merged SQL (`install/install.sql`), creating 78 tables and importing seed data
+- Executes the merged SQL (`install/install.sql`), creating 79 tables and importing seed data
 - Creates the super admin account (bcrypt-encrypted, associated with the super_admin role)
 - Auto-generates JWT/Encryption/Hashids keys
 - Writes `admin/.env` and `service/.env`
@@ -90,13 +90,13 @@ docker-compose logs -f
 | nginx | game-platform-nginx | 80, 443 | Reverse proxy + static files |
 | admin | game-platform-admin | 8789 | Admin backend API |
 | service | game-platform-service | 8792 | C-end business API |
-| leaderboard-ws | game-platform-ws | 8790, 8791 | WebSocket leaderboard/chat |
+| chat-ws | game-platform-ws | 8791 | WebSocket |
 | mysql | game-platform-mysql | 3306 | Main database |
 | redis | game-platform-redis | 6379 | Cache/rate limiting |
 | elasticsearch | game-platform-es | 9200 | Full-text search |
 
 > **Port configuration**: the table above lists the default ports; all of them can be changed in the project root `.env` (template `.env.example`; run `cp .env.example .env` and edit):
-> `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `LEADERBOARD_WS_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
+> `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
 > The upstream ports in `nginx.conf.template` are rendered automatically by the official image's envsubst — no manual Nginx config changes needed.
 > In Docker deployments the public addresses (`APP_URL` / `SITE_URL`) follow `ADMIN_PORT` / `SERVICE_PORT` automatically by default (as `http://localhost:port`); for a custom domain or HTTPS, set `APP_URL` / `SITE_URL` in the root `.env` (this overrides the same keys in `admin/.env` and `service/.env`). For bare-metal (manual) deployments, still update the addresses yourself when changing ports.
 
@@ -201,7 +201,6 @@ SCOUT_HOSTS=127.0.0.1:9200
 ```ini
 # Same database, Redis and ES configuration as admin
 APP_PORT=8792  # webman HTTP listen port
-LEADERBOARD_WS_PORT=8790  # leaderboard WebSocket port (must match the frontend connection address)
 CHAT_WS_PORT=8791  # chat WebSocket port
 SNOWFLAKE_WORKER_ID=2  # must differ from admin
 
@@ -326,7 +325,7 @@ systemctl enable --now game-platform-admin game-platform-service
 Create `/etc/nginx/sites-available/game-platform`:
 
 ```nginx
-# Ports are defaults (admin 8789 / service 8792 / ws 8790); if you changed .env, adjust these accordingly
+# Ports are defaults (admin 8789 / service 8792 / ws 8791); if you changed .env, adjust these accordingly
 server {
     listen 80;
     server_name your-domain.com;
@@ -352,16 +351,6 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    # WebSocket leaderboard (default port 8790, matching LEADERBOARD_WS_PORT in service/.env)
-    location /ws/ {
-        proxy_pass http://127.0.0.1:8790;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
     }
 
     # 健康检查
@@ -614,7 +603,7 @@ ufw allow 443/tcp     # HTTPS
 ufw enable
 
 # Internal ports should not be exposed
-# 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# 8789 (admin), 8792 (service), 8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
 # The above are default ports; if you changed the root .env or the individual .env files, use the actual values
 # Only accessible via 127.0.0.1
 ```

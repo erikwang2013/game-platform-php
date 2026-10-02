@@ -8,11 +8,13 @@
  */
 import { HttpInterceptorFn } from '@angular/common/http';
 import type { Num } from './api.types';
+import { t, type Msg } from './i18n/i18n';
 
 /* ---------------- token 存取 ---------------- */
 
 const K_ACCESS = 'gp_access_token';
 const K_REFRESH = 'gp_refresh_token';
+const K_LANG = 'gp_language';
 
 const store = {
   get: (k: string): string => {
@@ -52,6 +54,26 @@ export const tokens = {
 };
 
 export const isAuthed = (): boolean => !!tokens.access();
+
+/**
+ * 语言：出站请求的 `X-Language` 取值。键与兜底值**与 `apps/react` 逐字相同**
+ * （`apps/react/src/lib/http.ts` 的 `K_LANG` + `get()`），两棵树对同一用户必须发同一个头。
+ *
+ * 兜底**必须是 `'zh'`**（不是 `'en'`）：本树界面文案固定中文，而服务端
+ * `LanguageMiddleware::detectLocale()` 的顺序是 `X-Language` → `Accept-Language` → 配置默认(zh)。
+ * 不发这个头就没有「默认两边同语言」——浏览器是法语时（`fr` 在 `Locale::SUPPORTED` 里，
+ * 中间件第 2 步会命中）服务端吐法语文案，而界面还是中文，同一屏两种语言。
+ * 同理也不能兜底 `'en'`：那是把服务端自己的 zh 默认主动压掉，中文界面弹英文响应文案。
+ *
+ * **写这个键的地方只有一处**：`core/i18n/i18n.ts` 的 `use()`（语言菜单的落点），
+ * 它读同一个键 —— 于是「界面语言」与「出站头」是同一件事，不可能各说各话
+ * （本仓 flutter 树踩过「界面切了、请求头还是旧语言」）。
+ * 本函数保持**原样透传**读到的值、不做归一：偏好里存的是 `zh-CN` 这类全码时也照发，
+ * 后端 `common\Locale::normalize()` 两种都认；归一那一层在 i18n 的 `normalize()`。
+ */
+export const language = {
+  get: (): string => store.get(K_LANG) || 'zh',
+};
 
 /**
  * 金额展示格式化。**全程字符串运算，不做任何数值转换**（禁 `Number()`/`parseFloat`/`parseInt`/隐式转型）：
@@ -119,19 +141,37 @@ export function depositAmountOk(amount: string, currency: string): boolean {
 
 /* ---------------- 错误 ---------------- */
 
+/**
+ * 传输层错误的载体 —— **与 `Msg` 同形的两态**：raw（服务端原文）/ 键（本地产生的文案，渲染期才算）。
+ *
+ * ⚠ 为什么不能像 react 那棵树在**抛的那一刻** `t()` 成字符串：那正是冻结文案（见 `Msg` 的注释）——
+ * 抛点在渲染之前，中间隔着一次 await 与一次状态落值，切了语言这条就停在旧语言上。
+ *
+ * `.message` **仍然给出来**（= 抛的那一刻的字符串）：未迁移的读点 `set(e.message)` 行为与迁移前
+ * 逐字一致（本地文案还顺带从"恒中文"变成了"当前语言"），不回归。读点改读 `.msg` 之后，
+ * 文案才随语言切换实时变 —— 未迁移读点由 `source-nails.spec.ts` 的棘轮盯着，只许减。
+ */
 export class ApiError extends Error {
-  constructor(
-    message: string,
-    readonly code: number,
-  ) {
-    super(message);
+  /** 渲染期求值的文案；raw 态就是服务端原文（服务端按 `X-Language` 自己翻） */
+  readonly msg: Msg;
+
+  constructor(msg: Msg, readonly code: number) {
+    super(typeof msg === 'string' ? msg : t(msg.key, msg.params));
+    this.msg = msg;
     this.name = 'ApiError';
   }
 }
 
-/* ---------------- 拦截器：Bearer ---------------- */
+/* ---------------- 拦截器：语言 + Bearer ---------------- */
 
-export const authInterceptor: HttpInterceptorFn = (req, next) => {
+/**
+ * 每个出站请求都带上 `X-Language`（**无条件**，登录与否都发）与登录态下的 `Authorization`。
+ * 两件事写在同一个拦截器里：它们都是「所有请求都要带、且只在这里决定」的头，
+ * 拆成两个拦截器只会多一层洋葱壳。
+ */
+export const apiInterceptor: HttpInterceptorFn = (req, next) => {
+  const headers: Record<string, string> = { 'X-Language': language.get() };
   const token = tokens.access();
-  return next(token ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req);
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  return next(req.clone({ setHeaders: headers }));
 };

@@ -7,10 +7,16 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../lib/api.ts';
 import { useAuth } from '../lib/auth.tsx';
 import { useCaptcha } from '../lib/useCaptcha.tsx';
+import { type MessageKey } from '../i18n/index.ts';
+import { useI18n } from '../i18n/useI18n.ts';
 
 /** 与后端 AuthController::PASSWORD_RULE 对齐；HTML pattern 隐含整串匹配，故省去 ^$ */
 const REGISTER_PASSWORD_PATTERN = '(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).+';
-const REGISTER_PASSWORD_TITLE = '8-32 位，需含大小写字母和数字';
+/**
+ * ⚠ 这里存的是**键**不是文案：模块顶层求值只发生一次，存文案会把它冻在首屏语言上，
+ * 切完语言 `title=` 那条提示不会变（同 `Layout.tsx` 的 `NAV`）。
+ */
+const REGISTER_PASSWORD_RULE: MessageKey = 'login.password_rule';
 
 /**
  * 登录第二步只接受两种长度：6 位 TOTP、10 位备用码（服务端 between:6,10）。
@@ -26,6 +32,7 @@ const readInviteCode = (search: string) => {
 };
 
 export function Login() {
+  const { t } = useI18n();
   const { user, login, complete2fa, register } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -37,7 +44,8 @@ export function Login() {
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
   const [invite, setInvite] = useState(() => readInviteCode(location.search));
-  const [err, setErr] = useState<string | null>(null);
+  // ⚠ 存「原始错误 + 兜底键」不存翻好的文案：文案在渲染期才算（理由同 Wallet.tsx 的 Row）
+  const [err, setErr] = useState<{ err: unknown; fallback: MessageKey } | null>(null);
   const [busy, setBusy] = useState(false);
   // 非 null 表示密码已通过、账号开了 2FA：此步只差一个 TOTP 码
   const [pending2fa, setPending2fa] = useState<string | null>(null);
@@ -92,7 +100,7 @@ export function Login() {
       done();
     } catch (e2) {
       // 失败（含 422 验证码错误）：框已关，服务端 message 落在表单错误位，下次提交重取
-      setErr(e2 instanceof Error ? e2.message : '操作失败，请稍后重试');
+      setErr({ err: e2, fallback: 'error.action_failed' });
     } finally {
       setBusy(false);
     }
@@ -109,7 +117,7 @@ export function Login() {
       done();
     } catch (e2) {
       // 票据 10 分钟过期 / 码错误：都留在本步，由用户决定重输还是回上一步
-      setErr(e2 instanceof Error ? e2.message : '验证失败，请稍后重试');
+      setErr({ err: e2, fallback: 'login.verify_failed' });
     } finally {
       setBusy(false);
     }
@@ -144,35 +152,39 @@ export function Login() {
             alt=""
             aria-hidden="true"
           />
-          <p className="label">C 端平台</p>
+          <p className="label">{t('login.brand')}</p>
           <h1 className="h1">
-            玩你喜欢的
+            {t('login.hero_1')}
             <br />
-            <em style={{ fontStyle: 'normal', background: 'var(--yellow)' }}>每一款游戏</em>
+            <em style={{ fontStyle: 'normal', background: 'var(--yellow)' }}>{t('login.hero_2')}</em>
           </h1>
           <p className="muted" style={{ maxWidth: '42ch' }}>
-            一个账号，畅玩全平台游戏。统一钱包、实时结算、多币种支持。
+            {t('login.tagline')}
           </p>
           <p className="small muted">
-            还没有账号？在右侧切换到「注册」，30 秒即可开始。
+            {t('login.register_hint')}
           </p>
         </section>
 
-        <section className="card" aria-label="账号">
+        <section className="card" aria-label={t('login.account_aria')}>
           {pending2fa ? (
-            <form onSubmit={submitCode} className="stack" aria-label="两步验证">
+            <form onSubmit={submitCode} className="stack" aria-label={t('me.two_factor')}>
               <p className="label" style={{ margin: 0 }}>
-                两步验证
+                {t('me.two_factor')}
               </p>
               <p className="small muted" style={{ margin: 0 }}>
-                账号 {username.trim()} 已开启两步验证。请输入验证器上的 6 位动态码；
-                验证器丢失时可改用一条 10 位备用码。
+                {t('login.2fa_hint_1', { username: username.trim() })}{' '}
+                {t('login.2fa_hint_2')}
               </p>
 
-              {err && <p className="err" role="alert">{err}</p>}
+              {err && (
+                <p className="err" role="alert">
+                  {err.err instanceof Error ? err.err.message : t(err.fallback)}
+                </p>
+              )}
 
               <label className="field">
-                <span>动态码 / 备用码</span>
+                <span>{t('login.code_label')}</span>
                 <input
                   className="input mono"
                   name="code"
@@ -197,11 +209,11 @@ export function Login() {
                 disabled={busy || !isTwoFactorCode(code)}
               >
                 {busy && <span className="spin" aria-hidden="true" />}
-                验证并登录
+                {t('login.verify_and_sign_in')}
               </button>
 
               <button type="button" className="btn btn--sm" disabled={busy} onClick={backToPassword}>
-                返回上一步
+                {t('login.back')}
               </button>
             </form>
           ) : (
@@ -214,7 +226,7 @@ export function Login() {
                   className={`tabs__b${mode === 'login' ? ' is-on' : ''}`}
                   onClick={() => switchTo('login')}
                 >
-                  登录
+                  {t('app.sign_in')}
                 </button>
                 <button
                   type="button"
@@ -223,21 +235,25 @@ export function Login() {
                   className={`tabs__b${mode === 'register' ? ' is-on' : ''}`}
                   onClick={() => switchTo('register')}
                 >
-                  注册
+                  {t('login.register')}
                 </button>
               </div>
 
               <form onSubmit={submit} className="stack" style={{ marginTop: 18 }}>
                 {fromInviteLink && (
                   <p className="small muted" role="status" style={{ margin: 0 }}>
-                    你正在通过邀请链接注册，邀请码已填好。
+                    {t('login.invite_filled')}
                   </p>
                 )}
 
-                {err && <p className="err" role="alert">{err}</p>}
+                {err && (
+                  <p className="err" role="alert">
+                    {err.err instanceof Error ? err.err.message : t(err.fallback)}
+                  </p>
+                )}
 
                 <label className="field">
-                  <span>用户名</span>
+                  <span>{t('login.username')}</span>
                   <input
                     className="input"
                     name="username"
@@ -251,7 +267,7 @@ export function Login() {
 
                 {mode === 'register' && (
                   <label className="field">
-                    <span>邮箱</span>
+                    <span>{t('me.email')}</span>
                     <input
                       className="input"
                       name="email"
@@ -266,13 +282,13 @@ export function Login() {
 
                 {mode === 'register' && (
                   <label className="field">
-                    <span>邀请码（选填）</span>
+                    <span>{t('login.invite_optional')}</span>
                     <input
                       className="input mono"
                       name="invite"
                       autoComplete="off"
                       maxLength={12}
-                      placeholder={invite ? undefined : '朋友给的 8 位邀请码'}
+                      placeholder={invite ? undefined : t('login.invite_placeholder')}
                       value={invite}
                       onChange={(e) => setInvite(e.target.value.trim())}
                     />
@@ -280,7 +296,7 @@ export function Login() {
                 )}
 
                 <label className="field">
-                  <span>密码</span>
+                  <span>{t('login.password')}</span>
                   <input
                     className="input"
                     name="password"
@@ -290,7 +306,7 @@ export function Login() {
                     minLength={mode === 'login' ? 6 : 8}
                     maxLength={mode === 'login' ? undefined : 32}
                     pattern={mode === 'login' ? undefined : REGISTER_PASSWORD_PATTERN}
-                    title={mode === 'login' ? undefined : REGISTER_PASSWORD_TITLE}
+                    title={mode === 'login' ? undefined : t(REGISTER_PASSWORD_RULE)}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
@@ -298,13 +314,13 @@ export function Login() {
 
                 <button type="submit" className="btn btn--primary btn--block" disabled={busy}>
                   {busy && <span className="spin" aria-hidden="true" />}
-                  {mode === 'login' ? '登录' : '注册并登录'}
+                  {mode === 'login' ? t('app.sign_in') : t('login.register_and_sign_in')}
                 </button>
               </form>
 
               <p className="small muted" style={{ marginBottom: 0 }}>
                 <Link to="/" style={{ textDecoration: 'underline' }}>
-                  先随便逛逛
+                  {t('login.browse_first')}
                 </Link>
               </p>
             </>

@@ -38,6 +38,9 @@ class ActivityController extends BaseController
      */
     private const REWARD_TYPES = [ActivityRewardLog::REWARD_PLATFORM_COIN, ActivityRewardLog::REWARD_GAME_COIN];
 
+    #[Apidoc\Title("活动列表")]
+    #[Apidoc\Url("/admin/v1/activities/list")]
+    #[Apidoc\Method("GET")]
     public function list(Request $request): Response
     {
         $query = Activity::query();
@@ -61,6 +64,9 @@ class ActivityController extends BaseController
         return $this->success(['list' => $list, 'total' => $total]);
     }
 
+    #[Apidoc\Title("新增活动")]
+    #[Apidoc\Url("/admin/v1/activities/create")]
+    #[Apidoc\Method("POST")]
     public function create(Request $request): Response
     {
         $validator = validator($request->all(), [
@@ -98,6 +104,9 @@ class ActivityController extends BaseController
         return $this->success($this->encodeIds($a->toArray()), trans('Created successfully'));
     }
 
+    #[Apidoc\Title("更新活动")]
+    #[Apidoc\Url("/admin/v1/activities/{hashid}")]
+    #[Apidoc\Method("PUT")]
     public function update(Request $request, string $hashid): Response
     {
         $a = Activity::find($this->decodeId($hashid));
@@ -150,6 +159,9 @@ class ActivityController extends BaseController
         return $this->success($this->encodeIds($a->toArray()), trans('Updated successfully'));
     }
 
+    #[Apidoc\Title("删除活动")]
+    #[Apidoc\Url("/admin/v1/activities/{hashid}")]
+    #[Apidoc\Method("DELETE")]
     public function destroy(Request $request, string $hashid): Response
     {
         $a = Activity::find($this->decodeId($hashid));

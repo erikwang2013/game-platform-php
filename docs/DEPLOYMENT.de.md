@@ -51,7 +51,7 @@ rm -rf install/
 
 Vom Installationsassistenten durchgeführte Schritte:
 - PHP-Umgebungsprüfung (Version, Erweiterungen, Verzeichnisrechte)
-- Ausführen des zusammengeführten SQL (`install/install.sql`), Erstellen von 78 Tabellen und Importieren der Seed-Daten
+- Ausführen des zusammengeführten SQL (`install/install.sql`), Erstellen von 79 Tabellen und Importieren der Seed-Daten
 - Erstellen des Super-Admin-Kontos (bcrypt-verschlüsselt, verknüpft mit der super_admin-Rolle)
 - Automatische Generierung der JWT-/Encryption-/Hashids-Schlüssel
 - Schreiben von `admin/.env` und `service/.env`
@@ -90,13 +90,13 @@ docker-compose logs -f
 | nginx | game-platform-nginx | 80, 443 | Reverse-Proxy + statische Dateien |
 | admin | game-platform-admin | 8789 | Verwaltungsbackend-API |
 | service | game-platform-service | 8792 | C-End-Geschäfts-API |
-| leaderboard-ws | game-platform-ws | 8790, 8791 | WebSocket-Rangliste/Chat |
+| chat-ws | game-platform-ws | 8791 | WebSocket |
 | mysql | game-platform-mysql | 3306 | Hauptdatenbank |
 | redis | game-platform-redis | 6379 | Cache/Ratenbegrenzung |
 | elasticsearch | game-platform-es | 9200 | Volltextsuche |
 
 > **Portkonfiguration**: Die Ports in der Tabelle sind Standardwerte und können alle in der `.env` im Projektstamm geändert werden (Vorlage `.env.example`; nach `cp .env.example .env` bearbeiten):
-> `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `LEADERBOARD_WS_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
+> `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
 > Die upstream-Ports in `nginx.conf.template` werden vom offiziellen Image per envsubst automatisch gerendert; die Nginx-Konfiguration muss nicht manuell angepasst werden.
 > Bei Docker-Bereitstellungen folgen die öffentlichen Adressen (`APP_URL` / `SITE_URL`) standardmäßig automatisch `ADMIN_PORT` / `SERVICE_PORT` (Format `http://localhost:Port`); für eine eigene Domain oder HTTPS `APP_URL` / `SITE_URL` in der Root-`.env` setzen (überschreibt die gleichnamigen Einträge in `admin/.env` und `service/.env`). Bei Bare-Metal-Bereitstellungen (manuell) müssen die Adressen bei Portänderungen weiterhin selbst angepasst werden.
 
@@ -201,7 +201,6 @@ SCOUT_HOSTS=127.0.0.1:9200
 ```ini
 # Gleiche Datenbank-, Redis- und ES-Konfiguration wie admin
 APP_PORT=8792  # webman HTTP-Listen-Port
-LEADERBOARD_WS_PORT=8790  # WebSocket-Rangliste (muss mit der vom Frontend verwendeten Adresse übereinstimmen)
 CHAT_WS_PORT=8791  # Chat-WebSocket
 SNOWFLAKE_WORKER_ID=2  # muss sich von admin unterscheiden
 
@@ -326,7 +325,7 @@ systemctl enable --now game-platform-admin game-platform-service
 `/etc/nginx/sites-available/game-platform` erstellen:
 
 ```nginx
-# Ports sind Standardwerte (admin 8789 / service 8792 / ws 8790); bei geänderter .env bitte entsprechend anpassen
+# Ports sind Standardwerte (admin 8789 / service 8792 / ws 8791); bei geänderter .env bitte entsprechend anpassen
 server {
     listen 80;
     server_name your-domain.com;
@@ -352,16 +351,6 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    # WebSocket-Rangliste (Standardport 8790, entspricht LEADERBOARD_WS_PORT in service/.env)
-    location /ws/ {
-        proxy_pass http://127.0.0.1:8790;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
     }
 
     # 健康检查
@@ -614,7 +603,7 @@ ufw allow 443/tcp     # HTTPS
 ufw enable
 
 # Interne Ports sollten nicht exponiert werden
-# 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# 8789 (admin), 8792 (service), 8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
 # Oben stehen die Standardports; wurden die .env im Projektstamm bzw. die jeweiligen .env geändert, gelten die tatsächlichen Werte
 # Nur über 127.0.0.1 erreichbar
 ```

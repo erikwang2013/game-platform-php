@@ -51,7 +51,7 @@ Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 ```
 open-admin/
 ├── app/
-│   ├── admin/v1/controller/    # 管理端控制器 (45 个)
+│   ├── admin/v1/controller/    # 管理端控制器 (45 个)（admin/v1 43 + api/v1 2）
 │   │   ├── BaseController.php       # 基础控制器
 │   │   ├── DashboardController.php  # 仪表盘（Redis 缓存）
 │   │   ├── AnalyticsController.php  # 数据分析（12 个端点）
@@ -77,19 +77,19 @@ open-admin/
 │   │   ├── SecurityFilter.php  # 攻击拦截（全局：XSS/SQL注入/路径遍历/命令注入/CSRF）
 │   │   ├── RateLimit.php       # Redis 限流（全局，Lua 原子化）
 │   │   ├── LanguageMiddleware.php # 语言/locale（全局，注册在 RateLimit 之后、路由中间件之前）
-│   │   ├── StaticFile.php      # 静态文件服务（webman 内置）
+│   │   ├── StaticFile.php      # 静态文件服务（webman 内置件的副本；**未注册** —— config/static.php:25 处是注释掉的，不在执行链上）
 │   │   ├── AdminAuth.php       # JWT 认证 + 黑名单
 │   │   ├── AdminPermission.php # RBAC 权限校验（Redis 60s 缓存）
 │   │   ├── MetricsAuth.php     # /metrics 专用：管理员 JWT 或静态抓取令牌（全仓唯一 401/403 + text/plain 处）
 │   │   └── OperationLog.php    # 操作日志自动记录（含来源端检测）
-│   ├── model/                  # 数据模型（8 个）
-│   └── process/                # 进程 (Http, Monitor, RiskIpCron)
+│   ├── model/                  # 数据模型（6 个）
+│   └── process/                # 进程 (Http, Monitor, RiskIpCron, ExportTmpCleanup)
 ├── apps/
 │   ├── angular/                # Angular Web 管理后台
 │   ├── react/                  # React Web 管理后台
 │   ├── flutter/                # Flutter Web 管理后台
 │   │   └── lib/app/
-│   │       ├── pages/          # 20 个页面目录（下列为节选）
+│   │       ├── pages/          # 26 个页面目录（下列为节选）
 │   │       │   ├── dashboard/  # 仪表盘
 │   │       │   ├── login/      # 登录
 │   │       │   ├── user/       # 用户管理
@@ -124,7 +124,7 @@ open-admin/
 ├── vendor/                     # Composer 依赖
 ├── CLAUDE.md                   # 本文件
 ├── README.md                   # 中文说明
-├── README_EN.md                # 英文说明
+├── README.en.md                # 英文说明
 ├── .env                        # 环境变量（不纳入版本控制）
 ├── .env.example                # 环境变量模板
 ├── .env.docker                 # Docker 环境变量
@@ -133,7 +133,7 @@ open-admin/
 ├── docker-compose.yml          # Docker 编排
 └── .github/
     └── workflows/
-        └── ci.yml              # CI/CD 流水线（PHP语法+PHPUnit+Flutter analyze）
+        └── ci.yml              # CI/CD 流水线（7 个 job：php-syntax / composer-audit / frontend-react / frontend-angular / frontend-flutter / phpunit-admin / phpunit-service；release.yml 另 1 个 release，仅手动触发）
 ```
 
 ## 中间件执行链
@@ -151,7 +151,7 @@ open-admin/
 
 ## 安全增强
 
-- **HTTP 方法限制**：无方法白名单。非法方法由 webman 框架层拒绝（`vendor/workerman/webman-framework/src/app/App.php:934`，返回纯文本 `405 Method Not Allowed` + `Allow` 头，非 JSON 信封）；实测 admin 的 `TRACE` 在 HTTP 解析层即被拒（400 空响应体）
+- **HTTP 方法限制**：**有**启用的方法白名单（原文「无方法白名单」的断言已反转），允许 `GET/POST/PUT/DELETE/HEAD/OPTIONS/PATCH`。三处生效：① workerman HTTP 解析层对请求行做正则白名单（`vendor/workerman/workerman/src/Protocols/Http.php:140`），表外方法（如实测的 `TRACE`）在解析层即被拒 —— `400 Bad Request` **空响应体**（空体常量在同文件 `:71`，非 JSON 信封）；② 安全插件 `http_method` 检测器（`config/plugin/erikwang2013/security-php/app.php:224-228`，`enabled=true`、`mode=block`，白名单与 ① 同表，属纵深防御）由全局 `SecurityFilter` 中间件命中后拒绝（405 + 纯文本 body，`SecurityGuard::blockMessage()`，非 JSON 信封）；③ 路由存在但方法不匹配时，webman 的 fast-route 分发器判 `METHOD_NOT_ALLOWED` ⇒ `$status = 405`（`vendor/workerman/webman-framework/src/App.php:934`）
 - **CSP 头**：Content-Security-Policy + X-Permitted-Cross-Domain-Policies 注入所有响应
 - **账号锁定**：连续 5 次登录失败，账号锁定 15 分钟
 - **并发会话限制**：同一用户最多 3 个有效 Token，超出时最旧 Token 加入黑名单
@@ -172,8 +172,9 @@ curl http://localhost:8789/api/v1/auth/login
 
 Redis 滑动窗口（Lua 原子化），默认 60 次/分钟/IP/路由：
 - 登录: 10 次/分钟
-- 注册: 5 次/分钟
 - 响应头: `X-RateLimit-Limit/Remaining/Reset`，超限附加 `Retry-After`
+
+（曾有「注册: 5 次/分钟」一条：`POST /api/v1/auth/register` 已于 2026-10-01 摘除，对应的限流配置同步删除，见 `config/route.php` 与 `app/middleware/RateLimit.php` 的墓碑注释。）
 
 ## 代码规范
 

@@ -119,7 +119,7 @@ return [
     'Phone verified' => 'Telepon terverifikasi',
     'Play log not found' => 'Riwayat permainan tidak ditemukan',
     'Please type yes to confirm account closure' => 'Ketik yes untuk mengonfirmasi penghapusan akun',
-    'Privacy settings updated' => 'Pengaturan privasi diperbarui',
+    'Privacy settings were not saved' => 'Pengaturan privasi tidak disimpan',
     'Provider mismatch' => 'Penyedia tidak cocok',
     'Reply sent' => 'Balasan terkirim',
     'Request not found' => 'Permintaan tidak ditemukan',

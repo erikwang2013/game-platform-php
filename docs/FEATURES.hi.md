@@ -59,19 +59,19 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | 2FA | Google Authenticator TOTP + बैकअप रिकवरी कोड | पूर्ण |
 | रेफरल | रेफरल कोड, पंजीकरण पुरस्कार, रिचार्ज कमीशन | पूर्ण |
 | खोज | ES खोज API + गेम सुझाव + LIKE रोलबैक | पूर्ण |
-| लीडरबोर्ड | WebSocket वास्तविक समय पुश (पोर्ट 8790) | पूर्ण |
+| लीडरबोर्ड | REST + Redis | पूर्ण |
 | CDN | पाँच प्रदाताओं का एकीकरण (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS अपलोड + पर्ज + प्रीलोड) | पूर्ण |
 | CDN प्रशासन | व्यवस्थापक पाँच प्रदाता कॉन्फ़िगर करें (एन्क्रिप्टेड क्रेडेंशियल/सक्षम-अक्षम/HeadBucket कनेक्टिविटी टेस्ट), service केवल DB पढ़ता है | पूर्ण |
 | रिपोर्ट | एडमिन डेटा रिपोर्ट (सारांश/दैनिक/CSV निर्यात, Redis 5 मिनट कैश, अवधि ≤90 दिन) | पूर्ण |
 | प्लेटफ़ॉर्म सांख्यिकी | C-साइड होम सांख्यिकी (कुल गेम/उपयोगकर्ता/आज के प्ले/7 दिन सक्रिय) | पूर्ण |
 | तैनाती | Docker Compose 7 सेवाएँ + Nginx रिवर्स प्रॉक्सी | पूर्ण |
 | डेटा | MySQL वास्तविक समय एकत्रीकरण विश्लेषण + संयुक्त/सशर्त प्रायिकता गणना | पूर्ण |
-| HarmonyOS | admin छोर 8 पेज; C-छोर `apps/harmonyos/` में लॉगिन/लॉबी/विवरण/वॉलेट/व्यक्तिगत कार्यान्वित (8792 को इंगित) | आंशिक पूर्ण (प्रोजेक्ट चलता है, वास्तविक डिवाइस पर IP बदलना आवश्यक) |
+| HarmonyOS | admin छोर 19 पेज; C-छोर `apps/harmonyos/` में लॉगिन/लॉबी/विवरण/वॉलेट/व्यक्तिगत कार्यान्वित (8792 को इंगित) | आंशिक पूर्ण (प्रोजेक्ट चलता है, वास्तविक डिवाइस पर IP बदलना आवश्यक) |
 | API दस्तावेज़ | erikwang2013/apidoc-php इंटरैक्टिव दस्तावेज़ | पूर्ण |
 | वन-क्लिक इंस्टॉल | ब्राउज़र इंस्टॉल विज़ार्ड: एडमिन बनाना, मौजूदा DB अपग्रेड, install.lock पुनः इंस्टॉल रोकता है | पूर्ण |
 | फॉल्ट सहनशीलता | CircuitBreaker + Retry + feature.provider_mock डिग्रेडेशन स्विच | पूर्ण |
 | भुगतान विधियाँ | एडमिन CRUD + देश दृश्यता + राशि सीमा + मुद्रा प्रतिबंध | पूर्ण |
-| CI | push पर स्वचालित इंक्रीमेंट tag + GitHub Release | पूर्ण |
+| CI | push पर स्वचालित इंक्रीमेंट tag + GitHub Release | मैनुअल ट्रिगर में बदल गया |
 
 ### पारिस्थितिकी विस्तार (v2.0) — अभी पूर्ण
 
@@ -231,7 +231,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 
 ## 7. डेटाबेस तालिका सूची
 
-### पारिस्थितिकी विस्तार नई तालिकाएँ (10)
+### पारिस्थितिकी विस्तार नई तालिकाएँ (14)
 
 | तालिका नाम | विवरण | मुख्य विशेषताएँ |
 |------|------|---------|
@@ -245,6 +245,10 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | game_user_achievement | उपयोगकर्ता उपलब्धियाँ | user_id+achievement_id अद्वितीय इंडेक्स |
 | game_friend | मित्र संबंध | user_id+friend_id अद्वितीय इंडेक्स |
 | game_message | निजी संदेश | from_user_id+to_user_id / to_user_id+is_read |
+| game_cdn_provider | CDN प्रदाता कॉन्फ़िगरेशन | provider अद्वितीय इंडेक्स, config एन्क्रिप्टेड JSON |
+| game_referral_commission | बहु-स्तरीय रेफ़रल कमीशन रिकॉर्ड | user_id / referral_id / source_type+source_id इंडेक्स |
+| game_tournament | टूर्नामेंट | slug अद्वितीय इंडेक्स, status+start_at+end_at इंडेक्स |
+| game_tournament_entry | टूर्नामेंट प्रविष्टियाँ/स्कोर | tournament_id+user_id अद्वितीय इंडेक्स, tournament_id+score इंडेक्स |
 
 ### तालिका संरचना परिवर्तन
 
@@ -253,7 +257,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | game_game | +provider_config (JSON) |
 | game_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**कुल: install.sql में 78 तालिकाएँ**। मॉडल: `packages/platform-common/src/model/` में 52 साझा; admin/app/model/ के 8 और service/app/model/ के 10 अपने-अपने होस्ट के लिए विशिष्ट (फ़ाइल नामों में कोई ओवरलैप नहीं)।
+**कुल: install.sql में 79 तालिकाएँ**। मॉडल: `packages/platform-common/src/model/` में 51 साझा; admin/app/model/ के 6 और service/app/model/ के 10 अपने-अपने होस्ट के लिए विशिष्ट (फ़ाइल नामों में कोई ओवरलैप नहीं)।
 
 ## 8. परीक्षण कवरेज
 
@@ -267,7 +271,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · [한국어](FEA
 | HashidsServiceTest | 6 | ID एन्कोड/डिकोड राउंड-ट्रिप |
 | SnowflakeServiceTest | 5 | ID उत्पादन अद्वितीयता |
 
-**कुल (phpunit --list-tests, वर्तमान मापन): admin 200 मामले / 21 फ़ाइलें, service 273 मामले / 42 फ़ाइलें (WebhookUrlSafety + EventBusMessageFormat सहित; रिपोर्ट: 09-22 पुनर्प्रयोग admin 190 + service 273, 08-27 स्नैपशॉट admin 153 + service 45)। service CI विफलता अवरोधन में शामिल नहीं (असत्यापित)।**
+**कुल (phpunit --list-tests, वर्तमान मापन): admin 593 मामले / 70 फ़ाइलें, service 549 मामले / 89 फ़ाइलें (WebhookUrlSafety + EventBusMessageFormat सहित; रिपोर्ट: 09-22 पुनर्प्रयोग admin 190 + service 273, 08-27 स्नैपशॉट admin 153 + service 45)। service CI विफलता अवरोधन में शामिल है।**
 
 ---
 

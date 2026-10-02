@@ -299,13 +299,6 @@ Configuration via PlatformConfig ou variables d'environnement, repli automatique
 - PayPal : POST vers le point de vérification PayPal
 - Vérification automatiquement sautée si la clé n'est pas configurée (mode développement)
 
-### 8.6 Classement WebSocket temps réel
-
-- Protocole : WebSocket (ws://host:8790)
-- Abonnement : {action: "subscribe", leaderboard_id: 123}
-- Push : {type: "ranking_update", rankings: [...]}
-- Heartbeat ping/pong pour le maintien de la connexion
-
 ## 9. Conception de l'internationalisation
 
 ### 9.1 Langues prises en charge

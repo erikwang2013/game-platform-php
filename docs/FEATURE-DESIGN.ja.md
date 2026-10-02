@@ -299,13 +299,6 @@ signature = HMAC-SHA256(
 - PayPal: 検証エンドポイントに POST で再送
 - シークレット未設定時は検証を自動スキップ（開発モード）
 
-### 8.6 WebSocket リアルタイムランキング
-
-- プロトコル：WebSocket (ws://host:8790)
-- 購読：{action: "subscribe", leaderboard_id: 123}
-- プッシュ：{type: "ranking_update", rankings: [...]}
-- ping/pong ハートビートのキープアライブをサポート
-
 ## 9. 国際化設計
 
 ### 9.1 対応言語

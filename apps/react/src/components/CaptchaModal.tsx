@@ -13,6 +13,7 @@ import {
   type Click,
 } from '../lib/captcha.ts';
 import { Loading } from './States.tsx';
+import { useI18n } from '../i18n/useI18n.ts';
 
 /**
  * 通用弹窗外壳（遮罩点击 / Esc 关闭），全树唯一的弹框出口，验证码框复用它。
@@ -29,6 +30,8 @@ export function Modal({
   sm?: boolean;
   children: ReactNode;
 }) {
+  const { t } = useI18n();
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
@@ -48,8 +51,8 @@ export function Modal({
       >
         <div className="modal-h">
           <h2 className="h3">{title}</h2>
-          <button type="button" className="btn btn--sm" onClick={onClose} aria-label="关闭">
-            关闭
+          <button type="button" className="btn btn--sm" onClick={onClose} aria-label={t('app.close')}>
+            {t('app.close')}
           </button>
         </div>
         <div className="modal-b">{children}</div>
@@ -66,9 +69,11 @@ export function CaptchaModal({
   onConfirm: (proof: { captcha_key: string; clicks: Click[] }) => void;
   onCancel: () => void;
 }) {
+  const { t } = useI18n();
   const [data, setData] = useState<CaptchaData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [err, setErr] = useState<string | null>(null);
+  // 存**错误对象**而不是翻好的串：在 promise 回调里翻，等于把文案冻在取图那一刻的语言上
+  const [err, setErr] = useState<unknown>(null);
   const [size, setSize] = useState({ w: CANVAS_W, h: CANVAS_H });
   const [dots, setDots] = useState<Click[]>([]);
   const [tick, setTick] = useState(0);
@@ -87,7 +92,7 @@ export function CaptchaModal({
       .catch((cause: unknown) => {
         if (!alive) return;
         setData(null);
-        setErr(cause instanceof ApiError ? cause.message : '验证码加载失败，可直接标点重试');
+        setErr(cause);
       })
       .finally(() => {
         if (alive) setLoading(false);
@@ -119,7 +124,7 @@ export function CaptchaModal({
   };
 
   return (
-    <Modal title="安全验证" onClose={onCancel} sm>
+    <Modal title={t('captcha.title')} onClose={onCancel} sm>
       <p className="small muted" style={{ margin: 0 }}>
         {hint}
       </p>
@@ -129,7 +134,7 @@ export function CaptchaModal({
           <img
             className="cap-img"
             src={imgSrc}
-            alt="点击验证码"
+            alt={t('captcha.tap')}
             draggable={false}
             onLoad={(event) => {
               const el = event.currentTarget;
@@ -138,7 +143,7 @@ export function CaptchaModal({
             }}
           />
         ) : (
-          <div className="cap-ph">验证码图片不可用，直接点击此区域标记坐标后提交</div>
+          <div className="cap-ph">{t('captcha.image_unavailable')}</div>
         )}
         {dots.map((dot, index) => (
           <span
@@ -152,9 +157,7 @@ export function CaptchaModal({
       </div>
 
       <div className="cap-bar">
-        <span>
-          已标 {dots.length} 点（需 {required} 点）
-        </span>
+        <span>{t('captcha.marked', { marked: dots.length, required })}</span>
         <span className="row">
           <button
             type="button"
@@ -162,24 +165,24 @@ export function CaptchaModal({
             disabled={!dots.length}
             onClick={() => setDots((prev) => prev.slice(0, -1))}
           >
-            撤销
+            {t('captcha.undo')}
           </button>
           <button type="button" className="btn btn--sm" onClick={reload}>
-            换一张
+            {t('captcha.refresh')}
           </button>
         </span>
       </div>
 
-      {loading && <Loading label="验证码加载中" />}
-      {err && (
+      {loading && <Loading label={t('captcha.loading')} />}
+      {err ? (
         <p className="small" style={{ color: 'var(--neg)', margin: 0 }}>
-          {err}
+          {err instanceof ApiError ? err.message : t('captcha.load_failed')}
         </p>
-      )}
+      ) : null}
 
       <div className="row" style={{ marginTop: 14 }}>
         <button type="button" className="btn btn--sm" onClick={onCancel}>
-          取消
+          {t('app.cancel')}
         </button>
         <button
           type="button"
@@ -188,7 +191,7 @@ export function CaptchaModal({
           disabled={loading || dots.length !== required}
           onClick={() => onConfirm({ captcha_key: data?.key ?? '', clicks: dots })}
         >
-          确认
+          {t('app.confirm')}
         </button>
       </div>
     </Modal>

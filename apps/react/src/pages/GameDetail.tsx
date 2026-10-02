@@ -8,8 +8,14 @@ import { ApiError, api } from '../lib/api.ts';
 import { useAuth } from '../lib/auth.tsx';
 import { useAsync } from '../lib/hooks.ts';
 import { ErrorBox, Loading } from '../components/States.tsx';
+import type { MessageKey } from '../i18n/index.ts';
+import { useI18n } from '../i18n/useI18n.ts';
+
+/** 错误文案的**暂存形**：存「原始错误 + 兜底键」，**不存翻好的串**（理由见 `Exchange.tsx` 的 `Msg`）。 */
+type Msg = { err: unknown; fallback: MessageKey };
 
 export function GameDetail() {
+  const { t } = useI18n();
   const { hashid = '' } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -20,7 +26,7 @@ export function GameDetail() {
     null,
   );
   const [launching, setLaunching] = useState(false);
-  const [launchErr, setLaunchErr] = useState<string | null>(null);
+  const [launchErr, setLaunchErr] = useState<Msg | null>(null);
 
   const launch = async () => {
     if (!user) {
@@ -32,7 +38,7 @@ export function GameDetail() {
     try {
       setSession(await api.launch(hashid));
     } catch (e) {
-      setLaunchErr(e instanceof ApiError ? e.message : '启动失败，请稍后重试');
+      setLaunchErr({ err: e, fallback: 'error.launch_failed' });
     } finally {
       setLaunching(false);
     }
@@ -47,7 +53,7 @@ export function GameDetail() {
   return (
     <>
       <Link to="/" className="small" style={{ fontWeight: 700 }}>
-        ← 返回游戏库
+        {t('game.back_library')}
       </Link>
 
       <div className="shell--split">
@@ -78,15 +84,19 @@ export function GameDetail() {
             onClick={launch}
           >
             {launching && <span className="spin" aria-hidden="true" />}
-            {user ? '启动游戏' : '登录后启动'}
+            {user ? t('game.launch') : t('game.login_to_launch')}
           </button>
 
-          {launchErr && <p className="err" role="alert">{launchErr}</p>}
+          {launchErr && (
+            <p className="err" role="alert">
+              {launchErr.err instanceof ApiError ? launchErr.err.message : t(launchErr.fallback)}
+            </p>
+          )}
 
           {session && (
             <div className="card card--flat">
               <p className="card__fill fill-yellow" style={{ margin: '-18px -18px 14px' }}>
-                <span>会话已创建</span>
+                <span>{t('game.session_created')}</span>
               </p>
               <p className="small muted" style={{ margin: 0 }}>
                 Session ID
@@ -104,7 +114,7 @@ export function GameDetail() {
           )}
 
           <div className="stack">
-            <p className="label">支持币种</p>
+            <p className="label">{t('game.currencies')}</p>
             {g.currencies && g.currencies.length > 0 ? (
               <div className="list">
                 {g.currencies.map((c) => (
@@ -115,7 +125,11 @@ export function GameDetail() {
                       </p>
                       <p className="small muted" style={{ margin: 0 }}>
                         {c.symbol}
-                        {c.spread_pct ? ` · 点差 ${c.spread_pct}%` : ''}
+                        {/* ⚠ 表里那条 `game.spread` 的 zh 值**带一个前导空格** —— 它逐字抄自 HEAD
+                            的模板 ` · 点差 ${…}%`，那个空格是 `{c.symbol}` 与点差之间的**分隔符**
+                            （两个 JSX 表达式之间的纯空白文本节点会被丢掉），去掉就渲染成
+                            `USD· 点差 2%`。同时 `verify-zh.mjs` 的 A 面要的正是整条带空格的串。 */}
+                        {c.spread_pct ? t('game.spread', { pct: c.spread_pct }) : ''}
                       </p>
                     </div>
                     <span className="mono">{c.exchange_rate ?? '—'}</span>
@@ -123,7 +137,7 @@ export function GameDetail() {
                 ))}
               </div>
             ) : (
-              <p className="muted small">暂无币种信息</p>
+              <p className="muted small">{t('game.no_currencies')}</p>
             )}
           </div>
         </section>

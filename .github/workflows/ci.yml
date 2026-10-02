@@ -18,13 +18,19 @@ jobs:
         with:
           php-version: '8.3'
 
-      - name: Check PHP syntax (admin)
-        run: find admin -name '*.php' -not -path '*/vendor/*' -exec php -l {} \; 2>&1 | grep -v 'No syntax errors' | grep . && exit 1 || true
+      # 一条扫全树：原先只扫 admin/ 与 service/，漏掉 packages/platform-common(75 个)、
+      # install/(16 个，含 34KB 的安装向导 index.php)、scripts/(5)、tests/(3) —— 共 99 个 PHP 文件，
+      # 那些文件语法坏了 CI 照样全绿。
+      # ⚠ 已知盲区（**扩目录不解决**，只能靠别的手段兜）：**缺首行 `<?php` 的文件 `php -l`
+      #    同样报 "No syntax errors"** —— 本仓真踩过（decba5f 抽掉
+      #    admin/app/activity/ActivityHandlerFactory.php 的首行，文件变纯文本、类永不定义，
+      #    这里全绿）。那类损坏由 admin/tests/AppNamespaceIntegrityTest.php 兜。
+      - name: Check PHP syntax (all trees)
+        run: find admin service packages install scripts tests -name '*.php' -not -path '*/vendor/*' -exec php -l {} \; 2>&1 | grep -v 'No syntax errors' | grep . && exit 1 || true
 
-      - name: Check PHP syntax (service)
-        run: find service -name '*.php' -not -path '*/vendor/*' -exec php -l {} \; 2>&1 | grep -v 'No syntax errors' | grep . && exit 1 || true
-
-      - name: Check model drift (admin vs service, strict)
+      # 双份文件漂移门（admin vs service）。2026-10-02 前扫的是 app/model，而模型已全部迁到
+      # packages/platform-common/src/model ⇒ 两树交集为 0，是**恒绿门**；现扫真双份面。
+      - name: Check duplicate-file drift (admin vs service, strict)
         run: php scripts/check-model-drift.php --strict
 
   composer-audit:
@@ -146,6 +152,76 @@ jobs:
         working-directory: ${{ matrix.tree }}
         run: ./node_modules/.bin/ng build
 
+  # ⚠ 本 job **不含 harmonyos**（apps/harmonyos）：本机编译它需要 5 处沙箱修补
+  # （hvigor 项目声明版本与本机 SDK 不一致，见记忆 harmonyos_arkts_build），CI 上没有
+  # 等价的 harness，加进来只会一上线就红。等有可复现配方/官方 action 再补。
+  frontend-flutter:
+    name: Frontend Flutter (${{ matrix.tree }})
+    runs-on: ubuntu-latest
+    # 冷启动最贵的一档（SDK 下载 + pub get + 两棵树编译），比 react 15 / angular 20 给得更足
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        tree:
+          - admin/apps/flutter
+          - apps/flutter/platform
+    steps:
+      - uses: actions/checkout@v4
+
+      # 版本按两棵 **pubspec.lock** 取高定，不看 pubspec.yaml 里的 `sdk: ^3.11.5`：
+      #   apps/flutter/platform 锁 dart >=3.12.0 且 flutter >=3.44.0
+      #   admin/apps/flutter   锁 dart >=3.11.5 且 flutter >=3.38.4
+      # 3.47.2（Dart 3.13.2）= 本机这两棵套件实测全绿的 SDK，固定住不让 stable 漂移。
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.2'
+          channel: stable
+          cache: true
+
+      # 160 条 hosted 依赖在 lock 里都指向 pub.dev 官方源（不是 npm 那种镜像锁），
+      # 故不需要 frontend-react/angular 的 registry host 覆写。--offline 也不行：
+      # pub 缓存由上面的 action 缓存，但首次运行仍要联网解析。
+      - name: Install dependencies
+        working-directory: ${{ matrix.tree }}
+        run: flutter pub get
+
+      # ⚠⚠ 这是**权宜之计（欠的债），不是终态** —— 别让它变成没人记得拆的临时措施。
+      # ① 为什么加：C 端树 **在 HEAD 就有 32 条问题**（31 info + 1 warning），而 analyze
+      #    默认连 info 都 exit 1 ⇒ 裸跑等于「一上线就红」。逐条核对过**与本次改动无关**：
+      #      · 31 info 集中在 wallet/{deposit,withdraw,exchange,wallet}、
+      #        profile/{identity,profile}、login、game/game_detail；
+      #      · 1 warning = unused_field `_api` @ lib/app/pages/chat/chat_list_page.dart:16，
+      #        该字段在 HEAD 的同一行、且同样无人引用（`git show HEAD:` 逐字核过）。
+      # ② **error 仍然致命，未豁免**（也没有 --no-fatal-errors 这种 flag）。
+      # ③ ⚠ **代价：以后新增的 warning 也不再拦。**
+      # ⇒ **移除条件：另派一轮把 C 端这 32 条清掉，清完就把这两个 flag 删掉，
+      #    回到裸 `flutter analyze`。** admin 树本身是干净的（裸 analyze exit 0），
+      #    只因两腿共用同一条命令才一并放行。
+      - name: Analyze
+        working-directory: ${{ matrix.tree }}
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+
+      - name: Run tests
+        working-directory: ${{ matrix.tree }}
+        run: flutter test
+
+      # 只覆盖 admin 树的**那一个文件**（`bigscreen_page.dart` 的运行时行为），
+      # **不是**整棵树的第二遍测试 —— 别当成 coverage 加倍。
+      # 为什么非得单独跑：`test/bigscreen_page_web.dart` 刻意不带 `_test` 后缀
+      # （它 import 的页面在 VM 上编不过），默认套件不收 ⇒ 上面那步 `flutter test`
+      # 对它零观察。而它正是「fullscreen 的条件导入缝在 web 上链的是真实现、不是 stub」
+      # 的**唯一**证据（VM 套件看不见，已用变异证明）。
+      # ⚠ 未在真 runner 上验过：本机实测 flutter 能**自动找到** /usr/bin/google-chrome
+      # （不设 CHROME_EXECUTABLE 也全绿）；GitHub 的 ubuntu runner 同样预装
+      # google-chrome-stable，但这条判断没在 runner 上跑过。万一报找不到 Chrome：
+      # 先 `which google-chrome`，需要就在本步加 `CHROME_EXECUTABLE` 环境变量。
+      - name: Run bigscreen web test (admin only)
+        if: matrix.tree == 'admin/apps/flutter'
+        working-directory: ${{ matrix.tree }}
+        run: flutter test --platform chrome test/bigscreen_page_web.dart
+
   phpunit-admin:
     name: Admin PHPUnit
     runs-on: ubuntu-latest
@@ -185,11 +261,16 @@ jobs:
         working-directory: admin
         run: test -f .env || cp .env.example .env
 
+      # test-data.sql（430KB）是**默认安装路径**的一部分（`install/Installer.php` 会灌，
+      # 本机 `install/install.lock` 也是 `"test_data": true`），但此前 CI 对它零覆盖：
+      # 「按 schema 写死的种子数据」与 install.sql 的漂移（未知表/未知列/列顺序）没人看得见。
+      # 只灌测试库（phpunit-service 的库按原样保留，避免动到 service 套件的既有读数）。
       - name: Prepare test databases
         run: |
           mysql -h 127.0.0.1 -u root -e "CREATE DATABASE IF NOT EXISTS \`game-platform\`; CREATE DATABASE IF NOT EXISTS \`game-platform-test\`;"
           mysql -h 127.0.0.1 -u root game-platform < install/install.sql
           mysql -h 127.0.0.1 -u root game-platform-test < install/install.sql
+          mysql -h 127.0.0.1 -u root game-platform-test < install/test-data.sql
 
       - name: Run admin tests
         working-directory: admin

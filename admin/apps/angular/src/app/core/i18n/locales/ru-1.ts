@@ -114,6 +114,7 @@ export const RU_1: Record<string, string> = {
   'risk.rule.scope': 'Область действия',
   'risk.rule.priority': 'Приоритет',
   'risk.rule.priority_hint': '0-1000, чем больше — тем раньше проверяется (по умолчанию 100)',
+  'risk.rule.scope_hint': 'exchange / login пока не подключены (у оценщика есть ветки, но нет точек вызова — RiskService::check() вызывается только из deposit / withdraw), поэтому правило с этой областью никогда не сработает',
   'risk.rule.status': 'Статус',
   'risk.rule.config': 'Настройка порогов (JSON)',
   'risk.rule.keys_note': '\n',

@@ -51,7 +51,7 @@ rm -rf install/
 
 Opérations réalisées par l'assistant d'installation :
 - Vérification de l'environnement PHP (version, extensions, permissions des répertoires)
-- Exécution du SQL fusionné (`install/install.sql`), création des 78 tables et import des données de seed
+- Exécution du SQL fusionné (`install/install.sql`), création des 79 tables et import des données de seed
 - Création du compte super administrateur (chiffré bcrypt, lié au rôle super_admin)
 - Génération automatique des clés JWT/Encryption/Hashids
 - Écriture de `admin/.env` et `service/.env`
@@ -90,13 +90,13 @@ docker-compose logs -f
 | nginx | game-platform-nginx | 80, 443 | Reverse proxy + fichiers statiques |
 | admin | game-platform-admin | 8789 | API d'administration |
 | service | game-platform-service | 8792 | API métier C |
-| leaderboard-ws | game-platform-ws | 8790, 8791 | Classement WebSocket/Chat |
+| chat-ws | game-platform-ws | 8791 | WebSocket |
 | mysql | game-platform-mysql | 3306 | Base principale |
 | redis | game-platform-redis | 6379 | Cache/rate-limit |
 | elasticsearch | game-platform-es | 9200 | Recherche plein texte |
 
 > **Configuration des ports** : Les ports du tableau sont les valeurs par défaut et peuvent tous être modifiés dans le `.env` à la racine du projet (modèle `.env.example` ; à éditer après `cp .env.example .env`) :
-> `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `LEADERBOARD_WS_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
+> `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `ADMIN_PORT`, `SERVICE_PORT`, `CHAT_WS_PORT`, `MYSQL_PORT`, `REDIS_PORT`, `ES_PORT`.
 > Les ports upstream de `nginx.conf.template` sont rendus automatiquement par l'envsubst de l'image officielle ; aucune modification manuelle de la configuration Nginx n'est nécessaire.
 > En déploiement Docker, les adresses publiques (`APP_URL` / `SITE_URL`) suivent automatiquement `ADMIN_PORT` / `SERVICE_PORT` par défaut (format `http://localhost:port`) ; pour un domaine personnalisé ou HTTPS, définissez `APP_URL` / `SITE_URL` dans le `.env` racine (cela écrase les mêmes clés dans `admin/.env` et `service/.env`). En déploiement bare-metal (manuel), pensez à mettre à jour les adresses vous-même lors d'un changement de port.
 
@@ -201,7 +201,6 @@ SCOUT_HOSTS=127.0.0.1:9200
 ```ini
 # Mêmes configurations base de données, Redis, ES que admin
 APP_PORT=8792  # port d'écoute HTTP de webman
-LEADERBOARD_WS_PORT=8790  # WebSocket de classement (doit correspondre à l'adresse de connexion du frontend)
 CHAT_WS_PORT=8791  # WebSocket de chat
 SNOWFLAKE_WORKER_ID=2  # doit différer de admin
 
@@ -326,7 +325,7 @@ systemctl enable --now game-platform-admin game-platform-service
 Créer `/etc/nginx/sites-available/game-platform` :
 
 ```nginx
-# Ports aux valeurs par défaut (admin 8789 / service 8792 / ws 8790) ; si vous avez modifié le .env, ajustez-les en conséquence
+# Ports aux valeurs par défaut (admin 8789 / service 8792 / ws 8791) ; si vous avez modifié le .env, ajustez-les en conséquence
 server {
     listen 80;
     server_name your-domain.com;
@@ -352,16 +351,6 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-    }
-
-    # Classement WebSocket (port par défaut 8790, identique à LEADERBOARD_WS_PORT dans service/.env)
-    location /ws/ {
-        proxy_pass http://127.0.0.1:8790;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
     }
 
     # Health check
@@ -614,7 +603,7 @@ ufw allow 443/tcp     # HTTPS
 ufw enable
 
 # Les ports internes ne doivent pas être exposés
-# 8789 (admin), 8792 (service), 8790/8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
+# 8789 (admin), 8792 (service), 8791 (ws), 3306 (mysql), 6379 (redis), 9200 (es)
 # Les ports ci-dessus sont les valeurs par défaut ; si le .env racine ou les .env respectifs ont été modifiés, ce sont les valeurs réelles qui s'appliquent
 # Accessibles uniquement via 127.0.0.1
 ```

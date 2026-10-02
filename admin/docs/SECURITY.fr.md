@@ -8,7 +8,9 @@ Languages: [中文](SECURITY.md) · [English](SECURITY.en.md) · [한국어](SEC
 
 ## 1. Vue d'ensemble de la défense en profondeur
 
-Le système adopte un modèle de défense en profondeur à 7 couches, filtrant les requêtes malveillantes de l'extérieur vers l'intérieur, en garantissant que si une couche échoue, les suivantes prennent le relais.
+**La défense en profondeur compte 18 éléments au total** : les **7 couches** de cette section + les **7 détecteurs d'attaque** du §2 + les **4 mécanismes de réponse/limitation de débit** des §3–§5. La couche 1 du §1 (SecurityFilter) et les §2.1–§2.5 décrivent le même ensemble d'intercepteurs sous deux angles ; 18 est donc un **nombre d'éléments**, et non 18 mécanismes strictement disjoints. Les §3–§5 comportent plus de 4 mécanismes de réponse/limitation de débit ; le « 4 » n'est ici qu'un mode de comptage, sans énumération individuelle.
+
+Cette section décrit ces 7 couches, qui filtrent les requêtes malveillantes de l'extérieur vers l'intérieur, en garantissant que si une couche échoue, les suivantes prennent le relais.
 
 Toute la chaîne de middleware s'exécute dans l'ordre suivant (voir `config/middleware.php`) :
 

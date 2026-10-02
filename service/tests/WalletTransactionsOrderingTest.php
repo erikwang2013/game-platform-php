@@ -20,7 +20,7 @@ use support\Request;
  * GET /api/v1/wallet/transactions —— C 端自己的流水列表。
  *
  * 钉的是**翻页次序必须是全序**：`game_transaction.created_at` 是 DATETIME（秒精度，
- * install/install.sql:315 的 DDL），一局游戏成对写 earn/spend 就会**同秒**。只按 created_at
+ * install/install.sql:320 的 DDL），一局游戏成对写 earn/spend 就会**同秒**。只按 created_at
  * 排序时同秒行的先后是 MySQL 的**未定义行为** ⇒ LIMIT/OFFSET 翻页可能让同一行在两页里各出现
  * 一次、另一行谁都看不到，**而 total/last_page 仍然自洽**（账面对不上行）。修法是补第二排序键
  * `id desc`（照 admin 侧 PlatformUserController::transactions 的写法）。

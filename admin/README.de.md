@@ -85,17 +85,19 @@ open-admin/
 │   │       └── AuthController.php    # Login/Registrierung/Token-Refresh
 │   ├── common/                 # Gemeinsame Hilfsklassen
 │   │   └── CdnProbeService.php # CDN-Konnektivitätstest (Hashids/Snowflake/Encryption kommen aus Composer-Paketen)
-│   ├── middleware/             # Middleware
+│   ├── middleware/             # Middleware (9 im Verzeichnis; 8 in der Ausführungskette)
 │   │   ├── Cors.php            # Cross-Origin
 │   │   ├── SecurityFilter.php  # Angriffserkennung und -abwehr (HTTP-Methodenbegrenzung/XSS/SQL-Injection/Pfad-Traversal/Befehlsinjektion/CSRF)
 │   │   ├── RateLimit.php       # Redis-Rate-Limiting (Sliding Window + Response-Header)
-│   │   ├── StaticFile.php      # Statische Dateien (in webman integriert)
+│   │   ├── LanguageMiddleware.php # Sprache/Locale (global; nach RateLimit, vor der Routen-Middleware registriert)
+│   │   ├── StaticFile.php      # Statische Dateien (Kopie des webman-Bordmittels; NICHT registriert — bei config/static.php:25 auskommentiert, nicht in der Ausführungskette)
 │   │   ├── AdminAuth.php       # JWT-Authentifizierung + Blacklist
 │   │   ├── AdminPermission.php # RBAC-Berechtigungsprüfung
+│   │   ├── MetricsAuth.php     # nur /metrics: Admin-JWT oder statisches Scrape-Token
 │   │   └── OperationLog.php    # automatische Aufzeichnung von Operationsprotokollen (inkl. Quellen-Erkennung)
 │   ├── activity/               # Event-Handler (Check-in/Einladung/Tagesaufgaben)
 │   ├── model/                  # Datenmodelle
-│   ├── process/                # Prozesse (Http, Monitor, RiskIpCron)
+│   ├── process/                # Prozesse (Http, Monitor, RiskIpCron, ExportTmpCleanup)
 │   ├── provider/               # Spiele-Provider-Schicht (Self/ThirdParty/Factory)
 │   ├── service/                # Dienste (Wallet/Risiko-Sandbox)
 │   └── view/                   # View-Vorlagen
@@ -104,7 +106,7 @@ open-admin/
 │   ├── react/                  # React-Web-Admin-Backend
 │   ├── flutter/                # Flutter-Web-Verwaltungs-Backend (PC-Stil)
 │   │   └── lib/app/
-│   │       ├── pages/          # 20 Seitenverzeichnisse
+│   │       ├── pages/          # 26 Seitenverzeichnisse
 │   │       ├── services/       # ApiService (JWT-Interceptor) + AuthService (Token-Persistenz)
 │   │       └── layouts/        # Responsives Admin-Layout (Sidebar + Topbar + Inhaltsbereich)
 │   └── harmonyos/              # Natives HarmonyOS-Client (nahtloses Token-Refresh)
@@ -147,8 +149,8 @@ Wichtige Konfigurationsoptionen:
 |---------|------|--------|
 | `APP_PORT` | HTTP-Listening-Port von webman | `8789` |
 | `APP_URL` | Externe Zugriffsadresse (Links der Erfolgsseite des Installers, baseUrl der API-Dokumentation usw.) | `http://localhost:8789` |
-| `JWT_SECRET` | JWT-Signaturschlüssel | `open-admin-jwt-secret-change-in-production` |
-| `HASHIDS_SALT` | Hashids-Salt | `open-admin-hashids-salt-2026` |
+| `ADMIN_JWT_SECRET_KEY` | JWT-Signaturschlüssel | `game-platform-admin-jwt-secret-change-in-production` |
+| `HASHIDS_SALT` | Hashids-Salt | `game-platform-hashids-salt-2026` |
 | `ENCRYPTION_KEY` | API-Verschlüsselungsschlüssel | 32-Byte-Standardwert |
 | `SNOWFLAKE_DATACENTER_ID` | Rechenzentrums-ID (0-31) | `1` |
 | `SNOWFLAKE_WORKER_ID` | Worker-Knoten-ID (0-31) | `1` |
@@ -188,7 +190,7 @@ Mit DevEco Studio das Verzeichnis `apps/harmonyos/` öffnen und auf echtem Gerä
 
 ### 6. Docker-Compose-Ein-Klick-Bereitstellung (für Produktion empfohlen)
 
-Das Projekt bietet eine vollständige Docker-Orchestrierung mit 7 Diensten: Nginx, admin (webman), service (webman), leaderboard-ws (WebSocket), MySQL, Redis, Elasticsearch.
+Das Projekt bietet eine vollständige Docker-Orchestrierung mit 7 Diensten: Nginx, admin (webman), service (webman), chat-ws (WebSocket), MySQL, Redis, Elasticsearch.
 
 ```bash
 # 1. Docker-Umgebungsvariablen konfigurieren
@@ -423,7 +425,7 @@ Im Projektstamm liegt `docker-compose.yml`, das 7 Dienste orchestriert:
 | `nginx` | nginx:alpine | 80, 443 |
 | `admin` | lokaler `Dockerfile`-Build | 8789 |
 | `service` | lokaler `Dockerfile`-Build | 8792 |
-| `leaderboard-ws` | lokaler `Dockerfile`-Build | 8790, 8791 |
+| `chat-ws` | lokaler `Dockerfile`-Build | 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

@@ -152,6 +152,7 @@ export const hiUi: Record<UiKey, string> = {
   'form.options_load_failed': '{name} के विकल्प लोड नहीं हो सके; चुना गया मान अभी भी दिख रहा है, पर उसे बदले बिना सबमिट न करें',
   'form.tree_load_failed': '{name} की अनुमति-ट्री लोड नहीं हो सकी; चुनी गई अनुमतियाँ अभी भी दिख रही हैं, पर उन्हें बदले बिना सबमिट न करें',
   'form.tree_loading': 'अनुमति-ट्री लोड हो रही है…',
+  'form.discard_confirm': 'सहेजे न गए बदलाव हैं। उन्हें छोड़ दें?',
   'form.select_placeholder': 'कृपया चुनें',
   // 父权限下拉的选项（lib/tree.ts 摊平权限树）：键分两种**形状**（带 slug / 不带），
   // 路径与 slug 走 params —— 选项是逐行现拼的，见 lib/crud.ts 的 FieldOption

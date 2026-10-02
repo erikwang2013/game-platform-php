@@ -1,0 +1,218 @@
+:root {
+  color-scheme: dark;
+
+  /* ---- 画布与表面：四层深度 ---- */
+  --bg: #070a12;
+  --bg-2: #0b1020;
+  --surface: #121829;
+  --surface-2: #192134;
+  --surface-3: #222c44;
+
+  /* ---- 文本 ---- */
+  --text: #edf1fb;
+  --text-2: #98a4bf;
+  --text-3: #697692;
+
+  /* ---- 线条：暗底上纯色描边会脏，用半透明白 ---- */
+  --line: rgba(255, 255, 255, 0.085);
+  --line-2: rgba(255, 255, 255, 0.16);
+
+  /* ---- 语义色 ---- */
+  --primary: #6c5cff;
+  --primary-2: #8b7bff;
+  --primary-deep: #4a37d6;
+  --primary-ink: #ffffff;
+  --accent: #ffc24b;
+  --accent-ink: #241a00;
+  --pos: #2fd6a5;
+  --neg: #ff6b84;
+  --warn: #ffb020;
+  --info: #4ea8ff;
+  --ring: rgba(108, 92, 255, 0.35);
+
+  /* ---- 玻璃/遮罩 ---- */
+  --glass: rgba(9, 13, 24, 0.72);
+  --veil: rgba(3, 5, 11, 0.66);
+  --tint: rgba(255, 255, 255, 0.05);
+  /* 比轨道亮一档的「浮起」面：分段控件选中的那一片。暗底要更亮、亮底要更白，
+     所以不能直接复用 --surface-N 的序号（它在两套皮肤里明暗方向相反） */
+  --raise: #2a3550;
+
+  /* ---- 圆角 ---- */
+  --r-xs: 6px;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  --r-full: 999px;
+
+  /* ---- 投影：分层柔和，暗底靠扩散而不是位移 ---- */
+  --sh-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --sh-2: 0 6px 20px -8px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.35);
+  --sh-3: 0 28px 64px -20px rgba(0, 0, 0, 0.8), 0 8px 24px rgba(0, 0, 0, 0.45);
+  --glow: 0 8px 28px -10px rgba(108, 92, 255, 0.7);
+
+  /* ---- 字号阶梯 ---- */
+  --fs-2xs: 10.5px;
+  --fs-xs: 11.5px;
+  --fs-sm: 12.5px;
+  --fs-md: 14px;
+  --fs-base: 15px;
+  --fs-lg: 17px;
+  --fs-xl: 21px;
+  --fs-2xl: 26px;
+  --fs-3xl: 34px;
+  --fs-hero: clamp(30px, 5.4vw, 44px);
+
+  /* ---- 间距刻度（4 的倍数） ---- */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-12: 48px;
+  --s-16: 64px;
+
+  /* ---- 动效 ---- */
+  --ease: cubic-bezier(0.22, 0.68, 0.28, 1);
+  --t-fast: 0.12s;
+  --t: 0.2s;
+
+  --max: 1200px;
+  --chrome-h: 56px;
+  --tabbar-h: 64px;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Noto Sans CJK SC", system-ui, "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Noto Sans Mono CJK SC", monospace;
+
+  /* 兼容 tsx 内联样式里仍在用的旧变量名（22 处标题句点 = var(--orange)、
+     登录页 hero 高亮 = var(--yellow)、榜单榜首行 = var(--ink)/var(--paper)）。
+     改的是取值不是名字：--orange/--yellow 现在是品牌琥珀金，
+     --ink/--paper 是「前景/表面」这一对反色。列表为空即可全部删掉。 */
+  --orange: var(--accent);
+  --yellow: var(--accent);
+  --ink: var(--text);
+  --paper: var(--surface);
+}
+
+/* 亮色皮肤：同一套几何，只换取值。琥珀金在亮底上要压深才够对比度 */
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+
+    --bg: #f2f4fa;
+    --bg-2: #eaedf7;
+    --surface: #ffffff;
+    --surface-2: #f6f8fd;
+    --surface-3: #eaeef8;
+
+    --text: #0e1424;
+    --text-2: #59637a;
+    --text-3: #8a93a8;
+
+    --line: rgba(14, 20, 36, 0.1);
+    --line-2: rgba(14, 20, 36, 0.18);
+
+    --primary: #5847d6;
+    --primary-2: #7a6bea;
+    --primary-deep: #493ac2;
+    --accent: #a96a00;
+    --accent-ink: #ffffff;
+    --pos: #0e8f6a;
+    --neg: #d8395a;
+    --warn: #a96a00;
+    --info: #2563eb;
+    --ring: rgba(88, 71, 214, 0.26);
+
+    --glass: rgba(255, 255, 255, 0.78);
+    --veil: rgba(20, 26, 45, 0.42);
+    --tint: rgba(14, 20, 36, 0.04);
+    --raise: #ffffff;
+
+    --sh-1: 0 1px 2px rgba(14, 20, 36, 0.06);
+    --sh-2: 0 6px 18px -8px rgba(14, 20, 36, 0.16), 0 2px 5px rgba(14, 20, 36, 0.06);
+    --sh-3: 0 28px 60px -22px rgba(14, 20, 36, 0.28), 0 8px 20px rgba(14, 20, 36, 0.1);
+    --glow: 0 8px 24px -10px rgba(88, 71, 214, 0.55);
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: var(--fs-base);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* 底部 tabbar 是 fixed，正文要留出它的高度（含 iPhone 安全区） */
+  padding-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px));
+}
+
+/* 顶部两团环境光：只做氛围，不接任何交互 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: 520px;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(760px 380px at 12% -10%, rgba(108, 92, 255, 0.3), transparent 68%),
+    radial-gradient(620px 320px at 92% -14%, rgba(255, 194, 75, 0.13), transparent 68%);
+}
+
+@media (prefers-color-scheme: light) {
+  body::before {
+    background:
+      radial-gradient(760px 380px at 12% -10%, rgba(88, 71, 214, 0.13), transparent 68%),
+      radial-gradient(620px 320px at 92% -14%, rgba(255, 194, 75, 0.22), transparent 68%);
+  }
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--primary-2);
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+input,
+select,
+button,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary-2);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--primary);
+  color: #fff;
+}
+

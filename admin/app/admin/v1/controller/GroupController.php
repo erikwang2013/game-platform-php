@@ -23,7 +23,7 @@ class GroupController extends BaseController
     #[Apidoc\Title("组/公会列表")]
     #[Apidoc\Url("/admin/v1/groups")]
     #[Apidoc\Method("GET")]
-    #[Apidoc\Param(name: "type", type: "string", require: false, desc: "team/guild")]
+    #[Apidoc\Param(name: "type", type: "string", require: false, desc: "类型(team/guild)")]
     #[Apidoc\Param(name: "game_id", type: "string", require: false, desc: "游戏ID(hashid)")]
     #[Apidoc\Param(name: "status", type: "int", require: false, desc: "1=正常 0=解散")]
     #[Apidoc\Param(name: "page", type: "int", require: false, desc: "页码")]

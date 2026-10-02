@@ -90,7 +90,10 @@ describe('failText', () => {
   });
 
   it('UserAuth 的 401 信封（HTTP 200 + code:401）不算成功', () => {
-    expect(failText({ code: 401, message: '未登录', data: [] })).toContain('登录');
+    // C-2：这一支从裸中文改成了键那一态 ⇒ 断言由 `toContain('登录')` 换成 `toEqual`。
+    // **是加强不是放宽**：原来只要求句子里含「登录」二字（换任何一句含这二字的文案都能过），
+    // 现在钉死「返回的正是那个键的裸 `Msg`」—— 换键名、退回字符串、混入 raw 都会红。
+    expect(failText({ code: 401, message: '未登录', data: [] })).toEqual({ key: 'upload.session_expired' });
   });
 
   it('既没有 error 也不是 401 信封 ⇒ 判失败，绝不判成功', () => {

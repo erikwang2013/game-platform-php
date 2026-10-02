@@ -3,6 +3,7 @@
  */
 
 import router from '@ohos.router';
+import { t } from '../i18n/Translations';
 
 /**
  * 展示用：去掉金额字符串的小数尾零（"12.3400" → "12.34"，"0.0000" → "0"）
@@ -35,7 +36,8 @@ export function isZeroAmount(value: string): boolean {
  */
 @Component
 export struct LoadingView {
-  @Prop message: string = '加载中...';
+  @StorageLink('app_locale') localeCode: string = 'zh';
+  @Prop message: string = t('common.loading');
 
   build() {
     Column() {
@@ -60,7 +62,8 @@ export struct LoadingView {
  */
 @Component
 export struct EmptyView {
-  @Prop message: string = '暂无数据';
+  @StorageLink('app_locale') localeCode: string = 'zh';
+  @Prop message: string = t('common.no_data');
 
   build() {
     Column() {
@@ -86,7 +89,15 @@ export struct EmptyView {
  */
 @Component
 export struct ErrorView {
-  @Prop message: string = '加载失败';
+  @StorageLink('app_locale') localeCode: string = 'zh';
+  @Prop message: string = t('common.load_failed');
+  /**
+   * 重试回调，由调用方传入（各页自己的 loadXxx）。
+   * 不传时**整个按钮不渲染** —— 本组件此前是「按钮恒在、回调可为空」，漏传的调用点
+   * 会渲染出一个点了没反应的死按钮；与选图等处的「不摆按不动的按钮」同一条约定。
+   * 编译期拦不住漏传（plain 成员必须初始化、@Prop 无默认值时本版编译器都不报调用点），
+   * 所以靠 check-errorview-retry.sh 数调用点。
+   */
   onRetry?: () => void;
 
   build() {
@@ -95,14 +106,16 @@ export struct ErrorView {
         .fontSize(14)
         .fontColor('#999999')
 
-      Button('重试')
-        .margin({ top: 12 })
-        .fontSize(14)
-        .onClick(() => {
-          if (this.onRetry) {
-            this.onRetry();
-          }
-        })
+      if (this.onRetry) {
+        Button(t('common.retry'))
+          .margin({ top: 12 })
+          .fontSize(14)
+          .onClick(() => {
+            if (this.onRetry) {
+              this.onRetry();
+            }
+          })
+      }
     }
     .justifyContent(FlexAlign.Center)
     .width('100%')
@@ -115,11 +128,12 @@ export struct ErrorView {
  */
 @Component
 export struct NavBar {
+  @StorageLink('app_locale') localeCode: string = 'zh';
   @Prop title: string = '';
 
   build() {
     Row() {
-      Button('← 返回')
+      Button(t('common.back'))
         .fontSize(14)
         .fontColor('#1677FF')
         .backgroundColor(Color.Transparent)
@@ -160,6 +174,7 @@ export struct CopyrightBar {
  */
 @Component
 export struct BottomNav {
+  @StorageLink('app_locale') localeCode: string = 'zh';
   @Prop current: string = 'hall';
 
   private go(target: string, url: string): void {
@@ -172,7 +187,7 @@ export struct BottomNav {
   build() {
     Row() {
       Column() {
-        Text('大厅')
+        Text(t('nav.hall'))
           .fontSize(12)
           .fontColor(this.current === 'hall' ? '#1677FF' : '#999999')
           .fontWeight(this.current === 'hall' ? FontWeight.Medium : FontWeight.Normal)
@@ -185,7 +200,7 @@ export struct BottomNav {
       })
 
       Column() {
-        Text('钱包')
+        Text(t('nav.wallet'))
           .fontSize(12)
           .fontColor(this.current === 'wallet' ? '#1677FF' : '#999999')
           .fontWeight(this.current === 'wallet' ? FontWeight.Medium : FontWeight.Normal)
@@ -198,7 +213,7 @@ export struct BottomNav {
       })
 
       Column() {
-        Text('我的')
+        Text(t('nav.profile'))
           .fontSize(12)
           .fontColor(this.current === 'profile' ? '#1677FF' : '#999999')
           .fontWeight(this.current === 'profile' ? FontWeight.Medium : FontWeight.Normal)

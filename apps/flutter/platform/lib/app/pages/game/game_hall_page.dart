@@ -8,6 +8,7 @@ import '../../services/api_service.dart';
 import '../../services/auth_service.dart';
 import '../../services/api_helpers.dart';
 import '../../services/chat_service.dart';
+import 'game_grid.dart';
 
 class GameHallPage extends StatefulWidget {
   const GameHallPage({super.key});
@@ -38,7 +39,9 @@ class _GameHallPageState extends State<GameHallPage> {
   List<Map<String, dynamic>> get _navItems => [
     {'icon': Icons.sports_esports, 'label': '${AppTranslations.t('nav.games')}', 'route': '/games'},
     {'icon': Icons.account_balance_wallet, 'label': '${AppTranslations.t('nav.wallet')}', 'route': '/wallet'},
-    {'icon': Icons.local_offer_outlined, 'label': '${AppTranslations.t('nav.coupons')}', 'route': '/coupons'},
+    // ⚠ 这里**没有「优惠券」入口**，是有意的（2026-10-02 撤下，与两棵 web 树对齐）：
+    // 券可领不可核销 —— `status='used'` 与 `used_in_order` 全仓无写入方，领了永远用不掉，
+    // 页面唯一的「价值」就是让人领一张永远躺着的券。后端做出核销/抵扣再恢复入口。
     {'icon': Icons.leaderboard_outlined, 'label': '${AppTranslations.t('nav.leaderboard')}', 'route': '/leaderboard'},
     {'icon': Icons.notifications_outlined, 'label': '${AppTranslations.t('nav.notifications')}', 'route': '/notifications'},
     {'icon': Icons.chat_bubble_outline, 'label': '${AppTranslations.t('nav.chat')}', 'route': '/chat-list'},
@@ -293,7 +296,7 @@ class _GameHallPageState extends State<GameHallPage> {
             ),
           );
           if (confirm == true) {
-            await AuthService.clearToken();
+            await ApiService.signOut();
             Get.offAllNamed('/login');
           }
         }
@@ -375,7 +378,7 @@ class _GameHallPageState extends State<GameHallPage> {
                           ],
                         ),
                       )
-                    : _buildGameGrid(),
+                    : GameGrid(games: _filteredGames, searchQuery: _searchQuery),
           ),
         ],
       ),
@@ -432,136 +435,6 @@ class _GameHallPageState extends State<GameHallPage> {
               },
             );
           },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGameGrid() {
-    final filtered = _filteredGames;
-    if (filtered.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Image.asset('assets/mascot.png', width: 120),
-            const SizedBox(height: 12),
-            Text(
-              _searchQuery.isNotEmpty
-                  ? '${AppTranslations.t('game_hall.no_results')}'
-                  : '${AppTranslations.t('game_hall.no_games')}',
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
-            ),
-          ],
-        ),
-      );
-    }
-
-    final isTablet = _bp.equals(TABLET);
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final crossAxisCount = isTablet ? 2 : 4;
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1200),
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: crossAxisCount,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 0.85,
-              ),
-              itemCount: filtered.length,
-              itemBuilder: (context, index) => _buildGameCard(filtered[index]),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildGameCard(Map<String, dynamic> game) {
-    final name = game['name'] ?? 'Unknown';
-    final description = game['description'] ?? '';
-    final type = game['type'] ?? game['game_type'] ?? '';
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Card(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(8),
-        onTap: () => Get.toNamed('/game-detail', arguments: game),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Cover image placeholder
-            Expanded(
-              flex: 3,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer.withValues(alpha: 0.3),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-                ),
-                child: Center(
-                  child: Icon(Icons.sports_esports, size: 48, color: colorScheme.primary.withValues(alpha: 0.5)),
-                ),
-              ),
-            ),
-            // Info area
-            Expanded(
-              flex: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            name,
-                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (type.isNotEmpty)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: colorScheme.secondaryContainer,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(type, style: TextStyle(fontSize: 11, color: colorScheme.onSecondaryContainer)),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Expanded(
-                      child: Text(
-                        description,
-                        style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      height: 32,
-                      child: FilledButton.icon(
-                        onPressed: () => Get.toNamed('/game-detail', arguments: game),
-                        icon: const Icon(Icons.play_arrow, size: 18),
-                        label: Text('${AppTranslations.t('game_hall.enter_game')}',
-                            style: const TextStyle(fontSize: 12)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
         ),
       ),
     );

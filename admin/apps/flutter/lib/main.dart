@@ -59,7 +59,7 @@ class AdminApp extends StatelessWidget {
           const Breakpoint(start: 1200, end: 4500, name: DESKTOP),
         ],
       ),
-      // 路由顺序与 AdminLayout._pages 下标一一对应, initialIndex 即该下标
+      // 路由顺序与 AdminLayout._nav 下标一一对应, initialIndex 即该下标
       getPages: [
         GetPage(name: '/login', page: () => const LoginPage()),
         GetPage(name: '/dashboard', page: () => const AdminLayout(child: DashboardPage())),

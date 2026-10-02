@@ -85,17 +85,19 @@ open-admin/
 │   │       └── AuthController.php    # ログイン/登録/トークン更新
 │   ├── common/                 # 共通ユーティリティクラス
 │   │   └── CdnProbeService.php # CDN 接続テスト（Hashids/Snowflake/Encryption は composer パッケージ提供）
-│   ├── middleware/             # 中間ウェア
+│   ├── middleware/             # 中間ウェア（ディレクトリ 9 個；実行チェーン 8 個）
 │   │   ├── Cors.php            # クロスドメイン
 │   │   ├── SecurityFilter.php  # 攻撃検知・遮断（HTTPメソッド制限/XSS/SQLインジェクション/パストラバーサル/コマンドインジェクション/CSRF）
 │   │   ├── RateLimit.php       # Redis レート制限（スライディングウィンドウ + レスポンスヘッダー）
-│   │   ├── StaticFile.php      # 静的ファイル配信（webman 内蔵）
+│   │   ├── LanguageMiddleware.php # 言語/locale（グローバル、RateLimit の後・ルートミドルウェアの前に登録）
+│   │   ├── StaticFile.php      # 静的ファイル配信（webman 内蔵のコピー；未登録 —— config/static.php:25 でコメントアウト、実行チェーン外）
 │   │   ├── AdminAuth.php       # JWT 認証 + ブラックリスト
 │   │   ├── AdminPermission.php # RBAC 権限検証
+│   │   ├── MetricsAuth.php     # /metrics 専用：管理者 JWT または静的スクレイプトークン
 │   │   └── OperationLog.php    # 操作ログ自動記録（送信元検出を含む）
 │   ├── activity/               # アクティビティハンドラー（サインイン/招待/デイリータスク）
 │   ├── model/                  # データモデル
-│   ├── process/                # プロセス (Http, Monitor, RiskIpCron)
+│   ├── process/                # プロセス (Http, Monitor, RiskIpCron, ExportTmpCleanup)
 │   ├── provider/               # ゲーム Provider 層（Self/ThirdParty/Factory）
 │   ├── service/                # サービス（ウォレット/リスクサンドボックス）
 │   └── view/                   # ビューテンプレート
@@ -104,7 +106,7 @@ open-admin/
 │   ├── react/                  # React Web 管理画面
 │   ├── flutter/                # Flutter Web 管理画面（PC スタイル）
 │   │   └── lib/app/
-│   │       ├── pages/          # 20 個のページディレクトリ
+│   │       ├── pages/          # 26 個のページディレクトリ
 │   │       ├── services/       # ApiService（JWT インターセプター）+ AuthService（Token 永続化）
 │   │       └── layouts/        # レスポンシブ管理画面レイアウト（サイドバー+トップバー+コンテンツ領域）
 │   └── harmonyos/              # HarmonyOS ネイティブクライアント（Token シームレス更新）
@@ -147,8 +149,8 @@ cp .env.example .env
 |---------|------|--------|
 | `APP_PORT` | webman HTTP リッスンポート | `8789` |
 | `APP_URL` | 外部アクセスアドレス（インストーラーの成功ページのリンク、API ドキュメントの baseUrl など） | `http://localhost:8789` |
-| `JWT_SECRET` | JWT 署名キー | `open-admin-jwt-secret-change-in-production` |
-| `HASHIDS_SALT` | Hashids ソルト値 | `open-admin-hashids-salt-2026` |
+| `ADMIN_JWT_SECRET_KEY` | JWT 署名キー | `game-platform-admin-jwt-secret-change-in-production` |
+| `HASHIDS_SALT` | Hashids ソルト値 | `game-platform-hashids-salt-2026` |
 | `ENCRYPTION_KEY` | API 暗号化キー | 32バイトのデフォルト値 |
 | `SNOWFLAKE_DATACENTER_ID` | データセンターID (0-31) | `1` |
 | `SNOWFLAKE_WORKER_ID` | ワーカーノードID (0-31) | `1` |
@@ -188,7 +190,7 @@ DevEco Studio で `apps/harmonyos/` ディレクトリを開き、実機また�
 
 ### 6. Docker Compose によるワンクリックデプロイ（本番環境推奨）
 
-プロジェクトには7つのサービス（Nginx、admin (webman)、service (webman)、leaderboard-ws (WebSocket)、MySQL、Redis、Elasticsearch）を含む完全な Docker オーケストレーション構成が用意されています。
+プロジェクトには7つのサービス（Nginx、admin (webman)、service (webman)、chat-ws (WebSocket)、MySQL、Redis、Elasticsearch）を含む完全な Docker オーケストレーション構成が用意されています。
 
 ```bash
 # 1. Docker 環境変数の設定
@@ -423,7 +425,7 @@ Authorization: Bearer <token>
 | `nginx` | nginx:alpine | 80, 443 |
 | `admin` | ローカル `Dockerfile` でビルド | 8789 |
 | `service` | ローカル `Dockerfile` でビルド | 8792 |
-| `leaderboard-ws` | ローカル `Dockerfile` でビルド | 8790, 8791 |
+| `chat-ws` | ローカル `Dockerfile` でビルド | 8791 |
 | `mysql` | mysql:8.0 | 3306 |
 | `redis` | redis:7-alpine | 6379 |
 | `elasticsearch` | elasticsearch:8.x | 9200 |

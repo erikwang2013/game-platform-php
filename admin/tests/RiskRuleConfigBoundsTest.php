@@ -29,7 +29,6 @@ class RiskRuleConfigBoundsTest extends TestCase
     private function validate(string $type, string $config): string
     {
         $method = new ReflectionMethod(RiskRuleController::class, 'validateConfig');
-        $method->setAccessible(true);
 
         return $method->invoke(new RiskRuleController(), $type, $config);
     }
@@ -62,7 +61,7 @@ class RiskRuleConfigBoundsTest extends TestCase
             'velocity.max_accounts 负数'                     => ['velocity', '{"max_accounts":-1}'],
             'withdraw_pattern.drain_ratio>1'                 => ['withdraw_pattern', '{"drain_ratio":1.5}'],
             // 反向熔断：阈值**过高**与过低同样能全站熔断。IpReputationEvaluator.php:60 `$score < $blockBelow`
-            // 而 reputation_score 是 TINYINT、语义域 0..100（install.sql:743 列注释 0=bad/50=neutral/100=good）
+            // 而 game_ip_reputation.reputation_score 是 TINYINT、语义域 0..100（install.sql 里该列注释 0=bad / 50=neutral / 100=good）
             // ⇒ block_score_below=1000 时任何 IP 都命中阻断，凡是查 ip_reputation 的检查类型全停。
             'ip_reputation.block_score_below=1000（全站熔断）' => ['ip_reputation', '{"block_score_below":1000}'],
             'ip_reputation.warn_score_below=101（全员预警）'   => ['ip_reputation', '{"warn_score_below":101}'],

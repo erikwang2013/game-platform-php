@@ -17,7 +17,7 @@ Layanan API platform pengguna (sisi C) adalah backend PHP berkinerja tinggi berb
 | Penarikan | Pengajuan → peninjauan → pembayaran, batas berjenjang KYC |
 | Penukaran | Kuotasi real-time koin platform ⇄ koin game, diskon VIP dan bonus kurs |
 | Game | Daftar/kategori/pencarian game, riwayat bermain, callback penyelesaian Provider |
-| Papan peringkat | Harian/mingguan/bulanan/seluruh waktu + push WebSocket real-time |
+| Papan peringkat | Harian/mingguan/bulanan/seluruh waktu (REST) |
 | Kupon | Jumlah tetap + diskon persentase, terbatas waktu dan jumlah |
 | Tiket | Pengguna membuat/membalas tiket dukungan |
 | VIP | Loyalitas 5 tingkat, akumulasi pengalaman, diskon penukaran |
@@ -40,7 +40,7 @@ Layanan API platform pengguna (sisi C) adalah backend PHP berkinerja tinggi berb
 service/
 ├── app/
 │   ├── activity/           # Handler aktivitas
-│   ├── api/v1/controller/  # Kontroler API sisi C (34)
+│   ├── api/v1/controller/  # Kontroler API sisi C (35)
 │   ├── bootstrap/          # Bootstrap notifikasi
 │   ├── cdn/                # CDN multi-vendor (Aliyun/Tencent/Huawei/Cloudflare/CloudFront + CdnFactory)
 │   ├── common/             # Umum
@@ -96,7 +96,7 @@ cp .env.example .env
 # 3. Mulai layanan (port default 8792, dapat diubah via APP_PORT di .env)
 php start.php start        # latar depan
 php start.php start -d     # latar belakang (daemon)
-# Port WebSocket (papan peringkat 8790 / chat 8791) dapat diubah via LEADERBOARD_WS_PORT / CHAT_WS_PORT di .env
+# Port WebSocket (chat 8791) dapat diubah via CHAT_WS_PORT di .env
 ```
 
 ## Penggunaan

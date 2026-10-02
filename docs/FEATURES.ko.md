@@ -59,19 +59,19 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | 2FA | Google Authenticator TOTP + 백업 복구 코드 | 완료 |
 | 추천 | 추천 코드, 등록 보상, 충전 커미션 | 완료 |
 | 검색 | ES 검색 API + 게임 제안 + LIKE 폴백 | 완료 |
-| 리더보드 | WebSocket 실시간 푸시 (포트 8790) | 완료 |
+| 리더보드 | REST + Redis | 완료 |
 | CDN | 5개 업체 연동 (Cloudflare R2 / AWS S3 / 알리 OSS / 텐센트 COS / 화웨이 OBS 업로드 + 캐시 제거 + 프리로드) | 완료 |
 | CDN 관리 | 관리자가 5개 업체 설정 (자격증명 암호화 저장/활성·비활성/HeadBucket 연결 테스트), service는 DB만 읽음 | 완료 |
 | 리포트 | 관리자 데이터 리포트 (요약/일일/CSV 내보내기, Redis 5분 캐시, 기간 ≤90일) | 완료 |
 | 플랫폼 통계 | C측 홈 통계 (게임 총수/사용자 총수/오늘 플레이/7일 활성) | 완료 |
 | 배포 | Docker Compose 7서비스 + Nginx 리버스 프록시 | 완료 |
 | 데이터 | MySQL 실시간 집계 분석 + 결합/조건부 확률 계산 | 완료 |
-| HarmonyOS | admin 단 8페이지; C단 `apps/harmonyos/`에 로그인/로비/상세/지갑/개인 구현 (8792 지시) | 부분 완료 (프로젝트 실행 가능, 실기기 IP 변경 필요) |
+| HarmonyOS | admin 단 19페이지; C단 `apps/harmonyos/`에 로그인/로비/상세/지갑/개인 구현 (8792 지시) | 부분 완료 (프로젝트 실행 가능, 실기기 IP 변경 필요) |
 | API 문서 | erikwang2013/apidoc-php 인터랙티브 문서 | 완료 |
 | 원클릭 설치 | 브라우저 설치 마법사: 관리자 생성, 기존 DB 업그레이드, install.lock 재설치 방지 | 완료 |
 | 내결함성 | CircuitBreaker 차단 + Retry 재시도 + feature.provider_mock 다운그레이드 스위치 | 완료 |
 | 결제 수단 | 백오피스 CRUD + 국가별 표시 + 금액 구간 + 통화 제한 | 완료 |
-| CI | push 시 자동 증가 tag + GitHub Release | 완료 |
+| CI | push 시 자동 증가 tag + GitHub Release | 수동 트리거로 변경 |
 
 ### 생태계 확장 (v2.0) — 방금 완료
 
@@ -231,7 +231,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 
 ## 7. 데이터베이스 테이블 목록
 
-### 생태계 확장 신규 (10장)
+### 생태계 확장 신규 (14장)
 
 | 테이블명 | 설명 | 핵심 특성 |
 |------|------|---------|
@@ -245,6 +245,10 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | game_user_achievement | 사용자 업적 | user_id+achievement_id 고유 인덱스 |
 | game_friend | 친구 관계 | user_id+friend_id 고유 인덱스 |
 | game_message | 쪽지 | from_user_id+to_user_id / to_user_id+is_read |
+| game_cdn_provider | CDN 공급자 설정 | provider 고유 인덱스, config 암호화 JSON |
+| game_referral_commission | 다단계 추천 커미션 기록 | user_id / referral_id / source_type+source_id 인덱스 |
+| game_tournament | 토너먼트 | slug 고유 인덱스, status+start_at+end_at 인덱스 |
+| game_tournament_entry | 토너먼트 참가/점수 | tournament_id+user_id 고유 인덱스, tournament_id+score 인덱스 |
 
 ### 테이블 구조 변경
 
@@ -253,7 +257,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | game_game | +provider_config (JSON) |
 | game_game_play_log | +round_id, +bet_amount, +win_amount |
 
-**총계: install.sql 78장 테이블**. 모델: `packages/platform-common/src/model/`에 52개 공유; admin/app/model/의 8개와 service/app/model/의 10개는 각 호스트 전용 (파일명 중복 없음).
+**총계: install.sql 79장 테이블**. 모델: `packages/platform-common/src/model/`에 51개 공유; admin/app/model/의 6개와 service/app/model/의 10개는 각 호스트 전용 (파일명 중복 없음).
 
 ## 8. 테스트 커버리지
 
@@ -267,7 +271,7 @@ Languages: [中文](FEATURES.md) · [English](FEATURES.en.md) · **한국어** �
 | HashidsServiceTest | 6 | ID 인코딩/디코딩 왕복 |
 | SnowflakeServiceTest | 5 | ID 생성 고유성 |
 
-**총계 (phpunit --list-tests 현재 측정): admin 200 케이스 / 21 파일, service 273 케이스 / 42 파일 (WebhookUrlSafety + EventBusMessageFormat 포함; 보고서: 09-22 재실행 admin 190 + service 273, 08-27 스냅샷 admin 153 + service 45). service는 CI 실패 차단 미적용 (미검증).**
+**총계 (phpunit --list-tests 현재 측정): admin 593 케이스 / 70 파일, service 549 케이스 / 89 파일 (WebhookUrlSafety + EventBusMessageFormat 포함; 보고서: 09-22 재실행 admin 190 + service 273, 08-27 스냅샷 admin 153 + service 45). service는 CI 실패 차단 적용.**
 
 ---
 

@@ -36,7 +36,7 @@ flowchart TB
     end
 
     subgraph "저장 레이어"
-        E1[("MySQL 8.0<br/>주 저장소<br/>78장 테이블")]
+        E1[("MySQL 8.0<br/>주 저장소<br/>79장 테이블")]
         E2[("Redis<br/>Session/캐시/레이트 리밋<br/>EventBus/하트비트")]
         E3[("Elasticsearch<br/>전문 검색")]
         E4[("ClickHouse<br/>OLAP 분석<br/>확률 계산")]
@@ -66,7 +66,7 @@ flowchart TB
   ↓
 미들웨어 체인: Cors → SecurityFilter → RateLimit → AdminAuth → AdminPermission → OperationLog
   ↓
-컨트롤러 레이어 (45개):
+컨트롤러 레이어 (45개, admin/app/admin/v1/controller/ 에서 BaseController 제외 + admin/app/api/v1/controller/):
   ┌──────────────────────────────────────────────────────────┐
   │ Dashboard / User / Role / Permission / Config / Log      │ ← 기존
   │ Profile / Export / Import / Upload / Health / Docs       │ ← 기존
@@ -90,7 +90,7 @@ Provider 레이어: GameProvider → SelfProvider / ThirdPartyProvider
   ↓
 미들웨어 체인: TraceId → Cors → SecurityFilter → RateLimit → Language → [UserAuth | ProviderAuth | SdkSessionAuth]
   ↓
-컨트롤러 레이어 (34개):
+컨트롤러 레이어 (35개, service/app/api/v1/controller/ 에서 BaseController 제외):
   ┌──────────────────────────────────────────────────────────┐
   │ Auth / Wallet / Deposit / Exchange / Withdraw            │ ← 기존
   │ Game / User / Announcement / Captcha                     │ ← 기존
@@ -141,7 +141,7 @@ Redis Pub/Sub (channel: platform:events):
   NotificationService — 알림 전송
   WebhookController   — 외부 webhook 전달
 
-> 참고: 2026-08-18 기준 `emit()`은 호출자가 있으나 `subscribe()`에는 등록된 프로세스가 없습니다(P0-4 미완료). 이벤트는 현재 발행만 되고 소비되지 않으며, 구독자는 설계 목표입니다.
+> 참고: 2026-08-18 기준 `emit()`은 호출자가 있으나 `subscribe()`에는 등록된 프로세스가 없습니다(P0-4 미완료). 이후 보완되었습니다: `service/config/process.php`에 `event-consumer`와 `event-subscriber` 두 프로세스가 등록되어 이벤트가 소비됩니다.
 ```
 
 ### 2.5 안정성 보장 — 서킷 브레이커 / 재시도 / 디그레이션
@@ -316,7 +316,6 @@ game_achievement ── 1:N ── game_user_achievement
 단일 머신 배포:
   admin/         :8789 (webman, 32 workers)
   service/       :8792 (webman, 32 workers)
-  leaderboard-ws :8790 (WebSocket 리더보드)
   chat-ws        :8791 (WebSocket 채팅)
   MySQL          :3306
   Redis          :6379
@@ -326,7 +325,7 @@ game_achievement ── 1:N ── game_user_achievement
 
 ```yaml
 nginx (80/443) → admin (8789) + service (8792) + static files
-leaderboard-ws (8790/8791) — WebSocket 리더보드 실시간 푸시 + 쪽지/채팅
+chat-ws (8791) — 쪽지/채팅
 mysql (3306) — 메인 데이터베이스, 데이터 볼륨 영속화
 redis (6379) — 캐시/레이트 리밋/WebSocket/EventBus
 elasticsearch (9200) — 전문 검색
@@ -349,7 +348,6 @@ flowchart TB
         ADM2["admin :8789"]
         SVC1["service :8792"]
         SVC2["service :8792"]
-        WS1["leaderboard-ws :8790"]
         WS2["chat-ws :8791"]
     end
 
@@ -372,8 +370,10 @@ flowchart TB
 
 ## 7. 테스트 아키텍처
 
+> 참고: 아래 목록은 초기 표본입니다(파일 20개 · 테스트 200개). 현재 전체 수량은 파일 70개 · 테스트 593개입니다.
+
 ```
-tests/                             # 파일 21개 · 테스트 200개
+tests/                             # 파일 70개 · 테스트 593개
 ├── bootstrap.php                  # PHPUnit 부트스트랩
 ├── AuthControllerRegisterTest.php # 비밀번호 강도 테스트 15개
 ├── BackendEnhancementTest.php     # 암호화/ID 서비스 테스트 27개
@@ -403,7 +403,6 @@ tests/                             # 파일 21개 · 테스트 200개
 |------|------|------|
 | admin/ | 8789 | 관리 백오피스 API |
 | service/ | 8792 | C단 비즈니스 API |
-| leaderboard-ws | 8790 | WebSocket 실시간 리더보드 |
 | chat-ws | 8791 | WebSocket 쪽지/채팅 |
 | MySQL | 3306 | 메인 데이터베이스 |
 | Redis | 6379 | 캐시/레이트 리밋/WebSocket/EventBus |
@@ -417,7 +416,7 @@ tests/                             # 파일 21개 · 테스트 200개
 | 문서 | 주소 | 컨트롤러 | 엔드포인트 |
 |------|------|--------|------|
 | 관리 백오피스 | :8789/apidoc/ | 45 | 154 |
-| C단 비즈니스 | :8792/apidoc/ | 34 | 107 |
+| C단 비즈니스 | :8792/apidoc/ | 35 | 107 |
 
 ## 10. 데이터베이스 테이블 목록
 
@@ -460,7 +459,7 @@ game_share_link, game_aml_rule, game_aml_hit,
 game_kyc_level, game_user_kyc, game_user_trust,
 game_risk_cluster
 
-**총계: 78장 테이블**
+**총계: 79장 테이블**
 
 ## 11. 기능 스위치
 

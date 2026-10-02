@@ -119,7 +119,7 @@ return [
     'Phone verified' => 'ফোন যাচাই হয়েছে',
     'Play log not found' => 'গেম রেকর্ড পাওয়া যায়নি',
     'Please type yes to confirm account closure' => 'অ্যাকাউন্ট মুছতে নিশ্চিত করতে yes লিখুন',
-    'Privacy settings updated' => 'গোপনীয়তা সেটিংস হালনাগাদ হয়েছে',
+    'Privacy settings were not saved' => 'গোপনীয়তা সেটিংস সংরক্ষণ করা হয়নি',
     'Provider mismatch' => 'প্রদানকারী মিলছে না',
     'Reply sent' => 'উত্তর পাঠানো হয়েছে',
     'Request not found' => 'অনুরোধ পাওয়া যায়নি',

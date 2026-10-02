@@ -27,6 +27,8 @@ class RiskGraphController extends BaseController
     private const HOP_CAP = 50;
 
     #[Apidoc\Title("用户关联图谱")]
+    #[Apidoc\Url("/admin/v1/risk/graph/{userId}")]
+    #[Apidoc\Method("GET")]
     public function graph(Request $request, string $userId): Response
     {
         $rootId = $this->decodeId($userId);
@@ -119,6 +121,8 @@ class RiskGraphController extends BaseController
 
     #[Apidoc\Title("关联簇概览")]
     #[Apidoc\Desc("高账号数设备 TOP10 + 关联类型分布")]
+    #[Apidoc\Url("/admin/v1/risk/graph/clusters")]
+    #[Apidoc\Method("GET")]
     public function clusters(Request $request): Response
     {
         $devices = DeviceFingerprint::where('account_count', '>=', 2)

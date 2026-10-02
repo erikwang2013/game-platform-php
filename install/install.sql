@@ -29,7 +29,8 @@ CREATE TABLE IF NOT EXISTS `game_admin_user` (
     UNIQUE KEY `uk_username` (`username`),
     KEY `idx_status` (`status`),
     KEY `idx_deleted_at` (`deleted_at`),
-    KEY `idx_created_at` (`created_at`)
+    KEY `idx_created_at` (`created_at`),
+    KEY `idx_last_login_at` (`last_login_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='管理用户表';
 
 -- ============================================================
@@ -90,6 +91,8 @@ CREATE TABLE IF NOT EXISTS `game_admin_role_permission` (
 -- ============================================================
 -- 系统配置表
 -- ============================================================
+-- ⚠ 孤儿表：全仓 0 处 PHP 引用（2026-10-02 复核）。保留仅为兼容已部署实例；
+--    不要据本表推断系统具备对应能力。新增读取方前请先确认实现位置。
 CREATE TABLE IF NOT EXISTS `game_system_config` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `group` VARCHAR(50) NOT NULL DEFAULT 'default' COMMENT '配置分组标识',
@@ -147,7 +150,8 @@ CREATE TABLE IF NOT EXISTS `game_user` (
     KEY `idx_status` (`status`),
     KEY `idx_country` (`country`),
     KEY `idx_deleted_at` (`deleted_at`),
-    KEY `idx_created_at` (`created_at`)
+    KEY `idx_created_at` (`created_at`),
+    KEY `idx_last_login_at` (`last_login_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='C端用户表';
 
 -- ============================================================
@@ -204,6 +208,7 @@ CREATE TABLE IF NOT EXISTS `game_game` (
     `region` VARCHAR(10) NOT NULL DEFAULT 'global' COMMENT '运营区域: global/CN/US/EU/...',
     `status` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '状态: 0=下架 1=上架',
     `sort` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '排序值，越小越靠前',
+    `provider_config` JSON NULL COMMENT '第三方游戏接入配置(JSON)；两棵树的 GameProvider 都读它（admin/app/provider/GameProvider.php、service/app/provider/GameProvider.php）',
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
@@ -414,6 +419,8 @@ CREATE TABLE IF NOT EXISTS `game_platform_config` (
 -- ============================================================
 -- 语言定义表
 -- ============================================================
+-- ⚠ 孤儿表：全仓 0 处 PHP 引用（2026-10-02 复核）。保留仅为兼容已部署实例；
+--    不要据本表推断系统具备对应能力。新增读取方前请先确认实现位置。
 CREATE TABLE IF NOT EXISTS `game_language` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `code` VARCHAR(10) NOT NULL COMMENT '语言代码: en-US/zh-CN/ja-JP/ko-KR',
@@ -790,6 +797,8 @@ CREATE TABLE IF NOT EXISTS `game_account_account_link` (
 -- ============================================================
 -- 日统计快照表
 -- ============================================================
+-- ⚠ 孤儿表：全仓 0 处 PHP 引用（2026-10-02 复核）。保留仅为兼容已部署实例；
+--    不要据本表推断系统具备对应能力。新增读取方前请先确认实现位置。
 CREATE TABLE IF NOT EXISTS `game_stat_daily` (
     `id` BIGINT UNSIGNED NOT NULL,
     `date` DATE NOT NULL COMMENT '统计日期',
@@ -951,6 +960,8 @@ CREATE TABLE IF NOT EXISTS `game_user_kyc` (
 -- ============================================================
 -- AML 反洗钱规则表（L3 合规）
 -- ============================================================
+-- ⚠ 孤儿表：全仓 0 处 PHP 引用（2026-10-02 复核）。保留仅为兼容已部署实例；
+--    不要据本表推断系统具备对应能力。新增读取方前请先确认实现位置。
 CREATE TABLE IF NOT EXISTS `game_aml_rule` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `name` VARCHAR(100) NOT NULL COMMENT '规则名称，如: 单日充值超限(US)',
@@ -969,6 +980,8 @@ CREATE TABLE IF NOT EXISTS `game_aml_rule` (
 -- ============================================================
 -- AML 命中记录表（L3 合规）
 -- ============================================================
+-- ⚠ 孤儿表：全仓 0 处 PHP 引用（2026-10-02 复核）。保留仅为兼容已部署实例；
+--    不要据本表推断系统具备对应能力。新增读取方前请先确认实现位置。
 CREATE TABLE IF NOT EXISTS `game_aml_hit` (
     `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
     `rule_id` BIGINT UNSIGNED NOT NULL COMMENT '命中规则(game_aml_rule.id)',
@@ -1396,6 +1409,10 @@ INSERT IGNORE INTO `game_admin_permission` (`id`, `parent_id`, `name`, `slug`, `
 (21000000000000242, '0', '上传预处理', 'post.admin/aetherupload/preprocess', 3, '', '', 240, NOW(), NOW()),
 (21000000000000243, '0', '上传分块',   'post.admin/aetherupload/uploading',  3, '', '', 241, NOW(), NOW()),
 (21000000000000244, '0', '下载文件',   'get.admin/aetherupload/download',    3, '', '', 242, NOW(), NOW()),
+-- 平台用户「显式全号查看」：独立 POST 动作端点（POST /admin/v1/platform/user/{hashid}/reveal）。
+-- **刻意不复用** get.admin/platform/user（查看平台用户）：能看脱敏详情 ≠ 能看全号，
+-- 授予了前者不会顺带拿到后者。slug 由 AdminPermission 的归一算法实算（丢版本段 + 丢 {hashid} 占位段）。
+(21000000000000245, '0', '查看用户完整联系方式', 'post.admin/platform/user/reveal', 3, '', '', 243, NOW(), NOW()),
 -- 通配权限：slug='*' 直接命中 AdminPermission 中间件的短路分支，授予该角色访问全部端点
 (900000000000000001, '0', '全部权限', '*', 3, '', '', 99, NOW(), NOW());
 
@@ -1420,6 +1437,42 @@ INSERT IGNORE INTO `game_platform_config` (`id`, `group`, `key`, `value`, `type`
 INSERT IGNORE INTO `game_platform_config` (`id`, `group`, `key`, `value`, `type`, `description`) VALUES
 (60000000000000001, 'referral', 'signup_reward', '5.0000', 'decimal', '注册奖励(平台币)，推荐人和被推荐人各得'),
 (60000000000000002, 'referral', 'deposit_commission_pct', '5.00', 'decimal', '充值返佣比例(%)');
+
+-- 功能开关
+-- ⚠ 这 4 条与下面两组种子，2026-10-02 之前**只存在于 install/clickhouse.sql 里**（一份从未被执行的
+--   MySQL 脚本寄居在一个只喂 ClickHouse 的文件里）⇒ 全新安装出来是空的。与
+--   install/migrations/2026_08_27_ecosystem_expansion.sql **用同一批 ID** ⇒ 存量库先跑迁移再跑本文件时，
+--   INSERT IGNORE 按主键去重，两条路径收敛到同一结果。
+INSERT IGNORE INTO `game_platform_config` (`id`, `group`, `key`, `value`, `type`, `description`) VALUES
+(20260804000301, 'feature', 'tournament', 'off', 'string', 'Tournament system'),
+(20260804000302, 'feature', 'chat', 'off', 'string', 'Chat/WebSocket messaging'),
+(20260804000303, 'feature', 'vip', 'off', 'string', 'VIP loyalty system'),
+(20260804000304, 'feature', 'achievements', 'off', 'string', 'Achievement/badge system');
+
+-- VIP 等级定义（消费方：VipService::getNextLevel()、管理端 VipLevelController）
+-- ⚠ benefits 的三个键（exchange_discount / withdraw_fee_discount / rate_bonus）与 VipService
+--   现有三个 public 方法逐字对应 —— 改这里前先核那三个方法。
+INSERT IGNORE INTO `game_vip_level` (`id`, `level`, `name`, `required_exp`, `benefits`) VALUES
+(20260804000100, 1, 'Silver', 500, '{"exchange_discount":"0.02","withdraw_fee_discount":"0.10","rate_bonus":"0.001"}'),
+(20260804000101, 2, 'Gold', 2500, '{"exchange_discount":"0.05","withdraw_fee_discount":"0.30","rate_bonus":"0.003"}'),
+(20260804000102, 3, 'Platinum', 12500, '{"exchange_discount":"0.10","withdraw_fee_discount":"0.50","rate_bonus":"0.005"}'),
+(20260804000103, 4, 'Diamond', 62500, '{"exchange_discount":"0.15","withdraw_fee_discount":"1.00","rate_bonus":"0.010"}');
+
+-- 内置成就（消费方：service 的 AchievementService 按 condition_json->event 查定义并发成就）
+-- 这 12 条正是 README「12 个内置成就」所指的那批。
+INSERT IGNORE INTO `game_achievement` (`id`, `key`, `name`, `description`, `condition_json`, `points`) VALUES
+(20260804000201, 'first_deposit', 'First Deposit', 'Make your first deposit', '{"event":"deposit.completed","metric":"count","table":"game_deposit_order","threshold":1}', 20),
+(20260804000202, 'deposit_100', 'Century Club', 'Accumulate 100 in deposits', '{"event":"deposit.completed","metric":"sum","table":"game_deposit_order","sum_column":"platform_amount","threshold":100}', 50),
+(20260804000203, 'deposit_1000', 'High Roller', 'Accumulate 1000 in deposits', '{"event":"deposit.completed","metric":"sum","table":"game_deposit_order","sum_column":"platform_amount","threshold":1000}', 100),
+(20260804000204, 'first_exchange', 'Trader', 'Complete your first exchange', '{"event":"exchange.completed","metric":"count","table":"game_exchange_record","threshold":1}', 20),
+(20260804000205, 'exchange_100', 'Day Trader', 'Complete 100 exchanges', '{"event":"exchange.completed","metric":"count","table":"game_exchange_record","threshold":100}', 100),
+(20260804000206, 'play_3_games', 'Explorer', 'Play 3 different games', '{"event":"game.played","metric":"distinct_count","table":"game_game_play_log","distinct_column":"game_id","threshold":3}', 30),
+(20260804000207, 'play_5_games', 'Adventurer', 'Play 5 different games', '{"event":"game.played","metric":"distinct_count","table":"game_game_play_log","distinct_column":"game_id","threshold":5}', 50),
+(20260804000208, 'play_10_games', 'Conqueror', 'Play 10 different games', '{"event":"game.played","metric":"distinct_count","table":"game_game_play_log","distinct_column":"game_id","threshold":10}', 100),
+(20260804000209, 'login_7_days', 'Weekly Warrior', 'Login 7 days in a row', '{"event":"user.login","metric":"consecutive_days","threshold":7}', 30),
+(20260804000210, 'login_30_days', 'Monthly Master', 'Login 30 days in a row', '{"event":"user.login","metric":"consecutive_days","threshold":30}', 100),
+(20260804000211, 'invite_1', 'Connector', 'Invite 1 friend', '{"event":"referral.applied","metric":"count","table":"game_referral","column":"referrer_id","threshold":1}', 30),
+(20260804000212, 'invite_10', 'Influencer', 'Invite 10 friends', '{"event":"referral.applied","metric":"count","table":"game_referral","column":"referrer_id","threshold":10}', 100);
 
 -- 语言
 INSERT IGNORE INTO `game_language` (`id`, `code`, `name`, `native_name`, `icon`, `country_code`, `status`, `sort`) VALUES

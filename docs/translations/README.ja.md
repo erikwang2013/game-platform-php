@@ -63,7 +63,7 @@ game-platform-php/
 ├── admin/                     # 管理画面 (webman v2, デフォルトポート 8789, APP_PORT で変更可)
 │   ├── app/admin/v1/controller/  #   管理側コントローラ
 │   ├── app/middleware/        #   ミドルウェア (Cors/SecurityFilter/RateLimit/AdminAuth/AdminPermission/OperationLog)
-│   ├── app/model/             #   admin 専用モデル (8 個、残り 52 個の共有モデルは packages/ にあり)
+│   ├── app/model/             #   admin 専用モデル (6 個、残り 51 個の共有モデルは packages/ にあり)
 │   ├── app/service/           #   admin 専用サービス (WalletService/WalletScope/RiskSandboxService)
 │   ├── app/process/           #   常駐プロセス (Http/Monitor/RiskIpCron)
 │   ├── app/provider/          #   ゲーム Provider 層 (Self/ThirdParty/Factory)
@@ -79,19 +79,19 @@ game-platform-php/
 ├── service/                   # C側業務 (webman v2, デフォルトポート 8792, APP_PORT で変更可)
 │   ├── app/api/v1/controller/ #   C側 API コントローラー
 │   ├── app/middleware/        #   ミドルウェア (TraceId/Cors/SecurityFilter/RateLimit/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
-│   ├── app/model/             #   service 専用モデル (10 個、残り 52 個の共有モデルは packages/ にあり)
+│   ├── app/model/             #   service 専用モデル (10 個、残り 51 個の共有モデルは packages/ にあり)
 │   ├── app/service/           #   service 専用サービス (ウォレット/リスク/コンプライアンス/照合/プッシュ/実績/不正対策など)
 │   ├── app/payment/           #   18 個の決済ゲートウェイアダプタ (Stripe/PayPal/Adyen/NowPayments/Skrill…) + GatewayFactory
 │   ├── app/cdn/               #   5 社の CDN アダプタ (Cloudflare/CloudFront/Alibaba/Tencent/Huawei) + CdnFactory
-│   ├── app/process/           #   常駐プロセス (Http/Monitor/LeaderboardWS:8790/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
+│   ├── app/process/           #   常駐プロセス (Http/Monitor/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
 │   ├── app/provider/          #   ゲームProvider層
 │   ├── app/activity/          #   アクティビティエンジン
 │   ├── app/event/             #   イベントバス (EventBus Redis Pub/Sub)
 │   └── config/                #   設定ファイル
 │
 ├── packages/platform-common/  # 共有層: admin と service が composer path リポジトリ経由で取り込み、二重のコピーを避ける
-│   ├── src/model/             #   共有 Eloquent モデル (52 個、両側で同一ソース)
-│   ├── src/service/           #   共有サービス (DepositLogService / VipService など 11 個、ClickHouse 確率計算を含む)
+│   ├── src/model/             #   共有 Eloquent モデル (51 個、両側で同一ソース)
+│   ├── src/service/           #   共有サービス (DepositLogService / VipService など 12 個、ClickHouse 確率計算とインフラストラクチャクラス 2 個 EventPublisher/OutboxWriter を含む)
 │   ├── src/BcMath.php         #   金額/レートの高精度演算 (bcmath ラッパー)、四捨五入、パーセント
 │   ├── src/EncryptionService.php  #   AES 暗号化/復号とマスキング
 │   ├── src/CircuitBreaker.php #   サーキットブレーカー (加えて Retry.php による再試行)
@@ -109,7 +109,7 @@ game-platform-php/
 ├── install/                   # ワンクリックインストールウィザード + データベース初期化 SQL
 │   ├── index.php              #   インストールエントリー
 │   ├── Installer.php          #   インストールのコアロジック
-│   ├── install.sql            #   統合インストール SQL（78テーブル+シードデータ）
+│   ├── install.sql            #   統合インストール SQL（79テーブル+シードデータ）
 │   ├── clickhouse.sql         #   ClickHouse 分析用 DDL (独立エンジン、個別にインポート)
 │   ├── test-data.sql          #   デモ/テストデータ
 │   ├── migrations/            #   既存データベース向け増分アップグレードスクリプト (*.sql)
@@ -178,7 +178,7 @@ rm -rf install/
 
 インストールウィザードが自動的に実行する内容：
 - 環境チェック（PHPバージョン、拡張機能、ディレクトリ権限）
-- データベースとテーブルの作成（統合SQL、78テーブル + シードデータ）
+- データベースとテーブルの作成（統合SQL、79テーブル + シードデータ）
 - スーパー管理者アカウントの作成（bcrypt 暗号化）
 - JWT/暗号化キーの自動生成と .env ファイルへの書き込み
 - install.lock を生成して再インストールを防止
@@ -333,7 +333,7 @@ cd admin/apps/flutter && flutter test --timeout 300s
 | KYC | 実名認証の提出+審査、承認後に出金限度額を引き上げ |
 | ゲーム | CRUD + カテゴリ(10種) + サーバー区分 + ゲーム記録トラッキング |
 | 検索 | Elasticsearch 全文検索(LIKE フォールバック含む) |
-| ランキング | 日/週/月/総合ランキング、Redisキャッシュ、WebSocketリアルタイム配信（デフォルトポート 8790、LEADERBOARD_WS_PORT で変更可） |
+| ランキング | 日/週/月/総合ランキング、Redisキャッシュ |
 | CDN | 5社プロバイダー連携 (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS アップロード+パージ+プリロード) + 管理画面での設定/有効無効/接続テスト |
 | クーポン | 固定額+比率割引、期間・数量限定、獲得・使用の追跡 |
 | 通知 | サイト内メッセージ+メール、入金/出金/KYC/クーポンの自動通知 |

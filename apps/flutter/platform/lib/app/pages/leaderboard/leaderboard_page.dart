@@ -5,6 +5,28 @@ import '../../i18n/translations.dart';
 import '../../services/api_helpers.dart';
 import '../../services/api_service.dart';
 
+/// 榜单区域的四态：加载中 / 取数失败（可重试）/ 空（真没人上榜）/ 有数据。
+/// 旧代码把失败静默折成空列表，页面把「拉取失败」渲染成「暂无排名」，
+/// 用户看到的是数据结论，实际是请求失败。
+enum RankingView { loading, failed, empty, data }
+
+RankingView rankingViewOf({required bool loading, required String? error, required int count}) {
+  if (loading) return RankingView.loading;
+  if (error != null) return RankingView.failed;
+  return count == 0 ? RankingView.empty : RankingView.data;
+}
+
+/// 身份列只展示末 4 个字符（与两棵 web 树的 `maskedId` 同形）。
+///
+/// 榜单条目只有 rank / user_id / score —— **没有昵称**，所以这一列先天只能显示编号；
+/// 而 `user_id` 自 2026-10-02 起是 **hashid 字符串**（服务端出网前逐行 `encodeId`，
+/// 此前是裸数据库整数）。末 4 位是字母数字混排，取的是**字符**不是数字位。
+String maskUserId(dynamic raw) {
+  final s = '${raw ?? ''}';
+  if (s.isEmpty) return '-';
+  return '#···${s.length <= 4 ? s : s.substring(s.length - 4)}';
+}
+
 class LeaderboardPage extends StatefulWidget {
   const LeaderboardPage({super.key});
 
@@ -21,6 +43,8 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
   bool _loading = true;
   bool _rankingLoading = false;
   String? _error;
+  /// 榜单取数失败的原因：与「真没人上榜」分开（失败要能重试）
+  String? _rankingError;
 
   @override
   void initState() {
@@ -61,6 +85,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
       _selectedId = id;
       _selectedName = name;
       _rankingLoading = true;
+      _rankingError = null;
     });
     try {
       final resp = await _api.get('/api/v1/leaderboard/$id');
@@ -70,11 +95,64 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
         _ranking = ApiHelpers.extractList(ranks is List ? ranks : data);
         _rankingLoading = false;
       });
+    } on ApiException catch (e) {
+      setState(() {
+        _ranking = [];
+        _rankingError = e.message;
+        _rankingLoading = false;
+      });
     } catch (_) {
       setState(() {
         _ranking = [];
+        _rankingError = '${AppTranslations.t('app.network_error')}';
         _rankingLoading = false;
       });
+    }
+  }
+
+  Widget _buildRanking() {
+    switch (rankingViewOf(loading: _rankingLoading, error: _rankingError, count: _ranking.length)) {
+      case RankingView.loading:
+        return const Center(child: CircularProgressIndicator());
+      case RankingView.failed:
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(_rankingError!, style: const TextStyle(color: Colors.red)),
+              const SizedBox(height: 12),
+              FilledButton.tonal(
+                onPressed: _selectedId == null ? null : () => _loadRanking(_selectedId!, _selectedName ?? ''),
+                child: Text('${AppTranslations.t('app.retry')}'),
+              ),
+            ],
+          ),
+        );
+      case RankingView.empty:
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset('assets/mascot.png', width: 120),
+              const SizedBox(height: 12),
+              Text('${AppTranslations.t('leaderboard.empty')}'),
+            ],
+          ),
+        );
+      case RankingView.data:
+        return ListView.builder(
+          itemCount: _ranking.length,
+          itemBuilder: (_, i) {
+            final row = _ranking[i];
+            return ListTile(
+              leading: CircleAvatar(child: Text('${row['rank'] ?? i + 1}')),
+              // 原先这里是 `row['username'] ?? row['user_id']`：`username` 后端从来不下发
+              // （`LeaderboardController::ranking` 只拼 rank/user_id/score），是条死分支。
+              title: Text(maskUserId(row['user_id'])),
+              trailing: Text('${row['score'] ?? ''}'),
+            );
+          },
+        );
     }
   }
 
@@ -138,32 +216,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                               child: Text(_selectedName!, style: const TextStyle(fontWeight: FontWeight.w600)),
                             ),
                           ),
-                        Expanded(
-                          child: _rankingLoading
-                              ? const Center(child: CircularProgressIndicator())
-                              : _ranking.isEmpty
-                                  ? Center(
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Image.asset('assets/mascot.png', width: 120),
-                                          const SizedBox(height: 12),
-                                          Text('${AppTranslations.t('leaderboard.empty')}'),
-                                        ],
-                                      ),
-                                    )
-                                  : ListView.builder(
-                                      itemCount: _ranking.length,
-                                      itemBuilder: (_, i) {
-                                        final row = _ranking[i];
-                                        return ListTile(
-                                          leading: CircleAvatar(child: Text('${row['rank'] ?? i + 1}')),
-                                          title: Text('${row['username'] ?? row['user_id'] ?? '-'}'),
-                                          trailing: Text('${row['score'] ?? ''}'),
-                                        );
-                                      },
-                                    ),
-                        ),
+                        Expanded(child: _buildRanking()),
                       ],
                     ),
     );

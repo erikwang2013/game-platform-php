@@ -157,6 +157,7 @@ export const esUi: Record<UiKey, string> = {
   'form.options_load_failed': 'No se pudieron cargar las opciones de {name}; el valor seleccionado sigue visible, pero no envíes el formulario a menos que lo dejes sin cambios',
   'form.tree_load_failed': 'No se pudo cargar el árbol de permisos de {name}; los permisos seleccionados siguen visibles, pero no envíes el formulario a menos que los dejes sin cambios',
   'form.tree_loading': 'Cargando el árbol de permisos…',
+  'form.discard_confirm': '¿Descartar los cambios sin guardar?',
   'form.select_placeholder': 'Selecciona una opción',
   // Opciones del desplegable de permiso padre (lib/tree.ts aplana el árbol de permisos):
   // la clave tiene dos **formas** (con slug / sin slug); la ruta y el slug van por params

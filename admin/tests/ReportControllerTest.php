@@ -19,7 +19,6 @@ class ReportControllerTest extends TestCase
     private function callPrivate(string $method, ...$args): mixed
     {
         $m = new \ReflectionMethod(ReportController::class, $method);
-        $m->setAccessible(true);
         return $m->invoke(new ReportController(), ...$args);
     }
 

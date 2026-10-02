@@ -1668,7 +1668,7 @@ POST /admin/v1/upload
 
 ### Docker Compose
 
-В корне проекта есть `docker-compose.yml` с оркестрацией 7 сервисов (Nginx, admin, service, leaderboard-ws, MySQL, Redis, Elasticsearch). PHP собирается через `Dockerfile` (на базе `php:8.3-cli`, включен OPcache).
+В корне проекта есть `docker-compose.yml` с оркестрацией 7 сервисов (Nginx, admin, service, chat-ws, MySQL, Redis, Elasticsearch). PHP собирается через `Dockerfile` (на базе `php:8.3-cli`, включен OPcache).
 
 ```bash
 cp .env.example .env
@@ -1948,7 +1948,7 @@ DELETE /admin/v1/payment/method/{hashid}
 
 ## 19. Расширенные административные эндпоинты (Extended Admin APIs)
 
-Ниже 20 эндпоинтов сгруппированы в 6 разделов; все они относятся к административным эндпоинтам `/admin/v1` и требуют аутентификации JWT и проверки прав RBAC.
+Ниже 21 эндпоинтов сгруппированы в 6 разделов; все они относятся к административным эндпоинтам `/admin/v1` и требуют аутентификации JWT и проверки прав RBAC.
 
 ### 19.1 Пакетная проверка и выплата выводов
 

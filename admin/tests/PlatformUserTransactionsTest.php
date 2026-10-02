@@ -159,7 +159,7 @@ final class PlatformUserTransactionsTest extends TestCase
     #[Test]
     public function refIdZeroComesBackAsNullNotAsEncodedZero(): void
     {
-        // game_transaction.ref_id 是 NOT NULL DEFAULT 0（DDL:install.sql:325）：无关联单据的流水
+        // game_transaction.ref_id 是 NOT NULL DEFAULT 0（DDL: install.sql 的 game_transaction 建表段）：无关联单据的流水
         // 存的是 0。契约要的是 null（C 端同款），吐 hashid(0) 会让前端渲染出一个不存在的单据号。
         $this->seed($this->userId, 'deposit', '5.00000000');
 

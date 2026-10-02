@@ -20,7 +20,7 @@ use support\Request;
  * DELETE /admin/v1/vip/level/{hashid} 的「等级被占用则不可删」守卫。
  *
  * 旧实现查的是 `UserVip::where('vip_level', $vl->level)`，而 `game_user_vip` 的列是
- * `id / user_id / level / exp / total_exp`（install.sql:1733-1741）—— **没有 `vip_level`**。
+ * `id / user_id / level / exp / total_exp`（install.sql:1797-1801）—— **没有 `vip_level`**。
  * MySQL 抛 SQLSTATE 42S22 ⇒ 整个端点**永远 500**（不是"返回 422 之外的错"，是根本没走到守卫），
  * 于是下面那条「该等级下还有 N 个用户，不可删除」成了**死代码**，谁也走不到。
  *

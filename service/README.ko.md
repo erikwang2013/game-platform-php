@@ -17,7 +17,7 @@ C측 사용자 플랫폼 API 서비스. webman v2(Workerman) 기반의 고성능
 | 출금 | 신청 → 심사 → 지급, KYC 단계별 한도 |
 | 환전 | 플랫폼 코인 ⇄ 게임 코인 실시간 견적, VIP 할인 및 환율 가산 |
 | 게임 | 게임 목록/카테고리/검색, 플레이 기록, Provider 정산 콜백 |
-| 랭킹 | 일간/주간/월간/전체 + WebSocket 실시간 푸시 |
+| 랭킹 | 일간/주간/월간/전체 (REST) |
 | 쿠폰 | 고정 금액 + 비율 할인, 기간·수량 한정 |
 | 티켓 | 사용자의 고객센터 티켓 생성/답변 |
 | VIP | 5단계 로열티, 경험치 누적, 환전 할인 |
@@ -40,7 +40,7 @@ C측 사용자 플랫폼 API 서비스. webman v2(Workerman) 기반의 고성능
 service/
 ├── app/
 │   ├── activity/           # 활동 핸들러
-│   ├── api/v1/controller/  # C측 API 컨트롤러(34개)
+│   ├── api/v1/controller/  # C측 API 컨트롤러(35개)
 │   ├── bootstrap/          # 알림 부트스트랩
 │   ├── cdn/                # CDN 멀티 벤더 (Alibaba Cloud/Tencent Cloud/Huawei Cloud/Cloudflare/CloudFront + CdnFactory)
 │   ├── common/             # 공통
@@ -96,7 +96,7 @@ cp .env.example .env
 # 3. 서비스 시작(기본 포트 8792, .env에서 APP_PORT로 변경 가능)
 php start.php start        # 포그라운드
 php start.php start -d     # 백그라운드
-# WebSocket 포트(랭킹 8790 / 채팅 8791)는 .env에서 LEADERBOARD_WS_PORT / CHAT_WS_PORT로 변경 가능
+# WebSocket 포트(채팅 8791)는 .env에서 CHAT_WS_PORT로 변경 가능
 ```
 
 ## 사용 방법

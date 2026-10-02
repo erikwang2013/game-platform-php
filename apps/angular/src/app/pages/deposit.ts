@@ -12,6 +12,7 @@ import {
   moneyIsZero,
   moneyRaw,
 } from '../core/api.service';
+import { Mt, Msg, T, t } from '../core/i18n/i18n';
 
 /** 后端支持的 8 种法币（DepositController 的 in: 白名单） */
 const CURRENCIES = ['USD', 'CNY', 'EUR', 'JPY', 'KRW', 'GBP', 'BRL', 'INR'];
@@ -19,84 +20,84 @@ const CURRENCIES = ['USD', 'CNY', 'EUR', 'JPY', 'KRW', 'GBP', 'BRL', 'INR'];
 /** 充值：选支付方式 + 币种 + 金额 → 创建订单 → 打开收银台 */
 @Component({
   selector: 'app-deposit',
-  imports: [RouterLink],
+  imports: [RouterLink, T, Mt],
   template: `
-    <a class="btn ghost back" routerLink="/wallet">← 返回钱包</a>
+    <a class="btn ghost back" routerLink="/wallet">{{ 'common.back_wallet' | t }}</a>
 
     @if (done(); as d) {
       <div class="card stack">
         <div class="between">
-          <span class="label">订单已创建</span>
-          <span class="badge warn">待支付</span>
+          <span class="label">{{ 'deposit.created' | t }}</span>
+          <span class="badge warn">{{ 'status.dep.pending' | t }}</span>
         </div>
         <div class="kv">
-          <span class="muted">订单号</span><span class="mono">{{ d.order_no }}</span>
+          <span class="muted">{{ 'common.order_no' | t }}</span><span class="mono">{{ d.order_no }}</span>
         </div>
         <div class="kv">
-          <span class="muted">充值金额</span
+          <span class="muted">{{ 'deposit.amount_label' | t }}</span
           ><span class="mono" [title]="moneyRaw(d.amount)"
             >{{ money(d.amount) }} {{ currency() }}</span
           >
         </div>
         <div class="kv">
-          <span class="muted">到账平台币</span
+          <span class="muted">{{ 'deposit.credit' | t }}</span
           ><span class="mono" [title]="moneyRaw(d.platform_amount)">{{
             money(d.platform_amount)
           }}</span>
         </div>
         @if (d.expires_at) {
           <div class="kv">
-            <span class="muted">支付截止</span><span class="mono">{{ dt(d.expires_at) }}</span>
+            <span class="muted">{{ 'deposit.expires' | t }}</span><span class="mono">{{ dt(d.expires_at) }}</span>
           </div>
         }
 
         @if (safeUrl(); as u) {
           <a class="btn primary wide" [href]="u" target="_blank" rel="noopener noreferrer"
-            >前往支付</a
+            >{{ 'deposit.go_pay' | t }}</a
           >
-          <p class="muted hint">付款需在收银台完成；若未自动打开，请点上方按钮。</p>
+          <p class="muted hint">{{ 'deposit.pay_hint' | t }}</p>
         } @else if (unsafeUrl()) {
           <div class="alert">
-            支付链接协议异常，未自动跳转。请复制下方链接、核对无误后自行打开。
+            {{ 'deposit.bad_link' | t }}
           </div>
           <label class="field">
-            <span>支付链接</span>
+            <span>{{ 'deposit.pay_link' | t }}</span>
             <input class="input mono" readonly [value]="unsafeUrl()" (focus)="select($event)" />
           </label>
         }
 
         <div class="wrap">
-          <a class="btn" routerLink="/wallet">查看充值订单</a>
-          <button class="btn ghost" type="button" (click)="again()">再充一笔</button>
+          <a class="btn" routerLink="/wallet">{{ 'deposit.view_orders' | t }}</a>
+          <button class="btn ghost" type="button" (click)="again()">{{ 'deposit.again' | t }}</button>
         </div>
       </div>
     } @else {
       <div class="card form">
         <div>
-          <span class="label">充值</span>
-          <h1>购买平台币</h1>
+          <span class="label">{{ 'wallet.deposit' | t }}</span>
+          <h1>{{ 'deposit.title' | t }}</h1>
         </div>
 
         <label class="field">
-          <span>支付方式</span>
+          <span>{{ 'deposit.method' | t }}</span>
           <select
             class="input"
             [disabled]="methodsBusy() || !methods().length"
             (change)="methodId.set($any($event.target).value)"
           >
             @if (!methods().length) {
-              <option value="">{{ methodsBusy() ? '加载中…' : '暂无可用支付方式' }}</option>
+              <option value="">{{ (methodsBusy() ? 'common.loading' : 'deposit.no_methods') | t }}</option>
             }
             @for (m of methods(); track m.id) {
               <option [value]="m.id" [selected]="m.id === methodId()">
-                {{ m.name }}（{{ limit(m) }}）
+                {{ 'deposit.method_option' | t: { name: m.name, limit: limit(m) } }}
               </option>
             }
           </select>
         </label>
 
         <label class="field">
-          <span>币种</span>
+          <span>{{ 'deposit.currency' | t }}</span>
           <select class="input" (change)="pickCurrency($any($event.target).value)">
             @for (c of currencies; track c) {
               <option [value]="c" [selected]="c === currency()">{{ c }}</option>
@@ -105,7 +106,7 @@ const CURRENCIES = ['USD', 'CNY', 'EUR', 'JPY', 'KRW', 'GBP', 'BRL', 'INR'];
         </label>
 
         <label class="field">
-          <span>金额（{{ currency() }}）</span>
+          <span>{{ 'deposit.amount_with_cur' | t: { cur: currency() } }}</span>
           <input
             class="input mono"
             inputmode="decimal"
@@ -115,18 +116,18 @@ const CURRENCIES = ['USD', 'CNY', 'EUR', 'JPY', 'KRW', 'GBP', 'BRL', 'INR'];
             (input)="onAmount($event)"
           />
           @if (amountError()) {
-            <span class="err">{{ amountError() }}</span>
+            <span class="err">{{ amountError() | mt }}</span>
           }
         </label>
 
         @if (methodsError()) {
           <div class="alert">
             {{ methodsError() }}
-            <button class="btn ghost" type="button" (click)="loadMethods()">重试</button>
+            <button class="btn ghost" type="button" (click)="loadMethods()">{{ 'common.retry' | t }}</button>
           </div>
         }
         @if (error()) {
-          <div class="alert">{{ error() }}</div>
+          <div class="alert">{{ error() | mt }}</div>
         }
 
         <button
@@ -135,9 +136,9 @@ const CURRENCIES = ['USD', 'CNY', 'EUR', 'JPY', 'KRW', 'GBP', 'BRL', 'INR'];
           [disabled]="busy() || !methodId()"
           (click)="submit()"
         >
-          {{ busy() ? '提交中…' : '去支付' }}
+          {{ (busy() ? 'common.submitting' : 'deposit.submit') | t }}
         </button>
-        <p class="muted hint">订单有效期 1 小时，请在此期间完成付款。</p>
+        <p class="muted hint">{{ 'deposit.validity' | t }}</p>
       </div>
     }
   `,
@@ -182,8 +183,10 @@ export class DepositPage {
 
   protected readonly currency = signal('USD');
   protected readonly amount = signal('');
-  protected readonly amountError = signal('');
-  protected readonly error = signal('');
+  /** 两态（服务端原文 / 词条键）—— 见 `core/i18n/i18n.ts` 的 `Msg`；同信号的每个写入点都走这两态 */
+  protected readonly amountError = signal<Msg>('');
+  /** 两态（服务端原文 / 词条键）—— 见 `core/i18n/i18n.ts` 的 `Msg`；同信号的每个写入点都走这两态 */
+  protected readonly error = signal<Msg>('');
   protected readonly busy = signal(false);
   protected readonly done = signal<DepositCreated | null>(null);
 
@@ -234,7 +237,7 @@ export class DepositPage {
   protected limit(m: PaymentMethodInfo): string {
     // 原先这里写 `Number(m.max_amount) > 0` —— 金额列过数值转型，本批明令禁止；改走
     // moneyIsZero（同 money() 的字符串判据）。原样保留「不限」的取值分支。
-    const max = moneyIsZero(m.max_amount) ? '不限' : money(m.max_amount);
+    const max = moneyIsZero(m.max_amount) ? t('common.unlimited') : money(m.max_amount);
     return `${money(m.min_amount)} ~ ${max}`;
   }
 
@@ -245,15 +248,15 @@ export class DepositPage {
   protected submit(): void {
     const amount = this.amount().trim();
     if (!amount) {
-      this.amountError.set('请输入充值金额');
+      this.amountError.set({ key: 'deposit.err_amount_required' });
       return;
     }
     if (!depositAmountOk(amount, this.currency())) {
-      this.amountError.set('金额格式不支持：JPY/KRW 不支持小数，其余币种最多 2 位小数');
+      this.amountError.set({ key: 'deposit.err_amount_format' });
       return;
     }
     if (!this.methodId()) {
-      this.error.set('请先选择支付方式');
+      this.error.set({ key: 'deposit.err_method_required' });
       return;
     }
 
@@ -277,7 +280,7 @@ export class DepositPage {
         error: (e: ApiError) => {
           this.busy.set(false);
           this.error.set(
-            e.code === 502 ? `${e.message}（支付网关暂时不可用，请稍后重试）` : e.message,
+            e.code === 502 ? { key: 'deposit.err_gateway', params: { msg: e.message } } : e.message,
           );
         },
       });

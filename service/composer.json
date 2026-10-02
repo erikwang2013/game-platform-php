@@ -4,7 +4,7 @@
   "type": "project",
   "license": "MIT",
   "require": {
-    "php": ">=8.1",
+    "php": ">=8.3",
     "workerman/webman-framework": "^2.1",
     "monolog/monolog": "^2.0",
     "erikwang2013/snowflake-php": "^2.0",
@@ -68,6 +68,9 @@
       "erikwang2013/webman-scout": true,
       "erikwang2013/encryption": true,
       "erikwang2013/security-php": true
+    },
+    "platform": {
+      "php": "8.3.0"
     }
   },
   "minimum-stability": "dev",

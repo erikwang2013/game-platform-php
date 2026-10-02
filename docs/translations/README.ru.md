@@ -63,7 +63,7 @@ game-platform-php/
 ├── admin/                     # Административная панель (webman v2, порт по умолчанию 8789, настраивается через APP_PORT)
 │   ├── app/admin/v1/controller/  #   Контроллеры административной части
 │   ├── app/middleware/        #   Промежуточное ПО (Cors/SecurityFilter/RateLimit/AdminAuth/AdminPermission/OperationLog)
-│   ├── app/model/             #   Модели только для admin (8; остальные 52 общих модели — в packages/)
+│   ├── app/model/             #   Модели только для admin (6; остальные 51 общих модели — в packages/)
 │   ├── app/service/           #   Сервисы только для admin (WalletService/WalletScope/RiskSandboxService)
 │   ├── app/process/           #   Постоянные процессы (Http/Monitor/RiskIpCron)
 │   ├── app/provider/          #   Слой игровых провайдеров (Self/ThirdParty/Factory)
@@ -79,19 +79,19 @@ game-platform-php/
 ├── service/                   # C-бизнес (webman v2, порт по умолчанию 8792, настраивается через APP_PORT)
 │   ├── app/api/v1/controller/ #   API-контроллеры C-стороны
 │   ├── app/middleware/        #   Промежуточное ПО (TraceId/Cors/SecurityFilter/RateLimit/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
-│   ├── app/model/             #   Модели только для service (10; остальные 52 общих модели — в packages/)
+│   ├── app/model/             #   Модели только для service (10; остальные 51 общих модели — в packages/)
 │   ├── app/service/           #   Сервисы только для service (кошелёк/риски/комплаенс/сверка/push/достижения/антифрод и т. д.)
 │   ├── app/payment/           #   18 адаптеров платёжных шлюзов (Stripe/PayPal/Adyen/NowPayments/Skrill…) + GatewayFactory
 │   ├── app/cdn/               #   CDN-адаптеры пяти провайдеров (Cloudflare/CloudFront/Alibaba/Tencent/Huawei) + CdnFactory
-│   ├── app/process/           #   Постоянные процессы (Http/Monitor/LeaderboardWS:8790/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
+│   ├── app/process/           #   Постоянные процессы (Http/Monitor/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
 │   ├── app/provider/          #   Слой игровых провайдеров
 │   ├── app/activity/          #   Движок активностей
 │   ├── app/event/             #   Шина событий (EventBus Redis Pub/Sub)
 │   └── config/                #   Файлы конфигурации
 │
 ├── packages/platform-common/  # Общий слой: admin и service подключают его через composer path-репозиторий, чтобы избежать двух копий
-│   ├── src/model/             #   Общие Eloquent-модели (52, один источник для обеих сторон)
-│   ├── src/service/           #   Общие сервисы (DepositLogService / VipService и др., 11 штук, включая вычисление вероятностей в ClickHouse)
+│   ├── src/model/             #   Общие Eloquent-модели (51, один источник для обеих сторон)
+│   ├── src/service/           #   Общие сервисы (DepositLogService / VipService и др., 12 штук, включая вычисление вероятностей в ClickHouse и 2 инфраструктурных класса EventPublisher/OutboxWriter)
 │   ├── src/BcMath.php         #   Высокоточные вычисления сумм/курсов (обёртка над bcmath), округление, проценты
 │   ├── src/EncryptionService.php  #   Шифрование/расшифровка AES и маскирование
 │   ├── src/CircuitBreaker.php #   Предохранитель (плюс Retry.php для повторов)
@@ -109,7 +109,7 @@ game-platform-php/
 ├── install/                   # Мастер установки в один клик + SQL инициализации базы данных
 │   ├── index.php              #   Точка входа установки
 │   ├── Installer.php          #   Основная логика установки
-│   ├── install.sql            #   Объединенный SQL установки (78 таблиц + стартовые данные)
+│   ├── install.sql            #   Объединенный SQL установки (79 таблиц + стартовые данные)
 │   ├── clickhouse.sql         #   DDL аналитической базы ClickHouse (отдельный движок, импортируется отдельно)
 │   ├── test-data.sql          #   Демонстрационные/тестовые данные
 │   ├── migrations/            #   Скрипты инкрементального обновления существующих баз (*.sql)
@@ -178,7 +178,7 @@ rm -rf install/
 
 Мастер установки автоматически выполнит:
 - Проверку окружения (версия PHP, расширения, права на каталоги)
-- Создание базы данных и таблиц (объединенный SQL, 78 таблиц + стартовые данные)
+- Создание базы данных и таблиц (объединенный SQL, 79 таблиц + стартовые данные)
 - Создание аккаунта супер-администратора (шифрование bcrypt)
 - Автоматическую генерацию JWT/ключей шифрования и запись в файл .env
 - Создание install.lock для предотвращения повторной установки
@@ -333,7 +333,7 @@ cd admin/apps/flutter && flutter test --timeout 300s
 | KYC | Подача и проверка верификации личности, повышает лимит вывода после одобрения |
 | Игры | CRUD + категории (10 категорий) + серверы + отслеживание игровых записей |
 | Поиск | Полнотекстовый поиск Elasticsearch (с откатом на LIKE) |
-| Рейтинги | Дневной/недельный/месячный/общий, кэш Redis, push в реальном времени по WebSocket (порт по умолчанию 8790, настраивается через LEADERBOARD_WS_PORT) |
+| Рейтинги | Дневной/недельный/месячный/общий, кэш Redis |
 | CDN | Интеграция пяти провайдеров (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS загрузка + очистка кэша + прогрев) + настройка/включение/проверка соединения в админ-панели |
 | Купоны | Фиксированная сумма + процентная скидка, ограничение по времени и количеству, отслеживание выдачи и использования |
 | Уведомления | Внутренние сообщения + email, автоуведомления о пополнении/выводе/KYC/купонах |
