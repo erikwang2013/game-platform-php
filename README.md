@@ -487,6 +487,36 @@ SVG / PNG）**不是开源资产**，版权归作者所有。未经书面许可�
 > 代码部分仍遵循仓库原有 `LICENSE`；第三方素材（如明确标注的 Go Gopher 等）仍遵循其原许可证。
 <!-- assets-license:end -->
 
+## 开源版 vs 商业版
+
+本项目开源仓库保留可独立运行的游戏聚合平台核心能力；商业版面向需要完整运营工具、多端交付和商业授权的场景。
+
+### 规模对比
+
+| 维度 | 开源版 | 商业版 |
+|---|---|---|
+| PHP 源文件 | 404 | 438 |
+| 控制器 | 75 | 82 |
+| 数据模型 | 55 | 67 |
+| 路由注册 | 260 | 291 |
+| 数据表 | 68 | 80 |
+| 管理端 | React 19 + Flutter | React 19 + Angular 21 + Flutter + HarmonyOS |
+| C 端 | React 19 + Flutter | React 19 + Angular 21 + Flutter + HarmonyOS |
+
+### 商业版额外能力
+
+- **运营营销**：优惠券（领取 / 核销 / 统计）、赛事、组队 / 公会、成就体系。
+- **财务与基础设施**：对账 / 结算（批次 / 账单 / 差异）、CDN 五厂商管理（Cloudflare / CloudFront / 阿里云 / 腾讯云 / 华为云）。
+- **多端交付**：Angular 21 与 HarmonyOS ArkTS 的管理端、C 端源码各一套。
+- 上述模块均包含对应数据库表、后台菜单 / 权限、API 路由与前端页面。
+
+### 开源版保留能力
+
+游戏聚合、Provider 接入、钱包 / 支付、风控 / 反作弊、活动引擎、VIP / 工单、ClickHouse 报表、RBAC、审计、多语言，以及 React + Flutter 两套客户端。
+
+> 商业版授权与交付条款请联系 **erik@erik.xyz**。未经书面授权，禁止任何形式的商业使用。
+
+**English:** The open-source edition keeps the core game aggregation platform with React/Flutter clients. The commercial edition adds coupons, tournaments, groups, achievements, reconciliation/settlement, CDN provider management, and Angular/HarmonyOS clients for both admin and C-end, with matching tables, permissions and routes. Commercial licensing: **erik@erik.xyz**.
 
 ## 项目授权 / Project License
 
