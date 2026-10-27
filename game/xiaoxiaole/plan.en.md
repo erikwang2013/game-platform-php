@@ -1,7 +1,7 @@
 # Pastoral Match-3 — Development Plan
 <!-- lang-nav -->
 
-Languages: [中文](plan.md) · **English** · [한국어](plan.ko.md) · [Русский](plan.ru.md) · [Deutsch](plan.de.md) · [Français](plan.fr.md) · [Español](plan.es.md) · [Português](plan.pt.md) · [हिन्दी](plan.hi.md) · [العربية](plan.ar.md) · [বাংলা](plan.bn.md) · [Bahasa Indonesia](plan.id.md) · [日本語](plan.ja.md)
+Languages: [中文](plan.md) · **English**
 
 
 > Turning the vision (`design.md`) into something schedulable. Feature details follow `functional-design.md`, technical constraints follow `architecture.md`.

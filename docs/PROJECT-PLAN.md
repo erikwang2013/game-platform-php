@@ -1,7 +1,7 @@
 # 项目全面规划 (Project Plan)
 <!-- lang-nav -->
 
-Languages: **中文** · [English](PROJECT-PLAN.en.md) · [한국어](PROJECT-PLAN.ko.md) · [Русский](PROJECT-PLAN.ru.md) · [Deutsch](PROJECT-PLAN.de.md) · [Français](PROJECT-PLAN.fr.md) · [Español](PROJECT-PLAN.es.md) · [Português](PROJECT-PLAN.pt.md) · [हिन्दी](PROJECT-PLAN.hi.md) · [العربية](PROJECT-PLAN.ar.md) · [বাংলা](PROJECT-PLAN.bn.md) · [Bahasa Indonesia](PROJECT-PLAN.id.md) · [日本語](PROJECT-PLAN.ja.md)
+Languages: **中文** · [English](PROJECT-PLAN.en.md)
 
 
 > 生成日期: 2026-08-16 · 基于 6 人团队 (researcher/architect/backend-dev/frontend-dev/tester/reviewer) 只读盘点 + 关键论断实测验证

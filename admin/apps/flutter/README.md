@@ -1,11 +1,10 @@
 # admin_app — 管理后台 Web 前端（Flutter）
 <!-- lang-nav -->
 
-Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+Languages: **中文** · [English](README.en.md)
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
-基于 Flutter 3.x 的管理后台 Web 前端，采用经典 PC 后台布局（侧边栏 + 顶栏 + 内容区），覆盖游戏平台运营所需的全部管理页面：仪表盘、用户、角色权限、游戏、支付、提现、VIP、成就、公告、CDN、风控、实名认证、操作日志等。
 
 ## 功能清单
 
@@ -23,9 +22,7 @@ Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) ·
 | 支付管理 | 充值订单、支付方式与回调日志 |
 | 提现管理 | 提现审核与打款 |
 | VIP 管理 | VIP 等级与权益配置 |
-| 成就管理 | 成就定义与进度查看 |
 | 公告管理 | 公告发布与上下线 |
-| CDN 管理 | CDN 五厂商配置与域名管理 |
 | 风控管理 | 风控规则与拦截记录 |
 | 实名认证 | 实名信息审核 |
 | 操作日志 | 管理员操作审计日志 |

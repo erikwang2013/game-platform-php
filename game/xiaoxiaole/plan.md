@@ -1,7 +1,7 @@
 # 田园消消乐 — 开发规划
 <!-- lang-nav -->
 
-Languages: **中文** · [English](plan.en.md) · [한국어](plan.ko.md) · [Русский](plan.ru.md) · [Deutsch](plan.de.md) · [Français](plan.fr.md) · [Español](plan.es.md) · [Português](plan.pt.md) · [हिन्दी](plan.hi.md) · [العربية](plan.ar.md) · [বাংলা](plan.bn.md) · [Bahasa Indonesia](plan.id.md) · [日本語](plan.ja.md)
+Languages: **中文** · [English](plan.en.md)
 
 
 > 把愿景（`design.md`）做成可排期的事。功能细节以 `functional-design.md` 为准，技术约束以 `architecture.md` 为准。

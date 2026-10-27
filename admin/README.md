@@ -7,7 +7,7 @@
 **小骰（Dicey）** — 平台吉祥物。骰子代表游戏与概率玩法，金币代表平台经济与多支付网关，紫色主色调呼应后台品牌。SVG 源文件：`docs/mascot.svg`，可无限缩放用于文档、Logo 与周边。
 <!-- lang-nav -->
 
-Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+Languages: **中文** · [English](README.en.md)
 
 基于 webman v2 + Flutter 的全栈管理后台系统。
 
@@ -28,7 +28,6 @@ Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) ·
 | 🔒 角色权限 | 角色 CRUD + 权限树 | RBAC method.path 粒度鉴权 |
 | ⚙ 系统配置 | 键值对 CRUD | 分组管理 |
 | 💳 支付方式管理 | 多网关增删改 + 启停 | 18 个网关（stripe/paypal/nowpayments/coinbase 等）+ 国家可见性 |
-| 🖥 CDN 管理 | 五厂商配置 CRUD + 启停 + 连通测试 | 凭据 AES 加密存储，service 纯 DB 读取 |
 | 📋 操作审计 | 日志查询 + 来源端检测 | 8 平台自动识别 |
 | 📁 文件管理 | 上传/Excel 导出/PDF 导出 | 敏感数据自动脱敏 |
 | 🛡 安全防护 | 18 层纵深防御 | XSS/SQL注入/路径遍历/命令注入/CSRF/限流/CSP... |
@@ -43,7 +42,6 @@ Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) ·
 | 数据库 | MySQL 8.0+ | 表前缀 `game_`，BIGINT 非自增主键 |
 | 搜索引擎 | Elasticsearch | 通过 `webman-scout` 同步与查询 |
 | 管理端前端 | Flutter 3.x | Web 端为 PC 管理后台风格（`apps/flutter/`） |
-| 移动端 | HarmonyOS ArkTS | 鸿蒙原生客户端（`apps/harmonyos/`），支持手机/平板/2in1 |
 
 ## 核心依赖
 
@@ -84,7 +82,6 @@ open-admin/
 │   │       ├── CaptchaController.php # 点击验证码
 │   │       └── AuthController.php    # 登录/注册/刷新令牌
 │   ├── common/                 # 公共工具类
-│   │   └── CdnProbeService.php # CDN 连通性探测（Hashids/Snowflake/Encryption 由 composer 包提供）
 │   ├── middleware/             # 中间件（目录 9 个；执行链 8 个）
 │   │   ├── Cors.php            # 跨域
 │   │   ├── SecurityFilter.php  # 攻击检测拦截（HTTP方法限制/XSS/SQL注入/路径遍历/命令注入/CSRF）
@@ -102,14 +99,12 @@ open-admin/
 │   ├── service/                # 服务（钱包/风控沙箱）
 │   └── view/                   # 视图模板
 ├── apps/
-│   ├── angular/                # Angular Web 管理后台
 │   ├── react/                  # React Web 管理后台
 │   ├── flutter/                # Flutter Web 管理后台（PC 风格）
 │   │   └── lib/app/
 │   │       ├── pages/          # 26 个页面目录
 │   │       ├── services/       # ApiService（JWT 拦截器）+ AuthService（Token 持久化）
 │   │       └── layouts/        # 响应式管理后台布局（侧边栏+顶栏+内容区）
-│   └── harmonyos/              # HarmonyOS 原生客户端（Token 无感刷新）
 ├── config/                     # 配置文件（含中文注释）
 │   ├── route.php               # 路由 + API 版本策略
 │   ├── middleware.php           # 全局中间件注册
@@ -184,9 +179,7 @@ flutter pub get
 flutter run -d chrome    # Web 端（PC 管理后台风格）
 ```
 
-**HarmonyOS 客户端（手机端）:**
 
-使用 DevEco Studio 打开 `apps/harmonyos/` 目录，连接真机或模拟器运行。
 
 ### 6. Docker Compose 一键部署（推荐生产环境）
 
@@ -399,7 +392,6 @@ Authorization: Bearer <token>
 - **批量操作**: 多选批量删除、批量启用/禁用
 - **主题**: Material 3 浅色/深色双主题
 
-### HarmonyOS 移动端
 
 - **页面**: 登录、仪表盘、用户列表/详情、个人中心
 - **认证**: JWT Bearer + 401 自动无感刷新 Token，刷新失败自动重定向登录页
@@ -470,9 +462,14 @@ GitHub Actions 持续集成流水线：`.github/workflows/ci.yml`
 
 ---
 
-## License
-
-MIT
+## 项目授权 / Project License
 
 Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
+- 本项目仅供个人学习、研究使用。
+- 未经作者书面授权，禁止任何形式的商业使用（包括但不限于商业部署、付费服务、二次销售、SaaS 运营及以本项目为基础提供商业服务）。
+- 商业授权请联系 **erik@erik.xyz**。
+- 未经授权的商业使用，作者将在全球范围内依法追究法律责任，并保留终身追责的权利。
+- 第三方组件仍遵循其各自原有的许可证；视觉资产适用仓库内的 ASSETS-LICENSE.md（如适用）。
+
+**English:** This project is provided for personal study and research only. Commercial use of any kind requires prior written authorization from the author (erik@erik.xyz). Unauthorized commercial use will be pursued for legal liability worldwide, and the author reserves the right to pursue such liability for life. Third-party components remain under their original licenses; visual assets are governed by ASSETS-LICENSE.md where applicable.

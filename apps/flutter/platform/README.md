@@ -1,11 +1,10 @@
 # game_platform — C端用户平台（Flutter Web）
 <!-- lang-nav -->
 
-Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+Languages: **中文** · [English](README.en.md)
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
-C端用户平台的 Web 前端，基于 Flutter 3.x，面向用户提供游戏聚合平台的完整体验：注册登录、游戏大厅、钱包、充值、提现、兑换、排行榜、优惠券、通知、聊天、好友与客服工单。
 
 ## 功能清单
 
@@ -18,8 +17,6 @@ C端用户平台的 Web 前端，基于 Flutter 3.x，面向用户提供游戏�
 | 提现 | 申请提现、审核状态跟踪 |
 | 兑换 | 平台币 ⇄ 游戏币实时兑换 |
 | 排行榜 | 日/周/月/总榜 |
-| 优惠券 | 领取与使用 |
-| 通知 | 站内信（充值/提现/优惠券等） |
 | 聊天 | WebSocket 实时私信 |
 | 好友 | 好友系统 |
 | 工单 | 客服工单创建与回复 |

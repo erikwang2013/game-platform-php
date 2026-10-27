@@ -1,7 +1,7 @@
 # Security Architecture Design Document
 <!-- lang-nav -->
 
-Languages: [中文](SECURITY.md) · **English** · [한국어](SECURITY.ko.md) · [Русский](SECURITY.ru.md) · [Deutsch](SECURITY.de.md) · [Français](SECURITY.fr.md) · [Español](SECURITY.es.md) · [Português](SECURITY.pt.md) · [हिन्दी](SECURITY.hi.md) · [العربية](SECURITY.ar.md) · [বাংলা](SECURITY.bn.md) · [Bahasa Indonesia](SECURITY.id.md) · [日本語](SECURITY.ja.md)
+Languages: [中文](SECURITY.md) · **English**
 
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
@@ -60,7 +60,6 @@ All regexes come from `SecurityFilter::PATTERNS['XSS']`, matched case-insensitiv
 | Event attributes | `\bon\w+\s*=\s*[\"\']?\s*(?:javascript\|vbscript):` | Inline events like `onclick="javascript:..."` |
 | JS pseudo-protocol | `(?:javascript\|vbscript)\s*:\s*(?:[^\s]*\s*)?(?:eval\|alert\|prompt\|confirm\|document\.cookie\|location\s*=)` | `javascript:eval(...)`, `javascript:alert(1)` etc. |
 | Data URI XSS | `data\s*:\s*text\s*\/\s*html\s*(?:;base64)?\s*,` | `data:text/html,<script>`, `data:text/html;base64,...` etc. |
-| Template injection | `\{\{.*?\}\}` | `{{constructor}}`, `{{7*7}}` and other server-side/Angular/Vue template injection |
 
 ### 2.2 SQL Injection
 
@@ -444,7 +443,6 @@ The OperationLog middleware automatically records operation logs for POST / PUT 
 | Linux | `Linux` |
 | iOS | `iPhone`, `iOS`, `CFNetwork` |
 | Android | `Android` |
-| HarmonyOS | `HarmonyOS`, `OpenHarmony` |
 | Web | Fallback default |
 
 **Fault tolerance**: log write failures do not block business requests (`catch (\Throwable)` silently swallows them).

@@ -13,7 +13,6 @@
 
 **已知短板与规避**（接入时注意，不需要现在修）：
 
-- `match` 新增分支必须改工厂代码，不是 SPI 自动发现。可接受——18 个网关不值得引入反射/扫描机制；新增时按第 4 节清单改即可。（注：[2026-08-31-reconciliation-settlement-plan.md](superpowers/plans/2026-08-31-reconciliation-settlement-plan.md) §2.3 曾裁定「后续文档以 16 个网关为准」——该裁定**当时成立**：那时 `service/app/payment/` 的 18 个文件 = 16 个网关 + `PaymentGatewayInterface` + `GatewayFactory`；现目录已长到 26 个文件 = 18 个网关 + 8 个非网关（接口/工厂/工具类），属**前提过期**，不是当时写错。）
 - 游戏 type 现有三种：`self`（自研）、`embedded`（内嵌 H5 / Unity SDK）与 `third_party`（第三方），由 `ProviderFactory::create()` 分派（`self` 与 `embedded` 同走平台持有余额的资金路径）；设计背景见 [2026-08-31-medium-priority-extensions-plan.md](superpowers/plans/2026-08-31-medium-priority-extensions-plan.md) M5 章节。
 - `self` 与 `embedded` 共用 Provider 时入口区分在 `ProviderController`（SDK 签名 vs 内部调用），不在 Provider 类内。
 
@@ -152,7 +151,6 @@ abstract public function verifySignature(array $payload, string $signature): boo
 3. [ ] 协议非标准（字段名不同、签名算法不同、需要轮询而非回调）→ 建 `service/app/provider/<Vendor>Provider.php` 继承 `GameProvider`，只重写差异方法（通常只重写 `verifySignature` 与请求封装），沿用 `$this->request()` 的熔断/重试/mock 模式。
 4. [ ] 游戏类型不属于 self/embedded/third_party → 不要自行扩 type，先与平台确认接入方式（内嵌 H5 / Unity SDK 归 `embedded`）。
 5. [ ] 本地开 `provider_mock` 验证 `ProviderController` 全链路（balance→bet→settle→refund），确认 `GamePlayLog` 落行后再切真实 endpoint。
-6. [ ] 提交 contract test（6 方法字段断言 + `settle` 重放幂等断言）+ 联调对账单。
 
 **只新增 1 个 Provider 类，不改存量文件。**
 

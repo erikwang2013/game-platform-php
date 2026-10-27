@@ -1,7 +1,7 @@
 # Architecture Document
 <!-- lang-nav -->
 
-Languages: [中文](ARCHITECTURE.md) · **English** · [한국어](ARCHITECTURE.ko.md) · [Русский](ARCHITECTURE.ru.md) · [Deutsch](ARCHITECTURE.de.md) · [Français](ARCHITECTURE.fr.md) · [Español](ARCHITECTURE.es.md) · [Português](ARCHITECTURE.pt.md) · [हिन्दी](ARCHITECTURE.hi.md) · [العربية](ARCHITECTURE.ar.md) · [বাংলা](ARCHITECTURE.bn.md) · [Bahasa Indonesia](ARCHITECTURE.id.md) · [日本語](ARCHITECTURE.ja.md)
+Languages: [中文](ARCHITECTURE.md) · **English**
 
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
@@ -13,9 +13,6 @@ flowchart TB
     subgraph "Client Layer"
         A1["Flutter Web PC<br/>Admin panel"]
         A2["Flutter Web PC<br/>C-end user platform"]
-        A3["HarmonyOS ArkTS<br/>Phone/Tablet Client"]
-        A4["React · Angular<br/>Admin panel"]
-        A5["React · Angular<br/>C-end user platform"]
     end
 
     subgraph "Gateway Layer (Nginx)"
@@ -29,9 +26,7 @@ flowchart TB
 
     subgraph "Service Layer (new)"
         D0["GameProvider abstraction layer<br/>SelfProvider / ThirdPartyProvider<br/>HMAC-SHA256 signature<br/>Transactional consistency guarantee"]
-        D1["EventBus<br/>Redis Pub/Sub<br/>Async event dispatch<br/>Achievements/notifications/audit decoupling"]
         D2["VIP engine<br/>EXP accumulation→auto level-up<br/>Exchange discount/withdrawal fee reduction<br/>Exchange-rate bonus"]
-        D3["Achievement engine<br/>12 built-in achievements<br/>Progress tracking<br/>Event-driven detection"]
         D4["Feature flags<br/>FeatureFlag<br/>Zero-dependency dynamic config"]
     end
 
@@ -72,11 +67,9 @@ flowchart TB
   │ Profile / Export / Import / Upload / Health / Docs       │ ← 原有
   │ Game / Withdraw / Payment / PlatformUser / Announce      │ ← 原有
   │ Analytics / GameCategory / GameServer / Identity         │ ← 原有
-  │ CountryConfig / Coupon / Leaderboard / Metrics           │ ← 原有
   │ Ticket / Search                                          │ ← 新增
   └──────────────────────────────────────────────────────────┘
   ↓
-服务层: VIP / Achievement / EventBus / FeatureFlag / Risk / Notification
   ↓
 Provider 层: GameProvider → SelfProvider / ThirdPartyProvider
   ↓
@@ -96,11 +89,9 @@ Provider 层: GameProvider → SelfProvider / ThirdPartyProvider
   │ Game / User / Announcement / Captcha                     │ ← 原有
   │ OAuth / Identity / Payment / GamePlayLog                 │ ← 原有
   │ Leaderboard / Notification / Referral / TwoFactor        │ ← 原有
-  │ Country / Language / Coupon / Search                     │ ← 原有
   │ Provider / Ticket / Verification                         │ ← 新增
   └──────────────────────────────────────────────────────────┘
   ↓
-服务层: VIP / Achievement / EventBus / FeatureFlag / Risk
   ↓
 Provider 层: GameProvider → SelfProvider / ThirdPartyProvider
   ↓
@@ -136,7 +127,6 @@ provider/
 Redis Pub/Sub (channel: platform:events):
   ↓
 订阅者:
-  AchievementService  — 检测成就进度
   VipService          — 累计经验值
   NotificationService — 发送通知
   WebhookController   — 投递外部 webhook
@@ -163,7 +153,6 @@ Degradation switch `feature.provider_mock` (FeatureFlag / PlatformConfig, short-
 | `PayoutService::execute` | Returns `mock-{order_no}` batch and marks order completed |
 | `ThirdPartyProvider::request` | Returns `['success' => true]` |
 
-All real network calls are wrapped in `Retry::run → CircuitBreaker::call` (Push FCM/APNs/HarmonyOS, PayPal payouts, third-party Provider requests).
 
 ## 3. Middleware Execution Chains
 
@@ -206,7 +195,6 @@ Provider API:
      → UserWallet::addBalance() → 平台币到账
      → EventBus::emit('deposit.completed')
        → VipService::addExp() → EXP累计 → VIP升级检测
-       → AchievementService::check() → 成就进度更新
      → 记录 Transaction (type=deposit)
 ```
 
@@ -224,7 +212,6 @@ Provider API:
      ├─ 记录 Transaction
      └─ DB::commit()
      → EventBus::emit('exchange.completed')
-       → AchievementService::check()
 ```
 
 ### 4.3 Withdrawal Flow
@@ -289,7 +276,6 @@ game_user ──┬── 1:1 ── game_user_wallet
             ├── 1:N ── game_withdraw_order
             ├── 1:N ── game_exchange_record
             ├── 1:N ── game_transaction
-            ├── 1:N ── game_user_achievement ── game_achievement
             ├── 1:N ── game_exp_log
             ├── 1:N ── game_ticket ── game_ticket_reply
             ├── 1:N ── game_device_token
@@ -305,7 +291,6 @@ game_friend ── user_id → game_user
              └── friend_id → game_user
 
 game_vip_level ── 1:N ── game_user_vip
-game_achievement ── 1:N ── game_user_achievement
 ```
 
 ## 6. Deployment Architecture
@@ -378,8 +363,6 @@ tests/                             # 70 个文件 · 593 个用例
 ├── AuthControllerRegisterTest.php # 15 个注册口令强度测试
 ├── BackendEnhancementTest.php     # 27 个加密/ID服务测试
 ├── CaptchaTest.php                # 5 个验证码测试
-├── CdnProbeServiceTest.php        # 5 个 CDN 探测测试
-├── CdnProviderModelTest.php       # 3 个 CDN 供应商模型测试
 ├── ClickHouseServiceTest.php      # 16 个 ClickHouse 服务测试
 ├── ConfigDefaultsTest.php         # 4 个配置默认值测试
 ├── EncryptionServiceTest.php      # 8 个加解密测试
@@ -437,7 +420,6 @@ game_stat_daily
 
 ### Complete Version (13 tables)
 game_game_category, game_game_category_rel, game_leaderboard,
-game_coupon, game_user_coupon, game_language,
 game_translation, game_country_config, game_platform_revenue,
 game_notification, game_referral, game_referral_reward,
 game_user_2fa
@@ -445,13 +427,9 @@ game_user_2fa
 ### Ecosystem Expansion (14 tables) ← New
 game_ticket, game_ticket_reply, game_device_token,
 game_vip_level, game_user_vip, game_exp_log,
-game_achievement, game_user_achievement, game_friend,
-game_message, game_cdn_provider, game_referral_commission,
-game_tournament, game_tournament_entry
+game_message, game_referral_commission,
 
 ### v1.3.15-v1.3.22 additions (22 tables)
-game_event_outbox, game_reconciliation_batch, game_reconciliation_diff,
-game_reconciliation_statement, game_device_fingerprint, game_device_account_map,
 game_ip_reputation, game_account_account_link, game_activity,
 game_activity_participation, game_activity_reward_log, game_anticheat_event,
 game_anticheat_daily_stat, game_group, game_group_member,
@@ -467,10 +445,8 @@ Based on the `feature.*` namespace of `game_platform_config`, zero extra depende
 
 | Flag | Default | Feature |
 |------|------|------|
-| feature.tournament | off | Tournament system |
 | feature.chat | off | WebSocket private messaging |
 | feature.vip | off | VIP loyalty |
-| feature.achievements | off | Achievement badges |
 
 ```php
 use app\service\FeatureFlag;

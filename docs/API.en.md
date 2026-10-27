@@ -1,7 +1,7 @@
 # API Documentation
 <!-- lang-nav -->
 
-Languages: [中文](API.md) · **English** · [한국어](API.ko.md) · [Русский](API.ru.md) · [Deutsch](API.de.md) · [Français](API.fr.md) · [Español](API.es.md) · [Português](API.pt.md) · [हिन्दी](API.hi.md) · [العربية](API.ar.md) · [বাংলা](API.bn.md) · [Bahasa Indonesia](API.id.md) · [日本語](API.ja.md)
+Languages: [中文](API.md) · **English**
 
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
@@ -586,26 +586,19 @@ Response: {
 }
 ```
 
-### 2.13 Coupons
 
-#### GET /api/v1/coupon/available — Available Coupons
 ```
 Authentication required: Yes
 Response: { "list": [{ "id": "...", "name": "新人礼包", "type": "fixed", "value": "10.0000" }] }
 ```
 
-#### POST /api/v1/coupon/claim — Claim Coupon
 ```
 Authentication required: Yes
-Request: { "coupon_id": "hashid" }
-Response: { "coupon": { ... } }
 ```
 
-#### GET /api/v1/coupon/my — My Coupons
 ```
 Authentication required: Yes
 Parameters: ?status=unused
-Response: { "list": [{ "id": "...", "coupon": {...}, "status": "unused" }] }
 ```
 
 ### 2.14 Country Config
@@ -1412,18 +1405,12 @@ Request: { "name": "周收入榜", "type": "weekly", "metric": "earned", "game_i
 #### PUT /admin/v1/leaderboard/{hashid} — Edit Leaderboard
 #### DELETE /admin/v1/leaderboard/{hashid} — Delete Leaderboard
 #### POST /admin/v1/leaderboard/{hashid}/refresh — Refresh Cache
-### 3.13 Coupon Management
 
-#### GET /admin/v1/coupon/list — Coupon List
-#### POST /admin/v1/coupon/create — Create Coupon
 ```
 Authentication required: Yes
 Request: { "name": "新人礼包", "type": "fixed", "value": "10.0000", "total_qty": 1000 }
 ```
 
-#### PUT /admin/v1/coupon/{hashid} — Edit (when unclaimed)
-#### DELETE /admin/v1/coupon/{hashid} — Delete
-#### GET /admin/v1/coupon/{hashid}/stats — Claim Statistics
 ```
 Response: { "total_qty": 1000, "used_qty": 234, "remaining": 766, "usage_rate": "23.40%" }
 ```
@@ -1486,19 +1473,6 @@ All endpoints require authentication (AdminAuth + AdminPermission).
 | POST | /admin/v1/ticket/{hashid}/reply | Reply to ticket |
 | POST | /admin/v1/ticket/{hashid}/close | Close ticket |
 | POST | /admin/v1/ticket/{hashid}/assign | Assign handler (admin_id) |
-
-### 3.18 CDN Configuration Management
-
-All endpoints require authentication (AdminAuth + AdminPermission).
-
-| Method | Path | Description | Auth |
-|------|------|------|------|
-| GET | /admin/v1/cdn/provider/list | List CDN providers (credentials not returned) | AdminAuth + RBAC: cdn |
-| POST | /admin/v1/cdn/provider/toggle | Enable/disable provider {id, status} | AdminAuth + RBAC: cdn |
-| POST | /admin/v1/cdn/provider/create | Create {name, provider, config(JSON), status, sort}, provider uniqueness check | AdminAuth + RBAC: cdn |
-| PUT | /admin/v1/cdn/provider/{hashid} | Update (empty config = unchanged) | AdminAuth + RBAC: cdn |
-| DELETE | /admin/v1/cdn/provider/{hashid} | Delete | AdminAuth + RBAC: cdn |
-| POST | /admin/v1/cdn/provider/test | Connectivity test HeadBucket {id} | AdminAuth + RBAC: cdn |
 
 ### 3.19 Data Reports
 
@@ -1761,16 +1735,13 @@ Response: {
 }
 ```
 
-### 7.5 Achievement APIs
 
-#### GET /api/v1/user/achievements — Achievement List
 
 > **Not implemented**: the C-end route is not registered (no entry in `service/config/route.php`), so requests currently return 404. Delete this line once implemented.
 
 ```
 Authentication required: Yes
 Response: {
-  "achievements": [
     {
       "key": "first_deposit",
       "name": "First Deposit",
@@ -1872,14 +1843,12 @@ Response: {
 ```
 
 
-#### GET /admin/v1/cdn/provider/list — List CDN providers (credentials not returned)
 
 ```
 Authentication required: Yes
 Response: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
 ```
 
-#### POST /admin/v1/cdn/provider/toggle — Enable/disable provider {id, status}
 
 ```
 Authentication required: Yes
@@ -1887,7 +1856,6 @@ Request: { "id": "...", "status": 1 }
 Response: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/v1/cdn/provider/create — Create {name, provider, config(JSON), status, sort}, provider uniqueness check
 
 ```
 Authentication required: Yes
@@ -1895,7 +1863,6 @@ Request: { "name": "...", "provider": "aliyun", "config": "{...}", "status": 1, 
 Response: { "code": 0, "data": { "id": "..." } }
 ```
 
-#### PUT /admin/v1/cdn/provider/{hashid} — Update (empty config = unchanged)
 
 ```
 Authentication required: Yes
@@ -1903,14 +1870,12 @@ Request: { "name": "...", "config": "" }
 Response: { "code": 0, "message": "..." }
 ```
 
-#### DELETE /admin/v1/cdn/provider/{hashid} — Delete
 
 ```
 Authentication required: Yes
 Response: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/v1/cdn/provider/test — Connectivity test HeadBucket {id}
 
 ```
 Authentication required: Yes
@@ -2126,28 +2091,22 @@ Response: {
 ```
 
 
-### 7.11 Tournament APIs
 
-#### GET /api/v1/tournament/list — Tournament List
 ```
 Parameters: ?status=active|upcoming|ended&page=1&per_page=20
 Response: { "items": [{ "id": "...", "name": "...", "prize_pool": "1000.0000", "player_count": 45, "max_players": 100 }], "total": 5 }
 ```
 
-#### GET /api/v1/tournament/{hashid} — Tournament Detail
 ```
 Response: { "id": "...", "name": "...", "leaderboard": [...], "my_entry": {...} }
 ```
 
-#### POST /api/v1/tournament/{hashid}/join — Join Tournament
 ```
 Authentication required: Yes
 Error: 422 已报名 / 400 已开始或已满员 / 503 FeatureFlag关闭
 ```
 
-### 7.12 Coupon Conditions (New)
 
-Coupon `conditions` JSON supports:
 - `min_deposit`: string, minimum cumulative deposit amount
 - `first_user_only`: bool, only for new users who have never deposited
 - `game_id`: int, must have played the specified game
@@ -2165,7 +2124,6 @@ Referral commission adds a second level:
 
 | Endpoint | Limit |
 |------|------|
-| POST /api/v1/tournament/{id}/join | 10 requests/minute |
 
 ---
 
@@ -2252,9 +2210,7 @@ Referral commission adds a second level:
 | Adyen | New payment gateway (deposit / callback verification / auto-credit) |
 | GrabPay | New payment gateway (deposit / callback verification / auto-credit) |
 
-### 10.6 VIP / Achievements / Search / Receipts (Admin :8789)
 
-VIP levels, achievement configuration, global search and electronic receipt export (admin).
 
 | Endpoint | Description |
 |------|------|
@@ -2262,9 +2218,5 @@ VIP levels, achievement configuration, global search and electronic receipt expo
 | POST /admin/v1/vip/level/create | Create VIP level (level must be unique) |
 | PUT /admin/v1/vip/level/{hashid} | Update VIP level |
 | DELETE /admin/v1/vip/level/{hashid} | Delete VIP level (rejected while users hold that level) |
-| GET /admin/v1/achievement/list | Achievement list |
-| POST /admin/v1/achievement/create | Create achievement (duplicate key rejected) |
-| PUT /admin/v1/achievement/{hashid} | Update achievement |
-| DELETE /admin/v1/achievement/{hashid} | Delete achievement |
 | GET /admin/v1/search | Global search (?q= keyword, type=game or user) |
 | POST /admin/v1/export/receipt | Export receipt PDF (type=deposit or withdraw, plus order_id) |

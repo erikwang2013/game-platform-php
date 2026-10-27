@@ -1,7 +1,7 @@
 # Pastoral Match-3 — Technical Architecture
 <!-- lang-nav -->
 
-Languages: [中文](architecture.md) · **English** · [한국어](architecture.ko.md) · [Русский](architecture.ru.md) · [Deutsch](architecture.de.md) · [Français](architecture.fr.md) · [Español](architecture.es.md) · [Português](architecture.pt.md) · [हिन्दी](architecture.hi.md) · [العربية](architecture.ar.md) · [বাংলা](architecture.bn.md) · [Bahasa Indonesia](architecture.id.md) · [日本語](architecture.ja.md)
+Languages: [中文](architecture.md) · **English**
 
 
 > Player features and acceptance criteria see `functional-design.md`; scheduling see `plan.md`; the thematic vision see `design.md`.

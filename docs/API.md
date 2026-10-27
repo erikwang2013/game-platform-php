@@ -1,7 +1,7 @@
 # 接口文档
 <!-- lang-nav -->
 
-Languages: **中文** · [English](API.en.md) · [한국어](API.ko.md) · [Русский](API.ru.md) · [Deutsch](API.de.md) · [Français](API.fr.md) · [Español](API.es.md) · [Português](API.pt.md) · [हिन्दी](API.hi.md) · [العربية](API.ar.md) · [বাংলা](API.bn.md) · [Bahasa Indonesia](API.id.md) · [日本語](API.ja.md)
+Languages: **中文** · [English](API.en.md)
 
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
@@ -612,29 +612,22 @@ provider 可选值: stripe / paypal / nowpayments / coinbase / skrill / neteller
 }
 ```
 
-### 2.13 优惠券
 
-#### GET /api/v1/coupon/available — 可领优惠券
 
 ```
 需认证: 是
 响应: { "list": [{ "id": "...", "name": "新人礼包", "type": "fixed", "value": "10.0000" }] }
 ```
 
-#### POST /api/v1/coupon/claim — 领取优惠券
 
 ```
 需认证: 是
-请求: { "coupon_id": "hashid" }
-响应: { "coupon": { ... } }
 ```
 
-#### GET /api/v1/coupon/my — 我的优惠券
 
 ```
 需认证: 是
 参数: ?status=unused
-响应: { "list": [{ "id": "...", "coupon": {...}, "status": "unused" }] }
 ```
 
 ### 2.14 国家配置
@@ -1492,22 +1485,16 @@ action: approve / reject
 
 #### POST /admin/v1/leaderboard/{hashid}/refresh — 刷新缓存
 
-### 3.13 优惠券管理
 
-#### GET /admin/v1/coupon/list — 优惠券列表
 
-#### POST /admin/v1/coupon/create — 创建优惠券
 
 ```
 需认证: 是
 请求: { "name": "新人礼包", "type": "fixed", "value": "10.0000", "total_qty": 1000 }
 ```
 
-#### PUT /admin/v1/coupon/{hashid} — 编辑（未领取时）
 
-#### DELETE /admin/v1/coupon/{hashid} — 删除
 
-#### GET /admin/v1/coupon/{hashid}/stats — 领取统计
 
 ```
 响应: { "total_qty": 1000, "used_qty": 234, "remaining": 766, "usage_rate": "23.40%" }
@@ -1576,19 +1563,6 @@ action: approve / reject
 | POST | /admin/v1/ticket/{hashid}/reply | 回复工单 |
 | POST | /admin/v1/ticket/{hashid}/close | 关闭工单 |
 | POST | /admin/v1/ticket/{hashid}/assign | 指定处理人（admin_id） |
-
-### 3.18 CDN 配置管理
-
-全部端点需认证（AdminAuth + AdminPermission）。
-
-| 方法 | 路径 | 说明 | 认证 |
-|------|------|------|------|
-| GET | /admin/v1/cdn/provider/list | CDN 厂商列表（config 凭据不回传） | AdminAuth + RBAC: cdn |
-| POST | /admin/v1/cdn/provider/toggle | 启停厂商 {id, status} | AdminAuth + RBAC: cdn |
-| POST | /admin/v1/cdn/provider/create | 新增 {name, provider, config(JSON), status, sort}，provider 查重 | AdminAuth + RBAC: cdn |
-| PUT | /admin/v1/cdn/provider/{hashid} | 编辑（config 留空不修改） | AdminAuth + RBAC: cdn |
-| DELETE | /admin/v1/cdn/provider/{hashid} | 删除 | AdminAuth + RBAC: cdn |
-| POST | /admin/v1/cdn/provider/test | 连通测试 HeadBucket {id} | AdminAuth + RBAC: cdn |
 
 ### 3.19 数据报表
 
@@ -1862,16 +1836,13 @@ status: open / waiting / replied / closed
 }
 ```
 
-### 7.5 成就 API
 
-#### GET /api/v1/user/achievements — 成就列表
 
 > **尚未实现**：C 端路由未注册（`service/config/route.php` 无对应条目），当前请求返回 404。实现后请删除本行。
 
 ```
 需认证: 是
 响应: {
-  "achievements": [
     {
       "key": "first_deposit",
       "name": "First Deposit",
@@ -1981,14 +1952,12 @@ status: open / waiting / replied / closed
 ```
 
 
-#### GET /admin/v1/cdn/provider/list — CDN 厂商列表（config 凭据不回传）
 
 ```
 需认证: 是
 响应: { "list": [ { "id": "...", "name": "...", "provider": "cloudflare", "status": 1, "sort": 0 } ] }
 ```
 
-#### POST /admin/v1/cdn/provider/toggle — 启停厂商 {id, status}
 
 ```
 需认证: 是
@@ -1996,7 +1965,6 @@ status: open / waiting / replied / closed
 响应: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/v1/cdn/provider/create — 新增 {name, provider, config(JSON), status, sort}，provider 查重
 
 ```
 需认证: 是
@@ -2004,7 +1972,6 @@ status: open / waiting / replied / closed
 响应: { "code": 0, "data": { "id": "..." } }
 ```
 
-#### PUT /admin/v1/cdn/provider/{hashid} — 编辑（config 留空不修改）
 
 ```
 需认证: 是
@@ -2012,14 +1979,12 @@ status: open / waiting / replied / closed
 响应: { "code": 0, "message": "..." }
 ```
 
-#### DELETE /admin/v1/cdn/provider/{hashid} — 删除
 
 ```
 需认证: 是
 响应: { "code": 0, "message": "..." }
 ```
 
-#### POST /admin/v1/cdn/provider/test — 连通测试 HeadBucket {id}
 
 ```
 需认证: 是
@@ -2235,9 +2200,7 @@ status: open / waiting / replied / closed
 ```
 
 
-### 7.12 优惠券条件 (新增)
 
-优惠券 `conditions` JSON 支持:
 - `min_deposit`: 字符串, 最低累计充值金额
 - `first_user_only`: bool, 仅限从未充值的新用户
 - `game_id`: int, 需玩过指定游戏
@@ -2333,9 +2296,7 @@ status: open / waiting / replied / closed
 | Adyen | 新增支付网关（充值/回调验签/自动到账） |
 | GrabPay | 新增支付网关（充值/回调验签/自动到账） |
 
-### 10.6 VIP/成就/搜索/收据 (管理端 :8789)
 
-VIP 等级、成就配置、全局搜索与电子收据导出（管理端）。
 
 | 接口 | 说明 |
 |------|------|
@@ -2343,9 +2304,5 @@ VIP 等级、成就配置、全局搜索与电子收据导出（管理端）。
 | POST /admin/v1/vip/level/create | 新增 VIP 等级（level 唯一） |
 | PUT /admin/v1/vip/level/{hashid} | 更新 VIP 等级 |
 | DELETE /admin/v1/vip/level/{hashid} | 删除 VIP 等级（该等级下有用户时拒绝） |
-| GET /admin/v1/achievement/list | 成就列表 |
-| POST /admin/v1/achievement/create | 创建成就（key 重复拒绝） |
-| PUT /admin/v1/achievement/{hashid} | 更新成就 |
-| DELETE /admin/v1/achievement/{hashid} | 删除成就 |
 | GET /admin/v1/search | 全局搜索（?q= 关键词，type=game 或 user） |
 | POST /admin/v1/export/receipt | 导出收据 PDF（type=deposit 或 withdraw 与 order_id） |

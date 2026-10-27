@@ -7,7 +7,7 @@
 **Dicey** — Platform mascot. The die represents games and probability-based gameplay, the coin represents the platform economy and multi-payment gateways, and the purple palette echoes the admin branding. SVG source: `docs/mascot.svg`, infinitely scalable for docs, logos and merchandise.
 <!-- lang-nav -->
 
-Languages: [中文](../../README.md) · **English** · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+Languages: [中文](../../README.md) · **English**
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
@@ -17,9 +17,6 @@ A global, internationalized game aggregation platform. After registering, users 
 
 | Version | Goal | Status |
 |------|------|------|
-| Full Version | Complete edition: leaderboards, coupons, game categories, country config, ES search | Completed |
-| Ecosystem Expansion | v2.0: game Provider integration, tickets, VIP, achievements, social, event bus | Completed |
-| v1.3.15-22 (8 releases) | Reconciliation/settlement, risk-control depth, unified wallet, activity engine, anti-cheat, social growth, Adyen/GrabPay | Completed |
 
 ## Tech Stack
 
@@ -38,8 +35,6 @@ There are two separate front-end directory trees, **each calling only its own si
 
 | Directory tree | Role | Request prefix | Backend | Tech stack |
 |--------|------|---------|---------|--------|
-| `apps/*` | **C-end player platform** | `/api/v1/...` | service (default 8792) | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
-| `admin/apps/*` | **Admin console** | `/admin/v1/...` | admin (default 8789) | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
 
 - Responsive layout (Phone / Tablet / Desktop)
 - Internationalization (i18n): English / Simplified Chinese switching
@@ -73,17 +68,12 @@ game-platform-php/
 │   └── apps/                  #   Admin front-ends (4 targets, call /admin/v1 → admin:8789)
 │       ├── flutter/           #     Flutter Web PC admin backend
 │       ├── react/             #     React 19 (Vite) admin console
-│       ├── angular/           #     Angular 21 admin console
-│       └── harmonyos/         #     HarmonyOS ArkTS admin console (.hap, bypasses nginx)
 │
 ├── service/                   # C-end business service (webman v2, default port 8792, configurable via APP_PORT)
 │   ├── app/api/v1/controller/ #   C-end API controllers
 │   ├── app/middleware/        #   Middleware (TraceId/Cors/SecurityFilter/RateLimit/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
 │   ├── app/model/             #   Service-only models (10; the other 51 shared models live in packages/)
-│   ├── app/service/           #   Service-only services (wallet/risk/compliance/reconciliation/push/achievements/anti-cheat etc.)
 │   ├── app/payment/           #   18 payment gateway adapters (Stripe/PayPal/Adyen/NowPayments/Skrill…) + GatewayFactory
-│   ├── app/cdn/               #   Five-vendor CDN adapters (Cloudflare/CloudFront/Alibaba/Tencent/Huawei) + CdnFactory
-│   ├── app/process/           #   Resident processes (Http/Monitor/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
 │   ├── app/provider/          #   Game Provider layer
 │   ├── app/activity/          #   Activity engine
 │   ├── app/event/             #   Event bus (EventBus Redis Pub/Sub)
@@ -101,8 +91,6 @@ game-platform-php/
 ├── apps/                      # C-end player front-ends (4 targets, call /api/v1 → service:8792)
 │   ├── flutter/platform/      #   Flutter Web PC C-end user platform
 │   ├── react/                 #   React 19 (Vite) C-end
-│   ├── angular/               #   Angular 21 C-end
-│   └── harmonyos/             #   HarmonyOS ArkTS C-end (.hap, bypasses nginx)
 │
 ├── game/xiaoxiaole/           # Built-in mini-game “Pastoral Match-3”: TypeScript + Vite + Vitest, src/domain game engine + four-level design + tests/, design docs in 13 languages
 │
@@ -230,17 +218,13 @@ In development each front-end starts its own dev server; requests are proxied by
 ```bash
 # --- C-end player platform (/api/v1 → service:8792) ---
 cd apps/react            && npm install && npm run dev      # http://localhost:5173
-cd apps/angular          && npm install && npm start        # http://localhost:4200
 cd apps/flutter/platform && flutter pub get && flutter run -d chrome
 
 # --- Admin console (/admin/v1 → admin:8789) ---
 cd admin/apps/react      && npm install && npm run dev      # http://localhost:5273
-cd admin/apps/angular    && npm install && npm start        # http://localhost:4300
 cd admin/apps/flutter    && flutter pub get && flutter run -d chrome
 ```
 
-> Angular dev server ports: the admin console sets 4300 explicitly in `angular.json`, while the C-end keeps Angular's default 4200; to run both at once, add `--port` to one of them.
-> The HarmonyOS targets (`apps/harmonyos`, `admin/apps/harmonyos`) are opened and built with DevEco Studio;
 > an emulator reaches the host backend at `http://10.0.2.2:<port>` (see the constant at the top of each `ApiService.ets`).
 
 ### Frontend Deployment (Docker/Nginx)
@@ -252,13 +236,10 @@ When an artifact has not been built the directory is empty: a path request retur
 |-----|-----------|---------|
 | `/` | `apps/flutter/platform/build/web` | `flutter build web` |
 | `/app-react/` | `apps/react/dist` | `npm run build` (script includes `--base=/app-react/`) |
-| `/app-angular/` | `apps/angular/dist/game-client-angular/browser` | `npm run build` (script includes `--base-href=/app-angular/`) |
 | `/admin-panel/` | `admin/public` | Generic drop-in slot: copy any console build into `admin/public`; when absent it likewise returns 404 (bare directory 403). Note the build must use `--base=/admin-panel/` (`--base-href=/admin-panel/` for Flutter), otherwise its assets still point at the original prefix and 404. The slashless form 301-redirects here; `nginx.conf.template` sets `absolute_redirect off`, so the redirect is a relative Location and non-80-port deployments no longer lose the port |
 | `/admin-react/` | `admin/apps/react/dist` | `npm run build` (script includes `--base=/admin-react/`) |
-| `/admin-angular/` | `admin/apps/angular/dist/game-admin-angular/browser` | `npm run build` (script includes `--base-href=/admin-angular/`) |
 | `/admin-flutter/` | `admin/apps/flutter/build/web` | `flutter build web --base-href=/admin-flutter/` |
 
-`/admin/` (API) → admin container, `/api/` (API) → service container; the HarmonyOS build ships as a `.hap` package and does not go through nginx.
 
 ### Verification
 
@@ -334,14 +315,10 @@ Detailed reports:
 | Games | CRUD + categories (10) + servers/regions + game record tracking |
 | Search | Elasticsearch full-text search (with LIKE fallback) |
 | Leaderboards | Daily/weekly/monthly/all-time, Redis cache |
-| CDN | Five-provider integration (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + preload) + admin config/toggle/connectivity test |
-| Coupons | Fixed amount + percentage discount, time/quantity limited, claim and usage tracking |
-| Notifications | In-app messages + email, automatic notifications for deposits/withdrawals/KYC/coupons |
 | Referrals | Referral codes, signup rewards, deposit commissions |
 | Risk control | IP blacklist / large-amount alerts / frequency / speed detection |
 | Risk-control depth | Device fingerprint / IP reputation / account-link graph + rule engine + risk dashboard + AML/KYC/trust score |
 | Anti-cheat | Anti-cheat event collection + daily stats + manual review |
-| Reconciliation/settlement | Daily reconciliation batches + diff details + statement reconciliation |
 | Unified wallet | WalletScope unified wallet scoping |
 | Activity engine | Activity create/join/rewards + check-in |
 | Social growth | Groups + share-link tracking |
@@ -353,14 +330,10 @@ Detailed reports:
 | Game integration | Provider SDK (Self+ThirdParty) + HMAC-SHA256 signing + callback gateway |
 | Tickets | C-end create/reply + admin handle/assign/close |
 | VIP | 5 loyalty levels, XP accumulation, exchange discounts/withdrawal fee waivers/exchange rate bonuses |
-| Achievements | 12 built-in achievements, event-driven detection, progress tracking |
 | Social | Friend system + WebSocket real-time private messaging (default port 8791, configurable via CHAT_WS_PORT), friends-only messaging |
-| Tournaments | Championship system (FeatureFlag switch) + leaderboards + participant caps |
 | Rebates | Two-tier referral profit sharing (configurable commission rates) |
-| Coupons | Conditional restrictions (min_deposit/first_user/game_id) |
 | Events | Redis Pub/Sub event bus + Webhook subscription delivery (7 event types) |
 | Deployment | Docker Compose 7-service orchestration (ports configured in root .env) + Nginx reverse proxy |
-| Clients | Admin 4 targets (Flutter/React/Angular/HarmonyOS) + C-end 4 targets (Flutter/React/Angular/HarmonyOS) |
 
 ## Business Model
 
@@ -488,55 +461,3 @@ If this project helps you, feel free to buy the author a coffee ☕
     </tr>
   </table>
 </p>
-
-### Global Bank Transfer
-
-**Recipient**
-
-| Item | Content |
-|----|------|
-| Beneficiary Name | WANG KEXUN |
-| Account Number | 881015918251 |
-
-**Beneficiary Bank**
-
-| Item | Content |
-|----|------|
-| SWIFT Code | AABLHKHHXXX |
-| Bank Name | ZA Bank Limited |
-| Bank Code | 387 |
-| Bank Address | Core F, Cyberport 3, 100 Cyberport Road, Hong Kong |
-
-**Correspondent Bank (if required)**
-
-> Please note, this is the correspondent (intermediary) bank information, not the beneficiary bank information. Please ask your remitting bank whether correspondent bank details are required.
-
-- **Citibank is the correspondent bank for HKD, CNY and USD remittances:**
-  - Bank Name: Citibank N.A. Hong Kong
-  - SWIFT Code: CITIHKHXXXX
-  - Bank Code: 006
-  - Branch Name: Hong Kong Branch
-  - Branch Code: 391
-  - Bank Address: Citibank Tower, Citibank Plaza, 3 Garden Road, Central, Hong Kong
-- **BNY Mellon is the correspondent bank for other currencies:**
-  - Bank Name: THE BANK OF NEW YORK MELLON
-  - SWIFT Code: IRVTUS3NXXX
-  - Bank Address: THE BANK OF NEW YORK MELLON, 240 GREENWICH STREET, NEW YORK, United States
-
-### Crypto Donation
-
-If this project helps you, scan the QR code to donate, thank you!
-
-| Network | QR Code | Wallet Address |
-|---|---|---|
-| BNB Smart Chain (BEP20) | [<img src="../coin/1.jpg" width="150" alt="BNB Smart Chain (BEP20)">](../coin/1.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
-| Tron (TRC20) | [<img src="../coin/2.jpg" width="150" alt="Tron (TRC20)">](../coin/2.jpg) | `TEdDHWLajt1XvqtPDWmQctdrJaC3pzZZzz` |
-| Ethereum (ERC20) | [<img src="../coin/3.jpg" width="150" alt="Ethereum (ERC20)">](../coin/3.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
-| Aptos | [<img src="../coin/4.jpg" width="150" alt="Aptos">](../coin/4.jpg) | `0x836e3780edfc3f7b2372b39e2a1a3a5d7adfaccd96c726f21cfde1b50dd68030` |
-| Plasma | [<img src="../coin/5.jpg" width="150" alt="Plasma">](../coin/5.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
-| Polygon POS | [<img src="../coin/6.jpg" width="150" alt="Polygon POS">](../coin/6.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
-| Solana | [<img src="../coin/7.jpg" width="150" alt="Solana">](../coin/7.jpg) | `2hfhboHdmdrYsY25XfQSsEWxq5ip4EQsR7f4AzSRMUyr` |
-| The Open Network (TON) | [<img src="../coin/8.jpg" width="150" alt="The Open Network (TON)">](../coin/8.jpg) | `UQB9kFQohzmXUir9QSSZq01iwl9aQZIDdBpNmDklljRtCoGK` |
-| Arbitrum One | [<img src="../coin/9.jpg" width="150" alt="Arbitrum One">](../coin/9.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
-| AVAX C-Chain | [<img src="../coin/10.jpg" width="150" alt="AVAX C-Chain">](../coin/10.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
-

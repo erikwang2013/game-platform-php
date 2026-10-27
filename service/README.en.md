@@ -1,11 +1,10 @@
 # service/ — C-Side User Platform API Service
 <!-- lang-nav -->
 
-Languages: [中文](README.md) · **English** · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+Languages: [中文](README.md) · **English**
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
-The C-side user platform API service, a high-performance PHP backend built on webman v2 (Workerman), provides users with the full game aggregation platform experience: registration and login, wallet, deposit, withdrawal, exchange, games, leaderboards, coupons, support tickets, VIP, achievements, social features and announcements.
 
 ## Feature List
 
@@ -18,10 +17,8 @@ The C-side user platform API service, a high-performance PHP backend built on we
 | Exchange | Real-time platform token ⇄ game currency quotes, VIP discounts and rate bonuses |
 | Games | Game list/categories/search, game records, Provider settlement callbacks |
 | Leaderboards | Daily/weekly/monthly/all-time (REST) |
-| Coupons | Fixed amount + percentage discounts, time and quantity limited |
 | Tickets | Users create/reply to support tickets |
 | VIP | 5-tier loyalty, experience accumulation, exchange discounts |
-| Achievements | 12 built-in achievements, event-driven detection |
 | Social | Friend system + WebSocket real-time messaging |
 | Announcements | In-app announcements + notifications/email |
 
@@ -42,7 +39,6 @@ service/
 │   ├── activity/           # Activity handlers
 │   ├── api/v1/controller/  # C-side API controllers (35)
 │   ├── bootstrap/          # Notification bootstrap
-│   ├── cdn/                # Multi-vendor CDN (Aliyun/Tencent/Huawei/Cloudflare/CloudFront + CdnFactory)
 │   ├── common/             # Common
 │   ├── middleware/         # Middleware (Cors/SecurityFilter/RateLimit/TraceId/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
 │   ├── model/              # Data models

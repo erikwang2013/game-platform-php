@@ -82,7 +82,6 @@ open-admin/
 │   ├── model/                  # 数据模型（6 个）
 │   └── process/                # 进程 (Http, Monitor, RiskIpCron, ExportTmpCleanup)
 ├── apps/
-│   ├── angular/                # Angular Web 管理后台
 │   ├── react/                  # React Web 管理后台
 │   ├── flutter/                # Flutter Web 管理后台
 │   │   └── lib/app/
@@ -97,7 +96,6 @@ open-admin/
 │   │       ├── services/       # ApiService + AuthService
 │   │       ├── layouts/        # 响应式布局
 │   │       └── theme/          # Material 3 主题
-│   └── harmonyos/              # HarmonyOS 客户端
 ├── config/                     # 配置文件
 │   ├── route.php               # 路由 + API 版本策略
 │   └── middleware.php           # 全局中间件注册
@@ -130,7 +128,6 @@ open-admin/
 ├── docker-compose.yml          # Docker 编排
 └── .github/
     └── workflows/
-        └── ci.yml              # CI/CD 流水线（7 个 job：php-syntax / composer-audit / frontend-react / frontend-angular / frontend-flutter / phpunit-admin / phpunit-service；release.yml 另 1 个 release，仅手动触发）
 ```
 
 ## 中间件执行链
@@ -193,7 +190,6 @@ Redis 滑动窗口（Lua 原子化），默认 60 次/分钟/IP/路由：
 - Token 持久化使用 `shared_preferences`
 - 响应式断点: 移动端 (< 768px) 与桌面端 (>= 768px)
 
-### HarmonyOS
 - 使用 `@ohos.net.http` 原生 HTTP 客户端
 - Token 无感刷新：401 时自动调用 `/api/v1/auth/refresh`
 - 刷新失败自动重定向登录页
@@ -238,7 +234,6 @@ docker-compose up -d
 - `open_admin_active_users` / `open_admin_total_users` — 活跃/累计用户数
 - `open_admin_db_up` / `open_admin_redis_up` / `open_admin_es_up` — 依赖可达性 (0/1)
 - `open_admin_memory_usage_bytes` / `open_admin_process_fd_count` / `open_admin_cpu_load_1m` / `open_admin_uptime_seconds` — 进程指标
-- `open_admin_withdraw_pending` / `open_admin_deposit_confirmed_today` / `open_admin_deposit_total_today` / `open_admin_deposit_success_rate_percent` / `open_admin_reconciliation_diff_pending` — 资金指标
 - `open_admin_mysql_connections` / `open_admin_redis_hit_rate_percent` / `open_admin_redis_memory_bytes` — 连接/缓存指标
 - `open_admin_event_emit_total` / `open_admin_event_consume_total` — 事件总线 counter
 - `open_admin_info` — 版本/运行时信息

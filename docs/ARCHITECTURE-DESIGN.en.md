@@ -1,7 +1,7 @@
 # Architecture Design Document
 <!-- lang-nav -->
 
-Languages: [中文](ARCHITECTURE-DESIGN.md) · **English** · [한국어](ARCHITECTURE-DESIGN.ko.md) · [Русский](ARCHITECTURE-DESIGN.ru.md) · [Deutsch](ARCHITECTURE-DESIGN.de.md) · [Français](ARCHITECTURE-DESIGN.fr.md) · [Español](ARCHITECTURE-DESIGN.es.md) · [Português](ARCHITECTURE-DESIGN.pt.md) · [हिन्दी](ARCHITECTURE-DESIGN.hi.md) · [العربية](ARCHITECTURE-DESIGN.ar.md) · [বাংলা](ARCHITECTURE-DESIGN.bn.md) · [Bahasa Indonesia](ARCHITECTURE-DESIGN.id.md) · [日本語](ARCHITECTURE-DESIGN.ja.md)
+Languages: [中文](ARCHITECTURE-DESIGN.md) · **English**
 
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
@@ -44,9 +44,7 @@ The modular monolith is chosen for the current stage:
 
 ### 2.3 Why Flutter Web PC Style?
 
-- One codebase compiles to Web (PC), iOS, Android, and HarmonyOS simultaneously
 - The Material 3 component library is mature; the PC-style sidebar + top bar layout works out of the box
-- Shares the business logic layer with the HarmonyOS client
 - Avoids maintaining two frontend codebases (React/Vue + Flutter)
 
 ## 3. Key Technical Decisions

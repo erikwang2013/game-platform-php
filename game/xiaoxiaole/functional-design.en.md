@@ -1,7 +1,7 @@
 # Pastoral Match-3 — Functional Design
 <!-- lang-nav -->
 
-Languages: [中文](functional-design.md) · **English** · [한국어](functional-design.ko.md) · [Русский](functional-design.ru.md) · [Deutsch](functional-design.de.md) · [Français](functional-design.fr.md) · [Español](functional-design.es.md) · [Português](functional-design.pt.md) · [हिन्दी](functional-design.hi.md) · [العربية](functional-design.ar.md) · [বাংলা](functional-design.bn.md) · [Bahasa Indonesia](functional-design.id.md) · [日本語](functional-design.ja.md)
+Languages: [中文](functional-design.md) · **English**
 
 
 > The specification of what players can see, do, and accept. For the technical layering see `architecture.md`; for the element vision see `design.md`; for scheduling see `plan.md`.

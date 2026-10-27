@@ -1,11 +1,10 @@
 # game_platform — User Platform (Flutter Web)
 <!-- lang-nav -->
 
-Languages: [中文](README.md) · **English** · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+Languages: [中文](README.md) · **English**
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
-The web frontend of the C-side user platform, built with Flutter 3.x, offering users the full game aggregation platform experience: registration and login, game lobby, wallet, deposit, withdrawal, exchange, leaderboards, coupons, notifications, chat, friends and support tickets.
 
 ## Feature List
 
@@ -18,8 +17,6 @@ The web frontend of the C-side user platform, built with Flutter 3.x, offering u
 | Withdrawal | Apply for withdrawal, review status tracking |
 | Exchange | Real-time platform token ⇄ game currency exchange |
 | Leaderboards | Daily/weekly/monthly/all-time |
-| Coupons | Claim and use |
-| Notifications | In-app messages (deposit/withdrawal/coupons, etc.) |
 | Chat | WebSocket real-time messaging |
 | Friends | Friend system |
 | Tickets | Create and reply to support tickets |

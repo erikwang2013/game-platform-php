@@ -1,7 +1,7 @@
 # Architecture Diagrams and Business Logic Diagrams
 <!-- lang-nav -->
 
-Languages: [中文](ARCHITECTURE.md) · **English** · [한국어](ARCHITECTURE.ko.md) · [Русский](ARCHITECTURE.ru.md) · [Deutsch](ARCHITECTURE.de.md) · [Français](ARCHITECTURE.fr.md) · [Español](ARCHITECTURE.es.md) · [Português](ARCHITECTURE.pt.md) · [हिन्दी](ARCHITECTURE.hi.md) · [العربية](ARCHITECTURE.ar.md) · [বাংলা](ARCHITECTURE.bn.md) · [Bahasa Indonesia](ARCHITECTURE.id.md) · [日本語](ARCHITECTURE.ja.md)
+Languages: [中文](ARCHITECTURE.md) · **English**
 
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
@@ -16,7 +16,6 @@ Languages: [中文](ARCHITECTURE.md) · **English** · [한국어](ARCHITECTURE.
 flowchart TB
     subgraph "Client Layer"
         A1["Flutter Web<br/>PC Admin Panel<br/>(Port 3000)"]
-        A2["HarmonyOS ArkTS<br/>Phone/Tablet Client"]
     end
 
     subgraph "Gateway/Edge Layer (Nginx Edge)"
@@ -38,7 +37,6 @@ flowchart TB
     end
 
     subgraph "External"
-        E1["DevEco Studio<br/>HarmonyOS build"]
         E2["Flutter SDK<br/>Web build"]
     end
 
@@ -568,7 +566,6 @@ flowchart TD
 
 ---
 
-## 11. HarmonyOS Page Routing
 
 ```mermaid
 flowchart LR

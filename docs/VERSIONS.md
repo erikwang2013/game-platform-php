@@ -1,7 +1,7 @@
 # 版本对比
 <!-- lang-nav -->
 
-Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md) · [Русский](VERSIONS.ru.md) · [Deutsch](VERSIONS.de.md) · [Français](VERSIONS.fr.md) · [Español](VERSIONS.es.md) · [Português](VERSIONS.pt.md) · [हिन्दी](VERSIONS.hi.md) · [العربية](VERSIONS.ar.md) · [বাংলা](VERSIONS.bn.md) · [Bahasa Indonesia](VERSIONS.id.md) · [日本語](VERSIONS.ja.md)
+Languages: **中文** · [English](VERSIONS.en.md)
 
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
@@ -17,8 +17,6 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | 共享 Service | 无共享层 | 无共享层 | `packages/platform-common` 单一共享包 |
 | Admin 前端页面 | 11 | 13 | 15 |
 | Platform 前端页面 | 8 | 10 | 10 |
-| HarmonyOS (admin) | - | 登录+仪表盘 | **19 页** `admin/apps/harmonyos/` |
-| HarmonyOS (C端) | - | - | **8 页** `apps/harmonyos/`（登录/游戏大厅/详情/钱包/我的） |
 | Docker 服务 | - | - | **7** (nginx/admin/service/leaderboard-ws/mysql/redis/elasticsearch) |
 | 测试用例 | 60 | 60 | admin 593 用例 / 70 文件；service 549 用例 / 89 文件 |
 
@@ -87,7 +85,6 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | Excel 导出 | ✓ | ✓ | ✓ |
 | PDF 导出 | ✓ | ✓ | ✓ |
 | 仪表盘真实图表 | - | - | ✓ fl_chart |
-| 优惠券系统 | - | - | ✓ |
 | 排行榜 (日/周/月/总) | - | - | ✓ Redis缓存 |
 | WebSocket 实时排行榜 | - | - | - 已移除（2026-10-02） |
 | 通知系统 (站内+邮件) | - | - | ✓ |
@@ -132,7 +129,6 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 | webman 独立部署 | ✓ | ✓ | ✓ |
 | Docker Compose | - | - | ✓ 7服务 |
 | Nginx 反向代理 | - | - | ✓ |
-| CDN | - | - | ✓ 五厂商接入 + 管理端配置/启停/连通测试（凭据加密，service 纯 DB 读取） |
 | Crontab 定时任务 | - | ✓ | ✓ |
 | Prometheus 监控 | ✓ | ✓ | ✓ `/metrics` 业务 gauge + 事件 counter |
 | 健康检查 | ✓ | ✓ | ✓ |
@@ -146,8 +142,6 @@ Languages: **中文** · [English](VERSIONS.en.md) · [한국어](VERSIONS.ko.md
 |------|--------|--------|--------|
 | Flutter Web PC 管理后台 | ✓ 5页 | ✓ 11页 | ✓ 17页 |
 | Flutter Web PC 用户平台 | ✓ 5页 | ✓ 8页 | ✓ 10页 |
-| HarmonyOS admin | - | ✓ 登录+仪表盘 | ✓ 19页 `admin/apps/harmonyos/` |
-| HarmonyOS C端 | - | - | ✓ 8页 `apps/harmonyos/` |
 
 ---
 
@@ -175,15 +169,12 @@ game_withdraw_limit, game_risk_rule, game_risk_log, game_stat_daily
 ### 完整版新增 (13张)
 ```
 game_game_category, game_game_category_rel, game_leaderboard,
-game_coupon, game_user_coupon, game_language, game_translation,
 game_country_config, game_platform_revenue,
 game_notification, game_referral, game_referral_reward, game_user_2fa
 ```
 
 ### v1.3.15-22 新增 (22张)
 ```
-game_event_outbox, game_reconciliation_batch, game_reconciliation_diff,
-game_reconciliation_statement, game_device_fingerprint, game_device_account_map,
 game_ip_reputation, game_account_account_link,
 game_activity, game_activity_participation, game_activity_reward_log,
 game_anticheat_event, game_anticheat_daily_stat,
@@ -194,9 +185,7 @@ game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, gam
 ### 生态扩展 v2.0 新增 (14张)
 ```
 game_ticket, game_ticket_reply, game_device_token, game_vip_level,
-game_user_vip, game_exp_log, game_achievement, game_user_achievement,
-game_friend, game_message, game_cdn_provider, game_referral_commission,
-game_tournament, game_tournament_entry
+game_friend, game_message, game_referral_commission,
 ```
 
 ### v1.3.44 新增 (1张)
@@ -219,7 +208,6 @@ game_wallet_hold
 | 游戏 | 3 | 4 | 7 (+区服+记录+搜索) |
 | 用户 | 2 | 2 | 7 (+KYC+GDPR+隐私) |
 | 管理后台 | 18 | 25 | 79 |
-| 运营工具 | - | - | 30 (+排行榜+优惠券+通知+推荐) |
 | 国际化 | 2 | 2 | 4 (+国家配置) |
 | **总计** | **38** | **54** | **~260** |
 
@@ -235,15 +223,12 @@ game_wallet_hold
 | 邮箱验证 | 6位验证码、Redis 10分钟过期、60秒重发限制 |
 | 推送通知 | PushService (FCM/APNs/华为推送) |
 | VIP 体系 | 5级、经验值累计、自动升级、兑换折扣、提现减免、汇率加成 |
-| 成就系统 | 12个内置成就、事件驱动检测、进度追踪 |
 | 好友系统 | 申请/接受/拒绝/删除/搜索 |
 | 私信/聊天 | REST + WebSocket 实时消息 (端口8791) |
 | 事件总线 | Redis Pub/Sub；emit INCR `metrics:event_*`；消费进程 `EventConsumer` 已落地 |
 | 特性开关 | FeatureFlag 基于DB；`inRollout`/`abTest` 读 `feature.{name}_percent` |
 | Webhook | - | - | ✓ 7种事件+Pub/Sub投递 |
 | 聊天 | - | - | ✓ REST+WebSocket :8791 |
-| 赛事系统 | - | - | ✓ FeatureFlag+tournament |
-| 优惠券条件 | - | - | ✓ min_deposit/first_user/game_id |
 | 多级返佣 | - | - | ✓ 二级分润 |
 | SDK文档 | - | - | ✓ PHP/Go/Python |
 | 高级分析 | 留存/D1-D30、转化漏斗、ARPU/ARPPU |
@@ -252,10 +237,8 @@ game_wallet_hold
 ```
 game_ticket, game_ticket_reply, game_device_token,
 game_vip_level, game_user_vip, game_exp_log,
-game_achievement, game_user_achievement,
 game_friend, game_message
-game_cdn_provider, game_referral_commission,
-game_tournament, game_tournament_entry
+game_referral_commission,
 ```
 
 ### 新增 Provider API 端点 (4个)
@@ -268,7 +251,6 @@ POST /api/provider/refund   — 通知退款
 
 ### 新增 C端 API 端点 (8个)
 
-> **尚未实现**：`GET /api/v1/user/vip-status` 与 `GET /api/v1/user/achievements` 两条 C 端路由未注册（`service/config/route.php` 无对应条目），当前请求返回 404。实现后请删除本行。
 
 ```
 POST /api/v1/verify/send-email    — 发送邮箱验证码
@@ -278,7 +260,6 @@ POST /api/v1/ticket/create           — 创建工单
 GET  /api/v1/ticket/{hashid}         — 工单详情
 POST /api/v1/ticket/{hashid}/reply   — 回复工单
 GET  /api/v1/user/vip-status         — VIP状态
-GET  /api/v1/user/achievements       — 成就列表
 ```
 
 ### 新增管理后台 API 端点 (9个)

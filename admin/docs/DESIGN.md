@@ -1,7 +1,7 @@
 # 开放管理后台 — 设计文档
 <!-- lang-nav -->
 
-Languages: **中文** · [English](DESIGN.en.md) · [한국어](DESIGN.ko.md) · [Русский](DESIGN.ru.md) · [Deutsch](DESIGN.de.md) · [Français](DESIGN.fr.md) · [Español](DESIGN.es.md) · [Português](DESIGN.pt.md) · [हिन्दी](DESIGN.hi.md) · [العربية](DESIGN.ar.md) · [বাংলা](DESIGN.bn.md) · [Bahasa Indonesia](DESIGN.id.md) · [日本語](DESIGN.ja.md)
+Languages: **中文** · [English](DESIGN.en.md)
 
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
@@ -16,7 +16,6 @@ Languages: **中文** · [English](DESIGN.en.md) · [한국어](DESIGN.ko.md) ·
 ┌──────────────────────────────────────────────────────────────┐
 │                        客户端层                               │
 │  ┌──────────────────────┐  ┌──────────────────────────────┐  │
-│  │  Flutter Web (PC)    │  │  HarmonyOS ArkTS (Mobile)    │  │
 │  │  管理后台 (桌面风格)   │  │  客户端 (手机/平板/2in1)      │  │
 │  └──────────┬───────────┘  └──────────────┬───────────────┘  │
 └─────────────┼──────────────────────────────┼─────────────────┘
@@ -345,7 +344,6 @@ curl http://host/api/v2/auth/login
 
 特性: 侧边栏可折叠、Material 3 双主题、数据表格高密度、弹窗 Dialog、鼠标悬停交互
 
-### 5.2 HarmonyOS 移动端
 
 页面路由:
 
@@ -377,9 +375,7 @@ curl http://host/api/v2/auth/login
 - `.modal-sm` 340px ↔ 20px 横向内边距 ↔ 验证码画布 300×200 是**一组等式**（`src/index.css:573`）。全局是 `box-sizing: border-box`，给 `.modal` 加 `border` 会把画布压到 298 —— 描边只能走 `box-shadow: 0 0 0 1px`。
 - `--amber` 是唯一被 TSX 引用的令牌（`src/pages/LoginPage.tsx`），改名会静默失效。
 
-### 5.4 Angular 管理端
 
-设计令牌：**Inkwell Console（墨砚控制台）**，自述位于 `src/styles.scss` 文件头。栈：Angular standalone 组件 + Router；单测经 `@angular/build:unit-test`（`angular.json:78`）跑在 vitest 上；产物挂在 `/admin-angular/` 下。
 
 | 层 | 位置 | 说明 |
 |------|------|------|
@@ -501,7 +497,6 @@ GitHub Actions 持续集成定义在 `.github/workflows/ci.yml`：
 
 ### 8.5 监控
 
-`GET /metrics` 端点（`MetricsController`）以 Prometheus text format 暴露 18 个 gauge 指标：活跃/总用户数、DB/Redis/ES 连接状态、内存/CPU/进程指标、提现待处理与对账差异。
 
 ### 8.6 环境要求
 
@@ -513,4 +508,3 @@ GitHub Actions 持续集成定义在 `.github/workflows/ci.yml`：
 | Redis | 6.x | 7.x 哨兵模式 |
 | Nginx | 1.20+ | 反向代理 + gzip + SSL |
 | Flutter SDK | 3.41+ | 最新稳定版 |
-| HarmonyOS | API 12 | DevEco Studio 5.x |

@@ -1,7 +1,7 @@
 # 田园消消乐 — 技术架构
 <!-- lang-nav -->
 
-Languages: **中文** · [English](architecture.en.md) · [한국어](architecture.ko.md) · [Русский](architecture.ru.md) · [Deutsch](architecture.de.md) · [Français](architecture.fr.md) · [Español](architecture.es.md) · [Português](architecture.pt.md) · [हिन्दी](architecture.hi.md) · [العربية](architecture.ar.md) · [বাংলা](architecture.bn.md) · [Bahasa Indonesia](architecture.id.md) · [日本語](architecture.ja.md)
+Languages: **中文** · [English](architecture.en.md)
 
 
 > 玩家功能与验收见 `functional-design.md`；排期见 `plan.md`；主题愿景见 `design.md`。

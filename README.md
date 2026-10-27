@@ -1,8 +1,7 @@
 # 全球游戏聚合平台 (Global Game Platform)
 <!-- lang-nav -->
 
-Languages: **中文** · [English](docs/translations/README.en.md) · [한국어](docs/translations/README.ko.md) · [Русский](docs/translations/README.ru.md) · [Deutsch](docs/translations/README.de.md) · [Français](docs/translations/README.fr.md) · [Español](docs/translations/README.es.md) · [Português](docs/translations/README.pt.md) · [हिन्दी](docs/translations/README.hi.md) · [العربية](docs/translations/README.ar.md) · [বাংলা](docs/translations/README.bn.md) · [Bahasa Indonesia](docs/translations/README.id.md) · [日本語](docs/translations/README.ja.md)
-
+Languages: **中文** · [English](docs/translations/README.en.md)
 
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
@@ -17,9 +16,6 @@ Languages: **中文** · [English](docs/translations/README.en.md) · [한국어
 
 | 版本 | 目标 | 状态 |
 |------|------|------|
-| 完整版 | 完全体：排行榜、优惠券、游戏分类、国家配置、ES搜索 | 已完成 |
-| 生态扩展 | v2.0：游戏Provider接入、工单、VIP、成就、社交、事件总线 | 已完成 |
-| v1.3.15-22 (8版本) | 对账/结算、风控纵深、统一钱包、活动引擎、反作弊、社交拉新、Adyen/GrabPay | 已完成 |
 
 ## 技术栈
 
@@ -38,8 +34,6 @@ Languages: **中文** · [English](docs/translations/README.en.md) · [한국어
 
 | 目录树 | 定位 | 请求前缀 | 对应后端 | 技术栈 |
 |--------|------|---------|---------|--------|
-| `apps/*` | **C 端玩家端** | `/api/v1/...` | service（默认 8792） | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
-| `admin/apps/*` | **管理台** | `/admin/v1/...` | admin（默认 8789） | Flutter Web / React 19 (Vite) / Angular 21 / HarmonyOS ArkTS |
 
 - 响应式布局 (Phone / Tablet / Desktop)
 - 国际化 (i18n)：13 语言切换
@@ -72,17 +66,12 @@ game-platform-php/
 │   └── apps/                  #   管理台前端（4 端，调 /admin/v1 → admin:8789）
 │       ├── flutter/           #     Flutter Web PC 管理后台
 │       ├── react/             #     React 19 (Vite) 管理台
-│       ├── angular/           #     Angular 21 管理台
-│       └── harmonyos/         #     HarmonyOS ArkTS 管理台（.hap，不经 nginx）
 │
 ├── service/                   # C端业务端 (webman v2, 默认端口 8792，APP_PORT 可配)
 │   ├── app/api/v1/controller/ #   C端 API 控制器
 │   ├── app/middleware/        #   中间件 (TraceId/Cors/SecurityFilter/RateLimit/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
 │   ├── app/model/             #   仅 service 独有的模型 (10 个，其余 52 个共享模型在 packages/)
-│   ├── app/service/           #   仅 service 独有的服务 (钱包/风控/合规/推送/成就/反作弊等)
 │   ├── app/payment/           #   18 个支付网关适配器 (Stripe/PayPal/Adyen/NowPayments/Skrill…) + GatewayFactory
-│   ├── app/cdn/               #   五厂商 CDN 适配器 (Cloudflare/CloudFront/阿里/腾讯/华为) + CdnFactory
-│   ├── app/process/           #   常驻进程 (Http/Monitor/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
 │   ├── app/provider/          #   游戏Provider层
 │   ├── app/activity/          #   活动引擎
 │   ├── app/event/             #   事件总线 (EventBus Redis Pub/Sub)
@@ -100,8 +89,6 @@ game-platform-php/
 ├── apps/                      # C 端玩家端前端（4 端，调 /api/v1 → service:8792）
 │   ├── flutter/platform/      #   Flutter Web PC C端用户平台
 │   ├── react/                 #   React 19 (Vite) C端
-│   ├── angular/               #   Angular 21 C端
-│   └── harmonyos/             #   HarmonyOS ArkTS C端（.hap，不经 nginx）
 │
 ├── game/xiaoxiaole/           # 内置小游戏「田园消消乐」：TypeScript + Vite + Vitest，src/domain 领域引擎 + 四关设计 + tests/，13 语言设计文档
 │
@@ -229,17 +216,13 @@ cd ../service && composer install && php start.php start -d
 ```bash
 # --- C 端玩家端（/api/v1 → service:8792）---
 cd apps/react            && npm install && npm run dev      # http://localhost:5173
-cd apps/angular          && npm install && npm start        # http://localhost:4200
 cd apps/flutter/platform && flutter pub get && flutter run -d chrome
 
 # --- 管理台（/admin/v1 → admin:8789）---
 cd admin/apps/react      && npm install && npm run dev      # http://localhost:5273
-cd admin/apps/angular    && npm install && npm start        # http://localhost:4300
 cd admin/apps/flutter    && flutter pub get && flutter run -d chrome
 ```
 
-> Angular dev server 端口：管理台在 `angular.json` 里显式配了 4300，C 端沿用 Angular 默认 4200；同时跑需给其中一个加 `--port`。
-> HarmonyOS 端（`apps/harmonyos`、`admin/apps/harmonyos`）用 DevEco Studio 打开构建，
 > 模拟器访问宿主机后端用 `http://10.0.2.2:<端口>`（见各自 `ApiService.ets` 顶部常量）。
 
 ### 前端部署（Docker/Nginx）
@@ -251,13 +234,10 @@ cd admin/apps/flutter    && flutter pub get && flutter run -d chrome
 |-----|-----------|---------|
 | `/` | `apps/flutter/platform/build/web` | `flutter build web` |
 | `/app-react/` | `apps/react/dist` | `npm run build`（脚本内含 `--base=/app-react/`） |
-| `/app-angular/` | `apps/angular/dist/game-client-angular/browser` | `npm run build`（脚本内含 `--base-href=/app-angular/`） |
 | `/admin-panel/` | `admin/public` | 通用投放位：把任一控制台产物拷进 `admin/public` 即可；未放入时同样返回 404（裸目录 403）。注意产物须以 `--base=/admin-panel/`（Flutter 为 `--base-href=/admin-panel/`）构建，否则其资源仍指向原前缀而 404。无斜杠形式会 301 到本地址；`nginx.conf.template` 已设 `absolute_redirect off`，该跳转为相对 Location，非 80 端口部署不再丢端口 |
 | `/admin-react/` | `admin/apps/react/dist` | `npm run build`（脚本内含 `--base=/admin-react/`） |
-| `/admin-angular/` | `admin/apps/angular/dist/game-admin-angular/browser` | `npm run build`（脚本内含 `--base-href=/admin-angular/`） |
 | `/admin-flutter/` | `admin/apps/flutter/build/web` | `flutter build web --base-href=/admin-flutter/` |
 
-`/admin/`（API）→ admin 容器，`/api/`（API）→ service 容器；HarmonyOS 端分发 `.hap` 安装包，不经 nginx。
 
 ### 验证
 
@@ -333,9 +313,6 @@ cd admin/apps/flutter && flutter test --timeout 300s
 | 游戏 | CRUD + 分类(10类) + 区服 + 游戏记录追踪 |
 | 搜索 | Elasticsearch 全文检索(含LIKE回退) |
 | 排行榜 | 日/周/月/总榜、Redis缓存（实时推送未实现，WS 子系统已于 2026-10-02 移除） |
-| CDN | 五厂商接入（Cloudflare R2 / AWS S3 / 阿里OSS / 腾讯COS / 华为OBS 上传+刷新+预热）+ 管理端配置/启停/连通测试 |
-| 优惠券 | 固定金额+比例折扣、限时限量、领取使用追踪 |
-| 通知 | 站内信+邮件、充值/提现/KYC/优惠券自动通知 |
 | 推荐 | 推荐码、注册奖励、充值返佣 |
 | 风控 | IP黑名单/大额预警/频率/速度检测 |
 | 风控纵深 | 设备指纹/IP信誉/账号关联图谱 + 规则引擎 + 风控看板 + AML/KYC/信任分 |
@@ -351,13 +328,10 @@ cd admin/apps/flutter && flutter test --timeout 300s
 | 游戏接入 | Provider SDK (Self+ThirdParty) + HMAC-SHA256 签名 + 回调网关 |
 | 工单 | C端创建/回复 + 管理端处理/分配/关闭 |
 | VIP | 5级忠诚度、经验值累计、兑换折扣/提现减免/汇率加成 |
-| 成就 | 12个内置成就、事件驱动检测、进度追踪 |
 | 社交 | 好友系统 + WebSocket 实时私信 (默认端口 8791，CHAT_WS_PORT 可配)、仅好友可发 |
 | 返佣 | 二级推荐分润 (可配置佣金率) |
-| 优惠券 | 条件限制 (min_deposit/first_user/game_id) |
 | 事件 | Redis Pub/Sub 事件总线 + Webhook订阅投递 (7种事件) |
 | 部署 | Docker Compose 7 服务编排（端口由根 .env 配置） + Nginx反向代理 |
-| 客户端 | 管理台 4 端（Flutter/React/Angular/HarmonyOS）+ C 端 4 端（Flutter/React/Angular/HarmonyOS） |
 
 ## 业务模型
 
@@ -492,58 +466,6 @@ flowchart LR
   </table>
 </p>
 
-### 全球转账（Global Bank Transfer）
-
-**收款人信息（Recipient）**
-
-| 项 | 内容 |
-|----|------|
-| 收款人姓名（Beneficiary Name） | WANG KEXUN |
-| 收款账户号码（Account Number） | 881015918251 |
-
-**收款银行（Beneficiary Bank）**
-
-| 项 | 内容 |
-|----|------|
-| SWIFT Code | AABLHKHHXXX |
-| 银行名称（Bank Name） | ZA Bank Limited |
-| 银行编号（Bank Code） | 387 |
-| 银行地址（Bank Address） | Core F, Cyberport 3, 100 Cyberport Road, Hong Kong |
-
-**跨境汇款代理银行（Correspondent Bank，如需）**
-
-> 请留意，此为跨境汇款代理银行（中转银行）信息，非收款银行信息。请向汇款银行查询是否需要提供跨境汇款代理银行信息。
-
-- **汇入港元、人民币及美元的代理银行为 Citibank：**
-  - 银行名称：Citibank N.A. Hong Kong
-  - SWIFT Code：CITIHKHXXXX
-  - 银行编号：006
-  - 分行名称：Hong Kong Branch
-  - 分行编号：391
-  - 银行地址：Citibank Tower, Citibank Plaza, 3 Garden Road, Central, Hong Kong
-- **汇入其他币种时的代理银行为 BNY Mellon：**
-  - 银行名称：THE BANK OF NEW YORK MELLON
-  - SWIFT Code：IRVTUS3NXXX
-  - 银行地址：THE BANK OF NEW YORK MELLON, 240 GREENWICH STREET, NEW YORK, United States
-
-### 虚拟币打赏 (Crypto Donation)
-
-如果这个项目对你有帮助，欢迎扫描二维码打赏支持，谢谢！
-
-| 主网 (Network) | 二维码 (QR Code) | 钱包地址 (Wallet Address) |
-|---|---|---|
-| BNB Smart Chain (BEP20) | [<img src="docs/coin/1.jpg" width="150" alt="BNB Smart Chain (BEP20)">](docs/coin/1.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
-| Tron (TRC20) | [<img src="docs/coin/2.jpg" width="150" alt="Tron (TRC20)">](docs/coin/2.jpg) | `TEdDHWLajt1XvqtPDWmQctdrJaC3pzZZzz` |
-| Ethereum (ERC20) | [<img src="docs/coin/3.jpg" width="150" alt="Ethereum (ERC20)">](docs/coin/3.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
-| Aptos | [<img src="docs/coin/4.jpg" width="150" alt="Aptos">](docs/coin/4.jpg) | `0x836e3780edfc3f7b2372b39e2a1a3a5d7adfaccd96c726f21cfde1b50dd68030` |
-| Plasma | [<img src="docs/coin/5.jpg" width="150" alt="Plasma">](docs/coin/5.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
-| Polygon POS | [<img src="docs/coin/6.jpg" width="150" alt="Polygon POS">](docs/coin/6.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
-| Solana | [<img src="docs/coin/7.jpg" width="150" alt="Solana">](docs/coin/7.jpg) | `2hfhboHdmdrYsY25XfQSsEWxq5ip4EQsR7f4AzSRMUyr` |
-| The Open Network (TON) | [<img src="docs/coin/8.jpg" width="150" alt="The Open Network (TON)">](docs/coin/8.jpg) | `UQB9kFQohzmXUir9QSSZq01iwl9aQZIDdBpNmDklljRtCoGK` |
-| Arbitrum One | [<img src="docs/coin/9.jpg" width="150" alt="Arbitrum One">](docs/coin/9.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
-| AVAX C-Chain | [<img src="docs/coin/10.jpg" width="150" alt="AVAX C-Chain">](docs/coin/10.jpg) | `0x355d429f97511897ccb4e271ec888205f9ab6629` |
-
-<!-- pet-expressions:start -->
 ## 项目宠物表情形态 · Dicey
 
 <table align="center">
@@ -565,3 +487,15 @@ SVG / PNG）**不是开源资产**，版权归作者所有。未经书面许可�
 > 代码部分仍遵循仓库原有 `LICENSE`；第三方素材（如明确标注的 Go Gopher 等）仍遵循其原许可证。
 <!-- assets-license:end -->
 
+
+## 项目授权 / Project License
+
+Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+
+- 本项目仅供个人学习、研究使用。
+- 未经作者书面授权，禁止任何形式的商业使用（包括但不限于商业部署、付费服务、二次销售、SaaS 运营及以本项目为基础提供商业服务）。
+- 商业授权请联系 **erik@erik.xyz**。
+- 未经授权的商业使用，作者将在全球范围内依法追究法律责任，并保留终身追责的权利。
+- 第三方组件仍遵循其各自原有的许可证；视觉资产适用仓库内的 ASSETS-LICENSE.md（如适用）。
+
+**English:** This project is provided for personal study and research only. Commercial use of any kind requires prior written authorization from the author (erik@erik.xyz). Unauthorized commercial use will be pursued for legal liability worldwide, and the author reserves the right to pursue such liability for life. Third-party components remain under their original licenses; visual assets are governed by ASSETS-LICENSE.md where applicable.

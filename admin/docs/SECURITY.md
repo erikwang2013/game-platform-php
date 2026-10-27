@@ -1,7 +1,7 @@
 # 安全架构设计文档
 <!-- lang-nav -->
 
-Languages: **中文** · [English](SECURITY.en.md) · [한국어](SECURITY.ko.md) · [Русский](SECURITY.ru.md) · [Deutsch](SECURITY.de.md) · [Français](SECURITY.fr.md) · [Español](SECURITY.es.md) · [Português](SECURITY.pt.md) · [हिन्दी](SECURITY.hi.md) · [العربية](SECURITY.ar.md) · [বাংলা](SECURITY.bn.md) · [Bahasa Indonesia](SECURITY.id.md) · [日本語](SECURITY.ja.md)
+Languages: **中文** · [English](SECURITY.en.md)
 
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
@@ -60,7 +60,6 @@ GET, POST, PUT, DELETE, OPTIONS, HEAD
 | 事件属性 | `\bon\w+\s*=\s*[\"\']?\s*(?:javascript\|vbscript):` | `onclick="javascript:..."` 等内联事件 |
 | JS 伪协议 | `(?:javascript\|vbscript)\s*:\s*(?:[^\s]*\s*)?(?:eval\|alert\|prompt\|confirm\|document\.cookie\|location\s*=)` | `javascript:eval(...)`, `javascript:alert(1)` 等 |
 | Data URI XSS | `data\s*:\s*text\s*\/\s*html\s*(?:;base64)?\s*,` | `data:text/html,<script>`, `data:text/html;base64,...` 等 |
-| 模板注入 | `\{\{.*?\}\}` | `{{constructor}}`, `{{7*7}}` 等服务端/Angular/Vue 模板注入 |
 
 ### 2.2 SQL 注入
 
@@ -444,7 +443,6 @@ OperationLog 中间件对 POST / PUT / DELETE 请求自动记录操作日志。G
 | Linux | `Linux` |
 | iOS | `iPhone`, `iOS`, `CFNetwork` |
 | Android | `Android` |
-| HarmonyOS | `HarmonyOS`, `OpenHarmony` |
 | Web | 兜底默认值 |
 
 **容错**：日志写入异常不阻塞业务请求（`catch (\Throwable)` 静默吞掉）。

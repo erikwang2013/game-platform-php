@@ -30,8 +30,7 @@
   <rect x="30" y="296" width="440" height="180" rx="10" fill="#fef3c7" stroke="#fcd34d" stroke-width="2"/>
   <text x="250" y="320" text-anchor="middle" fill="#92400e" font-size="15" font-weight="bold">Phase 3: User Engagement</text>
   <rect x="50" y="340" width="190" height="55" rx="6" fill="#fde68a"/><text x="145" y="358" text-anchor="middle" fill="#78350f" font-size="12">VIP system (5 levels)</text><text x="145" y="373" text-anchor="middle" fill="#64748b" font-size="10">EXP: deposit/login/KYC/referral</text><text x="145" y="386" text-anchor="middle" fill="#64748b" font-size="10">Discounts: exch 2-15% / fees 10-100%</text>
-  <rect x="260" y="340" width="190" height="55" rx="6" fill="#fde68a"/><text x="355" y="358" text-anchor="middle" fill="#78350f" font-size="12">Achievement system</text><text x="355" y="373" text-anchor="middle" fill="#64748b" font-size="10">12 built-in achievements</text><text x="355" y="386" text-anchor="middle" fill="#64748b" font-size="10">Event-driven + progress tracking</text>
-  <rect x="50" y="410" width="400" height="55" rx="6" fill="#fde68a"/><text x="250" y="430" text-anchor="middle" fill="#78350f" font-size="12">VipService: EXP accumulation + auto upgrade + benefits</text><text x="250" y="445" text-anchor="middle" fill="#64748b" font-size="10">AchievementService: condition checks (count/sum/dedupe/streak)</text>
+  <rect x="50" y="410" width="400" height="55" rx="6" fill="#fde68a"/><text x="250" y="430" text-anchor="middle" fill="#78350f" font-size="12">VipService: EXP accumulation + auto upgrade + benefits</text>
   <text x="250" y="468" text-anchor="middle" fill="#92400e" font-size="11" font-style="italic">ExchangeController / WithdrawController — VIP discount integration</text>
 
   <!-- Phase 4: Social -->
@@ -46,13 +45,13 @@
   <text x="480" y="520" text-anchor="middle" fill="#334155" font-size="15" font-weight="bold">Phase 5 + P2/P3 Expansion</text>
   <rect x="50" y="540" width="270" height="45" rx="6" fill="#e2e8f0"/><text x="185" y="558" text-anchor="middle" fill="#334155" font-size="12">EventBus (Redis Pub/Sub)</text><text x="185" y="573" text-anchor="middle" fill="#64748b" font-size="10">user.registered / deposit.completed / game.played</text>
   <rect x="345" y="540" width="270" height="45" rx="6" fill="#e2e8f0"/><text x="480" y="558" text-anchor="middle" fill="#334155" font-size="12">Advanced analytics (ClickHouse)</text><text x="480" y="573" text-anchor="middle" fill="#64748b" font-size="10">Retention D1-D30 / funnel / ARPU / economy</text>
-  <rect x="640" y="540" width="270" height="45" rx="6" fill="#e2e8f0"/><text x="775" y="558" text-anchor="middle" fill="#334155" font-size="12">FeatureFlag (DB-based)</text><text x="775" y="573" text-anchor="middle" fill="#64748b" font-size="10">tournament / chat / vip / achievements</text>
+  <rect x="640" y="540" width="270" height="45" rx="6" fill="#e2e8f0"/><text x="775" y="558" text-anchor="middle" fill="#334155" font-size="12">FeatureFlag (DB-based)</text><text x="775" y="573" text-anchor="middle" fill="#64748b" font-size="10">chat / vip</text>
   <rect x="50" y="600" width="860" height="27" rx="6" fill="#94a3b8"/><text x="480" y="618" text-anchor="middle" fill="#fff" font-size="12">+10 new tables  |  +51 new files  |  0 new dependencies  |  BC Math 8-digit precision  |  fully backward compatible</text>
 
   <!-- Database Summary -->
   <rect x="30" y="656" width="900" height="70" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="480" y="680" text-anchor="middle" fill="#334155" font-size="14" font-weight="bold">Database: 42 → 52 tables</text>
-  <text x="480" y="700" text-anchor="middle" fill="#64748b" font-size="11">New:game_ticket,game_ticket_reply,game_device_token,game_vip_level,game_user_vip,game_exp_log,game_achievement,game_user_achievement,game_friend,game_message</text>
+  <text x="480" y="700" text-anchor="middle" fill="#64748b" font-size="11">New:game_ticket,game_ticket_reply,game_device_token,game_vip_level,game_user_vip,game_exp_log,game_friend,game_message</text>
   <text x="480" y="716" text-anchor="middle" fill="#64748b" font-size="11">Modified: game_game (+provider_config JSON), game_game_play_log (+round_id, +bet_amount, +win_amount)</text>
 
   <!-- Footer -->

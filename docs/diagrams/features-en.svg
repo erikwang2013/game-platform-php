@@ -57,7 +57,6 @@
   <text x="850" y="245" text-anchor="middle" fill="#7c3aed" font-size="11">Redis cache + real-time ranking</text>
 
   <rect x="30" y="292" width="220" height="95" rx="8" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5" filter="url(#sh)"/>
-  <text x="140" y="316" text-anchor="middle" fill="#064e3b" font-size="13" font-weight="bold">Coupons</text>
   <text x="140" y="336" text-anchor="middle" fill="#10b981" font-size="11">Fixed amount / percentage discount</text>
   <text x="140" y="355" text-anchor="middle" fill="#10b981" font-size="11">Time/quantity limited, claim tracking</text>
 
@@ -79,7 +78,7 @@
   <rect x="30" y="402" width="220" height="95" rx="8" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1.5" filter="url(#sh)"/>
   <text x="140" y="426" text-anchor="middle" fill="#0c4a6e" font-size="13" font-weight="bold">Notification Center</text>
   <text x="140" y="446" text-anchor="middle" fill="#0ea5e9" font-size="11">In-app + email notifications</text>
-  <text x="140" y="465" text-anchor="middle" fill="#0ea5e9" font-size="11">Deposit/withdraw/KYC/coupon</text>
+  <text x="140" y="465" text-anchor="middle" fill="#0ea5e9" font-size="11">Deposit/withdraw/KYC</text>
 
   <rect x="265" y="402" width="220" height="95" rx="8" fill="#fefce8" stroke="#fef08a" stroke-width="1.5" filter="url(#sh)"/>
   <text x="375" y="426" text-anchor="middle" fill="#713f12" font-size="13" font-weight="bold">Country Differentiation</text>
@@ -100,10 +99,10 @@
   <rect x="30" y="518" width="940" height="110" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
   <text x="500" y="546" text-anchor="middle" fill="#475569" font-size="14" font-weight="bold">Platform Capability Summary</text>
   <text x="500" y="572" text-anchor="middle" fill="#64748b" font-size="12">User auth · Wallet (optimistic lock) · Deposit (Stripe/PayPal/Alipay/WeChat Pay) · Exchange (real-time rate) · Withdrawal (review/auto) · KYC (identity verification)</text>
-  <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">Game CRUD (10 categories + servers) · Leaderboards  · Coupons · Referrals (signup reward + commission) · Risk control (4 rule types)</text>
+  <text x="500" y="594" text-anchor="middle" fill="#64748b" font-size="12">Game CRUD (10 categories + servers) · Leaderboards  · Referrals (signup reward + commission) · Risk control (4 rule types)</text>
   <text x="500" y="616" text-anchor="middle" fill="#64748b" font-size="12">Notifications (in-app + email) · Country differentiation (18 countries) · i18n (4 languages) · Analytics (daily snapshot + revenue) · Full-text search (ES)</text>
 
-  <text x="500" y="662" text-anchor="middle" fill="#94a3b8" font-size="11">Clients: 8 targets — admin 4 + C-end 4 (Flutter/React/Angular/HarmonyOS)</text>
+  <text x="500" y="662" text-anchor="middle" fill="#94a3b8" font-size="11">Clients: 4 targets — admin 2 + C-end 2 (Flutter/React)</text>
   <text x="500" y="682" text-anchor="middle" fill="#94a3b8" font-size="11">Deployment: Docker Compose 7 services + Nginx reverse proxy + CI/CD (GitHub Actions)</text>
 
   <text x="500" y="740" text-anchor="middle" fill="#94a3b8" font-size="10">Copyright (c) 2026 erik &lt;erik@erik.xyz&gt;</text>

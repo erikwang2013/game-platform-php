@@ -1,11 +1,10 @@
 # service/ — C端用户平台 API 服务
 <!-- lang-nav -->
 
-Languages: **中文** · [English](README.en.md) · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+Languages: **中文** · [English](README.en.md)
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
-C端用户平台 API 服务，基于 webman v2（Workerman）的高性能 PHP 后端，面向用户提供完整的游戏聚合平台能力：注册登录、钱包、充值、提现、兑换、游戏、排行榜、优惠券、客服工单、VIP、成就、社交与公告。
 
 ## 功能清单
 
@@ -18,10 +17,8 @@ C端用户平台 API 服务，基于 webman v2（Workerman）的高性能 PHP �
 | 兑换 | 平台币 ⇄ 游戏币实时询价，VIP 折扣与汇率加成 |
 | 游戏 | 游戏列表/分类/搜索、游戏记录、Provider 结算回调 |
 | 排行榜 | 日/周/月/总榜（REST） |
-| 优惠券 | 固定金额 + 比例折扣、限时限量 |
 | 工单 | 用户创建/回复客服工单 |
 | VIP | 5 级忠诚度、经验值累计、兑换折扣 |
-| 成就 | 12 个内置成就、事件驱动检测 |
 | 社交 | 好友系统 + WebSocket 实时私信 |
 | 公告 | 站内公告 + 站内信/邮件通知 |
 

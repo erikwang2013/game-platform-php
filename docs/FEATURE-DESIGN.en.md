@@ -1,7 +1,7 @@
 # Feature Design Document
 <!-- lang-nav -->
 
-Languages: [中文](FEATURE-DESIGN.md) · **English** · [한국어](FEATURE-DESIGN.ko.md) · [Русский](FEATURE-DESIGN.ru.md) · [Deutsch](FEATURE-DESIGN.de.md) · [Français](FEATURE-DESIGN.fr.md) · [Español](FEATURE-DESIGN.es.md) · [Português](FEATURE-DESIGN.pt.md) · [हिन्दी](FEATURE-DESIGN.hi.md) · [العربية](FEATURE-DESIGN.ar.md) · [বাংলা](FEATURE-DESIGN.bn.md) · [Bahasa Indonesia](FEATURE-DESIGN.id.md) · [日本語](FEATURE-DESIGN.ja.md)
+Languages: [中文](FEATURE-DESIGN.md) · **English**
 
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
@@ -257,13 +257,11 @@ Each game can configure multiple servers (region: global/asia/eu/na); server sta
 
 ### 8.1 Notification System
 
-Notification types: system/deposit/withdraw/kyc/coupon/announcement
 
 Auto-trigger scenarios:
 - Deposit credited → NotificationService::send()
 - Withdrawal approved/rejected → auto notification
 - KYC approved/rejected → auto notification
-- Coupon claimed → auto notification
 - Referral reward credited → auto notification
 
 Supports dual channels: in-app messages + email (email requires the MAIL_HOST environment variable).

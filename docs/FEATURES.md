@@ -1,7 +1,7 @@
 # 功能文档
 <!-- lang-nav -->
 
-Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md) · [Русский](FEATURES.ru.md) · [Deutsch](FEATURES.de.md) · [Français](FEATURES.fr.md) · [Español](FEATURES.es.md) · [Português](FEATURES.pt.md) · [हिन्दी](FEATURES.hi.md) · [العربية](FEATURES.ar.md) · [বাংলা](FEATURES.bn.md) · [Bahasa Indonesia](FEATURES.id.md) · [日本語](FEATURES.ja.md)
+Languages: **中文** · [English](FEATURES.en.md)
 
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
@@ -43,7 +43,6 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 |----|------|------|
 | 游戏大厅 | 10个预设分类、分类筛选、游戏-分类关联 | 已完成 |
 | 排行榜 | 日榜/周榜/月榜/总榜、Redis缓存、多指标 | 已完成 |
-| 优惠券 | 固定金额+比例折扣、限时限量、领取/使用追踪 | 已完成 |
 | 国家配置 | 18国预设、差异化支付/提现方式、最低充值额 | 已完成 |
 | 统计 | 日统计快照 + 平台收益追踪 | 已完成 |
 | 搜索 | Elasticsearch 全文搜索（模型层已集成） | 已完成 |
@@ -55,18 +54,14 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | OAuth | Google/Facebook/Apple 真实token交换 | 已完成 |
 | 支付 | 支付回调签名验证 (Stripe Webhook 含 Alipay/WeChat Pay APM、PayPal Webhook、NOWPayments IPN HMAC-SHA512、Coinbase HMAC-SHA256 base64 secret) | 已完成 |
 | 验证码 | poster-php 点击式验证码 | 已完成 |
-| 通知 | 站内信 + 邮件、充值/提现/KYC/优惠券自动通知 | 已完成 |
 | 2FA | Google Authenticator TOTP + 备用恢复码 | 已完成 |
 | 推荐 | 推荐码、注册奖励、充值返佣 | 已完成 |
 | 搜索 | ES 搜索API + 游戏建议 + LIKE回退 | 已完成 |
 | 排行榜 | REST + Redis | 已完成 |
-| CDN | 五厂商接入（Cloudflare R2 / AWS S3 / 阿里OSS / 腾讯COS / 华为OBS 上传+刷新+预热） | 已完成 |
-| CDN 管理 | 管理端配置五厂商（凭据加密存储/启停/连通测试 HeadBucket），service 纯 DB 读取 | 已完成 |
 | 报表 | 管理端数据报表（汇总/日报/CSV 导出，Redis 5 分钟缓存，跨度 ≤90 天） | 已完成 |
 | 平台统计 | C端首页统计（游戏总数/用户总数/今日局数/7 日活跃） | 已完成 |
 | 部署 | Docker Compose 7服务 + Nginx反向代理 | 已完成 |
 | 数据 | MySQL 实时聚合分析 + 联合/条件概率计算 | 已完成 |
-| HarmonyOS | admin 端 19 页；C 端 `apps/harmonyos/` 已实现登录/大厅/详情/钱包/个人（指向 8792） | 部分完成（工程可跑，真机需改 IP） |
 | API 文档 | erikwang2013/apidoc-php 交互式文档 | 已完成 |
 | 一键安装 | 浏览器安装向导：建管理员、存量库升级、install.lock 防重装 | 已完成 |
 | 容错 | CircuitBreaker 熔断 + Retry 重试 + feature.provider_mock 降级开关 | 已完成 |
@@ -85,16 +80,13 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | 推送通知 | PushService (FCM/APNs/华为推送) + DeviceToken 模型 | 已完成 |
 | VIP 体系 | 5级 (普通/白银/黄金/铂金/钻石) + 经验值 + 自动升级 | 已完成 |
 | VIP 权益 | 兑换折扣 2-15%、提现手续费减免 10-100%、汇率加成 0.1-1.0% | 已完成 |
-| 成就系统 | 12个内置成就；EventConsumer → AchievementService 事件驱动检测与 VIP 经验 | 已完成 |
 | 好友系统 | 申请/接受/拒绝/删除/搜索、pending/accepted/blocked 状态 | 已完成 |
 | 私信/聊天 | REST 私信 + WebSocket 实时消息 (端口8791)、仅好友可发 | 已完成 |
-| 事件总线 | Redis Pub/Sub；emit + EventConsumer 消费成就/Webhook + metrics INCR | 已完成 |
 | 特性开关 | FeatureFlag 基于DB；`inRollout`/`abTest` crc32 分桶读 `feature.{name}_percent` | 已完成 |
 | 高级分析 | 留存/D1-D30、转化漏斗、ARPU/ARPPU、游戏币种经济指标 (MySQL 实时聚合) | 已完成 |
 | Webhook | 订阅管理 + Redis Pub/Sub 事件投递、7种事件可选 | 已完成 |
 | 聊天 | REST 私信 + WebSocket 实时消息 (端口8791)、仅好友可发 | 已完成 |
 | 多级返佣 | 二级推荐分润、ReferralCommission 模型、可配置佣金率 | 已完成 |
-| 优惠券条件 | min_deposit/first_user_only/game_id 三种条件限制 | 已完成 |
 | SDK 文档 | Provider 接入文档 (PHP/Go/Python 示例 + 4 API 端点) | 已完成 |
 | 小游戏 | 田园消消乐 P0（领域引擎 + 四关设计，TypeScript/Vite/Vitest 单测） | 已完成 |
 
@@ -109,7 +101,6 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
     ↓
   提现 (VIP手续费减免) → 后台审核 → 到账
     ↓
-好友系统 → 私信聊天 → 排行榜竞技 → 成就追踪
     ↓
 工单支持
 ```
@@ -209,11 +200,8 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | 每日登录 | 5 |
 | 完成 KYC | 50 |
 | 邀请新用户 | 100 |
-| 达成成就 | 10-100 |
 
-## 6. 成就清单
 
-| 成就 | 条件 | 积分 |
 |------|------|------|
 | First Deposit | 首次充值 | 20 |
 | Century Club | 累计充值100 | 50 |
@@ -240,11 +228,8 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 | game_vip_level | VIP等级定义 | level 唯一索引, benefits JSON |
 | game_user_vip | 用户VIP记录 | user_id 唯一索引, level+exp+total_exp |
 | game_exp_log | 经验值日志 | user_id+source 组合索引 |
-| game_achievement | 成就定义 | key 唯一索引, condition_json JSON |
-| game_user_achievement | 用户成就 | user_id+achievement_id 唯一索引 |
 | game_friend | 好友关系 | user_id+friend_id 唯一索引 |
 | game_message | 私信 | from_user_id+to_user_id / to_user_id+is_read |
-| game_cdn_provider | CDN厂商配置 | provider 唯一索引, config 加密JSON |
 | game_referral_commission | 多级返佣流水 | user_id / referral_id / source_type+source_id 索引 |
 
 ### 表结构变更
@@ -260,7 +245,6 @@ Languages: **中文** · [English](FEATURES.en.md) · [한국어](FEATURES.ko.md
 
 | 测试文件 | 用例数 | 覆盖范围 |
 |---------|--------|---------|
-| PlatformTest | 55 | bcmath精度/兑换计算/提现费用/限额/风控/优惠券/KYC/i18n |
 | BackendEnhancementTest | 27 | 加密服务/Hashids/Snowflake |
 | CaptchaTest | 5 | 验证码生成/校验 |
 | EncryptionServiceTest | 8 | AES加解密/脱敏 |

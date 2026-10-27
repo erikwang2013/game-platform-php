@@ -1,7 +1,7 @@
 # Pastoral Match-3 — Platform Integration API
 <!-- lang-nav -->
 
-Languages: [中文](api.md) · **English** · [한국어](api.ko.md) · [Русский](api.ru.md) · [Deutsch](api.de.md) · [Français](api.fr.md) · [Español](api.es.md) · [Português](api.pt.md) · [हिन्दी](api.hi.md) · [العربية](api.ar.md) · [বাংলা](api.bn.md) · [Bahasa Indonesia](api.id.md) · [日本語](api.ja.md)
+Languages: [中文](api.md) · **English**
 
 
 > This document is the complete interface contract between Pastoral Match-3 and the game platform. For the technical layering see `architecture.md`, for scheduling see `plan.md`, and for player features see `functional-design.md`.

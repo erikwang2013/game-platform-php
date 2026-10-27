@@ -1,7 +1,7 @@
 # 田园消消乐 — 平台接入 API
 <!-- lang-nav -->
 
-Languages: **中文** · [English](api.en.md) · [한국어](api.ko.md) · [Русский](api.ru.md) · [Deutsch](api.de.md) · [Français](api.fr.md) · [Español](api.es.md) · [Português](api.pt.md) · [हिन्दी](api.hi.md) · [العربية](api.ar.md) · [বাংলা](api.bn.md) · [Bahasa Indonesia](api.id.md) · [日本語](api.ja.md)
+Languages: **中文** · [English](api.en.md)
 
 
 > 本文是《田园消消乐》与游戏平台之间的全部接口契约。技术分层见 `architecture.md`，排期见 `plan.md`，玩家功能见 `functional-design.md`。

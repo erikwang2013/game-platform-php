@@ -1,7 +1,7 @@
 # 架构设计文档
 <!-- lang-nav -->
 
-Languages: **中文** · [English](ARCHITECTURE-DESIGN.en.md) · [한국어](ARCHITECTURE-DESIGN.ko.md) · [Русский](ARCHITECTURE-DESIGN.ru.md) · [Deutsch](ARCHITECTURE-DESIGN.de.md) · [Français](ARCHITECTURE-DESIGN.fr.md) · [Español](ARCHITECTURE-DESIGN.es.md) · [Português](ARCHITECTURE-DESIGN.pt.md) · [हिन्दी](ARCHITECTURE-DESIGN.hi.md) · [العربية](ARCHITECTURE-DESIGN.ar.md) · [বাংলা](ARCHITECTURE-DESIGN.bn.md) · [Bahasa Indonesia](ARCHITECTURE-DESIGN.id.md) · [日本語](ARCHITECTURE-DESIGN.ja.md)
+Languages: **中文** · [English](ARCHITECTURE-DESIGN.en.md)
 
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
@@ -44,9 +44,7 @@ Languages: **中文** · [English](ARCHITECTURE-DESIGN.en.md) · [한국어](ARC
 
 ### 2.3 为什么用 Flutter Web PC 风格？
 
-- 一套代码可同时编译 Web (PC)、iOS、Android、HarmonyOS
 - Material 3 组件库成熟，PC 风格侧边栏+顶栏布局开箱即用
-- 与 HarmonyOS 客户端共享业务逻辑层
 - 避免维护 React/Vue + Flutter 两套前端代码
 
 ## 3. 关键技术决策

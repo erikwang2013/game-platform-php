@@ -1,7 +1,7 @@
 # 功能设计文档
 <!-- lang-nav -->
 
-Languages: **中文** · [English](FEATURE-DESIGN.en.md) · [한국어](FEATURE-DESIGN.ko.md) · [Русский](FEATURE-DESIGN.ru.md) · [Deutsch](FEATURE-DESIGN.de.md) · [Français](FEATURE-DESIGN.fr.md) · [Español](FEATURE-DESIGN.es.md) · [Português](FEATURE-DESIGN.pt.md) · [हिन्दी](FEATURE-DESIGN.hi.md) · [العربية](FEATURE-DESIGN.ar.md) · [বাংলা](FEATURE-DESIGN.bn.md) · [Bahasa Indonesia](FEATURE-DESIGN.id.md) · [日本語](FEATURE-DESIGN.ja.md)
+Languages: **中文** · [English](FEATURE-DESIGN.en.md)
 
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
@@ -257,13 +257,11 @@ signature = HMAC-SHA256(
 
 ### 8.1 通知系统
 
-通知类型：system/deposit/withdraw/kyc/coupon/announcement
 
 自动触发场景：
 - 充值到账 → NotificationService::send()
 - 提现审核通过/拒绝 → 自动通知
 - KYC 审核通过/拒绝 → 自动通知
-- 优惠券领取 → 自动通知
 - 推荐奖励到账 → 自动通知
 
 支持站内信 + 邮件双通道（邮件需配置 MAIL_HOST 环境变量）。

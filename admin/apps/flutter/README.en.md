@@ -1,11 +1,11 @@
 # admin_app — Admin Web Frontend (Flutter)
 <!-- lang-nav -->
 
-Languages: [中文](README.md) · **English** · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+Languages: [中文](README.md) · **English**
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
-The admin web frontend built with Flutter 3.x, using the classic PC admin layout (sidebar + topbar + content area). It covers all management pages needed to operate the game platform: dashboard, users, roles and permissions, games, payments, withdrawals, VIP, announcements, CDN, risk control, identity verification, operation logs, and more.
+The admin web frontend built with Flutter 3.x, using the classic PC admin layout (sidebar + topbar + content area). It covers all management pages needed to operate the game platform: dashboard, users, roles and permissions, games, payments, withdrawals, VIP, announcements, risk control, identity verification, operation logs, and more.
 
 ## Feature List
 
@@ -24,7 +24,6 @@ The admin web frontend built with Flutter 3.x, using the classic PC admin layout
 | Withdrawal management | Withdrawal review and payout |
 | VIP management | VIP levels and benefits configuration |
 | Announcement management | Announcement publishing and lifecycle |
-| CDN management | CDN provider and domain configuration |
 | Risk control | Risk rules and interception records |
 | Identity verification | Real-name information review |
 | Operation logs | Admin operation audit logs |

@@ -70,7 +70,7 @@
   <rect x="665" y="284" width="320" height="60" rx="8" fill="#fefce8" stroke="#fde68a" stroke-width="1.5" filter="url(#sh)"/>
   <text x="825" y="306" text-anchor="middle" fill="#854d0e" font-size="12" font-weight="bold">L12: 操作审计</text>
   <text x="825" y="324" text-anchor="middle" fill="#ca8a04" font-size="10">全量操作日志 + 8平台来源端检测</text>
-  <text x="825" y="338" text-anchor="middle" fill="#ca8a04" font-size="10">ipados/macos/windows/linux/ios/android/harmonyos/web</text>
+  <text x="825" y="338" text-anchor="middle" fill="#ca8a04" font-size="10">ipados/macos/windows/linux/ios/android/web</text>
 
   <!-- L13-L15 -->
   <rect x="15" y="356" width="310" height="60" rx="8" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5" filter="url(#sh)"/>

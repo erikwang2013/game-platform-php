@@ -1,7 +1,7 @@
 # Version Comparison
 <!-- lang-nav -->
 
-Languages: [中文](VERSIONS.md) · **English** · [한국어](VERSIONS.ko.md) · [Русский](VERSIONS.ru.md) · [Deutsch](VERSIONS.de.md) · [Français](VERSIONS.fr.md) · [Español](VERSIONS.es.md) · [Português](VERSIONS.pt.md) · [हिन्दी](VERSIONS.hi.md) · [العربية](VERSIONS.ar.md) · [বাংলা](VERSIONS.bn.md) · [Bahasa Indonesia](VERSIONS.id.md) · [日本語](VERSIONS.ja.md)
+Languages: [中文](VERSIONS.md) · **English**
 
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
@@ -17,8 +17,6 @@ Languages: [中文](VERSIONS.md) · **English** · [한국어](VERSIONS.ko.md) �
 | Shared services | No shared layer | No shared layer | Single shared package `packages/platform-common` |
 | Admin frontend pages | 11 | 13 | 15 |
 | Platform frontend pages | 8 | 10 | 10 |
-| HarmonyOS (admin) | - | Login + dashboard | **19 pages** `admin/apps/harmonyos/` |
-| HarmonyOS (C-end) | - | - | **8 pages** `apps/harmonyos/` (login/game lobby/detail/wallet/profile) |
 | Docker services | - | - | **7** (nginx/admin/service/leaderboard-ws/mysql/redis/elasticsearch) |
 | Test cases | 60 | 60 | admin 593 cases / 70 files; service 549 cases / 89 files |
 
@@ -87,7 +85,6 @@ Languages: [中文](VERSIONS.md) · **English** · [한국어](VERSIONS.ko.md) �
 | Excel export | ✓ | ✓ | ✓ |
 | PDF export | ✓ | ✓ | ✓ |
 | Real dashboard charts | - | - | ✓ fl_chart |
-| Coupon system | - | - | ✓ |
 | Leaderboards (daily/weekly/monthly/total) | - | - | ✓ Redis cache |
 | WebSocket real-time leaderboard | - | - | - removed (2026-10-02) |
 | Notification system (in-app + email) | - | - | ✓ |
@@ -132,7 +129,6 @@ Languages: [中文](VERSIONS.md) · **English** · [한국어](VERSIONS.ko.md) �
 | webman standalone deployment | ✓ | ✓ | ✓ |
 | Docker Compose | - | - | ✓ 7 services |
 | Nginx reverse proxy | - | - | ✓ |
-| CDN | - | - | ✓ 5-vendor integration + admin config/enable-disable/connectivity test (credentials encrypted, service reads purely from DB) |
 | Crontab scheduled tasks | - | ✓ | ✓ |
 | Prometheus monitoring | ✓ | ✓ | ✓ `/metrics` business gauges + event counters |
 | Health checks | ✓ | ✓ | ✓ |
@@ -146,8 +142,6 @@ Languages: [中文](VERSIONS.md) · **English** · [한국어](VERSIONS.ko.md) �
 |------|--------|--------|--------|
 | Flutter Web PC admin backend | ✓ 5 pages | ✓ 11 pages | ✓ 17 pages |
 | Flutter Web PC user platform | ✓ 5 pages | ✓ 8 pages | ✓ 10 pages |
-| HarmonyOS admin | - | ✓ login + dashboard | ✓ 19 pages `admin/apps/harmonyos/` |
-| HarmonyOS C-end | - | - | ✓ 8 pages `apps/harmonyos/` |
 
 ---
 
@@ -175,15 +169,12 @@ game_withdraw_limit, game_risk_rule, game_risk_log, game_stat_daily
 ### Full additions (13 tables)
 ```
 game_game_category, game_game_category_rel, game_leaderboard,
-game_coupon, game_user_coupon, game_language, game_translation,
 game_country_config, game_platform_revenue,
 game_notification, game_referral, game_referral_reward, game_user_2fa
 ```
 
 ### v1.3.15-v1.3.22 additions (22 tables)
 ```
-game_event_outbox, game_reconciliation_batch, game_reconciliation_diff,
-game_reconciliation_statement, game_device_fingerprint, game_device_account_map,
 game_ip_reputation, game_account_account_link,
 game_activity, game_activity_participation, game_activity_reward_log,
 game_anticheat_event, game_anticheat_daily_stat,
@@ -194,9 +185,7 @@ game_aml_rule, game_aml_hit, game_kyc_level, game_user_kyc, game_user_trust, gam
 ### Ecosystem v2.0 additions (14 tables)
 ```
 game_ticket, game_ticket_reply, game_device_token, game_vip_level,
-game_user_vip, game_exp_log, game_achievement, game_user_achievement,
-game_friend, game_message, game_cdn_provider, game_referral_commission,
-game_tournament, game_tournament_entry
+game_friend, game_message, game_referral_commission,
 ```
 
 ### v1.3.44 additions (1 table)
@@ -219,7 +208,6 @@ game_wallet_hold
 | Games | 3 | 4 | 7 (+servers+logs+search) |
 | Users | 2 | 2 | 7 (+KYC+GDPR+privacy) |
 | Admin | 18 | 25 | 79 |
-| Operations tools | - | - | 30 (+leaderboards+coupons+notifications+referrals) |
 | i18n | 2 | 2 | 4 (+country config) |
 | **Total** | **38** | **54** | **~260** |
 
@@ -235,15 +223,12 @@ game_wallet_hold
 | Email verification | 6-digit code, Redis 10-minute expiry, 60s resend limit |
 | Push notifications | PushService (FCM/APNs/Huawei push) |
 | VIP system | 5 levels, EXP accumulation, auto upgrade, exchange discounts, withdrawal fee reduction, rate bonus |
-| Achievement system | 12 built-in achievements, event-driven detection, progress tracking |
 | Friend system | request/accept/reject/remove/search |
 | DMs/chat | REST + WebSocket real-time messages (port 8791) |
 | Event bus | Redis Pub/Sub; emit INCR `metrics:event_*`; consumer process `EventConsumer` landed |
 | Feature flags | DB-based FeatureFlag; `inRollout`/`abTest` reads `feature.{name}_percent` |
 | Webhook | - | - | ✓ 7 event types + Pub/Sub delivery |
 | Chat | - | - | ✓ REST+WebSocket :8791 |
-| Tournaments | - | - | ✓ FeatureFlag+tournament |
-| Coupon conditions | - | - | ✓ min_deposit/first_user/game_id |
 | Multi-level commissions | - | - | ✓ two-level profit sharing |
 | SDK docs | - | - | ✓ PHP/Go/Python |
 | Advanced analytics | Retention/D1-D30, conversion funnel, ARPU/ARPPU |
@@ -252,10 +237,8 @@ game_wallet_hold
 ```
 game_ticket, game_ticket_reply, game_device_token,
 game_vip_level, game_user_vip, game_exp_log,
-game_achievement, game_user_achievement,
 game_friend, game_message
-game_cdn_provider, game_referral_commission,
-game_tournament, game_tournament_entry
+game_referral_commission,
 ```
 
 ### New Provider API Endpoints (4)
@@ -268,7 +251,6 @@ POST /api/provider/refund   — 通知退款
 
 ### New C-end API Endpoints (8)
 
-> **尚未实现**：`GET /api/v1/user/vip-status` 与 `GET /api/v1/user/achievements` 两条 C 端路由未注册（`service/config/route.php` 无对应条目），当前请求返回 404。实现后请删除本行。
 
 ```
 POST /api/v1/verify/send-email    — 发送邮箱验证码
@@ -278,7 +260,6 @@ POST /api/v1/ticket/create           — 创建工单
 GET  /api/v1/ticket/{hashid}         — 工单详情
 POST /api/v1/ticket/{hashid}/reply   — 回复工单
 GET  /api/v1/user/vip-status         — VIP状态
-GET  /api/v1/user/achievements       — 成就列表
 ```
 
 ### New Admin API Endpoints (9)

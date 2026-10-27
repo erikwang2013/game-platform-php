@@ -1,7 +1,7 @@
 # Global Game Aggregation Platform — Ecosystem Expansion Audit Report v2.0
 <!-- lang-nav -->
 
-Languages: [中文](PLATFORM-AUDIT-REPORT.md) · **English** · [한국어](PLATFORM-AUDIT-REPORT.ko.md) · [Русский](PLATFORM-AUDIT-REPORT.ru.md) · [Deutsch](PLATFORM-AUDIT-REPORT.de.md) · [Français](PLATFORM-AUDIT-REPORT.fr.md) · [Español](PLATFORM-AUDIT-REPORT.es.md) · [Português](PLATFORM-AUDIT-REPORT.pt.md) · [हिन्दी](PLATFORM-AUDIT-REPORT.hi.md) · [العربية](PLATFORM-AUDIT-REPORT.ar.md) · [বাংলা](PLATFORM-AUDIT-REPORT.bn.md) · [Bahasa Indonesia](PLATFORM-AUDIT-REPORT.id.md) · [日本語](PLATFORM-AUDIT-REPORT.ja.md)
+Languages: [中文](PLATFORM-AUDIT-REPORT.md) · **English**
 
 
 > **Audit date**: 2026-08-04

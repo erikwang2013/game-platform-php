@@ -1,7 +1,7 @@
 # 架构设计图与业务逻辑图
 <!-- lang-nav -->
 
-Languages: **中文** · [English](ARCHITECTURE.en.md) · [한국어](ARCHITECTURE.ko.md) · [Русский](ARCHITECTURE.ru.md) · [Deutsch](ARCHITECTURE.de.md) · [Français](ARCHITECTURE.fr.md) · [Español](ARCHITECTURE.es.md) · [Português](ARCHITECTURE.pt.md) · [हिन्दी](ARCHITECTURE.hi.md) · [العربية](ARCHITECTURE.ar.md) · [বাংলা](ARCHITECTURE.bn.md) · [Bahasa Indonesia](ARCHITECTURE.id.md) · [日本語](ARCHITECTURE.ja.md)
+Languages: **中文** · [English](ARCHITECTURE.en.md)
 
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
@@ -16,7 +16,6 @@ Languages: **中文** · [English](ARCHITECTURE.en.md) · [한국어](ARCHITECTU
 flowchart TB
     subgraph "客户端层"
         A1["Flutter Web<br/>PC 管理后台<br/>(Port 3000)"]
-        A2["HarmonyOS ArkTS<br/>手机/平板客户端"]
     end
 
     subgraph "网关/边缘层 (Nginx Edge)"
@@ -38,7 +37,6 @@ flowchart TB
     end
 
     subgraph "外部"
-        E1["DevEco Studio<br/>HarmonyOS 构建"]
         E2["Flutter SDK<br/>Web 构建"]
     end
 
@@ -568,7 +566,6 @@ flowchart TD
 
 ---
 
-## 11. HarmonyOS 页面路由
 
 ```mermaid
 flowchart LR

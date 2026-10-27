@@ -1,7 +1,7 @@
 # Open Admin — Design Document
 <!-- lang-nav -->
 
-Languages: [中文](DESIGN.md) · **English** · [한국어](DESIGN.ko.md) · [Русский](DESIGN.ru.md) · [Deutsch](DESIGN.de.md) · [Français](DESIGN.fr.md) · [Español](DESIGN.es.md) · [Português](DESIGN.pt.md) · [हिन्दी](DESIGN.hi.md) · [العربية](DESIGN.ar.md) · [বাংলা](DESIGN.bn.md) · [Bahasa Indonesia](DESIGN.id.md) · [日本語](DESIGN.ja.md)
+Languages: [中文](DESIGN.md) · **English**
 
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
@@ -16,7 +16,6 @@ Languages: [中文](DESIGN.md) · **English** · [한국어](DESIGN.ko.md) · [�
 ┌──────────────────────────────────────────────────────────────┐
 │                        客户端层                               │
 │  ┌──────────────────────┐  ┌──────────────────────────────┐  │
-│  │  Flutter Web (PC)    │  │  HarmonyOS ArkTS (Mobile)    │  │
 │  │  管理后台 (桌面风格)   │  │  客户端 (手机/平板/2in1)      │  │
 │  └──────────┬───────────┘  └──────────────┬───────────────┘  │
 └─────────────┼──────────────────────────────┼─────────────────┘
@@ -345,7 +344,6 @@ The payment method management module (`PaymentController` + Flutter `payment_pag
 
 Features: collapsible sidebar, Material 3 dual themes, high-density data tables, modal dialogs, hover interactions
 
-### 5.2 HarmonyOS Mobile Client
 
 Page routes:
 
@@ -377,9 +375,7 @@ Three constraints that must not drift:
 - `.modal-sm` 340px ↔ 20px horizontal padding ↔ the 300×200 captcha canvas are one triple (`src/index.css:573`). `box-sizing: border-box` is global, so a `border` on `.modal` squeezes the canvas to 298 — outlines must go through `box-shadow: 0 0 0 1px`.
 - `--amber` is the only token referenced from TSX (`src/pages/LoginPage.tsx`); renaming it fails silently.
 
-### 5.4 Angular Admin Backend
 
-Design tokens: **Inkwell Console**, self-described at the top of `src/styles.scss`. Stack: Angular standalone components + Router; unit tests run on vitest through `@angular/build:unit-test` (`angular.json:78`); the build is served under `/admin-angular/`.
 
 | Layer | Location | Notes |
 |------|------|------|
@@ -501,7 +497,6 @@ The GitHub Actions continuous integration is defined in `.github/workflows/ci.ym
 
 ### 8.5 Monitoring
 
-The `GET /metrics` endpoint (`MetricsController`) exposes 18 gauge metrics in Prometheus text format: active/total users, database/Redis/ES connection status, memory/CPU/process metrics, pending withdrawals and reconciliation differences.
 
 ### 8.6 Environment Requirements
 
@@ -513,4 +508,3 @@ The `GET /metrics` endpoint (`MetricsController`) exposes 18 gauge metrics in Pr
 | Redis | 6.x | 7.x sentinel mode |
 | Nginx | 1.20+ | Reverse proxy + gzip + SSL |
 | Flutter SDK | 3.41+ | Latest stable |
-| HarmonyOS | API 12 | DevEco Studio 5.x |

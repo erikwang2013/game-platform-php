@@ -1,7 +1,7 @@
 # Features Document
 <!-- lang-nav -->
 
-Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) · [Русский](FEATURES.ru.md) · [Deutsch](FEATURES.de.md) · [Français](FEATURES.fr.md) · [Español](FEATURES.es.md) · [Português](FEATURES.pt.md) · [हिन्दी](FEATURES.hi.md) · [العربية](FEATURES.ar.md) · [বাংলা](FEATURES.bn.md) · [Bahasa Indonesia](FEATURES.id.md) · [日本語](FEATURES.ja.md)
+Languages: [中文](FEATURES.md) · **English**
 
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
@@ -43,7 +43,6 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 |----|------|------|
 | Game lobby | 10 preset categories, category filtering, game-category relations | Completed |
 | Leaderboards | Daily/weekly/monthly/total, Redis cache, multiple metrics | Completed |
-| Coupons | Fixed amount + percentage discount, time/quantity limited, claim/usage tracking | Completed |
 | Country config | 18 preset countries, differentiated payment/withdrawal methods, minimum deposit | Completed |
 | Statistics | Daily stats snapshots + platform revenue tracking | Completed |
 | Search | Elasticsearch full-text search (model layer integrated) | Completed |
@@ -55,18 +54,14 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 | OAuth | Google/Facebook/Apple real token exchange | Completed |
 | Payments | Payment callback signature verification (Stripe Webhook incl. Alipay/WeChat Pay APM, PayPal Webhook, NOWPayments IPN HMAC-SHA512, Coinbase HMAC-SHA256 base64 secret) | Completed |
 | Captcha | poster-php click captcha | Completed |
-| Notifications | In-app messages + email, auto notifications for deposit/withdrawal/KYC/coupon | Completed |
 | 2FA | Google Authenticator TOTP + backup recovery codes | Completed |
 | Referrals | Referral codes, signup rewards, deposit commissions | Completed |
 | Search | ES search API + game suggestions + LIKE fallback | Completed |
 | Leaderboards | REST + Redis | Completed |
-| CDN | Five-provider integration (Cloudflare R2 / AWS S3 / Aliyun OSS / Tencent COS / Huawei OBS upload + purge + preload) | Completed |
-| CDN Admin | Admin-configurable five providers (encrypted credentials/toggle/connectivity test via HeadBucket), service reads from DB only | Completed |
 | Reports | Admin data reports (summary/daily/CSV export, Redis 5-min cache, span ≤90 days) | Completed |
 | Platform stats | C-side homepage stats (total games/users/today's plays/7-day active) | Completed |
 | Deployment | Docker Compose 7 services + Nginx reverse proxy | Completed |
 | Data | MySQL real-time aggregation analytics + joint/conditional probability | Completed |
-| HarmonyOS | admin 19 pages; C-end `apps/harmonyos/` implements login/lobby/detail/wallet/profile (pointing to 8792) | Partially complete (project runs, device needs IP change) |
 | API docs | erikwang2013/apidoc-php interactive documentation | Completed |
 | One-click install | Browser install wizard: create admin, upgrade existing DB, install.lock prevents reinstall | Completed |
 | Fault tolerance | CircuitBreaker + Retry + feature.provider_mock degradation switch | Completed |
@@ -85,17 +80,13 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
 | Push notifications | PushService (FCM/APNs/Huawei push) + DeviceToken model | Completed |
 | VIP system | 5 levels (Normal/Silver/Gold/Platinum/Diamond) + EXP + auto upgrade | Completed |
 | VIP benefits | Exchange discount 2-15%, withdrawal fee reduction 10-100%, rate bonus 0.1-1.0% | Completed |
-| Achievement system | 12 built-in achievements; EventConsumer → AchievementService event-driven detection and VIP EXP | Completed |
 | Friend system | Request/accept/reject/remove/search, pending/accepted/blocked states | Completed |
 | DM/chat | REST DMs + WebSocket real-time messages (port 8791), friends only | Completed |
-| Event bus | Redis Pub/Sub; emit + EventConsumer consuming achievements/Webhooks + metrics INCR | Completed |
 | Feature flags | DB-based FeatureFlag; `inRollout`/`abTest` crc32 bucketing reads `feature.{name}_percent` | Completed |
 | Advanced analytics | Retention/D1-D30, conversion funnel, ARPU/ARPPU, game currency economy metrics (MySQL real-time aggregation) | Completed |
 | Webhooks | Subscription management + Redis Pub/Sub event delivery, 7 selectable events | Completed |
 | Chat | REST DMs + WebSocket real-time messages (port 8791), friends only | Completed |
-| Tournaments | Create/list/detail/join, FeatureFlag switch, leaderboards, player cap | Completed |
 | Multi-level rebates | Two-level referral profit sharing, ReferralCommission model, configurable commission rates | Completed |
-| Coupon conditions | min_deposit/first_user_only/game_id three condition types | Completed |
 | SDK docs | Provider integration docs (PHP/Go/Python examples + 4 API endpoints) | Completed |
 | Mini-game | Farm Match-3 P0 (domain engine + 4-level design, TypeScript/Vite/Vitest unit tests) | Completed |
 
@@ -110,7 +101,6 @@ Languages: [中文](FEATURES.md) · **English** · [한국어](FEATURES.ko.md) �
     ↓
   提现 (VIP手续费减免) → 后台审核 → 到账
     ↓
-好友系统 → 私信聊天 → 排行榜竞技 → 成就追踪
     ↓
 工单支持
 ```
@@ -210,11 +200,8 @@ Time window: 5 minutes
 | Daily login | 5 |
 | Complete KYC | 50 |
 | Invite a new user | 100 |
-| Achieve an achievement | 10-100 |
 
-## 6. Achievement List
 
-| Achievement | Condition | Points |
 |------|------|------|
 | First Deposit | First deposit | 20 |
 | Century Club | Cumulative deposits of 100 | 50 |
@@ -241,14 +228,9 @@ Time window: 5 minutes
 | game_vip_level | VIP level definitions | level unique index, benefits JSON |
 | game_user_vip | User VIP records | user_id unique index, level+exp+total_exp |
 | game_exp_log | EXP logs | user_id+source composite index |
-| game_achievement | Achievement definitions | key unique index, condition_json JSON |
-| game_user_achievement | User achievements | user_id+achievement_id unique index |
 | game_friend | Friend relations | user_id+friend_id unique index |
 | game_message | DMs | from_user_id+to_user_id / to_user_id+is_read |
-| game_cdn_provider | CDN provider configuration | provider unique index, config encrypted JSON |
 | game_referral_commission | Multi-level referral commission records | user_id / referral_id / source_type+source_id index |
-| game_tournament | Tournaments | slug unique index, status+start_at+end_at index |
-| game_tournament_entry | Tournament entries/scores | tournament_id+user_id unique index, tournament_id+score index |
 
 ### Table Structure Changes
 
@@ -263,7 +245,6 @@ Time window: 5 minutes
 
 | Test File | Cases | Coverage |
 |---------|--------|---------|
-| PlatformTest | 55 | bcmath precision/exchange calculations/withdrawal fees/limits/risk control/coupons/KYC/i18n |
 | BackendEnhancementTest | 27 | encryption service/Hashids/Snowflake |
 | CaptchaTest | 5 | captcha generation/verification |
 | EncryptionServiceTest | 8 | AES encryption/decryption/masking |

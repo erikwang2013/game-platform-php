@@ -1,7 +1,7 @@
 # API 参考文档
 <!-- lang-nav -->
 
-Languages: **中文** · [English](API.en.md) · [한국어](API.ko.md) · [Русский](API.ru.md) · [Deutsch](API.de.md) · [Français](API.fr.md) · [Español](API.es.md) · [Português](API.pt.md) · [हिन्दी](API.hi.md) · [العربية](API.ar.md) · [বাংলা](API.bn.md) · [Bahasa Indonesia](API.id.md) · [日本語](API.ja.md)
+Languages: **中文** · [English](API.en.md)
 
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
@@ -1986,16 +1986,10 @@ VIP 等级的增删改查端点。
 | PUT | /admin/v1/vip/level/{hashid} | 更新 VIP 等级 | JWT + RBAC |
 | DELETE | /admin/v1/vip/level/{hashid} | 删除 VIP 等级 | JWT + RBAC |
 
-### 19.4 成就
 
-成就定义的增删改查端点。
 
 | Method | Path | Description | Auth |
 |------|------|------|------|
-| GET | /admin/v1/achievement/list | 成就列表 | JWT + RBAC |
-| POST | /admin/v1/achievement/create | 新增成就 | JWT + RBAC |
-| PUT | /admin/v1/achievement/{hashid} | 更新成就 | JWT + RBAC |
-| DELETE | /admin/v1/achievement/{hashid} | 删除成就 | JWT + RBAC |
 
 ### 19.5 全局搜索
 

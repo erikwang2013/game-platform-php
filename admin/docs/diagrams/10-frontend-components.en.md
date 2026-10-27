@@ -1,7 +1,7 @@
 # Frontend Component Architecture
 <!-- lang-nav -->
 
-Languages: [中文](10-frontend-components.md) · **English** · [한국어](10-frontend-components.ko.md) · [Русский](10-frontend-components.ru.md) · [Deutsch](10-frontend-components.de.md) · [Français](10-frontend-components.fr.md) · [Español](10-frontend-components.es.md) · [Português](10-frontend-components.pt.md) · [हिन्दी](10-frontend-components.hi.md) · [العربية](10-frontend-components.ar.md) · [বাংলা](10-frontend-components.bn.md) · [Bahasa Indonesia](10-frontend-components.id.md) · [日本語](10-frontend-components.ja.md)
+Languages: [中文](10-frontend-components.md) · **English**
 
 
 ## Flutter Web Component Tree

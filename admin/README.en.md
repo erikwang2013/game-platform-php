@@ -7,7 +7,7 @@
 **Dicey** — Platform mascot. The die represents games and probability-based gameplay, the coin represents the platform economy and multi-payment gateways, and the purple palette echoes the admin branding. SVG source: `docs/mascot.svg`, infinitely scalable for docs, logos and merchandise.
 <!-- lang-nav -->
 
-Languages: [中文](README.md) · **English** · [한국어](README.ko.md) · [Русский](README.ru.md) · [Deutsch](README.de.md) · [Français](README.fr.md) · [Español](README.es.md) · [Português](README.pt.md) · [हिन्दी](README.hi.md) · [العربية](README.ar.md) · [বাংলা](README.bn.md) · [Bahasa Indonesia](README.id.md) · [日本語](README.ja.md)
+Languages: [中文](README.md) · **English**
 
 A full-stack admin dashboard system built with webman v2 + Flutter.
 
@@ -28,7 +28,6 @@ A full-stack admin dashboard system built with webman v2 + Flutter.
 | 🔒 Roles & permissions | Role CRUD + permission tree | RBAC method.path granularity authorization |
 | ⚙ System config | Key-value CRUD | Group management |
 | 💳 Payment methods | Multi-gateway CRUD + enable/disable | 18 gateways (stripe/paypal/nowpayments/coinbase, etc.) + country visibility |
-| 🖥 CDN Admin | Five-provider config CRUD + toggle + connectivity test | Credentials AES-encrypted, service reads from DB only |
 | 📋 Operation audit | Log query + source detection | Automatic detection of 8 platforms |
 | 📁 File management | Upload/Excel export/PDF export | Sensitive data automatically masked |
 | 🛡 Security | 18-layer defense in depth | XSS/SQL injection/path traversal/command injection/CSRF/rate limit/CSP... |
@@ -43,7 +42,6 @@ A full-stack admin dashboard system built with webman v2 + Flutter.
 | Database | MySQL 8.0+ | Table prefix `game_`, BIGINT non-auto-increment primary keys |
 | Search engine | Elasticsearch | Synced and queried via `webman-scout` |
 | Admin frontend | Flutter 3.x | Web version uses PC admin dashboard style (`apps/flutter/`) |
-| Mobile | HarmonyOS ArkTS | Native HarmonyOS client (`apps/harmonyos/`), supports phone/tablet/2in1 |
 
 ## Core Dependencies
 
@@ -84,7 +82,6 @@ open-admin/
 │   │       ├── CaptchaController.php # Click captcha
 │   │       └── AuthController.php    # Login/register/refresh token
 │   ├── common/                 # Common utility classes
-│   │   └── CdnProbeService.php # CDN connectivity probe (Hashids/Snowflake/Encryption come from composer packages)
 │   ├── middleware/             # Middleware (9 on disk; 8 in the execution chain)
 │   │   ├── Cors.php            # Cross-origin
 │   │   ├── SecurityFilter.php  # Attack detection and blocking (HTTP method restriction/XSS/SQL injection/path traversal/command injection/CSRF)
@@ -102,14 +99,12 @@ open-admin/
 │   ├── service/                # Services (wallet/risk sandbox)
 │   └── view/                   # View templates
 ├── apps/
-│   ├── angular/                # Angular web admin backend
 │   ├── react/                  # React web admin backend
 │   ├── flutter/                # Flutter Web admin backend (PC style)
 │   │   └── lib/app/
 │   │       ├── pages/          # 26 page directories
 │   │       ├── services/       # ApiService (JWT interceptor) + AuthService (Token persistence)
 │   │       └── layouts/        # Responsive admin layout (sidebar + top bar + content area)
-│   └── harmonyos/              # Native HarmonyOS client (seamless Token refresh)
 ├── config/                     # Config files (with Chinese comments)
 │   ├── route.php               # Routes + API version strategy
 │   ├── middleware.php           # Global middleware registration
@@ -184,9 +179,7 @@ flutter pub get
 flutter run -d chrome    # Web (PC admin dashboard style)
 ```
 
-**HarmonyOS client (mobile):**
 
-Open the `apps/harmonyos/` directory with DevEco Studio and run on a real device or emulator.
 
 ### 6. Docker Compose one-click deployment (recommended for production)
 
@@ -399,7 +392,6 @@ Authorization: Bearer <token>
 - **Batch operations**: multi-select batch delete, batch enable/disable
 - **Theme**: Material 3 light/dark dual themes
 
-### HarmonyOS Mobile Client
 
 - **Pages**: login, dashboard, user list/detail, profile
 - **Authentication**: JWT Bearer + automatic seamless Token refresh on 401; auto-redirects to login on refresh failure
@@ -470,9 +462,14 @@ We thank **kta1kri** for responsibly disclosing the self-hosted / embedded game 
 
 ---
 
-## License
-
-MIT
+## 项目授权 / Project License
 
 Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
+- 本项目仅供个人学习、研究使用。
+- 未经作者书面授权，禁止任何形式的商业使用（包括但不限于商业部署、付费服务、二次销售、SaaS 运营及以本项目为基础提供商业服务）。
+- 商业授权请联系 **erik@erik.xyz**。
+- 未经授权的商业使用，作者将在全球范围内依法追究法律责任，并保留终身追责的权利。
+- 第三方组件仍遵循其各自原有的许可证；视觉资产适用仓库内的 ASSETS-LICENSE.md（如适用）。
+
+**English:** This project is provided for personal study and research only. Commercial use of any kind requires prior written authorization from the author (erik@erik.xyz). Unauthorized commercial use will be pursued for legal liability worldwide, and the author reserves the right to pursue such liability for life. Third-party components remain under their original licenses; visual assets are governed by ASSETS-LICENSE.md where applicable.

@@ -1,7 +1,7 @@
 # 部署文档
 <!-- lang-nav -->
 
-Languages: **中文** · [English](DEPLOYMENT.en.md) · [한국어](DEPLOYMENT.ko.md) · [Русский](DEPLOYMENT.ru.md) · [Deutsch](DEPLOYMENT.de.md) · [Français](DEPLOYMENT.fr.md) · [Español](DEPLOYMENT.es.md) · [Português](DEPLOYMENT.pt.md) · [हिन्दी](DEPLOYMENT.hi.md) · [العربية](DEPLOYMENT.ar.md) · [বাংলা](DEPLOYMENT.bn.md) · [Bahasa Indonesia](DEPLOYMENT.id.md) · [日本語](DEPLOYMENT.ja.md)
+Languages: **中文** · [English](DEPLOYMENT.en.md)
 
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
@@ -367,11 +367,8 @@ server {
     # 静态前端。两套前端定位不同：
     #   apps/*         = C 端玩家端（调 /api/ → service）
     #   admin/apps/*   = 管理台（调 /admin/ → admin）
-    # 各产物需先构建；React/Angular 必须带子路径前缀构建，否则资源 404：
     #   apps/react            npm run build                （已含 --base=/app-react/）
-    #   apps/angular          npm run build                （已含 --base-href=/app-angular/）
     #   admin/apps/react      npm run build                （已含 --base=/admin-react/）
-    #   admin/apps/angular    npm run build                （已含 --base-href=/admin-angular/）
     #   admin/apps/flutter    flutter build web --base-href=/admin-flutter/
     #   apps/flutter/platform flutter build web            （挂在根路径）
     # try_files 末项是【内部重定向】，目标 index.html 不存在时会重新匹配同一 location
@@ -391,7 +388,6 @@ server {
         try_files $uri $uri/ /index.html =404;
     }
 
-    # C 端 React / Angular Web（URL 前缀与产物目录名不同，用 alias 直接指向产物）
     location /app-react/ {
         alias /opt/game-platform/apps/react/dist/;
         try_files $uri $uri/ /app-react/index.html;
@@ -400,12 +396,7 @@ server {
         alias /opt/game-platform/apps/react/dist/index.html;
     }
 
-    location /app-angular/ {
-        alias /opt/game-platform/apps/angular/dist/game-client-angular/browser/;
-        try_files $uri $uri/ /app-angular/index.html;
     }
-    location = /app-angular/index.html {
-        alias /opt/game-platform/apps/angular/dist/game-client-angular/browser/index.html;
     }
 
     # 管理台 — 通用投放位：把任一控制台产物拷进 admin/public 即可
@@ -419,7 +410,6 @@ server {
         alias /opt/game-platform/admin/public/index.html;
     }
 
-    # 管理台 React / Angular / Flutter
     location /admin-react/ {
         alias /opt/game-platform/admin/apps/react/dist/;
         try_files $uri $uri/ /admin-react/index.html;
@@ -428,12 +418,7 @@ server {
         alias /opt/game-platform/admin/apps/react/dist/index.html;
     }
 
-    location /admin-angular/ {
-        alias /opt/game-platform/admin/apps/angular/dist/game-admin-angular/browser/;
-        try_files $uri $uri/ /admin-angular/index.html;
     }
-    location = /admin-angular/index.html {
-        alias /opt/game-platform/admin/apps/angular/dist/game-admin-angular/browser/index.html;
     }
 
     location /admin-flutter/ {
@@ -446,8 +431,6 @@ server {
 }
 ```
 
-> 手动部署时上面这些目录由你直接放构建产物（C 端四棵树：`apps/flutter/platform`、`apps/react`、`apps/angular`、`apps/harmonyos`；控制台前端统一挂在 `admin/apps/*`，另有通用投放位 `admin/public`）。
-> Docker 部署见 `docker-compose.yml` 的 nginx 卷挂载与 `nginx.conf.template`（同一套路径，容器内根为 `/var/www/...`）。HarmonyOS 端分发 `.hap`，不经 nginx。
 
 启用站点：
 ```bash

@@ -1,7 +1,7 @@
 # API Reference
 <!-- lang-nav -->
 
-Languages: [中文](API.md) · **English** · [한국어](API.ko.md) · [Русский](API.ru.md) · [Deutsch](API.de.md) · [Français](API.fr.md) · [Español](API.es.md) · [Português](API.pt.md) · [हिन्दी](API.hi.md) · [العربية](API.ar.md) · [বাংলা](API.bn.md) · [Bahasa Indonesia](API.id.md) · [日本語](API.ja.md)
+Languages: [中文](API.md) · **English**
 
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
@@ -1986,16 +1986,10 @@ CRUD endpoints for VIP levels.
 | PUT | /admin/v1/vip/level/{hashid} | Update a VIP level | JWT + RBAC |
 | DELETE | /admin/v1/vip/level/{hashid} | Delete a VIP level | JWT + RBAC |
 
-### 19.4 Achievements
 
-CRUD endpoints for achievement definitions.
 
 | Method | Path | Description | Auth |
 |------|------|------|------|
-| GET | /admin/v1/achievement/list | List achievements | JWT + RBAC |
-| POST | /admin/v1/achievement/create | Create an achievement | JWT + RBAC |
-| PUT | /admin/v1/achievement/{hashid} | Update an achievement | JWT + RBAC |
-| DELETE | /admin/v1/achievement/{hashid} | Delete an achievement | JWT + RBAC |
 
 ### 19.5 Global Search
 

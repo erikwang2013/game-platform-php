@@ -1,6 +1,6 @@
 <!-- lang-nav -->
 
-Languages: [中文](design.md) · **English** · [한국어](design.ko.md) · [Русский](design.ru.md) · [Deutsch](design.de.md) · [Français](design.fr.md) · [Español](design.es.md) · [Português](design.pt.md) · [हिन्दी](design.hi.md) · [العربية](design.ar.md) · [বাংলা](design.bn.md) · [Bahasa Indonesia](design.id.md) · [日本語](design.ja.md)
+Languages: [中文](design.md) · **English**
 
 OK, as your game designer and 3D technical lead, here is a complete design plan for the Three.js Match-3 game. This plan contains no code; it focuses on **element expansion**, **rule matrix**, **gameplay fusion mechanics**, and **Three.js scene construction ideas**.
 
