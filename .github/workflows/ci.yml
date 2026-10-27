@@ -116,45 +116,6 @@ jobs:
         working-directory: ${{ matrix.tree }}
         run: ./node_modules/.bin/oxlint src/
 
-  frontend-angular:
-    name: Frontend Angular (${{ matrix.tree }})
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        tree:
-          - admin/apps/angular
-          - apps/angular
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22.17.0'
-          cache: npm
-          cache-dependency-path: ${{ matrix.tree }}/package-lock.json
-
-      # Same mirror override as frontend-react -- see the comment there.
-      - name: Install dependencies
-        working-directory: ${{ matrix.tree }}
-        env:
-          NPM_CONFIG_REGISTRY: https://registry.npmjs.org
-          NPM_CONFIG_REPLACE_REGISTRY_HOST: always
-        run: npm ci --no-audit --no-fund
-
-      - name: Run tests
-        working-directory: ${{ matrix.tree }}
-        run: ./node_modules/.bin/ng test --watch=false
-
-      - name: Build
-        working-directory: ${{ matrix.tree }}
-        run: ./node_modules/.bin/ng build
-
-  # ⚠ 本 job **不含 harmonyos**（apps/harmonyos）：本机编译它需要 5 处沙箱修补
-  # （hvigor 项目声明版本与本机 SDK 不一致，见记忆 harmonyos_arkts_build），CI 上没有
-  # 等价的 harness，加进来只会一上线就红。等有可复现配方/官方 action 再补。
   frontend-flutter:
     name: Frontend Flutter (${{ matrix.tree }})
     runs-on: ubuntu-latest

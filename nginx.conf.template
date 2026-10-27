@@ -89,12 +89,6 @@ http {
             try_files $uri $uri/ /app-react/index.html =404;
         }
 
-        # C 端 Angular Web（apps/angular，构建需 --base-href=/app-angular/）
-        location /app-angular/ {
-            root /var/www/sites;
-            try_files $uri $uri/ /app-angular/index.html =404;
-        }
-
         # 管理台 — 自定义产物目录（admin/public，可放入任一控制台构建产物）
         location /admin-panel {
             alias /var/www/admin/public;
@@ -111,19 +105,10 @@ http {
             try_files $uri $uri/ /admin-react/index.html =404;
         }
 
-        # 管理台 Angular（admin/apps/angular，构建需 --base-href=/admin-angular/）
-        location /admin-angular/ {
-            root /var/www/sites;
-            try_files $uri $uri/ /admin-angular/index.html =404;
-        }
-
         # 管理台 Flutter Web（admin/apps/flutter，构建需 --base-href=/admin-flutter/）
         location /admin-flutter/ {
             root /var/www/sites;
             try_files $uri $uri/ /admin-flutter/index.html =404;
         }
-
-        # HarmonyOS 客户端（apps/harmonyos、admin/apps/harmonyos）为原生应用，
-        # 构建产物是 .hap 安装包，不经 nginx 分发。
     }
 }

@@ -44,7 +44,6 @@ Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 - Flutter 3.x，源码目录 `apps/flutter/`
 - Web 端按 PC 管理后台风格设计（非移动端 App 风格）
 - 支持客户端和管理员端
-- HarmonyOS ArkTS，源码目录 `apps/harmonyos/`
 
 ## 项目结构
 

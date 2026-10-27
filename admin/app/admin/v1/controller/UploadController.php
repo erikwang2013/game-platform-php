@@ -16,7 +16,7 @@ use support\Response;
  * 并把裁决记进墓碑」。记在这里，这个议题就不再被反复提出。
  *
  * 裁决依据的读数：
- *   · **零前端消费者**：四棵管理端树（apps/react、apps/angular、apps/flutter、apps/harmonyos）
+ *   · **零前端消费者**：两棵管理端树（apps/react、apps/flutter）
  *     一律走 `/admin/v1/aetherupload/*`，没有一处拼出 `/admin/v1/upload`。
  *   · **写是要求鉴权的**：`config/route.php:110` 的 Route::post('/upload', …) 就在 `/admin/v1` 组里
  *     （组起 `:73`、收在 `:314-317`），挂 AdminAuth + AdminPermission + OperationLog。

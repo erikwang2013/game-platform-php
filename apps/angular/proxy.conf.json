@@ -1,8 +1,0 @@
-{
-  "/api": {
-    "target": "http://games.test",
-    "secure": false,
-    "changeOrigin": true,
-    "logLevel": "warn"
-  }
-}

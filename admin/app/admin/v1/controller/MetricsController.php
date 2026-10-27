@@ -36,8 +36,8 @@ class MetricsController
     {
         $metrics = [];
 
-        // 走 cachedGauge：本端点的调用方不止 Prometheus —— admin/apps/angular 的
-        // dashboard.ts:100 与 settings.ts:432 也在打 /metrics，裸 safeCount 等于每次前端
+        // 走 cachedGauge：本端点的调用方不止 Prometheus —— 管理台的
+        // dashboard 与 settings 页面也在打 /metrics，裸 safeCount 等于每次前端
         // 页面加载都跑一条全表扫（见 todayRange() 的注释）。
         $activeUsers = $this->cachedGauge('metrics:admin:active_users_today', function () {
             return AdminUser::whereBetween('last_login_at', $this->todayRange())->count();

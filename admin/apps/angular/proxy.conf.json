@@ -1,6 +1,0 @@
-{
-  "/admin/v1": { "target": "http://admin.games.test", "changeOrigin": true, "secure": false },
-  "/api/v1": { "target": "http://admin.games.test", "changeOrigin": true, "secure": false },
-  "/health": { "target": "http://admin.games.test", "changeOrigin": true, "secure": false },
-  "/metrics": { "target": "http://admin.games.test", "changeOrigin": true, "secure": false }
-}

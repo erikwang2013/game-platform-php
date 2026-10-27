@@ -30,17 +30,13 @@ services:
       # 未构建时宿主机目录不存在，docker 会创建空目录，nginx 对路径请求返回 404（裸目录 403）。
       # 构建命令（各自目录内执行）：
       #   apps/react            npm run build                              → dist（含 --base=/app-react/）
-      #   apps/angular          npm run build                              → dist/game-client-angular/browser（含 --base-href=/app-angular/）
       #   admin/apps/react      npm run build                              → dist（含 --base=/admin-react/）
-      #   admin/apps/angular    npm run build                              → dist/game-admin-angular/browser（含 --base-href=/admin-angular/）
       #   admin/apps/flutter    flutter build web --base-href=/admin-flutter/
       #   apps/flutter/platform flutter build web                          → 挂到 /
       - ./admin/public:/var/www/admin/public:ro
       - ./apps/flutter/platform/build/web:/var/www/platform:ro
       - ./apps/react/dist:/var/www/sites/app-react:ro
-      - ./apps/angular/dist/game-client-angular/browser:/var/www/sites/app-angular:ro
       - ./admin/apps/react/dist:/var/www/sites/admin-react:ro
-      - ./admin/apps/angular/dist/game-admin-angular/browser:/var/www/sites/admin-angular:ro
       - ./admin/apps/flutter/build/web:/var/www/sites/admin-flutter:ro
       - ./ssl:/etc/nginx/ssl:ro
     depends_on:
