@@ -58,7 +58,6 @@ return [
                         ['title' => '公告管理', 'name' => 'announcement'],
                         ['title' => '分享统计', 'name' => 'share'],
                         ['title' => '搜索',     'name' => 'search'],
-                        ['title' => '成就管理', 'name' => 'achievement'],
                         ['title' => '运营活动', 'name' => 'activity'],
                     ]],
                     ['title' => '用户运营', 'name' => 'user_ops', 'children' => [
@@ -71,7 +70,6 @@ return [
                     ['title' => '资金财务', 'name' => 'finance', 'children' => [
                         ['title' => '提现管理', 'name' => 'withdraw'],
                         ['title' => '支付管理', 'name' => 'payment'],
-                        ['title' => '优惠券',   'name' => 'coupon'],
                     ]],
                     ['title' => '风控安全', 'name' => 'risk_center', 'children' => [
                         ['title' => '风控中心',   'name' => 'risk'],

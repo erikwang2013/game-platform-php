@@ -347,7 +347,7 @@ class ActivityService
             return $ok ? null : 'wallet mutate rejected: game';
         }
 
-        return 'unsupported reward_type: ' . $rewardType; // vip_exp/coupon/achievement 本最小区间不支持
+        return 'unsupported reward_type: ' . $rewardType; // vip_exp 本最小区间不支持
     }
 
     /**

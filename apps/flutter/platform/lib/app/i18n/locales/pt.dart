@@ -196,7 +196,6 @@ const Map<String, String> pt = {
   'two_factor.enter_code': 'Insira o código de 6 dígitos',
   'two_factor.setup_hint': 'Adicione este segredo ao seu aplicativo autenticador',
 
-  // Coupon
 
   // Leaderboard
   'leaderboard.title': 'Classificação',

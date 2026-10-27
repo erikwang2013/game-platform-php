@@ -56,7 +56,6 @@ const Map<String, String> zh = {
   'nav.cdn': 'CDN 配置',
   'nav.announcements': '公告管理',
   'nav.vip': 'VIP等级',
-  'nav.achievements': '成就管理',
   'nav.activities': '运营活动',
   'nav.game_categories': '游戏分类',
   'nav.game_servers': '游戏区服',
@@ -334,19 +333,6 @@ const Map<String, String> zh = {
   'vip.required_exp': '所需经验',
   'vip.benefits': '权益(JSON)',
 
-  // Achievement
-  'achievement.title': '成就管理',
-  'achievement.create': '新增成就',
-  'achievement.edit': '编辑成就',
-  'achievement.delete_confirm': '删除成就',
-  'achievement.key': '标识',
-  'achievement.name': '名称',
-  'achievement.description': '描述',
-  'achievement.icon': '图标',
-  'achievement.condition': '条件(JSON)',
-  'achievement.points': '积分',
-  'achievement.key_hint': '仅小写字母、数字和下划线',
-  'achievement.condition_hint': 'JSON，如 {"type":"signin"}',
 
   // Game category
   'game_category.title': '游戏分类',
@@ -496,7 +482,6 @@ const Map<String, String> zh = {
   'ticket.no_data': '暂无工单',
 
   // ─── 批次 4：资金（提现/支付/CDN/优惠券）───────────────────────────
-  'nav.coupons': '优惠券',
 
   // 提现订单与阶梯限额
   'withdraw.orders': '订单',
@@ -563,37 +548,6 @@ const Map<String, String> zh = {
   'cdn.sort': '排序',
 
   // 优惠券
-  'coupon.title': '优惠券',
-  'coupon.name': '名称',
-  'coupon.name_hint': '最长 100 字',
-  'coupon.type': '类型',
-  'coupon.type_fixed': '固定金额',
-  'coupon.type_rate': '比例折扣',
-  'coupon.value': '面值 / 折扣率',
-  'coupon.value_hint': 'fixed = 平台币面值；rate = 折扣率；十进制字符串，须大于 0',
-  'coupon.min_amount': '最低消费',
-  'coupon.min_amount_hint': '平台币金额；留空 = 0（无门槛）',
-  'coupon.max_discount': '最高优惠',
-  'coupon.max_discount_hint': '仅 rate 类型用；留空 = 0',
-  'coupon.game_id': '适用游戏',
-  'coupon.game_id_hint': '游戏 hashid（取自游戏列表的 id 列）；新建留空 = 全平台（存 0），编辑留空 = 保持原值',
-  'coupon.total_qty': '发行总量',
-  'coupon.total_qty_hint': '0 = 不限量',
-  'coupon.user_limit': '每人限领',
-  'coupon.user_limit_hint': '≥ 1；留空由后端取 1',
-  'coupon.start_at': '开始时间',
-  'coupon.end_at': '结束时间',
-  'coupon.time_hint': '日期时间串，如 2026-01-01 00:00:00；留空 = 不限（create 不校验格式）',
-  'coupon.issued': '已领 / 总量',
-  'coupon.unlimited': '不限量',
-  'coupon.stats': '统计',
-  'coupon.stats_title': '优惠券统计：{name}',
-  'coupon.used_qty': '已领取',
-  'coupon.remaining': '剩余',
-  'coupon.usage_rate': '使用率（%）',
-  'coupon.create': '新建优惠券',
-  'coupon.edit': '编辑优惠券',
-  'coupon.delete_confirm_target': '确定删除优惠券「{name}」及其全部用户领取记录吗？',
 
   // ─── 批次 5：风控（规则/事件/设备/IP/异常用户/团伙/反作弊）──────────
   'app.pager': '第 {page} / {pages} 页（共 {total} 条）',

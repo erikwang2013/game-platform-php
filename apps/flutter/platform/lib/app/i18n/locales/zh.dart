@@ -196,7 +196,6 @@ const Map<String, String> zh = {
   'two_factor.enter_code': '请输入6位验证码',
   'two_factor.setup_hint': '请将密钥添加到验证器应用',
 
-  // Coupon
 
   // Leaderboard
   'leaderboard.title': '排行榜',

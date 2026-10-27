@@ -70,7 +70,6 @@ return [
                         ['title' => '提现管理', 'name' => 'withdraw'],
                         ['title' => '支付管理', 'name' => 'payment'],
                         ['title' => '兑换管理', 'name' => 'exchange'],
-                        ['title' => '优惠券', 'name' => 'coupon'],
                         ['title' => '推荐管理', 'name' => 'referral'],
                     ]],
                     ['title' => '运营支撑', 'name' => 'support', 'children' => [

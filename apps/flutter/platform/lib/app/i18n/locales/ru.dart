@@ -196,7 +196,6 @@ const Map<String, String> ru = {
   'two_factor.enter_code': 'Введите 6-значный код',
   'two_factor.setup_hint': 'Добавьте этот секрет в приложение-аутентификатор',
 
-  // Coupon
 
   // Leaderboard
   'leaderboard.title': 'Рейтинг',

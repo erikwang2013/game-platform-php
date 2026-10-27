@@ -189,10 +189,6 @@ export const api = {
   playLogDetail: (hashid: string) =>
     get<PlayLogDetail>(`/game/play-log/${encodeURIComponent(hashid)}`),
 
-  /* 优惠券三个端点（/coupon/available|claim|my）2026-10-01 撤下：端点本身能跑通，
-     但券可领不可核销 ⇒ 页面只能提供假价值。没有消费者的接线一律删，不留在树里当死码。
-     恢复条件见 Layout.tsx 的 MORE 注释。 */
-
   /**
    * 全局搜索。回包**没有 last_page**（只有 total/page/per_page），故单独一个类型。
    * 只暴露 type=game：服务端把 type=user 标注为 admin 用途（SearchController 注释），

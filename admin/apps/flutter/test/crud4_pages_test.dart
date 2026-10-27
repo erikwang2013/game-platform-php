@@ -12,8 +12,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
-import 'package:admin_app/app/pages/cdn/cdn_page.dart';
-import 'package:admin_app/app/pages/coupon/coupon_page.dart';
 import 'package:admin_app/app/pages/payment/payment_page.dart';
 import 'package:admin_app/app/pages/withdraw/withdraw_limits_tab.dart';
 import 'package:admin_app/app/pages/withdraw/withdraw_page.dart';
@@ -92,42 +90,6 @@ class _FakePaymentController extends PaymentController {
 
   @override
   Future<void> toggle(String hashid, int status) async => toggled.add((hashid, status));
-}
-
-class _FakeCdnController extends CdnController {
-  final removed = <String>[];
-  String testMessage = 'server: cdn probe ok';
-
-  @override
-  Future<void> load() async {}
-
-  @override
-  Future<String> test(String hashid) async => testMessage;
-
-  @override
-  Future<void> remove(String hashid) async => removed.add(hashid);
-}
-
-class _FakeCouponController extends CouponAdminController {
-  final created = <Map<String, dynamic>>[];
-  final statusCalls = <(String, int)>[];
-  final removed = <String>[];
-  Map<String, dynamic> statsData = <String, dynamic>{};
-
-  @override
-  Future<void> load({int? toPage}) async {}
-
-  @override
-  Future<void> create(Map<String, dynamic> data) async => created.add(data);
-
-  @override
-  Future<void> setStatus(String hashid, int status) async => statusCalls.add((hashid, status));
-
-  @override
-  Future<void> remove(String hashid) async => removed.add(hashid);
-
-  @override
-  Future<Map<String, dynamic>> stats(String hashid) async => statsData;
 }
 
 /// 一行提现订单。默认 pending 且没人审过（reviewer_id=0）。
@@ -555,107 +517,6 @@ void main() {
       await tester.tap(find.byIcon(Icons.edit).first);
       await tester.pumpAndSettle();
       expect(tester.widget<TextField>(find.widgetWithText(TextField, 'Countries')).controller?.text, 'US\nCN');
-    });
-  });
-
-  group('CDN 厂商', () {
-    testWidgets('连通测试：成功/失败都读服务端 message，删除确认带厂商名', (tester) async {
-      final ctrl = _FakeCdnController();
-      ctrl.providers.value = <dynamic>[
-        <String, dynamic>{'id': 'c-1', 'name': 'Cloudflare Prod', 'provider': 'cloudflare', 'status': 1, 'sort': 1},
-      ];
-      Get.put<CdnController>(ctrl);
-      await pumpPage(tester, const CdnPage());
-
-      await tester.tap(find.byIcon(Icons.wifi_tethering));
-      await tester.pumpAndSettle();
-      expect(find.text('server: cdn probe ok'), findsOneWidget); // 探测结果原样显示，不吞不改写
-      expect(ctrl.testingId.value, ''); // 转圈态复位，按钮还能再点
-      await flushSnackbars(tester);
-
-      await tester.tap(find.byIcon(Icons.delete));
-      await tester.pumpAndSettle();
-      expect(find.text('Delete "Cloudflare Prod"?'), findsOneWidget);
-      await tester.tap(find.descendant(of: find.byType(AlertDialog).last, matching: find.text('Cancel')));
-      await tester.pumpAndSettle();
-      expect(ctrl.removed, isEmpty);
-    });
-  });
-
-  group('优惠券', () {
-    Map<String, dynamic> coupon({String id = 'cp-1', int totalQty = 0}) => <String, dynamic>{
-          'id': id,
-          'name': 'New Year',
-          'type': 'fixed',
-          'value': '10.0000',
-          'min_amount': '100.0000',
-          'max_discount': '0.0000',
-          'total_qty': totalQty,
-          'used_qty': 3,
-          'user_limit': 1,
-          'status': 1,
-        };
-
-    testWidgets('新建表单里没有状态开关（status 由后端硬编码 1），金额是 text 控件', (tester) async {
-      final ctrl = _FakeCouponController();
-      Get.put<CouponAdminController>(ctrl);
-      await pumpPage(tester, const CouponPage());
-
-      await tester.tap(find.text('Create'));
-      await tester.pumpAndSettle();
-      expect(find.text('Create Coupon'), findsOneWidget);
-      expect(find.descendant(of: find.byType(AlertDialog), matching: find.byType(SwitchListTile)), findsNothing);
-
-      for (final label in <String>['Value / rate', 'Min spend', 'Max discount']) {
-        expect(tester.widget<TextField>(find.widgetWithText(TextField, label)).keyboardType,
-            isNot(TextInputType.number), reason: '$label 是金额，必须是 text 控件');
-      }
-      expect(tester.widget<TextField>(find.widgetWithText(TextField, 'Total qty')).keyboardType,
-          TextInputType.number);
-
-      await tester.enterText(find.widgetWithText(TextField, 'Name'), 'Spring');
-      await tester.enterText(find.widgetWithText(TextField, 'Value / rate'), '8.0000');
-      await tester.tap(find.text('Save'));
-      await tester.pumpAndSettle();
-
-      final data = ctrl.created.single;
-      expect(data['name'], 'Spring');
-      expect(data['value'], '8.0000');
-      expect(data['type'], 'fixed'); // 下拉默认第一项
-      expect(data.containsKey('status'), isFalse); // 表单里根本没有这个字段（后端 create 也不读入参）
-      expect(data.containsKey('min_amount'), isFalse);
-      await flushSnackbars(tester);
-    });
-
-    testWidgets('列表：已用/总量按 0=不限量显示，行内开关走局部 PUT，统计弹框读 stats', (tester) async {
-      final ctrl = _FakeCouponController()
-        ..statsData = <String, dynamic>{'total_qty': 0, 'used_qty': 3, 'remaining': null, 'usage_rate': null};
-      ctrl.items.value = <dynamic>[coupon(), coupon(id: 'cp-2', totalQty: 10)];
-      Get.put<CouponAdminController>(ctrl);
-      await pumpPage(tester, const CouponPage());
-
-      expect(find.text('3 / Unlimited'), findsOneWidget); // 总量 0 = 不限量，不摆「3 / 0」
-      expect(find.text('3 / 10'), findsOneWidget);
-
-      await tester.tap(find.descendant(of: find.byType(DataTable), matching: find.byType(Switch)).first);
-      await tester.pumpAndSettle();
-      expect(ctrl.statusCalls, <(String, int)>[('cp-1', 0)]); // 行里 status=1 ⇒ 切到 0
-
-      await tester.tap(find.byIcon(Icons.bar_chart).first);
-      await tester.pumpAndSettle();
-      expect(find.text('Coupon stats: New Year'), findsOneWidget);
-      expect(find.text('Unlimited'), findsNWidgets(2)); // total_qty=0 与 remaining=null 都读作不限量
-      expect(find.text('Claimed'), findsOneWidget);
-      await tester.tap(find.text('Close'));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byIcon(Icons.delete).first);
-      await tester.pumpAndSettle();
-      expect(find.text('Delete coupon "New Year" and all of its user claim records?'), findsOneWidget);
-      await tester.tap(find.descendant(of: find.byType(AlertDialog).last, matching: find.text('Delete')));
-      await tester.pumpAndSettle();
-      expect(ctrl.removed, <String>['cp-1']);
-      await flushSnackbars(tester);
     });
   });
 

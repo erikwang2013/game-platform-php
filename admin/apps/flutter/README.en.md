@@ -5,7 +5,7 @@ Languages: [中文](README.md) · **English** · [한국어](README.ko.md) · [�
 
 > Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
 
-The admin web frontend built with Flutter 3.x, using the classic PC admin layout (sidebar + topbar + content area). It covers all management pages needed to operate the game platform: dashboard, users, roles and permissions, games, payments, withdrawals, VIP, achievements, announcements, CDN, risk control, identity verification, operation logs, and more.
+The admin web frontend built with Flutter 3.x, using the classic PC admin layout (sidebar + topbar + content area). It covers all management pages needed to operate the game platform: dashboard, users, roles and permissions, games, payments, withdrawals, VIP, announcements, CDN, risk control, identity verification, operation logs, and more.
 
 ## Feature List
 
@@ -23,7 +23,6 @@ The admin web frontend built with Flutter 3.x, using the classic PC admin layout
 | Payment management | Deposit orders, payment methods and callback logs |
 | Withdrawal management | Withdrawal review and payout |
 | VIP management | VIP levels and benefits configuration |
-| Achievement management | Achievement definitions and progress |
 | Announcement management | Announcement publishing and lifecycle |
 | CDN management | CDN provider and domain configuration |
 | Risk control | Risk rules and interception records |

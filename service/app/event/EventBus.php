@@ -29,7 +29,7 @@ class EventBus
 
     /**
      * Emit an event to Redis Pub/Sub channel.
-     * Subscribers: achievement engine, webhook dispatcher, audit logger.
+     * Subscribers: webhook dispatcher, audit logger.
      *
      * id 在**这里生成一次**再放进消息：N 个订阅者收到的是 Redis 扇出的同一条消息字节，
      * 于是同一个事件对所有订阅者是同一个 id。若改到消费者侧生成，每个订阅者会各得一个

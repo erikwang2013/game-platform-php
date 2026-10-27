@@ -304,9 +304,6 @@ export interface CountryOption {
   min_deposit: string;
 }
 
-/* 券类型（CouponType / Coupon / UserCouponStatus / UserCoupon）2026-10-01 随优惠券页一并撤下，
-   因为服务端券可领不可核销，本树不再有消费者。恢复条件见 Layout.tsx 的 MORE 注释。 */
-
 /**
  * /search 的回包**不是**标准分页信封：只有 {list,total,page,per_page}，**没有 last_page**。
  * 别按 Paged<T> 解（`last_page` 会读成 undefined，翻页控件静默消失）。

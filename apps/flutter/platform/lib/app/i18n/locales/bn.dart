@@ -196,7 +196,6 @@ const Map<String, String> bn = {
   'two_factor.enter_code': '৬ সংখ্যার কোড লিখুন',
   'two_factor.setup_hint': 'এই গোপন কোডটি আপনার প্রমাণীকরণ অ্যাপে যোগ করুন',
 
-  // Coupon
 
   // Leaderboard
   'leaderboard.title': 'লিডারবোর্ড',

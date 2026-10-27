@@ -57,7 +57,6 @@ const Map<String, String> en = {
   'nav.cdn': 'CDN Providers',
   'nav.announcements': 'Announcements',
   'nav.vip': 'VIP Levels',
-  'nav.achievements': 'Achievements',
   'nav.activities': 'Activities',
   'nav.game_categories': 'Game Categories',
   'nav.game_servers': 'Game Servers',
@@ -335,19 +334,6 @@ const Map<String, String> en = {
   'vip.required_exp': 'Required EXP',
   'vip.benefits': 'Benefits (JSON)',
 
-  // Achievement
-  'achievement.title': 'Achievement Management',
-  'achievement.create': 'Create Achievement',
-  'achievement.edit': 'Edit Achievement',
-  'achievement.delete_confirm': 'Delete achievement',
-  'achievement.key': 'Key',
-  'achievement.name': 'Name',
-  'achievement.description': 'Description',
-  'achievement.icon': 'Icon',
-  'achievement.condition': 'Condition (JSON)',
-  'achievement.points': 'Points',
-  'achievement.key_hint': 'lowercase letters, digits and _ only',
-  'achievement.condition_hint': 'JSON, e.g. {"type":"signin"}',
 
   // Game category
   'game_category.title': 'Game Categories',
@@ -494,7 +480,6 @@ const Map<String, String> en = {
   'ticket.no_data': 'No tickets',
 
   // ─── Batch 4: 资金（提现/支付/CDN/优惠券）───────────────────────────
-  'nav.coupons': 'Coupons',
 
   // Withdraw orders & tiers
   'withdraw.orders': 'Orders',
@@ -561,38 +546,6 @@ const Map<String, String> en = {
   'cdn.status': 'Status',
   'cdn.sort': 'Sort',
 
-  // Coupons
-  'coupon.title': 'Coupons',
-  'coupon.name': 'Name',
-  'coupon.name_hint': 'Max 100 characters',
-  'coupon.type': 'Type',
-  'coupon.type_fixed': 'Fixed amount',
-  'coupon.type_rate': 'Rate',
-  'coupon.value': 'Value / rate',
-  'coupon.value_hint': 'fixed = platform-token amount; rate = discount rate; a decimal string greater than 0',
-  'coupon.min_amount': 'Min spend',
-  'coupon.min_amount_hint': 'Platform tokens; empty = 0 (no threshold)',
-  'coupon.max_discount': 'Max discount',
-  'coupon.max_discount_hint': 'Rate type only; empty = 0',
-  'coupon.game_id': 'Game',
-  'coupon.game_id_hint': 'Game hashid (the id column of the game list); create: empty = platform-wide (stored as 0), edit: empty = keep current',
-  'coupon.total_qty': 'Total qty',
-  'coupon.total_qty_hint': '0 = unlimited',
-  'coupon.user_limit': 'Per-user limit',
-  'coupon.user_limit_hint': '>= 1; empty lets the backend use 1',
-  'coupon.start_at': 'Start at',
-  'coupon.end_at': 'End at',
-  'coupon.time_hint': 'Datetime string, e.g. 2026-01-01 00:00:00; empty = no bound (create does not validate the format)',
-  'coupon.issued': 'Used / total',
-  'coupon.unlimited': 'Unlimited',
-  'coupon.stats': 'Stats',
-  'coupon.stats_title': 'Coupon stats: {name}',
-  'coupon.used_qty': 'Claimed',
-  'coupon.remaining': 'Remaining',
-  'coupon.usage_rate': 'Usage rate (%)',
-  'coupon.create': 'Create Coupon',
-  'coupon.edit': 'Edit Coupon',
-  'coupon.delete_confirm_target': 'Delete coupon "{name}" and all of its user claim records?',
 
   // ─── Batch 5: 风控（规则/事件/设备/IP/异常用户/团伙/反作弊）──────────
   'app.pager': 'Page {page} / {pages} ({total} total)',

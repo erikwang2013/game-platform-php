@@ -859,47 +859,6 @@ CREATE TABLE IF NOT EXISTS `game_leaderboard` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='排行榜定义表';
 
 -- ============================================================
--- 优惠券表
--- ============================================================
-CREATE TABLE IF NOT EXISTS `game_coupon` (
-    `id` BIGINT UNSIGNED NOT NULL,
-    `name` VARCHAR(100) NOT NULL COMMENT '优惠券名称',
-    `type` VARCHAR(20) NOT NULL DEFAULT 'fixed' COMMENT '类型: fixed=固定金额 rate=比例折扣',
-    `value` DECIMAL(18,4) NOT NULL COMMENT '优惠值(fixed=平台币 rate=折扣率如0.10=9折)',
-    `min_amount` DECIMAL(18,4) UNSIGNED NOT NULL DEFAULT 0.0000 COMMENT '最低使用金额',
-    `max_discount` DECIMAL(18,4) UNSIGNED NOT NULL DEFAULT 0.0000 COMMENT '最大优惠金额(rate类型)',
-    `conditions` JSON NULL COMMENT '使用条件(JSON)',
-    `game_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '适用游戏(0=全平台通用)',
-    `total_qty` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '发行总量(0=不限)',
-    `used_qty` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '已领取/使用数量',
-    `user_limit` INT UNSIGNED NOT NULL DEFAULT 1 COMMENT '每人限领数量',
-    `start_at` DATETIME DEFAULT NULL COMMENT '开始时间',
-    `end_at` DATETIME DEFAULT NULL COMMENT '结束时间',
-    `status` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '0=禁用 1=启用',
-    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id`),
-    KEY `idx_status_dates` (`status`, `start_at`, `end_at`),
-    KEY `idx_game_id` (`game_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='优惠券表：领取已实现；核销/抵扣未实现（used_qty 仅随领取递增，无核销写入方）';
-
--- ============================================================
--- 用户优惠券表
--- ============================================================
-CREATE TABLE IF NOT EXISTS `game_user_coupon` (
-    `id` BIGINT UNSIGNED NOT NULL,
-    `user_id` BIGINT UNSIGNED NOT NULL,
-    `coupon_id` BIGINT UNSIGNED NOT NULL,
-    `status` VARCHAR(20) NOT NULL DEFAULT 'unused' COMMENT 'unused/used/expired',
-    `used_at` DATETIME DEFAULT NULL,
-    `used_in_order` VARCHAR(32) NOT NULL DEFAULT '' COMMENT '使用的订单号',
-    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (`id`),
-    KEY `idx_user_status` (`user_id`, `status`),
-    KEY `idx_coupon_id` (`coupon_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户优惠券表：领取已实现；核销/抵扣未实现，status=used 与 used_in_order 全仓无写入方';
-
--- ============================================================
 -- 国家差异化配置表
 -- ============================================================
 CREATE TABLE IF NOT EXISTS `game_country_config` (
@@ -1020,7 +979,7 @@ CREATE TABLE IF NOT EXISTS `game_platform_revenue` (
 CREATE TABLE IF NOT EXISTS `game_notification` (
     `id` BIGINT UNSIGNED NOT NULL,
     `user_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '用户ID(0=全站通知)',
-    `type` VARCHAR(30) NOT NULL DEFAULT 'system' COMMENT '类型: system/deposit/withdraw/kyc/coupon/announcement',
+    `type` VARCHAR(30) NOT NULL DEFAULT 'system' COMMENT '类型: system/deposit/withdraw/kyc/announcement',
     `title` VARCHAR(255) NOT NULL,
     `content` TEXT NOT NULL,
     `is_read` TINYINT UNSIGNED NOT NULL DEFAULT 0,
@@ -1173,16 +1132,13 @@ INSERT IGNORE INTO `game_admin_permission` (`id`, `parent_id`, `name`, `slug`, `
 -- 业务模块 API 权限（type=3）：slug 由运行时路由 dump 生成，取 AdminPermission::permissionPath 归一后的
 -- 形态（丢掉 {占位符} 段），与中间件实际比对的字符串逐字节一致；name 取各控制器方法的 Apidoc\Title，
 -- 数据分析 12 条取 docs/API.md §17.x 标题。本段只做「可授予」，不向任何角色授予。
-(21000000000000101, '0', '删除成就', 'delete.admin/achievement', 3, '', '', 100, NOW(), NOW()),
 (21000000000000102, '0', '删除运营活动', 'delete.admin/activities', 3, '', '', 101, NOW(), NOW()),
-(21000000000000104, '0', '删除优惠券', 'delete.admin/coupon', 3, '', '', 103, NOW(), NOW()),
 (21000000000000105, '0', '删除游戏', 'delete.admin/game', 3, '', '', 104, NOW(), NOW()),
 (21000000000000106, '0', '删除分类', 'delete.admin/game/category', 3, '', '', 105, NOW(), NOW()),
 (21000000000000107, '0', '删除区服', 'delete.admin/game/server', 3, '', '', 106, NOW(), NOW()),
 (21000000000000108, '0', '删除排行榜', 'delete.admin/leaderboard', 3, '', '', 107, NOW(), NOW()),
 (21000000000000109, '0', '删除支付方式', 'delete.admin/payment/method', 3, '', '', 108, NOW(), NOW()),
 (21000000000000110, '0', '删除VIP等级', 'delete.admin/vip/level', 3, '', '', 109, NOW(), NOW()),
-(21000000000000111, '0', '查看成就', 'get.admin/achievement/list', 3, '', '', 110, NOW(), NOW()),
 (21000000000000112, '0', '查看运营活动', 'get.admin/activities/list', 3, '', '', 111, NOW(), NOW()),
 (21000000000000113, '0', '行为分布', 'get.admin/analytics/action-distribution', 3, '', '', 112, NOW(), NOW()),
 (21000000000000114, '0', 'ARPU/ARPPU 趋势', 'get.admin/analytics/arpu', 3, '', '', 113, NOW(), NOW()),
@@ -1199,8 +1155,6 @@ INSERT IGNORE INTO `game_admin_permission` (`id`, `parent_id`, `name`, `slug`, `
 (21000000000000125, '0', '公告列表', 'get.admin/announcement/list', 3, '', '', 124, NOW(), NOW()),
 (21000000000000126, '0', '反作弊-事件列表', 'get.admin/anticheat/events', 3, '', '', 125, NOW(), NOW()),
 (21000000000000128, '0', '国家配置列表', 'get.admin/country/config/list', 3, '', '', 127, NOW(), NOW()),
-(21000000000000129, '0', '优惠券列表', 'get.admin/coupon/list', 3, '', '', 128, NOW(), NOW()),
-(21000000000000130, '0', '优惠券统计', 'get.admin/coupon/stats', 3, '', '', 129, NOW(), NOW()),
 (21000000000000131, '21000000000000001', '平台仪表盘', 'get.admin/dashboard/platform', 3, '', '', 2, NOW(), NOW()),
 (21000000000000132, '0', '游戏详情', 'get.admin/game', 3, '', '', 130, NOW(), NOW()),
 (21000000000000133, '0', '分类列表', 'get.admin/game/category/list', 3, '', '', 131, NOW(), NOW()),
@@ -1238,12 +1192,10 @@ INSERT IGNORE INTO `game_admin_permission` (`id`, `parent_id`, `name`, `slug`, `
 (21000000000000167, '0', '阶梯限额列表', 'get.admin/withdraw/limits/list', 3, '', '', 165, NOW(), NOW()),
 (21000000000000168, '0', '提现订单列表', 'get.admin/withdraw/orders', 3, '', '', 166, NOW(), NOW()),
 (21000000000000169, '0', '查看提现打款开关', 'get.admin/withdraw/switch', 3, '', '', 167, NOW(), NOW()),
-(21000000000000170, '0', '创建成就', 'post.admin/achievement/create', 3, '', '', 168, NOW(), NOW()),
 (21000000000000171, '0', '创建运营活动', 'post.admin/activities/create', 3, '', '', 169, NOW(), NOW()),
 (21000000000000172, '0', '发布公告', 'post.admin/announcement/create', 3, '', '', 170, NOW(), NOW()),
 (21000000000000173, '0', '人工审核', 'post.admin/anticheat/events/review', 3, '', '', 171, NOW(), NOW()),
 (21000000000000177, '0', '创建国家配置', 'post.admin/country/config/create', 3, '', '', 175, NOW(), NOW()),
-(21000000000000178, '0', '创建优惠券', 'post.admin/coupon/create', 3, '', '', 176, NOW(), NOW()),
 (21000000000000179, '0', '导出收据PDF', 'post.admin/export/receipt', 3, '', '', 177, NOW(), NOW()),
 (21000000000000180, '0', '导出流水Excel', 'post.admin/export/transactions', 3, '', '', 178, NOW(), NOW()),
 (21000000000000181, '0', '导出用户Excel', 'post.admin/export/users', 3, '', '', 179, NOW(), NOW()),
@@ -1279,10 +1231,8 @@ INSERT IGNORE INTO `game_admin_permission` (`id`, `parent_id`, `name`, `slug`, `
 (21000000000000211, '0', '执行打款', 'post.admin/withdraw/execute-payout', 3, '', '', 209, NOW(), NOW()),
 (21000000000000212, '0', '设置提现限额', 'post.admin/withdraw/limits/set', 3, '', '', 210, NOW(), NOW()),
 (21000000000000213, '0', '同步打款状态', 'post.admin/withdraw/sync-payout', 3, '', '', 211, NOW(), NOW()),
-(21000000000000214, '0', '更新成就', 'put.admin/achievement', 3, '', '', 212, NOW(), NOW()),
 (21000000000000215, '0', '更新运营活动', 'put.admin/activities', 3, '', '', 213, NOW(), NOW()),
 (21000000000000217, '0', '编辑国家配置', 'put.admin/country/config', 3, '', '', 215, NOW(), NOW()),
-(21000000000000218, '0', '编辑优惠券', 'put.admin/coupon', 3, '', '', 216, NOW(), NOW()),
 (21000000000000219, '0', '编辑游戏', 'put.admin/game', 3, '', '', 217, NOW(), NOW()),
 (21000000000000220, '0', '编辑分类', 'put.admin/game/category', 3, '', '', 218, NOW(), NOW()),
 (21000000000000221, '0', '编辑区服', 'put.admin/game/server', 3, '', '', 219, NOW(), NOW()),
@@ -1307,7 +1257,6 @@ INSERT IGNORE INTO `game_admin_permission` (`id`, `parent_id`, `name`, `slug`, `
 (21000000000000237, '0', '删除公告', 'delete.admin/announcement', 3, '', '', 235, NOW(), NOW()),
 (21000000000000238, '0', '启用/禁用国家配置', 'post.admin/country/config/toggle', 3, '', '', 236, NOW(), NOW()),
 (21000000000000239, '0', '删除国家配置', 'delete.admin/country/config', 3, '', '', 237, NOW(), NOW()),
-(21000000000000240, '0', '上架/停用成就', 'post.admin/achievement/toggle', 3, '', '', 238, NOW(), NOW()),
 (21000000000000241, '0', '平台用户流水', 'get.admin/platform/user/transactions', 3, '', '', 239, NOW(), NOW()),
 -- aetherupload 展示件（游戏封面 / 分类图标 / 成就图标）的上传与下载端点。
 -- slug 抄自 PermissionSeedParityTest 的双向差集报错原文（运行时可授予 slug dump），非手敲。
@@ -1630,35 +1579,6 @@ CREATE TABLE IF NOT EXISTS `game_user_vip` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户VIP状态表';
 
 -- ============================================================
--- 成就定义表
--- ============================================================
-CREATE TABLE IF NOT EXISTS `game_achievement` (
-    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
-    `key` VARCHAR(64) NOT NULL COMMENT '成就唯一标识（保留字，必须反引号）',
-    `name` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '成就名称',
-    `description` VARCHAR(500) NOT NULL DEFAULT '' COMMENT '成就描述',
-    `icon` VARCHAR(255) NOT NULL DEFAULT '' COMMENT '图标地址',
-    `condition_json` JSON DEFAULT NULL COMMENT '达成条件JSON，需用 -> 语法做SQL过滤，故必须为JSON列',
-    `points` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '成就积分',
-    `status` TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '状态: 0=停用 1=启用',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_key` (`key`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='成就定义表';
-
--- ============================================================
--- 用户成就进度表
--- ============================================================
-CREATE TABLE IF NOT EXISTS `game_user_achievement` (
-    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
-    `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
-    `achievement_id` BIGINT UNSIGNED NOT NULL COMMENT '成就ID',
-    `progress` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '当前进度值',
-    `completed` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '是否已完成：0否 1是',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_user_achievement` (`user_id`, `achievement_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户成就进度表';
-
--- ============================================================
 -- 客服工单表
 -- ============================================================
 CREATE TABLE IF NOT EXISTS `game_ticket` (
@@ -1769,13 +1689,13 @@ CREATE TABLE IF NOT EXISTS `game_referral_commission` (
 -- 生态扩展种子：功能开关 4 · VIP 等级 4 · 内置成就 12
 --
 -- ⚠ **必须放在本文件所有 CREATE TABLE 之后**（故压在 COMMIT 之前）。
---   这三组种子在 2026-10-02 之前**只存在于 install/clickhouse.sql 里** —— 那是一份从未被
---   执行过的 MySQL 脚本，寄居在一个只喂 ClickHouse 的文件里 ⇒ 全新安装出来这三张表是空的。
+--   这两组种子在 2026-10-02 之前**只存在于 install/clickhouse.sql 里** —— 那是一份从未被
+--   执行过的 MySQL 脚本，寄居在一个只喂 ClickHouse 的文件里 ⇒ 全新安装出来这两张表是空的。
 --
 --   ⚠ **顺序是这条路径唯一的约束，而且本机测不出来**：2026-10-02 实测，把它们插在文件中部
 --   （原 `:1447`）会让 CI 的 `mysql -u root game-platform < install/install.sql`（**空库**）
 --   在 `game_vip_level` 上报 `ERROR 1146 Table ... doesn't exist` —— 该表的 CREATE 在
---   `:1783`、`game_achievement` 在 `:1809`，都在种子之后。
+--   该表的 CREATE 在种子之后。
 --   本机为什么没报：**本地测试库早就建好了那几张表** ⇒ 「install.sql 跑在空库上」这条路径
 --   只有 CI 在观察。**改本文件后，判据是 CI 的 Prepare test databases，不是本地套件。**
 --
@@ -1787,7 +1707,6 @@ CREATE TABLE IF NOT EXISTS `game_referral_commission` (
 INSERT IGNORE INTO `game_platform_config` (`id`, `group`, `key`, `value`, `type`, `description`) VALUES
 (20260804000302, 'feature', 'chat', 'off', 'string', 'Chat/WebSocket messaging'),
 (20260804000303, 'feature', 'vip', 'off', 'string', 'VIP loyalty system'),
-(20260804000304, 'feature', 'achievements', 'off', 'string', 'Achievement/badge system');
 
 -- VIP 等级定义（消费方：VipService::getNextLevel()、管理端 VipLevelController）
 -- ⚠ benefits 的三个键（exchange_discount / withdraw_fee_discount / rate_bonus）与 VipService
@@ -1797,21 +1716,5 @@ INSERT IGNORE INTO `game_vip_level` (`id`, `level`, `name`, `required_exp`, `ben
 (20260804000101, 2, 'Gold', 2500, '{"exchange_discount":"0.05","withdraw_fee_discount":"0.30","rate_bonus":"0.003"}'),
 (20260804000102, 3, 'Platinum', 12500, '{"exchange_discount":"0.10","withdraw_fee_discount":"0.50","rate_bonus":"0.005"}'),
 (20260804000103, 4, 'Diamond', 62500, '{"exchange_discount":"0.15","withdraw_fee_discount":"1.00","rate_bonus":"0.010"}');
-
--- 内置成就（消费方：service 的 AchievementService 按 condition_json->event 查定义并发成就）
--- 这 12 条正是 README「12 个内置成就」所指的那批。
-INSERT IGNORE INTO `game_achievement` (`id`, `key`, `name`, `description`, `condition_json`, `points`) VALUES
-(20260804000201, 'first_deposit', 'First Deposit', 'Make your first deposit', '{"event":"deposit.completed","metric":"count","table":"game_deposit_order","threshold":1}', 20),
-(20260804000202, 'deposit_100', 'Century Club', 'Accumulate 100 in deposits', '{"event":"deposit.completed","metric":"sum","table":"game_deposit_order","sum_column":"platform_amount","threshold":100}', 50),
-(20260804000203, 'deposit_1000', 'High Roller', 'Accumulate 1000 in deposits', '{"event":"deposit.completed","metric":"sum","table":"game_deposit_order","sum_column":"platform_amount","threshold":1000}', 100),
-(20260804000204, 'first_exchange', 'Trader', 'Complete your first exchange', '{"event":"exchange.completed","metric":"count","table":"game_exchange_record","threshold":1}', 20),
-(20260804000205, 'exchange_100', 'Day Trader', 'Complete 100 exchanges', '{"event":"exchange.completed","metric":"count","table":"game_exchange_record","threshold":100}', 100),
-(20260804000206, 'play_3_games', 'Explorer', 'Play 3 different games', '{"event":"game.played","metric":"distinct_count","table":"game_game_play_log","distinct_column":"game_id","threshold":3}', 30),
-(20260804000207, 'play_5_games', 'Adventurer', 'Play 5 different games', '{"event":"game.played","metric":"distinct_count","table":"game_game_play_log","distinct_column":"game_id","threshold":5}', 50),
-(20260804000208, 'play_10_games', 'Conqueror', 'Play 10 different games', '{"event":"game.played","metric":"distinct_count","table":"game_game_play_log","distinct_column":"game_id","threshold":10}', 100),
-(20260804000209, 'login_7_days', 'Weekly Warrior', 'Login 7 days in a row', '{"event":"user.login","metric":"consecutive_days","threshold":7}', 30),
-(20260804000210, 'login_30_days', 'Monthly Master', 'Login 30 days in a row', '{"event":"user.login","metric":"consecutive_days","threshold":30}', 100),
-(20260804000211, 'invite_1', 'Connector', 'Invite 1 friend', '{"event":"referral.applied","metric":"count","table":"game_referral","column":"referrer_id","threshold":1}', 30),
-(20260804000212, 'invite_10', 'Influencer', 'Invite 10 friends', '{"event":"referral.applied","metric":"count","table":"game_referral","column":"referrer_id","threshold":10}', 100);
 
 COMMIT;

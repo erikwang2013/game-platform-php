@@ -196,7 +196,6 @@ const Map<String, String> ar = {
   'two_factor.enter_code': 'يرجى إدخال الرمز المكوّن من 6 أرقام',
   'two_factor.setup_hint': 'أضف هذا المفتاح السري إلى تطبيق المصادقة',
 
-  // Coupon
 
   // Leaderboard
   'leaderboard.title': 'لوحة المتصدرين',

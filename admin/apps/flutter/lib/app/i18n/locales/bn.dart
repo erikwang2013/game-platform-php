@@ -56,7 +56,6 @@ const Map<String, String> bn = {
   'nav.cdn': 'CDN সরবরাহকারী',
   'nav.announcements': 'ঘোষণা',
   'nav.vip': 'VIP স্তর',
-  'nav.achievements': 'অর্জন',
   'nav.activities': 'কার্যক্রম',
   'nav.game_categories': 'গেম বিভাগ',
   'nav.game_servers': 'গেম সার্ভার',
@@ -334,19 +333,6 @@ const Map<String, String> bn = {
   'vip.required_exp': 'প্রয়োজনীয় EXP',
   'vip.benefits': 'সুবিধা (JSON)',
 
-  // Achievement
-  'achievement.title': 'অর্জন ব্যবস্থাপনা',
-  'achievement.create': 'অর্জন তৈরি করুন',
-  'achievement.edit': 'অর্জন সম্পাদনা করুন',
-  'achievement.delete_confirm': 'অর্জন মুছে ফেলবেন',
-  'achievement.key': 'কী',
-  'achievement.name': 'নাম',
-  'achievement.description': 'বিবরণ',
-  'achievement.icon': 'আইকন',
-  'achievement.condition': 'শর্ত (JSON)',
-  'achievement.points': 'পয়েন্ট',
-  'achievement.key_hint': 'কেবল ছোট হাতের অক্ষর, সংখ্যা এবং _',
-  'achievement.condition_hint': 'JSON, যেমন {"type":"signin"}',
 
   // Game category
   'game_category.title': 'গেম বিভাগ',
@@ -492,7 +478,6 @@ const Map<String, String> bn = {
   'ticket.no_data': 'কোনো টিকিট নেই',
 
   // ─── Batch 4: 资金（提现/支付/CDN/优惠券）───────────────────────────
-  'nav.coupons': 'কুপন',
 
   // Withdraw orders & tiers
   'withdraw.orders': 'অর্ডার',
@@ -557,38 +542,6 @@ const Map<String, String> bn = {
   'cdn.status': 'অবস্থা',
   'cdn.sort': 'ক্রম',
 
-  // Coupons
-  'coupon.title': 'কুপন',
-  'coupon.name': 'নাম',
-  'coupon.name_hint': 'সর্বোচ্চ 100 অক্ষর',
-  'coupon.type': 'ধরন',
-  'coupon.type_fixed': 'নির্দিষ্ট পরিমাণ',
-  'coupon.type_rate': 'হার',
-  'coupon.value': 'মান / হার',
-  'coupon.value_hint': 'fixed = প্ল্যাটফর্ম-টোকেন পরিমাণ; rate = ছাড়ের হার; 0 এর চেয়ে বড় দশমিক স্ট্রিং',
-  'coupon.min_amount': 'সর্বনিম্ন খরচ',
-  'coupon.min_amount_hint': 'প্ল্যাটফর্ম টোকেন; খালি = 0 (কোনো সীমা নেই)',
-  'coupon.max_discount': 'সর্বোচ্চ ছাড়',
-  'coupon.max_discount_hint': 'কেবল হার ধরনের জন্য; খালি = 0',
-  'coupon.game_id': 'গেম',
-  'coupon.game_id_hint': 'গেম hashid (গেম তালিকার id কলাম); তৈরি: খালি = প্ল্যাটফর্ম-ব্যাপী (0 হিসেবে সংরক্ষিত), সম্পাদনা: খালি = বর্তমান মান ধরে রাখুন',
-  'coupon.total_qty': 'মোট পরিমাণ',
-  'coupon.total_qty_hint': '0 = সীমাহীন',
-  'coupon.user_limit': 'প্রতি-ব্যবহারকারীর সীমা',
-  'coupon.user_limit_hint': '>= 1; খালি রাখলে ব্যাকএন্ড 1 ব্যবহার করে',
-  'coupon.start_at': 'শুরু',
-  'coupon.end_at': 'শেষ',
-  'coupon.time_hint': 'ডেটটাইম স্ট্রিং, যেমন 2026-01-01 00:00:00; খালি = কোনো সীমা নেই (তৈরির সময় ফরম্যাট যাচাই করা হয় না)',
-  'coupon.issued': 'ব্যবহৃত / মোট',
-  'coupon.unlimited': 'সীমাহীন',
-  'coupon.stats': 'পরিসংখ্যান',
-  'coupon.stats_title': 'কুপন পরিসংখ্যান: {name}',
-  'coupon.used_qty': 'দাবি করা হয়েছে',
-  'coupon.remaining': 'অবশিষ্ট',
-  'coupon.usage_rate': 'ব্যবহারের হার (%)',
-  'coupon.create': 'কুপন তৈরি করুন',
-  'coupon.edit': 'কুপন সম্পাদনা করুন',
-  'coupon.delete_confirm_target': 'কুপন "{name}" এবং এর সব ব্যবহারকারী দাবির রেকর্ড মুছে ফেলবেন?',
 
   // ─── Batch 5: 风控（规则/事件/设备/IP/异常用户/团伙/反作弊）──────────
   'app.pager': 'পৃষ্ঠা {page} / {pages} (মোট {total})',

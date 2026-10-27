@@ -56,7 +56,6 @@ const Map<String, String> pt = {
   'nav.cdn': 'Fornecedores de CDN',
   'nav.announcements': 'Anúncios',
   'nav.vip': 'Níveis VIP',
-  'nav.achievements': 'Conquistas',
   'nav.activities': 'Atividades',
   'nav.game_categories': 'Categorias de jogos',
   'nav.game_servers': 'Servidores de jogos',
@@ -334,19 +333,6 @@ const Map<String, String> pt = {
   'vip.required_exp': 'EXP necessária',
   'vip.benefits': 'Benefícios (JSON)',
 
-  // Achievement
-  'achievement.title': 'Gestão de conquistas',
-  'achievement.create': 'Criar conquista',
-  'achievement.edit': 'Editar conquista',
-  'achievement.delete_confirm': 'Eliminar conquista',
-  'achievement.key': 'Chave',
-  'achievement.name': 'Nome',
-  'achievement.description': 'Descrição',
-  'achievement.icon': 'Ícone',
-  'achievement.condition': 'Condição (JSON)',
-  'achievement.points': 'Pontos',
-  'achievement.key_hint': 'apenas letras minúsculas, dígitos e _',
-  'achievement.condition_hint': 'JSON, por exemplo {"type":"signin"}',
 
   // Game category
   'game_category.title': 'Categorias de jogos',
@@ -492,7 +478,6 @@ const Map<String, String> pt = {
   'ticket.no_data': 'Sem tickets',
 
   // ─── Batch 4: 资金（提现/支付/CDN/优惠券）───────────────────────────
-  'nav.coupons': 'Cupões',
 
   // Withdraw orders & tiers
   'withdraw.orders': 'Pedidos',
@@ -557,38 +542,6 @@ const Map<String, String> pt = {
   'cdn.status': 'Estado',
   'cdn.sort': 'Ordem',
 
-  // Coupons
-  'coupon.title': 'Cupões',
-  'coupon.name': 'Nome',
-  'coupon.name_hint': 'Máx. 100 caracteres',
-  'coupon.type': 'Tipo',
-  'coupon.type_fixed': 'Valor fixo',
-  'coupon.type_rate': 'Percentagem',
-  'coupon.value': 'Valor / taxa',
-  'coupon.value_hint': 'fixed = montante em tokens da plataforma; rate = taxa de desconto; uma cadeia decimal maior que 0',
-  'coupon.min_amount': 'Gasto mínimo',
-  'coupon.min_amount_hint': 'Tokens da plataforma; vazio = 0 (sem limiar)',
-  'coupon.max_discount': 'Desconto máximo',
-  'coupon.max_discount_hint': 'Apenas no tipo rate; vazio = 0',
-  'coupon.game_id': 'Jogo',
-  'coupon.game_id_hint': 'hashid do jogo (a coluna id da lista de jogos); criação: vazio = toda a plataforma (guardado como 0), edição: vazio = manter o atual',
-  'coupon.total_qty': 'Quantidade total',
-  'coupon.total_qty_hint': '0 = ilimitado',
-  'coupon.user_limit': 'Limite por utilizador',
-  'coupon.user_limit_hint': '>= 1; vazio faz o backend usar 1',
-  'coupon.start_at': 'Início',
-  'coupon.end_at': 'Fim',
-  'coupon.time_hint': 'Cadeia de data e hora, por exemplo 2026-01-01 00:00:00; vazio = sem limite (a criação não valida o formato)',
-  'coupon.issued': 'Usados / total',
-  'coupon.unlimited': 'Ilimitado',
-  'coupon.stats': 'Estatísticas',
-  'coupon.stats_title': 'Estatísticas do cupão: {name}',
-  'coupon.used_qty': 'Resgatados',
-  'coupon.remaining': 'Restantes',
-  'coupon.usage_rate': 'Taxa de utilização (%)',
-  'coupon.create': 'Criar cupão',
-  'coupon.edit': 'Editar cupão',
-  'coupon.delete_confirm_target': 'Eliminar o cupão "{name}" e todos os registos de resgate dos utilizadores?',
 
   // ─── Batch 5: 风控（规则/事件/设备/IP/异常用户/团伙/反作弊）──────────
   'app.pager': 'Página {page} / {pages} ({total} no total)',

@@ -56,7 +56,6 @@ const Map<String, String> ja = {
   'nav.cdn': 'CDNプロバイダー',
   'nav.announcements': 'お知らせ',
   'nav.vip': 'VIPレベル',
-  'nav.achievements': '実績',
   'nav.activities': 'イベント',
   'nav.game_categories': 'ゲームカテゴリ',
   'nav.game_servers': 'ゲームサーバー',
@@ -334,19 +333,6 @@ const Map<String, String> ja = {
   'vip.required_exp': '必要EXP',
   'vip.benefits': '特典（JSON）',
 
-  // Achievement
-  'achievement.title': '実績管理',
-  'achievement.create': '実績を作成',
-  'achievement.edit': '実績を編集',
-  'achievement.delete_confirm': '実績を削除',
-  'achievement.key': 'キー',
-  'achievement.name': '名称',
-  'achievement.description': '説明',
-  'achievement.icon': 'アイコン',
-  'achievement.condition': '条件（JSON）',
-  'achievement.points': 'ポイント',
-  'achievement.key_hint': '半角小文字英数字と _ のみ',
-  'achievement.condition_hint': 'JSON、例: {"type":"signin"}',
 
   // Game category
   'game_category.title': 'ゲームカテゴリ',
@@ -492,7 +478,6 @@ const Map<String, String> ja = {
   'ticket.no_data': 'チケットがありません',
 
   // ─── Batch 4: 資金（提现/支付/CDN/优惠券）───────────────────────────
-  'nav.coupons': 'クーポン',
 
   // Withdraw orders & tiers
   'withdraw.orders': '注文',
@@ -557,38 +542,6 @@ const Map<String, String> ja = {
   'cdn.status': 'ステータス',
   'cdn.sort': '並び順',
 
-  // Coupons
-  'coupon.title': 'クーポン',
-  'coupon.name': '名称',
-  'coupon.name_hint': '最大100文字',
-  'coupon.type': 'タイプ',
-  'coupon.type_fixed': '固定額',
-  'coupon.type_rate': '割引率',
-  'coupon.value': '値 / 割引率',
-  'coupon.value_hint': 'fixed = プラットフォームトークンの額、rate = 割引率。0より大きい小数の文字列',
-  'coupon.min_amount': '最低利用額',
-  'coupon.min_amount_hint': 'プラットフォームトークン。空欄 = 0（しきい値なし）',
-  'coupon.max_discount': '最大割引額',
-  'coupon.max_discount_hint': '割引率タイプのみ。空欄 = 0',
-  'coupon.game_id': 'ゲーム',
-  'coupon.game_id_hint': 'ゲームのhashid（ゲーム一覧のid列）。作成時: 空欄 = プラットフォーム全体（0として保存）、編集時: 空欄 = 現在の値を維持',
-  'coupon.total_qty': '発行総数',
-  'coupon.total_qty_hint': '0 = 無制限',
-  'coupon.user_limit': '1ユーザーあたりの上限',
-  'coupon.user_limit_hint': '1以上。空欄の場合、バックエンドは1として扱います',
-  'coupon.start_at': '開始日時',
-  'coupon.end_at': '終了日時',
-  'coupon.time_hint': '日時の文字列、例: 2026-01-01 00:00:00。空欄 = 制限なし（作成時は形式を検証しません）',
-  'coupon.issued': '使用済み / 総数',
-  'coupon.unlimited': '無制限',
-  'coupon.stats': '統計',
-  'coupon.stats_title': 'クーポン統計: {name}',
-  'coupon.used_qty': '受取済み',
-  'coupon.remaining': '残り',
-  'coupon.usage_rate': '利用率（%）',
-  'coupon.create': 'クーポンを作成',
-  'coupon.edit': 'クーポンを編集',
-  'coupon.delete_confirm_target': 'クーポン「{name}」とそのユーザー受取記録をすべて削除しますか？',
 
   // ─── Batch 5: 风控（规则/事件/设备/IP/异常用户/团伙/反作弊）──────────
   'app.pager': 'ページ {page} / {pages}（全 {total} 件）',

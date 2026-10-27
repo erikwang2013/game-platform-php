@@ -119,7 +119,7 @@ class OperationLog implements MiddlewareInterface
      *    代价：ActivityController / RiskRuleController 的 config 正文（非凭据）也不再入日志，
      *    中间件里无法区分同名字段的两种语义。路径 + 业务主键仍足以定位改动。
      * 2. 裸 `key`（且它必须是键名里唯一的词）不打码：本仓叫 `key` 的字段是标识符不是凭据 ——
-     *    AchievementController.php:50 的成就 key、ConfigController.php:88 的配置键名。
+     *    ConfigController.php:88 的配置键名。
      *    打码会把「改了哪个配置项/哪个成就」从审计里抹掉。`api_key` / `secret_key` 这类
      *    组合词仍然命中（见上）。
      */

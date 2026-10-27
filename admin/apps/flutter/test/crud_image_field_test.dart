@@ -12,7 +12,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
-import 'package:admin_app/app/pages/achievement/achievement_page.dart';
 import 'package:admin_app/app/pages/game/game_list_page.dart';
 import 'package:admin_app/app/pages/game_category/game_category_page.dart';
 import 'package:admin_app/app/services/api_service.dart';
@@ -311,7 +310,7 @@ void main() {
     });
   });
 
-  group('接线：三棵树都声明成了 image', () {
+  group('接线：字段都声明成了 image', () {
     Future<void> openCreateForm(WidgetTester tester, Widget page) async {
       tester.view.physicalSize = const Size(1400, 1200);
       tester.view.devicePixelRatio = 1.0;
@@ -340,12 +339,6 @@ void main() {
       expect(find.widgetWithText(ElevatedButton, 'Upload'), findsOneWidget);
     });
 
-    testWidgets('成就：icon 是 image 字段', (tester) async {
-      Get.put<AchievementAdminController>(_FakeAchievementController());
-      await openCreateForm(tester, const AchievementPage());
-
-      expect(find.widgetWithText(ElevatedButton, 'Upload'), findsOneWidget);
-    });
   });
 }
 
@@ -356,11 +349,6 @@ class _FakeGameListController extends GameListController {
 }
 
 class _FakeCategoryController extends GameCategoryAdminController {
-  @override
-  Future<void> load() async {}
-}
-
-class _FakeAchievementController extends AchievementAdminController {
   @override
   Future<void> load() async {}
 }

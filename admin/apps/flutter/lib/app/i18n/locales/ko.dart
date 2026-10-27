@@ -56,7 +56,6 @@ const Map<String, String> ko = {
   'nav.cdn': 'CDN 제공업체',
   'nav.announcements': '공지사항',
   'nav.vip': 'VIP 등급',
-  'nav.achievements': '업적',
   'nav.activities': '이벤트',
   'nav.game_categories': '게임 카테고리',
   'nav.game_servers': '게임 서버',
@@ -335,18 +334,6 @@ const Map<String, String> ko = {
   'vip.benefits': '혜택 (JSON)',
 
   // 업적
-  'achievement.title': '업적 관리',
-  'achievement.create': '업적 생성',
-  'achievement.edit': '업적 수정',
-  'achievement.delete_confirm': '업적 삭제',
-  'achievement.key': '키',
-  'achievement.name': '이름',
-  'achievement.description': '설명',
-  'achievement.icon': '아이콘',
-  'achievement.condition': '조건 (JSON)',
-  'achievement.points': '포인트',
-  'achievement.key_hint': '영문 소문자, 숫자 및 _만 허용',
-  'achievement.condition_hint': 'JSON, 예: {"type":"signin"}',
 
   // 게임 카테고리
   'game_category.title': '게임 카테고리',
@@ -492,7 +479,6 @@ const Map<String, String> ko = {
   'ticket.no_data': '티켓 없음',
 
   // ─── 배치 4: 자금 (출금/결제/CDN/쿠폰) ───────────────────────────
-  'nav.coupons': '쿠폰',
 
   // 출금 주문 및 등급
   'withdraw.orders': '주문',
@@ -558,37 +544,6 @@ const Map<String, String> ko = {
   'cdn.sort': '정렬',
 
   // 쿠폰
-  'coupon.title': '쿠폰',
-  'coupon.name': '이름',
-  'coupon.name_hint': '최대 100자',
-  'coupon.type': '유형',
-  'coupon.type_fixed': '정액',
-  'coupon.type_rate': '정률',
-  'coupon.value': '값 / 비율',
-  'coupon.value_hint': 'fixed = 플랫폼 토큰 금액; rate = 할인율; 0보다 큰 소수 문자열',
-  'coupon.min_amount': '최소 사용 금액',
-  'coupon.min_amount_hint': '플랫폼 토큰; 비워 두면 0 (조건 없음)',
-  'coupon.max_discount': '최대 할인',
-  'coupon.max_discount_hint': '정률 유형에만 해당; 비워 두면 0',
-  'coupon.game_id': '게임',
-  'coupon.game_id_hint': '게임 hashid (게임 목록의 id 열); 생성: 비워 두면 플랫폼 전체 (0으로 저장), 수정: 비워 두면 현재 값 유지',
-  'coupon.total_qty': '총 수량',
-  'coupon.total_qty_hint': '0 = 무제한',
-  'coupon.user_limit': '사용자당 한도',
-  'coupon.user_limit_hint': '>= 1; 비워 두면 백엔드가 1을 사용합니다',
-  'coupon.start_at': '시작 시각',
-  'coupon.end_at': '종료 시각',
-  'coupon.time_hint': '날짜시간 문자열, 예: 2026-01-01 00:00:00; 비워 두면 제한 없음 (생성 시 형식을 검증하지 않습니다)',
-  'coupon.issued': '사용 / 전체',
-  'coupon.unlimited': '무제한',
-  'coupon.stats': '통계',
-  'coupon.stats_title': '쿠폰 통계: {name}',
-  'coupon.used_qty': '수령됨',
-  'coupon.remaining': '남은 수량',
-  'coupon.usage_rate': '사용률 (%)',
-  'coupon.create': '쿠폰 생성',
-  'coupon.edit': '쿠폰 수정',
-  'coupon.delete_confirm_target': '쿠폰 "{name}" 및 모든 사용자 수령 기록을 삭제하시겠습니까?',
 
   // ─── 배치 5: 리스크 관리 (규칙/이벤트/기기/IP/이상 사용자/그룹/안티치트) ──────────
   'app.pager': '페이지 {page} / {pages} (총 {total}건)',

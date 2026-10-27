@@ -56,7 +56,6 @@ const Map<String, String> ar = {
   'nav.cdn': 'مزوّدو CDN',
   'nav.announcements': 'الإعلانات',
   'nav.vip': 'مستويات VIP',
-  'nav.achievements': 'الإنجازات',
   'nav.activities': 'الأنشطة',
   'nav.game_categories': 'تصنيفات الألعاب',
   'nav.game_servers': 'خوادم الألعاب',
@@ -334,19 +333,6 @@ const Map<String, String> ar = {
   'vip.required_exp': 'الخبرة المطلوبة',
   'vip.benefits': 'المزايا (JSON)',
 
-  // Achievement
-  'achievement.title': 'إدارة الإنجازات',
-  'achievement.create': 'إنشاء إنجاز',
-  'achievement.edit': 'تعديل الإنجاز',
-  'achievement.delete_confirm': 'حذف الإنجاز',
-  'achievement.key': 'المفتاح',
-  'achievement.name': 'الاسم',
-  'achievement.description': 'الوصف',
-  'achievement.icon': 'الأيقونة',
-  'achievement.condition': 'الشرط (JSON)',
-  'achievement.points': 'النقاط',
-  'achievement.key_hint': 'أحرف لاتينية صغيرة وأرقام و _ فقط',
-  'achievement.condition_hint': 'JSON، مثال: {"type":"signin"}',
 
   // Game category
   'game_category.title': 'تصنيفات الألعاب',
@@ -492,7 +478,6 @@ const Map<String, String> ar = {
   'ticket.no_data': 'لا توجد تذاكر',
 
   // ─── Batch 4: 资金（提现/支付/CDN/优惠券）───────────────────────────
-  'nav.coupons': 'الكوبونات',
 
   // Withdraw orders & tiers
   'withdraw.orders': 'الطلبات',
@@ -557,38 +542,6 @@ const Map<String, String> ar = {
   'cdn.status': 'الحالة',
   'cdn.sort': 'الترتيب',
 
-  // Coupons
-  'coupon.title': 'الكوبونات',
-  'coupon.name': 'الاسم',
-  'coupon.name_hint': '100 حرف كحد أقصى',
-  'coupon.type': 'النوع',
-  'coupon.type_fixed': 'مبلغ ثابت',
-  'coupon.type_rate': 'نسبة',
-  'coupon.value': 'القيمة / النسبة',
-  'coupon.value_hint': 'fixed = مبلغ برموز المنصة؛ rate = نسبة الخصم؛ سلسلة عشرية أكبر من 0',
-  'coupon.min_amount': 'الحد الأدنى للإنفاق',
-  'coupon.min_amount_hint': 'رموز المنصة؛ فارغ = 0 (بلا حد)',
-  'coupon.max_discount': 'الحد الأقصى للخصم',
-  'coupon.max_discount_hint': 'لنوع النسبة فقط؛ فارغ = 0',
-  'coupon.game_id': 'اللعبة',
-  'coupon.game_id_hint': 'hashid اللعبة (عمود id في قائمة الألعاب)؛ عند الإنشاء: فارغ = على مستوى المنصة (يُخزَّن 0)، وعند التعديل: فارغ = الإبقاء على الحالي',
-  'coupon.total_qty': 'الكمية الإجمالية',
-  'coupon.total_qty_hint': '0 = بلا حدود',
-  'coupon.user_limit': 'الحد لكل مستخدم',
-  'coupon.user_limit_hint': 'أكبر من أو يساوي 1؛ فارغ يجعل الخادم يستخدم 1',
-  'coupon.start_at': 'وقت البداية',
-  'coupon.end_at': 'وقت الانتهاء',
-  'coupon.time_hint': 'سلسلة تاريخ ووقت، مثال 2026-01-01 00:00:00؛ فارغ = بلا حد (الإنشاء لا يتحقق من الصيغة)',
-  'coupon.issued': 'المستخدم / الإجمالي',
-  'coupon.unlimited': 'بلا حدود',
-  'coupon.stats': 'الإحصاءات',
-  'coupon.stats_title': 'إحصاءات الكوبون: {name}',
-  'coupon.used_qty': 'المطالَب به',
-  'coupon.remaining': 'المتبقي',
-  'coupon.usage_rate': 'معدل الاستخدام (%)',
-  'coupon.create': 'إنشاء كوبون',
-  'coupon.edit': 'تعديل الكوبون',
-  'coupon.delete_confirm_target': 'حذف الكوبون "{name}" وجميع سجلات مطالبات المستخدمين به؟',
 
   // ─── Batch 5: 风控（规则/事件/设备/IP/异常用户/团伙/反作弊）──────────
   'app.pager': 'صفحة {page} / {pages} ({total} إجمالًا)',

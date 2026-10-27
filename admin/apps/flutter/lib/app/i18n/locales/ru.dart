@@ -56,7 +56,6 @@ const Map<String, String> ru = {
   'nav.cdn': 'Провайдеры CDN',
   'nav.announcements': 'Объявления',
   'nav.vip': 'Уровни VIP',
-  'nav.achievements': 'Достижения',
   'nav.activities': 'Активности',
   'nav.game_categories': 'Категории игр',
   'nav.game_servers': 'Игровые серверы',
@@ -334,19 +333,6 @@ const Map<String, String> ru = {
   'vip.required_exp': 'Требуемый опыт',
   'vip.benefits': 'Привилегии (JSON)',
 
-  // Achievement
-  'achievement.title': 'Управление достижениями',
-  'achievement.create': 'Создать достижение',
-  'achievement.edit': 'Изменить достижение',
-  'achievement.delete_confirm': 'Удалить достижение',
-  'achievement.key': 'Ключ',
-  'achievement.name': 'Название',
-  'achievement.description': 'Описание',
-  'achievement.icon': 'Иконка',
-  'achievement.condition': 'Условие (JSON)',
-  'achievement.points': 'Баллы',
-  'achievement.key_hint': 'только строчные буквы, цифры и _',
-  'achievement.condition_hint': 'JSON, например {"type":"signin"}',
 
   // Game category
   'game_category.title': 'Категории игр',
@@ -492,7 +478,6 @@ const Map<String, String> ru = {
   'ticket.no_data': 'Нет тикетов',
 
   // ─── Batch 4: 资金（提现/支付/CDN/优惠券）───────────────────────────
-  'nav.coupons': 'Купоны',
 
   // Withdraw orders & tiers
   'withdraw.orders': 'Заказы',
@@ -557,38 +542,6 @@ const Map<String, String> ru = {
   'cdn.status': 'Статус',
   'cdn.sort': 'Сортировка',
 
-  // Coupons
-  'coupon.title': 'Купоны',
-  'coupon.name': 'Название',
-  'coupon.name_hint': 'Не более 100 символов',
-  'coupon.type': 'Тип',
-  'coupon.type_fixed': 'Фиксированная сумма',
-  'coupon.type_rate': 'Процент',
-  'coupon.value': 'Значение / ставка',
-  'coupon.value_hint': 'fixed = сумма в токенах платформы; rate = размер скидки; десятичная строка больше 0',
-  'coupon.min_amount': 'Мин. сумма покупки',
-  'coupon.min_amount_hint': 'Токены платформы; пусто = 0 (без порога)',
-  'coupon.max_discount': 'Макс. скидка',
-  'coupon.max_discount_hint': 'Только для типа «процент»; пусто = 0',
-  'coupon.game_id': 'Игра',
-  'coupon.game_id_hint': 'hashid игры (столбец id в списке игр); при создании: пусто = для всей платформы (сохраняется как 0), при редактировании: пусто = оставить текущее значение',
-  'coupon.total_qty': 'Общее количество',
-  'coupon.total_qty_hint': '0 = без ограничения',
-  'coupon.user_limit': 'Лимит на пользователя',
-  'coupon.user_limit_hint': '>= 1; при пустом значении сервер использует 1',
-  'coupon.start_at': 'Начало',
-  'coupon.end_at': 'Окончание',
-  'coupon.time_hint': 'Строка даты и времени, например 2026-01-01 00:00:00; пусто = без ограничения (при создании формат не проверяется)',
-  'coupon.issued': 'Использовано / всего',
-  'coupon.unlimited': 'Без ограничения',
-  'coupon.stats': 'Статистика',
-  'coupon.stats_title': 'Статистика купона: {name}',
-  'coupon.used_qty': 'Получено',
-  'coupon.remaining': 'Остаток',
-  'coupon.usage_rate': 'Доля использования (%)',
-  'coupon.create': 'Создать купон',
-  'coupon.edit': 'Изменить купон',
-  'coupon.delete_confirm_target': 'Удалить купон «{name}» и все записи о его получении пользователями?',
 
   // ─── Batch 5: 风控（规则/事件/设备/IP/异常用户/团伙/反作弊）──────────
   'app.pager': 'Страница {page} / {pages} (всего {total})',

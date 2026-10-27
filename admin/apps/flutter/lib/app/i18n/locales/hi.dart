@@ -56,7 +56,6 @@ const Map<String, String> hi = {
   'nav.cdn': 'CDN प्रदाता',
   'nav.announcements': 'घोषणाएँ',
   'nav.vip': 'VIP स्तर',
-  'nav.achievements': 'उपलब्धियाँ',
   'nav.activities': 'गतिविधियाँ',
   'nav.game_categories': 'गेम श्रेणियाँ',
   'nav.game_servers': 'गेम सर्वर',
@@ -334,19 +333,6 @@ const Map<String, String> hi = {
   'vip.required_exp': 'आवश्यक EXP',
   'vip.benefits': 'लाभ (JSON)',
 
-  // Achievement
-  'achievement.title': 'उपलब्धि प्रबंधन',
-  'achievement.create': 'उपलब्धि बनाएँ',
-  'achievement.edit': 'उपलब्धि संपादित करें',
-  'achievement.delete_confirm': 'उपलब्धि हटाएँ',
-  'achievement.key': 'कुंजी',
-  'achievement.name': 'नाम',
-  'achievement.description': 'विवरण',
-  'achievement.icon': 'आइकन',
-  'achievement.condition': 'शर्त (JSON)',
-  'achievement.points': 'अंक',
-  'achievement.key_hint': 'केवल छोटे अक्षर, अंक और _',
-  'achievement.condition_hint': 'JSON, जैसे {"type":"signin"}',
 
   // Game category
   'game_category.title': 'गेम श्रेणियाँ',
@@ -492,7 +478,6 @@ const Map<String, String> hi = {
   'ticket.no_data': 'कोई टिकट नहीं',
 
   // ─── बैच 4: धन (निकासी/भुगतान/CDN/कूपन) ───────────────────────────
-  'nav.coupons': 'कूपन',
 
   // Withdraw orders & tiers
   'withdraw.orders': 'ऑर्डर',
@@ -557,38 +542,6 @@ const Map<String, String> hi = {
   'cdn.status': 'स्थिति',
   'cdn.sort': 'क्रम',
 
-  // Coupons
-  'coupon.title': 'कूपन',
-  'coupon.name': 'नाम',
-  'coupon.name_hint': 'अधिकतम 100 अक्षर',
-  'coupon.type': 'प्रकार',
-  'coupon.type_fixed': 'निश्चित राशि',
-  'coupon.type_rate': 'दर',
-  'coupon.value': 'मान / दर',
-  'coupon.value_hint': 'fixed = प्लेटफ़ॉर्म-टोकन राशि; rate = छूट दर; 0 से बड़ी दशमलव स्ट्रिंग',
-  'coupon.min_amount': 'न्यूनतम खर्च',
-  'coupon.min_amount_hint': 'प्लेटफ़ॉर्म टोकन; खाली = 0 (कोई सीमा नहीं)',
-  'coupon.max_discount': 'अधिकतम छूट',
-  'coupon.max_discount_hint': 'केवल rate प्रकार; खाली = 0',
-  'coupon.game_id': 'गेम',
-  'coupon.game_id_hint': 'गेम hashid (गेम सूची का id कॉलम); बनाते समय: खाली = पूरे प्लेटफ़ॉर्म पर (0 के रूप में संग्रहीत), संपादन: खाली = वर्तमान रखें',
-  'coupon.total_qty': 'कुल मात्रा',
-  'coupon.total_qty_hint': '0 = असीमित',
-  'coupon.user_limit': 'प्रति उपयोगकर्ता सीमा',
-  'coupon.user_limit_hint': '>= 1; खाली छोड़ने पर बैकएंड 1 का उपयोग करता है',
-  'coupon.start_at': 'प्रारंभ',
-  'coupon.end_at': 'समाप्ति',
-  'coupon.time_hint': 'दिनांक-समय स्ट्रिंग, जैसे 2026-01-01 00:00:00; खाली = कोई सीमा नहीं (निर्माण प्रारूप की जाँच नहीं करता)',
-  'coupon.issued': 'उपयोग / कुल',
-  'coupon.unlimited': 'असीमित',
-  'coupon.stats': 'आँकड़े',
-  'coupon.stats_title': 'कूपन आँकड़े: {name}',
-  'coupon.used_qty': 'दावा किया गया',
-  'coupon.remaining': 'शेष',
-  'coupon.usage_rate': 'उपयोग दर (%)',
-  'coupon.create': 'कूपन बनाएँ',
-  'coupon.edit': 'कूपन संपादित करें',
-  'coupon.delete_confirm_target': 'कूपन "{name}" और उसके सभी उपयोगकर्ता दावा रिकॉर्ड हटाएँ?',
 
   // ─── बैच 5: जोखिम नियंत्रण (नियम/इवेंट/डिवाइस/IP/चिह्नित उपयोगकर्ता/समूह/एंटी-चीट) ──
   'app.pager': 'पृष्ठ {page} / {pages} (कुल {total})',

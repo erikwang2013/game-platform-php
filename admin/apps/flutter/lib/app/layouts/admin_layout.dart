@@ -21,7 +21,6 @@ import '../pages/risk/risk_log_page.dart';
 import '../pages/payment/payment_page.dart';
 import '../pages/announcement/announcement_page.dart';
 import '../pages/vip/vip_page.dart';
-import '../pages/achievement/achievement_page.dart';
 import '../pages/activity/activity_page.dart';
 import '../pages/risk/risk_dashboard_page.dart';
 import '../pages/risk/risk_manage_page.dart';
@@ -30,7 +29,6 @@ import '../pages/game_server/game_server_page.dart';
 import '../pages/leaderboard/leaderboard_page.dart';
 import '../pages/country_config/country_config_page.dart';
 import '../pages/ticket/ticket_page.dart';
-import '../pages/coupon/coupon_page.dart';
 
 class AdminLayout extends StatefulWidget {
   final Widget child;
@@ -74,15 +72,13 @@ class _AdminLayoutState extends State<AdminLayout> {
     ('nav.payments', Icons.payment, PaymentPage()),
     ('nav.announcements', Icons.campaign, AnnouncementPage()),
     ('nav.vip', Icons.workspace_premium, VipPage()),
-    ('nav.achievements', Icons.emoji_events, AchievementPage()),
     ('nav.activities', Icons.local_activity, ActivityPage()),
     ('nav.game_categories', Icons.category, GameCategoryPage()),
     ('nav.game_servers', Icons.dns, GameServerPage()),
     ('nav.leaderboards', Icons.leaderboard, LeaderboardPage()),
     ('nav.country_configs', Icons.public, CountryConfigPage()),
     ('nav.tickets', Icons.confirmation_number, TicketPage()),
-    ('nav.coupons', Icons.local_offer, CouponPage()),
-    // 24：风控管理（写操作）—— 与 11 的「风控大盘」（只读看板）分开
+    // 22：风控管理（写操作）—— 与 11 的「风控大盘」（只读看板）分开
     ('nav.risk_manage', Icons.gpp_maybe_outlined, RiskManagePage()),
   ];
 

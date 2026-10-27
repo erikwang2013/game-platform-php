@@ -197,7 +197,6 @@ const Map<String, String> en = {
   'two_factor.enter_code': 'Please enter the 6-digit code',
   'two_factor.setup_hint': 'Add this secret to your authenticator app',
 
-  // Coupon
 
   // Leaderboard
   'leaderboard.title': 'Leaderboard',

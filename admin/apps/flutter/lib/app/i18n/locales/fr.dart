@@ -56,7 +56,6 @@ const Map<String, String> fr = {
   'nav.cdn': 'Fournisseurs CDN',
   'nav.announcements': 'Annonces',
   'nav.vip': 'Niveaux VIP',
-  'nav.achievements': 'Succès',
   'nav.activities': 'Activités',
   'nav.game_categories': 'Catégories de jeux',
   'nav.game_servers': 'Serveurs de jeu',
@@ -334,19 +333,6 @@ const Map<String, String> fr = {
   'vip.required_exp': 'EXP requis',
   'vip.benefits': 'Avantages (JSON)',
 
-  // Achievement
-  'achievement.title': 'Gestion des succès',
-  'achievement.create': 'Créer un succès',
-  'achievement.edit': 'Modifier le succès',
-  'achievement.delete_confirm': 'Supprimer le succès',
-  'achievement.key': 'Clé',
-  'achievement.name': 'Nom',
-  'achievement.description': 'Description',
-  'achievement.icon': 'Icône',
-  'achievement.condition': 'Condition (JSON)',
-  'achievement.points': 'Points',
-  'achievement.key_hint': 'lettres minuscules, chiffres et _ uniquement',
-  'achievement.condition_hint': 'JSON, par ex. {"type":"signin"}',
 
   // Game category
   'game_category.title': 'Catégories de jeux',
@@ -493,7 +479,6 @@ const Map<String, String> fr = {
   'ticket.no_data': 'Aucun ticket',
 
   // ─── Batch 4: 资金（提现/支付/CDN/优惠券）───────────────────────────
-  'nav.coupons': 'Coupons',
 
   // Withdraw orders & tiers
   'withdraw.orders': 'Commandes',
@@ -560,38 +545,6 @@ const Map<String, String> fr = {
   'cdn.status': 'Statut',
   'cdn.sort': 'Tri',
 
-  // Coupons
-  'coupon.title': 'Coupons',
-  'coupon.name': 'Nom',
-  'coupon.name_hint': '100 caractères maximum',
-  'coupon.type': 'Type',
-  'coupon.type_fixed': 'Montant fixe',
-  'coupon.type_rate': 'Taux',
-  'coupon.value': 'Valeur / taux',
-  'coupon.value_hint': 'fixed = montant en jetons de plateforme ; rate = taux de remise ; une chaîne décimale supérieure à 0',
-  'coupon.min_amount': 'Dépense minimale',
-  'coupon.min_amount_hint': 'Jetons de plateforme ; vide = 0 (aucun seuil)',
-  'coupon.max_discount': 'Remise maximale',
-  'coupon.max_discount_hint': 'Type taux uniquement ; vide = 0',
-  'coupon.game_id': 'Jeu',
-  'coupon.game_id_hint': 'hashid du jeu (colonne id de la liste des jeux) ; création : vide = toute la plateforme (enregistré comme 0), modification : vide = conserver l\'actuel',
-  'coupon.total_qty': 'Quantité totale',
-  'coupon.total_qty_hint': '0 = illimité',
-  'coupon.user_limit': 'Limite par utilisateur',
-  'coupon.user_limit_hint': '>= 1 ; vide laisse le backend utiliser 1',
-  'coupon.start_at': 'Début le',
-  'coupon.end_at': 'Fin le',
-  'coupon.time_hint': 'Chaîne date/heure, par ex. 2026-01-01 00:00:00 ; vide = aucune borne (la création ne valide pas le format)',
-  'coupon.issued': 'Utilisés / total',
-  'coupon.unlimited': 'Illimité',
-  'coupon.stats': 'Statistiques',
-  'coupon.stats_title': 'Statistiques du coupon : {name}',
-  'coupon.used_qty': 'Réclamés',
-  'coupon.remaining': 'Restants',
-  'coupon.usage_rate': 'Taux d\'utilisation (%)',
-  'coupon.create': 'Créer un coupon',
-  'coupon.edit': 'Modifier le coupon',
-  'coupon.delete_confirm_target': 'Supprimer le coupon « {name} » et tous les enregistrements de réclamation associés ?',
 
   // ─── Batch 5: 风控（规则/事件/设备/IP/异常用户/团伙/反作弊）──────────
   'app.pager': 'Page {page} / {pages} ({total} au total)',

@@ -278,40 +278,6 @@ export const ACTIVITY_CRUD: CrudConfig = {
   labelKey: 'name',
 };
 
-/* --------------------------------- 成就 ---------------------------------- */
-
-const ACHIEVEMENT_FIELDS: Field[] = [
-  { name: 'key', label: 'f.achievement_key', type: 'text', required: true, placeholder: 'f.lowercase_letters_digits_underscore_max' },
-  { name: 'name', label: 'f.achievement_name', type: 'text', required: true, placeholder: 'f.max_100_characters' },
-  { name: 'description', label: 'f.achievement_description', type: 'textarea', placeholder: 'f.max_500_characters' },
-  { name: 'icon', label: 'f.icon', type: 'image', placeholder: 'f.icon_url' },
-  {
-    name: 'condition_json',
-    label: 'f.unlock_condition_json',
-    type: 'json',
-    required: true,
-    placeholder: raw('{"event": "login", "count": 7}'),
-    hint: 'f.must_parse_into_a_json',
-  },
-  { name: 'points', label: 'f.achievement_points', type: 'number', required: true, placeholder: raw('≥ 0') },
-  {
-    name: 'status',
-    label: 'f.enabled',
-    type: 'switch',
-    default: '1',
-    hint: 'f.disabling_only_affects_whether_future',
-  },
-];
-
-export const ACHIEVEMENT_CRUD: CrudConfig = {
-  base: '/admin/v1/achievement',
-  noun: 'f.achievements',
-  fields: ACHIEVEMENT_FIELDS,
-  editFields: locked(ACHIEVEMENT_FIELDS, 'key', 'f.the_achievement_key_is_the'),
-  labelKey: 'name',
-  toggle: '/admin/v1/achievement/toggle',
-};
-
 /* ------------------------------- VIP 等级 -------------------------------- */
 
 const VIP_FIELDS: Field[] = [
@@ -925,73 +891,6 @@ export const PAYMENT_CRUD: CrudConfig = {
   labelKey: 'name',
   toggle: '/admin/v1/payment/method/toggle',
   // 删除会被后端按「存在待支付订单」拒绝（422），message 原样显示；无密码二次确认
-};
-
-/* --------------------------------- 优惠券 --------------------------------- */
-
-const COUPON_FIELDS: Field[] = [
-  { name: 'name', label: 'f.name', type: 'text', required: true, placeholder: 'f.max_100_characters' },
-  {
-    name: 'type',
-    label: 'f.type',
-    type: 'select',
-    required: true,
-    options: [
-      { value: 'fixed', label: 'f.fixed_fixed_amount' },
-      { value: 'rate', label: 'f.rate_percentage_discount' },
-    ],
-  },
-  {
-    name: 'value',
-    label: 'f.face_value_discount_rate',
-    type: 'text',
-    required: true,
-    hint: 'f.fixed_platform_coin_amount_e',
-  },
-  { name: 'min_amount', label: 'f.minimum_spend', type: 'text', hint: 'f.a_platform_coin_amount_empty' },
-  { name: 'max_discount', label: 'f.maximum_discount', type: 'text', hint: 'f.only_used_by_the_rate' },
-  {
-    name: 'game_id',
-    label: 'f.applicable_game',
-    type: 'text',
-    placeholder: 'f.game_hashid',
-    hint: 'f.picked_from_the_games_list',
-  },
-  { name: 'total_qty', label: 'f.total_issuance', type: 'number', hint: 'f.n_0_unlimited' },
-  { name: 'user_limit', label: 'f.per_user_limit', type: 'number', hint: 'f.n_1_empty_makes_the_backend' },
-  {
-    name: 'start_at',
-    label: 'f.start_time',
-    type: 'text',
-    placeholder: raw('2026-01-01 00:00:00'),
-    hint: 'f.a_date_time_string_empty',
-  },
-  { name: 'end_at', label: 'f.end_time', type: 'text', placeholder: raw('2026-01-01 00:00:00'), hint: 'f.must_be_the_start_time' },
-];
-
-export const COUPON_CRUD: CrudConfig = {
-  base: '/admin/v1/coupon',
-  noun: 'f.coupons',
-  createPath: '/admin/v1/coupon/create',
-  fields: COUPON_FIELDS,
-  // create 把 status 硬编码成 1（已启用）⇒ 开关只出现在编辑表单里。
-  // conditions（使用条件 JSON）也放进来，但**只读**：create/update 都不收它（$request->only 里没有），
-  // 表单里摆一个能输入的框等于骗人；它是 C 端 claim 的准入条件（conditions.game_id 等），只由直写库设置。
-  editFields: [
-    ...COUPON_FIELDS,
-    { name: 'status', label: 'f.enabled', type: 'switch', default: '1' },
-    {
-      name: 'conditions',
-      label: 'f.eligibility_read_only',
-      type: 'json',
-      readOnly: true,
-      hint: 'f.the_eligibility_rule_applied_when',
-    },
-  ],
-  labelKey: 'name',
-  // 没有单条详情端点（GET /coupon/{hashid} 不存在），只有 stats ⇒ 只读视图（不是 detailBase，那会 404）
-  views: [{ label: 'f.statistics', title: 'f.coupon_statistics', path: (id) => `/admin/v1/coupon/${id}/stats` }],
-  // 「已有用户领取」时后端拒绝编辑（400），message 原样显示；「删除会连带删掉所有领取记录」后端不拦
 };
 
 /* -------------------------------- CDN 厂商 -------------------------------- */

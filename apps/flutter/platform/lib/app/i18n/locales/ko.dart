@@ -196,7 +196,6 @@ const Map<String, String> ko = {
   'two_factor.enter_code': '6자리 코드를 입력하세요',
   'two_factor.setup_hint': '이 비밀 키를 인증 앱에 추가하세요',
 
-  // Coupon
 
   // Leaderboard
   'leaderboard.title': '리더보드',

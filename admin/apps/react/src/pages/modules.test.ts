@@ -6,10 +6,8 @@ import { buildPayload, draftFrom, type Field } from '../lib/crud.ts';
 // 路线表读取器与风控那组用例共用（文件按批次拆开，见 lib/route-fixtures.ts 的说明）
 import { hasRoute, rel, routes } from '../lib/route-fixtures.ts';
 import {
-  ACHIEVEMENT_CRUD,
   CATEGORY_CRUD,
   CDN_CRUD,
-  COUPON_CRUD,
   GAME_CRUD,
   IDENTITY_CRUD,
   PAYMENT_CRUD,
@@ -106,7 +104,7 @@ test('权限树字段往返：行数组 → 草稿一行一值；未改动不发
  */
 test('资金模块：写端点与只读视图逐个对上路由表（路径 + 方法）', () => {
   const endpoints: [string, string][] = [
-    ...[PAYMENT_CRUD, CDN_CRUD, COUPON_CRUD].flatMap((crud) => [
+    ...[PAYMENT_CRUD, CDN_CRUD].flatMap((crud) => [
       ['POST', String(crud.createPath)],
       ['PUT', `${crud.base}/{hashid}`],
       ['DELETE', `${crud.base}/{hashid}`],
@@ -136,7 +134,6 @@ test('金额字段一律 text —— number 控件会吃掉小数位（禁止浮
   const cases: [{ noun: string; fields?: Field[] }, string[]][] = [
     [WITHDRAW_LIMIT_CRUD, ['single_min', 'single_max', 'daily_limit', 'monthly_limit', 'fee_pct', 'fee_max', 'auto_approve_threshold']],
     [PAYMENT_CRUD, ['min_amount', 'max_amount']],
-    [COUPON_CRUD, ['value', 'min_amount', 'max_discount']],
   ];
   for (const [crud, names] of cases) {
     for (const name of names) {
@@ -231,11 +228,10 @@ test('阶梯限额：预置档位只有 PUT ⇒ 无「+ 新建」；没有删除
   assert.ok(level?.readOnly, '档位标识是唯一键，只读展示');
 });
 
-test('图片字段：只有游戏封面 / 分类图标 / 成就图标三处，且新建与编辑表单都挂上', () => {
+test('图片字段：只有游戏封面 / 分类图标两处，且新建与编辑表单都挂上', () => {
   for (const [crud, name] of [
     [GAME_CRUD, 'cover_image'],
     [CATEGORY_CRUD, 'icon'],
-    [ACHIEVEMENT_CRUD, 'icon'],
   ] as const) {
     // 编辑态才是换图的主路径：两个表单都得是 image，光新建挂上等于没挂
     for (const list of [crud.fields ?? [], crud.editFields ?? []]) {
@@ -245,13 +241,3 @@ test('图片字段：只有游戏封面 / 分类图标 / 成就图标三处，�
   // 权限的 icon 是菜单图标名（VARCHAR(50)），不是图片 URL —— 别顺手也挂上传
   assert.ok(!(PERMISSION_CRUD.fields ?? []).some((field) => field.type === 'image'));
 });
-
-test('优惠券统计走只读视图（没有单条详情端点，detailBase 会 404）', () => {
-  const views = COUPON_CRUD.views ?? [];
-  assert.equal(views.length, 1);
-  assert.equal(views[0].path('Xk9'), '/admin/v1/coupon/Xk9/stats');
-  // create 硬编码 status=1 ⇒ 开关只在编辑表单里
-  assert.ok(!(COUPON_CRUD.fields ?? []).some((field) => field.name === 'status'));
-  assert.ok((COUPON_CRUD.editFields ?? []).some((field) => field.name === 'status'));
-});
-

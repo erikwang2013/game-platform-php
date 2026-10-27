@@ -196,7 +196,6 @@ const Map<String, String> id = {
   'two_factor.enter_code': 'Masukkan kode 6 digit',
   'two_factor.setup_hint': 'Tambahkan kunci rahasia ini ke aplikasi autentikator Anda',
 
-  // Coupon
 
   // Leaderboard
   'leaderboard.title': 'Papan Peringkat',

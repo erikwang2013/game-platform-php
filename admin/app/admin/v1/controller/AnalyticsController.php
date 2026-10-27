@@ -269,7 +269,7 @@ class AnalyticsController extends BaseController
         $items = [];
         foreach ($currencies as $c) {
             // SUM 聚合在无匹配行时回 NULL（逐条 sum() 则是 int 0）——两种都要 `?? '0'` 兜住，
-            // 否则 bcsub 收 null/int 抛 TypeError。与 arpu()、CouponController 同款强制转型，别省。
+            // 否则 bcsub 收 null/int 抛 TypeError。与 arpu() 同款强制转型，别省。
             $minted = (string) ($sums[$c->id . ':in']->total ?? '0');
             $burned = (string) ($sums[$c->id . ':out']->total ?? '0');
             $circulation = bcsub($minted, $burned, 8);

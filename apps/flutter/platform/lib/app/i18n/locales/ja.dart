@@ -196,7 +196,6 @@ const Map<String, String> ja = {
   'two_factor.enter_code': '6桁のコードを入力してください',
   'two_factor.setup_hint': 'このシークレットを認証アプリに追加してください',
 
-  // Coupon
 
   // Leaderboard
   'leaderboard.title': 'ランキング',

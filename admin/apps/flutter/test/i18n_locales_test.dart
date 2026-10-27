@@ -32,7 +32,8 @@ void main() {
 
   test('13 种语言的键集两两相等（以 en 为基准）', () {
     final enKeys = en.keys.toSet();
-    expect(enKeys.length, 668, reason: '基准表键数变了 ⇒ 下面每条都失去意义，先确认是有意为之');
+    // 668 → 623：成就/优惠券管理页撤下，两批词条随页面一起清掉。
+    expect(enKeys.length, 623, reason: '基准表键数变了 ⇒ 下面每条都失去意义，先确认是有意为之');
 
     for (final entry in data.entries) {
       final keys = entry.value.keys.toSet();

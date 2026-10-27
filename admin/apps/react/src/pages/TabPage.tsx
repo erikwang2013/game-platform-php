@@ -20,7 +20,6 @@ import { RiskStats } from './risk-stats';
 // 管理员（后台账号）单独一个文件：本文件只负责挂载，配置在 adminUsers.ts
 import { ADMIN_USER_CRUD } from './adminUsers';
 import {
-  ACHIEVEMENT_CRUD,
   ACTIVITY_CRUD,
   ANNOUNCEMENT_CRUD,
   ANTICHEAT_CRUD,
@@ -28,7 +27,6 @@ import {
   CDN_CRUD,
   CONFIG_CRUD,
   COUNTRY_CRUD,
-  COUPON_CRUD,
   GAME_CRUD,
   IDENTITY_CRUD,
   LEADERBOARD_CRUD,
@@ -147,7 +145,6 @@ export const PAGES = {
       { label: 'tab.game.category', path: '/admin/v1/game/category/list', list: true, paged: false, preferred: ['id', 'name', 'slug', 'sort', 'status'], crud: CATEGORY_CRUD },
       { label: 'tab.leaderboard', path: '/admin/v1/leaderboard/list', list: true, preferred: ['id', 'name', 'type', 'metric', 'game_id', 'status'], crud: LEADERBOARD_CRUD },
       // 成就：端点整表返回（没有 total），且是全平台的下拉选项源，故不分页
-      { label: 'tab.achievement', path: '/admin/v1/achievement/list', list: true, paged: false, preferred: ['id', 'key', 'name', 'points', 'status'], crud: ACHIEVEMENT_CRUD },
       { label: 'tab.activity', path: '/admin/v1/activities/list', list: true, preferred: ['id', 'name', 'type', 'status', 'start_at'], crud: ACTIVITY_CRUD },
       { label: 'tab.announcement', path: '/admin/v1/announcement/list', list: true, preferred: ['id', 'title', 'type', 'status', 'start_at', 'created_at'], crud: ANNOUNCEMENT_CRUD },
     ],
@@ -199,13 +196,6 @@ export const PAGES = {
         paged: false,
         preferred: ['id', 'name', 'type', 'provider', 'currency', 'min_amount', 'max_amount', 'status', 'sort'],
         crud: PAYMENT_CRUD,
-      },
-      {
-        label: 'tab.coupon',
-        path: '/admin/v1/coupon/list',
-        list: true,
-        preferred: ['id', 'name', 'type', 'value', 'min_amount', 'total_qty', 'used_qty', 'status', 'end_at'],
-        crud: COUPON_CRUD,
       },
     ],
   },

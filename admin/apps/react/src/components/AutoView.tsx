@@ -27,7 +27,6 @@ const LIST_KEYS = [
   'users',
   'games',
   'logs',
-  'coupons',
   'currencies',
   'methods',
   'limits',

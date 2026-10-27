@@ -106,11 +106,6 @@ Route::group('/api/v1', function () {
     // 分享短码（M4）
     Route::post('/shares', v('ShareController', 'create'));
 
-    // 优惠券
-    Route::get('/coupon/available', v('CouponController', 'available'));
-    Route::post('/coupon/claim', v('CouponController', 'claim'));
-    Route::get('/coupon/my', v('CouponController', 'my'));
-
     // 用户
     Route::get('/user/profile', v('UserController', 'profile'));
     Route::put('/user/profile', v('UserController', 'updateProfile'));

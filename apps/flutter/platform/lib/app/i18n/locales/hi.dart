@@ -196,7 +196,6 @@ const Map<String, String> hi = {
   'two_factor.enter_code': 'कृपया 6 अंकों का कोड दर्ज करें',
   'two_factor.setup_hint': 'इस गुप्त कुंजी को अपने प्रमाणक ऐप में जोड़ें',
 
-  // Coupon
 
   // Leaderboard
   'leaderboard.title': 'लीडरबोर्ड',

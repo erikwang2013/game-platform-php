@@ -56,7 +56,6 @@ const Map<String, String> id = {
   'nav.cdn': 'Penyedia CDN',
   'nav.announcements': 'Pengumuman',
   'nav.vip': 'Tingkat VIP',
-  'nav.achievements': 'Pencapaian',
   'nav.activities': 'Aktivitas',
   'nav.game_categories': 'Kategori Game',
   'nav.game_servers': 'Server Game',
@@ -335,18 +334,6 @@ const Map<String, String> id = {
   'vip.benefits': 'Keuntungan (JSON)',
 
   // Pencapaian
-  'achievement.title': 'Manajemen Pencapaian',
-  'achievement.create': 'Buat Pencapaian',
-  'achievement.edit': 'Ubah Pencapaian',
-  'achievement.delete_confirm': 'Hapus pencapaian',
-  'achievement.key': 'Kunci',
-  'achievement.name': 'Nama',
-  'achievement.description': 'Deskripsi',
-  'achievement.icon': 'Ikon',
-  'achievement.condition': 'Syarat (JSON)',
-  'achievement.points': 'Poin',
-  'achievement.key_hint': 'hanya huruf kecil, angka, dan _',
-  'achievement.condition_hint': 'JSON, mis. {"type":"signin"}',
 
   // Kategori game
   'game_category.title': 'Kategori Game',
@@ -492,7 +479,6 @@ const Map<String, String> id = {
   'ticket.no_data': 'Tidak ada tiket',
 
   // ─── Batch 4: Dana (penarikan/pembayaran/CDN/kupon) ───────────────
-  'nav.coupons': 'Kupon',
 
   // Pesanan & tingkat penarikan
   'withdraw.orders': 'Pesanan',
@@ -558,37 +544,6 @@ const Map<String, String> id = {
   'cdn.sort': 'Urutan',
 
   // Kupon
-  'coupon.title': 'Kupon',
-  'coupon.name': 'Nama',
-  'coupon.name_hint': 'Maks 100 karakter',
-  'coupon.type': 'Tipe',
-  'coupon.type_fixed': 'Nominal tetap',
-  'coupon.type_rate': 'Rasio',
-  'coupon.value': 'Nilai / rasio',
-  'coupon.value_hint': 'fixed = jumlah token platform; rate = rasio diskon; string desimal lebih besar dari 0',
-  'coupon.min_amount': 'Min. belanja',
-  'coupon.min_amount_hint': 'Token platform; kosong = 0 (tanpa ambang)',
-  'coupon.max_discount': 'Diskon maks.',
-  'coupon.max_discount_hint': 'Hanya untuk tipe rate; kosong = 0',
-  'coupon.game_id': 'Game',
-  'coupon.game_id_hint': 'hashid game (kolom id pada daftar game); buat: kosong = seluruh platform (disimpan sebagai 0), ubah: kosong = pertahankan yang sekarang',
-  'coupon.total_qty': 'Total kuota',
-  'coupon.total_qty_hint': '0 = tidak terbatas',
-  'coupon.user_limit': 'Batas per pengguna',
-  'coupon.user_limit_hint': '>= 1; jika kosong, backend memakai 1',
-  'coupon.start_at': 'Mulai',
-  'coupon.end_at': 'Berakhir',
-  'coupon.time_hint': 'String datetime, mis. 2026-01-01 00:00:00; kosong = tanpa batas (pembuatan tidak memvalidasi format)',
-  'coupon.issued': 'Terpakai / total',
-  'coupon.unlimited': 'Tanpa batas',
-  'coupon.stats': 'Statistik',
-  'coupon.stats_title': 'Statistik kupon: {name}',
-  'coupon.used_qty': 'Diklaim',
-  'coupon.remaining': 'Tersisa',
-  'coupon.usage_rate': 'Tingkat pemakaian (%)',
-  'coupon.create': 'Buat Kupon',
-  'coupon.edit': 'Ubah Kupon',
-  'coupon.delete_confirm_target': 'Hapus kupon "{name}" beserta semua catatan klaim pengguna?',
 
   // ─── Batch 5: Kendali risiko (aturan/peristiwa/perangkat/IP/pengguna anomali/kluster/anti-cheat) ───
   'app.pager': 'Halaman {page} / {pages} (total {total})',

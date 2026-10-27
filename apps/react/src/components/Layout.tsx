@@ -19,14 +19,6 @@ const NAV: { to: string; label: MessageKey }[] = [
   { to: '/me', label: 'nav.me' },
 ];
 
-/**
- * ⚠ 这里**没有「优惠券」入口**，是有意的（2026-10-01 撤下）：
- * `user_coupon` 的唯一行写入方就是 `CouponController::claim()` 本身
- * （admin 侧 `CouponController.php:198` 只删不发），即用户拿券的唯一途径是在那个页面点领取；
- * 而 `status='used'` 与 `used_in_order` 全仓无写入方、`used_qty` 只随领取递增
- * ⇒ 领了**永远用不掉**。页面能提供的全部价值 = 「在这领一张券，然后它永远躺着」= 假价值。
- * 后端做出核销/抵扣再恢复入口。
- */
 const MORE: { to: string; label: MessageKey }[] = [
   { to: '/search', label: 'app.search' },
   { to: '/games', label: 'nav.my_games' },

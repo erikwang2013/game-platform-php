@@ -194,25 +194,11 @@ Route::group('/admin/v1', function () {
     Route::delete('/leaderboard/{hashid}', [app\admin\v1\controller\LeaderboardController::class, 'destroy']);
     Route::post('/leaderboard/{hashid}/refresh', [app\admin\v1\controller\LeaderboardController::class, 'refresh']);
 
-    // 优惠券管理
-    Route::get('/coupon/list', [app\admin\v1\controller\CouponController::class, 'list']);
-    Route::post('/coupon/create', [app\admin\v1\controller\CouponController::class, 'create']);
-    Route::put('/coupon/{hashid}', [app\admin\v1\controller\CouponController::class, 'update']);
-    Route::delete('/coupon/{hashid}', [app\admin\v1\controller\CouponController::class, 'destroy']);
-    Route::get('/coupon/{hashid}/stats', [app\admin\v1\controller\CouponController::class, 'stats']);
-
     // VIP等级管理
     Route::get('/vip/level/list', [app\admin\v1\controller\VipLevelController::class, 'list']);
     Route::post('/vip/level/create', [app\admin\v1\controller\VipLevelController::class, 'create']);
     Route::put('/vip/level/{hashid}', [app\admin\v1\controller\VipLevelController::class, 'update']);
     Route::delete('/vip/level/{hashid}', [app\admin\v1\controller\VipLevelController::class, 'destroy']);
-
-    // 成就管理
-    Route::get('/achievement/list', [app\admin\v1\controller\AchievementController::class, 'list']);
-    Route::post('/achievement/create', [app\admin\v1\controller\AchievementController::class, 'create']);
-    Route::put('/achievement/{hashid}', [app\admin\v1\controller\AchievementController::class, 'update']);
-    Route::delete('/achievement/{hashid}', [app\admin\v1\controller\AchievementController::class, 'destroy']);
-    Route::post('/achievement/toggle', [app\admin\v1\controller\AchievementController::class, 'toggle']);
 
     // 活动管理
     Route::get('/activities/list', [app\admin\v1\controller\ActivityController::class, 'list']);

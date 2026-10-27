@@ -10,7 +10,6 @@ namespace app\process;
 use app\api\v1\controller\WebhookController;
 use app\event\EventBus;
 use app\model\EventOutbox;
-use app\service\AchievementService;
 use app\service\ActivityService;
 use app\service\AntiCheatService;
 use support\Log;
@@ -212,13 +211,6 @@ class EventConsumer
     {
         $ctx = ['event' => $event, 'event_id' => $eventId, 'timestamp' => time()];
         $failures = [];
-
-        try {
-            AchievementService::handle($event, $payload);
-        } catch (\Throwable $e) {
-            Log::warning('EventConsumer achievement failed: ' . $e->getMessage(), $ctx);
-            $failures[] = $e;
-        }
 
         try {
             WebhookController::dispatch($event, $payload, $eventId);
