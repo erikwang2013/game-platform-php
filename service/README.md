@@ -1,10 +1,8 @@
 # service/ — C端用户平台 API 服务
-<!-- lang-nav -->
 
 Languages: **中文** · [English](README.en.md)
 
-> Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
-
+> Copyright (c) 2026 erik erik@erik.xyz — https://erik.xyz
 
 ## 功能清单
 

@@ -2,10 +2,9 @@
 
 ## Project Mascot
 
-<img src="../docs/mascot.svg" width="120" alt="Dicey"/>
+![Dicey](../docs/mascot.svg)
 
 **Dicey** — Platform mascot. The die represents games and probability-based gameplay, the coin represents the platform economy and multi-payment gateways, and the purple palette echoes the admin branding. SVG source: `docs/mascot.svg`, infinitely scalable for docs, logos and merchandise.
-<!-- lang-nav -->
 
 Languages: [中文](README.md) · **English**
 
@@ -178,8 +177,6 @@ cd apps/flutter
 flutter pub get
 flutter run -d chrome    # Web (PC admin dashboard style)
 ```
-
-
 
 ### 6. Docker Compose one-click deployment (recommended for production)
 
@@ -392,7 +389,6 @@ Authorization: Bearer <token>
 - **Batch operations**: multi-select batch delete, batch enable/disable
 - **Theme**: Material 3 light/dark dual themes
 
-
 - **Pages**: login, dashboard, user list/detail, profile
 - **Authentication**: JWT Bearer + automatic seamless Token refresh on 401; auto-redirects to login on refresh failure
 - **Storage**: Token managed via AppStorage
@@ -464,7 +460,7 @@ We thank **kta1kri** for responsibly disclosing the self-hosted / embedded game 
 
 ## 项目授权 / Project License
 
-Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+Copyright (c) 2026 erik erik@erik.xyz — https://erik.xyz
 
 - 本项目仅供个人学习、研究使用。
 - 未经作者书面授权，禁止任何形式的商业使用（包括但不限于商业部署、付费服务、二次销售、SaaS 运营及以本项目为基础提供商业服务）。

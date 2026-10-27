@@ -2,10 +2,9 @@
 
 ## 项目吉祥物
 
-<img src="../docs/mascot.svg" width="120" alt="Dicey"/>
+![Dicey](../docs/mascot.svg)
 
 **小骰（Dicey）** — 平台吉祥物。骰子代表游戏与概率玩法，金币代表平台经济与多支付网关，紫色主色调呼应后台品牌。SVG 源文件：`docs/mascot.svg`，可无限缩放用于文档、Logo 与周边。
-<!-- lang-nav -->
 
 Languages: **中文** · [English](README.en.md)
 
@@ -178,8 +177,6 @@ cd apps/flutter
 flutter pub get
 flutter run -d chrome    # Web 端（PC 管理后台风格）
 ```
-
-
 
 ### 6. Docker Compose 一键部署（推荐生产环境）
 
@@ -392,7 +389,6 @@ Authorization: Bearer <token>
 - **批量操作**: 多选批量删除、批量启用/禁用
 - **主题**: Material 3 浅色/深色双主题
 
-
 - **页面**: 登录、仪表盘、用户列表/详情、个人中心
 - **认证**: JWT Bearer + 401 自动无感刷新 Token，刷新失败自动重定向登录页
 - **存储**: Token 通过 AppStorage 管理
@@ -464,7 +460,7 @@ GitHub Actions 持续集成流水线：`.github/workflows/ci.yml`
 
 ## 项目授权 / Project License
 
-Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+Copyright (c) 2026 erik erik@erik.xyz — https://erik.xyz
 
 - 本项目仅供个人学习、研究使用。
 - 未经作者书面授权，禁止任何形式的商业使用（包括但不限于商业部署、付费服务、二次销售、SaaS 运营及以本项目为基础提供商业服务）。
