@@ -79,7 +79,7 @@ game-platform-php/
 │   ├── app/api/v1/controller/ #   C端 API 控制器
 │   ├── app/middleware/        #   中间件 (TraceId/Cors/SecurityFilter/RateLimit/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth)
 │   ├── app/model/             #   仅 service 独有的模型 (10 个，其余 52 个共享模型在 packages/)
-│   ├── app/service/           #   仅 service 独有的服务 (钱包/风控/合规/对账/推送/成就/反作弊等)
+│   ├── app/service/           #   仅 service 独有的服务 (钱包/风控/合规/推送/成就/反作弊等)
 │   ├── app/payment/           #   18 个支付网关适配器 (Stripe/PayPal/Adyen/NowPayments/Skrill…) + GatewayFactory
 │   ├── app/cdn/               #   五厂商 CDN 适配器 (Cloudflare/CloudFront/阿里/腾讯/华为) + CdnFactory
 │   ├── app/process/           #   常驻进程 (Http/Monitor/ChatWS:8791/EventConsumer/EventSubscriber/AntiCheatWorker/GroupSweepWorker/Health)
@@ -340,7 +340,6 @@ cd admin/apps/flutter && flutter test --timeout 300s
 | 风控 | IP黑名单/大额预警/频率/速度检测 |
 | 风控纵深 | 设备指纹/IP信誉/账号关联图谱 + 规则引擎 + 风控看板 + AML/KYC/信任分 |
 | 反作弊 | 反作弊事件采集 + 日统计 + 人工复核 |
-| 对账/结算 | 每日对账批处理 + 差异明细 + 账单对账 |
 | 统一钱包 | WalletScope 统一钱包作用域 |
 | 活动引擎 | 活动创建/参与/奖励 + 签到 |
 | 社交拉新 | 群组 + 分享链接追踪 |

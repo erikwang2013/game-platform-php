@@ -241,7 +241,7 @@ docker-compose up -d
 - `open_admin_active_users` / `open_admin_total_users` — 活跃/累计用户数
 - `open_admin_db_up` / `open_admin_redis_up` / `open_admin_es_up` — 依赖可达性 (0/1)
 - `open_admin_memory_usage_bytes` / `open_admin_process_fd_count` / `open_admin_cpu_load_1m` / `open_admin_uptime_seconds` — 进程指标
-- `open_admin_withdraw_pending` / `open_admin_deposit_confirmed_today` / `open_admin_deposit_total_today` / `open_admin_deposit_success_rate_percent` / `open_admin_reconciliation_diff_pending` — 资金指标
+- `open_admin_withdraw_pending` / `open_admin_deposit_confirmed_today` / `open_admin_deposit_total_today` / `open_admin_deposit_success_rate_percent` — 资金指标
 - `open_admin_mysql_connections` / `open_admin_redis_hit_rate_percent` / `open_admin_redis_memory_bytes` — 连接/缓存指标
 - `open_admin_event_emit_total` / `open_admin_event_consume_total` — 事件总线 counter
 - `open_admin_info` — 版本/运行时信息

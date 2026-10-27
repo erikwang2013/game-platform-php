@@ -119,20 +119,6 @@ class MetricsController
         });
         $metrics[] = 'open_admin_deposit_success_rate_percent ' . ($depositsToday > 0 ? (float) BcMath::percent((string) $depositsConfirmedToday, (string) $depositsToday, 2) : 0);
 
-        $diffPending = $this->cachedGauge('metrics:biz:reconciliation_diff_pending', function () {
-            // 两个坑叠在这里，任一未修则本指标**恒为 0**，而下面 safeCount 会把 SQLSTATE 42S22 静默吞掉：
-            //  ① 表名：Db::table 自己加前缀 `game_`（config/database.php:36）⇒ 写全名会查
-            //     `game_game_reconciliation_diff`（不存在）。**只写裸表名**。
-            //  ② 列名是 `resolution`（值 pending/resolved/ignored），**没有 `status` 列**
-            //     （DDL: install.sql 的 game_reconciliation_diff.resolution；同口径见 ReconciliationService::listDiffs 的 where('resolution', …)）。
-            // 后果：open_admin_reconciliation_diff_pending 是资金对账（H3）的唯一告警源，
-            // 恒 0 等于待处理差异永远不会告警。
-            return (int) Db::table('reconciliation_diff')->where('resolution', 'pending')->count();
-        });
-        $metrics[] = '# HELP open_admin_reconciliation_diff_pending Pending reconciliation diffs (H3 money risk)';
-        $metrics[] = '# TYPE open_admin_reconciliation_diff_pending gauge';
-        $metrics[] = "open_admin_reconciliation_diff_pending {$diffPending}";
-
         // ---- L4 可观测性扩充：系统组 ----
         $metrics[] = '# HELP open_admin_cpu_load_1m System 1-minute load average';
         $metrics[] = '# TYPE open_admin_cpu_load_1m gauge';

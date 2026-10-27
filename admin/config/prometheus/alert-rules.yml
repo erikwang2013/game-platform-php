@@ -44,17 +44,7 @@ groups:
 
   - name: game-platform-business
     rules:
-      # 3. 对账差异笔数 > 0 持续 30m → P2（资金风险，联动 H3）
-      - alert: ReconciliationDiffPending
-        expr: open_admin_reconciliation_diff_pending > 0
-        for: 30m
-        labels:
-          severity: P2
-        annotations:
-          summary: "对账差异未清零"
-          description: "待处理对账差异 {{ $value }} 笔，持续 30 分钟，需人工核查资金"
-
-      # 4. worker 存活数 < 预期值 持续 5m → P1（进程掉线）
+      # 3. worker 存活数 < 预期值 持续 5m → P1（进程掉线）
       # 依赖：open_admin_worker_alive gauge（每进程心跳写入，随进程注册上线）
       - alert: WorkerDown
         expr: open_admin_worker_alive < 6
