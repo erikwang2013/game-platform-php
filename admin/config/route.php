@@ -297,10 +297,6 @@ Route::group('/admin/v1', function () {
     Route::get('/anticheat/events/{hashid}', [app\admin\v1\controller\AntiCheatController::class, 'detail']);
     Route::post('/anticheat/events/{hashid}/review', [app\admin\v1\controller\AntiCheatController::class, 'review']);
 
-    // ---- 组队/公会管理（M4）----
-    Route::get('/groups', [app\admin\v1\controller\GroupController::class, 'list']);
-    Route::get('/groups/{hashid}/audit', [app\admin\v1\controller\GroupController::class, 'audit']);
-
     // ---- 分享统计（M4）----
     Route::get('/share/stats', [app\admin\v1\controller\ShareController::class, 'stats']);
 })->middleware([

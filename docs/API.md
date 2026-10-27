@@ -2318,20 +2318,12 @@ status: open / waiting / replied / closed
 | GET /api/v1/activities/{hashid} | 活动详情 (C端) |
 | POST /api/v1/activities/{hashid}/checkin | 签到 (C端) |
 
-### 10.4 群组/分享 (C端 :8792 + 管理端 :8789)
+### 10.4 分享 (C端 :8792 + 管理端 :8789)
 
 | 接口 | 说明 |
 |------|------|
-| POST /api/v1/groups | 创建群组 |
-| GET /api/v1/groups/{hashid} | 群组详情 |
-| GET /api/v1/groups/{hashid}/members | 成员列表 |
-| POST /api/v1/groups/{hashid}/join | 加入群组 |
-| POST /api/v1/groups/{hashid}/leave | 退出群组 |
-| PUT /api/v1/groups/{hashid}/role | 成员角色 |
 | POST /api/v1/shares | 创建分享链接 |
 | POST /api/v1/shares/visit | 分享访问追踪 |
-| GET /admin/v1/groups | 群组列表 (管理端) |
-| GET /admin/v1/groups/{hashid}/audit | 群组审核 (管理端) |
 | GET /admin/v1/share/stats | 分享统计 (管理端) |
 
 ### 10.5 支付网关扩展 (L1)

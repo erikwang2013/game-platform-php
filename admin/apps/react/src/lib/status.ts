@@ -40,7 +40,6 @@ export type StatusEnum = Record<string, MessageKey>;
  * - `publish`   `game_announcement.status`：`0=草稿 1=已发布`（**不是启停**）
  * - `user_state` `game_user.status`：`0=禁用 1=启用`，但平台用户的语义是 `1=正常 0=封禁`
  *                （`platform-users.tsx` 的字段 hint `f.on_active_1_off_banned` 与 `PlatformUserController.php:179` 的 in_array 是准）
- * - `group_state` `game_group.status`：`1=正常 0=解散`（**不是启停**，0 是「已解散」这个存续状态）
  * - `server`    `game_game_server.status`：`0=维护 1=正常 2=火爆 3=新服`；校验 `GameServerController.php:112` 的 `in:0,1,2,3`
  * - `activity`  `game_activity.status`：`0=禁用 1=启用 2=已结束`
  * - `cluster`   `game_risk_cluster.status`：`1=观察中 2=已处置 0=误判`（⚠ 顺序是 1/2/0，0 不是「关闭」）
@@ -58,7 +57,6 @@ export const STATUS_ENUMS: Record<string, StatusEnum> = {
   listing: { '1': 'st.listed', '0': 'st.unlisted' },
   publish: { '1': 'st.published', '0': 'st.draft' },
   user_state: { '1': 'st.active', '0': 'st.banned' },
-  group_state: { '1': 'st.group_active', '0': 'st.group_dissolved' },
   server: {
     '0': 'st.server_maintenance',
     '1': 'st.server_normal',
@@ -121,7 +119,6 @@ const ENDPOINT_ENUMS: Record<string, Record<string, string>> = {
   '/admin/v1/risk/clusters': { status: 'cluster' },
   '/admin/v1/cdn/provider/list': { status: 'enabled' },
   '/admin/v1/country/config/list': { status: 'enabled' },
-  '/admin/v1/groups': { status: 'group_state' },
   // 提现订单有两列编码：审核状态与打款状态（后者空值是「还没发起打款」）
   '/admin/v1/withdraw/orders': { status: 'withdraw', payout_status: 'payout' },
 };

@@ -103,14 +103,6 @@ Route::group('/api/v1', function () {
     Route::get('/game/balance', v('GameController', 'balance'));
     Route::get('/game/session', v('GameController', 'session'));
 
-    // 组队/公会（M4）
-    Route::post('/groups', v('GroupController', 'create'));
-    Route::get('/groups/{hashid}', v('GroupController', 'detail'));
-    Route::get('/groups/{hashid}/members', v('GroupController', 'members'));
-    Route::post('/groups/{hashid}/join', v('GroupController', 'join'));
-    Route::post('/groups/{hashid}/leave', v('GroupController', 'leave'));
-    Route::put('/groups/{hashid}/role', v('GroupController', 'role'));
-
     // 分享短码（M4）
     Route::post('/shares', v('ShareController', 'create'));
 

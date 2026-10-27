@@ -10,7 +10,7 @@ import { useApi } from '../lib/hooks';
 // 「我的账号」单独一个文件：只读信息 + 改资料/改密码两组表单（见 account.tsx 的说明）
 import { AccountCard } from './account';
 import { DashboardView } from './dashboard';
-import { CommunityGroups, ShareStats } from './community';
+import { ShareStats } from './community';
 import { WithdrawLimits, WithdrawOrders, WithdrawSwitch } from './funds';
 // 平台用户（C 端玩家）单独一个文件：那一屏有页面级导出 + 行内注销回读，本文件只负责挂载
 import { PlatformUsers } from './platform-users';
@@ -79,8 +79,7 @@ type Group = {
   detailBase?: string;
   /** 报表面板（汇总 + 逐日 + 日期范围 + 导出，见 pages/reports.tsx）：三个端点共用一对日期参数 */
   report?: boolean;
-  /** 社群页的两块（群组带筛选与审计弹框、分享漏斗只有日期范围，见 pages/community.tsx） */
-  communityGroups?: boolean;
+  /** 分享漏斗只有日期范围（见 pages/community.tsx） */
   shareStats?: boolean;
   /**
    * 是否分页，缺省 true。整表端点（无 total，且是别处的下拉选项源）与裸数组/树传 false：
@@ -133,8 +132,6 @@ export const PAGES = {
     title: 'page.community.title',
     sub: 'page.community.sub',
     groups: [
-      // 群组只读（后端没有增删改端点）⇒ 配置里只给 views，一个新建/编辑/删除按钮都不长
-      { label: 'tab.groups', path: '/admin/v1/groups', list: true, communityGroups: true },
       { label: 'tab.share_stats', path: '/admin/v1/share/stats', shareStats: true },
     ],
   },
@@ -395,8 +392,6 @@ export function TabPage({ id }: { id: PageKey }) {
             <RiskIps path={group.path} />
           ) : group.riskClusters ? (
             <RiskClusters path={group.path} />
-          ) : group.communityGroups ? (
-            <CommunityGroups />
           ) : (
             <RowBrowser
               path={group.path}

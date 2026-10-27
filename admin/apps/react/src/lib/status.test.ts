@@ -19,8 +19,6 @@ const DOMAINS: Record<string, Record<string, string>> = {
   listing: { '1': 'st.listed', '0': 'st.unlisted' },
   publish: { '1': 'st.published', '0': 'st.draft' },
   user_state: { '1': 'st.active', '0': 'st.banned' },
-  // 群组：1=正常 0=解散（**不是**「启用/停用」，措辞不能照抄别的布尔族）
-  group_state: { '1': 'st.group_active', '0': 'st.group_dissolved' },
   // 服务器：4 个码，且顺序不是数值序（0 维护不是「第一个」）
   server: { '0': 'st.server_maintenance', '1': 'st.server_normal', '2': 'st.server_hot', '3': 'st.server_new' },
   // 活动：2=已结束（DDL 只注释了 0/1，2 由写入侧代码补，最容易漏）
@@ -176,7 +174,6 @@ test('statusEnumsFor 引用的每个枚举 id 都真在表里（写错 id ＝ �
     '/admin/v1/risk/clusters',
     '/admin/v1/cdn/provider/list',
     '/admin/v1/country/config/list',
-    '/admin/v1/groups',
     '/admin/v1/withdraw/orders',
     ['/admin/v1/search', { type: 'user' }] as const,
   ];

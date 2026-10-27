@@ -1206,8 +1206,6 @@ INSERT IGNORE INTO `game_admin_permission` (`id`, `parent_id`, `name`, `slug`, `
 (21000000000000133, '0', '分类列表', 'get.admin/game/category/list', 3, '', '', 131, NOW(), NOW()),
 (21000000000000134, '0', '游戏列表', 'get.admin/game/list', 3, '', '', 132, NOW(), NOW()),
 (21000000000000135, '0', '区服列表', 'get.admin/game/server/list', 3, '', '', 133, NOW(), NOW()),
-(21000000000000136, '0', '组/公会列表', 'get.admin/groups', 3, '', '', 134, NOW(), NOW()),
-(21000000000000137, '0', '成员变动流水', 'get.admin/groups/audit', 3, '', '', 135, NOW(), NOW()),
 (21000000000000138, '0', 'KYC列表', 'get.admin/identity/list', 3, '', '', 136, NOW(), NOW()),
 (21000000000000139, '0', '排行榜列表', 'get.admin/leaderboard/list', 3, '', '', 137, NOW(), NOW()),
 (21000000000000140, '0', '支付方式列表', 'get.admin/payment/method/list', 3, '', '', 138, NOW(), NOW()),
@@ -1579,46 +1577,6 @@ INSERT IGNORE INTO `game_country_config` (`id`, `country_code`, `lang_prefix`, `
 (50000000000000116, 'NG', 'yo', 'NGN', '{"paystack":{"enabled":true,"min":"500","max":"5000000","fee_percent":"1.5"},"stripe":{"enabled":true,"min":"500","max":"5000000","fee_percent":"2.9"},"nowpayments":{"enabled":true,"min":"1000","max":"50000000","fee_percent":"0.5"}}', '{"paypal":{"enabled":true,"min":"1000","max":"5000000","fee_percent":"1.0"},"bank":{"enabled":true,"min":"500","max":"10000000","fee_percent":"0.5"},"crypto":{"enabled":true,"min":"2000","max":"50000000","fee_percent":"0.0"}}', 500.0000, 5000000.0000, 10000000.0000, 0.5000, 500.0000, 2, 1),
 (50000000000000117, 'AR', 'es', 'ARS', '{"mercadopago":{"enabled":true,"min":"1000","max":"300000","fee_percent":"3.0"},"stripe":{"enabled":true,"min":"1000","max":"300000","fee_percent":"2.9"}}', '{"paypal":{"enabled":true,"min":"2000","max":"300000","fee_percent":"1.0"},"bank":{"enabled":true,"min":"1000","max":"600000","fee_percent":"0.5"},"crypto":{"enabled":true,"min":"5000","max":"3000000","fee_percent":"0.0"}}', 1000.0000, 300000.0000, 600000.0000, 0.5000, 1000.0000, 1, 1),
 (50000000000000118, 'CL', '', 'CLP', '{"mercadopago":{"enabled":true,"min":"1000","max":"300000","fee_percent":"3.0"},"stripe":{"enabled":true,"min":"1000","max":"300000","fee_percent":"2.9"}}', '{"paypal":{"enabled":true,"min":"2000","max":"300000","fee_percent":"1.0"},"bank":{"enabled":true,"min":"1000","max":"600000","fee_percent":"0.5"},"crypto":{"enabled":true,"min":"5000","max":"3000000","fee_percent":"0.0"}}', 1000.0000, 300000.0000, 600000.0000, 0.5000, 1000.0000, 1, 1);
-
--- ============================================================
--- 组队/公会表（M4 社交拉新）
--- ============================================================
-CREATE TABLE IF NOT EXISTS `game_group` (
-    `id` BIGINT NOT NULL COMMENT '主键ID，由snowflake生成',
-    `type` VARCHAR(16) NOT NULL COMMENT 'team=组队 guild=公会',
-    `name` VARCHAR(100) NOT NULL COMMENT '名称',
-    `game_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '归属游戏(team 必填；guild 0=跨游戏)',
-    `owner_id` BIGINT UNSIGNED NOT NULL COMMENT '创建人/会长',
-    `level` INT UNSIGNED NOT NULL DEFAULT 1 COMMENT '公会等级；team 恒为 1',
-    `xp` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '公会经验',
-    `member_count` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '冗余计数，避免 COUNT 查询（定时校正兜底）',
-    `announcement` TEXT COMMENT '公会公告；team 留空',
-    `expire_at` DATETIME DEFAULT NULL COMMENT 'team 到期自动解散',
-    `status` TINYINT UNSIGNED NOT NULL DEFAULT 1 COMMENT '1=正常 0=解散',
-    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    PRIMARY KEY (`id`),
-    KEY `idx_type_game` (`type`, `game_id`),
-    KEY `idx_type_level` (`type`, `level` DESC),
-    KEY `idx_owner` (`owner_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='组队/公会表';
-
--- ============================================================
--- 组队/公会成员表（M4）
--- ============================================================
-CREATE TABLE IF NOT EXISTS `game_group_member` (
-    `id` BIGINT NOT NULL COMMENT '主键ID，由snowflake生成',
-    `group_id` BIGINT UNSIGNED NOT NULL COMMENT '组ID',
-    `user_id` BIGINT UNSIGNED NOT NULL COMMENT '用户ID',
-    `role` VARCHAR(16) NOT NULL DEFAULT 'member' COMMENT 'owner/admin/member/guest',
-    `contrib` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '贡献值（公会排行榜用）',
-    `joined_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '加入时间',
-    `left_at` DATETIME DEFAULT NULL COMMENT '离开时间（NULL=仍在组）',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_group_user` (`group_id`, `user_id`),
-    KEY `idx_user_role` (`user_id`, `role`),
-    KEY `idx_group_contrib` (`group_id`, `contrib` DESC)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='组队/公会成员表';
 
 -- ============================================================
 -- 分享短码表（M4 裂变追踪）

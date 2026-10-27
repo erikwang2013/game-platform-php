@@ -80,12 +80,6 @@ return [
         'count' => 1,
     ],
 
-    // 组队/公会定时校正（M4）：每小时 到期解散 + member_count 对齐（单实例）
-    'group-sweep' => [
-        'handler' => app\process\GroupSweepWorker::class,
-        'count' => 1,
-    ],
-
     // 健康探活（L4）：每分钟探测 MySQL/Redis，失败写日志 + 指标归零（health:mysql / health:redis）
     'health' => [
         'handler' => app\process\Health::class,
