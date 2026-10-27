@@ -491,17 +491,20 @@ SVG / PNG）**不是开源资产**，版权归作者所有。未经书面许可�
 
 本项目开源仓库保留可独立运行的游戏聚合平台核心能力；商业版面向需要完整运营工具、多端交付和商业授权的场景。
 
-### 规模对比
+### 多维度对比
 
 | 维度 | 开源版 | 商业版 |
 |---|---|---|
-| PHP 源文件 | 404 | 438 |
-| 控制器 | 75 | 82 |
-| 数据模型 | 55 | 67 |
-| 路由注册 | 260 | 291 |
-| 数据表 | 68 | 80 |
-| 管理端 | React 19 + Flutter | React 19 + Angular 21 + Flutter + HarmonyOS |
-| C 端 | React 19 + Flutter | React 19 + Angular 21 + Flutter + HarmonyOS |
+| 功能覆盖 | 404 PHP 文件 / 75 控制器 / 56 模型 / 260 路由 / 67 表；核心聚合、Provider 接入、钱包/支付、风控/反作弊、活动、VIP/工单 | 438 / 82 / 68 / 291 / 79 表；增加优惠券、赛事、组队/公会、成就、对账/结算、CDN 五厂商 |
+| 安全防护 | JWT + ProviderAuth + SdkSessionAuth、RBAC、RateLimit、SecurityFilter、2FA、9 类风控评估器、操作审计、敏感字段加密 | 同一套认证/风控/审计/加密中间件与评估器；未发现额外安全模块，增量集中在业务与客户端 |
+| 性能与规模 | webman 常驻、Redis、Elasticsearch、7 个常驻进程、WebSocket `chat-ws` | 同栈；8 个常驻进程（多 `GroupSweepWorker`）；未发现 ClickHouse 运行时依赖，双方一致 |
+| 数据与检索 | MySQL 67 表 + Redis + Elasticsearch；游戏/Provider/订单/钱包数据 | MySQL 79 表 + Redis + Elasticsearch；增加优惠券/赛事/组队/成就/对账/CDN 数据 |
+| 测试与质量 | git 历史 160 个 PHP 测试 + 30 Flutter + 38 React；CI 覆盖 php-syntax、phpunit-admin、phpunit-service、React、Flutter、Release | 快照含 5 个 PHP 测试 + 30 Flutter + 38 React；CI 增加 `frontend-angular`；双方当前工作区测试文件均未检出 |
+| 部署与运维 | Docker Compose 8 服务（nginx/admin/service/chat-ws/mysql/redis/ES）、健康检查、Prometheus metrics、7 进程 | 同 8 服务与健康/指标端点；8 进程；CI 增加 Angular 构建，部署拓扑一致 |
+| 多端与国际化 | React 19 + Flutter（管理端/C 端各一套）；13 语种 | React 19 + Angular 21 + Flutter + HarmonyOS（管理端/C 端各一套）；13 语种 |
+| 扩展性与二次开发 | ProviderFactory/GameProvider/ThirdPartyProvider + GameSdk + ProviderAuth；`/api/provider`、`/api/game`、`/api/v1` 版本化接口 | 同 Provider/SDK/版本化接口；额外提供赛事、组队、优惠券、对账、CDN 接口，扩展面更大 |
+| 授权与商业支持 | 个人学习/研究；商业使用需书面授权 | 商业授权；交付、支持与报价联系 **erik@erik.xyz** |
+| 适用场景 | 个人学习、研究、二次开发、小规模自建验证 | 需要完整运营营销、多端交付、对账结算与 CDN 的商业部署 |
 
 ### 商业版额外能力
 
@@ -512,11 +515,11 @@ SVG / PNG）**不是开源资产**，版权归作者所有。未经书面许可�
 
 ### 开源版保留能力
 
-游戏聚合、Provider 接入、钱包 / 支付、风控 / 反作弊、活动引擎、VIP / 工单、ClickHouse 报表、RBAC、审计、多语言，以及 React + Flutter 两套客户端。
+游戏聚合、Provider 接入、钱包 / 支付、风控 / 反作弊、活动引擎、VIP / 工单、报表、RBAC、审计、多语言，以及 React + Flutter 两套客户端。
 
 > 商业版授权与交付条款请联系 **erik@erik.xyz**。未经书面授权，禁止任何形式的商业使用。
 
-**English:** The open-source edition keeps the core game aggregation platform with React/Flutter clients. The commercial edition adds coupons, tournaments, groups, achievements, reconciliation/settlement, CDN provider management, and Angular/HarmonyOS clients for both admin and C-end, with matching tables, permissions and routes. Commercial licensing: **erik@erik.xyz**.
+**English:** The open-source edition keeps the core game aggregation platform with React/Flutter clients, the same JWT/RBAC/rate-limit/security-filter/2FA/risk/audit/encryption stack, MySQL + Redis + Elasticsearch, Docker Compose deployment, and 13-language i18n. The commercial edition adds coupons, tournaments, groups, achievements, reconciliation/settlement, CDN provider management, and Angular/HarmonyOS clients for both admin and C-end, with matching tables, permissions, routes and CI. Security middleware, risk evaluators and deployment topology are otherwise identical; no ClickHouse runtime dependency was found in either tree. Commercial licensing, delivery and support: **erik@erik.xyz**.
 
 ## 项目授权 / Project License
 
