@@ -57,7 +57,6 @@ export const frCommon = {
   'nav.me': 'Profil',
   'nav.my_games': 'Mes jeux',
   'nav.activities': 'Activités',
-  'nav.tournaments': 'Tournois',
   'nav.invite': 'Inviter des amis',
   'nav.messages': 'Messages',
   'nav.friends': 'Amis',

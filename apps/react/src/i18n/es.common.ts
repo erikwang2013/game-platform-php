@@ -57,7 +57,6 @@ export const esCommon = {
   'nav.me': 'Perfil',
   'nav.my_games': 'Mis juegos',
   'nav.activities': 'Actividades',
-  'nav.tournaments': 'Torneos',
   'nav.invite': 'Invitar amigos',
   'nav.messages': 'Mensajes',
   'nav.friends': 'Amigos',

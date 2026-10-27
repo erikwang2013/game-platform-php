@@ -2235,25 +2235,6 @@ status: open / waiting / replied / closed
 ```
 
 
-### 7.11 赛事 API
-
-#### GET /api/v1/tournament/list — 赛事列表
-```
-参数: ?status=active|upcoming|ended&page=1&per_page=20
-响应: { "items": [{ "id": "...", "name": "...", "prize_pool": "1000.0000", "player_count": 45, "max_players": 100 }], "total": 5 }
-```
-
-#### GET /api/v1/tournament/{hashid} — 赛事详情
-```
-响应: { "id": "...", "name": "...", "leaderboard": [...], "my_entry": {...} }
-```
-
-#### POST /api/v1/tournament/{hashid}/join — 报名参赛
-```
-需认证: 是
-错误: 422 已报名 / 400 已开始或已满员 / 503 FeatureFlag关闭
-```
-
 ### 7.12 优惠券条件 (新增)
 
 优惠券 `conditions` JSON 支持:
@@ -2274,7 +2255,6 @@ status: open / waiting / replied / closed
 
 | 接口 | 限制 |
 |------|------|
-| POST /api/v1/tournament/{id}/join | 10 次/分钟 |
 
 ---
 

@@ -57,7 +57,6 @@ export const koCommon = {
   'nav.me': '마이',
   'nav.my_games': '내 게임',
   'nav.activities': '이벤트',
-  'nav.tournaments': '토너먼트',
   'nav.invite': '친구 초대',
   'nav.messages': '메시지',
   'nav.friends': '친구',

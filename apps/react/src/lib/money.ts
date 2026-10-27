@@ -43,7 +43,7 @@ export function moneyRaw(v: string | number | null | undefined): string {
 
 /**
  * 金额是否为**零/无值**——纯字符串判定，不做数值转换。专给「0 = 不限 / 免费」这类**展示分支**用
- * （`deposit.limit` / `tournaments.feeText` 原先写的是 `Number(x) > 0`，那正是本批要禁掉的转型）。
+ * （`deposit.limit` 原先写的是 `Number(x) > 0`，那正是本批要禁掉的转型）。
  * 与 `money()` 同一套判据：去掉前后空白与符号后，串里只要出现 `1-9` 就不是零，
  * 故 `'0'` / `'0.00000000'` / `'-0.00'` 都是零，`'0.00000001'`（bcmath scale-8 最小非零量）不是。
  * 缺值与非数字串（`null`/`''`/`NaN`/自由文本）按**零**处理：与 `Number(x) > 0` 在

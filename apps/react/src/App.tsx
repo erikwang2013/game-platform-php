@@ -41,7 +41,6 @@ const Security = lazy(() => import('./pages/Security.tsx').then((m) => ({ defaul
 const TicketDetail = lazy(() => import('./pages/Tickets.tsx').then((m) => ({ default: m.TicketDetail })));
 const TicketNew = lazy(() => import('./pages/Tickets.tsx').then((m) => ({ default: m.TicketNew })));
 const Tickets = lazy(() => import('./pages/Tickets.tsx').then((m) => ({ default: m.Tickets })));
-const Tournaments = lazy(() => import('./pages/Tournaments.tsx').then((m) => ({ default: m.Tournaments })));
 const Wallet = lazy(() => import('./pages/Wallet.tsx').then((m) => ({ default: m.Wallet })));
 const Withdraw = lazy(() => import('./pages/Withdraw.tsx').then((m) => ({ default: m.Withdraw })));
 
@@ -156,14 +155,6 @@ export default function App() {
               element={
                 <Secure>
                   <Page><Activities /></Page>
-                </Secure>
-              }
-            />
-            <Route
-              path="/tournaments"
-              element={
-                <Secure>
-                  <Page><Tournaments /></Page>
                 </Secure>
               }
             />

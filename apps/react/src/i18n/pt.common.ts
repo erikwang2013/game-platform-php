@@ -57,7 +57,6 @@ export const ptCommon = {
   'nav.me': 'Perfil',
   'nav.my_games': 'Meus jogos',
   'nav.activities': 'Atividades',
-  'nav.tournaments': 'Torneios',
   'nav.invite': 'Convidar amigos',
   'nav.messages': 'Mensagens',
   'nav.friends': 'Amigos',

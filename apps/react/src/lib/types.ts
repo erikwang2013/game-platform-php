@@ -445,48 +445,6 @@ export interface ActivityCheckinResult {
   reward?: ActivityReward[];
 }
 
-/* ---------------- 赛事 ---------------- */
-
-/**
- * `/tournament/list` 的行。
- * ⚠ `start_at`/`end_at` 是 **ISO8601 UTC**（模型 cast 成 datetime + 控制器原样透传 ⇒
- * `json_encode(Carbon)`），不是本仓常见的 `Y-m-d H:i:s` 墙钟串 —— 渲染必须过 `dt()`。
- */
-export interface Tournament {
-  id: string;
-  name: string;
-  slug: string | null;
-  type: string | null;
-  description: string | null;
-  /** 只有 id/name；`null` = 全平台赛事 */
-  game: { id: string; name: string } | null;
-  prize_pool: string;
-  /** 0 = 免费。只做展示判定，不做任何金额运算 */
-  entry_fee: string;
-  /** `withCount('entries')` 的数，不是分页的 total */
-  player_count: number;
-  /** 0 = 不限人数 */
-  max_players: number;
-  start_at: string | null;
-  end_at: string | null;
-}
-
-/** `/tournament/{hashid}` = 列表行 + 我的报名 + 排行榜（服务端已截前 100） */
-export interface TournamentDetail extends Tournament {
-  /** 服务端按 (tournament_id, user_id) 查出来的，**不在本地推算** */
-  my_entry: { id: string; score: string; rank: number } | null;
-  leaderboard: TournamentRankRow[];
-}
-
-/** 只出现在上面 `leaderboard` 那一处 —— **不导出**（零处按名引用） */
-interface TournamentRankRow {
-  /** 服务端存的是报名行上的 rank 列；未结算时可能为 0/null */
-  rank: number | null;
-  /** ⚠ 昵称；`TournamentEntry::user` 取不到时服务端给字面量 `'N/A'` */
-  user: string;
-  score: string;
-}
-
 /* 组队/公会的类型（GroupDetail / GroupMemberRow）与 api.ts 的 6 个包装、Group.tsx 及其路由
    2026-10-01 一并撤下。端点都能调通，但 C 端拿它做不成任何事 —— 三条后端事实：
      ① 无「我的组」列表端点（route.php 的组段只有 create/detail/members/join/leave/role）

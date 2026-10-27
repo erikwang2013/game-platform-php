@@ -57,7 +57,6 @@ export const deCommon = {
   'nav.me': 'Profil',
   'nav.my_games': 'Meine Spiele',
   'nav.activities': 'Aktionen',
-  'nav.tournaments': 'Turniere',
   'nav.invite': 'Freunde einladen',
   'nav.messages': 'Nachrichten',
   'nav.friends': 'Freunde',

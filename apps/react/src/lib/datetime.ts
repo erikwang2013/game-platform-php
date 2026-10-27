@@ -8,12 +8,12 @@
  * ⚠ 这不是「美化」，是修一个**8 小时时差**。同一批 C 端接口回的 `created_at` / `start_at`
  * 有**两种线格式**，取决于控制器有没有自己 format 过：
  *
- *  1. **原样透传模型属性**的（`User`/`Ticket`/`app\model\Friend`/`DepositOrder`/`WithdrawOrder`/
- *     `Tournament` …，`$timestamps` 为真 ⇒ Eloquent 把属性转成 Carbon）⇒ `json_encode(Carbon)`
+ *  1. **原样透传模型属性**的（`User`/`Ticket`/`app\model\Friend`/`DepositOrder`/`WithdrawOrder` …，
+ *     `$timestamps` 为真 ⇒ Eloquent 把属性转成 Carbon）⇒ `json_encode(Carbon)`
  *     出的是 **ISO8601 UTC**：本机 +08:00 的 `2026-10-01 10:00:00` 在报文里是
  *     `"2026-10-01T02:00:00.000000Z"`（实测，非推断）。直接贴到 DOM 上就是差 8 小时的机器串。
  *     代表调用点：`UserController.php:51`、`TicketController.php:48,97`、`FriendController.php:46`、
- *     `DepositController.php:154-155`、`WithdrawController.php:270,302`、`TournamentController` 全部时间字段。
+ *     `DepositController.php:154-155`、`WithdrawController.php:270,302` 等。
  *  2. **本地墙钟串**的：控制器自己 `->format('Y-m-d H:i:s')`（如 `AnnouncementController.php:39,64`），
  *     或模型 `$timestamps = false` 且写入侧手写 `date('Y-m-d H:i:s')`
  *     （`Notification`/`TicketReply`/`ExchangeRecord`/`Transaction`/`Message`/`GamePlayLog` 的 `created_at`）。

@@ -1783,41 +1783,9 @@ CREATE TABLE IF NOT EXISTS `game_exp_log` (
 -- ============================================================
 -- 锦标赛表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `game_tournament` (
-    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
-    `name` VARCHAR(100) NOT NULL DEFAULT '' COMMENT '锦标赛名称',
-    `slug` VARCHAR(64) NOT NULL DEFAULT '' COMMENT '唯一别名',
-    `type` VARCHAR(32) NOT NULL DEFAULT '' COMMENT '赛制类型',
-    `description` TEXT COMMENT '赛事说明',
-    `game_id` BIGINT UNSIGNED NOT NULL DEFAULT 0 COMMENT '关联游戏ID，0=通用',
-    `start_at` DATETIME NOT NULL COMMENT '开始时间',
-    `end_at` DATETIME NOT NULL COMMENT '结束时间',
-    `prize_pool` DECIMAL(18,4) NOT NULL DEFAULT 0.0000 COMMENT '奖池总额',
-    `entry_fee` DECIMAL(18,4) NOT NULL DEFAULT 0.0000 COMMENT '报名费',
-    `max_players` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '人数上限，0=不限',
-    `status` TINYINT NOT NULL DEFAULT 0 COMMENT '状态：1=已发布',
-    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_slug` (`slug`),
-    KEY `idx_status_time` (`status`, `start_at`, `end_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='锦标赛表';
-
 -- ============================================================
 -- 锦标赛报名/成绩表
 -- ============================================================
-CREATE TABLE IF NOT EXISTS `game_tournament_entry` (
-    `id` BIGINT UNSIGNED NOT NULL COMMENT '主键ID，由snowflake生成',
-    `tournament_id` BIGINT UNSIGNED NOT NULL COMMENT '锦标赛ID',
-    `user_id` BIGINT UNSIGNED NOT NULL COMMENT '参赛用户ID',
-    `score` DECIMAL(18,4) NOT NULL DEFAULT 0.0000 COMMENT '当前得分',
-    `rank` INT UNSIGNED NOT NULL DEFAULT 0 COMMENT '名次（保留字，必须反引号）',
-    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '报名时间',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_tournament_user` (`tournament_id`, `user_id`),
-    KEY `idx_tournament_score` (`tournament_id`, `score` DESC)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='锦标赛报名/成绩表';
-
 -- ============================================================
 -- 多级返佣流水表（二级及以上）
 -- ============================================================
@@ -1859,7 +1827,6 @@ CREATE TABLE IF NOT EXISTS `game_referral_commission` (
 
 -- 功能开关
 INSERT IGNORE INTO `game_platform_config` (`id`, `group`, `key`, `value`, `type`, `description`) VALUES
-(20260804000301, 'feature', 'tournament', 'off', 'string', 'Tournament system'),
 (20260804000302, 'feature', 'chat', 'off', 'string', 'Chat/WebSocket messaging'),
 (20260804000303, 'feature', 'vip', 'off', 'string', 'VIP loyalty system'),
 (20260804000304, 'feature', 'achievements', 'off', 'string', 'Achievement/badge system');

@@ -52,8 +52,6 @@ import type {
   TicketDetail,
   TicketRow,
   TicketType,
-  Tournament,
-  TournamentDetail,
   Transaction,
   TwoFactorEnabled,
   TwoFactorSetup,
@@ -340,39 +338,6 @@ export const api = {
    */
   activityCheckin: (hashid: string) =>
     post<ActivityCheckinResult>(`/activities/${hashid}/checkin`, {}),
-
-  /* ---------------- 赛事 ---------------- */
-
-  /**
-   * 赛事列表（`TournamentController::list`）。
-   *
-   * ⚠ **整个赛事功能由 FeatureFlag `tournament` 把着**：开关关掉时本端点回
-   * `code:503 / 'Tournaments not available'`（不是空列表）——页面要把这句原文透出来，
-   * 别渲染成「暂无赛事」（那是在替服务端撒谎）。
-   * 服务端 `status` 默认 `active`；`upcoming` = `start_at > now AND status=1`，
-   * `ended` = `end_at < now`（**不过滤 status**），`active` = 在时间窗内且 `status=1`。
-   *
-   * 回包是 `PagedLite`：有 `items/total/page/last_page`，**没有 `per_page`**
-   * （`TournamentController::list` 的 success 数组里就没这个键）⇒ 别用 `Paged<T>` 假装有。
-   */
-  tournaments: (status: 'upcoming' | 'active' | 'ended', p: PageQuery = {}) =>
-    get<PagedLite<Tournament>>(`/tournament/list${qs({ status, ...p })}`),
-
-  /**
-   * 赛事详情。⚠ **这个端点不查 FeatureFlag**（`detail()` 里没有那道判断）⇒
-   * 「详情能打开」不能当成「赛事功能开着」的证据。
-   * `my_entry` 与 `leaderboard` 都由服务端算，页面不推算、不排序。
-   */
-  tournamentDetail: (hashid: string) => get<TournamentDetail>(`/tournament/${hashid}`),
-
-  /**
-   * 报名。服务端三道闸，任一不满足都回 400/404/422 + 原因：
-   *  1. `status !== 1` ⇒ 404 'Tournament not available'；
-   *  2. `start_at <= now` ⇒ 400 'Tournament has already started'（**开赛后不能再报名**）；
-   *  3. 已报名 ⇒ 422 'Already entered'；满员（`max_players > 0` 且已达）⇒ 400 'Tournament is full'。
-   * 页面只做本地预判（拿本机时钟比 `start_at`），真闸在服务端，被拒时原样透出 message。
-   */
-  tournamentJoin: (hashid: string) => post<{ id: string }>(`/tournament/${hashid}/join`, {}),
 
   /* ---------------- 分享短码（邀请） ---------------- */
 

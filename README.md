@@ -353,7 +353,6 @@ cd admin/apps/flutter && flutter test --timeout 300s
 | VIP | 5级忠诚度、经验值累计、兑换折扣/提现减免/汇率加成 |
 | 成就 | 12个内置成就、事件驱动检测、进度追踪 |
 | 社交 | 好友系统 + WebSocket 实时私信 (默认端口 8791，CHAT_WS_PORT 可配)、仅好友可发 |
-| 赛事 | 锦标赛系统 (FeatureFlag开关) + 排行榜 + 人数上限 |
 | 返佣 | 二级推荐分润 (可配置佣金率) |
 | 优惠券 | 条件限制 (min_deposit/first_user/game_id) |
 | 事件 | Redis Pub/Sub 事件总线 + Webhook订阅投递 (7种事件) |

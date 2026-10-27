@@ -57,7 +57,6 @@ export const jaCommon = {
   'nav.me': 'マイページ',
   'nav.my_games': 'マイゲーム',
   'nav.activities': 'イベント',
-  'nav.tournaments': 'トーナメント',
   'nav.invite': '友達を招待',
   'nav.messages': 'メッセージ',
   'nav.friends': '友達',

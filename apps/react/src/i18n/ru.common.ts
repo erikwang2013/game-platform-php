@@ -57,7 +57,6 @@ export const ruCommon = {
   'nav.me': 'Профиль',
   'nav.my_games': 'Мои игры',
   'nav.activities': 'Акции',
-  'nav.tournaments': 'Турниры',
   'nav.invite': 'Пригласить друзей',
   'nav.messages': 'Сообщения',
   'nav.friends': 'Друзья',

@@ -256,12 +256,3 @@ Route::group('/api/v1/activities', function () {
 })->middleware([
     app\middleware\UserAuth::class,
 ]);
-
-// 赛事 (FeatureFlag: tournament)
-Route::group('/api/v1/tournament', function () {
-    Route::get('/list', v('TournamentController', 'list'));
-    Route::get('/{hashid}', v('TournamentController', 'detail'));
-    Route::post('/{hashid}/join', v('TournamentController', 'join'));
-})->middleware([
-    app\middleware\UserAuth::class,
-]);

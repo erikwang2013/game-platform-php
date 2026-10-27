@@ -57,7 +57,6 @@ export const arCommon = {
   'nav.me': 'حسابي',
   'nav.my_games': 'ألعابي',
   'nav.activities': 'الأنشطة',
-  'nav.tournaments': 'البطولات',
   'nav.invite': 'دعوة الأصدقاء',
   'nav.messages': 'الرسائل',
   'nav.friends': 'الأصدقاء',

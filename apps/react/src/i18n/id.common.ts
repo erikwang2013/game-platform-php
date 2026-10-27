@@ -57,7 +57,6 @@ export const idCommon = {
   'nav.me': 'Profil',
   'nav.my_games': 'Game Saya',
   'nav.activities': 'Aktivitas',
-  'nav.tournaments': 'Turnamen',
   'nav.invite': 'Undang Teman',
   'nav.messages': 'Pesan',
   'nav.friends': 'Teman',

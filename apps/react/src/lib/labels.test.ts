@@ -3,7 +3,7 @@
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { tournamentTypeLabel, txLabel } from './labels.ts';
+import { txLabel } from './labels.ts';
 
 /* 两张枚举标签表。钉三件事：
    ① 逐键都在（少一条 ⇒ 用户直接看到英文原键，正是这次要修的缺陷）；
@@ -54,13 +54,4 @@ test('流水类型：零写入的死键不许加回来', () => {
   for (const dead of ['transfer_in', 'transfer_out', 'commission', 'adjust', 'bet', 'win']) {
     assert.equal(txLabel(dead), dead, `${dead} 全仓零写入，不该有标签（bet/win 是 game_play_record.action）`);
   }
-});
-
-test('赛制类型：已推定值与未知值回落', () => {
-  assert.equal(tournamentTypeLabel('weekly'), '每周赛');
-  assert.equal(tournamentTypeLabel('daily'), '每日赛');
-  assert.equal(tournamentTypeLabel('monthly'), '每月赛');
-  // 该列是自由文本且本仓无写入侧，运营手填的值必须原样透出
-  assert.equal(tournamentTypeLabel('周赛'), '周赛');
-  assert.equal(tournamentTypeLabel(''), '');
 });

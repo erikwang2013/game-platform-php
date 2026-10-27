@@ -57,7 +57,6 @@ export const hiCommon = {
   'nav.me': 'प्रोफ़ाइल',
   'nav.my_games': 'मेरे गेम',
   'nav.activities': 'गतिविधियाँ',
-  'nav.tournaments': 'टूर्नामेंट',
   'nav.invite': 'दोस्तों को आमंत्रित करें',
   'nav.messages': 'संदेश',
   'nav.friends': 'मित्र',

@@ -31,7 +31,6 @@ const MORE: { to: string; label: MessageKey }[] = [
   { to: '/search', label: 'app.search' },
   { to: '/games', label: 'nav.my_games' },
   { to: '/activities', label: 'nav.activities' },
-  { to: '/tournaments', label: 'nav.tournaments' },
   { to: '/invite', label: 'nav.invite' },
   { to: '/chat', label: 'nav.messages' },
   { to: '/friends', label: 'nav.friends' },

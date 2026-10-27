@@ -56,7 +56,6 @@ return [
                         ['title' => '游戏 SDK', 'name' => 'game-sdk'],
                         ['title' => '游戏提供商', 'name' => 'provider'],
                         ['title' => '排行榜', 'name' => 'leaderboard'],
-                        ['title' => '赛事管理', 'name' => 'tournament'],
                         ['title' => '组队/公会', 'name' => 'group'],
                     ]],
                     ['title' => '社交互动', 'name' => 'social', 'children' => [

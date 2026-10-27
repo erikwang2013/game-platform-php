@@ -225,8 +225,6 @@ foreach ($ROUTES as [$method, $path]) {
     if ($path === '/api/v1/game/session') {
         // 必填 game_id(hashid) 查询参数, 冒烟不带参 → 422；M0 起令牌角色不足也可能是 401/403
         $allow = [0, 400, 401, 403, 404, 422];
-    } elseif ($path === '/api/v1/tournament/list') {
-        $allow = [0, 503]; // 功能未初始化时业务返回 503 Tournaments not available
     } elseif ($hashidLike($path)) {
         $allow = [0, 400, 404, 422];
     } elseif ($method === 'GET') {

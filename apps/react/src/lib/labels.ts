@@ -48,19 +48,6 @@ const TX_LABEL: Record<string, MessageKey> = {
 };
 
 /**
- * game_tournament.type —— ⚠ 与上面不同：**这张表在本仓没有写入侧**。
- * `game_tournament` 全仓只有读（TournamentController + Tournament 模型），admin 树零引用、
- * 无 CRUD、install.sql 无种子，列是自由文本 `VARCHAR(32) COMMENT '赛制类型'`。
- * 所以下面是按平台既有的周期性词汇（与 LeaderboardService 的 daily/weekly/monthly 同词）**推定**的，
- * 不是从写入侧核出来的枚举 —— 别把它当契约。运营手填别的值一律由回落原样透出。
- */
-const TOURNAMENT_TYPE_LABEL: Record<string, MessageKey> = {
-  daily: 'tourney.daily',
-  weekly: 'tourney.weekly',
-  monthly: 'tourney.monthly',
-};
-
-/**
  * 表里存的是**键**不是文案，`t()` 必须到**调用时**才求值 ——
  * 模块顶层求值只发生一次，存文案会把它冻在首次加载的语言上。
  *
@@ -68,11 +55,5 @@ const TOURNAMENT_TYPE_LABEL: Record<string, MessageKey> = {
  */
 export const txLabel = (type: string): string => {
   const key = TX_LABEL[type];
-  return key === undefined ? type : t(key);
-};
-
-/** 赛制类型 → 文案；未知类型回落原键（不返回空串）。理由同上。 */
-export const tournamentTypeLabel = (type: string): string => {
-  const key = TOURNAMENT_TYPE_LABEL[type];
   return key === undefined ? type : t(key);
 };

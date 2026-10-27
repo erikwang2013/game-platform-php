@@ -57,7 +57,6 @@ export const zhCommon = {
   'nav.me': '我的',
   'nav.my_games': '我的游戏',
   'nav.activities': '活动',
-  'nav.tournaments': '赛事',
   'nav.invite': '邀请好友',
   'nav.messages': '消息',
   'nav.friends': '好友',

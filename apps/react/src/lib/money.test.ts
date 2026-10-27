@@ -112,18 +112,6 @@ test('moneyIsZero：负数是非零（与旧式 !(Number(x) > 0) 的分歧点，
  *   的两条分支同形，改任一处都会让下面这些串变样。）
  * ------------------------------------------------------------------ */
 
-test('Tournaments 报名费「免费」分支：与 angular tournaments.ts:329 同串', () => {
-  // angular: `moneyIsZero(t.entry_fee) ? '免费' : money(t.entry_fee)`
-  // DECIMAL(18,4) 的三种真实取值
-  assert.equal(moneyIsZero('0.0000') ? '免费' : money('0.0000'), '免费');
-  assert.equal(moneyIsZero('10.0000') ? '免费' : money('10.0000'), '10.00');
-  // 旧 react 写法 `Number('10.0650') > 0 ? '10.0650' : '免费'` 会原样吐 '10.0650'（无千分位、4 位小数），
-  // 而 angular 印的是 money() 规整过的 '10.065' —— 两串在这里对拍
-  assert.equal(moneyIsZero('10.0650') ? '免费' : money('10.0650'), '10.065');
-  // bcmath scale-4 的最小非零量不得显示成「免费」
-  assert.equal(moneyIsZero('0.0001') ? '免费' : money('0.0001'), '0.0001');
-});
-
 test('Leaderboard 金额榜分数：与 angular leaderboard.ts 的 score() 同串', () => {
   // angular: `return money(v)`（earned / spent 都是四位 DECIMAL）
   // 旧 react 版 `Number('0.0001').toLocaleString('en-US', {maximumFractionDigits: 2})` → '0'（非零显示成零）

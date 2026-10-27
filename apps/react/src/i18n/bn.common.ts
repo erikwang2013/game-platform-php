@@ -57,7 +57,6 @@ export const bnCommon = {
   'nav.me': 'প্রোফাইল',
   'nav.my_games': 'আমার গেম',
   'nav.activities': 'কার্যক্রম',
-  'nav.tournaments': 'টুর্নামেন্ট',
   'nav.invite': 'বন্ধুদের আমন্ত্রণ জানান',
   'nav.messages': 'বার্তা',
   'nav.friends': 'বন্ধুরা',
