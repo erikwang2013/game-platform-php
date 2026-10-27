@@ -114,9 +114,8 @@ class OperationLog implements MiddlewareInterface
      * 这次改动只扩大覆盖面，不缩小。
      *
      * 两处刻意的取舍，都不是凭感觉收窄，是照本仓实际字段名定的：
-     * 1. `config` 一律整体打码，不递归。CdnProviderController.php:93 与
-     *    PaymentController.php:118 都把它当凭据载体，而 CdnProbeService.php:44-45 读的键名
-     *    含缩写（ak / sk），缩写过不了任何词表 ⇒ 只递归而不整体打码等于假修。
+     * 1. `config` 一律整体打码，不递归。PaymentController.php:118 把它当凭据载体，
+     *    凭据键名含缩写（如 ak / sk），缩写过不了任何词表 ⇒ 只递归而不整体打码等于假修。
      *    代价：ActivityController / RiskRuleController 的 config 正文（非凭据）也不再入日志，
      *    中间件里无法区分同名字段的两种语义。路径 + 业务主键仍足以定位改动。
      * 2. 裸 `key`（且它必须是键名里唯一的词）不打码：本仓叫 `key` 的字段是标识符不是凭据 ——

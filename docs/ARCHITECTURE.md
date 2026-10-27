@@ -378,8 +378,6 @@ tests/                             # 70 个文件 · 593 个用例
 ├── AuthControllerRegisterTest.php # 15 个注册口令强度测试
 ├── BackendEnhancementTest.php     # 27 个加密/ID服务测试
 ├── CaptchaTest.php                # 5 个验证码测试
-├── CdnProbeServiceTest.php        # 5 个 CDN 探测测试
-├── CdnProviderModelTest.php       # 3 个 CDN 供应商模型测试
 ├── ClickHouseServiceTest.php      # 16 个 ClickHouse 服务测试
 ├── ConfigDefaultsTest.php         # 4 个配置默认值测试
 ├── EncryptionServiceTest.php      # 8 个加解密测试
@@ -442,11 +440,11 @@ game_translation, game_country_config, game_platform_revenue,
 game_notification, game_referral, game_referral_reward,
 game_user_2fa
 
-### 生态扩展 (14张) ← 新增
+### 生态扩展 (13张) ← 新增
 game_ticket, game_ticket_reply, game_device_token,
 game_vip_level, game_user_vip, game_exp_log,
 game_achievement, game_user_achievement, game_friend,
-game_message, game_cdn_provider, game_referral_commission,
+game_message, game_referral_commission,
 game_tournament, game_tournament_entry
 
 ### v1.3.15-22 新增 (22张)

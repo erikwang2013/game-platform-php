@@ -167,14 +167,6 @@ Route::group('/admin/v1', function () {
     Route::put('/payment/method/{hashid}', [app\admin\v1\controller\PaymentController::class, 'update']);
     Route::delete('/payment/method/{hashid}', [app\admin\v1\controller\PaymentController::class, 'delete']);
 
-    // CDN 厂商配置管理
-    Route::get('/cdn/provider/list', [app\admin\v1\controller\CdnProviderController::class, 'list']);
-    Route::post('/cdn/provider/toggle', [app\admin\v1\controller\CdnProviderController::class, 'toggle']);
-    Route::post('/cdn/provider/create', [app\admin\v1\controller\CdnProviderController::class, 'create']);
-    Route::put('/cdn/provider/{hashid}', [app\admin\v1\controller\CdnProviderController::class, 'update']);
-    Route::delete('/cdn/provider/{hashid}', [app\admin\v1\controller\CdnProviderController::class, 'delete']);
-    Route::post('/cdn/provider/test', [app\admin\v1\controller\CdnProviderController::class, 'test']);
-
     // C端用户管理
     Route::get('/platform/user/list', [app\admin\v1\controller\PlatformUserController::class, 'list']);
     Route::get('/platform/user/{hashid}', [app\admin\v1\controller\PlatformUserController::class, 'detail']);

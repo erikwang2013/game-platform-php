@@ -12,8 +12,7 @@ use Erikwang2013\Encryptable\Encryptable as BaseEncryptable;
 /**
  * 加密 cast（JSON 结构版）：让「明文 JSON」的列也能读成 array，而不是 string。
  *
- * 适用：语义上是 JSON 结构的加密列（common\model\PaymentMethod::$casts['config']、
- * common\model\CdnProvider::$casts['config']）。
+ * 适用：语义上是 JSON 结构的加密列（common\model\PaymentMethod::$casts['config']）。
  *
  * 病根：install/install.sql 用裸 SQL 播种，绕过 Eloquent 的 set()，落的是**明文** JSON；
  * 而父类 Encryptable::get() 走 PHPEncrypter::decrypt($strict = false)，非密文时**原样返回

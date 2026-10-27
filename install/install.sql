@@ -1093,19 +1093,6 @@ CREATE TABLE IF NOT EXISTS `game_device_token` (
     KEY `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='设备推送令牌表';
 
-CREATE TABLE IF NOT EXISTS `game_cdn_provider` (
-    `id` BIGINT UNSIGNED NOT NULL COMMENT '雪花ID',
-    `name` VARCHAR(50) NOT NULL COMMENT '显示名称',
-    `provider` VARCHAR(30) NOT NULL COMMENT '厂商: cloudflare/cloudfront/aliyun/tencent/huawei',
-    `config` TEXT NULL COMMENT '加密JSON配置（凭据/桶/域名）',
-    `status` TINYINT NOT NULL DEFAULT 1 COMMENT '1启用 0停用',
-    `sort` INT NOT NULL DEFAULT 0 COMMENT '排序',
-    `created_at` DATETIME DEFAULT NULL,
-    `updated_at` DATETIME DEFAULT NULL,
-    PRIMARY KEY (`id`),
-    UNIQUE KEY `uk_provider` (`provider`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='CDN厂商配置';
-
 -- ============================================================
 -- 可靠事件投递表（Outbox）
 -- 关键资金事件（deposit/withdraw/exchange）与业务行同事务写入，
@@ -1188,7 +1175,6 @@ INSERT IGNORE INTO `game_admin_permission` (`id`, `parent_id`, `name`, `slug`, `
 -- 数据分析 12 条取 docs/API.md §17.x 标题。本段只做「可授予」，不向任何角色授予。
 (21000000000000101, '0', '删除成就', 'delete.admin/achievement', 3, '', '', 100, NOW(), NOW()),
 (21000000000000102, '0', '删除运营活动', 'delete.admin/activities', 3, '', '', 101, NOW(), NOW()),
-(21000000000000103, '0', '删除 CDN 厂商', 'delete.admin/cdn/provider', 3, '', '', 102, NOW(), NOW()),
 (21000000000000104, '0', '删除优惠券', 'delete.admin/coupon', 3, '', '', 103, NOW(), NOW()),
 (21000000000000105, '0', '删除游戏', 'delete.admin/game', 3, '', '', 104, NOW(), NOW()),
 (21000000000000106, '0', '删除分类', 'delete.admin/game/category', 3, '', '', 105, NOW(), NOW()),
@@ -1212,7 +1198,6 @@ INSERT IGNORE INTO `game_admin_permission` (`id`, `parent_id`, `name`, `slug`, `
 (21000000000000124, '0', '营收总览', 'get.admin/analytics/revenue', 3, '', '', 123, NOW(), NOW()),
 (21000000000000125, '0', '公告列表', 'get.admin/announcement/list', 3, '', '', 124, NOW(), NOW()),
 (21000000000000126, '0', '反作弊-事件列表', 'get.admin/anticheat/events', 3, '', '', 125, NOW(), NOW()),
-(21000000000000127, '0', 'CDN 厂商列表', 'get.admin/cdn/provider/list', 3, '', '', 126, NOW(), NOW()),
 (21000000000000128, '0', '国家配置列表', 'get.admin/country/config/list', 3, '', '', 127, NOW(), NOW()),
 (21000000000000129, '0', '优惠券列表', 'get.admin/coupon/list', 3, '', '', 128, NOW(), NOW()),
 (21000000000000130, '0', '优惠券统计', 'get.admin/coupon/stats', 3, '', '', 129, NOW(), NOW()),
@@ -1259,9 +1244,6 @@ INSERT IGNORE INTO `game_admin_permission` (`id`, `parent_id`, `name`, `slug`, `
 (21000000000000171, '0', '创建运营活动', 'post.admin/activities/create', 3, '', '', 169, NOW(), NOW()),
 (21000000000000172, '0', '发布公告', 'post.admin/announcement/create', 3, '', '', 170, NOW(), NOW()),
 (21000000000000173, '0', '人工审核', 'post.admin/anticheat/events/review', 3, '', '', 171, NOW(), NOW()),
-(21000000000000174, '0', '创建 CDN 厂商', 'post.admin/cdn/provider/create', 3, '', '', 172, NOW(), NOW()),
-(21000000000000175, '0', 'CDN 连通测试', 'post.admin/cdn/provider/test', 3, '', '', 173, NOW(), NOW()),
-(21000000000000176, '0', '启停 CDN 厂商', 'post.admin/cdn/provider/toggle', 3, '', '', 174, NOW(), NOW()),
 (21000000000000177, '0', '创建国家配置', 'post.admin/country/config/create', 3, '', '', 175, NOW(), NOW()),
 (21000000000000178, '0', '创建优惠券', 'post.admin/coupon/create', 3, '', '', 176, NOW(), NOW()),
 (21000000000000179, '0', '导出收据PDF', 'post.admin/export/receipt', 3, '', '', 177, NOW(), NOW()),
@@ -1301,7 +1283,6 @@ INSERT IGNORE INTO `game_admin_permission` (`id`, `parent_id`, `name`, `slug`, `
 (21000000000000213, '0', '同步打款状态', 'post.admin/withdraw/sync-payout', 3, '', '', 211, NOW(), NOW()),
 (21000000000000214, '0', '更新成就', 'put.admin/achievement', 3, '', '', 212, NOW(), NOW()),
 (21000000000000215, '0', '更新运营活动', 'put.admin/activities', 3, '', '', 213, NOW(), NOW()),
-(21000000000000216, '0', '更新 CDN 厂商', 'put.admin/cdn/provider', 3, '', '', 214, NOW(), NOW()),
 (21000000000000217, '0', '编辑国家配置', 'put.admin/country/config', 3, '', '', 215, NOW(), NOW()),
 (21000000000000218, '0', '编辑优惠券', 'put.admin/coupon', 3, '', '', 216, NOW(), NOW()),
 (21000000000000219, '0', '编辑游戏', 'put.admin/game', 3, '', '', 217, NOW(), NOW()),
@@ -1577,14 +1558,6 @@ CREATE TABLE IF NOT EXISTS `game_activity_reward_log` (
     KEY `idx_user` (`user_id`),
     KEY `idx_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='活动发奖记录表';
-
--- 默认 CDN 厂商（凭据为空，status=0 停用，管理端填写凭据后启用）
-INSERT IGNORE INTO `game_cdn_provider` (`id`, `name`, `provider`, `config`, `status`, `sort`) VALUES
-(50000000000000061, 'Cloudflare R2', 'cloudflare', '{"bucket":"static","domain":"cdn.example.com","account_id":"","api_token":"","zone_id":"","s3":{"region":"auto","access_key_id":"","secret_access_key":""}}', 0, 10),
-(50000000000000062, 'AWS CloudFront', 'cloudfront', '{"bucket":"static","domain":"d111111abcdef8.cloudfront.net","distribution_id":"","s3":{"region":"us-east-1","access_key_id":"","secret_access_key":""}}', 0, 20),
-(50000000000000063, '阿里云 OSS', 'aliyun', '{"bucket":"static","domain":"cdn.aliyun.example.com","access_key_id":"","access_key_secret":"","region":"oss-cn-hangzhou"}', 0, 30),
-(50000000000000064, '腾讯云 COS', 'tencent', '{"bucket":"static","domain":"cdn.tencent.example.com","secret_id":"","secret_key":"","region":"ap-guangzhou"}', 0, 40),
-(50000000000000065, '华为云 OBS', 'huawei', '{"bucket":"static","domain":"cdn.huawei.example.com","ak":"","sk":"","region":"cn-north-4"}', 0, 50);
 
 -- 默认国家配置
 INSERT IGNORE INTO `game_country_config` (`id`, `country_code`, `lang_prefix`, `currency`, `payment_methods`, `withdraw_methods`, `min_deposit`, `max_deposit`, `daily_deposit_limit`, `withdraw_fee_percent`, `withdraw_min`, `settlement_days`, `status`) VALUES

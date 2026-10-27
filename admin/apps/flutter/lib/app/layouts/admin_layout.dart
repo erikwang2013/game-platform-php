@@ -19,7 +19,6 @@ import '../pages/platform_user/platform_user_page.dart';
 import '../pages/identity/identity_page.dart';
 import '../pages/risk/risk_log_page.dart';
 import '../pages/payment/payment_page.dart';
-import '../pages/cdn/cdn_page.dart';
 import '../pages/announcement/announcement_page.dart';
 import '../pages/vip/vip_page.dart';
 import '../pages/achievement/achievement_page.dart';
@@ -73,7 +72,6 @@ class _AdminLayoutState extends State<AdminLayout> {
     ('nav.risk_logs', Icons.warning, RiskLogPage()),
     ('nav.risk_dashboard', Icons.monitor_heart, RiskDashboardPage()),
     ('nav.payments', Icons.payment, PaymentPage()),
-    ('nav.cdn', Icons.cloud, CdnPage()),
     ('nav.announcements', Icons.campaign, AnnouncementPage()),
     ('nav.vip', Icons.workspace_premium, VipPage()),
     ('nav.achievements', Icons.emoji_events, AchievementPage()),

@@ -42,7 +42,6 @@ service/
 │   ├── activity/           # 活动处理器
 │   ├── api/v1/controller/  # C端 API 控制器（35 个）
 │   ├── bootstrap/          # 通知引导
-│   ├── cdn/                # CDN 多厂商（阿里云/腾讯云/华为云/Cloudflare/CloudFront + CdnFactory）
 │   ├── common/             # 公共
 │   ├── middleware/         # 中间件（Cors/SecurityFilter/RateLimit/TraceId/LanguageMiddleware/UserAuth/ProviderAuth/SdkSessionAuth）
 │   ├── model/              # 数据模型

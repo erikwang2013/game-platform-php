@@ -21,7 +21,6 @@ import 'app/pages/risk/risk_log_page.dart';
 import 'app/pages/risk/risk_dashboard_page.dart';
 import 'app/pages/risk/risk_manage_page.dart';
 import 'app/pages/payment/payment_page.dart';
-import 'app/pages/cdn/cdn_page.dart';
 import 'app/pages/announcement/announcement_page.dart';
 import 'app/pages/vip/vip_page.dart';
 import 'app/pages/achievement/achievement_page.dart';
@@ -75,18 +74,17 @@ class AdminApp extends StatelessWidget {
         GetPage(name: '/risk-logs', page: () => const AdminLayout(initialIndex: 10, child: RiskLogPage())),
         GetPage(name: '/risk-dashboard', page: () => const AdminLayout(initialIndex: 11, child: RiskDashboardPage())),
         GetPage(name: '/payments', page: () => const AdminLayout(initialIndex: 12, child: PaymentPage())),
-        GetPage(name: '/cdn', page: () => const AdminLayout(initialIndex: 13, child: CdnPage())),
-        GetPage(name: '/announcements', page: () => const AdminLayout(initialIndex: 14, child: AnnouncementPage())),
-        GetPage(name: '/vip', page: () => const AdminLayout(initialIndex: 15, child: VipPage())),
-        GetPage(name: '/achievement', page: () => const AdminLayout(initialIndex: 16, child: AchievementPage())),
-        GetPage(name: '/activity', page: () => const AdminLayout(initialIndex: 17, child: ActivityPage())),
-        GetPage(name: '/game-categories', page: () => const AdminLayout(initialIndex: 18, child: GameCategoryPage())),
-        GetPage(name: '/game-servers', page: () => const AdminLayout(initialIndex: 19, child: GameServerPage())),
-        GetPage(name: '/leaderboards', page: () => const AdminLayout(initialIndex: 20, child: LeaderboardPage())),
-        GetPage(name: '/country-configs', page: () => const AdminLayout(initialIndex: 21, child: CountryConfigPage())),
-        GetPage(name: '/tickets', page: () => const AdminLayout(initialIndex: 22, child: TicketPage())),
-        GetPage(name: '/coupons', page: () => const AdminLayout(initialIndex: 23, child: CouponPage())),
-        GetPage(name: '/risk-manage', page: () => const AdminLayout(initialIndex: 24, child: RiskManagePage())),
+        GetPage(name: '/announcements', page: () => const AdminLayout(initialIndex: 13, child: AnnouncementPage())),
+        GetPage(name: '/vip', page: () => const AdminLayout(initialIndex: 14, child: VipPage())),
+        GetPage(name: '/achievement', page: () => const AdminLayout(initialIndex: 15, child: AchievementPage())),
+        GetPage(name: '/activity', page: () => const AdminLayout(initialIndex: 16, child: ActivityPage())),
+        GetPage(name: '/game-categories', page: () => const AdminLayout(initialIndex: 17, child: GameCategoryPage())),
+        GetPage(name: '/game-servers', page: () => const AdminLayout(initialIndex: 18, child: GameServerPage())),
+        GetPage(name: '/leaderboards', page: () => const AdminLayout(initialIndex: 19, child: LeaderboardPage())),
+        GetPage(name: '/country-configs', page: () => const AdminLayout(initialIndex: 20, child: CountryConfigPage())),
+        GetPage(name: '/tickets', page: () => const AdminLayout(initialIndex: 21, child: TicketPage())),
+        GetPage(name: '/coupons', page: () => const AdminLayout(initialIndex: 22, child: CouponPage())),
+        GetPage(name: '/risk-manage', page: () => const AdminLayout(initialIndex: 23, child: RiskManagePage())),
         GetPage(name: '/bigscreen', page: () => const BigscreenPage()),
         GetPage(name: '/profile', page: () => const ProfilePage()),
       ],
