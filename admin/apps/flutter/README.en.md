@@ -1,9 +1,8 @@
 # admin_app — Admin Web Frontend (Flutter)
-<!-- lang-nav -->
 
 Languages: [中文](README.md) · **English**
 
-> Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+> Copyright (c) 2026 erik erik@erik.xyz — https://erik.xyz
 
 The admin web frontend built with Flutter 3.x, using the classic PC admin layout (sidebar + topbar + content area). It covers all management pages needed to operate the game platform: dashboard, users, roles and permissions, games, payments, withdrawals, VIP, announcements, risk control, identity verification, operation logs, and more.
 

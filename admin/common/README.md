@@ -1,9 +1,8 @@
 # common/ — 管理后台公共库
-<!-- lang-nav -->
 
 Languages: **中文** · [English](README.en.md)
 
-> Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+> Copyright (c) 2026 erik erik@erik.xyz — https://erik.xyz
 
 管理后台（admin/）的公共代码目录。`common\service\*` 已抽取到共享包 **erik/platform-common**（`packages/platform-common`），本目录不再放置 PHP 类，避免遮蔽包的自动加载。详见 `packages/platform-common/README.md`。
 

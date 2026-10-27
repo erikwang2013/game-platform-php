@@ -1,9 +1,8 @@
 # common/ — Admin Shared Library
-<!-- lang-nav -->
 
 Languages: [中文](README.md) · **English**
 
-> Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+> Copyright (c) 2026 erik erik@erik.xyz — https://erik.xyz
 
 The shared code directory of the admin backend (`admin/`). `common\service\*` has been extracted into the shared package **erik/platform-common** (`packages/platform-common`); do not place PHP classes in this directory, as they would shadow the package autoload. See `packages/platform-common/README.md`.
 

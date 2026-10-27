@@ -2,10 +2,9 @@
 
 ## 项目吉祥物
 
-<img src="../../docs/mascot.svg" width="120" alt="Dicey"/>
+![Dicey](../../docs/mascot.svg)
 
 **小骰（Dicey）** — 平台吉祥物。骰子代表游戏与概率玩法，金币代表平台经济与多支付网关，紫色主色调呼应后台品牌。SVG 源文件：`docs/mascot.svg`，可无限缩放用于文档、Logo 与周边。
-<!-- lang-nav -->
 
 Languages: **中文** · [English](README.en.md)
 

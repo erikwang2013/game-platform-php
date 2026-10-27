@@ -1,9 +1,8 @@
 # game_platform — User Platform (Flutter Web)
-<!-- lang-nav -->
 
 Languages: [中文](README.md) · **English**
 
-> Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+> Copyright (c) 2026 erik erik@erik.xyz — https://erik.xyz
 
 
 ## Feature List

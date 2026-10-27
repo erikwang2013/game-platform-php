@@ -2,14 +2,13 @@
 
 ## Project Mascot
 
-<img src="../mascot.svg" width="120" alt="Dicey"/>
+![Dicey](../mascot.svg)
 
 **Dicey** — Platform mascot. The die represents games and probability-based gameplay, the coin represents the platform economy and multi-payment gateways, and the purple palette echoes the admin branding. SVG source: `docs/mascot.svg`, infinitely scalable for docs, logos and merchandise.
-<!-- lang-nav -->
 
 Languages: [中文](../../README.md) · **English**
 
-> Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+> Copyright (c) 2026 erik (erik@erik.xyz) — https://erik.xyz
 
 A global, internationalized game aggregation platform. After registering, users deposit to exchange for platform coins, play games with platform coins to earn more game coins, and can convert game coins back to their wallet for withdrawal. The admin backend provides complete game management, withdrawal review, user management, and payment management. Supports multi-language switching (English/Chinese).
 
@@ -173,8 +172,8 @@ The install wizard automatically:
 
 ### Option 2: Manual Installation
 
-<details>
-<summary>Expand manual installation steps</summary>
+**Expand manual installation steps**
+
 
 #### 1. Database initialization
 
@@ -209,7 +208,7 @@ cd ../service && composer install && php start.php start -d
 
 You need to manually insert the admin account into the database (password bcrypt-encrypted).
 
-</details>
+
 
 ### Frontend Startup (Optional)
 
@@ -447,17 +446,6 @@ flowchart LR
 
 If this project helps you, feel free to buy the author a coffee ☕
 
-<p align="center">
-  <table align="center" border="0" cellspacing="0" cellpadding="0">
-    <tr>
-      <td align="center" width="200">
-        <img src="../weixinpay-130.png" width="130" height="130" alt="WeChat Pay"><br>
-        <b>WeChat Pay</b>
-      </td>
-      <td align="center" width="200">
-        <img src="../alipay-130.png" width="130" height="130" alt="Alipay"><br>
-        <b>Alipay</b>
-      </td>
-    </tr>
-  </table>
-</p>
+| WeChat Pay | Alipay |
+|---|---|
+| ![WeChat Pay](../weixinpay-130.png) | ![Alipay](../alipay-130.png) |

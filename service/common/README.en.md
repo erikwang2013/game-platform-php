@@ -2,10 +2,9 @@
 
 ## Project Mascot
 
-<img src="../../docs/mascot.svg" width="120" alt="Dicey"/>
+![Dicey](../../docs/mascot.svg)
 
 **Dicey** — Platform mascot. The die represents games and probability-based gameplay, the coin represents the platform economy and multi-payment gateways, and the purple palette echoes the admin branding. SVG source: `docs/mascot.svg`, infinitely scalable for docs, logos and merchandise.
-<!-- lang-nav -->
 
 Languages: [中文](README.md) · **English**
 

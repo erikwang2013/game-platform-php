@@ -1,9 +1,8 @@
 # erik/platform-common
-<!-- lang-nav -->
 
 Languages: [中文](README.md) · **English**
 
-> Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+> Copyright (c) 2026 erik erik@erik.xyz — https://erik.xyz
 
 The shared `common\service\*` layer used by admin/ and service/, referencing the local source via a Composer path repository.
 

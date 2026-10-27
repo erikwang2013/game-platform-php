@@ -1,9 +1,8 @@
 # erik/platform-common
-<!-- lang-nav -->
 
 Languages: **中文** · [English](README.en.md)
 
-> Copyright (c) 2026 erik <erik@erik.xyz> — https://erik.xyz
+> Copyright (c) 2026 erik erik@erik.xyz — https://erik.xyz
 
 admin/ 与 service/ 共享的 `common\service\*` 公共层，通过 Composer path 仓库引用本地源码。
 
